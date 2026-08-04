@@ -22,8 +22,61 @@ export const CLUSTER_CS_CONQUEST_DEADLINE_TURN = 100;
 export const CITY_STATE_PLAYER_WAR_MIN_TURN = 20;
 export const CITY_STATE_PLAYER_WAR_CHANCE = 0.60;
 
+/** R-MP-HARD-WAVE Q3: jeden członek klastra siostrzanych PM do zbiorczego rzutu wojny. */
+export interface ClusterWarRollMember {
+  ownerId: number;
+  atWarWithPlayer: boolean;
+  hasTradeOrResourceTreatyWithPlayer: boolean;
+  peaceLockedWithPlayer: boolean;
+  hasNapWithPlayer: boolean;
+}
+
+/** Czy pojedyncze PM może wypowiedzieć wojnę graczowi (bez rzutu — tylko bramki). */
+export function isCityStateEligibleForPlayerWar(
+  cityStateDifficulty: DifficultyLevel,
+  turn: number,
+  atWarWithPlayer: boolean,
+  hasTradeOrResourceTreatyWithPlayer: boolean,
+  peaceLockedWithPlayer = false,
+  hasNapWithPlayer = false,
+): boolean {
+  if (cityStateDifficulty !== 'hard') return false;
+  if (turn < CITY_STATE_PLAYER_WAR_MIN_TURN) return false;
+  if (atWarWithPlayer) return false;
+  if (hasTradeOrResourceTreatyWithPlayer) return false;
+  if (peaceLockedWithPlayer) return false;
+  if (hasNapWithPlayer) return false;
+  return true;
+}
+
+/**
+ * R-MP-HARD-WAVE Q3: jeden rzut na klaster siostrzanych PM / turę.
+ * Przy sukcesie zwraca ownerId wszystkich kwalifikujących się sióstr (blokady NAP/handlu respektowane).
+ */
+export function resolveClusterCityStateWarOnPlayer(
+  cityStateDifficulty: DifficultyLevel,
+  turn: number,
+  members: ReadonlyArray<ClusterWarRollMember>,
+  rng: () => number = Math.random,
+): number[] {
+  const eligible = members.filter(m =>
+    isCityStateEligibleForPlayerWar(
+      cityStateDifficulty,
+      turn,
+      m.atWarWithPlayer,
+      m.hasTradeOrResourceTreatyWithPlayer,
+      m.peaceLockedWithPlayer,
+      m.hasNapWithPlayer,
+    ),
+  );
+  if (eligible.length === 0) return [];
+  if (rng() >= CITY_STATE_PLAYER_WAR_CHANCE) return [];
+  return eligible.map(m => m.ownerId);
+}
+
 /**
  * Czy to państwo-miasto ma w tej turze wypowiedzieć wojnę graczowi (rzut raz na turę).
+ * @deprecated Preferuj resolveClusterCityStateWarOnPlayer (jeden rzut na klaster).
  */
 export function shouldCityStateRollWarOnPlayer(
   cityStateDifficulty: DifficultyLevel,
@@ -36,12 +89,14 @@ export function shouldCityStateRollWarOnPlayer(
   /** Aktywny pakt nieagresji z graczem — twardy zakaz DOW do wygaśnięcia. */
   hasNapWithPlayer = false,
 ): boolean {
-  if (cityStateDifficulty !== 'hard') return false;
-  if (turn < CITY_STATE_PLAYER_WAR_MIN_TURN) return false;
-  if (atWarWithPlayer) return false;
-  if (hasTradeOrResourceTreatyWithPlayer) return false;
-  if (peaceLockedWithPlayer) return false;
-  if (hasNapWithPlayer) return false;
+  if (!isCityStateEligibleForPlayerWar(
+    cityStateDifficulty,
+    turn,
+    atWarWithPlayer,
+    hasTradeOrResourceTreatyWithPlayer,
+    peaceLockedWithPlayer,
+    hasNapWithPlayer,
+  )) return false;
   return rng() < CITY_STATE_PLAYER_WAR_CHANCE;
 }
 

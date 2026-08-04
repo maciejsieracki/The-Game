@@ -63,7 +63,7 @@ const ENTRY_FILE  = path.resolve(__dirname, '.city-state-alliance-test-entry.ts'
 const BUNDLE_FILE = path.resolve(__dirname, '.city-state-alliance-test-bundle.cjs');
 
 const ENTRY_TS = `
-export { decideAITurn, RESUP_TIERS } from ${JSON.stringify(SRC + '/game/ai')};
+export { decideAITurn, RESUP_TIERS, CS_WAVE_ATTACK_MIN_STACK } from ${JSON.stringify(SRC + '/game/ai')};
 export {
   DIPLOMACY_PARAMS, sisterAllianceDiplomacyParams, sisterAllianceEligible,
 } from ${JSON.stringify(SRC + '/game/diplomacy')};
@@ -93,7 +93,7 @@ try {
 }
 
 const {
-  decideAITurn, RESUP_TIERS,
+  decideAITurn, RESUP_TIERS, CS_WAVE_ATTACK_MIN_STACK,
   DIPLOMACY_PARAMS, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   hexDistance,
   startRelationForPair, startRelationForPlayerSameCivCityState,
@@ -462,6 +462,7 @@ console.log('10. Hard offensive -- marsz na wroga wojny gdy brak zagrozenia domu
   const guard1 = makeGuard('og1', PLAYER_ID, CITY_Q, CITY_R);
   const guard2 = makeGuard('og2', PLAYER_ID, CITY_Q, CITY_R + 1);
   const guard3 = makeGuard('og3', PLAYER_ID, CITY_Q + 1, CITY_R);
+  const guard4 = makeGuard('og4', PLAYER_ID, CITY_Q - 1, CITY_R);
   const enemyCity = makeCity('ecWar', ENEMY_ID, CITY_Q + 8, CITY_R);
   const atWar = (targetOwnerId) => targetOwnerId === ENEMY_ID;
   const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
@@ -483,7 +484,7 @@ console.log('10. Hard offensive -- marsz na wroga wojny gdy brak zagrozenia domu
 
   const cmdsHard = decideAITurn(
     PLAYER_ID,
-    [guard1, guard2, guard3],
+    [guard1, guard2, guard3, guard4],
     [city, enemyCity],
     mapOff,
     data,
@@ -513,6 +514,8 @@ console.log('11. Hard offensive -- dolaczenie do armii sojusznika');
   const mapJoin = makeFlatMap(30, 30);
   const guard1 = makeGuard('jg1', PLAYER_ID, CITY_Q, CITY_R);
   const guard2 = makeGuard('jg2', PLAYER_ID, CITY_Q, CITY_R + 1);
+  const guard3 = makeGuard('jg3', PLAYER_ID, CITY_Q + 1, CITY_R);
+  const guard4 = makeGuard('jg4', PLAYER_ID, CITY_Q - 1, CITY_R);
   const allyUnit = makeGuard('ally1', SISTER_ID, CITY_Q + 4, CITY_R);
   const enemy = makeEnemy('je1', ENEMY_ID, CITY_Q + 5, CITY_R);
   const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
@@ -520,7 +523,7 @@ console.log('11. Hard offensive -- dolaczenie do armii sojusznika');
 
   const cmds = decideAITurn(
     PLAYER_ID,
-    [guard1, guard2, allyUnit, enemy],
+    [guard1, guard2, guard3, guard4, allyUnit, enemy],
     [city],
     mapJoin,
     data,
@@ -543,6 +546,52 @@ console.log('11. Hard offensive -- dolaczenie do armii sojusznika');
     ),
   );
   assert(towardAlly || moves.length >= 1, 'Hard: jednostka MP rusza w strone sojusznika lub wroga');
+}
+
+console.log('12. Hard wave -- solo atak na gracza zakazany (stos <3)');
+{
+  eq(CS_WAVE_ATTACK_MIN_STACK, 3, 'CS_WAVE_ATTACK_MIN_STACK = 3');
+  const mapSolo = makeFlatMap(30, 30);
+  const HEX_Q = CITY_Q + 2;
+  const HEX_R = CITY_R;
+  const soloGuard = makeGuard('sg1', PLAYER_ID, HEX_Q, HEX_R);
+  const playerEnemy = makeEnemy('pe1', ENEMY_ID, HEX_Q + 1, HEX_R);
+  const city = makeCity('cityA', PLAYER_ID, CITY_Q, CITY_R);
+  const atWar = (targetOwnerId) => targetOwnerId === ENEMY_ID;
+
+  const cmds = decideAITurn(
+    PLAYER_ID,
+    [soloGuard, playerEnemy],
+    [city],
+    mapSolo,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: true,
+      canEngageOwner: atWar,
+    },
+  );
+  const attacks = cmds.filter(c => c.type === 'attack');
+  eq(attacks.length, 0, 'Hard: solo jednostka NIE atakuje gracza (stos 1 < 3)');
+
+  const guard2 = makeGuard('sg2', PLAYER_ID, HEX_Q, HEX_R);
+  const guard3 = makeGuard('sg3', PLAYER_ID, HEX_Q, HEX_R);
+  const cmdsWave = decideAITurn(
+    PLAYER_ID,
+    [soloGuard, guard2, guard3, playerEnemy],
+    [city],
+    mapSolo,
+    data,
+    {
+      defensiveCopy: true,
+      citySupportLevel: 'strong',
+      cityStateOffensiveSupport: true,
+      canEngageOwner: atWar,
+    },
+  );
+  const attacksWave = cmdsWave.filter(c => c.type === 'attack');
+  assert(attacksWave.length >= 1, 'Hard: stos 3 na hex → atak dozwolony');
 }
 
 // ---------------------------------------------------------------------------

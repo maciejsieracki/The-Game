@@ -1078,6 +1078,8 @@ export function chooseCityProduction(
   // (250) i resztą gospodarki (~140+eko ≈ 240) — efekt: 0 budynków mimo zasobów.
   // Studnia/Garncarnia nie były w puli kandydatów w ogóle. Po garnizonie priorytet
   // podstawowej bazy; wojsko tylko przy zagrożeniu lub gdy baza już stoi.
+  // R-MP-HARD-WAVE Q1: na Trudnym osłabiona supresja wojska + wyższy priorytet Koszar.
+  const hardOffensive = opts.cityStateOffensiveSupport === true;
   if (opts.defensiveCopy) {
     const cityGuardCount = allUnits.filter(
       u => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
@@ -1102,15 +1104,24 @@ export function chooseCityProduction(
       }
       for (const c of candidates) {
         if (c.id === 'mury' || c.id === 'koszary') {
-          c.score -= 90;
+          c.score -= hardOffensive ? 25 : 90;
         }
+      }
+      if (hardOffensive && !built.includes('koszary')) {
+        candidates.push({ id: 'koszary', score: 400 + militaryScore });
       }
     }
     if (cityGuardCount >= 1 && !underThreat && infraBootstrap) {
       for (const c of candidates) {
         if (c.id === 'Wojownik' || c.id === 'Łucznik') {
-          c.score -= 250;
+          c.score -= hardOffensive ? 60 : 250;
         }
+      }
+    }
+    if (hardOffensive && cityGuardCount >= 1) {
+      for (const c of candidates) {
+        if (c.id === 'Wojownik') c.score += 70;
+        if (c.id === 'Łucznik') c.score += 55;
       }
     }
   }
@@ -1924,6 +1935,33 @@ export const RESUP_TIERS: Record<'low' | 'normal' | 'strong', ResupTier> = {
 /** Maks. dystans od domu, by jednostka MP (Hard) kontynuowała marsz ofensywny zamiast powrotu. */
 const CS_OFFENSIVE_CAMPAIGN_RADIUS = 12;
 
+/** R-MP-HARD-WAVE Q2: minimalny stos przy ataku na gracza (solo zakazany bez zagrożenia domu). */
+export const CS_WAVE_ATTACK_MIN_STACK = 3;
+
+function countFriendlyMilitaryOnHex(
+  q: number,
+  r: number,
+  ownerIds: ReadonlySet<number>,
+  allUnits: RuntimeUnit[],
+): number {
+  return allUnits.filter(
+    u => u.q === q && u.r === r && ownerIds.has(u.ownerId) && !isScoutUnit(u),
+  ).length;
+}
+
+function countOwnerFieldArmy(
+  ownerId: number,
+  ownerUnits: RuntimeUnit[],
+  myCities: AICity[],
+): number {
+  return ownerUnits.filter(u => {
+    if (isScoutUnit(u)) return false;
+    const home = nearest(u.q, u.r, myCities, c => c.q, c => c.r);
+    if (home === undefined) return true;
+    return hexDistance(u.q, u.r, home.q, home.r) > 1;
+  }).length;
+}
+
 /**
  * Trudny (cityStateOffensiveSupport): marsz na wroga wojny lub dołączenie do armii
  * sojusznika/siostry. Normal/Easy — nie wołane (legacy defend-only).
@@ -1938,6 +1976,8 @@ function planCityStateOffensiveMove(
   friendlyOwnerIds: ReadonlySet<number>,
   homeGuardCount: ReadonlyMap<string, number>,
   minGuardToSend: number,
+  /** R-MP-HARD-WAVE Q1: wymagaj min. armii polowej przed wysłaniem z domu. */
+  minFieldArmyBeforeSend = 0,
 ): { q: number; r: number } | null {
   if (isScoutUnit(unit)) return null;
 
@@ -1949,6 +1989,15 @@ function planCityStateOffensiveMove(
   if (atHome) {
     const guardCount = homeGuardCount.get(homeCity.id) ?? 0;
     if (guardCount < minGuardToSend) return null;
+    if (minFieldArmyBeforeSend > 0) {
+      const ownerUnits = allUnits.filter(u => u.ownerId === unit.ownerId);
+      const fieldArmy = countOwnerFieldArmy(unit.ownerId, ownerUnits, myCities);
+      const totalMilitary = ownerUnits.filter(u => !isScoutUnit(u)).length;
+      // Po wysłaniu tej jednostki zostaje minGuard; potrzeba minFieldArmyBeforeSend w polu.
+      if (totalMilitary - minGuardToSend < minFieldArmyBeforeSend && fieldArmy < minFieldArmyBeforeSend) {
+        return null;
+      }
+    }
   } else if (distHome > CS_OFFENSIVE_CAMPAIGN_RADIUS) {
     return null;
   }
@@ -2079,11 +2128,23 @@ function decideDefensiveCopyTurn(
       && aiCanEngageOwner(opts, c.ownerId)
       && !sisterOwnerIds.has(c.ownerId),
   );
+  const offensiveSupport = opts.cityStateOffensiveSupport === true;
+  const waveStackOwnerIds = new Set<number>([
+    playerId,
+    ...sisterOwnerIds,
+    ...(opts.warAllyOwnerIds ?? []),
+  ]);
   const friendlyArmyOwnerIds = new Set<number>([
     ...sisterOwnerIds,
     ...(opts.warAllyOwnerIds ?? []),
   ]);
-  const offensiveSupport = opts.cityStateOffensiveSupport === true;
+  const maxOffensiveMovesPerTurn = offensiveSupport ? 3 : RESUP_MAX_PER_TURN;
+
+  const isOwnCityThreatened = (): boolean => myCities.some(city =>
+    nonSisterEnemyUnits.some(
+      eu => hexDistance(eu.q, eu.r, city.q, city.r) <= RESUP_THREAT_RADIUS,
+    ),
+  );
 
   for (const unit of myUnits) {
     if (unit.ruchLeft <= 0) continue;
@@ -2092,8 +2153,22 @@ function decideDefensiveCopyTurn(
       eu => isAdjacent(unit.q, unit.r, eu.q, eu.r),
     );
     if (adjacentEnemy !== undefined) {
-      commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
-      continue;
+      let doAttack = true;
+      // R-MP-HARD-WAVE Q2: solo atak na gracza zakazany — tylko fala (stos ≥3) lub obrona domu.
+      if (offensiveSupport && aiCanEngageOwner(opts, adjacentEnemy.ownerId)) {
+        if (!isOwnCityThreatened()) {
+          const stackSize = countFriendlyMilitaryOnHex(
+            unit.q, unit.r, waveStackOwnerIds, units,
+          );
+          if (stackSize < CS_WAVE_ATTACK_MIN_STACK) {
+            doAttack = false;
+          }
+        }
+      }
+      if (doAttack) {
+        commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
+        continue;
+      }
     }
 
     let moved = false;
@@ -2156,14 +2231,10 @@ function decideDefensiveCopyTurn(
     // Normal/Easy (offensiveSupport=false): legacy defend-only — ten blok pomijany.
     if (
       offensiveSupport
-      && offensiveMovesThisTurn < RESUP_MAX_PER_TURN
+      && offensiveMovesThisTurn < maxOffensiveMovesPerTurn
       && (nonSisterEnemyUnits.length > 0 || enemyCitiesAtWar.length > 0)
     ) {
-      const ownThreatened = myCities.some(city =>
-        nonSisterEnemyUnits.some(
-          eu => hexDistance(eu.q, eu.r, city.q, city.r) <= RESUP_THREAT_RADIUS,
-        ),
-      );
+      const ownThreatened = isOwnCityThreatened();
       if (!ownThreatened) {
         const offStep = planCityStateOffensiveMove(
           unit,
@@ -2175,6 +2246,7 @@ function decideDefensiveCopyTurn(
           friendlyArmyOwnerIds,
           homeGuardCount,
           RESUP_MIN_GUARD_TO_SEND,
+          CS_WAVE_ATTACK_MIN_STACK,
         );
         if (offStep !== null) {
           commands.push({ type: 'move', unitId: unit.id, toQ: offStep.q, toR: offStep.r });

@@ -236,7 +236,8 @@ import {
   cityStateDifficultyFromGameDifficulty,
   isClusterConquestDeadlineActive,
   pickClusterCityStateWarTargetId,
-  shouldCityStateRollWarOnPlayer,
+  resolveClusterCityStateWarOnPlayer,
+  type ClusterWarRollMember,
 } from './game/city-state-difficulty';
 import {
   aiCsAbsorptionParams,
@@ -20494,6 +20495,64 @@ async function boot(): Promise<void> {
               return [...out];
             })();
 
+            // R-MP-HARD-WAVE Q3: jeden rzut wojny na klaster siostrzanych PM / turę (nie per-owner).
+            if (startOi === 0 && _menuCityStateDifficulty === 'hard') {
+              const clusterWarMembers: ClusterWarRollMember[] = [];
+              for (const csOwnerId of aiOwnerList) {
+                if (eliminatedOwners.has(csOwnerId)) continue;
+                if (!typCityCopyOwners.has(csOwnerId)) continue;
+                if (!isOwnerPlayerSameCivType(csOwnerId)) continue;
+                if (!diplomaticallyDiscoveredOwners.has(csOwnerId)) continue;
+                const relToPlayer = getDiploRelation(csOwnerId, 0);
+                const hasTradeBlock = activeDeals.some(d => {
+                  if (!dealInvolvesOwners(d, 0, csOwnerId)) return false;
+                  const k = normalizeTreatyKind(d.rodzaj);
+                  if (
+                    k === RodzajTraktatu.UmowaSzlakow
+                    || k === RodzajTraktatu.UmowaWymiany
+                    || k === RodzajTraktatu.UmowaHandlowa
+                  ) return true;
+                  return (d.handelSurowiecCykliczny?.length ?? 0) > 0;
+                }) || hasActiveResourceTradeDealForPair(0, csOwnerId);
+                clusterWarMembers.push({
+                  ownerId: csOwnerId,
+                  atWarWithPlayer: relToPlayer.status === 'wojna',
+                  hasTradeOrResourceTreatyWithPlayer: hasTradeBlock,
+                  peaceLockedWithPlayer: isPeaceLockedBetween(csOwnerId, 0),
+                  hasNapWithPlayer: hasTreaty(activeDeals, csOwnerId, 0, RodzajTraktatu.PaktNieagresji),
+                });
+              }
+              const clusterDowOwners = resolveClusterCityStateWarOnPlayer(
+                _menuCityStateDifficulty,
+                turn,
+                clusterWarMembers,
+                Math.random,
+              );
+              for (const csOwnerId of clusterDowOwners) {
+                try {
+                  chargeWarDeclarationCredibility(csOwnerId, 0);
+                  breakTreatiesOnWar(csOwnerId, 0, false);
+                  applyAllianceObligationsOnWar(csOwnerId, 0);
+                  const newRel = applyDiploEventTracked(
+                    csOwnerId, 0, getDiploRelation(csOwnerId, 0), 'wojna_wypowiedziana',
+                  );
+                  setDiploRelation(csOwnerId, 0, newRel);
+                  pruneTributeNegotiationsBetween(csOwnerId, 0);
+                  recordWarDeclarationEvent(csOwnerId, 0);
+                  console.log(
+                    `[Dyplomacja] PM${csOwnerId} wypowiada wojne graczowi (trudnosc PM=hard, klaster 60%)`,
+                  );
+                  showHintMessage(
+                    '\u2694 ' + ownerDiploLabel(csOwnerId) + ' wypowiada wojnę!',
+                    4500,
+                  );
+                  if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+                } catch (eClusterDow) {
+                  console.error(`[Dyplomacja] Blad wojny klaster PM→gracz AI${csOwnerId}:`, eClusterDow);
+                }
+              }
+            }
+
             ownerLoop: for (let oi = startOi; oi < aiOwnerList.length; oi++) {
               const ownerId = aiOwnerList[oi]!;
               // Bezpiecznik: gdyby lista pochodziła z aiCmdResume sprzed eliminacji
@@ -21148,54 +21207,9 @@ async function boot(): Promise<void> {
                 console.error(`[Dyplomacja] Blad stolu negocjacyjnego AI${ownerId}:`, eNegoc);
               }
 
-              // PM (trudność PM=hard) → wojna z graczem od t.20, 60%/turę; blokada: handel/surowce.
-              // Wyłącznie MP typu gracza (spawnPendingSameTypeRivals), nie obce Ostia/Nekhen itd.
-              if (
-                typCityCopyOwners.has(ownerId)
-                && isOwnerPlayerSameCivType(ownerId)
-                && diplomaticallyDiscoveredOwners.has(ownerId)
-              ) {
-                try {
-                  const relToPlayer = getDiploRelation(ownerId, 0);
-                  const hasTradeBlock = activeDeals.some(d => {
-                    if (!dealInvolvesOwners(d, 0, ownerId)) return false;
-                    const k = normalizeTreatyKind(d.rodzaj);
-                    if (
-                      k === RodzajTraktatu.UmowaSzlakow
-                      || k === RodzajTraktatu.UmowaWymiany
-                      || k === RodzajTraktatu.UmowaHandlowa
-                    ) return true;
-                    return (d.handelSurowiecCykliczny?.length ?? 0) > 0;
-                  }) || hasActiveResourceTradeDealForPair(0, ownerId);
-                  if (shouldCityStateRollWarOnPlayer(
-                    _menuCityStateDifficulty,
-                    turn,
-                    relToPlayer.status === 'wojna',
-                    hasTradeBlock,
-                    Math.random,
-                    isPeaceLockedBetween(ownerId, 0),
-                    hasTreaty(activeDeals, ownerId, 0, RodzajTraktatu.PaktNieagresji),
-                  )) {
-                    chargeWarDeclarationCredibility(ownerId, 0);
-                    breakTreatiesOnWar(ownerId, 0, false);
-                    applyAllianceObligationsOnWar(ownerId, 0);
-                    const newRel = applyDiploEventTracked(
-                      ownerId, 0, getDiploRelation(ownerId, 0), 'wojna_wypowiedziana',
-                    );
-                    setDiploRelation(ownerId, 0, newRel);
-                    pruneTributeNegotiationsBetween(ownerId, 0);
-                    recordWarDeclarationEvent(ownerId, 0);
-                    console.log(`[Dyplomacja] PM${ownerId} wypowiada wojne graczowi (trudnosc PM=hard, 60%)`);
-                    showHintMessage(
-                      '\u2694 ' + ownerDiploLabel(ownerId) + ' wypowiada wojnę!',
-                      4500,
-                    );
-                    if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
-                  }
-                } catch (eCsWar) {
-                  console.error(`[Dyplomacja] Blad wojny PM→gracz AI${ownerId}:`, eCsWar);
-                }
-              }
+              // R-MP-HARD-WAVE Q3: wojna PM→gracz obsługiwana zbiorczo przed pętlą ownerów
+              // (resolveClusterCityStateWarOnPlayer — jeden rzut na klaster / turę).
+
             } catch (eDiplo) {
               console.error(`[Dyplomacja] Blad dyplomacji AI${ownerId}:`, eDiplo);
             } finally {

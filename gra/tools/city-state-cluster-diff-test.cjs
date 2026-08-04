@@ -27,6 +27,8 @@ export {
   isClusterConquestDeadlineActive,
   pickClusterCityStateWarTargetId,
   shouldCityStateRollWarOnPlayer,
+  resolveClusterCityStateWarOnPlayer,
+  isCityStateEligibleForPlayerWar,
   CITY_STATE_PLAYER_WAR_CHANCE,
   CITY_STATE_PLAYER_WAR_MIN_TURN,
   CLUSTER_CS_WAR_MIN_TURN,
@@ -58,6 +60,8 @@ const {
   isClusterConquestDeadlineActive,
   pickClusterCityStateWarTargetId,
   shouldCityStateRollWarOnPlayer,
+  resolveClusterCityStateWarOnPlayer,
+  isCityStateEligibleForPlayerWar,
   CITY_STATE_PLAYER_WAR_CHANCE,
   CITY_STATE_PLAYER_WAR_MIN_TURN,
   CLUSTER_CS_WAR_MIN_TURN,
@@ -182,6 +186,32 @@ assert(
 assert(
   !shouldCityStateRollWarOnPlayer('hard', 25, false, false, () => 0.60),
   'T6h: roll 0.60 → no war (strict <)',
+);
+
+console.log('\n--- T8: resolveClusterCityStateWarOnPlayer (R-MP-HARD-WAVE Q3) ---');
+const clusterMembers = [
+  { ownerId: 2, atWarWithPlayer: false, hasTradeOrResourceTreatyWithPlayer: false, peaceLockedWithPlayer: false, hasNapWithPlayer: false },
+  { ownerId: 3, atWarWithPlayer: false, hasTradeOrResourceTreatyWithPlayer: false, peaceLockedWithPlayer: false, hasNapWithPlayer: false },
+  { ownerId: 4, atWarWithPlayer: true, hasTradeOrResourceTreatyWithPlayer: false, peaceLockedWithPlayer: false, hasNapWithPlayer: false },
+];
+eq(
+  resolveClusterCityStateWarOnPlayer('hard', 25, clusterMembers, () => 0.59).sort().join(','),
+  '2,3',
+  'T8a: jeden roll sukces → wszyscy eligible DOW (bez już w wojnie)',
+);
+eq(
+  resolveClusterCityStateWarOnPlayer('hard', 25, clusterMembers, () => 0.60).length,
+  0,
+  'T8b: roll fail → nikt',
+);
+eq(
+  resolveClusterCityStateWarOnPlayer('normal', 25, clusterMembers, () => 0).length,
+  0,
+  'T8c: normal difficulty → nigdy',
+);
+assert(
+  isCityStateEligibleForPlayerWar('hard', 25, false, false, true, false) === false,
+  'T8d: peace lock → nieeligible',
 );
 
 console.log('\n--- T7: miasto-państwo nie generuje trybutu (Maciej 2026-08-02) ---');
