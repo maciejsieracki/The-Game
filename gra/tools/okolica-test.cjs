@@ -28,7 +28,11 @@ export {
   OKOLICA_RADIUS,
   okolicaTiles,
   tileScore,
+  tileAssignScore,
   assignWorkedTiles,
+  wagiForFocus,
+  foodPotentialOfMapHex,
+  resolveWorkedTiles,
   cityRangeForPopulation,
   adjustTileWorker,
   seedReczneFromAuto,
@@ -59,7 +63,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { OKOLICA_RADIUS, okolicaTiles, tileScore, assignWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker, rebalanceWorkersAfterPopulationChange, buildTerritoryNodesFromCities, isTerritoryHexOwnedBy, territoryOwnerAt } = M;
+const { OKOLICA_RADIUS, okolicaTiles, tileScore, tileAssignScore, assignWorkedTiles, wagiForFocus, foodPotentialOfMapHex, resolveWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker, rebalanceWorkersAfterPopulationChange, buildTerritoryNodesFromCities, isTerritoryHexOwnedBy, territoryOwnerAt } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -259,6 +263,74 @@ const foreignToggle = toggleTileWorker(
 );
 eq(foreignToggle.ok, false, 'manual assign on foreign hex rejected');
 eq(foreignToggle.reason, 'obce_terytorium', 'foreign hex reason code');
+
+// Test 15: fokus żywność — łąka 6Ż/3P bije las 4Ż/7P (R-OKOLICA-ZYWNOSC-SCORE)
+console.log('\n15. focus zywnosc — meadow beats forest on food');
+const foodMap = {
+  szerokoscQ: 23,
+  wysokoscR: 23,
+  seed: 42,
+  hexes: Object.assign({}, hexes, {
+    '1,0': { terenBazowy: 'laka', nakladka: 'brak', ulepszenie: 'brak' },
+    '2,0': { terenBazowy: 'wzgorza', nakladka: 'las', ulepszenie: 'brak' },
+  }),
+};
+function yieldFoodCompare(q, r) {
+  if (q === 1 && r === 0) return { zywnosc: 6, praca: 3, handel: 2 };
+  if (q === 2 && r === 0) return { zywnosc: 4, praca: 7, handel: 2 };
+  return { zywnosc: 1, praca: 1, handel: 1 };
+}
+const wagiZywnosc = wagiForFocus('zywnosc');
+const foodWorked = assignWorkedTiles(0, 0, 1, foodMap, yieldFoodCompare, {
+  radius: 5,
+  wagi: wagiZywnosc,
+  focus: 'zywnosc',
+  potentialOf: function(q, r) { return foodPotentialOfMapHex(foodMap, q, r); },
+});
+eq(foodWorked.length, 1, 'one tile assigned');
+eq(foodWorked[0].q, 1, 'meadow (1,0) wins over forest (2,0)');
+eq(foodWorked[0].r, 0, 'meadow r === 0');
+assert(tileScore({ zywnosc: 6, praca: 3 }, wagiZywnosc) > tileScore({ zywnosc: 4, praca: 7 }, wagiZywnosc),
+  'raw food-weighted score favors meadow');
+
+// Test 16: fokus żywność — przy równej żywności preferuj łąkę bez lasu
+console.log('\n16. focus zywnosc — tie food prefers open meadow vs forest');
+const tieMap = {
+  szerokoscQ: 23,
+  wysokoscR: 23,
+  seed: 42,
+  hexes: Object.assign({}, hexes, {
+    '1,0': { terenBazowy: 'laka', nakladka: 'brak', ulepszenie: 'brak' },
+    '2,0': { terenBazowy: 'wzgorza', nakladka: 'las', ulepszenie: 'brak' },
+  }),
+};
+function yieldEqualFood(q, r) {
+  if ((q === 1 && r === 0) || (q === 2 && r === 0)) return { zywnosc: 4, praca: 3, handel: 1 };
+  return { zywnosc: 1, praca: 1, handel: 1 };
+}
+const tieWorked = assignWorkedTiles(0, 0, 1, tieMap, yieldEqualFood, {
+  radius: 5,
+  wagi: wagiZywnosc,
+  focus: 'zywnosc',
+  potentialOf: function(q, r) { return foodPotentialOfMapHex(tieMap, q, r); },
+});
+eq(tieWorked[0].q, 1, 'open meadow wins tie on equal current food');
+assert(foodPotentialOfMapHex(tieMap, 1, 0) > foodPotentialOfMapHex(tieMap, 2, 0),
+  'meadow has higher food potential than forest');
+
+// Test 17: zrównoważone — wysoka praca lasu może wygrać przy podobnej żywności
+console.log('\n17. focus zrownowazone — forest can win on praca/handel');
+const wagiBal = wagiForFocus('zrownowazone');
+function yieldBalancedForestWins(q, r) {
+  if (q === 1 && r === 0) return { zywnosc: 4, praca: 2, handel: 1 };
+  if (q === 2 && r === 0) return { zywnosc: 4, praca: 7, handel: 3 };
+  return { zywnosc: 1, praca: 1, handel: 1 };
+}
+const balWorked = assignWorkedTiles(0, 0, 1, tieMap, yieldBalancedForestWins, {
+  radius: 5,
+  wagi: wagiBal,
+});
+eq(balWorked[0].q, 2, 'balanced: forest (2,0) beats meadow on praca when food similar');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

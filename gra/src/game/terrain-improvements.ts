@@ -4,7 +4,7 @@
  * PURE — lane EKONOMIA.
  */
 import improvementsJson from '../../data/terrain-improvements.json';
-import { Nakladka } from '../types/hex';
+import { Nakladka, TerenBazowy } from '../types/hex';
 import type { TileYield } from './economy';
 
 export type ImprovementBonusKey =
@@ -340,6 +340,37 @@ export function isImprovementAllowedForCiv(
 // (TERRITORY_YIELD_IMPROVEMENTS powyżej). Zwolnione: żywnościowe + infrastruktura.
 // Patrz turn-economy.ts computePracaUpkeepByOwner / countResourceUpkeepImprovementsByOwner.
 // ---------------------------------------------------------------------------
+
+/** Bonus żywności z farmy (terrain-improvements.json → farma.bonus.zywnosc). */
+export const FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
+
+/** Kara potencjału żywności na lesie przy auto-okolicy fokus żywność (R-OKOLICA-ZYWNOSC-SCORE). */
+export const FOREST_FOOD_POTENTIAL_PENALTY = -3;
+
+const FOOD_IMPROVEMENT_KEYS = new Set([
+  'farma', 'irygacja', 'tarasy', 'bydlo', 'owce', 'lama', 'oboz_lowiecki', 'lodzie_rybackie',
+]);
+
+/**
+ * Potencjał przyszłej żywności heksu (ranking auto-okolicy, fokus żywność).
+ * +farma.bonus na otwartej łące/równinie bez ulepszenia żywnościowego; 0 gdy już farma/irygacja;
+ * kara na nakładce Las (las nie jest celem fokusu żywności).
+ */
+export function foodPotentialForHex(
+  terenBazowy: TerenBazowy,
+  nakladka: Nakladka,
+  improvementKeys: readonly string[],
+): number {
+  const keys = improvementKeys
+    .map(k => normalizeImprovementKey(k))
+    .filter((k): k is string => !!k);
+  if (keys.some(k => FOOD_IMPROVEMENT_KEYS.has(k))) return 0;
+  if (nakladka === Nakladka.Las) return FOREST_FOOD_POTENTIAL_PENALTY;
+  if (terenBazowy === TerenBazowy.Laka || terenBazowy === TerenBazowy.Rownina) {
+    return FARMA_POTENTIAL_FOOD_BONUS;
+  }
+  return 0;
+}
 
 /** Ulepszenia płacące −1 Praca/turę (civ-wide) z econ-params.json `ulepszenie_surowcowe_upkeep_praca`. */
 export const RESOURCE_UPKEEP_IMPROVEMENT_KEYS: ReadonlySet<string> = new Set([

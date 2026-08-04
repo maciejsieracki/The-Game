@@ -19,6 +19,7 @@ import {
   assignWorkedTiles,
   cityRangeForPopulation,
   wagiForFocus,
+  foodPotentialOfMapHex,
   type OkolicaTile,
   type TileYield,
 } from './okolica';
@@ -325,6 +326,10 @@ export function autoManageCity(
       territoryNodes: input.territoryNodes,
       ownerId: city.ownerId,
       wagi: wagiForFocus(focus),
+      focus,
+      potentialOf: focus === 'zywnosc'
+        ? (q, r) => foodPotentialOfMapHex(map, q, r)
+        : undefined,
     },
   );
 
