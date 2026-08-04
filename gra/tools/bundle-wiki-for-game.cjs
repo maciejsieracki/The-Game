@@ -125,7 +125,7 @@ function bundleEncyklopedia() {
 }
 
 const bundle = {
-  version: 'rev-G-2026-08-04',
+  version: 'rev-G2-2026-08-04',
   generated: new Date().toISOString().slice(0, 10),
   poradnik: bundlePoradnik(),
   encyklopedia: bundleEncyklopedia(),

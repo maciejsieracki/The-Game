@@ -9,50 +9,41 @@
 | **kategoria** | Miasto — budowa |
 | **poradnik_ref** | `docs/PORADNIK-GRACZA/45-katalog-budynkow.md` |
 | **json_ref** | `buildings.json` |
-| **status_v1** | ✅ |
+| **status_v1** | ⏸️ PARKOWANE |
 
 ---
 
 ## Wiki‑S
 
-**Wielka Kuźnia** — budynek (Produkcja), epoka Średniowiecze. Koszt od **90** pracy, utrzymanie **4** ¤/t. Technologia **Hutnictwo żelaza**.
+**Wielka Kuźnia** — **niedostępna** w aktualnych 3 epokach gry (Kamień / Brąz / Żelazo). W danych `epokaWejscia: 4` (pozycja parkowana). Upgrade Kuźni żelaza; docelowo **+15% Pancerza** (ścieżka A). **Nie buduj** — nie pojawi się w normalnej rozgrywce v1.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Wielka Kuźnia wzmacnia miasto w kategorii **Produkcja**. Poziom 1: **+12 pracy** (+5 na poziom), **+3 złota** (+2 na poziom), **+15 % mnożnika Daniny** (+4 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**18** od poprzedniego), ale daje większy przyrost.
-### Koszty
-- **Budowa poz. 1:** 90 pracy
-- **Każdy kolejny poziom:** +18 pracy
-- **Utrzymanie:** 4 ¤/turę (+2 ¤/poziom)
-- Technologia **Hutnictwo żelaza**.
-Warunek: zelazo i stal w zasiegu; wymaga Kuźni żelaza.
-- **Uwaga:** Mnoznik % dotyczy sily i kosztu produkcji wszystkich jednostek w miescie; wymaga dostepu do stali
+**⏸️ PARKOWANE — poza zakresem gry v1 (3 epoki).**
+
+W przyszłej epoce (poza Kamieniem/Brązem/Żelazem) Wielka Kuźnia miałaby **zastąpić** Kuźnię żelaza i dawać:
+- **+20 Pracy/t**, **+5 Pieniądza/t** (wartości z `buildings.json`)
+- **+15% Pancerza** (ścieżka A) — **nie** kumuluje z Kuźnią żelaza, bo ją zastępuje
+- **Nie produkuje stali** (stal = Wielka odlewnia)
+
+Technologia w danych: **Obróbka żelaza**. Wymaga **Stali** w imperium.
+
+### Dlaczego nie w grze
+Gra ma dziś **3 epoki** (Kamień → Brąz → Żelazo). `epokaWejscia: 4` blokuje budowę — wpis istnieje w danych na przyszłość, ale **nie jest aktywnym budynkiem** w Civpedii jako cel do zbudowania.
+
 ### Strategia gracza
-Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
-### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 4 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Produkcja
+W v1 kończ łańcuch na **Kuźni żelaza**. Nie planuj Wielkiej Kuźni — nie zobaczysz jej na liście budowy w dostępnych epokach.
+
+**Powiązane:** Kuźnia żelaza · Epoki (Część IX poradnika)
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
-
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 90 | **9 tur** | +12 pracy, +3 złota, +15 % mnożnika Daniny | 4 ¤/t |
-| Poziom 2 | 108 | **11 tur** | więcej (patrz niżej) | 4 ¤/t |
-| Poziom 3 | 126 | — | **+22 pracy, +7 złota, +23 % mnożnika Daniny** | 4 ¤/t |
-
-Przy +3 złota/t, utrzymanie 4 ¤/t → netto **+-1 ¤/t**. Koszt 90 pracy przy 10/t ≈ **9 tur** pracy — złotem „zwraca się" po ok. **90 tur** (uproszczenie, bez inflacji).
-
-**Przyspieszenie za złoto:** jeśli brakuje **70** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+— (budynek niedostępny w 3 epokach v1)
 
 ---
 
@@ -64,4 +55,4 @@ Przy +3 złota/t, utrzymanie 4 ¤/t → netto **+-1 ¤/t**. Koszt 90 pracy przy 
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — oznaczenie PARKOWANE epoka 4; usunięto fałszywą „epokę Średniowiecze" jako aktywną.

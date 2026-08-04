@@ -15,45 +15,48 @@
 
 ## Wiki‑S
 
-**Akademia** — budynek (Nauka), epoka Żelazo. Koszt od **70** pracy, utrzymanie **3** ¤/t. Technologia **Filozofia**.
+**Akademia** — budynek (Nauka), epoka Żelazo. Koszt **70** pracy + **8× drewno, 14× cegła**, utrzymanie **3** ¤/t. Technologia **Filozofia**. **Maks. 1 poziom.** **Niezależna** obok Biblioteki. Daje **Naukę, Kulturę i Zadowolenie** w mieście — **nie** globalny mnożnik nauki.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Akademia wzmacnia miasto w kategorii **Nauka**. Poziom 1: **+6 nauki** (+3 na poziom), **+2 kultury** (+1 na poziom), **+10 % mnożnika Daniny** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
+Akademia to **osobny budynek** obok **Biblioteki** (nie zastępuje jej, nie merge w 1 slot). Wkład rozdzielony, żeby Biblioteka nie liczyła się podwójnie.
+
+**Przyrost w mieście (poz. 1):**
+- **+6 Nauki/t**
+- **+5 Kultury/t**
+- **+3 Zadowolenia** (pkt)
+
+Efekt to **lokalna produkcja miasta** na suwakach Daniny — **nie** „mnożnik globalnej puli nauki". Teatr jest w danych ukryty z produkcji i wliczony w Akademię (merge bez zmiany slotu).
+
 ### Koszty
-- **Budowa poz. 1:** 70 pracy
-- **Każdy kolejny poziom:** +15 pracy
-- **Utrzymanie:** 3 ¤/turę (+1 ¤/poziom)
-- **Surowiec do budowy:** 14× cegła (poz. 1)
-- Technologia **Filozofia**.
-Warunek: upgrade Biblioteki (merge z Teatrem — 1 slot budynku).
-- **Uwaga:** Mnoznik % dotyczy globalnej puli nauki (nadbudowka nad Biblioteka)
+- **Budowa:** 70 pracy + 8× drewno, 14× cegła
+- **Utrzymanie:** 3 ¤/turę
+- Technologia **Filozofia**
+- **Wymaganie:** wybudowana **Biblioteka w tym mieście**
+
 ### Strategia gracza
-Miasto naukowe: ustaw suwak Daniny więcej na **naukę (20%)**, suwak pracy **70% budynki**.
+Miasto naukowe: Biblioteka → Akademia, suwak Daniny więcej na **naukę (20%)**, suwak pracy **70% budynki**.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 3 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Nauka
+- Budowa bez Biblioteki w mieście.
+- Oczekiwanie globalnego ×% nauki imperium — liczy się **Nauka/t w tym mieście**.
+
+**Powiązane:** Biblioteka · Nauka · Kultura
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+| Budynek | Nauka/t | Kultura/t |
+|---------|---------|-----------|
+| Biblioteka (poz. 1) | +3 | +1 |
+| + Akademia | +6 | +5 |
+| **Razem w mieście** | **+9** | **+6** |
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 70 | **7 tur** | +6 nauki, +2 kultury, +10 % mnożnika Daniny | 3 ¤/t |
-| Poziom 2 | 85 | **9 tur** | więcej (patrz niżej) | 3 ¤/t |
-| Poziom 3 | 100 | — | **+12 nauki, +4 kultury, +16 % mnożnika Daniny** | 3 ¤/t |
-
-Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu **Miasto** przed/po budowie.
-
-**Przyspieszenie za złoto:** jeśli brakuje **50** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+Koszt Akademii **70** pracy przy 10/t ≈ **7 tur**.
 
 ---
 
@@ -65,4 +68,4 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — Nauka/Kultura lokalnie, niezależny obok Biblioteki.

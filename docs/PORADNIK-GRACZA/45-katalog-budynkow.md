@@ -3,9 +3,9 @@
 > **Poradnik gracza (Pełny)** · Część VII §45 · dane: `gra/data/buildings.json`
 > Pełne karty Wiki: `docs/encyklopedia/budynki/` · spis: `docs/PORADNIK-GRACZA-SPIS-TRESCI.md`
 
-> **WERYFIKACJA 2026-07-23:** `buildings.json` ma dziś **37** budynków, nie 26 — brakuje w tym katalogu: Mielerz, Piec hutniczy, Odlewnia żelaza, Port wielki, Spichlerz II, Garncarnia, Cegielnia, Kamienne kręgi, Akwedukt, Mennica, Trybunał (11 pozycji, spoza zakresu tej sesji dokumentacyjnej — poradnik dotyczy `docs/PORADNIK-GRACZA/`, nie regeneracji katalogu). **„Fort" zmienił nazwę na „Cytadela"** (ten sam `id: fort` w danych) i stał się **upgrade'em Murów** (1 slot, nie osobny budynek) — poprawione niżej; osobno istnieje **Fort terenowy** jako ulepszenie na mapie ([`28-katalog-ulepszen.md`](28-katalog-ulepszen.md)), to inny system. **Koszt materiałowy budynków** (cegła/ceramika z magazynu miasta, nowość 2026-07-23) — tabela w §„Koszt materiałowy" poniżej.
+> **WERYFIKACJA 2026-08-04 (rev. G2):** Obrona miasta = **wyłącznie % Obrony** (Mury +200%, Cytadela/Baszta +100% każda obok). Kuźnie = **ścieżka A Pancerz** po wizycie; Koszary/Akademia wojskowa/Warsztat = **ścieżka B** miękkie staty. Targowisko = **Pieniądz/t**, nie mnożnik handlu. **Cytadela** (`id: fort`) to **osobny budynek obok Murów**, nie upgrade slotu. **Wielka Kuźnia** — parkowana (epoka 4, poza 3 epokami v1). Pełne karty: `docs/encyklopedia/budynki/`.
 
-Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. Każdy budynek ma do **10 poziomów** — kolejny poziom droższy, ale daje większy przyrost. **9 budynków** epoki Brązu/Żelaza dodatkowo kosztują **cegłę lub ceramikę** z magazynu miasta przy wejściu do kolejki (Część VIII §53.2) — tabela niżej.
+Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **praca** z puli imperium; utrzymanie — **złoto** co turę. **Maks. poziomów** zależy od budynku (np. Targowisko **3**, Mury **2**, kuźnie wojskowe często **1**) — patrz karta w Civpedii, nie zakładaj „zawsze 10". Część budynków dodatkowo kosztuje **surowce z magazynu** przy wejściu do kolejki (Część VIII §53.2).
 
 ## Koszt materiałowy — 9 budynków (2026-07-23)
 
@@ -18,8 +18,8 @@ Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **prac
 | Pretorium | 9 cegły | Cegielnia |
 | Łaźnia publiczna | 10 cegły | Cegielnia |
 | Akademia | 14 cegły | Cegielnia |
-| Mury | 15 cegły | Cegielnia |
-| Cytadela (dawny Fort) | 18 cegły | Cegielnia |
+| Mury | 8 drewna, 16 kamienia | mapa / kamieniarski |
+| Cytadela (dawny Fort) | 10 drewna, 20 kamienia | mapa / kamieniarski |
 
 Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazuje brakujący chip surowca. Pełny mechanizm (magazyn per miasto, dostęp do złóż) — Część VIII §53.
 
@@ -29,28 +29,28 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 |---------|-----------|-------|------|----------------|------------|--------------|------|
 | Stolarnia | Produkcja | Kamień | Obróbka drewna | 20 pracy | 1 ¤/t | +5 praca | [Stolarnia](../encyklopedia/budynki/stolarnia.md) |
 | Warsztat kamieniarski | Produkcja | Kamień | Murarstwo | 20 pracy | 1 ¤/t | +4 praca | [Warsztat kamieniarski](../encyklopedia/budynki/kamieniarski.md) |
-| Kuźnia brązu | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 złoto (+5% mnożnik) | [Kuźnia brązu](../encyklopedia/budynki/kuznia.md) |
-| Targowisko (Rynek) | Pieniadz | Kamień | Wymiana | 25 pracy | 1 ¤/t | +3 złoto | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
+| Kuźnia brązu | Produkcja+Wojsko | Brąz | Brązownictwo | 30 pracy | 2 ¤/t | +6 praca, +1 ¤; +15% Pancerz (wizyta) | [Kuźnia brązu](../encyklopedia/budynki/kuznia.md) |
+| Targowisko (Rynek) | Pieniadz | Kamień | Wymiana | 25 pracy | 1 ¤/t | +5 ¤/t (max 3 poz.) | [Targowisko (Rynek)](../encyklopedia/budynki/targowisko.md) |
 | Port handlowy | Pieniadz | Brąz | Żegluga | 30 pracy | 2 ¤/t | +1 praca, +5 złoto | [Port handlowy](../encyklopedia/budynki/port.md) |
 | Spichlerz | Zywnosc | Kamień | Garncarstwo | 20 pracy | 1 ¤/t | +2 żywność | [Spichlerz](../encyklopedia/budynki/spichlerz.md) |
 | Swiatynia | Kultura | Kamień | Mistycyzm | 25 pracy | 1 ¤/t | +2 kultura, +2 szczęście | [Swiatynia](../encyklopedia/budynki/swiatynia.md) |
 | Biblioteka | Nauka | Brąz | Pismo | 25 pracy | 1 ¤/t | +3 nauka, +1 kultura | [Biblioteka](../encyklopedia/budynki/biblioteka.md) |
 | Studnia | Zdrowie | Kamień | Gospodarka wodna | 15 pracy | 1 ¤/t | +1 szczęście | [Studnia](../encyklopedia/budynki/studnia.md) |
-| Mury | Obrona | Brąz | Budownictwo | 35 pracy | 2 ¤/t | +5 obrona | [Mury](../encyklopedia/budynki/mury.md) |
-| Koszary | Wojsko | Brąz | Wojskowosc | 25 pracy | 2 ¤/t | +2 praca (+5% mnożnik) | [Koszary](../encyklopedia/budynki/koszary.md) |
+| Mury | Obrona | Brąz | Budownictwo | 35 pracy | 2 ¤/t | +200% Obrony (max 2 poz.) | [Mury](../encyklopedia/budynki/mury.md) |
+| Koszary | Wojsko | Brąz | Wojskowosc | 25 pracy | 2 ¤/t | +2 praca; +20% miękkie (wizyta) | [Koszary](../encyklopedia/budynki/koszary.md) |
 | Magazyn | Produkcja+Pieniadz | Brąz | Handel | 20 pracy | 1 ¤/t | +1 praca, +1 złoto | [Magazyn](../encyklopedia/budynki/magazyn.md) |
 | Stela / Pomnik | Kultura | Kamień | Murarstwo | 15 pracy | 0 ¤/t | +1 kultura | [Stela / Pomnik](../encyklopedia/budynki/stela.md) |
 | Palac | Kultura/Administracja | Kamień | — | 40 pracy | 2 ¤/t | +3 kultura, +1 szczęście (+5% mnożnik) | [Palac](../encyklopedia/budynki/palac.md) |
-| Kuźnia żelaza | Produkcja+Wojsko | Żelazo | Obróbka żelaza | 60 pracy | 3 ¤/t | +8 praca, +2 złoto (+8% mnożnik) | [Kuźnia żelaza](../encyklopedia/budynki/kuznia_zelaza.md) |
-| Wielka Kuźnia | Produkcja | Średniowiecze | Hutnictwo żelaza | 90 pracy | 4 ¤/t | +12 praca, +3 złoto (+15% mnożnik) | [Wielka Kuźnia](../encyklopedia/budynki/wielka_kuznia.md) |
-| Cytadela (dawny Fort) | Obrona | Żelazo | Inżynieria | 70 pracy + 18 cegły | 3 ¤/t | +15 obrona (upgrade Murów, 1 slot) | [Fort](../encyklopedia/budynki/fort.md) |
-| Warsztat oblężniczy | Wojsko | Żelazo | Oblężnictwo | 65 pracy | 3 ¤/t | +4 praca, +2 złoto (+10% mnożnik) | [Warsztat oblężniczy](../encyklopedia/budynki/warsztat_oblezniczy.md) |
-| Akademia | Nauka | Żelazo | Filozofia | 70 pracy | 3 ¤/t | +6 nauka, +2 kultura (+10% mnożnik) | [Akademia](../encyklopedia/budynki/akademia.md) |
+| Kuźnia żelaza | Produkcja+Wojsko | Żelazo | Hutnictwo żelaza | 60 pracy | 3 ¤/t | +8 praca, +2 ¤; +15% Pancerz (wizyta) | [Kuźnia żelaza](../encyklopedia/budynki/kuznia_zelaza.md) |
+| Wielka Kuźnia | Produkcja | ⏸️ epoka 4 | Obróbka żelaza | 90 pracy | 4 ¤/t | **niedostępna** w 3 epokach v1 | [Wielka Kuźnia](../encyklopedia/budynki/wielka_kuznia.md) |
+| Cytadela (dawny Fort) | Obrona | Żelazo | Inżynieria | 70 pracy + kamień | 3 ¤/t | +100% Obrony obok Murów | [Fort](../encyklopedia/budynki/fort.md) |
+| Warsztat oblężniczy | Wojsko | Żelazo | Oblężnictwo | 65 pracy | 3 ¤/t | Katapulta; +10% miękkie | [Warsztat oblężniczy](../encyklopedia/budynki/warsztat_oblezniczy.md) |
+| Akademia | Nauka | Żelazo | Filozofia | 70 pracy | 3 ¤/t | +6 nauka, +5 kultura (obok Biblioteki) | [Akademia](../encyklopedia/budynki/akademia.md) |
 | Teatr | Kultura | Żelazo | Filozofia | 55 pracy | 2 ¤/t | +4 kultura, +3 szczęście | [Teatr](../encyklopedia/budynki/teatr.md) |
 | Sąd | Administracja | Żelazo | Kodeks prawa | 55 pracy | 2 ¤/t | +2 złoto, +1 kultura, +2 szczęście | [Sąd](../encyklopedia/budynki/sad.md) |
-| Pretorium | Administracja | Żelazo | Kodeks prawa | 75 pracy | 3 ¤/t | +2 praca, +3 złoto, +1 szczęście, +2 obrona (+5% mnożnik) | [Pretorium](../encyklopedia/budynki/pretorium.md) |
+| Pretorium | Administracja | Żelazo | Prawo | 75 pracy | 3 ¤/t | +2 praca, +3 ¤, +5 kultura; Prawo regionalne | [Pretorium](../encyklopedia/budynki/pretorium.md) |
 | Łaźnia publiczna | Zdrowie | Żelazo | Medycyna | 50 pracy | 2 ¤/t | +1 żywność, +1 kultura, +3 szczęście | [Łaźnia publiczna](../encyklopedia/budynki/laznia_publiczna.md) |
-| Akademia wojskowa | Wojsko | Żelazo | Sztuka wojenna | 80 pracy | 4 ¤/t | +3 praca, +2 złoto (+15% mnożnik) | [Akademia wojskowa](../encyklopedia/budynki/akademia_wojskowa.md) |
+| Akademia wojskowa | Wojsko | Żelazo | Sztuka wojenna | 80 pracy | 4 ¤/t | +3 praca, +2 ¤; +20% miękkie (wizyta) | [Akademia wojskowa](../encyklopedia/budynki/akademia_wojskowa.md) |
 
 ---
 
@@ -86,11 +86,10 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Kuźnia brązu
 
-**Kuźnia brązu** (Produkcja+Wojsko) odblokowuje się w epoce **Brąz** po technologii **Brązownictwo**. Pierwsze wzniesienie kosztuje **30** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
+**Kuźnia brązu** (Produkcja+Wojsko) odblokowuje się w epoce **Brąz** po technologii **Brązownictwo**. Koszt **30** pracy ( **maks. 1 poziom** — wyższy tier = awans na Kuźnię żelaza). Utrzymanie: **2** ¤/t.
 
-Na poziomie 1 daje: **+6 praca, +1 złoto**. Każdy kolejny poziom dodaje: **+3 praca**.
-**Wymagania:** miedz lub cyna w zasiegu.
-**Uwaga:** Mnoznik % dotyczy sily jednostek produkowanych w miescie
+Daje: **+6 Pracy/t**, **+1 Pieniądza/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** miasto po zbudowaniu kuźni.
+**Wymagania:** dostęp do **Rudy (miedź)** w imperium.
 
 
 ### Przykład liczbowy
@@ -102,11 +101,9 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Targowisko (Rynek)
 
-**Targowisko (Rynek)** (Pieniadz) odblokowuje się w epoce **Kamień** po technologii **Wymiana**. Pierwsze wzniesienie kosztuje **25** pracy; każdy kolejny poziom +**10**. Utrzymanie: **1** ¤ na turę (rosnie o **1** per poziom).
+**Targowisko (Rynek)** (Pieniądz) odblokowuje się w epoce **Kamień** po technologii **Wymiana**. Koszt od **25** pracy; **maks. 3 poziomy** (Targowisko → Rynek → Giełda). Utrzymanie: **1** ¤/t.
 
-Na poziomie 1 daje: **+3 złoto**. Każdy kolejny poziom dodaje: **+2 złoto**.
-**Wymagania:** brak.
-**Uwaga:** Mnoznik % dotyczy przychodow z Daniny w miescie
+Daje **Pieniądz na turę:** **+5 / +8 / +11 ¤/t** (poz. 1–3). **Bez mnożnika %** handlu ani Daniny.
 
 
 ### Przykład liczbowy
@@ -194,26 +191,23 @@ Utrzymanie **1** ¤/t × **10** tur = **10** ¤ — uwzględnij w bilansie skarb
 
 ### Mury
 
-**Mury** (Obrona) odblokowuje się w epoce **Brąz** po technologii **Budownictwo**. Pierwsze wzniesienie kosztuje **35** pracy; każdy kolejny poziom +**12**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
+**Mury** (Obrona) odblokowuje się w epoce **Brąz** po technologii **Budownictwo**. Koszt od **35** pracy + **8× drewno, 16× kamień**; **maks. 2 poziomy**. Utrzymanie: **2** ¤/t.
 
-Na poziomie 1 daje: **+5 obrona**. Każdy kolejny poziom dodaje: **+3 obrona**.
-**Wymagania:** brak.
+Daje **+200% Obrony** broniącym się jednostkom — bonus **procentowy**, nie płaski „+5 obrony". Zastępują bonus **Palisady** (+100%). **Cytadela** i **Baszta** to osobne budynki dokładane obok (każda +100% dodatkowo).
 
 
 ### Przykład liczbowy
 
 Koszt **35** pracy przy **7** pracy/t na budynki (70%) → **~5** tury budowy.
-Bonus **+5 obrona** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+200% Obrony** — jednostka z 50 pkt Obrony na murze ≈ **150** efektywnie.
 Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/mury.md`](../encyklopedia/budynki/mury.md)
 
 ### Koszary
 
-**Koszary** (Wojsko) odblokowuje się w epoce **Brąz** po technologii **Wojskowosc**. Pierwsze wzniesienie kosztuje **25** pracy; każdy kolejny poziom +**10**. Utrzymanie: **2** ¤ na turę (rosnie o **1** per poziom).
+**Koszary** (Wojsko) odblokowuje się w epoce **Brąz** po technologii **Wojskowosc**. Koszt od **25** pracy; **maks. 2 poziomy**. Utrzymanie: **2** ¤/t.
 
-Na poziomie 1 daje: **+2 praca**. Każdy kolejny poziom dodaje: **+1 praca**.
-**Wymagania:** brak.
-**Uwaga:** Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie
+Daje **+2/+3 Pracy/t** oraz **+20% parametrów miękkich** (ścieżka B, po wizycie w mieście). **Akademia wojskowa** stoi obok (nie zastępuje Koszar).
 
 
 ### Przykład liczbowy
@@ -271,11 +265,10 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Kuźnia żelaza
 
-**Kuźnia żelaza** (Produkcja+Wojsko) odblokowuje się w epoce **Żelazo** po technologii **Obróbka żelaza**. Pierwsze wzniesienie kosztuje **60** pracy; każdy kolejny poziom +**15**. Utrzymanie: **3** ¤ na turę (rosnie o **1** per poziom).
+**Kuźnia żelaza** (Produkcja+Wojsko) — **upgrade Kuźni brązu** w epoce **Żelazo** (tech **Hutnictwo żelaza**). Koszt **60** pracy; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Na poziomie 1 daje: **+8 praca, +2 złoto**. Każdy kolejny poziom dodaje: **+4 praca, +1 złoto**.
-**Wymagania:** zelazo w zasiegu.
-**Uwaga:** Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza
+Daje **+8 Pracy/t**, **+2 Pieniądza/t**, **+15% Pancerza** (ścieżka A, po wizycie).
+**Wymagania:** Kuźnia brązu w mieście + **żelazo** w imperium.
 
 
 ### Przykład liczbowy
@@ -287,11 +280,7 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 
 ### Wielka Kuźnia
 
-**Wielka Kuźnia** (Produkcja) odblokowuje się w epoce **Średniowiecze** po technologii **Hutnictwo żelaza**. Pierwsze wzniesienie kosztuje **90** pracy; każdy kolejny poziom +**18**. Utrzymanie: **4** ¤ na turę (rosnie o **2** per poziom).
-
-Na poziomie 1 daje: **+12 praca, +3 złoto**. Każdy kolejny poziom dodaje: **+5 praca, +2 złoto**.
-**Wymagania:** zelazo i stal w zasiegu; wymaga Kuźni żelaza.
-**Uwaga:** Mnoznik % dotyczy sily i kosztu produkcji wszystkich jednostek w miescie; wymaga dostepu do stali
+**⏸️ PARKOWANE — niedostępna** w aktualnych 3 epokach (Kamień/Brąz/Żelazo). W danych `epokaWejscia: 4`. Docelowo upgrade Kuźni żelaza (+15% Pancerza, ścieżka A). **Nie planuj** w normalnej rozgrywce v1.
 
 
 ### Przykład liczbowy
@@ -303,29 +292,26 @@ Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarb
 
 ### Cytadela (dawny Fort)
 
-> **[Zmiana nazwy]** ten budynek nazywał się „Fort" w tym katalogu — dane (`id: fort`) mają dziś wyświetlaną nazwę **Cytadela** i status **upgrade Murów** (1 slot, nie osobny budynek). Osobno na mapie istnieje **Fort terenowy** (ulepszenie budowane przez robotnika, nie budynek miasta) — to inny system, patrz [`28-katalog-ulepszen.md`](28-katalog-ulepszen.md).
+> **Cytadela** (`id: fort`) to **osobny budynek obronny obok Murów** — nie upgrade tego samego slotu. Osobno na mapie: **Fort terenowy** ([`28-katalog-ulepszen.md`](28-katalog-ulepszen.md)).
 
-**Cytadela** (Obrona) odblokowuje się w epoce **Żelazo** po technologii **Inżynieria**. Pierwsze wzniesienie kosztuje **70** pracy **+ 18 cegły** z magazynu miasta (Część VIII §53.2); każdy kolejny poziom +**15** pracy. Utrzymanie: **3** ¤ na turę (rosnie o **1** per poziom).
+**Cytadela** (Obrona) w epoce **Żelazo** po tech **Inżynieria**. Koszt **70** pracy + **10× drewno, 20× kamień**. **Maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Na poziomie 1 daje: **+15 obrona**. Każdy kolejny poziom dodaje: **+8 obrona**.
-**Wymagania:** upgrade Murów.
-**Uwaga:** +100% obrona przy obozowaniu jednostek (zasieg 10); styk MAPA/civ-bonusy-obronne-mapa.md
+Daje **+100% Obrony dodatkowo** (z murami **+300%** łącznie; z Basztą do **+400%**). Wymaga **Murów w tym mieście**.
 
 
 ### Przykład liczbowy
 
-Koszt **70** pracy przy **7** pracy/t na budynki (70%) → **~10** tury budowy.
-Bonus **+10 obrona** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Koszt **70** pracy przy **7** pracy/t → **~10** tury budowy.
+Z Murami: **+300% Obrony** łącznie (nie płaski bonus).
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/fort.md`](../encyklopedia/budynki/fort.md)
 
 ### Warsztat oblężniczy
 
-**Warsztat oblężniczy** (Wojsko) odblokowuje się w epoce **Żelazo** po technologii **Oblężnictwo**. Pierwsze wzniesienie kosztuje **65** pracy; każdy kolejny poziom +**15**. Utrzymanie: **3** ¤ na turę (rosnie o **1** per poziom).
+**Warsztat oblężniczy** (Wojsko) w epoce **Żelazo** po tech **Oblężnictwo**. Koszt **65** pracy + kamień; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Na poziomie 1 daje: **+4 praca, +2 złoto**. Każdy kolejny poziom dodaje: **+2 praca, +1 złoto**.
-**Wymagania:** wymaga Koszary.
-**Uwaga:** Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS
+**+4 Pracy/t**, **+2 Pieniądza/t**, **+10% miękkich** (ścieżka B). **Odblokowuje Katapultę** w rekrutacji miasta.
+**Wymagania:** Koszary w tym mieście.
 
 
 ### Przykład liczbowy
@@ -337,11 +323,10 @@ Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarb
 
 ### Akademia
 
-**Akademia** (Nauka) odblokowuje się w epoce **Żelazo** po technologii **Filozofia**. Pierwsze wzniesienie kosztuje **70** pracy; każdy kolejny poziom +**15**. Utrzymanie: **3** ¤ na turę (rosnie o **1** per poziom).
+**Akademia** (Nauka) w epoce **Żelazo** po tech **Filozofia**. Koszt **70** pracy + cegła; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Na poziomie 1 daje: **+6 nauka, +2 kultura**. Każdy kolejny poziom dodaje: **+3 nauka, +1 kultura**.
-**Wymagania:** wymaga Biblioteka.
-**Uwaga:** Mnoznik % dotyczy globalnej puli nauki (nadbudowka nad Biblioteka)
+**Niezależna obok Biblioteki.** Daje **+6 Nauki/t**, **+5 Kultury/t**, **+3 Zadowolenia** — lokalna produkcja miasta, **nie** globalny mnożnik nauki.
+**Wymagania:** Biblioteka w tym mieście.
 
 
 ### Przykład liczbowy
@@ -385,17 +370,15 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Pretorium
 
-**Pretorium** (Administracja) odblokowuje się w epoce **Żelazo** po technologii **Kodeks prawa**. Pierwsze wzniesienie kosztuje **75** pracy; każdy kolejny poziom +**15**. Utrzymanie: **3** ¤ na turę (rosnie o **1** per poziom).
+**Pretorium** (Administracja) — **tylko miasta regionalne** (upgrade Dworu Zarządcy). Epoka **Żelazo**, tech **Prawo**. Koszt **75** pracy; **maks. 1 poziom**. Utrzymanie: **3** ¤/t.
 
-Na poziomie 1 daje: **+2 praca, +3 złoto, +1 szczęście, +2 obrona**. Każdy kolejny poziom dodaje: **+1 praca, +2 złoto, +1 szczęście, +1 obrona**.
-**Wymagania:** brak.
-**Uwaga:** Centrum administracji prowincji; bonus do utrzymania porzadku (garnizon); mnoznik % do przychodu podatkowego
+Daje **+2 Pracy/t**, **+3 Pieniądza/t**, **+5 Kultury/t** oraz **Prawo** miasta regionalnego. **Bez bonusu obrony** i bez mnożnika podatkowego.
 
 
 ### Przykład liczbowy
 
 Koszt **75** pracy przy **7** pracy/t na budynki (70%) → **~10** tury budowy.
-Bonus **+2 praca, +3 złoto, +1 szczęście, +2 obrona** — przy **4** polach w okolicy suma skalowana liniowo z przypisaniem pól.
+Bonus **+2 praca, +3 złoto, +5 kultura** — Prawo regionalne, nie obrona.
 Utrzymanie **3** ¤/t × **10** tur = **30** ¤ — uwzględnij w bilansie skarbca.
 → Pełna karta: [`docs/encyklopedia/budynki/pretorium.md`](../encyklopedia/budynki/pretorium.md)
 
@@ -417,11 +400,10 @@ Utrzymanie **2** ¤/t × **10** tur = **20** ¤ — uwzględnij w bilansie skarb
 
 ### Akademia wojskowa
 
-**Akademia wojskowa** (Wojsko) odblokowuje się w epoce **Żelazo** po technologii **Sztuka wojenna**. Pierwsze wzniesienie kosztuje **80** pracy; każdy kolejny poziom +**18**. Utrzymanie: **4** ¤ na turę (rosnie o **2** per poziom).
+**Akademia wojskowa** (Wojsko) w epoce **Żelazo** po tech **Sztuka wojenna**. Koszt **80** pracy; **maks. 1 poziom**. Utrzymanie: **4** ¤/t.
 
-Na poziomie 1 daje: **+3 praca, +2 złoto**. Każdy kolejny poziom dodaje: **+1 praca, +1 złoto**.
-**Wymagania:** wymaga Koszary.
-**Uwaga:** Mnoznik % dotyczy sily i exp WSZYSTKICH jednostek szkolonych w miescie; prereq elitarnych jednostek top-tier Zelaza — styk UNITS
+**Obok Koszar** (niezależny budynek). **+3 Pracy/t**, **+2 Pieniądza/t**, **+20% miękkich** (ścieżka B, po wizycie). Z Koszarami = +40%; z Warsztatem do +50%.
+**Wymagania:** Koszary w tym mieście.
 
 
 ### Przykład liczbowy
@@ -433,4 +415,4 @@ Utrzymanie **4** ¤/t × **10** tur = **40** ¤ — uwzględnij w bilansie skarb
 
 ---
 
-*Wygenerowano z `buildings.json` · zweryfikowano ręcznie 2026-07-23 (37 budynków vs 26 w katalogu, Fort→Cytadela, koszt materiałowy 10 budynków) · pierwotnie rev. E 2026-07-03*
+*Wygenerowano z `buildings.json` · rev. G2 2026-08-04 (obrona %, ścieżki A/B, Targowisko=¤) · pierwotnie rev. E 2026-07-03*

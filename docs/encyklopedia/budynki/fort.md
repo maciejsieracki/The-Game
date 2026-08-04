@@ -15,43 +15,53 @@
 
 ## Wiki‑S
 
-**Fort** (budynkowy, w danych `nazwa: "Cytadela"`) — budynek (Obrona), epoka Żelazo, **upgrade Murów** (1 slot budynkowy, nie osobna budowla). Koszt od **70** pracy + **18× cegła**, utrzymanie **3** ¤/t. Technologia **Inżynieria**. *(Odrębna Strażnica/Fort terenowy na mapie to inny obiekt — zob. [[Fort / umocnienia]] w Ulepszeniach.)*
+**Cytadela** (w danych `id: fort`) — budynek obronny (Obrona), epoka Żelazo. **Niezależny** obok Murów (nie zastępuje ich). Koszt **70** pracy + **10× drewno, 20× kamień**, utrzymanie **3** ¤/t. Technologia **Inżynieria**. Wymaga **Murów w tym mieście**. Daje **+100% Obrony** dodatkowo (razem z murami **+300%**).
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Fort (w UI: **Cytadela**) to **ulepszenie Murów** — nie osobny budynek, tylko kolejny poziom tego samego slotu obronnego. Poziom 1: **+15 obrony** (+8 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
+**Cytadela** to **osobny budynek obronny** obok kamiennych **Murów** — **nie** upgrade tego samego slotu i **nie** zastępuje murów. Oba mogą stać w mieście jednocześnie.
+
+Obrona miasta jest **wyłącznie procentowa**:
+- **Mury:** +200% Obrony
+- **Cytadela:** +100% **dodatkowo** (z murami = **+300%**)
+- **Baszta:** +100% **dodatkowo** (komplet trzech = **+400%**)
+
+To **nie** są płaskie „+15 obrony" ani 10 poziomów. **Maks. 1 poziom** Cytadeli.
+
+**Uwaga:** Osobny **Fort terenowy** na mapie (ulepszenie heksu) to inny obiekt — bonus dla obozujących jednostek w polu, nie budynek miasta.
+
 ### Koszty
-- **Budowa poz. 1:** 70 pracy + **18× cegła**
-- **Każdy kolejny poziom:** +15 pracy
-- **Utrzymanie:** 3 ¤/turę (+1 ¤/poziom)
-- Technologia **Inżynieria**. Warunek: wymaga ukończonych Murów (upgrade).
-- **Uwaga:** +100% obrona przy obozowaniu jednostek (zasieg 10); styk MAPA/civ-bonusy-obronne-mapa.md
+- **Budowa:** 70 pracy + 10× drewno, 20× kamień
+- **Utrzymanie:** 3 ¤/turę
+- Technologia **Inżynieria**
+- **Wymaganie:** wybudowane **Mury w tym samym mieście** (kolejność budowy; Cytadela nie zastępuje Murów w liście budynków)
+
 ### Strategia gracza
-Przed wojnou z sąsiadem: mury/fort **przed** masową rekrutacją. Oblężenie bez muru kończy się szybciej.
+Miasto graniczne w epoce Żelaza: najpierw **Mury**, potem **Cytadela** (i opcjonalnie **Baszta**) przed oczekiwanym oblężeniem.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 3 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Obrona
+- Budowa Cytadeli **bez** Murów w tym mieście — karta nie wejdzie do kolejki.
+- Mylenie z **Fortem terenowym** na mapie.
+- Szukanie płaskiego bonusu obrony zamiast **% Obrony**.
+
+**Powiązane:** Mury · Baszta · Obrona miasta · Fort terenowy (mapa)
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+**Scenariusz:** miasto z **Murami** i **Cytadelą**, jednostka **50** pkt Obrony na murze.
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 70 (+18 cegły) | **7 tur** | +15 obrony | 3 ¤/t |
-| Poziom 2 | 85 | **9 tur** | więcej (patrz niżej) | 3 ¤/t |
-| Poziom 3 | 100 | — | **+31 obrony** | 3 ¤/t |
+| Budynki obronne | Łączny bonus | Efektywna Obrona |
+|-----------------|--------------|------------------|
+| Tylko Mury | +200% | **150** |
+| Mury + Cytadela | +300% | **200** |
+| Mury + Cytadela + Baszta | +400% | **250** |
 
-Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu **Miasto** przed/po budowie.
-
-**Przyspieszenie za złoto:** jeśli brakuje **50** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+Koszt **70** pracy przy **10**/t ≈ **7 tur** budowy (bez surowców).
 
 ---
 
@@ -63,4 +73,4 @@ Korzyść jakościowa (obrona, szczęście, kultura) — policz wpływ w panelu 
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — niezależny budynek obok Murów, obrona % (+100% dodatkowo).

@@ -15,44 +15,47 @@
 
 ## Wiki‑S
 
-**Kuźnia brązu** — budynek (Produkcja+Wojsko), epoka Brąz. Koszt od **30** pracy, utrzymanie **2** ¤/t. Technologia **Brązownictwo**.
+**Kuźnia brązu** — budynek (Produkcja+Wojsko), epoka Brąz. Koszt **30** pracy + surowce, utrzymanie **2** ¤/t. Technologia **Brązownictwo**. **Maks. 1 poziom.** Daje **+6 Pracy/t**, **+1 Pieniądza/t** oraz **+15% Pancerza** (ścieżka A) jednostkom, które **odwiedziły** to miasto.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Kuźnia brązu wzmacnia miasto w kategorii **Produkcja+Wojsko**. Poziom 1: **+6 pracy** (+3 na poziom), **+1 złota** (+0 na poziom), **+5 % mnożnika Daniny** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Kuźnia brązu wzmacnia miasto na dwa sposoby:
+
+1. **Ekonomia miasta:** **+6 Pracy/t**, **+1 Pieniądza/t** (stały przyrost na turę).
+2. **Ścieżka A — Pancerz:** **+15% Pancerza** dla jednostek, które **odwiedziły** to miasto po zbudowaniu kuźni (nie tylko przy produkcji). Kumuluje się z Kuźnią żelaza / Wielką Kuźnią (max **+45%** łącznie z łańcucha).
+
+**Maks. 1 poziom** — wyższy tier to **awans na Kuźnię żelaza** (upgrade), nie kolejne poziomy tej samej kuźni.
+
 ### Koszty
-- **Budowa poz. 1:** 30 pracy
-- **Każdy kolejny poziom:** +10 pracy
-- **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
-- Technologia **Brązownictwo**.
-Warunek: miedz lub cyna w zasiegu.
-- **Uwaga:** Mnoznik % dotyczy sily jednostek produkowanych w miescie
+- **Budowa:** 30 pracy + 6× drewno, 6× kamień
+- **Utrzymanie:** 2 ¤/turę
+- Technologia **Brązownictwo**
+- **Wymaganie:** dostęp do **Rudy (miedź)** w imperium
+
 ### Strategia gracza
-Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
+Miasto wojskowe produkcyjne: zbuduj kuźnię, **przepuść przez miasto** armie przed wyprawą — bonus Pancerza zostaje na jednostce. W Żelazie awansuj na **Kuźnię żelaza**.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 2 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Produkcja+Wojsko
+- Myślenie, że bonus dotyczy „siły przy produkcji" — liczy się **wizyta w mieście**.
+- Oczekiwanie 10 poziomów kuźni — tier rośnie tylko przez **upgrade łańcucha**.
+
+**Powiązane:** Kuźnia żelaza · Pancerz · Produkcja miejska
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+**Scenariusz:** Kuźnia brązu poz. 1, jednostka z **20** pkt Pancerza po wizycie w mieście.
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 30 | **3 tur** | +6 pracy, +1 złota, +5 % mnożnika Daniny | 2 ¤/t |
-| Poziom 2 | 40 | **4 tur** | więcej (patrz niżej) | 2 ¤/t |
-| Poziom 3 | 50 | — | **+12 pracy, +1 złota, +9 % mnożnika Daniny** | 2 ¤/t |
+| Źródło | Efekt |
+|--------|-------|
+| Przyrost miasta | +6 Pracy/t, +1 ¤/t |
+| Ścieżka A | Pancerz **20 → 23** (+15%) |
 
-Przy +1 złota/t, utrzymanie 2 ¤/t → netto **+-1 ¤/t**. Koszt 30 pracy przy 10/t ≈ **3 tur** pracy — złotem „zwraca się" po ok. **30 tur** (uproszczenie, bez inflacji).
-
-**Przyspieszenie za złoto:** jeśli brakuje **10** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+Koszt **30** pracy przy **10**/t ≈ **3 tur** budowy.
 
 ---
 
@@ -64,4 +67,4 @@ Przy +1 złota/t, utrzymanie 2 ¤/t → netto **+-1 ¤/t**. Koszt 30 pracy przy 
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — ścieżka A Pancerz po wizycie, max 1 poz., bez fałszywego mnożnika „siły przy produkcji".

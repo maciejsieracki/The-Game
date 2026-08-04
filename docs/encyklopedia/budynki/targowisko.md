@@ -15,43 +15,46 @@
 
 ## Wiki‑S
 
-**Targowisko (Rynek)** — budynek (Pieniadz), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Wymiana**.
+**Targowisko (Rynek)** — budynek (Pieniądz), epoka Kamień. Koszt od **25** pracy, utrzymanie **1** ¤/t. Technologia **Wymiana**. **Maks. 3 poziomy** (nazwy: Targowisko → Rynek → Giełda). Daje **Pieniądz na turę** — **nie** mnożnik handlu ani Daniny.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Targowisko (Rynek) wzmacnia miasto w kategorii **Pieniadz**. Poziom 1: **+3 złota** (+2 na poziom), **+0 % mnożnika Daniny** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Targowisko generuje **Pieniądz (¤) na turę** w mieście:
+
+| Poziom | Pieniądz/t |
+|--------|------------|
+| 1 (Targowisko) | **+5** |
+| 2 (Rynek) | **+8** (+3) |
+| 3 (Giełda) | **+11** (+3) |
+
+**Brak mnożnika %** — dawny wpis „mnożnik handlu/Daniny" nie był czytany przez silnik i został usunięty z efektu (naprawa 2026-07-26). Planuj ekonomię po **stałym przyroście ¤**, nie po procencie handlu.
+
 ### Koszty
-- **Budowa poz. 1:** 25 pracy
+- **Budowa poz. 1:** 25 pracy + 6× drewno
 - **Każdy kolejny poziom:** +10 pracy
-- **Utrzymanie:** 1 ¤/turę (+1 ¤/poziom)
-- Technologia **Wymiana**.
-- **Uwaga:** Mnoznik % dotyczy przychodow z Daniny w miescie
+- **Utrzymanie:** 1 ¤/turę (+1 ¤ na wyższych poziomach w danych)
+- Technologia **Wymiana**
+
 ### Strategia gracza
-Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
+Wczesne miasto: Targowisko finansuje utrzymanie wojska i rush budowy. Awansuj do Rynek/Giełda, gdy masz nadwyżkę pracy — netto **+4/+7/+10 ¤** po utrzymaniu na poz. 1–3.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 1 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Pieniadz
+- Szukanie „% handlu" lub „mnożnika Daniny" — efekt to **tylko ¤/turę**.
+- Porównywanie z Portem — Port to handel morski, Targowisko to lokalny przychód miejski.
+
+**Powiązane:** Pieniądz · Danina miasta · Port handlowy
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+**Scenariusz:** Targowisko poz. 1, utrzymanie 1 ¤/t.
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 25 | **3 tur** | +3 złota, +0 % mnożnika Daniny | 1 ¤/t |
-| Poziom 2 | 35 | **4 tur** | więcej (patrz niżej) | 1 ¤/t |
-| Poziom 3 | 45 | — | **+7 złota, +6 % mnożnika Daniny** | 1 ¤/t |
-
-Przy +3 złota/t, utrzymanie 1 ¤/t → netto **+2 ¤/t**. Koszt 25 pracy przy 10/t ≈ **3 tur** pracy — złotem „zwraca się" po ok. **13 tur** (uproszczenie, bez inflacji).
-
-**Przyspieszenie za złoto:** jeśli brakuje **5** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+- Przyrost: **+5 ¤/t** → netto **+4 ¤/t**
+- Koszt 25 pracy przy 10/t ≈ **3 tur** — zwrot z netto po ~**7 turach**
 
 ---
 
@@ -63,4 +66,4 @@ Przy +3 złota/t, utrzymanie 1 ¤/t → netto **+2 ¤/t**. Koszt 25 pracy przy 1
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — efekt = pieniadz baza/przyrost, bez martwego mnożnika.

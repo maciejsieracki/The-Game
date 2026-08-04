@@ -15,44 +15,45 @@
 
 ## Wiki‑S
 
-**Kuźnia żelaza** — budynek (Produkcja+Wojsko), epoka Żelazo. Koszt od **60** pracy, utrzymanie **3** ¤/t. Technologia **Obróbka żelaza**.
+**Kuźnia żelaza** — budynek (Produkcja+Wojsko), epoka Żelazo. **Upgrade Kuźni brązu** (zastępuje ją w mieście). Koszt **60** pracy, utrzymanie **3** ¤/t. Technologia **Hutnictwo żelaza**. **Maks. 1 poziom.** **+8 Pracy/t**, **+2 Pieniądza/t**, **+15% Pancerza** (ścieżka A) po wizycie w mieście.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Kuźnia żelaza wzmacnia miasto w kategorii **Produkcja+Wojsko**. Poziom 1: **+8 pracy** (+4 na poziom), **+2 złota** (+1 na poziom), **+8 % mnożnika Daniny** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
+Kuźnia żelaza **zastępuje** Kuźnię brązu w tym samym mieście (`upgradeFrom: kuznia`).
+
+1. **Ekonomia:** **+8 Pracy/t**, **+2 Pieniądza/t**
+2. **Ścieżka A — Pancerz:** **+15% Pancerza** dla jednostek, które **odwiedziły** miasto (kumuluje z poprzednim tierem łańcucha kuźni, max **+45%** gdy dostępna Wielka Kuźnia w przyszłej epoce)
+
+**Maks. 1 poziom** — nie ma 10 poziomów ani bonusu „siły przy produkcji".
+
 ### Koszty
-- **Budowa poz. 1:** 60 pracy
-- **Każdy kolejny poziom:** +15 pracy
-- **Utrzymanie:** 3 ¤/turę (+1 ¤/poziom)
-- Technologia **Obróbka żelaza**.
-Warunek: zelazo w zasiegu.
-- **Uwaga:** Mnoznik % dotyczy sily jednostek zelaznych produkowanych w miescie; wymaga dostepu do zelaza
+- **Budowa:** 60 pracy + 8× drewno, 10× cegła
+- **Utrzymanie:** 3 ¤/turę
+- Technologia **Hutnictwo żelaza**
+- **Wymaganie:** upgrade Kuźni brązu + dostęp do **Żelaza** w imperium
+
 ### Strategia gracza
-Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
+Awansuj kuźnię w mieście produkcyjnym wojska, zanim zaczniesz masową produkcję jednostek żelaznych. Przepuść armie przez miasto po ukończeniu.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 3 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Produkcja+Wojsko
+- Budowa bez Kuźni brązu w mieście — to upgrade, nie osobny slot obok.
+- Brak żelaza w imperium — karta zablokowana.
+
+**Powiązane:** Kuźnia brązu · Pancerz · Łańcuch kuźni
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+| Etap | Koszt | Przyrost miasta | Pancerz (ścieżka A) |
+|------|-------|-----------------|---------------------|
+| Kuźnia brązu | 30 pracy | +6 Pracy, +1 ¤ | +15% |
+| → Kuźnia żelaza | 60 pracy | +8 Pracy, +2 ¤ | +15% (tier żelaza) |
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 60 | **6 tur** | +8 pracy, +2 złota, +8 % mnożnika Daniny | 3 ¤/t |
-| Poziom 2 | 75 | **8 tur** | więcej (patrz niżej) | 3 ¤/t |
-| Poziom 3 | 90 | — | **+16 pracy, +4 złota, +14 % mnożnika Daniny** | 3 ¤/t |
-
-Przy +2 złota/t, utrzymanie 3 ¤/t → netto **+-1 ¤/t**. Koszt 60 pracy przy 10/t ≈ **6 tur** pracy — złotem „zwraca się" po ok. **60 tur** (uproszczenie, bez inflacji).
-
-**Przyspieszenie za złoto:** jeśli brakuje **40** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+Koszt upgrade **60** pracy przy **10**/t ≈ **6 tur**.
 
 ---
 
@@ -64,4 +65,4 @@ Przy +2 złota/t, utrzymanie 3 ¤/t → netto **+-1 ¤/t**. Koszt 60 pracy przy 
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — upgrade z Kuźni brązu, ścieżka A Pancerz po wizycie.

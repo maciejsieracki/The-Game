@@ -15,44 +15,48 @@
 
 ## Wiki‑S
 
-**Akademia wojskowa** — budynek (Wojsko), epoka Żelazo. Koszt od **80** pracy, utrzymanie **4** ¤/t. Technologia **Sztuka wojenna**.
+**Akademia wojskowa** — budynek (Wojsko), epoka Żelazo. Koszt **80** pracy + surowce, utrzymanie **4** ¤/t. Technologia **Sztuka wojenna**. **Maks. 1 poziom.** **Niezależna** obok Koszar. **+20% parametrów miękkich** (ścieżka B) po wizycie w mieście.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Akademia wojskowa wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+3 pracy** (+1 na poziom), **+2 złota** (+1 na poziom), **+15 % mnożnika Daniny** (+4 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**18** od poprzedniego), ale daje większy przyrost.
+Akademia wojskowa stoi **obok Koszar** (niezależny budynek, nie upgrade).
+
+1. **Ekonomia:** **+3 Pracy/t**, **+2 Pieniądza/t**
+2. **Ścieżka B:** **+20% parametrów miękkich** (wszystko poza Pancerzem) dla jednostek po **wizycie** w mieście
+
+**Kumulacja ścieżki B w jednym mieście:**
+- Koszary: +20%
+- Akademia wojskowa: +20%
+- Warsztat oblężniczy: +10%
+- **Max łącznie: +50%**
+
+To **nie** jest bonus EXP/siły „przy szkoleniu". Wymaga **Koszary** w tym mieście.
+
 ### Koszty
-- **Budowa poz. 1:** 80 pracy
-- **Każdy kolejny poziom:** +18 pracy
-- **Utrzymanie:** 4 ¤/turę (+2 ¤/poziom)
-- Technologia **Sztuka wojenna**.
-Warunek: wymaga Koszary.
-- **Uwaga:** Mnoznik % dotyczy sily i exp WSZYSTKICH jednostek szkolonych w miescie; prereq elitarnych jednostek top-tier Zelaza — styk UNITS
+- **Budowa:** 80 pracy + 10× drewno, 14× cegła
+- **Utrzymanie:** 4 ¤/turę
+- Technologia **Sztuka wojenna**
+- **Wymaganie:** wybudowane **Koszary** w tym mieście
+
 ### Strategia gracza
-Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
+Miasto elitarne: pełny zestaw wojskowy (Koszary + Akademia + Warsztat), potem przepuść armię przez miasto przed wojną.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 4 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Wojsko
+- Budowa bez Koszar.
+- Mylenie ze ścieżką A (Pancerz = kuźnie).
+
+**Powiązane:** Koszary · Warsztat oblężniczy · Ścieżka B
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+Miasto z Koszarami + Akademią wojskową: **+40%** miękkich statystyk po wizycie (+50% z Warsztatem).
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 80 | **8 tur** | +3 pracy, +2 złota, +15 % mnożnika Daniny | 4 ¤/t |
-| Poziom 2 | 98 | **10 tur** | więcej (patrz niżej) | 4 ¤/t |
-| Poziom 3 | 116 | — | **+5 pracy, +4 złota, +23 % mnożnika Daniny** | 4 ¤/t |
-
-Przy +2 złota/t, utrzymanie 4 ¤/t → netto **+-2 ¤/t**. Koszt 80 pracy przy 10/t ≈ **8 tur** pracy — złotem „zwraca się" po ok. **80 tur** (uproszczenie, bez inflacji).
-
-**Przyspieszenie za złoto:** jeśli brakuje **60** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+Koszt **80** pracy przy 10/t ≈ **8 tur**.
 
 ---
 
@@ -64,4 +68,4 @@ Przy +2 złota/t, utrzymanie 4 ¤/t → netto **+-2 ¤/t**. Koszt 80 pracy przy 
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — ścieżka B +20%, niezależna obok Koszar.
