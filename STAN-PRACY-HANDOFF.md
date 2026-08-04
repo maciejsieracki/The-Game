@@ -1,10 +1,12 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-04 ~21:30** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~00:40** · Projekt: Civ „The Game"
 
-> **FALA 220 (2026-08-04):** ROBOCZA `8a3c6d6d` · commit `b47a2e8` pushed `main`. AI-ALL batch: utrzymanie budynków (+1 surowiec/turę + UI) · MP army cap easy∞/normal1/hard0 · AI→MP absorption + same-civ Zaufanie 100 · major AI economy + AI-FOUND/LOCAL/MANAGE. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 224 (2026-08-05):** ROBOCZA `38df6ad7` · stempel menu `eef4e87e` · `main` includes cleanup `c44a190`. Batch: R-REKRUT-LUDNOSC-UI (teksty UI) + docs zamknięcie zrównoważonego. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra. **Handoff sesji:** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md)
 
-> **FALA 219 (2026-08-04):** ROBOCZA `9830224e` — dyplo kontrpropozycja + bilateral gate NAP + tip weteranów. Zastąpiona przez FALA 220.
+> **FALA 220 (2026-08-04):** ROBOCZA `8a3c6d6d` · commit `b47a2e8` pushed `main`. AI-ALL batch: utrzymanie budynków (+1 surowiec/turę + UI) · MP army cap easy∞/normal1/hard0 · AI→MP absorption + same-civ Zaufanie 100 · major AI economy + AI-FOUND/LOCAL/MANAGE. **ZASTĄPIONA** przez FALA 221–224.
+
+> **FALA 219 (2026-08-04):** ROBOCZA `9830224e` — dyplo kontrpropozycja + bilateral gate NAP + tip weteranów. Zastąpiona przez FALA 220–224.
 
 > **FALA 215 (2026-08-04):** ROBOCZA `2a5a66d1` — R-NADMIAR-POOLS FALA2 ×2 koszty. Zastąpiona przez FALA 216–220.
 
@@ -39,11 +41,23 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-04 (NAJNOWSZY):** deploy ROBOCZA `8a3c6d6d` (FALA 220, 21:17) · `main` commit `b47a2e8`. Wejście: `gra-robocza/START.html`. **Czeka:** playtest Macieja OK/BUG (AI major Moc, MP cap, absorpcja klastra).
+**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `38df6ad7` (FALA 224, 00:25) · stempel menu `eef4e87e` · `main` commit `c44a190` (cleanup rejestru stale „bez deploy"). Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224. **Handoff sesji:** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md)
 
-**ABC zamknięte FALA 220:** MP-ARMY/GARRISON/DIPLO-Q1=A · AI-FOUND/LOCAL/MANAGE-Q1=A — docs: `docs/decyzje/MP-*.md`, `AI-*.md`.
+**Łańcuch FALA 221–224:** 221 `4d17d869` (dyplo flex) → 222 `132401ef` (tempo bitwy + budynki nieaktywne + zrównoważony + city pill) → 223 `ee0e7e04` (tarcza pigułki + Zwiedzaj highlight) → **224 `38df6ad7`** (R-REKRUT-LUDNOSC-UI).
 
-**OTWARTE po FALA 220:** `P-AI-MOC-GAP` (częściowo złagodzone, bez playtestu zamknięcia) · martwe bonusy trudności · MP spawn Wyżywienie ~3 · AI major→major absorb · upkeep-test 24 fail · dyplo-UX — pełna lista: `dyspozycje/PYTANIA-OTWARTE.md`.
+**ABC zamknięte (sesja 221–224):** R-PILL-TARCZA-BEZ-MURU-Q1=A · R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A · R-BUDOWA-ZROWNOWAZONE-TRYB-Q1=A (**playtest OK**) · R-REKRUT-LUDNOSC-UI (audyt + fix UI, bez nowego ABC).
+
+**Ważne dla agentów:** rekrutacja **NIE odejmuje** `city.population` (tylko Manpower) — kanon `jednostka_koszt_ludnosci=0` od 2026-07-21; UI kłamało „−1 obywatela" → poprawione FALA 224 (`docs/decyzje/R-REKRUT-LUDNOSC-UI.md`). **R-GRACZ-WCHLONIECIE** już **ZDEPLOYOWANE FALA 206** — stale etykiety „bez deploy" naprawione w cleanup `c44a190`.
+
+**KOLEJKA (otwarte):**
+1. **R-BUDYNKI-NIEAKTYWNE** — playtest (czerwona nazwa + `Brak: …`) — w ROBOCZA od FALA 222, **jeszcze bez OK/BUG**
+2. **R-WIARYGODNOSC** — CZEKA-NA-DECYZJĘ (strojenie §9, później)
+3. **R-DESIGN-PANEL-MIASTA** — prototyp w ROBOCZA; hover/v2 czeka Design
+4. **R-PANEL-SPLIT** / **R-SUROWCE-UI-ZERO** — stary backlog NOWE
+5. **P-AI-MOC-GAP** — częściowo FALA 220, bez zamknięcia playtestem
+6. **R-DOTYK-MVP** — ODŁOŻONE
+
+**Stan na 2026-08-04 (historyczny):** deploy ROBOCZA `8a3c6d6d` (FALA 220, 21:17) — AI-ALL batch.
 
 **Stan na 2026-08-04 (historyczny):** deploy ROBOCZA `e38ad116` (FALA 212, 11:24) — batch bugfixów sesji.
 

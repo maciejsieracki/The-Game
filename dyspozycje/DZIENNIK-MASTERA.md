@@ -11,6 +11,12 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-08-05 ~00:40] CLOUD — HANDOFF sesji FALA 221–224
+
+Pełny zapis: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md). AKTUALNA ROBOCZA FALA 224 `38df6ad7` (stempel `eef4e87e`) · Maciej OK 223+224. Cleanup rejestru stale „bez deploy" na `main` (`c44a190`). Kolejna sesja: czytaj handoff + `STAN-PRACY-HANDOFF.md` §1 + `WERSJE.md` AKTUALNA.
+
+---
+
 ## [2026-07-28 12:05] SESJA LOKALNA — audyt FALA 50–56 + redeploy ROBOCZA `fed92ad1`
 
 Dokumentacja zsynchronizowana z manifestem: FALA 56 HUD mapa+miasto+dock · FALA 55 paski armii · FALA 54 karta armii · łańcuch 50–56 w jednym bundle. Handoff: `dyspozycje/HANDOFF-SESJA-2026-07-28-KARTA-ARMII.md` · rejestr: `REJESTR-PROSB-I-ZADAN.md` · `STAN-PRACY-HANDOFF.md` §1.

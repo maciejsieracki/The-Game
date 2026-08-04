@@ -1,4 +1,12 @@
-﻿## [00:30 PL, 2026-08-05] CLOUD → Maciej — cleanup rejestr stale „bez deploy"
+﻿## [00:40 PL, 2026-08-05] CLOUD → ALL — HANDOFF sesji FALA 221–224
+|- Pełny zapis: dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md
+|- AKTUALNA ROBOCZA FALA 224 `38df6ad7` (stempel eef4e87e) · Maciej OK 223+224
+|- ABC zamknięte: R-PILL-TARCZA-BEZ-MURU-Q1=A · R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A · R-BUDOWA-ZROWNOWAZONE-Q1=A playtest OK · R-REKRUT-LUDNOSC-UI
+|- Cleanup rejestr stale „bez deploy" na main (c44a190)
+|- Czeka: playtest R-BUDYNKI-NIEAKTYWNE · kolejka produktowa (WIARYGODNOSC/Design/Panel-split)
+CZEKAM-NA: kolejna sesja — czytaj handoff + WERSJE AKTUALNA
+
+## [00:30 PL, 2026-08-05] CLOUD → Maciej — cleanup rejestr stale „bez deploy"
 |- Poprawione: R-GRACZ-WCHLONIECIE → FALA 206 · C-ARMY-HUNGER → FALA 36 · P-AI-017 · usunięte „czeka/bez deploy” przy już ZDEPLOYOWANE (221/222)
 |- Bez zmian kodu / bez deploy gry
 CZEKAM-NA: nic
@@ -8,7 +16,7 @@ CZEKAM-NA: nic
 |- Batch: R-REKRUT-LUDNOSC-UI (+ docs R-BUDOWA-ZROWNOWAZONE OK)
 |- Bramki: tsc 0 · vite · VERIFY OK
 |- Wejście: gra-robocza/START.html
-CZEKAM-NA: Maciej — **najpierw git pull**, potem Ctrl+F5 + Nowa gra · stempel `eef4e87e` (nie ee0e7e04) · OK/BUG
+CZEKAM-NA: ~~Maciej OK/BUG~~ → **Maciej OK** (FALA 224 potwierdzona)
 
 ## [22:25 PL, 2026-08-04] CLOUD → Maciej — R-REKRUT-LUDNOSC-UI fix UI (kod, bez deploy)
 - Teksty intro Rekruci + Rekrutacja — szczegóły: bez „−1 obywatela”; „ludność miasta nie spada”
