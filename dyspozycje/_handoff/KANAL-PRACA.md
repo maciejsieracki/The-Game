@@ -5320,3 +5320,9 @@ CZEKAM-NA: Maciej — **deploy** (najlepiej razem z R-RELACJA-PW-INVERT #67)
 - autoExplore poza cyklem Spacji; ruchLeft NIE zerowane (ruch EOT)
 - Branch: `cursor/fix-scout-zwiedzaj-ux-63a1` · tsc 0 · scout-auto-explore 15/15
 CZEKAM-NA: Maciej — **deploy** (razem z #67+#68)
+
+## [10:24 PL, 2026-08-04] CLOUD → ALL — DEPLOY FALA 211 ROBOCZA `6bf472e2`
+- md5: `6bf472e29725960883c323a8f74519f8` · stempel `ROBOCZA · 2026-08-04 10:24`
+- #67 Relacja PW invert (42 vs 80 @ Rel 52) · #68 landscape traktat · #69 Zwiedzaj UX
+- Wejście: `gra-robocza/START.html`
+CZEKAM-NA: Maciej — **najpierw `git pull`**, potem Ctrl+F5 + Nowa gra · OK/BUG
