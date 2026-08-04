@@ -7765,7 +7765,7 @@ function buildOkolicaDetailCard(
     zywnosc: `${cityPanelChipIconWrap('chip-grain', 14)} Żywność`,
     produkcja: `${cityPanelChipIconWrap('res-work', 14)} Produkcja`,
     podatki: `${cityPanelChipIconWrap('res-treasury', 14)} Podatki`,
-    zrownowazone: `${cityPanelChipIconWrap('cp-order', 14)} Zrównoważone`,
+    zrownowazone: `${cityPanelChipIconWrap('field-balanced', 14)} Zrównoważone`,
   };
   gridDetailRow(g3, 'Profil auto', focusLbl[focus] ?? focus);
   gridDetailRow(g3, 'Tryb', tryb === 'reczny' ? 'Ręczny 👤 na mapie' : 'Automatyczny');
