@@ -94,8 +94,8 @@ const cityBase = {
   r: 0,
   name: 'Testowo',
   population: 2,
-  budowaTryb: 'priorytet',
-  budowaPriorytetTypow: ['zrownowazone'],
+  budowaTryb: 'zrownowazone',
+  budowaPriorytetTypow: ['wzrost', 'produkcja', 'wojsko', 'kultura', 'prawo'],
   budowaFocus: 'zrownowazone',
 };
 
@@ -401,6 +401,28 @@ const cityDone = {
 };
 eq(isBudowaListaUkonczonaForCity(cityDone, dataWojskoWzrost, ['koszary', 'spichlerz']), true, 'oba zbudowane -> ukończona');
 eq(isBudowaListaUkonczonaForCity(cityDone, dataWojskoWzrost, ['koszary']), false, 'spichlerz brak -> nie ukończona');
+
+// Test 28: tryb zrownowazone — enqueue balanced (produkcja przed wojsko epoka 2)
+console.log('\n28. tryb zrownowazone -> enqueue balanced (stolarnia epoka 1)');
+const cityZrown = {
+  ...cityBase,
+  budowaTryb: 'zrownowazone',
+  budowaPriorytetTypow: ['wzrost', 'produkcja', 'wojsko', 'kultura', 'prawo'],
+  budowaFocus: 'zrownowazone',
+};
+const r28 = pickAutoBuildItem(cityZrown, emptyProd, dataMinimal, { unlockedTechs: [], ...ctxWithDrewno });
+eq(r28 && r28.id, 'stolarnia', 'zrownowazone -> stolarnia (epoka 1, balanced)');
+
+// Test 29: legacy priorytet [zrownowazone] — pick via sanitize fallback (nie tryb zrownowazone w pick)
+console.log('\n29. Legacy priorytet [zrownowazone] -> sanitize do DEFAULT (stolarnia)');
+const cityLegacyZrown = {
+  ...cityBase,
+  budowaTryb: 'priorytet',
+  budowaPriorytetTypow: ['zrownowazone'],
+  budowaFocus: 'zrownowazone',
+};
+const r29 = pickAutoBuildItem(cityLegacyZrown, emptyProd, dataMinimal, { unlockedTechs: [], ...ctxWithDrewno });
+eq(r29 && r29.id, 'stolarnia', 'legacy [zrownowazone] w priorytet -> DEFAULT typy -> stolarnia');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;
