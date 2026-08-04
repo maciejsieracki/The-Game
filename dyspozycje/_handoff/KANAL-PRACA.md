@@ -1,3 +1,9 @@
+﻿## [20:35 PL, 2026-08-04] CLOUD → Maciej — R-DYPLO-PRZYJMIJ-TRADE (kod, bez deploy)
+- Fix: evaluateProposal obsługuje `umowa_handlowa` (= `umowa_szlakow`); UI `'5'` → `umowa_szlakow`
+- Branch: `cursor/fix-dyplo-przyjmij-traktat-63a1` · docs: `docs/decyzje/R-DYPLO-PRZYJMIJ-TRADE.md`
+- Bramki: tsc 0 · diplomacy-proposal · negotiation-table · acceptance-points
+CZEKAM-NA: merge + **deploy** na hasło Macieja
+
 ## [21:17 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 220 8a3c6d6d
 |- md5: 8a3c6d6d88f9d8a482e1c0107c9cc122 · stempel: ROBOCZA · 2026-08-04 21:17
 |- AI-ALL batch: (1) utrzymanie budynków +1 surowiec/turę per typ z kosztu budowy + UI; (2) MP army cap easy/normal/hard + absorption rates; (3) same-civ AI↔MP Zaufanie 100 + priorytet absorpcji klastra; (4) major AI early wzrost/Spichlerz + 60/40 archetyp + early ulepszenia; (5) AI-FOUND pop≥2, AI-LOCAL faza ~tura 20 LUB 1 zwiadowca, AI-MANAGE auto-zarządca major (NIE MP).
