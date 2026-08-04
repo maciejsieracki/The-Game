@@ -1,3 +1,4 @@
+- **2026-08-04 07:57** — ✅ Gotowe FALA 208 ROBOCZA `64a7878a`. Pigułka miasta v1 (obrona + cywu). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 ﻿- **2026-08-04 ~06:00** — ✅ Gotowe w kodzie (bez deploy): **R-DESIGN-PANEL-MIASTA** pigułka miasta v1 — obrona 3 stany + medalion cywu + glif produkcji (prototyp bez Design). Hover/ostrzeżenie surowców → po makiecie Design. Branch `cursor/fix-city-map-pill-v1-63a1`. Napisz **deploy**.
 - **2026-08-04 ~05:35** — ✅ ECHO **R-DESIGN-PANEL-MIASTA** Q1A Q2C Q3A (docs only). Czeka Design makieta v2 (3 klatki: baseline, MUST, hover). Po dostarczeniu: **działaj** (kod od razu, deploy osobno). `docs/decyzje/R-DESIGN-PANEL-MIASTA.md`
 - **2026-08-04 00:30** — ✅ Gotowe FALA 207 ROBOCZA `47a2e73b`. Handel AI + Połącz + Design Badania + Klatka D + kolonizacja AI. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.

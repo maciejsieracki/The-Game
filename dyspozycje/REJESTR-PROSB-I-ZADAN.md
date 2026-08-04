@@ -43,7 +43,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 | R-DESIGN-BADANIA | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | R-DESIGN-BADANIA-Q1=B · scienceHubHud + Klatka D |
 | R-DESIGN-BADANIA-KLATKA-D | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | Numerek planu na węźle drzewka v1.1 |
 | R-KOLEJKA-NASTEPNY | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | A+C wykonane: kolonizacja + Design w ROBOCZA |
-| R-DESIGN-PANEL-MIASTA | CZEKA-NA-DESIGN | Q1A Q2C Q3A zapisane · brak mockupu v2 · `docs/decyzje/R-DESIGN-PANEL-MIASTA.md` · `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` |
+| R-DESIGN-PANEL-MIASTA | **ZDEPLOYOWANE `64a7878a`** (FALA 208) | prototyp v1 (obrona+cywu); hover/SVG czekają Design · `docs/decyzje/R-DESIGN-PANEL-MIASTA.md` |
 | R-WIARYGODNOSC | CZEKA-NA-DECYZJĘ | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — rdzeń OK; paczka ABC §9 strojenie (później) |
 | R-AI-KOLONIZACJA | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | Q1A Q2A Q3B · dystans 4 · pop≥5 · surge |
 

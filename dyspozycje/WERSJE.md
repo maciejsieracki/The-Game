@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `47a2e73b` - 2026-08-04 00:30 - FALA 207: handel+Połącz + Design Badania + Klatka D + kolonizacja AI - **AKTUALNA**
+## ROBOCZA `64a7878a` - 2026-08-04 07:57 - FALA 208: pigułka miasta v1 (obrona + cywu) - **AKTUALNA**
+- md5 (pelne): `64a7878a905984a0450bc2f5cfbf576d` · stempel: `ROBOCZA · 2026-08-04 07:57`
+- **FALA 208.** R-DESIGN-PANEL-MIASTA prototyp: pigułka na mapie — tarcza obrony 3 stany, medalion cywu, glif produkcji lite. Na bazie FALA 207. Branch `cursor/deploy-fala208-63a1`.
+- tsc 0 · city-map-badge 12/12 · vite · VERIFY OK · build /tmp/civ-dist-fala208.
+
+## ROBOCZA `47a2e73b` - 2026-08-04 00:30 - FALA 207: handel+Połącz + Design Badania + Klatka D + kolonizacja AI - **ZASTĄPIONA**
 - md5 (pelne): `47a2e73b266037c1f7b21406370a78b0` · stempel: `ROBOCZA · 2026-08-04 00:30`
 - **FALA 207.** Handel AI Q1=B + Połącz (#42). Design Badania v1 (#44). Klatka D numerek planu (#46). R-AI-KOLONIZACJA (pop≥5, dystans 4, surge, score). Na bazie FALA 206 (wiarygodność/wchłonięcie/manpower/UI Relacja). Branch `cursor/deploy-fala207-63a1`.
 - tsc 0 · vite · VERIFY OK · build /tmp/civ-dist-fala207.

@@ -1,3 +1,9 @@
+## [07:57 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 208 `64a7878a`
+- md5: `64a7878a905984a0450bc2f5cfbf576d` · stempel: ROBOCZA · 2026-08-04 07:57
+- Pigułka miasta v1: obrona 3 stany + medalion cywu + glif produkcji (prototyp bez Design)
+- Wejście: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej playtest pigułki / OK / BUG · sesja lokalna: pull
+
 ## [06:00 PL, 2026-08-04] CLOUD → Maciej — pigułka miasta v1 (prototyp bez Design)
 - Kod: obrona 3 stany + medalion cywu + glif produkcji always-on lite
 - Odłożone: hover rozszerzony + ostrzeżenie surowców (czeka makieta Design)
