@@ -190,9 +190,9 @@ function computePeaceAcceptanceSides(
     relationModPct: modPct,
     relationModLabel: modLabel,
     mode,
-    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
-    statusLabel: hasBasket && asymBalance < 0
-      ? `Brakuje ${Math.abs(asymBalance)} PW (Relacja)`
+    accepted: peaceAccepted && asymBalance >= 0,
+    statusLabel: asymBalance < 0
+      ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
       : asymBalance > 0 && hasBasket
         ? `Nadwyżka +${asymBalance} PW`
         : formatBalanceLabel(surplusPn, peaceAccepted),
@@ -206,11 +206,11 @@ function computePeaceAcceptanceSides(
     treatyBasePn: treatyBase,
     treatyEffectivePn: partnerTreatyPw,
     mode,
-    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
-    statusLabel: hasBasket && asymBalance > 0
-      ? `Przewaga u Ciebie +${asymBalance} PW`
-      : hasBasket && asymBalance < 0
-        ? `Brakuje ${Math.abs(asymBalance)} PW`
+    accepted: peaceAccepted && asymBalance >= 0,
+    statusLabel: asymBalance < 0
+      ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+      : hasBasket && asymBalance > 0
+        ? `Przewaga u Ciebie +${asymBalance} PW`
         : 'Równo — spełnia',
   });
 
@@ -353,19 +353,29 @@ export function computePlayerAcceptanceSides(
     const theirDisplay = (their.treatyEffectivePn ?? 0) + their.offerPn;
     const asymBalance = myDisplay - theirDisplay;
     const relOk = adjustedRelRequired == null || relTotal >= adjustedRelRequired;
+    const balanceOk = asymBalance >= 0;
     my.balancePn = asymBalance;
     their.balancePn = asymBalance;
     if (mode === 'treaty' && !hasBasket) {
-      my.accepted = relOk;
-      their.accepted = relOk;
-      my.statusLabel = asymBalance > 0
-        ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
-        : asymBalance < 0
-          ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW`
+      my.accepted = relOk && balanceOk;
+      their.accepted = relOk && balanceOk;
+      my.statusLabel = !balanceOk
+        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        : asymBalance > 0
+          ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
           : 'Spełnia warunki (0 PW)';
-      their.statusLabel = asymBalance > 0
-        ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
-        : 'Równo — spełnia';
+      their.statusLabel = !balanceOk
+        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        : asymBalance > 0
+          ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
+          : 'Równo — spełnia';
+    } else if (mode === 'mixed') {
+      my.accepted = my.accepted && relOk && balanceOk;
+      their.accepted = their.accepted && relOk && balanceOk;
+      if (!balanceOk) {
+        my.statusLabel = `Brakuje ${Math.abs(asymBalance)} PW — dopłać`;
+        their.statusLabel = my.statusLabel;
+      }
     }
   }
 

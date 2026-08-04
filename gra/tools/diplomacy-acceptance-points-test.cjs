@@ -191,6 +191,24 @@ const tradeTreaty148 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 14
 ok(tradeTreaty148.my.treatyEffectivePn === 118, 'umowa_handlowa @ rel 148: gracz 118 PW');
 ok(tradeTreaty148.their.treatyEffectivePn === 80, 'umowa_handlowa @ rel 148: partner 80 PW');
 
+// Bilans PW traktatu — akceptacja tylko gdy bilans ≥ 0 (Maciej 2026-08-04, FALA 213)
+const trade92 = mod.computePlayerAcceptanceSides('umowa_szlakow', {}, 92, false);
+ok(trade92.my.treatyEffectivePn === 74, 'rel 92: gracz 74');
+ok(trade92.my.balancePn === -6, 'rel 92: bilans -6');
+ok(trade92.my.accepted === false, 'rel 92: NIE accepted przy bilansie < 0');
+ok(trade92.their.accepted === false, 'rel 92: their też false');
+
+const trade100 = mod.computePlayerAcceptanceSides('umowa_szlakow', {}, 100, false);
+ok(trade100.my.accepted === true && trade100.my.balancePn === 0, 'rel 100: accepted @ 0');
+
+const tradeTopUp = mod.computePlayerAcceptanceSides(
+  'umowa_szlakow',
+  { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 6 }] },
+  92,
+  false,
+);
+ok(tradeTopUp.my.accepted === true, 'rel 92 + 6¤: accepted po dopłacie');
+
 // Baza 0 — tylko koszyk
 ok(mod.treatyBaseAcceptancePn('handel') === 0, 'handel base 0');
 ok(mod.treatyBaseAcceptancePn('tech') === 0, 'tech base 0');
@@ -280,7 +298,7 @@ ok(woodTradePn.givePn === 10, 'resolveProposalPn: 1 pakiet drewno = 10 PN');
 ok(mod.effectiveTreatyPnRequired(500, 77) === 385, 'pokój @ rel 77: traktat gracz 385 PW');
 ok(mod.partnerTreatyPnRequired(500) === 500, 'pokój @ rel 77: partner 500 PW (baza)');
 const peacePure77 = mod.computePlayerAcceptanceSides('pokoj', {}, 77, false);
-ok(peacePure77.their.accepted, 'pokój czysty @ rel 77: accepted');
+ok(!peacePure77.their.accepted, 'pokój czysty @ rel 77: nie accepted (bilans −115 PW)');
 ok(peacePure77.my.balancePn === -115, 'pokój czysty @ rel 77: asymetria −115 PW (385−500)');
 ok(peacePure77.my.treatyEffectivePn === 385, 'pokój @ rel 77: gracz 385 PW');
 ok(peacePure77.their.treatyEffectivePn === 500, 'pokój @ rel 77: partner 500 PW');

@@ -11331,9 +11331,6 @@ async function boot(): Promise<void> {
     ): { accepted: boolean; reason?: string } {
       const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
       const result = evaluateProposal(negotiationAsProposal(entry), ctx);
-      if (!result.accepted && entry.actionId === 'umowa_handlowa') {
-        return { accepted: true, reason: 'Propozycja traktatu handlowego' };
-      }
       return { accepted: result.accepted, reason: result.reason };
     }
 
