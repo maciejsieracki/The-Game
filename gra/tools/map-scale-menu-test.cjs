@@ -48,9 +48,9 @@ function assert(c, msg) {
 const MP_EXPECT = {
   Malenki: [2, 3, 4],
   Mały: [3, 4, 5],
-  Standardowy: [4, 6, 7],
-  Duży: [5, 7, 8],
-  Ogromny: [6, 8, 9],
+  Standardowy: [4, 5, 7],
+  Duży: [5, 6, 8],
+  Ogromny: [6, 7, 9],
   'Super Huge': [7, 8, 9],
 };
 
@@ -82,7 +82,7 @@ const TYPY_EXPECT = {
     zelazo: [11, 12, 13],
   },
   'Super Huge': {
-    kamien: [6, 7, 8],
+    kamien: [7, 8, 8],
     braz: [12, 13, 14],
     zelazo: [13, 14, 15],
   },

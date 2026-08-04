@@ -59,8 +59,21 @@ repo, nie czat. **Dotyczy też odpowiedzi już udzielonych w czacie** — jeśli
 „co dalej?” / „nad czym pracujesz?”. Kończy wiadomość blokiem **„Następny krok”** z max 3 konkretnymi
 opcjami (pierwsza = rekomendacja). Reguła Cursor: `.cursor/rules/maciej-nastepny-krok.mdc`.
 
+**6. Gdy jest coś do testu w roboczej — banner GOTÓW DO TESTU (Maciej 2026-08-02).** Po deployu / po
+subagencie z bundlem: w czacie **najpierw** znak tekstowy:
+
+```
+╔══════════════════════════════╗
+║   ✅ GOTÓW DO TESTU          ║
+╚══════════════════════════════╝
+```
+
++ md5 + Ctrl+F5 + 1–3 punkty „co sprawdzić”. **Bez bannera Maciej nie testuje** (nie ufa wiszącemu
+„Working” w UI). Reguła Cursor: `.cursor/rules/gotow-do-testu.mdc` · obieg: `docs/obieg/OBOWIAZ-POWIADOM-MACIEJA.md`.
+
 **Gdzie te zasady muszą być widoczne** (sprawdzaj przy każdej większej aktualizacji dokumentacji):
-`CLAUDE.md` §„Jak pracować z właścicielem" · ten plik · `.cursor/rules/maciej-nastepny-krok.mdc` · `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E.
+`CLAUDE.md` §„Jak pracować z właścicielem" · ten plik · `.cursor/rules/maciej-nastepny-krok.mdc` ·
+`.cursor/rules/gotow-do-testu.mdc` · `dyspozycje/BACKLOG-PRZYSZLOSC.md` §E.
 
 ---
 

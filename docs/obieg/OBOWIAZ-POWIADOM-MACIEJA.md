@@ -2,6 +2,26 @@
 
 > **Decyzja Macieja (2026-06-26):** gdy coś **przygotujesz**, napisz mu **w czacie** **`✅ Gotowe:`** / **`⏸️ Czeka:`** **oraz dopisz wpis** do [`docs/MACIEJ-GOTOWE.md`](../MACIEJ-GOTOWE.md) — nie tylko dziennik operacyjny.
 
+> **Decyzja Macieja (2026-08-02):** gdy jest **coś do przetestowania w `gra-robocza/`**, w czacie **najpierw** banner tekstowy **GOTÓW DO TESTU** (md5 + Ctrl+F5 + co sprawdzić). Bez bannera Maciej **nie testuje**. Reguła Cursor: [`.cursor/rules/gotow-do-testu.mdc`](../../.cursor/rules/gotow-do-testu.mdc).
+
+> **Decyzja Macieja (2026-08-02 wieczór):** skończyłeś kod w źródłach → **natychmiast** w czacie **`✅ Gotowe w źródłach`** + pytanie **„Wrzucić na ROBOCZA?”**. **ZAKAZ** milczeć i czekać, aż Maciej przypomni o deployu / teście. Po deployu — od razu banner GOTÓW DO TESTU (bez „a mogę testować?”).
+
+---
+
+## Banner testu (ROBOCZA) — obowiązkowy
+
+Gdy paczka jest w roboczej i Maciej ma odpalić grę:
+
+```
+╔══════════════════════════════╗
+║   ✅ GOTÓW DO TESTU          ║
+╚══════════════════════════════╝
+```
+
+Pod spodem: **md5** · **Ctrl+F5 → `gra-robocza/START.html`** · **1–3 punkty „co sprawdzić”**.
+
+Wiszący subagent w UI Cursor ≠ sygnał. Dopiero ten banner = „możesz testować”.
+
 ---
 
 ## Kiedy pisać (czat **i** plik)
@@ -56,6 +76,7 @@
 
 ## Powiązane
 
+- [`.cursor/rules/gotow-do-testu.mdc`](../../.cursor/rules/gotow-do-testu.mdc) — banner **GOTÓW DO TESTU** (2026-08-02)
 - [`PLOT-CODE-WORKFLOW.md`](PLOT-CODE-WORKFLOW.md) — hasło **`plot code`**
 - [`OBOWIAZ-PLAYTEST-GATE.md`](OBOWIAZ-PLAYTEST-GATE.md)
 - [`OBOWIAZ-ZAKRES-RAPORTU.md`](OBOWIAZ-ZAKRES-RAPORTU.md)

@@ -49,7 +49,7 @@ assert(duzy.w * duzy.h === 40320, 'Duży → 40320 heksów');
 
 const eDims = M.eStartHexDims('Duży');
 assert(eDims && eDims[0] === 240 && eDims[1] === 168, 'Panel-E Duży hex dims');
-assert(M.eStartMiastaPanstwa('Duży') === 14, 'Panel-E Duży miasta_panstwa=14');
+assert(M.eStartMiastaPanstwa('Duży') === 6, 'Panel-E Duży miasta_panstwa=6');
 
 for (const label of M.ROZMIAR_MENU_LABELS) {
   const key = M.rozmiarFromMenuLabel(label);

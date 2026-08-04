@@ -27,6 +27,7 @@ Napisz: działaj / 1 / 2 / 3 (albo inną dyspozycję).
 4. **Nie czekaj** aż Maciej zapyta „co dalej?” — blok jest obowiązkowy.
 5. Wyjątek: Maciej wyraźnie kończy sesję („stop”, „na dziś”, „wyłączam komputer”) — wtedy krótki status bez menu.
 6. Nie mylić z ABC gameplay — to **kolejka operacyjna**, nie decyzja produktowa A/B/C.
+7. Gdy paczka jest **do testu w `gra-robocza/`** — **najpierw** banner z `.cursor/rules/gotow-do-testu.mdc`, **potem** (opcjonalnie) ten blok „Następny krok”. Bez bannera Maciej nie wie, że może testować.
 
 ## Przykład
 

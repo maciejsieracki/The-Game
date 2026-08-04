@@ -7,9 +7,10 @@ alwaysApply: true
 
 # Routing modeli — oszczędność tokenów (NIENEGOCJOWALNE)
 
-**Zasada (Maciej 2026-06-28, korekta 2026-07-27, doprecyzowanie 2026-07-28, deploy 2026-07-29):**
+**Zasada (Maciej 2026-06-28, korekta 2026-07-27, doprecyzowanie 2026-07-28, deploy 2026-07-29, ZWIS 2026-08-02):**
 - **Grok 4.5** (czat główny) = mózg: **rozkminianie, planowanie, kontrola** — oraz **jedyny**, kto robi **deploy**.
 - **`composer-2.5`** (subagent) = ręce: **cała pozostała praca** (kod, audyt, błędy, testy, refaktory, dokumentacja decyzyjna…) — **bez deployu**.
+- **1× ZWIS subagenta** → Grok **sam finalizuje temat** (bez restartu kolejnym Composerem) — `subagent-watchdog.mdc`.
 
 **⛔ `composer-2.5-fast` — NIE UŻYWAĆ** (Maciej 2026-07-27: za drogi). Jedyny model subagenta implementacyjnego: **`composer-2.5`**.
 
@@ -35,6 +36,18 @@ alwaysApply: true
 - NIE `git push` deployowego bez Groka
 
 **Composer po zakończeniu pracy** raportuje do Groka: **„gotowe do deployu"** + lista zmienionych plików + wynik testów — i **czeka** na deploy przez Groka.
+
+## Po skończeniu pracy w źródłach — NIE MILCZEĆ (Maciej 2026-08-02)
+
+**ZAKAZ:** skończyć kod/testy i siedzieć cicho „czekając na deploy”, aż Maciej sam przypomni.
+
+**OBOWIĄZEK Groka (ta sama tura, gdy źródła gotowe):**
+1. Napisz w czacie: **`✅ Gotowe w źródłach`** + 1 linia co (temat).
+2. **Zapytaj:** **„Wrzucić na ROBOCZA?”** (albo: deploy teraz / jeszcze nie).
+3. Deploy / **GOTÓW DO TESTU** + md5 — **dopiero** po tak / „deploy” / równoważnym haśle.
+4. Po deployu: **natychmiast** banner **GOTÓW DO TESTU** (md5 + Ctrl+F5 + Nowa gra) — bez czekania na kolejne „a mogę testować?”.
+
+**ZAKAZ:** mówić „czekam na Ciebie” bez pytania o deploy, gdy paczka już gotowa.
 
 ## Kiedy OBOWIĄZKOWO subagent `composer-2.5`
 
