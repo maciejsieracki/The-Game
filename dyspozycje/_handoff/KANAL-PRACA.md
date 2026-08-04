@@ -1,3 +1,10 @@
+## [23:25 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 222 132401ef
+|- md5: 132401efa7a83d8e55d33325fe52ba6b · stempel: ROBOCZA · 2026-08-04 23:25
+|- Batch: R-BATTLE-TEMPO-UI · R-BUDYNKI-NIEAKTYWNE · R-BUDOWA-ZROWNOWAZONE-TRYB · R-CITY-PILL-SHIELD-EMBLEM (PR #97 #98 #85 #83)
+|- Bramki: tsc 0 · inactive 4/4 · auto-manage 45/45 · city-map-badge 13/13 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej — **najpierw git pull**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
 ## [20:00 PL, 2026-08-04] CLOUD → Maciej — R-BUDOWA-ZROWNOWAZONE-TRYB (kod → FALA 222)
 - Q1=A: zrównoważony = osobny tryb auto (nie 6. priorytet typów)
 - Branch: `cursor/fix-budowa-zrownowazone-tryb-63a1`

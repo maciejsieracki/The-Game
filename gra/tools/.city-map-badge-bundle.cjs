@@ -26,6 +26,16 @@ __export(city_map_badge_entry_exports, {
 });
 module.exports = __toCommonJS(city_map_badge_entry_exports);
 
+// src/render/hexutil.ts
+var HEX_R = 1;
+var SQRT3 = Math.sqrt(3);
+
+// src/render/unitOwnerEmblem.ts
+var EMBLEM_SPRITE_SIZE = 0.36 * HEX_R;
+var EMBLEM_X = -0.5 * HEX_R;
+var EMBLEM_Y = 0.42 * HEX_R;
+var EMBLEM_Z = 0.2 * HEX_R;
+
 // src/render/cityMapStatChip.ts
 var CIV_INITIALS = {
   grecy: "G",
@@ -52,9 +62,9 @@ var CIV_INITIALS = {
 };
 function defenseTierFromCity(builtBuildingIds, maMur) {
   const built = builtBuildingIds ?? [];
-  if (built.includes("fort")) return 2;
-  if (built.includes("mury") || built.includes("palisada")) return 1;
-  if (maMur === true) return 1;
+  if (built.includes("mury") || built.includes("fort")) return 2;
+  if (built.includes("palisada")) return 1;
+  if (maMur === true) return 2;
   return 0;
 }
 function civInitialForIconId(ikonaId) {

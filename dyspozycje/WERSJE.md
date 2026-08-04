@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 4d17d869 - 2026-08-04 23:04 - FALA 221: dyplo flex/EOT + dobra-kat + trzoda ×1.5 + PW sum/Przyjmij/przecinek + Zwiedzaj highlight - **AKTUALNA**
+## ROBOCZA 132401ef - 2026-08-04 23:25 - FALA 222: tempo bitwy ±/komputer + czerwone budynki + zrównoważony tryb + city pill - **AKTUALNA**
+|- md5 (pelne): 132401efa7a83d8e55d33325fe52ba6b · stempel: ROBOCZA · 2026-08-04 23:25
+|- **FALA 222.** (1) R-BATTLE-TEMPO-UI Q1=A Q2=B — Pauza/−/+/komputer, ×N w tooltipie, drabina do ×512. (2) R-BUDYNKI-NIEAKTYWNE Q1=A Q2=A+C Q3=A — czerwona nazwa + `Brak: …` (Spichlerz/Mennica/deposit). (3) R-BUDOWA-ZROWNOWAZONE-TRYB Q1=A — zrównoważony = osobny tryb auto. (4) R-CITY-PILL-SHIELD-EMBLEM — tarcza palisada/mury + emblemat civ. Na bazie FALA 221.
+|- tsc 0 · owned-building-inactive 4/4 · auto-manage 45/45 · city-map-badge 13/13 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA 4d17d869 - 2026-08-04 23:04 - FALA 221: dyplo flex/EOT + dobra-kat + trzoda ×1.5 + PW sum/Przyjmij/przecinek + Zwiedzaj highlight - **ZASTĄPIONA** (→ 132401ef)
 |- md5 (pelne): 4d17d86943cbd010c6df3ed7d7517f81 · stempel: ROBOCZA · 2026-08-04 23:04
 |- **FALA 221.** (1) R-EOT-EVENT-DEFER=A — wydarzenia EOT na start następnej tury. (2) R-DYPLO-WYMIANA-FLEX: one-way, qty edit, jedno Przyjmij, Usuń. (3) R-DYPLO-DOBRA-KAT Q1–Q3=A — akordeon Surowce/Technologie/Inne. (4) R-TRZODA-SCALE-MAP-Q1=B — pastwisko ×1,5. (5) R-DYPLO-STOL-PW-SUM + PRZYJMIJ-TRADE + PW-PRZECINEK. (6) R-SCOUT-ZWIEDZAJ-HIGHLIGHT. Na bazie FALA 220.
 |- tsc 0 · trade-flex 8/8 · eot-defer 5/5 · goods-kat 8/8 · stol-pw-sum 22/22 · acceptance 225/225 · negotiation-table 54/54 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.

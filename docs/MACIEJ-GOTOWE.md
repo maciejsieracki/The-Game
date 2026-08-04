@@ -1,3 +1,4 @@
+- **2026-08-04 23:25** — ✅ **FALA 222** ROBOCZA `132401ef` — tempo bitwy ±/komputer + czerwone budynki (brak surowców) + zrównoważony tryb budowy + city pill (tarcza/emblemat). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
 ﻿- **2026-08-04 ~23:20** — ✅ Gotowe w kodzie (bez deploy): **R-BUDYNKI-NIEAKTYWNE** — czerwona nazwa w Wybudowane + tooltip `Brak: …` (Spichlerz I/II, Mennica, deposit runtime). Branch `cursor/feat-budynki-nieaktywne-63a1`. Napisz **deploy**.
 - **2026-08-04 23:04** — ✅ **FALA 221** ROBOCZA `4d17d869` — EOT defer + dyplo flex + dobra-kat + trzoda×1.5 + PW sum/Przyjmij/przecinek + Zwiedzaj highlight. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
 - **2026-08-04 ~22:10** — ✅ Gotowe w kodzie (bez deploy): **R-DYPLO-PW-PRZECINEK** — panel PW bez śmieci float (−10,4% zamiast −10.400000000000006%). Branch `cursor/fix-dyplo-pw-przecinek-63a1`. Napisz **deploy**.
