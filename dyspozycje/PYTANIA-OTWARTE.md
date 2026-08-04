@@ -8,9 +8,9 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **WDROŻONE (kod)** 2026-08-04 — czeka deploy
+## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **NA MAIN** (`f940f61`, PR #82) — czeka **deploy** FALA 215
 
-Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md).
+Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md). ROBOCZA nadal FALA 214.
 
 ---
 
