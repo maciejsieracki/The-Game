@@ -19,6 +19,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 3. Maciej: **`ID + A|B|C`** → dopiero commit.
 4. **`deploy`** (hasło) → dopiero ROBOCZA / `WERSJE.md`.
 
+| R-REKRUT-LUDNOSC-UI | 2026-08-04 | Wrażenie: ludność miasta spada po rekrutacji wojska | **AUDYT OK** — rekrutacja **nie** odejmuje pop (`jednostka_koszt_ludnosci=0`); ubytek = głód (−1/tura bez dopłaty) / założenie miasta / bunt | UI kłamie: „−1 obywatela” w `cityPanel.ts` (~4749, ~7316) — **CZEKA FIX** · `docs/decyzje/R-REKRUT-LUDNOSC-UI.md` |
 | R-BUDYNKI-NIEAKTYWNE | 2026-08-04 | Wybudowane budynki bez surowca runtime (Spichlerz, Mennica, deposit gate) → czerwona nazwa + tooltip Brak: … | **ZDEPLOYOWANE `132401ef`** (FALA 222) | Q1=A · Q2=A+C · Q3=A · `docs/decyzje/R-BUDYNKI-NIEAKTYWNE.md` · branch `cursor/feat-budynki-nieaktywne-63a1` |
 | R-DYPLO-PW-PRZECINEK | 2026-08-04 | Panel PW: śmieci float (−10.400000000000006%) → format jak Skarbiec | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| `docs/decyzje/R-DYPLO-PW-PRZECINEK.md` · czeka deploy |
 | R-EOT-EVENT-DEFER | 2026-08-04 | Skutki EOT (wydarzenia/toasty) odłóż na start następnej tury gracza | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| Q1=**A** · `docs/decyzje/R-EOT-EVENT-DEFER.md` · branch `cursor/feat-eot-dyplo-flex-63a1` |
