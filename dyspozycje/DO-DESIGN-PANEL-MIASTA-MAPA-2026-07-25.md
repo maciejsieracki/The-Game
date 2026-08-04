@@ -86,6 +86,24 @@ Uzasadnienie każdego punktu wynika wprost z sekcji 3 — to nie są życzenia e
 - Czy elementy 2–6 mają być **zawsze widoczne** (ryzyko zagracenia pigułki przy dużym zoom-out, wiele miast na ekranie) czy **progresywne** (np. tylko przy hover/zbliżeniu — analogicznie do reszty gry, gdzie `hoverDetailDock.ts` dostarcza bogatszy widok na żądanie). Zalecenie: Design dostarcza OBA warianty (always-on „skrócony" + hover „rozszerzony"), decyzję podejmie Maciej na podglądzie.
 - Czy przenieść rysowanie pigułki z ręcznego Canvas 2D na system ikon brand (`brandIconSvg`/`mapResourceIconSvg`) — to pytanie techniczne do integratora, ale wpływa na to, jakie assety Design powinien dostarczyć (SVG do wektorowego renderu vs. bitmapy do wpalenia w Canvas).
 
+### §4 addendum — decyzja Macieja 2026-08-04 (R-DESIGN-PANEL-MIASTA Q1A Q2C Q3A)
+
+**Zatwierdzony zakres (Q2=C):**
+
+| Warstwa | Elementy |
+|---------|----------|
+| **Always-on MUST** | Nazwa + populacja · 3 stany obrony (brak muru / mur / mur+Cytadela) · ikona cywilizacji |
+| **Hover rozszerzony** (obowiązkowy deliverable) | Kategoria produkcji (budynek/jednostka/cud) · ostrzeżenie surowców (blokada produkcji / cap magazynu) |
+
+**Deliverable Design — 3 klatki** (nie 2):
+1. **Baseline** — spokój, brak muru, brak produkcji.
+2. **Pełny MUST** — always-on: mur+Cytadela, ikona cywu, nazwa+pop.
+3. **Hover rozszerzony** — MUST + kategoria produkcji + ostrzeżenie surowców.
+
+**Kolejność pracy (Q1=A, Q3=A):** Design dostarcza makieta v2 do `docs/ux/claude-design/_dist/...` → **dopiero wtedy** kod (`działaj`); deploy osobno, nie blokuje FALA 207.
+
+Pełny ECHO: `docs/decyzje/R-DESIGN-PANEL-MIASTA.md`.
+
 ---
 
 ## 5. OGRANICZENIA TECHNICZNE (żeby Design projektował w realnych ramach)
@@ -100,10 +118,10 @@ Uzasadnienie każdego punktu wynika wprost z sekcji 3 — to nie są życzenia e
 ## 6. FORMAT ODDANIA (konwencja jak w poprzednich paczkach DO-DESIGN)
 
 - **Punkt wyjścia dla Design:** ten dokument + stary mockup (sekcja 2) + realny zrzut ekranu gry z playtestu Macieja 2026-07-25 (dołączony w rozmowie z Maciejem — poproś go bezpośrednio, nie ma kopii w repo).
-- **Deliverable:** nowa makieta `.dc.html`, np. `The Game - HUD Miasto na mapie v2 (1E).dc.html`, minimum **2 klatki**:
+- **Deliverable:** nowa makieta `.dc.html`, np. `The Game - HUD Miasto na mapie v2 (1E).dc.html`, **3 klatki** (decyzja Maciej 2026-08-04, Q2=C):
   1. Stan spokoju — brak muru, brak produkcji w toku (baseline).
-  2. Stan „pełny" — mur+Cytadela, produkcja w toku, ostrzeżenie surowca — żeby integrator zobaczył od razu wszystkie stany naraz, nie musiał się domyślać.
-  Jeśli Design zdecyduje się na wariant progresywny (hover) — dodatkowa 3. klatka pokazująca stan rozszerzony.
+  2. Stan „pełny MUST" — always-on: mur+Cytadela, ikona cywu, nazwa+pop.
+  3. Stan hover rozszerzony — MUST + kategoria produkcji + ostrzeżenie surowców.
 - **Styl:** 1E (Painted Imperial), tokeny wyłącznie z `eksport/tokens.css` / `brand-book/` (spójne z resztą kanonu — złoto `#e8d88a`, tła grafitowe, Georgia na nazwach).
 - **Zapis:** wg utartej struktury `docs/ux/claude-design/_dist/<NAZWA>-2026-07-25/brand-book/KANON/mockupy/` + aktualizacja `CANON.md` i huba, zgodnie z konwencją z poprzednich zleceń (`docs/ux/claude-design/DO-DESIGN-2026-07-23/DYSPOZYCJA-DLA-DESIGN-TURA-2.md`).
 - **Po dostarczeniu:** integrator aktualizuje `dyspozycje/REJESTR-PROSB-I-ZADAN.md` (status `R-DESIGN-PANEL-MIASTA`) i wdraża w `gra/src/render/cityMapStatChip.ts` / `cityMapOutline.ts` / `render/cities.ts`.

@@ -1,3 +1,11 @@
+## [05:35 PL, 2026-08-04] CLOUD → Design / Maciej — ECHO R-DESIGN-PANEL-MIASTA (docs only)
+- **Q1=A** — czekaj na makieta Design v2; NIE kodować chipu teraz
+- **Q2=C** — MUST (nazwa+pop, 3 stany obrony, ikona cywu) + hover (produkcja + ostrzeżenie surowców)
+- **Q3=A** — po Design: kod od razu (`działaj`); deploy osobno (nie blokuje FALA 207)
+- Deliverable Design: **3 klatki** (baseline · pełny MUST · hover rozszerzony) → `docs/ux/claude-design/_dist/...`
+- Docs: `docs/decyzje/R-DESIGN-PANEL-MIASTA.md` · addendum `DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md` §4
+CZEKAM-NA: Design makieta v2
+
 ## [00:30 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 207 `47a2e73b`
 - md5: `47a2e73b266037c1f7b21406370a78b0` · stempel: ROBOCZA · 2026-08-04 00:30
 - Handel AI + Połącz · Design Badania · Klatka D · kolonizacja AI (pop≥5, dystans 4, surge)

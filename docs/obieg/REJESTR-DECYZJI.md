@@ -252,3 +252,6 @@ Po wdrożeniu ten sam wiersz przechodzi w górę statusów aż do ✅ (Master). 
 | **R-AI-KOLONIZACJA-Q2** | 2026-08-03 | **A** — max 1 miasto/turę + surge 2 gdy brak wolnych MP | D | 🟢 **WDROŻONA (kod)** | `ai.ts` · `main.ts` | R-AI-KOLONIZACJA |
 | **R-AI-KOLONIZACJA-Q3** | 2026-08-03 | **B** — agresja epok 1–3; potem founding poza zasięgiem | D | 🟢 **WDROŻONA (kod)** | `ai.ts` | R-AI-KOLONIZACJA |
 | **R-AI-KOLONIZACJA-DYSTANS** | 2026-08-03 | **4 hex** — min_dystans_miast + ekspansja_min_dystans_miast | D | 🟢 **WDROŻONA (kod)** | `miasto-params.json` · `ai-params.json` | gracz + AI |
+| **R-DESIGN-PANEL-MIASTA-Q1** | 2026-08-04 | **A** — czekaj na makieta Design v2; NIE kodować chipu teraz | Design+E | 🟡 **ZAPISANA** | `docs/decyzje/R-DESIGN-PANEL-MIASTA.md` | blokada do `_dist/` |
+| **R-DESIGN-PANEL-MIASTA-Q2** | 2026-08-04 | **C** — MUST (nazwa+pop, 3 stany obrony, ikona cywu) + hover (produkcja + ostrzeżenie surowców) | Design+E | 🟡 **ZAPISANA** | j.w. · 3 klatki deliverable | always-on + hover |
+| **R-DESIGN-PANEL-MIASTA-Q3** | 2026-08-04 | **A** — po Design: kod od razu; deploy osobno (nie blokuje FALA 207) | CLOUD | 🟡 **ZAPISANA** | j.w. | czeka Design v2 |
