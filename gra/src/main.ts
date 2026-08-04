@@ -998,7 +998,11 @@ import {
   startPeaceTreatyLock,
   filterAllianceObligationsRespectingPeaceLock,
 } from './game/diplomacy-peace-lock';
-import { computePlayerAcceptanceSides } from './game/diplomacy-acceptance-points';
+import {
+  computeIncomingPlayerAcceptNetPw,
+  computePlayerAcceptanceSides,
+  previewIncomingPlayerAccept,
+} from './game/diplomacy-acceptance-points';
 import {
   basketItemsAffordableExtended,
   buildClampedAiTradeAgreementPayload,
@@ -11329,11 +11333,25 @@ async function boot(): Promise<void> {
     function previewNegotiationEntry(
       entry: PendingNegotiation,
     ): { accepted: boolean; reason?: string } {
+      const incoming = entry.awaitingOwnerId === 0;
+      if (incoming) {
+        const aiPartnerId = negotiationPartnerOwnerId(entry.proposerOwnerId, entry.responderOwnerId);
+        const rel = getDiploRelation(0, aiPartnerId);
+        const relTotal = audienceRelTotal(aiPartnerId, rel);
+        const playerAccept = previewIncomingPlayerAccept(
+          entry.actionId,
+          entry.payload,
+          relTotal,
+          {
+            difficulty: _menuDifficulty,
+            proposerOwnerId: entry.proposerOwnerId,
+            tempoGry: player.tempoGry ?? 'standardowa',
+          },
+        );
+        if (playerAccept) return playerAccept;
+      }
       const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
       const result = evaluateProposal(negotiationAsProposal(entry), ctx);
-      if (!result.accepted && entry.actionId === 'umowa_handlowa') {
-        return { accepted: true, reason: 'Propozycja traktatu handlowego' };
-      }
       return { accepted: result.accepted, reason: result.reason };
     }
 
@@ -11363,13 +11381,20 @@ async function boot(): Promise<void> {
         }
         const responderPreview = previewNegotiationEntry(entry);
         const legacyAccess = proposalHasResourceAccess(entry.payload);
-        // Incoming: gracz może przyjąć propozycję AI nawet gdy jest dla niego niekorzystna
-        // (Maciej 2026-08-02). evaluateProposal/fair-min dotyczy auto-akceptacji AI, nie Przyjmij.
-        const canAccept = direction === 'incoming' && !legacyAccess;
+        const p = entry.payload;
+        const incomingNetPw = incoming
+          ? computeIncomingPlayerAcceptNetPw(entry.actionId, p, relTotal, {
+            difficulty: _menuDifficulty,
+            proposerOwnerId: entry.proposerOwnerId,
+            tempoGry: player.tempoGry ?? 'standardowa',
+          })
+          : null;
+        // Incoming wymiana PN: net ≥ 0 (R-PW-ACCEPT-OVERPAY-Q1=A); inne incoming — gracz decyduje.
+        const canAccept = direction === 'incoming' && !legacyAccess
+          && (incomingNetPw == null || incomingNetPw.netPw >= 0);
         const awaitingAiResponse = direction === 'own' && entry.awaitingOwnerId !== 0;
         const dealDetails = negotiationSummary(entry);
         const canCounter = direction === 'incoming' && canCounterNegotiation(entry);
-        const p = entry.payload;
         const acceptance = computePlayerAcceptanceSides(entry.actionId, p, relTotal, incoming, {
           difficulty: _menuDifficulty,
           proposerOwnerId: entry.proposerOwnerId,

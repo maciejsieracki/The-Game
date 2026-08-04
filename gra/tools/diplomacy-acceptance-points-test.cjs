@@ -16,6 +16,8 @@ fs.writeFileSync(ENTRY, `
 export {
   treatyBaseAcceptancePn,
   computePlayerAcceptanceSides,
+  computeIncomingPlayerAcceptNetPw,
+  previewIncomingPlayerAccept,
   isPlayerIncomingGift,
   playerSideHasBasketOffer,
   acceptancePointsCatalog,
@@ -359,6 +361,42 @@ ok(incomingPanel.includes('+120'), 'incoming panel: +120 netto');
 ok(!incomingPanel.includes('Brakuje'), 'incoming panel: bez Brakuje');
 ok(incomingPanel.includes('Bilans (netto)'), 'incoming panel: etykieta netto');
 ok(incomingPanel.includes('da-pn-balance-bar ok'), 'incoming panel: tone ok przy canAccept');
+
+// R-PW-ACCEPT-OVERPAY-Q1=A: incoming overpay (160 vs 100) → accept; underpay → block
+const overpayPayload = {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 160 }],
+};
+const overpayPreview = mod.previewIncomingPlayerAccept('handel', overpayPayload, 100);
+ok(overpayPreview != null && overpayPreview.accepted, 'incoming overpay handel: preview accepted');
+const overpayNet = mod.computeIncomingPlayerAcceptNetPw('handel', overpayPayload, 100);
+ok(overpayNet != null && overpayNet.netPw === 60, 'incoming overpay: net +60 PW (160−100)');
+
+const underpayPayload = {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 160 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }],
+};
+const underpayPreview = mod.previewIncomingPlayerAccept('handel', underpayPayload, 100);
+ok(underpayPreview != null && !underpayPreview.accepted, 'incoming underpay handel: preview blocked');
+ok(underpayPreview.reason.includes('nieuczciwa'), 'incoming underpay: reason mentions unfair');
+const underpayNet = mod.computeIncomingPlayerAcceptNetPw('handel', underpayPayload, 100);
+ok(underpayNet != null && underpayNet.netPw === -60, 'incoming underpay: net −60 PW');
+
+// AI evaluating player offer still uses fair-min (no regression on outgoing path)
+const playerOfferSides = mod.computePlayerAcceptanceSides('handel', underpayPayload, 100, false);
+ok(!playerOfferSides.their.accepted, 'outgoing underpay: AI side not accepted (fair-min)');
+
+const underpayRow = {
+  direction: 'incoming',
+  actionLabel: 'Wymiana',
+  acceptanceMy: mod.computePlayerAcceptanceSides('handel', underpayPayload, 100, true).my,
+  acceptanceTheir: mod.computePlayerAcceptanceSides('handel', underpayPayload, 100, true).their,
+  canAccept: false,
+};
+const underpayPanelData = mod.balancePanelDataFromRow(underpayRow, 0);
+const underpayPanel = mod.renderPnBalancePanelHtml(underpayPanelData);
+ok(underpayPanel.includes('da-pn-balance-bar no'), 'incoming underpay panel: tone no');
+ok(underpayPanel.includes('nieuczciwa'), 'incoming underpay panel: unfair message');
 
 // Traktat handlowy @ rel 52 — UI asymetria (Maciej 2026-08-04)
 ok(mod.effectiveTreatyPnRequired(80, 52) === 42, 'umowa_handlowa @ rel 52: 80 → 42 PW gracz');

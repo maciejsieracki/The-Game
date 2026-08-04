@@ -394,6 +394,63 @@ export function computePlayerAcceptanceSides(
   return { my, their, isGift };
 }
 
+/** Akcje przychodzącej wymiany PN — bramka Przyjmij wg netto (R-PW-ACCEPT-OVERPAY-Q1=A). */
+const INCOMING_NET_PW_ACTIONS = new Set<ProposalActionId>([
+  'handel',
+  'umowa_handlowa',
+  'umowa_szlakow',
+]);
+
+export function usesIncomingPlayerNetPwGate(actionId: ProposalActionId): boolean {
+  return INCOMING_NET_PW_ACTIONS.has(actionId);
+}
+
+export type IncomingPlayerAcceptNetPw = {
+  netPw: number;
+  myOfferPn: number;
+  theirOfferPn: number;
+};
+
+/**
+ * Netto PW przy przyjmowaniu oferty AI: myOffer − theirOffer (jak UI / incomingTradeNetBalancePw).
+ * Zwraca null gdy akcja nie podlega tej bramce lub brak koszyka (handel / umowa_szlakow).
+ */
+export function computeIncomingPlayerAcceptNetPw(
+  actionId: ProposalActionId,
+  payload: ProposalPayload,
+  relTotal: number,
+  opts?: { difficulty?: GameDifficulty; proposerOwnerId?: number; tempoGry?: import('./tech-tempo').TempoGry | number },
+): IncomingPlayerAcceptNetPw | null {
+  if (!usesIncomingPlayerNetPwGate(actionId)) return null;
+  const acceptance = computePlayerAcceptanceSides(actionId, payload, relTotal, true, opts);
+  const mode = acceptance.my.mode;
+  if (actionId !== 'umowa_handlowa' && mode !== 'basket' && mode !== 'mixed') {
+    return null;
+  }
+  const bilateralPw = bilateralTreatyDisplayPw(acceptance.my, acceptance.their);
+  const myOfferPn = sideDisplayOfferPw(acceptance.my, bilateralPw);
+  const theirOfferPn = sideDisplayOfferPw(acceptance.their, bilateralPw);
+  return { netPw: myOfferPn - theirOfferPn, myOfferPn, theirOfferPn };
+}
+
+/** Podgląd Przyjmij dla gracza-respondenta — net ≥ 0 (bez pnDealAcceptedByAi). */
+export function previewIncomingPlayerAccept(
+  actionId: ProposalActionId,
+  payload: ProposalPayload,
+  relTotal: number,
+  opts?: { difficulty?: GameDifficulty; proposerOwnerId?: number; tempoGry?: import('./tech-tempo').TempoGry | number },
+): { accepted: boolean; reason?: string } | null {
+  const net = computeIncomingPlayerAcceptNetPw(actionId, payload, relTotal, opts);
+  if (!net) return null;
+  if (net.netPw >= 0) {
+    return { accepted: true };
+  }
+  return {
+    accepted: false,
+    reason: `Przewaga u Ciebie — oferta nieuczciwa dla partnera (${Math.abs(net.netPw)} PW)`,
+  };
+}
+
 /** Eksport pełnej tabeli konfiguracyjnej (dokumentacja / testy). */
 export function acceptancePointsCatalog(): AcceptanceConfig {
   return CONFIG;
