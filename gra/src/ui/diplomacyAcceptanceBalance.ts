@@ -70,8 +70,9 @@ function relationDealText(relTotal: number, context: RelationDealContext): strin
     return `musisz dać więcej (×${mult} PW), by oferta była uczciwa`;
   }
   if (modPct === 0) return 'balans (0% — cena bazowa)';
-  if (modPct > 0) return `deal tańszy o ${modPct}%`;
-  return `deal droższy o ${Math.abs(modPct)}%`;
+  const signed = modPct > 0 ? `−${modPct}%` : `+${Math.abs(modPct)}%`;
+  if (modPct > 0) return `deal tańszy (${signed} do progu PW)`;
+  return `deal droższy (${signed} do progu PW)`;
 }
 
 function resolveRelationPanelContext(side: AcceptanceSideBalance): RelationDealContext {
@@ -93,6 +94,9 @@ export function renderRelationDealModRowHtml(
   const relDisplay = context === 'trade' && relTotal >= 100
     ? 'Relacja ≥100'
     : `Relacja ${relTotal}`;
+  const pctBadge = modPct !== 0
+    ? '<span class="da-pn-rel-mod-pct">' + esc(modPct > 0 ? '−' + modPct + '%' : '+' + Math.abs(modPct) + '%') + '</span>'
+    : '';
   const balanceNote = context === 'treaty' && modPct !== 0
     ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>'
     : '';
@@ -101,6 +105,7 @@ export function renderRelationDealModRowHtml(
   return (
     '<div class="da-pn-rel-mod ' + tone + '"' + tip + '>'
     + '<span class="da-pn-rel-mod-label">Wpływ Relacji na deal</span>'
+    + pctBadge
     + '<span class="da-pn-rel-mod-text">'
     + '<strong>' + esc(relDisplay) + '</strong>'
     + ' · <span class="da-pn-rel-mod-deal">' + esc(dealText) + '</span>'
@@ -263,6 +268,23 @@ function verdictHtml(data: PnBalancePanelData): { html: string; tone: 'ok' | 'no
   return { tone: 'no', html: 'Brakuje u nich: ' + their.statusLabel };
 }
 
+function treatyMetaHtml(
+  treatyEffectivePw: number,
+  relTotal: number,
+  treatyMetaLabel: string,
+  treatyBasePw?: number,
+  basketNet?: number,
+): string {
+  const base = treatyBasePw ?? 0;
+  const modPart = base > 0 && base !== treatyEffectivePw
+    ? 'baza ' + base + ' → ' + treatyEffectivePw + ' PW @ Rel ' + relTotal
+    : treatyEffectivePw + ' PW @ Rel ' + relTotal;
+  const basketPart = basketNet != null && (basketNet > 0 || (basketNet === 0 && base > 0))
+    ? ' · koszyk netto ' + (basketNet > 0 ? '+' + basketNet : '0') + ' PW'
+    : '';
+  return '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ': ' + modPart + basketPart + '</div>';
+}
+
 /** Główny panel PW — widoczny między kolumnami My / Oni na stole. */
 export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): string {
   if (!data) {
@@ -293,10 +315,10 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     ? '<span class="da-pn-bal-more">+' + data.extraOnTable + ' inna na stole</span>'
     : '';
 
-  const treatyNote = their.treatyEffectivePn != null && their.treatyEffectivePn > 0
-    ? '<div class="da-pn-bal-meta">Traktat: wym. '
-      + their.treatyEffectivePn + ' PW'
-      + '</div>'
+  const treatyEff = data.myBalance?.treatyEffectivePn ?? their.treatyEffectivePn;
+  const treatyBase = data.myBalance?.treatyBasePn ?? their.treatyBasePn ?? 0;
+  const treatyNote = treatyEff != null && treatyEff > 0
+    ? treatyMetaHtml(treatyEff, their.relCurrent ?? data.myBalance?.relCurrent ?? 100, 'Traktat', treatyBase)
     : '';
 
   const relModRow = relationRowFromBalance(their, data.myBalance);
@@ -411,6 +433,7 @@ export function renderPnBalancePanelForTreaty(
   actionLabel: string,
   relRequired?: number,
   treatyMetaLabel = 'Traktat',
+  treatyBasePw?: number,
 ): string {
   const basketNet = Math.max(0, basketGivePn - basketReceivePn);
   const myDisplay = treatyEffectivePw + basketGivePn;
@@ -457,11 +480,7 @@ export function renderPnBalancePanelForTreaty(
     + '</div>'
     + '</div>'
     + renderRelationDealModRowHtml(relTotal, 'treaty')
-    + '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ': ' + treatyEffectivePw + ' PW @ Rel ' + relTotal
-    + (basketGivePn > 0 || basketReceivePn > 0
-      ? ' · koszyk netto ' + (basketNet > 0 ? '+' + basketNet : '0') + ' PW'
-      : '')
-    + '</div>'
+    + treatyMetaHtml(treatyEffectivePw, relTotal, treatyMetaLabel, treatyBasePw, basketNet)
     + relNote
     + '<div class="da-pn-bal-verdict ' + balCls + '">' + esc(verdict) + '</div>'
     + '</div>'

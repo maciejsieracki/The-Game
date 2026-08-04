@@ -455,6 +455,11 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rel-row .v{font-weight:700;font-variant-numeric:tabular-nums;}
 .da-rel-row.trust .v{color:#7ad0a0;} .da-rel-row.respect .v{color:#e8d88a;}
 .da-rel-row.credibility .v{color:#9ab8e8;}
+.da-rel-row.relacja-total{margin-top:6px;border-top:1px dashed rgba(232,216,138,.12);padding-top:6px;}
+.da-rel-row.relacja-total .v{color:#e8d88a;font-weight:700;}
+.da-rel-sum-hint{font-size:0.58em;color:#6a6058;margin-left:4px;}
+.da-rbar.relacja-total{background:rgba(232,216,138,.12);}
+.da-rbar.relacja-total i{background:linear-gradient(90deg,#8a7050,#e8d88a);}
 .da-rbar{height:6px;border-radius:4px;background:rgba(0,0,0,.4);overflow:hidden;margin-bottom:6px;border:1px solid rgba(0,0,0,.3);}
 .da-rbar i{display:block;height:100%;}
 .da-rbar.trust i{background:linear-gradient(90deg,#2f7a4a,#5ad07a);}
@@ -599,6 +604,11 @@ ${DIPLO_1E_SHARED_CSS}
 .da-pn-bal-meta.warn{color:#e0a868;}
 .da-pn-rel-mod{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;margin-top:8px;padding:6px 10px;
   border-radius:7px;border:1px solid rgba(140,150,165,.25);background:rgba(0,0,0,.18);cursor:help;}
+.da-pn-rel-mod-pct{font-size:0.72em;font-weight:800;padding:2px 7px;border-radius:5px;
+  background:rgba(0,0,0,.25);color:#e8d88a;font-variant-numeric:tabular-nums;}
+.da-pn-rel-mod.worse .da-pn-rel-mod-pct{color:#e0a868;}
+.da-pn-rel-mod.better .da-pn-rel-mod-pct{color:#7ad0a0;}
+.da-deal-pw-base{font-size:0.85em;color:#8a8070;font-weight:500;}
 .da-pn-rel-mod-label{font-size:0.58em;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8a8070;flex:0 0 auto;}
 .da-pn-rel-mod-text{font-size:0.7em;line-height:1.35;color:#d8d0c0;}
 .da-pn-rel-mod-text strong{color:#f0e8d8;font-weight:700;}
@@ -1105,6 +1115,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
         '<div class="da-sec-title">Relacje z Tobą</div>' +
         progressBarHtml('Zaufanie', relScores.zaufanie, 100, undefined, 'trust') +
         progressBarHtml('Respekt', relScores.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
+        relacjaTotalHtml(st) +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
@@ -1114,6 +1125,24 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
       personalityTagsHtml(st.personalityTags) +
       bonusListHtml(otherBon) +
     '</div>'
+  );
+}
+
+/** Suma Zaufanie + Respekt (0–200) — widoczna w panelu relacji audiencji. */
+function relacjaTotalHtml(st: DiplomacyAudienceState): string {
+  const relTotal = st.relacjaTotal ?? (st.zaufanie + st.respekt);
+  const pct = Math.max(0, Math.min(100, Math.round((relTotal / 200) * 100)));
+  const tip = ' title="' + esc(
+    'Relacja = Zaufanie + Respekt (0–200). Punkt balansu: 100. '
+    + 'Wpływa na wymagane PW traktatów (±90%) i fair-min wymiany.',
+  ) + '"';
+  return (
+    '<div class="da-rel-row relacja-total"' + tip + '>'
+    + '<span>Relacja</span>'
+    + '<span class="v">' + relTotal + ' / 200</span>'
+    + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>'
+    + '</div>'
+    + '<div class="da-rbar relacja-total"><i style="width:' + pct + '%"></i></div>'
   );
 }
 
@@ -1346,12 +1375,16 @@ function tableDealSideHtml(
   if (!r.dealPayload) return '';
   const treatyLabel = bilateralTreatyLabel(r);
   const treatyPw = treatyLabel ? bilateralTreatyDisplayPw(r.acceptanceMy, r.acceptanceTheir) : undefined;
+  const treatyBasePw = treatyLabel
+    ? (r.acceptanceMy?.treatyBasePn ?? r.acceptanceTheir?.treatyBasePn)
+    : undefined;
   return renderNegotiationTableDealSideHtml(
     r.dealPayload,
     focus,
     incoming,
     treatyLabel,
     treatyPw,
+    treatyBasePw,
   );
 }
 
@@ -1538,8 +1571,10 @@ function relBreakdownHtml(st: DiplomacyAudienceState): string {
     '<div class="da-relbreak">' +
       '<div class="da-relcol pos"><h4>Za co Cię lubią</h4>' + posRows + '</div>' +
       '<div class="da-relcol neg"><h4>Za co Cię nie lubią</h4>' + negRows + '</div>' +
-      '<div class="da-relbreak-foot">Stan bieżący: <b>Zaufanie ' + relScores.zaufanie + ' / 100</b> · ' +
-        '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b></div>' +
+      '<div class="da-relbreak-foot">Stan bieżący: <b>Relacja '
+        + (st.relacjaTotal ?? (st.zaufanie + st.respekt)) + ' / 200</b> · '
+        + '<b>Zaufanie ' + relScores.zaufanie + ' / 100</b> · '
+        + '<b>Respekt ' + relScores.respekt + ' / 100</b> · nastawienie: <b>' + esc(label) + '</b></div>' +
     '</div>'
   );
 }
