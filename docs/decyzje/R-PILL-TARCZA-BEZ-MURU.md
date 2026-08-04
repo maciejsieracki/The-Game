@@ -1,6 +1,6 @@
 # R-PILL-TARCZA-BEZ-MURU — tarcza na pigułce bez widocznego muru/palisady
 
-**Status:** 🟢 WDROŻONE (kod) Q1=A · 2026-08-04 — czeka **`deploy`**  
+**Status:** ✅ ZDEPLOYOWANE `ee0e7e04` Q1=A · 2026-08-04 — ZDEPLOYOWANE FALA 223 `ee0e7e04`  
 **Zgłoszenie:** Maciej (screenshot Sparta, FALA 222) — szara tarcza na pigułce mimo braku muru/palisady na heksie.
 
 ## ECHO

@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 132401ef - 2026-08-04 23:25 - FALA 222: tempo bitwy ±/komputer + czerwone budynki + zrównoważony tryb + city pill - **AKTUALNA**
+## ROBOCZA ee0e7e04 - 2026-08-04 22:10 - FALA 223: tarcza pigułki wallKind + Zwiedzaj złota ramka od razu - **AKTUALNA**
+|- md5 (pelne): ee0e7e046c317b101ca2eb07f7e349fe · stempel: ROBOCZA · 2026-08-04 22:10
+|- **FALA 223.** (1) R-PILL-TARCZA-BEZ-MURU-Q1=A — tarcza wyłącznie z `wallKind` (= model 3D); bez `maMur`. (2) R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A — WŁ Zwiedzaj: zostań zaznaczony + złota ramka od razu (bez deselect/cycle). Na bazie FALA 222.
+|- tsc 0 · city-map-badge 19/19 · scout-auto-explore 25/25 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA 132401ef - 2026-08-04 23:25 - FALA 222: tempo bitwy ±/komputer + czerwone budynki + zrównoważony tryb + city pill - **ZASTĄPIONA** (→ ee0e7e04)
 |- md5 (pelne): 132401efa7a83d8e55d33325fe52ba6b · stempel: ROBOCZA · 2026-08-04 23:25
 |- **FALA 222.** (1) R-BATTLE-TEMPO-UI Q1=A Q2=B — Pauza/−/+/komputer, ×N w tooltipie, drabina do ×512. (2) R-BUDYNKI-NIEAKTYWNE Q1=A Q2=A+C Q3=A — czerwona nazwa + `Brak: …` (Spichlerz/Mennica/deposit). (3) R-BUDOWA-ZROWNOWAZONE-TRYB Q1=A — zrównoważony = osobny tryb auto. (4) R-CITY-PILL-SHIELD-EMBLEM — tarcza palisada/mury + emblemat civ. Na bazie FALA 221.
 |- tsc 0 · owned-building-inactive 4/4 · auto-manage 45/45 · city-map-badge 13/13 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.

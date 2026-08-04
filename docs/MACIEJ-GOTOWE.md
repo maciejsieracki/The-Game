@@ -1,3 +1,4 @@
+- **2026-08-05 00:11** — ✅ **FALA 223** ROBOCZA `ee0e7e04` — tarcza pigułki = wallKind + Zwiedzaj złota ramka od razu. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel ma być `ee0e7e04`.
 - **2026-08-04 ~22:05** — ✅ Gotowe w kodzie (bez deploy): **R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A** — Zwiedzaj zostaje zaznaczone ze złotą ramką od razu. Branch `cursor/fix-zwiedzaj-podswietlenie-63a1`. Napisz **deploy**.
 ﻿- **2026-08-04 ~21:55** — ✅ Gotowe w kodzie (bez deploy): **R-PILL-TARCZA-BEZ-MURU-Q1=A** — tarcza pigułki wyłącznie z `wallKind` (= model 3D); bez `maMur`. Branch `cursor/fix-pill-tarcza-bez-muru-63a1`. Napisz **deploy**.
 - **2026-08-04 23:25** — ✅ **FALA 222** ROBOCZA `132401ef` — tempo bitwy ±/komputer + czerwone budynki (brak surowców) + zrównoważony tryb budowy + city pill (tarcza/emblemat). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.

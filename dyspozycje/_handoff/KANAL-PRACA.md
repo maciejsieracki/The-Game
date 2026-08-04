@@ -1,3 +1,10 @@
+## [00:11 PL, 2026-08-05] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 223 ee0e7e04
+|- md5: ee0e7e046c317b101ca2eb07f7e349fe · stempel: ROBOCZA · 2026-08-04 22:10
+|- Batch: R-PILL-TARCZA-BEZ-MURU-Q1=A · R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A
+|- Bramki: tsc 0 · city-map-badge 19/19 · scout-auto-explore 25/25 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej — **najpierw git pull**, potem Ctrl+F5 + Nowa gra · stempel `ee0e7e04` · OK/BUG
+
 ## [22:05 PL, 2026-08-04] CLOUD → Maciej — R-SCOUT-ZWIEDZAJ-PODSWIETLENIE Q1=A (kod, bez deploy)
 - ECHO: Q1=A — WŁ Zwiedzaj: zostań na zwiadowcy + złota ramka od razu
 - Usunięte: clearPlayerUnitSelection + cycleToAdjacent przy enable

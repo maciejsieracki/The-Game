@@ -1,6 +1,6 @@
 # R-SCOUT-ZWIEDZAJ-PODSWIETLENIE — Zwiedzaj bez złotej ramki (vs Uśpienie)
 
-**Status:** 🟢 WDROŻONE (kod) Q1=A · 2026-08-04 — czeka **`deploy`**  
+**Status:** ✅ ZDEPLOYOWANE `ee0e7e04` Q1=A · 2026-08-04 — ZDEPLOYOWANE FALA 223 `ee0e7e04`  
 **Zgłoszenie:** Maciej (powtórne, screenshot) — Uśpienie (księżyc) ma złote podświetlenie WŁ; Zwiedzaj po kliknięciu „nic się nie dzieje”.
 
 **Powiązane:** `R-UNIT-MODE-TOGGLE-UI` · `R-SCOUT-ZWIEDZAJ-HIGHLIGHT` (FALA 221 — select nie kasuje `autoExplore`) · `R-SCOUT-ZWIEDZAJ-UX` (deselect + cykl — **nadpisane** Q1=A dla WŁ)
