@@ -19,7 +19,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 3. Maciej: **`ID + A|B|C`** → dopiero commit.
 4. **`deploy`** (hasło) → dopiero ROBOCZA / `WERSJE.md`.
 
-| R-DYPLO-WYMIANA-FLEX | 2026-08-04 | Umowa wymiany: jednostronna (bez „coś za coś”) + edycja ilości na pozycji | **CZEKA-NA-DECYZJĘ** | ABC Q1+Q2 · `docs/decyzje/R-DYPLO-WYMIANA-FLEX.md` |
+| R-DYPLO-WYMIANA-FLEX | 2026-08-04 | Stół: jednostronna wymiana · edycja qty · 1× Przyjmij/Odrzuć · Usuń ze stołu | **CZEKA-NA-DECYZJĘ** | ABC Q1–Q4 · `docs/decyzje/R-DYPLO-WYMIANA-FLEX.md` |
 | R-BUDOWA-ZROWNOWAZONE-TRYB | 2026-08-04 | Zrównoważony w produkcji = osobny tryb (nie 6. priorytet typów) | **CZEKA-NA-DECYZJĘ** | Panel PRODUKCJA: dziś `zrownowazone` w jednym rzędzie z wzrost/wojsko/… · ABC Q1 |
 | R-PROC-NUMER-ABC | 2026-08-03 | Procedura: numer tematu → ABC → commit; deploy tylko na hasło | **WDROŻONE (docs)** | Pliki: `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`, `.cursor/rules/numer-abc-commit-deploy.mdc`, START-TU, CLAUDE, PAMIEC, KOMENDY |
 | R-PROC-ABC-FULL-ID | 2026-08-03 | W ABC/Ask/ECHO **zakaz gołego Q1** — zawsze pełne ID (`R-TEMAT-Qn`) bo wiele wątków | **WDROŻONE (docs)** | Maciej: „nie wystarczy Q1… sam nie będziesz wiedział”. Procedura §3a · PAMIEC · abc-pelna-forma · numer-abc rule |

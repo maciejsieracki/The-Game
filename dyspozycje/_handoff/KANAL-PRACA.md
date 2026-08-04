@@ -1,4 +1,10 @@
-﻿## [22:15 PL, 2026-08-04] CLOUD → Maciej — R-DYPLO-WYMIANA-FLEX (ABC, bez kodu)
+﻿## [22:20 PL, 2026-08-04] CLOUD → Maciej — R-DYPLO-WYMIANA-FLEX dopisek Q3+Q4 (ABC)
+- Q3: jedno Przyjmij/Odrzuć na cały pakiet (jeden bilans PW)
+- Q4: Usuń pozycję ze stołu (My/Oni), nie tylko Odrzuć
+- Docs zaktualizowane · rek. A/A
+CZEKAM-NA: Maciej — litery Q1–Q4 (lub paczkami po 2–3)
+
+## [22:15 PL, 2026-08-04] CLOUD → Maciej — R-DYPLO-WYMIANA-FLEX (ABC, bez kodu)
 - 1) Umowa wymiany wymusza „Co dostaję” — chcesz móc tylko oddać (prezent/słodzik)
 - 2) Ilości surowców na pozycji nadal bez −/+
 - Docs: `docs/decyzje/R-DYPLO-WYMIANA-FLEX.md` · rek. ONEWAY=A · QTY-EDIT=A

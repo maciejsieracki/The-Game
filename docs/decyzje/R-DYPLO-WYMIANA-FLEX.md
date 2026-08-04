@@ -1,22 +1,25 @@
-# R-DYPLO-WYMIANA-FLEX — umowa wymiany: jednostronna + edycja ilości
+# R-DYPLO-WYMIANA-FLEX — stół / umowa wymiany: elastyczność UI
 
 **Status:** CZEKA-NA-DECYZJĘ  
 **Data:** 2026-08-04  
-**Ekran:** Dyplomacja → Umowa wymiany surowców / koszyk / stół propozycji
+**Ekran:** Dyplomacja → Stół negocjacji · Umowa wymiany · panel PW
 
-## Cytat Macieja
+## Cytaty Macieja
 
-> Jeżeli daję umowę wymiany surowców to system nie powinien oczekiwać to z wymianą coś za coś, bo przecież mogę coś dać, żeby podbić swoją punktację chcąc coś innego albo na przykład jakąś umowę lub po prostu chcę dać prezent. A tutaj jest informacja dodaj co najmniej jedną pozycję co dostaje. Nadal nie można edytować propozycji surowcowych, które się zaproponowało, zmniejszając, zwiększając na przykład ilość surowców. Nadal jest to nieedytowalne.
+> Jeżeli daję umowę wymiany surowców to system nie powinien oczekiwać to z wymianą coś za coś… Dodaj co najmniej jedną pozycję co dostaje. Nadal nie można edytować propozycji surowcowych… zwiększając/zmniejszając ilość.
+
+> Dla dwóch różnych propozycji powinno być jedno przyjmij lub odrzuć, a nie dla każdego traktatu czy umowy, bo jest jeden balans dla wszystkiego. Poza tym nie można usunąć propozycji wcześniej zaproponowanej, ani z oni oferują, ani my oferujemy… Powinna być możliwość okienku usunięcia nie tylko odrzucenia.
 
 ## Sytuacja (dziś)
 
-1. **Tryb `trade` (Umowa wymiany)** w `validateBasket` wymaga **obu** stron: „Co oddaję” **i** „Co dostaję” (`Dodaj co najmniej jedną pozycję w „Co dostaję"`). Dar (`mode === 'gift'`) pozwala tylko oddawać — ale osobna ścieżka UI.
-2. Po dodaniu pozycji surowcowej w koszyku / na stole: widać kartę z ilością, ale **brak** stepperów −/+ / pola ilości na już dodanej pozycji (tylko usuń ×). Zmiana ilości = usuń i dodaj od nowa.
+1. Tryb `trade` wymaga obu stron koszyka („Co dostaję”).
+2. Brak stepperów ilości na już dodanej pozycji.
+3. Przy multi-deal (np. Traktat handlowy + Umowa wymiany) panel PW pokazuje **jeden bilans**, ale pod spodem jest **Przyjmij/Odrzuć per umowa** (hint UI: „każda pozycja wymaga osobnego Przyjmij”).
+4. Karty na stole (My oferujemy / Oni oferują) — brak **Usuń** (wycofanie ze stołu); tylko Odrzuć (odrzucenie dealu).
 
 ## Cel
 
-- Móc **tylko oddać** (prezent / słodzik / budowanie PW) w ramach umowy wymiany, bez wymuszania „coś za coś”.
-- Móc **zmieniać ilość** już zaproponowanych pozycji surowcowych (↑↓), bez kasowania wiersza.
+Elastyczny stół: jednostronna wymiana, edycja ilości, **jedna decyzja Przyjmij/Odrzuć na cały pakiet**, oraz **Usuń** pozycję ze stołu.
 
 ---
 
@@ -24,26 +27,22 @@
 
 ### A — Tak: wystarczy „Co oddaję” LUB „Co dostaję” (rekomendacja)
 
-Walidacja jak przy słodzikach do traktatu: co najmniej jedna niepusta strona. Pusta „Co dostaję” = jednostronny dar w tej umowie (PW / prezent / budowanie pozycji). Obie strony nadal dozwolone.
+Walidacja: co najmniej jedna niepusta strona. Pusta „Co dostaję” = jednostronny dar / słodzik. Obie strony nadal dozwolone.
 
-- **Za:** dokładnie Twój opis (prezent, słodzik, podbicie punktacji).
-- **Za:** nie trzeba przełączać na osobny „Dar”, gdy już jesteś w Umowie wymiany.
-- **Przeciw:** AI może dostać „goły dar” oznaczony jako wymiana — trzeba jasnej etykiety (Dar / Wymiana).
-- **Przeciw:** bilans PW przy pustym „dostaję” = sam oddajesz (fair-min 0) — OK, ale UI musi to pokazać.
+- **Za:** prezent / słodzik / punktacja bez wychodzenia do „Dar”.
+- **Za:** zgodne z opisem Macieja.
+- **Przeciw:** potrzebna jasna etykieta Dar vs Wymiana.
+- **Przeciw:** bilans PW przy samym oddawaniu musi być czytelny.
 
-### B — Zostaw wymóg obu stron w Umowie wymiany; prezent tylko przez akcję Dar
+### B — Wymóg obu stron; prezent tylko przez akcję Dar
 
-- **Za:** czytelny podział: wymiana = 2 strony, dar = 1.
-- **Za:** zero zmian logiki AI fair-min.
-- **Przeciw:** przeczy Twojej uwadze — musisz wychodzić do „Dar”.
-- **Przeciw:** nadal komunikat „dodaj co dostaję”, którego nie chcesz przy samym dawaniu.
+- **Za:** czytelny podział.
+- **Przeciw:** przeczy uwadze o „coś za coś”.
 
-### C — Jednostronne tylko „Co oddaję” (dar); „tylko dostaję” zabronione
+### C — Jednostronne tylko „oddaję”; „tylko dostaję” zabronione
 
-- **Za:** możesz dać prezent w tej umowie; nie możesz żądać za darmo.
-- **Za:** bezpieczniejsze vs exploit „żądaj bez oferty”.
-- **Przeciw:** nie pokrywa przypadku „chcę tylko dostać za inną umowę na stole” (multi-deal).
-- **Przeciw:** nadal sztywne vs pełna elastyczność A.
+- **Za:** prezent OK, bez darmowego żądania.
+- **Przeciw:** mniej elastyczne przy multi-deal.
 
 **Rekomendacja: A**
 
@@ -51,32 +50,83 @@ Walidacja jak przy słodzikach do traktatu: co najmniej jedna niepusta strona. P
 
 ## R-DYPLO-WYMIANA-QTY-EDIT-Q1 — edycja ilości na już dodanej pozycji
 
-### A — Stepper −/+ (i pole liczby) na każdym wierszu surowca w koszyku i przy edycji propozycji na stole (rekomendacja)
+### A — Stepper −/+ (i pole liczby) na wierszu w koszyku i przy edycji na stole (rekomendacja)
 
-- **Za:** szybka zmiana 10→15 bez usuń/dodaj.
-- **Za:** domyka „nadal nieedytowalne” z playtestu.
-- **Przeciw:** więcej UI na małej karcie.
-- **Przeciw:** trzeba pilnować max magazynu przy ↑.
+- **Za:** domyka „nieedytowalne”.
+- **Przeciw:** więcej UI; pilnować max magazynu.
 
-### B — Tylko w koszyku przed wysłaniem; na stole (TWOJA PROPOZYCJA) — „Edytuj” otwiera koszyk
+### B — Na stole „Edytuj” → koszyk (steppery tylko w koszyku)
 
-- **Za:** mniej kontrolek na stole.
-- **Za:** jeden edytor (koszyk).
-- **Przeciw:** dodatkowy klik vs edycja in-place.
-- **Przeciw:** jeśli koszyk nie pokazuje stepperów na wierszu — problem zostaje w połowie.
+- **Za:** mniej kontrolek na karcie.
+- **Przeciw:** dodatkowy klik.
 
-### C — Bez stepperów: ilość tylko przy dodawaniu; zmiana = usuń + dodaj (status quo)
+### C — Status quo (usuń + dodaj)
 
-- **Za:** zero pracy.
-- **Przeciw:** wprost to, na co narzekasz.
-- **Przeciw:** łatwo o błąd przy ponownym dodawaniu.
+- **Przeciw:** to, na co narzekasz.
 
-**Rekomendacja: A** (ew. A+B: steppers w koszyku + „Edytuj” z karty na stole otwiera ten koszyk)
+**Rekomendacja: A**
+
+---
+
+## R-DYPLO-STOL-ACCEPT-Q1 — jedno Przyjmij/Odrzuć na cały pakiet
+
+### A — Jeden bilans PW → jeden pasek Przyjmij / Odrzuć dla całego stołu z tym partnerem (rekomendacja)
+
+Karty traktatów/umów = pozycje pakietu; decyzja akceptacji **jedna**.
+
+- **Za:** spójne z jednym bilansem PW.
+- **Za:** koniec „Przyjmij przy każdej umowie”.
+- **Przeciw:** nie przyjmiesz tylko części — najpierw Usuń niechcianą pozycję (Q4).
+- **Przeciw:** większa zmiana UI/silnika negocjacji.
+
+### B — Zostaw Przyjmij per umowa; bilans PW tylko informacyjny
+
+- **Za:** można przyjąć część pakietu.
+- **Przeciw:** przeczy „jeden balans = jedna decyzja”.
+
+### C — Domyślnie pakiet (jak A) + opcjonalnie „Rozdziel”
+
+- **Za:** moc + elastyczność.
+- **Przeciw:** za dużo na teraz.
+
+**Rekomendacja: A**
+
+---
+
+## R-DYPLO-STOL-USUN-Q1 — Usuń pozycję ze stołu (nie tylko Odrzuć)
+
+### A — Przy każdej karcie (My / Oni): **Usuń** = wycofaj ze stołu bez zamykania całego dealu (rekomendacja)
+
+- My → wycofujesz swoją propozycję.
+- Oni → zdejmujesz tę pozycję z pakietu (reszta zostaje).
+
+- **Za:** dokładnie „usunięcie nie tylko odrzucenie”.
+- **Za:** spina z Q3=A (najpierw Usuń, potem jedno Przyjmij).
+- **Przeciw:** skutek po stronie AI do zdefiniowania.
+- **Przeciw:** więcej przycisków na karcie.
+
+### B — Usuń tylko po stronie „My”; po stronie „Oni” tylko Odrzuć całość
+
+- **Za:** prostsze.
+- **Przeciw:** nie pokrywa w pełni opisu.
+
+### C — Bez Usuń; tylko Odrzuć (status quo)
+
+- **Przeciw:** to, na co narzekasz.
+
+**Rekomendacja: A**
 
 ---
 
 ## Po decyzji
 
-`R-DYPLO-WYMIANA-ONEWAY-Q1 A|B|C`  
-`R-DYPLO-WYMIANA-QTY-EDIT-Q1 A|B|C`  
+```
+R-DYPLO-WYMIANA-ONEWAY-Q1 A|B|C
+R-DYPLO-WYMIANA-QTY-EDIT-Q1 A|B|C
+R-DYPLO-STOL-ACCEPT-Q1 A|B|C
+R-DYPLO-STOL-USUN-Q1 A|B|C
+```
+
 → commit → **`deploy`** osobno.
+
+**Uwaga:** śmieci float `−9.400000000000006%` = **R-DYPLO-PW-PRZECINEK** (PR #87) — w kodzie, czeka **`deploy`**.

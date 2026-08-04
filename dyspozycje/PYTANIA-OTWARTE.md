@@ -8,14 +8,12 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## R-DYPLO-WYMIANA-FLEX — umowa wymiany: jednostronna + edycja ilości · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+## R-DYPLO-WYMIANA-FLEX — stół dyplomacji (wymiana + Przyjmij + Usuń) · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
 
-**Sytuacja.** Umowa wymiany wymaga „Co dostaję” (coś za coś). Nie da się zmienić ilości już dodanej pozycji surowcowej (−/+).
-
-**Cel.** Prezent / słodzik / tylko oddaję — bez wymuszania drugiej strony; edycja ilości na pozycji.
+**Sytuacja.** (1) Wymiana wymusza coś-za-coś. (2) Brak edycji ilości. (3) Przyjmij/Odrzuć **per umowa** mimo jednego bilansu PW. (4) Brak **Usuń** ze stołu (My/Oni).
 
 **ABC:** [`docs/decyzje/R-DYPLO-WYMIANA-FLEX.md`](../docs/decyzje/R-DYPLO-WYMIANA-FLEX.md)  
-Odpowiedź: `R-DYPLO-WYMIANA-ONEWAY-Q1 A|B|C` · `R-DYPLO-WYMIANA-QTY-EDIT-Q1 A|B|C` (rekomendacje **A** / **A**).
+`ONEWAY-Q1` · `QTY-EDIT-Q1` · `STOL-ACCEPT-Q1` · `STOL-USUN-Q1` (rek. wszystkie **A**).
 
 ---
 
