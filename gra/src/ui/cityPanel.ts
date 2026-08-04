@@ -919,7 +919,7 @@ interface CityView {
 
 /** Snapshot imperium do paska zasobów w widoku miasta (spójny z HudState). */
 export interface EmpireHudSnap {
-  /** Pula Pracy imperium (zapas — osadnicy, projekty). */
+  /** Pula Pracy imperium (zapas — załóż miasto, ulepszenia / projekty mapy). */
   pracaPool?: number;
   /** Suma Pracy / turę (wszystkie miasta). */
   pracaRate?: number;
@@ -1491,8 +1491,9 @@ function pracaSplitBarLabelHtml(pctB: number, pctU: number, budAmt?: number, ule
   );
 }
 
-function psiRowLabel(iconId: string, text: string): string {
-  return `${cityPanelChipIconWrap(iconId, 16)}<span>${text}</span>`;
+function psiRowLabel(iconId: string, text: string, title?: string): string {
+  const t = title ? ` title="${title.replace(/"/g, '&quot;')}"` : '';
+  return `${cityPanelChipIconWrap(iconId, 16)}<span${t}>${text}</span>`;
 }
 
 function cityTabIconHtml(tab: CityDrawerTab): string {
@@ -4279,29 +4280,33 @@ function appendPodzialPracyInfo(
     budSub =
       `${front.nazwa}: ${prod.postep}/${front.koszt}${cityPanelChipIconWrap('res-work', 14)}` +
       (paused ? ' · wstrzymana' : eta != null ? ` · ~${eta} ${tury(eta)}` : praca.doBudynkow > 0 ? '' : ' · brak pracy');
-  } else {
-    budSub = `Kolejka budowy pusta — wybierz ${cityPanelChipIconWrap('cp-buildings', 14)} Buduj (lewy rail)`;
   }
+  const budLbl = psiRowLabel(
+    'cp-buildings',
+    'Kolejka budowy',
+    front ? undefined : 'Kolejka budowy pusta — wybierz Buduj w lewym railu',
+  );
   rowBud.innerHTML =
-    `<span class="psi-lbl">${psiRowLabel('cp-buildings', 'Kolejka budowy')}</span>` +
-    `<span class="psi-val gold">${budVal}<div class="psi-sub">${budSub}</div></span>`;
+    `<span class="psi-lbl">${budLbl}</span>` +
+    `<span class="psi-val gold">${budVal}${budSub ? `<div class="psi-sub">${budSub}</div>` : ''}</span>`;
   info.appendChild(rowBud);
 
   const rowPool = el('div', 'psi-row');
+  const poolTip = `Zapas całej cywilizacji: ${pool} Pracy · załóż miasto, ulepszenia / projekty mapy`;
   rowPool.innerHTML =
-    `<span class="psi-lbl">${psiRowLabel('chip-crate', 'Pula imperium')}</span>` +
-    `<span class="psi-val blue">${praca ? `+${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
-    `<div class="psi-sub">Zapas całej cywilizacji: ${pool}${cityPanelChipIconWrap('res-work', 14)} · osadnicy, projekty mapy</div></span>`;
+    `<span class="psi-lbl">${psiRowLabel('chip-crate', 'Pula imperium', poolTip)}</span>` +
+    `<span class="psi-val blue">${praca ? `+${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}</span>`;
   info.appendChild(rowPool);
 
   const rowSkarb = el('div', 'psi-row');
-  const rqHint = rq.length > 0
-    ? `Kolejka rekrutacji: ${rq.length} · opłacone złotem`
-    : `Jednostki kupujesz za ${cityPanelChipIconWrap('res-treasury', 14)} ze skarbca (zakładka ${cityPanelChipIconWrap('cp-recruit', 14)} Rekrut.)`;
+  const rqSub = rq.length > 0 ? `Kolejka rekrutacji: ${rq.length} · opłacone złotem` : '';
+  const skarbTip = rq.length > 0
+    ? undefined
+    : 'Jednostki kupujesz za złoto ze skarbca (zakładka Rekrut.)';
   rowSkarb.innerHTML =
-    `<span class="psi-lbl">${psiRowLabel('res-treasury', 'Skarbiec')}</span>` +
+    `<span class="psi-lbl">${psiRowLabel('res-treasury', 'Skarbiec', skarbTip)}</span>` +
     `<span class="psi-val gold">${skarb}${skarbDelta !== 0 ? ` (${signed(skarbDelta)})` : ''}` +
-    `<div class="psi-sub">${rqHint}</div></span>`;
+    `${rqSub ? `<div class="psi-sub">${rqSub}</div>` : ''}</span>`;
   info.appendChild(rowSkarb);
 
   mount.appendChild(info);
@@ -4325,8 +4330,9 @@ function renderPodzialPracy(
   const sliderWrap = el('div', 'praca-w4-sliders');
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
+  const podzialTip = 'Kroki co 10%. W lewo → więcej ulepszeń pola · w prawo → szybsza kolejka budowy.';
   sliderLabel.innerHTML =
-    `<span>${cityPanelChipIconWrap('res-work', 14)} Budynki / Pula</span>` +
+    `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Pula</span>` +
     `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
   sliderRow.appendChild(sliderLabel);
 
@@ -4338,7 +4344,7 @@ function renderPodzialPracy(
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
     inp.setAttribute('aria-label', 'Podział pracy: budynki versus pula imperium');
-    inp.title = 'Podział pracy — budynki w kolejce versus ulepszenia pól / pula imperium';
+    inp.title = podzialTip;
     inp.addEventListener('input', () => {
       const v = snapHandelPct(Number(inp.value));
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
@@ -4352,9 +4358,6 @@ function renderPodzialPracy(
     sliderRow.appendChild(ro);
   }
   sliderWrap.appendChild(sliderRow);
-  const hint = el('div', 'wyzwienie-w4-hint');
-  hint.textContent = 'Kroki co 10%. W lewo → więcej ulepszeń pola · w prawo → szybsza kolejka budowy.';
-  sliderWrap.appendChild(hint);
   mount.appendChild(sliderWrap);
 
   appendPodzialPracyInfo(mount, city, view, data);
