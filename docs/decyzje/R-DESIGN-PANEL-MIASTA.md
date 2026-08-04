@@ -31,8 +31,12 @@
 ### Always-on (MUST — skrócony) — **WDROŻONE (prototyp kod)**
 
 1. **Nazwa miasta + populacja** — zostaje (jak dziś).
-2. **Wskaźnik obrony** — 3 stany: brak muru / mur (+200%) / mur + Cytadela (+300%) — tarcza kolorowa po lewej.
-3. **Ikona właściciela / cywilizacji** — medalion z literą kultury + kolor właściciela (SVG brand-book — po makiecie Design).
+2. **Wskaźnik obrony** — 3 stany wizualne (2026-08-04, R-CITY-PILL-SHIELD-EMBLEM):
+   - **brak muru** → **bez tarczy** (layout nie rezerwuje miejsca);
+   - **palisada** (bez murów i bez cytadeli) → tarcza **szara**;
+   - **mury** lub **cytadela** (`fort`) → tarcza **złota**.
+   `maMur` bez listy budynków = mury (złota).
+3. **Ikona właściciela / cywilizacji** — medalion z **sygnetem SVG** (`civIconSvg`, ten sam co HUD/dyplomacja) + kolor właściciela; powiększony ~1,5× względem v1. Wstrzyknięcie: `setCityMapBadgeCivSigil` w `main.ts`.
 
 ### Always-on lite (prototyp bez Design)
 
@@ -63,7 +67,8 @@ Styl: 1E (Painted Imperial), tokeny z `eksport/tokens.css` / `brand-book/`.
 
 ## Kod (prototyp v1 — 2026-08-04)
 
-- `gra/src/render/cityMapStatChip.ts` — rysowanie pigułki, `defenseTierFromCity`, `cityMapBadgeKey`
+- `gra/src/render/cityMapStatChip.ts` — rysowanie pigułki, `defenseTierFromCity`, `cityMapBadgeKey`, `setCityMapBadgeCivSigil`
+- `gra/src/main.ts` — wstrzyknięcie `civIconSvg` do medalionu
 - `gra/src/render/cities.ts` — `_syncStatChip` + opcje `getBuiltBuildingIds` / `getCivIconId` / `getProduction`
 - `gra/tools/city-map-badge-test.cjs` — testy pure helpers
 - Deploy do `gra-robocza/` — **osobna decyzja Macieja**
