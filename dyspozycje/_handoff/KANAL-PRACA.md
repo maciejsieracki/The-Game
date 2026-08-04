@@ -1,3 +1,10 @@
+﻿## [21:20 PL, 2026-08-04] CLOUD → Maciej — R-BATTLE-TEMPO-UI (kod, bez deploy)
+- Panel Tempo: Pauza · − · + · AUTO (ikona komputera); ± po SPEED_STEPS 1..512 (clamp, bez zawijania)
+- Q1=A · Q2=B: brak etykiety ×N między −/+; prędkość tylko w tooltipach przycisków
+- Branch: `cursor/feat-battle-tempo-ui-63a1` · `docs/decyzje/R-BATTLE-TEMPO-UI.md`
+- Bramki: tsc 0
+CZEKAM-NA: Maciej — **`deploy`** gdy OK
+
 ## [23:04 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 221 4d17d869
 |- md5: 4d17d86943cbd010c6df3ed7d7517f81 · stempel: ROBOCZA · 2026-08-04 23:04
 |- Batch: EOT defer · dyplo flex (one-way/qty/Przyjmij pakiet/Usuń) · dobra-kat akordeon · trzoda×1.5 · PW sum+Przyjmij handlowy+przecinek · Zwiedzaj highlight

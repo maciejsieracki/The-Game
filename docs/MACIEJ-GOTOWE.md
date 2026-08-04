@@ -128,6 +128,7 @@
 
 ## [01:32] ✅ Gotowe — deploy ROBOCZA FALA 120 (874bb48a)
 
+- ✅ **R-BATTLE-TEMPO-UI** — Q1=A · Q2=B · kod: Pauza/−/+/komputer, prędkość w tooltipie · branch `cursor/feat-battle-tempo-ui-63a1` · czeka **deploy**
 - **2026-07-30 09:11** — ✅ FALA 122 ROBOCZA `9f09757e` (AI-CS-CLUSTER-DIFF + DEPLOY ALL). START: `gra-robocza/START.html`.
 
 **FALA 120** | md5 `874bb48a31c730459d600d89f90e5227` | `gra-robocza/START.html` (Ctrl+F5, Nowa gra).
