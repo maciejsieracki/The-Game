@@ -5307,3 +5307,10 @@ CZEKAM-NA: Maciej — **deploy** (FALA 207) gdy wgrać do ROBOCZA
 - Branch: `cursor/fix-relacja-pw-invert-63a1` · tsc 0 · diplomacy-acceptance-points 198/198
 - Docs: `D-RELACJA-PW-ASYMETRIA-2026-08-04.md` korekta
 CZEKAM-NA: Maciej — **deploy** gdy wgrać do ROBOCZA (najpierw git pull po deployu)
+
+## [10:10 PL, 2026-08-04] CLOUD → ALL — R-UI-TRAKTAT-LANDSCAPE
+- Maciej: propozycja traktatu gubi się w pionie za liniami → układ **landscape**
+- Lewa: warunki + panel PW (sticky) · Prawa: opcjonalna wymiana · modal ~1180px
+- PW: baza/Relacja pod liczbą (czytelniej)
+- Branch: `cursor/ui-traktat-landscape-63a1` · tsc 0
+CZEKAM-NA: Maciej — **deploy** (najlepiej razem z R-RELACJA-PW-INVERT #67)
