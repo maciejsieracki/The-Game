@@ -32,6 +32,7 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 8. Testuje wyłącznie Maciej (gra); agenci — tylko testy konsolowe i kompilację.
 9. Zero sterowania ekranem Macieja bez jego wyraźnej prośby.
 10. NUMER → ABC → COMMIT → DEPLOY — patrz procedura na górze (2026-08-03).
+11. Przed commit/deploy: **nie uwsteczniaj** wcześniejszych fixów — przegląd `git diff` (zmiany **i** usunięcia) · `R-PROC-NO-REGRESS` / procedura §4a.
 
 ## HISTORIA = OBOWIĄZKOWY KONTEKST (korekta Macieja 2026-07-06)
 Bannery „NIEAKTUALNE" na starych plikach dotyczą WYŁĄCZNIE procesu (role, publish,
