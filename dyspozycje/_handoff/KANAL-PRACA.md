@@ -1,3 +1,10 @@
+## [22:20 PL, 2026-08-04] CLOUD → Maciej — R-REKRUT-LUDNOSC-UI (audyt)
+|- Werdykt: rekrutacja **NIE** odejmuje `city.population` (`jednostka_koszt_ludnosci=0`)
+|- Realny −1: głód (brak dopłaty centrali) / założenie miasta / bunt; Spichlerz tylko pośrednio
+|- Bug UI: cityPanel nadal pisze „−1 obywatela” — CZEKA FIX
+|- Docs: `docs/decyzje/R-REKRUT-LUDNOSC-UI.md`
+CZEKAM-NA: Maciej — `działaj` na fix UI / OK zostaw / BUG jeśli inaczej widać w grze
+
 ## [00:11 PL, 2026-08-05] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 223 ee0e7e04
 |- md5: ee0e7e046c317b101ca2eb07f7e349fe · stempel: ROBOCZA · 2026-08-04 22:10
 |- Batch: R-PILL-TARCZA-BEZ-MURU-Q1=A · R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A
