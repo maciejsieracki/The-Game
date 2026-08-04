@@ -14,7 +14,7 @@ import type { GameMap } from '../types/map';
 import { Nakladka } from '../types/hex';
 import { hexDistance } from '../units/setup';
 import { tileYield } from './economy';
-import { normalizeImprovementKey } from './terrain-improvements';
+import { foodPotentialForHex, normalizeImprovementKey } from './terrain-improvements';
 import miastoParams from '../../data/miasto-params.json';
 import { cityBorderRadius } from './culture-religion';
 import type { City, OkolicaFocus, OkolicaTryb } from './cities';
@@ -112,13 +112,76 @@ export function tileScore(y: TileYield, wagi?: { zywnosc?: number; praca?: numbe
   return (y.zywnosc ?? 0) * wz + (y.praca ?? 0) * wp + (y.handel ?? 0) * wh;
 }
 
+/** Score pola do rankingu auto-okolicy (plony × wagi + opcjonalny potencjał żywności). */
+export function tileAssignScore(
+  y: TileYield,
+  wagi?: { zywnosc?: number; praca?: number; handel?: number },
+  foodPotential = 0,
+): number {
+  return tileScore(y, wagi) + foodPotential;
+}
+
 export interface AssignOptions {
   radius?: number;
   isWorkable?: (q: number, r: number) => boolean;
   wagi?: { zywnosc?: number; praca?: number; handel?: number };
+  focus?: OkolicaFocus;
+  /** Bonus potencjału żywności (fokus żywność) — dodawany do score przed sortowaniem. */
+  potentialOf?: (q: number, r: number) => number;
   /** Gdy podane z ownerId — tylko heksy należące do tego państwa (overlap → najbliższe miasto). */
   territoryNodes?: readonly TerritoryNode[];
   ownerId?: number;
+}
+
+type ScoredOkolicaTile = {
+  t: OkolicaTile;
+  s: number;
+  y: TileYield;
+  potential: number;
+};
+
+function compareScoredOkolicaTiles(a: ScoredOkolicaTile, b: ScoredOkolicaTile, focus?: OkolicaFocus): number {
+  if (b.s !== a.s) return b.s - a.s;
+  if (focus === 'zywnosc') {
+    const az = a.y.zywnosc ?? 0;
+    const bz = b.y.zywnosc ?? 0;
+    if (bz !== az) return bz - az;
+    if (b.potential !== a.potential) return b.potential - a.potential;
+  }
+  if (a.t.dist !== b.t.dist) return a.t.dist - b.t.dist;
+  return a.t.key.localeCompare(b.t.key);
+}
+
+function scoreOkolicaTile(
+  t: OkolicaTile,
+  yieldOf: (q: number, r: number) => TileYield,
+  opts: AssignOptions,
+): ScoredOkolicaTile {
+  const y = yieldOf(t.q, t.r);
+  const potential = opts.potentialOf?.(t.q, t.r) ?? 0;
+  return { t, s: tileAssignScore(y, opts.wagi, potential), y, potential };
+}
+
+/** Potencjał żywności heksu mapy (fokus żywność w auto-okolicy). */
+export function foodPotentialOfMapHex(map: GameMap, q: number, r: number): number {
+  const h = map.hexes[`${q},${r}`];
+  if (!h) return 0;
+  const key = normalizeImprovementKey(String(h.ulepszenie ?? 'brak'));
+  const keys = key ? [key] : [];
+  return foodPotentialForHex(h.terenBazowy, h.nakladka ?? Nakladka.Brak, keys);
+}
+
+function assignOptionsForFocus(
+  base: AssignOptions,
+  focus: OkolicaFocus,
+  map: GameMap,
+): AssignOptions {
+  if (focus !== 'zywnosc') return base;
+  return {
+    ...base,
+    focus,
+    potentialOf: (q, r) => foodPotentialOfMapHex(map, q, r),
+  };
 }
 
 function effectiveIsWorkable(opts: AssignOptions): ((q: number, r: number) => boolean) | undefined {
@@ -144,12 +207,8 @@ export function assignWorkedTiles(
 ): OkolicaTile[] {
   const radius = opts.radius ?? cityRangeForPopulation(population);
   const tiles = okolicaTiles(centerQ, centerR, radius, map, effectiveIsWorkable(opts));
-  const scored = tiles.map(t => ({ t, s: tileScore(yieldOf(t.q, t.r), opts.wagi) }));
-  scored.sort((a, b) => {
-    if (b.s !== a.s) return b.s - a.s;
-    if (a.t.dist !== b.t.dist) return a.t.dist - b.t.dist;
-    return a.t.key.localeCompare(b.t.key);
-  });
+  const scored = tiles.map(t => scoreOkolicaTile(t, yieldOf, opts));
+  scored.sort((a, b) => compareScoredOkolicaTiles(a, b, opts.focus));
   const n = Math.max(0, Math.min(Math.floor(Number.isFinite(population) ? population : 0), scored.length));
   return scored.slice(0, n).map(x => x.t);
 }
@@ -161,7 +220,7 @@ export function wagiForFocus(focus: OkolicaFocus = DEFAULT_OKOLICA_FOCUS): {
   handel: number;
 } {
   switch (focus) {
-    case 'zywnosc':    return { zywnosc: 3, praca: 0.5, handel: 0.5 };
+    case 'zywnosc':    return { zywnosc: 10, praca: 0, handel: 0 };
     case 'produkcja':  return { zywnosc: 0.5, praca: 3, handel: 0.5 };
     case 'podatki':    return { zywnosc: 0.5, praca: 0.5, handel: 3 };
     case 'zrownowazone':
@@ -206,13 +265,13 @@ export function resolveWorkedTiles(
     return out;
   }
 
-  return assignWorkedTiles(city.q, city.r, pop, map, yieldOf, {
+  return assignWorkedTiles(city.q, city.r, pop, map, yieldOf, assignOptionsForFocus({
     radius,
     isWorkable: opts.isWorkable,
     territoryNodes: opts.territoryNodes,
     ownerId: opts.ownerId ?? city.ownerId,
     wagi: wagiForFocus(focus),
-  });
+  }, focus, map));
 }
 
 /** Plony heksu do rankingu auto (spójne z turn-economy / cityPanel). */
@@ -238,12 +297,12 @@ export function seedReczneFromAuto(
   if (pop <= 0) return {};
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
-  const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), {
+  const tiles = assignWorkedTiles(city.q, city.r, pop, map, (q, r) => yieldOfMapHex(map, q, r), assignOptionsForFocus({
     radius,
     territoryNodes,
     ownerId: city.ownerId,
     wagi: wagiForFocus(focus),
-  });
+  }, focus, map));
   const reczne: Record<string, number> = {};
   for (const t of tiles) reczne[t.key] = 1;
   return reczne;
@@ -324,7 +383,8 @@ export function rebalanceWorkersAfterPopulationChange(
           excess--;
           continue;
         }
-        const s = tileScore(yieldOf(t.q, t.r), wagi);
+        const potential = focus === 'zywnosc' ? foodPotentialOfMapHex(map, t.q, t.r) : 0;
+        const s = tileAssignScore(yieldOf(t.q, t.r), wagi, potential);
         if (s < worstScore || (s === worstScore && t.dist > worstDist)) {
           worstScore = s;
           worstDist = t.dist;
