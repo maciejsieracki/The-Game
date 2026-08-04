@@ -9,6 +9,7 @@ import {
   pnDealAcceptedByAi,
   relationPnModPct,
   relationSignedFromTotal,
+  treatyPwForRole,
 } from '../game/diplomacy-pn-engine';
 import { diplomacyFairGivePn } from '../game/diplomacy-value-catalog';
 
@@ -49,10 +50,10 @@ export const PW_EXCHANGE_TOOLTIP =
   + 'ujemny bilans — trzeba dopłacić (surowce, ¤, ustępstwa). '
   + 'To nie jest waluta ¤ ani złoto-surowiec w magazynie.';
 
-/** Tooltip wiersza wpływu Relacji na deal (Maciej 2026-08-03). */
+/** Tooltip wiersza wpływu Relacji na deal (Maciej 2026-08-04). */
 export const RELATION_DEAL_TOOLTIP =
-  'Relacja = Zaufanie + Respekt. Powyżej 100 obniża wymagane PW traktatu (max −90%), '
-  + 'poniżej podnosi (max +90%).';
+  'Relacja = Zaufanie + Respekt. Modyfikuje tylko PW po Twojej stronie (max ±90%). '
+  + 'Partner zawsze na bazie traktatu.';
 
 type RelationDealContext = 'treaty' | 'trade';
 
@@ -69,10 +70,10 @@ function relationDealText(relTotal: number, context: RelationDealContext): strin
     const mult = (100 / Math.max(1, relTotal)).toFixed(1).replace(/\.0$/, '');
     return `musisz dać więcej (×${mult} PW), by oferta była uczciwa`;
   }
-  if (modPct === 0) return 'balans (0% — cena bazowa)';
+  if (modPct === 0) return 'balans (0% — Ty i oni na bazie)';
   const signed = modPct > 0 ? `−${modPct}%` : `+${Math.abs(modPct)}%`;
-  if (modPct > 0) return `deal tańszy (${signed} do progu PW)`;
-  return `deal droższy (${signed} do progu PW)`;
+  if (modPct > 0) return `Twój traktat tańszy (${signed}); oni: baza`;
+  return `Twój traktat droższy (${signed}); oni: baza`;
 }
 
 function resolveRelationPanelContext(side: AcceptanceSideBalance): RelationDealContext {
@@ -144,6 +145,18 @@ function pwTitleHeadHtml(): string {
 function pwAmountHtml(n: number, extraCls = ''): string {
   const cls = 'da-pn-bal-num' + (extraCls ? ' ' + extraCls : '');
   return '<span class="' + cls + '"' + pwTipAttr() + '>' + n + ' PW</span>';
+}
+
+function pwAmountWithBaseHtml(pw: number, basePw?: number, modPct?: number, extraCls = ''): string {
+  const cls = 'da-pn-bal-num' + (extraCls ? ' ' + extraCls : '');
+  let inner = String(pw) + ' PW';
+  if (basePw != null && basePw > 0 && basePw !== pw) {
+    const modHint = modPct != null && modPct !== 0
+      ? `, Relacja ${modPct > 0 ? '−' : '+'}${Math.abs(modPct)}% koszt`
+      : '';
+    inner += ` <span class="da-pn-bal-base" title="Baza traktatu">(baza ${basePw}${modHint})</span>`;
+  }
+  return '<span class="' + cls + '"' + pwTipAttr() + '>' + inner + '</span>';
 }
 
 /** Wybiera wpis stołu do centralnego panelu PW (priorytet: incoming do decyzji). */
@@ -269,20 +282,23 @@ function verdictHtml(data: PnBalancePanelData): { html: string; tone: 'ok' | 'no
 }
 
 function treatyMetaHtml(
-  treatyEffectivePw: number,
+  playerTreatyPw: number,
+  partnerTreatyPw: number,
   relTotal: number,
   treatyMetaLabel: string,
   treatyBasePw?: number,
   basketNet?: number,
 ): string {
-  const base = treatyBasePw ?? 0;
-  const modPart = base > 0 && base !== treatyEffectivePw
-    ? 'baza ' + base + ' → ' + treatyEffectivePw + ' PW @ Rel ' + relTotal
-    : treatyEffectivePw + ' PW @ Rel ' + relTotal;
+  const base = treatyBasePw ?? partnerTreatyPw;
+  const playerPart = base > 0 && playerTreatyPw !== base
+    ? 'Ty: baza ' + base + ' → ' + playerTreatyPw + ' PW'
+    : 'Ty: ' + playerTreatyPw + ' PW';
+  const partnerPart = ' · Oni: ' + partnerTreatyPw + ' PW (baza)';
   const basketPart = basketNet != null && (basketNet > 0 || (basketNet === 0 && base > 0))
     ? ' · koszyk netto ' + (basketNet > 0 ? '+' + basketNet : '0') + ' PW'
     : '';
-  return '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ': ' + modPart + basketPart + '</div>';
+  return '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ': ' + playerPart + partnerPart
+    + ' @ Rel ' + relTotal + basketPart + '</div>';
 }
 
 /** Główny panel PW — widoczny między kolumnami My / Oni na stole. */
@@ -297,28 +313,46 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
   }
 
   const their = data.theirBalance;
+  const myBal = data.myBalance;
   const incomingTrade = isIncomingBasketTradePanel(data);
-  const netPw = incomingTrade ? incomingTradeNetBalancePw(data) : their.balancePn;
+  const isTreatyMode = (myBal?.mode === 'treaty' || myBal?.mode === 'mixed'
+    || their.mode === 'treaty' || their.mode === 'mixed')
+    && !incomingTrade;
+  const netPw = incomingTrade
+    ? incomingTradeNetBalancePw(data)
+    : isTreatyMode
+      ? data.myOfferPn - data.theirOfferPn
+      : their.balancePn;
+  const treatyAccepted = myBal?.accepted ?? their.accepted;
   const balCls = incomingTrade
     ? (data.canAccept !== false ? 'ok' : 'no')
-    : (their.accepted ? 'ok' : 'no');
-  const delta = incomingTrade
+    : (treatyAccepted ? 'ok' : 'no');
+  const delta = incomingTrade || isTreatyMode
     ? (netPw > 0 ? `+${netPw}` : String(netPw))
     : formatBalanceDelta(their.balancePn, their.accepted);
   const deltaCls = netPw >= 0 ? 'pos' : 'neg';
-  const centerLabel = incomingTrade ? 'Bilans (netto)' : 'Bilans (Oni)';
+  const centerLabel = incomingTrade || isTreatyMode ? 'Bilans (netto)' : 'Bilans (Oni)';
   const hint = incomingTrade
     ? incomingTradeBalanceHint(netPw)
-    : balanceHint(their);
+    : isTreatyMode
+      ? (netPw < 0
+        ? `Brakuje ${Math.abs(netPw)} PW — dopłać do bilansu`
+        : netPw > 0
+          ? `Nadwyżka +${netPw} PW`
+          : 'Równo — spełnia')
+      : balanceHint(their);
   const verdict = verdictHtml(data);
   const extraNote = (data.extraOnTable ?? 0) > 0
     ? '<span class="da-pn-bal-more">+' + data.extraOnTable + ' inna na stole</span>'
     : '';
 
-  const treatyEff = data.myBalance?.treatyEffectivePn ?? their.treatyEffectivePn;
-  const treatyBase = data.myBalance?.treatyBasePn ?? their.treatyBasePn ?? 0;
-  const treatyNote = treatyEff != null && treatyEff > 0
-    ? treatyMetaHtml(treatyEff, their.relCurrent ?? data.myBalance?.relCurrent ?? 100, 'Traktat', treatyBase)
+  const playerTreatyPw = myBal?.treatyEffectivePn ?? 0;
+  const partnerTreatyPw = their.treatyEffectivePn ?? their.treatyBasePn ?? 0;
+  const treatyBase = myBal?.treatyBasePn ?? their.treatyBasePn ?? 0;
+  const relTotal = their.relCurrent ?? myBal?.relCurrent ?? 100;
+  const modPct = myBal?.relationModPct;
+  const treatyNote = playerTreatyPw > 0 || partnerTreatyPw > 0
+    ? treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, 'Traktat', treatyBase)
     : '';
 
   const relModRow = relationRowFromBalance(their, data.myBalance);
@@ -339,7 +373,9 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
     + '<div class="da-pn-bal-cols">'
     + '<div class="da-pn-bal-cell my">'
     + '<span class="da-pn-bal-lbl">My oddajemy</span>'
-    + pwAmountHtml(data.myOfferPn)
+    + (playerTreatyPw > 0
+      ? pwAmountWithBaseHtml(data.myOfferPn, treatyBase, modPct)
+      : pwAmountHtml(data.myOfferPn))
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
     + '<span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span>'
@@ -421,12 +457,10 @@ export function renderPnBalancePanelFromBasket(
 }
 
 /**
- * Koszyk traktatu (pokój, NAP, sojusz, …) — PN traktatu @ Relacji + koszyk osobno.
- * NIE stosuje diplomacyFairGivePn na dwustronnej wartości traktatu (fałszywe „Brakuje PW").
- * Bilans = słodzik netto proponenta max(0, give−receive), jak peaceProposalOfferPn w silniku.
+ * Koszyk traktatu — asymetryczny PW (gracz @ Relacji, partner = baza) + koszyk.
  */
 export function renderPnBalancePanelForTreaty(
-  treatyEffectivePw: number,
+  playerTreatyPw: number,
   basketGivePn: number,
   basketReceivePn: number,
   relTotal: number,
@@ -434,24 +468,36 @@ export function renderPnBalancePanelForTreaty(
   relRequired?: number,
   treatyMetaLabel = 'Traktat',
   treatyBasePw?: number,
+  partnerTreatyPw?: number,
 ): string {
+  const base = treatyBasePw ?? partnerTreatyPw ?? playerTreatyPw;
+  const partnerPw = partnerTreatyPw ?? treatyPwForRole(base, relTotal, 'partner');
+  const playerPw = playerTreatyPw > 0 ? playerTreatyPw : treatyPwForRole(base, relTotal, 'player');
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
   const basketNet = Math.max(0, basketGivePn - basketReceivePn);
-  const myDisplay = treatyEffectivePw + basketGivePn;
-  const theirDisplay = treatyEffectivePw + basketReceivePn;
+  const myDisplay = playerPw + basketGivePn;
+  const theirDisplay = partnerPw + basketReceivePn;
+  const asymBalance = myDisplay - theirDisplay;
   const relOk = relRequired == null || relTotal >= relRequired;
-  const accepted = relOk;
-  const balancePn = basketNet;
+  const accepted = relOk && asymBalance >= 0;
+  const balancePn = asymBalance;
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
   const hint = !relOk
     ? `Relacja ${relTotal} — wym. ${relRequired}`
-    : (balancePn > 0 ? `Nadwyżka ${balancePn} PW` : 'Równo — spełnia');
+    : (balancePn < 0
+      ? `Brakuje ${Math.abs(balancePn)} PW — dopłać`
+      : balancePn > 0
+        ? `Nadwyżka ${balancePn} PW`
+        : 'Równo — spełnia');
   const verdict = !relOk
-    ? `Relacja ${relTotal} — wymagane ≥ ${relRequired} (nie progu fair-min handlu)`
-    : (balancePn > 0
-      ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
-      : treatyMetaLabel + ': ' + treatyEffectivePw + ' PW @ Rel ' + relTotal + ' — spełnione');
+    ? `Relacja ${relTotal} — wymagane ≥ ${relRequired}`
+    : (balancePn < 0
+      ? `Dopłać ${Math.abs(balancePn)} PW (Relacja obciąża Twoją stronę)`
+      : balancePn > 0
+        ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
+        : treatyMetaLabel + ': Ty ' + playerPw + ' PW · Oni ' + partnerPw + ' PW — spełnione');
 
   const relNote = !relOk
     ? '<div class="da-pn-bal-meta warn">Relacja ' + relTotal
@@ -467,10 +513,10 @@ export function renderPnBalancePanelForTreaty(
     + '<div class="da-pn-bal-cols">'
     + '<div class="da-pn-bal-cell my">'
     + '<span class="da-pn-bal-lbl">My oddajemy</span>'
-    + pwAmountHtml(myDisplay)
+    + pwAmountWithBaseHtml(myDisplay, base, modPct)
     + '</div>'
     + '<div class="da-pn-bal-cell center ' + balCls + '">'
-    + '<span class="da-pn-bal-lbl">Bilans (Oni)</span>'
+    + '<span class="da-pn-bal-lbl">Bilans (netto)</span>'
     + '<span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + '>' + esc(delta) + '</span>'
     + '<span class="da-pn-bal-hint">' + esc(hint) + '</span>'
     + '</div>'
@@ -480,7 +526,7 @@ export function renderPnBalancePanelForTreaty(
     + '</div>'
     + '</div>'
     + renderRelationDealModRowHtml(relTotal, 'treaty')
-    + treatyMetaHtml(treatyEffectivePw, relTotal, treatyMetaLabel, treatyBasePw, basketNet)
+    + treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet)
     + relNote
     + '<div class="da-pn-bal-verdict ' + balCls + '">' + esc(verdict) + '</div>'
     + '</div>'
@@ -489,20 +535,23 @@ export function renderPnBalancePanelForTreaty(
 
 /** @deprecated alias — użyj renderPnBalancePanelForTreaty */
 export function renderPnBalancePanelForPeace(
-  treatyEffectivePw: number,
+  playerTreatyPw: number,
   basketGivePn: number,
   basketReceivePn: number,
   relTotal: number,
   actionLabel = 'Propozycja pokoju',
+  treatyBasePw?: number,
 ): string {
   return renderPnBalancePanelForTreaty(
-    treatyEffectivePw,
+    playerTreatyPw,
     basketGivePn,
     basketReceivePn,
     relTotal,
     actionLabel,
     undefined,
     'Traktat pokoju',
+    treatyBasePw,
+    treatyBasePw != null ? treatyBasePw : undefined,
   );
 }
 

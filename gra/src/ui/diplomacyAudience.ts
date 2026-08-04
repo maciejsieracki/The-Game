@@ -29,7 +29,7 @@ import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQu
 import { civCardDisplayName, leaderName } from './leaderPortraits';
 import { civBrandLineForKey } from './civBrandDisplay';
 import { renderNegotiationTableDealSideHtml } from './diplomacyDealDisplay';
-import { bilateralTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
+import { bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
 import {
   balancePanelDataFromRow,
   pickPrimaryNegotiationRow,
@@ -1374,17 +1374,22 @@ function tableDealSideHtml(
 ): string {
   if (!r.dealPayload) return '';
   const treatyLabel = bilateralTreatyLabel(r);
-  const treatyPw = treatyLabel ? bilateralTreatyDisplayPw(r.acceptanceMy, r.acceptanceTheir) : undefined;
   const treatyBasePw = treatyLabel
     ? (r.acceptanceMy?.treatyBasePn ?? r.acceptanceTheir?.treatyBasePn)
     : undefined;
+  const treatyPw = treatyLabel
+    ? (focus === 'we'
+      ? playerTreatyDisplayPw(r.acceptanceMy) ?? bilateralTreatyDisplayPw(r.acceptanceMy, r.acceptanceTheir)
+      : partnerTreatyDisplayPw(r.acceptanceTheir) ?? treatyBasePw)
+    : undefined;
+  const showBasePw = focus === 'we' ? treatyBasePw : undefined;
   return renderNegotiationTableDealSideHtml(
     r.dealPayload,
     focus,
     incoming,
     treatyLabel,
     treatyPw,
-    treatyBasePw,
+    showBasePw,
   );
 }
 

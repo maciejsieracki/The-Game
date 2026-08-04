@@ -35,6 +35,9 @@ export {
   relationSignedFromTotal,
   relationPnModPct,
   resolveProposalPn,
+  partnerTreatyPnRequired,
+  playerTreatyPnRequired,
+  treatyPwForRole,
 } from './game/diplomacy-pn-engine';
 export {
   renderPnBalancePanelForTreaty,
@@ -82,10 +85,10 @@ ok(mod.relationPnModPct(50) === 50, 'modPct +50');
 ok(mod.relationPnModPct(-50) === -50, 'modPct -50');
 ok(mod.relationPnModPct(95) === 90, 'modPct clamp +90');
 ok(mod.relationPnModPct(-95) === -90, 'modPct clamp -90');
-ok(mod.effectiveTreatyPnRequired(500, 150) === 250, 'pokój @ rel +50 → 250 PN');
-ok(mod.effectiveTreatyPnRequired(500, 50) === 750, 'pokój @ rel -50 → 750 PN');
-ok(mod.effectiveTreatyPnRequired(200, 150) === 100, 'NAP @ rel +50 → 100 PN');
-ok(mod.effectiveTreatyPnRequired(200, 50) === 300, 'NAP @ rel -50 → 300 PN');
+ok(mod.effectiveTreatyPnRequired(500, 150) === 250, 'pokój @ rel +50 → 250 PN (gracz)');
+ok(mod.effectiveTreatyPnRequired(500, 50) === 750, 'pokój @ rel -50 → 750 PN (gracz)');
+ok(mod.effectiveTreatyPnRequired(200, 150) === 100, 'NAP @ rel +50 → 100 PN (gracz)');
+ok(mod.effectiveTreatyPnRequired(200, 50) === 300, 'NAP @ rel -50 → 300 PN (gracz)');
 ok(mod.effectiveTreatyPnRequired(0, 100) === 0, 'handel base 0 → 0 effective');
 
 const giftPayload = {
@@ -129,11 +132,11 @@ ok(napTreatyOnly.my.mode === 'treaty', 'NAP bez koszyka: mode treaty');
 ok(napTreatyOnly.my.treatyEffectivePn === 200, 'NAP @ rel 100 effective 200 PW');
 ok(mod.bilateralTreatyDisplayPw(napTreatyOnly.my, napTreatyOnly.their) === 200, 'bilateral NAP display 200 PW');
 ok(mod.sideDisplayOfferPw(napTreatyOnly.my, 200) === 200, 'proposer side display 200 PW');
-ok(mod.sideDisplayOfferPw(napTreatyOnly.their, 200) === 200, 'responder side display 200 PW (bilateral)');
+ok(mod.sideDisplayOfferPw(napTreatyOnly.their, 200) === 200, 'responder side display 200 PW (baza @ rel 100)');
 
 const napIncoming = mod.computePlayerAcceptanceSides('nap', {}, 100, true);
-ok(napIncoming.their.treatyEffectivePn === 200, 'incoming NAP: their side treaty 200 PW');
-ok(mod.sideDisplayOfferPw(napIncoming.my, 200) === 200, 'incoming: my bilateral display 200 PW');
+ok(napIncoming.their.treatyEffectivePn === 200, 'incoming NAP: their side treaty 200 PW (baza)');
+ok(mod.sideDisplayOfferPw(napIncoming.my, 200) === 200, 'incoming: my display 200 PW');
 ok(mod.sideDisplayOfferPw(napIncoming.their, 200) === 200, 'incoming: their display 200 PW');
 
 // Wszystkie traktaty z bazą PW > 0 — wspólna ścieżka bilateralTreatyDisplayPw / sideDisplayOfferPw
@@ -158,7 +161,7 @@ for (const [actionId, base] of TREATY_PW_BASE) {
   const bil = mod.bilateralTreatyDisplayPw(pure.my, pure.their);
   ok(bil === base, `${actionId}: bilateral display ${base} PW @ rel 100`);
   ok(mod.sideDisplayOfferPw(pure.my, bil) === base, `${actionId}: proposer card/panel ${base} PW`);
-  ok(mod.sideDisplayOfferPw(pure.their, bil) === base, `${actionId}: responder card/panel ${base} PW`);
+  ok(mod.sideDisplayOfferPw(pure.their, bil) === base, `${actionId}: responder card/panel ${base} PW (baza @ rel 100)`);
   ok(pure.my.offerPn === 0, `${actionId}: raw offerPn 0 before display helper`);
 }
 
@@ -173,7 +176,20 @@ ok(napMixed.my.mode === 'mixed', 'NAP+gold: mode mixed');
 const napMixedBil = mod.bilateralTreatyDisplayPw(napMixed.my, napMixed.their);
 ok(napMixedBil === 200, 'NAP+gold: bilateral 200');
 ok(mod.sideDisplayOfferPw(napMixed.my, napMixedBil) === 250, 'NAP+gold: my display 50+200 PW');
-ok(mod.sideDisplayOfferPw(napMixed.their, napMixedBil) === 200, 'NAP+gold: their display 200 PW');
+ok(mod.sideDisplayOfferPw(napMixed.their, napMixedBil) === 200, 'NAP+gold: their display 200 PW (baza)');
+
+// Asymetria Relacja→PW: partner = baza, gracz @ Relacji (Maciej 2026-08-04)
+ok(mod.partnerTreatyPnRequired(80) === 80, 'partner treaty = baza 80');
+const tradeTreaty52 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 52, false);
+ok(tradeTreaty52.my.treatyEffectivePn === 118, 'umowa_handlowa @ rel 52: gracz 118 PW');
+ok(tradeTreaty52.their.treatyEffectivePn === 80, 'umowa_handlowa @ rel 52: partner 80 PW');
+ok(mod.sideDisplayOfferPw(tradeTreaty52.my, undefined) === 118, 'umowa_handlowa @ rel 52: my display 118');
+ok(mod.sideDisplayOfferPw(tradeTreaty52.their, undefined) === 80, 'umowa_handlowa @ rel 52: their display 80');
+const tradeTreaty100 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 100, false);
+ok(tradeTreaty100.my.treatyEffectivePn === 80 && tradeTreaty100.their.treatyEffectivePn === 80, 'umowa_handlowa @ rel 100: obie 80');
+const tradeTreaty148 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 148, false);
+ok(tradeTreaty148.my.treatyEffectivePn === 42, 'umowa_handlowa @ rel 148: gracz 42 PW');
+ok(tradeTreaty148.their.treatyEffectivePn === 80, 'umowa_handlowa @ rel 148: partner 80 PW');
 
 // Baza 0 — tylko koszyk
 ok(mod.treatyBaseAcceptancePn('handel') === 0, 'handel base 0');
@@ -260,11 +276,14 @@ const woodTradePn = mod.resolveProposalPn({
 }, { difficulty: 'normal', proposerOwnerId: 0, playerOwnerId: 0 });
 ok(woodTradePn.givePn === 10, 'resolveProposalPn: 1 pakiet drewno = 10 PN');
 
-// Pokój @ rel 77 (Maciej 2026-08-01): symetryczny traktat 615 PW — NIE fair-min −184
-ok(mod.effectiveTreatyPnRequired(500, 77) === 615, 'pokój @ rel 77: traktat effective 615 PW');
+// Pokój @ rel 77 — asymetria: gracz 615 PW, partner 500 PW (baza)
+ok(mod.effectiveTreatyPnRequired(500, 77) === 615, 'pokój @ rel 77: traktat gracz 615 PW');
+ok(mod.partnerTreatyPnRequired(500) === 500, 'pokój @ rel 77: partner 500 PW (baza)');
 const peacePure77 = mod.computePlayerAcceptanceSides('pokoj', {}, 77, false);
 ok(peacePure77.their.accepted, 'pokój czysty @ rel 77: accepted');
-ok(peacePure77.their.balancePn === 0, 'pokój czysty @ rel 77: bilans 0 (nie fair-min)');
+ok(peacePure77.my.balancePn === 115, 'pokój czysty @ rel 77: asymetria +115 PW (615−500)');
+ok(peacePure77.my.treatyEffectivePn === 615, 'pokój @ rel 77: gracz 615 PW');
+ok(peacePure77.their.treatyEffectivePn === 500, 'pokój @ rel 77: partner 500 PW');
 ok(mod.diplomacyFairGivePn(615, 77) === 799, 'kontrola: fair-min handlu 615→799 (nie dotyczy pokoju)');
 const peaceSym77 = mod.computePlayerAcceptanceSides(
   'pokoj',
@@ -276,8 +295,8 @@ const peaceSym77 = mod.computePlayerAcceptanceSides(
   false,
 );
 ok(peaceSym77.their.accepted, 'pokój symetryczny 10¤ @ rel 77: accepted (jak silnik)');
-ok(peaceSym77.their.balancePn === 0, 'pokój symetryczny: bilans 0 nie −184');
-ok(peaceSym77.their.balancePn !== -184, 'pokój: bez fałszywego fair-min na traktacie');
+ok(peaceSym77.my.balancePn === 115, 'pokój symetryczny: asymetria strukturalna +115 (nie fair-min)');
+ok(peaceSym77.my.balancePn !== -184, 'pokój: bez fałszywego fair-min na traktacie');
 const peaceSweet77 = mod.computePlayerAcceptanceSides(
   'pokoj',
   { giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 50 }] },
@@ -285,24 +304,26 @@ const peaceSweet77 = mod.computePlayerAcceptanceSides(
   false,
 );
 ok(peaceSweet77.their.accepted, 'pokój + dar 50¤: accepted');
-ok(peaceSweet77.their.balancePn === 50, 'pokój + dar 50¤: nadwyżka +50 PW');
+ok(peaceSweet77.my.balancePn === 165, 'pokój + dar 50¤: asymetria 615+50−500 = +165 PW');
 
 // NAP @ rel 52 — panel traktatowy NIE fair-min (Maciej 2026-08-02, BUG-DYPLO-NAP-FAIRMIN-FALSE)
 ok(mod.effectiveTreatyPnRequired(200, 52) === 296, 'NAP @ rel 52: effective 296 PW');
-const napPanel52 = mod.renderPnBalancePanelForTreaty(296, 0, 0, 52, 'Pakt o nieagresji', 50);
-ok(napPanel52.includes('296 PW @ Rel 52'), 'NAP panel @ rel 52: meta traktatu');
+const napPanel52 = mod.renderPnBalancePanelForTreaty(296, 0, 0, 52, 'Pakt o nieagresji', 50, 'Traktat', 200, 200);
+ok(napPanel52.includes('Ty: baza 200 → 296'), 'NAP panel @ rel 52: meta gracz baza→effective');
+ok(napPanel52.includes('Oni: 200 PW (baza)'), 'NAP panel @ rel 52: meta partner baza');
 ok(!napPanel52.includes('fair min'), 'NAP panel @ rel 52: bez fair min');
 ok(!napPanel52.includes('Brakuje 274'), 'NAP panel @ rel 52: bez fałszywego Brakuje 274');
 ok(napPanel52.includes('da-pn-balance-bar ok'), 'NAP panel @ rel 52: tone ok przy Rel ≥50');
 
-const napPanel40 = mod.renderPnBalancePanelForTreaty(300, 0, 0, 40, 'Pakt o nieagresji', 50);
+const napPanel40 = mod.renderPnBalancePanelForTreaty(300, 0, 0, 40, 'Pakt o nieagresji', 50, 'Traktat', 200, 200);
 ok(napPanel40.includes('wym. 50'), 'NAP panel @ rel 40: komunikat Relacji');
 ok(!napPanel40.includes('fair min'), 'NAP panel @ rel 40: bez fair-min handlu');
 ok(napPanel40.includes('da-pn-balance-bar no'), 'NAP panel @ rel 40: tone no');
 
-// Pokój — panel traktatowy (regresja po uogólnieniu)
-const peacePanel77 = mod.renderPnBalancePanelForPeace(615, 0, 0, 77, 'Propozycja pokoju');
-ok(peacePanel77.includes('Traktat pokoju: 615 PW @ Rel 77'), 'pokój panel: meta traktatu');
+// Pokój — panel traktatowy asymetryczny
+const peacePanel77 = mod.renderPnBalancePanelForPeace(615, 0, 0, 77, 'Propozycja pokoju', 500);
+ok(peacePanel77.includes('Ty: baza 500 → 615'), 'pokój panel: meta gracz');
+ok(peacePanel77.includes('Oni: 500 PW (baza)'), 'pokój panel: meta partner');
 ok(!peacePanel77.includes('fair min'), 'pokój panel: bez fair min');
 ok(!peacePanel77.includes('Brakuje'), 'pokój panel: bez fałszywego Brakuje');
 ok(peacePanel77.includes('da-pn-balance-bar ok'), 'pokój panel: tone ok');
@@ -339,14 +360,13 @@ ok(!incomingPanel.includes('Brakuje'), 'incoming panel: bez Brakuje');
 ok(incomingPanel.includes('Bilans (netto)'), 'incoming panel: etykieta netto');
 ok(incomingPanel.includes('da-pn-balance-bar ok'), 'incoming panel: tone ok przy canAccept');
 
-// Traktat handlowy @ rel 52 — silnik + UI „Wpływ Relacji” (Maciej 2026-08-04)
-ok(mod.effectiveTreatyPnRequired(80, 52) === 118, 'umowa_handlowa @ rel 52: 80 → 118 PW effective');
-const tradeTreaty52 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 52, false);
-ok(mod.bilateralTreatyDisplayPw(tradeTreaty52.my, tradeTreaty52.their) === 118, 'umowa_handlowa @ rel 52: bilateral 118 PW');
-const tradePanel52 = mod.renderPnBalancePanelForTreaty(118, 0, 0, 52, 'Traktat handlowy', 0, 'Traktat', 80);
+// Traktat handlowy @ rel 52 — UI asymetria (Maciej 2026-08-04)
+ok(mod.effectiveTreatyPnRequired(80, 52) === 118, 'umowa_handlowa @ rel 52: 80 → 118 PW gracz');
+const tradePanel52 = mod.renderPnBalancePanelForTreaty(118, 0, 0, 52, 'Traktat handlowy', 0, 'Traktat', 80, 80);
 ok(tradePanel52.includes('Wpływ Relacji na deal'), 'umowa_handlowa panel: wiersz wpływu Relacji');
 ok(tradePanel52.includes('+48%'), 'umowa_handlowa panel: badge +48% (droższy przy niskiej Relacji)');
-ok(tradePanel52.includes('baza 80 → 118'), 'umowa_handlowa panel: meta baza→effective');
+ok(tradePanel52.includes('Ty: baza 80 → 118'), 'umowa_handlowa panel: meta gracz baza→effective');
+ok(tradePanel52.includes('Oni: 80 PW (baza)'), 'umowa_handlowa panel: meta partner baza');
 const tradeRow52 = {
   direction: 'own',
   actionLabel: 'Traktat handlowy',
@@ -357,7 +377,8 @@ const tradeRow52 = {
 const tradePanelData52 = mod.balancePanelDataFromRow(tradeRow52, 0);
 const tradeTablePanel52 = mod.renderPnBalancePanelHtml(tradePanelData52);
 ok(tradeTablePanel52.includes('da-pn-rel-mod'), 'stół negocjacji umowa_handlowa: rel-mod row');
-ok(tradeTablePanel52.includes('118 PW'), 'stół negocjacji umowa_handlowa: 118 PW display');
+ok(tradeTablePanel52.includes('118 PW'), 'stół negocjacji umowa_handlowa: gracz 118 PW');
+ok(tradeTablePanel52.includes('80 PW'), 'stół negocjacji umowa_handlowa: partner 80 PW');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 

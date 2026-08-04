@@ -567,6 +567,7 @@ function treatySummaryHtml(
   const rel = ctx.relacjaTotal ?? 100;
   const { actionId: _aid, ...proposalFields } = payload;
   const sides = computePlayerAcceptanceSides(cywId, proposalFields as ProposalPayload, rel, false);
+  const treatyBasePw = sides.my.treatyBasePn ?? sides.their.treatyBasePn;
   const bil = bilateralTreatyDisplayPw(sides.my, sides.their);
   const myPw = sideDisplayOfferPw(sides.my, bil);
   const theirPw = sideDisplayOfferPw(sides.their, bil);
@@ -575,12 +576,12 @@ function treatySummaryHtml(
 
   let html = '';
   if (bil != null && bil > 0) {
-    const treatyPw = sides.my.treatyEffectivePn ?? sides.their.treatyEffectivePn ?? bil;
-    const treatyBasePw = sides.my.treatyBasePn ?? sides.their.treatyBasePn;
+    const playerPw = sides.my.treatyEffectivePn ?? bil;
+    const partnerPw = sides.their.treatyEffectivePn ?? treatyBasePw ?? bil;
     const relRequired = sides.my.relRequired ?? sides.their.relRequired;
     const treatyMetaLabel = cywId === 'pokoj' ? 'Traktat pokoju' : 'Traktat';
     html += renderPnBalancePanelForTreaty(
-      treatyPw, basketGivePn, basketReceivePn, rel, action.label, relRequired, treatyMetaLabel, treatyBasePw,
+      playerPw, basketGivePn, basketReceivePn, rel, action.label, relRequired, treatyMetaLabel, treatyBasePw, partnerPw,
     );
   } else if (myPw > 0 || theirPw > 0) {
     html += renderPnBalancePanelFromBasket(myPw, theirPw, rel, action.label);

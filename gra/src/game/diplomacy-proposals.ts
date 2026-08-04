@@ -29,6 +29,7 @@ import type { Player } from '../types/player';
 import { TypCywilizacji } from '../types/player';
 import {
   effectiveTreatyPnRequired,
+  partnerTreatyPnRequired,
   pnDealAcceptedByAi,
   pnFromLegacyGold,
   pnGiftAllowed,
@@ -419,17 +420,20 @@ export function treatyEvalRelationTotal(rel: Relation): number {
 }
 
 /**
- * Skuteczna oferta PN na pokój: sama propozycja pokoju = wymagane PN traktatu @ Relacji
- * (jak karta „375 PW" na stole); koszyk to dodatkowy słodzik netto ponad próg.
+ * Skuteczna oferta PN na pokój: propozycja pokoju = wymagane PN traktatu po stronie
+ * proponenta (gracz @ Relacji, partner = baza) + słodzik netto z koszyka.
  */
 export function peaceProposalOfferPn(
   givePn: number,
   receivePn: number,
   basePn: number,
   rel: Relation,
+  proposerIsPlayer = false,
 ): { offerPn: number; required: number } {
   const relTotal = treatyEvalRelationTotal(rel);
-  const required = effectiveTreatyPnRequired(basePn, relTotal);
+  const required = proposerIsPlayer
+    ? effectiveTreatyPnRequired(basePn, relTotal)
+    : partnerTreatyPnRequired(basePn);
   const basketNet = Math.max(0, givePn - receivePn);
   return { offerPn: required + basketNet, required };
 }
@@ -453,7 +457,8 @@ function treatyPnGate(
   if (basePn <= 0) return null;
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   if (actionId === 'pokoj') {
-    const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+    const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
+    const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
     if (offerPn < required) {
       return {
         accepted: false,
@@ -669,7 +674,8 @@ export function evaluateProposal(
     case 'pokoj': {
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const basePn = treatyBasePnFromConfig('pokoj');
-      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+      const proposerIsPlayer = proposerOwnerId === 0;
+      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
       if (offerPn < required) {
         return {
           accepted: false,

@@ -16,6 +16,7 @@ import {
   relationPnModPct,
   relationSignedFromTotal,
   resolveProposalPn,
+  treatyPwForRole,
   type ResolveProposalPnOptions,
 } from './diplomacy-pn-engine';
 import { splitNegotiationDealPlayerSides } from './diplomacy-display';
@@ -71,15 +72,36 @@ export function treatyBaseAcceptancePn(actionId: string): number {
   return loadTreatyAcceptanceDef(actionId)?.punkty ?? 0;
 }
 
-/** PW traktatu dwustronnego do wyświetlenia na obu stronach stołu (effective lub baza). */
+/** PW traktatu po stronie gracza (My) — z moda Relacji. */
+export function playerTreatyDisplayPw(side?: AcceptanceSideBalance): number | undefined {
+  if (!side) return undefined;
+  const pw = side.treatyEffectivePn ?? 0;
+  return pw > 0 ? pw : undefined;
+}
+
+/** PW traktatu po stronie partnera (Oni) — baza bez moda. */
+export function partnerTreatyDisplayPw(side?: AcceptanceSideBalance): number | undefined {
+  if (!side) return undefined;
+  const base = side.treatyBasePn ?? 0;
+  if (base <= 0) return undefined;
+  const pw = side.treatyEffectivePn ?? base;
+  return pw > 0 ? pw : undefined;
+}
+
+/**
+ * @deprecated Asymetryczny model — użyj playerTreatyDisplayPw / partnerTreatyDisplayPw.
+ * Zwraca PW gracza gdy dostępne, inaczej bazę partnera (kompatybilność wsteczna).
+ */
 export function bilateralTreatyDisplayPw(
   my?: AcceptanceSideBalance,
   their?: AcceptanceSideBalance,
 ): number | undefined {
   const mode = my?.mode ?? their?.mode;
   if (mode !== 'treaty' && mode !== 'mixed') return undefined;
-  const effective = my?.treatyEffectivePn ?? their?.treatyEffectivePn;
-  if (effective != null && effective > 0) return effective;
+  const playerPw = playerTreatyDisplayPw(my);
+  if (playerPw != null) return playerPw;
+  const partnerPw = partnerTreatyDisplayPw(their);
+  if (partnerPw != null) return partnerPw;
   const base = my?.treatyBasePn ?? their?.treatyBasePn;
   return base != null && base > 0 ? base : undefined;
 }
@@ -125,10 +147,7 @@ function formatBalanceLabel(balancePn: number, accepted: boolean): string {
 }
 
 /**
- * Pokój: silnik liczy offer = PN traktatu @ Relacji + słodzik netto z koszyka
- * (peaceProposalOfferPn w diplomacy-proposals). NIE stosuje fair-min handlu na
- * symetrycznej karcie traktatu — to dawało fałszywe „−184 PW” w koszyku przy
- * 615/615, podczas gdy evaluateProposal akceptuje.
+ * Pokój: asymetryczny PW traktatu (gracz @ Relacji, partner = baza) + słodzik netto.
  */
 function computePeaceAcceptanceSides(
   givePn: number,
@@ -138,41 +157,66 @@ function computePeaceAcceptanceSides(
   incoming: boolean,
   mode: 'treaty' | 'mixed',
 ): { my: AcceptanceSideBalance; their: AcceptanceSideBalance } {
-  const treatyEffectivePn = effectiveTreatyPnRequired(treatyBase, relTotal);
+  const playerTreatyPw = treatyPwForRole(treatyBase, relTotal, 'player');
+  const partnerTreatyPw = treatyPwForRole(treatyBase, relTotal, 'partner');
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
   const modLabel = formatRelationModLabel(relTotal);
+  const proposerIsPlayer = !incoming;
+  const proposerTreatyPw = proposerIsPlayer ? playerTreatyPw : partnerTreatyPw;
   const proposerGive = incoming ? receivePn : givePn;
   const proposerReceive = incoming ? givePn : receivePn;
   const basketNet = Math.max(0, proposerGive - proposerReceive);
-  const proposerOfferPn = treatyEffectivePn + basketNet;
-  const peaceAccepted = proposerOfferPn >= treatyEffectivePn;
-  const surplusPn = proposerOfferPn - treatyEffectivePn;
+  const proposerOfferPn = proposerTreatyPw + basketNet;
+  const peaceAccepted = proposerOfferPn >= proposerTreatyPw;
+  const surplusPn = proposerOfferPn - proposerTreatyPw;
 
   const myBasketOffer = incoming ? receivePn : givePn;
   const myBasketDemand = incoming ? givePn : receivePn;
   const theirBasketOffer = incoming ? givePn : receivePn;
   const theirBasketDemand = incoming ? receivePn : givePn;
 
-  const buildSide = (
-    basketOffer: number,
-    basketDemand: number,
-  ): AcceptanceSideBalance => ({
-    offerPn: basketOffer,
-    demandPn: basketDemand,
-    fairMinPn: treatyEffectivePn,
-    balancePn: surplusPn,
+  const myDisplayPw = playerTreatyPw + myBasketOffer;
+  const theirDisplayPw = partnerTreatyPw + theirBasketOffer;
+  const asymBalance = myDisplayPw - theirDisplayPw;
+  const hasBasket = myBasketOffer > 0 || theirBasketOffer > 0;
+
+  const buildPlayerSide = (): AcceptanceSideBalance => ({
+    offerPn: myBasketOffer,
+    demandPn: myBasketDemand,
+    fairMinPn: playerTreatyPw,
+    balancePn: asymBalance,
     treatyBasePn: treatyBase,
-    treatyEffectivePn,
+    treatyEffectivePn: playerTreatyPw,
     relationModPct: modPct,
     relationModLabel: modLabel,
     mode,
-    accepted: peaceAccepted,
-    statusLabel: formatBalanceLabel(surplusPn, peaceAccepted),
+    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
+    statusLabel: hasBasket && asymBalance < 0
+      ? `Brakuje ${Math.abs(asymBalance)} PW (Relacja)`
+      : asymBalance > 0 && hasBasket
+        ? `Nadwyżka +${asymBalance} PW`
+        : formatBalanceLabel(surplusPn, peaceAccepted),
+  });
+
+  const buildPartnerSide = (): AcceptanceSideBalance => ({
+    offerPn: theirBasketOffer,
+    demandPn: theirBasketDemand,
+    fairMinPn: partnerTreatyPw,
+    balancePn: asymBalance,
+    treatyBasePn: treatyBase,
+    treatyEffectivePn: partnerTreatyPw,
+    mode,
+    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
+    statusLabel: hasBasket && asymBalance > 0
+      ? `Przewaga u Ciebie +${asymBalance} PW`
+      : hasBasket && asymBalance < 0
+        ? `Brakuje ${Math.abs(asymBalance)} PW`
+        : 'Równo — spełnia',
   });
 
   return {
-    my: buildSide(myBasketOffer, myBasketDemand),
-    their: buildSide(theirBasketOffer, theirBasketDemand),
+    my: buildPlayerSide(),
+    their: buildPartnerSide(),
   };
 }
 
@@ -183,20 +227,22 @@ function computeSideBalance(
   treatyBasePn: number,
   relRequired: number | undefined,
   mode: AcceptanceSideBalance['mode'],
+  treatyRole: 'player' | 'partner' | 'none',
 ): AcceptanceSideBalance {
   const relClamped = Math.min(100, Math.max(1, relTotal));
   const fairMinPn = diplomacyFairGivePn(demandPn, relClamped);
-  const treatyEffectivePn = effectiveTreatyPnRequired(treatyBasePn, relTotal);
-  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  const modLabel = formatRelationModLabel(relTotal);
+  const treatyEffectivePn = treatyRole === 'none'
+    ? 0
+    : treatyPwForRole(treatyBasePn, relTotal, treatyRole);
+  const modPct = treatyRole === 'player'
+    ? relationPnModPct(relationSignedFromTotal(relTotal))
+    : undefined;
+  const modLabel = treatyRole === 'player' ? formatRelationModLabel(relTotal) : undefined;
   const balancePn = offerPn - fairMinPn;
   const basketAccepted = pnDealAcceptedByAi(offerPn, demandPn, relTotal);
   const relBalance = relRequired != null ? relTotal - relRequired : undefined;
   const relOk = relRequired == null || relTotal >= relRequired;
   const hasBasketContent = offerPn > 0 || demandPn > 0;
-  // Traktat (NAP itd.) opłacany progiem Relacji w evaluateProposal — koszyk to
-  // słodzik/wymiana. Nie wymagaj offerPn ≥ bazę PN traktatu (to psuło UI vs silnik:
-  // 10¤+NAP wyglądało na bilans 0, a accepted=false). Maciej 2026-07-30.
   const treatyPnOk = treatyEffectivePn === 0
     || !hasBasketContent
     || demandPn > 0
@@ -204,15 +250,13 @@ function computeSideBalance(
   const accepted = (hasBasketContent ? basketAccepted : true) && relOk;
 
   let statusLabel = formatBalanceLabel(balancePn, accepted);
-  // Nie strasz „brakuje PW traktatu” przy słodziku/wymianie — traktat idzie progiem Relacji.
   if (treatyEffectivePn > 0 && !treatyPnOk && demandPn <= 0 && offerPn > 0 && offerPn < treatyEffectivePn) {
-    // Jednostronna dopłata poniżej bazy: informacyjnie, bez blokady accepted (NAP/sojusz).
     statusLabel = `${statusLabel} · słodzik ${offerPn}/${treatyEffectivePn} PW`;
   } else if (relRequired != null && relBalance != null && relBalance < 0) {
     statusLabel = `Relacja −${Math.abs(relBalance)} (wym. ${relRequired})`;
   } else if (mode === 'gift' && offerPn > 0 && demandPn === 0) {
     statusLabel = `Dar +${offerPn} PW`;
-  } else if (treatyEffectivePn > 0 && treatyPnOk && modPct !== 0) {
+  } else if (treatyEffectivePn > 0 && treatyPnOk && modPct != null && modPct !== 0) {
     statusLabel = `${statusLabel} · ${modLabel}`;
   }
 
@@ -221,10 +265,10 @@ function computeSideBalance(
     demandPn,
     fairMinPn,
     balancePn,
-    treatyBasePn,
+    treatyBasePn: treatyBasePn > 0 ? treatyBasePn : 0,
     treatyEffectivePn: treatyEffectivePn > 0 ? treatyEffectivePn : undefined,
-    relationModPct: treatyBasePn > 0 ? modPct : undefined,
-    relationModLabel: treatyBasePn > 0 ? modLabel : undefined,
+    relationModPct: modPct,
+    relationModLabel: modLabel,
     relRequired,
     relCurrent: relTotal,
     relBalance,
@@ -285,15 +329,45 @@ export function computePlayerAcceptanceSides(
     return { my: peace.my, their: peace.their, isGift };
   }
 
-  const my = computeSideBalance(myOfferPn, myDemandPn, relTotal, incoming ? 0 : treatyBase, adjustedRelRequired, mode);
+  const my = computeSideBalance(
+    myOfferPn,
+    myDemandPn,
+    relTotal,
+    treatyBase,
+    adjustedRelRequired,
+    mode,
+    treatyBase > 0 ? 'player' : 'none',
+  );
   const their = computeSideBalance(
     theirOfferPn,
     theirDemandPn,
     relTotal,
-    incoming ? treatyBase : 0,
+    treatyBase,
     adjustedRelRequired,
     mode,
+    treatyBase > 0 ? 'partner' : 'none',
   );
+
+  if (treatyBase > 0 && (mode === 'treaty' || mode === 'mixed')) {
+    const myDisplay = (my.treatyEffectivePn ?? 0) + my.offerPn;
+    const theirDisplay = (their.treatyEffectivePn ?? 0) + their.offerPn;
+    const asymBalance = myDisplay - theirDisplay;
+    const relOk = adjustedRelRequired == null || relTotal >= adjustedRelRequired;
+    my.balancePn = asymBalance;
+    their.balancePn = asymBalance;
+    if (mode === 'treaty' && !hasBasket) {
+      my.accepted = relOk;
+      their.accepted = relOk;
+      my.statusLabel = asymBalance > 0
+        ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
+        : asymBalance < 0
+          ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW`
+          : 'Spełnia warunki (0 PW)';
+      their.statusLabel = asymBalance > 0
+        ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
+        : 'Równo — spełnia';
+    }
+  }
 
   if (isGift) {
     their.accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
