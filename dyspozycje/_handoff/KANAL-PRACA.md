@@ -1,3 +1,9 @@
+## [08:22 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 209 `ddad7cf9`
+- md5: `ddad7cf9e1578de9c07124ba738181c8` · stempel: ROBOCZA · 2026-08-04 08:22
+- Civpedia/poradnik rev G2: budynki obrona % + efekty, katalog §45, wikiBundle `rev-G2-2026-08-04`
+- Wejście: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra)
+CZEKAM-NA: Maciej Civpedia OK / BUG · sesja lokalna: pull na dysk
+
 ## [07:57 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 208 `64a7878a`
 - md5: `64a7878a905984a0450bc2f5cfbf576d` · stempel: ROBOCZA · 2026-08-04 07:57
 - Pigułka miasta v1: obrona 3 stany + medalion cywu + glif produkcji (prototyp bez Design)

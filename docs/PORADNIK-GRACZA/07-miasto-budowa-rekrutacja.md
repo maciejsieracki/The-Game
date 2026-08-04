@@ -184,7 +184,7 @@ Szare na liście = brak tech. Przykłady: Murarstwo → kamieniarski; Brązownic
 Dwa osobne mechanizmy działają razem:
 
 - **Dostęp** do surowca na mapie (miedź, żelazo, koń, drewno…) — nadal **tak/nie** po złożu + ulepszeniu na heksie (Część VIII §53.1), nie magazyn sztuk.
-- **Koszt materiałowy** — **9 budynków** epoki Brązu/Żelazo (Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia publiczna, Akademia, Mury, Cytadela) pobierają **cegłę** lub **ceramikę** z magazynu miasta przy wejściu do kolejki — realne odejmowanie sztuk, nie flaga. Pełna tabela kosztów i strategia — Część VIII §53.2.
+- **Koszt materiałowy** — budynki Brązu/Żelazo pobierają surowce z magazynu państwa przy wejściu do kolejki (realne odejmowanie sztuk, nie flaga). **Cegła/ceramika:** m.in. Świątynia, Biblioteka, Spichlerz II, Akwedukt, Pretorium, Łaźnia, Akademia. **Mury / Cytadela / Baszta:** **drewno + kamień** (bez cegły — miasto bez gliny nie traci obrony). Pełna tabela — Część VIII §53.2 i katalog §45.
 
 **To dlatego Cegielnia i Garncarnia wreszcie mają sens** — bez zapasu cegły/ceramiki karta budynku pokazuje brakujący chip surowca i nie wejdzie do kolejki, nawet przy pełnej puli Pracy.
 

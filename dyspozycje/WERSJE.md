@@ -10,7 +10,12 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `64a7878a` - 2026-08-04 07:57 - FALA 208: pigułka miasta v1 (obrona + cywu) - **AKTUALNA**
+## ROBOCZA `ddad7cf9` - 2026-08-04 08:22 - FALA 209: Civpedia/poradnik rev G2 (budynki) - **AKTUALNA**
+- md5 (pelne): `ddad7cf9e1578de9c07124ba738181c8` · stempel: `ROBOCZA · 2026-08-04 08:22`
+- **FALA 209.** Civpedia/poradnik rev G (FALA 206–208 docs) + rev G2 (obrona % + prawdziwe efekty budynków, katalog §45, wikiBundle). Na bazie FALA 208. Branch `cursor/deploy-fala209-63a1`.
+- tsc 0 · vite · VERIFY OK · build /tmp/civ-dist-fala209.
+
+## ROBOCZA `64a7878a` - 2026-08-04 07:57 - FALA 208: pigułka miasta v1 (obrona + cywu) - **ZASTĄPIONA**
 - md5 (pelne): `64a7878a905984a0450bc2f5cfbf576d` · stempel: `ROBOCZA · 2026-08-04 07:57`
 - **FALA 208.** R-DESIGN-PANEL-MIASTA prototyp: pigułka na mapie — tarcza obrony 3 stany, medalion cywu, glif produkcji lite. Na bazie FALA 207. Branch `cursor/deploy-fala208-63a1`.
 - tsc 0 · city-map-badge 12/12 · vite · VERIFY OK · build /tmp/civ-dist-fala208.
