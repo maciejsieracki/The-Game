@@ -1,3 +1,4 @@
+﻿- **2026-08-04 ~22:25** — ✅ Gotowe w kodzie (bez deploy): **R-REKRUT-LUDNOSC-UI** — teksty bez „−1 obywatela”. Branch `cursor/fix-rekrut-ludnosc-ui-63a1`. Napisz **deploy**.
 - **2026-08-05 00:11** — ✅ **FALA 223** ROBOCZA `ee0e7e04` — tarcza pigułki = wallKind + Zwiedzaj złota ramka od razu. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel ma być `ee0e7e04`.
 - **2026-08-04 ~22:05** — ✅ Gotowe w kodzie (bez deploy): **R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A** — Zwiedzaj zostaje zaznaczone ze złotą ramką od razu. Branch `cursor/fix-zwiedzaj-podswietlenie-63a1`. Napisz **deploy**.
 ﻿- **2026-08-04 ~21:55** — ✅ Gotowe w kodzie (bez deploy): **R-PILL-TARCZA-BEZ-MURU-Q1=A** — tarcza pigułki wyłącznie z `wallKind` (= model 3D); bez `maMur`. Branch `cursor/fix-pill-tarcza-bez-muru-63a1`. Napisz **deploy**.

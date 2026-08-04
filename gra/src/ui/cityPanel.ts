@@ -4747,7 +4747,7 @@ function buildTopBarRekruciDetailCard(
   intro.style.fontStyle = 'normal';
   intro.textContent =
     'Pula rekrutów tego miasta (składnik sumy imperium). Werb jednostki zużywa rekrutów ' +
-    'z puli całej cywilizacji; z tego miasta schodzi tylko −1 obywatel. ' +
+    'z puli całej cywilizacji — ludność miasta nie spada. ' +
     'Zwiadowca — 0 kosztu Manpower. Co turę pula rośnie (regen), chyba że miasto jest oblężone.';
   card.appendChild(intro);
 
@@ -7313,7 +7313,7 @@ function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number 
   intro.style.fontStyle = 'normal';
   intro.textContent =
     'Jednostki kupujesz za pieniądz ze skarbca imperium oraz rekrutów (Manpower) z puli całej cywilizacji. ' +
-    'Werb zużywa rekrutów imperium i −1 obywatela w tym mieście. Zwiadowca — 0 kosztu Manpower. ' +
+    'Werb zużywa tylko rekrutów imperium — ludność miasta nie spada. Zwiadowca — 0 kosztu Manpower. ' +
     'Opłacone pozycje trafiają do kolejki — max 1 gotowa na turę (v0.1).';
   card.appendChild(intro);
   appendDetailSection(card, 'Stan');
