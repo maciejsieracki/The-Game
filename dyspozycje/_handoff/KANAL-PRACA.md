@@ -1,3 +1,11 @@
+﻿## [23:48 PL, 2026-08-04] CLOUD → Maciej — R-PILL-TARCZA-BEZ-MURU (BUG pigułka)
+- Screenshot Sparta: szara tarcza bez widocznej palisady/muru na heksie
+- Reguła potwierdzona: szara = tylko palisada; brak obwodu = zero tarczy
+- ABC Q1 (rekomendacja A): tier tarczy wyłącznie z `wallKind` jak model 3D
+- Docs: `docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md` · branch `cursor/fix-pill-tarcza-bez-muru-63a1`
+- **Bez kodu** do odpowiedzi `R-PILL-TARCZA-BEZ-MURU-Q1 A|B|C`
+CZEKAM-NA: Maciej — litera Q1
+
 ## [23:25 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 222 132401ef
 |- md5: 132401efa7a83d8e55d33325fe52ba6b · stempel: ROBOCZA · 2026-08-04 23:25
 |- Batch: R-BATTLE-TEMPO-UI · R-BUDYNKI-NIEAKTYWNE · R-BUDOWA-ZROWNOWAZONE-TRYB · R-CITY-PILL-SHIELD-EMBLEM (PR #97 #98 #85 #83)
