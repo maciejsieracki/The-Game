@@ -49,6 +49,11 @@ export interface RuntimeUnit {
   ruchLeft: number;
   /** true = ukryta w garnizonie miasta (po Ufort. na heksie własnego miasta). */
   inGarnizon?: boolean;
+  /**
+   * ODFORT-Q2 (Maciej 2026-08-04): `ruchLeft` z momentu wejścia w garnizon lub
+   * fortyfikację w polu — przywracane przy odfortyfikowaniu (bez exploita pełnej puli).
+   */
+  fortifyRuchSnapshot?: number;
   /** HP po walce (undefined = pełne z definicji jednostki). */
   hp?: number;
   /** Tura: liczba porażek obrony w tej turze (L2 — 2. = wipe). */

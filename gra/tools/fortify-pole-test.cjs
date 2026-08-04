@@ -196,12 +196,20 @@ function makeUnit(overrides) {
 }
 
 {
-  // Zdjęcie fortyfikacji NIE kosztuje ruchu (parytet z Czuwaj/Obudź, Opuść garnizon).
-  const u = makeUnit({ ruchLeft: 0 });
+  // Zdjęcie fortyfikacji przywraca snapshot ruchLeft (ODFORT-Q2), bez dodatkowego kosztu.
+  const u = makeUnit({ ruchLeft: 2, ruch: 2 });
   enterFieldFortify(u);
-  u.ruchLeft = 0; // symuluje turę mijającą bez ruchu
+  assert(u.ruchLeft === 0, 'enterFieldFortify: zeruje ruchLeft');
+  assert(u.fortifyRuchSnapshot === 2, 'enterFieldFortify: zapisuje snapshot');
   exitFieldFortify(u);
-  assert(u.ruchLeft === 0, 'exitFieldFortify nie zmienia ruchLeft samo w sobie (zdjęcie jest darmowe, nie "zwraca" ruchu)');
+  assert(u.ruchLeft === 2, 'exitFieldFortify przywraca snapshot (pełna pula gdy brak ruchów w turze)');
+}
+
+{
+  const u = makeUnit({ ruchLeft: 0, ruch: 2 });
+  enterFieldFortify(u);
+  exitFieldFortify(u);
+  assert(u.ruchLeft === 0, 'anti-exploit pole: wejście z MP=0 -> odfort. nadal 0, nie pełna pula');
 }
 
 {

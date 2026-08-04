@@ -101,6 +101,17 @@ export function activeUnitStack(
 }
 
 /**
+ * Wchodzi do ukrytego garnizonu miasta — zapisuje snapshot ruchLeft (ODFORT-Q2),
+ * zeruje ruch na resztę tury (FORTIFY-MP0-Q1: wejście dozwolone także przy MP=0).
+ */
+export function enterGarnizon(u: RuntimeUnit): void {
+  if (u.inGarnizon === true) return;
+  u.fortifyRuchSnapshot = u.ruchLeft;
+  u.inGarnizon = true;
+  u.ruchLeft = 0;
+}
+
+/**
  * Wyprowadza jednostkę z ukrytego garnizonu: odfortyfikowanie + budzenie
  * (sentry) w jednym kroku — dokładnie to, czego oczekuje właściciel przy
  * rozkazie ruchu wydanym jednostce z listy armii ("wtedy automatycznie
@@ -108,11 +119,16 @@ export function activeUnitStack(
  * garnizon" w panelu miasta i w panelu akcji jednostki.
  * Mutuje `u` w miejscu; zwraca `true`, jeśli coś się rzeczywiście zmieniło
  * (żeby wołający zsynchronizował licznik garnizonu miasta — `city.garnizon`).
+ * ODFORT-Q2: przywraca `ruchLeft` ze snapshota z momentu fortyfikacji.
  */
 export function exitGarnizon(u: RuntimeUnit): boolean {
   if (u.inGarnizon !== true) return false;
   u.inGarnizon = false;
   u.sentry = false;
+  if (u.fortifyRuchSnapshot !== undefined) {
+    u.ruchLeft = u.fortifyRuchSnapshot;
+    delete u.fortifyRuchSnapshot;
+  }
   return true;
 }
 
@@ -123,7 +139,8 @@ export function exitGarnizon(u: RuntimeUnit): boolean {
  * przy murze, hexDistance===1, nigdy na samym hexie miasta, patrz main.ts
  * commitBesiege). Mutuje `u` w miejscu.
  *
- * enterFieldFortify: zeruje ruchLeft (koszt = CAŁY pozostały ruch tury, zgodnie
+ * enterFieldFortify: zapisuje snapshot ruchLeft (ODFORT-Q2), zeruje ruchLeft
+ * (koszt = CAŁY pozostały ruch tury, zgodnie
  * ze słowami właściciela -- nie tylko część) i ustawia flagę. NIE dotyka
  * oblegaCityId -- jednostka oblegająca zostaje w oblężeniu (main.ts turn-loop
  * i tak zeruje jej ruchLeft co turę, patrz `if (u.oblegaCityId) u.ruchLeft = 0`,
@@ -131,6 +148,7 @@ export function exitGarnizon(u: RuntimeUnit): boolean {
  * jednostką NIE oblegającą, która wchodzi w ten stan z realnym ruchem do stracenia).
  */
 export function enterFieldFortify(u: RuntimeUnit): void {
+  u.fortifyRuchSnapshot = u.ruchLeft;
   u.ufortyfikowanyWPolu = true;
   u.ruchLeft = 0;
 }
@@ -138,11 +156,16 @@ export function enterFieldFortify(u: RuntimeUnit): void {
 /**
  * Zdejmuje fortyfikację w polu -- BEZ kosztu ruchu (parytet z "Czuwaj"/"Obudź" i
  * exitGarnizon powyżej: wyjście z trybu nigdy nie kosztuje, tylko wejście).
+ * ODFORT-Q2: przywraca `ruchLeft` ze snapshota z momentu fortyfikacji.
  * Zwraca `true`, jeśli coś się rzeczywiście zmieniło (jak exitGarnizon).
  */
 export function exitFieldFortify(u: RuntimeUnit): boolean {
   if (u.ufortyfikowanyWPolu !== true) return false;
   u.ufortyfikowanyWPolu = false;
+  if (u.fortifyRuchSnapshot !== undefined) {
+    u.ruchLeft = u.fortifyRuchSnapshot;
+    delete u.fortifyRuchSnapshot;
+  }
   return true;
 }
 
@@ -243,6 +266,35 @@ export function findAdjacentEmptyHexes(
       u => u.q === nq && u.r === nr && u.inGarnizon !== true,
     );
     if (!occupied) out.push({ q: nq, r: nr });
+  }
+  return out;
+}
+
+/** Cel rozdzielenia armii — opcjonalnie ten sam heks (własne miasto). */
+export interface SplitDestHex {
+  q: number;
+  r: number;
+  /** Etykieta UI; brak → „(q,r)”. */
+  label?: string;
+}
+
+/**
+ * Split: sąsiednie wolne heksy + (gdy allowSameHex) „zostaje w mieście”.
+ * Na heksie miasta dwa widoczne stosy mogą współistnieć (garnizon vs pole).
+ */
+export function findSplitDestHexes(
+  units: RuntimeUnit[],
+  q: number,
+  r: number,
+  isPassable: (q: number, r: number) => boolean,
+  allowSameHex = false,
+): SplitDestHex[] {
+  const out: SplitDestHex[] = [];
+  if (allowSameHex) {
+    out.push({ q, r, label: 'W mieście (ten heks)' });
+  }
+  for (const d of findAdjacentEmptyHexes(units, q, r, isPassable)) {
+    out.push(d);
   }
   return out;
 }

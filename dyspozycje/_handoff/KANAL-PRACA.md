@@ -1,3 +1,13 @@
+﻿## [12:13 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna - DEPLOY FALA 213 1d3b8755
+- md5: 1d3b8755445058c10957c81438912d1c · stempel: ROBOCZA · 2026-08-04 12:13
+- REL-WIARYG-DRIFT-Q1 · FORTIFY-MP0-Q1=C · ODFORT (fortify/odfort MP snapshot)
+- Wejście: gra-robocza/START.html - **git pull**, Ctrl+F5 + Nowa gra
+CZEKAM-NA: Maciej test / OK / BUG · sesja lokalna: pull na dysk
+## [11:24 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 212 `e38ad116`
+- md5: `e38ad116993cf1b8c18d1fce4a5e10d6` · stempel: ROBOCZA · 2026-08-04 11:24
+- SPICH-AUTO-Q1 · REL-MP-SAME-Q1 · obce MP · HEX magazyn UI · scout chatka · toast chatka · garnizon/split
+- Wejście: `gra-robocza/START.html` — **git pull**, Ctrl+F5 + Nowa gra
+CZEKAM-NA: Maciej test / OK / BUG · sesja lokalna: pull na dysk
 ## [09:27 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 210 `000e19c1`
 - md5: `000e19c1b4df3f77406ecd00b235d220` · stempel: ROBOCZA · 2026-08-04 09:27
 - Merge: #66 Relacja PW asymetria+UI · #63 rzeki FoW OFF · #64 bonus obu brzegów · #62 ściągi/tooltipy · #65 etykieta Ulepszenia

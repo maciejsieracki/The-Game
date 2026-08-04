@@ -146,7 +146,7 @@ const villageMap = makeMap({
   },
 });
 const villageScout = scout(1, 1, 3);
-const villageExplored = new Set(['0,0', '1,0', '0,1', '1,1', '2,1']);
+const villageExplored = new Set(['0,0', '1,0', '0,1', '1,1', '2,1', '3,1']);
 const villageTarget = pickScoutExploreTarget(
   villageScout,
   villageMap,
@@ -156,7 +156,54 @@ const villageTarget = pickScoutExploreTarget(
   () => 0,
 );
 assert(villageTarget !== null && villageTarget.q === 3 && villageTarget.r === 1,
-  'widoczna wioska wygrywa z fog score');
+  'odkryta wioska wygrywa z fog score');
+
+// znana chatka poza jednorazowym zasięgiem MP — nadal priorytet nad mgłą
+const farVillageMap = makeMap({
+  '6,1': {
+    wioska: { istnieje: true, ludnosc: 1 },
+    wlasciciel: null,
+  },
+});
+const farScout = scout(1, 1, 2);
+const farExplored = new Set();
+for (let q = 0; q < 8; q++) {
+  for (let r = 0; r < 8; r++) farExplored.add(`${q},${r}`);
+}
+const farTarget = pickScoutExploreTarget(
+  farScout,
+  farVillageMap,
+  farExplored,
+  new Set(),
+  1,
+  () => 0,
+);
+assert(
+  farTarget !== null && farTarget.q === 6 && farTarget.r === 1,
+  'odkryta chatka poza zasięgiem MP wygrywa z fog score',
+);
+
+// chatka na krawędzi mgły: odkryta, ale poza bieżącym sight — nadal cel
+const edgeVillageMap = makeMap({
+  '5,5': {
+    wioska: { istnieje: true, ludnosc: 1 },
+    wlasciciel: null,
+  },
+});
+const edgeScout = scout(1, 1, 3);
+const edgeExplored = new Set(['0,0', '1,0', '0,1', '1,1', '2,1', '5,5']);
+const edgeTarget = pickScoutExploreTarget(
+  edgeScout,
+  edgeVillageMap,
+  edgeExplored,
+  new Set(),
+  2,
+  () => 0,
+);
+assert(
+  edgeTarget !== null && edgeTarget.q === 5 && edgeTarget.r === 5,
+  'odkryta chatka poza sight wygrywa z eksploracją mgły',
+);
 
 console.log(`\nWynik: ${passed} OK, ${failed} FAIL`);
 process.exit(failed > 0 ? 1 : 0);

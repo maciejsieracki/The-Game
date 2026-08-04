@@ -1,7 +1,8 @@
 import {
   activeUnitStack,
+  enterGarnizon,
   exitGarnizon,
   visibleStackOnHex,
   unitAtRepresentative,
 } from '../src/game/armyMerge';
-export { activeUnitStack, exitGarnizon, visibleStackOnHex, unitAtRepresentative };
+export { activeUnitStack, enterGarnizon, exitGarnizon, visibleStackOnHex, unitAtRepresentative };

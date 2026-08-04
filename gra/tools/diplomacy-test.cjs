@@ -503,14 +503,14 @@ function mkRdip(zaufanie, respekt, urazyHistoryczne = 0, traktaty = []) {
   eq(r.zaufanie, 43, 'tickDiplomacy: sojusz -> +3 Zaufanie');
 }
 {
-  // pokojowy kontakt +1
+  // tier pokoj bez umowy — REL-WIARYG-DRIFT-Q1: brak flat +1 bez dryfu W
   const r = tickDiplomacy(mkRdip(50, 20), { turn: 1, pokojTrustTier: 'pokoj' });
-  eq(r.zaufanie, 51, 'tickDiplomacy: pokoj -> +1 Zaufanie');
+  eq(r.zaufanie, 50, 'tickDiplomacy: tier pokoj bez W → 0 ΔZ');
 }
 {
-  // UmowaHandlowa stackuje z tierem pokoju: +1 + +1 = +2
+  // handel stackuje z tierem pokoju (bez flat +1): sam handel +1
   const r = tickDiplomacy(mkRdip(20, 20), { turn: 1, aktywnyHandel: true, pokojTrustTier: 'pokoj' });
-  eq(r.zaufanie, 22, 'tickDiplomacy: handel+pokoj -> +2 Zaufanie');
+  eq(r.zaufanie, 21, 'tickDiplomacy: handel+tier pokoj → +1 Zaufanie');
 }
 {
   // ekspansja przy granicy -> -2 Zaufanie/turę

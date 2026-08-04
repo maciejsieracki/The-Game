@@ -1,6 +1,6 @@
 /**
  * scout-auto-explore.ts — automatyczne zwiedzanie mapy przez zwiadowców.
- * Priorytet: widoczna chatka → mgła. Tylko jednostki z autoExplore=true.
+ * Priorytet: znana (odkryta) niewykorzystana chatka → mgła. Tylko autoExplore=true.
  */
 
 import type { GameMap } from '../types/map';
@@ -59,35 +59,30 @@ function deductStepCost(unit: RuntimeUnit, cost: number): void {
   }
 }
 
-/** Priorytet 1: najbliższa widoczna, nieprzejęta chatka w zasięgu ruchu. */
-function pickVisibleVillageTarget(
+/**
+ * Priorytet 1: najbliższa znana (odkryta), nieprzejęta chatka.
+ * Szuka w `explored` — także na krawędzi mgły / poza jednorazowym zasięgiem MP.
+ */
+function pickKnownVillageTarget(
   unit: RuntimeUnit,
   map: GameMap,
-  reachable: ReadonlySet<string>,
+  explored: ReadonlySet<string>,
   occupied: ReadonlySet<string>,
-  sight: number,
 ): { q: number; r: number } | null {
-  const visible = computeVisibleAt(unit.q, unit.r, map, sight);
-  let bestDist = Infinity;
+  let bestPathLen = Infinity;
   let best: { q: number; r: number } | null = null;
 
-  for (const key of visible) {
-    if (!reachable.has(key)) continue;
+  for (const key of explored) {
     const hex = map.hexes[key];
     if (!hex?.wioska?.istnieje) continue;
     if (hex.wlasciciel !== null) continue;
 
-    const parts = key.split(',');
-    if (parts.length !== 2) continue;
-    const q = Number(parts[0]);
-    const r = Number(parts[1]);
-    if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-
+    const { q, r } = hex.coords;
     const path = computePath(unit, map, q, r, new Set(occupied));
     if (path.length === 0) continue;
 
-    if (path.length < bestDist) {
-      bestDist = path.length;
+    if (path.length < bestPathLen) {
+      bestPathLen = path.length;
       best = { q, r };
     }
   }
@@ -96,7 +91,7 @@ function pickVisibleVillageTarget(
 }
 
 /**
- * Wybiera docelowy heks w zasięgu ruchu — priorytet: widoczna chatka, potem mgła.
+ * Wybiera docelowy heks — priorytet: znana chatka, potem mgła (w zasięgu MP).
  */
 export function pickScoutExploreTarget(
   unit: RuntimeUnit,
@@ -106,12 +101,12 @@ export function pickScoutExploreTarget(
   sight: number,
   rng: () => number,
 ): { q: number; r: number } | null {
+  const villageTarget = pickKnownVillageTarget(unit, map, explored, occupied);
+  if (villageTarget) return villageTarget;
+
   const reachable = computeReachable(unit, map, new Set(occupied));
   reachable.delete(keyOf(unit.q, unit.r));
   if (reachable.size === 0) return null;
-
-  const villageTarget = pickVisibleVillageTarget(unit, map, reachable, occupied, sight);
-  if (villageTarget) return villageTarget;
 
   let bestScore = -Infinity;
   const candidates: { q: number; r: number }[] = [];

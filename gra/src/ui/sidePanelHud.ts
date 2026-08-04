@@ -33,6 +33,8 @@ export interface SidePanelEvent {
   subtitle?: string;
   kind: SidePanelEventKind;
   blocking?: boolean;
+  /** SPICH-AUTO-Q1: wymusza czerwony styl (jak wydarzenia negatywne). */
+  negative?: boolean;
 }
 
 export type ContextPanelKind = 'hex' | 'unit';
@@ -204,8 +206,9 @@ const PLACEHOLDER_EVENTS: SidePanelEvent[] = [
   },
 ];
 
-function kindClass(kind: SidePanelEventKind): string {
-  return 'sp-' + kind;
+function kindClass(ev: SidePanelEvent): string {
+  if (ev.negative) return 'sp-enemy';
+  return 'sp-' + ev.kind;
 }
 
 function resolveContextPanel(config: SidePanelHudConfig): ContextPanelData | null {
@@ -312,7 +315,7 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         const icoContent = icInner.startsWith('<svg')
           ? icInner
           : `<span class="sp-ico-emoji">${ev.icon || '•'}</span>`;
-        html += '<div class="sp-event ' + kindClass(ev.kind) + blockCls + '" data-id="' + ev.id + '">'
+        html += '<div class="sp-event ' + kindClass(ev) + blockCls + '" data-id="' + ev.id + '">'
           + '<span class="sp-ico">' + icoContent + '</span>'
           + '<div><div class="sp-title">' + ev.title + '</div>'
           + (ev.subtitle !== undefined ? '<div class="sp-sub">' + ev.subtitle + '</div>' : '')

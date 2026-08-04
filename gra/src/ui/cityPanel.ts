@@ -1189,6 +1189,22 @@ function pluralTur(n: number): string {
   return 'tur';
 }
 
+/** SPICH-AUTO-Q1: fed z ticku imperium — bez fałszywego „nakarmione” przy deficycie Spichlerza. */
+function resolveCityFedForUi(
+  cityId: string,
+  foodSplitTotal: number,
+  tick?: EmpireFoodTick | null,
+): boolean {
+  const row = tick?.perCityRows?.find(r => r.cityId === cityId);
+  if (row !== undefined) return row.nakarmione === true;
+  if (tick) return false;
+  return foodSplitTotal >= 0;
+}
+
+function effectiveGrowthPctForUi(wzrostProcent: number, fed: boolean): number {
+  return fed ? wzrostProcent : 0;
+}
+
 /** Postęp wzrostu (sloty) i ETA kolejnego obywatela — szczegóły absolutne/tempo tylko w tooltipie. */
 function buildGrowthProgressUi(
   population: number,
@@ -1196,9 +1212,11 @@ function buildGrowthProgressUi(
   epoch: number,
   fed: boolean,
   atPopCap: boolean,
+  growthPctOverride?: number,
 ): { progressHtml: string; etaHtml: string } {
   const frac = view.wzrostUlamkowy;
-  const gainSlots = growthGainPerTurnSlots(population, view.wzrostProcent, fed, atPopCap);
+  const growthPct = growthPctOverride ?? view.wzrostProcent;
+  const gainSlots = growthGainPerTurnSlots(population, growthPct, fed, atPopCap);
 
   const progressHtml =
     `<div class="growth-progress-main">Wzrost ludności: <strong>${fmtDecPl(frac)}</strong> / 1 obywatela</div>`;
@@ -1207,8 +1225,8 @@ function buildGrowthProgressUi(
   if (atPopCap) {
     etaHtml = '<div class="growth-eta warn">Limit ludności — brak kolejnego obywatela.</div>';
   } else if (!fed) {
-    etaHtml = '<div class="growth-eta warn">Brak wzrostu — miasto nie jest w pełni nakarmione.</div>';
-  } else if (view.wzrostProcent <= 0) {
+    etaHtml = '<div class="growth-eta warn">Brak wzrostu — miasto nie jest w pełni nakarmione ze Spichlerza.</div>';
+  } else if (growthPct <= 0) {
     etaHtml = '<div class="growth-eta muted">WZROST% = 0 — brak kolejnego obywatela.</div>';
   } else {
     const turns = turnsUntilNextCitizen(frac, gainSlots);
@@ -1229,10 +1247,12 @@ function buildGrowthProgressTooltipCard(
   epoch: number,
   fed: boolean,
   atPopCap: boolean,
+  growthPctOverride?: number,
 ): HTMLDivElement {
   const frac = view.wzrostUlamkowy;
   const osobNaObywatela = cityLudnoscAbsolutna(1, epoch);
-  const gainSlots = growthGainPerTurnSlots(population, view.wzrostProcent, fed, atPopCap);
+  const growthPct = growthPctOverride ?? view.wzrostProcent;
+  const gainSlots = growthGainPerTurnSlots(population, growthPct, fed, atPopCap);
   const fracPeople = Math.round(frac * osobNaObywatela);
   const gainPeople = Math.round(gainSlots * osobNaObywatela);
 
@@ -2108,8 +2128,10 @@ function ensureStyles(): void {
 .civ-v-garrison-chip.in-garnizon{border-color:rgba(224,178,74,0.55);}
 .civ-v-garrison-leave-btn{flex-shrink:0;cursor:pointer;border:1px solid rgba(212,175,90,0.4);
   background:rgba(212,175,90,0.12);color:#e0b24a;font-size:0.85em;line-height:1;border-radius:3px;
-  padding:0.05em 0.32em;margin-left:0.1em;}
-.civ-v-garrison-leave-btn:hover{background:rgba(212,175,90,0.28);color:#f0d290;}
+  padding:0.05em 0.32em;margin-left:0.1em;pointer-events:auto;}
+.civ-v-garrison-leave-btn:hover:not(:disabled){background:rgba(212,175,90,0.28);color:#f0d290;}
+.civ-v-garrison-leave-btn:disabled{opacity:0.35;cursor:not-allowed;border-color:rgba(212,175,90,0.2);}
+.civ-v-garrison-leave-all-btn{pointer-events:auto;}
 .civ-v-garrison-leave-all-btn{display:block;width:100%;margin-top:0.5rem;cursor:pointer;
   border:1px solid rgba(212,175,90,0.45);background:rgba(212,175,90,0.14);color:#e0b24a;
   font-size:0.78em;padding:0.35em 0.6em;border-radius:4px;text-align:center;}
@@ -2211,6 +2233,7 @@ function ensureStyles(): void {
 .civ-hover-detail-float{display:none;position:fixed;z-index:100000;max-width:min(400px,92vw);pointer-events:none;
   padding:0.38em 0.48em;background:rgba(8,12,20,0.96);border:1px solid #e0b24a;border-radius:4px;
   box-shadow:0 6px 20px rgba(0,0,0,0.65);font-size:0.74em;line-height:1.38;}
+.civ-hover-detail-float .civ-detail-scope{pointer-events:auto;}
 .civ-hover-detail-float .civ-detail-scope .detail-card{border:none;background:transparent;padding:0;}
 .civ-cs .mini-thumb.hover-detail-anchor,.civ-cs .unit-mini-preview.hover-detail-anchor,.civ-cs .item-row.hover-detail-anchor,.civ-cs .growth-progress-block.hover-detail-anchor,.civ-cs .wealth-compact-wrap.hover-detail-anchor{cursor:help;}
 .civ-cs .item-row{display:flex;align-items:center;gap:0.32em;background:var(--panel2);border:1px solid var(--border);
@@ -4398,11 +4421,12 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const atPopCap = view.atPopCap;
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const cityRow = tick?.perCityRows?.find(r => r.cityId === city.id);
-  const fed = cityRow?.nakarmione ?? foodSplit.total >= 0;
+  const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
+  const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   const osobNaObywatela = cityLudnoscAbsolutna(1, epoch);
-  const growthUi = buildGrowthProgressUi(city.population, view, epoch, fed, atPopCap);
+  const growthUi = buildGrowthProgressUi(city.population, view, epoch, fed, atPopCap, growthPctUi);
 
   const popHero = el('div', 'food-pop-hero');
   popHero.innerHTML =
@@ -4436,9 +4460,11 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     {
       icon: cityPanelChipIcon('chip-map', 14),
       label: 'WZROST%',
-      value: `${view.wzrostProcent}%`,
-      cls: view.wzrostProcent > 0 ? 'gold' : 'muted',
-      title: 'Łączny procent wzrostu ludności w tej turze',
+      value: fed ? `${view.wzrostProcent}%` : '—',
+      cls: fed && view.wzrostProcent > 0 ? 'gold' : fed ? 'muted' : 'red',
+      title: fed
+        ? 'Łączny procent wzrostu ludności w tej turze'
+        : 'Brak wzrostu — miasto nie jest w pełni nakarmione ze Spichlerza',
     },
   ];
   if (!fed) {
@@ -4519,7 +4545,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const growBlock = el('div', 'growth-bd-block');
   growBlock.innerHTML =
     `<div class="growth-bd-hd">WZROST ludności</div>` +
-    `<div class="growth-bd-total">Łącznie ${view.wzrostProcent}%</div>` +
+    `<div class="growth-bd-total">Łącznie ${fed ? view.wzrostProcent : 0}%${fed ? '' : ' <span class="muted">(brak — głód)</span>'}</div>` +
     growthBreakdownRow('Wyżywienie', bd.racje, true) +
     growthBreakdownRow('Małe miasto', bd.maleMiasto) +
     growthBreakdownRow('Spichlerz', bd.spichlerz) +
@@ -4532,7 +4558,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   if (progressBlock) {
     attachHoverDetail(
       progressBlock,
-      () => buildGrowthProgressTooltipCard(city.population, view, epoch, fed, atPopCap),
+      () => buildGrowthProgressTooltipCard(city.population, view, epoch, fed, atPopCap, growthPctUi),
       220,
       'left',
     );
@@ -4550,7 +4576,8 @@ function buildRacjeWzrostDetailCard(
   const foodSplit = cityFoodSplit(view);
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
-  const fed = tickRow?.nakarmione ?? foodSplit.total >= 0;
+  const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
+  const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Wyżywienie i wzrost — szczegóły</span>'));
   const intro = el('div', 'dc-note');
@@ -4584,9 +4611,9 @@ function buildRacjeWzrostDetailCard(
   gridDetailRow(g2, 'Zdrowie', `${signed(bd.zdrowie)}%`);
   gridDetailRow(g2, 'Szczęście', `${signed(bd.szczescie)}%`);
   gridDetailRow(g2, 'Cywilizacja', `${signed(bd.cywilizacja)}%`);
-  gridDetailRow(g2, 'Łącznie', `${view.wzrostProcent}%`);
+  gridDetailRow(g2, 'Łącznie', fed ? `${view.wzrostProcent}%` : '— (głód)');
   gridDetailRow(g2, 'Postęp do +1 obywatela', `${fmtDecPl(view.wzrostUlamkowy)} / 1`);
-  const gainSlots = growthGainPerTurnSlots(city.population, view.wzrostProcent, fed, view.atPopCap);
+  const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
   const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
   gridDetailRow(
     g2,
@@ -4758,13 +4785,14 @@ function buildTopBarLudnoscDetailCard(
     const foodSplit = cityFoodSplit(view);
     const tick = cfg.getEmpireFoodTick?.(city.ownerId);
     const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
-    const fed = tickRow?.nakarmione ?? foodSplit.total >= 0;
-    const gainSlots = growthGainPerTurnSlots(city.population, view.wzrostProcent, fed, view.atPopCap);
+    const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
+    const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
+    const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
     const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
     appendDetailSection(card, 'Wzrost ludności');
     const g1 = appendDetailGrid(card);
     gridDetailRow(g1, 'Wyżywienie', formatWyzwienieLabel(view.poziomRacji));
-    gridDetailRow(g1, 'WZROST%', `${view.wzrostProcent}%`);
+    gridDetailRow(g1, 'WZROST%', fed ? `${view.wzrostProcent}%` : '— (głód)');
     gridDetailRow(g1, 'Postęp do +1', `${fmtDecPl(view.wzrostUlamkowy)} / 1 obywatela`);
     gridDetailRow(
       g1,
@@ -7525,17 +7553,22 @@ function appendGarrisonUnitChip(parent: HTMLElement, u: GarrisonUnit): void {
     `<span class="hpb"><span class="hpf ${low ? 'hpl' : ''}" style="width:${pct}%"></span></span>`;
   chip.title = `${u.nazwa} · ${hp}/${max} HP`
     + (isHidden ? ' · w koszarach (ufortyfikowana)' : '');
-  if (isHidden && cfg.onLeaveGarrison) {
+  if (cfg.onLeaveGarrison) {
     const leaveBtn = document.createElement('button');
     leaveBtn.type = 'button';
     leaveBtn.className = 'civ-v-garrison-leave-btn';
-    leaveBtn.textContent = '↩';
-    leaveBtn.title = `Odfortyfikuj — ${u.nazwa} zostaje na heksie miasta`;
-    leaveBtn.setAttribute('aria-label', `Odfortyfikuj — ${u.nazwa}`);
-    leaveBtn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      cfg.onLeaveGarrison?.(u.id);
-    });
+    leaveBtn.textContent = '−';
+    leaveBtn.disabled = !isHidden;
+    leaveBtn.title = isHidden
+      ? `Odfortyfikuj — ${u.nazwa} zostaje na heksie miasta`
+      : `${u.nazwa} — już na heksie miasta (sterowanie z mapy)`;
+    leaveBtn.setAttribute('aria-label', isHidden ? `Odfortyfikuj — ${u.nazwa}` : u.nazwa);
+    if (isHidden) {
+      leaveBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        cfg.onLeaveGarrison?.(u.id);
+      });
+    }
     chip.appendChild(leaveBtn);
   }
   parent.appendChild(chip);
@@ -7587,12 +7620,14 @@ function buildGarnizonDetailCard(
     for (const u of units) appendGarrisonUnitChip(list, u);
     card.appendChild(list);
     const hiddenCount = units.filter(u => u.inGarnizon === true).length;
-    if (hiddenCount > 1 && cfg.onLeaveAllGarrison && cityQ !== undefined && cityR !== undefined) {
+    if (hiddenCount >= 1 && cfg.onLeaveAllGarrison && cityQ !== undefined && cityR !== undefined) {
       const allBtn = document.createElement('button');
       allBtn.type = 'button';
       allBtn.className = 'civ-v-garrison-leave-all-btn';
-      allBtn.textContent = 'Odfortyfikuj wszystkie';
-      allBtn.title = `Odfortyfikuj wszystkie ${hiddenCount} jednostki — zostają na heksie miasta`;
+      allBtn.textContent = hiddenCount > 1 ? 'Odfortyfikuj wszystkie' : 'Odfortyfikuj';
+      allBtn.title = hiddenCount > 1
+        ? `Odfortyfikuj wszystkie ${hiddenCount} jednostki — zostają na heksie miasta`
+        : 'Odfortyfikuj jednostkę — zostaje na heksie miasta';
       allBtn.addEventListener('click', () => cfg.onLeaveAllGarrison?.(cityQ, cityR));
       card.appendChild(allBtn);
     }
@@ -8694,8 +8729,9 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
   const foodSplit = cityFoodSplit(view);
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
-  const fed = tickRow?.nakarmione ?? foodSplit.total >= 0;
-  const gainSlots = growthGainPerTurnSlots(city.population, view.wzrostProcent, fed, view.atPopCap);
+  const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
+  const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
+  const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
   const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
   const etaTxt = view.atPopCap ? 'limit'
     : !fed ? 'brak wzrostu'
@@ -8704,7 +8740,7 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
           : '—';
   const grow = el('div', 'civ-v-growth');
   grow.innerHTML =
-    `<div class="civ-v-growth-lbl">WZROST · ${view.wzrostProcent}% ${loafIconHtml('civ-v-loaf-chip')}</div>` +
+    `<div class="civ-v-growth-lbl">WZROST · ${fed ? view.wzrostProcent : '—'}% ${loafIconHtml('civ-v-loaf-chip')}</div>` +
     `<div class="muted" style="font-size:0.68em;margin-top:0.12em">Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} · postęp ${fmtDecPl(view.wzrostUlamkowy)}/1 · ${etaTxt}</div>`;
   mount.appendChild(grow);
 }

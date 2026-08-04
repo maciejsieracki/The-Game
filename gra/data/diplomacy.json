@@ -9,6 +9,7 @@
     "zdrada_zaufanie": -50,
     "szpiegWykryty_zaufanie": -15,
     "rywalizacjaTenSamTyp_zaufanie": -20,
+    "miastoPanstwoSameCiv_zaufanie": 20,
     "roznicaKulturowa_zaufanie": -5,
     "przewagaMilitarna_respekt": 15,
     "slabszyMilitarnie_respekt": -10,

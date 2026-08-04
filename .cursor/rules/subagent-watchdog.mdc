@@ -1,0 +1,51 @@
+---
+description: Watchdog — 1 temat=1 agent, cisza 7 min=ZWIS→Grok przejmuje (Maciej 2026-08-02 wieczór)
+alwaysApply: true
+---
+
+# Watchdog subagentów (Maciej 2026-08-02)
+
+## 1. Jeden temat = jeden subagent
+
+- Każdy temat → **osobny** subagent.
+- Zakaz dwóch agentów na ten sam temat.
+- Max **2** równolegle tylko gdy tematy **niezależne**.
+
+## 2. Cisza 7 minut = ZWIS → GROK PRZEJMUJE (nie restart)
+
+| Sygnał | Próg | Akcja |
+|--------|------|--------|
+| Brak ruchu w transcriptcie (mtime / nowe linie) | **7 min** | **ZWIS** → interrupt + **Grok finalizuje sam** |
+| UI „Working” bez ruchu w pliku | **7 min** | to samo |
+
+**Decyzja Macieja (2026-08-02 wieczór):** nawet **1×** zawieszenie subagenta → **STOP delegacji**, Grok **sam doprowadza temat do końca**.  
+**ZAKAZ:** restartować tego samego tematu kolejnym subagentem po ZWIS (wcześniejsza reguła „1× restart / 2× Grok” — **wycofana**).
+
+**ZAKAZ:** traktować ZWIS jako „Stop All / anuluj / odpuszczamy temat”.  
+**ZWIS = temat nadal żywy** → Grok kontynuuje w czacie głównym.
+
+Wyjątek anulowania: tylko gdy Maciej **wyraźnie** kasuje temat albo temat był czysto informacyjny i odpowiedź już padła.
+
+**Obowiązek Groka:** po starcie Task w tle — **po 7 min** sprawdź transcript **sam**. Nie czekaj, aż Maciej zapyta.
+
+Hasło: **`status agentów`** / **`czy zwisł?`** → tabela: temat · ostatni ruch · pracuje/ZWIS.
+
+Komunikat przy ZWIS: `1× ZWIS → przejmuję temat sam.`
+
+## 3. Prompt (żeby mniej wieszać)
+
+- Shell / mapgen wall-clock **max ~3 min**.
+- Zakaz ciężkiej Pangea × wiele seedów w tle.
+- Koniec: `GOTÓW DO TESTU` + md5 albo `STOP: …` / `✅ Gotowe w źródłach — wrzucić na ROBOCZA?`.
+
+## 4. Nie wprowadzaj Macieja w błąd (status „skończone”)
+
+**ZAKAZ** mówić „skończone / domknięte / OK / możesz Stop” bez **twardej weryfikacji w tej turze**.
+
+Przed statusem „gotowe” sprawdź dowody (nie pamięć, nie UI „Working”):
+1. transcript: `turn_ended` + `success` **albo** brak końca = **nie gotowe**,
+2. efekt w repo: WERSJE md5 / diff / test PASS / plik zmieniony,
+3. jeśli nie sprawdziłeś → status tylko: **„niepewne — sprawdzam”** / **„w toku”** / **„ZWIS — przejmuję”**.
+
+**ZAKAZ:** zgadywać z podtytułu UI („Deployed…”) że temat zamknięty.  
+**ZAKAZ:** potem robić twarde sprawdzenie i zmieniać wersję historii („jednak niedokończone”) — najpierw sprawdź, **potem** mów.

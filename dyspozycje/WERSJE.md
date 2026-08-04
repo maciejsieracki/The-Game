@@ -10,7 +10,17 @@ wyraĹşne polecenie wĹ‚aĹ›ciciela) â€” dlatego sÄ… logowane NIEZA
 swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji drugiego.
 
 
-## ROBOCZA `6bf472e2` - 2026-08-04 10:24 - FALA 211: Relacja invert + landscape + Zwiedzaj UX - **AKTUALNA**
+
+## ROBOCZA `1d3b8755` - 2026-08-04 12:13 - FALA 213: Wiaryg drift + fortify/odfort - **AKTUALNA**
+- md5 (pelne): `1d3b8755445058c10957c81438912d1c` · stempel: `ROBOCZA · 2026-08-04 12:13`
+- **FALA 213.** REL-WIARYG-DRIFT-Q1: dryf Zaufania W×0.03 (±3 przy ±100), umowy osobno, UI Δ/turę w audiencji. FORTIFY-MP0-Q1=C + ODFORT: fortify bez wymogu MP, snapshot ruchLeft, odfort na heksie miasta z select + restore MP (anti-exploit). Na bazie FALA 212.
+- tsc 0 · vite · VERIFY OK · build `gra/dist`.
+## ROBOCZA `e38ad116` - 2026-08-04 11:24 - FALA 212: Spich auto + MP rel + garnizon/scout - **ZASTAPIONA**
+- md5 (pelne): `e38ad116993cf1b8c18d1fce4a5e10d6` · stempel: `ROBOCZA · 2026-08-04 11:24`
+- **FALA 212.** SPICH-AUTO-Q1: auto-racje EOT + czerwone wydarzenie. REL-MP-SAME-Q1: MP sameCiv +20 zaufanie. Obce MP: wojna/klaster tylko typ gracza. HEX→magazyn: projection UI MAGAZYNOWANE + tooltip. Scout AI: priorytet odkrytej chatki. Chatka toast: nie nadpisywany tipem weteranów. Garnizon: odgarnizonowanie + split zostaje w mieście. Na bazie FALA 211.
+- tsc 0 · vite · VERIFY OK · build `gra/dist`.
+
+## ROBOCZA `6bf472e2` - 2026-08-04 10:24 - FALA 211: Relacja invert + landscape + Zwiedzaj UX - **ZASTĄPIONA**
 - md5 (pelne): `6bf472e29725960883c323a8f74519f8` · stempel: `ROBOCZA · 2026-08-04 10:24`
 - **FALA 211.** #67 Relacja PW invert (niska Rel → niższe PW gracza, 52/80→42 vs 80). #68 koszyk traktatu landscape. #69 Zwiedzaj: clear path + deselect + next. Na bazie FALA 210. Branch `cursor/deploy-fala211-63a1`.
 - tsc 0 · diplomacy-acceptance 198/198 · scout-auto-explore 15/15 · vite · VERIFY OK · build /tmp/civ-dist-fala211.

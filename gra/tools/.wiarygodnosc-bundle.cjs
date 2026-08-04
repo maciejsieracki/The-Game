@@ -21,8 +21,10 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var wiarygodnosc_entry_exports = {};
 __export(wiarygodnosc_entry_exports, {
   DIPLOMACY_PARAMS: () => DIPLOMACY_PARAMS,
+  WIARYGODNOSC_ZAUFANIE_DRYF_NA_100: () => WIARYGODNOSC_ZAUFANIE_DRYF_NA_100,
   appendCredibilityEvent: () => appendCredibilityEvent,
   applyWiarygodnoscTempoDoDelty: () => applyWiarygodnoscTempoDoDelty,
+  computeTickZaufanieDelta: () => computeTickZaufanieDelta,
   credibilityEventSign: () => credibilityEventSign,
   credibilityStreamWeight: () => credibilityStreamWeight,
   diplomacyClampTrustGainNaTure: () => diplomacyClampTrustGainNaTure,
@@ -42,6 +44,7 @@ __export(wiarygodnosc_entry_exports, {
   wiarygodnoscSpadekMult: () => wiarygodnoscSpadekMult,
   wiarygodnoscStartowa: () => wiarygodnoscStartowa,
   wiarygodnoscWzrostMult: () => wiarygodnoscWzrostMult,
+  zaufanieDryfOdWiarygodnosci: () => zaufanieDryfOdWiarygodnosci,
   zaufaniePierwszyKontaktZD4: () => zaufaniePierwszyKontaktZD4
 });
 module.exports = __toCommonJS(wiarygodnosc_entry_exports);
@@ -58,6 +61,7 @@ var diplomacy_default = {
     zdrada_zaufanie: -50,
     szpiegWykryty_zaufanie: -15,
     rywalizacjaTenSamTyp_zaufanie: -20,
+    miastoPanstwoSameCiv_zaufanie: 20,
     roznicaKulturowa_zaufanie: -5,
     przewagaMilitarna_respekt: 15,
     slabszyMilitarnie_respekt: -10,
@@ -4668,6 +4672,8 @@ var DIPLOMACY_PARAMS = {
   szpiegWykryty_zaufanie: -15,
   /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
   rywalizacjaTenSamTyp_zaufanie: -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie: 20,
   /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
   roznicaKulturowa_zaufanie: -5,
   // ---- one-shot Respekt deltas (jednorazowo) ----
@@ -5203,10 +5209,12 @@ function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffe
     willingnessAlly: parseFloat(allyW.toFixed(4))
   };
 }
-function tickDiplomacy(rdip, ctx) {
+function computeTickZaufanieDelta(ctx, atWar) {
   const p = getEffectiveDiplomacyParams();
-  const atWar = isRelationAtWar(rdip);
   let dZ = 0;
+  if (!atWar && ctx.wiarygodnoscSelf !== void 0) {
+    dZ += zaufanieDryfOdWiarygodnosci(ctx.wiarygodnoscSelf);
+  }
   if (ctx.aktywnyHandel) dZ += p.handel_zaufanie_perTura;
   const peaceTier = ctx.pokojTrustTier ?? (ctx.aktywnyPakt ? "nap" : void 0);
   switch (peaceTier) {
@@ -5216,18 +5224,19 @@ function tickDiplomacy(rdip, ctx) {
     case "nap":
       dZ += p.nap_zaufanie_perTura;
       break;
-    case "pokoj":
-      dZ += p.pokoj_zaufanie_perTura;
-      break;
   }
   if (ctx.dobraWolaAktywna) dZ += p.dobraWola_zaufanie_perTura;
   if (ctx.wspolnyWrog) dZ += p.wspolnyWrog_zaufanie_perTura;
   if (ctx.wspolnaReligia) dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia) dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
-  if (ctx.wiarygodnoscSelf !== void 0 && dZ !== 0) {
-    dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
-  }
+  if (atWar && dZ > 0) dZ = 0;
+  return dZ;
+}
+function tickDiplomacy(rdip, ctx) {
+  const p = getEffectiveDiplomacyParams();
+  const atWar = isRelationAtWar(rdip);
+  const dZ = computeTickZaufanieDelta(ctx, atWar);
   let noweUrazy = rdip.urazyHistoryczne ?? 0;
   if (ctx.turn % 20 === 0 && noweUrazy !== 0) {
     const krok = Math.abs(p.urazyHistoryczne_zaufanie_perTura);
@@ -5241,7 +5250,6 @@ function tickDiplomacy(rdip, ctx) {
   const aktywne = traktatyList.filter(
     (t) => t.wygasaTura === null || t.wygasaTura > ctx.turn
   );
-  if (atWar && dZ > 0) dZ = 0;
   const slimStatus = rdip.status;
   const tickedRel = clampRelationForWar({
     zaufanie: clamp(rdip.zaufanie + dZ, 0, 100),
@@ -5395,6 +5403,15 @@ function applyWiarygodnoscTempoDoDelty(dZ, w) {
   if (w === void 0 || dZ === 0) return dZ;
   if (dZ > 0) return dZ * wiarygodnoscWzrostMult(w);
   return dZ * wiarygodnoscSpadekMult(w);
+}
+var WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
+function zaufanieDryfOdWiarygodnosci(w) {
+  const wKlamrowane = clamp2(
+    w,
+    DIPLOMACY_PARAMS.wiarygodnoscSkalaMin,
+    DIPLOMACY_PARAMS.wiarygodnoscSkalaMax
+  );
+  return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
 }
 function strumienWiarygodnoscDoZaufania(w) {
   const wKlamrowane = clamp2(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
@@ -12804,7 +12821,10 @@ function relationPnModPct(relSigned) {
 function effectiveTreatyPnRequired(basePn, relTotal) {
   if (basePn <= 0) return 0;
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  return Math.max(0, Math.round(basePn * (1 - modPct / 100)));
+  return Math.max(0, Math.round(basePn * (1 + modPct / 100)));
+}
+function partnerTreatyPnRequired(basePn) {
+  return Math.max(0, basePn);
 }
 function pnDealAcceptedByAi(givePn, receivePn, relacja) {
   if (givePn <= 0 && receivePn <= 0) return false;
@@ -13062,9 +13082,9 @@ function treatyEvalRelationTotal(rel) {
   const clamped = rel.status === "wojna" ? clampRelationForWar(rel) : rel;
   return relationTotal(clamped);
 }
-function peaceProposalOfferPn(givePn, receivePn, basePn, rel) {
+function peaceProposalOfferPn(givePn, receivePn, basePn, rel, proposerIsPlayer = false) {
   const relTotal = treatyEvalRelationTotal(rel);
-  const required = effectiveTreatyPnRequired(basePn, relTotal);
+  const required = proposerIsPlayer ? effectiveTreatyPnRequired(basePn, relTotal) : partnerTreatyPnRequired(basePn);
   const basketNet = Math.max(0, givePn - receivePn);
   return { offerPn: required + basketNet, required };
 }
@@ -13073,7 +13093,8 @@ function treatyPnGate(actionId, payload, relation, pnOpts) {
   if (basePn <= 0) return null;
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
   if (actionId === "pokoj") {
-    const { offerPn, required: required2 } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+    const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
+    const { offerPn, required: required2 } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
     if (offerPn < required2) {
       return {
         accepted: false,
@@ -13243,7 +13264,8 @@ function evaluateProposal(proposal, ctx) {
     case "pokoj": {
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const basePn = treatyBasePnFromConfig("pokoj");
-      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation);
+      const proposerIsPlayer = proposerOwnerId === 0;
+      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
       if (offerPn < required) {
         return {
           accepted: false,
@@ -13538,8 +13560,10 @@ function tributeBlockedForCityState(ctx) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DIPLOMACY_PARAMS,
+  WIARYGODNOSC_ZAUFANIE_DRYF_NA_100,
   appendCredibilityEvent,
   applyWiarygodnoscTempoDoDelty,
+  computeTickZaufanieDelta,
   credibilityEventSign,
   credibilityStreamWeight,
   diplomacyClampTrustGainNaTure,
@@ -13559,5 +13583,6 @@ function tributeBlockedForCityState(ctx) {
   wiarygodnoscSpadekMult,
   wiarygodnoscStartowa,
   wiarygodnoscWzrostMult,
+  zaufanieDryfOdWiarygodnosci,
   zaufaniePierwszyKontaktZD4
 });

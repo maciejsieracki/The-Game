@@ -158,6 +158,37 @@ console.log('\n-- R-HEX-PLONY-MAGAZYN B: tileYield z 👤 → magazyn + ulepszen
   eq(stock.glina, 2, 'magazyn: heks przy rzece → +2 glina/t');
 }
 
+// Sąsiad z 👤 (tryb ręczny) — Łąka +1 drewno, nie tylko centrum miasta
+{
+  const city = makeCity({
+    population: 1,
+    okolicaTryb: 'reczny',
+    okolicaReczne: { '1,0': 1 },
+  });
+  const map = {
+    hexes: {
+      '0,0': {
+        coords: { q: 0, r: 0 },
+        terenBazowy: 'rownina',
+        nakladka: 'brak',
+        rzeka: null,
+      },
+      '1,0': {
+        coords: { q: 1, r: 0 },
+        terenBazowy: 'laka',
+        nakladka: 'brak',
+        rzeka: null,
+      },
+    },
+  };
+  const nodes = M.buildTerritoryNodesFromCities([city]);
+  const worked = M.computeWorkedMagazynYieldsByCity([city], map, nodes);
+  const w = worked.get(city.id);
+  ok(w && w.drewno === 3, 'centrum+👤 Łąka: drewno 2+1=3');
+  const stock = runTick(city, [], map);
+  eq(stock.drewno, 3, 'magazyn: plony z obrabianego sąsiada addytywnie');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY); } catch (e) { /* ignore */ }
 try { fs.unlinkSync(BUNDLE); } catch (e) { /* ignore */ }

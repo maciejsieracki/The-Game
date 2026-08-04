@@ -72,6 +72,10 @@ export interface DiplomacyAudienceState {
   actions: readonly AudienceAction[];
   /** Suma zaufanie + respekt (0–200). */
   relacjaTotal?: number;
+  /** REL-WIARYG-DRIFT-Q1 — efektywna Δ Zaufania co turę (W + umowy). */
+  zaufanieDeltaPerTurn?: number;
+  /** REL-WIARYG-DRIFT-Q1 — Δ Relacji co turę (= Δ Zaufania; Respekt nie dryfuje). */
+  relacjaDeltaPerTurn?: number;
   /** D4: ile Zauf. z PN już w tej turze (limit 5). */
   trustPnGainedThisTurn?: number;
   /** D4-W3-B: próg Relacji na czysty dar. */
@@ -453,6 +457,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-abar.them i{background:linear-gradient(90deg,#a86018,#e0a868);}
 .da-rel-row{display:flex;align-items:baseline;justify-content:space-between;font-size:0.72em;margin-bottom:2px;color:#8a8070;}
 .da-rel-row .v{font-weight:700;font-variant-numeric:tabular-nums;}
+.da-per-turn{font-weight:600;font-size:0.92em;color:#9ab8e8;margin-left:4px;}
 .da-rel-row.trust .v{color:#7ad0a0;} .da-rel-row.respect .v{color:#e8d88a;}
 .da-rel-row.credibility .v{color:#9ab8e8;}
 .da-rel-row.relacja-total{margin-top:6px;border-top:1px dashed rgba(232,216,138,.12);padding-top:6px;}
@@ -1116,7 +1121,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Relacje z Tobą</div>' +
-        progressBarHtml('Zaufanie', relScores.zaufanie, 100, undefined, 'trust') +
+        progressBarHtml('Zaufanie', relScores.zaufanie, 100, undefined, 'trust', st.zaufanieDeltaPerTurn) +
         progressBarHtml('Respekt', relScores.respekt, 100, RESPEKT_TOOLTIP_PL, 'respect') +
         relacjaTotalHtml(st) +
       '</div>' +
@@ -1142,20 +1147,34 @@ function relacjaTotalHtml(st: DiplomacyAudienceState): string {
   return (
     '<div class="da-rel-row relacja-total"' + tip + '>'
     + '<span>Relacja</span>'
-    + '<span class="v">' + relTotal + ' / 200</span>'
+    + '<span class="v">' + relTotal + ' / 200' + formatPerTurnDelta(st.relacjaDeltaPerTurn) + '</span>'
     + '<span class="da-rel-sum-hint">(Zaufanie + Respekt)</span>'
     + '</div>'
     + '<div class="da-rbar relacja-total"><i style="width:' + pct + '%"></i></div>'
   );
 }
 
-function progressBarHtml(label: string, value: number, max: number, tooltip?: string, kind?: 'trust' | 'respect'): string {
+function formatPerTurnDelta(delta: number | undefined): string {
+  if (delta === undefined || !Number.isFinite(delta) || delta === 0) return '';
+  const sign = delta > 0 ? '+' : '';
+  const val = Number.isInteger(delta) ? String(delta) : delta.toFixed(1);
+  return ' <span class="da-per-turn">' + sign + val + ' / turę</span>';
+}
+
+function progressBarHtml(
+  label: string,
+  value: number,
+  max: number,
+  tooltip?: string,
+  kind?: 'trust' | 'respect',
+  perTurnDelta?: number,
+): string {
   const pct = Math.max(0, Math.min(100, Math.round((value / max) * 100)));
   const tip = tooltip ? ' title="' + esc(tooltip) + '"' : '';
   const rowCls = kind ? 'da-rel-row ' + kind : 'da-rel-row';
   const barCls = kind ? 'da-rbar ' + kind : 'da-rbar';
   return (
-    '<div class="' + rowCls + '"' + tip + '><span>' + esc(label) + '</span><span class="v">' + value + ' / ' + max + '</span></div>' +
+    '<div class="' + rowCls + '"' + tip + '><span>' + esc(label) + '</span><span class="v">' + value + ' / ' + max + formatPerTurnDelta(perTurnDelta) + '</span></div>' +
     '<div class="' + barCls + '"><i style="width:' + pct + '%"></i></div>'
   );
 }

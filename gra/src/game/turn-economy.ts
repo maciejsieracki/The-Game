@@ -1362,7 +1362,7 @@ export function computeGarncarniaSurplusZadowolenieByOwner(
 }
 
 /** PYTANIE-85: bilans żywności miasta (brutto − racje). */
-function computeCityFoodBalanceV85(
+export function computeCityFoodBalanceV85(
   zywnoscBrutto: number,
   population: number,
   city: Pick<City, 'poziomRacji' | 'procentRozwoj'>,
@@ -1381,6 +1381,48 @@ function computeCityFoodBalanceV85(
     bilansLokalny: zywnoscBrutto - kosztRacji,
     poziomRacji,
   };
+}
+
+/** SPICH-AUTO-Q1: przelicz koszt racji / bilans lokalny po zmianie poziomRacji (bez pełnego ticku). */
+export function recomputeCityFoodBalancesInEcon(
+  perCity: CityEconomyTick[],
+  cities: City[],
+  rationParams: RationParams,
+  spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>,
+): void {
+  const cityById = new Map(cities.map(c => [c.id, c]));
+  for (const tick of perCity) {
+    const city = cityById.get(tick.cityId);
+    if (!city) continue;
+    const spichlerz = spichlerzByCity?.get(tick.cityId) ?? {
+      ceramikaActive: tick.spichlerzCeramika ?? false,
+      solActive: tick.spichlerzSol ?? false,
+      maSpichlerzPop: tick.maSpichlerz ?? false,
+      maSpichlerzIIPop: tick.maSpichlerzII ?? false,
+    };
+    const produkcja = tick.zywnoscBrutto
+      ?? Math.max(0, (tick.zywnoscNetto ?? 0) + (tick.kosztRacji ?? 0));
+    const foodBal = computeCityFoodBalanceV85(
+      produkcja,
+      city.population,
+      city,
+      rationParams,
+      spichlerz,
+    );
+    tick.kosztRacji = foodBal.kosztRacji;
+    tick.bilansLokalny = foodBal.bilansLokalny;
+    tick.zywnoscNetto = foodBal.bilansLokalny;
+    tick.poziomRacji = foodBal.poziomRacji;
+  }
+}
+
+/** Odśwież totalZywnosc w wyniku ticku po zmianie bilansów lokalnych. */
+export function refreshEconomyFoodTotals(result: EconomyTickResult): void {
+  let total = 0;
+  for (const tick of result.perCity) {
+    total += tick.bilansLokalny ?? tick.zywnoscNetto ?? 0;
+  }
+  result.totalZywnosc = total;
 }
 
 function runtimeActiveBuiltIdsForCity(

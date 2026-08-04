@@ -28,7 +28,7 @@ import {
   resolveArchetypeTrade,
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
-import { applyWiarygodnoscTempoDoDelty } from './diplomacy-credibility';
+import { zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -118,6 +118,8 @@ export const DIPLOMACY_PARAMS = {
   szpiegWykryty_zaufanie:          -15,
   /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
   rywalizacjaTenSamTyp_zaufanie:   -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie:   20,
   /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
   roznicaKulturowa_zaufanie:       -5,
 
@@ -1551,12 +1553,9 @@ export interface TickCtx {
   /** Czy gracz rozbudowuje się przy granicy partnera? (-2 Zaufanie/turę). */
   ekspansjaPrzyGranicy?: boolean;
   /**
-   * WIARYGODNOSC-SPECYFIKACJA.md §5, Dźwignia 1 (WIAR-Q3=C) — Wiarygodność GLOBALNA
-   * (nie per para) strony, której reputacja mnoży tempo ΔZ tej pary (surowa,
-   * nieklamrowana suma — klamrowanie do −100…+100 w `applyWiarygodnoscTempoDoDelty`).
-   * `undefined` = brak mnożnika (SILNIK zostawia pole puste m.in. gdy ta konkretna
-   * para jest AKTUALNIE w stanie wojny — C-WIAR-WROG=A). Mnożnik stosowany do
-   * zsumowanego dZ (handel/sojusz/religia/ekspansja), przed war-zeroing i clamp.
+   * REL-WIARYG-DRIFT-Q1 — globalna Wiarygodność strony (nie per para), źródło
+   * pasywnego dryfu Zaufania `zaufanieDryfOdWiarygodnosci(W)` (niezależnego od umów).
+   * `undefined` = brak dryfu (SILNIK: para w wojnie — C-WIAR-WROG=A).
    */
   wiarygodnoscSelf?: number;
 }
@@ -1567,7 +1566,9 @@ export interface TickCtx {
  *
  * Efekty per-turowe (DIPLOMACY_PARAMS):
  *   handel (UmowaHandlowa) +1 Zaufanie (stackuje)
- *   pokojTrustTier: sojusz +3 | nap +2 | pokoj +1 (wzajemnie wykluczające)
+ *   pokojTrustTier: sojusz +3 | nap +2 (wzajemnie wykluczające; tier „pokoj" bez umowy
+ *     zastąpiony dryfem z Wiarygodności — REL-WIARYG-DRIFT-Q1)
+ *   wiarygodnoscSelf: pasywny ΔZ/turę = clamp(W,±100)×0,03 (niezależny od umów)
  *   dobraWola      +1 Zaufanie
  *   wspolnyWrog    +1 Zaufanie
  *   wspolnaReligia +0.5 Zaufanie  (TODO: cap akumulacyjny +15/−10 per religia)
@@ -1584,20 +1585,21 @@ export interface TickCtx {
  *
  * TODO: Akumulatory per-religia (+15/−10 cap) — uproszczenie na przyszłość.
  */
-export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): RelacjaDyplomatyczna {
+export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
   const p = getEffectiveDiplomacyParams();
-
-  const atWar = isRelationAtWar(rdip);
-
-  // --- delta Zaufania z flag per-turowych ---
   let dZ = 0;
-  if (ctx.aktywnyHandel)        dZ += p.handel_zaufanie_perTura;
+
+  if (!atWar && ctx.wiarygodnoscSelf !== undefined) {
+    dZ += zaufanieDryfOdWiarygodnosci(ctx.wiarygodnoscSelf);
+  }
+
+  if (ctx.aktywnyHandel) dZ += p.handel_zaufanie_perTura;
   const peaceTier = ctx.pokojTrustTier
     ?? (ctx.aktywnyPakt ? 'nap' as PokojTrustTier : undefined);
   switch (peaceTier) {
     case 'sojusz': dZ += p.sojusz_zaufanie_perTura; break;
     case 'nap':    dZ += p.nap_zaufanie_perTura; break;
-    case 'pokoj':  dZ += p.pokoj_zaufanie_perTura; break;
+    // tier „pokoj" (+1) zastąpiony dryfem z W (REL-WIARYG-DRIFT-Q1)
   }
   if (ctx.dobraWolaAktywna)     dZ += p.dobraWola_zaufanie_perTura;
   if (ctx.wspolnyWrog)          dZ += p.wspolnyWrog_zaufanie_perTura;
@@ -1605,10 +1607,17 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
   if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
 
-  // WIARYGODNOSC §5 Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa na zsumowanym dZ.
-  if (ctx.wiarygodnoscSelf !== undefined && dZ !== 0) {
-    dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
-  }
+  if (atWar && dZ > 0) dZ = 0;
+
+  return dZ;
+}
+
+export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): RelacjaDyplomatyczna {
+  const p = getEffectiveDiplomacyParams();
+
+  const atWar = isRelationAtWar(rdip);
+
+  const dZ = computeTickZaufanieDelta(ctx, atWar);
 
   // --- zanik urazów historycznych co 20 tur ---
   // main.ts trzyma slim Relation (bez traktaty/urazy) — guard dla bezpiecznego ticku.
@@ -1629,8 +1638,7 @@ export function tickDiplomacy(rdip: RelacjaDyplomatyczna, ctx: TickCtx): Relacja
     t => t.wygasaTura === null || t.wygasaTura > ctx.turn,
   );
 
-  // Wojna: brak narastania Zaufania (pokój/handlowe tiery i tak wyłączone w main.ts).
-  if (atWar && dZ > 0) dZ = 0;
+  // Wojna: brak narastania Zaufania (umowy pokojowe wyłączone w main.ts).
 
   // --- clamp Zaufania i przelicz relacjaOgolna ---
   const slimStatus = (rdip as unknown as Relation).status;

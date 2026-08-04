@@ -1,0 +1,64 @@
+---
+description: Po deployu/paczce do playtestu — obowiązkowy banner GOTÓW DO TESTU (Maciej 2026-08-02)
+alwaysApply: true
+---
+
+# ✅ GOTÓW DO TESTU — sygnał dla Macieja (NIENEGOCJOWALNE)
+
+**Problem:** subagent kończy w tle / UI pokazuje „Working”, a Maciej nie wie, że już może testować — marnuje czas czekając albo testuje za wcześnie.
+
+**Decyzja Macieja (2026-08-02):** gdy jest coś do przetestowania w grze, agent **zawsze** daje w czacie **wyraźny znak tekstowy** (banner). Bez bannera Maciej **zakłada, że jeszcze nie testuje**.
+
+**Decyzja Macieja (2026-08-02 wieczór):** skończyłeś pracę **w źródłach** (jeszcze bez ROBOCZA) → **natychmiast** napisz **`✅ Gotowe w źródłach`** + pytanie **„Wrzucić na ROBOCZA?”**. **ZAKAZ** milczeć i czekać na popchnięcie. Po tak/deploy → publish → **od razu** banner niżej (bez osobnego „a mogę testować?”).
+
+## Kiedy obowiązkowo
+
+### A) Źródła gotowe, jeszcze nie na ROBOCZA
+1. `✅ Gotowe w źródłach` + 1 linia co
+2. Pytanie: **Wrzucić na ROBOCZA?**
+3. **Nie** dawaj jeszcze bannera GOTÓW DO TESTU
+
+### B) Paczka już w `gra-robocza/` (po deployu)
+
+Po **każdym** z poniższych, gdy wynik jest w `gra-robocza/` (lub Maciej ma otworzyć konkretny plik HTML):
+
+1. Deploy / publish ROBOCZA (FALA, md5 w manifeście)
+2. Zamknięcie subagenta, który zrobił deploy lub zostawił gotowy bundle do Ctrl+F5
+3. Fix, który Maciej ma **obejrzeć / zmierzyć** w Nowej grze
+
+**Nie** wystarczy: samo „md5 …”, samo „Ctrl+F5”, wpis w `WERSJE.md` / kanale bez bannera w czacie.
+
+## Format (kopiuj 1:1)
+
+```
+╔══════════════════════════════╗
+║   ✅ GOTÓW DO TESTU          ║
+╚══════════════════════════════╝
+```
+
+**Od razu pod bannerem (obowiązkowe 3 linie):**
+
+1. **md5** (skrót 8 znaków z `gra-robocza/ROBOCZA-MANIFEST.json`)
+2. **Wejście:** `Ctrl+F5` → `gra-robocza/START.html` → …
+3. **Co sprawdzić:** 1–3 punkty (konkret)
+
+Opcjonalnie potem: `### Następny krok` (reguła `maciej-nastepny-krok.mdc`).
+
+## Zakazy
+
+- ❌ Skończyć kod w źródłach i **milczeć** (bez „Gotowe w źródłach” + pytanie o ROBOCZA)
+- ❌ Kończyć sesję / odpowiedź po subagencie **bez** bannera, gdy jest paczka do testu
+- ❌ Liczyć na to, że Maciej zobaczy zniknięcie „1 Working” w UI
+- ❌ Prosić o test **zanim** banner (i md5) są w czacie
+- ❌ Mieszać z historycznym „playtest tylko Master” — tu chodzi o **sygnał gotowości roboczej**, nie o rejestr PT-
+
+## Relacja z innymi regułami
+
+| Reguła | Rola |
+|---|---|
+| Ten plik | **Kiedy wolno testować** — banner + md5 |
+| `maciej-nastepny-krok.mdc` | **Co dalej** po odpowiedzi (max 3 opcje) |
+| `docs/obieg/OBOWIAZ-POWIADOM-MACIEJA.md` | `✅ Gotowe:` + wpis `MACIEJ-GOTOWE.md` |
+| `obowiaz-playtest-master-only.mdc` | Nie mylić z oficjalnym playtestem kanonu |
+
+Po deployu typowa kolejność w jednej wiadomości: banner **GOTÓW DO TESTU** → md5/co sprawdzić → (opcjonalnie) `✅ Gotowe:` / `MACIEJ-GOTOWE` → `### Następny krok`.

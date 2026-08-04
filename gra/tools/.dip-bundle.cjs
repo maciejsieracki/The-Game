@@ -97,6 +97,7 @@ var diplomacy_default = {
     zdrada_zaufanie: -50,
     szpiegWykryty_zaufanie: -15,
     rywalizacjaTenSamTyp_zaufanie: -20,
+    miastoPanstwoSameCiv_zaufanie: 20,
     roznicaKulturowa_zaufanie: -5,
     przewagaMilitarna_respekt: 15,
     slabszyMilitarnie_respekt: -10,
@@ -117,6 +118,7 @@ var diplomacy_default = {
     progSojuszZaufanie: 91,
     progWymianaTechZaufanie: 70,
     progWasalizacjaRespekt: 70,
+    progWchloniecieRespekt: 90,
     progMinimalnyRelacja: 30,
     progSojuszRelacja: 151,
     progUmowaMinRelacja: 151,
@@ -166,7 +168,11 @@ var diplomacy_default = {
     karaPrzemarszNieautoryzowany_zaufanie_perTura: 5,
     progUltimatumMilitaryRatio: 1.3,
     progUltimatumMinGold: 20,
-    progWasalDefaultGoldPerTurn: 10
+    progWasalDefaultGoldPerTurn: 10,
+    graczWchlonieciePoWasaluTur: 10,
+    graczWchloniecieKosztBaza: 150,
+    graczWchloniecieKosztPerLudnosc: 25,
+    graczWchloniecieKosztMin: 200
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -249,12 +255,7 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1,
-    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
-    wiarygodnosc_limit_zaufanie_chwiejny: 3,
-    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
-    wiarygodnosc_limit_zaufanie_dno: 0,
-    wiarygodnosc_limit_prog_dno: -70
+    dobra_wola_zaufanie_per_tura: 1
   },
   akcje_dyplomatyczne: [
     {
@@ -354,12 +355,20 @@ var diplomacy_default = {
       Efekt: "Z casus belli: \u221210 Relacja u wszystkich. Bez c.b.: \u221225 Relacja u wszystkich, \u221220 Zaufanie, flaga agresor"
     },
     {
-      Akcja: "12. Wasalizacja / wch\u0142oni\u0119cie",
-      Opis: "S\u0142absza cywilizacja staje si\u0119 wasalem (zachowuje terytorium, p\u0142aci trybut) lub zostaje w pe\u0142ni wch\u0142oni\u0119ta przez gracza.",
+      Akcja: "12. Wasalizacja",
+      Opis: "Miasto-pa\u0144stwo staje si\u0119 wasalem \u2014 zachowuje terytorium, p\u0142aci trybut co tur\u0119. Wymaga Respektu \u2265 prog_wasalizacja.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "TAK",
-      Koszt: "Wasalizacja: 100\u2013300 Pieni\u0119dzy gwarancji + zobowi\u0105zanie ochrony; Wch\u0142oni\u0119cie: kary reputacyjne",
-      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wch\u0142oni\u0119cie: miasta przechodz\u0105, niezadowolenie N tur"
+      Koszt: "Wasalizacja: trybut \xA4/tur\u0119 (domy\u015Blnie 10) + zobowi\u0105zanie ochrony",
+      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody suzerena"
+    },
+    {
+      Akcja: "15. Wch\u0142oni\u0119cie",
+      Opis: "Po aktywnym wasalu (min. 10 tur) gracz mo\u017Ce w pe\u0142ni wch\u0142oni\u0107 miasto-pa\u0144stwo \u2014 jednorazowa op\u0142ata \xA4 (skala ludno\u015Bci), zgoda wasala.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "NIE",
+      "Dost\u0119pne: Poboczni": "TAK",
+      Koszt: "max(200, 150 + 25 \xD7 ludno\u015B\u0107 MP) \xA4 jednorazowo",
+      Efekt: "Miasta MP przechodz\u0105 do gracza; wasalizacja znika; MP eliminowane z mapy"
     },
     {
       Akcja: "13. Prezent / dar",
@@ -4683,6 +4692,20 @@ var TERRAIN_MOVEMENT_KEY_ALIASES = {
   polarny: "polarny" /* Polarny */
 };
 
+// src/game/diplomacy-credibility.ts
+function clamp(v, min, max) {
+  return Math.min(max, Math.max(min, v));
+}
+var WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
+function zaufanieDryfOdWiarygodnosci(w) {
+  const wKlamrowane = clamp(
+    w,
+    DIPLOMACY_PARAMS.wiarygodnoscSkalaMin,
+    DIPLOMACY_PARAMS.wiarygodnoscSkalaMax
+  );
+  return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
+}
+
 // src/game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
   // ---- one-shot Zaufanie deltas (jednorazowo) ----
@@ -4704,6 +4727,8 @@ var DIPLOMACY_PARAMS = {
   szpiegWykryty_zaufanie: -15,
   /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
   rywalizacjaTenSamTyp_zaufanie: -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie: 20,
   /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
   roznicaKulturowa_zaufanie: -5,
   // ---- one-shot Respekt deltas (jednorazowo) ----
@@ -4747,6 +4772,8 @@ var DIPLOMACY_PARAMS = {
   progWymianaTechZaufanie: 70,
   /** Respekt >= 70 required to demand Wasalizacja */
   progWasalizacjaRespekt: 70,
+  /** Respekt >= 90 required to demand Wchloniecie */
+  progWchloniecieRespekt: 90,
   /** Relacja < 30 = diplomacy nearly impossible */
   progMinimalnyRelacja: 30,
   /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
@@ -4846,6 +4873,14 @@ var DIPLOMACY_PARAMS = {
   progUltimatumMinGold: 20,
   /** Domyślny trybut wasala (¤/turę) */
   progWasalDefaultGoldPerTurn: 10,
+  /** R-GRACZ-WCHLONIECIE: min tur wasalu przed wchłonięciem MP przez gracza */
+  graczWchlonieciePoWasaluTur: 10,
+  /** R-GRACZ-WCHLONIECIE: baza kosztu wchłonięcia (¤) */
+  graczWchloniecieKosztBaza: 150,
+  /** R-GRACZ-WCHLONIECIE: koszt per ludność MP (¤) */
+  graczWchloniecieKosztPerLudnosc: 25,
+  /** R-GRACZ-WCHLONIECIE: minimalny koszt wchłonięcia (¤) */
+  graczWchloniecieKosztMin: 200,
   // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
   // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
   // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
@@ -4980,6 +5015,7 @@ var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
 ];
 var DIPLO_RESPEKT_THRESHOLD_KEYS = [
   "progWasalizacjaRespekt",
+  "progWchloniecieRespekt",
   "progGraniceWojskoweRespekt",
   "progTrybutZadanieMinRespekt",
   "progPoboczneAkceptacja"
@@ -5063,11 +5099,11 @@ function diplomacyAllianceStrengthAdjust(proposerMilRatio, proposerRespekt, resp
     hegemonProposerNoAlliance: safeMil >= params.progSojuszHegemonProposerMaxMil
   };
 }
-function clamp(value, min, max) {
+function clamp2(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 function relationScore(rel) {
-  return clamp(
+  return clamp2(
     rel.zaufanie * DIPLOMACY_PARAMS.mnoznikZaufania + rel.respekt * DIPLOMACY_PARAMS.mnoznikRespektu,
     0,
     200
@@ -5154,8 +5190,8 @@ function applyDiplomaticEvent(rel, event, params = {}) {
       dZ = -15;
       break;
   }
-  const newZ = clamp(rel.zaufanie + dZ, 0, 100);
-  const newR = clamp(rel.respekt + dR, 0, 100);
+  const newZ = clamp2(rel.zaufanie + dZ, 0, 100);
+  const newR = clamp2(rel.respekt + dR, 0, 100);
   return clampRelationForWar({
     zaufanie: newZ,
     respekt: newR,
@@ -5255,8 +5291,8 @@ function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffe
   let warW = 0;
   if (rel.status !== "wojna") {
     const respektNorm = respekt / 100;
-    const relPenalty = 1 - clamp(score / 200, 0, 1);
-    warW = clamp(
+    const relPenalty = 1 - clamp2(score / 200, 0, 1);
+    warW = clamp2(
       archAggression * 0.5 + respektNorm * 0.3 + relPenalty * 0.2,
       0,
       1
@@ -5264,17 +5300,17 @@ function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffe
   }
   let peaceW;
   if (rel.status === "wojna") {
-    const warWeariness = clamp(context.turnsAtWar / 20, 0, 0.5);
+    const warWeariness = clamp2(context.turnsAtWar / 20, 0, 0.5);
     const militaryPressure = context.militaryRatio < 1 ? (1 - context.militaryRatio) * 0.4 : 0;
     const goodwill = zaufanie / 100 * 0.2;
-    peaceW = clamp(warWeariness + militaryPressure + goodwill, 0, 1);
+    peaceW = clamp2(warWeariness + militaryPressure + goodwill, 0, 1);
   } else {
     peaceW = 0.8;
   }
   let tradeW = 0;
   if (score >= p.progMinimalnyRelacja) {
-    const relFactor = clamp(score / 200, 0, 1) * 0.4;
-    tradeW = clamp(archTrade * 0.6 + relFactor, 0, 1);
+    const relFactor = clamp2(score / 200, 0, 1) * 0.4;
+    tradeW = clamp2(archTrade * 0.6 + relFactor, 0, 1);
   }
   const aiMilOverOther = Math.max(0.01, context.militaryRatio);
   const otherMilOverAi = aiMilOverOther > 0 ? 1 / aiMilOverOther : 99;
@@ -5295,16 +5331,16 @@ function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffe
   if (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore) {
     const loyaltyBonus = aiPlayer.typCywilizacji === "chinczycy" /* Chinczycy */ ? 0.2 : aiPlayer.typCywilizacji === "inkowie" /* Inkowie */ ? 0.15 : aiPlayer.typCywilizacji === "grecy" /* Grecy */ ? 0.1 : aiPlayer.typCywilizacji === "zulusi" /* Zulusi */ ? -0.2 : 0;
     const trustFactor = zaufanie / 100 * 0.6;
-    const scoreFactor = clamp((score - p.progSojuszRelacja) / 80, 0, 0.3);
-    allyW = clamp(trustFactor + loyaltyBonus + scoreFactor, 0, 1);
+    const scoreFactor = clamp2((score - p.progSojuszRelacja) / 80, 0, 0.3);
+    allyW = clamp2(trustFactor + loyaltyBonus + scoreFactor, 0, 1);
     if (aiMilOverOther < 1) {
-      allyW = clamp(
+      allyW = clamp2(
         allyW + (1 - aiMilOverOther) * p.progSojuszPremiaSilniejszyInny,
         0,
         1
       );
     } else if (aiMilOverOther > 1) {
-      allyW = clamp(allyW - adj.allyWPenalty, 0, 1);
+      allyW = clamp2(allyW - adj.allyWPenalty, 0, 1);
     }
   }
   return {
@@ -5324,7 +5360,7 @@ function initialRelation(playerA, playerB) {
     zaufanie += p.roznicaKulturowa_zaufanie;
   }
   return {
-    zaufanie: clamp(zaufanie, 0, 100),
+    zaufanie: clamp2(zaufanie, 0, 100),
     respekt: p.startRespekt,
     status: "neutralni"
   };
@@ -5371,12 +5407,12 @@ var DEFAULT_POTEGA_WAGI = {
 };
 function computePotegaNacji(k, w = DEFAULT_POTEGA_WAGI) {
   const raw = k.wielkoscArmii * w.wielkoscArmii + k.wygraneBitwy * w.wygraneBitwy + k.ludnosc * w.ludnosc + k.rekruci * w.rekruci + k.miasta * w.miasta + k.gospodarka * w.gospodarka + k.epoka * w.epoka;
-  return clamp(Math.round(raw), 0, 100);
+  return clamp2(Math.round(raw), 0, 100);
 }
 function computeRespekt(potegaSelf, potegaPartner) {
   const sum = potegaSelf + potegaPartner;
   if (sum === 0) return 50;
-  return clamp(Math.round(100 * potegaSelf / sum), 0, 100);
+  return clamp2(Math.round(100 * potegaSelf / sum), 0, 100);
 }
 function computeMilitaryRatioFromArmyM(armyMSelf, armyMPartner) {
   const self = Math.max(0, armyMSelf);
@@ -5384,10 +5420,12 @@ function computeMilitaryRatioFromArmyM(armyMSelf, armyMPartner) {
   if (partner > 0) return self / partner;
   return self > 0 ? 2 : 1;
 }
-function tickDiplomacy(rdip, ctx) {
+function computeTickZaufanieDelta(ctx, atWar) {
   const p = getEffectiveDiplomacyParams();
-  const atWar = isRelationAtWar(rdip);
   let dZ = 0;
+  if (!atWar && ctx.wiarygodnoscSelf !== void 0) {
+    dZ += zaufanieDryfOdWiarygodnosci(ctx.wiarygodnoscSelf);
+  }
   if (ctx.aktywnyHandel) dZ += p.handel_zaufanie_perTura;
   const peaceTier = ctx.pokojTrustTier ?? (ctx.aktywnyPakt ? "nap" : void 0);
   switch (peaceTier) {
@@ -5397,19 +5435,19 @@ function tickDiplomacy(rdip, ctx) {
     case "nap":
       dZ += p.nap_zaufanie_perTura;
       break;
-    case "pokoj":
-      dZ += p.pokoj_zaufanie_perTura;
-      break;
   }
   if (ctx.dobraWolaAktywna) dZ += p.dobraWola_zaufanie_perTura;
   if (ctx.wspolnyWrog) dZ += p.wspolnyWrog_zaufanie_perTura;
   if (ctx.wspolnaReligia) dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia) dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
-  if (ctx.wiarygodnoscSelf !== void 0) {
-    const wKlamrowane = clamp(ctx.wiarygodnoscSelf, p.wiarygodnoscSkalaMin, p.wiarygodnoscSkalaMax);
-    dZ += wKlamrowane / p.wiarygodnoscZaufanieDzielnikPerTura;
-  }
+  if (atWar && dZ > 0) dZ = 0;
+  return dZ;
+}
+function tickDiplomacy(rdip, ctx) {
+  const p = getEffectiveDiplomacyParams();
+  const atWar = isRelationAtWar(rdip);
+  const dZ = computeTickZaufanieDelta(ctx, atWar);
   let noweUrazy = rdip.urazyHistoryczne ?? 0;
   if (ctx.turn % 20 === 0 && noweUrazy !== 0) {
     const krok = Math.abs(p.urazyHistoryczne_zaufanie_perTura);
@@ -5423,10 +5461,9 @@ function tickDiplomacy(rdip, ctx) {
   const aktywne = traktatyList.filter(
     (t) => t.wygasaTura === null || t.wygasaTura > ctx.turn
   );
-  if (atWar && dZ > 0) dZ = 0;
   const slimStatus = rdip.status;
   const tickedRel = clampRelationForWar({
-    zaufanie: clamp(rdip.zaufanie + dZ, 0, 100),
+    zaufanie: clamp2(rdip.zaufanie + dZ, 0, 100),
     respekt: rdip.respekt,
     status: atWar ? "wojna" : slimStatus ?? "pokoj"
   });

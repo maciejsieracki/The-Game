@@ -378,6 +378,23 @@ export function applyWiarygodnoscTempoDoDelty(dZ: number, w: number | undefined)
   return dZ * wiarygodnoscSpadekMult(w);
 }
 
+/** REL-WIARYG-DRIFT-Q1 — pasywny ΔZaufanie/turę od globalnej Wiarygodności (niezależny od umów). */
+export const WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
+
+/**
+ * Pasywny dryf Zaufania co turę z Wiarygodności (REL-WIARYG-DRIFT-Q1):
+ *   W=+100 → +3/turę · W=−100 → −3/turę · liniowo · W=0 → 0.
+ * Wzór: `clamp(W, −100, 100) × 0,03`.
+ */
+export function zaufanieDryfOdWiarygodnosci(w: number): number {
+  const wKlamrowane = clamp(
+    w,
+    DIPLOMACY_PARAMS.wiarygodnoscSkalaMin,
+    DIPLOMACY_PARAMS.wiarygodnoscSkalaMax,
+  );
+  return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
+}
+
 /**
  * @deprecated ANULOWANY (2026-08-03, WIAR-Q3=C) — zastąpiony mnożnikiem tempa
  * (`wiarygodnoscWzrostMult` / `wiarygodnoscSpadekMult` / `applyWiarygodnoscTempoDoDelty`).

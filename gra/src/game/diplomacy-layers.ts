@@ -55,6 +55,20 @@ export function startRelationForPair(sameType: boolean): Relation {
 }
 
 /**
+ * REL-MP-SAME-Q1 — start gracz ↔ miasto-państwo kopii typu gracza (wspólnota +20).
+ * Bez rywalizacjaTenSamTyp_zaufanie (−20); AI↔AI ten sam typ nadal startRelationForPair(true).
+ */
+export function startRelationForPlayerSameCivCityState(): Relation {
+  const p = DIPLOMACY_PARAMS;
+  const zaufanie = clamp(p.startZaufanie + p.miastoPanstwoSameCiv_zaufanie, 0, 100);
+  return {
+    zaufanie,
+    respekt: p.startRespekt,
+    status: 'neutralni',
+  };
+}
+
+/**
  * C-WIAR-D4=A — nakłada Dźwignię 4 na relację startową (pierwszy kontakt / lazy init).
  * Symetrycznie: każda strona wnosi `round(W/20)` pkt Zaufania.
  */
@@ -92,9 +106,9 @@ export function applyWiarygodnoscD4ToRelation(
  * Wyzsza trudnosc = mniej zaufania (miasta-panstwa bardziej nieufne wobec gracza).
  * Status pozostaje 'neutralni' — to nastawienie startowe, nie wojna od tury 1.
  *
- * WARIANT B (Maciej 2026-07-21, po recon podlogi skali): baza miasta-panstwa
- * (startRelationForPair(true) = startZaufanie(20) + rywalizacjaTenSamTyp_zaufanie(-20) = 0)
- * jest juz na dole skali 0-100 -- delta ujemna na hard bylaby wchlaniana przez clamp i
+ * WARIANT B (Maciej 2026-07-21, po recon podlogi skali): baza miasta-panstwa gracza
+ * (REL-MP-SAME-Q1: startRelationForPlayerSameCivCityState = startZaufanie(20) +
+ * miastoPanstwoSameCiv_zaufanie(+20) = 40) -- delta ujemna na hard bylaby wchlaniana przez clamp i
  * nieodrozniablna od normal. Zamiast tego skala PRZESUNIETA W GORE: hard=0 (dzisiejsze
  * zero -- zero regresji na trudnym, najbardziej nieufne), normal=+5 (lekko cieplej),
  * easy=+10 (najcieplej) -- monotonicznie "wyzsza trudnosc = mniej zaufania", i hard ma

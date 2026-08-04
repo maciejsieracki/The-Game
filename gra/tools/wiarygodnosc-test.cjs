@@ -48,13 +48,15 @@ fs.writeFileSync(
   wiarygodnoscWzrostMult,
   wiarygodnoscSpadekMult,
   applyWiarygodnoscTempoDoDelty,
+  zaufanieDryfOdWiarygodnosci,
+  WIARYGODNOSC_ZAUFANIE_DRYF_NA_100,
   modyfikatorZaufaniaD4OdWiarygodnosci,
   zaufaniePierwszyKontaktZD4,
   freshCredibilityStreamEntry,
   tickCredibilityStreamEntry,
   sumaWiarygodnosciCalkowita,
 } from '../src/game/diplomacy-credibility';
-export { DIPLOMACY_PARAMS, tickDiplomacy } from '../src/game/diplomacy';
+export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta } from '../src/game/diplomacy';
 export {
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,
@@ -347,7 +349,23 @@ ok(WC.credibilityStreamWeight('strumien_przemarsz') === P.wiarygodnoscS4Przemars
 }
 
 // ---------------------------------------------------------------------------
-// 8) Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa w tickDiplomacy + czyste funkcje mult
+// 8b) REL-WIARYG-DRIFT-Q1 — pasywny dryf Zaufania od W (niezależny od umów)
+// ---------------------------------------------------------------------------
+
+ok(WC.WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 === 0.03, 'WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03');
+ok(WC.zaufanieDryfOdWiarygodnosci(100) === 3, 'dryf W=+100 → +3/turę');
+ok(WC.zaufanieDryfOdWiarygodnosci(-100) === -3, 'dryf W=−100 → −3/turę');
+ok(WC.zaufanieDryfOdWiarygodnosci(0) === 0, 'dryf W=0 → 0');
+ok(approxEqual(WC.zaufanieDryfOdWiarygodnosci(50), 1.5), 'dryf W=+50 → +1.5/turę');
+ok(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: 100 }, false) === 3,
+  'computeTickZaufanieDelta: sam dryf W=100 → +3');
+ok(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: -100 }, false) === -3,
+  'computeTickZaufanieDelta: sam dryf W=−100 → −3');
+ok(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: 0 }, false) === 0,
+  'computeTickZaufanieDelta: W=0 → 0');
+
+// ---------------------------------------------------------------------------
+// 8) Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa (legacy; nie w tickDiplomacy od REL-WIARYG-DRIFT-Q1)
 // ---------------------------------------------------------------------------
 
 // Czyste funkcje mnożnika
@@ -372,42 +390,56 @@ function freshRdip(zaufanie, status) {
 }
 
 {
-  // sojusz +3 przy W=100 → dZ = 3×1.5 = 4.5
+  // sojusz +3 przy W=+100 → dryf +3 + sojusz +3 = +6 (bez mnożnika W)
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 100 });
-  ok(approxEqual(after.zaufanie, 50 + 4.5), `tickDiplomacy: sojusz +3 przy W=100 → dZ=4.5 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 56), `tickDiplomacy: sojusz +3 + dryf W=100 → dZ=6 (got ${after.zaufanie})`);
 }
 
 {
-  // sojusz +3 przy W=−100 → dZ = 3×0.5 = 1.5
+  // sojusz +3 przy W=−100 → dryf −3 + sojusz +3 = 0
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: -100 });
-  ok(approxEqual(after.zaufanie, 51.5), `tickDiplomacy: sojusz +3 przy W=−100 → dZ=1.5 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 50), `tickDiplomacy: sojusz + dryf W=−100 → dZ=0 (got ${after.zaufanie})`);
 }
 
 {
-  // ekspansja −2 przy W=100 → dZ = −2×0.5 = −1
+  // ekspansja −2 przy W=+100 → dryf +3 + ekspansja −2 = +1
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: 100 });
-  ok(approxEqual(after.zaufanie, 49), `tickDiplomacy: ekspansja −2 przy W=100 → dZ=−1 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 51), `tickDiplomacy: ekspansja −2 + dryf W=100 → dZ=+1 (got ${after.zaufanie})`);
 }
 
 {
-  // ekspansja −2 przy W=−100 → dZ = −2×1.5 = −3
+  // ekspansja −2 przy W=−100 → dryf −3 + ekspansja −2 = −5
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: -100 });
-  ok(approxEqual(after.zaufanie, 47), `tickDiplomacy: ekspansja −2 przy W=−100 → dZ=−3 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 45), `tickDiplomacy: ekspansja −2 + dryf W=−100 → dZ=−5 (got ${after.zaufanie})`);
 }
 
 {
-  // W=0 → bez zmian mnożnika (sojusz +3 pozostaje +3)
+  // pokoj tier (bez umowy) — tylko dryf W=+100 → +3 (bez flat +1)
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'pokoj', wiarygodnoscSelf: 100 });
+  ok(approxEqual(after.zaufanie, 53), `tickDiplomacy: tier pokoj + W=100 → dZ=+3 (got ${after.zaufanie})`);
+}
+
+{
+  // W=0, tier pokoj — brak dryfu i brak flat +1
+  const before = freshRdip(50, 'neutralni');
+  const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'pokoj', wiarygodnoscSelf: 0 });
+  ok(approxEqual(after.zaufanie, 50), `tickDiplomacy: tier pokoj + W=0 → dZ=0 (got ${after.zaufanie})`);
+}
+
+{
+  // sojusz +3 przy W=0 → tylko sojusz +3
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 0 });
   ok(approxEqual(after.zaufanie, 53), `tickDiplomacy: sojusz +3 przy W=0 → dZ=3 (got ${after.zaufanie})`);
 }
 
 {
-  // brak wiarygodnoscSelf → dZ bez mnożnika
+  // brak wiarygodnoscSelf → tylko bonusy umów (sojusz +3)
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz' });
   ok(approxEqual(after.zaufanie, 53), `tickDiplomacy: sojusz +3 bez W → dZ=3 (got ${after.zaufanie})`);
@@ -422,11 +454,11 @@ function freshRdip(zaufanie, status) {
 }
 
 {
-  // Klamrowanie W>100 przed wzorem mnożnika
+  // Klamrowanie W>100 przed dryfem
   const before = freshRdip(10, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 100000 });
-  const expectedDelta = P.sojusz_zaufanie_perTura * WC.wiarygodnoscWzrostMult(100);
-  ok(approxEqual(after.zaufanie, 10 + expectedDelta), `tickDiplomacy: klamruje W>100 przed mnożnikiem (got ${after.zaufanie})`);
+  const expectedDelta = P.sojusz_zaufanie_perTura + WC.zaufanieDryfOdWiarygodnosci(100);
+  ok(approxEqual(after.zaufanie, 10 + expectedDelta), `tickDiplomacy: klamruje W>100 przed dryfem (got ${after.zaufanie})`);
 }
 
 // ---------------------------------------------------------------------------

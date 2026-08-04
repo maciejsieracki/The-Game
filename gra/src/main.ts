@@ -265,6 +265,7 @@ import {
   audienceRestrictedActionLockNote,
   playerDiplomacyActionAllowed,
   startRelationForPair,
+  startRelationForPlayerSameCivCityState,
   applyWiarygodnoscD4ToRelation,
   applyCityStateDifficultyTrust,
 } from './game/diplomacy-layers';
@@ -377,6 +378,7 @@ import {
   computeStackDisplay,
   unitAtRepresentative,
   findAdjacentEmptyHexes,
+  findSplitDestHexes,
   assignBounceHexesForUnits,
   pickStackRepresentative,
   stackRuchLeft,
@@ -388,6 +390,7 @@ import {
   activeUnitStack,
   garrisonUnitsOnHex,
   exitGarnizon,
+  enterGarnizon,
   enterFieldFortify,
   exitFieldFortify,
 } from './game/armyMerge';
@@ -409,11 +412,13 @@ import {
   previewOwnerUpkeep,
   computePracaUpkeepByOwner,
   computeTerritoryResourceYieldByCity,
+  computeWorkedMagazynYieldsByCity,
   ownerResourceCap,
   cityHasWaterAccess,
   militaryFoodConsumptionWithSpichlerz,
   spichlerzSolArmyBonusActive,
   applyStolarniaDrewnoMapInflow,
+  refreshEconomyFoodTotals,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -753,9 +758,12 @@ import {
   isArmyStarving, isArmyHungry,
   getArmyStarvationCountdown,
   clearLastEmpireFoodTicks,
+  autoBalanceRationsToSolvency,
   type EmpireFoodState,
   type EmpireFoodTickResult,
+  type AutoRationAdjustResult,
 } from './game/empire-food';
+import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
@@ -784,6 +792,7 @@ import { PendingImprovementsTurn, type PendingImprovementEntry } from './game/pe
 import {
   aiDiplomacyStance, relationTier, loadDiplomacyParams, getEffectiveDiplomacyParams,
   applyDiplomaticEvent, computePotegaNacji, computeRespekt, tickDiplomacy,
+  computeTickZaufanieDelta,
   ARCHETYPE_AGGRESSION, ARCHETYPE_TRADE, DEFAULT_POTEGA_WAGI,
   relationScore, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   isOwnerAtWarInRelations,
@@ -2141,14 +2150,53 @@ async function boot(): Promise<void> {
     function empireTerritoryResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const territoryNodes = buildAllTerritoryNodes();
       const byCity = computeTerritoryResourceYieldByCity(cities, map, territoryNodes);
+      const workedByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes);
       const out: Record<string, number> = {};
       for (const c of cities) {
         if (c.ownerId !== ownerId) continue;
         const rec = byCity.get(c.id);
-        if (!rec) continue;
-        for (const [key, amount] of Object.entries(rec)) {
-          out[key] = (out[key] ?? 0) + (amount ?? 0);
+        if (rec) {
+          for (const [key, amount] of Object.entries(rec)) {
+            out[key] = (out[key] ?? 0) + (amount ?? 0);
+          }
         }
+        const worked = workedByCity.get(c.id);
+        if (worked) {
+          if (worked.drewno > 0) out.drewno = (out.drewno ?? 0) + worked.drewno;
+          if (worked.kamien > 0) out.kamien = (out.kamien ?? 0) + worked.kamien;
+          if (worked.glina > 0) out.glina = (out.glina ?? 0) + worked.glina;
+        }
+      }
+      // R-HEX-PLONY-MAGAZYN B + PYTANIE-84 R5/D2: ten sam mnożnik co tickEmpireResourcePipeline.
+      const drewnoBase = out.drewno ?? 0;
+      if (drewnoBase > 0) {
+        let stolarniaCount = 0;
+        for (const c of cities) {
+          if (c.ownerId !== ownerId) continue;
+          if ((cityBuilt.get(c.id) ?? []).includes('stolarnia')) stolarniaCount++;
+        }
+        const stolarniaBonus = loadThroughput(
+          data.econParams as unknown as Parameters<typeof loadThroughput>[0],
+          'budynek_stolarnia_bonus_drewna_civ',
+          _menuDifficulty,
+          0.10,
+        );
+        out.drewno = applyStolarniaDrewnoMapInflow(drewnoBase, stolarniaCount, stolarniaBonus);
+      }
+      const kamienBase = out.kamien ?? 0;
+      if (kamienBase > 0) {
+        let kamieniarskiCount = 0;
+        for (const c of cities) {
+          if (c.ownerId !== ownerId) continue;
+          if ((cityBuilt.get(c.id) ?? []).includes('kamieniarski')) kamieniarskiCount++;
+        }
+        const kamieniarskiBonus = loadThroughput(
+          data.econParams as unknown as Parameters<typeof loadThroughput>[0],
+          'budynek_kamieniarski_bonus_kamienia_civ',
+          _menuDifficulty,
+          0.10,
+        );
+        out.kamien = Math.floor(kamienBase * (1 + kamieniarskiBonus * kamieniarskiCount));
       }
       return out;
     }
@@ -3731,10 +3779,20 @@ async function boot(): Promise<void> {
       const hex = map.hexes[keyOf(hexDetailHex.q, hexDetailHex.r)];
       if (!hex) return null;
       const cityOn = cities.find(c => c.q === hexDetailHex!.q && c.r === hexDetailHex!.r);
+      const hexKey = keyOf(hexDetailHex.q, hexDetailHex.r);
+      let hexWorkedForMagazyn = cityOn != null;
+      if (!hexWorkedForMagazyn) {
+        const workedMap = collectWorkedHexOwnerMap(cities, map, {
+          isWorkable: okolicaHexWorkable,
+          territoryNodes: buildAllTerritoryNodes(),
+        });
+        hexWorkedForMagazyn = workedMap.has(hexKey);
+      }
       return buildHexContextTooltipHtml({
         q: hexDetailHex.q,
         r: hexDetailHex.r,
         hex,
+        hexWorkedForMagazyn,
         cityName: cityOn?.name ?? null,
         cityIsCityState: cityOn != null && cityOn.ownerId !== 0 && !!cityOn.startCityState,
         cityOwnerLabel: cityOn != null && cityOn.ownerId !== 0
@@ -5714,6 +5772,13 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** Konsolidacja klastra / auto-wojna PM — wyłącznie typ gracza (nie obce civ/MP). */
+    function isOwnerPlayerSameCivType(ownerId: number): boolean {
+      const playerCiv = civTypeForOwner(0);
+      if (!playerCiv) return false;
+      return aiOwnerCivMap.get(ownerId) === playerCiv;
+    }
+
     /** R-MP-PORTRET: medalion dyplomacji/bitwa/map — symbol kultury zamiast portretu władcy. */
     function portraitForceCultureIcon(ownerId: number): boolean {
       return shouldForceCultureIconForOwner(ownerId, {
@@ -6060,16 +6125,18 @@ async function boot(): Promise<void> {
         ownerDisplayName.set(ownerId, nazwa);
         simplifiedDiplomacyOwners.add(ownerId);
         typCityCopyOwners.add(ownerId);
-        // D-MP-DYPL Q1 (część 1, WARIANT B): korekta startowego zaufania miast-panstw wg
-        // trudnosci (easy +10 / normal +5 / hard 0 — skala przesunieta w gore, bo baza=0
-        // juz jest na dole 0-100 i ujemna delta na hard bylaby wchlaniana przez clamp)
-        // — WYLACZNIE tu, NIE dotyka głównych cywilizacji obcego typu (te startuja przez
+        // D-MP-DYPL Q1 (część 1, WARIANT B) + REL-MP-SAME-Q1: korekta startowego zaufania
+        // miast-panstw wg trudnosci (easy +10 / normal +5 / hard 0) — WYLACZNIE tu,
+        // NIE dotyka głównych cywilizacji obcego typu (te startuja przez
         // startRelationForPair(false) bez korekty, patrz plan.startRelations w
         // cluster-start.ts / main.ts linia ~3223).
         setDiploRelation(
           0, ownerId,
           applyWiarygodnoscD4ToRelation(
-            applyCityStateDifficultyTrust(startRelationForPair(true), _menuCityStateDifficulty),
+            applyCityStateDifficultyTrust(
+              startRelationForPlayerSameCivCityState(),
+              _menuCityStateDifficulty,
+            ),
             getWiarygodnosc(0),
             getWiarygodnosc(ownerId),
           ),
@@ -7124,7 +7191,7 @@ async function boot(): Promise<void> {
      * Re-apply fog and unit visibility after any state change.
      * Must NOT be called while gallery is active (gallery drives its own sync).
      */
-    function refreshFog(): void {
+    function refreshFog(opts?: { skipVeteranEducation?: boolean }): void {
       if (galleryOn) return;
       markMinimapDirty(); // D11: zmiana mgły/mapy → minimapa do przerysowania (poza tym pomijana)
       const vis = currentVisible();
@@ -7160,7 +7227,7 @@ async function boot(): Promise<void> {
       }
       if (d1bHudActive) refreshD1bHud();
       checkNewDiplomaticContacts();
-      checkVeteranEnemyFirstEncounter(vis);
+      if (!opts?.skipVeteranEducation) checkVeteranEnemyFirstEncounter(vis);
       if (territoryBorderVisible) refreshTerritoryBorderOverlay();
     }
 
@@ -7727,7 +7794,7 @@ async function boot(): Promise<void> {
           if (garnizonMode) {
             for (const id of movedUnitIds) {
               const mu = units.find(x => x.id === id);
-              if (mu) mu.inGarnizon = true;
+              if (mu && mu.inGarnizon !== true) enterGarnizon(mu);
             }
           }
           syncStackRuchLeft(onHex);
@@ -7833,9 +7900,15 @@ async function boot(): Promise<void> {
       if (!active || active.ownerId !== 0) return;
       const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId);
       if (stack.length < 2) return;
-      const dests = findAdjacentEmptyHexes(units, active.q, active.r, isHexPassableForUnit);
+      const dests = findSplitDestHexes(
+        units,
+        active.q,
+        active.r,
+        isHexPassableForUnit,
+        cityAtUnit(active) !== undefined,
+      );
       if (dests.length === 0) {
-        showHintMessage('Brak wolnego s\u0105siedniego heksu na rozdzielenie.', 3500);
+        showHintMessage('Brak wolnego heksu na rozdzielenie.', 3500);
         return;
       }
       const srcQ = active.q;
@@ -7846,7 +7919,7 @@ async function boot(): Promise<void> {
         destHexes: dests.map(d => ({
           q: d.q,
           r: d.r,
-          label: '(' + d.q + ',' + d.r + ')',
+          label: d.label ?? '(' + d.q + ',' + d.r + ')',
         })),
         onSplit: (ids, destQ, destR) => {
           for (const id of ids) {
@@ -9853,6 +9926,9 @@ async function boot(): Promise<void> {
     // wpis w WYDARZENIACH, symetrycznie do villageEventLog — czyszczony co turę
     // w tym samym miejscu, zob. `villageEventLog.length = 0;` przy turn++).
     const tradeRouteEventLog: SidePanelEvent[] = [];
+    /** SPICH-AUTO-Q1: komunikat auto-obniżenia racji — widoczny przez turę gracza po EOT. */
+    const rationAutoEventLog: SidePanelEvent[] = [];
+    let pendingAutoRationForNextTurn: AutoRationAdjustResult | null = null;
 
     /** Miasta, w których gracz zamknął (✕) alert pustej kolejki — fingerprint opcji produkcji. */
     const prodEmptyDismissFp = new Map<string, string>();
@@ -10203,7 +10279,12 @@ async function boot(): Promise<void> {
     }
 
     function collectTurnEvents(): SidePanelEvent[] {
-      const events: SidePanelEvent[] = [...warEventLog, ...villageEventLog, ...tradeRouteEventLog];
+      const events: SidePanelEvent[] = [
+        ...rationAutoEventLog,
+        ...warEventLog,
+        ...villageEventLog,
+        ...tradeRouteEventLog,
+      ];
       for (const city of cities) {
         if (city.ownerId !== 0) continue;
         const st = cityOrderState.get(city.id);
@@ -12119,6 +12200,35 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * TickCtx dla pary (a,b) — wspólne źródło dla tickDiplomacy, rozbicia relacji i UI Δ/turę.
+     */
+    function buildDiplomacyTickCtxForPair(a: number, b: number): TickCtx {
+      const rel = getDiploRelation(a, b);
+      const relStatus = (rel as Relation).status;
+      const atWar = relStatus === 'wojna';
+      const sameCulture = sameCultureCircle(civKeyForOwner(a), civKeyForOwner(b));
+      const religionA = ownerReligionForOwnerId(a);
+      const religionB = ownerReligionForOwnerId(b);
+      const playerInPair = a === 0 || b === 0;
+      return {
+        turn,
+        aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
+        pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
+          contactEstablished: a === 0 ? diplomaticContactEstablished.has(b)
+            : (b === 0 ? diplomaticContactEstablished.has(a) : true),
+          atWar,
+        }),
+        dobraWolaAktywna: false,
+        wspolnyWrog: false,
+        wspolnaReligia: sameCulture && !!religionA && !!religionB && religionA === religionB,
+        odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
+        ekspansjaPrzyGranicy:
+          cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2,
+        wiarygodnoscSelf: atWar || !playerInPair ? undefined : getWiarygodnosc(0),
+      };
+    }
+
+    /**
      * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 6) — rozbicie relacji „za/przeciw"
      * dla pary (a,b). Łączy REJESTR jednorazowych zdarzeń (diplomacyFactorLog) z
      * czynnikami CIĄGŁYMI wyliczonymi NA ŻYWO z activeDeals/stanu — ten sam materiał
@@ -12135,6 +12245,10 @@ async function boot(): Promise<void> {
       const sameCulture = sameCultureCircle(civKeyForOwner(a), civKeyForOwner(b));
       const religionA = ownerReligionForOwnerId(a);
       const religionB = ownerReligionForOwnerId(b);
+      const sameTypCiv = civA === civB;
+      const playerMpOtherId = a === 0 ? b : (b === 0 ? a : -1);
+      const isPlayerSameCivCityState =
+        playerMpOtherId >= 0 && typCityCopyOwners.has(playerMpOtherId) && sameTypCiv;
       const continuous: ContinuousFactorFlags = {
         aktywnyHandel: hasSzlakowTreaty(activeDeals, a, b),
         pokojTrustTier: resolvePokojTrustTier(activeDeals, a, b, {
@@ -12146,8 +12260,11 @@ async function boot(): Promise<void> {
         odmiennaReligia: !!religionA && !!religionB && religionA !== religionB,
         ekspansjaPrzyGranicy:
           cities.filter(c => c.ownerId === a).length > 2 && cities.filter(c => c.ownerId === b).length > 2,
-        rywalizacjaTenSamTyp: civA === civB,
+        rywalizacjaTenSamTyp: sameTypCiv && !isPlayerSameCivCityState,
+        miastoPanstwoSameCiv: isPlayerSameCivCityState,
         roznicaKulturowa: sameCulture === false,
+        wiarygodnoscSelf: buildDiplomacyTickCtxForPair(a, b).wiarygodnoscSelf,
+        atWar,
       };
       return buildRelationBreakdown(log, continuous, dip);
     }
@@ -13771,6 +13888,9 @@ async function boot(): Promise<void> {
               : undefined,
             breakPenaltyLabel: treatyBreakPenaltyLabel(dominantTreaty),
           } : undefined;
+          const tickCtxAudience = buildDiplomacyTickCtxForPair(0, ownerId);
+          const atWarAudience = rel.status === 'wojna';
+          const zaufanieDeltaPerTurn = computeTickZaufanieDelta(tickCtxAudience, atWarAudience);
           return {
             formalStatus,
             formalStatusDetail,
@@ -13781,6 +13901,8 @@ async function boot(): Promise<void> {
             zaufanie: zaufanieNorm,
             respekt: respektNorm,
             relacjaTotal: audienceRelTotal(ownerId, rel),
+            zaufanieDeltaPerTurn,
+            relacjaDeltaPerTurn: zaufanieDeltaPerTurn,
             trustPnGainedThisTurn: pairMeta.trustPnGainedThisTurn,
             progDarRelacja: diplomacyProgDarRelacja(undefined, _menuDifficulty),
             playerPower,
@@ -13924,11 +14046,10 @@ async function boot(): Promise<void> {
       return false;
     }
 
-    function unitFortifyActionDisabled(u: RuntimeUnit, stackRuch: number): boolean {
-      // Ufortyfikuj / odfortyfikuj działa na KAŻDYM heksie (także poza terytorium gracza).
-      // Blokada wyłącznie: brak puli ruchu przy wejściu w tryb (nie przy wyjściu).
-      if (u.inGarnizon === true || u.ufortyfikowanyWPolu === true) return false;
-      return stackRuch <= 0;
+    function unitFortifyActionDisabled(_u: RuntimeUnit, _stackRuch: number): boolean {
+      // FORTIFY-MP0-Q1=C: Ufortyfikuj / garnizon bez wymogu punktów ruchu (miasto i pole).
+      // Wyjście z trybu (już ufortyfikowany) zawsze dostępne — patrz buildArmyStackHudStateInner.
+      return false;
     }
 
     function unitSentryActionDisabled(u: RuntimeUnit, stackRuch: number): boolean {
@@ -14064,11 +14185,12 @@ async function boot(): Promise<void> {
           || computeUnitReplacements(active).length === 0;
         actions.push({ id: 'replace', label: 'Zast\u0105p', disabled: replaceDisabled });
       }
-      const splitDests = findAdjacentEmptyHexes(
+      const splitDests = findSplitDestHexes(
         units,
         active.q,
         active.r,
         isHexPassableForUnit,
+        cityAtUnit(active) !== undefined,
       );
       for (const a of stackHudMergeSplitActions(
         stack.length,
@@ -14148,6 +14270,7 @@ async function boot(): Promise<void> {
           if (u.ufortyfikowanyWPolu === true) {
             for (const su of siegeStack) exitFieldFortify(su);
             showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119 (obl\u0119\u017cenie trwa)', 2500);
+            selectPlayerUnit(u.id, true);
           } else {
             for (const su of siegeStack) enterFieldFortify(su);
             showHintMessage(u.typeId + ' ufortyfikowany w polu (obl\u0119\u017cenie trwa)', 2800);
@@ -14159,17 +14282,17 @@ async function boot(): Promise<void> {
           const fieldStack = playerStackAt(u);
           for (const su of fieldStack) exitFieldFortify(su);
           showHintMessage(u.typeId + ' zdj\u0105\u0142 fortyfikacj\u0119', 2000);
+          selectPlayerUnit(u.id, true);
           refreshD1bHud();
           return;
         }
         clearPlannedMarch(u.id);
-        syncStackRuchLeft(stack, 0);
         reachable = new Set<string>();
         unitRenderer.clearHighlight();
         unitRenderer.clearPathRoute();
         const city = cityAtUnit(u);
         if (city !== undefined && u.ownerId === city.ownerId) {
-          for (const su of stack) su.inGarnizon = true;
+          for (const su of stack) enterGarnizon(su);
           syncGarnizonForCity(city);
           refreshFog();
           syncUnitsRender();
@@ -14772,7 +14895,13 @@ async function boot(): Promise<void> {
             if (!u || u.ownerId !== 0) return false;
             const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId);
             if (stack.length < 2) return false;
-            return findAdjacentEmptyHexes(units, u.q, u.r, isHexPassableForUnit).length > 0;
+            return findSplitDestHexes(
+              units,
+              u.q,
+              u.r,
+              isHexPassableForUnit,
+              cityAtUnit(u) !== undefined,
+            ).length > 0;
           },
           onSplit: () => openSplitPanelForSelected(),
           onAction: handleSelectedUnitHudAction,
@@ -15756,6 +15885,10 @@ async function boot(): Promise<void> {
         }
       }
 
+      // Wioska znikła — odśwież FoW/meshe PRZED toastem; bez tipu weteranów (checkVeteranEnemyFirstEncounter
+      // w refreshFog nadpisywał toast chatki komunikatem „Doświadczeni wojownicy”).
+      refreshFog({ skipVeteranEducation: true });
+
       if (summary) {
         // Jeden trwały toast (5 s) + wpis w panelu WYDARZENIA (nie ginie jak toast).
         // Awans epoki ma własny toast — nie nadpisuj go podsumowaniem chatki.
@@ -15772,9 +15905,6 @@ async function boot(): Promise<void> {
         if (villageEventLog.length > 6) villageEventLog.length = 6;
         refreshD1bHud();
       }
-
-      // Wioska znikła -- odśwież meshe (ta sama ścieżka co syncVillageMeshes w refreshFog).
-      refreshFog();
     }
 
     /** Sprawdza nagrody wioski na każdym unikalnym heksie ścieżki (gracz). */
@@ -19189,6 +19319,7 @@ async function boot(): Promise<void> {
         villageEventLog.length = 0;
         // TEMAT #5: log tras handlowych — ta sama zasada (widoczny do końca tury bieżącej).
         tradeRouteEventLog.length = 0;
+        rationAutoEventLog.length = 0;
         dismissedSidePanelEventIds.clear();
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
@@ -19329,6 +19460,32 @@ async function boot(): Promise<void> {
           try {
             const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
             const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+
+            // SPICH-AUTO-Q1: auto-obniżenie racji gracza przed rozliczeniem Spichlerza.
+            const playerFoodSt = empireFoodStates.get(0) ?? freshEmpireFoodState();
+            const spichlerzByCityForAuto = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
+            for (const city of cities) {
+              const tick = econ.perCity.find(t => t.cityId === city.id);
+              spichlerzByCityForAuto.set(city.id, {
+                ceramikaActive: tick?.spichlerzCeramika ?? false,
+                solActive: tick?.spichlerzSol ?? false,
+                maSpichlerzPop: tick?.maSpichlerz ?? false,
+                maSpichlerzIIPop: tick?.maSpichlerzII ?? false,
+              });
+            }
+            const autoRationResult = autoBalanceRationsToSolvency({
+              ownerId: 0,
+              cities,
+              econ,
+              zapasyPrzed: playerFoodSt.zapasyPanstwa,
+              rationParams: efParams.rationParams,
+              spichlerzByCity: spichlerzByCityForAuto,
+            });
+            if (autoRationResult.adjusted) {
+              pendingAutoRationForNextTurn = autoRationResult;
+              refreshEconomyFoodTotals(econ);
+            }
+
             lastEfTickResult = advanceEmpireFood(
               econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
             );
@@ -20459,8 +20616,10 @@ async function boot(): Promise<void> {
               citySupportLevel: _menuCitySupport,
               // Trudny MP: aktywne wsparcie ofensywne (Normal/Easy = legacy defend-only).
               cityStateOffensiveSupport: typCityCopyOwners.has(ownerId)
+                && isOwnerPlayerSameCivType(ownerId)
                 && _menuCityStateDifficulty === 'hard',
               warAllyOwnerIds: typCityCopyOwners.has(ownerId)
+                && isOwnerPlayerSameCivType(ownerId)
                 ? aiOwnerList.filter(oid =>
                     oid !== ownerId
                     && activeDeals.some(
@@ -20532,7 +20691,11 @@ async function boot(): Promise<void> {
             const myCivTyp = aiOwnerCivMap.get(ownerId);
             const tc = clusterPlacement?.klastry.find(k => k.typ === myCivTyp);
             const clusterCap = tc?.miasta.find(m => m.isCapital) ?? tc?.miasta[0];
-            if (tc && clusterCapitalOwnerIds.has(ownerId)) {
+            if (
+              tc
+              && clusterCapitalOwnerIds.has(ownerId)
+              && isOwnerPlayerSameCivType(ownerId)
+            ) {
               const mpReach = clusterHubChainReachHex(Math.max(0, tc.miasta.length - 1));
               opts.clusterCenter = tc.centrum;
               opts.clusterRadius = clusterCityStateRadius();
@@ -20924,6 +21087,12 @@ async function boot(): Promise<void> {
                     const targetId = parseInt(cmd.targetId, 10);
                     if (Number.isNaN(targetId)) continue;
                     if (cmd.type === 'wypowiedz_wojne') {
+                      if (
+                        typCityCopyOwners.has(ownerId)
+                        && !isOwnerPlayerSameCivType(ownerId)
+                      ) {
+                        continue;
+                      }
                       if (isPeaceLockedBetween(ownerId, targetId)) continue;
                       if (hasTreaty(activeDeals, ownerId, targetId, RodzajTraktatu.PaktNieagresji)) {
                         continue;
@@ -20980,8 +21149,10 @@ async function boot(): Promise<void> {
               }
 
               // PM (trudność PM=hard) → wojna z graczem od t.20, 60%/turę; blokada: handel/surowce.
+              // Wyłącznie MP typu gracza (spawnPendingSameTypeRivals), nie obce Ostia/Nekhen itd.
               if (
                 typCityCopyOwners.has(ownerId)
+                && isOwnerPlayerSameCivType(ownerId)
                 && diplomaticallyDiscoveredOwners.has(ownerId)
               ) {
                 try {
@@ -21729,6 +21900,13 @@ async function boot(): Promise<void> {
         // finalne dla tej tury — teraz sprawdzamy, czy jakaś śpiąca (sentry)
         // jednostka ma wroga w polu widzenia i trzeba ją obudzić.
         wakeSentryUnitsOnEnemyContact();
+        if (pendingAutoRationForNextTurn?.adjusted) {
+          rationAutoEventLog.unshift(
+            buildAutoRationSidePanelEvent(pendingAutoRationForNextTurn, turn),
+          );
+          if (rationAutoEventLog.length > 4) rationAutoEventLog.length = 4;
+          pendingAutoRationForNextTurn = null;
+        }
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();
         } catch (errEndTurn) {

@@ -16,8 +16,9 @@ export {
   advanceEmpireFood, freshEmpireFoodState, buildEmpireFoodParams,
   bindEmpireFoodRuntime, getEmpireFoodMaxCap, isArmyStarving, isArmyHungry,
   clearLastEmpireFoodTicks,
+  autoBalanceRationsToSolvency, isEmpireCityFoodSolvent, simulateCityFoodCentralPool,
 } from '../src/game/empire-food';
-export { advanceCityEconomy } from '../src/game/turn-economy';
+export { advanceCityEconomy, recomputeCityFoodBalancesInEcon } from '../src/game/turn-economy';
 export { applyArmyStarvationHpLoss } from '../src/game/army-starvation';
 `, 'utf8');
 
@@ -150,6 +151,62 @@ ok(
   const ef = M.advanceEmpireFood({ perCity: [] }, barbUnits, states, upkeep, params);
   ok(!ef.byOwner.has(BARBARIAN_OWNER_ID), 'barbarians skipped in empire food tick');
   ok(M.isArmyStarving(BARBARIAN_OWNER_ID) === false, 'barbarians never army-starving');
+}
+
+// SPICH-AUTO-Q1: deficyt przy stock=0 — miasto nie „nakarmione”
+{
+  const states = new Map([[0, { zapasyPanstwa: 0, turyUjemnychZapasow: 0 }]]);
+  const econ = {
+    perCity: [{
+      cityId: 'c1', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 4, kosztRacji: 10, bilansLokalny: -6, zywnoscNetto: -6,
+    }],
+  };
+  const ef = M.advanceEmpireFood(econ, [], states, upkeep, params);
+  ok(ef.byOwner.get(0).fedByCityId.get('c1') === false, 'deficyt przy stock=0: nie nakarmione');
+  ok(!M.isEmpireCityFoodSolvent(0, econ.perCity, 0), 'nadwyżka+stock < 0 → niewypłacalne przed auto-racją');
+}
+
+// SPICH-AUTO-Q1: auto-obniżenie racji do bilansu >= 0 (przed wojskiem)
+{
+  const cities = [
+    { id: 'c1', ownerId: 0, name: 'Ateny', population: 3, poziomRacji: 4, wzrostUlamkowy: 0, rationMigratedV114: true },
+  ];
+  const econ = {
+    perCity: [{
+      cityId: 'c1', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 12, kosztRacji: 24, bilansLokalny: -12, zywnoscNetto: -12,
+      maSpichlerz: false,
+    }],
+  };
+  const auto = M.autoBalanceRationsToSolvency({
+    ownerId: 0,
+    cities,
+    econ,
+    zapasyPrzed: 0,
+    rationParams: params.rationParams,
+  });
+  ok(auto.adjusted === true, 'auto-racja: wykryto korektę');
+  ok(cities[0].poziomRacji < 4, 'auto-racja: obniżono poziomRacji');
+  ok(M.isEmpireCityFoodSolvent(0, econ.perCity, 0), 'auto-racja: solvent po korekcie');
+  const ef = M.advanceEmpireFood(econ, [], new Map([[0, M.freshEmpireFoodState()]]), upkeep, params);
+  ok(ef.byOwner.get(0).spichlerzStolicy >= 0, 'auto-racja: Spichlerz nie ujemny od miast');
+}
+
+// SPICH-AUTO-Q1: wojsko może głodować osobno — EOT bez blokady
+{
+  const states = new Map([[0, { zapasyPanstwa: 0, turyUjemnychZapasow: 0 }]]);
+  const units = [{ ownerId: 0, typeId: 'woj', camping: false }];
+  const econ = {
+    perCity: [{
+      cityId: 'c1', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 10, kosztRacji: 4, bilansLokalny: 6, zywnoscNetto: 6,
+    }],
+  };
+  const ef = M.advanceEmpireFood(econ, units, states, upkeep, params);
+  ok(ef.byOwner.get(0).spichlerzStolicy === 6, 'miasta zasilają centralę przed wojskiem');
+  ok(states.get(0).zapasyPanstwa === 4, 'wojsko zjada po miastach — 6-2=4');
+  ok(ef.byOwner.get(0).glodWojska === false, 'wojsko nie głoduje gdy zapasy po armii >= 0');
 }
 
 console.log('empire-food-b5-test: ' + passed + ' pass, ' + failed + ' fail');

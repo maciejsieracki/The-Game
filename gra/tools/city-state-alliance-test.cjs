@@ -69,7 +69,8 @@ export {
 } from ${JSON.stringify(SRC + '/game/diplomacy')};
 export { hexDistance } from ${JSON.stringify(SRC + '/units/setup')};
 export {
-  startRelationForPair, applyCityStateDifficultyTrust, CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
+  startRelationForPair, startRelationForPlayerSameCivCityState,
+  applyCityStateDifficultyTrust, CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
 } from ${JSON.stringify(SRC + '/game/diplomacy-layers')};
 `;
 
@@ -95,7 +96,8 @@ const {
   decideAITurn, RESUP_TIERS,
   DIPLOMACY_PARAMS, sisterAllianceDiplomacyParams, sisterAllianceEligible,
   hexDistance,
-  startRelationForPair, applyCityStateDifficultyTrust, CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
+  startRelationForPair, startRelationForPlayerSameCivCityState,
+  applyCityStateDifficultyTrust, CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
 } = require(BUNDLE_FILE);
 
 // --- tiny assertion framework ------------------------------------------------
@@ -412,20 +414,20 @@ console.log('9. applyCityStateDifficultyTrust -- korekta zaufania miast-panstw w
   eq(CITY_STATE_TRUST_DELTA_BY_DIFFICULTY.normal, 5, 'delta normal = +5');
   eq(CITY_STATE_TRUST_DELTA_BY_DIFFICULTY.hard, 0, 'delta hard = 0 (dzisiejsze zero, zero regresji na trudnym)');
 
-  const base = startRelationForPair(true);
-  eq(base.zaufanie, 0, 'baza miasta-panstwa (isSameTypeRival): zaufanie=20-20=0 (juz na podlodze)');
+  const base = startRelationForPlayerSameCivCityState();
+  eq(base.zaufanie, 40, 'baza miasta-panstwa gracza (REL-MP-SAME-Q1): zaufanie=20+20=40');
   eq(base.status, 'neutralni', 'status startowy zawsze neutralni (nie wojna od tury 1)');
 
   const relHard = applyCityStateDifficultyTrust(base, 'hard');
-  eq(relHard.zaufanie, 0, 'hard: brak zmiany vs baza (delta=0, zero regresji na trudnym -- dzisiejsze zachowanie)');
+  eq(relHard.zaufanie, 40, 'hard: brak zmiany vs baza (delta=0)');
   eq(relHard.status, 'neutralni', 'hard: status niezmieniony');
 
   const relNormal = applyCityStateDifficultyTrust(base, 'normal');
-  eq(relNormal.zaufanie, 5, 'normal: zaufanie podniesione o +5 (0 -> 5, lekko cieplej niz hard)');
+  eq(relNormal.zaufanie, 45, 'normal: zaufanie podniesione o +5 (40 -> 45)');
   eq(relNormal.status, 'neutralni', 'normal: status niezmieniony');
 
   const relEasy = applyCityStateDifficultyTrust(base, 'easy');
-  eq(relEasy.zaufanie, 10, 'easy: zaufanie podniesione o +10 (0 -> 10, najcieplej)');
+  eq(relEasy.zaufanie, 50, 'easy: zaufanie podniesione o +10 (40 -> 50, najcieplej)');
   eq(relEasy.status, 'neutralni', 'easy: status niezmieniony');
 
   // Monotonicznosc REALNA (bez clamp-wchloniecia): easy > normal > hard, scisle rosnaco.
@@ -436,6 +438,10 @@ console.log('9. applyCityStateDifficultyTrust -- korekta zaufania miast-panstw w
   // respekt nietkniety -- korekta dotyczy WYLACZNIE zaufania.
   eq(relEasy.respekt, base.respekt, 'easy: respekt niezmieniony');
   eq(relHard.respekt, base.respekt, 'hard: respekt niezmieniony');
+
+  // startRelationForPair(true) nadal dla AI↔AI (klaster plan) — rywalizacja −20.
+  const aiSameTypeBase = startRelationForPair(true);
+  eq(aiSameTypeBase.zaufanie, 0, 'AI↔AI ten sam typ: startRelationForPair(true) nadal 0');
 
   // applyCityStateDifficultyTrust per se nie rozroznia sameType (to main.ts decyduje GDZIE
   // ja wywolac -- WYLACZNIE spawnPendingSameTypeRivals dla miast-panstw, nigdy dla glownych

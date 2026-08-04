@@ -134,9 +134,13 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
       + '<div class="civ-asp-body">'
         + '<div class="civ-asp-lbl">Wybierz jednostki do od\u0142ączenia</div>'
         + '<div class="civ-asp-units">' + uHtml + '</div>'
-        + '<div class="civ-asp-lbl">Docelowy heks (s\u0105siad)</div>'
+        + '<div class="civ-asp-lbl">Docelowy heks</div>'
         + '<div class="civ-asp-dests">' + dHtml + '</div>'
-        + '<div class="civ-asp-hint">Na heksie \u0179r\u00f3d\u0142owym musi zosta\u0107 co najmniej 1 jednostka.</div>'
+        + '<div class="civ-asp-hint">Na heksie \u0179r\u00f3d\u0142owym musi zosta\u0107 co najmniej 1 jednostka.'
+        + (opts.destHexes.some(d => d.label?.includes('mie\u015bcie'))
+          ? ' W mie\u015bcie mo\u017cesz od\u0142\u0105czy\u0107 jednostk\u0119 bez wychodzenia poza miasto.'
+          : '')
+        + '</div>'
       + '</div>'
       + '<div class="civ-asp-foot">'
         + '<button type="button" class="civ-asp-btn civ-asp-btn-cancel" data-cancel>Anuluj</button>'

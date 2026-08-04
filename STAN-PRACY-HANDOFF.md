@@ -1,6 +1,8 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-01 ~21:14** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-04 ~11:30** · Projekt: Civ „The Game"
+
+> **FALA 212 (2026-08-04):** ROBOCZA `e38ad116` — batch bugfixów (Spich auto-racje, MP +20, obce MP, HEX magazyn UI, scout chatka, toast chatka, garnizon/split). **Handoff:** [`dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md`](dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md). Kod w `gra/src/**` **niezacommitowany** (dirty tree = ten sam stan co bundle). Otwarte: drift Relacji +1/tura bez umowy (tier pokoj — czeka decyzji). Deploy tylko na hasło `deploy`.
 
 > **Ten plik jest punktem wejścia dla KAŻDEJ nowej sesji** — lokalnej, chmurowej, telefonicznej.
 > Mówi: co jest zrobione, co w toku, czego NIE wolno ruszać i czy można pracować.
@@ -29,7 +31,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-01 (NAJNOWSZY):** deploy ROBOCZA `6a8ba59a` (FALA 147, 23:14) — tylko perf rzek. Poprzedni: FALA 146 `78a1b727`. Wejscie: `gra-robocza/START.html`.
+**Stan na 2026-08-04 (NAJNOWSZY):** deploy ROBOCZA `e38ad116` (FALA 212, 11:24) — batch bugfixów sesji (patrz handoff BATCH-2026-08-04). Poprzedni: FALA 211 `6bf472e2`. Wejście: `gra-robocza/START.html`. **Uwaga:** `gra/src` dirty (FALA 212 nie w commicie).
+
+**Stan na 2026-08-01 (historyczny):** deploy ROBOCZA `6a8ba59a` (FALA 147, 23:14) — tylko perf rzek.
 
 **ZAMKNIĘTE (2026-08-01 ~20:58):** regresja czasu głównych rzek — Maciej na FALA 140 `935d1642`: **~20 s OK** (było **>2 min**). Zapis: `PYTANIA-OTWARTE.md` → `BUG-RZEKI-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-PERF-FALA138`.
 

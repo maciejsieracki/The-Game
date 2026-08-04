@@ -4,15 +4,23 @@
  * Kolejność tury: suma bilansów lokalnych → nadwyżki do centrali → dopłaty miastom
  * → koszt wojska → zmiana stanu magazynu. Wzrost ludności w population-growth-v85.ts.
  */
-import type { EconomyTickResult, EconUnit } from './turn-economy';
+import type { EconomyTickResult, EconUnit, CityEconomyTick } from './turn-economy';
+import { militaryFoodConsumptionWithSpichlerz, recomputeCityFoodBalancesInEcon } from './turn-economy';
 import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
-import { militaryFoodConsumptionWithSpichlerz } from './turn-economy';
 import { isBarbarian } from './barbarians';
 import { SPICHLERZ_EMPIRE_CAP_I, SPICHLERZ_EMPIRE_CAP_II_FULL, resolveSpichlerzCityBonusState } from './building-resource-gate';
 import type { SpichlerzCityBonusState } from './building-resource-gate';
+import type { City } from './cities';
 import {
   buildRationParams,
+  clampPoziomRacji,
+  ensureCityRationDefaults,
+  getCityRationLevel,
+  WYZYWIENIE_MAX,
+  WYZYWIENIE_MIN,
+  WYZYWIENIE_STEP,
   type GrowthPercentBreakdown,
+  type PoziomRacji,
   type RationParams,
 } from './population-growth-v85';
 
@@ -337,6 +345,136 @@ export function _setLastEmpireFoodTicks(ticks: Map<number, EmpireFoodTick>): voi
 export function clearLastEmpireFoodTicks(): void {
   _lastTicks = new Map();
   _maxCapByOwner = new Map();
+}
+
+// --- SPICH-AUTO-Q1: auto-obniżenie racji do bilansu miast = 0 (przed wojskiem) ---
+
+export interface AutoRationCityChange {
+  cityId: string;
+  name: string;
+  oldLevel: PoziomRacji;
+  newLevel: PoziomRacji;
+}
+
+export interface AutoRationAdjustResult {
+  adjusted: boolean;
+  changes: AutoRationCityChange[];
+}
+
+type CityFoodTickLike = Pick<
+  CityEconomyTick,
+  'ownerId' | 'oblegany' | 'zywnoscBrutto' | 'kosztRacji' | 'bilansLokalny'
+>;
+
+/** Suma produkcji − koszt racji (imperium, bez wojska). */
+export function computeEmpireCityFoodNadwyzka(
+  perCity: ReadonlyArray<CityFoodTickLike>,
+  ownerId: number,
+): number {
+  let uprawa = 0;
+  let koszt = 0;
+  for (const tick of perCity) {
+    if (tick.ownerId !== ownerId || tick.oblegany) continue;
+    const produkcja = tick.zywnoscBrutto ?? 0;
+    const kosztRacji = tick.kosztRacji ?? 0;
+    uprawa += produkcja;
+    koszt += kosztRacji;
+  }
+  return uprawa - koszt;
+}
+
+/** Symulacja puli centralnej po dopłatach miastom (przed kosztem wojska). */
+export function simulateCityFoodCentralPool(
+  zapasyPrzed: number,
+  perCity: ReadonlyArray<CityFoodTickLike>,
+  ownerId: number,
+): number {
+  let central = zapasyPrzed;
+  const deficits: number[] = [];
+  for (const tick of perCity) {
+    if (tick.ownerId !== ownerId || tick.oblegany) continue;
+    const produkcja = tick.zywnoscBrutto ?? 0;
+    const koszt = tick.kosztRacji ?? 0;
+    const bilans = tick.bilansLokalny ?? (produkcja - koszt);
+    if (bilans >= 0) {
+      central += bilans;
+    } else {
+      deficits.push(-bilans);
+    }
+  }
+  for (const need of deficits) {
+    const covered = Math.min(need, Math.max(0, central));
+    central -= covered;
+  }
+  return central;
+}
+
+/** Czy po rozliczeniu miast Spichlerz nie jest ujemny z powodu racji (wojsko osobno). */
+export function isEmpireCityFoodSolvent(
+  zapasyPrzed: number,
+  perCity: ReadonlyArray<CityFoodTickLike>,
+  ownerId: number,
+): boolean {
+  return computeEmpireCityFoodNadwyzka(perCity, ownerId) + zapasyPrzed >= 0;
+}
+
+export interface AutoBalanceRationsOpts {
+  ownerId: number;
+  cities: City[];
+  econ: EconomyTickResult;
+  zapasyPrzed: number;
+  rationParams: RationParams;
+  spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+}
+
+/**
+ * SPICH-AUTO-Q1: obniża poziomRacji we wszystkich miastach właściciela o WYZYWIENIE_STEP,
+ * aż pula po dopłatach miastom (przed wojskiem) nie spadnie poniżej zera.
+ */
+export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): AutoRationAdjustResult {
+  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity } = opts;
+  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  if (ownerCities.length === 0) {
+    return { adjusted: false, changes: [] };
+  }
+
+  if (isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) {
+    return { adjusted: false, changes: [] };
+  }
+
+  const oldLevels = new Map<string, PoziomRacji>();
+  for (const c of ownerCities) {
+    ensureCityRationDefaults(c);
+    oldLevels.set(c.id, getCityRationLevel(c));
+  }
+
+  const maxSteps = Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 2;
+  for (let step = 0; step < maxSteps; step++) {
+    if (isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) break;
+
+    let lowered = false;
+    for (const c of ownerCities) {
+      const lvl = getCityRationLevel(c);
+      if (lvl > WYZYWIENIE_MIN) {
+        c.poziomRacji = clampPoziomRacji(lvl - WYZYWIENIE_STEP);
+        lowered = true;
+      }
+    }
+    if (!lowered) break;
+
+    recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
+  }
+
+  const changes: AutoRationCityChange[] = [];
+  for (const c of ownerCities) {
+    const oldLvl = oldLevels.get(c.id)!;
+    const newLvl = getCityRationLevel(c);
+    if (newLvl !== oldLvl) {
+      changes.push({ cityId: c.id, name: c.name, oldLevel: oldLvl, newLevel: newLvl });
+    }
+  }
+
+  return { adjusted: changes.length > 0, changes };
 }
 
 /** @deprecated PYTANIE-85 */

@@ -12,6 +12,7 @@
  *   - activeUnitStack   -> stos "do działania" dla zaznaczonej jednostki
  *                          (solo, gdy ukryta w garnizonie; inaczej bez zmian).
  *   - exitGarnizon      -> wyjście z garnizonu (+ budzenie sentry).
+ *   - enterGarnizon     -> wejście + snapshot ruchLeft (ODFORT-Q2).
  *   - visibleStackOnHex -> globalny filtr merge/blokad ruchu — MUSI zostać
  *                          BEZ ZMIAN (nadal wyklucza inGarnizon), żeby nie
  *                          rozluźnić łączenia armii ani blokad ruchu.
@@ -27,11 +28,12 @@ fs.writeFileSync(
   ENTRY,
   `import {
   activeUnitStack,
+  enterGarnizon,
   exitGarnizon,
   visibleStackOnHex,
   unitAtRepresentative,
 } from '../src/game/armyMerge';
-export { activeUnitStack, exitGarnizon, visibleStackOnHex, unitAtRepresentative };`,
+export { activeUnitStack, enterGarnizon, exitGarnizon, visibleStackOnHex, unitAtRepresentative };`,
 );
 
 esbuild.buildSync({
@@ -45,6 +47,7 @@ esbuild.buildSync({
 
 const {
   activeUnitStack,
+  enterGarnizon,
   exitGarnizon,
   visibleStackOnHex,
   unitAtRepresentative,
@@ -141,6 +144,34 @@ function makeUnit(overrides) {
     afterExit.length === 2 && afterExit.some(x => x.id === 'g4') && afterExit.some(x => x.id === 'stat'),
     'po wyjściu z garnizonu jednostka wraca do zwykłego widocznego stosu (merge z jednostkami na heksie)',
   );
+}
+
+// --- 5) enterGarnizon / exitGarnizon: snapshot ruchLeft (ODFORT-Q2, FORTIFY-MP0-Q1). ---
+{
+  const u = makeUnit({ id: 'snap1', ruchLeft: 2 });
+  enterGarnizon(u);
+  assert(u.inGarnizon === true, 'enterGarnizon: inGarnizon -> true');
+  assert(u.ruchLeft === 0, 'enterGarnizon: zeruje ruchLeft');
+  assert(u.fortifyRuchSnapshot === 2, 'enterGarnizon: zapisuje snapshot pełnej puli');
+
+  exitGarnizon(u);
+  assert(u.ruchLeft === 2, 'exitGarnizon: przywraca pełną pulę gdy nie było ruchów w turze');
+  assert(u.fortifyRuchSnapshot === undefined, 'exitGarnizon: czyści snapshot');
+}
+
+{
+  const u = makeUnit({ id: 'snap0', ruchLeft: 0 });
+  enterGarnizon(u);
+  assert(u.fortifyRuchSnapshot === 0, 'enterGarnizon przy MP=0: snapshot = 0');
+  exitGarnizon(u);
+  assert(u.ruchLeft === 0, 'anti-exploit: odfort. po wejściu z końcówką NIE daje pełnej puli');
+}
+
+{
+  const u = makeUnit({ id: 'snap-partial', ruchLeft: 1, ruch: 2 });
+  enterGarnizon(u);
+  exitGarnizon(u);
+  assert(u.ruchLeft === 1, 'exitGarnizon: przywraca częściową pulę (1/2), nie maxRuch');
 }
 
 console.log('garnizon-exit-test: ' + pass + ' pass, ' + fail + ' fail');

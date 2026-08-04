@@ -19,6 +19,8 @@
  * `Array.from(map.entries())`, jak istniejący `diplomacyPairMeta`).
  */
 
+import { zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
+
 export interface DiploFactorEntry {
   /** Klucz zdarzenia — nazwa z DiplomaticEvent (diplomacy.ts) lub 'dar_pn'/'handel_pn'
    *  dla realnych delt liczonych przez diplomacy-pn-engine.ts (koszyk PN). */
@@ -106,8 +108,13 @@ export interface ContinuousFactorFlags {
   ekspansjaPrzyGranicy?: boolean;
   /** Fakt statyczny pary (ustalony przy starcie kontaktu) — rywale tego samego typu cywilizacji. */
   rywalizacjaTenSamTyp?: boolean;
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 start). */
+  miastoPanstwoSameCiv?: boolean;
   /** Fakt statyczny pary — obcy okrąg kulturowy. */
   roznicaKulturowa?: boolean;
+  /** REL-WIARYG-DRIFT-Q1 — globalna W gracza (dryf Zaufania/turę); brak przy wojnie. */
+  wiarygodnoscSelf?: number;
+  atWar?: boolean;
 }
 
 /** Podzbiór DiplomacyParams potrzebny do wyliczenia wartości czynników ciągłych. */
@@ -120,6 +127,7 @@ export interface RelationBreakdownParams {
   odmiennaReligia_zaufanie_perTura: number;
   ekspansjaGranica_zaufanie_perTura: number;
   rywalizacjaTenSamTyp_zaufanie: number;
+  miastoPanstwoSameCiv_zaufanie: number;
   roznicaKulturowa_zaufanie: number;
 }
 
@@ -152,6 +160,11 @@ export function buildRelationBreakdown(
   const pozytywne: RelationFactorRow[] = [];
   const negatywne: RelationFactorRow[] = [];
 
+  if (!continuous.atWar && continuous.wiarygodnoscSelf !== undefined) {
+    const drift = zaufanieDryfOdWiarygodnosci(continuous.wiarygodnoscSelf);
+    pushRow(pozytywne, negatywne, 'Wiarygodność (dryf)', drift, true);
+  }
+
   if (continuous.aktywnyHandel) {
     pushRow(pozytywne, negatywne, 'Aktywny handel', params.handel_zaufanie_perTura, true);
   }
@@ -159,9 +172,8 @@ export function buildRelationBreakdown(
     pushRow(pozytywne, negatywne, 'Aktywny sojusz', params.sojusz_zaufanie_perTura, true);
   } else if (continuous.pokojTrustTier === 'nap') {
     pushRow(pozytywne, negatywne, 'Trwający pakt o nieagresji', params.nap_zaufanie_perTura, true);
-  } else if (continuous.pokojTrustTier === 'pokoj') {
-    pushRow(pozytywne, negatywne, 'Pokojowy kontakt', params.pokoj_zaufanie_perTura, true);
   }
+  // tier „pokoj" (+1) — zastąpiony dryfem z Wiarygodności (REL-WIARYG-DRIFT-Q1)
   if (continuous.wspolnaReligia) {
     pushRow(pozytywne, negatywne, 'Wspólna religia', params.wspolnaReligia_zaufanie_perTura, true);
   }
@@ -173,6 +185,9 @@ export function buildRelationBreakdown(
   }
   if (continuous.rywalizacjaTenSamTyp) {
     pushRow(pozytywne, negatywne, 'Rywalizacja (ten sam typ nacji)', params.rywalizacjaTenSamTyp_zaufanie);
+  }
+  if (continuous.miastoPanstwoSameCiv) {
+    pushRow(pozytywne, negatywne, 'Ten sam typ (miasto-państwo)', params.miastoPanstwoSameCiv_zaufanie);
   }
   if (continuous.roznicaKulturowa) {
     pushRow(pozytywne, negatywne, 'Różna kultura', params.roznicaKulturowa_zaufanie);

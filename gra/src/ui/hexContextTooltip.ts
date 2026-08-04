@@ -382,6 +382,11 @@ export interface HexContextTooltipInput {
   cityPopulation?: number | null;
   /** typCywilizacji gracza — bramka widoczności lamy. */
   playerCivType?: string | null;
+  /**
+   * R-HEX-PLONY-MAGAZYN B: plony drewno/kamień/glina z terenu trafiają do magazynu
+   * tylko przy 👤 (lub centrum miasta). Bez tego — nie pokazuj „przy 👤" na gołym heksie.
+   */
+  hexWorkedForMagazyn?: boolean;
   currentEra?: number;
   /**
    * Etykieta strumienia podatkowego (zawsze "Podatek" od 2026-07-27); opcjonalna
@@ -434,7 +439,9 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   }
 
   const magazynSummary = formatHexMagazynSummary(hex, esc);
-  const terrainMagazyn = formatTerrainMagazynWorkedNotes(hex);
+  const terrainMagazyn = input.hexWorkedForMagazyn
+    ? formatTerrainMagazynWorkedNotes(hex)
+    : [];
   if (magazynSummary || terrainMagazyn.length > 0) {
     lines.push('<div class="cp-yield-head">Do magazynu państwa</div>');
     const parts: string[] = [];
