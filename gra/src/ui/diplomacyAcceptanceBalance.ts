@@ -206,74 +206,64 @@ export function balancePanelDataFromRow(
   };
 }
 
-function aggregateBalanceStatusLabel(net: number): string {
-  if (net > 0) return `Nadwyżka +${net} PW`;
-  if (net === 0) return 'Spełnia warunki (0 PW)';
-  return `Brakuje ${Math.abs(net)} PW`;
+/** Wiersze wymagające decyzji gracza na stole (pakiet Przyjmij/Odrzuć). */
+export function filterActionableNegotiationRows(
+  rows: readonly NegotiationBalanceSource[],
+): NegotiationBalanceSource[] {
+  return rows.filter(
+    r => r.direction === 'incoming' || (r.direction === 'own' && r.awaitingAiResponse),
+  );
 }
 
-/** Panel PW stołu — suma wszystkich pending umów pary (R-DYPLO-STOL-PW-SUM). */
+/** R-DYPLO-STOL-ACCEPT-Q1=A — jeden bilans PW dla całego pakietu na stole. */
 export function balancePanelDataFromRows(
   rows: readonly NegotiationBalanceSource[],
 ): PnBalancePanelData | null {
-  if (rows.length === 0) return null;
-
-  const primary = pickPrimaryNegotiationRow(rows);
-  if (!primary?.acceptanceTheir) return null;
-
-  let mySum = 0;
-  let theirSum = 0;
-  for (const row of rows) {
-    if (!row.acceptanceTheir) continue;
-    const rowData = balancePanelDataFromRow(row, 0);
-    if (!rowData) continue;
-    mySum += rowData.myOfferPn;
-    theirSum += rowData.theirOfferPn;
+  const actionable = filterActionableNegotiationRows(rows);
+  if (actionable.length === 0) {
+    const primary = pickPrimaryNegotiationRow(rows);
+    return primary ? balancePanelDataFromRow(primary, Math.max(0, rows.length - 1)) : null;
   }
+  const primary = pickPrimaryNegotiationRow(actionable) ?? actionable[0]!;
+  const base = balancePanelDataFromRow(primary, Math.max(0, actionable.length - 1));
+  if (!base) return null;
 
-  const net = mySum - theirSum;
-  const statusLabel = aggregateBalanceStatusLabel(net);
-  const accepted = net >= 0;
+  let myOfferPn = 0;
+  let theirOfferPn = 0;
+  let canAccept = true;
+  let blockReason: string | undefined;
 
-  let actionLabel = primary.actionLabel;
-  if (rows.length > 1) {
-    const extra = rows.length - 1;
-    actionLabel = primary.actionLabel + ' + ' + extra + (extra === 1 ? ' inna' : ' inne');
-  }
-
-  const theirBalance: AcceptanceSideBalance = {
-    ...primary.acceptanceTheir,
-    balancePn: net,
-    accepted,
-    statusLabel,
-  };
-  const myBalance = primary.acceptanceMy
-    ? {
-        ...primary.acceptanceMy,
-        balancePn: net,
-        accepted,
-        statusLabel,
+  for (const row of actionable) {
+    const d = balancePanelDataFromRow(row, 0);
+    if (!d) continue;
+    myOfferPn += d.myOfferPn;
+    theirOfferPn += d.theirOfferPn;
+    if (row.direction === 'incoming' && row.canAccept === false) {
+      canAccept = false;
+      blockReason = row.responderPreview?.reason ?? d.theirBalance.statusLabel;
+    }
+    if (row.direction === 'own' && row.awaitingAiResponse) {
+      const ownOk = row.responderPreview?.accepted !== false
+        && (row.acceptanceTheir?.accepted !== false);
+      if (!ownOk) {
+        canAccept = false;
+        blockReason = row.responderPreview?.reason
+          ?? row.acceptanceTheir?.statusLabel
+          ?? 'Oferta nieuczciwa dla partnera';
       }
-    : undefined;
-
-  const canAccept = primary.direction === 'incoming'
-    ? net >= 0
-    : primary.canAccept;
+    }
+  }
 
   return {
-    actionLabel,
-    negotiationId: primary.id,
-    direction: primary.direction,
-    myOfferPn: mySum,
-    theirOfferPn: theirSum,
-    theirBalance,
-    myBalance,
+    ...base,
+    actionLabel: actionable.length > 1
+      ? `Pakiet na stole (${actionable.length} umów)`
+      : base.actionLabel,
+    myOfferPn,
+    theirOfferPn,
     canAccept,
     extraOnTable: 0,
-    awaitingAiResponse: primary.awaitingAiResponse,
-    responderPreview: primary.responderPreview,
-    canCounter: primary.canCounter,
-    uiActionId: primary.uiActionId,
+    responderPreview: canAccept ? base.responderPreview : { accepted: false, reason: blockReason },
   };
 }
 
