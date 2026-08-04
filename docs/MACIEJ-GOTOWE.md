@@ -1,12 +1,8 @@
-﻿- **2026-08-04 ~22:25** — ✅ Gotowe w kodzie (bez deploy): **R-REKRUT-LUDNOSC-UI** — teksty bez „−1 obywatela”. Branch `cursor/fix-rekrut-ludnosc-ui-63a1`. Napisz **deploy**.
+- **2026-08-04 ~22:25** — ✅ Gotowe w kodzie (bez deploy): **R-REKRUT-LUDNOSC-UI** — teksty bez „−1 obywatela”. Branch `cursor/fix-rekrut-ludnosc-ui-63a1`. Napisz **deploy**.
+- **2026-08-04 ~22:15** — ✅ Playtest **OK**: **R-BUDOWA-ZROWNOWAZONE-TRYB** zamknięte na `ee0e7e04` (osobny tryb Zrównoważony).
 - **2026-08-05 00:11** — ✅ **FALA 223** ROBOCZA `ee0e7e04` — tarcza pigułki = wallKind + Zwiedzaj złota ramka od razu. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel ma być `ee0e7e04`.
-- **2026-08-04 ~22:05** — ✅ Gotowe w kodzie (bez deploy): **R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A** — Zwiedzaj zostaje zaznaczone ze złotą ramką od razu. Branch `cursor/fix-zwiedzaj-podswietlenie-63a1`. Napisz **deploy**.
-﻿- **2026-08-04 ~21:55** — ✅ Gotowe w kodzie (bez deploy): **R-PILL-TARCZA-BEZ-MURU-Q1=A** — tarcza pigułki wyłącznie z `wallKind` (= model 3D); bez `maMur`. Branch `cursor/fix-pill-tarcza-bez-muru-63a1`. Napisz **deploy**.
 - **2026-08-04 23:25** — ✅ **FALA 222** ROBOCZA `132401ef` — tempo bitwy ±/komputer + czerwone budynki (brak surowców) + zrównoważony tryb budowy + city pill (tarcza/emblemat). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
-﻿- **2026-08-04 ~23:20** — ✅ Gotowe w kodzie (bez deploy): **R-BUDYNKI-NIEAKTYWNE** — czerwona nazwa w Wybudowane + tooltip `Brak: …` (Spichlerz I/II, Mennica, deposit runtime). Branch `cursor/feat-budynki-nieaktywne-63a1`. Napisz **deploy**.
 - **2026-08-04 23:04** — ✅ **FALA 221** ROBOCZA `4d17d869` — EOT defer + dyplo flex + dobra-kat + trzoda×1.5 + PW sum/Przyjmij/przecinek + Zwiedzaj highlight. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
-- **2026-08-04 ~22:10** — ✅ Gotowe w kodzie (bez deploy): **R-DYPLO-PW-PRZECINEK** — panel PW bez śmieci float (−10,4% zamiast −10.400000000000006%). Branch `cursor/fix-dyplo-pw-przecinek-63a1`. Napisz **deploy**.
-- **2026-08-04 ~22:00** — ✅ Gotowe w kodzie (bez deploy): **R-BUDOWA-ZROWNOWAZONE-TRYB-Q1=A** — zrównoważony = osobny tryb auto (5 typów + przełącznik). Branch `cursor/fix-budowa-zrownowazone-tryb-63a1`. Napisz **deploy**.
 - **2026-08-04 21:45** — ✅ Gotowe w kodzie (bez deploy): **R-DYPLO-STOL-PW-SUM** — panel PW stołu sumuje wszystkie umowy pending (nie tylko primary). Branch `cursor/fix-dyplo-stol-pw-sum-63a1`. Napisz **deploy** po merge.
 - **2026-08-04 20:35** — ✅ Gotowe w kodzie (bez deploy): **R-DYPLO-PRZYJMIJ-TRADE** — Przyjmij na Traktat handlowy zakłada umowę (`umowa_handlowa`/`umowa_szlakow` w evaluateProposal). Branch `cursor/fix-dyplo-przyjmij-traktat-63a1`. Napisz **deploy** po merge.
 - **2026-08-04 ~21:55** — ✅ Gotowe w kodzie (bez deploy): **R-SCOUT-ZWIEDZAJ-HIGHLIGHT** — Zwiedzaj złoty WŁ jak Czuwaj (select nie kasuje `autoExplore`). Branch `cursor/fix-zwiedzaj-mode-highlight-63a1`. Napisz **deploy**.
@@ -14,7 +10,7 @@
 - **2026-08-04 20:12** — ✅ **FALA 219** ROBOCZA `9830224e` — dyplo: edycja kontrpropozycji + landscape dealów; AI bilateral + gate NAP/traktaty (proposerUnfairToPartnerGate, blokada Przyjmij); tip „Doświadczeni wojownicy” (★≥2, bez spamu). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
 - **2026-08-04 19:52** - ✅ **FALA 218** ROBOCZA 4cf44809 - dyplo: uproszczone traktaty + stół multi-deal; parytet auto-racji AI/MP (wzrost CS). START: gra-robocza/START.html - **git pull**, Ctrl+F5 **Nowa gra**.
 - **2026-08-04 19:43** — ✅ **FALA 217** ROBOCZA `6bb24541` — UI Paktu o nieagresji (NAP) uproszczony. START: `gra-robocza/START.html` — Ctrl+F5 **Nowa gra** → dyplomacja → NAP (czas/kary/ultimatum, Anuluj/Zaproponuj).
-﻿- **2026-08-04 19:13** — ✅ **FALA 215** ROBOCZA `2a5a66d1` — R-NADMIAR-POOLS FALA2 ×2 koszty. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
+- **2026-08-04 19:13** — ✅ **FALA 215** ROBOCZA `2a5a66d1` — R-NADMIAR-POOLS FALA2 ×2 koszty. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
 - **2026-08-04 19:09** — ✅ **R-NADMIAR-POOLS FALA2** na `main` (`f940f61`, PR #82 MERGED). Bez deploy — ROBOCZA nadal FALA 214. Napisz **`deploy`** → FALA 215.
 - **2026-08-04 12:13** - ✅ Gotowe FALA 213 ROBOCZA `1d3b8755`. REL-WIARYG-DRIFT-Q1 (dryf W×0.03, UI Δ/turę audiencja) · FORTIFY-MP0-Q1=C + ODFORT (fortify bez MP, odfort miasto + restore MP). Handoff: `dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md` (dopisek deploy 213). START: `gra-robocza/START.html` - **git pull**, Ctrl+F5 **Nowa gra**.
 - ✅ **FALA 214** ROBOCZA `adefb5b8` — batch #70–#81 (ulepszenia AI/MP, dyplo PW, scout black-max, Hard MP wave, UI). **git pull** + Ctrl+F5 + Nowa gra.
@@ -24,7 +20,7 @@
 - **2026-08-04 08:22** — ✅ Gotowe FALA 209 ROBOCZA `ddad7cf9`. Civpedia/poradnik rev G2 (budynki obrona % + efekty, katalog §45, wikiBundle). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-04 12:00** — ✅ Gotowe Civpedia rev. G (docs only, bez deploy): poradnik 00/01/02/05/07/09/12/14/16 + 3 hasła encyklopedii (Wiarygodność, Manpower, Założenie miasta) + wikiBundle `rev-G-2026-08-04` + tooltipy (porażka, Wiarygodność). Branch `cursor/docs-civpedia-fala208-63a1`.
 - **2026-08-04 07:57** — ✅ Gotowe FALA 208 ROBOCZA `64a7878a`. Pigułka miasta v1 (obrona + cywu). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
-﻿- **2026-08-04 ~06:00** — ✅ Gotowe w kodzie (bez deploy): **R-DESIGN-PANEL-MIASTA** pigułka miasta v1 — obrona 3 stany + medalion cywu + glif produkcji (prototyp bez Design). Hover/ostrzeżenie surowców → po makiecie Design. Branch `cursor/fix-city-map-pill-v1-63a1`. Napisz **deploy**.
+- **2026-08-04 ~06:00** — ✅ Gotowe w kodzie (bez deploy): **R-DESIGN-PANEL-MIASTA** pigułka miasta v1 — obrona 3 stany + medalion cywu + glif produkcji (prototyp bez Design). Hover/ostrzeżenie surowców → po makiecie Design. Branch `cursor/fix-city-map-pill-v1-63a1`. Napisz **deploy**.
 - **2026-08-04 ~05:35** — ✅ ECHO **R-DESIGN-PANEL-MIASTA** Q1A Q2C Q3A (docs only). Czeka Design makieta v2 (3 klatki: baseline, MUST, hover). Po dostarczeniu: **działaj** (kod od razu, deploy osobno). `docs/decyzje/R-DESIGN-PANEL-MIASTA.md`
 - **2026-08-04 00:30** — ✅ Gotowe FALA 207 ROBOCZA `47a2e73b`. Handel AI + Połącz + Design Badania + Klatka D + kolonizacja AI. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-04 ~00:45** — ✅ (w FALA 207) **R-AI-KOLONIZACJA** + **#46 Klatka D**.
@@ -44,7 +40,7 @@
 
 - **2026-08-03 14:26** — ✅ Gotowe w kodzie (bez deploy): P-SCOUT-EXPLORE-Q2=B + P-TRIUMPH-CS-Q1=B. Branch `cursor/fix-scout-q2b-triumph-hint-63a1` · PR #26. Napisz **deploy** gdy wgrać do ROBOCZA.
 
-﻿- **2026-08-02 22:48** - ✅ Gotowe FALA 200 ROBOCZA `26b05753`. Stolice w pasie **10–15 hex** od morza (Standard). Zawiera FALA 199 (obwarzanek/Wybrzeże, rzeki). START: `gra-robocza/Gra-ROBOCZA.html` Ctrl+F5 **Nowa gra**.
+- **2026-08-02 22:48** - ✅ Gotowe FALA 200 ROBOCZA `26b05753`. Stolice w pasie **10–15 hex** od morza (Standard). Zawiera FALA 199 (obwarzanek/Wybrzeże, rzeki). START: `gra-robocza/Gra-ROBOCZA.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-02 22:32** - ✅ Gotowe FALA 199 ROBOCZA `046c3ec9`. Obwarzanek: most przez Wybrzeże (1 masa). Rzeki bez limitu liczby; stolice bliżej brzegu (min 10). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — różne % lądu, Pangea bez pierścienia.
 - **2026-08-02 22:10** - ✅ Gotowe FALA 198 ROBOCZA `b6a7e049`. Anti-obwarzanek (ponowny merge lądu przed rzekami) · galeria G wyłączona poza DEV. START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — Pangea **bez pierścienia**, rzeki do wnętrza, klawisz **G** nie otwiera galerii.
 - **2026-08-02 22:03** - ✅ GOTÓW FALA 197 ROBOCZA `03a46dd2`. Klawisz **G** (galeria jednostek) wyłączony w bundlu (tylko vite DEV). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra** — **G** nie otwiera galerii.

@@ -1,6 +1,6 @@
 # R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów
 
-**Status:** WDROŻONE (kod) — czeka deploy  
+**Status:** ZDEPLOYOWANE FALA 222/`132401ef` → FALA 223/`ee0e7e04` · playtest Maciej **OK** 2026-08-04  
 **Data:** 2026-08-04  
 **ID:** `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1` = **A**
 

@@ -1,8 +1,13 @@
-﻿## [22:25 PL, 2026-08-04] CLOUD → Maciej — R-REKRUT-LUDNOSC-UI fix UI (kod, bez deploy)
+## [22:25 PL, 2026-08-04] CLOUD → Maciej — R-REKRUT-LUDNOSC-UI fix UI (kod, bez deploy)
 - Teksty intro Rekruci + Rekrutacja — szczegóły: bez „−1 obywatela”; „ludność miasta nie spada”
 - Plik: `gra/src/ui/cityPanel.ts` (~4749, ~7316)
 - Branch: `cursor/fix-rekrut-ludnosc-ui-63a1` · docs: `docs/decyzje/R-REKRUT-LUDNOSC-UI.md`
 CZEKAM-NA: Maciej — **`deploy`**
+
+## [22:15 PL, 2026-08-04] CLOUD → Maciej — R-BUDOWA-ZROWNOWAZONE-TRYB playtest OK
+|- Maciej: OK na ROBOCZA `ee0e7e04` (FALA 222→223)
+|- Status: ZAMKNIĘTE w REJESTR / PYTANIA / decyzja
+CZEKAM-NA: nic (temat domknięty) · kolejny temat z Macieja
 
 ## [00:11 PL, 2026-08-05] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 223 ee0e7e04
 |- md5: ee0e7e046c317b101ca2eb07f7e349fe · stempel: ROBOCZA · 2026-08-04 22:10
@@ -25,7 +30,7 @@ CZEKAM-NA: Maciej — **`deploy`** gdy OK
 - **Bez kodu** do `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1 A|B|C`
 CZEKAM-NA: Maciej — litera Q1
 
-﻿## [23:25 PL, 2026-08-04] CLOUD Ôćĺ Maciej / sesja lokalna ÔÇö DEPLOY FALA 222 132401ef
+## [23:25 PL, 2026-08-04] CLOUD Ôćĺ Maciej / sesja lokalna ÔÇö DEPLOY FALA 222 132401ef
 |- md5: 132401efa7a83d8e55d33325fe52ba6b ┬Ě stempel: ROBOCZA ┬Ě 2026-08-04 23:25
 |- Batch: R-BATTLE-TEMPO-UI ┬Ě R-BUDYNKI-NIEAKTYWNE ┬Ě R-BUDOWA-ZROWNOWAZONE-TRYB ┬Ě R-CITY-PILL-SHIELD-EMBLEM (PR #97 #98 #85 #83)
 |- Bramki: tsc 0 ┬Ě inactive 4/4 ┬Ě auto-manage 45/45 ┬Ě city-map-badge 13/13 ┬Ě VERIFY OK
