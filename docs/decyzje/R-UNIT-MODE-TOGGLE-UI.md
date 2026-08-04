@@ -17,6 +17,8 @@ Przyciski trybu (Ufortyfikuj, Czuwaj, Zwiedzaj) wyglądały tak samo w stanie W�
 
 Pole `active: boolean` na akcjach fortify / sentry / scout-explore w `main.ts` → `buildUnitActionBarHtml`.
 
+**Korekta Zwiedzaj (R-SCOUT-ZWIEDZAJ-HIGHLIGHT):** zaznaczenie nie kasuje `autoExplore` — inaczej `active` nigdy nie było `true` po ponownym kliknięciu zwiadowcy.
+
 ## Pliki
 
 `gra/src/ui/unitActionBarHtml.ts` · `gra/src/main.ts` (actions push z `active:`)

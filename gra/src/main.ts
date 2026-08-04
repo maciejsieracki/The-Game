@@ -4157,9 +4157,9 @@ async function boot(): Promise<void> {
     function selectPlayerUnit(unitId: string, keepListOpen = false, preserveDetailExpanded = false): void {
       const u = units.find(x => x.id === unitId);
       if (!u || u.ownerId !== 0) return;
-      if (clearScoutAutoExplore(u)) {
-        showHintMessage('Wy\u0142\u0105czono zwiedzanie \u2014 ruch r\u0119czny', 2000);
-      }
+      // R-SCOUT-ZWIEDZAJ-HIGHLIGHT 2026-08-04: NIE czyść autoExplore przy zaznaczeniu —
+      // inaczej przycisk Zwiedzaj nigdy nie pokazuje stanu WŁ (złota ramka 3px).
+      // Wyjście z auto: toggle Zwiedzaj / rozkaz marszu (planMarchTo) — jak Czuwaj.
       // Jednostka gracza ↔ lista/audiencja dyplomacji — wykluczają się (first contact + toolbar).
       ensureDiplomacyUiClosed();
       if (!preserveDetailExpanded) unitSideDetailExpanded = false;
@@ -16153,6 +16153,8 @@ async function boot(): Promise<void> {
         cost = pathCost(truncated, map, moveCostFn);
       }
 
+      // R-SCOUT-ZWIEDZAJ-HIGHLIGHT: ręczny ruch (jak marsz) wyłącza auto-zwiedzanie.
+      clearScoutAutoExplore(u);
       markPlayerMovedUnit(u.id);
       clearPlannedMarch(u.id);
       startAnimatedMove(u, movePath, moveDestQ, moveDestR, cost);

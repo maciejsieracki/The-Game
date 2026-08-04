@@ -22,14 +22,14 @@
 
 Włączenie **Zwiedzaj**: kasuje zaplanowany marsz i ścieżkę, odznacza jednostkę i przechodzi do następnej w cyklu Spacji (jak **Czuwaj**); zwiadowca z `autoExplore` **nie wraca** w cykl Spacji. Punkty ruchu (`ruchLeft`) **nie** są zerowane — ruch nadal tylko na koniec tury (`runScoutsAutoExplore`). Wyłączenie zwiedzania: tylko flaga + hint, bez wymuszonego select.
 
-## UX 2026-08-04 — wyjście z auto (R-SCOUT-EXIT-AUTO)
+## UX 2026-08-04 — wyjście z auto (R-SCOUT-EXIT-AUTO + R-SCOUT-ZWIEDZAJ-HIGHLIGHT)
 
-Maciej: klik na zwiadowcę w trybie zwiedzania lub rozkaz marszu na heks **automatycznie wyłącza** `autoExplore` — bez ręcznego „Wyłącz zwiedzanie".
+Maciej: rozkaz marszu / ruch ręczny **wyłącza** `autoExplore`. **Zaznaczenie** zwiadowcy **nie** wyłącza — żeby złoty stan WŁ na „Zwiedzaj” był widoczny jak przy Czuwaj/Fortyfikuj.
 
 | Akcja | Zachowanie |
 |-------|------------|
-| **Klik / zaznaczenie** zwiadowcy z `autoExplore === true` | `clearScoutAutoExplore` → zaznaczenie do ruchu ręcznego; hint: „Wyłączono zwiedzanie — ruch ręczny” |
-| **`planMarchTo`** na zaznaczonym zwiadowcy z auto | najpierw `clearScoutAutoExplore`, potem marsz jak dotąd |
-| Przycisk HUD **Zwiedzaj** / **Wyłącz zwiedzanie** | bez zmian — nadal włącza (clear path, deselect, next unit) lub wyłącza flagę |
+| **Zaznaczenie** zwiadowcy z `autoExplore === true` | flaga zostaje; pasek pokazuje „Wyłącz zwiedzanie” (WŁ) |
+| **`planMarchTo` / `beginMoveSelectedUnitTo`** | `clearScoutAutoExplore`, potem ruch |
+| Przycisk HUD **Zwiedzaj** / **Wyłącz zwiedzanie** | bez zmian — włącza (clear path, deselect, next) lub wyłącza flagę |
 
 Helper: `clearScoutAutoExplore(u)` w `gra/src/game/scout-auto-explore.ts`. `runScoutsAutoExplore` bez zmian logiki priorytetów — jednostka z `autoExplore === false` nie trafia do puli.
