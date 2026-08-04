@@ -37,6 +37,7 @@ export {
   effectiveTreatyPnRequired,
   relationSignedFromTotal,
   relationPnModPct,
+  formatRelationModLabel,
   resolveProposalPn,
   partnerTreatyPnRequired,
   playerTreatyPnRequired,
@@ -88,6 +89,15 @@ ok(mod.relationPnModPct(50) === 50, 'modPct +50');
 ok(mod.relationPnModPct(-50) === -50, 'modPct -50');
 ok(mod.relationPnModPct(95) === 90, 'modPct clamp +90');
 ok(mod.relationPnModPct(-95) === -90, 'modPct clamp -90');
+
+// R-DYPLO-PW-PRZECINEK: bez śmieci IEEE w modPct / etykietach Relacji (Maciej 2026-08-04)
+const modPct896 = mod.relationPnModPct(mod.relationSignedFromTotal(89.6));
+ok(modPct896 === -10.4, 'modPct @ rel 89.6 → −10.4 (nie float junk)');
+ok(!String(modPct896).includes('000000'), 'modPct string bez 000000');
+const relLabel896 = mod.formatRelationModLabel(89.6);
+ok(!relLabel896.includes('000000'), 'formatRelationModLabel bez 000000');
+ok(relLabel896.includes('−10,4%'), 'formatRelationModLabel polski przecinek −10,4%');
+
 ok(mod.effectiveTreatyPnRequired(500, 150) === 750, 'pokój @ rel +50 → 750 PN (gracz)');
 ok(mod.effectiveTreatyPnRequired(500, 50) === 250, 'pokój @ rel -50 → 250 PN (gracz)');
 ok(mod.effectiveTreatyPnRequired(200, 150) === 300, 'NAP @ rel +50 → 300 PN (gracz)');
@@ -491,6 +501,12 @@ const tradeTablePanel52 = mod.renderPnBalancePanelHtml(tradePanelData52);
 ok(tradeTablePanel52.includes('da-pn-rel-mod'), 'stół negocjacji umowa_handlowa: rel-mod row');
 ok(tradeTablePanel52.includes('42 PW'), 'stół negocjacji umowa_handlowa: gracz 42 PW');
 ok(tradeTablePanel52.includes('80 PW'), 'stół negocjacji umowa_handlowa: partner 80 PW');
+
+// R-DYPLO-PW-PRZECINEK: panel traktatu @ rel 89.6 — badge i hint bez IEEE junk
+const tradePanel896 = mod.renderPnBalancePanelForTreaty(72, 0, 0, 89.6, 'Traktat handlowy', 0, 'Traktat', 80, 80);
+ok(!tradePanel896.includes('000000'), 'umowa_handlowa panel @ rel 89.6: bez IEEE junk');
+ok(tradePanel896.includes('−10,4%'), 'umowa_handlowa panel @ rel 89.6: badge −10,4%');
+ok(tradePanel896.includes('baza 80, Relacja −10,4% siła'), 'umowa_handlowa panel @ rel 89.6: hint baza z czystym mod%');
 
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 

@@ -128,7 +128,15 @@ export function relationSignedFromTotal(relTotal: number): number {
 
 /** Modyfikator % wymagań PN traktatu; clamp ±90 (nigdy ±100). */
 export function relationPnModPct(relSigned: number): number {
-  return Math.max(-90, Math.min(90, relSigned));
+  const clamped = Math.max(-90, Math.min(90, relSigned));
+  return Number(clamped.toFixed(1));
+}
+
+/** Jedno miejsce po przecinku, polski separator — tylko etykiety (nie stan gry). */
+function formatPctPl1(n: number): string {
+  const rounded = Number(n.toFixed(1));
+  const normalized = Object.is(rounded, -0) ? 0 : rounded;
+  return String(normalized).replace(/\.0$/, '').replace('.', ',');
 }
 
 /**
@@ -166,8 +174,9 @@ export function treatyPwForRole(
 export function formatRelationModLabel(relTotal: number): string {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
   if (modPct === 0) return 'Relacje: 0% siła PW';
-  if (modPct > 0) return `Relacje: +${modPct}% siła PW`;
-  return `Relacje: −${Math.abs(modPct)}% siła PW`;
+  const pctStr = formatPctPl1(Math.abs(modPct));
+  if (modPct > 0) return `Relacje: +${pctStr}% siła PW`;
+  return `Relacje: −${pctStr}% siła PW`;
 }
 
 /**
