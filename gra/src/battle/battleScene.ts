@@ -2259,13 +2259,14 @@ export class BattleScene {
   private _momentumCaptionEl: HTMLDivElement | null = null;
   /** vNow (zegar wirtualny) w chwili START WALKI — bazowa dla zegara bitwy MM:SS. */
   private _battleStartVNow: number | null = null;
-  /** TW v5 §3: przyciski Tempo (pauza/×1/×2/×3) + AUTO przy minimapie. */
+  /** TW v5 §3: przyciski Tempo (pauza/−/+) + AUTO-komputer przy minimapie. */
   private _tempoPauseBtn: HTMLButtonElement | null = null;
-  private _tempoSpeedBtns: HTMLButtonElement[] = [];
+  private _tempoMinusBtn: HTMLButtonElement | null = null;
+  private _tempoPlusBtn: HTMLButtonElement | null = null;
   private _tempoAutoBtn: HTMLButtonElement | null = null;
   /** Nagłówek „Minimapa · rozstawianie" (deploy, BEZ tempa) — makieta TW v5 §3/klatka 3. */
   private _minimapDeployHeaderRow: HTMLDivElement | null = null;
-  /** Rząd Tempo (pauza/×1/×2/×3/AUTO) — widoczny TYLKO w walce, nie w deployu. */
+  /** Rząd Tempo (pauza/−/+/AUTO) — widoczny TYLKO w walce, nie w deployu. */
   private _tempoRow: HTMLDivElement | null = null;
   /** Q2: minimap canvas (lewy-dolny rog). */
   private _minimapCanvas: HTMLCanvasElement | null = null;
@@ -8102,14 +8103,21 @@ export class BattleScene {
   }
 
   /** Apply a speed step by index into SPEED_STEPS and refresh the button label. */
-  private _setSpeedIdx(idx: number): void {
+  private _setSpeedIdx(idx: number, opts?: { clamp?: boolean }): void {
     const steps = BattleScene.SPEED_STEPS;
-    this.speedIdx = ((idx % steps.length) + steps.length) % steps.length;
+    this.speedIdx = opts?.clamp
+      ? Math.max(0, Math.min(steps.length - 1, idx))
+      : ((idx % steps.length) + steps.length) % steps.length;
     this.speedMul = steps[this.speedIdx] ?? 1;
     const label = 'Predkosc: ' + this.speedMul + 'x';
     if (this.speedHud) this.speedHud.textContent = label;
     if (this._topSpeedLbl) this._topSpeedLbl.textContent = 'x' + this.speedMul;
     this._syncTempoPanelHighlight();
+  }
+
+  /** Panel ±: zmiana o jeden stopień SPEED_STEPS bez zawijania (clamp 0..max). */
+  private _adjustSpeedIdx(delta: number): void {
+    this._setSpeedIdx(this.speedIdx + delta, { clamp: true });
   }
 
   /** Cycle to the next speed step (1 -> 2 -> 4 -> 8 -> 16 -> 32 -> 64 -> 128 -> 1). Safe to call mid-battle. */
@@ -10219,8 +10227,8 @@ export class BattleScene {
   /** Q2: build minimap canvas overlay (bottom-left, above roster). */
   /**
    * TW v5 §3: panel "Tempo + minimapa" (jeden panel, prawy dół wg makiety —
-   * u nas obok rosteru, patrz _syncMinimapPosition). Rząd Tempo (pauza/×1/×2/×3
-   * + AUTO-rozegranie) NAD minimapą, w tym samym panelu ~70%+blur. Podłączony
+   * u nas obok rosteru, patrz _syncMinimapPosition). Rząd Tempo (pauza/−/+
+   * + AUTO-komputer) NAD minimapą, w tym samym panelu ~70%+blur. Podłączony
    * do ISTNIEJĄCYCH handlerów pauzy/prędkości/AUTO (_togglePause/_setSpeedIdx/
    * _toggleManualMode) — usunięte z prawego raila (patrz makeRailBtn), rail
    * zostaje krótszy (R/M/MUZ/H/Statystyki/Pomiń/Wycofaj — F2/F3 przeniosą resztę).
@@ -10255,7 +10263,7 @@ export class BattleScene {
     wrap.appendChild(deployHeaderRow);
     this._minimapDeployHeaderRow = deployHeaderRow;
 
-    // --- Rząd Tempo: pauza + ×1/×2/×3 + AUTO-rozegranie (TYLKO w walce) ---
+    // --- Rząd Tempo: pauza + −/+ + AUTO-komputer (TYLKO w walce) ---
     const tempoRow = document.createElement('div');
     applyTempoRow1E(tempoRow);
     const tempoLbl = document.createElement('span');
@@ -10276,20 +10284,13 @@ export class BattleScene {
       return b;
     };
     this._tempoPauseBtn = mkTempoBtn(TEMPO_SVG.pause, 'Pauza / Wznów (P)', () => { this._togglePause(); this._syncTempoPanelHighlight(); });
-    // 3 dyskretne poziomy predkosci (1x/2x/4x z SPEED_STEPS) — reszta (8x..512x)
-    // zostaje dostepna z klawiatury (V) jak dotychczas, patrz _cycleSpeed.
-    const speedTargets: Array<{ svg: string; idx: number; title: string }> = [
-      { svg: TEMPO_SVG.play1, idx: 0, title: '×1' },
-      { svg: TEMPO_SVG.play2, idx: 1, title: '×2' },
-      { svg: TEMPO_SVG.play3, idx: 2, title: '×4' },
-    ];
-    this._tempoSpeedBtns = speedTargets.map(t =>
-      mkTempoBtn(t.svg, 'Prędkość ' + t.title, () => { this._setSpeedIdx(t.idx); this._syncTempoPanelHighlight(); }),
-    );
+    // ± po pelnej drabinie SPEED_STEPS (clamp, bez zawijania); V nadal cyklicznie.
+    this._tempoMinusBtn = mkTempoBtn(TEMPO_SVG.minus, 'Zwolnij', () => { this._adjustSpeedIdx(-1); });
+    this._tempoPlusBtn = mkTempoBtn(TEMPO_SVG.plus, 'Przyspiesz', () => { this._adjustSpeedIdx(1); });
     const tempoSpacer = document.createElement('span');
     tempoSpacer.style.flex = '1';
     tempoRow.appendChild(tempoSpacer);
-    this._tempoAutoBtn = mkTempoBtn(TEMPO_SVG.auto, 'AUTO-rozegranie bitwy (R)', () => { this._toggleManualMode(); });
+    this._tempoAutoBtn = mkTempoBtn(TEMPO_SVG.computer, 'AUTO-rozegranie bitwy (R)', () => { this._toggleManualMode(); });
     wrap.appendChild(tempoRow);
     this._tempoRow = tempoRow;
     this._syncTempoPanelHighlight();
@@ -10358,19 +10359,34 @@ export class BattleScene {
     this._syncMinimapPosition();
   }
 
-  /** Podswietla aktywna predkosc/pauze/AUTO w panelu Tempo (przy minimapie). */
+  /** Podswietla pauze/AUTO i odswieza tooltips ± w panelu Tempo (przy minimapie). */
   private _syncTempoPanelHighlight(): void {
-    if (this._tempoPauseBtn) applyTempoBtn1E(this._tempoPauseBtn, { active: this.paused });
-    this._tempoSpeedBtns.forEach((btn, i) => {
-      applyTempoBtn1E(btn, { active: !this.paused && this.speedIdx === i });
-    });
-    if (this._tempoAutoBtn) applyTempoBtn1E(this._tempoAutoBtn, { active: !this._manualMode, auto: true });
+    const maxIdx = BattleScene.SPEED_STEPS.length - 1;
+    const speedTag = '×' + this.speedMul;
+    if (this._tempoPauseBtn) {
+      applyTempoBtn1E(this._tempoPauseBtn, { active: this.paused });
+      this._tempoPauseBtn.style.opacity = '1';
+    }
+    if (this._tempoMinusBtn) {
+      applyTempoBtn1E(this._tempoMinusBtn, { active: false });
+      this._tempoMinusBtn.title = 'Zwolnij (teraz ' + speedTag + ')';
+      this._tempoMinusBtn.style.opacity = this.speedIdx === 0 ? '0.42' : '1';
+    }
+    if (this._tempoPlusBtn) {
+      applyTempoBtn1E(this._tempoPlusBtn, { active: false });
+      this._tempoPlusBtn.title = 'Przyspiesz (teraz ' + speedTag + ')';
+      this._tempoPlusBtn.style.opacity = this.speedIdx >= maxIdx ? '0.42' : '1';
+    }
+    if (this._tempoAutoBtn) {
+      applyTempoBtn1E(this._tempoAutoBtn, { active: !this._manualMode, auto: true });
+      this._tempoAutoBtn.style.opacity = '1';
+    }
   }
 
   /**
    * Panel Tempo+minimapa: w DEPLOYU pokazuje nagłówek „Minimapa · rozstawianie"
    * (tempo nie ma jeszcze sensu — bitwa startuje dopiero po rozstawieniu);
-   * w WALCE pokazuje rząd Tempo (pauza/×1/×2/×3/AUTO) — makieta TW v5 §3.
+   * w WALCE pokazuje rząd Tempo (pauza/−/+/AUTO) — makieta TW v5 §3.
    */
   private _syncMinimapPhaseChrome(): void {
     const deploy = this.deployPhase;
