@@ -7058,6 +7058,99 @@ function markRiverEdge(hexes: Record<string, Hex>, q: number, r: number, edgeIdx
   hex.rzeka = { obecna: edges.length > 0, krawedzie: edges };
 }
 
+/** Oznacz krawędź rzeki na obu heksach lądowych dzielących tę krawędź (bonus plonów I1). */
+function markRiverEdgePair(hexes: Record<string, Hex>, q: number, r: number, edgeIdx: number): void {
+  if (edgeIdx < 0) return;
+  markRiverEdge(hexes, q, r, edgeIdx);
+  const dir = HEX_DIRECTIONS[edgeIdx];
+  if (!dir) return;
+  markRiverEdge(hexes, q + dir[0], r + dir[1], (edgeIdx + 3) % 6);
+}
+
+/** Następny róg obwodu heksa (pointy-top; zgodnie z render/scene.ts). */
+function riverHexCornerStep(from: number, cw: boolean): number {
+  return cw ? (from + 1) % 6 : (from + 5) % 6;
+}
+
+function walkRiverHexPerimeter(fromCorner: number, toCorner: number, cw: boolean): number[] {
+  if (fromCorner === toCorner) return [fromCorner];
+  const out: number[] = [];
+  let c = fromCorner;
+  for (let guard = 0; guard < 7; guard++) {
+    out.push(c);
+    if (c === toCorner) break;
+    c = riverHexCornerStep(c, cw);
+  }
+  return out;
+}
+
+/**
+ * Rogi obwodu między krawędzią wejścia (dirIn) a wyjścia (dirOut) — ten sam łuk co render
+ * (scene.ts riverCornersAlongHexEdges). Używane do oznaczenia krawędzi tranzytowych rzeki.
+ */
+function riverCornersAlongHexEdges(dirIn: number, dirOut: number, hexParity: number): number[] {
+  const a = ((dirIn % 6) + 6) % 6;
+  const b = ((dirOut % 6) + 6) % 6;
+  if (a === b) return [];
+  const entryOpts = [(a + 1) % 6, (a + 2) % 6];
+  const exitOpts = [(b + 1) % 6, (b + 2) % 6];
+  const MIN_BOKI = 1;
+  let best: number[] = [];
+  let bestScore = Infinity;
+  let fallback: number[] = [];
+  let fallbackScore = Infinity;
+  for (const entry of entryOpts) {
+    for (const exit of exitOpts) {
+      for (const cw of [true, false]) {
+        const walked = walkRiverHexPerimeter(entry, exit, cw);
+        if (walked.length === 0) continue;
+        let score = walked.length;
+        if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
+        else if (score === bestScore) score += cw ? 0.01 : 0;
+        if (score < fallbackScore) { fallbackScore = score; fallback = walked; }
+        if (walked.length - 1 < MIN_BOKI) continue;
+        if (score < bestScore) { bestScore = score; best = walked; }
+      }
+    }
+  }
+  return best.length ? best : fallback;
+}
+
+/** Krawędź pointy-top między dwoma sąsiednimi rogami obwodu (edge dir = rogi dir+1, dir+2). */
+function riverEdgeBetweenCorners(c1: number, c2: number): number {
+  if (c2 === (c1 + 1) % 6) return (c1 + 5) % 6;
+  if (c2 === (c1 + 5) % 6) return (c2 + 5) % 6;
+  return -1;
+}
+
+/** Indeksy krawędzi (0–5) wzdłuż łuku rzeki na heksie — zgodnie z geometrią renderu. */
+function riverTransitEdgeIndices(dirIn: number, dirOut: number, hexParity: number): number[] {
+  const corners = riverCornersAlongHexEdges(dirIn, dirOut, hexParity);
+  if (corners.length < 2) return [];
+  const edges: number[] = [];
+  for (let i = 0; i < corners.length - 1; i++) {
+    const ei = riverEdgeBetweenCorners(corners[i]!, corners[i + 1]!);
+    if (ei >= 0 && !edges.includes(ei)) edges.push(ei);
+  }
+  return edges;
+}
+
+/** Oznacza krawędzie tranzytowe (obwód heksa) — brzeg rzeki widoczny z obu stron koryta. */
+function markRiverTransitEdgesOnPath(hexes: Record<string, Hex>, path: Array<{ q: number; r: number }>): void {
+  if (path.length < 3) return;
+  for (let i = 1; i < path.length - 1; i++) {
+    const prev = path[i - 1]!;
+    const cur = path[i]!;
+    const next = path[i + 1]!;
+    const dirIn = neighborDirIndex(cur.q, cur.r, prev.q, prev.r);
+    const dirOut = neighborDirIndex(cur.q, cur.r, next.q, next.r);
+    if (dirIn < 0 || dirOut < 0) continue;
+    for (const ei of riverTransitEdgeIndices(dirIn, dirOut, cur.q + cur.r)) {
+      markRiverEdgePair(hexes, cur.q, cur.r, ei);
+    }
+  }
+}
+
 /** Rzeka biegnie WYŁĄCZNIE po krawędziach — nie przez środek heksa (Roblox). */
 function markRiverPath(hexes: Record<string, Hex>, path: Array<{ q: number; r: number }>): void {
   for (let i = 0; i < path.length - 1; i++) {
@@ -7073,10 +7166,9 @@ function markRiverPath(hexes: Record<string, Hex>, path: Array<{ q: number; r: n
       if (!coastal) continue;
     }
     const eA = neighborDirIndex(a.q, a.r, b.q, b.r);
-    const eB = neighborDirIndex(b.q, b.r, a.q, a.r);
-    markRiverEdge(hexes, a.q, a.r, eA);
-    markRiverEdge(hexes, b.q, b.r, eB);
+    markRiverEdgePair(hexes, a.q, a.r, eA);
   }
+  markRiverTransitEdgesOnPath(hexes, path);
 }
 
 /**
