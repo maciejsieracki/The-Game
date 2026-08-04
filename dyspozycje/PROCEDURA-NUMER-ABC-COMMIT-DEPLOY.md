@@ -114,6 +114,24 @@ Hasła historyczne **`działaj` / `wdrażaj`** = zgoda na wdrożenie **bieżące
 
 ---
 
+## 4a. NIE UWSTECZNIAJ — bramka przed commit (Maciej 2026-08-04)
+
+**ID:** `R-PROC-NO-REGRESS`
+
+Przy wdrażaniu **jednej** rzeczy łatwo zepsuć **inną** (nadpisanie hunka, usunięcie „przy okazji”, konflikt między PR na `main.ts`).
+
+**Obowiązkowo przed `git commit` / przed `deploy`:**
+
+1. Przejrzyj **`git diff`** — co **zmienione** i co **usunięte** (nie tylko „co dodałem”).
+2. Dla każdego skasowanego / przepisano bloku: czy to **świadoma** część tego ID, czy **cofnięcie** wcześniejszego fixa (FALA / inny PR / inny R-*)?
+3. Gdy ten sam plik ruszają **inne otwarte PR** (zwłaszcza `main.ts`) — sprawdź overlap; rebase / kolejność merge, żeby nie wymazać cudzego fixa.
+4. Odpal **testy tego obszaru** + krótki smoke powiązanych tematów (np. Zwiedzaj + chatka + fog), nie tylko nowy test.
+5. W raporcie do Macieja: 1 linia **„regresja: nie stwierdzono / ryzyko: …”** jeśli był overlap.
+
+**Zakaz:** „przy okazji posprzątam” w cudzym obszarze · `git add -A` bez przeglądu · merge batcha bez kolejności zależności.
+
+---
+
 ## 5. Deploy — TYLKO na hasło Macieja
 
 | Hasło | Skutek |
@@ -133,7 +151,8 @@ Po deployu: stempel md5 w `WERSJE.md`, meldunek w kanale, status zadania → `ZD
 [ ] Przedstaw rozwiązanie (± ABC z **pełnym** ID pytania, nie gołe Q1) — BEZ kodu gry
 [ ] Czekaj: „<pełne-ID> A|B|C”
 [ ] ECHO z pełnymi ID + zapis plikowy → kod → commit (bez deploy)
-[ ] Deploy TYLKO po „deploy”
+[ ] Przed commit: diff — nic nie uwstecznia (§4a R-PROC-NO-REGRESS)
+[ ] Deploy TYLKO po „deploy” (+ ponowny check overlap PR)
 [ ] Koniec wiadomości: „Następny krok” (max 3)
 ```
 
