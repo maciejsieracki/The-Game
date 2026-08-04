@@ -26,9 +26,10 @@ Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-T
 
 ---
 
-## R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia u gracza · STATUS: **WDROŻONE (kod) Q1=B** · czeka deploy (2026-08-05)
+## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto-raise + limit suwaka · STATUS: **OTWARTE Q2–Q4** (Q1=B już w kodzie branch) (2026-08-05)
 
-**Decyzja:** B — gracz podnosi Wyżywienie tylko przy nadwyżce produkcji miast; zapasy Spichlerza nie uruchamiają raise. Major AI bez zmian.  
+**Q1=B (kod):** gracz raise tylko przy nadwyżce produkcji — Maciej: za mało; AI też szkodzi.  
+**Czeka:** Q2 (auto-raise podłoga 0) · Q3 (cap suwaka) · Q4 (Spichlerz nigdy < 0).  
 **Branch:** `cursor/abc-auto-racje-raise-63a1`  
 Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).
 

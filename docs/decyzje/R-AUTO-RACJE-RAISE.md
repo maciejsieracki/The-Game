@@ -1,79 +1,166 @@
-# R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia u gracza na EOT
+# R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia + podłoga Spichlerza
 
-**Status:** WDROŻONE (kod) · Q1=B · czeka deploy · 2026-08-05  
-**ID:** `R-AUTO-RACJE-RAISE-Q1`  
-**Decyzja Macieja:** **B** — gracz: auto-raise tylko przy trwałej nadwyżce produkcji miast (≥0); zapasy Spichlerza nie uruchamiają podnoszenia. Major AI: bez zmian (może z zapasów).  
-**Branch:** `cursor/abc-auto-racje-raise-63a1`  
-**Źródło:** Maciej — suwak Wyżywienia/rozwoju wraca do max mimo ręcznego obniżenia (Spichlerz)
+**Status:** 🟡 ZAPISANA (Q1=B wdrożone w kodzie branch; Q2–Q4 — **czekają odpowiedzi Macieja**)  
+**Data:** 2026-08-04  
+**Źródło:** Maciej (playtest FALA 224) + doprecyzowanie po Q1=B
 
 ---
 
-## Diagnoza (kod)
+## Problem (Maciej)
 
-Na koniec tury (`main.ts` ~19760) dla **każdego** właściciela poza miastami-państwami (`!typCityCopyOwners`) wołane jest:
+1. Koniec tury **podnosi** Wyżywienie/rozwój mimo niskiego Spichlerza → potem głód miast → **−1 ludność**.
+2. Ten sam mechanizm dotyczy **AI** (major) — AI też może obniżać ludność przez agresywny raise.
+3. **Spichlerz nigdy nie powinien spadać poniżej zera.**
+4. **Nie powinno dać się** podnieść zużycia (suwak w mieście / auto) ponad to, co cywilizacja utrzyma bez ujemnego Spichlerza na następną turę.
 
-`autoRaiseRationsForGrowth` (`empire-food.ts`)
-
-- Komentarz w kodzie: *„tylko major AI”*
-- W praktyce warunek **nie wyklucza gracza** (`ownerId === 0`) → **gracz też dostaje auto-podnoszenie do max**
-- Warunek startu: solvent + (`nadwyżka > 0` **lub** `zapasyPrzed > 0`) → podnosi racje **nawet z zapasów Spichlerza**, nie tylko z nadwyżki produkcji
-
-Osobno działa **SPICH-AUTO-Q1** (`autoBalanceRationsToSolvency`) — to tylko **obniża** przy deficycie (zgodne z decyzją B).
-
-## Objaw Macieja
-
-1. Obniża Wyżywienie (bo Spichlerz / zasoby słabe).
-2. Koniec tury → suwak znów w górę (często do max).
-3. Obawa o **ubytek ludności** — uzasadniona pośrednio: wyższe racje = wyższy koszt 🍞 → łatwiej o brak dopłaty centrali → `applyHungerPenaltyV85` → **−1 ludność** (min 1). Rekrutacja nadal **nie** odejmuje pop (`R-REKRUT-LUDNOSC-UI`).
-
-## Cytat / oczekiwanie Macieja
-
-> Powinien się podnosić ewentualnie automatycznie tylko wtedy kiedy w całej cywilizacji nie ma ujemnego salda co turę. Czyli co najmniej musi być na końcu zero.
+Powiązane: `SPICH-AUTO-Q1` (FALA 212) — auto-**obniżanie** przy deficycie — zostaje.
 
 ---
 
-## [TEMAT: Auto-podnoszenie Wyżywienia u gracza]
+## Q1 (zamknięte) — kto dostaje soft raise
 
-### Sytuacja
-Dziś na koniec tury gra **sama podnosi Wyżywienie** w miastach gracza (ten sam mechanizm, co u AI major „max wzrost”). Gracz obniża suwak przez brak zapasów w Spichlerzu — po turze wraca w górę. Auto-**obniżanie** przy deficycie (SPICH-AUTO) zostaje bez zmian.
+**Odpowiedź Macieja:** **B**
 
-### Cel pytania
-Ustalic, czy i kiedy gra wolno **podnosić** Wyżywienie u gracza bez jego kliknięcia.
+- Gracz: raise tylko przy nadwyżce produkcji miast (`requireProductionSurplus`).
+- AI major: bez tej bramki (jak było).
 
-### Dlaczego teraz
-Playtest: suwak walczy z graczem; ryzyko głodu i −1 ludności przy zbyt wysokich racjach.
-
-### Opcje
-
-**A — Gracz: zero auto-podnoszenia** (rekomendacja)  
-Tylko major AI podnosi Wyżywienie przy nadwyżce. U gracza zostaje wyłącznie ręczne ustawienie + auto-**obniżenie** przy deficycie (SPICH-AUTO).  
-- **Za:** zgodne z komentarzem w kodzie („tylko major AI”); gracz ma kontrolę; koniec walki z suwakiem.  
-- **Za:** mniej ryzyka głodu od wymuszonego max.  
-- **Przeciw:** gracz musi sam wracać w górę, gdy Spichlerz się zapełni.  
-- **Przeciw:** AI ma wygodę „auto max wzrostu”, gracz nie.
-
-**B — Podnosić u gracza tylko przy trwałej nadwyżce produkcji (≥ 0 po podniesieniu), bez zjadania zapasów**  
-Auto-raise tylko gdy bilans miast (nadwyżka) pozwala utrzymać wyższy poziom **bez** sięgania po Spichlerz jako warunek startu; po każdym kroku bilans imperium ≥ 0.  
-- **Za:** blisko słów Macieja („nie ujemne saldo / co najmniej zero”).  
-- **Za:** nadal pomaga, gdy żywności naprawdę starcza z produkcji.  
-- **Przeciw:** trudniejsza reguła do zrozumienia w UI.  
-- **Przeciw:** przy małej nadwyżce i tak może podnosić wbrew woli gracza.
-
-**C — Status quo (gracz = jak major AI)**  
-Zostawić auto-raise do max przy solvent + (nadwyżka lub zapasy > 0).  
-- **Za:** zero pracy.  
-- **Za:** AI i gracz jednakowo „pchają wzrost”.  
-- **Przeciw:** dokładnie obecny bug UX.  
-- **Przeciw:** zjada Spichlerz i sprzyja głodowi.
-
-### Rekomendacja
-**A** — auto-podnoszenie tylko u major AI; u gracza ręka + SPICH-AUTO obniżanie.
+**Uwaga Macieja po Q1:** B nie wystarcza — AI też szkodzi; potrzeba twardej podłogi Spichlerza ≥ 0 i limitu suwaka.
 
 ---
 
-## Implementacja (Q1=B — WDROŻONE w kodzie)
+## [PACZKA 1/1 — 3 pytania] Q2 · Q3 · Q4
 
-- `empire-food.ts`: `AutoRaiseRationsOpts.requireProductionSurplus` — gracz wymaga `nadwyzka > 0` (start i w pętli raise).
-- `main.ts` ~19762: `requireProductionSurplus: ownerId === 0`.
-- Test: `ai-major-economy-test.cjs` sekcje G–I (AI zapasy OK; gracz bez nadwyżki = no-op; gracz z nadwyżką = raise).
-- Deploy osobno na hasło `deploy`.
+### Q2 — Auto-raise (gracz + AI): twarda podłoga Spichlerza ≥ 0
+
+**Sytuacja:**  
+`autoRaiseRationsForGrowth` podnosi Wyżywienie w miastach, jeśli po kroku zapasy Spichlerza ≥ `minStockFloor` (domyślnie 0) **i** (dla gracza od Q1=B) jest nadwyżka produkcji. AI major nadal może podnosić z zapasów przy zerowej nadwyżce produkcji — wtedy **wypompowuje Spichlerz** i w kolejnej turze miasta mogą nie dostać żywności → **spadek ludności**. Maciej: raise może podnosić, ale **tylko do poziomu, przy którym Spichlerz nie zejdzie poniżej zera**.
+
+**Cel pytania:**  
+Czy auto-raise (gracz **i** AI) ma zawsze zatrzymać się tak, by po podniesieniu prognozowany Spichlerz ≥ 0 — bez wyjątku „ujemne zapasy na głód wojska”?
+
+**Dlaczego teraz:**  
+Bez tego AI i gracz mogą budować / podnosić rozwój, a ludność spada zamiast rosnąć.
+
+**A — Twarda podłoga 0 w auto-raise (gracz + AI), bez wyjątku**  
+Przy każdym kroku raise: jeśli po podniesieniu `zapasy + nadwyżka − koszt` < 0 → **nie podnosić** (stop). Dotyczy gracza i AI major tak samo.  
+**Za:**  
+1. Spełnia wprost: „podwyższa, ale tylko żeby nie było w Spichlerzu mniej niż zero”.  
+2. AI nie obniża sobie ludności agresywnym raise.  
+**Przeciw:**  
+1. AI wolniej dogania max Wyżywienia przy niskich zapasach.  
+2. Głód wojska z ujemnego Spichlerza (osobna reguła w `advanceEmpireFood`) może zostać sprzeczny z tą podłogą — wtedy Q4.
+
+**B — Podłoga 0 + AI jak gracz (tylko przy nadwyżce produkcji)**  
+Jak A, plus AI też wymaga `nadwyzka > 0` (nie raise z samego zapasu).  
+**Za:**  
+1. Jeszcze bezpieczniej dla AI.  
+2. Spójne z Q1=B dla gracza.  
+**Przeciw:**  
+1. AI prawie nigdy nie podnosi przy buforze-only.  
+2. Wolniejszy powrót AI do wzrostu po kryzysie.
+
+**C — Zostaw soft floor jak dziś (możliwy raise przy zapasach > 0 nawet bez nadwyżki u AI)**  
+Tylko dokumentacja / drobne progi.  
+**Za:**  
+1. Zero zmiany zachowania AI.  
+2. Najmniej kodu.  
+**Przeciw:**  
+1. Nie rozwiązuje obawy Macieja o AI.  
+2. Nadal ryzyko spadku ludności.
+
+**Rekomendacja:** **A** — twarda podłoga 0 w auto-raise dla gracza i AI; AI może nadal raise z zapasów, byle nie poniżej zera.
+
+---
+
+### Q3 — Suwak miasta: limit max Wyżywienia
+
+**Sytuacja:**  
+Gracz może ręcznie ustawić suwak Wyżywienie/rozwój wysoko; w następnej turze koszt żywności może **zepchnąć Spichlerz poniżej zera** (dziś ujemne zapasy są dozwolone w `advanceEmpireFood`). Maciej: nie powinno być możliwości zwiększenia zużycia ponad limit Spichlerza cywilizacji — de facto max suwaka = najwyższy poziom, przy którym następna tura **nie** zrobi Spichlerza < 0.
+
+**Cel pytania:**  
+Czy UI / walidacja ma **blokować** ustawienie Wyżywienia powyżej maksymalnego bezpiecznego poziomu dla cywilizacji?
+
+**Dlaczego teraz:**  
+Sam auto-raise nie wystarczy — gracz może nadal „przekręcić” suwak i dostać spadek ludności.
+
+**A — Cap suwaka = max bezpieczny poziom (prognoza Spichlerz ≥ 0)**  
+Przy zmianie suwaka (i przy starcie tury): clamp Wyżywienia do najwyższego poziomu, przy którym `zapasy + produkcja − koszt` ≥ 0. Komunikat w UI gdy gracz próbuje wyżej.  
+**Za:**  
+1. Spełnia „nie ma możliwości zwiększenia zużycia ponad limit”.  
+2. Spójne z Q2.  
+**Przeciw:**  
+1. Więcej logiki UI + testów.  
+2. Przy wahaniach produkcji max „skacze” — trzeba czytelnego feedbacku.
+
+**B — Cap tylko ostrzeżenie (żółty), suwak nadal pozwala wyżej**  
+Gracz może ustawić ryzykownie; tooltip/ostrzeżenie.  
+**Za:**  
+1. Pełna kontrola gracza.  
+2. Mniej twardej logiki.  
+**Przeciw:**  
+1. Maciej wprost nie chce możliwości zejścia poniżej zera.  
+2. Łatwo zignorować ostrzeżenie.
+
+**C — Bez limitu suwaka (tylko auto-raise z Q2)**  
+**Za:**  
+1. Zero UI.  
+2. Szybkie.  
+**Przeciw:**  
+1. Nie spełnia wymogu Macieja.  
+2. Nadal ręczne „zjedzenie” Spichlerza.
+
+**Rekomendacja:** **A**
+
+---
+
+### Q4 — Spichlerz: czy w ogóle może być < 0?
+
+**Sytuacja:**  
+Dziś w `advanceEmpireFood`: po rozliczeniu żywności `if (central < 0) central = central` — **ujemne zapasy dozwolone** (komentarz: głód wojska). Maciej: **Spichlerz nigdy nie powinien spadać poniżej zera.**
+
+**Cel pytania:**  
+Czy twardo clampować zapasy Spichlerza do ≥ 0 zawsze, i jak wtedy liczyć głód wojska / miast?
+
+**Dlaczego teraz:**  
+Bez tego Q2/Q3 to tylko „staranie się” — silnik i tak może wejść na minus.
+
+**A — Twardy clamp Spichlerz ≥ 0 zawsze; głód bez ujemnego salda**  
+Po rozliczeniu: `zapasy = max(0, zapasy)`. Głód miast/wojska liczony z **niedoboru w tej turze** (ile żywności zabrakło), nie z ujemnego bufora między turami.  
+**Za:**  
+1. Spełnia wprost słowa Macieja.  
+2. Prosty model mentalny dla gracza.  
+**Przeciw:**  
+1. Trzeba przepiąć logikę głodu wojska z „ujemnego Spichlerza”.  
+2. Większy zakres zmian + testów.
+
+**B — Clamp ≥ 0 w UI/raportach; w silniku krótki minus tylko wewnętrznie w tej samej turze**  
+Po turze zawsze ≥ 0; w trakcie rozliczenia chwilowy minus OK.  
+**Za:**  
+1. Blisko A bez wielkiej przebudowy.  
+2. Spójny odczyt dla gracza.  
+**Przeciw:**  
+1. Nadal mylące dla debug.  
+2. Półśrodek.
+
+**C — Zostaw ujemny Spichlerz (głód wojska jak dziś)**  
+**Za:**  
+1. Zero regresji głodu wojska.  
+2. Najmniej kodu.  
+**Przeciw:**  
+1. Sprzeczne z Maciejem.  
+2. Q2/Q3 słabsze.
+
+**Rekomendacja:** **A**
+
+---
+
+## Odpowiedzi (do uzupełnienia)
+
+| ID | Odpowiedź | Data |
+|----|-----------|------|
+| Q1 | **B** | 2026-08-04 |
+| Q2 | — | — |
+| Q3 | — | — |
+| Q4 | — | — |
+
+**Hasło wdrożenia całej paczki Q2–Q4:** np. `R-AUTO-RACJE-RAISE-Q2A-Q3A-Q4A` albo `działaj` po odpowiedziach.

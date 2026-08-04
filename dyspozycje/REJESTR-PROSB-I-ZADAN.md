@@ -21,7 +21,7 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 
 **Notatka 2026-08-05:** Cleanup przestarzałych „czeka deploy" / „bez deploy" dla pozycji już w `WERSJE.md`; źródło prawdy deployu = AKTUALNA FALA 224 (`38df6ad7`).
 
-| R-AUTO-RACJE-RAISE | 2026-08-05 | EOT podnosi Wyżywienie gracza do max mimo ręcznego obniżenia (Spichlerz); obawa o −ludność | **WDROŻONE (kod) Q1=B** · czeka deploy | `docs/decyzje/R-AUTO-RACJE-RAISE.md` · branch `cursor/abc-auto-racje-raise-63a1` · `requireProductionSurplus: ownerId===0` |
+| R-AUTO-RACJE-RAISE | 2026-08-05 | Auto-raise Wyżywienia + Spichlerz < 0 → spadek ludności (gracz i AI); Maciej: Spichlerz nigdy < 0 | **OTWARTE Q2–Q4** (Q1=B w kodzie branch) | `docs/decyzje/R-AUTO-RACJE-RAISE.md` · branch `cursor/abc-auto-racje-raise-63a1` |
 | R-REKRUT-LUDNOSC-UI | 2026-08-04 | Teksty rekrutacji: nie sugerować −1 obywatela; ludność miasta nie spada (tylko Manpower) | **ZDEPLOYOWANE `38df6ad7`** (FALA 224) | `docs/decyzje/R-REKRUT-LUDNOSC-UI.md` · cityPanel |
 | R-BUDYNKI-NIEAKTYWNE | 2026-08-04 | Wybudowane budynki bez surowca runtime (Spichlerz, Mennica, deposit gate) → czerwona nazwa + tooltip Brak: … | **ZDEPLOYOWANE `132401ef`** (FALA 222) | Q1=A · Q2=A+C · Q3=A · `docs/decyzje/R-BUDYNKI-NIEAKTYWNE.md` · branch `cursor/feat-budynki-nieaktywne-63a1` |
 | R-DYPLO-PW-PRZECINEK | 2026-08-04 | Panel PW: śmieci float (−10.400000000000006%) → format jak Skarbiec | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| `docs/decyzje/R-DYPLO-PW-PRZECINEK.md` |
