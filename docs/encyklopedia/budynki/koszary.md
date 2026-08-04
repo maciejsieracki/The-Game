@@ -15,43 +15,47 @@
 
 ## Wiki‑S
 
-**Koszary** — budynek (Wojsko), epoka Brąz. Koszt od **25** pracy, utrzymanie **2** ¤/t. Technologia **Wojskowosc**.
+**Koszary** — budynek (Wojsko), epoka Brąz. Koszt od **25** pracy, utrzymanie **2** ¤/t. Technologia **Wojskowość**. **Maks. 2 poziomy.** **+2/+3 Pracy/t** oraz **+20% parametrów miękkich** (ścieżka B) jednostkom po **wizycie** w mieście.
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Koszary wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+2 pracy** (+1 na poziom), **+5 % mnożnika Daniny** (+2 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**10** od poprzedniego), ale daje większy przyrost.
+Koszary dają:
+
+1. **Praca:** **+2 Pracy/t** (poz. 1), **+3** (poz. 2)
+2. **Ścieżka B — parametry miękkie:** **+20%** do statystyk **poza Pancerzem** (atak, obrona, HP itd.) dla jednostek, które **odwiedziły** miasto. Kumuluje z **Akademią wojskową** (+20%) i **Warsztatem oblężniczym** (+10%) — max **+50%** łącznie.
+
+To **nie** jest bonus „siły przy produkcji" ani mnożnik Daniny. **Maks. 2 poziomy** (nie 10).
+
+**Akademia wojskowa** stoi **obok** Koszar (niezależny budynek) — oba mogą być w mieście jednocześnie.
+
 ### Koszty
-- **Budowa poz. 1:** 25 pracy
-- **Każdy kolejny poziom:** +10 pracy
-- **Utrzymanie:** 2 ¤/turę (+1 ¤/poziom)
-- Technologia **Wojskowosc**.
-- **Uwaga:** Mnoznik % dotyczy sily i exp jednostek szkolonych w miescie
+- **Budowa poz. 1:** 25 pracy + 8× drewno, 8× kamień
+- **Poziom 2:** +10 pracy (łącznie 35)
+- **Utrzymanie:** 2 ¤/turę (+1 ¤ na poz. 2)
+- Technologia **Wojskowość**
+
 ### Strategia gracza
-Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
+Miasto rekrutacyjne: Koszary wcześnie, potem przepuszczaj przez nie armie przed kampanią. W Żelazie dołóż **Akademię wojskową** i **Warsztat oblężniczy** dla pełnego +50% ścieżki B.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 2 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Wojsko
+- Oczekiwanie bonusu Pancerza — Koszary to **ścieżka B** (miękkie staty), nie kuźnia.
+- Myślenie, że Akademia wojskowa zastępuje Koszary — **oba** obok siebie.
+
+**Powiązane:** Akademia wojskowa · Warsztat oblężniczy · Rekrutacja
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+| Poziom | Koszt | Praca/t | Ścieżka B |
+|--------|-------|---------|-----------|
+| 1 | 25 | +2 | +20% miękkie |
+| 2 | 35 | +3 | +20% miękkie |
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 25 | **3 tur** | +2 pracy, +5 % mnożnika Daniny | 2 ¤/t |
-| Poziom 2 | 35 | **4 tur** | więcej (patrz niżej) | 2 ¤/t |
-| Poziom 3 | 45 | — | **+4 pracy, +9 % mnożnika Daniny** | 2 ¤/t |
-
-+2 pracy/t — przy koszcie 25 pracy inwestycja „wraca" w **13 tur** (jeśli cała nowa praca idzie w kolejkę).
-
-**Przyspieszenie za złoto:** jeśli brakuje **5** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+Z **Akademią wojskową** w tym samym mieście: **+40%** miękkich (przed Warsztatem).
 
 ---
 
@@ -63,4 +67,4 @@ Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w m
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — ścieżka B parametry miękkie po wizycie, max 2 poz.

@@ -15,44 +15,46 @@
 
 ## Wiki‑S
 
-**Warsztat oblężniczy** — budynek (Wojsko), epoka Żelazo. Koszt od **65** pracy, utrzymanie **3** ¤/t. Technologia **Oblężnictwo**.
+**Warsztat oblężniczy** — budynek (Wojsko), epoka Żelazo. Koszt **65** pracy + **10× drewno, 10× kamień**, utrzymanie **3** ¤/t. Technologia **Oblężnictwo**. **Maks. 1 poziom.** Odblokowuje **Katapultę** w mieście + **+10% parametrów miękkich** (ścieżka B).
 
 ---
 
 ## Wiki‑M
 
 ### Co robi
-Warsztat oblężniczy wzmacnia miasto w kategorii **Wojsko**. Poziom 1: **+4 pracy** (+2 na poziom), **+2 złota** (+1 na poziom), **+10 % mnożnika Daniny** (+3 na poziom). Maksymalnie **10** poziomów — każdy kosztuje więcej pracy (+**15** od poprzedniego), ale daje większy przyrost.
+Warsztat oblężniczy:
+
+1. **Odblokowuje rekrutację Katapulty** w mieście (`maWarsztatOblezniczy`). **Taran** i **Wieża** to sprzęt oblężniczy budowany **podczas oblężenia**, nie w Warsztacie.
+2. **Ekonomia:** **+4 Pracy/t**, **+2 Pieniądza/t**
+3. **Ścieżka B:** **+10% parametrów miękkich** po wizycie w mieście (kumuluje z Koszarami/Akademią wojskową do max **+50%**)
+
+**Maks. 1 poziom** — nie 10 poziomów ani mnożnik Daniny.
+
 ### Koszty
-- **Budowa poz. 1:** 65 pracy
-- **Każdy kolejny poziom:** +15 pracy
-- **Utrzymanie:** 3 ¤/turę (+1 ¤/poziom)
-- Technologia **Oblężnictwo**.
-Warunek: wymaga Koszary.
-- **Uwaga:** Odblokowuje budowę Katapulty w mieście (maWarsztatOblezniczy). Taran i Wieża = in-siege przy oblężeniu — styk UNITS
+- **Budowa:** 65 pracy + 10× drewno, 10× kamień
+- **Utrzymanie:** 3 ¤/turę
+- Technologia **Oblężnictwo**
+- **Wymaganie:** **Koszary** (lub Akademia wojskowa jako upgrade Koszar) w tym mieście
+
 ### Strategia gracza
-Rozwijaj, gdy masz nadwyżkę pracy w imperium — nie blokuj kolejki wojska w mieście granicznym.
+Miasto oblężnicze: Warsztat przed kampanią na ufortyfikowane miasta wroga. Katapulta z tego miasta + armia ze ścieżką B.
+
 ### Typowe błędy
-- Budowa bez technologii (szara na liście) — sprawdź drzewko nauki.
-- Ignorowanie utrzymania: 3 ¤/t × 10 poziomów × kilka miast = wyczerpanie skarbca.
-- Rush za złoto „na siłę" przy pustym skarbcu — najpierw Targowisko / podatki.
-**Powiązane:** Produkcja miejska · Utrzymanie · Wojsko
+- Oczekiwanie Tarana/Wieży z kolejki miasta — tylko **Katapulta**.
+- Budowa bez Koszar.
+
+**Powiązane:** Katapulta · Koszary · Oblężenie
 
 ---
 
 ## Przykład liczbowy
 
-**Scenariusz:** miasto ma **10 pracy/t** na budynki (suwak pracy 70%, miasto produkuje ~14 pracy/t).
+| Efekt | Wartość |
+|-------|---------|
+| Odblokowanie | Katapulta w rekrutacji |
+| Ścieżka B | +10% miękkie (z Koszarami +20% = +30%) |
 
-| Etap | Koszt pracy | Czas budowy (~) | Co daje (poz. 1) | Utrzymanie |
-|------|-------------|-----------------|------------------|------------|
-| Poziom 1 | 65 | **7 tur** | +4 pracy, +2 złota, +10 % mnożnika Daniny | 3 ¤/t |
-| Poziom 2 | 80 | **8 tur** | więcej (patrz niżej) | 3 ¤/t |
-| Poziom 3 | 95 | — | **+8 pracy, +4 złota, +16 % mnożnika Daniny** | 3 ¤/t |
-
-Przy +2 złota/t, utrzymanie 3 ¤/t → netto **+-1 ¤/t**. Koszt 65 pracy przy 10/t ≈ **7 tur** pracy — złotem „zwraca się" po ok. **65 tur** (uproszczenie, bez inflacji).
-
-**Przyspieszenie za złoto:** jeśli brakuje **45** pracy po 2 turach, możesz dokupić rush — koszt rośnie z pozostałą pracą (szczegóły w Części VII poradnika).
+Koszt **65** pracy przy 10/t ≈ **7 tur**.
 
 ---
 
@@ -64,4 +66,4 @@ Przy +2 złota/t, utrzymanie 3 ¤/t → netto **+-1 ¤/t**. Koszt 65 pracy przy 
 
 ## Historia / decyzje
 
-Wygenerowano z danych gry · rev. E 2026-07-03 (pogłębienie + przykłady).
+rev. G2 2026-08-04 — katapulta + ścieżka B +10%, koszt kamień nie cegła.

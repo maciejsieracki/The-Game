@@ -1,5 +1,6 @@
 # Poradnik gracza — tracker postępu
 
+> **Rev. G2** (2026-08-04) — Civpedia: obrona % (Mury/Cytadela/Baszta), ścieżki A/B kuźni i koszar, Targowisko=¤, Wielka Kuźnia parkowana.  
 > **Rev. G** (2026-08-04) — przejście po FALA 206–208: brak osadnika (Załóż miasto), min. 4 hex, Manpower ep1=500, Wiarygodność dyplomacji, hub badań + numery planu, pigułka miasta v1, porażka = zero miast.  
 > Poprzednio **Rev. F** (2026-07-23) — 12 rozdziałów po sesji tech/Cudów/HUD/dyplomacji/rekrutacji.  
 > Spis: [`PORADNIK-GRACZA-SPIS-TRESCI.md`](../PORADNIK-GRACZA-SPIS-TRESCI.md) · handoff rev D: [`HANDOFF-rev-D-2026-07-03.md`](HANDOFF-rev-D-2026-07-03.md)
@@ -14,7 +15,7 @@ Legenda: ✅ Poradnik‑L gotowy · 📋 katalog (lista + akapit) · 🔗 Wiki�
 |---------|------|
 | Rozdziały zaktualizowane (FALA 206–208) | **00, 01, 02, 05, 07, 09, 12, 14, 16** |
 | Nowe hasła encyklopedii | **3** (Wiarygodność, Manpower, Założenie miasta) |
-| wikiBundle | **rev-G-2026-08-04** |
+| wikiBundle | **rev-G2-2026-08-04** |
 
 ---
 

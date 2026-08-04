@@ -188,9 +188,15 @@ Dwa osobne mechanizmy działają razem:
 
 **To dlatego Cegielnia i Garncarnia wreszcie mają sens** — bez zapasu cegły/ceramiki karta budynku pokazuje brakujący chip surowca i nie wejdzie do kolejki, nawet przy pełnej puli Pracy.
 
-### 45.6. Przyrost i mnożniki
+### 45.6. Przyrost i ulepszenia jednostek
 
-Budynki dają stały przyrost (żywność, nauka…) lub **mnożnik %** (kuźnia → silniejsze jednostki z miasta, targowisko → mnożnik Daniny miasta). Kumulują się z suwakami z Części VI.
+Budynki dają **stały przyrost** na turę (żywność, nauka, pieniądz…) albo **efekty wojskowe po wizycie** w mieście:
+- **Kuźnie** (ścieżka A): **+15% Pancerza** na jednostkę, która **odwiedziła** miasto z kuźnią
+- **Koszary / Akademia wojskowa / Warsztat** (ścieżka B): **+20% / +20% / +10%** parametrów miękkich (max **+50%** łącznie)
+- **Targowisko:** **pieniądz na turę** (+5/+8/+11 ¤), nie mnożnik handlu
+- **Mury / Cytadela / Baszta:** **% Obrony** broniącym się (+200% / +100% / +100% — stackują się do +400%)
+
+Kumulują się z suwakami z Części VI.
 
 **Wskazówka:** Pałac — jeden na miasto, fundament kultury; Spichlerz — pierwszy w imperium przed masową rekrutacją.
 
