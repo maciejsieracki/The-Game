@@ -39,9 +39,10 @@ import type { CityProduction } from '../game/production';
 import { frontItem } from '../game/production';
 import {
   cityMapBadgeKey,
-  defenseTierFromCity,
+  defenseTierFromWallKind,
   makeCityMapBadgeSprite,
   disposeCityStatChipTextures,
+  wallKindFromBuilt,
   type CityMapBadgeInput,
 } from './cityMapStatChip';
 import {
@@ -627,13 +628,15 @@ export class CityRenderer {
     options?: CityRenderOptions,
   ): CityMapBadgeInput {
     const built = options?.getBuiltBuildingIds?.(city.id) ?? [];
+    const wallKind: CityWallKind = options?.getWallKind?.(city.id)
+      ?? wallKindFromBuilt(built);
     const prod = options?.getProduction?.(city.id) ?? null;
     const front = prod ? frontItem(prod) : null;
     const ownerCol = (options?.ownerColorFn ?? ownerColor)(city.ownerId);
     return {
       cityName,
       population: city.population ?? 1,
-      defenseTier: defenseTierFromCity(built, city.maMur),
+      defenseTier: defenseTierFromWallKind(wallKind),
       civIconId: options?.getCivIconId?.(city.ownerId) ?? 'grecy',
       ownerColor: ownerCol,
       prodActive: front !== null && prod?.wstrzymana !== true,

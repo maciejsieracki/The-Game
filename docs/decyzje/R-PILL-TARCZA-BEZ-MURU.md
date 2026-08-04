@@ -1,7 +1,15 @@
 # R-PILL-TARCZA-BEZ-MURU — tarcza na pigułce bez widocznego muru/palisady
 
-**Status:** 🟡 CZEKA-NA-DECYZJĘ · 2026-08-04  
+**Status:** 🟢 WDROŻONE (kod) Q1=A · 2026-08-04 — czeka **`deploy`**  
 **Zgłoszenie:** Maciej (screenshot Sparta, FALA 222) — szara tarcza na pigułce mimo braku muru/palisady na heksie.
+
+## ECHO
+**R-PILL-TARCZA-BEZ-MURU-Q1 = A** — *„a”* (2026-08-04). Tier tarczy wyłącznie z `wallKind` (= model 3D); bez fallbacku `maMur`.
+
+## Dowód wdrożenia
+- `wallKindFromBuilt` + `defenseTierFromWallKind` w `cityMapStatChip.ts`
+- `_buildBadgeInput` bierze `getWallKind` (ten sam co model 3D)
+- `maMur` ignorowane · test `city-map-badge-test.cjs` **19/19** · `tsc` 0
 
 ---
 

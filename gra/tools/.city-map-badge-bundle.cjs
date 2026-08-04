@@ -22,7 +22,9 @@ var city_map_badge_entry_exports = {};
 __export(city_map_badge_entry_exports, {
   cityMapBadgeKey: () => cityMapBadgeKey,
   civInitialForIconId: () => civInitialForIconId,
-  defenseTierFromCity: () => defenseTierFromCity
+  defenseTierFromCity: () => defenseTierFromCity,
+  defenseTierFromWallKind: () => defenseTierFromWallKind,
+  wallKindFromBuilt: () => wallKindFromBuilt
 });
 module.exports = __toCommonJS(city_map_badge_entry_exports);
 
@@ -60,12 +62,19 @@ var CIV_INITIALS = {
   arabowie: "A",
   bizancjum: "B"
 };
-function defenseTierFromCity(builtBuildingIds, maMur) {
+function wallKindFromBuilt(builtBuildingIds) {
   const built = builtBuildingIds ?? [];
-  if (built.includes("mury") || built.includes("fort")) return 2;
-  if (built.includes("palisada")) return 1;
-  if (maMur === true) return 2;
+  if (built.includes("mury") || built.includes("fort")) return "stone";
+  if (built.includes("palisada")) return "palisada";
+  return "none";
+}
+function defenseTierFromWallKind(kind) {
+  if (kind === "stone") return 2;
+  if (kind === "palisada") return 1;
   return 0;
+}
+function defenseTierFromCity(builtBuildingIds, _maMur) {
+  return defenseTierFromWallKind(wallKindFromBuilt(builtBuildingIds));
 }
 function civInitialForIconId(ikonaId) {
   const key = (ikonaId || "").trim().toLowerCase();
@@ -94,5 +103,7 @@ function cityMapBadgeKey(a, population) {
 0 && (module.exports = {
   cityMapBadgeKey,
   civInitialForIconId,
-  defenseTierFromCity
+  defenseTierFromCity,
+  defenseTierFromWallKind,
+  wallKindFromBuilt
 });

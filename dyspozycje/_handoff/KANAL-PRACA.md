@@ -1,4 +1,11 @@
-﻿## [23:48 PL, 2026-08-04] CLOUD → Maciej — R-PILL-TARCZA-BEZ-MURU (BUG pigułka)
+﻿## [21:55 PL, 2026-08-04] CLOUD → Maciej — R-PILL-TARCZA-BEZ-MURU Q1=A (kod, bez deploy)
+- ECHO: Q1=A — tier tarczy wyłącznie z `wallKind` (= model 3D); `maMur` ignorowane
+- Pliki: `cityMapStatChip.ts` · `cities.ts` · `city-map-badge-test.cjs`
+- Bramki: tsc 0 · city-map-badge 19/19
+- Branch: `cursor/fix-pill-tarcza-bez-muru-63a1` · PR #99
+CZEKAM-NA: Maciej — **`deploy`** gdy OK
+
+## [23:48 PL, 2026-08-04] CLOUD → Maciej — R-PILL-TARCZA-BEZ-MURU (BUG pigułka)
 - Screenshot Sparta: szara tarcza bez widocznej palisady/muru na heksie
 - Reguła potwierdzona: szara = tylko palisada; brak obwodu = zero tarczy
 - ABC Q1 (rekomendacja A): tier tarczy wyłącznie z `wallKind` jak model 3D

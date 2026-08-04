@@ -8,12 +8,10 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## R-PILL-TARCZA-BEZ-MURU — szara tarcza bez muru na heksie · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+## R-PILL-TARCZA-BEZ-MURU — szara tarcza bez muru na heksie · STATUS: **WDROŻONE (kod)** Q1=A (2026-08-04)
 
-**Reguła (już ustalona):** brak obwodu → bez tarczy · palisada → szara · mury/cytadela → złota.
-
-**ABC:** `R-PILL-TARCZA-BEZ-MURU-Q1` — jak scalić tarcza z modelem (A = tier z `wallKind`).  
-Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md).
+**ECHO:** `R-PILL-TARCZA-BEZ-MURU-Q1 A` — tier wyłącznie z `wallKind` (= model 3D).  
+Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md). Bramki: tsc 0 · city-map-badge 19/19. Czeka **`deploy`**.
 
 ---
 

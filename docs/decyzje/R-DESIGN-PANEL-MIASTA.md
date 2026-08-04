@@ -35,7 +35,7 @@
    - **brak muru** → **bez tarczy** (layout nie rezerwuje miejsca);
    - **palisada** (bez murów i bez cytadeli) → tarcza **szara**;
    - **mury** lub **cytadela** (`fort`) → tarcza **złota**.
-   `maMur` bez listy budynków = mury (złota).
+   Źródło prawdy: `wallKind` (= model 3D); flaga `maMur` **nie** steruje tarczą (R-PILL-TARCZA-BEZ-MURU-Q1=A).
 3. **Ikona właściciela / cywilizacji** — medalion z **sygnetem SVG** (`civIconSvg`, ten sam co HUD/dyplomacja) + kolor właściciela; powiększony ~1,5× względem v1. Wstrzyknięcie: `setCityMapBadgeCivSigil` w `main.ts`.
 
 ### Always-on lite (prototyp bez Design)
