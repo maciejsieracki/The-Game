@@ -1,3 +1,9 @@
+﻿## [23:20 PL, 2026-08-04] CLOUD → Maciej — R-BUDYNKI-NIEAKTYWNE (kod, bez deploy)
+- Wybudowane: czerwona nazwa + tooltip `Brak: Ceramika` / `Brak: Sól` (Spichlerz I/II + runtime gate)
+- API: `resolveOwnedBuildingInactiveStatus` · UI `cityPanel.ts` · test 4/4
+- Branch: `cursor/feat-budynki-nieaktywne-63a1`
+CZEKAM-NA: Maciej deploy
+
 ## [23:04 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 221 4d17d869
 |- md5: 4d17d86943cbd010c6df3ed7d7517f81 · stempel: ROBOCZA · 2026-08-04 23:04
 |- Batch: EOT defer · dyplo flex (one-way/qty/Przyjmij pakiet/Usuń) · dobra-kat akordeon · trzoda×1.5 · PW sum+Przyjmij handlowy+przecinek · Zwiedzaj highlight

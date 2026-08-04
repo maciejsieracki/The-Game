@@ -484,3 +484,103 @@ export function spichlerzArmyFoodCostMultiplier(opts: {
   if (opts.isGarrisonInSolCity) m *= 0.5;
   return m;
 }
+
+// ---------------------------------------------------------------------------
+// R-BUDYNKI-NIEAKTYWNE (2026-08-04): wybudowany budynek bez surowca runtime → UI
+// ---------------------------------------------------------------------------
+
+export interface OwnedBuildingInactiveStatus {
+  inactive: boolean;
+  /** Polskie etykiety, np. ['Ceramika','Sól'] */
+  missingLabels: string[];
+  /** Gotowy tooltip: 'Brak: Ceramika, Sól' lub '' gdy aktywny */
+  tooltip: string;
+}
+
+function formatInactiveTooltip(missingLabels: readonly string[]): string {
+  if (missingLabels.length === 0) return '';
+  return 'Brak: ' + missingLabels.join(', ');
+}
+
+/** Brakujące etykiety surowca dla runtime gate (nie Spichlerz — patrz resolveOwnedBuildingInactiveStatus). */
+export function missingRuntimeResourceLabels(
+  building: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null },
+  runtimeActiveBuiltIds: readonly string[],
+  empireStock?: Readonly<Record<string, number>>,
+  options?: BuildingRuntimeGateOptions,
+): string[] {
+  if (building.id === 'mennica') {
+    if (mennicaRuntimeGateMet(empireStock, options)) return [];
+    return [ZLOTO_LABEL];
+  }
+  const required = buildingRequiredActiveLabels(building);
+  if (required.length === 0) return [];
+  const missing: string[] = [];
+  for (const label of required) {
+    if (!empireLabelSatisfiedAtRuntime(label, runtimeActiveBuiltIds, empireStock)) {
+      missing.push(label);
+    }
+  }
+  return missing;
+}
+
+export function resolveOwnedBuildingInactiveStatus(
+  buildingId: string,
+  opts: {
+    builtIds: readonly string[];
+    allCities: readonly StockCitySource[];
+    ownerId: number;
+    /** empire runtime-active built ids (filterRuntimeActiveBuiltIds) — konwerter Ceramika/Cegła */
+    runtimeActiveBuiltIds: readonly string[];
+    empireStock?: Readonly<Record<string, number>>;
+    building?: Pick<BuildingDef, 'id' | 'epokaWejscia'> & { wymaganySurowiec?: string | null };
+    resolveOwnerZlotoAccess?: (ownerId: number) => boolean;
+  },
+): OwnedBuildingInactiveStatus {
+  const empty: OwnedBuildingInactiveStatus = { inactive: false, missingLabels: [], tooltip: '' };
+
+  if (buildingId === 'spichlerz' || buildingId === 'spichlerz_ii') {
+    if (!opts.builtIds.includes(buildingId)) return empty;
+    const drain = paySpichlerzDrainForCity(
+      opts.allCities,
+      opts.ownerId,
+      opts.builtIds,
+      true,
+    );
+    if (buildingId === 'spichlerz') {
+      const missingI = !drain.ceramikaPaid ? ['Ceramika'] : [];
+      return {
+        inactive: missingI.length > 0,
+        missingLabels: missingI,
+        tooltip: formatInactiveTooltip(missingI),
+      };
+    }
+    const missingII: string[] = [];
+    if (!drain.ceramikaPaid) missingII.push('Ceramika');
+    if (!drain.solPaid) missingII.push('Sól');
+    return {
+      inactive: missingII.length > 0,
+      missingLabels: missingII,
+      tooltip: formatInactiveTooltip(missingII),
+    };
+  }
+
+  if (!hasDepositRuntimeGate(buildingId)) return empty;
+
+  const building = opts.building ?? { id: buildingId, epokaWejscia: 1 };
+  const gateOptions: BuildingRuntimeGateOptions = {
+    ownerId: opts.ownerId,
+    resolveOwnerZlotoAccess: opts.resolveOwnerZlotoAccess,
+  };
+  const missingLabels = missingRuntimeResourceLabels(
+    building,
+    opts.runtimeActiveBuiltIds,
+    opts.empireStock,
+    gateOptions,
+  );
+  return {
+    inactive: missingLabels.length > 0,
+    missingLabels,
+    tooltip: formatInactiveTooltip(missingLabels),
+  };
+}
