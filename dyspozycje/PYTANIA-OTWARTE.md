@@ -8,6 +8,18 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+
+**Sytuacja.** W panelu miasta (PRODUKCJA) ikona zrównoważonego jest w jednym rzędzie z priorytetami typów (wzrost / wojsko / kultura / prawo / produkcja) i dostaje numer kolejki jak one. Maciej: to ma być **osobny tryb auto**, nie szósty priorytet.
+
+**Cel.** Auto buduje różne kategorie budynków w zrównoważonym trybie; priorytety typów zostają osobną ścieżką.
+
+**Propozycja (A):** 5 chipów typów z numerami · osobny przełącznik „Zrównoważony” · włączenie zrównoważonego czyści/wyłącza typy · klik typu wyłącza zrównoważony.
+
+Szczegóły w czacie — bez kodu do `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1 A|B|C` / `działaj`.
+
+---
+
 ## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **ZDEPLOYOWANE FALA 215** `2a5a66d1` (2026-08-04)
 
 Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
