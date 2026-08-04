@@ -18,6 +18,7 @@ const mod = require(bundlePath);
 const {
   isScoutUnit,
   scoreHexForExplore,
+  scoreMarginalReveal,
   pickScoutExploreTarget,
   advanceScoutAutoExplore,
   runScoutsAutoExplore,
@@ -158,7 +159,7 @@ const villageTarget = pickScoutExploreTarget(
 assert(villageTarget !== null && villageTarget.q === 3 && villageTarget.r === 1,
   'odkryta wioska wygrywa z fog score');
 
-// znana chatka poza jednorazowym zasięgiem MP — nadal priorytet nad mgłą
+// znana chatka poza widokiem i poza zasięgiem MP — NIE priorytet (R-SCOUT-BLACK-MAX Q2=A)
 const farVillageMap = makeMap({
   '6,1': {
     wioska: { istnieje: true, ludnosc: 1 },
@@ -179,11 +180,11 @@ const farTarget = pickScoutExploreTarget(
   () => 0,
 );
 assert(
-  farTarget !== null && farTarget.q === 6 && farTarget.r === 1,
-  'odkryta chatka poza zasięgiem MP wygrywa z fog score',
+  farTarget === null || farTarget.q !== 6 || farTarget.r !== 1,
+  'odkryta chatka poza widokiem i MP nie jest celem',
 );
 
-// chatka na krawędzi mgły: odkryta, ale poza bieżącym sight — nadal cel
+// chatka na krawędzi mgły: odkryta, poza sight i poza MP — nie cel
 const edgeVillageMap = makeMap({
   '5,5': {
     wioska: { istnieje: true, ludnosc: 1 },
@@ -201,8 +202,50 @@ const edgeTarget = pickScoutExploreTarget(
   () => 0,
 );
 assert(
-  edgeTarget !== null && edgeTarget.q === 5 && edgeTarget.r === 5,
-  'odkryta chatka poza sight wygrywa z eksploracją mgły',
+  edgeTarget === null || edgeTarget.q !== 5 || edgeTarget.r !== 5,
+  'odkryta chatka poza sight i MP nie wygrywa z eksploracją czerni',
+);
+
+// marginal reveal: krok do przodu ujawnia więcej czerni niż do tyłu
+const forwardMap = makeMap();
+const forwardExplored = new Set(['1,1', '0,1', '1,0', '2,1', '1,2']);
+const forwardScout = scout(1, 1, 1);
+const forwardGain = scoreMarginalReveal(1, 1, 2, 1, forwardExplored, forwardMap, 2);
+const backwardGain = scoreMarginalReveal(1, 1, 0, 1, forwardExplored, forwardMap, 2);
+assert(forwardGain > 0 && backwardGain === 0, 'marginal reveal: przód > 0, tył = 0');
+const forwardPick = pickScoutExploreTarget(
+  forwardScout,
+  forwardMap,
+  forwardExplored,
+  new Set(),
+  2,
+  () => 0,
+);
+assert(
+  forwardPick !== null && forwardPick.q === 2 && forwardPick.r === 1,
+  'krok z max nowych czarnych wybiera przód (2,1) zamiast tyłu',
+);
+
+// po zebraniu chatki — wraca do max czerni
+const postHutMap = makeMap({
+  '2,1': {
+    wioska: { istnieje: false, ludnosc: 0 },
+    wlasciciel: null,
+  },
+});
+const postHutExplored = new Set(['1,1', '0,1', '1,0', '2,1']);
+const postHutScout = scout(1, 1, 1);
+const postHutTarget = pickScoutExploreTarget(
+  postHutScout,
+  postHutMap,
+  postHutExplored,
+  new Set(),
+  2,
+  () => 0,
+);
+assert(
+  postHutTarget !== null && postHutTarget.q === 2 && postHutTarget.r === 1,
+  'po zebranej chatce wraca do max nowych czarnych',
 );
 
 console.log(`\nWynik: ${passed} OK, ${failed} FAIL`);
