@@ -110,13 +110,18 @@ Każdy parametr rozgrywki mieszka w Excelu w `panele-sterowania/`; `export-{a..e
 
 ## 5. ZALEGŁE WĄTKI Z WCZEŚNIEJSZYCH SESJI
 
+**Sesja 2026-08-04/05 (Cloud Integrator) — FALA 221–224:**
+- AKTUALNA ROBOCZA **FALA 224** `38df6ad7` (stempel `eef4e87e`) · Maciej OK 223+224
+- ABC: R-PILL-TARCZA-BEZ-MURU-Q1=A · R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A · R-BUDOWA-ZROWNOWAZONE-TRYB-Q1=A playtest OK · R-REKRUT-LUDNOSC-UI (rekrut ≠ −pop)
+- Pełny zapis: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md) · `STAN-PRACY-HANDOFF.md` §1
+
 **Sesja 2026-07-27/28 (zdeployowane FALA 41–44, commit `65e3ddd`, md5 `95021308`):**
 - Spichlerz U-12/U-25B + Garncarnia R7-C (FALA 42)
 - C-OBCE-JEDN-Q2 żeton mapy — medalion + koszary/kuźnia (FALA 43)
 - **C-UPGRADE-TRIGGER** — bonus budynków wojskowych przy wejściu do miasta + toast (FALA 44); kumulacja nadal 1A (`C-UPGRADE-KUMULACJA`)
 - Pełny zapis: `STAN-PRACY-HANDOFF.md` §3a-6 · `docs/decyzje/STATUS-WDROZEN-AGENT-2026-07-28.md`
 
-Aktualna kolejka pracy jest w `STAN-PRACY-HANDOFF.md` §8. Poniżej starsze, wciąż otwarte tematy, żeby nie zginęły:
+Aktualna kolejka pracy jest w `STAN-PRACY-HANDOFF.md` §1 / §8. Poniżej starsze, wciąż otwarte tematy, żeby nie zginęły:
 
 **Wydajność / render**
 - Optymalizacje FPS: doszlifowanie mgły, LOD, `matrixAutoUpdate`, minimapa — klik → kamera.
