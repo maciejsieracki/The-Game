@@ -39,6 +39,20 @@ Ulepszenia płacisz **pracą** z puli imperium — **nie złotem** (przyspieszen
 
 **Wskazówka:** Pierwsze tury: jedna **farma** obok stolicy często ważniejsza niż droga — żywność karmi wzrost i wojsko (Część VIII §50).
 
+### 27.3. Załóż miasto (bez osadnika)
+
+W panelu **Budowa** wybierz akcję **Załóż miasto** — kursor zmienia się w tryb zakładania. Kliknij **wolny, odkryty heks** w twoim terytorium (lub po Strażnicy w nowym regionie).
+
+| Składnik kosztu | Wartość |
+|-----------------|---------|
+| **Praca** | **20** z puli imperium |
+| **Ludność** | **−1** z miasta-źródła (największe z pop ≥ 2) |
+| **Odległość** | Min. **4 heksy** od każdego innego miasta |
+
+Pierwsze miasto gracza (stolica startowa) jest **darmowe** — pojawia się automatycznie przy starcie gry. Kolejne miasta płatne wg tabeli. Gra pokazuje etykietę kosztu przy przycisku (np. `20 P · 1 👤`).
+
+**Wskazówka:** Planuj drugie miasto przy dobrym złożu lub rzece — min. 4 heksy od stolicy to ok. 2–3 tury marszu zwiadu w linii prostej.
+
 
 ### Przykład liczbowy
 
@@ -260,4 +274,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część V · rev. E · 2026-07-03 · dane: `terrain-improvements.json` · decyzje: E3 · spis §27–31 (§28 = katalog)*
+*Poradnik‑L · Część V · rev. G · 2026-08-04 (§27.3: Załóż miasto z panelu Budowa) · rev. E 2026-07-03 · dane: `terrain-improvements.json` · decyzje: E3 · spis §27–31 (§28 = katalog)*

@@ -59,7 +59,7 @@ export function formatVictorySubtitle(rodzaj: VictoryRodzaj, stats: VictoryScree
     case 'nauka':
       return 'Wszystkie technologie w zakresie gry zbadane. Rakieta z robotami wyruszyła na najbliższą planetę.';
     case 'przegrana':
-      return 'Twoje panowanie dobiegło końca. Utraciłeś wszystkie miasta i osadników.';
+      return 'Twoje panowanie dobiegło końca. Utraciłeś wszystkie miasta.';
   }
 }
 

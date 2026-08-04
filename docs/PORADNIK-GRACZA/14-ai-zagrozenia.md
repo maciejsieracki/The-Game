@@ -55,7 +55,7 @@ AI **nie powinno** widzieć jednostek w mgle poza zasięgiem zwiadu (docelowy st
 ### 87.4. Co obserwować na mapie
 
 1. **Stosy jednostek przy granicy** — przygotowanie do wojny lub oblężenia.
-2. **Nowe miasta AI** — ekspansja na wolne złoża; konkuruj osadnikiem.
+2. **Nowe miasta AI** — ekspansja przez **Załóż miasto** (nie osadnik): AI z miasta pop ≥ 5 zakłada kolonie na dobrych heksach, min. 4 hex od innych miast; w epokach 1–3 agresywniej, do 2 foundingów/turę gdy brak wolnych miast-państw.
 3. **Sojusze AI przeciwko tobie** — reakcja dyplomatyczna po twoich wojnach (Część XII).
 4. **Obozy barbarzyńskie** — zawsze neutralne zagrożenie (§90).
 
@@ -84,7 +84,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 **Miasta-państwa** w twoim klastrze (np. Sparta, Kapua, Teby) — od 2026-07-21 to **aktywni gracze ekonomiczni**, nie bierny łup:
 
-- **Nie zakładają** nowych miast — brak ekspansji osadniczej (jedyne wyłączenie).
+- **Nie zakładają** nowych miast przez panel **Załóż miasto** — brak ekspansji osadniczej (jedyne wyłączenie dla MP).
 - W pełni **rozwijają się**: budują budynki gospodarcze, jednostki i **ulepszenia terenu** (w tym wyrąb lasu — §88.5) jak każde AI.
 - **Zero bonusów, zero darmowych jednostek** — dokładnie te same zasady kosztów co gracz.
 - Mogą otrzymać **posiłki** od „sióstr" (miast tego samego klastra), ale **tylko w sojuszu** — siła posiłków skaluje się z **osobnym suwakiem „Trudność miast-państw"** z kreatora (domyślnie = główna trudność, ale niezależny od niej — Część XII §76.5a), nie wprost z głównej trudności gry.
@@ -109,8 +109,21 @@ Profil ekspansyjny (Rzym, Zulusi) + przewaga armii → AI może zdobyć sąsiada
 ### 88.5. AI buduje ulepszenia terenu — w tym wyrąb lasu (2026-07-23)
 
 **Wszystkie** AI (główne cywilizacje i miasta-państwa) stawiają ulepszenia terenu automatycznie — throttlowane do 1 ulepszenia/miasto/turę, priorytet żywności najpierw, deterministyczne. Od 2026-07-23 doszedł **wyrąb lasu** jako **ostatni priorytet** kolejki AI (po innych, „ważniejszych" ulepszeniach) — AI wycina drzewo tylko gdy w promieniu miasta zostaje **min. 3 lasy**, żeby nie ogołocić całej okolicy z jednego zamachu. Efekt dla gracza: AI konkuruje o dobre pola tak samo jak Ty — nie licz, że lasy przy granicy AI zostaną nietknięte na zawsze.
-4. Traktuj klaster jako **strefę treningową** przed spotkaniem **innego typu** cywilizacji.
+### 88.6. Kolonizacja głównego AI (FALA 206)
 
+Pełnoprawne cywilizacje AI (nie miasta-państwa) zakładają nowe miasta przez ten sam mechanizm co gracz — **panel Załóż miasto**, bez jednostki osadnika:
+
+| Reguła | Wartość |
+|--------|---------|
+| **Min. populacja źródła** | **≥ 5** (po founding: 5→4) |
+| **Min. dystans** | **4 heksy** od każdego miasta |
+| **Wybór heksu** | Ocena jakości (żywność, złoża, woda) |
+| **Tempo** | Do **2** foundingów/turę, gdy brak wolnych miast-państw do podboju |
+| **Epoki 1–3** | Wyższa agresja ekspansji |
+
+Konkuruj o dobre heksy wcześnie — AI w epokach Kamienia–Brązu–Żelaza może wyprzedzić cię kolonizacją.
+
+4. Traktuj klaster jako **strefę treningową** przed spotkaniem **innego typu** cywilizacji.
 
 ### Przykład liczbowy
 
@@ -194,7 +207,7 @@ Jednostki barbarzyńskie mają właściciela technicznego oddzielnego od graczy 
 
 | Faza gry | Zagrożenie | Co robić |
 |----------|------------|----------|
-| Wczesna | Osadnik, zwiadek bez eskorty | Jednostka wojskowa obok osadnika |
+| Wczesna | Zwiadek bez eskorty | Jednostka wojskowa obok zwiadu |
 | Środkowa | Obóz przy granicy miasta | Wyczyść obóz przed drugim miastem |
 | Późna | Mniejsze — armia elitarna | Posterunek / fort na szlaku (Część V) |
 
@@ -246,4 +259,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik gracza rev. G · 2026-07-24 (§88.1: siła posiłków „sióstr" idzie dziś z osobnego suwaka „Trudność miast-państw", nie wprost z głównej trudności — patrz Część XII §76.5a) · rev. F 2026-07-23 (miasta-państwa aktywne od 2026-07-21, AI buduje ulepszenia terenu w tym wyrąb z ochroną lasu) · pierwotnie rev. E 2026-07-03 · źródło: `ai-params.json`, `ai.ts`, `barbarians.ts`, `main.ts`*
+*Poradnik gracza rev. G · 2026-08-04 (§88.6: AI kolonizacja przez Załóż miasto; brak osadnika) · 2026-07-24 (§88.1: trudność MP) · 2026-07-23 (MP aktywne, wyrąb AI) · źródło: `ai.ts`, `city-founding.ts`, `barbarians.ts`*

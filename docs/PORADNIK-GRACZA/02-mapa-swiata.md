@@ -132,11 +132,16 @@ Tylko **twoje** terytorium — tam stawiasz ulepszenia i zbierasz plony z przypi
 
 ### 9.2. Zakładanie kolejnego miasta
 
-Nowe miasto możesz założyć na heksie:
-- w zasięgu **istniejącego miasta**, albo
-- po wybudowaniu **Strażnicy** (posterunku) w nowym regionie.
+**Nie ma jednostki osadnika** — nowe miasto zakładasz z panelu **Budowa → Załóż miasto** (`foundCityAt` w silniku):
 
-Nie możesz założyć miasta na **obcym** terytorium ani w **mgle** bez wcześniejszego odkrycia. Drugie miasto = nowy panel, nowa okolica, **wspólny** skarbiec imperium (Część VIII).
+| Warunek | Wartość |
+|---------|---------|
+| **Koszt** | **20 Pracy** (skarbiec imperium) **+ 1 ludność** z miasta-źródła |
+| **Miasto-źródło** | Największe miasto z populacją ≥ **2** (po founding zostaje min. 1 mieszkaniec) |
+| **Min. odległość** | **4 heksy** od każdego innego miasta (było 5 — FALA 206) |
+| **Teren** | Odkryty heks w **twoim** terytorium lub po **Strażnicy** w nowym regionie |
+
+Nie możesz założyć miasta na **obcym** terytorium ani w **mgle** bez wcześniejszego odkrycia. Drugie miasto = nowy panel, nowa okolica, **wspólny** skarbiec imperium (Część VIII). Pełny opis — Część V §27.3 · encyklopedia [`zalozanie-miasta.md`](../encyklopedia/pojecia/zalozanie-miasta.md).
 
 ### 9.3. Właściciel heksu i plony
 
@@ -260,6 +265,19 @@ Mur otacza miasto na mapie — sygnał dla **oblężenia** (Część XI). Styl w
 
 Podczas oblężenia może pojawić się obóz wokół murów — status wdrożenia sprawdź w aktualnym buildzie. **Nie mylić** z **obozem łowieckim** (ulepszenie pola — [`28-katalog-ulepszen.md`](28-katalog-ulepszen.md)).
 
+### 12.5. Pigułka miasta na mapie (FALA 208)
+
+Nad każdym miastem widzisz **pigułkę informacyjną v1** (sprite nad modelem 3D):
+
+| Element | Co pokazuje |
+|---------|-------------|
+| **Nazwa + populacja** | Skrót nazwy miasta i liczba mieszkańców |
+| **Tarcza obrony** | 3 poziomy siły obrony (mury, fort, budynki) |
+| **Medalion cywilizacji** | Litera/symbol typu państwa |
+| **Glif produkcji** | Ikona budynku lub jednostki w kolejce (gdy miasto coś buduje) |
+
+Pigułka jest zawsze widoczna przy zoomie mapy — nie musisz klikać miasta, żeby zobaczyć populację i produkcję.
+
 
 ### Przykład liczbowy
 
@@ -354,4 +372,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część II · rev. F · 2026-07-24 (§11.3–11.4: magazyn surowców z realnym zużyciem — już nie plan v2.0, patrz Część III §21.5b i Część VIII §53.2) · pierwotnie rev. E 2026-07-03 · decyzje: E1, E3, SUROW-CIV-01 · dane: generator mapy, `ui-params.json` · spis §9–13*
+*Poradnik‑L · Część II · rev. G · 2026-08-04 (§9.2: Załóż miasto bez osadnika, min. 4 hex; §12.5: pigułka miasta FALA 208) · rev. F 2026-07-24 · pierwotnie rev. E 2026-07-03 · decyzje: E1, E3, SUROW-CIV-01 · dane: generator mapy, `ui-params.json` · spis §9–13*

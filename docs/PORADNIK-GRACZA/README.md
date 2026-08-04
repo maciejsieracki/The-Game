@@ -1,9 +1,20 @@
 # Poradnik gracza — tracker postępu
 
-> **Rev. E** (baza 2026-07-03) **+ przejście weryfikacyjne rev. F 2026-07-23** — 12 rozdziałów zaktualizowane po sesji z drzewkiem tech/Cudami/HUD bitwy/handlem/dyplomacją/rekrutacją (Manpower); stopka każdego zmienionego pliku ma dopisek „rev. F". Reszta plików (00–06, 16–17, 28, 91) nadal rev. E — nie miały nieścisłości względem sesji 2026-07-23 przy przeglądzie tego dnia.  
+> **Rev. G** (2026-08-04) — przejście po FALA 206–208: brak osadnika (Załóż miasto), min. 4 hex, Manpower ep1=500, Wiarygodność dyplomacji, hub badań + numery planu, pigułka miasta v1, porażka = zero miast.  
+> Poprzednio **Rev. F** (2026-07-23) — 12 rozdziałów po sesji tech/Cudów/HUD/dyplomacji/rekrutacji.  
 > Spis: [`PORADNIK-GRACZA-SPIS-TRESCI.md`](../PORADNIK-GRACZA-SPIS-TRESCI.md) · handoff rev D: [`HANDOFF-rev-D-2026-07-03.md`](HANDOFF-rev-D-2026-07-03.md)
 
 Legenda: ✅ Poradnik‑L gotowy · 📋 katalog (lista + akapit) · 🔗 Wiki‑S/M
+
+---
+
+## Statystyka rev. G (sesja 2026-08-04)
+
+| Element | Stan |
+|---------|------|
+| Rozdziały zaktualizowane (FALA 206–208) | **00, 01, 02, 05, 07, 09, 12, 14, 16** |
+| Nowe hasła encyklopedii | **3** (Wiarygodność, Manpower, Założenie miasta) |
+| wikiBundle | **rev-G-2026-08-04** |
 
 ---
 
@@ -25,23 +36,23 @@ Legenda: ✅ Poradnik‑L gotowy · 📋 katalog (lista + akapit) · 🔗 Wiki�
 
 | Plik | Część | Status |
 |------|-------|--------|
-| `00-jak-czytac.md` | 0 | ✅ |
-| `01-pierwsze-kroki.md` | I | ✅ |
-| `02-mapa-swiata.md` | II | ✅ |
+| `00-jak-czytac.md` | 0 | ✅ rev. G |
+| `01-pierwsze-kroki.md` | I | ✅ rev. G |
+| `02-mapa-swiata.md` | II | ✅ rev. G |
 | `03-pasek-zasobow.md` | III | ✅ |
 | `04-jednostki-mapa.md` | IV | ✅ |
-| `05-budowa-mapa.md` | V | ✅ |
+| `05-budowa-mapa.md` | V | ✅ rev. G |
 | `06-miasto-spoleczenstwo.md` | VI | ✅ pełny |
-| `07-miasto-budowa-rekrutacja.md` | VII | ✅ |
+| `07-miasto-budowa-rekrutacja.md` | VII | ✅ rev. G |
 | `08-ekonomia-imperium.md` | VIII | ✅ |
-| `09-nauka-epoki.md` | IX | ✅ |
+| `09-nauka-epoki.md` | IX | ✅ rev. G |
 | `10-walka.md` | X | ✅ |
 | `11-oblezanie.md` | XI | ✅ |
-| `12-dyplomacja.md` | XII | ✅ |
+| `12-dyplomacja.md` | XII | ✅ rev. G |
 | `13-cywilizacje.md` | XIII | ✅ |
-| `14-ai-zagrozenia.md` | XIV | ✅ |
+| `14-ai-zagrozenia.md` | XIV | ✅ rev. G |
 | `15-kultura-religia-cuda.md` | XV | ✅ |
-| `16-zwyciestwo.md` | XVI | ✅ |
+| `16-zwyciestwo.md` | XVI | ✅ rev. G |
 | `17-zaawansowane.md` | XVII | ✅ |
 | `28-katalog-ulepszen.md` | V katalog | 📋 17 |
 | `45-katalog-budynkow.md` | VII katalog | 📋 26 |
@@ -59,7 +70,7 @@ Legenda: ✅ Poradnik‑L gotowy · 📋 katalog (lista + akapit) · 🔗 Wiki�
 | `docs/encyklopedia/ulepszenia/` | 17 | ↑ |
 | `docs/encyklopedia/cuda/` | 19 | `python gra/tools/gen-poradnik-batch.py` |
 | `docs/encyklopedia/cywilizacje/` | 9 | `python gra/tools/gen-cyw-encyklopedia.py` |
-| `docs/encyklopedia/pojecia/` | 8 | ręcznie (szczęście, bunt, suwaki…) |
+| `docs/encyklopedia/pojecia/` | 11 | ręcznie (szczęście, bunt, suwaki, Wiarygodność…) |
 | `docs/encyklopedia/indeks.md` | — | indeks A–Z |
 
 ---
@@ -73,4 +84,4 @@ Legenda: ✅ Poradnik‑L gotowy · 📋 katalog (lista + akapit) · 🔗 Wiki�
 
 ---
 
-*Rev. E · 2026-07-03 · pogłębienie + przykłady liczbowe wszędzie · Master dokumentacja*
+*Rev. G · 2026-08-04 · Civpedia FALA 206–208 · Master dokumentacja*

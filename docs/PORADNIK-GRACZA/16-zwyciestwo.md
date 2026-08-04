@@ -86,11 +86,10 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 Przegrywasz, gdy:
 
-- masz **zero miast**, **oraz**
-- masz **zero osadników** (jednostka zakładająca nowe miasto), **oraz**
+- masz **zero miast** (wszystkich — stolica i kolonie),
 - **kiedyś** miałeś miasto (pierwsza tura przed założeniem stolicy nie liczy się jako porażka).
 
-Nie ma reguły „tylko stolica" — **każde** miasto się liczy. Stracić ostatnie miasto bez rezerwowego osadnika = koniec gry.
+**Nie ma jednostki osadnika** — nie możesz „odrodzić" imperium po utracie ostatniego miasta. Nie ma reguły „tylko stolica" — **każde** miasto się liczy. Stracić ostatnie miasto = koniec gry.
 
 ### 98.2. Czy można wrócić z porażki
 
@@ -102,7 +101,7 @@ Sojusz **nie uratuje** cię, jeśli straciłeś wszystkie miasta — nie grasz d
 
 ### 98.4. Unikanie porażki — praktyka
 
-1. Trzymaj **drugie miasto** lub osadnika w bezpiecznym tyle mapy.
+1. Trzymaj **drugie miasto** w bezpiecznym tyle mapy — utrata obu = porażka.
 2. **Spichlerz** i zapasy żywności — utrzymaj armię na kontratak.
 3. **Pokój za trybut** lepszy niż wojna totalna przy jednej stolicy (Część XII §77).
 4. **Zapis przed ryzykowną wojna** — §100.1.
@@ -176,4 +175,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik gracza rev. E · 2026-07-03 · źródło: `victory.ts`*
+*Poradnik gracza rev. G · 2026-08-04 (§98: porażka = zero miast, bez osadnika) · rev. E 2026-07-03 · źródło: `victory.ts`, `victoryScreen.ts`*

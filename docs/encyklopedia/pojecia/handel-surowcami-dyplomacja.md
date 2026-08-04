@@ -50,7 +50,7 @@ Miasta-państwa (Sparta, Kapua, Teby…) **nie mają** osobnego, uproszczonego h
 
 **Obie strony inicjują:** dotyczy to zarówno **gracz↔MP** (Ty proponujesz lub akceptujesz ofertę miasta-państwa w audiencji), jak i **AI↔MP** (dowolna cywilizacja AI zawiera Umowę Handlową i wymienia surowce z sąsiednim miastem-państwem tak samo automatycznie, jak robi to AI↔AI — silnik nie ma osobnej gałęzi dla miast-państw jako partnera handlowego, patrz Część VIII §53.3 „AI proponuje… i zawiera ją też AI↔AI"). Praktyczny skutek: nie licz, że sąsiednie miasto-państwo zostanie bez szlaków handlowych tylko dlatego, że nie handlujesz z nim Ty — silniejsza AI obok może je już oplatać siecią tras, zanim zdążysz zaproponować traktat.
 
-**Powiązane:** [[Szlaki handlowe]] · Dyplomacja · Bogactwo · Część XII §75.2, §76.5 (miasta-państwa w liście dyplomatów i progi relacji)
+**Powiązane:** [[Szlaki handlowe]] · [[Wiarygodność]] · Dyplomacja · Bogactwo · Część XII §75.2, §76.5 (miasta-państwa w liście dyplomatów i progi relacji)
 
 ---
 
@@ -68,4 +68,4 @@ Chcesz kupić **30 sztuk Rudy** od AI: 3 pakiety × 10 szt. × 4 ¤/szt. = **120
 
 ## Historia / decyzje
 
-Decyzja **C-DYP-SUROWCE-Q1=B** (2026-07-23): ceny jednostkowe surowców w koszyku PN, placeholder do strojenia przez właściciela w panelu Excel (`gen-panel-*.py`) — nie wartości finalne. Wielkość pakietu **10** — `handel_surowce.pakiet_wielkosc`. Hasło dodane 2026-07-23 (audyt CIVPEDII) — funkcja świeża, dotąd bez hasła. Dopisano 2026-07-24: sekcja „Handel z miastami-państwami" — silnik (`trade-routes.ts`, `diplomacy-pn-engine.ts`) nie ma osobnej gałęzi dla miast-państw jako partnera handlowego, więc jednorazowy koszyk i cykliczne szlaki handlowe działają z nimi identycznie jak z pełnymi cywilizacjami, tylko z trudniejszym progiem relacji (Część XII §76.5).
+Decyzja **C-DYP-SUROWCE-Q1=B** (2026-07-23): ceny jednostkowe surowców w koszyku PN. Dopisano 2026-07-24: handel z miastami-państwami. **2026-08-04 rev. G:** cross-link Wiarygodność (limit +5 Zauf./turę flat, niezależny od W).

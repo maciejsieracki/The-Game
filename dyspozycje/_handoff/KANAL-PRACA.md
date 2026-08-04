@@ -5260,6 +5260,14 @@ CZEKAM-NA: merge docs (bez deploy gry)
 - REJESTR: FALA 202 `5e0f30e7` / 201 `48646cd6` / 200 `26b05753` — statusy ZDEPLOYOWANE
 CZEKAM-NA: parent commit cleanup branch
 
+## [12:00 PL, 2026-08-04] CLOUD → ALL — Civpedia rev. G (FALA 206–208, docs only)
+- Poradnik: Załóż miasto (brak osadnika), min 4 hex, Manpower ep1=500, Wiarygodność, hub badań, pigułka mapy, porażka=zero miast
+- Encyklopedia: wiarygodnosc.md, manpower-rekruci.md, zalozanie-miasta.md
+- UI: victoryScreen.ts (porażka), diplomacyAudience.ts (tooltip W)
+- wikiBundle: rev-G-2026-08-04 (22 rozdz. + 135 haseł)
+- Branch: `cursor/docs-civpedia-fala208-63a1` · tsc 0 · bez deploy ROBOCZA
+CZEKAM-NA: parent merge + deploy gdy Maciej każe
+
 ## [21:05 PL, 2026-08-03] CLOUD → ALL — R-ZAMIEN-ULEPSZENIE-CONFIRM-Q1=A
 - Maciej: zawsze modal przy zastąpieniu (jak dziś)
 - Docs: `docs/decyzje/R-ZAMIEN-ULEPSZENIE-CONFIRM.md` · bez zmian kodu gry

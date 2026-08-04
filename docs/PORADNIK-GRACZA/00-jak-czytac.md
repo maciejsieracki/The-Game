@@ -20,7 +20,7 @@ Ten rozdział wyjaśnia, czym jest gra, jak czytać liczby na ekranie i jak ten 
 
 **Cel gry w wersji 1.0:** wygrać **dominacją** (siła państwa > 50% świata w epoce Żelaza) albo **naukowo** (wszystkie technologie + rakieta). Szczegóły — Część XVI.
 
-**Wskazówka:** Pierwsze partie traktuj jako naukę pętli: osadnik → miasto → pola → armia → sąsiad. Reszta poradnika rozwija każdy element.
+**Wskazówka:** Pierwsze partie traktuj jako naukę pętli: stolica → pola → armia → drugie miasto (panel **Budowa → Załóż miasto**) → sąsiad. Reszta poradnika rozwija każdy element.
 
 
 ### Przykład liczbowy
@@ -236,4 +236,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik gracza rev. E · 2026-07-03 · spis: `PORADNIK-GRACZA-SPIS-TRESCI.md` §0.1–0.6*
+*Poradnik gracza rev. G · 2026-08-04 · spis: `PORADNIK-GRACZA-SPIS-TRESCI.md` §0.1–0.6*

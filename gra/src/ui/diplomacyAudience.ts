@@ -376,7 +376,7 @@ function onAudienceEsc(ev: KeyboardEvent): void {
 const RESPEKT_TOOLTIP_PL =
   'Respekt = jak duża jest wasza Moc w porównaniu z tą nacją. 50 = równi. Wyżej = jesteś silniejszy.';
 const WIARYGODNOSC_TOOLTIP_PL =
-  'Wiarygodność = globalna reputacja twojego państwa (−100…+100). Wpływa na zaufanie innych cywilizacji wobec ciebie.';
+  'Wiarygodność (W) = globalna reputacja twojego państwa (−100…+100). Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Twarde bramki: sojusz wymaga W≥0, pakt o nieagresji W≥−40. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal" (±%).';
 
 const STYLE_ID = 'civ-diplo-aud-css-1e';
 

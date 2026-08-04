@@ -1,6 +1,6 @@
 # Indeks encyklopedii (Wiki)
 
-> Rev. E · 2026-07-03 · każde hasło: Wiki-S, Wiki-M, **Przykład liczbowy**
+> Rev. G · 2026-08-04 · każde hasło: Wiki-S, Wiki-M, **Przykład liczbowy**
 
 ## Budynki (26)
 
@@ -126,4 +126,4 @@
 
 ## Pojęcia (ręczne)
 
-Folder `pojecia/` — szczęście, porządek, bunt, suwaki, Spichlerz, [drzewko technologii](pojecia/drzewko-technologii.md), [cuda świata — przegląd](pojecia/cuda-swiata.md), [bród w bitwie](pojecia/brod.md), [szlaki handlowe](pojecia/szlaki-handlowe.md), [handel surowcami — dyplomacja](pojecia/handel-surowcami-dyplomacja.md), [władcy — portrety i imiona](pojecia/wladcy.md)…
+Folder `pojecia/` — szczęście, porządek, bunt, suwaki, Spichlerz, [drzewko technologii](pojecia/drzewko-technologii.md), [cuda świata — przegląd](pojecia/cuda-swiata.md), [bród w bitwie](pojecia/brod.md), [szlaki handlowe](pojecia/szlaki-handlowe.md), [handel surowcami — dyplomacja](pojecia/handel-surowcami-dyplomacja.md), [władcy — portrety i imiona](pojecia/wladcy.md), [Wiarygodność](pojecia/wiarygodnosc.md), [Manpower — rekruci](pojecia/manpower-rekruci.md), [Założenie miasta](pojecia/zalozanie-miasta.md)…

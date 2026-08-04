@@ -290,7 +290,7 @@ Rekrutacja jednostek **bojowych** (nie zwiadowcy — patrz niżej) zużywa **Man
 | Element | Wartość |
 |---------|---------|
 | **Pula maksymalna** | Skaluje się z ludnością miasta i epoką (`epoka-ludnosc-manpower.json`) |
-| **Koszt 1 jednostki** | Pełny „slot" Manpower epoki (tabela per epokę w danych) |
+| **Koszt 1 jednostki** | Pełny „slot" Manpower epoki — w **Epoka 1 (Kamień)** koszt = **500** (~**2 jednostki** na slot populacji przy pełnej puli); od **Epoki 2 (Brąz)** zwykle = `manpowerNaLudka` (1 jednostka / slot) |
 | **Regeneracja** | **2% puli maksymalnej na turę** (od pustej do pełnej ≈ 50 tur) |
 | **Blokada regeneracji** | Miasto **oblężone** — Manpower **nie** odnawia się w tej turze |
 | **Zwiadowca** | Koszt Manpower = **0** — rekrutuj bez ograniczenia puli |
@@ -300,7 +300,7 @@ Pusta pula Manpower **blokuje** rekrutację tej jednostki, nawet gdy masz złoto
 
 ### 47.2c. Zwiadowca — szczególne zasady
 
-**Zwiadowca** to jedyna jednostka bez kosztu Manpower — rekrutuj go swobodnie do zwiadu. W zamian **zwiadowca (i inne jednostki cywilne: osadnik, robotnik) nie mogą zdobywać miast** — gra blokuje taką próbę komunikatem „jednostka cywilna nie może zdobywać miast, użyj jednostki bojowej". Trzymaj przy zwiadowcy osobną jednostkę bojową, jeśli planujesz szturm.
+**Zwiadowca** to jedyna jednostka bez kosztu Manpower — rekrutuj go swobodnie do zwiadu. **Zwiadowca** (i ewentualny **robotnik**, jeśli jest w buildzie) **nie mogą zdobywać miast** — gra blokuje taką próbę komunikatem „jednostka cywilna nie może zdobywać miast, użyj jednostki bojowej". Trzymaj przy zwiadowcy osobną jednostkę bojową, jeśli planujesz szturm.
 
 ### 47.3. Kolejka
 
@@ -353,7 +353,7 @@ Oblężenie — Część XI. Ruch jednostek — Część IV. Posiłki w promieni
 
 ### 48.5. Garnizon a produkcja
 
-Jednostka w mieście nie blokuje kolejki — ale **rekrut zużywa ludność**, którą potrzebujesz do wzrostu. Balans: garnizon 1–2, reszta armii w polu.
+Jednostka w mieście nie blokuje kolejki — rekrutacja **nie zabiera** mieszkańców (tylko Manpower z puli miasta).
 
 
 ### Przykład liczbowy
@@ -399,4 +399,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część VII · rev. G · 2026-07-24 (§47.2a: rekrutacja jednostek Brązu/Żelaza naprawdę odejmuje Surowiec z magazynu państwa, blokada przy niedoborze, parytet AI — JEDNOSTKI-SUROWIEC-01) · pierwotnie rev. F 2026-07-23 (rekrutacja: pula Manpower zamiast ludności, zwiadowca bez kosztu/bez zdobywania miast, koszty materiałowe budynków), rev. E 2026-07-03 · dane: `buildings.json`, `units.json`, `terrain-improvements.json`, `manpower.ts`, `main.ts`*
+*Poradnik‑L · Część VII · rev. G · 2026-08-04 (§47.2b: Manpower ep1=500, ~2 jed./slot; brak osadnika; rekrutacja bez kosztu ludności) · rev. G 2026-07-24 (§47.2a: rekrutacja jednostek Brązu/Żelaza naprawdę odejmuje Surowiec z magazynu państwa) · pierwotnie rev. F 2026-07-23 · dane: `buildings.json`, `units.json`, `epoka-ludnosc-manpower.json`, `manpower.ts`*

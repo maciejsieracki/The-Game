@@ -9,11 +9,18 @@ Nauka to wspólna pula imperium: wszystkie miasta składają punkty badań, a ty
 
 ## 54. Drzewko technologii
 
-### 54.1. Ekran drzewka — pełnoekranowy graf (2026-07-23)
+### 54.1. Hub badań i drzewko — Design v1 (FALA 207)
 
-Panel Badań ma **złoty przycisk** „Drzewko — graf epok" (nazwa dokładna zależy od buildu; szukaj przy pasku postępu aktualnej tech). Otwiera pełnoekranowy **graf** wg makiety „siatka v1.1": kolumny to **pasma epok** (Kamień / Brąz / Żelazo, każda w swoim paśmie), węzły w kolumnie ułożone wg **Poziomu** (tier). Nawigacja — **zoom + pan** myszą/kółkiem i **minimapa** w rogu do szybkiego skoku po całym drzewku. Zamknięcie wraca na mapę; postęp badania **nie** resetuje się.
+Panel **Nauka** (przycisk na pasku zasobów) otwiera **hub badań Design v1**:
 
-**Wskazówka:** Gdy chip **Wykonaj** na dole mówi „Wybierz technologię", otwórz drzewko i ustaw cel — inaczej nie zamkniesz tury.
+- **Postęp** — pasek aktualnej technologii, ETA w turach, przyrost nauki/turę.
+- **Lista tech** — dostępne technologie epoki z kosztem i podpowiedzią blokady.
+- **Plan badań** — kolejka do kilku pozycji; przeciągnij, żeby zmienić kolejność.
+- **Drzewko** — przycisk otwiera pełnoekranowy **graf epok** (zoom + pan + minimapa).
+
+Na węzłach drzewka technologii w **planie badań** widzisz **numerki 1…N** (Klatka D) — aktywny cel ma **1**, kolejne pozycje planu mają wyższe numery. Dzięki temu od razu widać, co badasz teraz i co jest w kolejce.
+
+**Wskazówka:** Gdy chip **Wykonaj** na dole mówi „Wybierz technologię", otwórz hub lub drzewko i ustaw cel — inaczej nie zamkniesz tury.
 
 ### 54.2. Widoczność — tylko bieżąca epoka
 
@@ -150,7 +157,7 @@ W audiencji możesz wymieniać **punkty postępu tech** (PN = koszt badania w pu
 
 ### 56.4. Planowanie badań — strategia
 
-1. **Wczesna gra:** rolnictwo, osadnictwo, żywność — bufor wzrostu (Część VI).
+1. **Wczesna gra:** rolnictwo, żywność, osadnictwo (panel **Załóż miasto**) — bufor wzrostu (Część VI).
 2. **Przed wojną:** Wojskowość, mury, jednostki wręcz/dystans.
 3. **Środek gry (Żelazo):** Inżynieria, katapulta, oblężenie.
 4. **Długa gra:** ścieżka do rakiety (zwycięstwo naukowe, Część XVI §98).
@@ -174,4 +181,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część IX · rev. F · 2026-07-23 (ekran drzewka pełnoekranowy, wzór kosztu tempo×2×trudność, twarda bramka epok, Łucznictwo←Łowiectwo) · pierwotnie rev. E 2026-07-03 · dane: `tech.json`, `buildings.json`, `units.json`, `gra/src/game/research.ts`, `difficulty-cost.ts`*
+*Poradnik‑L · Część IX · rev. G · 2026-08-04 (§54.1: hub badań Design v1, numery planu na węzłach drzewka — FALA 207) · rev. F 2026-07-23 · pierwotnie rev. E 2026-07-03 · dane: `tech.json`, `scienceHubHud.ts`, `sciencePicker.ts`, `research.ts`*

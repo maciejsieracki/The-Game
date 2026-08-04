@@ -133,7 +133,7 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ### 3.1. Auto-założenie stolicy
 
-W tej grze **nie** budujesz osadnika ani nie szukasz miejsca na pierwsze miasto. **Stolica pojawia się automatycznie** na wylosowanym heksie startowym — od razu masz panel miasta i terytorium wokół. To inny model niż klasyczne Civ z osadnikiem.
+W tej grze **nie ma jednostki osadnika**. **Stolica pojawia się automatycznie** na wylosowanym heksie startowym — od razu masz panel miasta i terytorium wokół. Kolejne miasta zakładasz z panelu **Budowa → Załóż miasto** (koszt: **20 Pracy + 1 ludność** z miasta-źródła; min. **4 heksy** od innego miasta) — szczegóły w Części V §27.3 i Części II §9.2.
 
 ### 3.2. Heks pod miastem
 
@@ -326,4 +326,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część I · rev. E · 2026-07-03 · decyzje: E1, D13, D18 · spis: `PORADNIK-GRACZA-SPIS-TRESCI.md` §1–8*
+*Poradnik‑L · Część I · rev. G · 2026-08-04 (brak osadnika; założenie miasta z panelu Budowa) · pierwotnie rev. E 2026-07-03 · decyzje: E1, D13, D18 · spis: `PORADNIK-GRACZA-SPIS-TRESCI.md` §1–8*

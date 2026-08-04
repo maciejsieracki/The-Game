@@ -9,25 +9,45 @@ Dyplomacja to relacje z **odkrytymi** nacjami: zaufanie, szacunek i wynikowa **r
 
 ## 74. Model relacji
 
-### 74.1. Dwie osie — Zaufanie i Szacunek
+### 74.1. Trzy osie — Zaufanie, Szacunek i Wiarygodność
 
-| Oś | Co mierzy |
-|----|-----------|
-| **Zaufanie** | Historia: handel, łamanie traktatów, prezenty |
-| **Szacunek (Respekt)** | Siła państwa — jak bardzo cię „boją/szanują" |
-| **Relacja** | Wynik używany do progów akcji dyplomatycznych |
+| Oś | Zakres | Co mierzy |
+|----|--------|-----------|
+| **Wiarygodność (W)** | −100…+100 | **Globalna reputacja** twojego państwa — historia dotrzymywania traktatów, przemarszów, wojen (nie per-relacja) |
+| **Zaufanie** | 0…100 | Historia **z tą nacją**: handel, dary, łamanie traktatów |
+| **Szacunek (Respekt)** | 0…100 | Siła państwa — jak bardzo cię „boją/szanują" |
+| **Relacja** | 0…200 | **Zaufanie + Respekt** — wynik używany do progów akcji dyplomatycznych |
 
-Widoczne w panelu dyplomacji przy każdej nacji.
+**Model (FALA 206):** Wiarygodność wpływa na **tempo** wzrostu Zaufania (im wyższa W, tym szybciej budujesz zaufanie u wszystkich). Relacja to suma osi per para — nie mylić z W.
 
-### 74.2. Wartości startowe
+W panelu audiencji widzisz **Wiarygodność** przy twojej karcie oraz **Zaufanie / Szacunek / Relacja** przy rozmówcy. Przy koszyku negocjacji — wiersz **„Wpływ Relacji na deal"** z procentową korektą akceptacji AI (±%).
 
-Nowe spotkanie: **Zaufanie 20**, **Szacunek 30** (neutralnie). Barbarzyńcy i miasta-państwa — osobne reguły (§75, Część XIV §90).
+Pełne hasło: [`wiarygodnosc.md`](../encyklopedia/pojecia/wiarygodnosc.md).
 
-### 74.3. Szacunek z siły państwa — nie z cudów
+### 74.2. Bramki Wiarygodności (twarde)
+
+Niektóre traktaty wymagają minimalnej **W**, niezależnie od Relacji:
+
+| Akcja | Min. Wiarygodność |
+|-------|-------------------|
+| **Pakt o nieagresji (NAP)** | **W ≥ −40** |
+| **Sojusz wojskowy** | **W ≥ 0** |
+
+Przy zbyt niskiej W przycisk akcji jest wyszarzony z komunikatem „Wiarygodność zbyt niska…".
+
+### 74.3. Dary a limit Zaufania
+
+Z nadmiaru punktów negocjacji (PN) możesz kupić **max +5 Zaufania na turę** z handlu lub daru — **stały limit dla wszystkich** (bez „Dźwigni 2" zależnej od W; FALA 206). Zła reputacja karana jest innymi mechanizmami (np. odmowa traktatów), nie obniżaniem sufitu dla uczciwych graczy.
+
+### 74.4. Wartości startowe
+
+Nowe spotkanie: **Zaufanie 20**, **Szacunek 30** (neutralnie). **Wiarygodność startowa** zależy od trudności (Łatwy +40 / Normalny +20 / Trudny 0). Barbarzyńcy i miasta-państwa — osobne reguły (§75, Część XIV §90).
+
+### 74.5. Szacunek z siły państwa — nie z cudów
 
 **Siła państwa** (armia, ludność, terytorium, tech — Część VIII §52) wpływa na szacunek. **Cuda** dają bonusy ekonomiczne/dyplomatyczne (Wpływ, zaufanie), ale **nie** dodają bezpośrednio do siły państwa ani szacunku z cudu samego w sobie.
 
-### 74.4. Relacja a AI
+### 74.6. Relacja a AI
 
 Wysoka relacja — handel, pakt, sojusz. Niska — ultimatum, wojna. Profil cywilizacji modyfikuje progi (Część XIV §87).
 
@@ -158,7 +178,7 @@ Od paczki DYPLOMACJA FINAL wszystkie blokady w panelu (§76.3) czytają **wprost
 
 - **Trybut:** szacunek > 70 **oraz** min. **10 ¤/turę** z twojego skarbca.
 - **Ultimatum:** twoja siła ≥ **1,3×** siła wroga + reparacje ≥ **20 ¤**.
-- **Wchłonięcie / podporządkowanie:** szacunek ≥ 90 (status wdrożenia).
+- **Wchłonięcie miasta-państwa (v1):** tylko **miasta-państwa** (nie pełne cywilizacje). Wymagania: aktywny **wasal** ≥ **10 tur**, **Respekt ≥ 90**, opłata **złotem** (skaluje się z populacją MP), zgoda po stronie Relacji. Akcja w audiencji: ikona **WCHŁONIĘCIE** (id 15).
 
 ### 77.3. Wojna i traktaty
 
@@ -358,4 +378,4 @@ Wysyłaj **prezenty** przed prośbą o pakt — relacja **+20** taniej niż wojn
 
 ---
 
-*Poradnik‑L · Część XII · rev. G · 2026-07-24 (§76.5a: nowy niezależny suwak „Trudność miast-państw" w zaawansowanych opcjach kreatora — R-TRUDNOSC-1; handel surowcami z miastami-państwami rozpisany w `docs/encyklopedia/pojecia/handel-surowcami-dyplomacja.md`) · rev. F 2026-07-23 (panel dwustronny, portrety/imiona władców, SZYBKA UMOWA, Zerwij −15 Zaufania, progi poprawione: Handel 40/NAP 50+40, surowce w koszyku po 10, Umowa Handlowa jako fundament szlaków, roadmap T1A/T2 oznaczony jako wdrożony) · pierwotnie rev. E 2026-07-03 · dane: `diplomacy.json`, `diplomacy.ts`, `diplomacy-locks.ts`, `diplomacy-proposals.ts`, `econ-params.json`, `newGameFlow.ts`, `main.ts`*
+*Poradnik‑L · Część XII · rev. G · 2026-08-04 (§74: Wiarygodność, bramki NAP W≥−40 / sojusz W≥0, flat +5 Zauf./turę, wchłonięcie MP v1; Wpływ Relacji na deal) · rev. G 2026-07-24 · rev. F 2026-07-23 · pierwotnie rev. E 2026-07-03 · dane: `diplomacy.json`, `diplomacy-credibility.ts`, `diplomacy-proposals.ts`*
