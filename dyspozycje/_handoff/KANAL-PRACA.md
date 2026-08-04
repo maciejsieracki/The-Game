@@ -1,4 +1,9 @@
-﻿## [19:09 PL, 2026-08-04] CLOUD → Maciej / ALL — R-NADMIAR-POOLS FALA2 na `main` (bez deploy)
+﻿## [19:11 PL, 2026-08-04] CLOUD → ALL — Maciej: FALA2 na main, deploy później
+- Potwierdzenie: PR #82 MERGED · **bez** publish ROBOCZA
+- Czekamy na hasło **`deploy`** (FALA 215)
+CZEKAM-NA: Maciej `deploy` albo inny wątek
+
+## [19:09 PL, 2026-08-04] CLOUD → Maciej / ALL — R-NADMIAR-POOLS FALA2 na `main` (bez deploy)
 - Commit: `f940f61` · PR #82 **MERGED** → `main`
 - FALA2 ×2: budynki (upkeep/Praca/surowce), jednostki (rekrut/upkeep/żywność×4), Brąz+Żelazo badań ×4, ulepszenia, cuda (+żywność)
 - **ROBOCZA nadal FALA 214** `adefb5b8` — kod FALA2 jeszcze NIE w bundle
