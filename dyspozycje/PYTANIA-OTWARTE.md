@@ -1494,6 +1494,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 ## BUG-ZIEMIA-SCALE — Duża/Huge/SH: ląd „ten sam”, rośnie woda · STATUS: **W TRAKCIE** (cap polar ocean)
 **Przyczyna:** `earthPolarOceanRows` skalował liniowo (~52% wysokości = ocean). Cap max ~12% wysokości na biegun.
 
+## BUG-RZEKI-MEDIUM-FOW — rzeki znikają przy wyłączeniu FoW (F) · STATUS: **REGRESJA / FIX v2** (2026-08-04)
+**Objaw:** FoW ON — widać cienkie niebieskie rzeki (medium) w oświetlonym obszarze; FoW OFF (F) — brak rzek w okolicy miasta.
+**Root cause:** `lastFogSig=0` przy FoW ON (wszystkie punkty odkryte) kolidowało z `fullSig=0` przy FoW OFF → pomijane `setIndex` pełnej wstęgi; dodatkowo `scene.fog` przy FoW OFF gasił ujścia na `coastDeltaMat` (brak `fog:false`).
+**Fix v2:** sentinel `RIVER_FOG_SIG_OFF=-1` + helpery w `riverLod.ts` (`needsRiverRibbonIndexUpdate`, `buildRiverRibbonFullIndex`); `coastDeltaMat.fog=false`; test 12/12 `river-fog-visibility-test.cjs`.
+**Poprzedni fix:** bed385c (FALA 202) — niewystarczający przy kolizji sig=0.
+**Weryfikacja ręczna:** Ctrl+F5 + Nowa gra → okolice miasta → F ON (rzeki widoczne) → F OFF (rzeki nadal widoczne na całej mapie).
+
 ## BUG-RZEKI-LODOWCE — brak rzek w pasie lodowców / polarnym na brzegu kontynentu · STATUS: **GOTOWE (kod)** (2026-08-02)
 **Objaw:** biały pas polarny przy brzegu — zero ujść/startów rzek; rzeki tylko w zielonym lądzie głębiej.
 **Root cause:** `isRiverLandTerrain` (`gen-helpers.ts` ~6596) nie zawierało `TerenBazowy.Polarny` → wykluczenie z kandydatów ujść (`collectCoastMouthCandidates`), grow path, markRiverEdge, medium fill.
