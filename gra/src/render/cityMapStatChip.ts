@@ -10,6 +10,9 @@ import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmb
 /** 0 = brak tarczy · 1 = palisada (szara) · 2 = mury lub cytadela (złota). */
 export type CityMapDefenseTier = 0 | 1 | 2;
 
+/** Rodzaj obwodu obronnego — ten sam union co CityWallKind w cities.ts. */
+export type CityMapWallKind = 'none' | 'palisada' | 'stone';
+
 export interface CityMapBadgeInput {
   cityName: string;
   population: number;
@@ -54,19 +57,34 @@ const CIV_INITIALS: Record<string, string> = {
 };
 
 /**
+ * wallKind z listy zbudowanych budynków — ta sama logika co getWallKind w main.ts.
+ */
+export function wallKindFromBuilt(
+  builtBuildingIds: readonly string[] | null | undefined,
+): CityMapWallKind {
+  const built = builtBuildingIds ?? [];
+  if (built.includes('mury') || built.includes('fort')) return 'stone';
+  if (built.includes('palisada')) return 'palisada';
+  return 'none';
+}
+
+/** Mapowanie wallKind → tier tarczy na pigułce (Q1=A: wyłącznie z wallKind, bez maMur). */
+export function defenseTierFromWallKind(kind: CityMapWallKind): CityMapDefenseTier {
+  if (kind === 'stone') return 2;
+  if (kind === 'palisada') return 1;
+  return 0;
+}
+
+/**
  * Trzy stany obrony na pigułce.
  * tier 0 = brak tarczy · tier 1 = palisada (szara) · tier 2 = mury lub fort (złota).
- * maMur bez listy budynków = mury (tier 2).
+ * Q1=A: wyłącznie z wallKind (lista budynków); parametr maMur jest ignorowany.
  */
 export function defenseTierFromCity(
   builtBuildingIds: readonly string[] | null | undefined,
-  maMur?: boolean,
+  _maMur?: boolean,
 ): CityMapDefenseTier {
-  const built = builtBuildingIds ?? [];
-  if (built.includes('mury') || built.includes('fort')) return 2;
-  if (built.includes('palisada')) return 1;
-  if (maMur === true) return 2;
-  return 0;
+  return defenseTierFromWallKind(wallKindFromBuilt(builtBuildingIds));
 }
 
 export function civInitialForIconId(ikonaId: string): string {

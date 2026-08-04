@@ -12,6 +12,8 @@ const bundle = path.join(__dirname, '.city-map-badge-bundle.cjs');
 fs.writeFileSync(entry, `
 export {
   defenseTierFromCity,
+  defenseTierFromWallKind,
+  wallKindFromBuilt,
   cityMapBadgeKey,
   civInitialForIconId,
 } from '../src/render/cityMapStatChip';
@@ -46,7 +48,14 @@ assert(M.defenseTierFromCity(['palisada']) === 1, 'palisada → tier 1 (szara)')
 assert(M.defenseTierFromCity(['mury']) === 2, 'mury → tier 2 (złota)');
 assert(M.defenseTierFromCity(['fort']) === 2, 'fort/cytadela → tier 2');
 assert(M.defenseTierFromCity(['mury', 'fort']) === 2, 'mury+fort → tier 2');
-assert(M.defenseTierFromCity([], true) === 2, 'maMur bez listy → tier 2');
+assert(M.defenseTierFromCity([], true) === 0, 'maMur ignorowane (Q1=A) → tier 0');
+
+assert(M.defenseTierFromWallKind('none') === 0, 'wallKind none → tier 0');
+assert(M.defenseTierFromWallKind('palisada') === 1, 'wallKind palisada → tier 1');
+assert(M.defenseTierFromWallKind('stone') === 2, 'wallKind stone → tier 2');
+assert(M.wallKindFromBuilt(['palisada']) === 'palisada', 'built palisada → palisada');
+assert(M.wallKindFromBuilt(['mury']) === 'stone', 'built mury → stone');
+assert(M.wallKindFromBuilt([]) === 'none', 'built pusta → none');
 
 const keyBase = M.cityMapBadgeKey({
   cityName: 'Ateny',
