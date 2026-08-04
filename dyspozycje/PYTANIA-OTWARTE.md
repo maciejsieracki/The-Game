@@ -8,6 +8,10 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-TRZODA-SCALE-MAP — krowa+świnia na mapie · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+
+Maciej: powiększyć trzodę o **50%** (niewidoczna). ABC zakresu: `R-TRZODA-SCALE-MAP-Q1` (rek. **A** = tylko krowa+świnia ×1,5). `docs/decyzje/R-TRZODA-SCALE-MAP.md`.
+
 ## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
 
 **Sytuacja.** W panelu miasta (PRODUKCJA) ikona zrównoważonego jest w jednym rzędzie z priorytetami typów (wzrost / wojsko / kultura / prawo / produkcja) i dostaje numer kolejki jak one. Maciej: to ma być **osobny tryb auto**, nie szósty priorytet.
