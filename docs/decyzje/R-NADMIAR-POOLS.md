@@ -1,6 +1,6 @@
 # R-NADMIAR-POOLS — FALA2 ×2 koszty (playtest)
 
-**Status:** WDROŻONE (kod) — czeka deploy  
+**Status:** ZDEPLOYOWANE FALA 215 (`2a5a66d1`)  
 **Data decyzji:** 2026-08-04  
 **Powiązane:** R-STAWKI-STROJENIE FALA1 (`R_STAWKI_KOSZT_MULT=2`)
 

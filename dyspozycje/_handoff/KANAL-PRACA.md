@@ -1,4 +1,10 @@
-﻿## [19:11 PL, 2026-08-04] CLOUD → ALL — Maciej: FALA2 na main, deploy później
+﻿## [19:13 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 215 `2a5a66d1`
+- md5: `2a5a66d15012215778d4bdd23c027ec4` · stempel: `ROBOCZA · 2026-08-04 19:13`
+- R-NADMIAR-POOLS FALA2 ×2 koszty (budynki/jednostki/ulepszenia/cuda/Brąz+Żelazo) — PR #82
+- Wejście: `gra-robocza/START.html`
+CZEKAM-NA: Maciej — **najpierw `git pull`**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
+## [19:11 PL, 2026-08-04] CLOUD → ALL — Maciej: FALA2 na main, deploy później
 - Potwierdzenie: PR #82 MERGED · **bez** publish ROBOCZA
 - Czekamy na hasło **`deploy`** (FALA 215)
 CZEKAM-NA: Maciej `deploy` albo inny wątek

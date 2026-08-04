@@ -11,7 +11,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `adefb5b8` - 2026-08-04 16:03 - FALA 214: batch #70–#81 (ulepszenia AI, dyplo PW, scout, MP Hard, UI) - **AKTUALNA**
+## ROBOCZA `2a5a66d1` - 2026-08-04 19:13 - FALA 215: R-NADMIAR-POOLS FALA2 ×2 koszty - **AKTUALNA**
+- md5 (pelne): `2a5a66d15012215778d4bdd23c027ec4` · stempel: `ROBOCZA · 2026-08-04 19:13`
+- **FALA 215.** R-NADMIAR-POOLS FALA2 (`R_STAWKI_FALA2_MULT=2`): utrzymanie budynków ×2 · Praca budynków ×2 vs JSON · `koszt_surowce` ×2 · rekrutacja ×2 · upkeep jednostek ×4 · żywność wojska ×4 · badania Brąz/Żelazo ×4 (Kamień ×2) · ulepszenia terenu ×2 · cuda Praca ×2 + żywność = Praca. Na bazie FALA 214. PR #82 `f940f61`.
+- tsc 0 · r-stawki-fala2 11/11 · difficulty-cost 22/22 · vite · VERIFY OK · build `gra/dist`.
+
+## ROBOCZA `adefb5b8` - 2026-08-04 16:03 - FALA 214: batch #70–#81 (ulepszenia AI, dyplo PW, scout, MP Hard, UI) - **ZASTĄPIONA** (→ `2a5a66d1`)
 - md5 (pelne): `adefb5b8e5b60c597562ce218e886d6b` · stempel: `ROBOCZA · 2026-08-04 16:03`
 - **FALA 214.** Merge #70–#81: #73 ulepszenia AI/MP (regres FALA 204) · #79 Przyjmij overpay OK · #70 bilans PW własna oferta · #80 Hard MP fala+sync DOW · #81 Zwiedzaj max czarne · #75 exit auto · #71 toast chatki · #74 lista nazwana · #76 okolica żywność · #77 tryby WŁ/WYŁ · #72 ikona zrównoważone · #78 R-PROC-NO-REGRESS. Na bazie FALA 213.
 - tsc 0 · scout 25/25 · ai-improvements 18/18 · diplomacy-acceptance 212/212 · vite · VERIFY OK · build `gra/dist`.

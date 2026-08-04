@@ -1,8 +1,10 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-04 ~16:30** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-04 ~19:13** · Projekt: Civ „The Game"
 
-> **FALA 214 (2026-08-04):** ROBOCZA `adefb5b8` — batch #70–#81 (ulepszenia MP, dyplo PW, scout black-max, Hard MP wave, UI). **Handoff:** [`dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md`](dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md). Wejście: `gra-robocza/START.html` · git pull + Ctrl+F5 + Nowa gra. **Otwarte:** R-NADMIAR-POOLS (Maciej myśli).
+> **FALA 215 (2026-08-04):** ROBOCZA `2a5a66d1` — R-NADMIAR-POOLS FALA2 ×2 koszty (budynki/jednostki/ulepszenia/cuda/Brąz+Żelazo). Wejście: `gra-robocza/START.html` · git pull + Ctrl+F5 + Nowa gra.
+
+> **FALA 214 (2026-08-04):** ROBOCZA `adefb5b8` — batch #70–#81 (ulepszenia MP, dyplo PW, scout black-max, Hard MP wave, UI). **Handoff:** [`dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md`](dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md). Zastąpiona przez FALA 215.
 
 > **FALA 212 (2026-08-04):** ROBOCZA `e38ad116` — batch bugfixów (Spich auto-racje, MP +20, obce MP, HEX magazyn UI, scout chatka, toast chatka, garnizon/split). **Handoff:** [`dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md`](dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md). Zastąpiona przez FALA 214.
 
@@ -33,7 +35,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-04 (NAJNOWSZY):** deploy ROBOCZA `adefb5b8` (FALA 214, 16:03) — batch #70–#81 (patrz handoff BATCH-2026-08-04_FALA-214). Wejście: `gra-robocza/START.html`. Poprzedni: FALA 213 `1d3b8755`.
+**Stan na 2026-08-04 (NAJNOWSZY):** deploy ROBOCZA `2a5a66d1` (FALA 215, 19:13) — R-NADMIAR-POOLS FALA2. Wejście: `gra-robocza/START.html`. Poprzedni: FALA 214 `adefb5b8`.
 
 **Stan na 2026-08-04 (historyczny):** deploy ROBOCZA `e38ad116` (FALA 212, 11:24) — batch bugfixów sesji.
 
