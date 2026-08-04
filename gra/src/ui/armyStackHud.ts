@@ -303,11 +303,15 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
     for (const a of st.actions) {
       let cls = a.primary ? 'mu-gold-btn' : 'mu-muted-btn';
       if (a.danger) cls += ' ash-act-danger';
+      if (a.active) cls += ' mu-act-on';
       const icon = ASH_ACTION_ICONS[a.id];
       const body = icon ? '<span class="ash-act-ic">' + icon + '</span>' : esc(a.label);
       if (icon) cls += ' ash-act-icon';
+      const ariaPressed = typeof a.active === 'boolean'
+        ? ' aria-pressed="' + (a.active ? 'true' : 'false') + '"'
+        : '';
       html += '<button type="button" class="' + cls + '" data-act="' + esc(a.id) + '"'
-        + ' title="' + esc(a.label) + '" aria-label="' + esc(a.label) + '"'
+        + ' title="' + esc(a.label) + '" aria-label="' + esc(a.label) + '"' + ariaPressed
         + (a.disabled ? ' disabled' : '') + '>' + body + '</button>';
     }
     html += '</div></div>';
