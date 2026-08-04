@@ -1,4 +1,10 @@
-﻿## [12:13 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna - DEPLOY FALA 213 1d3b8755
+﻿## [19:09 PL, 2026-08-04] CLOUD → Maciej / ALL — R-NADMIAR-POOLS FALA2 na `main` (bez deploy)
+- Commit: `f940f61` · PR #82 **MERGED** → `main`
+- FALA2 ×2: budynki (upkeep/Praca/surowce), jednostki (rekrut/upkeep/żywność×4), Brąz+Żelazo badań ×4, ulepszenia, cuda (+żywność)
+- **ROBOCZA nadal FALA 214** `adefb5b8` — kod FALA2 jeszcze NIE w bundle
+CZEKAM-NA: Maciej **`deploy`** → FALA 215 ROBOCZA
+
+## [12:13 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna - DEPLOY FALA 213 1d3b8755
 - md5: 1d3b8755445058c10957c81438912d1c · stempel: ROBOCZA · 2026-08-04 12:13
 - REL-WIARYG-DRIFT-Q1 · FORTIFY-MP0-Q1=C · ODFORT (fortify/odfort MP snapshot)
 - Wejście: gra-robocza/START.html - **git pull**, Ctrl+F5 + Nowa gra
