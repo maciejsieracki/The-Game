@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-04. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-04 (sync FALA 220 + push `b47a2e8`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -11,6 +11,23 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 ## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **ZDEPLOYOWANE FALA 215** `2a5a66d1` (2026-08-04)
 
 Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
+
+---
+
+## FALA 220 — ABC zamknięte (2026-08-04) · ROBOCZA `8a3c6d6d` · commit `b47a2e8`
+
+| ID | Decyzja | Status | Docs |
+|----|---------|--------|------|
+| **MP-ARMY-Q1** | **A** — cap = łącznie żywe jednostki bojowe (garnizon wliczony); odbudowa do limitu | **WDROŻONE FALA 220** | [`MP-ARMY-Q1.md`](docs/decyzje/MP-ARMY-Q1.md) |
+| **MP-GARRISON-Q1** | **A** — Hard: istniejące garnizony zostają, zakaz nowej produkcji wojskowej | **WDROŻONE FALA 220** | [`MP-GARRISON-Q1.md`](docs/decyzje/MP-GARRISON-Q1.md) |
+| **MP-DIPLO-Q1** | **A** — ułatwienie tylko AI major→MP; same-civ Zaufanie max ~100; priorytet absorpcji klastra | **WDROŻONE FALA 220** | [`MP-DIPLO-Q1.md`](docs/decyzje/MP-DIPLO-Q1.md) |
+| **AI-FOUND-Q1** | **A** — founding AI major pop ≥ 2 (jak gracz) | **WDROŻONE FALA 220** | [`AI-FOUND-Q1.md`](docs/decyzje/AI-FOUND-Q1.md) |
+| **AI-LOCAL-Q1** | **A** — faza lokalna ~tura 20 LUB 1 zwiadowca; wioski nie blokują | **WDROŻONE FALA 220** | [`AI-LOCAL-Q1.md`](docs/decyzje/AI-LOCAL-Q1.md) |
+| **AI-MANAGE-Q1** | **A** — auto-zarządca dla major AI (nie MP) | **WDROŻONE FALA 220** | [`AI-MANAGE-Q1.md`](docs/decyzje/AI-MANAGE-Q1.md) |
+
+**Ustalenia produktowe (nie ABC):** wzmacniać tylko **AI major** (nie MP); major AI = te same reguły gospodarcie co gracz. Trudność: Easy ≈ dziś MP wojsko/diplo · Normal max1 wojsko + mid absorb · Hard 0 wojska MP + prawie zawsze accept AI→MP.
+
+**Batch FALA 216–220 (wdrożone):** utrzymanie budynków +1 surowiec/turę + UI · dyplo bilateral/NAP gate · edycja kontrpropozycji · tip weteranów · major AI early economy (wzrost/Spichlerz, 60/40, ulepszenia).
 
 ---
 
@@ -1581,3 +1598,54 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 - **B)** Stolica obca = nazwa cywilizacji; MP = nazwa miasta + dopisek.
 - **C)** Marker wizualny stolicy (korona/obwódka), nazwy bez zmian.
 **Rekomendacja:** B (gdy w ogóle zmieniać).
+
+---
+
+## P-AI-MOC-GAP — AI pełne cywilizacje ~10× mniej Mocy niż gracz · STATUS: **OTWARTE — częściowo złagodzone** (FALA 220, bez playtestu zamknięcia)
+
+**Źródło:** playtest Macieja — gracz 6725 vs Zulusi 536 / Chińczycy 436 (poz. 1/8).
+**Werdykt audytu:** gap **REALNY** (nie bug rankingu/mgły). Głównie design + martwe parametry trudności.
+
+**Wdrożone FALA 220 (nie twierdzić „gap zniknął" bez playtestu):**
+- `AI-FOUND-Q1=A` — founding major pop≥2 (było ≥5)
+- `AI-LOCAL-Q1=A` — faza lokalna tura 20 LUB 1 scout; wioski nie blokują
+- `AI-MANAGE-Q1=A` — auto-zarządca major AI
+- Major AI early economy (wzrost/Spichlerz, 60/40 archetyp, early ulepszenia)
+
+**Nadal otwarte (root causes):**
+1. **BUG martwy kod** — `startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` z `loadDifficultyParams` **nie podpięte** w `main.ts`.
+2. **DESIGN** — `canAfford` → pusta kolejka, surowce rosną (myszkowanie).
+3. **Brak** AI major→major absorpcji (tylko AI→MP).
+
+**Kandydaty fix:** podpiąć martwe bonusy trudności; `bonusWalka` w combat; playtest po FALA 220.
+
+---
+
+## OTWARTE POST-FALA 220 (2026-08-04) — nie zamazane
+
+### P-AI-MARTWE-BONUSY — martwe parametry trudności · STATUS: **OTWARTE**
+
+`startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` z `loadDifficultyParams` — **nie stosowane** w gameplay (tylko `bonusProdukcja` w score produkcji). Powiązane: `P-AI-MOC-GAP`.
+
+### P-MP-SPAWN-WYZYWIENIE — MP spawn Wyżywienie ~3 · STATUS: **OTWARTE** (bugfix rekomendowany)
+
+Spawn MP: suwak Wyżywienie startuje ~3 zamiast oczekiwanej wartości — **nie naprawione** w FALA 220.
+
+### P-AI-PROD-GATE-PER-OWNER — `isProductionAllowed` per-owner difficulty · STATUS: **OTWARTE**
+
+Bramka tech/epoka w `isProductionAllowed` (`main.ts`) używa globalnej `_menuDifficulty` — brak per-owner trudności.
+
+### P-AI-MAJOR-ABSORB — absorpcja AI major→major · STATUS: **OTWARTE** (brak mechanizmu)
+
+Tylko AI major→MP (`MP-DIPLO-Q1`). Brak absorpcji między pełnymi cywilizacjami AI.
+
+### P-TEST-UPKEEP-R-STAWKI — upkeep-test 24× fail · STATUS: **OTWARTE** (pre-existing)
+
+`upkeep-test.cjs` 49/73 — 24 porażek przez ×2 koszty `R-STAWKI` / `R-NADMIAR-POOLS` (nie regres FALA 220).
+
+### MAP-UX-CLUSTER-LABEL — nadal **OTWARTE** (patrz sekcja powyżej)
+
+### Dyplo-UX (nadal otwarte)
+
+- `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP`
+- `HANDEL-SPLIT-Q1` · `R-AI-MIASTA-BUDOWY`

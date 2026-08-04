@@ -1,10 +1,14 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-04 ~19:13** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-04 ~21:30** · Projekt: Civ „The Game"
 
-> **FALA 215 (2026-08-04):** ROBOCZA `2a5a66d1` — R-NADMIAR-POOLS FALA2 ×2 koszty (budynki/jednostki/ulepszenia/cuda/Brąz+Żelazo). Wejście: `gra-robocza/START.html` · git pull + Ctrl+F5 + Nowa gra.
+> **FALA 220 (2026-08-04):** ROBOCZA `8a3c6d6d` · commit `b47a2e8` pushed `main`. AI-ALL batch: utrzymanie budynków (+1 surowiec/turę + UI) · MP army cap easy∞/normal1/hard0 · AI→MP absorption + same-civ Zaufanie 100 · major AI economy + AI-FOUND/LOCAL/MANAGE. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
-> **FALA 214 (2026-08-04):** ROBOCZA `adefb5b8` — batch #70–#81 (ulepszenia MP, dyplo PW, scout black-max, Hard MP wave, UI). **Handoff:** [`dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md`](dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md). Zastąpiona przez FALA 215.
+> **FALA 219 (2026-08-04):** ROBOCZA `9830224e` — dyplo kontrpropozycja + bilateral gate NAP + tip weteranów. Zastąpiona przez FALA 220.
+
+> **FALA 215 (2026-08-04):** ROBOCZA `2a5a66d1` — R-NADMIAR-POOLS FALA2 ×2 koszty. Zastąpiona przez FALA 216–220.
+
+> **FALA 214 (2026-08-04):** ROBOCZA `adefb5b8` — batch #70–#81. **Handoff:** [`dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md`](dyspozycje/_handoff/BATCH-2026-08-04_FALA-214-sesja.md). Historyczna.
 
 > **FALA 212 (2026-08-04):** ROBOCZA `e38ad116` — batch bugfixów (Spich auto-racje, MP +20, obce MP, HEX magazyn UI, scout chatka, toast chatka, garnizon/split). **Handoff:** [`dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md`](dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md). Zastąpiona przez FALA 214.
 
@@ -35,7 +39,11 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-04 (NAJNOWSZY):** deploy ROBOCZA `2a5a66d1` (FALA 215, 19:13) — R-NADMIAR-POOLS FALA2. Wejście: `gra-robocza/START.html`. Poprzedni: FALA 214 `adefb5b8`.
+**Stan na 2026-08-04 (NAJNOWSZY):** deploy ROBOCZA `8a3c6d6d` (FALA 220, 21:17) · `main` commit `b47a2e8`. Wejście: `gra-robocza/START.html`. **Czeka:** playtest Macieja OK/BUG (AI major Moc, MP cap, absorpcja klastra).
+
+**ABC zamknięte FALA 220:** MP-ARMY/GARRISON/DIPLO-Q1=A · AI-FOUND/LOCAL/MANAGE-Q1=A — docs: `docs/decyzje/MP-*.md`, `AI-*.md`.
+
+**OTWARTE po FALA 220:** `P-AI-MOC-GAP` (częściowo złagodzone, bez playtestu zamknięcia) · martwe bonusy trudności · MP spawn Wyżywienie ~3 · AI major→major absorb · upkeep-test 24 fail · dyplo-UX — pełna lista: `dyspozycje/PYTANIA-OTWARTE.md`.
 
 **Stan na 2026-08-04 (historyczny):** deploy ROBOCZA `e38ad116` (FALA 212, 11:24) — batch bugfixów sesji.
 

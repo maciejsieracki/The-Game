@@ -234,13 +234,15 @@
 ### RDY-10 — AI harness testowy + strojenie archetypów 7→9
 - **Lane:** CYWILIZACJE (+ AI)
 - **Priorytet:** P1
-- **Status:** READY (wątek #10)
+- **Status:** IN PROGRESS (FALA 220 `8a3c6d6d`: MP cap, absorption, AI-FOUND/LOCAL/MANAGE, major economy; **P-AI-MOC-GAP** nadal otwarty — playtest)
 - **Rola:** GLM (heurystyki + wartości) → Composer (kod) → Opus (review)
 - **Zależności:** archetypy 7→9 + ARCHETYPE_AGGRESSION (Zulusi 0.9..Chińczycy 0.2) wpięte; `aiOwnerCivMap` (różne nacje)
 - **AC:**
   - [ ] CYWILIZACJE: harness testowy `ai.ts` (scenariusze decyzyjne)
   - [ ] Heurystyka nauki AI (wybór tech per archetyp)
   - [ ] Strojenie wartości startowych per archetyp
+  - [x] FALA 220: MP army cap · AI→MP absorption · major founding/local/manage · early economy (`docs/decyzje/MP-*`, `AI-*-Q1.md`)
+  - [ ] Martwe bonusy trudności (`startoweJednostki` itd.) — OTWARTE
   - [ ] Testy: `ai-test.cjs` rozszerzone (113→pełny harness)
   - [ ] Bramka zielona
 

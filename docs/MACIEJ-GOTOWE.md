@@ -1,4 +1,16 @@
-- **2026-08-04 21:17** — ✅ **FALA 220** ROBOCZA `8a3c6d6d` — AI-ALL batch: utrzymanie budynków (+1 surowiec/turę per typ z kosztu budowy) + UI; MP army cap easy/normal/hard + absorption rates; same-civ AI↔MP Zaufanie 100 + priorytet absorpcji klastra; major AI early wzrost/Spichlerz + 60/40 archetyp + early ulepszenia; AI-FOUND pop≥2, AI-LOCAL faza ~tura 20 LUB 1 zwiadowca, AI-MANAGE auto-zarządca major (NIE MP). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
+- **2026-08-04 ~21:30** — 📋 **Docs sync** FALA 220 + push `b47a2e8` (PYTANIA-OTWARTE, STAN-PRACY, decyzje MP/AI-*). **Gotowe do commit** docs (bez push od agenta).
+- **2026-08-04 21:17** — ✅ **FALA 220** ROBOCZA `8a3c6d6d` · commit `b47a2e8` on `main` — AI-ALL batch: utrzymanie budynków (+1 surowiec/turę per typ z kosztu budowy) + UI; MP army cap easy/normal/hard + absorption rates; same-civ AI↔MP Zaufanie 100 + priorytet absorpcji klastra; major AI early wzrost/Spichlerz + 60/40 archetyp + early ulepszenia; AI-FOUND pop≥2, AI-LOCAL faza ~tura 20 LUB 1 zwiadowca, AI-MANAGE auto-zarządca major (NIE MP). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
+
+### Zamknięte tematy (ABC FALA 220)
+
+| ID | Decyzja | Docs |
+|----|---------|------|
+| MP-ARMY-Q1 | A | `docs/decyzje/MP-ARMY-Q1.md` |
+| MP-GARRISON-Q1 | A | `docs/decyzje/MP-GARRISON-Q1.md` |
+| MP-DIPLO-Q1 | A (+ same-civ cap 100) | `docs/decyzje/MP-DIPLO-Q1.md` |
+| AI-FOUND-Q1 | A | `docs/decyzje/AI-FOUND-Q1.md` |
+| AI-LOCAL-Q1 | A | `docs/decyzje/AI-LOCAL-Q1.md` |
+| AI-MANAGE-Q1 | A | `docs/decyzje/AI-MANAGE-Q1.md` |
 - **2026-08-04 20:12** — ✅ **FALA 219** ROBOCZA `9830224e` — dyplo: edycja kontrpropozycji + landscape dealów; AI bilateral + gate NAP/traktaty (proposerUnfairToPartnerGate, blokada Przyjmij); tip „Doświadczeni wojownicy” (★≥2, bez spamu). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
 - **2026-08-04 19:52** - ✅ **FALA 218** ROBOCZA 4cf44809 - dyplo: uproszczone traktaty + stół multi-deal; parytet auto-racji AI/MP (wzrost CS). START: gra-robocza/START.html - **git pull**, Ctrl+F5 **Nowa gra**.
 - **2026-08-04 19:43** — ✅ **FALA 217** ROBOCZA `6bb24541` — UI Paktu o nieagresji (NAP) uproszczony. START: `gra-robocza/START.html` — Ctrl+F5 **Nowa gra** → dyplomacja → NAP (czas/kary/ultimatum, Anuluj/Zaproponuj).

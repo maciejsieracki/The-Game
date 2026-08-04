@@ -1,7 +1,7 @@
 # R-AI-MP-WASAL-WCHLONIECIE — decyzje + parametry
 
-**Status:** WDROŻONE (kod) · bez deploy  
-**Data:** 2026-08-03
+**Status:** WDROŻONE (kod) · FALA 220 `8a3c6d6d` · commit `b47a2e8`  
+**Data:** 2026-08-03 (Q1–Q3) · dopisek **MP-DIPLO-Q1** 2026-08-04
 
 ## Decyzje Macieja
 
@@ -12,6 +12,8 @@
 | **Q3** | **A+B (przyszłość)** · **teraz bez zmian dla gracza** | Przyszły design gracza: **drogo** (A) + **zgoda** (B). **Teraz:** zero zmian UX/akcji gracza↔MP. |
 
 **Zakres:** wyłącznie ułatwienia **AI → miasta-państwa**. Skala = **trudność gry** (`easy`/`normal`/`hard`), nie odwrócona trudność MP.
+
+**Dopisek MP-DIPLO-Q1=A (2026-08-04):** same-civ MP w klastrze AI → Zaufanie/Relacja **max ~100**; **priorytet #1** absorpcja klastra. Szczegóły: [`MP-DIPLO-Q1.md`](MP-DIPLO-Q1.md).
 
 **Cytat:** *„Q1 już powiedziałem… gracza nic się nie zmienia… tylko ułatwienia przejęcia przez AI… stopniowane… trybut oraz wasal na bardzo ułatwionym poziomie… Q2 A na łatwy i normalny, C na trudny… Q3a+b”*
 
