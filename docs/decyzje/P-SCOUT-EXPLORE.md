@@ -17,3 +17,7 @@
 - `pickScoutExploreTarget` — priorytet 1: widoczna chatka (`wioska.istnieje`, `wlasciciel === null`); priorytet 2: scoring mgły
 - HUD: akcja `scout-explore` w `buildArmyStackHudStateInner` / `handleSelectedUnitHudAction`
 - Testy: `gra/tools/scout-auto-explore-test.cjs`
+
+## UX 2026-08-04 (doprecyzowanie P-SCOUT-EXPLORE-Q2=B)
+
+Włączenie **Zwiedzaj**: kasuje zaplanowany marsz i ścieżkę, odznacza jednostkę i przechodzi do następnej w cyklu Spacji (jak **Czuwaj**); zwiadowca z `autoExplore` **nie wraca** w cykl Spacji. Punkty ruchu (`ruchLeft`) **nie** są zerowane — ruch nadal tylko na koniec tury (`runScoutsAutoExplore`). Wyłączenie zwiedzania: tylko flaga + hint, bez wymuszonego select.

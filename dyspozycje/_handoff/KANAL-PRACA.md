@@ -5299,3 +5299,9 @@ CZEKAM-NA: nic (docs)
 - BUG-ARMIA-BRAK-POLACZ: `hexDetailHex` chował dock; fix + CSS foot
 - Testy: `diplomacy-ai-balance-test.cjs`, `army-merge-colocated-test.cjs`
 CZEKAM-NA: Maciej — **deploy** (FALA 207) gdy wgrać do ROBOCZA
+
+## [10:15 PL, 2026-08-04] CLOUD → ALL — R-SCOUT-ZWIEDZAJ-UX
+- Maciej: po Zwiedzaj wyglądało jakby nic — clear path + deselect + next unit (jak Czuwaj)
+- autoExplore poza cyklem Spacji; ruchLeft NIE zerowane (ruch EOT)
+- Branch: `cursor/fix-scout-zwiedzaj-ux-63a1` · tsc 0 · scout-auto-explore 15/15
+CZEKAM-NA: Maciej — **deploy** (razem z #67+#68)
