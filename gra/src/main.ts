@@ -172,7 +172,10 @@ import {
   DEFAULT_PROCENT_ROZWOJ,
   DEFAULT_BUDOWA_TRYB,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
-  EMPTY_BUDOWA_LISTA_SZABLONY,
+  EMPTY_BUDOWA_LISTA_BIBLIOTEKA,
+  dedupeBudowaLista,
+  newBudowaListaSzablonId,
+  loadBudowaListaBiblioteka,
   DEFAULT_ULEPSZENIA_TRYB,
   DEFAULT_ULEPSZENIA_FOCUS,
   DEFAULT_ULEPSZENIA_PER_TURN,
@@ -184,8 +187,7 @@ import {
   type City,
   type BudowaFocus,
   type BudowaTryb,
-  type BudowaListaSlot,
-  type BudowaListaSzablony,
+  type BudowaListaBiblioteka,
   type CityPodzialHandlu,
   type UlepszeniaFocus,
   type UlepszeniaTryb,
@@ -5088,12 +5090,12 @@ async function boot(): Promise<void> {
           return {
             tryb,
             priorytetTypow,
-            lista: [...(city.budowaLista ?? [])],
-            szablony: {
-              A: [...budowaListaSzablony.A],
-              B: [...budowaListaSzablony.B],
-              C: [...budowaListaSzablony.C],
-            },
+            lista: dedupeBudowaLista(city.budowaLista ?? []),
+            biblioteka: budowaListaBiblioteka.map(s => ({
+              id: s.id,
+              nazwa: s.nazwa,
+              budynki: [...s.budynki],
+            })),
           };
         },
         onBudowaPriorytetChange: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => {
@@ -5135,54 +5137,80 @@ async function boot(): Promise<void> {
         onBudowaListaChange: (cityId: string, lista: string[], tryb: 'lista') => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
-          city.budowaLista = [...lista];
+          city.budowaLista = dedupeBudowaLista(lista);
           city.budowaTryb = tryb;
           delete city.budowaListaUkonczonaHintShown;
           const enqueued = tryAutoEnqueueBuild(cityId);
           showHintMessage(
             enqueued
               ? `${city.name}: lista budowy → ${enqueued.nazwa}`
-              : `${city.name}: tryb lista (${lista.length} pozycji)`,
+              : `${city.name}: tryb lista (${city.budowaLista.length} pozycji)`,
             2800,
           );
           updateHud();
           refreshCityPanelIfOpen();
         },
-        onBudowaListaSaveSlot: (cityId: string, slot: BudowaListaSlot) => {
+        onBudowaListaCreateTemplate: (cityId: string, nazwa: string) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
-          budowaListaSzablony[slot] = [...(city.budowaLista ?? [])];
-          showHintMessage(`${city.name}: zapisano listę jako szablon ${slot}`, 2400);
+          const budynki = dedupeBudowaLista(city.budowaLista ?? []);
+          if (budynki.length === 0) return;
+          const trimmed = nazwa.trim();
+          if (!trimmed) return;
+          budowaListaBiblioteka.push({
+            id: newBudowaListaSzablonId(),
+            nazwa: trimmed,
+            budynki: [...budynki],
+          });
+          showHintMessage(`${city.name}: zapisano listę „${trimmed}”`, 2400);
           refreshCityPanelIfOpen();
         },
-        onBudowaListaLoadSlot: (cityId: string, slot: BudowaListaSlot) => {
+        onBudowaListaLoadTemplate: (cityId: string, templateId: string) => {
           const city = cities.find(c => c.id === cityId);
-          if (!city) return;
-          city.budowaLista = [...budowaListaSzablony[slot]];
+          const tpl = budowaListaBiblioteka.find(s => s.id === templateId);
+          if (!city || !tpl) return;
+          city.budowaLista = dedupeBudowaLista([...tpl.budynki]);
           city.budowaTryb = 'lista';
           delete city.budowaListaUkonczonaHintShown;
           const enqueued = tryAutoEnqueueBuild(cityId);
           showHintMessage(
             enqueued
-              ? `${city.name}: wgrano listę ${slot} → ${enqueued.nazwa}`
-              : `${city.name}: wgrano listę ${slot}`,
+              ? `${city.name}: wgrano „${tpl.nazwa}” → ${enqueued.nazwa}`
+              : `${city.name}: wgrano „${tpl.nazwa}”`,
             2800,
           );
           updateHud();
           refreshCityPanelIfOpen();
         },
+        onBudowaListaRenameTemplate: (templateId: string, nazwa: string) => {
+          const tpl = budowaListaBiblioteka.find(s => s.id === templateId);
+          const trimmed = nazwa.trim();
+          if (!tpl || !trimmed) return;
+          tpl.nazwa = trimmed;
+          showHintMessage(`Zmieniono nazwę listy na „${trimmed}”`, 2400);
+          refreshCityPanelIfOpen();
+        },
+        onBudowaListaDeleteTemplate: (templateId: string) => {
+          const idx = budowaListaBiblioteka.findIndex(s => s.id === templateId);
+          if (idx < 0) return;
+          const removed = budowaListaBiblioteka[idx];
+          budowaListaBiblioteka.splice(idx, 1);
+          showHintMessage(`Usunięto listę „${removed?.nazwa ?? templateId}”`, 2400);
+          refreshCityPanelIfOpen();
+        },
         onBudowaListaLoadAllCities: (cityId: string, lista: string[]) => {
           const src = cities.find(c => c.id === cityId);
           if (!src) return;
-          const msg = `Wgraj Listę budowy do wszystkich twoich miast?\n\nNadpisze tryb Lista i kolejność budynków we wszystkich miastach (${lista.length} pozycji).`;
+          const deduped = dedupeBudowaLista(lista);
+          const msg = `Wgraj Listę budowy do wszystkich twoich miast?\n\nNadpisze tryb Lista i kolejność budynków we wszystkich miastach (${deduped.length} pozycji).`;
           if (!window.confirm(msg)) return;
           for (const c of cities.filter(c => c.ownerId === 0)) {
-            c.budowaLista = [...lista];
+            c.budowaLista = [...deduped];
             c.budowaTryb = 'lista';
             delete c.budowaListaUkonczonaHintShown;
             tryAutoEnqueueBuild(c.id);
           }
-          showHintMessage(`Lista wgrana do wszystkich miast (${lista.length} pozycji)`, 3200);
+          showHintMessage(`Lista wgrana do wszystkich miast (${deduped.length} pozycji)`, 3200);
           updateHud();
           refreshCityPanelIfOpen();
         },
@@ -7483,11 +7511,7 @@ async function boot(): Promise<void> {
     // P3a: Last-turn totals for HUD display (Praca, Kultura from economy; Porzadek from order)
     /** Pula Pracy gracza (suma doPuli z miast — plaster D2=A). */
     let playerPracaPool: number = 0;
-    let budowaListaSzablony: BudowaListaSzablony = {
-      A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
-      B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
-      C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
-    };
+    let budowaListaBiblioteka: BudowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];
     let _lastPraca: number = 0;
     /** ZADANIE 1 (Maciej 2026-07-23): Praca/turę odjęta z playerPracaPool za utrzymanie
      *  ulepszeń surowcowych (civ-wide) w ostatniej turze -- wyłącznie do wyświetlenia
@@ -18982,11 +19006,11 @@ async function boot(): Promise<void> {
           ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
-          budowaListaSzablony: {
-            A: [...budowaListaSzablony.A],
-            B: [...budowaListaSzablony.B],
-            C: [...budowaListaSzablony.C],
-          },
+          budowaListaBiblioteka: budowaListaBiblioteka.map(s => ({
+            id: s.id,
+            nazwa: s.nazwa,
+            budynki: [...s.budynki],
+          })),
           siegeTurnByCity: Array.from(siegeTurnByCity.entries()),
           siegeBesiegerByCity: Array.from(siegeBesiegerByCity.entries()),
           siegeAiStateByKey: Array.from(siegeAiStateByKey.entries()),
@@ -22864,11 +22888,7 @@ async function boot(): Promise<void> {
       playerEverOwnedCity = false;
       turn = 1;
       playerPracaPool = 0;
-      budowaListaSzablony = {
-        A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
-        B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
-        C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
-      };
+      budowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];
       _lastPraca = 0;
       _lastPracaRate = 0;
       _lastPracaUpkeep = 0;
@@ -24087,20 +24107,7 @@ async function boot(): Promise<void> {
       );
       const savedPracaPool = saved.meta?.playerPracaPool as number | undefined;
       playerPracaPool = typeof savedPracaPool === 'number' ? savedPracaPool : 0;
-      const savedListaTpl = saved.meta?.budowaListaSzablony as BudowaListaSzablony | undefined;
-      if (savedListaTpl) {
-        budowaListaSzablony = {
-          A: [...(savedListaTpl.A ?? [])],
-          B: [...(savedListaTpl.B ?? [])],
-          C: [...(savedListaTpl.C ?? [])],
-        };
-      } else {
-        budowaListaSzablony = {
-          A: [...EMPTY_BUDOWA_LISTA_SZABLONY.A],
-          B: [...EMPTY_BUDOWA_LISTA_SZABLONY.B],
-          C: [...EMPTY_BUDOWA_LISTA_SZABLONY.C],
-        };
-      }
+      budowaListaBiblioteka = loadBudowaListaBiblioteka(saved.meta);
       const playerCityCountOnLoad = cities.filter(c => c.ownerId === 0).length;
       const maxReasonablePracaPool = Math.max(50, playerCityCountOnLoad * 100);
       if (playerPracaPool > maxReasonablePracaPool) {

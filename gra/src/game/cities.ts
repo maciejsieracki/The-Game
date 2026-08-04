@@ -46,10 +46,105 @@ export type BudowaFocus =
 /** priorytet = AI wg budowaPriorytetTypow; lista = kolejność budowaLista; reczny = ręczna kolejka. */
 export type BudowaTryb = 'reczny' | 'priorytet' | 'lista';
 
-/** Sloty szablonów listy budowy (gracz — zapis w save). */
+/** Nazwany szablon listy budowy (biblioteka gracza — zapis w save). */
+export type BudowaListaSzablon = { id: string; nazwa: string; budynki: string[] };
+export type BudowaListaBiblioteka = BudowaListaSzablon[];
+
+export const EMPTY_BUDOWA_LISTA_BIBLIOTEKA: BudowaListaBiblioteka = [];
+
+/** @deprecated Stary format save — tylko migracja przy wczytaniu. */
 export type BudowaListaSlot = 'A' | 'B' | 'C';
-export type BudowaListaSzablony = Record<BudowaListaSlot, string[]>;
-export const EMPTY_BUDOWA_LISTA_SZABLONY: BudowaListaSzablony = { A: [], B: [], C: [] };
+/** @deprecated Stary format save — tylko migracja przy wczytaniu. */
+export type BudowaListaSzablonyLegacy = Record<BudowaListaSlot, string[]>;
+
+let _budowaListaSzablonSeq = 0;
+
+export function newBudowaListaSzablonId(): string {
+  _budowaListaSzablonSeq += 1;
+  return `budowa-lista-${Date.now()}-${_budowaListaSzablonSeq}`;
+}
+
+/** Domyślna nazwa nowego szablonu (np. „Lista 1”, „Lista 2”). */
+export function defaultBudowaListaNazwa(biblioteka: BudowaListaBiblioteka): string {
+  const used = new Set(biblioteka.map(s => s.nazwa.trim().toLowerCase()));
+  for (let i = 1; i < 1000; i++) {
+    const candidate = `Lista ${i}`;
+    if (!used.has(candidate.toLowerCase())) return candidate;
+  }
+  return `Lista ${biblioteka.length + 1}`;
+}
+
+function isLegacyBudowaListaSzablony(
+  raw: unknown,
+): raw is BudowaListaSzablonyLegacy {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false;
+  const o = raw as Record<string, unknown>;
+  return 'A' in o || 'B' in o || 'C' in o;
+}
+
+function isBudowaListaSzablonArray(raw: unknown): raw is BudowaListaSzablon[] {
+  return Array.isArray(raw)
+    && raw.every(
+      item => item
+        && typeof item === 'object'
+        && typeof item.id === 'string'
+        && typeof item.nazwa === 'string'
+        && Array.isArray(item.budynki),
+    );
+}
+
+/** Wczytaj bibliotekę z save meta — nowy format tablicy lub migracja A/B/C. */
+export function loadBudowaListaBiblioteka(
+  meta: {
+    budowaListaBiblioteka?: unknown;
+    budowaListaSzablony?: unknown;
+  } | null | undefined,
+): BudowaListaBiblioteka {
+  const rawNew = meta?.budowaListaBiblioteka;
+  if (isBudowaListaSzablonArray(rawNew)) {
+    return rawNew.map(s => ({
+      id: s.id,
+      nazwa: s.nazwa,
+      budynki: [...s.budynki],
+    }));
+  }
+  const rawLegacy = meta?.budowaListaSzablony;
+  if (isLegacyBudowaListaSzablony(rawLegacy)) {
+    const slots: BudowaListaSlot[] = ['A', 'B', 'C'];
+    const out: BudowaListaBiblioteka = [];
+    for (const slot of slots) {
+      const budynki = rawLegacy[slot];
+      if (Array.isArray(budynki) && budynki.length > 0) {
+        out.push({
+          id: newBudowaListaSzablonId(),
+          nazwa: `Lista ${slot}`,
+          budynki: [...budynki],
+        });
+      }
+    }
+    return out;
+  }
+  if (isBudowaListaSzablonArray(rawLegacy)) {
+    return rawLegacy.map(s => ({
+      id: s.id,
+      nazwa: s.nazwa,
+      budynki: [...s.budynki],
+    }));
+  }
+  return [];
+}
+
+/** Usuń duplikaty z listy budynków (zachowuje pierwsze wystąpienie). */
+export function dedupeBudowaLista(budynki: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const id of budynki) {
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
+  }
+  return out;
+}
 
 /** Tryb auto-enqueue: Priorytet lub Lista (nie Ręczny). */
 export function isAutoBudowaTryb(t: BudowaTryb | undefined): boolean {

@@ -49,7 +49,8 @@ import {
 import { setMapHudChromeSuppressed } from './hud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
-import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, BudowaListaSlot, BudowaListaSzablony } from '../game/cities';
+import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, BudowaListaBiblioteka } from '../game/cities';
+import { dedupeBudowaLista, defaultBudowaListaNazwa } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import type { GameMap } from '../types/map';
@@ -352,13 +353,15 @@ export interface CityPanelConfig {
     tryb: BudowaTryb;
     priorytetTypow: BudowaFocus[];
     lista: string[];
-    szablony?: BudowaListaSzablony;
+    biblioteka?: BudowaListaBiblioteka;
   } | null;
   onBudowaPriorytetChange?: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => void;
   onBudowaEnterManual?: (cityId: string) => void;
   onBudowaListaChange?: (cityId: string, lista: string[], tryb: 'lista') => void;
-  onBudowaListaSaveSlot?: (cityId: string, slot: BudowaListaSlot) => void;
-  onBudowaListaLoadSlot?: (cityId: string, slot: BudowaListaSlot) => void;
+  onBudowaListaCreateTemplate?: (cityId: string, nazwa: string) => void;
+  onBudowaListaLoadTemplate?: (cityId: string, templateId: string) => void;
+  onBudowaListaRenameTemplate?: (templateId: string, nazwa: string) => void;
+  onBudowaListaDeleteTemplate?: (templateId: string) => void;
   /** R-AUTO-V2-Q1=B: wgraj bieżącą listę + tryb Lista do wszystkich miast gracza. */
   onBudowaListaLoadAllCities?: (cityId: string, lista: string[]) => void;
   onArtView?: (cityId: string) => void;
@@ -6814,7 +6817,7 @@ function renderProd(mount: HTMLElement, city: City, view: CityView | null): void
       appendBudowaToolbarProfiles(bProfiles, city, bState.priorytetTypow, bState.tryb, bState.lista);
       bToolbar.appendChild(bProfiles);
       if (bState.tryb === 'lista') {
-        appendBudowaListaBar(bToolbar, city, bState.lista, bState.szablony);
+        appendBudowaListaBar(bToolbar, city, bState.lista, bState.biblioteka);
       }
       mount.appendChild(bToolbar);
     }
@@ -9080,7 +9083,7 @@ function appendBudowaToolbarProfiles(
     listaBtn.type = 'button';
     listaBtn.className = tryb === 'lista' ? 'on' : '';
     listaBtn.textContent = 'Lista';
-    listaBtn.title = 'Lista nazwana — buduj wg kolejności (A/B/C szablony)';
+    listaBtn.title = 'Lista nazwana — buduj wg kolejności';
     listaBtn.style.cssText = 'font-size:0.68em;padding:0.15em 0.45em;min-width:auto;';
     listaBtn.addEventListener('click', () => {
       cfg.onBudowaListaChange?.(city.id, [...lista], 'lista');
@@ -9103,7 +9106,7 @@ function appendBudowaListaBar(
   parent: HTMLElement,
   city: City,
   lista: string[],
-  szablony?: BudowaListaSzablony,
+  biblioteka?: BudowaListaBiblioteka,
 ): void {
   const data = gameData();
   const bar = el('div', 'budowa-lista-bar');
@@ -9207,8 +9210,8 @@ function appendBudowaListaBar(
     }
     sel.addEventListener('change', () => {
       const id = sel.value;
-      if (!id) return;
-      cfg.onBudowaListaChange?.(city.id, [...lista, id], 'lista');
+      if (!id || lista.includes(id)) return;
+      cfg.onBudowaListaChange?.(city.id, dedupeBudowaLista([...lista, id]), 'lista');
       sel.value = '';
       rerender();
     });
@@ -9216,34 +9219,77 @@ function appendBudowaListaBar(
   }
   bar.appendChild(addRow);
 
-  if (cfg.onBudowaListaSaveSlot || cfg.onBudowaListaLoadSlot) {
-    const slots = el('div', 'budowa-lista-slots');
-    const slotLabels: BudowaListaSlot[] = ['A', 'B', 'C'];
-    for (const slot of slotLabels) {
-      const hasTpl = (szablony?.[slot]?.length ?? 0) > 0;
-      if (cfg.onBudowaListaLoadSlot) {
+  if (
+    cfg.onBudowaListaCreateTemplate
+    || cfg.onBudowaListaLoadTemplate
+    || cfg.onBudowaListaRenameTemplate
+    || cfg.onBudowaListaDeleteTemplate
+    || cfg.onBudowaListaLoadAllCities
+  ) {
+    const tplBar = el('div', 'budowa-lista-slots');
+    tplBar.style.cssText = 'display:flex;flex-direction:column;gap:0.2em;margin-top:0.2em;';
+
+    if (cfg.onBudowaListaCreateTemplate && lista.length > 0) {
+      const createBtn = document.createElement('button');
+      createBtn.type = 'button';
+      createBtn.textContent = 'Stwórz listę';
+      createBtn.title = 'Zapisz bieżącą listę budynków jako nowy szablon';
+      createBtn.addEventListener('click', () => {
+        const defaultName = defaultBudowaListaNazwa(biblioteka ?? []);
+        const nazwa = window.prompt('Nazwa listy:', defaultName)?.trim();
+        if (!nazwa) return;
+        cfg.onBudowaListaCreateTemplate?.(city.id, nazwa);
+        rerender();
+      });
+      tplBar.appendChild(createBtn);
+    }
+
+    for (const tpl of biblioteka ?? []) {
+      const row = el('div');
+      row.style.cssText = 'display:flex;gap:0.25em;align-items:center;flex-wrap:wrap;';
+      const label = el('span');
+      label.textContent = tpl.nazwa;
+      label.style.cssText = 'font-size:0.68em;min-width:4em;';
+      row.appendChild(label);
+      if (cfg.onBudowaListaLoadTemplate) {
         const loadBtn = document.createElement('button');
         loadBtn.type = 'button';
-        loadBtn.textContent = `Wgraj ${slot}`;
-        loadBtn.title = `Wgraj listę ${slot}${hasTpl ? '' : ' (pusty)'}`;
+        loadBtn.textContent = 'Wgraj';
+        loadBtn.title = `Wgraj „${tpl.nazwa}” (${tpl.budynki.length} pozycji)`;
         loadBtn.addEventListener('click', () => {
-          cfg.onBudowaListaLoadSlot?.(city.id, slot);
+          cfg.onBudowaListaLoadTemplate?.(city.id, tpl.id);
           rerender();
         });
-        slots.appendChild(loadBtn);
+        row.appendChild(loadBtn);
       }
-      if (cfg.onBudowaListaSaveSlot) {
-        const saveBtn = document.createElement('button');
-        saveBtn.type = 'button';
-        saveBtn.textContent = `Zapisz ${slot}`;
-        saveBtn.title = `Zapisz bieżącą listę jako szablon ${slot}`;
-        saveBtn.addEventListener('click', () => {
-          cfg.onBudowaListaSaveSlot?.(city.id, slot);
+      if (cfg.onBudowaListaRenameTemplate) {
+        const renameBtn = document.createElement('button');
+        renameBtn.type = 'button';
+        renameBtn.textContent = 'Zmień nazwę';
+        renameBtn.title = `Zmień nazwę „${tpl.nazwa}”`;
+        renameBtn.addEventListener('click', () => {
+          const nazwa = window.prompt('Nowa nazwa listy:', tpl.nazwa)?.trim();
+          if (!nazwa || nazwa === tpl.nazwa) return;
+          cfg.onBudowaListaRenameTemplate?.(tpl.id, nazwa);
           rerender();
         });
-        slots.appendChild(saveBtn);
+        row.appendChild(renameBtn);
       }
+      if (cfg.onBudowaListaDeleteTemplate) {
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.textContent = 'Usuń';
+        delBtn.title = `Usuń szablon „${tpl.nazwa}”`;
+        delBtn.addEventListener('click', () => {
+          if (!window.confirm(`Usunąć listę „${tpl.nazwa}”?`)) return;
+          cfg.onBudowaListaDeleteTemplate?.(tpl.id);
+          rerender();
+        });
+        row.appendChild(delBtn);
+      }
+      tplBar.appendChild(row);
     }
+
     if (cfg.onBudowaListaLoadAllCities && lista.length > 0) {
       const allBtn = document.createElement('button');
       allBtn.type = 'button';
@@ -9253,9 +9299,12 @@ function appendBudowaListaBar(
         cfg.onBudowaListaLoadAllCities?.(city.id, [...lista]);
         rerender();
       });
-      slots.appendChild(allBtn);
+      tplBar.appendChild(allBtn);
     }
-    bar.appendChild(slots);
+
+    if (tplBar.childNodes.length > 0) {
+      bar.appendChild(tplBar);
+    }
   }
   parent.appendChild(bar);
 }
