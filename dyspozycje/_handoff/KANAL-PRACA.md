@@ -1,3 +1,9 @@
+## [07:45 PL, 2026-08-04] CLOUD → Maciej — audyt ROBOCZA vs main
+- FALA 207 `47a2e73b` **AKTUALNA** — wszystkie tematy z kodem sesji są w ROBOCZA
+- Po deploy tylko docs (ECHO pigułka miasta) — **brak nowego kodu do wgrania**
+- Poza ROBOCZA (celowo): R-DESIGN-PANEL-MIASTA = CZEKA-NA-DESIGN (Q1A)
+CZEKAM-NA: Maciej playtest 207 / OK / BUG · Design makieta v2 pigułki
+
 ## [05:35 PL, 2026-08-04] CLOUD → Design / Maciej — ECHO R-DESIGN-PANEL-MIASTA (docs only)
 - **Q1=A** — czekaj na makieta Design v2; NIE kodować chipu teraz
 - **Q2=C** — MUST (nazwa+pop, 3 stany obrony, ikona cywu) + hover (produkcja + ostrzeżenie surowców)
