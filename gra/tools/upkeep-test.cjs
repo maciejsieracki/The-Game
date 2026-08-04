@@ -33,6 +33,7 @@ export {
   globalResourceCapacityPerType, onCityLost, onCityConquered,
   DEFAULT_UPKEEP_PARAMS, loadUpkeepParams,
   buildingUpkeep, totalBuildingUpkeep,
+  buildingResourceUpkeep, totalBuildingResourceUpkeep, buildingResourceUpkeepForBuiltIds,
   DEFAULT_UNIT_UPKEEP_BY_CATEGORY, unitUpkeep, totalUnitUpkeep,
   buildUnitUpkeepTable, buildUnitFoodTable, unitFoodPerTurn,
   militaryFoodConsumption, upkeepBalance,
@@ -156,6 +157,22 @@ eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1, 2), 2, 'ZAD1 (hard): budynek b
 eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1), 0, 'ZAD1: budynek bez wpisu utrzymanie i bez flat default -> 0 (bezpieczny fallback)');
 // utrzymanie=NaN traktowane jak "brak wpisu" (nie moze wygenerowac NaN w wyniku)
 eq(U.buildingUpkeep({ utrzymanie: NaN, przyrostUtrzymania: 0 }, 1, 1), 1, 'ZAD1: utrzymanie=NaN traktowane jak brak wpisu -> flat default');
+
+// --- building resource upkeep (koszt_surowce -> 1/turę per type) ---
+eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 5 } })), '{"drewno":1}', 'res upkeep: drewno build cost -> 1 drewno/t');
+eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 40, kamien: 12 } })), '{"drewno":1,"kamien":1}', 'res upkeep: always 1 per type, not build amount');
+eq(JSON.stringify(U.buildingResourceUpkeep({})), '{}', 'res upkeep: no koszt_surowce -> empty');
+eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 0 } })), '{}', 'res upkeep: zero build cost -> no upkeep');
+const resBlds = [
+  { record: { koszt_surowce: { drewno: 5 } }, level: 1 },
+  { record: { koszt_surowce: { drewno: 8, kamien: 3 } }, level: 1 },
+  { record: {}, level: 1 },
+];
+eq(JSON.stringify(U.totalBuildingResourceUpkeep(resBlds)), '{"drewno":2,"kamien":1}', 'res upkeep total: sum per type across buildings');
+eq(JSON.stringify(U.buildingResourceUpkeepForBuiltIds(
+  ['stolarnia', 'kamieniarski'],
+  [{ id: 'stolarnia', koszt_surowce: { drewno: 5 } }, { id: 'kamieniarski', koszt_surowce: { kamien: 4 } }],
+)), '{"drewno":1,"kamien":1}', 'res upkeep for built ids');
 
 // s.6.2 unit upkeep: typeId table > category default > standard
 const tbl = U.buildUnitUpkeepTable([{ Jednostka: 'Hetairoi', 'Utrzymanie (Pieniadz/ture)': 3 }]);

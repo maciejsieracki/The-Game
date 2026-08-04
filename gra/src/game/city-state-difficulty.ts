@@ -4,6 +4,22 @@
 
 export type DifficultyLevel = 'easy' | 'normal' | 'hard';
 
+/**
+ * Max łączna liczba jednostek bojowych MP (owner na całej mapie).
+ * Skala = trudność gry gracza (_menuDifficulty), nie suwak MP.
+ * null = brak limitu (easy — jak major AI).
+ */
+export function cityStateMilitaryProductionCap(gameDifficulty: DifficultyLevel): number | null {
+  switch (gameDifficulty) {
+    case 'hard':
+      return 0;
+    case 'normal':
+      return 1;
+    default:
+      return null;
+  }
+}
+
 /** Odwrócona skala Maciej 2026-07-30: łatwa gra → trudne PM, trudna gra → łatwe PM. */
 export function cityStateDifficultyFromGameDifficulty(diff: DifficultyLevel): DifficultyLevel {
   if (diff === 'easy') return 'hard';

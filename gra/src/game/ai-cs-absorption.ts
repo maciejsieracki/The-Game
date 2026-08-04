@@ -39,6 +39,8 @@ export interface DecideAiCsClusterActionInput {
   failCount: number;
   alreadyAtWar: boolean;
   napBlocked: boolean;
+  /** MP-DIPLO-Q1: same-civ cluster MPs — łatwiejsza absorpcja (nie gracz). */
+  sameCivCluster?: boolean;
 }
 
 export interface DecideAiCsClusterActionResult {
@@ -46,52 +48,118 @@ export interface DecideAiCsClusterActionResult {
   reason: string;
 }
 
+const CS_ABS_EASY: AiCsAbsorptionParams = {
+  minTurn: 28,
+  militaryRatioMin: 1.6,
+  trybutAccept: 0.70,
+  wasalAccept: 0.60,
+  trybutGoldPerTurn: 8,
+  wasalAfterTrybutTurns: 12,
+  vassalFailBeforeWar: 3,
+  clusterWarMinTurn: 40,
+  clusterConquestDeadline: 150,
+  annexAfterVassalTurns: 16,
+  instantAnnexIfRatio: null,
+  instantAnnexMinTurn: null,
+};
+
+const CS_ABS_HARD: AiCsAbsorptionParams = {
+  minTurn: 8,
+  militaryRatioMin: 1.1,
+  trybutAccept: 0.99,
+  wasalAccept: 0.99,
+  trybutGoldPerTurn: 2,
+  wasalAfterTrybutTurns: 3,
+  vassalFailBeforeWar: 1,
+  clusterWarMinTurn: 15,
+  clusterConquestDeadline: 80,
+  annexAfterVassalTurns: 1,
+  instantAnnexIfRatio: 1.25,
+  instantAnnexMinTurn: 10,
+};
+
+function midInt(a: number, b: number): number {
+  return Math.round((a + b) / 2);
+}
+
+function midRate(a: number, b: number): number {
+  return Math.round(((a + b) / 2) * 100) / 100;
+}
+
+function interpolateCsAbsorption(easy: AiCsAbsorptionParams, hard: AiCsAbsorptionParams): AiCsAbsorptionParams {
+  return {
+    minTurn: midInt(easy.minTurn, hard.minTurn),
+    militaryRatioMin: midRate(easy.militaryRatioMin, hard.militaryRatioMin),
+    trybutAccept: midRate(easy.trybutAccept, hard.trybutAccept),
+    wasalAccept: midRate(easy.wasalAccept, hard.wasalAccept),
+    trybutGoldPerTurn: midInt(easy.trybutGoldPerTurn, hard.trybutGoldPerTurn),
+    wasalAfterTrybutTurns: midInt(easy.wasalAfterTrybutTurns, hard.wasalAfterTrybutTurns),
+    vassalFailBeforeWar: midInt(easy.vassalFailBeforeWar, hard.vassalFailBeforeWar),
+    clusterWarMinTurn: midInt(easy.clusterWarMinTurn, hard.clusterWarMinTurn),
+    clusterConquestDeadline: midInt(easy.clusterConquestDeadline, hard.clusterConquestDeadline),
+    annexAfterVassalTurns: midInt(easy.annexAfterVassalTurns, hard.annexAfterVassalTurns),
+    instantAnnexIfRatio: null,
+    instantAnnexMinTurn: null,
+  };
+}
+
 export function aiCsAbsorptionParams(diff: DifficultyLevel): AiCsAbsorptionParams {
   switch (diff) {
     case 'easy':
+      return CS_ABS_EASY;
+    case 'hard':
+      return CS_ABS_HARD;
+    default:
+      return interpolateCsAbsorption(CS_ABS_EASY, CS_ABS_HARD);
+  }
+}
+
+function clampRate(n: number, lo = 0, hi = 0.99): number {
+  return Math.max(lo, Math.min(hi, Math.round(n * 100) / 100));
+}
+
+/**
+ * MP-DIPLO-Q1=A — same-civ MP w klastrze major AI: łatwiejsza ścieżka trybut/wasal/annex.
+ * Easy: lekki boost; Normal: połowa; Hard: prawie zawsze accept.
+ */
+export function applySameCivClusterAbsorptionBoost(
+  params: AiCsAbsorptionParams,
+  diff: DifficultyLevel,
+): AiCsAbsorptionParams {
+  switch (diff) {
+    case 'easy':
       return {
-        minTurn: 28,
-        militaryRatioMin: 1.6,
-        trybutAccept: 0.70,
-        wasalAccept: 0.60,
-        trybutGoldPerTurn: 8,
-        wasalAfterTrybutTurns: 12,
-        vassalFailBeforeWar: 3,
-        clusterWarMinTurn: 40,
-        clusterConquestDeadline: 150,
-        annexAfterVassalTurns: 16,
-        instantAnnexIfRatio: null,
-        instantAnnexMinTurn: null,
+        ...params,
+        minTurn: Math.max(1, params.minTurn - 4),
+        militaryRatioMin: clampRate(params.militaryRatioMin * 0.92, 0.5),
+        trybutAccept: clampRate(params.trybutAccept + 0.08),
+        wasalAccept: clampRate(params.wasalAccept + 0.08),
+        wasalAfterTrybutTurns: Math.max(1, params.wasalAfterTrybutTurns - 2),
+        annexAfterVassalTurns: Math.max(1, params.annexAfterVassalTurns - 2),
       };
     case 'hard':
       return {
-        minTurn: 8,
-        militaryRatioMin: 1.1,
-        trybutAccept: 0.98,
-        wasalAccept: 0.95,
-        trybutGoldPerTurn: 2,
-        wasalAfterTrybutTurns: 3,
+        ...params,
+        minTurn: Math.max(1, params.minTurn - 3),
+        militaryRatioMin: Math.min(params.militaryRatioMin, 1.0),
+        trybutAccept: 0.99,
+        wasalAccept: 0.99,
+        wasalAfterTrybutTurns: Math.min(params.wasalAfterTrybutTurns, 2),
         vassalFailBeforeWar: 1,
-        clusterWarMinTurn: 15,
-        clusterConquestDeadline: 80,
-        annexAfterVassalTurns: 1,
-        instantAnnexIfRatio: 1.25,
-        instantAnnexMinTurn: 10,
+        clusterWarMinTurn: Math.min(params.clusterWarMinTurn, 10),
+        annexAfterVassalTurns: Math.min(params.annexAfterVassalTurns, 1),
+        instantAnnexIfRatio: params.instantAnnexIfRatio ?? 1.15,
+        instantAnnexMinTurn: params.instantAnnexMinTurn ?? Math.max(1, params.minTurn - 2),
       };
     default:
       return {
-        minTurn: 18,
-        militaryRatioMin: 1.3,
-        trybutAccept: 0.85,
-        wasalAccept: 0.80,
-        trybutGoldPerTurn: 5,
-        wasalAfterTrybutTurns: 8,
-        vassalFailBeforeWar: 2,
-        clusterWarMinTurn: 30,
-        clusterConquestDeadline: 120,
-        annexAfterVassalTurns: 10,
-        instantAnnexIfRatio: null,
-        instantAnnexMinTurn: null,
+        ...params,
+        minTurn: Math.max(1, params.minTurn - 6),
+        militaryRatioMin: clampRate(params.militaryRatioMin * 0.95, 0.5),
+        trybutAccept: clampRate(params.trybutAccept + 0.12),
+        wasalAccept: clampRate(params.wasalAccept + 0.12),
+        wasalAfterTrybutTurns: Math.max(1, params.wasalAfterTrybutTurns - 3),
+        annexAfterVassalTurns: Math.max(1, params.annexAfterVassalTurns - 4),
       };
   }
 }
@@ -112,7 +180,10 @@ export function unitTriggersSisterAllianceThreat(
 export function decideAiCsClusterAction(
   input: DecideAiCsClusterActionInput,
 ): DecideAiCsClusterActionResult {
-  const params = aiCsAbsorptionParams(input.difficulty);
+  const base = aiCsAbsorptionParams(input.difficulty);
+  const params = input.sameCivCluster
+    ? applySameCivClusterAbsorptionBoost(base, input.difficulty)
+    : base;
 
   if (input.alreadyAtWar) {
     return { action: null, reason: 'wojna_juz_trwa' };

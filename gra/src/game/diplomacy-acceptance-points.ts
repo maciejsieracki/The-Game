@@ -386,6 +386,24 @@ export function computePlayerAcceptanceSides(
     their.statusLabel = formatBalanceLabel(their.balancePn, their.accepted);
   }
 
+  // Wychodząca wymiana PN: UI „prawdopodobnie przyjmie" musi zgadzać się z evaluateProposal
+  // (bilateral net + pnDealAcceptedByAi), nie z pnDealAcceptedByAi odwróconej perspektywy partnera.
+  if (!incoming && !isGift && (mode === 'basket' || mode === 'mixed')) {
+    const bilateralPw = bilateralTreatyDisplayPw(my, their);
+    const proposerDisplay = sideDisplayOfferPw(my, bilateralPw);
+    const responderDisplay = sideDisplayOfferPw(their, bilateralPw);
+    const bilateralNet = proposerDisplay - responderDisplay;
+    const basketFairOk = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+    their.accepted = bilateralNet >= 0 && basketFairOk;
+    if (!their.accepted) {
+      if (bilateralNet < 0) {
+        their.statusLabel = `Przewaga u Ciebie — oferta nieuczciwa dla partnera (${Math.abs(bilateralNet)} PW)`;
+      } else if (!basketFairOk) {
+        their.statusLabel = formatBalanceLabel(their.balancePn, false);
+      }
+    }
+  }
+
   // Przychodząca wymiana PN: gracz może przyjąć niekorzystny deal; bilans UI = netto
   // (nie fair-min respondenta — to dawało fałszywe „Brakuje PW" przy Przyjmij).
   if (incoming && !isGift && (mode === 'basket' || mode === 'mixed')) {

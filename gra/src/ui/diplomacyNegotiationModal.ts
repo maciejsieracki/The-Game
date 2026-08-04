@@ -113,15 +113,24 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-neg-overlay{position:fixed;inset:0;z-index:510;background:rgba(0,0,0,0.6);
   display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:auto;}
 .civ-diplo-neg{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
-  border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:18px 20px;max-width:400px;width:100%;
+  border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:16px 18px;
+  max-width:min(760px,96vw);width:100%;max-height:min(92vh,720px);
+  display:flex;flex-direction:column;overflow:hidden;
   color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;pointer-events:auto;position:relative;z-index:1;}
-.civ-diplo-neg h3{margin:0 0 8px;font-family:Georgia,serif;font-size:1.05em;color:#e8d88a;}
-.civ-diplo-neg .cdn-sub{font-size:0.78em;color:#8a8070;margin-bottom:12px;line-height:1.45;}
+.civ-diplo-neg .cdn-form-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:2px;}
+.civ-diplo-neg .cdn-footer{flex-shrink:0;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);margin-top:8px;}
+.civ-diplo-neg .cdn-landscape{display:grid;grid-template-columns:minmax(240px,1fr) minmax(240px,1fr);gap:14px;align-items:start;}
+.civ-diplo-neg .cdn-land-main,.civ-diplo-neg .cdn-land-aside{min-width:0;}
+.civ-diplo-neg .cdn-land-aside-empty{display:none;}
+@media (max-width:560px){.civ-diplo-neg .cdn-landscape{grid-template-columns:1fr;}
+  .civ-diplo-neg .cdn-land-aside-empty{display:none;}}
+.civ-diplo-neg h3{margin:0 0 6px;font-family:Georgia,serif;font-size:1.05em;color:#e8d88a;flex-shrink:0;}
+.civ-diplo-neg .cdn-sub{font-size:0.78em;color:#8a8070;margin-bottom:10px;line-height:1.45;}
 .civ-diplo-neg label{display:block;margin:8px 0 4px;font-size:0.78em;color:#a8a090;}
 .civ-diplo-neg input[type=number],.civ-diplo-neg select{width:100%;padding:6px 8px;border-radius:6px;
-  border:1px solid rgba(232,216,138,.28);background:rgba(10,12,18,0.9);color:#e8e0c8;font:inherit;}
+  border:1px solid rgba(232,216,138,.28);background:rgba(10,12,18,0.9);color:#e8e0c8;font:inherit;box-sizing:border-box;}
 .civ-diplo-neg .cdn-row{display:flex;gap:8px;align-items:center;margin:6px 0;}
-.civ-diplo-neg .cdn-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+.civ-diplo-neg .cdn-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:0;}
 .civ-diplo-neg .cdn-result-text p{margin:4px 0 0;line-height:1.5;}
 .civ-diplo-neg .cdn-result-text .cdn-accepted{color:#9fd88a;}
 .civ-diplo-neg .cdn-result-text .cdn-rejected{color:#d88a8a;}
@@ -210,7 +219,11 @@ function numInput(id: string, label: string, value: number, min: number, max?: n
 
 function buildForm(action: AudienceAction, ctx: NegotiationModalContext): string {
   const body = buildFormBody(action, ctx);
-  return SWEETENER_ACTION_IDS.has(action.id) ? body + sweetenerSectionHtml(ctx) : body;
+  const sweet = SWEETENER_ACTION_IDS.has(action.id) ? sweetenerSectionHtml(ctx) : '';
+  return '<div class="cdn-landscape">'
+    + '<div class="cdn-land-main">' + body + '</div>'
+    + (sweet ? '<div class="cdn-land-aside">' + sweet + '</div>' : '<div class="cdn-land-aside cdn-land-aside-empty"></div>')
+    + '</div>';
 }
 
 function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): string {
@@ -387,8 +400,10 @@ export function showNegotiationModal(
   overlay.innerHTML =
     '<div class="civ-diplo-neg" role="dialog" aria-modal="true">'
     + '<h3>' + esc(action.label) + '</h3>'
-    + '<div class="cdn-form-step">'
+    + '<div class="cdn-form-scroll cdn-form-step">'
     + buildForm(action, ctx)
+    + '</div>'
+    + '<div class="cdn-footer">'
     + '<div class="cdn-btns">'
     + '<button type="button" class="dip-muted-btn cdn-cancel">Anuluj</button>'
     + '<button type="button" class="dip-gold-btn cdn-submit">Zaproponuj</button>'
@@ -398,6 +413,7 @@ export function showNegotiationModal(
 
   const box = overlay.querySelector('.civ-diplo-neg')!;
   const formStep = box.querySelector('.cdn-form-step') as HTMLElement;
+  const footerEl = box.querySelector('.cdn-footer') as HTMLElement;
   const submitBtn = box.querySelector('.cdn-submit') as HTMLButtonElement | null;
   let invalidMsg: HTMLDivElement | null = null;
 
@@ -405,7 +421,7 @@ export function showNegotiationModal(
     if (!invalidMsg) {
       invalidMsg = document.createElement('div');
       invalidMsg.className = 'cdn-invalid';
-      formStep.insertBefore(invalidMsg, formStep.querySelector('.cdn-btns'));
+      footerEl.insertBefore(invalidMsg, footerEl.querySelector('.cdn-btns'));
     }
     invalidMsg.textContent = msg;
   };

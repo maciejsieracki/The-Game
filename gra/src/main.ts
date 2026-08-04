@@ -243,6 +243,7 @@ import {
 } from './game/city-state-difficulty';
 import {
   aiCsAbsorptionParams,
+  applySameCivClusterAbsorptionBoost,
   decideAiCsClusterAction,
   rollAiCsAccept,
   unitTriggersSisterAllianceThreat,
@@ -269,6 +270,9 @@ import {
   playerDiplomacyActionAllowed,
   startRelationForPair,
   startRelationForPlayerSameCivCityState,
+  startRelationForAiMajorSameCivCityState,
+  maintainAiMajorSameCivRelation,
+  isAiMajorToSameCivCityStatePair,
   applyWiarygodnoscD4ToRelation,
   applyCityStateDifficultyTrust,
 } from './game/diplomacy-layers';
@@ -702,6 +706,7 @@ import {
 import {
   buildingStockCost, unitStockCost, canAffordBuildingStock,
   ownerResourceStockAll, deductBuildingStockCostAcrossCities, creditOwnerResourceStock,
+  missingStockFor, stockResourceLabel,
 } from './game/building-stock-cost';
 import { empireHasKopalniaNaZlozuZelaza, hasZelazoAccess } from './game/zelazo-access';
 import {
@@ -762,12 +767,13 @@ import {
   getArmyStarvationCountdown,
   clearLastEmpireFoodTicks,
   autoBalanceRationsToSolvency,
+  autoRaiseRationsForGrowth,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
 } from './game/empire-food';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerBuildingResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -883,7 +889,7 @@ import {
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -907,6 +913,7 @@ import {
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
+import { isMajorAiOwner } from './game/owner-utils';
 import { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } from './game/auto-improvements';
 import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
@@ -923,7 +930,7 @@ import type { TempoGry } from './game/tech-tempo';
 import type { GameDifficulty } from './game/difficulty-cost';
 import { scaledResearchCost } from './game/difficulty-cost';
 import { scaledWonderWorkCost, scaledWonderFoodCost } from './game/r-stawki-strojenie';
-import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields, veteranExperienceLine } from './game/veteran';
+import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarCount, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields, veteranExperienceLine } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
@@ -945,10 +952,11 @@ import {
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
   type ProposalEvalContext, type ProposalPayload,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
-  type PendingNegotiation, createNegotiation, applyCounterOffer, canCounterNegotiation,
+  type PendingNegotiation, createNegotiation, applyCounterOffer, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
+  treatyEvalRelationTotal,
   NEGOTIATION_MAX_ROUNDS, NEGOTIATION_EXPIRY_TURNS,
 } from './game/diplomacy-proposals';
 import {
@@ -3136,6 +3144,7 @@ async function boot(): Promise<void> {
     let playerArmyFoodHintShown = false;
     /** C-OBCE-JEDN-Q3 A: jednorazowa edukacja przy pierwszym wrogu z ★≥2 (save/load meta). */
     let veteranEnemyEducationShown = false;
+    const VETERAN_ENEMY_EDU_EVENT_ID = 'edu-veteran-enemy-q3';
     const lastCityKulturaTick = new Map<string, number>();
     /** CUDA-AI: Praca/turę kierowana do budynków per miasto (econTick.doBudynkow),
      * migawka z ostatniego przelicznika ekonomii -- populowana razem z
@@ -3559,7 +3568,6 @@ async function boot(): Promise<void> {
 
     function initEmpireFoodStates(): void {
       playerArmyFoodHintShown = false;
-      veteranEnemyEducationShown = false;
       clearLastEmpireFoodTicks();
       clearMennicaZlotoGraceState(mennicaZlotoGraceState);
       empireFoodStates.clear();
@@ -4567,6 +4575,11 @@ async function boot(): Promise<void> {
       return cities.some(c => c.ownerId === ownerId) || units.some(u => u.ownerId === ownerId);
     }
 
+    /** AI-MANAGE-Q1=A: major AI = ownerId > 0, nie barbarzyńca, nie państwo-miasto/defensiveCopy. */
+    function isCityStateOwner(ownerId: number): boolean {
+      return simplifiedDiplomacyOwners.has(ownerId) || typCityCopyOwners.has(ownerId);
+    }
+
     function buildPlayerDiploRelations(): DiploRelation[] {
       const rels: DiploRelation[] = [];
       const contacted = getDiplomaticContacts();
@@ -4850,6 +4863,7 @@ async function boot(): Promise<void> {
             pieniadzZTras: Math.round(tk.pieniadzZTras),
             wealthMnoznik: tk.wealthMnoznik,
             utrzymanieBudynkow: buildingUpkeepForCityId(tk.cityId, 0),
+            utrzymanieSurowcowBudynkow: buildingResourceUpkeepForCityId(tk.cityId, 0),
             utrzymanieGarnizonu: c ? garrisonUpkeepForCity(c) : 0,
             doPuli: Math.round(tk.doPuli),
             doBudynkow: Math.round(tk.doBudynkow),
@@ -4876,6 +4890,11 @@ async function boot(): Promise<void> {
         ),
         upkeepParams.budynekUtrzymanieFlat,
       );
+    }
+
+    function buildingResourceUpkeepForCityId(cityId: string, ownerId: number): Record<string, number> {
+      const builtIds = cityBuilt.get(cityId) ?? [];
+      return buildingResourceUpkeepForBuiltIds(builtIds, data.buildings);
     }
 
     function garrisonUpkeepForCity(city: City): number {
@@ -5029,6 +5048,7 @@ async function boot(): Promise<void> {
             bogactwoWplywyBrutto: hs.bogactwoWplywyBrutto,
             bogactwoHandel: hs.bogactwoHandel,
             bogactwoUtrzymanieBudynkow: hs.bogactwoUtrzymanieBudynkow,
+            bogactwoUtrzymanieSurowcowBudynkow: hs.bogactwoUtrzymanieSurowcowBudynkow,
             bogactwoUtrzymanieJednostek: hs.bogactwoUtrzymanieJednostek,
             bogactwoRate: hs.bogactwoRate,
           };
@@ -5042,6 +5062,7 @@ async function boot(): Promise<void> {
             wealthMnoznik: row.wealthMnoznik,
             handelZeSzlakow: row.pieniadzZTras,
             utrzymanieBudynkow: row.utrzymanieBudynkow,
+            utrzymanieSurowcowBudynkow: row.utrzymanieSurowcowBudynkow,
             utrzymanieGarnizonu: row.utrzymanieGarnizonu,
             nauka: row.nauka,
           };
@@ -5849,6 +5870,44 @@ async function boot(): Promise<void> {
       return aiOwnerCivMap.get(ownerId) === playerCiv;
     }
 
+    const aiMajorSameCivPairOpts = () => ({
+      clusterCapitalOwnerIds,
+      typCityCopyOwners,
+      civOf: (oid: number) => aiOwnerCivMap.get(oid),
+    });
+
+    /** MP-DIPLO-Q1=A — max relacja major AI ↔ same-civ MP (nie gracz). */
+    function syncAiMajorSameCivRelations(majorOwnerId: number, forceInit = false): void {
+      if (!clusterCapitalOwnerIds.has(majorOwnerId)) return;
+      const pairOpts = aiMajorSameCivPairOpts();
+      for (const mpId of typCityCopyOwners) {
+        if (mpId === majorOwnerId || eliminatedOwners.has(mpId)) continue;
+        if (!isAiMajorToSameCivCityStatePair(majorOwnerId, mpId, pairOpts)) continue;
+        const cur = getDiploRelation(majorOwnerId, mpId);
+        const next = forceInit
+          ? applyWiarygodnoscD4ToRelation(
+            startRelationForAiMajorSameCivCityState(),
+            getWiarygodnosc(majorOwnerId),
+            getWiarygodnosc(mpId),
+          )
+          : maintainAiMajorSameCivRelation(cur);
+        if (
+          forceInit
+          || next.zaufanie !== cur.zaufanie
+          || next.respekt !== cur.respekt
+          || next.status !== cur.status
+        ) {
+          setDiploRelation(majorOwnerId, mpId, next);
+        }
+      }
+    }
+
+    function initAllAiMajorSameCivRelations(): void {
+      for (const majorId of clusterCapitalOwnerIds) {
+        syncAiMajorSameCivRelations(majorId, true);
+      }
+    }
+
     /** R-MP-PORTRET: medalion dyplomacji/bitwa/map — symbol kultury zamiast portretu władcy. */
     function portraitForceCultureIcon(ownerId: number): boolean {
       return shouldForceCultureIconForOwner(ownerId, {
@@ -6078,6 +6137,8 @@ async function boot(): Promise<void> {
       diplomaticContactEstablished.clear();
       diplomaticallyDiscoveredOwners.clear();
       resetDiplomaticDiscoveryUiState();
+      veteranEnemyEducationShown = false;
+      warEventLog.length = 0;
       activeDeals = [];
       negotiationTable.length = 0;
       negotiationSeq = 0;
@@ -6272,6 +6333,7 @@ async function boot(): Promise<void> {
 
       reconcileAllOwnerErasFromResearch();
       initDiplomaticContactSnapshot();
+      initAllAiMajorSameCivRelations();
       console.log(
         '[ClusterStart] deferred foreign clusters=' + _scFounded + '/' + toSpawn.length +
         (_scRejected > 0 ? ' (' + _scRejected + ' odrzuconych)' : ''),
@@ -7305,24 +7367,31 @@ async function boot(): Promise<void> {
      * C-OBCE-JEDN-Q3 A — pierwszy widoczny wróg z ★≥2: toast + wpis w WYDARZENIACH.
      * Flaga veteranEnemyEducationShown trwa w save/meta (jednorazowo na grę).
      */
+    function pruneVeteranEnemyEducationJournal(): void {
+      const idx = warEventLog.findIndex(e => e.id === VETERAN_ENEMY_EDU_EVENT_ID);
+      if (idx >= 0) warEventLog.splice(idx, 1);
+    }
+
     function checkVeteranEnemyFirstEncounter(visible: ReadonlySet<string>): void {
-      if (veteranEnemyEducationShown || galleryOn) return;
+      if (galleryOn || veteranEnemyEducationShown) return;
+      if (warEventLog.some(e => e.id === VETERAN_ENEMY_EDU_EVENT_ID)) {
+        veteranEnemyEducationShown = true;
+        return;
+      }
       for (const u of units) {
         if (u.ownerId === 0) continue;
         if (!visible.has(keyOf(u.q, u.r))) continue;
-        if (!veteranHasVisibleBadge(u)) continue;
+        if (veteranStarCount(u) < 2) continue;
         veteranEnemyEducationShown = true;
         showHintMessage(veteranFirstEncounterHintHtml(), 6000);
-        if (!warEventLog.some(e => e.id === 'edu-veteran-enemy-q3')) {
-          warEventLog.unshift({
-            id: 'edu-veteran-enemy-q3',
-            icon: '★',
-            title: 'Doświadczeni wojownicy',
-            subtitle: veteranFirstEncounterJournalSubtitle(),
-            kind: 'info',
-          });
-          if (warEventLog.length > 8) warEventLog.length = 8;
-        }
+        warEventLog.unshift({
+          id: VETERAN_ENEMY_EDU_EVENT_ID,
+          icon: '★',
+          title: 'Doświadczeni wojownicy',
+          subtitle: veteranFirstEncounterJournalSubtitle(),
+          kind: 'info',
+        });
+        if (warEventLog.length > 8) warEventLog.length = 8;
         refreshD1bHud();
         return;
       }
@@ -7580,6 +7649,7 @@ async function boot(): Promise<void> {
     let _lastBogactwoHandel: number = 0;
     let _lastBogactwoUtrzymanieBudynkow: number = 0;
     let _lastBogactwoUtrzymanieJednostek: number = 0;
+    let _lastBogactwoUtrzymanieSurowcow: Record<string, number> = {};
     /** Live brutto żywności imperium (preview) — gdy brak ticku po endTurn. */
     let _liveFoodBrutto: number = 0;
     /** Ostatni tick ekonomii per miasto gracza (HUD imperium + bilans pieniędzy miasta). */
@@ -7591,6 +7661,7 @@ async function boot(): Promise<void> {
       pieniadzZTras: number;
       wealthMnoznik: number;
       utrzymanieBudynkow: number;
+      utrzymanieSurowcowBudynkow: Record<string, number>;
       utrzymanieGarnizonu: number;
       doPuli: number;
       doBudynkow: number;
@@ -11259,6 +11330,11 @@ async function boot(): Promise<void> {
         return;
       }
       if (entry.awaitingOwnerId !== 0) {
+        const aiPreview = previewNegotiationEntry(entry);
+        if (!aiPreview.accepted) {
+          showHintMessage('Nie można wysłać — ' + (aiPreview.reason ?? 'oferta nieuczciwa dla partnera'), 4000);
+          return;
+        }
         handleRequestAiNegotiationResponse(negotiationId);
         return;
       }
@@ -11324,7 +11400,7 @@ async function boot(): Promise<void> {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
-      if (entry.awaitingOwnerId !== 0 || !canCounterNegotiation(entry)) {
+      if (entry.awaitingOwnerId !== 0 || !canPlayerCounterNegotiation(entry)) {
         showHintMessage('Limit rund osiągnięty — możesz tylko przyjąć lub odrzucić', 3500);
         return;
       }
@@ -11395,11 +11471,10 @@ async function boot(): Promise<void> {
     function previewNegotiationEntry(
       entry: PendingNegotiation,
     ): { accepted: boolean; reason?: string } {
+      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+      const relTotal = treatyEvalRelationTotal(ctx.relation);
       const incoming = entry.awaitingOwnerId === 0;
       if (incoming) {
-        const aiPartnerId = negotiationPartnerOwnerId(entry.proposerOwnerId, entry.responderOwnerId);
-        const rel = getDiploRelation(0, aiPartnerId);
-        const relTotal = audienceRelTotal(aiPartnerId, rel);
         const playerAccept = previewIncomingPlayerAccept(
           entry.actionId,
           entry.payload,
@@ -11412,7 +11487,6 @@ async function boot(): Promise<void> {
         );
         if (playerAccept) return playerAccept;
       }
-      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
       const result = evaluateProposal(negotiationAsProposal(entry), ctx);
       return { accepted: result.accepted, reason: result.reason };
     }
@@ -11423,7 +11497,6 @@ async function boot(): Promise<void> {
       actionsList: readonly AudienceAction[],
     ): PendingNegotiationRow[] {
       const rel = getDiploRelation(0, ownerId);
-      const relTotal = audienceRelTotal(ownerId, rel);
       const isAtWar = rel.status === 'wojna';
       return getNegotiationsForPair(ownerId).filter(entry => {
         const validity = negotiationStillValid(entry, {
@@ -11434,6 +11507,8 @@ async function boot(): Promise<void> {
         });
         return validity.valid;
       }).map(entry => {
+        const evalCtx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+        const relTotal = treatyEvalRelationTotal(evalCtx.relation);
         const direction: 'own' | 'incoming' = entry.awaitingOwnerId === 0 ? 'incoming' : 'own';
         const incoming = direction === 'incoming';
         const uiActionId = CYW_ACTION_TO_UI_ID[entry.actionId] ?? '5';
@@ -11456,7 +11531,7 @@ async function boot(): Promise<void> {
           && (incomingNetPw == null || incomingNetPw.netPw >= 0);
         const awaitingAiResponse = direction === 'own' && entry.awaitingOwnerId !== 0;
         const dealDetails = negotiationSummary(entry);
-        const canCounter = direction === 'incoming' && canCounterNegotiation(entry);
+        const canCounter = direction === 'incoming' && canPlayerCounterNegotiation(entry);
         const acceptance = computePlayerAcceptanceSides(entry.actionId, p, relTotal, incoming, {
           difficulty: _menuDifficulty,
           proposerOwnerId: entry.proposerOwnerId,
@@ -11821,6 +11896,9 @@ async function boot(): Promise<void> {
       _lastBogactwoHandel = playerEcon.pieniadzZTras;
       _lastBogactwoUtrzymanieBudynkow = bogactwoUpkeepPreview.utrzymanieBudynki;
       _lastBogactwoUtrzymanieJednostek = bogactwoUpkeepPreview.utrzymanieJednostki;
+      _lastBogactwoUtrzymanieSurowcow = previewOwnerBuildingResourceUpkeep(
+        0, playerCities, data.buildings, cityBuilt,
+      );
       _lastBogactwoRate = playerEcon.pieniadz - bogactwoUpkeepPreview.utrzymanieRazem;
       // NAPRAWA HUD-PRACA (ten sam wzorzec, ta sama zgloszenie): "+N" przy Pracy
       // liczylo tylko doPuli (wplyw brutto do puli imperium), pomijajac utrzymanie
@@ -11961,6 +12039,7 @@ async function boot(): Promise<void> {
         bogactwoWplywyBrutto: Math.floor(_lastPieniadzRate),
         bogactwoHandel: Math.floor(_lastBogactwoHandel),
         bogactwoUtrzymanieBudynkow: Math.floor(_lastBogactwoUtrzymanieBudynkow),
+        bogactwoUtrzymanieSurowcowBudynkow: { ..._lastBogactwoUtrzymanieSurowcow },
         bogactwoUtrzymanieJednostek: Math.floor(_lastBogactwoUtrzymanieJednostek),
         ludnosc: pop,
         ludnoscRate: Math.floor(_lastLudnoscRate),
@@ -19423,6 +19502,7 @@ async function boot(): Promise<void> {
         // TEMAT #5: log tras handlowych — ta sama zasada (widoczny do końca tury bieżącej).
         tradeRouteEventLog.length = 0;
         rationAutoEventLog.length = 0;
+        pruneVeteranEnemyEducationJournal();
         dismissedSidePanelEventIds.clear();
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
@@ -19564,8 +19644,10 @@ async function boot(): Promise<void> {
             const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
             const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
 
-            // SPICH-AUTO-Q1: auto-obniżenie racji gracza przed rozliczeniem Spichlerza.
-            const playerFoodSt = empireFoodStates.get(0) ?? freshEmpireFoodState();
+            // SPICH-AUTO-Q1: auto-obniżenie racji przed rozliczeniem Spichlerza.
+            // Parytet AI (w tym miasta-państwa klastra): wcześniej tylko ownerId===0 —
+            // MP startują z Wyżywieniem 6 (procentRozwoj 100) przy słabej produkcji →
+            // chronicznie nie nakarmione, pop utknięty na 1. Komunikat HUD tylko gracz.
             const spichlerzByCityForAuto = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
             for (const city of cities) {
               const tick = econ.perCity.find(t => t.cityId === city.id);
@@ -19576,16 +19658,46 @@ async function boot(): Promise<void> {
                 maSpichlerzIIPop: tick?.maSpichlerzII ?? false,
               });
             }
-            const autoRationResult = autoBalanceRationsToSolvency({
-              ownerId: 0,
-              cities,
-              econ,
-              zapasyPrzed: playerFoodSt.zapasyPanstwa,
-              rationParams: efParams.rationParams,
-              spichlerzByCity: spichlerzByCityForAuto,
-            });
-            if (autoRationResult.adjusted) {
-              pendingAutoRationForNextTurn = autoRationResult;
+            const ownerIdsForAutoRation = new Set<number>();
+            for (const city of cities) {
+              if (city.ownerId >= 0) ownerIdsForAutoRation.add(city.ownerId);
+            }
+            for (const oid of empireFoodStates.keys()) {
+              if (oid >= 0) ownerIdsForAutoRation.add(oid);
+            }
+            let autoRationAnyAdjusted = false;
+            for (const ownerId of ownerIdsForAutoRation) {
+              const foodSt = empireFoodStates.get(ownerId) ?? freshEmpireFoodState();
+              const autoRationResult = autoBalanceRationsToSolvency({
+                ownerId,
+                cities,
+                econ,
+                zapasyPrzed: foodSt.zapasyPanstwa,
+                rationParams: efParams.rationParams,
+                spichlerzByCity: spichlerzByCityForAuto,
+              });
+              if (autoRationResult.adjusted) {
+                autoRationAnyAdjusted = true;
+                if (ownerId === 0) {
+                  pendingAutoRationForNextTurn = autoRationResult;
+                }
+              }
+              // Major AI (nie MP): podnieś Wyżywienie gdy nadwyżka — max wzrost ludności.
+              if (!typCityCopyOwners.has(ownerId)) {
+                const raiseResult = autoRaiseRationsForGrowth({
+                  ownerId,
+                  cities,
+                  econ,
+                  zapasyPrzed: foodSt.zapasyPanstwa,
+                  rationParams: efParams.rationParams,
+                  spichlerzByCity: spichlerzByCityForAuto,
+                });
+                if (raiseResult.adjusted) {
+                  autoRationAnyAdjusted = true;
+                }
+              }
+            }
+            if (autoRationAnyAdjusted) {
               refreshEconomyFoodTotals(econ);
             }
 
@@ -19849,6 +19961,21 @@ async function boot(): Promise<void> {
                 );
               }
             }
+            // --- Subtract building resource upkeep from owner stock (1/type/building/turę) ---
+            const playerResUpkeep = econ.resourceUpkeepByOwner.get(0);
+            if (playerResUpkeep && Object.keys(playerResUpkeep).length > 0) {
+              const poolBefore = ownerResourceStockAll(cities, 0);
+              const missingRes = missingStockFor(poolBefore, playerResUpkeep);
+              deductBuildingStockCostAcrossCities(cities, 0, playerResUpkeep);
+              if (Object.keys(missingRes).length > 0) {
+                console.warn(
+                  '[Ekonomia] Brak surowców na utrzymanie budynków: ' +
+                  Object.entries(missingRes)
+                    .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+                    .join(', '),
+                );
+              }
+            }
             // NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26): utrwal SKŁADNIKI realnego bilansu
             // tej tury (nie tylko rate.pieniadz), zeby "+N" przy Skarbcu na HUD (po tym
             // ticku, przed nastepnym refreshLiveEmpireRates) i jego rozbicie w podpowiedzi
@@ -19856,6 +19983,7 @@ async function boot(): Promise<void> {
             _lastBogactwoHandel = playerEcon.pieniadzZTras;
             _lastBogactwoUtrzymanieBudynkow = playerBalance?.utrzymanieBudynki ?? 0;
             _lastBogactwoUtrzymanieJednostek = playerBalance?.utrzymanieJednostki ?? 0;
+            _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(0) ?? {}) };
             _lastBogactwoRate = pieniadzGracza - (playerBalance?.utrzymanieRazem ?? 0);
 
             // Bank skarbca AI — per owner (nie econ.total*)
@@ -19869,6 +19997,10 @@ async function boot(): Promise<void> {
               const aiBalance = econ.upkeepByOwner.get(oid);
               if (aiBalance && aiBalance.utrzymanieRazem > 0) {
                 aiSkarb -= aiBalance.utrzymanieRazem;
+              }
+              const aiResUpkeep = econ.resourceUpkeepByOwner.get(oid);
+              if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
+                deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
               }
               aiSkarbiecByOwner.set(oid, Math.max(0, aiSkarb));
 
@@ -20235,9 +20367,10 @@ async function boot(): Promise<void> {
               orderMultMap.set(cid, orderEffectsToYieldMults(tier, orderEff));
 
               // AUTO-MANAGE (STEP D): zastosuj decyzje auto-zarzadcy jesli wlaczony
+              // AI-MANAGE-Q1=A: major AI zawsze auto-zarzadza; gracz przez UI; MP/defensiveCopy NIE.
               const praca = pracaRaw;
               let prod0 = cityProd.get(cid) ?? { kolejka: [], postep: 0 };
-              if (autoManageCities.has(cid)) {
+              if (autoManageCities.has(cid) || isMajorAiOwner(city.ownerId, isCityStateOwner)) {
                 try {
                   const unlockedTechs = city.ownerId === 0
                     ? Array.from(player.zbadane)
@@ -20684,6 +20817,42 @@ async function boot(): Promise<void> {
                   procentNauka:   DEFAULT_PODZIAL_HANDLU.procentNauka,
                   lastChangeTurn: null,
                 };
+                const ownerCitiesSlider = cities.filter(c => c.ownerId === ownerId);
+                let builtSumSlider = 0;
+                for (const oc of ownerCitiesSlider) {
+                  builtSumSlider += cityBuilt.get(oc.id)?.length ?? 0;
+                }
+                const avgBuiltSlider = builtSumSlider / Math.max(1, ownerCitiesSlider.length);
+                const isMajorAiSlider = !typCityCopyOwners.has(ownerId);
+                const sliderEarlyOpts: AITurnOpts = {
+                  defensiveCopy: typCityCopyOwners.has(ownerId),
+                  currentTurn: turn,
+                };
+                const isEarlyGameSlider = computeMajorAiEarlyGame(
+                  sliderEarlyOpts,
+                  ownerCitiesSlider,
+                  avgBuiltSlider,
+                );
+                const econUnitsSlider: EconUnit[] = units
+                  .filter(u => u.ownerId === ownerId)
+                  .map(u => ({
+                    ownerId: u.ownerId,
+                    typeId: u.typeId,
+                    camping: false,
+                    onOwnTerritory: true,
+                  }));
+                const upkeepSlider = previewOwnerUpkeep(
+                  ownerId,
+                  cities,
+                  data,
+                  effectiveGameDifficultyForOwner(ownerId),
+                  cityBuilt,
+                  econUnitsSlider,
+                  empireEpochForOwner(ownerId),
+                  aiResearchDone.get(ownerId) ?? new Set<string>(),
+                  empireEpochForOwner,
+                  unlockedTechSetForOwner,
+                );
                 const sliderDecision = decideAIEconomySliders(
                   {
                     zapasyPanstwa: getEmpireFoodReserve(ownerId),
@@ -20695,6 +20864,10 @@ async function boot(): Promise<void> {
                       procentBudynki: sliderSt.procentBudynki,
                       procentNauka:   sliderSt.procentNauka,
                     },
+                    isMajorAi: isMajorAiSlider,
+                    isEarlyGame: isEarlyGameSlider,
+                    treasuryGold: aiSkarbiecByOwner.get(ownerId) ?? 0,
+                    upkeepGoldCost: upkeepSlider.utrzymanieRazem,
                   },
                   aiSliderParams,
                 );
@@ -20743,6 +20916,7 @@ async function boot(): Promise<void> {
             const opts: AITurnOpts = {
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
+              menuDifficulty: _menuDifficulty,
               defensiveCopy: typCityCopyOwners.has(ownerId),
               canEngageOwner: (targetOwnerId: number) => {
                 if (isBarbarian(targetOwnerId)) return true;
@@ -20855,7 +21029,6 @@ async function boot(): Promise<void> {
             if (
               tc
               && clusterCapitalOwnerIds.has(ownerId)
-              && isOwnerPlayerSameCivType(ownerId)
             ) {
               const mpReach = clusterHubChainReachHex(Math.max(0, tc.miasta.length - 1));
               opts.clusterCenter = tc.centrum;
@@ -20870,7 +21043,10 @@ async function boot(): Promise<void> {
                 })
                 .map(c => ({ ownerId: c.ownerId, q: c.q, r: c.r }));
               if (opts.clusterStateTargets && opts.clusterStateTargets.length > 0) {
-                const csTiming = aiCsAbsorptionParams(_menuDifficulty);
+                const csTiming = applySameCivClusterAbsorptionBoost(
+                  aiCsAbsorptionParams(_menuDifficulty),
+                  _menuDifficulty,
+                );
                 opts.clusterConquestDeadlineActive = isClusterConquestDeadlineActive(
                   turn,
                   opts.clusterStateTargets,
@@ -20913,6 +21089,9 @@ async function boot(): Promise<void> {
             } else {
             // --- C-AI-WOJNA-Q1=A: dyplomacja PRZED ruchem (wojna w tej turze, atak od następnej) ---
             try {
+              if (clusterCapitalOwnerIds.has(ownerId)) {
+                syncAiMajorSameCivRelations(ownerId);
+              }
               aiDiploTradeGoodsCache = new Map();
               aiDiploQtyOptionsCache = new Map();
               const aiTyp = aiTypForOpts;
@@ -21092,7 +21271,10 @@ async function boot(): Promise<void> {
                       ))
                       .map(t => t.ownerId),
                   );
-                  const csAbsParams = aiCsAbsorptionParams(_menuDifficulty);
+                  const csAbsParams = applySameCivClusterAbsorptionBoost(
+                    aiCsAbsorptionParams(_menuDifficulty),
+                    _menuDifficulty,
+                  );
                   const clusterTargetsSorted = [...opts.clusterStateTargets].sort((a, b) => {
                     if (!refHex) return a.ownerId - b.ownerId;
                     const da = hexDistance(a.q, a.r, refHex.q, refHex.r);
@@ -21123,6 +21305,7 @@ async function boot(): Promise<void> {
                       failCount: aiCsFailCount.get(pairKey) ?? 0,
                       alreadyAtWar,
                       napBlocked,
+                      sameCivCluster: true,
                     });
                     if (!decision.action) continue;
 
@@ -22991,6 +23174,8 @@ async function boot(): Promise<void> {
       marchExecQueue.length = 0;
       pendingMarchHint = null;
       playerEverOwnedCity = false;
+      veteranEnemyEducationShown = false;
+      warEventLog.length = 0;
       turn = 1;
       playerPracaPool = 0;
       budowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];
@@ -23002,6 +23187,7 @@ async function boot(): Promise<void> {
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;
       _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieSurowcow = {};
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
       _lastLudnoscRate = 0;
@@ -24177,6 +24363,7 @@ async function boot(): Promise<void> {
         for (const oid of savedDiscoveryPopups) diplomaticDiscoveryPopupShown.add(oid);
       }
       veteranEnemyEducationShown = saved.meta?.veteranEnemyEducationShown === true;
+      if (veteranEnemyEducationShown) pruneVeteranEnemyEducationJournal();
       if (saved.diploRelations) {
         for (const [key, rel] of Object.entries(saved.diploRelations)) diplomacyRelations.set(key, rel as any);
       }
@@ -24229,6 +24416,7 @@ async function boot(): Promise<void> {
       _lastBogactwoHandel = 0;
       _lastBogactwoUtrzymanieBudynkow = 0;
       _lastBogactwoUtrzymanieJednostek = 0;
+      _lastBogactwoUtrzymanieSurowcow = {};
       _lastNaukaRate = 0;
       _lastKulturaRate = 0;
       _lastLudnoscRate = 0;

@@ -11,6 +11,7 @@ import {
   type EmpireUchwalaRow,
 } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
+import { stockResourceLabel } from '../game/building-stock-cost';
 import { mocLabel, mocWithValue } from './power-labels';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { signedPl } from './formatPl';
@@ -353,6 +354,12 @@ function treasuryDeltaHtml(n: number): string {
 /** Bilans skarbca — re-export dla testów (implementacja w treasuryBalanceFormat.ts). */
 export { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 
+function formatResourceUpkeepEmpireLine(resources: Record<string, number> | undefined): string {
+  const keys = Object.keys(resources ?? {});
+  if (keys.length === 0) return '—';
+  return keys.map(k => `−${resources![k]} ${stockResourceLabel(k)}`).join(' · ');
+}
+
 function cityEconMiniSkarbiec(
   rows: EmpireDetailSnap['cityEcon'],
   economy: EmpireDetailSnap['economy'],
@@ -363,6 +370,7 @@ function cityEconMiniSkarbiec(
   const handel = economy.bogactwoHandel ?? 0;
   const daninaBud = wplywy - handel;
   const utrzB = economy.bogactwoUtrzymanieBudynkow ?? 0;
+  const utrzRes = economy.bogactwoUtrzymanieSurowcowBudynkow ?? {};
   const utrzJ = economy.bogactwoUtrzymanieJednostek ?? 0;
   const netto = economy.bogactwoRate ?? 0;
 
@@ -372,6 +380,7 @@ function cityEconMiniSkarbiec(
   h += miniRow(['Wpływy brutto (podatek + budynki)', treasuryBalanceSignedTxt(daninaBud)], sumGrid);
   h += miniRow(['Handel ze szlaków', treasuryBalanceSignedTxt(handel)], sumGrid);
   h += miniRow(['Utrzymanie budynków', treasuryBalanceSignedTxt(-utrzB)], sumGrid);
+  h += miniRow(['Utrzymanie surowców budynków', formatResourceUpkeepEmpireLine(utrzRes)], sumGrid);
   h += miniRow(['Utrzymanie jednostek', treasuryBalanceSignedTxt(-utrzJ)], sumGrid);
   h += miniRow(['<b>Netto skarbiec</b>', `<b>${treasuryBalanceSignedTxt(netto)}</b>`], sumGrid);
   h += '</div>';
@@ -386,7 +395,7 @@ function cityEconMiniSkarbiec(
     ], grid);
   }
   h += '</div>';
-  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków i wojska schodzi ze skarbca imperium — suma w bilansie u góry. Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
+  h += '<div class="civ-emp-foot">„Do skarbca" = wpływ miasta po suwakach (Skarb %). Utrzymanie budynków (złoto) i wojska schodzi ze skarbca imperium. Utrzymanie surowców budynków schodzi z magazynu państwa (1/turę na typ z kosztu budowy). Jednostki na mapie = koszt imperium, nie per miasto w tabeli.</div>';
   return h;
 }
 

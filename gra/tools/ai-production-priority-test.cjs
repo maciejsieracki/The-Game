@@ -122,12 +122,17 @@ console.log('\n--- P7a: aiPanelPriorityDelta ---');
   eq(aiPanelPriorityDelta(2), -45, '2 -> -45');
 }
 
-console.log('\n--- P7b: wysoki priorytetNauka -> Biblioteka ---');
+console.log('\n--- P7b: wysoki priorytetNauka -> Biblioteka (mid-game) ---');
 {
   const id = chooseCityProduction(
     'c1', midCities, units, 1, data, ZERO_MODS,
     {
-      cityBuildings: { c1: ['koszary'] },
+      cityBuildings: {
+        c1: ['koszary', 'mury', 'spichlerz', 'stolarnia'],
+        c2: ['koszary', 'mury', 'spichlerz', 'stolarnia'],
+        c3: ['koszary', 'mury', 'spichlerz', 'stolarnia'],
+      },
+      currentTurn: 100,
       civAiProfile: {
         ekspansywnosc: 0,
         sklonnoscDoPodboju: 0,
@@ -167,7 +172,12 @@ console.log('\n--- P7d: Biblioteka zbudowana + wysoka nauka -> Akademia ---');
   const id = chooseCityProduction(
     'c1', midCities, units, 1, data, ZERO_MODS,
     {
-      cityBuildings: { c1: ['koszary', 'biblioteka'] },
+      cityBuildings: {
+        c1: ['koszary', 'biblioteka', 'mury', 'spichlerz'],
+        c2: ['koszary', 'mury', 'spichlerz', 'stolarnia'],
+        c3: ['koszary', 'mury', 'spichlerz', 'stolarnia'],
+      },
+      currentTurn: 100,
       civAiProfile: {
         ekspansywnosc: 0,
         sklonnoscDoPodboju: 0,

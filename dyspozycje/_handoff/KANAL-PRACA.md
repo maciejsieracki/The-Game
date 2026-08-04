@@ -1,4 +1,37 @@
-﻿## [19:13 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 215 `2a5a66d1`
+## [21:17 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 220 8a3c6d6d
+|- md5: 8a3c6d6d88f9d8a482e1c0107c9cc122 · stempel: ROBOCZA · 2026-08-04 21:17
+|- AI-ALL batch: (1) utrzymanie budynków +1 surowiec/turę per typ z kosztu budowy + UI; (2) MP army cap easy/normal/hard + absorption rates; (3) same-civ AI↔MP Zaufanie 100 + priorytet absorpcji klastra; (4) major AI early wzrost/Spichlerz + 60/40 archetyp + early ulepszenia; (5) AI-FOUND pop≥2, AI-LOCAL faza ~tura 20 LUB 1 zwiadowca, AI-MANAGE auto-zarządca major (NIE MP).
+|- Bramki: tsc 0 · ai-mp-military-cap 16/16 · ai-cs-absorption 29/29 · ai-major-economy 9/9 · ai-slider 37/37 · upkeep 49/73 (24 ×2 R-STAWKI, nie regres) · ai-war-gate 24/24 · city-state-alliance 67/67
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej — **najpierw git pull**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
+## [20:12 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 219 9830224e
+- md5: 9830224eb13e86452128661adf120541 · stempel: ROBOCZA · 2026-08-04 20:12
+- Dyplo: edycja kontrpropozycji + landscape dealów; AI bilateral + proposerUnfairToPartnerGate (NAP/traktaty, blokada Przyjmij)
+- Tip „Doświadczeni wojownicy” — ★≥2, bez spamu (veteranEnemyEducationShown)
+- Bramki: tsc 0 · negotiation-table 55/55 · acceptance-points 218/218
+- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej — **najpierw git pull**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
+## [19:52 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna - DEPLOY FALA 218 4cf44809
+- md5: 4cf448090fae0e052cd754a96ce085ae · stempel: ROBOCZA · 2026-08-04 19:52
+- Dyplo: uproszczone UI traktatów (NAP/sojusz/…) + stół multi-deal
+- Parytet auto-racji AI/MP (wzrost miast-państw); city-state-mp-growth 9/9
+- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej - **najpierw git pull**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
+## [19:43 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 217 6bb24541
+- md5: 6bb245419c549de550282ec2829c7d2f · stempel: ROBOCZA · 2026-08-04 19:43
+- UI NAP uproszczony: czas, kary, ultimatum, Anuluj/Zaproponuj (diplomacyTradeBasket.ts)
+- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej — **najpierw git pull** (lub pliki lokalne), potem Ctrl+F5 + Nowa gra · OK/BUG
+
+﻿## [19:32 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna - DEPLOY FALA 216 56ee166e
+- md5: 56ee166e52ccfe166546bc108914cb6f · stempel: ROBOCZA · 2026-08-04 19:32
+- UI: aktywne tryby jednostki (fortify/sentry/autoExplore) — ramka 3px złota
+- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej - **najpierw git pull**, potem Ctrl+F5 + Nowa gra · OK/BUG
+## [19:13 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 215 `2a5a66d1`
 - md5: `2a5a66d15012215778d4bdd23c027ec4` · stempel: `ROBOCZA · 2026-08-04 19:13`
 - R-NADMIAR-POOLS FALA2 ×2 koszty (budynki/jednostki/ulepszenia/cuda/Brąz+Żelazo) — PR #82
 - Wejście: `gra-robocza/START.html`

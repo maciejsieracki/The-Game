@@ -24,6 +24,7 @@ export {
   bilateralTreatyDisplayPw,
   sideDisplayOfferPw,
 } from './game/diplomacy-acceptance-points';
+export { evaluateProposal } from './game/diplomacy-proposals';
 export {
   diplomacyFairGivePn,
   diplomacyPnTech,
@@ -400,9 +401,11 @@ ok(underpayPreview.reason.includes('nieuczciwa'), 'incoming underpay: reason men
 const underpayNet = mod.computeIncomingPlayerAcceptNetPw('handel', underpayPayload, 100);
 ok(underpayNet != null && underpayNet.netPw === -60, 'incoming underpay: net −60 PW');
 
-// AI evaluating player offer still uses fair-min (no regression on outgoing path)
-const playerOfferSides = mod.computePlayerAcceptanceSides('handel', underpayPayload, 100, false);
-ok(!playerOfferSides.their.accepted, 'outgoing underpay: AI side not accepted (fair-min)');
+// AI evaluating player offer: bilateral net (outgoing)
+const playerUnderpaySides = mod.computePlayerAcceptanceSides('handel', overpayPayload, 100, false);
+ok(!playerUnderpaySides.their.accepted, 'outgoing underpay handel: their.accepted false (gracz bierze za dużo)');
+const playerOverpaySides = mod.computePlayerAcceptanceSides('handel', underpayPayload, 100, false);
+ok(playerOverpaySides.their.accepted, 'outgoing overpay handel: their.accepted true (gracz dopłaca)');
 
 const underpayRow = {
   direction: 'incoming',
@@ -415,6 +418,59 @@ const underpayPanelData = mod.balancePanelDataFromRow(underpayRow, 0);
 const underpayPanel = mod.renderPnBalancePanelHtml(underpayPanelData);
 ok(underpayPanel.includes('da-pn-balance-bar no'), 'incoming underpay panel: tone no');
 ok(underpayPanel.includes('nieuczciwa'), 'incoming underpay panel: unfair message');
+
+// BUG: outgoing handel — their.accepted musi być false gdy partner traci (nie odwrócone pnDealAcceptedByAi)
+const woodUnfair = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 3 }],
+};
+const woodOut = mod.computePlayerAcceptanceSides('handel', woodUnfair, 100, false);
+ok(!woodOut.their.accepted, 'outgoing 1v3 drewno: their.accepted false');
+ok(woodOut.their.statusLabel.includes('nieuczciwa'), 'outgoing 1v3: status nieuczciwa dla partnera');
+
+// Silnik: bilateral gate odrzuca nawet gdy pnDealAcceptedByAi @ wysokiej Relacji przechodzi
+const woodHighRel = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  receiveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 3 }],
+};
+const ctx300 = {
+  relation: { zaufanie: 150, respekt: 150, status: 'pokoj' },
+  stanWojny: false,
+  turn: 1,
+  difficulty: 'normal',
+  activeDeals: [],
+  proposerRespekt: 50,
+  responderRespekt: 50,
+};
+const evalHighRel = mod.evaluateProposal(
+  { actionId: 'handel', proposerOwnerId: 0, responderOwnerId: 1, payload: woodHighRel },
+  ctx300,
+);
+ok(!evalHighRel.accepted, 'handel 1v3 @ rel 300: evaluate rejects bilateral unfair');
+ok(
+  (evalHighRel.reason ?? '').includes('nieuczciwa') || (evalHighRel.reason ?? '').includes('niekorzystna'),
+  'handel 1v3 @ rel 300: reason mentions unfair',
+);
+
+// umowa_szlakow @ rel 92 — bilans −5, silnik odrzuca (treatyPnGate + bilateral)
+const treatyUnfair92 = {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 31 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 30 }],
+};
+const ctx92 = {
+  relation: { zaufanie: 46, respekt: 46, status: 'pokoj' },
+  stanWojny: false,
+  turn: 1,
+  difficulty: 'normal',
+  activeDeals: [],
+  proposerRespekt: 50,
+  responderRespekt: 50,
+};
+const evalTreaty92 = mod.evaluateProposal(
+  { actionId: 'umowa_szlakow', proposerOwnerId: 0, responderOwnerId: 1, payload: treatyUnfair92 },
+  ctx92,
+);
+ok(!evalTreaty92.accepted, 'umowa_szlakow @ rel 92 asymetria: evaluate rejects');
 
 // Traktat handlowy @ rel 52 — UI asymetria (Maciej 2026-08-04)
 ok(mod.effectiveTreatyPnRequired(80, 52) === 42, 'umowa_handlowa @ rel 52: 80 → 42 PW gracz');

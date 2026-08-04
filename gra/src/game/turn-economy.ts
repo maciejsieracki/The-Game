@@ -77,6 +77,7 @@ import {
   loadUpkeepParams,
   buildUnitUpkeepTable,
   upkeepBalance,
+  totalBuildingResourceUpkeep,
   unitFoodPerTurn,
   loadOwnerStorageParams,
   ownerResourceCapacityPerType,
@@ -1101,6 +1102,8 @@ export interface EconomyTickResult {
   starved:        number;   // cities that lost population this turn
   /** Per-owner upkeep balance (buildings + units). Keyed by ownerId. */
   upkeepByOwner:  Map<number, UpkeepBalance>;
+  /** Per-owner building resource upkeep (1/turę per koszt_surowce type). Keyed by ownerId. */
+  resourceUpkeepByOwner: Map<number, Record<string, number>>;
   /**
    * ZADANIE 1 (Maciej 2026-07-23): Praca/turę do odjęcia z globalnej puli
    * produkcji cywilizacji (civ-wide -- playerPracaPool/aiPracaPoolByOwner w
@@ -2117,6 +2120,7 @@ export function advanceCityEconomy(
     growth:         0,
     starved:        0,
     upkeepByOwner:  new Map(),
+    resourceUpkeepByOwner: new Map(),
     pracaUpkeepByOwner,
   };
 
@@ -2506,6 +2510,10 @@ export function advanceCityEconomy(
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
+    result.resourceUpkeepByOwner.set(
+      oid,
+      totalBuildingResourceUpkeep(buildingsByOwner.get(oid) ?? []),
+    );
   }
 
   if (manpowerHeal) {

@@ -17,7 +17,11 @@ import { Nakladka }     from '../types/hex';
 import type { GameData } from '../data/loader';
 import aiParamsRaw from '../../data/ai-params.json';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, computeReachable, keyOf } from '../units/setup';
+import { hexDistance, computePath, computeReachable, keyOf, isCivilianUnit } from '../units/setup';
+import {
+  cityStateMilitaryProductionCap,
+  type DifficultyLevel,
+} from './city-state-difficulty';
 import type { City }       from './cities';
 import { canFoundCity }    from './cities';
 import { evaluateFoundCityAffordance } from './city-founding';
@@ -194,6 +198,11 @@ export interface AITurnOpts {
    * Values loaded from ai-params.json (trudnosc_poziom<N>_*).
    */
   poziomTrudnosci?: 1 | 2 | 3;
+  /**
+   * Trudność gry gracza (_menuDifficulty) — cap wojska MP i absorpcja CS.
+   * NIE suwak trudności MP (_menuCityStateDifficulty).
+   */
+  menuDifficulty?: DifficultyLevel;
   /**
    * Budget gate (pkt5): called by the engine with (cityId, buildingId).
    * When provided, only candidates for which canAfford returns true are considered.
@@ -705,10 +714,19 @@ function firstStep(
 /** Pełne cywilizacje: min. tyle zwiadowców w fazie startowej (nie dotyczy państw-miast). */
 export const AI_EARLY_SCOUT_TARGET = 2;
 const SCOUT_TYPE_ID = 'Zwiadowca';
-/** Promień szukania neutralnych wiosek w fazie lokalnej (hexy od dowolnego miasta). */
-const AI_LOCAL_VILLAGE_SEARCH_RADIUS = 24;
-/** Po tej turze faza lokalna może się zakończyć mimo niewybranych hutów / MP. */
-const AI_LOCAL_PHASE_MAX_TURN = 45;
+
+/** Jednostki bojowe ownera (nie cywilne: zwiadowca/osadnik/robotnik). */
+export function countOwnerMilitaryUnits(allUnits: RuntimeUnit[], ownerId: number): number {
+  return allUnits.filter(u => u.ownerId === ownerId && !isCivilianUnit(u)).length;
+}
+
+/** Kandydat produkcji to jednostka bojowa (nie budynek, nie cywil). */
+function isMilitaryProductionCandidate(id: string, buildingNames: ReadonlySet<string>): boolean {
+  if (buildingNames.has(id)) return false;
+  return !isCivilianUnit({ typeId: id, category: '' });
+}
+/** AI-LOCAL-Q1=A: faza lokalna kończy się ~tura 20. */
+const AI_LOCAL_PHASE_MAX_TURN = 20;
 
 /** R-AI-KOLONIZACJA-Q1: min pop miasta-źródła AI przed founding. */
 export const AI_COLONIZATION_SOURCE_MIN_POP = 5;
@@ -779,34 +797,14 @@ function isVillageExploreRacePhase(opts: AITurnOpts, myCities: AICity[]): boolea
   return !opts.defensiveCopy && myCities.length < 3;
 }
 
-/** Liczba wolnych wiosek w zasięgu od miast AI (faza lokalna — huty przed founding). */
-function countNeutralVillagesInRange(
-  map: GameMap,
-  myCities: AICity[],
-  radius: number,
-): number {
-  if (myCities.length === 0) return 0;
-  let count = 0;
-  for (const key of Object.keys(map.hexes)) {
-    const hex = map.hexes[key];
-    if (hex === undefined) continue;
-    if (!hex.wioska.istnieje) continue;
-    if (hex.wlasciciel !== null) continue;
-    const { q, r } = hex.coords;
-    const near = myCities.some(c => hexDistance(q, r, c.q, c.r) <= radius);
-    if (near) count += 1;
-  }
-  return count;
-}
-
 /**
- * Faza lokalna (Maciej 2026-07-28): skauci + huty + MP w klastrze przed founding drugiego miasta.
- * Kończy się po wyczerpaniu celów lokalnych lub po AI_LOCAL_PHASE_MAX_TURN.
+ * AI-LOCAL-Q1=A: faza lokalna kończy się ~tura 20 LUB gdy AI ma 1 zwiadowca.
+ * Wioski NIE blokują founding (tylko skauci/tura + cele klastra).
  */
 export function isLocalExpansionPhase(
   opts: AITurnOpts,
   myCities: AICity[],
-  map: GameMap,
+  _map: GameMap,
   units: readonly RuntimeUnit[],
   playerId: number,
   allCities: ReadonlyArray<{ ownerId: number; startCityState?: boolean }> = myCities,
@@ -831,9 +829,7 @@ export function isLocalExpansionPhase(
 
   if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return true;
 
-  if (countPlayerScouts(units, playerId) < AI_EARLY_SCOUT_TARGET) return true;
-
-  if (countNeutralVillagesInRange(map, myCities, AI_LOCAL_VILLAGE_SEARCH_RADIUS) > 0) return true;
+  if (countPlayerScouts(units, playerId) < 1) return true;
 
   return false;
 }
@@ -946,6 +942,76 @@ function hexCityScore(
 // Production decision (Spec-AI §4 + §9 step 2)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Major AI ekonomia (Maciej 2026-08-04) — pełne cywilizacje AI, NIE MP/kopie.
+// ---------------------------------------------------------------------------
+
+/** Max tura „early game” major AI (wzrost ludności > budynki wojskowe). */
+export const AI_MAJOR_EARLY_MAX_TURN = 40;
+/** Średnia ludność miasta poniżej progu → nadal early. */
+export const AI_MAJOR_EARLY_MAX_AVG_POP = 5;
+/** Średnia liczba budynków/miasto poniżej progu → nadal early. */
+export const AI_MAJOR_EARLY_MAX_BUILDINGS_AVG = 4;
+/** Bias 60/40: ±5% udziału wojska na punkt różnicy priorytetów archetypu (ai-params). */
+export const AI_ARCHETYPE_BIAS_PER_POINT = 0.05;
+/** Early major: ~60% Pracy do puli państwa (ulepszenia), ~40% kolejka budowy. */
+export const AI_MAJOR_EARLY_PROCENT_BUDYNKI = 40;
+/** Mid major: ~50/50 budynki ↔ ulepszenia. */
+export const AI_MAJOR_MID_PROCENT_BUDYNKI = 50;
+/** Early major: niższy próg Pracy zanim AI buduje ulepszenie terenu. */
+export const AI_MAJOR_EARLY_IMPROVEMENT_PRACA_SURPLUS = 10;
+
+/** Pełna cywilizacja AI (nie miasto-państwo / kopia_typu_obronna). */
+export function isMajorAiOwner(opts: AITurnOpts): boolean {
+  return !opts.defensiveCopy;
+}
+
+/** Early game major AI — mała ludność, mało budynków lub wczesna tura. */
+export function computeMajorAiEarlyGame(
+  opts: AITurnOpts,
+  myCities: AICity[],
+  avgBuildingsPerCity: number,
+): boolean {
+  if (!isMajorAiOwner(opts)) return false;
+  const turn = opts.currentTurn ?? 0;
+  if (turn <= AI_MAJOR_EARLY_MAX_TURN) return true;
+  if (myCities.length === 0) return false;
+  const avgPop = myCities.reduce((s, c) => s + c.population, 0) / myCities.length;
+  if (avgPop < AI_MAJOR_EARLY_MAX_AVG_POP) return true;
+  if (avgBuildingsPerCity < AI_MAJOR_EARLY_MAX_BUILDINGS_AVG) return true;
+  return false;
+}
+
+/**
+ * Udział wojska w alokacji major AI (0.4–0.6) z ai-params archetypów.
+ * Wojowniczy (zulusi: wojsko +2, ekonomia -1) ≈60% wojsko;
+ * gospodarczy (chiny: wojsko -1, ekonomia +1) ≈40% wojsko (reszta rozwój).
+ */
+export function computeMajorArchetypeMilitaryFraction(
+  mods: ArchetypeMods,
+): number {
+  const delta = (mods.wojsko - mods.ekonomia) * AI_ARCHETYPE_BIAS_PER_POINT;
+  return Math.min(0.6, Math.max(0.4, 0.5 + delta));
+}
+
+function applyMajorArchetypeProductionBias(
+  candidates: { id: string; score: number }[],
+  data: GameData,
+  militaryFraction: number,
+): void {
+  const unitNames = new Set(data.units.map(u => u.Jednostka));
+  const buildingIds = new Set(data.buildings.map(b => b.id));
+  const milBoost = Math.round((militaryFraction - 0.5) * 160);
+  const infraIds = new Set(['spichlerz', 'mury', 'koszary', 'studnia', 'garncarnia']);
+  for (const c of candidates) {
+    if (unitNames.has(c.id)) {
+      c.score += milBoost;
+    } else if (buildingIds.has(c.id) && !infraIds.has(c.id)) {
+      c.score -= milBoost;
+    }
+  }
+}
+
 /**
  * Returns the id of the building or unit this city should build next.
  * Priority based on Spec-AI §4 and archetype modifiers.
@@ -967,6 +1033,15 @@ export function chooseCityProduction(
   const city = myCities.find(c => c.id === cityId);
   if (city === undefined) return null;
 
+  const avgBuiltPerCity = myCities.reduce((s, c) => {
+    const n = opts.cityBuildings?.[c.id]?.length ?? 0;
+    return s + n;
+  }, 0) / Math.max(1, myCities.length);
+  const majorEarly = computeMajorAiEarlyGame(opts, myCities, avgBuiltPerCity);
+  const majorMilFrac = isMajorAiOwner(opts)
+    ? computeMajorArchetypeMilitaryFraction(mods)
+    : 0.5;
+
   // Threat check: any enemy within threat range of this city
   const threatRange  = getAiParam(data, 'ekspansja_zagroz_zasieg', AI_THREAT_RANGE_DEFAULT);
   const enemyUnits   = allUnits.filter(u => u.ownerId !== playerId);
@@ -981,13 +1056,14 @@ export function chooseCityProduction(
   const panelBoost = aiProductionScoreBoosts(opts.civAiProfile);
   const powerGoalBoost = opts.currentTurn !== undefined
     && opts.currentTurn % 3 === 0
-    && (opts.powerRank ?? 1) > 1;
+    && (opts.powerRank ?? 1) > 1
+    && !majorEarly;
   const economyScore  = 100 + mods.ekonomia * 20 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
   const militaryScore = 100 + mods.wojsko   * 20 + panelBoost.military;
   const defenseScore  = 100 + mods.obrona   * 20;
   const scienceScore  = 100 + mods.nauka    * 20 + panelBoost.science;
 
-  const candidates: { id: string; score: number }[] = [];
+  let candidates: { id: string; score: number }[] = [];
 
   // Państwa-kopie (kopia_typu_obronna) NIGDY nie zakładają miast (brak Osadnika/foundCity —
   // patrz opts.defensiveCopy niżej), więc myCities.length pozostaje = 1 na zawsze. Bez tego
@@ -1046,9 +1122,15 @@ export function chooseCityProduction(
       u => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1,
     );
     if (cityGuard.length === 0) {
-      candidates.push({ id: 'Wojownik', score: 190 + militaryScore });
+      const guardScore = majorEarly ? 110 + militaryScore * majorMilFrac : 190 + militaryScore;
+      candidates.push({ id: 'Wojownik', score: guardScore });
     }
-    candidates.push({ id: 'Łucznik',   score: 180 + militaryScore });
+    if (!majorEarly) {
+      candidates.push({ id: 'Łucznik',   score: 180 + militaryScore });
+    } else {
+      // Major early: minimal wojsko poza garnizonem — archetyp 60/40, nie blokada produkcji.
+      candidates.push({ id: 'Łucznik', score: 90 + militaryScore * majorMilFrac });
+    }
   } else {
     // §4.2 Mid phase
     if (!built.includes('koszary')) {
@@ -1126,6 +1208,21 @@ export function chooseCityProduction(
     }
   }
 
+  if (isMajorAiOwner(opts)) {
+    applyMajorArchetypeProductionBias(candidates, data, majorMilFrac);
+    if (majorEarly) {
+      for (const c of candidates) {
+        if (c.id === 'Wojownik' || c.id === 'Łucznik') {
+          c.score = Math.round(c.score * 0.65);
+        }
+        const earlyEconBuildings = ['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko', 'biblioteka', 'akademia'];
+        if (earlyEconBuildings.includes(c.id)) {
+          c.score = Math.round(c.score * 0.55);
+        }
+      }
+    }
+  }
+
   // ZADANIE 2 (Maciej 2026-07-23, correctness): priorytet konwertery-przed-konsumentami.
   // Cegła/Brąz/Żelazo powstają WYŁĄCZNIE w swoim konwerterze (Cegielnia/Odlewnia brązu/
   // Odlewnia żelaza -- glina+drewno→cegła, ruda+drewno→brąz, ruda_zelaza+drewno→żelazo).
@@ -1197,6 +1294,20 @@ export function chooseCityProduction(
   // §4.4 Filter out buildings already built (units can be built multiple times)
   // built (opts.cityBuildings) i candidates -- oba po id budynku (patrz cityBuilt w main.ts).
   const buildingNames = new Set(data.buildings.map(b => b.id));
+
+  // MP (defensiveCopy): cap wojska wg trudności GRY gracza — easy bez limitu, normal max 1, hard 0.
+  if (opts.defensiveCopy && opts.menuDifficulty !== undefined) {
+    const milCap = cityStateMilitaryProductionCap(opts.menuDifficulty);
+    if (milCap !== null) {
+      const militaryOwned = countOwnerMilitaryUnits(allUnits, playerId);
+      if (militaryOwned >= milCap) {
+        candidates = candidates.filter(
+          c => !isMilitaryProductionCandidate(c.id, buildingNames),
+        );
+      }
+    }
+  }
+
   let available = candidates.filter(c => {
     if (buildingNames.has(c.id) && built.includes(c.id)) return false;
     return true;
@@ -1440,11 +1551,19 @@ function planCityImprovements(
   if (!territoryNodes || myCities.length === 0) return [];
 
   const pracaAvailable = opts.pracaAvailable ?? 0;
+  const avgBuilt = myCities.reduce((s, c) => {
+    const n = opts.cityBuildings?.[c.id]?.length ?? 0;
+    return s + n;
+  }, 0) / Math.max(1, myCities.length);
+  const majorEarly = computeMajorAiEarlyGame(opts, myCities, avgBuilt);
+  const pracaSurplusGate = majorEarly
+    ? AI_MAJOR_EARLY_IMPROVEMENT_PRACA_SURPLUS
+    : AI_IMPROVEMENT_PRACA_SURPLUS;
   // P-AI-009: bramka wejścia — pula musi PRZEKRACZAĆ próg (nie buduj przy „na styk").
   // Rezerwa NIE jest wymagana PO kosztu ulepszenia (gracz: AUTO_ULEPSZENIA_PRACA_RESERVE
   // w pickAutoImprovements — inna polityka). Przed FALA 204 / pickAutoImprovements AI
   // schodził z puli poniżej 30 po budowie farmy (koszt 20 przy puli 35) — regres MP.
-  if (pracaAvailable <= AI_IMPROVEMENT_PRACA_SURPLUS) return [];
+  if (pracaAvailable <= pracaSurplusGate) return [];
 
   const picks = pickAutoImprovements({
     cities: myCities,
@@ -3532,6 +3651,14 @@ export interface AiSliderInputs {
   lastSliderChangeTurn: number | null;
   /** Bieżące ustawienia suwaków tego ownera (wynik poprzedniej korekty lub wartości startowe miasta). */
   current: AiSliderSettings;
+  /** Maciej 2026-08-04: pełna cywilizacja AI (nie MP/kopia_typu_obronna). */
+  isMajorAi?: boolean;
+  /** Early game major — bias wzrost + ulepszenia. */
+  isEarlyGame?: boolean;
+  /** Skarbiec Pieniądza ownera (pkt) — priorytet utrzymania. */
+  treasuryGold?: number;
+  /** Szacunkowe utrzymanie budynków+armii (pkt Pieniądz/tura). */
+  upkeepGoldCost?: number;
 }
 
 /** Nazwane progi/kroki heurystyki AI-suwaki (ładowane z econ-params.json globalne.ai_suwaki_*). */
@@ -3582,13 +3709,54 @@ export function decideAIEconomySliders(
   let { procentRozwoj, procentBudynki, procentNauka } = inp.current;
   let changed = false;
 
+  // Major early: zawsze max wzrost (procentRozwoj=100) jeśli Spichlerz państwa nie jest
+  // ujemny. Nie czekamy na minOdstepTur — między korektami nie można tracić tur na niskie
+  // racje. Deficyt żywności (< deficytZapasowProg) nadal obniża suwak w bloku poniżej.
+  if (
+    inp.isMajorAi
+    && inp.isEarlyGame
+    && inp.zapasyPanstwa >= params.deficytZapasowProg
+    && procentRozwoj < 100
+  ) {
+    procentRozwoj = 100;
+    changed = true;
+  }
+
   if (turnsSinceChange >= params.minOdstepTur) {
     if (inp.zapasyPanstwa < params.deficytZapasowProg) {
       const next = Math.max(0, procentRozwoj - params.krokProcentRozwoj);
       if (next !== procentRozwoj) { procentRozwoj = next; changed = true; }
+    } else if (inp.isMajorAi && inp.isEarlyGame) {
+      // Major early: max wzrost — nie magazynuj w Spichlerzu państwa kosztem ludności.
+      const target = 100;
+      if (procentRozwoj < target) { procentRozwoj = target; changed = true; }
     } else if (inp.zapasyPanstwa > params.nadwyzkaZapasowProg) {
       const next = Math.min(100, procentRozwoj + params.krokProcentRozwoj);
       if (next !== procentRozwoj) { procentRozwoj = next; changed = true; }
+    }
+
+    // Utrzymanie Pieniądza: gdy skarbiec nie pokrywa kosztów — więcej Handlu→Pieniądz.
+    if (
+      inp.isMajorAi
+      && inp.treasuryGold !== undefined
+      && inp.upkeepGoldCost !== undefined
+      && inp.treasuryGold < inp.upkeepGoldCost
+    ) {
+      const nextNauka = Math.max(0, procentNauka - params.krokProcentPracaNauka);
+      if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+    }
+
+    if (inp.isMajorAi && inp.isEarlyGame) {
+      const targetB = AI_MAJOR_EARLY_PROCENT_BUDYNKI;
+      if (procentBudynki !== targetB) { procentBudynki = targetB; changed = true; }
+    } else if (inp.isMajorAi && !inp.isEarlyGame) {
+      const targetB = AI_MAJOR_MID_PROCENT_BUDYNKI;
+      if (Math.abs(procentBudynki - targetB) > params.krokProcentPracaNauka) {
+        const nextB = procentBudynki > targetB
+          ? procentBudynki - params.krokProcentPracaNauka
+          : procentBudynki + params.krokProcentPracaNauka;
+        if (nextB !== procentBudynki) { procentBudynki = nextB; changed = true; }
+      }
     }
 
     if (inp.atWar) {
@@ -3596,11 +3764,19 @@ export function decideAIEconomySliders(
       if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
       const nextNauka = Math.max(0, procentNauka - params.krokProcentPracaNauka);
       if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
-    } else {
-      const nextBudynki = Math.max(0, procentBudynki - params.krokProcentPracaNauka);
-      if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
-      const nextNauka = Math.min(100, procentNauka + params.krokProcentPracaNauka);
-      if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+    } else if (!inp.isMajorAi || !inp.isEarlyGame) {
+      // Pokój: major early NIE obniża procentBudynki (szkodzi ulepszeniom/wzrostowi).
+      // Pieniądze: najpierw upkeep budynki+armia — w kryzysie nie zwiększamy Nauki kosztem Pieniądza.
+      const moneyCrisis = inp.isMajorAi
+        && inp.treasuryGold !== undefined
+        && inp.upkeepGoldCost !== undefined
+        && inp.treasuryGold < inp.upkeepGoldCost;
+      if (!moneyCrisis) {
+        const nextBudynki = Math.max(0, procentBudynki - params.krokProcentPracaNauka);
+        if (nextBudynki !== procentBudynki) { procentBudynki = nextBudynki; changed = true; }
+        const nextNauka = Math.min(100, procentNauka + params.krokProcentPracaNauka);
+        if (nextNauka !== procentNauka) { procentNauka = nextNauka; changed = true; }
+      }
     }
   }
 

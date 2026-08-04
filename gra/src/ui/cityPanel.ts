@@ -172,7 +172,7 @@ import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { axialToWorld, HEX_R } from '../render/hexutil';
 import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
-import { buildingUpkeep } from '../game/economy-upkeep';
+import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts } from '../game/economy-upkeep';
 import {
   type TradeRoute,
 } from '../game/trade-routes';
@@ -943,6 +943,7 @@ export interface EmpireHudSnap {
   bogactwoWplywyBrutto?: number;
   bogactwoHandel?: number;
   bogactwoUtrzymanieBudynkow?: number;
+  bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
   bogactwoUtrzymanieJednostek?: number;
   bogactwoRate?: number;
 }
@@ -959,6 +960,8 @@ export interface CityMoneySnap {
   handelZeSzlakow: number;
   /** Utrzymanie budynków w tym mieście / turę. */
   utrzymanieBudynkow: number;
+  /** Utrzymanie surowców budynków w tym mieście / turę (magazyn państwa). */
+  utrzymanieSurowcowBudynkow?: Record<string, number>;
   /** Utrzymanie jednostek na heksie miasta (garnizon) / turę. */
   utrzymanieGarnizonu: number;
   /** Nauka / turę z tego miasta (informacyjnie). */
@@ -4001,6 +4004,7 @@ function appendCitySkarbiecBalance(mount: HTMLElement, city: City): void {
     { label: 'Handel ze szlaków', value: signed(snap.handelZeSzlakow) },
     { label: '→ Wpływ do skarbca imperium', value: signed(snap.doSkarbca), cls: snap.doSkarbca > 0 ? 'green' : snap.doSkarbca < 0 ? 'red' : 'muted' },
     { label: 'Utrzymanie budynków (to miasto)', value: snap.utrzymanieBudynkow > 0 ? `−${snap.utrzymanieBudynkow}` : '—', cls: snap.utrzymanieBudynkow > 0 ? 'red' : undefined },
+    { label: 'Utrzymanie surowców budynków', value: formatResourceUpkeepSummary(snap.utrzymanieSurowcowBudynkow ?? {}), cls: Object.keys(snap.utrzymanieSurowcowBudynkow ?? {}).length > 0 ? 'red' : undefined },
     { label: 'Utrzymanie garnizonu (hex miasta)', value: snap.utrzymanieGarnizonu > 0 ? `−${snap.utrzymanieGarnizonu}` : '—', cls: snap.utrzymanieGarnizonu > 0 ? 'red' : undefined },
   ];
 
@@ -4909,12 +4913,14 @@ function buildTopBarZlotoDetailCard(
   const wplywy = empire.bogactwoWplywyBrutto ?? 0;
   const handel = empire.bogactwoHandel ?? 0;
   const utrzB = empire.bogactwoUtrzymanieBudynkow ?? 0;
+  const utrzRes = empire.bogactwoUtrzymanieSurowcowBudynkow ?? {};
   const utrzJ = empire.bogactwoUtrzymanieJednostek ?? 0;
   const netto = empire.bogactwoRate ?? empire.zlotoRate ?? 0;
   gridDetailRow(gImp, 'Stan skarbca', `${skarb}`);
   gridDetailRow(gImp, 'Wpływy brutto', signed(wplywy - handel));
   gridDetailRow(gImp, 'Handel ze szlaków', signed(handel));
   gridDetailRow(gImp, 'Utrzymanie budynków', utrzB > 0 ? `−${utrzB}` : '—');
+  gridDetailRow(gImp, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(utrzRes));
   gridDetailRow(gImp, 'Utrzymanie jednostek', utrzJ > 0 ? `−${utrzJ}` : '—');
   gridDetailRow(gImp, 'Netto / turę', signed(netto));
 
@@ -4926,6 +4932,7 @@ function buildTopBarZlotoDetailCard(
     gridDetailRow(gCity, 'Handel ze szlaków', signed(moneySnap.handelZeSzlakow));
     gridDetailRow(gCity, '→ Do skarbca imperium', signed(moneySnap.doSkarbca));
     gridDetailRow(gCity, 'Utrzymanie budynków', moneySnap.utrzymanieBudynkow > 0 ? `−${moneySnap.utrzymanieBudynkow}` : '—');
+    gridDetailRow(gCity, 'Utrzymanie surowców budynków', formatResourceUpkeepSummary(moneySnap.utrzymanieSurowcowBudynkow ?? {}));
     gridDetailRow(gCity, 'Utrzymanie garnizonu', moneySnap.utrzymanieGarnizonu > 0 ? `−${moneySnap.utrzymanieGarnizonu}` : '—');
     gridDetailRow(gCity, 'Nauka (osobny bank)', signed(moneySnap.nauka));
   } else {
@@ -5622,23 +5629,93 @@ function buildingStockCostChipsHtml(def: BuildingDef, city: City | undefined): s
 
 const BUILDING_UPKEEP_ZERO_LABEL = 'utrzymanie zero';
 
-function formatBuildingUpkeepGridValue(upkeep: number): string {
-  if (upkeep === 0) return BUILDING_UPKEEP_ZERO_LABEL;
-  return `${upkeep} ${cityPanelChipIconWrap('res-treasury', 14)}`;
+function formatResourceUpkeepText(
+  resources: Record<string, number>,
+  compact: boolean,
+): string {
+  const keys = Object.keys(resources);
+  if (keys.length === 0) return '';
+  return keys
+    .map(k => (compact
+      ? `−${resources[k]} ${stockResourceLabel(k)}`
+      : `−${resources[k]} ${stockResourceLabel(k)}/t`))
+    .join(' · ');
 }
 
-function formatBuildingUpkeepRowHtml(upkeep: number, compact: boolean): string {
-  if (upkeep === 0) return BUILDING_UPKEEP_ZERO_LABEL;
-  return compact
-    ? `−${upkeep}${cityPanelChipIconWrap('res-treasury', 8)}`
-    : `−${upkeep}${cityPanelChipIconWrap('res-treasury', 10)}/t`;
+function buildingUpkeepDisplay(
+  def: BuildingDef,
+  level: number,
+): { gold: number; resources: Record<string, number> } {
+  return {
+    gold: buildingUpkeep(def as unknown as BuildingRecord, level),
+    resources: buildingResourceUpkeep(def),
+  };
 }
 
-function formatBuildingUpkeepTotalHtml(totalUpkeep: number): string {
-  if (totalUpkeep === 0) {
+function sumOwnedBuildingsResourceUpkeep(
+  built: readonly string[],
+  data: GameData,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const id of built) {
+    const def = data.buildings.find(b => b.id === id);
+    if (!def) continue;
+    addResourceCosts(out, buildingResourceUpkeep(def));
+  }
+  return out;
+}
+
+function formatBuildingUpkeepGridValue(display: { gold: number; resources: Record<string, number> }): string {
+  if (display.gold === 0 && Object.keys(display.resources).length === 0) {
+    return BUILDING_UPKEEP_ZERO_LABEL;
+  }
+  const parts: string[] = [];
+  if (display.gold > 0) {
+    parts.push(`${display.gold} ${cityPanelChipIconWrap('res-treasury', 14)}`);
+  }
+  const res = formatResourceUpkeepText(display.resources, false);
+  if (res) parts.push(res);
+  return parts.join(' + ');
+}
+
+function formatBuildingUpkeepRowHtml(
+  display: { gold: number; resources: Record<string, number> },
+  compact: boolean,
+): string {
+  if (display.gold === 0 && Object.keys(display.resources).length === 0) {
+    return BUILDING_UPKEEP_ZERO_LABEL;
+  }
+  const parts: string[] = [];
+  if (display.gold > 0) {
+    parts.push(compact
+      ? `−${display.gold}${cityPanelChipIconWrap('res-treasury', 8)}`
+      : `−${display.gold}${cityPanelChipIconWrap('res-treasury', 10)}/t`);
+  }
+  const res = formatResourceUpkeepText(display.resources, compact);
+  if (res) parts.push(res);
+  return parts.join(compact ? ' ' : ' · ');
+}
+
+function formatBuildingUpkeepTotalHtml(
+  totalGold: number,
+  totalResources: Record<string, number>,
+): string {
+  if (totalGold === 0 && Object.keys(totalResources).length === 0) {
     return `Utrzymanie łącznie: <b>${BUILDING_UPKEEP_ZERO_LABEL}</b>`;
   }
-  return `Utrzymanie łącznie: <b>−${totalUpkeep}</b>${cityPanelChipIconWrap('res-treasury', 12)}/turę`;
+  const parts: string[] = [];
+  if (totalGold > 0) {
+    parts.push(`−${totalGold}${cityPanelChipIconWrap('res-treasury', 12)}`);
+  }
+  const res = formatResourceUpkeepText(totalResources, false).replace(/\/t/g, '');
+  if (res) parts.push(res);
+  return `Utrzymanie łącznie: <b>${parts.join(' · ')}</b>/turę`;
+}
+
+function formatResourceUpkeepSummary(resources: Record<string, number>): string {
+  const keys = Object.keys(resources);
+  if (keys.length === 0) return '—';
+  return keys.map(k => `−${resources[k]} ${stockResourceLabel(k)}`).join(' · ');
 }
 
 type BuildingReqChipKind = 'tech' | 'stock' | 'other';
@@ -5922,6 +5999,13 @@ function buildBuildingInfocard(
   const era = el('span', 'bld-infocard-era');
   era.innerHTML = `<span class="bld-infocard-era-dot"></span>Epoka ${epochLabelNum(def.epokaWejscia).toLowerCase()}`;
   ft.appendChild(era);
+  const upkeepLine = formatBuildingUpkeepRowHtml(buildingUpkeepDisplay(def, 1), true);
+  if (upkeepLine !== BUILDING_UPKEEP_ZERO_LABEL) {
+    const up = el('span', 'bld-infocard-upkeep');
+    up.innerHTML = upkeepLine;
+    up.title = 'Utrzymanie co turę';
+    ft.appendChild(up);
+  }
   const ftR = el('span');
   ftR.textContent = def.maksPoziom > 1 ? `max ${def.maksPoziom} poz.` : 'bez upgrade';
   if (parentName) {
@@ -6201,7 +6285,7 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
   gridDetailRow(
     gCost,
     'Utrzymanie (co turę)',
-    formatBuildingUpkeepGridValue(buildingUpkeep(def as unknown as BuildingRecord, 1)),
+    formatBuildingUpkeepGridValue(buildingUpkeepDisplay(def, 1)),
   );
   if (def.przyrostUtrzymania) {
     gridDetailRow(
@@ -6370,9 +6454,10 @@ function buildOwnedBuildingsDetailCard(city: City, data: GameData | null): HTMLD
     return card;
   }
   const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
+  const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
   const summary = el('div', 'bld-owned-summary');
   summary.innerHTML =
-    formatBuildingUpkeepTotalHtml(totalUpkeep) +
+    formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep) +
   ` · kliknij budynek — pełne szczegóły`;
   card.appendChild(summary);
   const groups = groupBuiltBuildingIds(built, data.buildings);
@@ -7392,9 +7477,9 @@ function appendOwnedBuildingRow(
   if (def && city) {
     const level = buildingOwnedLevel(def, city);
     const tail = el('div', 'bld-owned-tail');
-    const upkeep = buildingUpkeep(def as unknown as BuildingRecord, level);
-    const upSpan = el('span', 'bld-owned-upkeep' + (upkeep === 0 ? ' muted' : ''));
-    upSpan.innerHTML = formatBuildingUpkeepRowHtml(upkeep, compact);
+    const upkeepDisplay = buildingUpkeepDisplay(def, level);
+    const upSpan = el('span', 'bld-owned-upkeep' + (upkeepDisplay.gold === 0 && Object.keys(upkeepDisplay.resources).length === 0 ? ' muted' : ''));
+    upSpan.innerHTML = formatBuildingUpkeepRowHtml(upkeepDisplay, compact);
     tail.appendChild(upSpan);
     const bonusHtml = buildingOwnedBonusCompactHtml(def, level, data.buildings, { compact });
     if (bonusHtml) {
@@ -7439,17 +7524,25 @@ function renderBuildingsOwned(
     : `<span>Budynki w mieście${built ? ' (' + built.length + ')' : ''}</span>${built ? '' : PH()}`;
   if (built && data && built.length > 0 && compact) {
     const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
-    titleHtml += totalUpkeep === 0
-      ? `<span class="bld-owned-title-upkeep">· ${BUILDING_UPKEEP_ZERO_LABEL}</span>`
-      : `<span class="bld-owned-title-upkeep">· −${totalUpkeep}${cityPanelChipIconWrap('res-treasury', 9)}</span>`;
+    const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
+    if (totalUpkeep === 0 && Object.keys(totalResUpkeep).length === 0) {
+      titleHtml += `<span class="bld-owned-title-upkeep">· ${BUILDING_UPKEEP_ZERO_LABEL}</span>`;
+    } else {
+      const parts: string[] = [];
+      if (totalUpkeep > 0) parts.push(`−${totalUpkeep}${cityPanelChipIconWrap('res-treasury', 9)}`);
+      const res = formatResourceUpkeepText(totalResUpkeep, true);
+      if (res) parts.push(res);
+      titleHtml += `<span class="bld-owned-title-upkeep">· ${parts.join(' ')}</span>`;
+    }
   }
   mount.appendChild(el('div', 'ptitle', titleHtml));
   if (built && data) {
     if (built.length === 0) { mount.appendChild(el('div', 'muted', '(brak)')); return; }
     if (!compact) {
       const totalUpkeep = sumOwnedBuildingsUpkeep(built, data, city);
+      const totalResUpkeep = sumOwnedBuildingsResourceUpkeep(built, data);
       const summary = el('div', 'bld-owned-summary');
-      summary.innerHTML = formatBuildingUpkeepTotalHtml(totalUpkeep);
+      summary.innerHTML = formatBuildingUpkeepTotalHtml(totalUpkeep, totalResUpkeep);
       mount.appendChild(summary);
     }
     const scroll = opts?.scrollFill

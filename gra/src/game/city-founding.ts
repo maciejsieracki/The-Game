@@ -49,12 +49,12 @@ export function isSubsequentFoundCity(playerCities: ReadonlyArray<{ ownerId: num
   return playerCities.filter(c => c.ownerId === ownerId).length > 0;
 }
 
-/** R-AI-KOLONIZACJA-Q1: AI wymaga pop ≥ 5 w mieście-źródle (gracz: koszt+1). */
-export const AI_FOUNDING_SOURCE_MIN_POP = 5;
+/** AI-FOUND-Q1=A: AI major wymaga pop ≥ 2 w mieście-źródle (jak gracz: koszt+1). */
+export const AI_FOUNDING_SOURCE_MIN_POP = 2;
 
 /**
  * B1-FOUND-Q1=A+B: największe miasto cywilizacji z populacją ≥ koszt+1 (min. 1 zostaje).
- * R-AI-KOLONIZACJA-Q1: AI (ownerId > 0) wymaga pop ≥ 5 — po founding źródło 5→4.
+ * AI-FOUND-Q1=A: AI major (ownerId > 0) wymaga pop ≥ 2 — po founding źródło 2→1.
  * Przy remisie wielkości — losowe miasto spośród największych.
  */
 export function pickSourceCityForFounding(

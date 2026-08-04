@@ -24,11 +24,17 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-cs-absorption-bundle.cjs');
 const ENTRY_TS = `
 export {
   aiCsAbsorptionParams,
+  applySameCivClusterAbsorptionBoost,
   isSisterAllianceThreatOwner,
   unitTriggersSisterAllianceThreat,
   decideAiCsClusterAction,
   rollAiCsAccept,
 } from ${JSON.stringify(AI_SRC + '/game/ai-cs-absorption')};
+export {
+  startRelationForAiMajorSameCivCityState,
+  maintainAiMajorSameCivRelation,
+  isAiMajorToSameCivCityStatePair,
+} from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -51,10 +57,14 @@ try {
 
 const {
   aiCsAbsorptionParams,
+  applySameCivClusterAbsorptionBoost,
   isSisterAllianceThreatOwner,
   unitTriggersSisterAllianceThreat,
   decideAiCsClusterAction,
   rollAiCsAccept,
+  startRelationForAiMajorSameCivCityState,
+  maintainAiMajorSameCivRelation,
+  isAiMajorToSameCivCityStatePair,
 } = require(BUNDLE_FILE);
 
 let passed = 0;
@@ -71,6 +81,8 @@ const normal = aiCsAbsorptionParams('normal');
 const hard = aiCsAbsorptionParams('hard');
 assert(easy.minTurn !== normal.minTurn, 'T1a: easy vs normal minTurn differ');
 assert(hard.minTurn < normal.minTurn, 'T1b: hard minTurn lower than normal');
+assert(hard.trybutAccept >= 0.99, 'T1c2: hard trybutAccept ≥ 0.99');
+assert(hard.wasalAccept >= 0.99, 'T1c3: hard wasalAccept ≥ 0.99');
 assert(hard.instantAnnexIfRatio === 1.25, 'T1c: hard instant ratio');
 eq(easy.instantAnnexIfRatio, null, 'T1d: easy no instant annex');
 assert(hard.clusterWarMinTurn < easy.clusterWarMinTurn, 'T1e: hard war min earlier');
@@ -114,7 +126,7 @@ eq(early.action, null, 'T5a: easy turn 20 < min 28');
 console.log('\n--- T6: decide annex after wasal timer ---');
 const annex = decideAiCsClusterAction({
   difficulty: 'normal',
-  turn: 30,
+  turn: 28,
   militaryRatio: 1.5,
   hasWasalDeal: true,
   wasalSinceTurn: 18,
@@ -123,7 +135,7 @@ const annex = decideAiCsClusterAction({
   alreadyAtWar: false,
   napBlocked: false,
 });
-eq(annex.action, 'annex', 'T6a: wasal + 12 turns → annex');
+eq(annex.action, 'annex', 'T6a: wasal + annexAfterVassalTurns → annex');
 
 console.log('\n--- T7: decide war after fails ---');
 const war = decideAiCsClusterAction({
@@ -167,6 +179,41 @@ eq(waitWasal.action, null, 'T7c: aktywny wasal → czekaj (bez wojny mimo faili)
 console.log('\n--- T8: rollAiCsAccept ---');
 assert(rollAiCsAccept('trybut', easy, () => 0.0), 'T8a: rng 0 → accept');
 assert(!rollAiCsAccept('trybut', easy, () => 0.99), 'T8b: rng 0.99 reject easy trybut 0.70');
+
+console.log('\n--- T9: same-civ cluster relation start ---');
+const sameCivStart = startRelationForAiMajorSameCivCityState();
+eq(sameCivStart.zaufanie, 100, 'T9a: zaufanie 100');
+assert(sameCivStart.respekt >= 90, 'T9b: respekt ≥ 90');
+eq(sameCivStart.status, 'sojusz', 'T9c: status sojusz');
+const maintained = maintainAiMajorSameCivRelation({ zaufanie: 30, respekt: 20, status: 'neutralni' });
+eq(maintained.zaufanie, 100, 'T9d: maintain lifts zaufanie');
+assert(isAiMajorToSameCivCityStatePair(5, 7, {
+  clusterCapitalOwnerIds: new Set([5]),
+  typCityCopyOwners: new Set([7]),
+  civOf: (id) => (id === 5 || id === 7 ? 'egipt' : undefined),
+}), 'T9e: major↔MP same civ');
+assert(!isAiMajorToSameCivCityStatePair(5, 7, {
+  clusterCapitalOwnerIds: new Set([5]),
+  typCityCopyOwners: new Set([7]),
+  civOf: (id) => (id === 5 ? 'egipt' : 'grecy'),
+}), 'T9f: different civ false');
+
+console.log('\n--- T10: same-civ absorption boost ---');
+const hardBoost = applySameCivClusterAbsorptionBoost(hard, 'hard');
+assert(hardBoost.trybutAccept >= 0.99, 'T10a: hard boosted trybut');
+assert(hardBoost.minTurn < hard.minTurn, 'T10b: hard boosted earlier minTurn');
+const sameCivEarly = decideAiCsClusterAction({
+  difficulty: 'hard',
+  turn: 5,
+  militaryRatio: 1.2,
+  hasWasalDeal: false,
+  hasTrybutDeal: false,
+  failCount: 0,
+  alreadyAtWar: false,
+  napBlocked: false,
+  sameCivCluster: true,
+});
+eq(sameCivEarly.action, 'trybut', 'T10c: hard same-civ trybut turn 5');
 
 console.log(`\n=== ai-cs-absorption-test: ${passed} passed, ${failed} failed ===`);
 process.exit(failed > 0 ? 1 : 0);

@@ -33,6 +33,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-test-bundle.cjs');
 const ENTRY_TS = `
 export { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP } from ${JSON.stringify(AI_SRC + '/game/city-founding')};
+export { isMajorAiOwner } from ${JSON.stringify(AI_SRC + '/game/owner-utils')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 export { diplomacyLayerForOwner, filterDiplomacyCommandsForLayer } from ${JSON.stringify(AI_SRC + '/game/diplomacy-layers')};
 `;
@@ -56,7 +57,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP } = AI;
+const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP, isMajorAiOwner } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -1212,25 +1213,48 @@ console.log('\n--- T6e: planCityFounding prefers hex inside cluster ---');
   }
 }
 
-console.log('\n--- T6g: isLocalExpansionPhase blokuje founding bez skautów ---');
+console.log('\n--- T6g: AI-LOCAL-Q1=A faza lokalna tura 20 LUB 1 skaut ---');
 {
   const map6g = makeMap(20, 20);
   const data6g = makeGameData({
     'ekspansja_min_dystans_miast': { wartosc: 3, sekcja: 'test', opis: '' },
   });
   const myCity = [{ id: 'c1', ownerId: 1, q: 2, r: 2, population: 2 }];
+
+  // 0 skautów -> faza lokalna blokuje founding
   const blocked = planCityFounding(1, myCity, map6g, data6g, {
     pracaAvailable: 30,
     currentTurn: 5,
   }, 3, []);
-  assert(blocked === null, 'T6g: brak skautów -> brak founding');
-  const scouts = [
+  assert(blocked === null, 'T6g: brak skautów -> brak founding (faza lokalna)');
+
+  const oneScout = [
+    { id: 's1', ownerId: 1, q: 2, r: 3, typeId: 'Zwiadowca', category: 'zwiadowca', ruchLeft: 2 },
+  ];
+  assert(
+    isLocalExpansionPhase({ currentTurn: 5 }, myCity, map6g, oneScout, 1) === false,
+    'T6g: 1 skaut -> koniec fazy lokalnej',
+  );
+
+  const twoScouts = [
     { id: 's1', ownerId: 1, q: 2, r: 3, typeId: 'Zwiadowca', category: 'zwiadowca', ruchLeft: 2 },
     { id: 's2', ownerId: 1, q: 3, r: 2, typeId: 'Zwiadowca', category: 'zwiadowca', ruchLeft: 2 },
   ];
   assert(
-    isLocalExpansionPhase({ currentTurn: 5 }, myCity, map6g, scouts, 1) === false,
-    'T6g: 2 skautów + brak hutów -> koniec fazy lokalnej',
+    isLocalExpansionPhase({ currentTurn: 5 }, myCity, map6g, twoScouts, 1) === false,
+    'T6g: 2 skautów -> wciąż koniec fazy lokalnej',
+  );
+
+  assert(
+    isLocalExpansionPhase({ currentTurn: 20 }, myCity, map6g, [], 1) === false,
+    'T6g: tura 20 -> koniec fazy lokalnej bez skautów',
+  );
+
+  // Dodaj wioskę obok miasta — AI-LOCAL-Q1=A: wioski NIE blokują founding
+  map6g.hexes['3,3'].wioska = { istnieje: true, ludnosc: 1 };
+  assert(
+    isLocalExpansionPhase({ currentTurn: 5 }, myCity, map6g, oneScout, 1) === false,
+    'T6g: wioska w zasięgu nie blokuje founding',
   );
 }
 
@@ -2180,18 +2204,18 @@ console.log('\n--- T7D-f: bez defensiveCopy -> foundCityAt gdy stac (regresja) -
 // TESTY T8: R-AI-KOLONIZACJA — pop≥5, dystans 4, surge MP
 // ============================================================================
 
-console.log('\n--- T8a: AI pickSourceCityForFounding wymaga pop >= 5 ---');
+console.log('\n--- T8a: AI-FOUND-Q1=A pickSourceCityForFounding wymaga pop >= 2 ---');
 {
   const cities8a = [
-    { id: 'c-low', ownerId: 1, population: 4 },
-    { id: 'c-ok', ownerId: 1, population: 5 },
+    { id: 'c-low', ownerId: 1, population: 1 },
+    { id: 'c-ok', ownerId: 1, population: 2 },
   ];
-  const srcLow = pickSourceCityForFounding(cities8a.filter(c => c.population < 5), 1);
-  assert(srcLow === null, 'T8a: pop 4 -> brak zrodla');
+  const srcLow = pickSourceCityForFounding(cities8a.filter(c => c.population < 2), 1);
+  assert(srcLow === null, 'T8a: pop 1 -> brak zrodla');
   const srcOk = pickSourceCityForFounding(cities8a, 1);
-  assert(srcOk && srcOk.id === 'c-ok', 'T8a: pop 5 -> zrodlo OK');
-  eq(AI_FOUNDING_SOURCE_MIN_POP, 5, 'T8a: prog min pop AI');
-  eq(AI_COLONIZATION_SOURCE_MIN_POP, 5, 'T8a: prog kolonizacji AI');
+  assert(srcOk && srcOk.id === 'c-ok', 'T8a: pop 2 -> zrodlo OK');
+  eq(AI_FOUNDING_SOURCE_MIN_POP, 2, 'T8a: prog min pop AI = 2');
+  eq(AI_COLONIZATION_SOURCE_MIN_POP, 5, 'T8a: prog kolonizacji AI bez zmian');
 }
 
 console.log('\n--- T8b: countFreeIndependentCityStates ---');
@@ -2574,6 +2598,18 @@ console.log('\n--- T12-dip-e: brak kontaktu + oferta handlu -> zaproponuj_audien
     cmds.some(c => c.type === 'zaproponuj_audiencje'),
     `T12-dip-e: audiencja przed handlem; got: ${cmds.map(c => c.type).join(', ')}`,
   );
+}
+
+console.log('\n--- T13: AI-MANAGE-Q1=A isMajorAiOwner ---');
+{
+  const csSet = new Set([3, 4]);
+  const isCs = (id) => csSet.has(id);
+  assert(isMajorAiOwner(1, isCs), 'T13: owner 1 = major AI');
+  assert(isMajorAiOwner(2, isCs), 'T13: owner 2 = major AI');
+  assert(!isMajorAiOwner(0, isCs), 'T13: gracz (owner 0) nie jest major AI');
+  assert(!isMajorAiOwner(-1, isCs), 'T13: barbarzynca nie jest major AI');
+  assert(!isMajorAiOwner(3, isCs), 'T13: miasto-panstwo (simplified) nie jest major AI');
+  assert(!isMajorAiOwner(4, isCs), 'T13: defensiveCopy (typCityCopy) nie jest major AI');
 }
 
 // --- summary ---------------------------------------------------------------

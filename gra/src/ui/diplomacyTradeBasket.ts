@@ -193,16 +193,18 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket-overlay{position:fixed;inset:0;z-index:515;background:rgba(0,0,0,0.65);
   display:flex;align-items:center;justify-content:center;padding:12px;pointer-events:auto;}
 .civ-diplo-basket{background:linear-gradient(180deg,rgba(18,24,32,.98),rgba(8,10,16,.98));
-  border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:18px 20px;max-width:760px;width:100%;max-height:92vh;overflow:auto;
+  border:2px solid rgba(232,216,138,.4);border-radius:12px;padding:16px 18px;
+  max-width:min(1180px,96vw);width:100%;max-height:min(92vh,880px);
+  display:flex;flex-direction:column;overflow:hidden;
   color:#e8e0c8;font:14px 'Segoe UI',Tahoma,sans-serif;pointer-events:auto;position:relative;z-index:1;}
-.civ-diplo-basket.cdb-treaty-mode{max-width:min(1180px,96vw);}
-.civ-diplo-basket.cdb-trade-mode{max-width:min(860px,96vw);}
-.civ-diplo-basket .cdb-landscape{display:grid;grid-template-columns:minmax(320px,0.42fr) minmax(380px,0.58fr);gap:14px;align-items:start;}
-.civ-diplo-basket .cdb-land-main{display:flex;flex-direction:column;gap:10px;position:sticky;top:0;}
-.civ-diplo-basket .cdb-land-side{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.civ-diplo-basket .cdb-body-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:2px;}
+.civ-diplo-basket .cdb-footer{flex-shrink:0;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);margin-top:8px;}
+.civ-diplo-basket .cdb-landscape{display:grid;grid-template-columns:minmax(280px,0.42fr) minmax(340px,0.58fr);gap:14px;align-items:start;}
+.civ-diplo-basket .cdb-land-main{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.civ-diplo-basket .cdb-land-side{display:flex;flex-direction:column;gap:10px;min-width:0;max-height:min(68vh,620px);overflow-y:auto;overflow-x:hidden;padding-right:2px;}
 .civ-diplo-basket .cdb-land-side .cdb-basket-opt{border-top:none;padding-top:0;margin-top:0;}
-@media (max-width:900px){.civ-diplo-basket .cdb-landscape{grid-template-columns:1fr;}
-  .civ-diplo-basket .cdb-land-main{position:static;}}
+@media (max-width:640px){.civ-diplo-basket .cdb-landscape{grid-template-columns:1fr;}
+  .civ-diplo-basket .cdb-land-side{max-height:none;overflow:visible;}}
 .civ-diplo-basket h3{margin:0 0 6px;font-family:Georgia,serif;font-size:1.05em;color:#e8d88a;}
 .civ-diplo-basket .cdb-sub{font-size:0.75em;color:#8a8070;margin-bottom:10px;line-height:1.45;}
 .civ-diplo-basket .cdb-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
@@ -254,7 +256,7 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-verdict-bad{color:#e08a8a;background:rgba(200,64,64,.1);border:1px solid rgba(200,64,64,.4);}
 .civ-diplo-basket .cdb-blocked{color:#e08a8a;padding:12px;text-align:center;}
 .civ-diplo-basket .cdb-add-btn{margin-top:6px;}
-.civ-diplo-basket .cdb-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;}
+.civ-diplo-basket .cdb-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:0;}
 .civ-diplo-basket .cdb-submit:disabled{opacity:0.4;cursor:not-allowed;}
 .civ-diplo-basket .cdb-invalid{color:#e08a8a;font-size:0.72em;margin-top:8px;line-height:1.4;}
 .civ-diplo-basket .cdb-duration{margin-top:10px;padding:10px;border-radius:8px;
@@ -337,6 +339,14 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .da-pn-bal-verdict{margin-top:8px;padding:7px 10px;border-radius:7px;font-size:0.72em;font-weight:600;}
 .civ-diplo-basket .da-pn-bal-verdict.ok{color:#7ad0a0;background:rgba(80,176,112,.12);border:1px solid rgba(80,176,112,.35);}
 .civ-diplo-basket .da-pn-bal-verdict.no{color:#e0a868;background:rgba(224,168,104,.1);border:1px solid rgba(224,168,104,.35);}
+.civ-diplo-basket.cdb-treaty-only-mode{max-width:min(900px,96vw);}
+.civ-diplo-basket.cdb-treaty-only-mode .cdb-treaty-only-body{display:contents;}
+.civ-diplo-basket.cdb-treaty-only-mode .cdb-treaty{margin-bottom:0;}
+.civ-diplo-basket.cdb-treaty-only-mode .cdb-penalty-box{margin-top:10px;padding:8px 10px;border-radius:8px;
+  border:1px solid rgba(224,136,104,.28);background:rgba(80,40,30,.15);}
+.civ-diplo-basket.cdb-treaty-only-mode .cdb-penalty-title{font-size:0.72em;color:#e8d88a;margin:0 0 4px;
+  text-transform:uppercase;letter-spacing:.06em;}
+.civ-diplo-basket.cdb-treaty-only-mode .cdb-btns.cdb-btns-center{justify-content:center;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -428,6 +438,16 @@ interface TreatyFormState {
   goldOnce: number;
 }
 
+/**
+ * Traktaty „czyste" — tylko warunki umowy (czas, kary, trybut…), bez koszyka PW.
+ * Wymiana surowców / PW → osobna Umowa wymiany (14) lub dar (13).
+ */
+const TREATY_ONLY_FORM_IDS = new Set(['2', '3', '4', '8', '10', '12', '15']);
+
+export function isTreatyOnlyFormAction(actionId: string): boolean {
+  return TREATY_ONLY_FORM_IDS.has(actionId);
+}
+
 function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?: NegotiationModalContext): TreatyFormState {
   const wchlonGold = ctx?.wchloniecieGoldRequired ?? 200;
   return {
@@ -452,10 +472,13 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         '<button type="button" class="cdb-chip cdb-chip-turn' + (state.turns === t ? ' selected' : '')
         + '" data-turns="' + t + '">' + t + '</button>',
       ).join('');
-      body = '<label for="cdb-treaty-turns">Czas paktu (tur)</label>'
+      body = '<label for="cdb-treaty-turns">Czasookres paktu (tur)</label>'
         + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
         + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns, 1, 20)
-        + '<p class="cdb-sub">Złamanie: −30 Relacja, −20 Zaufanie</p>';
+        + '<div class="cdb-penalty-box">'
+        + '<div class="cdb-penalty-title">Koszty / kary</div>'
+        + '<p class="cdb-sub" style="margin:0">Złamanie paktu: −30 Relacja, −20 Zaufanie</p>'
+        + '</div>';
       break;
     }
     case '3':
@@ -463,7 +486,11 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<select id="cdb-treaty-alliance" class="cdb-treaty-alliance">'
         + '<option value="pelny"' + (state.allianceKind === 'pelny' ? ' selected' : '') + '>Sojusz wojskowy (wojna sojusznika = twoja)</option>'
         + '<option value="defensywny"' + (state.allianceKind === 'defensywny' ? ' selected' : '') + '>Sojusz obronny (atak na sojusznika)</option>'
-        + '</select>';
+        + '</select>'
+        + '<div class="cdb-penalty-box">'
+        + '<div class="cdb-penalty-title">Koszty / kary</div>'
+        + '<p class="cdb-sub" style="margin:0">Zerwanie sojuszu / wojna z sojusznikiem: kary Relacji i Wiarygodności</p>'
+        + '</div>';
       break;
     case '4': {
       const feeC = ctx.borderFeeCivil ?? 20;
@@ -499,8 +526,8 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       break;
     }
     case '10':
-      body = '<p class="cdb-sub">Zakończenie wojny — wymagana oferta PW (baza 500, modyfikator Relacji ±90%). '
-        + 'Dołóż złoto lub surowce w koszyku poniżej.</p>';
+      body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%). '
+        + 'Dodatkowa wymiana surowców lub PW → osobna <strong>Umowa wymiany</strong> na stole, nie w tej karcie.</p>';
       break;
     default:
       body = '<p class="cdb-sub">Brak dodatkowych warunków traktatu.</p>';
@@ -1230,6 +1257,7 @@ function renderBasket(
   const rel = ctx.relacjaTotal ?? 0;
   const progHandel = ctx.progHandelRelacja ?? PROG_HANDEL_REL;
   const progDar = ctx.progDarRelacja ?? diplomacyProgDarRelacja();
+  const isTreatyOnly = mode === 'treaty' && isTreatyOnlyFormAction(action.id);
 
   let blocked = '';
   if (ctx.atWar && mode !== 'treaty' && !uiActionAllowsWarCurrency(action.id, mode, treatyState.tributeMode)) {
@@ -1242,11 +1270,48 @@ function renderBasket(
 
   const title = modalOpts?.dialogTitle
     ?? (mode === 'gift' ? 'Prezent / dar' : action.label);
-  const sub = mode === 'treaty'
-    ? 'Ustal warunki traktatu — wymiana PW jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
-    : mode === 'gift'
-      ? 'Oddajesz bez towaru w zamian · Rel ≥ ' + progDar
-      : 'Wymiana dwustronna · Rel ≥ ' + progHandel + ' · partner: <strong>' + esc(ctx.civName) + '</strong>';
+  const sub = isTreatyOnly
+    ? 'Tylko warunki tej umowy · partner: <strong>' + esc(ctx.civName) + '</strong>'
+    : mode === 'treaty'
+      ? 'Ustal warunki traktatu — wymiana PW jest opcjonalna · partner: <strong>' + esc(ctx.civName) + '</strong>'
+      : mode === 'gift'
+        ? 'Oddajesz bez towaru w zamian · Rel ≥ ' + progDar
+        : 'Wymiana dwustronna · Rel ≥ ' + progHandel + ' · partner: <strong>' + esc(ctx.civName) + '</strong>';
+
+  const validation = validateBasketForm(
+    mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, !!blocked, treatyState,
+  );
+  const invalidHtml = !validation.valid && validation.reason
+    ? '<div class="cdb-invalid">' + esc(validation.reason) + '</div>'
+    : '';
+
+  const treatyHtml = mode === 'treaty' ? treatySectionHtml(action.id, ctx, treatyState) : '';
+
+  if (isTreatyOnly) {
+    const summaryBlock = blocked
+      ? ''
+      : treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode);
+    const treatyOnlyFooter = (blocked ? '' : warThreatBlockHtml(warThreat, true))
+      + invalidHtml
+      + '<div class="cdb-btns cdb-btns-center">'
+      + '<button type="button" class="dip-muted-btn cdb-cancel">Anuluj</button>'
+      + '<button type="button" class="dip-gold-btn cdb-submit"' + (blocked || !validation.valid ? ' disabled' : '') + '>'
+      + esc(modalOpts?.submitLabel ?? 'Zaproponuj') + '</button>'
+      + '</div>';
+    const scrollBody = blocked
+      ? blocked
+      : '<div class="cdb-landscape">'
+        + '<div class="cdb-land-main">' + treatyHtml + '</div>'
+        + '<div class="cdb-land-side">' + summaryBlock + '</div>'
+        + '</div>';
+    box.className = 'civ-diplo-basket cdb-treaty-mode cdb-treaty-only-mode cdb-landscape-mode';
+    box.innerHTML =
+      '<h3>' + esc(title) + '</h3>' +
+      '<div class="cdb-sub">' + sub + '</div>' +
+      '<div class="cdb-body-scroll">' + scrollBody + '</div>' +
+      '<div class="cdb-footer">' + treatyOnlyFooter + '</div>';
+    return;
+  }
 
   const basketModeForForm: TradeBasketMode = mode === 'treaty' ? 'trade' : mode;
   const showReceiveCol = mode === 'trade' || mode === 'treaty';
@@ -1304,14 +1369,7 @@ function renderBasket(
       dealSettingsHint,
     );
 
-  const validation = validateBasketForm(
-    mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, !!blocked, treatyState,
-  );
-  const invalidHtml = !validation.valid && validation.reason
-    ? '<div class="cdb-invalid">' + esc(validation.reason) + '</div>'
-    : '';
-
-  const treatyHtml = mode === 'treaty' ? treatySectionHtml(action.id, ctx, treatyState) : '';
+  const treatyHtmlRest = mode === 'treaty' ? treatySectionHtml(action.id, ctx, treatyState) : '';
   const basketOptIntro = mode === 'treaty' && !blocked && !wchloniecieOnly
     ? '<div class="cdb-basket-opt"><div class="cdb-basket-opt-title">'
       + (treatyBasketsEmpty
@@ -1324,16 +1382,13 @@ function renderBasket(
     ? treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode)
     : summaryHtml(mode, giveItems, receiveItems, ctx, resourceTradeMode, dealTurns);
 
-  const showWarThreat = !blocked && (mode === 'trade' || mode === 'treaty');
-  const showBalanceBtn = !blocked && mode === 'trade' && receiveItems.length > 0;
-
-  const useTreatyLandscape = mode === 'treaty' && !blocked && !wchloniecieOnly;
-
   const sideBlock = basketOptIntro
-    + dealPreview
     + dealSettings
     + (blocked ? '' : '<div class="cdb-cols">' + (wchloniecieOnly ? '' : giveCol + recvCol) + '</div>')
     + basketOptClose;
+
+  const showWarThreat = !blocked && (mode === 'trade' || mode === 'treaty');
+  const showBalanceBtn = !blocked && mode === 'trade' && receiveItems.length > 0;
 
   const footerBlock = (blocked ? '' : balanceButtonHtml(showBalanceBtn))
     + (blocked ? '' : warThreatBlockHtml(warThreat, showWarThreat))
@@ -1344,27 +1399,24 @@ function renderBasket(
     + esc(modalOpts?.submitLabel ?? 'Zaproponuj') + '</button>'
     + '</div>';
 
-  let bodyHtml: string;
-  if (useTreatyLandscape) {
-    bodyHtml = '<div class="cdb-landscape">'
-      + '<div class="cdb-land-main">' + treatyHtml + (blocked ? '' : summaryBlock) + '</div>'
+  const landMain = mode === 'treaty'
+    ? treatyHtmlRest + (showDealPreview ? dealPreview : '') + (blocked ? '' : summaryBlock)
+    : (dealPreview + (blocked ? '' : summaryBlock));
+
+  const scrollBody = blocked
+    ? blocked
+    : '<div class="cdb-landscape">'
+      + '<div class="cdb-land-main">' + landMain + '</div>'
       + '<div class="cdb-land-side">' + sideBlock + '</div>'
-      + '</div>'
-      + footerBlock;
-  } else {
-    bodyHtml = blocked
-      + treatyHtml
-      + sideBlock
-      + (blocked ? '' : summaryBlock)
-      + footerBlock;
-  }
+      + '</div>';
 
   const modeCls = mode === 'treaty' ? ' cdb-treaty-mode' : (mode === 'trade' ? ' cdb-trade-mode' : '');
-  box.className = 'civ-diplo-basket' + (mode === 'gift' ? ' cdb-gift' : '') + modeCls;
+  box.className = 'civ-diplo-basket cdb-landscape-mode' + (mode === 'gift' ? ' cdb-gift' : '') + modeCls;
   box.innerHTML =
     '<h3>' + esc(title) + '</h3>' +
     '<div class="cdb-sub">' + sub + '</div>' +
-    bodyHtml;
+    '<div class="cdb-body-scroll">' + scrollBody + '</div>' +
+    '<div class="cdb-footer">' + footerBlock + '</div>';
 }
 
 export interface TradeBasketModalOptions {
@@ -1693,7 +1745,7 @@ export function openQuickDealBasket(
   showTradeBasketModal('trade', action, ctx, onSubmit, onCancel, quick);
 }
 
-/** Akcje obsługiwane przez koszyk PN (handel + dar + traktaty z wymianą). R-DYP-STOL-A=C */
+/** Akcje obsługiwane przez koszyk PN (handel + dar + traktaty). R-DYP-STOL-A=C */
 export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '8', '10', '12', '13', '14', '15']);
 
 export function getTradeBasketMode(actionId: string): TradeBasketMode {

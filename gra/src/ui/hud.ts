@@ -115,6 +115,8 @@ export interface HudState {
   bogactwoHandel?: number;
   /** Utrzymanie budynkow/turę (Pieniadz) — odjete od wplywow brutto przy koncu tury. */
   bogactwoUtrzymanieBudynkow?: number;
+  /** Utrzymanie surowców budynków/turę (magazyn państwa) — 1 na typ z koszt_surowce. */
+  bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
   /** Utrzymanie jednostek/turę (Pieniadz) — odjete od wplywow brutto przy koncu tury. */
   bogactwoUtrzymanieJednostek?: number;
   ludnosc: number;

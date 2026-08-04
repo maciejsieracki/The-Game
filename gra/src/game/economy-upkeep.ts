@@ -43,6 +43,7 @@
  */
 
 import type { BuildingRecord } from './economy';
+import type { BuildingStockCost } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
@@ -582,6 +583,82 @@ export function totalBuildingUpkeep(
     sum += buildingUpkeep(b.record, b.level, flatOverride);
   }
   return sum;
+}
+
+/**
+ * Per-turn resource upkeep for one building: 1 unit per resource TYPE present in
+ * koszt_surowce (build cost), regardless of build-cost amount or FALA scaling.
+ * Empty / missing koszt_surowce => no resource upkeep.
+ */
+export function buildingResourceUpkeep(
+  building: { koszt_surowce?: BuildingStockCost | null } | null | undefined,
+): Record<string, number> {
+  const raw = building?.koszt_surowce;
+  if (!raw || typeof raw !== 'object') return {};
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
+      out[k] = 1;
+    }
+  }
+  return out;
+}
+
+/** Merge `add` into accumulator `acc` (mutates acc). */
+export function addResourceCosts(
+  acc: Record<string, number>,
+  add: Record<string, number>,
+): void {
+  for (const [k, v] of Object.entries(add)) {
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
+      acc[k] = (acc[k] ?? 0) + v;
+    }
+  }
+}
+
+/** Total per-turn resource upkeep for a set of building instances. */
+export function totalBuildingResourceUpkeep(
+  buildings: ReadonlyArray<BuildingInstanceLike>,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const b of buildings) {
+    addResourceCosts(out, buildingResourceUpkeep(
+      b.record as { koszt_surowce?: BuildingStockCost | null },
+    ));
+  }
+  return out;
+}
+
+/** Total per-turn resource upkeep for built building ids in one city/empire. */
+export function buildingResourceUpkeepForBuiltIds(
+  builtIds: readonly string[],
+  buildingCatalog: ReadonlyArray<{ id: string; koszt_surowce?: BuildingStockCost | null }>,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const bid of builtIds) {
+    const bdef = buildingCatalog.find(b => b.id === bid);
+    if (!bdef) continue;
+    addResourceCosts(out, buildingResourceUpkeep(bdef));
+  }
+  return out;
+}
+
+/** Live preview: total building resource upkeep for one owner (all cities). */
+export function previewOwnerBuildingResourceUpkeep(
+  ownerId: number,
+  cities: ReadonlyArray<{ id: string; ownerId: number }>,
+  buildingCatalog: ReadonlyArray<{ id: string; koszt_surowce?: BuildingStockCost | null }>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const city of cities) {
+    if (city.ownerId !== ownerId) continue;
+    addResourceCosts(out, buildingResourceUpkeepForBuiltIds(
+      builtByCity.get(city.id) ?? [],
+      buildingCatalog,
+    ));
+  }
+  return out;
 }
 
 /**

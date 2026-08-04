@@ -33,6 +33,7 @@ import {
   pnDealAcceptedByAi,
   pnFromLegacyGold,
   pnGiftAllowed,
+  proposalPnTurnsMultiplier,
   relationTotal,
   resolveProposalPn,
   type BasketItem,
@@ -459,22 +460,6 @@ function treatyPnGate(
   const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
   const relTotal = treatyEvalRelationTotal(relation);
 
-  /** Bilans PW gracza vs partnera — tylko gdy gracz proponuje (odpowiedź AI). */
-  function playerTreatyBalanceReject(): ProposalEvalResult | null {
-    if (!proposerIsPlayer) return null;
-    const playerPw = effectiveTreatyPnRequired(basePn, relTotal);
-    const partnerPw = partnerTreatyPnRequired(basePn);
-    const myDisplay = playerPw + givePn;
-    const theirDisplay = partnerPw + receivePn;
-    if (myDisplay < theirDisplay) {
-      return {
-        accepted: false,
-        reason: `Brakuje ${theirDisplay - myDisplay} PW do bilansu — dopłać`,
-      };
-    }
-    return null;
-  }
-
   if (actionId === 'pokoj') {
     const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
     if (offerPn < required) {
@@ -483,13 +468,8 @@ function treatyPnGate(
         reason: `Oferta za niska na pokój (wymagane ≥ ${required} PW @ Relacji, baza ${basePn})`,
       };
     }
-    const balanceReject = playerTreatyBalanceReject();
-    if (balanceReject) return balanceReject;
     return null;
   }
-
-  const balanceReject = playerTreatyBalanceReject();
-  if (balanceReject) return balanceReject;
 
   const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
   if (!hasBasket) return null;
@@ -511,6 +491,50 @@ function treatyPnGate(
  * na stole — uczciwa oferta PW @ Relacji nie może paść na „Brak chęci do handlu",
  * a sam traktat handlowy bez koszyka wymaga tylko progów Relacji (Maciej 2026-08-02).
  */
+/** Akcje z bilansem PW — gracz-proponent nie może dać partnerowi ujemnego netto. */
+const PROPOSER_PW_FAIRNESS_ACTIONS: ReadonlySet<string> = new Set([
+  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'pokoj', 'wasal',
+  'handel', 'umowa_szlakow', 'umowa_handlowa',
+]);
+
+/**
+ * Bramka bilateralnego netto PW (proponent vs respondent) — spójna z
+ * computePlayerAcceptanceSides / incomingTradeNetBalancePw (R-PW-ACCEPT-OVERPAY-Q1=A).
+ * Ujemne netto = respondent oddaje więcej niż proponent → AI jako respondent odrzuca.
+ * pnDealAcceptedByAi @ wysokiej Relacji może przejść przy give < receive — ta bramka domyka lukę.
+ */
+function proposerUnfairToPartnerGate(
+  actionId: string,
+  payload: ProposalPayload,
+  relation: Relation,
+  pnOpts: ResolveProposalPnOptions,
+): ProposalEvalResult | null {
+  if (!PROPOSER_PW_FAIRNESS_ACTIONS.has(actionId)) return null;
+  const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
+  if (!proposerIsPlayer) return null;
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const hasBasket = givePn > 0 || receivePn > 0
+    || (payload.giveItems?.length ?? 0) > 0
+    || (payload.receiveItems?.length ?? 0) > 0;
+  const basePn = treatyBasePnFromConfig(actionId);
+  if (basePn <= 0 && !hasBasket) return null;
+  const relTotal = treatyEvalRelationTotal(relation);
+  const playerTreaty = basePn > 0 ? effectiveTreatyPnRequired(basePn, relTotal) : 0;
+  const partnerTreaty = basePn > 0 ? partnerTreatyPnRequired(basePn) : 0;
+  const proposerDisplay = playerTreaty + givePn;
+  const responderDisplay = partnerTreaty + receivePn;
+  if (proposerDisplay < responderDisplay) {
+    return {
+      accepted: false,
+      reason: `Przewaga u Ciebie — oferta nieuczciwa dla partnera (${responderDisplay - proposerDisplay} PW)`,
+    };
+  }
+  if (receivePn > 0 && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+    return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
+  }
+  return null;
+}
+
 function tradeWillingnessBlocksAcceptance(
   stance: ReturnType<typeof aiDiplomacyStance>,
   params: ReturnType<typeof getEffectiveDiplomacyParams>,
@@ -543,6 +567,7 @@ export function evaluateProposal(
     difficulty: ctx.difficulty ?? 'normal',
     proposerOwnerId,
     playerOwnerId: 0,
+    ...proposalPnTurnsMultiplier(payload),
   };
   const score = relationScore(relation);
   const stance = stanceForEval(ctx);
@@ -559,6 +584,9 @@ export function evaluateProposal(
   if (TRIBUTE_PROPOSAL_ACTIONS.has(actionId) && tributeBlockedForCityState(ctx)) {
     return { accepted: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
   }
+
+  const unfairToPartner = proposerUnfairToPartnerGate(actionId, payload, relation, pnOpts);
+  if (unfairToPartner) return unfairToPartner;
 
   const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
   if (pnReject) return pnReject;
@@ -832,8 +860,10 @@ export function evaluateProposal(
         return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane ≥ ${p.progHandelRelacja})` };
       }
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
-      if (hasItems && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-        return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
+      if (hasItems) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
+        }
       }
       const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
       const deal = buildDeal(
@@ -1539,9 +1569,14 @@ export function negotiationAsProposal(entry: PendingNegotiation): DiplomaticProp
   };
 }
 
-/** Czy ten wpis może jeszcze przyjąć kontrofertę (limit rund + wsparcie silnika dla tej akcji). */
+/** Czy gracz może wysłać kontrofertę (limit rund negocjacji). */
+export function canPlayerCounterNegotiation(entry: PendingNegotiation): boolean {
+  return entry.round < NEGOTIATION_MAX_ROUNDS;
+}
+
+/** Czy silnik AI może wygenerować auto-kontrofertę (limit rund + ocena evaluateProposal). */
 export function canCounterNegotiation(entry: PendingNegotiation): boolean {
-  return entry.round < NEGOTIATION_MAX_ROUNDS && !NEGOTIATION_NO_ENGINE_COUNTER.has(entry.actionId);
+  return canPlayerCounterNegotiation(entry) && !NEGOTIATION_NO_ENGINE_COUNTER.has(entry.actionId);
 }
 
 /** Nakłada kontrofertę (nowe warunki) — woła SILNIK zarówno dla ręcznej kontry gracza, jak i automatycznej AI (resolveNegotiationAsResponder). */

@@ -69,6 +69,52 @@ export function startRelationForPlayerSameCivCityState(): Relation {
 }
 
 /**
+ * MP-DIPLO-Q1=A (Maciej 2026-08-04) — start AI major ↔ same-civ MP w klastrze obcego typu.
+ * Nie dotyka gracza ↔ MP (startRelationForPlayerSameCivCityState).
+ */
+export function startRelationForAiMajorSameCivCityState(): Relation {
+  const p = DIPLOMACY_PARAMS;
+  return {
+    zaufanie: 100,
+    respekt: p.progWchloniecieRespekt,
+    status: 'sojusz',
+  };
+}
+
+/** Utrzymuje wysokie Zaufanie/Respekt major↔MP same civ (bez wojny). */
+export function maintainAiMajorSameCivRelation(rel: Relation): Relation {
+  if (rel.status === 'wojna') return rel;
+  const floor = startRelationForAiMajorSameCivCityState();
+  const zaufanie = Math.max(rel.zaufanie, floor.zaufanie);
+  const respekt = Math.max(rel.respekt, floor.respekt);
+  const status =
+    rel.status === 'sojusz' || zaufanie >= floor.zaufanie ? 'sojusz' : rel.status;
+  return { zaufanie, respekt, status };
+}
+
+export interface AiMajorSameCivPairOpts {
+  clusterCapitalOwnerIds: ReadonlySet<number>;
+  typCityCopyOwners: ReadonlySet<number>;
+  civOf: (ownerId: number) => string | undefined;
+}
+
+/** Para AI major (stolica klastra) ↔ miasto-państwo kopii tego samego typu cywilizacji. */
+export function isAiMajorToSameCivCityStatePair(
+  ownerA: number,
+  ownerB: number,
+  opts: AiMajorSameCivPairOpts,
+): boolean {
+  const civA = opts.civOf(ownerA);
+  const civB = opts.civOf(ownerB);
+  if (!civA || !civB || civA !== civB) return false;
+  const aMajor = opts.clusterCapitalOwnerIds.has(ownerA);
+  const bMajor = opts.clusterCapitalOwnerIds.has(ownerB);
+  const aMp = opts.typCityCopyOwners.has(ownerA);
+  const bMp = opts.typCityCopyOwners.has(ownerB);
+  return (aMajor && bMp) || (bMajor && aMp);
+}
+
+/**
  * C-WIAR-D4=A — nakłada Dźwignię 4 na relację startową (pierwszy kontakt / lazy init).
  * Symetrycznie: każda strona wnosi `round(W/20)` pkt Zaufania.
  */

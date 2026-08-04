@@ -477,6 +477,75 @@ export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): Auto
   return { adjusted: changes.length > 0, changes };
 }
 
+export interface AutoRaiseRationsOpts {
+  ownerId: number;
+  cities: City[];
+  econ: EconomyTickResult;
+  zapasyPrzed: number;
+  rationParams: RationParams;
+  spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+}
+
+/**
+ * Maciej 2026-08-04 (major AI): gdy Spichlerz państwa jest solvent i jest nadwyżka
+ * żywności — podnieś Wyżywienie (poziomRacji) o krok, aż do max lub braku nadwyżki.
+ * Parytet SPICH-AUTO (obniżanie przy deficycie); tylko major AI woła z main.ts.
+ */
+export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRationAdjustResult {
+  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity } = opts;
+  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  if (ownerCities.length === 0) {
+    return { adjusted: false, changes: [] };
+  }
+
+  if (!isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) {
+    return { adjusted: false, changes: [] };
+  }
+
+  const nadwyzka = computeEmpireCityFoodNadwyzka(econ.perCity, ownerId);
+  // Major AI: nie magazynuj zamiast rosnąć — podnoś racje jeśli jest choć trochę żywności
+  // do przeznaczenia (nadwyżka miast lub zapasy centralne). Brak żywności = brak ruchu.
+  if (nadwyzka <= 0 && zapasyPrzed <= 0) {
+    return { adjusted: false, changes: [] };
+  }
+
+  const oldLevels = new Map<string, PoziomRacji>();
+  for (const c of ownerCities) {
+    ensureCityRationDefaults(c);
+    oldLevels.set(c.id, getCityRationLevel(c));
+  }
+
+  const maxSteps = Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 2;
+  for (let step = 0; step < maxSteps; step++) {
+    const poolAfterRaise = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
+    if (poolAfterRaise < 0) break;
+
+    let raised = false;
+    for (const c of ownerCities) {
+      const lvl = getCityRationLevel(c);
+      if (lvl < WYZYWIENIE_MAX) {
+        c.poziomRacji = clampPoziomRacji(lvl + WYZYWIENIE_STEP);
+        raised = true;
+      }
+    }
+    if (!raised) break;
+
+    recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
+    if (!isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) break;
+  }
+
+  const changes: AutoRationCityChange[] = [];
+  for (const c of ownerCities) {
+    const oldLvl = oldLevels.get(c.id)!;
+    const newLvl = getCityRationLevel(c);
+    if (newLvl !== oldLvl) {
+      changes.push({ cityId: c.id, name: c.name, oldLevel: oldLvl, newLevel: newLvl });
+    }
+  }
+
+  return { adjusted: changes.length > 0, changes };
+}
+
 /** @deprecated PYTANIE-85 */
 export function computeEmpireFoodNetDelta(
   brutto: number,

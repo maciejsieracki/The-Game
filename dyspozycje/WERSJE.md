@@ -1,4 +1,4 @@
-﻿# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
+# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje siÄ™ TYLKO tutaj, zaraz po publishu. Inne pliki linkujÄ…,
 nigdy nie kopiujÄ… (stary system miaĹ‚ 4 sprzeczne â€žaktualne" md5 â€” nigdy wiÄ™cej).
@@ -11,7 +11,33 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA `2a5a66d1` - 2026-08-04 19:13 - FALA 215: R-NADMIAR-POOLS FALA2 ×2 koszty - **AKTUALNA**
+
+## ROBOCZA 8a3c6d6d - 2026-08-04 21:17 - FALA 220: AI-ALL batch (utrzymanie + MP cap/absorpcja + same-civ + major economy + AI-FOUND/LOCAL/MANAGE) - **AKTUALNA**
+|- md5 (pelne): 8a3c6d6d88f9d8a482e1c0107c9cc122 · stempel: ROBOCZA · 2026-08-04 21:17
+|- **FALA 220.** (1) Utrzymanie budynków: +1 surowiec/turę per typ z kosztu budowy + UI. (2) MP army cap: easy unlimited / normal max 1 / hard 0 + absorption rates. (3) Same-civ AI↔MP: Zaufanie 100 + priorytet absorpcji klastra. (4) Major AI: max wzrost early / Spichlerz; 60/40 archetyp; early ulepszenia. (5) AI-FOUND pop≥2; AI-LOCAL faza ~tura 20 LUB 1 zwiadowca; AI-MANAGE auto-zarządca major (NIE MP/defensiveCopy). Na bazie FALA 219.
+|- tsc 0 · ai-mp-military-cap 16/16 · ai-cs-absorption 29/29 · ai-major-economy 9/9 · ai-slider 37/37 · upkeep 49/73 (24 ×2 R-STAWKI, nie regres) · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA 9830224e - 2026-08-04 20:12 - FALA 219: dyplo kontrpropozycja + bilateral gate NAP + tip weteranów - **ZASTĄPIONA** (→ 8a3c6d6d)
+- md5 (pelne): 9830224eb13e86452128661adf120541 · stempel: ROBOCZA · 2026-08-04 20:12
+- **FALA 219.** (1) Edycja kontrpropozycji + landscape dealów (canPlayerCounterNegotiation, diplomacyAudience Edytuj, diplomacyTradeBasket/NegotiationModal). (2) AI bilateral + proposerUnfairToPartnerGate (NAP/traktaty, blokada Przyjmij, sync Relacji main.ts). (3) Tip „Doświadczeni wojownicy” — veteranEnemyEducationShown ★≥2, prune journal. Na bazie FALA 218.
+- tsc 0 · diplomacy-negotiation-table 55/55 · diplomacy-acceptance-points 218/218 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA 4cf44809 - 2026-08-04 19:52 - FALA 218: dyplo traktaty + parytet auto-racji MP - **ZASTĄPIONA** (→ 9830224e)
+- md5 (pelne): 4cf448090fae0e052cd754a96ce085ae · stempel: ROBOCZA · 2026-08-04 19:52
+- **FALA 218.** UI traktatów uproszczone (NAP/sojusz/…) + stół multi-deal (diplomacyTradeBasket.ts, diplomacyAudience.ts). Parytet auto-racji AI/MP — wzrost miast-państw (main.ts, city-state-mp-growth-test.cjs 9/9). Na bazie FALA 217.
+- tsc 0 · city-state-mp-growth 9/9 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA `6bb24541` - 2026-08-04 19:43 - FALA 217: UI NAP uproszczony (dyplomacja) - **ZASTĄPIONA** (→ 4cf44809)
+- md5 (pelne): `6bb245419c549de550282ec2829c7d2f` · stempel: `ROBOCZA · 2026-08-04 19:43`
+- **FALA 217.** UI Paktu o nieagresji (NAP): tylko czas, kary, ultimatum, Anuluj/Zaproponuj (`diplomacyTradeBasket.ts`). Na bazie FALA 216.
+- tsc 0 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build `gra/dist`.
+
+## ROBOCZA `56ee166e` - 2026-08-04 19:32 - FALA 216: UI aktywne tryby jednostki (ramka 3px) - **ZASTĄPIONA** (→ `6bb24541`)
+- md5 (pelne): `56ee166e52ccfe166546bc108914cb6f` · stempel: `ROBOCZA · 2026-08-04 19:32`
+- **FALA 216.** UI: aktywne tryby jednostki (fortify / sentry / autoExplore) — ramka 3px złota (`unitActionBarHtml.ts`, `mapUnitHudSkin.ts`). Na bazie FALA 215.
+- tsc 0 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build `gra/dist`.
+
+## ROBOCZA `2a5a66d1` - 2026-08-04 19:13 - FALA 215: R-NADMIAR-POOLS FALA2 ×2 koszty - **ZASTĄPIONA** (→ `56ee166e`)
 - md5 (pelne): `2a5a66d15012215778d4bdd23c027ec4` · stempel: `ROBOCZA · 2026-08-04 19:13`
 - **FALA 215.** R-NADMIAR-POOLS FALA2 (`R_STAWKI_FALA2_MULT=2`): utrzymanie budynków ×2 · Praca budynków ×2 vs JSON · `koszt_surowce` ×2 · rekrutacja ×2 · upkeep jednostek ×4 · żywność wojska ×4 · badania Brąz/Żelazo ×4 (Kamień ×2) · ulepszenia terenu ×2 · cuda Praca ×2 + żywność = Praca. Na bazie FALA 214. PR #82 `f940f61`.
 - tsc 0 · r-stawki-fala2 11/11 · difficulty-cost 22/22 · vite · VERIFY OK · build `gra/dist`.

@@ -1,3 +1,7 @@
+- **2026-08-04 21:17** — ✅ **FALA 220** ROBOCZA `8a3c6d6d` — AI-ALL batch: utrzymanie budynków (+1 surowiec/turę per typ z kosztu budowy) + UI; MP army cap easy/normal/hard + absorption rates; same-civ AI↔MP Zaufanie 100 + priorytet absorpcji klastra; major AI early wzrost/Spichlerz + 60/40 archetyp + early ulepszenia; AI-FOUND pop≥2, AI-LOCAL faza ~tura 20 LUB 1 zwiadowca, AI-MANAGE auto-zarządca major (NIE MP). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
+- **2026-08-04 20:12** — ✅ **FALA 219** ROBOCZA `9830224e` — dyplo: edycja kontrpropozycji + landscape dealów; AI bilateral + gate NAP/traktaty (proposerUnfairToPartnerGate, blokada Przyjmij); tip „Doświadczeni wojownicy” (★≥2, bez spamu). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
+- **2026-08-04 19:52** - ✅ **FALA 218** ROBOCZA 4cf44809 - dyplo: uproszczone traktaty + stół multi-deal; parytet auto-racji AI/MP (wzrost CS). START: gra-robocza/START.html - **git pull**, Ctrl+F5 **Nowa gra**.
+- **2026-08-04 19:43** — ✅ **FALA 217** ROBOCZA `6bb24541` — UI Paktu o nieagresji (NAP) uproszczony. START: `gra-robocza/START.html` — Ctrl+F5 **Nowa gra** → dyplomacja → NAP (czas/kary/ultimatum, Anuluj/Zaproponuj).
 ﻿- **2026-08-04 19:13** — ✅ **FALA 215** ROBOCZA `2a5a66d1` — R-NADMIAR-POOLS FALA2 ×2 koszty. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**.
 - **2026-08-04 19:09** — ✅ **R-NADMIAR-POOLS FALA2** na `main` (`f940f61`, PR #82 MERGED). Bez deploy — ROBOCZA nadal FALA 214. Napisz **`deploy`** → FALA 215.
 - **2026-08-04 12:13** - ✅ Gotowe FALA 213 ROBOCZA `1d3b8755`. REL-WIARYG-DRIFT-Q1 (dryf W×0.03, UI Δ/turę audiencja) · FORTIFY-MP0-Q1=C + ODFORT (fortify bez MP, odfort miasto + restore MP). Handoff: `dyspozycje/_handoff/BATCH-2026-08-04_FALA-212-bugfixy.md` (dopisek deploy 213). START: `gra-robocza/START.html` - **git pull**, Ctrl+F5 **Nowa gra**.
@@ -236,3 +240,6 @@
 
 ## [20:10] ✅ Gotowe — R-HANDEL-AI-FALA + BUG-ARMIA-BRAK-POLACZ (kod, branch `cursor/handel-ai-polacz-63a1`, bez deploy ROBOCZA)
 
+
+## [19:32] ✅ Gotowe - deploy ROBOCZA FALA 216 (56ee166e)
+**FALA 216** | md5 56ee166e52ccfe166546bc108914cb6f | UI ramka 3px aktywne tryby jednostki | gra-robocza/START.html (Ctrl+F5, Nowa gra).

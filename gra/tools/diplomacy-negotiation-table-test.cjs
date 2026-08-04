@@ -16,7 +16,7 @@ const BUNDLE = path.resolve(__dirname, '.dip-negot-bundle.cjs');
 const entryFile = path.resolve(__dirname, '.dip-negot-entry.ts');
 fs.writeFileSync(entryFile, `
 export {
-  evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation,
+  evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   resolvePlayerAcceptsAiPending, generateCounterOffer, negotiationAsProposal,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
@@ -36,7 +36,7 @@ esbuild.buildSync({
 });
 
 const {
-  evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation,
+  evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   resolvePlayerAcceptsAiPending, generateCounterOffer, negotiationAsProposal,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
@@ -142,7 +142,8 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
   const counter = generateCounterOffer(proposal, ctx());
   ok(counter === null, 'umowa_handlowa: brak kontroferty silnika (świadomie poza zasięgiem)');
   const base = { id: 'y', proposerOwnerId: 1, responderOwnerId: 0, actionId: 'umowa_handlowa', payload: {}, authorOwnerId: 1, awaitingOwnerId: 0, createdTurn: 1, lastActionTurn: 1, expiresTurn: 99, source: 'ai' };
-  ok(canCounterNegotiation({ ...base, round: 1 }) === false, 'umowa_handlowa: canCounter zawsze false');
+  ok(canCounterNegotiation({ ...base, round: 1 }) === false, 'umowa_handlowa: silnik AI canCounter false');
+  ok(canPlayerCounterNegotiation({ ...base, round: 1 }) === true, 'umowa_handlowa: gracz canPlayerCounter true');
 }
 
 // 6 — trybut_zadanie: "oferuje mniej" — kwota zbyt wysoka (poza limitem AI) -> kontra obniża kwotę.
@@ -299,6 +300,54 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
   const aiProposal = { actionId: 'umowa_szlakow', proposerOwnerId: 2, responderOwnerId: 0, payload: { turns: 20 } };
   table.push(createNegotiation(aiProposal, 11, 'ai', 2));
   ok(hasPendingNegotiationForPair(table, 0, 2, 'umowa_szlakow'), 'dedup: oba kierunki na stole');
+}
+
+// 12 — BUG: AI nie przyjmuje oferty nieuczciwej dla partnera (bilans PW −5 @ NAP/handlu).
+{
+  const napCtx = ctx({
+    relation: rel(50, 50),
+    proposerWiarygodnosc: 80,
+    proposerRespekt: 50,
+    responderRespekt: 50,
+  });
+  const napUnfair = evaluateProposal(
+    {
+      actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1,
+      payload: {
+        turns: 15,
+        giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 5 }],
+        receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
+      },
+    },
+    napCtx,
+  );
+  ok(!napUnfair.accepted && /nieuczciwa dla partnera/i.test(napUnfair.reason ?? ''), 'NAP + koszyk 5 vs 10: odrzucony (nieuczciwy dla partnera)');
+
+  const handelUnfair = evaluateProposal(
+    {
+      actionId: 'handel', proposerOwnerId: 0, responderOwnerId: 1,
+      payload: {
+        giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 105 }],
+        receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 110 }],
+      },
+    },
+    ctx({ relation: rel(100, 100) }),
+  );
+  ok(!handelUnfair.accepted && /nieuczciwa dla partnera/i.test(handelUnfair.reason ?? ''), 'handel 105 vs 110 PW: odrzucony');
+
+  const entry = createNegotiation(
+    {
+      actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1,
+      payload: {
+        turns: 15,
+        giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 5 }],
+        receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
+      },
+    },
+    10, 'player', 1,
+  );
+  const outcome = resolveNegotiationAsResponder(entry, napCtx, 10);
+  ok(outcome.kind !== 'accepted', 'resolveNegotiationAsResponder: NAP nieuczciwy nie akceptuje');
 }
 
 console.log(`\n${pass}/${pass + fail} PASS`);

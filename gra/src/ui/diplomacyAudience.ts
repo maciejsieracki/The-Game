@@ -654,6 +654,10 @@ ${DIPLO_1E_SHARED_CSS}
 .da-deal .da-note{font-size:0.62em;color:#8a8070;margin-top:1px;}
 .da-deal.locked{opacity:.48;cursor:not-allowed;}
 .da-deal.locked .da-note{color:#e08a8a;}
+.da-deal.on-table{opacity:.72;border-style:dashed;}
+.da-deal.on-table .da-note{color:#8ab4e8;}
+.da-multi-deal-hint{font-size:0.62em;color:#8a8070;line-height:1.45;margin-top:6px;padding:6px 8px;
+  border-radius:6px;border:1px dashed rgba(232,216,138,.2);background:rgba(0,0,0,.18);}
 .da-deal.active{border-color:rgba(142,197,255,.5);background:linear-gradient(180deg,rgba(142,197,255,.09),rgba(12,16,24,.75));cursor:default;}
 .da-deal.active .da-note{color:#8ec5ff;}
 .da-deal:not(.locked):not(.active):hover{border-color:#e8d88a;box-shadow:0 0 8px rgba(232,216,138,.25);}
@@ -1294,15 +1298,25 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
 /** FAZA 2 pkt 3 kol.1 (lewo) — „Możliwe umowy" (12 akcji; bez „Nawiązanie kontaktu" gdy kontakt jest). */
 function dealsColumnHtml(st: DiplomacyAudienceState): string {
   const visible = st.actions.filter(a => a.id !== '1');
+  const ownOnTable = new Set(
+    (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').map(r => r.uiActionId),
+  );
+  const ownPendingCount = (st.pendingNegotiations ?? []).filter(r => r.direction === 'own').length;
   const items = visible.map(a => {
-    const isLocked = a.locked || !a.enabled || a.active === true;
+    const onTable = ownOnTable.has(a.id);
+    const isLocked = a.locked || !a.enabled || a.active === true || onTable;
     let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
+    if (onTable) cls += ' on-table';
     const lockReason = a.lockNote || (isLocked && a.tooltip ? a.tooltip : '');
-    const shortNote = a.active ? 'już zawarta' : (lockReason ? (lockReason.length > 40 ? lockReason.slice(0, 37) + '…' : lockReason) : '');
-    const hoverTip = a.active
-      ? 'Umowa już zawarta'
-      : (a.opis || lockReason || a.tooltip || a.label);
+    const shortNote = onTable
+      ? 'na stole — Przyjmij w PN'
+      : a.active ? 'już zawarta' : (lockReason ? (lockReason.length > 40 ? lockReason.slice(0, 37) + '…' : lockReason) : '');
+    const hoverTip = onTable
+      ? 'Ta umowa już leży na stole negocjacji — użyj Przyjmij przy panelu PW lub Odrzuć, aby wycofać'
+      : a.active
+        ? 'Umowa już zawarta'
+        : (a.opis || lockReason || a.tooltip || a.label);
     const icon = dipBrandIconHtml(actionIconId(a.id), 14, 'da-di');
     const endIc = a.active
       ? dipBrandIconHtml('ui-check', 13, 'da-checkic')
@@ -1318,10 +1332,14 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
       '</button>'
     );
   }).join('');
+  const multiHint = ownPendingCount > 0
+    ? '<div class="da-multi-deal-hint">Na stole: <b>' + ownPendingCount + '</b> · dodaj kolejną umowę z listy · każda pozycja wymaga osobnego „Przyjmij" w panelu PW</div>'
+    : '';
   return (
     '<div class="da-col da-col-deals">' +
       '<h3>Możliwe umowy<span class="cnt">' + visible.length + '</span></h3>' +
       (items || '<div class="da-empty">Brak dostępnych akcji.</div>') +
+      multiHint +
     '</div>'
   );
 }
@@ -1539,10 +1557,10 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
     const isOwn = r.direction === 'own' && r.awaitingAiResponse;
     const legacyAccess = !isOwn && r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
     const canAccept = isOwn
-      ? (r.responderPreview?.accepted !== false)
+      ? (r.responderPreview?.accepted !== false && r.acceptanceTheir?.accepted !== false)
       : (r.canAccept !== false && !legacyAccess);
     const acceptTitle = !canAccept
-      ? esc(r.responderPreview?.reason ?? RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON)
+      ? esc(r.responderPreview?.reason ?? r.acceptanceTheir?.statusLabel ?? RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON)
       : '';
     const btns =
       '<div class="da-btnrow">'
@@ -1550,7 +1568,8 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
       + ' data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
       + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
       + (!isOwn && r.canCounter
-        ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">Kontruj</button>'
+        ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">'
+          + (actionUsesTradeBasket(r.uiActionId) ? 'Edytuj' : 'Kontruj') + '</button>'
         : '') +
       '</div>';
     return '<div class="da-neg-act-block" data-negot-id="' + esc(r.id) + '">' +
@@ -1766,6 +1785,7 @@ function render(): void {
       const negotId = btn.getAttribute('data-negot-id');
       const act = btn.getAttribute('data-negot-act');
       if (!negotId || !act) return;
+      if (btn.disabled) return;
       if (act === 'accept') { cfg.onAcceptNegotiation?.(negotId); return; }
       if (act === 'reject') { cfg.onRejectNegotiation?.(negotId); return; }
       if (act === 'counter') {
