@@ -136,6 +136,7 @@ import { CIV_PUBLISH_MARKERS } from './buildInfo';
 // C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony
 // brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.
 import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';
+import { setCityMapBadgeCivSigil } from './render/cityMapStatChip';
 import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
 import { leaderPortraitUrl } from './ui/leaderPortraits';
 import { civIconSvg } from './ui/icons/brandAssets';
@@ -5836,6 +5837,7 @@ async function boot(): Promise<void> {
         civSigilSvg: (civId: string) => civIconSvg(civId, 40),
         barbarianSigilSvg: () => brandIconSvg('chip-death', 40),
       });
+      setCityMapBadgeCivSigil((id) => civIconSvg(id, 40));
       // Ikony odznak ulepszeń — DOKŁADNIE te symbole budynków, które gracz widzi
       // w panelu miasta przy Koszarach i Kuźni (korekta właściciela 2026-07-29:
       // „masz konkretne ikony i symbole tych dwóch budynków, użyj je”).
