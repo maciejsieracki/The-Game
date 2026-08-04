@@ -4,16 +4,21 @@
 **Status:** WDROŻONE (kod) · czeka deploy  
 **Branch:** `cursor/fix-rekrut-ludnosc-ui-63a1`
 
-## Problem
+## Audyt (Maciej)
 
-Intro w panelu miasta (Rekruci / Rekrutacja — szczegóły) sugerowało spadek ludności przy werbie (np. „−1 obywatela”), podczas gdy mechanika od dawna zużywa tylko pulę Manpower imperium — ludność miasta nie spada.
+Wrażenie: ludność spada po rekrutacji wojska.  
+**Werdykt:** rekrutacja **nie** odejmuje `city.population` (`jednostka_koszt_ludnosci=0` od 2026-07-21). Realny −1 = głód / założenie miasta / bunt. Spichlerz tylko pośrednio (łatwiej o głód).
+
+## Problem UI
+
+Intro w panelu miasta (Rekruci / Rekrutacja — szczegóły) kłamało: „−1 obywatela”, podczas gdy mechanika zużywa tylko Manpower.
 
 ## Fix (kod)
 
 `gra/src/ui/cityPanel.ts`:
 
-- `buildTopBarRekruciDetailCard` (~4749) — „ludność miasta nie spada”
-- intro Rekrutacja — szczegóły (~7316) — „Werb zużywa tylko rekrutów imperium — ludność miasta nie spada”
+- ~4749 — „ludność miasta nie spada”
+- ~7316 — „Werb zużywa tylko rekrutów imperium — ludność miasta nie spada”
 
 Bez zmiany logiki gry — tylko copy UI.
 
