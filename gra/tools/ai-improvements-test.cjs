@@ -12,9 +12,8 @@
  *   4. Praca + tech + kwalifikujący heks -> DOKŁADNIE 1 buildImprovement (key='farma').
  *   5. Throttle: wiele kwalifikujących heksów w 1 mieście -> nadal maks. 1 rozkaz.
  *   6. Throttle: 2 miasta tego samego AI -> maks. 1 rozkaz NA MIASTO (2 łącznie).
- *   7. `wyrab` NIGDY nie jest wybierany przez AI (jedyny typ tech-odblokowany
- *      bezwarunkowo -- na mapie z samym lasem i pustym zbiorem technologii AI nie
- *      buduje NIC, mimo że wyrab by się kwalifikował).
+ *   7. `wyrab` gdy jedyny odblokowany typ (mapa lasu, puste techy) — AI buduje wyrab
+ *      (gracz: skipWyrab=true w auto-ulepszeniach EOT).
  *   8. Determinizm: dwa identyczne wywołania decideAITurn -> identyczne komendy
  *      buildImprovement (JSON-equal), zero Math.random().
  *   9. defensiveCopy (miasto-państwo) -> ta sama ścieżka planCityImprovements
@@ -238,16 +237,17 @@ console.log('6. 2 miasta -- 1 rozkaz na miasto (2 lacznie)');
 }
 
 // ===========================================================================
-// 7. wyrab NIGDY wybierany -- mapa samego lasu, techy puste (tylko wyrab
-//    bezwarunkowo odblokowany) -> AI nie buduje NIC
+// 7. wyrab gdy jedyny odblokowany typ (mapa lasu, techy puste) — AI buduje wyrab
+//    (skipWyrab=false w planCityImprovements; gracz: skipWyrab=true w main.ts)
 // ===========================================================================
-console.log('7. wyrab pominiety dla AI (mapa samego lasu)');
+console.log('7. wyrab na mapie lasu gdy brak innych tech');
 {
   const city = makeCity('city0', PLAYER_ID, 15, 15);
   const opts = baseOpts(city);
   opts.improvementTechs = new Set(); // pusty zbior -- TYLKO wyrab jest bezwarunkowo odblokowany
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], forestMap, data, opts));
-  eq(cmds.length, 0, 'AI nie buduje wyrebu mimo ze kwalifikujacy sie heks istnieje (cala mapa las)');
+  eq(cmds.length, 1, 'AI buduje wyrab gdy tylko ten typ jest dostepny');
+  eq(cmds[0].key, 'wyrab', 'mapa lasu + brak tech -> wyrab');
 }
 
 // ===========================================================================
@@ -278,6 +278,20 @@ console.log('9. defensiveCopy -- ta sama intensywnosc co zwykle AI');
   const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
   eq(cmds.length, 1, 'defensiveCopy=true -> nadal 1 buildImprovement (zero specjalnego throttlingu)');
   eq(cmds[0].key, 'farma', 'defensiveCopy -- ten sam wybor typu co zwykle AI');
+}
+
+// ===========================================================================
+// 10. Regres FALA 204: praca > próg ale < próg+koszt — AI buduje (MP nie „utknięte”)
+// ===========================================================================
+console.log('10. praca=40 (ponad prog 30, ponizej 50) -- farma nadal');
+{
+  const city = makeCity('city0', PLAYER_ID, 15, 15);
+  const opts = baseOpts(city);
+  opts.pracaAvailable = 40;
+  opts.defensiveCopy = true;
+  const cmds = buildImprovementCmds(decideAITurn(PLAYER_ID, [], [city], map, data, opts));
+  eq(cmds.length, 1, 'praca=40 -> 1 buildImprovement (bez podwojnej rezerwy po kosztu)');
+  eq(cmds[0].key, 'farma', 'praca=40 -> farma (koszt 20, pula po budowie < 30 OK dla AI)');
 }
 
 // ---------------------------------------------------------------------------

@@ -1428,15 +1428,22 @@ function planCityImprovements(
   const territoryNodes = opts.territoryNodes;
   if (!territoryNodes || myCities.length === 0) return [];
 
+  const pracaAvailable = opts.pracaAvailable ?? 0;
+  // P-AI-009: bramka wejścia — pula musi PRZEKRACZAĆ próg (nie buduj przy „na styk").
+  // Rezerwa NIE jest wymagana PO kosztu ulepszenia (gracz: AUTO_ULEPSZENIA_PRACA_RESERVE
+  // w pickAutoImprovements — inna polityka). Przed FALA 204 / pickAutoImprovements AI
+  // schodził z puli poniżej 30 po budowie farmy (koszt 20 przy puli 35) — regres MP.
+  if (pracaAvailable <= AI_IMPROVEMENT_PRACA_SURPLUS) return [];
+
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
     map,
     territoryNodes,
     placedImprovements: opts.placedImprovements,
-    pracaAvailable: opts.pracaAvailable ?? 0,
+    pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? new Set<string>(),
-    pracaSurplusThreshold: AI_IMPROVEMENT_PRACA_SURPLUS,
+    pracaSurplusThreshold: 0,
     skipWyrab: false,
     civArchetype: opts.civType,
     playerEra: opts.civEra ?? 1,
