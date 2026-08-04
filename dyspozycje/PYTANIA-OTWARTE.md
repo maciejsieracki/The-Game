@@ -8,10 +8,21 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-SCOUT-ZWIEDZAJ-PODSWIETLENIE — Zwiedzaj bez złotej ramki · STATUS: **WDROŻONE (kod)** Q1=A (2026-08-04)
+
+**ECHO:** `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1 A` — zostań na zwiadowcy + złota ramka od razu.  
+Szczegóły: [`docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md`](../docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md). Czeka **`deploy`**.
+
+---
+
+---
+
 ## R-PILL-TARCZA-BEZ-MURU — szara tarcza bez muru na heksie · STATUS: **WDROŻONE (kod)** Q1=A (2026-08-04)
 
 **ECHO:** `R-PILL-TARCZA-BEZ-MURU-Q1 A` — tier wyłącznie z `wallKind` (= model 3D).  
 Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md). Bramki: tsc 0 · city-map-badge 19/19. Czeka **`deploy`**.
+
+---
 
 ---
 
