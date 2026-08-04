@@ -1538,7 +1538,9 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
   const blocks = rows.map(r => {
     const isOwn = r.direction === 'own' && r.awaitingAiResponse;
     const legacyAccess = !isOwn && r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
-    const canAccept = isOwn ? true : (r.canAccept !== false && !legacyAccess);
+    const canAccept = isOwn
+      ? (r.responderPreview?.accepted !== false)
+      : (r.canAccept !== false && !legacyAccess);
     const acceptTitle = !canAccept
       ? esc(r.responderPreview?.reason ?? RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON)
       : '';

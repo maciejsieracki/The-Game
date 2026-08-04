@@ -456,8 +456,26 @@ function treatyPnGate(
   const basePn = treatyBasePnFromConfig(actionId);
   if (basePn <= 0) return null;
   const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
+  const relTotal = treatyEvalRelationTotal(relation);
+
+  /** Bilans PW gracza vs partnera — tylko gdy gracz proponuje (odpowiedź AI). */
+  function playerTreatyBalanceReject(): ProposalEvalResult | null {
+    if (!proposerIsPlayer) return null;
+    const playerPw = effectiveTreatyPnRequired(basePn, relTotal);
+    const partnerPw = partnerTreatyPnRequired(basePn);
+    const myDisplay = playerPw + givePn;
+    const theirDisplay = partnerPw + receivePn;
+    if (myDisplay < theirDisplay) {
+      return {
+        accepted: false,
+        reason: `Brakuje ${theirDisplay - myDisplay} PW do bilansu — dopłać`,
+      };
+    }
+    return null;
+  }
+
   if (actionId === 'pokoj') {
-    const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
     const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
     if (offerPn < required) {
       return {
@@ -465,10 +483,14 @@ function treatyPnGate(
         reason: `Oferta za niska na pokój (wymagane ≥ ${required} PW @ Relacji, baza ${basePn})`,
       };
     }
+    const balanceReject = playerTreatyBalanceReject();
+    if (balanceReject) return balanceReject;
     return null;
   }
-  const relTotal = treatyEvalRelationTotal(relation);
-  const required = effectiveTreatyPnRequired(basePn, relTotal);
+
+  const balanceReject = playerTreatyBalanceReject();
+  if (balanceReject) return balanceReject;
+
   const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
   if (!hasBasket) return null;
   // Dwustronna wymiana przy traktacie — tylko fair trade koszyka (bez dublowania bazy NAP).

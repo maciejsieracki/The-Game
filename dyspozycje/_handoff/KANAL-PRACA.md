@@ -5336,3 +5336,10 @@ CZEKAM-NA: Maciej — **deploy** (razem z #67+#68)
 - #67 Relacja PW invert (42 vs 80 @ Rel 52) · #68 landscape traktat · #69 Zwiedzaj UX
 - Wejście: `gra-robocza/START.html`
 CZEKAM-NA: Maciej — **najpierw `git pull`**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
+## [14:00 PL, 2026-08-04] CLOUD → ALL — R-PW-BILANS-ACCEPT
+- Maciej: bilans −6 a AI i tak przyjmował → bramka **tylko bilans ≥ 0**
+- Fix: acceptance sides + treatyPnGate + Przyjmij disabled + usunięty force-accept umowa_handlowa
+- Rel 92 / baza 80 → 74 vs 80 → rejected; +6¤ → OK
+- Branch: `cursor/fix-pw-balance-accept-63a1` · tsc 0 · accept 204/204 · proposal 84/84
+CZEKAM-NA: Maciej — **deploy** gdy wgrać do ROBOCZA (najpierw git pull po deployu)

@@ -80,12 +80,13 @@ ok(dipHard.progNapRelacja === 60, 'hard progNapRelacja 60');
 ok(dipHard.progHandelRelacja === 0, 'hard progHandelRelacja 0 (bez skali trudnosci)');
 
 // 1 NAP accept — Relacja >= 50 @ normal (bez progu Zaufania, Maciej 2026-07-21)
-let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(40, 10) }));
-ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept rel 50 zauf 5 normal');
+// @ rel 100 bilans PW = 0 (FALA 213: przy rel 50 wymagana dopłata)
+let r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({ relation: rel(50, 50) }));
+ok(r.accepted && r.deal?.rodzaj === 'pakt_nieagresji', 'NAP accept rel 100 @ normal');
 
 // 1a NAP accept — Rel OK, niskie Zaufanie (brak progu Zauf)
-r = evaluateProposal(prop('nap'), ctx({ relation: rel(30, 20) }));
-ok(r.accepted, 'NAP accept rel 50 zauf 30 normal (bez progu Zauf)');
+r = evaluateProposal(prop('nap'), ctx({ relation: rel(50, 50) }));
+ok(r.accepted, 'NAP accept rel 100 (bez progu Zauf)');
 
 // 2 NAP reject low relacja @ normal
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(25, 24) }));
@@ -300,12 +301,12 @@ r = evaluateProposal(prop('handel', 0, 1, { givePn: 250, receivePn: 100 }), ctx(
 }));
 ok(r.accepted, 'handel accept relacja 40 normal');
 
-// 9c NAP easy — accept rel 40, reject rel 39 (bez progu Zauf)
+// 9c NAP easy — accept rel 100, reject rel 39 (bez progu Zauf; FALA 213: bilans PW @ rel 40)
 r = evaluateProposal(prop('nap', 0, 1, { turns: 15 }), ctx({
-  relation: rel(30, 10),
+  relation: rel(50, 50),
   difficulty: 'easy',
 }));
-ok(r.accepted, 'NAP accept rel 40 zauf 5 easy');
+ok(r.accepted, 'NAP accept rel 100 easy');
 r = evaluateProposal(prop('nap'), ctx({ relation: rel(20, 19), difficulty: 'easy' }));
 ok(!r.accepted, 'NAP reject relacja 39 easy');
 
@@ -376,7 +377,7 @@ ok(!r.accepted && r.reason.includes('Zaufanie'), 'granice reject zauf 40 rel 105
 r = evaluateProposal(prop('granice', 0, 1, { borderMilitary: false }), ctx({
   relation: rel(50, 40),
 }));
-ok(!r.accepted && r.reason.includes('Relacja'), 'granice reject rel 90 zauf 50');
+ok(!r.accepted && (r.reason.includes('Relacja') || r.reason.includes('Brakuje')), 'granice reject rel 90 zauf 50');
 
 // 14 applyAcceptedProposal + treatiesBrokenByWar
 let deals = applyAcceptedProposal([], r);
@@ -466,13 +467,20 @@ ok(!r.accepted && r.reason.includes('chęci'), 'handel unfair + niska willingnes
 r = evaluateProposal(prop('umowa_szlakow', 0, 1, { givePn: 250, receivePn: 100, turns: 20 }), lowTradeCtx);
 ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy fair PW: akceptacja mimo willingness');
 r = evaluateProposal(prop('umowa_szlakow', 0, 1, { turns: 20 }), lowTradeCtx);
-ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy bez koszyka: Relacja wystarczy (bez willingness)');
-r = evaluateProposal(prop('pokoj', 0, 1, { givePn: 615, receivePn: 615 }), {
+ok(!r.accepted && r.reason.includes('Brakuje'), 'traktat handlowy bez koszyka @ niska Rel: odrzucenie (ujemny bilans PW)');
+r = evaluateProposal(prop('umowa_szlakow', 0, 1, { turns: 20 }), { ...lowTradeCtx, relation: rel(50, 50) });
+ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy bez koszyka @ rel 100: bilans 0');
+r = evaluateProposal(prop('umowa_szlakow', 0, 1, {
+  turns: 20,
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 40 }],
+}), lowTradeCtx);
+ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy: dopłata gold pokrywa bilans @ niska Rel');
+r = evaluateProposal(prop('pokoj', 0, 1, { givePn: 355, receivePn: 0 }), {
   ...lowTradeCtx,
   stanWojny: true,
-  relation: rel(30, 47, 'wojna'),
+  relation: rel(50, 50, 'wojna'),
 });
-ok(r.accepted, 'pokój symetryczny: bez bramki willingnessTrade (willingnessPeace)');
+ok(r.accepted, 'pokój z dopłatą bilansu PW @ wojna: bez bramki willingnessTrade (willingnessPeace)');
 
 // 18 Dar złota — pokój OK, wojna zablokowana; ugoda pokojowa ze złotem w wojnie OK
 r = evaluateProposal(prop('handel', 0, 1, {
