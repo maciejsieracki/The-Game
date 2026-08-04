@@ -1,6 +1,6 @@
 # R-GRACZ-WCHLONIECIE — wchłonięcie MP przez gracza po wasalu
 
-**Status:** WDROŻONE w kodzie (bez deploy) · 2026-08-03  
+**Status:** ZDEPLOYOWANE FALA 206 (`1c7e9df7`) · 2026-08-03  
 **Branch:** `cursor/fix-gracz-wchloniecie-63a1`
 
 ## Decyzje Macieja (ECHO)

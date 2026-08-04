@@ -1,3 +1,8 @@
+﻿## [00:30 PL, 2026-08-05] CLOUD → Maciej — cleanup rejestr stale „bez deploy"
+|- Poprawione: R-GRACZ-WCHLONIECIE → FALA 206 · C-ARMY-HUNGER → FALA 36 · P-AI-017 · usunięte „czeka/bez deploy” przy już ZDEPLOYOWANE (221/222)
+|- Bez zmian kodu / bez deploy gry
+CZEKAM-NA: nic
+
 ## [00:25 PL, 2026-08-05] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 224 38df6ad7
 |- md5: 38df6ad74d2613e776a51b332eb2696c · stempel widoczny: ROBOCZA · eef4e87e · 2026-08-04 22:25
 |- Batch: R-REKRUT-LUDNOSC-UI (+ docs R-BUDOWA-ZROWNOWAZONE OK)

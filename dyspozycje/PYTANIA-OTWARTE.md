@@ -57,7 +57,7 @@ Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły
 
 ---
 
-## P-AI-017 — pasek HP w bitwie pokazywał 100% mimo uszkodzonej jednostki z mapy · STATUS: **FIX gotowy** (`cursor/fix-battle-hp-display-63a1`)
+## P-AI-017 — pasek HP w bitwie pokazywał 100% mimo uszkodzonej jednostki z mapy · STATUS: **ZDEPLOYOWANE** (PR #22 MERGED; w łańcuchu ROBOCZA FALA 202+ / obecna 224)
 
 **Temat:** Jednostka z minimalnym HP/energią na mapie wchodziła do bitwy z pełnym zielonym paskiem HP, ale szybko ginęła (logika walki miała poprawne `u.hp`, kłamała tylko wizualizacja).
 
