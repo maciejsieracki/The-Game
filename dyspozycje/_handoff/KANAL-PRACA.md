@@ -1,3 +1,9 @@
+## [21:55 PL, 2026-08-04] CLOUD → Maciej — R-SCOUT-ZWIEDZAJ-HIGHLIGHT (kod, bez deploy)
+- Przyczyna: select kasował `autoExplore` → Zwiedzaj nigdy nie miało złotej ramki WŁ
+- Fix: select NIE czyści; clear tylko przy marszu / ruchu ręcznym + toggle
+- Branch: `cursor/fix-zwiedzaj-mode-highlight-63a1` · docs: `R-SCOUT-ZWIEDZAJ-HIGHLIGHT.md`
+- Test: scout-auto-explore-test 25/25
+CZEKAM-NA: Maciej — **`deploy`** gdy OK (albo BUG)
 ## [22:05 PL, 2026-08-04] CLOUD → Maciej — R-DYPLO-DOBRA-KAT + R-TRZODA-SCALE-MAP (kod, bez deploy)
 - Dobra handlowe: akordeon Surowce · Technologie · Inne (Q1–Q3=A), bez cap 7
 - Pastwisko/trzoda: PASTWISKO_S ×1.5 (krowa, świnia, owca, lama — Q1=B)
