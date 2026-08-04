@@ -4259,7 +4259,7 @@ function appendPodzialPracyInfo(
   chips.innerHTML =
     statChipBrand('res-work', 'Miasto', praca ? signed(praca.total) : '—', 'gold') +
     statChipBrand('cp-buildings', 'Budowa', praca ? `+${praca.doBudynkow}` : '—', 'gold') +
-    statChipBrand('chip-crate', 'Pula', praca ? `+${praca.doUlepszen}` : '—', 'blue');
+    statChipBrand('tb-build', 'Ulepszenia', praca ? `+${praca.doUlepszen}` : '—', 'blue');
   mount.appendChild(chips);
 
   const info = el('div', 'praca-split-info');
@@ -4289,9 +4289,9 @@ function appendPodzialPracyInfo(
 
   const rowPool = el('div', 'psi-row');
   rowPool.innerHTML =
-    `<span class="psi-lbl">${psiRowLabel('chip-crate', 'Pula imperium')}</span>` +
+    `<span class="psi-lbl">${psiRowLabel('tb-build', 'Ulepszenia')}</span>` +
     `<span class="psi-val blue">${praca ? `+${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
-    `<div class="psi-sub">Zapas całej cywilizacji: ${pool}${cityPanelChipIconWrap('res-work', 14)} · osadnicy, projekty mapy</div></span>`;
+    `<div class="psi-sub">Zapas Pracy na ulepszenia pól: ${pool}${cityPanelChipIconWrap('res-work', 14)} · farma, kamieniołom, projekty mapy</div></span>`;
   info.appendChild(rowPool);
 
   const rowSkarb = el('div', 'psi-row');
@@ -4326,7 +4326,7 @@ function renderPodzialPracy(
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
   sliderLabel.innerHTML =
-    `<span>${cityPanelChipIconWrap('res-work', 14)} Budynki / Pula</span>` +
+    `<span>${cityPanelChipIconWrap('res-work', 14)} Budynki / Ulepszenia</span>` +
     `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
   sliderRow.appendChild(sliderLabel);
 
@@ -4337,8 +4337,8 @@ function renderPodzialPracy(
     inp.max = '100';
     inp.step = String(HANDEL_PCT_STEP);
     inp.value = String(pctB);
-    inp.setAttribute('aria-label', 'Podział pracy: budynki versus pula imperium');
-    inp.title = 'Podział pracy — budynki w kolejce versus ulepszenia pól / pula imperium';
+    inp.setAttribute('aria-label', 'Podział pracy: budynki versus ulepszenia');
+    inp.title = 'Podział pracy — budynki w kolejce versus ulepszenia pól';
     inp.addEventListener('input', () => {
       const v = snapHandelPct(Number(inp.value));
       cfg.onPodzialPracyChange?.(city.id, { procentBudynki: v });
