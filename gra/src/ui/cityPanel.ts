@@ -9057,11 +9057,19 @@ function appendBudowaToolbarProfiles(
       b.style.position = 'relative';
       b.appendChild(badge);
     }
+    if (tryb === 'lista') {
+      b.title = `Wyjdź z Listy → Priorytet: ${BUDOWA_FOCUS_TITLE[id]}`;
+    }
     b.addEventListener('click', () => {
       if (!cfg.onBudowaPriorytetChange) return;
       let next: BudowaFocus[];
       let nextTryb: BudowaTryb;
-      if (tryb === 'reczny') {
+      if (tryb === 'lista') {
+        // Wyjście z Listy — bez duplikowania typów w priorytecie.
+        nextTryb = 'priorytet';
+        next = priorytetTypow.includes(id) ? [...priorytetTypow] : [...priorytetTypow, id];
+        if (next.length === 0) next = [id];
+      } else if (tryb === 'reczny') {
         nextTryb = 'priorytet';
         next = inList ? [...priorytetTypow] : [...priorytetTypow, id];
         if (!inList && next.length === 0) next = [id];
@@ -9083,10 +9091,18 @@ function appendBudowaToolbarProfiles(
     listaBtn.type = 'button';
     listaBtn.className = tryb === 'lista' ? 'on' : '';
     listaBtn.textContent = 'Lista';
-    listaBtn.title = 'Lista nazwana — buduj wg kolejności';
+    listaBtn.title = tryb === 'lista'
+      ? 'Wyjdź z Listy (wróć do Priorytetu) — albo kliknij Ręczny / ikonę typu'
+      : 'Lista nazwana — buduj wg kolejności';
     listaBtn.style.cssText = 'font-size:0.68em;padding:0.15em 0.45em;min-width:auto;';
     listaBtn.addEventListener('click', () => {
-      cfg.onBudowaListaChange?.(city.id, [...lista], 'lista');
+      if (tryb === 'lista') {
+        // Ponowne kliknięcie „Lista” zamyka edytor → Priorytet.
+        const next = priorytetTypow.length > 0 ? [...priorytetTypow] : (['zrownowazone'] as BudowaFocus[]);
+        cfg.onBudowaPriorytetChange?.(city.id, next, 'priorytet');
+      } else {
+        cfg.onBudowaListaChange?.(city.id, [...lista], 'lista');
+      }
       rerender();
     });
     wrap.appendChild(listaBtn);
@@ -9096,7 +9112,9 @@ function appendBudowaToolbarProfiles(
     recBtn.type = 'button';
     recBtn.className = 'reczny' + (tryb === 'reczny' ? ' on' : '');
     setOkolicaProfileButtonIconOnly(recBtn, 'chip-manpower');
-    recBtn.title = 'Ręczny — własny wybór budynków w kolejce';
+    recBtn.title = tryb === 'lista'
+      ? 'Wyjdź z Listy → Ręczny (własna kolejka budynków)'
+      : 'Ręczny — własny wybór budynków w kolejce';
     recBtn.addEventListener('click', () => { cfg.onBudowaEnterManual?.(city.id); rerender(); });
     wrap.appendChild(recBtn);
   }
@@ -9115,6 +9133,34 @@ function appendBudowaListaBar(
     const def = data?.buildings.find(b => b.id === id);
     return def?.nazwa ?? id;
   };
+
+  // Jawne wyjście z edytora Listy (Maciej 2026-08-04) — profil typów / Ręczny też działają.
+  const head = el('div');
+  head.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:0.4em;margin-bottom:0.12em;';
+  const headLbl = el('span', 'muted');
+  headLbl.style.fontSize = '0.72em';
+  headLbl.textContent = 'Edycja listy budowy';
+  head.appendChild(headLbl);
+  if (cfg.onBudowaPriorytetChange || cfg.onBudowaEnterManual) {
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.textContent = 'Zamknij listę';
+    closeBtn.title = 'Wyjdź z Listy — wróć do Priorytetu typów (albo Ręczny obok)';
+    closeBtn.style.cssText = 'font-size:0.68em;padding:0.12em 0.4em;cursor:pointer;';
+    closeBtn.addEventListener('click', () => {
+      if (cfg.onBudowaPriorytetChange) {
+        const prio = (city.budowaPriorytetTypow?.length
+          ? [...city.budowaPriorytetTypow]
+          : (['zrownowazone'] as BudowaFocus[]));
+        cfg.onBudowaPriorytetChange(city.id, prio, 'priorytet');
+      } else {
+        cfg.onBudowaEnterManual?.(city.id);
+      }
+      rerender();
+    });
+    head.appendChild(closeBtn);
+  }
+  bar.appendChild(head);
 
   if (lista.length === 0) {
     bar.appendChild(el('div', 'muted', 'Lista pusta — dodaj budynki (+)'));
