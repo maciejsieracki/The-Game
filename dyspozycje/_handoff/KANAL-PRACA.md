@@ -1,3 +1,10 @@
+## [23:04 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 221 4d17d869
+|- md5: 4d17d86943cbd010c6df3ed7d7517f81 · stempel: ROBOCZA · 2026-08-04 23:04
+|- Batch: EOT defer · dyplo flex (one-way/qty/Przyjmij pakiet/Usuń) · dobra-kat akordeon · trzoda×1.5 · PW sum+Przyjmij handlowy+przecinek · Zwiedzaj highlight
+|- Bramki: tsc 0 · trade-flex 8/8 · eot 5/5 · goods-kat 8/8 · stol-pw 22/22 · accept 225/225 · negot 54/54 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: Maciej — **najpierw git pull**, potem Ctrl+F5 + Nowa gra · OK/BUG
+
 ## [21:55 PL, 2026-08-04] CLOUD → Maciej — R-SCOUT-ZWIEDZAJ-HIGHLIGHT (kod, bez deploy)
 - Przyczyna: select kasował `autoExplore` → Zwiedzaj nigdy nie miało złotej ramki WŁ
 - Fix: select NIE czyści; clear tylko przy marszu / ruchu ręcznym + toggle

@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 8a3c6d6d - 2026-08-04 21:17 - FALA 220: AI-ALL batch (utrzymanie + MP cap/absorpcja + same-civ + major economy + AI-FOUND/LOCAL/MANAGE) - **AKTUALNA**
+## ROBOCZA 4d17d869 - 2026-08-04 23:04 - FALA 221: dyplo flex/EOT + dobra-kat + trzoda ×1.5 + PW sum/Przyjmij/przecinek + Zwiedzaj highlight - **AKTUALNA**
+|- md5 (pelne): 4d17d86943cbd010c6df3ed7d7517f81 · stempel: ROBOCZA · 2026-08-04 23:04
+|- **FALA 221.** (1) R-EOT-EVENT-DEFER=A — wydarzenia EOT na start następnej tury. (2) R-DYPLO-WYMIANA-FLEX: one-way, qty edit, jedno Przyjmij, Usuń. (3) R-DYPLO-DOBRA-KAT Q1–Q3=A — akordeon Surowce/Technologie/Inne. (4) R-TRZODA-SCALE-MAP-Q1=B — pastwisko ×1,5. (5) R-DYPLO-STOL-PW-SUM + PRZYJMIJ-TRADE + PW-PRZECINEK. (6) R-SCOUT-ZWIEDZAJ-HIGHLIGHT. Na bazie FALA 220.
+|- tsc 0 · trade-flex 8/8 · eot-defer 5/5 · goods-kat 8/8 · stol-pw-sum 22/22 · acceptance 225/225 · negotiation-table 54/54 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA 8a3c6d6d - 2026-08-04 21:17 - FALA 220: AI-ALL batch (utrzymanie + MP cap/absorpcja + same-civ + major economy + AI-FOUND/LOCAL/MANAGE) - **ZASTĄPIONA** (→ 4d17d869)
 |- md5 (pelne): 8a3c6d6d88f9d8a482e1c0107c9cc122 · stempel: ROBOCZA · 2026-08-04 21:17
 |- **FALA 220.** (1) Utrzymanie budynków: +1 surowiec/turę per typ z kosztu budowy + UI. (2) MP army cap: easy unlimited / normal max 1 / hard 0 + absorption rates. (3) Same-civ AI↔MP: Zaufanie 100 + priorytet absorpcji klastra. (4) Major AI: max wzrost early / Spichlerz; 60/40 archetyp; early ulepszenia. (5) AI-FOUND pop≥2; AI-LOCAL faza ~tura 20 LUB 1 zwiadowca; AI-MANAGE auto-zarządca major (NIE MP/defensiveCopy). Na bazie FALA 219.
 |- tsc 0 · ai-mp-military-cap 16/16 · ai-cs-absorption 29/29 · ai-major-economy 9/9 · ai-slider 37/37 · upkeep 49/73 (24 ×2 R-STAWKI, nie regres) · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
