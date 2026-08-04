@@ -8,6 +8,16 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-DYPLO-DOBRA-KAT — Dobra handlowe w kategoriach · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+
+Audiencja dyplomacji: dziś jeden pas pigułek (surowce + techy, max 7). Maciej: Surowce / Technologie / Inne, klik → lista w kategorii.
+
+- **R-DYPLO-DOBRA-KAT-Q1** — interakcja (A akordeon / B zawsze otwarte sekcje / C zakładki)
+- **R-DYPLO-DOBRA-KAT-Q2** — puste kategorie (A szare nagłówki / B ukryj puste / C zawsze 3 nagłówki)
+- **R-DYPLO-DOBRA-KAT-Q3** — limit pozycji (A bez limitu 7 / B soft-cap per kategoria / C „pokaż więcej”)
+
+Rek.: **Q1=A · Q2=B · Q3=A**. Szczegóły: `docs/decyzje/R-DYPLO-DOBRA-KAT.md`.
+
 ## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
 
 **Sytuacja.** W panelu miasta (PRODUKCJA) ikona zrównoważonego jest w jednym rzędzie z priorytetami typów (wzrost / wojsko / kultura / prawo / produkcja) i dostaje numer kolejki jak one. Maciej: to ma być **osobny tryb auto**, nie szósty priorytet.
