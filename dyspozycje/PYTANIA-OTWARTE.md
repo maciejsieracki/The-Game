@@ -8,6 +8,11 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-BATTLE-TEMPO-UI — panel Tempo bitwy · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+
+Maciej: +/− zamiast ▶▶/▶▶▶ (prędkość do ×512); AUTO = komputer nie skrzyżowane miecze.
+ABC: `R-BATTLE-TEMPO-UI-Q1` · `Q2` (rek. A/A). `docs/decyzje/R-BATTLE-TEMPO-UI.md`.
+
 ## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
 
 **Sytuacja.** W panelu miasta (PRODUKCJA) ikona zrównoważonego jest w jednym rzędzie z priorytetami typów (wzrost / wojsko / kultura / prawo / produkcja) i dostaje numer kolejki jak one. Maciej: to ma być **osobny tryb auto**, nie szósty priorytet.
