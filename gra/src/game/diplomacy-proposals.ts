@@ -68,11 +68,8 @@ export type ProposalActionId =
   | 'sojusz_pelny'
   | 'handel'
   /**
-   * E6 (2026-07-23): STAŁA Umowa Handlowa (RodzajTraktatu.UmowaHandlowa)
-   * proponowana PROAKTYWNIE przez AI (decideAIDiplomacy zaproponuj_umowe_handlowa),
-   * bez pełnego koszyka PN gracza — prostsza siostra 'handel' (hasResourceAccess).
-   * Wyłącznie ścieżka AI→gracz (aiCommandToPendingProposal / resolvePlayerAcceptsAiPending);
-   * evaluateProposal jej nie ocenia (gracz nie inicjuje tej akcji z UI negocjacji).
+   * E6 (2026-07-23): alias traktatu szlaków — AI (`zaproponuj_umowe_handlowa`) i legacy save.
+   * Oceniana w evaluateProposal jak `umowa_szlakow` (ten sam deal UmowaSzlakow).
    */
   | 'umowa_handlowa'
   /** HANDEL-SPLIT-Q1=B: traktat szlaków — gracz lub AI (bez koszyka PN). */
@@ -850,6 +847,7 @@ export function evaluateProposal(
       return { accepted: true, reason: 'Wymiana jednorazowa (T3A)', oneShotTrade: true };
     }
 
+    case 'umowa_handlowa':
     case 'umowa_szlakow': {
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const relTotal = relationTotal(relation);
@@ -1461,14 +1459,11 @@ export const NEGOTIATION_MAX_ROUNDS = 3;
 export const NEGOTIATION_EXPIRY_TURNS = 5;
 
 /**
- * Akcje, których evaluateProposal NIE ocenia (patrz komentarz przy typie
- * ProposalActionId — 'umowa_handlowa' to wyłącznie ścieżka AI→gracz, oceniana w
- * decideAIDiplomacy, nie tutaj) — więc silnik nie ma na czym oprzeć auto-kontry AI.
- * Kontra na tych akcjach zawsze kończy się (po stronie AI) odrzuceniem — gracz wciąż
- * może Przyjąć/Odrzucić rundę 1.
+ * Akcje bez auto-kontroferty silnika (evaluateProposal nie ma sensownego pola do
+ * skalującej poprawki jednym krokiem). Gracz wciąż może Przyjąć/Odrzucić/Kontruj ręcznie.
  */
 const NEGOTIATION_NO_ENGINE_COUNTER: ReadonlySet<ProposalActionId> = new Set([
-  'umowa_handlowa' as ProposalActionId,
+  // (pusto — umowa_handlowa / umowa_szlakow obsługiwane w evaluateProposal)
 ]);
 
 export interface PendingNegotiation {
@@ -1719,8 +1714,7 @@ export interface CounterOfferResult {
  * NEGOTIATION_*_STEP/_MAX_STEPS wyżej) nie domyka propozycji — impas, silnik kończy
  * negocjację zwykłym odrzuceniem.
  *
- * Świadomie POZA zasięgiem (brak kontroferty, `null` od razu): 'umowa_handlowa'
- * (evaluateProposal jej nie ocenia), koszyk wielo-pozycyjny PN w 'handel'/
+ * Świadomie POZA zasięgiem (brak kontroferty, `null` od razu): koszyk wielo-pozycyjny PN w 'handel'/
  * 'zaproponuj_handel_surowiec' (giveItems/receiveItems niescalarne — patrz raport
  * zadania), 'namow_wojne' bez wskazanego celu.
  */

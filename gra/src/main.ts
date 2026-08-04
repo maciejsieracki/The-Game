@@ -136,6 +136,7 @@ import { CIV_PUBLISH_MARKERS } from './buildInfo';
 // C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony
 // brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.
 import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';
+import { setCityMapBadgeCivSigil } from './render/cityMapStatChip';
 import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
 import { leaderPortraitUrl } from './ui/leaderPortraits';
 import { civIconSvg } from './ui/icons/brandAssets';
@@ -172,6 +173,7 @@ import {
   DEFAULT_PROCENT_ROZWOJ,
   DEFAULT_BUDOWA_TRYB,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+  sanitizeBudowaPriorytetTypow,
   EMPTY_BUDOWA_LISTA_BIBLIOTEKA,
   dedupeBudowaLista,
   newBudowaListaSzablonId,
@@ -725,7 +727,9 @@ import {
 } from './game/city-defense';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
+  tradeGoodsCategoriesFromParts,
   type TradeGoodEntry,
+  type TradeGoodsCategories,
 } from './game/diplomacy-goods';
 import {
   pickResourceTradeBetweenOwners,
@@ -773,6 +777,11 @@ import {
   type AutoRationAdjustResult,
 } from './game/empire-food';
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
+import {
+  deferredHintsToSidePanelEvents,
+  shouldDeferEotEvents,
+  type DeferredEotHint,
+} from './game/eot-event-defer';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerBuildingResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
@@ -4157,9 +4166,9 @@ async function boot(): Promise<void> {
     function selectPlayerUnit(unitId: string, keepListOpen = false, preserveDetailExpanded = false): void {
       const u = units.find(x => x.id === unitId);
       if (!u || u.ownerId !== 0) return;
-      if (clearScoutAutoExplore(u)) {
-        showHintMessage('Wy\u0142\u0105czono zwiedzanie \u2014 ruch r\u0119czny', 2000);
-      }
+      // R-SCOUT-ZWIEDZAJ-HIGHLIGHT 2026-08-04: NIE czyść autoExplore przy zaznaczeniu —
+      // inaczej przycisk Zwiedzaj nigdy nie pokazuje stanu WŁ (złota ramka 3px).
+      // Wyjście z auto: toggle Zwiedzaj / rozkaz marszu (planMarchTo) — jak Czuwaj.
       // Jednostka gracza ↔ lista/audiencja dyplomacji — wykluczają się (first contact + toolbar).
       ensureDiplomacyUiClosed();
       if (!preserveDetailExpanded) unitSideDetailExpanded = false;
@@ -5147,9 +5156,11 @@ async function boot(): Promise<void> {
           if (!city) return null;
           ensureCitySaveDefaults(city);
           const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
-          const priorytetTypow = city.budowaPriorytetTypow?.length
-            ? [...city.budowaPriorytetTypow]
-            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+          const priorytetTypow = sanitizeBudowaPriorytetTypow(
+            city.budowaPriorytetTypow?.length
+              ? city.budowaPriorytetTypow
+              : DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+          );
           return {
             tryb,
             priorytetTypow,
@@ -5165,10 +5176,7 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
           city.budowaTryb = tryb;
-          city.budowaPriorytetTypow = priorytetTypow.length > 0
-            ? [...priorytetTypow]
-            : [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
-          city.budowaFocus = city.budowaPriorytetTypow[0] ?? 'zrownowazone';
+          city.budowaPriorytetTypow = sanitizeBudowaPriorytetTypow(priorytetTypow);
           const labels: Record<BudowaFocus, string> = {
             wzrost: 'Wzrost',
             wojsko: 'Wojsko',
@@ -5177,16 +5185,27 @@ async function boot(): Promise<void> {
             produkcja: 'Produkcja',
             zrownowazone: 'Zrównoważone',
           };
-          const prioText = city.budowaPriorytetTypow
-            .map((f, i) => `${i + 1}. ${labels[f] ?? f}`)
-            .join(' → ');
           const enqueued = isAutoBudowaTryb(tryb) ? tryAutoEnqueueBuild(cityId) : null;
-          showHintMessage(
-            enqueued
-              ? `${city.name}: priorytet budowy · ${prioText} → ${enqueued.nazwa}`
-              : `${city.name}: priorytet budowy · ${prioText}`,
-            3200,
-          );
+          if (tryb === 'zrownowazone') {
+            city.budowaFocus = 'zrownowazone';
+            showHintMessage(
+              enqueued
+                ? `${city.name}: budowa zrównoważona → ${enqueued.nazwa}`
+                : `${city.name}: budowa zrównoważona`,
+              3200,
+            );
+          } else {
+            city.budowaFocus = city.budowaPriorytetTypow[0] ?? 'zrownowazone';
+            const prioText = city.budowaPriorytetTypow
+              .map((f, i) => `${i + 1}. ${labels[f] ?? f}`)
+              .join(' → ');
+            showHintMessage(
+              enqueued
+                ? `${city.name}: priorytet budowy · ${prioText} → ${enqueued.nazwa}`
+                : `${city.name}: priorytet budowy · ${prioText}`,
+              3200,
+            );
+          }
           updateHud();
           refreshCityPanelIfOpen();
         },
@@ -5836,6 +5855,7 @@ async function boot(): Promise<void> {
         civSigilSvg: (civId: string) => civIconSvg(civId, 40),
         barbarianSigilSvg: () => brandIconSvg('chip-death', 40),
       });
+      setCityMapBadgeCivSigil((id) => civIconSvg(id, 40));
       // Ikony odznak ulepszeń — DOKŁADNIE te symbole budynków, które gracz widzi
       // w panelu miasta przy Koszarach i Kuźni (korekta właściciela 2026-07-29:
       // „masz konkretne ikony i symbole tych dwóch budynków, użyj je”).
@@ -9442,6 +9462,10 @@ async function boot(): Promise<void> {
     let hintOverrideTimer: ReturnType<typeof setTimeout> | null = null;
 
     function showHintMessage(msg: string, durationMs: number = 3000): void {
+      if (shouldDeferEotEvents(endTurnInProgress)) {
+        deferredEotHints.push({ msg, durationMs });
+        return;
+      }
       if (hintOverrideTimer !== null) {
         clearTimeout(hintOverrideTimer);
         hintOverrideTimer = null;
@@ -10066,6 +10090,8 @@ async function boot(): Promise<void> {
     /** SPICH-AUTO-Q1: komunikat auto-obniżenia racji — widoczny przez turę gracza po EOT. */
     const rationAutoEventLog: SidePanelEvent[] = [];
     let pendingAutoRationForNextTurn: AutoRationAdjustResult | null = null;
+    /** R-EOT-EVENT-DEFER-Q1=A: toasty z fazy EOT — flush na starcie tury gracza. */
+    const deferredEotHints: DeferredEotHint[] = [];
 
     /** Miasta, w których gracz zamknął (✕) alert pustej kolejki — fingerprint opcji produkcji. */
     const prodEmptyDismissFp = new Map<string, string>();
@@ -10416,12 +10442,15 @@ async function boot(): Promise<void> {
     }
 
     function collectTurnEvents(): SidePanelEvent[] {
-      const events: SidePanelEvent[] = [
-        ...rationAutoEventLog,
-        ...warEventLog,
-        ...villageEventLog,
-        ...tradeRouteEventLog,
-      ];
+      const deferLogs = shouldDeferEotEvents(endTurnInProgress);
+      const events: SidePanelEvent[] = deferLogs
+        ? []
+        : [
+          ...rationAutoEventLog,
+          ...warEventLog,
+          ...villageEventLog,
+          ...tradeRouteEventLog,
+        ];
       for (const city of cities) {
         if (city.ownerId !== 0) continue;
         const st = cityOrderState.get(city.id);
@@ -11389,6 +11418,50 @@ async function boot(): Promise<void> {
       refreshD1bHud();
       updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /** R-DYPLO-STOL-USUN-Q1=A — usuń pojedynczą pozycję ze stołu bez odrzucania całego pakietu. */
+    function handleNegotiationRemove(negotiationId: string): void {
+      const idx = negotiationTable.findIndex(n => n.id === negotiationId);
+      if (idx < 0) return;
+      const entry = negotiationTable[idx]!;
+      negotiationTable.splice(idx, 1);
+      if (entry.awaitingOwnerId !== 0) {
+        showHintMessage('Wycofano propozycję z stołu', 3500);
+      } else {
+        showHintMessage('Usunięto pozycję z pakietu na stole', 3000);
+      }
+      refreshD1bHud();
+      updateDiplomacyAudience();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
+    /** Identyfikatory wpisów stołu wymagających decyzji gracza u danego partnera. */
+    function actionableNegotiationIdsForPair(ownerId: number): string[] {
+      return getNegotiationsForPair(ownerId)
+        .filter(n => n.awaitingOwnerId === 0 || (n.proposerOwnerId === 0 && n.awaitingOwnerId !== 0))
+        .map(n => n.id)
+        .sort((a, b) => a.localeCompare(b));
+    }
+
+    /** R-DYPLO-STOL-ACCEPT-Q1=A — Przyjmij cały pakiet (stabilna kolejność). */
+    function handleNegotiationAcceptPackage(ownerId: number): void {
+      const ids = actionableNegotiationIdsForPair(ownerId);
+      for (const id of ids) {
+        if (negotiationTable.some(n => n.id === id)) {
+          handleNegotiationAccept(id);
+        }
+      }
+    }
+
+    /** R-DYPLO-STOL-ACCEPT-Q1=A — Odrzuć cały pakiet wymagający decyzji. */
+    function handleNegotiationRejectPackage(ownerId: number): void {
+      const ids = [...actionableNegotiationIdsForPair(ownerId)];
+      for (const id of ids) {
+        if (negotiationTable.some(n => n.id === id)) {
+          handleNegotiationReject(id);
+        }
+      }
     }
 
     /**
@@ -13998,14 +14071,11 @@ async function boot(): Promise<void> {
      * zmianą (b) był globalny katalog (diplomacyResourceAccessCatalog) — ta sama lista po
      * OBU stronach niezależnie od faktycznego posiadania; teraz różni się realnie per owner.
      */
-    function tradeGoodsForOwner(ownerId: number): string[] {
+    /** R-DYPLO-DOBRA-KAT — kategorie bez cap 7; wszystkie surowce + techy ownera. */
+    function tradeGoodsCategoriesForOwner(ownerId: number): TradeGoodsCategories {
       const techs = Array.from(ownerResearchedTechs(ownerId))
-        .map(slug => techNameFromSlug(slug) ?? slug)
-        .slice(0, 3);
-      const goods = tradableGoodsIndexForOwner(ownerId)
-        .map(g => (g.ilosc != null ? g.label + ' ×' + g.ilosc : g.label))
-        .slice(0, 4);
-      return [...goods, ...techs].slice(0, 7);
+        .map(slug => techNameFromSlug(slug) ?? slug);
+      return tradeGoodsCategoriesFromParts(tradableGoodsIndexForOwner(ownerId), techs);
     }
 
     function openDiplomacyAudience(ownerId: number): void {
@@ -14098,8 +14168,8 @@ async function boot(): Promise<void> {
             playerSkarbiec: Math.floor(player.skarbiec),
             playerZlotoPerTura: Math.floor(_lastPieniadzRate),
             sojuszPotencjal: sojuszPotencjalForPair(zaufanieNorm, respektNorm, dip),
-            playerGoods: tradeGoodsForOwner(0),
-            otherGoods: tradeGoodsForOwner(ownerId),
+            playerGoodsCats: tradeGoodsCategoriesForOwner(0),
+            otherGoodsCats: tradeGoodsCategoriesForOwner(ownerId),
             playerIkonaId: civTypeForOwner(0),
             playerWodz: leaderNameForOwnerId(0) ?? undefined,
             playerKolorHex: civKolorHexFn(0),
@@ -14183,6 +14253,9 @@ async function boot(): Promise<void> {
         previewBreakTreatyPenalties: (dealId: string) => buildBreakTreatyPenaltyPreview(dealId),
         onAcceptNegotiation: (negotiationId: string) => handleNegotiationAccept(negotiationId),
         onRejectNegotiation: (negotiationId: string) => handleNegotiationReject(negotiationId),
+        onAcceptNegotiationPackage: () => handleNegotiationAcceptPackage(ownerId),
+        onRejectNegotiationPackage: () => handleNegotiationRejectPackage(ownerId),
+        onRemoveNegotiation: (negotiationId: string) => handleNegotiationRemove(negotiationId),
         onCounterNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
           handleNegotiationCounter(negotiationId, payload),
         onRequestAiNegotiationResponse: (negotiationId: string) =>
@@ -16153,6 +16226,8 @@ async function boot(): Promise<void> {
         cost = pathCost(truncated, map, moveCostFn);
       }
 
+      // R-SCOUT-ZWIEDZAJ-HIGHLIGHT: ręczny ruch (jak marsz) wyłącza auto-zwiedzanie.
+      clearScoutAutoExplore(u);
       markPlayerMovedUnit(u.id);
       clearPlannedMarch(u.id);
       startAnimatedMove(u, movePath, moveDestQ, moveDestR, cost);
@@ -22216,6 +22291,14 @@ async function boot(): Promise<void> {
           );
           if (rationAutoEventLog.length > 4) rationAutoEventLog.length = 4;
           pendingAutoRationForNextTurn = null;
+        }
+        if (deferredEotHints.length > 0) {
+          const hintEvents = deferredHintsToSidePanelEvents(deferredEotHints, turn);
+          for (let hi = hintEvents.length - 1; hi >= 0; hi--) {
+            warEventLog.unshift(hintEvents[hi]!);
+          }
+          if (warEventLog.length > 8) warEventLog.length = 8;
+          deferredEotHints.length = 0;
         }
         setTurnTransition(100, `Tura ${turn} — twoja kolej`, 'Gracz', turn);
         await yieldTurnTransitionUi();

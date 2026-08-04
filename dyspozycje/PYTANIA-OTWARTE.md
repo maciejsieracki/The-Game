@@ -8,6 +8,14 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **WDROŻONE (kod)** Q1=A (2026-08-04)
+
+**ECHO Maciej:** `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1 A` — osobny tryb auto „Zrównoważony” (5 chipów typów z numerami + osobny przełącznik).
+
+Szczegóły: [`docs/decyzje/R-BUDOWA-ZROWNOWAZONE-TRYB.md`](../docs/decyzje/R-BUDOWA-ZROWNOWAZONE-TRYB.md). Czeka **`deploy`**.
+
+---
+
 ## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **ZDEPLOYOWANE FALA 215** `2a5a66d1` (2026-08-04)
 
 Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md). Wejście: `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.

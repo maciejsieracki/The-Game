@@ -5,8 +5,9 @@
  */
 import * as THREE from 'three';
 import type { ProductionKind } from '../game/production';
+import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
 
-/** 0 = brak muru · 1 = mur/palisada (+200%) · 2 = mur + Cytadela (+300%). */
+/** 0 = brak tarczy · 1 = palisada (szara) · 2 = mury lub cytadela (złota). */
 export type CityMapDefenseTier = 0 | 1 | 2;
 
 export interface CityMapBadgeInput {
@@ -24,11 +25,26 @@ export interface CityMapBadgeInput {
   resourceWarning?: boolean;
 }
 
-const DEFENSE_COLORS: Record<CityMapDefenseTier, { fill: string; stroke: string }> = {
-  0: { fill: 'rgba(120, 128, 140, 0.55)', stroke: 'rgba(160, 168, 180, 0.85)' },
-  1: { fill: '#b8860b', stroke: '#e8c86a' },
+const DEFENSE_COLORS: Record<1 | 2, { fill: string; stroke: string }> = {
+  1: { fill: '#9a9aa8', stroke: '#c8c8d4' },
   2: { fill: '#e8d88a', stroke: '#fff4c8' },
 };
+
+const CIV_SIGIL_STROKE = '#e8d88a';
+const CIV_MEDALLION_R = 16;
+const CIV_SLOT_W = 38;
+
+let civSigilSvgFn: ((civIconId: string) => string) | null = null;
+const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
+
+/**
+ * Wstrzykuje SVG sygnetu cywilizacji (main.ts → civIconSvg).
+ * render/ nie importuje ui/icons/brandAssets — ten sam wzorzec co unitOwnerEmblem.
+ */
+export function setCityMapBadgeCivSigil(fn: (civIconId: string) => string): void {
+  civSigilSvgFn = fn;
+  civSigilImageById.clear();
+}
 
 const CIV_INITIALS: Record<string, string> = {
   grecy: 'G', grecja: 'G', rzym: 'R', rzymianie: 'R', egipt: 'E', egipcjanie: 'E',
@@ -38,17 +54,18 @@ const CIV_INITIALS: Record<string, string> = {
 };
 
 /**
- * Trzy stany obrony na pigułce — z listy zbudowanych budynków (nie flag maMur sama).
- * Cytadela ('fort') = tier 2; Mury/palisada = tier 1; brak = tier 0.
+ * Trzy stany obrony na pigułce.
+ * tier 0 = brak tarczy · tier 1 = palisada (szara) · tier 2 = mury lub fort (złota).
+ * maMur bez listy budynków = mury (tier 2).
  */
 export function defenseTierFromCity(
   builtBuildingIds: readonly string[] | null | undefined,
   maMur?: boolean,
 ): CityMapDefenseTier {
   const built = builtBuildingIds ?? [];
-  if (built.includes('fort')) return 2;
-  if (built.includes('mury') || built.includes('palisada')) return 1;
-  if (maMur === true) return 1;
+  if (built.includes('mury') || built.includes('fort')) return 2;
+  if (built.includes('palisada')) return 1;
+  if (maMur === true) return 2;
   return 0;
 }
 
@@ -81,12 +98,12 @@ function roundedRect(
   ctx.closePath();
 }
 
-/** Mała tarcza obrony — lewy segment pigułki. */
+/** Mała tarcza obrony — lewy segment pigułki (tier 0 = nie wywoływać). */
 function drawDefenseShield(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  tier: CityMapDefenseTier,
+  tier: 1 | 2,
 ): void {
   const pal = DEFENSE_COLORS[tier];
   const w = 14;
@@ -103,7 +120,7 @@ function drawDefenseShield(
   ctx.fillStyle = pal.fill;
   ctx.fill();
   ctx.strokeStyle = pal.stroke;
-  ctx.lineWidth = tier === 0 ? 1.2 : 1.5;
+  ctx.lineWidth = 1.5;
   ctx.stroke();
   if (tier === 2) {
     ctx.beginPath();
@@ -115,15 +132,13 @@ function drawDefenseShield(
   }
 }
 
-/** Medalion cywu — kolor właściciela + litera kultury. */
-function drawCivMedallion(
+function drawCivMedallionDisc(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  civIconId: string,
   ownerColor?: number,
 ): void {
-  const r = 11;
+  const r = CIV_MEDALLION_R;
   const col = ownerColor ?? 0xffd54a;
   const rr = (col >> 16) & 0xff;
   const gg = (col >> 8) & 0xff;
@@ -133,13 +148,62 @@ function drawCivMedallion(
   ctx.fillStyle = `rgb(${Math.round(rr * 0.55)}, ${Math.round(gg * 0.55)}, ${Math.round(bb * 0.55)})`;
   ctx.fill();
   ctx.strokeStyle = '#e8d88a';
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.font = '700 13px Georgia, "Times New Roman", serif';
+}
+
+/** Medalion cywu — kolor właściciela + sygnet kultury (SVG) lub glif ◆ do wczytania. */
+function drawCivMedallion(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  civIconId: string,
+  ownerColor?: number,
+  sigilImg?: HTMLImageElement,
+): void {
+  drawCivMedallionDisc(ctx, cx, cy, ownerColor);
+  const r = CIV_MEDALLION_R;
+  if (sigilImg) {
+    const side = r * 1.55;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 1.5, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.drawImage(sigilImg, cx - side / 2, cy - side / 2, side, side);
+    ctx.restore();
+    return;
+  }
+  ctx.fillStyle = CIV_SIGIL_STROKE;
+  ctx.font = 'bold 20px "Segoe UI Symbol", "Segoe UI", Arial, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#f4f0e8';
-  ctx.fillText(civInitialForIconId(civIconId), cx, cy + 0.5);
+  ctx.fillText('◆', cx, cy + 1);
+}
+
+function civSigilCacheKey(civIconId: string): string {
+  return (civIconId || '').trim().toLowerCase() || 'unknown';
+}
+
+function requestCivSigilImage(
+  civIconId: string,
+  onReady: (img: HTMLImageElement) => void,
+): void {
+  if (!civSigilSvgFn) return;
+  const key = civSigilCacheKey(civIconId);
+  const cached = civSigilImageById.get(key);
+  if (cached instanceof HTMLImageElement) {
+    onReady(cached);
+    return;
+  }
+  if (cached === 'loading') return;
+  const raw = civSigilSvgFn(civIconId);
+  const svg = prepareSvgForCanvas(raw, CIV_SIGIL_STROKE);
+  if (!svg) return;
+  civSigilImageById.set(key, 'loading');
+  loadImageInto(svgToDataUri(svg), (img) => {
+    civSigilImageById.set(key, img);
+    onReady(img);
+  });
 }
 
 /** Kompaktowy glif produkcji (always-on lite — pełny hover po makiecie Design). */
@@ -183,18 +247,23 @@ function truncateName(
   return s + '…';
 }
 
-/** Canvas: [tarcza][cyw] NAZWA [prod?] + (pop). */
-export function drawCityMapBadgeCanvas(input: CityMapBadgeInput): HTMLCanvasElement {
+/** Rysuje pigułkę na istniejącej kanwie (async sygnet — ta sama kanwa + needsUpdate). */
+function paintCityMapBadgeOntoCanvas(
+  canvas: HTMLCanvasElement,
+  input: CityMapBadgeInput,
+  civSigilImg?: HTMLImageElement,
+): void {
   const pop = Math.max(1, Math.floor(input.population) || 1);
   const name = (input.cityName || 'Miasto').trim().toUpperCase();
   const popStr = String(pop);
 
   const padX = 10;
-  const padY = 7;
+  const padY = 8;
   const circleD = 30;
   const gap = 8;
-  const defenseW = 22;
-  const civW = 26;
+  const hasDefense = input.defenseTier !== 0;
+  const defenseW = hasDefense ? 22 : 0;
+  const civW = CIV_SLOT_W;
   const prodW = input.prodActive ? 18 : 0;
   const nameFont = '700 22px Georgia, "Times New Roman", serif';
   const popFont = '700 16px Arial, Helvetica, sans-serif';
@@ -208,11 +277,10 @@ export function drawCityMapBadgeCanvas(input: CityMapBadgeInput): HTMLCanvasElem
   }
   const nameW = measure.measureText(displayName).width;
 
-  const leftIconsW = defenseW + gap + civW + gap;
+  const leftIconsW = (hasDefense ? defenseW + gap : 0) + civW + gap;
   const W = Math.ceil(padX + leftIconsW + nameW + (prodW ? gap + prodW : 0) + gap + circleD + padX);
-  const H = Math.max(44, circleD + padY * 2);
+  const H = Math.max(48, circleD + padY * 2);
 
-  const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
@@ -229,10 +297,12 @@ export function drawCityMapBadgeCanvas(input: CityMapBadgeInput): HTMLCanvasElem
   ctx.stroke();
 
   const cy = H * 0.5;
-  let x = padX + defenseW * 0.5;
-  drawDefenseShield(ctx, x, cy, input.defenseTier);
-  x = padX + defenseW + gap + civW * 0.5;
-  drawCivMedallion(ctx, x, cy, input.civIconId, input.ownerColor);
+  const civCx = padX + (hasDefense ? defenseW + gap : 0) + civW * 0.5;
+  if (hasDefense) {
+    const shieldCx = padX + defenseW * 0.5;
+    drawDefenseShield(ctx, shieldCx, cy, input.defenseTier as 1 | 2);
+  }
+  drawCivMedallion(ctx, civCx, cy, input.civIconId, input.ownerColor, civSigilImg);
 
   const nameX = padX + leftIconsW;
   ctx.font = nameFont;
@@ -259,7 +329,15 @@ export function drawCityMapBadgeCanvas(input: CityMapBadgeInput): HTMLCanvasElem
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#2a2208';
   ctx.fillText(popStr, cx, cy + 1);
+}
 
+/** Canvas: [tarcza?][cyw] NAZWA [prod?] + (pop). */
+export function drawCityMapBadgeCanvas(
+  input: CityMapBadgeInput,
+  civSigilImg?: HTMLImageElement,
+): HTMLCanvasElement {
+  const canvas = document.createElement('canvas');
+  paintCityMapBadgeOntoCanvas(canvas, input, civSigilImg);
   return canvas;
 }
 
@@ -320,10 +398,17 @@ export function makeCityMapBadgeSprite(
   const key = cityMapBadgeKey(input);
   let tex = texCache.get(key);
   if (!tex) {
-    tex = new THREE.CanvasTexture(drawCityMapBadgeCanvas(input));
+    const canvas = document.createElement('canvas');
+    paintCityMapBadgeOntoCanvas(canvas, input);
+    tex = new THREE.CanvasTexture(canvas);
     tex.minFilter = THREE.LinearFilter;
     tex.colorSpace = THREE.SRGBColorSpace;
     texCache.set(key, tex);
+    const civId = input.civIconId;
+    requestCivSigilImage(civId, (img) => {
+      paintCityMapBadgeOntoCanvas(tex!.image as HTMLCanvasElement, input, img);
+      tex!.needsUpdate = true;
+    });
   }
   const mat = new THREE.SpriteMaterial({
     map: tex,
@@ -334,7 +419,7 @@ export function makeCityMapBadgeSprite(
   const sprite = new THREE.Sprite(mat);
   const img = tex.image as HTMLCanvasElement;
   const aspect = img.width / img.height;
-  const worldH = 0.48;
+  const worldH = 0.52;
   sprite.scale.set(worldH * aspect, worldH, 1);
   sprite.position.set(0, 0.92, 0);
   sprite.renderOrder = 12;

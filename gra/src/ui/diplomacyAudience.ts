@@ -28,11 +28,12 @@ import {
 import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQuickDealBasket, type TradeBasketInitial } from './diplomacyTradeBasket';
 import { civCardDisplayName, leaderName } from './leaderPortraits';
 import { civBrandLineForKey } from './civBrandDisplay';
+import type { TradeGoodsCategories } from '../game/diplomacy-goods';
 import { renderNegotiationTableDealSideHtml } from './diplomacyDealDisplay';
 import { bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
 import {
-  balancePanelDataFromRow,
-  pickPrimaryNegotiationRow,
+  balancePanelDataFromRows,
+  filterActionableNegotiationRows,
   renderPnBalancePanelHtml,
 } from './diplomacyAcceptanceBalance';
 import {
@@ -161,10 +162,10 @@ export interface DiplomacyAudienceState {
    * niezależnie), więc identyczna na obu kartach — mirror zgodny z makietą.
    */
   sojuszPotencjal?: { pct: number; label: string };
-  /** „Dobra handlowe" gracza — nazwy (tech zbadane + katalog surowców, patrz main.ts). */
-  playerGoods?: readonly string[];
-  /** „Dobra handlowe" rozmówcy — nazwy (tech zbadane rozmówcy + katalog surowców). */
-  otherGoods?: readonly string[];
+  /** „Dobra handlowe" gracza — kategorie Surowce · Technologie · Inne (R-DYPLO-DOBRA-KAT). */
+  playerGoodsCats?: TradeGoodsCategories;
+  /** „Dobra handlowe" rozmówcy — kategorie Surowce · Technologie · Inne. */
+  otherGoodsCats?: TradeGoodsCategories;
   /**
    * Szczegóły bannera statusu formalnego (pkt 2) — od ilu tur trwa DOMINUJĄCY traktat
    * (ten sam co formalStatus.kind) + kara zerwania. Brak gdy kind=wojna/pokoj/brak
@@ -263,6 +264,12 @@ export interface DiplomacyAudienceConfig {
   onAcceptNegotiation?: (negotiationId: string) => void;
   /** C-DYP-Q1=A: gracz Odrzuca wpis stołu. */
   onRejectNegotiation?: (negotiationId: string) => void;
+  /** R-DYPLO-STOL-ACCEPT-Q1=A: Przyjmij cały pakiet na stole u tego partnera. */
+  onAcceptNegotiationPackage?: () => void;
+  /** R-DYPLO-STOL-ACCEPT-Q1=A: Odrzuć cały pakiet na stole u tego partnera. */
+  onRejectNegotiationPackage?: () => void;
+  /** R-DYPLO-STOL-USUN-Q1=A: Usuń pojedynczą pozycję ze stołu (bez odrzucenia reszty). */
+  onRemoveNegotiation?: (negotiationId: string) => void;
   /** C-DYP-Q1=A: gracz wysyła kontrofertę (nowy formularz negocjacji) do wpisu stołu. */
   onCounterNegotiation?: (negotiationId: string, payload: NegotiationPayload) => void;
   /**
@@ -474,6 +481,19 @@ ${DIPLO_1E_SHARED_CSS}
 .da-good{font-size:0.62em;padding:3px 8px;border-radius:7px;border:1px solid rgba(232,216,138,.2);
   background:rgba(24,30,42,.65);color:#c8b898;white-space:nowrap;}
 .da-goods-empty{font-size:0.62em;color:#6a7280;}
+.da-goods-acc{display:flex;flex-direction:column;gap:3px;}
+.da-goods-cat-hdr{display:flex;align-items:center;gap:4px;width:100%;padding:4px 6px;border-radius:5px;
+  border:1px solid rgba(232,216,138,.15);background:rgba(18,22,32,.5);color:#c8b898;font-size:0.64em;
+  font-weight:600;cursor:pointer;font-family:inherit;text-align:left;}
+.da-goods-cat-hdr.is-empty{color:#6a7280;border-color:rgba(100,100,100,.2);background:rgba(12,14,20,.4);}
+.da-goods-cat-hdr.is-open{border-color:rgba(232,216,138,.28);}
+.da-goods-cat-hdr.is-open .da-goods-cat-chevron{transform:rotate(90deg);}
+.da-goods-cat-chevron{display:inline-block;transition:transform .15s;font-size:0.85em;color:#8a8070;flex:none;}
+.da-goods-cat-count{font-weight:400;color:#8a8070;font-size:0.92em;}
+.da-goods-cat-body{overflow:hidden;max-height:160px;transition:max-height .2s ease,padding .15s;}
+.da-goods-cat-body.is-collapsed{max-height:0;padding:0;margin:0;opacity:0;pointer-events:none;}
+.da-goods-cat-body .da-goods{padding:4px 2px 2px;}
+.da-goods-cat-none{font-size:0.62em;color:#6a7280;font-style:italic;padding:2px 6px;}
 .da-mood{font-size:0.66em;letter-spacing:.04em;padding:2px 0;color:#8a8070;}
 .da-culture{font-size:0.64em;color:#a8c0d8;}
 .da-tags{display:flex;flex-wrap:wrap;gap:4px;}
@@ -519,6 +539,13 @@ ${DIPLO_1E_SHARED_CSS}
 .da-negot-linked.can-edit{cursor:pointer;transition:border-color .15s,box-shadow .15s;}
 .da-negot-linked.can-edit:hover{border-color:rgba(232,216,138,.55);box-shadow:0 0 0 1px rgba(232,216,138,.25);}
 .da-negot-edit-hint{font-size:0.62em;color:#8a8070;margin-top:4px;font-style:italic;}
+.da-card-actions{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.da-card-actions button{font-size:0.72em;padding:3px 8px;border-radius:5px;cursor:pointer;
+  border:1px solid rgba(232,216,138,.25);background:rgba(30,36,48,.85);color:#e8e0c8;}
+.da-card-actions button.da-rm-negot{color:#e08a8a;border-color:rgba(200,64,64,.35);}
+.da-package-hint{font-size:0.62em;color:#8a8070;line-height:1.45;margin-top:6px;}
+.da-negot-actionbar--package{padding:8px 10px;border-radius:8px;border:1px solid rgba(232,216,138,.2);
+  background:rgba(18,22,32,.75);margin-top:8px;}
 .da-deal-side-only .da-deal-col{max-width:100%;}
 .da-negot .da-nm{font-size:0.72em;font-weight:600;color:#e8e0c8;display:flex;align-items:center;gap:6px;}
 .da-negot .da-nm .dir{font-size:0.62em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
@@ -1040,11 +1067,48 @@ function civNameHtml(civName: string, ikonaId: string | undefined, displayIkonaI
     + esc(civCardDisplayName(civName, displayIkonaId ?? ikonaId)) + '</div>';
 }
 
-function goodsHtml(goods: readonly string[] | undefined): string {
-  if (!goods || goods.length === 0) {
+type GoodsAccordionSide = 'player' | 'other';
+
+const GOODS_CAT_LABELS: Readonly<Record<keyof TradeGoodsCategories, string>> = {
+  surowce: 'Surowce',
+  technologie: 'Technologie',
+  inne: 'Inne',
+};
+
+const GOODS_CAT_ORDER: readonly (keyof TradeGoodsCategories)[] = ['surowce', 'technologie', 'inne'];
+
+/** Niezależny stan rozwinięcia kategorii per karta (przetrwa re-render audiencji). */
+const goodsCatExpanded: Record<GoodsAccordionSide, Set<string>> = {
+  player: new Set(),
+  other: new Set(),
+};
+
+function goodsCategoriesHtml(cats: TradeGoodsCategories | undefined, side: GoodsAccordionSide): string {
+  if (!cats) {
     return '<div class="da-goods-empty">Brak danych o dobrach</div>';
   }
-  return '<div class="da-goods">' + goods.map(g => '<span class="da-good">' + esc(g) + '</span>').join('') + '</div>';
+  let html = '<div class="da-goods-acc" data-goods-side="' + side + '">';
+  for (const key of GOODS_CAT_ORDER) {
+    const items = cats[key];
+    const isEmpty = items.length === 0;
+    const expanded = goodsCatExpanded[side].has(key);
+    const hdrCls = 'da-goods-cat-hdr' + (isEmpty ? ' is-empty' : '') + (expanded ? ' is-open' : '');
+    const bodyCls = 'da-goods-cat-body' + (expanded ? '' : ' is-collapsed');
+    const pills = isEmpty
+      ? '<span class="da-goods-cat-none">—</span>'
+      : items.map(g => '<span class="da-good">' + esc(g) + '</span>').join('');
+    html +=
+      '<div class="da-goods-cat">' +
+        '<button type="button" class="' + hdrCls + '" data-goods-cat="' + key + '">' +
+          '<span class="da-goods-cat-chevron">▸</span>' +
+          esc(GOODS_CAT_LABELS[key]) +
+          (isEmpty ? '' : ' <span class="da-goods-cat-count">(' + items.length + ')</span>') +
+        '</button>' +
+        '<div class="' + bodyCls + '"><div class="da-goods">' + pills + '</div></div>' +
+      '</div>';
+  }
+  html += '</div>';
+  return html;
 }
 
 /** Imię władcy gracza (civs.json wodzowie) pod nazwą cywilizacji, pusty string gdy brak. */
@@ -1094,7 +1158,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
-        goodsHtml(st.playerGoods) +
+        goodsCategoriesHtml(st.playerGoodsCats, 'player') +
       '</div>' +
       bonusListHtml(playerBon) +
     '</div>'
@@ -1131,7 +1195,7 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Dobra handlowe</div>' +
-        goodsHtml(st.otherGoods) +
+        goodsCategoriesHtml(st.otherGoodsCats, 'other') +
       '</div>' +
       cultureLineHtml(st) +
       personalityTagsHtml(st.personalityTags) +
@@ -1333,7 +1397,8 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
     );
   }).join('');
   const multiHint = ownPendingCount > 0
-    ? '<div class="da-multi-deal-hint">Na stole: <b>' + ownPendingCount + '</b> · dodaj kolejną umowę z listy · każda pozycja wymaga osobnego „Przyjmij" w panelu PW</div>'
+    ? '<div class="da-multi-deal-hint">Na stole: <b>' + ownPendingCount
+      + '</b> · dodaj kolejną umowę z listy · jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń</div>'
     : '';
   return (
     '<div class="da-col da-col-deals">' +
@@ -1433,13 +1498,25 @@ function tableDealSideHtml(
   );
 }
 
-/** Panel PN między kolumnami My / Oni — główny wpis stołu + licznik pozostałych. */
+/** Panel PN między kolumnami My / Oni — pakiet całego stołu (R-DYPLO-STOL-ACCEPT). */
 function negotiationBalanceBarHtml(st: DiplomacyAudienceState): string {
   const rows = st.pendingNegotiations ?? [];
-  const primary = pickPrimaryNegotiationRow(rows);
-  const extra = rows.length > 1 ? rows.length - 1 : 0;
-  const data = primary ? balancePanelDataFromRow(primary, extra) : null;
+  const data = balancePanelDataFromRows(rows);
   return renderPnBalancePanelHtml(data);
+}
+
+/** Przyciski Edytuj / Usuń na karcie pozycji stołu (bez stepperów na karcie). */
+function negotiationCardActionsHtml(r: PendingNegotiationRow): string {
+  const showEdit = !!r.canCounter && actionUsesTradeBasket(r.uiActionId);
+  let html = '<div class="da-card-actions">';
+  if (showEdit) {
+    html += '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="edit" data-negot-aid="'
+      + esc(r.uiActionId) + '">Edytuj</button>';
+  }
+  html += '<button type="button" class="da-rm-negot" data-negot-id="' + esc(r.id)
+    + '" data-negot-act="remove">Usuń</button>';
+  html += '</div>';
+  return html;
 }
 
 /** Karta wychodzącej propozycji gracza — kolumna „My oferujemy" (tylko przedmiot dealu). */
@@ -1453,6 +1530,7 @@ function renderOwnPendingCard(r: PendingNegotiationRow): string {
       '<div class="da-nm"><span class="dir">' + esc('Twoja propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1465,7 +1543,7 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
     : '<div class="da-deal-detail"><span class="da-deal-empty">—</span></div>';
   const editCls = r.canCounter ? ' can-edit' : '';
   const editHint = r.canCounter
-    ? '<div class="da-negot-edit-hint" title="Otwórz edycję obu stron koszyka">Kliknij kartę, aby edytować kwoty i surowce</div>'
+    ? '<div class="da-negot-edit-hint" title="Edytuj kwoty w koszyku">Użyj Edytuj, aby zmienić ilości w koszyku</div>'
     : '';
   return (
     '<div class="da-negot da-negot-linked da-negot-linked-we' + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="we"'
@@ -1474,6 +1552,7 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
       dealBlock +
       editHint +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1494,7 +1573,7 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
   const titleLabel = r.isGift ? 'Dar / prezent' : r.actionLabel;
   const editCls = r.canCounter && !r.isGift ? ' can-edit' : '';
   const editHint = r.canCounter && !r.isGift
-    ? '<div class="da-negot-edit-hint" title="Otwórz edycję obu stron koszyka">Kliknij kartę, aby edytować kwoty i surowce</div>'
+    ? '<div class="da-negot-edit-hint" title="Edytuj kwoty w koszyku">Użyj Edytuj, aby zmienić ilości w koszyku</div>'
     : '';
   return (
     '<div class="da-negot incoming da-negot-linked da-negot-linked-they' + giftCls + editCls + '" data-negot-id="' + esc(r.id) + '" data-negot-linked="they"'
@@ -1504,6 +1583,7 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
       legacyNote +
       editHint +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1519,6 +1599,7 @@ function renderOwnPendingTheyCard(r: PendingNegotiationRow): string {
       '<div class="da-nm"><span class="dir">' + esc('Oni oferują') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       pendingNegotiationMetaHtml(r) +
+      negotiationCardActionsHtml(r) +
     '</div>'
   );
 }
@@ -1545,37 +1626,36 @@ function offersColumnHtml(st: DiplomacyAudienceState): string {
 }
 
 /**
- * Pasek akcji przy sekcji PN — Przyjmij/Odrzuć/Kontruj dla wpisów wymagających decyzji gracza
- * (przychodzące od AI oraz własne propozycje czekające na wysłanie do partnera).
+ * R-DYPLO-STOL-ACCEPT-Q1=A — jeden pasek Przyjmij/Odrzuć dla całego pakietu na stole.
  */
 function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
-  const rows = (st.pendingNegotiations ?? []).filter(
-    r => r.direction === 'incoming' || (r.direction === 'own' && r.awaitingAiResponse),
-  );
+  const rows = filterActionableNegotiationRows(st.pendingNegotiations ?? []);
   if (rows.length === 0) return '<div class="da-negot-actionbar"></div>';
-  const blocks = rows.map(r => {
-    const isOwn = r.direction === 'own' && r.awaitingAiResponse;
-    const legacyAccess = !isOwn && r.dealPayload != null && proposalHasResourceAccess(r.dealPayload);
-    const canAccept = isOwn
-      ? (r.responderPreview?.accepted !== false && r.acceptanceTheir?.accepted !== false)
-      : (r.canAccept !== false && !legacyAccess);
-    const acceptTitle = !canAccept
-      ? esc(r.responderPreview?.reason ?? r.acceptanceTheir?.statusLabel ?? RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON)
-      : '';
-    const btns =
-      '<div class="da-btnrow">'
-      + '<button type="button" class="acc"' + (!canAccept ? ' disabled title="' + acceptTitle + '"' : '')
-      + ' data-negot-id="' + esc(r.id) + '" data-negot-act="accept">Przyjmij</button>'
-      + '<button type="button" class="rej" data-negot-id="' + esc(r.id) + '" data-negot-act="reject">Odrzuć</button>'
-      + (!isOwn && r.canCounter
-        ? '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="counter" data-negot-aid="' + esc(r.uiActionId) + '">'
-          + (actionUsesTradeBasket(r.uiActionId) ? 'Edytuj' : 'Kontruj') + '</button>'
-        : '') +
-      '</div>';
-    return '<div class="da-neg-act-block" data-negot-id="' + esc(r.id) + '">' +
-      '<div class="da-neg-act-label">' + esc(r.actionLabel) + '</div>' + btns + '</div>';
-  }).join('');
-  return '<div class="da-negot-actionbar">' + blocks + '</div>';
+
+  const panel = balancePanelDataFromRows(st.pendingNegotiations ?? []);
+  const canAccept = panel?.canAccept !== false && rows.every(r => {
+    if (r.direction === 'incoming') return r.canAccept !== false;
+    if (r.awaitingAiResponse) {
+      return r.responderPreview?.accepted !== false
+        && (r.acceptanceTheir?.accepted !== false);
+    }
+    return true;
+  });
+  const acceptTitle = !canAccept
+    ? esc(panel?.responderPreview?.reason ?? 'Warunki pakietu niespełnione')
+    : '';
+
+  return (
+    '<div class="da-negot-actionbar da-negot-actionbar--package">'
+    + '<div class="da-neg-act-label">Decyzja dla całego pakietu (' + rows.length + ')</div>'
+    + '<div class="da-btnrow">'
+    + '<button type="button" class="acc"' + (!canAccept ? ' disabled title="' + acceptTitle + '"' : '')
+    + ' data-negot-act="accept-package">Przyjmij</button>'
+    + '<button type="button" class="rej" data-negot-act="reject-package">Odrzuć</button>'
+    + '</div>'
+    + '<div class="da-package-hint">Jeden bilans PW — jedno Przyjmij/Odrzuć; niechcianą pozycję najpierw Usuń</div>'
+    + '</div>'
+  );
 }
 
 /**
@@ -1697,6 +1777,25 @@ function render(): void {
     if (cfg === null) return;
     cfg.onFocusCapital?.(cfg.ownerId);
   });
+  rootEl.querySelectorAll<HTMLButtonElement>('.da-goods-cat-hdr').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const acc = btn.closest('.da-goods-acc');
+      const side = acc?.getAttribute('data-goods-side') as GoodsAccordionSide | null;
+      const cat = btn.getAttribute('data-goods-cat');
+      if (!side || !cat) return;
+      const set = goodsCatExpanded[side];
+      const body = btn.nextElementSibling;
+      if (set.has(cat)) {
+        set.delete(cat);
+        btn.classList.remove('is-open');
+        body?.classList.add('is-collapsed');
+      } else {
+        set.add(cat);
+        btn.classList.add('is-open');
+        body?.classList.remove('is-collapsed');
+      }
+    });
+  });
   rootEl.querySelectorAll<HTMLButtonElement>('button[data-aid]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.disabled) return;
@@ -1779,16 +1878,28 @@ function render(): void {
    * świeża propozycja — submit woła onCounterNegotiation zamiast onAction (nowe
    * warunki NADPISUJĄ poprzednie na tym samym wpisie stołu, nie tworzą nowego).
    */
-  rootEl.querySelectorAll<HTMLButtonElement>('[data-negot-id]').forEach(btn => {
+  rootEl.querySelectorAll<HTMLButtonElement>('[data-negot-act]').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (cfg === null) return;
-      const negotId = btn.getAttribute('data-negot-id');
+      if (cfg === null || btn.disabled) return;
       const act = btn.getAttribute('data-negot-act');
-      if (!negotId || !act) return;
-      if (btn.disabled) return;
+      if (!act) return;
+
+      if (act === 'accept-package') {
+        cfg.onAcceptNegotiationPackage?.();
+        return;
+      }
+      if (act === 'reject-package') {
+        cfg.onRejectNegotiationPackage?.();
+        return;
+      }
+
+      const negotId = btn.getAttribute('data-negot-id');
+      if (!negotId) return;
+
       if (act === 'accept') { cfg.onAcceptNegotiation?.(negotId); return; }
       if (act === 'reject') { cfg.onRejectNegotiation?.(negotId); return; }
-      if (act === 'counter') {
+      if (act === 'remove') { cfg.onRemoveNegotiation?.(negotId); return; }
+      if (act === 'edit' || act === 'counter') {
         const aid = btn.getAttribute('data-negot-aid');
         if (!aid) return;
         const row = (st.pendingNegotiations ?? []).find(r => r.id === negotId);

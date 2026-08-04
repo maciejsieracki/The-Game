@@ -42,10 +42,11 @@ console.log('city-map-badge-test (pigułka miasta v1)\n');
 
 assert(M.defenseTierFromCity([]) === 0, 'brak budynków → tier 0');
 assert(M.defenseTierFromCity(['koszary']) === 0, 'koszary nie dają tieru obrony');
-assert(M.defenseTierFromCity(['palisada']) === 1, 'palisada → tier 1');
-assert(M.defenseTierFromCity(['mury']) === 1, 'mury → tier 1');
-assert(M.defenseTierFromCity(['mury', 'fort']) === 2, 'mury+fort → tier 2 (cytadela)');
-assert(M.defenseTierFromCity([], true) === 1, 'maMur bez listy → tier 1');
+assert(M.defenseTierFromCity(['palisada']) === 1, 'palisada → tier 1 (szara)');
+assert(M.defenseTierFromCity(['mury']) === 2, 'mury → tier 2 (złota)');
+assert(M.defenseTierFromCity(['fort']) === 2, 'fort/cytadela → tier 2');
+assert(M.defenseTierFromCity(['mury', 'fort']) === 2, 'mury+fort → tier 2');
+assert(M.defenseTierFromCity([], true) === 2, 'maMur bez listy → tier 2');
 
 const keyBase = M.cityMapBadgeKey({
   cityName: 'Ateny',

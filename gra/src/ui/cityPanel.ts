@@ -50,7 +50,13 @@ import { setMapHudChromeSuppressed } from './hud';
 import type { City } from '../game/cities';
 import { formatCityMapLabel } from '../game/display-names';
 import type { OkolicaFocus, OkolicaTryb, BudowaFocus, BudowaTryb, BudowaListaBiblioteka } from '../game/cities';
-import { dedupeBudowaLista, defaultBudowaListaNazwa } from '../game/cities';
+import {
+  dedupeBudowaLista,
+  defaultBudowaListaNazwa,
+  sanitizeBudowaPriorytetTypow,
+  BUDOWA_TYP_FOCUS,
+  DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+} from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
 import type { GameMap } from '../types/map';
@@ -132,7 +138,9 @@ import {
   type PoziomRacji,
 } from '../game/population-growth-v85';
 import {
+  filterRuntimeActiveBuiltIds,
   paySpichlerzDrainForCity,
+  resolveOwnedBuildingInactiveStatus,
   resolveSpichlerzCityBonusState,
 } from '../game/building-resource-gate';
 import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
@@ -2521,6 +2529,7 @@ ${UNIT_RECRUIT_CARD_CSS}
 .bld-owned-hd{display:flex;align-items:center;gap:0.28em;min-width:0;flex:0 1 auto;max-width:55%;}
 .bld-owned-hd .bi{flex:none;width:1.25em;height:1.25em;display:flex;align-items:center;justify-content:center;}
 .bld-owned-name{flex:0 1 auto;min-width:0;max-width:9.5em;font-size:0.78em;font-weight:600;color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bld-owned-name--inactive{color:#e07070;}
 .bld-owned-lvl{flex:none;font-size:0.58em;font-weight:700;color:#2a2208;background:#c8b070;border-radius:4px;padding:0.08em 0.32em;line-height:1.2;}
 .bld-owned-tail{display:flex;align-items:center;justify-content:flex-end;gap:0.35em 0.45em;flex:1 1 8em;min-width:0;margin-left:auto;flex-wrap:wrap;font-size:0.66em;line-height:1.25;}
 .bld-owned-upkeep{flex:none;color:#e8a090;font-weight:600;white-space:nowrap;}
@@ -7447,9 +7456,48 @@ function appendOwnedBuildingRow(
   appendBuildingInlineIcon(hd, def);
   const bn = el('span', 'bld-owned-name');
   bn.textContent = def ? def.nazwa : id;
+  let upgradeChainTitle = '';
   if (def && (def.upgradeFrom ?? '').trim().length > 0) {
-    const chain = upgradeChainSteps(def.id, data.buildings);
-    bn.title = chain.map(c => c.nazwa).join(' → ');
+    upgradeChainTitle = upgradeChainSteps(def.id, data.buildings).map(c => c.nazwa).join(' → ');
+  }
+  if (def && city) {
+    const builtIds = cfg.getBuiltBuildingIds?.(city.id) ?? [];
+    const allCities = cfg.getCities?.() ?? [];
+    const empireStock = cfg.getEmpireStock?.(city.ownerId);
+    let empireBuiltIds = cfg.getEmpireBuiltIds?.(city.ownerId);
+    if (!empireBuiltIds) {
+      const collected: string[] = [];
+      for (const c of allCities) {
+        if (c.ownerId !== city.ownerId) continue;
+        collected.push(...(cfg.getBuiltBuildingIds?.(c.id) ?? []));
+      }
+      empireBuiltIds = collected;
+    }
+    const activeLabels = cfg.getEmpireResourceAccess?.(city.ownerId) ?? [];
+    const runtimeActiveBuiltIds = filterRuntimeActiveBuiltIds(
+      empireBuiltIds,
+      activeLabels,
+      empireStock,
+      { ownerId: city.ownerId, resolveOwnerZlotoAccess: cfg.getOwnerHasZlotoAccess },
+    );
+    const inactiveStatus = resolveOwnedBuildingInactiveStatus(id, {
+      builtIds,
+      allCities,
+      ownerId: city.ownerId,
+      runtimeActiveBuiltIds,
+      empireStock,
+      building: def,
+      resolveOwnerZlotoAccess: cfg.getOwnerHasZlotoAccess,
+    });
+    if (inactiveStatus.inactive) {
+      bn.classList.add('bld-owned-name--inactive');
+      bn.title = inactiveStatus.tooltip
+        + (upgradeChainTitle ? '\n' + upgradeChainTitle : '');
+    } else if (upgradeChainTitle) {
+      bn.title = upgradeChainTitle;
+    }
+  } else if (upgradeChainTitle) {
+    bn.title = upgradeChainTitle;
   }
   hd.appendChild(bn);
   if (def && city) {
@@ -9125,9 +9173,7 @@ function appendBudowaToolbarProfiles(
   tryb: BudowaTryb,
   lista: string[],
 ): void {
-  const profiles: BudowaFocus[] = [
-    'wzrost', 'wojsko', 'kultura', 'prawo', 'produkcja', 'zrownowazone',
-  ];
+  const profiles = BUDOWA_TYP_FOCUS;
   const active = tryb === 'priorytet' ? priorytetTypow : [];
   for (const id of profiles) {
     const idx = active.indexOf(id);
@@ -9162,10 +9208,14 @@ function appendBudowaToolbarProfiles(
         nextTryb = 'priorytet';
         next = priorytetTypow.includes(id) ? [...priorytetTypow] : [...priorytetTypow, id];
         if (next.length === 0) next = [id];
+      } else if (tryb === 'zrownowazone') {
+        // Wyjście ze zrównoważonego: start od klikniętego typu (nie włączaj całej zapisanej piątki).
+        nextTryb = 'priorytet';
+        next = [id];
       } else if (tryb === 'reczny') {
         nextTryb = 'priorytet';
-        next = inList ? [...priorytetTypow] : [...priorytetTypow, id];
-        if (!inList && next.length === 0) next = [id];
+        next = priorytetTypow.includes(id) ? [...priorytetTypow] : [...priorytetTypow, id];
+        if (next.length === 0) next = [id];
       } else if (inList) {
         nextTryb = 'priorytet';
         next = priorytetTypow.filter(f => f !== id);
@@ -9174,10 +9224,28 @@ function appendBudowaToolbarProfiles(
         nextTryb = 'priorytet';
         next = [...priorytetTypow, id];
       }
-      cfg.onBudowaPriorytetChange?.(city.id, next, nextTryb);
+      cfg.onBudowaPriorytetChange?.(city.id, sanitizeBudowaPriorytetTypow(next), nextTryb);
       rerender();
     });
     wrap.appendChild(b);
+  }
+  if (cfg.onBudowaPriorytetChange) {
+    const zrownBtn = document.createElement('button');
+    zrownBtn.type = 'button';
+    zrownBtn.className = tryb === 'zrownowazone' ? 'on' : '';
+    setOkolicaProfileButtonIconOnly(zrownBtn, BUDOWA_FOCUS_BRAND.zrownowazone);
+    zrownBtn.title = tryb === 'zrownowazone'
+      ? 'Auto zrównoważone (wszystkie kategorie)'
+      : BUDOWA_FOCUS_TITLE.zrownowazone;
+    zrownBtn.addEventListener('click', () => {
+      cfg.onBudowaPriorytetChange?.(
+        city.id,
+        sanitizeBudowaPriorytetTypow(priorytetTypow),
+        'zrownowazone',
+      );
+      rerender();
+    });
+    wrap.appendChild(zrownBtn);
   }
   if (cfg.onBudowaListaChange) {
     const listaBtn = document.createElement('button');
@@ -9191,7 +9259,7 @@ function appendBudowaToolbarProfiles(
     listaBtn.addEventListener('click', () => {
       if (tryb === 'lista') {
         // Ponowne kliknięcie „Lista” zamyka edytor → Priorytet.
-        const next = priorytetTypow.length > 0 ? [...priorytetTypow] : (['zrownowazone'] as BudowaFocus[]);
+        const next = sanitizeBudowaPriorytetTypow(priorytetTypow);
         cfg.onBudowaPriorytetChange?.(city.id, next, 'priorytet');
       } else {
         cfg.onBudowaListaChange?.(city.id, [...lista], 'lista');
@@ -9242,9 +9310,11 @@ function appendBudowaListaBar(
     closeBtn.style.cssText = 'font-size:0.68em;padding:0.12em 0.4em;cursor:pointer;';
     closeBtn.addEventListener('click', () => {
       if (cfg.onBudowaPriorytetChange) {
-        const prio = (city.budowaPriorytetTypow?.length
-          ? [...city.budowaPriorytetTypow]
-          : (['zrownowazone'] as BudowaFocus[]));
+        const prio = sanitizeBudowaPriorytetTypow(
+          city.budowaPriorytetTypow?.length
+            ? city.budowaPriorytetTypow
+            : DEFAULT_BUDOWA_PRIORYTET_TYPOW,
+        );
         cfg.onBudowaPriorytetChange(city.id, prio, 'priorytet');
       } else {
         cfg.onBudowaEnterManual?.(city.id);

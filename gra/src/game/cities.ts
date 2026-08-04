@@ -43,8 +43,8 @@ export type BudowaFocus =
   | 'prawo'
   | 'produkcja';
 
-/** priorytet = AI wg budowaPriorytetTypow; lista = kolejność budowaLista; reczny = ręczna kolejka. */
-export type BudowaTryb = 'reczny' | 'priorytet' | 'lista';
+/** priorytet = AI wg budowaPriorytetTypow; zrownowazone = auto zrównoważone; lista = budowaLista; reczny = ręczna kolejka. */
+export type BudowaTryb = 'reczny' | 'priorytet' | 'lista' | 'zrownowazone';
 
 /** Nazwany szablon listy budowy (biblioteka gracza — zapis w save). */
 export type BudowaListaSzablon = { id: string; nazwa: string; budynki: string[] };
@@ -146,10 +146,10 @@ export function dedupeBudowaLista(budynki: string[]): string[] {
   return out;
 }
 
-/** Tryb auto-enqueue: Priorytet lub Lista (nie Ręczny). */
+/** Tryb auto-enqueue: Priorytet, Zrównoważony lub Lista (nie Ręczny). */
 export function isAutoBudowaTryb(t: BudowaTryb | undefined): boolean {
   const v = t ?? DEFAULT_BUDOWA_TRYB;
-  return v === 'priorytet' || v === 'lista';
+  return v === 'priorytet' || v === 'lista' || v === 'zrownowazone';
 }
 
 export const DEFAULT_BUDOWA_FOCUS: BudowaFocus = 'zrownowazone';
@@ -229,6 +229,28 @@ export const DEFAULT_BUDOWA_PRIORYTET_TYPOW: readonly BudowaFocus[] = [
   'kultura',
   'prawo',
 ];
+
+/** Pięć numerowanych typów priorytetu (bez zrównoważonego — osobny tryb). */
+export const BUDOWA_TYP_FOCUS: readonly BudowaFocus[] = [
+  'wzrost',
+  'wojsko',
+  'kultura',
+  'prawo',
+  'produkcja',
+];
+
+export function isBudowaTypFocus(f: BudowaFocus): boolean {
+  return f !== 'zrownowazone';
+}
+
+/** Usuwa zrownowazone z listy priorytetów; pusta → DEFAULT_BUDOWA_PRIORYTET_TYPOW. */
+export function sanitizeBudowaPriorytetTypow(
+  list: readonly BudowaFocus[] | undefined | null,
+): BudowaFocus[] {
+  const filtered = (list ?? []).filter(isBudowaTypFocus);
+  if (filtered.length === 0) return [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+  return [...filtered];
+}
 
 /**
  * Domyslny podzial Daniny netto nowego miasta — zgodny z econ-params.json
@@ -342,8 +364,31 @@ export function ensureCitySaveDefaults(city: City): void {
   } else if (!city.budowaTryb) {
     city.budowaTryb = DEFAULT_BUDOWA_TRYB;
   }
+  // Migracja: legacy priorytet tylko zrownowazone → tryb zrownowazone + domyślna lista typów
+  const rawPriorytet = city.budowaPriorytetTypow ?? [];
+  if (city.budowaTryb === 'priorytet') {
+    const onlyZrownowazone = rawPriorytet.length > 0
+      && rawPriorytet.every(f => f === 'zrownowazone');
+    if (onlyZrownowazone) {
+      city.budowaTryb = 'zrownowazone';
+      city.budowaPriorytetTypow = [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+      city.budowaFocus = 'zrownowazone';
+    } else if (rawPriorytet.some(f => f === 'zrownowazone')) {
+      city.budowaPriorytetTypow = sanitizeBudowaPriorytetTypow(rawPriorytet);
+    }
+  }
+  if (city.budowaTryb === 'zrownowazone') {
+    if (!city.budowaPriorytetTypow?.length) {
+      city.budowaPriorytetTypow = [...DEFAULT_BUDOWA_PRIORYTET_TYPOW];
+    } else {
+      city.budowaPriorytetTypow = sanitizeBudowaPriorytetTypow(city.budowaPriorytetTypow);
+    }
+    city.budowaFocus = 'zrownowazone';
+  }
   if (city.budowaTryb === 'priorytet' && !city.budowaPriorytetTypow?.length) {
-    city.budowaPriorytetTypow = [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS];
+    city.budowaPriorytetTypow = sanitizeBudowaPriorytetTypow(
+      [city.budowaFocus ?? DEFAULT_BUDOWA_FOCUS],
+    );
   }
   if (!city.budowaLista) city.budowaLista = [];
   if (city.ulepszeniaOverride === true) {

@@ -338,7 +338,7 @@ export function applyTempoRow1E(el: HTMLElement): void {
   });
 }
 
-/** Mały przycisk tempa (pauza / ×1 / ×2 / ×3 / AUTO) — 26×26 (§3). */
+/** Mały przycisk tempa (pauza / − / + / AUTO-komputer) — 26×26 (§3). */
 export function applyTempoBtn1E(el: HTMLButtonElement, opts?: { active?: boolean; auto?: boolean }): void {
   const active = opts?.active ?? false;
   const auto = opts?.auto ?? false;
@@ -360,13 +360,15 @@ export function applyTempoBtn1E(el: HTMLButtonElement, opts?: { active?: boolean
   });
 }
 
-/** Ikony 13px dla rzędu Tempo (pauza / odtwórz ×1/×2/×3 / auto-rozegranie). */
+/** Ikony 13px dla rzędu Tempo (pauza / − / + / komputer AUTO). */
 export const TEMPO_SVG = {
   pause: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 5v14M16 5v14"/></svg>',
-  play1: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>',
-  play2: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5v14l7-7ZM13 5v14l7-7Z"/></svg>',
-  play3: '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M2 5v14l6-7ZM9 5v14l6-7ZM16 5v14l6-7Z"/></svg>',
-  auto: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4.5 5 14 14.5M19.5 5 10 14.5M9.5 15 6.5 18M14.5 15 17.5 18"/></svg>',
+  minus: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+  plus: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  computer:
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+    '<rect x="3" y="4" width="18" height="12" rx="1.5"/>' +
+    '<path d="M8 20h8M12 16v4"/></svg>',
 } as const;
 
 /** Okrągła ikona typu na karcie rosteru (C09 v4). */

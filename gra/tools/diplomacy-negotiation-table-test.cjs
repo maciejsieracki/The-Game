@@ -136,13 +136,13 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
   ok(canCounterNegotiation({ ...base, round: 3 }) === false, 'canCounter round 3 (limit) -> false');
 }
 
-// 5 — umowa_handlowa: evaluateProposal jej nie ocenia -> generator kontroferty ZAWSZE null (brak wsparcia silnika).
+// 5 — umowa_handlowa: evaluateProposal jak umowa_szlakow (R-DYPLO-PRZYJMIJ-TRADE).
 {
-  const proposal = { actionId: 'umowa_handlowa', proposerOwnerId: 1, responderOwnerId: 0, payload: { turns: 10 } };
-  const counter = generateCounterOffer(proposal, ctx());
-  ok(counter === null, 'umowa_handlowa: brak kontroferty silnika (świadomie poza zasięgiem)');
-  const base = { id: 'y', proposerOwnerId: 1, responderOwnerId: 0, actionId: 'umowa_handlowa', payload: {}, authorOwnerId: 1, awaitingOwnerId: 0, createdTurn: 1, lastActionTurn: 1, expiresTurn: 99, source: 'ai' };
-  ok(canCounterNegotiation({ ...base, round: 1 }) === false, 'umowa_handlowa: silnik AI canCounter false');
+  const peaceCtx = ctx({ relation: rel(50, 50) });
+  const proposalHandlowa = { actionId: 'umowa_handlowa', proposerOwnerId: 0, responderOwnerId: 1, payload: { turns: 10 } };
+  const evalHandlowa = evaluateProposal(proposalHandlowa, peaceCtx);
+  ok(evalHandlowa.accepted && evalHandlowa.deal?.rodzaj === 'umowa_szlakow', 'umowa_handlowa @ rel 100: accepted + deal szlaków');
+  const base = { id: 'y', proposerOwnerId: 1, responderOwnerId: 0, actionId: 'umowa_handlowa', payload: { turns: 10 }, authorOwnerId: 1, awaitingOwnerId: 0, createdTurn: 1, lastActionTurn: 1, expiresTurn: 99, source: 'ai' };
   ok(canPlayerCounterNegotiation({ ...base, round: 1 }) === true, 'umowa_handlowa: gracz canPlayerCounter true');
 }
 
