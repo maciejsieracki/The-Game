@@ -67,5 +67,7 @@ function resolveSpichlerz(buildingId, builtIds, surowce) {
   ok(!r.inactive, 'spichlerz II oba surowce → active');
 }
 
+try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) { /* ignore */ }
+
 console.log(`owned-building-inactive-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);
