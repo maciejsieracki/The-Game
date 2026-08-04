@@ -23,6 +23,14 @@ export function isScoutUnit(unit: RuntimeUnit): boolean {
   return unit.category === 'zwiadowca' || unit.typeId === SCOUT_TYPE_ID;
 }
 
+/** Wyłącza auto-zwiedzanie zwiadowcy (np. klik / rozkaz marszu). Zwraca true jeśli było włączone. */
+export function clearScoutAutoExplore(unit: RuntimeUnit): boolean {
+  if (!isScoutUnit(unit)) return false;
+  if (unit.autoExplore !== true) return false;
+  unit.autoExplore = false;
+  return true;
+}
+
 /** Punkty za heksy nieodkryte w zasięgu wzroku + sąsiednie ukryte. */
 export function scoreHexForExplore(
   q: number,
