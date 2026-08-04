@@ -31,8 +31,7 @@ import { civBrandLineForKey } from './civBrandDisplay';
 import { renderNegotiationTableDealSideHtml } from './diplomacyDealDisplay';
 import { bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
 import {
-  balancePanelDataFromRow,
-  pickPrimaryNegotiationRow,
+  balancePanelDataFromRows,
   renderPnBalancePanelHtml,
 } from './diplomacyAcceptanceBalance';
 import {
@@ -1433,12 +1432,10 @@ function tableDealSideHtml(
   );
 }
 
-/** Panel PN między kolumnami My / Oni — główny wpis stołu + licznik pozostałych. */
+/** Panel PN między kolumnami My / Oni — suma PW wszystkich umów na stole. */
 function negotiationBalanceBarHtml(st: DiplomacyAudienceState): string {
   const rows = st.pendingNegotiations ?? [];
-  const primary = pickPrimaryNegotiationRow(rows);
-  const extra = rows.length > 1 ? rows.length - 1 : 0;
-  const data = primary ? balancePanelDataFromRow(primary, extra) : null;
+  const data = balancePanelDataFromRows(rows);
   return renderPnBalancePanelHtml(data);
 }
 

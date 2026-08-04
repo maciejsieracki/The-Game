@@ -206,6 +206,77 @@ export function balancePanelDataFromRow(
   };
 }
 
+function aggregateBalanceStatusLabel(net: number): string {
+  if (net > 0) return `Nadwyżka +${net} PW`;
+  if (net === 0) return 'Spełnia warunki (0 PW)';
+  return `Brakuje ${Math.abs(net)} PW`;
+}
+
+/** Panel PW stołu — suma wszystkich pending umów pary (R-DYPLO-STOL-PW-SUM). */
+export function balancePanelDataFromRows(
+  rows: readonly NegotiationBalanceSource[],
+): PnBalancePanelData | null {
+  if (rows.length === 0) return null;
+
+  const primary = pickPrimaryNegotiationRow(rows);
+  if (!primary?.acceptanceTheir) return null;
+
+  let mySum = 0;
+  let theirSum = 0;
+  for (const row of rows) {
+    if (!row.acceptanceTheir) continue;
+    const rowData = balancePanelDataFromRow(row, 0);
+    if (!rowData) continue;
+    mySum += rowData.myOfferPn;
+    theirSum += rowData.theirOfferPn;
+  }
+
+  const net = mySum - theirSum;
+  const statusLabel = aggregateBalanceStatusLabel(net);
+  const accepted = net >= 0;
+
+  let actionLabel = primary.actionLabel;
+  if (rows.length > 1) {
+    const extra = rows.length - 1;
+    actionLabel = primary.actionLabel + ' + ' + extra + (extra === 1 ? ' inna' : ' inne');
+  }
+
+  const theirBalance: AcceptanceSideBalance = {
+    ...primary.acceptanceTheir,
+    balancePn: net,
+    accepted,
+    statusLabel,
+  };
+  const myBalance = primary.acceptanceMy
+    ? {
+        ...primary.acceptanceMy,
+        balancePn: net,
+        accepted,
+        statusLabel,
+      }
+    : undefined;
+
+  const canAccept = primary.direction === 'incoming'
+    ? net >= 0
+    : primary.canAccept;
+
+  return {
+    actionLabel,
+    negotiationId: primary.id,
+    direction: primary.direction,
+    myOfferPn: mySum,
+    theirOfferPn: theirSum,
+    theirBalance,
+    myBalance,
+    canAccept,
+    extraOnTable: 0,
+    awaitingAiResponse: primary.awaitingAiResponse,
+    responderPreview: primary.responderPreview,
+    canCounter: primary.canCounter,
+    uiActionId: primary.uiActionId,
+  };
+}
+
 function formatBalanceDelta(balancePn: number, accepted: boolean): string {
   if (accepted && balancePn > 0) return `+${balancePn}`;
   if (accepted && balancePn === 0) return '0';
