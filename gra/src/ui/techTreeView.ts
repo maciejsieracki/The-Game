@@ -273,7 +273,7 @@ function statusOf(node: TreeNode, s: TtvState): TtvStatus {
 }
 
 function effectiveCost(node: TreeNode, s: TtvState): number {
-  return scaledResearchCost(node.koszt, s.tempo, activeOwner, s.difficulty);
+  return scaledResearchCost(node.koszt, s.tempo, activeOwner, s.difficulty, node.epoka);
 }
 
 /** Powody blokady (realne dane): brakujące techy AND, budynek, ulepszenie, tier. */

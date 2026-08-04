@@ -68,7 +68,7 @@ import {
   upgradeProductionDisplayName,
 } from './building-upgrades';
 import miastoParams from '../../data/miasto-params.json';
-import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
+import { R_STAWKI_KOSZT_MULT, R_STAWKI_FALA2_MULT } from './r-stawki-strojenie';
 
 export {
   buildingRuntimeGateMet,
@@ -466,8 +466,11 @@ export function buildingWorkCost(
 ): number {
   const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
   const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
-  // GLOBAL_BUILDING_PROD_MULT=0.5 (2026-07-22) × R-STAWKI-STROJENIE ×2 (2026-08-03) → efekt 1.0 vs JSON
-  const afterGlobal = Math.max(1, Math.round(afterPace * GLOBAL_BUILDING_PROD_MULT * R_STAWKI_KOSZT_MULT));
+  // GLOBAL×0.5 × FALA1×2 × FALA2×2 → efekt 2.0 vs JSON koszt Pracy budynku
+  const afterGlobal = Math.max(
+    1,
+    Math.round(afterPace * GLOBAL_BUILDING_PROD_MULT * R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT),
+  );
   return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 
@@ -485,7 +488,9 @@ export function unitMoneyCost(
     koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
   }
   const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
-  return applyDifficultyCostMultiplier(afterPace, ownerId, difficulty);
+  // R-NADMIAR-POOLS FALA2: rekrutacja jednostek (Pieniądz) ×2 vs JSON
+  const afterFala2 = Math.max(1, Math.round(afterPace * R_STAWKI_FALA2_MULT));
+  return applyDifficultyCostMultiplier(afterFala2, ownerId, difficulty);
 }
 
 /** Minimalny ksztalt bonusy[] — bez importu economy (unikamy cyklu z production). */

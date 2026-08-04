@@ -1,3 +1,5 @@
+import { scaleStockCostRecord } from './r-stawki-strojenie';
+
 /**
  * building-stock-cost.ts
  * TEMAT #6 (2026-07-23): konsument magazynu surowców przetworzonych (cegła/ceramika,
@@ -22,13 +24,8 @@ export type BuildingStockCost = Partial<Record<string, number>>;
 export function buildingStockCost(
   building: { koszt_surowce?: BuildingStockCost | null } | null | undefined,
 ): Record<string, number> {
-  const raw = building?.koszt_surowce;
-  const out: Record<string, number> = {};
-  if (!raw) return out;
-  for (const [k, v] of Object.entries(raw)) {
-    if (typeof v === 'number' && Number.isFinite(v) && v > 0) out[k] = v;
-  }
-  return out;
+  // R-NADMIAR-POOLS FALA2: koszt_surowce ×2 — UI/AI afford/deduct widzą skalowany koszt
+  return scaleStockCostRecord(building?.koszt_surowce);
 }
 
 /** Ile brakuje w puli państwa dla każdego surowca kosztu (0 lub brak wpisu = wystarcza). */

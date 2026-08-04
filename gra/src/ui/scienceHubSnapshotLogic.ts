@@ -80,7 +80,7 @@ export function buildHubTechEntries(input: {
   availableRaw: readonly string[];
   targetSlug: string | null;
   playerEra: number | undefined;
-  costFor: (baseKoszt: number) => number;
+  costFor: (baseKoszt: number, epoka?: string) => number;
 }): HubEntryDraft[] {
   const {
     techById, slugify, researchedRaw, availableRaw, targetSlug, playerEra, costFor,
@@ -111,7 +111,7 @@ export function buildHubTechEntries(input: {
       id: node.id,
       name: node.nazwa,
       epoka: node.epoka,
-      koszt: costFor(node.koszt),
+      koszt: costFor(node.koszt, node.epoka),
       locked: false,
       isTarget: slug === targetNorm,
     });
@@ -126,7 +126,7 @@ export function buildHubTechEntries(input: {
       id: node.id,
       name: node.nazwa,
       epoka: node.epoka,
-      koszt: costFor(node.koszt),
+      koszt: costFor(node.koszt, node.epoka),
       locked: true,
       isTarget: false,
     });

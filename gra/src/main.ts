@@ -922,6 +922,7 @@ import { showNewGameFlow, hideNewGameFlow, isNewGameFlowOpen, type NewGameParams
 import type { TempoGry } from './game/tech-tempo';
 import type { GameDifficulty } from './game/difficulty-cost';
 import { scaledResearchCost } from './game/difficulty-cost';
+import { scaledWonderWorkCost, scaledWonderFoodCost } from './game/r-stawki-strojenie';
 import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields, veteranExperienceLine } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
@@ -2393,12 +2394,27 @@ async function boot(): Promise<void> {
       return id.startsWith(WONDER_PROD_PREFIX) ? id.slice(WONDER_PROD_PREFIX.length) : null;
     }
 
+    function wonderScaledWorkCost(wonderId: string): number {
+      const w = getWonderById(wonderId);
+      return w ? scaledWonderWorkCost(w.kosztBudowy) : 0;
+    }
+
+    function tryDeductWonderStartFood(ownerId: number, kosztBudowy: number): boolean {
+      const foodCost = scaledWonderFoodCost(kosztBudowy);
+      if (foodCost <= 0) return true;
+      const st = empireFoodStates.get(ownerId) ?? freshEmpireFoodState();
+      if (st.zapasyPanstwa < foodCost) return false;
+      st.zapasyPanstwa -= foodCost;
+      empireFoodStates.set(ownerId, st);
+      return true;
+    }
+
     function wonderProductionItem(w: WonderDef): ProductionItem {
       return {
         kind: 'budynek',
         id: WONDER_PROD_PREFIX + w.id,
         nazwa: `[Cud] ${w.nazwa}`,
-        koszt: w.kosztBudowy,
+        koszt: scaledWonderWorkCost(w.kosztBudowy),
       };
     }
 
@@ -2523,7 +2539,7 @@ async function boot(): Promise<void> {
         q: hex.q,
         r: hex.r,
         ownerId: city.ownerId,
-        postep: getWonderById(wonderId)?.kosztBudowy ?? 0,
+        postep: wonderScaledWorkCost(wonderId),
       }, city);
       refreshFog();
     }
@@ -2763,7 +2779,7 @@ async function boot(): Promise<void> {
       const parts = sites.map(s => {
         const w = getWonderById(s.wonderId);
         const label = w?.nazwa ?? s.wonderId;
-        const koszt = w?.kosztBudowy ?? 0;
+        const koszt = wonderScaledWorkCost(s.wonderId);
         return `${label} @ ${s.q},${s.r}: ${s.postep}/${koszt} P`;
       });
       return parts.join(' · ');
@@ -2776,7 +2792,7 @@ async function boot(): Promise<void> {
       return listBuildableWondersForOwner(0).map(w => ({
         id: w.id,
         label: w.nazwa,
-        kosztPraca: w.kosztBudowy,
+        kosztPraca: scaledWonderWorkCost(w.kosztBudowy),
         epokaWejscia: w.epokaWejscia,
         dostep: w.dostep,
         building: buildingIds.has(w.id),
@@ -2846,7 +2862,7 @@ async function boot(): Promise<void> {
         wonderBuildSites,
         ownerId,
         pracaAvailable,
-        (id) => getWonderById(id)?.kosztBudowy ?? 0,
+        (id) => wonderScaledWorkCost(id),
       );
       wonderBuildSites = result.sites;
       for (const done of result.completed) {
@@ -2867,9 +2883,18 @@ async function boot(): Promise<void> {
       }
       const w = getWonderById(wonderId);
       if (!w) return false;
+      const scaledKoszt = scaledWonderWorkCost(w.kosztBudowy);
       const qual = qualifyingWonderHexesForPlayer();
       if (!qual.some(h => h.q === q && h.r === r)) {
         showHintMessage('Nie można tu postawić cudu (teren / terytorium / zajęte)', 3000);
+        return false;
+      }
+      const foodCost = scaledWonderFoodCost(w.kosztBudowy);
+      if (foodCost > 0 && !tryDeductWonderStartFood(0, w.kosztBudowy)) {
+        showHintMessage(
+          `Brak żywności w magazynie państwa — potrzeba <b>${foodCost}</b> 🍞 na start budowy cudu`,
+          4000,
+        );
         return false;
       }
       wonderBuildSites.push({ wonderId, q, r, ownerId: 0, postep: 0 });
@@ -2881,7 +2906,7 @@ async function boot(): Promise<void> {
       const site = wonderBuildSites.find(s => s.wonderId === wonderId && s.ownerId === 0);
       if (site) {
         showHintMessage(
-          `Budowa: <b>${w.nazwa}</b> @ ${q},${r} (${site.postep}/${w.kosztBudowy} Pracy)`,
+          `Budowa: <b>${w.nazwa}</b> @ ${q},${r} (${site.postep}/${scaledKoszt} Pracy)`,
           4500,
         );
       } else {
@@ -2907,6 +2932,15 @@ async function boot(): Promise<void> {
       }
       const w = getWonderById(wonderId);
       if (!w) return false;
+      const scaledKoszt = scaledWonderWorkCost(w.kosztBudowy);
+      if (!tryDeductWonderStartFood(0, w.kosztBudowy)) {
+        const foodCost = scaledWonderFoodCost(w.kosztBudowy);
+        showHintMessage(
+          `Brak żywności w magazynie państwa — potrzeba <b>${foodCost}</b> 🍞 na start budowy cudu`,
+          4000,
+        );
+        return false;
+      }
       const prod0 = cityProd.get(cityId) ?? { kolejka: [], postep: 0 };
       if (prod0.kolejka.some(it => parseWonderProdId(it.id) === wonderId)) {
         showHintMessage('Ten cud jest już w kolejce tego miasta', 3000);
@@ -2916,7 +2950,7 @@ async function boot(): Promise<void> {
       cityProd.set(cityId, enqueue(prod0, item));
       const city = cities.find(c => c.id === cityId);
       showHintMessage(
-        `Kolejka: <b>${w.nazwa}</b> w ${city?.name ?? 'mieście'} (${w.kosztBudowy} Pracy)`,
+        `Kolejka: <b>${w.nazwa}</b> w ${city?.name ?? 'mieście'} (${scaledKoszt} Pracy)`,
         4000,
       );
       refreshCityPanelIfOpen();
@@ -2975,7 +3009,7 @@ async function boot(): Promise<void> {
           'display:block;width:100%;text-align:left;margin:0.25em 0;padding:0.45em 0.55em;' +
           'cursor:pointer;border:1px solid rgba(255,255,255,0.2);border-radius:4px;background:rgba(0,0,0,0.35);color:inherit;';
         const tag = w.dostep === 'R' ? ' [R]' : '';
-        row.textContent = `${w.nazwa}${tag} — ${w.kosztBudowy} Pracy · tech: ${(w.techUnlock ?? []).join(' + ')}`;
+        row.textContent = `${w.nazwa}${tag} — ${scaledWonderWorkCost(w.kosztBudowy)} Pracy · tech: ${(w.techUnlock ?? []).join(' + ')}`;
         row.addEventListener('click', () => {
           hideWondersPicker();
           showHintMessage('Otwórz 🔨 Budowa w terenie → wybierz cud → kliknij hex', 4000);
@@ -11838,6 +11872,7 @@ async function boot(): Promise<void> {
             player.tempoGry ?? 'standardowa',
             0,
             _menuDifficulty,
+            techDef.Epoka,
           ) : 0;
         epokaPostep = koszt > 0 ? Math.min(1, player.nauka / koszt) : 0;
       }
@@ -21307,7 +21342,11 @@ async function boot(): Promise<void> {
                   (cityProd.get(c.id)?.kolejka ?? []).some(it => parseWonderProdId(it.id) !== null),
                 );
                 const buildableForAi: AiWonderOption[] = listBuildableWondersForOwner(ownerId)
-                  .map(w => ({ id: w.id, kosztBudowy: w.kosztBudowy, dostep: w.dostep }));
+                  .map(w => ({
+                    id: w.id,
+                    kosztBudowy: scaledWonderWorkCost(w.kosztBudowy),
+                    dostep: w.dostep,
+                  }));
                 const wonderCandidates: AiWonderCityCandidate[] = myCitiesForWonder.map(c => ({
                   cityId: c.id,
                   queueEmpty: frontItem(cityProd.get(c.id) ?? { kolejka: [], postep: 0 }) === null,
@@ -21320,12 +21359,19 @@ async function boot(): Promise<void> {
                 if (wonderDecision) {
                   const wDef = getWonderById(wonderDecision.wonderId);
                   if (wDef) {
-                    const wProd0 = cityProd.get(wonderDecision.cityId) ?? { kolejka: [], postep: 0 };
-                    cityProd.set(wonderDecision.cityId, enqueue(wProd0, wonderProductionItem(wDef)));
-                    const wCity = myCitiesForWonder.find(c => c.id === wonderDecision.cityId);
-                    console.log(
-                      `[Cuda][AI] Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${wDef.kosztBudowy} Pracy)`,
-                    );
+                    const scaledKoszt = scaledWonderWorkCost(wDef.kosztBudowy);
+                    if (!tryDeductWonderStartFood(ownerId, wDef.kosztBudowy)) {
+                      console.log(
+                        `[Cuda][AI] Tura ${turn} owner ${ownerId}: pominięto ${wDef.nazwa} — brak żywności w zapasach państwa`,
+                      );
+                    } else {
+                      const wProd0 = cityProd.get(wonderDecision.cityId) ?? { kolejka: [], postep: 0 };
+                      cityProd.set(wonderDecision.cityId, enqueue(wProd0, wonderProductionItem(wDef)));
+                      const wCity = myCitiesForWonder.find(c => c.id === wonderDecision.cityId);
+                      console.log(
+                        `[Cuda][AI] Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${scaledKoszt} Pracy)`,
+                      );
+                    }
                   }
                 }
               } catch (eAiWonder) {

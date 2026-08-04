@@ -257,7 +257,7 @@ export function getScienceHubSnapshot(ownerId: number): {
     availableRaw: cfg.getAvailableTechs?.(ownerId) ?? [],
     targetSlug,
     playerEra: cfg.getPlayerEra?.(ownerId),
-    costFor: (base) => effectiveTechCost(base, ownerId),
+    costFor: (base, epoka) => effectiveTechCost(base, ownerId, epoka),
   });
 
   const entries: ScienceHubEntry[] = drafts.map(d => {
@@ -838,7 +838,7 @@ function buildSVG(
     }
 
     // Cost top-right (po mnozniku tempa gry)
-    lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${effectiveTechCost(node.koszt, activeOwner)}PN</text>`);
+    lines.push(`<text x="${r(NW - 4)}" y="11" text-anchor="end" fill="rgba(120,180,90,0.45)" font-size="7.5" font-family="monospace" pointer-events="none">${effectiveTechCost(node.koszt, activeOwner, node.epoka)}PN</text>`);
 
     if (isClickable) {
       lines.push(`<rect class="civ-sci-hit" x="0" y="0" width="${NW}" height="${NH}" rx="8" fill="rgba(0,0,0,0.001)" stroke="none" pointer-events="all"/>`);
@@ -877,7 +877,7 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
     : '';
   let h = `<div class="tt-name" style="color:${st.label}">${ttIconHtml}${esc(node.nazwa)}</div>`;
   h += `<div class="tt-meta" style="color:#7a6028">Epoka: <strong>${esc(node.epoka)}</strong> | Kolumna: ${node.epoka === 'Kamień' ? 'K' : node.epoka === 'Brąz' ? 'B' : 'Z'}${node.zoneCol}</div>`;
-  h += `<div class="tt-cost" style="color:#78b058">⚗ Koszt nauki: ${effectiveTechCost(node.koszt, activeOwner)} PN</div>`;
+  h += `<div class="tt-cost" style="color:#78b058">⚗ Koszt nauki: ${effectiveTechCost(node.koszt, activeOwner, node.epoka)} PN</div>`;
   h += `<div class="tt-status" style="margin-top:4px;font-size:0.73em;font-weight:700">${statusLabel[status]}</div>`;
 
   if (node.prereqIds.length > 0) {
@@ -925,10 +925,10 @@ function buildTooltipHTML(node: TechNode, status: NodeStatus): string {
 let cfg: SciencePickerConfig = {};
 
 /** Koszt badania po mnozniku tempa gry + asymetrii trudnosci. */
-function effectiveTechCost(baseKoszt: number, ownerId = 0): number {
+function effectiveTechCost(baseKoszt: number, ownerId = 0, epoka?: string | null): number {
   const tempo = cfg.getTempoGry?.(ownerId) ?? 'standardowa';
   const difficulty = cfg.getDifficulty?.(ownerId) ?? 'normal';
-  return scaledResearchCost(baseKoszt, tempo, ownerId, difficulty);
+  return scaledResearchCost(baseKoszt, tempo, ownerId, difficulty, epoka);
 }
 let overlayEl: HTMLDivElement | null = null;
 let panelEl: HTMLDivElement | null = null;

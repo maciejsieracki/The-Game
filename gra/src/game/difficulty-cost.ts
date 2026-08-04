@@ -25,7 +25,11 @@ import {
   WZROST_LUDNOSCI_PACE,
   type WzrostLudnosciPace,
 } from './population-growth-tempo';
-import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
+import {
+  R_STAWKI_KOSZT_MULT,
+  R_STAWKI_FALA2_MULT,
+  isResearchEraFala2Extra,
+} from './r-stawki-strojenie';
 
 export type GameDifficulty = 'easy' | 'normal' | 'hard';
 
@@ -70,9 +74,14 @@ export function scaledResearchCost(
   tempo: TempoGry,
   ownerId: number,
   difficulty: GameDifficulty,
+  epoka?: string | null,
 ): number {
   const afterTempo = applyTempoKoszt(baseCost, tempo);
-  const afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
+  let afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
+  // R-NADMIAR-POOLS FALA2: Brąz + Żelazo ×2 dodatkowo (łącznie ×4 z FALA1).
+  if (isResearchEraFala2Extra(epoka)) {
+    afterGlobal = Math.max(1, Math.round(afterGlobal * R_STAWKI_FALA2_MULT));
+  }
   return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 

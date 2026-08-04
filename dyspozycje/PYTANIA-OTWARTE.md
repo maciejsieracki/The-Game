@@ -8,9 +8,9 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## R-NADMIAR-POOLS — nadmiar Pracy / Skarbca / Spichlerza · STATUS: **ODŁOŻONE** (Maciej myśli, 2026-08-04)
+## R-NADMIAR-POOLS — FALA2 ×2 koszty · STATUS: **WDROŻONE (kod)** 2026-08-04 — czeka deploy
 
-**Bez ABC na razie.** Powiązane: `R-STAWKI-STROJENIE`, `R-BILANS-100T`. Gdy Maciej wróci → paczka ABC.
+Decyzja Macieja: dodatkowe ×2 na wybrane koszty (stacking z FALA1). Szczegóły: [`docs/decyzje/R-NADMIAR-POOLS.md`](docs/decyzje/R-NADMIAR-POOLS.md).
 
 ---
 

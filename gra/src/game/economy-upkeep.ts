@@ -44,7 +44,10 @@
 
 import type { BuildingRecord } from './economy';
 import { buildingEffectAtLevel } from './production';
-import { R_STAWKI_KOSZT_MULT } from './r-stawki-strojenie';
+import {
+  R_STAWKI_FALA1_FALA2_MULT,
+  R_STAWKI_FALA2_MULT,
+} from './r-stawki-strojenie';
 
 // ===========================================================================
 // Difficulty + raw econ-params reader
@@ -556,13 +559,17 @@ export function buildingUpkeep(
   flatOverride?: number,
 ): number {
   const lvl = level >= 1 ? level : 1;
+  let raw: number;
   if (!Number.isFinite(building.utrzymanie)) {
     // No per-building value in data -> flat value is a DEFAULT, not an override.
-    return (typeof flatOverride === 'number' && Number.isFinite(flatOverride)) ? flatOverride : 0;
+    raw = (typeof flatOverride === 'number' && Number.isFinite(flatOverride)) ? flatOverride : 0;
+  } else {
+    const base   = building.utrzymanie;
+    const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
+    raw = Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
   }
-  const base   = building.utrzymanie;
-  const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
-  return Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
+  // R-NADMIAR-POOLS FALA2: utrzymanie budynków ×2 vs JSON (włącznie flatOverride).
+  return Math.floor(raw * R_STAWKI_FALA2_MULT);
 }
 
 /** Total gold building upkeep for a set of building instances (Spec s.6.1). */
@@ -631,8 +638,8 @@ export function unitUpkeep(
   else if (typeof byCat === 'number' && Number.isFinite(byCat)) base = byCat;
   else base = Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
   if (base <= 0) return 0;
-  // R-STAWKI-STROJENIE 2026-08-03: ×2 utrzymanie jednostek (Pieniądz/turę)
-  return Math.round(base * R_STAWKI_KOSZT_MULT);
+  // R-STAWKI FALA1×FALA2: ×4 utrzymanie jednostek (Pieniądz/turę)
+  return Math.round(base * R_STAWKI_FALA1_FALA2_MULT);
 }
 
 /** Total gold unit upkeep for a set of units (Spec s.6.2). */
@@ -726,8 +733,8 @@ export function unitFoodPerTurn(
     : (p.zywnoscMnoznikPozaTerytorium ?? 2);
   const food = base * mnoznikTerytorium;
   if (food <= 0) return 0;
-  // R-STAWKI-STROJENIE 2026-08-03: ×2 żywność wojska
-  return food * R_STAWKI_KOSZT_MULT;
+  // R-STAWKI FALA1×FALA2: ×4 żywność wojska
+  return food * R_STAWKI_FALA1_FALA2_MULT;
 }
 
 /** Build typeId -> food/turn from units.json rows. */

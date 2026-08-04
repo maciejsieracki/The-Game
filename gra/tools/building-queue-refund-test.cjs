@@ -68,18 +68,18 @@ console.log('-- building-queue-refund: enqueue pobór + cancel zwrot --');
   const stolarnia = buildings.find(b => b.id === 'stolarnia');
   assert(!!stolarnia, 'buildings.json: stolarnia istnieje');
   const cost = M.buildingStockCost(stolarnia);
-  eq(cost.drewno, 5, 'stolarnia koszt_surowce.drewno = 5');
+  eq(cost.drewno, 10, 'stolarnia koszt_surowce.drewno FALA2×2 = 10');
 
   const cities = makeCities([
     { id: 'c1', ownerId: 0, surowce: { drewno: 3 } },
-    { id: 'c2', ownerId: 0, surowce: { drewno: 7 } },
+    { id: 'c2', ownerId: 0, surowce: { drewno: 12 } },
   ]);
   const before = M.ownerResourceStock(cities, 0, 'drewno');
-  eq(before, 10, 'pula państwa przed enqueue: 3+7=10');
+  eq(before, 15, 'pula państwa przed enqueue: 3+12=15');
 
   M.deductBuildingStockCostAcrossCities(cities, 0, cost);
   const afterEnqueue = M.ownerResourceStock(cities, 0, 'drewno');
-  eq(afterEnqueue, 5, 'po enqueue: 10-5=5 drewna w puli');
+  eq(afterEnqueue, 5, 'po enqueue: 15-10=5 drewna w puli');
 
   M.refundBuildingStockCostAcrossCities(cities, 0, cost);
   const afterCancel = M.ownerResourceStock(cities, 0, 'drewno');

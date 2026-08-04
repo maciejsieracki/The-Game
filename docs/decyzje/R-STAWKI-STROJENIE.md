@@ -19,3 +19,5 @@
 
 Jedna stała `R_STAWKI_KOSZT_MULT = 2` w `gra/src/game/r-stawki-strojenie.ts` (łatwy rewind → 1).
 Wpięta w: badania, `buildingWorkCost`, `unitUpkeep`, `rationFoodCostPerPop` / koszt racji, `unitFoodPerTurn`.
+
+**FALA2 (R-NADMIAR-POOLS 2026-08-04):** `R_STAWKI_FALA2_MULT = 2` — patrz [`R-NADMIAR-POOLS.md`](R-NADMIAR-POOLS.md).

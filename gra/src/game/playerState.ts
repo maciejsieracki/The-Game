@@ -422,6 +422,7 @@ export function researchStep(
       state.tempoGry ?? 'standardowa',
       0,
       difficulty,
+      def.Epoka,
     );
     if (state.nauka < cost) break; // can't finish the current tech yet
 
@@ -543,6 +544,7 @@ export function getResearchState(
       state.tempoGry ?? 'standardowa',
       0,
       difficulty,
+      def.Epoka,
     )
     : 0;
   const pula = state.nauka;

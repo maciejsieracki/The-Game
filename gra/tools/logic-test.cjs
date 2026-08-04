@@ -544,8 +544,8 @@ psC.tempoGry = 'szybka';
 psC.zbadane = new Set(kamienBeforeBraz);
 psC.badana = 'Brązownictwo';
 psC.nauka = scaledResearchCost(
-  techCost(techData.find(t => t.Technologia === 'Brązownictwo')), 'szybka', 0, 'normal',
-); // exact effective cost (tempo='szybka', GLOBAL_MULT=1)
+  techCost(techData.find(t => t.Technologia === 'Brązownictwo')), 'szybka', 0, 'normal', 'Brąz',
+); // exact effective cost (tempo='szybka', FALA1+FALA2 Brąz)
 const eraBefore = psC.era;
 const resC = researchStep(psC, techData);
 assert('research: era tech (Brązownictwo) marks the era-advance flag',
@@ -570,7 +570,7 @@ const allKamien = techData.filter(t => t.Epoka === 'Kamień').map(t => t.Technol
 const brazBeforeWaluta = sameEpochLowerTierIds('Waluta'); // Brąz tiers 4-5
 psD.zbadane = new Set([...allKamien, ...brazBeforeWaluta]);
 psD.badana = 'Waluta';
-psD.nauka = scaledResearchCost(techCost(walutaDef), 'szybka', 0, 'normal'); // exact effective cost (tempo='szybka', GLOBAL_MULT=1)
+psD.nauka = scaledResearchCost(techCost(walutaDef), 'szybka', 0, 'normal', walutaDef.Epoka);
 const resD = researchStep(psD, techData);
 assert('research: money tech (Waluta) sets the money flag in completion',
   resD.completed.some(c => c.id === 'Waluta' && c.pieniadz === true));
@@ -636,7 +636,7 @@ assert('research: cascade leaves no available tech behind when fully funded',
   ps4.zbadane = new Set(kamienBeforeBraz);
   const brazDef = techData.find(t => t.Technologia === 'Brązownictwo');
   const brazCost = brazDef ? (typeof brazDef['Koszt nauki'] === 'number' ? brazDef['Koszt nauki'] : 0) : 0;
-  ps4.nauka = scaledResearchCost(brazCost, 'szybka', 0, 'normal'); // exact effective cost of Brązownictwo
+  ps4.nauka = scaledResearchCost(brazCost, 'szybka', 0, 'normal', brazDef?.Epoka);
   setPlayerResearchTarget(ps4, 'Brązownictwo', techData);
   assert('player-research: target set before researchStep',
     ps4.playerResearchTargetId === 'Brązownictwo', `id=${ps4.playerResearchTargetId}`);
@@ -670,7 +670,7 @@ assert('research: cascade leaves no available tech behind when fully funded',
   const brazCostRaw6 = brazDef6 ? (typeof brazDef6['Koszt nauki'] === 'number' ? brazDef6['Koszt nauki'] : 0) : 0;
   // Effective cost: scaledResearchCost (GLOBAL_MULT=1 since B-RESEARCH-COST-MODEL),
   // same as getResearchState computes internally for kosztCelu.
-  const brazCost6 = scaledResearchCost(brazCostRaw6, 'szybka', 0, 'normal');
+  const brazCost6 = scaledResearchCost(brazCostRaw6, 'szybka', 0, 'normal', brazDef6?.Epoka);
   ps6.nauka = brazCost6 / 2; // half the effective cost
   setPlayerResearchTarget(ps6, 'Brązownictwo', techData);
   const naukaPerTurn = 4;
