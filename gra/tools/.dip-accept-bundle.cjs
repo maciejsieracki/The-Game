@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var dip_accept_entry_exports = {};
 __export(dip_accept_entry_exports, {
   acceptancePointsCatalog: () => acceptancePointsCatalog,
+  balancePanelDataFromRow: () => balancePanelDataFromRow,
   basketSidePnDifficultyMultiplier: () => basketSidePnDifficultyMultiplier,
   bilateralTreatyDisplayPw: () => bilateralTreatyDisplayPw,
   computePlayerAcceptanceSides: () => computePlayerAcceptanceSides,
@@ -30,13 +31,21 @@ __export(dip_accept_entry_exports, {
   diplomacyPnTech: () => diplomacyPnTech,
   diplomacySumPn: () => diplomacySumPn,
   effectiveTreatyPnRequired: () => effectiveTreatyPnRequired,
+  incomingTradeNetBalancePw: () => incomingTradeNetBalancePw,
+  isIncomingBasketTradePanel: () => isIncomingBasketTradePanel,
   isPlayerIncomingGift: () => isPlayerIncomingGift,
+  partnerTreatyPnRequired: () => partnerTreatyPnRequired,
   playerSideHasBasketOffer: () => playerSideHasBasketOffer,
+  playerTreatyPnRequired: () => playerTreatyPnRequired,
   relationPnModPct: () => relationPnModPct,
   relationSignedFromTotal: () => relationSignedFromTotal,
+  renderPnBalancePanelForPeace: () => renderPnBalancePanelForPeace,
+  renderPnBalancePanelForTreaty: () => renderPnBalancePanelForTreaty,
+  renderPnBalancePanelHtml: () => renderPnBalancePanelHtml,
   resolveProposalPn: () => resolveProposalPn,
   sideDisplayOfferPw: () => sideDisplayOfferPw,
-  treatyBaseAcceptancePn: () => treatyBaseAcceptancePn
+  treatyBaseAcceptancePn: () => treatyBaseAcceptancePn,
+  treatyPwForRole: () => treatyPwForRole
 });
 module.exports = __toCommonJS(dip_accept_entry_exports);
 
@@ -164,7 +173,6 @@ var diplomacy_default = {
     progPoboczneAkceptacja: 60,
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
-    progNapZaufanie: 40,
     progNapRelacja: 50,
     progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
@@ -194,8 +202,6 @@ var diplomacy_default = {
     progTrybutOfertaBaseGold: 10,
     progTrybutOfertaEpokaGold: 5,
     progHandelWillingnessMin: 0.5,
-    progHandelFairRatioMin: 0.8,
-    progHandelFairRatioMax: 1.2,
     progNamowWojneZaufanie: 50,
     progNamowWojneBribeBase: 30,
     progGraniceZaufanie: 45,
@@ -204,7 +210,11 @@ var diplomacy_default = {
     karaPrzemarszNieautoryzowany_zaufanie_perTura: 5,
     progUltimatumMilitaryRatio: 1.3,
     progUltimatumMinGold: 20,
-    progWasalDefaultGoldPerTurn: 10
+    progWasalDefaultGoldPerTurn: 10,
+    graczWchlonieciePoWasaluTur: 10,
+    graczWchloniecieKosztBaza: 150,
+    graczWchloniecieKosztPerLudnosc: 25,
+    graczWchloniecieKosztMin: 200
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -287,12 +297,7 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1,
-    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
-    wiarygodnosc_limit_zaufanie_chwiejny: 3,
-    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
-    wiarygodnosc_limit_zaufanie_dno: 0,
-    wiarygodnosc_limit_prog_dno: -70
+    dobra_wola_zaufanie_per_tura: 1
   },
   akcje_dyplomatyczne: [
     {
@@ -392,12 +397,20 @@ var diplomacy_default = {
       Efekt: "Z casus belli: \u221210 Relacja u wszystkich. Bez c.b.: \u221225 Relacja u wszystkich, \u221220 Zaufanie, flaga agresor"
     },
     {
-      Akcja: "12. Wasalizacja / wch\u0142oni\u0119cie",
-      Opis: "S\u0142absza cywilizacja staje si\u0119 wasalem (zachowuje terytorium, p\u0142aci trybut) lub zostaje w pe\u0142ni wch\u0142oni\u0119ta przez gracza.",
+      Akcja: "12. Wasalizacja",
+      Opis: "Miasto-pa\u0144stwo staje si\u0119 wasalem \u2014 zachowuje terytorium, p\u0142aci trybut co tur\u0119. Wymaga Respektu \u2265 prog_wasalizacja.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "TAK",
-      Koszt: "Wasalizacja: 100\u2013300 Pieni\u0119dzy gwarancji + zobowi\u0105zanie ochrony; Wch\u0142oni\u0119cie: kary reputacyjne",
-      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wch\u0142oni\u0119cie: miasta przechodz\u0105, niezadowolenie N tur"
+      Koszt: "Wasalizacja: trybut \xA4/tur\u0119 (domy\u015Blnie 10) + zobowi\u0105zanie ochrony",
+      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody suzerena"
+    },
+    {
+      Akcja: "15. Wch\u0142oni\u0119cie",
+      Opis: "Po aktywnym wasalu (min. 10 tur) gracz mo\u017Ce w pe\u0142ni wch\u0142oni\u0107 miasto-pa\u0144stwo \u2014 jednorazowa op\u0142ata \xA4 (skala ludno\u015Bci), zgoda wasala.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "NIE",
+      "Dost\u0119pne: Poboczni": "TAK",
+      Koszt: "max(200, 150 + 25 \xD7 ludno\u015B\u0107 MP) \xA4 jednorazowo",
+      Efekt: "Miasta MP przechodz\u0105 do gracza; wasalizacja znika; MP eliminowane z mapy"
     },
     {
       Akcja: "13. Prezent / dar",
@@ -1243,7 +1256,7 @@ var e_start_params_default = {
     },
     Standardowy: {
       rywale_ai: 6,
-      miasta_panstwa: 6,
+      miasta_panstwa: 5,
       typy_cywilizacji: 6,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 5, min: 4, max: 6 },
@@ -1255,7 +1268,7 @@ var e_start_params_default = {
     },
     Du\u017Cy: {
       rywale_ai: 7,
-      miasta_panstwa: 7,
+      miasta_panstwa: 6,
       typy_cywilizacji: 10,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 6, min: 5, max: 7 },
@@ -1267,7 +1280,7 @@ var e_start_params_default = {
     },
     Ogromny: {
       rywale_ai: 8,
-      miasta_panstwa: 8,
+      miasta_panstwa: 7,
       typy_cywilizacji: 12,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 7, min: 6, max: 8 },
@@ -1282,7 +1295,7 @@ var e_start_params_default = {
       miasta_panstwa: 8,
       typy_cywilizacji: 14,
       typy_cywilizacji_per_epoka: {
-        kamien: { default: 7, min: 6, max: 8 },
+        kamien: { default: 8, min: 7, max: 8 },
         braz: { default: 13, min: 12, max: 14 },
         zelazo: { default: 14, min: 13, max: 15 }
       },
@@ -1363,6 +1376,21 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
+// map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
 // map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
@@ -1408,6 +1436,7 @@ var ELEVATION_RANK = {
   ["gory" /* Gory */]: 6,
   ["polarny" /* Polarny */]: 2
 };
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
 var BASE_DEPOSIT_RULES = [
   {
     id: "miedz",
@@ -1475,6 +1504,10 @@ var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
   const rarity = _depositRarities[rule.id];
   return typeof rarity === "number" ? { ...rule, rarity } : rule;
 });
+
+// map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
 
 // ../data/terrain-improvements.json
 var terrain_improvements_default = {
@@ -1869,6 +1902,29 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
 // game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
@@ -1964,9 +2020,7 @@ var DIPLOMACY_PARAMS = {
    */
   progPoboczneWojna: 15,
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Zaufanie >= wartość wymagane do NAP */
-  progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
   progNapRelacja: 50,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja: 0,
@@ -2021,10 +2075,6 @@ var DIPLOMACY_PARAMS = {
   progTrybutOfertaEpokaGold: 5,
   /** willingnessTrade min dla handlu */
   progHandelWillingnessMin: 0.5,
-  /** Fair deal: offered/fair min */
-  progHandelFairRatioMin: 0.8,
-  /** Fair deal: offered/fair max */
-  progHandelFairRatioMax: 1.2,
   /** Zaufanie min dla namówienia do wojny */
   progNamowWojneZaufanie: 50,
   /** Łapówka min = base × (epoka + 1) */
@@ -2041,6 +2091,14 @@ var DIPLOMACY_PARAMS = {
   progUltimatumMinGold: 20,
   /** Domyślny trybut wasala (¤/turę) */
   progWasalDefaultGoldPerTurn: 10,
+  /** R-GRACZ-WCHLONIECIE: min tur wasalu przed wchłonięciem MP przez gracza */
+  graczWchlonieciePoWasaluTur: 10,
+  /** R-GRACZ-WCHLONIECIE: baza kosztu wchłonięcia (¤) */
+  graczWchloniecieKosztBaza: 150,
+  /** R-GRACZ-WCHLONIECIE: koszt per ludność MP (¤) */
+  graczWchloniecieKosztPerLudnosc: 25,
+  /** R-GRACZ-WCHLONIECIE: minimalny koszt wchłonięcia (¤) */
+  graczWchloniecieKosztMin: 200,
   // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
   // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
   // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
@@ -9505,10 +9563,6 @@ var DEFAULT_DOBRA_WOLA_TUR = 3;
 var DEFAULT_PN_NA_ZAUFANIE = 100;
 var DEFAULT_MAX_ZAUFANIE_NA_TURE = 5;
 var DEFAULT_MIN_NADMIAR = 1;
-var DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY = 3;
-var DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY = 1;
-var DEFAULT_WIARYGODNOSC_LIMIT_DNO = 0;
-var DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO = -70;
 function loadPnRelacjaParams() {
   const block = diplomacy_default.pn_relacja ?? {};
   const maxNaTure = typeof block.max_zaufanie_na_ture === "number" && block.max_zaufanie_na_ture > 0 ? block.max_zaufanie_na_ture : typeof block.max_zaufanie_jednorazowo === "number" && block.max_zaufanie_jednorazowo > 0 ? block.max_zaufanie_jednorazowo : DEFAULT_MAX_ZAUFANIE_NA_TURE;
@@ -9519,11 +9573,7 @@ function loadPnRelacjaParams() {
     prog_dar_relacja: typeof block.prog_dar_relacja === "number" && block.prog_dar_relacja >= 0 ? block.prog_dar_relacja : DEFAULT_PROG_DAR_RELACJA,
     dobra_wola_min_nadmiar_pn: typeof block.dobra_wola_min_nadmiar_pn === "number" && block.dobra_wola_min_nadmiar_pn > 0 ? block.dobra_wola_min_nadmiar_pn : DEFAULT_DOBRA_WOLA_MIN_PN,
     dobra_wola_tur: typeof block.dobra_wola_tur === "number" && block.dobra_wola_tur > 0 ? block.dobra_wola_tur : DEFAULT_DOBRA_WOLA_TUR,
-    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1,
-    wiarygodnosc_limit_zaufanie_chwiejny: typeof block.wiarygodnosc_limit_zaufanie_chwiejny === "number" && block.wiarygodnosc_limit_zaufanie_chwiejny >= 0 ? block.wiarygodnosc_limit_zaufanie_chwiejny : DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY,
-    wiarygodnosc_limit_zaufanie_wiarolomny: typeof block.wiarygodnosc_limit_zaufanie_wiarolomny === "number" && block.wiarygodnosc_limit_zaufanie_wiarolomny >= 0 ? block.wiarygodnosc_limit_zaufanie_wiarolomny : DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY,
-    wiarygodnosc_limit_zaufanie_dno: typeof block.wiarygodnosc_limit_zaufanie_dno === "number" && block.wiarygodnosc_limit_zaufanie_dno >= 0 ? block.wiarygodnosc_limit_zaufanie_dno : DEFAULT_WIARYGODNOSC_LIMIT_DNO,
-    wiarygodnosc_limit_prog_dno: typeof block.wiarygodnosc_limit_prog_dno === "number" ? block.wiarygodnosc_limit_prog_dno : DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO
+    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1
   };
 }
 var _pnRelacja = loadPnRelacjaParams();
@@ -9566,13 +9616,21 @@ function relationPnModPct(relSigned) {
 function effectiveTreatyPnRequired(basePn, relTotal) {
   if (basePn <= 0) return 0;
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  return Math.max(0, Math.round(basePn * (1 - modPct / 100)));
+  return Math.max(0, Math.round(basePn * (1 + modPct / 100)));
+}
+var playerTreatyPnRequired = effectiveTreatyPnRequired;
+function partnerTreatyPnRequired(basePn) {
+  return Math.max(0, basePn);
+}
+function treatyPwForRole(basePn, relTotal, role) {
+  if (basePn <= 0) return 0;
+  return role === "player" ? effectiveTreatyPnRequired(basePn, relTotal) : partnerTreatyPnRequired(basePn);
 }
 function formatRelationModLabel(relTotal) {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  if (modPct === 0) return "Relacje: 0% do progu";
-  const verb = modPct > 0 ? "\u2212" : "+";
-  return `Relacje: ${verb}${Math.abs(modPct)}% do progu`;
+  if (modPct === 0) return "Relacje: 0% si\u0142a PW";
+  if (modPct > 0) return `Relacje: +${modPct}% si\u0142a PW`;
+  return `Relacje: \u2212${Math.abs(modPct)}% si\u0142a PW`;
 }
 function pnDealAcceptedByAi(givePn, receivePn, relacja) {
   if (givePn <= 0 && receivePn <= 0) return false;
@@ -12283,11 +12341,25 @@ function loadTreatyAcceptanceDef(actionId) {
 function treatyBaseAcceptancePn(actionId) {
   return loadTreatyAcceptanceDef(actionId)?.punkty ?? 0;
 }
+function playerTreatyDisplayPw(side) {
+  if (!side) return void 0;
+  const pw = side.treatyEffectivePn ?? 0;
+  return pw > 0 ? pw : void 0;
+}
+function partnerTreatyDisplayPw(side) {
+  if (!side) return void 0;
+  const base = side.treatyBasePn ?? 0;
+  if (base <= 0) return void 0;
+  const pw = side.treatyEffectivePn ?? base;
+  return pw > 0 ? pw : void 0;
+}
 function bilateralTreatyDisplayPw(my, their) {
   const mode = my?.mode ?? their?.mode;
   if (mode !== "treaty" && mode !== "mixed") return void 0;
-  const effective = my?.treatyEffectivePn ?? their?.treatyEffectivePn;
-  if (effective != null && effective > 0) return effective;
+  const playerPw = playerTreatyDisplayPw(my);
+  if (playerPw != null) return playerPw;
+  const partnerPw = partnerTreatyDisplayPw(their);
+  if (partnerPw != null) return partnerPw;
   const base = my?.treatyBasePn ?? their?.treatyBasePn;
   return base != null && base > 0 ? base : void 0;
 }
@@ -12318,43 +12390,61 @@ function formatBalanceLabel(balancePn, accepted) {
   return `Saldo ${balancePn} PW`;
 }
 function computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, incoming, mode) {
-  const treatyEffectivePn = effectiveTreatyPnRequired(treatyBase, relTotal);
+  const playerTreatyPw = treatyPwForRole(treatyBase, relTotal, "player");
+  const partnerTreatyPw = treatyPwForRole(treatyBase, relTotal, "partner");
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
   const modLabel = formatRelationModLabel(relTotal);
+  const proposerIsPlayer = !incoming;
+  const proposerTreatyPw = proposerIsPlayer ? playerTreatyPw : partnerTreatyPw;
   const proposerGive = incoming ? receivePn : givePn;
   const proposerReceive = incoming ? givePn : receivePn;
   const basketNet = Math.max(0, proposerGive - proposerReceive);
-  const proposerOfferPn = treatyEffectivePn + basketNet;
-  const peaceAccepted = proposerOfferPn >= treatyEffectivePn;
-  const surplusPn = proposerOfferPn - treatyEffectivePn;
+  const proposerOfferPn = proposerTreatyPw + basketNet;
+  const peaceAccepted = proposerOfferPn >= proposerTreatyPw;
+  const surplusPn = proposerOfferPn - proposerTreatyPw;
   const myBasketOffer = incoming ? receivePn : givePn;
   const myBasketDemand = incoming ? givePn : receivePn;
   const theirBasketOffer = incoming ? givePn : receivePn;
   const theirBasketDemand = incoming ? receivePn : givePn;
-  const buildSide = (basketOffer, basketDemand) => ({
-    offerPn: basketOffer,
-    demandPn: basketDemand,
-    fairMinPn: treatyEffectivePn,
-    balancePn: surplusPn,
+  const myDisplayPw = playerTreatyPw + myBasketOffer;
+  const theirDisplayPw = partnerTreatyPw + theirBasketOffer;
+  const asymBalance = myDisplayPw - theirDisplayPw;
+  const hasBasket = myBasketOffer > 0 || theirBasketOffer > 0;
+  const buildPlayerSide = () => ({
+    offerPn: myBasketOffer,
+    demandPn: myBasketDemand,
+    fairMinPn: playerTreatyPw,
+    balancePn: asymBalance,
     treatyBasePn: treatyBase,
-    treatyEffectivePn,
+    treatyEffectivePn: playerTreatyPw,
     relationModPct: modPct,
     relationModLabel: modLabel,
     mode,
-    accepted: peaceAccepted,
-    statusLabel: formatBalanceLabel(surplusPn, peaceAccepted)
+    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
+    statusLabel: hasBasket && asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW (Relacja)` : asymBalance > 0 && hasBasket ? `Nadwy\u017Cka +${asymBalance} PW` : formatBalanceLabel(surplusPn, peaceAccepted)
+  });
+  const buildPartnerSide = () => ({
+    offerPn: theirBasketOffer,
+    demandPn: theirBasketDemand,
+    fairMinPn: partnerTreatyPw,
+    balancePn: asymBalance,
+    treatyBasePn: treatyBase,
+    treatyEffectivePn: partnerTreatyPw,
+    mode,
+    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
+    statusLabel: hasBasket && asymBalance > 0 ? `Przewaga u Ciebie +${asymBalance} PW` : hasBasket && asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW` : "R\xF3wno \u2014 spe\u0142nia"
   });
   return {
-    my: buildSide(myBasketOffer, myBasketDemand),
-    their: buildSide(theirBasketOffer, theirBasketDemand)
+    my: buildPlayerSide(),
+    their: buildPartnerSide()
   };
 }
-function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequired, mode) {
+function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequired, mode, treatyRole) {
   const relClamped = Math.min(100, Math.max(1, relTotal));
   const fairMinPn = diplomacyFairGivePn(demandPn, relClamped);
-  const treatyEffectivePn = effectiveTreatyPnRequired(treatyBasePn, relTotal);
-  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  const modLabel = formatRelationModLabel(relTotal);
+  const treatyEffectivePn = treatyRole === "none" ? 0 : treatyPwForRole(treatyBasePn, relTotal, treatyRole);
+  const modPct = treatyRole === "player" ? relationPnModPct(relationSignedFromTotal(relTotal)) : void 0;
+  const modLabel = treatyRole === "player" ? formatRelationModLabel(relTotal) : void 0;
   const balancePn = offerPn - fairMinPn;
   const basketAccepted = pnDealAcceptedByAi(offerPn, demandPn, relTotal);
   const relBalance = relRequired != null ? relTotal - relRequired : void 0;
@@ -12369,7 +12459,7 @@ function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequir
     statusLabel = `Relacja \u2212${Math.abs(relBalance)} (wym. ${relRequired})`;
   } else if (mode === "gift" && offerPn > 0 && demandPn === 0) {
     statusLabel = `Dar +${offerPn} PW`;
-  } else if (treatyEffectivePn > 0 && treatyPnOk && modPct !== 0) {
+  } else if (treatyEffectivePn > 0 && treatyPnOk && modPct != null && modPct !== 0) {
     statusLabel = `${statusLabel} \xB7 ${modLabel}`;
   }
   return {
@@ -12377,10 +12467,10 @@ function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequir
     demandPn,
     fairMinPn,
     balancePn,
-    treatyBasePn,
+    treatyBasePn: treatyBasePn > 0 ? treatyBasePn : 0,
     treatyEffectivePn: treatyEffectivePn > 0 ? treatyEffectivePn : void 0,
-    relationModPct: treatyBasePn > 0 ? modPct : void 0,
-    relationModLabel: treatyBasePn > 0 ? modLabel : void 0,
+    relationModPct: modPct,
+    relationModLabel: modLabel,
     relRequired,
     relCurrent: relTotal,
     relBalance,
@@ -12425,29 +12515,282 @@ function computePlayerAcceptanceSides(actionId, payload, relTotal, incoming, opt
     }
     return { my: peace.my, their: peace.their, isGift };
   }
-  const my = computeSideBalance(myOfferPn, myDemandPn, relTotal, incoming ? 0 : treatyBase, adjustedRelRequired, mode);
+  const my = computeSideBalance(
+    myOfferPn,
+    myDemandPn,
+    relTotal,
+    treatyBase,
+    adjustedRelRequired,
+    mode,
+    treatyBase > 0 ? "player" : "none"
+  );
   const their = computeSideBalance(
     theirOfferPn,
     theirDemandPn,
     relTotal,
-    incoming ? treatyBase : 0,
+    treatyBase,
     adjustedRelRequired,
-    mode
+    mode,
+    treatyBase > 0 ? "partner" : "none"
   );
+  if (treatyBase > 0 && (mode === "treaty" || mode === "mixed")) {
+    const myDisplay = (my.treatyEffectivePn ?? 0) + my.offerPn;
+    const theirDisplay = (their.treatyEffectivePn ?? 0) + their.offerPn;
+    const asymBalance = myDisplay - theirDisplay;
+    const relOk = adjustedRelRequired == null || relTotal >= adjustedRelRequired;
+    my.balancePn = asymBalance;
+    their.balancePn = asymBalance;
+    if (mode === "treaty" && !hasBasket) {
+      my.accepted = relOk;
+      their.accepted = relOk;
+      my.statusLabel = asymBalance > 0 ? `Ty ${myDisplay} PW \xB7 Oni ${theirDisplay} PW (Relacja +${asymBalance})` : asymBalance < 0 ? `Ty ${myDisplay} PW \xB7 Oni ${theirDisplay} PW` : "Spe\u0142nia warunki (0 PW)";
+      their.statusLabel = asymBalance > 0 ? `Oni ${theirDisplay} PW \xB7 Ty ${myDisplay} PW` : "R\xF3wno \u2014 spe\u0142nia";
+    }
+  }
   if (isGift) {
     their.accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
     my.accepted = true;
     my.statusLabel = "Nic w zamian";
     their.statusLabel = formatBalanceLabel(their.balancePn, their.accepted);
   }
+  if (incoming && !isGift && (mode === "basket" || mode === "mixed")) {
+    my.accepted = true;
+    my.statusLabel = "Twoja decyzja \u2014 mo\u017Cesz przyj\u0105\u0107";
+    const netTheirAdvantage = myOfferPn - theirOfferPn;
+    their.balancePn = netTheirAdvantage;
+    their.accepted = netTheirAdvantage >= 0;
+    their.statusLabel = netTheirAdvantage > 0 ? `Przewaga u nich +${netTheirAdvantage} PW` : netTheirAdvantage < 0 ? `Przewaga u Ciebie +${-netTheirAdvantage} PW` : "R\xF3wno \u2014 wymiana symetryczna";
+  }
   return { my, their, isGift };
 }
 function acceptancePointsCatalog() {
   return CONFIG;
 }
+
+// ui/diplomacyAcceptanceBalance.ts
+var PW_EXCHANGE_TOOLTIP = "Punkty wymiany (PW) mierz\u0105 bilans oferty na stole negocjacji. \u201EMy oddajemy\u201D vs \u201EOni oddaj\u0105\u201D \u2014 dodatni bilans oznacza, \u017Ce mo\u017Cesz co\u015B wyci\u0105gn\u0105\u0107 lub przyj\u0105\u0107 ofert\u0119; ujemny bilans \u2014 trzeba dop\u0142aci\u0107 (surowce, \xA4, ust\u0119pstwa). To nie jest waluta \xA4 ani z\u0142oto-surowiec w magazynie.";
+var RELATION_DEAL_TOOLTIP = "Relacja = Zaufanie + Respekt. Modyfikuje si\u0142\u0119 PW tylko po Twojej stronie (max \xB190%). Niska Relacja = ni\u017Csze PW Twojej strony \u2014 trzeba dop\u0142aci\u0107 do bilansu. Partner zawsze na bazie traktatu.";
+function relationModTone(modPct) {
+  if (modPct > 0) return "better";
+  if (modPct < 0) return "worse";
+  return "neutral";
+}
+function relationDealText(relTotal, context) {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  if (context === "trade") {
+    if (relTotal >= 100) return "parytet 1:1 przy uczciwej wymianie";
+    const mult = (100 / Math.max(1, relTotal)).toFixed(1).replace(/\.0$/, "");
+    return `musisz da\u0107 wi\u0119cej (\xD7${mult} PW), by oferta by\u0142a uczciwa`;
+  }
+  if (modPct === 0) return "balans (0% \u2014 Ty i oni na bazie)";
+  if (modPct > 0) return `Twoja strona silniejsza (+${modPct}% PW); oni: baza`;
+  return `Twoja strona s\u0142absza (\u2212${Math.abs(modPct)}% PW); oni: baza`;
+}
+function resolveRelationPanelContext(side) {
+  const hasTreaty = (side.treatyBasePn ?? 0) > 0 || (side.treatyEffectivePn ?? 0) > 0;
+  if (hasTreaty || side.mode === "treaty") return "treaty";
+  return "trade";
+}
+function renderRelationDealModRowHtml(relTotal, context = "treaty") {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  const tone = context === "trade" ? relTotal >= 100 ? "neutral" : "worse" : relationModTone(modPct);
+  const dealText = relationDealText(relTotal, context);
+  const relDisplay = context === "trade" && relTotal >= 100 ? "Relacja \u2265100" : `Relacja ${relTotal}`;
+  const pctBadge = modPct !== 0 ? '<span class="da-pn-rel-mod-pct">' + esc(modPct > 0 ? "+" + modPct + "%" : "\u2212" + Math.abs(modPct) + "%") + "</span>" : "";
+  const balanceNote = context === "treaty" && modPct !== 0 ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>' : "";
+  const tip = ' title="' + esc(RELATION_DEAL_TOOLTIP + " " + formatRelationModLabel(relTotal)) + '"';
+  return '<div class="da-pn-rel-mod ' + tone + '"' + tip + '><span class="da-pn-rel-mod-label">Wp\u0142yw Relacji na deal</span>' + pctBadge + '<span class="da-pn-rel-mod-text"><strong>' + esc(relDisplay) + '</strong> \xB7 <span class="da-pn-rel-mod-deal">' + esc(dealText) + "</span>" + balanceNote + "</span></div>";
+}
+function relationRowFromBalance(side, my) {
+  const relTotal = side.relCurrent ?? my?.relCurrent ?? 100;
+  return renderRelationDealModRowHtml(relTotal, resolveRelationPanelContext(side));
+}
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function pwTipAttr() {
+  return ' title="' + esc(PW_EXCHANGE_TOOLTIP) + '"';
+}
+function pwTitleHeadHtml() {
+  const t = pwTipAttr();
+  return '<span class="da-pn-bal-head-titles"><span class="da-pn-bal-title"' + t + '>Punkty wymiany</span><abbr class="da-pn-bal-abbr"' + t + ">PW</abbr></span>";
+}
+function pwAmountHtml(n, extraCls = "") {
+  const cls = "da-pn-bal-num" + (extraCls ? " " + extraCls : "");
+  return '<span class="' + cls + '"' + pwTipAttr() + ">" + n + " PW</span>";
+}
+function pwAmountWithBaseHtml(pw, basePw, modPct, extraCls = "") {
+  const cls = "da-pn-bal-num" + (extraCls ? " " + extraCls : "");
+  let inner = String(pw) + " PW";
+  if (basePw != null && basePw > 0 && basePw !== pw) {
+    const modHint = modPct != null && modPct !== 0 ? `, Relacja ${modPct > 0 ? "+" : "\u2212"}${Math.abs(modPct)}% si\u0142a` : "";
+    inner += ` <span class="da-pn-bal-base" title="Baza traktatu">(baza ${basePw}${modHint})</span>`;
+  }
+  return '<span class="' + cls + '"' + pwTipAttr() + ">" + inner + "</span>";
+}
+function balancePanelDataFromRow(row, extraOnTable = 0) {
+  const their = row.acceptanceTheir;
+  if (!their) return null;
+  const my = row.acceptanceMy;
+  const bilateralPw = bilateralTreatyDisplayPw(my, their);
+  return {
+    actionLabel: row.actionLabel,
+    negotiationId: row.id,
+    direction: row.direction,
+    myOfferPn: sideDisplayOfferPw(my, bilateralPw),
+    theirOfferPn: sideDisplayOfferPw(their, bilateralPw),
+    theirBalance: their,
+    myBalance: my,
+    canAccept: row.canAccept,
+    extraOnTable,
+    awaitingAiResponse: row.awaitingAiResponse,
+    responderPreview: row.responderPreview,
+    canCounter: row.canCounter,
+    uiActionId: row.uiActionId
+  };
+}
+function formatBalanceDelta(balancePn, accepted) {
+  if (accepted && balancePn > 0) return `+${balancePn}`;
+  if (accepted && balancePn === 0) return "0";
+  if (balancePn < 0) return `${balancePn}`;
+  return String(balancePn);
+}
+function balanceHint(balance) {
+  if (balance.accepted && balance.balancePn > 0) {
+    return `Nadwy\u017Cka ${balance.balancePn} PW`;
+  }
+  if (balance.accepted && balance.balancePn === 0) {
+    return "R\xF3wno \u2014 spe\u0142nia";
+  }
+  if (balance.balancePn < 0) {
+    return `Brakuje ${Math.abs(balance.balancePn)} PW`;
+  }
+  return balance.statusLabel;
+}
+function isIncomingBasketTradePanel(data) {
+  if (data.direction !== "incoming") return false;
+  const mode = data.myBalance?.mode ?? data.theirBalance.mode;
+  return mode === "basket" || mode === "mixed";
+}
+function incomingTradeNetBalancePw(data) {
+  return data.myOfferPn - data.theirOfferPn;
+}
+function incomingTradeBalanceHint(netPw) {
+  if (netPw > 0) return `Przewaga u nich: +${netPw} PW`;
+  if (netPw < 0) return `Przewaga u Ciebie: +${Math.abs(netPw)} PW`;
+  return "R\xF3wno \u2014 symetryczna wymiana";
+}
+function verdictHtml(data) {
+  const their = data.theirBalance;
+  if (data.direction === "incoming") {
+    if (data.canAccept !== false) {
+      if (isIncomingBasketTradePanel(data)) {
+        const net = incomingTradeNetBalancePw(data);
+        const html = net > 0 ? `Mo\u017Cesz przyj\u0105\u0107 \u2014 oddajesz wi\u0119cej o ${net} PW (korzy\u015B\u0107 partnera)` : net < 0 ? `Mo\u017Cesz przyj\u0105\u0107 \u2014 przewaga u Ciebie o ${Math.abs(net)} PW` : "Mo\u017Cesz przyj\u0105\u0107 \u2014 wymiana symetryczna";
+        return { tone: "ok", html };
+      }
+      return {
+        tone: "ok",
+        html: "Spe\u0142nia warunki \u2014 mo\u017Cesz przyj\u0105\u0107 (Przyjmij aktywne)"
+      };
+    }
+    if (data.myBalance && !data.myBalance.accepted) {
+      return { tone: "no", html: "Twoje warunki: " + data.myBalance.statusLabel };
+    }
+    return { tone: "wait", html: "Oce\u0144 ofert\u0119 lub kontruj, aby osi\u0105gn\u0105\u0107 bilans" };
+  }
+  if (data.awaitingAiResponse) {
+    const prev = data.responderPreview;
+    if (prev?.accepted) {
+      return {
+        tone: "ok",
+        html: "Spe\u0142nia warunki \u2014 u\u017Cyj Przyjmij, aby wys\u0142a\u0107 propozycj\u0119 do partnera"
+      };
+    }
+    if (prev && !prev.accepted) {
+      return { tone: "no", html: "Nie spe\u0142nia warunk\xF3w: " + (prev.reason ?? "warunki niespe\u0142nione") };
+    }
+    return { tone: "wait", html: "Propozycja na stole \u2014 u\u017Cyj Przyjmij, aby poprosi\u0107 o odpowied\u017A" };
+  }
+  if (their.accepted) {
+    return {
+      tone: "ok",
+      html: data.theirBalance.balancePn > 0 ? "Drug\u0105 stron\u0119 mo\u017Cna przyj\u0105\u0107 \u2014 nadwy\u017Cka " + data.theirBalance.balancePn + " PW" : "R\xF3wno \u2014 druga strona spe\u0142nia oczekiwania"
+    };
+  }
+  return { tone: "no", html: "Brakuje u nich: " + their.statusLabel };
+}
+function treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, treatyMetaLabel, treatyBasePw, basketNet) {
+  const base = treatyBasePw ?? partnerTreatyPw;
+  const playerPart = base > 0 && playerTreatyPw !== base ? "Ty: baza " + base + " \u2192 " + playerTreatyPw + " PW" : "Ty: " + playerTreatyPw + " PW";
+  const partnerPart = " \xB7 Oni: " + partnerTreatyPw + " PW (baza)";
+  const basketPart = basketNet != null && (basketNet > 0 || basketNet === 0 && base > 0) ? " \xB7 koszyk netto " + (basketNet > 0 ? "+" + basketNet : "0") + " PW" : "";
+  return '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ": " + playerPart + partnerPart + " @ Rel " + relTotal + basketPart + "</div>";
+}
+function renderPnBalancePanelHtml(data) {
+  if (!data) {
+    return '<div class="da-pn-balance-bar idle"><div class="da-pn-bal-head">' + pwTitleHeadHtml() + '</div><div class="da-pn-bal-empty">Brak aktywnej propozycji na stole \u2014 wy\u015Blij ofert\u0119 lub poczekaj na odpowied\u017A.</div></div>';
+  }
+  const their = data.theirBalance;
+  const myBal = data.myBalance;
+  const incomingTrade = isIncomingBasketTradePanel(data);
+  const isTreatyMode = (myBal?.mode === "treaty" || myBal?.mode === "mixed" || their.mode === "treaty" || their.mode === "mixed") && !incomingTrade;
+  const netPw = incomingTrade ? incomingTradeNetBalancePw(data) : isTreatyMode ? data.myOfferPn - data.theirOfferPn : their.balancePn;
+  const treatyAccepted = myBal?.accepted ?? their.accepted;
+  const balCls = incomingTrade ? data.canAccept !== false ? "ok" : "no" : treatyAccepted ? "ok" : "no";
+  const delta = incomingTrade || isTreatyMode ? netPw > 0 ? `+${netPw}` : String(netPw) : formatBalanceDelta(their.balancePn, their.accepted);
+  const deltaCls = netPw >= 0 ? "pos" : "neg";
+  const centerLabel = incomingTrade || isTreatyMode ? "Bilans (netto)" : "Bilans (Oni)";
+  const hint = incomingTrade ? incomingTradeBalanceHint(netPw) : isTreatyMode ? netPw < 0 ? `Brakuje ${Math.abs(netPw)} PW \u2014 dop\u0142a\u0107 do bilansu` : netPw > 0 ? `Nadwy\u017Cka +${netPw} PW` : "R\xF3wno \u2014 spe\u0142nia" : balanceHint(their);
+  const verdict = verdictHtml(data);
+  const extraNote = (data.extraOnTable ?? 0) > 0 ? '<span class="da-pn-bal-more">+' + data.extraOnTable + " inna na stole</span>" : "";
+  const playerTreatyPw = myBal?.treatyEffectivePn ?? 0;
+  const partnerTreatyPw = their.treatyEffectivePn ?? their.treatyBasePn ?? 0;
+  const treatyBase = myBal?.treatyBasePn ?? their.treatyBasePn ?? 0;
+  const relTotal = their.relCurrent ?? myBal?.relCurrent ?? 100;
+  const modPct = myBal?.relationModPct;
+  const treatyNote = playerTreatyPw > 0 || partnerTreatyPw > 0 ? treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, "Traktat", treatyBase) : "";
+  const relModRow = relationRowFromBalance(their, data.myBalance);
+  const relNote = their.relRequired != null && their.relBalance != null && their.relBalance < 0 ? '<div class="da-pn-bal-meta warn">Relacja ' + (their.relCurrent ?? 0) + " \u2014 wym. " + their.relRequired + "</div>" : "";
+  return '<div class="da-pn-balance-bar ' + balCls + '"' + (data.negotiationId ? ' data-negot-id="' + esc(data.negotiationId) + '"' : "") + '><div class="da-pn-bal-head">' + pwTitleHeadHtml() + '<span class="da-pn-bal-deal">' + esc(data.actionLabel) + extraNote + '</span></div><div class="da-pn-bal-cols"><div class="da-pn-bal-cell my"><span class="da-pn-bal-lbl">My oddajemy</span>' + (playerTreatyPw > 0 ? pwAmountWithBaseHtml(data.myOfferPn, treatyBase, modPct) : pwAmountHtml(data.myOfferPn)) + '</div><div class="da-pn-bal-cell center ' + balCls + '"><span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span><span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + ">" + esc(delta) + '</span><span class="da-pn-bal-hint">' + esc(hint) + '</span></div><div class="da-pn-bal-cell they"><span class="da-pn-bal-lbl">Oni oddaj\u0105</span>' + pwAmountHtml(data.theirOfferPn) + "</div></div>" + relModRow + treatyNote + relNote + '<div class="da-pn-bal-verdict ' + verdict.tone + '">' + esc(verdict.html) + "</div></div>";
+}
+function renderPnBalancePanelForTreaty(playerTreatyPw, basketGivePn, basketReceivePn, relTotal, actionLabel, relRequired, treatyMetaLabel = "Traktat", treatyBasePw, partnerTreatyPw) {
+  const base = treatyBasePw ?? partnerTreatyPw ?? playerTreatyPw;
+  const partnerPw = partnerTreatyPw ?? treatyPwForRole(base, relTotal, "partner");
+  const playerPw = playerTreatyPw > 0 ? playerTreatyPw : treatyPwForRole(base, relTotal, "player");
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  const basketNet = Math.max(0, basketGivePn - basketReceivePn);
+  const myDisplay = playerPw + basketGivePn;
+  const theirDisplay = partnerPw + basketReceivePn;
+  const asymBalance = myDisplay - theirDisplay;
+  const relOk = relRequired == null || relTotal >= relRequired;
+  const accepted = relOk && asymBalance >= 0;
+  const balancePn = asymBalance;
+  const balCls = accepted ? "ok" : "no";
+  const delta = formatBalanceDelta(balancePn, accepted);
+  const deltaCls = balancePn >= 0 ? "pos" : "neg";
+  const hint = !relOk ? `Relacja ${relTotal} \u2014 wym. ${relRequired}` : balancePn < 0 ? `Brakuje ${Math.abs(balancePn)} PW \u2014 dop\u0142a\u0107` : balancePn > 0 ? `Nadwy\u017Cka ${balancePn} PW` : "R\xF3wno \u2014 spe\u0142nia";
+  const verdict = !relOk ? `Relacja ${relTotal} \u2014 wymagane \u2265 ${relRequired}` : balancePn < 0 ? `Dop\u0142a\u0107 ${Math.abs(balancePn)} PW (Twoja strona s\u0142absza przy tej Relacji)` : balancePn > 0 ? "Partner prawdopodobnie przyjmie \u2014 nadwy\u017Cka " + balancePn + " PW" : treatyMetaLabel + ": Ty " + playerPw + " PW \xB7 Oni " + partnerPw + " PW \u2014 spe\u0142nione";
+  const relNote = !relOk ? '<div class="da-pn-bal-meta warn">Relacja ' + relTotal + " \u2014 wym. " + relRequired + "</div>" : "";
+  return '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket da-pn-balance-bar--treaty"><div class="da-pn-bal-head">' + pwTitleHeadHtml() + '<span class="da-pn-bal-deal">' + esc(actionLabel) + '</span></div><div class="da-pn-bal-cols"><div class="da-pn-bal-cell my"><span class="da-pn-bal-lbl">My oddajemy</span>' + pwAmountWithBaseHtml(myDisplay, base, modPct) + '</div><div class="da-pn-bal-cell center ' + balCls + '"><span class="da-pn-bal-lbl">Bilans (netto)</span><span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + ">" + esc(delta) + '</span><span class="da-pn-bal-hint">' + esc(hint) + '</span></div><div class="da-pn-bal-cell they"><span class="da-pn-bal-lbl">Oni oddaj\u0105</span>' + pwAmountHtml(theirDisplay) + "</div></div>" + renderRelationDealModRowHtml(relTotal, "treaty") + treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet) + relNote + '<div class="da-pn-bal-verdict ' + balCls + '">' + esc(verdict) + "</div></div>";
+}
+function renderPnBalancePanelForPeace(playerTreatyPw, basketGivePn, basketReceivePn, relTotal, actionLabel = "Propozycja pokoju", treatyBasePw) {
+  return renderPnBalancePanelForTreaty(
+    playerTreatyPw,
+    basketGivePn,
+    basketReceivePn,
+    relTotal,
+    actionLabel,
+    void 0,
+    "Traktat pokoju",
+    treatyBasePw,
+    treatyBasePw != null ? treatyBasePw : void 0
+  );
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   acceptancePointsCatalog,
+  balancePanelDataFromRow,
   basketSidePnDifficultyMultiplier,
   bilateralTreatyDisplayPw,
   computePlayerAcceptanceSides,
@@ -12457,11 +12800,19 @@ function acceptancePointsCatalog() {
   diplomacyPnTech,
   diplomacySumPn,
   effectiveTreatyPnRequired,
+  incomingTradeNetBalancePw,
+  isIncomingBasketTradePanel,
   isPlayerIncomingGift,
+  partnerTreatyPnRequired,
   playerSideHasBasketOffer,
+  playerTreatyPnRequired,
   relationPnModPct,
   relationSignedFromTotal,
+  renderPnBalancePanelForPeace,
+  renderPnBalancePanelForTreaty,
+  renderPnBalancePanelHtml,
   resolveProposalPn,
   sideDisplayOfferPw,
-  treatyBaseAcceptancePn
+  treatyBaseAcceptancePn,
+  treatyPwForRole
 });

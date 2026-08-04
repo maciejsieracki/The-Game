@@ -5299,3 +5299,11 @@ CZEKAM-NA: nic (docs)
 - BUG-ARMIA-BRAK-POLACZ: `hexDetailHex` chował dock; fix + CSS foot
 - Testy: `diplomacy-ai-balance-test.cjs`, `army-merge-colocated-test.cjs`
 CZEKAM-NA: Maciej — **deploy** (FALA 207) gdy wgrać do ROBOCZA
+
+## [10:00 PL, 2026-08-04] CLOUD → ALL — R-RELACJA-PW-INVERT (korekta FALA 210)
+- Maciej: niska Relacja = **słabsza** strona gracza (niższe PW), nie droższy traktat; partner baza; dopłać do bilansu
+- Wzór: `gracz = round(baza × (1 + signedRel/100))` — Rel 52 / baza 80 → **42 vs 80** (było 118 vs 80)
+- UI: „Twoja strona słabsza (−48% PW)" · badge −48%
+- Branch: `cursor/fix-relacja-pw-invert-63a1` · tsc 0 · diplomacy-acceptance-points 198/198
+- Docs: `D-RELACJA-PW-ASYMETRIA-2026-08-04.md` korekta
+CZEKAM-NA: Maciej — **deploy** gdy wgrać do ROBOCZA (najpierw git pull po deployu)

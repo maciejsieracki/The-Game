@@ -52,7 +52,8 @@ export const PW_EXCHANGE_TOOLTIP =
 
 /** Tooltip wiersza wpływu Relacji na deal (Maciej 2026-08-04). */
 export const RELATION_DEAL_TOOLTIP =
-  'Relacja = Zaufanie + Respekt. Modyfikuje tylko PW po Twojej stronie (max ±90%). '
+  'Relacja = Zaufanie + Respekt. Modyfikuje siłę PW tylko po Twojej stronie (max ±90%). '
+  + 'Niska Relacja = niższe PW Twojej strony — trzeba dopłacić do bilansu. '
   + 'Partner zawsze na bazie traktatu.';
 
 type RelationDealContext = 'treaty' | 'trade';
@@ -71,9 +72,8 @@ function relationDealText(relTotal: number, context: RelationDealContext): strin
     return `musisz dać więcej (×${mult} PW), by oferta była uczciwa`;
   }
   if (modPct === 0) return 'balans (0% — Ty i oni na bazie)';
-  const signed = modPct > 0 ? `−${modPct}%` : `+${Math.abs(modPct)}%`;
-  if (modPct > 0) return `Twój traktat tańszy (${signed}); oni: baza`;
-  return `Twój traktat droższy (${signed}); oni: baza`;
+  if (modPct > 0) return `Twoja strona silniejsza (+${modPct}% PW); oni: baza`;
+  return `Twoja strona słabsza (−${Math.abs(modPct)}% PW); oni: baza`;
 }
 
 function resolveRelationPanelContext(side: AcceptanceSideBalance): RelationDealContext {
@@ -96,7 +96,7 @@ export function renderRelationDealModRowHtml(
     ? 'Relacja ≥100'
     : `Relacja ${relTotal}`;
   const pctBadge = modPct !== 0
-    ? '<span class="da-pn-rel-mod-pct">' + esc(modPct > 0 ? '−' + modPct + '%' : '+' + Math.abs(modPct) + '%') + '</span>'
+    ? '<span class="da-pn-rel-mod-pct">' + esc(modPct > 0 ? '+' + modPct + '%' : '−' + Math.abs(modPct) + '%') + '</span>'
     : '';
   const balanceNote = context === 'treaty' && modPct !== 0
     ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>'
@@ -152,7 +152,7 @@ function pwAmountWithBaseHtml(pw: number, basePw?: number, modPct?: number, extr
   let inner = String(pw) + ' PW';
   if (basePw != null && basePw > 0 && basePw !== pw) {
     const modHint = modPct != null && modPct !== 0
-      ? `, Relacja ${modPct > 0 ? '−' : '+'}${Math.abs(modPct)}% koszt`
+      ? `, Relacja ${modPct > 0 ? '+' : '−'}${Math.abs(modPct)}% siła`
       : '';
     inner += ` <span class="da-pn-bal-base" title="Baza traktatu">(baza ${basePw}${modHint})</span>`;
   }
@@ -494,7 +494,7 @@ export function renderPnBalancePanelForTreaty(
   const verdict = !relOk
     ? `Relacja ${relTotal} — wymagane ≥ ${relRequired}`
     : (balancePn < 0
-      ? `Dopłać ${Math.abs(balancePn)} PW (Relacja obciąża Twoją stronę)`
+      ? `Dopłać ${Math.abs(balancePn)} PW (Twoja strona słabsza przy tej Relacji)`
       : balancePn > 0
         ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
         : treatyMetaLabel + ': Ty ' + playerPw + ' PW · Oni ' + partnerPw + ' PW — spełnione');

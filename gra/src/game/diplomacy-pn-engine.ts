@@ -132,14 +132,14 @@ export function relationPnModPct(relSigned: number): number {
 }
 
 /**
- * Efektywne PN traktatu po stronie GRACZA @ Relacji:
- * wymagane = baza × (1 − modPct/100); +50 Rel → ×0,50; −50 → ×1,50.
+ * Efektywne PN traktatu po stronie GRACZA @ Relacji (siła PW, nie inflacja kosztu):
+ * gracz = baza × (1 + modPct/100); +50 Rel → ×1,50; −50 → ×0,50.
  * Partner (AI) zawsze na bazie — patrz partnerTreatyPnRequired.
  */
 export function effectiveTreatyPnRequired(basePn: number, relTotal: number): number {
   if (basePn <= 0) return 0;
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  return Math.max(0, Math.round(basePn * (1 - modPct / 100)));
+  return Math.max(0, Math.round(basePn * (1 + modPct / 100)));
 }
 
 /** Alias semantyczny — PW traktatu po stronie gracza (Relacja modyfikuje). */
@@ -162,12 +162,12 @@ export function treatyPwForRole(
     : partnerTreatyPnRequired(basePn);
 }
 
-/** Krótka etykieta UI modyfikatora relacji do progu PN. */
+/** Krótka etykieta UI modyfikatora siły PW gracza @ Relacji. */
 export function formatRelationModLabel(relTotal: number): string {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
-  if (modPct === 0) return 'Relacje: 0% do progu';
-  const verb = modPct > 0 ? '−' : '+';
-  return `Relacje: ${verb}${Math.abs(modPct)}% do progu`;
+  if (modPct === 0) return 'Relacje: 0% siła PW';
+  if (modPct > 0) return `Relacje: +${modPct}% siła PW`;
+  return `Relacje: −${Math.abs(modPct)}% siła PW`;
 }
 
 /**
