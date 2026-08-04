@@ -8,6 +8,17 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## R-DYPLO-WYMIANA-FLEX — umowa wymiany: jednostronna + edycja ilości · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
+
+**Sytuacja.** Umowa wymiany wymaga „Co dostaję” (coś za coś). Nie da się zmienić ilości już dodanej pozycji surowcowej (−/+).
+
+**Cel.** Prezent / słodzik / tylko oddaję — bez wymuszania drugiej strony; edycja ilości na pozycji.
+
+**ABC:** [`docs/decyzje/R-DYPLO-WYMIANA-FLEX.md`](../docs/decyzje/R-DYPLO-WYMIANA-FLEX.md)  
+Odpowiedź: `R-DYPLO-WYMIANA-ONEWAY-Q1 A|B|C` · `R-DYPLO-WYMIANA-QTY-EDIT-Q1 A|B|C` (rekomendacje **A** / **A**).
+
+---
+
 ## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-04)
 
 **Sytuacja.** W panelu miasta (PRODUKCJA) ikona zrównoważonego jest w jednym rzędzie z priorytetami typów (wzrost / wojsko / kultura / prawo / produkcja) i dostaje numer kolejki jak one. Maciej: to ma być **osobny tryb auto**, nie szósty priorytet.
