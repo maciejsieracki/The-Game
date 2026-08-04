@@ -1,7 +1,7 @@
 # R-SCOUT-BLACK-MAX — auto-zwiedzanie: max nowych czarnych heksów
 
-**Status:** wdrożone (kod)  
-**Data:** 2026-08-04
+**Status:** ZDEPLOYOWANE FALA 214 `adefb5b8`  
+**Data:** 2026-08-04 · **PR:** #81
 
 ## Decyzje Macieja
 

@@ -1,7 +1,7 @@
 # R-OKOLICA-ZYWNOSC-SCORE — auto-okolica fokus żywność
 
 **Data:** 2026-08-04 · **Zgłoszenie:** Maciej (playtest Ateny)  
-**Status:** WDROŻONE w kodzie (bez deploy)  
+**Status:** ZDEPLOYOWANE FALA 214 `adefb5b8` · **PR:** #76  
 **Pliki:** `gra/src/game/okolica.ts`, `gra/src/game/terrain-improvements.ts`, `gra/tools/okolica-test.cjs`
 
 ## Problem

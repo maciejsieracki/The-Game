@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-03. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-04. Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)

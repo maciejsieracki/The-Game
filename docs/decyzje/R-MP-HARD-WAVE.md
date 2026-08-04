@@ -1,6 +1,6 @@
 # R-MP-HARD-WAVE — Trudne państwa-miasta: wojsko + fala + sync DOW
 
-**Data:** 2026-08-04 · **Status:** 🟢 WDROŻONE (kod)
+**Data:** 2026-08-04 · **Status:** ZDEPLOYOWANE FALA 214 `adefb5b8` · **PR:** #80
 
 ## Decyzje Macieja (zamknięte)
 

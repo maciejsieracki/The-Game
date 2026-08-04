@@ -1,7 +1,7 @@
 # R-LISTA-NAZWANA — biblioteka nazwanych list budowy
 
-**Status:** WDROŻONE (kod) · czeka deploy  
-**Data:** 2026-08-04
+**Status:** ZDEPLOYOWANE FALA 214 `adefb5b8`  
+**Data:** 2026-08-04 · **PR:** #74
 
 ## Decyzja Macieja (ECHO)
 
