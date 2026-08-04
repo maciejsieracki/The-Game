@@ -224,6 +224,62 @@ export function applyRiverLodVisibility(
  * @param hideFromLevel próg ukrycia LOD (domyślnie RIVER_LOD_HIDE_FROM_LEVEL).
  */
 /**
+ * Sygnatura cache indeksu wstęgi gdy mgła nieaktywna (FoW OFF / brak ukrytych heksów).
+ * Musi być ≠ dowolnego hasha mgły (w tym 0 = wszystkie punkty odkryte przy FoW ON),
+ * inaczej przełączenie F pomija przywrócenie pełnego indeksu (regresja R-RZEKI-MEDIUM-FOW).
+ */
+export const RIVER_FOG_SIG_OFF = -1;
+
+/** Hash stanu mgły per punkt wstęgi (0/1 = ukryty). Identyczny algorytm jak w scene.ts. */
+export function computeRiverFogSig(
+  pointHex: readonly string[],
+  riverHidden: (hexKey: string) => boolean,
+): number {
+  let sig = 0;
+  for (let k = 0; k < pointHex.length; k++) {
+    sig = (Math.imul(sig, 31) + (riverHidden(pointHex[k]!) ? 1 : 0)) | 0;
+  }
+  return sig;
+}
+
+/** Pełny indeks wstęgi (wszystkie quady) dla pointCount punktów. */
+export function buildRiverRibbonFullIndex(pointCount: number): number[] {
+  const idx: number[] = [];
+  for (let j = 0; j < pointCount - 1; j++) {
+    const b = 2 * j;
+    idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+  }
+  return idx;
+}
+
+/** Indeks wstęgi z quads tylko na odkrytych odcinkach (mgła per-heks). */
+export function buildRiverRibbonFogIndex(
+  pointHex: readonly string[],
+  riverHidden: (hexKey: string) => boolean,
+): number[] {
+  const idx: number[] = [];
+  for (let j = 0; j < pointHex.length - 1; j++) {
+    if (riverHidden(pointHex[j]!) || riverHidden(pointHex[j + 1]!)) continue;
+    const b = 2 * j;
+    idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+  }
+  return idx;
+}
+
+/**
+ * Czy trzeba przebudować indeks GPU wstęgi (unika zbędnych setIndex).
+ * Gdy fogActive=false → przywróć pełną wstęgę, dopóki lastFogSig ≠ RIVER_FOG_SIG_OFF.
+ */
+export function needsRiverRibbonIndexUpdate(
+  fogActive: boolean,
+  lastFogSig: number | undefined,
+  fogSig: number,
+): boolean {
+  if (!fogActive) return lastFogSig !== RIVER_FOG_SIG_OFF;
+  return lastFogSig !== fogSig;
+}
+
+/**
  * Widoczność scalonej wstęgi (medium/short/tributary bez pointHex) przy aktywnej mgle.
  * Gdy fogActive=false (FoW wyłączony / brak ukrytych heksów) → zawsze true.
  */

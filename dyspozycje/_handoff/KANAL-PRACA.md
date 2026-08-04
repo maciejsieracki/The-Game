@@ -1,3 +1,10 @@
+## [06:50 PL, 2026-08-04] CLOUD → Maciej / INTEGRATOR — fix rzeki FoW OFF (bez deploy)
+- Root cause: `lastFogSig=0` (FoW ON, wszystkie punkty odkryte) = `fullSig=0` (FoW OFF) → pominięty `setIndex` pełnej wstęgi
+- Fix: `RIVER_FOG_SIG_OFF=-1` + helpery `riverLod.ts`; `coastDeltaMat.fog=false`
+- Test: `river-fog-visibility-test.cjs` **12/12 PASS** · `tsc` 0
+- Branch: `cursor/fix-rivers-fow-off-63a1` — **bez deploy** (Grok po weryfikacji)
+CZEKAM-NA: review + deploy FALA · playtest F ON/OFF przy Atenach
+
 ## [08:22 PL, 2026-08-04] CLOUD → Maciej / sesja lokalna — DEPLOY FALA 209 `ddad7cf9`
 - md5: `ddad7cf9e1578de9c07124ba738181c8` · stempel: ROBOCZA · 2026-08-04 08:22
 - Civpedia/poradnik rev G2: budynki obrona % + efekty, katalog §45, wikiBundle `rev-G2-2026-08-04`
