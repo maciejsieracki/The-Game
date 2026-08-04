@@ -61,8 +61,12 @@ export function buildUnitActionBarHtml(actions: readonly UnitPanelAction[]): str
     if (!a) continue;
     const icon = ACTION_ICONS[id];
     if (!icon) continue;
-    html += `<button type="button" class="uc-act-btn" data-act="${esc(id)}"`
-      + ` title="${esc(a.label)}" aria-label="${esc(a.label)}"`
+    const onCls = a.active ? ' uc-act-btn--on' : '';
+    const ariaPressed = typeof a.active === 'boolean'
+      ? ` aria-pressed="${a.active ? 'true' : 'false'}"`
+      : '';
+    html += `<button type="button" class="uc-act-btn${onCls}" data-act="${esc(id)}"`
+      + ` title="${esc(a.label)}" aria-label="${esc(a.label)}"${ariaPressed}`
       + (a.disabled ? ' disabled' : '')
       + `><span class="uc-act-ic">${icon}</span></button>`;
   }
@@ -84,10 +88,16 @@ export const UNIT_ACTION_BAR_CSS = `
   border-top:1px solid rgba(212,175,90,.28);flex-wrap:wrap;}
 .uc-act-btn{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;
   padding:0 8px;border-radius:6px;cursor:pointer;
-  background:rgba(18,22,30,.85);border:1px solid rgba(232,216,138,.28);color:var(--civ-text-primary,#e8e0c8);
-  transition:border-color .12s,background .12s;}
-.uc-act-btn:hover:not(:disabled){border-color:rgba(232,216,138,.5);background:rgba(32,38,48,.95);}
-.uc-act-btn:disabled{opacity:.38;cursor:not-allowed;}
+  background:rgba(18,22,30,.85);border:1px solid rgba(232,216,138,.22);
+  color:rgba(200,192,168,.72);transition:border-color .12s,background .12s,color .12s;}
+.uc-act-btn:hover:not(:disabled):not(.uc-act-btn--on){border-color:rgba(232,216,138,.38);
+  background:rgba(28,34,44,.92);color:rgba(220,212,188,.88);}
+.uc-act-btn--on{border-color:rgba(232,216,138,.72);
+  background:linear-gradient(180deg,rgba(232,216,138,.18),rgba(232,216,138,.06));
+  color:var(--civ-gold-primary,#e8d88a);box-shadow:0 0 10px rgba(232,216,138,.12);}
+.uc-act-btn--on:hover:not(:disabled){border-color:rgba(232,216,138,.85);
+  background:linear-gradient(180deg,rgba(232,216,138,.24),rgba(232,216,138,.1));}
+.uc-act-btn:disabled{opacity:.38;cursor:not-allowed;color:var(--civ-text-primary,#e8e0c8);}
 .uc-act-ic{width:17px;height:17px;display:flex;align-items:center;justify-content:center;}
 .uc-act-ic svg{width:100%;height:100%;display:block;}
 .uc-act-disband{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;

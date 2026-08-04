@@ -22,6 +22,8 @@ export interface UnitPanelAction {
   primary?: boolean;
   danger?: boolean;
   disabled?: boolean;
+  /** Tryb włączony (fortyfikacja / czuwaj / zwiedzaj) — przycisk „wciśnięty”. */
+  active?: boolean;
 }
 
 export interface UnitPanelState {
@@ -153,7 +155,11 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
     for (const a of u.actions) {
       let cls = a.primary ? 'mu-gold-btn' : 'mu-muted-btn';
       if (a.danger) cls += ' act-danger';
-      html += '<button type="button" class="' + cls + '" data-act="' + esc(a.id) + '"'
+      if (a.active) cls += ' mu-act-on';
+      const ariaPressed = typeof a.active === 'boolean'
+        ? ' aria-pressed="' + (a.active ? 'true' : 'false') + '"'
+        : '';
+      html += '<button type="button" class="' + cls + '" data-act="' + esc(a.id) + '"' + ariaPressed
         + (a.disabled ? ' disabled' : '') + '>' + esc(a.label) + '</button>';
     }
     html += '</div></div>';

@@ -14123,6 +14123,7 @@ async function boot(): Promise<void> {
           id: 'fortify',
           label: isFieldFortifiedSiege ? 'Zdejmij fortyfikację' : 'Ufortyfikuj',
           disabled: false,
+          active: isFieldFortifiedSiege,
         });
       } else if (hasPlan) {
         actions.push({
@@ -14143,6 +14144,7 @@ async function boot(): Promise<void> {
             ? 'Odfortyfikuj'
             : isFieldFortified ? 'Zdejmij fortyfikację' : 'Ufortyfikuj',
           disabled: unitFortifyActionDisabled(active, stackRuch),
+          active: isGarnizoned || isFieldFortified,
         });
         if (isGarnizoned) {
           const garCount = garrisonUnitsOnHex(units, active.q, active.r, active.ownerId).length;
@@ -14164,6 +14166,7 @@ async function boot(): Promise<void> {
           id: 'sentry',
           label: enteringSentry ? 'Czuwaj' : 'Obud\u017a',
           disabled: unitSentryActionDisabled(active, stackRuch),
+          active: active.sentry === true,
         });
         // P-SCOUT-EXPLORE-Q1=A: przycisk Zwiedzaj — tylko zwiadowca, domyślnie OFF.
         if (isScoutUnit(active)) {
@@ -14172,6 +14175,7 @@ async function boot(): Promise<void> {
             id: 'scout-explore',
             label: exploring ? 'Wy\u0142\u0105cz zwiedzanie' : 'Zwiedzaj',
             disabled: false,
+            active: exploring,
           });
         }
         // Mechanizm "Zast\u0105p" (ZASTAP-JEDNOSTKI-PLAN.md): dost\u0119pne w ca\u0142ym
