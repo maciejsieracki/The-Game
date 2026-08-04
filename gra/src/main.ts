@@ -4084,6 +4084,7 @@ async function boot(): Promise<void> {
     /** Jednostka aktywna do cyklu Spacja/HUD — nie uśpiona, nie w garnizonie, nie ufortyfikowana w polu. */
     function isUnitActiveForCycle(u: RuntimeUnit): boolean {
       return u.sentry !== true
+        && u.autoExplore !== true
         && u.inGarnizon !== true
         && u.ufortyfikowanyWPolu !== true;
     }
@@ -14210,13 +14211,17 @@ async function boot(): Promise<void> {
         if (!isScoutUnit(u)) return;
         const enabling = u.autoExplore !== true;
         if (enabling) {
+          clearPlannedMarch(u.id);
           u.autoExplore = true;
-          showHintMessage(u.typeId + ' zwiedza map\u0119', 2500);
+          showHintMessage(u.typeId + ' zwiedza map\u0119 \u2014 ruch na koniec tury', 2800);
+          const fromId = u.id;
+          clearPlayerUnitSelection();
+          cycleToAdjacentPlayerUnit(fromId, 1);
         } else {
           u.autoExplore = false;
           showHintMessage('Wy\u0142\u0105czono zwiedzanie', 2000);
+          refreshD1bHud();
         }
-        refreshD1bHud();
       }
     }
 

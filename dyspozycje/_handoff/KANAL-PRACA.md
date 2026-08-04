@@ -5314,3 +5314,9 @@ CZEKAM-NA: Maciej — **deploy** gdy wgrać do ROBOCZA (najpierw git pull po dep
 - PW: baza/Relacja pod liczbą (czytelniej)
 - Branch: `cursor/ui-traktat-landscape-63a1` · tsc 0
 CZEKAM-NA: Maciej — **deploy** (najlepiej razem z R-RELACJA-PW-INVERT #67)
+
+## [10:15 PL, 2026-08-04] CLOUD → ALL — R-SCOUT-ZWIEDZAJ-UX
+- Maciej: po Zwiedzaj wyglądało jakby nic — clear path + deselect + next unit (jak Czuwaj)
+- autoExplore poza cyklem Spacji; ruchLeft NIE zerowane (ruch EOT)
+- Branch: `cursor/fix-scout-zwiedzaj-ux-63a1` · tsc 0 · scout-auto-explore 15/15
+CZEKAM-NA: Maciej — **deploy** (razem z #67+#68)
