@@ -475,6 +475,10 @@ r = evaluateProposal(prop('umowa_szlakow', 0, 1, {
   giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 40 }],
 }), lowTradeCtx);
 ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy: dopłata gold pokrywa bilans @ niska Rel');
+r = evaluateProposal(prop('umowa_handlowa', 0, 1, { turns: 20 }), { ...lowTradeCtx, relation: rel(50, 50) });
+ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'umowa_handlowa alias @ rel 100: accepted + deal szlaków (R-DYPLO-PRZYJMIJ-TRADE)');
+r = evaluateProposal(prop('umowa_handlowa', 0, 1, { turns: 20 }), lowTradeCtx);
+ok(!r.accepted && r.reason?.includes('nieuczciwa'), 'umowa_handlowa @ niska Rel bez koszyka: odrzucenie jak szlaki');
 r = evaluateProposal(prop('pokoj', 0, 1, { givePn: 355, receivePn: 0 }), {
   ...lowTradeCtx,
   stanWojny: true,

@@ -1557,7 +1557,12 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
       ? (r.responderPreview?.accepted !== false && r.acceptanceTheir?.accepted !== false)
       : (r.canAccept !== false && !legacyAccess);
     const acceptTitle = !canAccept
-      ? esc(r.responderPreview?.reason ?? r.acceptanceTheir?.statusLabel ?? RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON)
+      ? esc(
+        [r.responderPreview?.reason, r.acceptanceTheir?.accepted === false ? r.acceptanceTheir?.statusLabel : undefined]
+          .filter(Boolean)
+          .join(' · ')
+          || RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
+      )
       : '';
     const btns =
       '<div class="da-btnrow">'

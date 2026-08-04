@@ -848,7 +848,7 @@ function proposalActionIdFromUi(
   if (actionId === '10') return 'pokoj';
   if (actionId === '8' && tributeMode === 'offer') return 'trybut_oferta';
   if (actionId === '13' || mode === 'gift') return 'handel';
-  if (actionId === '5') return 'umowa_handlowa';
+  if (actionId === '5') return 'umowa_szlakow';
   return 'handel';
 }
 
