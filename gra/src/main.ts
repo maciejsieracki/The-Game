@@ -15719,8 +15719,9 @@ async function boot(): Promise<void> {
       }
       deductStackRuchLeft(stack, result.cost);
       if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
+      let hutCollected = false;
       if (result.movePath.length > 0) {
-        if (u.ownerId === 0) checkVillageRewardsAlongPath(result.movePath);
+        if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(result.movePath);
         const bonusChanged = applyCityVisitBonusesAlongPath(
           stack,
           result.movePath,
@@ -15728,7 +15729,8 @@ async function boot(): Promise<void> {
         );
         if (bonusChanged) syncUnitsRender();
       }
-      refreshFog();
+      // checkVillageRewardAt już woła refreshFog({ skipVeteranEducation }) — nie dubluj ani nie nadpisuj toastu chatki.
+      if (!hutCollected) refreshFog();
       validateActiveSieges();
       promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost);
 
@@ -15798,9 +15800,9 @@ async function boot(): Promise<void> {
      * później) widzi już `istnieje === false` i funkcja wraca natychmiast.
      * Wołane raz na ZAKOŃCZONE przemieszczenie (nie per jednostka w stosie).
      */
-    function checkVillageRewardAt(q: number, r: number): void {
+    function checkVillageRewardAt(q: number, r: number): boolean {
       const hex = map.hexes[keyOf(q, r)];
-      if (!hex?.wioska?.istnieje) return;
+      if (!hex?.wioska?.istnieje) return false;
       hex.wioska.istnieje = false;
       hex.wioska.ludnosc = 0;
       villageHexKeyCache?.delete(keyOf(q, r)); // Audyt #57: usuń z cache syncVillageMeshes
@@ -15910,17 +15912,20 @@ async function boot(): Promise<void> {
         if (villageEventLog.length > 6) villageEventLog.length = 6;
         refreshD1bHud();
       }
+      return true;
     }
 
     /** Sprawdza nagrody wioski na każdym unikalnym heksie ścieżki (gracz). */
-    function checkVillageRewardsAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): void {
+    function checkVillageRewardsAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {
       const seen = new Set<string>();
+      let collected = false;
       for (const h of hexes) {
         const k = keyOf(h.q, h.r);
         if (seen.has(k)) continue;
         seen.add(k);
-        checkVillageRewardAt(h.q, h.r);
+        if (checkVillageRewardAt(h.q, h.r)) collected = true;
       }
+      return collected;
     }
 
     /** Animowany ruch (merge / taktyka — natychmiast, bez planowania A3). */
@@ -19249,6 +19254,7 @@ async function boot(): Promise<void> {
         }
 
         // Snap any in-flight animation to its destination.
+        let endTurnAnimHutCollected = false;
         if (isAnimating && anim !== null) {
           const u = units.find(x => x.id === anim!.id);
           if (u) {
@@ -19263,7 +19269,7 @@ async function boot(): Promise<void> {
             // TEMAT #15: woda -> zaokrętowanie, ląd -> zejście na ląd.
             applyEmbarkStateAfterMove(stack, map);
             if (u.ownerId === 0 && anim.pathHexes.length > 0) {
-              checkVillageRewardsAlongPath(anim.pathHexes);
+              endTurnAnimHutCollected = checkVillageRewardsAlongPath(anim.pathHexes);
             }
             if (anim.pathHexes.length > 0) {
               const bonusChanged = applyCityVisitBonusesAlongPath(
@@ -19281,6 +19287,7 @@ async function boot(): Promise<void> {
         }
         // Zwiadowcy gracza: auto-zwiedzanie nieużytego ruchu (mgła + kontakt z obcymi).
         {
+          let scoutHutCollected = false;
           const scoutExplore = runScoutsAutoExplore(
             units,
             map,
@@ -19289,7 +19296,9 @@ async function boot(): Promise<void> {
             unitSight,
             Math.random,
             (u) => {
-              if (u.ownerId === 0) checkVillageRewardAt(u.q, u.r);
+              if (u.ownerId === 0) {
+                if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
+              }
               if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === 0)) {
                 syncUnitsRender();
               }
@@ -19297,7 +19306,8 @@ async function boot(): Promise<void> {
           );
           if (scoutExplore.movedUnitIds.length > 0) {
             syncUnitsRender();
-            refreshFog();
+            const suppressVeteranTip = endTurnAnimHutCollected || scoutHutCollected;
+            refreshFog(suppressVeteranTip ? { skipVeteranEducation: true } : undefined);
             // SFX marsz: ruch BEZ animacji (teleport) — jednorazowy akcent, nie
             // pętla. Zawsze jednostki gracza -> bez sprawdzania widoczności.
             if (sfxUnitsEnabled) playMarchAccent(scoutExplore.movedUnitIds.length);
@@ -22139,13 +22149,14 @@ async function boot(): Promise<void> {
           stopMarch(); // SFX marsz: animacja dobiegła końca — krótki fade-out (patrz stopMarch())
           forceVisibleUnitId = null;
 
-          refreshFog();
           validateActiveSieges();
 
           // GRAFIKA-TEREN-2 / WIOSKI: jednostka gracza kończy ruch na wiosce -> nagroda + znika.
+          // Najpierw chatka (własny refreshFog ze skip), potem mgła tylko gdy bez chatki.
+          let hutCollected = false;
           if (u) {
             if (pathHexes.length > 0) {
-              if (u.ownerId === 0) checkVillageRewardsAlongPath(pathHexes);
+              if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(pathHexes);
               const bonusChanged = applyCityVisitBonusesAlongPath(
                 stack,
                 pathHexes,
@@ -22153,12 +22164,13 @@ async function boot(): Promise<void> {
               );
               if (bonusChanged) syncUnitsRender();
             } else if (u.ownerId === 0) {
-              checkVillageRewardAt(destQ, destR);
+              hutCollected = checkVillageRewardAt(destQ, destR);
               if (applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
                 syncUnitsRender();
               }
             }
           }
+          if (!hutCollected) refreshFog();
 
           if (u) tryAutoCaptureEmptyCityAt(destQ, destR, stack);
           promptMergeIfCoLocated(movedStackIds.length > 0 ? movedStackIds : [finishedId], fromQ, fromR, moveCost);
