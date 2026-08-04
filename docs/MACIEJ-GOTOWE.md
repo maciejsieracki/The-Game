@@ -1,5 +1,5 @@
-﻿- **2026-08-04 09:27** — ✅ Gotowe FALA 210 ROBOCZA `000e19c1`. Relacja PW asymetria+UI (#66), rzeki FoW OFF (#63), bonus obu brzegów (#64), ściągi/tooltipy miasta (#62), etykieta Ulepszenia (#65). START: `gra-robocza/START.html` — **git pull**, potem Ctrl+F5 **Nowa gra**.
 - **2026-08-04 10:24** — ✅ Gotowe FALA 211 ROBOCZA `6bf472e2`. Relacja invert + landscape + Zwiedzaj UX. START: `gra-robocza/START.html` — **najpierw git pull**, Ctrl+F5 **Nowa gra**.
+- **2026-08-04 09:27** — ✅ Gotowe FALA 210 ROBOCZA `000e19c1`. Relacja PW asymetria+UI (#66), rzeki FoW OFF (#63), bonus obu brzegów (#64), ściągi/tooltipy miasta (#62), etykieta Ulepszenia (#65). START: `gra-robocza/START.html` — **git pull**, potem Ctrl+F5 **Nowa gra**.
 - **2026-08-04 08:22** — ✅ Gotowe FALA 209 ROBOCZA `ddad7cf9`. Civpedia/poradnik rev G2 (budynki obrona % + efekty, katalog §45, wikiBundle). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
 - **2026-08-04 12:00** — ✅ Gotowe Civpedia rev. G (docs only, bez deploy): poradnik 00/01/02/05/07/09/12/14/16 + 3 hasła encyklopedii (Wiarygodność, Manpower, Założenie miasta) + wikiBundle `rev-G-2026-08-04` + tooltipy (porażka, Wiarygodność). Branch `cursor/docs-civpedia-fala208-63a1`.
 - **2026-08-04 07:57** — ✅ Gotowe FALA 208 ROBOCZA `64a7878a`. Pigułka miasta v1 (obrona + cywu). START: `gra-robocza/START.html` Ctrl+F5 **Nowa gra**.
