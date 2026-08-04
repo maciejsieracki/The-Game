@@ -215,7 +215,7 @@ export function filterActionableNegotiationRows(
   );
 }
 
-/** R-DYPLO-STOL-ACCEPT-Q1=A — jeden bilans PW dla całego pakietu na stole. */
+/** R-DYPLO-STOL-PW-SUM + R-DYPLO-STOL-ACCEPT-Q1=A — suma PW pakietu + jedna decyzja. */
 export function balancePanelDataFromRows(
   rows: readonly NegotiationBalanceSource[],
 ): PnBalancePanelData | null {
@@ -230,7 +230,6 @@ export function balancePanelDataFromRows(
 
   let myOfferPn = 0;
   let theirOfferPn = 0;
-  let canAccept = true;
   let blockReason: string | undefined;
 
   for (const row of actionable) {
@@ -238,21 +237,50 @@ export function balancePanelDataFromRows(
     if (!d) continue;
     myOfferPn += d.myOfferPn;
     theirOfferPn += d.theirOfferPn;
-    if (row.direction === 'incoming' && row.canAccept === false) {
-      canAccept = false;
-      blockReason = row.responderPreview?.reason ?? d.theirBalance.statusLabel;
-    }
     if (row.direction === 'own' && row.awaitingAiResponse) {
       const ownOk = row.responderPreview?.accepted !== false
         && (row.acceptanceTheir?.accepted !== false);
       if (!ownOk) {
-        canAccept = false;
         blockReason = row.responderPreview?.reason
           ?? row.acceptanceTheir?.statusLabel
           ?? 'Oferta nieuczciwa dla partnera';
       }
     }
   }
+
+  const net = myOfferPn - theirOfferPn;
+  const allIncoming = actionable.every(r => r.direction === 'incoming');
+  // Incoming: decyzja z sumy PW (nie per-wiersz canAccept — inaczej traktat 72/80 + koszyk blokuje mimo net 0).
+  let canAccept = allIncoming ? net >= 0 : blockReason == null;
+  if (!allIncoming && blockReason == null) {
+    canAccept = actionable.every(row => {
+      if (row.direction === 'incoming') return row.canAccept !== false;
+      if (row.awaitingAiResponse) {
+        return row.responderPreview?.accepted !== false
+          && (row.acceptanceTheir?.accepted !== false);
+      }
+      return true;
+    });
+  }
+  if (allIncoming && !canAccept) {
+    blockReason = `Brakuje ${Math.abs(net)} PW`;
+  }
+
+  const statusLabel = net > 0
+    ? `Nadwyżka +${net} PW`
+    : net === 0
+      ? 'Spełnia warunki (0 PW)'
+      : `Brakuje ${Math.abs(net)} PW`;
+
+  const theirBalance = {
+    ...base.theirBalance,
+    balancePn: net,
+    accepted: net >= 0,
+    statusLabel,
+  };
+  const myBalance = base.myBalance
+    ? { ...base.myBalance, balancePn: net, accepted: net >= 0, statusLabel }
+    : undefined;
 
   return {
     ...base,
@@ -261,6 +289,8 @@ export function balancePanelDataFromRows(
       : base.actionLabel,
     myOfferPn,
     theirOfferPn,
+    theirBalance,
+    myBalance,
     canAccept,
     extraOnTable: 0,
     responderPreview: canAccept ? base.responderPreview : { accepted: false, reason: blockReason },

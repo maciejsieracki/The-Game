@@ -99,9 +99,9 @@ ok(aggregated != null, 'aggregated: data');
 ok(aggregated.myOfferPn === 82, 'aggregated: myOfferPn 82 (72+10)');
 ok(aggregated.theirOfferPn === 82, 'aggregated: theirOfferPn 82 (80+2)');
 ok(aggregated.extraOnTable === 0, 'aggregated: extraOnTable 0 (bez badge)');
-ok(aggregated.actionLabel.includes('Traktat handlowy'), 'aggregated: label z primary');
-ok(aggregated.actionLabel.includes('1 inna'), 'aggregated: label + 1 inna');
-ok(aggregated.canAccept === true, 'aggregated: canAccept true przy net 0');
+ok(aggregated.actionLabel.includes('Pakiet na stole'), 'aggregated: label pakietu');
+ok(aggregated.actionLabel.includes('2 umów'), 'aggregated: label z liczbą umów');
+ok(aggregated.canAccept === true, 'aggregated: canAccept true przy net 0 (suma PW, nie per-wiersz)');
 ok(aggregated.theirBalance.balancePn === 0, 'aggregated: balancePn net 0');
 ok(aggregated.theirBalance.accepted === true, 'aggregated: theirBalance accepted');
 
