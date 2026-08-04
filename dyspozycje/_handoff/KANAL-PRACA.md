@@ -1,3 +1,11 @@
+## [22:00 PL, 2026-08-04] CLOUD → Maciej — R-SCOUT-ZWIEDZAJ-PODSWIETLENIE (ABC)
+- Uśpienie = złota ramka; Zwiedzaj po kliku wygląda martwo
+- Przyczyna: WŁ = odznaczenie + skok na inną jednostkę (ukrywa podświetlenie)
+- Q1 rekomendacja **A**: zostań na zwiadowcy + złoto od razu
+- Docs: `docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md`
+- **Bez kodu** do `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1 A|B|C`
+CZEKAM-NA: Maciej — litera Q1
+
 ﻿## [23:25 PL, 2026-08-04] CLOUD Ôćĺ Maciej / sesja lokalna ÔÇö DEPLOY FALA 222 132401ef
 |- md5: 132401efa7a83d8e55d33325fe52ba6b ┬Ě stempel: ROBOCZA ┬Ě 2026-08-04 23:25
 |- Batch: R-BATTLE-TEMPO-UI ┬Ě R-BUDYNKI-NIEAKTYWNE ┬Ě R-BUDOWA-ZROWNOWAZONE-TRYB ┬Ě R-CITY-PILL-SHIELD-EMBLEM (PR #97 #98 #85 #83)
