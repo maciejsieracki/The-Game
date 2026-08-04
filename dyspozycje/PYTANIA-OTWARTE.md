@@ -26,6 +26,15 @@ Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-T
 
 ---
 
+## R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia u gracza · STATUS: **CZEKA-NA-DECYZJĘ** (2026-08-05)
+
+**Objaw:** suwak Wyżywienia wraca w górę na EOT mimo ręcznego obniżenia (Spichlerz).  
+**Przyczyna:** `autoRaiseRationsForGrowth` działa też dla gracza (miało być tylko major AI).  
+**Ludność:** rekrutacja nie odejmuje; głód przy zbyt wysokich racjach może dać −1.  
+Szczegóły + ABC: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).
+
+---
+
 ## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **ZAMKNIĘTE** Q1=A · ZDEPLOYOWANE FALA 222→223 · playtest OK (2026-08-04)
 
 **ECHO Maciej:** `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1 A` — osobny tryb auto „Zrównoważony” (5 chipów typów z numerami + osobny przełącznik).

@@ -1,4 +1,11 @@
-﻿## [00:40 PL, 2026-08-05] CLOUD → ALL — HANDOFF sesji FALA 221–224
+﻿## [00:55 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE (ABC, bez kodu)
+|- Objaw: EOT podnosi Wyżywienie gracza mimo ręcznego obniżenia
+|- Przyczyna: autoRaiseRationsForGrowth dla ownerId=0 (miało być tylko major AI)
+|- Ludność: nie rekrutacja; ryzyko głodu przy wymuszonym max
+|- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md
+CZEKAM-NA: Maciej — `R-AUTO-RACJE-RAISE-Q1 A|B|C`
+
+## [00:40 PL, 2026-08-05] CLOUD → ALL — HANDOFF sesji FALA 221–224
 |- Pełny zapis: dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md
 |- AKTUALNA ROBOCZA FALA 224 `38df6ad7` (stempel eef4e87e) · Maciej OK 223+224
 |- ABC zamknięte: R-PILL-TARCZA-BEZ-MURU-Q1=A · R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A · R-BUDOWA-ZROWNOWAZONE-Q1=A playtest OK · R-REKRUT-LUDNOSC-UI
