@@ -136,7 +136,7 @@ import {
 } from '../game/building-resource-gate';
 import { daninaLabel, daninaLabelGenitive, daninaLabelAccusative, type DaninaLabel } from '../game/danina-nazwa';
 import type { CityManpowerSnapshot } from '../game/manpower';
-import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpower, unitManpowerCostForType } from '../game/manpower';
+import { civManpowerMaxMult, cityLudnoscAbsolutna, formatManpower, unitManpowerCost, unitManpowerCostForType } from '../game/manpower';
 import { defaultOwnerColor, mountUnitMiniPreview } from './unitMiniPreview';
 import {
   unitInfographicMedallionHtml,
@@ -222,7 +222,7 @@ export interface PodzialHandluSplit {
   procentLuksus: number;
 }
 
-/** Suwak podzialu Pracy (budynki vs ulepszenia terenu). */
+/** Suwak podzialu Pracy (budynki vs pula imperium). */
 export interface PodzialPracySplit {
   procentBudynki: number;
 }
@@ -1253,7 +1253,9 @@ function buildGrowthProgressTooltipCard(
     );
   }
   const note = el('div', 'dc-note');
-  note.textContent = 'Ułamek poniżej 1 zostaje w buforze i sumuje się co turę.';
+  note.textContent = fed
+    ? 'Ułamek poniżej 1 zostaje w buforze (wzrostUlamkowy) i sumuje się co turę — tylko gdy miasto jest nakarmione.'
+    : 'Brak wzrostu przy głodzie — bufor nie rośnie, dopóki bilans nie zostanie pokryty z magazynu centralnego.';
   card.appendChild(note);
   return card;
 }
@@ -1336,7 +1338,7 @@ function resGlobalLocal(
     `</span>`;
 }
 
-/** Górny pasek: pula pracy + dwa dopiski (budynki / ulepszenia). */
+/** Górny pasek: pula pracy + dwa dopiski (budynki / pula imperium). */
 function resPracaSplitBar(
   mainVal: string,
   doBudynkow: number,
@@ -1354,7 +1356,7 @@ function resPracaSplitBar(
     `<span class="civ-v-res-val gold">${mainVal}</span>` +
     `<span class="${deltaWrap}">` +
     `<span class="civ-v-res-delta ${b.cls}" title="Budynki">${b.html}</span>` +
-    `<span class="civ-v-res-delta blue" title="Ulepszenia">${u.html}</span>` +
+    `<span class="civ-v-res-delta blue" title="Pula imperium">${u.html}</span>` +
     `</span></span>`;
 }
 
@@ -1487,7 +1489,7 @@ function pracaSplitBarLabelHtml(pctB: number, pctU: number, budAmt?: number, ule
   const uPart = uleAmt != null ? ` +${uleAmt}` : '';
   return (
     `${pctB}% ${cityPanelChipIconWrap('cp-buildings', 14)}${bPart}` +
-    ` · ${pctU}% ${cityPanelChipIconWrap('tb-build', 14)}${uPart}`
+    ` · ${pctU}% ${cityPanelChipIconWrap('chip-crate', 14)}${uPart}`
   );
 }
 
@@ -4188,52 +4190,53 @@ function buildPracaDetailCard(
   const summary = el('div', 'dc-summary muted');
   summary.style.cssText = 'font-size:0.88em;margin-bottom:0.35em;';
   summary.innerHTML = praca
-    ? `${pctB}% ${cityPanelChipIconWrap('cp-buildings', 14)} budynki · ${pctU}% ${cityPanelChipIconWrap('tb-build', 14)} ulepszenia · ${signed(praca.total)} ${cityPanelChipIconWrap('res-work', 14)}`
-    : `${pctB}% ${cityPanelChipIconWrap('cp-buildings', 14)} · ${pctU}% ${cityPanelChipIconWrap('tb-build', 14)} (brak podglądu tury)`;
+    ? `${pctB}% ${cityPanelChipIconWrap('cp-buildings', 14)} budynki · ${pctU}% ${cityPanelChipIconWrap('chip-crate', 14)} pula · ${signed(praca.total)} ${cityPanelChipIconWrap('res-work', 14)}`
+    : `${pctB}% ${cityPanelChipIconWrap('cp-buildings', 14)} · ${pctU}% ${cityPanelChipIconWrap('chip-crate', 14)} (brak podglądu tury)`;
   card.appendChild(summary);
 
   const intro = el('div', 'dc-note');
   setNoteHtml(intro,
     'Praca 🔨 to surowiec z pól okolicy (👤 na heksach). Nie idzie wszystko w jedno miejsce — suwak dzieli ją między ' +
-    'kolejkę budowy/rekrutacji a ulepszenia terenu (farma, kamieniołom…). Razem zawsze 100%.',
+    'kolejkę budowy/rekrutacji a pulę imperium (załóż miasto, ulepszenia / projekty mapy). Razem zawsze 100%.',
   );
   card.appendChild(intro);
 
   appendDetailSection(card, 'Co widać w panelu');
   const g0 = appendDetailGrid(card);
-  gridDetailRow(g0, 'Suwak (jak Wyżywienie)', `Etykieta: ${pctB}% 🏛 · ${pctU}% 🛠 — jeden pasek przesuwania, bez osobnego paska podglądu.`);
-  gridDetailRow(g0, 'Lewo / prawo', 'W lewo → więcej ulepszeń pól; w prawo → szybsza kolejka budowy. Kroki co 10%.');
+  gridDetailRow(g0, 'Suwak (jak Wyżywienie)', `Etykieta: ${pctB}% 🏛 · ${pctU}% 📦 — jeden pasek przesuwania, bez osobnego paska podglądu.`);
+  gridDetailRow(g0, 'Lewo / prawo', 'W lewo → więcej do puli imperium; w prawo → szybsza kolejka budowy. Kroki co 10%.');
   gridDetailRow(g0, 'Dlaczego tu, po lewej', 'Podział pracy karmi produkcję i budowę — garnizon jest w pasku u góry obok nazwy miasta.');
 
   appendDetailSection(card, 'Aktualny podział');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Praca', praca ? `${signed(praca.total)} 🔨` : '—');
   gridDetailRow(g1, '→ Budynki', praca ? `${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—');
-  gridDetailRow(g1, '→ Ulepszenia', praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—');
+  gridDetailRow(g1, '→ Pula imperium', praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—');
 
   appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
-  appendDetailFormula(card, 'doUlepszen = praca − doBudynkow  (nigdy nie gubi reszty)');
+  appendDetailFormula(card, 'doPuli = praca − doBudynkow  (nigdy nie gubi reszty)');
 
   appendDetailSection(card, 'Trade-off (po co ten wybór)');
   const gt = appendDetailGrid(card);
   gridDetailRow(gt, 'Więcej 🏛', 'Szybciej kończysz budynki i rekrutację w kolejce — miasto rośnie „w pionie”.');
-  gridDetailRow(gt, 'Więcej 🛠', 'Szybciej ulepszasz pola — lepsze plony i praca w kolejnych turach (długofalowo).');
-  gridDetailRow(gt, 'Skrajności', '100% 🏛 = zero postępu ulepszeń terenu. 100% 🛠 = kolejka stoi w miejscu.');
+  gridDetailRow(gt, 'Więcej 📦', 'Szybciej kumulujesz pulę imperium — załóż miasto, ulepszenia terenu na mapie, projekty.');
+  gridDetailRow(gt, 'Skrajności', '100% 🏛 = zero wpływu do puli. 100% 📦 = kolejka stoi w miejscu (chyba że pusta — wtedy całość i tak idzie do puli).');
   gridDetailRow(gt, 'Brak pracy', 'Gdy 🔨 = 0, suwak nic nie da — przypisz 👤 w okolicy (prawa kolumna).');
 
   appendDetailAlgo(card, 'Algorytm (splitPraca + productionProgress)', [
     'Praca netto = suma z obrabianych pól + budynki − strata (korupcja).',
     'doBudynkow idzie do kolejki produkcji (budynki, jednostki) co turę.',
-    'doUlepszen trafia do puli ulepszeń pól (farma, kamieniołom itd.).',
-    'Kolejka: postęp += doBudynkow; gdy postęp ≥ koszt → budynek gotowy.',
+    'doPuli trafia do zapasu Pracy imperium (nie do ulepszeń pól — te kosztują pulę przy akcji na mapie).',
+    'Kolejka pusta: cała Praca miasta (doBudynkow + doPuli) idzie do puli imperium.',
+    'Kolejka zajęta: postęp += doBudynkow; gdy postęp ≥ koszt → budynek gotowy; reszta → doPuli.',
     maTargowisko
-      ? 'Część pracy (doUlepszen) + Waluta + Targowisko → dodatkowy pieniądz (osobny strumień).'
-      : 'Bez Targowiska doUlepszen nie konwertuje się na pieniądz.',
-    'Brak pracy = brak postępu budowy i ulepszeń — przypisz 👤 w okolicy.',
+      ? 'Część pracy (doPuli) + Waluta + Targowisko → dodatkowy pieniądz (osobny strumień).'
+      : 'Bez Targowiska doPuli nie konwertuje się na pieniądz.',
+    'Brak pracy = brak postępu budowy i brak wpływu do puli — przypisz 👤 w okolicy.',
   ]);
 
   appendDetailAlgo(card, 'Suwak UI', [
-    'Kroki co 10%. Zmiana %Budynki automatycznie ustawia resztę na ulepszenia.',
+    'Kroki co 10%. Zmiana %Budynki automatycznie ustawia resztę na pulę imperium.',
     'Per miasto — każde miasto może mieć inny podział.',
     'Brak pracy w turze — przypisz 👤 na mapie okolicy. Miasto rywala: tylko podgląd.',
   ]);
@@ -4330,7 +4333,7 @@ function renderPodzialPracy(
   const sliderWrap = el('div', 'praca-w4-sliders');
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
-  const podzialTip = 'Kroki co 10%. W lewo → więcej ulepszeń pola · w prawo → szybsza kolejka budowy.';
+  const podzialTip = 'Kroki co 10%. W lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.';
   sliderLabel.innerHTML =
     `<span title="${podzialTip.replace(/"/g, '&quot;')}">${cityPanelChipIconWrap('res-work', 14)} Budynki / Pula</span>` +
     `<span>${pracaSplitBarLabelHtml(pctB, pctU, praca?.doBudynkow, praca?.doUlepszen)}</span>`;
@@ -4597,6 +4600,17 @@ function buildRacjeWzrostDetailCard(
   appendDetailFormula(card, 'bilans = produkcja_brutto − (ludność × koszt_racji)');
   appendDetailFormula(card, 'wzrost = ludność × WZROST% / 100 — ułamek <1 zostaje w buforze na kolejną turę');
 
+  if (view.maSpichlerz || view.maAkwedukt) {
+    appendDetailSection(card, 'Budynki wpływające na wzrost');
+    const gB = appendDetailGrid(card);
+    if (view.maSpichlerz) {
+      gridDetailRow(gB, 'Spichlerz', `+${bd.spichlerz}% WZROST · niższy koszt racji (Ceramika −25%, pełny II −50%)`);
+    }
+    if (view.maAkwedukt) {
+      gridDetailRow(gB, 'Akwedukt', `Limit ludności ${view.popCapZAkweduktem} (bez niego max ${view.popCapBezAkweduktu})`);
+    }
+  }
+
   if (tick) {
     appendDetailSection(card, 'Magazyn centralny (ostatnia tura)');
     const g3 = appendDetailGrid(card);
@@ -4815,19 +4829,19 @@ function buildTopBarPracaDetailCard(
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 🔨', `${pool} — pula Pracy imperium (zapas / suma tur)`);
   gridDetailRow(g0, 'Złoty dopisek', `${signed(pracaSplit.doBudynkow)} — ten gród → kolejka budowy (${pctB}%)`);
-  gridDetailRow(g0, 'Niebieski dopisek', `${signed(pracaSplit.doUlepszen)} — ten gród → ulepszenia pól (${pctU}%)`);
+  gridDetailRow(g0, 'Niebieski dopisek', `${signed(pracaSplit.doUlepszen)} — ten gród → pula imperium (${pctU}%)`);
   gridDetailRow(g0, 'Suma miast', empireSum > 0 ? `${signed(empireSum)} łącznie z wszystkich grodów` : '—');
 
   appendDetailSection(card, 'Skąd bierze się praca (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Praca brutto', `${signed(pracaSplit.total)} 🔨`);
   gridDetailRow(g1, '→ Budynki', `${signed(pracaSplit.doBudynkow)} — postęp w kolejce produkcji`);
-  gridDetailRow(g1, '→ Ulepszenia', `${signed(pracaSplit.doUlepszen)} — farma, kamieniołom itd.`);
+  gridDetailRow(g1, '→ Pula imperium', `${signed(pracaSplit.doUlepszen)} — zapas cywilizacji (załóż miasto, projekty mapy)`);
 
   appendDetailFormula(card, 'doBudynkow = round(praca × %Budynki)');
-  appendDetailFormula(card, 'doUlepszen = praca − doBudynkow  (nigdy nie gubi reszty)');
+  appendDetailFormula(card, 'doPuli = praca − doBudynkow  (nigdy nie gubi reszty)');
   appendDetailAlgo(card, 'Gdzie zarządzać', [
-    'Lewa kolumna → „Podział pracy”: suwak 🏛 vs 🛠 (per miasto).',
+    'Lewa kolumna → „Podział pracy”: suwak 🏛 vs 📦 pula (per miasto).',
     'Mapa okolicy → przypisz 👤 na heksy z 🔨 (pola, lasy, kamieniołomy).',
     'Kolejka produkcji po lewej zużywa strumień „budynki”.',
   ]);
@@ -7162,17 +7176,30 @@ function renderBuildList(
 }
 
 function buildRecruitTabDetailCard(city: City, unitCount: number, skarb: number | undefined): HTMLDivElement {
+  const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
+  const mpSnap = cfg.getManpowerSnapshot?.(city.id);
+  const maxMult = civManpowerMaxMult(cfg.getCivBonusy?.(city.ownerId));
+  const mpCostStd = unitManpowerCost(epoch, maxMult);
+
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Rekrutacja — szczegóły</span>'));
   const intro = el('div', 'dc-note');
   intro.style.fontStyle = 'normal';
   intro.textContent =
-    'Jednostki kupujesz za pieniądz ze skarbca imperium. Opłacone pozycje trafiają do kolejki — max 1 gotowa na turę (v0.1).';
+    'Jednostki kupujesz za pieniądz ze skarbca imperium oraz rekrutów (Manpower) z puli całej cywilizacji. ' +
+    'Werb zużywa rekrutów imperium i −1 obywatela w tym mieście. Zwiadowca — 0 kosztu Manpower. ' +
+    'Opłacone pozycje trafiają do kolejki — max 1 gotowa na turę (v0.1).';
   card.appendChild(intro);
   appendDetailSection(card, 'Stan');
   const g = appendDetailGrid(card);
   gridDetailRow(g, 'Dostępne jednostki', String(unitCount));
-  gridDetailRow(g, 'Skarb imperium', skarb != null ? String(skarb) : '—');
+  gridDetailRow(g, 'Skarb imperium', skarb != null ? `${skarb} 💰` : '—');
+  if (mpSnap) {
+    gridDetailRow(g, 'Rekruci (pula miasta)', `${formatManpower(mpSnap.manpowerBiezacy)} / ${formatManpower(mpSnap.manpowerMax)}`);
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpSnap.kosztJednostki)} · epoka ${mpSnap.epoka}`);
+  } else {
+    gridDetailRow(g, 'Koszt Manpower (typowy)', `${formatManpower(mpCostStd)} · epoka ${epoch}`);
+  }
   const rq = getProd(city.id).rekrutacja?.length ?? 0;
   gridDetailRow(g, 'W kolejce', String(rq));
   return card;
@@ -8372,7 +8399,7 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
       signed(pracaSplit.total),
       pracaCls,
       'praca',
-      `Praca tego miasta · budynki ${signed(pracaSplit.doBudynkow)} · ulepszenia ${signed(pracaSplit.doUlepszen)}`,
+      `Praca tego miasta · budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}`,
     ),
     w3CityChip(
       cityPanelChipIcon('res-food', 20),
@@ -9287,7 +9314,7 @@ const CITY_PANEL_ICONS_RIGHT: { id: CityPanelCityParamTab; iconId: string; title
   // (daninaLabelGenitive), więc ten string nigdy nie trafia na ekran. Celowo bez słowa
   // "handel" mimo to — Handel jest WYŁĄCZNIE zakładką imperium, nie miasta.
   { id: 'handel', iconId: 'cp-trade', title: 'Podział daniny/podatku i zamożność — suwaki Skarb / Nauka / Zamożność' },
-  { id: 'praca', iconId: 'cp-labor', title: 'Podział pracy — budynki i ulepszenia' },
+  { id: 'praca', iconId: 'cp-labor', title: 'Podział pracy — budynki i pula imperium' },
   { id: 'porzadek', iconId: 'cp-order', title: 'Społeczeństwo i porządek' },
   { id: 'zdrowie', iconId: 'cp-health', title: 'Zdrowie miasta' },
   { id: 'kultura', iconId: 'cp-culture', title: 'Kultura — granice i progi' },
