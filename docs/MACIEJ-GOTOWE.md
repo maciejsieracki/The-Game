@@ -1,3 +1,4 @@
+- **2026-08-04 ~22:05** — ✅ Gotowe w kodzie (bez deploy): **R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A** — Zwiedzaj zostaje zaznaczone ze złotą ramką od razu. Branch `cursor/fix-zwiedzaj-podswietlenie-63a1`. Napisz **deploy**.
 ﻿- **2026-08-04 23:25** ÔÇö Ôťů **FALA 222** ROBOCZA `132401ef` ÔÇö tempo bitwy ┬▒/komputer + czerwone budynki (brak surowc├│w) + zr├│wnowa┼╝ony tryb budowy + city pill (tarcza/emblemat). START: `gra-robocza/START.html` ÔÇö **git pull**, Ctrl+F5 **Nowa gra**.
 ´╗┐- **2026-08-04 ~23:20** ÔÇö Ôťů Gotowe w kodzie (bez deploy): **R-BUDYNKI-NIEAKTYWNE** ÔÇö czerwona nazwa w Wybudowane + tooltip `Brak: ÔÇŽ` (Spichlerz I/II, Mennica, deposit runtime). Branch `cursor/feat-budynki-nieaktywne-63a1`. Napisz **deploy**.
 - **2026-08-04 ~21:30** ÔÇö ­čôő **Docs sync** FALA 220 + push `b47a2e8` (PYTANIA-OTWARTE, STAN-PRACY, decyzje MP/AI-*). **Gotowe do commit** docs (bez push od agenta).

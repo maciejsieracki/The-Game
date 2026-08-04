@@ -1,9 +1,17 @@
 # R-SCOUT-ZWIEDZAJ-PODSWIETLENIE — Zwiedzaj bez złotej ramki (vs Uśpienie)
 
-**Status:** 🟡 CZEKA-NA-DECYZJĘ · 2026-08-04  
+**Status:** 🟢 WDROŻONE (kod) Q1=A · 2026-08-04 — czeka **`deploy`**  
 **Zgłoszenie:** Maciej (powtórne, screenshot) — Uśpienie (księżyc) ma złote podświetlenie WŁ; Zwiedzaj po kliknięciu „nic się nie dzieje”.
 
-**Powiązane:** `R-UNIT-MODE-TOGGLE-UI` · `R-SCOUT-ZWIEDZAJ-HIGHLIGHT` (FALA 221 — select nie kasuje `autoExplore`) · `R-SCOUT-ZWIEDZAJ-UX` (deselect + cykl)
+**Powiązane:** `R-UNIT-MODE-TOGGLE-UI` · `R-SCOUT-ZWIEDZAJ-HIGHLIGHT` (FALA 221 — select nie kasuje `autoExplore`) · `R-SCOUT-ZWIEDZAJ-UX` (deselect + cykl — **nadpisane** Q1=A dla WŁ)
+
+## ECHO
+**R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1 = A** — *„R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1 a”* (2026-08-04).  
+Po WŁ Zwiedzaj: zostań na zwiadowcy + `refreshD1bHud` → złota ramka od razu. Bez odznaczania i bez cyklu.
+
+## Dowód
+- `gra/src/main.ts` — handler `scout-explore` (enable): usunięte `clearPlayerUnitSelection` + `cycleToAdjacentPlayerUnit`
+- WYŁ bez zmian (zostaje zaznaczony, złoto gaśnie)
 
 ---
 

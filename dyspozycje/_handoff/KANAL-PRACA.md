@@ -1,3 +1,9 @@
+## [22:05 PL, 2026-08-04] CLOUD → Maciej — R-SCOUT-ZWIEDZAJ-PODSWIETLENIE Q1=A (kod, bez deploy)
+- ECHO: Q1=A — WŁ Zwiedzaj: zostań na zwiadowcy + złota ramka od razu
+- Usunięte: clearPlayerUnitSelection + cycleToAdjacent przy enable
+- Branch: `cursor/fix-zwiedzaj-podswietlenie-63a1` · PR #100
+CZEKAM-NA: Maciej — **`deploy`** gdy OK
+
 ## [22:00 PL, 2026-08-04] CLOUD → Maciej — R-SCOUT-ZWIEDZAJ-PODSWIETLENIE (ABC)
 - Uśpienie = złota ramka; Zwiedzaj po kliku wygląda martwo
 - Przyczyna: WŁ = odznaczenie + skok na inną jednostkę (ukrywa podświetlenie)

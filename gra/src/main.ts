@@ -14578,12 +14578,12 @@ async function boot(): Promise<void> {
         if (!isScoutUnit(u)) return;
         const enabling = u.autoExplore !== true;
         if (enabling) {
+          // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A: zostań zaznaczony → złota ramka od razu
+          // (wcześniej deselect+cycle ukrywały uc-act-btn--on w momencie kliknięcia).
           clearPlannedMarch(u.id);
           u.autoExplore = true;
           showHintMessage(u.typeId + ' zwiedza map\u0119 \u2014 ruch na koniec tury', 2800);
-          const fromId = u.id;
-          clearPlayerUnitSelection();
-          cycleToAdjacentPlayerUnit(fromId, 1);
+          refreshD1bHud();
         } else {
           u.autoExplore = false;
           showHintMessage('Wy\u0142\u0105czono zwiedzanie', 2000);
