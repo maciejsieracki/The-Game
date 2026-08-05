@@ -168,5 +168,38 @@ console.log('-- E. Normal cap=1: po garnizonie wojsko wypada, budynek z bramki -
   eq(pick, 'palac', 'E: normal po garnizonie → palac gdy studnia zablokowana tech');
 }
 
+console.log('-- F. R-AI-MIASTA-BUDOWY-FIX-Q1: bramka Kamień — nie studnia/garncarnia, palac wygrywa nad Wojownikiem --');
+{
+  const gate = isProductionAllowedFactory(city, startTechs, []);
+  assert(!gate('mp1', 'studnia'), 'F1: studnia zablokowana tech');
+  assert(!gate('mp1', 'garncarnia'), 'F2: garncarnia zablokowana tech');
+  assert(gate('mp1', 'palac'), 'F3: palac dozwolony');
+
+  const pick = chooseCityProduction(
+    'mp1', [city], [guard], 7, gameData, mods,
+    {
+      defensiveCopy: true,
+      menuDifficulty: 'normal',
+      cityBuildings: { mp1: [] },
+      isProductionAllowed: gate,
+    },
+    map, diff,
+  );
+  assert(pick !== 'studnia', 'F4: wynik ≠ studnia (infraOrder nie preferuje zablokowanej)');
+  assert(pick !== 'garncarnia', 'F5: wynik ≠ garncarnia');
+  assert(pick !== 'Wojownik', 'F6: wynik ≠ Wojownik (palac z infraOrder wygrywa score path)');
+  eq(pick, 'palac', 'F7: wybór = palac — pierwszy dozwolony z infraOrder');
+}
+
+console.log('-- G. Bez callbacka isProductionAllowed — regresja A (studnia) --');
+{
+  const pick = chooseCityProduction(
+    'mp1', [city], [guard], 7, gameData, mods,
+    { defensiveCopy: true, cityBuildings: { mp1: [] } },
+    map, diff,
+  );
+  eq(pick, 'studnia', 'G: bez bramki nadal studnia (zero regresji)');
+}
+
 console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed > 0 ? 1 : 0);

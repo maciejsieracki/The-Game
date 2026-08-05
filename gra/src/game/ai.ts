@@ -1256,9 +1256,12 @@ export function chooseCityProduction(
         'targowisko',
         adminBuilding,
       ];
+      const prodAllowed = opts.isProductionAllowed;
       for (let i = 0; i < infraOrder.length; i++) {
         const bid = infraOrder[i]!;
         if (!built.includes(bid)) {
+          // R-AI-MIASTA-BUDOWY-FIX-Q1=A: nie nadawaj score zablokowanym tech (PROD-GATE).
+          if (prodAllowed?.(cityId, bid) === false) continue;
           // Powyżej Mury (defensiveCopy ≈ 420) i Koszar mid-phase (~300).
           candidates.push({ id: bid, score: 450 - i * 12 });
         }
