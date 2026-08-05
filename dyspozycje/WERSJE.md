@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA cbf529f3 - 2026-08-05 23:40 - FALA 246: AI-BALANS-STEP2 + Baszta/stolica docs - **AKTUALNA**
+## ROBOCZA 540d2490 - 2026-08-05 23:55 - FALA 247: STEP3 cuda + smoke STEP2 + Prawo V2 - **AKTUALNA**
+|- md5 (pelne): 540d24909f254a397b0523b975f56c82 · stempel: ROBOCZA · 2026-08-05 21:45 (label 540d2490)
+|- **FALA 247.** (1) AI-BALANS-STEP3 — L3 cuda throttle 3→2. (2) STEP2 smoke metryczny. (3) R-PRAWO-SIATKA-V2 audyt+test. AutoBot PASS · tipy `e2d9626`/`3997196`/`d3aadb6`.
+|- Grok deploy (Maciej „1+2+3” osobnymi subagentami · SOLO-Q1=A). smoke PASS · step3 8/8 · prawo 55/55 · VERIFY OK.
+
+## ROBOCZA cbf529f3 - 2026-08-05 23:40 - FALA 246: AI-BALANS-STEP2 + Baszta/stolica docs - **ZASTĄPIONA** (→ 540d2490)
 |- md5 (pelne): cbf529f3c2671b7f0b01ab25ae6cf01c · stempel: ROBOCZA · 2026-08-05 21:36 (label cbf529f3)
 |- **FALA 246.** (1) AI-BALANS-STEP2 — L3 pokój −40 score Wojownik (C.3 Ś2). (2) R-BASZTA + R-STOLICA-REGION — docs/rejestr + fix testu (gameplay już na main). AutoBot PASS-WITH-NOTES · tipy `9ba0aab`/`1015660` · step2 9/9 · stolica 48/48.
 |- Grok deploy (Maciej „2 i 3” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.

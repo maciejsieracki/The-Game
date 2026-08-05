@@ -1,6 +1,6 @@
 # AI-BALANS-STEP3 — L3 cuda: throttle 3→2
 
-**Status:** 🟡 **Operator** `cursor/ai-balans-step3-63a1` · 2026-08-05  
+**Status:** 🟢 **ZDEPLOYOWANE** FALA 247 ROBOCZA `540d2490` · 2026-08-05  
 **Źródło audytu:** `R-AI-TRUDNOSC-AUDYT.md` §C.3 Ś1 — `cuda_poziom3_throttle_tur` 3→2
 
 ## AC (jedna mała dźwignia)

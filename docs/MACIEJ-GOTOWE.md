@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 246** `cbf529f3` — AI-BALANS-STEP2 (L3 pokój −40 Wojownik) + zamknięcie Baszta/stolica w rejestrze. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+﻿- ✅ **FALA 247** `540d2490` — STEP3 cuda L3 throttle 2 · smoke STEP2 · Prawo V2 audyt. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+- ✅ **FALA 246** `cbf529f3` — AI-BALANS-STEP2 + Baszta/stolica. **ZASTĄPIONA** przez 247.
 - ✅ **FALA 245** `8b6e0cfe` — dyplo: dock jednostki ukryty gdy otwarta dyplomacja. **ZASTĄPIONA** przez 246.
 - ✅ **FALA 244** `0757265a` — MP: infra nie daje score zablokowanym budynkom (PROD-GATE). **ZASTĄPIONA** przez 245.
 - ✅ **FALA 243** `01f6024a` — dyplo: pełny katalog akcji + szare z **stałym** powodem · audyt MP budów (bez fix). **ZASTĄPIONA** przez 244.
