@@ -1,3 +1,11 @@
+﻿## [15:45 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P0 W TOKU (Maciej „1")
+
+Maciej wybrał **1 = wdrażaj P0** (AutoBot). Branch `cursor/fix-ai-trudnosc-p0-63a1`.
+- P0-1: `bonus_produkcja` → realna Praca major AI (1+bonus; scoring zostaje)
+- P0-2: `chooseAIResearch` ids `spichlerz`/`cegielnia`
+- P0-3: L3 `bonus_nauka` = 2
+Deploy dopiero na hasło. CZEKAM-NA: Operator → Evaluator → Grok
+
 ## [15:05 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC-AUDYT PASS (plan gotowy)
 |- Operator `a568a18` · Evaluator PASS-WITH-NOTES · scope major AI only
 |- Top: majorEarly ×0.55 · earlyPhase <3 miast · canAfford=null · bonus_produkcja tylko scoring · L3 nauka < L2
