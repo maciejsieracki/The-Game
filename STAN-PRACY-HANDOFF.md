@@ -1,16 +1,18 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~14:58** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~19:29** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 235 (2026-08-05):** ROBOCZA `9c0a38ae` · WIAR R1b one-shot tempo. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 236 (2026-08-05):** ROBOCZA `03a19191` · WIAR UI życiorys vs bieżące. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+>
+> **FALA 235 (2026-08-05):** ROBOCZA `9c0a38ae` · WIAR R1b one-shot tempo. **ZASTĄPIONA** przez FALA 236.
 >
 > **FALA 234 (2026-08-05):** ROBOCZA `7d86fa19` · WIAR R1 tempo. **ZASTĄPIONA** przez FALA 235.
 >
 > **FALA 233 (2026-08-05):** ROBOCZA `06712ea4` · C-FLANK replay + WIAR Etap0. **ZASTĄPIONA** przez FALA 234.
 >
-> **SOLO kolejka:** ECHO 12/12 ✅ · FALA 232–235 · WIAR R1/R1b/R3/R4 ✅ · playtesty otwarte (GATE=A) · scena pominięta (Q2=B).
+> **SOLO kolejka:** ECHO 12/12 ✅ · FALA 232–236 · WIAR R1/R1b/R3/R4/UI ✅ · playtesty otwarte (GATE=A) · scena pominięta (Q2=B).
 >
 > **FALA 232 (2026-08-05):** ROBOCZA `fca41b9a` · muzyka+węgiel+bitwa I. **ZASTĄPIONA** przez FALA 233.
 >

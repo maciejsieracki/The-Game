@@ -1,3 +1,12 @@
+﻿## [19:29 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 236 03a19191
+
+Maciej „2”=WIAR dalej · UI rozbicie życiorys/bieżące · AutoBot PASS · tip `18cb4f7`
+|- md5: 03a19191ae5a5c313417a67a386f9399 · stempel: ROBOCZA · 03a19191
+|- Batch: `rozbicieWiarygodnosci` + tooltip audiencji + linia „życiorys · bieżące”
+|- Testy: wiarygodnosc 136/136 · tsc 0
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
 ## [19:20 PL, 2026-08-05] GROK → Maciej — WIAR R3+R4 zmergowane (bez nowej FALI)
 
 Maciej „2” · AutoBot PASS · tip `c8a0113`

@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 9c0a38ae - 2026-08-05 19:15 - FALA 235: WIAR R1b tempo one-shot - **AKTUALNA**
+## ROBOCZA 03a19191 - 2026-08-05 19:29 - FALA 236: WIAR UI życiorys vs bieżące - **AKTUALNA**
+|- md5 (pelne): 03a19191ae5a5c313417a67a386f9399 · stempel: ROBOCZA · 2026-08-05 17:29 (label 03a19191)
+|- **FALA 236.** WIAR UI §4/§7: rozbicie „trwały życiorys” vs „bieżące uczynki” (tooltip + linia pod paskiem audiencji). AutoBot PASS · tip `18cb4f7` · wiarygodnosc 136/136.
+|- Grok deploy (Maciej „2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 9c0a38ae - 2026-08-05 19:15 - FALA 235: WIAR R1b tempo one-shot - **ZASTĄPIONA** (→ 03a19191)
 |- md5 (pelne): 9c0a38ae821034e283a794806853e788 · stempel: ROBOCZA · 2026-08-05 17:15 (label 9c0a38ae)
 |- **FALA 235.** WIAR R1b: applyDiplomaticEvent mnoży dZ tempa (nie dR); applyDiploEventTracked przekazuje W. AutoBot PASS · tip `1c7e650` · wiarygodnosc 110/110 · diplomacy 148/148.
 |- Grok deploy (Maciej „2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.

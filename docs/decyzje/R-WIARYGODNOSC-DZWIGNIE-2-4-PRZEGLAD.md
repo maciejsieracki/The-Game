@@ -25,7 +25,7 @@
 ## Ryzyka podwójnej kary / nakładania
 
 1. **N1+N2 przy wojnie na sojusznika** — spec: suma −35 max; kod: `appendWiarygodnoscEvent` per typ — **OK jeśli** każdy hak woła osobno (weryfikacja przy pełnym D1).
-2. **D4 start + D1 dryf** — nowy sąsiad z W=−60: start Zaufania −6 pkt (round(−60/20)×2) + dryf −1,8/turę — **zamierzone**, ale UI musi to rozdzielić (start vs bieżące).
+2. **D4 start + D1 dryf** — nowy sąsiad z W=−60: start Zaufania −6 pkt (round(−60/20)×2) + dryf −1,8/turę — **zamierzone**. **UI rozbicie W (FALA 236):** audiencja pokazuje „życiorys · bieżące” + tooltip (`rozbicieWiarygodnosci`) — gracz widzi składowe reputacji (nie mylić z D4 start Zaufania, które jest per-relacja).
 3. **D3 bramka + niska Zaufanie** — odmowa sojuszu z powodu W<0 **nie** nakłada kary N* — **OK**.
 4. **Dźwignia 2** — nie reintrodukować bez nowej decyzji; dublowałaby D1.
 
