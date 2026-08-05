@@ -55,7 +55,7 @@ export function hudRightRailBottomPx(): number {
   return HUD_TOP_PX + Math.max(HUD_RIGHT_CHIP_ROW_H_PX, HUD_RIGHT_ACTION_ROW_H_PX);
 }
 
-/** CSS `right` klastra Wiki/Menu w widoku miasta. */
+/** CSS `right` klastra Civpedia/Menu w widoku miasta. */
 export function cityViewRightClusterRightCss(): string {
   return `calc(${CITY_EDGE_PX}px + min(26vw,${CITY_RIGHT_PANEL_W_PX}px) + ${CITY_RAIL_GAP_PX}px + ${CITY_ICON_RAIL_W_PX}px + ${HUD_GAP_PX}px)`;
 }

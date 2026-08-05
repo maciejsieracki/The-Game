@@ -189,7 +189,7 @@ export interface HudConfig {
   onOpenScience?: () => void;
   onOpenDiplomacy?: () => void;
   onOpenMenu?: () => void;
-  /** Wikipedia — poradnik + encyklopedia (toolbar + przycisk przy minimapie). */
+  /** Civpedia — poradnik + encyklopedia (toolbar + przycisk przy minimapie). */
   onOpenWiki?: () => void;
   isWikiActive?: () => boolean;
 
@@ -1027,7 +1027,7 @@ function renderBarD1B(s: HudState): string {
   const menuIc = brandIconSvg('ui-menu', 24);
   const wikiOn = cfg?.isWikiActive?.() ?? false;
   const wikiBtn = (!mapChromeSuppressed && cfg?.onOpenWiki)
-    ? '<button type="button" class="b-wiki' + (wikiOn ? ' on' : '') + '" data-act="wiki" title="Civpedia — poradnik i encyklopedia">'
+    ? '<button type="button" class="b-wiki' + (wikiOn ? ' on' : '') + '" data-act="wiki" aria-label="Civpedia — poradnik i encyklopedia" title="Civpedia — poradnik i encyklopedia">'
       + wikiBookIcon(16)
       + '<span>Civpedia</span></button>'
     : '';

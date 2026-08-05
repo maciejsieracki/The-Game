@@ -23,9 +23,9 @@ Budynki wznosisz w zakładce **Produkcja** panelu miasta. Koszt budowy to **prac
 
 Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazuje brakujący chip surowca. Pełny mechanizm (magazyn per miasto, dostęp do złóż) — Część VIII §53.
 
-## Tabela wszystkich budynków (26 z 37 — patrz weryfikacja wyżej)
+## Tabela wszystkich budynków (27 z 37 — patrz weryfikacja wyżej)
 
-| Budynek | Kategoria | Epoka | Tech | Koszt (poz. 1) | Utrzymanie | Bonus poz. 1 | Wiki |
+| Budynek | Kategoria | Epoka | Tech | Koszt (poz. 1) | Utrzymanie | Bonus poz. 1 | Civpedia |
 |---------|-----------|-------|------|----------------|------------|--------------|------|
 | Stolarnia | Produkcja | Kamień | Obróbka drewna | 20 pracy | 1 ¤/t | +5 praca | [Stolarnia](../encyklopedia/budynki/stolarnia.md) |
 | Warsztat kamieniarski | Produkcja | Kamień | Murarstwo | 20 pracy | 1 ¤/t | +4 praca | [Warsztat kamieniarski](../encyklopedia/budynki/kamieniarski.md) |
@@ -44,6 +44,7 @@ Brak materiału w magazynie blokuje wejście do kolejki — karta budynku pokazu
 | Kuźnia żelaza | Produkcja+Wojsko | Żelazo | Hutnictwo żelaza | 60 pracy | 3 ¤/t | +8 praca, +2 ¤; +15% Pancerz (wizyta) | [Kuźnia żelaza](../encyklopedia/budynki/kuznia_zelaza.md) |
 | Wielka Kuźnia | Produkcja | ⏸️ epoka 4 | Obróbka żelaza | 90 pracy | 4 ¤/t | **niedostępna** w 3 epokach v1 | [Wielka Kuźnia](../encyklopedia/budynki/wielka_kuznia.md) |
 | Cytadela (dawny Fort) | Obrona | Żelazo | Inżynieria | 70 pracy + kamień | 3 ¤/t | +100% Obrony obok Murów | [Fort](../encyklopedia/budynki/fort.md) |
+| Baszta | Obrona | Żelazo | Inżynieria | 70 pracy + drewno/kamień | 3 ¤/t | +100% Obrony obok Murów (wymaga Murów) | [Baszta](../encyklopedia/budynki/baszta.md) |
 | Warsztat oblężniczy | Wojsko | Żelazo | Oblężnictwo | 65 pracy | 3 ¤/t | Katapulta; +10% miękkie | [Warsztat oblężniczy](../encyklopedia/budynki/warsztat_oblezniczy.md) |
 | Akademia | Nauka | Żelazo | Filozofia | 70 pracy | 3 ¤/t | +6 nauka, +5 kultura (obok Biblioteki) | [Akademia](../encyklopedia/budynki/akademia.md) |
 | Teatr | Kultura | Żelazo | Filozofia | 55 pracy | 2 ¤/t | +4 kultura, +3 szczęście | [Teatr](../encyklopedia/budynki/teatr.md) |
