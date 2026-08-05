@@ -18,7 +18,7 @@
 | Mechanizm | Spec | Kod | Status |
 |-----------|------|-----|--------|
 | Pasywny dryf ΔZ = W×0,03/turę | REL-WIARYG-DRIFT-Q1 | `zaufanieDryfOdWiarygodnosci` w `computeTickZaufanieDelta` | ✅ Wpięte |
-| Mnożnik tempa wzrost/spadek ΔZ | WIAR-Q3=C | `applyWiarygodnoscTempoDoDelty` w `computeTickZaufanieDelta` | ✅ **WDROŻONE (R1, 2026-08-05)** |
+| Mnożnik tempa wzrost/spadek ΔZ | WIAR-Q3=C | `applyWiarygodnoscTempoDoDelty` w `computeTickZaufanieDelta` + `applyDiplomaticEvent` | ✅ **WDROŻONE (R1 + R1b, 2026-08-05)** |
 | Strumień S1–S4 (zobowiązania) | §3 | `wiarygodnoscStrumienByOwner`, `tickCredibilityStreamEntry` | ✅ W main.ts |
 | Legacy W/20 strumień | Zastąpiony | `strumienWiarygodnoscDoZaufania` @deprecated | Nie używać |
 
@@ -34,6 +34,7 @@
 | # | Rekomendacja | Priorytet |
 |---|--------------|-----------|
 | R1 | **D1:** wpiąć `applyWiarygodnoscTempoDoDelty` w `tickDiplomacy` **albo** oficjalnie wycofać mnożnik — jedna ścieżka, nie oba dryf + mnożnik bez decyzji | ✅ **WDROŻONE** (2026-08-05, branch `cursor/fix-wiar-r1-tempo-63a1`) |
+| R1b | **D1 one-shot:** ten sam mnożnik w `applyDiplomaticEvent` + `applyDiploEventTracked` | ✅ **WDROŻONE** (2026-08-05, branch `cursor/fix-wiar-tempo-oneshot-63a1`) |
 | R2 | **D2:** utrzymać WYCOFANE — dokumentacja OK, kod czysty | Zamknięte |
 | R3 | **D3:** bez zmian; opcjonalnie potwierdzić bramkę Wasalizacja/Trybut (spec §5 uwaga) | P2 |
 | R4 | **D4:** utrzymać; przy testach balansu liczyć D4+D1 łącznie | P1 |

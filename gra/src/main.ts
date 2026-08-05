@@ -6760,7 +6760,10 @@ async function boot(): Promise<void> {
       event: DiplomaticEvent,
       params?: Partial<DiplomacyParams>,
     ): Relation {
-      const next = applyDiplomaticEvent(cur, event, params);
+      const playerInPair = a === 0 || b === 0;
+      const wiarygodnosc =
+        cur.status === 'wojna' || !playerInPair ? undefined : getWiarygodnosc(0);
+      const next = applyDiplomaticEvent(cur, event, params, wiarygodnosc);
       const dZ = next.zaufanie - cur.zaufanie;
       const dR = next.respekt - cur.respekt;
       if (dZ !== 0) recordDiploFactor(a, b, event, dZ);

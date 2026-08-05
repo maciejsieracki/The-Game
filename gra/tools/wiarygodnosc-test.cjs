@@ -56,7 +56,7 @@ fs.writeFileSync(
   tickCredibilityStreamEntry,
   sumaWiarygodnosciCalkowita,
 } from '../src/game/diplomacy-credibility';
-export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta } from '../src/game/diplomacy';
+export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent } from '../src/game/diplomacy';
 export {
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,
@@ -460,6 +460,51 @@ function freshRdip(zaufanie, status) {
   const rawDZ = P.sojusz_zaufanie_perTura + WC.zaufanieDryfOdWiarygodnosci(100);
   const expectedDelta = WC.applyWiarygodnoscTempoDoDelty(rawDZ, 100);
   ok(approxEqual(after.zaufanie, 10 + expectedDelta), `tickDiplomacy: klamruje W>100 przed dryfem+tempo (got ${after.zaufanie})`);
+}
+
+// ---------------------------------------------------------------------------
+// 8c) Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa w applyDiplomaticEvent (WIAR R1b)
+// ---------------------------------------------------------------------------
+
+function relOneShot(z, r = 30, status = 'neutralni') {
+  return { zaufanie: z, respekt: r, status };
+}
+
+{
+  // pokoj +5, W=+100 → ×1.5 = +7.5
+  const r = WC.applyDiplomaticEvent(relOneShot(20), 'pokoj', {}, 100);
+  ok(approxEqual(r.zaufanie, 27.5), `one-shot pokoj W=+100 → +7.5 Z (got ${r.zaufanie})`);
+}
+
+{
+  // pokoj +5, W=−100 → ×0.5 = +2.5
+  const r = WC.applyDiplomaticEvent(relOneShot(20), 'pokoj', {}, -100);
+  ok(approxEqual(r.zaufanie, 22.5), `one-shot pokoj W=−100 → +2.5 Z (got ${r.zaufanie})`);
+}
+
+{
+  // tarcia_graniczne −2, W=+100 → ×0.5 = −1
+  const r = WC.applyDiplomaticEvent(relOneShot(20), 'tarcia_graniczne', {}, 100);
+  ok(approxEqual(r.zaufanie, 19), `one-shot tarcia W=+100 → −1 Z (got ${r.zaufanie})`);
+}
+
+{
+  // tarcia_graniczne −2, W=−100 → ×1.5 = −3
+  const r = WC.applyDiplomaticEvent(relOneShot(20), 'tarcia_graniczne', {}, -100);
+  ok(approxEqual(r.zaufanie, 17), `one-shot tarcia W=−100 → −3 Z (got ${r.zaufanie})`);
+}
+
+{
+  // ultimatum_bezpodstawne: dZ=−10, dR=−10 — tylko Z dostaje mnożnik
+  const r = WC.applyDiplomaticEvent(relOneShot(30, 40), 'ultimatum_bezpodstawne', {}, 100);
+  ok(approxEqual(r.zaufanie, 25), `one-shot ultimatum: dZ −10×0.5=−5, R bez mnożnika (got Z=${r.zaufanie})`);
+  ok(r.respekt === 30, `one-shot ultimatum: Respekt −10 bez mnożnika (got R=${r.respekt})`);
+}
+
+{
+  // brak W → nominalne wartości (kompatybilność diplomacy-test)
+  const r = WC.applyDiplomaticEvent(relOneShot(20), 'pomoc_sojusznikowi');
+  ok(r.zaufanie === 30, `one-shot bez W → nominal +10 Z (got ${r.zaufanie})`);
 }
 
 // ---------------------------------------------------------------------------

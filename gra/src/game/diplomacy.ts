@@ -783,13 +783,14 @@ export type DiplomaticEvent =
  *
  * All values are clamped to [0, 100] per component after application.
  *
- * TODO (WIAR-Q3=C): opcjonalny parametr `wiarygodnosc?: number` do mnożnika tempa
- * na dZ — wymaga aktualizacji call-site'ów w main.ts; na razie tylko tickDiplomacy.
+ * `wiarygodnosc` (WIAR-Q3=C): opcjonalny mnożnik tempa na dZ (nie dotyka dR).
+ * Gdy pominięty — dZ bez mnożnika (np. para AI↔AI lub wojna).
  */
 export function applyDiplomaticEvent(
   rel:    Relation,
   event:  DiplomaticEvent,
-  params: Partial<DiplomacyParams> = {}
+  params: Partial<DiplomacyParams> = {},
+  wiarygodnosc?: number,
 ): Relation {
   const p = { ...DIPLOMACY_PARAMS, ...params };
 
@@ -939,6 +940,8 @@ export function applyDiplomaticEvent(
       dZ = -15;
       break;
   }
+
+  dZ = applyWiarygodnoscTempoDoDelty(dZ, wiarygodnosc);
 
   const newZ = clamp(rel.zaufanie + dZ, 0, 100);
   const newR = clamp(rel.respekt  + dR, 0, 100);

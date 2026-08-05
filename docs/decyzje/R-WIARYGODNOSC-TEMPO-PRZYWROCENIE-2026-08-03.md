@@ -28,7 +28,7 @@ Klamrowane W do −100…+100 przed wzorem.
 
 - `gra/src/game/diplomacy-credibility.ts` — `wiarygodnoscWzrostMult`, `wiarygodnoscSpadekMult`, `applyWiarygodnoscTempoDoDelty`; `strumienWiarygodnoscDoZaufania` oznaczony legacy/ANULOWANY.
 - `gra/src/game/diplomacy.ts` — `tickDiplomacy`: mnożnik na zsumowanym `dZ` (przed war-zeroing i clamp).
-- `applyDiplomaticEvent` — TODO (osobna paczka, call-site'y w main.ts).
+- `applyDiplomaticEvent` — **✅ WDROŻONE (R1b, 2026-08-05)** — opcjonalny `wiarygodnosc` → `applyWiarygodnoscTempoDoDelty` na dZ (nie dR); `applyDiploEventTracked` w `main.ts` przekazuje `getWiarygodnosc(0)` dla par gracz↔AI poza wojną.
 
 ## Przykłady
 
