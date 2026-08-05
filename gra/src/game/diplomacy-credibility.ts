@@ -345,6 +345,98 @@ export function sumaWiarygodnosciCalkowita(
 }
 
 // ---------------------------------------------------------------------------
+// §4 pkt 9 / §7 UI — rozbicie „trwały życiorys" vs „bieżące uczynki"
+// ---------------------------------------------------------------------------
+
+/** Trwały ślad jednorazowego zdarzenia — 10% wartości pierwotnej (§4, na zawsze). */
+export function trwalySlad(zdarzenie: CredibilityEventRecord): number {
+  return zdarzenie.wartoscPierwotna * DIPLOMACY_PARAMS.wiarygodnoscTrwalaPodlogaProcent;
+}
+
+/**
+ * Aktywna (jeszcze wygasająca) część zdarzenia ponad trwałą podłogę:
+ * wartośćBieżąca − trwałySlad (0 po pełnym czasie zapomnienia).
+ */
+export function aktywnaCzesc(
+  zdarzenie: CredibilityEventRecord,
+  tura: number,
+  poziomTrudnosci: GameDifficulty,
+): number {
+  return wartoscBiezaca(zdarzenie, tura, poziomTrudnosci) - trwalySlad(zdarzenie);
+}
+
+/** Rozbicie Wiarygodności do tooltipa i linii UI (§4 pkt 9). */
+export interface WiarygodnoscRozbicie {
+  /** Wartość startowa wg trudności (bez zdarzeń). */
+  startowa: number;
+  /** Σ trwałych śladów zdarzeń jednorazowych. */
+  trwalyZyciorys: number;
+  /** Σ aktywnych części zdarzeń + strumień S1–S4. */
+  biezaceUczynki: number;
+  /** Σ strumienia S1–S4 (podzbiór biezaceUczynki, dla tooltipa). */
+  strumien: number;
+  /** Suma klamrowana −100…+100 (jak sumaWiarygodnosciCalkowita). */
+  razem: number;
+}
+
+/**
+ * Rozbija Wiarygodność na składowe: startowa + trwały życiorys + bieżące uczynki.
+ * Składowe przed klamrowaniem mogą wyjść poza ±100; `razem` jest klamrowane.
+ */
+export function rozbicieWiarygodnosci(
+  zdarzenia: readonly CredibilityEventRecord[],
+  wpisyStrumienia: readonly CredibilityStreamEntry[],
+  startowa: number,
+  tura: number,
+  poziomTrudnosci: GameDifficulty,
+): WiarygodnoscRozbicie {
+  let trwalyZyciorys = 0;
+  let aktywneZdarzenia = 0;
+  for (const zdarzenie of zdarzenia) {
+    trwalyZyciorys += trwalySlad(zdarzenie);
+    aktywneZdarzenia += aktywnaCzesc(zdarzenie, tura, poziomTrudnosci);
+  }
+  const strumien = sumaStrumienia(wpisyStrumienia);
+  const biezaceUczynki = aktywneZdarzenia + strumien;
+  const surowa = startowa + trwalyZyciorys + biezaceUczynki;
+  return {
+    startowa,
+    trwalyZyciorys,
+    biezaceUczynki,
+    strumien,
+    razem: clamp(surowa, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax),
+  };
+}
+
+/** Format pkt Wiarygodności do tooltipa PL (przecinek dziesiętny, znak ±). */
+function formatWiarygodnoscPktPl(v: number): string {
+  const rounded = Math.round(v * 10) / 10;
+  if (rounded === 0) return '0';
+  const sign = rounded > 0 ? '+' : '−';
+  const abs = Math.abs(rounded);
+  const body = Number.isInteger(abs) ? String(abs) : abs.toFixed(1).replace('.', ',');
+  return sign + body;
+}
+
+/**
+ * Krótki tooltip PL z rozbiciem (§7 UI), np.:
+ * „Wiarygodność +12 · Uczciwy. Start +20 · Trwały życiorys −3,5 · Bieżące uczynki −4,5
+ * (w tym strumień +1,2). Nie wraca w pełni do startu — ślady zostają."
+ */
+export function wiarygodnoscTooltipRozbiciePl(rozbicie: WiarygodnoscRozbicie, bandLabel: string): string {
+  let s =
+    `Wiarygodność ${formatWiarygodnoscPktPl(rozbicie.razem)} · ${bandLabel}.`
+    + ` Start ${formatWiarygodnoscPktPl(rozbicie.startowa)}`
+    + ` · Trwały życiorys ${formatWiarygodnoscPktPl(rozbicie.trwalyZyciorys)}`
+    + ` · Bieżące uczynki ${formatWiarygodnoscPktPl(rozbicie.biezaceUczynki)}`;
+  if (rozbicie.strumien !== 0) {
+    s += ` (w tym strumień ${formatWiarygodnoscPktPl(rozbicie.strumien)})`;
+  }
+  s += '. Nie wraca w pełni do startu — ślady zostają.';
+  return s;
+}
+
+// ---------------------------------------------------------------------------
 // §5 — Dźwignia 1: mnożnik tempa Wiarygodność → Zaufanie (WIAR-Q3=C)
 // ---------------------------------------------------------------------------
 

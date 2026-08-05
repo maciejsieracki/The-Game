@@ -56,6 +56,10 @@ fs.writeFileSync(
   freshCredibilityStreamEntry,
   tickCredibilityStreamEntry,
   sumaWiarygodnosciCalkowita,
+  trwalySlad,
+  aktywnaCzesc,
+  rozbicieWiarygodnosci,
+  wiarygodnoscTooltipRozbiciePl,
 } from '../src/game/diplomacy-credibility';
 export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent } from '../src/game/diplomacy';
 export {
@@ -627,6 +631,68 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
   // computeTickZaufanieDelta — ta sama ścieżka co tickDiplomacy dla samego dryfu
   const dTick = WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: -60 }, false);
   ok(approxEqual(dTick, -2.34), `R4 computeTickZaufanieDelta W=−60 = dryf×tempo (got ${dTick})`);
+}
+
+// ---------------------------------------------------------------------------
+// 8b) Rozbicie — trwały życiorys vs bieżące uczynki (§4 pkt 9 / §7 UI)
+// ---------------------------------------------------------------------------
+
+{
+  const zdarzenie = {
+    typ: 'zlamanie_paktu_sojusz',
+    wartoscPierwotna: -25,
+    turaWystapienia: 0,
+    znak: 'kara',
+  };
+  const startowa = WC.wiarygodnoscStartowa('normal'); // +20
+  const trwaly = WC.trwalySlad(zdarzenie);
+  ok(approxEqual(trwaly, -2.5), `trwalySlad N2 −25 → −2,5 (got ${trwaly})`);
+
+  const aktywnaSwieza = WC.aktywnaCzesc(zdarzenie, 0, 'normal');
+  ok(approxEqual(aktywnaSwieza, -22.5), `aktywnaCzesc świeża N2 → −22,5 (got ${aktywnaSwieza})`);
+
+  const czas = P.wiarygodnoscCzasZapomnieniaKaraNormalny;
+  const aktywnaPoWygasnieciu = WC.aktywnaCzesc(zdarzenie, czas, 'normal');
+  ok(approxEqual(aktywnaPoWygasnieciu, 0), `aktywnaCzesc po pełnym czasie zapomnienia = 0 (got ${aktywnaPoWygasnieciu})`);
+  ok(approxEqual(WC.trwalySlad(zdarzenie), -2.5), `trwalySlad po wygasnięciu nadal −2,5`);
+
+  const rozbicieSwieze = WC.rozbicieWiarygodnosci([zdarzenie], [], startowa, 0, 'normal');
+  ok(approxEqual(rozbicieSwieze.trwalyZyciorys, -2.5), `rozbicie trwalyZyciorys ≈ −2,5 (got ${rozbicieSwieze.trwalyZyciorys})`);
+  ok(approxEqual(rozbicieSwieze.biezaceUczynki, -22.5), `rozbicie biezaceUczynki bez strumienia ≈ −22,5 (got ${rozbicieSwieze.biezaceUczynki})`);
+
+  const rozbiciePo = WC.rozbicieWiarygodnosci([zdarzenie], [], startowa, czas, 'normal');
+  ok(approxEqual(rozbiciePo.biezaceUczynki, 0), `rozbicie po wygasnięciu: biezaceUczynki = 0 (got ${rozbiciePo.biezaceUczynki})`);
+  ok(approxEqual(rozbiciePo.trwalyZyciorys, -2.5), `rozbicie po wygasnięciu: trwalyZyciorys = −2,5`);
+
+  const calkowita = WC.sumaWiarygodnosciCalkowita([zdarzenie], [], startowa, 0, 'normal');
+  ok(rozbicieSwieze.razem === calkowita, `rozbicie.razem === sumaWiarygodnosciCalkowita (got ${rozbicieSwieze.razem} vs ${calkowita})`);
+}
+
+{
+  const startowa = 20;
+  let streamEntry = WC.freshCredibilityStreamEntry('strumien_nap');
+  streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
+  streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
+  streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
+  const stream = [streamEntry];
+  const strumienSuma = WC.sumaStrumienia(stream);
+  ok(approxEqual(strumienSuma, 1.5), `strumień po 3 tikach S2 = +1,5 (got ${strumienSuma})`);
+
+  const rozbicie = WC.rozbicieWiarygodnosci([], stream, startowa, 0, 'normal');
+  ok(approxEqual(rozbicie.strumien, 1.5), `rozbicie.strumien = +1,5 (got ${rozbicie.strumien})`);
+  ok(approxEqual(rozbicie.biezaceUczynki, 1.5), `strumień w biezaceUczynki (got ${rozbicie.biezaceUczynki})`);
+  ok(rozbicie.trwalyZyciorys === 0, 'strumień NIE wchodzi do trwalyZyciorys');
+
+  const calkowita = WC.sumaWiarygodnosciCalkowita([], stream, startowa, 0, 'normal');
+  ok(rozbicie.razem === calkowita, `rozbicie ze strumieniem: razem === sumaWiarygodnosciCalkowita (got ${rozbicie.razem})`);
+}
+
+{
+  const startowa = 20;
+  const rozb = WC.rozbicieWiarygodnosci([], [], startowa, 0, 'normal');
+  const tip = WC.wiarygodnoscTooltipRozbiciePl(rozb, 'Uczciwy');
+  ok(tip.includes('Start +20'), 'tooltip zawiera Start +20');
+  ok(tip.includes('Nie wraca w pełni'), 'tooltip zawiera przypomnienie o śladach');
 }
 
 // ---------------------------------------------------------------------------

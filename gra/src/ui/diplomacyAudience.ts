@@ -11,7 +11,11 @@ import {
   TRAKTAT_HANDLOWY_LABEL,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
-import { wiarygodnoscLabelPl } from '../game/diplomacy-credibility';
+import {
+  wiarygodnoscLabelPl,
+  wiarygodnoscTooltipRozbiciePl,
+  type WiarygodnoscRozbicie,
+} from '../game/diplomacy-credibility';
 import {
   civLeaderMedallionHtmlById,
   dipBrandIconHtml,
@@ -152,6 +156,8 @@ export interface DiplomacyAudienceState {
    * SILNIK: getWiarygodnosc(0) · diplomacy-credibility.ts.
    */
   playerWiarygodnosc?: number;
+  /** Rozbicie W: trwały życiorys vs bieżące uczynki (§4 pkt 9) — tooltip audiencji. */
+  playerWiarygodnoscRozbicie?: WiarygodnoscRozbicie;
   /** Skarbiec gracza (kwota złota) — pkt 5: u gracza zamiast paska Zaufanie/Respekt. */
   playerSkarbiec?: number;
   /** Dochód złota/turę gracza (informacyjnie, jeśli dostępny — cache silnika). */
@@ -386,8 +392,11 @@ function onAudienceEsc(ev: KeyboardEvent): void {
 
 const RESPEKT_TOOLTIP_PL =
   'Respekt = jak duża jest wasza Moc w porównaniu z tą nacją. 50 = równi. Wyżej = jesteś silniejszy.';
+const WIARYGODNOSC_TOOLTIP_DEF_PL =
+  'Wiarygodność (W) = globalna reputacja twojego państwa (−100…+100). Twarde bramki: sojusz W≥0, pakt o nieagresji W≥−40.';
 const WIARYGODNOSC_TOOLTIP_PL =
-  'Wiarygodność (W) = globalna reputacja twojego państwa (−100…+100). Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Twarde bramki: sojusz wymaga W≥0, pakt o nieagresji W≥−40. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal" (±%).';
+  WIARYGODNOSC_TOOLTIP_DEF_PL
+  + ' Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal" (±%).';
 
 const STYLE_ID = 'civ-diplo-aud-css-1e';
 
@@ -477,6 +486,7 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rbar.trust i{background:linear-gradient(90deg,#2f7a4a,#5ad07a);}
 .da-rbar.respect i{background:linear-gradient(90deg,#9a7420,#e8d88a);}
 .da-rbar.credibility i{background:linear-gradient(90deg,#3a4a7a,#7aa0e8);}
+.da-credibility-hint{font-size:0.58em;color:#6a7080;line-height:1.35;margin-top:2px;}
 .da-goods{display:flex;flex-wrap:wrap;gap:5px;}
 .da-good{font-size:0.62em;padding:3px 8px;border-radius:7px;border:1px solid rgba(232,216,138,.2);
   background:rgba(24,30,42,.65);color:#c8b898;white-space:nowrap;}
@@ -1146,7 +1156,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
       (st.playerWiarygodnosc !== undefined
         ? '<div>' +
             '<div class="da-sec-title">Reputacja</div>' +
-            credibilityBarHtml(st.playerWiarygodnosc) +
+            credibilityBarHtml(st.playerWiarygodnosc, st.playerWiarygodnoscRozbicie) +
           '</div>'
         : '') +
       '<div>' +
@@ -1248,16 +1258,36 @@ function progressBarHtml(
 }
 
 /** Pasek globalnej Wiarygodności gracza (−100…+100) — skala bipolarna jak Zaufanie/Respekt u rozmówcy. */
-function credibilityBarHtml(value: number): string {
+function credibilityBarHtml(value: number, rozbicie?: WiarygodnoscRozbicie): string {
   const w = Math.round(Math.max(-100, Math.min(100, value)));
   const pct = Math.round(((w + 100) / 200) * 100);
   const signed = w > 0 ? '+' + w : String(w);
   const band = wiarygodnoscLabelPl(w);
-  const tip = ' title="' + esc(WIARYGODNOSC_TOOLTIP_PL) + '"';
+  const tipBody = rozbicie
+    ? WIARYGODNOSC_TOOLTIP_DEF_PL + ' ' + wiarygodnoscTooltipRozbiciePl(rozbicie, band)
+    : WIARYGODNOSC_TOOLTIP_PL;
+  const tip = ' title="' + esc(tipBody) + '"';
+  const hint = rozbicie && (rozbicie.trwalyZyciorys !== 0 || rozbicie.biezaceUczynki !== 0)
+    ? '<div class="da-credibility-hint">życiorys '
+      + formatCredibilityHintPkt(rozbicie.trwalyZyciorys)
+      + ' · bieżące '
+      + formatCredibilityHintPkt(rozbicie.biezaceUczynki)
+      + '</div>'
+    : '';
   return (
     '<div class="da-rel-row credibility"' + tip + '><span>Wiarygodność</span><span class="v">' + signed + ' · ' + esc(band) + '</span></div>' +
-    '<div class="da-rbar credibility"><i style="width:' + pct + '%"></i></div>'
+    '<div class="da-rbar credibility"><i style="width:' + pct + '%"></i></div>' +
+    hint
   );
+}
+
+function formatCredibilityHintPkt(v: number): string {
+  const rounded = Math.round(v * 10) / 10;
+  const sign = rounded > 0 ? '+' : '';
+  const body = Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(1).replace('.', ',');
+  return sign + body;
 }
 
 /** Ikona kafelka „Możliwe umowy" — dopasowana per id akcji (data/diplomacy.json akcje_dyplomatyczne). */

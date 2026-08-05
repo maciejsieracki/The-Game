@@ -1051,6 +1051,7 @@ import {
 import {
   wiarygodnoscStartowa,
   sumaWiarygodnosciCalkowita,
+  rozbicieWiarygodnosci,
   appendCredibilityEvent,
   freshCredibilityStreamEntry,
   tickCredibilityStreamEntry,
@@ -14358,6 +14359,13 @@ async function boot(): Promise<void> {
             playerKolorHex: civKolorHexFn(0),
             playerEra: empireEpochForOwner(0),
             playerWiarygodnosc: getWiarygodnosc(0),
+            playerWiarygodnoscRozbicie: rozbicieWiarygodnosci(
+              getWiarygodnoscEvents(0),
+              getWiarygodnoscStreamEntries(0),
+              wiarygodnoscStartowa(_menuDifficulty),
+              turn,
+              _menuDifficulty,
+            ),
           };
         },
         onAction: applyAudienceAction,
