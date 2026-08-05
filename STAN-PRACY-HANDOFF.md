@@ -1,8 +1,10 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~11:54** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~13:27** · Projekt: Civ „The Game"
 
-> **FALA 225 (2026-08-05):** ROBOCZA `8767b9c0` · stempel menu `e5fbaa18` · tip `main` przed deploy `9c4a8d8`. Batch: **R-AUTO-RACJE-RAISE** Q1=B Q2–Q5=A (Spichlerz≥0, maxSafe, Auto Wyżywienie per miasto) + **R-PROC-AUTOBOT**. AutoBot: Operator→Evaluator→Grok. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 226 (2026-08-05):** ROBOCZA `ebe4548f` · stempel menu `fea8af68` · P-AI-MOC-BONUS=A + P-AI-008. R-SCENA-PERF odłożone. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+
+> **FALA 225 (2026-08-05):** ROBOCZA `8767b9c0` · stempel menu `e5fbaa18` · **ZASTĄPIONA** przez FALA 226. Batch: R-AUTO-RACJE-RAISE + Autobot.
 
 > **FALA 224 (2026-08-05):** ROBOCZA `38df6ad7` · stempel menu `eef4e87e` · **ZASTĄPIONA** przez FALA 225. Batch: R-REKRUT-LUDNOSC-UI. **Handoff sesji:** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md)
 

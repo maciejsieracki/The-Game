@@ -1,3 +1,10 @@
+## [13:27 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 226 ebe4548f
+|- md5: ebe4548fb8f8522112bec8eea9d2f8b0 · stempel: ROBOCZA · fea8af68 · 2026-08-05 11:27
+|- Batch: P-AI-MOC-BONUS=A + P-AI-008 (jednostki/rozwój zamiast murów) · R-SCENA-PERF ODŁOŻONE
+|- AutoBot PASS · notes closed · merge `8bb15b0`
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Maciej: Ctrl+F5 + Nowa gra · OK/BUG
+
 ## [13:30 PL, 2026-08-05] GROK → ALL — P-AI-MOC+P008 gotowe (Evaluator PASS-WITH-NOTES → notes closed)
 |- Branch cursor/fix-ai-moc-bonus-p008-63a1 tip `fdb4bfb`
 |- tsc · ai-difficulty-bonus 18/18 · ai-threat-mode 11/11

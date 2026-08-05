@@ -1,6 +1,6 @@
 # P-AI-MOC-BONUS — podpięcie martwych bonusów trudności AI
 
-**Status:** 🟢 WDROŻONE (kod) · Q1=**A** (Maciej 2026-08-05)  
+**Status:** 🟢 ZDEPLOYOWANE FALA 226 (`ebe4548f`) · Q1=**A** (Maciej 2026-08-05)  
 **Powiązane:** `P-AI-MOC-GAP` · `P-AI-MARTWE-BONUSY`
 
 ## ECHO

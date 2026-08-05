@@ -1,3 +1,4 @@
+- **2026-08-05 13:27** — ✅ **FALA 226** ROBOCZA `ebe4548f` — P-AI-MOC-BONUS + P-AI-008. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel: `fea8af68`.
 ﻿- **2026-08-05 ~12:25** — ✅ **Merge #108** → `main` (`9068115`): R-PROC-AUTOBOT-P0 + smoke 10/10. **Bez deploy** (scaffold). ROBOCZA nadal FALA 225 `8767b9c0`.
 - **2026-08-05 ~12:20** — ✅ Gotowe w kodzie → **zmergowane**: **R-PROC-AUTOBOT-P0-SMOKE** · Evaluator PASS · smoke 10/10.
 - **2026-08-05 ~11:10** — ✅ Gotowe w kodzie → **w FALA 225**: **R-AUTO-RACJE-RAISE Q2–Q5=A**.

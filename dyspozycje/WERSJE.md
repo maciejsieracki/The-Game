@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 8767b9c0 - 2026-08-05 11:54 - FALA 225: R-AUTO-RACJE-RAISE + AutoBot - **AKTUALNA**
+## ROBOCZA ebe4548f - 2026-08-05 13:27 - FALA 226: P-AI-MOC-BONUS + P-AI-008 - **AKTUALNA**
+|- md5 (pelne): ebe4548fb8f8522112bec8eea9d2f8b0 · stempel: ROBOCZA · 2026-08-05 11:27 (label fea8af68)
+|- **FALA 226.** (1) P-AI-MOC-BONUS-Q1=A — startoweJednostki/Miasta + bonusWalka + bonusNauka dla major AI. (2) P-AI-008 — zagrożenie: jednostki+rozwój zamiast murów (MP defensiveCopy bez zmian). Notes: manual battle mult + research bez murów. R-SCENA-PERF odłożone. Na bazie FALA 225 · merge `8bb15b0`.
+|- AutoBot: Operator+Evaluator PASS · Grok deploy. tsc 0 · ai-difficulty-bonus 18/18 · ai-threat-mode 11/11 · vite · VERIFY OK.
+
+## ROBOCZA 8767b9c0 - 2026-08-05 11:54 - FALA 225: R-AUTO-RACJE-RAISE + AutoBot - **ZASTĄPIONA** (→ ebe4548f)
 |- md5 (pelne): 8767b9c075c6debb6e0c2036c22c8ffb · stempel: ROBOCZA · 2026-08-05 09:54 (label e5fbaa18)
 |- **FALA 225.** (1) R-AUTO-RACJE-RAISE Q1=B Q2–Q5=A — Spichlerz ≥0; auto-raise z cofnięciem gdy pool poniżej 0; maxSafe cap suwaka; Auto Wyżywienie per miasto (default WYŁ); toast glodWojska. (2) R-PROC-AUTOBOT — twarda reguła Operator→Evaluator→Grok + scaffold. Na bazie FALA 224 · tip `main` `9c4a8d8`.
 |- AutoBot: Operator PASS · Evaluator PASS · Grok deploy. tsc 0 · ai-major-economy 32/32 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
