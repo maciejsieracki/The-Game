@@ -28,6 +28,25 @@
 
 Dowolny major AI — wymaga osobnego ABC / sygnału Macieja.
 
+## Evaluator (AutoBot warstwa 2 — 2026-08-05)
+
+**Werdykt:** **PASS**  
+**Tip:** `27ba681` · branch `cursor/feat-ai-absorb-prod-gate-63a1`
+
+| # | Oś | Wynik |
+|---|-----|-------|
+| 1 | SCOPE — Faza 1 only: hard + same-civ + major↔major + ratio; brak Fazy 2 / gracz / easy-normal | ✅ |
+| 2 | NO-SIDE-EFFECT — brak any-civ, absorb gracza, easy/normal w kodzie i integracji | ✅ |
+| 3 | REGRESSION — progi 1,25 / tura 10 jak MP hard; `annexCityStateToOwner` reuse | ✅ |
+| 4 | COUPLING — runtime-only; guard `_menuDifficulty==='hard'` + filtr same-civ w pętli | ✅ |
+| 5 | STRICT — celowany test `ai-major-absorb-test.cjs` 18/18 | ✅ |
+| 6 | STRICT-EDGE — negacje: easy, different civ, weak ratio, early turn, player, MP; próg 1,25 | ✅ |
+| 7 | STRICT-PARITY — `ownerId===0` wykluczony (T7/T8); MP wykluczony (T9); jawne AC ZAKAZ | ✅ |
+| 8 | STRICT-SAVE — zero nowych pól / snapshot | ✅ |
+| 9 | Bramki — `tsc --noEmit` 0 · test tematu 18/18 | ✅ |
+
+**Pliki:** `gra/src/game/ai-major-absorb.ts` (nowy), `gra/src/main.ts` (integracja dyplomacji AI), `gra/tools/ai-major-absorb-test.cjs`.
+
 ## Po PASS
 
 Deploy FALA (razem z PROD-GATE jeśli w tym samym batchu).

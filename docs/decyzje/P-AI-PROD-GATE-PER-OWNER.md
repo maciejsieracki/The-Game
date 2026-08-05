@@ -18,6 +18,25 @@
 5. Edge: owner major → wynik identyczny jak przy `_menuDifficulty` (regresja zero dla major).
 6. STRICT-SAVE: zero nowych pól sejwu.
 
+## Evaluator (AutoBot warstwa 2 — 2026-08-05)
+
+**Werdykt:** **PASS**  
+**Tip:** `27ba681` · branch `cursor/feat-ai-absorb-prod-gate-63a1`
+
+| # | Oś | Wynik |
+|---|-----|-------|
+| 1 | SCOPE — diff tylko per-owner difficulty + wiring produkcji AI | ✅ |
+| 2 | NO-SIDE-EFFECT — brak zmian formuły tech/epoki; zero absorb/Faza2 | ✅ |
+| 3 | REGRESSION — major parity (T1/T4); MP slider oddzielnie (T2/T3) | ✅ |
+| 4 | COUPLING — pure helper wyciągnięty; `effectiveGameDifficultyForOwner` bez nowego stanu | ✅ |
+| 5 | STRICT — celowany test `ai-prod-gate-difficulty-test.cjs` 8/8 | ✅ |
+| 6 | STRICT-EDGE — edge odwrócone slidery (T3); parity major vs MP (T2) | ✅ |
+| 7 | STRICT-PARITY — major=menu; MP=city-state slider (T1–T4) | ✅ |
+| 8 | STRICT-SAVE — zero nowych pól sejwu | ✅ |
+| 9 | Bramki — `tsc --noEmit` 0 · test tematu 8/8 | ✅ |
+
+**Pliki:** `gra/src/game/effective-difficulty-for-owner.ts` (nowy), `gra/src/main.ts` (`isProductionAllowed` + 3 ścieżki produkcji AI), `gra/tools/ai-prod-gate-difficulty-test.cjs`.
+
 ## Po PASS
 
 Batch z P-AI-MAJOR-ABSORB Faza 1 jeśli równolegle.
