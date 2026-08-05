@@ -34,6 +34,7 @@
 3. BITWA-BUGI I (replay grupy) — ✅  
 4. **BITWA-FACING B** — ✅ JUŻ WDROŻONE (C-FLANK) + replay kierunku natarcia (minimal fix 2026-08-05)  
 5. **WIAR A+B** — ✅ Etap 0 (`wiarygodnosc-types.ts`) + przegląd Dźwigni 2–4 (docs)  
+5b. **WIAR R1** — ✅ mnożnik tempa `applyWiarygodnoscTempoDoDelty` w `computeTickZaufanieDelta` (2026-08-05)  
 6. Deploy FALA (Q1=A) po PASS  
 
 **Nie ruszam:** DOTYK · scena (bez liczb) · balans AI

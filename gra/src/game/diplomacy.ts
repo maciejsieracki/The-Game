@@ -28,7 +28,7 @@ import {
   resolveArchetypeTrade,
 } from './civ-ai-data';
 import { isBarbarian } from './barbarians';
-import { zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
+import { applyWiarygodnoscTempoDoDelty, zaufanieDryfOdWiarygodnosci } from './diplomacy-credibility';
 
 // ---------------------------------------------------------------------------
 // Re-exported Relation interface (spec-aligned alias over RelacjaDyplomatyczna)
@@ -1568,7 +1568,8 @@ export interface TickCtx {
  *   handel (UmowaHandlowa) +1 Zaufanie (stackuje)
  *   pokojTrustTier: sojusz +3 | nap +2 (wzajemnie wykluczające; tier „pokoj" bez umowy
  *     zastąpiony dryfem z Wiarygodności — REL-WIARYG-DRIFT-Q1)
- *   wiarygodnoscSelf: pasywny ΔZ/turę = clamp(W,±100)×0,03 (niezależny od umów)
+ *   wiarygodnoscSelf: pasywny ΔZ/turę = clamp(W,±100)×0,03 (niezależny od umów);
+ *     po zsumowaniu dZ — mnożnik tempa WIAR-Q3=C (`applyWiarygodnoscTempoDoDelty`)
  *   dobraWola      +1 Zaufanie
  *   wspolnyWrog    +1 Zaufanie
  *   wspolnaReligia +0.5 Zaufanie  (TODO: cap akumulacyjny +15/−10 per religia)
@@ -1606,6 +1607,8 @@ export function computeTickZaufanieDelta(ctx: TickCtx, atWar: boolean): number {
   if (ctx.wspolnaReligia)       dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia)      dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
+
+  dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
 
   if (atWar && dZ > 0) dZ = 0;
 

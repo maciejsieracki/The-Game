@@ -398,7 +398,8 @@ export function zaufanieDryfOdWiarygodnosci(w: number): number {
 /**
  * @deprecated ANULOWANY (2026-08-03, WIAR-Q3=C) — zastąpiony mnożnikiem tempa
  * (`wiarygodnoscWzrostMult` / `wiarygodnoscSpadekMult` / `applyWiarygodnoscTempoDoDelty`).
- * Usunięty z tickDiplomacy; zachowany dla kompatybilności testów legacy.
+ * Zastąpiony przez `applyWiarygodnoscTempoDoDelty` w `computeTickZaufanieDelta` (WIAR R1).
+ * Zachowany dla kompatybilności testów legacy.
  * D4 nadal używa `modyfikatorZaufaniaD4OdWiarygodnosci` (round(W/20)) — NIE ruszać.
  */
 export function strumienWiarygodnoscDoZaufania(w: number): number {

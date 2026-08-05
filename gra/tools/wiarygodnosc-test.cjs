@@ -357,15 +357,15 @@ ok(WC.zaufanieDryfOdWiarygodnosci(100) === 3, 'dryf W=+100 → +3/turę');
 ok(WC.zaufanieDryfOdWiarygodnosci(-100) === -3, 'dryf W=−100 → −3/turę');
 ok(WC.zaufanieDryfOdWiarygodnosci(0) === 0, 'dryf W=0 → 0');
 ok(approxEqual(WC.zaufanieDryfOdWiarygodnosci(50), 1.5), 'dryf W=+50 → +1.5/turę');
-ok(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: 100 }, false) === 3,
-  'computeTickZaufanieDelta: sam dryf W=100 → +3');
-ok(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: -100 }, false) === -3,
-  'computeTickZaufanieDelta: sam dryf W=−100 → −3');
+ok(approxEqual(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: 100 }, false), 4.5),
+  'computeTickZaufanieDelta: sam dryf W=100 → +3 ×1.5 = +4.5');
+ok(approxEqual(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: -100 }, false), -4.5),
+  'computeTickZaufanieDelta: sam dryf W=−100 → −3 ×1.5 = −4.5');
 ok(WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: 0 }, false) === 0,
   'computeTickZaufanieDelta: W=0 → 0');
 
 // ---------------------------------------------------------------------------
-// 8) Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa (legacy; nie w tickDiplomacy od REL-WIARYG-DRIFT-Q1)
+// 8) Dźwignia 1 (WIAR-Q3=C) — mnożnik tempa w computeTickZaufanieDelta (WIAR R1)
 // ---------------------------------------------------------------------------
 
 // Czyste funkcje mnożnika
@@ -390,38 +390,38 @@ function freshRdip(zaufanie, status) {
 }
 
 {
-  // sojusz +3 przy W=+100 → dryf +3 + sojusz +3 = +6 (bez mnożnika W)
+  // sojusz +3 przy W=+100 → (dryf +3 + sojusz +3) ×1.5 = +9
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 100 });
-  ok(approxEqual(after.zaufanie, 56), `tickDiplomacy: sojusz +3 + dryf W=100 → dZ=6 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 59), `tickDiplomacy: sojusz + dryf W=100 → dZ=9 (got ${after.zaufanie})`);
 }
 
 {
-  // sojusz +3 przy W=−100 → dryf −3 + sojusz +3 = 0
+  // sojusz +3 przy W=−100 → dryf −3 + sojusz +3 = 0 → tempo bez efektu
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: -100 });
   ok(approxEqual(after.zaufanie, 50), `tickDiplomacy: sojusz + dryf W=−100 → dZ=0 (got ${after.zaufanie})`);
 }
 
 {
-  // ekspansja −2 przy W=+100 → dryf +3 + ekspansja −2 = +1
+  // ekspansja −2 przy W=+100 → (dryf +3 + ekspansja −2) ×1.5 = +1.5
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: 100 });
-  ok(approxEqual(after.zaufanie, 51), `tickDiplomacy: ekspansja −2 + dryf W=100 → dZ=+1 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 51.5), `tickDiplomacy: ekspansja + dryf W=100 → dZ=+1.5 (got ${after.zaufanie})`);
 }
 
 {
-  // ekspansja −2 przy W=−100 → dryf −3 + ekspansja −2 = −5
+  // ekspansja −2 przy W=−100 → (dryf −3 + ekspansja −2) ×1.5 = −7.5
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, ekspansjaPrzyGranicy: true, wiarygodnoscSelf: -100 });
-  ok(approxEqual(after.zaufanie, 45), `tickDiplomacy: ekspansja −2 + dryf W=−100 → dZ=−5 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 42.5), `tickDiplomacy: ekspansja + dryf W=−100 → dZ=−7.5 (got ${after.zaufanie})`);
 }
 
 {
-  // pokoj tier (bez umowy) — tylko dryf W=+100 → +3 (bez flat +1)
+  // pokoj tier (bez umowy) — tylko dryf W=+100 → +3 ×1.5 = +4.5
   const before = freshRdip(50, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'pokoj', wiarygodnoscSelf: 100 });
-  ok(approxEqual(after.zaufanie, 53), `tickDiplomacy: tier pokoj + W=100 → dZ=+3 (got ${after.zaufanie})`);
+  ok(approxEqual(after.zaufanie, 54.5), `tickDiplomacy: tier pokoj + W=100 → dZ=+4.5 (got ${after.zaufanie})`);
 }
 
 {
@@ -454,11 +454,12 @@ function freshRdip(zaufanie, status) {
 }
 
 {
-  // Klamrowanie W>100 przed dryfem
+  // Klamrowanie W>100 przed dryfem + tempo
   const before = freshRdip(10, 'neutralni');
   const after = WC.tickDiplomacy(before, { turn: 1, pokojTrustTier: 'sojusz', wiarygodnoscSelf: 100000 });
-  const expectedDelta = P.sojusz_zaufanie_perTura + WC.zaufanieDryfOdWiarygodnosci(100);
-  ok(approxEqual(after.zaufanie, 10 + expectedDelta), `tickDiplomacy: klamruje W>100 przed dryfem (got ${after.zaufanie})`);
+  const rawDZ = P.sojusz_zaufanie_perTura + WC.zaufanieDryfOdWiarygodnosci(100);
+  const expectedDelta = WC.applyWiarygodnoscTempoDoDelty(rawDZ, 100);
+  ok(approxEqual(after.zaufanie, 10 + expectedDelta), `tickDiplomacy: klamruje W>100 przed dryfem+tempo (got ${after.zaufanie})`);
 }
 
 // ---------------------------------------------------------------------------
