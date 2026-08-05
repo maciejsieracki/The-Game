@@ -1,6 +1,6 @@
 # R-AI-TRUDNOSC-AUDYT — rozwój major AI vs poziomy trudności
 
-**Status:** 🟠 Operator done · awaiting Evaluator · 2026-08-05 · was: 🟢 ZDEPLOYOWANE FALA 229 (`efab84db`)  
+**Status:** 🟢 Evaluator PASS-WITH-NOTES · gotowe do Grok final · 2026-08-05 · was: 🟠 Operator done (`dadcb48`)  
 **Scope:** **tylko major AI** (nie miasta-państwa / `defensiveCopy` / `typCityCopy`)  
 **Cel:** (1) audyt — co najbardziej psuje rozwój AI; (2) plan usprawnień **per poziom** 1=Prosty / 2=Normalny / 3=Trudny.
 
@@ -229,3 +229,48 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 **Testy:** `ai-test.cjs` T14-p1-1a/b/c (mult 0.70, L1 turn 25, ranking stolarnia) · T14-p1-2a/b (penalty 80, Spichlerz > 2. scout).
 
 **Zakres:** tylko P1-1 + P1-2 — bez P1-3 Spryt JSON, P2 canAfford, buffów MP.
+
+---
+
+## Evaluator (2026-08-05) — P1 adversarial re-run
+
+**PASS-WITH-NOTES** · operator tip `dadcb48` (`dadcb489e39369fac147cc0abcbbc9160654fd05`)
+
+### SCOPE + regresja (R-PROC-AUTOBOT-EVAL-SCOPE)
+
+| # | Pytanie | Werdykt |
+|---|---------|---------|
+| 1 | Każda zmiana wynika z P1-1/P1-2? | ✅ Tak — 3 stałe + `computeMajorAiEarlyGame` L1 gate + `computeEarlyScoutProductionScore` + wiring w `chooseCityProduction` |
+| 2 | Brak niezwiązanych plików/funkcji? | ✅ Kod: tylko `gra/src/game/ai.ts` + `gra/tools/ai-test.cjs`; docs/handoff operacyjne (5 plików łącznie) |
+| 3 | Brak cofnięcia wcześniejszych usprawnień? | ✅ Wojsko ×0,65 bez zmian; `AI_EARLY_SCOUT_TARGET`=2; `defensiveCopy` wyłączone; brak P1-3/P2/MP/`main.ts` |
+| 4 | Uboczne ryzyka? | ⚠️ Patrz Notes — **brak regresji od P1** (porównanie `main` vs tip) |
+
+**Forbidden scope check:** brak P1-3 Spryt JSON · brak P2 canAfford · brak buffów MP · brak `main.ts` · brak UI.
+
+### Hard metrics (Evaluator re-run z `gra/`)
+
+| Test | Wynik |
+|---|---|
+| `npx tsc --noEmit` | **PASS** (0 błędów, ~6,6 s) |
+| `node tools/ai-test.cjs` (pełny) | **PASS-WITH-NOTES** — **271 passed / 8 failed** (~0,3 s); T14-p1 **6/6 PASS** |
+| `main` baseline (porównanie) | 261 passed / **9 failed** — P1 **nie dodaje** nowych faili; naprawia T2b `poziom3` (efekt uboczny ×0,70) |
+
+### Spot-check AC (kod, nie trust Operator)
+
+| AC | Dowód | OK |
+|---|---|:---:|
+| **P1-1** econ mult **0.70** (nie 0.55) | `ai.ts:968` `AI_MAJOR_EARLY_ECON_BUILDING_MULT` · użycie `:1267` | ✓ |
+| **P1-1** wojsko nadal **×0.65** | `ai.ts:1262-1263` | ✓ |
+| **P1-1** L1 max turn **25** | `ai.ts:966` `AI_MAJOR_EARLY_MAX_TURN_L1` · `computeMajorAiEarlyGame` `:995-997` | ✓ |
+| **P1-2** scout −80 gdy `scoutCount≥1` | `ai.ts:719` `805` · `computeEarlyScoutProductionScore` `:800-806` | ✓ |
+| **P1-2** `AI_EARLY_SCOUT_TARGET` **2** | `ai.ts:717` · gate `:1160` | ✓ |
+| **P1-2** `defensiveCopy` wyłączone | `ai.ts:1160` `!opts.defensiveCopy` | ✓ |
+| **T14-p1** testy istnieją i przechodzą | `ai-test.cjs:2617-2689` | ✓ |
+
+### Notes (nie blokery P1)
+
+- **8 faili** w pełnym `ai-test.cjs` (T1b/c, T3f, T2S-b/b2, T10b) — **pre-existing na `main`**, nie wprowadzone przez P1; dyplomacja/handel + archetyp ekonomia vs Koszary.
+- Sekcje **A/B** audytu nadal opisują ×0,55 / L3 nauka=0 — **stale** (jak po P0); follow-up docs, nie blokuje kodu.
+- Operator §F test opis „Spichlerz > 2. scout" — T14-p1-2b weryfikuje tylko matematykę score (−80), nie ranking vs Spichlerz; T11-scout-d pokrywa brak 3. zwiadowca.
+
+**Gotowe do Grok final** (prezentacja Maciejowi / deploy na sygnał — **Evaluator NIE deployuje**).
