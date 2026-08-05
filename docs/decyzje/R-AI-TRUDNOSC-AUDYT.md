@@ -1,6 +1,6 @@
 # R-AI-TRUDNOSC-AUDYT — rozwój major AI vs poziomy trudności
 
-**Status:** 🟢 GOTOWE (audyt + plan) · AutoBot Operator · Maciej 2026-08-05  
+**Status:** 🟢 Evaluator PASS-WITH-NOTES · gotowe do Macieja · 2026-08-05  
 **Scope:** **tylko major AI** (nie miasta-państwa / `defensiveCopy` / `typCityCopy`)  
 **Cel:** (1) audyt — co najbardziej psuje rozwój AI; (2) plan usprawnień **per poziom** 1=Prosty / 2=Normalny / 3=Trudny.
 
@@ -137,7 +137,7 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 | **P0-1** | 🔴 | **Podpiąć `bonus_produkcja` do realnej Pracy AI** (major, per `aiDiffLevelForOwner`) | L2+L3 | Średni (main.ts ekonomia) | Bezpośrednie przyspieszenie budowy — naprawa rozjazdu JSON/kod | Snowball na Trudnym |
 | **P0-2** | 🔴 | **Fix `chooseAIResearch` ids** (`spichlerz`/`cegielnia` lowercase) | Wszystkie | Mały | Prawidłowy tor badań po early buildings | Niski |
 | **P0-3** | 🔴 | **L3 `bonus_nauka` ≥ L2** (prop. 2 pkt/turę) | L3 | JSON only | Trudny nie gorszy w tech niż Normalny | Szybsze epoki |
-| **P1-1** | 🟡 | **Złagodzić `majorEarly` penalty** (×0,55→×0,70 budynki; opcjonalnie krótszy max turn na L1) | L1+L2 | Scoring | Więcej infrastruktury w grze środkowej | WCześniejsza armia |
+| **P1-1** | 🟡 | **Złagodzić `majorEarly` penalty** (×0,55→×0,70 budynki; opcjonalnie krótszy max turn na L1) | L1+L2 | Scoring | Więcej infrastruktury w grze środkowej | Wcześniejsza armia |
 | **P1-2** | 🟡 | **Scout score cap po 1. zwiadowcy** lub delta per poziom | L1 priorytet | JSON/scoring | Spichlerz/Koszary nie czekają na 2. scouta | Mniej explored |
 | **P1-3** | 🟡 | **Wyeksportować Spryt AI do `ai-params.json`** (agresja, dyplomacja, cel_obranie ×3 poziomy) | Wszystkie | JSON + panel | Strojenie trudności bez kodu | — |
 | **P2-1** | 🟢 | **ABC: `canAfford` pusta tura vs fallback najtańszy** | Wszystkie | Scoring + test | Koniec „myszkowania" przy pełnej kolejce | Ekonomiczne dziury |
@@ -164,3 +164,10 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 - Nie mieszać MP w rekomendacjach „wzmocnij AI”
 - Nie `npm run build` / nie deploy / nie merge main — **ta paczka: tylko docs**
 - AutoBot: po audycie → **Evaluator** → Grok prezentuje Maciejowi
+
+
+---
+
+## Evaluator (2026-08-05)
+**PASS-WITH-NOTES** · tip `a568a18` · spot-check kodu 4/4 OK.  
+Notes: C.1 Ś1 — `bonus_nauka` L1=0 już w JSON (nie „dodać”); literówka P1-1 poprawiona. Core findings zaakceptowane.
