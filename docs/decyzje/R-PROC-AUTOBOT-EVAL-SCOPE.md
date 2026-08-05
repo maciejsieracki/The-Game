@@ -1,6 +1,6 @@
 # R-PROC-AUTOBOT-EVAL-SCOPE — Evaluator: SCOPE + brak regresji
 
-**Status:** 🔵 **Operator done** · czeka **Evaluator** (Maciej 2026-08-05)  
+**Status:** 🟢 **AutoBot PASS** (docs) · czeka merge Grok (Maciej 2026-08-05)  
 **Rodzic:** `R-PROC-AUTOBOT` · **Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Playbook:** `dyspozycje/autobot/playbook.json` → `rule_105` (`verify-eval-scope-no-regression`)
 
@@ -92,3 +92,38 @@ Nie zamykaj paczki bez werdyktu SCOPE.
 - `docs/decyzje/R-PROC-POTROJNA-WARSTWA.md` — warstwa 2 = ten sam adwokat
 - `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md` — operacyjnie
 - `dyspozycje/autobot/playbook.json` — `rule_105`
+
+---
+
+## Evaluator (adwokat diabła — 2026-08-05)
+
+**Werdykt:** **PASS-WITH-NOTES**
+
+**Tip:** `904caf2` · branch `cursor/autobot-eval-scope-63a1`
+
+### Meta (SCOPE na własnym pakiecie)
+
+| Oś | Wynik |
+|----|-------|
+| **SCOPE** | ✅ Tylko proces Evaluator SCOPE — 9 plików docs/playbook/reguła; **zero** `gra/src` |
+| **NO-SIDE-EFFECT** | ✅ Brak drive-by; KANAL/rejestr/README = uzasadnione powiązania tematu |
+| **NO-REGRESSION** | ✅ Nie cofa P0 AutoBot ani potrójnej warstwy — rozszerza checklistę #2 |
+| **DIFF-MINIMAL** | ✅ +161/−7 linii; bez refaktorów obok tematu |
+
+### Spot-check
+
+| Plik | PASS? | Uwagi |
+|------|-------|-------|
+| `R-PROC-AUTOBOT-EVAL-SCOPE.md` | ✅ | ECHO cytat Macieja 1:1; 4 osie; FAIL/PASS-WITH-NOTES/PASS; szablon promptu Grok |
+| `autobot-evaluator-operator.mdc` | ✅ | Sekcja „Evaluator — obowiązkowy SCOPE + regresja" czytelna; rule_105 |
+| `R-PROC-AUTOBOT.md` | ✅ | Mapowanie Evaluator + checklista rule_105 |
+| `playbook.json` rule_105 | ✅ | ACTIVE; sensowny `rule_text`; `verify-eval-scope-no-regression` |
+| Potrójna docs | ✅ | `R-PROC-POTROJNA-WARSTWA.md` + `POTROJNA-WARSTWA-WERYFIKACJI.md` zsynchronizowane |
+| Rejestr | ✅ | Wiersz `R-PROC-AUTOBOT-EVAL-SCOPE` spójny (→ zaktualizowany poniżej) |
+
+### Notes (nie blocker)
+
+1. `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` (alwaysApply) **nie** dostał odnośnika do `R-PROC-AUTOBOT-EVAL-SCOPE` — drift vs `POTROJNA-WARSTWA-WERYFIKACJI.md`; follow-up przy merge Groka (1 linia w checklist #2).
+2. `actionId` `verify-eval-scope-no-regression` **brak** w `guardrails.ts` CATALOG (wzorzec: `verify-triple-layer` jest) — follow-up scaffold, nie blokuje procedury promptowej Evaluatora.
+
+**Gotowe do Grok final** — merge `main` + ewentualne dopięcie notes 1–2 w osobnej mikropaczce.
