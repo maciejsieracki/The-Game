@@ -23,10 +23,23 @@ export interface PowerRankingRow {
   wiarygodnosc?: number;
 }
 
+export interface AiMocDiagRow {
+  ownerId: number;
+  label: string;
+  moc: number;
+  miasta: number;
+  /** Pula Pracy imperium — stan bieżący. */
+  pracaPool: number;
+  kolejkaPuste: number;
+  kolejkaAktywne: number;
+}
+
 export interface PowerOverlayData {
   power: number;
   components: PowerComponentRow[];
   ranking: PowerRankingRow[];
+  /** AI-MOC-NEXT-Q1=B: metryki diag per major owner (gracz + major AI). */
+  diagMajorAi?: AiMocDiagRow[];
   respektExample?: { civ: string; respekt: number; playerPower: number; theirPower: number };
   /**
    * R-RANKING-MOC (Maciej 2026-07-24): pozycja ABSOLUTNA wśród WSZYSTKICH żyjących
@@ -60,6 +73,13 @@ function ensureStyles(): void {
 .civ-pow-close{margin-top:14px;width:100%;padding:8px;cursor:pointer;border-radius:6px;
   border:1px solid rgba(224,178,74,0.35);background:rgba(224,178,74,0.12);color:#f5e6c8;font-weight:600;}
 .civ-pow-close:hover{background:rgba(224,178,74,0.22);}
+.civ-pow-diag{margin-top:12px;padding-top:10px;border-top:1px solid rgba(224,178,74,0.2);font-size:11px;}
+.civ-pow-diag b{color:#e0b24a;font-size:12px;}
+.civ-pow-diag table{width:100%;border-collapse:collapse;margin-top:6px;}
+.civ-pow-diag th,.civ-pow-diag td{padding:3px 5px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06);}
+.civ-pow-diag th{color:#9aa6b6;font-weight:600;}
+.civ-pow-diag td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.civ-pow-diag tr.player td:first-child{color:#e0b24a;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -103,6 +123,23 @@ export function showPowerOverlay(data: PowerOverlayData, onClose?: () => void, o
     const ex = data.respektExample;
     html += '<div class="civ-pow-resp">Respekt wobec <b>' + esc(ex.civ) + '</b>: '
       + ex.respekt + '% (Twoja moc ' + ex.playerPower + ' vs ' + ex.theirPower + ')</div>';
+  }
+  if (data.diagMajorAi && data.diagMajorAi.length > 0) {
+    html += '<div class="civ-pow-diag"><b>Diag major AI</b>'
+      + '<table><thead><tr>'
+      + '<th>Cyw.</th><th class="num">Moc</th><th class="num">Miast</th>'
+      + '<th class="num">Praca</th><th class="num">Kol.∅</th><th class="num">Kol.▶</th>'
+      + '</tr></thead><tbody>';
+    for (const d of data.diagMajorAi) {
+      const cls = d.ownerId === 0 ? ' class="player"' : '';
+      html += '<tr' + cls + '><td>' + esc(d.label) + '</td>'
+        + '<td class="num">' + Math.round(d.moc) + '</td>'
+        + '<td class="num">' + d.miasta + '</td>'
+        + '<td class="num">' + Math.round(d.pracaPool) + '</td>'
+        + '<td class="num">' + d.kolejkaPuste + '</td>'
+        + '<td class="num">' + d.kolejkaAktywne + '</td></tr>';
+    }
+    html += '</tbody></table></div>';
   }
   html += '<button type="button" class="civ-pow-close">Zamknij</button>';
   box.innerHTML = html;

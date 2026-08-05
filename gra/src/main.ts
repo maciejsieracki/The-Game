@@ -748,6 +748,7 @@ import {
 } from './game/manpower';
 import { computeObjectivePower, battlePowerPointsFromDefeatedEnemy, type ObjectivePowerResult } from './game/power-objective';
 import { filterOwnersForPowerRanking, computeAbsolutePowerRank } from './game/power-ranking';
+import { buildAiMocDiagRows } from './game/ai-moc-diag';
 import { loadPowerOpcje } from './game/power-options';
 import { armyFieldPower, isSiegeUnit, siegePower } from './game/unit-power';
 import { loadOrderParams, orderEffectsToYieldMults, pickRevoltMigrationTarget, type OrderYieldMults } from './game/order';
@@ -10849,7 +10850,18 @@ async function boot(): Promise<void> {
         }
         : undefined;
       const absoluteRank = buildAbsolutePowerRank();
-      return { power, components, ranking, respektExample, absoluteRank };
+      const diagMajorAi = buildAiMocDiagRows({
+        ownerIds: allPowerOwnerIds(),
+        labelForOwner: (oid) => oid === 0
+          ? civDisplayNameForKey(civKeyForOwner(0))
+          : ownerDiploLabel(oid),
+        mocForOwner: objectivePowerForOwner,
+        pracaPoolForOwner: ownerPracaPool,
+        cities: cities.map(c => ({ ownerId: c.ownerId, cityId: c.id })),
+        productionQueueLength: (cityId) => cityProd.get(cityId)?.kolejka.length ?? 0,
+        isCityStateOwner: (ownerId) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
+      });
+      return { power, components, ranking, respektExample, absoluteRank, diagMajorAi };
     }
 
     function buildCultureOverlayData(): CultureOverlayData {
