@@ -773,7 +773,7 @@ Zapis: `docs/decyzje/DYSPOZYCJA-85-SUWAK.md`. Kod: ROZBIEŻNOŚĆ (brak globalne
 
 **Decyzja:** A — panel „Szczegóły bitwy" ma pokazywać procent HP i pasek (wzorzec `postBattleSummary`), nie tylko liczby bezwzględne.
 
-**Stan kodu:** CZĘŚCIOWO — `maxHp` już dociera (`battleScene.ts`, `endDetails1E.ts`); brakuje % i paska. Pełny zapis: `docs/decyzje/ZNALEZISKO-86.md`.
+**Stan kodu:** WDROŻONE — `endDetails1E.ts` (% HP + pasek jak `postBattleSummary`); test `end-details-hp-test.cjs`. Pełny zapis: `docs/decyzje/ZNALEZISKO-86.md`.
 
 ~~Diagnoza historyczna (przed częściową naprawą maxHp):~~
 - `gra/src/battle/endDetails1E.ts:85-88` renderuje `hpBefore → hpAfter` jako **liczby bezwzględne**,

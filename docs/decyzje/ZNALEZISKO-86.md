@@ -15,18 +15,14 @@
   - **pasek HP** (szerokość wg `hpAfterPct`),
   - odniesienie do maksimum (`maxHp`), nie same liczby bezwzględne bez kontekstu.
 
-## Stan kodu (audyt 2026-07-27)
+## Stan kodu (audyt 2026-08-05)
 
 | Element | Stan | Dowód |
 |---------|------|-------|
 | `maxHp` w typie `EndDetailsUnitRow` | ✅ | `endDetails1E.ts` ~34 |
-| Przekazanie `maxHp` z bitwy | ✅ | `battleScene.ts` ~8765–8768 (`_startAtkSnaps`) |
-| Format tekstu `hpAfter/maxHp HP (−loss)` | ✅ częściowo | `endDetails1E.ts` `hpText()` ~90–95 |
-| **Procent HP** (`hpBeforePct → hpAfterPct`) | ❌ | brak — inny format niż `postBattleSummary` |
-| **Pasek HP** w wierszu jednostki | ❌ | `unitRowHtml` — tylko tekst, bez paska |
+| Przekazanie `maxHp` z bitwy | ✅ | `battleScene.ts` (`_startAtkSnaps`) |
+| **Procent HP** (`hpBeforePct → hpAfterPct`) | ✅ | `endDetails1E.ts` `hpText()` — np. `HP 62% → 41%` |
+| **Pasek HP** w wierszu jednostki | ✅ | `endDetails1E.ts` `hpBarHtml()` + `unitRowHtml()` |
+| Test regresji | ✅ | `gra/tools/end-details-hp-test.cjs` |
 
-**Werdykt kodu:** **CZĘŚCIOWO** — `maxHp` już dociera; brakuje % i paska jak w `postBattleSummary.ts`.
-
-## Co dalej
-
-Wdrożenie na **`działaj`** (lane C): w `endDetails1E.ts` dodać obliczenie pct + mini-pasek (wzorzec z `postBattleSummary.ts` / `battle-summary.ts`).
+**Werdykt kodu:** **WDROŻONE** (FALA 37 + test 2026-08-05).
