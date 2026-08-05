@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 238** `ea921d1e` — MP spawn: Wyżywienie startuje na **4** (nie ~3); Evaluator STRICT-SAVE w procesie. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+﻿- ✅ **MAP-UX-CLUSTER-LABEL = A** (2026-08-05) — zostawiamy etykiety klastra jak są; bez zmiany kodu / bez deploy. Kanon: `docs/decyzje/MAP-UX-CLUSTER-LABEL.md`.
+- ✅ **FALA 238** `ea921d1e` — MP spawn: Wyżywienie startuje na **4** (nie ~3); Evaluator STRICT-SAVE w procesie. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
 - ✅ **FALA 237** `5b0e1c19` — WIAR §7: badge W przy tytule cywu + W w rankingu Potęgi i liście dyplomacji. **ZASTĄPIONA** przez 238.
 - ✅ **FALA 236** `03a19191` — WIAR UI: w audiencji widać rozbicie „życiorys · bieżące” + tooltip. **ZASTĄPIONA** przez 237.
 - ✅ **FALA 235** `9c0a38ae` — WIAR R1b tempo one-shot. **ZASTĄPIONA** przez 236.
