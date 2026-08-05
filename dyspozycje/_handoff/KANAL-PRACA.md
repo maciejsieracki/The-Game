@@ -1,3 +1,9 @@
+## [11:45 PL, 2026-08-05] CLOUD → ALL — R-PROC-POTROJNA-WARSTWA w plikach (PR #106)
+|- Maciej: wprowadź do plików i od tej pory tak działamy
+|- PR docs: cursor/proc-potrojna-warstwa-63a1 → main (PR #106)
+|- alwaysApply: .cursor/rules/potrojna-warstwa-weryfikacji.mdc
+CZEKAM-NA: merge PR #106 na main (żeby wszystkie sesje widziały regułę)
+
 ﻿## [00:40 PL, 2026-08-05] CLOUD → ALL — HANDOFF sesji FALA 221–224
 |- Pełny zapis: dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md
 |- AKTUALNA ROBOCZA FALA 224 `38df6ad7` (stempel eef4e87e) · Maciej OK 223+224
@@ -4908,7 +4914,7 @@ CZEKAM-NA: nic
 
 ## [18:54 PL, 2026-08-01] LOKAL/Grok ? ALL ? FALA 138 DEPLOY ALL
 - md5 `cbc79e63` / `cbc79e6399f5c67a41350229ff6a4711` | stempel ROBOCZA ? 2026-08-01 18:54
-- Zakres: MAP-SPAWN-Q2 (06a615) + tani fill rzek ( c4faac) ? bez wysp, 7 typ?w, g?sto?? rzek bez proximity
+- Zakres: MAP-SPAWN-Q2 (06a615) + tani fill rzek (c4faac) ? bez wysp, 7 typ?w, g?sto?? rzek bez proximity
 - tsc 0 | VERIFY OK
 - Graj: `gra-robocza/START.html` (Ctrl+F5 + Nowa gra) ? sprawd?: 7 civ na du?ych kontynentach + rzeki
 CZEKAM-NA: nic
