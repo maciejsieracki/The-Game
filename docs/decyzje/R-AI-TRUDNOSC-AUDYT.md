@@ -1,6 +1,6 @@
 # R-AI-TRUDNOSC-AUDYT — rozwój major AI vs poziomy trudności
 
-**Status:** 🟢 ZDEPLOYOWANE FALA 229 (`efab84db`) · was: 🟠 Operator done · awaiting Evaluator · 2026-08-05  
+**Status:** 🟠 Operator done · awaiting Evaluator · 2026-08-05 · was: 🟢 ZDEPLOYOWANE FALA 229 (`efab84db`)  
 **Scope:** **tylko major AI** (nie miasta-państwa / `defensiveCopy` / `typCityCopy`)  
 **Cel:** (1) audyt — co najbardziej psuje rozwój AI; (2) plan usprawnień **per poziom** 1=Prosty / 2=Normalny / 3=Trudny.
 
@@ -8,6 +8,8 @@
 > przy okazji, zrób audyt trudności AI, co wpływa najbardziej na to, że AI źle sobie radzi z rozwojem. Mówię głównie o głównych AI, nie o państwach miastach. I zrób plan działania, co możemy jeszcze usprawnić na każdym poziomie trudności, z podziałem na poziomy trudności, żeby AI lepiej sobie radziło. Wszystko zgodnie z zasadą Autobot.
 
 **ECHO P0 (Maciej „1" = wdrażaj P0, 2026-08-05):** realna Praca z `bonus_produkcja` (opcja B C.2 Q1 + zachować scoring `diffProdBonus`) · fix ids `spichlerz`/`cegielnia` w `chooseAIResearch` · L3 `bonus_nauka`=2 (≥ L2).
+
+**ECHO P1 (Maciej „2" = wdrażaj P1-1/P1-2, 2026-08-05):** `majorEarly` budynki gosp. ×0,70 (było ×0,55) · L1 `majorEarly` max tura 25 · drugi zwiadowca −80 pkt score.
 
 ## Kontekst już wdrożony (nie powtarzaj jako „brak”)
 - FALA 226: P-AI-MOC-BONUS (startowe jednostki/miasta, `bonusWalka`, `bonusNauka`) — major only
@@ -213,3 +215,17 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 - Podwójny efekt `bonus_produkcja` (scoring + realna Praca) — **zamierzone** wg ECHO P0.
 
 **Gotowe do Grok final** (prezentacja Maciejowi / deploy na sygnał).
+
+---
+
+## F — P1 wdrożone (Operator 2026-08-05, ECHO Maciej „2")
+
+| ID | Zmiana | Pliki |
+|---|---|---|
+| **P1-1** | `majorEarly` budynki gosp. ×0,55→×**0,70** (`AI_MAJOR_EARLY_ECON_BUILDING_MULT`); wojsko ×0,65 bez zmian | `gra/src/game/ai.ts` (`chooseCityProduction`) |
+| **P1-1** | L1 (Prosty): `majorEarly` max tura **25** (`AI_MAJOR_EARLY_MAX_TURN_L1`) zamiast 40 | `gra/src/game/ai.ts` (`computeMajorAiEarlyGame`) |
+| **P1-2** | Drugi zwiadowca w early: score **−80** (`AI_EARLY_SCOUT_REPEAT_PENALTY`) gdy `scoutCount≥1`; `AI_EARLY_SCOUT_TARGET` bez zmian | `gra/src/game/ai.ts` (`chooseCityProduction` §4.1) |
+
+**Testy:** `ai-test.cjs` T14-p1-1a/b/c (mult 0.70, L1 turn 25, ranking stolarnia) · T14-p1-2a/b (penalty 80, Spichlerz > 2. scout).
+
+**Zakres:** tylko P1-1 + P1-2 — bez P1-3 Spryt JSON, P2 canAfford, buffów MP.

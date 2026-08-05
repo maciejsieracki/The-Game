@@ -31,7 +31,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.ai-test-bundle.cjs');
 // Entry TS re-exports everything we need from ai.ts.
 // Uses AI_SRC path so env override works correctly.
 const ENTRY_TS = `
-export { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, planCityFounding, AI_EARLY_SCOUT_TARGET, isScoutUnit, countPlayerScouts, computeEarlyScoutProductionScore, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, computeMajorAiEarlyGame, AI_MAJOR_EARLY_MAX_TURN, AI_MAJOR_EARLY_MAX_TURN_L1, AI_MAJOR_EARLY_ECON_BUILDING_MULT, AI_EARLY_SCOUT_REPEAT_PENALTY } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export { pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP } from ${JSON.stringify(AI_SRC + '/game/city-founding')};
 export { isMajorAiOwner } from ${JSON.stringify(AI_SRC + '/game/owner-utils')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
@@ -57,7 +57,7 @@ try {
 }
 
 const AI = require(BUNDLE_FILE);
-const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP, isMajorAiOwner } = AI;
+const { decideAITurn, chooseCityProduction, loadDifficultyParams, decideAIReaction, decideAIReinforcements, PROG_BITWA, TERYTORIUM_MNOZNIK, AGRESJA_WPLYW, WARTOSC_PROG_OBS, WARTOSC_KOREKTA, PRZYJAZN_ZAUFANIE_PROG, AGRESJA_AGRESYWNY_PROG, hexDistance, decideAIDiplomacy, resolveDiplomacyCivBias, PROG_WOJNA_SILA, PROG_WOJNA_AGRESJA, PROG_TRYBUT, PROG_POKOJ_SLABOSC, PROG_SOJUSZ, PROG_HANDEL, diplomacyLayerForOwner, filterDiplomacyCommandsForLayer, planCityFounding, isLocalExpansionPhase, countFreeIndependentCityStates, AI_COLONIZATION_SOURCE_MIN_POP, pickSourceCityForFounding, AI_FOUNDING_SOURCE_MIN_POP, isMajorAiOwner, computeMajorAiEarlyGame, AI_MAJOR_EARLY_MAX_TURN, AI_MAJOR_EARLY_MAX_TURN_L1, AI_MAJOR_EARLY_ECON_BUILDING_MULT, AI_EARLY_SCOUT_REPEAT_PENALTY, computeEarlyScoutProductionScore } = AI;
 
 // --- tiny assertion framework ----------------------------------------------
 let passed = 0;
@@ -2611,6 +2611,82 @@ console.log('\n--- T13: AI-MANAGE-Q1=A isMajorAiOwner ---');
   assert(!isMajorAiOwner(-1, isCs), 'T13: barbarzynca nie jest major AI');
   assert(!isMajorAiOwner(3, isCs), 'T13: miasto-panstwo (simplified) nie jest major AI');
   assert(!isMajorAiOwner(4, isCs), 'T13: defensiveCopy (typCityCopy) nie jest major AI');
+}
+
+// ---------------------------------------------------------------------------
+// TEST 14: R-AI-TRUDNOSC P1 — majorEarly ×0.70 + L1 early turn 25 + scout −80
+// ---------------------------------------------------------------------------
+
+console.log('\n--- T14-p1-1a: majorEarly econ building mult = 0.70 ---');
+{
+  eq(AI_MAJOR_EARLY_ECON_BUILDING_MULT, 0.70, 'T14-p1-1a: AI_MAJOR_EARLY_ECON_BUILDING_MULT');
+}
+
+console.log('\n--- T14-p1-1b: L1 majorEarly konczy sie tura 25, L2 tura 40 ---');
+{
+  const cities = [makeCity('c1', 1, 2, 2)];
+  cities[0].population = 8;
+  const optsBase = {
+    defensiveCopy: false,
+    currentTurn: 30,
+    cityBuildings: { c1: ['spichlerz', 'koszary', 'stolarnia', 'cegielnia', 'odlewnia_brazu'] },
+  };
+  assert(
+    !computeMajorAiEarlyGame({ ...optsBase, poziomTrudnosci: 1 }, cities, 5),
+    'T14-p1-1b: L1 turn 30 -> not majorEarly (max 25)',
+  );
+  assert(
+    computeMajorAiEarlyGame({ ...optsBase, poziomTrudnosci: 2 }, cities, 5),
+    'T14-p1-1b: L2 turn 30 -> still majorEarly (max 40)',
+  );
+  eq(AI_MAJOR_EARLY_MAX_TURN_L1, 25, 'T14-p1-1b: AI_MAJOR_EARLY_MAX_TURN_L1');
+}
+
+console.log('\n--- T14-p1-1c: majorEarly stolarnia score ×0.70 (ranking vs biblioteka) ---');
+{
+  const map = makeMap(10, 10);
+  const cities = [
+    makeCity('c1', 1, 1, 1),
+    makeCity('c2', 1, 5, 1),
+    makeCity('c3', 1, 8, 1),
+  ];
+  const dataP1 = makeGameData({ ekspansja_zagroz_zasieg: { wartosc: 5 } });
+  dataP1.buildings.push({ id: 'biblioteka', nazwa: 'Biblioteka' });
+  const diff = loadDifficultyParams(dataP1, 2);
+  const guard = makeUnit('g1', 1, 1, 1);
+  const allowed = new Set(['stolarnia', 'biblioteka']);
+  const pick = chooseCityProduction(
+    'c1',
+    cities,
+    [guard],
+    1,
+    dataP1,
+    { wojsko: 0, nauka: 0, ekonomia: 0, obrona: 0 },
+    {
+      currentTurn: 10,
+      defensiveCopy: false,
+      cityBuildings: { c1: ['spichlerz', 'koszary'], c2: [], c3: [] },
+      isProductionAllowed: (_cid, itemId) => allowed.has(itemId),
+    },
+    map,
+    diff,
+  );
+  eq(pick, 'stolarnia', 'T14-p1-1c: majorEarly ×0.70 -> stolarnia (168) > biblioteka (164)');
+}
+
+console.log('\n--- T14-p1-2a: scout repeat penalty constant = 80 ---');
+{
+  eq(AI_EARLY_SCOUT_REPEAT_PENALTY, 80, 'T14-p1-2a: AI_EARLY_SCOUT_REPEAT_PENALTY');
+}
+
+console.log('\n--- T14-p1-2b: drugi scout score −80 vs pierwszy (ta sama economyScore) ---');
+{
+  const economyScore = 100;
+  const score0 = computeEarlyScoutProductionScore(0, economyScore);
+  const score1 = computeEarlyScoutProductionScore(1, economyScore);
+  eq(score0 - score1, AI_EARLY_SCOUT_REPEAT_PENALTY, 'T14-p1-2b: delta 80 przy scoutCount 0 vs 1');
+  eq(score0, 420, 'T14-p1-2b: pierwszy scout base 320+economy');
+  eq(score1, 340, 'T14-p1-2b: drugi scout 320-80+economy');
 }
 
 // --- summary ---------------------------------------------------------------
