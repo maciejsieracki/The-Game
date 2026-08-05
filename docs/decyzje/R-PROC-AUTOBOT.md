@@ -22,7 +22,7 @@ Self-improving agent framework w patternie **Evaluator–Operator**:
 | AutoBot | U nas |
 |---------|--------|
 | **OperatorAgent** | Implementer (`composer-2.5`) — czyta playbook + dyspozycję, wykonuje kod/testy |
-| **EvaluatorAgent** | Adwokat diabła + Grok final (+ metryki: testy PASS/FAIL, playtest OK/BUG, regresje) |
+| **EvaluatorAgent** | Adwokat diabła + Grok final (+ metryki: testy PASS/FAIL, playtest OK/BUG, **SCOPE + regresja** — `R-PROC-AUTOBOT-EVAL-SCOPE`) |
 | **playbook.json** | `dyspozycje/autobot/playbook.json` — reguły z win/loss / win_rate |
 | **Guardrails** | Zakaz merge→main / deploy bez hasła `deploy` / krytyczne = bramka Macieja |
 | **Feature pruning** | Nie pakować do kontekstu Operatora atrybutów bez mocy predykcyjnej (śmieciowy kontekst) |
@@ -74,7 +74,22 @@ Pełna implementacja w `dyspozycje/autobot/`:
 
 **Bramki jakości:** `node gra/node_modules/typescript/bin/tsc -p dyspozycje/autobot/tsconfig.json` · `node dyspozycje/autobot/tools/autobot-smoke.cjs`
 
-**Reguły Civ w playbook:** triple-layer (rule_101), numer-abc-deploy (rule_102), no-npm-run-build (rule_103), lane-no-main-ts (rule_104).
+**Reguły Civ w playbook:** triple-layer (rule_101), numer-abc-deploy (rule_102), no-npm-run-build (rule_103), lane-no-main-ts (rule_104), **eval-scope-no-regression** (rule_105).
+
+---
+
+## Checklista Evaluator — SCOPE (rule_105)
+
+**Kanon:** `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md`
+
+| Oś | Pytanie |
+|----|---------|
+| **SCOPE** | Czy każda linia diffu wynika z problemu/AC tematu? |
+| **DIFF-MINIMAL** | Czy brak refaktoru „przy okazji” i cudzych plików bez handoffu? |
+| **REGRESSION** | Czy nie cofa wcześniejszych fixów / nie psuje innego zachowania? |
+| **COUPLING** | Czy nie wprowadza sprzężeń poza zakresem tematu? |
+
+**Werdykt:** naruszenie → **FAIL** lub **PASS-WITH-NOTES** z blockerami (nie akceptować cicho).
 
 ---
 

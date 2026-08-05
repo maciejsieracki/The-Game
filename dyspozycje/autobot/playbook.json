@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "updatedAtIso": "2026-08-05T09:33:00.000Z",
+  "version": 3,
+  "updatedAtIso": "2026-08-05T15:00:00.000Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -58,6 +58,16 @@
       "fail_count": 1,
       "win_rate": 0.8571428571428571,
       "lastUpdatedIso": "2026-08-05T09:33:00.000Z"
+    },
+    {
+      "id": "rule_105",
+      "rule_text": "Evaluator: zmiany ściśle do tematu (SCOPE); zakaz ubocznych zmian i regresji w innych miejscach",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-scope-no-regression",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-05T15:00:00.000Z"
     }
   ],
   "quarantine_rules": []

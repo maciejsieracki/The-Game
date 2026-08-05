@@ -26,6 +26,17 @@ Dopiero po #2 i #3: meldunek „gotowe w kodzie” / hasło **`deploy`**.
 - Czy fix nie psuje innego miejsca (AI vs gracz, UI, zapis, koniec tury)?
 - Czy testy łapią realny bug, nie tylko happy-path?
 
+### SCOPE + regresja (OBOWIĄZKOWE — Maciej 2026-08-05)
+
+Adwokat diabła **zawsze** stosuje `R-PROC-AUTOBOT-EVAL-SCOPE` (playbook `rule_105`):
+
+1. Czy każda zmiana w diffie wynika wprost z problemu/AC tematu? (nie „przy okazji”)
+2. Czy paczka nie rusza niezwiązanych plików/funkcji?
+3. Czy nie cofa wcześniejszych usprawnień / nie psuje innych tematów?
+4. Przy NIE → **FAIL** lub **PASS-WITH-NOTES** z listą ubocznych ryzyk (nie akceptuj cicho).
+
+Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md`
+
 ## Punkty wejścia (każda sesja musi to znać)
 
 | Plik | Gdzie |

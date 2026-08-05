@@ -39,9 +39,25 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · pl
 | Agent | Robi | Nie robi |
 |-------|------|----------|
 | **Operator** | Task + playbook + akcja (kod/testy/docs) | Merge `main`, deploy, kanon/finalna |
-| **Evaluator** | Hard metrics → delta → postmortem → update playbook | Ocena „na czuja” / 10/10 bez KPI |
+| **Evaluator** | Hard metrics → delta → postmortem → update playbook + **SCOPE/regresja** | Ocena „na czuja” / 10/10 bez KPI · PASS bez sprawdzenia diffu |
 
 Potrójna warstwa (`R-PROC-POTROJNA-WARSTWA`) = **wbudowana** w kroki 1–3 AutoBot — nie osobny opcjonalny rytuał.
+
+---
+
+## Evaluator — obowiązkowy SCOPE + regresja (Maciej 2026-08-05)
+
+Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`
+
+**Evaluator MUSI** przed werdyktem sprawdzić:
+
+1. **SCOPE** — każda zmiana w diffie wynika wprost z problemu / błędu / AC tematu (nie „przy okazji”).
+2. **NO-SIDE-EFFECT** — paczka nie rusza niezwiązanych plików/funkcji bez uzasadnionego kontraktu.
+3. **NO-REGRESSION** — fix nie cofa wcześniejszych usprawnień ani nie psuje innych tematów.
+
+**Przy NIE:** **FAIL** albo minimum **PASS-WITH-NOTES** z listą blockerów — **ZAKAZ** czystego PASS „bo testy zielone”.
+
+Grok wkleja do promptu Evaluatora szablon 4 pytań z decision doc (sekcja „SCOPE + regresja”).
 
 ---
 
