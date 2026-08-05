@@ -1,5 +1,6 @@
 # R-WIARYGODNOSC — Etap 0 (typy / struktury) — status 2026-08-05
 
+**Status:** 🟢 **ZAMKNIĘTE** — typy FALA 233; pełny mechanizm ZDEPLOYOWANE (audyt `R-WIARYGODNOSC-AUDIT-OPEN-VS-DEPLOYED-2026-08-05.md`).  
 **Decyzja:** WIAR-START=A — Etap 0 przed strumieniem Dźwigni 1.  
 **Spec:** `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md`
 
