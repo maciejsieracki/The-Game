@@ -27,7 +27,7 @@ Agent #2 **musi** odpowiedzieć na:
 2. **SCOPE** — czy diff dotyczy **ściśle** zgłoszonego problemu/błędu (nie „przy okazji” innych tematów)? → kanon `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105` · **STRICT** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · `rule_106`
 3. **Regresja** — czy coś wcześniej działającego zostało usunięte, wyłączone lub osłabione (np. SPICH-AUTO lower, Q1=B, karencja głodu wojska, parytet AI/MP)?
 4. **Skutki uboczne** — czy fix w module A psuje B (inne ownerId, save/load, UI, EOT order)?
-5. **Testy** — czy asercje naprawdę łapią bug, czy tylko happy-path? **Luka testów / czerwone testy tematu / tsc≠0 → FAIL** (nie NOTES) — `R-PROC-AUTOBOT-EVAL-STRICT`.
+5. **Testy** — czy asercje naprawdę łapią bug, czy tylko happy-path? **Luka testów / czerwone testy tematu / tsc≠0 → FAIL** (nie NOTES) — `R-PROC-AUTOBOT-EVAL-STRICT`. **Tylko happy-path bez edge/negacji/repro → FAIL #7** — `R-PROC-AUTOBOT-EVAL-STRICT-EDGE` · `rule_107`.
 6. **Werdykt** — `PASS` / `FAIL` / `PASS-WITH-NOTES` + konkretne pliki:linie + co poprawić (bez wdrażania, chyba że Grok każe fix). **ZAKAZ** czystego PASS przy znanym naruszeniu SCOPE. **ZAKAZ** NOTES „brakuje testu, ale wygląda OK”.
 
 ## Kiedy obowiązuje

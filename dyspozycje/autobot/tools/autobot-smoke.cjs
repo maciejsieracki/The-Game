@@ -98,7 +98,7 @@ async function main() {
   fs.mkdirSync(path.dirname(TMP_PB), { recursive: true });
   fs.copyFileSync(pbPath, TMP_PB);
   const pb = mod.loadPlaybook(TMP_PB);
-  assert.strictEqual(pb.version, 4, 'playbook version');
+  assert.strictEqual(pb.version, 5, 'playbook version');
   assert.ok(pb.min_confidence_threshold >= 0.6, 'min_confidence_threshold');
   assert.ok(Array.isArray(pb.rules) && pb.rules.length >= 4, 'rules array');
   assert.ok(pb.rules[0].rule_text, 'rule_text present');

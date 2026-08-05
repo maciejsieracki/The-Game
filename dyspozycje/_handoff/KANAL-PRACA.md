@@ -1,3 +1,10 @@
+## [18:00 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-EDGE (Maciej „2 Jeszcze twardszy”)
+
+Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL #7 (nie NOTES).
+|- Pliki: `R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md`, STRICT patch, `rule_107`, guardrails, smoke v5
+|- Zero `gra/src` — tylko proces AutoBot
+CZEKAM-NA: Evaluator / merge Grok (bez deploy gry)
+
 ﻿## [17:32 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT (Maciej „2")
 
 Evaluator STRICT: luki testów / brak asercji AC / czerwone testy tematu → FAIL (nie NOTES).
