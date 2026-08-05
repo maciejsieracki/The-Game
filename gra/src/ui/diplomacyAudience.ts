@@ -18,6 +18,7 @@ import {
   wiarygodnoscLabelPl,
   wiarygodnoscTooltipRozbiciePl,
   type WiarygodnoscRozbicie,
+  type WiarygodnoscBreakdown,
 } from '../game/diplomacy-credibility';
 import {
   civLeaderMedallionHtmlById,
@@ -166,6 +167,8 @@ export interface DiplomacyAudienceState {
   playerWiarygodnosc?: number;
   /** Rozbicie W: trwały życiorys vs bieżące uczynki (§4 pkt 9) — tooltip audiencji. */
   playerWiarygodnoscRozbicie?: WiarygodnoscRozbicie;
+  /** Rejestr czynników W gracza per zdarzenie (WIAR-UI-REJESTR). */
+  playerWiarygodnoscBreakdown?: WiarygodnoscBreakdown;
   /**
    * Globalna Wiarygodność rozmówcy (−100…+100) — reputacja imperium rozmówcy.
    * SILNIK: getWiarygodnosc(otherOwnerId).
@@ -503,6 +506,13 @@ ${DIPLO_1E_SHARED_CSS}
 .da-rbar.respect i{background:linear-gradient(90deg,#9a7420,#e8d88a);}
 .da-rbar.credibility i{background:linear-gradient(90deg,#3a4a7a,#7aa0e8);}
 .da-credibility-hint{font-size:0.58em;color:#6a7080;line-height:1.35;margin-top:2px;}
+.da-credbreak{margin-top:6px;background:rgba(0,0,0,.18);border:1px solid rgba(232,216,138,.14);
+  border-radius:8px;overflow:hidden;}
+.da-credbreak-h{font-size:0.58em;text-transform:uppercase;letter-spacing:.04em;color:#8a8070;
+  padding:5px 8px 3px;border-bottom:1px solid rgba(232,216,138,.1);}
+.da-credbreak .da-rfact{padding:2px 8px;font-size:0.62em;}
+.da-credbreak-foot{padding:4px 8px 5px;font-size:0.58em;color:#6a7080;border-top:1px solid rgba(232,216,138,.1);}
+.da-credbreak-foot b{color:#e8d88a;}
 .da-goods{display:flex;flex-wrap:wrap;gap:5px;}
 .da-good{font-size:0.62em;padding:3px 8px;border-radius:7px;border:1px solid rgba(232,216,138,.2);
   background:rgba(24,30,42,.65);color:#c8b898;white-space:nowrap;}
@@ -1181,6 +1191,7 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
         ? '<div>' +
             '<div class="da-sec-title">Reputacja</div>' +
             credibilityBarHtml(st.playerWiarygodnosc, st.playerWiarygodnoscRozbicie) +
+            credibilityBreakdownHtml(st.playerWiarygodnoscBreakdown, st.playerWiarygodnoscRozbicie) +
           '</div>'
         : '') +
       '<div>' +
@@ -1317,6 +1328,47 @@ function formatCredibilityHintPkt(v: number): string {
     ? String(rounded)
     : rounded.toFixed(1).replace('.', ',');
   return sign + body;
+}
+
+function credibilityBreakdownHtml(
+  breakdown?: WiarygodnoscBreakdown,
+  rozbicie?: WiarygodnoscRozbicie,
+): string {
+  if (!breakdown) return '';
+  const fmtVal = (v: number, perTurn?: boolean): string => {
+    const rounded = Math.round(v * 10) / 10;
+    const sign = rounded > 0 ? '+' : '';
+    const body = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1).replace('.', ',');
+    return sign + body + (perTurn ? ' / turę' : '');
+  };
+  const rows: string[] = [];
+  for (const f of breakdown.pozytywne) {
+    rows.push(
+      '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span>'
+      + '<span class="val" style="color:#7ad0a0">' + fmtVal(f.value, f.perTurn) + '</span></div>',
+    );
+  }
+  for (const f of breakdown.negatywne) {
+    rows.push(
+      '<div class="da-rfact"><span class="lbl">' + esc(f.label) + '</span>'
+      + '<span class="val" style="color:#e08a8a">' + fmtVal(f.value, f.perTurn) + '</span></div>',
+    );
+  }
+  if (rows.length === 0) {
+    rows.push('<div class="da-empty" style="padding:4px 8px">Brak zdarzeń — tylko start.</div>');
+  }
+  const foot = rozbicie
+    ? 'Suma składowych (przed klamrą): <b>'
+      + formatCredibilityHintPkt(rozbicie.startowa + rozbicie.trwalyZyciorys + rozbicie.biezaceUczynki)
+      + '</b> · klamra: <b>' + formatCredibilityHintPkt(rozbicie.razem) + '</b>'
+    : '';
+  return (
+    '<div class="da-credbreak">' +
+      '<div class="da-credbreak-h">Rejestr Wiarygodności</div>' +
+      rows.join('') +
+      (foot ? '<div class="da-credbreak-foot">' + foot + '</div>' : '') +
+    '</div>'
+  );
 }
 
 /** Ikona kafelka „Możliwe umowy" — dopasowana per id akcji (data/diplomacy.json akcje_dyplomatyczne). */

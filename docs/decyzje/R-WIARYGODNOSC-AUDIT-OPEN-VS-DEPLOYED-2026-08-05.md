@@ -98,7 +98,7 @@ Sekcja „Nadal nierozstrzygnięte" w spec §9 (punkty 1–10) **duplikuje** dec
 | ID roboczy | Opis | Typ | Blokuje grę? |
 |------------|------|-----|--------------|
 | **WIAR-NAP-IMP** | §9.1 zatwierdzone: wybór NAP **terminowy (10–20 tur)** lub **bezterminowy** przy zawieraniu. Kod: `diplomacy-proposals.ts` case `'nap'` zawsze `clamp(turns, 10, 20)` — brak gałęzi `wygasaTura: null`. | Implementacja po decyzji | Nie — NAP terminowy działa |
-| **WIAR-UI-REJESTR** | §7 spec: globalny rejestr czynników W (jak `buildRelationBreakdown` dla Zaufania). Dziś: tooltip z `rozbicieWiarygodnosci` (start/życiorys/bieżące), **bez** listy per-zdarzenie w panelu. | UI V2 / playtest | Nie |
+| **WIAR-UI-REJESTR** | ✅ **WDROŻONE** (`buildWiarygodnoscBreakdown` + rejestr w audiencji gracza, sekcja Reputacja). Per-zdarzenie + strumień S1–S4; tooltip życiorys/bieżące bez zmian. | UI | Nie |
 
 **Strojenie liczb** (wagi N*, S*, czasy zapominania) — temat **post-playtest**, nie ABC; parametry w `diplomacy.json` / `DIPLOMACY_PARAMS`.
 
@@ -108,6 +108,6 @@ Sekcja „Nadal nierozstrzygnięte" w spec §9 (punkty 1–10) **duplikuje** dec
 
 **Otwarte ABC:** — (brak)
 
-**Backlog (nie ABC):** `WIAR-NAP-IMP` · `WIAR-UI-REJESTR`
+**Backlog (nie ABC):** `WIAR-NAP-IMP`
 
-**Zamknięte / wdrożone:** `C-WIAR-D4` · `C-WIAR-N1-UX` · `C-WIAR-N4-AI` · `D-WIAR-KASKADA-Q1` · `REL-WIARYG-DRIFT-Q1` · `R-WIARYGODNOSC-D3` · `R-WIARYGODNOSC-DZWIGNIA2` · `R-WIARYGODNOSC-TEMPO` (R1/R1b) · `R-WIARYGODNOSC-ETAP0` · przegląd R1–R4
+**Zamknięte / wdrożone:** `WIAR-UI-REJESTR` · `C-WIAR-D4` · `C-WIAR-N1-UX` · `C-WIAR-N4-AI` · `D-WIAR-KASKADA-Q1` · `REL-WIARYG-DRIFT-Q1` · `R-WIARYGODNOSC-D3` · `R-WIARYGODNOSC-DZWIGNIA2` · `R-WIARYGODNOSC-TEMPO` (R1/R1b) · `R-WIARYGODNOSC-ETAP0` · przegląd R1–R4

@@ -1063,6 +1063,7 @@ import {
   wiarygodnoscStartowa,
   sumaWiarygodnosciCalkowita,
   rozbicieWiarygodnosci,
+  buildWiarygodnoscBreakdown,
   appendCredibilityEvent,
   freshCredibilityStreamEntry,
   tickCredibilityStreamEntry,
@@ -14356,6 +14357,13 @@ async function boot(): Promise<void> {
             playerEra: empireEpochForOwner(0),
             playerWiarygodnosc: getWiarygodnosc(0),
             playerWiarygodnoscRozbicie: rozbicieWiarygodnosci(
+              getWiarygodnoscEvents(0),
+              getWiarygodnoscStreamEntries(0),
+              wiarygodnoscStartowa(_menuDifficulty),
+              turn,
+              _menuDifficulty,
+            ),
+            playerWiarygodnoscBreakdown: buildWiarygodnoscBreakdown(
               getWiarygodnoscEvents(0),
               getWiarygodnoscStreamEntries(0),
               wiarygodnoscStartowa(_menuDifficulty),
