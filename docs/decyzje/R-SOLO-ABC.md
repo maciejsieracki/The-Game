@@ -1,37 +1,39 @@
 # R-SOLO-ABC — pełny zestaw na nieobecność (2026-08-05)
 
-**Status:** 🟡 Paczka 1 ZAPISANA · paczki 2–4 CZEKAJĄ  
-**ROBOCZA:** FALA 231 `283de421`
+**Status:** ✅ WSZYSTKIE PACZKI ECHO · praca solo WG poniżej  
+**ROBOCZA bazowa:** FALA 231 `283de421` · SOLO-Q1=A → deploy po PASS OK
 
-## ECHO (Maciej 2026-08-05)
-
-> SOLO-Q1 a / SOLO-Q2 b / v a
+## ECHO paczka 1 (wcześniej)
 
 | ID | Odpowiedź | Skutek |
 |----|-----------|--------|
-| **SOLO-Q1** | **A** | Kod + AutoBot + **deploy samodzielnie** po PASS |
-| **SOLO-Q2** | **B** | Pomiń R-SCENA-PERF (bez F12) → SUR / inne |
-| **SOLO-Q3** | **A** (interpretacja „v a” = Q3=A) | Patrz korekta niżej |
+| **SOLO-Q1** | **A** | Deploy po AutoBot PASS bez osobnego hasła |
+| **SOLO-Q2** | **B** | Pomiń scenę (bez F12) |
+| **SOLO-Q3** | **A** | Kamień już spójny (Wzgórza+Góry) — STALE rejestr |
 
-### Korekta faktów SOLO-Q3 (audyt przy ECHO)
+## ECHO paczki 2–4 (Maciej 2026-08-05)
 
-Rejestr mówił „kod tylko Góry vs JSON Wzgórza+Góry” — **NIEAKTUALNE**.  
-Dziś w `improvement-build.ts` (komentarz Maciej 2026-07-24) oraz `terrain-improvements.json`:
+> SUR-WEGIEL b / BITWA-FACING b / BITWA-BUGI a / a + b / DOTYK a / MUZYKA a / PLAYTEST-GATE a / AI-PLAYTEST b + a / SCENA-PRIORYTET a+b
 
-- **Kod:** `kamieniolom` → Wzgórza **i** Góry  
-- **JSON:** `"teren": "Wzgórza, Góry (kamień)"`
+| ID | Odpowiedź | Skutek operacyjny |
+|----|-----------|-------------------|
+| **SUR-WEGIEL** | **B** | Ukryj węgiel (generacja OFF + UI hide); dane dyplomacji zostają |
+| **BITWA-FACING** | **B** | Gracz ustawia kierunek FRONT/BOK/TYŁ — **audyt: C-FLANK dropdown JUŻ JEST** w deploy; domykamy braki + czytelność jeśli coś dziurawe |
+| **BITWA-BUGI** | **A** | K1+K2 **już w kodzie**; dokończyć **I** (powtórka zachowuje ręczne grupy) |
+| **WIAR-START** | **A+B** | Etap 0 (typy/save) **oraz** przegląd Dźwigni 2–4 (docs) przed strumieniem D1 |
+| **DOTYK** | **A** | Dalej ODŁOŻONE — zero pracy |
+| **MUZYKA** | **A** | `muzyka_opoznienie_startu_ms=2500`, tylko pierwszy start menu |
+| **PLAYTEST-GATE** | **A** | R-AUTO/pigułka/budynki zostają otwarte; kod idzie dalej |
+| **AI-PLAYTEST** | **B+A** | Wolno metryki/logi diagnostyczne; **zakaz** dostrajania balansu P-AI-MOC/008 |
+| **SCENA-PRIORYTET** | **A+B** | Bez F12 (Q2=B): kolejka **bitwa-bugi → SUR/muzyka → …**; gdy kiedyś będzie pomiar → scena wraca na górę |
 
-**SOLO-Q3=A** w intencji = „nie zmieniaj gameplayu na ślepo; spójność docs↔kod”.  
-**NIE** wdrażamy cofnięcia do „tylko Góry” (to byłaby regresja względem decyzji 2026-07-24).  
-**R-SUR kamień:** **ZAMKNIĘTE — już spójne, zero zmian kodu.**
+## Kolejka solo (teraz)
 
-## Spis paczek
+1. MUZYKA A  
+2. SUR-WEGIEL B  
+3. BITWA-BUGI I (replay grupy)  
+4. BITWA-FACING B — weryfikacja C-FLANK + ewentualny ring  
+5. WIAR A+B — Etap 0 + docs dźwignie  
+6. Deploy FALA (Q1=A) po PASS  
 
-| Paczka | ID | Status |
-|--------|-----|--------|
-| 1/4 | SOLO-Q1 · SOLO-Q2 · SOLO-Q3 | ✅ ECHO |
-| 2/4 | SUR-WEGIEL · BITWA-FACING · BITWA-BUGI | ⏳ |
-| 3/4 | WIAR-START · DOTYK · MUZYKA | ⏳ |
-| 4/4 | PLAYTEST-GATE · AI-PLAYTEST · SCENA-PRIORYTET | ⏳ |
-
-**Rekomendacje 2–4 (gdy nie zdążysz):** `A A A · A A A · A A B`
+**Nie ruszam:** DOTYK · scena (bez liczb) · balans AI
