@@ -3,3 +3,5 @@ dist/
 *.log
 gra/tools/.debug-*
 gra/tools/.braz-*-preview-entry.ts
+gra/tools/.city-map-badge-bundle.cjs
+gra/tools/.city-map-badge-entry.ts

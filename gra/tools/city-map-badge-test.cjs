@@ -65,6 +65,29 @@ const keyBase = M.cityMapBadgeKey({
   prodActive: false,
 });
 assert(keyBase.includes('Ateny|5|d1|cgrecy|p-|g-|w0'), 'klucz cache zawiera defense+civ+growth');
+assert(keyBase.includes('cs0|e-'), 'klucz domyślny: major bez epoki');
+
+const keyMajorPortrait = M.cityMapBadgeKey({
+  cityName: 'Rzym',
+  population: 8,
+  defenseTier: 2,
+  civIconId: 'rzym',
+  isCityState: false,
+  era: 2,
+});
+assert(keyMajorPortrait.includes('cs0|e2'), 'major AI: cs0 + epoka w kluczu');
+assert(keyMajorPortrait.includes('crzym'), 'major: civ w kluczu');
+
+const keyCityState = M.cityMapBadgeKey({
+  cityName: 'Sparta',
+  population: 3,
+  defenseTier: 0,
+  civIconId: 'grecy',
+  isCityState: true,
+  era: 1,
+});
+assert(keyCityState.includes('cs1|e1'), 'miasto-państwo: cs1 w kluczu');
+assert(keyCityState !== keyMajorPortrait, 'MP vs major — różne klucze cache');
 
 const keyProd = M.cityMapBadgeKey({
   cityName: 'Ateny',

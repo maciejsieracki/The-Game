@@ -1,3 +1,9 @@
+## [14:52 PL, 2026-08-05] GROK → ALL — Maciej: po AutoBot → commit + deploy ROBOCZA
+|- Hasło: jak skończysz to commit deploy do robocza (zgodnie z Autobot)
+|- Kolejność: Operator ECHO2 → Evaluator PASS → Grok final → merge main → FALA 228 deploy
+|- Operator ECHO2 `bc-62298834` jeszcze RUNNING; ECHO1 już `bf5b4ea`
+CZEKAM-NA: Operator ECHO2 tip → Evaluator
+
 ## [14:52 PL, 2026-08-05] GROK → ALL — R-CITY-PILL AutoBot: ECHO1 DONE · ECHO2 Operator
 |- ECHO1 na branchu: `bf5b4ea` — ikony frontu + Wyżywienie · city-map-badge 22/22 · tsc 0
 |- ECHO2 Operator `bc-62298834` — władca (gracz/major) vs kultura (MP)

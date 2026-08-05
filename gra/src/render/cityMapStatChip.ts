@@ -31,6 +31,10 @@ export interface CityMapBadgeInput {
   growthLevel?: number | null;
   /** Ostrzeżenie surowców — rezerwa pod hover Design (v1: tylko klucz cache). */
   resourceWarning?: boolean;
+  /** true = miasto-państwo → medalion tylko sygnet kultury (bez portretu władcy). */
+  isCityState?: boolean;
+  /** Epoka właściciela — portret władcy na medalionie (gracz + major AI). */
+  era?: number;
 }
 
 const DEFENSE_COLORS: Record<1 | 2, { fill: string; stroke: string }> = {
@@ -47,6 +51,9 @@ const GROWTH_SLOT_W = 30;
 let civSigilSvgFn: ((civIconId: string) => string) | null = null;
 const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
 
+let leaderPortraitUrlFn: ((civIconId: string, era: number) => string | null) | null = null;
+const leaderPortraitImageByKey = new Map<string, HTMLImageElement | 'loading'>();
+
 let prodIconSvgFn: ((kind: ProductionKind, id: string) => string) | null = null;
 const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
 
@@ -57,6 +64,17 @@ const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
 export function setCityMapBadgeCivSigil(fn: (civIconId: string) => string): void {
   civSigilSvgFn = fn;
   civSigilImageById.clear();
+}
+
+/**
+ * Wstrzykuje URL portretu władcy (main.ts → leaderPortraitUrl).
+ * Major AI + gracz: medalion pigułki; MP → tylko sygnet kultury (isCityState).
+ */
+export function setCityMapBadgeLeaderPortrait(
+  fn: (civIconId: string, era: number) => string | null,
+): void {
+  leaderPortraitUrlFn = fn;
+  leaderPortraitImageByKey.clear();
 }
 
 /**
@@ -189,24 +207,40 @@ function drawCivMedallionDisc(
   ctx.stroke();
 }
 
-/** Medalion cywu — kolor właściciela + sygnet kultury (SVG) lub glif ◆ do wczytania. */
+interface CivMedallionContent {
+  sigilImg?: HTMLImageElement;
+  portraitImg?: HTMLImageElement;
+  isCityState?: boolean;
+}
+
+/** Medalion — major: portret władcy (fallback sygnet); MP: tylko sygnet kultury. */
 function drawCivMedallion(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  civIconId: string,
+  _civIconId: string,
   ownerColor?: number,
-  sigilImg?: HTMLImageElement,
+  content?: CivMedallionContent,
 ): void {
   drawCivMedallionDisc(ctx, cx, cy, ownerColor);
   const r = CIV_MEDALLION_R;
-  if (sigilImg) {
-    const side = r * 1.55;
+  const usePortrait = !content?.isCityState && content?.portraitImg;
+  const img = usePortrait ? content!.portraitImg! : content?.sigilImg;
+  if (img) {
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r - 1.5, 0, Math.PI * 2);
     ctx.clip();
-    ctx.drawImage(sigilImg, cx - side / 2, cy - side / 2, side, side);
+    if (usePortrait) {
+      const side = (r - 1.5) * 2;
+      const scale = Math.max(side / img.width, side / img.height);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      ctx.drawImage(img, cx - w / 2, cy - (r - 1.5), w, h);
+    } else {
+      const side = r * 1.55;
+      ctx.drawImage(img, cx - side / 2, cy - side / 2, side, side);
+    }
     ctx.restore();
     return;
   }
@@ -239,6 +273,33 @@ function requestCivSigilImage(
   civSigilImageById.set(key, 'loading');
   loadImageInto(svgToDataUri(svg), (img) => {
     civSigilImageById.set(key, img);
+    onReady(img);
+  });
+}
+
+function leaderPortraitCacheKey(civIconId: string, era: number): string {
+  const e = Math.max(1, Math.round(era) || 1);
+  return `${civSigilCacheKey(civIconId)}:${e}`;
+}
+
+function requestLeaderPortraitImage(
+  civIconId: string,
+  era: number,
+  onReady: (img: HTMLImageElement) => void,
+): void {
+  if (!leaderPortraitUrlFn) return;
+  const key = leaderPortraitCacheKey(civIconId, era);
+  const cached = leaderPortraitImageByKey.get(key);
+  if (cached instanceof HTMLImageElement) {
+    onReady(cached);
+    return;
+  }
+  if (cached === 'loading') return;
+  const url = leaderPortraitUrlFn(civIconId, era);
+  if (!url) return;
+  leaderPortraitImageByKey.set(key, 'loading');
+  loadImageInto(url, (img) => {
+    leaderPortraitImageByKey.set(key, img);
     onReady(img);
   });
 }
@@ -312,11 +373,11 @@ function truncateName(
   return s + '…';
 }
 
-/** Rysuje pigułkę na istniejącej kanwie (async sygnet — ta sama kanwa + needsUpdate). */
+/** Rysuje pigułkę na istniejącej kanwie (async sygnet/portret — ta sama kanwa + needsUpdate). */
 function paintCityMapBadgeOntoCanvas(
   canvas: HTMLCanvasElement,
   input: CityMapBadgeInput,
-  civSigilImg?: HTMLImageElement,
+  medallion?: CivMedallionContent,
   prodIconImg?: HTMLImageElement,
 ): void {
   const pop = Math.max(1, Math.floor(input.population) || 1);
@@ -370,7 +431,11 @@ function paintCityMapBadgeOntoCanvas(
     const shieldCx = padX + defenseW * 0.5;
     drawDefenseShield(ctx, shieldCx, cy, input.defenseTier as 1 | 2);
   }
-  drawCivMedallion(ctx, civCx, cy, input.civIconId, input.ownerColor, civSigilImg);
+  drawCivMedallion(ctx, civCx, cy, input.civIconId, input.ownerColor, {
+  sigilImg: medallion?.sigilImg,
+  portraitImg: medallion?.portraitImg,
+  isCityState: input.isCityState,
+});
 
   const nameX = padX + leftIconsW;
   ctx.font = nameFont;
@@ -406,11 +471,11 @@ function paintCityMapBadgeOntoCanvas(
 /** Canvas: [tarcza?][cyw] NAZWA [prod?] + (pop). */
 export function drawCityMapBadgeCanvas(
   input: CityMapBadgeInput,
-  civSigilImg?: HTMLImageElement,
+  medallion?: CivMedallionContent,
   prodIconImg?: HTMLImageElement,
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
-  paintCityMapBadgeOntoCanvas(canvas, input, civSigilImg, prodIconImg);
+  paintCityMapBadgeOntoCanvas(canvas, input, medallion, prodIconImg);
   return canvas;
 }
 
@@ -441,6 +506,10 @@ export function cityMapBadgeKey(
   const growth = a.growthLevel != null
     ? `g${formatWyzwienieLabel(a.growthLevel)}`
     : 'g-';
+  const cs = a.isCityState ? 'cs1' : 'cs0';
+  const era = a.era != null
+    ? `e${Math.max(1, Math.round(a.era) || 1)}`
+    : 'e-';
   return [
     (a.cityName || '').trim(),
     pop,
@@ -449,6 +518,8 @@ export function cityMapBadgeKey(
     `p${prod}`,
     growth,
     `w${a.resourceWarning ? 1 : 0}`,
+    cs,
+    era,
   ].join('|');
 }
 
@@ -483,20 +554,34 @@ export function makeCityMapBadgeSprite(
     tex.minFilter = THREE.LinearFilter;
     tex.colorSpace = THREE.SRGBColorSpace;
     texCache.set(key, tex);
-    const repaint = (civImg?: HTMLImageElement, prodImg?: HTMLImageElement) => {
-      paintCityMapBadgeOntoCanvas(tex!.image as HTMLCanvasElement, input, civImg, prodImg);
+    const repaint = (medallion?: CivMedallionContent, prodImg?: HTMLImageElement) => {
+      paintCityMapBadgeOntoCanvas(tex!.image as HTMLCanvasElement, input, medallion, prodImg);
       tex!.needsUpdate = true;
     };
     let civImg: HTMLImageElement | undefined;
+    let portraitImg: HTMLImageElement | undefined;
     let prodImg: HTMLImageElement | undefined;
+    const medallionContent = (): CivMedallionContent => ({
+      sigilImg: civImg,
+      portraitImg,
+      isCityState: input.isCityState,
+    });
+    const refreshMedallion = () => repaint(medallionContent(), prodImg);
     requestCivSigilImage(input.civIconId, (img) => {
       civImg = img;
-      repaint(civImg, prodImg);
+      refreshMedallion();
     });
+    if (!input.isCityState) {
+      const era = input.era ?? 1;
+      requestLeaderPortraitImage(input.civIconId, era, (img) => {
+        portraitImg = img;
+        refreshMedallion();
+      });
+    }
     if (input.prodActive && input.prodKind && input.prodId) {
       requestProdIconImage(input.prodKind, input.prodId, (img) => {
         prodImg = img;
-        repaint(civImg, prodImg);
+        refreshMedallion();
       });
     }
   }

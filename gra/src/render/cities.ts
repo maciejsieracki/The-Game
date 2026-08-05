@@ -328,6 +328,9 @@ export interface CityRenderOptions {
 
   /** ownerId gracza — pigułka: poziom Wyżywienia tylko dla jego miast. Domyślnie 0. */
   playerOwnerId?: number;
+
+  /** true = miasto-państwo → medalion pigułki tylko sygnet kultury. */
+  isCityStateOwner?: (ownerId: number) => boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -650,6 +653,8 @@ export class CityRenderer {
       prodId: front?.id ?? null,
       growthLevel: isPlayerCity ? getCityRationLevel(city) : null,
       resourceWarning: false,
+      isCityState: options?.isCityStateOwner?.(city.ownerId) ?? false,
+      era: options?.getEra?.(city.ownerId) ?? 1,
     };
   }
 

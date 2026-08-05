@@ -1,6 +1,6 @@
 # R-CITY-PILL-PROD-ICON — ikony kolejki + poziom wzrostu na pigułce miasta
 
-**Status:** 🔵 W TOKU · AutoBot · Maciej 2026-08-05 (~14:45)  
+**Status:** 🟢 Evaluator PASS-WITH-NOTES · gotowe do deploy (Maciej pre-auth) · 2026-08-05  
 **Ekran:** pigułka miasta na mapie świata (miasta **gracza**)
 
 ## ECHO (cytat)
@@ -23,7 +23,13 @@
 
 ### Wiring (wzorzec już w grze)
 - `setUnitOwnerEmblemAssets` + `isCityState: portraitForceCultureIcon(ownerId)` w `main.ts`
-- Pigułka dziś: tylko `setCityMapBadgeCivSigil` → rozszerzyć o portret władcy + flagę `useLeaderPortrait` / `isCityState` w `CityMapBadgeInput`
+- Pigułka: `setCityMapBadgeCivSigil` + **`setCityMapBadgeLeaderPortrait`** (`leaderPortraitUrl`) + `isCityState` / `era` w `CityMapBadgeInput` → `_buildBadgeInput` / `_cityRenderOpts`
+
+### ECHO2 wdrożone (Operator)
+- `cityMapStatChip.ts`: `setCityMapBadgeLeaderPortrait`, async cache portretu, `drawCivMedallion` — major = portret (fallback sygnet), MP = tylko sygnet
+- `cities.ts`: `isCityStateOwner` + `era` w badge input
+- `main.ts`: injection `leaderPortraitUrl` + `isCityStateOwner: portraitForceCultureIcon`
+- `cityMapBadgeKey`: segmenty `cs0`/`cs1` + `e{N}`
 
 ## Pliki (oczekiwane)
 - `gra/src/render/cityMapStatChip.ts` — rysunek + cache key
@@ -32,14 +38,18 @@
 - `gra/tools/city-map-badge-test.cjs` — rozszerzyć asercje klucza / helperów
 
 ## AC
-- [ ] Front budynku → ikona tego budynku (nie generyczny prostokąt)
-- [ ] Front jednostki → ikona tej jednostki (nie generyczny trójkąt)
-- [ ] Brak frontu / pause → brak ikony produkcji
-- [ ] Pigułka miasta gracza pokazuje poziom wzrostu (Wyżywienie / `poziomRacji`)
-- [ ] Gracz + major AI: medalion = portret/symbol **władcy** (nie sam sygnet kultury)
-- [ ] Miasta-państwa: medalion = **tylko kultura** (bez władcy głównej cywu)
-- [ ] `tsc --noEmit` 0 · `city-map-badge-test.cjs` PASS
-- [ ] Bez deploy / bez merge main (Grok + hasło Macieja)
+- [x] Front budynku → ikona tego budynku (nie generyczny prostokąt)
+- [x] Front jednostki → ikona tej jednostki (nie generyczny trójkąt)
+- [x] Brak frontu / pause → brak ikony produkcji
+- [x] Pigułka miasta gracza pokazuje poziom wzrostu (Wyżywienie / `poziomRacji`)
+- [x] Gracz + major AI: medalion = portret/symbol **władcy** (nie sam sygnet kultury) — ECHO2
+- [x] Miasta-państwa: medalion = **tylko kultura** (bez władcy głównej cywu) — ECHO2
+- [x] `tsc --noEmit` 0 · `city-map-badge-test.cjs` **27/27** PASS
+- [x] AutoBot PASS · Maciej: deploy po skończeniu (hasło 14:52)
 
 ## AutoBot
 Operator → Evaluator → Grok final. Deploy tylko na hasło.
+
+## Note Evaluatora (zaakceptowane)
+- Ikony produkcji na pigułce: dla wszystkich ownerów (tanie dziedziczenie); growth tylko gracz.
+- Testy = klucze cache, nie pixel — playtest wizualny po deploy.
