@@ -125,7 +125,9 @@ export function buildPerfReportText(opts: PerfReportPersistOptions): string {
     const n = d.nakladki;
     lines.push('');
     lines.push('Nakładki — podetapy (ms):');
-    lines.push(`  scalMerge=${n.scalMerge} instancje=${n.instancjePlazaWydmy}`);
+    lines.push(`  scalMerge=${n.scalMerge} instancje=${n.instancjePlazaWydmy}`
+      + ` collapsed=${n.scalMergeCollapsed ?? 0} skipMerged=${n.scalMergeSkippedMerged ?? 0}`
+      + ` skipLight=${n.scalMergeSkippedLight ?? 0}`);
   }
 
   lines.push('');
