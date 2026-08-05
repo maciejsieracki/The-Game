@@ -1,3 +1,12 @@
+﻿## [23:40 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 246 cbf529f3
+
+Maciej „2 i 3 oddzielonymi subagentami” · AutoBot PASS-WITH-NOTES · tipy `9ba0aab` / `1015660`
+|- md5: cbf529f3c2671b7f0b01ab25ae6cf01c · stempel: ROBOCZA · cbf529f3
+|- Batch: (1) AI-BALANS-STEP2 L3 pokój −40 Wojownik · (2) R-BASZTA+R-STOLICA rejestr/docs + fix testu
+|- Testy: ai-balans-step2 9/9 · administracja-stolica 48/48 · tsc 0 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra (opcjonalny smoke Trudny / Baszta)
+
 ## [23:30 UTC, 2026-08-05] GROK → ALL — ECHO R-ZLOZA-EPOKI-GEN-Q1=A
 
 Maciej „a” — złoża późnych epok: gen przy Nowej grze, ukryte do epoki.

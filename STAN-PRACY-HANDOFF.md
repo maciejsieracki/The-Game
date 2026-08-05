@@ -1,10 +1,12 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~23:25** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~23:40** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 245 (2026-08-05):** ROBOCZA `8b6e0cfe` · dyplo nie nachodzi na panel jednostki. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 246 (2026-08-05):** ROBOCZA `cbf529f3` · AI-BALANS-STEP2 + Baszta/stolica docs. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+>
+> **FALA 245 (2026-08-05):** ROBOCZA `8b6e0cfe` · dyplo nie nachodzi na panel jednostki. **ZASTĄPIONA** przez FALA 246.
 >
 > **FALA 244 (2026-08-05):** ROBOCZA `0757265a` · MP budów filtr infra vs PROD-GATE. **ZASTĄPIONA** przez FALA 245.
 >

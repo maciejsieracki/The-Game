@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 8b6e0cfe - 2026-08-05 23:25 - FALA 245: dyplo nie nachodzi na panel jednostki - **AKTUALNA**
+## ROBOCZA cbf529f3 - 2026-08-05 23:40 - FALA 246: AI-BALANS-STEP2 + Baszta/stolica docs - **AKTUALNA**
+|- md5 (pelne): cbf529f3c2671b7f0b01ab25ae6cf01c · stempel: ROBOCZA · 2026-08-05 21:36 (label cbf529f3)
+|- **FALA 246.** (1) AI-BALANS-STEP2 — L3 pokój −40 score Wojownik (C.3 Ś2). (2) R-BASZTA + R-STOLICA-REGION — docs/rejestr + fix testu (gameplay już na main). AutoBot PASS-WITH-NOTES · tipy `9ba0aab`/`1015660` · step2 9/9 · stolica 48/48.
+|- Grok deploy (Maciej „2 i 3” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 8b6e0cfe - 2026-08-05 23:25 - FALA 245: dyplo nie nachodzi na panel jednostki - **ZASTĄPIONA** (→ cbf529f3)
 |- md5 (pelne): 8b6e0cfe35e0d7af0461dbe6b5600775 · stempel: ROBOCZA · 2026-08-05 21:25 (label 8b6e0cfe)
 |- **FALA 245.** BUG-DYPLO-PANEL-OVERLAP-Q1=A — ukryj dock jednostki gdy dyplo open. AutoBot PASS · tip `3e03514` · tsc 0.
 |- Grok deploy (Maciej OVERLAP=A · SOLO-Q1=A). vite · stamp · sync · START hub · VERIFY OK.
