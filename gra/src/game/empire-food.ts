@@ -246,7 +246,6 @@ export function advanceEmpireFood(
     const spichlerzStolicy = central;
     const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable);
     central -= kosztArmii;
-    const przyrostZapasow = central - zapasyPrzed;
 
     const maxCap = computeCentralFoodCap(
       ownerId, econ.perCity, magazynCountByOwner.get(ownerId) ?? 0, params,
@@ -254,6 +253,7 @@ export function advanceEmpireFood(
     if (central > maxCap) central = maxCap;
     const glodWojska = central < 0;
     central = Math.max(0, central);
+    const przyrostZapasow = central - zapasyPrzed;
 
     st.zapasyPanstwa = central;
     _maxCapByOwner.set(ownerId, maxCap);

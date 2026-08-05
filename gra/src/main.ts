@@ -428,6 +428,7 @@ import {
   spichlerzSolArmyBonusActive,
   applyStolarniaDrewnoMapInflow,
   refreshEconomyFoodTotals,
+  recomputeCityFoodBalancesInEcon,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -763,6 +764,7 @@ import {
   ensureCityRationDefaults,
   migrateProcentRozwojToPoziomRacji,
   clampPoziomRacji,
+  getCityRationLevel,
   WYZYWIENIE_MAX,
   type PoziomRacji,
 } from './game/population-growth-v85';
@@ -19844,6 +19846,36 @@ async function boot(): Promise<void> {
               refreshEconomyFoodTotals(econ);
             }
 
+            // Q3=A (review): clamp Wyżywienia gracza do maxSafe przed rozliczeniem —
+            // stary zapis / spadek produkcji bez ruszania suwaka nie może grać powyżej limitu.
+            {
+              const foodSt0 = empireFoodStates.get(0) ?? freshEmpireFoodState();
+              let clampedAny = false;
+              for (const city of cities) {
+                if (city.ownerId !== 0) continue;
+                const maxSafe = maxSafePoziomRacjiForCity({
+                  cityId: city.id,
+                  ownerId: 0,
+                  cities,
+                  econ,
+                  zapasyPrzed: foodSt0.zapasyPanstwa,
+                  rationParams: efParams.rationParams,
+                  spichlerzByCity: spichlerzByCityForAuto,
+                });
+                const cur = getCityRationLevel(city);
+                if (cur > maxSafe) {
+                  city.poziomRacji = maxSafe;
+                  clampedAny = true;
+                }
+              }
+              if (clampedAny) {
+                recomputeCityFoodBalancesInEcon(
+                  econ.perCity, cities, efParams.rationParams, spichlerzByCityForAuto,
+                );
+                refreshEconomyFoodTotals(econ);
+              }
+            }
+
             lastEfTickResult = advanceEmpireFood(
               econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
             );
@@ -19921,11 +19953,12 @@ async function boot(): Promise<void> {
               // inaczej mechanizm karencji działa po cichu przez glodWojskaKarencjaTur tur, zanim
               // gracz cokolwiek zobaczy.
               const playerTick = efTickResult.byOwner.get(0);
-              if (playerTick && playerTick.zapasyPo < 0) {
+              // Q4: zapasyPo zawsze ≥ 0 — ostrzeżenie karencji na glodWojska (niedobór tury), nie ujemny bufor
+              if (playerTick && playerTick.glodWojska && !playerTick.glodWojskaAtrycjaAktywna) {
                 const pozostaleTury = Math.max(0, efParams.glodWojskaKarencjaTur - playerTick.turyUjemnychZapasowPo);
                 if (pozostaleTury > 0) {
                   showHintMessage(
-                    `Głód wojska za ${pozostaleTury} ${slowoTura(pozostaleTury)} — zapasy państwa ujemne!`,
+                    `Głód wojska za ${pozostaleTury} ${slowoTura(pozostaleTury)} — brak żywności na armię!`,
                     3000,
                   );
                 }

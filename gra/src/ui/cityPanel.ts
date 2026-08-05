@@ -4529,18 +4529,19 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const sliderWrap = el('div', 'wyzwienie-w4-sliders');
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
-  const growPct = rationGrowthPercent(view.poziomRacji, rationParams);
+  const displayLevel = Math.min(view.poziomRacji, maxSafe);
+  const growPct = rationGrowthPercent(displayLevel, rationParams);
   const growTxt = growPct > 0 ? `+${growPct}` : String(growPct);
   sliderLabel.innerHTML =
     `<span>${loafIconHtml('civ-v-loaf-chip')} Wyżywienie</span>` +
-    `<span>${formatWyzwienieLabel(view.poziomRacji)} · ${growTxt}%</span>`;
+    `<span>${formatWyzwienieLabel(displayLevel)} · ${growTxt}%</span>`;
   sliderRow.appendChild(sliderLabel);
   const inp = document.createElement('input');
   inp.type = 'range';
   inp.min = String(WYZYWIENIE_MIN / WYZYWIENIE_STEP);
   inp.max = String(maxSlider);
   inp.step = '1';
-  inp.value = String(Math.min(view.poziomRacji, maxSafe) / WYZYWIENIE_STEP);
+  inp.value = String(displayLevel / WYZYWIENIE_STEP);
   inp.disabled = !rationEditable;
   inp.title = maxSafe < WYZYWIENIE_MAX
     ? `Wyżywienie — limit Spichlerza: max ${formatWyzwienieLabel(maxSafe)}`
@@ -4566,7 +4567,9 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     const autoCb = document.createElement('input');
     autoCb.type = 'checkbox';
     autoCb.checked = city.autoWyzywienie === true;
-    autoCb.title = 'Automatyczne obniżanie i podnoszenie Wyżywienia na koniec tury (Spichlerz ≥ 0)';
+    autoCb.title =
+      'WŁ: automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0). ' +
+      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.';
     autoLabel.appendChild(autoCb);
     const autoTxt = document.createElement('span');
     autoTxt.textContent = 'Auto Wyżywienie';
@@ -4579,9 +4582,15 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     sliderWrap.appendChild(autoRow);
   }
   const hint = el('div', 'wyzwienie-w4-hint');
-  hint.textContent = wyzwienieSummaryLabel(view.poziomRacji, rationParams);
+  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams);
   if (maxSafe < WYZYWIENIE_MAX && rationEditable) {
     hint.textContent += ` · Limit Spichlerza: ${formatWyzwienieLabel(maxSafe)}`;
+  }
+  if (view.poziomRacji > maxSafe) {
+    hint.textContent += ' · poziom zostanie obniżony do limitu na koniec tury';
+  }
+  if (rationEditable && city.autoWyzywienie !== true) {
+    hint.textContent += ' · Auto WYŁ — bez auto-obniżania/podnoszenia';
   }
   sliderWrap.appendChild(hint);
   mount.appendChild(sliderWrap);
