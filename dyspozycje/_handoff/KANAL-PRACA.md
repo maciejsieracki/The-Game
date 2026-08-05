@@ -1,4 +1,13 @@
-﻿## [23:00 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 243 01f6024a
+﻿## [23:15 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 244 0757265a
+
+Maciej „1”=A · R-AI-MIASTA-BUDOWY-FIX · AutoBot PASS · tip `f25ab21`
+|- md5: 0757265a33ea3535cc416c609e135a47 · stempel: ROBOCZA · 0757265a
+|- Batch: MP infraOrder filtruje zablokowane tech przed score
+|- Testy: city-state-prod-audit 17/17 · tsc 0 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · litery Q2 OVERLAP + Q3 WĘGIEL (opcjonalnie)
+
+## [23:00 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 243 01f6024a
 
 Maciej SZARE=B+C · KATALOG=A · MIASTA=A(audyt) · AutoBot PASS · tip `3517031`/`38d54dd`
 |- md5: 01f6024abb7bfbac5b360a6213fa74f0 · stempel: ROBOCZA · 01f6024a

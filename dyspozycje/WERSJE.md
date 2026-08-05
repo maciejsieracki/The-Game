@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 01f6024a - 2026-08-05 23:00 - FALA 243: dyplo katalog+szare B+C · audyt MP budów - **AKTUALNA**
+## ROBOCZA 0757265a - 2026-08-05 23:15 - FALA 244: MP budów filtr infra vs PROD-GATE - **AKTUALNA**
+|- md5 (pelne): 0757265a33ea3535cc416c609e135a47 · stempel: ROBOCZA · 2026-08-05 21:15 (label 0757265a)
+|- **FALA 244.** R-AI-MIASTA-BUDOWY-FIX-Q1=A — `infraOrder` defensiveCopy pomija budynki z `isProductionAllowed===false`. AutoBot PASS · tip `f25ab21` · city-state-prod-audit 17/17.
+|- Grok deploy (Maciej „1”=A · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 01f6024a - 2026-08-05 23:00 - FALA 243: dyplo katalog+szare B+C · audyt MP budów - **ZASTĄPIONA** (→ 0757265a)
 |- md5 (pelne): 01f6024abb7bfbac5b360a6213fa74f0 · stempel: ROBOCZA · 2026-08-05 20:55 (label 01f6024a)
 |- **FALA 243.** (1) D-DYPLO-AKCJE-SZARE=B+C + D-DYPLO-KATALOG=A — pełny katalog, szare + stały wiersz powodu. (2) R-AI-MIASTA-BUDOWY=A — audyt docs (bez fix). AutoBot PASS · tip `3517031`/`38d54dd` · dyplo-test 20/20 · mp-audit 9/9.
 |- Grok deploy (Maciej litery · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.

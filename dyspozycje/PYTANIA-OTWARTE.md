@@ -1020,7 +1020,7 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## R-AI-MIASTA-BUDOWY — państwa-miasta prawie nie budują mimo zasobów · STATUS: **AUDYT OK — CZEKA FIX** (2026-08-05) · `R-AI-MIASTA-BUDOWY-Q1`
+## R-AI-MIASTA-BUDOWY — państwa-miasta prawie nie budują mimo zasobów · STATUS: **ZAMKNIĘTE** (FALA 244 `0757265a` · FIX-Q1=A)
 
 **Cytat:** „Państwa miasta nie budują praktycznie żadnych budynków, chociaż mają zasoby — trzeba sprawdzić."
 
