@@ -68,10 +68,10 @@ Budynki grupowane w panelu miasta w **8 grup dziedzinowych**:
 Kliknięcie grupy rozwija listę budynków w niej. Budynek będący wynikiem awansu **„w górę"** rozwija (po kliknięciu)
 listę tego, co zastąpił — to samo zachowanie UI, co w §1 (wariant B Pytania 25).
 
-**Status wdrożenia:** **WDROŻONE w kodzie** (gałąź robocza, commit `2354fb7`) — nowe pole `grupa` w
-`buildings.json` i `BuildingDef` (dane, nie hardkod UI), wszystkie 38 budynków pokryte, panel „Budynki w mieście"
-to teraz 8 zwijanych grup z licznikiem (grupa pusta widoczna, wyróżniona), test `grupy-budynkow` 74/74.
-**Nie zdeployowane do ROBOCZA.**
+**Status wdrożenia:** **ZDEPLOYOWANE** (audyt verify 2026-08-05; kod na `main` od `2354fb7`) — pole `grupa` w
+`buildings.json` i `BuildingDef` (dane, nie hardkod UI), 41/41 budynków pokryte (w tym Palisada→Wojsko i obrona),
+panel „Budynki w mieście" = 8 zwijanych grup z licznikiem (grupa pusta widoczna, wyróżniona), test `grupy-budynkow` 83/83.
+Dowód: `docs/decyzje/R-PANEL-GRUPY.md`.
 
 ---
 
