@@ -1,3 +1,9 @@
+## [17:00 PL, 2026-08-05] GROK → Maciej — R-PROC-AUTOBOT-EVAL-SCOPE OBOWIĄZUJE
+
+Maciej: Evaluator weryfikuje SCOPE (tylko temat) + brak ubocznych regresji.
+AutoBot PASS-WITH-NOTES · tip `eb84533` · rule_105 · merge → main (docs, bez deploy gry).
+CZEKAM-NA: nic (reguła aktywna w promptach Evaluatora)
+
 ## [16:56 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-EVAL-SCOPE W TOKU
 
 Maciej: Evaluator ma weryfikować, że zmiany **ściśle** dotyczą zgłoszonego problemu/błędu i **nie** wprowadzają ubocznych zmian / regresji w innych miejscach.
