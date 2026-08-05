@@ -13,7 +13,7 @@ const entryFile = path.resolve(__dirname, '.dip-proposal-entry.ts');
 fs.writeFileSync(entryFile, `
 export {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
-  makeDealId, proposalHasResourceAccess, clampDealTurns,
+  makeDealId, proposalHasResourceAccess, clampDealTurns, resolveNapDealExpiry,
   resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
@@ -38,7 +38,7 @@ const {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier,
   getEffectiveDiplomacyParams, proposalHasResourceAccess, clampDealTurns,
-  resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
+  resolveNapDealExpiry, resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage, capAiGoldOffer,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
@@ -95,6 +95,16 @@ ok(!r.accepted, 'NAP reject relacja 49 normal');
 // 3 NAP reject border expansion
 r = evaluateProposal(prop('nap'), ctx({ ekspansjaPrzyGranicy: true }));
 ok(!r.accepted, 'NAP reject ekspansja');
+
+// 3b WIAR-NAP-IMP: NAP bezterminowy (turns=0) vs terminowy (10–20)
+r = evaluateProposal(prop('nap', 0, 1, { turns: 0 }), ctx({ relation: rel(50, 50), turn: 10 }));
+ok(r.accepted && r.deal?.wygasaTura === null, 'NAP bezterminowy → wygasaTura null');
+const napExp = resolveNapDealExpiry(10, { turns: 0 });
+ok(napExp.wygasaTura === null, 'resolveNapDealExpiry turns=0 → null');
+const napTerm = resolveNapDealExpiry(10, { turns: 15 });
+ok(napTerm.wygasaTura === 25, 'resolveNapDealExpiry turns=15 → turn+15');
+r = evaluateProposal(prop('nap', 0, 1, { turns: 8 }), ctx({ relation: rel(50, 50), turn: 5 }));
+ok(r.accepted && r.deal?.wygasaTura === 15, 'NAP turns=8 clamped to 10 → wygasa t.15');
 
 // 4 Sojusz pełny accept (równowaga — Zauf >90, Relacja >150)
 r = evaluateProposal(prop('sojusz_pelny'), ctx({

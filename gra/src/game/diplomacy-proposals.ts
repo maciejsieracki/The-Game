@@ -87,7 +87,7 @@ export type ProposalActionId =
   | 'pokoj';
 
 export interface ProposalPayload {
-  /** NAP / rozejm — 10–20 tur */
+  /** NAP: 10–20 tur (terminowy); 0 lub brak po UI „bezterminowy” → wygasaTura null */
   turns?: number;
   goldPerTurn?: number;
   goldOnce?: number;
@@ -321,6 +321,19 @@ export function stripWithdrawnResourceAccessItems(items: readonly BasketItem[]):
 /** Czas trwałej umowy handlowej: 1–20 tur (Maciej 2026-07-21). */
 export function clampDealTurns(turns: number | undefined, defaultTurns = 15): number {
   return clamp(turns ?? defaultTurns, 1, 20);
+}
+
+/** §9.1 WIAR-NAP-IMP: NAP terminowy (10–20 tur) lub bezterminowy (wygasaTura null). */
+export function resolveNapDealExpiry(
+  turn: number,
+  payload: Pick<ProposalPayload, 'turns'>,
+): { wygasaTura: number | null; label: string } {
+  const raw = payload.turns;
+  if (raw != null && raw <= 0) {
+    return { wygasaTura: null, label: 'Pakt nieagresji (bezterminowy)' };
+  }
+  const turns = clamp(raw ?? 15, 10, 20);
+  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${turns} tur` };
 }
 
 // ---------------------------------------------------------------------------
@@ -608,15 +621,15 @@ export function evaluateProposal(
       if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, RodzajTraktatu.PaktNieagresji)) {
         return { accepted: false, reason: 'Pakt nieagresji już obowiązuje' };
       }
-      const turns = clamp(payload.turns ?? 15, 10, 20);
+      const napExpiry = resolveNapDealExpiry(ctx.turn, payload);
       const deal = buildDeal(
         RodzajTraktatu.PaktNieagresji,
         proposerOwnerId,
         responderOwnerId,
         ctx.turn,
-        ctx.turn + turns,
+        napExpiry.wygasaTura,
       );
-      return { accepted: true, reason: `Pakt nieagresji na ${turns} tur`, deal };
+      return { accepted: true, reason: napExpiry.label, deal };
     }
 
     case 'sojusz_defensywny':
@@ -1086,7 +1099,9 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
         ? 'Proponujemy sojusz obronny — wchodzimy do wojny tylko gdy któryś z nas jest atakowany.'
         : 'Proponujemy sojusz wojskowy — wspólna obrona i wsparcie militarnie.';
     case 'zaproponuj_pakt':
-      return `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
+      return cmd.turns != null && cmd.turns <= 0
+        ? 'Proponujemy bezterminowy pakt nieagresji — żadna strona nie zaatakuje drugiej.'
+        : `Proponujemy pakt nieagresji na ${cmd.turns ?? 15} tur — żadna strona nie zaatakuje drugiej.`;
     case 'zaproponuj_pokoj':
       return 'Proponujemy zawarcie pokoju i zakończenie wojny.';
     case 'zadaj_trybut':
@@ -1278,9 +1293,15 @@ export function resolvePlayerAcceptsAiPending(
   }
   switch (actionId) {
     case 'nap': {
-      const turns = clamp(payload.turns ?? 15, 10, 20);
-      const deal = buildDeal(RodzajTraktatu.PaktNieagresji, fromOwnerId, toOwnerId, turn, turn + turns);
-      return { accepted: true, reason: `Pakt nieagresji na ${turns} tur`, deal };
+      const napExpiry = resolveNapDealExpiry(turn, payload);
+      const deal = buildDeal(
+        RodzajTraktatu.PaktNieagresji,
+        fromOwnerId,
+        toOwnerId,
+        turn,
+        napExpiry.wygasaTura,
+      );
+      return { accepted: true, reason: napExpiry.label, deal };
     }
     case 'sojusz_defensywny':
     case 'sojusz_pelny': {

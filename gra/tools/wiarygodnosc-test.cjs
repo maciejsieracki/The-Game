@@ -558,6 +558,10 @@ function evalSojusz(ctxOverrides) {
   } else {
     ok(sojuszOk.accepted, 'Sojusz akceptowany gdy W proponenta = 0 i progi relacji spełnione');
   }
+  const napIndef = evalNap({ turns: 0 });
+  ok(napIndef.accepted && napIndef.deal?.wygasaTura === null, 'NAP bezterminowy turns=0 → wygasaTura null');
+  const napTerm = evalNap({ turns: 15 }, { turn: 7 });
+  ok(napTerm.accepted && napTerm.deal?.wygasaTura === 22, 'NAP terminowy 15 tur → wygasa t.turn+15');
 }
 
 // ---------------------------------------------------------------------------
