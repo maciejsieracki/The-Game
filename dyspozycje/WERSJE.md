@@ -12,7 +12,16 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 283de421 - 2026-08-05 17:45 - FALA 231: R-AI-TRUDNOSC P2 - **AKTUALNA**
+## ROBOCZA 06712ea4 - 2026-08-05 18:55 - FALA 233: SOLO facing replay + WIAR Etap0 - **AKTUALNA**
+|- md5 (pelne): 06712ea4149b64fc0eebad326684d7b0 · stempel: ROBOCZA · 2026-08-05 16:55 (label 06712ea4)
+|- **FALA 233.** (1) BITWA-FACING=B: C-FLANK kompletny + persist `attackDirection` przy replay. (2) WIAR A+B: Etap 0 typy + przegląd Dźwignie 2–4. AutoBot PASS · tip `c97bf2d` · deploy `830a9e4`.
+|- Grok deploy (SOLO-Q1=A · Maciej „1”=OK listy). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA fca41b9a - 2026-08-05 18:12 - FALA 232: SOLO batch (muzyka+węgiel+bitwa I) - **ZASTĄPIONA** (→ 06712ea4)
+|- md5 (pelne): fca41b9ae7d30c104db261679f0124e6 · stempel: ROBOCZA · 2026-08-05 16:12 (label fca41b9a)
+|- **FALA 232.** MUZYKA=A 2500ms · SUR-WEGIEL=B · BITWA I replay grupy. tip `b474a8e`.
+
+## ROBOCZA 283de421 - 2026-08-05 17:45 - FALA 231: R-AI-TRUDNOSC P2 - **ZASTĄPIONA** (→ fca41b9a)
 |- md5 (pelne): 283de42102481e6b66c509808ef6bf20 · stempel: ROBOCZA · 2026-08-05 15:45 (label 283de421)
 |- **FALA 231.** R-AI-TRUDNOSC P2: Q1=A (canAfford status quo, bez kodu) · Q2=A (L3 + startowe_miasta≥1 → majorEarly max tura **25**). AutoBot PASS · merge tip `b234300` (PR #115).
 |- Grok deploy (Maciej **1+2+3** = deploy + playtesty + dalsza kolejka). tsc 0 · difficulty 64/64 · vite · stamp · sync · START hub · VERIFY OK.

@@ -1,4 +1,16 @@
-﻿## [17:58 PL, 2026-08-05] GROK → ALL — SOLO ECHO paczki 2–4 → PRACA
+﻿## [18:55 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 233 06712ea4
+
+Maciej „1”=OK listy · AutoBot PASS · tip `c97bf2d` · deploy commit `830a9e4`
+|- md5: 06712ea4149b64fc0eebad326684d7b0 · stempel: ROBOCZA · 06712ea4
+|- Batch: C-FLANK replay attackDirection · WIAR Etap0 typy · docs Dźwignie 2–4
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · SOLO kod wyczerpany (playtesty otwarte)
+
+## [18:12 PL, 2026-08-05] GROK → ALL — DEPLOY FALA 232 fca41b9a (SOLO batch1)
+
+md5 fca41b9a · MUZYKA+WĘGIEL+BITWA I. ZASTĄPIONA przez FALA 233.
+
+## [17:58 PL, 2026-08-05] GROK → ALL — SOLO ECHO paczki 2–4 → PRACA
 
 Maciej: WEGIEL=B · FACING=B · BUGI=A · WIAR=A+B · DOTYK=A · MUZYKA=A · PLAYTEST-GATE=A · AI=B+A · SCENA=A+B.
 Kolejka: muzyka 2500 → ukryj węgiel → bitwa I (K1/K2 już OK) → facing verify → WIAR Etap0+dźwignie.
