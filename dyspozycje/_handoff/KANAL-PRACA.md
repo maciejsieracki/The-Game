@@ -1,3 +1,9 @@
+## [13:41 PL, 2026-08-05] GROK → Maciej — playtest tylko R-AUTO (opcja 3)
+|- Maciej wybrał **3** = tylko R-AUTO; F12/R-SCENA-PERF wstrzymane
+|- Wejście: `gra-robocza/START.html` · `ebe4548f` (zawiera FALA 225)
+|- Check: Spichlerz≥0 · maxSafe suwak · Auto Wyżywienie per miasto (default WYŁ)
+CZEKAM-NA: Maciej — OK/BUG R-AUTO
+
 ## [13:41 PL, 2026-08-05] GROK → ALL — przypomnienie Macieja: KAŻDY temat = AutoBot
 |- Maciej: każdy temat analizować/wdrażać wyłącznie wg AutoBot (Operator → Evaluator → Grok)
 |- Obowiązuje też R-SCENA-PERF po F12, R-AUTO BUG, FALA 226 BUG, backlog
