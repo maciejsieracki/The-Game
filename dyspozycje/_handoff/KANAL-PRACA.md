@@ -1,3 +1,9 @@
+﻿## [13:29 PL, 2026-08-05] GROK → Maciej — R-SCENA-PERF W TOKU (sygnał)
+|- Maciej opcja **3** = sygnał na Budowanie sceny (Q1=A pomiar)
+|- Instrumentacja już w FALA 226 `ebe4548f` (`[civ] buildScene ms` w F12)
+|- Czeka: git pull + Nowa gra + wklejenie 3 linii konsoli
+CZEKAM-NA: Maciej — pomiar F12 (hexes/coast/overlays/rivers/tail/total)
+
 ## [13:27 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 226 ebe4548f
 |- md5: ebe4548fb8f8522112bec8eea9d2f8b0 · stempel: ROBOCZA · fea8af68 · 2026-08-05 11:27
 |- Batch: P-AI-MOC-BONUS=A + P-AI-008 (jednostki/rozwój zamiast murów) · R-SCENA-PERF ODŁOŻONE
