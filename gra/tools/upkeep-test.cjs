@@ -126,23 +126,24 @@ eq(UP.zywnoscJednostkaOboz, 0.5, 's6.3: default unit food camping 0.5');
 // wlasciciela 19=A): kazdy budynek placi WLASNE utrzymanie z danych; flatOverride
 // (budynki.utrzymanie_budynek z econ-params.json) jest wylacznie DOMYSLNA wartoscia
 // dla budynku BEZ wlasnego wpisu -- nigdy nie nadpisuje realnej wartosci.
-// building.utrzymanie=1 + flatOverride=1 -- oba dają 1, ten przypadek nie odroznia
+// R-NADMIAR-POOLS FALA2: wynik ×2 (R_STAWKI_FALA2_MULT) vs JSON/base.
+// building.utrzymanie=1 + flatOverride=1 -- oba dają 2 po skali, ten przypadek nie odroznia
 // starego (nadpisanie) od nowego (per-budynek) zachowania -- patrz test ponizej.
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0 }, 1, 1), 1, 's6.1: utrzymanie=1 (flatOverride rowny, nie odrozniajacy)');
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0 }, 1, 1), 2, 's6.1: utrzymanie=1 (flatOverride rowny, nie odrozniajacy) ×2 FALA2');
 // without override: liniowy floor(utrzymanie + przyrostUtrzymania * (level-1)) [decyzja Naster 2026-07-25, mirrors buildingValue]
-// level 1: floor(1 + 0) = 1; level 3: floor(1 + 0.5*2) = floor(2) = 2
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 1), 1, 's6.1: linear lvl1 = 1');
-eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 3), 2, 's6.1: linear lvl3 = floor(2.0) = 2');
-// higher base: utrzymanie=10, przyrostUtrzymania=2, level 3 -> floor(10 + 2*2) = 14
-eq(U.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 14, 's6.1: linear base10 lvl3 = floor(14) = 14');
-// 12 buildings flat 1 = 12 (spec s.8.4 example)
+// level 1: floor(1 + 0) = 1 → ×2 = 2; level 3: floor(1 + 0.5*2) = 2 → ×2 = 4
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 1), 2, 's6.1: linear lvl1 = 2 (×2 FALA2)');
+eq(U.buildingUpkeep({ utrzymanie: 1, przyrostUtrzymania: 0.5 }, 3), 4, 's6.1: linear lvl3 = floor(2.0)×2 = 4');
+// higher base: utrzymanie=10, przyrostUtrzymania=2, level 3 -> floor(10 + 2*2) = 14 → ×2 = 28
+eq(U.buildingUpkeep({ utrzymanie: 10, przyrostUtrzymania: 2 }, 3), 28, 's6.1: linear base10 lvl3 = floor(14)×2 = 28');
+// 12 buildings flat 1 = 24 (spec s.8.4 example, ×2 FALA2)
 const blds = Array.from({ length: 12 }, () => ({ record: { utrzymanie: 1, przyrostUtrzymania: 0 }, level: 1 }));
-eq(U.totalBuildingUpkeep(blds, 1), 12, 's8.4: 12 buildings * 1 = 12');
+eq(U.totalBuildingUpkeep(blds, 1), 24, 's8.4: 12 buildings * 2 = 24 (×2 FALA2)');
 
 // --- ZADANIE 1 (2026-07-25): flat override PRZESTAJE nadpisywac dane budynku ---
-// budynek z utrzymanie:5 kosztuje 5, NIE stawke domyslna 1 (easy/normal) ani 2 (hard).
-eq(U.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 0 }, 1, 1), 5, 'ZAD1: utrzymanie=5 kosztuje 5, nie flat=1 (easy/normal)');
-eq(U.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 0 }, 1, 2), 5, 'ZAD1 (hard): utrzymanie=5 kosztuje 5, nie flat=2 -- plaska stawka trudna nie nadpisuje danych');
+// budynek z utrzymanie:5 kosztuje 10 (5×2 FALA2), NIE stawke domyslna 1/2 (easy/normal/hard).
+eq(U.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 0 }, 1, 1), 10, 'ZAD1: utrzymanie=5 kosztuje 10, nie flat=1 (easy/normal) ×2 FALA2');
+eq(U.buildingUpkeep({ utrzymanie: 5, przyrostUtrzymania: 0 }, 1, 2), 10, 'ZAD1 (hard): utrzymanie=5 kosztuje 10, nie flat=2 -- plaska stawka trudna nie nadpisuje danych');
 // Stela/Pomnik: utrzymanie=0 to WARTOSC z danych (decyzja 45=B, "pomnik nie wymaga
 // obslugi"), NIE "brak wpisu" -- 0 jest falsy w JS ale Number.isFinite(0)===true,
 // wiec NIE wolno go zastapic stawka domyslna.
@@ -152,11 +153,11 @@ eq(U.buildingUpkeep({ utrzymanie: 0, przyrostUtrzymania: 0 }, 3, 2), 0, 'ZAD1: S
 // budynek BEZ pola utrzymanie w danych (undefined -> not finite) -> flatOverride
 // jest DOMYSLNA wartoscia (nigdy sytuacja dzis w buildings.json -- wszystkie 39
 // budynkow maja wlasny wpis -- ale kod musi to obsluzyc bezpiecznie).
-eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1, 1), 1, 'ZAD1: budynek bez wpisu utrzymanie -> flat default 1 (easy/normal)');
-eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1, 2), 2, 'ZAD1 (hard): budynek bez wpisu utrzymanie -> flat default 2');
+eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1, 1), 2, 'ZAD1: budynek bez wpisu utrzymanie -> flat default 1×2=2 (easy/normal)');
+eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1, 2), 4, 'ZAD1 (hard): budynek bez wpisu utrzymanie -> flat default 2×2=4');
 eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1), 0, 'ZAD1: budynek bez wpisu utrzymanie i bez flat default -> 0 (bezpieczny fallback)');
 // utrzymanie=NaN traktowane jak "brak wpisu" (nie moze wygenerowac NaN w wyniku)
-eq(U.buildingUpkeep({ utrzymanie: NaN, przyrostUtrzymania: 0 }, 1, 1), 1, 'ZAD1: utrzymanie=NaN traktowane jak brak wpisu -> flat default');
+eq(U.buildingUpkeep({ utrzymanie: NaN, przyrostUtrzymania: 0 }, 1, 1), 2, 'ZAD1: utrzymanie=NaN traktowane jak brak wpisu -> flat default×2');
 
 // --- building resource upkeep (koszt_surowce -> 1/turę per type) ---
 eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 5 } })), '{"drewno":1}', 'res upkeep: drewno build cost -> 1 drewno/t');
@@ -175,40 +176,41 @@ eq(JSON.stringify(U.buildingResourceUpkeepForBuiltIds(
 )), '{"drewno":1,"kamien":1}', 'res upkeep for built ids');
 
 // s.6.2 unit upkeep: typeId table > category default > standard
+// R-STAWKI FALA1×FALA2: ×4 (R_STAWKI_FALA1_FALA2_MULT) vs JSON/category/base.
 const tbl = U.buildUnitUpkeepTable([{ Jednostka: 'Hetairoi', 'Utrzymanie (Pieniadz/ture)': 3 }]);
-eq(U.unitUpkeep({ typeId: 'Hetairoi', category: 'konnica' }, tbl, 1), 6, 's6.2: exact typeId from table = 6 (×2 R-STAWKI)');
+eq(U.unitUpkeep({ typeId: 'Hetairoi', category: 'konnica' }, tbl, 1), 12, 's6.2: exact typeId from table = 12 (3×4 FALA1×FALA2)');
 eq(U.unitUpkeep({ typeId: 'X', category: 'zwiadowca' }, {}, 1), 0, 's6.2: zwiadowca cywilny upkeep 0');
-eq(U.unitUpkeep({ typeId: 'X', category: 'falanga' }, {}, 1), 4, 's6.2: category falanga default = 4 (×2 R-STAWKI)');
+eq(U.unitUpkeep({ typeId: 'X', category: 'falanga' }, {}, 1), 8, 's6.2: category falanga default = 8 (2×4 FALA1×FALA2)');
 eq(U.unitUpkeep({ typeId: 'X', category: 'super' }, {}, 1), 0, 's6.2: super-unit upkeep 0');
-eq(U.unitUpkeep({ typeId: 'X', category: 'nieznana' }, {}, 1), 2, 's6.2: unknown -> standard 2 (×2 R-STAWKI)');
+eq(U.unitUpkeep({ typeId: 'X', category: 'nieznana' }, {}, 1), 4, 's6.2: unknown -> standard 4 (1×4 FALA1×FALA2)');
 
-// s.6.3 military food: 4 camping = 4; 4 marching = 8; mixed (×2 R-STAWKI)
-eq(U.militaryFoodConsumption([{camping:true},{camping:true},{camping:true},{camping:true}], UP), 4, 's6.3: 4 camping -> 4 food');
-eq(U.militaryFoodConsumption([{camping:false},{camping:false},{camping:false},{camping:false}], UP), 8, 's6.3: 4 marching -> 8 food');
-eq(U.militaryFoodConsumption([{camping:true},{camping:false}], UP), 3, 's6.3: 1 camp + 1 march -> 3');
+// s.6.3 military food: ×4 FALA1×FALA2 na stawce bazowej (ruch/oboz z econ-params)
+eq(U.militaryFoodConsumption([{camping:true},{camping:true},{camping:true},{camping:true}], UP), 8, 's6.3: 4 camping -> 8 food (4×0.5×4)');
+eq(U.militaryFoodConsumption([{camping:false},{camping:false},{camping:false},{camping:false}], UP), 16, 's6.3: 4 marching -> 16 food (4×1×4)');
+eq(U.militaryFoodConsumption([{camping:true},{camping:false}], UP), 6, 's6.3: 1 camp + 1 march -> 6 (2+4)');
 
 // s.6.3 per-type food (units.json): Zwiadowca = 0
 const foodTbl = U.buildUnitFoodTable([{ Jednostka: 'Zwiadowca', 'żywność/turę': 0 }, { Jednostka: 'Wojownik', 'żywność/turę': 1 }]);
 eq(U.militaryFoodConsumption([{ typeId: 'Zwiadowca', camping: false }], UP, foodTbl), 0, 'Zwiadowca: 0 food marching');
 eq(U.militaryFoodConsumption([{ typeId: 'Zwiadowca', camping: true }], UP, foodTbl), 0, 'Zwiadowca: 0 food camping');
-eq(U.militaryFoodConsumption([{ typeId: 'Wojownik', camping: false }], UP, foodTbl), 2, 'Wojownik: 2 food (×2 R-STAWKI)');
+eq(U.militaryFoodConsumption([{ typeId: 'Wojownik', camping: false }], UP, foodTbl), 4, 'Wojownik: 4 food (1×4 FALA1×FALA2)');
 eq(U.militaryFoodConsumption(
   [{ typeId: 'Zwiadowca', camping: false }, { typeId: 'Wojownik', camping: false }],
   UP,
   foodTbl,
-), 2, 'scout + warrior = 2 food total');
+), 4, 'scout + warrior = 4 food total');
 
-// s.6.4 / s.8.4 balance: income 8, 12 buildings (*1) + 5 units (lucznik=2 each × R-STAWKI) = 22 -> saldo -14, deficit
+// s.6.4 / s.8.4 balance: income 8, 12 buildings (×2=24) + 5 units lucznik (1×4=4 each=20) = 44 -> saldo -36
 const units5 = Array.from({ length: 5 }, () => ({ typeId: 'L', category: 'lucznik' }));
 const bal = U.upkeepBalance(8, blds, units5, {}, UP);
-eq(bal.utrzymanieBudynki, 12, 's8.4: building upkeep 12');
-eq(bal.utrzymanieJednostki, 10, 's8.4: unit upkeep 10 (5×2 R-STAWKI)');
-eq(bal.utrzymanieRazem, 22, 's8.4: total upkeep 22');
-eq(bal.saldo, -14, 's8.4: saldo 8-22 = -14');
+eq(bal.utrzymanieBudynki, 24, 's8.4: building upkeep 24 (12×2 FALA2)');
+eq(bal.utrzymanieJednostki, 20, 's8.4: unit upkeep 20 (5×4 FALA1×FALA2)');
+eq(bal.utrzymanieRazem, 44, 's8.4: total upkeep 44');
+eq(bal.saldo, -36, 's8.4: saldo 8-44 = -36');
 eq(bal.deficyt, true, 's8.4: deficit flagged');
-// surplus case: no deficit
-const balPlus = U.upkeepBalance(25, blds, units5, {}, UP);
-eq(balPlus.saldo, 3, 's6.4: surplus saldo 25-22 = 3'); eq(balPlus.deficyt, false, 's6.4: no deficit');
+// surplus case: no deficit (income must clear scaled upkeep 44)
+const balPlus = U.upkeepBalance(50, blds, units5, {}, UP);
+eq(balPlus.saldo, 6, 's6.4: surplus saldo 50-44 = 6'); eq(balPlus.deficyt, false, 's6.4: no deficit');
 
 // loadUpkeepParams: reads correct groups + fallback
 const rawUp = { ekonomia_miasta: { zywnosc_jednostka_oboz: { normal: 0.5 } }, budynki: { utrzymanie_budynek: { normal: 1, hard: 2 } }, globalne: { utrzymanie_jednostka_standard: { normal: 1 } } };
