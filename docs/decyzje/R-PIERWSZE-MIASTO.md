@@ -1,7 +1,8 @@
 # R-PIERWSZE-MIASTO — pierwszy osadnik przy 0 miast
 
-**Status:** 🟢 **ZAMKNIĘTE**  
-**Data:** 2026-07-27  
+**Status:** 🟢 **WDROŻONE**  
+**Data decyzji:** 2026-07-27  
+**Wdrożenie kodu:** 2026-08-05 (branch `cursor/pierwsze-miasto-63a1`)  
 **Odpowiedź:** **B** — pełna blokada: tylko „Załóż miasto", bez ruchu i bez innych akcji osadnika
 
 ## Cytat Macieja
@@ -12,24 +13,33 @@
 ## Implikacja
 
 - Gracz z **0 miast** i osadnikiem może wyłącznie założyć pierwsze miasto w oświetlonym kręgu startu.
-- Zablokowane: marsz osadnika, inne akcje panelu jednostki, wybór ulepszeń zamiast miasta, wyjście z trybu bez założenia, koniec tury.
+- Zablokowane: marsz osadnika, inne akcje panelu jednostki, wybór ulepszeń/cudów zamiast miasta, wyjście z trybu bez założenia, koniec tury.
 - **Bez parytetu AI** — dotyczy tylko `ownerId === 0`.
 
-## Stan kodu (audyt 2026-07-27)
+## Stan kodu (audyt 2026-08-05)
 
 | Element | Stan | Dowód |
 |---------|------|-------|
-| `isAwaitingFirstPlayerCity()` | ✅ | `main.ts` ~5771 |
-| Blokada `exitBuildMode` | ✅ | `main.ts` ~7306 |
-| Blokada końca tury (`canEndTurn`, N) | ✅ | `main.ts` ~11975, ~16218 |
-| Auto `foundCityMode` przy 🔨 | ✅ | `main.ts` ~12048 |
-| Założenie tylko w kręgu startu | ✅ | `canFoundPlayerCityAt` ~5791 |
-| **Blokada marszu osadnika** | ❌ | `planMarchTo` ~12758 — brak guarda |
-| **Tylko „Załóż miasto" w panelu 🔨** | ❌ | `onSelectType` ~12062 gasi `foundCityMode` → ulepszenia dostępne |
-| **Blokada innych akcji panelu jednostki** | ❌ | brak warunku `isAwaitingFirstPlayerCity` w akcjach osadnika |
+| `isAwaitingFirstPlayerCity()` | ✅ | `gra/src/game/first-player-city.ts` · `main.ts` |
+| Blokada `exitBuildMode` | ✅ | `main.ts` `exitBuildMode` |
+| Blokada końca tury (`canEndTurn`, N) | ✅ | `main.ts` `canPlayerInitiateEndTurn` |
+| Auto `foundCityMode` przy 🔨 | ✅ | `main.ts` `onOpenBuild` |
+| Założenie tylko w kręgu startu | ✅ | `validateFirstPlayerCityPlacement` · `canFoundPlayerCityAt` |
+| **Blokada marszu osadnika** | ✅ | `planMarchTo` · `beginMoveSelectedUnitTo` · `executeMarchSegment*` |
+| **Tylko „Załóż miasto" w panelu 🔨** | ✅ | `buildModeHud.ts` `isFoundCityOnly` · `onSelectType`/`onSelectWonder` guard |
+| **Blokada innych akcji panelu jednostki** | ✅ | `buildArmyStackHudState` → `actions: []` · `handleSelectedUnitHudAction` early return · `canMerge`/`canSplit` false |
 
-**Werdykt kodu:** **CZĘŚCIOWO** — fundament (tura, exit, krąg) jest; brakuje twardej blokady ruchu i panelu.
+**Werdykt kodu:** **WDROŻONE** — fundament + twarde blokady ruchu i panelu.
 
-## Co dalej
+## Testy
 
-Wdrożenie na **`działaj`** (lane E / Integrator): guard w `planMarchTo`, filtrowanie `onSelectType` / panelu 🔨 i akcji osadnika gdy `isAwaitingFirstPlayerCity()`.
+- `node gra/tools/first-player-city-test.cjs` — logika pure (`first-player-city.ts`)
+- `npx tsc --noEmit` — 0 błędów
+
+## Pliki
+
+| Plik | Rola |
+|------|------|
+| `gra/src/game/first-player-city.ts` | Pure helpers (awaiting, krąg startu, walidacja) |
+| `gra/src/main.ts` | Guardy UI/ruch/tura |
+| `gra/src/ui/buildModeHud.ts` | Panel 🔨 — tylko „Załóż miasto" gdy `isFoundCityOnly` |
