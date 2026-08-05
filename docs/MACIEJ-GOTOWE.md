@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 247** `540d2490` — STEP3 cuda L3 throttle 2 · smoke STEP2 · Prawo V2 audyt. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+﻿- ✅ **R-ARMIA-PASKI** — verify/close (bez deploy): niebieski pasek ruchu + etykiety Zdrowie/Ruch w liście ⚔. Już w FALA 247 `540d2490`. Tip: mapa → ⚔ Armie → niebieski pasek RUCH vs zielony ZDROWIE.
+- ✅ **FALA 247** `540d2490` — STEP3 cuda L3 throttle 2 · smoke STEP2 · Prawo V2 audyt. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
 - ✅ **FALA 246** `cbf529f3` — AI-BALANS-STEP2 + Baszta/stolica. **ZASTĄPIONA** przez 247.
 - ✅ **FALA 245** `8b6e0cfe` — dyplo: dock jednostki ukryty gdy otwarta dyplomacja. **ZASTĄPIONA** przez 246.
 - ✅ **FALA 244** `0757265a` — MP: infra nie daje score zablokowanym budynkom (PROD-GATE). **ZASTĄPIONA** przez 245.
