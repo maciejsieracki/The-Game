@@ -1,3 +1,4 @@
+- **2026-08-05 14:58** — ✅ **FALA 228** ROBOCZA `29bfdf00` — R-CITY-PILL: ikony kolejki + Wyżywienie + władca (gracz/major) / kultura (MP). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel: `dcefcfec`.
 - **2026-08-05 13:55** — ✅ **FALA 227 DEPLOY ALL** ROBOCZA `3840f218` — odświeżenie (225+226). START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel: `718d0ac2`. Fokus: OK/BUG R-AUTO.
 ﻿- **2026-08-05 13:44** — 📄 **Handoff sesji FALA 225–226** zapisany dla innych agentów: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](../dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) · STAN §1 + rejestr zaktualizowane. **Czeka:** Maciej `OK`/`BUG` R-AUTO (fokus); F12 sceny wstrzymane; playtest FALA 226 odłożony.
 - **2026-08-05 13:27** — ✅ **FALA 226** ROBOCZA `ebe4548f` — P-AI-MOC-BONUS + P-AI-008. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel: `fea8af68`.

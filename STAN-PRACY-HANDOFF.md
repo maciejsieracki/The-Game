@@ -1,12 +1,14 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~13:55** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~14:58** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 227 (2026-08-05):** ROBOCZA `3840f218` · stempel menu `718d0ac2` · **DEPLOY ALL** (odświeżenie 225+226 po handoffie). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 228 (2026-08-05):** ROBOCZA `29bfdf00` · stempel menu `dcefcfec` · R-CITY-PILL-PROD-ICON (ikony kolejki + Wyżywienie + władca vs MP). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
-> **FALA 226 (2026-08-05):** ROBOCZA `ebe4548f` · stempel menu `fea8af68` · P-AI-MOC-BONUS=A + P-AI-008. **ZASTĄPIONA** przez FALA 227.
+> **FALA 227 (2026-08-05):** ROBOCZA `3840f218` · stempel menu `718d0ac2` · DEPLOY ALL. **ZASTĄPIONA** przez FALA 228.
+
+> **FALA 226 (2026-08-05):** ROBOCZA `ebe4548f` · stempel menu `fea8af68` · P-AI-MOC-BONUS=A + P-AI-008. **ZASTĄPIONA** przez FALA 227→228.
 
 > **FALA 225 (2026-08-05):** ROBOCZA `8767b9c0` · stempel menu `e5fbaa18` · **ZASTĄPIONA** przez FALA 226→227. Batch: R-AUTO-RACJE-RAISE + Autobot (zawartość w 227).
 
@@ -51,7 +53,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `3840f218` (FALA 227 DEPLOY ALL, 13:55) · stempel menu `718d0ac2` · tip main przed deploy `546ce97`. Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
+**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `29bfdf00` (FALA 228, 14:58) · stempel menu `718d0ac2` · tip main przed deploy `546ce97`. Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
 
 **Łańcuch FALA 221–226:** 221 `4d17d869` → 222 `132401ef` → 223 `ee0e7e04` → 224 `38df6ad7` → 225 `8767b9c0` → 226 `ebe4548f` → **227 `3840f218`** (DEPLOY ALL; zawiera R-AUTO + P-AI-MOC + P-AI-008).
 

@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 3840f218 - 2026-08-05 13:55 - FALA 227: DEPLOY ALL (odświeżenie po handoff 225–226) - **AKTUALNA**
+## ROBOCZA 29bfdf00 - 2026-08-05 14:58 - FALA 228: R-CITY-PILL-PROD-ICON (ECHO1+2) - **AKTUALNA**
+|- md5 (pelne): 29bfdf0049aa4837a94b9c7cd76f6fd5 · stempel: ROBOCZA · 2026-08-05 12:58 (label dcefcfec)
+|- **FALA 228.** R-CITY-PILL-PROD-ICON: (1) ikony konkretnego budynku/jednostki z kolejki; pusta=brak; Wyżywienie na pigułce gracza. (2) ECHO2: medalion władcy (gracz+major AI) vs kultura (MP). AutoBot Operator→Evaluator PASS-WITH-NOTES→Grok. Merge `24127ba`+.
+|- Grok deploy (hasło Macieja). tsc 0 · city-map-badge 27/27 · vite · stamp · sync playtest · START hub · VERIFY OK.
+
+## ROBOCZA 3840f218 - 2026-08-05 13:55 - FALA 227: DEPLOY ALL (odświeżenie po handoff 225–226) - **ZASTĄPIONA** (→ 29bfdf00)
 |- md5 (pelne): 3840f2189404ca7cf447c18e40d17d00 · stempel: ROBOCZA · 2026-08-05 11:55 (label 718d0ac2)
 |- **FALA 227 DEPLOY ALL.** Maciej: po zapisie handoffu — deploy all do ROBOCZA. Kod gameplay = FALA 226 (P-AI-MOC-BONUS + P-AI-008) + FALA 225 (R-AUTO) na tip `main` `546ce97` + docs handoff. Sync wszystkich playtestów + START hub.
 |- Grok deploy (hasło Macieja). tsc 0 · vite · inject stamp · sync playtest · START hub · VERIFY OK.

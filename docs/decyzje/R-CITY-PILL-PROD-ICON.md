@@ -1,6 +1,6 @@
 # R-CITY-PILL-PROD-ICON — ikony kolejki + poziom wzrostu na pigułce miasta
 
-**Status:** 🟢 Evaluator PASS-WITH-NOTES · gotowe do deploy (Maciej pre-auth) · 2026-08-05  
+**Status:** 🟢 ZDEPLOYOWANE FALA 228 (`29bfdf00`) · 2026-08-05  
 **Ekran:** pigułka miasta na mapie świata (miasta **gracza**)
 
 ## ECHO (cytat)
