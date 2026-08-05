@@ -1,4 +1,12 @@
-﻿## [17:45 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 231 283de421
+﻿## [17:50 PL, 2026-08-05] GROK → Maciej — SOLO ECHO Q1=A Q2=B Q3=A
+
+Maciej: SOLO-Q1 a / SOLO-Q2 b / v a (=Q3=A).
+- Q1=A: deploy po AutoBot PASS OK bez osobnego hasła
+- Q2=B: scena pominięta (bez F12)
+- Q3=A: kamień — **audyt: kod+JSON już Wzgórza+Góry** (STALE „tylko Góry”); zero regresji; kamień ZAMKNIĘTY
+CZEKAM-NA: litery paczek 2–4 (lub skrót rekomendacji `AAA AAA AAB`) · potem praca solo
+
+## [17:45 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 231 283de421
 
 Maciej **1+2+3**: deploy P2 + playtesty + dalsza kolejka (scena → SUR-DESIGN).
 |- md5: 283de42102481e6b66c509808ef6bf20 · stempel: ROBOCZA · 283de421 · 2026-08-05 15:45
