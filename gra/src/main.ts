@@ -18468,9 +18468,15 @@ async function boot(): Promise<void> {
     /** Dyplomacja — celownik na karcie państwa: kamera na stolicę ownera (pełne civ + miasto-państwo). */
     function focusCameraOnOwnerCapital(ownerId: number): void {
       const capId = capitalCityIdForOwner(ownerId);
-      if (!capId) return;
+      if (!capId) {
+        showHintMessage('Brak stolicy na mapie — to państwo nie ma jeszcze miasta-stolicy.', 3500);
+        return;
+      }
       const city = cities.find(c => c.id === capId && c.ownerId === ownerId);
-      if (!city) return;
+      if (!city) {
+        showHintMessage('Stolica niedostępna — miasto mogło zostać zdobyte lub zniszczone.', 3500);
+        return;
+      }
       const { x, z } = axialToWorld(city.q, city.r, HEX_R);
       const { dist } = camCtrl.getFocusState();
       camCtrl.focusAt(x, z, dist);
@@ -21740,7 +21746,7 @@ async function boot(): Promise<void> {
                     }
                   }
                 }
-                // P-AI-MAJOR-ABSORB Faza 1: hard + same-civ major→major instant annex
+                // P-AI-MAJOR-ABSORB Faza 2: hard + any-civ major→major instant annex
                 if (
                   _menuDifficulty === 'hard'
                   && ownerId > 0
@@ -21756,8 +21762,7 @@ async function boot(): Promise<void> {
                       && oid > 0
                       && !typCityCopyOwners.has(oid)
                       && !isBarbarian(oid)
-                      && !eliminatedOwners.has(oid)
-                      && aiOwnerCivMap.get(oid) === myCivKey,
+                      && !eliminatedOwners.has(oid),
                     )
                     .sort((a, b) => a - b);
                   for (const victimId of majorTargets) {
@@ -21778,7 +21783,7 @@ async function boot(): Promise<void> {
                     if (decision.action === 'instant_annex') {
                       annexCityStateToOwner(victimId, ownerId);
                       console.log(
-                        `[Dyplomacja] AI${ownerId} wchłania major AI${victimId} (same-civ hard)`,
+                        `[Dyplomacja] AI${ownerId} wchłania major AI${victimId} (any-civ hard)`,
                       );
                       break;
                     }

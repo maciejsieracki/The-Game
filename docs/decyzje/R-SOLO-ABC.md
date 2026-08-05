@@ -24,7 +24,7 @@
 | **DOTYK** | **A** | Dalej ODŁOŻONE — zero pracy |
 | **MUZYKA** | **A** | `muzyka_opoznienie_startu_ms=2500`, tylko pierwszy start menu |
 | **PLAYTEST-GATE** | **A** | R-AUTO/pigułka/budynki zostają otwarte; kod idzie dalej |
-| **AI-PLAYTEST** | **B+A** | Wolno metryki/logi diagnostyczne; **zakaz** dostrajania balansu P-AI-MOC/008 |
+| **AI-PLAYTEST** | **B+A** → **częściowo supersede** `AI-BALANS-UNLOCK-Q1=B` (2026-08-05) | Metryki OK; **małe strojenie liczb** wolno (AutoBot); bez przebudowy systemów / buff MP |
 | **SCENA-PRIORYTET** | **A+B** | Bez F12 (Q2=B): kolejka **bitwa-bugi → SUR/muzyka → …**; gdy kiedyś będzie pomiar → scena wraca na górę |
 
 ## Kolejka solo (teraz)
@@ -39,5 +39,6 @@
 5d. **WIAR UI** — ✅ rozbicie życiorys vs bieżące w audiencji (FALA 236)  
 5e. **WIAR UI §7 badge+ranking** — ✅ chip przy tytule + W w Potędze/panelu (FALA 237)  
 6. Deploy FALA (Q1=A) po PASS  
+7. **P-AI-ABSORB-F2** + **D-DYPLO-CELOWNIK** + **AI-BALANS-UNLOCK docs** — batch AutoBot 2026-08-05  
 
-**Nie ruszam:** DOTYK · scena (bez liczb) · balans AI
+**Nie ruszam:** DOTYK · scena (bez liczb) · **liczby** `ai-params` w batchu F2 (unlock = docs only)

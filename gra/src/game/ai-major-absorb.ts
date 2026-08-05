@@ -1,5 +1,6 @@
 /**
- * P-AI-MAJOR-ABSORB Faza 1 — czysta logika wchłaniania major AI → major AI (same-civ, hard).
+ * P-AI-MAJOR-ABSORB Faza 2 — czysta logika wchłaniania major AI → major AI (any-civ, hard).
+ * Faza 1 (same-civ): `requireSameCiv: true` w teście / harness.
  */
 
 import type { DifficultyLevel } from './city-state-difficulty';
@@ -18,6 +19,8 @@ export interface DecideAiMajorAbsorbInput {
   aggressorId: number;
   victimId: number;
   sameCiv: boolean;
+  /** Gdy true — wymaga same-civ (Faza 1); domyślnie false = Faza 2 any-civ. */
+  requireSameCiv?: boolean;
   /** Moc agresora / moc ofiary (≥ 1 gdy agresor silniejszy lub równy). */
   powerRatio: number;
   aggressorIsMajor: boolean;
@@ -49,7 +52,7 @@ export function decideAiMajorAbsorb(
   if (!input.aggressorIsMajor || !input.victimIsMajor) {
     return { action: null, reason: 'not_both_major' };
   }
-  if (!input.sameCiv) {
+  if (input.requireSameCiv === true && !input.sameCiv) {
     return { action: null, reason: 'different_civ' };
   }
   if (input.turn < AI_MAJOR_ABSORB_MIN_TURN) {
@@ -58,5 +61,8 @@ export function decideAiMajorAbsorb(
   if (input.powerRatio < AI_MAJOR_ABSORB_POWER_RATIO_MIN) {
     return { action: null, reason: 'insufficient_power' };
   }
-  return { action: 'instant_annex', reason: 'hard_same_civ_ratio' };
+  const reason = input.requireSameCiv === true
+    ? 'hard_same_civ_ratio'
+    : 'hard_any_civ_ratio';
+  return { action: 'instant_annex', reason };
 }

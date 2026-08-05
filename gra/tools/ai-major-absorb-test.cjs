@@ -1,6 +1,6 @@
 'use strict';
 /**
- * ai-major-absorb-test.cjs — P-AI-MAJOR-ABSORB Faza 1
+ * ai-major-absorb-test.cjs — P-AI-MAJOR-ABSORB Faza 2
  * Run from gra/:  node tools/ai-major-absorb-test.cjs
  */
 
@@ -84,17 +84,22 @@ eq(AI_MAJOR_ABSORB_MIN_TURN, 10, 'T1b: min turn');
 console.log('\n--- T2: happy path — hard + sameCiv + ratio 1.3 + turn 15 ---');
 const happy = decideAiMajorAbsorb(baseInput());
 eq(happy.action, 'instant_annex', 'T2a: instant_annex');
-eq(happy.reason, 'hard_same_civ_ratio', 'T2b: reason');
+eq(happy.reason, 'hard_any_civ_ratio', 'T2b: reason (F2 any-civ default)');
+
+console.log('\n--- T2b: Faza 1 gate — requireSameCiv + different civ → null ---');
+const f1Gate = decideAiMajorAbsorb(baseInput({ sameCiv: false, requireSameCiv: true }));
+eq(f1Gate.action, null, 'T2b-a: F1 gate blocks different civ');
+eq(f1Gate.reason, 'different_civ', 'T2b-b: F1 gate reason');
 
 console.log('\n--- T3: edge — easy → null ---');
 const easy = decideAiMajorAbsorb(baseInput({ difficulty: 'easy' }));
 eq(easy.action, null, 'T3a: easy no annex');
 eq(easy.reason, 'not_hard', 'T3b: easy reason');
 
-console.log('\n--- T4: edge — different civ → null ---');
+console.log('\n--- T4: Faza 2 — different civ + hard + ratio → instant_annex ---');
 const diffCiv = decideAiMajorAbsorb(baseInput({ sameCiv: false }));
-eq(diffCiv.action, null, 'T4a: different civ no annex');
-eq(diffCiv.reason, 'different_civ', 'T4b: different civ reason');
+eq(diffCiv.action, 'instant_annex', 'T4a: different civ annex (F2)');
+eq(diffCiv.reason, 'hard_any_civ_ratio', 'T4b: different civ reason');
 
 console.log('\n--- T5: edge — ratio 1.1 → null ---');
 const weak = decideAiMajorAbsorb(baseInput({ powerRatio: 1.1 }));
