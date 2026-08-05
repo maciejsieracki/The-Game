@@ -729,6 +729,31 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
 }
 
 // ---------------------------------------------------------------------------
+// 8g) WIAR-UI-REJESTR — buildWiarygodnoscBreakdown (per-zdarzenie)
+// ---------------------------------------------------------------------------
+
+{
+  const zdarzenie = {
+    typ: 'zlamanie_paktu_sojusz',
+    wartoscPierwotna: -25,
+    turaWystapienia: 5,
+    znak: 'kara',
+  };
+  const startowa = WC.wiarygodnoscStartowa('normal');
+  const bd = WC.buildWiarygodnoscBreakdown([zdarzenie], [], startowa, 5, 'normal');
+  ok(bd.pozytywne.some(r => r.label.includes('startowa') && r.value === startowa), 'rejestr: wiersz startowy');
+  ok(bd.negatywne.some(r => r.label.includes('sojusz') && r.value < 0), 'rejestr: kara N2 w negatywnych');
+  ok(WC.credibilityEventLabelPl('zlamanie_paktu_sojusz').includes('sojusz'), 'etykieta PL zdarzenia');
+}
+
+{
+  let streamEntry = WC.freshCredibilityStreamEntry('strumien_nap');
+  streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
+  const bd = WC.buildWiarygodnoscBreakdown([], [streamEntry], 20, 1, 'normal');
+  ok(bd.pozytywne.some(r => r.label.includes('nieagresji') && r.value > 0), 'rejestr: strumień NAP');
+}
+
+// ---------------------------------------------------------------------------
 // 9) Flat max_zaufanie_na_ture — anty-kupowanie Zaufania (bez Dźwigni 2 / bez W)
 // ---------------------------------------------------------------------------
 

@@ -437,6 +437,114 @@ export function wiarygodnoscTooltipRozbiciePl(rozbicie: WiarygodnoscRozbicie, ba
 }
 
 // ---------------------------------------------------------------------------
+// §7 UI — rejestr czynników W per zdarzenie (WIAR-UI-REJESTR)
+// ---------------------------------------------------------------------------
+
+/** Etykiety PL zdarzeń jednorazowych (N1–N7, FINISZ, CZYNY) — rejestr audiencji. */
+export const CREDIBILITY_EVENT_LABELS_PL: Record<CredibilityEvent, string> = {
+  wypowiedzenie_wojny_bez_ostrzezenia: 'Wojna bez ostrzeżenia',
+  zlamanie_paktu_nap: 'Złamanie paktu o nieagresji',
+  zlamanie_paktu_sojusz: 'Złamanie sojuszu',
+  atak_w_oknie_karencji: 'Atak w oknie karencji',
+  odmowa_obowiazku_sojuszu: 'Odmowa pomocy sojusznikowi',
+  zerwanie_dobrowolne_traktat: 'Dobrowolne zerwanie traktatu',
+  zerwanie_dobrowolne_handel: 'Dobrowolne zerwanie handlu',
+  niedotrzymanie_handlu_cyklicznego: 'Niedotrzymanie handlu cyklicznego',
+  nieautoryzowany_przemarsz: 'Nieautoryzowany przemarsz',
+  dotrwanie_sojuszu: 'Dotrwanie sojuszu do końca',
+  dotrwanie_nap: 'Dotrwanie paktu o nieagresji',
+  dotrwanie_handlu: 'Dotrwanie umowy handlowej',
+  splata_handlu_cyklicznego: 'Spłata handlu cyklicznego',
+  wieloletni_pokoj: 'Wieloletni pokój',
+  pomoc_sojusznikowi_realna: 'Realna pomoc sojusznikowi',
+};
+
+/** Etykiety PL wpisów STRUMIENIA (S1–S4) — rejestr audiencji. */
+export const CREDIBILITY_STREAM_LABELS_PL: Record<CredibilityStreamEvent, string> = {
+  strumien_sojusz: 'Aktywny sojusz',
+  strumien_nap: 'Aktywny pakt o nieagresji',
+  strumien_handel: 'Aktywny handel',
+  strumien_przemarsz: 'Zezwolony przemarsz',
+};
+
+export function credibilityEventLabelPl(typ: CredibilityEvent): string {
+  return CREDIBILITY_EVENT_LABELS_PL[typ] ?? typ;
+}
+
+export function credibilityStreamLabelPl(typ: CredibilityStreamEvent): string {
+  return CREDIBILITY_STREAM_LABELS_PL[typ] ?? typ;
+}
+
+export interface WiarygodnoscFactorRow {
+  label: string;
+  value: number;
+  /** true = wartość „na turę" (strumień narastający). */
+  perTurn?: boolean;
+}
+
+/** Rejestr czynników W — wzorzec jak `RelationBreakdown` dla Zaufania. */
+export interface WiarygodnoscBreakdown {
+  pozytywne: WiarygodnoscFactorRow[];
+  negatywne: WiarygodnoscFactorRow[];
+}
+
+function pushWiarygodnoscRow(
+  pozytywne: WiarygodnoscFactorRow[],
+  negatywne: WiarygodnoscFactorRow[],
+  label: string,
+  value: number,
+  perTurn?: boolean,
+): void {
+  if (value === 0 || !Number.isFinite(value)) return;
+  const row: WiarygodnoscFactorRow = perTurn ? { label, value, perTurn: true } : { label, value };
+  if (value > 0) pozytywne.push(row);
+  else negatywne.push(row);
+}
+
+/**
+ * Buduje rejestr „za co Twoja Wiarygodność jest taka" — per zdarzenie (bieżący wkład)
+ * + aktywne strumienie S1–S4. Wartość startowa wg trudności jako pierwszy wiersz.
+ */
+export function buildWiarygodnoscBreakdown(
+  zdarzenia: readonly CredibilityEventRecord[],
+  wpisyStrumienia: readonly CredibilityStreamEntry[],
+  startowa: number,
+  tura: number,
+  poziomTrudnosci: GameDifficulty,
+): WiarygodnoscBreakdown {
+  const pozytywne: WiarygodnoscFactorRow[] = [];
+  const negatywne: WiarygodnoscFactorRow[] = [];
+
+  pushWiarygodnoscRow(pozytywne, negatywne, 'Wartość startowa (trudność)', startowa);
+
+  const typCount = new Map<CredibilityEvent, number>();
+  for (const zdarzenie of zdarzenia) {
+    typCount.set(zdarzenie.typ, (typCount.get(zdarzenie.typ) ?? 0) + 1);
+  }
+
+  for (let i = zdarzenia.length - 1; i >= 0; i--) {
+    const zdarzenie = zdarzenia[i]!;
+    const val = wartoscBiezaca(zdarzenie, tura, poziomTrudnosci);
+    const base = credibilityEventLabelPl(zdarzenie.typ);
+    const label = (typCount.get(zdarzenie.typ) ?? 0) > 1
+      ? `${base} · t. ${zdarzenie.turaWystapienia + 1}`
+      : base;
+    pushWiarygodnoscRow(pozytywne, negatywne, label, val);
+  }
+
+  for (const wpis of wpisyStrumienia) {
+    const label = credibilityStreamLabelPl(wpis.typ);
+    if (wpis.sumaAktywna !== 0) {
+      pushWiarygodnoscRow(pozytywne, negatywne, label, wpis.sumaAktywna);
+    } else if (wpis.wartoscNaTure !== 0) {
+      pushWiarygodnoscRow(pozytywne, negatywne, label, wpis.wartoscNaTure, true);
+    }
+  }
+
+  return { pozytywne, negatywne };
+}
+
+// ---------------------------------------------------------------------------
 // §5 — Dźwignia 1: mnożnik tempa Wiarygodność → Zaufanie (WIAR-Q3=C)
 // ---------------------------------------------------------------------------
 
