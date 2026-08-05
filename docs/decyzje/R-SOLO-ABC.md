@@ -29,11 +29,11 @@
 
 ## Kolejka solo (teraz)
 
-1. MUZYKA A  
-2. SUR-WEGIEL B  
-3. BITWA-BUGI I (replay grupy)  
-4. BITWA-FACING B — weryfikacja C-FLANK + ewentualny ring  
-5. WIAR A+B — Etap 0 + docs dźwignie  
+1. MUZYKA A — ✅  
+2. SUR-WEGIEL B — ✅  
+3. BITWA-BUGI I (replay grupy) — ✅  
+4. **BITWA-FACING B** — ✅ JUŻ WDROŻONE (C-FLANK) + replay kierunku natarcia (minimal fix 2026-08-05)  
+5. **WIAR A+B** — ✅ Etap 0 (`wiarygodnosc-types.ts`) + przegląd Dźwigni 2–4 (docs)  
 6. Deploy FALA (Q1=A) po PASS  
 
 **Nie ruszam:** DOTYK · scena (bez liczb) · balans AI

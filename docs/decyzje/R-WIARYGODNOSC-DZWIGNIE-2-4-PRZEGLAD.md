@@ -1,0 +1,46 @@
+# R-WIARYGODNOSC — przegląd Dźwigni 2–4 (kod vs spec) — 2026-08-05
+
+**Decyzja:** WIAR-START=B — przegląd przed strumieniem D1.  
+**Spec:** `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` §5, §5a.  
+**Bez nowego ABC** — rekomendacje do akceptacji po powrocie Macieja.
+
+## Tabela: spec vs kod dziś
+
+| Dźwignia | Spec (obowiązujący) | Kod dziś (2026-08-05) | Gdzie | Ryzyko podwójnej kary |
+|----------|---------------------|------------------------|-------|------------------------|
+| **1 — W→Zaufanie (strumień / tempo)** | ΔZ/turę z W; WIAR-Q3=C: mnożnik tempa wzrost/spadek; REL-WIARYG-DRIFT: pasywny dryf | **Częściowo wdrożone** | `zaufanieDryfOdWiarygodnosci` + `wiarygodnoscSelf` w `tickDiplomacy` (`diplomacy.ts:1592`). `applyWiarygodnoscTempoDoDelty` istnieje w `diplomacy-credibility.ts` ale **nie** wołany z ticku. Strumień S1–S4: `wiarygodnoscStrumienByOwner` w `main.ts` | **Średnie** — dryf + mnożnik tempa (gdy wpięty) + dar/handel PN mogą nakładać się na ten sam ΔZ; wymaga jednej ścieżki integracji |
+| **2 — sufit Zaufania od W** | **WYCOFANE** (R-WIARYGODNOSC-DZWIGNIA2-Q1=A, 2026-08-03) | **Brak** — flat `max_zaufanie_na_ture=5` (`diplomacyClampTrustGainNaTure`) | `diplomacy-value-catalog.ts`, `diplomacy-pn-engine.ts` | **Niskie** — świadomie usunięte; nie dublować przy D1 |
+| **3 — twarde progi traktatów** | Sojusz W≥0, NAP W≥−40; przed progami Zaufania/Relacji | **✅ Wdrożone** (D3, 2026-08-03) | `evaluateProposal` case `nap` / `sojusz_*`; `wiarygodnoscProgNapMin` / `wiarygodnoscProgSojuszMin`; `buildProposalEvalContext` → `getWiarygodnosc` | **Niskie** — binarna bramka, nie sumuje się z karami N1–N7 |
+| **4 — pierwszy kontakt** | Startowe Zaufanie pary z globalnej W obu stron | **✅ Wdrożone** (C-WIAR-D4=A) | `zaufaniePierwszyKontaktZD4`, `applyWiarygodnoscD4ToRelation` (`diplomacy-layers.ts`); wołane przy lazy init relacji w `main.ts` | **Średnie** — D4 modyfikuje **start** Zaufania; D1 dryf modyfikuje **co turę** — to zamierzone, ale suma efektów przy W=−60 może być ostra |
+
+## Dźwignia 1 — szczegół (najważniejsza przed D1)
+
+| Mechanizm | Spec | Kod | Status |
+|-----------|------|-----|--------|
+| Pasywny dryf ΔZ = W×0,03/turę | REL-WIARYG-DRIFT-Q1 | `zaufanieDryfOdWiarygodnosci` w `computeTickZaufanieDelta` | ✅ Wpięte |
+| Mnożnik tempa wzrost/spadek ΔZ | WIAR-Q3=C | `applyWiarygodnoscTempoDoDelty` | ⚠️ Funkcja gotowa, **nie** w ticku |
+| Strumień S1–S4 (zobowiązania) | §3 | `wiarygodnoscStrumienByOwner`, `tickCredibilityStreamEntry` | ✅ W main.ts |
+| Legacy W/20 strumień | Zastąpiony | `strumienWiarygodnoscDoZaufania` @deprecated | Nie używać |
+
+## Ryzyka podwójnej kary / nakładania
+
+1. **N1+N2 przy wojnie na sojusznika** — spec: suma −35 max; kod: `appendWiarygodnoscEvent` per typ — **OK jeśli** każdy hak woła osobno (weryfikacja przy pełnym D1).
+2. **D4 start + D1 dryf** — nowy sąsiad z W=−60: start Zaufania −6 pkt (round(−60/20)×2) + dryf −1,8/turę — **zamierzone**, ale UI musi to rozdzielić (start vs bieżące).
+3. **D3 bramka + niska Zaufanie** — odmowa sojuszu z powodu W<0 **nie** nakłada kary N* — **OK**.
+4. **Dźwignia 2** — nie reintrodukować bez nowej decyzji; dublowałaby D1.
+
+## Rekomendacje (do akceptacji Macieja)
+
+| # | Rekomendacja | Priorytet |
+|---|--------------|-----------|
+| R1 | **D1:** wpiąć `applyWiarygodnoscTempoDoDelty` w `tickDiplomacy` **albo** oficjalnie wycofać mnożnik — jedna ścieżka, nie oba dryf + mnożnik bez decyzji | P0 przed pełnym D1 |
+| R2 | **D2:** utrzymać WYCOFANE — dokumentacja OK, kod czysty | Zamknięte |
+| R3 | **D3:** bez zmian; opcjonalnie potwierdzić bramkę Wasalizacja/Trybut (spec §5 uwaga) | P2 |
+| R4 | **D4:** utrzymać; przy testach balansu liczyć D4+D1 łącznie | P1 |
+| R5 | Test regresji: `node tools/wiarygodnosc-test.cjs` przed każdym batchiem WIAR | Obowiązkowe |
+
+## Powiązane decyzje
+
+- `docs/decyzje/R-WIARYGODNOSC-DZWIGNIA2-USUNIECIE-2026-08-03.md`
+- `docs/decyzje/R-WIARYGODNOSC-D3-PROGI-2026-08-03.md`
+- `docs/decyzje/R-WIARYGODNOSC-ETAP0.md`

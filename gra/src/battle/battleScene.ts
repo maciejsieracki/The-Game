@@ -2243,6 +2243,11 @@ export class BattleScene {
    * używa `_autoGroupDeployByKind`. Po `_replayBattle()` odtwarza TEN zapis.
    */
   private _deployGroupSnapshot: Map<string, string> | null = null;
+  /**
+   * C-FLANK replay: kierunek natarcia per bu.id z końca fazy rozstawiania —
+   * odtwarzany po _replayBattle() razem z _deployGroupSnapshot.
+   */
+  private _deployAttackDirSnapshot: Map<string, AttackDirection> | null = null;
   /** Zloty marker grupy na mapie (3D) per jednostka. */
   private _groupFrameMarkers = new Map<string, THREE.Group>();
   // --- PROFESSIONAL HUD (TotalWar-style) ---
@@ -12287,6 +12292,9 @@ export class BattleScene {
     // pierwszy deploy) → świeża auto-grupa po typie.
     if (this._deployGroupSnapshot) {
       this._restoreDeployGroupSnapshot(this._deployGroupSnapshot);
+      if (this._deployAttackDirSnapshot) {
+        this._restoreDeployAttackDirSnapshot(this._deployAttackDirSnapshot);
+      }
     } else {
       this._autoGroupDeployByKind();
     }
@@ -12380,6 +12388,23 @@ export class BattleScene {
     }
     this._rebuildDeployRosterGrid();
     this._refreshDeploySelectionVisuals();
+  }
+
+  /** Odtwarza kierunek natarcia (C-FLANK) po powtórce bitwy w fazie deploy. */
+  private _restoreDeployAttackDirSnapshot(snapshot: Map<string, AttackDirection>): void {
+    const groupDirs = new Map<string, AttackDirection>();
+    for (const ru of this._playerRoster()) {
+      if (ru.dead || ru.removed) continue;
+      const dir = snapshot.get(ru.bu.id) ?? 'front';
+      ru.attackDirection = dir;
+      if (ru.groupId) groupDirs.set(ru.groupId, dir);
+    }
+    for (const [gid, dir] of groupDirs) {
+      this._ensureGroupMeta(gid).attackDirection = dir;
+    }
+    const live = this._playerRoster().filter(u => !u.dead && !u.removed);
+    const first = live[0];
+    if (first) this._setDeployAttackDirection(first.attackDirection);
   }
 
   /** Start deploy: osobne grupy Konnica / Piechota / Łucznicy (playtest POLE-BITWY). */
@@ -13339,7 +13364,10 @@ export class BattleScene {
       const meta = this._groupMeta.get(gid);
       if (meta?.meleeLines != null) this._deployMeleeLines = meta.meleeLines;
       if (meta?.archerLines != null) this._deployArcherLines = meta.archerLines;
+      if (meta?.attackDirection != null) this._setDeployAttackDirection(meta.attackDirection);
       this._syncDeployLinesButtons();
+    } else if (targets.length === 1 && targets[0]!.attackDirection !== 'front') {
+      this._setDeployAttackDirection(targets[0]!.attackDirection);
     }
     this._updateDeployToolbarStatus();
   }
@@ -15717,8 +15745,10 @@ export class BattleScene {
     // R-BITWA-POWTORKA-I: zapamiętaj stan grup PRZED czymkolwiek innym, żeby
     // _replayBattle -> _initDeployUI mógł go odtworzyć zamiast auto-grupować.
     this._deployGroupSnapshot = new Map();
+    this._deployAttackDirSnapshot = new Map();
     for (const ru of this._playerRoster()) {
       if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
+      this._deployAttackDirSnapshot.set(ru.bu.id, ru.attackDirection);
     }
     this.deployPhase = false;
     this._clearAllSelection();
