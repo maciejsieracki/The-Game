@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA ea921d1e - 2026-08-05 21:37 - FALA 238: MP spawn Wyżywienie=4 + STRICT-SAVE - **AKTUALNA**
+## ROBOCZA ff7c5e49 - 2026-08-05 21:54 - FALA 239: AI-MOC-NEXT-Q1=B metryki diag - **AKTUALNA**
+|- md5 (pelne): ff7c5e490c45dace365a00de068b70c3 · stempel: ROBOCZA · 2026-08-05 19:54 (label ff7c5e49)
+|- **FALA 239.** AI-MOC-NEXT-Q1=B: sekcja „Diag major AI” w overlay Moc (Moc/miasta/Praca/kolejki) · pure `ai-moc-diag.ts` · bez balansu. AutoBot PASS · tip `1f988f6`/`4b9c599` · ai-moc-diag 22/22.
+|- Grok deploy (Maciej „2”=B · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA ea921d1e - 2026-08-05 21:37 - FALA 238: MP spawn Wyżywienie=4 + STRICT-SAVE - **ZASTĄPIONA** (→ ff7c5e49)
 |- md5 (pelne): ea921d1e31f93a725c34f8efdbda4161 · stempel: ROBOCZA · 2026-08-05 19:37 (label ea921d1e)
 |- **FALA 238.** (1) P-MP-SPAWN-WYZYWIENIE: founding `poziomRacji=4` (parytet gracz/AI/MP). (2) Evaluator STRICT-SAVE (FAIL #9 save/load) w procesie. AutoBot PASS · tip `5fecbcf`/`8baa14d` · mp-spawn-ration 14/14.
 |- Grok deploy (Maciej „1+2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.

@@ -1,4 +1,13 @@
-﻿## [20:30 UTC, 2026-08-05] AutoBot Operator → Evaluator / Grok — P-MP-SPAWN-WYZYWIENIE
+﻿## [21:54 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 239 ff7c5e49
+
+Maciej „2”=B · AI-MOC-NEXT-Q1 metryki diag · AutoBot PASS · tip `1f988f6`
+|- md5: ff7c5e490c45dace365a00de068b70c3 · stempel: ROBOCZA · ff7c5e49
+|- Batch: overlay Moc → sekcja „Diag major AI” (Moc/miasta/Praca/kolejki) · bez balansu
+|- Testy: ai-moc-diag 22/22 · tsc 0
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
+## [20:30 UTC, 2026-08-05] AutoBot Operator → Evaluator / Grok — P-MP-SPAWN-WYZYWIENIE
 
 Fix: `foundCity`/`foundCityAt` ustawiają jawne `poziomRacji: DEFAULT_POZIOM_RACJI` (4) + `procentRozwoj: 67` — parytet gracz/major AI/MP.
 |- Pliki: `gra/src/game/cities.ts`, `gra/tools/mp-spawn-ration-test.cjs`, `docs/decyzje/P-MP-SPAWN-WYZYWIENIE.md`

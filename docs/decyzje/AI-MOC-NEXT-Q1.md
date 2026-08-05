@@ -1,6 +1,6 @@
 # AI-MOC-NEXT-Q1 — metryki diagnostyczne Mocy AI
 
-**Status:** 🔵 W TRAKCIE (Maciej `2` = **B**, 2026-08-05)  
+**Status:** 🟢 **ZDEPLOYOWANE FALA 239** `ff7c5e49` (Maciej `2` = **B**, 2026-08-05)  
 **Blokada balansu:** `AI-PLAYTEST=B+A` — **tylko** metryki/logi; zero dostrajania P-AI-MOC/008.
 
 ## ECHO
