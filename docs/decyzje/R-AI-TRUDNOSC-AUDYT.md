@@ -234,4 +234,33 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 
 **Testy:** `ai-difficulty-bonus-test.cjs` T-DB-h (klucze w JSON + `loadDifficultyParams` z fixture + fallback bez kluczy).
 
-**Status:** Operator done · czeka Evaluator · **bez deploy**.
+**Status:** Operator done · Evaluator PASS · czeka Grok final · **bez deploy**.
+
+---
+
+## Evaluator (2026-08-05) — P1-3 Spryt JSON
+
+**PASS** · operator tip `2d02506` · evaluator docs tip (po commit)
+
+### SCOPE (Maciej — regresja)
+| # | Pytanie | Werdykt |
+|---|---------|---------|
+| 1 | Każda zmiana wynika z P1-3 (Spryt keys in JSON)? | **TAK** — 9 kluczy `agresja_mnoznik` / `dyplomacja_aktywnosc` / `cel_obranie` × L1–L3 + T-DB-h + komentarz export + §G/rejestr |
+| 2 | Paczka nie rusza niezwiązanych plików/logiki AI? | **TAK** — diff `4dbdaaa..2d02506`: 5 plików; **0** linii w `ai.ts` / `main.ts` |
+| 3 | Wartości JSON = fallbacki (behavior-neutral)? Nie cofa P0/P1? | **TAK** — wartości 1:1 z `loadDifficultyParams` fallback (`ai.ts:434-436`); T-DB-f (P0-3) nadal zielony; brak zmian gameplay |
+
+### Hard metrics (Evaluator re-run z `gra/`)
+| Test | Wynik |
+|---|---|
+| `npx tsc --noEmit` | **PASS** (0 błędów) |
+| `ai-difficulty-bonus-test.cjs` | **PASS** 64/64 |
+
+### Spot-check AC
+| AC | Dowód | OK |
+|---|---|:---:|
+| 9 kluczy Spryt w JSON, poprawne `wartosc` | `ai-params.json:27-41,67-81,107-121` · T-DB-h assert | ✓ |
+| `loadDifficultyParams` czyta JSON gdy klucze obecne | T-DB-h L1–L3 + fixture override 0.9/1.1/0.7 | ✓ |
+| Fallbacki bez kluczy (pusty `aiParams`) | T-DB-h pętla `{ aiParams: {} }` × L1–L3 | ✓ |
+| Zakaz zmian `ai.ts` / logiki | `git diff 4dbdaaa..2d02506` — brak `gra/src/**` | ✓ |
+
+**Gotowe do Grok final** (prezentacja Maciejowi / deploy na sygnał — poza zakresem Evaluatora).
