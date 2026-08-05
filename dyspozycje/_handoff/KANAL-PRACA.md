@@ -1,3 +1,12 @@
+## [13:44 PL, 2026-08-05] GROK → ALL — HANDOFF SESJI FALA 225–226 zapisany
+|- Plik: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`
+|- Zaktualizowane: `STAN-PRACY-HANDOFF.md` §1 · `REJESTR-PROSB-I-ZADAN.md` · `MACIEJ-GOTOWE.md` · `DZIENNIK-MASTERA.md`
+|- AKTUALNA ROBOCZA: FALA 226 `ebe4548f` / stempel `fea8af68`
+|- FOKUS Macieja: playtest R-AUTO → `OK`/`BUG` (AutoBot przy BUG)
+|- Wstrzymane: F12 R-SCENA-PERF · playtest FALA 226 AI
+|- Przypomnienie: KAŻDY temat = AutoBot (Operator→Evaluator→Grok)
+CZEKAM-NA: Maciej — OK/BUG R-AUTO · inne sesje: czytaj handoff przed startem
+
 ## [13:41 PL, 2026-08-05] GROK → Maciej — playtest tylko R-AUTO (opcja 3)
 |- Maciej wybrał **3** = tylko R-AUTO; F12/R-SCENA-PERF wstrzymane
 |- Wejście: `gra-robocza/START.html` · `ebe4548f` (zawiera FALA 225)

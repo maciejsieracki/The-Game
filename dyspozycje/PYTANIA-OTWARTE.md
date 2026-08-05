@@ -26,12 +26,12 @@ Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-T
 
 ---
 
-## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto + przełącznik · STATUS: **WDROŻONE (kod) Q2–Q5=A** · czeka deploy (2026-08-05)
+## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto + przełącznik · STATUS: **ZDEPLOYOWANE** FALA 225→226 `ebe4548f` · **CZEKA playtest OK/BUG** (2026-08-05)
 
-**ECHO:** Q2=A · Q3=A · Q4=A · Q5=A. Testy ai-major-economy **32/32**.  
-**Branch:** `cursor/abc-auto-racje-raise-63a1` · commit `9321e39`  
-Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).  
-**Wejście po deploy:** `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
+**ECHO:** Q1=B · Q2=A · Q3=A · Q4=A · Q5=A. Testy ai-major-economy **32/32**.  
+**W ROBOCZA:** FALA 226 `ebe4548f` (zawiera FALA 225).  
+Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md) · handoff: [`_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).  
+**FOKUS Macieja:** playtest → `OK` / `BUG: …`. BUG → AutoBot.
 
 ---
 

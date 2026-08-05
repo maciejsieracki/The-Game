@@ -1,5 +1,6 @@
+﻿- **2026-08-05 13:44** — 📄 **Handoff sesji FALA 225–226** zapisany dla innych agentów: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](../dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) · STAN §1 + rejestr zaktualizowane. **Czeka:** Maciej `OK`/`BUG` R-AUTO (fokus); F12 sceny wstrzymane; playtest FALA 226 odłożony.
 - **2026-08-05 13:27** — ✅ **FALA 226** ROBOCZA `ebe4548f` — P-AI-MOC-BONUS + P-AI-008. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel: `fea8af68`.
-﻿- **2026-08-05 ~12:25** — ✅ **Merge #108** → `main` (`9068115`): R-PROC-AUTOBOT-P0 + smoke 10/10. **Bez deploy** (scaffold). ROBOCZA nadal FALA 225 `8767b9c0`.
+- **2026-08-05 ~12:25** — ✅ **Merge #108** → `main` (`9068115`): R-PROC-AUTOBOT-P0 + smoke 10/10. **Bez deploy** (scaffold). ROBOCZA nadal FALA 225 `8767b9c0`.
 - **2026-08-05 ~12:20** — ✅ Gotowe w kodzie → **zmergowane**: **R-PROC-AUTOBOT-P0-SMOKE** · Evaluator PASS · smoke 10/10.
 - **2026-08-05 ~11:10** — ✅ Gotowe w kodzie → **w FALA 225**: **R-AUTO-RACJE-RAISE Q2–Q5=A**.
 - **2026-08-05 ~01:10** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-RACJE-RAISE-Q1=B** — supersedowane przez Q2–Q5 na tym samym branchu.

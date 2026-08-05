@@ -1,12 +1,14 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~13:27** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~13:44** · Projekt: Civ „The Game"
 
-> **FALA 226 (2026-08-05):** ROBOCZA `ebe4548f` · stempel menu `fea8af68` · P-AI-MOC-BONUS=A + P-AI-008. R-SCENA-PERF odłożone. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 225 (2026-08-05):** ROBOCZA `8767b9c0` · stempel menu `e5fbaa18` · **ZASTĄPIONA** przez FALA 226. Batch: R-AUTO-RACJE-RAISE + Autobot.
+> **FALA 226 (2026-08-05):** ROBOCZA `ebe4548f` · stempel menu `fea8af68` · P-AI-MOC-BONUS=A + P-AI-008. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
-> **FALA 224 (2026-08-05):** ROBOCZA `38df6ad7` · stempel menu `eef4e87e` · **ZASTĄPIONA** przez FALA 225. Batch: R-REKRUT-LUDNOSC-UI. **Handoff sesji:** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md)
+> **FALA 225 (2026-08-05):** ROBOCZA `8767b9c0` · stempel menu `e5fbaa18` · **ZASTĄPIONA** przez FALA 226. Batch: R-AUTO-RACJE-RAISE + Autobot (zawartość w 226).
+
+> **FALA 224 (2026-08-05):** ROBOCZA `38df6ad7` · stempel menu `eef4e87e` · **ZASTĄPIONA** przez FALA 225. Batch: R-REKRUT-LUDNOSC-UI. Handoff wcześniejszy: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md)
 
 > **FALA 220 (2026-08-04):** ROBOCZA `8a3c6d6d` · commit `b47a2e8` pushed `main`. AI-ALL batch: utrzymanie budynków (+1 surowiec/turę + UI) · MP army cap easy∞/normal1/hard0 · AI→MP absorption + same-civ Zaufanie 100 · major AI economy + AI-FOUND/LOCAL/MANAGE. **ZASTĄPIONA** przez FALA 221–224.
 
@@ -47,22 +49,24 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `8767b9c0` (FALA 225, 11:54) · stempel menu `e5fbaa18` · tip źródeł przed deploy `9c4a8d8`. Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224; **FALA 225 czeka playtest** (R-AUTO).
+**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `ebe4548f` (FALA 226, 13:27) · stempel menu `fea8af68` · commit deploy `8a88190`. Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
 
-**Łańcuch FALA 221–225:** 221 `4d17d869` → 222 `132401ef` → 223 `ee0e7e04` → 224 `38df6ad7` → **225 `8767b9c0`** (R-AUTO-RACJE-RAISE + AutoBot).
+**Łańcuch FALA 221–226:** 221 `4d17d869` → 222 `132401ef` → 223 `ee0e7e04` → 224 `38df6ad7` → 225 `8767b9c0` → **226 `ebe4548f`** (P-AI-MOC-BONUS + P-AI-008; zawiera R-AUTO z 225).
 
-**ABC zamknięte (sesja 225):** R-AUTO-RACJE-RAISE Q1=B · Q2–Q5=A · R-PROC-AUTOBOT (twarda reguła).
+**ABC zamknięte (sesja 225–226):** R-AUTO-RACJE-RAISE Q1=B · Q2–Q5=A · R-PROC-AUTOBOT · P-AI-MOC-BONUS-Q1=A · P-AI-008 custom · R-SCENA-PERF-Q1=A (pomiar). Merge Autobot P0: `#108` / `9068115` (bez deploy gry).
 
-**Ważne dla agentów:** Auto Wyżywienie gracza = **default WYŁ** per miasto; Spichlerz clamp ≥0; maxSafe na suwaku. Rekrutacja **NIE odejmuje** `city.population` (FALA 224). **KAŻDA praca** = AutoBot.
+**Ważne dla agentów:** Auto Wyżywienie gracza = **default WYŁ** per miasto; Spichlerz clamp ≥0; maxSafe na suwaku. Rekrutacja **NIE odejmuje** `city.population` (FALA 224). Major AI: bonusy trudności + threat bez murów (FALA 226). **KAŻDA praca** = AutoBot (Operator→Evaluator→Grok). Pełny zapis: [`HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
 **KOLEJKA (otwarte):**
-1. **R-AUTO-RACJE-RAISE** — playtest na FALA 225 (Auto WYŁ/WŁ, niski Spichlerz, brak spadku ludności z wymuszonego raise)
-2. **R-BUDYNKI-NIEAKTYWNE** — playtest (czerwona nazwa + `Brak: …`) — w ROBOCZA od FALA 222, **jeszcze bez OK/BUG**
-3. **R-WIARYGODNOSC** — CZEKA-NA-DECYZJĘ (strojenie §9, później)
-4. **R-DESIGN-PANEL-MIASTA** — prototyp w ROBOCZA; hover/v2 czeka Design
-5. **R-PANEL-SPLIT** / **R-SUROWCE-UI-ZERO** — stary backlog NOWE
-6. **P-AI-MOC-GAP** — częściowo FALA 220, bez zamknięcia playtestem
-7. **R-DOTYK-MVP** — ODŁOŻONE
+1. **R-AUTO-RACJE-RAISE** — **FOKUS** playtest na `ebe4548f` (Auto WYŁ/WŁ, Spichlerz≥0, maxSafe) — **CZEKA OK/BUG**
+2. **R-SCENA-PERF** — 🔵 W TOKU; instrumentacja w bundlu; **czeka F12** (wstrzymane do domknięcia R-AUTO)
+3. **FALA 226 playtest** — P-AI-MOC + P-AI-008 — odłożony przez Macieja
+4. **R-BUDYNKI-NIEAKTYWNE** — playtest (czerwona nazwa + `Brak: …`) — od FALA 222, **bez OK/BUG**
+5. **R-WIARYGODNOSC** — CZEKA-NA-DECYZJĘ (strojenie §9, później)
+6. **R-DESIGN-PANEL-MIASTA** — prototyp w ROBOCZA; hover/v2 czeka Design
+7. **R-PANEL-SPLIT** / **R-SUROWCE-UI-ZERO** / **R-CIVPEDIA** — stary backlog NOWE
+8. **P-AI-MOC-GAP** — częściowo FALA 220/226; reszta design później
+9. **R-DOTYK-MVP** — ODŁOŻONE
 
 **Stan na 2026-08-04 (historyczny):** deploy ROBOCZA `8a3c6d6d` (FALA 220, 21:17) — AI-ALL batch.
 
