@@ -737,8 +737,24 @@ function isMilitaryProductionCandidate(id: string, buildingNames: ReadonlySet<st
 /** AI-LOCAL-Q1=A: faza lokalna kończy się ~tura 20. */
 const AI_LOCAL_PHASE_MAX_TURN = 20;
 
-/** R-AI-KOLONIZACJA-Q1: min pop miasta-źródła AI przed founding. */
+/** R-AI-KOLONIZACJA-Q1: min pop miasta-źródła major AI przed founding (L1/L2). */
 export const AI_COLONIZATION_SOURCE_MIN_POP = 5;
+/** AI-BALANS-STEP1: L3 / Trudny — próg kolonizacji major AI (było globalnie 5). */
+export const AI_COLONIZATION_SOURCE_MIN_POP_L3 = 4;
+
+/** Próg ludności miasta-źródła kolonii major AI per poziom trudności (nie MP). */
+export function colonizationSourceMinPop(poziomTrudnosci?: 1 | 2 | 3): number {
+  return poziomTrudnosci === 3 ? AI_COLONIZATION_SOURCE_MIN_POP_L3 : AI_COLONIZATION_SOURCE_MIN_POP;
+}
+
+/** Major AI ma miasto gotowe do kolonizacji (planCityFounding / faza lokalna). */
+export function hasColonizationSource(
+  myCities: ReadonlyArray<{ population: number }>,
+  poziomTrudnosci?: 1 | 2 | 3,
+): boolean {
+  const minPop = colonizationSourceMinPop(poziomTrudnosci);
+  return myCities.some(c => c.population >= minPop);
+}
 /** Epoki pełnej agresji kolonizacyjnej (Kamień → Żelazo). */
 const AI_COLONIZATION_AGGRESSIVE_ERA_MAX = 3;
 const AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS = 15;
@@ -761,8 +777,11 @@ export function countFreeIndependentCityStates(
   return free;
 }
 
-function aiHasColonizationReadyCity(myCities: ReadonlyArray<{ population: number }>): boolean {
-  return myCities.some(c => c.population >= AI_COLONIZATION_SOURCE_MIN_POP);
+function aiHasColonizationReadyCity(
+  myCities: ReadonlyArray<{ population: number }>,
+  poziomTrudnosci?: 1 | 2 | 3,
+): boolean {
+  return hasColonizationSource(myCities, poziomTrudnosci);
 }
 
 function isHexWithinAnyCityReach(
@@ -779,7 +798,8 @@ function isHexWithinAnyCityReach(
 
 function aiColonizationAggressiveMode(opts: AITurnOpts, myCities: AICity[]): boolean {
   const era = opts.civEra ?? 1;
-  return era <= AI_COLONIZATION_AGGRESSIVE_ERA_MAX && aiHasColonizationReadyCity(myCities);
+  return era <= AI_COLONIZATION_AGGRESSIVE_ERA_MAX
+    && aiHasColonizationReadyCity(myCities, opts.poziomTrudnosci);
 }
 
 function aiMaxFoundingPerTurn(
@@ -833,7 +853,7 @@ export function isLocalExpansionPhase(
 
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterTargets = opts.clusterStateTargets ?? [];
-  const colonizationReady = aiHasColonizationReadyCity(myCities);
+  const colonizationReady = aiHasColonizationReadyCity(myCities, opts.poziomTrudnosci);
   const freeCs = countFreeIndependentCityStates(allCities, opts.vassalizedCityStateOwnerIds);
   const aggressiveColonization = aiColonizationAggressiveMode(opts, myCities);
 
