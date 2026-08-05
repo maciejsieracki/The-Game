@@ -33,6 +33,7 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 9. Zero sterowania ekranem Macieja bez jego wyraźnej prośby.
 10. NUMER → ABC → COMMIT → DEPLOY — patrz procedura na górze (2026-08-03).
 11. Przed commit/deploy: **nie uwsteczniaj** wcześniejszych fixów — przegląd `git diff` (zmiany **i** usunięcia) · `R-PROC-NO-REGRESS` / procedura §4a.
+12. **POTRÓJNA WARSTWA (Maciej 2026-08-05) — OBOWIĄZUJE:** po kodzie zawsze (1) implementer → (2) osobny **adwokat diabła** → (3) Grok final. **ZAKAZ** „gotowe” / `deploy` po samym #1. Kanon: [`POTROJNA-WARSTWA-WERYFIKACJI.md`](POTROJNA-WARSTWA-WERYFIKACJI.md) · `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` · decyzja `docs/decyzje/R-PROC-POTROJNA-WARSTWA.md`.
 
 ## HISTORIA = OBOWIĄZKOWY KONTEKST (korekta Macieja 2026-07-06)
 Bannery „NIEAKTUALNE" na starych plikach dotyczą WYŁĄCZNIE procesu (role, publish,
