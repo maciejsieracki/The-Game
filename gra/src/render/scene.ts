@@ -77,12 +77,15 @@ import {
   goraGeometria, wzgorzeGeometria, wariantDlaHeksa, rotacjaDlaHeksa,
   TEREN_MATERIAL, LICZBA_WARIANTOW_TERENU,
 } from './teren-gory-wzgorza';
-// GRAFIKA-TEREN-2: kępy lasu jako 5 InstancedMesh (wzorzec gór/wzgórz — vertex colors, wspólny materiał).
-// Dżungla tropikalna zostaje na starej ścieżce buildStyleForestCluster (poza zakresem).
+// GRAFIKA-TEREN-2 + R-SCENA-PERF: kępy lasu + dżungla jako InstancedMesh (wzorzec gór/wzgórz).
 import {
   lasGeometria, wariantLasuDlaHeksa, rotacjaLasuDlaHeksa,
   LAS_MATERIAL, LICZBA_WARIANTOW_LASU,
 } from './lasy-modele';
+import {
+  djunglaGeometria, wariantDjungliDlaHeksa, rotacjaDjungliDlaHeksa,
+  DJUNGLA_MATERIAL, LICZBA_WARIANTOW_DJUNGLI,
+} from './djungla-modele';
 import { setImprovementDetailQuality } from './robloxImprovements';
 import { collapseToMergedMesh, isAlreadyMergedDecor } from './mergeDecor';
 import {
@@ -1665,6 +1668,8 @@ export async function buildScene(
   // dynamiczny wyrąb (hexClearingStates) — na starcie las ma być PEŁNY, nie wyglądać na wyrąbany.
   const NL_NATURAL = 4;
   const lasVarCount: number[] = new Array(NL).fill(0);
+  const NDJ = LICZBA_WARIANTOW_DJUNGLI;
+  const djunglaVarCount: number[] = new Array(NDJ).fill(0);
   // DEKOR: mikrodekor łąk/równin — pre-count wariantów (jak goraVarCount) do alokacji InstancedMesh.
   const dekorLakaVarCount: number[] = new Array(DEKOR_LICZBA_WARIANTOW).fill(0);
   const dekorRowninaVarCount: number[] = new Array(DEKOR_LICZBA_WARIANTOW).fill(0);
@@ -1674,10 +1679,13 @@ export async function buildScene(
     countByTerrain[t] = (countByTerrain[t] ?? 0) + 1;
     if (hex.nakladka === Nakladka.Las) {
       forestCount++;
-      // Kępa lasu instancjonowana tylko dla stylu roblox POZA strefą tropikalną (dżungla = stara ścieżka).
-      if (styledTerrain && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze
-          && !isWarmJungleForestHex(hex.coords.q, hex.coords.r, map.wysokoscR)) {
-        lasVarCount[wariantLasuDlaHeksa(hex.coords.q, hex.coords.r, NL_NATURAL, map.seed)]!++;
+      if (styledTerrain && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
+        const fq = hex.coords.q, fr = hex.coords.r;
+        if (isWarmJungleForestHex(fq, fr, map.wysokoscR)) {
+          djunglaVarCount[wariantDjungliDlaHeksa(fq, fr, NDJ, map.seed)]!++;
+        } else {
+          lasVarCount[wariantLasuDlaHeksa(fq, fr, NL_NATURAL, map.seed)]!++;
+        }
       }
     }
     if (t === TerenBazowy.Gory) {
@@ -1816,8 +1824,6 @@ export async function buildScene(
     }
   }
 
-  // GRAFIKA-TEREN-2: 5 InstancedMesh kęp lasu (poza dżunglą tropikalną) — wspólny LAS_MATERIAL
-  // (vertexColors, flatShading). Wzorzec gór/wzgórz: fog = matrix-hide + instanceColor-dim.
   const lasInst: THREE.InstancedMesh[] = [];
   const lasHexKey: string[][] = [];
   const lasOrigMatrix: THREE.Matrix4[][] = [];
@@ -1828,6 +1834,18 @@ export async function buildScene(
       lm.frustumCulled = false; lm.castShadow = true; lm.receiveShadow = true; lm.count = 0;
       scene.add(lm);
       lasInst.push(lm); lasHexKey.push([]); lasOrigMatrix.push([]); lasIdx.push(0);
+    }
+  }
+  const djunglaInst: THREE.InstancedMesh[] = [];
+  const djunglaHexKey: string[][] = [];
+  const djunglaOrigMatrix: THREE.Matrix4[][] = [];
+  const djunglaIdx: number[] = [];
+  if (styledTerrain) {
+    for (let v = 0; v < NDJ; v++) {
+      const jm = new THREE.InstancedMesh(djunglaGeometria(v), DJUNGLA_MATERIAL, Math.max(1, djunglaVarCount[v]!));
+      jm.frustumCulled = false; jm.castShadow = true; jm.receiveShadow = true; jm.count = 0;
+      scene.add(jm);
+      djunglaInst.push(jm); djunglaHexKey.push([]); djunglaOrigMatrix.push([]); djunglaIdx.push(0);
     }
   }
 
@@ -2175,22 +2193,31 @@ export async function buildScene(
     if (hex.nakladka === Nakladka.Las && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
       const baseY = vis.height + vis.yOffset;
       const q = hex.coords.q, r = hex.coords.r;
-      if (styledTerrain && !isWarmJungleForestHex(q, r, map.wysokoscR)) {
-        // GRAFIKA-TEREN-2: instancjonowana kępa lasu (wariant + rotacja deterministyczne; R=1 → bez skali).
-        // NL_NATURAL (4): tylko pełne warianty 0..3 — nigdy L4 „przetrzebiony" na starcie mapy.
-        const v = wariantLasuDlaHeksa(q, r, NL_NATURAL, map.seed);
+      if (styledTerrain) {
         dummy.position.set(x, baseY, z);
-        dummy.rotation.set(0, rotacjaLasuDlaHeksa(q, r, map.seed), 0);
         dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
-        const lm = lasInst[v]!;
-        const li = lasIdx[v]!;
-        lm.setMatrixAt(li, dummy.matrix);
-        lasHexKey[v]![li] = hexKey;
-        lasOrigMatrix[v]![li] = dummy.matrix.clone();
-        lasIdx[v] = li + 1;
+        if (isWarmJungleForestHex(q, r, map.wysokoscR)) {
+          const v = wariantDjungliDlaHeksa(q, r, NDJ, map.seed);
+          dummy.rotation.set(0, rotacjaDjungliDlaHeksa(q, r, map.seed), 0);
+          dummy.updateMatrix();
+          const jm = djunglaInst[v]!;
+          const ji = djunglaIdx[v]!;
+          jm.setMatrixAt(ji, dummy.matrix);
+          djunglaHexKey[v]![ji] = hexKey;
+          djunglaOrigMatrix[v]![ji] = dummy.matrix.clone();
+          djunglaIdx[v] = ji + 1;
+        } else {
+          const v = wariantLasuDlaHeksa(q, r, NL_NATURAL, map.seed);
+          dummy.rotation.set(0, rotacjaLasuDlaHeksa(q, r, map.seed), 0);
+          dummy.updateMatrix();
+          const lm = lasInst[v]!;
+          const li = lasIdx[v]!;
+          lm.setMatrixAt(li, dummy.matrix);
+          lasHexKey[v]![li] = hexKey;
+          lasOrigMatrix[v]![li] = dummy.matrix.clone();
+          lasIdx[v] = li + 1;
+        }
       } else if (useStyledDecor) {
-        // Dżungla tropikalna (palmy/parasole) — stara ścieżka klastra drzew (poza zakresem GRAFIKA-TEREN-2).
         const cluster = buildStyleForestCluster(renderStyle, { q, r, x, z, baseY, seed: map.seed, R, mapHeight: map.wysokoscR }, robloxLite);
         pushStyledOverlay(cluster, hexKey, 'forest');
       } else {
@@ -2548,10 +2575,13 @@ export async function buildScene(
     wzgorzeInst[v]!.instanceMatrix.needsUpdate = true;
     terrainPickKeys.set(wzgorzeInst[v]!, wzgorzeHexKey[v]!);
   }
-  // GRAFIKA-TEREN-2: finalizacja liczników 5 InstancedMesh kęp lasu.
   for (let v = 0; v < lasInst.length; v++) {
     lasInst[v]!.count = lasIdx[v]!;
     lasInst[v]!.instanceMatrix.needsUpdate = true;
+  }
+  for (let v = 0; v < djunglaInst.length; v++) {
+    djunglaInst[v]!.count = djunglaIdx[v]!;
+    djunglaInst[v]!.instanceMatrix.needsUpdate = true;
   }
   // DEKOR: finalizacja liczników 8 InstancedMesh mikrodekoru łąk/równin.
   for (let w = 0; w < dekorLakaInst.length; w++) {
@@ -3032,6 +3062,9 @@ export async function buildScene(
     for (let v = 0; v < lasInst.length; v++) {
       hideInstancedOnHex(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!, hexKey);
     }
+    for (let v = 0; v < djunglaInst.length; v++) {
+      hideInstancedOnHex(djunglaInst[v]!, djunglaHexKey[v]!, djunglaOrigMatrix[v]!, hexKey);
+    }
     for (let ci = 0; ci < coastInstMeshes.length; ci++) {
       hideInstancedOnHex(coastInstMeshes[ci]!, coastInstHexKey[ci]!, coastInstOrig[ci]!, hexKey);
     }
@@ -3220,6 +3253,10 @@ export async function buildScene(
     for (let v = 0; v < lasInst.length; v++) {
       lasInst[v]!.visible = zoomFlags.styledDecor;
       if (zoomFlags.styledDecor) applyLasFog(lasInst[v]!, lasHexKey[v]!, lasOrigMatrix[v]!);
+    }
+    for (let v = 0; v < djunglaInst.length; v++) {
+      djunglaInst[v]!.visible = zoomFlags.styledDecor;
+      if (zoomFlags.styledDecor) applyLasFog(djunglaInst[v]!, djunglaHexKey[v]!, djunglaOrigMatrix[v]!);
     }
     // FALA 141: instanced brzeg (woda/piasek) — fog jak góry/wzgórza.
     for (let ci = 0; ci < coastInstMeshes.length; ci++) {
