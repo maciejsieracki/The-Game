@@ -7,7 +7,7 @@ alwaysApply: true
 
 # Potrójna warstwa weryfikacji kodu (NIENEGOCJOWALNE)
 
-**Decyzja Maciej 2026-08-05:** jeden agent przygotowuje kod; drugi **zawsze** sprawdza jako adwokat diabła; główny agent (Grok) **zawsze** robi finalną kontrolę. Koszt tokenów OK — oszczędza czas na regresjach („naprawiono A, popsuto B”).
+**Decyzja Maciej 2026-08-05:** jeden agent przygotowuje kod; drugi **zawsze** sprawdza jako adwokat diabła; główny agent (Grok) **zawsze** robi finalną kontrolę. **Od tej pory tak działamy** (NIENEGOCJOWALNE). Koszt tokenów OK — oszczędza czas na regresjach („naprawiono A, popsuto B”).
 
 ## Trzy warstwy (kolejność obowiązkowa)
 
