@@ -5,7 +5,6 @@
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import type { MapRenderStyle } from './mapRenderStyle';
-import { isWarmJungleForestHex } from './mapRenderStyle';
 import { improvementKeysForHex } from '../game/terrain-improvements';
 
 function hash2D(q: number, r: number, seed: number, salt: number): number {
@@ -86,11 +85,10 @@ export function countSceneOverlayCandidates(
     const r = hex.coords.r;
 
     if (hex.nakladka === Nakladka.Las && t !== TerenBazowy.Morze && t !== TerenBazowy.Wybrzeze) {
-      if (styledTerrain && !isWarmJungleForestHex(q, r, map.wysokoscR)) {
-        // instanced las — nie styledOverlay
+      if (styledTerrain) {
+        // roblox: las + dżungla = InstancedMesh — nie styledOverlay
       } else if (useStyledDecor) {
-        if (styledTerrain) bump('jungleForest', true);
-        else bump('minecraftForest', true);
+        bump('minecraftForest', true);
       }
     }
 
