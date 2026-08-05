@@ -1,6 +1,6 @@
 # AI-BALANS-STEP1 — kolonizacja major AI: pop źródła na Trudnym
 
-**Status:** 🟢 Evaluator PASS · gotowe do Grok final / deploy FALA 242 (SOLO-Q1=A) · 2026-08-05  
+**Status:** 🟢 **ZDEPLOYOWANE** FALA 242 ROBOCZA `5b6ee97d` · 2026-08-05  
 **Źródło audytu:** `R-AI-TRUDNOSC-AUDYT.md` §C.3 D1 — `AI_COLONIZATION_SOURCE_MIN_POP` 5→4 na L3
 
 ## AC (jedna mała dźwignia)
@@ -11,7 +11,9 @@
 4. Test: L3 przy pop=4 → może kolonizować; L2 przy pop=4 → nie; L3 przy pop=3 → nie.
 5. ZAKAZ: inne zmiany ai-params / absorb / combat w tym PR.
 
-## Po PASS → deploy FALA 242 (SOLO-Q1=A).
+## Deploy
+
+FALA **242** · md5 `5b6ee97d94285880320f2f1369840c9d` · tip kodu `9f92cbd` · SOLO-Q1=A.
 
 ## Evaluator (AutoBot warstwa 2 — 2026-08-05)
 

@@ -954,7 +954,7 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## D-DYPLO-CELOWNIK-STOLICA — przeskok kamery do stolicy z karty państwa · STATUS: **OTWARTE** (Maciej 2026-07-29 ~00:47)
+## D-DYPLO-CELOWNIK-STOLICA — przeskok kamery do stolicy z karty państwa · STATUS: **ZAMKNIĘTE** (FALA 241 `178073f9` · Q1=A)
 
 **Cytat:** Na karcie reprezentanta państwa w dyplomacji brakuje **celownika** — klik przenosi na mapę do stolicy tego państwa.
 

@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 178073f9 - 2026-08-05 22:23 - FALA 241: absorb F2 any-civ + celownik - **AKTUALNA**
+## ROBOCZA 5b6ee97d - 2026-08-05 22:34 - FALA 242: AI-BALANS-STEP1 L3 kolonizacja pop 4 - **AKTUALNA**
+|- md5 (pelne): 5b6ee97d94285880320f2f1369840c9d · stempel: ROBOCZA · 2026-08-05 20:33 (label 5b6ee97d)
+|- **FALA 242.** AI-BALANS-STEP1 — major AI na Trudnym: próg ludności miasta-źródła kolonii **4** (L1/L2 zostaje 5). AutoBot PASS · tip `9f92cbd` · ai-colonization-pop 13/13.
+|- Grok deploy (Maciej „1+2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 178073f9 - 2026-08-05 22:23 - FALA 241: absorb F2 any-civ + celownik - **ZASTĄPIONA** (→ 5b6ee97d)
 |- md5 (pelne): 178073f9c05e0e83ba929dae53efd3c8 · stempel: ROBOCZA · 2026-08-05 20:23 (label 178073f9)
 |- **FALA 241.** (1) P-AI-ABSORB-F2=B — Hard any-civ major absorb (progi 1.25/tura10). (2) D-DYPLO-CELOWNIK=A — hint gdy brak stolicy. (3) AI-BALANS-UNLOCK=B — docs (bez liczb). AutoBot PASS · tip `68e2b04` · absorb 20/20.
 |- Grok deploy (Maciej litery · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
