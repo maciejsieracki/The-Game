@@ -1,6 +1,6 @@
-## [19:15 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 235 9c0a38ae
+﻿## [19:15 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 235 9c0a38ae
 
-Maciej „2”=WIAR dalej · R1b one-shot tempo · AutoBot PASS · tip 
+Maciej „2”=WIAR dalej · R1b one-shot tempo · AutoBot PASS · tip `1c7e650` 
 |- md5: 9c0a38ae821034e283a794806853e788 · stempel: ROBOCZA · 9c0a38ae
 |- Batch: applyDiplomaticEvent × tempo; tracked wrapper W=getWiarygodnosc(0)
 |- Testy: wiarygodnosc 110/110 · diplomacy 148/148

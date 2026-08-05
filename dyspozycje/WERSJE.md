@@ -14,7 +14,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 ## ROBOCZA 9c0a38ae - 2026-08-05 19:15 - FALA 235: WIAR R1b tempo one-shot - **AKTUALNA**
 |- md5 (pelne): 9c0a38ae821034e283a794806853e788 · stempel: ROBOCZA · 2026-08-05 17:15 (label 9c0a38ae)
-|- **FALA 235.** WIAR R1b:  mnoży dZ tempa (nie dR);  przekazuje W. AutoBot PASS · tip  · wiarygodnosc 110/110 · diplomacy 148/148.
+|- **FALA 235.** WIAR R1b: applyDiplomaticEvent mnoży dZ tempa (nie dR); applyDiploEventTracked przekazuje W. AutoBot PASS · tip `1c7e650` · wiarygodnosc 110/110 · diplomacy 148/148.
 |- Grok deploy (Maciej „2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
 
 ## ROBOCZA 7d86fa19 - 2026-08-05 19:05 - FALA 234: WIAR R1 tempo W→Zaufanie - **ZASTĄPIONA** (→ 9c0a38ae)
