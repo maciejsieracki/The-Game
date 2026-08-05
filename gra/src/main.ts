@@ -397,9 +397,12 @@ import {
   assignBounceHexesForUnits,
   pickStackRepresentative,
   stackRuchLeft,
+  planningStackRuchLeft,
   syncStackRuchLeft,
   deductStackRuchLeft,
   unitWithStackRuch,
+  unitWithPlanningStackRuch,
+  wakeStackForMoveOrder,
   countLawGarrisonOnCityHex,
   unitsOnCityHexForLaw,
   activeUnitStack,
@@ -4555,14 +4558,16 @@ async function boot(): Promise<void> {
       const out: ArmyListEntry[] = [];
       for (const group of stacks.values()) {
         const lead = group[0]!;
-        const inGarnizon = lead.inGarnizon === true;
+        const inGarnizon = group.some(u => u.inGarnizon === true);
+        const ufortyfikowanyWPolu = group.some(u => u.ufortyfikowanyWPolu === true);
+        const sentry = group.some(u => u.sentry === true);
         const types = [...new Set(group.map(u => u.typeId))];
         const name = group.length === 1
           ? lead.typeId
           : types.length === 1
             ? `${types[0]!} ×${group.length}`
             : formatArmiaLabel(group.length);
-        const ruchLeft = Math.min(...group.map(u => u.ruchLeft));
+        const ruchLeft = planningStackRuchLeft(group);
         const ruchMax = Math.max(...group.map(u => u.ruch));
         // Suma HP stosu: armia = stos, więc pokazujemy łączny stan zdrowia
         // (np. 34/50), a nie zdrowie pojedynczej jednostki wiodącej.
@@ -4591,6 +4596,8 @@ async function boot(): Promise<void> {
           hp,
           hpMax,
           inGarnizon,
+          ufortyfikowanyWPolu,
+          sentry,
         });
       }
       out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
@@ -7375,7 +7382,7 @@ async function boot(): Promise<void> {
     /** Najtańszy sąsiedni heks przy obcym mieście, na który jednostka może wejść. */
     function pickMarchHexAdjacentToCity(unit: RuntimeUnit, city: City): { q: number; r: number } | null {
       const stack = playerStackAt(unit);
-      const mover = unitWithStackRuch(unit, stack);
+      const mover = unitWithPlanningStackRuch(unit, stack);
       const occ = occupiedForMove(unit.ownerId, ...stack.map(s => s.id));
       const costFn = moveCostFnForUnit(unit);
       let best: { q: number; r: number; cost: number } | null = null;
@@ -8006,13 +8013,13 @@ async function boot(): Promise<void> {
     }
 
     function stackCanMove(u: RuntimeUnit): boolean {
-      return stackRuchLeft(playerStackAt(u)) > 0;
+      return planningStackRuchLeft(playerStackAt(u)) > 0;
     }
 
     /** Zasięg ruchu + heksy własnych stosów osiągalne kosztem ruchu (merge). */
     function reachableWithMergeTargets(unit: RuntimeUnit): Set<string> {
       const stack = playerStackAt(unit);
-      const mover = unitWithStackRuch(unit, stack);
+      const mover = unitWithPlanningStackRuch(unit, stack);
       const exceptIds = stack.map(s => s.id);
       const occ = occupiedForMove(unit.ownerId, ...exceptIds);
       // TEMAT #15: jednostka z Żeglugą (lub zaokrętowana) widzi też heksy wody.
@@ -15815,7 +15822,7 @@ async function boot(): Promise<void> {
       }
       const stack = playerStackAt(u);
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
-      const mover = unitWithStackRuch(u, stack);
+      const mover = unitWithPlanningStackRuch(u, stack);
       const plan = marchPathPlan(
         mover,
         dest.destQ,
@@ -15839,7 +15846,7 @@ async function boot(): Promise<void> {
     function refreshHoverPathPreview(uSel: RuntimeUnit, hitQ: number, hitR: number): void {
       const stack = playerStackAt(uSel);
       const occ = occupiedForMove(uSel.ownerId, ...stack.map(s => s.id));
-      const mover = unitWithStackRuch(uSel, stack);
+      const mover = unitWithPlanningStackRuch(uSel, stack);
       const hoverCostFn = moveCostFnForUnit(uSel);
       const hoverEnemy = units.find(
         x => x.q === hitQ && x.r === hitR && x.ownerId !== uSel.ownerId,
@@ -15896,7 +15903,7 @@ async function boot(): Promise<void> {
 
       const stack = playerStackAt(u);
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
-      const mover = unitWithStackRuch(u, stack);
+      const mover = unitWithPlanningStackRuch(u, stack);
 
       const attackTarget = attackUnitId
         ? units.find(x => x.id === attackUnitId)
@@ -15918,7 +15925,7 @@ async function boot(): Promise<void> {
         destR,
         occ,
         perTurnMoveForUnit(u),
-        stackRuchLeft(stack),
+        planningStackRuchLeft(stack),
         fogCtx,
         moveCostFnForUnit(u),
       );
@@ -15940,7 +15947,7 @@ async function boot(): Promise<void> {
       hoverKey = null;
       refreshPlannedMarchPreview(u.id);
       refreshD1bHud();
-      if (stackRuchLeft(stack) > 0) {
+      if (planningStackRuchLeft(stack) > 0) {
         executeMarchSegmentForUnit(u.id);
       }
       return true;
@@ -15961,15 +15968,9 @@ async function boot(): Promise<void> {
       // zamiast zostać "ukrytym" duchem na nowym heksie.
       const garnizonCity = u.inGarnizon === true ? cityAtUnit(u) : undefined;
       const stack = playerStackAt(u);
-      if (u.inGarnizon === true) {
-        for (const su of stack) exitGarnizon(su);
+      if (wakeStackForMoveOrder(stack)) {
         if (garnizonCity) syncGarnizonForCity(garnizonCity);
       }
-      // DYSPOZYCJA Macieja 2026-07-26: rozkaz ruchu zdejmuje fortyfikację W
-      // POLU automatycznie -- analogicznie do exitGarnizon powyżej, ale na
-      // CAŁYM stosie (fortyfikacja w polu jest ustawiana na całym widocznym
-      // stosie, patrz akcja 'fortify' powyżej), nie tylko na `u`.
-      for (const su of stack) exitFieldFortify(su);
       const startPl = unitRenderer.getTokenPlacement(u.q, u.r);
       const startWP: Waypoint = {
         x: startPl.x,
@@ -16037,14 +16038,14 @@ async function boot(): Promise<void> {
       if (!u || !dest || u.ownerId !== 0) return false;
 
       const stack = playerStackAt(u);
-      const stackRuch = stackRuchLeft(stack);
+      const stackRuch = planningStackRuchLeft(stack);
       if (stackRuch <= 0) {
         showHintMessage('Marsz przerwany: brak punktów ruchu', 3000);
         return false;
       }
 
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
-      const mover = unitWithStackRuch(u, stack);
+      const mover = unitWithPlanningStackRuch(u, stack);
       const fogCtx = buildMarchFogContext(dest);
       const result = executeMarchStep(
         mover,
@@ -16099,7 +16100,7 @@ async function boot(): Promise<void> {
       const ids = units
         .filter(u => u.ownerId === 0 && plannedMarches.has(u.id)
           && !movedByPlayerThisTurn.has(u.id)
-          && stackRuchLeft(playerStackAt(u)) > 0)
+          && planningStackRuchLeft(playerStackAt(u)) > 0)
         .map(u => u.id);
       enqueueMarchSegments(ids);
     }
@@ -16112,11 +16113,11 @@ async function boot(): Promise<void> {
       if (!u || !dest || u.ownerId !== 0) return false;
 
       const stack = playerStackAt(u);
-      const stackRuch = stackRuchLeft(stack);
+      const stackRuch = planningStackRuchLeft(stack);
       if (stackRuch <= 0) return false;
 
       const occ = occupiedForMove(u.ownerId, ...stack.map(s => s.id));
-      const mover = unitWithStackRuch(u, stack);
+      const mover = unitWithPlanningStackRuch(u, stack);
       const fogCtx = buildMarchFogContext(dest);
       const result = executeMarchStep(
         mover,
@@ -16379,12 +16380,12 @@ async function boot(): Promise<void> {
       }
 
       const stack = playerStackAt(u);
-      const stackRuch = stackRuchLeft(stack);
+      const stackRuch = planningStackRuchLeft(stack);
       if (stackRuch <= 0) return false;
 
       const exceptIds = stack.map(s => s.id);
       const occ = occupiedForMove(u.ownerId, ...exceptIds);
-      const mover = unitWithStackRuch(u, stack);
+      const mover = unitWithPlanningStackRuch(u, stack);
       const moveCostFn = moveCostFnForUnit(u);
       const path = computePath(mover, map, destQ, destR, occ, moveCostFn);
       if (path.length === 0) return false;

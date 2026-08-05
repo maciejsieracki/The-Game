@@ -30,10 +30,26 @@ fs.writeFileSync(
   activeUnitStack,
   enterGarnizon,
   exitGarnizon,
+  exitFieldFortify,
+  enterFieldFortify,
   visibleStackOnHex,
   unitAtRepresentative,
+  planningStackRuchLeft,
+  wakeStackForMoveOrder,
+  stackRuchLeft,
 } from '../src/game/armyMerge';
-export { activeUnitStack, enterGarnizon, exitGarnizon, visibleStackOnHex, unitAtRepresentative };`,
+export {
+  activeUnitStack,
+  enterGarnizon,
+  exitGarnizon,
+  exitFieldFortify,
+  enterFieldFortify,
+  visibleStackOnHex,
+  unitAtRepresentative,
+  planningStackRuchLeft,
+  wakeStackForMoveOrder,
+  stackRuchLeft,
+};`,
 );
 
 esbuild.buildSync({
@@ -49,8 +65,13 @@ const {
   activeUnitStack,
   enterGarnizon,
   exitGarnizon,
+  exitFieldFortify,
+  enterFieldFortify,
   visibleStackOnHex,
   unitAtRepresentative,
+  planningStackRuchLeft,
+  wakeStackForMoveOrder,
+  stackRuchLeft,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -172,6 +193,40 @@ function makeUnit(overrides) {
   enterGarnizon(u);
   exitGarnizon(u);
   assert(u.ruchLeft === 1, 'exitGarnizon: przywraca częściową pulę (1/2), nie maxRuch');
+}
+
+// --- 6) planningStackRuchLeft: lista armii + reachable widzą pul ze snapshota
+//        ZANIM jednostka opuści garnizon/fortyfikację w polu. ---
+{
+  const garrisoned = makeUnit({ id: 'plan-g', inGarnizon: true, ruchLeft: 0, fortifyRuchSnapshot: 2 });
+  assert(
+    planningStackRuchLeft([garrisoned]) === 2,
+    'planningStackRuchLeft(garnizon) = fortifyRuchSnapshot, nie zerowy ruchLeft',
+  );
+  assert(
+    stackRuchLeft([garrisoned]) === 0,
+    'stackRuchLeft(garnizon) nadal 0 dopóki jednostka w garnizonie',
+  );
+
+  const fieldFort = makeUnit({ id: 'plan-f', ufortyfikowanyWPolu: true, ruchLeft: 0, fortifyRuchSnapshot: 1 });
+  assert(
+    planningStackRuchLeft([fieldFort]) === 1,
+    'planningStackRuchLeft(fortyfikacja w polu) = snapshot',
+  );
+}
+
+// --- 7) wakeStackForMoveOrder: jeden krok przy rozkazie ruchu (garnizon + pole + sentry). ---
+{
+  const g = makeUnit({ id: 'wake-g', inGarnizon: true, sentry: true, ruchLeft: 0, fortifyRuchSnapshot: 2 });
+  const f = makeUnit({ id: 'wake-f', ufortyfikowanyWPolu: true, ruchLeft: 0, fortifyRuchSnapshot: 1 });
+  const s = makeUnit({ id: 'wake-s', sentry: true, ruchLeft: 0 });
+  const stack = [g, f, s];
+
+  const leftGar = wakeStackForMoveOrder(stack);
+  assert(leftGar === true, 'wakeStackForMoveOrder zwraca true gdy opuścił garnizon');
+  assert(g.inGarnizon === false && g.sentry === false && g.ruchLeft === 2, 'wake: garnizon + sentry + przywrócony ruch');
+  assert(f.ufortyfikowanyWPolu === false && f.ruchLeft === 1, 'wake: zdjęta fortyfikacja w polu + snapshot');
+  assert(s.sentry === false, 'wake: sentry=false bez garnizonu');
 }
 
 console.log('garnizon-exit-test: ' + pass + ' pass, ' + fail + ' fail');
