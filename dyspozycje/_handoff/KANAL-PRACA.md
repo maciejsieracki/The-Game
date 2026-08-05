@@ -1,3 +1,12 @@
+## [19:15 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 235 9c0a38ae
+
+Maciej „2”=WIAR dalej · R1b one-shot tempo · AutoBot PASS · tip 
+|- md5: 9c0a38ae821034e283a794806853e788 · stempel: ROBOCZA · 9c0a38ae
+|- Batch: applyDiplomaticEvent × tempo; tracked wrapper W=getWiarygodnosc(0)
+|- Testy: wiarygodnosc 110/110 · diplomacy 148/148
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
 ## [19:05 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 234 7d86fa19
 
 Maciej „2”=WIAR R1 · AutoBot PASS · tip `6ccc945`

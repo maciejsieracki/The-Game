@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 7d86fa19 - 2026-08-05 19:05 - FALA 234: WIAR R1 tempo W→Zaufanie - **AKTUALNA**
+## ROBOCZA 9c0a38ae - 2026-08-05 19:15 - FALA 235: WIAR R1b tempo one-shot - **AKTUALNA**
+|- md5 (pelne): 9c0a38ae821034e283a794806853e788 · stempel: ROBOCZA · 2026-08-05 17:15 (label 9c0a38ae)
+|- **FALA 235.** WIAR R1b:  mnoży dZ tempa (nie dR);  przekazuje W. AutoBot PASS · tip  · wiarygodnosc 110/110 · diplomacy 148/148.
+|- Grok deploy (Maciej „2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 7d86fa19 - 2026-08-05 19:05 - FALA 234: WIAR R1 tempo W→Zaufanie - **ZASTĄPIONA** (→ 9c0a38ae)
 |- md5 (pelne): 7d86fa1919e785a6a3242388ad11ec46 · stempel: ROBOCZA · 2026-08-05 17:05 (label 7d86fa19)
 |- **FALA 234.** WIAR R1: `applyWiarygodnoscTempoDoDelty` w `computeTickZaufanieDelta` (po sumie dZ, przed war-zero). AutoBot PASS · tip `6ccc945` · wiarygodnosc-test 103/103.
 |- Grok deploy (Maciej „2”=R1 · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
