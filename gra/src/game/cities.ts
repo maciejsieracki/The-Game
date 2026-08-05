@@ -11,7 +11,11 @@ import type { RuntimeUnit } from '../units/setup';
 import { hexDistance } from '../units/setup';
 import { freshWealthState, type WealthState } from './wealth';
 import { readCityFoodBuffer } from './economy-upkeep';
-import { ensureCityRationDefaults } from './population-growth-v85';
+import {
+  DEFAULT_POZIOM_RACJI,
+  ensureCityRationDefaults,
+  WYZYWIENIE_MAX,
+} from './population-growth-v85';
 import type { SiegeMachinesState } from './siegeMachines';
 import miastoParams from '../../data/miasto-params.json';
 export interface CityPodzialHandlu {
@@ -275,6 +279,11 @@ export const DEFAULT_PODZIAL_PRACY: Readonly<CityPodzialPracy> = {
 
 /** Domyślny suwak żywność→wzrost (reszta idzie do zapasów armii). Zgodny z suwak_zywnosc_rozwoj_domyslnie normal=100. */
 export const DEFAULT_PROCENT_ROZWOJ = 100;
+
+/** Legacy procentRozwoj odpowiadający domyślnemu Wyżywieniu (poziomRacji ma pierwszeństwo w getCityRationLevel). */
+export const DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
+  (DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX) * 100,
+);
 
 /** Suwak podziału handlu — tylko wielokrotności 10 (0, 10, …, 100). */
 export const HANDEL_PCT_STEP = 10;
@@ -638,7 +647,8 @@ export function foundCity(
     wealthImmunityRemaining: 5,
     podzialHandluOverride: false,
     podzialPracy:  podzial.podzialPracy,
-    procentRozwoj: DEFAULT_PROCENT_ROZWOJ,
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
+    poziomRacji: DEFAULT_POZIOM_RACJI,
   };
 }
 
@@ -669,7 +679,8 @@ export function foundCityAt(
     wealthImmunityRemaining: 5,
     podzialHandluOverride: false,
     podzialPracy:  podzial.podzialPracy,
-    procentRozwoj: DEFAULT_PROCENT_ROZWOJ,
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
+    poziomRacji: DEFAULT_POZIOM_RACJI,
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }

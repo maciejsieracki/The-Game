@@ -1,4 +1,12 @@
-﻿## [20:00 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-SAVE (Maciej „1+2” oś B save/load)
+﻿## [20:30 UTC, 2026-08-05] AutoBot Operator → Evaluator / Grok — P-MP-SPAWN-WYZYWIENIE
+
+Fix: `foundCity`/`foundCityAt` ustawiają jawne `poziomRacji: DEFAULT_POZIOM_RACJI` (4) + `procentRozwoj: 67` — parytet gracz/major AI/MP.
+|- Pliki: `gra/src/game/cities.ts`, `gra/tools/mp-spawn-ration-test.cjs`, `docs/decyzje/P-MP-SPAWN-WYZYWIENIE.md`
+|- Testy: `mp-spawn-ration-test.cjs` PASS · `tsc --noEmit` PASS
+|- **Bez deploy ROBOCZA**
+CZEKAM-NA: Evaluator → merge Grok → deploy na sygnał Macieja
+
+## [20:00 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-SAVE (Maciej „1+2” oś B save/load)
 
 Evaluator STRICT-SAVE: nowe trwałe pole bez snapshot/restore lub restore bez `?? default`; Operator bez roundtrip → FAIL #9 (nie NOTES).
 |- Pliki: `R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md`, STRICT patch FAIL #9, `rule_109`, guardrails, smoke v7

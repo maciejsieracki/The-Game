@@ -1662,9 +1662,9 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 `startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` z `loadDifficultyParams` — **nie stosowane** w gameplay (tylko `bonusProdukcja` w score produkcji). Powiązane: `P-AI-MOC-GAP`.
 
-### P-MP-SPAWN-WYZYWIENIE — MP spawn Wyżywienie ~3 · STATUS: **OTWARTE** (bugfix rekomendowany)
+### P-MP-SPAWN-WYZYWIENIE — MP spawn Wyżywienie ~3 · STATUS: **NAPRAWIONE** (`cursor/fix-mp-spawn-wyzywienie-63a1`)
 
-Spawn MP: suwak Wyżywienie startuje ~3 zamiast oczekiwanej wartości — **nie naprawione** w FALA 220.
+Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCity*` bez `poziomRacji` → migrate(100)→6 → auto-racja obniżała. Fix: jawne `poziomRacji: DEFAULT_POZIOM_RACJI` (4) przy founding dla wszystkich ownerów.
 
 ### P-AI-PROD-GATE-PER-OWNER — `isProductionAllowed` per-owner difficulty · STATUS: **OTWARTE**
 
