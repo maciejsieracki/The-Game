@@ -43,13 +43,14 @@ nie jedną regułą dla wszystkich budynków:
 - **Przy awansie „w bok"** wartości następcy muszą być **przyrostowe** (dokładają się do tego, co już daje
   poprzednik, nie liczą jego wkładu drugi raz) — dotyczy Pytania 24 (patrz §6, dwie ścieżki ulepszeń jednostek).
 
-**Status wdrożenia (zaktualizowano po fakcie — praca kodowa działa się równolegle z tą sesją dokumentacyjną):**
-podział na „w górę"/„w bok" i rozdzielenie wartości następcy (bez podwójnego liczenia) jest **WDROŻONY w kodzie**
-na gałęzi roboczej, commit `2354fb7` — usunięte `upgradeFrom` z `fort`/`akademia`/`akademia_wojskowa`/`swiatynia`
-(4 pary „w bok"), wartości rozdzielone (Akademia nauka 9→6/kultura 7→5, Akademia wojskowa praca 5→3, Świątynia
-kultura 3→2/zadowolenie 3→2). Reguła „stała wartość per tier, rośnie tylko przez awans" dla łańcuchów „w górę"
-zweryfikowana w kodzie na razie dla Pałacu (`R-LINEARYZACJA`, `R-PRAWO-ADMINISTRACJA` w `KANAL-PRACA.md`) —
-pozostałe 5 łańcuchów „w górę" do potwierdzenia. **Nic z tego nie jest jeszcze zdeployowane do ROBOCZA.**
+**Status wdrożenia:** **ZDEPLOYOWANE** (audyt 2026-08-05, AutoBot VERIFY/CLOSE `R-AWANS-MODEL`):
+podział na „w górę"/„w bok" i rozdzielenie wartości następcy (bez podwójnego liczenia) na `main` od commit
+`2354fb7` (2026-07-25), pierwszy deploy ROBOCZA FALA 11 `dd1ec38e`. Usunięte `upgradeFrom` z
+`fort`/`akademia`/`akademia_wojskowa`/`swiatynia` (4 pary „w bok"); wartości rozdzielone (Akademia nauka 9→6/kultura
+7→5, Akademia wojskowa praca 5→3, Świątynia kultura 3→2/zadowolenie 3→2). FALA 11.1 `98b1403a` przywróciła
+prerekwizyt kolejności budowy bez `upgradeFrom`. Dowód: `docs/decyzje/R-AWANS-MODEL.md`.
+Reguła „stała wartość per tier" dla łańcuchów „w górę" — Pałac zweryfikowany (`R-LINEARYZACJA`); pozostałe 5
+łańcuchów „w górę" do osobnego potwierdzenia tier-stałości (poza zakresem tego audytu).
 
 ---
 
@@ -241,9 +242,9 @@ Ten plik jest **dokumentacją decyzji** — sesja, która go napisała, pracowa�
 i `STAN-PRACY-HANDOFF.md` (zakaz dotykania `gra/`). RÓWNOLEGLE, w tym samym czasie, inne sesje wdrażały część
 tych decyzji w kodzie na gałęzi roboczej — stąd status poniżej jest już zaktualizowany, nie „zero zrobione":
 
-- ✅ **WDROŻONE w kodzie** (commit `2354fb7`, NIE zdeployowane do ROBOCZA): §1 podział łańcuchów na „w górę"/„w bok"
-  + rozdzielenie wartości następcy (`upgradeFrom` usunięte z `fort`/`akademia`/`akademia_wojskowa`/`swiatynia`) ·
-  §2 osiem grup dziedzinowych w panelu miasta (pole `grupa` w danych, 38/38 budynków).
+- ✅ **ZDEPLOYOWANE** (FALA 11 `dd1ec38e`, kod `2354fb7` na main; audyt `R-AWANS-MODEL` 2026-08-05): §1 podział
+  łańcuchów na „w górę"/„w bok" + rozdzielenie wartości następcy (`upgradeFrom` usunięte z czterech par bocznych) ·
+  §2 osiem grup dziedzinowych w panelu miasta (pole `grupa` w danych) — osobny wpis `R-PANEL-GRUPY`.
 - ⬜ **Nie sprawdzone / prawdopodobnie do zrobienia** (kolejność logiczna dla następnej sesji kodowej): (1) ~~Baszta
   jako nowy budynek + siatka obrony 400% z §5~~ **WDROŻONE** (audyt 2026-08-05), (2) siatka Prawa z §4, (3) reguła stała-wartość-per-tier dla
   POZOSTAŁYCH pięciu łańcuchów „w górę" (poza Pałacem, już zweryfikowanym) z §1, (4) ~~lokalizacja
