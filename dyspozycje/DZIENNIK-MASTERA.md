@@ -11,9 +11,15 @@ Append-only. Source of truth operacyjny projektu Civ.
 
 ---
 
+## [2026-08-05 ~13:44] CLOUD — HANDOFF sesji FALA 225–226 + AutoBot
+
+Pełny zapis: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md). AKTUALNA ROBOCZA FALA 226 `ebe4548f` (stempel `fea8af68`). Batch: R-AUTO (225) + P-AI-MOC-BONUS + P-AI-008 + Autobot P0 (#108). Maciej fokus: playtest R-AUTO (`OK`/`BUG`); F12 sceny wstrzymane; playtest 226 odłożony. STAN §1 + rejestr zaktualizowane. **KAŻDY temat = AutoBot.**
+
+---
+
 ## [2026-08-05 ~00:40] CLOUD — HANDOFF sesji FALA 221–224
 
-Pełny zapis: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md). AKTUALNA ROBOCZA FALA 224 `38df6ad7` (stempel `eef4e87e`) · Maciej OK 223+224. Cleanup rejestru stale „bez deploy" na `main` (`c44a190`). Kolejna sesja: czytaj handoff + `STAN-PRACY-HANDOFF.md` §1 + `WERSJE.md` AKTUALNA.
+Pełny zapis: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md). AKTUALNA ROBOCZA FALA 224 `38df6ad7` (stempel `eef4e87e`) · Maciej OK 223+224. Cleanup rejestru stale „bez deploy" na `main` (`c44a190`). Kolejna sesja: czytaj handoff + `STAN-PRACY-HANDOFF.md` §1 + `WERSJE.md` AKTUALNA.
 
 ---
 

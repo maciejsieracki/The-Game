@@ -1,8 +1,9 @@
 # R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia + podłoga Spichlerza
 
-**Status:** 🟢 ZDEPLOYOWANE FALA 225 (`8767b9c0`) — Q1=B · Q2–Q5=A (Maciej 2026-08-05)  
+**Status:** 🟢 ZDEPLOYOWANE FALA 225→226 (`ebe4548f`, zawiera `8767b9c0`) — Q1=B · Q2–Q5=A · **CZEKA playtest OK/BUG** (fokus Macieja 2026-08-05)  
 **Data:** 2026-08-04  
-**Źródło:** Maciej (playtest FALA 224) + doprecyzowanie po Q1=B + przełącznik auto (2026-08-05)
+**Źródło:** Maciej (playtest FALA 224) + doprecyzowanie po Q1=B + przełącznik auto (2026-08-05)  
+**Handoff sesji:** `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`
 
 ---
 
