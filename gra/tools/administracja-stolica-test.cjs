@@ -80,6 +80,17 @@ function idsOf(items) { return items.map(i => i.id); }
   ok(idsOf(capitalIII).includes('palac_iii'), 'Pałac III dostępny w stolicy (po Pałacu II)');
   const regionIII = M.availableProduction(city, prodData, [], { epoch: 3, builtBuildingIds: ['palac', 'palac_ii'], isCapital: false });
   ok(!idsOf(regionIII).includes('palac_iii'), 'Pałac III NIEdostępny w mieście regionalnym');
+
+  // R-PALAC-KOSZT / C-PALAC-Q1=A: startowy Pałac I — tylko Praca, zero surowców (pula=0).
+  const palac = buildings.find(b => b.id === 'palac');
+  ok(!!palac, 'buildings.json: palac istnieje');
+  ok(palac.kosztBudowy === 40, `palac kosztBudowy=40 (ma: ${palac?.kosztBudowy})`);
+  ok(!palac.koszt_surowce || Object.keys(palac.koszt_surowce).length === 0,
+    'palac: brak koszt_surowce (C-PALAC-Q1=A, start pula=0)');
+  const palacII = buildings.find(b => b.id === 'palac_ii');
+  ok(palacII?.koszt_surowce?.drewno > 0, 'palac_ii: koszt_surowce drewno zostaje (upgrade, nie start)');
+  const palacIII = buildings.find(b => b.id === 'palac_iii');
+  ok(palacIII?.koszt_surowce?.drewno > 0, 'palac_iii: koszt_surowce drewno zostaje (upgrade, nie start)');
 }
 
 // ---------------------------------------------------------------------------

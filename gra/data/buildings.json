@@ -1031,12 +1031,9 @@
     "utrzymanie": 2,
     "przyrostUtrzymania": 1,
     "wymagania": "-",
-    "uwagi": "B-PALAC-TIER I (Kamień): 1/miasto; bramka drewno; bonus bazowy ×1; upgrade→Pałac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pałac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    "uwagi": "B-PALAC-TIER I (Kamień): 1/miasto; bez kosztu surowcowego (C-PALAC-Q1=A, start pula=0); tylko kosztBudowy Praca; bonus bazowy ×1; upgrade→Pałac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pałac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "-",
-    "lokalizacja": "stolica",
-    "koszt_surowce": {
-      "drewno": 8
-    }
+    "lokalizacja": "stolica"
   },
   {
     "id": "palac_ii",
