@@ -1,6 +1,6 @@
 # AI-BALANS-STEP2 — smoke metryczny (Trudny)
 
-**Data:** 2026-08-05 · **Tip SHA:** `27b07a5` · **Wynik:** **PASS**
+**Data:** 2026-08-05 · **Tip SHA:** `9deaf56` · **Wynik:** **PASS**
 
 Automatyczny pomiar `chooseCityProduction` major AI mid-game — kara L3 pokój −40 score Wojownika (STEP2).
 
