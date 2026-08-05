@@ -966,7 +966,7 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## BUG-DYPLO-PANEL-OVERLAP — panel dyplomacji nachodzi na panel jednostki („Frank") · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:06)
+## BUG-DYPLO-PANEL-OVERLAP — panel dyplomacji nachodzi na panel jednostki („Frank") · STATUS: **ECHO A** (2026-08-05) — W TOKU · `BUG-DYPLO-PANEL-OVERLAP-Q1`
 
 **Cytat:** Po dyplomacji z zaznaczoną jednostką oba panele nachodzą; miało być naprawione.
 
@@ -1256,7 +1256,7 @@ Wdrożone w `gra/src/render/miasto-kamien.ts` (funkcja `wal`) — palisada w sty
 
 ---
 
-## NOTATKA TECH (R-KOPALNIA-UNIWERSALNA-Q1=B) — kopalnia na węglu · STATUS: **OTWARTE (cicho)**
+## NOTATKA TECH (R-KOPALNIA-UNIWERSALNA-Q1=B) — kopalnia na węglu · STATUS: **ECHO custom** (2026-08-05) — węgiel ep.6–7 · `R-KOPALNIA-WEGIEL-Q1` → `R-ZLOZA-EPOKI-GEN-Q1`
 
 Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulepszenia (brak `kopalnia_wegla`). Migracja przy load usuwa taką warstwę (`migrateLegacyKopalniaKey` → null). Do decyzji Macieja: osobne ulepszenie węgla vs inny fallback.
 
