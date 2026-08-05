@@ -250,6 +250,12 @@ import {
   rollAiCsAccept,
   unitTriggersSisterAllianceThreat,
 } from './game/ai-cs-absorption';
+import {
+  decideAiMajorAbsorb,
+} from './game/ai-major-absorb';
+import {
+  effectiveGameDifficultyForOwnerPure,
+} from './game/effective-difficulty-for-owner';
 import { clusterCityStateRadius, clusterHubChainReachHex, MIN_DIST_START_CITY_STATE, type ClusterPlacement } from './map/clusters';
 import { playerStartCityName, clusterRivalCityName, pickAiFoundedCityName, suggestPlayerFoundCityName } from './game/civ-names';
 import {
@@ -5476,7 +5482,12 @@ async function boot(): Promise<void> {
      * nigdy null) -- brak dodatkowej konwersji/fallbacku potrzebny tutaj.
      */
     function effectiveGameDifficultyForOwner(ownerId: number): GameDifficulty {
-      return typCityCopyOwners.has(ownerId) ? _menuCityStateDifficulty : _menuDifficulty;
+      return effectiveGameDifficultyForOwnerPure(
+        ownerId,
+        _menuDifficulty,
+        _menuCityStateDifficulty,
+        typCityCopyOwners,
+      );
     }
     /** N-1A: nazwa pierwszego miasta gracza z miasta_panstwa[0]. */
     let clusterPlayerStartCityName = playerStartCityName(data.civs, _menuCivId, data.cityNamesPools);
@@ -21351,7 +21362,7 @@ async function boot(): Promise<void> {
                     ),
                     buildingCostPace: player.buildingCostPace ?? 'niski',
                     ownerId,
-                    difficulty: _menuDifficulty,
+                    difficulty: effectiveGameDifficultyForOwner(ownerId),
                     empireActiveResourceLabels: empireActiveResourceLabelsForOwner(ownerId),
                     empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
                     empireResourceStock: citySurowceSumForOwner(ownerId),
@@ -21729,6 +21740,50 @@ async function boot(): Promise<void> {
                     }
                   }
                 }
+                // P-AI-MAJOR-ABSORB Faza 1: hard + same-civ major→major instant annex
+                if (
+                  _menuDifficulty === 'hard'
+                  && ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                ) {
+                  const myCivKey = aiOwnerCivMap.get(ownerId);
+                  const aggressorPower = objectivePowerByOwner.get(ownerId)?.power ?? 0;
+                  const majorTargets = [...aiOwnerList]
+                    .filter(oid =>
+                      oid !== ownerId
+                      && oid > 0
+                      && !typCityCopyOwners.has(oid)
+                      && !isBarbarian(oid)
+                      && !eliminatedOwners.has(oid)
+                      && aiOwnerCivMap.get(oid) === myCivKey,
+                    )
+                    .sort((a, b) => a - b);
+                  for (const victimId of majorTargets) {
+                    const victimPower = objectivePowerByOwner.get(victimId)?.power ?? 0;
+                    const powerRatio = victimPower > 0 ? aggressorPower / victimPower : 0;
+                    const decision = decideAiMajorAbsorb({
+                      difficulty: _menuDifficulty,
+                      turn,
+                      aggressorId: ownerId,
+                      victimId,
+                      sameCiv: aiOwnerCivMap.get(victimId) === myCivKey,
+                      powerRatio,
+                      aggressorIsMajor: true,
+                      victimIsMajor: true,
+                      victimEliminated: eliminatedOwners.has(victimId),
+                      sameOwner: false,
+                    });
+                    if (decision.action === 'instant_annex') {
+                      annexCityStateToOwner(victimId, ownerId);
+                      console.log(
+                        `[Dyplomacja] AI${ownerId} wchłania major AI${victimId} (same-civ hard)`,
+                      );
+                      break;
+                    }
+                  }
+                }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
                   relacje: relacjeDip,
@@ -22070,7 +22125,7 @@ async function boot(): Promise<void> {
                         ),
                         buildingCostPace: player.buildingCostPace ?? 'niski',
                         ownerId,
-                        difficulty: _menuDifficulty,
+                        difficulty: effectiveGameDifficultyForOwner(ownerId),
                         // TEMAT 8 Q2 (2026-07-24, PARYTET AI): bez tych 4 pól bramki surowcowe/
                         // terenowe (Glina/Ceramika/Sól/Drewno/Kamień/Ruda/Port — w tym stolarnia,
                         // którą AI faktycznie proponuje w ai.ts) byłyby tu zawsze niespełnione,
@@ -22103,7 +22158,7 @@ async function boot(): Promise<void> {
                         civBonusyForOwnerId(ownerId),
                         player.buildingCostPace ?? 'niski',
                         ownerId,
-                        _menuDifficulty,
+                        effectiveGameDifficultyForOwner(ownerId),
                       )
                       : unitProductionItem(
                         cmd.buildingId,
@@ -22111,7 +22166,7 @@ async function boot(): Promise<void> {
                         civBonusyForOwnerId(ownerId),
                         player.kosztJednostekPace ?? 'niski',
                         ownerId,
-                        _menuDifficulty,
+                        effectiveGameDifficultyForOwner(ownerId),
                       );
                     if (item !== null) {
                       // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24) / JEDNOSTKI-SUROWIEC-01
