@@ -5,6 +5,15 @@ Evaluator STRICT: luki testów / brak asercji AC / czerwone testy tematu → FAI
 |- Zero `gra/src` — tylko proces AutoBot
 CZEKAM-NA: Evaluator / merge Grok (bez deploy gry)
 
+## [19:44 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 237 5b0e1c19
+
+Maciej „Dalej WIAR” · badge tytuł + ranking Potęgi §7 · AutoBot PASS (STRICT) · tip `cad6f23`
+|- md5: 5b0e1c19816157ac22dbf10cbab7d11d · stempel: ROBOCZA · 5b0e1c19
+|- Batch: `wiarygodnoscBadgeHtml` przy da-civtitle · W w PowerRanking + panel cd-stats
+|- Testy: wiarygodnosc 146/146 · tsc 0
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
 ## [19:35 PL, 2026-08-05] GROK → Maciej — R-PROC-AUTOBOT-EVAL-STRICT OBOWIĄZUJE
 
 Maciej „2” = twardszy Evaluator: luki testów / czerwone testy tematu / tsc≠0 / SCOPE gameplay bez handoffu → **FAIL** (nie NOTES).

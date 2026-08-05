@@ -37,6 +37,7 @@
 5b. **WIAR R1 / R1b** — ✅ tempo w ticku + one-shot `applyDiplomaticEvent` (FALA 234–235)  
 5c. **WIAR R3+R4** — ✅ Wasal bez W-gate + harness D4+D1 (docs/testy)  
 5d. **WIAR UI** — ✅ rozbicie życiorys vs bieżące w audiencji (FALA 236)  
+5e. **WIAR UI §7 badge+ranking** — ✅ chip przy tytule + W w Potędze/panelu (FALA 237)  
 6. Deploy FALA (Q1=A) po PASS  
 
 **Nie ruszam:** DOTYK · scena (bez liczb) · balans AI

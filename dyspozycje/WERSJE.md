@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 03a19191 - 2026-08-05 19:29 - FALA 236: WIAR UI życiorys vs bieżące - **AKTUALNA**
+## ROBOCZA 5b0e1c19 - 2026-08-05 19:44 - FALA 237: WIAR UI badge + ranking Potęgi - **AKTUALNA**
+|- md5 (pelne): 5b0e1c19816157ac22dbf10cbab7d11d · stempel: ROBOCZA · 2026-08-05 17:44 (label 5b0e1c19)
+|- **FALA 237.** WIAR §7: badge `W ±N · pasmo` przy tytule cywu (gracz+rozmówca) · W w rankingu Potęgi i panelu dyplomacji. AutoBot PASS (STRICT) · tip `cad6f23` · wiarygodnosc 146/146.
+|- Grok deploy (Maciej „Dalej WIAR” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 03a19191 - 2026-08-05 19:29 - FALA 236: WIAR UI życiorys vs bieżące - **ZASTĄPIONA** (→ 5b0e1c19)
 |- md5 (pelne): 03a19191ae5a5c313417a67a386f9399 · stempel: ROBOCZA · 2026-08-05 17:29 (label 03a19191)
 |- **FALA 236.** WIAR UI §4/§7: rozbicie „trwały życiorys” vs „bieżące uczynki” (tooltip + linia pod paskiem audiencji). AutoBot PASS · tip `18cb4f7` · wiarygodnosc 136/136.
 |- Grok deploy (Maciej „2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.

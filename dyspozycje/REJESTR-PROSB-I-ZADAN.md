@@ -109,7 +109,7 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-PILL-TARCZA-BEZ-MURU | 2026-08-04 | Pigułka: szara tarcza mimo braku palisady/muru na heksie (Sparta) | **ZDEPLOYOWANE `ee0e7e04`** (FALA 223) | Q1=A · wallKind · `docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md` |
 | R-UI-TRAKTAT-LANDSCAPE | **ZDEPLOYOWANE `6bf472e2`** (FALA 211) | Koszyk traktatu: landscape 2 kol. (PW+warunki lewo, wymiana prawo), modal ~1180px. |
 | R-PW-BILANS-ACCEPT | **ZDEPLOYOWANE `adefb5b8`** (FALA 214) | Bilans PW < 0 → brak akceptacji AI/Przyjmij; dopiero ≥0. PR #70 · `docs/decyzje/R-PW-BILANS-ACCEPT.md` |
-| R-WIARYGODNOSC | **R1/R1b/R3/R4 + UI rozbicie DONE** (FALA 236 `03a19191`) · §9 strojenie później | Spec `WIARYGODNOSC-SPECYFIKACJA.md` — tempo W→Z + tooltip życiorys/bieżące; ABC §9 później |
+| R-WIARYGODNOSC | **R1/R1b/R3/R4 + UI rozbicie + badge/ranking DONE** (FALA 237 `5b0e1c19`) · rejestr czynników / §9 później | Spec §7 badge+Potęga w ROBOCZA; rejestr czynników = osobne |
 | R-RELACJA-PW-INVERT | **ZDEPLOYOWANE `6bf472e2`** (FALA 211) | Korekta FALA 210: niska Rel → niższe PW gracza (siła), partner baza; dopłać. Rel 52/baza 80 → **42 vs 80**. |
 | R-AI-KOLONIZACJA | **ZDEPLOYOWANE `47a2e73b`** (FALA 207) | Q1A Q2A Q3B · dystans 4 · pop≥5 · surge |
 

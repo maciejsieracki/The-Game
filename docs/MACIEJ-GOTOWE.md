@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 236** `03a19191` — WIAR UI: w audiencji widać rozbicie „życiorys · bieżące” + tooltip. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+﻿- ✅ **FALA 237** `5b0e1c19` — WIAR §7: badge W przy tytule cywu + W w rankingu Potęgi i liście dyplomacji. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+- ✅ **FALA 236** `03a19191` — WIAR UI: w audiencji widać rozbicie „życiorys · bieżące” + tooltip. **ZASTĄPIONA** przez 237.
 - ✅ **FALA 235** `9c0a38ae` — WIAR R1b tempo one-shot. **ZASTĄPIONA** przez 236.
 - ✅ **FALA 230** `7f8bdc74` — R-AI-TRUDNOSC P1 (majorEarly/scout) + P1-3 Spryt JSON. Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
 - ✅ **FALA 229** `efab84db` — DEPLOY ALL: R-AI-TRUDNOSC P0 (Praca×trudność · Spichlerz id · L3 nauka=2). Wejście: `gra-robocza/START.html` · Ctrl+F5 + Nowa gra.
