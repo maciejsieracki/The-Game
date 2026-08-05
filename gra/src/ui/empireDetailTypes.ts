@@ -71,7 +71,7 @@ export interface EmpireResourceRow {
   /**
    * SUROW-CIV-01 (Maciej 2026-07-24): cap CAŁEGO PAŃSTWA (civ-wide) dla tego typu
    * surowca — capBase + capBonusPerMagazyn×liczba Magazynów ownera. Brak (undefined)
-   * Brak (undefined) tylko gdy surowiec nie jest magazynowany (dziś: żaden z katalogu).
+   * dla wierszy dostępu (Ceramika/Sól/Koń/Złoto — patrz empire-resource-access.ts).
    */
   cap?: number;
   /**
