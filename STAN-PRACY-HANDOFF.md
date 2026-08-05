@@ -1,12 +1,14 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~13:44** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~13:55** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 226 (2026-08-05):** ROBOCZA `ebe4548f` · stempel menu `fea8af68` · P-AI-MOC-BONUS=A + P-AI-008. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 227 (2026-08-05):** ROBOCZA `3840f218` · stempel menu `718d0ac2` · **DEPLOY ALL** (odświeżenie 225+226 po handoffie). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
-> **FALA 225 (2026-08-05):** ROBOCZA `8767b9c0` · stempel menu `e5fbaa18` · **ZASTĄPIONA** przez FALA 226. Batch: R-AUTO-RACJE-RAISE + Autobot (zawartość w 226).
+> **FALA 226 (2026-08-05):** ROBOCZA `ebe4548f` · stempel menu `fea8af68` · P-AI-MOC-BONUS=A + P-AI-008. **ZASTĄPIONA** przez FALA 227.
+
+> **FALA 225 (2026-08-05):** ROBOCZA `8767b9c0` · stempel menu `e5fbaa18` · **ZASTĄPIONA** przez FALA 226→227. Batch: R-AUTO-RACJE-RAISE + Autobot (zawartość w 227).
 
 > **FALA 224 (2026-08-05):** ROBOCZA `38df6ad7` · stempel menu `eef4e87e` · **ZASTĄPIONA** przez FALA 225. Batch: R-REKRUT-LUDNOSC-UI. Handoff wcześniejszy: [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md)
 
@@ -49,16 +51,16 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `ebe4548f` (FALA 226, 13:27) · stempel menu `fea8af68` · commit deploy `8a88190`. Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
+**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `3840f218` (FALA 227 DEPLOY ALL, 13:55) · stempel menu `718d0ac2` · tip main przed deploy `546ce97`. Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
 
-**Łańcuch FALA 221–226:** 221 `4d17d869` → 222 `132401ef` → 223 `ee0e7e04` → 224 `38df6ad7` → 225 `8767b9c0` → **226 `ebe4548f`** (P-AI-MOC-BONUS + P-AI-008; zawiera R-AUTO z 225).
+**Łańcuch FALA 221–226:** 221 `4d17d869` → 222 `132401ef` → 223 `ee0e7e04` → 224 `38df6ad7` → 225 `8767b9c0` → 226 `ebe4548f` → **227 `3840f218`** (DEPLOY ALL; zawiera R-AUTO + P-AI-MOC + P-AI-008).
 
 **ABC zamknięte (sesja 225–226):** R-AUTO-RACJE-RAISE Q1=B · Q2–Q5=A · R-PROC-AUTOBOT · P-AI-MOC-BONUS-Q1=A · P-AI-008 custom · R-SCENA-PERF-Q1=A (pomiar). Merge Autobot P0: `#108` / `9068115` (bez deploy gry).
 
 **Ważne dla agentów:** Auto Wyżywienie gracza = **default WYŁ** per miasto; Spichlerz clamp ≥0; maxSafe na suwaku. Rekrutacja **NIE odejmuje** `city.population` (FALA 224). Major AI: bonusy trudności + threat bez murów (FALA 226). **KAŻDA praca** = AutoBot (Operator→Evaluator→Grok). Pełny zapis: [`HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
 **KOLEJKA (otwarte):**
-1. **R-AUTO-RACJE-RAISE** — **FOKUS** playtest na `ebe4548f` (Auto WYŁ/WŁ, Spichlerz≥0, maxSafe) — **CZEKA OK/BUG**
+1. **R-AUTO-RACJE-RAISE** — **FOKUS** playtest na `3840f218` (Auto WYŁ/WŁ, Spichlerz≥0, maxSafe) — **CZEKA OK/BUG**
 2. **R-SCENA-PERF** — 🔵 W TOKU; instrumentacja w bundlu; **czeka F12** (wstrzymane do domknięcia R-AUTO)
 3. **FALA 226 playtest** — P-AI-MOC + P-AI-008 — odłożony przez Macieja
 4. **R-BUDYNKI-NIEAKTYWNE** — playtest (czerwona nazwa + `Brak: …`) — od FALA 222, **bez OK/BUG**

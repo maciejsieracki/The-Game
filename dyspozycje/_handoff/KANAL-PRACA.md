@@ -1,3 +1,10 @@
+## [13:55 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY ALL FALA 227 3840f218
+|- md5: 3840f2189404ca7cf447c18e40d17d00 · stempel: ROBOCZA · 718d0ac2 · 2026-08-05 11:55
+|- Hasło Macieja: deploy all do robocza (po handoffie sesji)
+|- Zawartość: FALA 225 R-AUTO + FALA 226 AI MOC/P-AI-008 · tip main `546ce97`
+|- Wejście: gra-robocza/START.html · sync playtest ALL · VERIFY OK
+CZEKAM-NA: sesja lokalna — **git pull** · Maciej: Ctrl+F5 + Nowa gra · OK/BUG R-AUTO (fokus)
+
 ## [13:44 PL, 2026-08-05] GROK → ALL — HANDOFF SESJI FALA 225–226 zapisany
 |- Plik: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`
 |- Zaktualizowane: `STAN-PRACY-HANDOFF.md` §1 · `REJESTR-PROSB-I-ZADAN.md` · `MACIEJ-GOTOWE.md` · `DZIENNIK-MASTERA.md`

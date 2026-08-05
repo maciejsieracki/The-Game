@@ -12,14 +12,14 @@
 
 | Pole | Wartość |
 |------|---------|
-| **FALA** | **226** |
-| **md5 pliku** | `ebe4548fb8f8522112bec8eea9d2f8b0` (short **`ebe4548f`**) |
-| **Stempel w menu** | `ROBOCZA · fea8af68 · 2026-08-05 11:27` |
-| **Commit deploy** | `8a88190` |
+| **FALA** | **227** (DEPLOY ALL; gameplay = 225+226) |
+| **md5 pliku** | `3840f2189404ca7cf447c18e40d17d00` (short **`3840f218`**) |
+| **Stempel w menu** | `ROBOCZA · 718d0ac2 · 2026-08-05 11:55` |
+| **Tip main przed deploy** | `546ce97` |
 | **Tip docs (po deploy)** | patrz `git log` / `KANAL-PRACA.md` |
 | **Wejście** | `gra-robocza/START.html` — **git pull** + Ctrl+F5 + **Nowa gra** |
 
-Zawiera FALA 225 (R-AUTO) + FALA 226 (AI MOC + threat).
+Zawiera FALA 225 (R-AUTO) + FALA 226 (AI MOC + threat). **Odświeżone FALA 227 DEPLOY ALL** (hasło Macieja po handoffie).
 
 ---
 

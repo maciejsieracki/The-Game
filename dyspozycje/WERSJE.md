@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA ebe4548f - 2026-08-05 13:27 - FALA 226: P-AI-MOC-BONUS + P-AI-008 - **AKTUALNA**
+## ROBOCZA 3840f218 - 2026-08-05 13:55 - FALA 227: DEPLOY ALL (odświeżenie po handoff 225–226) - **AKTUALNA**
+|- md5 (pelne): 3840f2189404ca7cf447c18e40d17d00 · stempel: ROBOCZA · 2026-08-05 11:55 (label 718d0ac2)
+|- **FALA 227 DEPLOY ALL.** Maciej: po zapisie handoffu — deploy all do ROBOCZA. Kod gameplay = FALA 226 (P-AI-MOC-BONUS + P-AI-008) + FALA 225 (R-AUTO) na tip `main` `546ce97` + docs handoff. Sync wszystkich playtestów + START hub.
+|- Grok deploy (hasło Macieja). tsc 0 · vite · inject stamp · sync playtest · START hub · VERIFY OK.
+
+## ROBOCZA ebe4548f - 2026-08-05 13:27 - FALA 226: P-AI-MOC-BONUS + P-AI-008 - **ZASTĄPIONA** (→ 3840f218)
 |- md5 (pelne): ebe4548fb8f8522112bec8eea9d2f8b0 · stempel: ROBOCZA · 2026-08-05 11:27 (label fea8af68)
 |- **FALA 226.** (1) P-AI-MOC-BONUS-Q1=A — startoweJednostki/Miasta + bonusWalka + bonusNauka dla major AI. (2) P-AI-008 — zagrożenie: jednostki+rozwój zamiast murów (MP defensiveCopy bez zmian). Notes: manual battle mult + research bez murów. R-SCENA-PERF odłożone. Na bazie FALA 225 · merge `8bb15b0`.
 |- AutoBot: Operator+Evaluator PASS · Grok deploy. tsc 0 · ai-difficulty-bonus 18/18 · ai-threat-mode 11/11 · vite · VERIFY OK.
