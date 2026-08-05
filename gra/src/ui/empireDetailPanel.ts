@@ -21,7 +21,12 @@ import { daninaLabelGenitive } from '../game/danina-nazwa';
 import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu } from '../game/cities';
 import type { CityPodzialHandlu } from '../game/cities';
 import { formatCivBrandLine } from './civBrandDisplay';
+import {
+  empirePanelBlockForSection,
+  type EmpirePanelBlock,
+} from './empirePanelSectionMap';
 export type { EmpireDetailSnap } from './empireDetailTypes';
+export { empireSectionFromHudAct, empirePanelBlockForSection } from './empirePanelSectionMap';
 
 export interface EmpireHandelSplitUiConfig {
   getOwnerDefault?: (ownerId: number) => CityPodzialHandlu | null;
@@ -96,18 +101,8 @@ let pendingScrollSection: string | null = null;
  *  renderami (refresh nie resetuje widoku). null = pełny panel (wszystkie bloki). */
 let activeSection: string | null = null;
 
-/** Sekcja/żeton → który TOP-LEVEL blok panelu pokazać. 'all' = cały panel. */
-function blockForSection(section: string | null): 'all' | 'parametry' | 'moc' | 'ekonomia' | 'kultura' | 'surowce' | 'spichlerz' | 'armia' | 'handel' {
-  if (!section) return 'all';
-  if (section === 'ekonomia') return 'all';
-  if (section === 'armia') return 'armia';
-  if (section === 'spichlerz') return 'spichlerz';
-  if (section === 'surowce' || section.startsWith('econ-surowiec-')) return 'surowce';
-  if (section === 'handel') return 'handel';                        // TEMAT 14 (Maciej 2026-07-24) — szlaki handlowe imperium
-  if (section === 'kultura') return 'kultura';
-  if (section === 'moc') return 'moc';
-  if (section === 'parametry') return 'parametry';
-  return 'ekonomia';                                                // skarbiec/praca/nauka/zywnosc/religia/ludnosc/rekruci → filtr do własnego wiersza
+function blockForSection(section: string | null): EmpirePanelBlock {
+  return empirePanelBlockForSection(section);
 }
 
 function ensureStyles(): void {
@@ -1171,27 +1166,4 @@ export function refreshEmpireDetailPanel(): void {
 
 export function isEmpireDetailPanelOpen(): boolean {
   return open;
-}
-
-/** Mapowanie data-act z chipów HUD → sekcja panelu. */
-export function empireSectionFromHudAct(act: string): string | undefined {
-  switch (act) {
-    case 'skarbiec': return 'econ-skarbiec';
-    case 'praca': return 'econ-praca';
-    case 'kultura': return 'kultura';
-    case 'miasta':
-    case 'ludnosc': return 'econ-miasta';
-    case 'rekruci': return 'econ-rekruci';
-    case 'power':
-    case 'moc': return 'moc';
-    case 'nauka': return 'econ-nauka';
-    case 'zywnosc':
-    case 'spichlerz': return 'spichlerz';
-    case 'armia': return 'armia';
-    case 'religia': return 'econ-religia';
-    case 'empire': return 'ekonomia';
-    case 'surowce': return 'surowce';
-    case 'handel': return 'handel';
-    default: return undefined;
-  }
 }
