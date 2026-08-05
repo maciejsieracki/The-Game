@@ -36,7 +36,12 @@ import { createMapToolbarHud, type MapToolbarHudConfig } from './mapToolbarHud';
 import { createBuildModeHud, type BuildModeHudConfig } from './buildModeHud';
 import { refreshCityListHudIfOpen } from './cityListHud';
 import { refreshArmyListHudIfOpen } from './armyListHud';
-import { refreshDiploListHudIfOpen } from './diploListHud';
+import { refreshDiploListHudIfOpen, isDiploListHudOpen } from './diploListHud';
+import { isDiplomacyAudienceOpen } from './diplomacyAudience';
+import {
+  onDiploUiVisibilityChange,
+  setDiploOpenChecker,
+} from './unitCtxDockDiploGate';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { type UnitPanelState } from './unitPanelHud';
 import { createArmyStackHud, type ArmyStackHudConfig } from './armyStackHud';
@@ -1341,8 +1346,18 @@ function refreshMinimap(): void {
   }
 }
 
+let diploUnitDockGateRegistered = false;
+
+function registerDiploUnitDockGate(): void {
+  if (diploUnitDockGateRegistered) return;
+  diploUnitDockGateRegistered = true;
+  setDiploOpenChecker(() => isDiploListHudOpen() || isDiplomacyAudienceOpen());
+  onDiploUiVisibilityChange(() => refreshSidePanel());
+}
+
 function mountSidePanel(): void {
   if (cfg === null || sidePanelApi !== null) return;
+  registerDiploUnitDockGate();
   sidePanelApi = createSidePanelHud({
     getEvents: cfg.getEvents,
     getContextPanel: cfg.getContextPanel

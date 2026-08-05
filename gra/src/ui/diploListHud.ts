@@ -16,6 +16,7 @@ import {
   treatyChipsHtml,
 } from './diploUiSkin';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
+import { notifyDiploUiVisibilityChange } from './unitCtxDockDiploGate';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
 export interface DiploListEntry {
@@ -163,6 +164,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
     unbindOutside?.();
     unbindOutside = null;
     config.onClose?.();
+    notifyDiploUiVisibilityChange();
   }
 
   function onEsc(ev: KeyboardEvent): void {
@@ -366,6 +368,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
       closeList,
       '[data-act="diplo"]',
     );
+    notifyDiploUiVisibilityChange();
   }
 
   function hide(): void {

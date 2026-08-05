@@ -23,6 +23,7 @@ import {
   unitCardSafeTopCss,
 } from './minimapLayout';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
+import { isDiploObscuringUnitDock } from './unitCtxDockDiploGate';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -283,8 +284,9 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
 
     const unitCtx = ctx?.kind === 'unit' ? ctx : null;
     const hexCtx = ctx?.kind === 'hex' ? ctx : null;
+    const hideUnitDock = unitCtx !== null && isDiploObscuringUnitDock();
 
-    if (unitCtx !== null) {
+    if (unitCtx !== null && !hideUnitDock) {
       ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded);
       ctxEl.classList.add('open');
       if (expanded && unitCtx.expandable) {

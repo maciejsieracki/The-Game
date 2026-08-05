@@ -26,6 +26,7 @@ import {
   DIPLO_1E_SHARED_CSS,
   ensureDiploBrandScope,
 } from './diploUiSkin';
+import { notifyDiploUiVisibilityChange } from './unitCtxDockDiploGate';
 import {
   actionNeedsNegotiation,
   showNegotiationModal,
@@ -2011,6 +2012,7 @@ export function showDiplomacyAudience(config: DiplomacyAudienceConfig): void {
   rootEl.style.display = 'flex';
   document.addEventListener('keydown', onAudienceEsc);
   startDiplomacyMusic(config.otherCivId);
+  notifyDiploUiVisibilityChange();
 }
 
 export function updateDiplomacyAudience(): void {
@@ -2021,6 +2023,7 @@ export function hideDiplomacyAudience(): void {
   document.removeEventListener('keydown', onAudienceEsc);
   if (rootEl !== null) rootEl.style.display = 'none';
   stopDiplomacyMusic();
+  notifyDiploUiVisibilityChange();
 }
 
 export function isDiplomacyAudienceOpen(): boolean {
