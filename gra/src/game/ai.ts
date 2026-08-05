@@ -1506,7 +1506,7 @@ export interface AiWonderDifficultyParams {
 export function loadAiWonderParams(data: GameData, poziom: 1 | 2 | 3 = 2): AiWonderDifficultyParams {
   const n = poziom;
   return {
-    progKosztX: getAiParam(data, `cuda_poziom${n}_prog_koszt_x`, n === 1 ? 25 : n === 2 ? 45 : 70),
+    progKosztX: getAiParam(data, `cuda_poziom${n}_prog_koszt_x`, n === 1 ? 25 : n === 2 ? 45 : 80),
     throttleTur: getAiParam(data, `cuda_poziom${n}_throttle_tur`, n === 1 ? 8 : n === 2 ? 5 : 2),
   };
 }
