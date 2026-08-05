@@ -13,3 +13,4 @@ Branch: `cursor/verify-wdrozone-kod-rest-63a1` · main `@28819c7` · **bez deplo
 | R-MP-NAZWA-CIV-MISMATCH | **CLOSED** | `cluster-spawn.ts` L362-366 · `main.ts` L6285-6338 | Deferred same-type rival owner IDs |
 | R-BUD-LOKALIZACJA-UI | **CLOSED** | `cityPanel.ts` L7150-7164 `locationBlocked` filter | Stolica↔region ukryte w UI |
 | R-SKARBIEC-PRZECINEK | **CLOSED** | `formatPl.ts` L29-40 · `hud.ts`/`cityPanel.ts`/`empireDetailPanel.ts` | Float IEEE → PL przecinek |
+| R-BITWA-POWTORKA | **CLOSED** | `battleScene.ts` L9127-9133 `_replayBattle` roster visible · L12288 grupy | Panel rozstawiania po powtórce |
