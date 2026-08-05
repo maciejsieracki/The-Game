@@ -762,6 +762,8 @@ import {
   applyPostCentralPopulationGrowth,
   ensureCityRationDefaults,
   migrateProcentRozwojToPoziomRacji,
+  clampPoziomRacji,
+  WYZYWIENIE_MAX,
   type PoziomRacji,
 } from './game/population-growth-v85';
 import {
@@ -772,6 +774,7 @@ import {
   clearLastEmpireFoodTicks,
   autoBalanceRationsToSolvency,
   autoRaiseRationsForGrowth,
+  maxSafePoziomRacjiForCity,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
@@ -4983,10 +4986,19 @@ async function boot(): Promise<void> {
         getOrderYieldMults: (cityId: string) => orderMultMap.get(cityId) ?? null,
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
         getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
+        getMaxSafePoziomRacji: (cityId: string) => getMaxSafePoziomRacjiForPlayerCity(cityId),
         onCityRationChange: (cityId: string, level: PoziomRacji) => {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
-          city.poziomRacji = level;
+          const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
+          city.poziomRacji = clampPoziomRacji(Math.min(level, maxSafe));
+          markCityStateDirty();
+          updateHud();
+        },
+        onCityAutoWyzywienieChange: (cityId: string, enabled: boolean) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city || city.ownerId !== 0) return;
+          city.autoWyzywienie = enabled;
           markCityStateDirty();
           updateHud();
         },
@@ -11810,6 +11822,59 @@ async function boot(): Promise<void> {
       if (cap > 0) return cap;
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       return efParams.centralCapBaza;
+    }
+
+    /** R-AUTO-RACJE-RAISE-Q3=A: cap suwaka Wyżywienia — max bezpieczny poziom Spichlerza. */
+    function getMaxSafePoziomRacjiForPlayerCity(cityId: string): PoziomRacji {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || city.ownerId !== 0) return WYZYWIENIE_MAX;
+      const playerCities = cities.filter(c => c.ownerId === 0 && !c.oblegane);
+      if (playerCities.length === 0) return WYZYWIENIE_MAX;
+      const ownerCivMap = new Map<number, string>();
+      ownerCivMap.set(0, (player.civType as string) || 'grecy');
+      const preview = previewCityEconomy(
+        playerCities,
+        map,
+        data,
+        _menuDifficulty,
+        cityBuilt,
+        player.era,
+        player.zbadane,
+        ownerCivMap,
+        orderMultMap,
+        empireEpochForOwner,
+        unlockedTechSetForOwner,
+        undefined,
+        undefined,
+        buildAllTerritoryNodes(),
+        undefined,
+        buildWonderCityYieldsByOwnerMap([0]),
+        makeOwnerZlotoAccessResolver(),
+        makeOwnerRuntimeActiveLabelsResolver(),
+        makeOwnerEmpireStockResolver(),
+        ownerDefaultPodzialHandlu,
+      );
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      const foodSt = empireFoodStates.get(0) ?? freshEmpireFoodState();
+      const spichlerzByCity = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0) continue;
+        spichlerzByCity.set(tk.cityId, {
+          ceramikaActive: tk.spichlerzCeramika ?? false,
+          solActive: tk.spichlerzSol ?? false,
+          maSpichlerzPop: tk.maSpichlerz ?? false,
+          maSpichlerzIIPop: tk.maSpichlerzII ?? false,
+        });
+      }
+      return maxSafePoziomRacjiForCity({
+        cityId,
+        ownerId: 0,
+        cities,
+        econ: preview,
+        zapasyPrzed: foodSt.zapasyPanstwa,
+        rationParams: efParams.rationParams,
+        spichlerzByCity,
+      });
     }
 
     /** Projekcja przyrostu magazynu centralnego (PYTANIE-85). */
@@ -19750,6 +19815,7 @@ async function boot(): Promise<void> {
                 zapasyPrzed: foodSt.zapasyPanstwa,
                 rationParams: efParams.rationParams,
                 spichlerzByCity: spichlerzByCityForAuto,
+                onlyAutoManaged: ownerId === 0,
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
@@ -19767,6 +19833,7 @@ async function boot(): Promise<void> {
                   rationParams: efParams.rationParams,
                   spichlerzByCity: spichlerzByCityForAuto,
                   requireProductionSurplus: ownerId === 0,
+                  onlyAutoManaged: ownerId === 0,
                 });
                 if (raiseResult.adjusted) {
                   autoRationAnyAdjusted = true;

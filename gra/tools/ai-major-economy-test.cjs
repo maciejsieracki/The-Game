@@ -30,7 +30,18 @@ export {
   AI_MAJOR_EARLY_PROCENT_BUDYNKI,
   isMajorAiOwner,
 } from '../src/game/ai';
-export { autoRaiseRationsForGrowth } from '../src/game/empire-food';
+export {
+  autoRaiseRationsForGrowth,
+  autoBalanceRationsToSolvency,
+  advanceEmpireFood,
+  freshEmpireFoodState,
+  buildEmpireFoodParams,
+  maxSafePoziomRacjiForCity,
+  isEmpireCityFoodSolvent,
+  simulateCityFoodCentralPool,
+  isCityAutoWyzywienieEnabled,
+} from '../src/game/empire-food';
+export { recomputeCityFoodBalancesInEcon } from '../src/game/turn-economy';
 `, 'utf8');
 
 try {
@@ -59,11 +70,20 @@ const {
   computeMajorArchetypeMilitaryFraction,
   AI_MAJOR_EARLY_PROCENT_BUDYNKI,
   autoRaiseRationsForGrowth,
+  autoBalanceRationsToSolvency,
+  advanceEmpireFood,
+  freshEmpireFoodState,
+  buildEmpireFoodParams,
+  maxSafePoziomRacjiForCity,
+  isEmpireCityFoodSolvent,
+  simulateCityFoodCentralPool,
+  isCityAutoWyzywienieEnabled,
 } = M;
 
 let passed = 0;
 let failed = 0;
 function assert(cond, msg) { if (cond) passed++; else { failed++; console.error('FAIL:', msg); } }
+function ok(cond, msg) { assert(cond, msg); }
 function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
 
 const PARAMS = {
@@ -304,6 +324,134 @@ console.log('\n-- I. gracz Q1=B: nadwyżka>0 — może podnieść --');
   });
   assert(r.adjusted, 'gracz: nadwyżka produkcji -> raise OK');
   assert(cities[0].poziomRacji > 2, 'gracz poziomRacji wzrosł');
+}
+
+const RATION_PARAMS = {
+  racjeZywnosc1: 2, racjeZywnosc2: 4, racjeZywnosc3: 6,
+  racjeWzrostProc1: 3, racjeWzrostProc2: 5, racjeWzrostProc3: 7,
+};
+const EF_PARAMS = buildEmpireFoodParams({
+  ekonomia_miasta: {
+    magazyn_centralny_baza_zywnosc: { normal: 500 },
+    magazyn_centralny_bonus_zywnosc_na_budynek: { normal: 100 },
+    glod_wojska_hp_frac: { normal: 0.08 },
+    glod_wojska_karencja_tur: { normal: 3 },
+  },
+});
+const UPKEEP = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJednostkaOboz: 0.5 };
+
+console.log('\n-- J. Q2: raise cofa ostatni krok gdy pool < 0 --');
+{
+  const cities = [{
+    id: 'c1', ownerId: 1, name: 'A', population: 2, poziomRacji: 2, q: 0, r: 0,
+  }];
+  const econ = {
+    perCity: [{
+      cityId: 'c1', ownerId: 1, oblegany: false,
+      zywnoscBrutto: 20, kosztRacji: 5, bilansLokalny: 15,
+    }],
+  };
+  M.recomputeCityFoodBalancesInEcon(econ.perCity, cities, RATION_PARAMS);
+  const maxSafe = maxSafePoziomRacjiForCity({
+    cityId: 'c1', ownerId: 1, cities, econ, zapasyPrzed: 0, rationParams: RATION_PARAMS,
+  });
+  cities[0].poziomRacji = maxSafe;
+  M.recomputeCityFoodBalancesInEcon(econ.perCity, cities, RATION_PARAMS);
+  const levelAtMax = cities[0].poziomRacji;
+  const r = autoRaiseRationsForGrowth({
+    ownerId: 1,
+    cities,
+    econ,
+    zapasyPrzed: 0,
+    rationParams: RATION_PARAMS,
+  });
+  eq(cities[0].poziomRacji, levelAtMax, 'na maxSafe raise nie podnosi wyżej (rollback)');
+  const pool = simulateCityFoodCentralPool(0, econ.perCity, 1);
+  assert(pool >= 0, 'po raise pool Spichlerza ≥ 0');
+  assert(isEmpireCityFoodSolvent(0, econ.perCity, 1), 'solvent po raise');
+  assert(!r.adjusted || cities[0].poziomRacji === levelAtMax, 'brak podniesienia ponad maxSafe');
+}
+
+console.log('\n-- K. Q4: advanceEmpireFood zapasy ≥ 0, glodWojska przy niedoborze --');
+{
+  const states = new Map([[0, freshEmpireFoodState()]]);
+  states.get(0).zapasyPanstwa = 5;
+  const econ = {
+    perCity: [{
+      cityId: 'c1', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 2, kosztRacji: 2, bilansLokalny: 0,
+    }],
+  };
+  const units = Array.from({ length: 20 }, (_, i) => ({
+    ownerId: 0, typeId: 'woj', category: 'wojskowa', id: `u${i}`,
+  }));
+  const ef = advanceEmpireFood(econ, units, states, UPKEEP, EF_PARAMS);
+  const tick = ef.byOwner.get(0);
+  ok(states.get(0).zapasyPanstwa >= 0, 'zapasyPanstwa clamped ≥ 0');
+  ok(tick.zapasyPo >= 0, 'zapasyPo ≥ 0');
+  ok(tick.glodWojska === true, 'glodWojska=true gdy koszt armii > dostępne');
+}
+
+console.log('\n-- L. Q5: onlyAutoManaged — tylko miasta z flagą --');
+{
+  const cities = [
+    { id: 'c1', ownerId: 0, name: 'P1', population: 2, poziomRacji: 4, q: 0, r: 0 },
+    { id: 'c2', ownerId: 0, name: 'P2', population: 2, poziomRacji: 4, q: 1, r: 0, autoWyzywienie: true },
+  ];
+  const econ = {
+    perCity: [
+      { cityId: 'c1', ownerId: 0, oblegany: false, zywnoscBrutto: 2, kosztRacji: 8, bilansLokalny: -6 },
+      { cityId: 'c2', ownerId: 0, oblegany: false, zywnoscBrutto: 2, kosztRacji: 8, bilansLokalny: -6 },
+    ],
+  };
+  const r = autoBalanceRationsToSolvency({
+    ownerId: 0,
+    cities,
+    econ,
+    zapasyPrzed: 0,
+    rationParams: RATION_PARAMS,
+    onlyAutoManaged: true,
+  });
+  eq(cities[0].poziomRacji, 4, 'miasto bez auto — bez zmian');
+  assert(cities[1].poziomRacji < 4, 'miasto z auto — obniżone');
+  assert(r.adjusted, 'auto balance adjusted dla flagowanego miasta');
+  ok(!isCityAutoWyzywienieEnabled(cities[0]), 'gracz bez flagi -> auto WYŁ');
+  ok(isCityAutoWyzywienieEnabled(cities[1]), 'gracz z flagą -> auto WŁ');
+  ok(isCityAutoWyzywienieEnabled({ id: 'x', ownerId: 1, name: 'AI', population: 1, q: 0, r: 0 }), 'AI zawsze auto');
+}
+
+console.log('\n-- M. Q3: maxSafePoziomRacjiForCity ≤ max i solvent --');
+{
+  const cities = [{
+    id: 'c1', ownerId: 0, name: 'P', population: 5, poziomRacji: 2, q: 0, r: 0,
+  }];
+  const econ = {
+    perCity: [{
+      cityId: 'c1', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 10, kosztRacji: 10, bilansLokalny: 0,
+    }],
+  };
+  const maxSafe = maxSafePoziomRacjiForCity({
+    cityId: 'c1',
+    ownerId: 0,
+    cities,
+    econ,
+    zapasyPrzed: 5,
+    rationParams: RATION_PARAMS,
+  });
+  assert(maxSafe <= 6, 'maxSafe ≤ 6');
+  cities[0].poziomRacji = maxSafe;
+  M.recomputeCityFoodBalancesInEcon(econ.perCity, cities, RATION_PARAMS);
+  const pool = simulateCityFoodCentralPool(5, econ.perCity, 0);
+  ok(pool >= 0, `maxSafe=${maxSafe}: pool ≥ 0`);
+  ok(isEmpireCityFoodSolvent(5, econ.perCity, 0), `maxSafe=${maxSafe}: solvent`);
+  cities[0].poziomRacji = maxSafe + 0.5;
+  if (maxSafe < 6) {
+    M.recomputeCityFoodBalancesInEcon(econ.perCity, cities, RATION_PARAMS);
+    const poolOver = simulateCityFoodCentralPool(5, econ.perCity, 0);
+    ok(poolOver < 0 || !isEmpireCityFoodSolvent(5, econ.perCity, 0),
+      'poziom powyżej maxSafe nie jest solvent');
+  }
 }
 
 console.log(`\nai-major-economy-test: ${passed} passed, ${failed} failed`);

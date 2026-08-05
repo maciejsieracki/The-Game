@@ -1,4 +1,12 @@
-﻿## [01:35 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q5 (ABC, bez kodu)
+﻿## [09:15 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q5=A (kod, bez deploy)
+- Maciej «działaj z wszystkimi tematami» → Q2=A · Q3=A · Q4=A · Q5=A
+- Q2: autoRaise cofa ostatni krok gdy pool<0 · Q4: Spichlerz clamp ≥0, glodWojska z niedoboru tury
+- Q5: autoWyzywienie per miasto (default WYŁ) + onlyAutoManaged gracz EOT · Q3: maxSafe cap suwaka
+- Pliki: empire-food.ts, cities.ts, main.ts, cityPanel.ts, ai-major-economy-test.cjs J–M
+- Branch: cursor/abc-auto-racje-raise-63a1 · testy: ai-major-economy PASS (czeka weryfikacja)
+CZEKAM-NA: Maciej — hasło deploy
+
+## [01:35 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q5 (ABC, bez kodu)
 |- Maciej: przycisk auto zarządzania Spichlerzem (obniża+podnosi) — w każdym mieście
 |- Paczka 2/2: Q5 przełącznik per miasto
 |- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md

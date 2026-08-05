@@ -1,6 +1,6 @@
 # R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia + podłoga Spichlerza
 
-**Status:** 🟡 ZAPISANA (Q1=B w kodzie branch; **Q2–Q5 czekają odpowiedzi Macieja**)  
+**Status:** 🟢 WDROŻONE (kod) Q2–Q5=A — czeka deploy (Maciej 2026-08-05)  
 **Data:** 2026-08-04  
 **Źródło:** Maciej (playtest FALA 224) + doprecyzowanie po Q1=B + przełącznik auto (2026-08-05)
 
@@ -199,14 +199,14 @@ Globalny „Auto Spichlerz” w HUD / panelu państwa.
 
 ---
 
-## Odpowiedzi (do uzupełnienia)
+## Odpowiedzi
 
 | ID | Odpowiedź | Data |
 |----|-----------|------|
 | Q1 | **B** | 2026-08-04 |
-| Q2 | — | — |
-| Q3 | — | — |
-| Q4 | — | — |
-| Q5 | — | — |
+| Q2 | **A** | 2026-08-05 — Maciej «działaj z wszystkimi» (= rekomendacje) |
+| Q3 | **A** | 2026-08-05 |
+| Q4 | **A** | 2026-08-05 |
+| Q5 | **A** | 2026-08-05 |
 
-**Hasło wdrożenia:** np. `R-AUTO-RACJE-RAISE-Q2A-Q3A-Q4A-Q5A` albo `działaj` po literach Q2–Q5.
+**ECHO:** Zapisałem Q2–Q5 = A. Wdrażam w tej sesji (bez deploy do hasła `deploy`).
