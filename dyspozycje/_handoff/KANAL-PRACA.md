@@ -1,3 +1,11 @@
+## [23:30 UTC, 2026-08-05] GROK → ALL — ECHO R-ZLOZA-EPOKI-GEN-Q1=A
+
+Maciej „a” — złoża późnych epok: gen przy Nowej grze, ukryte do epoki.
+|- Docs: `docs/decyzje/R-ZLOZA-EPOKI-GEN-Q1.md` · kod metali (`deposit-era`) już zgodny
+|- Węgiel nadal SUR-WEGIEL=B do ep.6–7
+|- **Bez deploy** (docs only)
+CZEKAM-NA: nic
+
 ## [23:25 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 245 8b6e0cfe
 
 Maciej OVERLAP=A · WĘGIEL custom · AutoBot PASS · tip `3e03514`
