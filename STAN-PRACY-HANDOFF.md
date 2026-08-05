@@ -1,10 +1,12 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~21:54** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~22:11** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 239 (2026-08-05):** ROBOCZA `ff7c5e49` · AI-MOC-NEXT-Q1=B metryki diag w overlay Moc. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra → **Moc**.
+> **FALA 240 (2026-08-05):** ROBOCZA `d1450398` · PROD-GATE=A + major absorb Faza1 (Hard/same-civ). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+>
+> **FALA 239 (2026-08-05):** ROBOCZA `ff7c5e49` · AI-MOC-NEXT-Q1=B metryki diag w overlay Moc. **ZASTĄPIONA** przez FALA 240.
 >
 > **FALA 238 (2026-08-05):** ROBOCZA `ea921d1e` · MP spawn Wyżywienie=4 + STRICT-SAVE. **ZASTĄPIONA** przez FALA 239.
 >

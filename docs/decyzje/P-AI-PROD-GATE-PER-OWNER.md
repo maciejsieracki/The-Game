@@ -1,6 +1,6 @@
 # P-AI-PROD-GATE-PER-OWNER — bramka produkcji AI vs trudność per owner
 
-**Status:** 🔵 W TRAKCIE (ECHO 2026-08-05)  
+**Status:** 🟢 **ZDEPLOYOWANE FALA 240** `d1450398` · Q1=**A**  
 **Powiązane:** `R-TRUDNOSC-1` · `effectiveGameDifficultyForOwner` · P-AI-014
 
 ## ECHO (Maciej 2026-08-05)

@@ -1,4 +1,13 @@
-﻿## [21:54 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 239 ff7c5e49
+﻿## [22:11 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 240 d1450398
+
+Maciej Q1=C Q2=C Q3=A · PROD-GATE + major absorb Faza1 · AutoBot PASS · tip `27ba681`
+|- md5: d14503985a8eb8dffde64b0c64e932fe · stempel: ROBOCZA · d1450398
+|- Batch: difficulty per owner w produkcji AI · Hard same-civ absorb (Moc≥1.25, tura≥10)
+|- Testy: prod-gate 8/8 · major-absorb 18/18 · tsc 0
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
+## [21:54 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 239 ff7c5e49
 
 Maciej „2”=B · AI-MOC-NEXT-Q1 metryki diag · AutoBot PASS · tip `1f988f6`
 |- md5: ff7c5e490c45dace365a00de068b70c3 · stempel: ROBOCZA · ff7c5e49

@@ -1,6 +1,6 @@
 # P-AI-MAJOR-ABSORB — absorpcja AI major → major
 
-**Status:** 🔵 W TRAKCIE (ECHO 2026-08-05) → Faza 1 wdrożenie  
+**Status:** 🟢 **ZDEPLOYOWANE FALA 240** `d1450398` · Q1=**C** Q2=**C** Faza 1  
 **Powiązane:** `MP-DIPLO-Q1` · `R-AI-MP-WASAL-WCHLONIECIE` · `P-AI-MOC-GAP`
 
 ## ECHO (Maciej 2026-08-05)

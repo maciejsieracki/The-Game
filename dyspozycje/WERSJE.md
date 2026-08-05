@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA ff7c5e49 - 2026-08-05 21:54 - FALA 239: AI-MOC-NEXT-Q1=B metryki diag - **AKTUALNA**
+## ROBOCZA d1450398 - 2026-08-05 22:11 - FALA 240: PROD-GATE + major absorb Faza1 - **AKTUALNA**
+|- md5 (pelne): d14503985a8eb8dffde64b0c64e932fe · stempel: ROBOCZA · 2026-08-05 20:11 (label d1450398)
+|- **FALA 240.** (1) P-AI-PROD-GATE-Q1=A — difficulty per owner w produkcji AI. (2) P-AI-MAJOR-ABSORB Q1=C Q2=C Faza1 — Hard + same-civ + Moc≥1.25 od tury 10 → instant wchłonięcie. AutoBot PASS · tip `27ba681` · testy 8+18.
+|- Grok deploy (Maciej litery · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA ff7c5e49 - 2026-08-05 21:54 - FALA 239: AI-MOC-NEXT-Q1=B metryki diag - **ZASTĄPIONA** (→ d1450398)
 |- md5 (pelne): ff7c5e490c45dace365a00de068b70c3 · stempel: ROBOCZA · 2026-08-05 19:54 (label ff7c5e49)
 |- **FALA 239.** AI-MOC-NEXT-Q1=B: sekcja „Diag major AI” w overlay Moc (Moc/miasta/Praca/kolejki) · pure `ai-moc-diag.ts` · bez balansu. AutoBot PASS · tip `1f988f6`/`4b9c599` · ai-moc-diag 22/22.
 |- Grok deploy (Maciej „2”=B · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
