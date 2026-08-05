@@ -17,6 +17,8 @@ export function zlozeMinEraFor(hex: DepositEraHex): number {
 
 export function isDepositVisible(hex: DepositEraHex, currentEra: number): boolean {
   if (!hex.zloze) return true;
+  // SUR-WEGIEL=B: węgiel wyłączony z mapy — nigdy nie pokazuj (dyplomacja bez zmian).
+  if (hex.zloze.trim().toLowerCase() === 'wegiel') return false;
   return currentEra >= zlozeMinEraFor(hex);
 }
 

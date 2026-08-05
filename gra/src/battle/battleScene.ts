@@ -2234,6 +2234,15 @@ export class BattleScene {
   };
   /** Licznik do generowania unikalnych groupId. */
   private _groupCounter = 0;
+  /**
+   * BŁĄD I (R-BITWA-POWTORKA-I): stan grup (kto jest w jakiej grupie,
+   * kto ręcznie rozgrupowany) zapisany na koniec fazy rozstawiania
+   * (_endDeployPhase), klucz = bu.id jednostki, wartość = jej groupId W TEJ
+   * CHWILI (grupy puste/rozgrupowane jednostki po prostu nie mają wpisu).
+   * `null` = brak zapisu (pierwszy deploy tej sesji bitwy) → `_initDeployUI()`
+   * używa `_autoGroupDeployByKind`. Po `_replayBattle()` odtwarza TEN zapis.
+   */
+  private _deployGroupSnapshot: Map<string, string> | null = null;
   /** Zloty marker grupy na mapie (3D) per jednostka. */
   private _groupFrameMarkers = new Map<string, THREE.Group>();
   // --- PROFESSIONAL HUD (TotalWar-style) ---
@@ -12271,9 +12280,16 @@ export class BattleScene {
 
     this._buildDeployHalfLabels();
     this._initDeployGhostLayer();
-    // R-BITWA-POWTORKA-I=B: pierwsze wejście i „Rozegraj ponownie" — zawsze
-    // świeża auto-grupa po typie (Konnica / Piechota / Łucznicy).
-    this._autoGroupDeployByKind();
+    // R-BITWA-POWTORKA-I: mamy zapis grup z końca poprzedniej fazy rozstawiania
+    // tej samej bitwy (_endDeployPhase) → odtwórz go (w tym ręczne rozgrupowanie)
+    // zamiast na nowo auto-grupować po typie. Pusty zapis (size 0) = gracz miał
+    // wszystko rozgrupowane — też przetwarza powtórkę. Brak zapisu (`null`,
+    // pierwszy deploy) → świeża auto-grupa po typie.
+    if (this._deployGroupSnapshot) {
+      this._restoreDeployGroupSnapshot(this._deployGroupSnapshot);
+    } else {
+      this._autoGroupDeployByKind();
+    }
     this._updateBattleRosterHeader();
     this._updateDeployGroupsBar();
     this._updateDeployStrategyBar();
@@ -12334,6 +12350,36 @@ export class BattleScene {
       topPanelPx: this._battlePowerStackBottomPx(),
       bottomReservePx: 0,
     });
+  }
+
+  /** Odtwarza zapis grup z końca poprzedniej fazy rozstawiania (R-BITWA-POWTORKA-I). */
+  private _restoreDeployGroupSnapshot(snapshot: Map<string, string>): void {
+    const byGroup = new Map<string, Set<string>>();
+    for (const ru of this._playerRoster()) {
+      if (ru.dead || ru.removed) continue;
+      const gid = snapshot.get(ru.bu.id);
+      if (!gid) continue;
+      ru.groupId = gid;
+      let set = byGroup.get(gid);
+      if (!set) { set = new Set<string>(); byGroup.set(gid, set); }
+      set.add(ru.bu.id);
+      this._refreshUnitRingColor(ru);
+      this._updateGroupFrameMarker(ru);
+    }
+    for (const [gid, memberIds] of byGroup) {
+      if (memberIds.size === 0) continue;
+      this._groups.set(gid, memberIds);
+      this._ensureGroupMeta(gid);
+      const n = parseInt(gid, 10);
+      if (Number.isFinite(n)) this._groupCounter = Math.max(this._groupCounter, n);
+    }
+    this._pruneStaleGroups();
+    this._selectedUnits.clear();
+    for (const gid of this._sortedGroupIds()) {
+      this._rosterGroupCollapsed.delete(gid);
+    }
+    this._rebuildDeployRosterGrid();
+    this._refreshDeploySelectionVisuals();
   }
 
   /** Start deploy: osobne grupy Konnica / Piechota / Łucznicy (playtest POLE-BITWY). */
@@ -15668,6 +15714,12 @@ export class BattleScene {
    * uruchamia walke.
    */
   private _endDeployPhase(): void {
+    // R-BITWA-POWTORKA-I: zapamiętaj stan grup PRZED czymkolwiek innym, żeby
+    // _replayBattle -> _initDeployUI mógł go odtworzyć zamiast auto-grupować.
+    this._deployGroupSnapshot = new Map();
+    for (const ru of this._playerRoster()) {
+      if (ru.groupId) this._deployGroupSnapshot.set(ru.bu.id, ru.groupId);
+    }
     this.deployPhase = false;
     this._clearAllSelection();
     this._clearDeploySelection();

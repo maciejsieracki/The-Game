@@ -73,6 +73,12 @@ export interface UiMenu {
    * używają fade-in. Patrz resumeIntroMusic() w main.ts.
    */
   muzyka_fade_in_ms: number;
+  /**
+   * Opóźnienie (ms) przed PIERWSZYM startem muzyki intro (menu główne) w tej
+   * sesji strony. Kolejne powroty do menu — bez opóźnienia (patrz
+   * resumeIntroMusic() w main.ts). Nie dotyczy crossfade ani muzyki gry.
+   */
+  muzyka_opoznienie_startu_ms?: number;
   ustawienia: UiMenuSetting[];
 }
 

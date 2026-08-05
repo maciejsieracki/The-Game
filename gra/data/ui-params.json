@@ -28,6 +28,7 @@
     "wersja": "0.9",
     "etap": "alfa",
     "muzyka_fade_in_ms": 5000,
+    "muzyka_opoznienie_startu_ms": 2500,
     "ustawienia": [
       {
         "key": "muzyka",

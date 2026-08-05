@@ -7752,7 +7752,15 @@ async function boot(): Promise<void> {
     function resumeIntroMusic(): void {
       if (!introMusicStartedOnce) {
         introMusicStartedOnce = true;
-        startIntroMusicWithFadeIn(UI_PARAMS.menu.muzyka_fade_in_ms);
+        const startFirst = (): void => {
+          startIntroMusicWithFadeIn(UI_PARAMS.menu.muzyka_fade_in_ms);
+        };
+        const delayMs = UI_PARAMS.menu.muzyka_opoznienie_startu_ms ?? 0;
+        if (delayMs > 0) {
+          setTimeout(startFirst, delayMs);
+        } else {
+          startFirst();
+        }
       } else {
         startIntroMusic();
       }
