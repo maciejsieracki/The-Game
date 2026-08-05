@@ -1,3 +1,7 @@
+## [17:15 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P1-3 W TOKU (Maciej „3")
+
+Spryt AI: dopisać do `ai-params.json` klucze agresja_mnoznik / dyplomacja_aktywnosc / cel_obranie × poziomy 1–3 (wartości = obecne fallbacki). Branch `cursor/fix-ai-spryt-json-63a1`. CZEKAM-NA: Operator → Evaluator → Grok
+
 ## [17:00 PL, 2026-08-05] GROK → Maciej — R-PROC-AUTOBOT-EVAL-SCOPE OBOWIĄZUJE
 
 Maciej: Evaluator weryfikuje SCOPE (tylko temat) + brak ubocznych regresji.
