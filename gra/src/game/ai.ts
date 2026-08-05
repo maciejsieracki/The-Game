@@ -426,7 +426,7 @@ export function loadDifficultyParams(data: GameData, poziom: 1 | 2 | 3 = 2): Dif
   const n = poziom;
   return {
     bonusProdukcja:    getAiParam(data, `trudnosc_poziom${n}_bonus_produkcja`,    n === 1 ? 0 : n === 2 ? 0.1 : 0.25),
-    bonusNauka:        getAiParam(data, `trudnosc_poziom${n}_bonus_nauka`,         n === 1 ? 0 : n === 2 ? 1   : 0),
+    bonusNauka:        getAiParam(data, `trudnosc_poziom${n}_bonus_nauka`,         n === 1 ? 0 : n === 2 ? 1   : 2),
     startoweJednostki: getAiParam(data, `trudnosc_poziom${n}_startowe_jednostki`, n === 1 ? 0 : n === 2 ? 1   : 0),
     startoweMiasta:    getAiParam(data, `trudnosc_poziom${n}_startowe_miasta`,    n === 1 ? 0 : n === 2 ? 0   : 1),
     bonusWalka:        getAiParam(data, `trudnosc_poziom${n}_bonus_walka`,         n === 1 ? 0 : n === 2 ? 0   : 0.05),
@@ -545,8 +545,8 @@ function scoreTech(
   // Spichlerz/Cegielnia unlock: top priority when missing (§5.1 first branch)
   const unlocksGranary = unlocks.includes('spichlerz');
   const unlocksCegielnia = unlocks.includes('cegielnia');
-  if (unlocksGranary && !allBuilt.has('Spichlerz')) score += 120;
-  if (unlocksCegielnia && !allBuilt.has('Cegielnia')) score += 80;
+  if (unlocksGranary && !allBuilt.has('spichlerz') && !allBuilt.has('Spichlerz')) score += 120;
+  if (unlocksCegielnia && !allBuilt.has('cegielnia') && !allBuilt.has('Cegielnia')) score += 80;
 
   // Koszary / military buildings: high priority in mid/late or under threat
   const unlocksMilitary =

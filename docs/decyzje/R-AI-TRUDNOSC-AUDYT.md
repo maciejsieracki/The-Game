@@ -1,11 +1,13 @@
 # R-AI-TRUDNOSC-AUDYT — rozwój major AI vs poziomy trudności
 
-**Status:** 🟢 Evaluator PASS-WITH-NOTES · gotowe do Macieja · 2026-08-05  
+**Status:** 🟠 Operator done · awaiting Evaluator · 2026-08-05  
 **Scope:** **tylko major AI** (nie miasta-państwa / `defensiveCopy` / `typCityCopy`)  
 **Cel:** (1) audyt — co najbardziej psuje rozwój AI; (2) plan usprawnień **per poziom** 1=Prosty / 2=Normalny / 3=Trudny.
 
 ## ECHO (cytat)
 > przy okazji, zrób audyt trudności AI, co wpływa najbardziej na to, że AI źle sobie radzi z rozwojem. Mówię głównie o głównych AI, nie o państwach miastach. I zrób plan działania, co możemy jeszcze usprawnić na każdym poziomie trudności, z podziałem na poziomy trudności, żeby AI lepiej sobie radziło. Wszystko zgodnie z zasadą Autobot.
+
+**ECHO P0 (Maciej „1" = wdrażaj P0, 2026-08-05):** realna Praca z `bonus_produkcja` (opcja B C.2 Q1 + zachować scoring `diffProdBonus`) · fix ids `spichlerz`/`cegielnia` w `chooseAIResearch` · L3 `bonus_nauka`=2 (≥ L2).
 
 ## Kontekst już wdrożony (nie powtarzaj jako „brak”)
 - FALA 226: P-AI-MOC-BONUS (startowe jednostki/miasta, `bonusWalka`, `bonusNauka`) — major only
@@ -165,6 +167,19 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 - Nie `npm run build` / nie deploy / nie merge main — **ta paczka: tylko docs**
 - AutoBot: po audycie → **Evaluator** → Grok prezentuje Maciejowi
 
+---
+
+## E — P0 wdrożone (Operator 2026-08-05)
+
+| ID | Zmiana | Pliki |
+|---|---|---|
+| **P0-1** | `bonus_produkcja` → realna Praca major AI (`doBudynkow` + `doPuli` × mult) | `gra/src/game/ai-difficulty-bonus.ts` (`difficultyProductionMultiplier`), `gra/src/main.ts` (`difficultyProductionMultForOwner`, tick produkcji ~20734) |
+| **P0-2** | Fix ids Spichlerz/Cegielnia w `chooseAIResearch` (lowercase + dual-check) | `gra/src/game/ai.ts` (`scoreTech`) |
+| **P0-3** | L3 `bonus_nauka` = 2 (+2/turę, ≥ Normalny) | `gra/data/ai-params.json`, `gra/src/game/ai.ts` (`loadDifficultyParams` fallback) |
+
+**Testy:** `ai-difficulty-bonus-test.cjs` (T-DB-b/f/g), `ai-threat-mode-test.cjs`, `ai-test.cjs` (T2a/T2c bonusNauka L3=2).
+
+**Zachowane:** scoring `diffProdBonus` w `chooseCityProduction` (wiring + realna Praca = zamierzone po P0).
 
 ---
 

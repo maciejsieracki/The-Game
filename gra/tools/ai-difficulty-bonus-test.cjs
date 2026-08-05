@@ -24,10 +24,12 @@ fs.writeFileSync(ENTRY, `
 export {
   loadDifficultyParams,
   chooseCityProduction,
+  chooseAIResearch,
 } from ${JSON.stringify(SRC + '/game/ai')};
 export {
   qualifiesForMajorAiDifficultyBonus,
   difficultyCombatMultiplier,
+  difficultyProductionMultiplier,
   difficultyScienceBonusPerTurn,
   planMajorAiDifficultyStartBonuses,
   pickBonusCityHex,
@@ -54,8 +56,10 @@ try {
 
 const {
   loadDifficultyParams,
+  chooseAIResearch,
   qualifiesForMajorAiDifficultyBonus,
   difficultyCombatMultiplier,
+  difficultyProductionMultiplier,
   difficultyScienceBonusPerTurn,
   planMajorAiDifficultyStartBonuses,
   pickBonusCityHex,
@@ -78,12 +82,15 @@ console.log('\n--- T-DB-a: qualifiesForMajorAiDifficultyBonus ---');
   eq(isBarbarian(BARBARIAN_OWNER_ID), true, 'BARBARIAN_OWNER_ID jest barbarzynca');
 }
 
-console.log('\n--- T-DB-b: mnozniki walki i nauki ---');
+console.log('\n--- T-DB-b: mnozniki walki, nauki i produkcji ---');
 {
   eq(difficultyCombatMultiplier(0.05), 1.05, 'bonusWalka 5%');
   eq(difficultyCombatMultiplier(0), 1, 'bonusWalka 0');
   eq(difficultyScienceBonusPerTurn(1), 1, 'bonusNauka +1');
   eq(difficultyScienceBonusPerTurn(-2), 0, 'bonusNauka ujemny -> 0');
+  eq(difficultyProductionMultiplier(0), 1, 'bonusProdukcja L1 -> x1.0');
+  eq(difficultyProductionMultiplier(0.1), 1.1, 'bonusProdukcja L2 -> x1.1');
+  eq(difficultyProductionMultiplier(0.25), 1.25, 'bonusProdukcja L3 -> x1.25');
 }
 
 console.log('\n--- T-DB-c: applyDifficultyCombatToUnitDef ---');
@@ -149,6 +156,31 @@ console.log('\n--- T-DB-e: BLOK miasta -> jednostki ---');
   eq(plan.extraCitiesBlocked, true, 'BLOK miasta');
   eq(plan.units.length, 1, '1 jednostka zamiast miasta');
   eq(plan.cities.length, 0, 'brak miast bonusowych');
+}
+
+console.log('\n--- T-DB-f: loadDifficultyParams L3 bonusNauka=2 (P0-3) ---');
+{
+  const dataPath = path.resolve(GRA_ROOT, 'data', 'ai-params.json');
+  const raw = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  const data = { aiParams: raw };
+  const p3 = loadDifficultyParams(data, 3);
+  eq(p3.bonusNauka, 2, 'poziom3 bonusNauka z ai-params.json = 2');
+  const empty = loadDifficultyParams({ aiParams: {} }, 3);
+  eq(empty.bonusNauka, 2, 'poziom3 bonusNauka fallback = 2');
+}
+
+const RESEARCH_FIXTURE = [
+  { Technologia: 'Garncarstwo', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Spichlerz, Cegielnia, Garncarz', 'Koszt nauki': 12 },
+  { Technologia: 'Oswojenie zwierzat', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Tartak', 'Koszt nauki': 10 },
+];
+
+console.log('\n--- T-DB-g: chooseAIResearch lowercase spichlerz id (P0-2) ---');
+{
+  const pickBoth = chooseAIResearch(RESEARCH_FIXTURE, [], { allBuiltBuildings: ['spichlerz', 'cegielnia'] });
+  eq(pickBoth, 'Oswojenie zwierzat', 'spichlerz+cegielnia (lowercase ids): brak +120/+80 -> Oswojenie');
+  const pickLowerOnly = chooseAIResearch(RESEARCH_FIXTURE, [], { allBuiltBuildings: ['spichlerz'] });
+  const pickUpperOnly = chooseAIResearch(RESEARCH_FIXTURE, [], { allBuiltBuildings: ['Spichlerz'] });
+  eq(pickLowerOnly, pickUpperOnly, 'spichlerz lowercase == Spichlerz uppercase (dual-check)');
 }
 
 console.log('\n========================================');

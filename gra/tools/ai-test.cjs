@@ -337,7 +337,7 @@ console.log('\n--- T2a: loadDifficultyParams reads levels ---');
     'trudnosc_poziom2_startowe_miasta':    { wartosc: 0,    sekcja: 'test', opis: '' },
     'trudnosc_poziom2_bonus_walka':        { wartosc: 0,    sekcja: 'test', opis: '' },
     'trudnosc_poziom3_bonus_produkcja':    { wartosc: 0.25, sekcja: 'test', opis: '' },
-    'trudnosc_poziom3_bonus_nauka':        { wartosc: 0,    sekcja: 'test', opis: '' },
+    'trudnosc_poziom3_bonus_nauka':        { wartosc: 2,    sekcja: 'test', opis: '' },
     'trudnosc_poziom3_startowe_jednostki': { wartosc: 0,    sekcja: 'test', opis: '' },
     'trudnosc_poziom3_startowe_miasta':    { wartosc: 1,    sekcja: 'test', opis: '' },
     'trudnosc_poziom3_bonus_walka':        { wartosc: 0.05, sekcja: 'test', opis: '' },
@@ -359,7 +359,7 @@ console.log('\n--- T2a: loadDifficultyParams reads levels ---');
   
   const p3 = loadDifficultyParams(diffData, 3);
   eq(p3.bonusProdukcja,    0.25, 'poziom3 bonusProdukcja = 0.25');
-  eq(p3.bonusNauka,        0,    'poziom3 bonusNauka = 0');
+  eq(p3.bonusNauka,        2,    'poziom3 bonusNauka = 2');
   eq(p3.startoweJednostki, 0,    'poziom3 startoweJednostki = 0');
   eq(p3.startoweMiasta,    1,    'poziom3 startoweMiasta = 1');
   eq(p3.bonusWalka,        0.05, 'poziom3 bonusWalka = 0.05');
@@ -391,7 +391,7 @@ console.log('\n--- T2b: higher difficulty → stronger economy production score 
     // ekonomia: 140+150=290 vs wojownik: 170+100=270 → ekonomia wygra przy poziomie 3
     // poziom 1: ekonomia: 140+100=240 vs wojownik: 170+100=270 → wojownik wygra
     'trudnosc_poziom3_bonus_produkcja':   { wartosc: 0.25, sekcja: 'test', opis: '' },
-    'trudnosc_poziom3_bonus_nauka':       { wartosc: 0,    sekcja: 'test', opis: '' },
+    'trudnosc_poziom3_bonus_nauka':       { wartosc: 2,    sekcja: 'test', opis: '' },
     'trudnosc_poziom3_startowe_jednostki':{ wartosc: 0,    sekcja: 'test', opis: '' },
     'trudnosc_poziom3_startowe_miasta':   { wartosc: 0,    sekcja: 'test', opis: '' },
     'trudnosc_poziom3_bonus_walka':       { wartosc: 0.05, sekcja: 'test', opis: '' },
@@ -458,6 +458,7 @@ console.log('\n--- T2c: loadDifficultyParams empty aiParams → fallbacks ---');
   
   const p3 = loadDifficultyParams(emptyData, 3);
   eq(p3.bonusProdukcja, 0.25, 'empty params: poziom3 bonusProdukcja fallback = 0.25');
+  eq(p3.bonusNauka,     2,    'empty params: poziom3 bonusNauka fallback = 2');
   eq(p3.bonusWalka,     0.05, 'empty params: poziom3 bonusWalka fallback = 0.05');
   eq(p3.startoweMiasta, 1,    'empty params: poziom3 startoweMiasta fallback = 1');
 }
