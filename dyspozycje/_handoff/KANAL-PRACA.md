@@ -1,3 +1,8 @@
+## [16:56 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-EVAL-SCOPE W TOKU
+
+Maciej: Evaluator ma weryfikować, że zmiany **ściśle** dotyczą zgłoszonego problemu/błędu i **nie** wprowadzają ubocznych zmian / regresji w innych miejscach.
+Branch `cursor/autobot-eval-scope-63a1`. CZEKAM-NA: Operator → Evaluator → Grok
+
 ## [16:53 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY ALL FALA 229 efab84db
 
 |- md5: efab84db7a8eaeae0f4885ae0111ccae · stempel: ROBOCZA · efab84db · 2026-08-05 14:53
