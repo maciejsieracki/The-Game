@@ -64,6 +64,16 @@ Próg ilościowy (gdy wahanie):
 
 - `Task` z modelem **`composer-2.5`** (nigdy `composer-2.5-fast`).
 - Daj subagentowi **pełny kontekst w prompcie** (nie zna historii czatu): pliki, wzór zmiany, AC, zakazy (np. NIE ruszaj `main.ts` jeśli to nie Integrator; **NIE deploy** — patrz sekcja Deploy; długie testy → `.cursor/rules/testy-tlo-kontrol.mdc`).
-- Po powrocie subagenta — **Grok 4.5 weryfikuje** wynik (spójność, AC) przed zamknięciem i raportem do Macieja; deploy dopiero po zleceniu Macieja.
+- Po powrocie implementera — **obowiązkowo** druga warstwa: osobny subagent **adwokat diabła** (`.cursor/rules/potrojna-warstwa-weryfikacji.mdc`, Maciej 2026-08-05).
+- Potem **Grok 4.5** robi final (#3): spójność, AC, czy nic nie popsuto — dopiero wtedy raport „gotowe” / deploy na hasło Macieja.
 
-**Skutek:** Grok = orkiestracja + plan + kontrola + **jedyny deploy**. Composer = reszta roboty, kończy „gotowe do deployu".
+**Skutek:** Grok = orkiestracja + plan + kontrola + **jedyny deploy**. Composer = implementacja **oraz** osobny przegląd diabła. Potrójna warstwa za każdym razem.
+
+## Potrójna warstwa (Maciej 2026-08-05) — skrót
+
+1. **Implementer** (`composer-2.5`) → kod + testy  
+2. **Adwokat diabła** (osobny `composer-2.5`) → szuka regresji / ubocznych zepsuć / luk AC  
+3. **Grok** → finalna kontrola przed „gotowe” / deploy  
+
+Pełna reguła: `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` · `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md`  
+**ZAKAZ** zamykać paczkę kodu po samym #1.
