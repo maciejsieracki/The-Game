@@ -10,3 +10,4 @@ Branch: `cursor/verify-wdrozone-kod-rest-63a1` · main `@28819c7` · **bez deplo
 | R-TURA-JEDN-AKTYWNA | **CLOSED** | `main.ts` L2666, L20845 `ruchLeft: ruch` · L8169-8185 `afterPlayerUnitSpawned` | C-TURA-Q1=A |
 | R-DYP-NEGOCJACJE-NA-ZYWO | **CLOSED** | `main.ts` L11414-11459 `resolveNegotiationEntryAt` | Negocjacje na żywo w audiencji |
 | R-SPAWN-CLUSTER-KULTURA | **CLOSED** | `clusters.ts` L2294 `assignTypesToClusterCenters` | MAP-SPAWN typy per masa |
+| R-MP-NAZWA-CIV-MISMATCH | **CLOSED** | `cluster-spawn.ts` L362-366 · `main.ts` L6285-6338 | Deferred same-type rival owner IDs |
