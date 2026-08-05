@@ -1,3 +1,9 @@
+## [15:00 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC-AUDYT W TOKU (AutoBot)
+|- Maciej: audyt trudności major AI (nie MP) — co najbardziej psuje rozwój + plan per poziom 1/2/3
+|- Branch: `cursor/audit-ai-trudnosc-63a1` · bez kodu gry do czasu planu/ABC
+|- Operator → Evaluator → Grok: raport + plan działań
+CZEKAM-NA: Operator audyt w `docs/decyzje/R-AI-TRUDNOSC-AUDYT.md`
+
 ## [14:58 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 228 29bfdf00
 |- md5: 29bfdf0049aa4837a94b9c7cd76f6fd5 · stempel: ROBOCZA · dcefcfec · 2026-08-05 12:58
 |- Batch: R-CITY-PILL-PROD-ICON ECHO1+2 (ikony kolejki + Wyżywienie + władca vs MP)
