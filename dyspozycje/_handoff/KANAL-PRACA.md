@@ -1,3 +1,17 @@
+## [17:10 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P1 gotowe do deploy
+
+AutoBot: Operator `bc-5838324b` → Evaluator `bc-f25f7d25` **PASS-WITH-NOTES** (SCOPE OK).
+- P1-1: majorEarly budynki ×0.70 · L1 max turn 25
+- P1-2: drugi Zwiadowca −80 pkt score
+- Testy: tsc PASS · T14-p1 6/6 · ai-test 271/8 pre-existing
+- Branch `cursor/fix-ai-trudnosc-p1-63a1` tip `f063c24`
+CZEKAM-NA: Maciej **deploy** (FALA 230)
+
+## [17:02 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P1 W TOKU (Maciej „2")
+
+P1-1: majorEarly budynki ×0.55→×0.70 (+ L1 max turn 40→25). P1-2: scout −80 po 1. Zwiadowcy.
+Branch `cursor/fix-ai-trudnosc-p1-63a1`. SCOPE+regresja obowiązkowe. CZEKAM-NA: Operator → Evaluator → Grok
+
 ## [17:00 PL, 2026-08-05] GROK → Maciej — R-PROC-AUTOBOT-EVAL-SCOPE OBOWIĄZUJE
 
 Maciej: Evaluator weryfikuje SCOPE (tylko temat) + brak ubocznych regresji.

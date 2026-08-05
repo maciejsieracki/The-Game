@@ -715,6 +715,8 @@ function firstStep(
 
 /** Pełne cywilizacje: min. tyle zwiadowców w fazie startowej (nie dotyczy państw-miast). */
 export const AI_EARLY_SCOUT_TARGET = 2;
+/** Kara score drugiego+ zwiadowcy w early phase (R-AI-TRUDNOSC P1-2). */
+export const AI_EARLY_SCOUT_REPEAT_PENALTY = 80;
 const SCOUT_TYPE_ID = 'Zwiadowca';
 
 /** Jednostki bojowe ownera (nie cywilne: zwiadowca/osadnik/robotnik). */
@@ -792,6 +794,16 @@ export function isScoutUnit(unit: RuntimeUnit): boolean {
 
 export function countPlayerScouts(allUnits: readonly RuntimeUnit[], playerId: number): number {
   return allUnits.filter(u => u.ownerId === playerId && isScoutUnit(u)).length;
+}
+
+/** Score kandydata Zwiadowca w early phase (przed biasem archetypu). R-AI-TRUDNOSC P1-2. */
+export function computeEarlyScoutProductionScore(
+  scoutCount: number,
+  economyScore: number,
+): number {
+  let score = 320 + economyScore;
+  if (scoutCount >= 1) score -= AI_EARLY_SCOUT_REPEAT_PENALTY;
+  return score;
 }
 
 /** Faza wyścigu o neutralne wioski — pełna cywilizacja, przed ekspansją poza region startowy. */
@@ -950,6 +962,10 @@ function hexCityScore(
 
 /** Max tura „early game” major AI (wzrost ludności > budynki wojskowe). */
 export const AI_MAJOR_EARLY_MAX_TURN = 40;
+/** Max tura early major AI na poziomie 1 (Prosty) — krótsza faza early (R-AI-TRUDNOSC P1-1). */
+export const AI_MAJOR_EARLY_MAX_TURN_L1 = 25;
+/** Mnożnik score budynków gospodarczych w fazie majorEarly (R-AI-TRUDNOSC P1-1: było 0,55). */
+export const AI_MAJOR_EARLY_ECON_BUILDING_MULT = 0.70;
 /** Średnia ludność miasta poniżej progu → nadal early. */
 export const AI_MAJOR_EARLY_MAX_AVG_POP = 5;
 /** Średnia liczba budynków/miasto poniżej progu → nadal early. */
@@ -976,7 +992,10 @@ export function computeMajorAiEarlyGame(
 ): boolean {
   if (!isMajorAiOwner(opts)) return false;
   const turn = opts.currentTurn ?? 0;
-  if (turn <= AI_MAJOR_EARLY_MAX_TURN) return true;
+  const maxTurn = opts.poziomTrudnosci === 1
+    ? AI_MAJOR_EARLY_MAX_TURN_L1
+    : AI_MAJOR_EARLY_MAX_TURN;
+  if (turn <= maxTurn) return true;
   if (myCities.length === 0) return false;
   const avgPop = myCities.reduce((s, c) => s + c.population, 0) / myCities.length;
   if (avgPop < AI_MAJOR_EARLY_MAX_AVG_POP) return true;
@@ -1139,7 +1158,11 @@ export function chooseCityProduction(
     // Wyścig o wioski (Maciej 2026-07-26): pełne cywilizacje budują min. 2 zwiadowców.
     // Państwa-miasta (defensiveCopy) — wyłączone.
     if (!opts.defensiveCopy && countPlayerScouts(allUnits, playerId) < AI_EARLY_SCOUT_TARGET) {
-      candidates.push({ id: SCOUT_TYPE_ID, score: 320 + economyScore });
+      const scoutCount = countPlayerScouts(allUnits, playerId);
+      candidates.push({
+        id: SCOUT_TYPE_ID,
+        score: computeEarlyScoutProductionScore(scoutCount, economyScore),
+      });
     }
     // Defensive unit if city is unguarded
     const cityGuard = allUnits.filter(
@@ -1241,7 +1264,7 @@ export function chooseCityProduction(
         }
         const earlyEconBuildings = ['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko', 'biblioteka', 'akademia'];
         if (earlyEconBuildings.includes(c.id)) {
-          c.score = Math.round(c.score * 0.55);
+          c.score = Math.round(c.score * AI_MAJOR_EARLY_ECON_BUILDING_MULT);
         }
       }
     }
