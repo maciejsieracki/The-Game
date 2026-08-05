@@ -1,3 +1,9 @@
+## [13:30 PL, 2026-08-05] GROK → ALL — P-AI-MOC+P008 gotowe (Evaluator PASS-WITH-NOTES → notes closed)
+|- Branch cursor/fix-ai-moc-bonus-p008-63a1 tip `fdb4bfb`
+|- tsc · ai-difficulty-bonus 18/18 · ai-threat-mode 11/11
+|- R-SCENA-PERF nadal ODŁOŻONE
+CZEKAM-NA: merge main → deploy FALA 226
+
 ﻿## [14:05 PL, 2026-08-05] OPERATOR → GROK — P-AI-MOC-BONUS=A + P-AI-008 kod gotowy
 |- `ai-difficulty-bonus.ts` + main spawn/nauka/walka · `ai-threat-mode.ts` + `chooseCityProduction`
 |- Testy: `ai-difficulty-bonus-test.cjs` · `ai-threat-mode-test.cjs` · tsc
