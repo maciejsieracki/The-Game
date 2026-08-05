@@ -1,8 +1,18 @@
 # R-AI-TRUDNOSC-P2 — ABC (canAfford + L3 majorEarly)
 
-**Status:** ❓ CZEKA-NA-DECYZJĘ Macieja · 2026-08-05  
+**Status:** 🟡 ZAPISANA · ECHO Maciej · 2026-08-05 · wdrożenie Q2=A (AutoBot)  
 **Źródło:** audyt `R-AI-TRUDNOSC-AUDYT.md` §D P2-1 / P2-2 · Maciej wybrał „3” po FALA 230  
 **Scope:** tylko major AI (nie miasta-państwa)
+
+
+## ECHO odpowiedzi (Maciej 2026-08-05)
+
+> P2-Q1a / P2-Q2 a
+
+| ID | Odpowiedź | Skutek |
+|----|-----------|--------|
+| **P2-Q1** | **A** | Zostaw pustą turę gdy nic nie stać — **bez zmiany kodu** (status quo + zamknięcie tematu) |
+| **P2-Q2** | **A** | Na Trudnym przy `startowe_miasta ≥ 1`: `majorEarly` max tura **= 25** |
 
 ## ECHO (kontekst)
 Po P0/P1 w ROBOCZEJ (FALA 230) kolejka audytu: **P2** wymaga decyzji ABC przed kodem.

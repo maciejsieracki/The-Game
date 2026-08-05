@@ -1,3 +1,8 @@
+## [17:30 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P2 ECHO Q1=A Q2=A
+
+Maciej: P2-Q1=A (pusta tura zostaje) · P2-Q2=A (Trudny + startowe miasto → early max 25).
+Branch `cursor/fix-ai-trudnosc-p2-63a1`. CZEKAM-NA: Operator Q2 → Evaluator → Grok
+
 ## [17:22 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P2 ABC (wybór „3")
 
 Paczka P2-Q1 (canAfford) + P2-Q2 (L3 early). Docs: `docs/decyzje/R-AI-TRUDNOSC-P2-ABC.md`.
