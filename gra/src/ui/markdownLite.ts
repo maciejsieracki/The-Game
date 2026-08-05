@@ -1,5 +1,5 @@
 /**
- * markdownLite.ts — lekki renderer Markdown dla panelu Wikipedia (bez zależności).
+ * markdownLite.ts — lekki renderer Markdown dla panelu Civpedia (bez zależności).
  */
 
 function esc(s: string): string {

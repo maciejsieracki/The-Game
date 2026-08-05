@@ -1,8 +1,8 @@
-# Indeks encyklopedii (Wiki)
+# Indeks encyklopedii (Civpedia)
 
-> Rev. G · 2026-08-04 · każde hasło: Wiki-S, Wiki-M, **Przykład liczbowy**
+> Rev. G3 · 2026-08-05 · każde hasło: Skrót, Hasło, **Przykład liczbowy**
 
-## Budynki (26)
+## Budynki (27)
 
 - [Stolarnia](budynki/stolarnia.md)
 - [Warsztat kamieniarski](budynki/kamieniarski.md)
@@ -21,6 +21,7 @@
 - [Kuźnia żelaza](budynki/kuznia_zelaza.md)
 - [Wielka Kuźnia](budynki/wielka_kuznia.md)
 - [Fort](budynki/fort.md)
+- [Baszta](budynki/baszta.md)
 - [Warsztat oblężniczy](budynki/warsztat_oblezniczy.md)
 - [Akademia](budynki/akademia.md)
 - [Teatr](budynki/teatr.md)

@@ -138,21 +138,21 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-## 0.5. Poradnik vs Wiki — trzy długości tekstu
+## 0.5. Poradnik vs Civpedia — trzy długości tekstu
 
 Ten sam fakt o grze możesz przeczytać na trzech poziomach szczegółowości:
 
 | Warstwa | Gdzie | Długość | Przykład |
 |---------|-------|---------|----------|
-| **Wiki‑S** | Tooltip `(?)` przy ikonie, krótka linia w liście | 1–3 zdania | „Spichlerz — wspólny magazyn żywności państwa." |
-| **Wiki‑M** | Karta w encyklopedii, panel pomocy | ~150–300 słów | Hasło `docs/encyklopedia/budynki/spichlerz.md` |
+| **Skrót** | Tooltip `(?)` przy ikonie, krótka linia w liście Civpedia | 1–3 zdania | „Spichlerz — wspólny magazyn żywności państwa." |
+| **Hasło** | Karta w encyklopedii Civpedia, panel pomocy | ~150–300 słów | Hasło `docs/encyklopedia/budynki/spichlerz.md` |
 | **Poradnik‑L** | Ten folder `docs/PORADNIK-GRACZA/` | Pełny rozdział z tabelami i wskazówkami | `06-miasto-spoleczenstwo.md` §33 |
 
-**Jeden kanon** — te same fakty, inna długość. Wiki‑S nie może zaprzeczać Poradnikowi‑L.
+**Jeden kanon** — te same fakty, inna długość. Skrót Civpedia nie może zaprzeczać Poradnikowi‑L.
 
 **Jak korzystać:**
 
-- W trakcie gry — Wiki‑S / Wiki‑M (szybka odpowiedź „co robi ten budynek?").
+- W trakcie gry — **Skrót** / **Hasło** w Civpedia (szybka odpowiedź „co robi ten budynek?").
 - Przed pierwszą partią — Część 0 + I + III.
 - Gdy utkniesz — indeks `docs/encyklopedia/indeks.md` lub katalogi 28 / 45 / 57.
 

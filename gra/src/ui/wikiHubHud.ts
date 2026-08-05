@@ -167,6 +167,9 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
 
   const el = document.createElement('div');
   el.className = 'civ-wiki-hub';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'false');
+  el.setAttribute('aria-label', 'Civpedia');
   document.body.appendChild(el);
 
   let open = false;
@@ -207,6 +210,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
 
   function setLayout(mode: 'dock' | 'overlay'): void {
     layoutMode = mode;
+    el.setAttribute('aria-modal', mode === 'overlay' ? 'true' : 'false');
     if (mode === 'overlay') {
       el.classList.add('overlay-mode');
       if (backdropEl === null) {
@@ -398,13 +402,14 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     const titleMain = document.createElement('span');
     titleMain.className = 'wh-title-main';
     titleMain.innerHTML = wikiBookIcon(16)
-      + '<span>Civpedia</span>';
+      + '<span id="civ-wiki-hub-title">Civpedia</span>';
     titleRow.appendChild(titleMain);
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.className = 'wh-close';
     closeBtn.textContent = '×';
-    closeBtn.title = 'Zamknij (Esc)';
+    closeBtn.title = 'Zamknij Civpedia (Esc)';
+    closeBtn.setAttribute('aria-label', 'Zamknij Civpedia');
     closeBtn.addEventListener('click', () => closeHub());
     titleRow.appendChild(closeBtn);
     head.appendChild(titleRow);
@@ -415,6 +420,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     t1.type = 'button';
     t1.className = 'wh-tab' + (tab === 'poradnik' ? ' on' : '');
     t1.textContent = 'Poradnik';
+    t1.setAttribute('aria-label', 'Zakładka Poradnik');
     t1.addEventListener('click', () => {
       tab = 'poradnik';
       detailMode = false;
@@ -425,6 +431,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     t2.type = 'button';
     t2.className = 'wh-tab' + (tab === 'encyklopedia' ? ' on' : '');
     t2.textContent = 'Encyklopedia';
+    t2.setAttribute('aria-label', 'Zakładka Encyklopedia');
     t2.addEventListener('click', () => {
       tab = 'encyklopedia';
       detailMode = false;
@@ -439,6 +446,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
       search.type = 'search';
       search.className = 'wh-search';
       search.placeholder = 'Szukaj hasła…';
+      search.setAttribute('aria-label', 'Szukaj w encyklopedii Civpedia');
       search.value = filter;
       search.addEventListener('input', () => {
         filter = search.value;
