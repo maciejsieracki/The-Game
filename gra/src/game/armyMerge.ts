@@ -416,6 +416,39 @@ export function stackRuchLeft(stack: ReadonlyArray<RuntimeUnit>): number {
 }
 
 /**
+ * Pul ruchu do planowania rozkazu (reachable, marsz) ZANIM jednostka opuści
+ * garnizon / fortyfikację w polu. Symuluje stan po exitGarnizon/exitFieldFortify
+ * (fortifyRuchSnapshot), bez mutacji — widoczność na liście armii + klik na mapę.
+ */
+export function planningStackRuchLeft(stack: ReadonlyArray<RuntimeUnit>): number {
+  if (stack.length === 0) return 0;
+  return Math.min(...stack.map(planningUnitRuchLeft));
+}
+
+export function planningUnitRuchLeft(u: RuntimeUnit): number {
+  if ((u.inGarnizon === true || u.ufortyfikowanyWPolu === true)
+    && u.fortifyRuchSnapshot !== undefined) {
+    return u.fortifyRuchSnapshot;
+  }
+  return u.ruchLeft;
+}
+
+/**
+ * Wyjście z trybów ufortyfikowania/uśpienia przy wykonaniu rozkazu ruchu
+ * (C-GARN-Q1=A + R-GARN-AKCJE-A). Mutuje członków stosu; zwraca true, gdy
+ * którykolwiek opuścił garnizon (do sync city.garnizon).
+ */
+export function wakeStackForMoveOrder(stack: ReadonlyArray<RuntimeUnit>): boolean {
+  let leftGarnizon = false;
+  for (const su of stack) {
+    if (exitGarnizon(su)) leftGarnizon = true;
+    exitFieldFortify(su);
+    if (su.sentry === true) su.sentry = false;
+  }
+  return leftGarnizon;
+}
+
+/**
  * Maksimum wspólnego pulu ruchu stosu — MINIMUM z `ruch` członków.
  *
  * Symetryczne do `stackRuchLeft()` powyżej i z tego samego powodu (par. 6b:
@@ -630,6 +663,15 @@ export function unitWithStackRuch(
 ): RuntimeUnit {
   if (stack.length <= 1) return unit;
   const pooled = stackRuchLeft(stack);
+  return pooled === unit.ruchLeft ? unit : { ...unit, ruchLeft: pooled };
+}
+
+/** Jak unitWithStackRuch, ale z planningStackRuchLeft (jednostka wciąż w garnizonie). */
+export function unitWithPlanningStackRuch(
+  unit: RuntimeUnit,
+  stack: ReadonlyArray<RuntimeUnit>,
+): RuntimeUnit {
+  const pooled = planningStackRuchLeft(stack);
   return pooled === unit.ruchLeft ? unit : { ...unit, ruchLeft: pooled };
 }
 

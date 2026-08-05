@@ -29,6 +29,10 @@ export interface ArmyListEntry {
    * i obudzi (sentry). Oznaczona wizualnie badge'em „w garnizonie”.
    */
   inGarnizon?: boolean;
+  /** Jednostka ufortyfikowana w polu (nie garnizon miasta). */
+  ufortyfikowanyWPolu?: boolean;
+  /** Jednostka w trybie czuwania (uśpiona do wykrycia wroga). */
+  sentry?: boolean;
 }
 
 export interface ArmyListHudConfig {
@@ -173,7 +177,11 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
         row.tabIndex = 0;
         row.title = a.inGarnizon
           ? 'Zaznacz ' + a.name + ' — w garnizonie; rozkaz ruchu ją odfortyfikuje i obudzi'
-          : a.unitCount > 1
+          : a.sentry
+            ? 'Zaznacz ' + a.name + ' — uśpiona; rozkaz ruchu ją obudzi'
+            : a.ufortyfikowanyWPolu
+              ? 'Zaznacz ' + a.name + ' — ufortyfikowana w polu; rozkaz ruchu zdejmie fortyfikację'
+              : a.unitCount > 1
             ? formatZaznaczArmieLabel(a.unitCount)
             : 'Zaznacz ' + a.name;
         const ico = document.createElement('span');
@@ -194,6 +202,16 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
           const badge = document.createElement('div');
           badge.className = 'al-garnizon-badge';
           badge.textContent = 'w garnizonie';
+          body.appendChild(badge);
+        } else if (a.ufortyfikowanyWPolu) {
+          const badge = document.createElement('div');
+          badge.className = 'al-garnizon-badge';
+          badge.textContent = 'ufortyfikowana w polu';
+          body.appendChild(badge);
+        } else if (a.sentry) {
+          const badge = document.createElement('div');
+          badge.className = 'al-garnizon-badge';
+          badge.textContent = 'uśpiona';
           body.appendChild(badge);
         }
         if (typeof a.hpMax === 'number' && a.hpMax > 0) {
