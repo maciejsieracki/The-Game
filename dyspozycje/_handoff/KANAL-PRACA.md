@@ -5,11 +5,17 @@
 |- **BEZ** deploy gra-robocza · **BEZ** merge main
 CZEKAM-NA: Grok Evaluator re-run → merge?
 
+## [12:20 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0-SMOKE final PASS
+|- Operator `1c31c37` · smoke **10/10** · tsc 0
+|- Evaluator (bc-d29a92b0): **PASS** — notes P0 (git-merge, defer asserts, evaluate→RETIRED) zamknięte
+|- Branch `cursor/fix-autobot-p0-63a1` · PR #108 · **BEZ** deploy
+CZEKAM-NA: Maciej — **merge** #108 → main
+
 ## [12:10 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0 final (PASS-WITH-NOTES)
 |- Operator `41169c1` na `cursor/fix-autobot-p0-63a1` · tsc 0 · smoke 9/9
 |- Evaluator (bc-f71f4817): **PASS-WITH-NOTES** — P0 checklist 1–5 PASS; smoke notes nieblokujące
 |- **BEZ** deploy ROBOCZA (tylko scaffold autobot + docs)
-CZEKAM-NA: Maciej — **merge** do main? (rekomendacja TAK) · opcjonalnie smoke P1 później
+CZEKAM-NA: ~~Maciej merge~~ → Maciej wybrał **2** (wzmocnij smoke) → DONE PASS
 
 ## [10:15 PL, 2026-08-05] OPERATOR → ALL — R-PROC-AUTOBOT-P0 (kod, bez deploy)
 |- P0 fix: Dev score jawne metryki + HITL, run-history jsonl, delay gate retire/prune, deny-default guardrails, RETIRED status
