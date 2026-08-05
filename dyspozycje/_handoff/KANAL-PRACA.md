@@ -1,4 +1,11 @@
-﻿## [18:55 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 233 06712ea4
+﻿## [17:05 UTC, 2026-08-05] AutoBot → Evaluator / Grok — WIAR R1 tempo w ticku
+
+Maciej wybrał „2" (WIAR R1): `applyWiarygodnoscTempoDoDelty` wpięte w `computeTickZaufanieDelta` (po sumie dZ, przed war-zeroing).
+|- Pliki: `gra/src/game/diplomacy.ts`, `gra/tools/wiarygodnosc-test.cjs`, docs R1
+|- Testy: `wiarygodnosc-test.cjs` 103/103 PASS · `tsc --noEmit` PASS
+|- Branch: `cursor/fix-wiar-r1-tempo-63a1` — **bez deployu**
+CZEKAM-NA: Evaluator → merge → Grok deploy (SOLO-Q1=A)
+
 
 Maciej „1”=OK listy · AutoBot PASS · tip `c97bf2d` · deploy commit `830a9e4`
 |- md5: 06712ea4149b64fc0eebad326684d7b0 · stempel: ROBOCZA · 06712ea4
