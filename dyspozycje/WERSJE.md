@@ -13,7 +13,7 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 ## ROBOCZA 01f6024a - 2026-08-05 23:00 - FALA 243: dyplo katalog+szare B+C · audyt MP budów - **AKTUALNA**
-|- md5 (pelne): 01f6024abb7bfbac5b360a6213fa74f0 · stempel: ROBOCZA · 2026-08-05 20:xx (label 01f6024a)
+|- md5 (pelne): 01f6024abb7bfbac5b360a6213fa74f0 · stempel: ROBOCZA · 2026-08-05 20:55 (label 01f6024a)
 |- **FALA 243.** (1) D-DYPLO-AKCJE-SZARE=B+C + D-DYPLO-KATALOG=A — pełny katalog, szare + stały wiersz powodu. (2) R-AI-MIASTA-BUDOWY=A — audyt docs (bez fix). AutoBot PASS · tip `3517031`/`38d54dd` · dyplo-test 20/20 · mp-audit 9/9.
 |- Grok deploy (Maciej litery · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
 
