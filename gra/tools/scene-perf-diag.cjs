@@ -61,6 +61,11 @@ function analyzeMap(map, label) {
   console.log(`  długość: avg=${(sumLen / Math.max(1, paths.length)).toFixed(1)} max=${maxLen} >512=${over512} land>480=${over480land}`);
   console.log(`  computeRiverMouthEdgeKeys: ${mouthMs}ms`);
   console.log(`  computeRiverDeltaHexKeys: ${deltaMs}ms`);
+
+  const ovRoblox = M.countSceneOverlayCandidates(map, 'roblox');
+  const ovMc = M.countSceneOverlayCandidates(map, 'minecraft');
+  console.log(`  styledOverlays (offline est.) roblox: total=${ovRoblox.total} jungle=${ovRoblox.jungleForest} oasis=${ovRoblox.oasis} heavy≈${ovRoblox.estHeavyMerge}`);
+  console.log(`  styledOverlays (offline est.) minecraft: total=${ovMc.total} forest=${ovMc.minecraftForest} heavy≈${ovMc.estHeavyMerge}`);
 }
 
 const cases = [

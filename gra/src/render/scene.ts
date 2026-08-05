@@ -84,7 +84,7 @@ import {
   LAS_MATERIAL, LICZBA_WARIANTOW_LASU,
 } from './lasy-modele';
 import { setImprovementDetailQuality } from './robloxImprovements';
-import { collapseToMergedMesh, countMeshesInGroup } from './mergeDecor';
+import { collapseToMergedMesh, isAlreadyMergedDecor } from './mergeDecor';
 import {
   dekorLakaGeometria, dekorRowninaGeometria, dekorDlaHeksa, rotacjaDekoru,
   DEKOR_MATERIAL, DEKOR_LICZBA_WARIANTOW,
@@ -289,6 +289,12 @@ export interface SceneBuildDetailTimings {
     scalMerge: number;
     /** Finalizacja plaż/wydm/oaz (InstancedMesh count). */
     instancjePlazaWydmy: number;
+    /** Ile overlayów faktycznie scalono (R-SCENA-PERF). */
+    scalMergeCollapsed?: number;
+    /** Pominięte — już scalone wcześniej. */
+    scalMergeSkippedMerged?: number;
+    /** Pominięte — lekki brzeg (<7 mesh, nie las). */
+    scalMergeSkippedLight?: number;
   };
 }
 
@@ -1552,7 +1558,7 @@ export async function buildScene(
   setImprovementDetailQuality(renderOptions.mapDetailQuality);
   const palette = styleScenePalette(renderStyle);
   const useStyledDecor = renderStyle !== 'civ';
-  const styledOverlays: Array<{ group: THREE.Group; hexKey: string; kind?: 'forest' }> = [];
+  const styledOverlays: Array<{ group: THREE.Group; hexKey: string; kind?: 'forest'; meshCount: number }> = [];
   const R = HEX_R;
   const fixedViewport = renderOptions.previewViewport != null;
   const panelCols = Math.max(1, renderOptions.previewViewport?.panelColumns ?? 1);
@@ -2062,7 +2068,9 @@ export async function buildScene(
   const hexAcc = { pryzmy: 0, instancjeReliefu: 0, styledWPetli: 0, brzegWPetli: 0, pustynia: 0 };
   const pushStyledOverlay = (group: THREE.Group, hexKey: string, kind?: 'forest'): void => {
     const t0 = performance.now();
-    styledOverlays.push({ group, hexKey, kind });
+    let meshCount = 0;
+    group.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshCount++; });
+    styledOverlays.push({ group, hexKey, kind, meshCount });
     scene.add(group);
     hexAcc.styledWPetli += performance.now() - t0;
   };
@@ -2609,15 +2617,27 @@ export async function buildScene(
   const overlayYieldStep = overlayTotal > 8000 ? 15 : overlayTotal > 3000 ? 25 : overlayTotal > 1500 ? 40 : 80;
   let overlayChunkStart = performance.now();
   const overlayMergeT0 = performance.now();
+  let mergeCollapsed = 0;
+  let mergeSkippedMerged = 0;
+  let mergeSkippedLight = 0;
   reportSceneProgress(onProgress, 83, SCENE_BUILD_PHASE_LABELS.overlays);
   for (let oi = 0; oi < overlayTotal; oi++) {
     try {
       const entry = styledOverlays[oi];
       if (!entry) continue;
-      const { group, kind } = entry;
-      const heavy = (kind === 'forest' && !skipForestCollapse)
-        || countMeshesInGroup(group) >= OVERLAY_COLLAPSE_MIN_MESHES;
-      if (heavy) collapseToMergedMesh(group);
+      const { group, kind, meshCount } = entry;
+      if (isAlreadyMergedDecor(group)) {
+        mergeSkippedMerged++;
+      } else {
+        const heavy = (kind === 'forest' && !skipForestCollapse)
+          || meshCount >= OVERLAY_COLLAPSE_MIN_MESHES;
+        if (heavy) {
+          collapseToMergedMesh(group);
+          mergeCollapsed++;
+        } else {
+          mergeSkippedLight++;
+        }
+      }
       group.matrixAutoUpdate = false;
       group.updateMatrix();
     } catch (err) {
@@ -2633,6 +2653,9 @@ export async function buildScene(
     }
   }
   buildDetail.nakladki.scalMerge = Math.round(performance.now() - overlayMergeT0);
+  buildDetail.nakladki.scalMergeCollapsed = mergeCollapsed;
+  buildDetail.nakladki.scalMergeSkippedMerged = mergeSkippedMerged;
+  buildDetail.nakladki.scalMergeSkippedLight = mergeSkippedLight;
   markBuildPhase('overlays');
   reportSceneProgress(onProgress, 90, SCENE_BUILD_PHASE_LABELS.overlays);
   const plazaT0 = performance.now();
@@ -3507,7 +3530,9 @@ export async function buildScene(
     + ` brzegWPetli=${hd.brzegWPetli} pustynia=${hd.pustynia} finalizacja=${hd.finalizacja}`,
   );
   console.info(
-    `[civ] buildScene detail nakladki | scalMerge=${nd.scalMerge} instancjePlazaWydmy=${nd.instancjePlazaWydmy}`,
+    `[civ] buildScene detail nakladki | scalMerge=${nd.scalMerge} instancjePlazaWydmy=${nd.instancjePlazaWydmy}`
+    + ` collapsed=${nd.scalMergeCollapsed ?? 0} skipMerged=${nd.scalMergeSkippedMerged ?? 0}`
+    + ` skipLight=${nd.scalMergeSkippedLight ?? 0}`,
   );
   reportSceneProgress(onProgress, 100, SCENE_BUILD_PHASE_LABELS.tail);
 

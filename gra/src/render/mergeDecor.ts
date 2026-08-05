@@ -13,6 +13,18 @@
 import * as THREE from 'three';
 
 const WHITE = new THREE.Color(1, 1, 1);
+/** userData flag — grupa już przeszła collapseToMergedMesh (R-SCENA-PERF: unikaj podwójnego merge). */
+export const MERGED_DECOR_FLAG = 'civMergedDecor';
+
+/** true gdy grupa ma już jeden mesh po collapse (nie wołaj merge ponownie). */
+export function isAlreadyMergedDecor(group: THREE.Object3D): boolean {
+  if (group.userData?.[MERGED_DECOR_FLAG] === true) return true;
+  const only = group.children.length === 1 ? group.children[0] : null;
+  if (!only || !(only as THREE.Mesh).isMesh) return false;
+  const mat = (only as THREE.Mesh).material;
+  const m0 = Array.isArray(mat) ? mat[0] : mat;
+  return !!(m0 as THREE.MeshLambertMaterial | undefined)?.vertexColors;
+}
 
 /**
  * Buduje pojedynczy zmergowany mesh z wszystkich Mesh-dzieci grupy (w przestrzeni
@@ -92,6 +104,7 @@ export function countMeshesInGroup(group: THREE.Object3D): number {
 
 export function collapseToMergedMesh<T extends THREE.Object3D>(group: T): T {
   if (group.children.length === 0) return group;
+  if (isAlreadyMergedDecor(group)) return group;
   let merged: THREE.Mesh;
   try {
     merged = buildMergedMesh(group);
@@ -102,9 +115,11 @@ export function collapseToMergedMesh<T extends THREE.Object3D>(group: T): T {
     console.warn('[mergeDecor] collapse skipped', err);
     return group;
   }
+  merged.userData[MERGED_DECOR_FLAG] = true;
   for (let i = group.children.length - 1; i >= 0; i--) {
     group.remove(group.children[i]!);
   }
   group.add(merged);
+  group.userData[MERGED_DECOR_FLAG] = true;
   return group;
 }

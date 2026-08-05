@@ -112,6 +112,9 @@ function buildHtml(opts: SceneTimingReportOptions): string {
     const nRows = [
       row('Scal merge', n.scalMerge),
       row('Plaże/wydmy/oazy inst.', n.instancjePlazaWydmy),
+      ...(n.scalMergeCollapsed != null ? [row('Scal — wykonane', n.scalMergeCollapsed)] : []),
+      ...(n.scalMergeSkippedMerged != null ? [row('Scal — skip (już)', n.scalMergeSkippedMerged)] : []),
+      ...(n.scalMergeSkippedLight != null ? [row('Scal — skip (lekki)', n.scalMergeSkippedLight)] : []),
     ].join('');
     detailBlock = `<div style="color:#f5c542;font-weight:bold;margin:8px 0 4px;">Heksy — podetapy</div>`
       + `<table style="width:100%;border-collapse:collapse;">${hRows}</table>`
