@@ -1,3 +1,12 @@
+## [23:25 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 245 8b6e0cfe
+
+Maciej OVERLAP=A · WĘGIEL custom · AutoBot PASS · tip `3e03514`
+|- md5: 8b6e0cfe35e0d7af0461dbe6b5600775 · stempel: ROBOCZA · 8b6e0cfe
+|- Batch: dock jednostki ukryty przy otwartej dyplo (lista/audiencja)
+|- Testy: tsc 0 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · litery R-ZLOZA-EPOKI-GEN-Q1
+
 ﻿## [23:15 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 244 0757265a
 
 Maciej „1”=A · R-AI-MIASTA-BUDOWY-FIX · AutoBot PASS · tip `f25ab21`

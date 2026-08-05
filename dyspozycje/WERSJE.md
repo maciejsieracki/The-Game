@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 0757265a - 2026-08-05 23:15 - FALA 244: MP budów filtr infra vs PROD-GATE - **AKTUALNA**
+## ROBOCZA 8b6e0cfe - 2026-08-05 23:25 - FALA 245: dyplo nie nachodzi na panel jednostki - **AKTUALNA**
+|- md5 (pelne): 8b6e0cfe35e0d7af0461dbe6b5600775 · stempel: ROBOCZA · 2026-08-05 21:25 (label 8b6e0cfe)
+|- **FALA 245.** BUG-DYPLO-PANEL-OVERLAP-Q1=A — ukryj dock jednostki gdy dyplo open. AutoBot PASS · tip `3e03514` · tsc 0.
+|- Grok deploy (Maciej OVERLAP=A · SOLO-Q1=A). vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 0757265a - 2026-08-05 23:15 - FALA 244: MP budów filtr infra vs PROD-GATE - **ZASTĄPIONA** (→ 8b6e0cfe)
 |- md5 (pelne): 0757265a33ea3535cc416c609e135a47 · stempel: ROBOCZA · 2026-08-05 21:15 (label 0757265a)
 |- **FALA 244.** R-AI-MIASTA-BUDOWY-FIX-Q1=A — `infraOrder` defensiveCopy pomija budynki z `isProductionAllowed===false`. AutoBot PASS · tip `f25ab21` · city-state-prod-audit 17/17.
 |- Grok deploy (Maciej „1”=A · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
