@@ -31,6 +31,21 @@
 
 **Branch:** `cursor/fix-mp-budowy-infra-gate-63a1`
 
+## Evaluator (AutoBot warstwa 2 — 2026-08-05)
+
+**Werdykt:** **PASS**  
+**Tip:** `f25ab21` · branch `cursor/fix-mp-budowy-infra-gate-63a1`
+
+| # | Oś | Wynik |
+|---|-----|-------|
+| 1 | SCOPE — tylko `defensiveCopy` `infraOrder` (+3 linie `ai.ts`) + test F/G; zero `ai-params.json` / cap / absorb / major AI w commicie fix | ✅ PASS |
+| 2 | AC — `prodAllowed?.(cityId, bid) === false` → `continue` przed `candidates.push`; bez callbacka optional chaining = status quo (A, G → `studnia`) | ✅ PASS |
+| 3 | STRICT — `city-state-prod-audit-test.cjs` 17/17: z bramką Kamień → `palac` (B3, E, F7); bez bramki → `studnia` (A, G) | ✅ PASS |
+| 4 | STRICT-EDGE — negacja: F1–F2 gate blocked; F4–F5 `pick !== studnia/garncarnia`; F6 `≠ Wojownik` | ✅ PASS |
+| 5 | STRICT-PARITY — zmiana wyłącznie w `if (opts.defensiveCopy)`; jawny ECHO MP; ten sam callback `isProductionAllowed` co silnik (main.ts ~21308); brak gracz-only asymetrii | ✅ PASS |
+| 6 | STRICT-SAVE — zero nowych pól stanu / snapshot; tylko istniejący `opts.isProductionAllowed` | ✅ PASS |
+| 7 | Bramki — `npx tsc --noEmit` 0 · `node tools/city-state-prod-audit-test.cjs` 17/17 | ✅ PASS |
+
 ## Cytat / źródło
 
 Maciej „1” = A (paczka 1/1 po audycie) · 2026-08-05.
