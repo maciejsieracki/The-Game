@@ -1,6 +1,6 @@
 # R-AUTO-RACJE-RAISE — auto-podnoszenie Wyżywienia + podłoga Spichlerza
 
-**Status:** 🟢 WDROŻONE (kod) Q2–Q5=A — czeka deploy (Maciej 2026-08-05)  
+**Status:** 🟢 ZDEPLOYOWANE FALA 225 (`8767b9c0`) — Q1=B · Q2–Q5=A (Maciej 2026-08-05)  
 **Data:** 2026-08-04  
 **Źródło:** Maciej (playtest FALA 224) + doprecyzowanie po Q1=B + przełącznik auto (2026-08-05)
 

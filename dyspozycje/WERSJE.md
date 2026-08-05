@@ -1,4 +1,4 @@
-# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
+﻿# WERSJE â€” jedyny rejestr wersji bundli (prowadzi: publikujÄ…cy, czyli INTEGRATOR)
 
 ZASADA: md5/stempel wpisuje siÄ™ TYLKO tutaj, zaraz po publishu. Inne pliki linkujÄ…,
 nigdy nie kopiujÄ… (stary system miaĹ‚ 4 sprzeczne â€žaktualne" md5 â€” nigdy wiÄ™cej).
@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 38df6ad7 - 2026-08-05 00:25 - FALA 224: R-REKRUT-LUDNOSC-UI teksty bez −1 obywatela - **AKTUALNA**
+## ROBOCZA 8767b9c0 - 2026-08-05 11:54 - FALA 225: R-AUTO-RACJE-RAISE + AutoBot - **AKTUALNA**
+|- md5 (pelne): 8767b9c075c6debb6e0c2036c22c8ffb · stempel: ROBOCZA · 2026-08-05 09:54 (label e5fbaa18)
+|- **FALA 225.** (1) R-AUTO-RACJE-RAISE Q1=B Q2–Q5=A — Spichlerz ≥0; auto-raise z cofnięciem gdy pool poniżej 0; maxSafe cap suwaka; Auto Wyżywienie per miasto (default WYŁ); toast glodWojska. (2) R-PROC-AUTOBOT — twarda reguła Operator→Evaluator→Grok + scaffold. Na bazie FALA 224 · tip `main` `9c4a8d8`.
+|- AutoBot: Operator PASS · Evaluator PASS · Grok deploy. tsc 0 · ai-major-economy 32/32 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.
+
+## ROBOCZA 38df6ad7 - 2026-08-05 00:25 - FALA 224: R-REKRUT-LUDNOSC-UI teksty bez −1 obywatela - **ZASTĄPIONA** (→ 8767b9c0)
 |- md5 (pelne): 38df6ad74d2613e776a51b332eb2696c · stempel: ROBOCZA · 2026-08-04 22:25 (label eef4e87e)
 |- **FALA 224.** R-REKRUT-LUDNOSC-UI — intro Rekruci/Rekrutacja: werb = Manpower, ludność miasta nie spada (bez kłamstwa „−1 obywatela”). + docs close R-BUDOWA-ZROWNOWAZONE playtest OK. Na bazie FALA 223.
 |- tsc 0 · vite · inject stamp · sync playtest · START hub · VERIFY OK · build gra/dist.

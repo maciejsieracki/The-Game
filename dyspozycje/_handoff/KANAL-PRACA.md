@@ -1,8 +1,16 @@
-﻿## [09:50 PL, 2026-08-05] OPERATOR → ALL — merge main FALA 225 prep (bez deploy)
+﻿## [11:54 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 225 8767b9c0
+|- md5: 8767b9c075c6debb6e0c2036c22c8ffb · stempel widoczny: ROBOCZA · e5fbaa18 · 2026-08-05 09:54
+|- Batch: R-AUTO-RACJE-RAISE Q1=B Q2–Q5=A (Spichlerz≥0, maxSafe, Auto per miasto) + R-PROC-AUTOBOT na main
+|- AutoBot: Operator `9c4a8d8` PASS · Evaluator PASS · Grok deploy (hasło Maciej)
+|- Bramki: tsc 0 · ai-major-economy 32/32 · vite · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** na dysk właściciela · Maciej: Ctrl+F5 + Nowa gra · OK/BUG R-AUTO
+
+## [09:50 PL, 2026-08-05] OPERATOR → ALL — merge main FALA 225 prep (bez deploy)
 |- R-AUTO-RACJE-RAISE Q2–Q5=A + R-PROC-AUTOBOT scaffold scalone na main
 |- Testy: tsc + ai-major-economy (Operator)
 |- **BEZ** vite build / WERSJE AKTUALNA FALA — czeka Grok deploy
-CZEKAM-NA: Grok final + Maciej `deploy`
+CZEKAM-NA: ~~Grok deploy~~ → **DONE FALA 225 `8767b9c0`**
 
 ## [12:15 PL, 2026-08-05] CLOUD → ALL — AUTOBOT = TWARDA REGUŁA (każda praca)
 |- Maciej: każda praca agenta wyłącznie w systemie AutoBot — zapisz do twardych reguł
