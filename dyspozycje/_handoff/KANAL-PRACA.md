@@ -1,3 +1,13 @@
+## [16:50 PL, 2026-08-05] GROK → Maciej — fokus playtest R-AUTO (wybór „2")
+
+Maciej odłożył deploy P0 (#111); playtestuje R-AUTO na FALA 228 `29bfdf00`.
+Checklist w czacie. CZEKAM-NA: `playtest OK` albo `BUG: …` (R-AUTO-RACJE-RAISE)
+
+## [16:47 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P0 gotowe do deploy (odłożone)
+
+AutoBot PASS · PR #111 · tip `e2bb674` · bez merge do main do hasła.
+CZEKAM-NA: Maciej **deploy** (po playteście R-AUTO albo wcześniej)
+
 ## [15:05 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC-AUDYT PASS (plan gotowy)
 |- Operator `a568a18` · Evaluator PASS-WITH-NOTES · scope major AI only
 |- Top: majorEarly ×0.55 · earlyPhase <3 miast · canAfford=null · bonus_produkcja tylko scoring · L3 nauka < L2
