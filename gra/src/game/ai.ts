@@ -995,6 +995,8 @@ export const AI_MAJOR_EARLY_ECON_BUILDING_MULT = 0.70;
 export const AI_MAJOR_EARLY_MAX_AVG_POP = 5;
 /** Średnia liczba budynków/miasto poniżej progu → nadal early. */
 export const AI_MAJOR_EARLY_MAX_BUILDINGS_AVG = 4;
+/** AI-BALANS-STEP2 / R-AI-TRUDNOSC C.3 Ś2: L3 pokój — kara score Wojownika w produkcji major AI. */
+export const AI_L3_PEACE_WARRIOR_SCORE_PENALTY = 40;
 /** Bias 60/40: ±5% udziału wojska na punkt różnicy priorytetów archetypu (ai-params). */
 export const AI_ARCHETYPE_BIAS_PER_POINT = 0.05;
 /** Early major: ~60% Pracy do puli państwa (ulepszenia), ~40% kolejka budowy. */
@@ -1040,6 +1042,20 @@ export function computeMajorAiEarlyGame(
  * Wojowniczy (zulusi: wojsko +2, ekonomia -1) ≈60% wojsko;
  * gospodarczy (chiny: wojsko -1, ekonomia +1) ≈40% wojsko (reszta rozwój).
  */
+/** C.3 Ś2: obniż score Wojownika major AI na L3 gdy brak zagrożenia (nie MP). */
+export function applyL3PeaceWarriorPenalty(
+  candidates: { id: string; score: number }[],
+  opts: AITurnOpts,
+  underThreat: boolean,
+): void {
+  if (!isMajorAiOwner(opts) || opts.poziomTrudnosci !== 3 || underThreat) return;
+  for (const c of candidates) {
+    if (c.id === 'Wojownik') {
+      c.score -= AI_L3_PEACE_WARRIOR_SCORE_PENALTY;
+    }
+  }
+}
+
 export function computeMajorArchetypeMilitaryFraction(
   mods: ArchetypeMods,
 ): number {
@@ -1303,6 +1319,7 @@ export function chooseCityProduction(
         }
       }
     }
+    applyL3PeaceWarriorPenalty(candidates, opts, underThreat);
   }
 
   // ZADANIE 2 (Maciej 2026-07-23, correctness): priorytet konwertery-przed-konsumentami.
