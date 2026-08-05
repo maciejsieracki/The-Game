@@ -26,12 +26,12 @@ Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-T
 
 ---
 
-## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto + przełącznik miasta · STATUS: **OTWARTE Q2–Q5** (Q1=B w kodzie branch) (2026-08-05)
+## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto + przełącznik · STATUS: **WDROŻONE (kod) Q2–Q5=A** · czeka deploy (2026-08-05)
 
-**Q1=B (kod):** gracz raise tylko przy nadwyżce — Maciej: za mało.  
-**Czeka:** Q2 podłoga 0 · Q3 cap suwaka · Q4 Spichlerz nigdy < 0 · **Q5 przełącznik Auto Wyżywienie w każdym mieście**.  
-**Branch:** `cursor/abc-auto-racje-raise-63a1`  
-Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).
+**ECHO:** Q2=A · Q3=A · Q4=A · Q5=A. Testy ai-major-economy **32/32**.  
+**Branch:** `cursor/abc-auto-racje-raise-63a1` · commit `9321e39`  
+Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).  
+**Wejście po deploy:** `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
 
 ---
 

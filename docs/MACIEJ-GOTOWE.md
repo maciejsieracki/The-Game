@@ -1,4 +1,5 @@
-﻿- **2026-08-05 ~01:10** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-RACJE-RAISE-Q1=B** — gracz auto-raise Wyżywienia tylko przy nadwyżce produkcji miast; major AI bez zmian. Branch `cursor/abc-auto-racje-raise-63a1`. Napisz **deploy**.
+﻿- **2026-08-05 ~11:10** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-RACJE-RAISE Q2–Q5=A** — Spichlerz ≥ 0; auto-raise z cofnięciem; cap suwaka; **Auto Wyżywienie** per miasto (default WYŁ). Test 32/32. Branch `cursor/abc-auto-racje-raise-63a1`. Napisz **deploy**.
+- **2026-08-05 ~01:10** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-RACJE-RAISE-Q1=B** — supersedowane przez Q2–Q5 na tym samym branchu.
 - **2026-08-05 ~00:40** — ✅ Handoff sesji FALA 221–224 zapisany: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`. ROBOCZA FALA 224 OK.
 - **2026-08-05 00:25** — ✅ **FALA 224** ROBOCZA `38df6ad7` — teksty rekrutacji bez „−1 obywatela”. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel w menu: `eef4e87e`.
 - **2026-08-04 ~22:25** — ✅ **R-REKRUT-LUDNOSC-UI** → w FALA 224 `38df6ad7`.
