@@ -5,6 +5,14 @@ Evaluator STRICT: luki testów / brak asercji AC / czerwone testy tematu → FAI
 |- Zero `gra/src` — tylko proces AutoBot
 CZEKAM-NA: Evaluator / merge Grok (bez deploy gry)
 
+## [19:35 PL, 2026-08-05] GROK → Maciej — R-PROC-AUTOBOT-EVAL-STRICT OBOWIĄZUJE
+
+Maciej „2” = twardszy Evaluator: luki testów / czerwone testy tematu / tsc≠0 / SCOPE gameplay bez handoffu → **FAIL** (nie NOTES).
+|- Docs: `R-PROC-AUTOBOT-EVAL-STRICT.md` · rule_106 · smoke 10/10 (version 4)
+|- AutoBot: Operator → Evaluator PASS-WITH-NOTES → fix smoke+potrojna → Grok merge
+|- **Bez** deploy ROBOCZA (docs/proces)
+CZEKAM-NA: nic (obowiązuje od teraz)
+
 ## [19:29 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 236 03a19191
 
 Maciej „2”=WIAR dalej · UI rozbicie życiorys/bieżące · AutoBot PASS · tip `18cb4f7`

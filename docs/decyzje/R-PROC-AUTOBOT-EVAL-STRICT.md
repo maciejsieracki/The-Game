@@ -80,3 +80,15 @@ Dopisz do szablonu SCOPE (`R-PROC-AUTOBOT-EVAL-SCOPE.md`):
 - `docs/decyzje/R-PROC-AUTOBOT.md` — mapowanie Evaluator
 - `docs/decyzje/R-PROC-POTROJNA-WARSTWA.md` — warstwa 2
 - `dyspozycje/autobot/playbook.json` — `rule_105`, `rule_106`
+
+---
+
+## Evaluator (re-run po NOTES — 2026-08-05)
+
+Pierwszy przebieg: **PASS-WITH-NOTES** (smoke `pb.version===3` vs playbook v4; brak STRICT w `potrojna-warstwa-weryfikacji.mdc`).
+
+**Dociągnięte przed merge:**
+- `autobot-smoke.cjs` → `version === 4` · **10/10 PASS**
+- `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` → odnośnik STRICT + rule_106 + FAIL przy lukach testów
+
+**Werdykt Grok final:** PASS · merge na `main` · **bez** deploy ROBOCZA.
