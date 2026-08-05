@@ -1,3 +1,13 @@
+## [00:25 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 248 772bab7c
+
+Maciej: wszystkie otwarte z rejestru + 1+2 · każdy osobnym subagentem · bez rat
+|- md5: 772bab7c6a12057d534cc71e00d2a9ed · stempel: ROBOCZA · 772bab7c
+|- Kod: STEP4 prog80 · PANEL-SPLIT · GARN-AKCJE-A · CIVPEDIA · SCENA-PERF · PALAC · SUROWCE-DOSTEP
+|- Closes: MUZYKA · SURUI · MPDIFF · ZLOTO · WIAR · verify WDROŻONE(kod) · smoke Trudny
+|- Testy: step4 10/10 · panel 18/18 · garn 26/26 · dostep 13/13 · stolica 53/53 · merge-decor 8/8 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra
+
 ## [23:55 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 247 540d2490
 
 Maciej „1+2+3” osobnymi subagentami · AutoBot PASS · tipy `3997196` / `e2d9626` / `d3aadb6`

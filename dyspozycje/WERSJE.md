@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 540d2490 - 2026-08-05 23:55 - FALA 247: STEP3 cuda + smoke STEP2 + Prawo V2 - **AKTUALNA**
+## ROBOCZA 772bab7c - 2026-08-06 00:25 - FALA 248: wszystkie otwarte + STEP4 + smoke - **AKTUALNA**
+|- md5 (pelne): 772bab7c6a12057d534cc71e00d2a9ed · stempel: ROBOCZA · 2026-08-05 22:25 (label 772bab7c)
+|- **FALA 248.** STEP4 cuda prog 80 · PANEL-SPLIT · GARN-AKCJE-A · CIVPEDIA · SCENA-PERF · PALAC-KOSZT · SUROWCE-DOSTEP · closes (MUZYKA/SURUI/MPDIFF/ZLOTO/WIAR) · smoke Trudny · verify WDROŻONE(kod). Osobne AutoBoty · SOLO-Q1=A.
+|- Bramki: step4 10/10 · panel 18/18 · garn 26/26 · surowce-dostep 13/13 · stolica 53/53 · merge-decor 8/8 · tsc 0 · VERIFY OK.
+
+## ROBOCZA 540d2490 - 2026-08-05 23:55 - FALA 247: STEP3 cuda + smoke STEP2 + Prawo V2 - **ZASTĄPIONA** (→ 772bab7c)
 |- md5 (pelne): 540d24909f254a397b0523b975f56c82 · stempel: ROBOCZA · 2026-08-05 21:45 (label 540d2490)
 |- **FALA 247.** (1) AI-BALANS-STEP3 — L3 cuda throttle 3→2. (2) STEP2 smoke metryczny. (3) R-PRAWO-SIATKA-V2 audyt+test. AutoBot PASS · tipy `e2d9626`/`3997196`/`d3aadb6`.
 |- Grok deploy (Maciej „1+2+3” osobnymi subagentami · SOLO-Q1=A). smoke PASS · step3 8/8 · prawo 55/55 · VERIFY OK.

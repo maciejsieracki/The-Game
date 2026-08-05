@@ -1,14 +1,14 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~23:55** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-06 ~00:25** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 247 (2026-08-05):** ROBOCZA `540d2490` · STEP3 cuda + smoke STEP2 + Prawo V2. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 248 (2026-08-06):** ROBOCZA `772bab7c` · wszystkie otwarte z rejestru + STEP4 + smoke. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+>
+> **FALA 247 (2026-08-05):** ROBOCZA `540d2490` · STEP3 cuda + smoke STEP2 + Prawo V2. **ZASTĄPIONA** przez FALA 248.
 >
 > **FALA 246 (2026-08-05):** ROBOCZA `cbf529f3` · AI-BALANS-STEP2 + Baszta/stolica docs. **ZASTĄPIONA** przez FALA 247.
->
-> **FALA 245 (2026-08-05):** ROBOCZA `8b6e0cfe` · dyplo nie nachodzi na panel jednostki. **ZASTĄPIONA** przez FALA 246.
 >
 > **FALA 242 (2026-08-05):** ROBOCZA `5b6ee97d` · AI-BALANS-STEP1 L3 kolonizacja pop 4. **ZASTĄPIONA** przez FALA 243.
 >
