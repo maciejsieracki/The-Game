@@ -5,3 +5,5 @@ gra/tools/.debug-*
 gra/tools/.braz-*-preview-entry.ts
 gra/tools/.city-map-badge-bundle.cjs
 gra/tools/.city-map-badge-entry.ts
+gra/tools/.zloze-zloto-render-bundle.cjs
+gra/tools/.zloze-zloto-render-entry.ts
