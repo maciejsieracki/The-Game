@@ -1,3 +1,12 @@
+﻿## [17:45 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 231 283de421
+
+Maciej **1+2+3**: deploy P2 + playtesty + dalsza kolejka (scena → SUR-DESIGN).
+|- md5: 283de42102481e6b66c509808ef6bf20 · stempel: ROBOCZA · 283de421 · 2026-08-05 15:45
+|- Batch: R-AI-TRUDNOSC P2 (L3 early max 25 przy startowym mieście)
+|- tip main przed deploy `b234300` · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Maciej: Ctrl+F5 + Nowa gra · **playtest R-AUTO** (OK/BUG)
+
 ## [17:35 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P2 gotowe do deploy
 
 AutoBot: Operator `bc-01164806` → Evaluator `bc-6c0b1e3f` **PASS** (SCOPE OK).

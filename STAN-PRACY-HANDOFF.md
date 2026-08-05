@@ -4,9 +4,11 @@
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 230 (2026-08-05):** ROBOCZA `7f8bdc74` · stempel menu `7f8bdc74` · R-AI-TRUDNOSC P1 + P1-3 Spryt. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 231 (2026-08-05):** ROBOCZA `283de421` · stempel menu `283de421` · R-AI-TRUDNOSC P2 (L3 early max 25). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 >
-> **P2 (2026-08-05):** Maciej Q1=A / Q2=A · AutoBot PASS tip `139565e` na `cursor/fix-ai-trudnosc-p2-63a1` · **gotowe do deploy** (FALA 231 na hasło). L3+startowe miasto → early max 25.
+> **Kolejka (Maciej 1+2+3):** deploy P2 ✅ → playtest R-AUTO (potem pigułka/budynki) → F12/R-SCENA-PERF → R-SUR-DESIGN.
+>
+> **FALA 230 (2026-08-05):** ROBOCZA `7f8bdc74` · R-AI-TRUDNOSC P1 + P1-3. **ZASTĄPIONA** przez FALA 231.
 
 > **FALA 229 (2026-08-05):** ROBOCZA `efab84db` · DEPLOY ALL P0. **ZASTĄPIONA** przez FALA 230.
 

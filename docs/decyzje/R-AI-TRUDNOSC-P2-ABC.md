@@ -1,6 +1,6 @@
 # R-AI-TRUDNOSC-P2 — ABC (canAfford + L3 majorEarly)
 
-**Status:** 🔵 Operator done (Q2=A) · czeka Evaluator · Q1=A bez kodu  
+**Status:** ✅ ZDEPLOYOWANE FALA 231 `283de421` (Maciej 1+2+3)  
 **Źródło:** audyt `R-AI-TRUDNOSC-AUDYT.md` §D P2-1 / P2-2 · Maciej wybrał „3” po FALA 230  
 **Scope:** tylko major AI (nie miasta-państwa)
 

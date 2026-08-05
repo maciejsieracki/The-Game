@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 7f8bdc74 - 2026-08-05 17:20 - FALA 230: R-AI-TRUDNOSC P1 + P1-3 - **AKTUALNA**
+## ROBOCZA 283de421 - 2026-08-05 17:45 - FALA 231: R-AI-TRUDNOSC P2 - **AKTUALNA**
+|- md5 (pelne): 283de42102481e6b66c509808ef6bf20 · stempel: ROBOCZA · 2026-08-05 15:45 (label 283de421)
+|- **FALA 231.** R-AI-TRUDNOSC P2: Q1=A (canAfford status quo, bez kodu) · Q2=A (L3 + startowe_miasta≥1 → majorEarly max tura **25**). AutoBot PASS · merge tip `b234300` (PR #115).
+|- Grok deploy (Maciej **1+2+3** = deploy + playtesty + dalsza kolejka). tsc 0 · difficulty 64/64 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 7f8bdc74 - 2026-08-05 17:20 - FALA 230: R-AI-TRUDNOSC P1 + P1-3 - **ZASTĄPIONA** (→ 283de421)
 |- md5 (pelne): 7f8bdc7445c11973c9e323fa166b8970 · stempel: ROBOCZA · 2026-08-05 15:20 (label 7f8bdc74)
 |- **FALA 230.** (1) P1: majorEarly budynki ×0.70 · scout −80 po 1. · L1 early turn 25. (2) P1-3: Spryt AI (agresja/dyplomacja/cel) ×3 poziomy w `ai-params.json` (behavior-neutral). AutoBot PASS · merge PR #112+#113.
 |- Grok deploy (hasło Macieja „1"). tsc 0 · difficulty 64/64 · T14-p1 6/6 · vite · stamp · sync · START hub · VERIFY OK.
