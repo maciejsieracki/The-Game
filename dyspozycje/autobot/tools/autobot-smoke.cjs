@@ -86,6 +86,16 @@ async function main() {
   };
   const score = mod.computePerformanceScore(metrics, 0.1);
   assert.ok(score > 0 && score <= 1, 'performanceScore range');
+  // Anti confidence-machine: bez humanApproved/humanMerged score Dev = 0
+  const scoreNoHuman = mod.computePerformanceScore({
+    profile: 'dev',
+    testsPassed: 10,
+    testsFailed: 0,
+    typecheckOk: true,
+    buildPassed: true,
+    linterPassed: true,
+  }, 0);
+  assert.strictEqual(scoreNoHuman, 0, 'Dev score bez HITL = 0');
   const evalResult = ev.evaluate({
     run: safeRun,
     metrics,

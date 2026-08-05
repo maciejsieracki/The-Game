@@ -23,10 +23,9 @@ export class DevProfileScorer implements ProfileScorer {
     const testsOk = (metrics.testsFailed ?? 0) === 0;
     const buildOk = metrics.buildPassed !== false;
     const linterOk = metrics.linterPassed !== false;
+    // HITL: brak jawnego humanMerged/humanApproved = NIE sukces (anti confidence-machine)
     const humanOk =
-      metrics.humanMerged === true ||
-      metrics.humanApproved === true ||
-      metrics.humanMerged === undefined && metrics.humanApproved === undefined;
+      metrics.humanMerged === true || metrics.humanApproved === true;
 
     const prSuccessRate =
       (typecheckOk ? 1 : 0) *

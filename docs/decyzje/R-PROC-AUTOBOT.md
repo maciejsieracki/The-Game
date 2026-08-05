@@ -1,7 +1,7 @@
 # R-PROC-AUTOBOT — AutoBot (Evaluator–Operator)
 
-**Status:** 🟢 OBOWIĄZUJE (Maciej 2026-08-05) — scaffold + zasada procesu  
-**Źródło:** Maciej — Principal AI Systems Engineer brief (AutoBot / Auto-boc)  
+**Status:** 🟢 OBOWIĄZUJE (Maciej 2026-08-05) — Spec v1 (5 modułów) wdrożona w `dyspozycje/autobot/`  
+**Źródło:** Maciej — Architectural Specification AutoBot (Closed-Loop Feedback)  
 **Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Kod / playbook:** `dyspozycje/autobot/`
 

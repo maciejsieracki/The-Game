@@ -1,3 +1,9 @@
+## [12:05 PL, 2026-08-05] CLOUD → ALL — R-PROC-AUTOBOT Spec v1 (5 modułów)
+|- Hard metrics · pruneFeatureWeights · playbook ACTIVE/RETIRED · guardrails · dashboard log
+|- Fix Grok: Dev score bez HITL = 0 (anti confidence-machine)
+|- Smoke 6/6 · branch cursor/proc-autobot-63a1 · PR #107
+CZEKAM-NA: merge PR #107; review adwokata diabła
+
 ## [11:50 PL, 2026-08-05] CLOUD → ALL — R-PROC-AUTOBOT OBOWIĄZUJE (scaffold)
 |- Maciej: zasada AutoBot Evaluator–Operator + playbook + guardrails + feature pruning
 |- Scaffold: dyspozycje/autobot/ (types, playbook.json, Operator/Evaluator)
