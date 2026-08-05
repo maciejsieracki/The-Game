@@ -1,3 +1,9 @@
+## [13:41 PL, 2026-08-05] GROK → ALL — przypomnienie Macieja: KAŻDY temat = AutoBot
+|- Maciej: każdy temat analizować/wdrażać wyłącznie wg AutoBot (Operator → Evaluator → Grok)
+|- Obowiązuje też R-SCENA-PERF po F12, R-AUTO BUG, FALA 226 BUG, backlog
+|- ZAKAZ: Grok koduje omijając Operatora/Evaluatora; ZAKAZ Composer deploy
+CZEKAM-NA: Maciej — F12 + OK/BUG R-AUTO (1+3)
+
 ## [13:39 PL, 2026-08-05] GROK → Maciej — multitasking: R-SCENA-PERF + playtest R-AUTO
 |- Maciej: **1+3** (pomiar F12 + OK/BUG R-AUTO); FALA 226 playtest odłożony
 |- Wejście: `gra-robocza/START.html` · bundle `ebe4548f` (zawiera FALA 225 R-AUTO)
