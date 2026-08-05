@@ -1,4 +1,10 @@
-﻿## [11:25 PL, 2026-08-05] CLOUD → ALL — POTRÓJNA WARSTWA WERYFIKACJI (Maciej)
+﻿## [11:40 PL, 2026-08-05] CLOUD → ALL — R-PROC-POTROJNA-WARSTWA OBOWIĄZUJE (wpisane wszędzie)
+|- Maciej: „wprowadź do plików i od tej pory tak działamy”
+|- Pliki: START-TU · STAN · CLAUDE · PROCEDURA §4b · REJESTR · PAMIEC · rules · docs/decyzje/R-PROC-POTROJNA-WARSTWA.md
+|- Od teraz: implementer → adwokat diabła → Grok final przed gotowe/deploy
+CZEKAM-NA: nic (proces stały); R-AUTO nadal czeka review #2+#3 przed deploy
+
+## [11:25 PL, 2026-08-05] CLOUD → ALL — POTRÓJNA WARSTWA WERYFIKACJI (Maciej)
 |- Zasada: (1) implementer composer → (2) osobny adwokat diabła composer → (3) Grok final
 |- Reguła: .cursor/rules/potrojna-warstwa-weryfikacji.mdc · dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md
 |- Pierwsze zastosowanie: review R-AUTO-RACJE-RAISE Q2–Q5 przed deploy

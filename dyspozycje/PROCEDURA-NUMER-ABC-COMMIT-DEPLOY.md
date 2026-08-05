@@ -132,6 +132,25 @@ Przy wdrażaniu **jednej** rzeczy łatwo zepsuć **inną** (nadpisanie hunka, us
 
 ---
 
+## 4b. POTRÓJNA WARSTWA — implementer + adwokat diabła + Grok (Maciej 2026-08-05)
+
+**ID:** `R-PROC-POTROJNA-WARSTWA`
+
+Po §4 (implementacja + testy) **zawsze** — zanim „gotowe” / `deploy`:
+
+| # | Rola | Kto | Co |
+|---|------|-----|-----|
+| **1** | Implementer | `composer-2.5` | Kod + testy lane (już z §4) |
+| **2** | Adwokat diabła | **osobny** `composer-2.5` | Szuka regresji, usuniętych usprawnień, ubocznych zepsuć, luk AC |
+| **3** | Final | Grok 4.5 | Kontrola raportów #1+#2 + krytyczne miejsca w diffie |
+
+**ZAKAZ:** meldunek „gotowe w kodzie” lub hasło `deploy` po samym #1.
+
+Kanon: [`POTROJNA-WARSTWA-WERYFIKACJI.md`](POTROJNA-WARSTWA-WERYFIKACJI.md) · `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` · [`docs/decyzje/R-PROC-POTROJNA-WARSTWA.md`](../docs/decyzje/R-PROC-POTROJNA-WARSTWA.md).  
+Uzupełnia (nie zastępuje) §4a `R-PROC-NO-REGRESS`.
+
+---
+
 ## 5. Deploy — TYLKO na hasło Macieja
 
 | Hasło | Skutek |
