@@ -12,3 +12,4 @@ Branch: `cursor/verify-wdrozone-kod-rest-63a1` · main `@28819c7` · **bez deplo
 | R-SPAWN-CLUSTER-KULTURA | **CLOSED** | `clusters.ts` L2294 `assignTypesToClusterCenters` | MAP-SPAWN typy per masa |
 | R-MP-NAZWA-CIV-MISMATCH | **CLOSED** | `cluster-spawn.ts` L362-366 · `main.ts` L6285-6338 | Deferred same-type rival owner IDs |
 | R-BUD-LOKALIZACJA-UI | **CLOSED** | `cityPanel.ts` L7150-7164 `locationBlocked` filter | Stolica↔region ukryte w UI |
+| R-SKARBIEC-PRZECINEK | **CLOSED** | `formatPl.ts` L29-40 · `hud.ts`/`cityPanel.ts`/`empireDetailPanel.ts` | Float IEEE → PL przecinek |
