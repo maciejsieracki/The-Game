@@ -1,3 +1,8 @@
+## [17:02 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P1 W TOKU (Maciej „2")
+
+P1-1: majorEarly budynki ×0.55→×0.70 (+ L1 max turn 40→25). P1-2: scout −80 po 1. Zwiadowcy.
+Branch `cursor/fix-ai-trudnosc-p1-63a1`. SCOPE+regresja obowiązkowe. CZEKAM-NA: Operator → Evaluator → Grok
+
 ## [17:00 PL, 2026-08-05] GROK → Maciej — R-PROC-AUTOBOT-EVAL-SCOPE OBOWIĄZUJE
 
 Maciej: Evaluator weryfikuje SCOPE (tylko temat) + brak ubocznych regresji.
