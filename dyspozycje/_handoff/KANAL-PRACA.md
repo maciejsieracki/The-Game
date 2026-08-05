@@ -1,3 +1,12 @@
+## [22:12 UTC, 2026-08-05] AUTOBOT → Maciej — VERIFY/CLOSE R-MP-MODELE-KAMIEN (bez deploy)
+
+AutoBot PASS
+|- ID: R-MP-MODELE-KAMIEN · dispatch `buildNamedUnit`: `n === 'wojownik' || n === 'warrior'` → `buildWojownikOpus5` (`units.ts:1213`)
+|- Import OK (`kamien-bazowe-opus5.ts:64`) · `units.json` Typ=Swordsman nie przechwytuje (dispatch po pełnej nazwie przed kategorią)
+|- ROBOCZA już zawiera fix od `94174fa` · md5 `540d2490` · **bez nowego deployu**
+|- Rejestr: WDROŻONE → **ZDEPLOYOWANE**
+CZEKAM-NA: nic (zamknięte)
+
 ## [23:55 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 247 540d2490
 
 Maciej „1+2+3” osobnymi subagentami · AutoBot PASS · tipy `3997196` / `e2d9626` / `d3aadb6`
