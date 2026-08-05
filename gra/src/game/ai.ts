@@ -201,6 +201,11 @@ export interface AITurnOpts {
    */
   poziomTrudnosci?: 1 | 2 | 3;
   /**
+   * Startowe miasta z trudnosc_poziom<N>_startowe_miasta (ai-params).
+   * Używane w computeMajorAiEarlyGame (R-AI-TRUDNOSC P2-Q2: L3 early max 25 gdy ≥1).
+   */
+  startoweMiasta?: number;
+  /**
    * Trudność gry gracza (_menuDifficulty) — cap wojska MP i absorpcja CS.
    * NIE suwak trudności MP (_menuCityStateDifficulty).
    */
@@ -992,9 +997,16 @@ export function computeMajorAiEarlyGame(
 ): boolean {
   if (!isMajorAiOwner(opts)) return false;
   const turn = opts.currentTurn ?? 0;
-  const maxTurn = opts.poziomTrudnosci === 1
-    ? AI_MAJOR_EARLY_MAX_TURN_L1
-    : AI_MAJOR_EARLY_MAX_TURN;
+  let maxTurn = AI_MAJOR_EARLY_MAX_TURN;
+  if (opts.poziomTrudnosci === 1) {
+    maxTurn = AI_MAJOR_EARLY_MAX_TURN_L1;
+  } else if (
+    opts.poziomTrudnosci === 3
+    && (opts.startoweMiasta ?? 0) >= 1
+  ) {
+    // R-AI-TRUDNOSC P2-Q2=A: L3 + bonus startowe miasto → cap jak L1 (25)
+    maxTurn = AI_MAJOR_EARLY_MAX_TURN_L1;
+  }
   if (turn <= maxTurn) return true;
   if (myCities.length === 0) return false;
   const avgPop = myCities.reduce((s, c) => s + c.population, 0) / myCities.length;
@@ -1822,6 +1834,9 @@ export function decideAITurn(
   const mods = readArchMods(data, archKey);
   const difficultyLevel: 1 | 2 | 3 = opts.poziomTrudnosci ?? 2;
   const difficultyParams = loadDifficultyParams(data, difficultyLevel);
+  if (opts.startoweMiasta === undefined) {
+    opts.startoweMiasta = difficultyParams.startoweMiasta;
+  }
 
   if (opts.defensiveCopy) {
     return decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts, difficultyParams);

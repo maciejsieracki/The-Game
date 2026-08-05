@@ -323,3 +323,14 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 | Zakaz zmian `ai.ts` / logiki | `git diff 4dbdaaa..2d02506` — brak `gra/src/**` | ✓ |
 
 **Gotowe do Grok final** (prezentacja Maciejowi / deploy na sygnał — poza zakresem Evaluatora).
+
+---
+
+## H — P2 wdrożone (Operator 2026-08-05, ECHO Maciej P2-Q1=A / P2-Q2=A)
+
+| ID | Zmiana | Pliki |
+|---|---|---|
+| **P2-Q1** | **A** — status quo: `canAfford` gate → `null` gdy nic nie stać (bez kodu) | — |
+| **P2-Q2** | **A** — L3 + `startowe_miasta ≥ 1`: `majorEarly` max tura **25** (jak L1) | `gra/src/game/ai.ts` |
+
+**Testy:** `ai-test.cjs` T14-p2.

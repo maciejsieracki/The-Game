@@ -1,6 +1,6 @@
 # R-AI-TRUDNOSC-P2 — ABC (canAfford + L3 majorEarly)
 
-**Status:** 🟡 ZAPISANA · ECHO Maciej · 2026-08-05 · wdrożenie Q2=A (AutoBot)  
+**Status:** 🔵 Operator done (Q2=A) · czeka Evaluator · Q1=A bez kodu  
 **Źródło:** audyt `R-AI-TRUDNOSC-AUDYT.md` §D P2-1 / P2-2 · Maciej wybrał „3” po FALA 230  
 **Scope:** tylko major AI (nie miasta-państwa)
 
@@ -113,6 +113,15 @@ Szybsze wejście w Koszary / budynki mid w obu miastach.
 **Rekomendacja:** **B** — najpierw ogrąć FALA 230 (P0+P1); P2-Q2 dopiero po playteście Trudnego.
 
 ---
+
+## Wdrożenie (Operator 2026-08-05)
+
+| ID | Zmiana | Pliki |
+|---|---|---|
+| **P2-Q1** | **A** — brak zmiany kodu (`canAfford` → null gdy nic nie stać) | — |
+| **P2-Q2** | **A** — L3 + `startoweMiasta ≥ 1`: `majorEarly` max tura **25** (jak L1) | `gra/src/game/ai.ts` (`AITurnOpts.startoweMiasta`, `computeMajorAiEarlyGame`, `decideAITurn`) |
+
+**Testy:** `ai-test.cjs` T14-p2 (L3+1 miasto turn 26 false; L3+0 i L2+1 turn 26 true).
 
 ## Po odpowiedzi
 ECHO → wdrożenie AutoBot tylko dla wybranych liter · deploy na hasło.

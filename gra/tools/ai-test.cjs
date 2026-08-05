@@ -2642,6 +2642,41 @@ console.log('\n--- T14-p1-1b: L1 majorEarly konczy sie tura 25, L2 tura 40 ---')
   eq(AI_MAJOR_EARLY_MAX_TURN_L1, 25, 'T14-p1-1b: AI_MAJOR_EARLY_MAX_TURN_L1');
 }
 
+console.log('\n--- T14-p2: L3 majorEarly max turn 25 gdy startowe_miasta≥1 (P2-Q2=A) ---');
+{
+  const cities = [makeCity('c1', 1, 2, 2)];
+  cities[0].population = 8;
+  const optsBase = {
+    defensiveCopy: false,
+    currentTurn: 26,
+    cityBuildings: { c1: ['spichlerz', 'koszary', 'stolarnia', 'cegielnia', 'odlewnia_brazu'] },
+  };
+  assert(
+    !computeMajorAiEarlyGame(
+      { ...optsBase, poziomTrudnosci: 3, startoweMiasta: 1 },
+      cities,
+      5,
+    ),
+    'T14-p2: L3 + startoweMiasta=1 turn 26 -> not majorEarly (max 25)',
+  );
+  assert(
+    computeMajorAiEarlyGame(
+      { ...optsBase, poziomTrudnosci: 3, startoweMiasta: 0 },
+      cities,
+      5,
+    ),
+    'T14-p2: L3 + startoweMiasta=0 turn 26 -> still majorEarly (max 40)',
+  );
+  assert(
+    computeMajorAiEarlyGame(
+      { ...optsBase, poziomTrudnosci: 2, startoweMiasta: 1 },
+      cities,
+      5,
+    ),
+    'T14-p2: L2 + startoweMiasta=1 turn 26 -> still majorEarly (max 40)',
+  );
+}
+
 console.log('\n--- T14-p1-1c: majorEarly stolarnia score ×0.70 (ranking vs biblioteka) ---');
 {
   const map = makeMap(10, 10);
