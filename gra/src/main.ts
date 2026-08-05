@@ -136,7 +136,7 @@ import { CIV_PUBLISH_MARKERS } from './buildInfo';
 // C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony
 // brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.
 import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';
-import { setCityMapBadgeCivSigil, setCityMapBadgeProdIcon } from './render/cityMapStatChip';
+import { setCityMapBadgeCivSigil, setCityMapBadgeProdIcon, setCityMapBadgeLeaderPortrait } from './render/cityMapStatChip';
 import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
 import { leaderPortraitUrl } from './ui/leaderPortraits';
 import { civIconSvg } from './ui/icons/brandAssets';
@@ -1690,6 +1690,7 @@ async function boot(): Promise<void> {
             : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
         getProduction: (cityId) => cityProdForRender?.(cityId) ?? null,
         playerOwnerId: 0,
+        isCityStateOwner: portraitForceCultureIcon,
       };
     };
 
@@ -5898,6 +5899,7 @@ async function boot(): Promise<void> {
         barbarianSigilSvg: () => brandIconSvg('chip-death', 40),
       });
       setCityMapBadgeCivSigil((id) => civIconSvg(id, 40));
+      setCityMapBadgeLeaderPortrait((civId, era) => leaderPortraitUrl(civId, era));
       setCityMapBadgeProdIcon((kind, id) =>
         kind === 'budynek' ? buildingIconSvg(undefined, id) : unitIconSvg(undefined, id),
       );

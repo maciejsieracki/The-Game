@@ -23,7 +23,13 @@
 
 ### Wiring (wzorzec już w grze)
 - `setUnitOwnerEmblemAssets` + `isCityState: portraitForceCultureIcon(ownerId)` w `main.ts`
-- Pigułka dziś: tylko `setCityMapBadgeCivSigil` → rozszerzyć o portret władcy + flagę `useLeaderPortrait` / `isCityState` w `CityMapBadgeInput`
+- Pigułka: `setCityMapBadgeCivSigil` + **`setCityMapBadgeLeaderPortrait`** (`leaderPortraitUrl`) + `isCityState` / `era` w `CityMapBadgeInput` → `_buildBadgeInput` / `_cityRenderOpts`
+
+### ECHO2 wdrożone (Operator)
+- `cityMapStatChip.ts`: `setCityMapBadgeLeaderPortrait`, async cache portretu, `drawCivMedallion` — major = portret (fallback sygnet), MP = tylko sygnet
+- `cities.ts`: `isCityStateOwner` + `era` w badge input
+- `main.ts`: injection `leaderPortraitUrl` + `isCityStateOwner: portraitForceCultureIcon`
+- `cityMapBadgeKey`: segmenty `cs0`/`cs1` + `e{N}`
 
 ## Pliki (oczekiwane)
 - `gra/src/render/cityMapStatChip.ts` — rysunek + cache key
@@ -36,8 +42,8 @@
 - [ ] Front jednostki → ikona tej jednostki (nie generyczny trójkąt)
 - [ ] Brak frontu / pause → brak ikony produkcji
 - [ ] Pigułka miasta gracza pokazuje poziom wzrostu (Wyżywienie / `poziomRacji`)
-- [ ] Gracz + major AI: medalion = portret/symbol **władcy** (nie sam sygnet kultury)
-- [ ] Miasta-państwa: medalion = **tylko kultura** (bez władcy głównej cywu)
+- [x] Gracz + major AI: medalion = portret/symbol **władcy** (nie sam sygnet kultury) — ECHO2
+- [x] Miasta-państwa: medalion = **tylko kultura** (bez władcy głównej cywu) — ECHO2
 - [ ] `tsc --noEmit` 0 · `city-map-badge-test.cjs` PASS
 - [ ] Bez deploy / bez merge main (Grok + hasło Macieja)
 
