@@ -1,3 +1,10 @@
+## [13:39 PL, 2026-08-05] GROK → Maciej — multitasking: R-SCENA-PERF + playtest R-AUTO
+|- Maciej: **1+3** (pomiar F12 + OK/BUG R-AUTO); FALA 226 playtest odłożony
+|- Wejście: `gra-robocza/START.html` · bundle `ebe4548f` (zawiera FALA 225 R-AUTO)
+|- Tor A: 3 linie `[civ] buildScene ms` / detail heksy / detail nakladki
+|- Tor B R-AUTO: Spichlerz ≥0 · maxSafe suwak · Auto Wyżywienie per miasto (default WYŁ) · AI nie zjada Spichlerza poniżej 0
+CZEKAM-NA: Maciej — wklej F12 + OK/BUG R-AUTO
+
 ## [13:38 PL, 2026-08-05] GROK → Maciej — multitasking: R-SCENA-PERF + playtest FALA 226
 |- Maciej: **1+2** równolegle (pomiar F12 + OK/BUG AI)
 |- Wejście: `gra-robocza/START.html` · bundle `ebe4548f` · stempel `fea8af68`
