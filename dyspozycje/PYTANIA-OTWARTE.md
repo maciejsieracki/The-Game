@@ -868,13 +868,13 @@ FALA 94 B1 (aktywne Drewno/Tartak) cofnięta — kanon: **tylko magazyn państwa
 
 ---
 
-## HANDEL-SPLIT-Q1 — rozdzielenie handlu: szlaki vs wymiana · STATUS: **OTWARTE** (Maciej wskazał temat B, 2026-07-28)
+## HANDEL-SPLIT-Q1 — rozdzielenie handlu: szlaki vs wymiana · STATUS: **ZAMKNIĘTE · B · ZDEPLOYOWANE** (FALA 80 `7d266143`)
 
 Pełna forma ABC: [`docs/decyzje/HANDEL-SPLIT-Q1.md`](../docs/decyzje/HANDEL-SPLIT-Q1.md).
 
-**Skrót:** A = tylko UI · **B** = dwa traktaty w silniku (TraktatSzlakow + UmowaWymianySurowcow) · C = jeden traktat, pole `handelTryb`.
+**Skrót:** A = tylko UI · **B** = dwa traktaty w silniku (`umowa_szlakow` + `umowa_wymiany`) · C = jeden traktat, pole `handelTryb`.
 
-Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej decyzji — to warstwa prezentacji.
+Wdrożenie: `diplomacy.ts`, `diplomacy-proposals.ts`, `diplomacy-treaties.ts`. ROBOCZA zweryfikowana 2026-08-06 (`umowa_szlakow` / `umowa_wymiany` w bundle).
 
 ---
 
@@ -1063,9 +1063,11 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## BUG-ARMIA-BRAK-POLACZ — brak akcji „Połącz" przy wielu jednostkach na heksie · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:36)
+## BUG-ARMIA-BRAK-POLACZ — brak akcji „Połącz" przy wielu jednostkach na heksie · STATUS: **ZAMKNIĘTE · ZDEPLOYOWANE** (FALA 207 `47a2e73b`)
 
 **Cytat:** Jest „Rozdziel", brakuje „Połącz" gdy kilka jednostek na polu.
+
+**Wdrożenie:** przycisk Połącz w `armyStackHud.ts`; fix ukrywania docku (`hexDetailHex`); ROBOCZA: „Połącz z sąsiednią armią" (weryfikacja 2026-08-06). Audyt R-PUŁKA #13: `docs/decyzje/R-PULKA-FORGOTTEN-AUDIT.md`.
 
 ---
 
@@ -1322,7 +1324,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## BUG-RZEKI-UJSCIE-FALA138 — regres: rzeki kończą się w środku lądu · STATUS: **GOTOWE (kod)** (2026-08-01)
+## BUG-RZEKI-UJSCIE-FALA138 — regres: rzeki kończą się w środku lądu · STATUS: **ZAMKNIĘTE · ZDEPLOYOWANE** (FALA 140 `935d1642`)
 
 **Cytat Macieja (~19:18):** część rzek urywa bieg na lądzie zamiast ujściem w inną rzekę / ocean.
 
@@ -1330,7 +1332,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 **Fix (kod):** `9c4320b` — `ensureRiverOutlets` po topUp + **ponownie po** `finalizeCoastAndInlandWater`; `scrubStrayRiverHexMarks`.
 
-**Wynik smoke (12 map):** **0** tras bez ujścia, **0** sierot hex. tsc PASS.
+**Wynik smoke (12 map):** **0** tras bez ujścia, **0** sierot hex. Deploy FALA 140.
 
 **Powiązane:** `R-RZEKI-UJSCIE-FALA138` · sibling perf: `BUG-RZEKI-PERF-FALA138`.
 
