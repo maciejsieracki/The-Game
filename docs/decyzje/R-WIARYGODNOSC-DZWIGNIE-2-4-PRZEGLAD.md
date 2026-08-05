@@ -10,7 +10,7 @@
 |----------|---------------------|------------------------|-------|------------------------|
 | **1 — W→Zaufanie (strumień / tempo)** | ΔZ/turę z W; WIAR-Q3=C: mnożnik tempa wzrost/spadek; REL-WIARYG-DRIFT: pasywny dryf | **✅ Wdrożone (R1)** | `computeTickZaufanieDelta`: dryf + `applyWiarygodnoscTempoDoDelty` (`diplomacy.ts`). Strumień S1–S4: `wiarygodnoscStrumienByOwner` w `main.ts` | **Średnie** — dryf + mnożnik tempa + dar/handel PN mogą nakładać się na ten sam ΔZ; jedna ścieżka integracji |
 | **2 — sufit Zaufania od W** | **WYCOFANE** (R-WIARYGODNOSC-DZWIGNIA2-Q1=A, 2026-08-03) | **Brak** — flat `max_zaufanie_na_ture=5` (`diplomacyClampTrustGainNaTure`) | `diplomacy-value-catalog.ts`, `diplomacy-pn-engine.ts` | **Niskie** — świadomie usunięte; nie dublować przy D1 |
-| **3 — twarde progi traktatów** | Sojusz W≥0, NAP W≥−40; przed progami Zaufania/Relacji | **✅ Wdrożone** (D3, 2026-08-03) | `evaluateProposal` case `nap` / `sojusz_*`; `wiarygodnoscProgNapMin` / `wiarygodnoscProgSojuszMin`; `buildProposalEvalContext` → `getWiarygodnosc` | **Niskie** — binarna bramka, nie sumuje się z karami N1–N7 |
+| **3 — twarde progi traktatów** | Sojusz W≥0, NAP W≥−40; przed progami Zaufania/Relacji; **§9.10=A:** druga twarda bramka = **NAP** (nie Wasal/Trybut) | **✅ Wdrożone** (D3, 2026-08-03) · **R3 ZAMKNIĘTE** (2026-08-05) | `evaluateProposal`: W-gate tylko `nap` / `sojusz_*`; `wasal` / `trybut_*` **bez** bramki W | **Niskie** — binarna bramka, nie sumuje się z karami N1–N7 |
 | **4 — pierwszy kontakt** | Startowe Zaufanie pary z globalnej W obu stron | **✅ Wdrożone** (C-WIAR-D4=A) | `zaufaniePierwszyKontaktZD4`, `applyWiarygodnoscD4ToRelation` (`diplomacy-layers.ts`); wołane przy lazy init relacji w `main.ts` | **Średnie** — D4 modyfikuje **start** Zaufania; D1 dryf modyfikuje **co turę** — to zamierzone, ale suma efektów przy W=−60 może być ostra |
 
 ## Dźwignia 1 — szczegół (najważniejsza przed D1)
@@ -36,9 +36,17 @@
 | R1 | **D1:** wpiąć `applyWiarygodnoscTempoDoDelty` w `tickDiplomacy` **albo** oficjalnie wycofać mnożnik — jedna ścieżka, nie oba dryf + mnożnik bez decyzji | ✅ **WDROŻONE** (2026-08-05, branch `cursor/fix-wiar-r1-tempo-63a1`) |
 | R1b | **D1 one-shot:** ten sam mnożnik w `applyDiplomaticEvent` + `applyDiploEventTracked` | ✅ **WDROŻONE** (2026-08-05, branch `cursor/fix-wiar-tempo-oneshot-63a1`) |
 | R2 | **D2:** utrzymać WYCOFANE — dokumentacja OK, kod czysty | Zamknięte |
-| R3 | **D3:** bez zmian; opcjonalnie potwierdzić bramkę Wasalizacja/Trybut (spec §5 uwaga) | P2 |
-| R4 | **D4:** utrzymać; przy testach balansu liczyć D4+D1 łącznie | P1 |
+| R3 | **D3:** §9.10=A — Wasal/Trybut **bez** bramki W; tylko NAP/Sojusz mają W-gate | ✅ **ZAMKNIĘTE** (2026-08-05) — **ZAKAZ** dodawać W-gate na `wasal`/`trybut_*` |
+| R4 | **D4+D1:** harness scenariuszowy w `wiarygodnosc-test.cjs` (start D4 + N tur dryf×tempo) | ✅ **WDROŻONE** (harness, 2026-08-05, branch `cursor/fix-wiar-r3-r4-63a1`) |
 | R5 | Test regresji: `node tools/wiarygodnosc-test.cjs` przed każdym batchiem WIAR | Obowiązkowe |
+
+## R3 — potwierdzenie bramek Wasal/Trybut (ZAMKNIĘTE)
+
+**Decyzja spec:** `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` §9.10 = **A** — druga twarda bramka Dźwigni 3 dotyczy **paktu o nieagresji**, nie Wasalizacji ani Trybutu.
+
+**Kod (2026-08-05):** `evaluateProposal` sprawdza `proposerWiarygodnosc` wyłącznie w case `'nap'` i `'sojusz_defensywny'` / `'sojusz_pelny'`. Gałęzie `'wasal'`, `'trybut_zadanie'`, `'trybut_oferta'` używają progów Respektu/Relacji/Zaufania — **bez** `wiarygodnoscProgNapMin` / `wiarygodnoscProgSojuszMin`.
+
+**Zamknięcie R3:** Wasal/Trybut pozostają **bez** bramki W. **ZAKAZ** dodawania W-gate na wasal/trybut bez nowego ABC.
 
 ## Powiązane decyzje
 

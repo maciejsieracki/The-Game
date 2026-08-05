@@ -10,6 +10,7 @@
  *   - Etap 2–4: STRUMIEŃ (fresh/tick, bez trwałej podłogi), Wiarygodność CAŁKOWITA
  *     (zdarzenia jednorazowe + strumień, klamrowana), Dźwignia 1 (WIAR-Q3=C:
  *     mnożnik tempa w tickDiplomacy — wzrost/spadek ×0,5…×1,5 od W).
+ *   - R4 (§8e): harness D4+D1 łącznie — start pierwszego kontaktu + N tur dryf×tempo.
  * Haki silnika (main.ts — N1–N7, S1–S4, P1–P5, save/load) nie są tu wprost jednostkowo
  * testowalne (żyją w domknięciu main.ts) — pokryte pośrednio przez zielone bramki
  * ai-test/logic-test/diplomacy-*-test (brak regresji) i manualny playtest (raport).
@@ -552,6 +553,80 @@ function evalSojusz(ctxOverrides) {
   } else {
     ok(sojuszOk.accepted, 'Sojusz akceptowany gdy W proponenta = 0 i progi relacji spełnione');
   }
+}
+
+// ---------------------------------------------------------------------------
+// 8e) R4 — D4+D1 łącznie (harness balansu pierwszego kontaktu + dryf×tempo)
+//     Przy testach balansu liczyć start D4 i bieżący dryf D1 (REL-WIARYG-DRIFT + WIAR-Q3=C)
+//     jako jeden tor Zaufania — nie rozdzielać w asercjach.
+// ---------------------------------------------------------------------------
+
+/** ΔZ/turę tylko z dryfu W + mnożnika tempa (neutralna relacja, bez umów). */
+function r4DeltaPerTurnW(w) {
+  const dryf = WC.zaufanieDryfOdWiarygodnosci(w);
+  return WC.applyWiarygodnoscTempoDoDelty(dryf, w);
+}
+
+/** Symuluje N tur tickDiplomacy z wiarygodnoscSelf = wSelf (tylko dryf+tempo). */
+function r4SimulateNTicks(startZ, wSelf, n) {
+  let rdip = freshRdip(startZ, 'neutralni');
+  for (let t = 1; t <= n; t++) {
+    rdip = WC.tickDiplomacy(rdip, { turn: t, wiarygodnoscSelf: wSelf });
+  }
+  return rdip.zaufanie;
+}
+
+/** Oczekiwane Z po N turach: start D4 + N × (dryf×tempo), z klamrowaniem [0,100] co turę. */
+function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
+  const startZ = WC.zaufaniePierwszyKontaktZD4(baseZ, wa, wb);
+  const dPerTurn = r4DeltaPerTurnW(wSelf);
+  let z = startZ;
+  for (let t = 0; t < n; t++) {
+    z = Math.max(0, Math.min(100, z + dPerTurn));
+  }
+  return { startZ, z, dPerTurn };
+}
+
+{
+  const baza = 20;
+  const wa = -60;
+  const wb = -60;
+  const n = 10;
+  const exp = r4ExpectedAfterNTicks(baza, wa, wb, wa, n);
+  ok(exp.startZ === 14, `R4 D4 start: obie W=−60, baza 20 → Z=14 (got ${exp.startZ})`);
+  ok(approxEqual(exp.dPerTurn, -2.34), `R4 D1: W=−60 dryf×tempo = −2.34/turę (got ${exp.dPerTurn})`);
+  const sim = r4SimulateNTicks(exp.startZ, wa, n);
+  ok(approxEqual(sim, exp.z), `R4 D4+D1: obie W=−60, ${n} tur → Z=${exp.z} (got ${sim})`);
+}
+
+{
+  const baza = 20;
+  const wa = 100;
+  const wb = 100;
+  const n = 10;
+  const exp = r4ExpectedAfterNTicks(baza, wa, wb, wa, n);
+  ok(exp.startZ === 30, `R4 D4 start: obie W=+100, baza 20 → Z=30 (got ${exp.startZ})`);
+  ok(approxEqual(exp.dPerTurn, 4.5), `R4 D1: W=+100 dryf×tempo = +4.5/turę (got ${exp.dPerTurn})`);
+  const sim = r4SimulateNTicks(exp.startZ, wa, n);
+  ok(approxEqual(sim, exp.z), `R4 D4+D1: obie W=+100, ${n} tur → Z=${exp.z} (got ${sim})`);
+}
+
+{
+  const baza = 20;
+  const wa = 100;
+  const wb = -60;
+  const n = 5;
+  const exp = r4ExpectedAfterNTicks(baza, wa, wb, wa, n);
+  ok(exp.startZ === 22, `R4 D4 start: W=+100/−60 mieszane, baza 20 → Z=22 (got ${exp.startZ})`);
+  ok(approxEqual(exp.dPerTurn, 4.5), `R4 D1: wSelf=+100 → +4.5/turę (got ${exp.dPerTurn})`);
+  const sim = r4SimulateNTicks(exp.startZ, wa, n);
+  ok(approxEqual(sim, exp.z), `R4 D4+D1: mieszane W, ${n} tur → Z=${exp.z} (got ${sim})`);
+}
+
+{
+  // computeTickZaufanieDelta — ta sama ścieżka co tickDiplomacy dla samego dryfu
+  const dTick = WC.computeTickZaufanieDelta({ turn: 1, wiarygodnoscSelf: -60 }, false);
+  ok(approxEqual(dTick, -2.34), `R4 computeTickZaufanieDelta W=−60 = dryf×tempo (got ${dTick})`);
 }
 
 // ---------------------------------------------------------------------------
