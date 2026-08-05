@@ -1,4 +1,4 @@
-﻿- **2026-08-05 11:54** — ✅ **FALA 225** ROBOCZA `8767b9c0` — R-AUTO-RACJE-RAISE (Spichlerz≥0, Auto Wyżywienie per miasto) + AutoBot. START: `gra-robocza/START.html` — **git pull**, Ctrl+F5 **Nowa gra**. Stempel w menu: `e5fbaa18`.
+﻿- **2026-08-05 ~12:10** — ✅ Gotowe w kodzie (bez deploy): **R-PROC-AUTOBOT-P0** — Evaluator PASS-WITH-NOTES · branch `cursor/fix-autobot-p0-63a1` (`41169c1`). Czeka **merge** do main.
 - **2026-08-05 ~11:10** — ✅ Gotowe w kodzie → **w FALA 225**: **R-AUTO-RACJE-RAISE Q2–Q5=A**.
 - **2026-08-05 ~01:10** — ✅ Gotowe w kodzie (bez deploy): **R-AUTO-RACJE-RAISE-Q1=B** — supersedowane przez Q2–Q5 na tym samym branchu.
 - **2026-08-05 ~00:40** — ✅ Handoff sesji FALA 221–224 zapisany: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md`. ROBOCZA FALA 224 OK.
