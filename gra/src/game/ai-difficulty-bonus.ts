@@ -31,6 +31,11 @@ export function difficultyScienceBonusPerTurn(bonusNauka: number): number {
   return Math.max(0, bonusNauka);
 }
 
+/** Mnożnik realnej Pracy AI z bonusProdukcja (0.1 → ×1.1, 0.25 → ×1.25). */
+export function difficultyProductionMultiplier(bonusProdukcja: number): number {
+  return 1 + Math.max(0, bonusProdukcja);
+}
+
 /** Skaluje staty bojowe definicji jednostki (atak/obrona/ranged) — bez pancerza. */
 export function applyDifficultyCombatToUnitDef<T extends Record<string, unknown>>(
   def: T,

@@ -1,11 +1,13 @@
 # R-AI-TRUDNOSC-AUDYT — rozwój major AI vs poziomy trudności
 
-**Status:** 🟢 Evaluator PASS-WITH-NOTES · gotowe do Macieja · 2026-08-05  
+**Status:** 🟠 Operator done · awaiting Evaluator · 2026-08-05  
 **Scope:** **tylko major AI** (nie miasta-państwa / `defensiveCopy` / `typCityCopy`)  
 **Cel:** (1) audyt — co najbardziej psuje rozwój AI; (2) plan usprawnień **per poziom** 1=Prosty / 2=Normalny / 3=Trudny.
 
 ## ECHO (cytat)
 > przy okazji, zrób audyt trudności AI, co wpływa najbardziej na to, że AI źle sobie radzi z rozwojem. Mówię głównie o głównych AI, nie o państwach miastach. I zrób plan działania, co możemy jeszcze usprawnić na każdym poziomie trudności, z podziałem na poziomy trudności, żeby AI lepiej sobie radziło. Wszystko zgodnie z zasadą Autobot.
+
+**ECHO P0 (Maciej „1" = wdrażaj P0, 2026-08-05):** realna Praca z `bonus_produkcja` (opcja B C.2 Q1 + zachować scoring `diffProdBonus`) · fix ids `spichlerz`/`cegielnia` w `chooseAIResearch` · L3 `bonus_nauka`=2 (≥ L2).
 
 ## Kontekst już wdrożony (nie powtarzaj jako „brak”)
 - FALA 226: P-AI-MOC-BONUS (startowe jednostki/miasta, `bonusWalka`, `bonusNauka`) — major only
@@ -165,9 +167,49 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 - Nie `npm run build` / nie deploy / nie merge main — **ta paczka: tylko docs**
 - AutoBot: po audycie → **Evaluator** → Grok prezentuje Maciejowi
 
+---
+
+## E — P0 wdrożone (Operator 2026-08-05)
+
+| ID | Zmiana | Pliki |
+|---|---|---|
+| **P0-1** | `bonus_produkcja` → realna Praca major AI (`doBudynkow` + `doPuli` × mult) | `gra/src/game/ai-difficulty-bonus.ts` (`difficultyProductionMultiplier`), `gra/src/main.ts` (`difficultyProductionMultForOwner`, tick produkcji ~20734) |
+| **P0-2** | Fix ids Spichlerz/Cegielnia w `chooseAIResearch` (lowercase + dual-check) | `gra/src/game/ai.ts` (`scoreTech`) |
+| **P0-3** | L3 `bonus_nauka` = 2 (+2/turę, ≥ Normalny) | `gra/data/ai-params.json`, `gra/src/game/ai.ts` (`loadDifficultyParams` fallback) |
+
+**Testy:** `ai-difficulty-bonus-test.cjs` (T-DB-b/f/g), `ai-threat-mode-test.cjs`, `ai-test.cjs` (T2a/T2c bonusNauka L3=2).
+
+**Zachowane:** scoring `diffProdBonus` w `chooseCityProduction` (wiring + realna Praca = zamierzone po P0).
 
 ---
 
-## Evaluator (2026-08-05)
-**PASS-WITH-NOTES** · tip `a568a18` · spot-check kodu 4/4 OK.  
-Notes: C.1 Ś1 — `bonus_nauka` L1=0 już w JSON (nie „dodać”); literówka P1-1 poprawiona. Core findings zaakceptowane.
+## Evaluator (2026-08-05) — P0 re-run
+
+**PASS-WITH-NOTES** · operator tip `fcd21db` · evaluator docs tip (po commit)
+
+### Hard metrics (Evaluator re-run z `gra/`)
+| Test | Wynik |
+|---|---|
+| `npx tsc --noEmit` | **PASS** (0 błędów) |
+| `ai-difficulty-bonus-test.cjs` | **PASS** 25/25 |
+| `ai-threat-mode-test.cjs` | **PASS** 11/11 |
+
+### Spot-check AC (kod, nie trust Operator)
+| AC | Dowód | OK |
+|---|---|:---:|
+| **P0-1** `difficultyProductionMultiplier` = `1+max(0,bonus)` | `ai-difficulty-bonus.ts:35-36` | ✓ |
+| **P0-1** gate major only (gracz/MP/barb → mult 1) | `main.ts:5454-5457` · `qualifiesForMajorAiDifficultyBonus` `ownerId>0` | ✓ |
+| **P0-1** tick skaluje **oba** `doBudynkow` i `doPuli` przed `pracaImperialPoolGain` | `main.ts:20747-20751` | ✓ |
+| **P0-1** `pracaBudynki` też × mult (bez mutacji `econTick`) | `main.ts:20766-20768` · `econTick` per-city `20364` | ✓ |
+| **P0-1** scoring `diffProdBonus` zachowany | `ai.ts:1057-1063` | ✓ |
+| **P0-2** lowercase ids + dual-check PascalCase | `ai.ts:548-549` | ✓ |
+| **P0-2** test T-DB-g: `allBuilt spichlerz` usuwa +120 bias | `ai-difficulty-bonus-test.cjs:177-184` | ✓ |
+| **P0-3** JSON L3 `bonus_nauka`=2 + opis | `ai-params.json:57-60` | ✓ |
+| **P0-3** fallback L3=2 | `ai.ts:429` · T-DB-f | ✓ |
+
+### Notes (nie blokery P0)
+- Sekcje **A/B** audytu nadal opisują stan **sprzed P0** (np. rank #4 „tylko scoring”, L3 nauka=0) — zaktualizować przy P1/docs pass, nie blokuje kodu.
+- Brak testu integracyjnego `main.ts` tick produkcji — tylko unit + spot-check linii; akceptowalne dla P0.
+- Podwójny efekt `bonus_produkcja` (scoring + realna Praca) — **zamierzone** wg ECHO P0.
+
+**Gotowe do Grok final** (prezentacja Maciejowi / deploy na sygnał).

@@ -930,6 +930,7 @@ import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from
 import {
   applyDifficultyCombatToUnitDef,
   difficultyCombatMultiplier,
+  difficultyProductionMultiplier,
   difficultyScienceBonusPerTurn,
   planMajorAiDifficultyStartBonuses,
   qualifiesForMajorAiDifficultyBonus,
@@ -5447,6 +5448,13 @@ async function boot(): Promise<void> {
       if (!qualifiesForMajorAiDifficultyBonus(ownerId, isCityStateOwner(ownerId))) return 0;
       const params = loadDifficultyParams(data, aiDiffLevelForOwner(ownerId));
       return difficultyScienceBonusPerTurn(params.bonusNauka);
+    }
+
+    /** R-AI-TRUDNOSC P0-1: mnożnik realnej Pracy major AI z bonusProdukcja (nie gracz / nie MP / nie barb). */
+    function difficultyProductionMultForOwner(ownerId: number): number {
+      if (!qualifiesForMajorAiDifficultyBonus(ownerId, isCityStateOwner(ownerId))) return 1;
+      const params = loadDifficultyParams(data, aiDiffLevelForOwner(ownerId));
+      return difficultyProductionMultiplier(params.bonusProdukcja);
     }
 
     /** Def jednostki do mocy M auto-walki — weteran + fortyfikacja + bonus trudności AI. */
@@ -20734,9 +20742,12 @@ async function boot(): Promise<void> {
               // PRODUKCJA (D2=A: doBudynkow → kolejka; pula imperium per miasto)
               const prodPaused = prod0.wstrzymana === true;
               const queueEmpty = frontItem(prod0) === null;
+              const prodMult = difficultyProductionMultForOwner(city.ownerId);
               if (econTick && !prodPaused) {
+                const scaledDoBudynkow = econTick.doBudynkow * prodMult;
+                const scaledDoPuli = econTick.doPuli * prodMult;
                 const poolGain = pracaImperialPoolGain(
-                  { doBudynkow: econTick.doBudynkow, doPuli: econTick.doPuli },
+                  { doBudynkow: scaledDoBudynkow, doPuli: scaledDoPuli },
                   queueEmpty,
                 );
                 if (poolGain > 0) {
@@ -20752,7 +20763,9 @@ async function boot(): Promise<void> {
                   }
                 }
               }
-              const pracaBudynki = (econTick && !queueEmpty && !prodPaused) ? econTick.doBudynkow : 0;
+              const pracaBudynki = (econTick && !queueEmpty && !prodPaused)
+                ? econTick.doBudynkow * prodMult
+                : 0;
               const { prod: prodPo, completed, overflowToPool } = advanceProduction(prod0, pracaBudynki);
               let prodFinal = prodPo;
               cityProd.set(cid, prodPo);

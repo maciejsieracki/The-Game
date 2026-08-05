@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## [16:52 PL, 2026-08-05] GROK → Maciej — fokus pigułka FALA 228 (wybór „3")
 
 Maciej: inny fokus = R-CITY-PILL-PROD-ICON na `29bfdf00`.
@@ -12,6 +13,23 @@ Checklist w czacie. CZEKAM-NA: `playtest OK` albo `BUG: …` (R-AUTO-RACJE-RAISE
 
 AutoBot PASS · PR #111 · tip `e2bb674` · bez merge do main do hasła.
 CZEKAM-NA: Maciej **deploy** (po playteście R-AUTO albo wcześniej)
+=======
+﻿## [16:47 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P0 gotowe do deploy
+
+AutoBot: Operator `bc-5cb1c9b6` → Evaluator `bc-66af41dd` **PASS-WITH-NOTES**.
+- Branch `cursor/fix-ai-trudnosc-p0-63a1` tip `247128b` · PR #111
+- P0-1 realna Praca L2×1.1 / L3×1.25 · P0-2 spichlerz id · P0-3 L3 nauka=2
+- Testy: tsc PASS · difficulty 25/25 · threat 11/11
+CZEKAM-NA: Maciej **deploy** (FALA 229)
+
+## [15:45 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P0 W TOKU (Maciej „1")
+
+Maciej wybrał **1 = wdrażaj P0** (AutoBot). Branch `cursor/fix-ai-trudnosc-p0-63a1`.
+- P0-1: `bonus_produkcja` → realna Praca major AI (1+bonus; scoring zostaje)
+- P0-2: `chooseAIResearch` ids `spichlerz`/`cegielnia`
+- P0-3: L3 `bonus_nauka` = 2
+Deploy dopiero na hasło. CZEKAM-NA: Operator → Evaluator → Grok
+>>>>>>> origin/cursor/fix-ai-trudnosc-p0-63a1
 
 ## [15:05 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC-AUDYT PASS (plan gotowy)
 |- Operator `a568a18` · Evaluator PASS-WITH-NOTES · scope major AI only
