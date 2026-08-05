@@ -3502,11 +3502,12 @@ export function decideAIDiplomacy(
       && !rel.hasNapTreaty
       && score >= dipP.progNapRelacja - bias.napScoreEase
     ) {
+      const napIndefinite = score >= dipP.progSojuszRelacja;
       komendy.push({
         type:     'zaproponuj_pakt',
         targetId: rel.partnerId,
         powod:    `Profil pokojowy (Relacja=${score} >= progNap=${dipP.progNapRelacja - bias.napScoreEase}): proponujemy pakt nieagresji`,
-        turns:    15,
+        turns:    napIndefinite ? 0 : 15,
       });
       continue;
     }

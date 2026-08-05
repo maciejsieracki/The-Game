@@ -233,14 +233,15 @@ function buildFormBody(action: AudienceAction, ctx: NegotiationModalContext): st
 
   switch (action.id) {
     case '2': {
-      const turnChips = [5, 10, 15].map(t =>
+      const turnChips = [10, 15, 20].map(t =>
         '<button type="button" class="cdn-chip-turn' + (t === 15 ? ' selected' : '')
         + '" data-turns="' + t + '">' + t + '</button>',
       ).join('');
       return sub
-        + '<label>Czas paktu (tur)</label>'
-        + '<div class="cdn-chip-row">' + turnChips + '</div>'
-        + numInput('cdn-turns', 'Ręcznie (1–20)', 15, 1, 20)
+        + '<label>Czas paktu</label>'
+        + '<div class="cdn-chip-row">' + turnChips
+        + '<button type="button" class="cdn-chip-turn" data-turns="0">Bezterminowy</button></div>'
+        + numInput('cdn-turns', 'Ręcznie (10–20 lub 0 = bezterminowy)', 15, 0, 20)
         + '<p class="cdn-sub">Złamanie: −30 Relacja, −20 Zaufanie</p>';
     }
 
@@ -322,7 +323,8 @@ function readPayload(actionId: string, ctx: NegotiationModalContext): Negotiatio
   switch (actionId) {
     case '2': {
       const turns = parseInt((document.getElementById('cdn-turns') as HTMLInputElement)?.value ?? '15', 10);
-      return withSweetener({ ...base, turns: Math.max(1, Math.min(20, turns)) });
+      if (turns <= 0) return withSweetener({ ...base, turns: 0 });
+      return withSweetener({ ...base, turns: Math.max(10, Math.min(20, turns)) });
     }
     case '3': {
       const v = (document.getElementById('cdn-alliance') as HTMLSelectElement)?.value;
