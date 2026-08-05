@@ -49,7 +49,8 @@ Potrójna warstwa (`R-PROC-POTROJNA-WARSTWA`) = **wbudowana** w kroki 1–3 Auto
 
 Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`  
 **Twardość werdyktów (od 2026-08-05):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · playbook `rule_106`  
-**STRICT-EDGE (happy-path-only → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` · playbook `rule_107`
+**STRICT-EDGE (happy-path-only → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` · playbook `rule_107`  
+**STRICT-PARITY (asymetria gracz/AI/MP → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` · playbook `rule_108`
 
 **Evaluator MUSI** przed werdyktem sprawdzić:
 
@@ -58,6 +59,7 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`
 3. **NO-REGRESSION** — fix nie cofa wcześniejszych usprawnień ani nie psuje innych tematów.
 4. **STRICT (R-PROC-AUTOBOT-EVAL-STRICT)** — luki testów / brak asercji AC / czerwone testy tematu / `tsc≠0` / SCOPE gameplay bez handoffu → **FAIL** (nie NOTES).
 5. **STRICT-EDGE (R-PROC-AUTOBOT-EVAL-STRICT-EDGE)** — testy tematu tylko happy-path bez edge/negacji/repro buga → **FAIL #7** (nie NOTES).
+6. **STRICT-PARITY (R-PROC-AUTOBOT-EVAL-STRICT-PARITY)** — asymetria gracz/AI/MP (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub bez testu parytetu → **FAIL #8** (nie NOTES).
 
 **PASS-WITH-NOTES** tylko wąska lista: pre-existing baseline poza tematem (dowód `main`), docs drift nieblokujący, cross-lane z handoffem, GATE=A wizual, drobny drift procesu.
 

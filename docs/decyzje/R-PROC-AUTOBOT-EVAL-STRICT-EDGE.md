@@ -1,7 +1,8 @@
 # R-PROC-AUTOBOT-EVAL-STRICT-EDGE — Evaluator: FAIL przy samym happy-path
 
 **Status:** 🟢 **OBOWIĄZUJE** · 2026-08-05  
-**Rodzic:** `R-PROC-AUTOBOT-EVAL-STRICT` · **Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
+**Rodzic:** `R-PROC-AUTOBOT-EVAL-STRICT` · **Siostra:** [`R-PROC-AUTOBOT-EVAL-STRICT-PARITY`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md) (`rule_108`)  
+**Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Playbook:** `dyspozycje/autobot/playbook.json` → `rule_107` (`verify-eval-strict-edge`)
 
 ---

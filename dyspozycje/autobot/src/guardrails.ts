@@ -24,6 +24,7 @@ export const CATALOG: OperatorAction[] = [
   { id: 'verify-eval-scope-no-regression', label: 'Evaluator SCOPE + brak regresji ubocznych', risk: 'safe', requiresHumanApproval: false },
   { id: 'verify-eval-strict-tests', label: 'Evaluator STRICT — luki testów / brak asercji AC → FAIL', risk: 'safe', requiresHumanApproval: false },
   { id: 'verify-eval-strict-edge', label: 'Evaluator STRICT-EDGE — happy-path-only bez edge/negacji/repro → FAIL', risk: 'safe', requiresHumanApproval: false },
+  { id: 'verify-eval-strict-parity', label: 'Evaluator STRICT-PARITY — asymetria gracz/AI/MP lub test tylko ownerId=0 → FAIL', risk: 'safe', requiresHumanApproval: false },
   { id: 'respect-deploy-gate', label: 'Szanuj bramkę deploy', risk: 'safe', requiresHumanApproval: false },
   { id: 'build-via-vite-bin', label: 'Build przez vite.bin (nie npm run build)', risk: 'elevated', requiresHumanApproval: false },
   { id: 'respect-file-ownership', label: 'Własność plików / main.ts', risk: 'safe', requiresHumanApproval: false },

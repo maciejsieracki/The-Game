@@ -1,3 +1,10 @@
+﻿## [19:30 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-PARITY (Maciej „2 = Tylko A (parytet)”)
+
+Evaluator STRICT-PARITY: asymetria gracz/AI/MP (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub test tylko ownerId=0 → FAIL #8 (nie NOTES).
+|- Pliki: `R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`, STRICT patch, `rule_108`, guardrails, smoke v6
+|- Zero `gra/src` — tylko proces AutoBot
+CZEKAM-NA: Evaluator / merge Grok (bez deploy gry)
+
 ## [18:00 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-EDGE (Maciej „2 Jeszcze twardszy”)
 
 Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL #7 (nie NOTES).

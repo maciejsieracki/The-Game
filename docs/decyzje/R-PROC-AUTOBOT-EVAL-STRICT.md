@@ -3,7 +3,8 @@
 **Status:** 🟢 **OBOWIĄZUJE** · 2026-08-05  
 **Rodzic:** `R-PROC-AUTOBOT-EVAL-SCOPE` · **Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Playbook:** `dyspozycje/autobot/playbook.json` → `rule_106` (`verify-eval-strict-tests`)  
-**EDGE (happy-path-only):** → [`R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md) (`rule_107`)
+**EDGE (happy-path-only):** → [`R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md) (`rule_107`)  
+**PARITY (gracz/AI/MP):** → [`R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md) (`rule_108`)
 
 ---
 
@@ -38,6 +39,7 @@ Uściślić werdykty warstwy 2 (Evaluator AutoBot): **luki testów i brak asercj
 5. **Naruszenie SCOPE:** niezwiązany plik/funkcja gameplay **bez** uzasadnionego handoffu → FAIL (nie NOTES).
 6. **Cofnięcie wcześniejszego fixu** / regresja w sąsiednim zachowaniu z dowodem.
 7. **Testy tematu tylko happy-path** bez edge / negacji / repro buga → FAIL — szczegóły: [`R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md) (`rule_107`).
+8. **Asymetria gracz/AI/MP** (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub bez testu parytetu → FAIL — szczegóły: [`R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md) (`rule_108`).
 
 ### PASS-WITH-NOTES (tylko te wąskie przypadki)
 
@@ -62,6 +64,7 @@ Wszystkie osie SCOPE (z `R-PROC-AUTOBOT-EVAL-SCOPE`) + twarde testy tematu zielo
 - [ ] Czy `tsc --noEmit` = 0?
 - [ ] Czy zmiana logiki gry ma rozszerzoną asercję (nie tylko happy-path bez edge)?
 - [ ] **Tylko happy-path bez edge/negacji/repro → FAIL #7** (`STRICT-EDGE`), chyba że wyjątek z decision doc EDGE.
+- [ ] **Asymetria gracz/AI/MP bez decyzji lub test tylko ownerId=0 → FAIL #8** (`STRICT-PARITY`), chyba że wyjątek z decision doc PARITY.
 - [ ] Przy luce testów → **FAIL** (nie NOTES), chyba że GATE=A wyłącznie wizualny.
 
 ---
@@ -75,6 +78,8 @@ Dopisz do szablonu SCOPE (`R-PROC-AUTOBOT-EVAL-SCOPE.md`):
    PASS-WITH-NOTES tylko: pre-existing baseline poza tematem, docs drift, GATE=A wizual, handoff OK.
 6. Testy tematu tylko happy-path bez edge/negacji/repro buga → FAIL #7 (STRICT-EDGE, nie NOTES).
    Wyjątki: GATE=A wyłącznie wizual; czysta docs/proces; smoke eksportu UI gdy helper ma edge.
+7. Asymetria gracz/AI/MP (ownerId === 0 / isPlayer) bez decyzji ABC lub bez testu parytetu → FAIL #8 (STRICT-PARITY, nie NOTES).
+   Wyjątki: UI-only HUD gracza; jawny ECHO „tylko gracz/AI”; MP celowo inne z ID decyzji; czysta docs/proces.
 ```
 
 ---
@@ -85,7 +90,8 @@ Dopisz do szablonu SCOPE (`R-PROC-AUTOBOT-EVAL-SCOPE.md`):
 - `docs/decyzje/R-PROC-AUTOBOT.md` — mapowanie Evaluator
 - `docs/decyzje/R-PROC-POTROJNA-WARSTWA.md` — warstwa 2
 - `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` — FAIL #7 happy-path-only
-- `dyspozycje/autobot/playbook.json` — `rule_105`, `rule_106`, `rule_107`
+- `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` — FAIL #8 asymetria gracz/AI/MP
+- `dyspozycje/autobot/playbook.json` — `rule_105`, `rule_106`, `rule_107`, `rule_108`
 
 ---
 

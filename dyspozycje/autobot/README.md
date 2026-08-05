@@ -12,6 +12,8 @@
 
 **Evaluator — STRICT-EDGE (Maciej „2 Jeszcze twardszy”, 2026-08-05):** testy tematu tylko happy-path bez edge/negacji/repro buga → **FAIL #7** (`rule_107`, `R-PROC-AUTOBOT-EVAL-STRICT-EDGE`).
 
+**Evaluator — STRICT-PARITY (Maciej „2 = Tylko A (parytet)”, 2026-08-05):** asymetria gracz/AI/MP (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub bez testu parytetu → **FAIL #8** (`rule_108`, `R-PROC-AUTOBOT-EVAL-STRICT-PARITY`).
+
 ## Architektura — 5 modułów
 
 ```
@@ -135,7 +137,7 @@ node dyspozycje/autobot/tools/autobot-smoke.cjs
 | AutoBot | Sesja Cursor |
 |---------|----------------|
 | Operator | Composer implementer |
-| Evaluator | Adwokat diabła + Grok (+ testy) · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`) · **STRICT-EDGE** — happy-path-only → FAIL (`rule_107`) |
+| Evaluator | Adwokat diabła + Grok (+ testy) · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`) · **STRICT-EDGE** — happy-path-only → FAIL (`rule_107`) · **STRICT-PARITY** — asymetria gracz/AI/MP → FAIL (`rule_108`) |
 | playbook | ten katalog + reguły procesu |
 | Dev scorer | typecheck + testy + deploy gate |
 

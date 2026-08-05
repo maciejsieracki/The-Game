@@ -1,6 +1,6 @@
 {
-  "version": 5,
-  "updatedAtIso": "2026-08-05T18:00:00.000Z",
+  "version": 6,
+  "updatedAtIso": "2026-08-05T19:30:00.000Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -71,7 +71,7 @@
     },
     {
       "id": "rule_106",
-      "rule_text": "Evaluator STRICT: brak celowanego testu / czerwone testy tematu / tsc≠0 → FAIL (nie NOTES); happy-path-only → patrz rule_107 EDGE",
+      "rule_text": "Evaluator STRICT: brak celowanego testu / czerwone testy tematu / tsc≠0 → FAIL (nie NOTES); happy-path-only → rule_107 EDGE; asymetria gracz/AI/MP → rule_108 PARITY",
       "status": "ACTIVE",
       "actionId": "verify-eval-strict-tests",
       "win_count": 0,
@@ -81,13 +81,23 @@
     },
     {
       "id": "rule_107",
-      "rule_text": "Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL",
+      "rule_text": "Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL; parytet ownerId → rule_108",
       "status": "ACTIVE",
       "actionId": "verify-eval-strict-edge",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-05T18:00:00.000Z"
+      "lastUpdatedIso": "2026-08-05T19:30:00.000Z"
+    },
+    {
+      "id": "rule_108",
+      "rule_text": "Evaluator STRICT-PARITY: asymetria gracz/AI/MP lub test tylko ownerId=0 bez decyzji → FAIL",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-strict-parity",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-05T19:30:00.000Z"
     }
   ],
   "quarantine_rules": []

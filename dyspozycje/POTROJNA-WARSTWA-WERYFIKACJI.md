@@ -36,8 +36,9 @@ Adwokat diabła **zawsze** stosuje `R-PROC-AUTOBOT-EVAL-SCOPE` (playbook `rule_1
 4. Przy NIE SCOPE → **FAIL** lub **PASS-WITH-NOTES** z listą ubocznych ryzyk (nie akceptuj cicho).
 5. **STRICT** (`R-PROC-AUTOBOT-EVAL-STRICT`, `rule_106`): luki testów / brak asercji AC / czerwone testy tematu / `tsc≠0` → **FAIL** (nie NOTES).
 6. **STRICT-EDGE** (`R-PROC-AUTOBOT-EVAL-STRICT-EDGE`, `rule_107`): testy tematu tylko happy-path bez edge/negacji/repro → **FAIL #7** (nie NOTES).
+7. **STRICT-PARITY** (`R-PROC-AUTOBOT-EVAL-STRICT-PARITY`, `rule_108`): asymetria gracz/AI/MP bez decyzji ABC lub test tylko ownerId=0 → **FAIL #8** (nie NOTES).
 
-Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · twardość werdyktów: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · happy-path-only: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md`
+Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · twardość werdyktów: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · happy-path-only: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` · parytet ownerId: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`
 
 ## Punkty wejścia (każda sesja musi to znać)
 
