@@ -29,3 +29,19 @@
 **Hinty (brak stolicy):**
 - brak `capId` → „Brak stolicy na mapie — to państwo nie ma jeszcze miasta-stolicy."
 - brak miasta na mapie → „Stolica niedostępna — miasto mogło zostać zdobyte lub zniszczone."
+
+## Evaluator (AutoBot warstwa 2 — 2026-08-05)
+
+**Werdykt:** **PASS**  
+**Tip:** `68e2b04` · branch `cursor/feat-absorb-f2-celownik-63a1`
+
+| # | Oś | Wynik |
+|---|-----|-------|
+| 1 | SCOPE — tylko hint w `focusCameraOnOwnerCapital`; brak zmian logiki dyplo/absorb | ✅ |
+| 2 | AC — `showHintMessage` przy braku `capId` i braku miasta na mapie | ✅ |
+| 3 | WIRING — `dipCapitalLocateBtnHtml` + `onFocusCapital` w audiencji i liście; `handleDiploFocusCapital` zamyka overlay | ✅ |
+| 4 | STRICT — brak testu DOM zgodnie z AC; weryfikacja kodowa hintów | ✅ (AC wyjątek) |
+| 5 | STRICT-EDGE — dwa komunikaty rozróżniają brak stolicy vs niedostępność | ✅ |
+| 6 | STRICT-PARITY — działa dla gracza i AI (ownerId dowolny) | ✅ |
+| 7 | STRICT-SAVE — zero nowych pól | ✅ |
+| 8 | Bramki — `tsc --noEmit` 0 | ✅ |

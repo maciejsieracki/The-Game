@@ -28,3 +28,20 @@
 | `gra/src/game/ai-major-absorb.ts` | `decideAiMajorAbsorb` F2 + opcjonalny gate F1 |
 | `gra/src/main.ts` (~21743) | filtr `majorTargets` all major AI, log any-civ |
 | `gra/tools/ai-major-absorb-test.cjs` | harness T1–T10 + F1 gate |
+
+## Evaluator (AutoBot warstwa 2 — 2026-08-05)
+
+**Werdykt:** **PASS**  
+**Tip:** `68e2b04` · branch `cursor/feat-absorb-f2-celownik-63a1`
+
+| # | Oś | Wynik |
+|---|-----|-------|
+| 1 | SCOPE — Faza 2: hard only + any-civ; ratio/tura jak F1 (1,25 / 10); brak easy/normal/gracz | ✅ |
+| 2 | NO-SIDE-EFFECT — Ł/N bez zmian (`not_hard`); gracz wykluczony (T7/T8); MP wykluczony (T9) | ✅ |
+| 3 | REGRESSION — F1 gate `requireSameCiv: true` zachowany (T2b); progi stałe | ✅ |
+| 4 | COUPLING — `majorTargets` bez filtra same-civ; log `(any-civ hard)`; `break` max 1/turę | ✅ |
+| 5 | STRICT — celowany test `ai-major-absorb-test.cjs` 20/20 | ✅ |
+| 6 | STRICT-EDGE — easy, weak ratio, early turn, different civ annex, próg 1,25 | ✅ |
+| 7 | STRICT-PARITY — `ownerId===0` null; major↔major only | ✅ |
+| 8 | STRICT-SAVE — zero nowych pól / snapshot | ✅ |
+| 9 | Bramki — `tsc --noEmit` 0 · test tematu 20/20 | ✅ |
