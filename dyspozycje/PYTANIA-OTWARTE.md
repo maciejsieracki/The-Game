@@ -1622,17 +1622,17 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **OTWARTE** (audyt 2026-08-02, bez zmiany kodu)
+## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **ZAMKNIĘTE = A** (2026-08-05)
 
 **Źródło:** Maciej: 4 bliskie etykiety (np. krótkie nazwy ~2–4 hex); pamięta min. ~12 hex między stolicami.
-**Audyt:** `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` · **VERDICT: DESIGN_KLASTRA** — sep stolic Standard=14 twarde; skupisko = 1 stolica + MP (pierścień 5 hex). Menu Standard min 4 MP → dokładnie 4 etykiety w klastrze.
-**NIE bug bramki** — nie zmieniać sep/pack bez decyzji.
+**Audyt:** `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` · **VERDICT: DESIGN_KLASTRA** — sep stolic Standard=14 twarde; skupisko = 1 stolica + MP (pierścień 5 hex).
+**Decyzja Maciej 2026-08-05:** **A** (odpowiedź `1` = A) — zostawić jak jest (dopisek „· miasto-państwo” na chipie MP). **Bez zmiany kodu / bez deploy.**
+**Kanon:** `docs/decyzje/MAP-UX-CLUSTER-LABEL.md`
 
-**ABC (tylko jeśli chce czytelniejszy UX mapy):**
-- **A)** Zostawić (dopisek „· miasto-państwo” na chipie MP).
+**ABC (zamknięte):**
+- **A)** ✅ Zostawić (dopisek „· miasto-państwo” na chipie MP).
 - **B)** Stolica obca = nazwa cywilizacji; MP = nazwa miasta + dopisek.
 - **C)** Marker wizualny stolicy (korona/obwódka), nazwy bez zmian.
-**Rekomendacja:** B (gdy w ogóle zmieniać).
 
 ---
 
@@ -1678,7 +1678,7 @@ Tylko AI major→MP (`MP-DIPLO-Q1`). Brak absorpcji między pełnymi cywilizacja
 
 `upkeep-test.cjs` 49/73 — 24 porażek przez ×2 koszty `R-STAWKI` / `R-NADMIAR-POOLS` (nie regres FALA 220).
 
-### MAP-UX-CLUSTER-LABEL — nadal **OTWARTE** (patrz sekcja powyżej)
+### MAP-UX-CLUSTER-LABEL — **ZAMKNIĘTE = A** (2026-08-05, bez zmiany kodu)
 
 ### Dyplo-UX (nadal otwarte)
 

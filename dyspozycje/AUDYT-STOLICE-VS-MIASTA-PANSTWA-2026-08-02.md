@@ -62,13 +62,8 @@ Chipy na mapie nachodzą się wizualnie — 5 hex może wyglądać jak 2–4.
 
 ---
 
-## Opcjonalne ABC (tylko UX czytelności — nie bug)
+## ABC UX — **ZAMKNIĘTE = A** (Maciej 2026-08-05)
 
-Zapisane też w `PYTANIA-OTWARTE.md` jako `MAP-UX-CLUSTER-LABEL`.
+Zapis: `docs/decyzje/MAP-UX-CLUSTER-LABEL.md` · `PYTANIA-OTWARTE.md`.
 
-**Sytuacja:** skupisko 1 stolicy + MP wygląda jak „kilka stolic obok siebie”.  
-**Cel:** czy gracz ma od razu odróżniać stolicę klastra od miast-państw na mapie.  
-**A)** Zostawić (dopisek „· miasto-państwo” w etykiecie).  
-**B)** Stolica obca = nazwa cywilizacji; MP = nazwa miasta + dopisek.  
-**C)** Marker wizualny stolicy (korona / grubsza obwódka), nazwy bez zmian.  
-**Rekomendacja:** B (jeśli Maciej w ogóle chce zmianę).
+**Decyzja:** **A** — zostawić etykiety jak są (dopisek „· miasto-państwo”). Bez B/C, bez zmiany kodu.

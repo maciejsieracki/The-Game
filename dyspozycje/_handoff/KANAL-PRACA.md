@@ -1,4 +1,11 @@
-﻿## [20:30 UTC, 2026-08-05] AutoBot Operator → Evaluator / Grok — P-MP-SPAWN-WYZYWIENIE
+﻿## [19:44 UTC, 2026-08-05] GROK → Maciej — MAP-UX-CLUSTER-LABEL = A (zamknięte)
+
+Maciej `1` = **A** — zostawić etykiety klastra (dopisek „· miasto-państwo”); bez B/C.
+|- Docs: `docs/decyzje/MAP-UX-CLUSTER-LABEL.md` · PYTANIA-OTWARTE · REJESTR-PROSB · AUDYT
+|- **Bez** zmiany `gra/src` · **bez** deploy ROBOCZA (nadal FALA 238 `ea921d1e`)
+CZEKAM-NA: nic (temat zamknięty)
+
+## [20:30 UTC, 2026-08-05] AutoBot Operator → Evaluator / Grok — P-MP-SPAWN-WYZYWIENIE
 
 Fix: `foundCity`/`foundCityAt` ustawiają jawne `poziomRacji: DEFAULT_POZIOM_RACJI` (4) + `procentRozwoj: 67` — parytet gracz/major AI/MP.
 |- Pliki: `gra/src/game/cities.ts`, `gra/tools/mp-spawn-ration-test.cjs`, `docs/decyzje/P-MP-SPAWN-WYZYWIENIE.md`
