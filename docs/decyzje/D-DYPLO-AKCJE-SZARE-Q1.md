@@ -32,3 +32,20 @@
 ## Powiązane
 
 - `D-DYPLO-KATALOG-Q1=A` — pełny katalog z JSON (zablokowane = szare).
+
+## Evaluator
+
+**Werdykt:** **FAIL** (commit `3517031`)
+
+| Oś | Werdykt | Uwaga |
+|----|---------|-------|
+| SCOPE | **PASS** | Tylko helper + wiring `main.ts` + UI `diplomacyAudience.ts` + test; zero PW/silnika akceptacji/absorb/ai-params |
+| AC SZARE B+C | **PASS** | `.da-note` pełny tekst (usunięte `slice(0,37)`); `.da-abtn-note` na pasku; `audienceActionStatusNote` / `audienceActionBarLockNote` |
+| AC KATALOG A | **PASS** | (powiązane) Pełny katalog w `buildAudienceActionsList`; MP → `locked`, sojusz `3` widoczny |
+| STRICT | **FAIL** | Brak asercji `audienceActionStatusNote(…, onTable=true)` oraz pustego wiersza gdy enabled |
+| STRICT-EDGE | **FAIL** | Negacja **on-table** nieprzetestowana (MP lock ✓, active ✓) |
+| STRICT-PARITY | **PASS** | Brak nowej asymetrii gracz-only w helperze/UI |
+| STRICT-SAVE | **PASS** | Brak nowych pól stanu / snapshot |
+| Bramki | **PASS** | `tsc --noEmit` 0 · `diplomacy-audience-actions-test.cjs` 18/18 |
+
+**Do poprawy (Operator):** w `diplomacy-audience-actions-test.cjs` dodać asercje: `audienceActionStatusNote(a, true) === 'na stole — Przyjmij w PN'`; opcjonalnie `audienceActionStatusNote({enabled:true,locked:false}) === ''` i `audienceActionBarLockNote({enabled:true}) === ''`.
