@@ -1,4 +1,11 @@
-﻿## [12:10 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0 final (PASS-WITH-NOTES)
+﻿## [10:20 PL, 2026-08-05] OPERATOR → ALL — R-PROC-AUTOBOT-P0-SMOKE (wzmocnienie, bez deploy)
+|- Maciej opcja 2: smoke notes Evaluatora (bc-f71f4817) zamknięte
+|- #6 git-merge deny · #8 defer bez retire + attrs snapshot · #9 evaluate→RETIRED path · win/loss na defer
+|- Branch: cursor/fix-autobot-p0-63a1 · tsc 0 · smoke 10/10
+|- **BEZ** deploy gra-robocza · **BEZ** merge main
+CZEKAM-NA: Grok Evaluator re-run → merge?
+
+## [12:10 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0 final (PASS-WITH-NOTES)
 |- Operator `41169c1` na `cursor/fix-autobot-p0-63a1` · tsc 0 · smoke 9/9
 |- Evaluator (bc-f71f4817): **PASS-WITH-NOTES** — P0 checklist 1–5 PASS; smoke notes nieblokujące
 |- **BEZ** deploy ROBOCZA (tylko scaffold autobot + docs)

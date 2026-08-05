@@ -65,6 +65,7 @@ function restoreSmokeHistory() {
   const tempFiles = [
     path.join(ROOT, 'logs', 'playbook-delay-smoke.json'),
     path.join(ROOT, 'logs', 'playbook-retire-smoke.json'),
+    path.join(ROOT, 'logs', 'playbook-eval-retire-smoke.json'),
   ];
   for (const f of tempFiles) {
     if (fs.existsSync(f)) fs.unlinkSync(f);
@@ -198,6 +199,13 @@ async function main() {
   assert.strictEqual(mergeToMain.allowed, false, 'merge-to-main blocked');
   assert.strictEqual(mergeToMain.risk, 'forbidden', 'merge-to-main risk forbidden');
 
+  const gitMerge = mod.assertActionAllowed('git-merge', {
+    humanApproved: true,
+    deployPasswordGiven: true,
+  });
+  assert.strictEqual(gitMerge.allowed, false, 'git-merge blocked');
+  assert.strictEqual(gitMerge.risk, 'forbidden', 'git-merge risk forbidden');
+
   const unknown = mod.assertActionAllowed('totally-unknown-action');
   assert.strictEqual(unknown.allowed, false, 'unknown action blocked');
   assert.strictEqual(unknown.risk, 'forbidden', 'unknown risk forbidden');
@@ -262,6 +270,7 @@ async function main() {
   delayPb.thresholds.minEventsForWinner = 1000;
   delayPb.thresholds.evaluationDelayHours = 48;
   mod.savePlaybook(delayPb, delayPbPath);
+  const attrsBeforeDelay = [...delayPb.operatorContextAttributes];
 
   const delayRun = {
     id: mod.randomUUID(),
@@ -269,7 +278,7 @@ async function main() {
     finishedAtIso: new Date().toISOString(),
     taskId: 'DELAY-001',
     taskSummary: 'delay smoke',
-    operatorRuleIds: [],
+    operatorRuleIds: ['rule_101'],
     contextPayload: {},
     actionId: 'run-lane-tests',
     success: true,
@@ -289,11 +298,88 @@ async function main() {
     allowPlaybookMutation: false,
   });
   assert.ok(delayResult.postmortem.includes('playbookMutationDeferred'), 'deferred in postmortem');
+  assert.ok(
+    !delayResult.playbookUpdates.some(u => u.kind === 'retire' || u.kind === 'quarantine'),
+    'no retire/quarantine when delay blocks mutation',
+  );
+  const delayPbAfter = mod.loadPlaybook(delayPbPath);
+  assert.deepStrictEqual(
+    delayPbAfter.operatorContextAttributes,
+    attrsBeforeDelay,
+    'operatorContextAttributes unchanged on defer',
+  );
+  assert.ok(
+    delayResult.playbookUpdates.some(u => u.kind === 'win' || u.kind === 'loss'),
+    'recordRuleOutcome win/loss still recorded on defer',
+  );
   assert.ok(mod.readRunHistory().length >= 1, 'run history appended');
   console.log('8. evaluate history + delay deferred — PASS');
   passed++;
 
-  // 9. dashboard log required fields
+  // 9. evaluate → retire przez ścieżkę evaluate (nie bezpośrednie retireWeakRules)
+  const evalRetirePbPath = path.join(ROOT, 'logs', 'playbook-eval-retire-smoke.json');
+  const evalRetirePb = mod.loadPlaybook(TMP_PB);
+  evalRetirePb.thresholds.minRunsForSignificance = 3;
+  evalRetirePb.thresholds.deprecateBelowWinRate = 0.3;
+  evalRetirePb.thresholds.minEventsForWinner = 1;
+  evalRetirePb.thresholds.evaluationDelayHours = 0;
+  evalRetirePb.rules = [
+    {
+      id: 'rule_eval_retire_smoke',
+      rule_text: 'weak rule — evaluate retire path',
+      status: 'ACTIVE',
+      win_count: 0,
+      fail_count: 5,
+      win_rate: 0,
+      lastUpdatedIso: new Date().toISOString(),
+    },
+  ];
+  evalRetirePb.quarantine_rules = [];
+  mod.savePlaybook(evalRetirePb, evalRetirePbPath);
+
+  const evalRetireRun = {
+    id: mod.randomUUID(),
+    startedAtIso: new Date().toISOString(),
+    finishedAtIso: new Date().toISOString(),
+    taskId: 'EVAL-RETIRE-001',
+    taskSummary: 'evaluate retire smoke',
+    operatorRuleIds: ['rule_eval_retire_smoke'],
+    contextPayload: {},
+    actionId: 'run-lane-tests',
+    success: true,
+  };
+  const evalRetireResult = ev.evaluate({
+    run: evalRetireRun,
+    metrics: {
+      profile: 'dev',
+      testsPassed: 5,
+      testsFailed: 0,
+      typecheckOk: true,
+      buildPassed: true,
+      linterPassed: true,
+      humanApproved: true,
+    },
+    playbookPath: evalRetirePbPath,
+    allowPlaybookMutation: true,
+  });
+  assert.ok(
+    evalRetireResult.playbookUpdates.some(u => u.kind === 'retire'),
+    'evaluate path emits retire update',
+  );
+  const evalRetirePbAfter = mod.loadPlaybook(evalRetirePbPath);
+  const retiredViaEvaluate = evalRetirePbAfter.quarantine_rules.find(
+    r => r.id === 'rule_eval_retire_smoke',
+  );
+  assert.ok(retiredViaEvaluate, 'rule moved to quarantine_rules via evaluate');
+  assert.strictEqual(retiredViaEvaluate.status, 'RETIRED', 'status RETIRED via evaluate path');
+  assert.ok(
+    !evalRetirePbAfter.rules.some(r => r.id === 'rule_eval_retire_smoke'),
+    'rule removed from active rules',
+  );
+  console.log('9. evaluate → retireWeakRules path — PASS');
+  passed++;
+
+  // 10. dashboard log required fields
   const entry = mod.buildPostmortemEntry({
     runId: safeRun.id,
     success: true,
@@ -315,11 +401,11 @@ async function main() {
   for (const field of required) {
     assert.ok(field in entry, `log field ${field}`);
   }
-  console.log('9. dashboard log fields — PASS');
+  console.log('10. dashboard log fields — PASS');
   passed++;
 
   restoreSmokeHistory();
-  console.log(`\nautobot-smoke: ${passed}/9 PASS`);
+  console.log(`\nautobot-smoke: ${passed}/10 PASS`);
   process.exit(0);
 }
 
