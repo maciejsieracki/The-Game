@@ -198,9 +198,9 @@ function veteranScaledDef(
 
 function rosterFieldPowerM(
   roster: RuntimeUnit[],
-  unitDefFor: MapFieldBattleLaunchDeps['unitDefFor'],
+  powerScaledDefFor: MapFieldBattleLaunchDeps['fortifyScaledDefFor'],
 ): number {
-  return sumRosterFieldM(roster.map(u => ({ typeId: u.typeId, def: veteranScaledDef(u, unitDefFor) })));
+  return sumRosterFieldM(roster.map(u => ({ typeId: u.typeId, def: powerScaledDefFor(u) })));
 }
 
 function effectiveDefenderM(
@@ -246,7 +246,7 @@ function preBattleSzanseAtkPct(
   terrainCombatData: readonly TerrainEntry[],
 ): number {
   const aLeadDef = unitDefFor(atkRoster[0]!);
-  const mAtk = rosterFieldPowerM(atkRoster, unitDefFor);
+  const mAtk = rosterFieldPowerM(atkRoster, fortifyScaledDefFor);
   const mDef = effectiveDefenderM(defRoster, terrain, structBonusPct, aLeadDef, fortifyScaledDefFor, terrainCombatData);
   return autoBattleWinPct(mAtk, mDef);
 }
@@ -415,7 +415,7 @@ export function launchFieldBattleFromMap(
   function doAutoResolve(): void {
     try {
       const aLeadDef = deps.unitDefFor(atkRosterRef[0]!);
-      const mAtk = rosterFieldPowerM(atkRosterRef, deps.unitDefFor);
+      const mAtk = rosterFieldPowerM(atkRosterRef, deps.fortifyScaledDefFor);
       const mDef = effectiveDefenderM(
         defRosterRef,
         plan.terrain,

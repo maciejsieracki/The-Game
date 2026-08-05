@@ -34,6 +34,8 @@ import {
 import { aiProductionScoreBoosts } from './ai-production-priorities';
 import {
   AI_THREAT_RANGE_DEFAULT,
+  aiThreatMajorDevScore,
+  aiThreatMajorUnitScores,
   aiThreatWallProductionScore,
 } from './ai-threat-mode';
 import type { CivAiProfile } from './civ-ai-data';
@@ -1075,13 +1077,35 @@ export function chooseCityProduction(
   // dostają dokładnie tę samą listę kandydatów budowy co każde inne miasto AI w fazie mid-game.
   const earlyPhase = myCities.length < 3 && !opts.defensiveCopy;
 
-  // §4.3 Under threat: walls first (lider Mocy), then guard
+  // §4.3 Under threat — P-AI-008: major AI → jednostki + rozwój; defensiveCopy → mury+garnizon
   if (underThreat) {
-    const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank);
-    if (!built.includes('mury') && wallScore !== null) {
-      candidates.push({ id: 'mury', score: wallScore });
+    if (opts.defensiveCopy) {
+      const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank, true);
+      if (!built.includes('mury') && wallScore !== null) {
+        candidates.push({ id: 'mury', score: wallScore });
+      }
+      candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
+    } else if (isMajorAiOwner(opts)) {
+      const threatUnits = aiThreatMajorUnitScores(militaryScore);
+      candidates.push({ id: 'Wojownik', score: threatUnits.wojownik });
+      candidates.push({ id: 'Łucznik', score: threatUnits.lucznik });
+      if (!built.includes('spichlerz')) {
+        candidates.push({ id: 'spichlerz', score: aiThreatMajorDevScore(250) });
+      }
+      if (!built.includes('koszary')) {
+        candidates.push({ id: 'koszary', score: aiThreatMajorDevScore(200 + militaryScore) });
+      }
+      for (const b of ['stolarnia', 'cegielnia', 'odlewnia_brazu', 'magazyn', 'targowisko']) {
+        if (!built.includes(b)) {
+          candidates.push({ id: b, score: aiThreatMajorDevScore(140 + economyScore) });
+        }
+      }
+      if (!built.includes('biblioteka')) {
+        candidates.push({ id: 'biblioteka', score: aiThreatMajorDevScore(135 + scienceScore) });
+      }
+    } else {
+      candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
     }
-    candidates.push({ id: 'Wojownik', score: 280 + militaryScore });
   }
 
   // Państwa-kopie (kopia_typu_obronna): najpierw fortyfikacja + garnizon, nigdy ekspansja.
