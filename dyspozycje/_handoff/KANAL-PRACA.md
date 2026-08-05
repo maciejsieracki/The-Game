@@ -1,3 +1,12 @@
+## [19:05 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 234 7d86fa19
+
+Maciej „2”=WIAR R1 · AutoBot PASS · tip `6ccc945`
+|- md5: 7d86fa1919e785a6a3242388ad11ec46 · stempel: ROBOCZA · 7d86fa19
+|- Batch: mnożnik tempa Wiarygodność→Zaufanie w ticku (WIAR-Q3=C)
+|- Testy: wiarygodnosc 103/103 · tsc 0
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
 ﻿## [17:05 UTC, 2026-08-05] AutoBot → Evaluator / Grok — WIAR R1 tempo w ticku
 
 Maciej wybrał „2" (WIAR R1): `applyWiarygodnoscTempoDoDelty` wpięte w `computeTickZaufanieDelta` (po sumie dZ, przed war-zeroing).

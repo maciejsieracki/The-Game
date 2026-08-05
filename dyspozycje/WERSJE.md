@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 06712ea4 - 2026-08-05 18:55 - FALA 233: SOLO facing replay + WIAR Etap0 - **AKTUALNA**
+## ROBOCZA 7d86fa19 - 2026-08-05 19:05 - FALA 234: WIAR R1 tempo W→Zaufanie - **AKTUALNA**
+|- md5 (pelne): 7d86fa1919e785a6a3242388ad11ec46 · stempel: ROBOCZA · 2026-08-05 17:05 (label 7d86fa19)
+|- **FALA 234.** WIAR R1: `applyWiarygodnoscTempoDoDelty` w `computeTickZaufanieDelta` (po sumie dZ, przed war-zero). AutoBot PASS · tip `6ccc945` · wiarygodnosc-test 103/103.
+|- Grok deploy (Maciej „2”=R1 · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 06712ea4 - 2026-08-05 18:55 - FALA 233: SOLO facing replay + WIAR Etap0 - **ZASTĄPIONA** (→ 7d86fa19)
 |- md5 (pelne): 06712ea4149b64fc0eebad326684d7b0 · stempel: ROBOCZA · 2026-08-05 16:55 (label 06712ea4)
 |- **FALA 233.** (1) BITWA-FACING=B: C-FLANK kompletny + persist `attackDirection` przy replay. (2) WIAR A+B: Etap 0 typy + przegląd Dźwignie 2–4. AutoBot PASS · tip `c97bf2d` · deploy `830a9e4`.
 |- Grok deploy (SOLO-Q1=A · Maciej „1”=OK listy). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
