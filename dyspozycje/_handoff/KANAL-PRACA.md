@@ -1,3 +1,9 @@
+## [14:45 PL, 2026-08-05] GROK → ALL — R-CITY-PILL-PROD-ICON W TOKU (AutoBot)
+|- Maciej: na mieście gracza ikony konkretnego budynku/jednostki z kolejki; pusta kolejka = brak ikony; poziom wzrostu (Wyżywienie) widoczny
+|- ID: R-CITY-PILL-PROD-ICON · działaj + AutoBot (Operator→Evaluator→Grok)
+|- Deploy dopiero na hasło Macieja
+CZEKAM-NA: Operator PASS → Evaluator → Grok final
+
 ## [13:55 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY ALL FALA 227 3840f218
 |- md5: 3840f2189404ca7cf447c18e40d17d00 · stempel: ROBOCZA · 718d0ac2 · 2026-08-05 11:55
 |- Hasło Macieja: deploy all do robocza (po handoffie sesji)
