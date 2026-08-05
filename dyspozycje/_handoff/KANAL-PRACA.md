@@ -1,3 +1,9 @@
+## [15:05 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC-AUDYT PASS (plan gotowy)
+|- Operator `a568a18` · Evaluator PASS-WITH-NOTES · scope major AI only
+|- Top: majorEarly ×0.55 · earlyPhase <3 miast · canAfford=null · bonus_produkcja tylko scoring · L3 nauka < L2
+|- Docs: `docs/decyzje/R-AI-TRUDNOSC-AUDYT.md` · PR #110
+CZEKAM-NA: Maciej — wybór paczki P0 (działaj / ABC) albo odłóż
+
 ## [15:00 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC-AUDYT W TOKU (AutoBot)
 |- Maciej: audyt trudności major AI (nie MP) — co najbardziej psuje rozwój + plan per poziom 1/2/3
 |- Branch: `cursor/audit-ai-trudnosc-63a1` · bez kodu gry do czasu planu/ABC
