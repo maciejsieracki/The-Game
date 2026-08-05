@@ -37,6 +37,7 @@ import { buildMiastoKamien } from './miasto-kamien';
 import { buildMiastoBraz } from './miasto-braz';
 import type { CityProduction } from '../game/production';
 import { frontItem } from '../game/production';
+import { getCityRationLevel } from '../game/population-growth-v85';
 import {
   cityMapBadgeKey,
   defenseTierFromWallKind,
@@ -322,8 +323,11 @@ export interface CityRenderOptions {
   /** ikonaId cywilizacji właściciela (civs.json). */
   getCivIconId?: (ownerId: number) => string;
 
-  /** Kolejka produkcji — glif always-on lite (pełny hover po makiecie Design). */
+  /** Kolejka produkcji — ikona frontu (buildingIconSvg / unitIconSvg). */
   getProduction?: (cityId: string) => CityProduction | null;
+
+  /** ownerId gracza — pigułka: poziom Wyżywienia tylko dla jego miast. Domyślnie 0. */
+  playerOwnerId?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -633,6 +637,8 @@ export class CityRenderer {
     const prod = options?.getProduction?.(city.id) ?? null;
     const front = prod ? frontItem(prod) : null;
     const ownerCol = (options?.ownerColorFn ?? ownerColor)(city.ownerId);
+    const playerId = options?.playerOwnerId ?? 0;
+    const isPlayerCity = city.ownerId === playerId;
     return {
       cityName,
       population: city.population ?? 1,
@@ -641,6 +647,8 @@ export class CityRenderer {
       ownerColor: ownerCol,
       prodActive: front !== null && prod?.wstrzymana !== true,
       prodKind: front?.kind ?? null,
+      prodId: front?.id ?? null,
+      growthLevel: isPlayerCity ? getCityRationLevel(city) : null,
       resourceWarning: false,
     };
   }

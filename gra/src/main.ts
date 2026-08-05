@@ -136,7 +136,7 @@ import { CIV_PUBLISH_MARKERS } from './buildInfo';
 // C-OBCE-JEDN-Q2: znak właściciela na żetonie mapy. Assety (portrety + ikony
 // brand-booka) wstrzykujemy stąd, bo warstwa render/ nie zależy od warstwy ui/.
 import { setUnitOwnerEmblemAssets } from './render/unitOwnerEmblem';
-import { setCityMapBadgeCivSigil } from './render/cityMapStatChip';
+import { setCityMapBadgeCivSigil, setCityMapBadgeProdIcon } from './render/cityMapStatChip';
 import { setUnitUpgradeBadgeAssets } from './render/unitUpgradeBadges';
 import { leaderPortraitUrl } from './ui/leaderPortraits';
 import { civIconSvg } from './ui/icons/brandAssets';
@@ -377,7 +377,7 @@ import { showCityCaptureNotice } from './ui/cityCaptureNotice';
 import { showArmyMergePanel, hideArmyMergePanel, isArmyMergePanelOpen } from './ui/armyMergePanel';
 import { showArmyMergePickPanel, hideArmyMergePickPanel, isArmyMergePickPanelOpen } from './ui/armyMergePickPanel';
 import { showArmySplitPanel, hideArmySplitPanel, isArmySplitPanelOpen } from './ui/armySplitPanel';
-import { unitIconSvg, brandIconSvg } from './ui/icons/brandAssets';
+import { unitIconSvg, brandIconSvg, buildingIconSvg } from './ui/icons/brandAssets';
 import { techIconSvg } from './ui/techIcons';
 import {
   visibleStackOnHex,
@@ -1689,6 +1689,7 @@ async function boot(): Promise<void> {
             ? (player.civType as string || _menuCivId || 'grecy')
             : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
         getProduction: (cityId) => cityProdForRender?.(cityId) ?? null,
+        playerOwnerId: 0,
       };
     };
 
@@ -5897,6 +5898,9 @@ async function boot(): Promise<void> {
         barbarianSigilSvg: () => brandIconSvg('chip-death', 40),
       });
       setCityMapBadgeCivSigil((id) => civIconSvg(id, 40));
+      setCityMapBadgeProdIcon((kind, id) =>
+        kind === 'budynek' ? buildingIconSvg(undefined, id) : unitIconSvg(undefined, id),
+      );
       // Ikony odznak ulepszeń — DOKŁADNIE te symbole budynków, które gracz widzi
       // w panelu miasta przy Koszarach i Kuźni (korekta właściciela 2026-07-29:
       // „masz konkretne ikony i symbole tych dwóch budynków, użyj je”).
