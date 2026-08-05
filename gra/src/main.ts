@@ -4634,6 +4634,7 @@ async function boot(): Promise<void> {
           epochLabel: epochLabelForOwner(otherId),
           contactEstablished: diplomaticContactEstablished.has(otherId),
           activeTreaties: activeTreatyLabelsForPair(activeDeals, 0, otherId),
+          wiarygodnosc: getWiarygodnosc(otherId),
         });
       }
       rels.sort((x, y) => x.civ.localeCompare(y.civ, 'pl'));
@@ -10777,6 +10778,7 @@ async function boot(): Promise<void> {
         power: objectivePowerForOwner(oid),
         isPlayer: oid === 0,
         rank: 0,
+        wiarygodnosc: getWiarygodnosc(oid),
       }));
       rows.sort((a, b) => b.power - a.power);
       return rows.map((row, i) => ({ ...row, rank: i + 1 }));
@@ -14362,6 +14364,14 @@ async function boot(): Promise<void> {
             playerWiarygodnoscRozbicie: rozbicieWiarygodnosci(
               getWiarygodnoscEvents(0),
               getWiarygodnoscStreamEntries(0),
+              wiarygodnoscStartowa(_menuDifficulty),
+              turn,
+              _menuDifficulty,
+            ),
+            otherWiarygodnosc: getWiarygodnosc(ownerId),
+            otherWiarygodnoscRozbicie: rozbicieWiarygodnosci(
+              getWiarygodnoscEvents(ownerId),
+              getWiarygodnoscStreamEntries(ownerId),
               wiarygodnoscStartowa(_menuDifficulty),
               turn,
               _menuDifficulty,

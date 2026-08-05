@@ -9,6 +9,9 @@ import {
   nastawienieHintPl,
   nastawienieLabelFromScore,
   TRAKTAT_HANDLOWY_LABEL,
+  wiarygodnoscBadgeHtml,
+  wiarygodnoscTooltipPl,
+  wiarygodnoscTooltipDefPl,
   type FormalDiplomaticKind,
 } from '../game/diplomacy-display';
 import {
@@ -158,6 +161,13 @@ export interface DiplomacyAudienceState {
   playerWiarygodnosc?: number;
   /** Rozbicie W: trwały życiorys vs bieżące uczynki (§4 pkt 9) — tooltip audiencji. */
   playerWiarygodnoscRozbicie?: WiarygodnoscRozbicie;
+  /**
+   * Globalna Wiarygodność rozmówcy (−100…+100) — reputacja imperium rozmówcy.
+   * SILNIK: getWiarygodnosc(otherOwnerId).
+   */
+  otherWiarygodnosc?: number;
+  /** Rozbicie W rozmówcy — tooltip badge przy tytule. */
+  otherWiarygodnoscRozbicie?: WiarygodnoscRozbicie;
   /** Skarbiec gracza (kwota złota) — pkt 5: u gracza zamiast paska Zaufanie/Respekt. */
   playerSkarbiec?: number;
   /** Dochód złota/turę gracza (informacyjnie, jeśli dostępny — cache silnika). */
@@ -392,11 +402,6 @@ function onAudienceEsc(ev: KeyboardEvent): void {
 
 const RESPEKT_TOOLTIP_PL =
   'Respekt = jak duża jest wasza Moc w porównaniu z tą nacją. 50 = równi. Wyżej = jesteś silniejszy.';
-const WIARYGODNOSC_TOOLTIP_DEF_PL =
-  'Wiarygodność (W) = globalna reputacja twojego państwa (−100…+100). Twarde bramki: sojusz W≥0, pakt o nieagresji W≥−40.';
-const WIARYGODNOSC_TOOLTIP_PL =
-  WIARYGODNOSC_TOOLTIP_DEF_PL
-  + ' Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal" (±%).';
 
 const STYLE_ID = 'civ-diplo-aud-css-1e';
 
@@ -456,6 +461,12 @@ ${DIPLO_1E_SHARED_CSS}
 .da-civname.has-brand-tip{cursor:help;}
 .da-civleader{font-size:0.72em;font-style:italic;color:var(--tg-gold-dim,#c9a84c);line-height:1.3;}
 .da-civtitle{font-size:0.68em;color:#8a8070;line-height:1.5;}
+.da-civtitle-row{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+.da-wiar-badge{display:inline-flex;align-items:center;font-size:0.6em;font-weight:600;line-height:1.35;
+  color:#9ab0c8;border:1px solid rgba(122,152,192,.32);background:rgba(40,52,72,.45);
+  border-radius:999px;padding:2px 8px;cursor:help;white-space:nowrap;}
+.da-wiar-badge.pos{color:#9ab8e8;border-color:rgba(122,160,232,.38);background:rgba(58,74,122,.28);}
+.da-wiar-badge.neg{color:#c8a0a0;border-color:rgba(180,100,100,.35);background:rgba(72,40,40,.28);}
 .da-stance-badge{display:inline-flex;align-items:center;gap:5px;font-size:0.6em;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;border-radius:999px;padding:3px 10px;margin-top:2px;
   color:#e0a868;border:1px solid rgba(210,120,30,.5);background:rgba(210,120,30,.1);}
@@ -1146,7 +1157,12 @@ function playerCardHtml(st: DiplomacyAudienceState, playerBon: readonly CivBonus
         civLeaderMedallionHtmlById(st.playerIkonaId ?? 'rzymianie', st.playerKolorHex, st.playerEra) +
         civNameHtml(st.playerCivName, st.playerIkonaId, st.playerIkonaId) +
         playerLeaderHtml(st) +
-        '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
+        '<div class="da-civtitle-row">' +
+          '<div class="da-civtitle">' + esc(st.playerTitle) + '</div>' +
+          (st.playerWiarygodnosc !== undefined
+            ? wiarygodnoscBadgeHtml(st.playerWiarygodnosc, st.playerWiarygodnoscRozbicie)
+            : '') +
+        '</div>' +
       '</div>' +
       '<div>' +
         '<div class="da-sec-title">Atrybuty</div>' +
@@ -1189,7 +1205,12 @@ function otherCardHtml(st: DiplomacyAudienceState, otherBon: readonly CivBonusLi
         civLeaderMedallionHtmlById(st.otherIkonaId ?? 'grecy', st.otherKolorHex, st.otherEra, st.otherIsCityState) +
         civNameHtml(st.otherCivName, st.otherIkonaId, st.otherIkonaId) +
         otherLeaderHtml(st) +
-        '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
+        '<div class="da-civtitle-row">' +
+          '<div class="da-civtitle">' + esc(st.otherTitle) + (st.otherEpochLabel ? ' · ' + esc(st.otherEpochLabel) : '') + '</div>' +
+          (st.otherWiarygodnosc !== undefined
+            ? wiarygodnoscBadgeHtml(st.otherWiarygodnosc, st.otherWiarygodnoscRozbicie)
+            : '') +
+        '</div>' +
         stanceBadgeHtml(st) +
       '</div>' +
       '<div>' +
@@ -1264,8 +1285,8 @@ function credibilityBarHtml(value: number, rozbicie?: WiarygodnoscRozbicie): str
   const signed = w > 0 ? '+' + w : String(w);
   const band = wiarygodnoscLabelPl(w);
   const tipBody = rozbicie
-    ? WIARYGODNOSC_TOOLTIP_DEF_PL + ' ' + wiarygodnoscTooltipRozbiciePl(rozbicie, band)
-    : WIARYGODNOSC_TOOLTIP_PL;
+    ? wiarygodnoscTooltipDefPl() + ' ' + wiarygodnoscTooltipRozbiciePl(rozbicie, band)
+    : wiarygodnoscTooltipPl();
   const tip = ' title="' + esc(tipBody) + '"';
   const hint = rozbicie && (rozbicie.trwalyZyciorys !== 0 || rozbicie.biezaceUczynki !== 0)
     ? '<div class="da-credibility-hint">życiorys '

@@ -61,6 +61,7 @@ fs.writeFileSync(
   rozbicieWiarygodnosci,
   wiarygodnoscTooltipRozbiciePl,
 } from '../src/game/diplomacy-credibility';
+export { wiarygodnoscTooltipPl, wiarygodnoscBadgeHtml } from '../src/game/diplomacy-display';
 export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent } from '../src/game/diplomacy';
 export {
   diplomacyPnRelacjaParams,
@@ -693,6 +694,32 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
   const tip = WC.wiarygodnoscTooltipRozbiciePl(rozb, 'Uczciwy');
   ok(tip.includes('Start +20'), 'tooltip zawiera Start +20');
   ok(tip.includes('Nie wraca w pełni'), 'tooltip zawiera przypomnienie o śladach');
+}
+
+// ---------------------------------------------------------------------------
+// 8f) WIAR §7 UI — tooltip definicji + badge HTML (diplomacy-display.ts)
+// ---------------------------------------------------------------------------
+
+{
+  const tip = WC.wiarygodnoscTooltipPl();
+  ok(tip.includes('Wiarygodność'), 'wiarygodnoscTooltipPl zawiera Wiarygodność');
+  ok(tip.includes('sojusz'), 'wiarygodnoscTooltipPl zawiera bramkę sojusz');
+  ok(tip.includes('nieagresji'), 'wiarygodnoscTooltipPl zawiera bramkę NAP');
+}
+
+{
+  const badge = WC.wiarygodnoscBadgeHtml(12);
+  ok(badge.includes('W +12'), 'wiarygodnoscBadgeHtml: signed value +12');
+  ok(badge.includes('Uczciwy'), 'wiarygodnoscBadgeHtml: band label Uczciwy');
+  ok(badge.includes('da-wiar-badge'), 'wiarygodnoscBadgeHtml: chip class');
+  ok(badge.includes('title='), 'wiarygodnoscBadgeHtml: tooltip attribute');
+}
+
+{
+  const badgeNeg = WC.wiarygodnoscBadgeHtml(-45);
+  ok(badgeNeg.includes('W -45'), 'wiarygodnoscBadgeHtml: signed negative value');
+  ok(badgeNeg.includes('Wiarołomny'), 'wiarygodnoscBadgeHtml: band Wiarołomny');
+  ok(badgeNeg.includes('neg'), 'wiarygodnoscBadgeHtml: neg tone class');
 }
 
 // ---------------------------------------------------------------------------

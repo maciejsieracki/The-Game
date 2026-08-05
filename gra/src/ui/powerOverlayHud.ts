@@ -19,6 +19,8 @@ export interface PowerRankingRow {
   power: number;
   rank: number;
   isPlayer?: boolean;
+  /** Globalna Wiarygodność (−100…+100) — WIAR §7 UI. */
+  wiarygodnosc?: number;
 }
 
 export interface PowerOverlayData {
@@ -84,8 +86,11 @@ export function showPowerOverlay(data: PowerOverlayData, onClose?: () => void, o
   if (data.ranking.length > 0) {
     html += '<div class="civ-pow-rank"><b>Ranking ' + esc(mocLabel()) + '</b><br>';
     for (const r of data.ranking) {
+      const wPart = r.wiarygodnosc !== undefined
+        ? ' · W ' + (r.wiarygodnosc > 0 ? '+' + Math.round(r.wiarygodnosc) : String(Math.round(r.wiarygodnosc)))
+        : '';
       html += (r.isPlayer ? '▸ ' : '  ') + '#' + r.rank + ' ' + esc(r.civ)
-        + ' — ' + esc(mocWithValue(r.power)) + '<br>';
+        + ' — ' + esc(mocWithValue(r.power)) + wPart + '<br>';
     }
     html += '</div>';
   }

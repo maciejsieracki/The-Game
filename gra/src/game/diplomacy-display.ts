@@ -13,12 +13,24 @@ import { normalizeTreatyKind } from './diplomacy-treaties';
 import type { BasketItem } from './diplomacy-pn-engine';
 import type { ProposalPayload } from './diplomacy-proposals';
 import { diplomacyHandelSurowcePakietWielkosc } from './diplomacy-value-catalog';
+import {
+  wiarygodnoscLabelPl,
+  wiarygodnoscTooltipRozbiciePl,
+  type WiarygodnoscRozbicie,
+} from './diplomacy-credibility';
 
 const MATRIX = loadCivMatrix();
 
 const RESPEKT_TOOLTIP_PL =
   'Respekt pokazuje, jak duża jest wasza Moc w porównaniu z tą nacją. ' +
   '50 = równi. Wyżej = jesteś silniejszy.';
+
+const WIARYGODNOSC_TOOLTIP_DEF_PL =
+  'Wiarygodność (W) = globalna reputacja twojego państwa (−100…+100). Twarde bramki: sojusz W≥0, pakt o nieagresji W≥−40.';
+
+const WIARYGODNOSC_TOOLTIP_PL =
+  WIARYGODNOSC_TOOLTIP_DEF_PL
+  + ' Wpływa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/turę (ten sam limit dla każdego — bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0–200); w koszyku negocjacji widać „Wpływ Relacji na deal" (±%).';
 
 interface TagRule {
   paramId: string;
@@ -210,6 +222,39 @@ export function sameCultureCircle(
 /** Tooltip PL dla paska Respekt (D3-UX-4B). */
 export function respektTooltipPl(): string {
   return RESPEKT_TOOLTIP_PL;
+}
+
+/** Tooltip PL dla Wiarygodności (W) — definicja + bramki sojusz/NAP (WIAR §7 UI). */
+export function wiarygodnoscTooltipPl(): string {
+  return WIARYGODNOSC_TOOLTIP_PL;
+}
+
+/** Krótka definicja W + bramki (prefix tooltipa z rozbiciem). */
+export function wiarygodnoscTooltipDefPl(): string {
+  return WIARYGODNOSC_TOOLTIP_DEF_PL;
+}
+
+function escWiarygodnoscHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/**
+ * Kompaktowy badge Wiarygodności przy tytule cywilizacji (WIAR §7 UI).
+ * Pure string — bez DOM; escapowanie HTML jak w diplomacyAudience.ts.
+ */
+export function wiarygodnoscBadgeHtml(value: number, rozbicie?: WiarygodnoscRozbicie): string {
+  const w = Math.round(Math.max(-100, Math.min(100, value)));
+  const signed = w > 0 ? '+' + w : String(w);
+  const band = wiarygodnoscLabelPl(w);
+  const tipBody = rozbicie
+    ? WIARYGODNOSC_TOOLTIP_DEF_PL + ' ' + wiarygodnoscTooltipRozbiciePl(rozbicie, band)
+    : WIARYGODNOSC_TOOLTIP_PL;
+  const tone = w < 0 ? ' neg' : w > 0 ? ' pos' : '';
+  return (
+    '<span class="da-wiar-badge' + tone + '" title="' + escWiarygodnoscHtml(tipBody) + '">'
+    + 'W ' + escWiarygodnoscHtml(signed) + ' · ' + escWiarygodnoscHtml(band)
+    + '</span>'
+  );
 }
 
 /** Formalny stan umów między państwami (odrębny od nastawienia / score). */

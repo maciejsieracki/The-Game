@@ -70,6 +70,8 @@ export interface DiploRelation {
   kolorHex?: string;
   /** Aktywne traktaty między graczem a tą cywilizacją (etykiety PL z silnika). */
   activeTreaties?: readonly string[];
+  /** Globalna Wiarygodność tej cywilizacji (−100…+100) — WIAR §7 UI. */
+  wiarygodnosc?: number;
 }
 
 /** Wojna między dwiema cywilizacjami (wywiad) — A1-Q5; nie musi dotyczyć gracza. */
@@ -225,8 +227,13 @@ function renderRow(rel: DiploRelation, isPlaceholder: boolean): string {
   const tierBadge = '<div class="cd-tier-row">' + tierBadgeHtml(rel.tier, tierLabel(rel.tier)) + treatyChips + '</div>';
   const zauf = rel.zaufanie ?? 0;
   const relTotal = panelRelTotal(zauf, rel.respekt ?? 0);
+  let statsText = 'Relacja: ' + relTotal + ' · Zaufanie: ' + zauf;
+  if (rel.wiarygodnosc !== undefined) {
+    const w = Math.round(rel.wiarygodnosc);
+    statsText += ' · W ' + (w > 0 ? '+' + w : String(w));
+  }
   const stats = (rel.zaufanie != null || rel.respekt != null)
-    ? '<div class="cd-stats">' + esc('Relacja: ' + relTotal + ' · Zaufanie: ' + zauf) + '</div>'
+    ? '<div class="cd-stats">' + esc(statsText) + '</div>'
     : '';
   const rowCls = rel.tier === 0 ? 'cd-row cd-war' : 'cd-row';
   const pennant = rel.ikonaId
