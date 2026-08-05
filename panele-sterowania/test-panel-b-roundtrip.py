@@ -75,7 +75,29 @@ def main():
                 if kb != 777:
                     fail(f"buildings stolarnia.kosztBudowy: oczekiwano 777, jest {kb}")
 
-    print("OK: Panel-B round-trip (miasto + budynki)")
+            # koszt_surowce.drewno (R-PANEL-SYNC)
+            drewno_col = hdr.index("koszt_surowce.drewno") + 1 if "koszt_surowce.drewno" in hdr else None
+            if drewno_col:
+                wb4 = openpyxl.load_workbook(xlsx)
+                ws4 = wb4["Budynki"]
+                hdr4 = [c.value for c in ws4[1]]
+                id_col4 = hdr4.index("id") + 1
+                drewno_col4 = hdr4.index("koszt_surowce.drewno") + 1
+                for r in range(2, ws4.max_row + 1):
+                    if ws4.cell(r, id_col4).value == "stolarnia":
+                        ws4.cell(r, drewno_col4, 88)
+                        break
+                wb4.save(xlsx)
+                subprocess.run(cmd, check=True, capture_output=True)
+                ks = next(
+                    b["koszt_surowce"]["drewno"]
+                    for b in json.load(open(bld_path, encoding="utf-8"))
+                    if b["id"] == "stolarnia"
+                )
+                if ks != 88:
+                    fail(f"buildings stolarnia.koszt_surowce.drewno: oczekiwano 88, jest {ks}")
+
+    print("OK: Panel-B round-trip (miasto + budynki + koszt_surowce)")
 
     # Power P-A: jednostka_wojskowa pkt
     if "Potega-P-A" in openpyxl.load_workbook(PANEL).sheetnames:
