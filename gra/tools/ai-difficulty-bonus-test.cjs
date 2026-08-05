@@ -169,6 +169,59 @@ console.log('\n--- T-DB-f: loadDifficultyParams L3 bonusNauka=2 (P0-3) ---');
   eq(empty.bonusNauka, 2, 'poziom3 bonusNauka fallback = 2');
 }
 
+const SPRYT_FALLBACKS = {
+  1: { agresjaMnoznik: 0.85, dyplomacjaAktywnosc: 0.8, celObranie: 0.0 },
+  2: { agresjaMnoznik: 1.0, dyplomacjaAktywnosc: 1.0, celObranie: 0.5 },
+  3: { agresjaMnoznik: 1.2, dyplomacjaAktywnosc: 1.25, celObranie: 1.0 },
+};
+
+console.log('\n--- T-DB-h: loadDifficultyParams Spryt AI (P1-3) ---');
+{
+  const dataPath = path.resolve(GRA_ROOT, 'data', 'ai-params.json');
+  const raw = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  const data = { aiParams: raw };
+
+  for (const level of [1, 2, 3]) {
+    const keys = [
+      `trudnosc_poziom${level}_agresja_mnoznik`,
+      `trudnosc_poziom${level}_dyplomacja_aktywnosc`,
+      `trudnosc_poziom${level}_cel_obranie`,
+    ];
+    for (const k of keys) {
+      assert(raw[k] != null, `ai-params.json ma klucz ${k}`);
+    }
+    const fb = SPRYT_FALLBACKS[level];
+    eq(raw[`trudnosc_poziom${level}_agresja_mnoznik`].wartosc, fb.agresjaMnoznik, `JSON L${level} agresja wartosc`);
+    eq(raw[`trudnosc_poziom${level}_dyplomacja_aktywnosc`].wartosc, fb.dyplomacjaAktywnosc, `JSON L${level} dyplomacja wartosc`);
+    eq(raw[`trudnosc_poziom${level}_cel_obranie`].wartosc, fb.celObranie, `JSON L${level} cel wartosc`);
+
+    const p = loadDifficultyParams(data, level);
+    eq(p.agresjaMnoznik, fb.agresjaMnoznik, `poziom${level} agresjaMnoznik z JSON`);
+    eq(p.dyplomacjaAktywnosc, fb.dyplomacjaAktywnosc, `poziom${level} dyplomacjaAktywnosc z JSON`);
+    eq(p.celObranie, fb.celObranie, `poziom${level} celObranie z JSON`);
+  }
+
+  const custom = {
+    aiParams: {
+      trudnosc_poziom2_agresja_mnoznik: { wartosc: 0.9, sekcja: 't', opis: '' },
+      trudnosc_poziom2_dyplomacja_aktywnosc: { wartosc: 1.1, sekcja: 't', opis: '' },
+      trudnosc_poziom2_cel_obranie: { wartosc: 0.7, sekcja: 't', opis: '' },
+    },
+  };
+  const p2custom = loadDifficultyParams(custom, 2);
+  eq(p2custom.agresjaMnoznik, 0.9, 'fixture agresja override');
+  eq(p2custom.dyplomacjaAktywnosc, 1.1, 'fixture dyplomacja override');
+  eq(p2custom.celObranie, 0.7, 'fixture cel override');
+
+  for (const level of [1, 2, 3]) {
+    const p = loadDifficultyParams({ aiParams: {} }, level);
+    const fb = SPRYT_FALLBACKS[level];
+    eq(p.agresjaMnoznik, fb.agresjaMnoznik, `poziom${level} agresja fallback`);
+    eq(p.dyplomacjaAktywnosc, fb.dyplomacjaAktywnosc, `poziom${level} dyplomacja fallback`);
+    eq(p.celObranie, fb.celObranie, `poziom${level} cel fallback`);
+  }
+}
+
 const RESEARCH_FIXTURE = [
   { Technologia: 'Garncarstwo', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Spichlerz, Cegielnia, Garncarz', 'Koszt nauki': 12 },
   { Technologia: 'Oswojenie zwierzat', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Tartak', 'Koszt nauki': 10 },

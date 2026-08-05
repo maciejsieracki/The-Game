@@ -24,6 +24,21 @@
     "sekcja": "§7 Trudność Lv1",
     "opis": "Bonus % do statystyk walki jednostek AI na poziomie Prostym."
   },
+  "trudnosc_poziom1_agresja_mnoznik": {
+    "wartosc": 0.85,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Spryt AI: mnożnik agresji reakcji militarnych (0,85 = łagodniejszy Prosty)."
+  },
+  "trudnosc_poziom1_dyplomacja_aktywnosc": {
+    "wartosc": 0.8,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Spryt AI: aktywność dyplomacji — sojusze i handel (0,8 = pasywny Prosty)."
+  },
+  "trudnosc_poziom1_cel_obranie": {
+    "wartosc": 0,
+    "sekcja": "§7 Trudność Lv1",
+    "opis": "Spryt AI: cel ataku — 0 = najbliższy wróg; wyższe = preferuj słabszego (Prosty: 0)."
+  },
   "trudnosc_poziom2_bonus_produkcja": {
     "wartosc": 0.1,
     "sekcja": "§7 Trudność Lv2",
@@ -49,6 +64,21 @@
     "sekcja": "§7 Trudność Lv2",
     "opis": "Bonus % do statystyk walki jednostek AI na poziomie Normalnym."
   },
+  "trudnosc_poziom2_agresja_mnoznik": {
+    "wartosc": 1,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Spryt AI: mnożnik agresji reakcji militarnych (1,0 = Normalny)."
+  },
+  "trudnosc_poziom2_dyplomacja_aktywnosc": {
+    "wartosc": 1,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Spryt AI: aktywność dyplomacji — sojusze i handel (1,0 = Normalny)."
+  },
+  "trudnosc_poziom2_cel_obranie": {
+    "wartosc": 0.5,
+    "sekcja": "§7 Trudność Lv2",
+    "opis": "Spryt AI: cel ataku — 0 = najbliższy; 0,5 = mieszanka odległości i siły (Normalny)."
+  },
   "trudnosc_poziom3_bonus_produkcja": {
     "wartosc": 0.25,
     "sekcja": "§7 Trudność Lv3",
@@ -73,6 +103,21 @@
     "wartosc": 0.05,
     "sekcja": "§7 Trudność Lv3",
     "opis": "Bonus do statystyk walki jednostek AI na poziomie Trudnym (+5%)."
+  },
+  "trudnosc_poziom3_agresja_mnoznik": {
+    "wartosc": 1.2,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Spryt AI: mnożnik agresji reakcji militarnych (1,2 = agresywny Trudny)."
+  },
+  "trudnosc_poziom3_dyplomacja_aktywnosc": {
+    "wartosc": 1.25,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Spryt AI: aktywność dyplomacji — sojusze i handel (1,25 = aktywny Trudny)."
+  },
+  "trudnosc_poziom3_cel_obranie": {
+    "wartosc": 1,
+    "sekcja": "§7 Trudność Lv3",
+    "opis": "Spryt AI: cel ataku — 1,0 = preferuj słabszego wroga (Trudny)."
   },
   "archetype_grecy_wojsko_priorytet": {
     "wartosc": 0,

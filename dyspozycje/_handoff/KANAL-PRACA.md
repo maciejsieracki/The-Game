@@ -1,3 +1,14 @@
+## [17:18 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P1-3 gotowe do deploy
+
+AutoBot PASS · SCOPE OK · 9 kluczy Spryt w `ai-params.json` (= fallbacki, bez zmiany zachowania).
+Branch `cursor/fix-ai-spryt-json-63a1` · tip po cherry-pick Evaluator.
+Testy: tsc PASS · difficulty 64/64.
+CZEKAM-NA: Maciej **deploy** (można razem z P1 PR #112 → FALA 230)
+
+## [17:15 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P1-3 W TOKU (Maciej „3")
+
+Spryt AI: dopisać do `ai-params.json` klucze agresja_mnoznik / dyplomacja_aktywnosc / cel_obranie × poziomy 1–3 (wartości = obecne fallbacki). Branch `cursor/fix-ai-spryt-json-63a1`. CZEKAM-NA: Operator → Evaluator → Grok
+
 ## [17:10 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P1 gotowe do deploy
 
 AutoBot: Operator `bc-5838324b` → Evaluator `bc-f25f7d25` **PASS-WITH-NOTES** (SCOPE OK).
@@ -11,6 +22,7 @@ CZEKAM-NA: Maciej **deploy** (FALA 230)
 
 P1-1: majorEarly budynki ×0.55→×0.70 (+ L1 max turn 40→25). P1-2: scout −80 po 1. Zwiadowcy.
 Branch `cursor/fix-ai-trudnosc-p1-63a1`. SCOPE+regresja obowiązkowe. CZEKAM-NA: Operator → Evaluator → Grok
+
 
 ## [17:00 PL, 2026-08-05] GROK → Maciej — R-PROC-AUTOBOT-EVAL-SCOPE OBOWIĄZUJE
 
