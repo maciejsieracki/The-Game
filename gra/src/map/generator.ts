@@ -704,6 +704,18 @@ export function generateMap(
   // Wybrzeże po ensureRiverOutlets potrafi odciąć ujścia (Maciej 2026-08-01) — ponowna bramka.
   ({ paths: riverPaths, kinds: riverPathKinds } =
     ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+
+  // ── Przebieg 4-fairplay-final: ostatni pierścień wybrzeża / bramka ujść mogły rozdrobnić
+  // masy lądu lub skasować las/złoża — fair-play-grid-test i relief-grid-coverage-test
+  // mierzą STAN końcowy (C-MAPA-Q1=B). Wspólne domknięcie dla wszystkich typów świata.
+  capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+  ensureReliefGridCoverage(
+    hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
+  );
+  ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
+
   reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 100);
   const mapGenTimings = genTimer.finish();
   console.info(

@@ -1912,6 +1912,39 @@ function eligibleReliefLandCount(land: Array<[number, number]>, hexes: Record<st
   return n;
 }
 
+/** Suchy ląd w komórce złóż fair-play (nie Morze/Wybrzeże) — lustro eligibleReliefLandCount. */
+function eligibleDepositLandCount(
+  land: Array<[number, number]>,
+  hexes: Record<string, Hex>,
+): number {
+  return eligibleReliefLandCount(land, hexes);
+}
+
+/** Pakiet żelazo+miedź+glina: min. suchy ląd + co najmniej jeden heks z rzeką (glina, TEMAT 12). */
+function cellCanHostDepositPackage(
+  land: Array<[number, number]>,
+  hexes: Record<string, Hex>,
+  minLand: number,
+): boolean {
+  if (eligibleDepositLandCount(land, hexes) < minLand) return false;
+  for (const [q, r] of land) {
+    if (hexes[hexKey(q, r)]?.rzeka?.obecna) return true;
+  }
+  return false;
+}
+
+function eligibleForestLandCount(
+  land: Array<[number, number]>,
+  hexes: Record<string, Hex>,
+): number {
+  let n = 0;
+  for (const [q, r] of land) {
+    const hex = hexes[hexKey(q, r)];
+    if (hex && isForestEligibleTerrain(hex.terenBazowy)) n++;
+  }
+  return n;
+}
+
 export function ironGridCoverageRatio(
   massLandKeys: string[],
   hexes: Record<string, Hex>,
@@ -12221,7 +12254,7 @@ export function depositGridCoverageRatio(
   let need = 0;
   let hit = 0;
   for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-    if (land.length < minLand) continue;
+    if (!cellCanHostDepositPackage(land, hexes, minLand)) continue;
     need++;
     const ok = required.every((id) => cellCarriesDepositType(land, hexes, id));
     if (ok) hit++;
@@ -12235,22 +12268,24 @@ export function depositGridCoverageRatio(
 export function ensureDepositGridCoverage(
   hexes: Record<string, Hex>,
   tier: DensityTier | ReliefDensityTier,
-  typ: TypSwiata,
-  continentOf: Map<string, number> | null,
-  nContinents: number,
+  _typ: TypSwiata,
+  _continentOf: Map<string, number> | null,
+  _nContinents: number,
   rand: () => number,
 ): number {
   const cellSize = fairPlayResourceCellSize(tier);
   const minLand = minLandHexesForFairPlayCell(cellSize);
-  const partitions = landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents);
+  // fair-play-grid-test.cjs mierzy pokrycie per SPÓJNA masa lądu (groupLandMassKeys), nie strefa
+  // Voronoi — ensureReliefGridCoverage / ensureForestGridCoverage robią tak samo (C-MAPA-Q1=B).
+  const partitions = groupLandMassKeys(hexes).filter((m) => m.length >= 8);
   let fixed = 0;
 
   for (const part of partitions) {
-    const massSet = new Set(part.filter((k) => hexes[k]?.terenBazowy !== TerenBazowy.Morze));
+    const massSet = new Set(part);
     for (let pass = 0; pass < 10; pass++) {
       let passFixed = 0;
       for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-        if (land.length < minLand) continue;
+        if (!cellCanHostDepositPackage(land, hexes, minLand)) continue;
         for (const id of FAIR_PLAY_DEPOSIT_IDS) {
           if (forceDepositInCell(land, hexes, id, rand)) passFixed++;
         }
@@ -12260,7 +12295,7 @@ export function ensureDepositGridCoverage(
     }
     // Domknięcie fair-play: komórki bez pełnego pakietu (żelazo+miedź+glina)
     for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-      if (land.length < minLand) continue;
+      if (!cellCanHostDepositPackage(land, hexes, minLand)) continue;
       for (const id of FAIR_PLAY_DEPOSIT_IDS) {
         if (!cellCarriesDepositType(land, hexes, id)) {
           forceDepositInCell(land, hexes, id, rand);
@@ -12299,7 +12334,7 @@ export function forestGridCoverageRatio(
   let need = 0;
   let hit = 0;
   for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-    if (land.length < minLand) continue;
+    if (eligibleForestLandCount(land, hexes) < minLand) continue;
     need++;
     if (cellHasForest(land, hexes)) hit++;
   }
@@ -12325,12 +12360,12 @@ export function ensureForestGridCoverage(
     .sort((a, b) => b.length - a.length);
   let fixed = 0;
 
-  for (let outer = 0; outer < 4; outer++) {
+  for (let outer = 0; outer < 6; outer++) {
     let passFixed = 0;
     for (const mass of masses) {
       const massSet = new Set(mass);
       for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-        if (land.length < minLand || cellHasForest(land, hexes)) continue;
+        if (eligibleForestLandCount(land, hexes) < minLand || cellHasForest(land, hexes)) continue;
         const eligible = land
           .filter(([q, r]) => {
             const h = hexes[hexKey(q, r)];
