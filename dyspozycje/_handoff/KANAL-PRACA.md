@@ -1,4 +1,13 @@
-﻿## [22:11 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 240 d1450398
+﻿## [22:23 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 241 178073f9
+
+Maciej F2=B (Hard any-civ) · BALANS=B (docs) · CELOWNIK=A · AutoBot PASS · tip `68e2b04`
+|- md5: 178073f9c05e0e83ba929dae53efd3c8 · stempel: ROBOCZA · 178073f9
+|- Batch: major absorb any-civ Hard · celownik hint · unlock strojenia AI (bez liczb)
+|- Testy: ai-major-absorb 20/20 · tsc 0
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
+## [22:11 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 240 d1450398
 
 Maciej Q1=C Q2=C Q3=A · PROD-GATE + major absorb Faza1 · AutoBot PASS · tip `27ba681`
 |- md5: d14503985a8eb8dffde64b0c64e932fe · stempel: ROBOCZA · d1450398

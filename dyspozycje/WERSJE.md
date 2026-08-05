@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA d1450398 - 2026-08-05 22:11 - FALA 240: PROD-GATE + major absorb Faza1 - **AKTUALNA**
+## ROBOCZA 178073f9 - 2026-08-05 22:23 - FALA 241: absorb F2 any-civ + celownik - **AKTUALNA**
+|- md5 (pelne): 178073f9c05e0e83ba929dae53efd3c8 · stempel: ROBOCZA · 2026-08-05 20:23 (label 178073f9)
+|- **FALA 241.** (1) P-AI-ABSORB-F2=B — Hard any-civ major absorb (progi 1.25/tura10). (2) D-DYPLO-CELOWNIK=A — hint gdy brak stolicy. (3) AI-BALANS-UNLOCK=B — docs (bez liczb). AutoBot PASS · tip `68e2b04` · absorb 20/20.
+|- Grok deploy (Maciej litery · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA d1450398 - 2026-08-05 22:11 - FALA 240: PROD-GATE + major absorb Faza1 - **ZASTĄPIONA** (→ 178073f9)
 |- md5 (pelne): d14503985a8eb8dffde64b0c64e932fe · stempel: ROBOCZA · 2026-08-05 20:11 (label d1450398)
 |- **FALA 240.** (1) P-AI-PROD-GATE-Q1=A — difficulty per owner w produkcji AI. (2) P-AI-MAJOR-ABSORB Q1=C Q2=C Faza1 — Hard + same-civ + Moc≥1.25 od tury 10 → instant wchłonięcie. AutoBot PASS · tip `27ba681` · testy 8+18.
 |- Grok deploy (Maciej litery · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
