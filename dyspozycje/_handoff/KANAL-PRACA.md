@@ -1,3 +1,10 @@
+## [13:38 PL, 2026-08-05] GROK → Maciej — multitasking: R-SCENA-PERF + playtest FALA 226
+|- Maciej: **1+2** równolegle (pomiar F12 + OK/BUG AI)
+|- Wejście: `gra-robocza/START.html` · bundle `ebe4548f` · stempel `fea8af68`
+|- Tor A: 3 linie `[civ] buildScene ms` / detail heksy / detail nakladki
+|- Tor B: trudność wyższa → start AI (więcej jednostek/miast) · walka AI silniejsza · pod zagrożeniem AI: jednostki/rozwój **nie** mury (MP bez zmian)
+CZEKAM-NA: Maciej — wklej F12 + OK/BUG FALA 226 (może osobno lub w jednej wiadomości)
+
 ﻿## [13:29 PL, 2026-08-05] GROK → Maciej — R-SCENA-PERF W TOKU (sygnał)
 |- Maciej opcja **3** = sygnał na Budowanie sceny (Q1=A pomiar)
 |- Instrumentacja już w FALA 226 `ebe4548f` (`[civ] buildScene ms` w F12)
