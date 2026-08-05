@@ -36,6 +36,19 @@ Odpowiedź Macieja / ECHO: `R-AUTO-BUDOWA-LISTA-Q2=A · R-AUTO-BUDOWA-LISTA-Q3=B
 
 ---
 
+## 1a00. POTRÓJNA WARSTWA WERYFIKACJI KODU (Maciej 2026-08-05) — NADRZĘDNE
+
+Po każdej paczce kodu (`działaj` / implementacja):
+
+1. **Implementer** (`composer-2.5`) — pisze kod + testy  
+2. **Adwokat diabła** (osobny `composer-2.5`) — szuka regresji, usuniętych usprawnień, ubocznych zepsuć  
+3. **Grok** — finalna kontrola przed „gotowe” / `deploy`
+
+**ZAKAZ** zamykać paczkę po samym #1.  
+Reguła: `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` · opis: `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md`.
+
+---
+
 ## 1a0. NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03) — NADRZĘDNE
 
 **Kanon:** `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` · reguła Cursor: `.cursor/rules/numer-abc-commit-deploy.mdc`

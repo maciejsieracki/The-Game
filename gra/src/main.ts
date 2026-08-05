@@ -428,6 +428,7 @@ import {
   spichlerzSolArmyBonusActive,
   applyStolarniaDrewnoMapInflow,
   refreshEconomyFoodTotals,
+  recomputeCityFoodBalancesInEcon,
 } from './game/turn-economy';
 import {
   refreshTradeRoutes,
@@ -762,6 +763,9 @@ import {
   applyPostCentralPopulationGrowth,
   ensureCityRationDefaults,
   migrateProcentRozwojToPoziomRacji,
+  clampPoziomRacji,
+  getCityRationLevel,
+  WYZYWIENIE_MAX,
   type PoziomRacji,
 } from './game/population-growth-v85';
 import {
@@ -772,6 +776,7 @@ import {
   clearLastEmpireFoodTicks,
   autoBalanceRationsToSolvency,
   autoRaiseRationsForGrowth,
+  maxSafePoziomRacjiForCity,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
@@ -4983,10 +4988,19 @@ async function boot(): Promise<void> {
         getOrderYieldMults: (cityId: string) => orderMultMap.get(cityId) ?? null,
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
         getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
+        getMaxSafePoziomRacji: (cityId: string) => getMaxSafePoziomRacjiForPlayerCity(cityId),
         onCityRationChange: (cityId: string, level: PoziomRacji) => {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
-          city.poziomRacji = level;
+          const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
+          city.poziomRacji = clampPoziomRacji(Math.min(level, maxSafe));
+          markCityStateDirty();
+          updateHud();
+        },
+        onCityAutoWyzywienieChange: (cityId: string, enabled: boolean) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city || city.ownerId !== 0) return;
+          city.autoWyzywienie = enabled;
           markCityStateDirty();
           updateHud();
         },
@@ -11810,6 +11824,59 @@ async function boot(): Promise<void> {
       if (cap > 0) return cap;
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       return efParams.centralCapBaza;
+    }
+
+    /** R-AUTO-RACJE-RAISE-Q3=A: cap suwaka Wyżywienia — max bezpieczny poziom Spichlerza. */
+    function getMaxSafePoziomRacjiForPlayerCity(cityId: string): PoziomRacji {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || city.ownerId !== 0) return WYZYWIENIE_MAX;
+      const playerCities = cities.filter(c => c.ownerId === 0 && !c.oblegane);
+      if (playerCities.length === 0) return WYZYWIENIE_MAX;
+      const ownerCivMap = new Map<number, string>();
+      ownerCivMap.set(0, (player.civType as string) || 'grecy');
+      const preview = previewCityEconomy(
+        playerCities,
+        map,
+        data,
+        _menuDifficulty,
+        cityBuilt,
+        player.era,
+        player.zbadane,
+        ownerCivMap,
+        orderMultMap,
+        empireEpochForOwner,
+        unlockedTechSetForOwner,
+        undefined,
+        undefined,
+        buildAllTerritoryNodes(),
+        undefined,
+        buildWonderCityYieldsByOwnerMap([0]),
+        makeOwnerZlotoAccessResolver(),
+        makeOwnerRuntimeActiveLabelsResolver(),
+        makeOwnerEmpireStockResolver(),
+        ownerDefaultPodzialHandlu,
+      );
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      const foodSt = empireFoodStates.get(0) ?? freshEmpireFoodState();
+      const spichlerzByCity = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
+      for (const tk of preview.perCity) {
+        if (tk.ownerId !== 0) continue;
+        spichlerzByCity.set(tk.cityId, {
+          ceramikaActive: tk.spichlerzCeramika ?? false,
+          solActive: tk.spichlerzSol ?? false,
+          maSpichlerzPop: tk.maSpichlerz ?? false,
+          maSpichlerzIIPop: tk.maSpichlerzII ?? false,
+        });
+      }
+      return maxSafePoziomRacjiForCity({
+        cityId,
+        ownerId: 0,
+        cities,
+        econ: preview,
+        zapasyPrzed: foodSt.zapasyPanstwa,
+        rationParams: efParams.rationParams,
+        spichlerzByCity,
+      });
     }
 
     /** Projekcja przyrostu magazynu centralnego (PYTANIE-85). */
@@ -19750,6 +19817,7 @@ async function boot(): Promise<void> {
                 zapasyPrzed: foodSt.zapasyPanstwa,
                 rationParams: efParams.rationParams,
                 spichlerzByCity: spichlerzByCityForAuto,
+                onlyAutoManaged: ownerId === 0,
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
@@ -19766,6 +19834,8 @@ async function boot(): Promise<void> {
                   zapasyPrzed: foodSt.zapasyPanstwa,
                   rationParams: efParams.rationParams,
                   spichlerzByCity: spichlerzByCityForAuto,
+                  requireProductionSurplus: ownerId === 0,
+                  onlyAutoManaged: ownerId === 0,
                 });
                 if (raiseResult.adjusted) {
                   autoRationAnyAdjusted = true;
@@ -19774,6 +19844,36 @@ async function boot(): Promise<void> {
             }
             if (autoRationAnyAdjusted) {
               refreshEconomyFoodTotals(econ);
+            }
+
+            // Q3=A (review): clamp Wyżywienia gracza do maxSafe przed rozliczeniem —
+            // stary zapis / spadek produkcji bez ruszania suwaka nie może grać powyżej limitu.
+            {
+              const foodSt0 = empireFoodStates.get(0) ?? freshEmpireFoodState();
+              let clampedAny = false;
+              for (const city of cities) {
+                if (city.ownerId !== 0) continue;
+                const maxSafe = maxSafePoziomRacjiForCity({
+                  cityId: city.id,
+                  ownerId: 0,
+                  cities,
+                  econ,
+                  zapasyPrzed: foodSt0.zapasyPanstwa,
+                  rationParams: efParams.rationParams,
+                  spichlerzByCity: spichlerzByCityForAuto,
+                });
+                const cur = getCityRationLevel(city);
+                if (cur > maxSafe) {
+                  city.poziomRacji = maxSafe;
+                  clampedAny = true;
+                }
+              }
+              if (clampedAny) {
+                recomputeCityFoodBalancesInEcon(
+                  econ.perCity, cities, efParams.rationParams, spichlerzByCityForAuto,
+                );
+                refreshEconomyFoodTotals(econ);
+              }
             }
 
             lastEfTickResult = advanceEmpireFood(
@@ -19853,11 +19953,12 @@ async function boot(): Promise<void> {
               // inaczej mechanizm karencji działa po cichu przez glodWojskaKarencjaTur tur, zanim
               // gracz cokolwiek zobaczy.
               const playerTick = efTickResult.byOwner.get(0);
-              if (playerTick && playerTick.zapasyPo < 0) {
+              // Q4: zapasyPo zawsze ≥ 0 — ostrzeżenie karencji na glodWojska (niedobór tury), nie ujemny bufor
+              if (playerTick && playerTick.glodWojska && !playerTick.glodWojskaAtrycjaAktywna) {
                 const pozostaleTury = Math.max(0, efParams.glodWojskaKarencjaTur - playerTick.turyUjemnychZapasowPo);
                 if (pozostaleTury > 0) {
                   showHintMessage(
-                    `Głód wojska za ${pozostaleTury} ${slowoTura(pozostaleTury)} — zapasy państwa ujemne!`,
+                    `Głód wojska za ${pozostaleTury} ${slowoTura(pozostaleTury)} — brak żywności na armię!`,
                     3000,
                   );
                 }

@@ -488,6 +488,8 @@ export interface City {
    * Wyżywienie: 0…6 co 0,5 (koszt żywności/miesz. = ta wartość). Decyzja 2026-07-30.
    */
   poziomRacji?: number;
+  /** R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: default false/undefined=WYŁ. AI: ignorowane (zawsze auto). */
+  autoWyzywienie?: boolean;
   /** Jednorazowa migracja starych racji 1|2|3 → 2|4|6. */
   rationMigratedV114?: boolean;
   /** PYTANIE-85: skumulowany ułamkowy przyrost ludności. */

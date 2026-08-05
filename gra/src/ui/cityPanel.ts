@@ -344,6 +344,10 @@ export interface CityPanelConfig {
   getEmpireFoodTick?: (ownerId: number) => EmpireFoodTick | null;
   /** PYTANIE-85 — gracz wybiera rację 1|2|3 w panelu miasta. */
   onCityRationChange?: (cityId: string, poziomRacji: PoziomRacji) => void;
+  /** R-AUTO-RACJE-RAISE-Q5=A — przełącznik auto Wyżywienie per miasto (gracz). */
+  onCityAutoWyzywienieChange?: (cityId: string, enabled: boolean) => void;
+  /** R-AUTO-RACJE-RAISE-Q3=A — max bezpieczny poziom suwaka Wyżywienia. */
+  getMaxSafePoziomRacji?: (cityId: string) => number;
   /** Okolica 4C — profile + ręczna korekta. */
   getOkolicaState?: (cityId: string) => {
     focus: OkolicaFocus;
@@ -4520,26 +4524,35 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
 
   const player = city.ownerId === 0;
   const rationEditable = player && !!cfg.onCityRationChange;
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const maxSlider = maxSafe / WYZYWIENIE_STEP;
   const sliderWrap = el('div', 'wyzwienie-w4-sliders');
   const sliderRow = el('div', 'slider-row');
   const sliderLabel = el('label');
-  const growPct = rationGrowthPercent(view.poziomRacji, rationParams);
+  const displayLevel = Math.min(view.poziomRacji, maxSafe);
+  const growPct = rationGrowthPercent(displayLevel, rationParams);
   const growTxt = growPct > 0 ? `+${growPct}` : String(growPct);
   sliderLabel.innerHTML =
     `<span>${loafIconHtml('civ-v-loaf-chip')} Wyżywienie</span>` +
-    `<span>${formatWyzwienieLabel(view.poziomRacji)} · ${growTxt}%</span>`;
+    `<span>${formatWyzwienieLabel(displayLevel)} · ${growTxt}%</span>`;
   sliderRow.appendChild(sliderLabel);
   const inp = document.createElement('input');
   inp.type = 'range';
   inp.min = String(WYZYWIENIE_MIN / WYZYWIENIE_STEP);
-  inp.max = String(WYZYWIENIE_MAX / WYZYWIENIE_STEP);
+  inp.max = String(maxSlider);
   inp.step = '1';
-  inp.value = String(view.poziomRacji / WYZYWIENIE_STEP);
+  inp.value = String(displayLevel / WYZYWIENIE_STEP);
   inp.disabled = !rationEditable;
-  inp.title = 'Wyżywienie — koszt żywności na mieszkańca i tempo wzrostu ludności';
+  inp.title = maxSafe < WYZYWIENIE_MAX
+    ? `Wyżywienie — limit Spichlerza: max ${formatWyzwienieLabel(maxSafe)}`
+    : 'Wyżywienie — koszt żywności na mieszkańca i tempo wzrostu ludności';
   if (rationEditable) {
     inp.addEventListener('input', () => {
-      const level = Number(inp.value) * WYZYWIENIE_STEP;
+      const rawLevel = Number(inp.value) * WYZYWIENIE_STEP;
+      const level = Math.min(rawLevel, maxSafe);
+      if (level < rawLevel) {
+        inp.value = String(level / WYZYWIENIE_STEP);
+      }
       if (level === view.poziomRacji) return;
       cfg.onCityRationChange?.(city.id, level);
       rerender();
@@ -4547,8 +4560,38 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   }
   sliderRow.appendChild(inp);
   sliderWrap.appendChild(sliderRow);
+  if (rationEditable && cfg.onCityAutoWyzywienieChange) {
+    const autoRow = el('div', 'slider-row auto-wyzywienie-row');
+    const autoLabel = el('label');
+    autoLabel.style.cssText = 'display:flex;align-items:center;gap:0.35em;cursor:pointer;';
+    const autoCb = document.createElement('input');
+    autoCb.type = 'checkbox';
+    autoCb.checked = city.autoWyzywienie === true;
+    autoCb.title =
+      'WŁ: automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0). ' +
+      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.';
+    autoLabel.appendChild(autoCb);
+    const autoTxt = document.createElement('span');
+    autoTxt.textContent = 'Auto Wyżywienie';
+    autoLabel.appendChild(autoTxt);
+    autoRow.appendChild(autoLabel);
+    autoCb.addEventListener('change', () => {
+      cfg.onCityAutoWyzywienieChange?.(city.id, autoCb.checked);
+      rerender();
+    });
+    sliderWrap.appendChild(autoRow);
+  }
   const hint = el('div', 'wyzwienie-w4-hint');
-  hint.textContent = wyzwienieSummaryLabel(view.poziomRacji, rationParams);
+  hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams);
+  if (maxSafe < WYZYWIENIE_MAX && rationEditable) {
+    hint.textContent += ` · Limit Spichlerza: ${formatWyzwienieLabel(maxSafe)}`;
+  }
+  if (view.poziomRacji > maxSafe) {
+    hint.textContent += ' · poziom zostanie obniżony do limitu na koniec tury';
+  }
+  if (rationEditable && city.autoWyzywienie !== true) {
+    hint.textContent += ' · Auto WYŁ — bez auto-obniżania/podnoszenia';
+  }
   sliderWrap.appendChild(hint);
   mount.appendChild(sliderWrap);
   if (!rationEditable && player) {

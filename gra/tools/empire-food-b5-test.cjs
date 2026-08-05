@@ -108,7 +108,7 @@ const params = M.buildEmpireFoodParams({
   ok(M.getEmpireFoodMaxCap(0) === 600, 'max cap = 500 + 100 spichlerz');
 }
 
-// Głód wojska przy ujemnych zapasach
+// Głód wojska przy niedoborze żywności (Q4=A: zapasy clamp ≥ 0)
 {
   const states = new Map([[0, { zapasyPanstwa: 0, turyUjemnychZapasow: 0 }]]);
   const units20 = Array.from({ length: 20 }, () => ({ ownerId: 0, typeId: 'woj', camping: false }));
@@ -116,8 +116,8 @@ const params = M.buildEmpireFoodParams({
     { perCity: [{ cityId: 'c1', ownerId: 0, oblegany: false, zywnoscBrutto: 5, kosztRacji: 0, bilansLokalny: 5, zywnoscNetto: 5 }] },
     units20, states, upkeep, params,
   );
-  ok(ef.byOwner.get(0).glodWojska === true, 'głód wojska przy ujemnych zapasach');
-  ok(states.get(0).zapasyPanstwa < 0, 'zapasy mogą być ujemne');
+  ok(ef.byOwner.get(0).glodWojska === true, 'głód wojska przy niedoborze w turze');
+  ok(states.get(0).zapasyPanstwa === 0, 'zapasy clamp ≥ 0 (Q4=A)');
 }
 
 // Army starvation HP

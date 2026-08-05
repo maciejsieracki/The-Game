@@ -16,6 +16,7 @@ import {
   clampPoziomRacji,
   ensureCityRationDefaults,
   getCityRationLevel,
+  WYZYWIENIE_LEVELS,
   WYZYWIENIE_MAX,
   WYZYWIENIE_MIN,
   WYZYWIENIE_STEP,
@@ -245,19 +246,20 @@ export function advanceEmpireFood(
     const spichlerzStolicy = central;
     const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable);
     central -= kosztArmii;
-    const przyrostZapasow = central - zapasyPrzed;
 
     const maxCap = computeCentralFoodCap(
       ownerId, econ.perCity, magazynCountByOwner.get(ownerId) ?? 0, params,
     );
     if (central > maxCap) central = maxCap;
-    if (central < 0) central = central; // ujemne zapasy dozwolone (głód wojska)
+    const glodWojska = central < 0;
+    central = Math.max(0, central);
+    const przyrostZapasow = central - zapasyPrzed;
 
     st.zapasyPanstwa = central;
     _maxCapByOwner.set(ownerId, maxCap);
 
     const turyUjemnychZapasowPrzed = st.turyUjemnychZapasow ?? 0;
-    const turyUjemnychZapasowPo = central < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
+    const turyUjemnychZapasowPo = glodWojska ? turyUjemnychZapasowPrzed + 1 : 0;
     st.turyUjemnychZapasow = turyUjemnychZapasowPo;
 
     const tick: EmpireFoodTick = {
@@ -273,7 +275,7 @@ export function advanceEmpireFood(
       zapasyPo: central,
       maxCap,
       kosztArmii,
-      glodWojska: central < 0,
+      glodWojska,
       turyUjemnychZapasowPo,
       glodWojskaAtrycjaAktywna: turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur,
       zywnoscBrutto: uprawaHodowla,
@@ -314,7 +316,7 @@ export function getEmpireFoodSplit(_ownerId: number): number {
 }
 
 /**
- * Głód wojska — osłabienie statów bojowych (bez armor) gdy zapasy < 0 po koszcie armii.
+ * Głód wojska — osłabienie statów bojowych (bez armor) gdy w tej turze zabrakło żywności na armię.
  * Wcześniejsze niż isArmyStarving (atrycja HP po karencji).
  */
 export function isArmyHungry(ownerId: number): boolean {
@@ -322,7 +324,7 @@ export function isArmyHungry(ownerId: number): boolean {
   return _lastTicks.get(ownerId)?.glodWojska ?? false;
 }
 
-/** Atrycja HP wojska — aktywna PO karencji glodWojskaKarencjaTur tur ujemnych zapasów. */
+/** Atrycja HP wojska — aktywna PO karencji glodWojskaKarencjaTur tur z głodem wojska z rzędu. */
 export function isArmyStarving(ownerId: number): boolean {
   if (isBarbarian(ownerId)) return false;
   return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
@@ -330,7 +332,7 @@ export function isArmyStarving(ownerId: number): boolean {
 
 export function getArmyStarvationCountdown(ownerId: number, karencjaTur: number): number | null {
   const t = _lastTicks.get(ownerId);
-  if (!t || t.zapasyPo >= 0 || t.glodWojskaAtrycjaAktywna) return null;
+  if (!t || !t.glodWojska || t.glodWojskaAtrycjaAktywna) return null;
   return Math.max(1, karencjaTur - t.turyUjemnychZapasowPo);
 }
 
@@ -348,6 +350,23 @@ export function clearLastEmpireFoodTicks(): void {
 }
 
 // --- SPICH-AUTO-Q1: auto-obniżenie racji do bilansu miast = 0 (przed wojskiem) ---
+
+/** R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: tylko gdy flaga WŁ. AI: zawsze. */
+export function isCityAutoWyzywienieEnabled(city: City, opts?: { forceAuto?: boolean }): boolean {
+  if (opts?.forceAuto) return true;
+  if (city.ownerId !== 0) return true;
+  return city.autoWyzywienie === true;
+}
+
+function ownerCitiesForAutoAdjust(
+  cities: City[],
+  ownerId: number,
+  onlyAutoManaged?: boolean,
+): City[] {
+  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  if (!onlyAutoManaged) return ownerCities;
+  return ownerCities.filter(c => isCityAutoWyzywienieEnabled(c));
+}
 
 export interface AutoRationCityChange {
   cityId: string;
@@ -425,6 +444,8 @@ export interface AutoBalanceRationsOpts {
   zapasyPrzed: number;
   rationParams: RationParams;
   spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+  /** Gracz Q5=A: tylko miasta z autoWyzywienie === true. */
+  onlyAutoManaged?: boolean;
 }
 
 /**
@@ -432,8 +453,8 @@ export interface AutoBalanceRationsOpts {
  * aż pula po dopłatach miastom (przed wojskiem) nie spadnie poniżej zera.
  */
 export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): AutoRationAdjustResult {
-  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity } = opts;
-  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, onlyAutoManaged } = opts;
+  const ownerCities = ownerCitiesForAutoAdjust(cities, ownerId, onlyAutoManaged);
   if (ownerCities.length === 0) {
     return { adjusted: false, changes: [] };
   }
@@ -484,16 +505,24 @@ export interface AutoRaiseRationsOpts {
   zapasyPrzed: number;
   rationParams: RationParams;
   spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+  /** Gracz (Q1=B): podnoś tylko przy trwałej nadwyżce produkcji miast; major AI — zapasy OK. */
+  requireProductionSurplus?: boolean;
+  /** Gracz Q5=A: tylko miasta z autoWyzywienie === true. */
+  onlyAutoManaged?: boolean;
 }
 
 /**
- * Maciej 2026-08-04 (major AI): gdy Spichlerz państwa jest solvent i jest nadwyżka
- * żywności — podnieś Wyżywienie (poziomRacji) o krok, aż do max lub braku nadwyżki.
- * Parytet SPICH-AUTO (obniżanie przy deficycie); tylko major AI woła z main.ts.
+ * Gdy Spichlerz państwa jest solvent — podnieś Wyżywienie (poziomRacji) o krok,
+ * aż do max lub braku nadwyżki. Parytet SPICH-AUTO (obniżanie przy deficycie).
+ * Gracz (requireProductionSurplus): tylko nadwyżka produkcji miast (Q1=B).
+ * Major AI: nadwyżka lub zapasy centralne (nie magazynuj zamiast rosnąć).
  */
 export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRationAdjustResult {
-  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity } = opts;
-  const ownerCities = cities.filter(c => c.ownerId === ownerId);
+  const {
+    ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity,
+    requireProductionSurplus, onlyAutoManaged,
+  } = opts;
+  const ownerCities = ownerCitiesForAutoAdjust(cities, ownerId, onlyAutoManaged);
   if (ownerCities.length === 0) {
     return { adjusted: false, changes: [] };
   }
@@ -503,9 +532,13 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
   }
 
   const nadwyzka = computeEmpireCityFoodNadwyzka(econ.perCity, ownerId);
-  // Major AI: nie magazynuj zamiast rosnąć — podnoś racje jeśli jest choć trochę żywności
-  // do przeznaczenia (nadwyżka miast lub zapasy centralne). Brak żywności = brak ruchu.
-  if (nadwyzka <= 0 && zapasyPrzed <= 0) {
+  if (requireProductionSurplus) {
+    // Gracz Q1=B: tylko trwała nadwyżka produkcji — zapasy Spichlerza nie uruchamiają raise.
+    if (nadwyzka <= 0) {
+      return { adjusted: false, changes: [] };
+    }
+  } else if (nadwyzka <= 0 && zapasyPrzed <= 0) {
+    // Major AI: nadwyżka miast lub zapasy centralne; brak żywności = brak ruchu.
     return { adjusted: false, changes: [] };
   }
 
@@ -517,8 +550,10 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
 
   const maxSteps = Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 2;
   for (let step = 0; step < maxSteps; step++) {
-    const poolAfterRaise = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
-    if (poolAfterRaise < 0) break;
+    const levelsBeforeRaise = new Map<string, PoziomRacji>();
+    for (const c of ownerCities) {
+      levelsBeforeRaise.set(c.id, getCityRationLevel(c));
+    }
 
     let raised = false;
     for (const c of ownerCities) {
@@ -531,7 +566,18 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
     if (!raised) break;
 
     recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
-    if (!isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) break;
+
+    const pool = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
+    const solvent = isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId);
+    if (pool < 0 || !solvent) {
+      for (const c of ownerCities) {
+        c.poziomRacji = levelsBeforeRaise.get(c.id)!;
+      }
+      recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
+      break;
+    }
+
+    if (requireProductionSurplus && computeEmpireCityFoodNadwyzka(econ.perCity, ownerId) <= 0) break;
   }
 
   const changes: AutoRationCityChange[] = [];
@@ -544,6 +590,39 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
   }
 
   return { adjusted: changes.length > 0, changes };
+}
+
+/** R-AUTO-RACJE-RAISE-Q3=A: najwyższy poziom Wyżywienia przy którym Spichlerz ≥ 0 po dopłatach miastom. */
+export function maxSafePoziomRacjiForCity(opts: {
+  cityId: string;
+  ownerId: number;
+  cities: City[];
+  econ: Pick<EconomyTickResult, 'perCity'>;
+  zapasyPrzed: number;
+  rationParams: RationParams;
+  spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
+}): PoziomRacji {
+  const { cityId, ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity } = opts;
+  const city = cities.find(c => c.id === cityId);
+  if (!city || city.ownerId !== ownerId) return WYZYWIENIE_MIN;
+
+  ensureCityRationDefaults(city);
+  const originalLevel = getCityRationLevel(city);
+  let maxSafe = WYZYWIENIE_MIN;
+
+  for (const level of WYZYWIENIE_LEVELS) {
+    city.poziomRacji = level;
+    recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
+    const pool = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
+    const solvent = isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId);
+    if (pool >= 0 && solvent) {
+      maxSafe = level;
+    }
+  }
+
+  city.poziomRacji = originalLevel;
+  recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
+  return clampPoziomRacji(maxSafe);
 }
 
 /** @deprecated PYTANIE-85 */

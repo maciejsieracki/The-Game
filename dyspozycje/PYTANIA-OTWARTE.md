@@ -26,6 +26,15 @@ Szczegóły: [`docs/decyzje/R-PILL-TARCZA-BEZ-MURU.md`](../docs/decyzje/R-PILL-T
 
 ---
 
+## R-AUTO-RACJE-RAISE — Spichlerz ≥ 0 + auto + przełącznik · STATUS: **WDROŻONE (kod) Q2–Q5=A** · czeka deploy (2026-08-05)
+
+**ECHO:** Q2=A · Q3=A · Q4=A · Q5=A. Testy ai-major-economy **32/32**.  
+**Branch:** `cursor/abc-auto-racje-raise-63a1` · commit `9321e39`  
+Szczegóły: [`docs/decyzje/R-AUTO-RACJE-RAISE.md`](../docs/decyzje/R-AUTO-RACJE-RAISE.md).  
+**Wejście po deploy:** `gra-robocza/START.html` — git pull + Ctrl+F5 + Nowa gra.
+
+---
+
 ## R-BUDOWA-ZROWNOWAZONE-TRYB — zrównoważony ≠ priorytet typów · STATUS: **ZAMKNIĘTE** Q1=A · ZDEPLOYOWANE FALA 222→223 · playtest OK (2026-08-04)
 
 **ECHO Maciej:** `R-BUDOWA-ZROWNOWAZONE-TRYB-Q1 A` — osobny tryb auto „Zrównoważony” (5 chipów typów z numerami + osobny przełącznik).
