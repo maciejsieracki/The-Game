@@ -1,10 +1,37 @@
-﻿## [22:10 UTC, 2026-08-05] AUTOBOT → Maciej — VERIFY/CLOSE R-MP-MODELE-KAMIEN (bez deploy)
+﻿## [22:15 UTC, 2026-08-05] AUTOBOT → Maciej — VERIFY/CLOSE R-ARMIA-PASKI (bez deploy)
+
+AutoBot PASS · tip `50ff001`
+|- ID: R-ARMIA-PASKI · `armyListHud.ts:93` gradient `#1d4e8f→#6fb0f0` · etykiety `.al-bar-lbl` „Zdrowie"/„Ruch" z X/Y
+|- `main.ts:4577-4587` — `detailLine` bez duplikatu ruchu (tylko `armia` + „Ruch wykorzystany…")
+|- ROBOCZA już zawiera fix od `50ff001` · md5 `540d2490` · **bez nowego deployu**
+|- Rejestr: WDROŻONE → **ZDEPLOYOWANE** · `docs/decyzje/R-ARMIA-PASKI.md`
+CZEKAM-NA: nic (zamknięte)
+
+## [22:10 UTC, 2026-08-05] AUTOBOT → Maciej — VERIFY/CLOSE R-MP-MODELE-KAMIEN (bez deploy)
 
 AutoBot PASS · tip `<pending>`
 |- ID: R-MP-MODELE-KAMIEN · dispatch `buildNamedUnit`: `n === 'wojownik' || n === 'warrior'` → `buildWojownikOpus5` (`units.ts:1213`)
 |- Import OK (`kamien-bazowe-opus5.ts:64`) · `units.json` Typ=Swordsman nie przechwytuje (dispatch po pełnej nazwie przed kategorią)
 |- ROBOCZA już zawiera fix od `94174fa` · md5 `540d2490` · **bez nowego deployu**
 |- Rejestr: WDROŻONE → **ZDEPLOYOWANE**
+CZEKAM-NA: nic (zamknięte)
+
+## [22:12 UTC, 2026-08-05] AUTOBOT → Maciej — VERIFY/CLOSE R-MP-MODELE-KAMIEN (bez deploy)
+
+AutoBot PASS
+|- ID: R-MP-MODELE-KAMIEN · dispatch `buildNamedUnit`: `n === 'wojownik' || n === 'warrior'` → `buildWojownikOpus5` (`units.ts:1213`)
+|- Import OK (`kamien-bazowe-opus5.ts:64`) · `units.json` Typ=Swordsman nie przechwytuje (dispatch po pełnej nazwie przed kategorią)
+|- ROBOCZA już zawiera fix od `94174fa` · md5 `540d2490` · **bez nowego deployu**
+|- Rejestr: WDROŻONE → **ZDEPLOYOWANE**
+CZEKAM-NA: nic (zamknięte)
+
+## [22:15 UTC, 2026-08-05] AUTOBOT → Maciej — VERIFY/CLOSE R-TECH-ESC-FS + R-TECH-WROC (bez deploy)
+
+AutoBot PASS · tip po push
+|- ID: **R-TECH-ESC-FS** · `lockEscape`/`unlockEscape` + `keyboard.lock(['Escape'])` · `showTechTreeView`/`hideTechTreeView` (`techTreeView.ts:905-922, 1125-1135`)
+|- ID: **R-TECH-WROC** · `.civ-ttv-back` „← Wróć · ESC" · click → `hideTechTreeView` (`techTreeView.ts:1017-1030`)
+|- ROBOCZA już zawiera od FALA 16 `290a962b` (kod `4bec493`) · md5 `540d2490` · **bez nowego deployu**
+|- Rejestr: WDROŻONE → **ZDEPLOYOWANE** · docs `R-TECH-ESC-FS.md` + `R-TECH-WROC.md`
 CZEKAM-NA: nic (zamknięte)
 
 ## [23:55 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 247 540d2490
