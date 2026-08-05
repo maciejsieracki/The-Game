@@ -966,9 +966,11 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## BUG-DYPLO-PANEL-OVERLAP — panel dyplomacji nachodzi na panel jednostki („Frank") · STATUS: **ECHO A** (2026-08-05) — W TOKU · `BUG-DYPLO-PANEL-OVERLAP-Q1`
+## BUG-DYPLO-PANEL-OVERLAP — panel dyplomacji nachodzi na panel jednostki („Frank") · STATUS: **ZAMKNIĘTE** (FALA 245 `8b6e0cfe` · `BUG-DYPLO-PANEL-OVERLAP-Q1=A`)
 
 **Cytat:** Po dyplomacji z zaznaczoną jednostką oba panele nachodzą; miało być naprawione.
+
+**Wdrożenie:** `unitCtxDockDiploGate.ts` — ukryj dock jednostki gdy dyplo open. Szczegóły: `docs/decyzje/BUG-DYPLO-PANEL-OVERLAP-Q1.md`.
 
 ---
 
@@ -1063,13 +1065,17 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## BUG-ARMIA-BRAK-POLACZ — brak akcji „Połącz" przy wielu jednostkach na heksie · STATUS: **OTWARTE** (Maciej 2026-07-29 ~01:36)
+## BUG-ARMIA-BRAK-POLACZ — brak akcji „Połącz" przy wielu jednostkach na heksie · STATUS: **ZAMKNIĘTE** (FALA 207 `47a2e73b`)
 
 **Cytat:** Jest „Rozdziel", brakuje „Połącz" gdy kilka jednostek na polu.
 
+**Wdrożenie:** przycisk Połącz w `armyStackHud.ts`; fix ukrywania docku (`hexDetailHex`); merge `main.ts` / `armyMerge.ts`. Audyt R-PUŁKA #13: `docs/decyzje/R-PULKA-FORGOTTEN-AUDIT.md`.
+
 ---
 
-## R-PUŁKA-PYTANIA-29-07 — paczka pytań bez odpowiedzi w czacie (29.07 noc) · STATUS: **OTWARTE / FORGOTTEN**
+## R-PUŁKA-PYTANIA-29-07 — paczka pytań bez odpowiedzi w czacie (29.07 noc) · STATUS: **ZAMKNIĘTE audytem** (2026-08-05)
+
+**Audyt:** `docs/decyzje/R-PULKA-FORGOTTEN-AUDIT.md` — 18/18 + 5 powiązanych domknięte; **0 realnie otwartych**.
 
 Maciej ~01:43: „Zadałem sporo pytań, czekam na odpowiedzi." Źródło pełne: `MASTER-Work_KORESPONDENCJA.md` linie 93062–93505 (transkrypt 29.07 01:24–01:59).
 
@@ -1089,11 +1095,11 @@ Maciej ~01:43: „Zadałem sporo pytań, czekam na odpowiedzi." Źródło pełne
 | 10 | Handel wychodzi poza ramkę panelu | BUG — fix layout (wdrożony) |
 | 11 | „Handel jednorazowy" + „Runda 1 z 3 · 5 tur" | TAK — copy do uproszczenia (nie ABC gameplay) |
 | 12 | Owce w lesie / zastąpienie Tartaku — dialog? | WDROŻENIE — `R-ZAMIEN-ULEPSZENIE-CONFIRM` |
-| 13 | Brak „Połącz" przy wielu jednostkach | BUG — `BUG-ARMIA-BRAK-POLACZ` |
+| 13 | Brak „Połącz" przy wielu jednostkach | ZAMKNIĘTE — FALA 207 `BUG-ARMIA-BRAK-POLACZ` |
 | 14 | Surowce znów widoczne po budowie | BUG — fix (ZAMKNIĘTE) |
 | 15 | Farma chowa ikonę gliny — czy blokuje Gliniankę? | TAK — tylko UI, złoże zostaje (ZAMKNIĘTE) |
 | 16 | Tartak → 10 Drewna/t, Glinianka → 15 Glina/t | DECYZJA Macieja 01:39 — wdrożone |
-| 17 | Państwa-miasta nie budują mimo zasobów | OTWARTE — `R-AI-MIASTA-BUDOWY` |
+| 17 | Państwa-miasta nie budują mimo zasobów | ZAMKNIĘTE — FALA 244 `R-AI-MIASTA-BUDOWY-FIX-Q1=A` |
 | 18 | Sojusznik zerwie handel gdy broni sojusznika — kto karę? | TAK — wyjaśnione w czacie 01:02 (audyt do potwierdzenia) |
 
 Powiązane osobno (ta sama noc, nie w skróconej tabeli): `D-DYPLO-KATALOG-AKCJI`, `D-DYPLO-CELOWNIK-STOLICA`, `D-DYPLO-AKCJE-SZARE`, `BUG-DYPLO-PANEL-OVERLAP`, `R-HEX-PLONY-MAGAZYN` (ZAMKNIĘTE B).
@@ -1682,5 +1688,6 @@ Tylko AI major→MP (`MP-DIPLO-Q1`). Brak absorpcji między pełnymi cywilizacja
 
 ### Dyplo-UX (nadal otwarte)
 
-- `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP`
-- `HANDEL-SPLIT-Q1` · `R-AI-MIASTA-BUDOWY`
+- `HANDEL-SPLIT-Q1` — patrz sekcja własna (jeśli OTWARTE)
+
+**Zamknięte (audyt R-PUŁKA 2026-08-05):** `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP` · `R-AI-MIASTA-BUDOWY` · paczka `R-PUŁKA-PYTANIA-29-07`
