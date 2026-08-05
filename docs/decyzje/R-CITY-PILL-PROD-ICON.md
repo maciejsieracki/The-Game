@@ -1,6 +1,6 @@
 # R-CITY-PILL-PROD-ICON — ikony kolejki + poziom wzrostu na pigułce miasta
 
-**Status:** 🔵 W TOKU · AutoBot · Maciej 2026-08-05 (~14:45)  
+**Status:** 🟢 Evaluator PASS-WITH-NOTES · gotowe do deploy (Maciej pre-auth) · 2026-08-05  
 **Ekran:** pigułka miasta na mapie świata (miasta **gracza**)
 
 ## ECHO (cytat)
@@ -38,14 +38,18 @@
 - `gra/tools/city-map-badge-test.cjs` — rozszerzyć asercje klucza / helperów
 
 ## AC
-- [ ] Front budynku → ikona tego budynku (nie generyczny prostokąt)
-- [ ] Front jednostki → ikona tej jednostki (nie generyczny trójkąt)
-- [ ] Brak frontu / pause → brak ikony produkcji
-- [ ] Pigułka miasta gracza pokazuje poziom wzrostu (Wyżywienie / `poziomRacji`)
+- [x] Front budynku → ikona tego budynku (nie generyczny prostokąt)
+- [x] Front jednostki → ikona tej jednostki (nie generyczny trójkąt)
+- [x] Brak frontu / pause → brak ikony produkcji
+- [x] Pigułka miasta gracza pokazuje poziom wzrostu (Wyżywienie / `poziomRacji`)
 - [x] Gracz + major AI: medalion = portret/symbol **władcy** (nie sam sygnet kultury) — ECHO2
 - [x] Miasta-państwa: medalion = **tylko kultura** (bez władcy głównej cywu) — ECHO2
-- [ ] `tsc --noEmit` 0 · `city-map-badge-test.cjs` PASS
-- [ ] Bez deploy / bez merge main (Grok + hasło Macieja)
+- [x] `tsc --noEmit` 0 · `city-map-badge-test.cjs` **27/27** PASS
+- [x] AutoBot PASS · Maciej: deploy po skończeniu (hasło 14:52)
 
 ## AutoBot
 Operator → Evaluator → Grok final. Deploy tylko na hasło.
+
+## Note Evaluatora (zaakceptowane)
+- Ikony produkcji na pigułce: dla wszystkich ownerów (tanie dziedziczenie); growth tylko gracz.
+- Testy = klucze cache, nie pixel — playtest wizualny po deploy.
