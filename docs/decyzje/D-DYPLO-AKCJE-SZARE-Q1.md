@@ -1,6 +1,6 @@
 # D-DYPLO-AKCJE-SZARE-Q1 — niedostępne akcje wyszarzone + tooltip
 
-**Status:** 🟡 ECHO **B+C** (2026-08-05) — gotowe do Evaluator (AutoBot 2026-08-05)
+**Status:** 🟢 Evaluator **PASS** (re-eval po STRICT) · gotowe do deploy · 2026-08-05
 
 ## Dowód wdrożenia (AutoBot)
 
@@ -35,17 +35,16 @@
 
 ## Evaluator
 
-**Werdykt:** **FAIL** (commit `3517031`)
+**Werdykt:** **PASS** (re-eval 2026-08-05 po uzupełnieniu STRICT)  
+**Tip kodu:** `3517031` · test STRICT patch na branchu
 
 | Oś | Werdykt | Uwaga |
 |----|---------|-------|
 | SCOPE | **PASS** | Tylko helper + wiring `main.ts` + UI `diplomacyAudience.ts` + test; zero PW/silnika akceptacji/absorb/ai-params |
-| AC SZARE B+C | **PASS** | `.da-note` pełny tekst (usunięte `slice(0,37)`); `.da-abtn-note` na pasku; `audienceActionStatusNote` / `audienceActionBarLockNote` |
-| AC KATALOG A | **PASS** | (powiązane) Pełny katalog w `buildAudienceActionsList`; MP → `locked`, sojusz `3` widoczny |
-| STRICT | **FAIL** | Brak asercji `audienceActionStatusNote(…, onTable=true)` oraz pustego wiersza gdy enabled |
-| STRICT-EDGE | **FAIL** | Negacja **on-table** nieprzetestowana (MP lock ✓, active ✓) |
-| STRICT-PARITY | **PASS** | Brak nowej asymetrii gracz-only w helperze/UI |
-| STRICT-SAVE | **PASS** | Brak nowych pól stanu / snapshot |
-| Bramki | **PASS** | `tsc --noEmit` 0 · `diplomacy-audience-actions-test.cjs` 18/18 |
-
-**Do poprawy (Operator):** w `diplomacy-audience-actions-test.cjs` dodać asercje: `audienceActionStatusNote(a, true) === 'na stole — Przyjmij w PN'`; opcjonalnie `audienceActionStatusNote({enabled:true,locked:false}) === ''` i `audienceActionBarLockNote({enabled:true}) === ''`.
+| AC SZARE B+C | **PASS** | `.da-note` pełny tekst; `.da-abtn-note` na pasku; `audienceActionStatusNote` / `audienceActionBarLockNote` |
+| AC KATALOG A | **PASS** | Pełny katalog; MP → `locked`, sojusz `3` widoczny |
+| STRICT | **PASS** | on-table + enabled→pusty wiersz (20/20) |
+| STRICT-EDGE | **PASS** | MP lock · active · on-table · enabled |
+| STRICT-PARITY | **PASS** | Brak nowej asymetrii gracz-only |
+| STRICT-SAVE | **PASS** | Brak nowych pól stanu |
+| Bramki | **PASS** | `tsc --noEmit` 0 · `diplomacy-audience-actions-test.cjs` 20/20 |

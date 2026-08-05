@@ -1,6 +1,6 @@
 # D-DYPLO-KATALOG-Q1 — katalog akcji w menu propozycji / audiencji
 
-**Status:** 🟡 ECHO **A** (2026-08-05) — gotowe do Evaluator (AutoBot 2026-08-05)
+**Status:** 🟢 Evaluator **PASS** (re-eval po STRICT) · gotowe do deploy · 2026-08-05
 
 ## Dowód wdrożenia (AutoBot)
 

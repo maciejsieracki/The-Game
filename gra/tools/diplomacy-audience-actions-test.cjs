@@ -141,6 +141,13 @@ ok(!AUDIENCE_BASIC_IDS.has('3'), 'basic NIE zawiera sojuszu');
 
   const active = { locked: false, enabled: true, active: true, lockNote: '' };
   ok(audienceActionStatusNote(active) === 'już zawarta', 'active → już zawarta');
+
+  // STRICT-EDGE — on-table + enabled (Evaluator FAIL #STRICT)
+  ok(
+    audienceActionStatusNote({ locked: false, enabled: true }, true) === 'na stole — Przyjmij w PN',
+    'onTable → stały komunikat',
+  );
+  ok(audienceActionStatusNote({ locked: false, enabled: true }) === '', 'enabled → brak wiersza');
 }
 
 console.log('diplomacy-audience-actions-test: ' + passed + ' passed, ' + failed + ' failed');

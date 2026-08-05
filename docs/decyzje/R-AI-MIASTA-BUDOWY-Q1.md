@@ -1,6 +1,6 @@
 # R-AI-MIASTA-BUDOWY-Q1 — państwa-miasta prawie nie budują
 
-**Status:** 🟡 ECHO **A** (2026-08-05) — W TRAKCIE audyt AutoBot  
+**Status:** 🟡 ECHO **A** (2026-08-05) — **audyt zamknięty**, czekam na sygnał fix  
 **Źródło:** Maciej 2026-07-29 ~02:04 · paczka 2/2
 
 ## ECHO
