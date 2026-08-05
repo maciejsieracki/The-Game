@@ -1009,6 +1009,7 @@ import {
   type AllianceObligation,
 } from './game/diplomacy-treaties';
 import { empireDiploResourceFlowPerTurn } from './game/empire-diplo-resource-flow';
+import { isEmpireAccessResource } from './game/empire-resource-access';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   tributeBreakPairsFromDeals, canAiProposeTradeAgreement,
@@ -2363,9 +2364,12 @@ async function boot(): Promise<void> {
         const diploOut = flow?.outPerTurn ?? 0;
         const diploIn = flow?.inPerTurn ?? 0;
         const ratePerTurn = production - diploOut + diploIn;
-        const cap = empireCap;
-        const capBase = storageParams.bazaSurowcePanstwo;
-        const capBonusPerMagazyn = storageParams.bonusSurowceNaBudynek;
+        // R-SUROWCE-DOSTEP: wiersze dostępu (Ceramika/Sól/Koń/Złoto) muszą mieć cap
+        // undefined — panel imperium filtruje access po `cap == null`.
+        const isAccessRow = isEmpireAccessResource(c.id);
+        const cap = isAccessRow ? undefined : empireCap;
+        const capBase = isAccessRow ? undefined : storageParams.bazaSurowcePanstwo;
+        const capBonusPerMagazyn = isAccessRow ? undefined : storageParams.bonusSurowceNaBudynek;
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
           rateProductionPerTurn: production,
