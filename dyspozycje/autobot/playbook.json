@@ -1,6 +1,6 @@
 {
-  "version": 6,
-  "updatedAtIso": "2026-08-05T19:30:00.000Z",
+  "version": 7,
+  "updatedAtIso": "2026-08-05T20:00:00.000Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -71,7 +71,7 @@
     },
     {
       "id": "rule_106",
-      "rule_text": "Evaluator STRICT: brak celowanego testu / czerwone testy tematu / tsc≠0 → FAIL (nie NOTES); happy-path-only → rule_107 EDGE; asymetria gracz/AI/MP → rule_108 PARITY",
+      "rule_text": "Evaluator STRICT: brak celowanego testu / czerwone testy tematu / tsc≠0 → FAIL (nie NOTES); happy-path-only → rule_107 EDGE; asymetria gracz/AI/MP → rule_108 PARITY; luki save/load → rule_109 SAVE",
       "status": "ACTIVE",
       "actionId": "verify-eval-strict-tests",
       "win_count": 0,
@@ -97,7 +97,17 @@
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-05T19:30:00.000Z"
+      "lastUpdatedIso": "2026-08-05T20:00:00.000Z"
+    },
+    {
+      "id": "rule_109",
+      "rule_text": "Evaluator STRICT-SAVE: nowe trwałe pole bez snapshot/restore lub restore bez ?? default → FAIL",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-strict-save",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-05T20:00:00.000Z"
     }
   ],
   "quarantine_rules": []

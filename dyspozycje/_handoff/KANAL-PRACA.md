@@ -1,4 +1,11 @@
-﻿## [19:30 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-PARITY (Maciej „2 = Tylko A (parytet)”)
+﻿## [20:00 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-SAVE (Maciej „1+2” oś B save/load)
+
+Evaluator STRICT-SAVE: nowe trwałe pole bez snapshot/restore lub restore bez `?? default`; Operator bez roundtrip → FAIL #9 (nie NOTES).
+|- Pliki: `R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md`, STRICT patch FAIL #9, `rule_109`, guardrails, smoke v7
+|- Zero `gra/src` — tylko proces AutoBot
+CZEKAM-NA: Evaluator / merge Grok (bez deploy gry)
+
+## [19:30 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT-PARITY (Maciej „2 = Tylko A (parytet)”)
 
 Evaluator STRICT-PARITY: asymetria gracz/AI/MP (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub test tylko ownerId=0 → FAIL #8 (nie NOTES).
 |- Pliki: `R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`, STRICT patch, `rule_108`, guardrails, smoke v6

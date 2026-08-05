@@ -14,6 +14,8 @@
 
 **Evaluator — STRICT-PARITY (Maciej „2 = Tylko A (parytet)”, 2026-08-05):** asymetria gracz/AI/MP (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub bez testu parytetu → **FAIL #8** (`rule_108`, `R-PROC-AUTOBOT-EVAL-STRICT-PARITY`).
 
+**Evaluator — STRICT-SAVE (Maciej „1+2” oś B save/load, 2026-08-05):** nowe trwałe pole bez snapshot/restore lub restore bez `?? default`; Operator bez roundtrip → **FAIL #9** (`rule_109`, `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`).
+
 ## Architektura — 5 modułów
 
 ```
@@ -137,7 +139,7 @@ node dyspozycje/autobot/tools/autobot-smoke.cjs
 | AutoBot | Sesja Cursor |
 |---------|----------------|
 | Operator | Composer implementer |
-| Evaluator | Adwokat diabła + Grok (+ testy) · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`) · **STRICT-EDGE** — happy-path-only → FAIL (`rule_107`) · **STRICT-PARITY** — asymetria gracz/AI/MP → FAIL (`rule_108`) |
+| Evaluator | Adwokat diabła + Grok (+ testy) · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`) · **STRICT-EDGE** — happy-path-only → FAIL (`rule_107`) · **STRICT-PARITY** — asymetria gracz/AI/MP → FAIL (`rule_108`) · **STRICT-SAVE** — luki save/load → FAIL (`rule_109`) |
 | playbook | ten katalog + reguły procesu |
 | Dev scorer | typecheck + testy + deploy gate |
 

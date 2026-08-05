@@ -23,7 +23,7 @@ Dopiero po #2 i #3: meldunek „gotowe w kodzie” / hasło **`deploy`**.
 
 - Czy decyzja ABC / AC jest naprawdę w kodzie?
 - Czy nie wyłączono / nie usunięto wcześniejszej poprawki?
-- Czy fix nie psuje innego miejsca (AI vs gracz, UI, zapis, koniec tury)?
+- Czy fix nie psuje innego miejsca (AI vs gracz, UI, zapis, koniec tury)? → `R-PROC-AUTOBOT-EVAL-STRICT-SAVE` (FAIL #9)
 - Czy testy łapią realny bug, nie tylko happy-path? → `R-PROC-AUTOBOT-EVAL-STRICT-EDGE` (FAIL #7)
 
 ### SCOPE + regresja (OBOWIĄZKOWE — Maciej 2026-08-05)
@@ -37,8 +37,9 @@ Adwokat diabła **zawsze** stosuje `R-PROC-AUTOBOT-EVAL-SCOPE` (playbook `rule_1
 5. **STRICT** (`R-PROC-AUTOBOT-EVAL-STRICT`, `rule_106`): luki testów / brak asercji AC / czerwone testy tematu / `tsc≠0` → **FAIL** (nie NOTES).
 6. **STRICT-EDGE** (`R-PROC-AUTOBOT-EVAL-STRICT-EDGE`, `rule_107`): testy tematu tylko happy-path bez edge/negacji/repro → **FAIL #7** (nie NOTES).
 7. **STRICT-PARITY** (`R-PROC-AUTOBOT-EVAL-STRICT-PARITY`, `rule_108`): asymetria gracz/AI/MP bez decyzji ABC lub test tylko ownerId=0 → **FAIL #8** (nie NOTES).
+8. **STRICT-SAVE** (`R-PROC-AUTOBOT-EVAL-STRICT-SAVE`, `rule_109`): luki save/load nowego pola lub restore bez `?? default` → **FAIL #9** (nie NOTES).
 
-Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · twardość werdyktów: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · happy-path-only: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` · parytet ownerId: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`
+Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · twardość werdyktów: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · happy-path-only: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` · parytet ownerId: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` · save/load: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md`
 
 ## Punkty wejścia (każda sesja musi to znać)
 

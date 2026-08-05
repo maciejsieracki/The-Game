@@ -4,7 +4,8 @@
 **Rodzic:** `R-PROC-AUTOBOT-EVAL-SCOPE` · **Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Playbook:** `dyspozycje/autobot/playbook.json` → `rule_106` (`verify-eval-strict-tests`)  
 **EDGE (happy-path-only):** → [`R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md) (`rule_107`)  
-**PARITY (gracz/AI/MP):** → [`R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md) (`rule_108`)
+**PARITY (gracz/AI/MP):** → [`R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md) (`rule_108`)  
+**SAVE (save/load nowych pól):** → [`R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md`](R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md) (`rule_109`)
 
 ---
 
@@ -40,6 +41,7 @@ Uściślić werdykty warstwy 2 (Evaluator AutoBot): **luki testów i brak asercj
 6. **Cofnięcie wcześniejszego fixu** / regresja w sąsiednim zachowaniu z dowodem.
 7. **Testy tematu tylko happy-path** bez edge / negacji / repro buga → FAIL — szczegóły: [`R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md`](R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md) (`rule_107`).
 8. **Asymetria gracz/AI/MP** (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub bez testu parytetu → FAIL — szczegóły: [`R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md`](R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md) (`rule_108`).
+9. **Luka save/load** — nowe trwałe pole stanu bez snapshot/restore lub restore bez `?? default`; Operator bez roundtrip / bez wskazania snapshot/restore → FAIL — szczegóły: [`R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md`](R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md) (`rule_109`).
 
 ### PASS-WITH-NOTES (tylko te wąskie przypadki)
 
@@ -65,6 +67,7 @@ Wszystkie osie SCOPE (z `R-PROC-AUTOBOT-EVAL-SCOPE`) + twarde testy tematu zielo
 - [ ] Czy zmiana logiki gry ma rozszerzoną asercję (nie tylko happy-path bez edge)?
 - [ ] **Tylko happy-path bez edge/negacji/repro → FAIL #7** (`STRICT-EDGE`), chyba że wyjątek z decision doc EDGE.
 - [ ] **Asymetria gracz/AI/MP bez decyzji lub test tylko ownerId=0 → FAIL #8** (`STRICT-PARITY`), chyba że wyjątek z decision doc PARITY.
+- [ ] **Nowe trwałe pole bez save/restore lub bez ?? default → FAIL #9** (`STRICT-SAVE`), chyba że wyjątek z decision doc SAVE.
 - [ ] Przy luce testów → **FAIL** (nie NOTES), chyba że GATE=A wyłącznie wizualny.
 
 ---
@@ -80,6 +83,9 @@ Dopisz do szablonu SCOPE (`R-PROC-AUTOBOT-EVAL-SCOPE.md`):
    Wyjątki: GATE=A wyłącznie wizual; czysta docs/proces; smoke eksportu UI gdy helper ma edge.
 7. Asymetria gracz/AI/MP (ownerId === 0 / isPlayer) bez decyzji ABC lub bez testu parytetu → FAIL #8 (STRICT-PARITY, nie NOTES).
    Wyjątki: UI-only HUD gracza; jawny ECHO „tylko gracz/AI”; MP celowo inne z ID decyzji; czysta docs/proces.
+8. Nowe trwałe pole stanu bez snapshot save i/lub restore bez ?? default → FAIL #9 (STRICT-SAVE, nie NOTES).
+   Operator bez roundtrip / bez wskazania snapshot/restore w raporcie (gdy temat = persistence) → FAIL #9.
+   Wyjątki: czyste UI bez stanu; efemeryczny cache sesji; docs/proces; jawny „nie persistujemy” w AC.
 ```
 
 ---
@@ -91,7 +97,8 @@ Dopisz do szablonu SCOPE (`R-PROC-AUTOBOT-EVAL-SCOPE.md`):
 - `docs/decyzje/R-PROC-POTROJNA-WARSTWA.md` — warstwa 2
 - `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` — FAIL #7 happy-path-only
 - `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` — FAIL #8 asymetria gracz/AI/MP
-- `dyspozycje/autobot/playbook.json` — `rule_105`, `rule_106`, `rule_107`, `rule_108`
+- `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md` — FAIL #9 luki save/load
+- `dyspozycje/autobot/playbook.json` — `rule_105`, `rule_106`, `rule_107`, `rule_108`, `rule_109`
 
 ---
 
