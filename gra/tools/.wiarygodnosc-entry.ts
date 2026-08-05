@@ -19,8 +19,15 @@ export {
   freshCredibilityStreamEntry,
   tickCredibilityStreamEntry,
   sumaWiarygodnosciCalkowita,
+  trwalySlad,
+  aktywnaCzesc,
+  rozbicieWiarygodnosci,
+  wiarygodnoscTooltipRozbiciePl,
+  buildWiarygodnoscBreakdown,
+  credibilityEventLabelPl,
 } from '../src/game/diplomacy-credibility';
-export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta } from '../src/game/diplomacy';
+export { wiarygodnoscTooltipPl, wiarygodnoscBadgeHtml } from '../src/game/diplomacy-display';
+export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent } from '../src/game/diplomacy';
 export {
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,

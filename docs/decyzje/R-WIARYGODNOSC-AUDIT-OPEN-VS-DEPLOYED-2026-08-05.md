@@ -84,7 +84,7 @@ Sekcja „Nadal nierozstrzygnięte" w spec §9 (punkty 1–10) **duplikuje** dec
 | Kumulacja strumienia | §9.2 = **C** bez limitu |
 | P4 globalnie vs per para | §9.3 = **A** globalnie |
 | Strumień pozytywny w wojnie | §9.4 = **A** działa normalnie |
-| NAP terminowy/bezterminowy | §9.1 = **oba warianty** (implementacja — patrz backlog) |
+| NAP terminowy/bezterminowy | §9.1 = **oba warianty** — **WDROŻONE** (`WIAR-NAP-IMP`, bez deployu) |
 | Kumulacja śladów | §9.6 = **A** bez limitu |
 | Dźwignie 2–4 przegląd | §9.5 = **C** — wykonany (R1–R4) |
 | Sufit Zaufania skrajny | §9.7 = **A** proste przycięcie 0–100 |
@@ -97,7 +97,6 @@ Sekcja „Nadal nierozstrzygnięte" w spec §9 (punkty 1–10) **duplikuje** dec
 
 | ID roboczy | Opis | Typ | Blokuje grę? |
 |------------|------|-----|--------------|
-| **WIAR-NAP-IMP** | §9.1 zatwierdzone: wybór NAP **terminowy (10–20 tur)** lub **bezterminowy** przy zawieraniu. Kod: `diplomacy-proposals.ts` case `'nap'` zawsze `clamp(turns, 10, 20)` — brak gałęzi `wygasaTura: null`. | Implementacja po decyzji | Nie — NAP terminowy działa |
 | **WIAR-UI-REJESTR** | §7 spec: globalny rejestr czynników W (jak `buildRelationBreakdown` dla Zaufania). Dziś: tooltip z `rozbicieWiarygodnosci` (start/życiorys/bieżące), **bez** listy per-zdarzenie w panelu. | UI V2 / playtest | Nie |
 
 **Strojenie liczb** (wagi N*, S*, czasy zapominania) — temat **post-playtest**, nie ABC; parametry w `diplomacy.json` / `DIPLOMACY_PARAMS`.
@@ -108,6 +107,6 @@ Sekcja „Nadal nierozstrzygnięte" w spec §9 (punkty 1–10) **duplikuje** dec
 
 **Otwarte ABC:** — (brak)
 
-**Backlog (nie ABC):** `WIAR-NAP-IMP` · `WIAR-UI-REJESTR`
+**Backlog (nie ABC):** `WIAR-UI-REJESTR`
 
-**Zamknięte / wdrożone:** `C-WIAR-D4` · `C-WIAR-N1-UX` · `C-WIAR-N4-AI` · `D-WIAR-KASKADA-Q1` · `REL-WIARYG-DRIFT-Q1` · `R-WIARYGODNOSC-D3` · `R-WIARYGODNOSC-DZWIGNIA2` · `R-WIARYGODNOSC-TEMPO` (R1/R1b) · `R-WIARYGODNOSC-ETAP0` · przegląd R1–R4
+**Zamknięte / wdrożone:** `WIAR-NAP-IMP` · `C-WIAR-D4` · `C-WIAR-N1-UX` · `C-WIAR-N4-AI` · `D-WIAR-KASKADA-Q1` · `REL-WIARYG-DRIFT-Q1` · `R-WIARYGODNOSC-D3` · `R-WIARYGODNOSC-DZWIGNIA2` · `R-WIARYGODNOSC-TEMPO` (R1/R1b) · `R-WIARYGODNOSC-ETAP0` · przegląd R1–R4

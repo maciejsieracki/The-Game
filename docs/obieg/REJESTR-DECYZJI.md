@@ -53,7 +53,7 @@
 | **C-WIAR-N4-AI** | 2026-07-27 | **B** — AI rzadko odmawia pomocy sojuszniczej gdy osłabione; N4 −15 | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `alliance-war-obligation.ts` 14/14 |
 | **C-WIAR-D4** | 2026-07-27 | **A** — Dźwignia 4: start Zaufania + `round(W/20)` per strona (dzielnik 20) | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `diplomacy-credibility.ts` · wiarygodnosc-test |
 | **C-WIAR-N1-UX** | 2026-07-27 | **A** — modal 3 opcje: wypowiedz / atak bez ostrzeżenia / anuluj + podgląd kar | D+E | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `showWarConsentModal` |
-| **WIAR-NAP-IMP** | 2026-08-05 | §9.1 — NAP **terminowy (10–20 tur)** lub **bezterminowy** przy zawieraniu | D | 🔵 **W TRAKCIE** | `resolveNapDealExpiry` · `diplomacy-proposals.ts` · `WIAR-NAP-IMP.md` | bez deployu |
+| **WIAR-NAP-IMP** | 2026-08-05 | §9.1 — NAP **terminowy (10–20 tur)** lub **bezterminowy** przy zawieraniu | D | 🟢 **WDROŻONA** | `resolveNapDealExpiry` · `diplomacy-proposals.ts` · `diplomacyTradeBasket.ts` · `diplomacyNegotiationModal.ts` · `WIAR-NAP-IMP.md` · diplomacy-proposal-test §3b | bez deployu |
 | **P-AI-006** | 2026-07-27 | **C** — ekspansywność per nacja + rozszerzenie w `ai-expansion.ts` | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `civ-ai.json` · `ai-war-gate-test` |
 | **P-AI-007** | 2026-07-27 | **A** — priorytety Panel D na archetyp + Biblioteka/Akademia | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `ai-production-priorities.ts` |
 | **P-AI-008** | 2026-07-27 | **C** — zasięg zagrożenia 7 hex + Mury tylko gdy #1 Mocy | D | 🟢 **WDROŻONA** | FALA 36 `a74c3797` · `ai-threat-mode.ts` |

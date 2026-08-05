@@ -440,13 +440,16 @@ interface TreatyFormState {
   goldPerTurn: number;
   tributeTurns: number;
   goldOnce: number;
+  techId: string;
+  bribeGold: number;
+  targetOwnerId: number;
 }
 
 /**
- * Traktaty „czyste" — tylko warunki umowy (czas, kary, trybut…), bez koszyka PW.
- * Wymiana surowców / PW → osobna Umowa wymiany (14) lub dar (13).
+ * Traktaty bez opcjonalnego koszyka PW (tylko warunki umowy w formularzu).
+ * R-DYP-STOL-A=C: pozostałe traktaty mają sekcję warunków + opcjonalny koszyk PW.
  */
-const TREATY_ONLY_FORM_IDS = new Set(['2', '3', '4', '8', '10', '12', '15']);
+const TREATY_ONLY_FORM_IDS = new Set<string>(['15']);
 
 export function isTreatyOnlyFormAction(actionId: string): boolean {
   return TREATY_ONLY_FORM_IDS.has(actionId);
@@ -454,14 +457,24 @@ export function isTreatyOnlyFormAction(actionId: string): boolean {
 
 function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?: NegotiationModalContext): TreatyFormState {
   const wchlonGold = ctx?.wchloniecieGoldRequired ?? 200;
+  const techs = ctx?.techOptions ?? defaultTechOptions();
+  const rivals = ctx?.rivalOptions ?? [];
+  const defaultTurns = actionId === '5' ? 20 : (actionId === '2' ? 15 : 10);
+  const initialTurns = initial?.turns;
+  const turns = initialTurns != null
+    ? (initialTurns <= 0 ? 0 : Math.max(10, Math.min(20, initialTurns)))
+    : defaultTurns;
   return {
-    turns: initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 10,
+    turns,
     allianceKind: initial?.allianceKind === 'defensywny' ? 'defensywny' : 'pelny',
     borderMilitary: initial?.borderMilitary ?? false,
     tributeMode: initial?.tributeMode === 'offer' ? 'offer' : 'demand',
     goldPerTurn: initial?.goldPerTurn ?? (actionId === '12' ? 10 : 15),
     tributeTurns: initial?.tributeTurns ?? 0,
-    goldOnce: initial?.goldOnce ?? (actionId === '15' ? wchlonGold : 0),
+    goldOnce: initial?.goldOnce ?? (actionId === '15' ? wchlonGold : (actionId === '9' ? 50 : 0)),
+    techId: initial?.techId ?? techs[0]?.id ?? '',
+    bribeGold: initial?.bribeGold ?? 30,
+    targetOwnerId: initial?.targetOwnerId ?? rivals[0]?.ownerId ?? -1,
   };
 }
 
@@ -472,13 +485,17 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
   let body = '';
   switch (actionId) {
     case '2': {
-      const turnChips = [5, 10, 15].map(t =>
+      const turnChips = [10, 15, 20].map(t =>
         '<button type="button" class="cdb-chip cdb-chip-turn' + (state.turns === t ? ' selected' : '')
         + '" data-turns="' + t + '">' + t + '</button>',
       ).join('');
-      body = '<label for="cdb-treaty-turns">Czasookres paktu (tur)</label>'
-        + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
-        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns, 1, 20)
+      const indefiniteSelected = state.turns <= 0 ? ' selected' : '';
+      body = '<label for="cdb-treaty-turns">Czas paktu</label>'
+        + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips
+        + '<button type="button" class="cdb-chip cdb-chip-turn' + indefiniteSelected
+        + '" data-turns="0">Bezterminowy</button></div>'
+        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns <= 0 ? 0 : state.turns, 0, 20)
+        + '<p class="cdb-sub">Ręcznie: 10–20 tur lub 0 = bezterminowy</p>'
         + '<div class="cdb-penalty-box">'
         + '<div class="cdb-penalty-title">Koszty / kary</div>'
         + '<p class="cdb-sub" style="margin:0">Złamanie paktu: −30 Relacja, −20 Zaufanie</p>'
@@ -529,9 +546,58 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<p class="cdb-sub">Wymagane minimum ' + minGold + ' ¤ · wasal musi wyrazić zgodę (Relacja ≥ 60)</p>';
       break;
     }
+    case '5': {
+      const turnChips = [10, 15, 20].map(t =>
+        '<button type="button" class="cdb-chip cdb-chip-turn' + (state.turns === t ? ' selected' : '')
+        + '" data-turns="' + t + '">' + t + '</button>',
+      ).join('');
+      body = '<label for="cdb-treaty-turns">Czas traktatu handlowego (tur)</label>'
+        + '<div class="cdb-chip-row cdb-turn-presets">' + turnChips + '</div>'
+        + qtyStepperHtml('cdb-treaty-turns', 'treaty', state.turns, 1, 20)
+        + '<p class="cdb-sub">Fundament szlaków handlowych — opcjonalnie dołóż wymianę PW poniżej.</p>';
+      break;
+    }
+    case '6': {
+      const techs = ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 }));
+      if (techs.length === 0) {
+        body = '<p class="cdb-sub">Brak technologii do sprzedaży.</p>';
+      } else {
+        const sel = techs.map(t =>
+          '<option value="' + esc(t.id) + '"' + (t.id === state.techId ? ' selected' : '') + '>'
+          + esc(t.label) + (t.suggestedPrice ? ' (~' + t.suggestedPrice + ' ¤)' : '') + '</option>',
+        ).join('');
+        const price = state.goldOnce > 0 ? state.goldOnce : (techs.find(t => t.id === state.techId)?.suggestedPrice ?? 50);
+        body = '<label>Technologia</label>'
+          + '<select id="cdb-treaty-tech" class="cdb-treaty-tech">' + sel + '</select>'
+          + '<label for="cdb-treaty-tech-price">Cena (¤)</label>'
+          + '<input type="number" id="cdb-treaty-tech-price" class="cdb-treaty-tech-price" value="' + price + '" min="1" />';
+      }
+      break;
+    }
+    case '7': {
+      const rivals = ctx.rivalOptions ?? [];
+      if (rivals.length === 0) {
+        body = '<p class="cdb-sub">Brak znanych wrogów tej cywilizacji.</p>';
+      } else {
+        const sel = rivals.map(r =>
+          '<option value="' + r.ownerId + '"' + (r.ownerId === state.targetOwnerId ? ' selected' : '') + '>'
+          + esc(r.label) + '</option>',
+        ).join('');
+        body = '<label>Cel wojny</label>'
+          + '<select id="cdb-treaty-rival" class="cdb-treaty-rival">' + sel + '</select>'
+          + '<label for="cdb-treaty-bribe">Łapówka (¤)</label>'
+          + '<input type="number" id="cdb-treaty-bribe" class="cdb-treaty-bribe" value="' + state.bribeGold + '" min="0" />';
+      }
+      break;
+    }
+    case '9':
+      body = '<label for="cdb-treaty-ult-gold">Reparacje (¤)</label>'
+        + '<input type="number" id="cdb-treaty-ult-gold" class="cdb-treaty-ult-gold" value="' + state.goldOnce + '" min="0" />'
+        + '<p class="cdb-sub">Odmowa partnera = casus belli (zaznacz ultimatum poniżej).</p>';
+      break;
     case '10':
       body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%). '
-        + 'Dodatkowa wymiana surowców lub PW → osobna <strong>Umowa wymiany</strong> na stole, nie w tej karcie.</p>';
+        + 'Opcjonalnie dołóż wymianę PW poniżej.</p>';
       break;
     default:
       body = '<p class="cdb-sub">Brak dodatkowych warunków traktatu.</p>';
@@ -544,8 +610,8 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
 function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): TreatyFormState {
   const state = { ...prev };
   if (actionId === '2') {
-    const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '10', 10);
-    state.turns = Math.max(1, Math.min(20, turns));
+    const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '15', 10);
+    state.turns = turns <= 0 ? 0 : Math.max(10, Math.min(20, turns));
   } else if (actionId === '3') {
     const v = (document.querySelector('.cdb-treaty-alliance') as HTMLSelectElement)?.value;
     state.allianceKind = v === 'defensywny' ? 'defensywny' : 'pelny';
@@ -560,6 +626,17 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): Treaty
     state.goldPerTurn = parseInt((document.querySelector('.cdb-treaty-wasal-gpt') as HTMLInputElement)?.value ?? '10', 10);
   } else if (actionId === '15') {
     state.goldOnce = parseInt((document.querySelector('.cdb-treaty-wchlon-gold') as HTMLInputElement)?.value ?? '0', 10);
+  } else if (actionId === '5') {
+    const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '20', 10);
+    state.turns = Math.max(1, Math.min(20, turns));
+  } else if (actionId === '6') {
+    state.techId = (document.querySelector('.cdb-treaty-tech') as HTMLSelectElement)?.value ?? state.techId;
+    state.goldOnce = parseInt((document.querySelector('.cdb-treaty-tech-price') as HTMLInputElement)?.value ?? '0', 10);
+  } else if (actionId === '7') {
+    state.targetOwnerId = parseInt((document.querySelector('.cdb-treaty-rival') as HTMLSelectElement)?.value ?? '-1', 10);
+    state.bribeGold = parseInt((document.querySelector('.cdb-treaty-bribe') as HTMLInputElement)?.value ?? '0', 10);
+  } else if (actionId === '9') {
+    state.goldOnce = parseInt((document.querySelector('.cdb-treaty-ult-gold') as HTMLInputElement)?.value ?? '0', 10);
   }
   return state;
 }
@@ -567,8 +644,9 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): Treaty
 function validateTreatyForm(actionId: string, state: TreatyFormState, ctx?: NegotiationModalContext): BasketValidation {
   switch (actionId) {
     case '2':
-      if (state.turns < 1 || state.turns > 20) {
-        return { valid: false, reason: 'Czas paktu: od 1 do 20 tur' };
+      if (state.turns === 0) break;
+      if (state.turns < 10 || state.turns > 20) {
+        return { valid: false, reason: 'Czas paktu: bezterminowy (0) lub 10–20 tur' };
       }
       break;
     case '8':
@@ -588,6 +666,24 @@ function validateTreatyForm(actionId: string, state: TreatyFormState, ctx?: Nego
       }
       break;
     }
+    case '5':
+      if (state.turns < 1 || state.turns > 20) {
+        return { valid: false, reason: 'Czas traktatu handlowego: od 1 do 20 tur' };
+      }
+      break;
+    case '6':
+      if (!state.techId) {
+        return { valid: false, reason: 'Wybierz technologię do sprzedaży' };
+      }
+      if (state.goldOnce < 1) {
+        return { valid: false, reason: 'Cena technologii: minimum 1 ¤' };
+      }
+      break;
+    case '7':
+      if (state.targetOwnerId < 0) {
+        return { valid: false, reason: 'Wybierz cel wojny' };
+      }
+      break;
   }
   return { valid: true };
 }
@@ -679,6 +775,21 @@ function buildTreatyPayload(
       break;
     case '15':
       payload.goldOnce = state.goldOnce;
+      break;
+    case '5':
+      payload.turns = state.turns;
+      break;
+    case '6':
+      payload.techId = state.techId;
+      payload.goldOnce = state.goldOnce;
+      break;
+    case '7':
+      payload.targetOwnerId = state.targetOwnerId;
+      payload.bribeGold = state.bribeGold;
+      break;
+    case '9':
+      payload.goldOnce = state.goldOnce;
+      payload.warThreat = true;
       break;
   }
   if (giveItems.length > 0) {
@@ -841,6 +952,7 @@ function uiActionAllowsWarCurrency(
   tributeMode?: 'demand' | 'offer',
 ): boolean {
   if (actionId === '10') return true;
+  if (actionId === '9') return true;
   if (actionId === '8' && tributeMode === 'offer') return true;
   if (mode === 'treaty' && actionId === '8' && tributeMode === 'offer') return true;
   return false;
@@ -852,9 +964,19 @@ function proposalActionIdFromUi(
   tributeMode?: 'demand' | 'offer',
 ): string {
   if (actionId === '10') return 'pokoj';
+  if (actionId === '9') return 'ultimatum';
   if (actionId === '8' && tributeMode === 'offer') return 'trybut_oferta';
+  if (actionId === '8') return 'trybut_zadanie';
   if (actionId === '13' || mode === 'gift') return 'handel';
   if (actionId === '5') return 'umowa_szlakow';
+  if (actionId === '6') return 'tech';
+  if (actionId === '7') return 'namow_wojne';
+  if (actionId === '2') return 'nap';
+  if (actionId === '3') return 'sojusz_pelny';
+  if (actionId === '12') return 'wasal';
+  if (actionId === '15') return 'wchloniecie';
+  if (actionId === '4') return 'granice';
+  if (actionId === '14') return 'handel';
   return 'handel';
 }
 
@@ -1494,6 +1616,9 @@ export interface TradeBasketInitial {
   goldOnce?: number;
   tributeMode?: 'demand' | 'offer';
   tributeTurns?: number;
+  techId?: string;
+  bribeGold?: number;
+  targetOwnerId?: number;
 }
 
 export function showTradeBasketModal(
@@ -1514,7 +1639,7 @@ export function showTradeBasketModal(
   let receiveItems: BasketItem[] = stripWithdrawnResourceAccessItems(initial?.receiveItems ?? []);
   let dealTurns = initial?.turns != null ? Math.max(1, Math.min(20, initial.turns)) : 15;
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
-  let warThreat = false;
+  let warThreat = action.id === '9';
   let treatyState = defaultTreatyState(action.id, initial, ctx);
 
   overlay = document.createElement('div');
@@ -1615,7 +1740,8 @@ export function showTradeBasketModal(
         const turns = parseInt(btn.getAttribute('data-turns') ?? '15', 10);
         const treatyInp = box.querySelector('.cdb-treaty-turns') as HTMLInputElement | null;
         if (treatyInp) {
-          treatyInp.value = String(Math.max(1, Math.min(20, turns)));
+          const val = turns <= 0 ? 0 : Math.max(10, Math.min(20, turns));
+          treatyInp.value = String(val);
           const treatyRoot = treatyInp.closest('.cdb-treaty');
           treatyRoot?.querySelectorAll('.cdb-chip-turn').forEach(c => c.classList.toggle('selected', c === btn));
           refresh();
@@ -1844,7 +1970,9 @@ export function openQuickDealBasket(
 }
 
 /** Akcje obsługiwane przez koszyk PN (handel + dar + traktaty). R-DYP-STOL-A=C */
-export const TRADE_BASKET_ACTION_IDS = new Set(['2', '3', '4', '8', '10', '12', '13', '14', '15']);
+export const TRADE_BASKET_ACTION_IDS = new Set([
+  '2', '3', '4', '5', '6', '7', '8', '9', '10', '12', '13', '14', '15',
+]);
 
 export function getTradeBasketMode(actionId: string): TradeBasketMode {
   if (actionId === '13') return 'gift';
