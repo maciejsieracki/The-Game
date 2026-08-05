@@ -1,6 +1,6 @@
 # R-AI-MIASTA-BUDOWY-Q1 — państwa-miasta prawie nie budują
 
-**Status:** 🟡 ECHO **A** (2026-08-05) — **audyt zamknięty**, czekam na sygnał fix  
+**Status:** 🟡 ECHO **A** (2026-08-05) — audyt ✅ · fix → `R-AI-MIASTA-BUDOWY-FIX-Q1=A`  
 **Źródło:** Maciej 2026-07-29 ~02:04 · paczka 2/2
 
 ## ECHO
@@ -77,3 +77,8 @@ Gdy `built.length >= 6` (`ai.ts` ~1248), supresja Wojownika `-250` (`ai.ts` ~127
 ### Status
 
 Audyt zamknięty — **czekam na sygnał fix** (osobna fala; bez zmian `ai-params.json` / balansu w tej paczce).
+
+
+## Fix (następna fala)
+
+ECHO **R-AI-MIASTA-BUDOWY-FIX-Q1=A** — filtr `infraOrder` przez `isProductionAllowed`. Szczegóły: `R-AI-MIASTA-BUDOWY-FIX-Q1.md`.
