@@ -120,7 +120,7 @@ odpowiednika** (Dom Starszyzny=70% Pałacu I, Dwór Zarządcy=70% Pałacu II), c
 AKTUALNA** — obie liczone teraz jako procent Pałacu III (50%/60%), nie swojego odpowiednika. Ratusz (był liczony
 jako 70% Pretorium = 35/27/22) **znika z tej siatki całkowicie**, bo budynek jest usunięty z gry (§8, Pytanie 44)
 i zastąpiony wpisem Trybunał (22/17/13 — wartość podana wprost, nie jako procent).
-**Status wdrożenia:** nie sprawdzone w tej sesji, czy `society-params.json` odzwierciedla już te liczby.
+**Status wdrożenia:** **WDROŻONE** (audyt 2026-08-05, AutoBot Tor 3) — `society-params.json` zgodny z tabelą (wszystkie wiersze PASS); test `prawo-siatka-v2-test.cjs` + `prawo-palac-tier-test.cjs`. Dowód: `docs/decyzje/R-PRAWO-SIATKA-V2.md`.
 
 ---
 
