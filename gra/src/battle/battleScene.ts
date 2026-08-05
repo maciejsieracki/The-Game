@@ -497,6 +497,10 @@ export interface BattleOpts {
   defenderArmyHungry?: boolean;
   /** Mnożnik statów bojowych przy głodzie wojska (domyślnie 0.75). */
   armyHungerStatMult?: number;
+  /** P-AI-MOC-BONUS=A: bonus trudności walki atakującego (major AI). */
+  attackerDifficultyCombatMult?: number;
+  /** P-AI-MOC-BONUS=A: bonus trudności walki broniącego (major AI). */
+  defenderDifficultyCombatMult?: number;
 }
 
 export interface BattleResult {
@@ -2503,6 +2507,8 @@ export class BattleScene {
   private attackerCivBonusy: readonly CivBonusEntry[] = [];
   private defenderCivBonusy: readonly CivBonusEntry[] = [];
   private armyHungerStatMult = 0.75;
+  private attackerDifficultyCombatMult = 1;
+  private defenderDifficultyCombatMult = 1;
 
   // Procedural per-tile battle terrain (B8). Drives rendering, per-tile move
   // cost / passability and the per-tile defender terrain fed to the combat math.
@@ -2536,6 +2542,8 @@ export class BattleScene {
     this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
     this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
+    this.attackerDifficultyCombatMult = opts.attackerDifficultyCombatMult ?? 1;
+    this.defenderDifficultyCombatMult = opts.defenderDifficultyCombatMult ?? 1;
     this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
     this._defenderCivLabel = opts.defenderCivLabel?.trim() || 'Przeciwnik';
     this._attackerSideLabel = opts.attackerSideLabel?.trim() || '';
@@ -3464,6 +3472,8 @@ export class BattleScene {
       this.wallDefenseTotalProc,
       this.isCityDefenseBattle,
       this.armyHungerStatMult,
+      this.attackerDifficultyCombatMult,
+      this.defenderDifficultyCombatMult,
     );
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
@@ -7670,10 +7680,17 @@ export class BattleScene {
       defender.bu.fortifiedInField === true,
       FORTIFY_OBRONA_PROC_FIELD,
     );
-    const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac));
+    const atkOwnerDiffMult = attacker.side === 'atk'
+      ? this.attackerDifficultyCombatMult
+      : this.defenderDifficultyCombatMult;
+    const defOwnerDiffMult = defender.side === 'def'
+      ? this.defenderDifficultyCombatMult
+      : this.attackerDifficultyCombatMult;
+
+    const defEffObrona   = Math.max(0, defMeleeDef * (1 - defPenaltyFrac) * defOwnerDiffMult);
     const defFinalObrona = defEffObrona * terrDefMult * defFordMlt * shoreBonusMlt;
-    const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt;
-    const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk);
+    const atkMelee       = applyMultiplier(cuA.meleeAttack, atkMods.atk) * terrRiverMlt * atkOwnerDiffMult;
+    const atkMissile     = applyMultiplier(cuA.missileAttack ?? 0, atkMods.rangedAtk) * atkOwnerDiffMult;
     const defArmor       = applyMultiplier(cuD.armor, defMods.pancerz);
     const roundAtkCharge = applyMultiplier(cuA.chargeBonus, atkMods.uderzenie);
     const ctrAtkVsDef    = counterMultiplier(cuA.counterTyp, cuD.counterTyp, this.counters);
@@ -18412,6 +18429,8 @@ function computeInstantResult(
   // polu, poza miastem).
   isCityDefense: boolean = false,
   armyHungerStatMult: number = 0.75,
+  attackerDifficultyCombatMult: number = 1,
+  defenderDifficultyCombatMult: number = 1,
 ): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
   const log: string[] = [];
 
@@ -18542,6 +18561,8 @@ function computeInstantResult(
         attackerArmyHungry: a.ru.bu.armyHungry === true,
         defenderArmyHungry: d.ru.bu.armyHungry === true,
         armyHungerStatMult,
+        attackerDifficultyCombatMult,
+        defenderDifficultyCombatMult,
       });
       for (const line of res.log) log.push(line);
 

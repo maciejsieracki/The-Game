@@ -1,6 +1,6 @@
 'use strict';
 /**
- * ai-threat-mode-test.cjs — P-AI-008=C (zagrożenie AI: 7 hex + wyjątek Mocy).
+ * ai-threat-mode-test.cjs — P-AI-008 (zagrożenie major AI: jednostki+rozwój, nie mury).
  * Run from gra/: node tools/ai-threat-mode-test.cjs
  */
 
@@ -21,11 +21,12 @@ const ENTRY = path.resolve(__dirname, '.ai-threat-mode-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.ai-threat-mode-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
-export { chooseCityProduction, loadDifficultyParams } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { chooseCityProduction, loadDifficultyParams, chooseAIResearch } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export {
   AI_THREAT_RANGE_DEFAULT,
   aiThreatPrioritizeWalls,
   aiThreatWallProductionScore,
+  aiThreatMajorUnitScores,
 } from ${JSON.stringify(AI_SRC + '/game/ai-threat-mode')};
 export { hexDistance } from ${JSON.stringify(AI_SRC + '/units/setup')};
 `, 'utf8');
@@ -49,9 +50,11 @@ try {
 const {
   chooseCityProduction,
   loadDifficultyParams,
+  chooseAIResearch,
   AI_THREAT_RANGE_DEFAULT,
   aiThreatPrioritizeWalls,
   aiThreatWallProductionScore,
+  aiThreatMajorUnitScores,
   hexDistance,
 } = require(BUNDLE);
 
@@ -107,12 +110,13 @@ const map = makeMap();
 console.log('\n--- T8a: domyślny zasięg zagrożenia = 7 ---');
 eq(AI_THREAT_RANGE_DEFAULT, 7, 'default 7 hex');
 
-console.log('\n--- T8b: aiThreatPrioritizeWalls ---');
+console.log('\n--- T8b: aiThreatPrioritizeWalls / wall score major vs MP ---');
 {
-  eq(aiThreatPrioritizeWalls(1), true, 'rank 1 -> mury pierwsze');
-  eq(aiThreatPrioritizeWalls(2), false, 'rank 2 -> bez murów pierwszych');
-  eq(aiThreatWallProductionScore(100, 2), null, 'rank 2 -> null score mury');
-  eq(aiThreatWallProductionScore(100, 1), 400, 'rank 1 -> 300+100');
+  eq(aiThreatPrioritizeWalls(1), false, 'major AI: bez murów pod zagrożeniem');
+  eq(aiThreatWallProductionScore(100, 1, false), null, 'major: null score mury');
+  eq(aiThreatWallProductionScore(100, 1, true), 400, 'defensiveCopy: 300+100');
+  const scores = aiThreatMajorUnitScores(100);
+  assert(scores.wojownik > 380, 'major unit score boost');
 }
 
 console.log('\n--- T8c: wrog w 6 hex przy zasiegu 5 -> brak zagrozenia ---');
@@ -128,7 +132,7 @@ console.log('\n--- T8c: wrog w 6 hex przy zasiegu 5 -> brak zagrozenia ---');
   assert(id !== 'mury', 'zasieg 5 + wrog 6 hex -> nie Mury z trybu zagrozenia');
 }
 
-console.log('\n--- T8d: lider Mocy + wrog blisko -> Mury ---');
+console.log('\n--- T8d: major AI lider Mocy + zagrozenie -> nie Mury (jednostka/rozwój) ---');
 {
   const data = makeData(7);
   const enemy = { id: 'e2', ownerId: 2, typeId: 'Wojownik', category: 'miecznik', q: 6, r: 5, ruch: 2, ruchLeft: 2 };
@@ -136,10 +140,10 @@ console.log('\n--- T8d: lider Mocy + wrog blisko -> Mury ---');
     cityBuildings: { c1: [] },
     powerRank: 1,
   }, map, loadDifficultyParams(data, 2));
-  eq(id, 'mury', 'rank 1 + zagrozenie -> Mury');
+  assert(id !== 'mury', 'P-AI-008: rank 1 + zagrozenie -> nie Mury (prefer jednostki/rozwój)');
 }
 
-console.log('\n--- T8e: nie #1 Mocy + zagrozenie -> bez Murów (rozwoj dozwolony) ---');
+console.log('\n--- T8e: major AI rank 3 + zagrozenie -> bez Murów ---');
 {
   const data = makeData(7);
   const enemy = { id: 'e3', ownerId: 2, typeId: 'Wojownik', category: 'miecznik', q: 6, r: 5, ruch: 2, ruchLeft: 2 };
@@ -148,7 +152,34 @@ console.log('\n--- T8e: nie #1 Mocy + zagrozenie -> bez Murów (rozwoj dozwolony
     powerRank: 3,
     civAiProfile: { ekspansywnosc: 0, sklonnoscDoPodboju: 0, priorytetMilitarny: 5, priorytetEkonomia: 5, priorytetNauka: 5 },
   }, map, loadDifficultyParams(data, 2));
-  assert(id !== 'mury', 'rank 3 + zagrozenie -> nie Mury (P-AI-008=C)');
+  assert(id !== 'mury', 'rank 3 + zagrozenie -> nie Mury');
+}
+
+console.log('\n--- T8f: defensiveCopy + zagrozenie + garnizon -> Mury (po bootstrap) ---');
+{
+  const data = makeData(7);
+  const enemy = { id: 'e4', ownerId: 2, typeId: 'Wojownik', category: 'miecznik', q: 6, r: 5, ruch: 2, ruchLeft: 2 };
+  const guard = { id: 'g1', ownerId: 1, typeId: 'Wojownik', category: 'miecznik', q: 5, r: 4, ruch: 2, ruchLeft: 2 };
+  const id = chooseCityProduction('c1', midCities, [enemy, guard], 1, data, ZERO, {
+    cityBuildings: {
+      c1: ['studnia', 'garncarnia', 'stolarnia', 'spichlerz', 'targowisko', 'palac'],
+    },
+    powerRank: 1,
+    defensiveCopy: true,
+  }, map, loadDifficultyParams(data, 2));
+  eq(id, 'mury', 'defensiveCopy + garnizon + zagrozenie -> Mury');
+}
+
+console.log('\n--- T8g: P-AI-008 chooseAIResearch underThreat -> nie Murarstwo (military/rozwój) ---');
+{
+  const techData = [
+    { Technologia: 'Garncarstwo', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Spichlerz, Cegielnia', 'Koszt nauki': 12 },
+    { Technologia: 'Murarstwo', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Mury, Kopalnia', 'Koszt nauki': 14 },
+    { Technologia: 'Brazownictwo', Epoka: 'Kamien', Poziom: 2, 'Wymaga (prereq)': 'Garncarstwo', 'Odblokowuje budynek': 'Huta, jednostki bronzowe', 'Koszt nauki': 24 },
+  ];
+  const done = new Set(['Garncarstwo']);
+  const pick = chooseAIResearch(techData, done, { underThreat: true });
+  eq(pick, 'Brazownictwo', 'underThreat + Garncarstwo done -> Brazownictwo, nie Murarstwo');
 }
 
 console.log('\n========================================');

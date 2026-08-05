@@ -1,9 +1,22 @@
-﻿## [10:20 PL, 2026-08-05] OPERATOR → ALL — R-PROC-AUTOBOT-P0-SMOKE (wzmocnienie, bez deploy)
-|- Maciej opcja 2: smoke notes Evaluatora (bc-f71f4817) zamknięte
-|- #6 git-merge deny · #8 defer bez retire + attrs snapshot · #9 evaluate→RETIRED path · win/loss na defer
-|- Branch: cursor/fix-autobot-p0-63a1 · tsc 0 · smoke 10/10
-|- **BEZ** deploy gra-robocza · **BEZ** merge main
-CZEKAM-NA: Grok Evaluator re-run → merge?
+## [13:30 PL, 2026-08-05] GROK → ALL — P-AI-MOC+P008 gotowe (Evaluator PASS-WITH-NOTES → notes closed)
+|- Branch cursor/fix-ai-moc-bonus-p008-63a1 tip `fdb4bfb`
+|- tsc · ai-difficulty-bonus 18/18 · ai-threat-mode 11/11
+|- R-SCENA-PERF nadal ODŁOŻONE
+CZEKAM-NA: merge main → deploy FALA 226
+
+﻿## [14:05 PL, 2026-08-05] OPERATOR → GROK — P-AI-MOC-BONUS=A + P-AI-008 kod gotowy
+|- `ai-difficulty-bonus.ts` + main spawn/nauka/walka · `ai-threat-mode.ts` + `chooseCityProduction`
+|- Testy: `ai-difficulty-bonus-test.cjs` · `ai-threat-mode-test.cjs` · tsc
+|- Branch: `cursor/fix-ai-moc-bonus-p008-63a1` · **NIE deploy** ROBOCZA
+CZEKAM-NA: Evaluator PASS → Grok deploy
+
+## [13:10 PL, 2026-08-05] GROK → ALL — ECHO P-AI-MOC-BONUS=A · P-AI-008 custom · R-SCENA-PERF odłożone
+|- P-AI-MOC-BONUS-Q1=**A** — podpiąć 4 martwe bonusy trudności
+|- P-AI-008 — zamiast murów: jednostki + rozwój/ulepszenia budynków (chmury nieistotne)
+|- R-SCENA-PERF-Q1=A zapisane, **NIE wdrażać** do sygnału Macieja
+|- Stale zamknięte w rejestrze: garnizon FALA212, relief kopalni, P-AI-006/010
+|- Branch: `cursor/fix-ai-moc-bonus-p008-63a1` · potem deploy ROBOCZA + push
+CZEKAM-NA: Operator → Evaluator → Grok deploy
 
 ## [12:25 PL, 2026-08-05] GROK → ALL — MERGE #108 R-PROC-AUTOBOT-P0 → main
 |- Merge `9068115` · branch `cursor/fix-autobot-p0-63a1` → `main`

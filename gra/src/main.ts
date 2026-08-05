@@ -927,6 +927,13 @@ import {
 } from './game/embarkation';
 import { isWaterTerrain } from './units/setup';
 import { autoManageCity, pickAutoBuildItem, isBudowaListaUkonczonaForCity } from './game/auto-manage';
+import {
+  applyDifficultyCombatToUnitDef,
+  difficultyCombatMultiplier,
+  difficultyScienceBonusPerTurn,
+  planMajorAiDifficultyStartBonuses,
+  qualifiesForMajorAiDifficultyBonus,
+} from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
 import { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } from './game/auto-improvements';
 import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
@@ -5419,13 +5426,31 @@ async function boot(): Promise<void> {
      * do decideAITurn/decideDefensiveCopyTurn (opts.poziomTrudnosci) -- w tym bonusProdukcja
      * realnie używane w chooseCityProduction (ai.ts) DLA OBU ścieżek (zwykłe AI i
      * defensiveCopy), więc bez tego globalny "Trudny" podbijał priorytet ekonomii
-     * miast-państw niezależnie od ich własnego suwaka. bonusWalka aktualnie NIE jest
-     * konsumowane nigdzie w combat.ts/ai.ts (martwe pole w DifficultyParams) -- ta funkcja
-     * i tak przekazuje dla niego poprawną wartość na przyszłość (zero dodatkowego ryzyka).
+     * miast-państw niezależnie od ich własnego suwaka. bonusWalka jest konsumowane
+     * (P-AI-MOC-BONUS=A) przez difficultyCombatMultForOwner -> BattleScene / resolveCombat.
      */
     function aiDiffLevelForOwner(ownerId: number): 1 | 2 | 3 {
       const src = typCityCopyOwners.has(ownerId) ? _menuCityStateDifficulty : _menuDifficulty;
       return src === 'hard' ? 3 : src === 'easy' ? 1 : 2;
+    }
+
+    /** P-AI-MOC-BONUS=A: mnożnik walki major AI z bonusWalka (nie gracz / nie MP / nie barb). */
+    function difficultyCombatMultForOwner(ownerId: number): number {
+      if (!qualifiesForMajorAiDifficultyBonus(ownerId, isCityStateOwner(ownerId))) return 1;
+      const params = loadDifficultyParams(data, aiDiffLevelForOwner(ownerId));
+      return difficultyCombatMultiplier(params.bonusWalka);
+    }
+
+    function difficultyScienceBonusForOwner(ownerId: number): number {
+      if (!qualifiesForMajorAiDifficultyBonus(ownerId, isCityStateOwner(ownerId))) return 0;
+      const params = loadDifficultyParams(data, aiDiffLevelForOwner(ownerId));
+      return difficultyScienceBonusPerTurn(params.bonusNauka);
+    }
+
+    /** Def jednostki do mocy M auto-walki — weteran + fortyfikacja + bonus trudności AI. */
+    function combatPowerScaledDefFor(u: RuntimeUnit): Record<string, unknown> {
+      const def = fortifyFieldScaledDefFor(u);
+      return applyDifficultyCombatToUnitDef(def, difficultyCombatMultForOwner(u.ownerId));
     }
     /**
      * R-MP-DYPL-PROAKT dokończenie (Maciej 2026-07-24): odpowiednik aiDiffLevelForOwner,
@@ -5451,6 +5476,8 @@ async function boot(): Promise<void> {
     let pendingForeignSpawnCities: Array<{ q: number; r: number; ownerId: number; name: string }> = [];
     /** Stolice klastrów obcych typów — ekspansyjna AI. */
     const clusterCapitalOwnerIds = new Set<number>();
+    /** P-AI-MOC-BONUS=A: jednorazowy grant startowych bonusów per owner major AI. */
+    const difficultyBonusGrantedOwners = new Set<number>();
     /** Rozmieszczenie klastrów — kontekst AI (faza 1 konsolidacji). */
     let clusterPlacement: ClusterPlacement | null = null;
     let clusterStartSeed = 42;
@@ -6145,6 +6172,7 @@ async function boot(): Promise<void> {
       clusterPlacement = plan.placement;
       clusterStartSeed = seed;
       clusterCapitalOwnerIds.clear();
+      difficultyBonusGrantedOwners.clear();
       for (const oid of plan.clusterCapitalOwnerIds) clusterCapitalOwnerIds.add(oid);
 
       aiOwnerCivMap.clear();
@@ -6332,6 +6360,66 @@ async function boot(): Promise<void> {
       );
     }
 
+    /** P-AI-MOC-BONUS=A: dodatkowe jednostki startowe major AI (stolica klastra). */
+    function spawnDifficultyBonusUnit(ownerId: number, typeId: string, q: number, r: number): void {
+      const def = lookupUnitDef(typeId);
+      const ruch = normFieldVal(def['Ruch'], 2);
+      const role = String(def['Rola'] ?? def['Rola (linia)'] ?? '');
+      const isSuper = def['Super-jednostka'] === 'TAK';
+      const newUnitId = 'diffbonus_' + turn + '_' + ownerId + '_' + Math.random().toString(36).slice(2);
+      units.push({
+        id: newUnitId,
+        ownerId,
+        typeId,
+        category: categoryOf(typeId, role, isSuper, def['Typ']),
+        q,
+        r,
+        ruch,
+        ruchLeft: ruch,
+      });
+    }
+
+    function grantDifficultyStartBonusesForMajorCapital(
+      ownerId: number,
+      capitalCity: City,
+      capitalName: string,
+    ): void {
+      if (difficultyBonusGrantedOwners.has(ownerId)) return;
+      if (!clusterCapitalOwnerIds.has(ownerId)) return;
+      difficultyBonusGrantedOwners.add(ownerId);
+
+      const params = loadDifficultyParams(data, aiDiffLevelForOwner(ownerId));
+      const plan = planMajorAiDifficultyStartBonuses(
+        capitalCity.q,
+        capitalCity.r,
+        params,
+        map,
+        cities,
+        qualifiesForMajorAiDifficultyBonus(ownerId, isCityStateOwner(ownerId)),
+      );
+
+      for (const u of plan.units) {
+        spawnDifficultyBonusUnit(ownerId, u.typeId, u.q, u.r);
+      }
+
+      for (const extra of plan.cities) {
+        const extraName = capitalName + ' — kolonia' + extra.nameSuffix;
+        const extraCity = foundCityAt(extra.q, extra.r, ownerId, cities, map, extraName, false, true);
+        if (extraCity) {
+          cities.push(extraCity);
+          finalizeCityFounding(extraCity, extra.q, extra.r);
+          aiStartHexes.push({ q: extra.q, r: extra.r, ownerId });
+        }
+      }
+
+      if (plan.extraCitiesBlocked) {
+        console.log(
+          '[DifficultyBonus] BLOK startoweMiasta owner=' + ownerId +
+          ' — spawn jednostek zamiast miast (brak legalnego heksu)',
+        );
+      }
+    }
+
     /** Po stolicy gracza i rywalach tego samego typu — obce cywilizacje z planu klastra. */
     function spawnPendingForeignClusters(): void {
       if (pendingForeignSpawnCities.length === 0) return;
@@ -6354,6 +6442,9 @@ async function boot(): Promise<void> {
           }
           if (!ownerDefaultPodzialHandlu.has(sc.ownerId)) {
             ownerDefaultPodzialHandlu.set(sc.ownerId, freshOwnerDefaultPodzialHandlu());
+          }
+          if (clusterCapitalOwnerIds.has(sc.ownerId)) {
+            grantDifficultyStartBonusesForMajorCapital(sc.ownerId, c, sc.name);
           }
           _scFounded++;
         } else {
@@ -17297,6 +17388,14 @@ async function boot(): Promise<void> {
       };
     }
 
+    /** P-AI-MOC-BONUS=A: bonusWalka major AI do BattleScene / resolveCombat. */
+    function difficultyBattleOpts(atkOwnerId: number, defOwnerId: number): Pick<BattleOpts, 'attackerDifficultyCombatMult' | 'defenderDifficultyCombatMult'> {
+      return {
+        attackerDifficultyCombatMult: difficultyCombatMultForOwner(atkOwnerId),
+        defenderDifficultyCombatMult: difficultyCombatMultForOwner(defOwnerId),
+      };
+    }
+
     /** C1-Q4 / D8=A: heks kotwicy + własne jednostki w promieniu 1 heksa. */
     function collectBattleRoster(
       anchor: RuntimeUnit,
@@ -17556,6 +17655,7 @@ async function boot(): Promise<void> {
             attackerIsBarbarian: pbInfo4.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo4.obronca.isBarbarian,
             ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
+            ...difficultyBattleOpts(atkLead.ownerId, defLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -17674,7 +17774,7 @@ async function boot(): Promise<void> {
     // (obie strony, ownerId-agnostycznie -- PARYTET AI).
     function rosterFieldPowerM(roster: RuntimeUnit[]): number {
       return sumRosterFieldM(
-        roster.map(u => ({ typeId: u.typeId, def: veteranScaledDefFor(u) })),
+        roster.map(u => ({ typeId: u.typeId, def: combatPowerScaledDefFor(u) })),
       );
     }
 
@@ -17731,7 +17831,7 @@ async function boot(): Promise<void> {
       // Obrony (fieldFortifyDefenseBonus, fortify_obrona_proc) NA WIERZCHU premii
       // weterana, gdy unitGetsFortifyDefenseBonus (pole lub garnizon bez muru).
       const split = sumRosterFieldMSplit(
-        defRoster.map(u => ({ typeId: u.typeId, def: fortifyFieldScaledDefFor(u) })),
+        defRoster.map(u => ({ typeId: u.typeId, def: combatPowerScaledDefFor(u) })),
       );
       const { isCity, hasMur } = cityWallStatusAtHex(q, r);
       let terrAdjAttack: number;
@@ -17947,6 +18047,7 @@ async function boot(): Promise<void> {
             attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo.obronca.isBarbarian,
             ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
+            ...difficultyBattleOpts(atkLead.ownerId, defLead.ownerId),
             onCancel: () => {
               setMood('mapa');
               finishIncomingBattleUi();
@@ -18768,7 +18869,7 @@ async function boot(): Promise<void> {
       isCityStateForOwner: (ownerId: number) => isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
       lookupUnitDef,
       runtimeToBattleUnit,
-      fortifyScaledDefFor: fortifyFieldScaledDefFor,
+      fortifyScaledDefFor: combatPowerScaledDefFor,
       terrainCombatData: terrainCombatData as unknown as readonly TerrainEntry[],
       battleData: data,
       showHint: showHintMessage,
@@ -18778,6 +18879,7 @@ async function boot(): Promise<void> {
       clearBattleUiState: clearMapBattleUiState,
       createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
       armyHungerBattleOpts,
+      difficultyBattleOpts,
       registerMilitiaDef: (id: string, def: Record<string, unknown>) => {
         militiaDefOverrides.set(id, def);
       },
@@ -19120,6 +19222,7 @@ async function boot(): Promise<void> {
             attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo.obronca.isBarbarian,
             ...armyHungerBattleOpts(atkRosterRef[0]?.ownerId ?? 0, defRosterRef[0]?.ownerId ?? 0),
+            ...difficultyBattleOpts(atkRosterRef[0]?.ownerId ?? 0, defRosterRef[0]?.ownerId ?? 0),
             onCancel: () => setMood('mapa'),
           });
           bs.play((res) => {
@@ -20180,10 +20283,10 @@ async function boot(): Promise<void> {
               }
               aiSkarbiecByOwner.set(oid, Math.max(0, aiSkarb));
 
-              // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast).
+              // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.
               aiNaukaPoolByOwner.set(
                 oid,
-                (aiNaukaPoolByOwner.get(oid) ?? 0) + aiEcon.nauka,
+                (aiNaukaPoolByOwner.get(oid) ?? 0) + aiEcon.nauka + difficultyScienceBonusForOwner(oid),
               );
             }
 

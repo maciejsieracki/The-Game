@@ -359,6 +359,15 @@ export interface ResolveCombatOpts {
 
   /** Mnożnik statów przy głodzie wojska (domyślnie 0.75). */
   armyHungerStatMult?: number;
+
+  /**
+   * P-AI-MOC-BONUS=A: bonus trudności AI (bonusWalka) — tylko major AI, nie gracz.
+   * Mnożnik ataku/obrony/ranged (1.05 = +5%). Domyślnie 1 (brak bonusu).
+   */
+  attackerDifficultyCombatMult?: number;
+
+  /** Jak wyżej, dla broniącego. */
+  defenderDifficultyCombatMult?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -783,15 +792,18 @@ export function resolveCombat(
     opts.defenderBuildingBonus,
   );
 
-  const atkMelee0 = applyMultiplier(attacker.meleeAttack, atkBaseMods.atk);
-  const atkObrona0 = applyMultiplier(attacker.meleeDefence, atkBaseMods.obrona);
-  const atkPanc0 = applyMultiplier(attacker.armor, atkBaseMods.pancerz);
-  const atkMissile0 = applyMultiplier(attacker.missileAttack ?? 0, atkBaseMods.rangedAtk);
+  const atkDiffMult = opts.attackerDifficultyCombatMult ?? 1;
+  const defDiffMult = opts.defenderDifficultyCombatMult ?? 1;
 
-  const defObrona0 = applyMultiplier(defender.meleeDefence, defBaseMods.obrona);
-  const defMelee0 = applyMultiplier(defender.meleeAttack, defBaseMods.atk);
+  const atkMelee0 = applyMultiplier(attacker.meleeAttack, atkBaseMods.atk) * atkDiffMult;
+  const atkObrona0 = applyMultiplier(attacker.meleeDefence, atkBaseMods.obrona) * atkDiffMult;
+  const atkPanc0 = applyMultiplier(attacker.armor, atkBaseMods.pancerz);
+  const atkMissile0 = applyMultiplier(attacker.missileAttack ?? 0, atkBaseMods.rangedAtk) * atkDiffMult;
+
+  const defObrona0 = applyMultiplier(defender.meleeDefence, defBaseMods.obrona) * defDiffMult;
+  const defMelee0 = applyMultiplier(defender.meleeAttack, defBaseMods.atk) * defDiffMult;
   const defPanc0 = applyMultiplier(defender.armor, defBaseMods.pancerz);
-  const defMissile0 = applyMultiplier(defender.missileAttack ?? 0, defBaseMods.rangedAtk);
+  const defMissile0 = applyMultiplier(defender.missileAttack ?? 0, defBaseMods.rangedAtk) * defDiffMult;
 
   let hpAtk = Math.round(applyMultiplier(attacker.health, atkBaseMods.health));
   let hpDef = Math.round(applyMultiplier(defender.health, defBaseMods.health));
