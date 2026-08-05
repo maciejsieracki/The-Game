@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 240** `d1450398` — PROD-GATE per-owner + absorpcja major→major **Faza 1** (tylko Trudny, same-civ, Moc≥1.25 od tury 10). Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra (Trudny).
+﻿- ✅ **FALA 241** `178073f9` — absorb major **any-civ** (tylko Trudny) · celownik dyplo z hintem · odblokowane małe strojenie AI (docs). Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+- ✅ **FALA 240** `d1450398` — PROD-GATE + absorb Faza1. **ZASTĄPIONA** przez 241.
 - ✅ **FALA 239** `ff7c5e49` — Diag major AI w overlay Moc. **ZASTĄPIONA** przez 240.
 - ✅ **FALA 238** `ea921d1e` — MP spawn Wyżywienie=4. **ZASTĄPIONA** przez 239.
 - ✅ **FALA 237** `5b0e1c19` — WIAR §7: badge W przy tytule cywu + W w rankingu Potęgi i liście dyplomacji. **ZASTĄPIONA** przez 238.
