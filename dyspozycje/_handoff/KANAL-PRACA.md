@@ -1,4 +1,10 @@
-﻿## [11:54 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 225 8767b9c0
+﻿## [10:15 PL, 2026-08-05] OPERATOR → ALL — R-PROC-AUTOBOT-P0 (kod, bez deploy)
+|- P0 fix: Dev score jawne metryki + HITL, run-history jsonl, delay gate retire/prune, deny-default guardrails, RETIRED status
+|- Branch: cursor/fix-autobot-p0-63a1 · tsc + smoke 9/9
+|- **BEZ** deploy gra-robocza · **BEZ** merge main
+CZEKAM-NA: Grok Evaluator review → merge
+
+## [11:54 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 225 8767b9c0
 |- md5: 8767b9c075c6debb6e0c2036c22c8ffb · stempel widoczny: ROBOCZA · e5fbaa18 · 2026-08-05 09:54
 |- Batch: R-AUTO-RACJE-RAISE Q1=B Q2–Q5=A (Spichlerz≥0, maxSafe, Auto per miasto) + R-PROC-AUTOBOT na main
 |- AutoBot: Operator `9c4a8d8` PASS · Evaluator PASS · Grok deploy (hasło Maciej)

@@ -178,13 +178,14 @@ export function retireWeakRules(
       rule.deprecatedReason = rule.retiredReason;
       rule.lastUpdatedIso = nowIso;
       if (moveToQuarantine) {
-        rule.status = 'QUARANTINE';
         pb.quarantine_rules.push(rule);
       }
       updates.push({
         ruleId: rule.id,
-        kind: moveToQuarantine ? 'quarantine' : 'retire',
-        detail: `Retired rule ${rule.id}: ${rule.retiredReason}`,
+        kind: 'retire',
+        detail: moveToQuarantine
+          ? `Retired rule ${rule.id}: ${rule.retiredReason}; moved to quarantine_rules`
+          : `Retired rule ${rule.id}: ${rule.retiredReason}`,
       });
     } else {
       remaining.push(rule);

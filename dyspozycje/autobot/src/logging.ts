@@ -3,10 +3,24 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import type { DashboardLogEntry, PostmortemLogEntry, PlaybookUpdate } from './types';
+import type {
+  DashboardLogEntry,
+  ExecutionRun,
+  PostmortemLogEntry,
+  PlaybookUpdate,
+} from './types';
 
 const LOG_DIR = path.resolve(__dirname, '..', 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'postmortems.jsonl');
+const RUN_HISTORY_FILE = path.join(LOG_DIR, 'run-history.jsonl');
+
+/** Wpis historii runów dla prune / delay (append-only JSONL) */
+export interface RunHistoryEntry {
+  run: ExecutionRun;
+  evaluatedAtIso: string;
+  success: boolean;
+  performanceScore: number;
+}
 
 export function ensureLogDir(): void {
   if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
@@ -58,6 +72,17 @@ export function appendPostmortemLog(entry: PostmortemLogEntry | PostmortemInput)
       ? (entry as PostmortemLogEntry)
       : buildPostmortemEntry(entry as PostmortemInput);
   appendDashboardLog(normalized);
+}
+
+export function appendRunHistory(entry: RunHistoryEntry): void {
+  ensureLogDir();
+  fs.appendFileSync(RUN_HISTORY_FILE, JSON.stringify(entry) + '\n', 'utf8');
+}
+
+export function readRunHistory(limit = 500): RunHistoryEntry[] {
+  if (!fs.existsSync(RUN_HISTORY_FILE)) return [];
+  const lines = fs.readFileSync(RUN_HISTORY_FILE, 'utf8').trim().split('\n').filter(Boolean);
+  return lines.slice(-limit).map(l => JSON.parse(l) as RunHistoryEntry);
 }
 
 export function readDashboardLogs(limit = 100): DashboardLogEntry[] {

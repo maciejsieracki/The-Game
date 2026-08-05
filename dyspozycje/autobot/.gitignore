@@ -1,1 +1,3 @@
 dist-smoke/
+logs/*.jsonl
+!logs/.gitkeep

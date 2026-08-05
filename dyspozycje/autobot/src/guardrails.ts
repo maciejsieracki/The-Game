@@ -61,6 +61,25 @@ export function assertProdIsolation(env: string | undefined, actionId: string): 
  * - ZAKAZ: merge main, mass mail, real money
  * - Deploy: tylko humanApproved + deployPassword
  */
+/** Semantika poza CATALOG — deny-by-default (merge/deploy-force bez HITL) */
+function isSemanticallyForbidden(actionId: string): boolean {
+  if (
+    actionId === 'merge' ||
+    actionId === 'git-merge' ||
+    actionId === 'merge-to-main' ||
+    actionId.startsWith('merge-')
+  ) {
+    return true;
+  }
+  if (/push.*force/i.test(actionId) || actionId.includes('force-push')) {
+    return true;
+  }
+  if (actionId.startsWith('deploy') && !CATALOG.some(a => a.id === actionId)) {
+    return true;
+  }
+  return false;
+}
+
 export function assertActionAllowed(
   actionId: string,
   opts: GuardrailContext = {},
@@ -78,8 +97,23 @@ export function assertActionAllowed(
   }
 
   const action = CATALOG.find(a => a.id === actionId);
-  const risk: ActionRisk =
-    action?.risk ?? (FORBIDDEN_ACTION_IDS.has(actionId) ? 'forbidden' : 'elevated');
+
+  if (!action) {
+    if (FORBIDDEN_ACTION_IDS.has(actionId) || isSemanticallyForbidden(actionId)) {
+      return {
+        allowed: false,
+        reason: `Guardrail: akcja "${actionId}" zabroniona (deny-by-default / semantika merge/deploy-force)`,
+        risk: 'forbidden',
+      };
+    }
+    return {
+      allowed: false,
+      reason: `Guardrail: nieznana akcja "${actionId}" (deny-by-default — brak w CATALOG)`,
+      risk: 'forbidden',
+    };
+  }
+
+  const risk: ActionRisk = action.risk;
 
   const alwaysForbidden = new Set([
     'git-merge-main',
