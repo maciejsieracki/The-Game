@@ -13,10 +13,11 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 
 ## Przeczytaj w tej kolejności
 1. TEN plik (30 sekund) + procedura NUMER→ABC wyżej.
-2. `SCHEMAT-PRACY-COWORK-2026-07-05.md` — role (MASTER / INTEGRATOR / UX / Maciej),
+2. **[`AUTOBOT-SCHEMAT-DZIALANIA.md`](AUTOBOT-SCHEMAT-DZIALANIA.md)** — kto za co (Operator / Evaluator / Grok / Maciej) + reguły.
+3. `SCHEMAT-PRACY-COWORK-2026-07-05.md` — role (MASTER / INTEGRATOR / UX / Maciej),
    łańcuch wersji robocza→kanon→finalna, pętla robocza.
-3. `_handoff/KANAL-PRACA.md` — protokół komunikacji + bieżące zadania (ostatnie wpisy!).
-4. Swoją kartę roli, jeśli istnieje (np. `_handoff/ROLA-UX.md`).
+4. `_handoff/KANAL-PRACA.md` — protokół komunikacji + bieżące zadania (ostatnie wpisy!).
+5. Swoją kartę roli, jeśli istnieje (np. `_handoff/ROLA-UX.md`).
 
 ## Żelazne zasady (skrót — pełne w schemacie)
 1. TYLKO DO PRZODU: zero restore, backupów, archeologii. Braki = piszemy kod od nowa.
