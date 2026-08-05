@@ -9,7 +9,8 @@ import {
   savePlaybook,
 } from './playbook-manager';
 import { pruneFeatureWeights, attributesToWeights } from './feature-pruning';
-import { appendPostmortemLog } from './logging';
+import { appendPostmortemLog, appendRunHistory, readRunHistory } from './logging';
+import { canDeclareWinner } from './guardrails';
 import {
   computePerformanceScore,
   extractMetricSnapshot,
@@ -31,6 +32,11 @@ export interface EvaluateOpts {
   ruleIds?: string[];
   /** Kara za złożoność (0–1) odejmowana od performanceScore */
   complexityPenalty?: number;
+  /**
+   * Smoke / testy: omija bramkę evaluation delay przed retire/prune.
+   * Produkcja Civ: zawsze false (domyślnie).
+   */
+  allowPlaybookMutation?: boolean;
 }
 
 function metricNumber(m: HardMetrics, key: keyof HardMetrics): number {
@@ -76,46 +82,92 @@ export class EvaluatorAgent {
     const { metricBefore, metricAfter } = extractMetricSnapshot(metrics, baseline);
     const performanceScore = computePerformanceScore(metrics, complexityPenalty);
     const deltaPercentage = computeDeltaPercentage(metricBefore, metricAfter);
+    const evaluatedAtIso = new Date().toISOString();
 
     const updates: PlaybookUpdate[] = [];
     const ruleIds = opts.ruleIds ?? run.operatorRuleIds;
 
+    // Historia runów — zawsze append (źródło dla prune + delay)
+    appendRunHistory({
+      run,
+      evaluatedAtIso,
+      success,
+      performanceScore,
+    });
+
+    const history = readRunHistory();
+    const historyRuns = history.map(h => h.run);
+    const minRuns = pb.thresholds.minRunsForSignificance;
+    const runsForPrune =
+      historyRuns.length >= minRuns
+        ? historyRuns.slice(-Math.max(historyRuns.length, minRuns))
+        : historyRuns;
+
+    // recordRuleOutcome — zawsze (bez bramki delay)
     for (const id of ruleIds) {
       const u = recordRuleOutcome(pb, id, success);
       if (u) updates.push(u);
     }
-    updates.push(...retireWeakRules(pb));
 
-    const prune = pruneFeatureWeights({
-      runs: [run],
-      featureWeights: attributesToWeights(pb.operatorContextAttributes),
-      opts: {
-        minRuns: pb.thresholds.minRunsForSignificance,
-        correlationThreshold: 0.05,
-      },
-    });
+    let playbookMutationDeferred: string | undefined;
+    let pruneActions: string[] = [];
+    let prunedAttributes: string[] = [];
 
-    if (prune.prunedAttributes.length > 0 && prune.evaluatedRuns >= pb.thresholds.minRunsForSignificance) {
-      pb.operatorContextAttributes = prune.keptAttributes;
+    const canMutatePlaybook =
+      opts.allowPlaybookMutation === true ||
+      canDeclareWinner({
+        eventCount: history.length,
+        minEvents: pb.thresholds.minEventsForWinner ?? 1000,
+        firstEventAtIso: history[0]?.evaluatedAtIso ?? run.startedAtIso,
+        minDelayHours: pb.thresholds.evaluationDelayHours ?? 48,
+      }).ok;
+
+    if (canMutatePlaybook) {
+      updates.push(...retireWeakRules(pb));
+
+      const prune = pruneFeatureWeights({
+        runs: runsForPrune,
+        featureWeights: attributesToWeights(pb.operatorContextAttributes),
+        opts: {
+          minRuns: minRuns,
+          correlationThreshold: 0.05,
+        },
+      });
+
+      prunedAttributes = prune.prunedAttributes;
+      pruneActions = prune.actionsTaken;
+
+      if (prune.prunedAttributes.length > 0 && prune.evaluatedRuns >= minRuns) {
+        pb.operatorContextAttributes = prune.keptAttributes;
+      }
+    } else {
+      const delayResult = canDeclareWinner({
+        eventCount: history.length,
+        minEvents: pb.thresholds.minEventsForWinner ?? 1000,
+        firstEventAtIso: history[0]?.evaluatedAtIso ?? run.startedAtIso,
+        minDelayHours: pb.thresholds.evaluationDelayHours ?? 48,
+      });
+      playbookMutationDeferred = delayResult.reason;
     }
 
     savePlaybook(pb, playbookPath);
 
-    const postmortem = [
+    const postmortemParts = [
       success ? 'PASS' : 'FAIL',
       `performanceScore=${performanceScore.toFixed(3)}`,
       run.blockedByGuardrail ? `guardrail: ${run.blockedByGuardrail}` : null,
       `tests ${metrics.testsPassed ?? '?'}/${(metrics.testsPassed ?? 0) + (metrics.testsFailed ?? 0)}`,
       metrics.regressionDetected ? 'REGRESSION' : null,
       `deltas=${JSON.stringify(deltas)}`,
-    ]
-      .filter(Boolean)
-      .join(' · ');
+      playbookMutationDeferred ? `playbookMutationDeferred: ${playbookMutationDeferred}` : null,
+    ];
+
+    const postmortem = postmortemParts.filter(Boolean).join(' · ');
 
     const actionTaken =
-      prune.actionsTaken.length > 0
-        ? prune.actionsTaken.join('; ')
-        : updates.find(u => u.kind === 'quarantine' || u.kind === 'retire')
+      pruneActions.length > 0
+        ? pruneActions.join('; ')
+        : updates.find(u => u.kind === 'retire' || u.kind === 'quarantine')
           ? updates.map(u => u.detail).join('; ')
           : success
             ? 'No action required'
@@ -124,7 +176,7 @@ export class EvaluatorAgent {
     const result: EvaluationResult = {
       id: randomUUID(),
       runId: run.id,
-      evaluatedAtIso: new Date().toISOString(),
+      evaluatedAtIso,
       metrics,
       metricBefore,
       metricAfter,
@@ -133,7 +185,7 @@ export class EvaluatorAgent {
       success,
       postmortem,
       playbookUpdates: updates,
-      prunedAttributes: prune.prunedAttributes,
+      prunedAttributes,
     };
 
     appendPostmortemLog({

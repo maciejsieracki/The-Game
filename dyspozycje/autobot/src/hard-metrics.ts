@@ -19,11 +19,14 @@ export class DevProfileScorer implements ProfileScorer {
   readonly primaryMetricKey = 'prSuccessRate';
 
   score(metrics: HardMetrics): number {
-    const typecheckOk = metrics.typecheckOk !== false;
-    const testsOk = (metrics.testsFailed ?? 0) === 0;
-    const buildOk = metrics.buildPassed !== false;
-    const linterOk = metrics.linterPassed !== false;
-    // HITL: brak jawnego humanMerged/humanApproved = NIE sukces (anti confidence-machine)
+    // Jawne === true — brak pola / undefined = NIE sukces (anti confidence-machine)
+    const typecheckOk = metrics.typecheckOk === true;
+    const buildOk = metrics.buildPassed === true;
+    const linterOk = metrics.linterPassed === true;
+    const hasTestSignal =
+      metrics.testsFailed !== undefined || metrics.testsPassed !== undefined;
+    const testsOk = hasTestSignal && (metrics.testsFailed ?? 0) === 0;
+    // HITL: brak jawnego humanMerged/humanApproved = NIE sukces
     const humanOk =
       metrics.humanMerged === true || metrics.humanApproved === true;
 

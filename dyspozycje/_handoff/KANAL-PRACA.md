@@ -1,4 +1,29 @@
-﻿## [11:54 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 225 8767b9c0
+﻿## [10:20 PL, 2026-08-05] OPERATOR → ALL — R-PROC-AUTOBOT-P0-SMOKE (wzmocnienie, bez deploy)
+|- Maciej opcja 2: smoke notes Evaluatora (bc-f71f4817) zamknięte
+|- #6 git-merge deny · #8 defer bez retire + attrs snapshot · #9 evaluate→RETIRED path · win/loss na defer
+|- Branch: cursor/fix-autobot-p0-63a1 · tsc 0 · smoke 10/10
+|- **BEZ** deploy gra-robocza · **BEZ** merge main
+CZEKAM-NA: Grok Evaluator re-run → merge?
+
+## [12:20 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0-SMOKE final PASS
+|- Operator `1c31c37` · smoke **10/10** · tsc 0
+|- Evaluator (bc-d29a92b0): **PASS** — notes P0 (git-merge, defer asserts, evaluate→RETIRED) zamknięte
+|- Branch `cursor/fix-autobot-p0-63a1` · PR #108 · **BEZ** deploy
+CZEKAM-NA: Maciej — **merge** #108 → main
+
+## [12:10 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0 final (PASS-WITH-NOTES)
+|- Operator `41169c1` na `cursor/fix-autobot-p0-63a1` · tsc 0 · smoke 9/9
+|- Evaluator (bc-f71f4817): **PASS-WITH-NOTES** — P0 checklist 1–5 PASS; smoke notes nieblokujące
+|- **BEZ** deploy ROBOCZA (tylko scaffold autobot + docs)
+CZEKAM-NA: ~~Maciej merge~~ → Maciej wybrał **2** (wzmocnij smoke) → DONE PASS
+
+## [10:15 PL, 2026-08-05] OPERATOR → ALL — R-PROC-AUTOBOT-P0 (kod, bez deploy)
+|- P0 fix: Dev score jawne metryki + HITL, run-history jsonl, delay gate retire/prune, deny-default guardrails, RETIRED status
+|- Branch: cursor/fix-autobot-p0-63a1 · tsc + smoke 9/9
+|- **BEZ** deploy gra-robocza · **BEZ** merge main
+CZEKAM-NA: ~~Grok Evaluator~~ → **PASS-WITH-NOTES** · czeka merge
+
+## [11:54 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 225 8767b9c0
 |- md5: 8767b9c075c6debb6e0c2036c22c8ffb · stempel widoczny: ROBOCZA · e5fbaa18 · 2026-08-05 09:54
 |- Batch: R-AUTO-RACJE-RAISE Q1=B Q2–Q5=A (Spichlerz≥0, maxSafe, Auto per miasto) + R-PROC-AUTOBOT na main
 |- AutoBot: Operator `9c4a8d8` PASS · Evaluator PASS · Grok deploy (hasło Maciej)
