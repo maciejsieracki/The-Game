@@ -4,13 +4,13 @@
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 232 (2026-08-05):** ROBOCZA `fca41b9a` · SOLO: muzyka 2.5s + węgiel ukryty + bitwa replay grupy. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 233 (2026-08-05):** ROBOCZA `06712ea4` · C-FLANK replay + WIAR Etap0. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+>
+> **SOLO kolejka:** ECHO 12/12 ✅ · FALA 232–233 wdrożone · playtesty otwarte (GATE=A) · scena pominięta (Q2=B).
+>
+> **FALA 232 (2026-08-05):** ROBOCZA `fca41b9a` · muzyka+węgiel+bitwa I. **ZASTĄPIONA** przez FALA 233.
 >
 > **FALA 231 (2026-08-05):** ROBOCZA `283de421` · R-AI-TRUDNOSC P2. **ZASTĄPIONA** przez FALA 232.
->
-> **Kolejka solo:** FACING verify (C-FLANK) · WIAR Etap0+dźwignie · playtesty otwarte (GATE=A).
->
-> **FALA 230 (2026-08-05):** ROBOCZA `7f8bdc74` · R-AI-TRUDNOSC P1 + P1-3. **ZASTĄPIONA** przez FALA 231.
 
 > **FALA 229 (2026-08-05):** ROBOCZA `efab84db` · DEPLOY ALL P0. **ZASTĄPIONA** przez FALA 230.
 
