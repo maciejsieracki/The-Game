@@ -635,9 +635,9 @@
     "opis": "PRÓG DO AKCEPTACJI: poziom Normalny — AI rozważa kolejkowanie cudu co 5 tur."
   },
   "cuda_poziom3_prog_koszt_x": {
-    "wartosc": 70,
+    "wartosc": 80,
     "sekcja": "§9 Cuda AI",
-    "opis": "PRÓG DO AKCEPTACJI: poziom Trudny — AI kolejkuje cud agresywnie, nawet przy koszcie <= 70× Praca/turę miasta."
+    "opis": "PRÓG DO AKCEPTACJI: poziom Trudny — AI kolejkuje cud agresywnie, nawet przy koszcie <= 80× Praca/turę miasta (STEP4: 70→80)."
   },
   "cuda_poziom3_throttle_tur": {
     "wartosc": 2,
