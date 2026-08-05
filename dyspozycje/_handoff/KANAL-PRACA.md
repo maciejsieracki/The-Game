@@ -5,11 +5,16 @@
 |- **BEZ** deploy gra-robocza · **BEZ** merge main
 CZEKAM-NA: Grok Evaluator re-run → merge?
 
+## [12:25 PL, 2026-08-05] GROK → ALL — MERGE #108 R-PROC-AUTOBOT-P0 → main
+|- Merge `9068115` · branch `cursor/fix-autobot-p0-63a1` → `main`
+|- P0 + smoke 10/10 · Evaluator PASS · **BEZ** deploy ROBOCZA
+CZEKAM-NA: nic (merge done) · playtest R-AUTO nadal na FALA 225
+
 ## [12:20 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0-SMOKE final PASS
 |- Operator `1c31c37` · smoke **10/10** · tsc 0
 |- Evaluator (bc-d29a92b0): **PASS** — notes P0 (git-merge, defer asserts, evaluate→RETIRED) zamknięte
 |- Branch `cursor/fix-autobot-p0-63a1` · PR #108 · **BEZ** deploy
-CZEKAM-NA: Maciej — **merge** #108 → main
+CZEKAM-NA: ~~Maciej merge~~ → **DONE `9068115`**
 
 ## [12:10 PL, 2026-08-05] GROK → ALL — R-PROC-AUTOBOT-P0 final (PASS-WITH-NOTES)
 |- Operator `41169c1` na `cursor/fix-autobot-p0-63a1` · tsc 0 · smoke 9/9
