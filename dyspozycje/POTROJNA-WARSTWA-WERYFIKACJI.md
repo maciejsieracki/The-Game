@@ -33,9 +33,10 @@ Adwokat diabła **zawsze** stosuje `R-PROC-AUTOBOT-EVAL-SCOPE` (playbook `rule_1
 1. Czy każda zmiana w diffie wynika wprost z problemu/AC tematu? (nie „przy okazji”)
 2. Czy paczka nie rusza niezwiązanych plików/funkcji?
 3. Czy nie cofa wcześniejszych usprawnień / nie psuje innych tematów?
-4. Przy NIE → **FAIL** lub **PASS-WITH-NOTES** z listą ubocznych ryzyk (nie akceptuj cicho).
+4. Przy NIE SCOPE → **FAIL** lub **PASS-WITH-NOTES** z listą ubocznych ryzyk (nie akceptuj cicho).
+5. **STRICT** (`R-PROC-AUTOBOT-EVAL-STRICT`, `rule_106`): luki testów / brak asercji AC / czerwone testy tematu / `tsc≠0` → **FAIL** (nie NOTES).
 
-Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md`
+Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · twardość werdyktów: `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md`
 
 ## Punkty wejścia (każda sesja musi to znać)
 

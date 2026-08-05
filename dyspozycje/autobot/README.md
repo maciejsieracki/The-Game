@@ -6,7 +6,9 @@
 
 > Operator → Evaluator → Grok final. **ZAKAZ** omijania pętli.
 
-**Evaluator — SCOPE:** przed werdyktem sprawdza, czy diff dotyczy **wyłącznie** zgłoszonego problemu/AC i nie wprowadza ubocznych zmian ani regresji w innych miejscach (`rule_105`, `R-PROC-AUTOBOT-EVAL-SCOPE`). Naruszenie → FAIL lub PASS-WITH-NOTES z blockerami.
+**Evaluator — SCOPE:** przed werdyktem sprawdza, czy diff dotyczy **wyłącznie** zgłoszonego problemu/AC i nie wprowadza ubocznych zmian ani regresji w innych miejscach (`rule_105`, `R-PROC-AUTOBOT-EVAL-SCOPE`). Naruszenie SCOPE → FAIL.
+
+**Evaluator — STRICT (Maciej „2”, 2026-08-05):** luki testów, brak asercji AC, czerwone testy tematu lub `tsc≠0` → **FAIL** (nie PASS-WITH-NOTES). PASS-WITH-NOTES tylko dla wąskiej listy wyjątków procesowych (`rule_106`, `R-PROC-AUTOBOT-EVAL-STRICT`).
 
 ## Architektura — 5 modułów
 
@@ -131,7 +133,7 @@ node dyspozycje/autobot/tools/autobot-smoke.cjs
 | AutoBot | Sesja Cursor |
 |---------|----------------|
 | Operator | Composer implementer |
-| Evaluator | Adwokat diabła + Grok (+ testy) · **SCOPE** — diff tylko do tematu, bez ubocznych regresji (`rule_105`, `R-PROC-AUTOBOT-EVAL-SCOPE`) |
+| Evaluator | Adwokat diabła + Grok (+ testy) · **SCOPE** — diff tylko do tematu (`rule_105`) · **STRICT** — luki testów → FAIL (`rule_106`, `R-PROC-AUTOBOT-EVAL-STRICT`) |
 | playbook | ten katalog + reguły procesu |
 | Dev scorer | typecheck + testy + deploy gate |
 

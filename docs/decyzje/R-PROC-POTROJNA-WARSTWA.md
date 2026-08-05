@@ -17,7 +17,7 @@ Jeden agent przygotowuje kod. Drugi agent **zawsze** sprawdza jako adwokat diab�
 | # | Rola | Kto |
 |---|------|-----|
 | 1 | Implementer | `composer-2.5` |
-| 2 | Adwokat diabła (osobny przebieg) — **OBOWIĄZKOWO SCOPE + regresja** (`R-PROC-AUTOBOT-EVAL-SCOPE`) | `composer-2.5` |
+| 2 | Adwokat diabła (osobny przebieg) — **OBOWIĄZKOWO SCOPE + regresja** (`R-PROC-AUTOBOT-EVAL-SCOPE`) + **STRICT** (`R-PROC-AUTOBOT-EVAL-STRICT`) | `composer-2.5` |
 | 3 | Final | Grok 4.5 |
 
 **ZAKAZ:** „gotowe w kodzie” / `deploy` po samym #1.

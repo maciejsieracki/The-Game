@@ -47,17 +47,21 @@ Potrójna warstwa (`R-PROC-POTROJNA-WARSTWA`) = **wbudowana** w kroki 1–3 Auto
 
 ## Evaluator — obowiązkowy SCOPE + regresja (Maciej 2026-08-05)
 
-Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`
+Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`  
+**Twardość werdyktów (od 2026-08-05):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` · playbook `rule_106`
 
 **Evaluator MUSI** przed werdyktem sprawdzić:
 
 1. **SCOPE** — każda zmiana w diffie wynika wprost z problemu / błędu / AC tematu (nie „przy okazji”).
 2. **NO-SIDE-EFFECT** — paczka nie rusza niezwiązanych plików/funkcji bez uzasadnionego kontraktu.
 3. **NO-REGRESSION** — fix nie cofa wcześniejszych usprawnień ani nie psuje innych tematów.
+4. **STRICT (R-PROC-AUTOBOT-EVAL-STRICT)** — luki testów / brak asercji AC / czerwone testy tematu / `tsc≠0` / SCOPE gameplay bez handoffu → **FAIL** (nie NOTES).
 
-**Przy NIE:** **FAIL** albo minimum **PASS-WITH-NOTES** z listą blockerów — **ZAKAZ** czystego PASS „bo testy zielone”.
+**PASS-WITH-NOTES** tylko wąska lista: pre-existing baseline poza tematem (dowód `main`), docs drift nieblokujący, cross-lane z handoffem, GATE=A wizual, drobny drift procesu.
 
-Grok wkleja do promptu Evaluatora szablon 4 pytań z decision doc (sekcja „SCOPE + regresja”).
+**Przy NIE (SCOPE lub STRICT):** **FAIL** — **ZAKAZ** czystego PASS i PASS-WITH-NOTES „bo brakuje testu, ale wygląda OK”.
+
+Grok wkleja do promptu Evaluatora szablon 5 pytań z decision doc (sekcja „SCOPE + regresja + STRICT”).
 
 ---
 

@@ -1,8 +1,9 @@
 # R-PROC-AUTOBOT-EVAL-SCOPE — Evaluator: SCOPE + brak regresji
 
-**Status:** 🟢 **AutoBot PASS** (docs) · czeka merge Grok (Maciej 2026-08-05)  
+**Status:** 🟢 **OBOWIĄZUJE** (Maciej 2026-08-05)  
 **Rodzic:** `R-PROC-AUTOBOT` · **Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
-**Playbook:** `dyspozycje/autobot/playbook.json` → `rule_105` (`verify-eval-scope-no-regression`)
+**Playbook:** `dyspozycje/autobot/playbook.json` → `rule_105` (`verify-eval-scope-no-regression`)  
+**Twardość werdyktów:** → [`R-PROC-AUTOBOT-EVAL-STRICT.md`](R-PROC-AUTOBOT-EVAL-STRICT.md) (`rule_106`)
 
 ---
 
@@ -54,34 +55,40 @@ Twarde kryterium **Evaluatora** (warstwa 2 AutoBot / adwokat diabła):
 
 ## FAIL vs PASS-WITH-NOTES vs PASS
 
-| Werdykt | Kiedy |
-|---------|--------|
-| **FAIL** | Uboczna zmiana **psuje** inny temat; cofnięcie wcześniejszego fixu; diff **wyraźnie** szerszy niż AC bez uzasadnienia; brak testu tam, gdzie regresja była realna |
-| **PASS-WITH-NOTES** | Drobne ryzyko uboczne **z nazwanymi** punktami do weryfikacji Groka; plik cross-lane z uzasadnionym handoffem; brak pewności co do regresji — **blocker** w notes, nie cisza |
-| **PASS** | Wszystkie 4 osie (SCOPE / DIFF-MINIMAL / REGRESSION / COUPLING) spełnione; diff czytelnie „tylko temat” |
+> **Twardość werdyktów (od 2026-08-05):** pełna tabela FAIL / PASS-WITH-NOTES / PASS → [`R-PROC-AUTOBOT-EVAL-STRICT.md`](R-PROC-AUTOBOT-EVAL-STRICT.md). Poniżej skrót SCOPE; luki testów i brak asercji AC → **FAIL** (nie NOTES).
 
-**ZAKAZ:** PASS przy znanym naruszeniu SCOPE „bo reszta OK”.
+| Werdykt | Kiedy (SCOPE + STRICT) |
+|---------|------------------------|
+| **FAIL** | Uboczna zmiana **psuje** inny temat; cofnięcie wcześniejszego fixu; diff **wyraźnie** szerszy niż AC bez uzasadnienia; **brak celowanego testu/asercji** dla zmienionej logiki; **testy tematu czerwone**; **`tsc≠0`**; SCOPE gameplay bez handoffu — patrz STRICT §FAIL |
+| **PASS-WITH-NOTES** | **Tylko wąskie wyjątki STRICT:** pre-existing baseline poza tematem; docs drift; cross-lane z handoffem; GATE=A wizual; drift procesu — **nie** „brakuje testu, ale OK” |
+| **PASS** | Wszystkie 4 osie (SCOPE / DIFF-MINIMAL / REGRESSION / COUPLING) + twarde testy tematu zielone + brak luk AC (STRICT) |
+
+**ZAKAZ:** PASS przy znanym naruszeniu SCOPE „bo reszta OK”. **ZAKAZ:** PASS-WITH-NOTES przy luce testów / braku asercji AC („wygląda OK”).
 
 ---
 
 ## Szablon do promptów Evaluatora (Grok wkleja 5–8 linii)
 
 ```
-### SCOPE + regresja (OBOWIĄZKOWE — Maciej)
+### SCOPE + regresja + STRICT (OBOWIĄZKOWE — Maciej)
 1. Czy każda zmiana w diffie wynika wprost z problemu/AC tematu? (nie „przy okazji”)
 2. Czy paczka nie rusza niezwiązanych plików/funkcji?
 3. Czy nie cofa wcześniejszych usprawnień / nie psuje innych tematów?
-4. Przy NIE → FAIL lub PASS-WITH-NOTES z listą ubocznych ryzyk (nie akceptuj cicho).
+4. Przy NIE SCOPE → FAIL lub PASS-WITH-NOTES z listą ubocznych ryzyk (nie akceptuj cicho).
+5. Luki testów / brak asercji AC / czerwone testy tematu / tsc≠0 → FAIL (nie NOTES).
+   PASS-WITH-NOTES tylko: pre-existing baseline poza tematem, docs drift, GATE=A wizual, handoff OK.
 ```
 
 **Grok — prompt Evaluatora (szkielet):**
 
 ```
 Jesteś Evaluatorem AutoBot (adwokat diabła). Temat: <ID> — <jedno zdanie AC>.
-Sprawdź diff Operatora pod kątem SCOPE + regresji (R-PROC-AUTOBOT-EVAL-SCOPE).
-Użyj checklisty 4 pytań powyżej. Werdykt: PASS | PASS-WITH-NOTES | FAIL.
-Przy PASS-WITH-NOTES/FAIL: wypisz konkretne pliki/linie uboczne lub ryzyka regresji.
-Nie zamykaj paczki bez werdyktu SCOPE.
+Sprawdź diff Operatora pod kątem SCOPE + regresji (R-PROC-AUTOBOT-EVAL-SCOPE)
+oraz twardości werdyktów (R-PROC-AUTOBOT-EVAL-STRICT).
+Użyj checklisty 5 pytań powyżej. Werdykt: PASS | PASS-WITH-NOTES | FAIL.
+Przy PASS-WITH-NOTES/FAIL: wypisz konkretne pliki/linie, luki testów lub ryzyka regresji.
+Brak celowanego testu dla zmienionej logiki → FAIL (nie NOTES).
+Nie zamykaj paczki bez werdyktu SCOPE + STRICT.
 ```
 
 ---
@@ -91,7 +98,8 @@ Nie zamykaj paczki bez werdyktu SCOPE.
 - `docs/decyzje/R-PROC-AUTOBOT.md` — mapowanie Evaluator + checklista
 - `docs/decyzje/R-PROC-POTROJNA-WARSTWA.md` — warstwa 2 = ten sam adwokat
 - `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md` — operacyjnie
-- `dyspozycje/autobot/playbook.json` — `rule_105`
+- `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT.md` — twardość werdyktów (FAIL vs NOTES)
+- `dyspozycje/autobot/playbook.json` — `rule_105`, `rule_106`
 
 ---
 

@@ -1,4 +1,11 @@
-﻿## [19:29 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 236 03a19191
+﻿## [17:32 UTC, 2026-08-05] AutoBot → Evaluator / Grok — R-PROC-AUTOBOT-EVAL-STRICT (Maciej „2")
+
+Evaluator STRICT: luki testów / brak asercji AC / czerwone testy tematu → FAIL (nie NOTES).
+|- Pliki: `R-PROC-AUTOBOT-EVAL-STRICT.md`, SCOPE patch, `rule_106`, reguła Cursor, guardrails
+|- Zero `gra/src` — tylko proces AutoBot
+CZEKAM-NA: Evaluator / merge Grok (bez deploy gry)
+
+## [19:29 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 236 03a19191
 
 Maciej „2”=WIAR dalej · UI rozbicie życiorys/bieżące · AutoBot PASS · tip `18cb4f7`
 |- md5: 03a19191ae5a5c313417a67a386f9399 · stempel: ROBOCZA · 03a19191
