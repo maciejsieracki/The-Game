@@ -209,6 +209,11 @@ import {
   foundCityCostLabel,
   isSubsequentFoundCity,
 } from './game/city-founding';
+import {
+  isAwaitingFirstPlayerCity as computeAwaitingFirstPlayerCity,
+  isHexInStartReveal as computeHexInStartReveal,
+  validateFirstPlayerCityPlacement,
+} from './game/first-player-city';
 import { assignAiCivTypes, civIdsAvailableAtGameEpoch } from './game/civ-roster';
 import {
   civColorCssForOwner,
@@ -7161,12 +7166,18 @@ async function boot(): Promise<void> {
     }
 
     function isAwaitingFirstPlayerCity(): boolean {
-      return !playerEverOwnedCity && !cities.some(c => c.ownerId === 0);
+      return computeAwaitingFirstPlayerCity(playerEverOwnedCity, cities);
     }
 
     function isInStartReveal(q: number, r: number): boolean {
-      if (!isAwaitingFirstPlayerCity() || playerStartHex === null) return true;
-      return hexDistance(q, r, playerStartHex.q, playerStartHex.r) <= startRevealRadius;
+      return computeHexInStartReveal(
+        q,
+        r,
+        isAwaitingFirstPlayerCity(),
+        playerStartHex,
+        startRevealRadius,
+        hexDistance,
+      );
     }
 
     /** Opcje terytorium przy founding (D2=A plaster) — pierwsze miasto: tylko krąg startu. */
@@ -7182,11 +7193,14 @@ async function boot(): Promise<void> {
     /** Walidacja założenia miasta gracza (pierwsze miasto tylko w oświetlonym kręgu startu). */
     function canFoundPlayerCityAt(q: number, r: number): { ok: boolean; reason: string } {
       const base = canFoundCity(q, r, cities, map, foundingTerritoryOpts(0));
-      if (!base.ok) return base;
-      if (isAwaitingFirstPlayerCity() && !isInStartReveal(q, r)) {
-        return { ok: false, reason: 'poza oświetlonym obszarem startu' };
-      }
-      return base;
+      return validateFirstPlayerCityPlacement(
+        q,
+        r,
+        isAwaitingFirstPlayerCity(),
+        isInStartReveal(q, r),
+        base.ok,
+        base.reason,
+      );
     }
 
     /** Widoczne heksy = zasięg jednostek/miast gracza; przed miastem = oświetlenie startu. */
