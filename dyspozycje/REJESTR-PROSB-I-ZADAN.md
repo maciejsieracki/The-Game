@@ -38,6 +38,8 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-PROC-AUTOBOT-P0-SMOKE | 2026-08-05 | Wzmocnienie smoke przed merge (notes Evaluatora: git-merge, defer attrs, evaluate→retire) | **ZMERGOWANE `9068115`** · #108 · bez deploy | smoke 10/10 |
 | R-PROC-AUTOBOT-P0 | 2026-08-05 | P0 po FAIL adwokata: Dev score jawne metryki, delay+historia prune, deny-default, RETIRED, smoke | **ZMERGOWANE `9068115`** · #108 · bez deploy | na `main` |
 | P-AI-MOC-BONUS | 2026-08-05 | Podpiąć 4 martwe bonusy trudności AI (jednostki/miasta/walka/nauka) | **ZDEPLOYOWANE `3840f218`** (FALA 227←226) · playtest odłożony | Q1=A · `docs/decyzje/P-AI-MOC-BONUS.md` · AutoBot PASS+notes |
+| P-AI-MARTWE-BONUSY | 2026-08-04 | Alias: 4 martwe DifficultyParams | **ZAMKNIĘTE** → P-AI-MOC-BONUS F226 | `docs/decyzje/P-AI-MARTWE-BONUSY.md` |
+| P-AI-MOC-GAP | 2026-08-04 | Major AI ~10× mniej Mocy niż gracz | **OTWARTE (częściowo)** · AI-PLAYTEST=B+A | F220+F226+F229–231 w ROBOCZEJ; bez dalszego balansu bez decyzji; otwarte: playtest · MAJOR-ABSORB · PROD-GATE |
 | P-AI-008 | 2026-08-05 | Zagrożenie: jednostki+rozwój zamiast murów (nie chmury) | **ZDEPLOYOWANE `3840f218`** (FALA 227←226) · playtest odłożony | custom Maciej · `docs/decyzje/P-AI-008.md` |
 | R-SCENA-PERF-FALA138 | 2026-08-05 | Budowanie sceny — pomiar→fix | **🔵 W TOKU** · F12 wstrzymane (fokus R-AUTO) · instr. w FALA 226 | `docs/decyzje/R-SCENA-PERF.md` · handoff sesji 2026-08-05 |
 | R-GARNIZON-AKCJE | 2026-07-26 | Opuść garnizon z panelu miasta | **ZDEPLOYOWANE** FALA 212 `e38ad116` (onLeaveGarrison) | diagnoza historyczna — kod już w ROBOCZA |
