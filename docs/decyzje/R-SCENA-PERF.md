@@ -1,12 +1,25 @@
-# R-SCENA-PERF — Budowanie sceny (odłożone)
+# R-SCENA-PERF — Budowanie sceny
 
-**Status:** ⏸ ODŁOŻONE · Q1=**A** zapisane, **bez wdrożenia** do sygnału Macieja  
-**ID rejestr:** `R-SCENA-PERF-FALA138`
+**Status:** 🔵 W TOKU · Q1=**A** · sygnał Macieja 2026-08-05 (~13:29)  
+**ID rejestr:** `R-SCENA-PERF-FALA138` · `BUG-SCENA-PERF-FALA138`
 
 ## ECHO
 `R-SCENA-PERF-Q1 A` — najpierw pomiar (instrumentacja / kill-switch etapów) → potem fix wąskiego gardła.
 
-## Maciej 2026-08-05
-> a ale jeszcze nie robimy tego, dam Ci sygnał, kiedyś tym zajmiemy. Najpierw chcę pozamykać inne tematy i zrobić deploy do robocza i git push, a potem zajmiemy się tematem sceny.
+## Sygnał
+Maciej wybrał opcję **3** (sygnał na scenę) po FALA 226.
 
-**ZAKAZ:** nie startować Operatora / kodu sceny, dopóki Maciej nie da hasła.
+## Stan techniczny (main / FALA 226)
+Instrumentacja **już jest** w `gra/src/render/scene.ts` (FALA 150–155):
+- `console.info('[civ] buildScene ms | hexes=… coast=… overlays=… rivers=… tail=… total=…')`
+- detail heksy / nakładki
+- overlay UI faz: heksy / brzeg / nakładki / rzeki / finał
+
+Diagnoza historyczna: wąskie gardło **≠ mesh rzek** (FALA 149: `riverRenderStage=0` nadal wolno) — podejrzenie pętli heksów / `styledOverlays` merge.
+
+## Krok teraz (pomiar)
+1. `git pull` + Ctrl+F5 + **Nowa gra** (skala Standard lub ta, na której boli)
+2. F12 → konsola → skopiuj linie `[civ] buildScene ms` + `detail heksy` + `detail nakladki`
+3. Wklej w czat → Operator: kill-switch / fix wg największej pozycji
+
+**ZAKAZ:** duży refaktor renderu bez liczb z konsoli.
