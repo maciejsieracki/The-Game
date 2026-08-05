@@ -1,16 +1,16 @@
-﻿## [09:15 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q5=A (kod, bez deploy)
-- Maciej «działaj z wszystkimi tematami» → Q2=A · Q3=A · Q4=A · Q5=A
-- Q2: autoRaise cofa ostatni krok gdy pool<0 · Q4: Spichlerz clamp ≥0, glodWojska z niedoboru tury
-- Q5: autoWyzywienie per miasto (default WYŁ) + onlyAutoManaged gracz EOT · Q3: maxSafe cap suwaka
-- Pliki: empire-food.ts, cities.ts, main.ts, cityPanel.ts, ai-major-economy-test.cjs J–M
-- Branch: cursor/abc-auto-racje-raise-63a1 · testy: ai-major-economy PASS (czeka weryfikacja)
-CZEKAM-NA: Maciej — hasło deploy
-
-## [11:25 PL, 2026-08-05] CLOUD → ALL — POTRÓJNA WARSTWA WERYFIKACJI (Maciej)
+﻿## [11:25 PL, 2026-08-05] CLOUD → ALL — POTRÓJNA WARSTWA WERYFIKACJI (Maciej)
 |- Zasada: (1) implementer composer → (2) osobny adwokat diabła composer → (3) Grok final
 |- Reguła: .cursor/rules/potrojna-warstwa-weryfikacji.mdc · dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md
 |- Pierwsze zastosowanie: review R-AUTO-RACJE-RAISE Q2–Q5 przed deploy
 CZEKAM-NA: wynik adwokata diabła + final Groka; potem Maciej `deploy`
+
+## [09:15 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q5=A (kod, bez deploy)
+- Maciej «działaj z wszystkimi tematami» → Q2=A · Q3=A · Q4=A · Q5=A
+- Q2: autoRaise cofa ostatni krok gdy pool<0 · Q4: Spichlerz clamp ≥0, glodWojska z niedoboru tury
+- Q5: autoWyzywienie per miasto (default WYŁ) + onlyAutoManaged gracz EOT · Q3: maxSafe cap suwaka
+- Pliki: empire-food.ts, cities.ts, main.ts, cityPanel.ts, ai-major-economy-test.cjs J–M
+- Branch: cursor/abc-auto-racje-raise-63a1 · testy: ai-major-economy PASS (czeka weryfikacja #2+#3)
+CZEKAM-NA: po review → Maciej hasło deploy
 
 ## [01:35 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q5 (ABC, bez kodu)
 |- Maciej: przycisk auto zarządzania Spichlerzem (obniża+podnosi) — w każdym mieście
