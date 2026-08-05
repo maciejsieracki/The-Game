@@ -1,6 +1,18 @@
 # D-DYPLO-AKCJE-SZARE-Q1 — niedostępne akcje wyszarzone + tooltip
 
-**Status:** 🟡 ECHO **B+C** (2026-08-05) — W TRAKCIE AutoBot  
+**Status:** 🟡 ECHO **B+C** (2026-08-05) — gotowe do Evaluator (AutoBot 2026-08-05)
+
+## Dowód wdrożenia (AutoBot)
+
+| AC | Dowód |
+|----|-------|
+| 1–3 | `gra/src/ui/diplomacyAudience.ts` — `dealsColumnHtml` + `actionBarHtml`: `.da-note` / `.da-abtn-note` stały powód; tooltip zachowany |
+| 4 | Audyt: jedyna filtracja listy = `id !== '1'` (kontakt); MP → `locked` w `buildAudienceActionsList` |
+| 5 | Silnik PW bez zmian — tylko UI + helper |
+
+- Helper: `gra/src/game/diplomacy-audience-actions.ts` (`buildAudienceActionsList`, `audienceActionStatusNote`)
+- Wiring: `gra/src/main.ts` → `buildAudienceActionsList` (minimalny)
+- Test: `node tools/diplomacy-audience-actions-test.cjs` — PASS
 **Źródło:** Maciej 2026-07-29 ~00:50–00:51 · paczka 2/2
 
 ## ECHO

@@ -48,6 +48,10 @@ import {
   RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON,
 } from '../game/diplomacy-proposals';
 import type { ProposalPayload } from '../game/diplomacy-proposals';
+import {
+  audienceActionBarLockNote,
+  audienceActionStatusNote,
+} from '../game/diplomacy-audience-actions';
 
 export interface AudienceAction {
   id: string;
@@ -751,7 +755,10 @@ ${DIPLO_1E_SHARED_CSS}
 @media (max-width:760px){.da-mainrow{flex-wrap:wrap;}.da-card{width:100%;flex:1 1 auto;}}
 
 /* ===== FAZA 3 pkt 8 — pasek szybkich akcji (SAME IKONY, 46×46) + „Szybka Umowa" ===== */
-.da-actionbar{display:flex;align-items:center;gap:9px;justify-content:center;flex-wrap:wrap;padding-top:2px;}
+.da-actionbar{display:flex;align-items:flex-end;gap:9px;justify-content:center;flex-wrap:wrap;padding-top:2px;}
+.da-abtn-cell{display:inline-flex;flex-direction:column;align-items:center;gap:2px;max-width:74px;}
+.da-abtn-note{font-size:0.5em;line-height:1.2;color:#e08a8a;text-align:center;max-width:70px;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 .da-ttip{position:relative;display:inline-flex;}
 .da-ttip>.da-ttip-lbl{position:absolute;bottom:54px;left:50%;transform:translateX(-50%);opacity:0;
   pointer-events:none;transition:opacity .12s;white-space:nowrap;background:rgba(8,10,16,.96);
@@ -1390,11 +1397,16 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
     const enabled = action ? action.enabled : false;
     const isLocked = action ? (action.locked || !action.enabled) : true;
     const tip = enabled ? spec.label : (action?.lockNote || (isLocked ? action?.tooltip : undefined) || spec.label);
+    const lockNote = audienceActionBarLockNote(action);
     const cls = 'da-abtn' + (spec.extraCls ? ' ' + spec.extraCls : '');
-    return (
+    const btn =
       '<span class="da-ttip"><span class="da-ttip-lbl">' + esc(spec.label) + '</span>' +
       '<button type="button" class="' + cls + '" data-aid="' + esc(spec.aid) + '"' +
       (enabled ? '' : ' disabled') + ' title="' + esc(tip) + '">' + ACTION_BAR_SVG[spec.svg] + '</button>' +
+      '</span>';
+    return (
+      '<span class="da-abtn-cell">' + btn +
+      (lockNote ? '<span class="da-abtn-note" title="' + esc(lockNote) + '">' + esc(lockNote) + '</span>' : '') +
       '</span>'
     );
   }).join('');
@@ -1402,10 +1414,15 @@ function actionBarHtml(st: DiplomacyAudienceState): string {
   const handel = byId.get('14');
   const handelEnabled = handel ? handel.enabled : false;
   const qdTitle = handelEnabled ? 'auto-uczciwa wymiana' : (handel?.lockNote || handel?.tooltip || 'Wymiana niedostępna');
-  const quickdeal =
+  const qdLockNote = handelEnabled ? '' : audienceActionBarLockNote(handel);
+  const quickdealBtn =
     '<button type="button" class="da-quickdeal"' + (handelEnabled ? '' : ' disabled') +
     ' title="' + esc(qdTitle) + '">' + ACTION_BAR_SVG.quickdeal +
     '<span>SZYBKA WYMIANA<small>auto-uczciwa oferta</small></span></button>';
+  const quickdeal =
+    '<span class="da-abtn-cell">' + quickdealBtn +
+    (qdLockNote ? '<span class="da-abtn-note" title="' + esc(qdLockNote) + '">' + esc(qdLockNote) + '</span>' : '') +
+    '</span>';
 
   return '<div class="da-actionbar">' + btns + quickdeal + '</div>';
 }
@@ -1423,10 +1440,8 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
     let cls = isLocked ? 'da-deal locked' : 'da-deal';
     if (a.active) cls += ' active';
     if (onTable) cls += ' on-table';
+    const statusNote = audienceActionStatusNote(a, onTable);
     const lockReason = a.lockNote || (isLocked && a.tooltip ? a.tooltip : '');
-    const shortNote = onTable
-      ? 'na stole — Przyjmij w PN'
-      : a.active ? 'już zawarta' : (lockReason ? (lockReason.length > 40 ? lockReason.slice(0, 37) + '…' : lockReason) : '');
     const hoverTip = onTable
       ? 'Ta umowa już leży na stole negocjacji — użyj Przyjmij przy panelu PW lub Odrzuć, aby wycofać'
       : a.active
@@ -1442,7 +1457,7 @@ function dealsColumnHtml(st: DiplomacyAudienceState): string {
       (isLocked ? ' disabled' : '') + '>' +
       icon +
       '<div class="da-body"><div class="da-nm">' + esc(a.label) + '</div>' +
-      (shortNote ? '<div class="da-note">' + esc(shortNote) + '</div>' : '') +
+      (statusNote ? '<div class="da-note">' + esc(statusNote) + '</div>' : '') +
       '</div>' + endIc +
       '</button>'
     );

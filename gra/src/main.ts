@@ -274,7 +274,6 @@ import {
   filterDiplomacyCommandsForLayer,
   filterCityStateTributeCommands,
   filterDiplomacyCommandsForEstablishedContact,
-  audienceRestrictedActionLockNote,
   playerDiplomacyActionAllowed,
   startRelationForPair,
   startRelationForPlayerSameCivCityState,
@@ -284,6 +283,7 @@ import {
   applyWiarygodnoscD4ToRelation,
   applyCityStateDifficultyTrust,
 } from './game/diplomacy-layers';
+import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch } from './game/owner-epoch';
 import {
@@ -12471,8 +12471,6 @@ async function boot(): Promise<void> {
       requestAnimationFrame(() => tryOpenNextFirstContactCard());
     }
 
-    /** D3-Q4 poboczni + warstwa uproszczona — pokój, wojna, handel (szlaki+wymiana), NAP. */
-    const AUDIENCE_BASIC_IDS = new Set(['2', '5', '14', '10', '11', '15']);
 
     function buildDiploTreasury() {
       return {
@@ -14067,11 +14065,6 @@ async function boot(): Promise<void> {
       showHintMessage('Propozycja na stole — użyj Przyjmij w Punkty wymiany', 4000);
     }
 
-    function diplomacyActionIdFromLabel(akcja: string): string {
-      const m = /^(\d+)/.exec(akcja);
-      return m ? m[1]! : akcja;
-    }
-
     /** Relacja widoczna w audiencji = Zaufanie + Respekt z mocy (jak w panelu). */
     function audienceRelTotal(ownerId: number, rel: Relation): number {
       return Math.round(Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + objectiveRespektPctToward(ownerId))));
@@ -14141,49 +14134,16 @@ async function boot(): Promise<void> {
       const isCityStatePartner = isOwnerClusterCityState(ownerId, ownerCityStateOpts());
       const restrictToBasicActions = isSimplified || isCityStatePartner;
       const akcje = (data.diplomacy as { akcje_dyplomatyczne?: Array<Record<string, string>> }).akcje_dyplomatyczne ?? [];
-      const out: AudienceAction[] = [];
       const lockCtxBase = buildDiplomacyLockContextBase(ownerId, rel, relTotal, dip);
 
-      for (const row of akcje) {
-        const raw = row['Akcja'] ?? '';
-        const id = diplomacyActionIdFromLabel(raw);
-        if (id === '1') continue;
-
-        const label = raw.replace(/^\d+\.\s*/, '');
-        let enabled = true;
-        let tooltip = row['Opis'] ?? '';
-        let locked: boolean | undefined;
-        let lockNote: string | undefined;
-        let active: boolean | undefined;
-
-        if (restrictToBasicActions && !AUDIENCE_BASIC_IDS.has(id)) {
-          // Maciej 2026-07-29: widoczne + wyszarzone + jasny powód (nie ukrywać z listy).
-          locked = true;
-          enabled = false;
-          lockNote = audienceRestrictedActionLockNote(ownerId, simplifiedDiplomacyOwners);
-          tooltip = lockNote;
-        } else if (id === '11' && !playerDiplomacyActionAllowed(layer, 'war')) {
-          locked = true;
-          enabled = false;
-          lockNote = 'Niedostępne';
-          tooltip = lockNote;
-        } else if ((id === '5' || id === '14') && !playerDiplomacyActionAllowed(layer, 'trade')) {
-          locked = true;
-          enabled = false;
-          lockNote = 'Handel niedostępny';
-          tooltip = lockNote;
-        } else {
-          const result = resolveDiplomacyActionLock({ actionId: id, ...lockCtxBase });
-          locked = result.locked;
-          enabled = !result.locked;
-          lockNote = result.note || undefined;
-          tooltip = result.note || tooltip;
-          active = result.active;
-        }
-
-        out.push({ id, label, enabled, tooltip, opis: row['Opis'], locked, lockNote, active });
-      }
-      return out;
+      return buildAudienceActionsList({
+        akcje,
+        ownerId,
+        restrictToBasicActions,
+        simplifiedOwners: simplifiedDiplomacyOwners,
+        layer,
+        lockCtxBase,
+      });
     }
 
     function applyAudienceAction(ownerId: number, actionId: string, payload?: NegotiationPayload): void {

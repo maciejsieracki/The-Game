@@ -1,6 +1,17 @@
 # D-DYPLO-KATALOG-Q1 — katalog akcji w menu propozycji / audiencji
 
-**Status:** 🟡 ECHO **A** (2026-08-05) — W TRAKCIE AutoBot  
+**Status:** 🟡 ECHO **A** (2026-08-05) — gotowe do Evaluator (AutoBot 2026-08-05)
+
+## Dowód wdrożenia (AutoBot)
+
+| AC | Dowód |
+|----|-------|
+| 1 | `buildAudienceActionsList` iteruje całe `akcje_dyplomatyczne` z JSON (skip tylko `id==='1'`) |
+| 2 | `restrictToBasicActions` → `locked`+`lockNote`, nie `filter` — sojusz `3` widoczny szary wobec MP |
+| 3 | Spójne z SZARE B+C — `audienceActionStatusNote` / `.da-abtn-note` |
+| 4 | Brak usuwania akcji z JSON; efekty silnika nietknięte |
+
+- `gra/src/game/diplomacy-audience-actions.ts` + test `diplomacy-audience-actions-test.cjs`
 **Źródło:** Maciej 2026-07-29 ~00:46 · paczka 2/2
 
 ## ECHO
