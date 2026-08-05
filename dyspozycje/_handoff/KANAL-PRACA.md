@@ -1,3 +1,11 @@
+## [19:20 PL, 2026-08-05] GROK → Maciej — WIAR R3+R4 zmergowane (bez nowej FALI)
+
+Maciej „2” · AutoBot PASS · tip `c8a0113`
+|- R3: Wasal/Trybut BEZ bramki W (§9.10=A = NAP) — docs ZAMKNIĘTE
+|- R4: harness D4+D1 w wiarygodnosc-test §8e (+10 asercji) — 120/120
+|- ROBOCZA bez zmian gameplay: nadal FALA 235 `9c0a38ae`
+CZEKAM-NA: nic (playtesty otwarte)
+
 ﻿## [19:15 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 235 9c0a38ae
 
 Maciej „2”=WIAR dalej · R1b one-shot tempo · AutoBot PASS · tip `1c7e650` 

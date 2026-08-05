@@ -10,7 +10,7 @@
 >
 > **FALA 233 (2026-08-05):** ROBOCZA `06712ea4` · C-FLANK replay + WIAR Etap0. **ZASTĄPIONA** przez FALA 234.
 >
-> **SOLO kolejka:** ECHO 12/12 ✅ · FALA 232–235 WIAR R1/R1b · playtesty otwarte (GATE=A) · scena pominięta (Q2=B).
+> **SOLO kolejka:** ECHO 12/12 ✅ · FALA 232–235 · WIAR R1/R1b/R3/R4 ✅ · playtesty otwarte (GATE=A) · scena pominięta (Q2=B).
 >
 > **FALA 232 (2026-08-05):** ROBOCZA `fca41b9a` · muzyka+węgiel+bitwa I. **ZASTĄPIONA** przez FALA 233.
 >
