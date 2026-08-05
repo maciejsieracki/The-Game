@@ -1,3 +1,8 @@
+## [17:22 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P2 ABC (wybór „3")
+
+Paczka P2-Q1 (canAfford) + P2-Q2 (L3 early). Docs: `docs/decyzje/R-AI-TRUDNOSC-P2-ABC.md`.
+CZEKAM-NA: odpowiedzi A/B/C na Q1 i Q2
+
 ## [17:20 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 230 7f8bdc74
 
 |- md5: 7f8bdc7445c11973c9e323fa166b8970 · stempel: ROBOCZA · 7f8bdc74 · 2026-08-05 15:20
