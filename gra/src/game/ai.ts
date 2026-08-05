@@ -559,9 +559,9 @@ function scoreTech(
     score += underThreat ? 100 : (earlyPhase ? 40 : 80);
   }
 
-  // Mury (walls): high under threat
+  // Mury (walls): P-AI-008 — major AI pod zagrożeniem nie ciągnie murów (produkcja ani badania).
   if (unlocks.includes('mury')) {
-    score += underThreat ? 110 : 30;
+    score += 30;
   }
 
   // Economy buildings (Tartak, Targowisko, Akwedukt, Biblioteka, Swiatynia...)

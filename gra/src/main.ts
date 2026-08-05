@@ -5426,9 +5426,8 @@ async function boot(): Promise<void> {
      * do decideAITurn/decideDefensiveCopyTurn (opts.poziomTrudnosci) -- w tym bonusProdukcja
      * realnie używane w chooseCityProduction (ai.ts) DLA OBU ścieżek (zwykłe AI i
      * defensiveCopy), więc bez tego globalny "Trudny" podbijał priorytet ekonomii
-     * miast-państw niezależnie od ich własnego suwaka. bonusWalka aktualnie NIE jest
-     * konsumowane nigdzie w combat.ts/ai.ts (martwe pole w DifficultyParams) -- ta funkcja
-     * i tak przekazuje dla niego poprawną wartość na przyszłość (zero dodatkowego ryzyka).
+     * miast-państw niezależnie od ich własnego suwaka. bonusWalka jest konsumowane
+     * (P-AI-MOC-BONUS=A) przez difficultyCombatMultForOwner -> BattleScene / resolveCombat.
      */
     function aiDiffLevelForOwner(ownerId: number): 1 | 2 | 3 {
       const src = typCityCopyOwners.has(ownerId) ? _menuCityStateDifficulty : _menuDifficulty;
@@ -18880,6 +18879,7 @@ async function boot(): Promise<void> {
       clearBattleUiState: clearMapBattleUiState,
       createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
       armyHungerBattleOpts,
+      difficultyBattleOpts,
       registerMilitiaDef: (id: string, def: Record<string, unknown>) => {
         militiaDefOverrides.set(id, def);
       },

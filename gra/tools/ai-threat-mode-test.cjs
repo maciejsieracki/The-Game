@@ -21,7 +21,7 @@ const ENTRY = path.resolve(__dirname, '.ai-threat-mode-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.ai-threat-mode-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
-export { chooseCityProduction, loadDifficultyParams } from ${JSON.stringify(AI_SRC + '/game/ai')};
+export { chooseCityProduction, loadDifficultyParams, chooseAIResearch } from ${JSON.stringify(AI_SRC + '/game/ai')};
 export {
   AI_THREAT_RANGE_DEFAULT,
   aiThreatPrioritizeWalls,
@@ -50,6 +50,7 @@ try {
 const {
   chooseCityProduction,
   loadDifficultyParams,
+  chooseAIResearch,
   AI_THREAT_RANGE_DEFAULT,
   aiThreatPrioritizeWalls,
   aiThreatWallProductionScore,
@@ -167,6 +168,18 @@ console.log('\n--- T8f: defensiveCopy + zagrozenie + garnizon -> Mury (po bootst
     defensiveCopy: true,
   }, map, loadDifficultyParams(data, 2));
   eq(id, 'mury', 'defensiveCopy + garnizon + zagrozenie -> Mury');
+}
+
+console.log('\n--- T8g: P-AI-008 chooseAIResearch underThreat -> nie Murarstwo (military/rozwój) ---');
+{
+  const techData = [
+    { Technologia: 'Garncarstwo', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Spichlerz, Cegielnia', 'Koszt nauki': 12 },
+    { Technologia: 'Murarstwo', Epoka: 'Kamien', Poziom: 1, 'Wymaga (prereq)': '—', 'Odblokowuje budynek': 'Mury, Kopalnia', 'Koszt nauki': 14 },
+    { Technologia: 'Brazownictwo', Epoka: 'Kamien', Poziom: 2, 'Wymaga (prereq)': 'Garncarstwo', 'Odblokowuje budynek': 'Huta, jednostki bronzowe', 'Koszt nauki': 24 },
+  ];
+  const done = new Set(['Garncarstwo']);
+  const pick = chooseAIResearch(techData, done, { underThreat: true });
+  eq(pick, 'Brazownictwo', 'underThreat + Garncarstwo done -> Brazownictwo, nie Murarstwo');
 }
 
 console.log('\n========================================');
