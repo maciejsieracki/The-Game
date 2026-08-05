@@ -1,3 +1,12 @@
+## [17:35 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P2 gotowe do deploy
+
+AutoBot: Operator `bc-01164806` → Evaluator `bc-6c0b1e3f` **PASS** (SCOPE OK).
+- P2-Q1=A: bez kodu canAfford (status quo)
+- P2-Q2=A: L3 + startoweMiasta≥1 → majorEarly max tura **25**
+- tip `70e58a1` · branch `cursor/fix-ai-trudnosc-p2-63a1`
+- Testy: tsc PASS · T14-p2 3/3 · difficulty 64/64 · ai-test 274/8 (pre-existing)
+CZEKAM-NA: Maciej **deploy** (FALA 231)
+
 ## [17:30 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P2 ECHO Q1=A Q2=A
 
 Maciej: P2-Q1=A (pusta tura zostaje) · P2-Q2=A (Trudny + startowe miasto → early max 25).
