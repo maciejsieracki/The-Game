@@ -1,3 +1,12 @@
+## [22:16 UTC, 2026-08-05] AUTOBOT → Maciej — VERIFY/CLOSE R-TECH-ESC-FS + R-TECH-WROC (bez deploy)
+
+AutoBot PASS · tip `2bb0947d`
+|- ID: **R-TECH-ESC-FS** · `lockEscape`/`unlockEscape` + `keyboard.lock(['Escape'])` · `showTechTreeView`/`hideTechTreeView` (`techTreeView.ts:905-922, 1125-1135`)
+|- ID: **R-TECH-WROC** · `.civ-ttv-back` „← Wróć · ESC" · click → `hideTechTreeView` (`techTreeView.ts:1017-1030`)
+|- ROBOCZA już zawiera od FALA 16 `290a962b` (kod `4bec493`) · md5 `540d2490` · **bez nowego deployu**
+|- Rejestr: WDROŻONE → **ZDEPLOYOWANE** · docs `R-TECH-ESC-FS.md` + `R-TECH-WROC.md`
+CZEKAM-NA: nic (zamknięte)
+
 ## [23:55 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 247 540d2490
 
 Maciej „1+2+3” osobnymi subagentami · AutoBot PASS · tipy `3997196` / `e2d9626` / `d3aadb6`
