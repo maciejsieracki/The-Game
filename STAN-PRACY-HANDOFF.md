@@ -4,9 +4,11 @@
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 231 (2026-08-05):** ROBOCZA `283de421` · stempel menu `283de421` · R-AI-TRUDNOSC P2 (L3 early max 25). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 232 (2026-08-05):** ROBOCZA `fca41b9a` · SOLO: muzyka 2.5s + węgiel ukryty + bitwa replay grupy. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 >
-> **Kolejka (Maciej 1+2+3):** deploy P2 ✅ → playtest R-AUTO (potem pigułka/budynki) → F12/R-SCENA-PERF → R-SUR-DESIGN.
+> **FALA 231 (2026-08-05):** ROBOCZA `283de421` · R-AI-TRUDNOSC P2. **ZASTĄPIONA** przez FALA 232.
+>
+> **Kolejka solo:** FACING verify (C-FLANK) · WIAR Etap0+dźwignie · playtesty otwarte (GATE=A).
 >
 > **FALA 230 (2026-08-05):** ROBOCZA `7f8bdc74` · R-AI-TRUDNOSC P1 + P1-3. **ZASTĄPIONA** przez FALA 231.
 
