@@ -5,7 +5,7 @@
 | **ID** | REL-MP-SAME-Q1 |
 | **Czat** | Grupa D (dyplomacja) + Integrator (spawn) |
 | **Ekran** | Dyplomacja · lista cywilizacji · start nowej gry (klaster) |
-| **Status** | 🔵 **WDROŻONE W KODU** — Maciej 2026-08-04 (REL-MP-SAME-Q1) |
+| **Status** | 🟢 **WDROŻONA** — FALA 212 ROBOCZA `e38ad116` (2026-08-04) |
 | **Decyzja** | Startowe Zaufanie **+20** (nie −20) dla miast-państw własnego typu |
 | **Data** | 2026-08-04 |
 
@@ -93,4 +93,4 @@
 
 ---
 
-**Zapisałem jako REL-MP-SAME-Q1, status ZAPISANA.** Wdrożenie po `działaj` — lane D + Integrator (spawn).
+**Zapisałem jako REL-MP-SAME-Q1, status WDROŻONA.** Deploy FALA 212 — `startRelationForPlayerSameCivCityState` w `spawnPendingSameTypeRivals`.

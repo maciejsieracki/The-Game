@@ -5,7 +5,7 @@
 | **ID** | SPICH-AUTO-Q1 |
 | **Czat** | Grupa B (Miasto / ekonomia) |
 | **Ekran** | Panel miasta (racje / fed) + HUD mapy (Spichlerz) + panel wydarzeń |
-| **Status** | 🟢 **WDROŻONE w kodzie** — zamknięta dyskusja (Maciej 2026-08-04) |
+| **Status** | 🟢 **WDROŻONA** — FALA 212 ROBOCZA `e38ad116` (2026-08-04) |
 | **Decyzja** | **B** (z doprecyzowaniem) |
 | **Data** | 2026-08-04 |
 
@@ -104,5 +104,5 @@ Przy Spichlerzu = 0 gracz **nie powinien** móc „jeść na kredyt” — ustaw
 | Etap | Stan |
 |------|------|
 | Decyzja + ECHO | ✅ ZAPISANA 2026-08-04 |
-| Kod `gra/src` | ✅ **WDROŻONE w kodzie** (2026-08-04) — czeka `deploy` |
-| Deploy `gra-robocza` | ⏸ — po implementacji + hasło `deploy` |
+| Kod `gra/src` | ✅ WDROŻONE — `empire-food.ts` · `spich-auto-ration-notify.ts` |
+| Deploy `gra-robocza` | ✅ FALA 212 `e38ad116` |

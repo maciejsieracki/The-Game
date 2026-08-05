@@ -868,7 +868,7 @@ FALA 94 B1 (aktywne Drewno/Tartak) cofnięta — kanon: **tylko magazyn państwa
 
 ---
 
-## HANDEL-SPLIT-Q1 — rozdzielenie handlu: szlaki vs wymiana · STATUS: **OTWARTE** (Maciej wskazał temat B, 2026-07-28)
+## HANDEL-SPLIT-Q1 — rozdzielenie handlu: szlaki vs wymiana · STATUS: **ZAMKNIĘTE** (FALA 80 `7d266143` · Q1=B)
 
 Pełna forma ABC: [`docs/decyzje/HANDEL-SPLIT-Q1.md`](../docs/decyzje/HANDEL-SPLIT-Q1.md).
 
@@ -966,9 +966,11 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## BUG-DYPLO-PANEL-OVERLAP — panel dyplomacji nachodzi na panel jednostki („Frank") · STATUS: **ECHO A** (2026-08-05) — W TOKU · `BUG-DYPLO-PANEL-OVERLAP-Q1`
+## BUG-DYPLO-PANEL-OVERLAP — panel dyplomacji nachodzi na panel jednostki („Frank") · STATUS: **ZAMKNIĘTE** (FALA 245 `8b6e0cfe` · Q1=A)
 
 **Cytat:** Po dyplomacji z zaznaczoną jednostką oba panele nachodzą; miało być naprawione.
+
+**Wdrożenie:** `unitCtxDockDiploGate.ts` — ukryj dock jednostki gdy dyplo open.
 
 ---
 
@@ -1093,7 +1095,7 @@ Maciej ~01:43: „Zadałem sporo pytań, czekam na odpowiedzi." Źródło pełne
 | 14 | Surowce znów widoczne po budowie | BUG — fix (ZAMKNIĘTE) |
 | 15 | Farma chowa ikonę gliny — czy blokuje Gliniankę? | TAK — tylko UI, złoże zostaje (ZAMKNIĘTE) |
 | 16 | Tartak → 10 Drewna/t, Glinianka → 15 Glina/t | DECYZJA Macieja 01:39 — wdrożone |
-| 17 | Państwa-miasta nie budują mimo zasobów | OTWARTE — `R-AI-MIASTA-BUDOWY` |
+| 17 | Państwa-miasta nie budują mimo zasobów | ZAMKNIĘTE — FALA 244 `0757265a` · `R-AI-MIASTA-BUDOWY-FIX-Q1` |
 | 18 | Sojusznik zerwie handel gdy broni sojusznika — kto karę? | TAK — wyjaśnione w czacie 01:02 (audyt do potwierdzenia) |
 
 Powiązane osobno (ta sama noc, nie w skróconej tabeli): `D-DYPLO-KATALOG-AKCJI`, `D-DYPLO-CELOWNIK-STOLICA`, `D-DYPLO-AKCJE-SZARE`, `BUG-DYPLO-PANEL-OVERLAP`, `R-HEX-PLONY-MAGAZYN` (ZAMKNIĘTE B).
@@ -1322,7 +1324,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## BUG-RZEKI-UJSCIE-FALA138 — regres: rzeki kończą się w środku lądu · STATUS: **GOTOWE (kod)** (2026-08-01)
+## BUG-RZEKI-UJSCIE-FALA138 — regres: rzeki kończą się w środku lądu · STATUS: **ZDEPLOYOWANE** (FALA 140 `935d1642` + FALA 177)
 
 **Cytat Macieja (~19:18):** część rzek urywa bieg na lądzie zamiast ujściem w inną rzekę / ocean.
 
@@ -1648,9 +1650,9 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 - Major AI early economy (wzrost/Spichlerz, 60/40 archetyp, early ulepszenia)
 
 **Nadal otwarte (root causes):**
-1. **BUG martwy kod** — `startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` z `loadDifficultyParams` **nie podpięte** w `main.ts`.
-2. **DESIGN** — `canAfford` → pusta kolejka, surowce rosną (myszkowanie).
-3. **Brak** AI major→major absorpcji (tylko AI→MP).
+1. ~~**BUG martwy kod** — bonusy trudności~~ → **ZAMKNIĘTE** `P-AI-MOC-BONUS` FALA 226 `3840f218`
+2. **DESIGN** — `canAfford` → pusta kolejka, surowce rosną (myszkowanie) — `P-AI-MOC-GAP` nadal otwarte
+3. ~~**Brak** AI major→major absorpcji~~ → **ZAMKNIĘTE** `P-AI-MAJOR-ABSORB` FALA 240–241
 
 **Kandydaty fix:** podpiąć martwe bonusy trudności; `bonusWalka` w combat; playtest po FALA 220.
 
@@ -1658,21 +1660,21 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ## OTWARTE POST-FALA 220 (2026-08-04) — nie zamazane
 
-### P-AI-MARTWE-BONUSY — martwe parametry trudności · STATUS: **OTWARTE**
+### P-AI-MARTWE-BONUSY — martwe parametry trudności · STATUS: **ZAMKNIĘTE** (`P-AI-MOC-BONUS` FALA 226 `3840f218`)
 
-`startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` z `loadDifficultyParams` — **nie stosowane** w gameplay (tylko `bonusProdukcja` w score produkcji). Powiązane: `P-AI-MOC-GAP`.
+`startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` — podpięte w `ai-difficulty-bonus.ts` + `main.ts`.
 
 ### P-MP-SPAWN-WYZYWIENIE — MP spawn Wyżywienie ~3 · STATUS: **NAPRAWIONE** (`cursor/fix-mp-spawn-wyzywienie-63a1`)
 
 Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCity*` bez `poziomRacji` → migrate(100)→6 → auto-racja obniżała. Fix: jawne `poziomRacji: DEFAULT_POZIOM_RACJI` (4) przy founding dla wszystkich ownerów.
 
-### P-AI-PROD-GATE-PER-OWNER — `isProductionAllowed` per-owner difficulty · STATUS: **OTWARTE**
+### P-AI-PROD-GATE-PER-OWNER — `isProductionAllowed` per-owner difficulty · STATUS: **ZDEPLOYOWANE** (FALA 240 `d1450398` · Q1=A)
 
-Bramka tech/epoka w `isProductionAllowed` (`main.ts`) używa globalnej `_menuDifficulty` — brak per-owner trudności.
+`effectiveGameDifficultyForOwner` w `isProductionAllowed` — `docs/decyzje/P-AI-PROD-GATE-PER-OWNER.md`
 
-### P-AI-MAJOR-ABSORB — absorpcja AI major→major · STATUS: **OTWARTE** (brak mechanizmu)
+### P-AI-MAJOR-ABSORB — absorpcja AI major→major · STATUS: **ZDEPLOYOWANE** (FALA 240 Faza1 + FALA 241 Faza2 `178073f9`)
 
-Tylko AI major→MP (`MP-DIPLO-Q1`). Brak absorpcji między pełnymi cywilizacjami AI.
+`ai-major-absorb.ts` · `docs/decyzje/P-AI-MAJOR-ABSORB.md`
 
 ### P-TEST-UPKEEP-R-STAWKI — upkeep-test 24× fail · STATUS: **OTWARTE** (pre-existing)
 
@@ -1682,5 +1684,4 @@ Tylko AI major→MP (`MP-DIPLO-Q1`). Brak absorpcji między pełnymi cywilizacja
 
 ### Dyplo-UX (nadal otwarte)
 
-- `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP`
-- `HANDEL-SPLIT-Q1` · `R-AI-MIASTA-BUDOWY`
+— (brak — katalog/celownik/szare/overlap zamknięte FALA 241–245)

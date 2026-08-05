@@ -88,7 +88,7 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 | **11** | **Parametry Spryt AI niewidoczne w Panelu** | WIRING | `ai.ts:loadDifficultyParams` fallback bez kluczy w JSON | Niemożliwe strojenie agresji/dyplomacji/celu per poziom bez kodu. |
 | **12** | **Wojna przesuwa suwaki od Nauki** | POLITYKA | `ai.ts:decideAIEconomySliders` (`if (inp.atWar)`) | AI w wojnie spowalnia badania — kumuluje się z agresją L3. |
 
-**Oddzielnie (nie rank rozwój, ale gap Mocy):** brak absorpcji AI major→major (`P-AI-MAJOR-ABSORB`) — nie blokuje wewnętrznego rozwoju, ale utrudnia konsolidację imperiów AI.
+**Oddzielnie (nie rank rozwój, ale gap Mocy):** absorpcja AI major→major — **ZDEPLOYOWANE** `P-AI-MAJOR-ABSORB` FALA 240–241.
 
 ---
 
@@ -147,7 +147,7 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 | **P2-1** | 🟢 | **ABC: `canAfford` pusta tura vs fallback najtańszy** | Wszystkie | Scoring + test | Koniec „myszkowania" przy pełnej kolejce | Ekonomiczne dziury |
 | **P2-2** | 🟢 | **ABC: L3 skrócony `majorEarly` przy `startowe_miasta=1`** | L3 | Scoring | Drugie miasto od razu w mid-tier produkcji | Snowball |
 
-**Nie wchodzi w kolejkę (świadomie):** buffy MP, absorpcja AI→AI (osobny wątek `P-AI-MAJOR-ABSORB`), zmiana progu ulepszeń P-AI-009 bez ABC.
+**Nie wchodzi w kolejkę (świadomie):** buffy MP, ~~absorpcja AI→AI~~ (zamknięte F240–241), zmiana progu ulepszeń P-AI-009 bez ABC.
 
 ---
 
@@ -157,7 +157,8 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 |---|---|---|
 | P-AI-008 | WDROŻONE | Zagrożenie — rozwój zamiast murów (major) |
 | P-AI-MOC-BONUS | ZDEPLOYOWANE F226 | Startowe bonusy podpięte; `bonus_produkcja` nadal tylko scoring |
-| P-AI-MARTWE-BONUSY | **Częściowo zamknięte** F226 | Został rozjazd `bonus_produkcja` (opis vs kod) |
+| P-AI-MARTWE-BONUSY | **ZAMKNIĘTE** F226 (`P-AI-MOC-BONUS`) | 4 pola podpięte; `bonus_produkcja` scoring — P0-1 osobno |
+| P-AI-MAJOR-ABSORB | **ZDEPLOYOWANE** F240–241 | `ai-major-absorb.ts` |
 | P-AI-MOC-GAP | OTWARTE | `canAfford` null, gap Mocy — częściowo F220 |
 | P-AI-009 | ŚWIADOMIE-ZOSTAJE | Próg 30 Pracy na ulepszenia |
 | P-AI-014 | ZDEPLOYOWANE | `isProductionAllowed` — odróżnić od P-AI-PROD-GATE-PER-OWNER |
