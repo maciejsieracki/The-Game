@@ -372,11 +372,12 @@ def sheet_koszty(wb, units):
             if field not in u:
                 continue
             fid = f"C-K-{slug(name)}-{slug(field)}"
+            default = "-" if field == "Surowiec" else 0
             write_row(ws, r, [
                 fid,
                 f"{name} · {field}",
                 opis,
-                u.get(field, 0),
+                u.get(field, default),
                 "0-999",
                 jed,
                 "Ekonomia produkcji",
