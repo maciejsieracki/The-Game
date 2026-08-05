@@ -58,9 +58,9 @@ function ok(c, m) {
 // C. Każdy budynek ma przypisaną grupę — jedną z ośmiu dozwolonych.
 // ===========================================================================
 {
-  // KOSZTY-SUROWCOWE (Maciej 2026-07-27): 40 budynków od dodania Wielkiej odlewni
-  // (było 39 po Baszcie 41B).
-  ok(buildings.length === 40, `buildings.json ma 40 budynków (ma: ${buildings.length})`);
+  // KOSZTY-SUROWCOWE (Maciej 2026-07-27): 40 budynków od Wielkiej odlewni;
+  // +1 Palisada drewniana (Maciej 2026-07-28) → 41.
+  ok(buildings.length === 41, `buildings.json ma 41 budynków (ma: ${buildings.length})`);
   ok(M.BUILDING_GROUP_ORDER.length === 8, 'BUILDING_GROUP_ORDER ma dokładnie 8 grup');
   const allowed = new Set(M.BUILDING_GROUP_ORDER);
   let missing = [];
@@ -73,10 +73,10 @@ function ok(c, m) {
   ok(unknownGroup.length === 0, `grupa każdego budynku to jedna z 8 dozwolonych (poza listą: ${unknownGroup.join(', ')})`);
 
   // Rozkład przypisań zgodny z tabelą z zadania (kontrola liczności każdej grupy).
-  // 'Wojsko i obrona' 5 -> 6 (Baszta dołącza obok Murów/Cytadeli, decyzja 41B).
+  // 'Wojsko i obrona' 5 -> 6 (Baszta 41B) -> 7 (+ Palisada drewniana 2026-07-28).
   const expectedCounts = {
     'Prawo i administracja': 8,
-    'Wojsko i obrona': 6,
+    'Wojsko i obrona': 7,
     'Handel i pieniądz': 5,
     'Nauka i kultura': 4,
     'Wiara': 2,
@@ -90,7 +90,7 @@ function ok(c, m) {
     ok(counts[g] === n, `grupa "${g}" ma ${n} budynków (ma: ${counts[g] ?? 0})`);
   }
   const totalAssigned = Object.values(counts).reduce((a, b) => a + b, 0);
-  ok(totalAssigned === 40, `suma budynków we wszystkich grupach = 40 (ma: ${totalAssigned})`);
+  ok(totalAssigned === 41, `suma budynków we wszystkich grupach = 41 (ma: ${totalAssigned})`);
 }
 
 // ===========================================================================
