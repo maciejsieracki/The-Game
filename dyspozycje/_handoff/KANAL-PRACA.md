@@ -1,3 +1,10 @@
+## [14:48 PL, 2026-08-05] GROK → Operator — R-CITY-PILL ECHO2: władca vs kultura
+|- Maciej: gracz + major AI = symbol **władcy** na pigułce; miasta-państwa = tylko **kultura**
+|- Cel: odróżnić miasta major od MP (dziś skleja się)
+|- Wzorzec: `portraitForceCultureIcon` / unitOwnerEmblem / R-MP-PORTRET
+|- Docs: `docs/decyzje/R-CITY-PILL-PROD-ICON.md` §ECHO2
+CZEKAM-NA: Operator uwzględnia ECHO2 w tym samym branchu → Evaluator
+
 ## [14:45 PL, 2026-08-05] GROK → ALL — R-CITY-PILL-PROD-ICON W TOKU (AutoBot)
 |- Maciej: na mieście gracza ikony konkretnego budynku/jednostki z kolejki; pusta kolejka = brak ikony; poziom wzrostu (Wyżywienie) widoczny
 |- ID: R-CITY-PILL-PROD-ICON · działaj + AutoBot (Operator→Evaluator→Grok)

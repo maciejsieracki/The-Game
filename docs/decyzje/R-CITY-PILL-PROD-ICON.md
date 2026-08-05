@@ -12,6 +12,19 @@
 3. **„Poziom wzrostu trudności”** (w kontekście miasta) → **poziom Wyżywienia / wzrostu** (`poziomRacji`) widoczny na pigułce miasta gracza (kompaktowa etykieta, np. W1… / wartość z kanonu UI). *Jeśli Maciej miał na myśli globalną trudność gry — osobny follow-up HUD; tu scope = pigułka miasta.*
 4. Scope UI: **miasta gracza** (ownerId gracza); AI/MP mogą zostać bez ikon szczegółowych / bez poziomu wzrostu albo dziedziczyć to samo jeśli tanie — preferuj **tylko gracz**.
 
+
+## ECHO 2 (2026-08-05 ~14:48) — medalion: władca vs kultura
+> zamiast widoku kultury, powinien być symbol władcy danego państwa, jeżeli chodzi o gracza. To samo w wypadku innych głównych A.I, nie dotyczy to państw, miast, gdzie symbol powinien być na mieście tylko kultury. wtedy będziemy wiedzieć, które to są miasta główne danej cywilizacji, które to są nasze główne miasta. bo nawet ten moment to się skleja razem z państwami miastami.
+
+### Interpretacja
+5. **Gracz + major AI** (nie MP / nie typCityCopy / nie simplifiedDiplomacy): medalion pigułki = **portret/symbol władcy** (`leaderPortraitUrl` + era) — ten sam kanon co żeton jednostki / dyplomacja / R-MP-PORTRET.
+6. **Miasta-państwa** (`portraitForceCultureIcon` / `isCityStateOwner`): medalion = **tylko sygnet kultury** (`civIconSvg`) — bez portretu władcy głównej cywu.
+7. Cel: wizualne odróżnienie stolic/miast major od MP tej samej kultury (dziś wszystko „skleja się”).
+
+### Wiring (wzorzec już w grze)
+- `setUnitOwnerEmblemAssets` + `isCityState: portraitForceCultureIcon(ownerId)` w `main.ts`
+- Pigułka dziś: tylko `setCityMapBadgeCivSigil` → rozszerzyć o portret władcy + flagę `useLeaderPortrait` / `isCityState` w `CityMapBadgeInput`
+
 ## Pliki (oczekiwane)
 - `gra/src/render/cityMapStatChip.ts` — rysunek + cache key
 - `gra/src/render/cities.ts` — badge input (prodId + growth)
@@ -23,6 +36,8 @@
 - [ ] Front jednostki → ikona tej jednostki (nie generyczny trójkąt)
 - [ ] Brak frontu / pause → brak ikony produkcji
 - [ ] Pigułka miasta gracza pokazuje poziom wzrostu (Wyżywienie / `poziomRacji`)
+- [ ] Gracz + major AI: medalion = portret/symbol **władcy** (nie sam sygnet kultury)
+- [ ] Miasta-państwa: medalion = **tylko kultura** (bez władcy głównej cywu)
 - [ ] `tsc --noEmit` 0 · `city-map-badge-test.cjs` PASS
 - [ ] Bez deploy / bez merge main (Grok + hasło Macieja)
 
