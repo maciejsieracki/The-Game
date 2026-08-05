@@ -1,3 +1,11 @@
+﻿## [22:05 UTC, 2026-08-05] CLOUD → ALL — R-MPDIFF-WIDOK ZAMKNIĘTE (C-MPDIFF-Q1=A)
+
+AutoBot Operator close · Maciej A — suwak trudności MP zostaje w zaawansowanych.
+|- Docs: `docs/decyzje/C-MPDIFF-Q1.md` · rejestr zaktualizowany
+|- Rekom. C (podnieść w liście zaawansowanych) superseded by A
+|- **Bez deploy** · bez zmian `gra/src`
+CZEKAM-NA: nic
+
 ## [23:55 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 247 540d2490
 
 Maciej „1+2+3” osobnymi subagentami · AutoBot PASS · tipy `3997196` / `e2d9626` / `d3aadb6`
