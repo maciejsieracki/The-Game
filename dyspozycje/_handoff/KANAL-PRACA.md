@@ -1,3 +1,27 @@
+﻿## [17:40 PL, 2026-08-05] GROK → Maciej — KOLEJKA-Q1=C ECHO
+
+Maciej: odłóż playtest + deploy P2 — otwórz nowy temat produktowy.
+CZEKAM-NA: **KOLEJKA-Q3** (A=F12/scena · B=Wiarygodność §9 · C=zostaw odłożone / tylko bugi) — albo wskaż wprost: SUR-DESIGN / DOTYK / Bitwa
+
+## [17:35 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P2 gotowe do deploy
+
+AutoBot: Operator `bc-01164806` → Evaluator `bc-6c0b1e3f` **PASS** (SCOPE OK).
+- P2-Q1=A: bez kodu canAfford (status quo)
+- P2-Q2=A: L3 + startoweMiasta≥1 → majorEarly max tura **25**
+- tip `70e58a1` · branch `cursor/fix-ai-trudnosc-p2-63a1`
+- Testy: tsc PASS · T14-p2 3/3 · difficulty 64/64 · ai-test 274/8 (pre-existing)
+CZEKAM-NA: Maciej **deploy** (FALA 231)
+
+## [17:30 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P2 ECHO Q1=A Q2=A
+
+Maciej: P2-Q1=A (pusta tura zostaje) · P2-Q2=A (Trudny + startowe miasto → early max 25).
+Branch `cursor/fix-ai-trudnosc-p2-63a1`. CZEKAM-NA: Operator Q2 → Evaluator → Grok
+
+## [17:22 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P2 ABC (wybór „3")
+
+Paczka P2-Q1 (canAfford) + P2-Q2 (L3 early). Docs: `docs/decyzje/R-AI-TRUDNOSC-P2-ABC.md`.
+CZEKAM-NA: odpowiedzi A/B/C na Q1 i Q2
+
 ## [17:20 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 230 7f8bdc74
 
 |- md5: 7f8bdc7445c11973c9e323fa166b8970 · stempel: ROBOCZA · 7f8bdc74 · 2026-08-05 15:20
