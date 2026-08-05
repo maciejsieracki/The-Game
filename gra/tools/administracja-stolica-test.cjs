@@ -233,8 +233,12 @@ function idsOf(items) { return items.map(i => i.id); }
   ok(domEntry && domEntry.status === 'locked' && domEntry.locationBlocked === 'region',
     'Dom Starszyzny w katalogu stolicy: locked, locationBlocked=region');
 
-  const sadEntry = M.eraBuildingCatalog(prodData, ['Prawo'], { epoch: 3, builtBuildingIds: [], isCapital: true })
-    .find(e => e.id === 'sad');
+  const sadEntry = M.eraBuildingCatalog(prodData, ['Prawo'], {
+    epoch: 3,
+    builtBuildingIds: [],
+    isCapital: true,
+    empireResourceStock: { drewno: 99, kamien: 99, cegla: 99 },
+  }).find(e => e.id === 'sad');
   ok(sadEntry && sadEntry.status === 'ready' && !sadEntry.locationBlocked, 'Sąd w stolicy: ready, brak blokady lokalizacji');
 }
 

@@ -81,9 +81,10 @@ to teraz 8 zwijanych grup z licznikiem (grupa pusta widoczna, wyróżniona), tes
 - **Dom Starszyzny / Dwór Zarządcy / Pretorium** — budowalne **wyłącznie poza stolicą** (miasta regionalne).
 - **Trybunał i Sąd** — budowalne **wszędzie** (stolica i regiony).
 
-**Status wdrożenia:** nowa reguła dostępności per lokalizacja miasta — nie sprawdzone, czy istnieje dziś w kodzie
-mechanizm „budynek tylko poza stolicą" (odwrotność Pałacu, który już ma taki warunek). Do zrobienia przy pracy
-nad tym łańcuchem administracyjnym.
+**Status wdrożenia:** **WDROŻONE w kodzie** (audyt 2026-08-05, FALA 245 `8b6e0cfe` na `main`):
+`BuildingDef.lokalizacja` (`stolica` / `region`) w `buildings.json` dla Pałacu I–III, Domu Starszyzny, Dworu Zarządcy, Pretorium;
+`production.ts` → `buildingLocationAllowed()`; Trybunał i Sąd bez pola `lokalizacja` (wszędzie).
+Test: `administracja-stolica-test.cjs` 48/48.
 
 ---
 
@@ -145,8 +146,12 @@ liczy się **wyłącznie procentowo**.
 - **Fort terenowy** to zupełnie inny byt — ulepszenie terenu stawiane robotnikiem na mapie, nie budynek miasta.
 - Baszta to trzeci, nowy budynek — nie mylić z żadnym z powyższych.
 
-**Status wdrożenia:** Baszta jest NOWYM budynkiem — nie istnieje jeszcze w `buildings.json`. Do zrobienia:
-wpis budynku, ikona, Civpedia/poradnik, ewentualny panel Excel.
+**Status wdrożenia:** **WDROŻONE w kodzie** (audyt 2026-08-05, FALA 245 `8b6e0cfe` na `main`):
+wpis `baszta` w `buildings.json`, `bonus_obrona_baszta_proc` w `miasto-params.json`, logika +400% w
+`city-defense.ts`, prereq Mury w `building-resource-gate.ts`, ikona `building-icon-map.json`,
+Civpedia `docs/encyklopedia/budynki/baszta.md`.
+Testy: `koszty-surowcowe-test.cjs` (sekcje E/F), `prereq-budynkow-test.cjs`, `city-defense-terrain-gate-test.cjs`.
+Panel Excel budynków — poza scope (źródło prawdy: JSON).
 
 ---
 
@@ -239,9 +244,9 @@ tych decyzji w kodzie na gałęzi roboczej — stąd status poniżej jest już z
 - ✅ **WDROŻONE w kodzie** (commit `2354fb7`, NIE zdeployowane do ROBOCZA): §1 podział łańcuchów na „w górę"/„w bok"
   + rozdzielenie wartości następcy (`upgradeFrom` usunięte z `fort`/`akademia`/`akademia_wojskowa`/`swiatynia`) ·
   §2 osiem grup dziedzinowych w panelu miasta (pole `grupa` w danych, 38/38 budynków).
-- ⬜ **Nie sprawdzone / prawdopodobnie do zrobienia** (kolejność logiczna dla następnej sesji kodowej): (1) Baszta
-  jako nowy budynek + siatka obrony 400% z §5, (2) siatka Prawa z §4, (3) reguła stała-wartość-per-tier dla
-  POZOSTAŁYCH pięciu łańcuchów „w górę" (poza Pałacem, już zweryfikowanym) z §1, (4) lokalizacja
-  Pałac-tylko-stolica / Dom Starszyzny+Dwór Zarządcy+Pretorium-tylko-region z §3, (5) usunięcie Ratusza +
+- ⬜ **Nie sprawdzone / prawdopodobnie do zrobienia** (kolejność logiczna dla następnej sesji kodowej): (1) ~~Baszta
+  jako nowy budynek + siatka obrony 400% z §5~~ **WDROŻONE** (audyt 2026-08-05), (2) siatka Prawa z §4, (3) reguła stała-wartość-per-tier dla
+  POZOSTAŁYCH pięciu łańcuchów „w górę" (poza Pałacem, już zweryfikowanym) z §1, (4) ~~lokalizacja
+  Pałac-tylko-stolica / Dom Starszyzny+Dwór Zarządcy+Pretorium-tylko-region z §3~~ **WDROŻONE** (audyt 2026-08-05), (5) usunięcie Ratusza +
   Karawanseraju (jeśli jeszcze nie zrobione — sprawdź `git log -- gra/data/buildings.json`), (6) utrzymanie
   zróżnicowane (Pytanie 19).
