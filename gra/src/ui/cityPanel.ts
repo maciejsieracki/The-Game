@@ -112,7 +112,6 @@ import {
 import {
   upgradeChainSteps,
   upgradeCompositionLines,
-  buildingStatSummaryLines,
   buildingStructuralDefenseBonusLine,
   buildingStructuralDefenseBonusPercent,
   cityHasBibliotekaLine,
@@ -5543,36 +5542,58 @@ function yieldBrandIconHtml(brandId: string, size: BrandIconSize = 14): string {
   return cityPanelChipIconWrap(brandId, size);
 }
 
-/** Przychód budynku na turę — zawsze z nazwą parametru i jednostką (reguła Macieja). */
-function formatBuildingYieldDetailValue(base: number, inc: number): string {
-  const perTurn = '/turę';
-  if (base !== 0 && inc !== 0) {
-    return `${base >= 0 ? '+' : ''}${base} pkt${perTurn} (${inc >= 0 ? '+' : ''}${inc} pkt${perTurn} na poziom)`;
-  }
-  if (base !== 0) return `${base >= 0 ? '+' : ''}${base} pkt${perTurn}`;
-  if (inc !== 0) return `${inc >= 0 ? '+' : ''}${inc} pkt${perTurn} na poziom`;
-  return '—';
+/** Poziom budynku do wyświetlenia w katalogu / karcie (C-PRZYROST=A — jak silnik). */
+function buildingUiDisplayLevel(def: BuildingDef, city?: City): number {
+  if (!city) return 1;
+  return buildingOwnedLevel(def, city);
 }
 
-/** Skrót przychodu na chipie infokarty budynku. */
-function formatBuildingYieldChipText(base: number, inc: number, label: string): string {
-  const perTurn = '/turę';
-  if (base !== 0 && inc !== 0) {
-    return `${base >= 0 ? '+' : ''}${base} ${label}${perTurn} (+${inc}${perTurn}/poz.)`;
+/** Przychód budynku na turę — wartość z buildingEffectAtLevel (C-PRZYROST=A). */
+function formatBuildingYieldDetailValue(baza: number, przyrost: number, level: number): string {
+  const effect = buildingEffectAtLevel(baza, przyrost, level);
+  if (effect === 0 && baza === 0 && przyrost === 0) return '—';
+  const sign = effect >= 0 ? '+' : '';
+  const main = `${sign}${effect} pkt/turę`;
+  if (przyrost !== 0 && level > 1) {
+    return `${main} (poziom ${level}: baza ${baza} + przyrost ${przyrost} × ${level - 1})`;
   }
-  if (base !== 0) return `${base >= 0 ? '+' : ''}${base} ${label}${perTurn}`;
-  return `+${inc} ${label}${perTurn}/poz.`;
+  return main;
+}
+
+/** Skrót przychodu na chipie infokarty budynku — realna wartość na poziomie miasta. */
+function formatBuildingYieldChipText(baza: number, przyrost: number, label: string, level: number): string {
+  const effect = buildingEffectAtLevel(baza, przyrost, level);
+  const sign = effect >= 0 ? '+' : '';
+  const base = `${sign}${effect} ${label}/turę`;
+  if (level > 1) return `${base} (L${level})`;
+  return base;
+}
+
+/** Wiersze skali L1…Ln gdy budynek rośnie z epoką miasta (bez mylącego „+X/poz.”). */
+function formatBuildingYieldScaleRow(def: BuildingDef, baza: number, przyrost: number): string | null {
+  if (przyrost === 0 || def.maksPoziom <= 1) return null;
+  const parts: string[] = [];
+  for (let l = 1; l <= def.maksPoziom; l++) {
+    const v = buildingEffectAtLevel(baza, przyrost, l);
+    parts.push(`L${l}: ${v >= 0 ? '+' : ''}${v}`);
+  }
+  return parts.join(' · ');
 }
 
 /** Chipy bonusów (max 3) — mockup Poziom B budynków 1E. */
-function buildingBonusChipsHtml(def: BuildingDef, buildings: readonly BuildingDef[], max = 3): string {
+function buildingBonusChipsHtml(
+  def: BuildingDef,
+  buildings: readonly BuildingDef[],
+  max = 3,
+  level = 1,
+): string {
   const chips: string[] = [];
   for (const y of YIELD_BRAND) {
     if (chips.length >= max) break;
     const base = def.baza[y.key] ?? 0;
     const inc = def.przyrost[y.key] ?? 0;
     if (base === 0 && inc === 0) continue;
-    const val = formatBuildingYieldChipText(base, inc, y.label);
+    const val = formatBuildingYieldChipText(base, inc, y.label, level);
     chips.push(
       `<span class="bld-infocard-chip">${yieldBrandIconHtml(y.brandId, 13)}${val}</span>`,
     );
@@ -6009,7 +6030,8 @@ function buildBuildingInfocard(
   const bd = el('div', 'bld-infocard-bd');
   // DAJE (efekty) — bonusy budynku, wyraźnie oddzielone od tego, co jest WYMAGANE do budowy
   // (Maciej 2026-07-24: gracz musi wiedzieć, czego mu brakuje i dlaczego nie może budować).
-  const chipsHtml = buildingBonusChipsHtml(def, data.buildings);
+  const displayLevel = buildingUiDisplayLevel(def, opts?.city);
+  const chipsHtml = buildingBonusChipsHtml(def, data.buildings, 3, displayLevel);
   if (chipsHtml) {
     bd.appendChild(el('div', 'bld-infocard-eyebrow', 'Daje'));
     const chips = el('div', 'bld-infocard-chips');
@@ -6266,7 +6288,7 @@ function appendTechDetailBlock(parent: HTMLElement, data: GameData, techName: st
   if (techNote) gridDetailRow(grid, 'Uwagi tech', techNote);
 }
 
-function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivElement {
+function buildBuildingDetailCard(def: BuildingDef, data: GameData, city?: City): HTMLDivElement {
   const card = el('div', 'detail-card bld-detail-card');
   const head = el('div', 'dc-h');
   head.appendChild(makeBuildingThumb(def));
@@ -6275,11 +6297,22 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
   head.appendChild(ht);
   card.appendChild(head);
 
+  const displayLevel = buildingUiDisplayLevel(def, city);
+
   const charBody = beginBuildingDetailTile(card, 'Charakterystyka');
   const gChar = appendDetailGridIn(charBody);
   gridDetailRow(gChar, 'Kategoria', def.kategoria);
   gridDetailRow(gChar, 'Epoka wejścia', epochLabelNum(def.epokaWejscia));
   gridDetailRow(gChar, 'Typ', def.wielokrotny ? 'Wielokrotny' : 'Unikalny w mieście');
+  if (displayLevel > 1 || def.maksPoziom > 1) {
+    gridDetailRow(
+      gChar,
+      'Poziom w tym mieście',
+      city
+        ? `L${displayLevel} (epoka miasta — jak liczy silnik)`
+        : `L1 (podgląd; w mieście rośnie z epoką, max ${def.maksPoziom})`,
+    );
+  }
 
   const yieldBody = beginBuildingDetailTile(card, 'Plony i efekty (przychód na turę)');
   const gYield = appendDetailGridIn(yieldBody);
@@ -6289,12 +6322,15 @@ function buildBuildingDetailCard(def: BuildingDef, data: GameData): HTMLDivEleme
     const inc = def.przyrost[y.key] ?? 0;
     if (base !== 0 || inc !== 0) {
       anyYield = true;
-      const rowLabel = inc !== 0 ? `${y.label} (przyrost)` : y.label;
       gridDetailRow(
         gYield,
-        rowLabel,
-        `${formatBuildingYieldDetailValue(base, inc)} ${yieldBrandIconHtml(y.brandId)}`,
+        y.label,
+        `${formatBuildingYieldDetailValue(base, inc, displayLevel)} ${yieldBrandIconHtml(y.brandId)}`,
       );
+      const scale = formatBuildingYieldScaleRow(def, base, inc);
+      if (scale) {
+        gridDetailRow(gYield, `${y.label} — skala poziomów`, scale);
+      }
     }
   }
   // Sciezki ulepszen jednostek (2026-07-25, druga tura -- suma lancucha
@@ -6407,7 +6443,7 @@ function buildBuildingBuildTabDetailCard(
     techs?: readonly string[];
   },
 ): HTMLDivElement {
-  const card = buildBuildingDetailCard(def, data);
+  const card = buildBuildingDetailCard(def, data, city);
 
   const techs = opts?.techs ?? (city ? (cfg.getUnlockedTechs?.(city.ownerId) ?? []) : []);
   const ctx = opts?.ctx ?? (city ? productionCtxForCity(city) : undefined);
@@ -6451,7 +6487,8 @@ function buildBuildingBuildTabDetailCard(
     }
   }
 
-  const chipsHtml = buildingBonusChipsHtml(def, data.buildings);
+  const displayLevel = city ? buildingUiDisplayLevel(def, city) : 1;
+  const chipsHtml = buildingBonusChipsHtml(def, data.buildings, 3, displayLevel);
   if (chipsHtml) {
     const givesBody = beginBuildingDetailTile(card, 'Daje');
     const chips = el('div', 'bld-infocard-chips');
@@ -7456,6 +7493,7 @@ function renderPurchasableUnits(
 function buildUpgradeBonusDetailCard(
   def: BuildingDef,
   data: GameData,
+  city?: City,
 ): HTMLDivElement {
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', `<span>Skład bonusów — ${def.nazwa}</span>`));
@@ -7471,15 +7509,36 @@ function buildUpgradeBonusDetailCard(
       card.appendChild(note);
     }
   }
+  const displayLevel = buildingUiDisplayLevel(def, city);
   appendDetailSection(card, 'Statystyki (silnik)');
-  const stats = buildingStatSummaryLines(def, data.buildings);
-  if (stats.length === 0) {
+  const g1 = appendDetailGrid(card);
+  let anyStat = false;
+  for (const y of YIELD_BRAND) {
+    const baza = def.baza[y.key] ?? 0;
+    const przyrost = def.przyrost[y.key] ?? 0;
+    if (baza === 0 && przyrost === 0) continue;
+    anyStat = true;
+    gridDetailRow(
+      g1,
+      y.label,
+      formatBuildingYieldDetailValue(baza, przyrost, displayLevel),
+    );
+    const scale = formatBuildingYieldScaleRow(def, baza, przyrost);
+    if (scale) gridDetailRow(g1, `${y.label} — skala`, scale);
+  }
+  const role = mnoznikRoleForBuildingId(def.id);
+  if (role) {
+    const cumulative = cumulativeMnoznikForBuildingId(def.id, data.buildings);
+    if (cumulative !== 0) {
+      anyStat = true;
+      const label = role === 'pancerz' ? 'Pancerz (jednostki)' : 'Parametry poza Pancerzem (jednostki)';
+      gridDetailRow(g1, label, `+${cumulative}%`);
+    }
+  }
+  if (!anyStat) {
     const note = el('div', 'dc-note');
     note.textContent = 'Brak statów bazowych w definicji.';
     card.appendChild(note);
-  } else {
-    const g1 = appendDetailGrid(card);
-    for (const s of stats) gridDetailRow(g1, s.split(' ')[0] ?? s, s.slice(s.indexOf(' ') + 1));
   }
   return card;
 }
@@ -7560,7 +7619,7 @@ function appendOwnedBuildingRow(
     upBtn.textContent = '↗';
     upBtn.title = 'Skład bonusów upgrade';
     upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
-    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data), { delayMs: 260, sideHint: 'left' });
+    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data, city), { delayMs: 260, sideHint: 'left' });
     hd.appendChild(upBtn);
   }
   row.appendChild(hd);
@@ -7579,11 +7638,11 @@ function appendOwnedBuildingRow(
       tail.appendChild(bon);
     }
     if (tail.childElementCount > 0) row.appendChild(tail);
-    attachHoverDetail(row, () => buildBuildingDetailCard(def, data), 280, 'left');
+    attachHoverDetail(row, () => buildBuildingDetailCard(def, data, city), 280, 'left');
     row.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('.bld-upg')) return;
       e.stopPropagation();
-      showHoverDetailNow(row, () => buildBuildingDetailCard(def, data), 'left');
+      showHoverDetailNow(row, () => buildBuildingDetailCard(def, data, city), 'left');
     });
   }
 
