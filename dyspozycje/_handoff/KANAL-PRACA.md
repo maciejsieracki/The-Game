@@ -1,4 +1,10 @@
-﻿## [00:40 PL, 2026-08-05] CLOUD → ALL — HANDOFF sesji FALA 221–224
+## [11:50 PL, 2026-08-05] CLOUD → ALL — R-PROC-AUTOBOT OBOWIĄZUJE (scaffold)
+|- Maciej: zasada AutoBot Evaluator–Operator + playbook + guardrails + feature pruning
+|- Scaffold: dyspozycje/autobot/ (types, playbook.json, Operator/Evaluator)
+|- Reguła: .cursor/rules/autobot-evaluator-operator.mdc · docs/decyzje/R-PROC-AUTOBOT.md
+CZEKAM-NA: merge PR na main; kolejne: podpięcie metryk/dashboard
+
+## [00:40 PL, 2026-08-05] CLOUD → ALL — HANDOFF sesji FALA 221–224
 |- Pełny zapis: dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md
 |- AKTUALNA ROBOCZA FALA 224 `38df6ad7` (stempel eef4e87e) · Maciej OK 223+224
 |- ABC zamknięte: R-PILL-TARCZA-BEZ-MURU-Q1=A · R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A · R-BUDOWA-ZROWNOWAZONE-Q1=A playtest OK · R-REKRUT-LUDNOSC-UI

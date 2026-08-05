@@ -1,0 +1,49 @@
+---
+description: AutoBot Evaluator–Operator — playbook, guardrails, feature pruning. Maciej 2026-08-05. NIENEGOCJOWALNE.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# AutoBot (Evaluator–Operator) — NIENEGOCJOWALNE
+
+**Decyzja Maciej 2026-08-05 (`R-PROC-AUTOBOT`):** self-improving pętla agentów — Operator wykonuje, Evaluator mierzy i aktualizuje playbook. **Od tej pory tak działamy.**
+
+Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · opis: `dyspozycje/autobot/README.md`
+
+## Dwa rdzenie
+
+| Agent | Robi | Nie robi |
+|-------|------|----------|
+| **Operator** | Bierze zadanie, czyta `playbook.json`, wykonuje akcję (kod/testy/docs) | Merge do `main`, deploy, promocja kanon/finalna |
+| **Evaluator** | Metryki twarde → delta → postmortem → update playbook (win/loss) | Udawać „sukces” bez metryki |
+
+U nas: Operator ≈ `composer-2.5` implementer · Evaluator ≈ adwokat diabła + Grok final (+ playtest/testy). Patrz też `potrojna-warstwa-weryfikacji.mdc`.
+
+## Playbook
+
+- Reguły dynamiczne: `wins` / `losses` / `win_rate`.
+- `win_rate < 0.30` przy min. próbie → status `deprecated` (nie usuwaj wpisu).
+- Progi akcji (`thresholds`) zmienia Evaluator **dopiero** po guardrailu istotności / time-delay — nie po jednym runie.
+
+## Feature pruning
+
+Przed kolejnym runem Operatora: atrybuty kontekstu z near-zero mocą predykcyjną vs sukces (ostatnie N runów) → **usuń z payloadu kontekstu** (nie zaśmiecaj promptu).
+
+## Guardrails (twarde)
+
+1. **ZAKAZ** bezpośredniego merge do `main` przez Operatora.
+2. **ZAKAZ** deploy / production execution bez hasła Macieja (`deploy` / promocja).
+3. Krytyczne akcje → **mandatory human approval**.
+4. Zwycięzcy A/B / zmiana playbooka → significance lub time-delay.
+
+## Logging
+
+Każdy postmortem + delta → `dyspozycje/autobot/logs/` (strukturalny JSON), pod przyszły dashboard.
+
+## Po paczce pracy (skrót)
+
+1. Operator wykonał + testy  
+2. Evaluator: metryki + postmortem + ewentualny update playbook  
+3. Grok: final (potrójna warstwa)  
+4. Dopiero wtedy „gotowe” / czekaj na `deploy`

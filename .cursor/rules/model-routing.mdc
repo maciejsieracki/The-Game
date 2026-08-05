@@ -67,3 +67,8 @@ Próg ilościowy (gdy wahanie):
 - Po powrocie subagenta — **Grok 4.5 weryfikuje** wynik (spójność, AC) przed zamknięciem i raportem do Macieja; deploy dopiero po zleceniu Macieja.
 
 **Skutek:** Grok = orkiestracja + plan + kontrola + **jedyny deploy**. Composer = reszta roboty, kończy „gotowe do deployu".
+
+## AutoBot (Maciej 2026-08-05)
+
+Operator ≈ Composer (playbook + akcja) · Evaluator ≈ adwokat diabła + Grok + metryki.  
+Reguła: `.cursor/rules/autobot-evaluator-operator.mdc` · scaffold: `dyspozycje/autobot/`.

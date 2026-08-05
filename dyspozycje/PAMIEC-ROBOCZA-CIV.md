@@ -36,6 +36,14 @@ Odpowiedź Macieja / ECHO: `R-AUTO-BUDOWA-LISTA-Q2=A · R-AUTO-BUDOWA-LISTA-Q3=B
 
 ---
 
+## 1a00. AUTOBOT Evaluator–Operator (Maciej 2026-08-05) — NADRZĘDNE
+
+Self-improving pętla: **Operator** wykonuje wg `dyspozycje/autobot/playbook.json`; **Evaluator** mierzy twarde metryki, postmortem, win/loss, deprecate &lt;30%, feature pruning. Guardrails: bez merge/deploy bez człowieka.
+
+Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · `.cursor/rules/autobot-evaluator-operator.mdc` · `dyspozycje/autobot/README.md`.
+
+---
+
 ## 1a0. NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03) — NADRZĘDNE
 
 **Kanon:** `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` · reguła Cursor: `.cursor/rules/numer-abc-commit-deploy.mdc`

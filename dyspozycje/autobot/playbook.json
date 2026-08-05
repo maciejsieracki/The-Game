@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "updatedAtIso": "2026-08-05T09:28:00.000Z",
+  "thresholds": {
+    "promoteMinWinRate": 0.6,
+    "deprecateBelowWinRate": 0.3,
+    "minRunsForSignificance": 5,
+    "thresholdAdjustDelayHours": 24
+  },
+  "operatorContextAttributes": [
+    "taskId",
+    "decisionId",
+    "acChecklist",
+    "touchedFiles",
+    "testCommands",
+    "relatedPlaybookRuleIds"
+  ],
+  "rules": [
+    {
+      "id": "pb-triple-layer",
+      "description": "Po kodzie: implementer → adwokat diabła → Grok final (R-PROC-POTROJNA-WARSTWA)",
+      "status": "active",
+      "actionId": "verify-triple-layer",
+      "wins": 0,
+      "losses": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+    },
+    {
+      "id": "pb-numer-abc-deploy",
+      "description": "NUMER → ABC → commit; deploy tylko na hasło Macieja",
+      "status": "active",
+      "actionId": "respect-deploy-gate",
+      "wins": 0,
+      "losses": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+    },
+    {
+      "id": "pb-no-npm-run-build",
+      "description": "Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON)",
+      "status": "active",
+      "actionId": "build-via-vite-bin",
+      "wins": 0,
+      "losses": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+    },
+    {
+      "id": "pb-lane-no-main-ts",
+      "description": "Lane A–E nie edytuje main.ts — tylko Integrator",
+      "status": "active",
+      "actionId": "respect-file-ownership",
+      "wins": 0,
+      "losses": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+    }
+  ]
+}

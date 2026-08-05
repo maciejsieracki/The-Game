@@ -132,6 +132,23 @@ Przy wdrażaniu **jednej** rzeczy łatwo zepsuć **inną** (nadpisanie hunka, us
 
 ---
 
+## 4b. AUTOBOT — Evaluator–Operator + playbook (Maciej 2026-08-05)
+
+**ID:** `R-PROC-AUTOBOT`
+
+Po implementacji obowiązuje pętla uczenia się (scaffold: `dyspozycje/autobot/`):
+
+| Rola | Kto u nas | Co |
+|------|-----------|-----|
+| **Operator** | `composer-2.5` | Task + `playbook.json` + akcja (bez merge/deploy) |
+| **Evaluator** | Adwokat diabła + Grok (+ testy/playtest) | Metryki → postmortem → win/loss / deprecate / prune |
+
+Guardrails: zakaz merge→`main`; deploy tylko hasło Macieja; winner dopiero po `minRunsForSignificance` + time-delay; reguły z win_rate &lt; 30% → `deprecated`.
+
+Kanon: [`autobot/README.md`](autobot/README.md) · `.cursor/rules/autobot-evaluator-operator.mdc` · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md).
+
+---
+
 ## 5. Deploy — TYLKO na hasło Macieja
 
 | Hasło | Skutek |

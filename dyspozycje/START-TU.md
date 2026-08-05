@@ -33,6 +33,7 @@ Od 2026-07-06 praca odbywa się w Cowork (Cursor tylko od święta — promocje 
 9. Zero sterowania ekranem Macieja bez jego wyraźnej prośby.
 10. NUMER → ABC → COMMIT → DEPLOY — patrz procedura na górze (2026-08-03).
 11. Przed commit/deploy: **nie uwsteczniaj** wcześniejszych fixów — przegląd `git diff` (zmiany **i** usunięcia) · `R-PROC-NO-REGRESS` / procedura §4a.
+12. **AUTOBOT (Maciej 2026-08-05) — OBOWIĄZUJE:** Operator wykonuje wg `playbook.json`; Evaluator mierzy metryki + postmortem + update playbook; twarde guardrails (bez merge/deploy bez człowieka). Kanon: [`autobot/README.md`](autobot/README.md) · `.cursor/rules/autobot-evaluator-operator.mdc` · `docs/decyzje/R-PROC-AUTOBOT.md`.
 
 ## HISTORIA = OBOWIĄZKOWY KONTEKST (korekta Macieja 2026-07-06)
 Bannery „NIEAKTUALNE" na starych plikach dotyczą WYŁĄCZNIE procesu (role, publish,
