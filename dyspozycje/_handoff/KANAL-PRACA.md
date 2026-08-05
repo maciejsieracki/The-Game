@@ -34,6 +34,15 @@ Evaluator STRICT: luki testów / brak asercji AC / czerwone testy tematu → FAI
 |- Zero `gra/src` — tylko proces AutoBot
 CZEKAM-NA: Evaluator / merge Grok (bez deploy gry)
 
+## [21:37 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 238 ea921d1e
+
+Maciej „1+2” · P-MP-SPAWN-WYZYWIENIE + STRICT-SAVE · AutoBot PASS · tip `5fecbcf`
+|- md5: ea921d1e31f93a725c34f8efdbda4161 · stempel: ROBOCZA · ea921d1e
+|- Batch: founding Wyżywienie=4 (parytet) · Evaluator FAIL #9 save/load (proces)
+|- Testy: mp-spawn-ration 14/14 · tsc 0 · autobot-smoke 10/10 (v7)
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull**
+
 ## [19:44 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 237 5b0e1c19
 
 Maciej „Dalej WIAR” · badge tytuł + ranking Potęgi §7 · AutoBot PASS (STRICT) · tip `cad6f23`

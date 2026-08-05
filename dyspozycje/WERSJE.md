@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 5b0e1c19 - 2026-08-05 19:44 - FALA 237: WIAR UI badge + ranking Potęgi - **AKTUALNA**
+## ROBOCZA ea921d1e - 2026-08-05 21:37 - FALA 238: MP spawn Wyżywienie=4 + STRICT-SAVE - **AKTUALNA**
+|- md5 (pelne): ea921d1e31f93a725c34f8efdbda4161 · stempel: ROBOCZA · 2026-08-05 19:37 (label ea921d1e)
+|- **FALA 238.** (1) P-MP-SPAWN-WYZYWIENIE: founding `poziomRacji=4` (parytet gracz/AI/MP). (2) Evaluator STRICT-SAVE (FAIL #9 save/load) w procesie. AutoBot PASS · tip `5fecbcf`/`8baa14d` · mp-spawn-ration 14/14.
+|- Grok deploy (Maciej „1+2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 5b0e1c19 - 2026-08-05 19:44 - FALA 237: WIAR UI badge + ranking Potęgi - **ZASTĄPIONA** (→ ea921d1e)
 |- md5 (pelne): 5b0e1c19816157ac22dbf10cbab7d11d · stempel: ROBOCZA · 2026-08-05 17:44 (label 5b0e1c19)
 |- **FALA 237.** WIAR §7: badge `W ±N · pasmo` przy tytule cywu (gracz+rozmówca) · W w rankingu Potęgi i panelu dyplomacji. AutoBot PASS (STRICT) · tip `cad6f23` · wiarygodnosc 146/146.
 |- Grok deploy (Maciej „Dalej WIAR” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.

@@ -1,10 +1,12 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-05 ~19:44** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-05 ~21:37** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 237 (2026-08-05):** ROBOCZA `5b0e1c19` · WIAR UI badge + ranking Potęgi. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 238 (2026-08-05):** ROBOCZA `ea921d1e` · MP spawn Wyżywienie=4 + STRICT-SAVE. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+>
+> **FALA 237 (2026-08-05):** ROBOCZA `5b0e1c19` · WIAR UI badge + ranking Potęgi. **ZASTĄPIONA** przez FALA 238.
 >
 > **FALA 236 (2026-08-05):** ROBOCZA `03a19191` · WIAR UI życiorys vs bieżące. **ZASTĄPIONA** przez FALA 237.
 >
@@ -14,7 +16,7 @@
 >
 > **FALA 233 (2026-08-05):** ROBOCZA `06712ea4` · C-FLANK replay + WIAR Etap0. **ZASTĄPIONA** przez FALA 234.
 >
-> **SOLO kolejka:** ECHO 12/12 ✅ · FALA 232–237 · WIAR R1/R1b/R3/R4/UI+badge ✅ · STRICT Evaluator ✅ · playtesty otwarte (GATE=A) · scena pominięta (Q2=B).
+> **SOLO kolejka:** ECHO 12/12 ✅ · FALA 232–238 · WIAR UI ✅ · Evaluator STRICT/EDGE/PARITY/SAVE ✅ · MP spawn Wyżywienie ✅ · playtesty otwarte (GATE=A).
 >
 > **FALA 232 (2026-08-05):** ROBOCZA `fca41b9a` · muzyka+węgiel+bitwa I. **ZASTĄPIONA** przez FALA 233.
 >
