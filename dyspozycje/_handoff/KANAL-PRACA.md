@@ -1,4 +1,13 @@
-﻿## [22:34 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 242 5b6ee97d
+﻿## [23:00 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 243 01f6024a
+
+Maciej SZARE=B+C · KATALOG=A · MIASTA=A(audyt) · AutoBot PASS · tip `3517031`/`38d54dd`
+|- md5: 01f6024abb7bfbac5b360a6213fa74f0 · stempel: ROBOCZA · 01f6024a
+|- Batch: dyplo pełny katalog + szare + stały wiersz powodu · audyt MP budów (docs, bez fix)
+|- Testy: diplomacy-audience-actions 20/20 · city-state-prod-audit 9/9 · tsc 0
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · sygnał fix MP budów (opcjonalnie)
+
+## [22:34 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 242 5b6ee97d
 
 Maciej „1+2” · AI-BALANS-STEP1 (pierwszy mały krok po UNLOCK=B) · AutoBot PASS · tip `9f92cbd`
 |- md5: 5b6ee97d94285880320f2f1369840c9d · stempel: ROBOCZA · 5b6ee97d

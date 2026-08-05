@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 242** `5b6ee97d` — AI-BALANS-STEP1: na Trudnym major AI kolonizuje od **4** ludności źródła (L1/L2=5). Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+﻿- ✅ **FALA 243** `01f6024a` — dyplo: pełny katalog akcji + szare z **stałym** powodem · audyt MP budów (bez fix). Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+- ✅ **FALA 242** `5b6ee97d` — AI-BALANS-STEP1: na Trudnym major AI kolonizuje od **4** ludności źródła (L1/L2=5). **ZASTĄPIONA** przez 243.
 - ✅ **FALA 241** `178073f9` — absorb major **any-civ** (tylko Trudny) · celownik dyplo z hintem · odblokowane małe strojenie AI (docs). **ZASTĄPIONA** przez 242.
 - ✅ **FALA 240** `d1450398` — PROD-GATE + absorb Faza1. **ZASTĄPIONA** przez 241.
 - ✅ **FALA 239** `ff7c5e49` — Diag major AI w overlay Moc. **ZASTĄPIONA** przez 240.

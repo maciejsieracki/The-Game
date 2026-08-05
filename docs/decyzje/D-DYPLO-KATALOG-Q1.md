@@ -34,17 +34,16 @@
 
 ## Evaluator
 
-**Werdykt:** **FAIL** (commit `3517031` — wspólny tor ze SZARE)
+**Werdykt:** **PASS** (re-eval 2026-08-05 po uzupełnieniu STRICT)  
+**Tip kodu:** `3517031` · wspólny tor ze SZARE
 
 | Oś | Werdykt | Uwaga |
 |----|---------|-------|
 | SCOPE | **PASS** | Zakres zgodny — tylko katalog/lista akcji audiencji |
-| AC KATALOG A | **PASS** | Iteracja całego `akcje_dyplomatyczne` (skip `1`); `restrictToBasicActions` → `locked`+`lockNote`, nie `filter`; test: sojusz `3` obecny+locked wobec MP |
-| AC SZARE B+C | **PASS** | (powiązane) Spójne `lockNote` + stały wiersz w UI |
-| STRICT | **FAIL** | Test nie weryfikuje count vs JSON per-id poza sojuszem/6; brak on-table w helper-testach |
-| STRICT-EDGE | **FAIL** | Brak testu negacji on-table w `audienceActionStatusNote` |
-| STRICT-PARITY | **PASS** | Ten sam `buildAudienceActionsList` dla wszystkich ownerów |
+| AC KATALOG A | **PASS** | Iteracja całego `akcje_dyplomatyczne` (skip `1`); MP → `locked` nie omit; sojusz `3` |
+| AC SZARE B+C | **PASS** | Spójne `lockNote` + stały wiersz w UI |
+| STRICT | **PASS** | on-table + enabled; katalog MP (20/20) |
+| STRICT-EDGE | **PASS** | on-table w `audienceActionStatusNote` |
+| STRICT-PARITY | **PASS** | Ten sam helper dla wszystkich ownerów |
 | STRICT-SAVE | **PASS** | Brak nowych pól persist |
-| Bramki | **PASS** | `tsc --noEmit` 0 · test 18/18 |
-
-**Do poprawy (Operator):** uzupełnić testy STRICT-EDGE (on-table) — wspólny plik `diplomacy-audience-actions-test.cjs`.
+| Bramki | **PASS** | `tsc --noEmit` 0 · test 20/20 |

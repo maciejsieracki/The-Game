@@ -946,7 +946,7 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## D-DYPLO-KATALOG-AKCJI — brak akcji (sojusz, wojna…) w menu propozycji · STATUS: **ECHO A** (2026-08-05) — W TOKU · `D-DYPLO-KATALOG-Q1`
+## D-DYPLO-KATALOG-AKCJI — brak akcji (sojusz, wojna…) w menu propozycji · STATUS: **ZAMKNIĘTE** (FALA 243 `01f6024a` · Q1=A)
 
 **Cytat:** „Nie widzę tutaj np. sojuszu czy zaatakowania innego państwa. Większość akcji dyplomatycznych, które mieliśmy w kodzie i zaprojektowaliśmy, ich tu nie widzę."
 
@@ -960,7 +960,7 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## D-DYPLO-AKCJE-SZARE — niedostępne akcje wyszarzone + tooltip · STATUS: **ECHO B+C** (2026-08-05) — W TOKU · `D-DYPLO-AKCJE-SZARE-Q1`
+## D-DYPLO-AKCJE-SZARE — niedostępne akcje wyszarzone + tooltip · STATUS: **ZAMKNIĘTE** (FALA 243 `01f6024a` · Q1=B+C)
 
 **Cytat:** Gdy próg nie spełniony — akcja **wyszarzona z tooltipem** (nie znika). Osobno: akcje niemożliwe z **państwem-miastem** — wyszarzone z komunikatem.
 
@@ -1020,7 +1020,7 @@ Pakiet UX 28.07 (Aktywne umowy, etykiety, recompute tras) **nie zastępuje** tej
 
 ---
 
-## R-AI-MIASTA-BUDOWY — państwa-miasta prawie nie budują mimo zasobów · STATUS: **ECHO A** (2026-08-05) — audyt · `R-AI-MIASTA-BUDOWY-Q1`
+## R-AI-MIASTA-BUDOWY — państwa-miasta prawie nie budują mimo zasobów · STATUS: **AUDYT OK — CZEKA FIX** (2026-08-05) · `R-AI-MIASTA-BUDOWY-Q1`
 
 **Cytat:** „Państwa miasta nie budują praktycznie żadnych budynków, chociaż mają zasoby — trzeba sprawdzić."
 

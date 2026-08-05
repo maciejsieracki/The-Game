@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 5b6ee97d - 2026-08-05 22:34 - FALA 242: AI-BALANS-STEP1 L3 kolonizacja pop 4 - **AKTUALNA**
+## ROBOCZA 01f6024a - 2026-08-05 23:00 - FALA 243: dyplo katalog+szare B+C · audyt MP budów - **AKTUALNA**
+|- md5 (pelne): 01f6024abb7bfbac5b360a6213fa74f0 · stempel: ROBOCZA · 2026-08-05 20:xx (label 01f6024a)
+|- **FALA 243.** (1) D-DYPLO-AKCJE-SZARE=B+C + D-DYPLO-KATALOG=A — pełny katalog, szare + stały wiersz powodu. (2) R-AI-MIASTA-BUDOWY=A — audyt docs (bez fix). AutoBot PASS · tip `3517031`/`38d54dd` · dyplo-test 20/20 · mp-audit 9/9.
+|- Grok deploy (Maciej litery · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA 5b6ee97d - 2026-08-05 22:34 - FALA 242: AI-BALANS-STEP1 L3 kolonizacja pop 4 - **ZASTĄPIONA** (→ 01f6024a)
 |- md5 (pelne): 5b6ee97d94285880320f2f1369840c9d · stempel: ROBOCZA · 2026-08-05 20:33 (label 5b6ee97d)
 |- **FALA 242.** AI-BALANS-STEP1 — major AI na Trudnym: próg ludności miasta-źródła kolonii **4** (L1/L2 zostaje 5). AutoBot PASS · tip `9f92cbd` · ai-colonization-pop 13/13.
 |- Grok deploy (Maciej „1+2” · SOLO-Q1=A). tsc 0 · vite · stamp · sync · START hub · VERIFY OK.
