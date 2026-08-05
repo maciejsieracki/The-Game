@@ -1,3 +1,8 @@
+﻿## [17:40 PL, 2026-08-05] GROK → Maciej — KOLEJKA-Q1=C ECHO
+
+Maciej: odłóż playtest + deploy P2 — otwórz nowy temat produktowy.
+CZEKAM-NA: **KOLEJKA-Q3** (A=F12/scena · B=Wiarygodność §9 · C=zostaw odłożone / tylko bugi) — albo wskaż wprost: SUR-DESIGN / DOTYK / Bitwa
+
 ## [17:35 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P2 gotowe do deploy
 
 AutoBot: Operator `bc-01164806` → Evaluator `bc-6c0b1e3f` **PASS** (SCOPE OK).
