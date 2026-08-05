@@ -11700,7 +11700,10 @@ async function boot(): Promise<void> {
       const incoming = entry.proposerOwnerId !== 0;
       const basketDetail = formatNegotiationDealPlayerSummary(p, incoming);
       switch (entry.actionId) {
-        case 'nap': return `Pakt nieagresji na ${p.turns ?? 15} tur`;
+        case 'nap':
+          return p.turns != null && p.turns <= 0
+            ? 'Pakt nieagresji (bezterminowy)'
+            : `Pakt nieagresji na ${p.turns ?? 15} tur`;
         case 'sojusz_defensywny': return 'Sojusz obronny';
         case 'sojusz_pelny': return 'Sojusz wojskowy';
         case 'granice': return p.borderMilitary ? 'Traktat przemarszu (wojskowy)' : 'Traktat przemarszu (cywilny)';
