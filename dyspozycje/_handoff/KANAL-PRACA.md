@@ -1,3 +1,10 @@
+## [17:18 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P1-3 gotowe do deploy
+
+AutoBot PASS · SCOPE OK · 9 kluczy Spryt w `ai-params.json` (= fallbacki, bez zmiany zachowania).
+Branch `cursor/fix-ai-spryt-json-63a1` · tip po cherry-pick Evaluator.
+Testy: tsc PASS · difficulty 64/64.
+CZEKAM-NA: Maciej **deploy** (można razem z P1 PR #112 → FALA 230)
+
 ## [17:15 PL, 2026-08-05] GROK → ALL — R-AI-TRUDNOSC P1-3 W TOKU (Maciej „3")
 
 Spryt AI: dopisać do `ai-params.json` klucze agresja_mnoznik / dyplomacja_aktywnosc / cel_obranie × poziomy 1–3 (wartości = obecne fallbacki). Branch `cursor/fix-ai-spryt-json-63a1`. CZEKAM-NA: Operator → Evaluator → Grok
