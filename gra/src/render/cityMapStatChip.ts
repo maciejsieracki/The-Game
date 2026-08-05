@@ -5,6 +5,7 @@
  */
 import * as THREE from 'three';
 import type { ProductionKind } from '../game/production';
+import { formatWyzwienieLabel } from '../game/population-growth-v85';
 import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
 
 /** 0 = brak tarczy · 1 = palisada (szara) · 2 = mury lub cytadela (złota). */
@@ -24,6 +25,10 @@ export interface CityMapBadgeInput {
   /** Czy w kolejce jest aktywna produkcja (pierwszy element). */
   prodActive?: boolean;
   prodKind?: ProductionKind | null;
+  /** id frontu kolejki (budynek.id lub jednostka Jednostka) — ikona kanoniczna z brandAssets. */
+  prodId?: string | null;
+  /** Poziom Wyżywienia (poziomRacji) — tylko miasta gracza. */
+  growthLevel?: number | null;
   /** Ostrzeżenie surowców — rezerwa pod hover Design (v1: tylko klucz cache). */
   resourceWarning?: boolean;
 }
@@ -36,9 +41,14 @@ const DEFENSE_COLORS: Record<1 | 2, { fill: string; stroke: string }> = {
 const CIV_SIGIL_STROKE = '#e8d88a';
 const CIV_MEDALLION_R = 16;
 const CIV_SLOT_W = 38;
+const PROD_SLOT_W = 20;
+const GROWTH_SLOT_W = 30;
 
 let civSigilSvgFn: ((civIconId: string) => string) | null = null;
 const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
+
+let prodIconSvgFn: ((kind: ProductionKind, id: string) => string) | null = null;
+const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
 
 /**
  * Wstrzykuje SVG sygnetu cywilizacji (main.ts → civIconSvg).
@@ -47,6 +57,15 @@ const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
 export function setCityMapBadgeCivSigil(fn: (civIconId: string) => string): void {
   civSigilSvgFn = fn;
   civSigilImageById.clear();
+}
+
+/**
+ * Wstrzykuje SVG ikony produkcji (main.ts → buildingIconSvg / unitIconSvg).
+ * render/ nie importuje ui/icons/brandAssets — ten sam wzorzec co sygnet cywu.
+ */
+export function setCityMapBadgeProdIcon(fn: (kind: ProductionKind, id: string) => string): void {
+  prodIconSvgFn = fn;
+  prodIconImageByKey.clear();
 }
 
 const CIV_INITIALS: Record<string, string> = {
@@ -224,30 +243,58 @@ function requestCivSigilImage(
   });
 }
 
-/** Kompaktowy glif produkcji (always-on lite — pełny hover po makiecie Design). */
-function drawProdGlyph(
+function prodIconCacheKey(kind: ProductionKind, id: string): string {
+  return `${kind}:${(id || '').trim()}`;
+}
+
+function requestProdIconImage(
+  kind: ProductionKind,
+  id: string,
+  onReady: (img: HTMLImageElement) => void,
+): void {
+  if (!prodIconSvgFn) return;
+  const key = prodIconCacheKey(kind, id);
+  const cached = prodIconImageByKey.get(key);
+  if (cached instanceof HTMLImageElement) {
+    onReady(cached);
+    return;
+  }
+  if (cached === 'loading') return;
+  const raw = prodIconSvgFn(kind, id);
+  const svg = prepareSvgForCanvas(raw, '#e8d88a', 1.2);
+  if (!svg) return;
+  prodIconImageByKey.set(key, 'loading');
+  loadImageInto(svgToDataUri(svg), (img) => {
+    prodIconImageByKey.set(key, img);
+    onReady(img);
+  });
+}
+
+/** Ikona frontu kolejki (SVG z brandAssets) — bez generycznego trójkąta/prostokąta. */
+function drawProdIcon(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  kind: ProductionKind | null | undefined,
+  img?: HTMLImageElement,
 ): void {
-  const s = 9;
-  ctx.fillStyle = kind === 'jednostka' ? '#c45c5c' : '#6a9e6a';
-  ctx.strokeStyle = 'rgba(232, 216, 138, 0.9)';
-  ctx.lineWidth = 1;
-  if (kind === 'jednostka') {
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - s);
-    ctx.lineTo(cx + s * 0.85, cy + s * 0.9);
-    ctx.lineTo(cx - s * 0.85, cy + s * 0.9);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-  } else {
-    roundedRect(ctx, cx - s, cy - s * 0.75, s * 2, s * 1.5, 2);
-    ctx.fill();
-    ctx.stroke();
-  }
+  const side = 16;
+  if (!img) return;
+  ctx.drawImage(img, cx - side * 0.5, cy - side * 0.5, side, side);
+}
+
+/** Kompaktowa etykieta poziomu Wyżywienia (poziomRacji) — tylko miasta gracza. */
+function drawGrowthLabel(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  cy: number,
+  level: number,
+): void {
+  const label = `W${formatWyzwienieLabel(level)}`;
+  ctx.font = '700 13px Arial, Helvetica, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#d4c48a';
+  ctx.fillText(label, x, cy);
 }
 
 function truncateName(
@@ -270,6 +317,7 @@ function paintCityMapBadgeOntoCanvas(
   canvas: HTMLCanvasElement,
   input: CityMapBadgeInput,
   civSigilImg?: HTMLImageElement,
+  prodIconImg?: HTMLImageElement,
 ): void {
   const pop = Math.max(1, Math.floor(input.population) || 1);
   const name = (input.cityName || 'Miasto').trim().toUpperCase();
@@ -282,21 +330,23 @@ function paintCityMapBadgeOntoCanvas(
   const hasDefense = input.defenseTier !== 0;
   const defenseW = hasDefense ? 22 : 0;
   const civW = CIV_SLOT_W;
-  const prodW = input.prodActive ? 18 : 0;
+  const prodW = input.prodActive ? PROD_SLOT_W : 0;
+  const growthW = input.growthLevel != null ? GROWTH_SLOT_W : 0;
   const nameFont = '700 22px Georgia, "Times New Roman", serif';
   const popFont = '700 16px Arial, Helvetica, sans-serif';
 
   const measure = document.createElement('canvas').getContext('2d')!;
   measure.font = nameFont;
   let displayName = name;
-  const maxNameW = 200 - prodW;
+  const maxNameW = 200 - prodW - growthW;
   if (measure.measureText(name).width > maxNameW) {
     displayName = truncateName(measure, name, maxNameW, nameFont);
   }
   const nameW = measure.measureText(displayName).width;
 
   const leftIconsW = (hasDefense ? defenseW + gap : 0) + civW + gap;
-  const W = Math.ceil(padX + leftIconsW + nameW + (prodW ? gap + prodW : 0) + gap + circleD + padX);
+  const midExtraW = (growthW ? gap + growthW : 0) + (prodW ? gap + prodW : 0);
+  const W = Math.ceil(padX + leftIconsW + nameW + midExtraW + gap + circleD + padX);
   const H = Math.max(48, circleD + padY * 2);
 
   canvas.width = W;
@@ -330,9 +380,13 @@ function paintCityMapBadgeOntoCanvas(
   ctx.fillText(displayName, nameX, cy);
 
   let afterNameX = nameX + nameW;
+  if (input.growthLevel != null) {
+    drawGrowthLabel(ctx, afterNameX + gap, cy, input.growthLevel);
+    afterNameX += gap + growthW;
+  }
   if (input.prodActive) {
     const prodCx = afterNameX + gap + prodW * 0.5;
-    drawProdGlyph(ctx, prodCx, cy, input.prodKind);
+    drawProdIcon(ctx, prodCx, cy, prodIconImg);
     afterNameX += gap + prodW;
   }
 
@@ -353,9 +407,10 @@ function paintCityMapBadgeOntoCanvas(
 export function drawCityMapBadgeCanvas(
   input: CityMapBadgeInput,
   civSigilImg?: HTMLImageElement,
+  prodIconImg?: HTMLImageElement,
 ): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
-  paintCityMapBadgeOntoCanvas(canvas, input, civSigilImg);
+  paintCityMapBadgeOntoCanvas(canvas, input, civSigilImg, prodIconImg);
   return canvas;
 }
 
@@ -380,13 +435,19 @@ export function cityMapBadgeKey(
     return `${(a || '').trim()}|${pop}`;
   }
   const pop = Math.max(1, Math.floor(a.population) || 1);
-  const prod = a.prodActive ? `${a.prodKind ?? 'b'}` : '-';
+  const prod = a.prodActive
+    ? `${a.prodKind ?? 'b'}:${(a.prodId || '').trim()}`
+    : '-';
+  const growth = a.growthLevel != null
+    ? `g${formatWyzwienieLabel(a.growthLevel)}`
+    : 'g-';
   return [
     (a.cityName || '').trim(),
     pop,
     `d${a.defenseTier}`,
     `c${(a.civIconId || '').trim().toLowerCase()}`,
     `p${prod}`,
+    growth,
     `w${a.resourceWarning ? 1 : 0}`,
   ].join('|');
 }
@@ -422,11 +483,22 @@ export function makeCityMapBadgeSprite(
     tex.minFilter = THREE.LinearFilter;
     tex.colorSpace = THREE.SRGBColorSpace;
     texCache.set(key, tex);
-    const civId = input.civIconId;
-    requestCivSigilImage(civId, (img) => {
-      paintCityMapBadgeOntoCanvas(tex!.image as HTMLCanvasElement, input, img);
+    const repaint = (civImg?: HTMLImageElement, prodImg?: HTMLImageElement) => {
+      paintCityMapBadgeOntoCanvas(tex!.image as HTMLCanvasElement, input, civImg, prodImg);
       tex!.needsUpdate = true;
+    };
+    let civImg: HTMLImageElement | undefined;
+    let prodImg: HTMLImageElement | undefined;
+    requestCivSigilImage(input.civIconId, (img) => {
+      civImg = img;
+      repaint(civImg, prodImg);
     });
+    if (input.prodActive && input.prodKind && input.prodId) {
+      requestProdIconImage(input.prodKind, input.prodId, (img) => {
+        prodImg = img;
+        repaint(civImg, prodImg);
+      });
+    }
   }
   const mat = new THREE.SpriteMaterial({
     map: tex,

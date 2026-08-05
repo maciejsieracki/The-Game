@@ -64,7 +64,7 @@ const keyBase = M.cityMapBadgeKey({
   civIconId: 'grecy',
   prodActive: false,
 });
-assert(keyBase.includes('Ateny|5|d1|cgrecy|p-|w0'), 'klucz cache zawiera defense+civ');
+assert(keyBase.includes('Ateny|5|d1|cgrecy|p-|g-|w0'), 'klucz cache zawiera defense+civ+growth');
 
 const keyProd = M.cityMapBadgeKey({
   cityName: 'Ateny',
@@ -73,9 +73,32 @@ const keyProd = M.cityMapBadgeKey({
   civIconId: 'rzym',
   prodActive: true,
   prodKind: 'jednostka',
+  prodId: 'Wojownik',
 });
 assert(keyProd !== keyBase, 'prod zmienia klucz cache');
-assert(keyProd.includes('pjednostka'), 'klucz zawiera rodzaj produkcji');
+assert(keyProd.includes('pjednostka:Wojownik'), 'klucz zawiera rodzaj+id produkcji');
+
+const keyProdBld = M.cityMapBadgeKey({
+  cityName: 'Ateny',
+  population: 5,
+  defenseTier: 2,
+  civIconId: 'rzym',
+  prodActive: true,
+  prodKind: 'budynek',
+  prodId: 'koszary',
+});
+assert(keyProdBld.includes('pbudynek:koszary'), 'klucz budynku zawiera id');
+
+const keyGrowth = M.cityMapBadgeKey({
+  cityName: 'Ateny',
+  population: 5,
+  defenseTier: 0,
+  civIconId: 'grecy',
+  prodActive: false,
+  growthLevel: 3,
+});
+assert(keyGrowth.includes('g3'), 'klucz zawiera poziom Wyżywienia');
+assert(keyGrowth !== keyBase, 'growth zmienia klucz cache');
 
 assert(M.civInitialForIconId('grecy') === 'G', 'grecy → G');
 assert(M.civInitialForIconId('rzym') === 'R', 'rzym → R');
