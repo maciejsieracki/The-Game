@@ -100,7 +100,7 @@ git status --short
 2. **R-SCENA-PERF** — 🔵 W TOKU; instrumentacja w bundlu; **czeka F12** (wstrzymane do domknięcia R-AUTO)
 3. **FALA 226 playtest** — P-AI-MOC + P-AI-008 — odłożony przez Macieja
 4. **R-BUDYNKI-NIEAKTYWNE** — playtest (czerwona nazwa + `Brak: …`) — od FALA 222, **bez OK/BUG**
-5. **R-WIARYGODNOSC** — CZEKA-NA-DECYZJĘ (strojenie §9, później)
+5. ~~**R-WIARYGODNOSC**~~ — **ZDEPLOYOWANE** (FALA 233–237; audyt 2026-08-05, 0 ABC otwartych)
 6. **R-DESIGN-PANEL-MIASTA** — prototyp w ROBOCZA; hover/v2 czeka Design
 7. **R-PANEL-SPLIT** / **R-SUROWCE-UI-ZERO** / **R-CIVPEDIA** — stary backlog NOWE
 8. **P-AI-MOC-GAP** — częściowo FALA 220/226; reszta design później
