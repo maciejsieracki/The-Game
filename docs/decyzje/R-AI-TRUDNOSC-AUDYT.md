@@ -334,3 +334,13 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 | **P2-Q2** | **A** — L3 + `startowe_miasta ≥ 1`: `majorEarly` max tura **25** (jak L1) | `gra/src/game/ai.ts` |
 
 **Testy:** `ai-test.cjs` T14-p2.
+
+---
+
+## I — AI-BALANS małe kroki (UNLOCK=B, Operator)
+
+| Tor | Audyt | Zmiana | Status |
+|---|---|---|---|
+| **STEP1** | C.3 D1 / Ś1 kolonizacja | L3: `AI_COLONIZATION_SOURCE_MIN_POP_L3` = 4 | 🟢 FALA 242 `5b6ee97d` · `docs/decyzje/AI-BALANS-STEP1.md` |
+| **STEP2** | C.3 **Ś2** | L3 + `!underThreat`: score Wojownik **−40** w `chooseCityProduction` major AI | 🟡 Operator `cursor/ai-balans-step2-63a1` · `docs/decyzje/AI-BALANS-STEP2.md` |
+
