@@ -53,7 +53,7 @@ Przegląd: `gra/data/ai-params.json` (`trudnosc_poziom{1,2,3}_*`), `gra/src/game
 | `priorytetMilitarny/Ekonomia/Nauka` (Panel D, `civ-ai.json`) | 1–10 | `ai-production-priorities.ts:aiProductionScoreBoosts` | **Średni** — ±75 pkt score przy skrajnych wartościach. |
 | `ekspansja_zagroz_zasieg` | 7 hex | `chooseCityProduction` → `underThreat` | **Średni** — P-AI-008 łagodzi (jednostki+rozwój), ale Wojownik 300+ pkt nadal konkuruje ze Spichlerzem. |
 | `ekspansja_min_score_hex` | 3 | `planCityFounding` / `findCityFoundingHex` | Jakość lokacji kolonii — słabe hexy odrzucane. |
-| `cuda_poziom{1,2,3}_prog_koszt_x` + `throttle_tur` | 25/8 · 45/5 · 70/3 | `loadAiWonderParams` → `decideAiWonderBuild` | Cuda po stabilnej ekonomii — L3 agresywniej. |
+| `cuda_poziom{1,2,3}_prog_koszt_x` + `throttle_tur` | 25/8 · 45/5 · 70/**2** | `loadAiWonderParams` → `decideAiWonderBuild` | Cuda po stabilnej ekonomii — L3 agresywniej (STEP3: throttle 3→2). |
 | **Major early** (`AI_MAJOR_EARLY_*`) | tura ≤40 LUB avg pop <5 LUB avg budynki <4 | `computeMajorAiEarlyGame` | **Bardzo silny** — tłumi budynki gosp. (×0,55) i wojsko (×0,65); suwaki: 100% wzrost, 40% budynki. |
 | **Early phase produkcji** | `myCities.length < 3` | `chooseCityProduction` gałąź §4.1 vs §4.2 | **Silny** — bez Koszar/infrastruktury mid do 3. miasta (L3 start +1 miasto przyspiesza wyjście). |
 | **AI-LOCAL** | tura <20 + brak scouta + cluster | `isLocalExpansionPhase` → blokuje `planCityFounding` | **Silny wczesny** — opóźnia ekspansję mimo AI-FOUND pop≥2. |
@@ -342,5 +342,6 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 | Tor | Audyt | Zmiana | Status |
 |---|---|---|---|
 | **STEP1** | C.3 D1 / Ś1 kolonizacja | L3: `AI_COLONIZATION_SOURCE_MIN_POP_L3` = 4 | 🟢 FALA 242 `5b6ee97d` · `docs/decyzje/AI-BALANS-STEP1.md` |
-| **STEP2** | C.3 **Ś2** | L3 + `!underThreat`: score Wojownik **−40** w `chooseCityProduction` major AI | 🟡 Operator `cursor/ai-balans-step2-63a1` · `docs/decyzje/AI-BALANS-STEP2.md` |
+| **STEP2** | C.3 **Ś2** | L3 + `!underThreat`: score Wojownik **−40** w `chooseCityProduction` major AI | 🟢 FALA 246 `cbf529f3` · `docs/decyzje/AI-BALANS-STEP2.md` |
+| **STEP3** | C.3 **Ś1** throttle | L3: `cuda_poziom3_throttle_tur` **3→2** (prog_koszt_x 70 bez zmian) | 🟡 Operator `cursor/ai-balans-step3-63a1` · `docs/decyzje/AI-BALANS-STEP3.md` |
 
