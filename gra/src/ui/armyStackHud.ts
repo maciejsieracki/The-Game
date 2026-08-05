@@ -249,7 +249,7 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       'data-merge',
       'accent-blue',
       !mergeOk,
-      mergeOk ? 'Połącz z sąsiednią armią' : 'Brak sąsiedniej armii do połączenia',
+      mergeOk ? 'Połącz stosy armii' : 'Brak drugiego stosu do połączenia',
     );
     html += mapUnitCloseBtnHtml('Odznacz');
     html += '</div></div>';

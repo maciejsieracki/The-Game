@@ -15307,25 +15307,10 @@ async function boot(): Promise<void> {
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
             if (!u || u.ownerId !== 0) return false;
-            return hasAdjacentPlayerArmy(u.q, u.r);
+            return canMergeSelectedStack(u, playerStackAt(u));
           },
           onMerge: () => {
-            const u = selectedId !== null ? units.find(x => x.id === selectedId) : null;
-            if (!u || !stackCanMove(u)) return;
-            for (const [dq, dr] of HEX_NEIGHBOR_DIRS) {
-              const nq = u.q + dq;
-              const nr = u.r + dr;
-              const stack = visibleStackOnHex(units, nq, nr, u.ownerId);
-              if (stack.length === 0) continue;
-              if (reachable.has(keyOf(nq, nr))) {
-                beginMoveSelectedUnitTo(nq, nr);
-                return;
-              }
-            }
-            showHintMessage(
-              'Po\u0142\u0105czenie: klik s\u0105siedni\u0105 w\u0142asn\u0105 armi\u0119 (kursor spinacza)',
-              3500,
-            );
+            openMergePanelForSelected();
           },
           canSplit: () => {
             if (isAwaitingFirstPlayerCity()) return false;
