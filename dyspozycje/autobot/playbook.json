@@ -1,11 +1,14 @@
 {
-  "version": 1,
-  "updatedAtIso": "2026-08-05T09:28:00.000Z",
+  "version": 2,
+  "updatedAtIso": "2026-08-05T09:33:00.000Z",
+  "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
     "deprecateBelowWinRate": 0.3,
     "minRunsForSignificance": 5,
-    "thresholdAdjustDelayHours": 24
+    "thresholdAdjustDelayHours": 24,
+    "minEventsForWinner": 1000,
+    "evaluationDelayHours": 48
   },
   "operatorContextAttributes": [
     "taskId",
@@ -17,44 +20,45 @@
   ],
   "rules": [
     {
-      "id": "pb-triple-layer",
-      "description": "Po kodzie: implementer → adwokat diabła → Grok final (R-PROC-POTROJNA-WARSTWA)",
-      "status": "active",
+      "id": "rule_101",
+      "rule_text": "Po kodzie: implementer → adwokat diabła → Grok final (R-PROC-POTROJNA-WARSTWA)",
+      "status": "ACTIVE",
       "actionId": "verify-triple-layer",
-      "wins": 0,
-      "losses": 0,
-      "win_rate": 0,
-      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+      "win_count": 12,
+      "fail_count": 2,
+      "win_rate": 0.8571428571428571,
+      "lastUpdatedIso": "2026-08-05T09:33:00.000Z"
     },
     {
-      "id": "pb-numer-abc-deploy",
-      "description": "NUMER → ABC → commit; deploy tylko na hasło Macieja",
-      "status": "active",
+      "id": "rule_102",
+      "rule_text": "NUMER → ABC → commit; deploy tylko na hasło Macieja",
+      "status": "ACTIVE",
       "actionId": "respect-deploy-gate",
-      "wins": 0,
-      "losses": 0,
-      "win_rate": 0,
-      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+      "win_count": 10,
+      "fail_count": 1,
+      "win_rate": 0.9090909090909091,
+      "lastUpdatedIso": "2026-08-05T09:33:00.000Z"
     },
     {
-      "id": "pb-no-npm-run-build",
-      "description": "Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON)",
-      "status": "active",
+      "id": "rule_103",
+      "rule_text": "Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON)",
+      "status": "ACTIVE",
       "actionId": "build-via-vite-bin",
-      "wins": 0,
-      "losses": 0,
-      "win_rate": 0,
-      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+      "win_count": 8,
+      "fail_count": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-05T09:33:00.000Z"
     },
     {
-      "id": "pb-lane-no-main-ts",
-      "description": "Lane A–E nie edytuje main.ts — tylko Integrator",
-      "status": "active",
+      "id": "rule_104",
+      "rule_text": "Lane A–E nie edytuje main.ts — tylko Integrator",
+      "status": "ACTIVE",
       "actionId": "respect-file-ownership",
-      "wins": 0,
-      "losses": 0,
-      "win_rate": 0,
-      "lastUpdatedIso": "2026-08-05T09:28:00.000Z"
+      "win_count": 6,
+      "fail_count": 1,
+      "win_rate": 0.8571428571428571,
+      "lastUpdatedIso": "2026-08-05T09:33:00.000Z"
     }
-  ]
+  ],
+  "quarantine_rules": []
 }

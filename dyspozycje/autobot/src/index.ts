@@ -1,4 +1,5 @@
 export * from './types';
+export * from './hard-metrics';
 export * from './playbook-manager';
 export * from './guardrails';
 export * from './feature-pruning';

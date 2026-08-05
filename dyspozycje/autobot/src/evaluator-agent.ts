@@ -1,15 +1,20 @@
 /**
- * EvaluatorAgent — metryki twarde → delta → postmortem → update playbook.
+ * EvaluatorAgent — Moduł 1: twarde metryki → performanceScore → postmortem → playbook.
  */
 import { randomUUID } from 'crypto';
 import {
-  deprecateWeakRules,
   loadPlaybook,
   recordRuleOutcome,
+  retireWeakRules,
   savePlaybook,
 } from './playbook-manager';
-import { suggestAttributePruning } from './feature-pruning';
+import { pruneFeatureWeights, attributesToWeights } from './feature-pruning';
 import { appendPostmortemLog } from './logging';
+import {
+  computePerformanceScore,
+  extractMetricSnapshot,
+  computeDeltaPercentage,
+} from './hard-metrics';
 import type {
   EvaluationResult,
   ExecutionRun,
@@ -24,6 +29,8 @@ export interface EvaluateOpts {
   playbookPath?: string;
   /** Rule IDs to credit win/loss (default: run.operatorRuleIds) */
   ruleIds?: string[];
+  /** Kara za złożoność (0–1) odejmowana od performanceScore */
+  complexityPenalty?: number;
 }
 
 function metricNumber(m: HardMetrics, key: keyof HardMetrics): number {
@@ -56,15 +63,20 @@ export function inferSuccess(metrics: HardMetrics, run: ExecutionRun): boolean {
   if (metrics.typecheckOk === false) return false;
   if (metrics.regressionDetected === true) return false;
   if (metrics.playtestOk === false) return false;
-  return true;
+  const score = computePerformanceScore(metrics, 0);
+  return score > 0;
 }
 
 export class EvaluatorAgent {
   evaluate(opts: EvaluateOpts): EvaluationResult {
-    const { run, metrics, baseline, playbookPath } = opts;
+    const { run, metrics, baseline, playbookPath, complexityPenalty = 0 } = opts;
     const pb = loadPlaybook(playbookPath);
     const success = inferSuccess(metrics, run);
     const deltas = computeDeltas(metrics, baseline);
+    const { metricBefore, metricAfter } = extractMetricSnapshot(metrics, baseline);
+    const performanceScore = computePerformanceScore(metrics, complexityPenalty);
+    const deltaPercentage = computeDeltaPercentage(metricBefore, metricAfter);
+
     const updates: PlaybookUpdate[] = [];
     const ruleIds = opts.ruleIds ?? run.operatorRuleIds;
 
@@ -72,13 +84,17 @@ export class EvaluatorAgent {
       const u = recordRuleOutcome(pb, id, success);
       if (u) updates.push(u);
     }
-    updates.push(...deprecateWeakRules(pb));
+    updates.push(...retireWeakRules(pb));
 
-    const prune = suggestAttributePruning(pb.operatorContextAttributes, [run], {
-      minRuns: pb.thresholds.minRunsForSignificance,
-      nearZeroScore: 0.05,
+    const prune = pruneFeatureWeights({
+      runs: [run],
+      featureWeights: attributesToWeights(pb.operatorContextAttributes),
+      opts: {
+        minRuns: pb.thresholds.minRunsForSignificance,
+        correlationThreshold: 0.05,
+      },
     });
-    // Feature pruning applies to future Operator payloads; persist allow-list when enough data
+
     if (prune.prunedAttributes.length > 0 && prune.evaluatedRuns >= pb.thresholds.minRunsForSignificance) {
       pb.operatorContextAttributes = prune.keptAttributes;
     }
@@ -87,17 +103,32 @@ export class EvaluatorAgent {
 
     const postmortem = [
       success ? 'PASS' : 'FAIL',
+      `performanceScore=${performanceScore.toFixed(3)}`,
       run.blockedByGuardrail ? `guardrail: ${run.blockedByGuardrail}` : null,
       `tests ${metrics.testsPassed ?? '?'}/${(metrics.testsPassed ?? 0) + (metrics.testsFailed ?? 0)}`,
       metrics.regressionDetected ? 'REGRESSION' : null,
       `deltas=${JSON.stringify(deltas)}`,
-    ].filter(Boolean).join(' · ');
+    ]
+      .filter(Boolean)
+      .join(' · ');
+
+    const actionTaken =
+      prune.actionsTaken.length > 0
+        ? prune.actionsTaken.join('; ')
+        : updates.find(u => u.kind === 'quarantine' || u.kind === 'retire')
+          ? updates.map(u => u.detail).join('; ')
+          : success
+            ? 'No action required'
+            : 'Recorded failure';
 
     const result: EvaluationResult = {
       id: randomUUID(),
       runId: run.id,
       evaluatedAtIso: new Date().toISOString(),
       metrics,
+      metricBefore,
+      metricAfter,
+      performanceScore,
       deltas,
       success,
       postmortem,
@@ -106,15 +137,20 @@ export class EvaluatorAgent {
     };
 
     appendPostmortemLog({
-      tsIso: result.evaluatedAtIso,
-      evaluationId: result.id,
       runId: run.id,
+      evaluationId: result.id,
       success,
+      metricBefore,
+      metricAfter,
+      deltaPercentage,
+      postmortemReasoning: postmortem,
+      actionTaken,
       deltas,
-      postmortem,
       playbookUpdates: updates,
     });
 
     return result;
   }
 }
+
+export { computePerformanceScore } from './hard-metrics';

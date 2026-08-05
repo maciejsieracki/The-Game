@@ -14,3 +14,15 @@ declare module 'crypto' {
   export function randomUUID(): string;
 }
 declare const __dirname: string;
+
+declare namespace NodeJS {
+  interface ProcessEnv {
+    [key: string]: string | undefined;
+    AUTOBOT_ENV?: string;
+    NODE_ENV?: string;
+  }
+}
+
+declare const process: {
+  env: NodeJS.ProcessEnv;
+};
