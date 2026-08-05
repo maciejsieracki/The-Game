@@ -132,22 +132,22 @@ Przy wdrażaniu **jednej** rzeczy łatwo zepsuć **inną** (nadpisanie hunka, us
 
 ---
 
-## 4b. POTRÓJNA WARSTWA — implementer + adwokat diabła + Grok (Maciej 2026-08-05)
+## 4b. AUTOBOT — TWARDA REGUŁA: każda praca tylko tędy (Maciej 2026-08-05)
 
-**ID:** `R-PROC-POTROJNA-WARSTWA`
+**ID:** `R-PROC-AUTOBOT`
 
-Po §4 (implementacja + testy) **zawsze** — zanim „gotowe” / `deploy`:
+**KAŻDA praca agenta** po decyzji Macieja (`działaj` / implementacja) **musi** iść przez AutoBot — **ZAKAZ** pracy poza pętlą.
 
-| # | Rola | Kto | Co |
-|---|------|-----|-----|
-| **1** | Implementer | `composer-2.5` | Kod + testy lane (już z §4) |
-| **2** | Adwokat diabła | **osobny** `composer-2.5` | Szuka regresji, usuniętych usprawnień, ubocznych zepsuć, luk AC |
-| **3** | Final | Grok 4.5 | Kontrola raportów #1+#2 + krytyczne miejsca w diffie |
+| Krok | Rola | Kto u nas | Co |
+|------|------|-----------|-----|
+| **1** | **Operator** | `composer-2.5` | Task + `playbook.json` + akcja (bez merge/deploy) |
+| **2** | **Evaluator** | Adwokat diabła + twarde metryki | Score KPI → postmortem → win/loss / RETIRED / prune |
+| **3** | **Final** | Grok 4.5 | Kontrola; dopiero potem „gotowe” / czekaj na `deploy` |
 
-**ZAKAZ:** meldunek „gotowe w kodzie” lub hasło `deploy` po samym #1.
+Guardrails: zakaz merge→`main`; deploy tylko hasło Macieja; winner dopiero po significance + time-delay; win_rate &lt; 30% → `RETIRED`.
 
-Kanon: [`POTROJNA-WARSTWA-WERYFIKACJI.md`](POTROJNA-WARSTWA-WERYFIKACJI.md) · `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` · [`docs/decyzje/R-PROC-POTROJNA-WARSTWA.md`](../docs/decyzje/R-PROC-POTROJNA-WARSTWA.md).  
-Uzupełnia (nie zastępuje) §4a `R-PROC-NO-REGRESS`.
+Kanon: [`autobot/README.md`](autobot/README.md) · `.cursor/rules/autobot-evaluator-operator.mdc` · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md).  
+Potrójna warstwa = kroki 1–3 AutoBot (nie osobny opcjonalny rytuał).
 
 ---
 

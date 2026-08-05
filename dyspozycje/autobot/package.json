@@ -1,0 +1,10 @@
+{
+  "name": "civ-autobot",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AutoBot Evaluator–Operator scaffold (R-PROC-AUTOBOT)",
+  "main": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}

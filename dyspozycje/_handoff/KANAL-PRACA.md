@@ -1,47 +1,59 @@
-﻿## [11:40 PL, 2026-08-05] CLOUD → ALL — R-PROC-POTROJNA-WARSTWA OBOWIĄZUJE (wpisane wszędzie)
-|- Maciej: „wprowadź do plików i od tej pory tak działamy”
-|- Pliki: START-TU · STAN · CLAUDE · PROCEDURA §4b · REJESTR · PAMIEC · rules · docs/decyzje/R-PROC-POTROJNA-WARSTWA.md
-|- Od teraz: implementer → adwokat diabła → Grok final przed gotowe/deploy
-CZEKAM-NA: nic (proces stały); R-AUTO nadal czeka review #2+#3 przed deploy
+﻿## [09:50 PL, 2026-08-05] OPERATOR → ALL — merge main FALA 225 prep (bez deploy)
+|- R-AUTO-RACJE-RAISE Q2–Q5=A + R-PROC-AUTOBOT scaffold scalone na main
+|- Testy: tsc + ai-major-economy (Operator)
+|- **BEZ** vite build / WERSJE AKTUALNA FALA — czeka Grok deploy
+CZEKAM-NA: Grok final + Maciej `deploy`
 
-## [11:25 PL, 2026-08-05] CLOUD → ALL — POTRÓJNA WARSTWA WERYFIKACJI (Maciej)
-|- Zasada: (1) implementer composer → (2) osobny adwokat diabła composer → (3) Grok final
-|- Reguła: .cursor/rules/potrojna-warstwa-weryfikacji.mdc · dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md
-|- Pierwsze zastosowanie: review R-AUTO-RACJE-RAISE Q2–Q5 przed deploy
-CZEKAM-NA: wynik adwokata diabła + final Groka; potem Maciej `deploy`
+## [12:15 PL, 2026-08-05] CLOUD → ALL — AUTOBOT = TWARDA REGUŁA (każda praca)
+|- Maciej: każda praca agenta wyłącznie w systemie AutoBot — zapisz do twardych reguł
+|- alwaysApply: .cursor/rules/autobot-evaluator-operator.mdc
+|- START-TU / CLAUDE / STAN / PROCEDURA / REJESTR / PAMIEC / decyzja — zaktualizowane
+CZEKAM-NA: merge na main (Operator)
+
+## [12:05 PL, 2026-08-05] CLOUD → ALL — R-PROC-AUTOBOT Spec v1 (5 modułów)
+|- Hard metrics · pruneFeatureWeights · playbook ACTIVE/RETIRED · guardrails · dashboard log
+|- Fix Grok: Dev score bez HITL = 0 (anti confidence-machine)
+|- Smoke 6/6 · branch cursor/proc-autobot-63a1
+CZEKAM-NA: merge na main
+
+## [11:50 PL, 2026-08-05] CLOUD → ALL — R-PROC-AUTOBOT OBOWIĄZUJE (scaffold)
+|- Maciej: zasada AutoBot Evaluator–Operator + playbook + guardrails + feature pruning
+|- Scaffold: dyspozycje/autobot/ (types, playbook.json, Operator/Evaluator)
+|- Reguła: .cursor/rules/autobot-evaluator-operator.mdc · docs/decyzje/R-PROC-AUTOBOT.md
+CZEKAM-NA: merge na main
 
 ## [09:15 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q5=A (kod, bez deploy)
 - Maciej «działaj z wszystkimi tematami» → Q2=A · Q3=A · Q4=A · Q5=A
 - Q2: autoRaise cofa ostatni krok gdy pool<0 · Q4: Spichlerz clamp ≥0, glodWojska z niedoboru tury
 - Q5: autoWyzywienie per miasto (default WYŁ) + onlyAutoManaged gracz EOT · Q3: maxSafe cap suwaka
 - Pliki: empire-food.ts, cities.ts, main.ts, cityPanel.ts, ai-major-economy-test.cjs J–M
-- Branch: cursor/abc-auto-racje-raise-63a1 · testy: ai-major-economy PASS (czeka weryfikacja #2+#3)
-CZEKAM-NA: po review → Maciej hasło deploy
+- Branch: cursor/abc-auto-racje-raise-63a1 · testy: ai-major-economy PASS
+CZEKAM-NA: merge main → Grok deploy FALA 225
 
 ## [01:35 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q5 (ABC, bez kodu)
 |- Maciej: przycisk auto zarządzania Spichlerzem (obniża+podnosi) — w każdym mieście
 |- Paczka 2/2: Q5 przełącznik per miasto
 |- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md
-CZEKAM-NA: Maciej — Q2–Q5 litery (np. A A A A)
+CZEKAM-NA: supersedowane — Q2–Q5 wdrożone
 
 ## [01:25 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE Q2–Q4 (ABC, bez kodu)
 |- Maciej po Q1=B: efekt męczący; AI też może obniżać ludność; Spichlerz nigdy < 0; limit suwaka
 |- Paczka: Q2 auto-raise podłoga 0 · Q3 cap suwaka · Q4 clamp Spichlerz ≥ 0
 |- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md
-CZEKAM-NA: supersedowane — czeka też Q5
+CZEKAM-NA: supersedowane
 
 ## [01:10 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE-Q1=B (kod, bez deploy)
 |- ECHO: Q1=B — gracz auto-raise tylko przy nadwyżce produkcji miast; zapasy Spichlerza nie startują raise
 |- Kod: empire-food.ts `requireProductionSurplus` · main.ts `ownerId===0` · test ai-major-economy G–I PASS
 |- Branch: cursor/abc-auto-racje-raise-63a1
-CZEKAM-NA: supersedowane — czeka Q2–Q4 (nie deploy samego Q1=B)
+CZEKAM-NA: supersedowane
 
 ## [00:55 PL, 2026-08-05] CLOUD → Maciej — R-AUTO-RACJE-RAISE (ABC, bez kodu)
 |- Objaw: EOT podnosi Wyżywienie gracza mimo ręcznego obniżenia
 |- Przyczyna: autoRaiseRationsForGrowth dla ownerId=0 (miało być tylko major AI)
 |- Ludność: nie rekrutacja; ryzyko głodu przy wymuszonym max
 |- Docs: docs/decyzje/R-AUTO-RACJE-RAISE.md
-CZEKAM-NA: Maciej — `R-AUTO-RACJE-RAISE-Q1 A|B|C`
+CZEKAM-NA: supersedowane
 
 ## [00:40 PL, 2026-08-05] CLOUD → ALL — HANDOFF sesji FALA 221–224
 |- Pełny zapis: dyspozycje/_handoff/HANDOFF-SESJA-2026-08-04_FALA-221-224.md

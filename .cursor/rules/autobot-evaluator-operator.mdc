@@ -1,0 +1,65 @@
+---
+description: TWARDA REGUŁA — KAŻDA praca wyłącznie w systemie AutoBot. Maciej 2026-08-05. NIENEGOCJOWALNE.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# AutoBot — KAŻDA PRACA TYLKO TĘDY (NIENEGOCJOWALNE)
+
+**Decyzja Maciej 2026-08-05 (`R-PROC-AUTOBOT`):**  
+**Każda praca, którą wykonuje agent (kod, fix, docs procesu, audyt, deploy-prep), MUSI iść przez system AutoBot.**  
+Bez wyjątku „to tylko drobiazg” / „zrobię sam poza pętlą”.
+
+Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · playbook: `dyspozycje/autobot/playbook.json`
+
+---
+
+## Obowiązek (od tej pory — zawsze)
+
+| Krok | Rola AutoBot | Kto u nas | Wymagane |
+|------|----------------|-----------|----------|
+| **1** | **Operator** | `composer-2.5` (implementer) | Czyta `playbook.json` + zadanie → wykonuje akcję w guardrails |
+| **2** | **Evaluator** | Osobny `composer-2.5` (adwokat diabła) + twarde metryki | Score z KPI (nie self-grade), postmortem, win/loss playbook, prune |
+| **3** | **Final / Gate** | Grok 4.5 | Kontrola #1+#2; dopiero potem „gotowe” / czekaj na `deploy` |
+
+**ZAKAZ:**
+
+- ❌ Wykonać paczkę kodu / docs bez Operatora (gdy > drobny 1–3 linie czysto tekstowe — i tak loguj w duchu AutoBot)
+- ❌ Zamknąć „gotowe w kodzie” / prosić `deploy` bez Evaluator + final Groka
+- ❌ Omijać `playbook.json` / guardrails „na skróty”
+- ❌ Self-grade bez twardej metryki (testy, typecheck, playtest OK/BUG, md5)
+
+**Wyjątek wąski (tylko):** czysta rozmowa ABC / zapis decyzji Macieja bez zmiany `gra/src` — wtedy Operator nie koduje, ale Grok i tak trzyma reguły playbooka (NUMER→ABC, deploy gate).
+
+---
+
+## Dwa rdzenie (przypomnienie)
+
+| Agent | Robi | Nie robi |
+|-------|------|----------|
+| **Operator** | Task + playbook + akcja (kod/testy/docs) | Merge `main`, deploy, kanon/finalna |
+| **Evaluator** | Hard metrics → delta → postmortem → update playbook | Ocena „na czuja” / 10/10 bez KPI |
+
+Potrójna warstwa (`R-PROC-POTROJNA-WARSTWA`) = **wbudowana** w kroki 1–3 AutoBot — nie osobny opcjonalny rytuał.
+
+---
+
+## Playbook + pruning + guardrails
+
+- Reguły: `win_count` / `fail_count` / `win_rate`; `< 30%` → `RETIRED`
+- Feature pruning: atrybuty z \|corr\| < 0.05 poza kontekstem Operatora
+- Guardrails w **kodzie**: bez merge→main; deploy tylko hasło Macieja; HITL; delay 48h **lub** N≥1000 przed winnerem
+
+## Logging
+
+Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.
+
+## Self-check przed „gotowe”
+
+1. Czy był **Operator** (osobny przebieg implementacji / jasny przebieg Autobot)?  
+2. Czy był **Evaluator** (adwokat + metryki)?  
+3. Czy **Grok** zrobił final?  
+4. Czy playbook / guardrails uszanowane?  
+
+**Choć jedno NIE → nie zamykaj paczki.**

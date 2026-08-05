@@ -36,16 +36,12 @@ Odpowiedź Macieja / ECHO: `R-AUTO-BUDOWA-LISTA-Q2=A · R-AUTO-BUDOWA-LISTA-Q3=B
 
 ---
 
-## 1a00. POTRÓJNA WARSTWA WERYFIKACJI KODU (Maciej 2026-08-05) — NADRZĘDNE
+## 1a00. AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — NADRZĘDNE
 
-Po każdej paczce kodu (`działaj` / implementacja):
+**KAŻDA praca agenta wyłącznie w systemie AutoBot** (Operator → Evaluator → Grok final).  
+**ZAKAZ** omijania pętli / „gotowe” bez Evaluatora. Playbook + guardrails w kodzie.
 
-1. **Implementer** (`composer-2.5`) — pisze kod + testy  
-2. **Adwokat diabła** (osobny `composer-2.5`) — szuka regresji, usuniętych usprawnień, ubocznych zepsuć  
-3. **Grok** — finalna kontrola przed „gotowe” / `deploy`
-
-**ZAKAZ** zamykać paczkę po samym #1.  
-Reguła: `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` · opis: `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md`.
+Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · `.cursor/rules/autobot-evaluator-operator.mdc` · `dyspozycje/autobot/README.md`.
 
 ---
 

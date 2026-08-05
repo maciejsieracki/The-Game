@@ -29,7 +29,7 @@
 
 > **⛔ PROCES 2026-08-03:** `R-PROC-NUMER-ABC` — każdy case → ID → propozycja ± ABC → kod+commit dopiero po `ID+A|B|C` → **deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 >
-> **⛔ POTRÓJNA WARSTWA 2026-08-05:** `R-PROC-POTROJNA-WARSTWA` — po kodzie zawsze: (1) implementer → (2) osobny adwokat diabła → (3) Grok final. **ZAKAZ** „gotowe”/deploy po samym #1. Kanon: `dyspozycje/POTROJNA-WARSTWA-WERYFIKACJI.md` · `.cursor/rules/potrojna-warstwa-weryfikacji.mdc`.
+> **⛔ AUTOBOT 2026-08-05 — TWARDA REGUŁA:** `R-PROC-AUTOBOT` — **KAŻDA praca** wyłącznie AutoBot (Operator → Evaluator → Grok). **ZAKAZ** omijania. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc`.
 
 
 **TAK — ale najpierw sprawdź stan drzewa:**

@@ -19,17 +19,17 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 3. Maciej: **`ID + A|B|C`** → dopiero commit.
 4. **`deploy`** (hasło) → dopiero ROBOCZA / `WERSJE.md`.
 
-## ⛔ POTRÓJNA WARSTWA WERYFIKACJI (Maciej 2026-08-05) — OBOWIĄZUJE
-Pełny kanon: [`POTROJNA-WARSTWA-WERYFIKACJI.md`](POTROJNA-WARSTWA-WERYFIKACJI.md) · reguła `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` · decyzja [`R-PROC-POTROJNA-WARSTWA`](../docs/decyzje/R-PROC-POTROJNA-WARSTWA.md).
-1. **Implementer** (`composer-2.5`) — kod + testy.
-2. **Adwokat diabła** (osobny `composer-2.5`) — szuka regresji, usuniętych usprawnień, ubocznych zepsuć.
-3. **Grok** — finalna kontrola.
-**ZAKAZ** „gotowe w kodzie” / `deploy` po samym #1.
+## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
+**KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot: Operator → Evaluator → Grok final. **ZAKAZ** omijania pętli.  
+Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) · `.cursor/rules/autobot-evaluator-operator.mdc`.
+1. **Operator** — `composer-2.5` + `playbook.json` + guardrails.
+2. **Evaluator** — adwokat diabła + twarde metryki → postmortem → playbook.
+3. **Grok** — final; dopiero potem „gotowe” / `deploy`.
 
 **Notatka 2026-08-05:** Cleanup przestarzałych „czeka deploy" / „bez deploy" dla pozycji już w `WERSJE.md`; źródło prawdy deployu = AKTUALNA FALA 224 (`38df6ad7`).
 
-| R-PROC-POTROJNA-WARSTWA | 2026-08-05 | Po kodzie zawsze: implementer → adwokat diabła → Grok final | **OBOWIĄZUJE** | `docs/decyzje/R-PROC-POTROJNA-WARSTWA.md` · `.cursor/rules/potrojna-warstwa-weryfikacji.mdc` |
-| R-AUTO-RACJE-RAISE | 2026-08-05 | Auto Wyżywienie + Spichlerz ≥ 0 + przełącznik auto w każdym mieście | **WDROŻONE (kod) Q2–Q5=A** · czeka deploy + review #2+#3 | `docs/decyzje/R-AUTO-RACJE-RAISE.md` · branch `cursor/abc-auto-racje-raise-63a1` · test 32/32 |
+| R-PROC-AUTOBOT | 2026-08-05 | **KAŻDA praca** wyłącznie AutoBot (Operator→Evaluator→Grok) | **TWARDA REGUŁA OBOWIĄZUJE** | `docs/decyzje/R-PROC-AUTOBOT.md` · `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` |
+| R-AUTO-RACJE-RAISE | 2026-08-05 | Auto Wyżywienie + Spichlerz ≥ 0 + przełącznik auto w każdym mieście | **WDROŻONE (kod) Q2–Q5=A** · czeka deploy FALA 225 | `docs/decyzje/R-AUTO-RACJE-RAISE.md` · test ai-major-economy PASS |
 | R-REKRUT-LUDNOSC-UI | 2026-08-04 | Teksty rekrutacji: nie sugerować −1 obywatela; ludność miasta nie spada (tylko Manpower) | **ZDEPLOYOWANE `38df6ad7`** (FALA 224) | `docs/decyzje/R-REKRUT-LUDNOSC-UI.md` · cityPanel |
 | R-BUDYNKI-NIEAKTYWNE | 2026-08-04 | Wybudowane budynki bez surowca runtime (Spichlerz, Mennica, deposit gate) → czerwona nazwa + tooltip Brak: … | **ZDEPLOYOWANE `132401ef`** (FALA 222) | Q1=A · Q2=A+C · Q3=A · `docs/decyzje/R-BUDYNKI-NIEAKTYWNE.md` · branch `cursor/feat-budynki-nieaktywne-63a1` |
 | R-DYPLO-PW-PRZECINEK | 2026-08-04 | Panel PW: śmieci float (−10.400000000000006%) → format jak Skarbiec | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| `docs/decyzje/R-DYPLO-PW-PRZECINEK.md` |
