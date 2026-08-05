@@ -1,4 +1,11 @@
-﻿## [20:30 UTC, 2026-08-05] AutoBot Operator → Evaluator / Grok — P-MP-SPAWN-WYZYWIENIE
+﻿## [19:48 UTC, 2026-08-05] GROK → Maciej — sync P-AI-MOC-GAP / MARTWE (docs)
+
+Maciej „2” = tor AI. Recon: martwe bonusy **już zamknięte** (F226); gap częściowo F220+F226+F229–231; AI-PLAYTEST=B+A blokuje dalszy balans.
+|- Docs: PYTANIA-OTWARTE · REJESTR · `P-AI-MARTWE-BONUSY.md` · MAP-UX=A
+|- **Bez** `gra/src` · **bez** deploy
+CZEKAM-NA: Maciej ABC — playtest / metryki / MAJOR-ABSORB
+
+## [20:30 UTC, 2026-08-05] AutoBot Operator → Evaluator / Grok — P-MP-SPAWN-WYZYWIENIE
 
 Fix: `foundCity`/`foundCityAt` ustawiają jawne `poziomRacji: DEFAULT_POZIOM_RACJI` (4) + `procentRozwoj: 67` — parytet gracz/major AI/MP.
 |- Pliki: `gra/src/game/cities.ts`, `gra/tools/mp-spawn-ration-test.cjs`, `docs/decyzje/P-MP-SPAWN-WYZYWIENIE.md`

@@ -1622,63 +1622,56 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **OTWARTE** (audyt 2026-08-02, bez zmiany kodu)
+## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **ZAMKNIĘTE = A** (2026-08-05)
 
-**Źródło:** Maciej: 4 bliskie etykiety (np. krótkie nazwy ~2–4 hex); pamięta min. ~12 hex między stolicami.
-**Audyt:** `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` · **VERDICT: DESIGN_KLASTRA** — sep stolic Standard=14 twarde; skupisko = 1 stolica + MP (pierścień 5 hex). Menu Standard min 4 MP → dokładnie 4 etykiety w klastrze.
-**NIE bug bramki** — nie zmieniać sep/pack bez decyzji.
-
-**ABC (tylko jeśli chce czytelniejszy UX mapy):**
-- **A)** Zostawić (dopisek „· miasto-państwo” na chipie MP).
-- **B)** Stolica obca = nazwa cywilizacji; MP = nazwa miasta + dopisek.
-- **C)** Marker wizualny stolicy (korona/obwódka), nazwy bez zmian.
-**Rekomendacja:** B (gdy w ogóle zmieniać).
+**Źródło:** Maciej: 4 bliskie etykiety; pamięta min. ~12 hex między stolicami.
+**Audyt:** DESIGN_KLASTRA — sep stolic OK; skupisko = 1 stolica + MP.
+**Decyzja Maciej `1`=A:** zostawić dopisek „· miasto-państwo”. Bez zmiany kodu. Kanon: `docs/decyzje/MAP-UX-CLUSTER-LABEL.md`.
 
 ---
 
-## P-AI-MOC-GAP — AI pełne cywilizacje ~10× mniej Mocy niż gracz · STATUS: **OTWARTE — częściowo złagodzone** (FALA 220, bez playtestu zamknięcia)
+## P-AI-MOC-GAP — AI pełne cywilizacje ~10× mniej Mocy niż gracz · STATUS: **OTWARTE — częściowo złagodzone** (AI-PLAYTEST=B+A)
 
 **Źródło:** playtest Macieja — gracz 6725 vs Zulusi 536 / Chińczycy 436 (poz. 1/8).
-**Werdykt audytu:** gap **REALNY** (nie bug rankingu/mgły). Głównie design + martwe parametry trudności.
+**Werdykt:** gap **REALNY** (nie bug rankingu/mgły).
 
-**Wdrożone FALA 220 (nie twierdzić „gap zniknął" bez playtestu):**
-- `AI-FOUND-Q1=A` — founding major pop≥2 (było ≥5)
-- `AI-LOCAL-Q1=A` — faza lokalna tura 20 LUB 1 scout; wioski nie blokują
-- `AI-MANAGE-Q1=A` — auto-zarządca major AI
-- Major AI early economy (wzrost/Spichlerz, 60/40 archetyp, early ulepszenia)
+**Już w ROBOCZEJ (nie twierdzić „gap zniknął" bez playtestu):**
+- FALA 220: `AI-FOUND` / `AI-LOCAL` / `AI-MANAGE` + early economy major
+- FALA 226: **P-AI-MOC-BONUS=A** (4 bonusy podpięte) + **P-AI-008**
+- FALA 229–231: **R-AI-TRUDNOSC** P0–P2 (realna Praca · Spichlerz id · L3 nauka · majorEarly/scout/Spryt · canAfford=A status quo · L3 early=25)
 
-**Nadal otwarte (root causes):**
-1. **BUG martwy kod** — `startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` z `loadDifficultyParams` **nie podpięte** w `main.ts`.
-2. **DESIGN** — `canAfford` → pusta kolejka, surowce rosną (myszkowanie).
-3. **Brak** AI major→major absorpcji (tylko AI→MP).
+**Blokada:** `AI-PLAYTEST=B+A` — wolno metryki/logi; **zakaz** dalszego dostrajania balansu P-AI-MOC/008 bez decyzji.
 
-**Kandydaty fix:** podpiąć martwe bonusy trudności; `bonusWalka` w combat; playtest po FALA 220.
+**Nadal otwarte:**
+1. Playtest porównawczy Mocy po FALA 226–231 (odłożony).
+2. **P-AI-MAJOR-ABSORB** — brak absorpcji AI major→major.
+3. **P-AI-PROD-GATE-PER-OWNER** — bramka produkcji vs globalna trudność.
 
 ---
 
-## OTWARTE POST-FALA 220 (2026-08-04) — nie zamazane
+## OTWARTE POST-FALA 220 — sync 2026-08-05
 
-### P-AI-MARTWE-BONUSY — martwe parametry trudności · STATUS: **OTWARTE**
+### P-AI-MARTWE-BONUSY — STATUS: **ZAMKNIĘTE** (FALA 226 / P-AI-MOC-BONUS=A)
 
-`startoweJednostki`, `startoweMiasta`, `bonusWalka`, `bonusNauka` z `loadDifficultyParams` — **nie stosowane** w gameplay (tylko `bonusProdukcja` w score produkcji). Powiązane: `P-AI-MOC-GAP`.
+Cztery pola `DifficultyParams` podpięte (major). `bonus_produkcja` → realna Praca: **R-AI-TRUDNOSC P0** (FALA 229). Kanon: `docs/decyzje/P-AI-MOC-BONUS.md`.
 
-### P-MP-SPAWN-WYZYWIENIE — MP spawn Wyżywienie ~3 · STATUS: **NAPRAWIONE** (`cursor/fix-mp-spawn-wyzywienie-63a1`)
+### P-MP-SPAWN-WYZYWIENIE — STATUS: **ZDEPLOYOWANE** (FALA 238)
 
-Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCity*` bez `poziomRacji` → migrate(100)→6 → auto-racja obniżała. Fix: jawne `poziomRacji: DEFAULT_POZIOM_RACJI` (4) przy founding dla wszystkich ownerów.
+Fix founding `poziomRacji=4`. Kanon: `docs/decyzje/P-MP-SPAWN-WYZYWIENIE.md`.
 
-### P-AI-PROD-GATE-PER-OWNER — `isProductionAllowed` per-owner difficulty · STATUS: **OTWARTE**
+### P-AI-PROD-GATE-PER-OWNER — STATUS: **OTWARTE**
 
-Bramka tech/epoka w `isProductionAllowed` (`main.ts`) używa globalnej `_menuDifficulty` — brak per-owner trudności.
+`isProductionAllowed` używa globalnej `_menuDifficulty` — brak per-owner.
 
-### P-AI-MAJOR-ABSORB — absorpcja AI major→major · STATUS: **OTWARTE** (brak mechanizmu)
+### P-AI-MAJOR-ABSORB — STATUS: **OTWARTE**
 
-Tylko AI major→MP (`MP-DIPLO-Q1`). Brak absorpcji między pełnymi cywilizacjami AI.
+Tylko AI→MP; brak absorpcji major→major.
 
-### P-TEST-UPKEEP-R-STAWKI — upkeep-test 24× fail · STATUS: **OTWARTE** (pre-existing)
+### P-TEST-UPKEEP-R-STAWKI — STATUS: **OTWARTE** (pre-existing)
 
-`upkeep-test.cjs` 49/73 — 24 porażek przez ×2 koszty `R-STAWKI` / `R-NADMIAR-POOLS` (nie regres FALA 220).
+`upkeep-test.cjs` 49/73 — ×2 koszty R-STAWKI / R-NADMIAR-POOLS.
 
-### MAP-UX-CLUSTER-LABEL — nadal **OTWARTE** (patrz sekcja powyżej)
+### MAP-UX-CLUSTER-LABEL — **ZAMKNIĘTE = A** (2026-08-05)
 
 ### Dyplo-UX (nadal otwarte)
 
