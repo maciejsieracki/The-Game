@@ -213,3 +213,25 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 - Podwójny efekt `bonus_produkcja` (scoring + realna Praca) — **zamierzone** wg ECHO P0.
 
 **Gotowe do Grok final** (prezentacja Maciejowi / deploy na sygnał).
+
+---
+
+## G — P1-3 wdrożone (Operator 2026-08-05)
+
+**ECHO P1-3 (Maciej „3" = wyeksportuj Spryt AI do JSON, 2026-08-05):** `agresja_mnoznik` · `dyplomacja_aktywnosc` · `cel_obranie` × poziomy 1/2/3 → `ai-params.json` (wartości = dotychczasowe fallbacki w `loadDifficultyParams`, export behavior-neutral).
+
+| ID | Zmiana | Pliki |
+|---|---|---|
+| **P1-3** | 9 kluczy Spryt AI w JSON (agresja/dyplomacja/cel × L1/L2/L3) | `gra/data/ai-params.json`, `gra/tools/ai-difficulty-bonus-test.cjs` (T-DB-h) |
+
+**Wartości (bez zmiany zachowania):**
+
+| Poziom | `agresja_mnoznik` | `dyplomacja_aktywnosc` | `cel_obranie` |
+|:---:|:---:|:---:|:---:|
+| L1 Prosty | 0,85 | 0,8 | 0 |
+| L2 Normalny | 1,0 | 1,0 | 0,5 |
+| L3 Trudny | 1,2 | 1,25 | 1,0 |
+
+**Testy:** `ai-difficulty-bonus-test.cjs` T-DB-h (klucze w JSON + `loadDifficultyParams` z fixture + fallback bez kluczy).
+
+**Status:** Operator done · czeka Evaluator · **bez deploy**.

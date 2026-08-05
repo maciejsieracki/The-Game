@@ -12,6 +12,10 @@
 #   - kolumna "Status" jest IGNOROWANA (to adnotacja panelu LIVE/PLANOWANE, nie schema).
 # NIE rusza innych JSON-ow. NIE uruchamiac export-data.py ani npm run build.
 #
+# Klucze Spryt AI (P1-3): trudnosc_poziomN_agresja_mnoznik,
+#   trudnosc_poziomN_dyplomacja_aktywnosc, trudnosc_poziomN_cel_obranie (N=1..3)
+#   — kanon w ai-params.json; panel legacy moze je dopisac przez merge jak inne klucze.
+#
 # Uzycie:
 #   python3 gra/tools/export-ai-params.py
 #   python3 gra/tools/export-ai-params.py --xlsx X.xlsx --json J.json   # do testow
