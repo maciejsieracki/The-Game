@@ -1,6 +1,6 @@
 # R-BUDYNKI-NIEAKTYWNE — czerwona czcionka dla nieaktywnych budynków
 
-**Status:** OTWARTE · ABC · 2026-08-04  
+**Status:** ZAMKNIĘTE · ABC · Q1=A · Q2=A+C · Q3=A · **ZDEPLOYOWANE** FALA 222 `132401ef`  
 **Źródło:** Maciej — „wybudowane budynki które nie działają (brak surowców) → czerwona czcionka, np. Spichlerz bez Ceramiki/Soli”
 
 ## Stan dziś

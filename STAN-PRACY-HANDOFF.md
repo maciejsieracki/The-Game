@@ -116,9 +116,9 @@ git status --short
 
 **Constraint gęstości rzek (~21:11):** Maciej: *„ilość generowanych rzek jest zadowalająca"* — **gęstość/mapgen rzek = OK**; problem leży w **ostatnim etapie = Budowanie sceny** (nie generowanie rzek). Plan eksperymentu kill-switch wyłączania rzek (stage 0–5) → **ODŁOŻONY / NIE POTRZEBNY** na razie.
 
-**OTWARTE (2026-08-01):** regres ciągłości rzek — część biegów **urywa się na lądzie** zamiast ujściem w inną rzekę lub ocean (~19:18) — **W TRAKCIE po „działaj"** (ten sam tor co perf); **constraint ~19:17:** gęstość/efekt OK — naprawić ciągłość do ujścia, nie wyzerować gęstości. Zapis: `PYTANIA-OTWARTE.md` → `BUG-RZEKI-UJSCIE-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-RZEKI-UJSCIE-FALA138`.
+**OTWARTE (2026-08-01):** ~~regres ciągłości rzek~~ → **ZAMKNIĘTE** FALA 140+177 (`ensureRiverOutlets`). Zapis: `BUG-RZEKI-UJSCIE-FALA138` · `R-RZEKI-UJSCIE-FALA138`.
 
-**OTWARTE (2026-08-01 ~21:11):** Budowanie sceny — **nadal za długo**; rzeki ~20 s OK, gęstość OK → wąskie gardło = **Budowanie sceny** (ostatni etap), nie mapgen rzek. FALA 141 (`0b70e93f`, coast InstancedMesh) — **W TRAKCIE** (deploy mógł wisieć). Zapis: `PYTANIA-OTWARTE.md` → `BUG-SCENA-PERF-FALA138` · `REJESTR-PROSB-I-ZADAN.md` → `R-SCENA-PERF-FALA138`.
+**ZAMKNIĘTE (2026-08-06):** Budowanie sceny — **ZDEPLOYOWANE** FALA 248 `772bab7c`. Zapis: `R-SCENA-PERF-FALA138`.
 
 **WDROŻONE (2026-08-01):** spawn A/B/C — kolizja `ownerId` MP (`cluster-spawn` + `main.ts`), typy→masa (`assignTypesToClusterCenters`), min. odległość od morza (`capitalMinSeaDist`, Standard=10). Zapis: `PYTANIA-OTWARTE.md` → `BUG-MP-NAZWA-CIV-MISMATCH` + `BUG-SPAWN-CLUSTER-KULTURA` + `BUG-SPAWN-ODLEGLOSC-MORZE`.
 

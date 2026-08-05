@@ -1,6 +1,6 @@
 # R-BUDYNKI-NIEAKTYWNE — czerwona czcionka dla nieaktywnych budynków
 
-**Status:** ZAPISANA · wdrożone w kodzie · czeka deploy  
+**Status:** 🟢 **ZDEPLOYOWANE** FALA 222 `132401ef` · Q1=A · Q2=A+C · Q3=A  
 **Data:** 2026-08-04  
 **Decyzje Macieja:** Q1=A · Q2=A+C · Q3=A
 
