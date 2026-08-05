@@ -1,8 +1,10 @@
 # AutoBot — Evaluator–Operator (R-PROC-AUTOBOT)
 
-**Status:** OBOWIĄZUJE · Spec v1 — 5 modułów · 2026-08-05  
+**Status:** ⛔ **TWARDA REGUŁA** — **KAŻDA praca agenta wyłącznie tędy** (Maciej 2026-08-05)  
 **Decyzja:** [`docs/decyzje/R-PROC-AUTOBOT.md`](../../docs/decyzje/R-PROC-AUTOBOT.md)  
-**Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`
+**Reguła Cursor (alwaysApply):** `.cursor/rules/autobot-evaluator-operator.mdc`
+
+> Operator → Evaluator → Grok final. **ZAKAZ** omijania pętli.
 
 ## Architektura — 5 modułów
 

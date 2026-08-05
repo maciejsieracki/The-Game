@@ -29,7 +29,7 @@
 
 > **⛔ PROCES 2026-08-03:** `R-PROC-NUMER-ABC` — każdy case → ID → propozycja ± ABC → kod+commit dopiero po `ID+A|B|C` → **deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 >
-> **⛔ AUTOBOT 2026-08-05:** `R-PROC-AUTOBOT` — Operator (playbook) + Evaluator (metryki/postmortem) + guardrails. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc`.
+> **⛔ AUTOBOT 2026-08-05 — TWARDA REGUŁA:** `R-PROC-AUTOBOT` — **KAŻDA praca** wyłącznie AutoBot (Operator → Evaluator → Grok). **ZAKAZ** omijania. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc`.
 
 
 **TAK — ale najpierw sprawdź stan drzewa:**

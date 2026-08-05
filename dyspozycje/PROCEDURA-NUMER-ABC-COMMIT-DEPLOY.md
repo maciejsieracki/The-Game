@@ -132,20 +132,22 @@ Przy wdrażaniu **jednej** rzeczy łatwo zepsuć **inną** (nadpisanie hunka, us
 
 ---
 
-## 4b. AUTOBOT — Evaluator–Operator + playbook (Maciej 2026-08-05)
+## 4b. AUTOBOT — TWARDA REGUŁA: każda praca tylko tędy (Maciej 2026-08-05)
 
 **ID:** `R-PROC-AUTOBOT`
 
-Po implementacji obowiązuje pętla uczenia się (scaffold: `dyspozycje/autobot/`):
+**KAŻDA praca agenta** po decyzji Macieja (`działaj` / implementacja) **musi** iść przez AutoBot — **ZAKAZ** pracy poza pętlą.
 
-| Rola | Kto u nas | Co |
-|------|-----------|-----|
-| **Operator** | `composer-2.5` | Task + `playbook.json` + akcja (bez merge/deploy) |
-| **Evaluator** | Adwokat diabła + Grok (+ testy/playtest) | Metryki → postmortem → win/loss / deprecate / prune |
+| Krok | Rola | Kto u nas | Co |
+|------|------|-----------|-----|
+| **1** | **Operator** | `composer-2.5` | Task + `playbook.json` + akcja (bez merge/deploy) |
+| **2** | **Evaluator** | Adwokat diabła + twarde metryki | Score KPI → postmortem → win/loss / RETIRED / prune |
+| **3** | **Final** | Grok 4.5 | Kontrola; dopiero potem „gotowe” / czekaj na `deploy` |
 
-Guardrails: zakaz merge→`main`; deploy tylko hasło Macieja; winner dopiero po `minRunsForSignificance` + time-delay; reguły z win_rate &lt; 30% → `deprecated`.
+Guardrails: zakaz merge→`main`; deploy tylko hasło Macieja; winner dopiero po significance + time-delay; win_rate &lt; 30% → `RETIRED`.
 
-Kanon: [`autobot/README.md`](autobot/README.md) · `.cursor/rules/autobot-evaluator-operator.mdc` · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md).
+Kanon: [`autobot/README.md`](autobot/README.md) · `.cursor/rules/autobot-evaluator-operator.mdc` · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md).  
+Potrójna warstwa = kroki 1–3 AutoBot (nie osobny opcjonalny rytuał).
 
 ---
 

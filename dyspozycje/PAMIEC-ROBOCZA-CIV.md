@@ -36,9 +36,10 @@ Odpowiedź Macieja / ECHO: `R-AUTO-BUDOWA-LISTA-Q2=A · R-AUTO-BUDOWA-LISTA-Q3=B
 
 ---
 
-## 1a00. AUTOBOT Evaluator–Operator (Maciej 2026-08-05) — NADRZĘDNE
+## 1a00. AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — NADRZĘDNE
 
-Self-improving pętla: **Operator** wykonuje wg `dyspozycje/autobot/playbook.json`; **Evaluator** mierzy twarde metryki, postmortem, win/loss, deprecate &lt;30%, feature pruning. Guardrails: bez merge/deploy bez człowieka.
+**KAŻDA praca agenta wyłącznie w systemie AutoBot** (Operator → Evaluator → Grok final).  
+**ZAKAZ** omijania pętli / „gotowe” bez Evaluatora. Playbook + guardrails w kodzie.
 
 Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · `.cursor/rules/autobot-evaluator-operator.mdc` · `dyspozycje/autobot/README.md`.
 

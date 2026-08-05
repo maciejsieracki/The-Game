@@ -68,7 +68,7 @@ Próg ilościowy (gdy wahanie):
 
 **Skutek:** Grok = orkiestracja + plan + kontrola + **jedyny deploy**. Composer = reszta roboty, kończy „gotowe do deployu".
 
-## AutoBot (Maciej 2026-08-05)
+## AutoBot — TWARDA REGUŁA (Maciej 2026-08-05)
 
-Operator ≈ Composer (playbook + akcja) · Evaluator ≈ adwokat diabła + Grok + metryki.  
-Reguła: `.cursor/rules/autobot-evaluator-operator.mdc` · scaffold: `dyspozycje/autobot/`.
+**KAŻDA praca** agenta wyłącznie AutoBot: Operator (`composer-2.5`) → Evaluator (adwokat + KPI) → Grok final.  
+**ZAKAZ** omijania. Reguła alwaysApply: `.cursor/rules/autobot-evaluator-operator.mdc` · scaffold: `dyspozycje/autobot/`.

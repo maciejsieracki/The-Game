@@ -19,15 +19,16 @@ Pełny kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMI
 3. Maciej: **`ID + A|B|C`** → dopiero commit.
 4. **`deploy`** (hasło) → dopiero ROBOCZA / `WERSJE.md`.
 
-## ⛔ AUTOBOT Evaluator–Operator (Maciej 2026-08-05) — OBOWIĄZUJE
-Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) · reguła `.cursor/rules/autobot-evaluator-operator.mdc`.
-1. **Operator** — wykonuje zadanie według `dyspozycje/autobot/playbook.json` (guardrails).
-2. **Evaluator** — twarde metryki → delta → postmortem → win/loss / deprecate &lt;30% / feature pruning.
-3. **ZAKAZ** merge→main / deploy bez hasła Macieja; winner dopiero po significance + time-delay.
+## ⛔ AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05) — KAŻDA PRACA TYLKO TĘDY
+**KAŻDA praca agenta** (kod, fix, audyt, docs procesu) **wyłącznie** w systemie AutoBot: Operator → Evaluator → Grok final. **ZAKAZ** omijania pętli.  
+Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT.md`](../docs/decyzje/R-PROC-AUTOBOT.md) · `.cursor/rules/autobot-evaluator-operator.mdc`.
+1. **Operator** — `composer-2.5` + `playbook.json` + guardrails.
+2. **Evaluator** — adwokat diabła + twarde metryki → postmortem → playbook.
+3. **Grok** — final; dopiero potem „gotowe” / `deploy`.
 
 **Notatka 2026-08-05:** Cleanup przestarzałych „czeka deploy" / „bez deploy" dla pozycji już w `WERSJE.md`; źródło prawdy deployu = AKTUALNA FALA 224 (`38df6ad7`).
 
-| R-PROC-AUTOBOT | 2026-08-05 | AutoBot Evaluator–Operator + playbook + guardrails + feature pruning | **OBOWIĄZUJE** (scaffold) | `docs/decyzje/R-PROC-AUTOBOT.md` · `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` |
+| R-PROC-AUTOBOT | 2026-08-05 | **KAŻDA praca** wyłącznie AutoBot (Operator→Evaluator→Grok) | **TWARDA REGUŁA OBOWIĄZUJE** | `docs/decyzje/R-PROC-AUTOBOT.md` · `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` |
 | R-REKRUT-LUDNOSC-UI | 2026-08-04 | Teksty rekrutacji: nie sugerować −1 obywatela; ludność miasta nie spada (tylko Manpower) | **ZDEPLOYOWANE `38df6ad7`** (FALA 224) | `docs/decyzje/R-REKRUT-LUDNOSC-UI.md` · cityPanel |
 | R-BUDYNKI-NIEAKTYWNE | 2026-08-04 | Wybudowane budynki bez surowca runtime (Spichlerz, Mennica, deposit gate) → czerwona nazwa + tooltip Brak: … | **ZDEPLOYOWANE `132401ef`** (FALA 222) | Q1=A · Q2=A+C · Q3=A · `docs/decyzje/R-BUDYNKI-NIEAKTYWNE.md` · branch `cursor/feat-budynki-nieaktywne-63a1` |
 | R-DYPLO-PW-PRZECINEK | 2026-08-04 | Panel PW: śmieci float (−10.400000000000006%) → format jak Skarbiec | **ZDEPLOYOWANE `4d17d869`** (FALA 221)| `docs/decyzje/R-DYPLO-PW-PRZECINEK.md` |

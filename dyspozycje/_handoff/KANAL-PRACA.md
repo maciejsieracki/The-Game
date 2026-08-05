@@ -1,3 +1,9 @@
+## [12:15 PL, 2026-08-05] CLOUD → ALL — AUTOBOT = TWARDA REGUŁA (każda praca)
+|- Maciej: każda praca agenta wyłącznie w systemie AutoBot — zapisz do twardych reguł
+|- alwaysApply: .cursor/rules/autobot-evaluator-operator.mdc
+|- START-TU / CLAUDE / STAN / PROCEDURA / REJESTR / PAMIEC / decyzja — zaktualizowane
+CZEKAM-NA: merge PR #107 na main
+
 ## [12:05 PL, 2026-08-05] CLOUD → ALL — R-PROC-AUTOBOT Spec v1 (5 modułów)
 |- Hard metrics · pruneFeatureWeights · playbook ACTIVE/RETIRED · guardrails · dashboard log
 |- Fix Grok: Dev score bez HITL = 0 (anti confidence-machine)

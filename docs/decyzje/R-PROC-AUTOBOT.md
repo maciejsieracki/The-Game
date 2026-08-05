@@ -1,8 +1,8 @@
 # R-PROC-AUTOBOT — AutoBot (Evaluator–Operator)
 
-**Status:** 🟢 OBOWIĄZUJE (Maciej 2026-08-05) — Spec v1 (5 modułów) wdrożona w `dyspozycje/autobot/`  
-**Źródło:** Maciej — Architectural Specification AutoBot (Closed-Loop Feedback)  
-**Reguła Cursor:** `.cursor/rules/autobot-evaluator-operator.mdc`  
+**Status:** 🟢 **TWARDA REGUŁA OBOWIĄZUJE** (Maciej 2026-08-05) — **KAŻDA praca agenta wyłącznie w AutoBot**  
+**Źródło:** Maciej — „każda praca którą wykonujesz ma być teraz wykonywana w systemie AutoBot” + Architectural Spec  
+**Reguła Cursor (alwaysApply):** `.cursor/rules/autobot-evaluator-operator.mdc`  
 **Kod / playbook:** `dyspozycje/autobot/`
 
 ---
@@ -13,7 +13,7 @@ Self-improving agent framework w patternie **Evaluator–Operator**:
 - **Operator** wykonuje zadanie według `playbook.json`
 - **Evaluator** mierzy twarde metryki, liczy deltę, robi postmortem i aktualizuje playbook
 
-U nas (Civ / Cursor): ta sama logika steruje pracą agentów — nie „jednorazowy fix i zapomnij”, tylko pętla z win/loss i guardrails.
+**U nas:** **nie wolno** wykonywać pracy „obok” systemu. Każda paczka = Operator → Evaluator → Grok final.
 
 ---
 
