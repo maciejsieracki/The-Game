@@ -1,3 +1,8 @@
+## [16:52 PL, 2026-08-05] GROK → Maciej — fokus pigułka FALA 228 (wybór „3")
+
+Maciej: inny fokus = R-CITY-PILL-PROD-ICON na `29bfdf00`.
+CZEKAM-NA: `playtest OK` / `BUG: …` (pigułka) albo inny wybór z menu
+
 ## [16:50 PL, 2026-08-05] GROK → Maciej — fokus playtest R-AUTO (wybór „2")
 
 Maciej odłożył deploy P0 (#111); playtestuje R-AUTO na FALA 228 `29bfdf00`.
