@@ -16,7 +16,8 @@ Przy zawieraniu paktu o nieagresji gracz (i AI) może wybrać:
 | Obszar | Plik | Mechanizm |
 |--------|------|-----------|
 | Kontrakt propozycji | `gra/src/game/diplomacy-proposals.ts` | `resolveNapDealExpiry(turn, payload)` — `turns > 0` → clamp 10–20; `turns <= 0` → null |
-| UI audiencji | `gra/src/ui/diplomacyNegotiationModal.ts` | Akcja „2" (NAP): chipy 10/15/20 + „Bezterminowy"; input 0 = bezterminowy |
+| UI audiencji | `gra/src/ui/diplomacyNegotiationModal.ts` | Akcja „2" (NAP): chipy 10/15/20 + „Bezterminowy"; input 0 |
+| Stół audiencji (koszyk) | `gra/src/ui/diplomacyTradeBasket.ts` | Kafelek NAP (akcja „2"): chipy 10/15/20 + „Bezterminowy"; stepper min 0 |
 | Tick dyplomacji | `gra/src/game/diplomacy.ts` | Istniejący filtr `wygasaTura === null \|\| wygasaTura > turn` — bez zmian |
 | AI | `gra/src/game/ai.ts` | Przy Relacja ≥ progSojuszRelacja → `turns: 0` (bezterminowy), inaczej 15 tur |
 | Podsumowanie stołu | `gra/src/main.ts` | `negotiationSummary` case `nap` |
