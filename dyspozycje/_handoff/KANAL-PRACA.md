@@ -1,3 +1,9 @@
+## [14:50 PL, 2026-08-05] GROK → Operator — Maciej: działaj AutoBot (ECHO1+2)
+|- Hasło: działaj zgodnie z zasadą autobot
+|- Operator `bc-6e8aa45b` RUNNING → follow-up ECHO1+ECHO2 na `cursor/fix-city-pill-prod-icon-63a1`
+|- Potem: Evaluator → Grok final · deploy dopiero na hasło
+CZEKAM-NA: Operator tip z kodem + testami PASS
+
 ## [14:48 PL, 2026-08-05] GROK → Operator — R-CITY-PILL ECHO2: władca vs kultura
 |- Maciej: gracz + major AI = symbol **władcy** na pigułce; miasta-państwa = tylko **kultura**
 |- Cel: odróżnić miasta major od MP (dziś skleja się)
