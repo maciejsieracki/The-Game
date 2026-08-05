@@ -102,7 +102,7 @@ git status --short
 4. **R-BUDYNKI-NIEAKTYWNE** — playtest (czerwona nazwa + `Brak: …`) — od FALA 222, **bez OK/BUG**
 5. **R-WIARYGODNOSC** — CZEKA-NA-DECYZJĘ (strojenie §9, później)
 6. **R-DESIGN-PANEL-MIASTA** — prototyp w ROBOCZA; hover/v2 czeka Design
-7. **R-PANEL-SPLIT** / **R-SUROWCE-UI-ZERO** / **R-CIVPEDIA** — stary backlog NOWE
+7. **R-PANEL-SPLIT** / **R-CIVPEDIA** — stary backlog NOWE (R-SUROWCE-UI-ZERO → ZDEPLOYOWANE `b5ba1b0`, patrz `docs/decyzje/R-SUROWCE-UI-ZERO.md`)
 8. **P-AI-MOC-GAP** — częściowo FALA 220/226; reszta design później
 9. **R-DOTYK-MVP** — ODŁOŻONE
 
