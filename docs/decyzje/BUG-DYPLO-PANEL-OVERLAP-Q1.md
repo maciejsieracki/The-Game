@@ -53,3 +53,16 @@
 ### Uwaga
 
 `diplomacyPanel.ts` (panel relacji po prawej) — poza overlapiem z lewym dockiem; nie w checkerze.
+
+## Evaluator (AutoBot warstwa 2 — 2026-08-05)
+
+**Werdykt:** **PASS**  
+**Tip:** `3e03514` · branch `cursor/fix-dyplo-panel-overlap-63a1`
+
+| # | Oś | Wynik |
+|---|-----|-------|
+| 1 | SCOPE — tylko UI (`unitCtxDockDiploGate.ts`, `sidePanelHud.ts`, `hud.ts`, `diploListHud.ts`, `diplomacyAudience.ts`); zero `gra/src/game/diplomacy*` / PW / save | ✅ PASS |
+| 2 | AC — `isDiploObscuringUnitDock()` → unit dock bez klasy `open`; `notifyDiploUiVisibilityChange()` przy show/hide listy + audiencji → `refreshSidePanel()` | ✅ PASS |
+| 3 | STRICT — ścieżka repro: zaznacz jednostkę → dyplo lista/audiencja → dock ukryty; Esc/close → dock wraca przy nadal zaznaczonej jednostce (`hideUnitDock` w `render()`) | ✅ PASS |
+| 4 | STRICT-SAVE — brak nowych pól persist; checker/listenery tylko w runtime UI | ✅ PASS |
+| 5 | Bramki — `cd gra && npx tsc --noEmit` **0 błędów** (evaluator 2026-08-05) | ✅ PASS |
