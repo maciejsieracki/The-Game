@@ -1,3 +1,11 @@
+## [17:20 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 230 7f8bdc74
+
+|- md5: 7f8bdc7445c11973c9e323fa166b8970 · stempel: ROBOCZA · 7f8bdc74 · 2026-08-05 15:20
+|- Batch: R-AI-TRUDNOSC P1 (#112) + P1-3 Spryt JSON (#113)
+|- tip main przed deploy `4ca9d82` · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Maciej: Ctrl+F5 + Nowa gra · OK/BUG
+
 ## [17:18 PL, 2026-08-05] GROK → Maciej — R-AI-TRUDNOSC P1-3 gotowe do deploy
 
 AutoBot PASS · SCOPE OK · 9 kluczy Spryt w `ai-params.json` (= fallbacki, bez zmiany zachowania).

@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA efab84db - 2026-08-05 16:53 - FALA 229: DEPLOY ALL (R-AI-TRUDNOSC P0) - **AKTUALNA**
+## ROBOCZA 7f8bdc74 - 2026-08-05 17:20 - FALA 230: R-AI-TRUDNOSC P1 + P1-3 - **AKTUALNA**
+|- md5 (pelne): 7f8bdc7445c11973c9e323fa166b8970 · stempel: ROBOCZA · 2026-08-05 15:20 (label 7f8bdc74)
+|- **FALA 230.** (1) P1: majorEarly budynki ×0.70 · scout −80 po 1. · L1 early turn 25. (2) P1-3: Spryt AI (agresja/dyplomacja/cel) ×3 poziomy w `ai-params.json` (behavior-neutral). AutoBot PASS · merge PR #112+#113.
+|- Grok deploy (hasło Macieja „1"). tsc 0 · difficulty 64/64 · T14-p1 6/6 · vite · stamp · sync · START hub · VERIFY OK.
+
+## ROBOCZA efab84db - 2026-08-05 16:53 - FALA 229: DEPLOY ALL (R-AI-TRUDNOSC P0) - **ZASTĄPIONA** (→ 7f8bdc74)
 |- md5 (pelne): efab84db7a8eaeae0f4885ae0111ccae · stempel: ROBOCZA · 2026-08-05 14:53 (label efab84db)
 |- **FALA 229 DEPLOY ALL.** Maciej: deploy all do ROBOCZA. Batch: R-AI-TRUDNOSC P0 (realna Praca L2×1.1/L3×1.25 · fix spichlerz/cegielnia ids · L3 bonus_nauka=2) + pełny rebuild tip `main` (zawiera FALA 225–228). AutoBot PASS · merge PR #111.
 |- Grok deploy (hasło Macieja). tsc 0 · ai-difficulty-bonus 25/25 · vite · stamp · sync playtest · START hub · VERIFY OK.

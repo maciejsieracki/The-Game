@@ -4,7 +4,9 @@
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 229 (2026-08-05):** ROBOCZA `efab84db` · stempel menu `efab84db` · DEPLOY ALL — R-AI-TRUDNOSC P0 (+ FALA 225–228 w bundlu). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 230 (2026-08-05):** ROBOCZA `7f8bdc74` · stempel menu `7f8bdc74` · R-AI-TRUDNOSC P1 + P1-3 Spryt. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+
+> **FALA 229 (2026-08-05):** ROBOCZA `efab84db` · DEPLOY ALL P0. **ZASTĄPIONA** przez FALA 230.
 
 > **FALA 228 (2026-08-05):** ROBOCZA `29bfdf00` · R-CITY-PILL-PROD-ICON. **ZASTĄPIONA** przez FALA 229.
 
