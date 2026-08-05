@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 29bfdf00 - 2026-08-05 14:58 - FALA 228: R-CITY-PILL-PROD-ICON (ECHO1+2) - **AKTUALNA**
+## ROBOCZA efab84db - 2026-08-05 16:53 - FALA 229: DEPLOY ALL (R-AI-TRUDNOSC P0) - **AKTUALNA**
+|- md5 (pelne): efab84db7a8eaeae0f4885ae0111ccae · stempel: ROBOCZA · 2026-08-05 14:53 (label efab84db)
+|- **FALA 229 DEPLOY ALL.** Maciej: deploy all do ROBOCZA. Batch: R-AI-TRUDNOSC P0 (realna Praca L2×1.1/L3×1.25 · fix spichlerz/cegielnia ids · L3 bonus_nauka=2) + pełny rebuild tip `main` (zawiera FALA 225–228). AutoBot PASS · merge PR #111.
+|- Grok deploy (hasło Macieja). tsc 0 · ai-difficulty-bonus 25/25 · vite · stamp · sync playtest · START hub · VERIFY OK.
+
+## ROBOCZA 29bfdf00 - 2026-08-05 14:58 - FALA 228: R-CITY-PILL-PROD-ICON (ECHO1+2) - **ZASTĄPIONA** (→ efab84db)
 |- md5 (pelne): 29bfdf0049aa4837a94b9c7cd76f6fd5 · stempel: ROBOCZA · 2026-08-05 12:58 (label dcefcfec)
 |- **FALA 228.** R-CITY-PILL-PROD-ICON: (1) ikony konkretnego budynku/jednostki z kolejki; pusta=brak; Wyżywienie na pigułce gracza. (2) ECHO2: medalion władcy (gracz+major AI) vs kultura (MP). AutoBot Operator→Evaluator PASS-WITH-NOTES→Grok. Merge `24127ba`+.
 |- Grok deploy (hasło Macieja). tsc 0 · city-map-badge 27/27 · vite · stamp · sync playtest · START hub · VERIFY OK.

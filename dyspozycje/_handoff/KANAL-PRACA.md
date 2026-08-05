@@ -1,3 +1,11 @@
+## [16:53 PL, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY ALL FALA 229 efab84db
+
+|- md5: efab84db7a8eaeae0f4885ae0111ccae · stempel: ROBOCZA · efab84db · 2026-08-05 14:53
+|- Batch: R-AI-TRUDNOSC P0 (realna Praca · Spichlerz id · L3 nauka=2) + rebuild all (FALA 225–228 w bundlu)
+|- AutoBot PASS · merge PR #111 · tip main przed deploy `68acfca`
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Maciej: Ctrl+F5 + Nowa gra · OK/BUG
+
 ## [16:52 PL, 2026-08-05] GROK → Maciej — fokus pigułka FALA 228 (wybór „3")
 
 Maciej: inny fokus = R-CITY-PILL-PROD-ICON na `29bfdf00`.

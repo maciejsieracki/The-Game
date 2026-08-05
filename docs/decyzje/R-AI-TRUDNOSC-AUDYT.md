@@ -1,6 +1,6 @@
 # R-AI-TRUDNOSC-AUDYT — rozwój major AI vs poziomy trudności
 
-**Status:** 🟠 Operator done · awaiting Evaluator · 2026-08-05  
+**Status:** 🟢 ZDEPLOYOWANE FALA 229 (`efab84db`) · was: 🟠 Operator done · awaiting Evaluator · 2026-08-05  
 **Scope:** **tylko major AI** (nie miasta-państwa / `defensiveCopy` / `typCityCopy`)  
 **Cel:** (1) audyt — co najbardziej psuje rozwój AI; (2) plan usprawnień **per poziom** 1=Prosty / 2=Normalny / 3=Trudny.
 
