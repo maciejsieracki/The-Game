@@ -3,6 +3,7 @@
  * Dwa stosy → jeden stos na heksie. Styl spójny z cityAttackChoice / preBattle.
  */
 
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
 import { formatArmiaLabel } from './formatPl';
 
@@ -118,6 +119,7 @@ function detachKeyboard(): void {
 }
 
 function closePanel(): void {
+  popOverlay('army-merge');
   detachKeyboard();
   if (root) {
     root.remove();
@@ -202,13 +204,12 @@ export function showArmyMergePanel(opts: ArmyMergePanelOpts): void {
   root.appendChild(box);
   document.body.appendChild(root);
 
+  // R-MERGE-DISMISS: patrz komentarz przy click-outside powyzej -- Escape to
+  // dismiss, nie "Zostaw osobno" (ktore bouncowaloby jednostke).
+  pushOverlay('army-merge', () => pick(opts.onMerge));
+
   keyHandler = (e: KeyboardEvent) => {
-    // R-MERGE-DISMISS: patrz komentarz przy click-outside powyzej -- Escape to
-    // dismiss, nie "Zostaw osobno" (ktore bouncowaloby jednostke).
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      pick(opts.onMerge);
-    } else if (e.key === 'Enter') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       pick(opts.onMerge);
     }
