@@ -8,6 +8,7 @@ import { wikiBookIcon } from './icons/wikiBookIcon';
 import { ensureBrandRootTokens, CIV_BRAND_SCOPE_VARS } from './brandTokenVars';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface WikiHubHudConfig {
   onClose?: () => void;
@@ -234,15 +235,13 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     detailMode = false;
     el.classList.remove('open');
     setLayout('dock');
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('wiki-hub');
     unbindOutside?.();
     unbindOutside = null;
     configRef?.onClose?.();
   }
 
-  function onEsc(ev: KeyboardEvent): void {
-    if (ev.key !== 'Escape') return;
-    ev.preventDefault();
+  function handleWikiHubEscape(): void {
     if (detailMode) {
       detailMode = false;
       render();
@@ -484,7 +483,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
     }
     open = true;
     el.classList.add('open');
-    document.addEventListener('keydown', onEsc);
+    pushOverlay('wiki-hub', handleWikiHubEscape);
     unbindOutside?.();
     if (layoutMode === 'dock') {
       unbindOutside = bindHudPanelOutsideDismiss(
@@ -500,7 +499,7 @@ export function createWikiHubHud(config: WikiHubHudConfig): WikiHubHudApi {
   function toggle(): void { if (open) closeHub(); else show(); }
 
   function destroy(): void {
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('wiki-hub');
     unbindOutside?.();
     unbindOutside = null;
     backdropEl?.remove();

@@ -909,6 +909,7 @@ import {
   isTechTreeViewOpen,
   refreshTechTreeViewIfOpen,
 } from './ui/techTreeView';
+import { pushOverlay, popOverlay } from './ui/escapeOverlayStack';
 import { buildingGateMet, improvementGateMet } from './game/research';
 import {
   createWikiHubHud,
@@ -5653,6 +5654,7 @@ async function boot(): Promise<void> {
       galleryOn = false;
       foundCityMode = false;
       buildModeOpen = false;
+      popOverlay('build-mode');
       activeImprovementKey = null;
       revealAllLand = false;
       hideSiegeMapPanel();
@@ -9053,6 +9055,7 @@ async function boot(): Promise<void> {
       refreshBuildApi();
       refreshBuildHighlight();
       refreshD1bHud();
+      enterBuildModeEscapeOverlay();
       if (playerStartHex) {
         const focusPos = axialToWorld(playerStartHex.q, playerStartHex.r, HEX_R);
         camCtrl.focusAt(focusPos.x, focusPos.z, 22);
@@ -9151,6 +9154,11 @@ async function boot(): Promise<void> {
       refreshBuildApi();
       refreshBuildHighlight();
       refreshD1bHud();
+      popOverlay('build-mode');
+    }
+
+    function enterBuildModeEscapeOverlay(): void {
+      pushOverlay('build-mode', () => exitBuildMode());
     }
 
     function undoPendingBuildRequest(req: ImprovementBuildRequest): void {
@@ -15147,6 +15155,7 @@ async function boot(): Promise<void> {
             refreshBuildApi();
             refreshBuildHighlight();
             refreshD1bHud();
+            enterBuildModeEscapeOverlay();
           },
           isCultureRangeActive: () => cultureRangeVisible,
           isReligionRangeActive: () => religionRangeVisible,
@@ -22637,6 +22646,7 @@ async function boot(): Promise<void> {
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       // --- Escape: close city panel / exit build mode ---
       if (e.key === 'Escape') {
+        if (e.defaultPrevented) return;
         if (isSaveLoadDialogOpen()) {
           hideSaveLoadDialog();
           return;
@@ -22645,21 +22655,9 @@ async function boot(): Promise<void> {
           hideGamePauseMenu();
           return;
         }
-        if (tryCloseCityUxFrameFromKeyboard() || (isCityPanelOpen() && closeCityPanelIfOpen())) {
-          e.preventDefault();
-          hideCityUnitPick();
-      hideCityForeignPick();
-      hideUnitForeignPick();
-          requestAnimationFrame(() => tryOpenNextFirstContactCard());
-          return;
-        }
         if (okolicaMapEditCityId) {
           exitOkolicaMapMode();
           showHintMessage('Tryb okolicy zakończony.', 2500);
-          return;
-        }
-        if (buildModeOpen) {
-          exitBuildMode();
           return;
         }
         if (dismissPlayerUnitSelectionIfAny()) {
@@ -23623,6 +23621,7 @@ async function boot(): Promise<void> {
       reachable = new Set<string>();
       hoverKey = null;
       buildModeOpen = false;
+      popOverlay('build-mode');
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
@@ -23878,6 +23877,7 @@ async function boot(): Promise<void> {
       reachable = new Set<string>();
       hoverKey = null;
       buildModeOpen = false;
+      popOverlay('build-mode');
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
@@ -24123,6 +24123,7 @@ async function boot(): Promise<void> {
       reachable = new Set<string>();
       hoverKey = null;
       buildModeOpen = false;
+      popOverlay('build-mode');
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();
@@ -24342,6 +24343,7 @@ async function boot(): Promise<void> {
       reachable = new Set<string>();
       hoverKey = null;
       buildModeOpen = false;
+      popOverlay('build-mode');
       activeImprovementKey = null;
       resetMapOverlayToggleDefaults();
       clearBuildModeVisuals();

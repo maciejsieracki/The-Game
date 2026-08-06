@@ -28,6 +28,7 @@ import {
   ensureDiploBrandScope,
 } from './diploUiSkin';
 import { notifyDiploUiVisibilityChange } from './unitCtxDockDiploGate';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import {
   actionNeedsNegotiation,
   showNegotiationModal,
@@ -401,10 +402,9 @@ function childModalBlocksExit(): boolean {
   return false;
 }
 
-function onAudienceEsc(ev: KeyboardEvent): void {
-  if (ev.key !== 'Escape' || cfg === null || rootEl === null || rootEl.style.display === 'none') return;
+function handleAudienceEscape(): void {
+  if (cfg === null || rootEl === null || rootEl.style.display === 'none') return;
   if (childModalBlocksExit()) return;
-  ev.preventDefault();
   cfg.onBack();
 }
 
@@ -2062,7 +2062,7 @@ export function showDiplomacyAudience(config: DiplomacyAudienceConfig): void {
   }
   render();
   rootEl.style.display = 'flex';
-  document.addEventListener('keydown', onAudienceEsc);
+  pushOverlay('diplo-audience', handleAudienceEscape);
   startDiplomacyMusic(config.otherCivId);
   notifyDiploUiVisibilityChange();
 }
@@ -2072,7 +2072,7 @@ export function updateDiplomacyAudience(): void {
 }
 
 export function hideDiplomacyAudience(): void {
-  document.removeEventListener('keydown', onAudienceEsc);
+  popOverlay('diplo-audience');
   if (rootEl !== null) rootEl.style.display = 'none';
   stopDiplomacyMusic();
   notifyDiploUiVisibilityChange();

@@ -23,6 +23,7 @@ import { scaledResearchCost, type GameDifficulty } from '../game/difficulty-cost
 import { epochIconSvg } from './icons/brandAssets';
 import { scienceProgressRingHtml } from './icons/scienceProgressRing';
 import { techIconSvg } from './techIcons';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 // ---------------------------------------------------------------------------
 // Konfiguracja (haki wstrzykiwane przez silnik — main.ts)
@@ -868,57 +869,9 @@ function render(): void {
 // Interakcje
 // ---------------------------------------------------------------------------
 
-function onKeyDownCapture(e: KeyboardEvent): void {
-  if (e.key !== 'Escape') return;
-  e.preventDefault();
-  e.stopPropagation();
+function handleTechTreeEscape(): void {
   if (confirmBackEl !== null) { closeConfirm(); return; }
   hideTechTreeView();
-}
-
-// ---------------------------------------------------------------------------
-// Escape w pełnym ekranie (Maciej 2026-07-26)
-// Objaw: gdy gra działa w pełnym ekranie, pierwszy Escape wychodził z pełnego ekranu,
-// a dopiero drugi zamykał drzewko — właściciel chce odwrotnej kolejności.
-// Przeglądarka konsumuje Escape w pełnym ekranie ZANIM zdarzenie trafi do strony, więc
-// samym listenerem tego nie odwrócimy. Jedyne czyste wyjście: Keyboard Lock API
-// (`navigator.keyboard.lock(['Escape'])`) — na czas otwartego drzewka Escape trafia do gry,
-// a wyjście z pełnego ekranu zostaje pod PRZYTRZYMANYM Escape (zachowanie przeglądarki).
-// Blokadę zdejmujemy przy zamknięciu drzewka, więc na mapie Escape znów wychodzi z pełnego
-// ekranu. Gdy API nie ma (nie-Chromium) — zostaje stan sprzed zmiany plus widoczny „Wróć".
-// ---------------------------------------------------------------------------
-
-interface KeyboardLockApi {
-  lock(keyCodes?: readonly string[]): Promise<void>;
-  unlock(): void;
-}
-
-function keyboardLockApi(): KeyboardLockApi | null {
-  const nav = navigator as Navigator & { keyboard?: KeyboardLockApi };
-  const kb = nav.keyboard;
-  if (kb === undefined || typeof kb.lock !== 'function' || typeof kb.unlock !== 'function') return null;
-  return kb;
-}
-
-let escapeLocked = false;
-
-function lockEscape(): void {
-  if (escapeLocked) return;
-  const kb = keyboardLockApi();
-  if (kb === null) return;
-  escapeLocked = true;
-  void kb.lock(['Escape']).catch(() => {
-    // Odrzucone (brak pełnego ekranu / brak uprawnienia) — nic nie psuje, Escape działa jak dotąd.
-    escapeLocked = false;
-  });
-}
-
-function unlockEscape(): void {
-  if (!escapeLocked) return;
-  escapeLocked = false;
-  const kb = keyboardLockApi();
-  if (kb === null) return;
-  try { kb.unlock(); } catch { /* brak wsparcia — stan i tak wracamy do domyślnego */ }
 }
 
 function bindViewportInteractions(): void {
@@ -1122,8 +1075,7 @@ export function showTechTreeView(ownerId: number = 0): void {
   overlayEl.style.display = 'flex';
   render();
   fitToView();
-  document.addEventListener('keydown', onKeyDownCapture, true);
-  lockEscape();
+  pushOverlay('tech-tree', handleTechTreeEscape);
 }
 
 /** Ukryj graf (bez usuwania z DOM). */
@@ -1131,8 +1083,7 @@ export function hideTechTreeView(): void {
   closeConfirm();
   hideCard();
   if (overlayEl !== null) overlayEl.style.display = 'none';
-  document.removeEventListener('keydown', onKeyDownCapture, true);
-  unlockEscape();
+  popOverlay('tech-tree');
 }
 
 export function isTechTreeViewOpen(): boolean {

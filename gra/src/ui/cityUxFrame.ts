@@ -20,6 +20,7 @@ import {
   CITY_RAIL_TOP_PX,
   CITY_RIGHT_PANEL_W_PX,
 } from './hudLayout';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 let frameRoot: HTMLDivElement | null = null;
 let mounts: CityPanelUxMounts | null = null;
@@ -128,12 +129,6 @@ function bindCityUxEscClose(): void {
   unbindCityUxEscClose();
   cityUxEscHandler = (e: KeyboardEvent) => {
     if (frameRoot === null) return;
-    if (e.key === 'Escape' && frameOnClose !== null) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      frameOnClose();
-      return;
-    }
     if (cityUxKeyboardBlockedTarget(e)) return;
     if (e.key === 'ArrowLeft' || e.key === ',' || e.code === 'Comma') {
       e.preventDefault();
@@ -279,6 +274,7 @@ export function showCityUxFrame(
     onClose();
   };
   paintCityPanelSections(mounts, city, map, paint, frameOnClose);
+  pushOverlay('city-panel', () => { frameOnClose?.(); });
   bindCityUxEscClose();
 }
 
@@ -293,6 +289,7 @@ export function refreshCityUxFrame(
 
 export function hideCityUxFrame(): void {
   unbindCityUxEscClose();
+  popOverlay('city-panel');
   clearCityPanelUxMode();
   frameOnClose = null;
   frameRoot?.remove();
