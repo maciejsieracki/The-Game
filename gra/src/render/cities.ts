@@ -35,9 +35,13 @@ import type { BronzeCiv } from './bronzeCity';
 // buildSettlementModel (styl 'civ'/'minecraft' bez zmian).
 import { buildMiastoKamien } from './miasto-kamien';
 import { buildMiastoBraz } from './miasto-braz';
-import type { CityProduction } from '../game/production';
+import type { CityProduction, ProductionItem } from '../game/production';
 import { frontItem } from '../game/production';
 import { getCityRationLevel } from '../game/population-growth-v85';
+import {
+  canAffordBuildingStock,
+} from '../game/building-stock-cost';
+import { clientRectToNdc } from '../input/picker';
 import {
   cityMapBadgeKey,
   defenseTierFromWallKind,
@@ -326,6 +330,15 @@ export interface CityRenderOptions {
   /** Kolejka produkcji — ikona frontu (buildingIconSvg / unitIconSvg). */
   getProduction?: (cityId: string) => CityProduction | null;
 
+  /** Magazyn surowców państwa (suma City.surowce) — ostrzeżenie hover. */
+  getOwnerResourceStock?: (ownerId: number) => Record<string, number>;
+
+  /** Koszt surowcowy pozycji kolejki (enqueue) — do ostrzeżenia hover. */
+  getProductionItemStockCost?: (item: ProductionItem) => Record<string, number>;
+
+  /** Miasto pod kursorem — rozszerzona pigułka (hover). */
+  hoverStatChipCityId?: string | null;
+
   /** ownerId gracza — pigułka: poziom Wyżywienia tylko dla jego miast. Domyślnie 0. */
   playerOwnerId?: number;
 
@@ -500,6 +513,34 @@ export class CityRenderer {
     }
   }
 
+  /**
+   * Raycast na pigułkę miasta — cityId gdy kursor nad żetonem (hover rozszerzony).
+   */
+  pickStatChipCityIdAt(
+    clientX: number,
+    clientY: number,
+    canvas: HTMLCanvasElement,
+    camera: THREE.Camera,
+  ): string | null {
+    const rect = canvas.getBoundingClientRect();
+    const ndc = clientRectToNdc(clientX, clientY, rect);
+    if (!ndc) return null;
+
+    camera.updateMatrixWorld(true);
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(ndc.x, ndc.y), camera);
+
+    const sprites = [...this.statSprites.values()].filter((s) => s.visible);
+    if (sprites.length === 0) return null;
+
+    const hits = raycaster.intersectObjects(sprites, false);
+    for (const h of hits) {
+      const cityId = h.object.userData['cityId'];
+      if (typeof cityId === 'string' && cityId.length > 0) return cityId;
+    }
+    return null;
+  }
+
   /** Odśwież obwódki heksów (np. po zmianie dyplomacji). */
   syncMapOutlines(cities: City[], options?: CityRenderOptions): void {
     for (const city of cities) {
@@ -642,6 +683,19 @@ export class CityRenderer {
     const ownerCol = (options?.ownerColorFn ?? ownerColor)(city.ownerId);
     const playerId = options?.playerOwnerId ?? 0;
     const isPlayerCity = city.ownerId === playerId;
+    const hoverExpanded = options?.hoverStatChipCityId === city.id;
+    const prodPaused = prod?.wstrzymana === true;
+    let resourceWarning = false;
+    if (front && options?.getOwnerResourceStock && options?.getProductionItemStockCost) {
+      const pool = options.getOwnerResourceStock(city.ownerId);
+      const stockCost = options.getProductionItemStockCost(front);
+      if (Object.keys(stockCost).length > 0) {
+        resourceWarning = !canAffordBuildingStock(pool, stockCost);
+      }
+    }
+    const prodCategoryLabel = front
+      ? (front.kind === 'budynek' ? 'Budynek' : 'Jednostka')
+      : null;
     return {
       cityName,
       population: city.population ?? 1,
@@ -652,7 +706,11 @@ export class CityRenderer {
       prodKind: front?.kind ?? null,
       prodId: front?.id ?? null,
       growthLevel: isPlayerCity ? getCityRationLevel(city) : null,
-      resourceWarning: false,
+      resourceWarning,
+      hoverExpanded,
+      prodCategoryLabel,
+      prodItemName: front?.nazwa ?? null,
+      prodPaused,
       isCityState: options?.isCityStateOwner?.(city.ownerId) ?? false,
       era: options?.getEra?.(city.ownerId) ?? 1,
     };
@@ -680,6 +738,7 @@ export class CityRenderer {
     }
     this._removeStatChip(cityId, parent);
     const sprite = makeCityMapBadgeSprite(badge, this.statTexCache);
+    sprite.userData['cityId'] = cityId;
     parent.add(sprite);
     this.statSprites.set(cityId, sprite);
     this.statSpriteKeys.set(cityId, key);

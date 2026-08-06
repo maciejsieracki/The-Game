@@ -909,6 +909,7 @@ import {
   isTechTreeViewOpen,
   refreshTechTreeViewIfOpen,
 } from './ui/techTreeView';
+import { pushOverlay, popOverlay } from './ui/escapeOverlayStack';
 import { buildingGateMet, improvementGateMet } from './game/research';
 import {
   createWikiHubHud,
@@ -1664,6 +1665,8 @@ async function boot(): Promise<void> {
     let cityBuiltIdsForRender: ((cityId: string) => readonly string[]) | undefined;
     /** Podpinane po deklaracji cityProd — pigułka: glif produkcji always-on lite. */
     let cityProdForRender: ((cityId: string) => import('./game/production').CityProduction | null) | undefined;
+    /** Pigułka miasta: hover rozszerzony (R-DESIGN-PANEL-MIASTA-Q4=B). */
+    let statChipHoverCityId: string | null = null;
     const _cityRenderOpts = (): CityRenderOptions => {
       // #27 perf: policz widoczność RAZ per wywołanie _cityRenderOpts (nie osobno dla
       // każdego obcego miasta w isVisible) — reużywane przez cache'ujący cityFogVisible.
@@ -1708,6 +1711,9 @@ async function boot(): Promise<void> {
             ? (player.civType as string || _menuCivId || 'grecy')
             : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
         getProduction: (cityId) => cityProdForRender?.(cityId) ?? null,
+        getOwnerResourceStock: (ownerId) => ownerSurowcePoolFor(ownerId),
+        getProductionItemStockCost: (item) => productionItemStockCostForRender(item),
+        hoverStatChipCityId: statChipHoverCityId,
         playerOwnerId: 0,
         isCityStateOwner: portraitForceCultureIcon,
       };
@@ -5711,6 +5717,15 @@ async function boot(): Promise<void> {
       return ownerResourceStockAll(cities, ownerId);
     }
 
+    /** Koszt surowcowy pozycji kolejki — pigułka hover (ostrzeżenie magazynu). */
+    function productionItemStockCostForRender(item: ProductionItem): Record<string, number> {
+      if (item.kind === 'budynek') {
+        return buildingStockCost(data.buildings.find(b => b.id === item.id));
+      }
+      const unitDef = data.units.find(u => u.Jednostka === item.id);
+      return unitStockCost(unitDef);
+    }
+
     /** Pobiera koszt surowcowy budynku Z PULI PANSTWA (rozproszone po miastach ownera). */
     function deductOwnerStockCost(ownerId: number, cost: Record<string, number>): void {
       if (Object.keys(cost).length === 0) return;
@@ -9053,6 +9068,7 @@ async function boot(): Promise<void> {
       refreshBuildApi();
       refreshBuildHighlight();
       refreshD1bHud();
+      enterBuildModeEscapeOverlay();
       if (playerStartHex) {
         const focusPos = axialToWorld(playerStartHex.q, playerStartHex.r, HEX_R);
         camCtrl.focusAt(focusPos.x, focusPos.z, 22);
@@ -9151,6 +9167,11 @@ async function boot(): Promise<void> {
       refreshBuildApi();
       refreshBuildHighlight();
       refreshD1bHud();
+      popOverlay('build-mode');
+    }
+
+    function enterBuildModeEscapeOverlay(): void {
+      pushOverlay('build-mode', () => exitBuildMode());
     }
 
     function undoPendingBuildRequest(req: ImprovementBuildRequest): void {
@@ -15147,6 +15168,7 @@ async function boot(): Promise<void> {
             refreshBuildApi();
             refreshBuildHighlight();
             refreshD1bHud();
+            enterBuildModeEscapeOverlay();
           },
           isCultureRangeActive: () => cultureRangeVisible,
           isReligionRangeActive: () => religionRangeVisible,
@@ -16597,6 +16619,18 @@ async function boot(): Promise<void> {
         hideVeteranBadgeTip();
       }
 
+      // Pigułka miasta: hover rozszerzony (produkcja + ostrzeżenie surowców).
+      if (isWorldMapUnitMode()) {
+        const chipCityId = cityRenderer.pickStatChipCityIdAt(e.clientX, e.clientY, canvas, camera);
+        if (chipCityId !== statChipHoverCityId) {
+          statChipHoverCityId = chipCityId;
+          cityRenderer.syncStatChips(cities, _cityRenderOpts());
+        }
+      } else if (statChipHoverCityId !== null) {
+        statChipHoverCityId = null;
+        cityRenderer.syncStatChips(cities, _cityRenderOpts());
+      }
+
       // Tryb budowy — ghost miasta / ulepszenia + chip przy kursorze
       if (buildModeOpen && (foundCityMode || activeImprovementKey || activeWonderId)) {
         handleBuildModeHover(e);
@@ -16665,6 +16699,10 @@ async function boot(): Promise<void> {
     canvas.addEventListener('mouseleave', () => {
       applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
       hideVeteranBadgeTip();
+      if (statChipHoverCityId !== null) {
+        statChipHoverCityId = null;
+        cityRenderer.syncStatChips(cities, _cityRenderOpts());
+      }
     });
 
     canvas.addEventListener('mouseup', (e: MouseEvent) => {
@@ -22637,6 +22675,7 @@ async function boot(): Promise<void> {
     window.addEventListener('keydown', (e: KeyboardEvent) => {
       // --- Escape: close city panel / exit build mode ---
       if (e.key === 'Escape') {
+        if (e.defaultPrevented) return;
         if (isSaveLoadDialogOpen()) {
           hideSaveLoadDialog();
           return;
@@ -22645,21 +22684,9 @@ async function boot(): Promise<void> {
           hideGamePauseMenu();
           return;
         }
-        if (tryCloseCityUxFrameFromKeyboard() || (isCityPanelOpen() && closeCityPanelIfOpen())) {
-          e.preventDefault();
-          hideCityUnitPick();
-      hideCityForeignPick();
-      hideUnitForeignPick();
-          requestAnimationFrame(() => tryOpenNextFirstContactCard());
-          return;
-        }
         if (okolicaMapEditCityId) {
           exitOkolicaMapMode();
           showHintMessage('Tryb okolicy zakończony.', 2500);
-          return;
-        }
-        if (buildModeOpen) {
-          exitBuildMode();
           return;
         }
         if (dismissPlayerUnitSelectionIfAny()) {

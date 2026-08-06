@@ -1,7 +1,7 @@
 /**
  * cityMapStatChip.ts — etykieta miasta na mapie świata (MAPA).
- * Pigułka v1 (prototyp bez Design): nazwa + populacja + obrona (3 stany) + sygnet cywu
- * + opcjonalny glif produkcji (always-on lite; pełny hover — po makiecie Design).
+ * Always-on MUST: nazwa + populacja + obrona (3 stany) + medalion cywu + glif produkcji (lite).
+ * Hover (R-DESIGN-PANEL-MIASTA-Q4=B): drugi wiersz — kategoria produkcji + ostrzeżenie surowców.
  */
 import * as THREE from 'three';
 import type { ProductionKind } from '../game/production';
@@ -29,8 +29,16 @@ export interface CityMapBadgeInput {
   prodId?: string | null;
   /** Poziom Wyżywienia (poziomRacji) — tylko miasta gracza. */
   growthLevel?: number | null;
-  /** Ostrzeżenie surowców — rezerwa pod hover Design (v1: tylko klucz cache). */
+  /** Ostrzeżenie surowców (hover: brak w magazynie państwa). */
   resourceWarning?: boolean;
+  /** true = rozszerzona pigułka (hover na mapie). */
+  hoverExpanded?: boolean;
+  /** „Budynek" / „Jednostka" — hover, front kolejki. */
+  prodCategoryLabel?: string | null;
+  /** Nazwa frontu kolejki (hover). */
+  prodItemName?: string | null;
+  /** Kolejka wstrzymana (hover). */
+  prodPaused?: boolean;
   /** true = miasto-państwo → medalion tylko sygnet kultury (bez portretu władcy). */
   isCityState?: boolean;
   /** Epoka właściciela — portret władcy na medalionie (gracz + major AI). */
@@ -47,6 +55,7 @@ const CIV_MEDALLION_R = 16;
 const CIV_SLOT_W = 38;
 const PROD_SLOT_W = 20;
 const GROWTH_SLOT_W = 30;
+const HOVER_ROW_H = 22;
 
 let civSigilSvgFn: ((civIconId: string) => string) | null = null;
 const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
@@ -343,6 +352,60 @@ function drawProdIcon(
   ctx.drawImage(img, cx - side * 0.5, cy - side * 0.5, side, side);
 }
 
+/** Mała ikona ostrzeżenia (brak surowców). */
+function drawResourceWarningIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+): void {
+  const r = 8;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#8a4a10';
+  ctx.fill();
+  ctx.strokeStyle = '#e8a040';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.fillStyle = '#ffd090';
+  ctx.font = 'bold 11px Arial, Helvetica, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('!', cx, cy + 0.5);
+}
+
+/** Drugi wiersz pigułki — kategoria produkcji + ostrzeżenie. */
+function drawHoverProdRow(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  input: CityMapBadgeInput,
+): void {
+  const warnW = input.resourceWarning ? 20 : 0;
+  const maxTextW = w - x - warnW - 6;
+  const cat = (input.prodCategoryLabel || '').trim();
+  const name = (input.prodItemName || '').trim();
+  let line = cat && name ? `${cat} · ${name}` : cat || name;
+  if (input.prodPaused && line) line += ' · wstrzymana';
+  else if (input.prodPaused) line = 'Produkcja wstrzymana';
+  if (!line && input.resourceWarning) line = 'Brak surowców w magazynie';
+
+  const font = '600 11px Arial, Helvetica, sans-serif';
+  ctx.font = font;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  if (ctx.measureText(line).width > maxTextW && line.length > 1) {
+    let s = line;
+    while (s.length > 1 && ctx.measureText(s + '…').width > maxTextW) s = s.slice(0, -1);
+    line = s + '…';
+  }
+  ctx.fillStyle = '#c8b888';
+  ctx.fillText(line, x, y);
+  if (input.resourceWarning) {
+    drawResourceWarningIcon(ctx, x + maxTextW + warnW * 0.5, y);
+  }
+}
+
 /** Kompaktowa etykieta poziomu Wyżywienia (poziomRacji) — tylko miasta gracza. */
 function drawGrowthLabel(
   ctx: CanvasRenderingContext2D,
@@ -408,14 +471,19 @@ function paintCityMapBadgeOntoCanvas(
   const leftIconsW = (hasDefense ? defenseW + gap : 0) + civW + gap;
   const midExtraW = (growthW ? gap + growthW : 0) + (prodW ? gap + prodW : 0);
   const W = Math.ceil(padX + leftIconsW + nameW + midExtraW + gap + circleD + padX);
-  const H = Math.max(48, circleD + padY * 2);
+  const baseH = Math.max(48, circleD + padY * 2);
+  const hasHoverDetail = input.hoverExpanded && (
+    input.prodCategoryLabel || input.prodItemName || input.prodPaused || input.resourceWarning
+  );
+  const H = baseH + (hasHoverDetail ? HOVER_ROW_H : 0);
 
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
 
   ctx.clearRect(0, 0, W, H);
-  roundedRect(ctx, 2, 2, W - 4, H - 4, H * 0.45);
+  const pillR = Math.min(H * 0.45, baseH * 0.45);
+  roundedRect(ctx, 2, 2, W - 4, H - 4, pillR);
   const grad = ctx.createLinearGradient(0, 0, 0, H);
   grad.addColorStop(0, 'rgba(16, 22, 34, 0.96)');
   grad.addColorStop(1, 'rgba(8, 10, 16, 0.94)');
@@ -425,7 +493,7 @@ function paintCityMapBadgeOntoCanvas(
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  const cy = H * 0.5;
+  const cy = baseH * 0.5;
   const civCx = padX + (hasDefense ? defenseW + gap : 0) + civW * 0.5;
   if (hasDefense) {
     const shieldCx = padX + defenseW * 0.5;
@@ -466,6 +534,17 @@ function paintCityMapBadgeOntoCanvas(
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#2a2208';
   ctx.fillText(popStr, cx, cy + 1);
+
+  if (hasHoverDetail) {
+    const sepY = baseH - 1;
+    ctx.beginPath();
+    ctx.moveTo(padX, sepY);
+    ctx.lineTo(W - padX, sepY);
+    ctx.strokeStyle = 'rgba(232, 216, 138, 0.28)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    drawHoverProdRow(ctx, padX, baseH + HOVER_ROW_H * 0.5, W - padX * 2, input);
+  }
 }
 
 /** Canvas: [tarcza?][cyw] NAZWA [prod?] + (pop). */
@@ -518,6 +597,7 @@ export function cityMapBadgeKey(
     `p${prod}`,
     growth,
     `w${a.resourceWarning ? 1 : 0}`,
+    `h${a.hoverExpanded ? 1 : 0}`,
     cs,
     era,
   ].join('|');
