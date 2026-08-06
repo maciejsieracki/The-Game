@@ -93,7 +93,10 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 5. **Publikacja / deploy tylko na hasło `deploy`.** Commit po `ID+A|B|C` **nie** publikuje ROBOCZA. `git push` branch OK; deploy bundla + `WERSJE.md` dopiero gdy Maciej powie **`deploy`** / „deploy do robocza". (Hasła „pushuj" / „wdrażaj" = nie mylić: wdrażaj = kod+commit; deploy = ROBOCZA.)
 6. **Nie zgaduj przy niejednoznaczności** — zrób resztę, a sporny punkt opisz i zapytaj. Ta zasada wielokrotnie uchroniła projekt przed kosztownymi błędami.
 7. **Nie twórz problemów, których nie ma.** Maciej kilkakrotnie korygował nadmierne komplikowanie („znajdujesz problemy, których nie ma"). Najprostsze rozwiązanie spełniające wymaganie wygrywa.
-8. **Po każdej paczce pracy — zaproponuj następny krok (Maciej 2026-08-01).** Nie czekaj na „co dalej?”. Kończ wiadomość blokiem **„Następny krok”** z max 3 konkretnymi opcjami (pierwsza = rekomendacja). Reguła: `.cursor/rules/maciej-nastepny-krok.mdc`.
+8. **Po każdej paczce pracy — dwa bloki (Maciej 2026-08-01 / split 2026-08-06).** Nie czekaj na „co dalej?”.
+   Kończ wiadomość: **### Playtesty** (tylko weryfikacja w grze) **oraz** **### Następny krok** (tylko kolejne
+   zmiany kod/dane/docs — max 3). **ZAKAZ** mieszać playtest z kodem w jednym menu.
+   Reguła alwaysApply: `.cursor/rules/maciej-nastepny-krok.mdc` · kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md`.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)

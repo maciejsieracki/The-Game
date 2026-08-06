@@ -42,7 +42,7 @@ Po **każdym** z poniższych, gdy wynik jest w `gra-robocza/` (lub Maciej ma otw
 2. **Wejście:** `Ctrl+F5` → `gra-robocza/START.html` → …
 3. **Co sprawdzić:** 1–3 punkty (konkret)
 
-Opcjonalnie potem: `### Następny krok` (reguła `maciej-nastepny-krok.mdc`).
+Opcjonalnie potem: `### Playtesty` + `### Następny krok` (reguła `maciej-nastepny-krok.mdc` — **rozdzielone**).
 
 ## Zakazy
 
