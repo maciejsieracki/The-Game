@@ -9,6 +9,7 @@ import {
   uniqueSlotIdFromLabel, slotSlugFromLabel,
   type SaveGame,
 } from '../game/save';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface SaveSlotSummary {
   slotId: string;
@@ -53,6 +54,7 @@ export function saveContextLine(g: SaveGame): string {
 
 const STYLE_ID = 'civ-save-load-css';
 let root: HTMLDivElement | null = null;
+let activeOnCancel: (() => void) | undefined;
 
 function ensureStyles(): void {
   if (document.getElementById(STYLE_ID)) return;
@@ -96,10 +98,18 @@ function ensureStyles(): void {
 }
 
 function closeDialog(): void {
+  popOverlay('save-load-dialog');
   if (root) {
     root.remove();
     root = null;
   }
+  activeOnCancel = undefined;
+}
+
+function dismissSaveLoadViaEscape(): void {
+  const cb = activeOnCancel;
+  closeDialog();
+  cb?.();
 }
 
 export function isSaveLoadDialogOpen(): boolean {
@@ -169,6 +179,7 @@ export interface SaveDialogOptions {
 export function showSaveGameDialog(opts: SaveDialogOptions): void {
   closeDialog();
   ensureStyles();
+  activeOnCancel = opts.onCancel;
   const existing = summarizeSaveSlots();
 
   root = document.createElement('div');
@@ -238,19 +249,18 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
   }
 
   cancelBtn.addEventListener('click', () => {
-    closeDialog();
-    opts.onCancel?.();
+    dismissSaveLoadViaEscape();
   });
   saveBtn.addEventListener('click', commit);
   input.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
-    if (ev.key === 'Escape') { ev.preventDefault(); cancelBtn.click(); }
   });
 
   btns.append(cancelBtn, saveBtn);
   box.appendChild(btns);
   root.appendChild(box);
   document.body.appendChild(root);
+  pushOverlay('save-load-dialog', dismissSaveLoadViaEscape);
 
   root.addEventListener('click', (ev) => {
     if (ev.target === root) cancelBtn.click();
@@ -267,6 +277,7 @@ export interface LoadDialogOptions {
 export function showLoadGameDialog(opts: LoadDialogOptions): void {
   closeDialog();
   ensureStyles();
+  activeOnCancel = opts.onCancel;
 
   let slots = summarizeSaveSlots();
   let selectedId: string | null =
@@ -348,8 +359,7 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
   loadBtn.textContent = 'Wczytaj';
 
   cancelBtn.addEventListener('click', () => {
-    closeDialog();
-    opts.onCancel?.();
+    dismissSaveLoadViaEscape();
   });
   loadBtn.addEventListener('click', () => {
     if (!selectedId) return;
@@ -362,6 +372,7 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
   box.appendChild(btns);
   root.appendChild(box);
   document.body.appendChild(root);
+  pushOverlay('save-load-dialog', dismissSaveLoadViaEscape);
 
   root.addEventListener('click', (ev) => {
     if (ev.target === root) cancelBtn.click();

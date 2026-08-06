@@ -20,6 +20,7 @@ import { techIconSvg } from './techIcons';
 import type { ScienceHubEntry, ScienceHubPlanEntry, ScienceHubProgress } from './scienceHubHud';
 import { refreshScienceHubIfOpen } from './scienceHubHud';
 import { buildHubTechEntries } from './scienceHubSnapshotLogic';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
 // ---------------------------------------------------------------------------
@@ -1307,16 +1308,6 @@ function moveTooltip(e: MouseEvent): void {
   tooltipEl.style.top = y + 'px';
 }
 
-// ---------------------------------------------------------------------------
-// Esc
-// ---------------------------------------------------------------------------
-
-function onKeyDown(e: KeyboardEvent): void {
-  if (e.key !== 'Escape') return;
-  e.preventDefault();
-  hideSciencePicker();
-}
-
 function ensureDimBackdrop(): void {
   if (dimBackdropEl !== null) return;
   dimBackdropEl = document.createElement('div');
@@ -1390,17 +1381,17 @@ function showSciencePickerInternal(ownerId: number): void {
   render();
 
   overlayEl.style.display = displayMode === 'dock' ? 'block' : 'flex';
-  document.addEventListener('keydown', onKeyDown);
+  pushOverlay('science-picker', hideSciencePicker);
 }
 
 /**
  * Ukryj drzewko (bez usuwania z DOM).
  */
 export function hideSciencePicker(): void {
+  popOverlay('science-picker');
   if (overlayEl !== null) overlayEl.style.display = 'none';
   if (dimBackdropEl !== null) dimBackdropEl.style.display = 'none';
   if (tooltipEl !== null) tooltipEl.style.display = 'none';
-  document.removeEventListener('keydown', onKeyDown);
   const hook = onTreeCloseHook;
   onTreeCloseHook = null;
   hook?.();
