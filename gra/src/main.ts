@@ -802,7 +802,7 @@ import {
   shouldDeferEotEvents,
   type DeferredEotHint,
 } from './game/eot-event-defer';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitUpkeepReserve, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -2732,9 +2732,14 @@ async function boot(): Promise<void> {
       // pobraniem Manpower/złota, żeby nie zdarzyło się częściowe pobranie przy odmowie.
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       const stockCost = unitStockCost(unitDef);
+      const ownerPool = ownerResourceStockAll(cities, ownerId);
       if (Object.keys(stockCost).length > 0
-        && !canAffordBuildingStock(ownerResourceStockAll(cities, ownerId), stockCost)) {
+        && !canAffordBuildingStock(ownerPool, stockCost)) {
         if (ownerId === 0) showHintMessage('Za mało surowca w magazynie państwa', 2800);
+        return false;
+      }
+      if (!canAffordUnitRecruitUpkeepReserve(ownerPool, unitDef)) {
+        if (ownerId === 0) showHintMessage('Za mało surowca na utrzymanie jednostki (1 tura)', 2800);
         return false;
       }
       const d = tryDeductUnitSpawnCostsEmpire(
@@ -10381,6 +10386,7 @@ async function boot(): Promise<void> {
         const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
         if (!unitDef) continue;
         if (!canAffordBuildingStock(pool, unitStockCost(unitDef))) continue;
+        if (!canAffordUnitRecruitUpkeepReserve(pool, unitDef)) continue;
         if (!canAffordUnitManpowerEmpire(
           cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
         )) continue;
@@ -10454,6 +10460,7 @@ async function boot(): Promise<void> {
           const unitDef = data.units.find(u => String(u.Jednostka) === item.id);
           if (!unitDef) continue;
           if (!canAffordBuildingStock(pool, unitStockCost(unitDef))) continue;
+          if (!canAffordUnitRecruitUpkeepReserve(pool, unitDef)) continue;
           if (!canAffordUnitManpowerEmpire(
             cities, city.ownerId, city, ep, UNIT_POPULATION_COST, mpMaxMult, item.id,
           )) continue;
@@ -21371,9 +21378,12 @@ async function boot(): Promise<void> {
                   return canAffordBuildingStock(ownerSurowcePoolFor(c.ownerId), cost);
                 }
                 const unitDef = data.units.find(u => u.Jednostka === buildingId);
+                if (!unitDef) return true;
+                const pool = ownerSurowcePoolFor(c.ownerId);
                 const unitCost = unitStockCost(unitDef);
-                if (Object.keys(unitCost).length === 0) return true;
-                return canAffordBuildingStock(ownerSurowcePoolFor(c.ownerId), unitCost);
+                if (Object.keys(unitCost).length > 0
+                  && !canAffordBuildingStock(pool, unitCost)) return false;
+                return canAffordUnitRecruitUpkeepReserve(pool, unitDef);
               },
               // P-AI-014: bramka tech/epoka/prereq — ta sama semantyka co handler build niżej
               // (availableProduction). Bez tego chooseCityProduction wybiera studnia/mury itd.
@@ -22263,14 +22273,21 @@ async function boot(): Promise<void> {
                         }
                         const unitDef = data.units.find(u => u.Jednostka === item.id);
                         const cost = unitStockCost(unitDef);
+                        const pool = ownerSurowcePoolFor(ownerId);
                         if (Object.keys(cost).length > 0) {
-                          if (!canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost)) {
+                          if (!canAffordBuildingStock(pool, cost)) {
                             console.warn(
                               `[AI ${ownerId}] Build skipped (brak surowca w magazynie panstwa): ${cmd.buildingId}`,
                             );
                             continue;
                           }
                           deductOwnerStockCost(ownerId, cost);
+                        }
+                        if (!canAffordUnitRecruitUpkeepReserve(pool, unitDef)) {
+                          console.warn(
+                            `[AI ${ownerId}] Build skipped (brak rezerwy utrzymania surowcowego): ${cmd.buildingId}`,
+                          );
+                          continue;
                         }
                       }
                       cityProd.set(cmd.cityId, enqueue(prod0, item));

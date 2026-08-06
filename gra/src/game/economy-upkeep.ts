@@ -44,6 +44,7 @@
 
 import type { BuildingRecord } from './economy';
 import type { BuildingStockCost } from './building-stock-cost';
+import { canAffordBuildingStock } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
@@ -700,6 +701,37 @@ export function unitResourceUpkeep(
     if (key) out[key] = ilosc;
   }
   return out;
+}
+
+/**
+ * R-AI-RECRUIT-UPKEEP-GATE (Maciej 2026-08-06): przy rekrutacji jednostki pula
+ * państwa musi pokryć N tur surowcowego utrzymania tej jednostki (oprócz kosztu
+ * rekrutacji unitStockCost). Domyślnie N=1 (1× utrzymanie/turę, nie 5 tur).
+ * OWNERID-AGNOSTIC — identycznie gracz / AI / miasto-państwo.
+ */
+export const UNIT_RECRUIT_UPKEEP_RESERVE_TURNS = 1;
+
+/** Wymagana rezerwa surowców w puli państwa przed rekrutacją (N × utrzymanie/turę). */
+export function unitRecruitUpkeepReserve(
+  unitDef: UnitResourceUpkeepSource | null | undefined,
+  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+): Record<string, number> {
+  const upkeep = unitResourceUpkeep(unitDef);
+  if (turns === 1) return upkeep;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(upkeep)) {
+    if (v > 0) out[k] = v * turns;
+  }
+  return out;
+}
+
+/** Czy pula państwa pokrywa rezerwę utrzymania surowcowego na rekrutację. */
+export function canAffordUnitRecruitUpkeepReserve(
+  pool: Record<string, number> | undefined,
+  unitDef: UnitResourceUpkeepSource | null | undefined,
+  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+): boolean {
+  return canAffordBuildingStock(pool, unitRecruitUpkeepReserve(unitDef, turns));
 }
 
 /** Suma utrzymania surowcowego po żywych jednostkach (typeId → resolveDef). */

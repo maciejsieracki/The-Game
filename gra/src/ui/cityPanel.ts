@@ -179,7 +179,7 @@ import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { axialToWorld, HEX_R } from '../render/hexutil';
 import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
-import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts, unitResourceUpkeep } from '../game/economy-upkeep';
+import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts, unitResourceUpkeep, canAffordUnitRecruitUpkeepReserve, unitRecruitUpkeepReserve } from '../game/economy-upkeep';
 import {
   type TradeRoute,
 } from '../game/trade-routes';
@@ -5344,10 +5344,14 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
     // JEDNOSTKI-SUROWIEC-01: identyczny wzorzec jak budynki powyżej -- pobór RAZ przy
     // enqueue do kolejki Pracy; anulowanie (cancelQueueItem) zwraca surowiec symetrycznie.
     const cost = unitStockCostForItem(item);
+    const pool = ownerSurowcePoolFor(city);
     if (Object.keys(cost).length > 0) {
-      if (!canAffordBuildingStock(ownerSurowcePoolFor(city), cost)) return; // blokada: pula panstwa nie starcza
+      if (!canAffordBuildingStock(pool, cost)) return; // blokada: pula panstwa nie starcza
+      // pobór RAZ, przy starcie rekrutacji — rozłożony po miastach ownera (pula PAŃSTWA).
       deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
     }
+    const def = gameData()?.units.find(u => u.Jednostka === item.id);
+    if (!canAffordUnitRecruitUpkeepReserve(pool, def)) return; // R-AI-RECRUIT-UPKEEP-GATE
   }
   setProd(city.id, enqueue(getProd(city.id), item));
   rerender();
@@ -6780,20 +6784,30 @@ function appendUnitRecruitCompactRow(
   const stockCost = unitStockCost(udef);
   const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
   const stockOk = Object.keys(stockMissing).length === 0;
+  const upkeepReserve = unitRecruitUpkeepReserve(udef);
+  const upkeepMissing = missingStockFor(ownerSurowcePoolFor(city), upkeepReserve);
+  const upkeepOk = Object.keys(upkeepMissing).length === 0;
+  const recruitOk = stockOk && upkeepOk;
   const row = buildUnitRecruitCard({
     udef,
     item,
     data,
     skarb,
-    canPurchase: !!cfg.onPurchaseUnit && canMp && stockOk,
+    canPurchase: !!cfg.onPurchaseUnit && canMp && recruitOk,
     treasuryIconHtml: cityPanelChipIconWrap('res-treasury', 14),
     mpCost,
     mpCostLabel: formatManpower(mpCost),
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
     resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
-    stockMissingLabel: stockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(stockMissing)
-      .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
-      .join(', '),
+    stockMissingLabel: !recruitOk
+      ? (!stockOk
+        ? 'Brakuje w magazynie: ' + Object.entries(stockMissing)
+          .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+          .join(', ')
+        : 'Za mało na utrzymanie (1 tura): ' + Object.entries(upkeepMissing)
+          .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+          .join(', '))
+      : undefined,
     onRecruit: () => recruitUnit(city, item),
   });
   attachHoverDetail(row, () => buildUnitDetailCard(udef, data), 220, 'left');
@@ -6805,6 +6819,10 @@ function recruitUnit(city: City, item: ProductionItem): void {
   if (skarb !== undefined && skarb < item.koszt) return;
   const mpCost = recruitManpowerCost(city, item.id);
   if (!empireRekruciAffordable(city, mpCost)) return;
+  const data = gameData();
+  const udef = data ? findUnitDef(data, item.id) : undefined;
+  const pool = ownerSurowcePoolFor(city);
+  if (!canAffordUnitRecruitUpkeepReserve(pool, udef)) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
   } else {
