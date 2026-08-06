@@ -5,6 +5,9 @@
  */
 
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
+
+const OVERLAY_ID = 'city-foreign-pick';
 
 export interface CityForeignPickOptions {
   cityName: string;
@@ -124,6 +127,7 @@ function detachKeyboard(): void {
 
 export function hideCityForeignPick(): void {
   detachKeyboard();
+  popOverlay(OVERLAY_ID);
   if (root) {
     root.remove();
     root = null;
@@ -213,12 +217,6 @@ export function showCityForeignPick(opts: CityForeignPickOptions): void {
   btnInfo.focus();
 
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      hideCityForeignPick();
-      opts.onCancel?.();
-      return;
-    }
     if (e.key === '1') {
       e.preventDefault();
       pick(opts.onInfo);
@@ -239,4 +237,8 @@ export function showCityForeignPick(opts: CityForeignPickOptions): void {
     }
   };
   document.addEventListener('keydown', keyHandler);
+  pushOverlay(OVERLAY_ID, () => {
+    hideCityForeignPick();
+    opts.onCancel?.();
+  });
 }

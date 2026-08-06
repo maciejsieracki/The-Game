@@ -73,6 +73,12 @@ const MAP_OVERLAY_IDS = [
   'save-load-dialog',
   'science-hub',
   'city-list',
+  'city-attack-choice',
+  'city-capture-notice',
+  'city-foreign-pick',
+  'city-unit-pick',
+  'unit-foreign-pick',
+  'unit-replace-picker',
 ];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();

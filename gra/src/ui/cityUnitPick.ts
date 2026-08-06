@@ -10,6 +10,9 @@
 
 import { formatArmiaLabel } from './formatPl';
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
+
+const OVERLAY_ID = 'city-unit-pick';
 
 export interface CityUnitPickOptions {
   cityName: string;
@@ -134,6 +137,7 @@ function detachKeyboard(): void {
 
 export function hideCityUnitPick(): void {
   detachKeyboard();
+  popOverlay(OVERLAY_ID);
   if (root) {
     root.remove();
     root = null;
@@ -234,12 +238,6 @@ export function showCityUnitPick(opts: CityUnitPickOptions): void {
   btnCity.focus();
 
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      hideCityUnitPick();
-      opts.onCancel?.();
-      return;
-    }
     if (e.key === '1') {
       e.preventDefault();
       pick(opts.onCity);
@@ -260,4 +258,8 @@ export function showCityUnitPick(opts: CityUnitPickOptions): void {
     }
   };
   document.addEventListener('keydown', keyHandler);
+  pushOverlay(OVERLAY_ID, () => {
+    hideCityUnitPick();
+    opts.onCancel?.();
+  });
 }
