@@ -116,7 +116,6 @@ import {
 import {
   buildAxeWarriorInka as newBuildAxeWarriorInka,
   buildInkaSlinger as newBuildInkaSlinger,
-  buildSuperInca as newBuildSuperInca,
 } from './jednostki-p2-inka';
 import {
   buildAkkadianArcher as newBuildAkkadianArcher,
@@ -137,10 +136,6 @@ import {
 } from './jednostki-p57-wlocznie-machiny';
 import {
   buildSuperGreece as newBuildSuperGreece,
-  buildSuperChina as newBuildSuperChina,
-  buildSuperZulu as newBuildSuperZulu,
-  buildSuperEgypt as newBuildSuperEgypt,
-  buildSuperSumer as newBuildSuperSumer,
   buildSuperRome as newBuildSuperRome,
 } from './jednostki-p6-super';
 import {
@@ -969,6 +964,26 @@ function cultureHouseColor(c: Culture): number {
 // ---------------------------------------------------------------------------
 
 /**
+ * Super-jednostki, dla których model NAZWANY (buildNamedUnit) ma pierwszeństwo
+ * przed generycznym modelem „na kulturę" (buildSuperUnit).  Fragmenty nazw są
+ * już ASCII-zwinięte (normName), po PL i po EN — dokładnie te same, których
+ * używa buildNamedUnit, więc obie listy nie mogą się rozjechać niezauważenie.
+ *
+ * Pięć nazw = pięć jednostek z units.json (Super-jednostka = TAK):
+ *   „Hu Ben Wei (Gwardia Tygrysa)"  Chińczycy  → buildHuBenWei
+ *   „uThulwana (Białe Tarcze)"      Zulusi     → buildUThulwana
+ *   „Królewska Gwardia"             Inkowie    → buildInkaRoyalGuard
+ *   „Medżaj (Gwardia Faraona)"      Egipt      → buildMedjay
+ *   „Gwardia Królewska Sumeru"      Sumerowie  → buildSumerianRoyalGuard
+ *
+ * Rozróżnienie „Królewska Gwardia" (Inka) vs „Gwardia Królewska Sumeru"
+ * rozstrzyga samo buildNamedUnit (sprawdza sumer PRZED inkaskim royal guard) —
+ * tutaj wystarczy, żeby obie nazwy w ogóle trafiły do buildNamedUnit.
+ */
+const SUPER_Z_MODELEM_NAZWANYM =
+  /hu ben wei|tiger guard|gwardia tygrysa|uthulwana|white shields|biale tarcze|krolewska gwardia|royal guard|medzaj|medjay|gwardia faraona|gwardia krolewska sumeru|qurubuti/;
+
+/**
  * Returns a THREE.Group representing a unit of the given category.
  * Owner color appears on a clearly visible sash/shield/crest/cape per unit.
  * All geometries are shared singletons; all materials are per-token (collected
@@ -986,6 +1001,26 @@ function cultureHouseColor(c: Culture): number {
 export function buildUnitModel(category: string, ownerColor_: number, unitName?: string): THREE.Group {
   // Super-units dispatch to per-culture elite guards (visually distinct).
   if (category === 'super' && unitName) {
+    // MARTWY KOD — NAPRAWA (2026-08-06): pięć super-jednostek ma w
+    // buildNamedUnit własną, dużo bogatszą funkcję nazwaną (buildHuBenWei,
+    // buildUThulwana, buildInkaRoyalGuard, buildMedjay,
+    // buildSumerianRoyalGuard), ale ta gałąź `category === 'super'` łapała je
+    // WCZEŚNIEJ i odsyłała do generyka „na kulturę" — funkcje nazwane nigdy
+    // się nie wykonywały. Dla tych pięciu nazw (i TYLKO dla nich) pytamy
+    // najpierw buildNamedUnit.
+    //
+    // Dlaczego BIAŁA LISTA, a nie zwykłe „najpierw nazwa, potem kultura":
+    // buildNamedUnit łapie też nazwy pozostałych super-jednostek, ale modelami
+    // przeznaczonymi dla ICH ZWYKŁYCH ODPOWIEDNIKÓW —
+    //   „Wojownik germański" (SUPER)  → buildGermanWarrior (zwykły wojownik),
+    //   „Hieros Lochos"      (SUPER)  → buildHierosLochos,
+    // więc bezwarunkowa zamiana kolejności zdegradowałaby germańskiego supera
+    // i po cichu podmieniła greckiego. Evocati i Triari nie mają wpisu
+    // nazwanego i tak czy siak idą do buildSuperUnit.
+    if (SUPER_Z_MODELEM_NAZWANYM.test(normName(unitName))) {
+      const named = buildNamedUnit(normName(unitName), ownerColor_);
+      if (named) return named;   // brak wpisu → spadamy do generyka niżej
+    }
     return buildSuperUnit(cultureFromName(unitName), ownerColor_, unitName);
   }
   // NAME-keyed bespoke models for the new units (Celts, Germans, Bronze
@@ -1537,39 +1572,75 @@ function buildMedjay(ownerColor_: number): THREE.Group {
   mCollE.position.set(0, AV_Y_TORSO_TOP - 0.042 * HEX_R, 0.002 * HEX_R);
   group.add(mCollE);
 
-  // --- NAKRYCIE GŁOWY: pasiaste (nemes-like) z ownerColor pasami ---
-  // Główna tkanina głowy (lniano-niebieska, trochę szersza niż głowa)
-  const gNemes = new THREE.BoxGeometry(0.165 * HEX_R, 0.115 * HEX_R, 0.165 * HEX_R);
+  // --- NAKRYCIE GŁOWY: NEMES (chusta) — czapa na CIEMIENIU, twarz odsłonięta ---
+  // NAPRAWA 2026-08-06: poprzednia wersja stawiała bryłę 0.165³ na środku głowy
+  // (AV_HEAD_S = 0.13), więc chusta była SZERSZA i GŁĘBSZA niż głowa i zasłaniała
+  // całą twarz razem z oczami (z = AV_HEAD_S*0.5 + 0.003 = 0.068 < 0.0825 przodu
+  // chusty). Z kąta gry 52° figurka czytała się jako niebieski klocek bez głowy.
+  // Teraz chusta siada na CIEMIENIU (dół 0.535 > linia oczu 0.525), a twarz
+  // obramowują lapety opadające na ramiona — czyli tak, jak nemes wygląda.
+  const NEM_Y = AV_Y_HEAD_CTR + 0.055 * HEX_R;
+  const gNemes = new THREE.BoxGeometry(0.158 * HEX_R, 0.072 * HEX_R, 0.162 * HEX_R);
   perGeo.push(gNemes);
   const mNemesM = new THREE.Mesh(gNemes, mBlue);
-  mNemesM.position.set(0, AV_Y_HEAD_CTR + 0.018 * HEX_R, -0.003 * HEX_R);
+  mNemesM.position.set(0, NEM_Y, -0.004 * HEX_R);
   group.add(mNemesM);
-  // Pasy ownerColor (3 pionowe poziome paski na czole)
-  for (let ni = 0; ni < 3; ni++) {
-    const gStripe = new THREE.BoxGeometry(0.165 * HEX_R, 0.014 * HEX_R, 0.012 * HEX_R);
+  // Pasy nemes (ownerColor + złoto) na PRZEDNIEJ ścianie chusty — nad oczami.
+  for (let ni = 0; ni < 2; ni++) {
+    const gStripe = new THREE.BoxGeometry(0.158 * HEX_R, 0.015 * HEX_R, 0.012 * HEX_R);
     perGeo.push(gStripe);
-    const mStripe = new THREE.Mesh(gStripe, (ni % 2 === 0) ? mOwner : mGold);
-    mStripe.position.set(0, AV_Y_HEAD_CTR + 0.050 * HEX_R - ni * 0.020 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+    const mStripe = new THREE.Mesh(gStripe, (ni === 0) ? mOwner : mGold);
+    mStripe.position.set(0, NEM_Y + 0.018 * HEX_R - ni * 0.030 * HEX_R, 0.082 * HEX_R);
     group.add(mStripe);
   }
-  // Lapety nemes (opuszczające się na ramiona po bokach)
+  // Złota opaska czołowa tuż nad brwiami (oddziela chustę od twarzy).
+  const gBand = new THREE.BoxGeometry(0.150 * HEX_R, 0.016 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gBand);
+  const mBandM = new THREE.Mesh(gBand, mGold);
+  mBandM.position.set(0, AV_Y_HEAD_CTR + 0.040 * HEX_R, AV_HEAD_S * 0.5 + 0.006 * HEX_R);
+  group.add(mBandM);
+  // Lapety nemes — opadają PRZED ramionami i obramowują twarz.
   for (const sx of [-1, 1]) {
-    const gLap = new THREE.BoxGeometry(0.038 * HEX_R, 0.100 * HEX_R, 0.020 * HEX_R);
+    const gLap = new THREE.BoxGeometry(0.040 * HEX_R, 0.130 * HEX_R, 0.026 * HEX_R);
     perGeo.push(gLap);
     const mLap = new THREE.Mesh(gLap, mBlue);
-    mLap.position.set(sx * (AV_HEAD_S * 0.5 + 0.017 * HEX_R), AV_Y_HEAD_CTR - 0.038 * HEX_R, 0.025 * HEX_R);
+    mLap.position.set(sx * (AV_HEAD_S * 0.5 + 0.019 * HEX_R), AV_Y_HEAD_CTR - 0.018 * HEX_R, 0.040 * HEX_R);
     group.add(mLap);
   }
-  // Złoty uraeus na czole
-  const gUra = new THREE.BoxGeometry(0.020 * HEX_R, 0.028 * HEX_R, 0.016 * HEX_R);
+  // Tren chusty z tyłu (warkocz nemes).
+  const gQueue = new THREE.BoxGeometry(0.072 * HEX_R, 0.115 * HEX_R, 0.030 * HEX_R);
+  perGeo.push(gQueue);
+  const mQueue = new THREE.Mesh(gQueue, mBlue);
+  mQueue.position.set(0, AV_Y_HEAD_CTR - 0.010 * HEX_R, -(AV_HEAD_S * 0.5 + 0.022 * HEX_R));
+  group.add(mQueue);
+  // Złoty uraeus (kobra) na czole — nad opaską, przed chustą.
+  const gUra = new THREE.BoxGeometry(0.020 * HEX_R, 0.030 * HEX_R, 0.016 * HEX_R);
   perGeo.push(gUra);
   const mUra = new THREE.Mesh(gUra, mGold);
-  mUra.position.set(0, AV_Y_HEAD_CTR + 0.048 * HEX_R, AV_HEAD_S * 0.5 + 0.010 * HEX_R);
+  mUra.position.set(0, AV_Y_HEAD_CTR + 0.062 * HEX_R, AV_HEAD_S * 0.5 + 0.014 * HEX_R);
   group.add(mUra);
+  // PIÓRO STRUSIE (znak Medżaja / pióro Maat) — jedyny element, który wynosi
+  // sylwetkę do konwencyjnych ~0.75 × HEX_R; pozostałe supery robią to
+  // pióropuszem (uThulwana, Inka) albo hełmem z kitą (Hu Ben Wei).
+  const gFeat = new THREE.BoxGeometry(0.024 * HEX_R, 0.150 * HEX_R, 0.013 * HEX_R);
+  perGeo.push(gFeat);
+  const mFeat = new THREE.Mesh(gFeat, mat(COLOR_PAINT_WHT, 0.03, 0.94));
+  mFeat.rotation.z = 0.10;
+  mFeat.position.set(0.012 * HEX_R, NEM_Y + 0.108 * HEX_R, -0.016 * HEX_R);
+  group.add(mFeat);
+  const gFeatB = new THREE.BoxGeometry(0.030 * HEX_R, 0.022 * HEX_R, 0.018 * HEX_R);
+  perGeo.push(gFeatB);
+  const mFeatB = new THREE.Mesh(gFeatB, mGold);   // złota tulejka pióra
+  mFeatB.position.set(0.006 * HEX_R, NEM_Y + 0.040 * HEX_R, -0.016 * HEX_R);
+  group.add(mFeatB);
 
-  // --- KHOPESH (sierpowaty miecz) — prawa ręka ---
-  const KH_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.012 * HEX_R;
-  const KH_Y_BASE = AV_Y_TORSO_CTR - 0.04 * HEX_R;
+  // --- KHOPESH (sierpowaty miecz) — prawa ręka, PODNIESIONY DO CIOSU ---
+  // NAPRAWA 2026-08-06: dawniej rękojeść siedziała na x = 0.165, czyli OBOK
+  // ramienia (0.093..0.153) — miecz wisiał w powietrzu obok figurki. Teraz oś
+  // broni przechodzi przez dłoń, a klinga idzie w górę ponad bark (tak samo
+  // rozwiązuje to nowszy model p6 „khopesz w ciosie").
+  const KH_X = AV_ARM_OFFSET_X;
+  const KH_Y_BASE = AV_Y_TORSO_CTR + 0.035 * HEX_R;
   // Rękojeść
   const mGrip = new THREE.Mesh(getGeoSwordGrip(), mWood);
   mGrip.position.set(KH_X, KH_Y_BASE + 0.050 * HEX_R, 0.015 * HEX_R);
@@ -1602,24 +1673,32 @@ function buildMedjay(ownerColor_: number): THREE.Group {
   }
 
   // --- OWALNA TARCZA HIDE (fig-8 / owalna skóra) — lewa ręka ---
-  // Symulacja fig-8 jako dwa nakładające się owale (dwa CylindreGeometry)
+  // NAPRAWA 2026-08-06 — ORIENTACJA TARCZY. getGeoOvalShield() to walec o osi
+  // wzdłuż lokalnego Y. Poprzednie `rotation.z = π/2` kładło tę oś na światowy
+  // X, czyli LICO tarczy patrzyło w bok (±X). Kamera gry stoi na azymucie 0 pod
+  // 52°, więc patrzyła na tarczę DOKŁADNIE KRAWĘDZIĄ — z figurki wystawał tylko
+  // pionowy pasek grubości 0.018 i tarczy w ogóle nie było widać. Poprawne jest
+  // `rotation.x = π/2` (oś walca → światowe +Z, lico do kamery) — dokładnie tak
+  // robi nowszy pakiet modeli (jednostki-p6-super.ts, `face.rotation.x = π/2`).
+  // Przy tej rotacji skala mapuje się: X → szerokość, Z → wysokość, Y → grubość.
   const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
-  // Górna część (okrągła, mniejsza)
+  const SH_Z = 0.046 * HEX_R;                      // przed przedramieniem
+  // Górna część fig-8 (węższa)
   const mShTop = new THREE.Mesh(getGeoOvalShield(), mHide);
-  mShTop.rotation.z = Math.PI / 2;
-  mShTop.scale.set(1.0, 0.92, 0.92);
-  mShTop.position.set(SH_X, AV_Y_TORSO_CTR + 0.080 * HEX_R, 0.012 * HEX_R);
+  mShTop.rotation.x = Math.PI / 2;
+  mShTop.scale.set(0.84, 1.0, 1.03);
+  mShTop.position.set(SH_X, AV_Y_TORSO_CTR + 0.072 * HEX_R, SH_Z);
   group.add(mShTop);
-  // Dolna część (nieco większa)
+  // Dolna część fig-8 (szersza)
   const mShBot = new THREE.Mesh(getGeoOvalShield(), mHide);
-  mShBot.rotation.z = Math.PI / 2;
-  mShBot.scale.set(1.0, 1.05, 1.05);
-  mShBot.position.set(SH_X, AV_Y_TORSO_CTR - 0.060 * HEX_R, 0.012 * HEX_R);
+  mShBot.rotation.x = Math.PI / 2;
+  mShBot.scale.set(0.97, 1.0, 1.16);
+  mShBot.position.set(SH_X, AV_Y_TORSO_CTR - 0.055 * HEX_R, SH_Z);
   group.add(mShBot);
-  // Brązowy boss pośrodku (ownerColor)
+  // Brązowy boss pośrodku
   const mBoss = new THREE.Mesh(getGeoShieldBoss(), mBronzL);
-  mBoss.rotation.z = Math.PI / 2;
-  mBoss.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR + 0.010 * HEX_R, 0.020 * HEX_R);
+  mBoss.rotation.x = Math.PI / 2;
+  mBoss.position.set(SH_X, AV_Y_TORSO_CTR + 0.010 * HEX_R, SH_Z + 0.012 * HEX_R);
   group.add(mBoss);
 
   addBoots(group, mLeath);
@@ -3755,11 +3834,12 @@ function buildSuperUnit(culture: Culture, ownerColor_: number, _name: string): T
     // ignorowany. Rozróżniamy po nazwie -- Triari dostaje własny bespoke model.
     case 'rzym':   return normName(_name).includes('triari') ? buildTriari(ownerColor_) : buildSuperRome(ownerColor_);
     case 'grecja': return buildSuperGreece(ownerColor_);
-    case 'chiny':  return buildSuperChina(ownerColor_);
-    case 'zulu':   return buildSuperZulu(ownerColor_);
-    case 'inka':   return buildSuperInca(ownerColor_);
-    case 'egipt':  return buildSuperEgypt(ownerColor_);
-    case 'sumer':  return buildSuperSumer(ownerColor_);
+    // 'chiny'/'zulu'/'inka'/'egipt'/'sumer' USUNIĘTE (R-BRAZ-SUPER-DISPATCH-Q1=A,
+    // Maciej 2026-08-06: "nowe wprowadzamy, stare usuwamy") — te 5 kultur ma
+    // dziś dedykowane, naprawione modele (buildHuBenWei/buildUThulwana/
+    // buildInkaRoyalGuard/buildMedjay/buildSumerianRoyalGuard) przechwytywane
+    // WCZEŚNIEJ w buildNamedUnit() przez SUPER_Z_MODELEM_NAZWANYM, więc ta
+    // gałąź nigdy by ich nie zobaczyła — usunięto zamiast zostawić martwą.
     // GRAFIKA-JEDNOSTKI 2b — FIX ROUTINGU GERMANA (dopisek 3/3): "Wojownik
     // germański" SUPER dostaje bespoke model zamiast generycznego super.
     case 'germanie': return buildGermanSuper(ownerColor_);
@@ -3776,48 +3856,12 @@ function buildSuperRome(ownerColor_: number): THREE.Group {
   return newBuildSuperRome(ownerColor_);
 }
 
-// --- uThulwana (Zulu, White Shields) --------------------------------------
-// Ochre body, large WHITE/BLACK cowhide oval shield, tall OSTRICH-FEATHER
-// headdress, short iklwa stabbing spear.  No metal armour or helmet.
-function buildSuperZulu(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p6-super.ts).
-  return newBuildSuperZulu(ownerColor_);
-}
-
 // --- Hieros Lochos (Greece, Sacred Band) ----------------------------------
 // Bronze hoplite panoply: Corinthian helm + TALL crimson crest, blue/crimson
 // cloak, large round bronze-rimmed ASPIS, long dory spear.
 function buildSuperGreece(ownerColor_: number): THREE.Group {
   // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p6-super.ts).
   return newBuildSuperGreece(ownerColor_);
-}
-
-// --- Hu Ben Wei (China, Tiger Guard) --------------------------------------
-// Lacquer red/black lamellar, BRASS helm, tiger stripes, long dao/spear.
-function buildSuperChina(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p6-super.ts).
-  return newBuildSuperChina(ownerColor_);
-}
-
-// --- Królewska Gwardia (Inca) ---------------------------------------------
-// Vivid Andean textiles (ochre + red), gold trim, FEATHERED helm, star-mace.
-function buildSuperInca(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p2-inka.ts).
-  return newBuildSuperInca(ownerColor_);
-}
-
-// --- Medżaj (Egypt, Pharaoh's Guard) --------------------------------------
-// White kilt + gold, BLUE-STRIPED nemes-style headdress, khopesh, hide shield.
-function buildSuperEgypt(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p6-super.ts).
-  return newBuildSuperEgypt(ownerColor_);
-}
-
-// --- Gwardia Królewska Sumeru (Sumer) -------------------------------------
-// COPPER lamellar, CONICAL helm, spear, large rectangular shield.
-function buildSuperSumer(ownerColor_: number): THREE.Group {
-  // GRAFIKA-JEDNOSTKI: deleguje do bespoke modelu (jednostki-p6-super.ts).
-  return newBuildSuperSumer(ownerColor_);
 }
 
 // ===========================================================================
@@ -3880,27 +3924,47 @@ function buildSumerianRoyalGuard(ownerColor_: number): THREE.Group {
   }
 
   // WYSOKI STOŻKOWY HEŁM miedziano-brązowy (wyższy niż w buildSuperSumer)
-  const mHelm = new THREE.Mesh(getGeoConicalHelm(), mCopper);
-  mHelm.scale.set(1.10, 1.45, 1.10);  // wyraźnie wyższy
-  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.060 * HEX_R, 0);
+  // NAPRAWA 2026-08-06 — HEŁM POŁYKAŁ CAŁĄ GŁOWĘ. Stożek przy skali (1.10, 1.45,
+  // 1.10) ma dolny promień 0.094 (głowa: połowa boku 0.065) i spód na y = 0.510,
+  // czyli PONIŻEJ linii oczu (0.525) — z kąta gry widać było brązową bryłę bez
+  // twarzy. Do tego obręcz 0.175 × 0.175 na wysokości oczu dokładała z góry
+  // beżową „płytę" (efekt opisany przy opasce uThulwany).
+  // Teraz stożek jest węższy u podstawy i podniesiony ponad linię oczu, a obręcz
+  // jest płytka i wsunięta w czaszkę.
+  // Hełm w JASNEJ miedzi — kirys jest w miedzi ciemnej, więc głowa odcina się
+  // od korpusu (dawniej oba na mCopper = jednolita brązowa bryła).
+  const mHelm = new THREE.Mesh(getGeoConicalHelm(), mCopL);
+  mHelm.scale.set(0.94, 1.50, 0.94);   // dolny promień 0.080, wysokość 0.135
+  mHelm.position.set(0, AV_Y_HEAD_CTR + 0.100 * HEX_R, 0);
   group.add(mHelm);
-  const gBrow = new THREE.BoxGeometry(0.175 * HEX_R, 0.026 * HEX_R, 0.175 * HEX_R);
+  // Obręcz hełmu — nad brwiami, płytsza niż głowa.
+  const gBrow = new THREE.BoxGeometry(0.164 * HEX_R, 0.022 * HEX_R, 0.144 * HEX_R);
   perGeo.push(gBrow);
   const mBrow = new THREE.Mesh(gBrow, mCopL);
-  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.006 * HEX_R, 0);
+  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.042 * HEX_R, -0.004 * HEX_R);
   group.add(mBrow);
+  // Czarna broda sumeryjska — charakterystyczny detal, oddziela twarz od kolczugi.
+  const gBeard = new THREE.BoxGeometry(0.072 * HEX_R, 0.052 * HEX_R, 0.024 * HEX_R);
+  perGeo.push(gBeard);
+  const mBeard = new THREE.Mesh(gBeard, mDark);
+  mBeard.position.set(0, AV_Y_HEAD_CTR - 0.040 * HEX_R, AV_HEAD_S * 0.5 + 0.004 * HEX_R);
+  group.add(mBeard);
 
   // DŁUGA WŁÓCZNIA (dłuższa od standardowej — pełna wysokość super+)
+  // NAPRAWA 2026-08-06: przy grocie na 0.62 cała sylwetka kończyła się na
+  // 0.661 × HEX_R, czyli poniżej konwencyjnych ~0.75. Drzewce wydłużone
+  // z 0.60 na 0.68 — grot wychodzi ponad hełm i jednostka czyta się jako
+  // włócznik, a nie jako niska bryła.
   const SP_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.016 * HEX_R;
   const SP_BOT = AV_Y_LEG_BOT + 0.00 * HEX_R;
-  const gShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.60 * HEX_R, 0.016 * HEX_R);
+  const gShaft = new THREE.BoxGeometry(0.016 * HEX_R, 0.68 * HEX_R, 0.016 * HEX_R);
   perGeo.push(gShaft);
   const mShaft = new THREE.Mesh(gShaft, mWood);
-  mShaft.position.set(SP_X, SP_BOT + 0.30 * HEX_R, 0.01 * HEX_R);
+  mShaft.position.set(SP_X, SP_BOT + 0.34 * HEX_R, 0.01 * HEX_R);
   group.add(mShaft);
   const mTip = new THREE.Mesh(getGeoSpearTip(), mCopL);
   mTip.scale.set(1.2, 1.5, 1.2);
-  mTip.position.set(SP_X, SP_BOT + 0.62 * HEX_R, 0.01 * HEX_R);
+  mTip.position.set(SP_X, SP_BOT + 0.712 * HEX_R, 0.01 * HEX_R);
   group.add(mTip);
   // Kolec stopki
   const gButt = new THREE.BoxGeometry(0.012 * HEX_R, 0.030 * HEX_R, 0.012 * HEX_R);
@@ -3919,11 +3983,15 @@ function buildSumerianRoyalGuard(ownerColor_: number): THREE.Group {
   group.add(mBlade);
 
   // PROSTOKĄTNA TARCZA WIEŻOWA (duża, ownerColor + miedziany obramek)
+  // NAPRAWA 2026-08-06: tarcza stała na z = 0.014, więc chowała się w linii
+  // przedramienia i korpusu; wysunięta przed rękę czyta się jako tarcza.
   const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.022 * HEX_R);
+  const SH_Y = AV_Y_TORSO_CTR + 0.02 * HEX_R;
+  const SH_Z = 0.046 * HEX_R;
   const gSh = new THREE.BoxGeometry(0.148 * HEX_R, 0.270 * HEX_R, 0.018 * HEX_R);
   perGeo.push(gSh);
   const mSh = new THREE.Mesh(gSh, mOwner);
-  mSh.position.set(SH_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.014 * HEX_R);
+  mSh.position.set(SH_X, SH_Y, SH_Z);
   group.add(mSh);
   for (const [w, h, ox, oy] of [
     [0.148, 0.018, 0,      0.126], [0.148, 0.018, 0, -0.126],
@@ -3932,7 +4000,7 @@ function buildSumerianRoyalGuard(ownerColor_: number): THREE.Group {
     const gBar = new THREE.BoxGeometry(w * HEX_R, h * HEX_R, 0.022 * HEX_R);
     perGeo.push(gBar);
     const mBar = new THREE.Mesh(gBar, mCopL);
-    mBar.position.set(SH_X + ox * HEX_R, AV_Y_TORSO_CTR + 0.02 * HEX_R + oy * HEX_R, 0.018 * HEX_R);
+    mBar.position.set(SH_X + ox * HEX_R, SH_Y + oy * HEX_R, SH_Z + 0.004 * HEX_R);
     group.add(mBar);
   }
 
@@ -3995,25 +4063,38 @@ function buildHuBenWei(ownerColor_: number): THREE.Group {
   }
   addPteruges(group, mRed);
 
-  // HEŁM mosiężny + PIÓROPUSZ (ownerColor + złoto)
-  const gDome = new THREE.CylinderGeometry(0.070 * HEX_R, 0.088 * HEX_R, 0.080 * HEX_R, 10, 1);
+  // HEŁM mosiężny (kopuła + szerokie rondo + szpic) + PIÓROPUSZ
+  // NAPRAWA 2026-08-06 — HEŁM ZASŁANIAŁ TWARZ. Kopuła miała dolny promień 0.088
+  // (głowa ma połowę boku 0.065) i spód na y = 0.497, czyli NIŻEJ niż linia oczu
+  // (0.525) — twarzy nie było widać wcale, a rondo 0.168 × 0.168 leżące dokładnie
+  // na wysokości oczu dokładało z góry beżową „płytę" (patrz opis efektu przy
+  // opasce uThulwany). Teraz kopuła siedzi wyżej i jest węższa, a rondo jest
+  // PŁYTKIE i cofnięte, więc oczy zostają odsłonięte.
+  const gDome = new THREE.CylinderGeometry(0.062 * HEX_R, 0.080 * HEX_R, 0.082 * HEX_R, 10, 1);
   perGeo.push(gDome);
   const mDome = new THREE.Mesh(gDome, mBrass);
-  mDome.position.set(0, AV_Y_HEAD_CTR + 0.022 * HEX_R, 0);
+  mDome.position.set(0, AV_Y_HEAD_CTR + 0.062 * HEX_R, 0);
   group.add(mDome);
-  const gBrow = new THREE.BoxGeometry(0.168 * HEX_R, 0.022 * HEX_R, 0.168 * HEX_R);
+  // Rondo hełmu — cienkie, tuż nad brwiami, płytsze niż głowa (nie robi „stołu").
+  const gBrow = new THREE.BoxGeometry(0.170 * HEX_R, 0.018 * HEX_R, 0.140 * HEX_R);
   perGeo.push(gBrow);
   const mBrow = new THREE.Mesh(gBrow, mBrass);
-  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.000 * HEX_R, 0);
+  mBrow.position.set(0, AV_Y_HEAD_CTR + 0.041 * HEX_R, -0.004 * HEX_R);
   group.add(mBrow);
-  // PIÓROPUSZ wysoki (ownerColor + pomarańcz)
+  // Szpic na szczycie hełmu (typowy dla chińskich hełmów lamelkowych).
+  const gSpike = new THREE.BoxGeometry(0.020 * HEX_R, 0.038 * HEX_R, 0.020 * HEX_R);
+  perGeo.push(gSpike);
+  const mSpike = new THREE.Mesh(gSpike, mBrass);
+  mSpike.position.set(0, AV_Y_HEAD_CTR + 0.122 * HEX_R, 0);
+  group.add(mSpike);
+  // PIÓROPUSZ wysoki (ownerColor + pomarańcz) — osadzony na szpicu.
   for (const ax of [-0.30, 0.0, 0.30]) {
     const gP = new THREE.BoxGeometry(0.022 * HEX_R, 0.130 * HEX_R, 0.012 * HEX_R);
     perGeo.push(gP);
     const col = (ax === 0) ? mOwner : mTigOr;
     const mP = new THREE.Mesh(gP, col);
     mP.rotation.z = ax;
-    mP.position.set(Math.sin(ax) * 0.04 * HEX_R, AV_Y_HEAD_TOP + 0.085 * HEX_R, -0.006 * HEX_R);
+    mP.position.set(Math.sin(ax) * 0.04 * HEX_R, AV_Y_HEAD_CTR + 0.190 * HEX_R, -0.006 * HEX_R);
     group.add(mP);
   }
 
@@ -4024,17 +4105,19 @@ function buildHuBenWei(ownerColor_: number): THREE.Group {
   const mShaft = new THREE.Mesh(gShaft, mWood);
   mShaft.position.set(SP_X, AV_Y_LEG_BOT + 0.28 * HEX_R, 0.01 * HEX_R);
   group.add(mShaft);
-  // Główne ostrze halabardowe (poziome)
-  const gBlade = new THREE.BoxGeometry(0.010 * HEX_R, 0.085 * HEX_R, 0.010 * HEX_R);
+  // Główne ostrze halabardowe (pionowy szpic) — NAPRAWA 2026-08-06: było
+  // 0.010 × 0.085, czyli cieńsze niż drzewce (0.016) i z kąta gry ginęło.
+  const gBlade = new THREE.BoxGeometry(0.016 * HEX_R, 0.110 * HEX_R, 0.014 * HEX_R);
   perGeo.push(gBlade);
   const mBlade = new THREE.Mesh(gBlade, mSteel);
-  mBlade.position.set(SP_X, AV_Y_LEG_BOT + 0.58 * HEX_R, 0.01 * HEX_R);
+  mBlade.position.set(SP_X, AV_Y_LEG_BOT + 0.60 * HEX_R, 0.01 * HEX_R);
   group.add(mBlade);
-  // Boczne ostrze halabardowe (poziomo, typowe dla ji)
-  const gSideBl = new THREE.BoxGeometry(0.060 * HEX_R, 0.018 * HEX_R, 0.010 * HEX_R);
+  // Boczne ostrze halabardowe (poziome, znak rozpoznawczy ji) — powiększone,
+  // bo to ono odróżnia ji od zwykłej włóczni.
+  const gSideBl = new THREE.BoxGeometry(0.078 * HEX_R, 0.024 * HEX_R, 0.012 * HEX_R);
   perGeo.push(gSideBl);
   const mSideBl = new THREE.Mesh(gSideBl, mSteel);
-  mSideBl.position.set(SP_X + 0.022 * HEX_R, AV_Y_LEG_BOT + 0.55 * HEX_R, 0.01 * HEX_R);
+  mSideBl.position.set(SP_X + 0.031 * HEX_R, AV_Y_LEG_BOT + 0.565 * HEX_R, 0.01 * HEX_R);
   group.add(mSideBl);
   // Czerwony tassel
   const gTas = new THREE.BoxGeometry(0.028 * HEX_R, 0.046 * HEX_R, 0.028 * HEX_R);
@@ -4044,23 +4127,34 @@ function buildHuBenWei(ownerColor_: number): THREE.Group {
   group.add(mTas);
 
   // TARCZA z MOTYWEM TYGRYSA — ownerColor tło + pomarańczowy pysk tygrysa
+  // NAPRAWA 2026-08-06: tarcza leżała na z = 0.012, czyli w tej samej głębokości
+  // co pancerz, i przy „czerwonym" właścicielu zlewała się z lakierowanym
+  // pancerzem w jedną plamę. Teraz jest WYSUNIĘTA PRZED przedramię i ma CZARNĄ
+  // LAKIEROWANĄ OBWÓDKĘ, więc odcina się od korpusu przy każdym kolorze gracza;
+  // pysk tygrysa (motyw dający nazwę jednostce) powiększony z 0.080 na 0.100.
   const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.020 * HEX_R);
-  const gSh = new THREE.BoxGeometry(0.130 * HEX_R, 0.210 * HEX_R, 0.018 * HEX_R);
+  const SH_Z = 0.046 * HEX_R;
+  const gShRim = new THREE.BoxGeometry(0.146 * HEX_R, 0.226 * HEX_R, 0.014 * HEX_R);
+  perGeo.push(gShRim);
+  const mShRim = new THREE.Mesh(gShRim, mBlack);
+  mShRim.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z - 0.004 * HEX_R);
+  group.add(mShRim);
+  const gSh = new THREE.BoxGeometry(0.130 * HEX_R, 0.210 * HEX_R, 0.016 * HEX_R);
   perGeo.push(gSh);
   const mSh = new THREE.Mesh(gSh, mOwner);
-  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z);
   group.add(mSh);
   // Pysk tygrysa (pomarańczowy prostokąt + czarne paski)
-  const gFace = new THREE.BoxGeometry(0.080 * HEX_R, 0.080 * HEX_R, 0.014 * HEX_R);
+  const gFace = new THREE.BoxGeometry(0.100 * HEX_R, 0.100 * HEX_R, 0.014 * HEX_R);
   perGeo.push(gFace);
   const mFace = new THREE.Mesh(gFace, mTigOr);
-  mFace.position.set(SH_X, AV_Y_TORSO_CTR + 0.01 * HEX_R, 0.016 * HEX_R);
+  mFace.position.set(SH_X, AV_Y_TORSO_CTR + 0.01 * HEX_R, SH_Z + 0.008 * HEX_R);
   group.add(mFace);
-  for (const dy of [0.022, -0.022]) {
-    const gSt = new THREE.BoxGeometry(0.080 * HEX_R, 0.010 * HEX_R, 0.016 * HEX_R);
+  for (const dy of [0.028, -0.028]) {
+    const gSt = new THREE.BoxGeometry(0.100 * HEX_R, 0.014 * HEX_R, 0.014 * HEX_R);
     perGeo.push(gSt);
     const mSt = new THREE.Mesh(gSt, mBlack);
-    mSt.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R + 0.01 * HEX_R, 0.018 * HEX_R);
+    mSt.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R + 0.01 * HEX_R, SH_Z + 0.012 * HEX_R);
     group.add(mSt);
   }
 
@@ -4083,7 +4177,12 @@ function buildHuBenWei(ownerColor_: number): THREE.Group {
  *  • ownerColor na bandolierze + uchwycie knobkerrie
  */
 function buildUThulwana(ownerColor_: number): THREE.Group {
-  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_HIDE_RED, ownerColor_);
+  // NAPRAWA 2026-08-06: drugim argumentem buildBaseAvatar jest kolor TKANINY,
+  // którą kryte są tors, ramiona i szyja. Podanie COLOR_HIDE_RED ubierało
+  // Zulusa w czerwoną tunikę z długimi rękawami — a uThulwana walczyli z GOŁYM
+  // torsem (zbroi nie nosili wcale). Kolor skóry daje nagi tors; przepaskę
+  // biodrową (ochra) dokłada getGeoLoincloth niżej.
+  const { group, mats } = buildBaseAvatar(COLOR_SKIN_DARK, COLOR_SKIN_DARK, ownerColor_);
   const mat = makeMatFactory(mats);
   const mOchre  = mat(COLOR_HIDE_RED,  0.06, 0.84);
   const mWhite  = mat(COLOR_PAINT_WHT, 0.03, 0.94);
@@ -4128,12 +4227,35 @@ function buildUThulwana(ownerColor_: number): THREE.Group {
     group.add(mA);
   }
 
-  // OPASKA FUTRA (isigqoko) + PIÓRO ŻURAWIA na głowie
-  const gHat = new THREE.BoxGeometry(0.152 * HEX_R, 0.032 * HEX_R, 0.152 * HEX_R);
+  // OPASKA FUTRA (isicoco) + PIÓRO ŻURAWIA na głowie
+  // NAPRAWA 2026-08-06 — „PŁYTA NA GŁOWIE". Opaska leżała NAD czubkiem głowy
+  // (0.152 × 0.152 przy głowie 0.13 i grubości 0.032). Kamera gry stoi pod 52°,
+  // więc patrzy na GÓRNĄ ścianę takiej płyty: pozioma płytka o głębokości g
+  // rzutuje się na ekran jako dodatkowe g·cos(52°) ≈ 0.6·g „wysokości".
+  // Płyta 0.152 dawała więc ~0.09 pozornej wysokości ponad swoje 0.032 i
+  // czytała się jako KLOCEK zamiast opaski (to samo psuło hełm Sumeru, koronę
+  // Inków i rondo Hu Ben Wei).
+  // Lekarstwo: obręcz WSUNIĘTA w głowę — jej góra (0.560) jest niżej niż czubek
+  // głowy (0.580), więc z góry widać skórę/włosy, a opaska pokazuje się tylko
+  // jako obwódka na bokach czaszki. Dokładnie tak nosi się isicoco.
+  // Kolor: CZARNY, nie futrzany brąz — COLOR_FUR jest prawie tym samym brązem
+  // co COLOR_SKIN_DARK, więc opaska zlewała się z głową w jedną bryłę.
+  // Kolor: CZARNY, nie futrzany brąz — COLOR_FUR jest prawie tym samym brązem
+  // co COLOR_SKIN_DARK, więc opaska zlewała się z głową w jedną bryłę.
+  // Wysokość: dolna krawędź (0.545) MUSI być powyżej linii oczu (0.525),
+  // inaczej obręcz nasuwa się na twarz — a jej górna (0.573) poniżej czubka
+  // głowy (0.580), żeby nie tworzyć „płyty" oglądanej z góry pod 52°.
+  const gHat = new THREE.BoxGeometry(0.150 * HEX_R, 0.028 * HEX_R, 0.150 * HEX_R);
   perGeo.push(gHat);
-  const mHat = new THREE.Mesh(gHat, mFur);
-  mHat.position.set(0, AV_Y_HEAD_TOP + 0.006 * HEX_R, 0);
+  const mHat = new THREE.Mesh(gHat, mBlack);
+  mHat.position.set(0, AV_Y_HEAD_CTR + 0.044 * HEX_R, 0);
   group.add(mHat);
+  // Futrzany akcent isicoco na czubku (amashoba) — wąski, nie cała czapa.
+  const gHatB = new THREE.BoxGeometry(0.104 * HEX_R, 0.016 * HEX_R, 0.104 * HEX_R);
+  perGeo.push(gHatB);
+  const mHatB = new THREE.Mesh(gHatB, mFur);
+  mHatB.position.set(0, AV_Y_HEAD_TOP + 0.004 * HEX_R, 0);
+  group.add(mHatB);
   // Pióro żurawia (nkwe) — wąskie, białe, lekko skośne ku tyłowi
   const gPFeat = new THREE.BoxGeometry(0.016 * HEX_R, 0.190 * HEX_R, 0.010 * HEX_R);
   perGeo.push(gPFeat);
@@ -4176,26 +4298,40 @@ function buildUThulwana(ownerColor_: number): THREE.Group {
   mKnob.position.set(KX + 0.016 * HEX_R, AV_Y_TORSO_BOT + 0.12 * HEX_R, 0.014 * HEX_R);
   group.add(mKnob);
 
-  // DUŻA BIAŁA OWALNA TARCZA isihlangu (większa niż w buildSuperZulu)
+  // DUŻA BIAŁA OWALNA TARCZA isihlangu — znak pułku „Białe Tarcze"
+  // NAPRAWA 2026-08-06 — DWA BŁĘDY NARAZ:
+  //  (1) ORIENTACJA: `rotation.z = π/2` kładło oś walca na światowy X, więc lico
+  //      tarczy patrzyło w bok i kamera gry (azymut 0, elewacja 52°) widziała ją
+  //      DOKŁADNIE KRAWĘDZIĄ — z sylwetki wystawał biały pasek grubości 0.027
+  //      i największy atrybut jednostki (tarcza w nazwie!) był niewidoczny.
+  //      Poprawnie jest `rotation.x = π/2`, jak w jednostki-p6-super.ts.
+  //  (2) SKALA W ZŁYCH OSIACH: scale (1.0, 1.50, 2.30) przy tamtej rotacji dawało
+  //      tarczę o wysokości 0.16 i GŁĘBOKOŚCI 0.37 — czyli placek wystający do
+  //      przodu i do tyłu. Dlatego czarne plamy (dy = ±0.095) i drewniany
+  //      grzbiet (0.32 wysokości) wisiały POZA tarczą wysoką na 0.16.
+  //      Po rotacji X skala mapuje się X → szerokość, Z → wysokość, Y → grubość,
+  //      więc tarcza ma teraz 0.185 × 0.336 i plamy oraz grzbiet leżą NA niej.
   const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.022 * HEX_R);
+  const SH_Y = AV_Y_TORSO_CTR + 0.02 * HEX_R;
+  const SH_Z = 0.048 * HEX_R;                      // przed przedramieniem
   const mShield = new THREE.Mesh(getGeoOvalShield(), mWhite);
-  mShield.rotation.z = Math.PI / 2;
-  mShield.scale.set(1.0, 1.50, 2.30);   // wyraźnie większa
-  mShield.position.set(SH_X, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.012 * HEX_R);
+  mShield.rotation.x = Math.PI / 2;
+  mShield.scale.set(1.16, 1.20, 2.10);   // 0.185 szer. × 0.336 wys. × 0.022 grub.
+  mShield.position.set(SH_X, SH_Y, SH_Z);
   group.add(mShield);
   // Czarne plamy na skórze (wzór plemienny uThulwana)
   for (const dy of [0.095, 0.0, -0.095]) {
-    const gPatch = new THREE.BoxGeometry(0.028 * HEX_R, 0.078 * HEX_R, 0.022 * HEX_R);
+    const gPatch = new THREE.BoxGeometry(0.030 * HEX_R, 0.070 * HEX_R, 0.016 * HEX_R);
     perGeo.push(gPatch);
     const mPatch = new THREE.Mesh(gPatch, mBlack);
-    mPatch.position.set(SH_X + 0.010 * HEX_R, AV_Y_TORSO_CTR + 0.02 * HEX_R + dy * HEX_R, 0.014 * HEX_R);
+    mPatch.position.set(SH_X - 0.036 * HEX_R, SH_Y + dy * HEX_R, SH_Z + 0.010 * HEX_R);
     group.add(mPatch);
   }
-  // Drewniany kij (spine) tarczy
-  const gSpine = new THREE.BoxGeometry(0.018 * HEX_R, 0.32 * HEX_R, 0.022 * HEX_R);
+  // Drewniany kij (spine) tarczy — pionowo przez środek lica
+  const gSpine = new THREE.BoxGeometry(0.018 * HEX_R, 0.320 * HEX_R, 0.016 * HEX_R);
   perGeo.push(gSpine);
   const mSpine = new THREE.Mesh(gSpine, mWood);
-  mSpine.position.set(SH_X + 0.014 * HEX_R, AV_Y_TORSO_CTR + 0.02 * HEX_R, 0.014 * HEX_R);
+  mSpine.position.set(SH_X + 0.012 * HEX_R, SH_Y, SH_Z + 0.010 * HEX_R);
   group.add(mSpine);
 
   addSuperBanner(group, mat(0x6b4a26, 0.10, 0.70), mOwner, mWhite, perGeo);
@@ -4232,16 +4368,21 @@ function buildInkaRoyalGuard(ownerColor_: number): THREE.Group {
   const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
   const perGeo: THREE.BufferGeometry[] = [];
 
-  // PIKOWANY PANCERZ (ichcahuipilli) — ochre z poziomymi złotymi pasami
+  // PIKOWANY PANCERZ (ichcahuipilli) — ochre z poziomymi pasami
+  // NAPRAWA 2026-08-06 — WSZYSTKO NA ZŁOTO. Ochrowy pancerz + 3 złote pasy +
+  // złote naramienniki + złoty rąbek + złoty dysk + złota korona dawały bryłę
+  // w jednym, jednolitym złocie: z kąta gry 52° jednostka czytała się jako
+  // ZŁOTY KLOCEK bez żadnego detalu. Andyjskie tkaniny to mocne kontrasty
+  // (czerwień + ochra + złoto), więc środkowy pas idzie na czerwień tkaniny —
+  // złoto zostaje AKCENTEM, a nie tłem.
   const mTunic = new THREE.Mesh(getGeoCuirassBox(), mOchre);
   mTunic.scale.set(1.02, 1.04, 1.02);
   mTunic.position.set(0, AV_Y_TORSO_CTR, 0);
   group.add(mTunic);
-  // Złote płytki-pasy na pancerzu
-  for (const dy of [0.07, 0.0, -0.07]) {
+  for (const [dy, mBand] of [[0.07, mGold], [0.0, mRed], [-0.07, mGold]] as const) {
     const gGP = new THREE.BoxGeometry(0.190 * HEX_R, 0.020 * HEX_R, 0.135 * HEX_R);
     perGeo.push(gGP);
-    const mGP = new THREE.Mesh(gGP, mGold);
+    const mGP = new THREE.Mesh(gGP, mBand);
     mGP.position.set(0, AV_Y_TORSO_CTR + dy * HEX_R, 0.003 * HEX_R);
     group.add(mGP);
   }
@@ -4252,41 +4393,60 @@ function buildInkaRoyalGuard(ownerColor_: number): THREE.Group {
     group.add(sp);
   }
 
-  // ZŁOTY DYSK SŁOŃCA (Punchao) na piersi
-  const gDisc = new THREE.CylinderGeometry(0.052 * HEX_R, 0.052 * HEX_R, 0.014 * HEX_R, 14, 1);
+  // ZŁOTY DYSK SŁOŃCA (Punchao) na piersi — na CIEMNOCZERWONYM polu, żeby
+  // złoto miało się od czego odciąć (dawniej złoto na złocie = plama).
+  // UWAGA NA GŁĘBOKOŚĆ: złote pasy pancerza wyżej mają BoxGeometry o głębokości
+  // 0.135 (opasują kirys), więc ich przednia ściana sięga z = 0.0705 — dysk i
+  // czerwone pole muszą być PRZED tą płaszczyzną, inaczej pasy je zasłaniają.
+  const PUN_Z = AV_TORSO_D * 0.5 + 0.026 * HEX_R;   // 0.076
+  const PUN_Y = AV_Y_TORSO_CTR + 0.060 * HEX_R;
+  const gPanel = new THREE.BoxGeometry(0.150 * HEX_R, 0.120 * HEX_R, 0.010 * HEX_R);
+  perGeo.push(gPanel);
+  const mPanel = new THREE.Mesh(gPanel, mRed);
+  mPanel.position.set(0, PUN_Y, PUN_Z);
+  group.add(mPanel);
+  const gDisc = new THREE.CylinderGeometry(0.044 * HEX_R, 0.044 * HEX_R, 0.014 * HEX_R, 14, 1);
   perGeo.push(gDisc);
   const mDisc = new THREE.Mesh(gDisc, mGold);
   mDisc.rotation.x = Math.PI / 2;
-  mDisc.position.set(0, AV_Y_TORSO_CTR + 0.06 * HEX_R, AV_TORSO_D * 0.5 + 0.012 * HEX_R);
+  mDisc.position.set(0, PUN_Y, PUN_Z + 0.008 * HEX_R);
   group.add(mDisc);
-  // Promienie słońca (8 krótkich złotych prostokątów radialnie)
+  // Promienie słońca (8 krótkich złotych prostokątów radialnie) — wysunięte POZA
+  // krawędź dysku (dawniej promień 0.046 przy tarczy 0.052, więc chowały się
+  // w dysku i całość zlewała się w jedną złotą plamę).
   for (let i = 0; i < 8; i++) {
     const ang = (i * Math.PI * 2) / 8;
-    const gRay = new THREE.BoxGeometry(0.014 * HEX_R, 0.040 * HEX_R, 0.010 * HEX_R);
+    const gRay = new THREE.BoxGeometry(0.013 * HEX_R, 0.036 * HEX_R, 0.010 * HEX_R);
     perGeo.push(gRay);
     const mRay = new THREE.Mesh(gRay, mGold);
     mRay.rotation.z = ang;
     mRay.position.set(
-      Math.sin(ang) * 0.046 * HEX_R,
-      AV_Y_TORSO_CTR + 0.06 * HEX_R + Math.cos(ang) * 0.046 * HEX_R,
-      AV_TORSO_D * 0.5 + 0.012 * HEX_R
+      Math.sin(ang) * 0.056 * HEX_R,
+      PUN_Y + Math.cos(ang) * 0.056 * HEX_R,
+      PUN_Z + 0.006 * HEX_R
     );
     group.add(mRay);
   }
   addTunicHem(group, mGold);
 
-  // PIÓROPUSZ-KORONA (wysoki, kolorowy, z ZŁOTĄ PODSTAWĄ)
-  const gCrown = new THREE.BoxGeometry(0.165 * HEX_R, 0.038 * HEX_R, 0.165 * HEX_R);
+  // LLAUTU (czerwona plecionka na czole) + ZŁOTE ZĘBY KORONY
+  // NAPRAWA 2026-08-06: złota płyta 0.165 × 0.165 leżała PONAD czubkiem głowy
+  // (głowa ma bok 0.13) i kamera pod 52° patrzyła na jej górną ścianę — z góry
+  // taka płyta rzutuje się na duży czworokąt, więc głowa znikała pod złotym
+  // klockiem (ten sam błąd co opaska uThulwany, hełm Sumeru, rondo Hu Ben Wei).
+  // Teraz opaska jest WSUNIĘTA w czaszkę (góra 0.560 < czubek głowy 0.580),
+  // a nad głowę wystają tylko złote zęby — sylwetka zostaje głową w koronie.
+  const gCrown = new THREE.BoxGeometry(0.148 * HEX_R, 0.032 * HEX_R, 0.148 * HEX_R);
   perGeo.push(gCrown);
-  const mCrown = new THREE.Mesh(gCrown, mGold);
-  mCrown.position.set(0, AV_Y_HEAD_TOP + 0.010 * HEX_R, 0);
+  const mCrown = new THREE.Mesh(gCrown, mRed);          // llautu = czerwień
+  mCrown.position.set(0, AV_Y_HEAD_CTR + 0.029 * HEX_R, 0);
   group.add(mCrown);
-  // Złote zęby korony
+  // Złote zęby korony — nad opaską, wąskie, żeby nie robiły płyty
   for (const px of [-0.048, -0.016, 0.016, 0.048]) {
-    const gTooth = new THREE.BoxGeometry(0.022 * HEX_R, 0.028 * HEX_R, 0.022 * HEX_R);
+    const gTooth = new THREE.BoxGeometry(0.022 * HEX_R, 0.034 * HEX_R, 0.018 * HEX_R);
     perGeo.push(gTooth);
     const mTooth = new THREE.Mesh(gTooth, mGold);
-    mTooth.position.set(px * HEX_R, AV_Y_HEAD_TOP + 0.030 * HEX_R, 0);
+    mTooth.position.set(px * HEX_R, AV_Y_HEAD_TOP + 0.012 * HEX_R, 0);
     group.add(mTooth);
   }
   // Pióra — gęsty wachlarz kolorowych piór
@@ -4338,31 +4498,33 @@ function buildInkaRoyalGuard(ownerColor_: number): THREE.Group {
   group.add(mTBl);
 
   // TARCZA prostokątna z geometrycznym wzorem (tokapu) — ownerColor + złote pasy
+  // NAPRAWA 2026-08-06: pięć złotych belek (3 pasy + 2 obrzeża) na tarczy o
+  // wysokości 0.21 zostawiało z pola gracza tylko cienkie szczeliny — tarcza
+  // czytała się jako stos złotych sztabek. Zostają DWA pasy tokapu i obrzeża;
+  // tarcza wysunięta przed przedramię, żeby nie ginęła w linii korpusu.
   const SH_X = -(AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R);
+  const SH_Z = 0.046 * HEX_R;
   const gSh = new THREE.BoxGeometry(0.135 * HEX_R, 0.210 * HEX_R, 0.018 * HEX_R);
   perGeo.push(gSh);
   const mSh = new THREE.Mesh(gSh, mOwner);
-  mSh.position.set(SH_X, AV_Y_TORSO_CTR, 0.012 * HEX_R);
+  mSh.position.set(SH_X, AV_Y_TORSO_CTR, SH_Z);
   group.add(mSh);
   // Złote pasy tokapu (geometryczny wzór)
-  for (const dy of [0.055, 0.0, -0.055]) {
+  for (const dy of [0.045, -0.045]) {
     const gP = new THREE.BoxGeometry(0.135 * HEX_R, 0.014 * HEX_R, 0.020 * HEX_R);
     perGeo.push(gP);
     const mP = new THREE.Mesh(gP, mGold);
-    mP.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R, 0.016 * HEX_R);
+    mP.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R, SH_Z + 0.004 * HEX_R);
     group.add(mP);
   }
-  // Złoty rim
-  const gRim = new THREE.BoxGeometry(0.135 * HEX_R, 0.012 * HEX_R, 0.022 * HEX_R);
-  perGeo.push(gRim);
-  const mRim = new THREE.Mesh(gRim, mGold);
-  mRim.position.set(SH_X, AV_Y_TORSO_CTR + 0.100 * HEX_R, 0.018 * HEX_R);
-  group.add(mRim);
-  const gRimB = new THREE.BoxGeometry(0.135 * HEX_R, 0.012 * HEX_R, 0.022 * HEX_R);
-  perGeo.push(gRimB);
-  const mRimB = new THREE.Mesh(gRimB, mGold);
-  mRimB.position.set(SH_X, AV_Y_TORSO_CTR - 0.100 * HEX_R, 0.018 * HEX_R);
-  group.add(mRimB);
+  // Złote obrzeża góra/dół
+  for (const dy of [0.100, -0.100]) {
+    const gRim = new THREE.BoxGeometry(0.135 * HEX_R, 0.012 * HEX_R, 0.022 * HEX_R);
+    perGeo.push(gRim);
+    const mRim = new THREE.Mesh(gRim, mGold);
+    mRim.position.set(SH_X, AV_Y_TORSO_CTR + dy * HEX_R, SH_Z + 0.004 * HEX_R);
+    group.add(mRim);
+  }
 
   addSuperBanner(group, mat(0x6b4a26, 0.10, 0.70), mOwner, mGold, perGeo);
   addBoots(group, mat(COLOR_SKIN_DARK, 0.05, 0.85));
