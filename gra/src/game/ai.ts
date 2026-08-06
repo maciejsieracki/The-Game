@@ -54,6 +54,7 @@ import {
   pickAutoImprovements,
 } from './auto-improvements';
 import { buildingStockCost, unitStockCost } from './building-stock-cost';
+import { unitRecruitUpkeepReserve } from './economy-upkeep';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -1653,8 +1654,9 @@ function collectMilitaryRecruitStockDeficits(
     if (canAfford(cityId, c.id)) continue;
     const unitDef = data.units.find(u => u.Jednostka === c.id);
     const cost = unitStockCost(unitDef);
-    if (Object.keys(cost).length === 0) continue;
+    const reserve = unitRecruitUpkeepReserve(unitDef);
     for (const k of Object.keys(cost)) keys.add(k);
+    for (const k of Object.keys(reserve)) keys.add(k);
   }
   return expandRecruitResourceKeys(keys);
 }
