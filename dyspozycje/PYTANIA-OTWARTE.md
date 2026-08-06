@@ -1642,13 +1642,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **OTWARTE** → paczka [`ABC-PACZKA-2026-08-06-KOLEJKA`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) **[3/5] MAP-UX-CLUSTER-LABEL-Q1**
+## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **ZASTĄPIONE** (ABC → paczka [`ABC-PACZKA-2026-08-06-KOLEJKA`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) **[3/5] MAP-UX-CLUSTER-LABEL-Q1**)
+
+> **⛔ Nie odpowiadać w tej sekcji.** Kanon ABC: [`ABC-PACZKA-2026-08-06-KOLEJKA`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) pozycja **[3/5]** (`MAP-UX-CLUSTER-LABEL-Q1`). Poniżej — kontekst historyczny audytu (2026-08-02), bez duplikatu opcji A/B/C.
 
 **Źródło:** Maciej: 4 bliskie etykiety (np. krótkie nazwy ~2–4 hex); pamięta min. ~12 hex między stolicami.
 **Audyt:** `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` · **VERDICT: DESIGN_KLASTRA** — sep stolic Standard=14 twarde; skupisko = 1 stolica + MP (pierścień 5 hex). Menu Standard min 4 MP → dokładnie 4 etykiety w klastrze.
 **NIE bug bramki** — nie zmieniać sep/pack bez decyzji.
-
-Pełna forma ABC: paczka 2026-08-06 · rekomendacja **B** (nazwa cywilizacji na stolicy obcej).
 
 ---
 
@@ -1694,7 +1694,7 @@ Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCi
 
 `upkeep-test.cjs` 49/73 — 24 porażek przez ×2 koszty `R-STAWKI` / `R-NADMIAR-POOLS` (nie regres FALA 220).
 
-### MAP-UX-CLUSTER-LABEL — nadal **OTWARTE** (patrz sekcja powyżej)
+### MAP-UX-CLUSTER-LABEL — **ZASTĄPIONE** → paczka [`ABC-PACZKA-2026-08-06-KOLEJKA`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) **[3/5]** (nie duplikować tutaj)
 
 ### Dyplo-UX (nadal otwarte)
 
