@@ -18,6 +18,7 @@ import {
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { notifyDiploUiVisibilityChange } from './unitCtxDockDiploGate';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface DiploListEntry {
   id: string;
@@ -160,18 +161,11 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
     listFilter = 'all';
     el.classList.remove('open');
     el.classList.remove('dl-filter-war');
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('diplo-list');
     unbindOutside?.();
     unbindOutside = null;
     config.onClose?.();
     notifyDiploUiVisibilityChange();
-  }
-
-  function onEsc(ev: KeyboardEvent): void {
-    if (ev.key === 'Escape') {
-      ev.preventDefault();
-      closeList();
-    }
   }
 
   function render(): void {
@@ -360,7 +354,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
     el.classList.add('open');
     if (listFilter === 'war') el.classList.add('dl-filter-war');
     else el.classList.remove('dl-filter-war');
-    document.addEventListener('keydown', onEsc);
+    pushOverlay('diplo-list', closeList);
     unbindOutside?.();
     unbindOutside = bindHudPanelOutsideDismiss(
       el,
@@ -389,7 +383,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
   }
 
   function destroy(): void {
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('diplo-list');
     unbindOutside?.();
     unbindOutside = null;
     el.remove();

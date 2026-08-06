@@ -1,18 +1,43 @@
 # R-ESC-PELNY-EKRAN-Q1 — Escape zamyka panel przed pełnym ekranem
 
-**Status:** 🟡 ZAPISANA · **A** (2026-08-06)  
-**Cytat Macieja:** „R-ESC-PELNY-EKRAN-Q1 a”
+**Status:** 🟢 WDROŻONE (kod) · **A** (2026-08-06)  
+**Cytat Macieja:** „R-ESC-PELNY-EKRAN-Q1 a"
 
 ## Decyzja
 
-**A** — wdrażaj wspólny stos Escape (jak drzewko technologii): Escape najpierw zamyka wierzchni panel/zakładkę; pełny ekran zostaje.
+**A** — wspólny stos Escape (jak drzewko technologii): Escape najpierw zamyka wierzchni panel/zakładkę; pełny ekran zostaje.
+
+## Wdrożenie
+
+Moduł: `gra/src/ui/escapeOverlayStack.ts`
+
+| API | Opis |
+|-----|------|
+| `pushOverlay(id, onClose)` | Nakładka na wierzch stosu |
+| `popOverlay(id?)` | Zdejmij po id lub wierzchnią |
+| `top()` | Wierzchni wpis |
+| `lockEscapeWhileStacked()` | Keyboard Lock Escape gdy stos ≠ ∅ |
+
+Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-ESC-FS). Globalny listener (capture) woła `onClose` wierzchniej nakładki.
+
+### Panele wpięte (mapa)
+
+| id | Plik |
+|----|------|
+| `tech-tree` | `gra/src/ui/techTreeView.ts` |
+| `city-panel` | `gra/src/ui/cityUxFrame.ts` |
+| `wiki-hub` | `gra/src/ui/wikiHubHud.ts` (Civpedia) |
+| `diplo-list` | `gra/src/ui/diploListHud.ts` |
+| `diplo-audience` | `gra/src/ui/diplomacyAudience.ts` |
+| `build-mode` | `gra/src/main.ts` |
+
+`main.ts` — Escape lokalny pomija panele ze stosu (`defaultPrevented`); save/load i menu pauzy bez zmian.
+
+## Test
+
+`node gra/tools/escape-overlay-stack-test.cjs` — push/pop + `_dispatchEscapeForTest` bez DOM.
 
 ## Stan przed
 
-- Drzewko technologii: Keyboard Lock + Escape zamyka widok (`R-TECH-ESC-FS`).
-- Pozostałe panele: w pełnym ekranie pierwszy Escape wychodzi z FS przeglądarki.
-- Rejestr: wcześniej „NIE PRACOWAĆ”.
-
-## Następny krok
-
-Po `działaj` / wdrażaj: wspólny mechanizm stosu nakładek (nie tylko tech tree).
+- Drzewko technologii: lokalny Keyboard Lock + Escape (`R-TECH-ESC-FS`).
+- Pozostałe panele: w pełnym ekranie pierwszy Escape wychodził z FS przeglądarki.
