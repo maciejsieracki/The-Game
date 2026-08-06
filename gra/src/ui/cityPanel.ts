@@ -179,7 +179,15 @@ import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { axialToWorld, HEX_R } from '../render/hexutil';
 import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
-import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts, unitResourceUpkeep, canAffordUnitRecruitFull, unitRecruitFullStockCost } from '../game/economy-upkeep';
+import {
+  buildingUpkeep,
+  buildingResourceUpkeep,
+  addResourceCosts,
+  unitResourceUpkeep,
+  canAffordUnitRecruitFull,
+  unitRecruitFullStockCost,
+  isUnitRecruitStockChipMissing,
+} from '../game/economy-upkeep';
 import {
   type TradeRoute,
 } from '../game/trade-routes';
@@ -6738,8 +6746,10 @@ function empireRekruciAffordable(city: City, mpCost: number): boolean {
 /**
  * JEDNOSTKI-SUROWIEC-01 (Maciej 2026-07-24): chip(y) kosztu surowcowego jednostki
  * (units.json Surowiec/Surowiec (ilość)) na karcie rekrutacji — czerwony gdy pula
- * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza. Pusty string
- * gdy jednostka nie ma kosztu surowcowego. Wzorzec: buildingStockCostChipsHtml powyżej.
+ * PAŃSTWA ownera (suma City.surowce po wszystkich miastach) nie starcza na łączny
+ * koszt rekrutacji (unitRecruitFullStockCost = stock + rezerwa utrzymania 1 tura).
+ * Pusty string gdy jednostka nie ma kosztu surowcowego.
+ * Wzorzec: buildingStockCostChipsHtml; bramka: isUnitRecruitStockChipMissing.
  */
 function unitStockCostChipsHtml(u: UnitDef, city: City): string {
   const cost = unitStockCost(u);
@@ -6748,7 +6758,7 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
   const pool = ownerSurowcePoolFor(city);
   const chips = keys.map(k => {
     const need = cost[k]!;
-    const missing = need > (pool[k] ?? 0);
+    const missing = isUnitRecruitStockChipMissing(pool, u, k);
     const cls = missing ? 'bld-infocard-chip stock-missing' : 'bld-infocard-chip';
     return `<span class="${cls}">${need} ${stockResourceLabel(k)}</span>`;
   });
