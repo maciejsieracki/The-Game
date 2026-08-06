@@ -1373,7 +1373,7 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
 // --- Inka: WOJOWNIK Z MACZUGĄ (Chaska / Mace Warrior) ---------------------
 /**
  * Andyjski wojownik z gwiaździstą maczugą (macana).
- * RÓŻNI SIĘ od inkaskiego super (buildSuperInca) brakiem plakietki pektoralnej
+ * RÓŻNI SIĘ od inkaskiego super (buildInkaRoyalGuard) brakiem plakietki pektoralnej
  * i pióropuszu elitarnego — to zwykły wojownik epoki kamiennej.
  * Wyposażenie: pikowana tunika (ichcahuipilli) z wzorem, MACZUGA z gwiaździstą
  * głowicą (drzewce + kamienna gwiazda 6-ramienna), mała kwadratowa tarcza,
@@ -1516,7 +1516,7 @@ function buildHierosLochos(ownerColor_: number): THREE.Group {
 // --- Egipt: MEDŻAJ (Gwardia Faraona / Medjay) -------------------------------
 /**
  * Egipski elitarny gwardzista Medżaj — ochrona faraona.
- * RÓŻNI SIĘ od buildSuperEgypt (Gwardia Królewska) sposobem złożenia:
+ * RÓŻNI SIĘ od sumeryjskiej Gwardii Królewskiej (buildSumerianRoyalGuard) sposobem złożenia:
  *   - BRAK bannera standardowego (jednostka bojowa, nie dowódca)
  *   - Skóra LAMPARTA lub pasy nemes-like (pasiaste nakrycie głowy)
  *   - KHOPESH (sierpowaty miecz) w prawej ręce
@@ -1639,8 +1639,27 @@ function buildMedjay(ownerColor_: number): THREE.Group {
   // ramienia (0.093..0.153) — miecz wisiał w powietrzu obok figurki. Teraz oś
   // broni przechodzi przez dłoń, a klinga idzie w górę ponad bark (tak samo
   // rozwiązuje to nowszy model p6 „khopesz w ciosie").
-  const KH_X = AV_ARM_OFFSET_X;
-  const KH_Y_BASE = AV_Y_TORSO_CTR + 0.035 * HEX_R;
+  //
+  // NAPRAWA 2 (2026-08-06, D1 z recenzji Evaluatora): oś X była już dobra, ale
+  // WYSOKOŚĆ nie — KH_Y_BASE = AV_Y_TORSO_CTR + 0.035 stawiało rękojeść na
+  // y = 0.365..0.425 × HEX_R, czyli 0.0995 × HEX_R PONAD dłonią, której środek
+  // addHands() kładzie na y = 0.243 (góra 0.2655). Miecz wisiał więc w
+  // powietrzu przy przedramieniu, a nie w pięści. Ramię zostaje opuszczone
+  // (nie ruszamy zaakceptowanej sylwetki: odsłonięta twarz, czytelna tarcza,
+  // pióro strusie) — zjeżdża sama broń, tak żeby środek rękojeści wypadł na
+  // y = 0.250, czyli WEWNĄTRZ bryły dłoni (0.2205..0.2655). Klinga nadal idzie
+  // w górę, kończąc ~0.46 × HEX_R, czyli ponad barkiem (0.42) — gest ciosu
+  // pozostaje czytelny.
+  // D4 (Evaluator, 2026-08-06): po zjechaniu w dół KH_X=AV_ARM_OFFSET_X sadzał
+  // klingę NA osi samego rękawa (nieprzezroczysty box) — jelec i klinga prosta
+  // znikały w 100% wewnątrz bryły ramienia. Odsunięte na zewnątrz rękawa,
+  // wzorem reszty rodziny (Hu Ben Wei/uThulwana/Sumer stawiają broń przy
+  // krawędzi ramienia, nie na jego osi): AV_ARM_OFFSET_X + AV_ARM_W*0.5 + δ.
+  const KH_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.014 * HEX_R;
+  // Środek dłoni z addHands() — jedno źródło prawdy, żeby broń nie mogła
+  // „odjechać" od pięści przy zmianie proporcji awatara.
+  const KH_HAND_Y = AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.022 * HEX_R;   // 0.2430
+  const KH_Y_BASE = KH_HAND_Y - 0.043 * HEX_R;   // rękojeść (base+0.050) → 0.250
   // Rękojeść
   const mGrip = new THREE.Mesh(getGeoSwordGrip(), mWood);
   mGrip.position.set(KH_X, KH_Y_BASE + 0.050 * HEX_R, 0.015 * HEX_R);
@@ -3871,8 +3890,8 @@ function buildSuperGreece(ownerColor_: number): THREE.Group {
 
 // --- Sumeryjska Gwardia Królewska (Sumerian Royal Guard / Gwardia Królewska Sumeru) ---
 /**
- * Elitarna gwardia qurubuti — cięższa od buildSuperSumer:
- *  • wysoki STOŻKOWY hełm brązowo-miedziany (wyższy niż buildSuperSumer)
+ * Elitarna gwardia qurubuti — cięższa od zwykłego włócznika sumeryjskiego:
+ *  • wysoki STOŻKOWY hełm brązowo-miedziany (wyższy niż u zwykłego włócznika)
  *  • DŁUGA WŁÓCZNIA z liściowatym grotem (dłuższa niż standardowa)
  *  • PROSTOKĄTNA TARCZA WIEŻOWA (duża, ownerColor + miedziany obramek)
  *  • PELERYNA kaunakes (tufts) — ownerColor zamiast tealu
@@ -3890,7 +3909,7 @@ function buildSumerianRoyalGuard(ownerColor_: number): THREE.Group {
   const mSteel  = mat(COLOR_STEEL,     0.50, 0.40);
   const perGeo: THREE.BufferGeometry[] = [];
 
-  // PELERYNA kaunakes (tufted, ownerColor zamiast teal — wyróżnia od buildSuperSumer)
+  // PELERYNA kaunakes (tufted, ownerColor zamiast teal — wyróżnik gwardii)
   const gCape = new THREE.BoxGeometry(0.16 * HEX_R, 0.24 * HEX_R, 0.012 * HEX_R);
   perGeo.push(gCape);
   const mCape = new THREE.Mesh(gCape, mOwner);
@@ -3923,7 +3942,7 @@ function buildSumerianRoyalGuard(ownerColor_: number): THREE.Group {
     group.add(sp);
   }
 
-  // WYSOKI STOŻKOWY HEŁM miedziano-brązowy (wyższy niż w buildSuperSumer)
+  // WYSOKI STOŻKOWY HEŁM miedziano-brązowy (wyższy niż u zwykłego włócznika)
   // NAPRAWA 2026-08-06 — HEŁM POŁYKAŁ CAŁĄ GŁOWĘ. Stożek przy skali (1.10, 1.45,
   // 1.10) ma dolny promień 0.094 (głowa: połowa boku 0.065) i spód na y = 0.510,
   // czyli PONIŻEJ linii oczu (0.525) — z kąta gry widać było brązową bryłę bez
@@ -4016,7 +4035,7 @@ function buildSumerianRoyalGuard(ownerColor_: number): THREE.Group {
 
 // --- Hu Ben Wei (China, Tiger Guard / Gwardia Tygrysa) -------------------
 /**
- * Elitarna gwardia cesarska — bardziej ozdobna niż buildSuperChina:
+ * Elitarna gwardia cesarska — bardziej ozdobna niż zwykła piechota chińska:
  *  • pancerz LAMELOWY z ciemnych płytek + CZERWONE wiązania (zamiast czarnych)
  *  • motyw TYGRYSA: duży pomarańczowo-czarny pysk na tarczy
  *  • HALABARDA ji (drzewce + szerokie ostrze + kolec) lub dao w prawej ręce
@@ -4169,7 +4188,7 @@ function buildHuBenWei(ownerColor_: number): THREE.Group {
 
 // --- uThulwana (Zulu, White Shields / Białe Tarcze) -----------------------
 /**
- * Elitarny pułk uThulwana — bardziej ozdobny niż buildSuperZulu:
+ * Elitarny pułk uThulwana — bardziej ozdobny niż zwykły wojownik Zulu:
  *  • DUŻA BIAŁA owalna tarcza isihlangu (większa niż standardowa Nguni)
  *  • IKLWA (krótka, szeroka, kłująca) + KNOBKERRIE (maczuga knotted) u pasa
  *  • opaska z futra (isigqoko) + PIÓRO ŻURAWIA (nkwe) na głowie
@@ -4257,18 +4276,27 @@ function buildUThulwana(ownerColor_: number): THREE.Group {
   mHatB.position.set(0, AV_Y_HEAD_TOP + 0.004 * HEX_R, 0);
   group.add(mHatB);
   // Pióro żurawia (nkwe) — wąskie, białe, lekko skośne ku tyłowi
-  const gPFeat = new THREE.BoxGeometry(0.016 * HEX_R, 0.190 * HEX_R, 0.010 * HEX_R);
+  // NAPRAWA 2026-08-06 (D3 z recenzji Evaluatora): pióro 0.190 × HEX_R plus
+  // czubek na AV_Y_HEAD_TOP + 0.205 wynosiły całą sylwetkę na 0.8057 × HEX_R,
+  // przy rodzinie super-jednostek Brązu w paśmie 0.7504 (Inka) … 0.7832
+  // (Gwardia Sumeru) — uThulwana była o ~0.05 × HEX_R wyższa od najwyższej
+  // siostry i o 0.055 od Medżaja, przez co na mapie czytała się jako jednostka
+  // z innej skali. Pióro skrócone o 0.060 (0.190 → 0.130), ale zakotwiczone
+  // DOŁEM w tym samym miejscu (0.6047), więc pióropusz nadal wychodzi wyraźnie
+  // ponad opaskę isicoco i zostaje cechą rozpoznawczą; skraca się tylko część
+  // stercząca w pustkę. Wysokość spada do 0.7757 × HEX_R (≤ 0.78).
+  const gPFeat = new THREE.BoxGeometry(0.016 * HEX_R, 0.130 * HEX_R, 0.010 * HEX_R);
   perGeo.push(gPFeat);
   const mPFeat = new THREE.Mesh(gPFeat, mWhite);
   mPFeat.rotation.z = 0.12;
-  mPFeat.position.set(0.008 * HEX_R, AV_Y_HEAD_TOP + 0.120 * HEX_R, -0.018 * HEX_R);
+  mPFeat.position.set(0.008 * HEX_R, AV_Y_HEAD_TOP + 0.090 * HEX_R, -0.018 * HEX_R);
   group.add(mPFeat);
   // Czarny czubek pióra
   const gPTip = new THREE.BoxGeometry(0.014 * HEX_R, 0.040 * HEX_R, 0.008 * HEX_R);
   perGeo.push(gPTip);
   const mPTip = new THREE.Mesh(gPTip, mBlack);
   mPTip.rotation.z = 0.12;
-  mPTip.position.set(0.010 * HEX_R, AV_Y_HEAD_TOP + 0.205 * HEX_R, -0.018 * HEX_R);
+  mPTip.position.set(0.010 * HEX_R, AV_Y_HEAD_TOP + 0.175 * HEX_R, -0.018 * HEX_R);
   group.add(mPTip);
 
   // IKLWA — krótka kłująca włócznia (prawa ręka)
@@ -4345,11 +4373,11 @@ function buildUThulwana(ownerColor_: number): THREE.Group {
 
 // --- Inkaski Royal Guard (Królewska Gwardia Inkaów) -----------------------
 /**
- * Królewska gwardia inkaskiego Sapa Inki — BOGATSZY niż buildSuperInca/buildMaceWarrior:
+ * Królewska gwardia inkaskiego Sapa Inki — BOGATSZY niż buildMaceWarrior (Chaska):
  *  • PIÓROPUSZ-KORONA (kolorowe tropikalne pióra + złote elementy)
  *  • ZŁOTY DYSK SŁOŃCA (Punchao) na piersi
  *  • PIKOWANY PANCERZ z ZŁOTYMI PŁYTKAMI (ichcahuipilli ze złotem)
- *  • MACZUGA z gwiaździstą głowicą ZŁOTĄ (zamiast kamiennej jak w buildSuperInca)
+ *  • MACZUGA z gwiaździstą głowicą ZŁOTĄ (zamiast kamiennej jak w buildMaceWarrior)
  *  • TUMI (ofiarny nóż półksiężycowy) u pasa jako atrybut królewski
  *  • prostokątna tarcza z GEOMETRYCZNYM WZOREM (tokapu) — ownerColor
  *  • złoto i ownerColor dominują
@@ -4461,15 +4489,39 @@ function buildInkaRoyalGuard(ownerColor_: number): THREE.Group {
     group.add(mF);
   }
 
-  // MACZUGA ZŁOTA z gwiaździstą głowicą (w prawej ręce — jak buildSuperInca ale gold+)
+  // MACZUGA ZŁOTA z gwiaździstą głowicą (w prawej ręce — jak buildMaceWarrior ale gold+)
+  // NAPRAWA 2026-08-06 (D1 + D2 z recenzji Evaluatora — JEDNA bryła, jedna
+  // poprawka, bo obie wady miały wspólną przyczynę: trzy elementy maczugi
+  // ustawiane były NIEZALEŻNIE od siebie i od dłoni):
+  //   D1 — trzonek to był współdzielony getGeoClubHandle() (0.16 × HEX_R
+  //        wysokości) postawiony na y = 0.36..0.52, czyli 0.0945 × HEX_R PONAD
+  //        dłonią (addHands: środek 0.243, góra 0.2655). Maczuga wisiała w
+  //        powietrzu obok ramienia.
+  //   D2 — głowica startowała na y = 0.595 (hubY 0.620 − pół sześcianu 0.025)
+  //        przy trzonku kończącym się na 0.520, więc między drzewcem a gwiazdą
+  //        ziała przerwa 0.075 × HEX_R (a do najniższego promienia 0.044) —
+  //        widoczna gołym okiem z kamery gry.
+  // Rozwiązanie: trzonek dostaje WŁASNĄ, dłuższą geometrię (0.34 × HEX_R) i
+  // biegnie od y = 0.180 do 0.520 — przechodzi więc PRZEZ pięść (chwyt w
+  // dolnej jednej trzeciej drzewca, dokładnie jak włócznia Gwardii Sumeru,
+  // która przeszła recenzję), a głowica jest kotwiczona do GÓRY TRZONKA
+  // (M_HAFT_TOP), nie do torsu — przerwa znika z definicji i nie może wrócić
+  // przy kolejnej zmianie proporcji. Wysokość sylwetki bez zmian (0.7504),
+  // bo o niej decyduje pióropusz-korona, nie maczuga.
   const M_X = AV_ARM_OFFSET_X + AV_ARM_W * 0.5 + 0.018 * HEX_R;
-  const mHaft = new THREE.Mesh(getGeoClubHandle(), mWood);
-  mHaft.position.set(M_X, AV_Y_TORSO_TOP + 0.02 * HEX_R, 0.01 * HEX_R);
+  const M_HAND_Y  = AV_Y_ARM_CTR - AV_ARM_H * 0.5 + 0.022 * HEX_R;   // 0.2430
+  const M_HAFT_LEN = 0.340 * HEX_R;
+  const M_HAFT_BOT = M_HAND_Y - 0.063 * HEX_R;                       // 0.1800
+  const M_HAFT_TOP = M_HAFT_BOT + M_HAFT_LEN;                        // 0.5200
+  const gHaft = new THREE.BoxGeometry(0.030 * HEX_R, M_HAFT_LEN, 0.030 * HEX_R);
+  perGeo.push(gHaft);
+  const mHaft = new THREE.Mesh(gHaft, mWood);
+  mHaft.position.set(M_X, M_HAFT_BOT + M_HAFT_LEN * 0.5, 0.01 * HEX_R);
   group.add(mHaft);
   const gHub = new THREE.BoxGeometry(0.050 * HEX_R, 0.050 * HEX_R, 0.050 * HEX_R);
   perGeo.push(gHub);
   const mHub = new THREE.Mesh(gHub, mGold);
-  const hubY = AV_Y_TORSO_TOP + 0.175 * HEX_R + 0.025 * HEX_R;
+  const hubY = M_HAFT_TOP + 0.025 * HEX_R;   // spód głowicy = góra trzonka
   mHub.position.set(M_X, hubY, 0.01 * HEX_R);
   group.add(mHub);
   for (const ang of [0, Math.PI/3, (2*Math.PI)/3, Math.PI, (4*Math.PI)/3, (5*Math.PI)/3]) {

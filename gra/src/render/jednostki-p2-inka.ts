@@ -2,13 +2,22 @@
  * jednostki-p2-inka.ts — PACZKA 2/8: INKOWIE, proceduralne modele piechoty
  * (seria render-jednostki; wzorzec: hastati-falangita.ts KOREKTA v2)
  * ---------------------------------------------------------------------------
- * Zamienniki 1:1 dla starych tokenow z gra/src/render/units.ts:
- *   buildMaceWarrior(ownerColor)    -> units.ts:1104 (dispatch :1070 'wojownik z maczuga'/'chaska')
- *   buildInkaJavelineer(ownerColor) -> units.ts:2498 (dispatch :1048-49 'oszczepnik+estolica')
- *   buildAxeWarriorInka(ownerColor) -> units.ts:1217 (dispatch :1071 'wojownik z toporem')
- *   buildInkaSlinger(ownerColor)    -> units.ts:2588 (dispatch :1050-51 'procarz+huarac')
- *   buildSuperInca(ownerColor)      -> units.ts:6266 (dispatch :5849 case 'inka' w buildSuperUnit;
- *                                      buildInkaRoyalGuard = martwy kod, pominiety)
+ * ZAWARTOSC PLIKU (stan 2026-08-06) — CZTERY buildery, wszystkie UZYWANE
+ * (wywolania po NAZWIE FUNKCJI, import w units.ts; celowo bez numerow linii —
+ * poprzedni naglowek podawal „units.ts:6266" itp. i dawno sie rozjechal):
+ *   buildMaceWarrior(ownerColor)     'wojownik z maczuga' / 'chaska'
+ *   buildInkaJavelineer(ownerColor)  'oszczepnik' + 'estolica'
+ *   buildAxeWarriorInka(ownerColor)  'wojownik z toporem'
+ *   buildInkaSlinger(ownerColor)     'procarz' + 'huaracoc'
+ *
+ * USUNIETE 2026-08-06 (R-BRAZ-SUPER-DISPATCH-Q1=A, sprzatanie po recenzji):
+ * buildSuperInca wraz z geometriami uzywanymi wylacznie przez niego. Po
+ * przekierowaniu dispatchu super-jednostek na modele NAZWANE super 'inka'
+ * obsluguje buildInkaRoyalGuard w units.ts, a buildSuperInca nie mial juz ANI
+ * JEDNEGO wywolania. (Poprzedni naglowek twierdzil odwrotnie — ze to
+ * buildInkaRoyalGuard jest „martwym kodem" — co po zmianie dispatchu przestalo
+ * byc prawda.) Analogiczne czyszczenie objelo jednostki-p6-super.ts.
+ *
  * Interfejs i konwencje BEZ ZMIAN:
  *   - figurka PRZODEM do +Z, stopy na y = 0, uklad prawoskretny => LEWA = +X, PRAWA = -X,
  *   - TARCZA zawsze na LEWYM (+X) przedramieniu, BRON w PRAWEJ (-X) dloni NA OSI przedramienia,
@@ -19,14 +28,13 @@
  *   - tuniki-UNKU: kolory ziemi (ochra/burgund) + wzory geometryczne (szachownica
  *     tokapu, rzedy rombow, pasy graniczne na dole spodnicy),
  *   - nakrycia glowy: opaski llautu z piorami (Chaska, Estolica, Huaracoc),
- *     czapka CHULLO z nausznikami (topornik), zlota korona z wachlarzem pior (SUPER),
+ *     czapka CHULLO z nausznikami (topornik),
  *   - akcenty: turkus 0x2a9d8f + zloto Inkow 0xe0b53a, zlote kolczyki-krazki (orejones),
  *   - bronie: maczuga gwiazdzista z KAMIENNA glowica (gwiazda = 3 skrzyzowane klocki),
  *     estolica-atlatl w gescie zamachu (strzalka na haczyku), topor bradzowy na DLUGIM
- *     stylisku, proca huaraca w ZAMACHU NAD GLOWA, SUPER: zloty champi + prostokatna
- *     tarcza pullcanca z fredzlami + choragiew na plecach.
+ *     stylisku, proca huaraca w ZAMACHU NAD GLOWA.
  *   - kolor gracza JAK W STARYCH: Chaska pole tarczy+2 piora; Estolica pas dolny+pioropusz;
- *     topornik pole tarczy+pioro; Huaracoc pas dolny+klapka sakwy; SUPER pole tarczy+flaga.
+ *     topornik pole tarczy+pioro; Huaracoc pas dolny+klapka sakwy.
  */
 
 import * as THREE from 'three';
@@ -56,7 +64,6 @@ const IK_RED_BAND  = 0xc03530;   // czerwona opaska llautu (jak stare)
 const IK_TEAL      = 0x2a9d8f;   // turkus andyjski (akcent)
 const IK_GOLD      = 0xe0b53a;   // zloto Inkow
 const IK_WOOD      = 0x7a5c3a;   // drewno
-const IK_WOOD_DK   = 0x5f4020;   // ciemne drewno (champi, drzewce SUPER)
 const IK_LEATHER   = 0x6b4a28;   // skora rzemienie/sandaly
 const IK_STONE     = 0x8a8680;   // kamien glowicy maczugi
 const IK_BRONZE    = 0xcf9234;   // braz
@@ -122,13 +129,6 @@ let gIKPouch:   THREE.BoxGeometry | null = null;   // kieszen procy / sakwa
 let gIKPellet:  THREE.BoxGeometry | null = null;   // pocisk
 let gIKSmallSh: THREE.BoxGeometry | null = null;   // mala kwadratowa tarcza
 let gIKShBoss:  THREE.BoxGeometry | null = null;
-let gIKRectSh:  THREE.BoxGeometry | null = null;   // pullcanca SUPER
-let gIKShTrim:  THREE.BoxGeometry | null = null;
-let gIKFringe:  THREE.BoxGeometry | null = null;
-let gIKSun:     THREE.BoxGeometry | null = null;   // zloty romb-slonce
-let gIKPole:    THREE.BoxGeometry | null = null;
-let gIKFlag:    THREE.BoxGeometry | null = null;
-let gIKFinial:  THREE.BoxGeometry | null = null;
 // chullo topornika
 let gIKChullo:  THREE.BoxGeometry | null = null;
 let gIKChStripe:THREE.BoxGeometry | null = null;
@@ -171,13 +171,6 @@ function getGIKPouch():   THREE.BoxGeometry { return (gIKPouch   ||= new THREE.B
 function getGIKPellet():  THREE.BoxGeometry { return (gIKPellet  ||= new THREE.BoxGeometry(0.026 * HEX_R, 0.026 * HEX_R, 0.026 * HEX_R)); }
 function getGIKSmallSh(): THREE.BoxGeometry { return (gIKSmallSh ||= new THREE.BoxGeometry(0.085 * HEX_R, 0.105 * HEX_R, 0.014 * HEX_R)); }
 function getGIKShBoss():  THREE.BoxGeometry { return (gIKShBoss  ||= new THREE.BoxGeometry(0.030 * HEX_R, 0.030 * HEX_R, 0.012 * HEX_R)); }
-function getGIKRectSh():  THREE.BoxGeometry { return (gIKRectSh  ||= new THREE.BoxGeometry(0.150 * HEX_R, 0.205 * HEX_R, 0.014 * HEX_R)); }
-function getGIKShTrim():  THREE.BoxGeometry { return (gIKShTrim  ||= new THREE.BoxGeometry(0.158 * HEX_R, 0.024 * HEX_R, 0.018 * HEX_R)); }
-function getGIKFringe():  THREE.BoxGeometry { return (gIKFringe  ||= new THREE.BoxGeometry(0.034 * HEX_R, 0.058 * HEX_R, 0.009 * HEX_R)); }
-function getGIKSun():     THREE.BoxGeometry { return (gIKSun     ||= new THREE.BoxGeometry(0.040 * HEX_R, 0.040 * HEX_R, 0.010 * HEX_R)); }
-function getGIKPole():    THREE.BoxGeometry { return (gIKPole    ||= new THREE.BoxGeometry(0.016 * HEX_R, 0.360 * HEX_R, 0.016 * HEX_R)); }
-function getGIKFlag():    THREE.BoxGeometry { return (gIKFlag    ||= new THREE.BoxGeometry(0.085 * HEX_R, 0.062 * HEX_R, 0.008 * HEX_R)); }
-function getGIKFinial():  THREE.BoxGeometry { return (gIKFinial  ||= new THREE.BoxGeometry(0.022 * HEX_R, 0.022 * HEX_R, 0.022 * HEX_R)); }
 function getGIKChullo():  THREE.BoxGeometry { return (gIKChullo  ||= new THREE.BoxGeometry(0.148 * HEX_R, 0.055 * HEX_R, 0.148 * HEX_R)); }
 function getGIKChStripe():THREE.BoxGeometry { return (gIKChStripe||= new THREE.BoxGeometry(0.142 * HEX_R, 0.014 * HEX_R, 0.142 * HEX_R)); }
 function getGIKChFlap():  THREE.BoxGeometry { return (gIKChFlap  ||= new THREE.BoxGeometry(0.024 * HEX_R, 0.062 * HEX_R, 0.046 * HEX_R)); }
@@ -689,101 +682,4 @@ export function buildInkaSlinger(ownerColor_: number): THREE.Group {
 function hipFlapPlace(flap: THREE.Mesh, group: THREE.Group): void {
   flap.position.set(IK_TORSO_W * 0.5 + 0.016 * HEX_R, IK_TORSO_BOT + 0.004 * HEX_R, 0.028 * HEX_R);
   group.add(flap);
-}
-
-// ---------------------------------------------------------------------------
-// 5. SUPER: KROLEWSKA GWARDIA (Inkowie, Braz) — POZA ATAKU
-// Realny builder super-jednostki 'inka' (buildSuperInca; buildInkaRoyalGuard
-// to martwy kod). ZLOTE AKCENTY: korona z wachlarzem 5 pior, ZLOTY CHAMPI
-// (maczuga gwiazdzista) w PRAWEJ (-X) dloni w zamachu, romb-pektoral, kolczyki;
-// BOGATSZA TARCZA: prostokatna pullcanca (pole = KOLOR GRACZA) ze zlotymi
-// listwami, zlotym sloncem i fredzlami na LEWYM (+X) przedramieniu;
-// choragiew na plecach (flaga = KOLOR GRACZA). Szachownica tokapu na unku.
-// ---------------------------------------------------------------------------
-export function buildSuperInca(ownerColor_: number): THREE.Group {
-  const group = new THREE.Group();
-  const { mats, mat } = makeMats();
-
-  const mOchre = mat(IK_OCHRE,    0.06, 0.80);
-  const mRed   = mat(IK_RED,      0.06, 0.78);
-  const mTeal  = mat(IK_TEAL,     0.06, 0.78);
-  const mGold  = mat(IK_GOLD,     0.58, 0.32);
-  const mFeath = mat(IK_FEATHER,  0.03, 0.92);
-  const mOwner = mat(ownerColor_, 0.16, 0.62);
-  const mWoodD = mat(IK_WOOD_DK,  0.05, 0.85);
-  const mLeath = mat(IK_LEATHER,  0.06, 0.82);
-
-  const HIP_Y = IK_HIP_Y - 0.008 * HEX_R;
-
-  const mSkin = ikCore(group, mat, mOchre, IK_SKIN_DARK);
-  ikSkirtSet(group, mOchre, mRed, null);     // bez pasa (budzet tri; brzeg czerwony wystarcza)
-  void mLeath;
-  // szachownica tokapu (3 kwadraty) + zloty romb-pektoral
-  let ci = 0;
-  for (const dx of [-0.048, 0.0, 0.048]) {
-    const sq = new THREE.Mesh(getGIKCheckSq(), (ci++ % 2 === 0) ? mRed : mTeal);
-    sq.position.set(dx * HEX_R, IK_TORSO_CTR - 0.014 * HEX_R, IK_TORSO_D * 0.5 + 0.006 * HEX_R);
-    group.add(sq);
-  }
-  const pect = new THREE.Mesh(getGIKSun(), mGold);
-  pect.rotation.z = Math.PI / 4;
-  pect.position.set(0, IK_TORSO_CTR + 0.062 * HEX_R, IK_TORSO_D * 0.5 + 0.008 * HEX_R);
-  group.add(pect);
-
-  // nogi: pewny wykrok dowodcy
-  ikBuildLeg(group,  IK_HIP_X,  0.50,  0.28, mOchre, mSkin, mLeath, HIP_Y);
-  ikBuildLeg(group, -IK_HIP_X, -0.45, -0.15, mOchre, mSkin, mLeath, HIP_Y);
-
-  // NAKRYCIE GLOWY: zlota korona-opaska + wachlarz 5 pior + zlote kolczyki
-  const crownY = ikHeadband(group, mGold);
-  void crownY;
-  let fi = 0;
-  for (const az of [-0.44, -0.22, 0.0, 0.22, 0.44]) {
-    const colF = (fi % 2 === 0) ? mRed : ((fi === 1) ? mFeath : mTeal);
-    fi++;
-    const f = new THREE.Mesh(getGIKFeather(), colF);
-    f.rotation.z = az;
-    f.position.set(Math.sin(az) * 0.052 * HEX_R, IK_HEAD_TOP + 0.058 * HEX_R, -0.010 * HEX_R);
-    group.add(f);
-  }
-
-  // PRAWE (-X) RAMIE + ZLOTY CHAMPI w zamachu szczytowym (talerz nad glowa)
-  const armR = ikBuildArm(group, -IK_SHLD_X, -2.45, 2.60, mOchre, mSkin, mSkin);
-  const fist = armR.wrist.clone().addScaledVector(armR.axis, 0.014 * HEX_R);
-  ikStarMace(group, fist, 2.60, mWoodD, mGold);
-
-  // LEWE (+X) RAMIE + PULLCANCA: prostokatna tarcza przed korpusem
-  const armL = ikBuildArm(group, IK_SHLD_X, 0.50, 1.10, mOchre, mSkin, null);
-  const sh = new THREE.Group();
-  sh.position.set(armL.wrist.x - 0.020 * HEX_R, armL.wrist.y + 0.030 * HEX_R, armL.wrist.z + 0.040 * HEX_R);
-  sh.rotation.y = -0.20;
-  const face = new THREE.Mesh(getGIKRectSh(), mOwner);           // pole = KOLOR GRACZA
-  sh.add(face);
-  const trimT = new THREE.Mesh(getGIKShTrim(), mGold);
-  trimT.position.set(0, 0.104 * HEX_R, 0.004 * HEX_R);
-  sh.add(trimT);
-  const sun = new THREE.Mesh(getGIKSun(), mGold);                // zlote slonce Inti
-  sun.rotation.z = Math.PI / 4;
-  sun.position.set(0, 0.010 * HEX_R, 0.010 * HEX_R);
-  sh.add(sun);
-  for (const [fx, colF] of [[-0.038, mTeal], [0.038, mRed]] as [number, THREE.MeshStandardMaterial][]) {
-    const fr = new THREE.Mesh(getGIKFringe(), colF);
-    fr.position.set(fx * HEX_R, -0.134 * HEX_R, 0.002 * HEX_R);
-    sh.add(fr);
-  }
-  group.add(sh);
-
-  // CHORAGIEW NA PLECACH (znacznik SUPER; flaga = KOLOR GRACZA, zloty grot)
-  const pole = new THREE.Mesh(getGIKPole(), mWoodD);
-  pole.rotation.x = -0.14;
-  pole.position.set(-0.052 * HEX_R, 0.300 * HEX_R, -0.082 * HEX_R);
-  group.add(pole);
-  const flag = new THREE.Mesh(getGIKFlag(), mOwner);
-  flag.rotation.x = -0.14;
-  flag.position.set(-0.052 * HEX_R - 0.048 * HEX_R, 0.452 * HEX_R, -0.104 * HEX_R);
-  group.add(flag);
-
-  group.userData['mats'] = mats;
-  group.userData['perTokenGeos'] = [];
-  return group;
 }
