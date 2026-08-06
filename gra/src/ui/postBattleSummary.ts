@@ -16,9 +16,11 @@ import {
   BATTLE_FONT_TITLE,
   applyBtnStartBattle,
 } from '../battle/battleHudTheme';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 let overlayEl: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
+let activeOnContinue: (() => void) | null = null;
 let styleInjected = false;
 
 /** Opcje wyświetlenia (pole bitwy: inny przycisk / z-index nad endScreen). */
@@ -471,10 +473,16 @@ function buildOverlay(
   return overlay;
 }
 
+function handlePostBattleEscape(): void {
+  const cb = activeOnContinue;
+  hidePostBattleSummary();
+  cb?.();
+}
+
 function attachKeyboard(onContinue: () => void): void {
   detachKeyboard();
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === 'Escape') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       hidePostBattleSummary();
       onContinue();
@@ -496,15 +504,19 @@ export function showPostBattleSummary(
   opts?: PostBattleSummaryShowOptions,
 ): void {
   hidePostBattleSummary();
+  activeOnContinue = onContinue;
   overlayEl = buildOverlay(data, onContinue, opts);
   document.body.appendChild(overlayEl);
   attachKeyboard(onContinue);
+  pushOverlay('post-battle-summary', handlePostBattleEscape);
 }
 
 export function hidePostBattleSummary(): void {
+  popOverlay('post-battle-summary');
   detachKeyboard();
   overlayEl?.remove();
   overlayEl = null;
+  activeOnContinue = null;
 }
 
 export function isPostBattleSummaryOpen(): boolean {

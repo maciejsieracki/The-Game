@@ -15,6 +15,7 @@ import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
 import { startPreBattleMusic, stopPreBattleMusic } from '../audio/muzyka-antyczna';
 import { setArmyStackHudSuppressed } from './hud';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface PreBattleUnit {
   nazwa: string;
@@ -118,6 +119,8 @@ let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 let pbCfg: PreBattleConfig = {};
 let saveToastEl: HTMLDivElement | null = null;
 let saveToastTimer: ReturnType<typeof setTimeout> | null = null;
+let activePreBattleCb: PreBattleCallbacks | null = null;
+let activePreBattleRetreat: boolean = false;
 
 /** Wpięcie silnika — jak configureCityPanel (P0-D4). */
 export function configurePreBattle(config: PreBattleConfig): void {
@@ -148,7 +151,10 @@ export function showPreBattle(
   showMapScrim();
   overlayEl = buildOverlay(info, cb, opts);
   document.body.appendChild(overlayEl);
+  activePreBattleCb = cb;
+  activePreBattleRetreat = retreatUiEnabled(info);
   attachKeyboard(cb, info, opts);
+  pushOverlay('pre-battle', handlePreBattleEscape);
   startPreBattleMusic();
   // T-BITWA-ROSTER (Maciej 2026-07-24): panel rosteru armii swiata (armyStackHud, dolny
   // stos "Armia . (x,y)") zaslania ten overlay -- ukryj go na czas dialogu, przywroc w
@@ -158,7 +164,10 @@ export function showPreBattle(
 }
 
 export function hidePreBattle(): void {
+  popOverlay('pre-battle');
   detachKeyboard();
+  activePreBattleCb = null;
+  activePreBattleRetreat = false;
   clearPreBattleSaveToast();
   hideMapScrim();
   if (overlayEl !== null) {
@@ -425,19 +434,20 @@ function retreatUiEnabled(info: PreBattleInfo): boolean {
   return info.canRetreat !== false || info.defenderCanRetreat === true;
 }
 
+function handlePreBattleEscape(): void {
+  if (!activePreBattleRetreat || activePreBattleCb === null) return;
+  activePreBattleCb.onCancel();
+  hidePreBattle();
+}
+
 function attachKeyboard(
   cb: PreBattleCallbacks,
   info: PreBattleInfo,
   opts?: PreBattleOptions,
 ): void {
-  const showRetreat = retreatUiEnabled(info);
   const defaultManual = (opts?.defaultAction ?? 'manual') === 'manual';
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && showRetreat) {
-      e.preventDefault();
-      cb.onCancel();
-      hidePreBattle();
-    } else if (e.key === 'Enter') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       if (defaultManual) cb.onBattlefield();
       else cb.onAuto();
