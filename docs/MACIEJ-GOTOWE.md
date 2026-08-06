@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 248** `772bab7c` — batch otwartych: STEP4 · panel żetonów · garnizon lista · Civpedia · scena perf · Pałac/surowce-dostęp · closes rejestr. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+﻿- ✅ **FALA 249** `097c5e5c` — camouflage sweep: pierwsze miasto · dżungla InstancedMesh · NAP + WIAR UI · Połącz colocated · przyrost UI · fair-play · panele B/C · closes. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+- ✅ **FALA 248** `772bab7c` — batch otwartych: STEP4 · panel żetonów · garnizon lista · Civpedia · scena perf · Pałac/surowce-dostęp · closes rejestr. **ZASTĄPIONA** przez 249.
 - ✅ **FALA 247** `540d2490` — STEP3 + smoke + Prawo V2. **ZASTĄPIONA** przez 248.
 - ✅ **FALA 246** `cbf529f3` — AI-BALANS-STEP2 + Baszta/stolica. **ZASTĄPIONA** przez 247.
 - ✅ **FALA 245** `8b6e0cfe` — dyplo: dock jednostki ukryty gdy otwarta dyplomacja. **ZASTĄPIONA** przez 246.

@@ -1,3 +1,13 @@
+## [00:25 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 249 097c5e5c
+
+Maciej: „szukaj wszystkich, odpal wszystkie" (zakamuflowane + extras)
+|- md5: 097c5e5c469af23866ae2c1898ad22d3 · stempel: ROBOCZA · 097c5e5c
+|- Kod: PIERWSZE-MIASTO · SCENA dżungla InstancedMesh · NAP termin/bezterm + koszyk · WIAR-UI-REJESTR · ARMIA Połącz · C-PRZYROST · fair-play/relief · PANEL-SYNC · upkeep-test
+|- Docs: ZNALEZISKO-86 · SMOKE-F248 · CLOSES-STALE(+EXTRA) · R-PUŁKA audyt
+|- Testy: tsc 0 · first-city 16 · upkeep 73 · hp 5 · army 4 · wiar 152 · merge-decor 8 · fair-play 8 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra
+
 ## [00:25 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 248 772bab7c
 
 Maciej: wszystkie otwarte z rejestru + 1+2 · każdy osobnym subagentem · bez rat
@@ -6,7 +16,7 @@ Maciej: wszystkie otwarte z rejestru + 1+2 · każdy osobnym subagentem · bez r
 |- Closes: MUZYKA · SURUI · MPDIFF · ZLOTO · WIAR · verify WDROŻONE(kod) · smoke Trudny
 |- Testy: step4 10/10 · panel 18/18 · garn 26/26 · dostep 13/13 · stolica 53/53 · merge-decor 8/8 · VERIFY OK
 |- Wejście: gra-robocza/START.html
-CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra (ZASTĄPIONA → F249)
 
 ## [23:55 UTC, 2026-08-05] GROK → Maciej / sesja lokalna — DEPLOY FALA 247 540d2490
 

@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 772bab7c - 2026-08-06 00:25 - FALA 248: wszystkie otwarte + STEP4 + smoke - **AKTUALNA**
+## ROBOCZA 097c5e5c - 2026-08-06 00:25 - FALA 249: camouflage sweep + extras - **AKTUALNA**
+|- md5 (pelne): 097c5e5c469af23866ae2c1898ad22d3 · stempel: ROBOCZA · 2026-08-06 00:25 (label 097c5e5c)
+|- **FALA 249.** PIERWSZE-MIASTO · SCENA-PERF dżungla InstancedMesh · WIAR-NAP-IMP + koszyk · WIAR-UI-REJESTR · ZNALEZISKO-86 · ARMIA Połącz colocated · C-PRZYROST UI · fair-play/relief · PANEL-SYNC · upkeep-test R-STAWKI · closes STALE/PUŁKA/EXTRA · smoke F248 docs. Maciej „odpal wszystkie" · SOLO-Q1=A.
+|- Bramki: tsc 0 · first-city 16/16 · upkeep 73/73 · hp 5/5 · army-merge 4/4 · wiarygodnosc 152/152 · merge-decor 8/8 · fair-play 8/8 · VERIFY OK.
+
+## ROBOCZA 772bab7c - 2026-08-06 00:25 - FALA 248: wszystkie otwarte + STEP4 + smoke - **ZASTĄPIONA** (→ 097c5e5c)
 |- md5 (pelne): 772bab7c6a12057d534cc71e00d2a9ed · stempel: ROBOCZA · 2026-08-05 22:25 (label 772bab7c)
 |- **FALA 248.** STEP4 cuda prog 80 · PANEL-SPLIT · GARN-AKCJE-A · CIVPEDIA · SCENA-PERF · PALAC-KOSZT · SUROWCE-DOSTEP · closes (MUZYKA/SURUI/MPDIFF/ZLOTO/WIAR) · smoke Trudny · verify WDROŻONE(kod). Osobne AutoBoty · SOLO-Q1=A.
 |- Bramki: step4 10/10 · panel 18/18 · garn 26/26 · surowce-dostep 13/13 · stolica 53/53 · merge-decor 8/8 · tsc 0 · VERIFY OK.

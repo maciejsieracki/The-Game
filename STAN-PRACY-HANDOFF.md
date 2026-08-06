@@ -4,7 +4,9 @@
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 248 (2026-08-06):** ROBOCZA `772bab7c` · wszystkie otwarte z rejestru + STEP4 + smoke. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 249 (2026-08-06):** ROBOCZA `097c5e5c` · camouflage sweep (WIAR/NAP/scena/pierwsze miasto + extras). **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+>
+> **FALA 248 (2026-08-06):** ROBOCZA `772bab7c` · wszystkie otwarte z rejestru + STEP4 + smoke. **ZASTĄPIONA** przez FALA 249.
 >
 > **FALA 247 (2026-08-05):** ROBOCZA `540d2490` · STEP3 cuda + smoke STEP2 + Prawo V2. **ZASTĄPIONA** przez FALA 248.
 >
