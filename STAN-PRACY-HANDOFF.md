@@ -498,7 +498,7 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 - **Bug rzeka↔mgła** — rzeka znika przy budowie miasta, wraca po wyłączeniu mgły wojny. ⚠️ Możliwe, że zmiana „wybrzeże=woda" (2026-07-20) to zmieniła — **do weryfikacji wzrokowej**.
 - **Panele Excel** — kierunek jednostronny JSON→Excel; nie odpalać `export-*.py` (§2).
 - **„Zastąp"** — nie zweryfikowano wzrokowo ścieżki „jednostka w polu poza miastem" ani blokady przy braku środków.
-- **Balans Mennicy — Fenicjanie** — łańcuch mnożników Skarbu z handlu może dać u Fenicjan **×11,4** (bonus handlu +35% × override Waluty × Mennica). Para Waluta+Mennica (×4 easy) jest OK/zamierzona; przegięcie to osobny temat balansu `civs.json` — do decyzji.
+- ~~Balans Mennicy — Fenicjanie ×11,4~~ — **ZAMKNIĘTE 2026-08-06**: ×11,4 był artefaktem kodu SPRZED refaktoru „Efekt 1 SCALONY" (2026-07-25), gdy Waluta+Mennica mnożyły niezależnie; dziś to jedna bramka, dubel nie istnieje. Realny szczyt: ×5,79 (normal)/×7,46 (easy)/×4,30 (hard) — patrz `docs/decyzje/R-FENICJA-SKARB-CAP-Q1.md`.
 
 **Wioski** (stary problem „`istnieje` nigdy nie = true") — **NAPRAWIONE** (§4 pkt 2).
 
@@ -613,7 +613,7 @@ Maciej (dosłownie): „Każdy poziom jest dla następnej epoki… Jak będziemy
 
 - **Szlaki handlowe** — zagraj: zbuduj Karawanseraj/Port + pokój z sąsiadem → trasa (łuk na mapie + panel „Szlaki handlowe" + dochód/turę). Oceń dochód dystansowy (8/0,4/1 — placeholdery) i +5%/trasę.
 - **Mapa** — obejrzyj wybrzeże=woda, pasma (łańcuchy), rzeki do morza; sprawdź bug rzeka↔mgła.
-- **Mennica** — miasto z Mennicą+Walutą → +50% Skarbu z handlu (normal). Ocena, czy ×4 easy OK; decyzja o Fenicjanach (×11,4).
+- **Mennica** — miasto z Mennicą+Walutą → +50% Skarbu z handlu (normal). Fenicjanie ×11,4 zamknięte jako nieaktualne (patrz wyżej) — do playtestu zostaje tylko ocena, czy realny szczyt ×5,79 (normal) jest OK.
 - **Glina/ruda→brąz** — czy przebudować brąz na ilościowy, czy zostawić civ-wide.
 - **Głód wojska / „Zastąp"** — wzrokowa weryfikacja (stare, nierozstrzygnięte).
 - **Pary „Zastąp specjalnie"** — wypełnione 2, reszta czeka na przegląd kuratorski.
