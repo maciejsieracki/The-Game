@@ -6,8 +6,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 10,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 6,
@@ -53,7 +53,9 @@
     "chargeBonus": 2,
     "health": 22,
     "missileAttack": 0,
-    "fieldPower": 27
+    "fieldPower": 27,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Procarz",
@@ -62,8 +64,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 8,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 2,
@@ -109,7 +111,9 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 12
+    "fieldPower": 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Oszczepnik",
@@ -118,8 +122,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 6,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 4,
@@ -165,7 +169,9 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 12
+    "fieldPower": 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Łucznik",
@@ -174,8 +180,8 @@
     "Tech": "Łucznictwo",
     "Pieniądz (koszt)": 6,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 4,
@@ -221,7 +227,9 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 3,
-    "fieldPower": 17.5
+    "fieldPower": 17.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Zwiadowca",
@@ -230,8 +238,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 8,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 0,
     "Atak": 0,
@@ -277,7 +285,9 @@
     "chargeBonus": 0,
     "health": 10,
     "missileAttack": 0,
-    "fieldPower": 6
+    "fieldPower": 6,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Włócznik",
@@ -287,7 +297,7 @@
     "Pieniądz (koszt)": 16,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -333,7 +343,9 @@
     "chargeBonus": 4,
     "health": 32,
     "missileAttack": 0,
-    "fieldPower": 44
+    "fieldPower": 44,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Wojownik z mieczem i tarczą",
@@ -343,7 +355,7 @@
     "Pieniądz (koszt)": 16,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -389,7 +401,9 @@
     "chargeBonus": 4,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 39
+    "fieldPower": 39,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Rydwan (woły)",
@@ -399,7 +413,7 @@
     "Pieniądz (koszt)": 30,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 6,
@@ -445,7 +459,9 @@
     "chargeBonus": 10,
     "health": 48,
     "missileAttack": 0,
-    "fieldPower": 52
+    "fieldPower": 52,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Konnica",
@@ -455,7 +471,7 @@
     "Pieniądz (koszt)": 22,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 6,
@@ -501,7 +517,9 @@
     "chargeBonus": 10,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 49
+    "fieldPower": 49,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Galera",
@@ -511,7 +529,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 4,
@@ -557,7 +575,9 @@
     "chargeBonus": 2,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 25
+    "fieldPower": 25,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Falanga",
@@ -567,7 +587,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -613,7 +633,9 @@
     "chargeBonus": 7,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 52.5
+    "fieldPower": 52.5,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Hieros Lochos (Święty Zastęp)",
@@ -623,7 +645,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 8,
@@ -669,7 +691,9 @@
     "chargeBonus": 8,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 63
+    "fieldPower": 63,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Hastati",
@@ -679,7 +703,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -725,7 +749,9 @@
     "chargeBonus": 7,
     "health": 38,
     "missileAttack": 4,
-    "fieldPower": 57.5
+    "fieldPower": 57.5,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Triari",
@@ -735,7 +761,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 8,
@@ -781,7 +807,9 @@
     "chargeBonus": 10,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 62
+    "fieldPower": 62,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Jeździec chiński",
@@ -791,7 +819,7 @@
     "Pieniądz (koszt)": 28,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 8,
@@ -837,7 +865,9 @@
     "chargeBonus": 5,
     "health": 44,
     "missileAttack": 0,
-    "fieldPower": 45.5
+    "fieldPower": 45.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Hu Ben Wei (Gwardia Tygrysa)",
@@ -847,7 +877,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 10,
@@ -893,7 +923,9 @@
     "chargeBonus": 8,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 61
+    "fieldPower": 61,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Impi",
@@ -903,7 +935,7 @@
     "Pieniądz (koszt)": 16,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 3,
@@ -949,7 +981,9 @@
     "chargeBonus": 3,
     "health": 36,
     "missileAttack": 0,
-    "fieldPower": 38.5
+    "fieldPower": 38.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Oszczepnik Zulu (Izijula)",
@@ -958,8 +992,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 20,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 4,
@@ -1005,7 +1039,9 @@
     "chargeBonus": 0,
     "health": 20,
     "missileAttack": 4,
-    "fieldPower": 16
+    "fieldPower": 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "uThulwana (Białe Tarcze)",
@@ -1015,7 +1051,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 8,
@@ -1061,7 +1097,9 @@
     "chargeBonus": 10,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 61
+    "fieldPower": 61,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Wojownik z maczugą (Chaska)",
@@ -1070,8 +1108,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 26,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -1117,7 +1155,9 @@
     "chargeBonus": 2,
     "health": 20,
     "missileAttack": 0,
-    "fieldPower": 32
+    "fieldPower": 32,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Wojownik z toporem",
@@ -1127,7 +1167,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -1173,7 +1213,9 @@
     "chargeBonus": 3,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 32.5
+    "fieldPower": 32.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Procarz (Huaracoc)",
@@ -1182,8 +1224,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 8,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 2,
@@ -1229,7 +1271,9 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 12
+    "fieldPower": 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Oszczepnik (Estólica)",
@@ -1238,8 +1282,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 9,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 4,
@@ -1285,7 +1329,9 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 12
+    "fieldPower": 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Królewska Gwardia",
@@ -1295,7 +1341,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 10,
@@ -1341,7 +1387,9 @@
     "chargeBonus": 8,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 62
+    "fieldPower": 62,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Rydwan konny",
@@ -1351,7 +1399,7 @@
     "Pieniądz (koszt)": 28,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 6,
@@ -1397,7 +1445,9 @@
     "chargeBonus": 8,
     "health": 56,
     "missileAttack": 0,
-    "fieldPower": 54
+    "fieldPower": 54,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Łucznik egipski",
@@ -1406,8 +1456,8 @@
     "Tech": "Łucznictwo",
     "Pieniądz (koszt)": 14,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 4,
@@ -1453,7 +1503,9 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 6,
-    "fieldPower": 15
+    "fieldPower": 15,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Rydwan egipski",
@@ -1463,7 +1515,7 @@
     "Pieniądz (koszt)": 32,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 4,
@@ -1509,7 +1561,9 @@
     "chargeBonus": 7,
     "health": 56,
     "missileAttack": 5,
-    "fieldPower": 53
+    "fieldPower": 53,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Wojownik z khopesh",
@@ -1519,7 +1573,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -1565,7 +1619,9 @@
     "chargeBonus": 3,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 33.5
+    "fieldPower": 33.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Medżaj (Gwardia Faraona)",
@@ -1575,7 +1631,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 10,
@@ -1621,7 +1677,9 @@
     "chargeBonus": 8,
     "health": 42,
     "missileAttack": 3,
-    "fieldPower": 64.5
+    "fieldPower": 64.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Łucznik nubijski",
@@ -1630,8 +1688,8 @@
     "Tech": "Łucznictwo",
     "Pieniądz (koszt)": 20,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 4,
@@ -1677,7 +1735,9 @@
     "chargeBonus": 0,
     "health": 18,
     "missileAttack": 6,
-    "fieldPower": 16
+    "fieldPower": 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Łucznik sumeryjski",
@@ -1686,8 +1746,8 @@
     "Tech": "Łucznictwo",
     "Pieniądz (koszt)": 9,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 4,
@@ -1733,7 +1793,9 @@
     "chargeBonus": 0,
     "health": 16,
     "missileAttack": 4,
-    "fieldPower": 12
+    "fieldPower": 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Rydwan sumeryjski",
@@ -1743,7 +1805,7 @@
     "Pieniądz (koszt)": 38,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 8,
@@ -1789,7 +1851,9 @@
     "chargeBonus": 9,
     "health": 56,
     "missileAttack": 0,
-    "fieldPower": 54.5
+    "fieldPower": 54.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Włócznik sumeryjski",
@@ -1799,7 +1863,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 4,
@@ -1845,7 +1909,9 @@
     "chargeBonus": 2,
     "health": 40,
     "missileAttack": 0,
-    "fieldPower": 41
+    "fieldPower": 41,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Gwardia Królewska Sumeru",
@@ -1855,7 +1921,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 10,
@@ -1901,7 +1967,9 @@
     "chargeBonus": 8,
     "health": 42,
     "missileAttack": 0,
-    "fieldPower": 63
+    "fieldPower": 63,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Wojownik mykeński",
@@ -1911,7 +1979,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -1957,7 +2025,9 @@
     "chargeBonus": 3,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 34.5
+    "fieldPower": 34.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Rydwan mykeński",
@@ -1967,7 +2037,7 @@
     "Pieniądz (koszt)": 30,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 6,
@@ -2013,7 +2083,9 @@
     "chargeBonus": 9,
     "health": 52,
     "missileAttack": 0,
-    "fieldPower": 52.5
+    "fieldPower": 52.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Wojownik Sherden",
@@ -2023,7 +2095,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 7,
@@ -2069,7 +2141,9 @@
     "chargeBonus": 3,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 35.5
+    "fieldPower": 35.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Halabardnik Shang",
@@ -2079,7 +2153,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 7,
@@ -2125,7 +2199,9 @@
     "chargeBonus": 2,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 36
+    "fieldPower": 36,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Rydwan Shang",
@@ -2135,7 +2211,7 @@
     "Pieniądz (koszt)": 32,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 6,
@@ -2181,7 +2257,9 @@
     "chargeBonus": 8,
     "health": 60,
     "missileAttack": 0,
-    "fieldPower": 58
+    "fieldPower": 58,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Łucznik akadyjski",
@@ -2190,8 +2268,8 @@
     "Tech": "Łucznictwo",
     "Pieniądz (koszt)": 16,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 4,
@@ -2237,7 +2315,9 @@
     "chargeBonus": 0,
     "health": 18,
     "missileAttack": 5,
-    "fieldPower": 15.5
+    "fieldPower": 15.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Gaesatae",
@@ -2247,7 +2327,7 @@
     "Pieniądz (koszt)": 14,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 8,
@@ -2293,14 +2373,16 @@
     "chargeBonus": 5,
     "health": 22,
     "missileAttack": 0,
-    "fieldPower": 29.5
+    "fieldPower": 29.5,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -2346,7 +2428,9 @@
     "meleeAttack": 7,
     "weaponDamage": 5,
     "meleeDefence": 2,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Rydwan celtycki",
@@ -2356,7 +2440,7 @@
     "Pieniądz (koszt)": 28,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 7,
@@ -2402,7 +2486,9 @@
     "chargeBonus": 10,
     "health": 52,
     "missileAttack": 0,
-    "fieldPower": 53
+    "fieldPower": 53,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Wojownik germański",
@@ -2412,7 +2498,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -2458,7 +2544,9 @@
     "chargeBonus": 4,
     "health": 30,
     "missileAttack": 4,
-    "fieldPower": 37
+    "fieldPower": 37,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Berserker germański",
@@ -2468,7 +2556,7 @@
     "Pieniądz (koszt)": 16,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 10,
@@ -2514,7 +2602,9 @@
     "chargeBonus": 6,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 33
+    "fieldPower": 33,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Taran",
@@ -2523,8 +2613,8 @@
     "Tech": "Obróbka drewna",
     "Pieniądz (koszt)": 14,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 3,
@@ -2572,7 +2662,9 @@
     "missileAttack": 0,
     "wallAttack": 14,
     "fieldPower": 352.5,
-    "siegePower": 85
+    "siegePower": 85,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Taran okuty",
@@ -2582,7 +2674,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 4,
@@ -2630,7 +2722,9 @@
     "missileAttack": 0,
     "wallAttack": 18,
     "fieldPower": 377.5,
-    "siegePower": 94
+    "siegePower": 94,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Katapulta",
@@ -2640,7 +2734,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 1,
@@ -2688,7 +2782,9 @@
     "missileAttack": 4,
     "wallAttack": 16,
     "fieldPower": 128,
-    "siegePower": 45
+    "siegePower": 45,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Wieża oblężnicza",
@@ -2698,7 +2794,7 @@
     "Pieniądz (koszt)": 20,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 0,
@@ -2746,7 +2842,9 @@
     "missileAttack": 0,
     "wallAttack": 6,
     "fieldPower": 451,
-    "siegePower": 97
+    "siegePower": 97,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "Wojownik tyrreński",
@@ -2756,7 +2854,7 @@
     "Pieniądz (koszt)": 15,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -2802,7 +2900,9 @@
     "chargeBonus": 3,
     "health": 24,
     "missileAttack": 0,
-    "fieldPower": 33.5
+    "fieldPower": 33.5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Wojownik szekelesz",
@@ -2812,7 +2912,7 @@
     "Pieniądz (koszt)": 14,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 5,
@@ -2858,14 +2958,16 @@
     "chargeBonus": 2,
     "health": 28,
     "missileAttack": 0,
-    "fieldPower": 32
+    "fieldPower": 32,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 32,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 10,
@@ -2911,14 +3013,16 @@
     "meleeAttack": 9,
     "weaponDamage": 8,
     "meleeDefence": 5,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 30,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 7,
@@ -2964,14 +3068,16 @@
     "meleeAttack": 4,
     "weaponDamage": 3,
     "meleeDefence": 2,
-    "missileAttack": 6
+    "missileAttack": 6,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 14,
     "Ludność": 1,
-    "Surowiec": "-",
-    "Surowiec (ilość)": 0,
+    "Surowiec": "Drewno",
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 5,
@@ -3017,14 +3123,16 @@
     "meleeAttack": 2,
     "weaponDamage": 2,
     "meleeDefence": 3,
-    "missileAttack": 4
+    "missileAttack": 4,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -3070,14 +3178,16 @@
     "meleeAttack": 7,
     "weaponDamage": 6,
     "meleeDefence": 4,
-    "missileAttack": 7
+    "missileAttack": 7,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 26,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 7,
@@ -3123,14 +3233,16 @@
     "meleeAttack": 6,
     "weaponDamage": 5,
     "meleeDefence": 4,
-    "missileAttack": 7
+    "missileAttack": 7,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -3176,14 +3288,16 @@
     "meleeAttack": 4,
     "weaponDamage": 4,
     "meleeDefence": 9,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 7,
@@ -3229,14 +3343,16 @@
     "meleeAttack": 6,
     "weaponDamage": 5,
     "meleeDefence": 5,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -3282,14 +3398,16 @@
     "meleeAttack": 5,
     "weaponDamage": 4,
     "meleeDefence": 8,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 34,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 3,
     "żywność/turę": 1,
     "Atak": 8,
@@ -3335,14 +3453,16 @@
     "meleeAttack": 7,
     "weaponDamage": 7,
     "meleeDefence": 3,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 7,
@@ -3388,14 +3508,16 @@
     "meleeAttack": 5,
     "weaponDamage": 8,
     "meleeDefence": 8,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 9,
@@ -3441,14 +3563,16 @@
     "meleeAttack": 7,
     "weaponDamage": 6,
     "meleeDefence": 7,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 9,
@@ -3494,14 +3618,16 @@
     "meleeAttack": 8,
     "weaponDamage": 7,
     "meleeDefence": 7,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 7,
@@ -3547,14 +3673,16 @@
     "meleeAttack": 6,
     "weaponDamage": 5,
     "meleeDefence": 5,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -3600,14 +3728,16 @@
     "meleeAttack": 6,
     "weaponDamage": 5,
     "meleeDefence": 7,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -3653,14 +3783,16 @@
     "meleeAttack": 7,
     "weaponDamage": 6,
     "meleeDefence": 3,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Brąz",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -3706,14 +3838,16 @@
     "meleeAttack": 5,
     "weaponDamage": 4,
     "meleeDefence": 4,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Epoka": "Żelazo",
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -3759,7 +3893,9 @@
     "meleeAttack": 7,
     "weaponDamage": 6,
     "meleeDefence": 6,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Thorakites",
@@ -3769,7 +3905,7 @@
     "Pieniądz (koszt)": 16,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 7,
@@ -3812,7 +3948,9 @@
     "meleeAttack": 5,
     "weaponDamage": 4,
     "meleeDefence": 8,
-    "missileAttack": 6
+    "missileAttack": 6,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Evocati",
@@ -3822,7 +3960,7 @@
     "Pieniądz (koszt)": 0,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 3,
+    "Surowiec (ilość)": 15,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 1,
     "Atak": 9,
@@ -3865,7 +4003,9 @@
     "meleeAttack": 8,
     "weaponDamage": 8,
     "meleeDefence": 8,
-    "missileAttack": 6
+    "missileAttack": 6,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 3
   },
   {
     "Jednostka": "iButho z iklwa",
@@ -3875,7 +4015,7 @@
     "Pieniądz (koszt)": 16,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 5,
@@ -3918,7 +4058,9 @@
     "meleeAttack": 5,
     "weaponDamage": 4,
     "meleeDefence": 7,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Gwardzista z champi",
@@ -3928,7 +4070,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Brąz",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -3971,7 +4113,9 @@
     "meleeAttack": 7,
     "weaponDamage": 6,
     "meleeDefence": 5,
-    "missileAttack": 5
+    "missileAttack": 5,
+    "Utrzymanie surowiec": "Brąz",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Wojownik z żelaznym khopesh",
@@ -3981,7 +4125,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 8,
@@ -4024,7 +4168,9 @@
     "meleeAttack": 6,
     "weaponDamage": 6,
     "meleeDefence": 6,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Mur tarcz (Sargonid)",
@@ -4034,7 +4180,7 @@
     "Pieniądz (koszt)": 18,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 2,
     "żywność/turę": 1,
     "Atak": 6,
@@ -4077,7 +4223,9 @@
     "meleeAttack": 4,
     "weaponDamage": 3,
     "meleeDefence": 10,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   },
   {
     "Jednostka": "Miecznik galijski",
@@ -4087,7 +4235,7 @@
     "Pieniądz (koszt)": 14,
     "Ludność": 1,
     "Surowiec": "Żelazo",
-    "Surowiec (ilość)": 2,
+    "Surowiec (ilość)": 10,
     "Utrzymanie (Pieniądz/turę)": 1,
     "żywność/turę": 1,
     "Atak": 9,
@@ -4130,6 +4278,8 @@
     "meleeAttack": 8,
     "weaponDamage": 6,
     "meleeDefence": 2,
-    "missileAttack": 0
+    "missileAttack": 0,
+    "Utrzymanie surowiec": "Żelazo",
+    "Utrzymanie surowiec (ilość)": 2
   }
 ]

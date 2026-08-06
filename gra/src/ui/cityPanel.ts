@@ -179,7 +179,7 @@ import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { axialToWorld, HEX_R } from '../render/hexutil';
 import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
-import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts } from '../game/economy-upkeep';
+import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts, unitResourceUpkeep } from '../game/economy-upkeep';
 import {
   type TradeRoute,
 } from '../game/trade-routes';
@@ -6617,6 +6617,15 @@ function buildUnitDetailCard(u: UnitDef, data: GameData): HTMLDivElement {
   gridDetailRow(gEco, 'Utrzymanie', u['Utrzymanie (Pieniądz/turę)'] != null
     ? `${u['Utrzymanie (Pieniądz/turę)']} ${cityPanelChipIconWrap('res-treasury', 14)}`
     : null);
+  const resUpkeep = unitResourceUpkeep(u);
+  const resUpkeepKeys = Object.keys(resUpkeep);
+  if (resUpkeepKeys.length > 0) {
+    gridDetailRow(
+      gEco,
+      'Utrzymanie surowców',
+      formatResourceUpkeepSummary(resUpkeep) + '/t',
+    );
+  }
   gridDetailRow(gEco, 'Żywność', u['żywność/turę'] != null ? `${u['żywność/turę']}` : null);
   gridDetailRow(gEco, 'Ludność', u.Ludność != null ? String(u.Ludność) : null);
   const surow = u.Surowiec;
@@ -6745,6 +6754,16 @@ function unitStockCostChipsHtml(u: UnitDef, city: City): string {
   return chips.join('');
 }
 
+/** Chip(y) utrzymania surowcowego jednostki (units.json Utrzymanie surowiec). */
+function unitResourceUpkeepChipsHtml(u: UnitDef): string {
+  const upkeep = unitResourceUpkeep(u);
+  const keys = Object.keys(upkeep);
+  if (keys.length === 0) return '';
+  return keys
+    .map(k => `<span class="bld-infocard-chip">−${upkeep[k]} ${stockResourceLabel(k)}/t</span>`)
+    .join('');
+}
+
 function appendUnitRecruitCompactRow(
   scroll: HTMLElement,
   city: City,
@@ -6771,6 +6790,7 @@ function appendUnitRecruitCompactRow(
     mpCost,
     mpCostLabel: formatManpower(mpCost),
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
+    resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
     stockMissingLabel: stockOk ? undefined : 'Brakuje w magazynie: ' + Object.entries(stockMissing)
       .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
       .join(', '),

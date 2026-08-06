@@ -78,6 +78,8 @@ import {
   buildUnitUpkeepTable,
   upkeepBalance,
   totalBuildingResourceUpkeep,
+  totalUnitResourceUpkeep,
+  addResourceCosts,
   unitFoodPerTurn,
   loadOwnerStorageParams,
   ownerResourceCapacityPerType,
@@ -2510,10 +2512,16 @@ export function advanceCityEconomy(
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
-    result.resourceUpkeepByOwner.set(
-      oid,
-      totalBuildingResourceUpkeep(buildingsByOwner.get(oid) ?? []),
+    const resUpkeep: Record<string, number> = totalBuildingResourceUpkeep(
+      buildingsByOwner.get(oid) ?? [],
     );
+    addResourceCosts(
+      resUpkeep,
+      totalUnitResourceUpkeep(ounits, typeId =>
+        data.units.find(u => u.Jednostka === typeId),
+      ),
+    );
+    result.resourceUpkeepByOwner.set(oid, resUpkeep);
   }
 
   if (manpowerHeal) {

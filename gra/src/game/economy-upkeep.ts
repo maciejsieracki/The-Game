@@ -661,6 +661,74 @@ export function previewOwnerBuildingResourceUpkeep(
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// Unit resource upkeep (units.json "Utrzymanie surowiec" / "Utrzymanie surowiec (ilość)")
+// ---------------------------------------------------------------------------
+
+/** Usuwa znaki diakrytyczne (NFD + wycięcie combining marks) i normalizuje do lowercase. */
+function stripDiacriticsLower(s: string): string {
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}
+
+/** Minimalny kształt jednostki dla utrzymania surowcowego (units.json). */
+export interface UnitResourceUpkeepSource {
+  'Utrzymanie surowiec'?: string | null;
+  'Utrzymanie surowiec (ilość)'?: number | null;
+}
+
+/** Jednostka do sumowania utrzymania surowcowego (typeId = units.json Jednostka). */
+export interface UnitResourceUpkeepLike {
+  typeId: string;
+}
+
+/**
+ * Koszt surowcowy utrzymania jednostki (units.json `Utrzymanie surowiec` /
+ * `Utrzymanie surowiec (ilość)`), zmapowany na klucz ASCII zgodny z City.surowce.
+ * Zwraca {} gdy brak surowca lub ilość <= 0. NIE obejmuje Koni (Mount) — tylko
+ * rekrutacja (unitStockCost).
+ */
+export function unitResourceUpkeep(
+  unitDef: UnitResourceUpkeepSource | null | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (!unitDef) return out;
+  const rawName = (unitDef['Utrzymanie surowiec'] ?? '').toString().trim();
+  if (!rawName || rawName === '-') return out;
+  const ilosc = unitDef['Utrzymanie surowiec (ilość)'];
+  if (typeof ilosc === 'number' && Number.isFinite(ilosc) && ilosc > 0) {
+    const key = stripDiacriticsLower(rawName);
+    if (key) out[key] = ilosc;
+  }
+  return out;
+}
+
+/** Suma utrzymania surowcowego po żywych jednostkach (typeId → resolveDef). */
+export function totalUnitResourceUpkeep(
+  units: ReadonlyArray<UnitResourceUpkeepLike>,
+  resolveDef: (typeId: string) => UnitResourceUpkeepSource | null | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const u of units) {
+    addResourceCosts(out, unitResourceUpkeep(resolveDef(u.typeId)));
+  }
+  return out;
+}
+
+/** Live preview: budynki + jednostki — utrzymanie surowcowe państwa per owner. */
+export function previewOwnerTotalResourceUpkeep(
+  ownerId: number,
+  cities: ReadonlyArray<{ id: string; ownerId: number }>,
+  buildingCatalog: ReadonlyArray<{ id: string; koszt_surowce?: BuildingStockCost | null }>,
+  builtByCity: ReadonlyMap<string, readonly string[]>,
+  units: ReadonlyArray<{ ownerId: number; typeId: string }>,
+  resolveUnitDef: (typeId: string) => UnitResourceUpkeepSource | null | undefined,
+): Record<string, number> {
+  const out = previewOwnerBuildingResourceUpkeep(ownerId, cities, buildingCatalog, builtByCity);
+  const ownerUnits = units.filter(u => u.ownerId === ownerId);
+  addResourceCosts(out, totalUnitResourceUpkeep(ownerUnits, resolveUnitDef));
+  return out;
+}
+
 /**
  * Per-category unit upkeep fallback (Pieniadz/ture), used when a unit's typeId is
  * not in the table.  Mirrors player-economy.ts DEFAULT_UNIT_UPKEEP_BY_CATEGORY so

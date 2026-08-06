@@ -43,6 +43,10 @@ export interface UnitDef {
   Ludność: number | null;
   Surowiec: string | null;
   'Surowiec (ilość)': number | null;
+  /** Surowiec zużywany co turę na utrzymanie (Drewno/Brąz/Żelazo). */
+  'Utrzymanie surowiec'?: string | null;
+  /** Ilość surowca co turę na utrzymanie jednostki. */
+  'Utrzymanie surowiec (ilość)'?: number | null;
   'Utrzymanie (Pieniądz/turę)': number | null;
   'żywność/turę': number | null;
   Atak: number | null;

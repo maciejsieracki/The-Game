@@ -54,6 +54,11 @@ export interface UnitRecruitCardOpts {
    */
   stockChipsHtml?: string;
   /**
+   * Utrzymanie surowcowe jednostki (units.json Utrzymanie surowiec), już
+   * wyrenderowany HTML — wyświetlane gdy >0.
+   */
+  resourceUpkeepChipsHtml?: string;
+  /**
    * Gdy podane (pula PAŃSTWA ownera nie starcza na koszt surowcowy), przycisk
    * "Rekrutuj" jest zablokowany niezależnie od canPurchase/skarb/Manpower.
    */
@@ -65,7 +70,7 @@ export interface UnitRecruitCardOpts {
 export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement {
   const {
     udef, item, skarb, canPurchase, treasuryIconHtml, mpCostLabel,
-    stockChipsHtml, stockMissingLabel, onRecruit,
+    stockChipsHtml, resourceUpkeepChipsHtml, stockMissingLabel, onRecruit,
   } = opts;
   const cat = unitCategory(udef);
   const canBuy = opts.canPurchase && (skarb === undefined || skarb >= item.koszt);
@@ -93,6 +98,11 @@ export function buildUnitRecruitCard(opts: UnitRecruitCardOpts): HTMLDivElement 
     const stock = el('span', 'bld-infocard-chips');
     stock.innerHTML = stockChipsHtml;
     cost.appendChild(stock);
+  }
+  if (resourceUpkeepChipsHtml) {
+    const upkeep = el('span', 'bld-infocard-chips');
+    upkeep.innerHTML = resourceUpkeepChipsHtml;
+    cost.appendChild(upkeep);
   }
   row.appendChild(cost);
 
