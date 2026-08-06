@@ -73,6 +73,9 @@ const MAP_OVERLAY_IDS = [
   'save-load-dialog',
   'science-hub',
   'city-list',
+  'pre-battle',
+  'siege-map',
+  'post-battle-summary',
 ];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();

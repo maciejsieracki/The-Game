@@ -8,6 +8,7 @@ import type { MapSiegeContext } from '../game/mapSiegeDetect';
 import { getCityFood } from '../game/turn-economy';
 import type { SiegeMachineKind, SiegeMachinesState } from '../game/siegeMachines';
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface SiegeMapPanelActions {
   /** Zatwierdź oblężenie — wojsko zostaje, panel się zamyka. */
@@ -170,6 +171,11 @@ function ownerLabel(ownerId: number): string {
   return ownerId === 0 ? 'Gracz' : ('AI ' + ownerId);
 }
 
+function handleSiegeMapEscape(): void {
+  if (!activeCtx || !actions) return;
+  actions.onRetreat(activeCtx.city.id);
+}
+
 function detachKeyboard(): void {
   if (keyHandler) {
     document.removeEventListener('keydown', keyHandler);
@@ -181,10 +187,7 @@ function attachKeyboard(cityId: string): void {
   detachKeyboard();
   keyHandler = (e: KeyboardEvent) => {
     if (!activeCtx || !actions) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      actions.onRetreat(cityId);
-    } else if (e.key === 'Enter') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       actions.onBesiege(cityId);
     } else if (e.key === '1') {
@@ -334,6 +337,7 @@ export function showSiegeMapPanel(ctx: MapSiegeContext, panelActions: SiegeMapPa
   siegeTurn = turnNum;
   root.style.display = 'flex';
   render();
+  pushOverlay('siege-map', handleSiegeMapEscape);
 }
 
 export function updateSiegeMapPanelTurn(turnNum: number, city?: City): void {
@@ -343,6 +347,7 @@ export function updateSiegeMapPanelTurn(turnNum: number, city?: City): void {
 }
 
 export function hideSiegeMapPanel(): void {
+  popOverlay('siege-map');
   detachKeyboard();
   if (root) root.style.display = 'none';
   activeCtx = null;
