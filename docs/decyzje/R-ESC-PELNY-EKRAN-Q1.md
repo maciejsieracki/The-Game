@@ -29,12 +29,17 @@ Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-
 | `wiki-hub` | `gra/src/ui/wikiHubHud.ts` (Civpedia) |
 | `diplo-list` | `gra/src/ui/diploListHud.ts` |
 | `diplo-audience` | `gra/src/ui/diplomacyAudience.ts` |
+| `diplo-trade-basket` | `gra/src/ui/diplomacyTradeBasket.ts` |
 | `build-mode` | `gra/src/main.ts` |
 | `science-picker` | `gra/src/ui/sciencePicker.ts` |
 | `army-list` | `gra/src/ui/armyListHud.ts` |
 | `save-load-dialog` | `gra/src/ui/saveLoadDialog.ts` |
 | `science-hub` | `gra/src/ui/scienceHubHud.ts` |
 | `city-list` | `gra/src/ui/cityListHud.ts` |
+| `army-merge` | `gra/src/ui/armyMergePanel.ts` |
+| `army-merge-pick` | `gra/src/ui/armyMergePickPanel.ts` |
+| `army-split` | `gra/src/ui/armySplitPanel.ts` |
+| `army-stack-prompt` | `gra/src/ui/armyStackPrompt.ts` |
 
 `main.ts` — Escape lokalny pomija panele ze stosu (`defaultPrevented`); menu pauzy bez zmian.
 

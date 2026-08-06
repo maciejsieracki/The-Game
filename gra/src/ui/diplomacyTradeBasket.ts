@@ -32,6 +32,7 @@ import {
 import { HANDEL_ZLOZE_CENA_BAZA } from '../game/diplomacy-deposit-trade';
 import unitsJson from '../../data/units.json';
 import techJson from '../../data/tech.json';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { DIPLO_1E_SHARED_CSS, ensureDiploBrandScope } from './diploUiSkin';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import {
@@ -52,6 +53,7 @@ export type TradeBasketMode = 'trade' | 'gift' | 'treaty';
 
 const STYLE_ID = 'civ-diplo-basket-css-1e';
 let overlay: HTMLDivElement | null = null;
+let activeOnCancel: (() => void) | undefined;
 
 const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   zloto: 'Pieniądze (¤)',
@@ -363,7 +365,18 @@ function esc(s: string): string {
 }
 
 function closeModal(): void {
-  if (overlay !== null) { overlay.remove(); overlay = null; }
+  if (overlay !== null) {
+    popOverlay('diplo-trade-basket');
+    overlay.remove();
+    overlay = null;
+  }
+  activeOnCancel = undefined;
+}
+
+function dismissTradeBasketViaEscape(): void {
+  const cb = activeOnCancel;
+  closeModal();
+  cb?.();
 }
 
 function defaultUnitOptions(): Array<{ id: string; label: string }> {
@@ -1632,6 +1645,7 @@ export function showTradeBasketModal(
 ): void {
   closeModal();
   ensureStyles();
+  activeOnCancel = onCancel;
 
   // Zaległość #1 (SZYBKA UMOWA) — koszyk może otwierać się WYPEŁNIONY propozycją
   // (computeQuickDealBasket), użytkownik dalej może edytować/usuwać pozycje normalnie.
@@ -1649,15 +1663,7 @@ export function showTradeBasketModal(
   box.setAttribute('aria-modal', 'true');
   overlay.appendChild(box);
   document.body.appendChild(overlay);
-
-  const onBasketEsc = (ev: KeyboardEvent): void => {
-    if (ev.key !== 'Escape') return;
-    ev.preventDefault();
-    document.removeEventListener('keydown', onBasketEsc);
-    closeModal();
-    onCancel();
-  };
-  document.addEventListener('keydown', onBasketEsc);
+  pushOverlay('diplo-trade-basket', dismissTradeBasketViaEscape);
 
   const readDealTurnsFromDom = (): void => {
     const inp = box.querySelector('.cdb-deal-turns') as HTMLInputElement | null;
@@ -1679,9 +1685,9 @@ export function showTradeBasketModal(
 
   const bindEvents = (): void => {
     const dismiss = (): void => {
-      document.removeEventListener('keydown', onBasketEsc);
+      const cb = activeOnCancel;
       closeModal();
-      onCancel();
+      cb?.();
     };
     box.querySelector('.cdb-cancel')?.addEventListener('click', dismiss);
 
@@ -1925,7 +1931,6 @@ export function showTradeBasketModal(
         }
       }
       closeModal();
-      document.removeEventListener('keydown', onBasketEsc);
       onSubmit(payload);
     });
   };
@@ -1934,9 +1939,9 @@ export function showTradeBasketModal(
 
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
-      document.removeEventListener('keydown', onBasketEsc);
+      const cb = activeOnCancel;
       closeModal();
-      onCancel();
+      cb?.();
     }
   });
 }
