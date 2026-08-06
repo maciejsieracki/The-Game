@@ -802,7 +802,7 @@ import {
   shouldDeferEotEvents,
   type DeferredEotHint,
 } from './game/eot-event-defer';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, UNIT_RECRUIT_FULL_HINT, UNIT_RECRUIT_STOCK_ONLY_HINT, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -2733,15 +2733,9 @@ async function boot(): Promise<void> {
       const unitDef = data.units.find(u => u.Jednostka === itemId);
       const stockCost = unitStockCost(unitDef);
       const ownerPool = ownerResourceStockAll(cities, ownerId);
-      if (!canAffordUnitRecruitFull(ownerPool, unitDef)) {
-        if (ownerId === 0) {
-          if (Object.keys(stockCost).length > 0
-            && !canAffordBuildingStock(ownerPool, stockCost)) {
-            showHintMessage(UNIT_RECRUIT_STOCK_ONLY_HINT, 2800);
-          } else {
-            showHintMessage(UNIT_RECRUIT_FULL_HINT, 2800);
-          }
-        }
+      const recruitHint = pickUnitRecruitHint(ownerPool, unitDef);
+      if (recruitHint) {
+        if (ownerId === 0) showHintMessage(recruitHint, 2800);
         return false;
       }
       const d = tryDeductUnitSpawnCostsEmpire(

@@ -30,6 +30,7 @@ export {
   canAffordUnitRecruitUpkeepReserve,
   unitRecruitFullStockCost,
   canAffordUnitRecruitFull,
+  pickUnitRecruitHint,
   UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
   UNIT_RECRUIT_FULL_HINT,
   UNIT_RECRUIT_STOCK_ONLY_HINT,
@@ -117,6 +118,20 @@ assert(
 assert(
   M.canAffordUnitRecruitFull({ braz: 12 }, wlocznik),
   'pool braz=12 >= 12 -> OK',
+);
+
+console.log('\n-- pickUnitRecruitHint: STOCK_ONLY / FULL / null (Włócznik) --');
+assert(
+  M.pickUnitRecruitHint({ braz: 9 }, wlocznik) === M.UNIT_RECRUIT_STOCK_ONLY_HINT,
+  'pool braz=9 < 10 stock -> STOCK_ONLY',
+);
+assert(
+  M.pickUnitRecruitHint({ braz: 11 }, wlocznik) === M.UNIT_RECRUIT_FULL_HINT,
+  'pool braz=11 stock OK, full fail -> FULL',
+);
+assert(
+  M.pickUnitRecruitHint({ braz: 12 }, wlocznik) === null,
+  'pool braz=12 full OK -> null',
 );
 
 console.log('\n-- parytet ownerId: gracz (0) vs AI (7) — ta sama bramka --');
