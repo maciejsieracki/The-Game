@@ -715,6 +715,12 @@ export function generateMap(
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
   ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   stripDepositsFromWater(hexes);
+  // ensureDepositGridCoverage (bootstrap złóż + cap skupisk na końcu) może obciąć Góry/Wzgórza
+  // poniżej pakietu żelaza/miedzi w komórce — Ogromny Ziemia seed 99: 75% żelaza przed mop-up.
+  capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+  ensureReliefGridCoverage(
+    hexes, terrainScratch, reliefTier, width, height, typ, zoneOf, nZones, rand,
+  );
 
   reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 100);
   const mapGenTimings = genTimer.finish();

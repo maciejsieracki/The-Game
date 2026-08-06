@@ -2294,7 +2294,7 @@ function ensureMassIronGridCoverage(
   const ironSize = ironCoverageCellSize(tier);
   const minIronLand = minLandHexesForReliefCell(ironSize);
   const eligibleCells = [...landHexesByCoverageCell(massSet, ironSize).values()]
-    .filter((land) => land.length >= minIronLand);
+    .filter((land) => eligibleReliefLandCount(land, hexes) >= minIronLand);
   let fixed = 0;
 
   if (!skipCap) {
@@ -2329,7 +2329,7 @@ function ensureMassCopperGridCoverage(
   const copperSize = copperCoverageCellSize(tier);
   const minCopperLand = minLandHexesForReliefCell(copperSize);
   const eligibleCells = [...landHexesByCoverageCell(massSet, copperSize).values()]
-    .filter((land) => land.length >= minCopperLand);
+    .filter((land) => eligibleReliefLandCount(land, hexes) >= minCopperLand);
   let fixed = 0;
 
   if (!skipCap) {
@@ -2386,12 +2386,36 @@ export function ensureReliefGridCoverage(
   for (const mass of masses) {
     capIronCellReliefSpread(hexes, scratch, tier, new Set(mass));
   }
-  for (let restore = 0; restore < 3; restore++) {
+  for (let restore = 0; restore < 8; restore++) {
     let passFixed = 0;
     for (const mass of masses) {
       const massSet = new Set(mass);
       passFixed += ensureMassIronGridCoverage(hexes, scratch, tier, width, height, massSet, rand, true);
       passFixed += ensureMassCopperGridCoverage(hexes, scratch, tier, width, height, massSet, rand, true);
+    }
+    fixed += passFixed;
+    if (passFixed === 0) break;
+  }
+  // Mop-up po spread-cap: duże mapy (Ogromny) — komórki bez pakietu żelaza/miedzi.
+  const ironSize = ironCoverageCellSize(tier);
+  const copperSize = copperCoverageCellSize(tier);
+  const minIron = minLandHexesForReliefCell(ironSize);
+  const minCopper = minLandHexesForReliefCell(copperSize);
+  for (let mop = 0; mop < 16; mop++) {
+    let passFixed = 0;
+    for (const mass of masses) {
+      if (mass.length < 150) continue;
+      const massSet = new Set(mass);
+      for (const land of landHexesByCoverageCell(massSet, ironSize).values()) {
+        if (eligibleReliefLandCount(land, hexes) < minIron) continue;
+        if (cellHasIronPackage(land, hexes, tier)) continue;
+        if (forceIronMountainsInCell(land, hexes, scratch, width, height, rand, tier)) passFixed++;
+      }
+      for (const land of landHexesByCoverageCell(massSet, copperSize).values()) {
+        if (eligibleReliefLandCount(land, hexes) < minCopper) continue;
+        if (cellHasCopperPackage(land, hexes, tier)) continue;
+        if (forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand, tier)) passFixed++;
+      }
     }
     fixed += passFixed;
     if (passFixed === 0) break;
