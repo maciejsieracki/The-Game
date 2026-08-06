@@ -29,6 +29,7 @@ Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-
 | `wiki-hub` | `gra/src/ui/wikiHubHud.ts` (Civpedia) |
 | `diplo-list` | `gra/src/ui/diploListHud.ts` |
 | `diplo-audience` | `gra/src/ui/diplomacyAudience.ts` |
+| `diplo-trade-basket` | `gra/src/ui/diplomacyTradeBasket.ts` |
 | `build-mode` | `gra/src/main.ts` |
 | `science-picker` | `gra/src/ui/sciencePicker.ts` |
 | `army-list` | `gra/src/ui/armyListHud.ts` |
