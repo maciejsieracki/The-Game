@@ -25,7 +25,7 @@ Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-
 | id | Plik |
 |----|------|
 | `tech-tree` | `gra/src/ui/techTreeView.ts` |
-| `city-panel` | `gra/src/ui/cityUxFrame.ts` |
+| `city-panel` | `gra/src/ui/cityUxFrame.ts` — Escape tylko stos; lokalny keydown = nawigacja miast (←/→) |
 | `wiki-hub` | `gra/src/ui/wikiHubHud.ts` (Civpedia) |
 | `diplo-list` | `gra/src/ui/diploListHud.ts` |
 | `diplo-audience` | `gra/src/ui/diplomacyAudience.ts` |
