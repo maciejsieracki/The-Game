@@ -1,3 +1,13 @@
+## [13:24 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 256 693a2c57
+
+Maciej „3” = merge+deploy relief (osobno od paczki ABC 6)
+|- ROBOCZA md5 `693a2c571b77806dd2d3cebb80af2295` · VERIFY OK
+|- Kod: C-MAPA-Q1=B mop-up relief po złożach (`generator.ts` + `gen-helpers.ts`) · tip `41eed4d6`
+|- Bramki Grok: fair-play 8/8 · Operator: relief Ogromny PASS + map-gen exit 0
+|- Wejście: gra-robocza/START.html · git pull + Ctrl+F5 + Nowa gra
+|- Reszta (DOPREC ABC + 6 Autobotów ECHO) — następny agent
+CZEKAM-NA: sesja lokalna pull · opcjonalnie litery DOPREC / `działaj`
+
 ## [13:20 UTC, 2026-08-06] GROK → Maciej / sesja lokalna / następny agent — DEPLOY FALA 255 20e554dc
 
 Maciej: handoff + deploy ROBOCZA + push (koniec limitu sesji)

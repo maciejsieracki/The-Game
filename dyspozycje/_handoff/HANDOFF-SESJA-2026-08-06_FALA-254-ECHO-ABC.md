@@ -67,11 +67,11 @@ Po merge ECHO na `main` + hasło Macieja **`działaj`** (lub „działaj wszystk
 
 Po CLEAN tipach → Grok merge → **deploy dopiero na hasło Macieja** (`deploy` / „wdrażaj ROBOCZA”).
 
-### Zaparkowane (Maciej: nie w tej kolejce natychmiast)
+### Zaparkowane (poza bieżącą paczką ABC 6)
 
 | Temat | Notatka |
 |-------|---------|
-| Relief/fair-play tip `9c098944` | Eval PASS-WITH-NOTES (Ogromny timeout / perf) — osobny Autobot później |
+| ~~Relief/fair-play~~ | **ZDEPLOYOWANE** FALA 256 `693a2c57` |
 | `P-TEST-UPKEEP-R-STAWKI` | Inżynieria testów po ×2 kosztach — nie ABC |
 | Promocja KANON | Tylko sesja lokalna / PowerShell |
 | `R-DOTYK-MVP` | ODŁOŻONE Q1=B |

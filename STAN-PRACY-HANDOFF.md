@@ -1,12 +1,13 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-06 ~13:15** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-06 ~13:24** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-06 (FALA 254 + ECHO ABC):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md) — **czytaj najpierw** (ECHO 6×, kolejka Autobot, pułapki, paste dla agenta).
 >
 > **Handoff wcześniejszy 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
-> **FALA 255 (2026-08-06):** ROBOCZA `20e554dc` · ECHO ABC 6× + handoff sesji · logika gry = F254. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 256 (2026-08-06):** ROBOCZA `693a2c57` · C-MAPA-Q1=B relief mop-up po złożach. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 255 (2026-08-06):** ROBOCZA `20e554dc` · ECHO ABC 6× + handoff · logika = F254. **ZASTĄPIONA** przez FALA 256.
 > **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **ZASTĄPIONA** przez FALA 255.
 > **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. **ZASTĄPIONA** przez FALA 254.
 >
@@ -97,7 +98,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA **`20e554dc`** (FALA 255) · ECHO ABC 6× + handoff · logika = F254. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA **`693a2c57`** (FALA 256) · relief mop-up C-MAPA-Q1=B. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
 **Stan FALA 254 (historyczny):** ROBOCZA `232634a9` (10:11) · Escape + recruit + Panel-C + audyty.
 

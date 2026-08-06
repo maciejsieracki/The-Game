@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 20e554dc - 2026-08-06 13:20 - FALA 255: ECHO ABC 6× + handoff sesji (logika gry = F254) - **AKTUALNA**
+## ROBOCZA 693a2c57 - 2026-08-06 13:24 - FALA 256: C-MAPA-Q1=B relief mop-up po złożach (fair-play/relief) - **AKTUALNA**
+|- md5 (pelne): 693a2c571b77806dd2d3cebb80af2295 · stempel: ROBOCZA · 2026-08-06 (label 693a2c57)
+|- **FALA 256.** AutoBot Operator tip `41eed4d6`/`0530cad8` · Grok final (Eval w tle; SCOPE OK + fair-play 8/8). Fix: drugi przebieg cap+ensureReliefGridCoverage po ensureDepositGridCoverage; filtr eligibleReliefLandCount; mop-up 16×. Docs: `R-RELIEF-FAIRPLAY-STATUS.md`. Limit skupiska 10 hex bez zmian.
+|- Bramki: fair-play-grid 8/8 · Operator: relief Ogromny 6/6 · map-gen-regression exit 0 · VERIFY OK. Uwaga: Ogromny wolniejszy (~58 min) — optymalizacja osobno.
+
+## ROBOCZA 20e554dc - 2026-08-06 13:20 - FALA 255: ECHO ABC 6× + handoff sesji (logika gry = F254) - **ZASTĄPIONA** (→ 693a2c57)
 |- md5 (pelne): 20e554dc2c010bb43a44b867a2dee09e · stempel: ROBOCZA · 2026-08-06 (label 20e554dc)
 |- **FALA 255.** Docs/ECHO: STEP6=A · KAMIEN=A+reguła · MAP-UX=B+C · S9=A · DESIGN=C · OBRONA=A. Handoff: `HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`. Rebuild ROBOCZA (Escape/recruit F254 bez nowego gameplay). Wdrożenie 6 tematów czeka `działaj` + Autobot.
 |- Bramki: tsc n/a (docs) · VERIFY OK · stempel 20e554dc.
