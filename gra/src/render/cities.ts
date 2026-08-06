@@ -685,8 +685,13 @@ export class CityRenderer {
    * Czy TO miasto jest stolicą swojego państwa — wyłącznie z `options.getCapitalCityId`
    * (main.ts `capitalCityIdForOwner`). Bez callbacku: false, czyli brak markera, ale
    * NIGDY własna heurystyka „najstarsze miasto” — jedno źródło prawdy.
+   * Miasta-państwa WYŁĄCZONE (MAP-UX-CAPITAL-MP-SCOPE-Q1=B, Maciej 2026-08-06): MP ma
+   * zawsze jedno miasto, więc predykat capId===city.id byłby prawdziwy dla każdego MP —
+   * korona/obwódka ma czytać się jako „stolica imperium”, nie jako techniczny fakt
+   * „to jedyne miasto tego właściciela”.
    */
   private _isCapitalCity(city: City, options?: CityRenderOptions): boolean {
+    if (options?.isCityStateOwner?.(city.ownerId) ?? false) return false;
     const capId = options?.getCapitalCityId?.(city.ownerId) ?? null;
     return capId !== null && capId === city.id;
   }
