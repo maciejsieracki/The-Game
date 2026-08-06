@@ -57,7 +57,7 @@ Opcjonalnie potem: `### Playtesty` + `### Następny krok` (reguła `maciej-naste
 | Reguła | Rola |
 |---|---|
 | Ten plik | **Kiedy wolno testować** — banner + md5 |
-| `maciej-nastepny-krok.mdc` | **Co dalej** po odpowiedzi (max 3 opcje) |
+| `maciej-nastepny-krok.mdc` | **Co dalej** po odpowiedzi (pełna lista; bez limitu 3) |
 | `docs/obieg/OBOWIAZ-POWIADOM-MACIEJA.md` | `✅ Gotowe:` + wpis `MACIEJ-GOTOWE.md` |
 | `obowiaz-playtest-master-only.mdc` | Nie mylić z oficjalnym playtestem kanonu |
 

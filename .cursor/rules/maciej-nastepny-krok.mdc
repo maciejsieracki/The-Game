@@ -1,11 +1,11 @@
 ---
-description: Po każdym zakończonym kroku — Playtesty osobno, Następny krok tylko kod (Maciej 2026-08-01/06)
+description: Po każdym zakończonym kroku — Playtesty osobno, Następny krok pełna lista kodu (Maciej 2026-08-01/06)
 alwaysApply: true
 ---
 
-# Następny krok — obowiązek po każdej paczce (Maciej 2026-08-01 · split 2026-08-06)
+# Następny krok — obowiązek po każdej paczce (Maciej 2026-08-01 · split 2026-08-06 · pełna lista)
 
-**Problem:** Maciej musi dopytywać „nad czym pracujesz?” / „co dalej?” — albo playtest miesza się z kodem i zamydla obraz.
+**Problem:** Maciej musi dopytywać „nad czym pracujesz?” / „co dalej?” — albo playtest miesza się z kodem i zamydla obraz — albo agent ucina listę do 3 pozycji i chowa resztę kolejki.
 
 **Zasada:** po **każdym** zamknięciu sensownej jednostki pracy agent **sam** kończy wiadomość **dwoma blokami**.
 
@@ -17,34 +17,22 @@ alwaysApply: true
 - (albo „— (brak)” jeśli nic do ogrania)
 
 ### Następny krok
-1. **…** — tylko dalsza zmiana w kodzie/danych/docs (rekomendacja pierwsza)
-2. **…** — alternatywa kodowa
-3. **…** — opcjonalnie trzecia
-Napisz: działaj / 1 / 2 / 3 (albo inną dyspozycję).
+1. **…** — rekomendacja (najpilniejsza)
+2. **…**
+…
+N. **…** — wszystkie widoczne dalsze prace (kod/dane/docs), bez limitu 3
+Napisz: działaj / 1 / 2 / … / N (albo inną dyspozycję).
 ```
 
-Kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md` · zakaz ABC o playtestach: `R-ABC-BEZ-PLAYTEST.md`.
+Kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md` · pełna lista: `docs/decyzje/R-NASTEPNY-KROK-PELNA-LISTA.md` · zakaz ABC o playtestach: `R-ABC-BEZ-PLAYTEST.md`.
 
 ## Reguły
 
 1. **Playtesty** ≠ **Następny krok** — nigdy w jednym numerowanym menu.
 2. **Następny krok** = tylko rzeczy do zrobienia przez agenta (kod/dane/docs/deploy na hasło).
-3. Max **3** opcje w Następnym kroku; pierwsza = rekomendacja.
-4. Propozycje **konkretne** — nie „mogę pomóc dalej”.
-5. **Nie czekaj** aż Maciej zapyta „co dalej?”.
-6. Wyjątek: Maciej kończy sesję („stop”, „na dziś”) — krótki status bez menu.
-7. Nie mylić z ABC gameplay — to kolejka operacyjna.
-
-## Przykład
-
-Po deployu FALA N:
-### Playtesty
-- **FALA N `abcd1234`** — `gra-robocza/START.html` · git pull · Ctrl+F5 · Nowa gra
-- **Escape w pełnym ekranie** — otwórz panel miasta, Escape ma zamknąć panel (nie FS)
-
-### Następny krok
-1. **Wpięcie Escape do sciencePicker** — ten sam `escapeOverlayStack`
-2. **Bramka AI: nie rekrutuj bez utrzymania surowca** — wymaga decyzji liczb
-3. **Panel-C regen** po kosztach ×5
-
-Napisz: działaj / 1 / 2 / 3.
+3. **Pełna lista** — wszystkie widoczne kolejne prace z rejestru / ewaluacji / handoffu; **ZAKAZ** ucinać do 3. (Limit „max 3” dotyczył tylko ABC i jest wycofany — `R-ABC-PELNA-LISTA`.)
+4. Pierwsza pozycja = rekomendacja.
+5. Propozycje **konkretne** — nie „mogę pomóc dalej”.
+6. **Nie czekaj** aż Maciej zapyta „co dalej?”.
+7. Wyjątek: Maciej kończy sesję („stop”, „na dziś”) — krótki status bez menu.
+8. Nie mylić z ABC gameplay — to kolejka operacyjna.

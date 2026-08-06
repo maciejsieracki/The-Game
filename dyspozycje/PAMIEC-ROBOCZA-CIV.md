@@ -84,15 +84,15 @@ nie domyślaj się, że skomplikowany temat kwalifikuje się automatycznie.
 repo, nie czat. **Dotyczy też odpowiedzi już udzielonych w czacie** — jeśli brakuje sekcji
 **„Odpowiedź Macieja"** w pliku, uzupełnij natychmiast (retroaktywnie). Szczegóły: `docs/decyzje/ABC-ZAPIS-PLIKOWY.md` §„Kolejność obowiązkowa".
 
-**5. Po każdej paczce pracy — zaproponuj następny krok (Maciej 2026-08-01).** Agent **nie czeka** na pytanie
-„co dalej?” / „nad czym pracujesz?”. Kończy wiadomość blokiem **„Następny krok”** z max 3 konkretnymi
-opcjami (pierwsza = rekomendacja). Reguła Cursor: `.cursor/rules/maciej-nastepny-krok.mdc`.
+**5. Po każdej paczce pracy — zaproponuj następny krok (Maciej 2026-08-01 / pełna lista 2026-08-06).** Agent **nie czeka** na pytanie
+„co dalej?” / „nad czym pracujesz?”. Kończy wiadomość blokiem **„Następny krok”** z **pełną listą** widocznych prac
+(pierwsza = rekomendacja; **bez limitu 3** — `R-NASTEPNY-KROK-PELNA-LISTA`). Reguła Cursor: `.cursor/rules/maciej-nastepny-krok.mdc`.
 
 **5b. Rozdziel Playtesty vs Następny krok (Maciej 2026-08-06) — `R-NASTEPNY-KROK-SPLIT`.**  
 Na końcu odpowiedzi **dwa osobne bloki**:
 - **### Playtesty** — tylko weryfikacja w grze (wejście/md5/co sprawdzić). Nie mieszać z kodem.
-- **### Następny krok** — tylko kolejne zmiany (kod/dane/docs) do wyboru.  
-Kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md`.
+- **### Następny krok** — tylko kolejne zmiany (kod/dane/docs); **wszystkie** widoczne pozycje.  
+Kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md` · `docs/decyzje/R-NASTEPNY-KROK-PELNA-LISTA.md`.
 
 **6. ZAKAZ ABC o playtestach (Maciej 2026-08-06) — `R-ABC-BEZ-PLAYTEST`.** Nigdy nie zadawać w A/B/C pytań
 typu „czy playtestujesz?”, „OK/BUG teraz?”, „odłożyć playtest?”. Maciej wie, że ma ogrywać ROBOCZA.

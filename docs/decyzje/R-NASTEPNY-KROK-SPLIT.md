@@ -11,7 +11,8 @@ Bez mieszania z implementacją. Maciej wie, że ma testować — to **lista wery
 
 ### Następny krok
 Tylko **dalsze zmiany w kodzie / danych / docs** (co agent może zrobić po sygnale).  
-Bez pozycji typu „git pull + sprawdź w grze”.
+Bez pozycji typu „git pull + sprawdź w grze”.  
+**Pełna lista** wszystkich widocznych prac — **bez limitu 3** (`R-NASTEPNY-KROK-PELNA-LISTA`; limit 3 dotyczył tylko ABC i jest wycofany).
 
 ## Zakaz
 Mieszać w jednym numerowanym menu: „1. sprawdź Escape · 2. koduj X · 3. hover”.

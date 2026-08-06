@@ -172,7 +172,7 @@ Po deployu: stempel md5 w `WERSJE.md`, meldunek w kanale, status zadania → `ZD
 [ ] ECHO z pełnymi ID + zapis plikowy → kod → commit (bez deploy)
 [ ] Przed commit: diff — nic nie uwstecznia (§4a R-PROC-NO-REGRESS)
 [ ] Deploy TYLKO po „deploy” (+ ponowny check overlap PR)
-[ ] Koniec wiadomości: „Następny krok” (max 3)
+[ ] Koniec wiadomości: „Następny krok” (pełna lista; bez limitu 3)
 ```
 
 ---
