@@ -1,39 +1,50 @@
 ---
-description: Po każdym zakończonym kroku — zaproponuj konkretne następne kroki (Maciej 2026-08-01)
+description: Po każdym zakończonym kroku — Playtesty osobno, Następny krok tylko kod (Maciej 2026-08-01/06)
 alwaysApply: true
 ---
 
-# Następny krok — obowiązek po każdej paczce (Maciej 2026-08-01)
+# Następny krok — obowiązek po każdej paczce (Maciej 2026-08-01 · split 2026-08-06)
 
-**Problem:** Maciej musi dopytywać „nad czym pracujesz?” / „co dalej?” — agent kończy zadanie i milczy.
+**Problem:** Maciej musi dopytywać „nad czym pracujesz?” / „co dalej?” — albo playtest miesza się z kodem i zamydla obraz.
 
-**Zasada:** po **każdym** zamknięciu sensownej jednostki pracy (fix, deploy, diagnoza, zapis notatki, odpowiedź na decyzję) agent **sam** kończy wiadomość blokiem **„Następny krok”**.
+**Zasada:** po **każdym** zamknięciu sensownej jednostki pracy agent **sam** kończy wiadomość **dwoma blokami**.
 
 ## Format (zawsze na końcu odpowiedzi)
 
 ```
+### Playtesty
+- **…** — co sprawdzić w grze (wejście / md5 / konkretny ekran)
+- (albo „— (brak)” jeśli nic do ogrania)
+
 ### Następny krok
-1. **…** — jedno zdanie (rekomendacja pierwsza)
-2. **…** — alternatywa
+1. **…** — tylko dalsza zmiana w kodzie/danych/docs (rekomendacja pierwsza)
+2. **…** — alternatywa kodowa
 3. **…** — opcjonalnie trzecia
 Napisz: działaj / 1 / 2 / 3 (albo inną dyspozycję).
 ```
 
+Kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md` · zakaz ABC o playtestach: `R-ABC-BEZ-PLAYTEST.md`.
+
 ## Reguły
 
-1. Propozycje **konkretne** (co zrobić, w jakim pliku/torze, po co) — nie „mogę pomóc dalej”.
-2. Max **3** opcje; pierwsza = rekomendacja (najpilniejsza / naturalna kontynuacja).
-3. Uwzględnij otwarte wpisy z `PYTANIA-OTWARTE.md` / `REJESTR-PROSB` / bieżący wątek czatu.
-4. **Nie czekaj** aż Maciej zapyta „co dalej?” — blok jest obowiązkowy.
-5. Wyjątek: Maciej wyraźnie kończy sesję („stop”, „na dziś”, „wyłączam komputer”) — wtedy krótki status bez menu.
-6. Nie mylić z ABC gameplay — to **kolejka operacyjna**, nie decyzja produktowa A/B/C.
+1. **Playtesty** ≠ **Następny krok** — nigdy w jednym numerowanym menu.
+2. **Następny krok** = tylko rzeczy do zrobienia przez agenta (kod/dane/docs/deploy na hasło).
+3. Max **3** opcje w Następnym kroku; pierwsza = rekomendacja.
+4. Propozycje **konkretne** — nie „mogę pomóc dalej”.
+5. **Nie czekaj** aż Maciej zapyta „co dalej?”.
+6. Wyjątek: Maciej kończy sesję („stop”, „na dziś”) — krótki status bez menu.
+7. Nie mylić z ABC gameplay — to kolejka operacyjna.
 
 ## Przykład
 
 Po deployu FALA N:
+### Playtesty
+- **FALA N `abcd1234`** — `gra-robocza/START.html` · git pull · Ctrl+F5 · Nowa gra
+- **Escape w pełnym ekranie** — otwórz panel miasta, Escape ma zamknąć panel (nie FS)
+
 ### Następny krok
-1. **Pomiar Budowania sceny** — Ctrl+F5 + Nowa gra, czas ostatniego etapu (rekomendacja)
-2. **Fix Jin/Argos (ownerId)** — miasta-państwa Chin vs etykieta Grecy
-3. **Spawn: 10 hex od morza** — skala Standard
+1. **Wpięcie Escape do sciencePicker** — ten sam `escapeOverlayStack`
+2. **Bramka AI: nie rekrutuj bez utrzymania surowca** — wymaga decyzji liczb
+3. **Panel-C regen** po kosztach ×5
 
 Napisz: działaj / 1 / 2 / 3.

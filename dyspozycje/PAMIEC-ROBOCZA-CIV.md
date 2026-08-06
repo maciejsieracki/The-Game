@@ -87,6 +87,12 @@ repo, nie czat. **Dotyczy też odpowiedzi już udzielonych w czacie** — jeśli
 „co dalej?” / „nad czym pracujesz?”. Kończy wiadomość blokiem **„Następny krok”** z max 3 konkretnymi
 opcjami (pierwsza = rekomendacja). Reguła Cursor: `.cursor/rules/maciej-nastepny-krok.mdc`.
 
+**5b. Rozdziel Playtesty vs Następny krok (Maciej 2026-08-06) — `R-NASTEPNY-KROK-SPLIT`.**  
+Na końcu odpowiedzi **dwa osobne bloki**:
+- **### Playtesty** — tylko weryfikacja w grze (wejście/md5/co sprawdzić). Nie mieszać z kodem.
+- **### Następny krok** — tylko kolejne zmiany (kod/dane/docs) do wyboru.  
+Kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md`.
+
 **6. ZAKAZ ABC o playtestach (Maciej 2026-08-06) — `R-ABC-BEZ-PLAYTEST`.** Nigdy nie zadawać w A/B/C pytań
 typu „czy playtestujesz?”, „OK/BUG teraz?”, „odłożyć playtest?”. Maciej wie, że ma ogrywać ROBOCZA.
 ABC tylko gdy odpowiedź jest potrzebna do **kodu / danych / rozstrzygnięcia błędu**. Kanon:
