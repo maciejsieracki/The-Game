@@ -37,6 +37,19 @@ Wojownik · Zwiadowca · Łucznik · Wojownik z mieczem i tarczą · Włócznik 
 - Mechanika zasięgu Łucznika → backlog C (post-v1.0)
 - `Macierz-walki.xlsx` (Excel źródłowy poza repo) → zastąpiony przez `Panel-C.xlsx`
 
+## Test round-trip (Koszty-jednostek F250)
+
+Skrypt: `panele-sterowania/test-panel-c-roundtrip.py` (wzorowany na `test-panel-b-roundtrip.py`).
+
+| Faza | Co sprawdza |
+|------|-------------|
+| JSON→Excel | `units.json` ↔ arkusz `Koszty-jednostek`: `Surowiec`, `Surowiec (ilość)`, `Utrzymanie surowiec`, `Utrzymanie surowiec (ilość)` |
+| F250 ×5 | Dla każdej jednostki z kosztem surowcowym: rekrutacja = utrzymanie × 5 (`R-DYST-DREWNO`) |
+| Excel→export→JSON | Probe na `Konnica` w `export-c.py` → tmp `units.json` (bez dotykania `gra/data/`) |
+| Stale-walki | `C-TW-HIT-BASE` → `combat-params.json` (tmp) |
+
+Uruchomienie: `python panele-sterowania/test-panel-c-roundtrip.py` — wymaga `openpyxl` + `Panel-C.xlsx`.
+
 ## Archiwum
 
 Analiza tekstowa pozostaje: `Civ-UNITS/Macierz-walki-analiza.md` (referencja, nie źródło prawdy).
