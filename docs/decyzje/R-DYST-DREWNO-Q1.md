@@ -1,18 +1,17 @@
-# R-DYST-DREWNO-Q1 — wymóg drewna (epoka Kamień)
+# R-DYST-DREWNO-Q1 — akceptacja kosztów (2026-08-06)
 
-**Status:** 🟡 ZAPISANA · **custom** (2026-08-06)  
-**Cytat Macieja:** „R-DYST-DREWNO-Q1 drewno wymóg dla wszystkich jednostek epoki kamienia.”
+**Status:** 🔵 W TRAKCIE / WDROŻONE (kod na branchu)  
 
-## Decyzja (nie A/B/C z paczki)
+## Cytat / akceptacja Macieja
 
-**Wymóg drewna dla wszystkich jednostek epoki Kamień** (nie tylko dystansowych / łuczników).
+1. Koszt rekrutacji Brąz/Żelazo = **stary × 5**.  
+2. Koszt utrzymania surowcowego = **stary koszt rekrutacji** (baza).  
+3. Jednostki bez Brązu/Żelaza (Kamień + dystans Brązu itd.) → **Drewno**, te same zasady (baza 2 / oblężenie·super 3), potem ×5 rekrutacja, utrzymanie = baza.  
+4. Pełna tabela = akceptacja.
 
-## Uwagi
+## Pola danych
 
-- Stary wpis rejestru mówił o dystansowych; Maciej rozszerzył na **całą epokę Kamień**.
-- Koliduje z historyczną regułą „dystansowe = 0 surowca” (`R-UNIT-KOSZT-ŁUCZ`) — ta decyzja **nadpisuje** dla epoki Kamień.
-- Przed kodem warto doprecyzować w paczce follow-up (ilość drewna, czy Procarz/Osadnik/Robotnik też, parytet AI) — albo wdrożyć po `działaj` z rozsądnym defaultem (np. 1 drewno) jeśli Maciej nie doprecyzuje.
+- Rekrutacja: `Surowiec` + `Surowiec (ilość)`  
+- Utrzymanie: `Utrzymanie surowiec` + `Utrzymanie surowiec (ilość)`  
 
-## Następny krok
-
-Po `działaj`: `units.json` / koszty surowcowe jednostek Kamień + parytet AI + panel/test.
+Tabela: `docs/decyzje/R-DYST-DREWNO-TABELE-AKCEPTACJA.md`
