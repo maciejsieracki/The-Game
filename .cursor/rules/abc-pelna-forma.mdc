@@ -42,21 +42,21 @@ Maciej musi dostać **kontekst + cel + opcje z za/przeciw + rekomendację**. Pe�
 
 ---
 
-## Paczki ABC — **max 3 pytania** (Maciej 2026-07-04)
+## Paczki / lista ABC — **pełna lista naraz** (Maciej 2026-08-06 · `R-ABC-PELNA-LISTA`)
 
-**Powód:** paczki po 10 pytań **zerwają sesję w połowie** — Maciej traci odpowiedzi i musi zaczynać od nowa. Wolę **10× po 3**, nie **3× po 10**.
+> **Wycofane:** limit „max 3 pytania na paczkę” (2026-07-04).
 
 | Reguła | Wartość |
 |--------|---------|
-| Max pytań w **jednej wiadomości** + **jednym** `AskQuestion` | **3** |
-| Więcej w kolejce | **Kolejne paczki** po 3 (np. `[PACZKA 2/4]`) |
-| Po paczce | **ECHO** wszystkich odpowiedzi → **START** (wdrażaj?) → **dopiero potem** następna paczka |
+| Ile pytań w jednej wiadomości | **Wszystkie** z bieżącej pełnej listy |
+| Numeracja | **Obowiązkowa:** `[1/N]`, `[2/N]`, … + pełne ID |
+| Nagłówek | `[LISTA ABC — N pytań]` + spis ID |
+| Formularz Ask / popup | **BEZ** (ład 2026-07-06 — tekst w kanale) |
+| Po odpowiedziach | **ECHO** wszystkich → wdrażaj / `działaj` |
 
-**Nagłówek paczki:** `[PACZKA 1/4 — 3 pytania]` + lista ID (`B2-Q7`, `B2-Q8`, `B2-Q9`).
+**ZAKAZ:** sztucznie dzielić na paczki po 3 „żeby było bezpiecznie”, gdy lista jest gotowa.
 
-**Końcówka wiadomości:** jedna linia — np. „Pozostało **7** pytań — następna paczka po Twojej odpowiedzi / **`działaj`**."
-
-**ZAKAZ:** 4+ pytań w jednym `AskQuestion` · 4+ pełnych ABC w jednej wiadomości bez podziału na paczki.
+Kanon: `docs/decyzje/R-ABC-PELNA-LISTA.md`.
 
 ---
 
@@ -83,27 +83,22 @@ Maciej musi dostać **kontekst + cel + opcje z za/przeciw + rekomendację**. Pe�
 
 ## SELF-CHECK (wszystkie TAK przed wysłaniem)
 
-1. Nagłówek `[EKRAN: …]` lub `[TEMAT: …]` + ID pytania?
+1. Nagłówek `[EKRAN: …]` lub `[TEMAT: …]` + **pełne ID** pytania?
 2. Osobne sekcje **Sytuacja**, **Cel pytania**, **Dlaczego teraz**?
 3. **Pełne nazwy** — bez niejasnych skrótów?
 4. Dokładnie **3 opcje A, B, C** — każda: opis decyzji + **Za** (≥2) + **Przeciw** (≥2)?
 5. **Rekomendacja** — **zawsze** litera A/B/C + jedno zdanie?
-6. Max **3 pytania** w paczce (nagłówek `[PACZKA x/y]`)?
-7. **Jeden** `AskQuestion` na paczkę — **dopiero po** pełnym tekście?
-8. Po odpowiedzi → **ECHO → START** → **AKCJA** po **Tak** (`.cursor/rules/decyzje-echo.mdc`)?
+6. **Pełna lista** wypisana naraz z numeracją `[k/N]` (`R-ABC-PELNA-LISTA`) — nie sztuczny limit 3?
+7. Tekst w kanale — **BEZ** popupów AskQuestion?
+8. Po odpowiedzi → **ECHO** → `działaj` / AKCJA?
 
 **Choć jedno NIE → nie wysyłaj.**
 
 ---
 
-## Formularz Ask (krok 5 — ostatni)
+## Formularz Ask
 
-1. Pełny tekst w czacie **najpierw** — potem **jedno** `AskQuestion`.
-2. Tablica `questions`: po jednym wpisie na pytanie (**max 3** — więcej → następna paczka).
-3. Każdy wpis: `id` = ID · `prompt` = krótki tytuł · `options` = 3 krótkie etykiety.
-4. **ZAKAZ:** sam formularz bez Sytuacji/Celu/Opcji w czacie.
-5. **ZAKAZ:** osobny formularz na każde pytanie (zamiast jednego z max 3 wpisami).
-6. **ZAKAZ:** 4+ pytań w jednej paczce (historyczny błąd: max 10 — **wycofane** 2026-07-04).
+**Wycofane / nieużywane** w ładzie 2026-07-06 — pytania **tylko tekstem** w kanale. Nie twórz `AskQuestion`.
 
 ---
 

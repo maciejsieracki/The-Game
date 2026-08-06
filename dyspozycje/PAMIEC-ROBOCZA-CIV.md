@@ -17,20 +17,21 @@ Maciej wymaga **pełnej formy** dla KAŻDEJ decyzji gameplayowej/produktowej/arc
 3. **Dlaczego teraz** — blokada / ryzyko / zależność. 1–3 zdania.
 4. **A / B / C** — każda opcja: opis decyzji *w grze* + **Za (≥2)** + **Przeciw (≥2)**. Zakaz skróconych list typu „A: szybciej / B: więcej pracy".
 5. **Rekomendacja** — ZAWSZE litera A/B/C + jedno zdanie dlaczego.
-6. **Formularz Ask** na samym końcu — tylko krótkie etykiety A/B/C (bez Za/Przeciw), rekomendacja pierwsza z dopiskiem „(Rekomendacja)".
+6. Tekst w kanale — **BEZ** popupów AskQuestion (ład 2026-07-06).
 
-**Paczkowanie:** max **3 pytania na turę** (jedna wiadomość + jeden formularz). Dłuższa kolejka → nagłówek `[PACZKA 1/N]`, kolejna paczka **dopiero po odpowiedzi**. Paczki po ~10 pytań zrywają rozmowę.
+**Lista ABC (Maciej 2026-08-06 — `R-ABC-PELNA-LISTA`):** wypisz **od razu wszystkie** pytania z pełnej listy
+w jednej wiadomości. **ZAKAZ** limitu „max 3 na paczkę” (wycofane). Numeracja obowiązkowa:
+`[LISTA ABC — N pytań]` + `[1/N] ID` … `[N/N] ID`. Kanon: `docs/decyzje/R-ABC-PELNA-LISTA.md`.
 
 **⛔ PEŁNE ID PYTANIA (Maciej 2026-08-03) — `R-PROC-ABC-FULL-ID`:**  
-Gołe `Q1` / `Q2` / `Q3` **ZAKAZANE** w czacie, Ask i ECHO — jest wiele wątków naraz.  
+Gołe `Q1` / `Q2` / `Q3` **ZAKAZANE** w czacie i ECHO — jest wiele wątków naraz.  
 **Zawsze:** `R-<TEMAT>-Q1`, `R-AUTO-BUDOWA-LISTA-Q2`, `P-SCOUT-EXPLORE-Q1` itd.  
-Nagłówek paczki: `[PACZKA 1/N — R-AUTO-BUDOWA-LISTA-Q2, R-AUTO-BUDOWA-LISTA-Q3]`.  
-Odpowiedź Macieja / ECHO: `R-AUTO-BUDOWA-LISTA-Q2=A · R-AUTO-BUDOWA-LISTA-Q3=B` — nigdy samo „a / q3b” bez tematu po stronie agenta.
+Nagłówek listy: `[LISTA ABC — N — R-…-Q1, R-…-Q2, …]`.  
+Odpowiedź Macieja / ECHO: `R-…-Q2=A · R-…-Q3=B` — nigdy samo „a / q3b” bez tematu po stronie agenta.
 
-**Po odpowiedzi:** **ECHO** (powtórz wybory i konsekwencje) → potwierdź „wdrażaj?" → działaj po „Tak".
-**Hasło `format` / `ABC`** → natychmiast przepisz pytanie w pełnej formie, bez tłumaczenia się.
-**Zakazane:** sam formularz bez tekstu · skróty/gołe id · **gołe Q1 bez tematu** · brak rekomendacji · długie opisy w formularzu.
-**Po co:** Maciej ma decydować bez domyślania się — pełny kontekst i trade-offy w tekście do przeczytania, minimalny picker tylko do kliknięcia.
+**Po odpowiedzi:** **ECHO** (powtórz wybory) → `działaj` / wdrażaj.  
+**Hasło `format` / `ABC`** → natychmiast przepisz pytanie w pełnej formie, bez tłumaczenia się.  
+**Zakazane:** skróty/gołe id · **gołe Q1 bez tematu** · brak rekomendacji · ABC o playtestach (`R-ABC-BEZ-PLAYTEST`).
 
 **Brak odpowiedzi** = wariant `[REKOMENDACJA]` + oznaczenie `[ZAŁOŻENIE — do potwierdzenia]`.
 
