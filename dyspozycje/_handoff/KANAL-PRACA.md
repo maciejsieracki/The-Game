@@ -1,3 +1,11 @@
+## [09:50 UTC, 2026-08-06] AutoBot OPERATOR #14 — docs cleanup rejestr/STAN vs FALA 248–253
+
+|- Branch: `cursor/cleanup-rejestr-fala253-aef8` · docs only (bez gra/src, bez deploy)
+|- `REJESTR-PROSB-I-ZADAN.md` — sprzeczne statusy (STEP2–5, R-ESC, R-PIERWSZE-MIASTO, W TOKU)
+|- `STAN-PRACY-HANDOFF.md` — KOLEJKA odświeżona; AKTUALNA FALA 253 `b8704216`
+|- `R-AI-TRUDNOSC-AUDYT.md` — STEP3–5 🟢
+CZEKAM-NA: merge docs
+
 ## [08:36 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 253 b8704216
 
 Maciej „1+2+3” — każdy temat osobnym AutoBotem

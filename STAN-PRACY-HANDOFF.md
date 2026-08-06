@@ -1,6 +1,6 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-06 ~08:36** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-06 ~09:50** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
@@ -93,7 +93,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-05 (NAJNOWSZY):** deploy ROBOCZA `29bfdf00` (FALA 228, 14:58) · stempel menu `718d0ac2` · tip main przed deploy `546ce97`. Wejście: `gra-robocza/START.html`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
+**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA `b8704216` (FALA 253, 08:36) · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+
+**Stan na 2026-08-05 (historyczny):** deploy ROBOCZA `29bfdf00` (FALA 228, 14:58) · stempel menu `718d0ac2` · tip main przed deploy `546ce97`. Maciej **OK** na FALA 223 i FALA 224.
 
 **Łańcuch FALA 221–226:** 221 `4d17d869` → 222 `132401ef` → 223 `ee0e7e04` → 224 `38df6ad7` → 225 `8767b9c0` → 226 `ebe4548f` → **227 `3840f218`** (DEPLOY ALL; zawiera R-AUTO + P-AI-MOC + P-AI-008).
 
@@ -102,15 +104,23 @@ git status --short
 **Ważne dla agentów:** Auto Wyżywienie gracza = **default WYŁ** per miasto; Spichlerz clamp ≥0; maxSafe na suwaku. Rekrutacja **NIE odejmuje** `city.population` (FALA 224). Major AI: bonusy trudności + threat bez murów (FALA 226). **KAŻDA praca** = AutoBot (Operator→Evaluator→Grok). Pełny zapis: [`HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
 **KOLEJKA (otwarte):**
-1. **R-AUTO-RACJE-RAISE** — **FOKUS** playtest na `3840f218` (Auto WYŁ/WŁ, Spichlerz≥0, maxSafe) — **CZEKA OK/BUG**
-2. **R-SCENA-PERF** — 🔵 W TOKU; instrumentacja w bundlu; **czeka F12** (wstrzymane do domknięcia R-AUTO)
-3. **FALA 226 playtest** — P-AI-MOC + P-AI-008 — odłożony przez Macieja
-4. **R-BUDYNKI-NIEAKTYWNE** — playtest (czerwona nazwa + `Brak: …`) — od FALA 222, **bez OK/BUG**
-5. **R-WIARYGODNOSC** — CZEKA-NA-DECYZJĘ (strojenie §9, później)
-6. **R-DESIGN-PANEL-MIASTA** — prototyp w ROBOCZA; hover/v2 czeka Design
-7. **R-PANEL-SPLIT** / **R-SUROWCE-UI-ZERO** / **R-CIVPEDIA** — stary backlog NOWE
-8. **P-AI-MOC-GAP** — częściowo FALA 220/226; reszta design później
-9. **R-DOTYK-MVP** — ODŁOŻONE
+1. **R-BILANS-100T** — analiza gotowa; implikacje strojenia → R-STAWKI-STROJENIE (decyzja później)
+2. **R-OBRONA-MIASTA-MP** — audyt zamknięty; ABC UX rozbicie preBattle rekomendowane
+3. **R-TEREN-BITWA-WERYF** — raport gotowy; 3 martwe mechaniki (Góry +75%, Δ Zasięg) do decyzji
+4. **R-DYP-STOL-A** — ABC zamknięte; kod częściowy (koszyk tylko akcje 5/13)
+5. **R-WIARYGODNOSC §9** — strojenie liczb (paczka ABC później; rdzeń ZDEPLOYOWANE F233–237)
+
+**ZDEPLOYOWANE — wykreślone z kolejki (F248–253, historia zachowana):**
+- ~~**R-SCENA-PERF**~~ — F248 `772bab7c` (+ dżungla InstancedMesh F249)
+- ~~**R-PANEL-SPLIT** / **R-CIVPEDIA** / **R-SUROWCE-DOSTEP**~~ — F248
+- ~~**AI-BALANS-STEP2–5**~~ — F246 `cbf529f3` → F247 `540d2490` → F248 `772bab7c` → F253 `b8704216`
+- ~~**R-DYST-DREWNO** (koszty ×5)~~ — F250 `d7165a12`
+- ~~**R-DESIGN-PANEL-MIASTA** (hover)~~ — F251 `e594f018`
+- ~~**R-ESC-PELNY-EKRAN**~~ — F251–253 (`e594f018` → `bbff9996` → `b8704216`)
+- ~~**R-AI-RECRUIT-UPKEEP-GATE**~~ — F252 `bbff9996`
+- ~~**R-BUDYNKI-NIEAKTYWNE**~~ — F222 `132401ef` (playtest bez OK/BUG — odłożony)
+- ~~**R-AUTO-RACJE-RAISE**~~ — F225→227 `3840f218` (playtest odłożony)
+- ~~**R-PIERWSZE-MIASTO**~~ — F249 `097c5e5c`
 
 **Stan na 2026-08-04 (historyczny):** deploy ROBOCZA `8a3c6d6d` (FALA 220, 21:17) — AI-ALL batch.
 
