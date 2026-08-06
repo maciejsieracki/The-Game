@@ -82,6 +82,15 @@ import { buildWlocznikBrazOpus5 } from './braz-wlocznik-opus5';
 import { buildMiecznikBrazOpus5 } from './braz-miecznik-opus5';
 import { buildProcarzBrazOpus5 } from './braz-procarz-opus5';
 import { buildRydwanWolyBrazOpus5 } from './braz-rydwan-woly-opus5';
+// BRĄZ OPUS 5 — RYDWAN KAPADOKIJSKI (jednostka UNIKALNA Hetytów, units.json:
+// „Rydwan Kapadokijski"/„Cappadocian Chariot", Kultura=Nacja=Hetyci). Do
+// 2026-08-06 była to JEDYNA jednostka unikalna epoki Brązu bez własnej grafiki
+// — categoryOf() (units/setup.ts, dopasowanie po słowie „rydwan") wysyłał ją
+// do generycznego case 'rydwan' poniżej, identycznego jak każdy inny rydwan.
+// Wyróżnik modelu: TRZYOSOBOWA ZAŁOGA (woźnica + włócznik + tarczownik) —
+// historycznie udokumentowana cecha rydwanu hetyckiego (reliefy z Kadesz),
+// w odróżnieniu od dwuosobowych rydwanów egipskich i mykeńskich.
+import { buildRydwanKapadokijskiOpus5 } from './braz-rydwan-kapadokijski-opus5';
 // BRĄZ OPUS 5 — KONNICA (units.json: „Konnica"/„Horseman", Epoka=Brąz,
 // Kultura=null, Tech=Jeździectwo). Do tej pory jedyna jednostka bazowa Brązu
 // BEZ własnej grafiki — leciała na wspólnym modelu kategorii 'konnica' niżej
@@ -1160,6 +1169,13 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n.includes('rydwan mykensk') || (n.includes('rydwan') && n.includes('mykensk'))) {
     return decorateChariot(buildCategoryModel('rydwan', ownerColor_), ownerColor_, COLOR_BRONZE, COLOR_WOAD);
   }
+  // HETYCI — „Rydwan Kapadokijski" / „Cappadocian Chariot" (jednostka UNIKALNA,
+  // Epoka=Brąz;Żelazo). MUSI stać PRZED fallbackiem do generycznego 'rydwan'
+  // (case 'rydwan' w buildCategoryModel), do którego jednostka trafiała
+  // wcześniej przez categoryOf() po samym słowie „rydwan". Dopasowanie po
+  // rdzeniu „kapadok"/„cappadoc" — w całym units.json nie ma innej jednostki
+  // z tym rdzeniem, więc jest jednoznaczne i odporne na odmianę nazwy.
+  if (n.includes('kapadok') || n.includes('cappadoc')) return buildRydwanKapadokijskiOpus5(ownerColor_);
   if (n.includes('sherden')) return buildSherden(ownerColor_);
   if (n.includes('halabardnik shang') || (n.includes('shang') && n.includes('halabard'))) return buildShangHalberdier(ownerColor_);
   if (n.includes('rydwan shang') || (n.includes('rydwan') && n.includes('shang'))) {
