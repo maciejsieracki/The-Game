@@ -1,10 +1,26 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-04 (sync FALA 220 + push `b47a2e8`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-06 (paczka `ABC-PACZKA-2026-08-06-KOLEJKA`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
 Nowy case → **ID w REJESTR-PROSB** + wpis tu (jeśli ABC) → agent **proponuje, nie koduje** → Maciej: **`ID + A|B|C`** → commit → **`deploy`** osobno.
 Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md).
+
+---
+
+## ABC-PACZKA-2026-08-06-KOLEJKA — pełna lista (5 pytań) · STATUS: **OTWARTE**
+
+**Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) · reguła [`R-ABC-PELNA-LISTA.md`](../docs/decyzje/R-ABC-PELNA-LISTA.md) (wszystkie naraz, bez limitu 3).
+
+| # | ID | Skrót |
+|---|-----|--------|
+| 1 | **AI-BALANS-STEP6-Q1** | Następna dźwignia AI po STEP1–5 (scout −80 / LOCAL 15 / L1 scout 220) |
+| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | Whitelist reliefu: `kopalnia` legacy + miedź |
+| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | Etykiety stolica vs MP w klastrze |
+| 4 | **R-WIARYGODNOSC-S9-Q1** | Strojenie §9 teraz vs odłożyć |
+| 5 | **R-DESIGN-PANEL-MIASTA-V2-Q1** | Polish pigułki: czekać Design vs status quo (Q4=B) |
+
+**Odpowiedź:** `A B C A B` albo `AI-BALANS-STEP6-Q1=A` itd.
 
 ---
 
@@ -1626,17 +1642,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **OTWARTE** (audyt 2026-08-02, bez zmiany kodu)
+## MAP-UX-CLUSTER-LABEL — 4 bliskie etykiety miast (stolica vs MP) · STATUS: **OTWARTE** → paczka [`ABC-PACZKA-2026-08-06-KOLEJKA`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) **[3/5] MAP-UX-CLUSTER-LABEL-Q1**
 
 **Źródło:** Maciej: 4 bliskie etykiety (np. krótkie nazwy ~2–4 hex); pamięta min. ~12 hex między stolicami.
 **Audyt:** `dyspozycje/AUDYT-STOLICE-VS-MIASTA-PANSTWA-2026-08-02.md` · **VERDICT: DESIGN_KLASTRA** — sep stolic Standard=14 twarde; skupisko = 1 stolica + MP (pierścień 5 hex). Menu Standard min 4 MP → dokładnie 4 etykiety w klastrze.
 **NIE bug bramki** — nie zmieniać sep/pack bez decyzji.
 
-**ABC (tylko jeśli chce czytelniejszy UX mapy):**
-- **A)** Zostawić (dopisek „· miasto-państwo” na chipie MP).
-- **B)** Stolica obca = nazwa cywilizacji; MP = nazwa miasta + dopisek.
-- **C)** Marker wizualny stolicy (korona/obwódka), nazwy bez zmian.
-**Rekomendacja:** B (gdy w ogóle zmieniać).
+Pełna forma ABC: paczka 2026-08-06 · rekomendacja **B** (nazwa cywilizacji na stolicy obcej).
 
 ---
 
