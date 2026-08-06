@@ -117,7 +117,7 @@ function ensureFrameStyles(): void {
 }
 
 let frameOnClose: (() => void) | null = null;
-let cityUxEscHandler: ((e: KeyboardEvent) => void) | null = null;
+let cityUxNavKeyHandler: ((e: KeyboardEvent) => void) | null = null;
 
 function cityUxKeyboardBlockedTarget(e: KeyboardEvent): boolean {
   const t = e.target;
@@ -125,9 +125,10 @@ function cityUxKeyboardBlockedTarget(e: KeyboardEvent): boolean {
   return !!t.closest('input, textarea, select, [contenteditable="true"]');
 }
 
-function bindCityUxEscClose(): void {
-  unbindCityUxEscClose();
-  cityUxEscHandler = (e: KeyboardEvent) => {
+/** Nawigacja miast (←/→, , / .) — Escape tylko przez escapeOverlayStack (R-ESC). */
+function bindCityUxNavKeys(): void {
+  unbindCityUxNavKeys();
+  cityUxNavKeyHandler = (e: KeyboardEvent) => {
     if (frameRoot === null) return;
     if (cityUxKeyboardBlockedTarget(e)) return;
     if (e.key === 'ArrowLeft' || e.key === ',' || e.code === 'Comma') {
@@ -142,20 +143,13 @@ function bindCityUxEscClose(): void {
       navigateCityPanel(1);
     }
   };
-  document.addEventListener('keydown', cityUxEscHandler, true);
+  document.addEventListener('keydown', cityUxNavKeyHandler, true);
 }
 
-function unbindCityUxEscClose(): void {
-  if (cityUxEscHandler === null) return;
-  document.removeEventListener('keydown', cityUxEscHandler, true);
-  cityUxEscHandler = null;
-}
-
-/** Zamknij panel miasta (Esc) — ten sam łańcuch co przycisk „Wróć na mapę”. */
-export function tryCloseCityUxFrameFromKeyboard(): boolean {
-  if (!isCityUxFrameOpen() || frameOnClose === null) return false;
-  frameOnClose();
-  return true;
+function unbindCityUxNavKeys(): void {
+  if (cityUxNavKeyHandler === null) return;
+  document.removeEventListener('keydown', cityUxNavKeyHandler, true);
+  cityUxNavKeyHandler = null;
 }
 
 export function getCityUxLayoutMetrics(): {
@@ -275,7 +269,7 @@ export function showCityUxFrame(
   };
   paintCityPanelSections(mounts, city, map, paint, frameOnClose);
   pushOverlay('city-panel', () => { frameOnClose?.(); });
-  bindCityUxEscClose();
+  bindCityUxNavKeys();
 }
 
 export function refreshCityUxFrame(
@@ -288,7 +282,7 @@ export function refreshCityUxFrame(
 }
 
 export function hideCityUxFrame(): void {
-  unbindCityUxEscClose();
+  unbindCityUxNavKeys();
   popOverlay('city-panel');
   clearCityPanelUxMode();
   frameOnClose = null;

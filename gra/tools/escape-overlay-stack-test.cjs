@@ -68,6 +68,7 @@ assert(top()?.id === 'x', 're-push tego samego id na wierzch');
 
 // Id nakładek mapy (FALA 251+) — ten sam kontrakt push/pop + Escape
 const MAP_OVERLAY_IDS = [
+  'city-panel',
   'science-picker',
   'army-list',
   'save-load-dialog',
