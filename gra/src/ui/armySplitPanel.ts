@@ -3,6 +3,7 @@
  */
 
 import type { ArmyMergeUnitRow } from './armyMergePanel';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { unitIconSvg } from './icons/brandAssets';
 
 export interface SplitDestOption {
@@ -20,7 +21,6 @@ export interface ArmySplitPanelOpts {
 }
 
 let root: HTMLDivElement | null = null;
-let keyHandler: ((e: KeyboardEvent) => void) | null = null;
 
 const STYLE_ID = 'civ-army-split-css-v1';
 
@@ -74,10 +74,7 @@ function esc(s: string): string {
 }
 
 function closePanel(): void {
-  if (keyHandler) {
-    document.removeEventListener('keydown', keyHandler);
-    keyHandler = null;
-  }
+  popOverlay('army-split');
   if (root) {
     root.remove();
     root = null;
@@ -181,12 +178,5 @@ export function showArmySplitPanel(opts: ArmySplitPanelOpts): void {
   document.body.appendChild(root);
   renderInner();
 
-  keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closePanel();
-      opts.onCancel();
-    }
-  };
-  document.addEventListener('keydown', keyHandler);
+  pushOverlay('army-split', () => { closePanel(); opts.onCancel(); });
 }

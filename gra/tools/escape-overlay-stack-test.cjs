@@ -76,6 +76,10 @@ const MAP_OVERLAY_IDS = [
   'pre-battle',
   'siege-map',
   'post-battle-summary',
+  'army-merge',
+  'army-merge-pick',
+  'army-split',
+  'army-stack-prompt',
 ];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();
