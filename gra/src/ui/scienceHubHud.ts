@@ -6,6 +6,7 @@
 
 import { scienceOwlIconHtml } from './icons/scienceOwlIcon';
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { techIconSvg } from './techIcons';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
@@ -224,16 +225,14 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     if (!open) return;
     open = false;
     el.classList.remove('open');
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('science-hub');
     unbindOutside?.();
     unbindOutside = null;
     config.onClose?.();
   }
 
-  function onEsc(ev: KeyboardEvent): void {
-    if (ev.key !== 'Escape') return;
+  function handleScienceHubEscape(): void {
     if (config.isTreeOpen?.()) return;
-    ev.preventDefault();
     closeHub();
   }
 
@@ -546,7 +545,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     open = true;
     render();
     el.classList.add('open');
-    document.addEventListener('keydown', onEsc);
+    pushOverlay('science-hub', handleScienceHubEscape);
     unbindOutside?.();
     unbindOutside = bindHudPanelOutsideDismiss(
       el,
@@ -561,7 +560,7 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
   function update(): void { if (open) render(); }
 
   function destroy(): void {
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('science-hub');
     unbindOutside?.();
     unbindOutside = null;
     el.remove();
