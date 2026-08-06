@@ -47,9 +47,13 @@ Jednostki **bez** `Utrzymanie surowiec` (np. Osadnik): bramka przepuszcza — ze
 
 ---
 
+## Hint UI (gracz)
+
+Gdy `canAffordUnitRecruitFull` odmawia rekrutacji: **jeden** komunikat łączny `UNIT_RECRUIT_FULL_HINT` („rekrutacja + utrzymanie 1 tura”), jeśli pula pokrywa sam `unitStockCost` — np. Włócznik 10–11 brązu przy koszcie 12. Osobny `UNIT_RECRUIT_STOCK_ONLY_HINT` tylko gdy brakuje na sam koszt rekrutacji (`!canAffordBuildingStock(pool, stockCost)`). Panel miasta: tooltip `Brakuje w magazynie: …` z `unitRecruitFullStockCost` (łączny merge).
+
 ## Test
 
-`gra/tools/ai-recruit-upkeep-gate-test.cjs` — min. 4 asercje: próg 1×, blokada/OK, parytet gracz=AI, jednostka bez upkeep.
+`gra/tools/ai-recruit-upkeep-gate-test.cjs` — min. 4 asercje: próg 1×, blokada/OK, parytet gracz=AI, jednostka bez upkeep; asercja stałych hintów UI.
 
 ---
 

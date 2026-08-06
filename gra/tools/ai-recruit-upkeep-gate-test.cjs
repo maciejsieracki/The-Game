@@ -31,6 +31,8 @@ export {
   unitRecruitFullStockCost,
   canAffordUnitRecruitFull,
   UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+  UNIT_RECRUIT_FULL_HINT,
+  UNIT_RECRUIT_STOCK_ONLY_HINT,
 } from '../src/game/economy-upkeep';
 export {
   unitStockCost,
@@ -81,6 +83,14 @@ console.log('\n-- unitRecruitUpkeepReserve: próg 1× utrzymanie/turę --');
 const wlocznik = findUnit('Włócznik');
 deepEq(M.unitRecruitUpkeepReserve(wlocznik), { braz: 2 }, 'Włócznik reserve -> {braz:2}');
 assert(M.UNIT_RECRUIT_UPKEEP_RESERVE_TURNS === 1, 'UNIT_RECRUIT_UPKEEP_RESERVE_TURNS === 1');
+assert(
+  M.UNIT_RECRUIT_FULL_HINT === 'Za mało surowca (rekrutacja + utrzymanie 1 tura)',
+  'UNIT_RECRUIT_FULL_HINT — łączny komunikat (nie samo utrzymanie)',
+);
+assert(
+  M.UNIT_RECRUIT_STOCK_ONLY_HINT === 'Za mało surowca w magazynie państwa',
+  'UNIT_RECRUIT_STOCK_ONLY_HINT — tylko koszt rekrutacji',
+);
 
 console.log('\n-- canAffordUnitRecruitUpkeepReserve: blokada gdy brak rezerwy --');
 const poolLow = { braz: 1 };
