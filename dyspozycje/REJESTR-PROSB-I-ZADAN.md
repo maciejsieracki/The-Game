@@ -595,3 +595,15 @@ w ogóle — gracz odczytuje je wyłącznie z panelu jednostki.
 zawsze, czy tylko dla jednostki zaznaczonej/najechanej; czy medalion właściciela wchodzi
 DO tabliczki (zmniejsza się, traci czytelność portretu), czy zostaje osobno przy heksie.
 | R-EPOKA-KOMUNIKAT | 2026-08-02 | Brak informacji o przejściu do nowej epoki | **ZDEPLOYOWANE `5e0f30e7`** (FALA 202) | Toast + WYDARZENIA: „Nowa epoka — Wkraczasz w epokę Brązu/Żelaza.” `era-change-notify.ts`. Branch `cursor/feat-era-change-notify-63a1` · PR #14 |
+
+## R-AUTOBOT-PROMPT — gotowy scenariusz AutoBot do wklejenia innym agentom
+**Zgłoszone:** Maciej, 2026-08-06. Cytat: „przygotuj mi gotowy scenariusz, jak w innych
+agentach mogę wkleić, żeby działali zgodnie z taką zasadą autobot, jak u nas to się
+dzieje. Ale ze szczegółami."
+**Wykonane:** `dyspozycje/autobot/PROMPT-AUTOBOT-DLA-AGENTOW.md` — samowystarczalny blok
+do wklejenia (role Operator/Evaluator/Gate, pętla 8 kroków, twarde metryki, guardraile,
+szablon werdyktu 5 pytań + STRICT/EDGE/PARITY/SAVE, playbook+postmortem z progami
+0.30/0.60/5 runów/1000 zdarzeń/48 h, format meldunku, lista zakazów) + sekcja
+PARAMETRY PROJEKTU wypełniona dla Civ. Zgodny z kanonem `R-PROC-AUTOBOT*` i playbookiem
+rule_101–109; treść zawiera realne wypadki jako uzasadnienia reguł (ddcc04c1,
+C-OBCE-JEDN-Q2, git stash).
