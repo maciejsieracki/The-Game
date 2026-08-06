@@ -74,7 +74,12 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    do roboczej) = Opus 5.** Jego słowa: „Główny model językowy tutaj wybrany to będzie SONNET 5.
    Pracę wszystkich subagentów odpalasz też na Sonet 5, ale ewaluator włączasz na Opus 5
    i deploy Opus 5". Fable 5 wyłącznie za wyraźną zgodą Macieja.
-   **WYJĄTEK — ZGODA STAŁA (Maciej, 2026-07-25):** *„Jednostki i render musisz dawać do subagentów Opus 5, bo Sonnet sobie z tym nie poradzi."* → **modele 3D jednostek i cała praca w `gra/src/render/**` idą na Opus 5.**
+   **WYJĄTEK — ZGODA STAŁA (Maciej, 2026-07-25; POTWIERDZONE 2026-08-06 po wprowadzeniu Sonnet 5
+   jako domyślnego):** *„Jednostki i render musisz dawać do subagentów Opus 5, bo Sonnet sobie
+   z tym nie poradzi."* → **modele 3D jednostek i cała praca w `gra/src/render/**` idą na Opus 5.**
+   Potwierdzenie 2026-08-06, jego słowa: *„Tak, graficzne wszystkie rendery muszą być robione
+   opus 5."* — wyjątek **NIE jest** zniesiony przez zasadę „wszyscy subagenci na Sonnet 5" wyżej;
+   obowiązuje równolegle, dla każdego renderu bez wyjątku.
    Powód praktyczny: Sonnet poprawnie dobiera detale historyczne, ale nie ocenia proporcji i czytelności bryły
    z kąta kamery gry — modele wychodziły za niskie (0,62–0,64 zamiast 0,75 HEX_R), broń nieczytelna albo
    wystająca poza obrys heksu, tarcze niewidoczne. Każdy wymagał 2–3 rund poprawek po oględzinach zrzutu. Główna pętla zostaje do: rozmowy, dekompozycji, syntezy i decyzji ABC. Subagentowi dawaj samodzielny prompt: ścieżki, bramki, zakaz `npm run build`, zakaz commita/deployu.
