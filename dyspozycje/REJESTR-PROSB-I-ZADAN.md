@@ -53,6 +53,9 @@ Kanon: [`autobot/README.md`](autobot/README.md) · [`docs/decyzje/R-PROC-AUTOBOT
 | R-OBRONA-MIASTA-MP-Q1 | 2026-08-06 | Obrona bez murów: rozbicie bonusów w preBattle (mechanika bez zmian) | **FAIL Evaluatora** (panel myli się względem realnej walki) · powtórka Operatora w toku · doprecyzowanie R-OBRONA-MIASTA-MP-SCOPE-Q1=B (dodać bonus murów) czeka na powtórkę | `docs/decyzje/R-OBRONA-MIASTA-MP.md` §ECHO · A |
 | R-DEFICYT-ZLOTA-KARA-Q1 | 2026-08-06 | Kara za deficyt Złota — analogia do głodu wojska (staty + atrycja HP) | **ECHO ZAPISANA** · czeka Autobot wdrożenia | `docs/decyzje/R-DEFICYT-ZLOTA-KARA-Q1.md` · A |
 | R-STATUS-PRZYCZYNA-CIERPIENIA-Q1 | 2026-08-06 | Ikona per przyczyna + opis na karcie jednostki | **ECHO ZAPISANA** · czeka scalenia R-DEFICYT-ZLOTA-KARA-Q1, potem Autobot | `docs/decyzje/R-STATUS-PRZYCZYNA-CIERPIENIA-Q1.md` · C |
+| R-RABAT-SOL-GARNIZON-Q1 | 2026-08-06 | Podwójny rabat garnizonu przy Soli — sumują się czy nie | **ZAMKNIĘTA** — potwierdzenie status quo, zero zmian w kodzie | `docs/decyzje/R-RABAT-SOL-GARNIZON-Q1.md` · A |
+| R-FENICJA-SKARB-CAP-Q1 | 2026-08-06 | Mnożnik Skarbu Fenicjan ×11,4 — exploit czy zamierzone | **ECHO ZAPISANA** · czeka Autobot (analiza, zero zmian w danych) | `docs/decyzje/R-FENICJA-SKARB-CAP-Q1.md` · A |
+| R-KONTRY-BITWA-SPOJNOSC-Q1 | 2026-08-06 | Ujednolicenie tabeli kontr bitwy do `counters.json` | **ECHO ZAPISANA** · czeka Autobot wdrożenia | `docs/decyzje/R-KONTRY-BITWA-SPOJNOSC-Q1.md` · A |
 | D-DYPLO-CELOWNIK-Q1 | 2026-08-05 | Celownik → stolica z karty dyplo | **ZDEPLOYOWANE `178073f9`** (FALA 241) Q1=A | hint brak stolicy · wiring był · `D-DYPLO-CELOWNIK-Q1.md` |
 | D-DYPLO-AKCJE-SZARE-Q1 | 2026-08-05 | Niedostępne akcje szare+tooltip+wiersz | **ZDEPLOYOWANE `01f6024a`** (FALA 243) B+C | `D-DYPLO-AKCJE-SZARE-Q1.md` |
 | D-DYPLO-KATALOG-Q1 | 2026-08-05 | Pełny katalog akcji dyplo w UI | **ZDEPLOYOWANE `01f6024a`** (FALA 243) A | `D-DYPLO-KATALOG-Q1.md` |
