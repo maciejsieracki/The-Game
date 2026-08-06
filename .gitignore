@@ -54,3 +54,10 @@ gra/tmp-*.ts
 gra/tools/.probe-*
 gra/tools/.capital-sep-*-entry.ts
 gra/tools/.capital-sep-*-bundle.cjs
+
+# Test harness temp (esbuild entry/bundle from tools/*-test.cjs)
+gra/tools/.ai-recruit-upkeep-gate-*.cjs
+gra/tools/.ai-recruit-upkeep-gate-*.ts
+gra/tools/.escape-overlay-stack-*.cjs
+gra/tools/.escape-overlay-stack-*.ts
+gra/tools/.tmp-eval-entry.ts
