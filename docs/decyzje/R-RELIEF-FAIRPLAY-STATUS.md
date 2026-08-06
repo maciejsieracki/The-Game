@@ -1,15 +1,16 @@
 # R-RELIEF-FAIRPLAY-STATUS — relief-grid / fair-play-grid (C-MAPA-Q1=B)
 
 **Data audytu:** 2026-08-06  
-**Branch:** `cursor/fix-relief-fair-play-63a1`  
-**Tip SHA:** `b1582757`  
+**Branch:** `cursor/fix-relief-fair-play-63a1` (zmergowane → `main`)  
+**Fix SHA:** `41eed4d6` · docs tip `0530cad8` · deploy FALA **256** `693a2c57` (`50d4c07a`)  
+**Evaluator:** PASS-WITH-NOTES ([Eval relief](bc-51c9b4b7-c931-50fd-a018-aa8d81339220))  
 **Decyzja nadrzędna:** C-MAPA-Q1=B — limit skupiska Gór/Wzgórz max 10 heksów (PYTANIE 63) **zostaje**; fair-play mierzy **komórkę siatki** (osobna metryka).
 
 ---
 
 ## Metryki testów (przed / po)
 
-| Test | Baseline (handoff 2026-07-26) | Przed fixem (main, sesja 2026-08-06) | Po fixie (`b1582757`) |
+| Test | Baseline (handoff 2026-07-26) | Przed fixem (main, sesja 2026-08-06) | Po fixie (`41eed4d6`) |
 |------|--------------------------------|--------------------------------------|------------------------|
 | `fair-play-grid-test.cjs` | 3 pass / 5 fail | **8 pass / 0 fail** (już zielony po `807b1772`) | **8 pass / 0 fail** |
 | `relief-grid-coverage-test.cjs` (Standard ×2) | — | **4 pass / 0 fail** | **4 pass / 0 fail** |
