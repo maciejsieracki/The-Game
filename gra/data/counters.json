@@ -40,5 +40,82 @@
     "Bonus": "−50%",
     "Rodzaj (Atak/Obrona)": "Obrona",
     "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Swordsman",
+    "Cel (typ)": "Spearman",
+    "Bonus": "+15%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Mount",
+    "Cel (typ)": "Offensive",
+    "Bonus": "+25%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Spearman",
+    "Cel (typ)": "Spearman",
+    "Bonus": "+15%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Mount",
+    "Cel (typ)": "Spearman",
+    "Bonus": "+15%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Swordsman",
+    "Cel (typ)": "Mount",
+    "Bonus": "+50%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Offensive",
+    "Cel (typ)": "Swordsman",
+    "Bonus": "+25%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Falangite",
+    "Cel (typ)": "Mount",
+    "Bonus": "+50%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Distance",
+    "Cel (typ)": "Spearman",
+    "Bonus": "+15%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Naval",
+    "Cel (typ)": "Spearman",
+    "Bonus": "+15%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Offensive",
+    "Cel (typ)": "Distance",
+    "Bonus": "+15%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
+  },
+  {
+    "Typ atakujący": "Offensive",
+    "Cel (typ)": "Slinger",
+    "Bonus": "+15%",
+    "Rodzaj (Atak/Obrona)": "Atak",
+    "Status": "potwierdzone"
   }
 ]

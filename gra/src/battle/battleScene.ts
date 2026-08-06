@@ -1226,26 +1226,6 @@ function statField(s: Record<string, unknown>, asciiKey: string, accentKey?: str
 }
 
 /**
- * BONUS vs TYPE multiplier (battle-lane, B-units data model). Reads the
- * defender's "Typ" (Swordsman / Spearman / Falangite / Offensive / Distance /
- * Mount) and the attacker's matching "Bonus vs <Typ> %" column, returning a
- * clamped (1 + pct/100) factor. Defaults to 1.0 (no bonus) for missing data.
- * Kept modest + clamped so a single column cannot trivialise a fight.
- */
-function attackerBonusVsType(attacker: BattleUnit, defender: BattleUnit): number {
-  const dTyp = String((defender.stats as any)?.['Typ'] ?? '').trim();
-  if (!dTyp) return 1.0;
-  const col = 'Bonus vs ' + dTyp + ' %';
-  const raw = (attacker.stats as any)?.[col];
-  let pct = typeof raw === 'number' ? raw : parseFloat(String(raw ?? ''));
-  if (!Number.isFinite(pct)) pct = 0;
-  // Clamp the bonus to a sane band so it stays a tweak, not a one-shot.
-  if (pct > 200) pct = 200;
-  if (pct < -90) pct = -90;
-  return 1 + pct / 100;
-}
-
-/**
  * Normalise counters.json rows for resolveCombat.
  *
  * The JSON ships the accented key "Typ atakujacy" (with diacritics) while
@@ -7752,11 +7732,12 @@ export class BattleScene {
         isCharge,
       );
     }
-    // BONUS vs TYPE (battle-lane wiring; combat.ts untouched). The attacker's
-    // "Bonus vs <defender.Typ> %" column scales the dealt damage. This REPLACES
-    // relying on counters.json for the test battle (counters left intact).
-    const bonusVsType = attackerBonusVsType(attacker.bu, defender.bu);
-    const dmg = Math.max(1, Math.round(rawDmg * ctrAtkVsDef * bonusVsType));
+    // R-KONTRY-BITWA-MIGRACJA-Q1 (2026-08-06): the old independent "Bonus vs
+    // <defender.Typ> %" path (attackerBonusVsType, reading units.json's own
+    // columns) is gone -- every pair it covered was migrated into
+    // counters.json with its real percentage (see combat.ts:counterMultiplier
+    // doc comment), so ctrAtkVsDef alone now carries the full counter bonus.
+    const dmg = Math.max(1, Math.round(rawDmg * ctrAtkVsDef));
 
     defender.bu.hp = Math.max(0, defender.bu.hp - dmg);
     this._updateHpBar(defender);

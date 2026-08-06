@@ -463,9 +463,36 @@ export function rangeDamage(missileAttack: number, armor: number): number {
 }
 
 /**
- * counterMultiplier per SS5k / SS5l:
- *   Returns 1.5 if a confirmed Atak-type counter applies.
- *   Returns 1.0 otherwise.
+ * Parse a counters.json "Bonus" cell ("+50%", "+15%", "-25%", "−50%" with the
+ * U+2212 minus some rows use) into a fraction, e.g. "+50%" -> 0.5. Returns
+ * null when the cell is missing/blank/unparseable so the caller can fall back
+ * to a safe default instead of silently treating a bad row as 0% (no bonus).
+ */
+function parseCounterBonusFrac(raw: unknown): number | null {
+  if (typeof raw !== 'string') return null;
+  const cleaned = raw.trim().replace(/−/g, '-').replace('%', '');
+  if (!cleaned) return null;
+  const n = parseFloat(cleaned);
+  return Number.isFinite(n) ? n / 100 : null;
+}
+
+/**
+ * counterMultiplier per SS5k / SS5l (R-KONTRY-BITWA-MIGRACJA-Q1, 2026-08-06):
+ *   Returns 1 + (row's own "Bonus" %) if a confirmed Atak-type counter row
+ *   matches, e.g. a "+15%" row returns 1.15, "+50%" returns 1.5.
+ *   Returns 1.0 when no row matches.
+ *
+ * Before this change every matching row returned the SAME flat COUNTER_MULT
+ * (1.5) regardless of what its own "Bonus" cell said, and a second,
+ * independent code path in battleScene.ts (attackerBonusVsType, reading
+ * units.json's "Bonus vs <Typ> %" columns directly) supplied the per-pair
+ * +15%/+25%/+50% values for the ~14 attacker/defender type pairs that carry
+ * a counter bonus, multiplied together with this one (double-counted for
+ * the few pairs both paths covered). counters.json now carries EVERY pair
+ * (migrated from units.json's columns) with its real percentage in "Bonus",
+ * so this single function is the only source of counter bonuses left.
+ * Falls back to COUNTER_MULT only if a matched row's "Bonus" cell is
+ * missing/unparseable (defensive; keeps old rows without a value working).
  *
  * Matching is substring-based, case-insensitive.
  */
@@ -489,7 +516,8 @@ export function counterMultiplier(
     const defMatch = defAlts.some((alt) => dLow.includes(alt) || alt.includes(dLow));
 
     if (atkMatch && defMatch) {
-      return COUNTER_MULT;
+      const frac = parseCounterBonusFrac(c['Bonus']);
+      return frac !== null ? 1 + frac : COUNTER_MULT;
     }
   }
   return 1.0;
