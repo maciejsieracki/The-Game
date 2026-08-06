@@ -1,9 +1,24 @@
 # ABC-PACZKA-2026-08-06-KOLEJKA — pełna lista pytań do Macieja
 
-**Status:** 🟡 **OTWARTE** — czeka na odpowiedzi `ID=A|B|C`  
+**Status:** 🟢 **ZAMKNIĘTA (ECHO)** — 2026-08-06  
 **Data:** 2026-08-06  
 **Reguła:** [`R-ABC-PELNA-LISTA.md`](R-ABC-PELNA-LISTA.md) — wszystkie pytania naraz, numeracja `[n/N]`, bez limitu 3 · bez popupów AskQuestion  
 **Źródła:** `R-AI-TRUDNOSC-AUDYT.md` · `PYTANIA-OTWARTE.md` · `REJESTR-PROSB-I-ZADAN.md` · audyt wiarygodności 2026-08-05
+
+---
+
+## Tabela odpowiedzi Macieja (ECHO 2026-08-06)
+
+| # | ID | Litera | Skutek (skrót) | Plik decyzji |
+|---|-----|--------|----------------|--------------|
+| 1 | **AI-BALANS-STEP6-Q1** | **A** | Kara score 2. zwiadowca −80 pkt w `chooseCityProduction` | [`AI-BALANS-STEP6-Q1.md`](AI-BALANS-STEP6-Q1.md) |
+| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | **A** + reguła | `kopalnia` legacy + **wszystkie kopalnie teraz i przyszłe** zachowują relief | [`R-KAMIEN-RELIEF-FOLLOWUP-Q1.md`](R-KAMIEN-RELIEF-FOLLOWUP-Q1.md) |
+| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | **B+C** | Stolica: nazwa cywilizacji + korona/obwódka; MP: nazwa + dopisek | [`MAP-UX-CLUSTER-LABEL-Q1.md`](MAP-UX-CLUSTER-LABEL-Q1.md) |
+| 4 | **R-WIARYGODNOSC-S9-Q1** | **A** | Pełna paczka strojenia §9 (JSON + testy) | [`R-WIARYGODNOSC-S9-Q1.md`](R-WIARYGODNOSC-S9-Q1.md) |
+| 5 | **R-DESIGN-PANEL-MIASTA-V2-Q1** | **C** | Pilne zlecenie Design klatek v2; kod nie zamrożony | [`R-DESIGN-PANEL-MIASTA-V2-Q1.md`](R-DESIGN-PANEL-MIASTA-V2-Q1.md) |
+| 6 | **R-OBRONA-MIASTA-MP-Q1** | **A** | Mechanika bez zmian; rozbicie bonusów w preBattle | [`R-OBRONA-MIASTA-MP.md`](R-OBRONA-MIASTA-MP.md) §ECHO |
+
+**Wdrożenie:** czeka na hasło **`działaj`** → 6 osobnych Autobotów (bez deployu w tym commicie).
 
 ---
 
@@ -315,6 +330,6 @@ Design dostaje **pilne** zlecenie klatek v2; kod może lekko dopracowywać layou
 
 ## Po odpowiedzi Macieja
 
-1. **ECHO** — zapis każdego `ID` + litera w `docs/decyzje/<ID>.md` i `REJESTR-DECYZJI.md`.
+1. ~~**ECHO**~~ — ✅ **ZROBIONE** 2026-08-06 (Operator AutoBot, branch `cursor/abc-echo-paczka-2026-08-06-63a1`).
 2. **Wdrożenie** — na hasło `działaj` per temat; deploy osobno.
-3. **Paczka** — status → 🟢 ZAMKNIĘTA po ECHO wszystkich pozycji.
+3. ~~**Paczka**~~ — status → 🟢 **ZAMKNIĘTA (ECHO)**.

@@ -44,6 +44,12 @@
 
 | ID | Data | Decyzja Macieja (skrót) | Grupa | Status | Dowód / gdzie | Notatki |
 |---|---|---|---|---|---|---|
+| **AI-BALANS-STEP6-Q1** | 2026-08-06 | **A** — kara score 2. zwiadowca −80 pkt w `chooseCityProduction` | D | 🟡 **ZAPISANA** | `docs/decyzje/AI-BALANS-STEP6-Q1.md` | czeka `działaj` · paczka ABC 2026-08-06 |
+| **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | 2026-08-06 | **A** + reguła — `kopalnia` legacy + wszystkie kopalnie teraz i przyszłe zachowują relief | A+F | 🟡 **ZAPISANA** | `docs/decyzje/R-KAMIEN-RELIEF-FOLLOWUP-Q1.md` | czeka `działaj` |
+| **MAP-UX-CLUSTER-LABEL-Q1** | 2026-08-06 | **B+C** — stolica: nazwa cywilizacji + korona/obwódka; MP: nazwa + dopisek | A+E | 🟡 **ZAPISANA** | `docs/decyzje/MAP-UX-CLUSTER-LABEL-Q1.md` | czeka `działaj` |
+| **R-WIARYGODNOSC-S9-Q1** | 2026-08-06 | **A** — pełna paczka strojenia liczb §9 (JSON + testy) | D | 🟡 **ZAPISANA** | `docs/decyzje/R-WIARYGODNOSC-S9-Q1.md` | czeka `działaj` |
+| **R-DESIGN-PANEL-MIASTA-V2-Q1** | 2026-08-06 | **C** — pilne zlecenie Design klatek v2; kod nie zamrożony | E+Design | 🟡 **ZAPISANA** | `docs/decyzje/R-DESIGN-PANEL-MIASTA-V2-Q1.md` | czeka `działaj` / Design |
+| **R-OBRONA-MIASTA-MP-Q1** | 2026-08-06 | **A** — mechanika bez zmian; rozbicie bonusów w preBattle | C+E | 🟡 **ZAPISANA** | `docs/decyzje/R-OBRONA-MIASTA-MP.md` §ECHO | czeka `działaj` |
 | **MAP-SPAWN-Q2** | 2026-08-01 | **B** — quota proporcjonalna (largest remainder) + cap 1 typ na małą masę; preferencja hexów rozwoju; Pangea = wszystkie typy OK | A | 🟠 **U INTEGRATORA** | `allocateTypyToMasses` · `developmentSpaceScore` · `clusters.ts` · `cluster-start-test.cjs` | Maciej: „wdrażaj" · gotowe do batch F |
 | **HANDEL-SPLIT-Q1** | 2026-07-29 | **B** — dwa traktaty: `umowa_szlakow` + `umowa_wymiany` | D+E | ✅ **ZDEPLOYOWANA** | FALA 80 `7d266143` · ROBOCZA `772bab7c` · `HANDEL-SPLIT-Q1.md` | Maciej: „b” · closes 2026-08-06 |
 | **C-UNIT-CARD-Q2** | 2026-07-27 | **A** — max HP efektywne na karcie + pasek | E | 🔵 **W TRAKCIE** | j.w. | |

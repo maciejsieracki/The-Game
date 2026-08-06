@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-06 (paczka `ABC-PACZKA-2026-08-06-KOLEJKA`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-06 (ECHO paczka `ABC-PACZKA-2026-08-06-KOLEJKA` + `R-OBRONA-MIASTA-MP-Q1`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
@@ -8,19 +8,20 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## ABC-PACZKA-2026-08-06-KOLEJKA — pełna lista (5 pytań) · STATUS: **OTWARTE**
+## ABC-PACZKA-2026-08-06-KOLEJKA + R-OBRONA-MIASTA-MP-Q1 — STATUS: **ZAMKNIĘTE ECHO** (2026-08-06)
 
-**Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) · reguła [`R-ABC-PELNA-LISTA.md`](../docs/decyzje/R-ABC-PELNA-LISTA.md) (wszystkie naraz, bez limitu 3).
+**Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) · reguła [`R-ABC-PELNA-LISTA.md`](../docs/decyzje/R-ABC-PELNA-LISTA.md).
 
-| # | ID | Skrót |
-|---|-----|--------|
-| 1 | **AI-BALANS-STEP6-Q1** | Następna dźwignia AI po STEP1–5 (scout −80 / LOCAL 15 / L1 scout 220) |
-| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | Whitelist reliefu: `kopalnia` legacy + miedź |
-| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | Etykiety stolica vs MP w klastrze |
-| 4 | **R-WIARYGODNOSC-S9-Q1** | Strojenie §9 teraz vs odłożyć |
-| 5 | **R-DESIGN-PANEL-MIASTA-V2-Q1** | Polish pigułki: czekać Design vs status quo (Q4=B) |
+| # | ID | Litera | Status |
+|---|-----|--------|--------|
+| 1 | **AI-BALANS-STEP6-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |
+| 2 | **R-KAMIEN-RELIEF-FOLLOWUP-Q1** | **A** + reguła | 🟡 ZAPISANA — czeka `działaj` |
+| 3 | **MAP-UX-CLUSTER-LABEL-Q1** | **B+C** | 🟡 ZAPISANA — czeka `działaj` |
+| 4 | **R-WIARYGODNOSC-S9-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |
+| 5 | **R-DESIGN-PANEL-MIASTA-V2-Q1** | **C** | 🟡 ZAPISANA — czeka `działaj` |
+| 6 | **R-OBRONA-MIASTA-MP-Q1** | **A** | 🟡 ZAPISANA — czeka `działaj` |
 
-**Odpowiedź:** `A B C A B` albo `AI-BALANS-STEP6-Q1=A` itd.
+Szczegóły ECHO: pliki w `docs/decyzje/` (patrz tabela w paczce ABC).
 
 ---
 

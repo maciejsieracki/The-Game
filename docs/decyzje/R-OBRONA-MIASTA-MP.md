@@ -185,6 +185,19 @@ export function shouldApplyGarrisonFortifyBonus(
 
 ---
 
+## ECHO — R-OBRONA-MIASTA-MP-Q1 (2026-08-06)
+
+**Status:** 🟡 **ZAPISANA** · **A**  
+**Cytat Macieja:** „Zostawić mechanikę; dodać w preBattle **rozbicie bonusów** (garnizon +50%, cyw, weteran, liczba obrońców)"
+
+| ID | Odpowiedź | Skutek wdrożenia |
+|----|-----------|------------------|
+| **R-OBRONA-MIASTA-MP-Q1** | **A** | Mechanika obrony bez murów **bez zmian** (`fortify_obrona_proc=50`, milicja, roster dist≤1). W ekranie przed bitwą (preBattle) dodać **widoczne rozbicie** składników: garnizon +50%, bonus cywilizacji, weteran, liczba obrońców. |
+
+Gracz widzi, skąd bierze się siła obrony — bez obniżania bonusów ani wyłączania milicji. Czeka na hasło **`działaj`** → AutoBot Operator (🟡 cross — UI preBattle + logika walki).
+
+---
+
 ## AutoBot — metryki audytu
 
 | Metryka | Wynik |
