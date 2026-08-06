@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA d7165a12 - 2026-08-06 06:55 - FALA 250: koszty jednostek ×5 + utrzymanie surowcowe + AI tartak/kopalnia - **AKTUALNA**
+## ROBOCZA e594f018 - 2026-08-06 07:20 - FALA 251: Escape stos paneli + hover pigułki miasta - **AKTUALNA**
+|- md5 (pelne): e594f0188aa155e397e6c15648b33423 · stempel: ROBOCZA · 2026-08-06 (label e594f018)
+|- **FALA 251.** (1) R-ESC-PELNY-EKRAN-Q1=A — wspólny `escapeOverlayStack` (tech/city/diplo/wiki/build). (2) R-DESIGN-PANEL-MIASTA-Q4=B — hover pigułki: produkcja + ostrzeżenie surowców. Tipy `a6fdac41`/`7eda6ddc`.
+|- Bramki: escape-stack 9/9 · tsc 0 · VERIFY OK.
+
+## ROBOCZA d7165a12 - 2026-08-06 06:55 - FALA 250: koszty jednostek ×5 + utrzymanie surowcowe + AI tartak/kopalnia - **ZASTĄPIONA** (→ e594f018)
 |- md5 (pelne): d7165a120c635612d278607cfd5a3897 · stempel: ROBOCZA · 2026-08-06 (label d7165a12)
 |- **FALA 250.** R-DYST-DREWNO: rekrutacja = baza×5 · utrzymanie surowcowe = baza · Drewno dla jednostek bez metalu · AI/MP: boost tartak/kopalnia gdy rekrutacja bez surowca · parytet canAfford. Tip `796fc7a7`.
 |- Bramki: unit-resource-upkeep 7/7 · ai-resource-needs 6/6 · tsc 0 · VERIFY OK.

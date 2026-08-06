@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 250** `d7165a12` — koszty jednostek ×5 + utrzymanie surowcowe + AI tartak/kopalnia. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+﻿- ✅ **FALA 251** `e594f018` — Escape stos paneli + hover pigułki miasta. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
+- ✅ **FALA 250** `d7165a12` — koszty jednostek ×5 + utrzymanie surowcowe + AI tartak/kopalnia. **ZASTĄPIONA** przez 251.
 - ✅ **FALA 249** `097c5e5c` — camouflage sweep. **ZASTĄPIONA** przez 250.
 - ✅ **FALA 248** `772bab7c` — batch otwartych: STEP4 · panel żetonów · garnizon lista · Civpedia · scena perf · Pałac/surowce-dostęp · closes rejestr. **ZASTĄPIONA** przez 249.
 - ✅ **FALA 247** `540d2490` — STEP3 + smoke + Prawo V2. **ZASTĄPIONA** przez 248.

@@ -1,3 +1,12 @@
+## [07:20 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 251 e594f018
+
+Maciej „2” — Escape + hover pigułki
+|- md5: e594f0188aa155e397e6c15648b33423 · stempel: ROBOCZA · e594f018
+|- Kod: escapeOverlayStack (tech/city/diplo/wiki/build) · hover pigułki produkcja+ostrzeżenie surowców
+|- Testy: escape-stack 9/9 · tsc 0 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra
+
 ## [06:55 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 250 d7165a12
 
 Maciej: wprowadź koszty ×5 + AI pamięta tartak/kopalnię brązu
