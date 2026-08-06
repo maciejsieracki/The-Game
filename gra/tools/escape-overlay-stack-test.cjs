@@ -82,6 +82,12 @@ const MAP_OVERLAY_IDS = [
   'siege-map',
   'post-battle-summary',
   'diplo-trade-basket',
+  'city-attack-choice',
+  'city-capture-notice',
+  'city-foreign-pick',
+  'city-unit-pick',
+  'unit-foreign-pick',
+  'unit-replace-picker',
 ];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();

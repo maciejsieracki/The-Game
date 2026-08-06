@@ -43,6 +43,12 @@ Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-
 | `pre-battle` | `gra/src/ui/preBattle.ts` |
 | `siege-map` | `gra/src/ui/siegeMapPanel.ts` |
 | `post-battle-summary` | `gra/src/ui/postBattleSummary.ts` |
+| `city-attack-choice` | `gra/src/ui/cityAttackChoice.ts` |
+| `city-capture-notice` | `gra/src/ui/cityCaptureNotice.ts` |
+| `city-foreign-pick` | `gra/src/ui/cityForeignPick.ts` |
+| `city-unit-pick` | `gra/src/ui/cityUnitPick.ts` |
+| `unit-foreign-pick` | `gra/src/ui/unitForeignPick.ts` |
+| `unit-replace-picker` | `gra/src/ui/unitReplacePicker.ts` |
 
 `main.ts` — Escape lokalny pomija panele ze stosu (`defaultPrevented`); menu pauzy bez zmian.
 

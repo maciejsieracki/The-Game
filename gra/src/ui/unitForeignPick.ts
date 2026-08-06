@@ -5,6 +5,9 @@
  */
 
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
+
+const OVERLAY_ID = 'unit-foreign-pick';
 
 export interface UnitForeignPickOptions {
   unitName: string;
@@ -125,6 +128,7 @@ function detachKeyboard(): void {
 
 export function hideUnitForeignPick(): void {
   detachKeyboard();
+  popOverlay(OVERLAY_ID);
   if (root) {
     root.remove();
     root = null;
@@ -214,12 +218,6 @@ export function showUnitForeignPick(opts: UnitForeignPickOptions): void {
   btnInfo.focus();
 
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      hideUnitForeignPick();
-      opts.onCancel?.();
-      return;
-    }
     if (e.key === '1') {
       e.preventDefault();
       pick(opts.onInfo);
@@ -240,4 +238,8 @@ export function showUnitForeignPick(opts: UnitForeignPickOptions): void {
     }
   };
   document.addEventListener('keydown', keyHandler);
+  pushOverlay(OVERLAY_ID, () => {
+    hideUnitForeignPick();
+    opts.onCancel?.();
+  });
 }
