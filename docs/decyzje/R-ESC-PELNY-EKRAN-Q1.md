@@ -29,12 +29,19 @@ Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-
 | `wiki-hub` | `gra/src/ui/wikiHubHud.ts` (Civpedia) |
 | `diplo-list` | `gra/src/ui/diploListHud.ts` |
 | `diplo-audience` | `gra/src/ui/diplomacyAudience.ts` |
+| `diplo-trade-basket` | `gra/src/ui/diplomacyTradeBasket.ts` |
 | `build-mode` | `gra/src/main.ts` |
 | `science-picker` | `gra/src/ui/sciencePicker.ts` |
 | `army-list` | `gra/src/ui/armyListHud.ts` |
 | `save-load-dialog` | `gra/src/ui/saveLoadDialog.ts` |
 | `science-hub` | `gra/src/ui/scienceHubHud.ts` |
 | `city-list` | `gra/src/ui/cityListHud.ts` |
+| `city-attack-choice` | `gra/src/ui/cityAttackChoice.ts` |
+| `city-capture-notice` | `gra/src/ui/cityCaptureNotice.ts` |
+| `city-foreign-pick` | `gra/src/ui/cityForeignPick.ts` |
+| `city-unit-pick` | `gra/src/ui/cityUnitPick.ts` |
+| `unit-foreign-pick` | `gra/src/ui/unitForeignPick.ts` |
+| `unit-replace-picker` | `gra/src/ui/unitReplacePicker.ts` |
 
 `main.ts` — Escape lokalny pomija panele ze stosu (`defaultPrevented`); menu pauzy bez zmian.
 
