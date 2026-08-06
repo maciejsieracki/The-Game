@@ -1,3 +1,12 @@
+## [06:55 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 250 d7165a12
+
+Maciej: wprowadź koszty ×5 + AI pamięta tartak/kopalnię brązu
+|- md5: d7165a120c635612d278607cfd5a3897 · stempel: ROBOCZA · d7165a12
+|- Kod: R-DYST-DREWNO rekrutacja×5 · utrzymanie=baza · Drewno bez metalu · AI/MP boost tartak/kopalnia przy zablokowanej rekrutacji · tip `796fc7a7`
+|- Testy: unit-resource-upkeep 7/7 · ai-resource-needs 6/6 · tsc 0 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra
+
 ## [00:25 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 249 097c5e5c
 
 Maciej: „szukaj wszystkich, odpal wszystkie" (zakamuflowane + extras)

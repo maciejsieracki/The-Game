@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 097c5e5c - 2026-08-06 00:25 - FALA 249: camouflage sweep + extras - **AKTUALNA**
+## ROBOCZA d7165a12 - 2026-08-06 06:55 - FALA 250: koszty jednostek ×5 + utrzymanie surowcowe + AI tartak/kopalnia - **AKTUALNA**
+|- md5 (pelne): d7165a120c635612d278607cfd5a3897 · stempel: ROBOCZA · 2026-08-06 (label d7165a12)
+|- **FALA 250.** R-DYST-DREWNO: rekrutacja = baza×5 · utrzymanie surowcowe = baza · Drewno dla jednostek bez metalu · AI/MP: boost tartak/kopalnia gdy rekrutacja bez surowca · parytet canAfford. Tip `796fc7a7`.
+|- Bramki: unit-resource-upkeep 7/7 · ai-resource-needs 6/6 · tsc 0 · VERIFY OK.
+
+## ROBOCZA 097c5e5c - 2026-08-06 00:25 - FALA 249: camouflage sweep + extras - **ZASTĄPIONA** (→ d7165a12)
 |- md5 (pelne): 097c5e5c469af23866ae2c1898ad22d3 · stempel: ROBOCZA · 2026-08-06 00:25 (label 097c5e5c)
 |- **FALA 249.** PIERWSZE-MIASTO · SCENA-PERF dżungla InstancedMesh · WIAR-NAP-IMP + koszyk · WIAR-UI-REJESTR · ZNALEZISKO-86 · ARMIA Połącz colocated · C-PRZYROST UI · fair-play/relief · PANEL-SYNC · upkeep-test R-STAWKI · closes STALE/PUŁKA/EXTRA · smoke F248 docs. Maciej „odpal wszystkie" · SOLO-Q1=A.
 |- Bramki: tsc 0 · first-city 16/16 · upkeep 73/73 · hp 5/5 · army-merge 4/4 · wiarygodnosc 152/152 · merge-decor 8/8 · fair-play 8/8 · VERIFY OK.
