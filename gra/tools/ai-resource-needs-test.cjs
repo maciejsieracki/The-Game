@@ -16,6 +16,7 @@ fs.writeFileSync(ENTRY, `
 export {
   detectOwnerResourceNeeds,
   resourceKeysNeededForBuildingQueue,
+  resourceKeysNeededForUnitQueue,
 } from ${JSON.stringify(SRC + '/game/ai-resource-needs')};
 `, 'utf8');
 
@@ -32,6 +33,7 @@ esbuild.buildSync({
 const {
   detectOwnerResourceNeeds,
   resourceKeysNeededForBuildingQueue,
+  resourceKeysNeededForUnitQueue,
 } = require(BUNDLE);
 
 let passed = 0;
@@ -70,6 +72,22 @@ const foodLow = detectOwnerResourceNeeds({
   foodReserve: 3,
 });
 ok(foodLow.needsResource.zywnosc === true, 'niski spichlerz → needsResource.zywnosc');
+
+const unitQueueKeys = resourceKeysNeededForUnitQueue({
+  queuedUnitTypeIds: ['Wojownik'],
+  goods: [{ key: 'drewno', label: 'Drewno', ilosc: 2 }],
+  lookupUnitStockCost: () => ({ drewno: 10 }),
+});
+ok(unitQueueKeys.includes('drewno'), 'kolejka jednostki wymaga drewna (stock 2 < koszt 10)');
+
+const unitQueueDeficit = detectOwnerResourceNeeds({
+  goods: [{ key: 'drewno', label: 'Drewno', ilosc: 2 }],
+  pricedKeys: ['drewno'],
+  pakietWielkosc: 10,
+  queuedUnitTypeIds: ['Wojownik'],
+  lookupUnitStockCost: () => ({ drewno: 10 }),
+});
+ok(unitQueueDeficit.deficitKeys.includes('drewno'), 'detectOwnerResourceNeeds: deficyt z kolejki jednostki');
 
 console.log(`ai-resource-needs-test: ${passed} pass, ${failed} fail`);
 process.exit(failed > 0 ? 1 : 0);

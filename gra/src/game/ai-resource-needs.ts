@@ -14,6 +14,10 @@ import { detectPricedResourceDeficits } from './diplomacy-resource-trade-pick';
 import type { BuildingStockCost } from './building-stock-cost';
 import { buildingStockCost } from './building-stock-cost';
 
+export type UnitStockCostLookup = (
+  unitTypeId: string,
+) => Record<string, number> | null | undefined;
+
 export interface OwnerResourceNeedState {
   /** Flaga per klucz surowca — true gdy brakuje do budowy/kolejki/magazynu. */
   needsResource: Record<string, boolean>;
@@ -64,6 +68,25 @@ export function resourceKeysNeededForBuildingQueue(input: {
   return [...needed];
 }
 
+/** Klucze surowców wymagane przez jednostki w kolejce produkcji (niepokryte zapasem). */
+export function resourceKeysNeededForUnitQueue(input: {
+  queuedUnitTypeIds: readonly string[];
+  goods: readonly TradeGoodEntry[];
+  lookupUnitStockCost: UnitStockCostLookup;
+}): string[] {
+  const needed = new Set<string>();
+  const stockByKey = new Map(input.goods.map(g => [g.key, g.ilosc ?? 0]));
+
+  for (const unitTypeId of input.queuedUnitTypeIds) {
+    const cost = input.lookupUnitStockCost(unitTypeId) ?? {};
+    for (const [key, amount] of Object.entries(cost)) {
+      const have = stockByKey.get(key) ?? 0;
+      if (have < amount) needed.add(key);
+    }
+  }
+  return [...needed];
+}
+
 /**
  * Pełne wykrywanie deficytu dla ownera — magazyn + kolejka budowy + żywność.
  */
@@ -73,6 +96,8 @@ export function detectOwnerResourceNeeds(input: {
   pakietWielkosc: number;
   queuedBuildingIds?: readonly string[];
   lookupBuildingStockCost?: BuildingStockCostLookup;
+  queuedUnitTypeIds?: readonly string[];
+  lookupUnitStockCost?: UnitStockCostLookup;
   /** Zapas żywności państwa (spichlerz) — opcjonalnie dla miast-państw. */
   foodReserve?: number;
   foodUrgentThreshold?: number;
@@ -92,7 +117,15 @@ export function detectOwnerResourceNeeds(input: {
     })
     : [];
 
-  const deficitKeys = mergeDeficitKeys(stockDeficits, buildDeficits);
+  const unitDeficits = input.queuedUnitTypeIds?.length && input.lookupUnitStockCost
+    ? resourceKeysNeededForUnitQueue({
+      queuedUnitTypeIds: input.queuedUnitTypeIds,
+      goods: input.goods,
+      lookupUnitStockCost: input.lookupUnitStockCost,
+    })
+    : [];
+
+  const deficitKeys = mergeDeficitKeys(mergeDeficitKeys(stockDeficits, buildDeficits), unitDeficits);
   const needsResource: Record<string, boolean> = {};
   for (const k of deficitKeys) needsResource[k] = true;
 

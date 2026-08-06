@@ -53,7 +53,7 @@ import {
   AI_IMPROVEMENT_PRIORITY,
   pickAutoImprovements,
 } from './auto-improvements';
-import { buildingStockCost } from './building-stock-cost';
+import { buildingStockCost, unitStockCost } from './building-stock-cost';
 
 // ---------------------------------------------------------------------------
 // AICommand discriminated union
@@ -321,6 +321,11 @@ export interface AITurnOpts {
    * Silnik (main.ts) — priorytet: (1) handel, (2) budowa/ulepszenie pod brak.
    */
   resourceDeficitKeys?: readonly string[];
+  /**
+   * Scratch per turę: brakujące surowce rekrutacji wojskowej (merge przed planCityImprovements).
+   * Silnik nie ustawia — chooseCityProduction dopisuje, decideAITurn scala do resourceDeficitKeys.
+   */
+  recruitStockDeficitScratch?: Set<string>;
   /**
    * D-IMPROVEMENTS: epoka TEGO AI (main.ts `empireEpochForOwner(ownerId)`) --
    * wymagane przez qualifier dla hodowli Inków (bydło/owce poza lamą dopiero
@@ -1377,22 +1382,24 @@ export function chooseCityProduction(
   // P-AI-011: deficyt surowca → priorytet budynku wytwarzającego / przetwarzającego.
   const deficitKeys = opts.resourceDeficitKeys;
   if (deficitKeys?.length) {
-    for (const resKey of deficitKeys) {
-      for (const buildingId of AI_BUILDING_FOR_DEFICIT[resKey] ?? []) {
-        if (built.includes(buildingId)) continue;
-        const idx = candidates.findIndex(c => c.id === buildingId);
-        if (idx >= 0) {
-          candidates[idx]!.score += 85;
-        } else {
-          candidates.push({ id: buildingId, score: 200 + economyScore });
-        }
-      }
-    }
+    boostCandidatesForResourceDeficits(candidates, deficitKeys, built, economyScore);
   }
 
   // §4.4 Filter out buildings already built (units can be built multiple times)
   // built (opts.cityBuildings) i candidates -- oba po id budynku (patrz cityBuilt w main.ts).
   const buildingNames = new Set(data.buildings.map(b => b.id));
+
+  // Wojskowe kandydaty bez pokrycia unitStockCost → boost tartak/kopalnia/odlewnia (P-AI-RECURUIT-STOCK).
+  if (opts.canAfford) {
+    const recruitGapKeys = collectMilitaryRecruitStockDeficits(
+      cityId, candidates, buildingNames, data, opts,
+    );
+    if (recruitGapKeys.length > 0) {
+      boostCandidatesForResourceDeficits(candidates, recruitGapKeys, built, economyScore);
+      if (!opts.recruitStockDeficitScratch) opts.recruitStockDeficitScratch = new Set();
+      for (const k of recruitGapKeys) opts.recruitStockDeficitScratch.add(k);
+    }
+  }
 
   // MP (defensiveCopy): cap wojska wg trudności GRY gracza — easy bez limitu, normal max 1, hard 0.
   if (opts.defensiveCopy && opts.menuDifficulty !== undefined) {
@@ -1594,6 +1601,63 @@ const AI_BUILDING_FOR_DEFICIT: Readonly<Record<string, readonly string[]>> = {
   stal: ['wielka_odlewnia'],
   ceramika: ['garncarnia'],
 };
+
+/** Gdy brakuje produktu przetworzonego — boost także surowca źródłowego (kopalnia/tartak). */
+const UPSTREAM_FOR_PROCESSED_RESOURCE: Readonly<Record<string, readonly string[]>> = {
+  braz: ['ruda'],
+  zelazo: ['ruda_zelaza'],
+  cegla: ['glina', 'drewno'],
+};
+
+function expandRecruitResourceKeys(keys: Iterable<string>): string[] {
+  const out = new Set<string>();
+  for (const k of keys) {
+    out.add(k);
+    for (const up of UPSTREAM_FOR_PROCESSED_RESOURCE[k] ?? []) out.add(up);
+  }
+  return [...out];
+}
+
+function boostCandidatesForResourceDeficits(
+  candidates: { id: string; score: number }[],
+  deficitKeys: readonly string[],
+  built: readonly string[],
+  economyScore: number,
+): void {
+  for (const resKey of deficitKeys) {
+    for (const buildingId of AI_BUILDING_FOR_DEFICIT[resKey] ?? []) {
+      if (built.includes(buildingId)) continue;
+      const idx = candidates.findIndex(c => c.id === buildingId);
+      if (idx >= 0) {
+        candidates[idx]!.score += 85;
+      } else {
+        candidates.push({ id: buildingId, score: 200 + economyScore });
+      }
+    }
+  }
+}
+
+function collectMilitaryRecruitStockDeficits(
+  cityId: string,
+  candidates: readonly { id: string; score: number }[],
+  buildingNames: ReadonlySet<string>,
+  data: GameData,
+  opts: AITurnOpts,
+): string[] {
+  const canAfford = opts.canAfford;
+  if (!canAfford) return [];
+  const keys = new Set<string>();
+  for (const c of candidates) {
+    if (!isMilitaryProductionCandidate(c.id, buildingNames)) continue;
+    if (opts.isProductionAllowed && opts.isProductionAllowed(cityId, c.id) === false) continue;
+    if (canAfford(cityId, c.id)) continue;
+    const unitDef = data.units.find(u => u.Jednostka === c.id);
+    const cost = unitStockCost(unitDef);
+    if (Object.keys(cost).length === 0) continue;
+    for (const k of Object.keys(cost)) keys.add(k);
+  }
+  return expandRecruitResourceKeys(keys);
+}
 
 function improvementPriorityForDeficits(
   base: readonly ImprovementKey[],
@@ -1882,6 +1946,8 @@ export function decideAITurn(
     return decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts, difficultyParams);
   }
 
+  opts.recruitStockDeficitScratch = new Set();
+
   const commands: AICommand[] = [];
 
   const myUnits      = units.filter(u => u.ownerId === playerId);
@@ -1935,6 +2001,11 @@ export function decideAITurn(
   // -------------------------------------------------------------------------
   // Step 2b: TERRAIN IMPROVEMENTS -- max 1/miasto/turę (patrz planCityImprovements)
   // -------------------------------------------------------------------------
+  if (opts.recruitStockDeficitScratch.size > 0) {
+    const merged = new Set(opts.resourceDeficitKeys ?? []);
+    for (const k of opts.recruitStockDeficitScratch) merged.add(k);
+    opts.resourceDeficitKeys = [...merged];
+  }
   for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
     commands.push(cmd);
   }
@@ -2288,6 +2359,7 @@ function decideDefensiveCopyTurn(
   difficultyParams: DifficultyParams,
 ): AICommand[] {
   const commands: AICommand[] = [];
+  opts.recruitStockDeficitScratch = new Set();
   const myUnits = units.filter(u => u.ownerId === playerId);
   const myCities = cities.filter(c => c.ownerId === playerId);
   const enemyUnits = units.filter(u => u.ownerId !== playerId);
@@ -2308,6 +2380,11 @@ function decideDefensiveCopyTurn(
 
   // Ulepszenia terenu -- ta sama intensywność co zwykłe miasto AI (Maciej decyzja 4:
   // miasta-państwa NIE dostają osobnego throttlingu, wspólny helper).
+  if (opts.recruitStockDeficitScratch.size > 0) {
+    const merged = new Set(opts.resourceDeficitKeys ?? []);
+    for (const k of opts.recruitStockDeficitScratch) merged.add(k);
+    opts.resourceDeficitKeys = [...merged];
+  }
   for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
     commands.push(cmd);
   }

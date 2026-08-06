@@ -12852,6 +12852,18 @@ async function boot(): Promise<void> {
       return ids;
     }
 
+    function queuedUnitTypeIdsForOwner(ownerId: number): string[] {
+      const ids: string[] = [];
+      for (const c of cities) {
+        if (c.ownerId !== ownerId) continue;
+        const prod = cityProd.get(c.id);
+        for (const item of prod?.kolejka ?? []) {
+          if (item.kind === 'jednostka') ids.push(item.id);
+        }
+      }
+      return ids;
+    }
+
     function resourceDeficitKeysForOwner(ownerId: number): string[] {
       const pricedKeys = Object.keys(diplomacyHandelSurowceCatalog());
       const needs = detectOwnerResourceNeeds({
@@ -12861,6 +12873,11 @@ async function boot(): Promise<void> {
         queuedBuildingIds: queuedBuildingIdsForOwner(ownerId),
         lookupBuildingStockCost: (buildingId) =>
           data.buildings.find(b => b.id === buildingId)?.koszt_surowce,
+        queuedUnitTypeIds: queuedUnitTypeIdsForOwner(ownerId),
+        lookupUnitStockCost: (unitTypeId) => {
+          const def = data.units.find(u => u.Jednostka === unitTypeId);
+          return unitStockCost(def);
+        },
         foodReserve: getEmpireFoodReserve(ownerId),
       });
       return needs.deficitKeys;
