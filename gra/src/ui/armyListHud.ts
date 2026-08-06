@@ -3,6 +3,7 @@
  * Ten sam układ co cityListHud (lewy panel, ✕, Esc, toggle).
  */
 
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { brandIconSvg } from './icons/brandAssets';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
@@ -127,17 +128,10 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
     if (!open) return;
     open = false;
     el.classList.remove('open');
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('army-list');
     unbindOutside?.();
     unbindOutside = null;
     config.onClose?.();
-  }
-
-  function onEsc(ev: KeyboardEvent): void {
-    if (ev.key === 'Escape') {
-      ev.preventDefault();
-      closeList();
-    }
   }
 
   function render(): void {
@@ -287,7 +281,7 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
     open = true;
     render();
     el.classList.add('open');
-    document.addEventListener('keydown', onEsc);
+    pushOverlay('army-list', closeList);
     unbindOutside?.();
     unbindOutside = bindHudPanelOutsideDismiss(
       el,
@@ -311,7 +305,7 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
   }
 
   function destroy(): void {
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('army-list');
     unbindOutside?.();
     unbindOutside = null;
     el.remove();

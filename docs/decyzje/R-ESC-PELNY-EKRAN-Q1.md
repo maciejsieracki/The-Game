@@ -30,8 +30,11 @@ Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-
 | `diplo-list` | `gra/src/ui/diploListHud.ts` |
 | `diplo-audience` | `gra/src/ui/diplomacyAudience.ts` |
 | `build-mode` | `gra/src/main.ts` |
+| `science-picker` | `gra/src/ui/sciencePicker.ts` |
+| `army-list` | `gra/src/ui/armyListHud.ts` |
+| `save-load-dialog` | `gra/src/ui/saveLoadDialog.ts` |
 
-`main.ts` — Escape lokalny pomija panele ze stosu (`defaultPrevented`); save/load i menu pauzy bez zmian.
+`main.ts` — Escape lokalny pomija panele ze stosu (`defaultPrevented`); menu pauzy bez zmian.
 
 ## Test
 
