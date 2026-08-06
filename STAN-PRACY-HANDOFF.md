@@ -1,12 +1,14 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-06 ~07:55** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-06 ~08:36** · Projekt: Civ „The Game"
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 252 (2026-08-06):** ROBOCZA `bbff9996` · Escape more + recruit upkeep gate (łączna) + Panel-C ×5. AutoBot CLEAN. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. AutoBot ×3. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 >
-> **FALA 251 (2026-08-06):** ROBOCZA `e594f018` · Escape stos paneli + hover pigułki miasta. **ZASTĄPIONA** przez FALA 252.
+> **FALA 252 (2026-08-06):** ROBOCZA `bbff9996` · Escape more + upkeep gate + Panel-C. **ZASTĄPIONA** przez FALA 253.
+>
+> **FALA 251 (2026-08-06):** ROBOCZA `e594f018` · Escape + hover. **ZASTĄPIONA** przez FALA 252.
 >
 > **FALA 250 (2026-08-06):** ROBOCZA `d7165a12` · koszty jednostek ×5 + AI tartak/kopalnia. **ZASTĄPIONA** przez FALA 251.
 >

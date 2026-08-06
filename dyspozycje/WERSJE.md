@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA bbff9996 - 2026-08-06 07:55 - FALA 252: Escape more + recruit upkeep gate + Panel-C ×5 - **AKTUALNA**
+## ROBOCZA b8704216 - 2026-08-06 08:36 - FALA 253: Escape hub/cityList + recruit hint + AI-BALANS-STEP5 - **AKTUALNA**
+|- md5 (pelne): b8704216e69abaafb685fea3db00e13c · stempel: ROBOCZA · 2026-08-06 (label b8704216)
+|- **FALA 253.** AutoBot ×3 osobne. (1) Escape science-hub + city-list. (2) Hint rekrutacji łączny (stock OK + full fail). (3) AI-BALANS-STEP5: test+docs `bonus_produkcja`→realna Praca (wiring już F229). Tipy `9f93d36b`/`98649992`/`502a8fb5`.
+|- Bramki: escape 24/24 · upkeep-gate 20/20 · step5 18/18 · tsc 0 · VERIFY OK.
+
+## ROBOCZA bbff9996 - 2026-08-06 07:55 - FALA 252: Escape more + recruit upkeep gate + Panel-C ×5 - **ZASTĄPIONA** (→ b8704216)
 |- md5 (pelne): bbff9996793c4ff32ca48795608885ab · stempel: ROBOCZA · 2026-08-06 (label bbff9996)
 |- **FALA 252.** AutoBot Op→Eval→Grok. (1) Escape: science-picker / army-list / save-load-dialog. (2) R-AI-RECRUIT-UPKEEP-GATE: canAffordUnitRecruitFull (stock+reserve łącznie; Włócznik 12) — FIX po NEEDS_FIX. (3) Panel-C regen ×5 + utrzymanie. Tipy `12222526`/`1b2f3a13`/`df5cc308`.
 |- Bramki: escape-stack 18/18 · upkeep-gate 18/18 · tsc 0 · VERIFY OK.

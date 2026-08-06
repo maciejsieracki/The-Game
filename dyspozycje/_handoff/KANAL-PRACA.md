@@ -1,3 +1,12 @@
+## [08:36 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 253 b8704216
+
+Maciej „1+2+3” — każdy temat osobnym AutoBotem
+|- md5: b8704216e69abaafb685fea3db00e13c · stempel: ROBOCZA · b8704216
+|- (1) Escape science-hub + city-list · (2) hint rekrutacji łączny · (3) AI-BALANS-STEP5 test+docs
+|- Testy: escape 24/24 · upkeep-gate 20/20 · step5 18/18 · tsc 0 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra
+
 ## [07:55 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 252 bbff9996
 
 Maciej „działaj 1+2+3” + AutoBot (Op→Eval→Grok; upkeep NEEDS_FIX→FIX CLEAN)
