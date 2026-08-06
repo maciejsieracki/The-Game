@@ -1,4 +1,5 @@
-﻿- ✅ **FALA 254** `232634a9` — Escape (army/battle/diplo/city) + chip/hint rekrutacji + Panel-C + audyt obrony MP + ABC. AutoBot. Wejście: gra-robocza/START.html · git pull, Ctrl+F5 + Nowa gra.
+﻿- ✅ **FALA 255** `20e554dc` — ECHO ABC 6× + handoff sesji (logika = F254 Escape/recruit). Wejście: gra-robocza/START.html · git pull, Ctrl+F5 + Nowa gra. Czeka: `działaj` → 6 Autobotów.
+- ✅ **FALA 254** `232634a9` — Escape (army/battle/diplo/city) + chip/hint rekrutacji + Panel-C + audyt obrony MP + ABC. **ZASTĄPIONA** przez 255.
 - ✅ **FALA 253** `b8704216` — Escape hub/cityList + hint + STEP5. **ZASTĄPIONA** przez 254.
 - ✅ **FALA 252** `bbff9996` — Escape (science/army/save-load) + bramka rekrutacji stock+upkeep łącznie + Panel-C ×5. AutoBot CLEAN. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.
 - ✅ **FALA 251** `e594f018` — Escape stos paneli + hover pigułki miasta. Wejście: `gra-robocza/START.html` · **git pull**, Ctrl+F5 + Nowa gra.

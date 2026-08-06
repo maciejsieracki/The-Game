@@ -9,11 +9,11 @@
 
 | Pole | Wartość |
 |------|---------|
-| **AKTUALNA FALA** | **254** |
-| **md5** | `232634a96b7bbea7a2147f851510a32f` (label `232634a9`) |
-| **Commit deploy** | `a3217572` na `main` |
+| **AKTUALNA FALA** | **255** |
+| **md5** | `20e554dc2c010bb43a44b867a2dee09e` (label `20e554dc`) |
+| **Commit deploy** | *(po push F255)* na `main` |
 | **Wejście** | `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra |
-| **ECHO ABC** | branch `cursor/abc-echo-paczka-2026-08-06-63a1` · tip `4b79cdbc` (+ ten handoff) — **docs only**, jeszcze do merge na `main` |
+| **ECHO ABC** | ZAMKNIĘTE w F255 · docs w `docs/decyzje/*-Q1.md` · wdrożenie czeka `działaj` |
 
 **Zawartość FALA 254:** Escape (army / battle / diplo koszyk / city-unit picks / cityUxFrame) · chip rekrutacji full-cost + `pickUnitRecruitHint` · Panel-C roundtrip · audyt `R-OBRONA-MIASTA-MP` · paczka ABC (otwarta → potem ECHO).
 

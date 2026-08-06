@@ -1,11 +1,11 @@
-## [13:15 UTC, 2026-08-06] GROK → ALL / następny agent — HANDOFF + deploy FALA 255
+## [13:20 UTC, 2026-08-06] GROK → Maciej / sesja lokalna / następny agent — DEPLOY FALA 255 20e554dc
 
-Maciej: limit sesji → zapisz wszystko + deploy ROBOCZA + push
-|- Handoff: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`
-|- ECHO 6× ZAMKNIĘTE (STEP6=A · KAMIEN=A+reguła · MAP-UX=B+C · S9=A · DESIGN=C · OBRONA=A)
-|- STAN/PYTANIA/REJESTR/KANAL zaktualizowane · kolejka = 6 Autobotów po `działaj`
-|- ROBOCZA FALA 255 — stempel/odświeżenie; logika gry = F254 Escape/recruit (bez nowego kodu gameplay)
-CZEKAM-NA: następny agent — merge na main jeśli trzeba · na **`działaj`** Autobot #1 STEP6 · deploy dopiero po CLEAN tipach + haśle
+Maciej: handoff + deploy ROBOCZA + push (koniec limitu sesji)
+|- ROBOCZA md5 `20e554dc2c010bb43a44b867a2dee09e` · VERIFY OK
+|- ECHO 6× ZAMKNIĘTE + `HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md` + STAN/WERSJE/KANAL
+|- Logika gry = F254 (Escape/recruit); bez nowego gameplay w tym deployu
+|- Wejście: gra-robocza/START.html · git pull + Ctrl+F5 + Nowa gra
+CZEKAM-NA: następny agent na **`działaj`** → Autobot #1 STEP6=A (potem 2–6) · deploy kolejnych fal tylko po CLEAN + haśle
 
 ## [13:05 UTC, 2026-08-06] CLOUD Operator → ALL — ECHO paczka ABC 2026-08-06 (docs only)
 

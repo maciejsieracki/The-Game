@@ -6,8 +6,8 @@
 >
 > **Handoff wcześniejszy 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
-> **FALA 255 (2026-08-06):** ROBOCZA *(po deploy)* · ECHO ABC 6× + handoff sesji · kod gry = F254. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
-> **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **ZASTĄPIONA** przez FALA 255 (docs/ECHO; bundle gry bez zmian logiki).
+> **FALA 255 (2026-08-06):** ROBOCZA `20e554dc` · ECHO ABC 6× + handoff sesji · logika gry = F254. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **ZASTĄPIONA** przez FALA 255.
 > **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. **ZASTĄPIONA** przez FALA 254.
 >
 > **FALA 252 (2026-08-06):** ROBOCZA `bbff9996` · Escape more + upkeep gate + Panel-C. **ZASTĄPIONA** przez FALA 253.
@@ -97,7 +97,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-06 (NAJNOWSZY):** ECHO ABC 6× zamknięte · handoff F254+ECHO · deploy FALA 255 (docs + odświeżony stempel ROBOCZA; logika gry = F254). Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA **`20e554dc`** (FALA 255) · ECHO ABC 6× + handoff · logika = F254. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
 **Stan FALA 254 (historyczny):** ROBOCZA `232634a9` (10:11) · Escape + recruit + Panel-C + audyty.
 

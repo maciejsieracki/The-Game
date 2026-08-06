@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 232634a9 - 2026-08-06 10:11 - FALA 254: Escape army/battle/diplo/city + recruit chip/hint + Panel-C test + audyty - **AKTUALNA**
+## ROBOCZA 20e554dc - 2026-08-06 13:20 - FALA 255: ECHO ABC 6× + handoff sesji (logika gry = F254) - **AKTUALNA**
+|- md5 (pelne): 20e554dc2c010bb43a44b867a2dee09e · stempel: ROBOCZA · 2026-08-06 (label 20e554dc)
+|- **FALA 255.** Docs/ECHO: STEP6=A · KAMIEN=A+reguła · MAP-UX=B+C · S9=A · DESIGN=C · OBRONA=A. Handoff: `HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`. Rebuild ROBOCZA (Escape/recruit F254 bez nowego gameplay). Wdrożenie 6 tematów czeka `działaj` + Autobot.
+|- Bramki: tsc n/a (docs) · VERIFY OK · stempel 20e554dc.
+
+## ROBOCZA 232634a9 - 2026-08-06 10:11 - FALA 254: Escape army/battle/diplo/city + recruit chip/hint + Panel-C test + audyty - **ZASTĄPIONA** (→ 20e554dc)
 |- md5 (pelne): 232634a96b7bbea7a2147f851510a32f · stempel: ROBOCZA · 2026-08-06 (label 232634a9)
 |- **FALA 254.** AutoBot fala (Op→Eval→Grok). Escape: army · battle · diplo koszyk · city/unit picks · cityUxFrame. Recruit: chip full-cost + pickUnitRecruitHint. Panel-C roundtrip F250×5. Docs: cleanup rejestr/STAN · audyt R-OBRONA-MIASTA-MP · ABC-PACZKA-2026-08-06. Relief poza falą.
 |- Bramki: escape-stack 72/72 · upkeep-gate 27/27 · tsc 0 · VERIFY OK.
