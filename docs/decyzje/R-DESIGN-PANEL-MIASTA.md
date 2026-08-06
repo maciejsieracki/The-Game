@@ -1,6 +1,6 @@
 # R-DESIGN-PANEL-MIASTA — pigułka miasta na mapie świata (odświeżenie v2)
 
-**Status:** 🔵 W TRAKCIE (kod v1 prototyp) · 2026-08-04  
+**Status:** 🟢 **WDROŻONE (kod)** · 2026-08-06 (hover Q4=B)  
 **Temat:** kafelek/pigułka miasta widoczna na mapie świata (nie pełny panel miasta)  
 **Zlecenie Design:** `dyspozycje/DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md`
 
@@ -40,18 +40,18 @@
 
 ### Always-on lite (prototyp bez Design)
 
-4. **Glif produkcji** — mały symbol budynku/jednostki gdy kolejka aktywna (zamiast pełnego hover).
+4. **Glif produkcji** — mały symbol budynku/jednostki gdy kolejka aktywna (always-on lite).
 
-### Hover / zoom rozszerzony — **ODŁOŻONE (czeka Design + wiring mapy)**
+### Hover / zoom rozszerzony — **WDROŻONE (kod, Q4=B 2026-08-06)**
 
-5. **Kategoria produkcji** — ikona kategorii (budynek / jednostka / cud), opcjonalnie tury do końca.
-6. **Ostrzeżenie surowców** — pojedyncza ikonka ostrzegawcza, gdy produkcja zablokowana brakiem surowca lub magazyn bliski capu.
+5. **Kategoria produkcji** — drugi wiersz pigułki na hover: Budynek/Jednostka + nazwa frontu kolejki.
+6. **Ostrzeżenie surowców** — ikona ! gdy magazyn państwa nie pokrywa kosztu surowcowego frontu kolejki.
 
-Design **musi** dostarczyć **obie** klatki (always-on + hover) — nie tylko wariant skrócony.
+Design **może** później polish wizualny — funkcja bez makiety.
 
 ---
 
-## Deliverable Design (3 klatki) — nadal oczekiwany
+## Deliverable Design (3 klatki) — opcjonalny polish
 
 Ścieżka docelowa: `docs/ux/claude-design/_dist/<NAZWA>-2026-08-04/brand-book/KANON/mockupy/`
 

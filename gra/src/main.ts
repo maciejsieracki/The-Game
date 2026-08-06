@@ -1665,6 +1665,8 @@ async function boot(): Promise<void> {
     let cityBuiltIdsForRender: ((cityId: string) => readonly string[]) | undefined;
     /** Podpinane po deklaracji cityProd — pigułka: glif produkcji always-on lite. */
     let cityProdForRender: ((cityId: string) => import('./game/production').CityProduction | null) | undefined;
+    /** Pigułka miasta: hover rozszerzony (R-DESIGN-PANEL-MIASTA-Q4=B). */
+    let statChipHoverCityId: string | null = null;
     const _cityRenderOpts = (): CityRenderOptions => {
       // #27 perf: policz widoczność RAZ per wywołanie _cityRenderOpts (nie osobno dla
       // każdego obcego miasta w isVisible) — reużywane przez cache'ujący cityFogVisible.
@@ -1709,6 +1711,9 @@ async function boot(): Promise<void> {
             ? (player.civType as string || _menuCivId || 'grecy')
             : (aiOwnerCivMap.get(ownerId) ?? 'grecy'),
         getProduction: (cityId) => cityProdForRender?.(cityId) ?? null,
+        getOwnerResourceStock: (ownerId) => ownerSurowcePoolFor(ownerId),
+        getProductionItemStockCost: (item) => productionItemStockCostForRender(item),
+        hoverStatChipCityId: statChipHoverCityId,
         playerOwnerId: 0,
         isCityStateOwner: portraitForceCultureIcon,
       };
@@ -5711,6 +5716,15 @@ async function boot(): Promise<void> {
      */
     function ownerSurowcePoolFor(ownerId: number): Record<string, number> {
       return ownerResourceStockAll(cities, ownerId);
+    }
+
+    /** Koszt surowcowy pozycji kolejki — pigułka hover (ostrzeżenie magazynu). */
+    function productionItemStockCostForRender(item: ProductionItem): Record<string, number> {
+      if (item.kind === 'budynek') {
+        return buildingStockCost(data.buildings.find(b => b.id === item.id));
+      }
+      const unitDef = data.units.find(u => u.Jednostka === item.id);
+      return unitStockCost(unitDef);
     }
 
     /** Pobiera koszt surowcowy budynku Z PULI PANSTWA (rozproszone po miastach ownera). */
@@ -16606,6 +16620,18 @@ async function boot(): Promise<void> {
         hideVeteranBadgeTip();
       }
 
+      // Pigułka miasta: hover rozszerzony (produkcja + ostrzeżenie surowców).
+      if (isWorldMapUnitMode()) {
+        const chipCityId = cityRenderer.pickStatChipCityIdAt(e.clientX, e.clientY, canvas, camera);
+        if (chipCityId !== statChipHoverCityId) {
+          statChipHoverCityId = chipCityId;
+          cityRenderer.syncStatChips(cities, _cityRenderOpts());
+        }
+      } else if (statChipHoverCityId !== null) {
+        statChipHoverCityId = null;
+        cityRenderer.syncStatChips(cities, _cityRenderOpts());
+      }
+
       // Tryb budowy — ghost miasta / ulepszenia + chip przy kursorze
       if (buildModeOpen && (foundCityMode || activeImprovementKey || activeWonderId)) {
         handleBuildModeHover(e);
@@ -16674,6 +16700,10 @@ async function boot(): Promise<void> {
     canvas.addEventListener('mouseleave', () => {
       applyMapCanvasCursor(CURSOR_MAP_DEFAULT);
       hideVeteranBadgeTip();
+      if (statChipHoverCityId !== null) {
+        statChipHoverCityId = null;
+        cityRenderer.syncStatChips(cities, _cityRenderOpts());
+      }
     });
 
     canvas.addEventListener('mouseup', (e: MouseEvent) => {
