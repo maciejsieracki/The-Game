@@ -82,6 +82,20 @@ import { buildWlocznikBrazOpus5 } from './braz-wlocznik-opus5';
 import { buildMiecznikBrazOpus5 } from './braz-miecznik-opus5';
 import { buildProcarzBrazOpus5 } from './braz-procarz-opus5';
 import { buildRydwanWolyBrazOpus5 } from './braz-rydwan-woly-opus5';
+// BRĄZ OPUS 5 — KONNICA (units.json: „Konnica"/„Horseman", Epoka=Brąz,
+// Kultura=null, Tech=Jeździectwo). Do tej pory jedyna jednostka bazowa Brązu
+// BEZ własnej grafiki — leciała na wspólnym modelu kategorii 'konnica' niżej
+// (generyczny koń + beznogi jeździec bez uzdy i oporządzenia). Nowy model jest
+// wczesnym jeźdźcem epoki Brązu: BEZ strzemion, BEZ siodła z łękami, czaprak
+// na poprągu/napierśniku/pośliśniku, uzda z brązowym wędzidłem.
+import { buildKonnicaBrazOpus5 } from './braz-konnica-opus5';
+// BRĄZ OPUS 5 — „Rydwan konny"/„War Chariot" (Kultura=null, Tech=Jeździectwo).
+// Do 2026-08-06 jedyna uniwersalna jednostka Brązu BEZ własnej grafiki: leciała
+// na wspólny model kategorii 'rydwan' bez żadnej dekoracji (warianty kulturowe
+// — mykeński/Shang/celtycki — dostawały przynajmniej decorateChariot()).
+// Dedykowany model: lekki dwukołowy rydwan Późnego Brązu, koła SZPRYCHOWE,
+// oś na tyle platformy, para koni w jarzmie grzbietowym.
+import { buildRydwanKonnyBrazOpus5 } from './braz-rydwan-konny-opus5';
 // ŻELAZO OPUS 5 — Hastati republikański (units.json: „Hastati", Epoka=Żelazo,
 // Nacja=Rzym) — zastępuje wariant z hastati-falangita.ts.
 import { buildHastatiOpus5 } from './hastati-opus5';
@@ -1221,6 +1235,18 @@ function buildNamedUnit(n: string, ownerColor_: number): THREE.Group | null {
   if (n === 'wojownik z mieczem i tarcza' || n === 'swordsman') return buildMiecznikBrazOpus5(ownerColor_);
   if (n === 'procarz' || n === 'slinger') return buildProcarzBrazOpus5(ownerColor_);
   if (n === 'rydwan (woly)' || n === 'rydwan woly' || n === 'ox chariot') return buildRydwanWolyBrazOpus5(ownerColor_);
+  // KONNICA (Brąz, Kultura=null): dopasowanie po PEŁNEJ nazwie, żeby warianty
+  // kulturowe („Konnica lancowa asyryjska", „Konnica łucznicza asyryjska",
+  // „Jeździec chiński"…) zachowały swoje modele — mają własne wpisy wyżej
+  // albo lecą przez kategorię 'konnica'.
+  if (n === 'konnica' || n === 'horseman') return buildKonnicaBrazOpus5(ownerColor_);
+  // „Rydwan konny"/„War Chariot" — units.json: Epoka=Brąz, Kultura=null,
+  // Tech=Jeździectwo, Atak dystansowy=0 (dlatego załoga to woźnica + WŁÓCZNIK,
+  // a nie łucznik — łucznik rydwanowy to osobna jednostka „Rydwan egipski").
+  // Dopasowanie po PEŁNEJ nazwie: kulturowe „W zamian za: Rydwan konny"
+  // (egipski/mykeński/Shang/celtycki/kapadokijski) mają własne wpisy WYŻEJ
+  // i nie mogą tu wpaść.
+  if (n === 'rydwan konny' || n === 'war chariot') return buildRydwanKonnyBrazOpus5(ownerColor_);
   // MACHINY OBLĘŻNICZE -------------------------------------------------------
   // UWAGA: „taran okuty" (Brąz, na kołach) MUSI być sprawdzony PRZED ogólnym
   // 'taran', inaczej przechwyci go płozowy taran epoki Kamienia.
