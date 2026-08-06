@@ -4,7 +4,8 @@
 
 > **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
 
-> **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. AutoBot ×3. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. **ZASTĄPIONA** przez FALA 254.
 >
 > **FALA 252 (2026-08-06):** ROBOCZA `bbff9996` · Escape more + upkeep gate + Panel-C. **ZASTĄPIONA** przez FALA 253.
 >
@@ -93,7 +94,7 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA `b8704216` (FALA 253, 08:36) · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA `232634a9` (FALA 254, 10:11) · Escape + recruit + Panel-C + audyty. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
 **Stan na 2026-08-05 (historyczny):** deploy ROBOCZA `29bfdf00` (FALA 228, 14:58) · stempel menu `718d0ac2` · tip main przed deploy `546ce97`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
 

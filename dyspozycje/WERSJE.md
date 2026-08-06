@@ -12,9 +12,14 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA b8704216 - 2026-08-06 08:36 - FALA 253: Escape hub/cityList + recruit hint + AI-BALANS-STEP5 - **AKTUALNA**
+## ROBOCZA 232634a9 - 2026-08-06 10:11 - FALA 254: Escape army/battle/diplo/city + recruit chip/hint + Panel-C test + audyty - **AKTUALNA**
+|- md5 (pelne): 232634a96b7bbea7a2147f851510a32f · stempel: ROBOCZA · 2026-08-06 (label 232634a9)
+|- **FALA 254.** AutoBot fala (Op→Eval→Grok). Escape: army · battle · diplo koszyk · city/unit picks · cityUxFrame. Recruit: chip full-cost + pickUnitRecruitHint. Panel-C roundtrip F250×5. Docs: cleanup rejestr/STAN · audyt R-OBRONA-MIASTA-MP · ABC-PACZKA-2026-08-06. Relief poza falą.
+|- Bramki: escape-stack 72/72 · upkeep-gate 27/27 · tsc 0 · VERIFY OK.
+
+## ROBOCZA b8704216 - 2026-08-06 08:36 - FALA 253: Escape hub/cityList + recruit hint + AI-BALANS-STEP5 - **ZASTĄPIONA** (→ 232634a9)
 |- md5 (pelne): b8704216e69abaafb685fea3db00e13c · stempel: ROBOCZA · 2026-08-06 (label b8704216)
-|- **FALA 253.** AutoBot ×3 osobne. (1) Escape science-hub + city-list. (2) Hint rekrutacji łączny (stock OK + full fail). (3) AI-BALANS-STEP5: test+docs `bonus_produkcja`→realna Praca (wiring już F229). Tipy `9f93d36b`/`98649992`/`502a8fb5`.
+|- **FALA 253.** AutoBot ×3 osobne. (1) Escape science-hub + city-list. (2) Hint rekrutacji łączny (stock OK + full fail). (3) AI-BALANS-STEP5: test+docs bonus_produkcja→realna Praca (wiring już F229). Tipy 9f93d36b/98649992/502a8fb5.
 |- Bramki: escape 24/24 · upkeep-gate 20/20 · step5 18/18 · tsc 0 · VERIFY OK.
 
 ## ROBOCZA bbff9996 - 2026-08-06 07:55 - FALA 252: Escape more + recruit upkeep gate + Panel-C ×5 - **ZASTĄPIONA** (→ b8704216)

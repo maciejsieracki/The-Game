@@ -1,3 +1,13 @@
+## [10:11 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 254 232634a9
+
+Maciej „każdy temat AutoBot → deploy + pełna lista ABC”
+|- ROBOCZA md5 `232634a96b7bbea7a2147f851510a32f` · VERIFY OK
+|- Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyt obrony + ABC paczka
+|- Wejście: gra-robocza/START.html · git pull + Ctrl+F5 + Nowa gra
+|- ABC: docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md (5) + R-OBRONA-MIASTA-MP (1)
+|- UWAGA: wcześniejszy pusty commit 6177988b na main nadpisany prawdziwym F254
+CZEKAM-NA: sesja lokalna pull + litery ABC
+
 ## [09:50 UTC, 2026-08-06] CLOUD → ALL — docs cleanup rejestr FALA 248–253
 
 AutoBot Operator #14 — bez zmian w `gra/src`
