@@ -67,7 +67,13 @@ pushOverlay('x', () => { closedA = true; });
 assert(top()?.id === 'x', 're-push tego samego id na wierzch');
 
 // Id nakładek mapy (FALA 251+) — ten sam kontrakt push/pop + Escape
-const MAP_OVERLAY_IDS = ['science-picker', 'army-list', 'save-load-dialog'];
+const MAP_OVERLAY_IDS = [
+  'science-picker',
+  'army-list',
+  'save-load-dialog',
+  'science-hub',
+  'city-list',
+];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();
   let closed = false;

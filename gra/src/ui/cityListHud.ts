@@ -3,6 +3,7 @@
  * Styl jak lewa kolumna panelu miasta (Produkcja).
  */
 
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 
@@ -98,17 +99,10 @@ export function createCityListHud(config: CityListHudConfig): CityListHudApi {
     if (!open) return;
     open = false;
     el.classList.remove('open');
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('city-list');
     unbindOutside?.();
     unbindOutside = null;
     config.onClose?.();
-  }
-
-  function onEsc(ev: KeyboardEvent): void {
-    if (ev.key === 'Escape') {
-      ev.preventDefault();
-      closeList();
-    }
   }
 
   function render(): void {
@@ -201,7 +195,7 @@ export function createCityListHud(config: CityListHudConfig): CityListHudApi {
     open = true;
     render();
     el.classList.add('open');
-    document.addEventListener('keydown', onEsc);
+    pushOverlay('city-list', closeList);
     unbindOutside?.();
     unbindOutside = bindHudPanelOutsideDismiss(
       el,
@@ -225,7 +219,7 @@ export function createCityListHud(config: CityListHudConfig): CityListHudApi {
   }
 
   function destroy(): void {
-    document.removeEventListener('keydown', onEsc);
+    popOverlay('city-list');
     unbindOutside?.();
     unbindOutside = null;
     el.remove();
