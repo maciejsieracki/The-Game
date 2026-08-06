@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA e594f018 - 2026-08-06 07:20 - FALA 251: Escape stos paneli + hover pigułki miasta - **AKTUALNA**
+## ROBOCZA bbff9996 - 2026-08-06 07:55 - FALA 252: Escape more + recruit upkeep gate + Panel-C ×5 - **AKTUALNA**
+|- md5 (pelne): bbff9996793c4ff32ca48795608885ab · stempel: ROBOCZA · 2026-08-06 (label bbff9996)
+|- **FALA 252.** AutoBot Op→Eval→Grok. (1) Escape: science-picker / army-list / save-load-dialog. (2) R-AI-RECRUIT-UPKEEP-GATE: canAffordUnitRecruitFull (stock+reserve łącznie; Włócznik 12) — FIX po NEEDS_FIX. (3) Panel-C regen ×5 + utrzymanie. Tipy `12222526`/`1b2f3a13`/`df5cc308`.
+|- Bramki: escape-stack 18/18 · upkeep-gate 18/18 · tsc 0 · VERIFY OK.
+
+## ROBOCZA e594f018 - 2026-08-06 07:20 - FALA 251: Escape stos paneli + hover pigułki miasta - **ZASTĄPIONA** (→ bbff9996)
 |- md5 (pelne): e594f0188aa155e397e6c15648b33423 · stempel: ROBOCZA · 2026-08-06 (label e594f018)
 |- **FALA 251.** (1) R-ESC-PELNY-EKRAN-Q1=A — wspólny `escapeOverlayStack` (tech/city/diplo/wiki/build). (2) R-DESIGN-PANEL-MIASTA-Q4=B — hover pigułki: produkcja + ostrzeżenie surowców. Tipy `a6fdac41`/`7eda6ddc`.
 |- Bramki: escape-stack 9/9 · tsc 0 · VERIFY OK.

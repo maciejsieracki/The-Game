@@ -1,3 +1,12 @@
+## [07:55 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 252 bbff9996
+
+Maciej „działaj 1+2+3” + AutoBot (Op→Eval→Grok; upkeep NEEDS_FIX→FIX CLEAN)
+|- md5: bbff9996793c4ff32ca48795608885ab · stempel: ROBOCZA · bbff9996
+|- Kod: Escape science/army/save-load · canAffordUnitRecruitFull (parytet AI/gracz/MP) · Panel-C ×5+utrzymanie
+|- Testy: escape-stack 18/18 · upkeep-gate 18/18 · tsc 0 · VERIFY OK
+|- Wejście: gra-robocza/START.html
+CZEKAM-NA: sesja lokalna — **git pull** · Ctrl+F5 + Nowa gra
+
 ## [07:20 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 251 e594f018
 
 Maciej „2” — Escape + hover pigułki
