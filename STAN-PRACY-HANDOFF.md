@@ -104,13 +104,15 @@ git status --short
 
 **Ważne dla agentów:** **KAŻDA praca** = AutoBot (Operator `composer-2.5` → Evaluator `composer-2.5` → Grok final). Deploy **tylko Grok** na hasło. Pełny zapis: [`HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md).
 
-**KOLEJKA (otwarte — po `działaj`, 1 Autobot = 1 ID):**
-1. **AI-BALANS-STEP6-Q1=A** — score 2. scouta −80 (`ai.ts`)
-2. **R-KAMIEN-RELIEF-FOLLOWUP-Q1=A** — whitelist `kopalnia` + reguła wszystkich kopalń
-3. **MAP-UX-CLUSTER-LABEL-Q1=B+C** — stolica = civ + marker; MP = nazwa + dopisek
-4. **R-OBRONA-MIASTA-MP-Q1=A** — rozbicie bonusów w preBattle (mechanika bez zmian)
-5. **R-WIARYGODNOSC-S9-Q1=A** — pełne strojenie §9 JSON + testy
-6. **R-DESIGN-PANEL-MIASTA-V2-Q1=C** — pilne zlecenie Design v2 (kod nie zamrożony)
+**KOLEJKA — stan na 2026-08-06 popołudnie (sesja chmurowa, po AutoBot Operator→Evaluator dla wszystkich 6):**
+1. ~~AI-BALANS-STEP6-Q1=A~~ — **JUŻ BYŁO WDROŻONE** przed decyzją (commit `dadcb48`, poprzedzał zapis). Nie dublować.
+2. **R-KAMIEN-RELIEF-FOLLOWUP-Q1=A/C** — **COMMIT+PUSH** `8593237` (branch roboczy `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie w main jeszcze)
+3. **MAP-UX-CLUSTER-LABEL-Q1=B+C** — **COMMIT+PUSH** `9d33e8f` + `d3470ed` (branch roboczy, nie w main jeszcze)
+4. **R-OBRONA-MIASTA-MP-Q1=A** — FAIL Evaluatora (panel niezgodny z realną walką), powtórka Operatora w toku; doprecyzowanie R-OBRONA-MIASTA-MP-SCOPE-Q1=B (dodać bonus murów) czeka na kolejną rundę
+5. **R-WIARYGODNOSC-S9-Q1=A/B** — tabela liczb gotowa, commit `22df1b1`, czeka OK Macieja przed jakimkolwiek kodem
+6. **R-DESIGN-PANEL-MIASTA-V2-Q1=C** — FAIL Evaluatora (opis niezgodny ze stanem HEAD), powtórka Operatora w toku
+
+Szczegóły w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Żaden z powyższych commitów nie jest jeszcze w `origin/main`/ROBOCZA** — to wciąż branch roboczy.
 
 **Zaparkowane:** relief tip `9c098944` · `P-TEST-UPKEEP-R-STAWKI` · KANON · `R-DOTYK-MVP` · playtesty R-AUTO / F226 AI.
 
