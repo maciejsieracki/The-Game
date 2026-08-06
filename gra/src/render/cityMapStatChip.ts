@@ -43,6 +43,12 @@ export interface CityMapBadgeInput {
   isCityState?: boolean;
   /** Epoka właściciela — portret władcy na medalionie (gracz + major AI). */
   era?: number;
+  /**
+   * MAP-UX-MARKER-Q1 = C — to miasto jest stolicą swojego państwa.
+   * Marker = OBA naraz: grubsza/jaśniejsza złota obwódka pigułki + ikona korony przy nazwie.
+   * PARYTET AI: identycznie dla stolicy gracza i każdej stolicy AI.
+   */
+  isCapital?: boolean;
 }
 
 const DEFENSE_COLORS: Record<1 | 2, { fill: string; stroke: string }> = {
@@ -56,6 +62,27 @@ const CIV_SLOT_W = 38;
 const PROD_SLOT_W = 20;
 const GROWTH_SLOT_W = 30;
 const HOVER_ROW_H = 22;
+
+// --- MAP-UX-MARKER-Q1 = C — marker stolicy (obwódka + korona) --------------------
+/** Grubość obwódki pigułki ZWYKŁEGO miasta: 2 px na kanwie pigułki. */
+const PILL_RING_LINE_W = 2;
+/** Grubość obwódki pigułki STOLICY: 3,5 px na kanwie pigułki (1,75× zwykłej). */
+const CAPITAL_RING_LINE_W = 3.5;
+/** Kolor obwódki pigułki stolicy — jaśniejsze złoto niż tło/medalion (#e8d88a). */
+const CAPITAL_RING_COLOR = 'rgba(255, 233, 168, 0.98)';
+/** Wewnętrzny pierścień stolicy: odsunięcie 6 px od krawędzi kanwy, grubość 1,2 px. */
+const CAPITAL_INNER_RING_INSET = 6;
+const CAPITAL_INNER_RING_LINE_W = 1.2;
+const CAPITAL_INNER_RING_COLOR = 'rgba(232, 216, 138, 0.42)';
+/** Slot korony w układzie pigułki: szerokość 19 px (między medalionem a nazwą). */
+const CAPITAL_CROWN_SLOT_W = 19;
+/**
+ * Rysowana korona: 17 px szerokości × 13 px wysokości na kanwie pigułki.
+ * Odniesienie skali: glif produkcji 16 px, tarcza obrony 14×16 px, medalion cywu 32 px średnicy,
+ * wysokość pigułki 48 px — korona jest najmniejszym elementem, nie konkuruje z medalionem.
+ */
+const CAPITAL_CROWN_W = 17;
+const CAPITAL_CROWN_H = 13;
 
 let civSigilSvgFn: ((civIconId: string) => string) | null = null;
 const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
@@ -193,6 +220,65 @@ function drawDefenseShield(
     ctx.strokeStyle = 'rgba(42, 34, 8, 0.45)';
     ctx.lineWidth = 1;
     ctx.stroke();
+  }
+}
+
+/**
+ * Korona stolicy — rysowana wprost na kanwie (render/ NIE importuje ui/icons/brandAssets;
+ * `import.meta.glob` żyje tylko w Vite, a ten moduł jest bundlowany też esbuildem
+ * w harnessach podglądu — patrz nagłówek unitOwnerEmblem.ts).
+ * Geometria: 3 szpice + 2 wcięcia nad obręczą; domyślnie 17 px szerokości × 13 px wysokości
+ * na kanwie pigułki (CAPITAL_CROWN_W / CAPITAL_CROWN_H).
+ */
+function drawCapitalCrown(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  w: number = CAPITAL_CROWN_W,
+  h: number = CAPITAL_CROWN_H,
+): void {
+  const x = cx - w * 0.5;
+  const y = cy - h * 0.5;
+  const bandH = h * 0.26;
+  const bandY = y + h - bandH;
+
+  const grad = ctx.createLinearGradient(0, y, 0, y + h);
+  grad.addColorStop(0, '#fff6d2');
+  grad.addColorStop(0.55, '#f2df9a');
+  grad.addColorStop(1, '#d8c069');
+
+  // Zęby korony: lewy szpic — wcięcie — środkowy (najwyższy) — wcięcie — prawy szpic.
+  // Wcięcia schodzą do 62% wysokości, żeby sylwetka przetrwała pomniejszenie do skali mapy.
+  ctx.beginPath();
+  ctx.moveTo(x, bandY + 0.5);
+  ctx.lineTo(x, y + h * 0.16);
+  ctx.lineTo(x + w * 0.26, y + h * 0.62);
+  ctx.lineTo(cx, y);
+  ctx.lineTo(x + w * 0.74, y + h * 0.62);
+  ctx.lineTo(x + w, y + h * 0.16);
+  ctx.lineTo(x + w, bandY + 0.5);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Obręcz korony — ta sama bryła koloru, spięta cienką jasną krawędzią.
+  roundedRect(ctx, x, bandY, w, bandH, bandH * 0.4);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 244, 200, 0.85)';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+
+  // Klejnoty na szpicach — ciemne kropki, ten sam kontrast co liczba populacji na złotym kole.
+  ctx.fillStyle = 'rgba(42, 34, 8, 0.55)';
+  for (const [gx, gy] of [
+    [x + w * 0.10, y + h * 0.28],
+    [cx, y + h * 0.16],
+    [x + w * 0.90, y + h * 0.28],
+  ] as ReadonlyArray<[number, number]>) {
+    ctx.beginPath();
+    ctx.arc(gx, gy, 0.95, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -456,19 +542,23 @@ function paintCityMapBadgeOntoCanvas(
   const civW = CIV_SLOT_W;
   const prodW = input.prodActive ? PROD_SLOT_W : 0;
   const growthW = input.growthLevel != null ? GROWTH_SLOT_W : 0;
+  const isCapital = input.isCapital === true;
+  const crownW = isCapital ? CAPITAL_CROWN_SLOT_W : 0;
   const nameFont = '700 22px Georgia, "Times New Roman", serif';
   const popFont = '700 16px Arial, Helvetica, sans-serif';
 
   const measure = document.createElement('canvas').getContext('2d')!;
   measure.font = nameFont;
   let displayName = name;
-  const maxNameW = 200 - prodW - growthW;
+  // Budżet nazwy: 200 px kanwy minus sloty glifu produkcji / Wyżywienia / korony stolicy.
+  const maxNameW = 200 - prodW - growthW - crownW;
   if (measure.measureText(name).width > maxNameW) {
     displayName = truncateName(measure, name, maxNameW, nameFont);
   }
   const nameW = measure.measureText(displayName).width;
 
-  const leftIconsW = (hasDefense ? defenseW + gap : 0) + civW + gap;
+  const leftIconsW = (hasDefense ? defenseW + gap : 0) + civW + gap
+    + (crownW ? crownW + gap : 0);
   const midExtraW = (growthW ? gap + growthW : 0) + (prodW ? gap + prodW : 0);
   const W = Math.ceil(padX + leftIconsW + nameW + midExtraW + gap + circleD + padX);
   const baseH = Math.max(48, circleD + padY * 2);
@@ -489,9 +579,25 @@ function paintCityMapBadgeOntoCanvas(
   grad.addColorStop(1, 'rgba(8, 10, 16, 0.94)');
   ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(232, 216, 138, 0.72)';
-  ctx.lineWidth = 2;
+  // MAP-UX-MARKER-Q1 = C: stolica → obwódka 3,5 px w jaśniejszym złocie (zwykłe miasto 2 px)
+  // + wewnętrzny cienki pierścień 1,2 px, żeby ramka czytała się jako „bogatsza”, a nie tylko grubsza.
+  ctx.strokeStyle = isCapital ? CAPITAL_RING_COLOR : 'rgba(232, 216, 138, 0.72)';
+  ctx.lineWidth = isCapital ? CAPITAL_RING_LINE_W : PILL_RING_LINE_W;
   ctx.stroke();
+  if (isCapital) {
+    const innerR = Math.max(2, pillR - CAPITAL_INNER_RING_INSET + 2);
+    roundedRect(
+      ctx,
+      CAPITAL_INNER_RING_INSET,
+      CAPITAL_INNER_RING_INSET,
+      W - CAPITAL_INNER_RING_INSET * 2,
+      H - CAPITAL_INNER_RING_INSET * 2,
+      innerR,
+    );
+    ctx.strokeStyle = CAPITAL_INNER_RING_COLOR;
+    ctx.lineWidth = CAPITAL_INNER_RING_LINE_W;
+    ctx.stroke();
+  }
 
   const cy = baseH * 0.5;
   const civCx = padX + (hasDefense ? defenseW + gap : 0) + civW * 0.5;
@@ -504,6 +610,10 @@ function paintCityMapBadgeOntoCanvas(
   portraitImg: medallion?.portraitImg,
   isCityState: input.isCityState,
 });
+  if (crownW) {
+    const crownCx = padX + (hasDefense ? defenseW + gap : 0) + civW + gap + crownW * 0.5;
+    drawCapitalCrown(ctx, crownCx, cy);
+  }
 
   const nameX = padX + leftIconsW;
   ctx.font = nameFont;
@@ -586,6 +696,10 @@ export function cityMapBadgeKey(
     ? `g${formatWyzwienieLabel(a.growthLevel)}`
     : 'g-';
   const cs = a.isCityState ? 'cs1' : 'cs0';
+  // MAP-UX-MARKER-Q1 = C — bez tego segmentu przejście stolica↔nie-stolica (przeniesienie
+  // stolicy, zdobycie miasta) trafiłoby w starą teksturę z cache i marker by się nie przerysował.
+  // Segment dopisany na KOŃCU klucza, żeby nie rozerwać istniejących par (…|cs0|e2|…).
+  const cap = a.isCapital ? 'k1' : 'k0';
   const era = a.era != null
     ? `e${Math.max(1, Math.round(a.era) || 1)}`
     : 'e-';
@@ -600,6 +714,7 @@ export function cityMapBadgeKey(
     `h${a.hoverExpanded ? 1 : 0}`,
     cs,
     era,
+    cap,
   ].join('|');
 }
 

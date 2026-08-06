@@ -28,7 +28,8 @@ __export(display_names_entry_exports, {
   isOwnerClusterCityState: () => isOwnerClusterCityState,
   isTechnicalOwnerLabel: () => isTechnicalOwnerLabel,
   resolveOwnerBaseName: () => resolveOwnerBaseName,
-  sanitizeOwnerDisplayBase: () => sanitizeOwnerDisplayBase
+  sanitizeOwnerDisplayBase: () => sanitizeOwnerDisplayBase,
+  shouldForceCultureIconForOwner: () => shouldForceCultureIconForOwner
 });
 module.exports = __toCommonJS(display_names_entry_exports);
 
@@ -59,10 +60,36 @@ function isOwnerClusterCityState(ownerId, opts) {
   if (opts?.cities?.some((c) => c.ownerId === ownerId && c.startCityState)) return true;
   return false;
 }
-function formatCityMapLabel(city) {
+function shouldForceCultureIconForOwner(ownerId, opts) {
+  if (ownerId <= 0) return false;
+  if (isOwnerClusterCityState(ownerId, opts)) return true;
+  const playerKey = (opts?.playerCivKey ?? "").trim();
+  const ownerKey = (opts?.ownerCivKey ?? "").trim();
+  if (playerKey && ownerKey && playerKey === ownerKey && !opts?.clusterCapitalOwnerIds?.has(ownerId)) {
+    return true;
+  }
+  return false;
+}
+function formatCityMapLabel(city, opts) {
+  const playerOwnerId = opts?.playerOwnerId ?? 0;
+  const isForeign = city.ownerId !== playerOwnerId;
+  const isCityState = isForeign && !!city.startCityState;
+  const isCityStateOwner = opts?.isCityStateOwner === true;
+  if (isForeign && opts?.isCapital === true && !isCityState && !isCityStateOwner) {
+    const base = resolveOwnerBaseName({
+      ownerId: city.ownerId,
+      cityName: city.name,
+      civDisplayName: opts.civDisplayName,
+      isCityState: false,
+      isClusterCapital: true
+    });
+    if (base.trim()) {
+      return formatEntityDisplayName({ baseName: base, isCityState: false });
+    }
+  }
   return formatEntityDisplayName({
     baseName: city.name,
-    isCityState: city.ownerId !== 0 && !!city.startCityState
+    isCityState
   });
 }
 function formatOwnerDiploLabel(baseName, ownerId, opts) {
@@ -121,5 +148,6 @@ function sanitizeOwnerDisplayBase(base, civDisplayName) {
   isOwnerClusterCityState,
   isTechnicalOwnerLabel,
   resolveOwnerBaseName,
-  sanitizeOwnerDisplayBase
+  sanitizeOwnerDisplayBase,
+  shouldForceCultureIconForOwner
 });

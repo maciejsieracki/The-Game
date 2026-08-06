@@ -91,15 +91,67 @@ export function shouldForceCultureIconForOwner(
   return false;
 }
 
-/** Etykieta miasta na mapie / tooltipie. */
-export function formatCityMapLabel(city: {
-  name: string;
-  ownerId: number;
-  startCityState?: boolean;
-}): string {
+/**
+ * Kontekst etykiety miasta na mapie (MAP-UX-CLUSTER-LABEL-Q1 = B+C, Maciej 2026-08-06).
+ * Bez tych opcji `formatCityMapLabel` zachowuje się jak dotąd (nazwa miasta + dopisek MP) —
+ * panel miasta (`cityPanel.ts`) woła go bez opcji i nic tam się nie zmienia.
+ */
+export interface CityMapLabelOpts {
+  /** ownerId gracza — jego miasta ZAWSZE pokazują własną nazwę. Domyślnie 0. */
+  playerOwnerId?: number;
+  /**
+   * Czy TO miasto jest stolicą swojego państwa.
+   * Jedno źródło prawdy: `capitalCityIdForOwner(ownerId) === city.id` (main.ts).
+   */
+  isCapital?: boolean;
+  /** Nazwa cywilizacji właściciela (civs.json → kolumna `Cywilizacja`). */
+  civDisplayName?: string;
+  /**
+   * Czy właściciel to miasto-państwo klastra (render: `options.isCityStateOwner`).
+   * Blokuje podmianę nazwy na nazwę cywilizacji — MP zostaje bez zmian.
+   * NIE wpływa na dopisek „· miasto-państwo” (ten dalej z `city.startCityState`).
+   */
+  isCityStateOwner?: boolean;
+}
+
+/**
+ * Etykieta miasta na mapie / tooltipie.
+ *
+ * MAP-UX-CLUSTER-LABEL-Q1 = B+C: stolica OBCEGO państwa (nie gracz, nie miasto-państwo)
+ * pokazuje NAZWĘ CYWILIZACJI zamiast nazwy miasta — mapowanie ownerId→cywilizacja przychodzi
+ * z zewnątrz (`civDisplayName`), a wybór nazwy robi ta sama `resolveOwnerBaseName`, której
+ * używa dyplomacja/HUD (gałąź `isClusterCapital`). Brak nazwy cywilizacji → fallback na nazwę
+ * miasta (stare zachowanie).
+ */
+export function formatCityMapLabel(
+  city: {
+    name: string;
+    ownerId: number;
+    startCityState?: boolean;
+  },
+  opts?: CityMapLabelOpts,
+): string {
+  const playerOwnerId = opts?.playerOwnerId ?? 0;
+  const isForeign = city.ownerId !== playerOwnerId;
+  const isCityState = isForeign && !!city.startCityState;
+  const isCityStateOwner = opts?.isCityStateOwner === true;
+
+  if (isForeign && opts?.isCapital === true && !isCityState && !isCityStateOwner) {
+    const base = resolveOwnerBaseName({
+      ownerId: city.ownerId,
+      cityName: city.name,
+      civDisplayName: opts.civDisplayName,
+      isCityState: false,
+      isClusterCapital: true,
+    });
+    if (base.trim()) {
+      return formatEntityDisplayName({ baseName: base, isCityState: false });
+    }
+  }
+
   return formatEntityDisplayName({
     baseName: city.name,
-    isCityState: city.ownerId !== 0 && !!city.startCityState,
+    isCityState,
   });
 }
 

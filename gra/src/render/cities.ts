@@ -344,6 +344,20 @@ export interface CityRenderOptions {
 
   /** true = miasto-państwo → medalion pigułki tylko sygnet kultury. */
   isCityStateOwner?: (ownerId: number) => boolean;
+
+  /**
+   * id stolicy właściciela — JEDNO źródło prawdy o stolicy (main.ts `capitalCityIdForOwner`,
+   * to samo, co karmi `cityPanel.getCapitalCityId` i bramkę budynków `lokalizacja: 'stolica'`).
+   * Renderer NIE liczy stolicy własną heurystyką. Brak callbacku = brak markera stolicy.
+   * PARYTET AI: pytanie jest o `ownerId`, bez gałęzi „gracz vs AI”.
+   */
+  getCapitalCityId?: (ownerId: number) => string | null;
+
+  /**
+   * Nazwa cywilizacji właściciela (civs.json → kolumna `Cywilizacja`), np. „Rzym”.
+   * MAP-UX-CLUSTER-LABEL-Q1=B+C: etykieta stolicy OBCEGO państwa zamiast nazwy miasta.
+   */
+  getCivDisplayName?: (ownerId: number) => string | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -433,7 +447,6 @@ export class CityRenderer {
           this._syncStatChip(
             city,
             grp,
-            formatCityMapLabel(city),
             visible && !options?.hideStatChips,
             options,
           );
@@ -475,7 +488,6 @@ export class CityRenderer {
       this._syncStatChip(
         city,
         group,
-        formatCityMapLabel(city),
         visible && !options?.hideStatChips,
         options,
       );
@@ -506,7 +518,6 @@ export class CityRenderer {
       this._syncStatChip(
         city,
         grp,
-        formatCityMapLabel(city),
         visible && grp.visible && !options?.hideStatChips,
         options,
       );
@@ -670,9 +681,34 @@ export class CityRenderer {
     }
   }
 
+  /**
+   * Czy TO miasto jest stolicą swojego państwa — wyłącznie z `options.getCapitalCityId`
+   * (main.ts `capitalCityIdForOwner`). Bez callbacku: false, czyli brak markera, ale
+   * NIGDY własna heurystyka „najstarsze miasto” — jedno źródło prawdy.
+   */
+  private _isCapitalCity(city: City, options?: CityRenderOptions): boolean {
+    const capId = options?.getCapitalCityId?.(city.ownerId) ?? null;
+    return capId !== null && capId === city.id;
+  }
+
+  /** Etykieta pigułki — MAP-UX-CLUSTER-LABEL-Q1=B+C (stolica obcego państwa → nazwa cywilizacji). */
+  private _cityMapLabel(
+    city: City,
+    isCapital: boolean,
+    options?: CityRenderOptions,
+  ): string {
+    return formatCityMapLabel(city, {
+      playerOwnerId: options?.playerOwnerId ?? 0,
+      isCapital,
+      civDisplayName: options?.getCivDisplayName?.(city.ownerId),
+      isCityStateOwner: options?.isCityStateOwner?.(city.ownerId) ?? false,
+    });
+  }
+
   private _buildBadgeInput(
     city: City,
     cityName: string,
+    isCapital: boolean,
     options?: CityRenderOptions,
   ): CityMapBadgeInput {
     const built = options?.getBuiltBuildingIds?.(city.id) ?? [];
@@ -713,13 +749,13 @@ export class CityRenderer {
       prodPaused,
       isCityState: options?.isCityStateOwner?.(city.ownerId) ?? false,
       era: options?.getEra?.(city.ownerId) ?? 1,
+      isCapital,
     };
   }
 
   private _syncStatChip(
     city: City,
     parent: THREE.Group,
-    cityName: string,
     show: boolean,
     options?: CityRenderOptions,
   ): void {
@@ -728,7 +764,9 @@ export class CityRenderer {
       this._removeStatChip(cityId, parent);
       return;
     }
-    const badge = this._buildBadgeInput(city, cityName, options);
+    const isCapital = this._isCapitalCity(city, options);
+    const cityName = this._cityMapLabel(city, isCapital, options);
+    const badge = this._buildBadgeInput(city, cityName, isCapital, options);
     const key = cityMapBadgeKey(badge);
     const prevKey = this.statSpriteKeys.get(cityId);
     if (prevKey === key && this.statSprites.has(cityId)) {

@@ -1716,6 +1716,13 @@ async function boot(): Promise<void> {
         hoverStatChipCityId: statChipHoverCityId,
         playerOwnerId: 0,
         isCityStateOwner: portraitForceCultureIcon,
+        // MAP-UX-MARKER-Q1=C + MAP-UX-CLUSTER-LABEL-Q1=B+C — marker stolicy na pigułce
+        // (złota obwódka + korona) i nazwa cywilizacji dla stolicy obcego państwa.
+        // Stolica z jednego źródła prawdy: capitalCityIdForOwner (to samo, co bramka
+        // budynków `lokalizacja: 'stolica'` i cityPanel.getCapitalCityId) — bez gałęzi
+        // po ownerId, więc gracz i AI liczeni identycznie (PARYTET AI).
+        getCapitalCityId: (ownerId) => capitalCityIdForOwner(ownerId),
+        getCivDisplayName: (ownerId) => civDisplayNameForOwner(ownerId),
       };
     };
 

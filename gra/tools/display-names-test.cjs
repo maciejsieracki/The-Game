@@ -197,5 +197,66 @@ assert(
   'sanitize: Rywal N → kultura (stolica obcego typu bez miasta)',
 );
 
+// --- MAP-UX-CLUSTER-LABEL-Q1 = B+C — etykieta stolicy na MAPIE ---------------
+// Stolica OBCEGO państwa (nie gracz, nie miasto-państwo) → nazwa cywilizacji.
+assert(
+  M.formatCityMapLabel(
+    { name: 'Neapol', ownerId: 5, startCityState: false },
+    { playerOwnerId: 0, isCapital: true, civDisplayName: 'Rzym' },
+  ) === 'Rzym',
+  'mapa: stolica obcego państwa → nazwa cywilizacji (Neapol → Rzym)',
+);
+
+// Zwykłe (nie-stolica) miasto obcego państwa → nazwa miasta bez zmian.
+assert(
+  M.formatCityMapLabel(
+    { name: 'Neapol', ownerId: 5, startCityState: false },
+    { playerOwnerId: 0, isCapital: false, civDisplayName: 'Rzym' },
+  ) === 'Neapol',
+  'mapa: zwykłe miasto obcego państwa → nazwa miasta',
+);
+
+// Stolica GRACZA → zawsze własna nazwa miasta (podmiana dotyczy tylko obcych).
+assert(
+  M.formatCityMapLabel(
+    { name: 'Ateny', ownerId: 0, startCityState: false },
+    { playerOwnerId: 0, isCapital: true, civDisplayName: 'Grecja' },
+  ) === 'Ateny',
+  'mapa: stolica gracza → własna nazwa miasta (bez podmiany na cywilizację)',
+);
+
+// Miasto-państwo (startCityState) → bez zmian, nawet gdy jest „stolicą" swojego ownera.
+assert(
+  M.formatCityMapLabel(
+    { name: 'Sparta', ownerId: 3, startCityState: true },
+    { playerOwnerId: 0, isCapital: true, civDisplayName: 'Grecja' },
+  ) === 'Sparta' + suffix,
+  'mapa: miasto-państwo → Sparta · miasto-państwo (bez podmiany)',
+);
+
+// Owner oznaczony jako miasto-państwo (isCityStateOwner) też blokuje podmianę.
+assert(
+  M.formatCityMapLabel(
+    { name: 'Mykeny', ownerId: 7, startCityState: false },
+    { playerOwnerId: 0, isCapital: true, civDisplayName: 'Grecja', isCityStateOwner: true },
+  ) === 'Mykeny',
+  'mapa: isCityStateOwner blokuje podmianę na nazwę cywilizacji',
+);
+
+// Brak nazwy cywilizacji → fallback na nazwę miasta (stare zachowanie, nigdy pusta etykieta).
+assert(
+  M.formatCityMapLabel(
+    { name: 'Neapol', ownerId: 5, startCityState: false },
+    { playerOwnerId: 0, isCapital: true },
+  ) === 'Neapol',
+  'mapa: stolica obcego bez nazwy cywilizacji → fallback na nazwę miasta',
+);
+
+// Zgodność wstecz: wywołanie bez opcji (cityPanel.ts) działa jak dotąd.
+assert(
+  M.formatCityMapLabel({ name: 'Neapol', ownerId: 5, startCityState: false }) === 'Neapol',
+  'mapa: brak opcji → stare zachowanie (nazwa miasta)',
+);
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

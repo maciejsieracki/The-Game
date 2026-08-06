@@ -123,6 +123,30 @@ const keyGrowth = M.cityMapBadgeKey({
 assert(keyGrowth.includes('g3'), 'klucz zawiera poziom Wyżywienia');
 assert(keyGrowth !== keyBase, 'growth zmienia klucz cache');
 
+// --- MAP-UX-MARKER-Q1 = C — marker stolicy w kluczu cache -------------------
+// Bez tego segmentu przejście stolica↔nie-stolica trafiłoby w starą teksturę i marker
+// (złota obwódka + korona) nie przerysowałby się na mapie.
+const keyNieStolica = M.cityMapBadgeKey({
+  cityName: 'Ateny',
+  population: 5,
+  defenseTier: 1,
+  civIconId: 'grecy',
+  prodActive: false,
+  isCapital: false,
+});
+const keyStolica = M.cityMapBadgeKey({
+  cityName: 'Ateny',
+  population: 5,
+  defenseTier: 1,
+  civIconId: 'grecy',
+  prodActive: false,
+  isCapital: true,
+});
+assert(keyStolica.endsWith('|k1'), 'stolica → segment k1 na końcu klucza cache');
+assert(keyNieStolica.endsWith('|k0'), 'nie-stolica → segment k0 na końcu klucza cache');
+assert(keyStolica !== keyNieStolica, 'stolica vs nie-stolica — różne klucze cache');
+assert(keyNieStolica === keyBase, 'brak isCapital === isCapital:false (ten sam klucz)');
+
 assert(M.civInitialForIconId('grecy') === 'G', 'grecy → G');
 assert(M.civInitialForIconId('rzym') === 'R', 'rzym → R');
 assert(M.civInitialForIconId('') === '?', 'pusty → ?');
