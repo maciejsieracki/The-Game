@@ -4,6 +4,9 @@
  */
 
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
+
+const OVERLAY_ID = 'city-capture-notice';
 
 let root: HTMLDivElement | null = null;
 let keyHandler: ((e: KeyboardEvent) => void) | null = null;
@@ -79,6 +82,7 @@ function modalIcon(id: string, size: 20 | 24 = 24): string {
 }
 
 function close(): void {
+  popOverlay(OVERLAY_ID);
   if (keyHandler) {
     document.removeEventListener('keydown', keyHandler);
     keyHandler = null;
@@ -137,12 +141,10 @@ export function showCityCaptureNotice(
     if (e.key === 'Enter') {
       e.preventDefault();
       enter();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      stay();
     }
   };
   document.addEventListener('keydown', keyHandler);
+  pushOverlay(OVERLAY_ID, stay);
 }
 
 export function hideCityCaptureNotice(): void {

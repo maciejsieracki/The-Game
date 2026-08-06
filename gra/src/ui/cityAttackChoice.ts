@@ -12,6 +12,9 @@
 
 import type { MapSiegeContext } from '../game/mapSiegeDetect';
 import { brandIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
+
+const OVERLAY_ID = 'city-attack-choice';
 
 export interface CityAttackChoiceActions {
   onSiege: () => void;
@@ -135,6 +138,7 @@ function detachKeyboard(): void {
 
 function removeRoot(): void {
   detachKeyboard();
+  popOverlay(OVERLAY_ID);
   if (root) {
     root.remove();
     root = null;
@@ -148,10 +152,7 @@ function pickAction(fn: () => void): void {
 
 function attachKeyboard(actions: CityAttackChoiceActions): void {
   keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      pickAction(actions.onCancel);
-    } else if (e.key === '1') {
+    if (e.key === '1') {
       e.preventDefault();
       pickAction(actions.onSiege);
     } else if (e.key === '2') {
@@ -228,6 +229,7 @@ export function showCityAttackChoice(ctx: MapSiegeContext, actions: CityAttackCh
   root.appendChild(box);
   document.body.appendChild(root);
   attachKeyboard(actions);
+  pushOverlay(OVERLAY_ID, () => pickAction(actions.onCancel));
 }
 
 export function isCityAttackChoiceOpen(): boolean {

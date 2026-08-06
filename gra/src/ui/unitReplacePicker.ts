@@ -10,6 +10,9 @@ import {
   MAP_UNIT_1E_SHARED_CSS,
 } from './mapUnitHudSkin';
 import { unitIconSvg } from './icons/brandAssets';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
+
+const OVERLAY_ID = 'unit-replace-picker';
 
 export interface UnitReplaceOption {
   /** Jednostka name (typeId) do wpisania w RuntimeUnit.typeId po wyborze. */
@@ -97,6 +100,7 @@ function detachKeyboard(): void {
 
 export function hideUnitReplacePicker(): void {
   detachKeyboard();
+  popOverlay(OVERLAY_ID);
   if (root) {
     root.remove();
     root = null;
@@ -196,12 +200,8 @@ export function showUnitReplacePicker(opts: UnitReplacePickerOptions): void {
   document.body.appendChild(overlay);
   root = overlay;
 
-  keyHandler = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      hideUnitReplacePicker();
-      opts.onCancel?.();
-    }
-  };
-  document.addEventListener('keydown', keyHandler);
+  pushOverlay(OVERLAY_ID, () => {
+    hideUnitReplacePicker();
+    opts.onCancel?.();
+  });
 }

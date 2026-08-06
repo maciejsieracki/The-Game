@@ -73,6 +73,12 @@ const MAP_OVERLAY_IDS = [
   'save-load-dialog',
   'science-hub',
   'city-list',
+  'city-attack-choice',
+  'city-capture-notice',
+  'city-foreign-pick',
+  'city-unit-pick',
+  'unit-foreign-pick',
+  'unit-replace-picker',
 ];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();
@@ -83,6 +89,17 @@ for (const id of MAP_OVERLAY_IDS) {
   assert(closed, `Escape zamyka ${id}`);
   assert(_getEscapeOverlayStackDepthForTest() === 0, `stos pusty po ${id}`);
 }
+
+// R-ESC: koszyk dyplomacji nad audiencją — LIFO (audience już na stosu)
+_resetEscapeOverlayStackForTest();
+let closedAudience = false;
+let closedBasket = false;
+pushOverlay('diplo-audience', () => { closedAudience = true; popOverlay('diplo-audience'); });
+pushOverlay('diplo-trade-basket', () => { closedBasket = true; popOverlay('diplo-trade-basket'); });
+assert(top()?.id === 'diplo-trade-basket', 'basket na wierzchu audiencji');
+_dispatchEscapeForTest();
+assert(closedBasket && !closedAudience, 'Escape zamyka koszyk, nie audiencję');
+assert(_getEscapeOverlayStackDepthForTest() === 1 && top()?.id === 'diplo-audience', 'audiencja zostaje');
 
 _resetEscapeOverlayStackForTest();
 
