@@ -11,7 +11,7 @@
 |------|---------|
 | **AKTUALNA FALA** | **255** |
 | **md5** | `20e554dc2c010bb43a44b867a2dee09e` (label `20e554dc`) |
-| **Commit deploy** | *(po push F255)* na `main` |
+| **Commit deploy** | `329221cb` na `main` |
 | **Wejście** | `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra |
 | **ECHO ABC** | ZAMKNIĘTE w F255 · docs w `docs/decyzje/*-Q1.md` · wdrożenie czeka `działaj` |
 
