@@ -179,7 +179,7 @@ import { buildTerritoryNodesFromCities } from '../map/territory-work';
 import { axialToWorld, HEX_R } from '../render/hexutil';
 import { tileYield } from '../game/economy';
 import { mnoznikRoleForBuildingId, cumulativeMnoznikForBuildingId } from '../game/unit-building-bonuses';
-import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts, unitResourceUpkeep, canAffordUnitRecruitUpkeepReserve, unitRecruitUpkeepReserve } from '../game/economy-upkeep';
+import { buildingUpkeep, buildingResourceUpkeep, addResourceCosts, unitResourceUpkeep, canAffordUnitRecruitFull, unitRecruitFullStockCost } from '../game/economy-upkeep';
 import {
   type TradeRoute,
 } from '../game/trade-routes';
@@ -5341,17 +5341,14 @@ function addItem(city: City, item: ProductionItem, opts?: { upgrade?: boolean })
       deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
     }
   } else if (item.kind === 'jednostka') {
-    // JEDNOSTKI-SUROWIEC-01: identyczny wzorzec jak budynki powyżej -- pobór RAZ przy
-    // enqueue do kolejki Pracy; anulowanie (cancelQueueItem) zwraca surowiec symetrycznie.
+    // JEDNOSTKI-SUROWIEC-01 + R-AI-RECRUIT-UPKEEP-GATE: łączna bramka PRZED poborem.
     const cost = unitStockCostForItem(item);
     const pool = ownerSurowcePoolFor(city);
+    const def = gameData()?.units.find(u => u.Jednostka === item.id);
+    if (!canAffordUnitRecruitFull(pool, def)) return;
     if (Object.keys(cost).length > 0) {
-      if (!canAffordBuildingStock(pool, cost)) return; // blokada: pula panstwa nie starcza
-      // pobór RAZ, przy starcie rekrutacji — rozłożony po miastach ownera (pula PAŃSTWA).
       deductBuildingStockCostAcrossCities(cfg.getCities?.() ?? [city], city.ownerId, cost);
     }
-    const def = gameData()?.units.find(u => u.Jednostka === item.id);
-    if (!canAffordUnitRecruitUpkeepReserve(pool, def)) return; // R-AI-RECRUIT-UPKEEP-GATE
   }
   setProd(city.id, enqueue(getProd(city.id), item));
   rerender();
@@ -6779,15 +6776,10 @@ function appendUnitRecruitCompactRow(
   if (!udef) return;
   const mpCost = recruitManpowerCost(city, item.id);
   const canMp = empireRekruciAffordable(city, mpCost);
-  // JEDNOSTKI-SUROWIEC-01: blokada rekrutacji gdy pula PAŃSTWA ownera nie pokrywa
-  // Surowiec/Surowiec (ilość) tej jednostki — identyczny wzorzec jak canMp powyżej.
-  const stockCost = unitStockCost(udef);
-  const stockMissing = missingStockFor(ownerSurowcePoolFor(city), stockCost);
-  const stockOk = Object.keys(stockMissing).length === 0;
-  const upkeepReserve = unitRecruitUpkeepReserve(udef);
-  const upkeepMissing = missingStockFor(ownerSurowcePoolFor(city), upkeepReserve);
-  const upkeepOk = Object.keys(upkeepMissing).length === 0;
-  const recruitOk = stockOk && upkeepOk;
+  // JEDNOSTKI-SUROWIEC-01 + R-AI-RECRUIT-UPKEEP-GATE: łączna bramka na puli państwa.
+  const fullCost = unitRecruitFullStockCost(udef);
+  const fullMissing = missingStockFor(ownerSurowcePoolFor(city), fullCost);
+  const recruitOk = Object.keys(fullMissing).length === 0;
   const row = buildUnitRecruitCard({
     udef,
     item,
@@ -6800,13 +6792,9 @@ function appendUnitRecruitCompactRow(
     stockChipsHtml: unitStockCostChipsHtml(udef, city),
     resourceUpkeepChipsHtml: unitResourceUpkeepChipsHtml(udef),
     stockMissingLabel: !recruitOk
-      ? (!stockOk
-        ? 'Brakuje w magazynie: ' + Object.entries(stockMissing)
-          .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
-          .join(', ')
-        : 'Za mało na utrzymanie (1 tura): ' + Object.entries(upkeepMissing)
-          .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
-          .join(', '))
+      ? 'Brakuje w magazynie: ' + Object.entries(fullMissing)
+        .map(([k, v]) => `${v} ${stockResourceLabel(k)}`)
+        .join(', ')
       : undefined,
     onRecruit: () => recruitUnit(city, item),
   });
@@ -6822,7 +6810,7 @@ function recruitUnit(city: City, item: ProductionItem): void {
   const data = gameData();
   const udef = data ? findUnitDef(data, item.id) : undefined;
   const pool = ownerSurowcePoolFor(city);
-  if (!canAffordUnitRecruitUpkeepReserve(pool, udef)) return;
+  if (!canAffordUnitRecruitFull(pool, udef)) return;
   if (cfg.onPurchaseUnit) {
     cfg.onPurchaseUnit(city.id, item.id, item.koszt);
   } else {
