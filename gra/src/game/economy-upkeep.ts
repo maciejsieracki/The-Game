@@ -44,7 +44,7 @@
 
 import type { BuildingRecord } from './economy';
 import type { BuildingStockCost } from './building-stock-cost';
-import { canAffordBuildingStock } from './building-stock-cost';
+import { canAffordBuildingStock, unitStockCost, type UnitStockCostSource } from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
@@ -732,6 +732,28 @@ export function canAffordUnitRecruitUpkeepReserve(
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): boolean {
   return canAffordBuildingStock(pool, unitRecruitUpkeepReserve(unitDef, turns));
+}
+
+/** Łączny koszt surowcowy rekrutacji: unitStockCost + rezerwa utrzymania (merge per klucz). */
+export function unitRecruitFullStockCost(
+  unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
+  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+): Record<string, number> {
+  const out: Record<string, number> = { ...unitStockCost(unitDef) };
+  addResourceCosts(out, unitRecruitUpkeepReserve(unitDef, turns));
+  return out;
+}
+
+/**
+ * Bramka łączna: pula państwa musi pokryć koszt rekrutacji + rezerwę utrzymania
+ * (nie osobno — np. Włócznik 10+2 brązu wymaga 12 w puli, nie 10 ani 11).
+ */
+export function canAffordUnitRecruitFull(
+  pool: Record<string, number> | undefined,
+  unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
+  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+): boolean {
+  return canAffordBuildingStock(pool, unitRecruitFullStockCost(unitDef, turns));
 }
 
 /** Suma utrzymania surowcowego po żywych jednostkach (typeId → resolveDef). */

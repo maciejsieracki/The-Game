@@ -28,6 +28,8 @@ export {
   unitResourceUpkeep,
   unitRecruitUpkeepReserve,
   canAffordUnitRecruitUpkeepReserve,
+  unitRecruitFullStockCost,
+  canAffordUnitRecruitFull,
   UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 } from '../src/game/economy-upkeep';
 export {
@@ -89,7 +91,22 @@ assert(
 );
 assert(
   M.canAffordUnitRecruitUpkeepReserve(poolOk, wlocznik),
-  '2 braz >= 2/t upkeep -> OK',
+  '2 braz >= 2/t upkeep -> OK (upkeep-only gate)',
+);
+
+console.log('\n-- canAffordUnitRecruitFull: łączna bramka rekrut+reserve (Włócznik 10+2) --');
+deepEq(M.unitRecruitFullStockCost(wlocznik), { braz: 12 }, 'Włócznik full cost -> {braz:12}');
+assert(
+  !M.canAffordUnitRecruitFull({ braz: 10 }, wlocznik),
+  'pool braz=10 < 12 (rekrut+reserve) -> odmowa',
+);
+assert(
+  !M.canAffordUnitRecruitFull({ braz: 11 }, wlocznik),
+  'pool braz=11 < 12 -> odmowa',
+);
+assert(
+  M.canAffordUnitRecruitFull({ braz: 12 }, wlocznik),
+  'pool braz=12 >= 12 -> OK',
 );
 
 console.log('\n-- parytet ownerId: gracz (0) vs AI (7) — ta sama bramka --');
@@ -114,11 +131,19 @@ assert(
 );
 assert(
   M.canAffordUnitRecruitUpkeepReserve(poolPlayer, wlocznik),
-  'gracz: 10 braz pokrywa reserve 2/t',
+  'gracz: 10 braz pokrywa reserve 2/t (upkeep-only)',
 );
 assert(
   M.canAffordUnitRecruitUpkeepReserve(poolAi, wlocznik),
-  'AI ownerId=7: identyczna pula 10 braz -> OK reserve',
+  'AI ownerId=7: identyczna pula 10 braz -> OK reserve (upkeep-only)',
+);
+assert(
+  !M.canAffordUnitRecruitFull(poolPlayer, wlocznik),
+  'gracz: 10 braz NIE pokrywa łącznego kosztu 12',
+);
+assert(
+  !M.canAffordUnitRecruitFull(poolAi, wlocznik),
+  'AI: 10 braz NIE pokrywa łącznego kosztu 12',
 );
 
 const citiesBare = makeCities([
@@ -130,7 +155,12 @@ const bareAi = M.ownerResourceStockAll(citiesBare.filter(c => c.ownerId === 7), 
 assert(
   M.canAffordUnitRecruitUpkeepReserve(barePlayer, wlocznik)
   === M.canAffordUnitRecruitUpkeepReserve(bareAi, wlocznik),
-  'parytet gracz=AI przy tej samej puli (10 braz)',
+  'parytet gracz=AI przy tej samej puli (upkeep-only, 10 braz)',
+);
+assert(
+  M.canAffordUnitRecruitFull(barePlayer, wlocznik)
+  === M.canAffordUnitRecruitFull(bareAi, wlocznik),
+  'parytet gracz=AI przy tej samej puli (full gate, 10 braz -> false)',
 );
 
 console.log('\n-- jednostka bez utrzymania surowcowego: bramka przepuszcza --');

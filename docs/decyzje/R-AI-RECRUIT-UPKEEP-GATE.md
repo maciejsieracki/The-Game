@@ -22,6 +22,7 @@
 |---------|--------|------------------|
 | Koszt rekrutacji surowcowy | `unitStockCost(units.json Surowiec)` | Już istniejąca bramka (JEDNOSTKI-SUROWIEC-01) |
 | Rezerwa utrzymania | `unitResourceUpkeep(units.json Utrzymanie surowiec)` × **1 turę** | **Nowa** bramka — pula państwa musi mieć zapas na 1 turę utrzymania nowej jednostki |
+| **Łączna bramka** | `canAffordUnitRecruitFull` = merge(`unitStockCost`, `unitRecruitUpkeepReserve`) | Sprawdzana **przed** poborem surowca — nie osobno na pełnej puli |
 
 Przykład: **Włócznik** — rekrutacja `unitStockCost` = 10 brązu, utrzymanie = 2 brązu/turę.  
 Gracz/AI z **10 brązu** w puli: może zapłacić rekrutację, ale **nie może** werbować (10 − 10 rekrut < 2 rezerwy).  
@@ -42,7 +43,7 @@ Jednostki **bez** `Utrzymanie surowiec` (np. Osadnik): bramka przepuszcza — ze
 | Gracz — kolejka Pracy | `cityPanel.ts` | `addItem` (jednostka) |
 | UI blokada przycisku | `cityPanel.ts` | `appendUnitRecruitCompactRow` |
 | Boost ekonomii AI przy deficycie | `ai.ts` | `collectMilitaryRecruitStockDeficits` (+ klucze z rezerwy) |
-| Helper | `economy-upkeep.ts` | `canAffordUnitRecruitUpkeepReserve`, `unitRecruitUpkeepReserve`, `UNIT_RECRUIT_UPKEEP_RESERVE_TURNS = 1` |
+| Helper | `economy-upkeep.ts` | `canAffordUnitRecruitFull`, `unitRecruitFullStockCost`, `canAffordUnitRecruitUpkeepReserve`, `unitRecruitUpkeepReserve`, `UNIT_RECRUIT_UPKEEP_RESERVE_TURNS = 1` |
 
 ---
 
@@ -56,4 +57,4 @@ Jednostki **bez** `Utrzymanie surowiec` (np. Osadnik): bramka przepuszcza — ze
 
 - `npx tsc --noEmit` PASS  
 - `node tools/ai-recruit-upkeep-gate-test.cjs` PASS  
-- Parytet AI = gracz = MP (ta sama funkcja `canAffordUnitRecruitUpkeepReserve` na puli `ownerResourceStockAll`)
+- Parytet AI = gracz = MP (ta sama funkcja `canAffordUnitRecruitFull` na puli `ownerResourceStockAll`)
