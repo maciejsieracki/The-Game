@@ -8,6 +8,23 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
+## ABC-PACZKA-2026-08-06-DOPREC — doprecyzowanie Autobot · STATUS: **OTWARTE** (2026-08-06)
+
+**Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md)
+
+| # | ID | Temat |
+|---|-----|--------|
+| 1 | **R-DZIALAJ-SCOPE-Q1** | `działaj` = wszystkie 6 / jeden / pierwsze 3 |
+| 2 | **R-DEPLOY-AUTOBOT-Q1** | Deploy po każdym / zbiorczo / po milestone |
+| 3 | **MAP-UX-MARKER-Q1** | Marker stolicy: obwódka / korona / oba |
+| 4 | **R-KAMIEN-FUTURE-Q1** | Prefix kopalnia* vs lista vs prefix+test |
+| 5 | **R-WIARYGODNOSC-S9-LICZBY-Q1** | Liczby §9 od razu / tabela OK / krytyczne |
+| 6 | **R-DESIGN-V2-KANAL-Q1** | Brief Design + kto pinguje |
+
+**Odpowiedź:** `A B C …` albo `ID=litera`.
+
+---
+
 ## ABC-PACZKA-2026-08-06-KOLEJKA + R-OBRONA-MIASTA-MP-Q1 — STATUS: **ZAMKNIĘTE ECHO** (2026-08-06)
 
 **Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) · reguła [`R-ABC-PELNA-LISTA.md`](../docs/decyzje/R-ABC-PELNA-LISTA.md).
