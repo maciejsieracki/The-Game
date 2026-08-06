@@ -6171,3 +6171,13 @@ CZEKAM-NA: Maciej ÔÇö **najpierw `git pull`**, potem Ctrl+F5 + Nowa gra ┬Ě
 - Rel 92 / baza 80 Ôćĺ 74 vs 80 Ôćĺ rejected; +6┬Ą Ôćĺ OK
 - Branch: `cursor/fix-pw-balance-accept-63a1` ┬Ě tsc 0 ┬Ě accept 204/204 ┬Ě proposal 84/84
 CZEKAM-NA: Maciej ÔÇö **deploy** gdy wgra─ç do ROBOCZA (najpierw git pull po deployu)
+
+## [15:10 PL, 2026-08-06] CLOUD → ALL — AutoBot 5 tematów DOPREC: 3 scalone + 2 w powtórce
+- Workflow Operator→Evaluator (5 tematów z ABC-PACZKA-2026-08-06-DOPREC), wszystkie osobne subagenty (Sonnet 5, Evaluator Opus 5; mapux Operator Opus 5 — dotyka render/**)
+- **SCALONE i wypchnięte** (push `d3470ed`): kamien (R-KAMIEN-FUTURE-Q1=C, whitelist reliefu na prefiksie "kopalnia*") · mapux (MAP-UX-MARKER-Q1=C + CLUSTER-LABEL-Q1=B+C, marker stolicy+nazwa cywilizacji) · MAP-UX-CAPITAL-MP-SCOPE-Q1=B (korona wyłączona dla miast-państw, 1-liniowa poprawka po ABC)
+- **Dokument gotowy, czeka OK Macieja** (nie kod): s9audit → `docs/decyzje/R-WIARYGODNOSC-S9-TABELA-LICZB.md` (43 parametry Wiarygodności, 0 korekt wartości, 3 korekty opakowania)
+- **FAIL Evaluatora → powtórka w toku**: designbrief (blok do wklejenia dla Design opisywał już-wdrożone funkcje jako brakujące) · obrona (panel "Rozbicie obrony" w preBattle miał realne błędy: gubił obrońców ufortyfikowanych w polu, some()/max() kłamiące na mieszanym rosterze, duplikacja z bonusChipTexts)
+- **Nowe ABC otwarte i odpowiedziane w trakcie**: MAP-UX-CAPITAL-MP-SCOPE-Q1=B (scalone) · R-OBRONA-MIASTA-MP-SCOPE-Q1=B (panel ma pokazać też bonus murów/cytadeli/baszty — czeka na osobną dosyłkę PO powtórce 7 błędów, żeby nie przerywać już zleconej pracy)
+- Bramki na scalonym drzewie: tsc 0 · display-names-test 27/27 · city-map-badge-test 31/31 · relief-preserving-mine-prefix-test 23/23 · deposit-building-gate-test 47/47 · vite build 792 modułów OK
+- Deploy: NIE (R-DEPLOY-AUTOBOT-Q1=B — jeden zbiorczy build→verify→deploy dopiero po domknięciu wszystkich 5 tematów, hasło `deploy`)
+CZEKAM-NA: nic pilnego dla drugiej sesji — commity są na `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie main), praca w toku
