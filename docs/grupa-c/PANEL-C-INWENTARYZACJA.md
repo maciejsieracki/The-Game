@@ -1,12 +1,13 @@
 # Panel C — inwentaryzacja parametrów (Grupa C / Walka)
 
-**Data:** 2026-06-29 · **Spec:** `docs/obieg/PANEL-STEROWANIA-SPEC.md`
+**Data:** 2026-06-29 · **Spec:** `docs/obieg/PANEL-STEROWANIA-SPEC.md` · **Sync F250:** 2026-08-06 — `gen-panel-c.py` regen z `units.json` (Surowiec ×5 + Utrzymanie surowiec); tip FALA 250 `796fc7a7`.
 
 ## Źródła zebrane
 
 | Kategoria | Plik w grze | Arkusz w Panel-C.xlsx |
 |-----------|-------------|------------------------|
 | Macierz jednostek v2.0 (9 jedn. Brąz/Żelazo) | `gra/data/units.json` | `Macierz-jednostek` |
+| Koszty rekrutacji + utrzymanie surowcowe (F250 ×5) | `gra/data/units.json` | `Koszty-jednostek` (`Surowiec`, `Surowiec (ilość)`, `Utrzymanie surowiec`, `Utrzymanie surowiec (ilość)`) |
 | Stałe walki (SS5l + macierz v2) | `gra/data/combat-params.json` | `Stale-walki` |
 | Oblężenie (mury, milicja, rundy) | `gra/data/combat-params.json` § oblężenie | `Oblezenie` |
 | Countery typów | `gra/data/counters.json` | `Countery` |

@@ -37,7 +37,9 @@ COST_FIELDS = [
     ("Utrzymanie (Pieniądz/turę)", "zł/t", "Utrzymanie co turę"),
     ("żywność/turę", "🌾/t", "Koszt żywności co turę"),
     ("Surowiec", "—", "Surowiec strategiczny wymagany do produkcji (Brąz/Żelazo/-)"),
-    ("Surowiec (ilość)", "szt.", "Ilość surowca strategicznego na sztukę"),
+    ("Surowiec (ilość)", "szt.", "Ilość surowca strategicznego na sztukę (rekrutacja ×5)"),
+    ("Utrzymanie surowiec", "—", "Surowiec strategiczny utrzymania co turę (Drewno/Brąz/Żelazo/-)"),
+    ("Utrzymanie surowiec (ilość)", "szt./t", "Ilość surowca utrzymania co turę (baza F250)"),
 ]
 # Macierz-jednostek — wszystkie jednostki (pełna lista z units.json / dawne Jednostki.xlsx)
 MACIERZ_FIELDS = [
@@ -372,7 +374,7 @@ def sheet_koszty(wb, units):
             if field not in u:
                 continue
             fid = f"C-K-{slug(name)}-{slug(field)}"
-            default = "-" if field == "Surowiec" else 0
+            default = "-" if field in ("Surowiec", "Utrzymanie surowiec") else 0
             write_row(ws, r, [
                 fid,
                 f"{name} · {field}",
