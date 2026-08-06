@@ -802,7 +802,7 @@ import {
   shouldDeferEotEvents,
   type DeferredEotHint,
 } from './game/eot-event-defer';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, UNIT_RECRUIT_FULL_HINT, UNIT_RECRUIT_STOCK_ONLY_HINT, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -2737,9 +2737,9 @@ async function boot(): Promise<void> {
         if (ownerId === 0) {
           if (Object.keys(stockCost).length > 0
             && !canAffordBuildingStock(ownerPool, stockCost)) {
-            showHintMessage('Za mało surowca w magazynie państwa', 2800);
+            showHintMessage(UNIT_RECRUIT_STOCK_ONLY_HINT, 2800);
           } else {
-            showHintMessage('Za mało surowca na utrzymanie jednostki (1 tura)', 2800);
+            showHintMessage(UNIT_RECRUIT_FULL_HINT, 2800);
           }
         }
         return false;

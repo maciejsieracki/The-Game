@@ -711,6 +711,13 @@ export function unitResourceUpkeep(
  */
 export const UNIT_RECRUIT_UPKEEP_RESERVE_TURNS = 1;
 
+/** Hint gracza gdy pula pokrywa koszt rekrutacji, ale nie łączny koszt rekrut+rezerwa. */
+export const UNIT_RECRUIT_FULL_HINT =
+  'Za mało surowca (rekrutacja + utrzymanie 1 tura)';
+
+/** Hint gracza gdy pula nie pokrywa samego kosztu rekrutacji surowcowego. */
+export const UNIT_RECRUIT_STOCK_ONLY_HINT = 'Za mało surowca w magazynie państwa';
+
 /** Wymagana rezerwa surowców w puli państwa przed rekrutacją (N × utrzymanie/turę). */
 export function unitRecruitUpkeepReserve(
   unitDef: UnitResourceUpkeepSource | null | undefined,
