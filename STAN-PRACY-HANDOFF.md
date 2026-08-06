@@ -1,10 +1,13 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-06 ~09:50** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-06 ~13:15** · Projekt: Civ „The Game"
 
-> **Handoff sesji 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md) — **czytaj najpierw** (co zrobione, playtesty, kolejka, AutoBot).
+> **Handoff sesji 2026-08-06 (FALA 254 + ECHO ABC):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md) — **czytaj najpierw** (ECHO 6×, kolejka Autobot, pułapki, paste dla agenta).
+>
+> **Handoff wcześniejszy 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
-> **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 255 (2026-08-06):** ROBOCZA *(po deploy)* · ECHO ABC 6× + handoff sesji · kod gry = F254. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **ZASTĄPIONA** przez FALA 255 (docs/ECHO; bundle gry bez zmian logiki).
 > **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. **ZASTĄPIONA** przez FALA 254.
 >
 > **FALA 252 (2026-08-06):** ROBOCZA `bbff9996` · Escape more + upkeep gate + Panel-C. **ZASTĄPIONA** przez FALA 253.
@@ -94,32 +97,31 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA `232634a9` (FALA 254, 10:11) · Escape + recruit + Panel-C + audyty. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+**Stan na 2026-08-06 (NAJNOWSZY):** ECHO ABC 6× zamknięte · handoff F254+ECHO · deploy FALA 255 (docs + odświeżony stempel ROBOCZA; logika gry = F254). Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
 
-**Stan na 2026-08-05 (historyczny):** deploy ROBOCZA `29bfdf00` (FALA 228, 14:58) · stempel menu `718d0ac2` · tip main przed deploy `546ce97`. Maciej **OK** na FALA 223 i FALA 224. **FOKUS Macieja:** playtest **R-AUTO** (`OK`/`BUG`) — F12/R-SCENA-PERF wstrzymane; playtest FALA 226 AI odłożony.
+**Stan FALA 254 (historyczny):** ROBOCZA `232634a9` (10:11) · Escape + recruit + Panel-C + audyty.
 
-**Łańcuch FALA 221–226:** 221 `4d17d869` → 222 `132401ef` → 223 `ee0e7e04` → 224 `38df6ad7` → 225 `8767b9c0` → 226 `ebe4548f` → **227 `3840f218`** (DEPLOY ALL; zawiera R-AUTO + P-AI-MOC + P-AI-008).
+**Ważne dla agentów:** **KAŻDA praca** = AutoBot (Operator `composer-2.5` → Evaluator `composer-2.5` → Grok final). Deploy **tylko Grok** na hasło. Pełny zapis: [`HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md).
 
-**ABC zamknięte (sesja 225–226):** R-AUTO-RACJE-RAISE Q1=B · Q2–Q5=A · R-PROC-AUTOBOT · P-AI-MOC-BONUS-Q1=A · P-AI-008 custom · R-SCENA-PERF-Q1=A (pomiar). Merge Autobot P0: `#108` / `9068115` (bez deploy gry).
+**KOLEJKA (otwarte — po `działaj`, 1 Autobot = 1 ID):**
+1. **AI-BALANS-STEP6-Q1=A** — score 2. scouta −80 (`ai.ts`)
+2. **R-KAMIEN-RELIEF-FOLLOWUP-Q1=A** — whitelist `kopalnia` + reguła wszystkich kopalń
+3. **MAP-UX-CLUSTER-LABEL-Q1=B+C** — stolica = civ + marker; MP = nazwa + dopisek
+4. **R-OBRONA-MIASTA-MP-Q1=A** — rozbicie bonusów w preBattle (mechanika bez zmian)
+5. **R-WIARYGODNOSC-S9-Q1=A** — pełne strojenie §9 JSON + testy
+6. **R-DESIGN-PANEL-MIASTA-V2-Q1=C** — pilne zlecenie Design v2 (kod nie zamrożony)
 
-**Ważne dla agentów:** Auto Wyżywienie gracza = **default WYŁ** per miasto; Spichlerz clamp ≥0; maxSafe na suwaku. Rekrutacja **NIE odejmuje** `city.population` (FALA 224). Major AI: bonusy trudności + threat bez murów (FALA 226). **KAŻDA praca** = AutoBot (Operator→Evaluator→Grok). Pełny zapis: [`HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
+**Zaparkowane:** relief tip `9c098944` · `P-TEST-UPKEEP-R-STAWKI` · KANON · `R-DOTYK-MVP` · playtesty R-AUTO / F226 AI.
 
-**KOLEJKA (otwarte):**
-1. **R-WIARYGODNOSC** — CZEKA-NA-DECYZJĘ (strojenie §9, później)
-2. **P-AI-MOC-GAP** — częściowo F220/226/239; reszta design później
-3. **R-DOTYK-MVP** — ODŁOŻONE (Q1=B, 2026-08-06)
-4. **R-AUTO-RACJE-RAISE** — playtest **ODŁOŻONY** (R-AUTO-RACJE-RAISE-PT=B)
-5. **FALA 226 playtest** — P-AI-MOC + P-AI-008 — odłożony przez Macieja
-
-**ZDEPLOYOWANE — wykreślone z kolejki (FALA 248–253, status w `REJESTR-PROSB-I-ZADAN.md`):**
+**ZDEPLOYOWANE — wykreślone z kolejki (FALA 248–254):**
 - **R-SCENA-PERF-FALA138** — F248 `772bab7c` (+ dżungla F249)
 - **R-PANEL-SPLIT** · **R-SUROWCE-UI-ZERO** · **R-CIVPEDIA** · **R-PALAC-KOSZT** · **R-GARN-AKCJE-A** · **R-SUROWCE-DOSTEP** — F248
-- **AI-BALANS-STEP2–5** — F246 `cbf529f3` → F247 → F248 → F253 `b8704216`
+- **AI-BALANS-STEP2–5** — F246 → F253 `b8704216`
 - **R-DYST-DREWNO** (koszty ×5) — F250 `d7165a12`
-- **R-DESIGN-PANEL-MIASTA** (hover) — F251 `e594f018`
-- **R-ESC-PELNY-EKRAN** (pełny stos) — F251–253
-- **R-AI-RECRUIT-UPKEEP-GATE** — F252 `bbff9996`
-- **R-BUDYNKI-NIEAKTYWNE** — F222 `132401ef` (bez OK/BUG od Macieja)
+- **R-DESIGN-PANEL-MIASTA** (hover Q4=B) — F251 `e594f018`
+- **R-ESC-PELNY-EKRAN** — F251–254
+- **R-AI-RECRUIT-UPKEEP-GATE** — F252–254
+- **ABC-PACZKA-2026-08-06** — ECHO F255 (wdrożenie czeka `działaj`)
 
 **Stan na 2026-08-04 (historyczny):** deploy ROBOCZA `8a3c6d6d` (FALA 220, 21:17) — AI-ALL batch.
 
@@ -405,7 +407,9 @@ Wszystko poniżej jest **zdeployowane i na GitHubie**. ID decyzji w nawiasach �
 
 ## 5. ⏳ W TRAKCIE
 
-**2026-07-28 — NIC NIE JEST W TOKU** po deployu FALA 44 `95021308` (commit `65e3ddd`, push na `origin/main`). Drzewo czyste (poza auto-eksportem czatów). Otwarte pozycje niezwiązane z tą sesją: testy generatora mapy (`relief-grid`, `fair-play-grid`), POLE-BITWY bundle (OneDrive lock przy publish). Nic nie blokuje nowych tematów z §8.
+**2026-08-06 ~13:15:** ECHO ABC 6× **ZAPISANE** · handoff sesji gotowy · **CZEKA** na Maciej **`działaj`** → 6 osobnych Autobotów (kolejność §1 handoffu F254-ECHO). Kod wdrożeniowy **nie** startuje bez hasła. Deploy FALA 255 = komunikacja + odświeżenie ROBOCZA (logika = F254).
+
+*(historyczny) **2026-07-28 — NIC NIE JEST W TOKU** po deployu FALA 44 `95021308`.*
 
 *(poprzedni) **2026-07-27 — NIC NIE JEST W TOKU** po deployu FALA 31 `f694dcba`.
 

@@ -1,3 +1,12 @@
+## [13:15 UTC, 2026-08-06] GROK → ALL / następny agent — HANDOFF + deploy FALA 255
+
+Maciej: limit sesji → zapisz wszystko + deploy ROBOCZA + push
+|- Handoff: `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`
+|- ECHO 6× ZAMKNIĘTE (STEP6=A · KAMIEN=A+reguła · MAP-UX=B+C · S9=A · DESIGN=C · OBRONA=A)
+|- STAN/PYTANIA/REJESTR/KANAL zaktualizowane · kolejka = 6 Autobotów po `działaj`
+|- ROBOCZA FALA 255 — stempel/odświeżenie; logika gry = F254 Escape/recruit (bez nowego kodu gameplay)
+CZEKAM-NA: następny agent — merge na main jeśli trzeba · na **`działaj`** Autobot #1 STEP6 · deploy dopiero po CLEAN tipach + haśle
+
 ## [13:05 UTC, 2026-08-06] CLOUD Operator → ALL — ECHO paczka ABC 2026-08-06 (docs only)
 
 Maciej odpowiedział na 6 pytań ABC (paczka 5 + obrona MP)
