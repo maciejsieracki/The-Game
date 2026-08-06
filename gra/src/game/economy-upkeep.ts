@@ -783,6 +783,23 @@ export function isUnitRecruitStockChipMissing(
   return (fullMissing[resourceKey] ?? 0) > 0;
 }
 
+/**
+ * Hint UI przy odmowie rekrutacji surowcowej: null gdy full gate OK;
+ * STOCK_ONLY gdy brak kosztu rekrutacji; FULL gdy stock OK ale brak rezerwy utrzymania.
+ */
+export function pickUnitRecruitHint(
+  pool: Record<string, number> | undefined,
+  unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
+  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+): string | null {
+  if (canAffordUnitRecruitFull(pool, unitDef, turns)) return null;
+  const stockCost = unitStockCost(unitDef);
+  if (Object.keys(stockCost).length > 0 && !canAffordBuildingStock(pool, stockCost)) {
+    return UNIT_RECRUIT_STOCK_ONLY_HINT;
+  }
+  return UNIT_RECRUIT_FULL_HINT;
+}
+
 /** Suma utrzymania surowcowego po żywych jednostkach (typeId → resolveDef). */
 export function totalUnitResourceUpkeep(
   units: ReadonlyArray<UnitResourceUpkeepLike>,
