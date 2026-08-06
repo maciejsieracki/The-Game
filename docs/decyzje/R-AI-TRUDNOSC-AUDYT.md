@@ -346,4 +346,5 @@ Legenda typu: **WIRING** = martwy/niepełny podział · **BALANS** = liczby · *
 | **STEP2** | C.3 **Ś2** | L3 + `!underThreat`: score Wojownik **−40** w `chooseCityProduction` major AI | 🟢 FALA 246 `cbf529f3` · `docs/decyzje/AI-BALANS-STEP2.md` |
 | **STEP3** | C.3 **Ś1** throttle | L3: `cuda_poziom3_throttle_tur` **3→2** (prog_koszt_x 70 bez zmian) | 🟡 Operator `cursor/ai-balans-step3-63a1` · `docs/decyzje/AI-BALANS-STEP3.md` |
 | **STEP4** | C.3 **Ś1** prog | L3: `cuda_poziom3_prog_koszt_x` **70→80** (throttle 2 bez zmian — STEP3) | 🟡 Operator `cursor/ai-balans-step4-63a1` · `docs/decyzje/AI-BALANS-STEP4.md` |
+| **STEP5** | §D **P0-1** / C.2 Q1 / C.3 Q2 | `bonus_produkcja` → realna Praca major AI (`doBudynkow`+`doPuli` × mult z JSON) | 🟡 Operator `cursor/ai-balans-step5-63a1` · `docs/decyzje/AI-BALANS-STEP5.md` |
 
