@@ -30,6 +30,7 @@ export {
   canAffordUnitRecruitUpkeepReserve,
   unitRecruitFullStockCost,
   canAffordUnitRecruitFull,
+  isUnitRecruitStockChipMissing,
   UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
   UNIT_RECRUIT_FULL_HINT,
   UNIT_RECRUIT_STOCK_ONLY_HINT,
@@ -171,6 +172,25 @@ assert(
   M.canAffordUnitRecruitFull(barePlayer, wlocznik)
   === M.canAffordUnitRecruitFull(bareAi, wlocznik),
   'parytet gracz=AI przy tej samej puli (full gate, 10 braz -> false)',
+);
+
+console.log('\n-- isUnitRecruitStockChipMissing: chip vs full cost (Eval F253) --');
+assert(
+  M.isUnitRecruitStockChipMissing({ braz: 10 }, wlocznik, 'braz'),
+  'pool braz=10: chip stock-missing (full 12, nie sam stock 10)',
+);
+assert(
+  M.isUnitRecruitStockChipMissing({ braz: 11 }, wlocznik, 'braz'),
+  'pool braz=11: chip stock-missing (tooltip Brakuje 1 — spójność)',
+);
+assert(
+  !M.isUnitRecruitStockChipMissing({ braz: 12 }, wlocznik, 'braz'),
+  'pool braz=12: chip OK (full gate pass)',
+);
+assert(
+  M.isUnitRecruitStockChipMissing({ braz: 11 }, wlocznik, 'braz')
+  === !M.canAffordUnitRecruitFull({ braz: 11 }, wlocznik),
+  'chip missing === negacja canAffordUnitRecruitFull (pula 11)',
 );
 
 console.log('\n-- jednostka bez utrzymania surowcowego: bramka przepuszcza --');

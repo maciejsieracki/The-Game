@@ -44,7 +44,12 @@
 
 import type { BuildingRecord } from './economy';
 import type { BuildingStockCost } from './building-stock-cost';
-import { canAffordBuildingStock, unitStockCost, type UnitStockCostSource } from './building-stock-cost';
+import {
+  canAffordBuildingStock,
+  missingStockFor,
+  unitStockCost,
+  type UnitStockCostSource,
+} from './building-stock-cost';
 import { buildingEffectAtLevel } from './production';
 import {
   R_STAWKI_FALA1_FALA2_MULT,
@@ -761,6 +766,21 @@ export function canAffordUnitRecruitFull(
   turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
 ): boolean {
   return canAffordBuildingStock(pool, unitRecruitFullStockCost(unitDef, turns));
+}
+
+/**
+ * Czy chip surowca rekrutacji (klucz z unitStockCost) ma klasę stock-missing.
+ * Uwzględnia łączny koszt unitRecruitFullStockCost (rekrutacja + rezerwa utrzymania),
+ * nie tylko sam koszt rekrutacji — spójnie z canAffordUnitRecruitFull / tooltipem.
+ */
+export function isUnitRecruitStockChipMissing(
+  pool: Record<string, number> | undefined,
+  unitDef: (UnitResourceUpkeepSource & UnitStockCostSource) | null | undefined,
+  resourceKey: string,
+  turns: number = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS,
+): boolean {
+  const fullMissing = missingStockFor(pool, unitRecruitFullStockCost(unitDef, turns));
+  return (fullMissing[resourceKey] ?? 0) > 0;
 }
 
 /** Suma utrzymania surowcowego po żywych jednostkach (typeId → resolveDef). */
