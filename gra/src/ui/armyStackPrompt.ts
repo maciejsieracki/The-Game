@@ -1,3 +1,5 @@
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
+
 /**
  * armyStackPrompt.ts
  * Okno „Zajęty heks" — pyta o scalenie armii gdy jednostka wchodzi na zajęty heks.
@@ -158,12 +160,6 @@ function onOverlayClick(e: MouseEvent): void {
   }
 }
 
-function onKeyDown(e: KeyboardEvent): void {
-  if (e.key === 'Escape') {
-    triggerKeep();
-  }
-}
-
 // ---------------------------------------------------------------------------
 // API publiczne
 // ---------------------------------------------------------------------------
@@ -190,18 +186,18 @@ export function showArmyStackPrompt(opts: ArmyStackPromptOpts): void {
   overlayEl.style.display = 'flex';
 
   overlayEl.addEventListener('click', onOverlayClick);
-  document.addEventListener('keydown', onKeyDown);
+  pushOverlay('army-stack-prompt', triggerKeep);
 }
 
 /**
  * Zamknij modal bez wywoływania callbacków.
  */
 export function hideArmyStackPrompt(): void {
+  popOverlay('army-stack-prompt');
   if (overlayEl !== null) {
     overlayEl.style.display = 'none';
   }
   currentOpts = null;
-  document.removeEventListener('keydown', onKeyDown);
   if (overlayEl !== null) {
     overlayEl.removeEventListener('click', onOverlayClick);
   }

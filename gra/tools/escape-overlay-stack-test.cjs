@@ -73,6 +73,10 @@ const MAP_OVERLAY_IDS = [
   'save-load-dialog',
   'science-hub',
   'city-list',
+  'army-merge',
+  'army-merge-pick',
+  'army-split',
+  'army-stack-prompt',
 ];
 for (const id of MAP_OVERLAY_IDS) {
   _resetEscapeOverlayStackForTest();

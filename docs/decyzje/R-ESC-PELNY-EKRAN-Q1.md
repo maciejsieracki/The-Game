@@ -35,6 +35,10 @@ Gdy stos niepusty: `navigator.keyboard.lock(['Escape'])` (jak tech tree, R-TECH-
 | `save-load-dialog` | `gra/src/ui/saveLoadDialog.ts` |
 | `science-hub` | `gra/src/ui/scienceHubHud.ts` |
 | `city-list` | `gra/src/ui/cityListHud.ts` |
+| `army-merge` | `gra/src/ui/armyMergePanel.ts` |
+| `army-merge-pick` | `gra/src/ui/armyMergePickPanel.ts` |
+| `army-split` | `gra/src/ui/armySplitPanel.ts` |
+| `army-stack-prompt` | `gra/src/ui/armyStackPrompt.ts` |
 
 `main.ts` — Escape lokalny pomija panele ze stosu (`defaultPrevented`); menu pauzy bez zmian.
 
