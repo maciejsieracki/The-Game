@@ -35,3 +35,23 @@ nazwanych parametrów (nie reużywanie stałych głodu 1:1), żeby dało się je
 
 Czeka na hasło **`działaj`** → AutoBot Operator (🟡 ekonomia + walka, reużyć wzorca `army-starvation.ts`
 jako szablonu architektury, NIE kopiować parametrów Żywności).
+
+---
+
+## DOPRECYZOWANIE — R-DEFICYT-ZLOTA-TRIGGER-Q1 (2026-08-06)
+
+**Status:** 🟢 **ZAPISANA** · **B**
+
+Pierwsza runda AutoBot (Operator→Evaluator, PASS-WITH-NOTES) zaimplementowała próg jako `saldo<0`
+(ujemny przepływ TEJ TURY, `upkeepBalance().deficyt`) — Evaluator wskazał, że to NIE jest wierna analogia
+do Żywności: głód sprawdza `central = zapasyPanstwa (zapas) + nadwyżki − deficyty − koszt armii`, więc
+kara odpala dopiero po wyczerpaniu ZAPASU, nie po jednej złej turze przepływu.
+
+| ID | Odpowiedź | Skutek wdrożenia |
+|----|-----------|------------------|
+| **R-DEFICYT-ZLOTA-TRIGGER-Q1** | **B** | Próg zmienia się na wyczerpanie Skarbca (`ownerTreasury(ownerId) < 0`), NIE samo saldo bieżącej tury. Dokładna analogia do Żywności: kara startuje dopiero gdy zgromadzony majątek się skończy, nie przy chwilowym gorszym budżecie. Dotyczy obu warstw (staty + atrycja) — licznik tur karencji liczy kolejne tury z ujemnym Skarbcem, nie z ujemnym saldem. |
+
+**Wdrożenie:** poprawka do już zaimplementowanego kodu (`gra/src/game/gold-deficit.ts` + wpięcie w
+`main.ts`) — zmienić punkt odczytu z `upkeepBalance().deficyt` na `ownerTreasury(ownerId) < 0`
+(`main.ts:18398`, już owner-agnostyczne). Reszta architektury (parametry, atrycja, save, parytet AI,
+wpięcie do walki) zostaje bez zmian — była już PASS.
