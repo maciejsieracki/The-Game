@@ -390,7 +390,7 @@ const SECTOR_R = 0.72;      // dosunięcie do ścianki (HEX_R=1)
 const SECTOR_SCALE = 0.30;  // znacząco mniejsze
 /**
  * Pierścień sektorów na heksie z ZACHOWANĄ bryłą wzgórza/góry (kopalnia, kamieniołom,
- * hodowla — patrz PRESERVES_HILL_RELIEF_KEYS w main.ts). Obrys kopca sięga 0.87 HEX_R
+ * hodowla — patrz preservesHillRelief w game/relief-preserving-improvements.ts). Obrys kopca sięga 0.87 HEX_R
  * (góra) / 0.92 (wzgórze), więc przy domyślnym 0.72 model stoi w połowie stromizny:
  * albo tonie w skale, albo — gdy podniesiony do szczytu — wisi w powietrzu obok niej.
  * 0.86 stawia go na płaskim rąbku heksa (sektory celują w wierzchołki, gdzie heks sięga

@@ -952,6 +952,7 @@ import {
 } from './game/ai-difficulty-bonus';
 import { isMajorAiOwner } from './game/owner-utils';
 import { pickAutoImprovements, AUTO_ULEPSZENIA_PRACA_RESERVE } from './game/auto-improvements';
+import { preservesHillRelief } from './game/relief-preserving-improvements';
 import { showMainMenu, hideMainMenu, isMainMenuOpen, getMenuAudioVolumes } from './ui/mainMenu';
 import { showPerfTestPanel } from './ui/perfTestPanel';
 import {
@@ -9355,21 +9356,13 @@ async function boot(): Promise<void> {
       console.log('[BuildMode]', req.key, req.hexKey, 'koszt=' + req.kosztPraca);
     }
 
-    /**
-     * Ulepszenia, które NIE spłaszczają wzgórza/góry — zostaw naturalny kopiec/szczyt
-     * (nie hideDecor): solo hodowla (bydło/owce/lama stoją na kopcu) + kamieniołom
-     * (Maciej 2026-07-24, R-KAMIEN-RELIEF: kamieniołom ma być wkomponowany w istniejące
-     * wzgórze/górę, a nie je spłaszczać — model siada na reliefie przy ściance heksa
-     * (elevatedTerrainEdgeSurfaceY); brakowało tylko pozostawienia widocznej bryły reliefu pod nim).
-     * Decyzja właściciela (2026-07-25, autonomiczna do rewizji ABC): kopalnia/kopalnia_miedzi
-     * mają identyczny mechanizm spłaszczania — rozszerzone o nie, bo kopalnia wkomponowana
-     * w zbocze wzgórza jest logiczniejsza niż płaski heks (spójne z kamieniołomem).
-     */
-    const PRESERVES_HILL_RELIEF_KEYS = new Set(['bydlo', 'owce', 'lama', 'kamieniolom', 'kopalnia_miedzi', 'kopalnia_zelaza', 'kopalnia_zlota']);
-
-    function preservesHillRelief(layers: readonly string[]): boolean {
-      return layers.length > 0 && layers.every(k => PRESERVES_HILL_RELIEF_KEYS.has(k));
-    }
+    // Ulepszenia, które NIE spłaszczają wzgórza/góry pod sobą (model wtapia się w relief
+    // zamiast siadać na wypłaszczonym heksie): hodowla solo, kamieniołom + KAŻDA kopalnia
+    // (prefiks "kopalnia"/"kopalnia_*", w tym przyszłe typy — decyzja właściciela
+    // R-KAMIEN-FUTURE-Q1=C, 2026-08-06: "przyszłe kopalnie będą też [zachowywać relief]
+    // automatycznie, bez pytania za każdym razem"). Predykat + uzasadnienie pełne:
+    // ./game/relief-preserving-improvements.ts (wydzielone stamtąd, żeby dało się objąć
+    // testem regresji — main.ts ma zależności DOM/WebGL, nie da się go zbundlować w Node).
 
     /**
      * Czy bryła kopca/masywu ZOSTAJE pod ulepszeniem (odwrotność hideDecorAtHex w
