@@ -4,6 +4,7 @@ import type { BuildingCombatBonus } from './unit-building-bonuses';
 import { mergeBuildingBonusIntoStatMultipliers } from './unit-building-bonuses';
 import { applyVeteranFracToCombatUnit } from './veteran';
 import { applyArmyHungerStatMultToCombatUnit } from './army-starvation';
+import { applyGoldDeficitStatMultToCombatUnit } from './gold-deficit';
 import combatParamsRaw from '../../data/combat-params.json';
 
 /** Panel-C: stałe walki (export-c.py → combat-params.json). */
@@ -359,6 +360,20 @@ export interface ResolveCombatOpts {
 
   /** Mnożnik statów przy głodzie wojska (domyślnie 0.75). */
   armyHungerStatMult?: number;
+
+  /**
+   * Deficyt Złota (R-DEFICYT-ZLOTA-KARA-Q1=A, próg R-DEFICYT-ZLOTA-TRIGGER-Q1=B):
+   * Skarbiec właściciela < 0 PO zbankowaniu tej tury — osłabienie statów
+   * bojowych (bez armor) przez goldDeficitStatMult. Stosowane po weteranie i
+   * po głodzie wojska (niezależny czynnik, patrz gold-deficit.ts).
+   */
+  attackerGoldDeficit?: boolean;
+
+  /** Jak wyżej, dla broniącego. */
+  defenderGoldDeficit?: boolean;
+
+  /** Mnożnik statów przy deficycie Złota (domyślnie 0.75). */
+  goldDeficitStatMult?: number;
 
   /**
    * P-AI-MOC-BONUS=A: bonus trudności AI (bonusWalka) — tylko major AI, nie gracz.
@@ -762,6 +777,14 @@ export function resolveCombat(
   }
   if (opts.defenderArmyHungry) {
     defender = applyArmyHungerStatMultToCombatUnit(defender, hungerMult);
+  }
+
+  const goldDeficitMult = opts.goldDeficitStatMult ?? 0.75;
+  if (opts.attackerGoldDeficit) {
+    attacker = applyGoldDeficitStatMultToCombatUnit(attacker, goldDeficitMult);
+  }
+  if (opts.defenderGoldDeficit) {
+    defender = applyGoldDeficitStatMultToCombatUnit(defender, goldDeficitMult);
   }
 
   const rng = opts.rng ?? (() => Math.random());

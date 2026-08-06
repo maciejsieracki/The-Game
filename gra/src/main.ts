@@ -819,6 +819,12 @@ import {
 import { loadWealthParams, type RawWealthParamsJson } from './game/wealth';
 import { applyArmyStarvationHpLoss } from './game/army-starvation';
 import {
+  advanceGoldDeficit, freshGoldDeficitState, buildGoldDeficitParams,
+  isGoldDeficit, isGoldDeficitStarving, getGoldDeficitCountdown,
+  clearLastGoldDeficitTicks, applyGoldDeficitHpLoss,
+  type GoldDeficitState,
+} from './game/gold-deficit';
+import {
   freshClearingState,
   isImprovementTechUnlocked,
   tickHexClearing,
@@ -3195,6 +3201,8 @@ async function boot(): Promise<void> {
     /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
     const militiaDefOverrides = new Map<string, Record<string, unknown>>();
     const empireFoodStates = new Map<number, EmpireFoodState>();
+    /** R-DEFICYT-ZLOTA-KARA-Q1: kolejne tury Z RZĘDU ze Skarbcem<0, per owner (gold-deficit.ts). */
+    const goldDeficitStates = new Map<number, GoldDeficitState>();
     /** DYSPOZYCJA-85-SUWAK: domyślny podział Daniny/Podatku per owner (Skarb/Nauka/Zamożność). */
     const ownerDefaultPodzialHandlu = new Map<number, CityPodzialHandlu>();
     const ulepszeniaEmpireByOwner = new Map<number, UlepszeniaEmpirePolicy>();
@@ -3639,6 +3647,16 @@ async function boot(): Promise<void> {
       }
       bindEmpireFoodRuntime(empireFoodStates);
       migrateCityRationsFromSave();
+
+      // R-DEFICYT-ZLOTA-KARA-Q1: reset licznika karencji deficytu Złota (parytet AI).
+      clearLastGoldDeficitTicks();
+      goldDeficitStates.clear();
+      goldDeficitStates.set(0, freshGoldDeficitState());
+      for (const ai of aiStartHexes) {
+        if (!goldDeficitStates.has(ai.ownerId)) {
+          goldDeficitStates.set(ai.ownerId, freshGoldDeficitState());
+        }
+      }
     }
 
     function initOwnerDefaultPodzialHandlu(): void {
@@ -6508,6 +6526,9 @@ async function boot(): Promise<void> {
           aiStartHexes.push({ q: sc.q, r: sc.r, ownerId: sc.ownerId });
           if (!empireFoodStates.has(sc.ownerId)) {
             empireFoodStates.set(sc.ownerId, freshEmpireFoodState());
+          }
+          if (!goldDeficitStates.has(sc.ownerId)) {
+            goldDeficitStates.set(sc.ownerId, freshGoldDeficitState());
           }
           if (!ownerDefaultPodzialHandlu.has(sc.ownerId)) {
             ownerDefaultPodzialHandlu.set(sc.ownerId, freshOwnerDefaultPodzialHandlu());
@@ -17474,6 +17495,7 @@ async function boot(): Promise<void> {
         // garnizonu (inGarnizon pozostaje osobno).
         fortifiedInField: unitGetsFortifyBonus(u),
         armyHungry: isArmyHungry(u.ownerId) && !isCivilianUnit(u),
+        goldDeficit: isGoldDeficit(u.ownerId) && !isCivilianUnit(u),
       };
     }
 
@@ -17484,6 +17506,16 @@ async function boot(): Promise<void> {
         attackerArmyHungry: isArmyHungry(atkOwnerId),
         defenderArmyHungry: isArmyHungry(defOwnerId),
         armyHungerStatMult: efParams.glodWojskaStatMult,
+      };
+    }
+
+    /** Opcje deficytu Złota do BattleOpts (R-DEFICYT-ZLOTA-KARA-Q1). */
+    function goldDeficitBattleOpts(atkOwnerId: number, defOwnerId: number): Pick<BattleOpts, 'attackerGoldDeficit' | 'defenderGoldDeficit' | 'goldDeficitStatMult'> {
+      const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
+      return {
+        attackerGoldDeficit: isGoldDeficit(atkOwnerId),
+        defenderGoldDeficit: isGoldDeficit(defOwnerId),
+        goldDeficitStatMult: gdParams.zlotoDeficytStatMult,
       };
     }
 
@@ -17754,6 +17786,7 @@ async function boot(): Promise<void> {
             attackerIsBarbarian: pbInfo4.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo4.obronca.isBarbarian,
             ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
+            ...goldDeficitBattleOpts(atkLead.ownerId, defLead.ownerId),
             ...difficultyBattleOpts(atkLead.ownerId, defLead.ownerId),
             onCancel: () => setMood('mapa'),
           });
@@ -18146,6 +18179,7 @@ async function boot(): Promise<void> {
             attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo.obronca.isBarbarian,
             ...armyHungerBattleOpts(atkLead.ownerId, defLead.ownerId),
+            ...goldDeficitBattleOpts(atkLead.ownerId, defLead.ownerId),
             ...difficultyBattleOpts(atkLead.ownerId, defLead.ownerId),
             onCancel: () => {
               setMood('mapa');
@@ -18984,6 +19018,7 @@ async function boot(): Promise<void> {
       clearBattleUiState: clearMapBattleUiState,
       createBattleScene: (opts: BattleOpts) => new BattleScene(opts),
       armyHungerBattleOpts,
+      goldDeficitBattleOpts,
       difficultyBattleOpts,
       registerMilitiaDef: (id: string, def: Record<string, unknown>) => {
         militiaDefOverrides.set(id, def);
@@ -19327,6 +19362,7 @@ async function boot(): Promise<void> {
             attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
             defenderIsBarbarian: pbInfo.obronca.isBarbarian,
             ...armyHungerBattleOpts(atkRosterRef[0]?.ownerId ?? 0, defRosterRef[0]?.ownerId ?? 0),
+            ...goldDeficitBattleOpts(atkRosterRef[0]?.ownerId ?? 0, defRosterRef[0]?.ownerId ?? 0),
             ...difficultyBattleOpts(atkRosterRef[0]?.ownerId ?? 0, defRosterRef[0]?.ownerId ?? 0),
             onCancel: () => setMood('mapa'),
           });
@@ -19505,6 +19541,7 @@ async function boot(): Promise<void> {
           loadCivId: _menuCivId,
           loadLandFraction: _lastNewGameParams?.landFractionPercent ?? 30,
           empireFoodStates: Array.from(empireFoodStates.entries()),
+          goldDeficitStates: Array.from(goldDeficitStates.entries()),
           ownerDefaultPodzialHandlu: Array.from(ownerDefaultPodzialHandlu.entries()),
           ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
@@ -20386,7 +20423,14 @@ async function boot(): Promise<void> {
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
                 deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
               }
-              aiSkarbiecByOwner.set(oid, Math.max(0, aiSkarb));
+              // R-DEFICYT-ZLOTA-KARA-Q1 (PARYTET AI): NIE podłogować do 0 tutaj —
+              // gracz (player.skarbiec -= utrzymanieRazem, wyżej) też może zejść
+              // poniżej zera w tym samym bankowaniu tury; ownerTreasury(oid)<0 jest
+              // progiem deficytu Złota (gold-deficit.ts, advanceGoldDeficit poniżej)
+              // i musi widzieć identyczny mechanizm dla obu stron. setOwnerTreasury()
+              // (inne wywołania — łup, przejęcie stolicy) nadal podłogowuje do 0,
+              // tak samo jak dla gracza — symetria zachowana.
+              aiSkarbiecByOwner.set(oid, aiSkarb);
 
               // Pula Nauki AI — symetryczna z graczem (totalNauka z ekonomii miast) + bonus trudności.
               aiNaukaPoolByOwner.set(
@@ -20436,6 +20480,114 @@ async function boot(): Promise<void> {
             }
           } catch (errBank) {
             console.warn('[Nauka] B\u0142\u0105d bankowania/badania:', errBank);
+          }
+
+          // --- R-DEFICYT-ZLOTA-KARA-Q1: deficyt Złota (analogia głodu wojska) ---
+          // WAŻNE: wołane PO bloku "Bank treasury" powyżej — ownerTreasury(ownerId)
+          // musi czytać Skarbiec PO zbankowaniu tej tury (dochód − utrzymanie),
+          // inaczej próg czyta stan sprzed bankowania (dawny błąd Q1, próg na
+          // upkeepByOwner[owner].deficyt zamiast na wyczerpaniu Skarbca).
+          try {
+            const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
+            // aiOwnerIds z bloku "Bank treasury" powyżej jest block-scoped (inny try{})
+            // -- przeliczamy niezależnie z tych samych miast (identyczna definicja).
+            const gdAiOwnerIds = new Set<number>();
+            for (const c of cities) {
+              if (c.ownerId > 0) gdAiOwnerIds.add(c.ownerId);
+            }
+            const gdOwnerIds = new Set<number>([0, ...gdAiOwnerIds, ...goldDeficitStates.keys()]);
+            for (const oid of gdOwnerIds) {
+              if (isBarbarian(oid)) continue;
+              if (!goldDeficitStates.has(oid)) goldDeficitStates.set(oid, freshGoldDeficitState());
+            }
+            const gdTickResult = advanceGoldDeficit(
+              [...gdOwnerIds].filter(oid => !isBarbarian(oid)),
+              goldDeficitStates,
+              ownerTreasury,
+              gdParams,
+            );
+
+            const gdDestroyedIds: string[] = [];
+            let gdPlayerDamagedCount = 0;
+            let gdPlayerDestroyedCount = 0;
+
+            for (const tick of gdTickResult.perOwner) {
+              if (!tick.zlotoDeficytAtrycjaAktywna) continue;
+              const gdStarv = applyGoldDeficitHpLoss(
+                units,
+                tick.ownerId,
+                gdParams.zlotoDeficytHpFrac,
+                (typeId) => unitHealth(data.units.find(u => u.Jednostka === typeId) ?? {}),
+              );
+              if (tick.ownerId === 0) {
+                gdPlayerDamagedCount += gdStarv.damagedCount;
+                gdPlayerDestroyedCount += gdStarv.destroyedIds.length;
+              }
+              if (gdStarv.destroyedIds.length > 0) gdDestroyedIds.push(...gdStarv.destroyedIds);
+            }
+
+            if (gdPlayerDamagedCount > 0) refreshFog();
+
+            if (gdDestroyedIds.length > 0) {
+              // Identyczne sprzątanie oblężenia/garnizonu co atrycja głodu wojska
+              // (main.ts, blok EmpireFood powyżej) — jednostka ginąca z deficytu
+              // Złota nie może zostawić wiszącego oblegaCityId ani zawyżonego
+              // licznika city.garnizon.
+              const gdDestroyedSet = new Set(gdDestroyedIds);
+              const gdSiegeCityIdsAffected = new Set<string>();
+              const gdGarnizonCitiesAffected = new Map<string, City>();
+              for (const u of units) {
+                if (!gdDestroyedSet.has(u.id)) continue;
+                if (u.oblegaCityId) gdSiegeCityIdsAffected.add(u.oblegaCityId);
+                if (u.inGarnizon === true) {
+                  const c = cityAtUnit(u);
+                  if (c) gdGarnizonCitiesAffected.set(c.id, c);
+                }
+              }
+              for (let i = units.length - 1; i >= 0; i--) {
+                if (gdDestroyedSet.has(units[i]!.id)) units.splice(i, 1);
+              }
+              syncUnitsRender();
+              for (const siegeCityId of gdSiegeCityIdsAffected) {
+                const stillMarked = units.some(x => x.oblegaCityId === siegeCityId);
+                if (!stillMarked) {
+                  const sc = cities.find(c => c.id === siegeCityId);
+                  if (sc?.oblegane) {
+                    const bId = sc.oblegajacyOwnerId ?? siegeBesiegerByCity.get(siegeCityId);
+                    const adj = bId !== undefined && units.some(
+                      x => x.ownerId === bId && hexDistance(x.q, x.r, sc.q, sc.r) === 1,
+                    );
+                    if (!adj) endMapSiege(siegeCityId);
+                  }
+                }
+              }
+              for (const c of gdGarnizonCitiesAffected.values()) syncGarnizonForCity(c);
+            }
+
+            // --- Komunikaty HUD gracza (tylko ownerId===0 — AI cierpi po cichu, parytet jak głód) ---
+            if (gdPlayerDestroyedCount > 0) {
+              showHintMessage(`Deficyt Złota: utracono ${gdPlayerDestroyedCount} jednostek`, 3500);
+            } else if (gdPlayerDamagedCount > 0) {
+              showHintMessage(
+                `Deficyt Złota: -${Math.round(gdParams.zlotoDeficytHpFrac * 100)}% max HP u ${gdPlayerDamagedCount} jednostek`,
+                2800,
+              );
+            } else {
+              const playerGdTick = gdTickResult.byOwner.get(0);
+              if (playerGdTick && playerGdTick.deficytZlota && !playerGdTick.zlotoDeficytAtrycjaAktywna) {
+                const gdPozostaleTury = Math.max(
+                  0, gdParams.zlotoDeficytKarencjaTur - playerGdTick.turyDeficytuZlotaPo,
+                );
+                if (gdPozostaleTury > 0) {
+                  showHintMessage(
+                    `Deficyt Złota za ${gdPozostaleTury} ${slowoTura(gdPozostaleTury)} - pusty Skarbiec!`,
+                    3000,
+                  );
+                }
+              }
+            }
+          } catch (errGd) {
+            console.error('[Deficyt Złota] Błąd ticku:', errGd);
           }
 
           // --- MIASTO: produkcja / porządek / kultura / religia ---
@@ -24172,6 +24324,9 @@ async function boot(): Promise<void> {
       empireFoodStates.clear();
       empireFoodStates.set(0, freshEmpireFoodState());
       bindEmpireFoodRuntime(empireFoodStates);
+      clearLastGoldDeficitTicks();
+      goldDeficitStates.clear();
+      goldDeficitStates.set(0, freshGoldDeficitState());
 
       foundCityMode = false;
       refreshBuildApi();
@@ -24395,6 +24550,9 @@ async function boot(): Promise<void> {
       empireFoodStates.clear();
       empireFoodStates.set(0, freshEmpireFoodState());
       bindEmpireFoodRuntime(empireFoodStates);
+      clearLastGoldDeficitTicks();
+      goldDeficitStates.clear();
+      goldDeficitStates.set(0, freshGoldDeficitState());
 
       playerPracaPool = preset.pracaStart;
       _lastPraca = playerPracaPool;
@@ -24810,6 +24968,16 @@ async function boot(): Promise<void> {
       }
       bindEmpireFoodRuntime(empireFoodStates);
       migrateCityRationsFromSave();
+      // R-DEFICYT-ZLOTA-KARA-Q1: stary zapis bez goldDeficitStates -> start od zera
+      // (bezpieczne, karencja liczy się od nowa zamiast błędnie kontynuować atrycję).
+      clearLastGoldDeficitTicks();
+      goldDeficitStates.clear();
+      const savedGd = saved.meta?.goldDeficitStates as Array<[number, GoldDeficitState]> | undefined;
+      if (savedGd?.length) {
+        for (const [oid, st] of savedGd) goldDeficitStates.set(oid, st);
+      } else {
+        goldDeficitStates.set(0, freshGoldDeficitState());
+      }
       ownerDefaultPodzialHandlu.clear();
       const savedHandel = saved.meta?.ownerDefaultPodzialHandlu as Array<[number, CityPodzialHandlu]> | undefined;
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, savedHandel);

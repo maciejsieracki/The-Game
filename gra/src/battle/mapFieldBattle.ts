@@ -112,6 +112,8 @@ export interface MapFieldBattleLaunchDeps {
   createBattleScene: (opts: BattleOpts) => { play: (cb: (res: BattleResult) => void) => void; dispose: () => void };
   /** Głód wojska — opcje do BattleOpts (PYTANIE-85). */
   armyHungerBattleOpts?: (atkOwnerId: number, defOwnerId: number) => Pick<BattleOpts, 'attackerArmyHungry' | 'defenderArmyHungry' | 'armyHungerStatMult'>;
+  /** Deficyt Złota — opcje do BattleOpts (gold-deficit.ts, R-DEFICYT-ZLOTA-KARA-Q1). */
+  goldDeficitBattleOpts?: (atkOwnerId: number, defOwnerId: number) => Pick<BattleOpts, 'attackerGoldDeficit' | 'defenderGoldDeficit' | 'goldDeficitStatMult'>;
   /** P-AI-MOC-BONUS=A: mnożnik walki major AI z bonusWalka (manual battlefield). */
   difficultyBattleOpts?: (atkOwnerId: number, defOwnerId: number) => Pick<BattleOpts, 'attackerDifficultyCombatMult' | 'defenderDifficultyCombatMult'>;
   registerMilitiaDef?: (id: string, def: Record<string, unknown>) => void;
@@ -494,6 +496,7 @@ export function launchFieldBattleFromMap(
         attackerIsBarbarian: pbInfo.atakujacy.isBarbarian,
         defenderIsBarbarian: pbInfo.obronca.isBarbarian,
         ...(deps.armyHungerBattleOpts?.(atkLead.ownerId, defLead.ownerId) ?? {}),
+        ...(deps.goldDeficitBattleOpts?.(atkLead.ownerId, defLead.ownerId) ?? {}),
         ...(deps.difficultyBattleOpts?.(atkLead.ownerId, defLead.ownerId) ?? {}),
         onCancel: () => setMood('mapa'),
       });

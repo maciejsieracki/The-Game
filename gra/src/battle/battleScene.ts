@@ -77,6 +77,7 @@ import {
   veteranMoraleUcieczkiDown,
 } from '../game/veteran';
 import { applyArmyHungerStatMultToCombatUnit } from '../game/army-starvation';
+import { applyGoldDeficitStatMultToCombatUnit } from '../game/gold-deficit';
 import {
   cityWallDefenseBonusPercent,
   cityGatedTerrainMultiplier,
@@ -392,6 +393,12 @@ export interface BattleUnit {
    * Osłabia staty bojowe (bez armor) w toCombatUnit — patrz army-starvation.ts.
    */
   armyHungry?: boolean;
+  /**
+   * Deficyt Złota (R-DEFICYT-ZLOTA-KARA-Q1=A/R-DEFICYT-ZLOTA-TRIGGER-Q1=B):
+   * Skarbiec właściciela < 0 po zbankowaniu tury. Osłabia staty bojowe (bez
+   * armor) w toCombatUnit — patrz gold-deficit.ts.
+   */
+  goldDeficit?: boolean;
 }
 
 /** Siege-mode options: add a wall across the defender's end of the field. */
@@ -497,6 +504,12 @@ export interface BattleOpts {
   defenderArmyHungry?: boolean;
   /** Mnożnik statów bojowych przy głodzie wojska (domyślnie 0.75). */
   armyHungerStatMult?: number;
+  /** Deficyt Złota atakującego (Skarbiec < 0 po zbankowaniu tury, gold-deficit.ts). */
+  attackerGoldDeficit?: boolean;
+  /** Deficyt Złota broniącego. */
+  defenderGoldDeficit?: boolean;
+  /** Mnożnik statów bojowych przy deficycie Złota (domyślnie 0.75). */
+  goldDeficitStatMult?: number;
   /** P-AI-MOC-BONUS=A: bonus trudności walki atakującego (major AI). */
   attackerDifficultyCombatMult?: number;
   /** P-AI-MOC-BONUS=A: bonus trudności walki broniącego (major AI). */
@@ -1263,6 +1276,8 @@ function toCombatUnit(
   bu: BattleUnit,
   armyHungerStatMult = 0.75,
   skipHunger = false,
+  goldDeficitStatMult = 0.75,
+  skipGoldDeficit = false,
 ): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
   const cu = combatUnitFromDef(s, {
@@ -1275,6 +1290,9 @@ function toCombatUnit(
   let scaled = applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
   if (bu.armyHungry && !skipHunger) {
     scaled = applyArmyHungerStatMultToCombatUnit(scaled, armyHungerStatMult);
+  }
+  if (bu.goldDeficit && !skipGoldDeficit) {
+    scaled = applyGoldDeficitStatMultToCombatUnit(scaled, goldDeficitStatMult);
   }
   return scaled;
 }
@@ -2521,6 +2539,7 @@ export class BattleScene {
   private attackerCivBonusy: readonly CivBonusEntry[] = [];
   private defenderCivBonusy: readonly CivBonusEntry[] = [];
   private armyHungerStatMult = 0.75;
+  private goldDeficitStatMult = 0.75;
   private attackerDifficultyCombatMult = 1;
   private defenderDifficultyCombatMult = 1;
 
@@ -2556,6 +2575,7 @@ export class BattleScene {
     this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
     this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
+    this.goldDeficitStatMult = opts.goldDeficitStatMult ?? 0.75;
     this.attackerDifficultyCombatMult = opts.attackerDifficultyCombatMult ?? 1;
     this.defenderDifficultyCombatMult = opts.defenderDifficultyCombatMult ?? 1;
     this._attackerCivLabel = opts.attackerCivLabel?.trim() || 'Gracz';
@@ -3488,6 +3508,7 @@ export class BattleScene {
       this.armyHungerStatMult,
       this.attackerDifficultyCombatMult,
       this.defenderDifficultyCombatMult,
+      this.goldDeficitStatMult,
     );
     for (const line of result.log) this.log.push(line);
     this._endWinner = result.winner;
@@ -7586,8 +7607,8 @@ export class BattleScene {
     // AUDIO: a melee blow connecting = a metallic clash (ranged shots have their
     // own "whoosh" at firing in _doRangedAttack, so don't double up here).
     if (!ranged) this._sfxMelee();
-    const cuA = toCombatUnit(attacker.bu, this.armyHungerStatMult);
-    const cuD = toCombatUnit(defender.bu, this.armyHungerStatMult);
+    const cuA = toCombatUnit(attacker.bu, this.armyHungerStatMult, false, this.goldDeficitStatMult);
+    const cuD = toCombatUnit(defender.bu, this.armyHungerStatMult, false, this.goldDeficitStatMult);
 
     // PER-TILE terrain (B8). The defender's OWN tile decides its terrain defence
     // bonus (hills / forest give the SS5j +50% via terrainDefenseMultiplier);
@@ -8399,7 +8420,7 @@ export class BattleScene {
     // before it breaks). Threshold kept >=0.
     let flee = ru.fleeMorale;
     const terr = this.terrainMap.combatTerrainName(ru.q, ru.r);
-    const cu = toCombatUnit(ru.bu, this.armyHungerStatMult);
+    const cu = toCombatUnit(ru.bu, this.armyHungerStatMult, false, this.goldDeficitStatMult);
     if (terrainDefenseMultiplier(terr, cu.rola, this.terrainData) > 1) {
       flee = Math.max(0, ru.fleeMorale - MORALE_TERRAIN_RESIST);
     }
@@ -18513,6 +18534,7 @@ function computeInstantResult(
   armyHungerStatMult: number = 0.75,
   attackerDifficultyCombatMult: number = 1,
   defenderDifficultyCombatMult: number = 1,
+  goldDeficitStatMult: number = 0.75,
 ): { winner: 'atakujacy' | 'obronca'; survivors: BattleUnit[]; log: string[] } {
   const log: string[] = [];
 
@@ -18534,8 +18556,8 @@ function computeInstantResult(
       const d = lD[i % lD.length];
       if (!a || !d || a.hp <= 0 || d.hp <= 0) continue;
 
-      const cu_a = toCombatUnit(a.ru.bu, armyHungerStatMult, true);
-      const cu_d = toCombatUnit(d.ru.bu, armyHungerStatMult, true);
+      const cu_a = toCombatUnit(a.ru.bu, armyHungerStatMult, true, goldDeficitStatMult, true);
+      const cu_d = toCombatUnit(d.ru.bu, armyHungerStatMult, true, goldDeficitStatMult, true);
       cu_a.health = a.hp;
       cu_d.health = d.hp;
 
@@ -18643,6 +18665,9 @@ function computeInstantResult(
         attackerArmyHungry: a.ru.bu.armyHungry === true,
         defenderArmyHungry: d.ru.bu.armyHungry === true,
         armyHungerStatMult,
+        attackerGoldDeficit: a.ru.bu.goldDeficit === true,
+        defenderGoldDeficit: d.ru.bu.goldDeficit === true,
+        goldDeficitStatMult,
         attackerDifficultyCombatMult,
         defenderDifficultyCombatMult,
       });

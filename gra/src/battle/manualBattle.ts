@@ -30,6 +30,7 @@ import type { CombatUnit, CombatResult } from '../game/combat';
 import { combatUnitFromDef } from '../game/combat';
 import { applyVeteranFracToCombatUnit } from '../game/veteran';
 import { applyArmyHungerStatMultToCombatUnit } from '../game/army-starvation';
+import { applyGoldDeficitStatMultToCombatUnit } from '../game/gold-deficit';
 import type { CivBonusEntry } from '../game/civ-bonuses';
 import { axialToWorld, HEX_R, SQRT3 } from '../render/hexutil';
 import { buildUnitModel } from '../render/units';
@@ -53,6 +54,8 @@ export interface BattleUnit {
   veteranBonusFrac?: number;
   /** Głód wojska (PYTANIE-85) — osłabienie statów bojowych bez armor. */
   armyHungry?: boolean;
+  /** Deficyt Złota (gold-deficit.ts) — osłabienie statów bojowych bez armor. */
+  goldDeficit?: boolean;
 }
 
 export interface ManualBattleOpts {
@@ -76,6 +79,8 @@ export interface ManualBattleOpts {
   defenderCivBonusy?: readonly CivBonusEntry[];
   /** Mnożnik statów bojowych przy głodzie wojska (domyślnie 0.75). */
   armyHungerStatMult?: number;
+  /** Mnożnik statów bojowych przy deficycie Złota (domyślnie 0.75). */
+  goldDeficitStatMult?: number;
 }
 
 export interface ManualBattleResult {
@@ -150,7 +155,11 @@ function norm(v: unknown, fallback: number): number {
   return isNaN(n) ? fallback : n;
 }
 
-function toCombatUnit(bu: BattleUnit, armyHungerStatMult = 0.75): CombatUnit {
+function toCombatUnit(
+  bu: BattleUnit,
+  armyHungerStatMult = 0.75,
+  goldDeficitStatMult = 0.75,
+): CombatUnit {
   const s: Record<string, unknown> = (bu.stats as Record<string, unknown>) ?? {};
   const cu = combatUnitFromDef(s, {
     typNazwa: (s['Jednostka'] as string) ?? bu.kategoria,
@@ -160,6 +169,9 @@ function toCombatUnit(bu: BattleUnit, armyHungerStatMult = 0.75): CombatUnit {
   let scaled = applyVeteranFracToCombatUnit(cu, bu.veteranBonusFrac ?? 0);
   if (bu.armyHungry) {
     scaled = applyArmyHungerStatMultToCombatUnit(scaled, armyHungerStatMult);
+  }
+  if (bu.goldDeficit) {
+    scaled = applyGoldDeficitStatMultToCombatUnit(scaled, goldDeficitStatMult);
   }
   return scaled;
 }
@@ -483,6 +495,7 @@ export class ManualBattle {
   private attackerCivBonusy: readonly CivBonusEntry[] = [];
   private defenderCivBonusy: readonly CivBonusEntry[] = [];
   private armyHungerStatMult = 0.75;
+  private goldDeficitStatMult = 0.75;
 
   // ------------------------------------------------------------------------
   constructor(opts: ManualBattleOpts) {
@@ -495,6 +508,7 @@ export class ManualBattle {
     this.attackerCivBonusy = opts.attackerCivBonusy ?? [];
     this.defenderCivBonusy = opts.defenderCivBonusy ?? [];
     this.armyHungerStatMult = opts.armyHungerStatMult ?? 0.75;
+    this.goldDeficitStatMult = opts.goldDeficitStatMult ?? 0.75;
 
     // ---- Overlay + UI ----
     this.overlay = document.createElement('div');
@@ -1042,8 +1056,8 @@ export class ManualBattle {
     attacker.group.rotation.y = (dw.x >= aw.x) ? 0 : Math.PI;
     defender.group.rotation.y = (aw.x >  dw.x) ? 0 : Math.PI;
 
-    const cuA = toCombatUnit(attacker.bu, this.armyHungerStatMult);
-    const cuD = toCombatUnit(defender.bu, this.armyHungerStatMult);
+    const cuA = toCombatUnit(attacker.bu, this.armyHungerStatMult, this.goldDeficitStatMult);
+    const cuD = toCombatUnit(defender.bu, this.armyHungerStatMult, this.goldDeficitStatMult);
     const result: CombatResult = resolveCombat(cuA, cuD, {
       maxRounds: 30,
       attackerMoved: true,

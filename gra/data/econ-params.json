@@ -119,6 +119,27 @@
       "jednostka": "mnożnik",
       "opis": "Mnożnik parametrów bojowych (bez armor) gdy zapasy państwa < 0 po koszcie armii — jednostka osłabiona zanim ruszy atrycja HP."
     },
+    "zloto_deficyt_hp_frac": {
+      "easy": 0.06,
+      "normal": 0.08,
+      "hard": 0.1,
+      "jednostka": "ułamek maxHP",
+      "opis": "R-DEFICYT-ZLOTA-KARA-Q1=A (Maciej 2026-08-06): atrycja HP jednostek na mapie gdy Skarbiec właściciela < 0 (ownerTreasury(ownerId), PO zbankowaniu tury — R-DEFICYT-ZLOTA-TRIGGER-Q1=B), PO karencji zloto_deficyt_karencja_tur (−8% maxHP/tura normal). Analogia do glod_wojska_hp_frac, ale osobny parametr (Złoto ≠ Żywność). Identycznie dla gracza i AI (PARYTET AI)."
+    },
+    "zloto_deficyt_karencja_tur": {
+      "easy": 3,
+      "normal": 3,
+      "hard": 3,
+      "jednostka": "tury",
+      "opis": "R-DEFICYT-ZLOTA-KARA-Q1=A: liczba kolejnych tur Z RZĘDU ze Skarbcem<0 (ownerTreasury(ownerId)), zanim ruszy atrycja HP (zloto_deficyt_hp_frac). Punkt odniesienia 3 tury, jak Żywność (glod_wojska_karencja_tur) — do dostrojenia w playteście."
+    },
+    "zloto_deficyt_stat_mult": {
+      "easy": 0.75,
+      "normal": 0.75,
+      "hard": 0.75,
+      "jednostka": "mnożnik",
+      "opis": "R-DEFICYT-ZLOTA-KARA-Q1=A: mnożnik parametrów bojowych (bez armor) gdy Skarbiec właściciela < 0 tej tury — jednostka osłabiona zanim ruszy atrycja HP. Analogia do glod_wojska_stat_mult, osobny nazwany parametr."
+    },
     "zywnosc_mnoznik_terytorium_wlasne": {
       "easy": 1.0,
       "normal": 1.0,
