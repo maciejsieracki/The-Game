@@ -2,7 +2,7 @@
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../src/map/generator';
 import { computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance } from '../src/units/setup';
 import { computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap } from '../src/game/visibility';
-import { canFoundCity, foundCity, foundCityAt, cityName } from '../src/game/cities';
+import { canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE } from '../src/game/cities';
 import { loadGameData } from '../src/data/loader';
 import { advanceCityEconomy, buildEconParams, workedTilesForCity } from '../src/game/turn-economy';
 import {
@@ -40,7 +40,7 @@ export {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
   computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
   computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
-  canFoundCity, foundCity, foundCityAt, cityName,
+  canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE,
   loadGameData,
   advanceCityEconomy, buildEconParams, workedTilesForCity,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,

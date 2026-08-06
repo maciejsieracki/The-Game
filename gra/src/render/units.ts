@@ -252,6 +252,41 @@ const STARVING_SKULL_SCALE         = 0.85;
 const STARVING_SKULL_OPACITY       = 0.30;
 const STARVING_SKULL_RENDER_ORDER  = 15;
 
+/**
+ * R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C (Maciej 2026-08-06) — IKONA PER PRZYCZYNA.
+ *
+ * Do tej pory nad jednostką wisiała JEDNA uniwersalna czaszka głodu, więc gracz
+ * nie odróżniał, czy jednostka słabnie od braku Żywności (isArmyHungry), czy od
+ * pustego Skarbca (isGoldDeficit, gold-deficit.ts). Teraz każda przyczyna ma
+ * własny sprite i obie mogą wisieć JEDNOCZEŚNIE:
+ *   - GŁÓD WOJSKA  → czerwona czaszka ☠ (bez zmian, właściciel ją już zna);
+ *   - DEFICYT ZŁOTA → złota moneta przekreślona karmazynową belką (pusty Skarbiec).
+ *
+ * Rozmiary (jednostki świata, HEX_R = 1; token jednostki ma ~0.58*HEX_R wysokości):
+ *  - SUFFER_ICON_SCALE_SINGLE = 0.85 — jedna przyczyna, wartość zastana (MAP-Q1);
+ *  - SUFFER_ICON_SCALE_PAIR   = 0.58 — dwie przyczyny naraz; zmniejszone, bo
+ *    2 × 0.85 = 1.70 przy szerokości heksu 2*HEX_R zachodziłoby na sąsiadów;
+ *  - SUFFER_ICON_PAIR_DX      = 0.30*HEX_R — połowa rozstawu pary w osi X
+ *    (czaszka w lewo −DX, moneta w prawo +DX). Sprite'y są billboardami, a
+ *    kamera mapy ma azymut 0 na stałe (elewacja 52°), więc lokalna oś X tokena
+ *    pokrywa się z poziomem ekranu i ikony NIGDY na siebie nie nachodzą.
+ *  - SUFFER_ICON_Y / _Z — wysokość nad głową i wysunięcie ku kamerze; te same
+ *    wartości, co miała pojedyncza czaszka przed zmianą.
+ */
+const SUFFER_ICON_SCALE_SINGLE     = STARVING_SKULL_SCALE;
+const SUFFER_ICON_SCALE_PAIR       = 0.58;
+const SUFFER_ICON_PAIR_DX          = 0.30 * HEX_R;
+const SUFFER_ICON_Y                = 0.78 * HEX_R;
+const SUFFER_ICON_Z                = 0.10 * HEX_R;
+
+/**
+ * Moneta deficytu Złota. Opacity WYŻSZE niż czaszki (0.30): czaszka to zwarta
+ * czerwona sylwetka na ciemnym tokenie, a jasnozłoty krążek przy 0.30 ginął na
+ * piasku/stepie. Ciemna obwódka (rim) domyka czytelność na każdym terenie.
+ */
+const GOLD_DEFICIT_COIN_OPACITY    = 0.46;
+const GOLD_DEFICIT_RENDER_ORDER    = STARVING_SKULL_RENDER_ORDER;
+
 // Avatar proportions -- stocky R6 style
 const AV_LEG_W   = 0.07  * HEX_R;  // leg box width & depth
 const AV_LEG_H   = 0.20  * HEX_R;  // leg height
@@ -4826,8 +4861,10 @@ export class UnitRenderer {
 
   /** Sprite ×N na reprezentancie stosu. */
   private stackBadgeSprites: Map<string, THREE.Sprite> = new Map();
-  /** MAP-Q1: chip głodu na reprezentancie stosu. */
+  /** MAP-Q1: ikona GŁODU WOJSKA (czaszka) na reprezentancie stosu. */
   private stackStarvingSprites: Map<string, THREE.Sprite> = new Map();
+  /** R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: ikona DEFICYTU ZŁOTA (moneta) na reprezentancie stosu. */
+  private stackGoldDeficitSprites: Map<string, THREE.Sprite> = new Map();
   /** Etykieta „X tur” przy podglądzie trasy (A3 Shift). */
   private pathTurnLabelSprite: THREE.Sprite | null = null;
 
@@ -5203,24 +5240,62 @@ export class UnitRenderer {
       this.stackBadgeSprites.set(repId, sprite);
     }
 
+    this._applySufferingIcons(stackDisplay);
+  }
+
+  /**
+   * R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C — IKONA PER PRZYCZYNA nad żetonem.
+   *
+   * Dwa NIEZALEŻNE zbiory reprezentantów: głód wojska (`starvingRepIds`) i
+   * deficyt Złota (`goldDeficitRepIds`). Gdy jednostka jest w obu naraz, wiszą
+   * OBIE ikony obok siebie (czaszka po lewej, moneta po prawej) — żadna nie
+   * nadpisuje drugiej; przy jednej przyczynie ikona zostaje wyśrodkowana i w
+   * rozmiarze zastanym (SUFFER_ICON_SCALE_SINGLE), więc dotychczasowy obraz
+   * głodu się nie zmienia.
+   */
+  private _applySufferingIcons(stackDisplay?: StackDisplayInfo): void {
     const starving = stackDisplay?.starvingRepIds;
-    for (const [id, sprite] of this.stackStarvingSprites) {
-      const obj = this.tokens.get(id);
-      if (obj) obj.remove(sprite);
-      sprite.material.map?.dispose();
-      (sprite.material as THREE.SpriteMaterial).dispose();
+    const goldDeficit = stackDisplay?.goldDeficitRepIds;
+
+    for (const map of [this.stackStarvingSprites, this.stackGoldDeficitSprites]) {
+      for (const [id, sprite] of map) {
+        const obj = this.tokens.get(id);
+        if (obj) obj.remove(sprite);
+        sprite.material.map?.dispose();
+        (sprite.material as THREE.SpriteMaterial).dispose();
+      }
+      map.clear();
     }
-    this.stackStarvingSprites.clear();
-    if (starving) {
-      for (const repId of starving) {
-        const obj = this.tokens.get(repId);
-        if (!obj || !obj.visible) continue;
-        const sprite = this._makeStarvingChipSprite();
-        // Wyśrodkowana nad jednostką (x=0), wysoko nad głową (Y), lekko
-        // wysunięta w stronę kamery (Z), żeby nie ginęła w geometrii tokena.
-        sprite.position.set(0, 0.78 * HEX_R, 0.10 * HEX_R);
+
+    if (!starving?.size && !goldDeficit?.size) return;
+
+    const repIds = new Set<string>();
+    if (starving) for (const id of starving) repIds.add(id);
+    if (goldDeficit) for (const id of goldDeficit) repIds.add(id);
+
+    for (const repId of repIds) {
+      const obj = this.tokens.get(repId);
+      if (!obj || !obj.visible) continue;
+      const hasHunger = starving?.has(repId) === true;
+      const hasGold = goldDeficit?.has(repId) === true;
+      const both = hasHunger && hasGold;
+      const scale = both ? SUFFER_ICON_SCALE_PAIR : SUFFER_ICON_SCALE_SINGLE;
+
+      if (hasHunger) {
+        const sprite = this._makeStarvingChipSprite(scale);
+        // Wyśrodkowana nad jednostką (x=0) gdy sama; przy dwóch przyczynach
+        // w lewo o SUFFER_ICON_PAIR_DX. Y — wysoko nad głową, Z — lekko ku
+        // kamerze, żeby ikona nie ginęła w geometrii tokena.
+        sprite.position.set(both ? -SUFFER_ICON_PAIR_DX : 0, SUFFER_ICON_Y, SUFFER_ICON_Z);
         obj.add(sprite);
         this.stackStarvingSprites.set(repId, sprite);
+      }
+
+      if (hasGold) {
+        const sprite = this._makeGoldDeficitChipSprite(scale);
+        sprite.position.set(both ? SUFFER_ICON_PAIR_DX : 0, SUFFER_ICON_Y, SUFFER_ICON_Z);
+        obj.add(sprite);
+        this.stackGoldDeficitSprites.set(repId, sprite);
       }
     }
   }
@@ -5232,7 +5307,7 @@ export class UnitRenderer {
    * Skala i opacity dobrane pod oko w\u0142a\u015bciciela \u2014 \u0142atwe do dostrojenia
    * (patrz sta\u0142e STARVING_SKULL_* poni\u017cej).
    */
-  private _makeStarvingChipSprite(): THREE.Sprite {
+  private _makeStarvingChipSprite(scale: number = SUFFER_ICON_SCALE_SINGLE): THREE.Sprite {
     const canvas = document.createElement('canvas');
     canvas.width = 128;
     canvas.height = 128;
@@ -5251,8 +5326,66 @@ export class UnitRenderer {
       depthTest: false,
     });
     const sp = new THREE.Sprite(mat);
-    sp.scale.set(STARVING_SKULL_SCALE, STARVING_SKULL_SCALE, 1);
+    sp.scale.set(scale, scale, 1);
     sp.renderOrder = STARVING_SKULL_RENDER_ORDER;
+    return sp;
+  }
+
+  /**
+   * R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: ikona DEFICYTU Z\u0141OTA (isGoldDeficit,
+   * gra/src/game/gold-deficit.ts) \u2014 z\u0142ota moneta przekre\u015blona karmazynow\u0105 belk\u0105
+   * (\u201epusty Skarbiec\u201d). Celowo INNY kszta\u0142t i INNY kolor ni\u017c czerwona czaszka
+   * g\u0142odu, \u017ceby przyczyn\u0119 da\u0142o si\u0119 rozpozna\u0107 z k\u0105ta kamery mapy (elewacja 52\u00b0,
+   * azymut 0) bez naje\u017cd\u017cania kursorem. Ciemna obw\u00f3dka trzyma czytelno\u015b\u0107 na
+   * jasnych terenach (pustynia/step), gdzie samo z\u0142oto by si\u0119 zla\u0142o.
+   */
+  private _makeGoldDeficitChipSprite(scale: number = SUFFER_ICON_SCALE_SINGLE): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const cx = 64;
+    const cy = 64;
+
+    // Ciemna obw\u00f3dka monety (kontrast na jasnym terenie).
+    ctx.beginPath();
+    ctx.arc(cx, cy, 50, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(12,18,32,0.92)';
+    ctx.fill();
+
+    // Kr\u0105\u017cek z\u0142ota.
+    ctx.beginPath();
+    ctx.arc(cx, cy, 43, 0, Math.PI * 2);
+    ctx.fillStyle = '#e8c84a';
+    ctx.fill();
+
+    // Wewn\u0119trzny pier\u015bcie\u0144 \u2014 czytelne \u201eto jest moneta\u201d, nie kropka.
+    ctx.beginPath();
+    ctx.arc(cx, cy, 31, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(120,86,16,0.85)';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+
+    // Belka przekre\u015blenia \u2014 \u201ebrak / minus\u201d (Skarbiec < 0).
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillStyle = '#c0281e';
+    ctx.fillRect(-52, -9, 104, 18);
+    ctx.restore();
+
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      opacity: GOLD_DEFICIT_COIN_OPACITY,
+      depthTest: false,
+    });
+    const sp = new THREE.Sprite(mat);
+    sp.scale.set(scale, scale, 1);
+    sp.renderOrder = GOLD_DEFICIT_RENDER_ORDER;
     return sp;
   }
 

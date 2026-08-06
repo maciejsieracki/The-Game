@@ -13,8 +13,15 @@
  *     imperium ALBO aktywny szlak handlowy -- ta sama reguła co bramka budowy,
  *     zloto-access.ts). Traci dostęp -> mnożnik wraca do ×1,0 -- BEZ usuwania
  *     budynku z listy zbudowanych.
- *   - Etykieta "Podatek"/"Danina" (danina-nazwa.ts) rozszerzona o trzeci, opcjonalny
- *     argument `maDostepDoZlota` -- ta sama bramka, jedna funkcja rozstrzygająca.
+ *   - Etykieta "Podatek"/"Danina" (danina-nazwa.ts) BYŁA rozszerzona o trzeci,
+ *     opcjonalny argument `maDostepDoZlota` pod PYTANIE 83 -- ale FALA 41
+ *     (Maciej 2026-07-27 wieczor, commit 297c60c, deploy c1e7a596) NADPISAŁA tę
+ *     bramkę decyzją "strumień nazywa się zawsze Podatek" (danina-nazwa.ts
+ *     nagłówek: "bez bramki Waluta/Mennica i bez nazwy Danina"). `daninaLabel`/
+ *     `isPodatekActive` dziś ignorują wszystkie argumenty i zwracają zawsze
+ *     Podatek/true -- MNOŻNIK Efektu 1 (Waluta+Mennica+dostęp do złota) nadal w
+ *     pełni działa i śpi zgodnie z PYTANIE 83/PYTANIE-77-DOP, zmieniła się
+ *     WYŁĄCZNIE etykieta w UI. Ten plik zakłada dziś zachowanie PO FALI 41.
  *   - Dostęp liczony jest CIV-WIDE (dla właściciela), NIE per-miasto -- dwa miasta
  *     tej samej cywilizacji muszą zawsze zgodnie raportować ten sam stan (sekcja 6).
  *   - PARYTET AI bezwzględny -- identyczna reguła dla ownerId=0 i dowolnego ownerId AI.
@@ -217,10 +224,11 @@ console.log('\n-- 1. wlasna Kopalnia zlota + Waluta + Mennica w stolicy -> dzial
 }
 
 // ===========================================================================
-// 2. Ta sama cywilizacja TRACI Kopalnie zlota -> mnoznik x1,0, nazwa wraca na
-//    "Danina", a Mennica NADAL figuruje jako zbudowana.
+// 2. Ta sama cywilizacja TRACI Kopalnie zlota -> mnoznik wraca do x1,0 (etykieta
+//    zostaje "Podatek", FALA 41 -- patrz naglowek pliku), a Mennica NADAL figuruje
+//    jako zbudowana.
 // ===========================================================================
-console.log('\n-- 2. utrata Kopalni zlota -> 1 tura laski, potem spi, "Danina", Mennica nadal stoi --');
+console.log('\n-- 2. utrata Kopalni zlota -> 1 tura laski, potem spi (mnoznik), etykieta stale "Podatek" (FALA 41), Mennica nadal stoi --');
 {
   const placedLost = new Map(); // Kopalnia zniszczona/utracona -- mapa juz jej nie zawiera
   const hasGold2 = M.empireHasKopalniaZlota(placedLost);
@@ -235,7 +243,7 @@ console.log('\n-- 2. utrata Kopalni zlota -> 1 tura laski, potem spi, "Danina", 
     `2: 1. tura po utracie -- mnoznik DZIALA (laska) (${afterLossGrace.capital.pieniadzBrutto} > ${noEffectBaseline.capital.pieniadzBrutto})`);
   eq(afterLossSleep.capital.pieniadzBrutto, noEffectBaseline.capital.pieniadzBrutto,
     '2: 2. tura bez dostepu -- pieniadzBrutto IDENTYCZNY jak baseline bez mnoznika (x1,0)');
-  eq(daninaFor(0, hasGold2), 'Danina', '2: etykieta "Danina" gdy brak natywnego dostepu (bez laski w UI mid-tick)');
+  eq(daninaFor(0, hasGold2), 'Podatek', '2: etykieta zawsze "Podatek" (FALA 41, 2026-07-27) niezaleznie od dostepu do zlota -- mnoznik (wyzej) nadal spi, tylko nazwa juz sie nie zmienia');
   assert(builtBothWithMennica.get(capitalSite.id).includes('mennica'),
     '2: Mennica NADAL figuruje w builtBuildingIds stolicy -- budynek NIE zostal zburzony');
 }
@@ -271,8 +279,15 @@ console.log('\n-- 3. brak zloza + aktywny szlak -> dziala; po zerwaniu -> spi --
   const grantsConnected = M.computeTradeRouteResourceGrants(routesConnected, partnerHasGoldNatively);
   const hasTradeGrantConnected = M.hasTradeRouteResourceAccess(grantsConnected, OWNER_SELF, 'zloto');
   eq(hasTradeGrantConnected, true, '3: grant "z trasy" aktywny dla wlasciciela bez zloza');
-  const augmentedConnected = M.placedImprovementsWithZlotoTradeGrant(new Map(), hasTradeGrantConnected);
-  const hasGold3Connected = M.empireHasKopalniaZlota(augmentedConnected);
+  // FALA 41 (PYTANIE-84-U3, 2026-07-27, commit 297c60c): placedImprovementsWithZlotoTradeGrant
+  // jest dzis @deprecated no-op (zloto-access.ts) -- main.ts NIE augmentuje juz
+  // placedImprovements syntetycznym wpisem, tylko liczy dostep BEZPOSREDNIO jako
+  // OR: zapas w skarbcu (ownerHasZlotoStock) LUB wlasna kopalnia (empireHasKopalniaZlota)
+  // LUB grant z trasy (hasTradeRouteResourceAccess) -- patrz main.ts ownerHasZlotoAccessNow.
+  // Test rekonstruuje TEN SAM wzor, pomijajac skladnik zapasu w skarbcu (nieistotny
+  // dla tej sekcji -- OWNER_SELF nie ma zadnej Kopalni zlota ani stocku).
+  const nativeGold3 = M.empireHasKopalniaZlota(new Map());
+  const hasGold3Connected = nativeGold3 || hasTradeGrantConnected;
   eq(hasGold3Connected, true, '3: dostep do zlota AKTYWNY dzieki szlakowi (bez wlasnego zloza)');
 
   const withRoute = tick(OWNER_SELF, () => hasGold3Connected);
@@ -288,8 +303,8 @@ console.log('\n-- 3. brak zloza + aktywny szlak -> dziala; po zerwaniu -> spi --
   const grantsBroken = M.computeTradeRouteResourceGrants(routesBroken, partnerHasGoldNatively);
   const hasTradeGrantBroken = M.hasTradeRouteResourceAccess(grantsBroken, OWNER_SELF, 'zloto');
   eq(hasTradeGrantBroken, false, '3: grant "z trasy" cofniety po zerwaniu szlaku');
-  const augmentedBroken = M.placedImprovementsWithZlotoTradeGrant(new Map(), hasTradeGrantBroken);
-  const hasGold3Broken = M.empireHasKopalniaZlota(augmentedBroken);
+  // Ten sam wzor co hasGold3Connected wyzej (FALA 41 -- patrz komentarz tam).
+  const hasGold3Broken = nativeGold3 || hasTradeGrantBroken;
   eq(hasGold3Broken, false, '3: dostep do zlota utracony po zerwaniu szlaku');
 
   const graceState3 = M.createMennicaZlotoGraceState();
@@ -301,7 +316,7 @@ console.log('\n-- 3. brak zloza + aktywny szlak -> dziala; po zerwaniu -> spi --
     `3: 1. tura po zerwaniu szlaku -- mnoznik DZIALA (laska) (${afterBreakGrace.capital.pieniadzBrutto} > ${noEffectBaseline3.capital.pieniadzBrutto})`);
   eq(afterBreakSleep.capital.pieniadzBrutto, noEffectBaseline3.capital.pieniadzBrutto,
     '3: 2. tura po zerwaniu -- mnoznik SPI (pieniadzBrutto = baseline bez efektu)');
-  eq(daninaFor(OWNER_SELF, hasGold3Broken), 'Danina', '3: etykieta "Danina" gdy brak natywnego grantu (bez laski w UI mid-tick)');
+  eq(daninaFor(OWNER_SELF, hasGold3Broken), 'Podatek', '3: etykieta zawsze "Podatek" (FALA 41) mimo braku natywnego grantu -- mnoznik (wyzej) nadal spi');
   assert(builtBothWithMennica.get(capitalSite.id).includes('mennica'),
     '3: Mennica NADAL zbudowana w stolicy mimo zerwania szlaku (budynek nietkniety)');
 
@@ -314,8 +329,8 @@ console.log('\n-- 3. brak zloza + aktywny szlak -> dziala; po zerwaniu -> spi --
   const grantsReconnected = M.computeTradeRouteResourceGrants(routesReconnected, partnerHasGoldNatively);
   const hasTradeGrantReconnected = M.hasTradeRouteResourceAccess(grantsReconnected, OWNER_SELF, 'zloto');
   eq(hasTradeGrantReconnected, true, '4: grant "z trasy" odzyskany');
-  const augmentedReconnected = M.placedImprovementsWithZlotoTradeGrant(new Map(), hasTradeGrantReconnected);
-  const hasGold4 = M.empireHasKopalniaZlota(augmentedReconnected);
+  // Ten sam wzor co hasGold3Connected/Broken wyzej (FALA 41 -- patrz komentarz w sekcji 3).
+  const hasGold4 = nativeGold3 || hasTradeGrantReconnected;
   eq(hasGold4, true, '4: dostep do zlota odzyskany');
 
   // builtBothWithMennica NIGDY nie byl modyfikowany w tej sekcji -- zero odbudowy,
@@ -356,10 +371,12 @@ console.log('\n-- 5. parytet AI -- identyczna reguła dla ownerId AI --');
   assert(aiWithGold.capital.pieniadzBrutto > aiNoEffect.capital.pieniadzBrutto,
     '5: parytet -- AI TEZ traci mnoznik po utracie dostepu do zlota (nie tylko gracz)');
   eq(daninaFor(OWNER_AI, hasGoldAi), 'Podatek', '5: AI -- etykieta "Podatek" z dostepem');
-  eq(daninaFor(OWNER_AI, false), 'Danina', '5: AI -- etykieta "Danina" po utracie dostepu');
+  eq(daninaFor(OWNER_AI, false), 'Podatek', '5: AI -- etykieta zawsze "Podatek" (FALA 41) po utracie dostepu');
   // isPodatekActive bezposrednio -- brak jakiejkolwiek galezi po ownerId w samej funkcji.
-  eq(M.isPodatekActive(true, true, true),  true,  '5: isPodatekActive(true,true,true) -- ownerId-agnostic z definicji');
-  eq(M.isPodatekActive(true, true, false), false, '5: isPodatekActive(true,true,false) -- ownerId-agnostic z definicji');
+  // FALA 41 (2026-07-27): bramka Danina/Podatek usunieta z UI -- funkcja zwraca
+  // zawsze true, niezaleznie od argumentow (danina-nazwa.ts naglowek).
+  eq(M.isPodatekActive(true, true, true),  true, '5: isPodatekActive(true,true,true) -- ownerId-agnostic z definicji');
+  eq(M.isPodatekActive(true, true, false), true, '5: isPodatekActive(true,true,false) -- zawsze true od FALA 41 (bramka usunieta), ownerId-agnostic z definicji');
 }
 
 // ===========================================================================
@@ -388,7 +405,7 @@ console.log('\n-- 6. dwa miasta tej samej cywilizacji zgodnie raportuja ten sam 
   const lblRegionalNoGold = daninaFor(0, false);
   eq(lblCapitalNoGold, lblRegionalNoGold, '6: etykieta identyczna dla stolicy i miasta regionalnego (dostep utracony)');
   eq(lblCapitalWithGold, 'Podatek', '6: (kontrola) z dostepem = "Podatek" dla obu miast');
-  eq(lblCapitalNoGold, 'Danina', '6: (kontrola) bez dostepu = "Danina" dla obu miast');
+  eq(lblCapitalNoGold, 'Podatek', '6: (kontrola) bez dostepu = "Podatek" tez dla obu miast (FALA 41 -- etykieta stala, mnoznik i tak spi)');
 }
 
 // --- summary ---------------------------------------------------------------

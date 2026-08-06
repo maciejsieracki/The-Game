@@ -35,7 +35,7 @@ const ENTRY_TS = `
 import { generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT } from '../src/map/generator';
 import { computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance } from '../src/units/setup';
 import { computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap } from '../src/game/visibility';
-import { canFoundCity, foundCity, foundCityAt, cityName } from '../src/game/cities';
+import { canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE } from '../src/game/cities';
 import { loadGameData } from '../src/data/loader';
 import { advanceCityEconomy, buildEconParams, workedTilesForCity } from '../src/game/turn-economy';
 import {
@@ -73,7 +73,7 @@ export {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
   computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
   computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
-  canFoundCity, foundCity, foundCityAt, cityName,
+  canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE,
   loadGameData,
   advanceCityEconomy, buildEconParams, workedTilesForCity,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
@@ -124,7 +124,7 @@ const {
   generateMap, DEFAULT_WIDTH, DEFAULT_HEIGHT,
   computeStartPlacements, placeStartingUnits, computeReachable, computePath, keyOf, hexDistance,
   computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
-  canFoundCity, foundCity, foundCityAt, cityName,
+  canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE,
   loadGameData,
   advanceCityEconomy, buildEconParams, workedTilesForCity,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
@@ -333,17 +333,19 @@ assert('foundCity population === 1', c !== null && c.population === 1,
 if (c !== null) {
   cities.push(c);
 
-  // Find a land hex at hexDistance < 5 from the city
+  // Find a land hex at hexDistance < MIN_CITY_DISTANCE from the city (real
+  // engine threshold — cities.ts:570, sourced from miasto-params.json
+  // min_dystans_miast.wartosc; do NOT hardcode a guessed constant here).
   let nearQ = null, nearR = null;
   let farQ  = null, farR  = null;
   for (const [key, hex] of Object.entries(map.hexes)) {
     if (hex.terenBazowy === 'morze' || hex.terenBazowy === 'wybrzeze' || hex.terenBazowy === 'gory') continue;
     const [hq, hr] = key.split(',').map(Number);
     const d = hexDistance(hq, hr, c.q, c.r);
-    if (d > 0 && d < 5 && nearQ === null) {
+    if (d > 0 && d < MIN_CITY_DISTANCE && nearQ === null) {
       nearQ = hq; nearR = hr;
     }
-    if (d >= 5 && farQ === null) {
+    if (d >= MIN_CITY_DISTANCE && farQ === null) {
       farQ = hq; farR = hr;
     }
     if (nearQ !== null && farQ !== null) break;
@@ -419,10 +421,20 @@ if (econSettler) {
       res && Number.isFinite(res.totalPraca) && Number.isFinite(res.totalNauka) &&
       Number.isFinite(res.totalPieniadz) && Number.isFinite(res.totalZywnosc),
       `praca=${res && res.totalPraca}, nauka=${res && res.totalNauka}`);
-    // City founded on land near food should accumulate a food store (granary-less
-    // model floors store to 0 each turn, so just assert it is a number >= 0).
-    assert('economy: city food store is a number >= 0',
-      typeof econCity.magazynZywnosci === 'number' && econCity.magazynZywnosci >= 0,
+    // city.magazynZywnosci is CELOWO legacy/oblezenie-only (turn-economy.ts:20,
+    // comment "magazynZywnosci kept for save compat only"; growth buffer moved to
+    // city.wzrostUlamkowy under PYTANIE-85/population-growth-v85). The normal
+    // (non-besieged) advanceCityEconomy path never writes city.magazynZywnosci —
+    // only the siege branch (turn-economy.ts:2332) does, "zachowanie BEZ ZMIAN
+    // (pelna wsteczna kompatybilnosc)" for cities that were never besieged. Every
+    // reader goes through getCityFood()/readCityFoodBuffer(), which default
+    // undefined -> 0 (economy-upkeep.ts:141-143), so the field being undefined
+    // here is the correct, intended state for a city that has never been under
+    // siege — assert the real contract (number >= 0 OR undefined), not that a
+    // write always happens.
+    assert('economy: city food store is a number >= 0 or undefined (oblezenie-only field)',
+      econCity.magazynZywnosci === undefined ||
+      (typeof econCity.magazynZywnosci === 'number' && econCity.magazynZywnosci >= 0),
       `store=${econCity.magazynZywnosci}`);
     assert('economy: population never goes below 1',
       econCity.population >= 1, `pop=${econCity.population} (was ${popBefore})`);

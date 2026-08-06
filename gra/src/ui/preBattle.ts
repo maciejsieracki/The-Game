@@ -9,7 +9,7 @@
  */
 
 import type { CivBonusLite } from '../game/production';
-import { isCombatModifierBonus } from '../game/civ-bonuses';
+import { bonusChipTexts } from '../game/defenseBreakdown';
 import { terrainIconSvg, civIconSvg, brandIconSvg } from './icons/brandAssets';
 import { PB_SVG } from '../battle/battleHudTheme';
 import { leaderPortraitUrl, leaderName } from './leaderPortraits';
@@ -399,19 +399,6 @@ function roleLabel(role: 'atk' | 'def', isPlayer: boolean): string {
   if (isPlayer) return base + ' — Ty';
   if (role === 'atk') return base + ' — Wróg';
   return base;
-}
-
-function bonusChipTexts(
-  bonusy: readonly CivBonusLite[],
-): string[] {
-  const out: string[] = [];
-  for (const b of bonusy) {
-    if (!isCombatModifierBonus(b)) continue;
-    const text = (b.opis ?? '').trim();
-    if (!text) continue;
-    out.push(text);
-  }
-  return out;
 }
 
 function resolveSideBonusy(

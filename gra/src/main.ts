@@ -548,7 +548,7 @@ import {
   type BattleUnitBeforeSnap,
   type BattleSummaryWinner,
 } from './game/battle-summary';
-import type { PreBattleInfo, PreBattleUnit } from './ui/preBattle';
+import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
 import { showHud, updateHud as refreshD1bHud, hideHud, markMinimapDirty } from './ui/hud';
 import {
   createCityListHud,
@@ -739,6 +739,11 @@ import {
   unitGetsFortifyDefenseBonus,
   type CityDefenseBonusParams,
 } from './game/city-defense';
+import {
+  buildDefenseRosterUnits,
+  cityDefenseBreakdownLines,
+  civBonusUnitShapeFromDef,
+} from './game/defenseBreakdown';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
   tradeGoodsCategoriesFromParts,
@@ -3964,12 +3969,53 @@ async function boot(): Promise<void> {
       );
     }
 
+    /** Etykieta poziomu trudności do kart jednostek — kontekst dla liczb z econ-params. */
+    function poziomTrudnosciLabelPl(): string {
+      return _menuDifficulty === 'easy' ? 'łatwy'
+        : _menuDifficulty === 'hard' ? 'trudny'
+        : 'normalny';
+    }
+
+    /**
+     * R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: obie przyczyny cierpienia jednostki
+     * (głód wojska + deficyt Złota) z REALNYMI wartościami parametrów dla
+     * bieżącego poziomu trudności — te same, którymi liczy silnik.
+     * Cywile (osadnik / robotnik / zwiadowca) nie tracą statów ani HP z żadnej
+     * z tych przyczyn (patrz applyArmyStarvationHpLoss / applyGoldDeficitHpLoss),
+     * więc karta też im tego nie pokazuje — parytet z ikonami na mapie.
+     */
+    function unitSufferingFields(u: RuntimeUnit) {
+      const cywil = isCivilianUnit(u);
+      const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
+      const gdParams = buildGoldDeficitParams(data.econParams, _menuDifficulty);
+      const glod = !cywil && isArmyHungry(u.ownerId);
+      const zloto = !cywil && isGoldDeficit(u.ownerId);
+      return {
+        poziomTrudnosciLabel: poziomTrudnosciLabelPl(),
+        glodWojska: glod,
+        glodWojskaStatMult: efParams.glodWojskaStatMult,
+        glodWojskaHpFrac: efParams.glodWojskaHpFrac,
+        glodWojskaAtrycjaAktywna: glod && isArmyStarving(u.ownerId),
+        glodWojskaTurDoAtrycji: glod
+          ? getArmyStarvationCountdown(u.ownerId, efParams.glodWojskaKarencjaTur)
+          : null,
+        zlotoDeficyt: zloto,
+        zlotoDeficytStatMult: gdParams.zlotoDeficytStatMult,
+        zlotoDeficytHpFrac: gdParams.zlotoDeficytHpFrac,
+        zlotoDeficytAtrycjaAktywna: zloto && isGoldDeficitStarving(u.ownerId),
+        zlotoDeficytTurDoAtrycji: zloto
+          ? getGoldDeficitCountdown(u.ownerId, gdParams.zlotoDeficytKarencjaTur)
+          : null,
+      };
+    }
+
     function unitCardStatusFields(u: RuntimeUnit) {
       const vetEdu = veteranUnitEducationFields(u);
       const siegeCity = u.oblegaCityId
         ? cities.find(c => c.id === u.oblegaCityId)
         : null;
       return {
+        ...unitSufferingFields(u),
         parametryPathPp: unitParametryBonusProc(u),
         pancerzPathPp: unitPancerzBonusProc(u),
         veteranBadgeLabel: vetEdu?.veteranBadgeLabel,
@@ -4027,6 +4073,18 @@ async function boot(): Promise<void> {
         sentry: status.sentry,
         ufortyfikowanyWPolu: status.ufortyfikowanyWPolu,
         oblegaCityName: status.oblegaCityName,
+        // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: wiersze „głód wojska” / „deficyt Złota”.
+        poziomTrudnosciLabel: status.poziomTrudnosciLabel,
+        glodWojska: status.glodWojska,
+        glodWojskaStatMult: status.glodWojskaStatMult,
+        glodWojskaHpFrac: status.glodWojskaHpFrac,
+        glodWojskaAtrycjaAktywna: status.glodWojskaAtrycjaAktywna,
+        glodWojskaTurDoAtrycji: status.glodWojskaTurDoAtrycji,
+        zlotoDeficyt: status.zlotoDeficyt,
+        zlotoDeficytStatMult: status.zlotoDeficytStatMult,
+        zlotoDeficytHpFrac: status.zlotoDeficytHpFrac,
+        zlotoDeficytAtrycjaAktywna: status.zlotoDeficytAtrycjaAktywna,
+        zlotoDeficytTurDoAtrycji: status.zlotoDeficytTurDoAtrycji,
         ownerLabel: opts.ownerLabel ?? ownerDiploLabel(u.ownerId),
         relationLabel: opts.relationLabel,
         readOnly: opts.readOnly,
@@ -7979,11 +8037,16 @@ async function boot(): Promise<void> {
       } else if (forceVisibleUnitId) {
         display.visibleIds.add(forceVisibleUnitId);
       }
-      // MAP-Q1: czaszka głodu — tylko jednostki wojskowe (nie zwiadowca/osadnik/robotnik),
-      // gdy państwo głoduje wg isArmyHungry() (osłabienie statów, przed atrycją HP).
+      // MAP-Q1 + R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: IKONA PER PRZYCZYNA.
+      // Tylko jednostki wojskowe (nie zwiadowca/osadnik/robotnik). Dwie
+      // NIEZALEŻNE flagi per właściciel, obie sprzed atrycji HP:
+      //   - isArmyHungry(ownerId)  → czaszka głodu (zapasy Żywności państwa < 0),
+      //   - isGoldDeficit(ownerId) → moneta deficytu Złota (Skarbiec < 0).
+      // Jednostka może trafić do OBU zbiorów — renderer rysuje wtedy obie ikony.
       const unitById = new Map<string, RuntimeUnit>();
       for (const u of src) unitById.set(u.id, u);
       const starvingOwnerCache = new Map<number, boolean>();
+      const goldDeficitOwnerCache = new Map<number, boolean>();
       for (const repId of display.visibleIds) {
         const rep = unitById.get(repId);
         if (!rep || isCivilianUnit(rep)) continue;
@@ -7995,6 +8058,15 @@ async function boot(): Promise<void> {
         if (starving) {
           if (!display.starvingRepIds) display.starvingRepIds = new Set();
           display.starvingRepIds.add(repId);
+        }
+        let goldDef = goldDeficitOwnerCache.get(rep.ownerId);
+        if (goldDef === undefined) {
+          goldDef = isGoldDeficit(rep.ownerId);
+          goldDeficitOwnerCache.set(rep.ownerId, goldDef);
+        }
+        if (goldDef) {
+          if (!display.goldDeficitRepIds) display.goldDeficitRepIds = new Set();
+          display.goldDeficitRepIds.add(repId);
         }
       }
       unitRenderer.setForceVisibleUnitId(forceVisibleUnitId);
@@ -17612,6 +17684,36 @@ async function boot(): Promise<void> {
       };
     }
 
+    /**
+     * R-OBRONA-MIASTA-MP-Q1=A (Maciej 2026-08-06): rozbicie bonusów obrony w preBattle
+     * ("garnizon +50%, cyw, weteran, liczba obrońców") -- gracz widzi SKĄD bierze się
+     * siła obrony (np. miasto-państwo bez murów), mechanika walki BEZ ZMIAN.
+     *
+     * Runda 3 (po FAIL Evaluatora rundy 2, warunek 2): funkcja jest teraz TYLKO
+     * cienkim wrapperem -- calus agregacja (garnizon/weteran/bonusy cyw. per-cel/
+     * trudnosc AI) zyje w defenseBreakdown.ts jako CZYSTA funkcja
+     * (cityDefenseBreakdownLines + buildDefenseRosterUnits), testowalna bez
+     * main.ts/DOM (gra/tools/defense-breakdown-test.cjs). Tu wolamy ja z REALNYMI
+     * funkcjami walki (unitGetsFortifyBonus, veteranCombatBonusFrac, unitDefFor,
+     * civBonusyForOwnerId, difficultyCombatMultForOwner) -- zero rownoleglego
+     * przeliczania, zero duplikatu logiki.
+     */
+    function cityDefenseBreakdownFor(defRoster: RuntimeUnit[]): PreBattleModifier[] {
+      if (defRoster.length === 0) return [];
+      const rosterUnits = buildDefenseRosterUnits(
+        defRoster,
+        u => unitGetsFortifyBonus(u),
+        u => veteranCombatBonusFrac(u),
+        u => civBonusUnitShapeFromDef(unitDefFor(u), u.typeId),
+      );
+      const defenderOwnerId = defRoster[0]!.ownerId;
+      return cityDefenseBreakdownLines(rosterUnits, {
+        fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
+        civBonusy: civBonusyForOwnerId(defenderOwnerId),
+        difficultyMult: difficultyCombatMultForOwner(defenderOwnerId),
+      });
+    }
+
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
       if (atkUnit.ownerId === 0 && defUnit.ownerId !== 0 && !playerIsAtWarWith(defUnit.ownerId)) {
@@ -17653,6 +17755,7 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: true,
+        warunki: cityDefenseBreakdownFor(defRoster),
       };
 
       const atkRosterRef = atkRoster.slice();
@@ -18079,6 +18182,7 @@ async function boot(): Promise<void> {
         tura: turn,
         canRetreat: false,
         defenderCanRetreat: playerDefends,
+        warunki: cityDefenseBreakdownFor(defRosterRef),
       };
 
       const atkStartSnap = snapshotRosterPositions(atkRosterRef);
@@ -19255,6 +19359,7 @@ async function boot(): Promise<void> {
         lokacja: '(' + city.q + ',' + city.r + ')',
         tura: turn,
         canRetreat: true,
+        warunki: cityDefenseBreakdownFor(defRoster),
       };
 
       const atkRosterRef = atkRoster.slice();

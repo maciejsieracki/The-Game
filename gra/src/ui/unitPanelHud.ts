@@ -13,7 +13,9 @@ import {
   buildUnitCardStatusSectionHtml,
   pathStatusRowHasChips,
   UNIT_CARD_STATUS_CSS,
+  pickUnitSufferingFields,
   type UnitCardStatusInput,
+  type UnitSufferingStatusFields,
 } from './unitCardStatus';
 
 export interface UnitPanelAction {
@@ -26,7 +28,7 @@ export interface UnitPanelAction {
   active?: boolean;
 }
 
-export interface UnitPanelState {
+export interface UnitPanelState extends UnitSufferingStatusFields {
   name: string;
   subtitle: string;
   icon: string;
@@ -131,6 +133,8 @@ export function createUnitPanelHud(config: UnitPanelHudConfig): UnitPanelHudApi 
       sentry: u.sentry,
       ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
       oblegaCityName: u.oblegaCityName,
+      // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
+      ...pickUnitSufferingFields(u),
       esc,
     };
     const statusHtml = buildUnitCardStatusSectionHtml(statusInput);

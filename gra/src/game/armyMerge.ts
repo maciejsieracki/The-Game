@@ -22,8 +22,15 @@ export interface StackDisplayInfo {
   visibleIds: Set<string>;
   /** rep unit id → liczba jednostek na heksie (gdy > 1). */
   badgeByRepId: Map<string, number>;
-  /** MAP-Q1: rep token ids z chipem głodu (armia państwa głoduje). */
+  /** MAP-Q1: rep token ids z ikoną GŁODU WOJSKA (isArmyHungry — zapasy Żywności państwa < 0). */
   starvingRepIds?: Set<string>;
+  /**
+   * R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: rep token ids z ikoną DEFICYTU ZŁOTA
+   * (isGoldDeficit — Skarbiec właściciela < 0 po zbankowaniu tury). Zbiór
+   * NIEZALEŻNY od `starvingRepIds` — ta sama jednostka może być w obu naraz
+   * (renderer rysuje wtedy dwie ikony obok siebie, żadna nie znika).
+   */
+  goldDeficitRepIds?: Set<string>;
   /**
    * R-ZETON-PASKI (Maciej 2026-07-29): rep unit id → wartości CAŁEGO stosu
    * pokazywane na tabliczce nad żetonem (Ruch / pula HP / Moc pola M).

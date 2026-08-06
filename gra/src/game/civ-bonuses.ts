@@ -84,7 +84,14 @@ export function unitCombatCategory(unit: CivBonusUnitShape): string {
   return 'piechota';
 }
 
-function unitMatchesCel(unit: CivBonusUnitShape, cel: string): boolean {
+/**
+ * unitMatchesCel — eksportowane (R-OBRONA-MIASTA-MP-Q1, runda 3, warunek 1):
+ * defenseBreakdown.ts liczy "N z M jednostek" dla bonusów obrony civ (bonus_obrona
+ * ma zawsze `cel` np. 'piechota' -- realna walka bramkuje przez TĘ SAMĄ funkcję
+ * w bonusApplies() ponizej; panel preBattle MUSI uzywac identycznego predykatu,
+ * zero rownoleglej reimplementacji dopasowania kategorii jednostki).
+ */
+export function unitMatchesCel(unit: CivBonusUnitShape, cel: string): boolean {
   const cat = unitCombatCategory(unit);
   const c = stripDiacritics(cel);
   if (c === 'piechota') return cat === 'piechota';

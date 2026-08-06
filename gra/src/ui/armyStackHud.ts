@@ -9,7 +9,9 @@ import {
   UNIT_CARD_STATUS_CSS,
   unitCardAtkDefLineHtml,
   unitCardStatValueHtml,
+  pickUnitSufferingFields,
   type UnitCardStatusInput,
+  type UnitSufferingStatusFields,
 } from './unitCardStatus';
 import type { UnitCardCombatDisplay } from '../game/unit-card-stats';
 import {
@@ -32,7 +34,7 @@ export interface ArmyStackCard {
   active: boolean;
 }
 
-export interface ArmyStackHudState {
+export interface ArmyStackHudState extends UnitSufferingStatusFields {
   hexLabel: string;
   unitCount: number;
   cards: ArmyStackCard[];
@@ -277,6 +279,8 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
       sentry: st.sentry,
       ufortyfikowanyWPolu: st.ufortyfikowanyWPolu,
       oblegaCityName: st.oblegaCityName,
+      // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
+      ...pickUnitSufferingFields(st),
       esc,
     };
     const statusHtml = buildUnitCardStatusSectionHtml(statusInput);

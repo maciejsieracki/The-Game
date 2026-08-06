@@ -47,7 +47,9 @@ import {
   unitCardAtkDefLineHtml,
   unitCardStatValueHtml,
   UNIT_CARD_STATUS_CSS,
+  pickUnitSufferingFields,
   type UnitCardStatusInput,
+  type UnitSufferingStatusFields,
 } from './unitCardStatus';
 import type { UnitPanelAction } from './unitPanelHud';
 import { buildUnitActionBarHtml, UNIT_ACTION_BAR_CSS } from './unitActionBarHtml';
@@ -478,7 +480,7 @@ export function buildHexContextTooltipHtml(input: HexContextTooltipInput): strin
   return lines.join('');
 }
 
-export interface UnitContextTooltipInput {
+export interface UnitContextTooltipInput extends UnitSufferingStatusFields {
   displayName: string;
   /** Podtytuł pod nazwą (np. „2 jednostki na heksie"). */
   headMeta?: string;
@@ -573,6 +575,8 @@ function unitCardStatusFromTooltip(u: UnitContextTooltipInput): UnitCardStatusIn
     sentry: u.sentry,
     ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
     oblegaCityName: u.oblegaCityName,
+    // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
+    ...pickUnitSufferingFields(u),
     esc: u.esc,
   };
 }
