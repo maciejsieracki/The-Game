@@ -67,7 +67,13 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    Pieniądz / Zadowolenie / Obrona), **w jakiej jednostce** (pkt na turę, %, pkt Prawa) i **w jakim kontekście**
    (poziom, epoka, poziom trudności). Nagłówek kolumny „Baza" jest zakazany — ma być „Kultura (baza)".
    Jego słowa: „wpisujesz baza, ale baza do czego? potem chodzimy po omacku".
-4. **Deleguj wykonanie subagentom na Sonnet 5** (`Agent`, `model: "sonnet"`; `general-purpose` do pracy w repo, `Explore` do read-only reconu). **Opus 5 i Fable 5 wyłącznie za wyraźną zgodą Macieja** (2026-07-25) — domyślnie wszystko na Sonnet 5.
+4. **PRZYDZIAŁ MODELI — Claude Code (Maciej, 2026-08-06; NIE dotyczy Cursora):** główny model
+   sesji = **Sonnet 5**; **wszyscy subagenci-wykonawcy (Operator) = Sonnet 5** (`Agent`,
+   `model: "sonnet"`; `general-purpose` do pracy w repo, `Explore` do read-only reconu).
+   **EVALUATOR (adwokat diabła, werdykt AutoBot) = Opus 5. DEPLOY (build+weryfikacja+publikacja
+   do roboczej) = Opus 5.** Jego słowa: „Główny model językowy tutaj wybrany to będzie SONNET 5.
+   Pracę wszystkich subagentów odpalasz też na Sonet 5, ale ewaluator włączasz na Opus 5
+   i deploy Opus 5". Fable 5 wyłącznie za wyraźną zgodą Macieja.
    **WYJĄTEK — ZGODA STAŁA (Maciej, 2026-07-25):** *„Jednostki i render musisz dawać do subagentów Opus 5, bo Sonnet sobie z tym nie poradzi."* → **modele 3D jednostek i cała praca w `gra/src/render/**` idą na Opus 5.**
    Powód praktyczny: Sonnet poprawnie dobiera detale historyczne, ale nie ocenia proporcji i czytelności bryły
    z kąta kamery gry — modele wychodziły za niskie (0,62–0,64 zamiast 0,75 HEX_R), broń nieczytelna albo
