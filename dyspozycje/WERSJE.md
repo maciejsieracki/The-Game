@@ -12,7 +12,12 @@ swoim wĹ‚asnym md5/stemplem/statusem; promocja jednego NIE oznacza promocji d
 
 
 
-## ROBOCZA 693a2c57 - 2026-08-06 13:24 - FALA 256: C-MAPA-Q1=B relief mop-up po złożach (fair-play/relief) - **AKTUALNA**
+## ROBOCZA 91401bd1 - 2026-08-07 01:10 - FALA 257: AutoBot batch — status-cierpienia, obrona r3, dyplomacja-handel r1-4, 3 zaległe bugi - **AKTUALNA**
+|- md5 (pelne): 91401bd11f5ba94068b515e045a9c07b · stempel: ROBOCZA · 2026-08-07 (label 91401bd1)
+|- **FALA 257.** AutoBot Operator→Evaluator, seria wieloagentowa. R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: dwie rozróżnialne ikony cierpienia na mapie (głód/deficyt złota) + wiersze statusu na karcie jednostki. R-OBRONA-MIASTA-MP-Q1=A runda 3: bramka 'cel' bonusu cywilizacji z licznikiem N z M, martwy kod usunięty. R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C (4 rundy): uczciwość PW priorytetem, chęć respondenta-AI modyfikatorem, podłoga parytetu przeciw przepłacie AI. UNIT-REPLACE-EVOCATI-Q1: naprawiony realny bug produkcyjny w main.ts (mechanizm "Zastąp" gubił jednostki brązowe/żelazne od FALI 96). LOGIC-TEST-2BUGS-Q1, MENNICA-GRACE-VERIFY-Q1: naprawy testów (canFoundCity próg, magazynZywnosci legacy, mennica-uspienie za FALĄ 41). R-RZEKI-PROG-MASY-LADU-Q1: zamknięte jako fałszywy alarm. Commity: `72672f9`·`86e9828`·`9fc3821`.
+|- Bramki: tsc 0 · vite build 797 modułów · logic-test 207/208 · defense-breakdown-test 35/35 · unit-replace-test 10/10 · diplomacy-proposal-test 99/101 · diplomacy-acceptance-points-test 225/225 · diplomacy-negotiation-table-test 54/54 · tech-tree 19/19 · research 33/33 · VERIFY OK.
+
+## ROBOCZA 693a2c57 - 2026-08-06 13:24 - FALA 256: C-MAPA-Q1=B relief mop-up po złożach (fair-play/relief) - **ZASTĄPIONA** (→ 91401bd1)
 |- md5 (pelne): 693a2c571b77806dd2d3cebb80af2295 · stempel: ROBOCZA · 2026-08-06 (label 693a2c57)
 |- **FALA 256.** AutoBot Operator tip `41eed4d6`/`0530cad8` · Grok final (Eval w tle; SCOPE OK + fair-play 8/8). Fix: drugi przebieg cap+ensureReliefGridCoverage po ensureDepositGridCoverage; filtr eligibleReliefLandCount; mop-up 16×. Docs: `R-RELIEF-FAIRPLAY-STATUS.md`. Limit skupiska 10 hex bez zmian.
 |- Bramki: fair-play-grid 8/8 · Operator: relief Ogromny 6/6 · map-gen-regression exit 0 · VERIFY OK. Uwaga: Ogromny wolniejszy (~58 min) — optymalizacja osobno.

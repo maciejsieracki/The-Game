@@ -6181,3 +6181,12 @@ CZEKAM-NA: Maciej ÔÇö **deploy** gdy wgra─ç do ROBOCZA (najpierw git pull 
 - Bramki na scalonym drzewie: tsc 0 · display-names-test 27/27 · city-map-badge-test 31/31 · relief-preserving-mine-prefix-test 23/23 · deposit-building-gate-test 47/47 · vite build 792 modułów OK
 - Deploy: NIE (R-DEPLOY-AUTOBOT-Q1=B — jeden zbiorczy build→verify→deploy dopiero po domknięciu wszystkich 5 tematów, hasło `deploy`)
 CZEKAM-NA: nic pilnego dla drugiej sesji — commity są na `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (nie main), praca w toku
+
+## [01:15 PL, 2026-08-07] CLOUD → ALL — DEPLOY ROBOCZA FALA 257 (batch AutoBot domknięty)
+- Wszystkie tematy AutoBot z tej sesji domknięte i scalone (commity `72672f9`·`86e9828`·`9fc3821` na `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, niepushnięte na `main`)
+- **SCALONE**: R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C (2 ikony cierpienia na mapie + karta jednostki) · R-OBRONA-MIASTA-MP-Q1=A runda 3 (bramka 'cel' + licznik N z M, martwy kod usunięty) · R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C po 4 rundach (podłoga parytetu przeciw przepłacie AI, kierunek AI→gracz naprawiony) · UNIT-REPLACE-EVOCATI-Q1 (realny bug produkcyjny w main.ts od FALI 96 — "Zastąp" gubił jednostki brązowe/żelazne) · LOGIC-TEST-2BUGS-Q1 · MENNICA-GRACE-VERIFY-Q1 (oba: naprawy testów, zero zmian silnika) · R-RZEKI-PROG-MASY-LADU-Q1 (falszywy alarm, zamknięte)
+- **DEPLOY ROBOCZA wykonany**: build 797 modułów → `gra-robocza/Gra-ROBOCZA.html` (md5 `91401bd11f5ba94068b515e045a9c07b`) → stamp ROBOCZA `91401bd1` → sync 6 playtestów → START hub → **VERIFY OK**
+- Bramki na scalonym drzewie: tsc 0 · vite build 797 modułów · logic-test 207/208 · unit-replace-test 10/10 · diplomacy-proposal-test 99/101 · diplomacy-acceptance-points-test 225/225 · diplomacy-negotiation-table-test 54/54 · defense-breakdown-test 35/35 · tech-tree 19/19 · research 33/33
+- Zapisano w `WERSJE.md` (FALA 257, poprzednia `693a2c57` oznaczona ZASTĄPIONA)
+- Notatki Evaluatorów (nieblokujące, do przyszłej rundy) → `PYTANIA-OTWARTE.md`: brak pokrycia testowego naprawy `main.ts` (UNIT-REPLACE), asymetria brąz-vs-złoto w `placedImprovementsWithTradeGrants` (MENNICA), efekt uboczny modyfikatora chęci na handel AI↔AI (DYPLOMACJA), luka bramki `cel` dla przyszłych opisowych bonusów obrony (OBRONA)
+CZEKAM-NA: sesja lokalna (Windows) — **pull na dysk właściciela i playtest md5 `91401bd11f5ba94068b515e045a9c07b`**; commity `72672f9`/`86e9828`/`9fc3821` na branchu, nie na `main` — merge do `main` zależnie od decyzji właściciela
