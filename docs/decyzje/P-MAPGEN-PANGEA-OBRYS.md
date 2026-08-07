@@ -1,6 +1,6 @@
 # P-MAPGEN-PANGEA-OBRYS — sekcja „Pangea nieregularna" czerwona, bo metryka mierzy zły obrys
 
-**Status:** 🟡 **OTWARTE — czeka na literę ABC** (2026-08-07)
+**Status:** 🟢 **ZAPISANA — D** (2026-08-07) · wdrożenie WSTRZYMANE do polecenia właściciela
 **Wykonanie diagnostyki:** AutoBot Operator→Evaluator, `w2vcni6m1`. Werdykt Evaluatora na raport
 Operatora: **FAIL** — pomiar był poprawny, ale dwa wnioski były fałszywe, a właściwej przyczyny
 Operator nie znalazł. Poniżej wersja po korektach Evaluatora, zweryfikowana niezależnie.
@@ -123,3 +123,32 @@ z ≥30 seedów, nie z 5.
 **Osobno, niezależnie od litery:** rozważyć, czy progi czasowe AC (`standard <7 s`, `duża <15 s`)
 mają nadal wchodzić do `allOk`, skoro na wolnej maszynie zawsze dają exit 1 i przez to maskują
 każdą realną czerwień w tej bramce. To odrębny temat — nie mieszać z metryką kształtu.
+
+
+---
+
+## ECHO
+
+**Odpowiedź Macieja:** „1" — pierwsza opcja z tabeli ABC, czyli **D**.
+
+| ID | Odpowiedź | Skutek wdrożenia |
+|----|-----------|------------------|
+| **P-MAPGEN-PANGEA-OBRYS** | **D** | `pangeaShapeMetrics` traktuje `Wybrzeze` jako wodę (albo dostaje `groupLandMassKeysStrict`). **Zero zmian w generatorze.** |
+
+### Wymogi wdrożenia (wiążące dla Operatora, gdy padnie polecenie startu)
+
+1. **Zero zmian w `gra/src/map/generator.ts`.** Naprawa dotyczy wyłącznie liczenia metryki.
+   Jeśli Operator uzna, że trzeba ruszyć generator — to znak, że źle zrozumiał zlecenie.
+2. **Nie psuć `groupLandMassKeys` dla innych wołających.** Ta funkcja jest używana poza sekcją
+   Pangei — sprawdzić wszystkie call-site przed zmianą sygnatury. Bezpieczniej dodać wariant
+   `strict` niż zmienić zachowanie istniejącej funkcji.
+3. **Przekalibrować próg w TYM SAMYM zleceniu.** Po naprawie metryki `coastRatio` wynosi
+   5,29–5,89, więc próg 3,8 przestaje cokolwiek bramkować. Podstawa kalibracji: rozkład
+   z **≥30 seedów**, nie z 5. Podać w raporcie: min, max, mediana, odchylenie, oraz proponowany
+   próg z jawną regułą (np. „min − 2σ"), nie liczbę wziętą z sufitu.
+4. **Wynik ma być zielony z zapasem**, ale nie tak luźny, żeby przepuścił dysk (podłoga 3,4380
+   przy starej metryce — przeliczyć odpowiednik przy nowej) ani zwykły prostokąt.
+5. Bramki: `map-gen-regression-test.cjs` (długi, uruchamiać w tle), `logic-test.cjs`,
+   `fair-play-grid-test.cjs`, `relief-grid-coverage-test.cjs`, `npx tsc --noEmit`.
+6. **Worktree przygotowuje orkiestrator** na właściwej bazie — `isolation: "worktree"`
+   konsekwentnie odbija od `main`, nie od gałęzi roboczej (trzy realne wypadki 2026-08-07).
