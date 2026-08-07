@@ -837,3 +837,54 @@ orkiestratora z 2026-08-07 to **19 commitów**; **14 pozostałych NIE zostało o
 `6e98ddc`, `3213ee2`, `8c6f26a` (deploy FALA 258). **Do przeglądu w osobnym zleceniu.**
 Odnotowane: cztery z pięciu commitów niosących wypadki wymienione w uzasadnieniu zasady 0b
 znalazły się POZA jej własnym zastosowaniem wstecznym.
+
+## R-DYSK-WORKTREE-Q1 (2026-08-07) — zapobieganie zapychaniu dysku sesji chmurowej = **C**
+**Decyzja Macieja: C** (reguła cyklu życia + sparse-checkout). Jego sformułowanie zasady:
+*„wykonujesz daną pracę, komitujesz do Githuba i tyle, a potem czyścisz dysk"* oraz *„trzymanie
+u ciebie danych tylko ma wtedy sens, kiedy coś jeszcze trzeba z tym zrobić"*.
+**Wypadek, który to wywołał (2026-08-07):** dysk sesji chmurowej **86 % zajętości, 0 MB wolnego**.
+`Bash` zwracał `ENOSPC` **bez wykonania polecenia**, `Write` błąd. Skutki: Evaluator handoffu nie
+uruchomił **ani jednej** bramki (uczciwie to zaraportował zamiast zmyślić pomiar), a bramka
+`map-gen-regression` zginęła przy restarcie kontenera. Praca w toku przepadła **dwa razy** tego dnia.
+**Przyczyna:** zasada 4a (CLAUDE.md) każe subagentom pracować na własnych worktree, ale **nie mówi,
+kiedy worktree ma zniknąć**. Uzbierały się **22 sztuki × ~810 MB = 18 GB**; scratchpad **7,9 GB**.
+Każdy worktree kopiował całe drzewo, w tym `gra-robocza` (**328 MB**) i `gra-kanon` (**109 MB**),
+których subagent do pracy nie potrzebuje.
+**Wykonane sprzątanie (kolejność: zapis → GitHub → dopiero kasowanie):** stan niescommitowany
+każdego z 22 worktree zapisany na gałęzi `zapas/<nazwa>` i **wypchnięty na origin** (zweryfikowane:
+`git ls-remote --heads origin 'refs/heads/zapas/*'` = **22**). Commit `c9c031e` — jedyny spoza
+głównej historii, wnoszący `playbook.md` — jest przodkiem czterech gałęzi `zapas/*`, więc też
+pojechał na zdalne. Odzyskanie: `git checkout zapas/<nazwa>`.
+**Wynik:** wolne miejsce **5,3 GB → 26 GB**, zajętość **86 % → 32 %**, worktree **22 → 0**,
+scratchpad **7,9 GB → 44 KB**, katalog repo **21 GB → 3,0 GB**.
+**Zapisane w kanonie:** `dyspozycje/autobot/playbook.json` — **rule_118** (cykl życia worktree,
+zapas na gałąź przed usunięciem) i **rule_119** (sparse-checkout: worktree bez `gra-robocza`,
+`gra-kanon`, `dist` → ~370 MB zamiast ~810 MB, czyli **−54 %**; wyjątek dla subagenta robiącego deploy).
+**CZŁON NIEWDROŻONY — `.gitignore` na generowane artefakty bramek.** Był częścią wariantu C, ale
+rozpoznanie po decyzji wykazało dwie przeszkody i **wstrzymałem go do osobnej litery**:
+(1) koliduje ze świadomą konwencją — w `.gitignore` stoi komentarz *„bundle testowe są już śledzone,
+więc ich nie ignorujemy"*, a w repo jest **398 śledzonych** plików `gra/tools/.*-bundle.cjs`
+/ `.*-entry.ts`; wyłączenie **2 z 398** dałoby niespójność;
+(2) objaw zniknął — te dwa pliki brudziły drzewo, bo wersja w gicie była **przestarzała** względem
+`gra/src/map/**`; po odświeżeniu (commit `892d13f`) bramka biegnie, a drzewo pozostaje czyste.
+
+## R-BRAMKA-MINDIST-Q1 (2026-08-07) — legalizacja zmiany bramki `logic-test.cjs` = **A**
+**Decyzja Macieja: A** — commit `7136241` zatwierdzony **w całości**. Wszedł w ramach
+`R-BRAMKI-AUDYT-KANONU` bez własnej litery; Maciej odmówił legalizowania go samodzielnie
+(*„zmiana bramki weszła poza zakresem, sam tego nie zalegalizuję"*) i zażądał osobnego ID + ABC.
+**NOWY PUNKT ODNIESIENIA: `logic-test.cjs` = 213/213 zaliczonych asercji** (było 209/209).
+Każda sesja porównuje się od teraz do **213**; wynik 209 oznacza cofnięcie tej decyzji, nie normę.
+**Co obejmuje (a):** przypięcie parametru **`MIN_CITY_DISTANCE` = 4 heksy** (+1 asercja). Poprzednia
+asercja była **rozbrojona** — porównywała stałą zaimportowaną z testowanego modułu z tą samą stałą,
+więc przechodziła dla dowolnej wartości progu, także **1 heksa**. Żaden inny test w repo nie pilnował
+tego parametru (trafienia w `ai-*-test.cjs` dotyczą innego pola, `ekspansja_min_dystans_miast`).
+Wartość **4 heksy** pochodzi z decyzji `R-AI-KOLONIZACJA`; wcześniej było **5 heksów** — parametr
+**już raz zmienił się po cichu**, i to jest powód, dla którego przypięcie jest celem, a nie kosztem.
+**Skutek przyjęty świadomie:** zmiana `MIN_CITY_DISTANCE` bez decyzji właściciela **wywala bramkę**.
+**Co obejmuje (b):** kontrakt czytelnika **`readCityFoodBuffer()`** (+3 asercje). Poprzedni predykat
+rozszerzono o `=== undefined`, czyli zaczął akceptować dokładnie ten stan, który wcześniej wykrywał.
+Nowe asercje sprawdzają **7 wariantów wejścia** (brak wartości, dodatnia, ujemna, zapis legacy
+`{aktualny,pojemnosc}`, `NaN`, tekst) i wymagają, by funkcja zawsze zwracała liczbę skończoną **≥ 0**.
+Żadnej liczby produktowej nie przypinają.
+**Powiązanie:** obie luki to wypadki opisane w **rule_117** playbooka (zakaz „naprawy" testu przez
+rozbrojenie asercji) — ta decyzja jest jego pierwszym zastosowaniem.
