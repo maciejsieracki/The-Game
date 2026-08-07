@@ -10,6 +10,27 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
 ## ⛔ ZASADY KRYTYCZNE (złamanie = utrata pracy)
 0. **NUMER → ABC → COMMIT → DEPLOY (Maciej 2026-08-03).** Każdy case/bug/poprawka/innowacja → ID w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Nie koduj od razu** — przedstaw rozwiązanie ± ABC. Commit dopiero po **`numer + A|B|C`**. **Deploy tylko na hasło `deploy`**. Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 0a. **AUTOBOT — TWARDA REGUŁA (Maciej 2026-08-05).** **KAŻDA praca** wyłącznie w systemie AutoBot: Operator (`composer-2.5`) → Evaluator (adwokat + twarde metryki) → Grok final. **ZAKAZ** pracy poza pętlą / „gotowe” bez Evaluatora. Playbook + guardrails. Kanon: `dyspozycje/autobot/` · `.cursor/rules/autobot-evaluator-operator.mdc` · `docs/decyzje/R-PROC-AUTOBOT.md`.
+0b. **AUTOBOT OBEJMUJE TAKŻE PRACĘ GŁÓWNEJ SESJI (Maciej 2026-08-07).** Jego słowa: *„Dla siebie
+   też przyjmij zasadę autobot na każdym temacie, nie tylko dla subagentów. Czyli każdą swoją
+   decyzję sprawdzaj ewaluatorem"* oraz *„zasada Autobots obejmuje nie tylko zleconą pracę
+   subagentowi, ale **po pierwsze Twoją pracę**"*.
+   **Skutek:** orkiestrator (główna sesja) **nie jest zwolniony** z pętli. Każda zmiana, którą
+   wprowadza SAM — kod, dane, kanon, dokument decyzji, wpis w rejestrze, sprostowanie — przechodzi
+   przez **Evaluatora na Opus 5**, tak samo jak praca subagenta. Orkiestrator jest wtedy Operatorem
+   własnej zmiany i **nie ocenia sam siebie** (zasada z §1 playbooka: „wykonawca nigdy nie ocenia
+   sam siebie").
+   **Powód (realne wypadki 2026-08-07, wszystkie w pracy własnej orkiestratora, żaden nie złapany
+   przez nikogo poza późniejszym przypadkiem):** (a) wpisanie do `PYTANIA-OTWARTE.md`, że bramka
+   `map-gen-regression` kończy się `exit 0` — nieprawda, `fail++` z sekcji Pangea wchodzi do
+   `allOk`; błąd powielony potem w 3 kolejnych dokumentach i przez subagenta; (b) odczytanie kodu
+   wyjścia **procesu opakowującego** jako kodu wyjścia testu i wyciągnięcie z tego wniosku
+   o determinizmie; (c) zapisanie w kanonie decyzji `ECHO = D`, której właściciel nie podjął —
+   wycofane dopiero po jego interwencji; (d) uzasadnienie zlecenia zdaniem „nikt nie zapisał
+   «przetestuj mapę Ogromny»", obalonym przez Evaluatora (przypadek stoi w kodzie od miesiąca).
+   **Zakres wyjątku:** czynności czysto odczytowe (grep, uruchomienie bramki w celu poznania wyniku)
+   nie wymagają Evaluatora. Wymaga go **każda zmiana zapisana do repozytorium** i **każda
+   liczba/twierdzenie przedstawione właścicielowi jako fakt**.
+
 1. **NIGDY `npm run build` ani `npm run dev`** w `gra/` — `prebuild`/`predev` uruchamia `tools/export-data.py`, który **NADPISUJE ręcznie edytowane pliki JSON** w `gra/data/`. Cała praca nad danymi (drzewko, jednostki, cywilizacje) żyje w JSON. Buduj **wyłącznie** z katalogu `gra`:
    `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`
 2. **Źródłem prawdy są JSON-y w `gra/data/`.** Panele Excel (`panele-sterowania/`) DOGANIAMY do JSON — kierunek **JSON→Excel** przez `gen-panel-*.py`, NIGDY odwrotnie. **Nie uruchamiaj `export-*.py` na żywym `gra/data`** (nadpisze grę starym Excelem). Round-trip zawsze na kopii (`--data-dir <tmp>`).

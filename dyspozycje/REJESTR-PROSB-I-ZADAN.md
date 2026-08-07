@@ -817,3 +817,15 @@ Operator przygotowuje propozycję nowej treści sekcji, orkiestrator wkleja po z
 **tych samych dwóch plików kanonu** — `dyspozycje/autobot/PROMPT-AUTOBOT-DLA-AGENTOW.md` §5
 i `.cursor/rules/autobot-evaluator-operator.mdc`. Idą więc jako **jedno zlecenie**, nie dwa
 (CLAUDE.md §4a — dwa równoległe worktree na tym samym pliku kończą się ręcznym scalaniem).
+
+## R-AUTOBOT-ORKIESTRATOR (2026-08-07) — zasada AutoBot obejmuje pracę własną głównej sesji
+**Polecenie Macieja, dwa zdania:** *„Dla siebie też przyjmij zasadę autobot na każdym temacie,
+nie tylko dla subagentów. Czyli każdą swoją decyzję sprawdzaj ewaluatorem."* · *„zasada Autobots
+obejmuje nie tylko zleconą pracę subagentowi ale **po pierwsze Twoją pracę**."*
+**Zapisane w kanonie:** `CLAUDE.md` zasada **0b**.
+**Skutek:** orkiestrator jest Operatorem własnej zmiany i **nie ocenia sam siebie**. Każda zmiana
+zapisana do repo przez główną sesję — kod, dane, kanon, dokument decyzji, wpis w rejestrze,
+sprostowanie — przechodzi przez Evaluatora na Opus 5. Tak samo każda liczba przedstawiona
+właścicielowi jako fakt. Czynności czysto odczytowe są wyłączone.
+**Zastosowanie wsteczne:** puszczony Evaluator na całość pracy własnej orkiestratora z 2026-08-07
+(commity `7136241`, `7c24e33`, `55658fc`, `af68f86` + świeże zmiany w `CLAUDE.md`).
