@@ -28,6 +28,8 @@ const COMBAT_TS = path.join(GRA_DIR, 'src/game/combat.ts');
 const PBM_TS = path.join(GRA_DIR, 'src/game/post-battle-map.ts');
 const UNIT_POWER_TS = path.join(GRA_DIR, 'src/game/unit-power.ts');
 const AUTO_BATTLE_POWER_TS = path.join(GRA_DIR, 'src/game/auto-battle-power.ts');
+const ARMY_MERGE_TS = path.join(GRA_DIR, 'src/game/armyMerge.ts');
+const MAIN_TS = path.join(GRA_DIR, 'src/main.ts');
 const UNITS_JSON = path.join(GRA_DIR, 'data/units.json');
 const ESBUILD_BIN = path.join(GRA_DIR, 'node_modules/.bin/esbuild');
 
@@ -50,6 +52,11 @@ const pbmMod = bundle(PBM_TS, 'pbm-bundle-weterani.cjs');
 // przezyla poprzedni audyt. Sekcja 9 ponizej pokrywa te sciezke.
 const unitPowerMod = bundle(UNIT_POWER_TS, 'unit-power-bundle-weterani.cjs');
 const autoBattlePowerMod = bundle(AUTO_BATTLE_POWER_TS, 'auto-battle-power-bundle-weterani.cjs');
+// R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B (Maciej 2026-08-07): sekcja 10 bundluje
+// armyMerge.ts, zeby przetestowac PRAWDZIWA funkcje, ktora feeduje tabliczke
+// nad zetonem (stackFieldPowerM, wolana z main.ts syncUnitsRender przez
+// StackVitalsDeps.defOf) -- nie reimplementacje.
+const armyMergeMod = bundle(ARMY_MERGE_TS, 'army-merge-bundle-weterani.cjs');
 console.log('Bundle OK.\n');
 
 const {
@@ -71,6 +78,7 @@ const { resolveCombat, combatUnitFromDef } = combatMod;
 const { applyPostBattleMap } = pbmMod;
 const { armyFieldPower, armyFieldPowerSplit } = unitPowerMod;
 const { sumRosterFieldM, sumRosterFieldMSplit } = autoBattlePowerMod;
+const { stackFieldPowerM } = armyMergeMod;
 
 let passCount = 0;
 let failCount = 0;
@@ -441,6 +449,67 @@ check(
   'sumRosterFieldMSplit: attack+defense == sumRosterFieldM rowniez PO doliczeniu weterana (zgodnosc z rankingiem Mocy)',
   approxEq(rosterSplitWeteran.attack + rosterSplitWeteran.defense, sumRosterFieldM(rosterWeteran), 0.05),
   (rosterSplitWeteran.attack + rosterSplitWeteran.defense) + ' vs ' + sumRosterFieldM(rosterWeteran),
+);
+console.log('');
+
+// ---------------------------------------------------------------------------
+// 10. R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B (Maciej 2026-08-07): tabliczka nad
+// zetonem (i panel pre-battle) maja pokazywac Moc EFEKTYWNA, nie nominalna.
+// Wdrozenie: game/armyMerge.ts::stackFieldPowerM sam sie NIE zmienil -- to
+// wciaz sumRosterFieldM(stack.map(u => ({typeId, def: defOf(u)}))). Zmienilo
+// sie WYLACZNIE `defOf` wstrzykiwane z main.ts (syncUnitsRender), ktore od tej
+// decyzji przekazuje combatPowerScaledDefFor(u) zamiast surowego lookupUnitDef.
+// Ten test wola PRAWDZIWA stackFieldPowerM() (nie reimplementacje) z DWOMA
+// wariantami defOf -- nominalnym (stary main.ts::defForUnit) i weteransko-
+// przeskalowanym (main.ts::combatPowerScaledDefFor dla gracza, jednostka NIE
+// ufortyfikowana -- wtedy combatPowerScaledDefFor == veteranScaledDefFor,
+// patrz main.ts fortifyFieldScaledDefFor/combatPowerScaledDefFor) -- i dowodzi,
+// ze podmiana defOf faktycznie zmienia liczbe na tabliczce z 49 na 58.0,
+// dokladnie jak w sekcji 9 (auto-bitwa) -- ZERO ROZJAZDU miedzy tabliczka a
+// wynikiem auto-walki dla tego samego skladu.
+// ---------------------------------------------------------------------------
+console.log('10. Tabliczka/pre-battle (armyMerge.ts::stackFieldPowerM) -- Moc EFEKTYWNA');
+
+const stackKonnicaWeteran = [{ id: 'u1', typeId: 'Konnica', ownerId: 0 }];
+
+const mTabliczkaNominalna = stackFieldPowerM(stackKonnicaWeteran, (u) => konnicaRaw);
+check(
+  'PRZED (nominalna, C-MOC-Q1=A): stackFieldPowerM(Konnica gwiazdki=3, defOf=nominalny) == 49',
+  approxEq(mTabliczkaNominalna, 49, 0.05),
+  mTabliczkaNominalna,
+);
+
+const mTabliczkaEfektywna = stackFieldPowerM(
+  stackKonnicaWeteran,
+  (u) => veteranScaledUnitRow(konnicaRaw, 3), // battlesSurvived=3 -> ★★★, frac=0.20
+);
+check(
+  'PO (efektywna, R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B): stackFieldPowerM(Konnica gwiazdki=3, defOf=weteran-przeskalowany) == 58.0',
+  approxEq(mTabliczkaEfektywna, expectedMWeteran, 0.05),
+  mTabliczkaEfektywna + ' vs oczekiwane ' + expectedMWeteran,
+);
+check(
+  'Tabliczka PO == Auto-moc (M) sekcji 9 dla identycznego skladu (58.0 == 58.0, zero rozjazdu)',
+  approxEq(mTabliczkaEfektywna, mWeteran, 0.05),
+  mTabliczkaEfektywna + ' vs ' + mWeteran,
+);
+check(
+  'Tabliczka PO (58) > tabliczka PRZED (49) -- premia weterana teraz WIDOCZNA na tokenie',
+  mTabliczkaEfektywna > mTabliczkaNominalna,
+);
+
+// Sekcje 9-10 wyzej dowodza tylko, ze WSTRZYKNIETA przeskalowana definicja daje
+// 58 -- nie dowodza, ze main.ts FAKTYCZNIE wstrzykuje ja do tabliczki. Cofniecie
+// jedynej istotnej linii (main.ts::syncUnitsRender, StackVitalsDeps.defOf)
+// zostawiloby powyzsze testy zielonymi. Asercja zrodlowa lapie wlasnie to
+// (Evaluator, nota N7, 2026-08-07): czyta main.ts jako tekst (wzor jak w
+// tools/plony-budynkow-test.cjs) i sprawdza literalne wstrzykniecie.
+const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
+const hasCombatPowerScaledDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*combatPowerScaledDefFor\(u\)/.test(mainTsSrc);
+check(
+  'ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje combatPowerScaledDefFor(u) (nie surowy defForUnit/lookupUnitDef) -- lapie cofniecie zmiany #1',
+  hasCombatPowerScaledDefOf,
+  hasCombatPowerScaledDefOf ? 'OK' : 'wzorzec "defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u)" NIE znaleziony w main.ts',
 );
 console.log('');
 

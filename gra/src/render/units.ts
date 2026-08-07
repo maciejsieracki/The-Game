@@ -5155,7 +5155,9 @@ export class UnitRenderer {
       // armyMerge.ts::stackVitals, dostarczone tu w StackDisplayInfo.vitalsByRepId:
       //   Ruch  = minimum (stackRuchLeft — wspólny pul, armia rusza łącznie),
       //   HP    = PULA (Σ HP / Σ maks. HP, nie średnia z procentów),
-      //   Moc   = sumRosterFieldM (nominalna, C-MOC-Q1 = A),
+      //   Moc   = sumRosterFieldM (EFEKTYWNA -- weteran + fortyfikacja + trudność
+      //           AI, R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 = B, Maciej 2026-08-07;
+      //           dawniej nominalna pod C-MOC-Q1 = A, patrz armyMerge.ts::stackFieldPowerM),
       //   odznaki i gwiazdki = MAKSIMUM z każdej ścieżki osobno (C-ZETON-STOS-Q1 = A);
       //     gwiazdki liczone jako max liczby WYGRANYCH bitew (veteranStarCount).
       // Brak wpisu (żeton niewidoczny, galeria, podgląd bez StackDisplayInfo) =

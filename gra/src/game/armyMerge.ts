@@ -514,20 +514,29 @@ export function stackHpPool(
  *     naprawdę nie liczy się w bitwie polowej. Warstwa renderu ma wtedy
  *     NIE RYSOWAĆ pola Mocy (tak jak nie rysuje ikony Koszar przy poziomie 0),
  *     bo gołe „0” gracz odczytałby jako awarię.
- *   • `armyFieldPower(def)` bierze DEFINICJĘ jednostki, więc ta liczba jest
- *     MOCĄ NOMINALNĄ: NIE uwzględnia bieżących HP, premii weterana
- *     (game/veteran.ts) ani premii budynkowych (pancerzBonusProc /
- *     parametryBonusProc). Wariant zachowawczy, wybrany świadomie — gdyby
- *     właściciel zdecydował „moc efektywna”, podmiana ma być JEDNYM
- *     wywołaniem W TYM CIELE, bez ruszania renderu.
- *   • KONKRETNY, ZNANY ROZJAZD: sama auto-bitwa mapowa NIE liczy M z surowych
- *     definicji — battle/mapFieldBattle.ts::rosterFieldPowerM podaje do
- *     `sumRosterFieldM` definicje PRZESKALOWANE premią weterana
- *     (`veteranScaledDef`, z usunięciem zapieczonego pola `fieldPower`).
- *     Dla armii z weteranami M użyte do rozstrzygnięcia starcia jest więc
- *     WYŻSZE niż liczba na tabliczce. To jest właśnie ta rozbieżność, którą
- *     właściciel świadomie odłożył jako osobny temat (C-MOC-Q1 = A); żeby ją
- *     zamknąć, wystarczy tu wywołać rosterFieldPowerM zamiast sumRosterFieldM.
+ *   • `defOf(u)` NIE jest zapisane w tym pliku — to zależność wstrzykiwana
+ *     przez wołającego (StackVitalsDeps, patrz niżej). DOMYŚLNIE OD
+ *     R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 = B (Maciej 2026-08-07) main.ts
+ *     wstrzykuje `combatPowerScaledDefFor` (main.ts, obok
+ *     `veteranScaledDefFor`/`rosterFieldPowerM`) — czyli DEFINICJĘ już
+ *     PRZESKALOWANĄ premią weterana (game/veteran.ts), fortyfikacją polową/
+ *     garnizonem bez muru i mnożnikiem trudności AI. Liczba na tabliczce jest
+ *     więc dziś MOCĄ EFEKTYWNĄ, tą samą, którą realnie rozstrzyga auto-bitwa
+ *     (rosterFieldPowerM()/resolveAutoBattleByPower() w main.ts) — CEL z
+ *     C-MOC-Q1 domknięty, `stackFieldPowerM` sam się nie zmienił, zmieniło
+ *     się WYŁĄCZNIE `defOf` wstrzyknięte z main.ts (syncUnitsRender).
+ *     Zakres decyzji R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 = B jest DOSŁOWNY:
+ *     dotyczy WYŁĄCZNIE tabliczki nad żetonem. Panel pre-battle
+ *     (main.ts::preBattleUnitFromRuntime, battle/mapFieldBattle.ts::
+ *     preBattleUnitFromRuntime) NIE jest tym objęty i nadal liczy „Moc"
+ *     z definicji NOMINALNEJ (`armyFieldPower(def)`) — to jest osobny temat
+ *     (Evaluator, 2026-08-07): jedyny faktyczny konsument pola `.moc` w
+ *     panelu pre-battle to etykieta „Szarża +X" dla jednostek konnych
+ *     (preBattle.ts), niezwiązana z „Szacunkową przewagą".
+ *   • Gdyby przyszły wołający chciał z powrotem Mocy NOMINALNEJ, wystarczy
+ *     przekazać `defOf: (u) => defForUnit(u)` (surowa definicja
+ *     units.json, bez żadnego skalowania) — ta funkcja i `sumRosterFieldM`
+ *     nie wymagają zmiany.
  *
  * Jednostka: punkty Mocy pola M (ta sama skala co mAtk/mDef w auto-bitwie).
  */

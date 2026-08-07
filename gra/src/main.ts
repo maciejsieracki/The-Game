@@ -3580,11 +3580,61 @@ async function boot(): Promise<void> {
       if (penalizedPairs > 0) {
         const kara = borderParams.karaPrzemarszNieautoryzowany_zaufanie_perTura;
         const notice = classifyPlayerBorderMarchNotice(enriched, resolveBorderMarchCtx, 0);
+        // R-PRZEMARSZ-ATRYBUCJA-Q1=B (Maciej 2026-08-07) + naprawa not Evaluatora (2026-08-07):
+        // komunikat dostaje nazwę naruszającej cywilizacji (ownerDiploLabel — ta sama funkcja co
+        // wpisy wojenne, obsługuje barbarzyńców/miasta-państwa/AI) + wpis w WYDARZENIACH klikalny
+        // do skoku kamery na heks pary (q/r z BorderMarchPair — pierwsza napotkana jednostka
+        // intruza, border-march-scan.ts). Wiele naruszycieli w jednej turze → JEDNA zagregowana
+        // wiadomość (nazwy złączone przecinkiem, unikalne) + skok do PIERWSZEJ pary z danym q/r
+        // w kolejności iteracji (nie "najbliższej" — brak w tym miejscu odległości do gracza,
+        // prostota > funkcja sortująca której nikt nie prosił, CLAUDE.md zasada 7).
+        // N1: BRAK showHintMessage — ta funkcja biegnie podczas endTurnInProgress, więc toast
+        // trafiałby do deferredEotHints i wychodziłby jako DRUGI, niekliknalny wpis w
+        // warEventLog (deferredHintsToSidePanelEvents, prefiks eot-hint-) obok tego poniżej —
+        // duplikat tej samej treści. Wpis WYDARZENIA (border-march-*, klikalny, ze skokiem
+        // kamery) niesie całą treść, więc toast jest zbędny.
+        // N5 (+N3+N4): stabilne id per kierunek (nie per-turę) — przy każdym wystąpieniu
+        // naruszenia usuwamy stary wpis o tym id i wstawiamy świeży z aktualnym hexem/nazwami,
+        // co eliminuje starzenie się celu kamery bez potrzeby osobnej logiki wygasania.
         if (notice.playerBorderViolated) {
-          showHintMessage(`Twoje granice naruszone: −${kara} pkt Zaufania/turę u każdej naruszającej cywilizacji`, 3500);
+          const names = [...new Set(notice.violatingIntruders.map(v => ownerDiploLabel(v.ownerId)))];
+          const namesLabel = names.join(', ');
+          const evId = 'border-march-violated';
+          const target = notice.violatingIntruders.find(v => v.q != null && v.r != null);
+          borderMarchEventTargets.set(
+            evId,
+            target && target.q != null && target.r != null ? { q: target.q, r: target.r } : null,
+          );
+          const existingIdx = warEventLog.findIndex(e => e.id === evId);
+          if (existingIdx >= 0) warEventLog.splice(existingIdx, 1);
+          warEventLog.unshift({
+            id: evId,
+            icon: '⚠️',
+            title: 'Granice naruszone',
+            subtitle: `Twoje granice naruszone — ${namesLabel}: −${kara} pkt Zaufania/turę u każdej naruszającej cywilizacji`,
+            kind: 'diplo',
+          });
+          if (warEventLog.length > 8) warEventLog.length = 8;
         }
         if (notice.playerTrespassing) {
-          showHintMessage(`Twoja jednostka na cudzym terenie: −${kara} pkt Zaufania/turę u właściciela terenu`, 3500);
+          const names = [...new Set(notice.trespassedOwners.map(v => ownerDiploLabel(v.ownerId)))];
+          const namesLabel = names.join(', ');
+          const evId = 'border-march-trespassing';
+          const target = notice.trespassedOwners.find(v => v.q != null && v.r != null);
+          borderMarchEventTargets.set(
+            evId,
+            target && target.q != null && target.r != null ? { q: target.q, r: target.r } : null,
+          );
+          const existingIdx = warEventLog.findIndex(e => e.id === evId);
+          if (existingIdx >= 0) warEventLog.splice(existingIdx, 1);
+          warEventLog.unshift({
+            id: evId,
+            icon: '⚠️',
+            title: 'Jednostka na cudzym terenie',
+            subtitle: `Twoja jednostka na cudzym terenie (${namesLabel}): −${kara} pkt Zaufania/turę u właściciela terenu`,
+            kind: 'diplo',
+          });
+          if (warEventLog.length > 8) warEventLog.length = 8;
         }
       }
 
@@ -6226,6 +6276,13 @@ async function boot(): Promise<void> {
     /** Wojna z udziałem gracza — wpisy w panelu WYDARZENIA (bez stałego paska na HUD). */
     const warEventLog: SidePanelEvent[] = [];
 
+    /**
+     * R-PRZEMARSZ-ATRYBUCJA-Q1=B: heks skoku kamery dla wpisu WYDARZENIA `border-march-*`
+     * (klucz = SidePanelEvent.id). `null` gdy para nie niosła q/r (np. test ręczny bez
+     * lokalizacji) — onEventClick wtedy pomija skok, ale nadal pokazuje nazwę cywilizacji.
+     */
+    const borderMarchEventTargets = new Map<string, { q: number; r: number } | null>();
+
     function recordWarDeclarationEvent(declarerId: number, targetId: number): void {
       if (declarerId !== 0 && targetId !== 0) return;
       if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
@@ -6369,6 +6426,7 @@ async function boot(): Promise<void> {
       resetDiplomaticDiscoveryUiState();
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
+      borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
       activeDeals = [];
       negotiationTable.length = 0;
       negotiationSeq = 0;
@@ -8053,7 +8111,13 @@ async function boot(): Promise<void> {
         // (hpMaxEffective z game/unit-card-stats.ts) — mapa i panel nie mogą
         // pokazać innego maksimum HP dla tej samej jednostki.
         maxHpOf: (u: RuntimeUnit) => unitCardCombatFor(u, defForUnit(u)).hpMaxEffective,
-        defOf: (u: RuntimeUnit) => defForUnit(u),
+        // R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B (Maciej 2026-08-07): Moc EFEKTYWNA,
+        // nie nominalna -- ta sama definicja skalowana (weteran + fortyfikacja
+        // polowa/garnizon bez muru + mnożnik trudności AI), której realnie
+        // używa rosterFieldPowerM()/resolveAutoBattleByPower() do rozstrzygania
+        // auto-bitwy (patrz combatPowerScaledDefFor niżej w tym pliku). Zero
+        // nowej matematyki -- ta sama funkcja co bitwa.
+        defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u),
       });
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
@@ -15581,6 +15645,18 @@ async function boot(): Promise<void> {
         onContextAction: handleSelectedUnitHudAction,
         getContextPanelMessage: () => buildContextPanelMessage(),
         onEventClick: (id) => {
+          if (id.startsWith('border-march-')) {
+            // R-PRZEMARSZ-ATRYBUCJA-Q1=B: skok kamery na heks pary, gdy znany (patrz
+            // borderMarchEventTargets / applyBorderMarchPenaltiesEndTurn). Wzorzec identyczny do
+            // 'revolt-' niżej (axialToWorld + camCtrl.focusAt) — bez otwierania dodatkowego panelu,
+            // bo naruszyciel nie ma jednego miasta/jednostki do pokazania w kontekście.
+            const target = borderMarchEventTargets.get(id);
+            if (target) {
+              const pos = axialToWorld(target.q, target.r, HEX_R);
+              camCtrl.focusAt(pos.x, pos.z, 22);
+            }
+            return;
+          }
           if (id.startsWith('war-')) {
             openDiploListWarEnemies();
             return;
@@ -15610,6 +15686,16 @@ async function boot(): Promise<void> {
         },
         onEventDismiss: (id) => {
           if (id.startsWith('war-')) {
+            const idx = warEventLog.findIndex(e => e.id === id);
+            if (idx >= 0) {
+              warEventLog.splice(idx, 1);
+              refreshD1bHud();
+            }
+            return;
+          }
+          if (id.startsWith('border-march-')) {
+            // N4: bez tej gałęzi id wpadał w ogólny dismissedSidePanelEventIds, czyszczony przy
+            // zmianie tury — wpis wracał mimo odrzucenia. Wzorzec identyczny do 'war-' wyżej.
             const idx = warEventLog.findIndex(e => e.id === id);
             if (idx >= 0) {
               warEventLog.splice(idx, 1);
@@ -23887,6 +23973,7 @@ async function boot(): Promise<void> {
       playerEverOwnedCity = false;
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
+      borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
       turn = 1;
       playerPracaPool = 0;
       budowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];
