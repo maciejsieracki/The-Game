@@ -1973,3 +1973,28 @@ Stan **pre-istniejący** (drzewo bez zmian), przyczyna: zdezaktualizowane warto�
 w teście po zmianie danych Hastati — **nie jest to regresja**. Ale **nie figuruje na liście
 znanych czerwonych w `CLAUDE.md`**, więc każda sesja odkrywa ją od nowa. Do naprawy albo do
 wpisania na listę znanych.
+
+## BUG-RZEKI-MEDIUM-FOW-REGRESJA-2 (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — sprzeczność z zieloną bramką**
+**Jego słowa:** *„Znowu pojawił się kolejny regres w zależności czy jest włączony czy wyłączony
+FoW to rzeki średnie włączają się lub wyłączają."*
+**Objaw:** ten sam typ zjawiska co `BUG-RZEKI-MEDIUM-FOW` (2026-08-04, oznaczony „FIX v2" —
+sekcja powyżej): sieć rzek średnich zmienia widoczność zależnie od stanu Fog of War (klawisz F).
+Dwa zrzuty pokazują różny układ widocznych rzek w tym samym rejonie mapy (dwa wzgórza-kopce
+w centrum kadru jako punkt odniesienia).
+**⛔ SPRZECZNOŚĆ DO WYJAŚNIENIA:** `node gra/tools/river-fog-visibility-test.cjs` uruchomiony
+DZIŚ (2026-08-07, po zgłoszeniu) daje **12 pass, 0 fail** — dokładnie ten test, który miał
+pilnować tego konkretnego zjawiska po „FIX v2". Historia zmian w kodzie renderowania rzek
+(`git log -- gra/src/render/riverLod.ts gra/src/render/river*.ts`) pokazuje ostatnią zmianę
+2026-08-04 (`2b4be50`) — **żadnego commitu od tamtej pory**, który mógłby cofnąć fix.
+**Wniosek na tę chwilę (do zweryfikowania):** albo (a) to NOWY, inny mechanizm generujący ten
+sam wizualny objaw — test jednostkowy pilnuje logiki indeksu LOD, nie faktycznego renderu
+end-to-end, więc mogła powstać inna droga do tego samego skutku; albo (b) to problem generacji
+mapy (które rzeki w ogóle ISTNIEJĄ w danym miejscu), nie widoczności przy FoW — wtedy nazwa
+zgłoszenia jest myląca, a przyczyna leży w `gra/src/map/**`, nie w `render/**`.
+**NIE ZGADUJĘ który wariant — wymaga diagnozy Operator→Evaluator.**
+**Kotwice:** `gra/src/render/riverLod.ts` (funkcje `needsRiverRibbonIndexUpdate`,
+`buildRiverRibbonFullIndex`, sentinel `RIVER_FOG_SIG_OFF`) · `gra/src/render/river*.ts`
+· ewentualnie `gra/src/map/gen-helpers.ts` (generacja rzek średnich) jeśli wariant (b).
+**Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała, CLAUDE.md §4); jeśli okaże się,
+że przyczyna leży w `gra/src/map/**` — zmiana generatora wymaga bramki `map-gen-regression-test`
+i pomiaru przed/po (playbook C-011), NIE testu na oko.
