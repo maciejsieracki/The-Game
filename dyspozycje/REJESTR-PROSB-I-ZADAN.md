@@ -638,3 +638,12 @@ zatwierdzonych/zdeployowanych decyzji.
 Weryfikacja: każdy Evaluator odtworzył kontrfaktyk (stara asercja czerwona na dzisiejszym
 `main` też), potwierdził zero zmian w `gra/src/**`/`gra/data/**`, przepuścił `tsc --noEmit`.
 Scalone bezpośrednio (bez ABC), commit `<uzupełnij po committcie>`.
+
+## R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1 (2026-08-07) — eskalacja zasadna z batcha AutoBot (wgjvwhy88, temat dip-proposal-fairness-msg)
+**Zgłoszenie źródłowe:** Maciej, „każdy z tych tematów odpal oddzielnym subagentem…
+Spróbujmy rozwiązać wszystkie te problemy" — luka Evaluatora „efekt uboczny modyfikatora
+chęci handlu" wyeskalowała w analizie do szerszego problemu w `proposerUnfairToPartnerGate`.
+**WERDYKT AutoBot:** ESKALACJA-ZASADNA (Operator poprawnie rozpoznał, że wymaga decyzji
+Macieja, nie autonomicznej naprawy — zero kodu zmienione).
+**Status:** 🟡 CZEKA NA DECYZJĘ MACIEJA — pełna ABC przedstawiona w czacie 2026-08-07.
+Szczegóły techniczne, dowody, kontrprzykłady: patrz raport Evaluatora w transkrypcie sesji.
