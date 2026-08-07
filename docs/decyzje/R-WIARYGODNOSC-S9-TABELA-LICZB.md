@@ -92,8 +92,26 @@ uzasadnienie w kolumnie obok.
 |---|---|---|---|---|---|
 | `wiarygodnoscS1SojuszPerTure` | +1,0 | pkt Wiarygodności / turę — Sojusz (pełny lub defensywny) aktywny, za każdy trwający sojusz | 1,0 (bez zmian) | Najwyższa w tabeli strumienia — najsilniejsze zobowiązanie. Zaprojektowana WPROST razem z N2-sojusz(−25): 25 tur strumienia odrabia jedną zdradę — to jest podstawa czytelności całego systemu kar/nagród, nie zmieniać w oderwaniu od N2. | POTWIERDZENIE |
 | `wiarygodnoscS2NapPerTure` | +0,5 | pkt Wiarygodności / turę — Pakt o Nieagresji aktywny | 0,5 (bez zmian) | Połowa S1 — proporcjonalnie do wagi NAP względem Sojuszu, ta sama proporcja co N2-NAP(−18)/N2-sojusz(−25) ≈ 0,72, blisko S2/S1=0,5 (nie identyczna, ale ten sam kierunek hierarchii — kary i nagrody NIE muszą być idealnie proporcjonalne 1:1, tylko zachowywać tę samą kolejność, co robią). | POTWIERDZENIE |
-| `wiarygodnoscS3HandelPerTure` | +0,3 | pkt Wiarygodności / turę — umowa handlowa / handel cykliczny ZE 100% zrealizowanych dostaw tej tury | 0,3 (bez zmian) | Trzecia w hierarchii wagi zobowiązań (Sojusz > NAP > Handel > Przemarsz), zgodna z kolejnością kar N5 (traktat −6 > handel −4). Warunek „100% dostaw" (bez zmian numerycznych, to reguła atomowości C-HANDEL-3) chroni przed farmieniem tej nagrody bez realnego ryzyka. | POTWIERDZENIE |
-| `wiarygodnoscS4PrzemarszPerTure` | +0,2 | pkt Wiarygodności / turę — prawo przemarszu / otwarte granice aktywne | 0,2 (bez zmian) | Najsłabsze zobowiązanie w tabeli — otwarcie granic nie wymaga wzajemnego zaufania w takim stopniu jak handel czy sojusz. Domyka spójną drabinę 1,0 / 0,5 / 0,3 / 0,2. | POTWIERDZENIE |
+| `wiarygodnoscS3HandelPerTureTrudny` | (nowy, dziś płaskie +0,3) | pkt Wiarygodności / turę — handel ze 100% zrealizowanych dostaw tej tury, poziom Trudny | **0,6** | Decyzja Maciej 2026-08-07: podnieść S3 razem z S4, zachowując stosunek S3/S4=1,5 z dzisiejszej tabeli (0,3/0,2) na KAŻDYM poziomie trudności — nie tylko średnio. 0,6 = 0,4(S4-Trudny)×1,5. | **KOREKTA (zatwierdzona)** |
+| `wiarygodnoscS3HandelPerTureNormalny` | (nowy, dziś płaskie +0,3) | pkt Wiarygodności / turę — jw., poziom Normalny | **0,9** | 0,9 = 0,6(S4-Normalny)×1,5. | **KOREKTA (zatwierdzona)** |
+| `wiarygodnoscS3HandelPerTureLatwy` | (nowy, dziś płaskie +0,3) | pkt Wiarygodności / turę — jw., poziom Łatwy | **1,2** | 1,2 = 0,8(S4-Łatwy)×1,5. | **KOREKTA (zatwierdzona)** |
+| `wiarygodnoscS4PrzemarszPerTureTrudny` | (nowy, dziś płaskie +0,2) | pkt Wiarygodności / turę — prawo przemarszu / otwarte granice aktywne, poziom Trudny | **0,4** | Decyzja Maciej 2026-08-07: „za słabe, powinno rosnąć trzykrotnie szybciej, z rozbiciem na trudny dwukrotnie, łatwy czterokrotnie" — Trudny ×2 względem dzisiejszego 0,2. | **KOREKTA (zatwierdzona)** |
+| `wiarygodnoscS4PrzemarszPerTureNormalny` | (nowy, dziś płaskie +0,2) | pkt Wiarygodności / turę — jw., poziom Normalny | **0,6** | Interpolacja liniowa między Trudny(×2) i Łatwy(×4) — ×3, zgodnie z headline Macieja „trzykrotnie szybciej"; potwierdzone przez Maciej 2026-08-07. | **KOREKTA (zatwierdzona)** |
+| `wiarygodnoscS4PrzemarszPerTureLatwy` | (nowy, dziś płaskie +0,2) | pkt Wiarygodności / turę — jw., poziom Łatwy | **0,8** | Decyzja Maciej 2026-08-07: Łatwy ×4 względem dzisiejszego 0,2. | **KOREKTA (zatwierdzona)** |
+
+**KOREKTA 2026-08-07 — zmiana kształtu parametru, nie tylko wartości.** S3 i S4 przestają być
+płaskimi stałymi i stają się trójwartościowe (Trudny/Normalny/Łatwy), analogicznie do już
+istniejącego wzorca w §1 (`wiarygodnoscStart*`) i §6 (`wiarygodnoscCzasZapomnienia*`). S1 i S2
+POZOSTAJĄ płaskie (Maciej nie zgłosił zmiany) — hierarchia Sojusz>NAP>Handel>Przemarsz jest
+teraz zachowana na KAŻDYM poziomie trudności osobno (Trudny: 1,0>0,5>0,6>0,4 — **UWAGA: Handel
+Trudny=0,6 > NAP=0,5**, patrz zastrzeżenie niżej), nie tylko w uśrednieniu.
+
+**Zastrzeżenie do zgłoszenia przy najbliższej okazji (nie blokuje wdrożenia, Maciej już
+zaakceptował oba mnożniki osobno):** przy podniesieniu S3-Trudny do 0,6, ten poziom przewyższa
+S2 (NAP=0,5, płaskie) — na Trudnym Handel daje TERAZ więcej Wiarygodności/turę niż NAP. Na
+Normalnym i Łatwym hierarchia S1>S2>S3>S4 zostaje zachowana (0,9<1,0 i 1,2, oba >0,5). To
+efekt uboczny tego, że S1/S2 zostały płaskie, a S3/S4 nie — zgłaszam do wiadomości, nie otwieram
+nowego wątku ABC.
 
 **Uwaga do §9.2 (już rozstrzygnięte, nie do ponownego głosowania):** kumulacja strumienia z wielu
 jednoczesnych zobowiązań/partnerów jest BEZ LIMITU (decyzja C, spec §9.2). Przy wartościach
@@ -176,11 +194,11 @@ skrajnych wartości Wiarygodności. Odnotowuję to tu do wiadomości, nie otwier
 
 | Miernik | Wartość |
 |---|---|
-| **Parametrów w `DIPLOMACY_PARAMS` (TS, docelowo JSON)** | **41** |
+| **Parametrów w `DIPLOMACY_PARAMS` (TS, docelowo JSON)** | **45** (było 41 — S3 i S4 rozbite każdy z 1 na 3 parametry Trudny/Normalny/Łatwy, decyzje Maciej 2026-08-07) |
 | **Dodatkowych stałych poza `DIPLOMACY_PARAMS`** | **2** (dryf 0,03; amplituda tempa 0,5) |
-| **RAZEM zinwentaryzowanych liczb** | **43** |
-| **POTWIERDZENIE (wartość bez zmian)** | **43 / 43** — żadna rekomendowana wartość liczbowa nie różni się od dzisiejszej |
-| **KOREKTA wartości liczbowej** | **0** |
+| **RAZEM zinwentaryzowanych liczb** | **47** |
+| **POTWIERDZENIE (wartość bez zmian)** | **40 / 47** |
+| **KOREKTA wartości liczbowej (zatwierdzona przez Maciej 2026-08-07)** | **7** — `wiarygodnoscProgNapMin` (−40→0) + 3×`wiarygodnoscS3HandelPerTure*` (0,6/0,9/1,2) + 3×`wiarygodnoscS4PrzemarszPerTure*` (0,4/0,6/0,8) | 
 | **KOREKTA opakowania (ta sama wartość, inna forma w kodzie — nie wymaga litery per-parametr, tylko zgody „tak, zrób" przy najbliższej okazji kodowej)** | **3** (`wiarygodnoscZaufanieDzielnikPerTura` — komentarz; `WIARYGODNOSC_ZAUFANIE_DRYF_NA_100` — przenieść do `DIPLOMACY_PARAMS`; amplituda tempa 0,5 — nazwać) |
 | **Parametr z zastrzeżeniem źródłowym** (spec sama go oznaczyła jako założenie) | **1** (`wiarygodnoscOdwetOknoTur`) — rekomendacja mimo to: zostawić |
 
