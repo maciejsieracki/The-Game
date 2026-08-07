@@ -645,7 +645,13 @@ Spróbujmy rozwiązać wszystkie te problemy" — luka Evaluatora „efekt ubocz
 chęci handlu" wyeskalowała w analizie do szerszego problemu w `proposerUnfairToPartnerGate`.
 **WERDYKT AutoBot:** ESKALACJA-ZASADNA (Operator poprawnie rozpoznał, że wymaga decyzji
 Macieja, nie autonomicznej naprawy — zero kodu zmienione).
-**Status:** 🟢 **ZAPISANA — A** (Maciej 2026-08-07). Rozszerzyć wzorzec naprawy handlu na
-wszystkich 8 akcji z `PROPOSER_PW_FAIRNESS_ACTIONS`, jedną skoordynowaną sesją AutoBot.
-Szczegóły, wymogi wdrożenia, odrzucony wariant C: `docs/decyzje/R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1.md`.
-Wdrożenie: AutoBot Operator→Evaluator w toku.
+**Status:** ✅ **ZDEPLOYOWANE do kodu — SCALONE** (commity `f80b24d` + `49819ee`, 2026-08-07).
+AutoBot Operator (7 akcji dostały dedykowane bramki/progi, 'handel' nietknięty — miał już
+własną naprawę z 9fc3821) → scalenie ręczne (1 konflikt w `PROPOSER_PW_FAIRNESS_ACTIONS`,
+rozwiązany na PUSTY zbiór, nie `['handel']`, żeby nie zdublować bramkowania handlu) →
+Evaluator (PASS-WITH-NOTES, macierz różnicowa 4860 przypadków, mutation-testing, sonda
+bezpieczeństwa „darmowy pokój" — 0/12 exploitów) → 2 poprawki po notatkach Evaluatora:
+zawężenie `treatyPnGate` receive-side z powrotem do `proposerIsPlayer` (N3, poza literą
+decyzji A) + spójność `treatyEvalRelationTotal` (N5) + domknięcie luki pokrycia (N2).
+117/117 `diplomacy-proposal-test.cjs`, 0 błędów tsc, zero regresji w pełnej baterii
+diplomacy-*/wiarygodnosc/tech-tree/research. Szczegóły: `docs/decyzje/R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1.md`.
