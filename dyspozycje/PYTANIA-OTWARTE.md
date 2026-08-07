@@ -2025,7 +2025,7 @@ dostawać gołą liczbę bez punktu odniesienia.
 **Kotwice:** `gra/src/main.ts:3573-3589` (komunikat), `gra/src/game/diplomacy-border-march.ts`
 (`classifyPlayerBorderMarchNotice` — dziś zwraca tylko dwie flagi bool, bez identyfikacji strony).
 
-## R-BRAMKI-SAMOGENERUJACE-ENTRY-Q1 (2026-08-07) — 10 bramek zależne od artefaktu spoza gita · STATUS: **DO NAPRAWY, bez pytania**
+## R-BRAMKI-SAMOGENERUJACE-ENTRY-Q1 (2026-08-07) — 10 bramek zależne od artefaktu spoza gita · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`165cd0d`)
 **Źródło:** znalezisko Evaluatora (Opus 5) przy okazji `BUG-RZEKI-MEDIUM-FOW-REGRESJA-2`.
 **Problem:** `.gitignore:53-56` deklaruje wprost: *„KAŻDA bramka zapisuje [swój plik wejściowy]
 sama przy starcie"* — **nieprawda dla 10 plików**. Przeskanowane wszystkie **360** plików
