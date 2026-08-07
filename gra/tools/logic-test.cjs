@@ -38,6 +38,7 @@ import { computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightR
 import { canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE } from '../src/game/cities';
 import { loadGameData } from '../src/data/loader';
 import { advanceCityEconomy, buildEconParams, workedTilesForCity } from '../src/game/turn-economy';
+import { readCityFoodBuffer } from '../src/game/economy-upkeep';
 import {
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
@@ -75,7 +76,7 @@ export {
   computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
   canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE,
   loadGameData,
-  advanceCityEconomy, buildEconParams, workedTilesForCity,
+  advanceCityEconomy, buildEconParams, workedTilesForCity, readCityFoodBuffer,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
   setPlayerResearchTarget, getResearchState, scaledResearchCost,
@@ -126,7 +127,7 @@ const {
   computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
   canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE,
   loadGameData,
-  advanceCityEconomy, buildEconParams, workedTilesForCity,
+  advanceCityEconomy, buildEconParams, workedTilesForCity, readCityFoodBuffer,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
   setPlayerResearchTarget, getResearchState, scaledResearchCost,
@@ -340,6 +341,17 @@ assert('foundCity population === 1', c !== null && c.population === 1,
 if (c !== null) {
   cities.push(c);
 
+  // PRZYPIĘCIE WARTOŚCI (nota N4a Evaluatora, R-BRAMKI-AUDYT-KANONU 2026-08-07).
+  // Poniższe asercje używają MIN_CITY_DISTANCE zaimportowanego z testowanego modułu,
+  // więc SAME W SOBIE są tautologią — przechodzą dla dowolnej wartości progu, także 1.
+  // Bez tego przypięcia żaden test w repo nie pilnuje min_dystans_miast (sprawdzone:
+  // trafienia w ai-*-test.cjs dotyczą INNEGO parametru, ekspansja_min_dystans_miast).
+  // Wartość 4 heksy = decyzja Macieja, docs/decyzje/R-AI-KOLONIZACJA.md („min dystans 4 hex"),
+  // wcześniej 5 heksów. Zmiana tej liczby MA wywalić ten test — to jest jego jedyne zadanie.
+  assert('MIN_CITY_DISTANCE = 4 heksy (R-AI-KOLONIZACJA, było 5)',
+    MIN_CITY_DISTANCE === 4,
+    `MIN_CITY_DISTANCE=${MIN_CITY_DISTANCE} heksów`);
+
   // Find a land hex at hexDistance < MIN_CITY_DISTANCE from the city (real
   // engine threshold — cities.ts:570, sourced from miasto-params.json
   // min_dystans_miast.wartosc; do NOT hardcode a guessed constant here).
@@ -443,6 +455,41 @@ if (econSettler) {
       econCity.magazynZywnosci === undefined ||
       (typeof econCity.magazynZywnosci === 'number' && econCity.magazynZywnosci >= 0),
       `store=${econCity.magazynZywnosci}`);
+    // ODZYSKANIE POKRYCIA (nota N4b Evaluatora, R-BRAMKI-AUDYT-KANONU 2026-08-07).
+    // Asercja wyżej została rozszerzona o `=== undefined`, czyli akceptuje dokładnie ten
+    // stan, który wcześniej wykrywała — jest bliska pustej. Opis pola jest poprawny
+    // (magazynZywnosci to legacy/oblężenie-only), ale przez to zniknęła JAKAKOLWIEK
+    // bramka na buforze żywności. Testujemy więc realny kontrakt, na którym stoją
+    // wszyscy czytelnicy: readCityFoodBuffer() ZAWSZE zwraca skończoną liczbę >= 0,
+    // niezależnie od tego, czy pole jest undefined, liczbą, czy legacy-obiektem
+    // { aktualny, pojemnosc } ze starego zapisu (economy-upkeep.ts:141-150).
+    // UWAGA: sprawdzone, że NIE wolno tu asercjonować city.wzrostUlamkowy — to pole
+    // też jest opcjonalne, czytane wyłącznie przez `?? 0` (turn-economy.ts:1875,2414).
+    {
+      const przypadki = [
+        [econCity.magazynZywnosci, 'stan po advanceCityEconomy'],
+        [undefined, 'undefined (miasto nigdy nieoblegane)'],
+        [7, 'liczba dodatnia'],
+        [-3, 'liczba ujemna → clamp do 0'],
+        [{ aktualny: 5, pojemnosc: 20 }, 'legacy obiekt ze starego zapisu'],
+        [NaN, 'NaN'],
+        ['12', 'string zamiast liczby'],
+      ];
+      let bufOk = true, zle = '';
+      for (const [wej, opis] of przypadki) {
+        const out = readCityFoodBuffer(wej);
+        if (!(typeof out === 'number' && Number.isFinite(out) && out >= 0)) {
+          bufOk = false; zle = `${opis} → ${out}`; break;
+        }
+      }
+      assert('economy: readCityFoodBuffer zawsze zwraca skończoną liczbę >= 0 (7 przypadków)',
+        bufOk, zle);
+      assert('economy: readCityFoodBuffer(-3) klampuje do 0 (nie przepuszcza ujemnego bufora)',
+        readCityFoodBuffer(-3) === 0, `got=${readCityFoodBuffer(-3)}`);
+      assert('economy: readCityFoodBuffer czyta legacy { aktualny } ze starego zapisu',
+        readCityFoodBuffer({ aktualny: 5, pojemnosc: 20 }) === 5,
+        `got=${readCityFoodBuffer({ aktualny: 5, pojemnosc: 20 })}`);
+    }
     assert('economy: population never goes below 1',
       econCity.population >= 1, `pop=${econCity.population} (was ${popBefore})`);
     // Net food should be defined per-city in the result.
