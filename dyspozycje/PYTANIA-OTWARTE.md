@@ -1861,7 +1861,7 @@ wzroście zerowym lub ujemnym (głód) — czy pokazujemy `0 %`, znak minus, czy
 w `gra/src/game/turn-economy.ts`.
 **Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
 
-## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — przyczyna ustalona**
+## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C`)
 **Jego słowa:** *„jakieś niezautoryzowane niby przemarsze, których ja nie widzę, bo ja nie widzę,
 żeby ktoś robił przemarsz przez mój teren, a ja też nie mam jeszcze żadnych jednostek."*
 **Objaw:** panel WYDARZENIA pokazuje wielokrotnie „Koniec tury — Nieautoryzowany przemarsz:
@@ -1998,3 +1998,22 @@ zgłoszenia jest myląca, a przyczyna leży w `gra/src/map/**`, nie w `render/**
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała, CLAUDE.md §4); jeśli okaże się,
 że przyczyna leży w `gra/src/map/**` — zmiana generatora wymaga bramki `map-gen-regression-test`
 i pomiaru przed/po (playbook C-011), NIE testu na oko.
+
+## R-PRZEMARSZ-ATRYBUCJA-Q1 (2026-08-07, wynik pętli AutoBot na BUG-PRZEMARSZ-KOMUNIKAT-OBCY) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+**Kontekst:** naprawa `BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C` scalona — komunikat pokazuje się teraz
+tylko gdy gracz jest stroną. Evaluator (nota N1) wskazał lukę, którą ta naprawa NIE zamyka:
+właściciel powiedział *„nie widzę, żeby ktoś robił przemarsz przez mój teren"* — o **widoczności**,
+nie o **istnieniu** pary. Promień terytorium miasta to 5–15 heksów, a obce jednostki we mgle wojny
+są niewidoczne. Obca jednostka może stać na terenie gracza, generować kartę „Twoje granice
+naruszone", a gracz nadal uczciwie zaraportuje „nikt tu nie chodził" — bo faktycznie tego nie widzi.
+**Dodatkowo:** zbuntowane miasto (`REBEL_FACTION_OWNER_ID`) NIE jest wymuszane na relację
+`'wojna'` (w przeciwieństwie do barbarzyńców) — po dzisiejszej naprawie gracz zacznie widzieć
+komunikaty o naruszeniach przez własne, zbuntowane miasta, bez wyjaśnienia kto to jest.
+**DO DECYZJI (ABC):** czy komunikat ma dodatkowo podawać **kto** narusza granice i **gdzie**
+(nazwa cywilizacji, ewentualnie hex/kierunek), żeby gracz mógł to zweryfikować wizualnie zamiast
+dostawać gołą liczbę bez punktu odniesienia.
+(A) dopisać nazwę naruszającej cywilizacji do istniejącego komunikatu — minimalna zmiana;
+(B) jak (A) + link/skok kamery do miejsca naruszenia;
+(C) zostawić bez zmian — komunikat jako ostrzeżenie ogólne, szczegóły w panelu Wiarygodności.
+**Kotwice:** `gra/src/main.ts:3573-3589` (komunikat), `gra/src/game/diplomacy-border-march.ts`
+(`classifyPlayerBorderMarchNotice` — dziś zwraca tylko dwie flagi bool, bez identyfikacji strony).
