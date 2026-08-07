@@ -910,3 +910,32 @@ Nowe asercje sprawdzają **7 wariantów wejścia** (brak wartości, dodatnia, uj
 Żadnej liczby produktowej nie przypinają.
 **Powiązanie:** obie luki to wypadki opisane w **rule_117** playbooka (zakaz „naprawy" testu przez
 rozbrojenie asercji) — ta decyzja jest jego pierwszym zastosowaniem.
+
+## R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 (2026-08-07) — tabliczka jednostki: Moc nominalna vs efektywna = **B**
+**Decyzja Macieja: B.** Tabliczka nad żetonem ma pokazywać Moc **efektywną** — tę samą liczbę,
+którą realnie rozstrzyga auto-bitwa — zamiast dzisiejszej Mocy nominalnej.
+**Powód:** dla jednostki bez gwiazdek liczby są identyczne; dla weterana ★★★ (3 wygrane) tabliczka
+pokazywała **49 pkt Mocy**, a starcie rozstrzygała liczba **58,0 pkt Mocy** — różnica **+18,37%**,
+w całości z pominiętej premii weterana. Zweryfikowane dwukrotnie: Operator i niezależnie
+Evaluator (oba Opus 5), zgodna arytmetyka.
+**Implementacja:** podmiana jednego wywołania w `gra/src/game/armyMerge.ts::stackFieldPowerM`
+(`rosterFieldPowerM` zamiast `sumRosterFieldM`), bez ruszania kodu renderu (Evaluator: koszt
+znikomy). Model: Sonnet 5 (logika gry, nie `gra/src/render/**`).
+**Powiązane, do domknięcia razem:** panel pre-battle (`main.ts:17635`, duplikat
+`battle/mapFieldBattle.ts:143`) pokazuje dziś Moc nominalną obok prognozy szans liczonej ze
+skalowanej — po tej decyzji zostałby jedynym miejscem z wariantem nominalnym; ujednolicić.
+
+## R-PRZEMARSZ-ATRYBUCJA-Q1 (2026-08-07) — komunikat o naruszeniu granic: kto i gdzie = **B**
+**Decyzja Macieja: B.** Komunikat „Twoje granice naruszone" ma dodatkowo pokazywać **nazwę
+naruszającej cywilizacji** ORAZ dawać możliwość **skoku kamery** do miejsca naruszenia.
+**Powód:** po naprawie `BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C` (filtr do gracza, scalone `e52e84a`)
+komunikat jest poprawny formalnie, ale obca jednostka w promieniu terytorium (5–15 heksów) może
+stać we mgle wojny, całkowicie niewidoczna — gracz dostaje ostrzeżenie bez możliwości
+zweryfikowania go wzrokiem. Nota N1 Evaluatora.
+**Zakres implementacji:** `classifyPlayerBorderMarchNotice` (`gra/src/game/diplomacy-border-march.ts`)
+dziś zwraca tylko dwie flagi bool — trzeba rozszerzyć o identyfikację strony (ownerId, ewentualnie
+współrzędne hexa pierwszej/najbliższej pary). `main.ts:3573-3589` — komunikat + akcja skoku kamery
+(wzorzec: sprawdzić istniejący mechanizm centrowania kamery, np. z panelu jednostek — zadanie #1
+z listy zadań tej sesji, „Centrowanie kamery po kliknięciu jednostki w panelu", już wdrożone).
+Model: Sonnet 5 (logika + UI zdarzeń, nie `gra/src/render/**` — jeśli dotknie faktycznego
+sterowania kamerą 3D, ten fragment przekazać do Opus 5 zgodnie z zasadą 4 CLAUDE.md).
