@@ -833,5 +833,342 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
   ok(mismatched === 0, `zero rozjazdu JSON<->TS dla kluczy wiarygodnosc* (rozjazd: ${mismatched}/${wiarygodnoscKeys.length})`);
 }
 
+// ---------------------------------------------------------------------------
+// 11) R-DYPLO-JSON-ZRODLO-PRAWDY-Q1=B — DOWÓD, że czytniki dyplomacji faktycznie
+//     czytają getBaseDiplomacyParams() (JSON+TS przez loadDiplomacyParams), a NIE
+//     surową stałą DIPLOMACY_PARAMS. Sekcja 10 wyżej dowodzi tylko, że JSON i TS
+//     mają dziś te same WARTOŚCI — nie dowodzi, że silnik JSON w ogóle czyta.
+//
+//     Mechanizm: buduje OSOBNY bundle esbuild z modyfikowanej KOPII drzewa
+//     src/+data (fs.mkdtempSync + fs.cpSync do katalogu tymczasowego, sprzątane
+//     w finally), nadpisuje >=8 różnych kluczy w kopii diplomacy.json na wartości
+//     sentinel (jednoznacznie różne od defaultu TS), woła
+//     resetEffectiveDiplomacyParamsCache() i asercjonuje, że funkcje z TRZECH
+//     zmienionych plików (diplomacy-credibility.ts, diplomacy-layers.ts,
+//     diplomacy-value-catalog.ts) zwracają wartość pochodzącą z JSON sentinela,
+//     nie ze stałej TS. Kontrola negatywna na końcu potwierdza, że surowa
+//     DIPLOMACY_PARAMS w tym samym bundlu NIE zmieniła się — dowód, że to
+//     właśnie getBaseDiplomacyParams()/loadDiplomacyParams() wykonuje pracę.
+//     Prawdziwy gra/data/diplomacy.json pozostaje nietknięty (kopia w os.tmpdir()) —
+//     weryfikowane na końcu przez `git status --porcelain -- data/diplomacy.json`.
+// ---------------------------------------------------------------------------
+
+{
+  const os = require('os');
+  const { execSync } = require('child_process');
+  let tmpDir = null;
+  try {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiarygodnosc-json-src-'));
+    fs.cpSync(path.resolve(GRA_ROOT, 'src'), path.join(tmpDir, 'src'), { recursive: true });
+    fs.cpSync(path.resolve(GRA_ROOT, 'data'), path.join(tmpDir, 'data'), { recursive: true });
+
+    const tmpDiplomacyJsonPath = path.join(tmpDir, 'data', 'diplomacy.json');
+    const tmpJson = JSON.parse(fs.readFileSync(tmpDiplomacyJsonPath, 'utf8'));
+    if (!tmpJson.params || typeof tmpJson.params !== 'object') {
+      throw new Error('kopia diplomacy.json: brak bloku params');
+    }
+
+    // >=8 kluczy z RÓŻNYCH sekcji §1/§3/§4/§5 (diplomacy-credibility.ts) oraz po
+    // jednym z diplomacy-layers.ts i diplomacy-value-catalog.ts — pokrycie SZEROKIE,
+    // nie punktowe (Evaluator rundy 1: 3 asercje na 3/21 kluczy nie wykryły sabotażu).
+    const SENTINEL_KEYS = [
+      'wiarygodnoscStartNormalny',              // §1 wiarygodnoscStartowa (credibility)
+      'wiarygodnoscProgWzorCnoty',               // §1 wiarygodnoscBand (credibility)
+      'wiarygodnoscS4PrzemarszPerTureNormalny',  // §3 credibilityStreamWeight — OBOWIĄZKOWY (cel N3)
+      'wiarygodnoscS3HandelPerTureNormalny',     // §3 credibilityStreamWeight (credibility)
+      'wiarygodnoscS1SojuszPerTure',             // §3 credibilityStreamWeight (credibility)
+      'wiarygodnoscS2NapPerTure',                // §3 credibilityStreamWeight (credibility)
+      'wiarygodnoscTrwalaPodlogaProcent',        // §4 trwalySlad (credibility)
+      'wiarygodnoscSkalaMax',                    // §4 sumaWiarygodnosci — clamp (credibility)
+      'wiarygodnoscCzasZapomnieniaKaraNormalny', // §4 wartoscBiezaca -> czasZapomnienia (credibility, prywatna)
+      'wiarygodnoscTempoAmplituda',              // §5 D1 wiarygodnoscWzrostMult/SpadekMult (credibility)
+      'wiarygodnoscZaufanieDryfNa100',           // §5 zaufanieDryfOdWiarygodnosci (credibility)
+      'wiarygodnoscZaufanieDzielnikPerTura',     // §5 D4 strumienWiarygodnoscDoZaufania / modyfikatorZaufaniaD4OdWiarygodnosci (credibility)
+      'startZaufanie',                           // diplomacy-layers.ts: defaultNeutralRelation
+      'startRespekt',                            // diplomacy-layers.ts: startRelationForPair
+      'handel_zaufanie_perTura',                 // diplomacy-value-catalog.ts: diplomacyHandelZaufaniePerTura
+    ];
+    const originalTsValues = {};
+    const sentinelValues = {};
+    for (const key of SENTINEL_KEYS) {
+      ok(key in P, `sanity: DIPLOMACY_PARAMS ma klucz ${key}`);
+      const base = P[key];
+      originalTsValues[key] = base;
+      // Sentinel jednoznacznie różny od defaultu TS. Ułamki (<1, np. mnożniki/procenty)
+      // dostają mały, bezpieczny offset — duże wartości (np. +999) na ułamku 0..1
+      // wywróciłyby sens parametru (np. mnożnik ×1000). Progi/liczby całkowite >=1
+      // dostają duży offset, żeby wynik był jednoznacznie odróżnialny od defaultu
+      // nawet po zaokrągleniach w funkcjach wywołujących (np. Math.round w D4).
+      const sentinel = Math.abs(base) < 1 ? base + 0.4321 : base + 999;
+      sentinelValues[key] = sentinel;
+      tmpJson.params[key] = sentinel;
+    }
+    fs.writeFileSync(tmpDiplomacyJsonPath, JSON.stringify(tmpJson, null, 2), 'utf8');
+
+    const tmpEntry = path.join(tmpDir, '.wiarygodnosc-json-entry.ts');
+    fs.writeFileSync(
+      tmpEntry,
+      `export {
+  wiarygodnoscStartowa,
+  wiarygodnoscBand,
+  credibilityStreamWeight,
+  trwalySlad,
+  sumaWiarygodnosci,
+  wartoscBiezaca,
+  wiarygodnoscWzrostMult,
+  wiarygodnoscSpadekMult,
+  zaufanieDryfOdWiarygodnosci,
+  strumienWiarygodnoscDoZaufania,
+  modyfikatorZaufaniaD4OdWiarygodnosci,
+} from './src/game/diplomacy-credibility';
+export {
+  startRelationForPair,
+  defaultNeutralRelation,
+} from './src/game/diplomacy-layers';
+export { diplomacyHandelZaufaniePerTura } from './src/game/diplomacy-value-catalog';
+export {
+  resetEffectiveDiplomacyParamsCache,
+  getBaseDiplomacyParams,
+  DIPLOMACY_PARAMS as TS_DIPLOMACY_PARAMS,
+} from './src/game/diplomacy';
+`,
+      'utf8',
+    );
+
+    const tmpBundle = path.join(tmpDir, '.wiarygodnosc-json-bundle.cjs');
+    esbuild.buildSync({
+      entryPoints: [tmpEntry],
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      target: 'node18',
+      outfile: tmpBundle,
+      absWorkingDir: tmpDir,
+      logLevel: 'silent',
+    });
+
+    const WCJ = require(tmpBundle);
+    WCJ.resetEffectiveDiplomacyParamsCache();
+
+    // Dowód bazowy: getBaseDiplomacyParams() (JSON-owa kopia) zwraca sentinel z JSON,
+    // NIE default TS — dla wszystkich >=8 kluczy naraz.
+    const base = WCJ.getBaseDiplomacyParams();
+    for (const key of SENTINEL_KEYS) {
+      ok(
+        approxEqual(base[key], sentinelValues[key]),
+        `[bundle-JSON] getBaseDiplomacyParams().${key} = sentinel z kopii JSON (${sentinelValues[key]}), TS default był ${originalTsValues[key]}`,
+      );
+    }
+
+    // --- diplomacy-credibility.ts --------------------------------------------
+    ok(
+      approxEqual(WCJ.wiarygodnoscStartowa('normal'), sentinelValues.wiarygodnoscStartNormalny),
+      'wiarygodnoscStartowa(normal) czyta wiarygodnoscStartNormalny z JSON (§1)',
+    );
+    ok(
+      // Różnicowy: przy defaultowym progu TS (40) w=40 dawałoby 'wzor_cnoty'; po
+      // podniesieniu progu sentinelem z JSON to samo w=40 musi spaść do 'uczciwy' —
+      // dowodzi, że band() faktycznie użył progu z JSON, nie z surowej stałej TS.
+      WCJ.wiarygodnoscBand(originalTsValues.wiarygodnoscProgWzorCnoty) === 'uczciwy',
+      'wiarygodnoscBand(progTS_default) spada do "uczciwy" po podniesieniu wiarygodnoscProgWzorCnoty sentinelem z JSON (§1, dowód różnicowy)',
+    );
+    ok(
+      approxEqual(
+        WCJ.credibilityStreamWeight('strumien_przemarsz', 'normal'),
+        sentinelValues.wiarygodnoscS4PrzemarszPerTureNormalny,
+      ),
+      'credibilityStreamWeight(strumien_przemarsz, normal) czyta wiarygodnoscS4PrzemarszPerTureNormalny z JSON (§3) — KLUCZ OBOWIĄZKOWY (cel N3)',
+    );
+    ok(
+      approxEqual(
+        WCJ.credibilityStreamWeight('strumien_handel', 'normal'),
+        sentinelValues.wiarygodnoscS3HandelPerTureNormalny,
+      ),
+      'credibilityStreamWeight(strumien_handel, normal) czyta wiarygodnoscS3HandelPerTureNormalny z JSON (§3)',
+    );
+    ok(
+      approxEqual(WCJ.credibilityStreamWeight('strumien_sojusz', 'normal'), sentinelValues.wiarygodnoscS1SojuszPerTure),
+      'credibilityStreamWeight(strumien_sojusz, *) czyta wiarygodnoscS1SojuszPerTure z JSON (§3)',
+    );
+    ok(
+      approxEqual(WCJ.credibilityStreamWeight('strumien_nap', 'normal'), sentinelValues.wiarygodnoscS2NapPerTure),
+      'credibilityStreamWeight(strumien_nap, *) czyta wiarygodnoscS2NapPerTure z JSON (§3)',
+    );
+    ok(
+      approxEqual(
+        WCJ.trwalySlad({ typ: 'zlamanie_paktu_nap', wartoscPierwotna: -18, turaWystapienia: 0, znak: 'kara' }),
+        -18 * sentinelValues.wiarygodnoscTrwalaPodlogaProcent,
+      ),
+      'trwalySlad() czyta wiarygodnoscTrwalaPodlogaProcent z JSON (§4)',
+    );
+    ok(
+      // startowa=150 nie przycięte do 100 (default TS max), tylko do sentinela
+      // (znacznie > 150) — dowodzi, że clamp użył wiarygodnoscSkalaMax z JSON.
+      WCJ.sumaWiarygodnosci([], 150, 0, 'normal') === 150,
+      'sumaWiarygodnosci: startowa=150 nieprzycięte do 100 — dowód, że wiarygodnoscSkalaMax pochodzi z JSON (§4)',
+    );
+    {
+      const zdarzenie = { typ: 'zlamanie_paktu_nap', wartoscPierwotna: -18, turaWystapienia: 0, znak: 'kara' };
+      const elapsed = 1;
+      const oczekiwanyCzas = sentinelValues.wiarygodnoscCzasZapomnieniaKaraNormalny;
+      const oczekiwanyMnoznik = Math.min(1, Math.max(0.10, 1 - elapsed / oczekiwanyCzas));
+      const oczekiwana = -18 * oczekiwanyMnoznik;
+      ok(
+        approxEqual(WCJ.wartoscBiezaca(zdarzenie, elapsed, 'normal'), oczekiwana),
+        'wartoscBiezaca() czyta wiarygodnoscCzasZapomnieniaKaraNormalny z JSON przez czasZapomnienia() (§4, funkcja prywatna pokryta pośrednio)',
+      );
+    }
+    {
+      const expectedWzrost = 1 + (100 / 100) * sentinelValues.wiarygodnoscTempoAmplituda;
+      ok(
+        approxEqual(WCJ.wiarygodnoscWzrostMult(100), expectedWzrost),
+        'wiarygodnoscWzrostMult(100) czyta wiarygodnoscTempoAmplituda z JSON (§5 D1)',
+      );
+      const expectedSpadek = 1 - (100 / 100) * sentinelValues.wiarygodnoscTempoAmplituda;
+      ok(
+        approxEqual(WCJ.wiarygodnoscSpadekMult(100), expectedSpadek),
+        'wiarygodnoscSpadekMult(100) czyta wiarygodnoscTempoAmplituda z JSON (§5 D1)',
+      );
+    }
+    ok(
+      approxEqual(WCJ.zaufanieDryfOdWiarygodnosci(100), 100 * sentinelValues.wiarygodnoscZaufanieDryfNa100),
+      'zaufanieDryfOdWiarygodnosci(100) czyta wiarygodnoscZaufanieDryfNa100 z JSON (§5, REL-WIARYG-DRIFT)',
+    );
+    ok(
+      approxEqual(WCJ.strumienWiarygodnoscDoZaufania(100), 100 / sentinelValues.wiarygodnoscZaufanieDzielnikPerTura),
+      'strumienWiarygodnoscDoZaufania(100) czyta wiarygodnoscZaufanieDzielnikPerTura z JSON (§5, legacy)',
+    );
+    ok(
+      WCJ.modyfikatorZaufaniaD4OdWiarygodnosci(100) === Math.round(100 / sentinelValues.wiarygodnoscZaufanieDzielnikPerTura),
+      'modyfikatorZaufaniaD4OdWiarygodnosci(100) czyta wiarygodnoscZaufanieDzielnikPerTura z JSON (§5 D4)',
+    );
+
+    // --- diplomacy-layers.ts -------------------------------------------------
+    {
+      const rel = WCJ.startRelationForPair(false);
+      ok(
+        approxEqual(rel.respekt, sentinelValues.startRespekt),
+        'diplomacy-layers.ts startRelationForPair(false).respekt czyta startRespekt z JSON',
+      );
+    }
+    {
+      const rel = WCJ.defaultNeutralRelation();
+      ok(
+        approxEqual(rel.zaufanie, sentinelValues.startZaufanie) && approxEqual(rel.respekt, sentinelValues.startRespekt),
+        'diplomacy-layers.ts defaultNeutralRelation() czyta startZaufanie i startRespekt z JSON',
+      );
+    }
+
+    // --- diplomacy-value-catalog.ts ------------------------------------------
+    ok(
+      approxEqual(WCJ.diplomacyHandelZaufaniePerTura(), sentinelValues.handel_zaufanie_perTura),
+      'diplomacy-value-catalog.ts diplomacyHandelZaufaniePerTura() czyta handel_zaufanie_perTura z JSON',
+    );
+
+    // --- kontrola negatywna ---------------------------------------------------
+    // Surowa DIPLOMACY_PARAMS (stała TS) w TYM SAMYM bundlu NIE zmieniła się mimo
+    // override JSON — dowód, że to getBaseDiplomacyParams()/loadDiplomacyParams()
+    // wykonuje realną pracę (a nie np. że DIPLOMACY_PARAMS samo czyta plik, co
+    // czyniłoby powyższe asercje bezwartościowymi).
+    ok(
+      approxEqual(
+        WCJ.TS_DIPLOMACY_PARAMS.wiarygodnoscS4PrzemarszPerTureNormalny,
+        originalTsValues.wiarygodnoscS4PrzemarszPerTureNormalny,
+      ),
+      'kontrola negatywna: surowa DIPLOMACY_PARAMS.wiarygodnoscS4PrzemarszPerTureNormalny NIE zmieniona przez override JSON w tym samym bundlu',
+    );
+  } finally {
+    if (tmpDir) {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  }
+
+  // Prawdziwy gra/data/diplomacy.json pozostaje nietknięty — cała modyfikacja
+  // działa wyłącznie na kopii w os.tmpdir(), sprzątniętej wyżej.
+  try {
+    const gitStatus = execSync('git status --porcelain -- data/diplomacy.json', {
+      cwd: GRA_ROOT,
+      encoding: 'utf8',
+    }).trim();
+    ok(gitStatus === '', `prawdziwy gra/data/diplomacy.json nietknięty po sekcji 11 (git status: "${gitStatus}")`);
+  } catch (e) {
+    ok(false, `nie udało się sprawdzić git status dla data/diplomacy.json: ${e.message}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 12) R-DYPLO-JSON-ZRODLO-PRAWDY-Q1=B — BRAMKA STRUKTURALNA (nota N1 Evaluatora).
+//
+//     Sekcja 11 wyżej dowodzi funkcjonalnie, że 15 kluczy realnie płynie z JSON,
+//     ale pokrywa 15 z 42 odwołań w kodzie. Evaluator wykazał empirycznie, że
+//     cofnięcie NIEOBJĘTEGO odwołania z `P.klucz` na `DIPLOMACY_PARAMS.klucz`
+//     przechodzi przez całą baterię 10 bramek niezauważone (261 pass, 0 fail) —
+//     czyli dokładnie tak, jak zginął cel w rundzie 1 tego zlecenia.
+//
+//     Ta sekcja zamyka lukę niezależnie od pokrycia funkcyjnego: czyta ŹRÓDŁA
+//     trzech plików i wymaga ZERA odczytów surowej stałej. Każde cofnięcie —
+//     objęte asercją czy nie — jest łapane natychmiast.
+//
+//     Świadomie sprawdzamy tylko `DIPLOMACY_PARAMS.<klucz>` w KODZIE: wzmianki
+//     w komentarzach są dozwolone i merytorycznie poprawne (stała nadal fizycznie
+//     mieszka w diplomacy.ts), więc linie komentarza są odfiltrowane.
+// ---------------------------------------------------------------------------
+
+{
+  const PLIKI_BEZ_SUROWEJ_STALEJ = [
+    'src/game/diplomacy-credibility.ts',
+    'src/game/diplomacy-layers.ts',
+    'src/game/diplomacy-value-catalog.ts',
+  ];
+
+  for (const rel of PLIKI_BEZ_SUROWEJ_STALEJ) {
+    const abs = path.resolve(GRA_ROOT, rel);
+    let tresc = '';
+    try {
+      tresc = fs.readFileSync(abs, 'utf8');
+    } catch (e) {
+      ok(false, `bramka strukturalna: nie udało się odczytać ${rel}: ${e.message}`);
+      continue;
+    }
+
+    // Odfiltruj linie komentarza (// ... oraz * ... wewnątrz bloku JSDoc).
+    const linieKodu = tresc
+      .split('\n')
+      .map((linia, i) => ({ nr: i + 1, linia }))
+      .filter(({ linia }) => {
+        const t = linia.trim();
+        return !(t.startsWith('//') || t.startsWith('*') || t.startsWith('/*'));
+      });
+
+    const trafienia = linieKodu.filter(({ linia }) => /DIPLOMACY_PARAMS\s*[.[]/.test(linia));
+    const opis = trafienia.map(({ nr, linia }) => `${nr}: ${linia.trim()}`).join(' | ');
+    ok(
+      trafienia.length === 0,
+      `bramka strukturalna: ${rel} — 0 odczytów surowej DIPLOMACY_PARAMS w kodzie `
+      + `(znaleziono ${trafienia.length}${trafienia.length ? `: ${opis}` : ''})`,
+    );
+
+    // Alias/spread/destrukturyzacja omijają regex z kropką — sprawdzane osobno.
+    const obejscia = linieKodu.filter(({ linia }) =>
+      /=\s*DIPLOMACY_PARAMS\s*[;,)]/.test(linia)
+      || /\.\.\.DIPLOMACY_PARAMS/.test(linia)
+      || /\}\s*=\s*DIPLOMACY_PARAMS/.test(linia));
+    ok(
+      obejscia.length === 0,
+      `bramka strukturalna: ${rel} — 0 aliasów/spreadów/destrukturyzacji DIPLOMACY_PARAMS `
+      + `(znaleziono ${obejscia.length})`,
+    );
+
+    // Import surowej stałej też musi zniknąć — inaczej cofnięcie jest o jedną linię.
+    const importSurowej = linieKodu.filter(({ linia }) =>
+      /^\s*import\b/.test(linia) && /\bDIPLOMACY_PARAMS\b/.test(linia));
+    ok(
+      importSurowej.length === 0,
+      `bramka strukturalna: ${rel} — brak importu DIPLOMACY_PARAMS `
+      + `(znaleziono ${importSurowej.length})`,
+    );
+  }
+}
+
 console.log(`wiarygodnosc-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);

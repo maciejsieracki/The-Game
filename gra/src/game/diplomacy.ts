@@ -505,7 +505,14 @@ const DIPLO_RESPEKT_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progPoboczneAkceptacja',
 ];
 
-function getBaseDiplomacyParams(): DiplomacyParams {
+/**
+ * Kanon + override z diplomacy.json (Panel-D export), BEZ skalowania po trudności —
+ * skalowanie żyje osobno w scaleDiplomacyParamsForDifficulty()/getEffectiveDiplomacyParams().
+ * Eksportowana (R-DYPLO-JSON-ZRODLO-PRAWDY-Q1=B) — czytniki dyplomacji (diplomacy-credibility.ts,
+ * diplomacy-layers.ts, diplomacy-value-catalog.ts) mają czytać stąd, nie z surowej stałej
+ * DIPLOMACY_PARAMS, żeby edycja diplomacy.json/Panelu-D realnie wpływała na rozgrywkę.
+ */
+export function getBaseDiplomacyParams(): DiplomacyParams {
   if (!_baseDiplomacyParams) {
     _baseDiplomacyParams = {
       ...DIPLOMACY_PARAMS,
