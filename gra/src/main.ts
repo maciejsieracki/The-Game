@@ -8113,9 +8113,13 @@ async function boot(): Promise<void> {
         // nie nominalna -- ta sama definicja skalowana (weteran + fortyfikacja
         // polowa/garnizon bez muru + mnożnik trudności AI), której realnie
         // używa rosterFieldPowerM()/resolveAutoBattleByPower() do rozstrzygania
-        // auto-bitwy (patrz combatPowerScaledDefFor niżej w tym pliku). Zero
-        // nowej matematyki -- ta sama funkcja co bitwa.
-        defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u),
+        // auto-bitwy (patrz combatPowerScaledDefFor niżej w tym pliku).
+        // R-MOC-MUR-PARADOKS-Q1=A (Maciej 2026-08-07): dla garnizonu w mieście
+        // z murem, combatPowerScaledDefFor SAM nie dociąga bonusu struktury/
+        // terenu (żeby effectiveDefenderM go nie policzyło podwójnie -- patrz
+        // komentarz przy tabliczkaGarnizonScaledDefFor), więc tabliczka woła
+        // dodatkową, tabliczkowo-lokalną warstwę nad tą samą bazą.
+        defOf: (u: RuntimeUnit) => tabliczkaGarnizonScaledDefFor(u),
       });
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
@@ -18216,6 +18220,76 @@ async function boot(): Promise<void> {
       // przed tą zmianą, mimo że komentarz mówi "obrona x0,5" (patrz raport).
       const embarkMult = defRoster[0]?.embarked === true ? EMBARK_DEFENSE_MULT : 1;
       return Math.round((terrAdjAttack + terrAdjDefense) * embarkMult * 10) / 10;
+    }
+
+    /**
+     * R-MOC-MUR-PARADOKS-Q1 = A (Maciej 2026-08-07): tabliczka nad żetonem
+     * garnizonu ma dociągnąć bonus struktury obronnej (mur/Palisada/Cytadela/
+     * Baszta -- structureDefenseBonusFor) i mnożnik terenu miasta
+     * (cityGatedTerrainMultiplier), DOKŁADNIE tak jak effectiveDefenderM liczy
+     * realną Obronę w bitwie -- inaczej tabliczka garnizonu z murem POKAZUJE
+     * NIŻSZĄ Moc niż bez murów (fortifyFieldScaledDefFor nie dolicza swojego
+     * +50%, bo unitGetsFortifyDefenseBonus zwraca false gdy jest mur), mimo że
+     * realna Obrona rośnie do +400%.
+     *
+     * ⚠ CELOWO NIE PODMIENIA combatPowerScaledDefFor() -- ta funkcja karmi
+     * effectiveDefenderM (patrz sumRosterFieldMSplit wyżej w effectiveDefenderM),
+     * które SAMO dolicza structBonusPct/cityGatedTerrainMultiplier na
+     * split.defense. Gdyby bonus wszedł już do combatPowerScaledDefFor(),
+     * effectiveDefenderM policzyłby go PODWÓJNIE (raz tu, raz przez
+     * combinedDefPct) i realna bitwa (rosterFieldPowerM dla atakującego też
+     * korzysta z combatPowerScaledDefFor) zaczęłaby liczyć struct bonus nawet
+     * dla atakującego. Dlatego to OSOBNA funkcja, wpięta WYŁĄCZNIE pod defOf
+     * tabliczki (syncUnitsRender, patrz niżej w tym pliku) -- ranking Mocy
+     * (sumArmyMForOwner) i panel pre-battle (preBattleUnitFromRuntime) jej
+     * NIE używają.
+     *
+     * Zastosowanie -- WYŁĄCZNIE jednostka w garnizonie (u.inGarnizon===true)
+     * miasta (cityAtUnit) na heksie, który cityWallStatusAtHex uznaje za
+     * miasto: skaluje meleeDefence/armor/health (SKŁADOWE Obrony w
+     * fieldPower(), unit-power.ts -- defense = meleeDefence+armor+health/2)
+     * o ten sam % co effectiveDefenderM liczy dla split.defense w gałęzi
+     * isCity -- combinedDefPct = structBonusPct + (cityGatedTerrainMultiplier-1)*100,
+     * ADDYTYWNIE (nie mnożone), zgodnie z C-COMBAT-Q2. Gdy miasto nie ma
+     * żadnego budynku obronnego, structBonusPct=0 i cityGatedTerrainMultiplier
+     * gate'uje się na 1.0 -- combinedDefPct=0, funkcja jest wtedy no-opem
+     * (zwraca base bez zmian, tabliczka garnizonu bez murów NIEZMIENIONA).
+     *
+     * Atak jednostki (meleeAttack/weaponDamage/piercing/chargeBonus/
+     * missileAttack) NIE dostaje żadnego bonusu -- mur broni Obronę, nie
+     * wzmacnia Ataku (ta sama zasada co effectiveDefenderM, punkt 3 zadania:
+     * jednostka ATAKUJĄCA z sąsiedniego heksu nigdy nie stoi NA heksie miasta
+     * obrońcy, więc ten branch jej po prostu nie dotyczy -- gating jest przez
+     * pozycję (u.q,u.r) jednostki, nie przez rolę w bitwie).
+     *
+     * Jednostka NIE w garnizonie (w polu, w tym ufortyfikowana polowo) --
+     * zwraca combatPowerScaledDefFor(u) bez zmian (zachowanie sprzed decyzji).
+     */
+    function tabliczkaGarnizonScaledDefFor(u: RuntimeUnit): Record<string, unknown> {
+      const base = combatPowerScaledDefFor(u);
+      if (u.inGarnizon !== true) return base;
+      if (!cityAtUnit(u)) return base;
+      const { isCity, hasMur } = cityWallStatusAtHex(u.q, u.r);
+      if (!isCity) return base;
+      const structBonusPct = structureDefenseBonusFor(u.q, u.r);
+      const hex = map.hexes[keyOf(u.q, u.r)];
+      const terrain = hex ? (hex.terenBazowy as string) : 'Rownina';
+      const cityTerrMult = cityGatedTerrainMultiplier(
+        hasMur,
+        terrain,
+        terrainCombatData as unknown as TerrainEntry[],
+      );
+      const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
+      if (combinedDefPct <= 0) return base;
+      const mult = 1 + combinedDefPct / 100;
+      const scaleField = (v: unknown): unknown => (typeof v === 'number' ? v * mult : v);
+      const { fieldPower: _staleFieldPower3, ...rest } = base as Record<string, unknown>;
+      return {
+        ...rest,
+        meleeDefence: scaleField(rest.meleeDefence),
+        armor: scaleField(rest.armor),
+        health: scaleField(rest.health),
+      };
     }
 
     /** Auto-walka M v2b + wspólne skutki mapy (identyczne reguły ruchu co ręczna). */

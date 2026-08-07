@@ -504,12 +504,30 @@ check(
 // zostawiloby powyzsze testy zielonymi. Asercja zrodlowa lapie wlasnie to
 // (Evaluator, nota N7, 2026-08-07): czyta main.ts jako tekst (wzor jak w
 // tools/plony-budynkow-test.cjs) i sprawdza literalne wstrzykniecie.
+//
+// R-MOC-MUR-PARADOKS-Q1=A (Maciej 2026-08-07): defOf tabliczki od tej decyzji
+// wola tabliczkaGarnizonScaledDefFor(u) -- OPAKOWANIE nad combatPowerScaledDefFor(u)
+// ktore dla garnizonu w miescie z murem DODATKOWO dolicza structBonusPct/
+// cityGatedTerrainMultiplier (main.ts, patrz komentarz przy definicji funkcji;
+// asercja dedykowana temu scenariuszowi -- tools/mur-paradoks-test.cjs).
+// Nie goly combatPowerScaledDefFor(u) jak wczesniej -- wzorzec ponizej to
+// zaktualizowano, zeby lapac cofniecie ZARÓWNO do #1 (surowy defForUnit) JAK
+// I do stanu SPRZED tej decyzji (goly combatPowerScaledDefFor(u) bez opakowania).
 const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
-const hasCombatPowerScaledDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*combatPowerScaledDefFor\(u\)/.test(mainTsSrc);
+const hasScaledDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*tabliczkaGarnizonScaledDefFor\(u\)/.test(mainTsSrc);
 check(
-  'ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje combatPowerScaledDefFor(u) (nie surowy defForUnit/lookupUnitDef) -- lapie cofniecie zmiany #1',
-  hasCombatPowerScaledDefOf,
-  hasCombatPowerScaledDefOf ? 'OK' : 'wzorzec "defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u)" NIE znaleziony w main.ts',
+  'ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje tabliczkaGarnizonScaledDefFor(u) (nie surowy defForUnit/lookupUnitDef, nie goly combatPowerScaledDefFor(u) sprzed R-MOC-MUR-PARADOKS-Q1) -- lapie cofniecie zmiany #1 i cofniecie muru/terenu na tabliczce',
+  hasScaledDefOf,
+  hasScaledDefOf ? 'OK' : 'wzorzec "defOf: (u: RuntimeUnit) => tabliczkaGarnizonScaledDefFor(u)" NIE znaleziony w main.ts',
+);
+// tabliczkaGarnizonScaledDefFor() SAMA MUSI wywolywac combatPowerScaledDefFor(u)
+// jako baze -- zeby premia weterana/fortyfikacji polowej/trudnosci AI (sekcje
+// 1-9 powyzej) zostala na tabliczce zachowana, nie zastapiona.
+const wrapperCallsBase = /function tabliczkaGarnizonScaledDefFor\(u: RuntimeUnit\)[\s\S]{0,200}combatPowerScaledDefFor\(u\)/.test(mainTsSrc);
+check(
+  'ZRODLO main.ts: tabliczkaGarnizonScaledDefFor() woła combatPowerScaledDefFor(u) jako baze (premia weterana/fortyfikacji/trudnosci AI z sekcji 1-9 nie znika z tabliczki po R-MOC-MUR-PARADOKS-Q1)',
+  wrapperCallsBase,
+  wrapperCallsBase ? 'OK' : 'wzorzec wywolania combatPowerScaledDefFor(u) wewnatrz tabliczkaGarnizonScaledDefFor NIE znaleziony',
 );
 console.log('');
 
