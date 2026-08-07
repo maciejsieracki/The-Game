@@ -38,6 +38,9 @@ export {
   availableProduction,
   epochNumber,
 } from '../src/game/production';
+export {
+  buildReplaceAvailabilityCtx,
+} from '../src/game/unit-replace-context';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -59,7 +62,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { availableReplacementsFor } = M;
+const { availableReplacementsFor, buildReplaceAvailabilityCtx } = M;
 
 const unitsJson = require('../data/units.json');
 const DATA = { buildings: [], units: Object.values(unitsJson) };
@@ -92,6 +95,13 @@ const RZYM_ZELAZO_CTX = {
   builtBuildingIds: ['odlewnia_zelaza'],
   placedImprovements: null,
   hasKopalniaNaZlozuZelaza: true,
+  // UNIT-REPLACE-EVOCATI-Q1 (nota N1): passesAvailabilityGates (production.ts) sprawdza
+  // dostep do surowca Braz/Zelazo przez empireStockHas(ctx.empireResourceStock, ...) --
+  // bez tego pola KAZDA jednostka Surowiec=Braz/Zelazo jest odrzucana (undefined ?? 0 > 0
+  // = false). Symulacja gracza z pelnym magazynem obu surowcow (10 jednostek kazdy) --
+  // zgodna z tym, co main.ts realnie przekazuje po naprawie replaceAvailabilityCtxForCity/
+  // replaceAvailabilityCtxEmpireWide (przez buildReplaceAvailabilityCtx, patrz sekcja 4 nizej).
+  empireResourceStock: { braz: 10, zelazo: 10 },
 };
 const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
 
@@ -133,6 +143,67 @@ console.log('\n3. Nieznana nazwa jednostki -> []');
 {
   const items = availableReplacementsFor('Nie Ma Takiej Jednostki', DATA, TECHS_ZELAZO, RZYM_ZELAZO_CTX);
   assert(Array.isArray(items) && items.length === 0, 'zwraca pusta tablice dla nieznanej jednostki');
+}
+
+// --- Scenario 4: buildReplaceAvailabilityCtx (UNIT-REPLACE-EVOCATI-Q1, nota N1) ---
+// main.ts (replaceAvailabilityCtxForCity/replaceAvailabilityCtxEmpireWide) jest zbyt
+// duzy/zalezny od DOM zeby bundlowac go w calosci w tym tescie -- ta sekcja testuje
+// WPROST buildReplaceAvailabilityCtx (game/unit-replace-context.ts), czyli DOKLADNIE
+// tą funkcję, którą oba miejsca w main.ts wołają zamiast składać kontekst same. Gdyby
+// ktoś usunął `empireResourceStock: citySurowceSumForOwner(...)` z main.ts, przestałby
+// się kompilować (pole obowiązkowe w ReplaceAvailabilityCtxParams -- patrz tsc bramka);
+// gdyby ktoś zepsuł SAMĄ funkcję (np. przestała przepisywać pole do zwracanego obiektu),
+// to poniższe asercje behawioralne to wykryją, mimo że tsc by tego nie złapał
+// (AvailabilityContext.empireResourceStock jest tam polem opcjonalnym).
+console.log('\n4. buildReplaceAvailabilityCtx (main.ts "Zastąp" -- pokrycie UNIT-REPLACE-EVOCATI-Q1)');
+{
+  const baseParams = {
+    epoch: 3,
+    builtBuildingIds: ['odlewnia_zelaza'],
+    civBonusy: [],
+    civUnitNacja: 'Rzym',
+    placedImprovements: null,
+    hasKopalniaNaZlozuZelaza: true,
+    aliveUnitTypeNames: new Set(),
+    kosztJednostekPace: 'niski',
+    ownerId: 0,
+    difficulty: 'normal',
+  };
+
+  // 4a. Roundtrip: empireResourceStock przekazany do buildReplaceAvailabilityCtx trafia
+  //     1:1 do zwróconego AvailabilityContext (dokładnie to pole main.ts gubił do
+  //     UNIT-REPLACE-EVOCATI-Q1 -- główny cel tego testu).
+  const stock = { braz: 3, zelazo: 5 };
+  const ctxZStokiem = buildReplaceAvailabilityCtx({ ...baseParams, empireResourceStock: stock });
+  assert(
+    ctxZStokiem.empireResourceStock === stock,
+    'empireResourceStock z parametrów trafia 1:1 do zwróconego AvailabilityContext',
+    'ctx.empireResourceStock=' + JSON.stringify(ctxZStokiem.empireResourceStock),
+  );
+
+  // 4b. Zachowanie end-to-end: kontekst ZE stokiem Żelaza odblokowuje Evocati
+  //     (Surowiec=Żelazo) w availableReplacementsFor -- jak realnie w grze po
+  //     replaceAvailabilityCtxForCity/EmpireWide (main.ts).
+  const itemsZeStokiem = availableReplacementsFor('Wojownik tyrreński', DATA, TECHS_ZELAZO, ctxZStokiem);
+  const idsZeStokiem = itemsZeStokiem.map(i => i.id);
+  assert(
+    idsZeStokiem.includes('Evocati'),
+    'ctx z buildReplaceAvailabilityCtx (empireResourceStock={zelazo:5}) odblokowuje Evocati',
+    'ids=' + JSON.stringify(idsZeStokiem),
+  );
+
+  // 4c. Kontrast: kontekst z PUSTYM magazynem (zero Żelaza) -- Evocati znika. Dowodzi,
+  //     że to naprawdę WARTOŚĆ pola (nie sama jej obecność) steruje bramką w
+  //     passesAvailabilityGates (production.ts) -- symuluje stan main.ts SPRZED
+  //     naprawy UNIT-REPLACE-EVOCATI-Q1 (empireResourceStock brakujące/puste).
+  const ctxBezStoku = buildReplaceAvailabilityCtx({ ...baseParams, empireResourceStock: {} });
+  const itemsBezStoku = availableReplacementsFor('Wojownik tyrreński', DATA, TECHS_ZELAZO, ctxBezStoku);
+  const idsBezStoku = itemsBezStoku.map(i => i.id);
+  assert(
+    !idsBezStoku.includes('Evocati'),
+    'ctx z pustym empireResourceStock NIE odblokowuje Evocati (regresja UNIT-REPLACE-EVOCATI-Q1)',
+    'ids=' + JSON.stringify(idsBezStoku),
+  );
 }
 
 // --- Summary -----------------------------------------------------------------

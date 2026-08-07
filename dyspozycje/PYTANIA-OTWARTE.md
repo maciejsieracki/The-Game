@@ -1719,3 +1719,19 @@ Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCi
 - `HANDEL-SPLIT-Q1` — patrz sekcja własna (jeśli OTWARTE)
 
 **Zamknięte (audyt R-PUŁKA 2026-08-05):** `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP` · `R-AI-MIASTA-BUDOWY` · paczka `R-PUŁKA-PYTANIA-29-07`
+
+### Znaleziska AutoBot 2026-08-06/07 (do przyszłej rundy, nieblokujące)
+
+- **UNIT-REPLACE-EVOCATI-Q1, N1 — ZAMKNIĘTE.** Naprawa `main.ts`
+  (`replaceAvailabilityCtxForCity`/`replaceAvailabilityCtxEmpireWide` →
+  `empireResourceStock`) nie miała pokrycia testowego — `unit-replace-test.cjs`
+  testował wyłącznie `production.ts`, nigdy nie ładował `main.ts`. Domknięte:
+  budowa `AvailabilityContext` dla "Zastąp" wyekstrahowana do czystej funkcji
+  `buildReplaceAvailabilityCtx` (`gra/src/game/unit-replace-context.ts`,
+  `ReplaceAvailabilityCtxParams` wymusza `empireResourceStock` jako pole
+  OBOWIĄZKOWE przez typy — pominięcie go w main.ts jest dziś błędem `tsc`),
+  main.ts jest teraz cienkim wrapperem, a `tools/unit-replace-test.cjs` bundluje
+  i testuje `buildReplaceAvailabilityCtx` wprost (roundtrip pola +
+  zachowanie `availableReplacementsFor` z/bez zapasu Brąz/Żelazo).
+- **MENNICA-GRACE-VERIFY-Q1, N3**: `main.ts` `placedImprovementsWithTradeGrants()` nadal woła deprecjonowany no-op dla złota (`placedImprovementsWithZlotoTradeGrant`), z wieloma wołającymi. Bramka runtime Mennicy jest bezpieczna (osobna ścieżka `ownerHasZlotoAccessNow`), ale to potencjalny dług — asymetria brąz-vs-złoto w tej funkcji.
+- **R-OBRONA-MIASTA-MP-Q1, notatka Evaluatora rundy 3**: `defenderCivBonusBreakdown` filtruje bonusy obrony wyłącznie przez `unitMatchesCel` — realna walka (`bonusApplies()`) ma dodatkowo bramki opisowe (las/szarża/pierwsze uderzenie). Dziś zero rozbieżności (żaden z 4 wpisów `bonus_obrona` w civs.json nie używa tych bramek), ale pierwszy nowy wpis z takim opisem sprawi że panel znów skłamie. Docelowo: eksportować `bonusApplies` zamiast samego `unitMatchesCel`.

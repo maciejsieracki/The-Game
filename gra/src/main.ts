@@ -707,6 +707,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
   buildingUnlockFlagFor, buildingTypeQueued,
   type CityProduction, type AvailabilityContext } from './game/production';
+import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
 import {
   createMennicaZlotoGraceState,
@@ -4389,10 +4390,15 @@ async function boot(): Promise<void> {
     }
 
     /** Kontekst dostępności dla availableReplacementsFor — jak productionCtxForCity (cityPanel.ts),
-     *  per-miasto garnizonu (bramka koszary/braz-access per to miasto, gdy jednostka w nim stoi). */
+     *  per-miasto garnizonu (bramka koszary/braz-access per to miasto, gdy jednostka w nim stoi).
+     *  Cienki wrapper: cała budowa AvailabilityContext (wliczając `empireResourceStock` --
+     *  UNIT-REPLACE-EVOCATI-Q1, NIE USUWAĆ bez sprawdzenia noty N1 w PYTANIA-OTWARTE.md)
+     *  żyje w buildReplaceAvailabilityCtx (game/unit-replace-context.ts), gdzie ma pokrycie
+     *  testowe (tools/unit-replace-test.cjs) — pole `empireResourceStock` jest tam WYMAGANE
+     *  przez typy (ReplaceAvailabilityCtxParams), więc jego pominięcie tutaj jest błędem tsc. */
     function replaceAvailabilityCtxForCity(city: City): AvailabilityContext {
       const ownImprovements = placedImprovementsForOwner(city.ownerId);
-      return {
+      return buildReplaceAvailabilityCtx({
         epoch: empireEpochForOwner(city.ownerId),
         builtBuildingIds: cityBuilt.get(city.id) ?? [],
         civBonusy: civBonusyForOwnerId(city.ownerId),
@@ -4402,20 +4408,23 @@ async function boot(): Promise<void> {
         // hasKopalniaNaZlozuZelazaOrTradeGrant.
         placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
+        empireResourceStock: citySurowceSumForOwner(city.ownerId),
         // audyt #11: "Zastąp" nie może dać drugiej żywej Super-jednostka -- ta sama
         // bramka co productionCtxForCity (cityPanel.ts).
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
         difficulty: _menuDifficulty,
-      };
+      });
     }
 
     /** Kontekst dostępności dla availableReplacementsFor, gdy jednostka stoi w POLU (w granicach
      *  terytorium, bez miasta pod nią) — bramka koszary/braz-access "OR po wszystkich miastach
      *  gracza" (decyzja właściciela: Zastąp działa w całym terytorium, nie tylko w garnizonie;
      *  unia builtBuildingIds ze wszystkich miast gracza -> built.has('koszary') /
-     *  cityHasPiecHutniczy() zwraca true, gdy KTÓREKOLWIEK miasto spełnia warunek). */
+     *  cityHasPiecHutniczy() zwraca true, gdy KTÓREKOLWIEK miasto spełnia warunek).
+     *  Cienki wrapper — patrz komentarz przy replaceAvailabilityCtxForCity powyżej
+     *  (ta sama uwaga o `empireResourceStock` / UNIT-REPLACE-EVOCATI-Q1 dotyczy tej funkcji). */
     function replaceAvailabilityCtxEmpireWide(): AvailabilityContext {
       const builtUnion = new Set<string>();
       for (const c of cities) {
@@ -4423,19 +4432,23 @@ async function boot(): Promise<void> {
         for (const id of cityBuilt.get(c.id) ?? []) builtUnion.add(id);
       }
       const ownImprovements = placedImprovementsForOwner(0);
-      return {
+      return buildReplaceAvailabilityCtx({
         epoch: empireEpochForOwner(0),
         builtBuildingIds: Array.from(builtUnion),
         civBonusy: civBonusyForOwnerId(0),
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
         placedImprovements: placedImprovementsWithTradeGrants(0, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
+        // UNIT-REPLACE-EVOCATI-Q1: ta funkcja jest empire-wide wyłącznie dla gracza
+        // (ownerId 0, patrz literały wyżej w tej samej funkcji), więc suma surowców
+        // też liczona dla ownerId 0.
+        empireResourceStock: citySurowceSumForOwner(0),
         // audyt #11: jak wyżej (replaceAvailabilityCtxForCity) — całe terytorium gracza.
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === 0).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: 0,
         difficulty: _menuDifficulty,
-      };
+      });
     }
 
     /** Lista zamienników dostępnych TERAZ dla jednostki `u` (pusta gdy poza terytorium gracza).
