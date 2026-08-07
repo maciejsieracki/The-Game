@@ -1974,23 +1974,30 @@ w teście po zmianie danych Hastati — **nie jest to regresja**. Ale **nie figu
 znanych czerwonych w `CLAUDE.md`**, więc każda sesja odkrywa ją od nowa. Do naprawy albo do
 wpisania na listę znanych.
 
-## BUG-RZEKI-MEDIUM-FOW-REGRESJA-2 (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — sprzeczność z zieloną bramką**
+## BUG-RZEKI-MEDIUM-FOW-REGRESJA-2 (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`b33a19b`)
 **Jego słowa:** *„Znowu pojawił się kolejny regres w zależności czy jest włączony czy wyłączony
 FoW to rzeki średnie włączają się lub wyłączają."*
-**Objaw:** ten sam typ zjawiska co `BUG-RZEKI-MEDIUM-FOW` (2026-08-04, oznaczony „FIX v2" —
-sekcja powyżej): sieć rzek średnich zmienia widoczność zależnie od stanu Fog of War (klawisz F).
-Dwa zrzuty pokazują różny układ widocznych rzek w tym samym rejonie mapy (dwa wzgórza-kopce
-w centrum kadru jako punkt odniesienia).
-**⛔ SPRZECZNOŚĆ DO WYJAŚNIENIA:** `node gra/tools/river-fog-visibility-test.cjs` uruchomiony
-DZIŚ (2026-08-07, po zgłoszeniu) daje **12 pass, 0 fail** — dokładnie ten test, który miał
-pilnować tego konkretnego zjawiska po „FIX v2". Historia zmian w kodzie renderowania rzek
-(`git log -- gra/src/render/riverLod.ts gra/src/render/river*.ts`) pokazuje ostatnią zmianę
-2026-08-04 (`2b4be50`) — **żadnego commitu od tamtej pory**, który mógłby cofnąć fix.
-**Wniosek na tę chwilę (do zweryfikowania):** albo (a) to NOWY, inny mechanizm generujący ten
-sam wizualny objaw — test jednostkowy pilnuje logiki indeksu LOD, nie faktycznego renderu
-end-to-end, więc mogła powstać inna droga do tego samego skutku; albo (b) to problem generacji
-mapy (które rzeki w ogóle ISTNIEJĄ w danym miejscu), nie widoczności przy FoW — wtedy nazwa
-zgłoszenia jest myląca, a przyczyna leży w `gra/src/map/**`, nie w `render/**`.
+**⛔ KOREKTA WŁASNA (C-016):** ten wpis pierwotnie mówił „sprzeczność z zieloną bramką" —
+cytowałem `river-fog-visibility-test.cjs` **12/12 PASS** jako fakt sprawdzony. **To był
+fałszywy wynik.** Test w ogóle nie generuje swojego pliku wejściowego (`fs.writeFileSync`);
+działał wyłącznie dlatego, że na dysku TEJ sesji leżał przypadkowy, nieśledzony artefakt
+z 2026-08-06. Na czystym stanie repozytorium (świeży worktree) ten sam test **nie startuje**
+(`exit 1`, nie może rozwiązać modułu). Zweryfikowane dwukrotnie, niezależnie (Operator i
+Evaluator, oba Opus 5) — patrz `R-BRAMKI-SAMOGENERUJACE-ENTRY-Q1` niżej.
+**Przyczyna prawdziwa (hipoteza (a) potwierdzona, (b) odrzucona):** rzeki średnie/krótkie/
+dopływy są rysowane w paczkach po 32–128 tras (`RIVER_BATCH_PATHS`, `scene.ts`). Paczka nigdy
+nie miała mapowania punkt→heks, więc widoczność przy mgle wojny działała na zasadzie
+wszystko-albo-nic — jeden ciemny heks w paczce gasił CAŁĄ paczkę rzek. Naprawa z 2026-08-04
+(„FIX v2") objęła wyłącznie rzeki main, nie paczkowane.
+**Naprawa:** `buildMergedRiverFullIndex`/`buildMergedRiverFogIndex`/`computeMergedRiverFogSig`
+w `riverLod.ts` (+73 linii, tylko nowe funkcje), dociągnięcie `pointHex` przez łańcuch
+batchowania w `scene.ts`. Rzeki main, delty, ujścia — nietknięte. Perf zmierzony: 0,038–0,055 ms
+na pełny przebieg `setFog`, także na mapie Ogromny — znikomy koszt.
+**Bramka naprawiona przy okazji:** `river-fog-visibility-test.cjs` teraz generuje entry sam
+(wzorzec z 286 innych plików w `gra/tools/`); 12 → **31 asercji**, w tym 12 end-to-end na
+prawdziwym `generateMap` porównujących zbudowany indeks z REALNYM buforem `mergeGeometries`.
+Zweryfikowane od zera po tej korekcie (usunięty zaległy artefakt przed uruchomieniem):
+**31/31, exit 0.**
 **NIE ZGADUJĘ który wariant — wymaga diagnozy Operator→Evaluator.**
 **Kotwice:** `gra/src/render/riverLod.ts` (funkcje `needsRiverRibbonIndexUpdate`,
 `buildRiverRibbonFullIndex`, sentinel `RIVER_FOG_SIG_OFF`) · `gra/src/render/river*.ts`
@@ -2017,3 +2024,27 @@ dostawać gołą liczbę bez punktu odniesienia.
 (C) zostawić bez zmian — komunikat jako ostrzeżenie ogólne, szczegóły w panelu Wiarygodności.
 **Kotwice:** `gra/src/main.ts:3573-3589` (komunikat), `gra/src/game/diplomacy-border-march.ts`
 (`classifyPlayerBorderMarchNotice` — dziś zwraca tylko dwie flagi bool, bez identyfikacji strony).
+
+## R-BRAMKI-SAMOGENERUJACE-ENTRY-Q1 (2026-08-07) — 10 bramek zależne od artefaktu spoza gita · STATUS: **DO NAPRAWY, bez pytania**
+**Źródło:** znalezisko Evaluatora (Opus 5) przy okazji `BUG-RZEKI-MEDIUM-FOW-REGRESJA-2`.
+**Problem:** `.gitignore:53-56` deklaruje wprost: *„KAŻDA bramka zapisuje [swój plik wejściowy]
+sama przy starcie"* — **nieprawda dla 10 plików**. Przeskanowane wszystkie **360** plików
+`.cjs` w `gra/tools/`: **286** generują entry samodzielnie (`fs.writeFileSync`, bezpieczne),
+**63** nie odwołują się do żadnego entry, **10** odwołują się do pliku, którego SAME NIE
+GENERUJĄ — a plik jest ignorowany przez `.gitignore` (`gra/tools/.*-entry.ts`), więc nigdy
+nie trafia do repo. Te bramki „działają" wyłącznie na maszynie, na której ktoś już je kiedyś
+uruchomił ręcznie i zostawił artefakt; w świeżym worktree albo świeżym klonie **milcząco padają**
+(`exit 1`, „nie można rozwiązać modułu"), co łatwo pomylić z brakiem uruchomienia w ogóle.
+**Lista 10 plików** (11. — `river-fog-visibility-test.cjs` — już naprawiony w `b33a19b`):
+`alliance-war-obligation-test.cjs` · `army-merge-colocated-test.cjs` · `civ-visual-test.cjs`
+· `escape-overlay-stack-test.cjs` · `map-gen-phase-profile.cjs` · `merge-decor-no-regress-test.cjs`
+· `planned-march-test.cjs` · `scene-perf-diag.cjs` · `science-hub-test.cjs`
+· `terrain-hill-movement-test.cjs`.
+**Ryzyko sprawdzone i wykluczone:** żaden z 360 plików nie czyta STAREGO `bundle.cjs` bez
+przebudowy (co dawałoby cichą zieloność na nieaktualnym kodzie) — to byłby wariant najgorszy.
+Dzisiejszy wypadek to „test nie startuje", nie „test kłamie o aktualnym kodzie".
+**Dlaczego bez pytania:** to nie decyzja produktowa, tylko dług narzędziowy z jasnym wzorcem
+naprawy (286 istniejących przykładów w tym samym repo). Naprawa: dopisać `fs.writeFileSync`
+generujący entry przed `esbuild`, identycznie jak w działających plikach.
+**Do poprawienia przy okazji:** `.gitignore:53-56` — komentarz twierdzący, że WSZYSTKIE bramki
+generują entry same, jest dziś nieprawdziwy; poprawić po naprawieniu 10 plików.
