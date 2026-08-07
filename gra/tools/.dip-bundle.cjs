@@ -172,7 +172,54 @@ var diplomacy_default = {
     graczWchlonieciePoWasaluTur: 10,
     graczWchloniecieKosztBaza: 150,
     graczWchloniecieKosztPerLudnosc: 25,
-    graczWchloniecieKosztMin: 200
+    graczWchloniecieKosztMin: 200,
+    wiarygodnoscSkalaMin: -100,
+    wiarygodnoscSkalaMax: 100,
+    wiarygodnoscProgWzorCnoty: 40,
+    wiarygodnoscProgWiarolomny: -40,
+    wiarygodnoscStartLatwy: 40,
+    wiarygodnoscStartNormalny: 20,
+    wiarygodnoscStartTrudny: 0,
+    wiarygodnoscN1BezOstrzezenia: -10,
+    wiarygodnoscN1KarencjaTur: 1,
+    wiarygodnoscN2ZlamaniePaktuNap: -18,
+    wiarygodnoscN2ZlamaniePaktuSojusz: -25,
+    wiarygodnoscN3AtakWOknieKarencji: -12,
+    wiarygodnoscN3KarencjaBezterminoweTur: 10,
+    wiarygodnoscN4OdmowaObowiazkuSojuszu: -15,
+    wiarygodnoscN5ZerwanieTraktatCzasowy: -6,
+    wiarygodnoscN5ZerwanieHandelCzasowy: -4,
+    wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+    wiarygodnoscN6ProgTurZRzedu: 3,
+    wiarygodnoscN7NieautoryzowanyPrzemarsz: -2,
+    wiarygodnoscOdwetOknoTur: 10,
+    wiarygodnoscS1SojuszPerTure: 1,
+    wiarygodnoscS2NapPerTure: 0.5,
+    wiarygodnoscS3HandelPerTureLatwy: 1.2,
+    wiarygodnoscS3HandelPerTureNormalny: 0.9,
+    wiarygodnoscS3HandelPerTureTrudny: 0.6,
+    wiarygodnoscS4PrzemarszPerTureLatwy: 0.8,
+    wiarygodnoscS4PrzemarszPerTureNormalny: 0.6,
+    wiarygodnoscS4PrzemarszPerTureTrudny: 0.4,
+    wiarygodnoscP1FiniszSojusz: 10,
+    wiarygodnoscP2FiniszNap: 5,
+    wiarygodnoscP2FiniszHandel: 5,
+    wiarygodnoscP3FiniszHandelCykliczny: 1,
+    wiarygodnoscP4BezWojny30Tur: 3,
+    wiarygodnoscP4OknoBezWojnyTur: 30,
+    wiarygodnoscP5PomocSojusznikowi: 20,
+    wiarygodnoscCzasZapomnieniaKaraLatwy: 40,
+    wiarygodnoscCzasZapomnieniaKaraNormalny: 80,
+    wiarygodnoscCzasZapomnieniaKaraTrudny: 120,
+    wiarygodnoscCzasZapomnieniaNagrodaLatwy: 120,
+    wiarygodnoscCzasZapomnieniaNagrodaNormalny: 80,
+    wiarygodnoscCzasZapomnieniaNagrodaTrudny: 40,
+    wiarygodnoscTrwalaPodlogaProcent: 0.1,
+    wiarygodnoscZaufanieDzielnikPerTura: 20,
+    wiarygodnoscTempoAmplituda: 0.5,
+    wiarygodnoscZaufanieDryfNa100: 0.03,
+    wiarygodnoscProgSojuszMin: 0,
+    wiarygodnoscProgNapMin: 0
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -3906,7 +3953,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -3939,7 +3986,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -4652,6 +4699,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -4696,14 +4744,29 @@ var TERRAIN_MOVEMENT_KEY_ALIASES = {
 function clamp(v, min, max) {
   return Math.min(max, Math.max(min, v));
 }
-var WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
+function wiarygodnoscWzrostMult(w) {
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
+  return 1 + wKlamrowane / 100 * P.wiarygodnoscTempoAmplituda;
+}
+function wiarygodnoscSpadekMult(w) {
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
+  return 1 - wKlamrowane / 100 * P.wiarygodnoscTempoAmplituda;
+}
+function applyWiarygodnoscTempoDoDelty(dZ, w) {
+  if (w === void 0 || dZ === 0) return dZ;
+  if (dZ > 0) return dZ * wiarygodnoscWzrostMult(w);
+  return dZ * wiarygodnoscSpadekMult(w);
+}
 function zaufanieDryfOdWiarygodnosci(w) {
+  const P = getBaseDiplomacyParams();
   const wKlamrowane = clamp(
     w,
-    DIPLOMACY_PARAMS.wiarygodnoscSkalaMin,
-    DIPLOMACY_PARAMS.wiarygodnoscSkalaMax
+    P.wiarygodnoscSkalaMin,
+    P.wiarygodnoscSkalaMax
   );
-  return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
+  return wKlamrowane * P.wiarygodnoscZaufanieDryfNa100;
 }
 
 // src/game/diplomacy.ts
@@ -4932,10 +4995,27 @@ var DIPLOMACY_PARAMS = {
   wiarygodnoscS1SojuszPerTure: 1,
   /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
   wiarygodnoscS2NapPerTure: 0.5,
-  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
-  wiarygodnoscS3HandelPerTure: 0.3,
-  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
-  wiarygodnoscS4PrzemarszPerTure: 0.2,
+  /**
+   * S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury,
+   * poziom Łatwy (pkt Wiarygodności / turę). R-WIARYGODNOSC-S9 2026-08-07 (Maciej):
+   * rozbite z jednej płaskiej wartości (0,3) na trudność, podniesione proporcjonalnie
+   * do S4, żeby zachować stosunek S3/S4 = 1,5 na każdym poziomie.
+   */
+  wiarygodnoscS3HandelPerTureLatwy: 1.2,
+  /** S3 — jak wyżej, poziom Normalny (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTureNormalny: 0.9,
+  /** S3 — jak wyżej, poziom Trudny (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTureTrudny: 0.6,
+  /**
+   * S4 — Prawo przemarszu / otwarte granice aktywne, poziom Łatwy (pkt Wiarygodności /
+   * turę). R-WIARYGODNOSC-S9 2026-08-07 (Maciej): za słabe jako płaska wartość (0,2) —
+   * rozbite na trudność i podniesione trzykrotnie (Normalny 0,2 → 0,6).
+   */
+  wiarygodnoscS4PrzemarszPerTureLatwy: 0.8,
+  /** S4 — jak wyżej, poziom Normalny (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTureNormalny: 0.6,
+  /** S4 — jak wyżej, poziom Trudny (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTureTrudny: 0.4,
   // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
   /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
   wiarygodnoscP1FiniszSojusz: 10,
@@ -4968,12 +5048,40 @@ var DIPLOMACY_PARAMS = {
   /** Trwała podłoga krzywej zapominania — ułamek [0,1] wartości pierwotnej, który zostaje NA ZAWSZE po pełnym wygaśnięciu (dotyczy WYŁĄCZNIE zdarzeń jednorazowych, nie STRUMIENIA — C-WIAR-SLAD=A). */
   wiarygodnoscTrwalaPodlogaProcent: 0.1,
   // -- §5: wpływ Wiarygodności na Zaufanie --
-  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  /**
+   * Dzielnik Dźwigni 4 (pierwszy kontakt, C-WIAR-D4=A): modyfikatorZaufaniaD4OdWiarygodnosci(W)
+   * = round(W / wartość) — startowe Zaufanie ±5 pkt na stronę przy W=±100. Nazwa „PerTura" jest
+   * HISTORYCZNA: dawny bezpośredni strumień Wiarygodność→Zaufanie/turę (C-WIAR-SKALA=20) został
+   * ANULOWANY (WIAR-Q3=C) i zastąpiony mnożnikiem tempa (wiarygodnoscTempoAmplituda niżej) —
+   * ten parametr dziś NIE działa co turę, wyłącznie przy pierwszym ustaleniu relacji.
+   * R-WIARYGODNOSC-S9 2026-08-07: komentarz doprecyzowany względem faktycznego użycia,
+   * WARTOŚĆ bez zmian (20).
+   */
   wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /**
+   * Amplituda mnożnika tempa Zaufania od Wiarygodności (Dźwignia 1, WIAR-Q3=C):
+   * wzrostMult(W) = 1 + (W/100) × wartość · spadekMult(W) = 1 − (W/100) × wartość.
+   * R-WIARYGODNOSC-S9 2026-08-07: nazwany parametr, przeniesiony z literału 0,5
+   * w `diplomacy-credibility.ts` (wiarygodnoscWzrostMult/wiarygodnoscSpadekMult),
+   * WARTOŚĆ bez zmian.
+   */
+  wiarygodnoscTempoAmplituda: 0.5,
+  /**
+   * Pasywny dryf Zaufania/turę od globalnej Wiarygodności, niezależny od traktatów
+   * (REL-WIARYG-DRIFT-Q1): ΔZaufanie/turę = clamp(W, −100, 100) × wartość.
+   * R-WIARYGODNOSC-S9 2026-08-07: przeniesiony z modułowej stałej
+   * `WIARYGODNOSC_ZAUFANIE_DRYF_NA_100` w `diplomacy-credibility.ts`, WARTOŚĆ bez zmian.
+   */
+  wiarygodnoscZaufanieDryfNa100: 0.03,
   /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
   wiarygodnoscProgSojuszMin: 0,
-  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
-  wiarygodnoscProgNapMin: -40
+  /**
+   * Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności),
+   * niezależnie od Zaufania/Respektu. R-WIARYGODNOSC-S9 2026-08-07 (Maciej): wyrównane
+   * z wiarygodnoscProgSojuszMin=0 („tutaj też powinna być wiarygodność zero tak samo
+   * jak przy sojuszu") — było −40 (pokrywało się z wiarygodnoscProgWiarolomny).
+   */
+  wiarygodnoscProgNapMin: 0
 };
 function loadDiplomacyParams(json) {
   const out = {};
@@ -5109,7 +5217,7 @@ function relationScore(rel) {
     200
   );
 }
-function applyDiplomaticEvent(rel, event, params = {}) {
+function applyDiplomaticEvent(rel, event, params = {}, wiarygodnosc) {
   const p = { ...DIPLOMACY_PARAMS, ...params };
   let dZ = 0;
   let dR = 0;
@@ -5190,6 +5298,7 @@ function applyDiplomaticEvent(rel, event, params = {}) {
       dZ = -15;
       break;
   }
+  dZ = applyWiarygodnoscTempoDoDelty(dZ, wiarygodnosc);
   const newZ = clamp2(rel.zaufanie + dZ, 0, 100);
   const newR = clamp2(rel.respekt + dR, 0, 100);
   return clampRelationForWar({
@@ -5441,6 +5550,7 @@ function computeTickZaufanieDelta(ctx, atWar) {
   if (ctx.wspolnaReligia) dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia) dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
+  dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
   if (atWar && dZ > 0) dZ = 0;
   return dZ;
 }

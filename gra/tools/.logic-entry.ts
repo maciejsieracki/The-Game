@@ -5,6 +5,7 @@ import { computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightR
 import { canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE } from '../src/game/cities';
 import { loadGameData } from '../src/data/loader';
 import { advanceCityEconomy, buildEconParams, workedTilesForCity } from '../src/game/turn-economy';
+import { readCityFoodBuffer } from '../src/game/economy-upkeep';
 import {
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
@@ -42,7 +43,7 @@ export {
   computeVisible, DEFAULT_SIGHT, computePlayerVisibility, buildUnitSightResolver, computeVisibleAt, unitsVisibleOnMap,
   canFoundCity, foundCity, foundCityAt, cityName, MIN_CITY_DISTANCE,
   loadGameData,
-  advanceCityEconomy, buildEconParams, workedTilesForCity,
+  advanceCityEconomy, buildEconParams, workedTilesForCity, readCityFoodBuffer,
   createPlayerState, researchStep, cheapestAvailable, availableTechs,
   parsePrereqs, prereqsMet, techCost, isEraAdvanceTech, isMoneyTech, PIENIADZ_MNOZNIK,
   setPlayerResearchTarget, getResearchState, scaledResearchCost,

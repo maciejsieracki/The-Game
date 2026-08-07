@@ -17,30 +17,97 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.dip-negot-entry.ts
-var dip_negot_entry_exports = {};
-__export(dip_negot_entry_exports, {
-  NEGOTIATION_EXPIRY_TURNS: () => NEGOTIATION_EXPIRY_TURNS,
-  NEGOTIATION_MAX_ROUNDS: () => NEGOTIATION_MAX_ROUNDS,
-  applyCounterOffer: () => applyCounterOffer,
-  canCounterNegotiation: () => canCounterNegotiation,
-  canPlayerCounterNegotiation: () => canPlayerCounterNegotiation,
-  createNegotiation: () => createNegotiation,
-  evaluateProposal: () => evaluateProposal,
-  findOwnOutgoingNegotiation: () => findOwnOutgoingNegotiation,
-  generateCounterOffer: () => generateCounterOffer,
-  getEffectiveDiplomacyParams: () => getEffectiveDiplomacyParams,
-  hasPendingNegotiationForPair: () => hasPendingNegotiationForPair,
-  makeNegotiationId: () => makeNegotiationId,
-  negotiationAsProposal: () => negotiationAsProposal,
-  negotiationStillValid: () => negotiationStillValid,
-  negotiationToLegacyPending: () => negotiationToLegacyPending,
-  resolveNegotiationAsResponder: () => resolveNegotiationAsResponder,
-  resolvePlayerAcceptsAiPending: () => resolvePlayerAcceptsAiPending
+// .dip-stol-pw-entry.ts
+var dip_stol_pw_entry_exports = {};
+__export(dip_stol_pw_entry_exports, {
+  balancePanelDataFromRow: () => balancePanelDataFromRow,
+  balancePanelDataFromRows: () => balancePanelDataFromRows,
+  computePlayerAcceptanceSides: () => computePlayerAcceptanceSides,
+  incomingTradeNetBalancePw: () => incomingTradeNetBalancePw,
+  renderPnBalancePanelHtml: () => renderPnBalancePanelHtml
 });
-module.exports = __toCommonJS(dip_negot_entry_exports);
+module.exports = __toCommonJS(dip_stol_pw_entry_exports);
 
-// data/diplomacy.json
+// ../data/diplomacy-acceptance-points.json
+var diplomacy_acceptance_points_default = {
+  _opis: "Punkty akceptacji sto\u0142u negocjacji (Maciej 2026-07-29). Traktaty: PN bazowe (warto\u015B\u0107 strategiczna). Koszyk: runtime z diplomacy-value-catalog.ts. Skala wzgl\u0119dna: sojusz >> NAP >> traktat handlowy >> wymiana.",
+  traktaty: {
+    pokoj: { punkty: 500, jednostka: "umowa", uwaga: "zako\u0144czenie wojny \u2014 wymaga trwaj\u0105cej wojny; PN obowi\u0105zkowe (jak sojusz)" },
+    sojusz_pelny: { punkty: 500, jednostka: "umowa", prog_relacja: 151 },
+    sojusz_defensywny: { punkty: 420, jednostka: "umowa", prog_relacja: 151 },
+    nap: { punkty: 200, jednostka: "umowa", prog_relacja: 50 },
+    umowa_szlakow: { punkty: 80, jednostka: "umowa", prog_relacja: 0 },
+    umowa_handlowa: { punkty: 80, jednostka: "umowa", prog_relacja: 0 },
+    handel: { punkty: 0, jednostka: "wymiana", prog_relacja: 0, uwaga: "tylko koszyk PN \u2014 bez bazy traktatu" },
+    granice: { punkty: 60, jednostka: "umowa", prog_relacja: 100, uwaga: "UI: Traktat przemarszu" },
+    tech: { punkty: 0, jednostka: "once", uwaga: "wycena z tech.json (PN silnika)" },
+    wasal: { punkty: 350, jednostka: "umowa", prog_respekt: 70 },
+    trybut_zadanie: { punkty: 120, jednostka: "/t", prog_respekt: 70 },
+    trybut_oferta: { punkty: 100, jednostka: "once" },
+    namow_wojne: { punkty: 150, jednostka: "once", prog_zaufanie: 50 },
+    ultimatum: { punkty: 180, jednostka: "once" },
+    dar: { punkty: 0, jednostka: "once", uwaga: "tylko koszyk PN" }
+  },
+  koszyk_pn: {
+    zloto: { pn_per_unit: 1, jednostka: "once lub /t", zrodlo: "1 PN = 1 \xA4" },
+    praca: { pn_per_unit: 1, jednostka: "once lub /t", zrodlo: "1 PN = 1 Praca" },
+    zywnosc: { pn_per_unit: 1, jednostka: "once", zrodlo: "pn_relacja: 1 PN = 1 \u017Cywno\u015B\u0107" },
+    surowiec_ilosc: {
+      jednostka: "once lub /t (pakiety \xD7 10 szt.)",
+      zrodlo: "econ-params.handel_surowce \u2014 PN/szt. \xD7 (pakiety \xD7 pakiet_wielkosc)",
+      pn_per_szt: {
+        drewno: 1,
+        glina: 2,
+        kamien: 3,
+        ruda: 5,
+        ruda_zelaza: 10,
+        cegla: 5,
+        sol: 2,
+        kon: 5,
+        ceramika: 5,
+        braz: 15,
+        zelazo: 20,
+        stal: 25,
+        zloto: 50,
+        wegiel: 20
+      },
+      przyklady_pn_per_pakiet_10szt: {
+        drewno: 10,
+        glina: 20,
+        kamien: 30,
+        ruda: 50,
+        ruda_zelaza: 100,
+        cegla: 50,
+        sol: 20,
+        kon: 50,
+        ceramika: 50,
+        braz: 150,
+        zelazo: 200,
+        stal: 250,
+        zloto: 500,
+        wegiel: 200
+      }
+    },
+    tech: { jednostka: "once", zrodlo: "tech.json Koszt nauki \xD7 tempo gry" },
+    jednostka: { jednostka: "once", zrodlo: "units.json pole Pieni\u0105dz (koszt)" },
+    zloze: {
+      jednostka: "once (dost\u0119p 1 hex)",
+      zrodlo: "diplomacy.json handel_zloze.cena_baza",
+      przyklady: { glina: 50, sol: 50, konie: 100, wegiel: 100, miedz: 120, zelazo: 150 }
+    }
+  },
+  sweetener: {
+    pn_na_punkt_ease: 25,
+    max_ease_punkty: 20,
+    opis: "S\u0142odzik obni\u017Ca pr\xF3g Relacji traktatu: 1 pkt ease / 25 PN netto (sufit 20 pkt)"
+  },
+  fair_trade: {
+    kurs_relacja_baza: 100,
+    opis: "Min PN oddawane = oczekiwane \xD7 (100 / Relacja); patrz diplomacyFairGivePn"
+  }
+};
+
+// ../data/diplomacy.json
 var diplomacy_default = {
   params: {
     handelZawarcie_zaufanie: 2,
@@ -993,2810 +1060,7 @@ var diplomacy_default = {
   ]
 };
 
-// data/civs.json
-var civs_default = {
-  cywilizacje: [
-    {
-      Cywilizacja: "Grecy",
-      "Styl / charakter": "defensywna piechota",
-      "Jednostka specjalna": "Falanga (Hoplita)",
-      "Bonus startowy": "+Obrona piechoty; silna od frontu, odpiera szar\u017C\u0119",
-      "Bonusy/minusy (do dopracowania)": "wolniejszy ruch",
-      Uwagi: "epoka Br\u0105zu",
-      Religia: "Politeizm olimpijski",
-      nazwyKlastra: [
-        "Ateny",
-        "Sparta",
-        "Korynt",
-        "Teby",
-        "Argos",
-        "Mykeny",
-        "Milet",
-        "Rodos",
-        "Syrakuzy",
-        "Delfy"
-      ],
-      mnoznikHandelPieniadz: 2.3,
-      ikonaId: "grecy",
-      wodzowiePula: ["Perykles", "Temistokles", "Miltiades", "Kimon", "Solon", "Kleistenes", "Lizander", "Epaminondas", "Pelopidas", "Alkibiades"],
-      wodzowie: {
-        kamien: "Minos",
-        braz: "Agamemnon",
-        zelazo: "Leonidas",
-        antyk: "Aleksander Wielki"
-      },
-      kolorHex: "#1E5AA8",
-      bonusy: [
-        {
-          typ: "bonus_obrona",
-          cel: "piechota",
-          wartosc: 0.2,
-          opis: "Falanga: +20% obrony piechoty przy ataku frontalnym (szyld i oszczep)",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Falanga",
-            "Wojownik myke\u0144ski",
-            "Rydwan myke\u0144ski",
-            "Thorakites"
-          ],
-          opis: "Hoplita = ulepszona piechota z tarcz\u0105; silna od frontu, odpiera szar\u017C\u0119 kawalerii",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_zloto",
-          cel: "handel",
-          wartosc: 0.15,
-          opis: "Morskie szlaki handlowe: +15% Daniny z port\xF3w i dr\xF3g morskich (Korynt, Ateny)",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "bonus_pobor_regen",
-          cel: "rekruci",
-          wartosc: -0.15,
-          opis: "Mniejsze pa\u0144stwa-miasta: wolniejsza odnowa poboru (\u221215% regen/tur\u0119 vs standard 10%)",
-          realizuje: "ekonomia"
-        }
-      ],
-      typCywilizacji: "grecy",
-      archetyp: "grecy",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "Ateny",
-        "Sparta",
-        "Korynt",
-        "Teby",
-        "Argos",
-        "Mykeny",
-        "Milet",
-        "Rodos",
-        "Syrakuzy",
-        "Delfy",
-        "Olimpia",
-        "Efez",
-        "Pergamon",
-        "Halikarnas",
-        "Knossos",
-        "Faistos",
-        "Chania",
-        "Epidauros",
-        "Nafplion",
-        "Megara",
-        "Eleusis",
-        "Maraton",
-        "Platoje",
-        "Chalkida",
-        "Eretria",
-        "Larisa",
-        "Farsalos",
-        "Trikala",
-        "Iolkos",
-        "Demetrias",
-        "Ambrakia",
-        "Nikopolis",
-        "Dodona",
-        "Patras",
-        "Elis",
-        "Pylos",
-        "Messene",
-        "Gytheion",
-        "Monemwazja",
-        "Mistra",
-        "Tegea",
-        "Mantineja",
-        "Orchomenos",
-        "Chaironeja",
-        "Lebadeia",
-        "Tanagra",
-        "Aulis",
-        "Amfissa",
-        "Naupaktos",
-        "Kalydon",
-        "Stratos",
-        "Apollonia Illiryjska",
-        "Epidamnos",
-        "Korkyra",
-        "Zakintos",
-        "Kefalonia",
-        "Itaka",
-        "Leukas",
-        "Samos",
-        "Chios",
-        "Mitylena",
-        "Fokaja",
-        "Smyrna",
-        "Klazomeny",
-        "Kolofon",
-        "Teos",
-        "Erytraj",
-        "Priene",
-        "Magnezja",
-        "Milas",
-        "Knidos",
-        "Kos",
-        "Kalymnos",
-        "Astypalaia",
-        "Naksos",
-        "Paros",
-        "Melos",
-        "Tera",
-        "Delos",
-        "Andros",
-        "Tenos",
-        "Mykonos",
-        "Kytnos",
-        "Sifnos",
-        "Ios",
-        "Amorgos",
-        "Karpatos",
-        "Gortyna",
-        "Kydonia",
-        "Lyktos",
-        "Polirinia",
-        "Eleutherna",
-        "Aptera",
-        "Kyrena",
-        "Bizantion",
-        "Selinunt",
-        "Agrygent",
-        "Gela",
-        "Katania",
-        "Messyna"
-      ]
-    },
-    {
-      Cywilizacja: "Rzymianie",
-      "Styl / charakter": "ofensywna piechota + in\u017Cynieria",
-      "Jednostka specjalna": "Legion (Legionista)",
-      "Bonus startowy": "silny atak + pancerz; szybsza budowa dr\xF3g/budynk\xF3w; +Morale (dyscyplina)",
-      "Bonusy/minusy (do dopracowania)": "wy\u017Csze utrzymanie armii",
-      Uwagi: null,
-      Religia: "Religia rzymska / kult pa\u0144stwa",
-      nazwyKlastra: [
-        "Rzym",
-        "Ostia",
-        "Kapua",
-        "Pompeje",
-        "Tarent",
-        "Mediolan",
-        "Akwileja",
-        "Rawenna",
-        "Weje",
-        "Ancjum"
-      ],
-      mnoznikHandelPieniadz: 2,
-      ikonaId: "rzymianie",
-      wodzowiePula: ["Kamillus", "Cyncynat", "Fabiusz Maksymus", "Katon Starszy", "Emiliusz Paulus", "Klaudiusz", "Waleriusz", "Korneliusz", "Serwiliusz", "Fulwiusz"],
-      wodzowie: {
-        kamien: "Romulus",
-        braz: "Numa Pompiliusz",
-        zelazo: "Scypion Afryka\u0144ski",
-        antyk: "Juliusz Cezar"
-      },
-      kolorHex: "#8B1A1A",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.15,
-          opis: "Legion: +15% ataku i pancerza piechoty szturmowej; dyscyplina bojowa +morale",
-          realizuje: "walka"
-        },
-        {
-          typ: "koszt_redukcja",
-          cel: "budynki",
-          wartosc: 0.2,
-          opis: "In\u017Cynieria rzymska: -20% kosztu Produkcji budowli; szybsza budowa dr\xF3g",
-          realizuje: "miasto"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Hastati",
-            "Triari"
-          ],
-          opis: "Legionista = ci\u0119\u017Cka piechota z pilum; silny atak + pancerz + morale",
-          realizuje: "walka"
-        },
-        {
-          typ: "mnoznik_manpower_max",
-          cel: "rekruci",
-          wartosc: 2,
-          opis: "Legiony: 2\xD7 pula Manpower na obywatela (np. 2000 vs 1000 w epoce Kamie\u0144)",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "bonus_pobor_regen",
-          cel: "rekruci",
-          wartosc: 1,
-          opis: "Dyscyplina legion\xF3w: 2\xD7 szybsza odnowa poboru (4% max/tur\u0119 vs standard 2%)",
-          realizuje: "ekonomia"
-        }
-      ],
-      typCywilizacji: "rzymianie",
-      archetyp: "rzym",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "Rzym",
-        "Ostia",
-        "Kapua",
-        "Pompeje",
-        "Tarent",
-        "Mediolan",
-        "Akwileja",
-        "Rawenna",
-        "Weje",
-        "Ancjum",
-        "Neapol",
-        "Herkulanum",
-        "Werona",
-        "Padwa",
-        "Brescia",
-        "Turyn",
-        "Genua",
-        "Piza",
-        "Florencja",
-        "Perugia",
-        "Asy\u017C",
-        "Rimini",
-        "Bolonia",
-        "Parma",
-        "Modena",
-        "Ferrara",
-        "Terracina",
-        "Formia",
-        "Gaeta",
-        "Brindisi",
-        "Bari",
-        "Otranto",
-        "Lecce",
-        "Reggio Kalabria",
-        "Krotona",
-        "Sybaris",
-        "Metapont",
-        "Lokri",
-        "Cumae",
-        "Puzzole",
-        "Benewent",
-        "Alba Longa",
-        "Tuskulum",
-        "Preneste",
-        "Tibur",
-        "Antium",
-        "Lawinium",
-        "Fidenae",
-        "Cerveteri",
-        "Tarquinia",
-        "Volterra",
-        "Arezzo",
-        "Kortona",
-        "Chiusi",
-        "Perugia Etruska",
-        "Vulci",
-        "Populonia",
-        "Fiesole",
-        "Luka",
-        "Pistoia",
-        "Akwilea Nowa",
-        "Trewir",
-        "Kolonia",
-        "Moguncja",
-        "Augsburg",
-        "Wiede\u0144 Rzymski",
-        "Lugdunum",
-        "Massalia",
-        "Arles",
-        "Nimes",
-        "Narbona",
-        "Tuluza",
-        "Bordeaux",
-        "Londinium",
-        "York",
-        "Bath",
-        "Chester",
-        "Kartagena Hiszpa\u0144ska",
-        "Tarragona",
-        "Merida",
-        "Sewilla",
-        "Kordoba",
-        "Saragossa",
-        "Efez Rzymski",
-        "Antiochia",
-        "Damaszek",
-        "Cezarea Nadmorska",
-        "Aleksandria",
-        "Cyrena",
-        "Leptis Magna",
-        "Sabratha",
-        "Utica",
-        "Timgad",
-        "Volubilis",
-        "Bizancjum",
-        "Nikomedia",
-        "Tesaloniki",
-        "Filippi",
-        "Dyrrachium",
-        "Salona"
-      ]
-    },
-    {
-      Cywilizacja: "Chi\u0144czycy",
-      "Styl / charakter": "dystans + kawaleria",
-      "Jednostka specjalna": "Je\u017Adziec chi\u0144ski",
-      "Bonus startowy": "lepsi \u0142ucznicy (+Atak/zasi\u0119g) i lepsza konnica (+Uderzenie)",
-      "Bonusy/minusy (do dopracowania)": "s\u0142absza piechota szturmowa wr\u0119cz (nacisk na dystans i konnic\u0119)",
-      Uwagi: "wczesna przewaga w wojnie dystansowej",
-      Religia: "Konfucjanizm / Taoizm",
-      nazwyKlastra: [
-        "Qin",
-        "Qi",
-        "Chu",
-        "Jin",
-        "Yan",
-        "Zhao",
-        "Wei",
-        "Han",
-        "Lu",
-        "Song"
-      ],
-      mnoznikHandelPieniadz: 2.4,
-      ikonaId: "chinczycy",
-      wodzowiePula: ["Cheng Tang", "Wu Ding", "Wen Wang", "Zhou Gong", "Goujian", "Fuchai", "Hel\xFC", "Ksiaze Mu", "Ksiaze Huan", "Zhuang"],
-      wodzowie: {
-        kamien: "Huang Di",
-        braz: "Yu Wielki",
-        zelazo: "Qin Shi Huang",
-        antyk: "Han Wudi"
-      },
-      kolorHex: "#C41E3A",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "lukownicy",
-          wartosc: 0.2,
-          opis: "\u0141ucznicy: +20% ataku i zasi\u0119gu jednostek dystansowych (przewaga dystansowa)",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "kawaleria",
-          wartosc: 0.15,
-          opis: "Konnica stepowa: +15% uderzenia kawalerii przy szar\u017Cy",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "kawaleria",
-          wartosc: [
-            "Je\u017Adziec chi\u0144ski",
-            "Halabardnik Shang",
-            "Rydwan Shang"
-          ],
-          opis: "Chi\u0144scy specjali\u015Bci: Je\u017Adziec chi\u0144ski (kawaleria stepowa), Halabardnik Shang (elitarna piechota), Rydwan Shang (rydwan bojowy)",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "chinczycy",
-      archetyp: "chiny",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "Xi'an",
-        "Luoyang",
-        "Pekin",
-        "Nankin",
-        "Kaifeng",
-        "Hangzhou",
-        "Suzhou",
-        "Chengdu",
-        "Chongqing",
-        "Wuhan",
-        "Guangzhou",
-        "Shanghai",
-        "Tianjin",
-        "Shenyang",
-        "Harbin",
-        "Jinan",
-        "Taiyuan",
-        "Zhengzhou",
-        "Anyang",
-        "Handan",
-        "Linzi",
-        "Yingdu",
-        "Xianyang",
-        "Datong",
-        "Dunhuang",
-        "Turfan",
-        "Kaszgar",
-        "Lanzhou",
-        "Yinchuan",
-        "Xining",
-        "Kunming",
-        "Guiyang",
-        "Nanning",
-        "Fuzhou",
-        "Xiamen",
-        "Quanzhou",
-        "Ningbo",
-        "Wenzhou",
-        "Shaoxing",
-        "Jiaxing",
-        "Wuxi",
-        "Changzhou",
-        "Yangzhou",
-        "Zhenjiang",
-        "Hefei",
-        "Nanchang",
-        "Changsha",
-        "Guilin",
-        "Luoyi",
-        "Chang'an Nowy",
-        "Pingyao",
-        "Qufu",
-        "Zoucheng",
-        "Jining",
-        "Dezhou",
-        "Weifang",
-        "Yantai",
-        "Qingdao",
-        "Weihai",
-        "Baoding",
-        "Shijiazhuang",
-        "Handan Nowy",
-        "Xingtai",
-        "Luoning",
-        "Sanmenxia",
-        "Nanyang",
-        "Xiangyang",
-        "Jingzhou",
-        "Yichang",
-        "Jingmen",
-        "Ying",
-        "Shou Chun",
-        "Chen",
-        "Song Cheng",
-        "Pengcheng",
-        "Xiapi",
-        "Guangling",
-        "Jiankang",
-        "Jiangling",
-        "Wancheng",
-        "Chengzhou",
-        "Jinyang",
-        "Anyi",
-        "Yong",
-        "Yueyang",
-        "Fenyang",
-        "Puzhou",
-        "Wei Cheng",
-        "Daliang",
-        "Ye",
-        "Handan Stary",
-        "Zhongshan",
-        "Jicheng",
-        "Xiadu",
-        "Liaoyang",
-        "Yan Cheng",
-        "Jimo",
-        "Bohai",
-        "Laizhou",
-        "Dengzhou"
-      ]
-    },
-    {
-      Cywilizacja: "Inkowie",
-      "Styl / charakter": "nauka/kultura + elitarna piechota",
-      "Jednostka specjalna": "Chaska (maczuga gwia\u017Adzista) + Kr\xF3lewska Gwardia (elita)",
-      "Bonus startowy": "+Nauka/Kultura (kalendarz); bonus w lesie/d\u017Cungli",
-      "Bonusy/minusy (do dopracowania)": "brak konnicy i rydwan\xF3w (brak koni/wo\u0142\xF3w; \xA78c) \u2014 si\u0142a w piechocie i dystansie",
-      Uwagi: null,
-      Religia: "Kult S\u0142o\u0144ca Inti",
-      nazwyKlastra: [
-        "Cusco",
-        "Machu Picchu",
-        "Ollantaytambo",
-        "Pisac",
-        "Sacsayhuam\xE1n",
-        "Vilcabamba",
-        "Cajamarca",
-        "Tambo Colorado",
-        "Quito",
-        "Tumbes"
-      ],
-      mnoznikHandelPieniadz: 1.9,
-      ikonaId: "inkowie",
-      wodzowiePula: ["Sinchi Roca", "Lloque Yupanqui", "Mayta Capac", "Capac Yupanqui", "Inca Roca", "Yahuar Huacac", "Tupac Yupanqui", "Huayna Capac", "Atahualpa", "Huascar"],
-      wodzowie: {
-        kamien: "Manco C\xE1pac",
-        braz: "Wirakocza Inka",
-        zelazo: "Pachacuti",
-        antyk: "T\xFApac Inca Yupanqui"
-      },
-      kolorHex: "#D4A017",
-      bonusy: [
-        {
-          typ: "bonus_nauka",
-          cel: "wszystko",
-          wartosc: 0.15,
-          opis: "Kalendarz s\u0142oneczny: +15% produkcji punkt\xF3w nauki (astronomia i agronomia)",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.2,
-          opis: "Teren g\xF3rski: +20% walki w lesie i d\u017Cungli (znajomo\u015B\u0107 terenu)",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Wojownik z maczug\u0105 (Chaska)",
-            "Wojownik z toporem",
-            "Procarz (Huaracoc)",
-            "Oszczepnik (Est\xF3lica)",
-            "Gwardzista z champi"
-          ],
-          opis: "Chaska (maczuga gwia\u017Adzista) = elitarna piechota; Kr\xF3lewska Gwardia = oddzia\u0142y presti\u017Cowe",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "inkowie",
-      archetyp: "inkowie",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "Cusco",
-        "Machu Picchu",
-        "Ollantaytambo",
-        "Pisac",
-        "Sacsayhuam\xE1n",
-        "Vilcabamba",
-        "Cajamarca",
-        "Tambo Colorado",
-        "Quito",
-        "Tumbes",
-        "Chan Chan",
-        "Chavin de Huantar",
-        "Tiwanaku",
-        "Pachacamac",
-        "Nazca",
-        "Caral",
-        "Kuelap",
-        "Choquequirao",
-        "Wi\xF1ay Wayna",
-        "Moray",
-        "Tipon",
-        "Raqchi",
-        "Huanuco Pampa",
-        "Vilcashuaman",
-        "Chinchero",
-        "Pisac Nowy",
-        "Ancon",
-        "Sipan",
-        "T\xFAcume",
-        "Bat\xE1n Grande",
-        "Sican",
-        "Huaca del Sol",
-        "Huaca de la Luna",
-        "Chavin",
-        "Sillustani",
-        "Puno",
-        "Copacabana",
-        "Chucuito",
-        "Juli",
-        "Pomata",
-        "Lampa",
-        "Azangaro",
-        "Ayaviri",
-        "Huancayo",
-        "Jauja",
-        "Tarma",
-        "Huanuco",
-        "Cerro de Pasco",
-        "Huaraz",
-        "Recuay",
-        "Huamachuco",
-        "Marcahuamachuco",
-        "Cajamarquilla",
-        "Lima Inkaska",
-        "Ica",
-        "Pisco",
-        "Paracas",
-        "Arequipa",
-        "Moquegua",
-        "Tacna",
-        "Arica",
-        "Potosi",
-        "La Paz Inkaska",
-        "Oruro",
-        "Cochabamba",
-        "Sucre",
-        "Charcas",
-        "Chuquisaca",
-        "Samaipata",
-        "Incallajta",
-        "Iskanwaya",
-        "Quito Nowe",
-        "Latacunga",
-        "Ambato",
-        "Riobamba",
-        "Cuenca",
-        "Loja",
-        "Ingapirca",
-        "Tomebamba",
-        "Saraguro",
-        "Ca\xF1aribamba",
-        "Piura",
-        "Chulucanas",
-        "Lambayeque",
-        "Chiclayo",
-        "Trujillo",
-        "Huamachuco Nowy",
-        "Otuzco",
-        "Cajabamba",
-        "Celendin",
-        "San Marcos",
-        "Chota",
-        "Bambamarca",
-        "Huancabamba",
-        "Ayacucho",
-        "Huanta",
-        "Andahuaylas",
-        "Abancay",
-        "Curahuasi",
-        "Vilcashuaman Nowy"
-      ]
-    },
-    {
-      Cywilizacja: "Zulusi",
-      "Styl / charakter": "szybka, agresywna piechota",
-      "Jednostka specjalna": "Impi",
-      "Bonus startowy": "+Ruch i +Morale piechoty; tania, silna w grupie",
-      "Bonusy/minusy (do dopracowania)": "s\u0142aby dystans",
-      Uwagi: null,
-      Religia: "Kult przodk\xF3w / animizm",
-      nazwyKlastra: [
-        "uMgungundlovu",
-        "Ondini",
-        "Ulundi",
-        "kwaBulawayo",
-        "eMakhosini",
-        "Nobamba",
-        "Nodwengu",
-        "kwaDukuza",
-        "Mahlabathini",
-        "Babanango"
-      ],
-      mnoznikHandelPieniadz: 1.8,
-      ikonaId: "zulusi",
-      wodzowiePula: ["Dingane", "Mpande", "Ndaba", "Jama", "Punga", "Mageba", "Zwide", "Sobhuza", "Dingiswayo", "Langalibalele"],
-      wodzowie: {
-        kamien: "Zulu kaMalandela",
-        braz: "Senzangakhona",
-        zelazo: "Czaka",
-        antyk: "Cetshwayo"
-      },
-      kolorHex: "#2E7D32",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.2,
-          opis: "Ruch i morale: +20% pr\u0119dko\u015Bci piechoty i +morale przy ataku w grupie (formacja buffalo)",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.1,
-          opis: "Tania rekrutacja: koszt rekrutacji Impi -10% (liczebno\u015B\u0107 > jako\u015B\u0107)",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Impi",
-            "Oszczepnik Zulu (Izijula)",
-            "iButho z iklwa"
-          ],
-          opis: "Impi = szybka piechota z assegai; silna w zmasowanym ataku, s\u0142aba na dystans",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "zulusi",
-      archetyp: "zulusi",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "uMgungundlovu",
-        "Ondini",
-        "Ulundi",
-        "kwaBulawayo",
-        "eMakhosini",
-        "Nobamba",
-        "Nodwengu",
-        "kwaDukuza",
-        "Mahlabathini",
-        "Babanango",
-        "Isandlwana",
-        "kwaGqokli",
-        "Eshowe",
-        "Empangeni",
-        "Nongoma",
-        "Nkandla",
-        "Mtunzini",
-        "Melmoth",
-        "Vryheid",
-        "Pongola",
-        "Hlobane",
-        "Kambula",
-        "Gingindlovu",
-        "Ntombe",
-        "Msebe",
-        "Ndondakusuka",
-        "Ceza",
-        "Nkwalini",
-        "Mtubatuba",
-        "Hluhluwe",
-        "Mkuze",
-        "Jozini",
-        "Ubombo",
-        "Manguzi",
-        "Sodwana",
-        "kwaMbonambi",
-        "Richards Bay",
-        "St Lucia",
-        "Nseleni",
-        "Esikhawini",
-        "Gibixhegu",
-        "esiKlebheni",
-        "Mbelebeleni",
-        "kwaNzimela",
-        "kwaNxumalo",
-        "eNtumeni",
-        "kwaMagwaza",
-        "Hlabisa",
-        "Nqutu",
-        "Dundee",
-        "Utrecht",
-        "Newcastle",
-        "Ladysmith",
-        "Estcourt",
-        "Weenen",
-        "Greytown",
-        "Kranskop",
-        "Tugela Ferry",
-        "Msinga",
-        "Pomeroy",
-        "Nkonjeni",
-        "Louwsburg",
-        "Paulpietersburg",
-        "Piet Retief",
-        "Golela",
-        "Ingwavuma",
-        "Mahlangeni",
-        "Nondweni",
-        "Enseleni",
-        "Mandeni",
-        "Groutville",
-        "Stanger",
-        "Tongaat",
-        "Verulam",
-        "Ndwedwe",
-        "KwaMashu",
-        "Umlazi",
-        "Ntuzuma",
-        "Inanda",
-        "Amanzimtoti",
-        "Umzinto",
-        "Scottburgh",
-        "Port Shepstone",
-        "Harding",
-        "Ixopo",
-        "Underberg",
-        "Bulwer",
-        "Impendle",
-        "Nottingham Road",
-        "Mooi River",
-        "Winterton",
-        "Bergville",
-        "Colenso",
-        "Elandslaagte",
-        "Glencoe",
-        "Hattingspruit",
-        "Wasbank",
-        "Helpmekaar",
-        "Landman's Drift",
-        "Nongqayi"
-      ]
-    },
-    {
-      Cywilizacja: "Egipt",
-      "Styl / charakter": "rydwany + \u0142ucznicy dystansowi",
-      "Jednostka specjalna": "Med\u017Caj (Gwardia Faraona)",
-      "Bonus startowy": "+Atak dystansowy \u0142ucznik\xF3w; rydwany szybsze, z atakiem dystansowym i du\u017Cym zapasem strza\u0142u (rydwany-\u0142ucznicy)",
-      "Bonusy/minusy (do dopracowania)": "s\u0142absza ci\u0119\u017Cka piechota frontalna",
-      Uwagi: "Stary \u015Awiat \u2014 pe\u0142ny dost\u0119p do koni/wo\u0142\xF3w/rydwan\xF3w",
-      Religia: "Religia egipska \u2014 faraon-b\xF3g",
-      nazwyKlastra: [
-        "Memfis",
-        "Teby",
-        "Heliopolis",
-        "Abydos",
-        "Nekhen",
-        "Elefantyna",
-        "Sais",
-        "Bubastis",
-        "Edfu",
-        "Dendera"
-      ],
-      mnoznikHandelPieniadz: 2.1,
-      ikonaId: "egipt",
-      wodzowiePula: ["Dzeser", "Snofru", "Chefren", "Mykerinos", "Pepi II", "Mentuhotep II", "Amenemhat I", "Totmes III", "Amenhotep III", "Echnaton"],
-      wodzowie: {
-        kamien: "Narmer",
-        braz: "Chufu",
-        zelazo: "Ramzes II",
-        antyk: "Kleopatra VII"
-      },
-      kolorHex: "#E8C547",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "lukownicy",
-          wartosc: 0.2,
-          opis: "\u0141ucznicy na rydwanach: +20% ataku dystansowego; rydwany z du\u017Cym zapasem strza\u0142",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "rydwany",
-          wartosc: 0.15,
-          opis: "Szybkie rydwany: +15% pr\u0119dko\u015Bci i zasi\u0119gu ataku rydwan\xF3w bojowych",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "\u0141ucznik egipski",
-            "\u0141ucznik nubijski",
-            "Rydwan egipski",
-            "Wojownik z khopesh",
-            "Wojownik z \u017Celaznym khopesh"
-          ],
-          opis: "Med\u017Caj = elitarna gwardia; najlepsza piechota Egiptu, ochrona centrum miasta",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "egipt",
-      archetyp: "egipt",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "Memfis",
-        "Teby",
-        "Heliopolis",
-        "Abydos",
-        "Nekhen",
-        "Elefantyna",
-        "Sais",
-        "Bubastis",
-        "Edfu",
-        "Dendera",
-        "Karnak",
-        "Luksor",
-        "Gize",
-        "Sakkara",
-        "Abu Simbel",
-        "Amarna",
-        "Achetaton",
-        "Awaris",
-        "Tanis",
-        "Piramunt",
-        "Buto",
-        "Naukratis",
-        "Rakotis",
-        "Aleksandria",
-        "Kanopus",
-        "Rozetta",
-        "Damietta",
-        "Mendes",
-        "Busiris",
-        "Pi-Ramzes",
-        "Herakleopolis",
-        "Oksyrynchos",
-        "Hermopolis",
-        "Asjut",
-        "Achmim",
-        "Koptos",
-        "Deir el-Bahari",
-        "Deir el-Medina",
-        "Medinet Habu",
-        "Ramesseum",
-        "Esna",
-        "Kom Ombo",
-        "Aswan",
-        "Filae",
-        "Kalabsza",
-        "Buhen",
-        "Kerma",
-        "Napata",
-        "Meroe",
-        "Semna",
-        "Faras",
-        "Nekropolis Teba\u0144ska",
-        "Hut-waret",
-        "Xois",
-        "Leontopolis",
-        "Sebennytos",
-        "Athribis",
-        "Letopolis",
-        "Krokodilopolis",
-        "Fajum",
-        "Herakleon",
-        "Marea",
-        "Paretonion",
-        "Siwa",
-        "Bahariya",
-        "Farafra",
-        "Dachla",
-        "Charga",
-        "Elkab",
-        "Hierakonpolis",
-        "Gebelein",
-        "Armant",
-        "Tod",
-        "Dendur",
-        "Amada",
-        "Wadi Halfa",
-        "Sesebi",
-        "Sai",
-        "Kawa",
-        "Sanam",
-        "Gebel Barkal",
-        "Nuri",
-        "Kurru",
-        "Musawwarat",
-        "Naga",
-        "Sarabit al-Chadim",
-        "Timna",
-        "Serabit",
-        "Tell el-Daba",
-        "Tell Basta",
-        "Tell el-Amarna",
-        "Kom el-Hisn",
-        "Kom el-Ahmar",
-        "Beni Hasan",
-        "El-Bersza",
-        "Meir",
-        "Qau el-Kebir",
-        "Rifa",
-        "Matmar",
-        "Badari"
-      ]
-    },
-    {
-      Cywilizacja: "Sumerowie",
-      "Styl / charakter": "ci\u0119\u017Cka piechota + \u0142ucznicy + mocne rydwany",
-      "Jednostka specjalna": "Gwardia Kr\xF3lewska Sumeru",
-      "Bonus startowy": "+Obrona i Health ci\u0119\u017Ckiej piechoty; silni \u0142ucznicy pieszni; ci\u0119\u017Ckie, mocne rydwany bojowe",
-      "Bonusy/minusy (do dopracowania)": "wolniejsza lekka kawaleria",
-      Uwagi: "Stary \u015Awiat \u2014 pe\u0142ny dost\u0119p do koni/wo\u0142\xF3w/rydwan\xF3w",
-      Religia: "Religia sumeryjska (mezopotamska) \u2014 Enlil/Anu",
-      nazwyKlastra: [
-        "Uruk",
-        "Ur",
-        "Lagasz",
-        "Kisz",
-        "Nippur",
-        "Eridu",
-        "Umma",
-        "Larsa",
-        "Adab",
-        "Isin"
-      ],
-      mnoznikHandelPieniadz: 2.2,
-      ikonaId: "sumer",
-      wodzowiePula: ["Etana", "Enmerkar", "Lugalbanda", "Dumuzi", "Eannatum", "Lugalzagesi", "Meskalamdug", "Mesannepada", "Enannatum", "Entemena"],
-      wodzowie: {
-        kamien: "Alulim",
-        braz: "Gilgamesz",
-        zelazo: "Ur-Nammu",
-        antyk: "Szulgi"
-      },
-      kolorHex: "#6B4226",
-      bonusy: [
-        {
-          typ: "bonus_obrona",
-          cel: "piechota",
-          wartosc: 0.2,
-          opis: "Ci\u0119\u017Cka piechota: +20% obrony i HP ci\u0119\u017Ckiej piechoty (pancerz br\u0105zowy + tarcza)",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "rydwany",
-          wartosc: 0.15,
-          opis: "Ci\u0119\u017Ckie rydwany bojowe: +15% HP i obrony rydwan\xF3w (masywna konstrukcja)",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "\u0141ucznik sumeryjski",
-            "Rydwan sumeryjski",
-            "W\u0142\xF3cznik sumeryjski",
-            "\u0141ucznik akadyjski",
-            "Mur tarcz (Sargonid)"
-          ],
-          opis: "Gwardia Kr\xF3lewska = szczyt ci\u0119\u017Ckiej piechoty Sumeru; pancerz i lanca; +obrona miasta",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "sumer",
-      archetyp: "sumer",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "Uruk",
-        "Ur",
-        "Lagasz",
-        "Kisz",
-        "Nippur",
-        "Eridu",
-        "Umma",
-        "Larsa",
-        "Adab",
-        "Isin",
-        "Girsu",
-        "Szuruppak",
-        "Bad-tibira",
-        "Sippar",
-        "Akszak",
-        "Kutha",
-        "Marad",
-        "Kazallu",
-        "Dilbat",
-        "Borsippa",
-        "Babilon",
-        "Kisura",
-        "Zabalam",
-        "Nina",
-        "Guabba",
-        "Karkara",
-        "Der",
-        "Esznunna",
-        "Malgium",
-        "Terqa",
-        "Mari",
-        "Ebla",
-        "Emar",
-        "Tuttul",
-        "Nagar",
-        "Urkesz",
-        "Aszur",
-        "Niniwa",
-        "Arbela",
-        "Nuzi",
-        "Arrapha",
-        "Susa",
-        "Anszan",
-        "Awan",
-        "Simaszki",
-        "Akkad",
-        "Agade",
-        "Kul-Aba",
-        "Kesz",
-        "Abu Salabikh",
-        "Fara",
-        "Tello",
-        "Warka",
-        "Uqair",
-        "Jemdet Nasr",
-        "Ubaid",
-        "Choga Mami",
-        "Tepe Gawra",
-        "Hassuna",
-        "Samarra",
-        "Halaf",
-        "Hamoukar",
-        "Tell Brak",
-        "Tell Leilan",
-        "Chagar Bazar",
-        "Tell Beydar",
-        "Tell Chuera",
-        "Kar-Tukulti-Ninurta",
-        "Dur-Kurigalzu",
-        "Larak",
-        "Kullab",
-        "Puzrisz-Dagan",
-        "Drehem",
-        "Tell Agrab",
-        "Khafajah",
-        "Tell Asmar",
-        "Ischali",
-        "Nerebtum",
-        "Shaduppum",
-        "Tuba",
-        "Rapiqum",
-        "Hit",
-        "Anah",
-        "Qatna",
-        "Alalakh",
-        "Ugarit",
-        "Karkemisz",
-        "Shubat-Enlil",
-        "Tell Mozan",
-        "Tell Rimah",
-        "Tell Taya",
-        "Tepe Sialk",
-        "Tepe Yahya",
-        "Shahr-i Sokhta",
-        "Chogha Zanbil",
-        "Haft Tepe",
-        "Tal-i Malyan",
-        "Konar Sandal",
-        "Liyan",
-        "Bushehr"
-      ]
-    },
-    {
-      Cywilizacja: "Celtowie",
-      "Styl / charakter": "agresywna piechota z broni\u0105 sieczn\u0105; brawurowa szar\u017Ca",
-      "Jednostka specjalna": "Soldurii",
-      "Bonus startowy": "+Atak/Morale piechoty przy szar\u017Cy (brawura); d\u0142ugie miecze \u2014 premia do Uderzenia",
-      "Bonusy/minusy (do dopracowania)": "s\u0142absza dyscyplina/obrona w przeci\u0105g\u0142ej walce; brak ci\u0119\u017Ckiej formacji",
-      Uwagi: "typ g\u0142\xF3wny \xA79d; jedn. spec. Soldurii (Maciej 2026-07-04); Gaesatae = elita najemna w units.json",
-      Religia: "Religia celtycka (druidyzm)",
-      nazwyKlastra: [
-        "Bibracte",
-        "Gergowia",
-        "Alezja",
-        "Avaricum",
-        "Uxellodunum",
-        "Manching",
-        "Numancja",
-        "Stradonice",
-        "Z\xE1vist",
-        "Heuneburg"
-      ],
-      mnoznikHandelPieniadz: 1.9,
-      ikonaId: "celtowie",
-      wodzowiePula: ["Dumnoryks", "Divitiakus", "Cassivellaunus", "Kunobelinos", "Orgetoryks", "Kastyk", "Ambioryks", "Indutiomaros", "Tasgetios", "Litawikus"],
-      wodzowie: {
-        kamien: "Ambigatos",
-        braz: "Brennus",
-        zelazo: "Wercyngetoryks",
-        antyk: "Boudika"
-      },
-      kolorHex: "#3D6B35",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.25,
-          opis: "Brawura szar\u017Cy: +25% ataku piechoty przy pierwszym uderzeniu (furia celtycka)",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.15,
-          opis: "Gaesatae: +15% Uderzenia (miecz sieczny, si\u0142a ci\u0119cia)",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Soldurii",
-            "Rydwan celtycki",
-            "Miecznik galijski"
-          ],
-          opis: "Soldurii \u2014 elitarna gwardia wodza; przysi\u0119ga do \u015Bmierci; silna w szar\u017Cy",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "celtowie",
-      archetyp: "celtowie",
-      epokaWejscia: "braz",
-      epokiStartowe: [
-        "braz"
-      ],
-      nazwyMiast: [
-        "Bibracte",
-        "Gergowia",
-        "Alezja",
-        "Avaricum",
-        "Uxellodunum",
-        "Manching",
-        "Numancja",
-        "Stradonice",
-        "Zavist",
-        "Heuneburg",
-        "Vix",
-        "Mont Lassois",
-        "Entremont",
-        "Glanum",
-        "Ens\xE9rune",
-        "Corent",
-        "Gondole",
-        "Vienne",
-        "Genabum",
-        "Lutecja",
-        "Divodurum",
-        "Durocortorum",
-        "Samarobriva",
-        "Noviodunum",
-        "Augustodunum",
-        "Augustonemetum",
-        "Vesontio",
-        "Cabillonum",
-        "Matisco",
-        "Lugdunum",
-        "Genava",
-        "Noviodunum Helvetiorum",
-        "Aventicum",
-        "Vindonissa",
-        "Basilia",
-        "Turicum",
-        "Salodurum",
-        "Argentorate",
-        "Borbetomagus",
-        "Noviomagus",
-        "Durocatalaunum",
-        "Vellaunodunum",
-        "Agedincum",
-        "Autricum",
-        "Suindinum",
-        "Vorgium",
-        "Condate",
-        "Condevincum",
-        "Portus Namnetum",
-        "Darioritum",
-        "Fanum Martis",
-        "Vindinium",
-        "Juliomagus",
-        "Caesarodunum",
-        "Limonum",
-        "Mediolanum Santonum",
-        "Burdigala",
-        "Vesunna",
-        "Segodunum",
-        "Divona",
-        "Nemausus",
-        "Ruscino",
-        "Ambrussum",
-        "Ugernum",
-        "Cabellio",
-        "Arausio",
-        "Vasio",
-        "Alba Helviorum",
-        "Aletum",
-        "Reginca",
-        "Vorganium",
-        "Isca Dumnoniorum",
-        "Camulodunum",
-        "Verulamium",
-        "Calleva Atrebatum",
-        "Venta Belgarum",
-        "Durnovaria",
-        "Sorviodunum",
-        "Corinium",
-        "Glevum",
-        "Viroconium",
-        "Deva",
-        "Eboracum",
-        "Lindum",
-        "Ratae",
-        "Venta Icenorum",
-        "Noviomagus Reginorum",
-        "Maiden Castle",
-        "Danebury",
-        "Cadbury Castle",
-        "Traprain Law",
-        "Dun Aengus",
-        "Emain Macha",
-        "Tara",
-        "Dun Ailinne",
-        "Cruachan",
-        "Navan Fort",
-        "Downpatrick",
-        "Dinorben",
-        "Tre'r Ceiri"
-      ]
-    },
-    {
-      Cywilizacja: "Germanie",
-      "Styl / charakter": "piechota le\u015Bna; zasadzki i furia bojowa",
-      "Jednostka specjalna": "Wojownik germa\u0144ski (framea)",
-      "Bonus startowy": "+walka w lesie i +zasadzka (pierwszy cios); furia bojowa (+Atak na starciu)",
-      "Bonusy/minusy (do dopracowania)": "wolniejsza technologia/organizacja; s\u0142absze obl\u0119\u017Cnictwo",
-      Uwagi: "typ g\u0142\xF3wny (przysz\u0142a kultura \xA79d, pokrewna Galom)",
-      Religia: "Religia germa\u0144ska (Wotan / Odyn)",
-      nazwyKlastra: [
-        "Mattium",
-        "Feddersen Wierde",
-        "Hodde",
-        "Gr\xF8ntoft",
-        "Fl\xF6geln",
-        "Wijster",
-        "Ezinge",
-        "Jastorf",
-        "Gamla Uppsala",
-        "Tofting"
-      ],
-      mnoznikHandelPieniadz: 1.7,
-      ikonaId: "germanie",
-      wodzowiePula: ["Marbod", "Segestes", "Segimer", "Inguiomer", "Chariovalda", "Katualda", "Nasua", "Cimberius", "Boioryks", "Teutobod"],
-      wodzowie: {
-        kamien: "Mannus",
-        braz: "Ariowist",
-        zelazo: "Arminiusz",
-        antyk: "Alaryk I"
-      },
-      kolorHex: "#4A5568",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.25,
-          opis: "Zasadzka le\u015Bna: +25% ataku przy walce w lesie lub przy pierwszym ciosie z zasadzki",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.15,
-          opis: "Furia bojowa: +15% ataku na starciu (bonus morale przy bezpo\u015Brednim kontakcie)",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Berserker germa\u0144ski"
-          ],
-          opis: "Framea = w\u0142\xF3cznia/oszczep germa\u0144ski; celny rzut + walka wr\u0119cz; specjalista od zasadzki",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "germanie",
-      archetyp: "germanie",
-      epokaWejscia: "braz",
-      epokiStartowe: [
-        "braz"
-      ],
-      nazwyMiast: [
-        "Mattium",
-        "Feddersen Wierde",
-        "Hodde",
-        "Gr\xF8ntoft",
-        "Fl\xF6geln",
-        "Wijster",
-        "Ezinge",
-        "Jastorf",
-        "Gamla Uppsala",
-        "Tofting",
-        "Haithabu",
-        "Birka",
-        "Ribe",
-        "Hedeby",
-        "Kaupang",
-        "Wolin",
-        "Truso",
-        "Menzlin",
-        "Gro\xDF Str\xF6mkendorf",
-        "Reric",
-        "Starigard",
-        "Rugard",
-        "Oldenburg",
-        "Bardowick",
-        "Magadoburg",
-        "Erphesfurt",
-        "Fulda",
-        "Paderborn",
-        "Corvey",
-        "Herford",
-        "Minden",
-        "Osnabr\xFCck",
-        "Bremum",
-        "Hammaburg",
-        "Soest",
-        "Throtmanni",
-        "Xanten",
-        "Ubiorum",
-        "Novaesium",
-        "Bonna",
-        "Confluentes",
-        "Wormacja",
-        "Mogontiacum",
-        "Nida",
-        "Dieburg",
-        "Ladenburg",
-        "Rottweil",
-        "Cambodunum",
-        "Reginum",
-        "Castra Regina",
-        "Boiodurum",
-        "Iuvavum",
-        "Vindobona",
-        "Carnuntum",
-        "Brigetio",
-        "Aquincum",
-        "Noreia",
-        "Magdalensberg",
-        "Idistaviso",
-        "Teutoburg",
-        "Aliso",
-        "Anreppen",
-        "Haltern",
-        "Oberaden",
-        "Waldgirmes",
-        "Dorlar",
-        "Kalkriese",
-        "Wilzenberg",
-        "Sievern",
-        "Fochteloerveen",
-        "Wijnaldum",
-        "Elisenhof",
-        "Bentumersiel",
-        "Fallward",
-        "Hodorf",
-        "S\xFCderbrarup",
-        "Sorte Muld",
-        "Gudme",
-        "Lundeborg",
-        "Upp\xE5kra",
-        "Helg\xF6",
-        "Sigtuna",
-        "Old L\xF6d\xF6se",
-        "Trelleborg",
-        "Fyrkat",
-        "Aggersborg",
-        "Nonnebakken",
-        "Jelling",
-        "Ladby",
-        "Roskilde",
-        "Lejre",
-        "Tiss\xF8",
-        "Vorbasse",
-        "Dankirke",
-        "Himling\xF8je",
-        "Stevns",
-        "Boeslunde",
-        "Borgeby",
-        "Valsg\xE4rde",
-        "Vendel"
-      ]
-    },
-    {
-      Cywilizacja: "Harappa",
-      "Styl / charakter": "Miasta-plan; handel wewn\u0119trzny; obrona mur\xF3w; niska agresja ekspansji",
-      "Jednostka specjalna": "Stra\u017Cnik bram Harappy",
-      "Bonus startowy": "+Handel miejski; +obrona piechoty w terytorium",
-      "Bonusy/minusy (do dopracowania)": "S\u0142absza kawaleria wczesna",
-      Uwagi: "roster-6 tier 1",
-      Religia: "Kultura indusko-dolinna",
-      nazwyKlastra: [
-        "Harappa",
-        "Mohenjo-daro",
-        "Dholavira",
-        "Rakhigarhi",
-        "Ganweriwala",
-        "Kalibangan",
-        "Lothal",
-        "Banawali",
-        "Kot Diji",
-        "Amri"
-      ],
-      mnoznikHandelPieniadz: 2.4,
-      ikonaId: "harappa",
-      wodzowiePula: ["Vasu", "Bharata", "Divodasa", "Sudas", "Trasadasyu", "Mandhatri", "Purukutsa", "Kuvalashva", "Anaranya", "Trishanku"],
-      wodzowie: {
-        kamien: "Starszy z Mehrgarh",
-        braz: "Kap\u0142an-Kr\xF3l z Mohend\u017Co-Daro",
-        zelazo: "Rad\u017Ca Dholaviry",
-        antyk: "A\u015Boka"
-      },
-      kolorHex: "#C67B4E",
-      bonusy: [
-        {
-          typ: "bonus_zloto",
-          cel: "handel",
-          wartosc: 0.15,
-          opis: "Szlaki lokalne: +15% Daniny miast",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "bonus_obrona",
-          cel: "piechota",
-          wartosc: 0.15,
-          opis: "Obrona mur\xF3w: +15% obrony piechoty w terytorium w\u0142asnym",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Stra\u017Cnik bram Harappy",
-            "Piechota induska",
-            "Garnizon Harappy"
-          ],
-          opis: "Elitarna piechota bram miasta-plan",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "harappa",
-      archetyp: "harappa",
-      epokaWejscia: "kamien",
-      epokiStartowe: [
-        "kamien"
-      ],
-      nazwyMiast: [
-        "Harappa",
-        "Mohenjo-daro",
-        "Dholavira",
-        "Rakhigarhi",
-        "Ganweriwala",
-        "Kalibangan",
-        "Lothal",
-        "Banawali",
-        "Kot Diji",
-        "Amri",
-        "Chanhudaro",
-        "Surkotada",
-        "Rojdi",
-        "Rangpur",
-        "Desalpur",
-        "Dhaneti",
-        "Nagwada",
-        "Nageshwar",
-        "Bagasra",
-        "Kuntasi",
-        "Padri",
-        "Somnath",
-        "Prabhas Patan",
-        "Lakhabaval",
-        "Rupar",
-        "Sanghol",
-        "Bara",
-        "Kotla Nihang Khan",
-        "Manda",
-        "Chak Purbane Syal",
-        "Kunal",
-        "Bhirrana",
-        "Farmana",
-        "Mitathal",
-        "Balu",
-        "Girawad",
-        "Rakhi Shahpur",
-        "Alamgirpur",
-        "Hulas",
-        "Bargaon",
-        "Sanauli",
-        "Baror",
-        "Karanpura",
-        "Nausharo",
-        "Mehrgarh",
-        "Sibri",
-        "Dabar Kot",
-        "Pirak",
-        "Sutkagen Dor",
-        "Sotka Koh",
-        "Balakot",
-        "Allahdino",
-        "Naru Waro Dharo",
-        "Jhukar",
-        "Chhalgari",
-        "Judeirjo-daro",
-        "Ali Murad",
-        "Gazi Shah",
-        "Ghazi Shah",
-        "Lohumjo-daro",
-        "Rehman Dheri",
-        "Sarai Khola",
-        "Jalilpur",
-        "Gumla",
-        "Lewan",
-        "Islam Chowki",
-        "Hathala",
-        "Tarakai Qila",
-        "Dabarkot",
-        "Periano Ghundai",
-        "Kulli",
-        "Mehi",
-        "Shahi Tump",
-        "Miri Qalat",
-        "Nindowari",
-        "Nal",
-        "Anjira",
-        "Togau",
-        "Damb Sadaat",
-        "Quetta",
-        "Kili Gul Muhammad",
-        "Faiz Muhammad",
-        "Sadaat",
-        "Rana Ghundai",
-        "Sur Jangal",
-        "Zangian",
-        "Bampur",
-        "Shahdad",
-        "Jiroft",
-        "Khurab",
-        "Deh Morasi Ghundai",
-        "Mundigak",
-        "Said Qala",
-        "Nad-i Ali",
-        "Farukhabad",
-        "Bala Hisar Charsadda",
-        "Taxila",
-        "Hastinapur",
-        "Bhagwanpura",
-        "Daimabad"
-      ]
-    },
-    {
-      Cywilizacja: "Hetyci",
-      "Styl / charakter": "Charyotycy; fortyfikacje g\xF3rskie; traktaty; obrona",
-      "Jednostka specjalna": "Rydwan Kapadokijski",
-      "Bonus startowy": "+Rydwany; +obrona fortec",
-      "Bonusy/minusy (do dopracowania)": "S\u0142abszy handel morski",
-      Uwagi: "roster-6 tier 1",
-      Religia: "Politeizm hetycki",
-      nazwyKlastra: [
-        "Hattusa",
-        "Alaca H\xF6y\xFCk",
-        "Kanesh",
-        "Carchemish",
-        "Aleppo",
-        "Karkemish",
-        "Sapinuwa",
-        "Sarissa",
-        "Ku\u015Fakl\u0131",
-        "\u015Eapinuva"
-      ],
-      mnoznikHandelPieniadz: 2,
-      ikonaId: "hetyci",
-      wodzowiePula: ["Tudhalija I", "Arnuwanda I", "Mursili I", "Muwatalli II", "Hantili I", "Zidanta I", "Ammuna", "Telipinu", "Tahurwaili", "Alluwamna"],
-      wodzowie: {
-        kamien: "Labarna I",
-        braz: "Hattusili I",
-        zelazo: "Suppiluliuma I",
-        antyk: "Suppiluliuma II"
-      },
-      kolorHex: "#7B4B8A",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "rydwany",
-          wartosc: 0.2,
-          opis: "Rydwan hetycki: +20% ataku rydwan\xF3w",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_obrona",
-          cel: "piechota",
-          wartosc: 0.15,
-          opis: "Forteca Anatolii: +15% obrony w murach/g\xF3rach",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "rydwany",
-          wartosc: [
-            "Rydwan Kapadokijski",
-            "Piechota hetycka",
-            "Gwardia hetycka"
-          ],
-          opis: "Elitarny rydwan hetycki",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "hetyci",
-      archetyp: "hetyci",
-      epokaWejscia: "braz",
-      epokiStartowe: [
-        "braz"
-      ],
-      nazwyMiast: [
-        "Hattusa",
-        "Alaca H\xF6y\xFCk",
-        "Kanesz",
-        "Karkemisz",
-        "Aleppo",
-        "Sapinuwa",
-        "Sarissa",
-        "Ku\u015Fakl\u0131",
-        "Nerik",
-        "Zippalanda",
-        "Tarhuntassa",
-        "Nesa",
-        "Purushanda",
-        "Zalpa",
-        "Wahsusana",
-        "Hupisna",
-        "Tuwanuwa",
-        "Landa",
-        "Hattena",
-        "Nenassa",
-        "Ullamma",
-        "Malitiya",
-        "Melid",
-        "Kummanni",
-        "Lawazantiya",
-        "Kizzuwatna",
-        "Adaniya",
-        "Tarsus",
-        "Ura",
-        "Lamiya",
-        "Milawanda",
-        "Apasa",
-        "Arzawa",
-        "Mira",
-        "Hapalla",
-        "Seha",
-        "Wilusa",
-        "Truwisa",
-        "Masa",
-        "Karkisa",
-        "Lukka",
-        "Pitassa",
-        "Tummana",
-        "Pala",
-        "Kaska",
-        "Isuwa",
-        "Alse",
-        "Arslantepe",
-        "Tille H\xF6y\xFCk",
-        "Lidar H\xF6y\xFCk",
-        "Norsuntepe",
-        "Korucutepe",
-        "Pulur",
-        "Imiku\u015Fa\u011F\u0131",
-        "Tepecik",
-        "De\u011Firmentepe",
-        "Karah\xF6y\xFCk",
-        "Acemh\xF6y\xFCk",
-        "Yaz\u0131l\u0131kaya",
-        "Eflatun P\u0131nar",
-        "Fas\u0131llar",
-        "Gavurkalesi",
-        "Sivas H\xF6y\xFCk",
-        "Ma\u015Fath\xF6y\xFCk",
-        "Ortak\xF6y",
-        "\xC7ad\u0131r H\xF6y\xFCk",
-        "Kaman-Kaleh\xF6y\xFCk",
-        "Kerkenes Da\u011F",
-        "K\xFCltepe",
-        "Karum Kanesz",
-        "Karah\xF6y\xFCk Elbistan",
-        "Kummuh",
-        "Samsat",
-        "Lidar",
-        "Gritille",
-        "Kurban H\xF6y\xFCk",
-        "Titri\u015F H\xF6y\xFCk",
-        "Hassek H\xF6y\xFCk",
-        "Tell Ahmar",
-        "Til Barsip",
-        "Zincirli",
-        "Sam'al",
-        "Karatepe",
-        "Sak\xE7ag\xF6z\xFC",
-        "Tayinat",
-        "Tell Tayinat",
-        "\xC7atal H\xF6y\xFCk Amik",
-        "Domuztepe",
-        "Sirkeli H\xF6y\xFCk",
-        "Kinet H\xF6y\xFCk",
-        "Sabuniye",
-        "Al Mina",
-        "Kilise Tepe",
-        "G\xF6zl\xFCkule",
-        "Mersin",
-        "Soli",
-        "Kelenderis",
-        "Nagidos",
-        "Anemurium",
-        "Iotape"
-      ]
-    },
-    {
-      Cywilizacja: "S\u0142owianie",
-      "Styl / charakter": "Osady le\u015Bne; liczna piechota; ekspansja wschodnia",
-      "Jednostka specjalna": "Dru\u017Cynnik",
-      "Bonus startowy": "+Piechota w lesie; +regen poboru",
-      "Bonusy/minusy (do dopracowania)": "Wolniejsza nauka wczesna",
-      Uwagi: "roster-6 tier 1",
-      Religia: "Poga\u0144stwo s\u0142owia\u0144skie",
-      nazwyKlastra: [
-        "Kiev",
-        "Novgorod",
-        "Krak\xF3w",
-        "Wolin",
-        "Gniezno",
-        "Pskov",
-        "Suzdal",
-        "Belgrade",
-        "Pliska",
-        "Arkona"
-      ],
-      mnoznikHandelPieniadz: 1.8,
-      ikonaId: "slowianie",
-      wodzowiePula: ["Piast", "Siemowit", "Lestek", "Siemomysl", "Popiel", "Przemysl", "Ziemowit", "Choscisko", "Wiszymir", "Leszek"],
-      wodzowie: {
-        kamien: "Lech",
-        braz: "Krak",
-        zelazo: "Samo",
-        antyk: "Mieszko I"
-      },
-      kolorHex: "#B83232",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "piechota",
-          wartosc: 0.15,
-          opis: "Horda le\u015Bna: +15% ataku piechoty w lesie",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_pobor_regen",
-          cel: "rekruci",
-          wartosc: 0.1,
-          opis: "Wsp\xF3lnota: +10% regen poboru",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Dru\u017Cynnik",
-            "Je\u017Adziec z oszczepami"
-          ],
-          opis: "Elitarny wojownik dru\u017Cyny ksi\u0119cia",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "slowianie",
-      archetyp: "slowianie",
-      epokaWejscia: "zelazo",
-      epokiStartowe: [
-        "zelazo"
-      ],
-      nazwyMiast: [
-        "Kij\xF3w",
-        "Nowogr\xF3d",
-        "Krak\xF3w",
-        "Wolin",
-        "Gniezno",
-        "Psk\xF3w",
-        "Suzdal",
-        "Belgrad",
-        "Pliska",
-        "Arkona",
-        "Wieliczka",
-        "Pozna\u0144",
-        "Wroc\u0142aw",
-        "Opole",
-        "G\u0142og\xF3w",
-        "Szczecin",
-        "Ko\u0142obrzeg",
-        "Gda\u0144sk",
-        "Elbl\u0105g",
-        "Toru\u0144",
-        "P\u0142ock",
-        "Sandomierz",
-        "Lublin",
-        "Przemy\u015Bl",
-        "Halicz",
-        "W\u0142odzimierz Wo\u0142y\u0144ski",
-        "Czernih\xF3w",
-        "Perejas\u0142aw",
-        "Smole\u0144sk",
-        "Po\u0142ock",
-        "Witebsk",
-        "Tur\xF3w",
-        "Rost\xF3w",
-        "W\u0142odzimierz nad Kla\u017Am\u0105",
-        "Moskwa",
-        "Twer",
-        "Riaza\u0144",
-        "Murom",
-        "Jaros\u0142aw Ruski",
-        "Wo\u0142ogda",
-        "Bie\u0142ozersk",
-        "Staraja \u0141adoga",
-        "Izborsk",
-        "Wyszogr\xF3d",
-        "Czersk",
-        "Sieradz",
-        "\u0141\u0119czyca",
-        "Kalisz",
-        "Gdecz",
-        "Bnin",
-        "Ostr\xF3w Lednicki",
-        "Grodzisk Wielkopolski",
-        "Santok",
-        "Mi\u0119dzyrzecz",
-        "Cedynia",
-        "Kamie\u0144 Pomorski",
-        "Szczecinek",
-        "Bia\u0142ogard",
-        "Nak\u0142o",
-        "Bydgoszcz",
-        "W\u0142oc\u0142awek",
-        "Giecz",
-        "L\u0105d",
-        "Radzim",
-        "Ostr\xF3w Tumski",
-        "Wi\u015Blica",
-        "Strad\xF3w",
-        "Naszacowice",
-        "Chodlik",
-        "Zawichost",
-        "Opat\xF3w",
-        "Tyniec",
-        "Praga",
-        "Wyszehrad",
-        "O\u0142omuniec",
-        "Brno",
-        "Mikulczyce",
-        "Stare Miasto na Morawach",
-        "Bratys\u0142awa",
-        "Nitra",
-        "Devin",
-        "Zadar",
-        "Split",
-        "Nin",
-        "Knin",
-        "Solin",
-        "Trogir",
-        "Kotor",
-        "Ras",
-        "Stari Ras",
-        "Prizren",
-        "Skopje",
-        "Ohrid",
-        "Pres\u0142aw",
-        "Tyrnowo",
-        "Warna",
-        "Sozopol",
-        "Nesebyr",
-        "Ruse",
-        "Sylistra"
-      ]
-    },
-    {
-      Cywilizacja: "Babilonia",
-      "Styl / charakter": "Prawo, astronomia, kap\u0142ani; nauka i dyplomacja",
-      "Jednostka specjalna": "Gwardia Ishtar",
-      "Bonus startowy": "+Nauka; +handel rzeczny",
-      "Bonusy/minusy (do dopracowania)": "Wra\u017Cliwo\u015B\u0107 na utrat\u0119 stolicy",
-      Uwagi: "roster-6 tier 2",
-      Religia: "Religia babilo\u0144ska (Marduk)",
-      nazwyKlastra: [
-        "Babilon",
-        "Ur",
-        "Sippar",
-        "Nippur",
-        "Larsa",
-        "Isin",
-        "Uruk",
-        "Eridu",
-        "Kish",
-        "Akkad"
-      ],
-      mnoznikHandelPieniadz: 2.3,
-      ikonaId: "babilonia",
-      wodzowiePula: ["Sumu-la-El", "Sabium", "Apil-Sin", "Sin-muballit", "Samsu-iluna", "Abi-eszuh", "Ammi-ditana", "Ammi-saduqa", "Samsu-ditana", "Kurigalzu I"],
-      wodzowie: {
-        kamien: "Sumu-abum",
-        braz: "Hammurabi",
-        zelazo: "Nabuchodonozor II",
-        antyk: "Nabonid"
-      },
-      kolorHex: "#2B5F8A",
-      bonusy: [
-        {
-          typ: "bonus_nauka",
-          cel: "nauka",
-          wartosc: 0.15,
-          opis: "Kap\u0142ani-astronomowie: +15% nauki",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "bonus_zloto",
-          cel: "handel",
-          wartosc: 0.1,
-          opis: "Rynek Euphratu: +10% Daniny miast",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Gwardia Ishtar",
-            "Wojownik babilo\u0144ski",
-            "Piechota neobabilo\u0144ska"
-          ],
-          opis: "Elitarna gwardia \u015Bwi\u0105tynna",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "babilonia",
-      archetyp: "babilonia",
-      epokaWejscia: "braz",
-      epokiStartowe: [
-        "braz"
-      ],
-      nazwyMiast: [
-        "Babilon",
-        "Ur",
-        "Sippar",
-        "Nippur",
-        "Larsa",
-        "Isin",
-        "Uruk",
-        "Eridu",
-        "Kisz",
-        "Akkad",
-        "Borsippa",
-        "Kutha",
-        "Dilbat",
-        "Marad",
-        "Kazallu",
-        "Opis",
-        "Sela",
-        "Der",
-        "Mari",
-        "Terqa",
-        "Emar",
-        "Tuttul",
-        "Ebla",
-        "Halab",
-        "Karkemisz",
-        "Hindanu",
-        "Rapiqum",
-        "Anah",
-        "Hit",
-        "Sirara",
-        "Karduniasz",
-        "Nemetti-Enlil",
-        "Dur-Kurigalzu",
-        "Duranki",
-        "Namar",
-        "Ellipi",
-        "Susa",
-        "Anszan",
-        "Ekbatana",
-        "Niniwa",
-        "Kalhu",
-        "Dur-Szarrukin",
-        "Harran",
-        "Tema",
-        "Dumat al-D\u017Candal",
-        "Duma",
-        "Adummatu",
-        "Bit-Adini",
-        "Bit-Bahiani",
-        "Guzana",
-        "Arpad",
-        "Melid",
-        "Tabal",
-        "Que",
-        "Hilakku",
-        "Unqi",
-        "Patina",
-        "Hamat",
-        "Damaszek",
-        "Sydon",
-        "Tyr",
-        "Byblos",
-        "Arwad",
-        "Aszkelon",
-        "Gaza",
-        "Jerozolima",
-        "Samaria",
-        "Megiddo",
-        "Lakisz",
-        "Hazor",
-        "Jerycho",
-        "Betel",
-        "Sychem",
-        "Hebron",
-        "Beer-Szeba",
-        "Aszdod",
-        "Ekron",
-        "Gat",
-        "Joppa",
-        "Berytos",
-        "Kadesz",
-        "Qarqar",
-        "Tadmor",
-        "Dura Europos",
-        "Circesium",
-        "Nisibis",
-        "Edessa",
-        "Sarug",
-        "Til Huzur",
-        "Tarbisu",
-        "Kar-Tukulti-Ninurta",
-        "Imgur-Enlil",
-        "Arbail",
-        "Arrapha",
-        "Nuzi",
-        "Lubdu",
-        "Kilizi",
-        "Sibaniba",
-        "Dur-Katlimmu",
-        "Sabi Abyad"
-      ]
-    },
-    {
-      Cywilizacja: "Asyria",
-      "Styl / charakter": "Imperium obl\u0119\u017Cnicze; \u0142ucznicy; podb\xF3j",
-      "Jednostka specjalna": "\u0141ucznik asyryjski",
-      "Bonus startowy": "+\u0141ucznicy; +obl\u0119\u017Cenie",
-      "Bonusy/minusy (do dopracowania)": "Niskie zaufanie s\u0105siad\xF3w",
-      Uwagi: "roster-6 tier 2",
-      Religia: "Religia asyryjska (Aszur)",
-      nazwyKlastra: [
-        "Ninive",
-        "Assur",
-        "Kalhu",
-        "Dur-Sharrukin",
-        "Harran",
-        "Carchemish",
-        "Arpad",
-        "Imgur-Enlil",
-        "Tushhan",
-        "Arbail"
-      ],
-      mnoznikHandelPieniadz: 1.7,
-      ikonaId: "asyria",
-      wodzowiePula: ["Szamszi-Adad I", "Adad-nirari I", "Salmanasar I", "Tukulti-Ninurta I", "Aszur-uballit I", "Sargon II", "Asarhaddon", "Aszurnasirpal II", "Salmanasar III", "Sennacheryb"],
-      wodzowie: {
-        kamien: "Puzur-Aszur I",
-        braz: "Tiglat-Pileser I",
-        zelazo: "Aszurbanipal",
-        antyk: "Sennacheryb"
-      },
-      kolorHex: "#5C4033",
-      bonusy: [
-        {
-          typ: "bonus_walka",
-          cel: "lukownicy",
-          wartosc: 0.2,
-          opis: "\u0141ucznicy asyryjscy: +20% ataku dystansowego",
-          realizuje: "walka"
-        },
-        {
-          typ: "bonus_walka",
-          cel: "obleczenie",
-          wartosc: 0.15,
-          opis: "Machiny obl\u0119\u017Cnicze: +15% obl\u0119\u017Cenia",
-          realizuje: "walka"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "lukownicy",
-          wartosc: [
-            "Konnica lancowa asyryjska",
-            "Konnica \u0142ucznicza asyryjska",
-            "\u0141ucznik asyryjski"
-          ],
-          opis: "Elitarny \u0142ucznik imperium",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "asyria",
-      archetyp: "asyria",
-      epokaWejscia: "braz",
-      epokiStartowe: [
-        "braz"
-      ],
-      nazwyMiast: [
-        "Ninive",
-        "Assur",
-        "Kalhu",
-        "Dur-Szarrukin",
-        "Harran",
-        "Karkemisz",
-        "Arpad",
-        "Imgur-Enlil",
-        "Tuszhan",
-        "Arbail",
-        "Nemed-Ishtar",
-        "Kar-Tukulti-Ninurta",
-        "Szibaniba",
-        "Kilizi",
-        "Lubdu",
-        "Arrapha",
-        "Nuzi",
-        "Guzana",
-        "Til Barsip",
-        "Hindanu",
-        "Sam'al",
-        "Que",
-        "Tabal",
-        "Hilakku",
-        "Melid",
-        "Kummuh",
-        "Patina",
-        "Unqi",
-        "Hamat",
-        "Damaszek",
-        "Samerina",
-        "Aszkelon",
-        "Gaza",
-        "Ekron",
-        "Aszdod",
-        "Tyr",
-        "Sydon",
-        "Byblos",
-        "Arwad",
-        "Babilon",
-        "Borsippa",
-        "Sippar",
-        "Kutha",
-        "Uruk",
-        "Ur",
-        "Nippur",
-        "Der",
-        "Susa",
-        "Madaktu",
-        "Hidalu",
-        "Ekbatana",
-        "Parsua",
-        "Namri",
-        "Zamua",
-        "Musasir",
-        "Tuszpa",
-        "Van",
-        "Argishtihinili",
-        "Erebuni",
-        "Teishebaini",
-        "Rusahinili",
-        "Manna",
-        "Izirtu",
-        "Kar-Kashi",
-        "Bit-Hamban",
-        "Ellipi",
-        "Bit-Jakin",
-        "Bit-Dakkuri",
-        "Bit-Amukani",
-        "Larak",
-        "Marad",
-        "Kisz",
-        "Isin",
-        "Larsa",
-        "Adab",
-        "Umma",
-        "Girsu",
-        "Lagasz",
-        "Eridu",
-        "Bad-tibira",
-        "Szuruppak",
-        "Memfis",
-        "Teby Asyryjskie",
-        "Sais",
-        "Tanis",
-        "Migdol",
-        "Pelusium",
-        "Daphnae",
-        "Kition",
-        "Salamina Cypryjska",
-        "Amathus",
-        "Kurion",
-        "Pafos",
-        "Idalion",
-        "Tamassos",
-        "Marion",
-        "Soloi Cypryjskie",
-        "Lapithos",
-        "Chytroi",
-        "Golgoi"
-      ]
-    },
-    {
-      Cywilizacja: "Fenicjanie",
-      "Styl / charakter": "Handel morski; kolonie; barter",
-      "Jednostka specjalna": "Tyrski miecznik",
-      "Bonus startowy": "+Handel morski; porty",
-      "Bonusy/minusy (do dopracowania)": "S\u0142aba piechota elit l\u0105dowa",
-      Uwagi: "roster-6 tier 2",
-      Religia: "Religia fenicka (Ba'al)",
-      nazwyKlastra: [
-        "Tyr",
-        "Sidon",
-        "Byblos",
-        "Carthage",
-        "Utica",
-        "Gadir",
-        "Motya",
-        "Tharros",
-        "Kition",
-        "Arwad"
-      ],
-      mnoznikHandelPieniadz: 2.6,
-      ikonaId: "fenicjanie",
-      wodzowiePula: ["Ahiram", "Ittobaal I", "Baal-Eser I", "Matten I", "Pygmalion", "Abibaal", "Elibaal", "Szipitbaal", "Mago I", "Hazdrubal"],
-      wodzowie: {
-        kamien: "Agenor",
-        braz: "Hiram I",
-        zelazo: "Dydona-Elissa",
-        antyk: "Hannibal Barkas"
-      },
-      kolorHex: "#9B2335",
-      bonusy: [
-        {
-          typ: "bonus_zloto",
-          cel: "handel",
-          wartosc: 0.25,
-          opis: "Szlaki morskie: +25% Daniny z port\xF3w",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "bonus_zloto",
-          cel: "handel",
-          wartosc: 0.1,
-          opis: "Purpura: +10% Daniny",
-          realizuje: "ekonomia"
-        },
-        {
-          typ: "jednostka_specjalna",
-          cel: "piechota",
-          wartosc: [
-            "Tyrski miecznik",
-            "Wojownik fenicki",
-            "Gwardia Tyre\u0144ska"
-          ],
-          opis: "Elitarny wojownik fenicki",
-          realizuje: "walka"
-        }
-      ],
-      typCywilizacji: "fenicjanie",
-      archetyp: "fenicjanie",
-      epokaWejscia: "braz",
-      epokiStartowe: [
-        "braz"
-      ],
-      nazwyMiast: [
-        "Tyr",
-        "Sydon",
-        "Byblos",
-        "Kartagina",
-        "Utica",
-        "Gadir",
-        "Motya",
-        "Tharros",
-        "Kition",
-        "Arwad",
-        "Berytos",
-        "Trypolis",
-        "Batrun",
-        "Amrit",
-        "Simyra",
-        "Sarepta",
-        "Akko",
-        "Dor",
-        "Jafa",
-        "Ako",
-        "Achziw",
-        "Anafa",
-        "Kabri",
-        "Tell Sukas",
-        "Ras Ibn Hani",
-        "Al Mina",
-        "Amathus",
-        "Kurion",
-        "Pafos",
-        "Salamis",
-        "Idalion",
-        "Lapithos",
-        "Marion",
-        "Soloi",
-        "Tamassos",
-        "Chytroi",
-        "Golgoi",
-        "Kalawasos",
-        "Palepafos",
-        "Larnaka",
-        "Panormos",
-        "Solunt",
-        "Lilibeum",
-        "Drepanon",
-        "Erice",
-        "Segesta Fenicka",
-        "Karales",
-        "Nora",
-        "Sulcis",
-        "Bithia",
-        "Olbia Sardy\u0144ska",
-        "Melite",
-        "Gaulos",
-        "Ebusus",
-        "Sa Caleta",
-        "Malaka",
-        "Sexi",
-        "Abdera",
-        "Carteia",
-        "Baelo Claudia",
-        "Lixus",
-        "Mogador",
-        "Tingis",
-        "Rusadir",
-        "Sala",
-        "Cerne",
-        "Tamuda",
-        "Volubilis",
-        "Ikosim",
-        "Rusguniae",
-        "Hippo Diarrhytus",
-        "Hippo Regius",
-        "Thabraca",
-        "Cirta",
-        "Sicca Veneria",
-        "Thugga",
-        "Sabratha",
-        "Oea",
-        "Leptis Magna",
-        "Leptis Minor",
-        "Hadrumetum",
-        "Thapsus",
-        "Ruspina",
-        "Zama",
-        "Bulla Regia",
-        "Kerkouane",
-        "Neapolis",
-        "Klupea",
-        "Carthago Nova",
-        "Akra Leuke",
-        "Barcelo",
-        "Onoba",
-        "Asta Regia",
-        "Tartessos",
-        "Huelva",
-        "Ossonoba",
-        "Balsa",
-        "Myrtilis",
-        "Olisipo",
-        "Cetobriga"
-      ]
-    }
-  ],
-  start_gry: [
-    {
-      Parametr: "Osadnicy na start (gracz)",
-      Warto\u015B\u0107: "1",
-      Uwagi: "gracz zawsze startuje z 1 osadnikiem"
-    },
-    {
-      Parametr: "Cywilizacje na mapie",
-      Warto\u015B\u0107: "90",
-      Uwagi: "9 typ\xF3w \xD7 10 miast (1 gracz + 9 rywali tego samego typu = klaster); skaluje si\u0119 z map\u0105"
-    },
-    {
-      Parametr: "G\u0142\xF3wne cywilizacje (typy)",
-      Warto\u015B\u0107: "15 (Grecy, Rzymianie, Chi\u0144czycy, Inkowie, Zulusi, Egipt, Sumerowie, Celtowie, Germanie, Harappa, Hetyci, S\u0142owianie, Babilonia, Asyria, Fenicjanie)",
-      Uwagi: "pula 15 typ\xF3w (D-ROSTER-Q3); na mapie cap z rozmiaru; Celtowie = Soldurii + Gaesatae (2026-07-04)"
-    },
-    {
-      Parametr: "Cywilizacje pocz\u0105tkowe",
-      Warto\u015B\u0107: "miasta tego samego typu (klaster)",
-      Uwagi: "to NIE osobne nacje \u2014 to miasta/AI tego samego typu wok\xF3\u0142 g\u0142\xF3wnej cyw. (1 gracz + 9 rywali); uproszczona dyplomacja: osobny, p\xF3\u017Aniejszy w\u0105tek"
-    },
-    {
-      Parametr: "Rywale tego samego typu wok\xF3\u0142 gracza",
-      Warto\u015B\u0107: "~9 (AI)",
-      Uwagi: "9 rywali wok\xF3\u0142 gracza = klaster 10 miast danego typu; miasta min. ~9 p\xF3l od siebie (regu\u0142a map-gen)"
-    },
-    {
-      Parametr: "Cel startu",
-      Warto\u015B\u0107: "pokona\u0107 rywali w\u0142asnego typu",
-      Uwagi: "zanim napotkasz inne typy cywilizacji"
-    },
-    {
-      Parametr: "Ludno\u015B\u0107 w terenie",
-      Warto\u015B\u0107: "ka\u017Cdy zamieszkiwalny heks (\u22651 \u017Cywno\u015B\u0107) = 1 wioska/1 ludno\u015B\u0107",
-      Uwagi: "g\xF3ry/ja\u0142owe = 0 ludno\u015Bci"
-    },
-    {
-      Parametr: "Przejmowanie terenu",
-      Warto\u015B\u0107: "odkrycie/zaj\u0119cie \u2192 wioska + ludno\u015B\u0107 staje si\u0119 nasza (obywatele, nie niewolnicy), przypisana do najbli\u017Cszego miasta",
-      Uwagi: null
-    },
-    {
-      Parametr: "Wzrost ludno\u015Bci",
-      Warto\u015B\u0107: "szybki przez ekspansj\u0119, ograniczony \u017Cywno\u015Bci\u0105",
-      Uwagi: "najpierw zdob\u0105d\u017A tereny rolne, by wy\u017Cywi\u0107"
-    },
-    {
-      Parametr: "Jednostka specjalna",
-      Warto\u015B\u0107: "1 na cywilizacj\u0119",
-      Uwagi: "niekoniecznie w ka\u017Cdej epoce"
-    },
-    {
-      Parametr: "Bonusy/minusy cywilizacji",
-      Warto\u015B\u0107: "do dopracowania",
-      Uwagi: "doprecyzujemy p\xF3\u017Aniej"
-    }
-  ]
-};
-
-// data/civ-ai.json
-var civ_ai_default = {
-  cywilizacje: [
-    {
-      Cywilizacja: "Grecy",
-      agresywnosc: 4,
-      ekspansywnosc: 3,
-      priorytetMilitarny: 5,
-      priorytetEkonomia: 5,
-      priorytetNauka: 6,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 2,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.75"
-    },
-    {
-      Cywilizacja: "Rzymianie",
-      agresywnosc: 8,
-      ekspansywnosc: 5,
-      priorytetMilitarny: 6,
-      priorytetEkonomia: 5,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 8,
-      sklonnoscDoPodboju: 4,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.5"
-    },
-    {
-      Cywilizacja: "Chi\u0144czycy",
-      agresywnosc: 2,
-      ekspansywnosc: 2,
-      priorytetMilitarny: 4,
-      priorytetEkonomia: 6,
-      priorytetNauka: 6,
-      tolerancjaRyzyka: 2,
-      sklonnoscDoPodboju: 1,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.85"
-    },
-    {
-      Cywilizacja: "Inkowie",
-      agresywnosc: 4,
-      ekspansywnosc: 3,
-      priorytetMilitarny: 5,
-      priorytetEkonomia: 5,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 3,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.25"
-    },
-    {
-      Cywilizacja: "Zulusi",
-      agresywnosc: 9,
-      ekspansywnosc: 4,
-      priorytetMilitarny: 8,
-      priorytetEkonomia: 4,
-      priorytetNauka: 4,
-      tolerancjaRyzyka: 9,
-      sklonnoscDoPodboju: 5,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.2"
-    },
-    {
-      Cywilizacja: "Egipt",
-      agresywnosc: 4,
-      ekspansywnosc: 2,
-      priorytetMilitarny: 5,
-      priorytetEkonomia: 6,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 2,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.6"
-    },
-    {
-      Cywilizacja: "Sumerowie",
-      agresywnosc: 3,
-      ekspansywnosc: 2,
-      priorytetMilitarny: 4,
-      priorytetEkonomia: 5,
-      priorytetNauka: 8,
-      tolerancjaRyzyka: 3,
-      sklonnoscDoPodboju: 2,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.65"
-    },
-    {
-      Cywilizacja: "Celtowie",
-      agresywnosc: 6,
-      ekspansywnosc: 4,
-      priorytetMilitarny: 8,
-      priorytetEkonomia: 5,
-      priorytetNauka: 4,
-      tolerancjaRyzyka: 6,
-      sklonnoscDoPodboju: 4,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.35"
-    },
-    {
-      Cywilizacja: "Germanie",
-      agresywnosc: 6,
-      ekspansywnosc: 4,
-      priorytetMilitarny: 8,
-      priorytetEkonomia: 4,
-      priorytetNauka: 4,
-      tolerancjaRyzyka: 6,
-      sklonnoscDoPodboju: 4,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "seed CYW 2026-06-27; handel=0.3"
-    },
-    {
-      Cywilizacja: "Harappa",
-      agresywnosc: 2,
-      ekspansywnosc: 3,
-      priorytetMilitarny: 4,
-      priorytetEkonomia: 7,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 2,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "draft roster-6"
-    },
-    {
-      Cywilizacja: "Hetyci",
-      agresywnosc: 5,
-      ekspansywnosc: 3,
-      priorytetMilitarny: 6,
-      priorytetEkonomia: 5,
-      priorytetNauka: 4,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 2,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "draft roster-6"
-    },
-    {
-      Cywilizacja: "S\u0142owianie",
-      agresywnosc: 6,
-      ekspansywnosc: 4,
-      priorytetMilitarny: 6,
-      priorytetEkonomia: 5,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 3,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "draft roster-6"
-    },
-    {
-      Cywilizacja: "Babilonia",
-      agresywnosc: 4,
-      ekspansywnosc: 2,
-      priorytetMilitarny: 5,
-      priorytetEkonomia: 5,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 2,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "draft roster-6"
-    },
-    {
-      Cywilizacja: "Asyria",
-      agresywnosc: 8,
-      ekspansywnosc: 5,
-      priorytetMilitarny: 8,
-      priorytetEkonomia: 5,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 4,
-      sklonnoscDoPodboju: 5,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "draft roster-6"
-    },
-    {
-      Cywilizacja: "Fenicjanie",
-      agresywnosc: 3,
-      ekspansywnosc: 2,
-      priorytetMilitarny: 5,
-      priorytetEkonomia: 8,
-      priorytetNauka: 5,
-      tolerancjaRyzyka: 3,
-      sklonnoscDoPodboju: 2,
-      profilMapy: "kopia_typu_obronna",
-      uwagi: "draft roster-6"
-    }
-  ],
-  _meta: {
-    zrodlo: "Panel-D.xlsx/AI-per-nacja"
-  }
-};
-
-// src/game/civ-ai-data.ts
-function civAiAggressionNorm(data, civName) {
-  const row = data.civAi?.cywilizacje?.find((c) => c.Cywilizacja === civName);
-  if (!row || row.agresywnosc == null) return void 0;
-  return Math.max(0, Math.min(1, row.agresywnosc / 10));
-}
-function civExcelNameFromTyp(typ) {
-  if (typ === "drobna_cywilizacja" /* DrobnaCywilizacja */) return void 0;
-  const row = civs_default.cywilizacje.find((c) => c.ikonaId === typ);
-  return row?.Cywilizacja;
-}
-function diplomacyPerNacjaRow(civName) {
-  const rows = diplomacy_default.perNacja;
-  return rows?.find((r) => r.Cywilizacja === civName);
-}
-function diplomacyPerNacjaForTyp(typ) {
-  const name = civExcelNameFromTyp(typ);
-  return name ? diplomacyPerNacjaRow(name) : void 0;
-}
-function resolveArchetypeAggression(typ, fallback, data) {
-  const civName = civExcelNameFromTyp(typ);
-  if (!civName) return fallback;
-  const fromData = data ? civAiAggressionNorm(data, civName) : (() => {
-    const row = civ_ai_default.cywilizacje?.find((c) => c.Cywilizacja === civName);
-    if (!row || row.agresywnosc == null) return void 0;
-    return Math.max(0, Math.min(1, row.agresywnosc / 10));
-  })();
-  return fromData ?? fallback;
-}
-function resolveArchetypeTrade(typ, fallback) {
-  const row = diplomacyPerNacjaForTyp(typ);
-  if (row?.otwartoscHandel != null) {
-    return Math.max(0, Math.min(1, row.otwartoscHandel / 10));
-  }
-  return fallback;
-}
-
-// data/map-gen-params.json
+// ../data/map-gen-params.json
 var map_gen_params_default = {
   _meta: {
     opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
@@ -3914,7 +1178,7 @@ var map_gen_params_default = {
   }
 };
 
-// src/data/map-gen-params-loader.ts
+// data/map-gen-params-loader.ts
 var FALLBACK_ROZMIAR = {
   malenki: [76, 52],
   maly: [108, 74],
@@ -3983,7 +1247,7 @@ function mapGenAllDepositRarities() {
   return out;
 }
 
-// data/e-start-params.json
+// ../data/e-start-params.json
 var e_start_params_default = {
   _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
   defaulty: {
@@ -4125,7 +1389,7 @@ var e_start_params_default = {
   }
 };
 
-// src/data/e-start-params-loader.ts
+// data/e-start-params-loader.ts
 var R = e_start_params_default;
 function eStartPlayerCivId() {
   return R.defaulty?.player_civ_id ?? "rzymianie";
@@ -4139,7 +1403,7 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
-// src/map/mapGenProgress.ts
+// map/mapGenProgress.ts
 var MAP_GEN_PHASE_LABELS = {
   prep: "Przygotowanie siatki",
   terrain: "Klimat i teren bazowy",
@@ -4154,10 +1418,10 @@ var MAP_GEN_PHASE_LABELS = {
 };
 var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
 
-// src/map/generator.ts
+// map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
-// src/map/newGameMapDefaults.ts
+// map/newGameMapDefaults.ts
 var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
 var DEFAULT_START_EPOCH_ID = eStartEpochId();
 var DEFAULT_RENDER_QUALITY = eStartRenderQualityBundled();
@@ -4171,7 +1435,7 @@ var RIVER_SCALE_BY_SIZE = {
 var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
-// src/map/gen-helpers.ts
+// map/gen-helpers.ts
 var CLIMATE_DESERT_HALF_ROWS = 3.5;
 var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
@@ -4268,11 +1532,11 @@ var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
   return typeof rarity === "number" ? { ...rule, rarity } : rule;
 });
 
-// src/map/clusters.ts
+// map/clusters.ts
 var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
 var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
 
-// data/terrain-improvements.json
+// ../data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
     opis: "Ulepszenia terenu (lane MIASTO: liczby bonusow + koszt + epoka). Gdzie wolno (placement) + render = MAPA. Przeplyw w turze = SILNIK. Koszt w PRACY (z puli Pracy w skarbcu, Q4). Lista uzgodniona z MAPA + uzupelniona na przyszlosc wczesnych epok (2026-06-24). EKONOMIA: dodano surowiecOdblokowany (ASCII) + zasieg_terytorium (2026-06-25).",
@@ -4641,7 +1905,7 @@ var terrain_improvements_default = {
   }
 };
 
-// src/game/terrain-improvements.ts
+// game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
@@ -4651,10 +1915,10 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
 });
 var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
-// src/map/road-movement.ts
+// map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
 
-// src/units/setup.ts
+// units/setup.ts
 var DEFAULT_TERRAIN_COSTS = {
   ["laka" /* Laka */]: 1,
   ["rownina" /* Rownina */]: 1,
@@ -4690,7 +1954,7 @@ var TERRAIN_MOVEMENT_KEY_ALIASES = {
   polarny: "polarny" /* Polarny */
 };
 
-// src/game/diplomacy.ts
+// game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
   // ---- one-shot Zaufanie deltas (jednorazowo) ----
   /** "Zawarcie umowy handlowej" (+2 Zaufanie, jednorazowo) */
@@ -5004,157 +2268,7 @@ var DIPLOMACY_PARAMS = {
    */
   wiarygodnoscProgNapMin: 0
 };
-function loadDiplomacyParams(json) {
-  const out = {};
-  if (!json || typeof json !== "object") return out;
-  const params = json.params;
-  if (!params || typeof params !== "object") return out;
-  const src = params;
-  for (const key of Object.keys(DIPLOMACY_PARAMS)) {
-    const v = src[key];
-    if (typeof v === "number" && Number.isFinite(v)) {
-      out[key] = v;
-    }
-  }
-  return out;
-}
-var _baseDiplomacyParams = null;
-var DIPLOMACY_DIFFICULTY_DELTA = {
-  easy: -10,
-  normal: 0,
-  hard: 10
-};
-var DIPLO_RELATION_THRESHOLD_KEYS = [
-  "progMinimalnyRelacja",
-  "progSojuszRelacja",
-  "progUmowaMinRelacja",
-  "progNapRelacja",
-  "progGraniceRelacja",
-  "progPoboczneHandel",
-  "progPoboczneWojna"
-];
-var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
-  "progSojuszZaufanie",
-  "progWymianaTechZaufanie",
-  "progNamowWojneZaufanie",
-  "progGraniceZaufanie",
-  "progTrybutOfertaNearWarZaufanie",
-  "progSojuszPremiaGracz2xMinZaufanie",
-  "progSojuszPremiaGracz3xMinZaufanie"
-];
-var DIPLO_RESPEKT_THRESHOLD_KEYS = [
-  "progWasalizacjaRespekt",
-  "progWchloniecieRespekt",
-  "progGraniceWojskoweRespekt",
-  "progTrybutZadanieMinRespekt",
-  "progPoboczneAkceptacja"
-];
-function getBaseDiplomacyParams() {
-  if (!_baseDiplomacyParams) {
-    _baseDiplomacyParams = {
-      ...DIPLOMACY_PARAMS,
-      ...loadDiplomacyParams(diplomacy_default)
-    };
-  }
-  return _baseDiplomacyParams;
-}
-function scaleDiplomacyParamsForDifficulty(base, difficulty = "normal") {
-  const delta = DIPLOMACY_DIFFICULTY_DELTA[difficulty];
-  if (delta === 0) return { ...base };
-  const out = { ...base };
-  for (const k of DIPLO_RELATION_THRESHOLD_KEYS) {
-    out[k] = Math.max(0, Math.min(200, base[k] + delta));
-  }
-  for (const k of DIPLO_ZAUFANIE_THRESHOLD_KEYS) {
-    out[k] = Math.max(0, Math.min(100, base[k] + delta));
-  }
-  for (const k of DIPLO_RESPEKT_THRESHOLD_KEYS) {
-    out[k] = Math.max(0, Math.min(100, base[k] + delta));
-  }
-  return out;
-}
-function scaleRelationThreshold(base, difficulty = "normal") {
-  return Math.max(0, Math.min(200, base + DIPLOMACY_DIFFICULTY_DELTA[difficulty]));
-}
-function getEffectiveDiplomacyParams(difficulty = "normal") {
-  return scaleDiplomacyParamsForDifficulty(getBaseDiplomacyParams(), difficulty);
-}
-function diplomacyTreatyMinRelacja(adjustedThreshold, params = getEffectiveDiplomacyParams()) {
-  return Math.max(params.progUmowaMinRelacja, adjustedThreshold);
-}
-function diplomacyProposerStrengthEase(proposerMilRatio, proposerRespekt, responderRespekt, params = getEffectiveDiplomacyParams()) {
-  const milAdv = Math.max(0, proposerMilRatio - 1);
-  const resAdv = Math.max(0, proposerRespekt - responderRespekt) / 100;
-  let raw = milAdv * params.progSojuszPremiaMilSkok + resAdv * params.progSojuszPremiaRespektSkok;
-  if (proposerMilRatio >= params.progSojuszPremiaGracz3xMilRatio) {
-    raw += params.progSojuszPremiaGracz3xBonus;
-  } else if (proposerMilRatio >= params.progSojuszPremiaGracz2xMilRatio) {
-    raw += params.progSojuszPremiaGracz2xBonus;
-  }
-  const capped = Math.min(params.progSojuszPremiaSilniejszyMax, raw);
-  return {
-    allyThresholdDelta: capped,
-    zaufanieThresholdDelta: Math.round(capped * 80),
-    scoreThresholdDelta: Math.round(capped * 100)
-  };
-}
-function diplomacyAllianceMinZaufanie(adj, proposerMilRatio, params = getEffectiveDiplomacyParams()) {
-  let minZ = Math.max(
-    0,
-    params.progSojuszZaufanie - adj.ease.zaufanieThresholdDelta + adj.penaltyZ
-  );
-  if (proposerMilRatio >= params.progSojuszPremiaGracz3xMilRatio) {
-    minZ = Math.max(params.progSojuszPremiaGracz3xMinZaufanie, minZ);
-  } else if (proposerMilRatio >= params.progSojuszPremiaGracz2xMilRatio) {
-    minZ = Math.max(params.progSojuszPremiaGracz2xMinZaufanie, minZ);
-  }
-  return minZ;
-}
-function diplomacyAllianceStrengthAdjust(proposerMilRatio, proposerRespekt, responderRespekt, params = getEffectiveDiplomacyParams()) {
-  const ease = diplomacyProposerStrengthEase(
-    proposerMilRatio,
-    proposerRespekt,
-    responderRespekt,
-    params
-  );
-  const safeMil = Math.max(0.01, proposerMilRatio);
-  const responderAdv = safeMil < 1 ? 1 / safeMil - 1 : 0;
-  const rawPenalty = responderAdv * params.progSojuszKaraMilSkok;
-  const cappedPenalty = Math.min(params.progSojuszKaraSilniejszyMax, rawPenalty);
-  return {
-    ease,
-    penaltyZ: Math.round(cappedPenalty * 95),
-    penaltyScore: Math.round(cappedPenalty * 110),
-    penaltyAlly: cappedPenalty * 0.55,
-    allyWPenalty: responderAdv * params.progSojuszKaraAllySkok,
-    hegemonBlocksAlliance: safeMil <= params.progSojuszHegemonMilRatio,
-    hegemonProposerNoAlliance: safeMil >= params.progSojuszHegemonProposerMaxMil
-  };
-}
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-function relationScore(rel) {
-  return clamp(
-    rel.zaufanie * DIPLOMACY_PARAMS.mnoznikZaufania + rel.respekt * DIPLOMACY_PARAMS.mnoznikRespektu,
-    0,
-    200
-  );
-}
 var WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
-function clampRelationForWar(rel) {
-  if (rel.status !== "wojna") return rel;
-  const score = relationScore(rel);
-  if (score <= WAR_RELATION_SCORE_CAP) return rel;
-  let excess = score - WAR_RELATION_SCORE_CAP;
-  let z = rel.zaufanie;
-  let r = rel.respekt;
-  const takeZ = Math.min(excess, z);
-  z -= takeZ;
-  excess -= takeZ;
-  r = Math.max(0, r - excess);
-  return { ...rel, zaufanie: z, respekt: r };
-}
 var ARCHETYPE_AGGRESSION = {
   ["grecy" /* Grecy */]: 0.4,
   ["rzymianie" /* Rzymianie */]: 0.75,
@@ -5193,106 +2307,8 @@ var ARCHETYPE_TRADE = {
   ["fenicjanie" /* Fenicjanie */]: 0.9,
   ["drobna_cywilizacja" /* DrobnaCywilizacja */]: 0.6
 };
-function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffectiveDiplomacyParams()) {
-  const score = relationScore(rel);
-  const { zaufanie, respekt } = rel;
-  const p = params;
-  if (!aiPlayer?.typCywilizacji || !otherPlayer?.typCywilizacji) {
-    return {
-      willingnessWar: 0,
-      willingnessPeace: 0.5,
-      willingnessTrade: 0.3,
-      willingnessAlly: 0
-    };
-  }
-  if (context.isMinorCiv || aiPlayer.typCywilizacji === "drobna_cywilizacja" /* DrobnaCywilizacja */) {
-    const fearFactor = respekt > p.progPoboczneAkceptacja ? 0.9 : respekt / p.progPoboczneAkceptacja;
-    const tradeOpen = score > p.progPoboczneHandel ? 0.6 : 0.2;
-    const warWilling = score < p.progPoboczneWojna ? 0.2 : 0.05;
-    return {
-      willingnessWar: warWilling,
-      willingnessPeace: fearFactor,
-      willingnessTrade: tradeOpen,
-      willingnessAlly: 0
-      // minor civs cannot form military alliances (paragraph 2 table)
-    };
-  }
-  const archAggression = resolveArchetypeAggression(
-    aiPlayer.typCywilizacji,
-    ARCHETYPE_AGGRESSION[aiPlayer.typCywilizacji] ?? 0.4
-  );
-  const archTrade = resolveArchetypeTrade(
-    aiPlayer.typCywilizacji,
-    ARCHETYPE_TRADE[aiPlayer.typCywilizacji] ?? 0.5
-  );
-  let warW = 0;
-  if (rel.status !== "wojna") {
-    const respektNorm = respekt / 100;
-    const relPenalty = 1 - clamp(score / 200, 0, 1);
-    warW = clamp(
-      archAggression * 0.5 + respektNorm * 0.3 + relPenalty * 0.2,
-      0,
-      1
-    );
-  }
-  let peaceW;
-  if (rel.status === "wojna") {
-    const warWeariness = clamp(context.turnsAtWar / 20, 0, 0.5);
-    const militaryPressure = context.militaryRatio < 1 ? (1 - context.militaryRatio) * 0.4 : 0;
-    const goodwill = zaufanie / 100 * 0.2;
-    peaceW = clamp(warWeariness + militaryPressure + goodwill, 0, 1);
-  } else {
-    peaceW = 0.8;
-  }
-  let tradeW = 0;
-  if (score >= p.progMinimalnyRelacja) {
-    const relFactor = clamp(score / 200, 0, 1) * 0.4;
-    tradeW = clamp(archTrade * 0.6 + relFactor, 0, 1);
-  }
-  const aiMilOverOther = Math.max(0.01, context.militaryRatio);
-  const otherMilOverAi = aiMilOverOther > 0 ? 1 / aiMilOverOther : 99;
-  const aiRespektShare = respekt;
-  const otherRespektShare = Math.max(0, 100 - respekt);
-  const adj = diplomacyAllianceStrengthAdjust(
-    otherMilOverAi,
-    otherRespektShare,
-    aiRespektShare,
-    p
-  );
-  let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
-  let minAllyScore = diplomacyTreatyMinRelacja(
-    p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore,
-    p
-  );
-  let allyW = 0;
-  if (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore) {
-    const loyaltyBonus = aiPlayer.typCywilizacji === "chinczycy" /* Chinczycy */ ? 0.2 : aiPlayer.typCywilizacji === "inkowie" /* Inkowie */ ? 0.15 : aiPlayer.typCywilizacji === "grecy" /* Grecy */ ? 0.1 : aiPlayer.typCywilizacji === "zulusi" /* Zulusi */ ? -0.2 : 0;
-    const trustFactor = zaufanie / 100 * 0.6;
-    const scoreFactor = clamp((score - p.progSojuszRelacja) / 80, 0, 0.3);
-    allyW = clamp(trustFactor + loyaltyBonus + scoreFactor, 0, 1);
-    if (aiMilOverOther < 1) {
-      allyW = clamp(
-        allyW + (1 - aiMilOverOther) * p.progSojuszPremiaSilniejszyInny,
-        0,
-        1
-      );
-    } else if (aiMilOverOther > 1) {
-      allyW = clamp(allyW - adj.allyWPenalty, 0, 1);
-    }
-  }
-  return {
-    willingnessWar: parseFloat(warW.toFixed(4)),
-    willingnessPeace: parseFloat(peaceW.toFixed(4)),
-    willingnessTrade: parseFloat(tradeW.toFixed(4)),
-    willingnessAlly: parseFloat(allyW.toFixed(4))
-  };
-}
 
-// src/game/diplomacy-treaties.ts
-function normalizeTreatyKind(rodzaj) {
-  if (rodzaj === "sojusz_wojskowy" /* SojuszWojskowy */) return "sojusz_pelny";
-  return rodzaj;
-}
+// game/diplomacy-treaties.ts
 var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "pakt_nieagresji" /* PaktNieagresji */,
   "sojusz_wojskowy" /* SojuszWojskowy */,
@@ -5305,7 +2321,7 @@ var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "umowa_wymiany" /* UmowaWymiany */
 ]);
 
-// data/tech.json
+// ../data/tech.json
 var tech_default = {
   drzewko_model: "liniowe",
   _drzewko_model_opis: "B1-Q3 Maciej 2026-06-28 opcja B \u2014 o\u015B w epoce wg Poziom + kolejno\u015B\u0107 w tablicy; bramki AND bez zmian (research.ts).",
@@ -5738,7 +2754,7 @@ var tech_default = {
   ]
 };
 
-// data/units.json
+// ../data/units.json
 var units_default = [
   {
     Jednostka: "Wojownik",
@@ -10025,7 +7041,7 @@ var units_default = [
   }
 ];
 
-// data/buildings.json
+// ../data/buildings.json
 var buildings_default = [
   {
     id: "stolarnia",
@@ -11721,7 +8737,7 @@ var buildings_default = [
   }
 ];
 
-// data/econ-params.json
+// ../data/econ-params.json
 var econ_params_default = {
   ekonomia_miasta: {
     pr\u00F3g_wzrostu_wspolczynnik: {
@@ -12558,7 +9574,7 @@ var econ_params_default = {
   }
 };
 
-// src/game/diplomacy-deposit-trade.ts
+// game/diplomacy-deposit-trade.ts
 var HANDEL_ZLOZE_CENA_BAZA = Object.freeze({
   glina: 50,
   sol: 50,
@@ -12585,7 +9601,7 @@ function diplomacyDepositBasePrice(zlozeId) {
   return v != null && Number.isFinite(v) ? v : null;
 }
 
-// src/game/tech-tempo.ts
+// game/tech-tempo.ts
 var TEMPO_GRY = {
   szybka: 1,
   standardowa: 2,
@@ -12596,7 +9612,7 @@ function applyTempoKoszt(bazowyKoszt, tempo) {
   return Math.max(1, Math.round(bazowyKoszt * mnoznik));
 }
 
-// src/game/diplomacy-value-catalog.ts
+// game/diplomacy-value-catalog.ts
 function loadReguly() {
   const block = diplomacy_default.wartosc_katalog;
   return block ?? {};
@@ -12808,156 +9824,15 @@ function diplomacyFairGivePn(receivePn, relacja) {
   const rel = Math.max(1, relacja);
   return Math.ceil(Math.max(0, receivePn) * (100 / rel));
 }
-function diplomacyProgDarRelacja(params = _pnRelacja, difficulty = "normal") {
-  const base = { ..._pnRelacja, ...params }.prog_dar_relacja;
-  return scaleRelationThreshold(base, difficulty);
-}
 
-// src/game/diplomacy-ai-offer-balance.ts
+// game/diplomacy-ai-offer-balance.ts
 var AI_OFFER_PW_BALANCE_TOLERANCE_PN = {
   easy: Number.POSITIVE_INFINITY,
   normal: 5,
   hard: 2
 };
-function aiOfferPwSurplusTolerance(difficulty = "normal") {
-  return AI_OFFER_PW_BALANCE_TOLERANCE_PN[difficulty];
-}
-function aiOfferTargetsZeroBalance(difficulty = "normal") {
-  return difficulty !== "easy";
-}
-function responderPwSurplus(proposerGivePn, proposerReceivePn, relTotal) {
-  const rel = Math.min(100, Math.max(1, relTotal));
-  const responderOfferPn = proposerReceivePn;
-  const responderDemandPn = proposerGivePn;
-  const fairMinPn = diplomacyFairGivePn(responderDemandPn, rel);
-  return responderOfferPn - fairMinPn;
-}
-function aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts) {
-  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-  const isOneSidedGift = givePn > 0 && receivePn <= 0 && !payload.receiveItems?.length;
-  if (isOneSidedGift) return givePn;
-  return -responderPwSurplus(givePn, receivePn, relTotal);
-}
-function trimProposalGoldForZeroBalance(payload, relTotal, difficulty = "normal", pnOpts) {
-  if (!aiOfferTargetsZeroBalance(difficulty)) return payload;
-  const tolerance = aiOfferPwSurplusTolerance(difficulty);
-  const surplus = aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts);
-  if (surplus <= tolerance) return payload;
-  const items = [...payload.giveItems ?? []];
-  const goldIdx = items.findIndex((i) => i.typ === "zloto");
-  if (goldIdx < 0) return payload;
-  const goldItem = items[goldIdx];
-  const currentGold = goldItem.ilosc ?? 0;
-  if (currentGold <= 0) return payload;
-  let lo = 0;
-  let hi = currentGold;
-  let best = -1;
-  while (lo <= hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    const trialItems = [...items];
-    if (mid <= 0) {
-      trialItems.splice(goldIdx, 1);
-    } else {
-      trialItems[goldIdx] = { ...goldItem, ilosc: mid };
-    }
-    const trialPayload = {
-      ...payload,
-      giveItems: trialItems.length ? trialItems : void 0,
-      goldOnce: mid > 0 ? mid : void 0
-    };
-    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
-    if (trialSurplus <= tolerance) {
-      best = mid;
-      lo = mid + 1;
-    } else {
-      hi = mid - 1;
-    }
-  }
-  if (best < 0 || best === currentGold) return payload;
-  const outItems = [...items];
-  if (best <= 0) {
-    outItems.splice(goldIdx, 1);
-  } else {
-    outItems[goldIdx] = { ...goldItem, ilosc: best };
-  }
-  return {
-    ...payload,
-    giveItems: outItems.length ? outItems : void 0,
-    goldOnce: best > 0 ? best : void 0
-  };
-}
-function isPaymentBasketItem(item) {
-  return item.typ === "zloto" || item.typ === "praca";
-}
-function hasResourcePaymentTrade(payload) {
-  const giveRes = payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false;
-  const recvRes = payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false;
-  const givePay = payload.giveItems?.some(isPaymentBasketItem) ?? false;
-  const recvPay = payload.receiveItems?.some(isPaymentBasketItem) ?? false;
-  return giveRes && recvPay || givePay && recvRes;
-}
-function trimResourcePaymentTradeForZeroBalance(payload, relTotal, difficulty = "normal", pnOpts) {
-  if (!aiOfferTargetsZeroBalance(difficulty) || !hasResourcePaymentTrade(payload)) {
-    return payload;
-  }
-  const tolerance = aiOfferPwSurplusTolerance(difficulty);
-  if (aiProposalPlayerBenefitSurplus(payload, relTotal, pnOpts) <= tolerance) {
-    return payload;
-  }
-  let giveItems = [...payload.giveItems ?? []];
-  let receiveItems = [...payload.receiveItems ?? []];
-  const resGiveIdx = giveItems.findIndex((i) => i.typ === "surowiec_ilosc");
-  const resRecvIdx = receiveItems.findIndex((i) => i.typ === "surowiec_ilosc");
-  const resSide = resGiveIdx >= 0 ? "give" : resRecvIdx >= 0 ? "receive" : null;
-  if (!resSide) return payload;
-  const resIdx = resSide === "give" ? resGiveIdx : resRecvIdx;
-  const resArr = resSide === "give" ? giveItems : receiveItems;
-  const resItem = resArr[resIdx];
-  const currentPkts = resItem.ilosc ?? 1;
-  let lo = 1;
-  let hi = currentPkts;
-  let best = -1;
-  while (lo <= hi) {
-    const mid = Math.floor((lo + hi) / 2);
-    const trialResArr = [...resArr];
-    trialResArr[resIdx] = { ...resItem, ilosc: mid };
-    const trialPayload = {
-      ...payload,
-      giveItems: resSide === "give" ? trialResArr : giveItems,
-      receiveItems: resSide === "receive" ? trialResArr : receiveItems
-    };
-    const trialSurplus = aiProposalPlayerBenefitSurplus(trialPayload, relTotal, pnOpts);
-    if (trialSurplus <= tolerance) {
-      best = mid;
-      lo = mid + 1;
-    } else {
-      hi = mid - 1;
-    }
-  }
-  if (best < 1) {
-    return {
-      ...payload,
-      giveItems: void 0,
-      receiveItems: void 0
-    };
-  }
-  if (best === currentPkts) return payload;
-  const outResArr = [...resArr];
-  outResArr[resIdx] = { ...resItem, ilosc: best };
-  return {
-    ...payload,
-    giveItems: resSide === "give" ? outResArr.length ? outResArr : void 0 : giveItems.length ? giveItems : void 0,
-    receiveItems: resSide === "receive" ? outResArr.length ? outResArr : void 0 : receiveItems.length ? receiveItems : void 0
-  };
-}
-function trimProposalForZeroBalance(payload, relTotal, difficulty = "normal", pnOpts) {
-  if (!aiOfferTargetsZeroBalance(difficulty)) return payload;
-  let p = trimProposalGoldForZeroBalance(payload, relTotal, difficulty, pnOpts);
-  p = trimResourcePaymentTradeForZeroBalance(p, relTotal, difficulty, pnOpts);
-  return p;
-}
 
-// src/game/diplomacy-pn-engine.ts
+// game/diplomacy-pn-engine.ts
 function buildProposalPnSumOpts(opts) {
   return {
     difficulty: opts?.difficulty ?? "normal",
@@ -12975,15 +9850,17 @@ function proposalPnTurnsMultiplier(payload) {
     turnsMultiplier: perTurn ? Math.max(1, payload.turns ?? 1) : 1
   };
 }
-function relationTotal(rel) {
-  return Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + (rel.respekt ?? 0)));
-}
 function relationSignedFromTotal(relTotal) {
   return Math.max(-100, Math.min(100, relTotal - 100));
 }
 function relationPnModPct(relSigned) {
   const clamped = Math.max(-90, Math.min(90, relSigned));
   return Number(clamped.toFixed(1));
+}
+function formatPctPl1(n) {
+  const rounded = Number(n.toFixed(1));
+  const normalized = Object.is(rounded, -0) ? 0 : rounded;
+  return String(normalized).replace(/\.0$/, "").replace(".", ",");
 }
 function effectiveTreatyPnRequired(basePn, relTotal) {
   if (basePn <= 0) return 0;
@@ -12993,13 +9870,21 @@ function effectiveTreatyPnRequired(basePn, relTotal) {
 function partnerTreatyPnRequired(basePn) {
   return Math.max(0, basePn);
 }
+function treatyPwForRole(basePn, relTotal, role) {
+  if (basePn <= 0) return 0;
+  return role === "player" ? effectiveTreatyPnRequired(basePn, relTotal) : partnerTreatyPnRequired(basePn);
+}
+function formatRelationModLabel(relTotal) {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  if (modPct === 0) return "Relacje: 0% si\u0142a PW";
+  const pctStr = formatPctPl1(Math.abs(modPct));
+  if (modPct > 0) return `Relacje: +${pctStr}% si\u0142a PW`;
+  return `Relacje: \u2212${pctStr}% si\u0142a PW`;
+}
 function pnDealAcceptedByAi(givePn, receivePn, relacja) {
   if (givePn <= 0 && receivePn <= 0) return false;
   const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relacja));
   return givePn >= fairMin;
-}
-function pnGiftAllowed(relacja, difficulty = "normal") {
-  return relacja >= diplomacyProgDarRelacja(void 0, difficulty);
 }
 function pnFromLegacyGold(goldOnce) {
   if (goldOnce == null || !Number.isFinite(goldOnce) || goldOnce <= 0) return 0;
@@ -13023,190 +9908,9 @@ function resolveProposalPn(payload, opts) {
   return { givePn, receivePn };
 }
 
-// src/game/diplomacy-war-gates.ts
-var PEACE_CURRENCY_ACTION_IDS = /* @__PURE__ */ new Set(["pokoj", "trybut_oferta"]);
-function isPeaceCurrencyAction(actionId) {
-  return PEACE_CURRENCY_ACTION_IDS.has(actionId);
-}
-function basketHasCurrencyPayment(items) {
-  if (!items?.length) return false;
-  return items.some((i) => i.typ === "zloto" || i.typ === "praca");
-}
-function payloadHasCurrencyPayment(payload) {
-  if (!payload) return false;
-  if ((payload.goldOnce ?? 0) > 0) return true;
-  if ((payload.goldPerTurn ?? 0) > 0) return true;
-  return basketHasCurrencyPayment(payload.giveItems) || basketHasCurrencyPayment(payload.receiveItems);
-}
-function isCurrencyProposalForbiddenDuringWar(actionId, payload, atWar = true) {
-  if (!atWar) return false;
-  if (!payloadHasCurrencyPayment(payload)) return false;
-  return !isPeaceCurrencyAction(actionId);
-}
-
-// data/diplomacy-acceptance-points.json
-var diplomacy_acceptance_points_default = {
-  _opis: "Punkty akceptacji sto\u0142u negocjacji (Maciej 2026-07-29). Traktaty: PN bazowe (warto\u015B\u0107 strategiczna). Koszyk: runtime z diplomacy-value-catalog.ts. Skala wzgl\u0119dna: sojusz >> NAP >> traktat handlowy >> wymiana.",
-  traktaty: {
-    pokoj: { punkty: 500, jednostka: "umowa", uwaga: "zako\u0144czenie wojny \u2014 wymaga trwaj\u0105cej wojny; PN obowi\u0105zkowe (jak sojusz)" },
-    sojusz_pelny: { punkty: 500, jednostka: "umowa", prog_relacja: 151 },
-    sojusz_defensywny: { punkty: 420, jednostka: "umowa", prog_relacja: 151 },
-    nap: { punkty: 200, jednostka: "umowa", prog_relacja: 50 },
-    umowa_szlakow: { punkty: 80, jednostka: "umowa", prog_relacja: 0 },
-    umowa_handlowa: { punkty: 80, jednostka: "umowa", prog_relacja: 0 },
-    handel: { punkty: 0, jednostka: "wymiana", prog_relacja: 0, uwaga: "tylko koszyk PN \u2014 bez bazy traktatu" },
-    granice: { punkty: 60, jednostka: "umowa", prog_relacja: 100, uwaga: "UI: Traktat przemarszu" },
-    tech: { punkty: 0, jednostka: "once", uwaga: "wycena z tech.json (PN silnika)" },
-    wasal: { punkty: 350, jednostka: "umowa", prog_respekt: 70 },
-    trybut_zadanie: { punkty: 120, jednostka: "/t", prog_respekt: 70 },
-    trybut_oferta: { punkty: 100, jednostka: "once" },
-    namow_wojne: { punkty: 150, jednostka: "once", prog_zaufanie: 50 },
-    ultimatum: { punkty: 180, jednostka: "once" },
-    dar: { punkty: 0, jednostka: "once", uwaga: "tylko koszyk PN" }
-  },
-  koszyk_pn: {
-    zloto: { pn_per_unit: 1, jednostka: "once lub /t", zrodlo: "1 PN = 1 \xA4" },
-    praca: { pn_per_unit: 1, jednostka: "once lub /t", zrodlo: "1 PN = 1 Praca" },
-    zywnosc: { pn_per_unit: 1, jednostka: "once", zrodlo: "pn_relacja: 1 PN = 1 \u017Cywno\u015B\u0107" },
-    surowiec_ilosc: {
-      jednostka: "once lub /t (pakiety \xD7 10 szt.)",
-      zrodlo: "econ-params.handel_surowce \u2014 PN/szt. \xD7 (pakiety \xD7 pakiet_wielkosc)",
-      pn_per_szt: {
-        drewno: 1,
-        glina: 2,
-        kamien: 3,
-        ruda: 5,
-        ruda_zelaza: 10,
-        cegla: 5,
-        sol: 2,
-        kon: 5,
-        ceramika: 5,
-        braz: 15,
-        zelazo: 20,
-        stal: 25,
-        zloto: 50,
-        wegiel: 20
-      },
-      przyklady_pn_per_pakiet_10szt: {
-        drewno: 10,
-        glina: 20,
-        kamien: 30,
-        ruda: 50,
-        ruda_zelaza: 100,
-        cegla: 50,
-        sol: 20,
-        kon: 50,
-        ceramika: 50,
-        braz: 150,
-        zelazo: 200,
-        stal: 250,
-        zloto: 500,
-        wegiel: 200
-      }
-    },
-    tech: { jednostka: "once", zrodlo: "tech.json Koszt nauki \xD7 tempo gry" },
-    jednostka: { jednostka: "once", zrodlo: "units.json pole Pieni\u0105dz (koszt)" },
-    zloze: {
-      jednostka: "once (dost\u0119p 1 hex)",
-      zrodlo: "diplomacy.json handel_zloze.cena_baza",
-      przyklady: { glina: 50, sol: 50, konie: 100, wegiel: 100, miedz: 120, zelazo: 150 }
-    }
-  },
-  sweetener: {
-    pn_na_punkt_ease: 25,
-    max_ease_punkty: 20,
-    opis: "S\u0142odzik obni\u017Ca pr\xF3g Relacji traktatu: 1 pkt ease / 25 PN netto (sufit 20 pkt)"
-  },
-  fair_trade: {
-    kurs_relacja_baza: 100,
-    opis: "Min PN oddawane = oczekiwane \xD7 (100 / Relacja); patrz diplomacyFairGivePn"
-  }
-};
-
-// src/game/diplomacy-proposals.ts
+// game/diplomacy-proposals.ts
 var STUB_RESPONDER = { typCywilizacji: "grecy" /* Grecy */ };
 var STUB_PROPOSER = { typCywilizacji: "rzymianie" /* Rzymianie */ };
-function clamp2(n, lo, hi) {
-  return Math.max(lo, Math.min(hi, n));
-}
-function pairHasKind(deals, a, b, rodzaj) {
-  if (!deals?.length) return false;
-  const p0 = Math.min(a, b);
-  const p1 = Math.max(a, b);
-  const k = normalizeTreatyKind(rodzaj);
-  return deals.some(
-    (d) => d.strony[0] === p0 && d.strony[1] === p1 && normalizeTreatyKind(d.rodzaj) === k
-  );
-}
-function graczWchloniecieKosztZloto(population, p = getEffectiveDiplomacyParams("normal")) {
-  return Math.max(
-    p.graczWchloniecieKosztMin,
-    p.graczWchloniecieKosztBaza + p.graczWchloniecieKosztPerLudnosc * Math.max(0, population)
-  );
-}
-function findWasalDeal(deals, suzerenId, wasalId) {
-  if (!deals?.length) return void 0;
-  const p0 = Math.min(suzerenId, wasalId);
-  const p1 = Math.max(suzerenId, wasalId);
-  return deals.find((d) => {
-    if (d.strony[0] !== p0 || d.strony[1] !== p1) return false;
-    if (normalizeTreatyKind(d.rodzaj) !== "wasalizacja" /* Wasalizacja */) return false;
-    const econ = d.ekonomia;
-    if (!econ) return true;
-    return econ.receiverOwnerId === suzerenId && econ.payerOwnerId === wasalId;
-  });
-}
-function wasalAgeTurns(deal, turn) {
-  if (!deal || deal.zawartaTura == null) return void 0;
-  return Math.max(0, turn - deal.zawartaTura);
-}
-function makeDealId(prefix, turn, a, b) {
-  const [p0, p1] = a < b ? [a, b] : [b, a];
-  return `${prefix}-${p0}-${p1}-t${turn}`;
-}
-function stanceForEval(ctx) {
-  const responder = ctx.responderPlayer ?? STUB_RESPONDER;
-  const proposer = ctx.proposerPlayer ?? STUB_PROPOSER;
-  const proposerMil = ctx.militaryRatio ?? 1;
-  const responderMilRatio = proposerMil > 0 ? 1 / proposerMil : 99;
-  const dipCtx = {
-    isMinorCiv: ctx.isMinorCiv ?? false,
-    militaryRatio: responderMilRatio,
-    currentTurn: ctx.turn,
-    turnsAtWar: ctx.stanWojny ? 5 : 0
-  };
-  return aiDiplomacyStance(responder, proposer, ctx.relation, dipCtx);
-}
-function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy, handelPayload, handelSurowiecCykliczny) {
-  return {
-    id: makeDealId(rodzaj, turn, a, b),
-    rodzaj,
-    strony: a < b ? [a, b] : [b, a],
-    wygasaTura,
-    zawartaTura: turn,
-    ekonomia,
-    handelJednorazowy,
-    handelPayload,
-    handelSurowiecCykliczny
-  };
-}
-var RESOURCE_ACCESS_TYPES = /* @__PURE__ */ new Set(["zloze", "surowiec_boolean"]);
-var RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON = "Handel dost\u0119pem do surowc\xF3w nieaktualny \u2014 wycofany po polityce terytorialnej (SUROW-TERYT)";
-function proposalHasResourceAccess(payload) {
-  const items = [...payload.giveItems ?? [], ...payload.receiveItems ?? []];
-  return items.some((i) => RESOURCE_ACCESS_TYPES.has(i.typ));
-}
-function clampDealTurns(turns, defaultTurns = 15) {
-  return clamp2(turns ?? defaultTurns, 1, 20);
-}
-function resolveNapDealExpiry(turn, payload) {
-  const raw = payload.turns;
-  if (raw != null && raw <= 0) {
-    return { wygasaTura: null, label: "Pakt nieagresji (bezterminowy)" };
-  }
-  const turns = clamp2(raw ?? 15, 10, 20);
-  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${turns} tur` };
-}
 var SWEETENER_PN_PER_EASE_POINT = 25;
 var SWEETENER_EASE_MAX_POINTS = 20;
 function sweetenerNetPn(payload, pnOpts) {
@@ -13218,1047 +9922,3198 @@ function sweetenerEasePoints(payload, pnOpts) {
   if (netPn <= 0) return 0;
   return Math.min(SWEETENER_EASE_MAX_POINTS, Math.floor(netPn / SWEETENER_PN_PER_EASE_POINT));
 }
-function buildHandelSurowiecCykliczny(proposerId, responderId, giveItems = [], receiveItems = []) {
-  const out = [];
-  const giveRes = giveItems.find((i) => i.typ === "surowiec_ilosc" && (i.ilosc ?? 0) > 0);
-  const givePayment = giveItems.find((i) => i.typ === "zloto" || i.typ === "praca");
-  const recvRes = receiveItems.find((i) => i.typ === "surowiec_ilosc" && (i.ilosc ?? 0) > 0);
-  const recvPayment = receiveItems.find((i) => i.typ === "zloto" || i.typ === "praca");
-  if (giveRes) {
-    out.push({
-      surowiecKey: giveRes.id,
-      pakietyPerTura: Math.floor(giveRes.ilosc ?? 0),
-      sellerOwnerId: proposerId,
-      buyerOwnerId: responderId,
-      zaplataTyp: recvPayment?.typ,
-      zaplataPerTura: recvPayment?.ilosc
-    });
-  }
-  if (recvRes) {
-    out.push({
-      surowiecKey: recvRes.id,
-      pakietyPerTura: Math.floor(recvRes.ilosc ?? 0),
-      sellerOwnerId: responderId,
-      buyerOwnerId: proposerId,
-      zaplataTyp: givePayment?.typ,
-      zaplataPerTura: givePayment?.ilosc
-    });
-  }
-  return out;
-}
-function marchTreatyLabel(borderMilitary) {
-  return borderMilitary ? "Traktat przemarszu (wojskowy)" : "Traktat przemarszu (cywilny)";
-}
-function treatyBasePnFromConfig(actionId) {
-  const t = diplomacy_acceptance_points_default.traktaty;
-  return t[actionId]?.punkty ?? 0;
-}
-function treatyEvalRelationTotal(rel) {
-  const clamped = rel.status === "wojna" ? clampRelationForWar(rel) : rel;
-  return relationTotal(clamped);
-}
-function peaceProposalOfferPn(givePn, receivePn, basePn, rel, proposerIsPlayer = false) {
-  const relTotal = treatyEvalRelationTotal(rel);
-  const required = proposerIsPlayer ? effectiveTreatyPnRequired(basePn, relTotal) : partnerTreatyPnRequired(basePn);
-  const basketNet = Math.max(0, givePn - receivePn);
-  return { offerPn: required + basketNet, required };
-}
-function treatyPnGate(actionId, payload, relation, pnOpts) {
-  const basePn = treatyBasePnFromConfig(actionId);
-  if (basePn <= 0) return null;
-  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-  const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
-  const relTotal = treatyEvalRelationTotal(relation);
-  if (actionId === "pokoj") {
-    const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
-    if (offerPn < required) {
-      return {
-        accepted: false,
-        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji, baza ${basePn})`
-      };
+
+// ../data/civ-matrix.json
+var civ_matrix_default = {
+  _meta: {
+    version: "1.0",
+    source: "Cyw-macierz (11 arkuszy Cyw-01..11)",
+    formula_mul_proc: "wynik = baza * (1 + wartosc)",
+    formula_mul_abs: "wynik = baza * wartosc",
+    formula_add: "wynik = baza + wartosc",
+    formula_flag: "wartosc 1 = aktywny warunek",
+    kolumny: 113,
+    cywilizacje: 15
+  },
+  paramDefs: {
+    meta_epoka_kamien: {
+      domena: "meta",
+      jednostka: "flag_0_1",
+      modul: "start-preview.ts",
+      formula: "flag"
+    },
+    meta_epoka_braz: {
+      domena: "meta",
+      jednostka: "flag_0_1",
+      modul: "start-preview.ts",
+      formula: "flag"
+    },
+    meta_epoka_zelazo: {
+      domena: "meta",
+      jednostka: "flag_0_1",
+      modul: "start-preview.ts",
+      formula: "flag"
+    },
+    meta_mnoznik_waluta: {
+      domena: "meta",
+      jednostka: "absolut",
+      modul: "economy.ts",
+      formula: "mul_abs"
+    },
+    meta_tier_roster: {
+      domena: "meta",
+      jednostka: "absolut",
+      modul: "civ-roster.ts",
+      formula: "mul_abs"
+    },
+    walka_atak_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_obleczenie: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_morska: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_wszystkie: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_obleczenie: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_morska: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_pancerz_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_uderzenie_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_uderzenie_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_uderzenie_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_dystans_lukownicy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_dystans_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_hp_piechota: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_hp_kawaleria: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_hp_rydwany: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_ruch_bitwa_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_zasieg_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_oblezenie_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_koszt_rekrutacji_proc: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_teren_las: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_teren_las: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_terytorium_wlasne: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_terytorium_wlasne: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_w_murze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_w_murze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_runda_szarzy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_runda_szarzy: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_atak_piechota_teren_wybrzeze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    walka_obrona_piechota_teren_wybrzeze: {
+      domena: "walka",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    spec_Atak: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Obrazenia: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Obrona: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Uderzenie: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Pancerz: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Przebicie: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Health: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Atak_dystansowy: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Zasieg_hex: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Pociski: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Ruch_bitwa: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Ruch_mapa: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Widok: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Dezercja_proc: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Morale: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Koszt_pieniadz: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Utrzymanie: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    spec_Zywnosc_ture: {
+      domena: "jednostka_spec",
+      jednostka: "absolut",
+      modul: "units.json+combat.ts",
+      formula: "stat_abs"
+    },
+    eko_praca_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_pieniadz_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_pieniadz_port_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_zywnosc_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_nauka_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_kultura_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_luksus_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_zadowolenie_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_handel_brutto_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    eko_korupcja_proc: {
+      domena: "ekonomia",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    prod_koszt_budynku_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "civ-bonuses.ts",
+      formula: "mul_proc"
+    },
+    prod_koszt_jednostki_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    prod_szybkosc_budynku_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    prod_szybkosc_jednostki_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    prod_rush_koszt_proc: {
+      domena: "produkcja",
+      jednostka: "ulamek",
+      modul: "production.ts",
+      formula: "mul_proc"
+    },
+    lud_wzrost_proc: {
+      domena: "ludnosc",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    lud_spadek_proc: {
+      domena: "ludnosc",
+      jednostka: "ulamek",
+      modul: "economy.ts",
+      formula: "mul_proc"
+    },
+    lud_zdrowie_proc: {
+      domena: "ludnosc",
+      jednostka: "ulamek",
+      modul: "turn-economy.ts",
+      formula: "mul_proc"
+    },
+    lud_zadowolenie_bazowe: {
+      domena: "ludnosc",
+      jednostka: "absolut",
+      modul: "culture-religion.ts",
+      formula: "add"
+    },
+    lud_limit_populacji: {
+      domena: "ludnosc",
+      jednostka: "absolut",
+      modul: "cities.ts",
+      formula: "add"
+    },
+    mp_regen_proc: {
+      domena: "manpower",
+      jednostka: "ulamek",
+      modul: "manpower.ts",
+      formula: "mul_proc"
+    },
+    mp_max_proc: {
+      domena: "manpower",
+      jednostka: "ulamek",
+      modul: "manpower.ts",
+      formula: "mul_proc"
+    },
+    mp_koszt_jednostki_proc: {
+      domena: "manpower",
+      jednostka: "ulamek",
+      modul: "manpower.ts",
+      formula: "mul_proc"
+    },
+    wealth_cap_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "wealth.ts",
+      formula: "mul_proc"
+    },
+    wealth_mnoznik_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "wealth.ts",
+      formula: "mul_proc"
+    },
+    kultura_naplyw_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "culture-religion.ts",
+      formula: "mul_proc"
+    },
+    religia_spread_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "culture-religion.ts",
+      formula: "mul_proc"
+    },
+    porzadek_produkcja_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_pieniadz_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_nauka_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_kultura_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    porzadek_wzrost_proc: {
+      domena: "spoleczenstwo",
+      jednostka: "ulamek",
+      modul: "order.ts",
+      formula: "mul_proc"
+    },
+    obl_obrona_miasta_proc: {
+      domena: "obleczenie",
+      jednostka: "ulamek",
+      modul: "siege.ts",
+      formula: "mul_proc"
+    },
+    obl_mur_proc: {
+      domena: "obleczenie",
+      jednostka: "ulamek",
+      modul: "siege.ts",
+      formula: "mul_proc"
+    },
+    obl_machines_proc: {
+      domena: "obleczenie",
+      jednostka: "ulamek",
+      modul: "siegeMachines.ts",
+      formula: "mul_proc"
+    },
+    dip_sklonnosc_sojusze: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_lojalnosc: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_prog_wojny: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_pamietliwosc: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_otwartosc_handel: {
+      domena: "dyplomacja",
+      jednostka: "skala_1_10",
+      modul: "diplomacy.ts",
+      formula: "skala"
+    },
+    dip_nastawienie_bazowe: {
+      domena: "dyplomacja",
+      jednostka: "absolut",
+      modul: "diplomacy.ts",
+      formula: "add"
+    },
+    dip_agresja_archetyp: {
+      domena: "dyplomacja",
+      jednostka: "ulamek_0_1",
+      modul: "diplomacy.ts",
+      formula: "mul_abs"
+    },
+    dip_handlowosc_archetyp: {
+      domena: "dyplomacja",
+      jednostka: "ulamek_0_1",
+      modul: "diplomacy.ts",
+      formula: "mul_abs"
+    },
+    ai_agresywnosc: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_ekspansywnosc: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_priorytet_militarny: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_priorytet_ekonomia: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_priorytet_nauka: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_tolerancja_ryzyka: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_sklonnosc_podboju: {
+      domena: "ai",
+      jednostka: "skala_1_10",
+      modul: "civ-ai-data.ts",
+      formula: "skala"
+    },
+    ai_profil_obronna: {
+      domena: "ai",
+      jednostka: "flag_0_1",
+      modul: "civ-ai-data.ts",
+      formula: "flag"
     }
-    return null;
-  }
-  if (!proposerIsPlayer) return null;
-  const hasBasket = givePn > 0 || receivePn > 0 || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
-  if (!hasBasket) return null;
-  if (receivePn > 0) {
-    if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-      return { accepted: false, reason: `Oferta nieuczciwa dla partnera \u2014 poni\u017Cej warto\u015Bci PW @ Relacji (masz ${givePn} PW, potrzeba wi\u0119cej wobec ${receivePn} PW od partnera)` };
+  },
+  defaults: {
+    meta_epoka_kamien: 0,
+    meta_epoka_braz: 0,
+    meta_epoka_zelazo: 0,
+    meta_mnoznik_waluta: 2,
+    meta_tier_roster: 1,
+    walka_atak_piechota: 0,
+    walka_atak_lukownicy: 0,
+    walka_atak_kawaleria: 0,
+    walka_atak_rydwany: 0,
+    walka_atak_obleczenie: 0,
+    walka_atak_morska: 0,
+    walka_atak_wszystkie: 0,
+    walka_obrona_piechota: 0,
+    walka_obrona_lukownicy: 0,
+    walka_obrona_kawaleria: 0,
+    walka_obrona_rydwany: 0,
+    walka_obrona_obleczenie: 0,
+    walka_obrona_morska: 0,
+    walka_pancerz_piechota: 0,
+    walka_pancerz_lukownicy: 0,
+    walka_pancerz_kawaleria: 0,
+    walka_pancerz_rydwany: 0,
+    walka_uderzenie_piechota: 0,
+    walka_uderzenie_kawaleria: 0,
+    walka_uderzenie_rydwany: 0,
+    walka_dystans_lukownicy: 0,
+    walka_dystans_rydwany: 0,
+    walka_hp_piechota: 0,
+    walka_hp_kawaleria: 0,
+    walka_hp_rydwany: 0,
+    walka_ruch_bitwa_proc: 0,
+    walka_zasieg_proc: 0,
+    walka_oblezenie_proc: 0,
+    walka_koszt_rekrutacji_proc: 0,
+    walka_atak_piechota_teren_las: 0,
+    walka_obrona_piechota_teren_las: 0,
+    walka_atak_piechota_terytorium_wlasne: 0,
+    walka_obrona_piechota_terytorium_wlasne: 0,
+    walka_atak_piechota_w_murze: 0,
+    walka_obrona_piechota_w_murze: 0,
+    walka_atak_piechota_runda_szarzy: 0,
+    walka_obrona_piechota_runda_szarzy: 0,
+    walka_atak_piechota_teren_wybrzeze: 0,
+    walka_obrona_piechota_teren_wybrzeze: 0,
+    spec_Atak: 0,
+    spec_Obrazenia: 0,
+    spec_Obrona: 0,
+    spec_Uderzenie: 0,
+    spec_Pancerz: 0,
+    spec_Przebicie: 0,
+    spec_Health: 0,
+    spec_Atak_dystansowy: 0,
+    spec_Zasieg_hex: 0,
+    spec_Pociski: 0,
+    spec_Ruch_bitwa: 0,
+    spec_Ruch_mapa: 0,
+    spec_Widok: 0,
+    spec_Dezercja_proc: 0,
+    spec_Morale: 0,
+    spec_Koszt_pieniadz: 0,
+    spec_Utrzymanie: 0,
+    spec_Zywnosc_ture: 0,
+    eko_praca_proc: 0,
+    eko_pieniadz_proc: 0,
+    eko_pieniadz_port_proc: 0,
+    eko_zywnosc_proc: 0,
+    eko_nauka_proc: 0,
+    eko_kultura_proc: 0,
+    eko_luksus_proc: 0,
+    eko_zadowolenie_proc: 0,
+    eko_handel_brutto_proc: 0,
+    eko_korupcja_proc: 0,
+    prod_koszt_budynku_proc: 0,
+    prod_koszt_jednostki_proc: 0,
+    prod_szybkosc_budynku_proc: 0,
+    prod_szybkosc_jednostki_proc: 0,
+    prod_rush_koszt_proc: 0,
+    lud_wzrost_proc: 0,
+    lud_spadek_proc: 0,
+    lud_zdrowie_proc: 0,
+    lud_zadowolenie_bazowe: 0,
+    lud_limit_populacji: 10,
+    mp_regen_proc: 0,
+    mp_max_proc: 0,
+    mp_koszt_jednostki_proc: 0,
+    wealth_cap_proc: 0,
+    wealth_mnoznik_proc: 0,
+    kultura_naplyw_proc: 0,
+    religia_spread_proc: 0,
+    porzadek_produkcja_proc: 0,
+    porzadek_pieniadz_proc: 0,
+    porzadek_nauka_proc: 0,
+    porzadek_kultura_proc: 0,
+    porzadek_wzrost_proc: 0,
+    obl_obrona_miasta_proc: 0,
+    obl_mur_proc: 0,
+    obl_machines_proc: 0,
+    dip_sklonnosc_sojusze: 5,
+    dip_lojalnosc: 5,
+    dip_prog_wojny: 5,
+    dip_pamietliwosc: 5,
+    dip_otwartosc_handel: 5,
+    dip_nastawienie_bazowe: 50,
+    dip_agresja_archetyp: 0.5,
+    dip_handlowosc_archetyp: 0.5,
+    ai_agresywnosc: 5,
+    ai_ekspansywnosc: 5,
+    ai_priorytet_militarny: 5,
+    ai_priorytet_ekonomia: 5,
+    ai_priorytet_nauka: 5,
+    ai_tolerancja_ryzyka: 5,
+    ai_sklonnosc_podboju: 5,
+    ai_profil_obronna: 0
+  },
+  cywilizacje: [
+    {
+      Cywilizacja: "Grecy",
+      typCywilizacji: "grecy",
+      ikonaId: "grecy",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.3,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0.2,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 48,
+        spec_Obrazenia: 45,
+        spec_Obrona: 100,
+        spec_Uderzenie: 70,
+        spec_Pancerz: 85,
+        spec_Przebicie: 15,
+        spec_Health: 100,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 1,
+        spec_Widok: 1,
+        spec_Dezercja_proc: 0.2,
+        spec_Morale: 75,
+        spec_Koszt_pieniadz: 18,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.02,
+        eko_pieniadz_proc: 0.15,
+        eko_pieniadz_port_proc: 0.15,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.15,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: -0.15,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 6,
+        dip_otwartosc_handel: 8,
+        dip_nastawienie_bazowe: 59,
+        dip_agresja_archetyp: 0.4,
+        dip_handlowosc_archetyp: 0.75,
+        ai_agresywnosc: 4,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 6,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Rzymianie",
+      typCywilizacji: "rzymianie",
+      ikonaId: "rzymianie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0.15,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0.15,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 0,
+        spec_Obrazenia: 0,
+        spec_Obrona: 0,
+        spec_Uderzenie: 0,
+        spec_Pancerz: 0,
+        spec_Przebicie: 0,
+        spec_Health: 0,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 0,
+        spec_Ruch_mapa: 0,
+        spec_Widok: 0,
+        spec_Dezercja_proc: 0,
+        spec_Morale: 0,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 0,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0.2,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0.35,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 2,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 8,
+        dip_pamietliwosc: 7,
+        dip_otwartosc_handel: 5,
+        dip_nastawienie_bazowe: 44,
+        dip_agresja_archetyp: 0.75,
+        dip_handlowosc_archetyp: 0.5,
+        ai_agresywnosc: 8,
+        ai_ekspansywnosc: 5,
+        ai_priorytet_militarny: 6,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 8,
+        ai_sklonnosc_podboju: 4,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Chi\u0144czycy",
+      typCywilizacji: "chinczycy",
+      ikonaId: "chinczycy",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.4,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: -0.05,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0.15,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0.2,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 8,
+        spec_Obrazenia: 0,
+        spec_Obrona: 4,
+        spec_Uderzenie: 4,
+        spec_Pancerz: 2,
+        spec_Przebicie: 2,
+        spec_Health: 20,
+        spec_Atak_dystansowy: 10,
+        spec_Zasieg_hex: 4,
+        spec_Pociski: 14,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 85,
+        spec_Koszt_pieniadz: 20,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.03,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 8,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 2,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 8,
+        dip_nastawienie_bazowe: 66,
+        dip_agresja_archetyp: 0.2,
+        dip_handlowosc_archetyp: 0.85,
+        ai_agresywnosc: 2,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 6,
+        ai_priorytet_nauka: 6,
+        ai_tolerancja_ryzyka: 2,
+        ai_sklonnosc_podboju: 1,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Inkowie",
+      typCywilizacji: "inkowie",
+      ikonaId: "inkowie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.9,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: -0.15,
+        walka_atak_rydwany: -0.15,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0.2,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 8,
+        spec_Obrazenia: 0,
+        spec_Obrona: 4,
+        spec_Uderzenie: 8,
+        spec_Pancerz: 2,
+        spec_Przebicie: 6,
+        spec_Health: 40,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 3,
+        spec_Widok: 3,
+        spec_Dezercja_proc: 0.1,
+        spec_Morale: 100,
+        spec_Koszt_pieniadz: 26,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.03,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0.15,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 6,
+        dip_otwartosc_handel: 2,
+        dip_nastawienie_bazowe: 45,
+        dip_agresja_archetyp: 0.45,
+        dip_handlowosc_archetyp: 0.25,
+        ai_agresywnosc: 4,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Zulusi",
+      typCywilizacji: "zulusi",
+      ikonaId: "zulusi",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.8,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: -0.1,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0.2,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0.1,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 3,
+        spec_Obrazenia: 0,
+        spec_Obrona: 6,
+        spec_Uderzenie: 6,
+        spec_Pancerz: 4,
+        spec_Przebicie: 2,
+        spec_Health: 70,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 4,
+        spec_Widok: 4,
+        spec_Dezercja_proc: 0.15,
+        spec_Morale: 100,
+        spec_Koszt_pieniadz: 16,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.03,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0.1,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: -0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 1,
+        dip_lojalnosc: 5,
+        dip_prog_wojny: 9,
+        dip_pamietliwosc: 8,
+        dip_otwartosc_handel: 2,
+        dip_nastawienie_bazowe: 32,
+        dip_agresja_archetyp: 0.9,
+        dip_handlowosc_archetyp: 0.2,
+        ai_agresywnosc: 9,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 4,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 9,
+        ai_sklonnosc_podboju: 5,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Egipt",
+      typCywilizacji: "egipt",
+      ikonaId: "egipt",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.1,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0.2,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0.15,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 10,
+        spec_Obrazenia: 0,
+        spec_Obrona: 8,
+        spec_Uderzenie: 8,
+        spec_Pancerz: 6,
+        spec_Przebicie: 4,
+        spec_Health: 85,
+        spec_Atak_dystansowy: 6,
+        spec_Zasieg_hex: 2,
+        spec_Pociski: 6,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 3,
+        spec_Widok: 3,
+        spec_Dezercja_proc: 0.1,
+        spec_Morale: 120,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.01,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 6,
+        dip_nastawienie_bazowe: 56,
+        dip_agresja_archetyp: 0.35,
+        dip_handlowosc_archetyp: 0.6,
+        ai_agresywnosc: 4,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 6,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Sumerowie",
+      typCywilizacji: "sumer",
+      ikonaId: "sumer",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.2,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0.2,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0.2,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0.15,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 10,
+        spec_Obrazenia: 0,
+        spec_Obrona: 8,
+        spec_Uderzenie: 8,
+        spec_Pancerz: 6,
+        spec_Przebicie: 4,
+        spec_Health: 85,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.1,
+        spec_Morale: 120,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.01,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 7,
+        dip_lojalnosc: 7,
+        dip_prog_wojny: 3,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 6,
+        dip_nastawienie_bazowe: 59,
+        dip_agresja_archetyp: 0.3,
+        dip_handlowosc_archetyp: 0.65,
+        ai_agresywnosc: 3,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 8,
+        ai_tolerancja_ryzyka: 3,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Celtowie",
+      typCywilizacji: "celtowie",
+      ikonaId: "celtowie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.9,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0.4,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 0,
+        spec_Obrazenia: 0,
+        spec_Obrona: 0,
+        spec_Uderzenie: 0,
+        spec_Pancerz: 0,
+        spec_Przebicie: 0,
+        spec_Health: 0,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 0,
+        spec_Ruch_mapa: 0,
+        spec_Widok: 0,
+        spec_Dezercja_proc: 0,
+        spec_Morale: 0,
+        spec_Koszt_pieniadz: 0,
+        spec_Utrzymanie: 0,
+        spec_Zywnosc_ture: 0,
+        eko_praca_proc: -0.02,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 4,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 6,
+        dip_pamietliwosc: 6,
+        dip_otwartosc_handel: 4,
+        dip_nastawienie_bazowe: 44,
+        dip_agresja_archetyp: 0.6,
+        dip_handlowosc_archetyp: 0.35,
+        ai_agresywnosc: 6,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 6,
+        ai_sklonnosc_podboju: 4,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Germanie",
+      typCywilizacji: "germanie",
+      ikonaId: "germanie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.7,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0.25,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0.4,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 45,
+        spec_Obrazenia: 45,
+        spec_Obrona: 38,
+        spec_Uderzenie: 20,
+        spec_Pancerz: 20,
+        spec_Przebicie: 10,
+        spec_Health: 45,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 50,
+        spec_Koszt_pieniadz: 10,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.02,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: -0.05,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 4,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 6,
+        dip_pamietliwosc: 7,
+        dip_otwartosc_handel: 3,
+        dip_nastawienie_bazowe: 41,
+        dip_agresja_archetyp: 0.65,
+        dip_handlowosc_archetyp: 0.3,
+        ai_agresywnosc: 6,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 4,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 6,
+        ai_sklonnosc_podboju: 4,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Harappa",
+      typCywilizacji: "harappa",
+      ikonaId: "harappa",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 1,
+        meta_epoka_braz: 0,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 2.4,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: -0.08,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0.15,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 56,
+        spec_Obrazenia: 56,
+        spec_Obrona: 89.6,
+        spec_Uderzenie: 44.8,
+        spec_Pancerz: 61.6,
+        spec_Przebicie: 22.4,
+        spec_Health: 72.8,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.3,
+        spec_Morale: 65,
+        spec_Koszt_pieniadz: 16,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.04,
+        eko_pieniadz_proc: 0.15,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.15,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 7,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 2,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 8,
+        dip_nastawienie_bazowe: 58,
+        dip_agresja_archetyp: 0.25,
+        dip_handlowosc_archetyp: 0.7,
+        ai_agresywnosc: 2,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 7,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Hetyci",
+      typCywilizacji: "hetyci",
+      ikonaId: "hetyci",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 2,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0.2,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0.15,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 6.9,
+        spec_Obrazenia: 0,
+        spec_Obrona: 2.3,
+        spec_Uderzenie: 9.2,
+        spec_Pancerz: 2.3,
+        spec_Przebicie: 4.6,
+        spec_Health: 103.5,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 6,
+        spec_Ruch_mapa: 4,
+        spec_Widok: 4,
+        spec_Dezercja_proc: 0.3,
+        spec_Morale: 100,
+        spec_Koszt_pieniadz: 28,
+        spec_Utrzymanie: 3,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: -0.05,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 5,
+        dip_lojalnosc: 6,
+        dip_prog_wojny: 5,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 5,
+        dip_nastawienie_bazowe: 52,
+        dip_agresja_archetyp: 0.45,
+        dip_handlowosc_archetyp: 0.5,
+        ai_agresywnosc: 5,
+        ai_ekspansywnosc: 3,
+        ai_priorytet_militarny: 6,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 4,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "S\u0142owianie",
+      typCywilizacji: "slowianie",
+      ikonaId: "slowianie",
+      tier: 1,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 0,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 1.8,
+        meta_tier_roster: 1,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0.15,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 57,
+        spec_Obrazenia: 57,
+        spec_Obrona: 91.2,
+        spec_Uderzenie: 45.6,
+        spec_Pancerz: 62.7,
+        spec_Przebicie: 22.8,
+        spec_Health: 74.1,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.3,
+        spec_Morale: 65,
+        spec_Koszt_pieniadz: 16,
+        spec_Utrzymanie: 2,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: -0.05,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0.03,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0.1,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 4,
+        dip_lojalnosc: 5,
+        dip_prog_wojny: 6,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 4,
+        dip_nastawienie_bazowe: 48,
+        dip_agresja_archetyp: 0.55,
+        dip_handlowosc_archetyp: 0.4,
+        ai_agresywnosc: 6,
+        ai_ekspansywnosc: 4,
+        ai_priorytet_militarny: 6,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 1
+      }
+    },
+    {
+      Cywilizacja: "Babilonia",
+      typCywilizacji: "babilonia",
+      ikonaId: "babilonia",
+      tier: 2,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 2.3,
+        meta_tier_roster: 2,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 50.85,
+        spec_Obrazenia: 50.85,
+        spec_Obrona: 42.94,
+        spec_Uderzenie: 22.6,
+        spec_Pancerz: 22.6,
+        spec_Przebicie: 11.3,
+        spec_Health: 50.85,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 50,
+        spec_Koszt_pieniadz: 10,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0,
+        eko_pieniadz_proc: 0.1,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0.15,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.1,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 6,
+        dip_lojalnosc: 5,
+        dip_prog_wojny: 4,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 6,
+        dip_nastawienie_bazowe: 55,
+        dip_agresja_archetyp: 0.3,
+        dip_handlowosc_archetyp: 0.65,
+        ai_agresywnosc: 3,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 4,
+        ai_priorytet_ekonomia: 6,
+        ai_priorytet_nauka: 8,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 2,
+        ai_profil_obronna: 0
+      }
+    },
+    {
+      Cywilizacja: "Asyria",
+      typCywilizacji: "asyria",
+      ikonaId: "asyria",
+      tier: 2,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 1,
+        meta_epoka_zelazo: 0,
+        meta_mnoznik_waluta: 1.7,
+        meta_tier_roster: 2,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0.15,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: 0,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0.2,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 30,
+        spec_Obrazenia: 35,
+        spec_Obrona: 20,
+        spec_Uderzenie: 10,
+        spec_Pancerz: 10,
+        spec_Przebicie: 15,
+        spec_Health: 30,
+        spec_Atak_dystansowy: 35,
+        spec_Zasieg_hex: 3,
+        spec_Pociski: 12,
+        spec_Ruch_bitwa: 3,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.5,
+        spec_Morale: 40,
+        spec_Koszt_pieniadz: 6,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: -0.02,
+        eko_pieniadz_proc: 0,
+        eko_pieniadz_port_proc: 0,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 2,
+        dip_lojalnosc: 4,
+        dip_prog_wojny: 9,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 3,
+        dip_nastawienie_bazowe: 38,
+        dip_agresja_archetyp: 0.8,
+        dip_handlowosc_archetyp: 0.25,
+        ai_agresywnosc: 8,
+        ai_ekspansywnosc: 5,
+        ai_priorytet_militarny: 8,
+        ai_priorytet_ekonomia: 5,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 4,
+        ai_sklonnosc_podboju: 5,
+        ai_profil_obronna: 0
+      }
+    },
+    {
+      Cywilizacja: "Fenicjanie",
+      typCywilizacji: "fenicjanie",
+      ikonaId: "fenicjanie",
+      tier: 2,
+      params: {
+        meta_epoka_kamien: 0,
+        meta_epoka_braz: 0,
+        meta_epoka_zelazo: 1,
+        meta_mnoznik_waluta: 2.6,
+        meta_tier_roster: 2,
+        walka_atak_piechota: 0,
+        walka_atak_lukownicy: 0,
+        walka_atak_kawaleria: 0,
+        walka_atak_rydwany: 0,
+        walka_atak_obleczenie: 0,
+        walka_atak_morska: 0,
+        walka_atak_wszystkie: 0,
+        walka_obrona_piechota: -0.05,
+        walka_obrona_lukownicy: 0,
+        walka_obrona_kawaleria: 0,
+        walka_obrona_rydwany: 0,
+        walka_obrona_obleczenie: 0,
+        walka_obrona_morska: 0,
+        walka_pancerz_piechota: 0,
+        walka_pancerz_lukownicy: 0,
+        walka_pancerz_kawaleria: 0,
+        walka_pancerz_rydwany: 0,
+        walka_uderzenie_piechota: 0,
+        walka_uderzenie_kawaleria: 0,
+        walka_uderzenie_rydwany: 0,
+        walka_dystans_lukownicy: 0,
+        walka_dystans_rydwany: 0,
+        walka_hp_piechota: 0,
+        walka_hp_kawaleria: 0,
+        walka_hp_rydwany: 0,
+        walka_ruch_bitwa_proc: 0,
+        walka_zasieg_proc: 0,
+        walka_oblezenie_proc: 0,
+        walka_koszt_rekrutacji_proc: 0,
+        walka_atak_piechota_teren_las: 0,
+        walka_obrona_piechota_teren_las: 0,
+        walka_atak_piechota_terytorium_wlasne: 0,
+        walka_obrona_piechota_terytorium_wlasne: 0,
+        walka_atak_piechota_w_murze: 0,
+        walka_obrona_piechota_w_murze: 0,
+        walka_atak_piechota_runda_szarzy: 0,
+        walka_obrona_piechota_runda_szarzy: 0,
+        walka_atak_piechota_teren_wybrzeze: 0,
+        walka_obrona_piechota_teren_wybrzeze: 0,
+        spec_Atak: 50.4,
+        spec_Obrazenia: 50.4,
+        spec_Obrona: 42.56,
+        spec_Uderzenie: 22.4,
+        spec_Pancerz: 22.4,
+        spec_Przebicie: 11.2,
+        spec_Health: 50.4,
+        spec_Atak_dystansowy: 0,
+        spec_Zasieg_hex: 0,
+        spec_Pociski: 0,
+        spec_Ruch_bitwa: 4,
+        spec_Ruch_mapa: 2,
+        spec_Widok: 2,
+        spec_Dezercja_proc: 0.4,
+        spec_Morale: 50,
+        spec_Koszt_pieniadz: 10,
+        spec_Utrzymanie: 1,
+        spec_Zywnosc_ture: 1,
+        eko_praca_proc: 0.05,
+        eko_pieniadz_proc: 0.35,
+        eko_pieniadz_port_proc: 0.25,
+        eko_zywnosc_proc: 0,
+        eko_nauka_proc: 0,
+        eko_kultura_proc: 0,
+        eko_luksus_proc: 0,
+        eko_zadowolenie_proc: 0,
+        eko_handel_brutto_proc: 0.35,
+        eko_korupcja_proc: 0,
+        prod_koszt_budynku_proc: 0,
+        prod_koszt_jednostki_proc: 0,
+        prod_szybkosc_budynku_proc: 0,
+        prod_szybkosc_jednostki_proc: 0,
+        prod_rush_koszt_proc: 0,
+        lud_wzrost_proc: 0,
+        lud_spadek_proc: 0,
+        lud_zdrowie_proc: 0,
+        lud_zadowolenie_bazowe: 0,
+        lud_limit_populacji: 10,
+        mp_regen_proc: 0,
+        mp_max_proc: 0,
+        mp_koszt_jednostki_proc: 0,
+        wealth_cap_proc: 0,
+        wealth_mnoznik_proc: 0,
+        kultura_naplyw_proc: 0,
+        religia_spread_proc: 0,
+        porzadek_produkcja_proc: 0,
+        porzadek_pieniadz_proc: 0,
+        porzadek_nauka_proc: 0,
+        porzadek_kultura_proc: 0,
+        porzadek_wzrost_proc: 0,
+        obl_obrona_miasta_proc: 0,
+        obl_mur_proc: 0,
+        obl_machines_proc: 0,
+        dip_sklonnosc_sojusze: 5,
+        dip_lojalnosc: 4,
+        dip_prog_wojny: 3,
+        dip_pamietliwosc: 5,
+        dip_otwartosc_handel: 9,
+        dip_nastawienie_bazowe: 62,
+        dip_agresja_archetyp: 0.25,
+        dip_handlowosc_archetyp: 0.9,
+        ai_agresywnosc: 3,
+        ai_ekspansywnosc: 2,
+        ai_priorytet_militarny: 5,
+        ai_priorytet_ekonomia: 8,
+        ai_priorytet_nauka: 5,
+        ai_tolerancja_ryzyka: 3,
+        ai_sklonnosc_podboju: 3,
+        ai_profil_obronna: 0
+      }
     }
-    return null;
-  }
-  return null;
+  ]
+};
+
+// game/civ-matrix.ts
+var DATA = civ_matrix_default;
+function loadCivMatrix() {
+  return DATA;
 }
-var PROPOSER_PW_FAIRNESS_ACTIONS = /* @__PURE__ */ new Set([]);
-function treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal) {
-  const playerRequired = effectiveTreatyPnRequired(basePn, relTotal);
-  const partnerRequired = partnerTreatyPnRequired(basePn);
-  const proposerDisplay = playerRequired + givePn;
-  const responderDisplay = partnerRequired + receivePn;
-  return responderDisplay - proposerDisplay;
-}
-function proposerUnfairToPartnerGate(actionId, payload, relation, pnOpts) {
-  if (!PROPOSER_PW_FAIRNESS_ACTIONS.has(actionId)) return null;
-  const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
-  if (!proposerIsPlayer) return null;
-  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-  const hasBasket = givePn > 0 || receivePn > 0 || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
-  const basePn = treatyBasePnFromConfig(actionId);
-  if (basePn <= 0 && !hasBasket) return null;
-  const relTotal = treatyEvalRelationTotal(relation);
-  const playerTreaty = basePn > 0 ? effectiveTreatyPnRequired(basePn, relTotal) : 0;
-  const partnerTreaty = basePn > 0 ? partnerTreatyPnRequired(basePn) : 0;
-  const proposerDisplay = playerTreaty + givePn;
-  const responderDisplay = partnerTreaty + receivePn;
-  if (proposerDisplay < responderDisplay) {
-    return {
-      accepted: false,
-      reason: `Przewaga u Ciebie \u2014 oferta nieuczciwa dla partnera (${responderDisplay - proposerDisplay} PW)`
-    };
+
+// game/diplomacy-display.ts
+var MATRIX = loadCivMatrix();
+var WIARYGODNOSC_TOOLTIP_DEF_PL = "Wiarygodno\u015B\u0107 (W) = globalna reputacja twojego pa\u0144stwa (\u2212100\u2026+100). Twarde bramki: sojusz W\u22650, pakt o nieagresji W\u2265\u221240.";
+var WIARYGODNOSC_TOOLTIP_PL = WIARYGODNOSC_TOOLTIP_DEF_PL + ' Wp\u0142ywa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/tur\u0119 (ten sam limit dla ka\u017Cdego \u2014 bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0\u2013200); w koszyku negocjacji wida\u0107 \u201EWp\u0142yw Relacji na deal" (\xB1%).';
+function splitNegotiationDealPlayerSides(payload, incoming) {
+  let give = payload.giveItems ?? [];
+  let receive = payload.receiveItems ?? [];
+  if (give.length === 0 && receive.length === 0) {
+    const legacyGold = payload.goldOnce ?? 0;
+    if (legacyGold > 0) {
+      give = [{ typ: "zloto", id: "zloto", ilosc: legacyGold }];
+    } else {
+      return null;
+    }
   }
-  if (receivePn > 0 && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-    return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
+  const weOffer = incoming ? receive : give;
+  const theyOffer = incoming ? give : receive;
+  const perTurn = payload.resourceTradeMode === "per_turn";
+  const turns = payload.turns;
+  let schedule;
+  if (turns != null && turns > 0) {
+    schedule = perTurn ? `Wymiana co tur\u0119 przez ${turns} tur` : `Jednorazowa wymiana (umowa na ${turns} tur)`;
+  } else if (perTurn) {
+    schedule = "Wymiana co tur\u0119 (bez limitu tur w ofercie)";
   }
-  return null;
+  return { weOffer, theyOffer, schedule };
 }
-function tradeWillingnessBlocksAcceptance(stance, params, givePn, receivePn, relTotal, payload) {
-  if (stance.willingnessTrade >= params.progHandelWillingnessMin) return false;
-  const hasBasket = givePn > 0 || receivePn > 0 || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
-  if (!hasBasket) return false;
-  if (pnDealAcceptedByAi(givePn, receivePn, relTotal)) return false;
-  return true;
+
+// game/diplomacy-acceptance-points.ts
+var CONFIG = diplomacy_acceptance_points_default;
+function loadTreatyAcceptanceDef(actionId) {
+  const t = CONFIG.traktaty;
+  return t[actionId];
 }
-var HANDEL_WILLINGNESS_EASE_MAX_PCT = 0.15;
-var HANDEL_WILLINGNESS_PENALTY_MAX_PCT = 0.2;
-function handelWillingnessMultiplier(stance, params, responderIsPlayer) {
-  if (responderIsPlayer) return 1;
-  const w = stance.willingnessTrade;
-  const mid = params.progHandelWillingnessMin;
-  if (w >= mid) {
-    const span2 = Math.max(1e-6, 1 - mid);
-    const t2 = Math.min(1, (w - mid) / span2);
-    return 1 - HANDEL_WILLINGNESS_EASE_MAX_PCT * t2;
+function playerTreatyDisplayPw(side) {
+  if (!side) return void 0;
+  const pw = side.treatyEffectivePn ?? 0;
+  return pw > 0 ? pw : void 0;
+}
+function partnerTreatyDisplayPw(side) {
+  if (!side) return void 0;
+  const base = side.treatyBasePn ?? 0;
+  if (base <= 0) return void 0;
+  const pw = side.treatyEffectivePn ?? base;
+  return pw > 0 ? pw : void 0;
+}
+function bilateralTreatyDisplayPw(my, their) {
+  const mode = my?.mode ?? their?.mode;
+  if (mode !== "treaty" && mode !== "mixed") return void 0;
+  const playerPw = playerTreatyDisplayPw(my);
+  if (playerPw != null) return playerPw;
+  const partnerPw = partnerTreatyDisplayPw(their);
+  if (partnerPw != null) return partnerPw;
+  const base = my?.treatyBasePn ?? their?.treatyBasePn;
+  return base != null && base > 0 ? base : void 0;
+}
+function sideDisplayOfferPw(side, bilateralTreatyPw) {
+  if (!side) return bilateralTreatyPw ?? 0;
+  const basket = side.offerPn;
+  const ownTreaty = side.treatyEffectivePn ?? 0;
+  if (ownTreaty > 0) return basket + ownTreaty;
+  if ((side.mode === "treaty" || side.mode === "mixed") && bilateralTreatyPw != null && bilateralTreatyPw > 0) {
+    return basket + bilateralTreatyPw;
   }
-  const span = Math.max(1e-6, mid);
-  const t = Math.min(1, (mid - w) / span);
-  return 1 + HANDEL_WILLINGNESS_PENALTY_MAX_PCT * t;
+  return basket;
 }
-function handelFairnessReject(givePn, requiredPn, multiplier) {
-  if (multiplier > 1) {
-    const pct = Math.round((multiplier - 1) * 100);
-    return {
-      accepted: false,
-      reason: `Niech\u0119\u0107 partnera do handlu podnios\u0142a wymagany pr\xF3g PW o ${pct}% \u2014 oferta nieuczciwa dla partnera (wymagane \u2265 ${requiredPn} PW, oferujesz ${givePn} PW)`
-    };
-  }
+function isPlayerIncomingGift(payload) {
+  const split = splitNegotiationDealPlayerSides(payload, true);
+  if (!split) return false;
+  return split.weOffer.length === 0 && split.theyOffer.length > 0;
+}
+function formatBalanceLabel(balancePn, accepted) {
+  if (accepted && balancePn > 0) return `Nadwy\u017Cka +${balancePn} PW`;
+  if (accepted && balancePn === 0) return "Spe\u0142nia warunki (0 PW)";
+  if (balancePn < 0) return `Brakuje ${Math.abs(balancePn)} PW`;
+  return `Saldo ${balancePn} PW`;
+}
+function computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, incoming, mode) {
+  const playerTreatyPw = treatyPwForRole(treatyBase, relTotal, "player");
+  const partnerTreatyPw = treatyPwForRole(treatyBase, relTotal, "partner");
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  const modLabel = formatRelationModLabel(relTotal);
+  const proposerIsPlayer = !incoming;
+  const proposerTreatyPw = proposerIsPlayer ? playerTreatyPw : partnerTreatyPw;
+  const proposerGive = incoming ? receivePn : givePn;
+  const proposerReceive = incoming ? givePn : receivePn;
+  const basketNet = Math.max(0, proposerGive - proposerReceive);
+  const proposerOfferPn = proposerTreatyPw + basketNet;
+  const peaceAccepted = proposerOfferPn >= proposerTreatyPw;
+  const surplusPn = proposerOfferPn - proposerTreatyPw;
+  const myBasketOffer = incoming ? receivePn : givePn;
+  const myBasketDemand = incoming ? givePn : receivePn;
+  const theirBasketOffer = incoming ? givePn : receivePn;
+  const theirBasketDemand = incoming ? receivePn : givePn;
+  const myDisplayPw = playerTreatyPw + myBasketOffer;
+  const theirDisplayPw = partnerTreatyPw + theirBasketOffer;
+  const asymBalance = myDisplayPw - theirDisplayPw;
+  const hasBasket = myBasketOffer > 0 || theirBasketOffer > 0;
+  const buildPlayerSide = () => ({
+    offerPn: myBasketOffer,
+    demandPn: myBasketDemand,
+    fairMinPn: playerTreatyPw,
+    balancePn: asymBalance,
+    treatyBasePn: treatyBase,
+    treatyEffectivePn: playerTreatyPw,
+    relationModPct: modPct,
+    relationModLabel: modLabel,
+    mode,
+    accepted: peaceAccepted && asymBalance >= 0,
+    statusLabel: asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : asymBalance > 0 && hasBasket ? `Nadwy\u017Cka +${asymBalance} PW` : formatBalanceLabel(surplusPn, peaceAccepted)
+  });
+  const buildPartnerSide = () => ({
+    offerPn: theirBasketOffer,
+    demandPn: theirBasketDemand,
+    fairMinPn: partnerTreatyPw,
+    balancePn: asymBalance,
+    treatyBasePn: treatyBase,
+    treatyEffectivePn: partnerTreatyPw,
+    mode,
+    accepted: peaceAccepted && asymBalance >= 0,
+    statusLabel: asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : hasBasket && asymBalance > 0 ? `Przewaga u Ciebie +${asymBalance} PW` : "R\xF3wno \u2014 spe\u0142nia"
+  });
   return {
-    accepted: false,
-    reason: `Oferta nieuczciwa dla partnera \u2014 poni\u017Cej uczciwej warto\u015Bci PW @ Relacji (wymagane \u2265 ${requiredPn} PW, oferujesz ${givePn} PW)`
+    my: buildPlayerSide(),
+    their: buildPartnerSide()
   };
 }
-function handelFairnessGate(givePn, receivePn, relTotal, multiplier) {
-  if (givePn <= 0 && receivePn <= 0) {
-    return { accepted: false, reason: "Brak warto\u015Bci w ofercie" };
+function computeSideBalance(offerPn, demandPn, relTotal, treatyBasePn, relRequired, mode, treatyRole) {
+  const relClamped = Math.min(100, Math.max(1, relTotal));
+  const fairMinPn = diplomacyFairGivePn(demandPn, relClamped);
+  const treatyEffectivePn = treatyRole === "none" ? 0 : treatyPwForRole(treatyBasePn, relTotal, treatyRole);
+  const modPct = treatyRole === "player" ? relationPnModPct(relationSignedFromTotal(relTotal)) : void 0;
+  const modLabel = treatyRole === "player" ? formatRelationModLabel(relTotal) : void 0;
+  const balancePn = offerPn - fairMinPn;
+  const basketAccepted = pnDealAcceptedByAi(offerPn, demandPn, relTotal);
+  const relBalance = relRequired != null ? relTotal - relRequired : void 0;
+  const relOk = relRequired == null || relTotal >= relRequired;
+  const hasBasketContent = offerPn > 0 || demandPn > 0;
+  const treatyPnOk = treatyEffectivePn === 0 || !hasBasketContent || demandPn > 0 || offerPn >= treatyEffectivePn;
+  const accepted = (hasBasketContent ? basketAccepted : true) && relOk;
+  let statusLabel = formatBalanceLabel(balancePn, accepted);
+  if (treatyEffectivePn > 0 && !treatyPnOk && demandPn <= 0 && offerPn > 0 && offerPn < treatyEffectivePn) {
+    statusLabel = `${statusLabel} \xB7 s\u0142odzik ${offerPn}/${treatyEffectivePn} PW`;
+  } else if (relRequired != null && relBalance != null && relBalance < 0) {
+    statusLabel = `Relacja \u2212${Math.abs(relBalance)} (wym. ${relRequired})`;
+  } else if (mode === "gift" && offerPn > 0 && demandPn === 0) {
+    statusLabel = `Dar +${offerPn} PW`;
+  } else if (treatyEffectivePn > 0 && treatyPnOk && modPct != null && modPct !== 0) {
+    statusLabel = `${statusLabel} \xB7 ${modLabel}`;
   }
-  const relForFair = Math.min(100, Math.max(1, relTotal));
-  const requiredPn = Math.max(
-    receivePn,
-    Math.ceil(diplomacyFairGivePn(receivePn, relForFair) * multiplier)
-  );
-  if (givePn < requiredPn) {
-    return handelFairnessReject(givePn, requiredPn, multiplier);
-  }
-  return null;
+  return {
+    offerPn,
+    demandPn,
+    fairMinPn,
+    balancePn,
+    treatyBasePn: treatyBasePn > 0 ? treatyBasePn : 0,
+    treatyEffectivePn: treatyEffectivePn > 0 ? treatyEffectivePn : void 0,
+    relationModPct: modPct,
+    relationModLabel: modLabel,
+    relRequired,
+    relCurrent: relTotal,
+    relBalance,
+    mode,
+    statusLabel,
+    accepted
+  };
 }
-function evaluateProposal(proposal, ctx) {
-  const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
-  const { relation, stanWojny } = ctx;
-  const p = getEffectiveDiplomacyParams(ctx.difficulty ?? "normal");
+function computePlayerAcceptanceSides(actionId, payload, relTotal, incoming, opts) {
+  const turnsOpts = proposalPnTurnsMultiplier(payload);
   const pnOpts = {
-    difficulty: ctx.difficulty ?? "normal",
-    proposerOwnerId,
+    difficulty: opts?.difficulty ?? "normal",
+    proposerOwnerId: opts?.proposerOwnerId ?? (incoming ? void 0 : 0),
     playerOwnerId: 0,
-    ...proposalPnTurnsMultiplier(payload)
+    tempoGry: opts?.tempoGry,
+    ...turnsOpts
   };
-  const score = relationScore(relation);
-  const stance = stanceForEval(ctx);
-  if (actionId === "pokoj" && !stanWojny) {
-    return { accepted: false, reason: "Pok\xF3j \u2014 brak trwaj\u0105cej wojny" };
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const treatyDef = loadTreatyAcceptanceDef(actionId);
+  const treatyBase = treatyDef?.punkty ?? 0;
+  const relRequired = treatyDef?.prog_relacja;
+  const isGift = incoming && isPlayerIncomingGift(payload);
+  const myOfferPn = incoming ? receivePn : givePn;
+  const myDemandPn = incoming ? givePn : receivePn;
+  const theirOfferPn = incoming ? givePn : receivePn;
+  const theirDemandPn = incoming ? receivePn : givePn;
+  const hasBasket = myOfferPn > 0 || myDemandPn > 0 || theirOfferPn > 0 || theirDemandPn > 0;
+  let mode = "treaty";
+  if (isGift) mode = "gift";
+  else if (hasBasket && treatyBase > 0) mode = "mixed";
+  else if (hasBasket) mode = "basket";
+  const ease = sweetenerEasePoints(payload);
+  const adjustedRelRequired = relRequired != null ? Math.max(0, relRequired - ease) : void 0;
+  if (actionId === "pokoj" && treatyBase > 0) {
+    const peaceMode = hasBasket ? "mixed" : "treaty";
+    const peace = computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, incoming, peaceMode);
+    if (isGift) {
+      peace.their.accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+      peace.my.accepted = true;
+      peace.my.statusLabel = "Nic w zamian";
+      peace.their.statusLabel = formatBalanceLabel(peace.their.balancePn, peace.their.accepted);
+    }
+    return { my: peace.my, their: peace.their, isGift };
   }
-  if (stanWojny && actionId !== "trybut_oferta" && actionId !== "ultimatum" && actionId !== "pokoj") {
-    return { accepted: false, reason: "Trwa wojna \u2014 ta akcja jest niedost\u0119pna" };
+  const my = computeSideBalance(
+    myOfferPn,
+    myDemandPn,
+    relTotal,
+    treatyBase,
+    adjustedRelRequired,
+    mode,
+    treatyBase > 0 ? "player" : "none"
+  );
+  const their = computeSideBalance(
+    theirOfferPn,
+    theirDemandPn,
+    relTotal,
+    treatyBase,
+    adjustedRelRequired,
+    mode,
+    treatyBase > 0 ? "partner" : "none"
+  );
+  if (treatyBase > 0 && (mode === "treaty" || mode === "mixed")) {
+    const myDisplay = (my.treatyEffectivePn ?? 0) + my.offerPn;
+    const theirDisplay = (their.treatyEffectivePn ?? 0) + their.offerPn;
+    const asymBalance = myDisplay - theirDisplay;
+    const relOk = adjustedRelRequired == null || relTotal >= adjustedRelRequired;
+    const balanceOk = asymBalance >= 0;
+    my.balancePn = asymBalance;
+    their.balancePn = asymBalance;
+    if (mode === "treaty" && !hasBasket) {
+      my.accepted = relOk && balanceOk;
+      their.accepted = relOk && balanceOk;
+      my.statusLabel = !balanceOk ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : asymBalance > 0 ? `Ty ${myDisplay} PW \xB7 Oni ${theirDisplay} PW (Relacja +${asymBalance})` : "Spe\u0142nia warunki (0 PW)";
+      their.statusLabel = !balanceOk ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : asymBalance > 0 ? `Oni ${theirDisplay} PW \xB7 Ty ${myDisplay} PW` : "R\xF3wno \u2014 spe\u0142nia";
+    } else if (mode === "mixed") {
+      my.accepted = my.accepted && relOk && balanceOk;
+      their.accepted = their.accepted && relOk && balanceOk;
+      if (!balanceOk) {
+        my.statusLabel = `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107`;
+        their.statusLabel = my.statusLabel;
+      }
+    }
   }
-  if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
-    return { accepted: false, reason: "W wojnie pieni\u0105dze tylko w ugodzie pokojowej" };
+  if (isGift) {
+    their.accepted = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+    my.accepted = true;
+    my.statusLabel = "Nic w zamian";
+    their.statusLabel = formatBalanceLabel(their.balancePn, their.accepted);
   }
-  if (TRIBUTE_PROPOSAL_ACTIONS.has(actionId) && tributeBlockedForCityState(ctx)) {
-    return { accepted: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
+  if (!incoming && !isGift && (mode === "basket" || mode === "mixed")) {
+    const bilateralPw = bilateralTreatyDisplayPw(my, their);
+    const proposerDisplay = sideDisplayOfferPw(my, bilateralPw);
+    const responderDisplay = sideDisplayOfferPw(their, bilateralPw);
+    const bilateralNet = proposerDisplay - responderDisplay;
+    const basketFairOk = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+    their.accepted = bilateralNet >= 0 && basketFairOk;
+    if (!their.accepted) {
+      if (bilateralNet < 0) {
+        their.statusLabel = `Przewaga u Ciebie \u2014 oferta nieuczciwa dla partnera (${Math.abs(bilateralNet)} PW)`;
+      } else if (!basketFairOk) {
+        their.statusLabel = formatBalanceLabel(their.balancePn, false);
+      }
+    }
   }
-  const unfairToPartner = proposerUnfairToPartnerGate(actionId, payload, relation, pnOpts);
-  if (unfairToPartner) return unfairToPartner;
-  const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
-  if (pnReject) return pnReject;
-  switch (actionId) {
-    case "nap": {
-      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgNapMin) {
-        return {
-          accepted: false,
-          reason: `Wiarygodno\u015B\u0107 zbyt niska na pakt (wymagana \u2265 ${p.wiarygodnoscProgNapMin})`
-        };
-      }
-      const napEase = sweetenerEasePoints(payload, pnOpts);
-      const napThreshold = Math.max(0, p.progNapRelacja - napEase);
-      if (score < napThreshold) {
-        return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana \u2265 ${napThreshold})` };
-      }
-      if (ctx.ekspansjaPrzyGranicy) {
-        return { accepted: false, reason: "Ekspansja przy granicy \u2014 brak zaufania do paktu" };
-      }
-      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, "pakt_nieagresji" /* PaktNieagresji */)) {
-        return { accepted: false, reason: "Pakt nieagresji ju\u017C obowi\u0105zuje" };
-      }
-      const napExpiry = resolveNapDealExpiry(ctx.turn, payload);
-      const deal = buildDeal(
-        "pakt_nieagresji" /* PaktNieagresji */,
-        proposerOwnerId,
-        responderOwnerId,
-        ctx.turn,
-        napExpiry.wygasaTura
-      );
-      return { accepted: true, reason: napExpiry.label, deal };
-    }
-    case "sojusz_defensywny":
-    case "sojusz_pelny": {
-      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgSojuszMin) {
-        return {
-          accepted: false,
-          reason: `Wiarygodno\u015B\u0107 zbyt niska na sojusz (wymagana \u2265 ${p.wiarygodnoscProgSojuszMin})`
-        };
-      }
-      const kind = actionId === "sojusz_defensywny" ? "sojusz_defensywny" : "sojusz_pelny";
-      const milRatio = ctx.militaryRatio ?? 1;
-      const adj = diplomacyAllianceStrengthAdjust(
-        milRatio,
-        ctx.proposerRespekt,
-        ctx.responderRespekt,
-        p
-      );
-      const sojuszEase = sweetenerEasePoints(payload, pnOpts);
-      const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
-      const minScore = diplomacyTreatyMinRelacja(
-        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
-        p
-      );
-      const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);
-      if (adj.hegemonBlocksAlliance) {
-        return {
-          accepted: false,
-          reason: "Hegemon nie potrzebuje sojuszu \u2014 wola wobec s\u0142abszego to trybut lub wasalizacja"
-        };
-      }
-      if (relation.zaufanie < minZ) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${minZ})` };
-      }
-      if (score < minScore) {
-        return { accepted: false, reason: `Relacja og\xF3lna zbyt niska na sojusz (\u2265 ${minScore})` };
-      }
-      if (milRatio < p.progSojuszSlabyProponentMilRatio && ctx.proposerRespekt <= ctx.responderRespekt && score < p.progUmowaMinRelacja) {
-        return { accepted: false, reason: "Za s\u0142aby proponent bez pe\u0142nej relacji \u2014 sojusz nierealny" };
-      }
-      if (stance.willingnessAlly < minAlly) {
-        return { accepted: false, reason: "Brak gotowo\u015Bci do sojuszu" };
-      }
-      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, kind)) {
-        return { accepted: false, reason: "Sojusz tego typu ju\u017C istnieje" };
-      }
-      const deal = buildDeal(kind, proposerOwnerId, responderOwnerId, ctx.turn, null);
-      const label = kind === "sojusz_defensywny" ? "Sojusz obronny" : "Sojusz wojskowy";
-      return { accepted: true, reason: `${label} zawarty`, deal };
-    }
-    case "trybut_zadanie": {
-      const perTurn = payload.goldPerTurn ?? 0;
-      if (perTurn < p.progTrybutMinGoldPerTurn) {
-        return { accepted: false, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} \xA4/tur\u0119` };
-      }
-      const trybutEase = sweetenerEasePoints(payload, pnOpts);
-      const trybutRespektThreshold = Math.max(0, p.progTrybutZadanieMinRespekt - trybutEase);
-      if (ctx.proposerRespekt <= trybutRespektThreshold) {
-        return {
-          accepted: false,
-          reason: `\u017B\u0105danie trybutu wymaga Respekt > ${trybutRespektThreshold} (masz ${ctx.proposerRespekt})`
-        };
-      }
-      const maxPerTurn = p.progTrybutZadanieMaxGoldBase + Math.max(0, ctx.proposerRespekt - p.progTrybutZadanieMinRespekt) * p.progTrybutZadanieMaxGoldPerRespekt;
-      if (perTurn > maxPerTurn) {
-        return {
-          accepted: false,
-          reason: `\u017B\u0105danie trybutu przekracza limit przy tym Respekcie (max ${Math.round(maxPerTurn)} \xA4/tur\u0119)`
-        };
-      }
-      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, "wasalizacja" /* Wasalizacja */)) {
-        return { accepted: false, reason: "Trybut/wasalizacja z tym pa\u0144stwem ju\u017C obowi\u0105zuje" };
-      }
-      const deal = buildDeal(
-        "wasalizacja" /* Wasalizacja */,
-        proposerOwnerId,
-        responderOwnerId,
-        ctx.turn,
-        payload.turns != null ? ctx.turn + payload.turns : null,
-        {
-          payerOwnerId: responderOwnerId,
-          receiverOwnerId: proposerOwnerId,
-          pieniadzePerTura: perTurn
-        }
-      );
-      return { accepted: true, reason: `Trybut ${perTurn} \xA4/tur\u0119`, deal };
-    }
-    case "pokoj": {
-      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const basePn = treatyBasePnFromConfig("pokoj");
-      const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
-      if (proposerIsPlayer && basePn > 0) {
-        const relTotal = treatyEvalRelationTotal(relation);
-        const gap = treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal);
-        if (gap > 0) {
-          return {
-            accepted: false,
-            reason: `Brakuje ${gap} PW do uczciwej oferty pokoju @ Relacji (baza ${basePn} PW) \u2014 oferta nieuczciwa dla partnera`
-          };
-        }
-        if (receivePn > 0 && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
-        }
-      }
-      return { accepted: true, reason: "Warunki pokoju spe\u0142nione", oneShotTrade: true };
-    }
-    case "trybut_oferta": {
-      const perTurn = payload.goldPerTurn ?? payload.goldOnce ?? 0;
-      const threshold = p.progTrybutOfertaBaseGold + (ctx.epoka ?? 0) * p.progTrybutOfertaEpokaGold;
-      const nearWar = (ctx.militaryRatio ?? 1) > p.progTrybutOfertaNearWarRatio || relation.zaufanie < p.progTrybutOfertaNearWarZaufanie;
-      if (!nearWar && perTurn < threshold) {
-        return { accepted: false, reason: "Oferta trybutu zbyt niska" };
-      }
-      if (perTurn < p.progTrybutOfertaMinGold) {
-        return { accepted: false, reason: `Minimalna oferta to ${p.progTrybutOfertaMinGold} \xA4` };
-      }
-      if (payload.goldOnce != null && payload.goldOnce > 0) {
-        return { accepted: true, reason: "Jednorazowy trybut za pok\xF3j", oneShotTrade: true };
-      }
-      const deal = buildDeal(
-        "wasalizacja" /* Wasalizacja */,
-        proposerOwnerId,
-        responderOwnerId,
-        ctx.turn,
-        payload.turns != null ? ctx.turn + payload.turns : null,
-        {
-          payerOwnerId: proposerOwnerId,
-          receiverOwnerId: responderOwnerId,
-          pieniadzePerTura: perTurn
-        }
-      );
-      return { accepted: true, reason: `Oferta trybutu ${perTurn} \xA4/tur\u0119 przyj\u0119ta`, deal };
-    }
-    case "handel": {
-      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const relTotal = relationTotal(relation);
-      const isGift = payload.isGift === true || (payload.giveItems?.length ?? 0) > 0 && !payload.receiveItems?.length && (payload.receivePn ?? 0) <= 0;
-      if (isGift) {
-        if (!pnGiftAllowed(relTotal, ctx.difficulty ?? "normal")) {
-          return {
-            accepted: false,
-            reason: `Relacja zbyt niska na dar (wymagane \u2265 ${diplomacyProgDarRelacja(void 0, ctx.difficulty ?? "normal")})`
-          };
-        }
-        if (givePn <= 0) {
-          return { accepted: false, reason: "Brak warto\u015Bci w darze" };
-        }
-        return { accepted: true, reason: "Dar przyj\u0119ty", oneShotTrade: true };
-      }
-      if (score < p.progHandelRelacja) {
-        return { accepted: false, reason: `Relacja zbyt niska na handel (wymagane \u2265 ${p.progHandelRelacja})` };
-      }
-      const responderIsPlayer = responderOwnerId === 0;
-      const handelMultiplier = handelWillingnessMultiplier(stance, p, responderIsPlayer);
-      const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
-      if (proposalHasResourceAccess(payload)) {
-        return { accepted: false, reason: RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON };
-      }
-      const hasQuantityResourceItems = (payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false) || (payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false);
-      if (payload.resourceTradeMode === "per_turn" && hasQuantityResourceItems) {
-        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
-        if (cyklFairnessReject) return cyklFairnessReject;
-        const turns = clampDealTurns(payload.turns);
-        const cyklicznyItems = buildHandelSurowiecCykliczny(
-          proposerOwnerId,
-          responderOwnerId,
-          payload.giveItems,
-          payload.receiveItems
-        );
-        if (!cyklicznyItems.length) {
-          return { accepted: false, reason: "Brak surowca do cyklicznej wymiany" };
-        }
-        const deal = buildDeal(
-          "umowa_wymiany" /* UmowaWymiany */,
-          proposerOwnerId,
-          responderOwnerId,
-          ctx.turn,
-          ctx.turn + turns,
-          void 0,
-          false,
-          void 0,
-          cyklicznyItems
-        );
-        return {
-          accepted: true,
-          reason: `Umowa handlowa (surowiec co tur\u0119) na ${turns} tur`,
-          deal
-        };
-      }
-      if (hasPnPath) {
-        const fairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
-        if (fairnessReject) return fairnessReject;
-        return { accepted: true, reason: "Wymiana PW zaakceptowana", oneShotTrade: true };
-      }
-      const legacyGive = pnFromLegacyGold(payload.goldOnce ?? (payload.amount ?? 0) * 10);
-      const legacyReceive = pnFromLegacyGold(ctx.fairTradeValue ?? legacyGive);
-      if (legacyGive <= 0) {
-        return { accepted: false, reason: "Brak warto\u015Bci w ofercie" };
-      }
-      if (!pnDealAcceptedByAi(legacyGive, legacyReceive, relTotal)) {
-        return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
-      }
-      return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
-    }
-    case "umowa_handlowa":
-    case "umowa_szlakow": {
-      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const relTotal = treatyEvalRelationTotal(relation);
-      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
-        return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
-      }
-      if (score < p.progHandelRelacja) {
-        return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane \u2265 ${p.progHandelRelacja})` };
-      }
-      const treatyBasePn = treatyBasePnFromConfig(actionId);
-      const proposerIsTreatyPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
-      if (treatyBasePn > 0 && proposerIsTreatyPlayer) {
-        const gap = treatyBaseFairnessGap(treatyBasePn, givePn, receivePn, relTotal);
-        if (gap > 0) {
-          return {
-            accepted: false,
-            reason: `Brakuje ${gap} PW do uczciwej oferty traktatu handlowego @ Relacji (baza ${treatyBasePn} PW) \u2014 oferta nieuczciwa dla partnera`
-          };
-        }
-      }
-      const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
-      if (hasItems) {
-        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
-        }
-      }
-      const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
-      const deal = buildDeal(
-        "umowa_szlakow" /* UmowaSzlakow */,
-        proposerOwnerId,
-        responderOwnerId,
-        ctx.turn,
-        wygasa
-      );
-      return {
-        accepted: true,
-        reason: hasItems ? "Traktat handlowy (ze s\u0142odzikiem) zawarty" : "Traktat handlowy zawarty",
-        deal
-      };
-    }
-    case "namow_wojne": {
-      if (relation.zaufanie < p.progNamowWojneZaufanie) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${p.progNamowWojneZaufanie})` };
-      }
-      const epoka = ctx.epoka ?? 0;
-      const minBribe = p.progNamowWojneBribeBase * (epoka + 1);
-      const bribe = payload.bribeGold ?? 0;
-      if (bribe < minBribe) {
-        return { accepted: false, reason: `\u0141ap\xF3wka zbyt ma\u0142a (min. ${minBribe} \xA4)` };
-      }
-      if (payload.targetOwnerId == null) {
-        return { accepted: false, reason: "Brak wskazanego wroga" };
-      }
-      return { accepted: true, reason: "Zgoda na wypowiedzenie wojny wskazanemu wrogowi" };
-    }
-    case "tech": {
-      const techRelOk = score >= p.progHandelRelacja;
-      const techZaufOk = relation.zaufanie >= p.progWymianaTechZaufanie;
-      if (!techRelOk && !techZaufOk) {
-        return {
-          accepted: false,
-          reason: `Relacja zbyt niska na wymian\u0119 tech (wymagana Relacja \u2265 ${p.progHandelRelacja} i Zaufanie \u2265 ${p.progWymianaTechZaufanie})`
-        };
-      }
-      if (!techRelOk) {
-        return { accepted: false, reason: `Relacja zbyt niska na wymian\u0119 tech (wymagane \u2265 ${p.progHandelRelacja})` };
-      }
-      if (!techZaufOk) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie na wymian\u0119 tech (wymagane \u2265 ${p.progWymianaTechZaufanie})` };
-      }
-      const minPrice = ctx.techMinPrice ?? 50;
-      const price = payload.techPrice ?? 0;
-      if (price < minPrice) {
-        return { accepted: false, reason: `Cena poni\u017Cej minimum (${minPrice} \xA4)` };
-      }
-      if (!payload.techId) {
-        return { accepted: false, reason: "Brak technologii w ofercie" };
-      }
-      return { accepted: true, reason: "Sprzeda\u017C technologii zaakceptowana", oneShotTrade: true };
-    }
-    case "granice": {
-      const graniceEase = sweetenerEasePoints(payload, pnOpts);
-      const graniceRelThreshold = Math.max(0, p.progGraniceRelacja - graniceEase);
-      const graniceZaufThreshold = Math.max(0, p.progGraniceZaufanie - graniceEase);
-      const granRelOk = score >= graniceRelThreshold;
-      const granZaufOk = relation.zaufanie >= graniceZaufThreshold;
-      if (!granRelOk && !granZaufOk) {
-        return {
-          accepted: false,
-          reason: `Relacja zbyt niska na traktat przemarszu (wymagana Relacja \u2265 ${graniceRelThreshold} i Zaufanie \u2265 ${graniceZaufThreshold})`
-        };
-      }
-      if (!granRelOk) {
-        return { accepted: false, reason: `Relacja zbyt niska na traktat przemarszu (wymagana \u2265 ${graniceRelThreshold})` };
-      }
-      if (!granZaufOk) {
-        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${graniceZaufThreshold})` };
-      }
-      if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
-        return { accepted: false, reason: `Prawo wojskowe wymaga Respekt \u2265 ${p.progGraniceWojskoweRespekt}` };
-      }
-      const rodzaj = payload.borderMilitary ? "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */ : "otwarte_granice" /* OtwartGranice */;
-      const deal = buildDeal(
-        rodzaj,
-        proposerOwnerId,
-        responderOwnerId,
-        ctx.turn,
-        null
-      );
-      return {
-        accepted: true,
-        reason: marchTreatyLabel(payload.borderMilitary),
-        deal
-      };
-    }
-    case "ultimatum": {
-      const rw = ctx.militaryRatio ?? 1;
-      if (rw < p.progUltimatumMilitaryRatio) {
-        return { accepted: false, reason: "Ultimatum wymaga wyra\u017Anej przewagi militarnej" };
-      }
-      if (payload.goldOnce != null && payload.goldOnce >= p.progUltimatumMinGold) {
-        return { accepted: true, reason: "Warunki ultimatum spe\u0142nione", oneShotTrade: true };
-      }
-      return { accepted: false, reason: "Ultimatum odrzucone \u2014 warunki zbyt surowe" };
-    }
-    case "wasal": {
-      const wasalEase = sweetenerEasePoints(payload, pnOpts);
-      const wasalRespektThreshold = Math.max(0, p.progWasalizacjaRespekt - wasalEase);
-      if (ctx.proposerRespekt < wasalRespektThreshold) {
-        return { accepted: false, reason: `Wasalizacja wymaga Respekt \u2265 ${wasalRespektThreshold}` };
-      }
-      const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
-      const deal = buildDeal(
-        "wasalizacja" /* Wasalizacja */,
-        proposerOwnerId,
-        responderOwnerId,
-        ctx.turn,
-        null,
-        {
-          payerOwnerId: responderOwnerId,
-          receiverOwnerId: proposerOwnerId,
-          pieniadzePerTura: perTurn
-        }
-      );
-      return { accepted: true, reason: "Wasalizacja zaakceptowana", deal };
-    }
-    case "wchloniecie": {
-      if (!ctx.responderIsCityState) {
-        return { accepted: false, reason: "Wch\u0142oni\u0119cie v1 tylko miasta-pa\u0144stwa" };
-      }
-      const wasalDeal = findWasalDeal(ctx.activeDeals, proposerOwnerId, responderOwnerId);
-      if (!wasalDeal) {
-        return { accepted: false, reason: "Brak aktywnej wasalizacji z tym miastem-pa\u0144stwem" };
-      }
-      const age = ctx.wasalAgeTurns ?? wasalAgeTurns(wasalDeal, ctx.turn);
-      if (age == null || age < p.graczWchlonieciePoWasaluTur) {
-        const remain = p.graczWchlonieciePoWasaluTur - (age ?? 0);
-        return {
-          accepted: false,
-          reason: `Wasal musi trwa\u0107 \u2265 ${p.graczWchlonieciePoWasaluTur} tur (pozosta\u0142o ${remain})`
-        };
-      }
-      if (ctx.proposerRespekt < p.progWchloniecieRespekt) {
-        return {
-          accepted: false,
-          reason: `Wch\u0142oni\u0119cie wymaga Respekt \u2265 ${p.progWchloniecieRespekt}`
-        };
-      }
-      const WCHLONIECIE_CONSENT_REL = 60;
-      if (score < WCHLONIECIE_CONSENT_REL) {
-        return { accepted: false, reason: "Wasal odmawia wch\u0142oni\u0119cia \u2014 zbyt niska Relacja" };
-      }
-      const pop = ctx.responderPopulation ?? 0;
-      const koszt = graczWchloniecieKosztZloto(pop, p);
-      const goldOnce = payload.goldOnce ?? 0;
-      if (goldOnce < koszt) {
-        return {
-          accepted: false,
-          reason: `Wch\u0142oni\u0119cie wymaga jednorazowej op\u0142aty \u2265 ${koszt} \xA4`
-        };
-      }
-      return { accepted: true, reason: `Wch\u0142oni\u0119cie zaakceptowane (${koszt} \xA4)` };
-    }
-    default:
-      return { accepted: false, reason: "Nieznana akcja dyplomatyczna" };
+  if (incoming && !isGift && (mode === "basket" || mode === "mixed")) {
+    my.accepted = true;
+    my.statusLabel = "Twoja decyzja \u2014 mo\u017Cesz przyj\u0105\u0107";
+    const netTheirAdvantage = myOfferPn - theirOfferPn;
+    their.balancePn = netTheirAdvantage;
+    their.accepted = netTheirAdvantage >= 0;
+    their.statusLabel = netTheirAdvantage > 0 ? `Przewaga u nich +${netTheirAdvantage} PW` : netTheirAdvantage < 0 ? `Przewaga u Ciebie +${-netTheirAdvantage} PW` : "R\xF3wno \u2014 wymiana symetryczna";
   }
+  return { my, their, isGift };
 }
-var AI_TRIBUTE_PER_TURN = 15;
-var NEGOTIATION_PEACE_REQUIRED = /* @__PURE__ */ new Set([
-  "nap",
-  "sojusz_defensywny",
-  "sojusz_pelny",
-  "handel",
-  "umowa_handlowa",
-  "umowa_szlakow",
-  "granice",
-  "tech",
-  "wasal",
-  "wchloniecie",
-  "trybut_zadanie"
-]);
-var PEACE_ACTIONS_DURING_WAR = /* @__PURE__ */ new Set([
-  "pokoj",
-  "trybut_oferta",
-  "ultimatum"
-]);
-function resolvePlayerAcceptsAiPending(pending, turn, difficulty = "normal", opts) {
-  const { actionId, fromOwnerId, toOwnerId, payload } = pending;
-  if (opts?.atWar === true) {
-    if (isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
-      return { accepted: false, reason: "W wojnie pieni\u0105dze tylko w ugodzie pokojowej" };
-    }
-    if (NEGOTIATION_PEACE_REQUIRED.has(actionId) && !PEACE_ACTIONS_DURING_WAR.has(actionId)) {
-      return { accepted: false, reason: "Wybuch\u0142a wojna \u2014 warunki straci\u0142y aktualno\u015B\u0107" };
-    }
+
+// ui/formatPl.ts
+function formatLiczbaPl(n, maxMiejsca = 1) {
+  if (!Number.isFinite(n)) return "0";
+  const zaokr = Number(n.toFixed(Math.max(0, Math.min(6, maxMiejsca))));
+  const bezMinusZera = Object.is(zaokr, -0) ? 0 : zaokr;
+  return String(bezMinusZera).replace(".", ",");
+}
+
+// ui/diplomacyAcceptanceBalance.ts
+var PW_EXCHANGE_TOOLTIP = "Punkty wymiany (PW) mierz\u0105 bilans oferty na stole negocjacji. \u201EMy oddajemy\u201D vs \u201EOni oddaj\u0105\u201D \u2014 dodatni bilans oznacza, \u017Ce mo\u017Cesz co\u015B wyci\u0105gn\u0105\u0107 lub przyj\u0105\u0107 ofert\u0119; ujemny bilans \u2014 trzeba dop\u0142aci\u0107 (surowce, \xA4, ust\u0119pstwa). To nie jest waluta \xA4 ani z\u0142oto-surowiec w magazynie.";
+var RELATION_DEAL_TOOLTIP = "Relacja = Zaufanie + Respekt. Modyfikuje si\u0142\u0119 PW tylko po Twojej stronie (max \xB190%). Niska Relacja = ni\u017Csze PW Twojej strony \u2014 trzeba dop\u0142aci\u0107 do bilansu. Partner zawsze na bazie traktatu.";
+function formatModPctSigned(modPct) {
+  if (modPct === 0) return "0%";
+  const pct = formatLiczbaPl(Math.abs(modPct));
+  return modPct > 0 ? "+" + pct + "%" : "\u2212" + pct + "%";
+}
+function relationModTone(modPct) {
+  if (modPct > 0) return "better";
+  if (modPct < 0) return "worse";
+  return "neutral";
+}
+function relationDealText(relTotal, context) {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  if (context === "trade") {
+    if (relTotal >= 100) return "parytet 1:1 przy uczciwej wymianie";
+    const mult = formatLiczbaPl(100 / Math.max(1, relTotal));
+    return `musisz da\u0107 wi\u0119cej (\xD7${mult} PW), by oferta by\u0142a uczciwa`;
   }
-  switch (actionId) {
-    case "nap": {
-      const napExpiry = resolveNapDealExpiry(turn, payload);
-      const deal = buildDeal(
-        "pakt_nieagresji" /* PaktNieagresji */,
-        fromOwnerId,
-        toOwnerId,
-        turn,
-        napExpiry.wygasaTura
-      );
-      return { accepted: true, reason: napExpiry.label, deal };
-    }
-    case "sojusz_defensywny":
-    case "sojusz_pelny": {
-      const deal = buildDeal(
-        actionId,
-        fromOwnerId,
-        toOwnerId,
-        turn,
-        null
-      );
-      const label = actionId === "sojusz_defensywny" ? "Sojusz obronny" : "Sojusz wojskowy";
-      return { accepted: true, reason: `${label} zawarty`, deal };
-    }
-    case "pokoj":
-      return { accepted: true, reason: "Pok\xF3j zawarty", oneShotTrade: true };
-    case "granice": {
-      const rodzaj = payload.borderMilitary ? "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */ : "otwarte_granice" /* OtwartGranice */;
-      const deal = buildDeal(rodzaj, fromOwnerId, toOwnerId, turn, null);
-      return {
-        accepted: true,
-        reason: marchTreatyLabel(payload.borderMilitary),
-        deal
-      };
-    }
-    case "tech": {
-      return { accepted: true, reason: "Sprzeda\u017C technologii zaakceptowana", oneShotTrade: true };
-    }
-    case "namow_wojne": {
-      return { accepted: true, reason: "Zgoda na wypowiedzenie wojny wskazanemu wrogowi" };
-    }
-    case "ultimatum": {
-      return { accepted: true, reason: "Warunki ultimatum spe\u0142nione", oneShotTrade: true };
-    }
-    case "wasal": {
-      const p = getEffectiveDiplomacyParams(difficulty);
-      const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
-      const deal = buildDeal(
-        "wasalizacja" /* Wasalizacja */,
-        fromOwnerId,
-        toOwnerId,
-        turn,
-        null,
-        {
-          payerOwnerId: toOwnerId,
-          receiverOwnerId: fromOwnerId,
-          pieniadzePerTura: perTurn
-        }
-      );
-      return { accepted: true, reason: "Wasalizacja zaakceptowana", deal };
-    }
-    case "handel": {
-      if (proposalHasResourceAccess(payload)) {
-        return { accepted: false, reason: RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON };
-      }
-      const hasQuantityResourceItems = (payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false) || (payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false);
-      if (payload.resourceTradeMode === "per_turn" && hasQuantityResourceItems) {
-        const turns = clampDealTurns(payload.turns);
-        const cyklicznyItems = buildHandelSurowiecCykliczny(
-          fromOwnerId,
-          toOwnerId,
-          payload.giveItems,
-          payload.receiveItems
-        );
-        if (!cyklicznyItems.length) {
-          return { accepted: false, reason: "Brak surowca do cyklicznej wymiany" };
-        }
-        const deal = buildDeal(
-          "umowa_wymiany" /* UmowaWymiany */,
-          fromOwnerId,
-          toOwnerId,
-          turn,
-          turn + turns,
-          void 0,
-          false,
-          void 0,
-          cyklicznyItems
-        );
-        return { accepted: true, reason: `Umowa handlowa (surowiec co tur\u0119) na ${turns} tur`, deal };
-      }
-      if (payload.goldOnce != null && payload.goldOnce > 0) {
-        return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
-      }
-      return { accepted: true, reason: "Wymiana PW zaakceptowana", oneShotTrade: true };
-    }
-    case "umowa_handlowa":
-    case "umowa_szlakow": {
-      const deal = buildDeal(
-        "umowa_szlakow" /* UmowaSzlakow */,
-        fromOwnerId,
-        toOwnerId,
-        turn,
-        payload.turns != null ? turn + clampDealTurns(payload.turns) : null
-      );
-      return { accepted: true, reason: "Traktat handlowy zawarty", deal };
-    }
-    case "trybut_zadanie": {
-      const perTurn = payload.goldPerTurn ?? AI_TRIBUTE_PER_TURN;
-      const deal = buildDeal(
-        "wasalizacja" /* Wasalizacja */,
-        fromOwnerId,
-        toOwnerId,
-        turn,
-        payload.turns != null ? turn + payload.turns : null,
-        {
-          payerOwnerId: toOwnerId,
-          receiverOwnerId: fromOwnerId,
-          pieniadzePerTura: perTurn
-        }
-      );
-      return { accepted: true, reason: `Trybut ${perTurn} \xA4/tur\u0119`, deal };
-    }
-    case "trybut_oferta": {
-      if (payload.goldOnce != null && payload.goldOnce > 0) {
-        return { accepted: true, reason: "Jednorazowy trybut za pok\xF3j", oneShotTrade: true };
-      }
-      const perTurn = payload.goldPerTurn ?? 0;
-      const deal = buildDeal(
-        "wasalizacja" /* Wasalizacja */,
-        fromOwnerId,
-        toOwnerId,
-        turn,
-        payload.turns != null ? turn + payload.turns : null,
-        {
-          payerOwnerId: fromOwnerId,
-          receiverOwnerId: toOwnerId,
-          pieniadzePerTura: perTurn
-        }
-      );
-      return { accepted: true, reason: `Oferta trybutu ${perTurn} \xA4/tur\u0119 przyj\u0119ta`, deal };
-    }
-    default:
-      return { accepted: false, reason: "Nieznana akcja dyplomatyczna" };
+  if (modPct === 0) return "balans (0% \u2014 Ty i oni na bazie)";
+  if (modPct > 0) return `Twoja strona silniejsza (${formatModPctSigned(modPct)} PW); oni: baza`;
+  return `Twoja strona s\u0142absza (${formatModPctSigned(modPct)} PW); oni: baza`;
+}
+function resolveRelationPanelContext(side) {
+  const hasTreaty = (side.treatyBasePn ?? 0) > 0 || (side.treatyEffectivePn ?? 0) > 0;
+  if (hasTreaty || side.mode === "treaty") return "treaty";
+  return "trade";
+}
+function renderRelationDealModRowHtml(relTotal, context = "treaty") {
+  const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
+  const tone = context === "trade" ? relTotal >= 100 ? "neutral" : "worse" : relationModTone(modPct);
+  const dealText = relationDealText(relTotal, context);
+  const relDisplay = context === "trade" && relTotal >= 100 ? "Relacja \u2265100" : `Relacja ${formatLiczbaPl(relTotal)}`;
+  const pctBadge = modPct !== 0 ? '<span class="da-pn-rel-mod-pct">' + esc(formatModPctSigned(modPct)) + "</span>" : "";
+  const balanceNote = context === "treaty" && modPct !== 0 ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>' : "";
+  const tip = ' title="' + esc(RELATION_DEAL_TOOLTIP + " " + formatRelationModLabel(relTotal)) + '"';
+  return '<div class="da-pn-rel-mod ' + tone + '"' + tip + '><span class="da-pn-rel-mod-label">Wp\u0142yw Relacji na deal</span>' + pctBadge + '<span class="da-pn-rel-mod-text"><strong>' + esc(relDisplay) + '</strong> \xB7 <span class="da-pn-rel-mod-deal">' + esc(dealText) + "</span>" + balanceNote + "</span></div>";
+}
+function relationRowFromBalance(side, my) {
+  const relTotal = side.relCurrent ?? my?.relCurrent ?? 100;
+  return renderRelationDealModRowHtml(relTotal, resolveRelationPanelContext(side));
+}
+function esc(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function pwTipAttr() {
+  return ' title="' + esc(PW_EXCHANGE_TOOLTIP) + '"';
+}
+function pwTitleHeadHtml() {
+  const t = pwTipAttr();
+  return '<span class="da-pn-bal-head-titles"><span class="da-pn-bal-title"' + t + '>Punkty wymiany</span><abbr class="da-pn-bal-abbr"' + t + ">PW</abbr></span>";
+}
+function pwAmountHtml(n, extraCls = "") {
+  const cls = "da-pn-bal-num" + (extraCls ? " " + extraCls : "");
+  return '<span class="' + cls + '"' + pwTipAttr() + ">" + n + " PW</span>";
+}
+function pwAmountWithBaseHtml(pw, basePw, modPct, extraCls = "") {
+  const cls = "da-pn-bal-num" + (extraCls ? " " + extraCls : "");
+  const pwLine = '<span class="da-pn-bal-pw"' + pwTipAttr() + ">" + pw + " PW</span>";
+  if (basePw != null && basePw > 0 && basePw !== pw) {
+    const modHint = modPct != null && modPct !== 0 ? `, Relacja ${formatModPctSigned(modPct)} si\u0142a` : "";
+    return '<span class="' + cls + '">' + pwLine + '<span class="da-pn-bal-base" title="Baza traktatu">(baza ' + basePw + modHint + ")</span></span>";
   }
+  return '<span class="' + cls + '"' + pwTipAttr() + ">" + pw + " PW</span>";
 }
-var NEGOTIATION_MAX_ROUNDS = 3;
-var NEGOTIATION_EXPIRY_TURNS = 5;
-var NEGOTIATION_NO_ENGINE_COUNTER = /* @__PURE__ */ new Set([
-  // (pusto — umowa_handlowa / umowa_szlakow obsługiwane w evaluateProposal)
-]);
-function otherPartyOf(entry, ownerId) {
-  return ownerId === entry.proposerOwnerId ? entry.responderOwnerId : entry.proposerOwnerId;
+function pickPrimaryNegotiationRow(rows) {
+  if (rows.length === 0) return null;
+  const incoming = rows.filter((r) => r.direction === "incoming");
+  if (incoming.length > 0) return incoming[0] ?? null;
+  const own = rows.filter((r) => r.direction === "own");
+  if (own.length > 0) return own[0] ?? null;
+  return rows[0] ?? null;
 }
-function makeNegotiationId(actionId, turn, a, b, seq) {
-  const [p0, p1] = a < b ? [a, b] : [b, a];
-  return `negot-${actionId}-${p0}-${p1}-t${turn}-${seq}`;
+function balancePanelDataFromRow(row, extraOnTable = 0) {
+  const their = row.acceptanceTheir;
+  if (!their) return null;
+  const my = row.acceptanceMy;
+  const bilateralPw = bilateralTreatyDisplayPw(my, their);
+  return {
+    actionLabel: row.actionLabel,
+    negotiationId: row.id,
+    direction: row.direction,
+    myOfferPn: sideDisplayOfferPw(my, bilateralPw),
+    theirOfferPn: sideDisplayOfferPw(their, bilateralPw),
+    theirBalance: their,
+    myBalance: my,
+    canAccept: row.canAccept,
+    extraOnTable,
+    awaitingAiResponse: row.awaitingAiResponse,
+    responderPreview: row.responderPreview,
+    canCounter: row.canCounter,
+    uiActionId: row.uiActionId
+  };
 }
-function hasPendingNegotiationForPair(table, ownerA, ownerB, actionId) {
-  return table.some(
-    (n) => n.actionId === actionId && (n.proposerOwnerId === ownerA && n.responderOwnerId === ownerB || n.proposerOwnerId === ownerB && n.responderOwnerId === ownerA)
+function filterActionableNegotiationRows(rows) {
+  return rows.filter(
+    (r) => r.direction === "incoming" || r.direction === "own" && r.awaitingAiResponse
   );
 }
-function findOwnOutgoingNegotiation(table, partnerOwnerId, actionId) {
-  return table.find(
-    (n) => n.proposerOwnerId === 0 && n.responderOwnerId === partnerOwnerId && n.actionId === actionId
-  );
-}
-function createNegotiation(proposal, turn, source, seq) {
-  return {
-    id: makeNegotiationId(proposal.actionId, turn, proposal.proposerOwnerId, proposal.responderOwnerId, seq),
-    proposerOwnerId: proposal.proposerOwnerId,
-    responderOwnerId: proposal.responderOwnerId,
-    actionId: proposal.actionId,
-    payload: proposal.payload,
-    round: 1,
-    awaitingOwnerId: proposal.responderOwnerId,
-    authorOwnerId: proposal.proposerOwnerId,
-    createdTurn: turn,
-    lastActionTurn: turn,
-    expiresTurn: turn + NEGOTIATION_EXPIRY_TURNS,
-    source
-  };
-}
-function negotiationAsProposal(entry) {
-  return {
-    actionId: entry.actionId,
-    proposerOwnerId: entry.proposerOwnerId,
-    responderOwnerId: entry.responderOwnerId,
-    payload: entry.payload
-  };
-}
-function canPlayerCounterNegotiation(entry) {
-  return entry.round < NEGOTIATION_MAX_ROUNDS;
-}
-function canCounterNegotiation(entry) {
-  return canPlayerCounterNegotiation(entry) && !NEGOTIATION_NO_ENGINE_COUNTER.has(entry.actionId);
-}
-function applyCounterOffer(entry, newPayload, authorOwnerId, turn) {
-  return {
-    ...entry,
-    payload: newPayload,
-    round: entry.round + 1,
-    authorOwnerId,
-    awaitingOwnerId: otherPartyOf(entry, authorOwnerId),
-    lastActionTurn: turn,
-    expiresTurn: turn + NEGOTIATION_EXPIRY_TURNS
-  };
-}
-var TRIBUTE_PROPOSAL_ACTIONS = /* @__PURE__ */ new Set([
-  "trybut_zadanie",
-  "trybut_oferta"
-]);
-var CITY_STATE_TRIBUTE_BLOCK_REASON = "Trybut niedost\u0119pny u miasta-pa\u0144stwa";
-function tributeBlockedForCityState(ctx) {
-  return ctx.proposerIsCityState === true || ctx.responderIsCityState === true;
-}
-function negotiationStillValid(entry, world) {
-  if (world.proposerEliminated || world.responderEliminated) {
-    return { valid: false, reason: "Jedna ze stron zosta\u0142a wyeliminowana z gry \u2014 propozycja wygas\u0142a" };
+function balancePanelDataFromRows(rows) {
+  const actionable = filterActionableNegotiationRows(rows);
+  if (actionable.length === 0) {
+    const primary2 = pickPrimaryNegotiationRow(rows);
+    return primary2 ? balancePanelDataFromRow(primary2, Math.max(0, rows.length - 1)) : null;
   }
-  if (world.turn > entry.expiresTurn) {
-    return { valid: false, reason: "Propozycja wygas\u0142a \u2014 brak odpowiedzi w terminie" };
-  }
-  if (TRIBUTE_PROPOSAL_ACTIONS.has(entry.actionId) && (world.proposerIsCityState || world.responderIsCityState)) {
-    return { valid: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
-  }
-  if (world.isAtWar && NEGOTIATION_PEACE_REQUIRED.has(entry.actionId)) {
-    return { valid: false, reason: "Wybuch\u0142a wojna \u2014 warunki straci\u0142y aktualno\u015B\u0107" };
-  }
-  if (world.isAtWar && entry.actionId === "trybut_oferta" && (world.proposerIsCityState || world.responderIsCityState)) {
-    return { valid: false, reason: "Wybuch\u0142a wojna \u2014 warunki straci\u0142y aktualno\u015B\u0107" };
-  }
-  return { valid: true };
-}
-var NEGOTIATION_SWEETENER_STEP_GOLD = SWEETENER_PN_PER_EASE_POINT;
-var NEGOTIATION_SWEETENER_MAX_STEPS = SWEETENER_EASE_MAX_POINTS;
-var NEGOTIATION_MONEY_STEP_PCT = 0.2;
-var NEGOTIATION_MONEY_MAX_STEPS = 4;
-var SWEETENER_COUNTER_ELIGIBLE = /* @__PURE__ */ new Set([
-  "nap",
-  "sojusz_defensywny",
-  "sojusz_pelny",
-  "granice",
-  "wasal",
-  "pokoj"
-]);
-function withExtraSweetenerGold(payload, extraGold) {
-  const items = [...payload.giveItems ?? []];
-  const idx = items.findIndex((i) => i.typ === "zloto");
-  if (idx >= 0) {
-    items[idx] = { ...items[idx], ilosc: (items[idx].ilosc ?? 0) + extraGold };
-  } else {
-    items.push({ typ: "zloto", id: "zloto", ilosc: extraGold });
-  }
-  return { ...payload, giveItems: items };
-}
-function getMoneyField(payload, field) {
-  switch (field) {
-    case "goldPerTurn":
-      return payload.goldPerTurn ?? 0;
-    case "goldOnce":
-      return payload.goldOnce ?? 0;
-    case "techPrice":
-      return payload.techPrice ?? 0;
-    case "bribeGold":
-      return payload.bribeGold ?? 0;
-  }
-}
-function withMoneyField(payload, field, value) {
-  const v = Math.max(0, Math.round(value));
-  switch (field) {
-    case "goldPerTurn":
-      return { ...payload, goldPerTurn: v };
-    case "goldOnce":
-      return { ...payload, goldOnce: v };
-    case "techPrice":
-      return { ...payload, techPrice: v };
-    case "bribeGold":
-      return { ...payload, bribeGold: v };
-  }
-}
-function generateCounterOffer(proposal, ctx) {
-  const { actionId, payload } = proposal;
-  if (NEGOTIATION_NO_ENGINE_COUNTER.has(actionId)) return null;
-  const difficulty = ctx.difficulty ?? "normal";
-  const relTotal = treatyEvalRelationTotal(ctx.relation);
-  const pnOpts = { difficulty };
-  const tryPayload = (p) => evaluateProposal({ ...proposal, payload: p }, ctx).accepted;
-  const finalizePayload = (p) => aiOfferTargetsZeroBalance(difficulty) ? trimProposalForZeroBalance(p, relTotal, difficulty, pnOpts) : p;
-  if (actionId === "trybut_zadanie") {
-    const base = payload.goldPerTurn ?? 0;
-    if (base > 0) {
-      let bestDown = null;
-      let bestUp = null;
-      for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
-        const down = withMoneyField(payload, "goldPerTurn", base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
-        if ((down.goldPerTurn ?? 0) > 0 && tryPayload(down)) {
-          const note = `obni\u017Cone \u017C\u0105danie trybutu (${down.goldPerTurn} \xA4/tur\u0119)`;
-          if (!bestDown || (down.goldPerTurn ?? 0) > (bestDown.payload.goldPerTurn ?? 0)) {
-            bestDown = { payload: down, note };
-          }
-        }
-        const up = withMoneyField(payload, "goldPerTurn", base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
-        if (tryPayload(up)) {
-          const note = `podniesione \u017C\u0105danie trybutu (${up.goldPerTurn} \xA4/tur\u0119)`;
-          if (!bestUp || (up.goldPerTurn ?? 0) < (bestUp.payload.goldPerTurn ?? 0)) {
-            bestUp = { payload: up, note };
-          }
-        }
-      }
-      return bestDown ?? bestUp;
-    }
-    return null;
-  }
-  if (SWEETENER_COUNTER_ELIGIBLE.has(actionId)) {
-    if (tryPayload(payload)) return null;
-    for (let step = 1; step <= NEGOTIATION_SWEETENER_MAX_STEPS; step++) {
-      const extra = step * NEGOTIATION_SWEETENER_STEP_GOLD;
-      const candidate = withExtraSweetenerGold(payload, extra);
-      if (tryPayload(candidate)) {
-        return { payload: candidate, note: `+${extra} \xA4 s\u0142odzika do umowy` };
+  const primary = pickPrimaryNegotiationRow(actionable) ?? actionable[0];
+  const base = balancePanelDataFromRow(primary, Math.max(0, actionable.length - 1));
+  if (!base) return null;
+  let myOfferPn = 0;
+  let theirOfferPn = 0;
+  let blockReason;
+  for (const row of actionable) {
+    const d = balancePanelDataFromRow(row, 0);
+    if (!d) continue;
+    myOfferPn += d.myOfferPn;
+    theirOfferPn += d.theirOfferPn;
+    if (row.direction === "own" && row.awaitingAiResponse) {
+      const ownOk = row.responderPreview?.accepted !== false && row.acceptanceTheir?.accepted !== false;
+      if (!ownOk) {
+        blockReason = row.responderPreview?.reason ?? row.acceptanceTheir?.statusLabel ?? "Oferta nieuczciwa dla partnera";
       }
     }
-    if (actionId === "granice" && payload.borderMilitary) {
-      const candidate = { ...payload, borderMilitary: false };
-      if (tryPayload(candidate)) {
-        return { payload: candidate, note: "rezygnacja z prawa wojskowego (tylko cywilne)" };
+  }
+  const net = myOfferPn - theirOfferPn;
+  const allIncoming = actionable.every((r) => r.direction === "incoming");
+  let canAccept = allIncoming ? net >= 0 : blockReason == null;
+  if (!allIncoming && blockReason == null) {
+    canAccept = actionable.every((row) => {
+      if (row.direction === "incoming") return row.canAccept !== false;
+      if (row.awaitingAiResponse) {
+        return row.responderPreview?.accepted !== false && row.acceptanceTheir?.accepted !== false;
       }
-    }
-    return null;
+      return true;
+    });
   }
-  const moneyField = actionId === "trybut_oferta" ? payload.goldPerTurn != null ? "goldPerTurn" : "goldOnce" : actionId === "tech" ? "techPrice" : actionId === "namow_wojne" ? "bribeGold" : actionId === "ultimatum" ? "goldOnce" : actionId === "handel" && !payload.giveItems?.length && !payload.receiveItems?.length ? "goldOnce" : null;
-  if (moneyField) {
-    const base = getMoneyField(payload, moneyField);
-    if (base > 0) {
-      const tolerance = aiOfferPwSurplusTolerance(difficulty);
-      let bestUp = null;
-      let bestDown = null;
-      for (let step = 1; step <= NEGOTIATION_MONEY_MAX_STEPS; step++) {
-        const up = withMoneyField(payload, moneyField, base * (1 + NEGOTIATION_MONEY_STEP_PCT * step));
-        if (tryPayload(up)) {
-          const surplus = aiProposalPlayerBenefitSurplus(up, relTotal, pnOpts);
-          if (surplus <= tolerance) {
-            if (!bestUp || surplus < aiProposalPlayerBenefitSurplus(bestUp.payload, relTotal, pnOpts)) {
-              bestUp = { payload: finalizePayload(up), note: `podbita oferta (${getMoneyField(up, moneyField)})` };
-            }
-          } else if (!aiOfferTargetsZeroBalance(difficulty)) {
-            bestUp = { payload: up, note: `podbita oferta (${getMoneyField(up, moneyField)})` };
-          }
-        }
-        if (actionId === "trybut_oferta") {
-          const down = withMoneyField(payload, moneyField, base * (1 - NEGOTIATION_MONEY_STEP_PCT * step));
-          if (getMoneyField(down, moneyField) > 0 && tryPayload(down)) {
-            const surplus = aiProposalPlayerBenefitSurplus(down, relTotal, pnOpts);
-            if (surplus <= tolerance) {
-              if (!bestDown || surplus < aiProposalPlayerBenefitSurplus(bestDown.payload, relTotal, pnOpts)) {
-                bestDown = {
-                  payload: finalizePayload(down),
-                  note: `obni\u017Cona oferta (${getMoneyField(down, moneyField)})`
-                };
-              }
-            }
-          }
-        }
-      }
-      return bestUp ?? bestDown;
-    }
+  if (allIncoming && !canAccept) {
+    blockReason = `Brakuje ${Math.abs(net)} PW`;
   }
-  return null;
-}
-function resolveNegotiationAsResponder(entry, ctx, turn) {
-  const proposal = negotiationAsProposal(entry);
-  const result = evaluateProposal(proposal, ctx);
-  if (result.accepted) return { kind: "accepted", result };
-  if (canCounterNegotiation(entry)) {
-    const counter = generateCounterOffer(proposal, ctx);
-    if (counter) {
-      const nextEntry = applyCounterOffer(entry, counter.payload, entry.awaitingOwnerId, turn);
-      return { kind: "countered", entry: nextEntry, note: counter.note };
-    }
-  }
-  return { kind: "rejected", reason: result.reason };
-}
-function negotiationToLegacyPending(entry) {
-  return {
-    id: entry.id,
-    fromOwnerId: entry.proposerOwnerId,
-    toOwnerId: entry.responderOwnerId,
-    actionId: entry.actionId,
-    payload: entry.payload,
-    createdTurn: entry.createdTurn,
-    expiresTurn: entry.expiresTurn,
-    source: entry.source
+  const statusLabel = net > 0 ? `Nadwy\u017Cka +${net} PW` : net === 0 ? "Spe\u0142nia warunki (0 PW)" : `Brakuje ${Math.abs(net)} PW`;
+  const theirBalance = {
+    ...base.theirBalance,
+    balancePn: net,
+    accepted: net >= 0,
+    statusLabel
   };
+  const myBalance = base.myBalance ? { ...base.myBalance, balancePn: net, accepted: net >= 0, statusLabel } : void 0;
+  return {
+    ...base,
+    actionLabel: actionable.length > 1 ? `Pakiet na stole (${actionable.length} um\xF3w)` : base.actionLabel,
+    myOfferPn,
+    theirOfferPn,
+    theirBalance,
+    myBalance,
+    canAccept,
+    extraOnTable: 0,
+    responderPreview: canAccept ? base.responderPreview : { accepted: false, reason: blockReason }
+  };
+}
+function formatBalanceDelta(balancePn, accepted) {
+  if (accepted && balancePn > 0) return `+${balancePn}`;
+  if (accepted && balancePn === 0) return "0";
+  if (balancePn < 0) return `${balancePn}`;
+  return String(balancePn);
+}
+function balanceHint(balance) {
+  if (balance.accepted && balance.balancePn > 0) {
+    return `Nadwy\u017Cka ${balance.balancePn} PW`;
+  }
+  if (balance.accepted && balance.balancePn === 0) {
+    return "R\xF3wno \u2014 spe\u0142nia";
+  }
+  if (balance.balancePn < 0) {
+    return `Brakuje ${Math.abs(balance.balancePn)} PW`;
+  }
+  return balance.statusLabel;
+}
+function isIncomingBasketTradePanel(data) {
+  if (data.direction !== "incoming") return false;
+  const mode = data.myBalance?.mode ?? data.theirBalance.mode;
+  return mode === "basket" || mode === "mixed";
+}
+function incomingTradeNetBalancePw(data) {
+  return data.myOfferPn - data.theirOfferPn;
+}
+function incomingTradeBalanceHint(netPw) {
+  if (netPw > 0) return `Przewaga u nich: +${netPw} PW`;
+  if (netPw < 0) return `Przewaga u Ciebie: +${Math.abs(netPw)} PW`;
+  return "R\xF3wno \u2014 symetryczna wymiana";
+}
+function verdictHtml(data) {
+  const their = data.theirBalance;
+  if (data.direction === "incoming") {
+    if (isIncomingBasketTradePanel(data) && data.canAccept === false) {
+      const net = incomingTradeNetBalancePw(data);
+      return {
+        tone: "no",
+        html: net < 0 ? `Przewaga u Ciebie \u2014 oferta nieuczciwa dla partnera (${Math.abs(net)} PW)` : "Nie mo\u017Cna przyj\u0105\u0107 \u2014 warunki niespe\u0142nione"
+      };
+    }
+    if (data.canAccept !== false) {
+      if (isIncomingBasketTradePanel(data)) {
+        const net = incomingTradeNetBalancePw(data);
+        const html = net > 0 ? `Mo\u017Cesz przyj\u0105\u0107 \u2014 oddajesz wi\u0119cej o ${net} PW (korzy\u015B\u0107 partnera)` : net < 0 ? `Mo\u017Cesz przyj\u0105\u0107 \u2014 przewaga u Ciebie o ${Math.abs(net)} PW` : "Mo\u017Cesz przyj\u0105\u0107 \u2014 wymiana symetryczna";
+        return { tone: "ok", html };
+      }
+      return {
+        tone: "ok",
+        html: "Spe\u0142nia warunki \u2014 mo\u017Cesz przyj\u0105\u0107 (Przyjmij aktywne)"
+      };
+    }
+    if (data.myBalance && !data.myBalance.accepted) {
+      return { tone: "no", html: "Twoje warunki: " + data.myBalance.statusLabel };
+    }
+    return { tone: "wait", html: "Oce\u0144 ofert\u0119 lub kontruj, aby osi\u0105gn\u0105\u0107 bilans" };
+  }
+  if (data.awaitingAiResponse) {
+    const prev = data.responderPreview;
+    if (prev?.accepted) {
+      return {
+        tone: "ok",
+        html: "Spe\u0142nia warunki \u2014 u\u017Cyj Przyjmij, aby wys\u0142a\u0107 propozycj\u0119 do partnera"
+      };
+    }
+    if (prev && !prev.accepted) {
+      return { tone: "no", html: "Nie spe\u0142nia warunk\xF3w: " + (prev.reason ?? "warunki niespe\u0142nione") };
+    }
+    return { tone: "wait", html: "Propozycja na stole \u2014 u\u017Cyj Przyjmij, aby poprosi\u0107 o odpowied\u017A" };
+  }
+  if (their.accepted) {
+    return {
+      tone: "ok",
+      html: data.theirBalance.balancePn > 0 ? "Drug\u0105 stron\u0119 mo\u017Cna przyj\u0105\u0107 \u2014 nadwy\u017Cka " + data.theirBalance.balancePn + " PW" : "R\xF3wno \u2014 druga strona spe\u0142nia oczekiwania"
+    };
+  }
+  return { tone: "no", html: "Brakuje u nich: " + their.statusLabel };
+}
+function treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, treatyMetaLabel, treatyBasePw, basketNet) {
+  const base = treatyBasePw ?? partnerTreatyPw;
+  const playerPart = base > 0 && playerTreatyPw !== base ? "Ty: baza " + base + " \u2192 " + playerTreatyPw + " PW" : "Ty: " + playerTreatyPw + " PW";
+  const partnerPart = " \xB7 Oni: " + partnerTreatyPw + " PW (baza)";
+  const basketPart = basketNet != null && (basketNet > 0 || basketNet === 0 && base > 0) ? " \xB7 koszyk netto " + (basketNet > 0 ? "+" + basketNet : "0") + " PW" : "";
+  return '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ": " + playerPart + partnerPart + " @ Rel " + formatLiczbaPl(relTotal) + basketPart + "</div>";
+}
+function renderPnBalancePanelHtml(data) {
+  if (!data) {
+    return '<div class="da-pn-balance-bar idle"><div class="da-pn-bal-head">' + pwTitleHeadHtml() + '</div><div class="da-pn-bal-empty">Brak aktywnej propozycji na stole \u2014 wy\u015Blij ofert\u0119 lub poczekaj na odpowied\u017A.</div></div>';
+  }
+  const their = data.theirBalance;
+  const myBal = data.myBalance;
+  const incomingTrade = isIncomingBasketTradePanel(data);
+  const isTreatyMode = (myBal?.mode === "treaty" || myBal?.mode === "mixed" || their.mode === "treaty" || their.mode === "mixed") && !incomingTrade;
+  const netPw = incomingTrade ? incomingTradeNetBalancePw(data) : isTreatyMode ? data.myOfferPn - data.theirOfferPn : their.balancePn;
+  const treatyAccepted = myBal?.accepted ?? their.accepted;
+  const balCls = incomingTrade ? data.canAccept !== false ? "ok" : "no" : treatyAccepted ? "ok" : "no";
+  const delta = incomingTrade || isTreatyMode ? netPw > 0 ? `+${netPw}` : String(netPw) : formatBalanceDelta(their.balancePn, their.accepted);
+  const deltaCls = netPw >= 0 ? "pos" : "neg";
+  const centerLabel = incomingTrade || isTreatyMode ? "Bilans (netto)" : "Bilans (Oni)";
+  const hint = incomingTrade ? incomingTradeBalanceHint(netPw) : isTreatyMode ? netPw < 0 ? `Brakuje ${Math.abs(netPw)} PW \u2014 dop\u0142a\u0107 do bilansu` : netPw > 0 ? `Nadwy\u017Cka +${netPw} PW` : "R\xF3wno \u2014 spe\u0142nia" : balanceHint(their);
+  const verdict = verdictHtml(data);
+  const extraNote = (data.extraOnTable ?? 0) > 0 ? '<span class="da-pn-bal-more">+' + data.extraOnTable + " inna na stole</span>" : "";
+  const playerTreatyPw = myBal?.treatyEffectivePn ?? 0;
+  const partnerTreatyPw = their.treatyEffectivePn ?? their.treatyBasePn ?? 0;
+  const treatyBase = myBal?.treatyBasePn ?? their.treatyBasePn ?? 0;
+  const relTotal = their.relCurrent ?? myBal?.relCurrent ?? 100;
+  const modPct = myBal?.relationModPct;
+  const treatyNote = playerTreatyPw > 0 || partnerTreatyPw > 0 ? treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, "Traktat", treatyBase) : "";
+  const relModRow = relationRowFromBalance(their, data.myBalance);
+  const relNote = their.relRequired != null && their.relBalance != null && their.relBalance < 0 ? '<div class="da-pn-bal-meta warn">Relacja ' + formatLiczbaPl(their.relCurrent ?? 0) + " \u2014 wym. " + formatLiczbaPl(their.relRequired) + "</div>" : "";
+  return '<div class="da-pn-balance-bar ' + balCls + '"' + (data.negotiationId ? ' data-negot-id="' + esc(data.negotiationId) + '"' : "") + '><div class="da-pn-bal-head">' + pwTitleHeadHtml() + '<span class="da-pn-bal-deal">' + esc(data.actionLabel) + extraNote + '</span></div><div class="da-pn-bal-cols"><div class="da-pn-bal-cell my"><span class="da-pn-bal-lbl">My oddajemy</span>' + (playerTreatyPw > 0 ? pwAmountWithBaseHtml(data.myOfferPn, treatyBase, modPct) : pwAmountHtml(data.myOfferPn)) + '</div><div class="da-pn-bal-cell center ' + balCls + '"><span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span><span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + ">" + esc(delta) + '</span><span class="da-pn-bal-hint">' + esc(hint) + '</span></div><div class="da-pn-bal-cell they"><span class="da-pn-bal-lbl">Oni oddaj\u0105</span>' + pwAmountHtml(data.theirOfferPn) + "</div></div>" + relModRow + treatyNote + relNote + '<div class="da-pn-bal-verdict ' + verdict.tone + '">' + esc(verdict.html) + "</div></div>";
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  NEGOTIATION_EXPIRY_TURNS,
-  NEGOTIATION_MAX_ROUNDS,
-  applyCounterOffer,
-  canCounterNegotiation,
-  canPlayerCounterNegotiation,
-  createNegotiation,
-  evaluateProposal,
-  findOwnOutgoingNegotiation,
-  generateCounterOffer,
-  getEffectiveDiplomacyParams,
-  hasPendingNegotiationForPair,
-  makeNegotiationId,
-  negotiationAsProposal,
-  negotiationStillValid,
-  negotiationToLegacyPending,
-  resolveNegotiationAsResponder,
-  resolvePlayerAcceptsAiPending
+  balancePanelDataFromRow,
+  balancePanelDataFromRows,
+  computePlayerAcceptanceSides,
+  incomingTradeNetBalancePw,
+  renderPnBalancePanelHtml
 });

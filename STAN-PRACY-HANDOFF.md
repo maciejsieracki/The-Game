@@ -1,12 +1,15 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-06 ~13:24** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-07 ~17:15** · Projekt: Civ „The Game"
 
-> **Handoff sesji 2026-08-06 (FALA 254 + ECHO ABC):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md) — **czytaj najpierw** (ECHO 6×, kolejka Autobot, pułapki, paste dla agenta).
+> **Handoff sesji 2026-08-06 (FALA 254 + ECHO ABC):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md) — (ECHO 6×, kolejka Autobot, pułapki, paste dla agenta).
 >
 > **Handoff wcześniejszy 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
-> **FALA 256 (2026-08-06):** ROBOCZA `693a2c57` · C-MAPA-Q1=B relief mop-up po złożach. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 259 (2026-08-07):** ROBOCZA `e028045c` · **AKTUALNA**. Trzy tematy AutoBot: (1) **R-WIARYGODNOSC-S9-LICZBY-Q1 wdrożona** — 47 kluczy `wiarygodnosc*` wyeksportowane do `gra/data/diplomacy.json`→`params` (85→132 kluczy), `wiarygodnoscProgNapMin` −40→0 pkt Wiarygodności, S3/S4 rozbite na trudność (S3 Trudny/Normalny/Łatwy = 0,6/0,9/1,2 pkt Wiarygodności/turę, S4 = 0,4/0,6/0,8 pkt/turę); (2) **R-MENNICA-BRAZ-ZLOTO-ASYMETRIA-Q1 = a** — `zloto-szlak-test.cjs` zmigrowany do modelu magazynowego, 26/45→54/54, zero zmian w `gra/src/**`; (3) **R-DYPLO-JSON-ZRODLO-PRAWDY-Q1 = B** — `getBaseDiplomacyParams()` wyeksportowana, 48 odwołań do surowej stałej `DIPLOMACY_PARAMS` podmienionych w 3 plikach — od tej fali **edycja `diplomacy.json`/Panelu-D realnie steruje grą**. Commity: `2e67219` · `68f06dc`. ⚠️ **Playtest S3/S4 wymaga NOWEJ gry** — `wartoscNaTure` jest persystowana, stary zapis trzyma S3=0,3/S4=0,2 bezterminowo. Bramki: `dyspozycje/WERSJE.md` (FALA 259). Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 258 (2026-08-07):** ROBOCZA `24478d6b` · batch AutoBot `wgjvwhy88` (9 tematów) + R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A + wiarygodnosc S3/S4/ProgNapMin (docs-only). **ZASTĄPIONA** przez FALA 259.
+> **FALA 257 (2026-08-07):** ROBOCZA `91401bd1` · AutoBot batch: status-cierpienia, obrona r3, dyplomacja-handel r1-4, 3 zaległe bugi. **ZASTĄPIONA** przez FALA 258.
+> **FALA 256 (2026-08-06):** ROBOCZA `693a2c57` · C-MAPA-Q1=B relief mop-up po złożach. **ZASTĄPIONA** przez FALA 257.
 > **FALA 255 (2026-08-06):** ROBOCZA `20e554dc` · ECHO ABC 6× + handoff · logika = F254. **ZASTĄPIONA** przez FALA 256.
 > **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **ZASTĄPIONA** przez FALA 255.
 > **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. **ZASTĄPIONA** przez FALA 254.
@@ -98,7 +101,18 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA **`693a2c57`** (FALA 256) · relief mop-up C-MAPA-Q1=B. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+**Stan na 2026-08-07 (NAJNOWSZY):** deploy ROBOCZA **`e028045c`** (FALA 259) · wiarygodność S9 wdrożona + mennica opcja a + `getBaseDiplomacyParams()` (JSON realnie steruje grą). Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra. Po tym deployu sesja pracowała dalej **wyłącznie w dokumentacji** (rejestr, ECHO 3 decyzji, zasada AutoBot 0b, `P-MAPGEN-PANGEA-OBRYS` pytanie 4) — zero zmian w `gra/src`/`gra/data` od `e028045c`, więc bundle ROBOCZA jest wciąż aktualny wobec drzewa.
+
+**ECHO/decyzje zapadłe 2026-08-07 (po deployu FALA 259, docs-only, kod nie zmieniony od `e028045c`):**
+- **`P-MAPGEN-PANGEA-OBRYS` pytania 1–3** — **1=A** (naprawić metrykę: `Wybrzeze` liczone jako woda, zero zmian generatora) · **2=B** (nowy próg z kształtów odniesienia — musi odrzucać dysk/prostokąt, przepuszczać generator) · **3=B** (podnieść progi czasowe AC do realnych wartości maszyny chmurowej, zamiast wypinać je z bramki). Wdrożenie **czeka na pytanie 4** (zmiana nazwy Wybrzeże) — zobacz OTWARTE niżej. Szczegóły: `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md`.
+- **`R-FABLE-RETENCJA-NASTER` = B** — Fable 5 zablokowany do czasu potwierdzenia przez Macieja 30-dniowej retencji danych u NASTER (nie znaleziono zapisu w repo). Zapisane w `CLAUDE.md` §4.
+- **`R-AUTOBOT-EVALUATOR-MODEL-Q1` wersja 3 = C+A** — Evaluator zostaje na **Opus 5** (bez zmiany); dodatkowo pakiet dowodowy `eval-evidence.json` (SHA-256 stdout, parametry przebiegu, `baseline_sha`/`head_sha`) + obowiązkowy `StructuredOutput` jako protokół werdyktu (dziś 88,1% werdyktów to nieparsowalny wolny tekst).
+- **`R-KOLEJKA-ZLECEN-3-4-Q1` = B** — zlecenie 3 (audyt sekcji BRAMKI w `CLAUDE.md`, `R-BRAMKI-AUDYT-KANONU`) w całości; ze zlecenia 4 tylko obowiązek dopisywania kandydatów do `dyspozycje/autobot/KOLEJKA-FABLE-5.md` — punkt o checkliście konfiguracji odpadł (uzasadnienie obalone).
+- **`R-AUTOBOT-ORKIESTRATOR`** — zasada AutoBot obejmuje pracę własną głównej sesji, zapisana jako `CLAUDE.md` §0b (skrót w §2 pkt 0 niżej w tym handoffie).
+
+**OTWARTE — czeka na literę właściciela (2026-08-07):**
+- **`P-MAPGEN-PANGEA-OBRYS` pytanie 4** — zmiana nazwy `TerenBazowy.Wybrzeze` → „płytkie morze" (propozycja Macieja). Zmierzony zakres: 190 wystąpień identyfikatora TS w 33 plikach (niskie ryzyko, kompilator pilnuje) + **7 literałów stringowych** `'wybrzeze'` nie pilnowanych przez kompilator (`ai.ts:2627`, `clusters.ts:331`, `battleScene.ts:538`, `battle-terrain.ts:253/315/337`, `hex.ts:17`) + `civ-matrix.json` (34) + `wonders.json` (4). Zero migracji zapisów gry (mapa regenerowana z seeda). Rekomendacja dokumentu: **B** (rename + przepięcie 142 ręcznych porównań `=== TerenBazowy.Morze` na istniejący helper `isWaterTerrain()`) — sama zmiana nazwy (A) NIE usuwa klasy błędu, która dziś zafałszowała metrykę Pangei. Pytania 1–3 tego samego tematu już rozstrzygnięte (1=A, 2=B, 3=B, zob. §9 niżej). Szczegóły: `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md` §„PYTANIE 4".
+- **R-ZETON-PASKI — tabliczka jednostki** (zgłoszone 2026-07-29, wciąż otwarte): kierunek wdrożenia ustalony (jedna zwarta tabliczka nad jednostką: ikona właściciela + pasek Ruchu + pasek HP + rządek odznak Koszary/Kuźnia + miejsce na przyszły symbol generała), ale **nie rozstrzygnięte przed wdrożeniem**: czy tabliczka widoczna zawsze czy tylko przy zaznaczeniu/najechaniu, czy medalion właściciela wchodzi DO tabliczki czy zostaje osobno przy heksie. Szczegóły: `dyspozycje/REJESTR-PROSB-I-ZADAN.md` sekcja „R-ZETON-PASKI". *(Uwaga redakcyjna: zlecenie tej aktualizacji mówiło o „tabliczce miasta" — w repozytorium nie znaleziono żadnego otwartego pytania ABC pod tą nazwą; jedyny pasujący, wciąż nierozstrzygnięty temat „tabliczki" to R-ZETON-PASKI, czyli tabliczka JEDNOSTKI, zacytowana wyżej. Jeśli chodziło o coś innego — do sprostowania przez właściciela.)*
 
 **Stan FALA 254 (historyczny):** ROBOCZA `232634a9` (10:11) · Escape + recruit + Panel-C + audyty.
 
@@ -165,6 +179,8 @@ Szczegóły w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Żaden z powyższych comm
 ---
 
 ## 2. ⛔ KRYTYCZNE ZASADY (złamanie = utrata pracy)
+
+0. **AUTOBOT OBEJMUJE TAKŻE PRACĘ GŁÓWNEJ SESJI (Maciej 2026-08-07, `CLAUDE.md` zasada 0b).** Nie tylko subagenci — **orkiestrator sam też** przechodzi przez pętlę Operator→Evaluator dla KAŻDEJ zmiany, którą wprowadza sam: kod, dane, kanon, dokument decyzji, wpis w rejestrze, sprostowanie, a także każda liczba przedstawiona właścicielowi jako fakt. Orkiestrator jest wtedy Operatorem własnej zmiany i **nie ocenia sam siebie**. Wyjątek: czynności czysto odczytowe (grep, uruchomienie bramki w celu poznania wyniku). Powód — 4 realne wypadki 2026-08-07 w pracy własnej orkiestratora (żaden złapany od razu): błędny zapis, że `map-gen-regression` kończy się `exit 0`; odczytanie kodu wyjścia procesu opakowującego zamiast testu; zapisanie w kanonie nieistniejącej decyzji `ECHO=D`; uzasadnienie zlecenia zdaniem obalonym przez Evaluatora. Pełny zapis: `CLAUDE.md` §0b, `dyspozycje/REJESTR-PROSB-I-ZADAN.md` → `R-AUTOBOT-ORKIESTRATOR`.
 
 1. **NIGDY `npm run build` ani `npm run dev` w katalogu `gra/`.**
    `prebuild`/`predev` uruchamia `tools/export-data.py`, który **NADPISUJE ręcznie edytowane pliki JSON** w `gra/data/`. Cała praca nad drzewkiem/jednostkami/ekonomią żyje **wyłącznie w JSON** — jedno takie uruchomienie ją kasuje.
@@ -459,14 +475,22 @@ Wymaga `gra-kanon/Gra-KANON.html` (kanon już promowany i przetestowany — **ź
 
 ## 7. ⚠️ CO NIE DZIAŁA / ZNANE PROBLEMY
 
+**⚠️ POMIAR ŚWIEŻY 2026-08-07 ~17:10–17:17 UTC (worktree `handoff-upd`, commit `4b03741`, uruchomione SAMODZIELNIE, nie przepisane z kanonu):**
+- `node tools/logic-test.cjs` → **213/213**, 11,37 s. **Garnizon NIE jest już czerwony** — poprawiony commitem `579dec89` (2026-07-26) i dogonionym testem (FALA 258); stary wpis „207/208" niżej jest NIEAKTUALNY.
+- `node tools/unit-replace-test.cjs` → **13/13**, 0,37 s. Stary wpis „10/10" niżej jest NIEAKTUALNY (od FALI 258 doszła sekcja 4 — pokrycie `UNIT-REPLACE-EVOCATI-Q1`).
+- `node tools/fair-play-grid-test.cjs` → **8/8 pass, 0 fail**, **5 min 34,4 s** (realny czas, maszyna chmurowa — długi test, generuje 2 mapy standardowe pełne). **Zielony, NIE „3 pass/5 fail" jak podaje wpis niżej** — ten wpis pochodzi z 2026-07-26 i jest przestarzały (audyt aktualności zlecony jako `R-BRAMKI-AUDYT-KANONU`, w toku, jeszcze nie domknięty).
+- 26× `node tools/diplomacy-*-test.cjs` (wszystkie pliki pasujące do wzorca w `gra/tools/`) → **wszystkie 26 zielone, 0 fail łącznie**, każdy <2 s. Pełna lista z liczbami w `dyspozycje/WERSJE.md` FALA 259 i w logu tej sesji; przykładowo: `diplomacy-proposal-test` 117/117, `diplomacy-locks-test` 70/70, `diplomacy-value-catalog-test` 62/62, `diplomacy-acceptance-points-test` 225/225, `diplomacy-war-gates-test` 19/19.
+- `node tools/diplomacy-test.cjs` (plik bazowy, nie pasuje do wzorca `diplomacy-*-test.cjs`) → **148/148**, 0,47 s.
+- `node tools/relief-grid-coverage-test.cjs` → **NIE ZMIERZONE — przerwane po 18 min 53 s bez wyniku** (uruchomiony ~17:15:37 UTC, zabity ręcznie 17:34:30 UTC, `real 18m53,187s`). Przyczyna zidentyfikowana: **rywalizacja o CPU** — równolegle na tej samej maszynie działał **drugi, niezależny proces tego samego testu** (`ps aux`: PID 21733, cwd `.../worktrees/bramki-r2/gra`, wystartowany 16:55 — inny worktree/sesja robiąca `R-BRAMKI-AUDYT-KANONU`), oba przy ~90% CPU jednego rdzenia. Dla porównania `fair-play-grid-test.cjs` (podobny profil — też generuje pełne mapy Standard) zajął **solo 5 min 34 s**; przy dzieleniu CPU na pół `relief-grid-coverage-test.cjs` był w toku ponad 3× dłużej bez końca w polu widzenia. **Ten test NIE był w wymaganym zakresie tego zlecenia** (zlecono logic/unit-replace/fair-play/diplomacy-*) — dogrywka własna dla kompletności §7; zostawiona jako TODO dla następnej sesji, **NIE zgaduj liczby z 2026-07-26 („2 pass/4 fail") — nie ma potwierdzenia, że wciąż aktualna**, patrz adnotacja przy pliku niżej.
+
 **Bramki, które MAJĄ przechodzić** (uruchamiaj z `gra/`):
 ```bash
 npx tsc --noEmit                     # 0 błędów
 node tools/tech-tree-test.cjs        # 19/19
 node tools/research-test.cjs         # 33/33
-node tools/unit-replace-test.cjs     # 10/10
+node tools/unit-replace-test.cjs     # 13/13 (zmierzone 2026-08-07, patrz wyżej — NIE 10/10)
 node tools/map-gen-regression-test.cjs   # determinizm A=B + 0 rzek bez ujścia
-node tools/logic-test.cjs            # 207/208  (1 pre-istniejący fail garnizon — NIE regresja sesji F29–31)
+node tools/logic-test.cjs            # 213/213 (zmierzone 2026-08-07, patrz wyżej — NIE 207/208)
 node tools/manpower-test.cjs         # 62/62    (FALA 31, B-MP-Q1 HP heal)
 node tools/picker-test.cjs           # 140/140  (FALA 31, pickMapTarget)
 node tools/combat-test.cjs           # 6/6      (NAPRAWIONE 2026-07-20)
@@ -489,8 +513,8 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 - `currency-test.cjs` → **5 porażek** (dot. `pieniadzZPracy`/Efekt2 i mnożnika per-cyw). Zweryfikowane identycznie na baseline `git stash`.
 - `map-gen-regression-test.cjs` — progi czasowe „AC" (generacja <5s/<15s) FAIL na wolnej maszynie = pomiar wydajności, nie regresja.
 - **KOREKTA 2026-07-26:** `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs`, `upgrade-budynki-test.cjs`, `deposit-building-gate-test.cjs` figurowały tu jako czerwone (wpis 2026-07-25) — **audyt zweryfikował przez faktyczne uruchomienie z `gra/`, że wszystkie pięć są dziś ZIELONE**: `upgrade-budynki-test.cjs` 48/48, `deposit-building-gate-test.cjs` 34/34, `akwedukt-popcap-test.cjs` 5/5, `auto-manage-test.cjs` 29/29, `growthmult-compound-test.cjs` 24/24. Zdjęte z listy.
-- `relief-grid-coverage-test.cjs` — **2 pass / 4 fail** (stan 2026-07-26). **W NAPRAWIE na mocy decyzji C-MAPA-Q1=B** (osobny agent dostraja generator w `gra/src/map/**`), nie stan docelowy. Przyczyna: konsekwencja decyzji 63 (limit 10 heksów na spójne skupisko Gór/Wzgórz) — kilka osobnych skupisk może wpaść do jednej komórki siatki reliefu, więc limit skupiska i próg per komórka mierzą różne rzeczy (dokumentacja w kodzie: `gra/src/map/gen-helpers.ts:1961-1964`).
-- `fair-play-grid-test.cjs` — **3 pass / 5 fail** (stan 2026-07-26). **W NAPRAWIE na mocy decyzji C-MAPA-Q1=B**, ten sam mechanizm co wyżej. Punkt odniesienia zmierzony 2026-07-26 (do porównania po naprawie): 56 gór w najgorszej komórce siatki przy dopuszczalnych 25, 95 wzgórz przy dopuszczalnych 37 (Standard kontynenty).
+- `relief-grid-coverage-test.cjs` — wpis „2 pass / 4 fail" (stan 2026-07-26) **NIE ZWERYFIKOWANY w tej sesji** — uruchomiony 2026-08-07 17:15:37 UTC, przerwany po 18 min 53 s bez wyniku (rywalizacja CPU z równoległym procesem tego samego testu w innym worktree, patrz nota u góry §7). Audyt aktualności całej tej sekcji jest już zlecony i w toku jako `R-BRAMKI-AUDYT-KANONU` (AutoBot Operator→Evaluator `wupki7quq`) — **prawdopodobnie właśnie ten audyt kończy pomiar równolegle**; następna sesja niech sprawdzi jego wynik przed ponownym uruchamianiem testu od zera. **Nie ufaj wpisowi „2 pass/4 fail" bez świeżego pomiaru** — `fair-play-grid-test.cjs` niżej miał identyczny stary wpis i okazał się dawno nieaktualny.
+- `fair-play-grid-test.cjs` — **ZWERYFIKOWANE ZIELONE 2026-08-07: 8 pass / 0 fail**, 5 min 34,4 s (patrz nota u góry §7). Wpis „3 pass / 5 fail" (stan 2026-07-26) jest **NIEAKTUALNY** — plik testu się od tamtej pory zmienił (liczba asercji urosła z 5 do 8, C-MAPA-Q1=B relief mop-up FALA 256 `693a2c57` naprawił generator). Nie NAPRAWIONO PRZY OKAZJI dziś — to sama weryfikacja stanu, zero zmian w `gra/src/**`/`gra/tools/**` w tej sesji.
 - `map-deposits-era-test.cjs` — **był przestarzały** (asercjonował starą regułę terenu złóż: miedź na Górach), sprzeczny z regułą obowiązującą od 2026-07-25 (miedź na **Wzgórzach**, żelazo na **Górach**, `gen-helpers.ts:6734,6740`). **Naprawiony 2026-07-26** — zaktualizowano asercje testu do obowiązującej reguły, dziś **16/16 zielony**.
 
 **Inne znane problemy / długi:**

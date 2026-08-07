@@ -22,6 +22,7 @@ var unit_replace_entry_exports = {};
 __export(unit_replace_entry_exports, {
   availableProduction: () => availableProduction,
   availableReplacementsFor: () => availableReplacementsFor,
+  buildReplaceAvailabilityCtx: () => buildReplaceAvailabilityCtx,
   epochNumber: () => epochNumber
 });
 module.exports = __toCommonJS(unit_replace_entry_exports);
@@ -1574,9 +1575,15 @@ var DEFAULT_OUTPUT_SHARES = Object.freeze({
   nauka: miasto_params_default.udzial_output_nauka?.wartosc ?? 0.2,
   rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
 });
+
+// src/game/unit-replace-context.ts
+function buildReplaceAvailabilityCtx(params) {
+  return { ...params };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   availableProduction,
   availableReplacementsFor,
+  buildReplaceAvailabilityCtx,
   epochNumber
 });
