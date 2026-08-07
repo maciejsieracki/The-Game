@@ -99,6 +99,18 @@ metryki jest ZAKAZANY. Minimum dla pracy nad kodem:
 
 ## 5. EVALUATOR — SZABLON WERDYKTU (5 pytań + STRICT)
 
+**Protokół werdyktu — OBOWIĄZKOWY (R-AUTOBOT-EVALUATOR-MODEL-Q1=C, 2026-08-07).** Evaluator
+zapisuje w swoim scratchpadzie `eval-evidence.json` z polami dla KAŻDEJ bramki: nazwa, exit
+code, liczba asercji X/Y, czas wykonania w sekundach, skrót SHA-256 pełnego stdout, ścieżka do
+pełnego stdout — plus `baseline_sha`, `head_sha`, `worktree_path` na poziomie całego werdyktu.
+`StructuredOutput` przestaje być opcjonalny i staje się OBOWIĄZKOWYM protokołem werdyktu (pomiar:
+88,1 % werdyktów — 37 z 42 — to był wolny tekst nieparsowalny maszynowo; tylko 5 użyło
+`StructuredOutput`). Raporty niosące same TWIERDZENIA bez DOWODU (ścieżka do stdout / SHA-256)
+nie spełniają protokołu — kolejna warstwa im ufa na słowo. **FAIL formalny** (niezależnie od
+wyniku pytań 1–5 poniżej), gdy `baseline_sha === head_sha` (znaczy: mierzono ten sam stan dwa
+razy, delta jest fikcją) albo gdy którejkolwiek bramce w `eval-evidence.json` brakuje kompletu
+pól wyżej.
+
 Evaluator odpowiada na KAŻDE z pytań, z dowodem (plik:linia / liczba / zrzut):
 
 1. **SCOPE** — czy każda zmiana w diffie wynika wprost z tematu/AC? Zmiany „przy okazji" → FAIL.
@@ -118,6 +130,14 @@ Evaluator odpowiada na KAŻDE z pytań, z dowodem (plik:linia / liczba / zrzut):
 **PASS-WITH-NOTES** dozwolony wyłącznie dla: porażek pre-istniejących poza tematem
 (z dowodem pomiaru na main), nieblokującego driftu dokumentacji, uzgodnionych zmian
 cross-lane z handoffem. Wszystko inne przy „NIE" = FAIL.
+
+**Kolejka Fable 5 (R-FABLE-KOLEJKA-TYGODNIOWA, 2026-08-07).** Po KAŻDYM werdykcie — PASS albo
+FAIL — Evaluator przegląda własne noty N1..Nx i dopisuje do
+`dyspozycje/autobot/KOLEJKA-FABLE-5.md` tematy kwalifikujące się do WYŁĄCZNIE trzech kategorii:
+(A) dziury i nieścisłości, (B) balans i audyt rozgrywki, (C) refaktory architektoniczne. NIE
+kwalifikują się: zwykłe bugi z jasną naprawą, poprawki testów, zadania dokumentacyjne, drobne
+UI. Brak kandydatów → Evaluator pisze wprost **„brak kandydatów do kolejki"**, żeby dało się
+odróżnić „nie było" od „zapomniał".
 
 ## 6. PLAYBOOK I POSTMORTEM — PAMIĘĆ SYSTEMU
 

@@ -52,6 +52,8 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`
 **STRICT-EDGE (happy-path-only → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-EDGE.md` · playbook `rule_107`  
 **STRICT-PARITY (asymetria gracz/AI/MP → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-PARITY.md` · playbook `rule_108`  
 **STRICT-SAVE (luki save/load → FAIL):** `docs/decyzje/R-PROC-AUTOBOT-EVAL-STRICT-SAVE.md` · playbook `rule_109`
+**Pakiet dowodowy + StructuredOutput obowiązkowy (ECHO 2026-08-07):** `dyspozycje/REJESTR-PROSB-I-ZADAN.md` `R-AUTOBOT-EVALUATOR-MODEL-Q1` (wersja 3, odpowiedź C+A) · playbook: brak dedykowanej reguły (0 zastosowań)
+**Kolejka Fable 5 (ECHO 2026-08-07):** `dyspozycje/REJESTR-PROSB-I-ZADAN.md` `R-FABLE-KOLEJKA-TYGODNIOWA` · plik kolejki `dyspozycje/autobot/KOLEJKA-FABLE-5.md`
 
 **Evaluator MUSI** przed werdyktem sprawdzić:
 
@@ -62,6 +64,8 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`
 5. **STRICT-EDGE (R-PROC-AUTOBOT-EVAL-STRICT-EDGE)** — testy tematu tylko happy-path bez edge/negacji/repro buga → **FAIL #7** (nie NOTES).
 6. **STRICT-PARITY (R-PROC-AUTOBOT-EVAL-STRICT-PARITY)** — asymetria gracz/AI/MP (`ownerId === 0` / `isPlayer`) bez decyzji ABC lub bez testu parytetu → **FAIL #8** (nie NOTES).
 7. **STRICT-SAVE (R-PROC-AUTOBOT-EVAL-STRICT-SAVE)** — nowe trwałe pole bez snapshot/restore lub restore bez `?? default`; Operator bez roundtrip → **FAIL #9** (nie NOTES).
+8. **PAKIET DOWODOWY + PROTOKÓŁ (R-AUTOBOT-EVALUATOR-MODEL-Q1=C, 2026-08-07)** — zapisać `eval-evidence.json` w scratchpadzie Evaluatora z kompletem pól dla KAŻDEJ bramki (nazwa, exit code, liczba asercji X/Y, czas wykonania w sekundach, skrót SHA-256 pełnego stdout, ścieżka do pełnego stdout) plus `baseline_sha` / `head_sha` / `worktree_path` na poziomie werdyktu; `StructuredOutput` przestaje być opcjonalny — werdykt WYŁĄCZNIE przez `StructuredOutput` (pomiar: 88,1 % werdyktów było wolnym tekstem nieparsowalnym maszynowo). **FAIL formalny**, gdy `baseline_sha === head_sha` (ten sam stan zmierzony dwa razy) lub gdy którejkolwiek bramce brakuje kompletu pól wyżej.
+9. **KOLEJKA FABLE 5 (R-FABLE-KOLEJKA-TYGODNIOWA, 2026-08-07)** — po KAŻDYM werdykcie przejrzeć własne noty N1..Nx i dopisać do `dyspozycje/autobot/KOLEJKA-FABLE-5.md` kwalifikujące się tematy (WYŁĄCZNIE kat. A dziury i nieścisłości / B balans i audyt rozgrywki / C refaktory architektoniczne; NIE zwykłe bugi, poprawki testów, docs, drobne UI). Brak kandydatów → napisać wprost **„brak kandydatów do kolejki"**.
 
 **PASS-WITH-NOTES** tylko wąska lista: pre-existing baseline poza tematem (dowód `main`), docs drift nieblokujący, cross-lane z handoffem, GATE=A wizual, drobny drift procesu.
 
