@@ -1,6 +1,6 @@
 # P-MAPGEN-PANGEA-OBRYS — sekcja „Pangea nieregularna" czerwona, bo metryka mierzy zły obrys
 
-**Status:** 🟡 **PYTANIE 1 = A** (2026-08-07) · pytania 2, 3 i 4 otwarte
+**Status:** 🟡 **PYTANIA 1=A · 2=B · 3=B** (2026-08-07) · **pytanie 4 otwarte** — wdrożenie czeka na nie
 **Wykonanie diagnostyki:** AutoBot Operator→Evaluator, `w2vcni6m1`. Werdykt Evaluatora na raport
 Operatora: **FAIL** — pomiar był poprawny, ale dwa wnioski były fałszywe, a właściwej przyczyny
 Operator nie znalazł. Poniżej wersja po korektach Evaluatora, zweryfikowana niezależnie.
@@ -131,7 +131,13 @@ te trzy decyzje są **rozłączne** i można je rozstrzygnąć osobno oraz róż
 | **B** | **Próg z kształtów odniesienia** — musi odrzucić dysk i prostokąt, przepuścić obecny generator | 1. Próg zaczyna mierzyć **nieregularność**, a nie wielkość. 2. Sens niezależny od dzisiejszego generatora. | 1. Wymaga przeliczenia dysku i prostokąta przy nowej metryce. 2. Węższe okno — łatwiej o fałszywy alarm. |
 | **C** | **Zostawić 3,8**, sekcja czysto informacyjna (wypiąć `fail++`) | 1. Zero pracy. 2. Bramka przestaje fałszywie czerwienić. | 1. Sekcja przestaje cokolwiek pilnować — martwy kod w teście. 2. Regresja kształtu przejdzie niezauważona. |
 
-**Rekomendacja: B** — dopiero to daje progowi sens, którego dziś nie ma.
+**ODPOWIEDŹ MACIEJA: B** (2026-08-07). Próg ma mierzyć nieregularność, nie wielkość.
+
+**Wymóg wykonawczy wynikający z B:** przeliczyć przy NOWEJ metryce (`Wybrzeze` = woda) trzy
+kształty odniesienia — dysk heksowy (podłoga), pełny prostokąt, prostokąt wydłużony — oraz obecny
+generator na ≥30 seedach. Próg ustawić tak, żeby **odrzucał dysk i prostokąt** i **przepuszczał
+generator z jawnym marginesem**. Jeśli takie okno nie istnieje (np. generator wypada poniżej
+prostokąta), NIE zgadywać liczby — zgłosić to jako wynik i wrócić z pytaniem.
 
 ### PYTANIE 3 — progi czasowe AC (niezależne od pytań 1 i 2)
 
@@ -145,7 +151,14 @@ maskuje każdą realną czerwień.
 | **B** | **Podnieść progi** do realnych wartości tej maszyny (np. 180 s / 1500 s) | 1. Zachowuje automatyczny sygnał regresji wydajności. | 1. Progi stają się zależne od sprzętu — na Windowsie znaczą co innego. 2. Aktualizacja przy każdej zmianie środowiska. |
 | **C** | **Zostawić bez zmian** | 1. Zero pracy. | 1. Bramka pozostaje trwale czerwona i bezużyteczna jako sygnał. |
 
-**Rekomendacja: A.**
+**ODPOWIEDŹ MACIEJA: B** (2026-08-07) — podnieść progi do realnych wartości maszyny,
+zostawić je w `allOk`.
+
+**Zastrzeżenie do odnotowania (decyzja podjęta, nie kwestionuję):** pomiar 130,01 s / 1194,15 s
+pochodzi z maszyny chmurowej. Progi dobrane pod nią będą na szybszym sprzęcie właściciela zbyt
+luźne — realne spowolnienie generatora o 2–3× może się pod nimi zmieścić. Wykonawczo: wpisać progi
+z jawnym komentarzem, jakiego sprzętu dotyczą i kiedy zmierzone, żeby następna sesja wiedziała,
+czy liczba jest jeszcze aktualna.
 
 ---
 
