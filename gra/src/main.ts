@@ -1589,6 +1589,28 @@ async function boot(): Promise<void> {
       return sum;
     }
 
+    /**
+     * R-MOC-RANKING-ROZJAZD-Q1=B (Maciej 2026-08-07): wariant EFEKTYWNY sumy Mocy
+     * armii — jedyna różnica vs sumArmyMForOwner: combatPowerScaledDefFor(u) zamiast
+     * unitDefFor(u) (ta sama def skalowana co tabliczka jednostki nad żetonem,
+     * R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B, main.ts:8062 — weteran + fortyfikacja polowa
+     * + mnożnik trudności AI). Zero nowej matematyki poza tym podstawieniem.
+     * Karmi WYŁĄCZNIE panel Mocy imperium widoczny dla gracza (buildPowerRankingByOwner/
+     * buildPowerOverlayData/buildEmpireDetailSnap — ścieżka (a)). NIE wolno jej podłączyć
+     * do militaryRatioFromArmyM ani do żadnego progu decyzji dyplomatycznej AI — te
+     * zostają na sumArmyMForOwner nominalnej (ścieżka (b), poza zakresem tej decyzji).
+     */
+    function sumArmyMForOwnerEffective(ownerId: number): number {
+      const opcje = loadPowerOpcje();
+      let sum = 0;
+      for (const u of units) {
+        if (u.ownerId !== ownerId) continue;
+        if (!opcje.liczyOsadnikWArmii && u.category === 'osadnik') continue;
+        sum += armyFieldPower(combatPowerScaledDefFor(u));
+      }
+      return sum;
+    }
+
     /** Stosunek siły wojskowej proposer/responder — suma M_pole (UNIT-POWER-M-v1). */
     function militaryRatioFromArmyM(proposerArmyM: number, responderArmyM: number): number {
       if (responderArmyM > 0) return proposerArmyM / responderArmyM;
@@ -1636,6 +1658,63 @@ async function boot(): Promise<void> {
         // jest tu wliczony, więc łańcuch eliminacji sumuje się poprawnie).
         zdobyczePower: zdobyczePowerByOwner.get(ownerId) ?? 0,
       });
+    }
+
+    /**
+     * R-MOC-RANKING-ROZJAZD-Q1=B (Maciej 2026-08-07): duplikat buildObjectivePowerForOwner
+     * z JEDYNĄ różnicą — `jednostki` liczone przez sumArmyMForOwnerEffective zamiast
+     * sumArmyMForOwner (pozostałe 10 składników Power — bitwy/ludki/rekruci/miasta/
+     * terytorium/infra/tech/ulepszenia/kultura/religia/zdobycze — identyczne, nieskalowane
+     * mnożnikiem walki, więc pozostają bez zmian w obu wariantach). Świadomy duplikat
+     * zamiast refaktoru na wspólny helper — buildObjectivePowerForOwner (ścieżka (b),
+     * karmi też decyzje dyplomatyczne AI przez objectivePowerForOwner/computeRespekt)
+     * ma zostać BAJTOWO nietknięta. Nieskeszowana (bez własnego Map) — panel Mocy jest
+     * budowany na żądanie (kliknięcie gracza), nie co klatkę/turę, więc cache jak
+     * objectivePowerByOwner tu niepotrzebny (prostota > przedwczesna optymalizacja).
+     */
+    function buildObjectivePowerForOwnerEffective(ownerId: number): ObjectivePowerResult {
+      const epoka = empireEpochForOwner(ownerId);
+      const mpMults = civManpowerMultsForOwner(ownerId);
+      const pobor = empirePoborTotals(cities, ownerId, epoka, mpMults.maxMult);
+      const ownerCities = cities.filter(c => c.ownerId === ownerId);
+      const cultureCities = ownerCities.map(c => ({
+        id: c.id,
+        ownerId: c.ownerId,
+        q: c.q,
+        r: c.r,
+        population: c.population,
+        kulturaSkumulowana: (c as { kultura?: number }).kultura ?? 0,
+      }));
+      const religionParams = loadReligionParams(data.societyParams, _menuDifficulty);
+      const stateRel = ownerReligionForOwnerId(ownerId);
+      const religionCities = ownerCities.map(c => ({
+        ownerId: c.ownerId,
+        religionState: resolvedCityReligion(c),
+      }));
+      return computeObjectivePower({
+        ownerId,
+        epoka,
+        jednostki: sumArmyMForOwnerEffective(ownerId),
+        bitwyPktSum: battlePowerPtsByOwner.get(ownerId) ?? 0,
+        wygraneBitwy: 0,
+        sumaLudkow: pobor.sumaLudkow,
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, epoka, mpMults.maxMult),
+        miasta: ownerCities.length,
+        heksyTerytorium: countTerritoryHexes(cityNodesForOwner(ownerId)),
+        budynki: countBuildingsForOwner(ownerId),
+        techZbadane: countTechForOwner(ownerId),
+        ulepszeniaTerenu: countImprovementsForOwner(ownerId),
+        kulturaImperium: empireCultureTotal(cultureCities, ownerId),
+        miastaJednoscReligii: countCitiesWithDominantStateReligion(
+          religionCities, ownerId, stateRel, religionParams,
+        ),
+        zdobyczePower: zdobyczePowerByOwner.get(ownerId) ?? 0,
+      });
+    }
+
+    /** Wariant efektywny objectivePowerForOwner — patrz buildObjectivePowerForOwnerEffective. */
+    function objectivePowerForOwnerEffective(ownerId: number): number {
+      return buildObjectivePowerForOwnerEffective(ownerId).power;
     }
 
     // D10: model ZDARZENIOWY — przelicz ekonomię/moc TYLKO po realnej zmianie (trigger),
@@ -11025,7 +11104,10 @@ async function boot(): Promise<void> {
       });
       const rows = eligible.map(oid => ({
         civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
-        power: objectivePowerForOwner(oid),
+        // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy (widoczny dla gracza) liczy Moc
+        // EFEKTYWNIE — patrz sumArmyMForOwnerEffective. Progi decyzji AI (militaryRatioFromArmyM,
+        // computeRespekt spoza tego panelu) zostają na objectivePowerForOwner nominalnej.
+        power: objectivePowerForOwnerEffective(oid),
         isPlayer: oid === 0,
         rank: 0,
         wiarygodnosc: getWiarygodnosc(oid),
@@ -11068,8 +11150,21 @@ async function boot(): Promise<void> {
       });
     }
 
+    /**
+     * R-MOC-RANKING-ROZJAZD-Q1=B: wariant efektywny buildAbsolutePowerRank — WYŁĄCZNIE
+     * dla `absoluteRank` w panelu Mocy (buildPowerOverlayData). buildAbsolutePowerRank
+     * nominalna zostaje nietknięta — nadal karmi buildPlayerDiploSummary (ekran dyplomacji,
+     * poza zakresem tej decyzji).
+     */
+    function buildAbsolutePowerRankEffective(): { rank: number; total: number } {
+      return computeAbsolutePowerRank(0, allPowerOwnerIds(), objectivePowerForOwnerEffective, {
+        cityStateOpts: ownerCityStateOpts(),
+      });
+    }
+
     function buildPowerOverlayData(): PowerOverlayData {
-      const obj = objectivePowerByOwner.get(0) ?? buildObjectivePowerForOwner(0);
+      // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy widoczny dla gracza -> Moc EFEKTYWNA.
+      const obj = buildObjectivePowerForOwnerEffective(0);
       const power = obj.power;
       const maxPts = Math.max(1, ...obj.components.map(c => c.points));
       const components = obj.components.map(c => ({
@@ -11098,13 +11193,13 @@ async function boot(): Promise<void> {
           theirPower: rival.power,
         }
         : undefined;
-      const absoluteRank = buildAbsolutePowerRank();
+      const absoluteRank = buildAbsolutePowerRankEffective();
       const diagMajorAi = buildAiMocDiagRows({
         ownerIds: allPowerOwnerIds(),
         labelForOwner: (oid) => oid === 0
           ? civDisplayNameForKey(civKeyForOwner(0))
           : ownerDiploLabel(oid),
-        mocForOwner: objectivePowerForOwner,
+        mocForOwner: objectivePowerForOwnerEffective,
         pracaPoolForOwner: ownerPracaPool,
         cities: cities.map(c => ({ ownerId: c.ownerId, cityId: c.id })),
         productionQueueLength: (cityId) => cityProd.get(cityId)?.kolejka.length ?? 0,
@@ -11193,7 +11288,15 @@ async function boot(): Promise<void> {
       const economy = buildHudState();
       const cult = buildCultureOverlayData();
       const powOverlay = buildPowerOverlayData();
-      const obj = objectivePowerByOwner.get(0) ?? buildObjectivePowerForOwner(0);
+      // R-MOC-RANKING-ROZJAZD-Q1=B: spójność WEWNĄTRZ tego jednego payloadu -- poniżej
+      // trafiają wprost powOverlay.ranking/absoluteRank/respektExample (już EFEKTYWNE,
+      // patrz buildPowerOverlayData), więc `obj`/`powerComponents` (headline Moc + rozbicie
+      // na składniki w tym samym ekranie) muszą liczyć tym samym wariantem — inaczej gracz
+      // widziałby DWIE różne liczby Mocy dla siebie na jednym ekranie (dokładnie ten sam
+      // rozjazd, który ta decyzja ma naprawić). AI (militaryRatioFromArmyM, respekt poza
+      // tym ekranem) nadal czyta wyłącznie nominalny objectivePowerByOwner/buildObjectivePowerForOwner
+      // — nietknięte.
+      const obj = buildObjectivePowerForOwnerEffective(0);
       const totalPts = Math.max(1, obj.components.reduce((s, c) => s + c.points, 0));
       const maxCompPts = Math.max(1, ...obj.components.map(c => c.points));
       const powerNotes: Record<string, string> = {
