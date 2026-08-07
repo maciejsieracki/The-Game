@@ -73,6 +73,23 @@ Agent:
 
 ---
 
+## 3b. BALANS GRY — ABC ZAWSZE, niezależnie od pewności naprawy (Maciej 2026-08-07)
+
+**ID reguły:** `R-PROC-ABC-BALANS`
+
+Jego słowa: *„pamiętaj zapisz sobie do zasad jeżeli coś bardzo mocno zmienia balans gry to co robisz to trzeba zadać pytania ABC zawsze. Samodzielne poprawki mogą dotyczyć tylko takich kwestii, które nie zmieniają zasadniczo balansu gry."*
+
+Kryterium rozstrzygające, czy dana naprawa (w tym naprawa AutoBot, test przestarzały, „oczywisty" bug) może iść **bez** ABC:
+
+| Zmiana | ABC wymagane? |
+|--------|----------------|
+| Wpływa istotnie na balans gry (progi liczbowe wpływające na trudność/ekonomię/walkę, mechanika akceptacji/odrzucenia ofert AI, koszty, mnożniki, wymagania Relacji/Zaufania/Respektu itp.) | **ZAWSZE TAK** — nawet jeśli diagnoza jest w 100% pewna, nawet jeśli to „tylko przywrócenie starego zachowania", nawet jeśli Evaluator by to zatwierdził |
+| Nie zmienia balansu (literówka w komunikacie, test podążający za już wdrożoną i zatwierdzoną zmianą silnika, martwy kod, refaktor bez zmiany zachowania, dokumentacja) | Może iść przez AutoBot Operator→Evaluator bez ABC-first, zgodnie z §4b |
+
+**Praktyczna konsekwencja dla agenta:** przy każdej naprawie NAJPIERW ustal, czy dotyka ona balansu (patrz kryteria wyżej). Jeśli tak — **zatrzymaj się i zadaj pełne ABC** (§3), nawet gdy masz twardy dowód (git blame, testy, symulacja) że Twoja propozycja jest słuszna. Pewność diagnozy NIE zwalnia z pytania — dotyczy wyłącznie TEGO, jak dobrze przedstawisz opcje w ABC, nie tego, czy pytanie jest potrzebne.
+
+---
+
 ## 3a. PEŁNE ID PYTANIA — zakaz gołego Q1 (Maciej 2026-08-03)
 
 **ID reguły:** `R-PROC-ABC-FULL-ID`
