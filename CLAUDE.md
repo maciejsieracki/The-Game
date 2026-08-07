@@ -74,6 +74,12 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    do roboczej) = Opus 5.** Jego słowa: „Główny model językowy tutaj wybrany to będzie SONNET 5.
    Pracę wszystkich subagentów odpalasz też na Sonet 5, ale ewaluator włączasz na Opus 5
    i deploy Opus 5". Fable 5 wyłącznie za wyraźną zgodą Macieja.
+   **DODATKOWA BLOKADA — `R-FABLE-RETENCJA-NASTER` = B (Maciej 2026-08-07):** Fable 5 wymaga
+   **30-dniowej retencji danych i nie jest dostępny pod zerową retencją (ZDR)**. Wymagania
+   NASTER w tej sprawie **nie są ustalone** — przeszukanie repo (CLAUDE.md, ZASADY-WSPOLPRACY,
+   docs/**, dyspozycje/**, .cursor/rules/**, .claude/) nie znalazło **żadnego** zapisu.
+   Do czasu potwierdzenia przez Macieja **Fable 5 nie wchodzi w grę** — nawet gdyby padła
+   zgoda na model. Zgoda na model ≠ potwierdzenie retencji; potrzebne są oba.
    **WYJĄTEK — ZGODA STAŁA (Maciej, 2026-07-25; POTWIERDZONE 2026-08-06 po wprowadzeniu Sonnet 5
    jako domyślnego):** *„Jednostki i render musisz dawać do subagentów Opus 5, bo Sonnet sobie
    z tym nie poradzi."* → **modele 3D jednostek i cała praca w `gra/src/render/**` idą na Opus 5.**
