@@ -118,7 +118,17 @@ function opisForestOrCharge(opis: string): boolean {
   return o.includes(' lub ') && opisMentionsForest(opis) && (o.includes('pierwsz') || o.includes('zasadzk'));
 }
 
-function bonusApplies(
+/**
+ * bonusApplies — eksportowana (R-OBRONA-MIASTA-MP-Q1, runda 4, domkniecie luki
+ * rundy 3): panel preBattle "Rozbicie obrony" (defenseBreakdown.ts,
+ * defenderCivBonusBreakdown) MUSI bramkowac bonus_obrona TYM SAMYM pelnym
+ * predykatem co realna walka (civCombatStatMultipliers ponizej), nie tylko
+ * unitMatchesCel -- inaczej wpis bonus_obrona z opisem o lesie/szarzy pokazuje
+ * sie w panelu jako dotyczacy jednostek, dla ktorych realnie NIE zadziala
+ * (brak terenu lesnego / brak rundy szarzy). Jedno zrodlo prawdy dla obu
+ * sciezek (panel + bitwa) -- zero rownoleglej reimplementacji dopasowania.
+ */
+export function bonusApplies(
   b: CivBonusEntry,
   unit: CivBonusUnitShape,
   ctx: CivCombatContext,

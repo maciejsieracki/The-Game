@@ -548,7 +548,7 @@ import {
   type BattleUnitBeforeSnap,
   type BattleSummaryWinner,
 } from './game/battle-summary';
-import type { PreBattleInfo, PreBattleUnit } from './ui/preBattle';
+import type { PreBattleInfo, PreBattleUnit, PreBattleModifier } from './ui/preBattle';
 import { showHud, updateHud as refreshD1bHud, hideHud, markMinimapDirty } from './ui/hud';
 import {
   createCityListHud,
@@ -739,6 +739,11 @@ import {
   unitGetsFortifyDefenseBonus,
   type CityDefenseBonusParams,
 } from './game/city-defense';
+import {
+  buildDefenseRosterUnits,
+  cityDefenseBreakdownLines,
+  civBonusUnitShapeFromDef,
+} from './game/defenseBreakdown';
 import {
   tradableGoodsForOwner as tradableGoodsIndexForOwnerPure, sumCitySurowce,
   tradeGoodsCategoriesFromParts,
@@ -17580,6 +17585,44 @@ async function boot(): Promise<void> {
       };
     }
 
+    /**
+     * R-OBRONA-MIASTA-MP-Q1=A (Maciej 2026-08-06): rozbicie bonusów obrony w preBattle
+     * ("garnizon +50%, cyw, weteran, liczba obrońców") -- gracz widzi SKĄD bierze się
+     * siła obrony (np. miasto-państwo bez murów), mechanika walki BEZ ZMIAN.
+     *
+     * Cienki wrapper -- cala agregacja (garnizon/weteran/bonusy cyw. per-cel/
+     * trudnosc AI) zyje w defenseBreakdown.ts jako CZYSTA funkcja
+     * (cityDefenseBreakdownLines + buildDefenseRosterUnits), testowalna bez
+     * main.ts/DOM (gra/tools/defense-breakdown-test.cjs). Tu wolamy ja z REALNYMI
+     * funkcjami walki (unitGetsFortifyBonus, veteranCombatBonusFrac, unitDefFor,
+     * civBonusyForOwnerId, difficultyCombatMultForOwner) -- zero rownoleglego
+     * przeliczania, zero duplikatu logiki.
+     *
+     * `terrain` (runda 4, domkniecie luki Evaluatora): teren heksu obrońcy --
+     * wstrzykniety przez wolajacego (analogicznie do dTeren4/dTeren/terrain juz
+     * liczonych w tych samych miejscach dla preBattleSzanseAtkPct) -- przekazywany
+     * do defenderCivBonusBreakdown (civ-bonuses.ts bonusApplies), zeby bonus_obrona
+     * wymagajacy lasu/wzgorza NIE byl pokazywany na terenie, na ktorym realnie
+     * nie zadziala. isChargeRound w bonusApplies jest zawsze false tutaj -- panel
+     * dziala PRZED bitwa, szarza sie jeszcze nie odbyla.
+     */
+    function cityDefenseBreakdownFor(defRoster: RuntimeUnit[], terrain?: string): PreBattleModifier[] {
+      if (defRoster.length === 0) return [];
+      const rosterUnits = buildDefenseRosterUnits(
+        defRoster,
+        u => unitGetsFortifyBonus(u),
+        u => veteranCombatBonusFrac(u),
+        u => civBonusUnitShapeFromDef(unitDefFor(u), u.typeId),
+      );
+      const defenderOwnerId = defRoster[0]!.ownerId;
+      return cityDefenseBreakdownLines(rosterUnits, {
+        fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
+        civBonusy: civBonusyForOwnerId(defenderOwnerId),
+        difficultyMult: difficultyCombatMultForOwner(defenderOwnerId),
+        terrain,
+      });
+    }
+
     /** MAP PLAYER ATTACK: jednostka → jednostka (sąsiad) → preBattle C-01 */
     function openPlayerMapUnitAttack(atkUnit: RuntimeUnit, defUnit: RuntimeUnit): void {
       if (atkUnit.ownerId === 0 && defUnit.ownerId !== 0 && !playerIsAtWarWith(defUnit.ownerId)) {
@@ -17621,6 +17664,7 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: true,
+        warunki: cityDefenseBreakdownFor(defRoster, dTeren4),
       };
 
       const atkRosterRef = atkRoster.slice();
@@ -18046,6 +18090,7 @@ async function boot(): Promise<void> {
         tura: turn,
         canRetreat: false,
         defenderCanRetreat: playerDefends,
+        warunki: cityDefenseBreakdownFor(defRosterRef, terrain),
       };
 
       const atkStartSnap = snapshotRosterPositions(atkRosterRef);
@@ -19220,6 +19265,7 @@ async function boot(): Promise<void> {
         lokacja: '(' + city.q + ',' + city.r + ')',
         tura: turn,
         canRetreat: true,
+        warunki: cityDefenseBreakdownFor(defRoster, dTeren),
       };
 
       const atkRosterRef = atkRoster.slice();
