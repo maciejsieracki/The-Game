@@ -19,6 +19,13 @@ export interface BorderMarchPair {
   territoryOwnerId: number;
   /** true gdy choć jedna jednostka wojskowa na parze (domyślnie false). */
   isMilitary?: boolean;
+  /**
+   * Heks reprezentatywny pary (border-march-scan.ts `collectUnauthorizedBorderPairs`) —
+   * do atrybucji komunikatu graczowi + skoku kamery (R-PRZEMARSZ-ATRYBUCJA-Q1=B). Opcjonalne —
+   * wywołania/testy budujące pary ręcznie (np. diplomacy-border-march-test.cjs) go pomijają.
+   */
+  q?: number;
+  r?: number;
 }
 
 /** Kontekst autoryzacji przemarszu dla jednej pary. */
@@ -171,12 +178,36 @@ export function applyUnauthorizedBorderPenalties(
   return { relations: next, penalizedPairs };
 }
 
+/**
+ * Jedna ukarana para z punktu widzenia atrybucji komunikatu (R-PRZEMARSZ-ATRYBUCJA-Q1=B):
+ * KTO jest drugą stroną (nie gracz) i GDZIE (heks reprezentatywny pary, gdy znany — patrz
+ * `BorderMarchPair.q/r`). `main.ts` tłumaczy `ownerId` na nazwę cywilizacji (civDisplayNameForOwner)
+ * i `q`/`r` na skok kamery (axialToWorld + camCtrl.focusAt) — ta warstwa zostaje czystymi danymi.
+ */
+export interface BorderMarchViolationDetail {
+  /** ownerId drugiej strony pary (NIE gracza) — patrz pola tablic niżej dla kontekstu roli. */
+  ownerId: number;
+  /** Heks reprezentatywny pary, gdy `BorderMarchPair` go niósł (opcjonalne, patrz tam). */
+  q?: number;
+  r?: number;
+}
+
 /** Wynik klasyfikacji par pod kątem komunikatu widocznego GRACZOWI (BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C). */
 export interface PlayerBorderMarchNotice {
   /** true → ktoś wszedł na teren gracza (gracz = territoryOwnerId ukaranej pary). */
   playerBorderViolated: boolean;
   /** true → jednostka gracza stoi na cudzym terenie (gracz = intruderOwnerId ukaranej pary). */
   playerTrespassing: boolean;
+  /**
+   * Cywilizacje naruszające teren gracza (jedna pozycja na ukaraną parę, `ownerId` = intruz).
+   * Puste gdy `playerBorderViolated` = false. R-PRZEMARSZ-ATRYBUCJA-Q1=B.
+   */
+  violatingIntruders: readonly BorderMarchViolationDetail[];
+  /**
+   * Cywilizacje, na których terenie stoi jednostka gracza (jedna pozycja na ukaraną parę,
+   * `ownerId` = właściciel terenu). Puste gdy `playerTrespassing` = false. R-PRZEMARSZ-ATRYBUCJA-Q1=B.
+   */
+  trespassedOwners: readonly BorderMarchViolationDetail[];
 }
 
 /**
@@ -197,15 +228,23 @@ export function classifyPlayerBorderMarchNotice(
 ): PlayerBorderMarchNotice {
   let playerBorderViolated = false;
   let playerTrespassing = false;
+  const violatingIntruders: BorderMarchViolationDetail[] = [];
+  const trespassedOwners: BorderMarchViolationDetail[] = [];
   for (const pair of pairs) {
     if (pair.intruderOwnerId !== playerOwnerId && pair.territoryOwnerId !== playerOwnerId) continue;
     if (hasAuthorizedBorderCrossing(pair.intruderOwnerId, pair.territoryOwnerId, resolveCtx(pair))) {
       continue;
     }
-    if (pair.territoryOwnerId === playerOwnerId) playerBorderViolated = true;
-    if (pair.intruderOwnerId === playerOwnerId) playerTrespassing = true;
+    if (pair.territoryOwnerId === playerOwnerId) {
+      playerBorderViolated = true;
+      violatingIntruders.push({ ownerId: pair.intruderOwnerId, q: pair.q, r: pair.r });
+    }
+    if (pair.intruderOwnerId === playerOwnerId) {
+      playerTrespassing = true;
+      trespassedOwners.push({ ownerId: pair.territoryOwnerId, q: pair.q, r: pair.r });
+    }
   }
-  return { playerBorderViolated, playerTrespassing };
+  return { playerBorderViolated, playerTrespassing, violatingIntruders, trespassedOwners };
 }
 
 /** Dedupe par intruz→owner (UNITS może wołać przed apply). */

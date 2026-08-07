@@ -9,6 +9,13 @@ import type { RuntimeUnit } from '../units/setup';
 export interface BorderMarchPair {
   intruderOwnerId: number;
   territoryOwnerId: number;
+  /**
+   * Heks reprezentatywny pary — współrzędne PIERWSZEJ napotkanej jednostki intruza na tym
+   * terytorium (R-PRZEMARSZ-ATRYBUCJA-Q1=B, atrybucja komunikatu + skok kamery). Opcjonalne —
+   * wsteczna zgodność z wywołaniami/testami budującymi pary ręcznie bez q/r.
+   */
+  q?: number;
+  r?: number;
 }
 
 export type IsMilitaryUnitFn = (unit: RuntimeUnit) => boolean;
@@ -42,7 +49,7 @@ export function collectUnauthorizedBorderPairs(
     const key = pairKey(unit.ownerId, ownerAt);
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ intruderOwnerId: unit.ownerId, territoryOwnerId: ownerAt });
+    out.push({ intruderOwnerId: unit.ownerId, territoryOwnerId: ownerAt, q: unit.q, r: unit.r });
   }
 
   return out;

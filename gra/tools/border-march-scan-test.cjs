@@ -53,13 +53,22 @@ eq(pairs1.length, 1, 'one pair');
 eq(pairs1[0].intruderOwnerId, 0, 'intruder 0');
 eq(pairs1[0].territoryOwnerId, 1, 'owner 1');
 
+// R-PRZEMARSZ-ATRYBUCJA-Q1=B: pair niesie q/r jednostki (skok kamery + atrybucja w main.ts)
+eq(pairs1[0].q, 7, 'pair carries intruder q=7');
+eq(pairs1[0].r, 0, 'pair carries intruder r=0');
+
 // dedupe — 3 units same pair
 const triple = [
   { id: 'a', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 7, r: 0, ruch: 2, ruchLeft: 2 },
   { id: 'b', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 7, r: 1, ruch: 2, ruchLeft: 2 },
   { id: 'c', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 8, r: 0, ruch: 2, ruchLeft: 2 },
 ];
-eq(M.collectUnauthorizedBorderPairs(triple, nodes, isMil).length, 1, 'dedupe 3 units');
+const triplePairs = M.collectUnauthorizedBorderPairs(triple, nodes, isMil);
+eq(triplePairs.length, 1, 'dedupe 3 units');
+// R-PRZEMARSZ-ATRYBUCJA-Q1=B: dedupe keeps the FIRST unit's hex ('a' at q=7,r=0), not 'b'/'c'
+// — decyzja prostoty (main.ts §6 w raporcie), nie "najbliższy do gracza".
+eq(triplePairs[0].q, 7, 'dedupe keeps first unit q=7 (not b/c)');
+eq(triplePairs[0].r, 0, 'dedupe keeps first unit r=0 (not b/c)');
 
 // neutral — no pair
 const neutral = [{ id: 'n', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 20, r: 20, ruch: 2, ruchLeft: 2 }];
