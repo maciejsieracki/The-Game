@@ -114,10 +114,47 @@ Evaluator odpowiada na KAŻDE z pytań, z dowodem (plik:linia / liczba / zrzut):
      bez jawnej decyzji właściciela lub bez testu parytetu → FAIL.
    - **STRICT-SAVE**: nowe trwałe pole stanu bez zapisu/odczytu (snapshot/restore)
      lub odczyt bez wartości domyślnej (`?? default`) dla starych zapisów → FAIL.
+   - **STRICT-CONFIG** (Maciej 2026-08-07): zmiana zależna od parametrów konfiguracji gry
+     (generator mapy, balans, dane ekonomii, AI) zweryfikowana WYŁĄCZNIE na konfiguracji
+     domyślnej → FAIL. Evaluator musi wypisać i uruchomić **min. 3 konfiguracje POZA
+     domyślną** — inny rozmiar mapy, inny typ, inny seed, inny poziom trudności, inna
+     liczba cywilizacji — dobrane do tego, czego dotyczy zmiana, i wymienić je w werdykcie
+     z parametrami. Brak tej listy = werdykt niedomknięty → FAIL. (Powód, zmierzone
+     2026-08-05..07: pokrycie żelaza 75% wobec progu ≥85% złapane dopiero na mapie
+     Ogromny, seed 99 — domyślna bramka `fair-play-grid-test.cjs` była przy tym ZIELONA
+     8/8; nikt nie zapisał „przetestuj też mapę Ogromny".)
 
 **PASS-WITH-NOTES** dozwolony wyłącznie dla: porażek pre-istniejących poza tematem
 (z dowodem pomiaru na main), nieblokującego driftu dokumentacji, uzgodnionych zmian
 cross-lane z handoffem. Wszystko inne przy „NIE" = FAIL.
+
+## 5a. EVALUATOR — KOLEJKA DLA NAJMOCNIEJSZEGO MODELU (Maciej, 2026-08-07)
+
+Po KAŻDYM wydanym werdykcie (PASS lub FAIL) Evaluator przegląda własne notatki z paczki
+(obserwacje poza głównym scope tematu) i sprawdza, czy któraś kwalifikuje się do jednej
+z TRZECH kategorii zadań dla najmocniejszego modelu — raz w tygodniu właściciel puszcza
+z tej listy tyle tematów, ile pozwoli dostępny limit:
+
+- **(A) dziury i niespójności** — exploity reguł gry, ścieżki bez testu, sprzeczności
+  między dwoma miejscami w kodzie/danych, martwy kod maskujący realne zachowanie.
+- **(B) balans i audyt rozgrywki** — czy system domyka się przez pełną partię, czy
+  liczby są spójne, czy któraś strategia jest trywialnie dominująca, czy hierarchie
+  parametrów się nie rozjeżdżają.
+- **(C) refaktory architektoniczne** — duże, ryzykowne zmiany strukturalne o wysokiej
+  cenie błędu.
+
+NIE kwalifikują się: zwykłe bugi z jasną naprawą, poprawki testów, zadania
+dokumentacyjne, drobne UI.
+
+Każdy kwalifikujący się temat dopisz jako nowy wiersz do
+`dyspozycje/autobot/KOLEJKA-FABLE-5.md`, w formacie:
+
+```
+| data | ID źródłowe / temat | kategoria A/B/C | jedno zdanie o co chodzi | dlaczego najmocniejszy model | źródło plik:linia |
+```
+
+Jeśli z danej ewaluacji nie wynika żaden kandydat — napisz to WPROST w werdykcie:
+**„brak kandydatów do kolejki"**. To odróżnia „nie było" od „zapomniał".
 
 ## 6. PLAYBOOK I POSTMORTEM — PAMIĘĆ SYSTEMU
 
@@ -162,11 +199,19 @@ Nie melduj nieobecności czegoś jako rezultatu — dowieź albo wskaż konkretn
 - ❌ budować bez sprawdzenia, czy to już nie istnieje (recon: git log + grep + rejestry)
 - ❌ zgadywać przy niejednoznaczności — zrób resztę, sporny punkt opisz i zapytaj
 - ❌ pomijać wpis postmortem, „bo się udało"
+- ❌ werdykt PASS przy zmianie zależnej od konfiguracji (mapa/balans/dane/AI) zmierzonej
+  tylko na ustawieniach domyślnych — bez ≥3 konfiguracji POZA domyślną wypisanych
+  z parametrami (STRICT-CONFIG, §5)
+- ❌ zamknąć werdykt bez przejrzenia notatek paczki pod kątem kolejki dla najmocniejszego
+  modelu (§5a) — nawet gdy wynik to „brak kandydatów", trzeba to napisać wprost
 
 ## PARAMETRY PROJEKTU (uzupełnij pod swój projekt; niżej wartości dla Civ „The Game")
 
 - Rejestr zadań/ID: `dyspozycje/REJESTR-PROSB-I-ZADAN.md`
 - Playbook: `dyspozycje/autobot/playbook.json` · dziennik: `dyspozycje/autobot/logs/postmortems.jsonl`
+- Kolejka tematów dla najmocniejszego modelu (Fable 5): `dyspozycje/autobot/KOLEJKA-FABLE-5.md`
+  — Evaluator dopisuje wiersz po każdym werdykcie (kategorie A/B/C, format §5a); orkiestrator
+  utrzymuje sam plik, Evaluator tylko dopisuje wiersze / pisze „brak kandydatów"
 - Kanał między-sesyjny (obowiązkowy odczyt na starcie, wpis po każdym znaczącym kroku):
   `dyspozycje/_handoff/KANAL-PRACA.md` + `STAN-PRACY-HANDOFF.md`; start sesji od
   `git pull --ff-only origin main`
