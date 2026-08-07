@@ -545,5 +545,58 @@ r = evaluateProposal(prop('wchloniecie', 0, 5, { goldOnce: 250 }), ctx({
 }));
 ok(r.accepted && !r.deal && !r.oneShotTrade, 'wchłonięcie accept age 10 respekt 90 CS goldOnce ok');
 
+// ---------------------------------------------------------------------------
+// 19 R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A — 5 akcji (nap, sojusz_defensywny,
+// sojusz_pelny, wasal, pokoj) przy niskiej Relacji BEZ koszyka: dedykowany,
+// przyczynowo trafny komunikat zamiast generycznego „Przewaga u Ciebie —
+// oferta nieuczciwa dla partnera" (dawna proposerUnfairToPartnerGate maskowała
+// te komunikaty odpalając się bezwarunkowo przed switch(actionId)). granice i
+// umowa_szlakow/umowa_handlowa mają już takie asercje wyżej (§13, §17).
+// ---------------------------------------------------------------------------
+
+// 19a nap — Relacja 49 < progNapRelacja(50): komunikat dedykowany, nie generyczny
+r = evaluateProposal(prop('nap'), ctx({ relation: rel(25, 24) }));
+ok(
+  !r.accepted && r.reason.includes('pakt') && !r.reason.includes('Przewaga'),
+  'nap @ niska Rel bez koszyka: dedykowany komunikat "Relacja zbyt niska na pakt", nie generyczny',
+);
+
+// 19b sojusz_defensywny — Relacja/Zaufanie za niskie: komunikat dedykowany
+r = evaluateProposal(prop('sojusz_defensywny'), ctx({ relation: rel(30, 30) }));
+ok(
+  !r.accepted && (r.reason.includes('Zaufanie') || r.reason.includes('Relacja')) && !r.reason.includes('Przewaga'),
+  'sojusz_defensywny @ niska Rel bez koszyka: dedykowany komunikat Zaufanie/Relacja, nie generyczny',
+);
+
+// 19c sojusz_pelny — jak wyżej
+r = evaluateProposal(prop('sojusz_pelny'), ctx({ relation: rel(30, 30) }));
+ok(
+  !r.accepted && (r.reason.includes('Zaufanie') || r.reason.includes('Relacja')) && !r.reason.includes('Przewaga'),
+  'sojusz_pelny @ niska Rel bez koszyka: dedykowany komunikat Zaufanie/Relacja, nie generyczny',
+);
+
+// 19d wasal — Respekt proponenta (40, domyślny ctx) < progWasalizacjaRespekt(70)
+r = evaluateProposal(prop('wasal'), ctx({ relation: rel(25, 24) }));
+ok(
+  !r.accepted && r.reason.includes('Respekt') && !r.reason.includes('Przewaga'),
+  'wasal @ niska Rel bez koszyka: dedykowany komunikat Respekt, nie generyczny',
+);
+
+// 19e pokój — BEZPIECZEŃSTWO (wymóg #2): peaceProposalOfferPn ma samospełniający
+// się warunek przy pustym koszyku (offerPn = required + 0 = required, nigdy
+// < required) — bez dedykowanej bramki lokalnej to byłby exploit „darmowy pokój
+// podczas wojny". Musi ODRZUCIĆ mimo pustego koszyka.
+r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(25, 24, 'wojna') }));
+ok(
+  !r.accepted && r.reason.includes('PW') && !r.reason.includes('Przewaga u Ciebie —'),
+  'BEZPIECZEŃSTWO: pokój bez koszyka podczas wojny @ niska Rel — ODRZUCONY (brak exploita "darmowy pokój"), komunikat dedykowany',
+);
+// ...i przy Relacji bliskiej neutralnej (ale wciąż capowanej WAR_RELATION_SCORE_CAP=29
+// podczas wojny) — też odrzucony bez koszyka, bo baza pokoju (500 PW) nie jest pokryta
+// samą Relacją @ tym capie; dopłata koszykiem (patrz test #17 wyżej, `pokój z dopłatą
+// bilansu PW @ wojna`) pokrywa różnicę.
+r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(50, 50, 'wojna') }));
+ok(!r.accepted, 'pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: wciąż wymaga dopłaty (WAR_RELATION_SCORE_CAP)');
+
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);
