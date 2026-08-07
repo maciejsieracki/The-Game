@@ -2099,3 +2099,39 @@ z potencjalnie nieprawdziwą liczbą, którego nie da się skutecznie odrzucić.
     ale eliminuje problem najprościej.
 **Kotwice:** `gra/src/main.ts` (`applyBorderMarchPenaltiesEndTurn`, ~3578-3640),
 `borderMarchEventTargets`, `onEventDismiss`.
+
+## R-MOC-HUD-GLOWNY-Q1 (2026-08-07, nota Evaluatora w R-MOC-RANKING-ROZJAZD-Q1) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA — blokuje DEPLOY, nie scalenie**
+**Ustalenie:** po `d1f7b91` (panel Mocy imperium na efektywną) Evaluator znalazł **piąty
+konsument**, którego nikt nie zgłaszał: główny, stale widoczny licznik Mocy w górnym pasku
+HUD (`main.ts:12579`, `buildHudState` → `hud.ts:1022`, `<span class="p-val-num">`) nadal
+liczy **nominalnie**. Ten sam licznik to **fizyczny przycisk** (`act==='power'`) otwierający
+panel Mocy, który po dzisiejszej zmianie liczy **efektywnie**.
+**Skutek:** gracz z armią weteranów widzi w HUD np. „49", klika, i panel pokazuje „58" —
+dwie różne liczby dla tej samej rzeczy, jedna otwierająca drugą. Sprawdzone przez Evaluatora
+(z-index, przezroczystość backdropu) — licznik NIE jest zasłonięty, tylko przyciemniony,
+więc rozjazd jest fizycznie widoczny w jednej klatce.
+**DO DECYZJI (ABC):**
+(A) HUD też przechodzi na efektywną — pełna spójność, ale to kolejny, szósty punkt zmiany
+    tego samego dnia w tym samym obszarze kodu;
+(B) HUD zostaje nominalny świadomie, z jasnym uzasadnieniem w UI (np. dopisek „bazowa"),
+    żeby rozjazd nie wyglądał jak bug;
+(C) cała warstwa UI (HUD + panel + ekran dyplomacji + Empire) naraz, jedną decyzją, zamiast
+    punktowo — więcej pracy teraz, zero kolejnych „piątych konsumentów" później.
+**Kotwice:** `gra/src/main.ts:12579` (`buildHudState`), `gra/src/ui/hud.ts:1022,1102`.
+
+## Znaleziska poboczne z dzisiejszej pracy nad Mocą (nie blokują, do wiedzy)
+- **`openDiplomacyAudience` i `buildPlayerDiploSummary`** (`main.ts:14621-14622`,
+  `formatPowerRelationLine`) — kolejny ekran z parą liczb Mocy, nominalny. Evaluator ocenił
+  jako niższe ryzyko niż HUD (gracz nie widzi tego obok panelu Mocy) — świadomie pozostawione.
+- **Pozycja Mocy w rankingu na ekranie dyplomacji** (`buildAbsolutePowerRank`, nominalna)
+  może się różnić od pozycji w panelu Mocy (`buildAbsolutePowerRankEffective`) — ten sam
+  gracz, dwa różne miejsca w rankingu na dwóch ekranach.
+- **Mnożnik trudności AI jest częściowo gubiony** (pre-istniejące, nie wprowadzone dziś):
+  `applyDifficultyCombatToUnitDef` nie usuwa cache `fieldPower` dla jednostek bez weterana
+  i bez fortyfikacji — dla takich jednostek AI mnożnik trudności jest po cichu ignorowany
+  w całej ścieżce Mocy (tabliczka, auto-bitwa, teraz też ranking). Dotyczy `R-MOC-*`
+  całościowo, nie tego konkretnego commita. Do naprawy: `game/ai-difficulty-bonus.ts`.
+- **Garnizon wspierający szturm sąsiedniego miasta bez opuszczania własnego garnizonu**
+  (`R-MOC-MUR-PARADOKS-Q1`) — wnosi do bitwy 49 pkt (poprawnie), tabliczka pokazuje 95 —
+  artefakt semantyki „tabliczka = Moc w obronie TEGO miasta", nie błąd, ale warty wzmianki
+  w tooltipie jeśli gracz kiedyś zapyta.
