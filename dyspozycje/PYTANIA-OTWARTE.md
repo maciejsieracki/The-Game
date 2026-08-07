@@ -1921,3 +1921,55 @@ w ogóle nie kosztować surowca, przy wariancie (A) i tak przestanie podlegać b
 warunku) · `gra/data/units.json` (kolumny `Surowiec`, `Surowiec (ilość)`).
 **Uwaga:** warunek występuje w DWÓCH miejscach (`:859-863` i `:956-957`) — każda zmiana musi
 objąć oba, inaczej lista produkcji i faktyczna możliwość budowy się rozjadą.
+
+## BUG-TOOLTIP-MOC-NIEPELNA (2026-08-07) · STATUS: **OTWARTE — defekt systemowy, do naprawy bez pytania**
+**Źródło:** pętla AutoBot `R-MOC-TABLICZKA-VS-BITWA` — Operator (Sonnet 5) → Evaluator (Opus 5),
+werdykt PASS-WITH-NOTES, nota N4.
+**Defekt:** `gra/src/ui/hexContextTooltip.ts:661-665` woła `fieldPower({meleeAttack, meleeDefence,
+armor, health})` — **cztery pola zamiast ośmiu**. Pomija **4 z 5 składowych Ataku**:
+`weaponDamage` (Obrażenia), `piercing` (Przebicie), `chargeBonus` (Szarża), `missileAttack`
+(Atak dystansowy).
+**Skala (przeliczona przez Evaluatora na całym `units.json`):** rozjazd tabliczka↔tooltip
+dotyczy **70 z 71 jednostek nieoblężniczych**, od **+18 do +19,5 pkt Mocy**. Przykłady dla
+**REKRUTA** (zero gwiazdek, zero premii weterana): Konnica tabliczka **49** vs tooltip **31,0**;
+Medżaj 64,5 → 45,0; Triari 62 → 43,0.
+**Kluczowe:** defekt jest **całkowicie niezależny od decyzji `C-MOC-Q1`** i od weteranów —
+myli gracza przy KAŻDEJ jednostce od dnia wdrożenia. Nie obejmuje go żadna decyzja, nie ma
+o nim śladu w kanonie, nie pilnuje go żaden test.
+**Naprawa:** dołożenie brakujących pól do jednego wywołania. **Nie wymaga litery** — to nie jest
+wybór produktowy, tylko niepełna implementacja istniejącego wzoru (`unit-power.ts:90-108`).
+**Do dołożenia razem:** test pilnujący zgodności wszystkich trzech miejsc liczących Moc.
+
+## R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 (2026-08-07) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+**Ustalenie Evaluatora (nota N5) — decyzja `C-MOC-Q1 = A` jest wewnętrznie sprzeczna.**
+Jedyny zapis treści, identyczny w `dyspozycje/WERSJE.md:838` i `dyspozycje/_handoff/KANAL-PRACA.md:5230`:
+> `C-MOC-Q1=A (Moc nominalna, ta z auto-bitwy)`
+**„Moc nominalna" i „ta z auto-bitwy" to dla weterana DWIE RÓŻNE LICZBY** — 49 vs 58,0 pkt Mocy.
+Etykieta, którą właściciel zatwierdził, opisuje wariant jako **brak rozjazdu**, a rozjazd wynosi
+**+18,37 %**.
+**Czego NIE ma w repozytorium:** oryginalnego pytania ABC (brak `docs/decyzje/C-MOC-*.md`,
+brak wpisu w rejestrze, brak w `PYTANIA-OTWARTE.md`). Fraza „Moc efektywna" nie występuje nigdzie
+poza komentarzem w kodzie (`armyMerge.ts:521`).
+**Chronologia (`git log -S`):** skalowanie weterana w auto-bitwie weszło **2026-07-26** (`16389f7`),
+tabliczka z komentarzem „KONKRETNY, ZNANY ROZJAZD" — **2026-07-29** (`0dd5589`). Rozjazd już
+istniał, gdy zadawano pytanie, a autor tabliczki o nim wiedział i opisał go w kodzie.
+**Werdykt Evaluatora:** czy liczby 49 vs 58 padły w rozmowie — **NIEWERYFIKOWALNE** z repozytorium.
+Formuła „właściciel świadomie odłożył" (powtórzona za komentarzem w kodzie) jest **nieuprawniona**
+— kod deklaruje świadomość właściciela, na którą nie ma pokrycia.
+**PYTANIE DO WŁAŚCICIELA:** czy tabliczka nad żetonem ma pokazywać Moc **nominalną** (dziś)
+czy **efektywną** (tę, którą realnie rozstrzyga starcie). Liczby na stole: ★★★ Konnica —
+tabliczka **49 pkt Mocy**, starcie **58,0**, panel pre-battle **49**.
+**Koszt naprawy znikomy:** podmiana jednego wywołania w `armyMerge.ts::stackFieldPowerM`
+(`rosterFieldPowerM` zamiast `sumRosterFieldM`), bez ruszania renderu — decyzja może zapaść
+wyłącznie na gruncie rozgrywki, nie kosztu.
+**Do domknięcia razem (nota N2):** panel pre-battle (`main.ts:17635`, duplikat
+`battle/mapFieldBattle.ts:143`) pokazuje Moc nominalną OBOK prognozy szans liczonej ze skalowanej
+— zostałby ostatnim miejscem z wariantem A.
+
+## P-BRAMKA-UNIT-POWER-CZERWONA (2026-08-07) · STATUS: **OTWARTE — bramka czerwona, nieudokumentowana**
+`node gra/tools/unit-power-test.cjs` → **4 pass, 2 fail, exit 1**:
+`FAIL: Hastati M_pole=50 (got 57.5)` · `FAIL: sumArmyFieldPower 3 units (got 167.5)`.
+Stan **pre-istniejący** (drzewo bez zmian), przyczyna: zdezaktualizowane wartości oczekiwane
+w teście po zmianie danych Hastati — **nie jest to regresja**. Ale **nie figuruje na liście
+znanych czerwonych w `CLAUDE.md`**, więc każda sesja odkrywa ją od nowa. Do naprawy albo do
+wpisania na listę znanych.
