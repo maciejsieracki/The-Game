@@ -589,6 +589,117 @@ ok(
   'kontrola ulgi (ograniczona, nie sięga podłogi): handel gracz→AI @ rel 60 pkt, oferta 158 PW (poniżej wymaganego z ulgą 159 PW) @ wysoka chęć partnera (Fenicjanie): odrzucenie',
 );
 
+// ---------------------------------------------------------------------------
+// R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1, notatka Evaluatora rundy 4 (N3):
+// handelWillingnessMultiplier działa też dla par AI(1)→AI(2) (proposerOwnerId=1,
+// responderOwnerId=2, żadne z dwóch nie jest graczem=0) — kierunek zweryfikowany
+// sweepem 1728 przypadków jako bezpieczny, ale dotąd niepokryty żadnym testem.
+// Poniższe 3 bloki domykają lukę pokrycia (nie zmieniają kodu produkcyjnego).
+// ---------------------------------------------------------------------------
+
+// (1) NISKA chęć respondenta-AI(2) (Zulusi, archTrade=0,20) @ rel(50,50): relTotal=100
+// pkt → relForFair=min(100,100)=100 pkt → diplomacyFairGivePn(receivePn,100)=receivePn
+// (parytet dokładny — BEZ modyfikatora oferta give=receive przeszłaby zawsze). Z modyfikatorem:
+// score=100, relFactor=100/200*0,4=0,20, tradeW=0,20*0,60+0,20=0,32 < mid=0,50 (progHandelWillingnessMin)
+// → kara: t=(0,50−0,32)/0,50=0,36 → multiplier=1+0,20×0,36=1,072 → wymagany próg=
+// max(100, ceil(100×1,072))=max(100,108)=108 PW > 100 PW oferty → ODRZUCENIE.
+// Dowód, że zaostrzenie (penalty) mnożnika chęci realnie działa w kierunku AI(1)→AI(2),
+// nie tylko gracz(0)→AI(1) (jedyny kierunek pokryty przed tą naprawą).
+const aiToAiLowWillCtx = {
+  relation: rel(50, 50),
+  responderPlayer: { typCywilizacji: 'zulusi' }, // AI(2), respondent, niska chęć handlu
+  proposerPlayer: { typCywilizacji: 'rzymianie' }, // AI(1), proponent
+};
+r = evaluateProposal(prop('handel', 1, 2, {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }],
+}), aiToAiLowWillCtx);
+ok(
+  !r.accepted,
+  'AI(1)→AI(2) handel @ parytecie dokładnym (100 PW = 100 PW, rel(50,50)→relForFair=100 pkt, fair=receivePn bez modyfikatora): ODRZUCENIE z niską chęcią respondenta-AI(2) (Zulusi) — dowód że zaostrzenie mnożnika chęci działa też dla pary AI↔AI, nie tylko gracz→AI',
+);
+ok(
+  /niechęć/i.test(r.reason ?? ''),
+  'AI(1)→AI(2) handel odrzucone @ niskiej chęci: komunikat zawiera "Niechęć" (przyczynowo trafny, ten sam mechanizm co gracz→AI)',
+);
+ok(
+  (r.reason ?? '').includes('108') && (r.reason ?? '').includes('100'),
+  'AI(1)→AI(2) handel odrzucone: komunikat z realnymi liczbami PW (wymagane ≥ 108 PW, oferujesz 100 PW)',
+);
+
+// (2) WYSOKA chęć respondenta-AI(2) (Fenicjanie, archTrade=0,90) @ rel(30,30) — MIRROR
+// dokładny testu ulgi gracz→AI (midRelCtx wyżej, ta sama relacja/archetyp/kwoty). Skoro
+// handelWillingnessMultiplier zależy WYŁĄCZNIE od stance (funkcja relacji + archetypów
+// obu stron) i responderIsPlayer (responderOwnerId===0), a nie od konkretnych wartości
+// proposerOwnerId/responderOwnerId poza tym jednym porównaniem do 0 — te same 3 progi
+// (167/160/158 PW, zweryfikowane wyżej dla gracz(0)→AI(1)) MUSZĄ dać identyczny wynik
+// dla AI(1)→AI(2) (responderOwnerId=2, wciąż ≠ 0 — modyfikator wciąż aktywny, tak jak
+// dla AI(1) w kierunku gracz→AI). Dowód, że ulga też działa identycznie w obu kierunkach.
+const aiToAiHighWillCtx = {
+  relation: rel(30, 30),
+  responderPlayer: { typCywilizacji: 'fenicjanie' }, // AI(2), respondent, wysoka chęć handlu
+  proposerPlayer: { typCywilizacji: 'rzymianie' }, // AI(1), proponent
+};
+r = evaluateProposal(prop('handel', 1, 2, {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: fairAt60 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }],
+}), aiToAiHighWillCtx);
+ok(
+  r.accepted === true,
+  `AI(1)→AI(2) handel @ rel 60 pkt, oferta ${fairAt60} PW == fair-neutralny (bez ulgi): akceptacja (identyczny próg co gracz→AI)`,
+);
+r = evaluateProposal(prop('handel', 1, 2, {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 160 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }],
+}), aiToAiHighWillCtx);
+ok(
+  r.accepted === true,
+  'AI(1)→AI(2) handel @ rel 60 pkt, oferta 160 PW (poniżej fair-neutralnego 167 PW, powyżej wymaganego z ulgą 159 PW) @ wysoka chęć respondenta-AI(2) (Fenicjanie): akceptacja — ulga działa identycznie jak dla gracz→AI',
+);
+r = evaluateProposal(prop('handel', 1, 2, {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 158 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 100 }],
+}), aiToAiHighWillCtx);
+ok(
+  !r.accepted,
+  'AI(1)→AI(2) handel @ rel 60 pkt, oferta 158 PW (poniżej wymaganego z ulgą 159 PW) @ wysoka chęć respondenta-AI(2) (Fenicjanie): odrzucenie — ulga ograniczona identycznie jak dla gracz→AI',
+);
+
+// (3) KONTROLA STRUKTURALNA (zbadanie hipotezy luki z KONTEKSTU zadania): czy brak
+// proposerUnfairToPartnerGate dla proponenta-AI (ten gate sprawdza tylko proposerIsPlayer)
+// otwiera realną lukę dla 'handel' w parze AI(1)→AI(2)? ODPOWIEDŹ: NIE — 'handel' jest
+// CELOWO poza PROPOSER_PW_FAIRNESS_ACTIONS (usunięty w rundzie 3, patrz komentarz przy
+// stałej), więc proposerUnfairToPartnerGate i tak NIGDY nie uruchamia się dla 'handel',
+// niezależnie od tożsamości proponenta (gracz LUB AI) — to nie jest asymetria specyficzna
+// dla AI↔AI, to strukturalna nieobecność dla WSZYSTKICH proponentów w tej akcji. Jedynym
+// i pełnym strażnikiem uczciwości dla 'handel' jest handelFairnessGate z PODŁOGĄ PARYTETU
+// (Math.max(receivePn, …)) — a ta podłoga, w przeciwieństwie do proposerUnfairToPartnerGate,
+// NIE sprawdza proposerIsPlayer nigdzie w swoim kodzie (patrz handelFairnessGate — jedyna
+// zależność od tożsamości to responderIsPlayer w handelWillingnessMultiplier, użyta TYLKO
+// do neutralizacji modyfikatora gdy respondentem jest gracz). Poniższy test to MIRROR
+// dokładny testu PODŁOGI PARYTETU z rundy 4 (highRelCtx wyżej) z proposerOwnerId=1,
+// responderOwnerId=2 zamiast 0,1 — identyczne odrzucenie dowodzi, że AI(1) NIE MOŻE
+// "skimować" kosztem AI(2) tak samo, jak gracz nie mógł kosztem AI (naprawa rundy 4
+// jest proposer-identity-agnostyczna, nie tylko player-specific). Brak realnej luki —
+// nie wymaga decyzji Macieja, zamyka hipotezę z KONTEKSTU zadania.
+const aiToAiFloorCtx = {
+  relation: rel(100, 100),
+  responderPlayer: { typCywilizacji: 'fenicjanie' }, // AI(2), wysoka chęć — test podłogi
+  proposerPlayer: { typCywilizacji: 'rzymianie' }, // AI(1)
+};
+r = evaluateProposal(prop('handel', 1, 2, {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 105 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 110 }],
+}), aiToAiFloorCtx);
+ok(
+  !r.accepted,
+  'KONTROLA STRUKTURALNA — brak luki: AI(1)→AI(2) @ rel(100,100) (parytet fair=receivePn=110 PW), oferta 105 PW < 110 PW: odrzucenie mimo wysokiej chęci respondenta-AI(2) (Fenicjanie) — podłoga parytetu chroni AI(2) przed AI(1) identycznie jak chroniła AI przed graczem (proposerUnfairToPartnerGate nieobecny dla \'handel\' niezależnie od tożsamości proponenta — to nie luka, handelFairnessGate jest proposer-identity-agnostyczny)',
+);
+ok(
+  (r.reason ?? '').includes('110') && (r.reason ?? '').includes('105'),
+  'KONTROLA STRUKTURALNA reject: komunikat z realnymi liczbami PW (wymagane ≥ 110 PW, oferujesz 105 PW) — identyczny format co gracz→AI',
+);
+
 r = evaluateProposal(prop('umowa_szlakow', 0, 1, { givePn: 250, receivePn: 100, turns: 20 }), lowTradeCtx);
 ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'traktat handlowy fair PW: akceptacja mimo willingness');
 r = evaluateProposal(prop('umowa_szlakow', 0, 1, { turns: 20 }), lowTradeCtx);
