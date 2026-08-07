@@ -1808,3 +1808,37 @@ dopiero na zdarzeniu hover, zamiast przy tworzeniu plakietki; albo brak fallback
 ładowania i romb jest kształtem domyślnym.
 **Kotwice:** `gra/src/render/**`, `gra/src/ui/**` (plakietka miasta, ikony kultur).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
+
+## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — do naprawy**
+**Jego słowa:** *„jednostka zwiadowcy nie miała wymagać żadnych surowców ani nie miała
+spożytkowywać podczas… nie powinno być żadnym kosztem ani jedzenia ani surowców — silny błąd
+do naprawy."*
+**Stan faktyczny — `gra/data/units.json`, wiersz „Zwiadowca" (Epoka: Kamień, Kultura: brak):**
+| Parametr | Wartość | Zgodność |
+|---|---|---|
+| `Surowiec` | **Drewno** | ⛔ NIEZGODNE — ma nie wymagać surowca |
+| `Surowiec (ilość)` | **10 szt.** | ⛔ NIEZGODNE |
+| `Pieniądz (koszt)` | 8 pkt Pieniądza | ❓ do rozstrzygnięcia — właściciel wymienił żywność i surowce, NIE Pieniądz |
+| `Utrzymanie (Pieniądz/turę)` | 0 pkt/turę | ✅ zgodne |
+| `żywność/turę` | 0 pkt/turę | ✅ zgodne |
+**Wniosek:** utrzymanie jest JUŻ zerowe (zero Pieniądza/turę, zero żywności/turę) — zgłoszenie
+w tej części jest już spełnione. Realny defekt to **koszt budowy: 10 szt. Drewna**.
+**DO DECYZJI (ABC na jutro):** czy zerujemy sam surowiec (Drewno 10 → 0), czy również koszt
+Pieniądza (8 → 0), czyli Zwiadowca całkowicie darmowy poza kosztem Ludności = 1.
+**Uwaga na kierunek zmiany:** źródłem prawdy są JSON-y w `gra/data/` (CLAUDE.md §2); panel Excel
+dogania JSON przez `gen-panel-*.py`, NIGDY odwrotnie.
+
+## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** *„tam jeszcze chciałem procentowy wzrost czyli na przykład 5 i pół procent
+o ile wyrośnie populacja a nie W5 bez litery W. na przykład 5 i pół procent albo 5 procent."*
+**Stan faktyczny:** plakietka miasta pokazuje **„ATENY · W5 · 1"** — segment `W5` to skrót,
+nie procent. Właściciel chce w tym miejscu **tempo wzrostu populacji wyrażone w procentach**,
+z częścią ułamkową, np. **5,5 %** albo **5 %**.
+**Do ustalenia w diagnozie:** co dziś oznacza `W5` (numer poziomu wzrostu? tura do przyrostu?
+wielkość?) i skąd wziąć wartość procentową — czy silnik liczy już przyrost populacji na turę
+jako ułamek, czy trzeba go wyprowadzić z bufora żywności i progu wzrostu.
+**Do decyzji (ABC):** dokładność zapisu (`5 %` vs `5,5 %` vs `5,5%`), oraz co się dzieje przy
+wzroście zerowym lub ujemnym (głód) — czy pokazujemy `0 %`, znak minus, czy inny wskaźnik.
+**Kotwice:** plakietka miasta w `gra/src/render/**` / `gra/src/ui/**`; wzrost populacji
+w `gra/src/game/turn-economy.ts`.
+**Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
