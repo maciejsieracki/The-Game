@@ -24,6 +24,7 @@ __export(dip_accept_entry_exports, {
   balancePanelDataFromRow: () => balancePanelDataFromRow,
   basketSidePnDifficultyMultiplier: () => basketSidePnDifficultyMultiplier,
   bilateralTreatyDisplayPw: () => bilateralTreatyDisplayPw,
+  computeIncomingPlayerAcceptNetPw: () => computeIncomingPlayerAcceptNetPw,
   computePlayerAcceptanceSides: () => computePlayerAcceptanceSides,
   diplomacyFairGivePn: () => diplomacyFairGivePn,
   diplomacyHandelSurowiecCenaJednostkowa: () => diplomacyHandelSurowiecCenaJednostkowa,
@@ -31,12 +32,15 @@ __export(dip_accept_entry_exports, {
   diplomacyPnTech: () => diplomacyPnTech,
   diplomacySumPn: () => diplomacySumPn,
   effectiveTreatyPnRequired: () => effectiveTreatyPnRequired,
+  evaluateProposal: () => evaluateProposal,
+  formatRelationModLabel: () => formatRelationModLabel,
   incomingTradeNetBalancePw: () => incomingTradeNetBalancePw,
   isIncomingBasketTradePanel: () => isIncomingBasketTradePanel,
   isPlayerIncomingGift: () => isPlayerIncomingGift,
   partnerTreatyPnRequired: () => partnerTreatyPnRequired,
   playerSideHasBasketOffer: () => playerSideHasBasketOffer,
   playerTreatyPnRequired: () => playerTreatyPnRequired,
+  previewIncomingPlayerAccept: () => previewIncomingPlayerAccept,
   relationPnModPct: () => relationPnModPct,
   relationSignedFromTotal: () => relationSignedFromTotal,
   renderPnBalancePanelForPeace: () => renderPnBalancePanelForPeace,
@@ -140,6 +144,7 @@ var diplomacy_default = {
     zdrada_zaufanie: -50,
     szpiegWykryty_zaufanie: -15,
     rywalizacjaTenSamTyp_zaufanie: -20,
+    miastoPanstwoSameCiv_zaufanie: 20,
     roznicaKulturowa_zaufanie: -5,
     przewagaMilitarna_respekt: 15,
     slabszyMilitarnie_respekt: -10,
@@ -214,7 +219,54 @@ var diplomacy_default = {
     graczWchlonieciePoWasaluTur: 10,
     graczWchloniecieKosztBaza: 150,
     graczWchloniecieKosztPerLudnosc: 25,
-    graczWchloniecieKosztMin: 200
+    graczWchloniecieKosztMin: 200,
+    wiarygodnoscSkalaMin: -100,
+    wiarygodnoscSkalaMax: 100,
+    wiarygodnoscProgWzorCnoty: 40,
+    wiarygodnoscProgWiarolomny: -40,
+    wiarygodnoscStartLatwy: 40,
+    wiarygodnoscStartNormalny: 20,
+    wiarygodnoscStartTrudny: 0,
+    wiarygodnoscN1BezOstrzezenia: -10,
+    wiarygodnoscN1KarencjaTur: 1,
+    wiarygodnoscN2ZlamaniePaktuNap: -18,
+    wiarygodnoscN2ZlamaniePaktuSojusz: -25,
+    wiarygodnoscN3AtakWOknieKarencji: -12,
+    wiarygodnoscN3KarencjaBezterminoweTur: 10,
+    wiarygodnoscN4OdmowaObowiazkuSojuszu: -15,
+    wiarygodnoscN5ZerwanieTraktatCzasowy: -6,
+    wiarygodnoscN5ZerwanieHandelCzasowy: -4,
+    wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+    wiarygodnoscN6ProgTurZRzedu: 3,
+    wiarygodnoscN7NieautoryzowanyPrzemarsz: -2,
+    wiarygodnoscOdwetOknoTur: 10,
+    wiarygodnoscS1SojuszPerTure: 1,
+    wiarygodnoscS2NapPerTure: 0.5,
+    wiarygodnoscS3HandelPerTureLatwy: 1.2,
+    wiarygodnoscS3HandelPerTureNormalny: 0.9,
+    wiarygodnoscS3HandelPerTureTrudny: 0.6,
+    wiarygodnoscS4PrzemarszPerTureLatwy: 0.8,
+    wiarygodnoscS4PrzemarszPerTureNormalny: 0.6,
+    wiarygodnoscS4PrzemarszPerTureTrudny: 0.4,
+    wiarygodnoscP1FiniszSojusz: 10,
+    wiarygodnoscP2FiniszNap: 5,
+    wiarygodnoscP2FiniszHandel: 5,
+    wiarygodnoscP3FiniszHandelCykliczny: 1,
+    wiarygodnoscP4BezWojny30Tur: 3,
+    wiarygodnoscP4OknoBezWojnyTur: 30,
+    wiarygodnoscP5PomocSojusznikowi: 20,
+    wiarygodnoscCzasZapomnieniaKaraLatwy: 40,
+    wiarygodnoscCzasZapomnieniaKaraNormalny: 80,
+    wiarygodnoscCzasZapomnieniaKaraTrudny: 120,
+    wiarygodnoscCzasZapomnieniaNagrodaLatwy: 120,
+    wiarygodnoscCzasZapomnieniaNagrodaNormalny: 80,
+    wiarygodnoscCzasZapomnieniaNagrodaTrudny: 40,
+    wiarygodnoscTrwalaPodlogaProcent: 0.1,
+    wiarygodnoscZaufanieDzielnikPerTura: 20,
+    wiarygodnoscTempoAmplituda: 0.5,
+    wiarygodnoscZaufanieDryfNa100: 0.03,
+    wiarygodnoscProgSojuszMin: 0,
+    wiarygodnoscProgNapMin: 0
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -1033,6 +1085,2809 @@ var diplomacy_default = {
   ]
 };
 
+// ../data/civs.json
+var civs_default = {
+  cywilizacje: [
+    {
+      Cywilizacja: "Grecy",
+      "Styl / charakter": "defensywna piechota",
+      "Jednostka specjalna": "Falanga (Hoplita)",
+      "Bonus startowy": "+Obrona piechoty; silna od frontu, odpiera szar\u017C\u0119",
+      "Bonusy/minusy (do dopracowania)": "wolniejszy ruch",
+      Uwagi: "epoka Br\u0105zu",
+      Religia: "Politeizm olimpijski",
+      nazwyKlastra: [
+        "Ateny",
+        "Sparta",
+        "Korynt",
+        "Teby",
+        "Argos",
+        "Mykeny",
+        "Milet",
+        "Rodos",
+        "Syrakuzy",
+        "Delfy"
+      ],
+      mnoznikHandelPieniadz: 2.3,
+      ikonaId: "grecy",
+      wodzowiePula: ["Perykles", "Temistokles", "Miltiades", "Kimon", "Solon", "Kleistenes", "Lizander", "Epaminondas", "Pelopidas", "Alkibiades"],
+      wodzowie: {
+        kamien: "Minos",
+        braz: "Agamemnon",
+        zelazo: "Leonidas",
+        antyk: "Aleksander Wielki"
+      },
+      kolorHex: "#1E5AA8",
+      bonusy: [
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Falanga: +20% obrony piechoty przy ataku frontalnym (szyld i oszczep)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Falanga",
+            "Wojownik myke\u0144ski",
+            "Rydwan myke\u0144ski",
+            "Thorakites"
+          ],
+          opis: "Hoplita = ulepszona piechota z tarcz\u0105; silna od frontu, odpiera szar\u017C\u0119 kawalerii",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.15,
+          opis: "Morskie szlaki handlowe: +15% Daniny z port\xF3w i dr\xF3g morskich (Korynt, Ateny)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_pobor_regen",
+          cel: "rekruci",
+          wartosc: -0.15,
+          opis: "Mniejsze pa\u0144stwa-miasta: wolniejsza odnowa poboru (\u221215% regen/tur\u0119 vs standard 10%)",
+          realizuje: "ekonomia"
+        }
+      ],
+      typCywilizacji: "grecy",
+      archetyp: "grecy",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Ateny",
+        "Sparta",
+        "Korynt",
+        "Teby",
+        "Argos",
+        "Mykeny",
+        "Milet",
+        "Rodos",
+        "Syrakuzy",
+        "Delfy",
+        "Olimpia",
+        "Efez",
+        "Pergamon",
+        "Halikarnas",
+        "Knossos",
+        "Faistos",
+        "Chania",
+        "Epidauros",
+        "Nafplion",
+        "Megara",
+        "Eleusis",
+        "Maraton",
+        "Platoje",
+        "Chalkida",
+        "Eretria",
+        "Larisa",
+        "Farsalos",
+        "Trikala",
+        "Iolkos",
+        "Demetrias",
+        "Ambrakia",
+        "Nikopolis",
+        "Dodona",
+        "Patras",
+        "Elis",
+        "Pylos",
+        "Messene",
+        "Gytheion",
+        "Monemwazja",
+        "Mistra",
+        "Tegea",
+        "Mantineja",
+        "Orchomenos",
+        "Chaironeja",
+        "Lebadeia",
+        "Tanagra",
+        "Aulis",
+        "Amfissa",
+        "Naupaktos",
+        "Kalydon",
+        "Stratos",
+        "Apollonia Illiryjska",
+        "Epidamnos",
+        "Korkyra",
+        "Zakintos",
+        "Kefalonia",
+        "Itaka",
+        "Leukas",
+        "Samos",
+        "Chios",
+        "Mitylena",
+        "Fokaja",
+        "Smyrna",
+        "Klazomeny",
+        "Kolofon",
+        "Teos",
+        "Erytraj",
+        "Priene",
+        "Magnezja",
+        "Milas",
+        "Knidos",
+        "Kos",
+        "Kalymnos",
+        "Astypalaia",
+        "Naksos",
+        "Paros",
+        "Melos",
+        "Tera",
+        "Delos",
+        "Andros",
+        "Tenos",
+        "Mykonos",
+        "Kytnos",
+        "Sifnos",
+        "Ios",
+        "Amorgos",
+        "Karpatos",
+        "Gortyna",
+        "Kydonia",
+        "Lyktos",
+        "Polirinia",
+        "Eleutherna",
+        "Aptera",
+        "Kyrena",
+        "Bizantion",
+        "Selinunt",
+        "Agrygent",
+        "Gela",
+        "Katania",
+        "Messyna"
+      ]
+    },
+    {
+      Cywilizacja: "Rzymianie",
+      "Styl / charakter": "ofensywna piechota + in\u017Cynieria",
+      "Jednostka specjalna": "Legion (Legionista)",
+      "Bonus startowy": "silny atak + pancerz; szybsza budowa dr\xF3g/budynk\xF3w; +Morale (dyscyplina)",
+      "Bonusy/minusy (do dopracowania)": "wy\u017Csze utrzymanie armii",
+      Uwagi: null,
+      Religia: "Religia rzymska / kult pa\u0144stwa",
+      nazwyKlastra: [
+        "Rzym",
+        "Ostia",
+        "Kapua",
+        "Pompeje",
+        "Tarent",
+        "Mediolan",
+        "Akwileja",
+        "Rawenna",
+        "Weje",
+        "Ancjum"
+      ],
+      mnoznikHandelPieniadz: 2,
+      ikonaId: "rzymianie",
+      wodzowiePula: ["Kamillus", "Cyncynat", "Fabiusz Maksymus", "Katon Starszy", "Emiliusz Paulus", "Klaudiusz", "Waleriusz", "Korneliusz", "Serwiliusz", "Fulwiusz"],
+      wodzowie: {
+        kamien: "Romulus",
+        braz: "Numa Pompiliusz",
+        zelazo: "Scypion Afryka\u0144ski",
+        antyk: "Juliusz Cezar"
+      },
+      kolorHex: "#8B1A1A",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Legion: +15% ataku i pancerza piechoty szturmowej; dyscyplina bojowa +morale",
+          realizuje: "walka"
+        },
+        {
+          typ: "koszt_redukcja",
+          cel: "budynki",
+          wartosc: 0.2,
+          opis: "In\u017Cynieria rzymska: -20% kosztu Produkcji budowli; szybsza budowa dr\xF3g",
+          realizuje: "miasto"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Hastati",
+            "Triari"
+          ],
+          opis: "Legionista = ci\u0119\u017Cka piechota z pilum; silny atak + pancerz + morale",
+          realizuje: "walka"
+        },
+        {
+          typ: "mnoznik_manpower_max",
+          cel: "rekruci",
+          wartosc: 2,
+          opis: "Legiony: 2\xD7 pula Manpower na obywatela (np. 2000 vs 1000 w epoce Kamie\u0144)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_pobor_regen",
+          cel: "rekruci",
+          wartosc: 1,
+          opis: "Dyscyplina legion\xF3w: 2\xD7 szybsza odnowa poboru (4% max/tur\u0119 vs standard 2%)",
+          realizuje: "ekonomia"
+        }
+      ],
+      typCywilizacji: "rzymianie",
+      archetyp: "rzym",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Rzym",
+        "Ostia",
+        "Kapua",
+        "Pompeje",
+        "Tarent",
+        "Mediolan",
+        "Akwileja",
+        "Rawenna",
+        "Weje",
+        "Ancjum",
+        "Neapol",
+        "Herkulanum",
+        "Werona",
+        "Padwa",
+        "Brescia",
+        "Turyn",
+        "Genua",
+        "Piza",
+        "Florencja",
+        "Perugia",
+        "Asy\u017C",
+        "Rimini",
+        "Bolonia",
+        "Parma",
+        "Modena",
+        "Ferrara",
+        "Terracina",
+        "Formia",
+        "Gaeta",
+        "Brindisi",
+        "Bari",
+        "Otranto",
+        "Lecce",
+        "Reggio Kalabria",
+        "Krotona",
+        "Sybaris",
+        "Metapont",
+        "Lokri",
+        "Cumae",
+        "Puzzole",
+        "Benewent",
+        "Alba Longa",
+        "Tuskulum",
+        "Preneste",
+        "Tibur",
+        "Antium",
+        "Lawinium",
+        "Fidenae",
+        "Cerveteri",
+        "Tarquinia",
+        "Volterra",
+        "Arezzo",
+        "Kortona",
+        "Chiusi",
+        "Perugia Etruska",
+        "Vulci",
+        "Populonia",
+        "Fiesole",
+        "Luka",
+        "Pistoia",
+        "Akwilea Nowa",
+        "Trewir",
+        "Kolonia",
+        "Moguncja",
+        "Augsburg",
+        "Wiede\u0144 Rzymski",
+        "Lugdunum",
+        "Massalia",
+        "Arles",
+        "Nimes",
+        "Narbona",
+        "Tuluza",
+        "Bordeaux",
+        "Londinium",
+        "York",
+        "Bath",
+        "Chester",
+        "Kartagena Hiszpa\u0144ska",
+        "Tarragona",
+        "Merida",
+        "Sewilla",
+        "Kordoba",
+        "Saragossa",
+        "Efez Rzymski",
+        "Antiochia",
+        "Damaszek",
+        "Cezarea Nadmorska",
+        "Aleksandria",
+        "Cyrena",
+        "Leptis Magna",
+        "Sabratha",
+        "Utica",
+        "Timgad",
+        "Volubilis",
+        "Bizancjum",
+        "Nikomedia",
+        "Tesaloniki",
+        "Filippi",
+        "Dyrrachium",
+        "Salona"
+      ]
+    },
+    {
+      Cywilizacja: "Chi\u0144czycy",
+      "Styl / charakter": "dystans + kawaleria",
+      "Jednostka specjalna": "Je\u017Adziec chi\u0144ski",
+      "Bonus startowy": "lepsi \u0142ucznicy (+Atak/zasi\u0119g) i lepsza konnica (+Uderzenie)",
+      "Bonusy/minusy (do dopracowania)": "s\u0142absza piechota szturmowa wr\u0119cz (nacisk na dystans i konnic\u0119)",
+      Uwagi: "wczesna przewaga w wojnie dystansowej",
+      Religia: "Konfucjanizm / Taoizm",
+      nazwyKlastra: [
+        "Qin",
+        "Qi",
+        "Chu",
+        "Jin",
+        "Yan",
+        "Zhao",
+        "Wei",
+        "Han",
+        "Lu",
+        "Song"
+      ],
+      mnoznikHandelPieniadz: 2.4,
+      ikonaId: "chinczycy",
+      wodzowiePula: ["Cheng Tang", "Wu Ding", "Wen Wang", "Zhou Gong", "Goujian", "Fuchai", "Hel\xFC", "Ksiaze Mu", "Ksiaze Huan", "Zhuang"],
+      wodzowie: {
+        kamien: "Huang Di",
+        braz: "Yu Wielki",
+        zelazo: "Qin Shi Huang",
+        antyk: "Han Wudi"
+      },
+      kolorHex: "#C41E3A",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "lukownicy",
+          wartosc: 0.2,
+          opis: "\u0141ucznicy: +20% ataku i zasi\u0119gu jednostek dystansowych (przewaga dystansowa)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "kawaleria",
+          wartosc: 0.15,
+          opis: "Konnica stepowa: +15% uderzenia kawalerii przy szar\u017Cy",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "kawaleria",
+          wartosc: [
+            "Je\u017Adziec chi\u0144ski",
+            "Halabardnik Shang",
+            "Rydwan Shang"
+          ],
+          opis: "Chi\u0144scy specjali\u015Bci: Je\u017Adziec chi\u0144ski (kawaleria stepowa), Halabardnik Shang (elitarna piechota), Rydwan Shang (rydwan bojowy)",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "chinczycy",
+      archetyp: "chiny",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Xi'an",
+        "Luoyang",
+        "Pekin",
+        "Nankin",
+        "Kaifeng",
+        "Hangzhou",
+        "Suzhou",
+        "Chengdu",
+        "Chongqing",
+        "Wuhan",
+        "Guangzhou",
+        "Shanghai",
+        "Tianjin",
+        "Shenyang",
+        "Harbin",
+        "Jinan",
+        "Taiyuan",
+        "Zhengzhou",
+        "Anyang",
+        "Handan",
+        "Linzi",
+        "Yingdu",
+        "Xianyang",
+        "Datong",
+        "Dunhuang",
+        "Turfan",
+        "Kaszgar",
+        "Lanzhou",
+        "Yinchuan",
+        "Xining",
+        "Kunming",
+        "Guiyang",
+        "Nanning",
+        "Fuzhou",
+        "Xiamen",
+        "Quanzhou",
+        "Ningbo",
+        "Wenzhou",
+        "Shaoxing",
+        "Jiaxing",
+        "Wuxi",
+        "Changzhou",
+        "Yangzhou",
+        "Zhenjiang",
+        "Hefei",
+        "Nanchang",
+        "Changsha",
+        "Guilin",
+        "Luoyi",
+        "Chang'an Nowy",
+        "Pingyao",
+        "Qufu",
+        "Zoucheng",
+        "Jining",
+        "Dezhou",
+        "Weifang",
+        "Yantai",
+        "Qingdao",
+        "Weihai",
+        "Baoding",
+        "Shijiazhuang",
+        "Handan Nowy",
+        "Xingtai",
+        "Luoning",
+        "Sanmenxia",
+        "Nanyang",
+        "Xiangyang",
+        "Jingzhou",
+        "Yichang",
+        "Jingmen",
+        "Ying",
+        "Shou Chun",
+        "Chen",
+        "Song Cheng",
+        "Pengcheng",
+        "Xiapi",
+        "Guangling",
+        "Jiankang",
+        "Jiangling",
+        "Wancheng",
+        "Chengzhou",
+        "Jinyang",
+        "Anyi",
+        "Yong",
+        "Yueyang",
+        "Fenyang",
+        "Puzhou",
+        "Wei Cheng",
+        "Daliang",
+        "Ye",
+        "Handan Stary",
+        "Zhongshan",
+        "Jicheng",
+        "Xiadu",
+        "Liaoyang",
+        "Yan Cheng",
+        "Jimo",
+        "Bohai",
+        "Laizhou",
+        "Dengzhou"
+      ]
+    },
+    {
+      Cywilizacja: "Inkowie",
+      "Styl / charakter": "nauka/kultura + elitarna piechota",
+      "Jednostka specjalna": "Chaska (maczuga gwia\u017Adzista) + Kr\xF3lewska Gwardia (elita)",
+      "Bonus startowy": "+Nauka/Kultura (kalendarz); bonus w lesie/d\u017Cungli",
+      "Bonusy/minusy (do dopracowania)": "brak konnicy i rydwan\xF3w (brak koni/wo\u0142\xF3w; \xA78c) \u2014 si\u0142a w piechocie i dystansie",
+      Uwagi: null,
+      Religia: "Kult S\u0142o\u0144ca Inti",
+      nazwyKlastra: [
+        "Cusco",
+        "Machu Picchu",
+        "Ollantaytambo",
+        "Pisac",
+        "Sacsayhuam\xE1n",
+        "Vilcabamba",
+        "Cajamarca",
+        "Tambo Colorado",
+        "Quito",
+        "Tumbes"
+      ],
+      mnoznikHandelPieniadz: 1.9,
+      ikonaId: "inkowie",
+      wodzowiePula: ["Sinchi Roca", "Lloque Yupanqui", "Mayta Capac", "Capac Yupanqui", "Inca Roca", "Yahuar Huacac", "Tupac Yupanqui", "Huayna Capac", "Atahualpa", "Huascar"],
+      wodzowie: {
+        kamien: "Manco C\xE1pac",
+        braz: "Wirakocza Inka",
+        zelazo: "Pachacuti",
+        antyk: "T\xFApac Inca Yupanqui"
+      },
+      kolorHex: "#D4A017",
+      bonusy: [
+        {
+          typ: "bonus_nauka",
+          cel: "wszystko",
+          wartosc: 0.15,
+          opis: "Kalendarz s\u0142oneczny: +15% produkcji punkt\xF3w nauki (astronomia i agronomia)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Teren g\xF3rski: +20% walki w lesie i d\u017Cungli (znajomo\u015B\u0107 terenu)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Wojownik z maczug\u0105 (Chaska)",
+            "Wojownik z toporem",
+            "Procarz (Huaracoc)",
+            "Oszczepnik (Est\xF3lica)",
+            "Gwardzista z champi"
+          ],
+          opis: "Chaska (maczuga gwia\u017Adzista) = elitarna piechota; Kr\xF3lewska Gwardia = oddzia\u0142y presti\u017Cowe",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "inkowie",
+      archetyp: "inkowie",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Cusco",
+        "Machu Picchu",
+        "Ollantaytambo",
+        "Pisac",
+        "Sacsayhuam\xE1n",
+        "Vilcabamba",
+        "Cajamarca",
+        "Tambo Colorado",
+        "Quito",
+        "Tumbes",
+        "Chan Chan",
+        "Chavin de Huantar",
+        "Tiwanaku",
+        "Pachacamac",
+        "Nazca",
+        "Caral",
+        "Kuelap",
+        "Choquequirao",
+        "Wi\xF1ay Wayna",
+        "Moray",
+        "Tipon",
+        "Raqchi",
+        "Huanuco Pampa",
+        "Vilcashuaman",
+        "Chinchero",
+        "Pisac Nowy",
+        "Ancon",
+        "Sipan",
+        "T\xFAcume",
+        "Bat\xE1n Grande",
+        "Sican",
+        "Huaca del Sol",
+        "Huaca de la Luna",
+        "Chavin",
+        "Sillustani",
+        "Puno",
+        "Copacabana",
+        "Chucuito",
+        "Juli",
+        "Pomata",
+        "Lampa",
+        "Azangaro",
+        "Ayaviri",
+        "Huancayo",
+        "Jauja",
+        "Tarma",
+        "Huanuco",
+        "Cerro de Pasco",
+        "Huaraz",
+        "Recuay",
+        "Huamachuco",
+        "Marcahuamachuco",
+        "Cajamarquilla",
+        "Lima Inkaska",
+        "Ica",
+        "Pisco",
+        "Paracas",
+        "Arequipa",
+        "Moquegua",
+        "Tacna",
+        "Arica",
+        "Potosi",
+        "La Paz Inkaska",
+        "Oruro",
+        "Cochabamba",
+        "Sucre",
+        "Charcas",
+        "Chuquisaca",
+        "Samaipata",
+        "Incallajta",
+        "Iskanwaya",
+        "Quito Nowe",
+        "Latacunga",
+        "Ambato",
+        "Riobamba",
+        "Cuenca",
+        "Loja",
+        "Ingapirca",
+        "Tomebamba",
+        "Saraguro",
+        "Ca\xF1aribamba",
+        "Piura",
+        "Chulucanas",
+        "Lambayeque",
+        "Chiclayo",
+        "Trujillo",
+        "Huamachuco Nowy",
+        "Otuzco",
+        "Cajabamba",
+        "Celendin",
+        "San Marcos",
+        "Chota",
+        "Bambamarca",
+        "Huancabamba",
+        "Ayacucho",
+        "Huanta",
+        "Andahuaylas",
+        "Abancay",
+        "Curahuasi",
+        "Vilcashuaman Nowy"
+      ]
+    },
+    {
+      Cywilizacja: "Zulusi",
+      "Styl / charakter": "szybka, agresywna piechota",
+      "Jednostka specjalna": "Impi",
+      "Bonus startowy": "+Ruch i +Morale piechoty; tania, silna w grupie",
+      "Bonusy/minusy (do dopracowania)": "s\u0142aby dystans",
+      Uwagi: null,
+      Religia: "Kult przodk\xF3w / animizm",
+      nazwyKlastra: [
+        "uMgungundlovu",
+        "Ondini",
+        "Ulundi",
+        "kwaBulawayo",
+        "eMakhosini",
+        "Nobamba",
+        "Nodwengu",
+        "kwaDukuza",
+        "Mahlabathini",
+        "Babanango"
+      ],
+      mnoznikHandelPieniadz: 1.8,
+      ikonaId: "zulusi",
+      wodzowiePula: ["Dingane", "Mpande", "Ndaba", "Jama", "Punga", "Mageba", "Zwide", "Sobhuza", "Dingiswayo", "Langalibalele"],
+      wodzowie: {
+        kamien: "Zulu kaMalandela",
+        braz: "Senzangakhona",
+        zelazo: "Czaka",
+        antyk: "Cetshwayo"
+      },
+      kolorHex: "#2E7D32",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Ruch i morale: +20% pr\u0119dko\u015Bci piechoty i +morale przy ataku w grupie (formacja buffalo)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.1,
+          opis: "Tania rekrutacja: koszt rekrutacji Impi -10% (liczebno\u015B\u0107 > jako\u015B\u0107)",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Impi",
+            "Oszczepnik Zulu (Izijula)",
+            "iButho z iklwa"
+          ],
+          opis: "Impi = szybka piechota z assegai; silna w zmasowanym ataku, s\u0142aba na dystans",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "zulusi",
+      archetyp: "zulusi",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "uMgungundlovu",
+        "Ondini",
+        "Ulundi",
+        "kwaBulawayo",
+        "eMakhosini",
+        "Nobamba",
+        "Nodwengu",
+        "kwaDukuza",
+        "Mahlabathini",
+        "Babanango",
+        "Isandlwana",
+        "kwaGqokli",
+        "Eshowe",
+        "Empangeni",
+        "Nongoma",
+        "Nkandla",
+        "Mtunzini",
+        "Melmoth",
+        "Vryheid",
+        "Pongola",
+        "Hlobane",
+        "Kambula",
+        "Gingindlovu",
+        "Ntombe",
+        "Msebe",
+        "Ndondakusuka",
+        "Ceza",
+        "Nkwalini",
+        "Mtubatuba",
+        "Hluhluwe",
+        "Mkuze",
+        "Jozini",
+        "Ubombo",
+        "Manguzi",
+        "Sodwana",
+        "kwaMbonambi",
+        "Richards Bay",
+        "St Lucia",
+        "Nseleni",
+        "Esikhawini",
+        "Gibixhegu",
+        "esiKlebheni",
+        "Mbelebeleni",
+        "kwaNzimela",
+        "kwaNxumalo",
+        "eNtumeni",
+        "kwaMagwaza",
+        "Hlabisa",
+        "Nqutu",
+        "Dundee",
+        "Utrecht",
+        "Newcastle",
+        "Ladysmith",
+        "Estcourt",
+        "Weenen",
+        "Greytown",
+        "Kranskop",
+        "Tugela Ferry",
+        "Msinga",
+        "Pomeroy",
+        "Nkonjeni",
+        "Louwsburg",
+        "Paulpietersburg",
+        "Piet Retief",
+        "Golela",
+        "Ingwavuma",
+        "Mahlangeni",
+        "Nondweni",
+        "Enseleni",
+        "Mandeni",
+        "Groutville",
+        "Stanger",
+        "Tongaat",
+        "Verulam",
+        "Ndwedwe",
+        "KwaMashu",
+        "Umlazi",
+        "Ntuzuma",
+        "Inanda",
+        "Amanzimtoti",
+        "Umzinto",
+        "Scottburgh",
+        "Port Shepstone",
+        "Harding",
+        "Ixopo",
+        "Underberg",
+        "Bulwer",
+        "Impendle",
+        "Nottingham Road",
+        "Mooi River",
+        "Winterton",
+        "Bergville",
+        "Colenso",
+        "Elandslaagte",
+        "Glencoe",
+        "Hattingspruit",
+        "Wasbank",
+        "Helpmekaar",
+        "Landman's Drift",
+        "Nongqayi"
+      ]
+    },
+    {
+      Cywilizacja: "Egipt",
+      "Styl / charakter": "rydwany + \u0142ucznicy dystansowi",
+      "Jednostka specjalna": "Med\u017Caj (Gwardia Faraona)",
+      "Bonus startowy": "+Atak dystansowy \u0142ucznik\xF3w; rydwany szybsze, z atakiem dystansowym i du\u017Cym zapasem strza\u0142u (rydwany-\u0142ucznicy)",
+      "Bonusy/minusy (do dopracowania)": "s\u0142absza ci\u0119\u017Cka piechota frontalna",
+      Uwagi: "Stary \u015Awiat \u2014 pe\u0142ny dost\u0119p do koni/wo\u0142\xF3w/rydwan\xF3w",
+      Religia: "Religia egipska \u2014 faraon-b\xF3g",
+      nazwyKlastra: [
+        "Memfis",
+        "Teby",
+        "Heliopolis",
+        "Abydos",
+        "Nekhen",
+        "Elefantyna",
+        "Sais",
+        "Bubastis",
+        "Edfu",
+        "Dendera"
+      ],
+      mnoznikHandelPieniadz: 2.1,
+      ikonaId: "egipt",
+      wodzowiePula: ["Dzeser", "Snofru", "Chefren", "Mykerinos", "Pepi II", "Mentuhotep II", "Amenemhat I", "Totmes III", "Amenhotep III", "Echnaton"],
+      wodzowie: {
+        kamien: "Narmer",
+        braz: "Chufu",
+        zelazo: "Ramzes II",
+        antyk: "Kleopatra VII"
+      },
+      kolorHex: "#E8C547",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "lukownicy",
+          wartosc: 0.2,
+          opis: "\u0141ucznicy na rydwanach: +20% ataku dystansowego; rydwany z du\u017Cym zapasem strza\u0142",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "rydwany",
+          wartosc: 0.15,
+          opis: "Szybkie rydwany: +15% pr\u0119dko\u015Bci i zasi\u0119gu ataku rydwan\xF3w bojowych",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "\u0141ucznik egipski",
+            "\u0141ucznik nubijski",
+            "Rydwan egipski",
+            "Wojownik z khopesh",
+            "Wojownik z \u017Celaznym khopesh"
+          ],
+          opis: "Med\u017Caj = elitarna gwardia; najlepsza piechota Egiptu, ochrona centrum miasta",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "egipt",
+      archetyp: "egipt",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Memfis",
+        "Teby",
+        "Heliopolis",
+        "Abydos",
+        "Nekhen",
+        "Elefantyna",
+        "Sais",
+        "Bubastis",
+        "Edfu",
+        "Dendera",
+        "Karnak",
+        "Luksor",
+        "Gize",
+        "Sakkara",
+        "Abu Simbel",
+        "Amarna",
+        "Achetaton",
+        "Awaris",
+        "Tanis",
+        "Piramunt",
+        "Buto",
+        "Naukratis",
+        "Rakotis",
+        "Aleksandria",
+        "Kanopus",
+        "Rozetta",
+        "Damietta",
+        "Mendes",
+        "Busiris",
+        "Pi-Ramzes",
+        "Herakleopolis",
+        "Oksyrynchos",
+        "Hermopolis",
+        "Asjut",
+        "Achmim",
+        "Koptos",
+        "Deir el-Bahari",
+        "Deir el-Medina",
+        "Medinet Habu",
+        "Ramesseum",
+        "Esna",
+        "Kom Ombo",
+        "Aswan",
+        "Filae",
+        "Kalabsza",
+        "Buhen",
+        "Kerma",
+        "Napata",
+        "Meroe",
+        "Semna",
+        "Faras",
+        "Nekropolis Teba\u0144ska",
+        "Hut-waret",
+        "Xois",
+        "Leontopolis",
+        "Sebennytos",
+        "Athribis",
+        "Letopolis",
+        "Krokodilopolis",
+        "Fajum",
+        "Herakleon",
+        "Marea",
+        "Paretonion",
+        "Siwa",
+        "Bahariya",
+        "Farafra",
+        "Dachla",
+        "Charga",
+        "Elkab",
+        "Hierakonpolis",
+        "Gebelein",
+        "Armant",
+        "Tod",
+        "Dendur",
+        "Amada",
+        "Wadi Halfa",
+        "Sesebi",
+        "Sai",
+        "Kawa",
+        "Sanam",
+        "Gebel Barkal",
+        "Nuri",
+        "Kurru",
+        "Musawwarat",
+        "Naga",
+        "Sarabit al-Chadim",
+        "Timna",
+        "Serabit",
+        "Tell el-Daba",
+        "Tell Basta",
+        "Tell el-Amarna",
+        "Kom el-Hisn",
+        "Kom el-Ahmar",
+        "Beni Hasan",
+        "El-Bersza",
+        "Meir",
+        "Qau el-Kebir",
+        "Rifa",
+        "Matmar",
+        "Badari"
+      ]
+    },
+    {
+      Cywilizacja: "Sumerowie",
+      "Styl / charakter": "ci\u0119\u017Cka piechota + \u0142ucznicy + mocne rydwany",
+      "Jednostka specjalna": "Gwardia Kr\xF3lewska Sumeru",
+      "Bonus startowy": "+Obrona i Health ci\u0119\u017Ckiej piechoty; silni \u0142ucznicy pieszni; ci\u0119\u017Ckie, mocne rydwany bojowe",
+      "Bonusy/minusy (do dopracowania)": "wolniejsza lekka kawaleria",
+      Uwagi: "Stary \u015Awiat \u2014 pe\u0142ny dost\u0119p do koni/wo\u0142\xF3w/rydwan\xF3w",
+      Religia: "Religia sumeryjska (mezopotamska) \u2014 Enlil/Anu",
+      nazwyKlastra: [
+        "Uruk",
+        "Ur",
+        "Lagasz",
+        "Kisz",
+        "Nippur",
+        "Eridu",
+        "Umma",
+        "Larsa",
+        "Adab",
+        "Isin"
+      ],
+      mnoznikHandelPieniadz: 2.2,
+      ikonaId: "sumer",
+      wodzowiePula: ["Etana", "Enmerkar", "Lugalbanda", "Dumuzi", "Eannatum", "Lugalzagesi", "Meskalamdug", "Mesannepada", "Enannatum", "Entemena"],
+      wodzowie: {
+        kamien: "Alulim",
+        braz: "Gilgamesz",
+        zelazo: "Ur-Nammu",
+        antyk: "Szulgi"
+      },
+      kolorHex: "#6B4226",
+      bonusy: [
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.2,
+          opis: "Ci\u0119\u017Cka piechota: +20% obrony i HP ci\u0119\u017Ckiej piechoty (pancerz br\u0105zowy + tarcza)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "rydwany",
+          wartosc: 0.15,
+          opis: "Ci\u0119\u017Ckie rydwany bojowe: +15% HP i obrony rydwan\xF3w (masywna konstrukcja)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "\u0141ucznik sumeryjski",
+            "Rydwan sumeryjski",
+            "W\u0142\xF3cznik sumeryjski",
+            "\u0141ucznik akadyjski",
+            "Mur tarcz (Sargonid)"
+          ],
+          opis: "Gwardia Kr\xF3lewska = szczyt ci\u0119\u017Ckiej piechoty Sumeru; pancerz i lanca; +obrona miasta",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "sumer",
+      archetyp: "sumer",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Uruk",
+        "Ur",
+        "Lagasz",
+        "Kisz",
+        "Nippur",
+        "Eridu",
+        "Umma",
+        "Larsa",
+        "Adab",
+        "Isin",
+        "Girsu",
+        "Szuruppak",
+        "Bad-tibira",
+        "Sippar",
+        "Akszak",
+        "Kutha",
+        "Marad",
+        "Kazallu",
+        "Dilbat",
+        "Borsippa",
+        "Babilon",
+        "Kisura",
+        "Zabalam",
+        "Nina",
+        "Guabba",
+        "Karkara",
+        "Der",
+        "Esznunna",
+        "Malgium",
+        "Terqa",
+        "Mari",
+        "Ebla",
+        "Emar",
+        "Tuttul",
+        "Nagar",
+        "Urkesz",
+        "Aszur",
+        "Niniwa",
+        "Arbela",
+        "Nuzi",
+        "Arrapha",
+        "Susa",
+        "Anszan",
+        "Awan",
+        "Simaszki",
+        "Akkad",
+        "Agade",
+        "Kul-Aba",
+        "Kesz",
+        "Abu Salabikh",
+        "Fara",
+        "Tello",
+        "Warka",
+        "Uqair",
+        "Jemdet Nasr",
+        "Ubaid",
+        "Choga Mami",
+        "Tepe Gawra",
+        "Hassuna",
+        "Samarra",
+        "Halaf",
+        "Hamoukar",
+        "Tell Brak",
+        "Tell Leilan",
+        "Chagar Bazar",
+        "Tell Beydar",
+        "Tell Chuera",
+        "Kar-Tukulti-Ninurta",
+        "Dur-Kurigalzu",
+        "Larak",
+        "Kullab",
+        "Puzrisz-Dagan",
+        "Drehem",
+        "Tell Agrab",
+        "Khafajah",
+        "Tell Asmar",
+        "Ischali",
+        "Nerebtum",
+        "Shaduppum",
+        "Tuba",
+        "Rapiqum",
+        "Hit",
+        "Anah",
+        "Qatna",
+        "Alalakh",
+        "Ugarit",
+        "Karkemisz",
+        "Shubat-Enlil",
+        "Tell Mozan",
+        "Tell Rimah",
+        "Tell Taya",
+        "Tepe Sialk",
+        "Tepe Yahya",
+        "Shahr-i Sokhta",
+        "Chogha Zanbil",
+        "Haft Tepe",
+        "Tal-i Malyan",
+        "Konar Sandal",
+        "Liyan",
+        "Bushehr"
+      ]
+    },
+    {
+      Cywilizacja: "Celtowie",
+      "Styl / charakter": "agresywna piechota z broni\u0105 sieczn\u0105; brawurowa szar\u017Ca",
+      "Jednostka specjalna": "Soldurii",
+      "Bonus startowy": "+Atak/Morale piechoty przy szar\u017Cy (brawura); d\u0142ugie miecze \u2014 premia do Uderzenia",
+      "Bonusy/minusy (do dopracowania)": "s\u0142absza dyscyplina/obrona w przeci\u0105g\u0142ej walce; brak ci\u0119\u017Ckiej formacji",
+      Uwagi: "typ g\u0142\xF3wny \xA79d; jedn. spec. Soldurii (Maciej 2026-07-04); Gaesatae = elita najemna w units.json",
+      Religia: "Religia celtycka (druidyzm)",
+      nazwyKlastra: [
+        "Bibracte",
+        "Gergowia",
+        "Alezja",
+        "Avaricum",
+        "Uxellodunum",
+        "Manching",
+        "Numancja",
+        "Stradonice",
+        "Z\xE1vist",
+        "Heuneburg"
+      ],
+      mnoznikHandelPieniadz: 1.9,
+      ikonaId: "celtowie",
+      wodzowiePula: ["Dumnoryks", "Divitiakus", "Cassivellaunus", "Kunobelinos", "Orgetoryks", "Kastyk", "Ambioryks", "Indutiomaros", "Tasgetios", "Litawikus"],
+      wodzowie: {
+        kamien: "Ambigatos",
+        braz: "Brennus",
+        zelazo: "Wercyngetoryks",
+        antyk: "Boudika"
+      },
+      kolorHex: "#3D6B35",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.25,
+          opis: "Brawura szar\u017Cy: +25% ataku piechoty przy pierwszym uderzeniu (furia celtycka)",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Gaesatae: +15% Uderzenia (miecz sieczny, si\u0142a ci\u0119cia)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Soldurii",
+            "Rydwan celtycki",
+            "Miecznik galijski"
+          ],
+          opis: "Soldurii \u2014 elitarna gwardia wodza; przysi\u0119ga do \u015Bmierci; silna w szar\u017Cy",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "celtowie",
+      archetyp: "celtowie",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Bibracte",
+        "Gergowia",
+        "Alezja",
+        "Avaricum",
+        "Uxellodunum",
+        "Manching",
+        "Numancja",
+        "Stradonice",
+        "Zavist",
+        "Heuneburg",
+        "Vix",
+        "Mont Lassois",
+        "Entremont",
+        "Glanum",
+        "Ens\xE9rune",
+        "Corent",
+        "Gondole",
+        "Vienne",
+        "Genabum",
+        "Lutecja",
+        "Divodurum",
+        "Durocortorum",
+        "Samarobriva",
+        "Noviodunum",
+        "Augustodunum",
+        "Augustonemetum",
+        "Vesontio",
+        "Cabillonum",
+        "Matisco",
+        "Lugdunum",
+        "Genava",
+        "Noviodunum Helvetiorum",
+        "Aventicum",
+        "Vindonissa",
+        "Basilia",
+        "Turicum",
+        "Salodurum",
+        "Argentorate",
+        "Borbetomagus",
+        "Noviomagus",
+        "Durocatalaunum",
+        "Vellaunodunum",
+        "Agedincum",
+        "Autricum",
+        "Suindinum",
+        "Vorgium",
+        "Condate",
+        "Condevincum",
+        "Portus Namnetum",
+        "Darioritum",
+        "Fanum Martis",
+        "Vindinium",
+        "Juliomagus",
+        "Caesarodunum",
+        "Limonum",
+        "Mediolanum Santonum",
+        "Burdigala",
+        "Vesunna",
+        "Segodunum",
+        "Divona",
+        "Nemausus",
+        "Ruscino",
+        "Ambrussum",
+        "Ugernum",
+        "Cabellio",
+        "Arausio",
+        "Vasio",
+        "Alba Helviorum",
+        "Aletum",
+        "Reginca",
+        "Vorganium",
+        "Isca Dumnoniorum",
+        "Camulodunum",
+        "Verulamium",
+        "Calleva Atrebatum",
+        "Venta Belgarum",
+        "Durnovaria",
+        "Sorviodunum",
+        "Corinium",
+        "Glevum",
+        "Viroconium",
+        "Deva",
+        "Eboracum",
+        "Lindum",
+        "Ratae",
+        "Venta Icenorum",
+        "Noviomagus Reginorum",
+        "Maiden Castle",
+        "Danebury",
+        "Cadbury Castle",
+        "Traprain Law",
+        "Dun Aengus",
+        "Emain Macha",
+        "Tara",
+        "Dun Ailinne",
+        "Cruachan",
+        "Navan Fort",
+        "Downpatrick",
+        "Dinorben",
+        "Tre'r Ceiri"
+      ]
+    },
+    {
+      Cywilizacja: "Germanie",
+      "Styl / charakter": "piechota le\u015Bna; zasadzki i furia bojowa",
+      "Jednostka specjalna": "Wojownik germa\u0144ski (framea)",
+      "Bonus startowy": "+walka w lesie i +zasadzka (pierwszy cios); furia bojowa (+Atak na starciu)",
+      "Bonusy/minusy (do dopracowania)": "wolniejsza technologia/organizacja; s\u0142absze obl\u0119\u017Cnictwo",
+      Uwagi: "typ g\u0142\xF3wny (przysz\u0142a kultura \xA79d, pokrewna Galom)",
+      Religia: "Religia germa\u0144ska (Wotan / Odyn)",
+      nazwyKlastra: [
+        "Mattium",
+        "Feddersen Wierde",
+        "Hodde",
+        "Gr\xF8ntoft",
+        "Fl\xF6geln",
+        "Wijster",
+        "Ezinge",
+        "Jastorf",
+        "Gamla Uppsala",
+        "Tofting"
+      ],
+      mnoznikHandelPieniadz: 1.7,
+      ikonaId: "germanie",
+      wodzowiePula: ["Marbod", "Segestes", "Segimer", "Inguiomer", "Chariovalda", "Katualda", "Nasua", "Cimberius", "Boioryks", "Teutobod"],
+      wodzowie: {
+        kamien: "Mannus",
+        braz: "Ariowist",
+        zelazo: "Arminiusz",
+        antyk: "Alaryk I"
+      },
+      kolorHex: "#4A5568",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.25,
+          opis: "Zasadzka le\u015Bna: +25% ataku przy walce w lesie lub przy pierwszym ciosie z zasadzki",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Furia bojowa: +15% ataku na starciu (bonus morale przy bezpo\u015Brednim kontakcie)",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Berserker germa\u0144ski"
+          ],
+          opis: "Framea = w\u0142\xF3cznia/oszczep germa\u0144ski; celny rzut + walka wr\u0119cz; specjalista od zasadzki",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "germanie",
+      archetyp: "germanie",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Mattium",
+        "Feddersen Wierde",
+        "Hodde",
+        "Gr\xF8ntoft",
+        "Fl\xF6geln",
+        "Wijster",
+        "Ezinge",
+        "Jastorf",
+        "Gamla Uppsala",
+        "Tofting",
+        "Haithabu",
+        "Birka",
+        "Ribe",
+        "Hedeby",
+        "Kaupang",
+        "Wolin",
+        "Truso",
+        "Menzlin",
+        "Gro\xDF Str\xF6mkendorf",
+        "Reric",
+        "Starigard",
+        "Rugard",
+        "Oldenburg",
+        "Bardowick",
+        "Magadoburg",
+        "Erphesfurt",
+        "Fulda",
+        "Paderborn",
+        "Corvey",
+        "Herford",
+        "Minden",
+        "Osnabr\xFCck",
+        "Bremum",
+        "Hammaburg",
+        "Soest",
+        "Throtmanni",
+        "Xanten",
+        "Ubiorum",
+        "Novaesium",
+        "Bonna",
+        "Confluentes",
+        "Wormacja",
+        "Mogontiacum",
+        "Nida",
+        "Dieburg",
+        "Ladenburg",
+        "Rottweil",
+        "Cambodunum",
+        "Reginum",
+        "Castra Regina",
+        "Boiodurum",
+        "Iuvavum",
+        "Vindobona",
+        "Carnuntum",
+        "Brigetio",
+        "Aquincum",
+        "Noreia",
+        "Magdalensberg",
+        "Idistaviso",
+        "Teutoburg",
+        "Aliso",
+        "Anreppen",
+        "Haltern",
+        "Oberaden",
+        "Waldgirmes",
+        "Dorlar",
+        "Kalkriese",
+        "Wilzenberg",
+        "Sievern",
+        "Fochteloerveen",
+        "Wijnaldum",
+        "Elisenhof",
+        "Bentumersiel",
+        "Fallward",
+        "Hodorf",
+        "S\xFCderbrarup",
+        "Sorte Muld",
+        "Gudme",
+        "Lundeborg",
+        "Upp\xE5kra",
+        "Helg\xF6",
+        "Sigtuna",
+        "Old L\xF6d\xF6se",
+        "Trelleborg",
+        "Fyrkat",
+        "Aggersborg",
+        "Nonnebakken",
+        "Jelling",
+        "Ladby",
+        "Roskilde",
+        "Lejre",
+        "Tiss\xF8",
+        "Vorbasse",
+        "Dankirke",
+        "Himling\xF8je",
+        "Stevns",
+        "Boeslunde",
+        "Borgeby",
+        "Valsg\xE4rde",
+        "Vendel"
+      ]
+    },
+    {
+      Cywilizacja: "Harappa",
+      "Styl / charakter": "Miasta-plan; handel wewn\u0119trzny; obrona mur\xF3w; niska agresja ekspansji",
+      "Jednostka specjalna": "Stra\u017Cnik bram Harappy",
+      "Bonus startowy": "+Handel miejski; +obrona piechoty w terytorium",
+      "Bonusy/minusy (do dopracowania)": "S\u0142absza kawaleria wczesna",
+      Uwagi: "roster-6 tier 1",
+      Religia: "Kultura indusko-dolinna",
+      nazwyKlastra: [
+        "Harappa",
+        "Mohenjo-daro",
+        "Dholavira",
+        "Rakhigarhi",
+        "Ganweriwala",
+        "Kalibangan",
+        "Lothal",
+        "Banawali",
+        "Kot Diji",
+        "Amri"
+      ],
+      mnoznikHandelPieniadz: 2.4,
+      ikonaId: "harappa",
+      wodzowiePula: ["Vasu", "Bharata", "Divodasa", "Sudas", "Trasadasyu", "Mandhatri", "Purukutsa", "Kuvalashva", "Anaranya", "Trishanku"],
+      wodzowie: {
+        kamien: "Starszy z Mehrgarh",
+        braz: "Kap\u0142an-Kr\xF3l z Mohend\u017Co-Daro",
+        zelazo: "Rad\u017Ca Dholaviry",
+        antyk: "A\u015Boka"
+      },
+      kolorHex: "#C67B4E",
+      bonusy: [
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.15,
+          opis: "Szlaki lokalne: +15% Daniny miast",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Obrona mur\xF3w: +15% obrony piechoty w terytorium w\u0142asnym",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Stra\u017Cnik bram Harappy",
+            "Piechota induska",
+            "Garnizon Harappy"
+          ],
+          opis: "Elitarna piechota bram miasta-plan",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "harappa",
+      archetyp: "harappa",
+      epokaWejscia: "kamien",
+      epokiStartowe: [
+        "kamien"
+      ],
+      nazwyMiast: [
+        "Harappa",
+        "Mohenjo-daro",
+        "Dholavira",
+        "Rakhigarhi",
+        "Ganweriwala",
+        "Kalibangan",
+        "Lothal",
+        "Banawali",
+        "Kot Diji",
+        "Amri",
+        "Chanhudaro",
+        "Surkotada",
+        "Rojdi",
+        "Rangpur",
+        "Desalpur",
+        "Dhaneti",
+        "Nagwada",
+        "Nageshwar",
+        "Bagasra",
+        "Kuntasi",
+        "Padri",
+        "Somnath",
+        "Prabhas Patan",
+        "Lakhabaval",
+        "Rupar",
+        "Sanghol",
+        "Bara",
+        "Kotla Nihang Khan",
+        "Manda",
+        "Chak Purbane Syal",
+        "Kunal",
+        "Bhirrana",
+        "Farmana",
+        "Mitathal",
+        "Balu",
+        "Girawad",
+        "Rakhi Shahpur",
+        "Alamgirpur",
+        "Hulas",
+        "Bargaon",
+        "Sanauli",
+        "Baror",
+        "Karanpura",
+        "Nausharo",
+        "Mehrgarh",
+        "Sibri",
+        "Dabar Kot",
+        "Pirak",
+        "Sutkagen Dor",
+        "Sotka Koh",
+        "Balakot",
+        "Allahdino",
+        "Naru Waro Dharo",
+        "Jhukar",
+        "Chhalgari",
+        "Judeirjo-daro",
+        "Ali Murad",
+        "Gazi Shah",
+        "Ghazi Shah",
+        "Lohumjo-daro",
+        "Rehman Dheri",
+        "Sarai Khola",
+        "Jalilpur",
+        "Gumla",
+        "Lewan",
+        "Islam Chowki",
+        "Hathala",
+        "Tarakai Qila",
+        "Dabarkot",
+        "Periano Ghundai",
+        "Kulli",
+        "Mehi",
+        "Shahi Tump",
+        "Miri Qalat",
+        "Nindowari",
+        "Nal",
+        "Anjira",
+        "Togau",
+        "Damb Sadaat",
+        "Quetta",
+        "Kili Gul Muhammad",
+        "Faiz Muhammad",
+        "Sadaat",
+        "Rana Ghundai",
+        "Sur Jangal",
+        "Zangian",
+        "Bampur",
+        "Shahdad",
+        "Jiroft",
+        "Khurab",
+        "Deh Morasi Ghundai",
+        "Mundigak",
+        "Said Qala",
+        "Nad-i Ali",
+        "Farukhabad",
+        "Bala Hisar Charsadda",
+        "Taxila",
+        "Hastinapur",
+        "Bhagwanpura",
+        "Daimabad"
+      ]
+    },
+    {
+      Cywilizacja: "Hetyci",
+      "Styl / charakter": "Charyotycy; fortyfikacje g\xF3rskie; traktaty; obrona",
+      "Jednostka specjalna": "Rydwan Kapadokijski",
+      "Bonus startowy": "+Rydwany; +obrona fortec",
+      "Bonusy/minusy (do dopracowania)": "S\u0142abszy handel morski",
+      Uwagi: "roster-6 tier 1",
+      Religia: "Politeizm hetycki",
+      nazwyKlastra: [
+        "Hattusa",
+        "Alaca H\xF6y\xFCk",
+        "Kanesh",
+        "Carchemish",
+        "Aleppo",
+        "Karkemish",
+        "Sapinuwa",
+        "Sarissa",
+        "Ku\u015Fakl\u0131",
+        "\u015Eapinuva"
+      ],
+      mnoznikHandelPieniadz: 2,
+      ikonaId: "hetyci",
+      wodzowiePula: ["Tudhalija I", "Arnuwanda I", "Mursili I", "Muwatalli II", "Hantili I", "Zidanta I", "Ammuna", "Telipinu", "Tahurwaili", "Alluwamna"],
+      wodzowie: {
+        kamien: "Labarna I",
+        braz: "Hattusili I",
+        zelazo: "Suppiluliuma I",
+        antyk: "Suppiluliuma II"
+      },
+      kolorHex: "#7B4B8A",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "rydwany",
+          wartosc: 0.2,
+          opis: "Rydwan hetycki: +20% ataku rydwan\xF3w",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_obrona",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Forteca Anatolii: +15% obrony w murach/g\xF3rach",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "rydwany",
+          wartosc: [
+            "Rydwan Kapadokijski",
+            "Piechota hetycka",
+            "Gwardia hetycka"
+          ],
+          opis: "Elitarny rydwan hetycki",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "hetyci",
+      archetyp: "hetyci",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Hattusa",
+        "Alaca H\xF6y\xFCk",
+        "Kanesz",
+        "Karkemisz",
+        "Aleppo",
+        "Sapinuwa",
+        "Sarissa",
+        "Ku\u015Fakl\u0131",
+        "Nerik",
+        "Zippalanda",
+        "Tarhuntassa",
+        "Nesa",
+        "Purushanda",
+        "Zalpa",
+        "Wahsusana",
+        "Hupisna",
+        "Tuwanuwa",
+        "Landa",
+        "Hattena",
+        "Nenassa",
+        "Ullamma",
+        "Malitiya",
+        "Melid",
+        "Kummanni",
+        "Lawazantiya",
+        "Kizzuwatna",
+        "Adaniya",
+        "Tarsus",
+        "Ura",
+        "Lamiya",
+        "Milawanda",
+        "Apasa",
+        "Arzawa",
+        "Mira",
+        "Hapalla",
+        "Seha",
+        "Wilusa",
+        "Truwisa",
+        "Masa",
+        "Karkisa",
+        "Lukka",
+        "Pitassa",
+        "Tummana",
+        "Pala",
+        "Kaska",
+        "Isuwa",
+        "Alse",
+        "Arslantepe",
+        "Tille H\xF6y\xFCk",
+        "Lidar H\xF6y\xFCk",
+        "Norsuntepe",
+        "Korucutepe",
+        "Pulur",
+        "Imiku\u015Fa\u011F\u0131",
+        "Tepecik",
+        "De\u011Firmentepe",
+        "Karah\xF6y\xFCk",
+        "Acemh\xF6y\xFCk",
+        "Yaz\u0131l\u0131kaya",
+        "Eflatun P\u0131nar",
+        "Fas\u0131llar",
+        "Gavurkalesi",
+        "Sivas H\xF6y\xFCk",
+        "Ma\u015Fath\xF6y\xFCk",
+        "Ortak\xF6y",
+        "\xC7ad\u0131r H\xF6y\xFCk",
+        "Kaman-Kaleh\xF6y\xFCk",
+        "Kerkenes Da\u011F",
+        "K\xFCltepe",
+        "Karum Kanesz",
+        "Karah\xF6y\xFCk Elbistan",
+        "Kummuh",
+        "Samsat",
+        "Lidar",
+        "Gritille",
+        "Kurban H\xF6y\xFCk",
+        "Titri\u015F H\xF6y\xFCk",
+        "Hassek H\xF6y\xFCk",
+        "Tell Ahmar",
+        "Til Barsip",
+        "Zincirli",
+        "Sam'al",
+        "Karatepe",
+        "Sak\xE7ag\xF6z\xFC",
+        "Tayinat",
+        "Tell Tayinat",
+        "\xC7atal H\xF6y\xFCk Amik",
+        "Domuztepe",
+        "Sirkeli H\xF6y\xFCk",
+        "Kinet H\xF6y\xFCk",
+        "Sabuniye",
+        "Al Mina",
+        "Kilise Tepe",
+        "G\xF6zl\xFCkule",
+        "Mersin",
+        "Soli",
+        "Kelenderis",
+        "Nagidos",
+        "Anemurium",
+        "Iotape"
+      ]
+    },
+    {
+      Cywilizacja: "S\u0142owianie",
+      "Styl / charakter": "Osady le\u015Bne; liczna piechota; ekspansja wschodnia",
+      "Jednostka specjalna": "Dru\u017Cynnik",
+      "Bonus startowy": "+Piechota w lesie; +regen poboru",
+      "Bonusy/minusy (do dopracowania)": "Wolniejsza nauka wczesna",
+      Uwagi: "roster-6 tier 1",
+      Religia: "Poga\u0144stwo s\u0142owia\u0144skie",
+      nazwyKlastra: [
+        "Kiev",
+        "Novgorod",
+        "Krak\xF3w",
+        "Wolin",
+        "Gniezno",
+        "Pskov",
+        "Suzdal",
+        "Belgrade",
+        "Pliska",
+        "Arkona"
+      ],
+      mnoznikHandelPieniadz: 1.8,
+      ikonaId: "slowianie",
+      wodzowiePula: ["Piast", "Siemowit", "Lestek", "Siemomysl", "Popiel", "Przemysl", "Ziemowit", "Choscisko", "Wiszymir", "Leszek"],
+      wodzowie: {
+        kamien: "Lech",
+        braz: "Krak",
+        zelazo: "Samo",
+        antyk: "Mieszko I"
+      },
+      kolorHex: "#B83232",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "piechota",
+          wartosc: 0.15,
+          opis: "Horda le\u015Bna: +15% ataku piechoty w lesie",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_pobor_regen",
+          cel: "rekruci",
+          wartosc: 0.1,
+          opis: "Wsp\xF3lnota: +10% regen poboru",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Dru\u017Cynnik",
+            "Je\u017Adziec z oszczepami"
+          ],
+          opis: "Elitarny wojownik dru\u017Cyny ksi\u0119cia",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "slowianie",
+      archetyp: "slowianie",
+      epokaWejscia: "zelazo",
+      epokiStartowe: [
+        "zelazo"
+      ],
+      nazwyMiast: [
+        "Kij\xF3w",
+        "Nowogr\xF3d",
+        "Krak\xF3w",
+        "Wolin",
+        "Gniezno",
+        "Psk\xF3w",
+        "Suzdal",
+        "Belgrad",
+        "Pliska",
+        "Arkona",
+        "Wieliczka",
+        "Pozna\u0144",
+        "Wroc\u0142aw",
+        "Opole",
+        "G\u0142og\xF3w",
+        "Szczecin",
+        "Ko\u0142obrzeg",
+        "Gda\u0144sk",
+        "Elbl\u0105g",
+        "Toru\u0144",
+        "P\u0142ock",
+        "Sandomierz",
+        "Lublin",
+        "Przemy\u015Bl",
+        "Halicz",
+        "W\u0142odzimierz Wo\u0142y\u0144ski",
+        "Czernih\xF3w",
+        "Perejas\u0142aw",
+        "Smole\u0144sk",
+        "Po\u0142ock",
+        "Witebsk",
+        "Tur\xF3w",
+        "Rost\xF3w",
+        "W\u0142odzimierz nad Kla\u017Am\u0105",
+        "Moskwa",
+        "Twer",
+        "Riaza\u0144",
+        "Murom",
+        "Jaros\u0142aw Ruski",
+        "Wo\u0142ogda",
+        "Bie\u0142ozersk",
+        "Staraja \u0141adoga",
+        "Izborsk",
+        "Wyszogr\xF3d",
+        "Czersk",
+        "Sieradz",
+        "\u0141\u0119czyca",
+        "Kalisz",
+        "Gdecz",
+        "Bnin",
+        "Ostr\xF3w Lednicki",
+        "Grodzisk Wielkopolski",
+        "Santok",
+        "Mi\u0119dzyrzecz",
+        "Cedynia",
+        "Kamie\u0144 Pomorski",
+        "Szczecinek",
+        "Bia\u0142ogard",
+        "Nak\u0142o",
+        "Bydgoszcz",
+        "W\u0142oc\u0142awek",
+        "Giecz",
+        "L\u0105d",
+        "Radzim",
+        "Ostr\xF3w Tumski",
+        "Wi\u015Blica",
+        "Strad\xF3w",
+        "Naszacowice",
+        "Chodlik",
+        "Zawichost",
+        "Opat\xF3w",
+        "Tyniec",
+        "Praga",
+        "Wyszehrad",
+        "O\u0142omuniec",
+        "Brno",
+        "Mikulczyce",
+        "Stare Miasto na Morawach",
+        "Bratys\u0142awa",
+        "Nitra",
+        "Devin",
+        "Zadar",
+        "Split",
+        "Nin",
+        "Knin",
+        "Solin",
+        "Trogir",
+        "Kotor",
+        "Ras",
+        "Stari Ras",
+        "Prizren",
+        "Skopje",
+        "Ohrid",
+        "Pres\u0142aw",
+        "Tyrnowo",
+        "Warna",
+        "Sozopol",
+        "Nesebyr",
+        "Ruse",
+        "Sylistra"
+      ]
+    },
+    {
+      Cywilizacja: "Babilonia",
+      "Styl / charakter": "Prawo, astronomia, kap\u0142ani; nauka i dyplomacja",
+      "Jednostka specjalna": "Gwardia Ishtar",
+      "Bonus startowy": "+Nauka; +handel rzeczny",
+      "Bonusy/minusy (do dopracowania)": "Wra\u017Cliwo\u015B\u0107 na utrat\u0119 stolicy",
+      Uwagi: "roster-6 tier 2",
+      Religia: "Religia babilo\u0144ska (Marduk)",
+      nazwyKlastra: [
+        "Babilon",
+        "Ur",
+        "Sippar",
+        "Nippur",
+        "Larsa",
+        "Isin",
+        "Uruk",
+        "Eridu",
+        "Kish",
+        "Akkad"
+      ],
+      mnoznikHandelPieniadz: 2.3,
+      ikonaId: "babilonia",
+      wodzowiePula: ["Sumu-la-El", "Sabium", "Apil-Sin", "Sin-muballit", "Samsu-iluna", "Abi-eszuh", "Ammi-ditana", "Ammi-saduqa", "Samsu-ditana", "Kurigalzu I"],
+      wodzowie: {
+        kamien: "Sumu-abum",
+        braz: "Hammurabi",
+        zelazo: "Nabuchodonozor II",
+        antyk: "Nabonid"
+      },
+      kolorHex: "#2B5F8A",
+      bonusy: [
+        {
+          typ: "bonus_nauka",
+          cel: "nauka",
+          wartosc: 0.15,
+          opis: "Kap\u0142ani-astronomowie: +15% nauki",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.1,
+          opis: "Rynek Euphratu: +10% Daniny miast",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Gwardia Ishtar",
+            "Wojownik babilo\u0144ski",
+            "Piechota neobabilo\u0144ska"
+          ],
+          opis: "Elitarna gwardia \u015Bwi\u0105tynna",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "babilonia",
+      archetyp: "babilonia",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Babilon",
+        "Ur",
+        "Sippar",
+        "Nippur",
+        "Larsa",
+        "Isin",
+        "Uruk",
+        "Eridu",
+        "Kisz",
+        "Akkad",
+        "Borsippa",
+        "Kutha",
+        "Dilbat",
+        "Marad",
+        "Kazallu",
+        "Opis",
+        "Sela",
+        "Der",
+        "Mari",
+        "Terqa",
+        "Emar",
+        "Tuttul",
+        "Ebla",
+        "Halab",
+        "Karkemisz",
+        "Hindanu",
+        "Rapiqum",
+        "Anah",
+        "Hit",
+        "Sirara",
+        "Karduniasz",
+        "Nemetti-Enlil",
+        "Dur-Kurigalzu",
+        "Duranki",
+        "Namar",
+        "Ellipi",
+        "Susa",
+        "Anszan",
+        "Ekbatana",
+        "Niniwa",
+        "Kalhu",
+        "Dur-Szarrukin",
+        "Harran",
+        "Tema",
+        "Dumat al-D\u017Candal",
+        "Duma",
+        "Adummatu",
+        "Bit-Adini",
+        "Bit-Bahiani",
+        "Guzana",
+        "Arpad",
+        "Melid",
+        "Tabal",
+        "Que",
+        "Hilakku",
+        "Unqi",
+        "Patina",
+        "Hamat",
+        "Damaszek",
+        "Sydon",
+        "Tyr",
+        "Byblos",
+        "Arwad",
+        "Aszkelon",
+        "Gaza",
+        "Jerozolima",
+        "Samaria",
+        "Megiddo",
+        "Lakisz",
+        "Hazor",
+        "Jerycho",
+        "Betel",
+        "Sychem",
+        "Hebron",
+        "Beer-Szeba",
+        "Aszdod",
+        "Ekron",
+        "Gat",
+        "Joppa",
+        "Berytos",
+        "Kadesz",
+        "Qarqar",
+        "Tadmor",
+        "Dura Europos",
+        "Circesium",
+        "Nisibis",
+        "Edessa",
+        "Sarug",
+        "Til Huzur",
+        "Tarbisu",
+        "Kar-Tukulti-Ninurta",
+        "Imgur-Enlil",
+        "Arbail",
+        "Arrapha",
+        "Nuzi",
+        "Lubdu",
+        "Kilizi",
+        "Sibaniba",
+        "Dur-Katlimmu",
+        "Sabi Abyad"
+      ]
+    },
+    {
+      Cywilizacja: "Asyria",
+      "Styl / charakter": "Imperium obl\u0119\u017Cnicze; \u0142ucznicy; podb\xF3j",
+      "Jednostka specjalna": "\u0141ucznik asyryjski",
+      "Bonus startowy": "+\u0141ucznicy; +obl\u0119\u017Cenie",
+      "Bonusy/minusy (do dopracowania)": "Niskie zaufanie s\u0105siad\xF3w",
+      Uwagi: "roster-6 tier 2",
+      Religia: "Religia asyryjska (Aszur)",
+      nazwyKlastra: [
+        "Ninive",
+        "Assur",
+        "Kalhu",
+        "Dur-Sharrukin",
+        "Harran",
+        "Carchemish",
+        "Arpad",
+        "Imgur-Enlil",
+        "Tushhan",
+        "Arbail"
+      ],
+      mnoznikHandelPieniadz: 1.7,
+      ikonaId: "asyria",
+      wodzowiePula: ["Szamszi-Adad I", "Adad-nirari I", "Salmanasar I", "Tukulti-Ninurta I", "Aszur-uballit I", "Sargon II", "Asarhaddon", "Aszurnasirpal II", "Salmanasar III", "Sennacheryb"],
+      wodzowie: {
+        kamien: "Puzur-Aszur I",
+        braz: "Tiglat-Pileser I",
+        zelazo: "Aszurbanipal",
+        antyk: "Sennacheryb"
+      },
+      kolorHex: "#5C4033",
+      bonusy: [
+        {
+          typ: "bonus_walka",
+          cel: "lukownicy",
+          wartosc: 0.2,
+          opis: "\u0141ucznicy asyryjscy: +20% ataku dystansowego",
+          realizuje: "walka"
+        },
+        {
+          typ: "bonus_walka",
+          cel: "obleczenie",
+          wartosc: 0.15,
+          opis: "Machiny obl\u0119\u017Cnicze: +15% obl\u0119\u017Cenia",
+          realizuje: "walka"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "lukownicy",
+          wartosc: [
+            "Konnica lancowa asyryjska",
+            "Konnica \u0142ucznicza asyryjska",
+            "\u0141ucznik asyryjski"
+          ],
+          opis: "Elitarny \u0142ucznik imperium",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "asyria",
+      archetyp: "asyria",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Ninive",
+        "Assur",
+        "Kalhu",
+        "Dur-Szarrukin",
+        "Harran",
+        "Karkemisz",
+        "Arpad",
+        "Imgur-Enlil",
+        "Tuszhan",
+        "Arbail",
+        "Nemed-Ishtar",
+        "Kar-Tukulti-Ninurta",
+        "Szibaniba",
+        "Kilizi",
+        "Lubdu",
+        "Arrapha",
+        "Nuzi",
+        "Guzana",
+        "Til Barsip",
+        "Hindanu",
+        "Sam'al",
+        "Que",
+        "Tabal",
+        "Hilakku",
+        "Melid",
+        "Kummuh",
+        "Patina",
+        "Unqi",
+        "Hamat",
+        "Damaszek",
+        "Samerina",
+        "Aszkelon",
+        "Gaza",
+        "Ekron",
+        "Aszdod",
+        "Tyr",
+        "Sydon",
+        "Byblos",
+        "Arwad",
+        "Babilon",
+        "Borsippa",
+        "Sippar",
+        "Kutha",
+        "Uruk",
+        "Ur",
+        "Nippur",
+        "Der",
+        "Susa",
+        "Madaktu",
+        "Hidalu",
+        "Ekbatana",
+        "Parsua",
+        "Namri",
+        "Zamua",
+        "Musasir",
+        "Tuszpa",
+        "Van",
+        "Argishtihinili",
+        "Erebuni",
+        "Teishebaini",
+        "Rusahinili",
+        "Manna",
+        "Izirtu",
+        "Kar-Kashi",
+        "Bit-Hamban",
+        "Ellipi",
+        "Bit-Jakin",
+        "Bit-Dakkuri",
+        "Bit-Amukani",
+        "Larak",
+        "Marad",
+        "Kisz",
+        "Isin",
+        "Larsa",
+        "Adab",
+        "Umma",
+        "Girsu",
+        "Lagasz",
+        "Eridu",
+        "Bad-tibira",
+        "Szuruppak",
+        "Memfis",
+        "Teby Asyryjskie",
+        "Sais",
+        "Tanis",
+        "Migdol",
+        "Pelusium",
+        "Daphnae",
+        "Kition",
+        "Salamina Cypryjska",
+        "Amathus",
+        "Kurion",
+        "Pafos",
+        "Idalion",
+        "Tamassos",
+        "Marion",
+        "Soloi Cypryjskie",
+        "Lapithos",
+        "Chytroi",
+        "Golgoi"
+      ]
+    },
+    {
+      Cywilizacja: "Fenicjanie",
+      "Styl / charakter": "Handel morski; kolonie; barter",
+      "Jednostka specjalna": "Tyrski miecznik",
+      "Bonus startowy": "+Handel morski; porty",
+      "Bonusy/minusy (do dopracowania)": "S\u0142aba piechota elit l\u0105dowa",
+      Uwagi: "roster-6 tier 2",
+      Religia: "Religia fenicka (Ba'al)",
+      nazwyKlastra: [
+        "Tyr",
+        "Sidon",
+        "Byblos",
+        "Carthage",
+        "Utica",
+        "Gadir",
+        "Motya",
+        "Tharros",
+        "Kition",
+        "Arwad"
+      ],
+      mnoznikHandelPieniadz: 2.6,
+      ikonaId: "fenicjanie",
+      wodzowiePula: ["Ahiram", "Ittobaal I", "Baal-Eser I", "Matten I", "Pygmalion", "Abibaal", "Elibaal", "Szipitbaal", "Mago I", "Hazdrubal"],
+      wodzowie: {
+        kamien: "Agenor",
+        braz: "Hiram I",
+        zelazo: "Dydona-Elissa",
+        antyk: "Hannibal Barkas"
+      },
+      kolorHex: "#9B2335",
+      bonusy: [
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.25,
+          opis: "Szlaki morskie: +25% Daniny z port\xF3w",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "bonus_zloto",
+          cel: "handel",
+          wartosc: 0.1,
+          opis: "Purpura: +10% Daniny",
+          realizuje: "ekonomia"
+        },
+        {
+          typ: "jednostka_specjalna",
+          cel: "piechota",
+          wartosc: [
+            "Tyrski miecznik",
+            "Wojownik fenicki",
+            "Gwardia Tyre\u0144ska"
+          ],
+          opis: "Elitarny wojownik fenicki",
+          realizuje: "walka"
+        }
+      ],
+      typCywilizacji: "fenicjanie",
+      archetyp: "fenicjanie",
+      epokaWejscia: "braz",
+      epokiStartowe: [
+        "braz"
+      ],
+      nazwyMiast: [
+        "Tyr",
+        "Sydon",
+        "Byblos",
+        "Kartagina",
+        "Utica",
+        "Gadir",
+        "Motya",
+        "Tharros",
+        "Kition",
+        "Arwad",
+        "Berytos",
+        "Trypolis",
+        "Batrun",
+        "Amrit",
+        "Simyra",
+        "Sarepta",
+        "Akko",
+        "Dor",
+        "Jafa",
+        "Ako",
+        "Achziw",
+        "Anafa",
+        "Kabri",
+        "Tell Sukas",
+        "Ras Ibn Hani",
+        "Al Mina",
+        "Amathus",
+        "Kurion",
+        "Pafos",
+        "Salamis",
+        "Idalion",
+        "Lapithos",
+        "Marion",
+        "Soloi",
+        "Tamassos",
+        "Chytroi",
+        "Golgoi",
+        "Kalawasos",
+        "Palepafos",
+        "Larnaka",
+        "Panormos",
+        "Solunt",
+        "Lilibeum",
+        "Drepanon",
+        "Erice",
+        "Segesta Fenicka",
+        "Karales",
+        "Nora",
+        "Sulcis",
+        "Bithia",
+        "Olbia Sardy\u0144ska",
+        "Melite",
+        "Gaulos",
+        "Ebusus",
+        "Sa Caleta",
+        "Malaka",
+        "Sexi",
+        "Abdera",
+        "Carteia",
+        "Baelo Claudia",
+        "Lixus",
+        "Mogador",
+        "Tingis",
+        "Rusadir",
+        "Sala",
+        "Cerne",
+        "Tamuda",
+        "Volubilis",
+        "Ikosim",
+        "Rusguniae",
+        "Hippo Diarrhytus",
+        "Hippo Regius",
+        "Thabraca",
+        "Cirta",
+        "Sicca Veneria",
+        "Thugga",
+        "Sabratha",
+        "Oea",
+        "Leptis Magna",
+        "Leptis Minor",
+        "Hadrumetum",
+        "Thapsus",
+        "Ruspina",
+        "Zama",
+        "Bulla Regia",
+        "Kerkouane",
+        "Neapolis",
+        "Klupea",
+        "Carthago Nova",
+        "Akra Leuke",
+        "Barcelo",
+        "Onoba",
+        "Asta Regia",
+        "Tartessos",
+        "Huelva",
+        "Ossonoba",
+        "Balsa",
+        "Myrtilis",
+        "Olisipo",
+        "Cetobriga"
+      ]
+    }
+  ],
+  start_gry: [
+    {
+      Parametr: "Osadnicy na start (gracz)",
+      Warto\u015B\u0107: "1",
+      Uwagi: "gracz zawsze startuje z 1 osadnikiem"
+    },
+    {
+      Parametr: "Cywilizacje na mapie",
+      Warto\u015B\u0107: "90",
+      Uwagi: "9 typ\xF3w \xD7 10 miast (1 gracz + 9 rywali tego samego typu = klaster); skaluje si\u0119 z map\u0105"
+    },
+    {
+      Parametr: "G\u0142\xF3wne cywilizacje (typy)",
+      Warto\u015B\u0107: "15 (Grecy, Rzymianie, Chi\u0144czycy, Inkowie, Zulusi, Egipt, Sumerowie, Celtowie, Germanie, Harappa, Hetyci, S\u0142owianie, Babilonia, Asyria, Fenicjanie)",
+      Uwagi: "pula 15 typ\xF3w (D-ROSTER-Q3); na mapie cap z rozmiaru; Celtowie = Soldurii + Gaesatae (2026-07-04)"
+    },
+    {
+      Parametr: "Cywilizacje pocz\u0105tkowe",
+      Warto\u015B\u0107: "miasta tego samego typu (klaster)",
+      Uwagi: "to NIE osobne nacje \u2014 to miasta/AI tego samego typu wok\xF3\u0142 g\u0142\xF3wnej cyw. (1 gracz + 9 rywali); uproszczona dyplomacja: osobny, p\xF3\u017Aniejszy w\u0105tek"
+    },
+    {
+      Parametr: "Rywale tego samego typu wok\xF3\u0142 gracza",
+      Warto\u015B\u0107: "~9 (AI)",
+      Uwagi: "9 rywali wok\xF3\u0142 gracza = klaster 10 miast danego typu; miasta min. ~9 p\xF3l od siebie (regu\u0142a map-gen)"
+    },
+    {
+      Parametr: "Cel startu",
+      Warto\u015B\u0107: "pokona\u0107 rywali w\u0142asnego typu",
+      Uwagi: "zanim napotkasz inne typy cywilizacji"
+    },
+    {
+      Parametr: "Ludno\u015B\u0107 w terenie",
+      Warto\u015B\u0107: "ka\u017Cdy zamieszkiwalny heks (\u22651 \u017Cywno\u015B\u0107) = 1 wioska/1 ludno\u015B\u0107",
+      Uwagi: "g\xF3ry/ja\u0142owe = 0 ludno\u015Bci"
+    },
+    {
+      Parametr: "Przejmowanie terenu",
+      Warto\u015B\u0107: "odkrycie/zaj\u0119cie \u2192 wioska + ludno\u015B\u0107 staje si\u0119 nasza (obywatele, nie niewolnicy), przypisana do najbli\u017Cszego miasta",
+      Uwagi: null
+    },
+    {
+      Parametr: "Wzrost ludno\u015Bci",
+      Warto\u015B\u0107: "szybki przez ekspansj\u0119, ograniczony \u017Cywno\u015Bci\u0105",
+      Uwagi: "najpierw zdob\u0105d\u017A tereny rolne, by wy\u017Cywi\u0107"
+    },
+    {
+      Parametr: "Jednostka specjalna",
+      Warto\u015B\u0107: "1 na cywilizacj\u0119",
+      Uwagi: "niekoniecznie w ka\u017Cdej epoce"
+    },
+    {
+      Parametr: "Bonusy/minusy cywilizacji",
+      Warto\u015B\u0107: "do dopracowania",
+      Uwagi: "doprecyzujemy p\xF3\u017Aniej"
+    }
+  ]
+};
+
+// ../data/civ-ai.json
+var civ_ai_default = {
+  cywilizacje: [
+    {
+      Cywilizacja: "Grecy",
+      agresywnosc: 4,
+      ekspansywnosc: 3,
+      priorytetMilitarny: 5,
+      priorytetEkonomia: 5,
+      priorytetNauka: 6,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 2,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.75"
+    },
+    {
+      Cywilizacja: "Rzymianie",
+      agresywnosc: 8,
+      ekspansywnosc: 5,
+      priorytetMilitarny: 6,
+      priorytetEkonomia: 5,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 8,
+      sklonnoscDoPodboju: 4,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.5"
+    },
+    {
+      Cywilizacja: "Chi\u0144czycy",
+      agresywnosc: 2,
+      ekspansywnosc: 2,
+      priorytetMilitarny: 4,
+      priorytetEkonomia: 6,
+      priorytetNauka: 6,
+      tolerancjaRyzyka: 2,
+      sklonnoscDoPodboju: 1,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.85"
+    },
+    {
+      Cywilizacja: "Inkowie",
+      agresywnosc: 4,
+      ekspansywnosc: 3,
+      priorytetMilitarny: 5,
+      priorytetEkonomia: 5,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 3,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.25"
+    },
+    {
+      Cywilizacja: "Zulusi",
+      agresywnosc: 9,
+      ekspansywnosc: 4,
+      priorytetMilitarny: 8,
+      priorytetEkonomia: 4,
+      priorytetNauka: 4,
+      tolerancjaRyzyka: 9,
+      sklonnoscDoPodboju: 5,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.2"
+    },
+    {
+      Cywilizacja: "Egipt",
+      agresywnosc: 4,
+      ekspansywnosc: 2,
+      priorytetMilitarny: 5,
+      priorytetEkonomia: 6,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 2,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.6"
+    },
+    {
+      Cywilizacja: "Sumerowie",
+      agresywnosc: 3,
+      ekspansywnosc: 2,
+      priorytetMilitarny: 4,
+      priorytetEkonomia: 5,
+      priorytetNauka: 8,
+      tolerancjaRyzyka: 3,
+      sklonnoscDoPodboju: 2,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.65"
+    },
+    {
+      Cywilizacja: "Celtowie",
+      agresywnosc: 6,
+      ekspansywnosc: 4,
+      priorytetMilitarny: 8,
+      priorytetEkonomia: 5,
+      priorytetNauka: 4,
+      tolerancjaRyzyka: 6,
+      sklonnoscDoPodboju: 4,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.35"
+    },
+    {
+      Cywilizacja: "Germanie",
+      agresywnosc: 6,
+      ekspansywnosc: 4,
+      priorytetMilitarny: 8,
+      priorytetEkonomia: 4,
+      priorytetNauka: 4,
+      tolerancjaRyzyka: 6,
+      sklonnoscDoPodboju: 4,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "seed CYW 2026-06-27; handel=0.3"
+    },
+    {
+      Cywilizacja: "Harappa",
+      agresywnosc: 2,
+      ekspansywnosc: 3,
+      priorytetMilitarny: 4,
+      priorytetEkonomia: 7,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 2,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "draft roster-6"
+    },
+    {
+      Cywilizacja: "Hetyci",
+      agresywnosc: 5,
+      ekspansywnosc: 3,
+      priorytetMilitarny: 6,
+      priorytetEkonomia: 5,
+      priorytetNauka: 4,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 2,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "draft roster-6"
+    },
+    {
+      Cywilizacja: "S\u0142owianie",
+      agresywnosc: 6,
+      ekspansywnosc: 4,
+      priorytetMilitarny: 6,
+      priorytetEkonomia: 5,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 3,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "draft roster-6"
+    },
+    {
+      Cywilizacja: "Babilonia",
+      agresywnosc: 4,
+      ekspansywnosc: 2,
+      priorytetMilitarny: 5,
+      priorytetEkonomia: 5,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 2,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "draft roster-6"
+    },
+    {
+      Cywilizacja: "Asyria",
+      agresywnosc: 8,
+      ekspansywnosc: 5,
+      priorytetMilitarny: 8,
+      priorytetEkonomia: 5,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 4,
+      sklonnoscDoPodboju: 5,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "draft roster-6"
+    },
+    {
+      Cywilizacja: "Fenicjanie",
+      agresywnosc: 3,
+      ekspansywnosc: 2,
+      priorytetMilitarny: 5,
+      priorytetEkonomia: 8,
+      priorytetNauka: 5,
+      tolerancjaRyzyka: 3,
+      sklonnoscDoPodboju: 2,
+      profilMapy: "kopia_typu_obronna",
+      uwagi: "draft roster-6"
+    }
+  ],
+  _meta: {
+    zrodlo: "Panel-D.xlsx/AI-per-nacja"
+  }
+};
+
+// game/civ-ai-data.ts
+function civAiAggressionNorm(data, civName) {
+  const row = data.civAi?.cywilizacje?.find((c) => c.Cywilizacja === civName);
+  if (!row || row.agresywnosc == null) return void 0;
+  return Math.max(0, Math.min(1, row.agresywnosc / 10));
+}
+function civExcelNameFromTyp(typ) {
+  if (typ === "drobna_cywilizacja" /* DrobnaCywilizacja */) return void 0;
+  const row = civs_default.cywilizacje.find((c) => c.ikonaId === typ);
+  return row?.Cywilizacja;
+}
+function diplomacyPerNacjaRow(civName) {
+  const rows = diplomacy_default.perNacja;
+  return rows?.find((r) => r.Cywilizacja === civName);
+}
+function diplomacyPerNacjaForTyp(typ) {
+  const name = civExcelNameFromTyp(typ);
+  return name ? diplomacyPerNacjaRow(name) : void 0;
+}
+function resolveArchetypeAggression(typ, fallback, data) {
+  const civName = civExcelNameFromTyp(typ);
+  if (!civName) return fallback;
+  const fromData = data ? civAiAggressionNorm(data, civName) : (() => {
+    const row = civ_ai_default.cywilizacje?.find((c) => c.Cywilizacja === civName);
+    if (!row || row.agresywnosc == null) return void 0;
+    return Math.max(0, Math.min(1, row.agresywnosc / 10));
+  })();
+  return fromData ?? fallback;
+}
+function resolveArchetypeTrade(typ, fallback) {
+  const row = diplomacyPerNacjaForTyp(typ);
+  if (row?.otwartoscHandel != null) {
+    return Math.max(0, Math.min(1, row.otwartoscHandel / 10));
+  }
+  return fallback;
+}
+
 // ../data/map-gen-params.json
 var map_gen_params_default = {
   _meta: {
@@ -1140,7 +3995,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -1173,7 +4028,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -1886,6 +4741,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -1947,6 +4803,8 @@ var DIPLOMACY_PARAMS = {
   szpiegWykryty_zaufanie: -15,
   /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
   rywalizacjaTenSamTyp_zaufanie: -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie: 20,
   /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
   roznicaKulturowa_zaufanie: -5,
   // ---- one-shot Respekt deltas (jednorazowo) ----
@@ -2150,10 +5008,27 @@ var DIPLOMACY_PARAMS = {
   wiarygodnoscS1SojuszPerTure: 1,
   /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
   wiarygodnoscS2NapPerTure: 0.5,
-  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
-  wiarygodnoscS3HandelPerTure: 0.3,
-  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
-  wiarygodnoscS4PrzemarszPerTure: 0.2,
+  /**
+   * S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury,
+   * poziom Łatwy (pkt Wiarygodności / turę). R-WIARYGODNOSC-S9 2026-08-07 (Maciej):
+   * rozbite z jednej płaskiej wartości (0,3) na trudność, podniesione proporcjonalnie
+   * do S4, żeby zachować stosunek S3/S4 = 1,5 na każdym poziomie.
+   */
+  wiarygodnoscS3HandelPerTureLatwy: 1.2,
+  /** S3 — jak wyżej, poziom Normalny (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTureNormalny: 0.9,
+  /** S3 — jak wyżej, poziom Trudny (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTureTrudny: 0.6,
+  /**
+   * S4 — Prawo przemarszu / otwarte granice aktywne, poziom Łatwy (pkt Wiarygodności /
+   * turę). R-WIARYGODNOSC-S9 2026-08-07 (Maciej): za słabe jako płaska wartość (0,2) —
+   * rozbite na trudność i podniesione trzykrotnie (Normalny 0,2 → 0,6).
+   */
+  wiarygodnoscS4PrzemarszPerTureLatwy: 0.8,
+  /** S4 — jak wyżej, poziom Normalny (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTureNormalny: 0.6,
+  /** S4 — jak wyżej, poziom Trudny (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTureTrudny: 0.4,
   // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
   /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
   wiarygodnoscP1FiniszSojusz: 10,
@@ -2186,14 +5061,192 @@ var DIPLOMACY_PARAMS = {
   /** Trwała podłoga krzywej zapominania — ułamek [0,1] wartości pierwotnej, który zostaje NA ZAWSZE po pełnym wygaśnięciu (dotyczy WYŁĄCZNIE zdarzeń jednorazowych, nie STRUMIENIA — C-WIAR-SLAD=A). */
   wiarygodnoscTrwalaPodlogaProcent: 0.1,
   // -- §5: wpływ Wiarygodności na Zaufanie --
-  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  /**
+   * Dzielnik Dźwigni 4 (pierwszy kontakt, C-WIAR-D4=A): modyfikatorZaufaniaD4OdWiarygodnosci(W)
+   * = round(W / wartość) — startowe Zaufanie ±5 pkt na stronę przy W=±100. Nazwa „PerTura" jest
+   * HISTORYCZNA: dawny bezpośredni strumień Wiarygodność→Zaufanie/turę (C-WIAR-SKALA=20) został
+   * ANULOWANY (WIAR-Q3=C) i zastąpiony mnożnikiem tempa (wiarygodnoscTempoAmplituda niżej) —
+   * ten parametr dziś NIE działa co turę, wyłącznie przy pierwszym ustaleniu relacji.
+   * R-WIARYGODNOSC-S9 2026-08-07: komentarz doprecyzowany względem faktycznego użycia,
+   * WARTOŚĆ bez zmian (20).
+   */
   wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /**
+   * Amplituda mnożnika tempa Zaufania od Wiarygodności (Dźwignia 1, WIAR-Q3=C):
+   * wzrostMult(W) = 1 + (W/100) × wartość · spadekMult(W) = 1 − (W/100) × wartość.
+   * R-WIARYGODNOSC-S9 2026-08-07: nazwany parametr, przeniesiony z literału 0,5
+   * w `diplomacy-credibility.ts` (wiarygodnoscWzrostMult/wiarygodnoscSpadekMult),
+   * WARTOŚĆ bez zmian.
+   */
+  wiarygodnoscTempoAmplituda: 0.5,
+  /**
+   * Pasywny dryf Zaufania/turę od globalnej Wiarygodności, niezależny od traktatów
+   * (REL-WIARYG-DRIFT-Q1): ΔZaufanie/turę = clamp(W, −100, 100) × wartość.
+   * R-WIARYGODNOSC-S9 2026-08-07: przeniesiony z modułowej stałej
+   * `WIARYGODNOSC_ZAUFANIE_DRYF_NA_100` w `diplomacy-credibility.ts`, WARTOŚĆ bez zmian.
+   */
+  wiarygodnoscZaufanieDryfNa100: 0.03,
   /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
   wiarygodnoscProgSojuszMin: 0,
-  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
-  wiarygodnoscProgNapMin: -40
+  /**
+   * Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności),
+   * niezależnie od Zaufania/Respektu. R-WIARYGODNOSC-S9 2026-08-07 (Maciej): wyrównane
+   * z wiarygodnoscProgSojuszMin=0 („tutaj też powinna być wiarygodność zero tak samo
+   * jak przy sojuszu") — było −40 (pokrywało się z wiarygodnoscProgWiarolomny).
+   */
+  wiarygodnoscProgNapMin: 0
 };
+function loadDiplomacyParams(json) {
+  const out = {};
+  if (!json || typeof json !== "object") return out;
+  const params = json.params;
+  if (!params || typeof params !== "object") return out;
+  const src = params;
+  for (const key of Object.keys(DIPLOMACY_PARAMS)) {
+    const v = src[key];
+    if (typeof v === "number" && Number.isFinite(v)) {
+      out[key] = v;
+    }
+  }
+  return out;
+}
+var _baseDiplomacyParams = null;
+var DIPLOMACY_DIFFICULTY_DELTA = {
+  easy: -10,
+  normal: 0,
+  hard: 10
+};
+var DIPLO_RELATION_THRESHOLD_KEYS = [
+  "progMinimalnyRelacja",
+  "progSojuszRelacja",
+  "progUmowaMinRelacja",
+  "progNapRelacja",
+  "progGraniceRelacja",
+  "progPoboczneHandel",
+  "progPoboczneWojna"
+];
+var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
+  "progSojuszZaufanie",
+  "progWymianaTechZaufanie",
+  "progNamowWojneZaufanie",
+  "progGraniceZaufanie",
+  "progTrybutOfertaNearWarZaufanie",
+  "progSojuszPremiaGracz2xMinZaufanie",
+  "progSojuszPremiaGracz3xMinZaufanie"
+];
+var DIPLO_RESPEKT_THRESHOLD_KEYS = [
+  "progWasalizacjaRespekt",
+  "progWchloniecieRespekt",
+  "progGraniceWojskoweRespekt",
+  "progTrybutZadanieMinRespekt",
+  "progPoboczneAkceptacja"
+];
+function getBaseDiplomacyParams() {
+  if (!_baseDiplomacyParams) {
+    _baseDiplomacyParams = {
+      ...DIPLOMACY_PARAMS,
+      ...loadDiplomacyParams(diplomacy_default)
+    };
+  }
+  return _baseDiplomacyParams;
+}
+function scaleDiplomacyParamsForDifficulty(base, difficulty = "normal") {
+  const delta = DIPLOMACY_DIFFICULTY_DELTA[difficulty];
+  if (delta === 0) return { ...base };
+  const out = { ...base };
+  for (const k of DIPLO_RELATION_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(200, base[k] + delta));
+  }
+  for (const k of DIPLO_ZAUFANIE_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(100, base[k] + delta));
+  }
+  for (const k of DIPLO_RESPEKT_THRESHOLD_KEYS) {
+    out[k] = Math.max(0, Math.min(100, base[k] + delta));
+  }
+  return out;
+}
+function scaleRelationThreshold(base, difficulty = "normal") {
+  return Math.max(0, Math.min(200, base + DIPLOMACY_DIFFICULTY_DELTA[difficulty]));
+}
+function getEffectiveDiplomacyParams(difficulty = "normal") {
+  return scaleDiplomacyParamsForDifficulty(getBaseDiplomacyParams(), difficulty);
+}
+function diplomacyTreatyMinRelacja(adjustedThreshold, params = getEffectiveDiplomacyParams()) {
+  return Math.max(params.progUmowaMinRelacja, adjustedThreshold);
+}
+function diplomacyProposerStrengthEase(proposerMilRatio, proposerRespekt, responderRespekt, params = getEffectiveDiplomacyParams()) {
+  const milAdv = Math.max(0, proposerMilRatio - 1);
+  const resAdv = Math.max(0, proposerRespekt - responderRespekt) / 100;
+  let raw = milAdv * params.progSojuszPremiaMilSkok + resAdv * params.progSojuszPremiaRespektSkok;
+  if (proposerMilRatio >= params.progSojuszPremiaGracz3xMilRatio) {
+    raw += params.progSojuszPremiaGracz3xBonus;
+  } else if (proposerMilRatio >= params.progSojuszPremiaGracz2xMilRatio) {
+    raw += params.progSojuszPremiaGracz2xBonus;
+  }
+  const capped = Math.min(params.progSojuszPremiaSilniejszyMax, raw);
+  return {
+    allyThresholdDelta: capped,
+    zaufanieThresholdDelta: Math.round(capped * 80),
+    scoreThresholdDelta: Math.round(capped * 100)
+  };
+}
+function diplomacyAllianceMinZaufanie(adj, proposerMilRatio, params = getEffectiveDiplomacyParams()) {
+  let minZ = Math.max(
+    0,
+    params.progSojuszZaufanie - adj.ease.zaufanieThresholdDelta + adj.penaltyZ
+  );
+  if (proposerMilRatio >= params.progSojuszPremiaGracz3xMilRatio) {
+    minZ = Math.max(params.progSojuszPremiaGracz3xMinZaufanie, minZ);
+  } else if (proposerMilRatio >= params.progSojuszPremiaGracz2xMilRatio) {
+    minZ = Math.max(params.progSojuszPremiaGracz2xMinZaufanie, minZ);
+  }
+  return minZ;
+}
+function diplomacyAllianceStrengthAdjust(proposerMilRatio, proposerRespekt, responderRespekt, params = getEffectiveDiplomacyParams()) {
+  const ease = diplomacyProposerStrengthEase(
+    proposerMilRatio,
+    proposerRespekt,
+    responderRespekt,
+    params
+  );
+  const safeMil = Math.max(0.01, proposerMilRatio);
+  const responderAdv = safeMil < 1 ? 1 / safeMil - 1 : 0;
+  const rawPenalty = responderAdv * params.progSojuszKaraMilSkok;
+  const cappedPenalty = Math.min(params.progSojuszKaraSilniejszyMax, rawPenalty);
+  return {
+    ease,
+    penaltyZ: Math.round(cappedPenalty * 95),
+    penaltyScore: Math.round(cappedPenalty * 110),
+    penaltyAlly: cappedPenalty * 0.55,
+    allyWPenalty: responderAdv * params.progSojuszKaraAllySkok,
+    hegemonBlocksAlliance: safeMil <= params.progSojuszHegemonMilRatio,
+    hegemonProposerNoAlliance: safeMil >= params.progSojuszHegemonProposerMaxMil
+  };
+}
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+function relationScore(rel) {
+  return clamp(
+    rel.zaufanie * DIPLOMACY_PARAMS.mnoznikZaufania + rel.respekt * DIPLOMACY_PARAMS.mnoznikRespektu,
+    0,
+    200
+  );
+}
 var WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
+function clampRelationForWar(rel) {
+  if (rel.status !== "wojna") return rel;
+  const score = relationScore(rel);
+  if (score <= WAR_RELATION_SCORE_CAP) return rel;
+  let excess = score - WAR_RELATION_SCORE_CAP;
+  let z = rel.zaufanie;
+  let r = rel.respekt;
+  const takeZ = Math.min(excess, z);
+  z -= takeZ;
+  excess -= takeZ;
+  r = Math.max(0, r - excess);
+  return { ...rel, zaufanie: z, respekt: r };
+}
 var ARCHETYPE_AGGRESSION = {
   ["grecy" /* Grecy */]: 0.4,
   ["rzymianie" /* Rzymianie */]: 0.75,
@@ -2232,8 +5285,106 @@ var ARCHETYPE_TRADE = {
   ["fenicjanie" /* Fenicjanie */]: 0.9,
   ["drobna_cywilizacja" /* DrobnaCywilizacja */]: 0.6
 };
+function aiDiplomacyStance(aiPlayer, otherPlayer, rel, context, params = getEffectiveDiplomacyParams()) {
+  const score = relationScore(rel);
+  const { zaufanie, respekt } = rel;
+  const p = params;
+  if (!aiPlayer?.typCywilizacji || !otherPlayer?.typCywilizacji) {
+    return {
+      willingnessWar: 0,
+      willingnessPeace: 0.5,
+      willingnessTrade: 0.3,
+      willingnessAlly: 0
+    };
+  }
+  if (context.isMinorCiv || aiPlayer.typCywilizacji === "drobna_cywilizacja" /* DrobnaCywilizacja */) {
+    const fearFactor = respekt > p.progPoboczneAkceptacja ? 0.9 : respekt / p.progPoboczneAkceptacja;
+    const tradeOpen = score > p.progPoboczneHandel ? 0.6 : 0.2;
+    const warWilling = score < p.progPoboczneWojna ? 0.2 : 0.05;
+    return {
+      willingnessWar: warWilling,
+      willingnessPeace: fearFactor,
+      willingnessTrade: tradeOpen,
+      willingnessAlly: 0
+      // minor civs cannot form military alliances (paragraph 2 table)
+    };
+  }
+  const archAggression = resolveArchetypeAggression(
+    aiPlayer.typCywilizacji,
+    ARCHETYPE_AGGRESSION[aiPlayer.typCywilizacji] ?? 0.4
+  );
+  const archTrade = resolveArchetypeTrade(
+    aiPlayer.typCywilizacji,
+    ARCHETYPE_TRADE[aiPlayer.typCywilizacji] ?? 0.5
+  );
+  let warW = 0;
+  if (rel.status !== "wojna") {
+    const respektNorm = respekt / 100;
+    const relPenalty = 1 - clamp(score / 200, 0, 1);
+    warW = clamp(
+      archAggression * 0.5 + respektNorm * 0.3 + relPenalty * 0.2,
+      0,
+      1
+    );
+  }
+  let peaceW;
+  if (rel.status === "wojna") {
+    const warWeariness = clamp(context.turnsAtWar / 20, 0, 0.5);
+    const militaryPressure = context.militaryRatio < 1 ? (1 - context.militaryRatio) * 0.4 : 0;
+    const goodwill = zaufanie / 100 * 0.2;
+    peaceW = clamp(warWeariness + militaryPressure + goodwill, 0, 1);
+  } else {
+    peaceW = 0.8;
+  }
+  let tradeW = 0;
+  if (score >= p.progMinimalnyRelacja) {
+    const relFactor = clamp(score / 200, 0, 1) * 0.4;
+    tradeW = clamp(archTrade * 0.6 + relFactor, 0, 1);
+  }
+  const aiMilOverOther = Math.max(0.01, context.militaryRatio);
+  const otherMilOverAi = aiMilOverOther > 0 ? 1 / aiMilOverOther : 99;
+  const aiRespektShare = respekt;
+  const otherRespektShare = Math.max(0, 100 - respekt);
+  const adj = diplomacyAllianceStrengthAdjust(
+    otherMilOverAi,
+    otherRespektShare,
+    aiRespektShare,
+    p
+  );
+  let minAllyZ = diplomacyAllianceMinZaufanie(adj, otherMilOverAi, p);
+  let minAllyScore = diplomacyTreatyMinRelacja(
+    p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore,
+    p
+  );
+  let allyW = 0;
+  if (!adj.hegemonBlocksAlliance && zaufanie >= minAllyZ && score >= minAllyScore) {
+    const loyaltyBonus = aiPlayer.typCywilizacji === "chinczycy" /* Chinczycy */ ? 0.2 : aiPlayer.typCywilizacji === "inkowie" /* Inkowie */ ? 0.15 : aiPlayer.typCywilizacji === "grecy" /* Grecy */ ? 0.1 : aiPlayer.typCywilizacji === "zulusi" /* Zulusi */ ? -0.2 : 0;
+    const trustFactor = zaufanie / 100 * 0.6;
+    const scoreFactor = clamp((score - p.progSojuszRelacja) / 80, 0, 0.3);
+    allyW = clamp(trustFactor + loyaltyBonus + scoreFactor, 0, 1);
+    if (aiMilOverOther < 1) {
+      allyW = clamp(
+        allyW + (1 - aiMilOverOther) * p.progSojuszPremiaSilniejszyInny,
+        0,
+        1
+      );
+    } else if (aiMilOverOther > 1) {
+      allyW = clamp(allyW - adj.allyWPenalty, 0, 1);
+    }
+  }
+  return {
+    willingnessWar: parseFloat(warW.toFixed(4)),
+    willingnessPeace: parseFloat(peaceW.toFixed(4)),
+    willingnessTrade: parseFloat(tradeW.toFixed(4)),
+    willingnessAlly: parseFloat(allyW.toFixed(4))
+  };
+}
 
 // game/diplomacy-treaties.ts
+function normalizeTreatyKind(rodzaj) {
+  if (rodzaj === "sojusz_wojskowy" /* SojuszWojskowy */) return "sojusz_pelny";
+  return rodzaj;
+}
 var BREAK_ON_WAR = /* @__PURE__ */ new Set([
   "pakt_nieagresji" /* PaktNieagresji */,
   "sojusz_wojskowy" /* SojuszWojskowy */,
@@ -2688,8 +5839,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 10,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -2735,7 +5886,9 @@ var units_default = [
     chargeBonus: 2,
     health: 22,
     missileAttack: 0,
-    fieldPower: 27
+    fieldPower: 27,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz",
@@ -2744,8 +5897,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -2791,7 +5944,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik",
@@ -2800,8 +5955,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -2847,7 +6002,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik",
@@ -2856,8 +6013,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -2903,7 +6060,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 3,
-    fieldPower: 17.5
+    fieldPower: 17.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Zwiadowca",
@@ -2912,8 +6071,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 0,
     Atak: 0,
@@ -2959,7 +6118,9 @@ var units_default = [
     chargeBonus: 0,
     health: 10,
     missileAttack: 0,
-    fieldPower: 6
+    fieldPower: 6,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik",
@@ -2969,7 +6130,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3015,7 +6176,9 @@ var units_default = [
     chargeBonus: 4,
     health: 32,
     missileAttack: 0,
-    fieldPower: 44
+    fieldPower: 44,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z mieczem i tarcz\u0105",
@@ -3025,7 +6188,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3071,7 +6234,9 @@ var units_default = [
     chargeBonus: 4,
     health: 28,
     missileAttack: 0,
-    fieldPower: 39
+    fieldPower: 39,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan (wo\u0142y)",
@@ -3081,7 +6246,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3127,7 +6292,9 @@ var units_default = [
     chargeBonus: 10,
     health: 48,
     missileAttack: 0,
-    fieldPower: 52
+    fieldPower: 52,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Konnica",
@@ -3137,7 +6304,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 22,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3183,7 +6350,9 @@ var units_default = [
     chargeBonus: 10,
     health: 28,
     missileAttack: 0,
-    fieldPower: 49
+    fieldPower: 49,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Galera",
@@ -3193,7 +6362,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3239,7 +6408,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 25
+    fieldPower: 25,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Falanga",
@@ -3249,7 +6420,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3295,7 +6466,9 @@ var units_default = [
     chargeBonus: 7,
     health: 40,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
@@ -3305,7 +6478,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -3351,7 +6524,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Hastati",
@@ -3361,7 +6536,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3407,7 +6582,9 @@ var units_default = [
     chargeBonus: 7,
     health: 38,
     missileAttack: 4,
-    fieldPower: 57.5
+    fieldPower: 57.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Triari",
@@ -3417,7 +6594,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -3463,7 +6640,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Je\u017Adziec chi\u0144ski",
@@ -3473,7 +6652,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -3519,7 +6698,9 @@ var units_default = [
     chargeBonus: 5,
     health: 44,
     missileAttack: 0,
-    fieldPower: 45.5
+    fieldPower: 45.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hu Ben Wei (Gwardia Tygrysa)",
@@ -3529,7 +6710,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -3575,7 +6756,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Impi",
@@ -3585,7 +6768,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -3631,7 +6814,9 @@ var units_default = [
     chargeBonus: 3,
     health: 36,
     missileAttack: 0,
-    fieldPower: 38.5
+    fieldPower: 38.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik Zulu (Izijula)",
@@ -3640,8 +6825,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3687,7 +6872,9 @@ var units_default = [
     chargeBonus: 0,
     health: 20,
     missileAttack: 4,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "uThulwana (Bia\u0142e Tarcze)",
@@ -3697,7 +6884,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -3743,7 +6930,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik z maczug\u0105 (Chaska)",
@@ -3752,8 +6941,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -3799,7 +6988,9 @@ var units_default = [
     chargeBonus: 2,
     health: 20,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z toporem",
@@ -3809,7 +7000,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -3855,7 +7046,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 32.5
+    fieldPower: 32.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz (Huaracoc)",
@@ -3864,8 +7057,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -3911,7 +7104,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik (Est\xF3lica)",
@@ -3920,8 +7115,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3967,7 +7162,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Kr\xF3lewska Gwardia",
@@ -3977,7 +7174,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -4023,7 +7220,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Rydwan konny",
@@ -4033,7 +7232,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -4079,7 +7278,9 @@ var units_default = [
     chargeBonus: 8,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54
+    fieldPower: 54,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik egipski",
@@ -4088,8 +7289,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -4135,7 +7336,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 6,
-    fieldPower: 15
+    fieldPower: 15,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan egipski",
@@ -4145,7 +7348,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -4191,7 +7394,9 @@ var units_default = [
     chargeBonus: 7,
     health: 56,
     missileAttack: 5,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z khopesh",
@@ -4201,7 +7406,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -4247,7 +7452,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Med\u017Caj (Gwardia Faraona)",
@@ -4257,7 +7464,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -4303,7 +7510,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 3,
-    fieldPower: 64.5
+    fieldPower: 64.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "\u0141ucznik nubijski",
@@ -4312,8 +7521,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -4359,7 +7568,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 6,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik sumeryjski",
@@ -4368,8 +7579,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -4415,7 +7626,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan sumeryjski",
@@ -4425,7 +7638,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 38,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -4471,7 +7684,9 @@ var units_default = [
     chargeBonus: 9,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54.5
+    fieldPower: 54.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik sumeryjski",
@@ -4481,7 +7696,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -4527,7 +7742,9 @@ var units_default = [
     chargeBonus: 2,
     health: 40,
     missileAttack: 0,
-    fieldPower: 41
+    fieldPower: 41,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardia Kr\xF3lewska Sumeru",
@@ -4537,7 +7754,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -4583,7 +7800,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik myke\u0144ski",
@@ -4593,7 +7812,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -4639,7 +7858,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 34.5
+    fieldPower: 34.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan myke\u0144ski",
@@ -4649,7 +7870,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -4695,7 +7916,9 @@ var units_default = [
     chargeBonus: 9,
     health: 52,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik Sherden",
@@ -4705,7 +7928,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -4751,7 +7974,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 35.5
+    fieldPower: 35.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Halabardnik Shang",
@@ -4761,7 +7986,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -4807,7 +8032,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 36
+    fieldPower: 36,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan Shang",
@@ -4817,7 +8044,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -4863,7 +8090,9 @@ var units_default = [
     chargeBonus: 8,
     health: 60,
     missileAttack: 0,
-    fieldPower: 58
+    fieldPower: 58,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik akadyjski",
@@ -4872,8 +8101,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -4919,7 +8148,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 5,
-    fieldPower: 15.5
+    fieldPower: 15.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gaesatae",
@@ -4929,7 +8160,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -4975,14 +8206,16 @@ var units_default = [
     chargeBonus: 5,
     health: 22,
     missileAttack: 0,
-    fieldPower: 29.5
+    fieldPower: 29.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5028,7 +8261,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 5,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan celtycki",
@@ -5038,7 +8273,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -5084,7 +8319,9 @@ var units_default = [
     chargeBonus: 10,
     health: 52,
     missileAttack: 0,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik germa\u0144ski",
@@ -5094,7 +8331,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5140,7 +8377,9 @@ var units_default = [
     chargeBonus: 4,
     health: 30,
     missileAttack: 4,
-    fieldPower: 37
+    fieldPower: 37,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Berserker germa\u0144ski",
@@ -5150,7 +8389,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -5196,7 +8435,9 @@ var units_default = [
     chargeBonus: 6,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33
+    fieldPower: 33,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Taran",
@@ -5205,8 +8446,8 @@ var units_default = [
     Tech: "Obr\xF3bka drewna",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -5254,7 +8495,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 14,
     fieldPower: 352.5,
-    siegePower: 85
+    siegePower: 85,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Taran okuty",
@@ -5264,7 +8507,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -5312,7 +8555,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 18,
     fieldPower: 377.5,
-    siegePower: 94
+    siegePower: 94,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Katapulta",
@@ -5322,7 +8567,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 1,
@@ -5370,7 +8615,9 @@ var units_default = [
     missileAttack: 4,
     wallAttack: 16,
     fieldPower: 128,
-    siegePower: 45
+    siegePower: 45,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wie\u017Ca obl\u0119\u017Cnicza",
@@ -5380,7 +8627,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 0,
@@ -5428,7 +8675,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 6,
     fieldPower: 451,
-    siegePower: 97
+    siegePower: 97,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik tyrre\u0144ski",
@@ -5438,7 +8687,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 15,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5484,7 +8733,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik szekelesz",
@@ -5494,7 +8745,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -5540,14 +8791,16 @@ var units_default = [
     chargeBonus: 2,
     health: 28,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -5593,14 +8846,16 @@ var units_default = [
     meleeAttack: 9,
     weaponDamage: 8,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -5646,14 +8901,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 2,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -5699,14 +8956,16 @@ var units_default = [
     meleeAttack: 2,
     weaponDamage: 2,
     meleeDefence: 3,
-    missileAttack: 4
+    missileAttack: 4,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5752,14 +9011,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -5805,14 +9066,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5858,14 +9121,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 4,
     meleeDefence: 9,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -5911,14 +9176,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5964,14 +9231,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 34,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6017,14 +9286,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 7,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -6070,14 +9341,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -6123,14 +9396,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -6176,14 +9451,16 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 7,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -6229,14 +9506,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6282,14 +9561,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6335,14 +9616,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -6388,14 +9671,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 4,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6441,7 +9726,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Thorakites",
@@ -6451,7 +9738,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -6494,7 +9781,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Evocati",
@@ -6504,7 +9793,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -6547,7 +9836,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "iButho z iklwa",
@@ -6557,7 +9848,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -6600,7 +9891,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardzista z champi",
@@ -6610,7 +9903,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6653,7 +9946,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 5,
-    missileAttack: 5
+    missileAttack: 5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z \u017Celaznym khopesh",
@@ -6663,7 +9958,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -6706,7 +10001,9 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Mur tarcz (Sargonid)",
@@ -6716,7 +10013,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -6759,7 +10056,9 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 10,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Miecznik galijski",
@@ -6769,7 +10068,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -6812,7 +10111,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 6,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   }
 ];
 
@@ -7850,12 +11151,9 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bez kosztu surowcowego (C-PALAC-Q1=A, start pula=0); tylko kosztBudowy Praca; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "-",
-    lokalizacja: "stolica",
-    koszt_surowce: {
-      drewno: 8
-    }
+    lokalizacja: "stolica"
   },
   {
     id: "palac_ii",
@@ -9581,6 +12879,10 @@ function diplomacyFairGivePn(receivePn, relacja) {
   const rel = Math.max(1, relacja);
   return Math.ceil(Math.max(0, receivePn) * (100 / rel));
 }
+function diplomacyProgDarRelacja(params = _pnRelacja, difficulty = "normal") {
+  const base = { ..._pnRelacja, ...params }.prog_dar_relacja;
+  return scaleRelationThreshold(base, difficulty);
+}
 
 // game/diplomacy-ai-offer-balance.ts
 var AI_OFFER_PW_BALANCE_TOLERANCE_PN = {
@@ -9607,11 +12909,20 @@ function proposalPnTurnsMultiplier(payload) {
     turnsMultiplier: perTurn ? Math.max(1, payload.turns ?? 1) : 1
   };
 }
+function relationTotal(rel) {
+  return Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + (rel.respekt ?? 0)));
+}
 function relationSignedFromTotal(relTotal) {
   return Math.max(-100, Math.min(100, relTotal - 100));
 }
 function relationPnModPct(relSigned) {
-  return Math.max(-90, Math.min(90, relSigned));
+  const clamped = Math.max(-90, Math.min(90, relSigned));
+  return Number(clamped.toFixed(1));
+}
+function formatPctPl1(n) {
+  const rounded = Number(n.toFixed(1));
+  const normalized = Object.is(rounded, -0) ? 0 : rounded;
+  return String(normalized).replace(/\.0$/, "").replace(".", ",");
 }
 function effectiveTreatyPnRequired(basePn, relTotal) {
   if (basePn <= 0) return 0;
@@ -9629,13 +12940,17 @@ function treatyPwForRole(basePn, relTotal, role) {
 function formatRelationModLabel(relTotal) {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
   if (modPct === 0) return "Relacje: 0% si\u0142a PW";
-  if (modPct > 0) return `Relacje: +${modPct}% si\u0142a PW`;
-  return `Relacje: \u2212${Math.abs(modPct)}% si\u0142a PW`;
+  const pctStr = formatPctPl1(Math.abs(modPct));
+  if (modPct > 0) return `Relacje: +${pctStr}% si\u0142a PW`;
+  return `Relacje: \u2212${pctStr}% si\u0142a PW`;
 }
 function pnDealAcceptedByAi(givePn, receivePn, relacja) {
   if (givePn <= 0 && receivePn <= 0) return false;
   const fairMin = diplomacyFairGivePn(receivePn, Math.min(100, relacja));
   return givePn >= fairMin;
+}
+function pnGiftAllowed(relacja, difficulty = "normal") {
+  return relacja >= diplomacyProgDarRelacja(void 0, difficulty);
 }
 function pnFromLegacyGold(goldOnce) {
   if (goldOnce == null || !Number.isFinite(goldOnce) || goldOnce <= 0) return 0;
@@ -9659,9 +12974,111 @@ function resolveProposalPn(payload, opts) {
   return { givePn, receivePn };
 }
 
+// game/diplomacy-war-gates.ts
+var PEACE_CURRENCY_ACTION_IDS = /* @__PURE__ */ new Set(["pokoj", "trybut_oferta"]);
+function isPeaceCurrencyAction(actionId) {
+  return PEACE_CURRENCY_ACTION_IDS.has(actionId);
+}
+function basketHasCurrencyPayment(items) {
+  if (!items?.length) return false;
+  return items.some((i) => i.typ === "zloto" || i.typ === "praca");
+}
+function payloadHasCurrencyPayment(payload) {
+  if (!payload) return false;
+  if ((payload.goldOnce ?? 0) > 0) return true;
+  if ((payload.goldPerTurn ?? 0) > 0) return true;
+  return basketHasCurrencyPayment(payload.giveItems) || basketHasCurrencyPayment(payload.receiveItems);
+}
+function isCurrencyProposalForbiddenDuringWar(actionId, payload, atWar = true) {
+  if (!atWar) return false;
+  if (!payloadHasCurrencyPayment(payload)) return false;
+  return !isPeaceCurrencyAction(actionId);
+}
+
 // game/diplomacy-proposals.ts
 var STUB_RESPONDER = { typCywilizacji: "grecy" /* Grecy */ };
 var STUB_PROPOSER = { typCywilizacji: "rzymianie" /* Rzymianie */ };
+function clamp2(n, lo, hi) {
+  return Math.max(lo, Math.min(hi, n));
+}
+function pairHasKind(deals, a, b, rodzaj) {
+  if (!deals?.length) return false;
+  const p0 = Math.min(a, b);
+  const p1 = Math.max(a, b);
+  const k = normalizeTreatyKind(rodzaj);
+  return deals.some(
+    (d) => d.strony[0] === p0 && d.strony[1] === p1 && normalizeTreatyKind(d.rodzaj) === k
+  );
+}
+function graczWchloniecieKosztZloto(population, p = getEffectiveDiplomacyParams("normal")) {
+  return Math.max(
+    p.graczWchloniecieKosztMin,
+    p.graczWchloniecieKosztBaza + p.graczWchloniecieKosztPerLudnosc * Math.max(0, population)
+  );
+}
+function findWasalDeal(deals, suzerenId, wasalId) {
+  if (!deals?.length) return void 0;
+  const p0 = Math.min(suzerenId, wasalId);
+  const p1 = Math.max(suzerenId, wasalId);
+  return deals.find((d) => {
+    if (d.strony[0] !== p0 || d.strony[1] !== p1) return false;
+    if (normalizeTreatyKind(d.rodzaj) !== "wasalizacja" /* Wasalizacja */) return false;
+    const econ = d.ekonomia;
+    if (!econ) return true;
+    return econ.receiverOwnerId === suzerenId && econ.payerOwnerId === wasalId;
+  });
+}
+function wasalAgeTurns(deal, turn) {
+  if (!deal || deal.zawartaTura == null) return void 0;
+  return Math.max(0, turn - deal.zawartaTura);
+}
+function makeDealId(prefix, turn, a, b) {
+  const [p0, p1] = a < b ? [a, b] : [b, a];
+  return `${prefix}-${p0}-${p1}-t${turn}`;
+}
+function stanceForEval(ctx) {
+  const responder = ctx.responderPlayer ?? STUB_RESPONDER;
+  const proposer = ctx.proposerPlayer ?? STUB_PROPOSER;
+  const proposerMil = ctx.militaryRatio ?? 1;
+  const responderMilRatio = proposerMil > 0 ? 1 / proposerMil : 99;
+  const dipCtx = {
+    isMinorCiv: ctx.isMinorCiv ?? false,
+    militaryRatio: responderMilRatio,
+    currentTurn: ctx.turn,
+    turnsAtWar: ctx.stanWojny ? 5 : 0
+  };
+  return aiDiplomacyStance(responder, proposer, ctx.relation, dipCtx);
+}
+function buildDeal(rodzaj, a, b, turn, wygasaTura, ekonomia, handelJednorazowy, handelPayload, handelSurowiecCykliczny) {
+  return {
+    id: makeDealId(rodzaj, turn, a, b),
+    rodzaj,
+    strony: a < b ? [a, b] : [b, a],
+    wygasaTura,
+    zawartaTura: turn,
+    ekonomia,
+    handelJednorazowy,
+    handelPayload,
+    handelSurowiecCykliczny
+  };
+}
+var RESOURCE_ACCESS_TYPES = /* @__PURE__ */ new Set(["zloze", "surowiec_boolean"]);
+var RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON = "Handel dost\u0119pem do surowc\xF3w nieaktualny \u2014 wycofany po polityce terytorialnej (SUROW-TERYT)";
+function proposalHasResourceAccess(payload) {
+  const items = [...payload.giveItems ?? [], ...payload.receiveItems ?? []];
+  return items.some((i) => RESOURCE_ACCESS_TYPES.has(i.typ));
+}
+function clampDealTurns(turns, defaultTurns = 15) {
+  return clamp2(turns ?? defaultTurns, 1, 20);
+}
+function resolveNapDealExpiry(turn, payload) {
+  const raw = payload.turns;
+  if (raw != null && raw <= 0) {
+    return { wygasaTura: null, label: "Pakt nieagresji (bezterminowy)" };
+  }
+  const turns = clamp2(raw ?? 15, 10, 20);
+  return { wygasaTura: turn + turns, label: `Pakt nieagresji na ${turns} tur` };
+}
 var SWEETENER_PN_PER_EASE_POINT = 25;
 var SWEETENER_EASE_MAX_POINTS = 20;
 function sweetenerNetPn(payload, pnOpts) {
@@ -9672,6 +13089,560 @@ function sweetenerEasePoints(payload, pnOpts) {
   const netPn = sweetenerNetPn(payload, pnOpts);
   if (netPn <= 0) return 0;
   return Math.min(SWEETENER_EASE_MAX_POINTS, Math.floor(netPn / SWEETENER_PN_PER_EASE_POINT));
+}
+function buildHandelSurowiecCykliczny(proposerId, responderId, giveItems = [], receiveItems = []) {
+  const out = [];
+  const giveRes = giveItems.find((i) => i.typ === "surowiec_ilosc" && (i.ilosc ?? 0) > 0);
+  const givePayment = giveItems.find((i) => i.typ === "zloto" || i.typ === "praca");
+  const recvRes = receiveItems.find((i) => i.typ === "surowiec_ilosc" && (i.ilosc ?? 0) > 0);
+  const recvPayment = receiveItems.find((i) => i.typ === "zloto" || i.typ === "praca");
+  if (giveRes) {
+    out.push({
+      surowiecKey: giveRes.id,
+      pakietyPerTura: Math.floor(giveRes.ilosc ?? 0),
+      sellerOwnerId: proposerId,
+      buyerOwnerId: responderId,
+      zaplataTyp: recvPayment?.typ,
+      zaplataPerTura: recvPayment?.ilosc
+    });
+  }
+  if (recvRes) {
+    out.push({
+      surowiecKey: recvRes.id,
+      pakietyPerTura: Math.floor(recvRes.ilosc ?? 0),
+      sellerOwnerId: responderId,
+      buyerOwnerId: proposerId,
+      zaplataTyp: givePayment?.typ,
+      zaplataPerTura: givePayment?.ilosc
+    });
+  }
+  return out;
+}
+function marchTreatyLabel(borderMilitary) {
+  return borderMilitary ? "Traktat przemarszu (wojskowy)" : "Traktat przemarszu (cywilny)";
+}
+function treatyBasePnFromConfig(actionId) {
+  const t = diplomacy_acceptance_points_default.traktaty;
+  return t[actionId]?.punkty ?? 0;
+}
+function treatyEvalRelationTotal(rel) {
+  const clamped = rel.status === "wojna" ? clampRelationForWar(rel) : rel;
+  return relationTotal(clamped);
+}
+function peaceProposalOfferPn(givePn, receivePn, basePn, rel, proposerIsPlayer = false) {
+  const relTotal = treatyEvalRelationTotal(rel);
+  const required = proposerIsPlayer ? effectiveTreatyPnRequired(basePn, relTotal) : partnerTreatyPnRequired(basePn);
+  const basketNet = Math.max(0, givePn - receivePn);
+  return { offerPn: required + basketNet, required };
+}
+function treatyPnGate(actionId, payload, relation, pnOpts) {
+  const basePn = treatyBasePnFromConfig(actionId);
+  if (basePn <= 0) return null;
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const proposerIsPlayer = (pnOpts?.proposerOwnerId ?? 0) === (pnOpts?.playerOwnerId ?? 0);
+  const relTotal = treatyEvalRelationTotal(relation);
+  if (actionId === "pokoj") {
+    const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
+    if (offerPn < required) {
+      return {
+        accepted: false,
+        reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji, baza ${basePn})`
+      };
+    }
+    return null;
+  }
+  const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
+  if (!hasBasket) return null;
+  if (receivePn > 0) {
+    if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+      return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
+    }
+    return null;
+  }
+  return null;
+}
+var PROPOSER_PW_FAIRNESS_ACTIONS = /* @__PURE__ */ new Set([
+  "nap",
+  "sojusz_defensywny",
+  "sojusz_pelny",
+  "granice",
+  "pokoj",
+  "wasal",
+  "handel",
+  "umowa_szlakow",
+  "umowa_handlowa"
+]);
+function proposerUnfairToPartnerGate(actionId, payload, relation, pnOpts) {
+  if (!PROPOSER_PW_FAIRNESS_ACTIONS.has(actionId)) return null;
+  const proposerIsPlayer = (pnOpts.proposerOwnerId ?? 0) === (pnOpts.playerOwnerId ?? 0);
+  if (!proposerIsPlayer) return null;
+  const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+  const hasBasket = givePn > 0 || receivePn > 0 || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+  const basePn = treatyBasePnFromConfig(actionId);
+  if (basePn <= 0 && !hasBasket) return null;
+  const relTotal = treatyEvalRelationTotal(relation);
+  const playerTreaty = basePn > 0 ? effectiveTreatyPnRequired(basePn, relTotal) : 0;
+  const partnerTreaty = basePn > 0 ? partnerTreatyPnRequired(basePn) : 0;
+  const proposerDisplay = playerTreaty + givePn;
+  const responderDisplay = partnerTreaty + receivePn;
+  if (proposerDisplay < responderDisplay) {
+    return {
+      accepted: false,
+      reason: `Przewaga u Ciebie \u2014 oferta nieuczciwa dla partnera (${responderDisplay - proposerDisplay} PW)`
+    };
+  }
+  if (receivePn > 0 && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+    return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
+  }
+  return null;
+}
+function tradeWillingnessBlocksAcceptance(stance, params, givePn, receivePn, relTotal, payload) {
+  if (stance.willingnessTrade >= params.progHandelWillingnessMin) return false;
+  const hasBasket = givePn > 0 || receivePn > 0 || (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+  if (!hasBasket) return false;
+  if (pnDealAcceptedByAi(givePn, receivePn, relTotal)) return false;
+  return true;
+}
+function evaluateProposal(proposal, ctx) {
+  const { actionId, proposerOwnerId, responderOwnerId, payload } = proposal;
+  const { relation, stanWojny } = ctx;
+  const p = getEffectiveDiplomacyParams(ctx.difficulty ?? "normal");
+  const pnOpts = {
+    difficulty: ctx.difficulty ?? "normal",
+    proposerOwnerId,
+    playerOwnerId: 0,
+    ...proposalPnTurnsMultiplier(payload)
+  };
+  const score = relationScore(relation);
+  const stance = stanceForEval(ctx);
+  if (actionId === "pokoj" && !stanWojny) {
+    return { accepted: false, reason: "Pok\xF3j \u2014 brak trwaj\u0105cej wojny" };
+  }
+  if (stanWojny && actionId !== "trybut_oferta" && actionId !== "ultimatum" && actionId !== "pokoj") {
+    return { accepted: false, reason: "Trwa wojna \u2014 ta akcja jest niedost\u0119pna" };
+  }
+  if (stanWojny && isCurrencyProposalForbiddenDuringWar(actionId, payload, true)) {
+    return { accepted: false, reason: "W wojnie pieni\u0105dze tylko w ugodzie pokojowej" };
+  }
+  if (TRIBUTE_PROPOSAL_ACTIONS.has(actionId) && tributeBlockedForCityState(ctx)) {
+    return { accepted: false, reason: CITY_STATE_TRIBUTE_BLOCK_REASON };
+  }
+  const unfairToPartner = proposerUnfairToPartnerGate(actionId, payload, relation, pnOpts);
+  if (unfairToPartner) return unfairToPartner;
+  const pnReject = treatyPnGate(actionId, payload, relation, pnOpts);
+  if (pnReject) return pnReject;
+  switch (actionId) {
+    case "nap": {
+      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgNapMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodno\u015B\u0107 zbyt niska na pakt (wymagana \u2265 ${p.wiarygodnoscProgNapMin})`
+        };
+      }
+      const napEase = sweetenerEasePoints(payload, pnOpts);
+      const napThreshold = Math.max(0, p.progNapRelacja - napEase);
+      if (score < napThreshold) {
+        return { accepted: false, reason: `Relacja zbyt niska na pakt (wymagana \u2265 ${napThreshold})` };
+      }
+      if (ctx.ekspansjaPrzyGranicy) {
+        return { accepted: false, reason: "Ekspansja przy granicy \u2014 brak zaufania do paktu" };
+      }
+      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, "pakt_nieagresji" /* PaktNieagresji */)) {
+        return { accepted: false, reason: "Pakt nieagresji ju\u017C obowi\u0105zuje" };
+      }
+      const napExpiry = resolveNapDealExpiry(ctx.turn, payload);
+      const deal = buildDeal(
+        "pakt_nieagresji" /* PaktNieagresji */,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        napExpiry.wygasaTura
+      );
+      return { accepted: true, reason: napExpiry.label, deal };
+    }
+    case "sojusz_defensywny":
+    case "sojusz_pelny": {
+      if ((ctx.proposerWiarygodnosc ?? 0) < p.wiarygodnoscProgSojuszMin) {
+        return {
+          accepted: false,
+          reason: `Wiarygodno\u015B\u0107 zbyt niska na sojusz (wymagana \u2265 ${p.wiarygodnoscProgSojuszMin})`
+        };
+      }
+      const kind = actionId === "sojusz_defensywny" ? "sojusz_defensywny" : "sojusz_pelny";
+      const milRatio = ctx.militaryRatio ?? 1;
+      const adj = diplomacyAllianceStrengthAdjust(
+        milRatio,
+        ctx.proposerRespekt,
+        ctx.responderRespekt,
+        p
+      );
+      const sojuszEase = sweetenerEasePoints(payload, pnOpts);
+      const minZ = Math.max(0, diplomacyAllianceMinZaufanie(adj, milRatio, p) - sojuszEase);
+      const minScore = diplomacyTreatyMinRelacja(
+        p.progSojuszRelacja - adj.ease.scoreThresholdDelta + adj.penaltyScore - sojuszEase,
+        p
+      );
+      const minAlly = Math.max(0, p.progSojuszWillingnessMin - adj.ease.allyThresholdDelta + adj.penaltyAlly);
+      if (adj.hegemonBlocksAlliance) {
+        return {
+          accepted: false,
+          reason: "Hegemon nie potrzebuje sojuszu \u2014 wola wobec s\u0142abszego to trybut lub wasalizacja"
+        };
+      }
+      if (relation.zaufanie < minZ) {
+        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${minZ})` };
+      }
+      if (score < minScore) {
+        return { accepted: false, reason: `Relacja og\xF3lna zbyt niska na sojusz (\u2265 ${minScore})` };
+      }
+      if (milRatio < p.progSojuszSlabyProponentMilRatio && ctx.proposerRespekt <= ctx.responderRespekt && score < p.progUmowaMinRelacja) {
+        return { accepted: false, reason: "Za s\u0142aby proponent bez pe\u0142nej relacji \u2014 sojusz nierealny" };
+      }
+      if (stance.willingnessAlly < minAlly) {
+        return { accepted: false, reason: "Brak gotowo\u015Bci do sojuszu" };
+      }
+      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, kind)) {
+        return { accepted: false, reason: "Sojusz tego typu ju\u017C istnieje" };
+      }
+      const deal = buildDeal(kind, proposerOwnerId, responderOwnerId, ctx.turn, null);
+      const label = kind === "sojusz_defensywny" ? "Sojusz obronny" : "Sojusz wojskowy";
+      return { accepted: true, reason: `${label} zawarty`, deal };
+    }
+    case "trybut_zadanie": {
+      const perTurn = payload.goldPerTurn ?? 0;
+      if (perTurn < p.progTrybutMinGoldPerTurn) {
+        return { accepted: false, reason: `Minimalny trybut to ${p.progTrybutMinGoldPerTurn} \xA4/tur\u0119` };
+      }
+      const trybutEase = sweetenerEasePoints(payload, pnOpts);
+      const trybutRespektThreshold = Math.max(0, p.progTrybutZadanieMinRespekt - trybutEase);
+      if (ctx.proposerRespekt <= trybutRespektThreshold) {
+        return {
+          accepted: false,
+          reason: `\u017B\u0105danie trybutu wymaga Respekt > ${trybutRespektThreshold} (masz ${ctx.proposerRespekt})`
+        };
+      }
+      const maxPerTurn = p.progTrybutZadanieMaxGoldBase + Math.max(0, ctx.proposerRespekt - p.progTrybutZadanieMinRespekt) * p.progTrybutZadanieMaxGoldPerRespekt;
+      if (perTurn > maxPerTurn) {
+        return {
+          accepted: false,
+          reason: `\u017B\u0105danie trybutu przekracza limit przy tym Respekcie (max ${Math.round(maxPerTurn)} \xA4/tur\u0119)`
+        };
+      }
+      if (pairHasKind(ctx.activeDeals, proposerOwnerId, responderOwnerId, "wasalizacja" /* Wasalizacja */)) {
+        return { accepted: false, reason: "Trybut/wasalizacja z tym pa\u0144stwem ju\u017C obowi\u0105zuje" };
+      }
+      const deal = buildDeal(
+        "wasalizacja" /* Wasalizacja */,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        payload.turns != null ? ctx.turn + payload.turns : null,
+        {
+          payerOwnerId: responderOwnerId,
+          receiverOwnerId: proposerOwnerId,
+          pieniadzePerTura: perTurn
+        }
+      );
+      return { accepted: true, reason: `Trybut ${perTurn} \xA4/tur\u0119`, deal };
+    }
+    case "pokoj": {
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const basePn = treatyBasePnFromConfig("pokoj");
+      const proposerIsPlayer = proposerOwnerId === 0;
+      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
+      if (offerPn < required) {
+        return {
+          accepted: false,
+          reason: `Oferta za niska na pok\xF3j (wymagane \u2265 ${required} PW @ Relacji)`
+        };
+      }
+      return { accepted: true, reason: "Warunki pokoju spe\u0142nione", oneShotTrade: true };
+    }
+    case "trybut_oferta": {
+      const perTurn = payload.goldPerTurn ?? payload.goldOnce ?? 0;
+      const threshold = p.progTrybutOfertaBaseGold + (ctx.epoka ?? 0) * p.progTrybutOfertaEpokaGold;
+      const nearWar = (ctx.militaryRatio ?? 1) > p.progTrybutOfertaNearWarRatio || relation.zaufanie < p.progTrybutOfertaNearWarZaufanie;
+      if (!nearWar && perTurn < threshold) {
+        return { accepted: false, reason: "Oferta trybutu zbyt niska" };
+      }
+      if (perTurn < p.progTrybutOfertaMinGold) {
+        return { accepted: false, reason: `Minimalna oferta to ${p.progTrybutOfertaMinGold} \xA4` };
+      }
+      if (payload.goldOnce != null && payload.goldOnce > 0) {
+        return { accepted: true, reason: "Jednorazowy trybut za pok\xF3j", oneShotTrade: true };
+      }
+      const deal = buildDeal(
+        "wasalizacja" /* Wasalizacja */,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        payload.turns != null ? ctx.turn + payload.turns : null,
+        {
+          payerOwnerId: proposerOwnerId,
+          receiverOwnerId: responderOwnerId,
+          pieniadzePerTura: perTurn
+        }
+      );
+      return { accepted: true, reason: `Oferta trybutu ${perTurn} \xA4/tur\u0119 przyj\u0119ta`, deal };
+    }
+    case "handel": {
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const relTotal = relationTotal(relation);
+      const isGift = payload.isGift === true || (payload.giveItems?.length ?? 0) > 0 && !payload.receiveItems?.length && (payload.receivePn ?? 0) <= 0;
+      if (isGift) {
+        if (!pnGiftAllowed(relTotal, ctx.difficulty ?? "normal")) {
+          return {
+            accepted: false,
+            reason: `Relacja zbyt niska na dar (wymagane \u2265 ${diplomacyProgDarRelacja(void 0, ctx.difficulty ?? "normal")})`
+          };
+        }
+        if (givePn <= 0) {
+          return { accepted: false, reason: "Brak warto\u015Bci w darze" };
+        }
+        return { accepted: true, reason: "Dar przyj\u0119ty", oneShotTrade: true };
+      }
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
+        return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
+      }
+      if (score < p.progHandelRelacja) {
+        return { accepted: false, reason: `Relacja zbyt niska na handel (wymagane \u2265 ${p.progHandelRelacja})` };
+      }
+      const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
+      if (proposalHasResourceAccess(payload)) {
+        return { accepted: false, reason: RESOURCE_ACCESS_TRADE_WITHDRAWN_REASON };
+      }
+      const hasQuantityResourceItems = (payload.giveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false) || (payload.receiveItems?.some((i) => i.typ === "surowiec_ilosc") ?? false);
+      if (payload.resourceTradeMode === "per_turn" && hasQuantityResourceItems) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
+        }
+        const turns = clampDealTurns(payload.turns);
+        const cyklicznyItems = buildHandelSurowiecCykliczny(
+          proposerOwnerId,
+          responderOwnerId,
+          payload.giveItems,
+          payload.receiveItems
+        );
+        if (!cyklicznyItems.length) {
+          return { accepted: false, reason: "Brak surowca do cyklicznej wymiany" };
+        }
+        const deal = buildDeal(
+          "umowa_wymiany" /* UmowaWymiany */,
+          proposerOwnerId,
+          responderOwnerId,
+          ctx.turn,
+          ctx.turn + turns,
+          void 0,
+          false,
+          void 0,
+          cyklicznyItems
+        );
+        return {
+          accepted: true,
+          reason: `Umowa handlowa (surowiec co tur\u0119) na ${turns} tur`,
+          deal
+        };
+      }
+      if (hasPnPath) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
+        }
+        return { accepted: true, reason: "Wymiana PW zaakceptowana", oneShotTrade: true };
+      }
+      const legacyGive = pnFromLegacyGold(payload.goldOnce ?? (payload.amount ?? 0) * 10);
+      const legacyReceive = pnFromLegacyGold(ctx.fairTradeValue ?? legacyGive);
+      if (legacyGive <= 0) {
+        return { accepted: false, reason: "Brak warto\u015Bci w ofercie" };
+      }
+      if (!pnDealAcceptedByAi(legacyGive, legacyReceive, relTotal)) {
+        return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
+      }
+      return { accepted: true, reason: "Wymiana jednorazowa (T3A)", oneShotTrade: true };
+    }
+    case "umowa_handlowa":
+    case "umowa_szlakow": {
+      const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
+      const relTotal = relationTotal(relation);
+      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
+        return { accepted: false, reason: "Brak ch\u0119ci do handlu" };
+      }
+      if (score < p.progHandelRelacja) {
+        return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane \u2265 ${p.progHandelRelacja})` };
+      }
+      const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
+      if (hasItems) {
+        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: "Oferta poni\u017Cej uczciwej warto\u015Bci PW @ Relacji" };
+        }
+      }
+      const wygasa = payload.turns != null ? ctx.turn + clampDealTurns(payload.turns) : null;
+      const deal = buildDeal(
+        "umowa_szlakow" /* UmowaSzlakow */,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        wygasa
+      );
+      return {
+        accepted: true,
+        reason: hasItems ? "Traktat handlowy (ze s\u0142odzikiem) zawarty" : "Traktat handlowy zawarty",
+        deal
+      };
+    }
+    case "namow_wojne": {
+      if (relation.zaufanie < p.progNamowWojneZaufanie) {
+        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${p.progNamowWojneZaufanie})` };
+      }
+      const epoka = ctx.epoka ?? 0;
+      const minBribe = p.progNamowWojneBribeBase * (epoka + 1);
+      const bribe = payload.bribeGold ?? 0;
+      if (bribe < minBribe) {
+        return { accepted: false, reason: `\u0141ap\xF3wka zbyt ma\u0142a (min. ${minBribe} \xA4)` };
+      }
+      if (payload.targetOwnerId == null) {
+        return { accepted: false, reason: "Brak wskazanego wroga" };
+      }
+      return { accepted: true, reason: "Zgoda na wypowiedzenie wojny wskazanemu wrogowi" };
+    }
+    case "tech": {
+      const techRelOk = score >= p.progHandelRelacja;
+      const techZaufOk = relation.zaufanie >= p.progWymianaTechZaufanie;
+      if (!techRelOk && !techZaufOk) {
+        return {
+          accepted: false,
+          reason: `Relacja zbyt niska na wymian\u0119 tech (wymagana Relacja \u2265 ${p.progHandelRelacja} i Zaufanie \u2265 ${p.progWymianaTechZaufanie})`
+        };
+      }
+      if (!techRelOk) {
+        return { accepted: false, reason: `Relacja zbyt niska na wymian\u0119 tech (wymagane \u2265 ${p.progHandelRelacja})` };
+      }
+      if (!techZaufOk) {
+        return { accepted: false, reason: `Zaufanie zbyt niskie na wymian\u0119 tech (wymagane \u2265 ${p.progWymianaTechZaufanie})` };
+      }
+      const minPrice = ctx.techMinPrice ?? 50;
+      const price = payload.techPrice ?? 0;
+      if (price < minPrice) {
+        return { accepted: false, reason: `Cena poni\u017Cej minimum (${minPrice} \xA4)` };
+      }
+      if (!payload.techId) {
+        return { accepted: false, reason: "Brak technologii w ofercie" };
+      }
+      return { accepted: true, reason: "Sprzeda\u017C technologii zaakceptowana", oneShotTrade: true };
+    }
+    case "granice": {
+      const graniceEase = sweetenerEasePoints(payload, pnOpts);
+      const graniceRelThreshold = Math.max(0, p.progGraniceRelacja - graniceEase);
+      const graniceZaufThreshold = Math.max(0, p.progGraniceZaufanie - graniceEase);
+      const granRelOk = score >= graniceRelThreshold;
+      const granZaufOk = relation.zaufanie >= graniceZaufThreshold;
+      if (!granRelOk && !granZaufOk) {
+        return {
+          accepted: false,
+          reason: `Relacja zbyt niska na traktat przemarszu (wymagana Relacja \u2265 ${graniceRelThreshold} i Zaufanie \u2265 ${graniceZaufThreshold})`
+        };
+      }
+      if (!granRelOk) {
+        return { accepted: false, reason: `Relacja zbyt niska na traktat przemarszu (wymagana \u2265 ${graniceRelThreshold})` };
+      }
+      if (!granZaufOk) {
+        return { accepted: false, reason: `Zaufanie zbyt niskie (wymagane \u2265 ${graniceZaufThreshold})` };
+      }
+      if (payload.borderMilitary && ctx.proposerRespekt < p.progGraniceWojskoweRespekt) {
+        return { accepted: false, reason: `Prawo wojskowe wymaga Respekt \u2265 ${p.progGraniceWojskoweRespekt}` };
+      }
+      const rodzaj = payload.borderMilitary ? "prawo_wojskowe_przemarszu" /* PrawoWojskowePrzemarszu */ : "otwarte_granice" /* OtwartGranice */;
+      const deal = buildDeal(
+        rodzaj,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        null
+      );
+      return {
+        accepted: true,
+        reason: marchTreatyLabel(payload.borderMilitary),
+        deal
+      };
+    }
+    case "ultimatum": {
+      const rw = ctx.militaryRatio ?? 1;
+      if (rw < p.progUltimatumMilitaryRatio) {
+        return { accepted: false, reason: "Ultimatum wymaga wyra\u017Anej przewagi militarnej" };
+      }
+      if (payload.goldOnce != null && payload.goldOnce >= p.progUltimatumMinGold) {
+        return { accepted: true, reason: "Warunki ultimatum spe\u0142nione", oneShotTrade: true };
+      }
+      return { accepted: false, reason: "Ultimatum odrzucone \u2014 warunki zbyt surowe" };
+    }
+    case "wasal": {
+      const wasalEase = sweetenerEasePoints(payload, pnOpts);
+      const wasalRespektThreshold = Math.max(0, p.progWasalizacjaRespekt - wasalEase);
+      if (ctx.proposerRespekt < wasalRespektThreshold) {
+        return { accepted: false, reason: `Wasalizacja wymaga Respekt \u2265 ${wasalRespektThreshold}` };
+      }
+      const perTurn = payload.goldPerTurn ?? p.progWasalDefaultGoldPerTurn;
+      const deal = buildDeal(
+        "wasalizacja" /* Wasalizacja */,
+        proposerOwnerId,
+        responderOwnerId,
+        ctx.turn,
+        null,
+        {
+          payerOwnerId: responderOwnerId,
+          receiverOwnerId: proposerOwnerId,
+          pieniadzePerTura: perTurn
+        }
+      );
+      return { accepted: true, reason: "Wasalizacja zaakceptowana", deal };
+    }
+    case "wchloniecie": {
+      if (!ctx.responderIsCityState) {
+        return { accepted: false, reason: "Wch\u0142oni\u0119cie v1 tylko miasta-pa\u0144stwa" };
+      }
+      const wasalDeal = findWasalDeal(ctx.activeDeals, proposerOwnerId, responderOwnerId);
+      if (!wasalDeal) {
+        return { accepted: false, reason: "Brak aktywnej wasalizacji z tym miastem-pa\u0144stwem" };
+      }
+      const age = ctx.wasalAgeTurns ?? wasalAgeTurns(wasalDeal, ctx.turn);
+      if (age == null || age < p.graczWchlonieciePoWasaluTur) {
+        const remain = p.graczWchlonieciePoWasaluTur - (age ?? 0);
+        return {
+          accepted: false,
+          reason: `Wasal musi trwa\u0107 \u2265 ${p.graczWchlonieciePoWasaluTur} tur (pozosta\u0142o ${remain})`
+        };
+      }
+      if (ctx.proposerRespekt < p.progWchloniecieRespekt) {
+        return {
+          accepted: false,
+          reason: `Wch\u0142oni\u0119cie wymaga Respekt \u2265 ${p.progWchloniecieRespekt}`
+        };
+      }
+      const WCHLONIECIE_CONSENT_REL = 60;
+      if (score < WCHLONIECIE_CONSENT_REL) {
+        return { accepted: false, reason: "Wasal odmawia wch\u0142oni\u0119cia \u2014 zbyt niska Relacja" };
+      }
+      const pop = ctx.responderPopulation ?? 0;
+      const koszt = graczWchloniecieKosztZloto(pop, p);
+      const goldOnce = payload.goldOnce ?? 0;
+      if (goldOnce < koszt) {
+        return {
+          accepted: false,
+          reason: `Wch\u0142oni\u0119cie wymaga jednorazowej op\u0142aty \u2265 ${koszt} \xA4`
+        };
+      }
+      return { accepted: true, reason: `Wch\u0142oni\u0119cie zaakceptowane (${koszt} \xA4)` };
+    }
+    default:
+      return { accepted: false, reason: "Nieznana akcja dyplomatyczna" };
+  }
+}
+var TRIBUTE_PROPOSAL_ACTIONS = /* @__PURE__ */ new Set([
+  "trybut_zadanie",
+  "trybut_oferta"
+]);
+var CITY_STATE_TRIBUTE_BLOCK_REASON = "Trybut niedost\u0119pny u miasta-pa\u0144stwa";
+function tributeBlockedForCityState(ctx) {
+  return ctx.proposerIsCityState === true || ctx.responderIsCityState === true;
 }
 
 // ../data/civ-matrix.json
@@ -12308,6 +16279,8 @@ function loadCivMatrix() {
 
 // game/diplomacy-display.ts
 var MATRIX = loadCivMatrix();
+var WIARYGODNOSC_TOOLTIP_DEF_PL = "Wiarygodno\u015B\u0107 (W) = globalna reputacja twojego pa\u0144stwa (\u2212100\u2026+100). Twarde bramki: sojusz W\u22650, pakt o nieagresji W\u2265\u221240.";
+var WIARYGODNOSC_TOOLTIP_PL = WIARYGODNOSC_TOOLTIP_DEF_PL + ' Wp\u0142ywa na tempo wzrostu Zaufania u wszystkich nacji. Prezenty i handel: max +5 Zaufania/tur\u0119 (ten sam limit dla ka\u017Cdego \u2014 bez bonusu od wysokiej W). Relacja = Zaufanie + Respekt (0\u2013200); w koszyku negocjacji wida\u0107 \u201EWp\u0142yw Relacji na deal" (\xB1%).';
 function splitNegotiationDealPlayerSides(payload, incoming) {
   let give = payload.giveItems ?? [];
   let receive = payload.receiveItems ?? [];
@@ -12420,8 +16393,8 @@ function computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, in
     relationModPct: modPct,
     relationModLabel: modLabel,
     mode,
-    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
-    statusLabel: hasBasket && asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW (Relacja)` : asymBalance > 0 && hasBasket ? `Nadwy\u017Cka +${asymBalance} PW` : formatBalanceLabel(surplusPn, peaceAccepted)
+    accepted: peaceAccepted && asymBalance >= 0,
+    statusLabel: asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : asymBalance > 0 && hasBasket ? `Nadwy\u017Cka +${asymBalance} PW` : formatBalanceLabel(surplusPn, peaceAccepted)
   });
   const buildPartnerSide = () => ({
     offerPn: theirBasketOffer,
@@ -12431,8 +16404,8 @@ function computePeaceAcceptanceSides(givePn, receivePn, relTotal, treatyBase, in
     treatyBasePn: treatyBase,
     treatyEffectivePn: partnerTreatyPw,
     mode,
-    accepted: peaceAccepted && (!hasBasket || asymBalance >= 0),
-    statusLabel: hasBasket && asymBalance > 0 ? `Przewaga u Ciebie +${asymBalance} PW` : hasBasket && asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW` : "R\xF3wno \u2014 spe\u0142nia"
+    accepted: peaceAccepted && asymBalance >= 0,
+    statusLabel: asymBalance < 0 ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : hasBasket && asymBalance > 0 ? `Przewaga u Ciebie +${asymBalance} PW` : "R\xF3wno \u2014 spe\u0142nia"
   });
   return {
     my: buildPlayerSide(),
@@ -12538,13 +16511,21 @@ function computePlayerAcceptanceSides(actionId, payload, relTotal, incoming, opt
     const theirDisplay = (their.treatyEffectivePn ?? 0) + their.offerPn;
     const asymBalance = myDisplay - theirDisplay;
     const relOk = adjustedRelRequired == null || relTotal >= adjustedRelRequired;
+    const balanceOk = asymBalance >= 0;
     my.balancePn = asymBalance;
     their.balancePn = asymBalance;
     if (mode === "treaty" && !hasBasket) {
-      my.accepted = relOk;
-      their.accepted = relOk;
-      my.statusLabel = asymBalance > 0 ? `Ty ${myDisplay} PW \xB7 Oni ${theirDisplay} PW (Relacja +${asymBalance})` : asymBalance < 0 ? `Ty ${myDisplay} PW \xB7 Oni ${theirDisplay} PW` : "Spe\u0142nia warunki (0 PW)";
-      their.statusLabel = asymBalance > 0 ? `Oni ${theirDisplay} PW \xB7 Ty ${myDisplay} PW` : "R\xF3wno \u2014 spe\u0142nia";
+      my.accepted = relOk && balanceOk;
+      their.accepted = relOk && balanceOk;
+      my.statusLabel = !balanceOk ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : asymBalance > 0 ? `Ty ${myDisplay} PW \xB7 Oni ${theirDisplay} PW (Relacja +${asymBalance})` : "Spe\u0142nia warunki (0 PW)";
+      their.statusLabel = !balanceOk ? `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107` : asymBalance > 0 ? `Oni ${theirDisplay} PW \xB7 Ty ${myDisplay} PW` : "R\xF3wno \u2014 spe\u0142nia";
+    } else if (mode === "mixed") {
+      my.accepted = my.accepted && relOk && balanceOk;
+      their.accepted = their.accepted && relOk && balanceOk;
+      if (!balanceOk) {
+        my.statusLabel = `Brakuje ${Math.abs(asymBalance)} PW \u2014 dop\u0142a\u0107`;
+        their.statusLabel = my.statusLabel;
+      }
     }
   }
   if (isGift) {
@@ -12552,6 +16533,21 @@ function computePlayerAcceptanceSides(actionId, payload, relTotal, incoming, opt
     my.accepted = true;
     my.statusLabel = "Nic w zamian";
     their.statusLabel = formatBalanceLabel(their.balancePn, their.accepted);
+  }
+  if (!incoming && !isGift && (mode === "basket" || mode === "mixed")) {
+    const bilateralPw = bilateralTreatyDisplayPw(my, their);
+    const proposerDisplay = sideDisplayOfferPw(my, bilateralPw);
+    const responderDisplay = sideDisplayOfferPw(their, bilateralPw);
+    const bilateralNet = proposerDisplay - responderDisplay;
+    const basketFairOk = pnDealAcceptedByAi(givePn, receivePn, relTotal);
+    their.accepted = bilateralNet >= 0 && basketFairOk;
+    if (!their.accepted) {
+      if (bilateralNet < 0) {
+        their.statusLabel = `Przewaga u Ciebie \u2014 oferta nieuczciwa dla partnera (${Math.abs(bilateralNet)} PW)`;
+      } else if (!basketFairOk) {
+        their.statusLabel = formatBalanceLabel(their.balancePn, false);
+      }
+    }
   }
   if (incoming && !isGift && (mode === "basket" || mode === "mixed")) {
     my.accepted = true;
@@ -12563,13 +16559,57 @@ function computePlayerAcceptanceSides(actionId, payload, relTotal, incoming, opt
   }
   return { my, their, isGift };
 }
+var INCOMING_NET_PW_ACTIONS = /* @__PURE__ */ new Set([
+  "handel",
+  "umowa_handlowa",
+  "umowa_szlakow"
+]);
+function usesIncomingPlayerNetPwGate(actionId) {
+  return INCOMING_NET_PW_ACTIONS.has(actionId);
+}
+function computeIncomingPlayerAcceptNetPw(actionId, payload, relTotal, opts) {
+  if (!usesIncomingPlayerNetPwGate(actionId)) return null;
+  const acceptance = computePlayerAcceptanceSides(actionId, payload, relTotal, true, opts);
+  const mode = acceptance.my.mode;
+  if (actionId !== "umowa_handlowa" && mode !== "basket" && mode !== "mixed") {
+    return null;
+  }
+  const bilateralPw = bilateralTreatyDisplayPw(acceptance.my, acceptance.their);
+  const myOfferPn = sideDisplayOfferPw(acceptance.my, bilateralPw);
+  const theirOfferPn = sideDisplayOfferPw(acceptance.their, bilateralPw);
+  return { netPw: myOfferPn - theirOfferPn, myOfferPn, theirOfferPn };
+}
+function previewIncomingPlayerAccept(actionId, payload, relTotal, opts) {
+  const net = computeIncomingPlayerAcceptNetPw(actionId, payload, relTotal, opts);
+  if (!net) return null;
+  if (net.netPw >= 0) {
+    return { accepted: true };
+  }
+  return {
+    accepted: false,
+    reason: `Przewaga u Ciebie \u2014 oferta nieuczciwa dla partnera (${Math.abs(net.netPw)} PW)`
+  };
+}
 function acceptancePointsCatalog() {
   return CONFIG;
+}
+
+// ui/formatPl.ts
+function formatLiczbaPl(n, maxMiejsca = 1) {
+  if (!Number.isFinite(n)) return "0";
+  const zaokr = Number(n.toFixed(Math.max(0, Math.min(6, maxMiejsca))));
+  const bezMinusZera = Object.is(zaokr, -0) ? 0 : zaokr;
+  return String(bezMinusZera).replace(".", ",");
 }
 
 // ui/diplomacyAcceptanceBalance.ts
 var PW_EXCHANGE_TOOLTIP = "Punkty wymiany (PW) mierz\u0105 bilans oferty na stole negocjacji. \u201EMy oddajemy\u201D vs \u201EOni oddaj\u0105\u201D \u2014 dodatni bilans oznacza, \u017Ce mo\u017Cesz co\u015B wyci\u0105gn\u0105\u0107 lub przyj\u0105\u0107 ofert\u0119; ujemny bilans \u2014 trzeba dop\u0142aci\u0107 (surowce, \xA4, ust\u0119pstwa). To nie jest waluta \xA4 ani z\u0142oto-surowiec w magazynie.";
 var RELATION_DEAL_TOOLTIP = "Relacja = Zaufanie + Respekt. Modyfikuje si\u0142\u0119 PW tylko po Twojej stronie (max \xB190%). Niska Relacja = ni\u017Csze PW Twojej strony \u2014 trzeba dop\u0142aci\u0107 do bilansu. Partner zawsze na bazie traktatu.";
+function formatModPctSigned(modPct) {
+  if (modPct === 0) return "0%";
+  const pct = formatLiczbaPl(Math.abs(modPct));
+  return modPct > 0 ? "+" + pct + "%" : "\u2212" + pct + "%";
+}
 function relationModTone(modPct) {
   if (modPct > 0) return "better";
   if (modPct < 0) return "worse";
@@ -12579,12 +16619,12 @@ function relationDealText(relTotal, context) {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
   if (context === "trade") {
     if (relTotal >= 100) return "parytet 1:1 przy uczciwej wymianie";
-    const mult = (100 / Math.max(1, relTotal)).toFixed(1).replace(/\.0$/, "");
+    const mult = formatLiczbaPl(100 / Math.max(1, relTotal));
     return `musisz da\u0107 wi\u0119cej (\xD7${mult} PW), by oferta by\u0142a uczciwa`;
   }
   if (modPct === 0) return "balans (0% \u2014 Ty i oni na bazie)";
-  if (modPct > 0) return `Twoja strona silniejsza (+${modPct}% PW); oni: baza`;
-  return `Twoja strona s\u0142absza (\u2212${Math.abs(modPct)}% PW); oni: baza`;
+  if (modPct > 0) return `Twoja strona silniejsza (${formatModPctSigned(modPct)} PW); oni: baza`;
+  return `Twoja strona s\u0142absza (${formatModPctSigned(modPct)} PW); oni: baza`;
 }
 function resolveRelationPanelContext(side) {
   const hasTreaty = (side.treatyBasePn ?? 0) > 0 || (side.treatyEffectivePn ?? 0) > 0;
@@ -12595,8 +16635,8 @@ function renderRelationDealModRowHtml(relTotal, context = "treaty") {
   const modPct = relationPnModPct(relationSignedFromTotal(relTotal));
   const tone = context === "trade" ? relTotal >= 100 ? "neutral" : "worse" : relationModTone(modPct);
   const dealText = relationDealText(relTotal, context);
-  const relDisplay = context === "trade" && relTotal >= 100 ? "Relacja \u2265100" : `Relacja ${relTotal}`;
-  const pctBadge = modPct !== 0 ? '<span class="da-pn-rel-mod-pct">' + esc(modPct > 0 ? "+" + modPct + "%" : "\u2212" + Math.abs(modPct) + "%") + "</span>" : "";
+  const relDisplay = context === "trade" && relTotal >= 100 ? "Relacja \u2265100" : `Relacja ${formatLiczbaPl(relTotal)}`;
+  const pctBadge = modPct !== 0 ? '<span class="da-pn-rel-mod-pct">' + esc(formatModPctSigned(modPct)) + "</span>" : "";
   const balanceNote = context === "treaty" && modPct !== 0 ? ' <span class="da-pn-rel-mod-balance">(punkt balansu: 100)</span>' : "";
   const tip = ' title="' + esc(RELATION_DEAL_TOOLTIP + " " + formatRelationModLabel(relTotal)) + '"';
   return '<div class="da-pn-rel-mod ' + tone + '"' + tip + '><span class="da-pn-rel-mod-label">Wp\u0142yw Relacji na deal</span>' + pctBadge + '<span class="da-pn-rel-mod-text"><strong>' + esc(relDisplay) + '</strong> \xB7 <span class="da-pn-rel-mod-deal">' + esc(dealText) + "</span>" + balanceNote + "</span></div>";
@@ -12621,12 +16661,12 @@ function pwAmountHtml(n, extraCls = "") {
 }
 function pwAmountWithBaseHtml(pw, basePw, modPct, extraCls = "") {
   const cls = "da-pn-bal-num" + (extraCls ? " " + extraCls : "");
-  let inner = String(pw) + " PW";
+  const pwLine = '<span class="da-pn-bal-pw"' + pwTipAttr() + ">" + pw + " PW</span>";
   if (basePw != null && basePw > 0 && basePw !== pw) {
-    const modHint = modPct != null && modPct !== 0 ? `, Relacja ${modPct > 0 ? "+" : "\u2212"}${Math.abs(modPct)}% si\u0142a` : "";
-    inner += ` <span class="da-pn-bal-base" title="Baza traktatu">(baza ${basePw}${modHint})</span>`;
+    const modHint = modPct != null && modPct !== 0 ? `, Relacja ${formatModPctSigned(modPct)} si\u0142a` : "";
+    return '<span class="' + cls + '">' + pwLine + '<span class="da-pn-bal-base" title="Baza traktatu">(baza ' + basePw + modHint + ")</span></span>";
   }
-  return '<span class="' + cls + '"' + pwTipAttr() + ">" + inner + "</span>";
+  return '<span class="' + cls + '"' + pwTipAttr() + ">" + pw + " PW</span>";
 }
 function balancePanelDataFromRow(row, extraOnTable = 0) {
   const their = row.acceptanceTheir;
@@ -12683,6 +16723,13 @@ function incomingTradeBalanceHint(netPw) {
 function verdictHtml(data) {
   const their = data.theirBalance;
   if (data.direction === "incoming") {
+    if (isIncomingBasketTradePanel(data) && data.canAccept === false) {
+      const net = incomingTradeNetBalancePw(data);
+      return {
+        tone: "no",
+        html: net < 0 ? `Przewaga u Ciebie \u2014 oferta nieuczciwa dla partnera (${Math.abs(net)} PW)` : "Nie mo\u017Cna przyj\u0105\u0107 \u2014 warunki niespe\u0142nione"
+      };
+    }
     if (data.canAccept !== false) {
       if (isIncomingBasketTradePanel(data)) {
         const net = incomingTradeNetBalancePw(data);
@@ -12725,7 +16772,7 @@ function treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, treatyMetaLab
   const playerPart = base > 0 && playerTreatyPw !== base ? "Ty: baza " + base + " \u2192 " + playerTreatyPw + " PW" : "Ty: " + playerTreatyPw + " PW";
   const partnerPart = " \xB7 Oni: " + partnerTreatyPw + " PW (baza)";
   const basketPart = basketNet != null && (basketNet > 0 || basketNet === 0 && base > 0) ? " \xB7 koszyk netto " + (basketNet > 0 ? "+" + basketNet : "0") + " PW" : "";
-  return '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ": " + playerPart + partnerPart + " @ Rel " + relTotal + basketPart + "</div>";
+  return '<div class="da-pn-bal-meta">' + esc(treatyMetaLabel) + ": " + playerPart + partnerPart + " @ Rel " + formatLiczbaPl(relTotal) + basketPart + "</div>";
 }
 function renderPnBalancePanelHtml(data) {
   if (!data) {
@@ -12751,7 +16798,7 @@ function renderPnBalancePanelHtml(data) {
   const modPct = myBal?.relationModPct;
   const treatyNote = playerTreatyPw > 0 || partnerTreatyPw > 0 ? treatyMetaHtml(playerTreatyPw, partnerTreatyPw, relTotal, "Traktat", treatyBase) : "";
   const relModRow = relationRowFromBalance(their, data.myBalance);
-  const relNote = their.relRequired != null && their.relBalance != null && their.relBalance < 0 ? '<div class="da-pn-bal-meta warn">Relacja ' + (their.relCurrent ?? 0) + " \u2014 wym. " + their.relRequired + "</div>" : "";
+  const relNote = their.relRequired != null && their.relBalance != null && their.relBalance < 0 ? '<div class="da-pn-bal-meta warn">Relacja ' + formatLiczbaPl(their.relCurrent ?? 0) + " \u2014 wym. " + formatLiczbaPl(their.relRequired) + "</div>" : "";
   return '<div class="da-pn-balance-bar ' + balCls + '"' + (data.negotiationId ? ' data-negot-id="' + esc(data.negotiationId) + '"' : "") + '><div class="da-pn-bal-head">' + pwTitleHeadHtml() + '<span class="da-pn-bal-deal">' + esc(data.actionLabel) + extraNote + '</span></div><div class="da-pn-bal-cols"><div class="da-pn-bal-cell my"><span class="da-pn-bal-lbl">My oddajemy</span>' + (playerTreatyPw > 0 ? pwAmountWithBaseHtml(data.myOfferPn, treatyBase, modPct) : pwAmountHtml(data.myOfferPn)) + '</div><div class="da-pn-bal-cell center ' + balCls + '"><span class="da-pn-bal-lbl">' + esc(centerLabel) + '</span><span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + ">" + esc(delta) + '</span><span class="da-pn-bal-hint">' + esc(hint) + '</span></div><div class="da-pn-bal-cell they"><span class="da-pn-bal-lbl">Oni oddaj\u0105</span>' + pwAmountHtml(data.theirOfferPn) + "</div></div>" + relModRow + treatyNote + relNote + '<div class="da-pn-bal-verdict ' + verdict.tone + '">' + esc(verdict.html) + "</div></div>";
 }
 function renderPnBalancePanelForTreaty(playerTreatyPw, basketGivePn, basketReceivePn, relTotal, actionLabel, relRequired, treatyMetaLabel = "Traktat", treatyBasePw, partnerTreatyPw) {
@@ -12769,9 +16816,9 @@ function renderPnBalancePanelForTreaty(playerTreatyPw, basketGivePn, basketRecei
   const balCls = accepted ? "ok" : "no";
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? "pos" : "neg";
-  const hint = !relOk ? `Relacja ${relTotal} \u2014 wym. ${relRequired}` : balancePn < 0 ? `Brakuje ${Math.abs(balancePn)} PW \u2014 dop\u0142a\u0107` : balancePn > 0 ? `Nadwy\u017Cka ${balancePn} PW` : "R\xF3wno \u2014 spe\u0142nia";
-  const verdict = !relOk ? `Relacja ${relTotal} \u2014 wymagane \u2265 ${relRequired}` : balancePn < 0 ? `Dop\u0142a\u0107 ${Math.abs(balancePn)} PW (Twoja strona s\u0142absza przy tej Relacji)` : balancePn > 0 ? "Partner prawdopodobnie przyjmie \u2014 nadwy\u017Cka " + balancePn + " PW" : treatyMetaLabel + ": Ty " + playerPw + " PW \xB7 Oni " + partnerPw + " PW \u2014 spe\u0142nione";
-  const relNote = !relOk ? '<div class="da-pn-bal-meta warn">Relacja ' + relTotal + " \u2014 wym. " + relRequired + "</div>" : "";
+  const hint = !relOk ? `Relacja ${formatLiczbaPl(relTotal)} \u2014 wym. ${formatLiczbaPl(relRequired)}` : balancePn < 0 ? `Brakuje ${Math.abs(balancePn)} PW \u2014 dop\u0142a\u0107` : balancePn > 0 ? `Nadwy\u017Cka ${balancePn} PW` : "R\xF3wno \u2014 spe\u0142nia";
+  const verdict = !relOk ? `Relacja ${formatLiczbaPl(relTotal)} \u2014 wymagane \u2265 ${formatLiczbaPl(relRequired)}` : balancePn < 0 ? `Dop\u0142a\u0107 ${Math.abs(balancePn)} PW (Twoja strona s\u0142absza przy tej Relacji)` : balancePn > 0 ? "Partner prawdopodobnie przyjmie \u2014 nadwy\u017Cka " + balancePn + " PW" : treatyMetaLabel + ": Ty " + playerPw + " PW \xB7 Oni " + partnerPw + " PW \u2014 spe\u0142nione";
+  const relNote = !relOk ? '<div class="da-pn-bal-meta warn">Relacja ' + formatLiczbaPl(relTotal) + " \u2014 wym. " + formatLiczbaPl(relRequired) + "</div>" : "";
   return '<div class="da-pn-balance-bar ' + balCls + ' da-pn-balance-bar--basket da-pn-balance-bar--treaty"><div class="da-pn-bal-head">' + pwTitleHeadHtml() + '<span class="da-pn-bal-deal">' + esc(actionLabel) + '</span></div><div class="da-pn-bal-cols"><div class="da-pn-bal-cell my"><span class="da-pn-bal-lbl">My oddajemy</span>' + pwAmountWithBaseHtml(myDisplay, base, modPct) + '</div><div class="da-pn-bal-cell center ' + balCls + '"><span class="da-pn-bal-lbl">Bilans (netto)</span><span class="da-pn-bal-num ' + deltaCls + '"' + pwTipAttr() + ">" + esc(delta) + '</span><span class="da-pn-bal-hint">' + esc(hint) + '</span></div><div class="da-pn-bal-cell they"><span class="da-pn-bal-lbl">Oni oddaj\u0105</span>' + pwAmountHtml(theirDisplay) + "</div></div>" + renderRelationDealModRowHtml(relTotal, "treaty") + treatyMetaHtml(playerPw, partnerPw, relTotal, treatyMetaLabel, base, basketNet) + relNote + '<div class="da-pn-bal-verdict ' + balCls + '">' + esc(verdict) + "</div></div>";
 }
 function renderPnBalancePanelForPeace(playerTreatyPw, basketGivePn, basketReceivePn, relTotal, actionLabel = "Propozycja pokoju", treatyBasePw) {
@@ -12793,6 +16840,7 @@ function renderPnBalancePanelForPeace(playerTreatyPw, basketGivePn, basketReceiv
   balancePanelDataFromRow,
   basketSidePnDifficultyMultiplier,
   bilateralTreatyDisplayPw,
+  computeIncomingPlayerAcceptNetPw,
   computePlayerAcceptanceSides,
   diplomacyFairGivePn,
   diplomacyHandelSurowiecCenaJednostkowa,
@@ -12800,12 +16848,15 @@ function renderPnBalancePanelForPeace(playerTreatyPw, basketGivePn, basketReceiv
   diplomacyPnTech,
   diplomacySumPn,
   effectiveTreatyPnRequired,
+  evaluateProposal,
+  formatRelationModLabel,
   incomingTradeNetBalancePw,
   isIncomingBasketTradePanel,
   isPlayerIncomingGift,
   partnerTreatyPnRequired,
   playerSideHasBasketOffer,
   playerTreatyPnRequired,
+  previewIncomingPlayerAccept,
   relationPnModPct,
   relationSignedFromTotal,
   renderPnBalancePanelForPeace,

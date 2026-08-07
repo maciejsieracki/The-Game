@@ -50,7 +50,6 @@ fs.writeFileSync(
   wiarygodnoscSpadekMult,
   applyWiarygodnoscTempoDoDelty,
   zaufanieDryfOdWiarygodnosci,
-  WIARYGODNOSC_ZAUFANIE_DRYF_NA_100,
   modyfikatorZaufaniaD4OdWiarygodnosci,
   zaufaniePierwszyKontaktZD4,
   freshCredibilityStreamEntry,
@@ -64,7 +63,7 @@ fs.writeFileSync(
   credibilityEventLabelPl,
 } from '../src/game/diplomacy-credibility';
 export { wiarygodnoscTooltipPl, wiarygodnoscBadgeHtml } from '../src/game/diplomacy-display';
-export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent } from '../src/game/diplomacy';
+export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent, loadDiplomacyParams } from '../src/game/diplomacy';
 export {
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,
@@ -300,15 +299,44 @@ ok(P.wiarygodnoscCzasZapomnieniaNagrodaTrudny === 40, 'czas zapomnienia nagród,
 //    wpisów STRUMIENIA" z §7/A tego zlecenia.
 // ---------------------------------------------------------------------------
 
-ok(WC.credibilityStreamWeight('strumien_sojusz') === P.wiarygodnoscS1SojuszPerTure, 'S1 sojusz waga = wiarygodnoscS1SojuszPerTure');
-ok(WC.credibilityStreamWeight('strumien_nap') === P.wiarygodnoscS2NapPerTure, 'S2 nap waga = wiarygodnoscS2NapPerTure');
-ok(WC.credibilityStreamWeight('strumien_handel') === P.wiarygodnoscS3HandelPerTure, 'S3 handel waga = wiarygodnoscS3HandelPerTure');
-ok(WC.credibilityStreamWeight('strumien_przemarsz') === P.wiarygodnoscS4PrzemarszPerTure, 'S4 przemarsz waga = wiarygodnoscS4PrzemarszPerTure');
+// S1/S2 stałe niezależnie od trudności (drugi argument wymagany od R-WIARYGODNOSC-S9,
+// ale nie wpływa na wynik dla tych dwóch typów).
+ok(WC.credibilityStreamWeight('strumien_sojusz', 'normal') === P.wiarygodnoscS1SojuszPerTure, 'S1 sojusz waga = wiarygodnoscS1SojuszPerTure');
+ok(WC.credibilityStreamWeight('strumien_nap', 'normal') === P.wiarygodnoscS2NapPerTure, 'S2 nap waga = wiarygodnoscS2NapPerTure');
+
+// S3/S4 rozbite PER POZIOM TRUDNOŚCI (R-WIARYGODNOSC-S9 2026-08-07) — po 3 asercje na każdy.
+ok(WC.credibilityStreamWeight('strumien_handel', 'easy') === P.wiarygodnoscS3HandelPerTureLatwy, 'S3 handel waga Łatwy = wiarygodnoscS3HandelPerTureLatwy');
+ok(WC.credibilityStreamWeight('strumien_handel', 'normal') === P.wiarygodnoscS3HandelPerTureNormalny, 'S3 handel waga Normalny = wiarygodnoscS3HandelPerTureNormalny');
+ok(WC.credibilityStreamWeight('strumien_handel', 'hard') === P.wiarygodnoscS3HandelPerTureTrudny, 'S3 handel waga Trudny = wiarygodnoscS3HandelPerTureTrudny');
+ok(WC.credibilityStreamWeight('strumien_przemarsz', 'easy') === P.wiarygodnoscS4PrzemarszPerTureLatwy, 'S4 przemarsz waga Łatwy = wiarygodnoscS4PrzemarszPerTureLatwy');
+ok(WC.credibilityStreamWeight('strumien_przemarsz', 'normal') === P.wiarygodnoscS4PrzemarszPerTureNormalny, 'S4 przemarsz waga Normalny = wiarygodnoscS4PrzemarszPerTureNormalny');
+ok(WC.credibilityStreamWeight('strumien_przemarsz', 'hard') === P.wiarygodnoscS4PrzemarszPerTureTrudny, 'S4 przemarsz waga Trudny = wiarygodnoscS4PrzemarszPerTureTrudny');
+
+{
+  // Dowod, ze mechanizm FAKTYCZNIE rozroznia trudnosc (nie zawsze zwraca to samo) —
+  // dla obu typow strumienia rozbitych na trudnosc, wszystkie 3 poziomy musza sie roznic.
+  const s3Latwy = WC.credibilityStreamWeight('strumien_handel', 'easy');
+  const s3Normalny = WC.credibilityStreamWeight('strumien_handel', 'normal');
+  const s3Trudny = WC.credibilityStreamWeight('strumien_handel', 'hard');
+  ok(s3Latwy !== s3Normalny && s3Normalny !== s3Trudny && s3Latwy !== s3Trudny,
+    `credibilityStreamWeight('strumien_handel', ...) rozne dla kazdego poziomu trudnosci (Latwy=${s3Latwy}, Normalny=${s3Normalny}, Trudny=${s3Trudny})`);
+
+  const s4Latwy = WC.credibilityStreamWeight('strumien_przemarsz', 'easy');
+  const s4Normalny = WC.credibilityStreamWeight('strumien_przemarsz', 'normal');
+  const s4Trudny = WC.credibilityStreamWeight('strumien_przemarsz', 'hard');
+  ok(s4Latwy !== s4Normalny && s4Normalny !== s4Trudny && s4Latwy !== s4Trudny,
+    `credibilityStreamWeight('strumien_przemarsz', ...) rozne dla kazdego poziomu trudnosci (Latwy=${s4Latwy}, Normalny=${s4Normalny}, Trudny=${s4Trudny})`);
+
+  // S3/S4 = 1,5 na kazdym poziomie trudnosci (Maciej 2026-08-07: zachowac stosunek).
+  ok(approxEqual(s3Latwy / s4Latwy, 1.5), `S3/S4 = 1,5 na Latwym (got ${s3Latwy / s4Latwy})`);
+  ok(approxEqual(s3Normalny / s4Normalny, 1.5), `S3/S4 = 1,5 na Normalnym (got ${s3Normalny / s4Normalny})`);
+  ok(approxEqual(s3Trudny / s4Trudny, 1.5), `S3/S4 = 1,5 na Trudnym (got ${s3Trudny / s4Trudny})`);
+}
 
 {
   const wpisy = [
     { typ: 'strumien_sojusz', wartoscNaTure: P.wiarygodnoscS1SojuszPerTure, sumaAktywna: 10 },
-    { typ: 'strumien_handel', wartoscNaTure: P.wiarygodnoscS3HandelPerTure, sumaAktywna: 3 },
+    { typ: 'strumien_handel', wartoscNaTure: P.wiarygodnoscS3HandelPerTureNormalny, sumaAktywna: 3 },
   ];
   ok(WC.sumaStrumienia(wpisy) === 13, `sumaStrumienia sumuje sumaAktywna wpisów (got ${WC.sumaStrumienia(wpisy)})`);
   ok(WC.sumaStrumienia([]) === 0, 'sumaStrumienia([]) === 0');
@@ -320,7 +348,7 @@ ok(WC.credibilityStreamWeight('strumien_przemarsz') === P.wiarygodnoscS4Przemars
 // ---------------------------------------------------------------------------
 
 {
-  const fresh = WC.freshCredibilityStreamEntry('strumien_sojusz');
+  const fresh = WC.freshCredibilityStreamEntry('strumien_sojusz', 'normal');
   ok(fresh.wartoscNaTure === P.wiarygodnoscS1SojuszPerTure, 'freshCredibilityStreamEntry: waga = S1 sojusz');
   ok(fresh.sumaAktywna === 0, 'freshCredibilityStreamEntry: sumaAktywna startuje od 0');
 
@@ -332,7 +360,7 @@ ok(WC.credibilityStreamWeight('strumien_przemarsz') === P.wiarygodnoscS4Przemars
 
   // §3/§4 C-WIAR-SLAD=A: strumień nie ma krzywej zapominania ani podłogi — po
   // 1000 tur wpis nadal rośnie liniowo, nigdy się nie "zamraża" jak zdarzenia jednorazowe.
-  let acc = WC.freshCredibilityStreamEntry('strumien_nap');
+  let acc = WC.freshCredibilityStreamEntry('strumien_nap', 'normal');
   for (let i = 0; i < 1000; i++) acc = WC.tickCredibilityStreamEntry(acc);
   ok(approxEqual(acc.sumaAktywna, 1000 * P.wiarygodnoscS2NapPerTure), 'strumień: 1000 tur = 1000x waga, bez podłogi/zamrożenia');
 }
@@ -360,7 +388,7 @@ ok(WC.credibilityStreamWeight('strumien_przemarsz') === P.wiarygodnoscS4Przemars
 // 8b) REL-WIARYG-DRIFT-Q1 — pasywny dryf Zaufania od W (niezależny od umów)
 // ---------------------------------------------------------------------------
 
-ok(WC.WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 === 0.03, 'WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03');
+ok(P.wiarygodnoscZaufanieDryfNa100 === 0.03, 'DIPLOMACY_PARAMS.wiarygodnoscZaufanieDryfNa100 = 0.03 (R-WIARYGODNOSC-S9: przeniesiony z modulowej stalej)');
 ok(WC.zaufanieDryfOdWiarygodnosci(100) === 3, 'dryf W=+100 → +3/turę');
 ok(WC.zaufanieDryfOdWiarygodnosci(-100) === -3, 'dryf W=−100 → −3/turę');
 ok(WC.zaufanieDryfOdWiarygodnosci(0) === 0, 'dryf W=0 → 0');
@@ -548,10 +576,16 @@ function evalSojusz(ctxOverrides) {
   );
 }
 {
+  // R-WIARYGODNOSC-S9 2026-08-07: wiarygodnoscProgNapMin -40 -> 0 (wyrównanie z
+  // wiarygodnoscProgSojuszMin=0). Próg starej wartości (-40) jest teraz PONIŻEJ
+  // nowego progu (0) i musi być odrzucony, nie zaakceptowany.
   const napLow = evalNap({ turns: 15 }, { proposerWiarygodnosc: -50 });
-  ok(!napLow.accepted && napLow.reason.includes('Wiarygodność'), 'NAP odrzucony gdy W proponenta < -40');
-  const napOk = evalNap({ turns: 15 }, { proposerWiarygodnosc: -40 });
-  ok(napOk.accepted, 'NAP akceptowany gdy W proponenta = -40 (próg)');
+  ok(!napLow.accepted && napLow.reason.includes('Wiarygodność'), 'NAP odrzucony gdy W proponenta < 0 (nowy prog R-WIARYGODNOSC-S9)');
+  const napOldThreshold = evalNap({ turns: 15 }, { proposerWiarygodnosc: -40 });
+  ok(!napOldThreshold.accepted && napOldThreshold.reason.includes('Wiarygodność'),
+    'NAP odrzucony gdy W proponenta = -40 (stary prog, dziś poniżej nowego progu 0)');
+  const napOk = evalNap({ turns: 15 }, { proposerWiarygodnosc: 0 });
+  ok(napOk.accepted, 'NAP akceptowany gdy W proponenta = 0 (nowy próg, R-WIARYGODNOSC-S9)');
   const sojuszLow = evalSojusz({ proposerWiarygodnosc: -1 });
   ok(!sojuszLow.accepted && sojuszLow.reason.includes('Wiarygodność'), 'Sojusz odrzucony gdy W proponenta < 0');
   const sojuszOk = evalSojusz({ proposerWiarygodnosc: 0 });
@@ -677,7 +711,7 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
 
 {
   const startowa = 20;
-  let streamEntry = WC.freshCredibilityStreamEntry('strumien_nap');
+  let streamEntry = WC.freshCredibilityStreamEntry('strumien_nap', 'normal');
   streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
   streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
   streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
@@ -747,7 +781,7 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
 }
 
 {
-  let streamEntry = WC.freshCredibilityStreamEntry('strumien_nap');
+  let streamEntry = WC.freshCredibilityStreamEntry('strumien_nap', 'normal');
   streamEntry = WC.tickCredibilityStreamEntry(streamEntry);
   const bd = WC.buildWiarygodnoscBreakdown([], [streamEntry], 20, 1, 'normal');
   ok(bd.pozytywne.some(r => r.label.includes('nieagresji') && r.value > 0), 'rejestr: strumień NAP');
@@ -763,6 +797,40 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
   ok(WC.diplomacyClampTrustGainNaTure(5, 0) === 5, 'flat clamp: proposed 5, gained 0 -> 5');
   ok(WC.diplomacyClampTrustGainNaTure(5, 3) === 2, 'flat clamp: proposed 5, gained 3 -> room 2');
   ok(WC.diplomacyClampTrustGainNaTure(5, 5) === 0, 'flat clamp: sufit wyczerpany -> 0');
+}
+
+// ---------------------------------------------------------------------------
+// 10) R-WIARYGODNOSC-S9-LICZBY-Q1 — spójność JSON<->TS: KAŻDA wartość wiarygodnosc*
+//     w gra/data/diplomacy.json `params` musi być IDENTYCZNA jak odpowiadający jej
+//     default w DIPLOMACY_PARAMS (TS). Dowód, że eksport 47 parametrów Wiarygodności
+//     (41 oryginalnych + 6 nowych S3/S4-per-trudność, minus 2 zastąpione płaskie S3/S4,
+//     plus wiarygodnoscZaufanieDryfNa100 i wiarygodnoscTempoAmplituda) do JSON jest 1:1,
+//     zero rozjazdu. Używa loadDiplomacyParams() (ten sam most, którego silnik używa
+//     przy starcie) do wczytania JSON i porównuje z DIPLOMACY_PARAMS klucz po kluczu.
+// ---------------------------------------------------------------------------
+
+{
+  const diplomacyJsonPath = path.resolve(GRA_ROOT, 'data', 'diplomacy.json');
+  const diplomacyJson = JSON.parse(fs.readFileSync(diplomacyJsonPath, 'utf8'));
+  const overrides = WC.loadDiplomacyParams(diplomacyJson);
+  const wiarygodnoscKeys = Object.keys(P).filter((k) => k.startsWith('wiarygodnosc'));
+
+  ok(wiarygodnoscKeys.length > 0, 'sanity: DIPLOMACY_PARAMS ma klucze wiarygodnosc*');
+
+  let missing = 0;
+  let mismatched = 0;
+  for (const key of wiarygodnoscKeys) {
+    if (!(key in overrides)) {
+      missing++;
+      ok(false, `diplomacy.json params BRAK klucza ${key} (obecny w DIPLOMACY_PARAMS jako ${P[key]})`);
+      continue;
+    }
+    const same = overrides[key] === P[key];
+    if (!same) mismatched++;
+    ok(same, `diplomacy.json params.${key} (${overrides[key]}) === DIPLOMACY_PARAMS.${key} (${P[key]})`);
+  }
+  ok(missing === 0, `wszystkie ${wiarygodnoscKeys.length} kluczy wiarygodnosc* obecne w diplomacy.json params (brakuje ${missing})`);
+  ok(mismatched === 0, `zero rozjazdu JSON<->TS dla kluczy wiarygodnosc* (rozjazd: ${mismatched}/${wiarygodnoscKeys.length})`);
 }
 
 console.log(`wiarygodnosc-test: ${pass} pass, ${fail} fail`);

@@ -335,10 +335,27 @@ export const DIPLOMACY_PARAMS = {
   wiarygodnoscS1SojuszPerTure:      1.0,
   /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
   wiarygodnoscS2NapPerTure:         0.5,
-  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
-  wiarygodnoscS3HandelPerTure:      0.3,
-  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
-  wiarygodnoscS4PrzemarszPerTure:   0.2,
+  /**
+   * S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury,
+   * poziom Łatwy (pkt Wiarygodności / turę). R-WIARYGODNOSC-S9 2026-08-07 (Maciej):
+   * rozbite z jednej płaskiej wartości (0,3) na trudność, podniesione proporcjonalnie
+   * do S4, żeby zachować stosunek S3/S4 = 1,5 na każdym poziomie.
+   */
+  wiarygodnoscS3HandelPerTureLatwy:       1.2,
+  /** S3 — jak wyżej, poziom Normalny (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTureNormalny:    0.9,
+  /** S3 — jak wyżej, poziom Trudny (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTureTrudny:      0.6,
+  /**
+   * S4 — Prawo przemarszu / otwarte granice aktywne, poziom Łatwy (pkt Wiarygodności /
+   * turę). R-WIARYGODNOSC-S9 2026-08-07 (Maciej): za słabe jako płaska wartość (0,2) —
+   * rozbite na trudność i podniesione trzykrotnie (Normalny 0,2 → 0,6).
+   */
+  wiarygodnoscS4PrzemarszPerTureLatwy:    0.8,
+  /** S4 — jak wyżej, poziom Normalny (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTureNormalny: 0.6,
+  /** S4 — jak wyżej, poziom Trudny (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTureTrudny:   0.4,
 
   // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
   /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
@@ -375,12 +392,40 @@ export const DIPLOMACY_PARAMS = {
   wiarygodnoscTrwalaPodlogaProcent: 0.10,
 
   // -- §5: wpływ Wiarygodności na Zaufanie --
-  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  /**
+   * Dzielnik Dźwigni 4 (pierwszy kontakt, C-WIAR-D4=A): modyfikatorZaufaniaD4OdWiarygodnosci(W)
+   * = round(W / wartość) — startowe Zaufanie ±5 pkt na stronę przy W=±100. Nazwa „PerTura" jest
+   * HISTORYCZNA: dawny bezpośredni strumień Wiarygodność→Zaufanie/turę (C-WIAR-SKALA=20) został
+   * ANULOWANY (WIAR-Q3=C) i zastąpiony mnożnikiem tempa (wiarygodnoscTempoAmplituda niżej) —
+   * ten parametr dziś NIE działa co turę, wyłącznie przy pierwszym ustaleniu relacji.
+   * R-WIARYGODNOSC-S9 2026-08-07: komentarz doprecyzowany względem faktycznego użycia,
+   * WARTOŚĆ bez zmian (20).
+   */
   wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /**
+   * Amplituda mnożnika tempa Zaufania od Wiarygodności (Dźwignia 1, WIAR-Q3=C):
+   * wzrostMult(W) = 1 + (W/100) × wartość · spadekMult(W) = 1 − (W/100) × wartość.
+   * R-WIARYGODNOSC-S9 2026-08-07: nazwany parametr, przeniesiony z literału 0,5
+   * w `diplomacy-credibility.ts` (wiarygodnoscWzrostMult/wiarygodnoscSpadekMult),
+   * WARTOŚĆ bez zmian.
+   */
+  wiarygodnoscTempoAmplituda: 0.5,
+  /**
+   * Pasywny dryf Zaufania/turę od globalnej Wiarygodności, niezależny od traktatów
+   * (REL-WIARYG-DRIFT-Q1): ΔZaufanie/turę = clamp(W, −100, 100) × wartość.
+   * R-WIARYGODNOSC-S9 2026-08-07: przeniesiony z modułowej stałej
+   * `WIARYGODNOSC_ZAUFANIE_DRYF_NA_100` w `diplomacy-credibility.ts`, WARTOŚĆ bez zmian.
+   */
+  wiarygodnoscZaufanieDryfNa100: 0.03,
   /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
   wiarygodnoscProgSojuszMin:  0,
-  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
-  wiarygodnoscProgNapMin:   -40,
+  /**
+   * Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności),
+   * niezależnie od Zaufania/Respektu. R-WIARYGODNOSC-S9 2026-08-07 (Maciej): wyrównane
+   * z wiarygodnoscProgSojuszMin=0 („tutaj też powinna być wiarygodność zero tak samo
+   * jak przy sojuszu") — było −40 (pokrywało się z wiarygodnoscProgWiarolomny).
+   */
+  wiarygodnoscProgNapMin:   0,
 } as const;
 
 /**
