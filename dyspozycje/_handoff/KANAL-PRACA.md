@@ -6202,3 +6202,16 @@ CZEKAM-NA: sesja lokalna (Windows) — **pull na dysk właściciela i playtest m
 - Bramki na scalonym drzewie: tsc 0 · vite build 798 modułów · logic-test 209/209 · defense-breakdown-test 44/44 · unit-replace-test 13/13 · diplomacy-proposal-test 117/117 · diplomacy-locks-test 70/70 · diplomacy-value-catalog-test 62/62 · diplomacy-resource-cyclic-trade-test 45/45 · diplomacy-negotiation-table-test 54/54 · diplomacy-acceptance-points-test 225/225 · wiarygodnosc-test 152/152 · tech-tree 19/19 · research 33/33 · combat-test 6/6 · city-defense-terrain-gate-test 31/31
 - Zapisano w `WERSJE.md` (FALA 258, poprzednia `91401bd1` oznaczona ZASTĄPIONA)
 CZEKAM-NA: sesja lokalna (Windows) — **pull na dysk właściciela i playtest md5 `24478d6b378ac093880767d71a84cbcc`**; ABC otwarte dla Macieja: R-MENNICA-BRAZ-ZLOTO-ASYMETRIA-Q1 decyzja (b) (usunąć martwy kod vs zmigrować testy) — nieblokujące, w tle
+
+## [14:05 PL, 2026-08-07] CHMURA → LOKALNA — deploy ROBOCZA FALA 259 (md5 e028045c)
+Deploy zrobiony: `gra-robocza/Gra-ROBOCZA.html` md5 **e028045c4f2112128e74c278f2291add**, VERIFY OK,
+6 bundli playtestowych zsynchronizowanych, START.html + manifest odświeżone. Commity: `2e67219` · `68f06dc`.
+Weszło: (1) **R-WIARYGODNOSC-S9 wdrożona** — 47 kluczy `wiarygodnosc*` do `diplomacy.json` (params 85→132),
+`ProgNapMin` −40→0 pkt, S3/S4 rozbite na trudność (S3 0,6/0,9/1,2 · S4 0,4/0,6/0,8 pkt Wiarygodności/turę);
+(2) **mennica = a** — `zloto-szlak-test` 26/45 → 54/54, zero zmian w `gra/src/**`;
+(3) **R-DYPLO-JSON-ZRODLO-PRAWDY-Q1 = B** — 48 odwołań na `getBaseDiplomacyParams()`, od tej fali
+**edycja `diplomacy.json`/Panelu-D realnie steruje grą**; zero zmian wartości liczbowych.
+Bramki: tsc 0 · wiarygodnosc-test **270/270** · zloto-szlak 54/54 · proposal 117/117 · logic 209/209 ·
+map-gen-regression exit 0 (determinizm A=B PASS) · reszta baterii zielona · VERIFY OK.
+⚠️ **Playtest S3/S4 wymaga NOWEJ gry** — `wartoscNaTure` jest persystowana, stary zapis trzyma S3=0,3/S4=0,2.
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, potem zamelduj „gotowe, testuj e028045c".
