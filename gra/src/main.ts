@@ -4486,6 +4486,10 @@ async function boot(): Promise<void> {
         // hasKopalniaNaZlozuZelazaOrTradeGrant.
         placedImprovements: placedImprovementsWithTradeGrants(city.ownerId, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(city.ownerId, ownImprovements),
+        // UNIT-REPLACE-EVOCATI-Q1 runda 2: bez empireResourceStock bramka surowca (braz/zelazo)
+        // w passesAvailabilityGates (production.ts) zawsze odrzuca -- ten sam wzorzec co
+        // productionCtxForCity (main.ts ~10320).
+        empireResourceStock: citySurowceSumForOwner(city.ownerId),
         // audyt #11: "Zastąp" nie może dać drugiej żywej Super-jednostka -- ta sama
         // bramka co productionCtxForCity (cityPanel.ts).
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === city.ownerId).map(x => x.typeId)),
@@ -4514,6 +4518,10 @@ async function boot(): Promise<void> {
         civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(0)),
         placedImprovements: placedImprovementsWithTradeGrants(0, ownImprovements),
         hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(0, ownImprovements),
+        // UNIT-REPLACE-EVOCATI-Q1 runda 2: jak wyżej (replaceAvailabilityCtxForCity) --
+        // ta funkcja jest empire-wide wyłącznie dla gracza (ownerId 0, patrz literały
+        // wyżej w tej samej funkcji), więc suma surowców też liczona dla ownerId 0.
+        empireResourceStock: citySurowceSumForOwner(0),
         // audyt #11: jak wyżej (replaceAvailabilityCtxForCity) — całe terytorium gracza.
         aliveUnitTypeNames: new Set(units.filter(x => x.ownerId === 0).map(x => x.typeId)),
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',

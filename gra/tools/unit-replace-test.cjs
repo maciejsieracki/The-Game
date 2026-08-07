@@ -92,6 +92,13 @@ const RZYM_ZELAZO_CTX = {
   builtBuildingIds: ['odlewnia_zelaza'],
   placedImprovements: null,
   hasKopalniaNaZlozuZelaza: true,
+  // UNIT-REPLACE-EVOCATI-Q1 runda 2: passesAvailabilityGates (production.ts) sprawdza
+  // dostep do surowca Braz/Zelazo przez empireStockHas(ctx.empireResourceStock, ...) --
+  // bez tego pola KAZDA jednostka Surowiec=Braz/Zelazo jest odrzucana (undefined ?? 0 > 0
+  // = false). Symulacja gracza z pelnym magazynem obu surowcow (10 jednostek kazdy) --
+  // zgodna z tym, co main.ts realnie przekazuje po naprawie replaceAvailabilityCtxForCity/
+  // replaceAvailabilityCtxEmpireWide (citySurowceSumForOwner).
+  empireResourceStock: { braz: 10, zelazo: 10 },
 };
 const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
 

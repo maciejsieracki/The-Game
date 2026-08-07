@@ -1718,4 +1718,10 @@ Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCi
 
 - `HANDEL-SPLIT-Q1` — patrz sekcja własna (jeśli OTWARTE)
 
+### Znaleziska AutoBot 2026-08-06/07 (do przyszłej rundy, nieblokujące)
+
+- **UNIT-REPLACE-EVOCATI-Q1, N1**: naprawa `main.ts` (`replaceAvailabilityCtxForCity`/`replaceAvailabilityCtxEmpireWide` → `empireResourceStock`) nie ma pokrycia testowego — `unit-replace-test.cjs` testuje wyłącznie `production.ts`, nigdy nie ładuje `main.ts`; usunięcie naprawy w `main.ts` nie zostanie wykryte przez żaden test. Rekomendacja Evaluatora: wyekstrahować budowę kontekstu do czystej, testowalnej funkcji w `src/game/**`.
+- **MENNICA-GRACE-VERIFY-Q1, N3**: `main.ts:3354-3361` `placedImprovementsWithTradeGrants()` nadal woła deprecjonowany no-op dla złota (`placedImprovementsWithZlotoTradeGrant`), z 11 wołającymi (główne miejsca: 4403/4431/4995/5752/10308/15670/20794/21397/22158/23204). Bramka runtime Mennicy jest bezpieczna (osobna ścieżka `ownerHasZlotoAccessNow`), ale to potencjalny dług — asymetria brąz-vs-złoto w tej funkcji.
+- **R-OBRONA-MIASTA-MP-Q1, notatka Evaluatora rundy 3**: `defenderCivBonusBreakdown` filtruje bonusy obrony wyłącznie przez `unitMatchesCel` — realna walka (`bonusApplies()`) ma dodatkowo bramki opisowe (las/szarża/pierwsze uderzenie). Dziś zero rozbieżności (żaden z 4 wpisów `bonus_obrona` w civs.json nie używa tych bramek), ale pierwszy nowy wpis z takim opisem sprawi że panel znów skłamie. Docelowo: eksportować `bonusApplies` zamiast samego `unitMatchesCel`.
+
 **Zamknięte (audyt R-PUŁKA 2026-08-05):** `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP` · `R-AI-MIASTA-BUDOWY` · paczka `R-PUŁKA-PYTANIA-29-07`
