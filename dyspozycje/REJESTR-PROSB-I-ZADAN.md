@@ -827,5 +827,13 @@ obejmuje nie tylko zleconą pracę subagentowi ale **po pierwsze Twoją pracę**
 zapisana do repo przez główną sesję — kod, dane, kanon, dokument decyzji, wpis w rejestrze,
 sprostowanie — przechodzi przez Evaluatora na Opus 5. Tak samo każda liczba przedstawiona
 właścicielowi jako fakt. Czynności czysto odczytowe są wyłączone.
-**Zastosowanie wsteczne:** puszczony Evaluator na całość pracy własnej orkiestratora z 2026-08-07
-(commity `7136241`, `7c24e33`, `55658fc`, `af68f86` + świeże zmiany w `CLAUDE.md`).
+**Zastosowanie wsteczne — ZAKRES FAKTYCZNY (korekta po nocie N14 Evaluatora):** Evaluator objął
+**5 pozycji**: `7136241`, `7c24e33`, `55658fc`, `af68f86` oraz `CLAUDE.md` zasady 4 i 0b.
+**Pierwotne brzmienie mówiło „całość pracy własnej" — to była NIEPRAWDA.** Praca własna
+orkiestratora z 2026-08-07 to **19 commitów**; **14 pozostałych NIE zostało objętych**, w tym:
+`c98006a` (pierwotne fałszywe „exit 0" — wypadek (a) z uzasadnienia zasady 0b), `dde2696`
+(ECHO = D, którego właściciel nie podjął — wypadek (c)), `08035bf`, `56481cd`, `0355f30`,
+`a976b63`, `934bcb0`, `d3d2673`, `ad04299`, `c67c9de` (deploy FALA 259), `0a08bf0`, `3b84875`,
+`6e98ddc`, `3213ee2`, `8c6f26a` (deploy FALA 258). **Do przeglądu w osobnym zleceniu.**
+Odnotowane: cztery z pięciu commitów niosących wypadki wymienione w uzasadnieniu zasady 0b
+znalazły się POZA jej własnym zastosowaniem wstecznym.

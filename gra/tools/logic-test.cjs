@@ -463,8 +463,14 @@ if (econSettler) {
     // wszyscy czytelnicy: readCityFoodBuffer() ZAWSZE zwraca skończoną liczbę >= 0,
     // niezależnie od tego, czy pole jest undefined, liczbą, czy legacy-obiektem
     // { aktualny, pojemnosc } ze starego zapisu (economy-upkeep.ts:141-150).
-    // UWAGA: sprawdzone, że NIE wolno tu asercjonować city.wzrostUlamkowy — to pole
-    // też jest opcjonalne, czytane wyłącznie przez `?? 0` (turn-economy.ts:1875,2414).
+    // KOREKTA 2026-08-07 (nota N3 Evaluatora): pierwotny komentarz twierdził, że
+    // city.wzrostUlamkowy jest „czytane wyłącznie przez `?? 0`". To NIEPRAWDA — pole ma
+    // 30 wystąpień w gra/src, a odczyty BEZ domyślnika są m.in. w
+    // population-growth-v85.ts:285,364,377,378 oraz w 9 miejscach ui/cityPanel.ts.
+    // Wniosek się broni (asercja na wartości tego pola byłaby krucha, bo w ścieżce
+    // normalnej nikt go nie zapisuje), ale przesłanka była fałszywa. Ścieżka bez
+    // żadnego domyślnika: population-growth-v85.ts:377-378 (tick.wzrostUlamkowyPo)
+    // — polega na normalizacji z linii 285.
     {
       const przypadki = [
         [econCity.magazynZywnosci, 'stan po advanceCityEconomy'],
