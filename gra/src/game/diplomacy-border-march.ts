@@ -171,6 +171,43 @@ export function applyUnauthorizedBorderPenalties(
   return { relations: next, penalizedPairs };
 }
 
+/** Wynik klasyfikacji par pod kątem komunikatu widocznego GRACZOWI (BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C). */
+export interface PlayerBorderMarchNotice {
+  /** true → ktoś wszedł na teren gracza (gracz = territoryOwnerId ukaranej pary). */
+  playerBorderViolated: boolean;
+  /** true → jednostka gracza stoi na cudzym terenie (gracz = intruderOwnerId ukaranej pary). */
+  playerTrespassing: boolean;
+}
+
+/**
+ * Klasyfikuje ukarane pary pod kątem tego, czy GRACZ (`playerOwnerId`, domyślnie 0 —
+ * konwencja `ownerId === 0` z main.ts) był jedną ze stron. Para obcy↔obcy (ani intruz, ani
+ * właściciel = gracz) jest zawsze pomijana — stąd `main.ts` NIE POWINIEN pokazywać żadnego
+ * komunikatu graczowi dla takiej pary.
+ *
+ * Czysta funkcja — używa TEGO SAMEGO testu autoryzacji (`hasAuthorizedBorderCrossing`) co
+ * `applyUnauthorizedBorderPenalties`, żeby klasyfikacja widziała dokładnie te same ukarane
+ * pary (autoryzowane przemarsze — sojusz/wasal/traktat/wojna — nigdy nie trafiają do wyniku).
+ * NIE liczy kary ponownie i NIE modyfikuje `relations` — czyste odczytanie `pairs`.
+ */
+export function classifyPlayerBorderMarchNotice(
+  pairs: readonly BorderMarchPair[],
+  resolveCtx: (pair: BorderMarchPair) => BorderMarchCheckContext,
+  playerOwnerId = 0,
+): PlayerBorderMarchNotice {
+  let playerBorderViolated = false;
+  let playerTrespassing = false;
+  for (const pair of pairs) {
+    if (pair.intruderOwnerId !== playerOwnerId && pair.territoryOwnerId !== playerOwnerId) continue;
+    if (hasAuthorizedBorderCrossing(pair.intruderOwnerId, pair.territoryOwnerId, resolveCtx(pair))) {
+      continue;
+    }
+    if (pair.territoryOwnerId === playerOwnerId) playerBorderViolated = true;
+    if (pair.intruderOwnerId === playerOwnerId) playerTrespassing = true;
+  }
+  return { playerBorderViolated, playerTrespassing };
+}
+
 /** Dedupe par intruz→owner (UNITS może wołać przed apply). */
 export function dedupeBorderMarchPairs(pairs: readonly BorderMarchPair[]): BorderMarchPair[] {
   const map = new Map<string, BorderMarchPair>();

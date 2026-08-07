@@ -1108,7 +1108,9 @@ import {
   dedupeBorderMarchPairs,
   loadBorderMarchParams,
   hasAuthorizedBorderCrossing,
+  classifyPlayerBorderMarchNotice,
   type BorderMarchPair,
+  type BorderMarchCheckContext,
 } from './game/diplomacy-border-march';
 import {
   createEmptyBasketTransferContext,
@@ -3556,22 +3558,34 @@ async function boot(): Promise<void> {
         territoryNodes,
       );
       const borderParams = loadBorderMarchParams();
+      const resolveBorderMarchCtx = (pair: BorderMarchPair): BorderMarchCheckContext => ({
+        treaties: activeDeals,
+        isMilitary: pair.isMilitary === true,
+        relation: getDiploRelation(pair.intruderOwnerId, pair.territoryOwnerId),
+      });
       const { relations, penalizedPairs } = applyUnauthorizedBorderPenalties(
         enriched,
         diplomacyRelations,
         borderParams,
-        (pair) => ({
-          treaties: activeDeals,
-          isMilitary: pair.isMilitary === true,
-          relation: getDiploRelation(pair.intruderOwnerId, pair.territoryOwnerId),
-        }),
+        resolveBorderMarchCtx,
       );
       for (const [key, rel] of relations) diplomacyRelations.set(key, rel);
+      // BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C — komunikat wyłącznie gdy GRACZ (ownerId 0, konwencja
+      // main.ts np. main.ts:1729 `playerOwnerId: 0`) jest stroną ukaranej pary. Para obcy↔obcy
+      // (ani intruz, ani właściciel = gracz) nigdy nie trafia na ekran — dziś `penalizedPairs > 0`
+      // odpalał komunikat dla KAŻDEJ ukaranej pary w świecie (także AI↔AI), stąd zgłoszenie
+      // Macieja: „nieautoryzowany przemarsz”, mimo że gracz nie miał żadnych jednostek i nikt
+      // nie wszedł na jego teren. Klasyfikacja w classifyPlayerBorderMarchNotice (czysta,
+      // diplomacy-border-march.ts) — kara Zaufania (wyżej) i zdarzenie N7 (niżej) BEZ ZMIAN.
       if (penalizedPairs > 0) {
-        showHintMessage(
-          `Nieautoryzowany przemarsz: −${borderParams.karaPrzemarszNieautoryzowany_zaufanie_perTura} Zauf./para`,
-          3500,
-        );
+        const kara = borderParams.karaPrzemarszNieautoryzowany_zaufanie_perTura;
+        const notice = classifyPlayerBorderMarchNotice(enriched, resolveBorderMarchCtx, 0);
+        if (notice.playerBorderViolated) {
+          showHintMessage(`Twoje granice naruszone: −${kara} pkt Zaufania/turę u każdej naruszającej cywilizacji`, 3500);
+        }
+        if (notice.playerTrespassing) {
+          showHintMessage(`Twoja jednostka na cudzym terenie: −${kara} pkt Zaufania/turę u właściciela terenu`, 3500);
+        }
       }
 
       // N7 (§2, §8) — jednorazowo PRZY WEJŚCIU do nieautoryzowanej "wizyty" (NIE co turę

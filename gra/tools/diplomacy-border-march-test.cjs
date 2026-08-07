@@ -14,6 +14,7 @@ export {
   applyUnauthorizedBorderPenalties,
   loadBorderMarchParams,
   dedupeBorderMarchPairs,
+  classifyPlayerBorderMarchNotice,
 } from '../src/game/diplomacy-border-march.ts';
 export { addTreaty } from '../src/game/diplomacy-treaties.ts';
 export { diploPairKey } from '../src/game/diplomacy-pn-engine.ts';
@@ -113,6 +114,86 @@ ok(
   M.hasAuthorizedBorderCrossing(1, 2, { treaties: deals, isMilitary: false }),
   'hasAuthorized: otwarte granice cywil',
 );
+
+// 5) BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C — classifyPlayerBorderMarchNotice: adresat komunikatu.
+console.log('classifyPlayerBorderMarchNotice (BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C)');
+
+const resolveOpenCivil = () => ({ treaties: emptyTreaties, isMilitary: false, relation: neutralRel });
+
+// 5a) para obcy↔obcy (ani intruz ani wlasciciel = gracz 0) → brak komunikatu w OBIE strony
+const n1 = M.classifyPlayerBorderMarchNotice(
+  [{ intruderOwnerId: 1, territoryOwnerId: 2 }],
+  resolveOpenCivil,
+  0,
+);
+ok(n1.playerBorderViolated === false, 'obcy↔obcy: playerBorderViolated=false');
+ok(n1.playerTrespassing === false, 'obcy↔obcy: playerTrespassing=false');
+
+// 5b) gracz jako WLASCICIEL terenu (ktos wszedl na teren gracza) → "granice naruszone"
+const n2 = M.classifyPlayerBorderMarchNotice(
+  [{ intruderOwnerId: 3, territoryOwnerId: 0 }],
+  resolveOpenCivil,
+  0,
+);
+ok(n2.playerBorderViolated === true, 'intruz obcy → gracz wlasciciel: playerBorderViolated=true');
+ok(n2.playerTrespassing === false, 'intruz obcy → gracz wlasciciel: playerTrespassing=false');
+
+// 5c) gracz jako INTRUZ (jednostka gracza na cudzym terenie) → "jednostka na cudzym terenie"
+const n3 = M.classifyPlayerBorderMarchNotice(
+  [{ intruderOwnerId: 0, territoryOwnerId: 4 }],
+  resolveOpenCivil,
+  0,
+);
+ok(n3.playerBorderViolated === false, 'gracz intruz na obcym: playerBorderViolated=false');
+ok(n3.playerTrespassing === true, 'gracz intruz na obcym: playerTrespassing=true');
+
+// 5d) mieszana tura: obcy↔obcy + gracz-wlasciciel + gracz-intruz jednoczesnie → oba flagi true,
+//     para obcy↔obcy nie wplywa na wynik (regresja dla "komunikat dla KAZDEJ ukaranej pary")
+const n4 = M.classifyPlayerBorderMarchNotice(
+  [
+    { intruderOwnerId: 5, territoryOwnerId: 6 },
+    { intruderOwnerId: 7, territoryOwnerId: 0 },
+    { intruderOwnerId: 0, territoryOwnerId: 8 },
+  ],
+  resolveOpenCivil,
+  0,
+);
+ok(n4.playerBorderViolated === true, 'tura mieszana: playerBorderViolated=true (obcy↔obcy zignorowana)');
+ok(n4.playerTrespassing === true, 'tura mieszana: playerTrespassing=true (obcy↔obcy zignorowana)');
+
+// 5e) para z graczem, ale AUTORYZOWANA (otwarte granice cywil) → oba flagi false mimo udzialu gracza
+const dealsOG = M.addTreaty([], {
+  id: 'og-player', rodzaj: 'otwarte_granice', strony: [0, 9], wygasaTura: null,
+});
+const n5 = M.classifyPlayerBorderMarchNotice(
+  [{ intruderOwnerId: 0, territoryOwnerId: 9 }],
+  () => ({ treaties: dealsOG, isMilitary: false, relation: neutralRel }),
+  0,
+);
+ok(n5.playerBorderViolated === false, 'otwarte granice + gracz intruz: playerBorderViolated=false');
+ok(n5.playerTrespassing === false, 'otwarte granice + gracz intruz: playerTrespassing=false (autoryzowane, brak komunikatu)');
+
+// 5f) sam gracz na wlasnym terenie (intruderOwnerId === territoryOwnerId === 0) nie moze
+//     wystapic w praktyce (collectUnauthorizedBorderPairs go filtruje), ale funkcja jest
+//     defensywna: hasAuthorizedBorderCrossing zwraca true dla intruz===wlasciciel → oba false.
+const n6 = M.classifyPlayerBorderMarchNotice(
+  [{ intruderOwnerId: 0, territoryOwnerId: 0 }],
+  resolveOpenCivil,
+  0,
+);
+ok(n6.playerBorderViolated === false, 'gracz==gracz (edge case): playerBorderViolated=false');
+ok(n6.playerTrespassing === false, 'gracz==gracz (edge case): playerTrespassing=false');
+
+// 5g) ZADANIE 2: barbarzyńca (relacja zawsze 'wojna', C-BARB-Q1) na terenie gracza →
+//     hasAuthorizedBorderCrossing traktuje wojnę jako autoryzowaną (brak kary REPUTACYJNEJ,
+//     patrz diplomacy-border-march.ts:108) → classifyPlayerBorderMarchNotice też milczy.
+const n7 = M.classifyPlayerBorderMarchNotice(
+  [{ intruderOwnerId: -1, territoryOwnerId: 0 }],
+  () => ({ treaties: emptyTreaties, isMilitary: true, relation: { zaufanie: 0, respekt: 0, status: 'wojna' } }),
+  0,
+);
+ok(n7.playerBorderViolated === false, 'barbarzynca (wojna) na terenie gracza: playerBorderViolated=false (autoryzowane wojną)');
+ok(n7.playerTrespassing === false, 'barbarzynca (wojna) na terenie gracza: playerTrespassing=false');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 
