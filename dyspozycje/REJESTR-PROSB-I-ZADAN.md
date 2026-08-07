@@ -774,3 +774,22 @@ od ceny i zdolności modelu.
 **Zadanie:** ustalić, czy w repozytorium jest jakikolwiek zapis o retencji / ZDR / polityce
 prywatności / dozwolonych modelach. Jeśli nie ma — pytanie wraca do Macieja.
 **Status:** 🟡 w toku — AutoBot, zadanie czysto ustalające (read-only).
+
+## R-BRAMKI-AUDYT-KANONU (2026-08-07) — czy sekcja BRAMKI w CLAUDE.md odpowiada rzeczywistości
+**Podejrzenie:** `CLAUDE.md` (sekcja `## BRAMKI`) twierdzi, że `relief-grid-coverage-test.cjs` daje
+**2 pass / 4 fail**, a `fair-play-grid-test.cjs` **3 pass / 5 fail**, oba „W NAPRAWIE na mocy
+`C-MAPA-Q1=B`". Tymczasem w repo jest zapis, że `fair-play-grid-test` jest **zielony 8/8** —
+a liczba asercji zmieniła się z 5 na 8, czyli **sam plik testu jest inny** niż wtedy, gdy powstał
+wpis w kanonie.
+**Pytanie, którego nikt nie zadał:** test został **NAPRAWIONY** czy **ROZBROJONY** (usunięte
+asercje / poluzowane progi / zawężony zakres danych)? Rozstrzygnięcie wymaga porównania treści
+asercji ze starą wersją pliku, nie samej liczby pass/fail.
+**Dlaczego to pilne:** sekcja BRAMKI jest czytana przez **każdą** sesję i mówi wprost „NIE
+naprawiaj przy okazji". Nieaktualna lista albo każe ignorować realną czerwień, albo marnuje czas
+na fantomy.
+**Precedens:** audyt 2026-07-26 wykazał, że **5 testów było błędnie wpisanych jako czerwone**
+(`akwedukt-popcap`, `auto-manage`, `growthmult-compound`, `upgrade-budynki`,
+`deposit-building-gate`) — wszystkie okazały się zielone.
+**Zakres:** zadanie **audytowe** — zero napraw, zero zmian w `gra/src/**` i `gra/tools/**`.
+Operator przygotowuje propozycję nowej treści sekcji, orkiestrator wkleja po zatwierdzeniu.
+**Status:** 🟡 w toku — AutoBot Operator→Evaluator (`wupki7quq`).
