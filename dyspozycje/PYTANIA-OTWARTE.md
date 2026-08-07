@@ -1940,7 +1940,7 @@ o nim śladu w kanonie, nie pilnuje go żaden test.
 wybór produktowy, tylko niepełna implementacja istniejącego wzoru (`unit-power.ts:90-108`).
 **Do dołożenia razem:** test pilnujący zgodności wszystkich trzech miejsc liczących Moc.
 
-## R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 (2026-08-07) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+## R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 (2026-08-07) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`304eff9`)
 **Ustalenie Evaluatora (nota N5) — decyzja `C-MOC-Q1 = A` jest wewnętrznie sprzeczna.**
 Jedyny zapis treści, identyczny w `dyspozycje/WERSJE.md:838` i `dyspozycje/_handoff/KANAL-PRACA.md:5230`:
 > `C-MOC-Q1=A (Moc nominalna, ta z auto-bitwy)`
@@ -2006,7 +2006,7 @@ Zweryfikowane od zera po tej korekcie (usunięty zaległy artefakt przed uruchom
 że przyczyna leży w `gra/src/map/**` — zmiana generatora wymaga bramki `map-gen-regression-test`
 i pomiaru przed/po (playbook C-011), NIE testu na oko.
 
-## R-PRZEMARSZ-ATRYBUCJA-Q1 (2026-08-07, wynik pętli AutoBot na BUG-PRZEMARSZ-KOMUNIKAT-OBCY) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+## R-PRZEMARSZ-ATRYBUCJA-Q1 (2026-08-07, wynik pętli AutoBot na BUG-PRZEMARSZ-KOMUNIKAT-OBCY) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`30d48b8`, runda 2)
 **Kontekst:** naprawa `BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C` scalona — komunikat pokazuje się teraz
 tylko gdy gracz jest stroną. Evaluator (nota N1) wskazał lukę, którą ta naprawa NIE zamyka:
 właściciel powiedział *„nie widzę, żeby ktoś robił przemarsz przez mój teren"* — o **widoczności**,
@@ -2048,3 +2048,54 @@ naprawy (286 istniejących przykładów w tym samym repo). Naprawa: dopisać `fs
 generujący entry przed `esbuild`, identycznie jak w działających plikach.
 **Do poprawienia przy okazji:** `.gitignore:53-56` — komentarz twierdzący, że WSZYSTKIE bramki
 generują entry same, jest dziś nieprawdziwy; poprawić po naprawieniu 10 plików.
+
+## R-MOC-MUR-PARADOKS-Q1 (2026-08-07, nota N4 Evaluatora) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+**Ustalenie:** po wdrożeniu `R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B` tabliczka jednostki w garnizonie
+pokazuje wyższą Moc **w szczerym polu** niż **za murem miasta** — bo bonus muru (do +400%,
+`structBonusPct`) wchodzi dopiero w rozstrzygnięciu bitwy (`effectiveDefenderM`), nie w tabliczce
+(`stackFieldPowerM`), podczas gdy bonus fortyfikacji polowej garnizonu (+50%) w tabliczce już jest,
+a znika po wybudowaniu palisady/muru (bo `unitGetsFortifyBonus` działa tylko „bez muru").
+**Przykład zmierzony (Konnica rekrut, garnizon):** miasto bez murów → tabliczka **52**; to samo
+miasto po wybudowaniu murów → tabliczka **spada do 49**, mimo że realna Obrona rośnie z **49
+do 95** (mur +200%). Gracz zobaczy liczbę malejącą dokładnie wtedy, gdy buduje obronę.
+**Cel pytania:** czy tabliczka ma dociągnąć też mnożniki muru/terenu (uczyniłoby ją zależną od
+heksu, na którym jednostka aktualnie stoi), czy zostać przy „weteran + fortyfikacja polowa"
+i zaakceptować ten paradoks jako znany, opisany gdzieś w UI (np. tooltip).
+**Kotwice:** `gra/src/game/armyMerge.ts::stackFieldPowerM`, `gra/src/game/city-defense.ts`
+(`shouldApplyGarrisonFortifyBonus`), `gra/src/main.ts::effectiveDefenderM`.
+
+## R-MOC-RANKING-ROZJAZD-Q1 (2026-08-07, nota N9 Evaluatora) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+**Ustalenie:** `sumArmyMForOwner` (`main.ts:1581`, panel Mocy imperium + progi decyzji AI
+w dyplomacji) NIE zostało objęte decyzją B — pozostaje nominalne, świadomie (zakres decyzji
+dotyczył dosłownie „tabliczki nad żetonem"). Skutek: ta sama armia weteranów ma teraz **dwie
+różne liczby Mocy widoczne w jednym interfejsie** — wyższą na tabliczce nad żetonem, niższą
+w panelu rankingu Mocy imperium.
+**Dwa osobne pytania, oba pod tym ID:**
+(1) czy panel Mocy imperium (widoczny dla gracza) ma przejść na efektywną, dla spójności
+z tabliczką pojedynczej jednostki;
+(2) czy progi decyzji dyplomatycznych AI (`militaryRatioFromArmyM`, `progWojnaSila`) mają
+przejść na efektywną — to zmiana **rozgrywki** (przesuwa progi, kiedy AI decyduje się na wojnę),
+nie tylko wyświetlania, i wymaga osobnej bramki/pomiaru przed wdrożeniem.
+**Kotwice:** `gra/src/main.ts:1581` (`sumArmyMForOwner`), `ui/powerOverlayHud.ts` (panel),
+`main.ts` linie ~12955/13950/21784/21974 (`militaryRatioFromArmyM`, progi wojny).
+
+## R-PRZEMARSZ-WYGASANIE-Q1 (2026-08-07, noty N-D1/N-D2 Evaluatora, runda 2) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+**Ustalenie:** naprawa „cel kamery się starzeje" + „dismiss nie działa trwale" (obie z rundy 1)
+została zrobiona jednym mechanizmem — stabilne id per kierunek, usuwane i wstawiane na nowo
+przy każdym wystąpieniu naruszenia w kolejnej turze. To **wprowadziło nowy defekt**, gorszy
+niż stan przed całą tą pracą: symulacja Evaluatora na 20 000 tur pokazała, że **odrzucenie
+komunikatu („✕") nigdy nie działa trwale** (34629/34629 przypadków — wraca w następnej turze,
+jeśli naruszenie trwa) oraz że **komunikat NIE WYGASA po ustaniu naruszenia** w 79% przypadków
+(8926/11327) — gracz widzi trwały wpis z liczbą kary, która już nie jest naliczana.
+**Przed tą pracą:** ulotny toast na 3,5 sekundy, znikający sam. **Po tej pracy:** trwały wpis
+z potencjalnie nieprawdziwą liczbą, którego nie da się skutecznie odrzucić.
+**Cel pytania:** jak ma się zachowywać cykl życia tego komunikatu.
+**DO DECYZJI (ABC):**
+(A) osobny log czyszczony co turę (jak `villageEventLog`) — wpis znika sam, gdy naruszenie
+    ustaje, „✕" działa jak przy innych chipach per-turowych; najprostsze, zgodne z naturą danych;
+(B) zostać przy `warEventLog`, ale zapamiętać turę odrzucenia i nie wstawiać ponownie, dopóki
+    ten sam kierunek trwa nieprzerwanie + jawnie usuwać wpis, gdy naruszenie ustaje;
+(C) wrócić do ulotnego toastu (bez trwałego wpisu w Wydarzeniach) — traci skok kamery i historię,
+    ale eliminuje problem najprościej.
+**Kotwice:** `gra/src/main.ts` (`applyBorderMarchPenaltiesEndTurn`, ~3578-3640),
+`borderMarchEventTargets`, `onEventDismiss`.

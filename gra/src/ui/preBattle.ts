@@ -23,7 +23,9 @@ export interface PreBattleUnit {
   hp: number;
   maxHp: number;
   atak: number;
-  /** M jednostki (pole) — Łączna siła sumuje moc, nie meleeAttack. */
+  /** M jednostki (pole), Moc NOMINALNA (armyFieldPower(unitDefFor)). Jedyny konsument:
+   * unitSubtitle() niżej, etykieta "Szarża +X" dla jednostek konnych. NIE jest sumowana
+   * ani wyświetlana jako "Moc" gdzie indziej w panelu (zweryfikowane 2026-08-07, Evaluator). */
   moc?: number;
   ilosc?: number;
   /**
