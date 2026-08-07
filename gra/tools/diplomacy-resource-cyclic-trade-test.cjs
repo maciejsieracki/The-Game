@@ -105,7 +105,11 @@ let r = evaluateProposal(prop('handel', 0, 1, {
 }), ctx());
 ok(r.accepted, 'handel surowiec_ilosc per_turn: zaakceptowany (gracz proponuje)');
 ok(!r.oneShotTrade, 'handel per_turn: NIE oneShotTrade (to deal cykliczny, nie jednorazowy)');
-ok(r.deal?.rodzaj === 'umowa_handlowa', 'handel per_turn: deal.rodzaj=umowa_handlowa');
+// HANDEL-SPLIT-Q1=B (2026-07-29): buildHandelSurowiecCykliczny buduje deal z
+// RodzajTraktatu.UmowaWymiany = 'umowa_wymiany' (koszyk surowcow cykliczny), NIE
+// z legacy 'umowa_handlowa' (teraz tylko traktat szlakow bez koszyka). Rename
+// zamierzony, potwierdzony w docs/decyzje/HANDEL-SPLIT-Q1.md.
+ok(r.deal?.rodzaj === 'umowa_wymiany', 'handel per_turn: deal.rodzaj=umowa_wymiany');
 ok(r.deal?.wygasaTura === 22, 'handel per_turn: wygasaTura = turn(10)+turns(12) = 22');
 ok(r.deal?.handelSurowiecCykliczny?.length === 1, 'handel per_turn: 1 wpis handelSurowiecCykliczny');
 ok(r.deal?.handelSurowiecCykliczny?.[0]?.surowiecKey === 'drewno', 'handel per_turn: surowiecKey=drewno');

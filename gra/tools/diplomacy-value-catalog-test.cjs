@@ -58,7 +58,13 @@ eq(D.diplomacyPnJednostka('Wojownik'), 10, 'jednostka Wojownik');
 eq(D.diplomacyPnBudynek('stolarnia', 1), 20, 'ref budynek L1 (nie handel)');
 eq(D.diplomacyPnBudynek('stolarnia', 2), 22, 'ref budynek L2 (nie handel)');
 eq(D.diplomacyPnSurowiecBoolean('drewno'), 25, 'surowiec drewno=tartak');
-eq(D.diplomacyPnSurowiecBoolean('ruda'), 25, 'surowiec ruda=kopalnia');
+// 22 = jedyne ulepszenie z surowiecOdblokowany='ruda' w data/terrain-improvements.json dzis: "kopalnia_miedzi"
+// (koszt_praca=22, ABC-7 + ABC-14 Maciej 2026-07-04, wartosc niezmieniona od commita 1341975).
+// Historycznie istnialo tez drugie ("kopalnia", epoka 1, koszt_praca=25) ale min() i tak dawalo 22 od
+// poczatku historii repo -- usuniete commitem 6370311 (FALA 116, R-KOPALNIA-UNIWERSALNA-Q1=B, 2026-07-30).
+// Oczekiwanie 25 bylo bledem testu od samego poczatku (oba pliki dodane w tym samym commicie 1341975),
+// nie regresja danych gry.
+eq(D.diplomacyPnSurowiecBoolean('ruda'), 22, 'surowiec ruda=kopalnia_miedzi');
 ok(D.diplomacyPnZloze('bydlo') === null, 'bydlo nie w cenniku zloza');
 ok(D.diplomacyPnSurowiecBoolean('bydlo') === 20, 'bydlo boolean=ulepszenie 20');
 
