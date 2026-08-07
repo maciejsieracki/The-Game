@@ -201,3 +201,19 @@ przepięcie tych 142 porównań na jeden helper.
 
 **Rekomendacja: B.** Cel „żeby już nigdy nie było wątpliwości" spełnia dopiero nazwa **plus**
 mechanizm — a rename jest tańszy, niż wyglądał, bo zapisy gry nie trzymają terenu.
+
+## Reweryfikacja niezależna (2026-08-07, po restarcie kontenera)
+
+Pełne uruchomienie `node tools/map-gen-regression-test.cjs` z osobnej sesji, bez dostępu do
+powyższej analizy w kontekście. Wynik **bit w bit identyczny**:
+- determinizm (seed 42, standardowy): `hash A=85ec40a7 B=85ec40a7 → IDENTYCZNY`, PASS
+- rzeki: 0 tras bez ujścia, 0 main bez realnego morza, 0 sierot sieci, dopływy z junction — PASS
+- Pangea 5 seedów: **4 FAIL, 1 PASS** — `coastRatio` failujących seedów: 3,7887 / 3,7987 / 3,7778
+  / 3,7795 (seedy 42/123/777/2026), zgodne co do 4 miejsc po przecinku z tabelą wyżej.
+- czasy AC: standard 46,80 s, duża 781,00 s — poniżej progów bramki, ale **znacząco szybciej**
+  niż FALA 259 (130,01 s / 1194,15 s w `WERSJE.md`) — maszyna mniej obciążona, nie regresja
+  w drugą stronę.
+
+**Wniosek potwierdzony niezależnie: brak nowej regresji.** Jedyny blokujący wdrożenie punkt
+pozostaje **pytanie 4** (nazwa `TerenBazowy.Wybrzeze` — sama nazwa / nazwa + przepięcie 142
+porównań na `isWaterTerrain()` / bez zmiany nazwy).
