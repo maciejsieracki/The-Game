@@ -93,6 +93,51 @@ Pełna implementacja w `dyspozycje/autobot/`:
 
 ---
 
+## v2 — Protokół AutoBot (Maciej 2026-08-07)
+
+**Źródło:** trzy dokumenty dostarczone przez Macieja (protokół generyczny, wypracowany poza tym repo, teraz zintegrowany tutaj) — kopie kanoniczne: `dyspozycje/autobot/protokol-v1.2/AUTOBOT-PROMPT-v1.2.md` · `AUTOBOT-opis-i-wdrozenie-v1.2.md` · `playbook-zrodlowy-przykladowy.md` (przykładowy playbook z innego wdrożenia, referencyjny wzór formatu — NIE dane tego projektu).
+
+Zasada nadrzędna v2, cytat: *„Każdy może popełnić błąd. Nie wolno popełnić tego samego błędu drugi raz."*
+
+### Nowe pola `playbook.json` (typy: `src/types.ts`)
+
+| Pole | Rola |
+|------|------|
+| `errorLog: ErrorLogEntry[]` | **Rejestr błędów** — chronologiczny zapis KONKRETNYCH pomyłek (co się stało / przyczyna źródłowa / ID reguły zapobiegawczej / czy to recydywa). Odrębne od `rules[]` (liczniki win/fail) — to czytelna dla człowieka lista „NIGDY WIĘCEJ". |
+| `conclusionsJournal: ConclusionJournalEntry[]` | **Dziennik wniosków** — „co zrobiono → skutek (miara zewnętrzna) → wniosek", najnowsze na górze. Ważniejszy niż same reguły — pokazuje DLACZEGO reguły wyglądają tak, a nie inaczej. |
+| `openMatters: OpenMatter[]` | **Sprawy otwarte** — zadania bez jeszcze zmierzonego wyniku; przegląd obowiązkowy na starcie sesji AutoBot. |
+
+### Status `PROTECTED` (alias PL: CHRONIONA)
+
+Dodany do `RuleStatusCanonical`. Bariery bezpieczeństwa i reguły zatwierdzone WPROST przez Macieja — nie podlegają licznikom win/fail (`recordRuleOutcome` wymaga `status===ACTIVE`) ani automatycznemu `RETIRED` (`retireWeakRules` pomija wszystko poza `ACTIVE`). **Status PROTECTED nadaje wyłącznie człowiek** — agent może go tylko zaproponować.
+
+### Protokół błędu — R-PROC-AUTOBOT-BLAD (5 kroków, natychmiast po każdym błędzie)
+
+Błędem jest: Maciej poprawił lub odrzucił efekt; liczba nie przeszła weryfikacji; zadanie zrozumiane inaczej niż zamierzone; coś trzeba było przerabiać; agent sam zauważył pomyłkę.
+
+1. **NAPRAW** — najpierw poprawka, bez usprawiedliwień.
+2. **PRZYCZYNA, NIE WINNY** — „co zrobić inaczej następnym razem", nie „kto zawinił". Odpowiedź „będę uważniejszy” jest ZAKAZANA — wniosek musi zmieniać procedurę.
+3. **SPRAWDŹ WSTECZ** — czy ta sama pomyłka siedzi w innych miejscach bieżącej i wcześniejszej pracy? Wskaż i popraw wszystkie wystąpienia.
+4. **ZAPISZ DO `errorLog`** — data, co się stało, przyczyna, ID reguły zapobiegawczej.
+5. **PRZEKUJ W REGUŁĘ** — nowa reguła w `rules[]`, status `ACTIVE`, licznik **0/0** (nie backfilluj liczników — start zawsze od zera, zgodnie z protokołem). O dalszym losie zdecydują liczniki po min. `thresholds.minRunsForSignificance` (**10**, podniesione z 5) zastosowaniach.
+
+**Recydywa** (powtórka błędu już obecnego w `errorLog`) = incydent krytyczny — zgłoś Maciejowi wprost, zaznacz `isRecidivism: true`, zaproponuj mocniejsze zabezpieczenie. Realny przykład z tej sesji: dwukrotne usunięcie worktree z niescaloną pracą Operatora (`err_20260806_01`) → `rule_114`.
+
+### Progi statusu reguły (v2, ujednolicone z `thresholds`)
+
+Skuteczność = `win_count / (win_count + fail_count)`, liczona od min. **10** zastosowań (`minRunsForSignificance`):
+
+- **< 30%** → `RETIRED` (znika z promptu Operatora, zostaje w pliku; przywrócić może wyłącznie Maciej, przywrócenie zeruje liczniki),
+- **30–60%** → `QUARANTINE`/„W OBSERWACJI” — **nadal stosowana** (reguła odstawiona na zawsze nigdy nie zbierze danych na swoją obronę),
+- **> 60%** → `ACTIVE`,
+- **`PROTECTED`** — poza tym cyklem, patrz wyżej.
+
+### Seed 2026-08-07
+
+`rules[]` rozszerzone o `rule_110`–`rule_114` (test-vs-silnik, ABC-balans, escaping skryptów Workflow, worktree base-drift, worktree retention przed usunięciem) — każda 0/0, wyprowadzona z realnego incydentu w `errorLog` tej sesji. `rule_111` (ABC dla balansu) ustawiona od razu jako `PROTECTED`, bo Maciej zatwierdził ją wprost (patrz `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md` §3b, `R-PROC-ABC-BALANS`).
+
+---
+
 ## P0 fix (R-PROC-AUTOBOT-P0 · 2026-08-05)
 
 Po FAIL adwokata diabła (`bc-43dbc71b`):

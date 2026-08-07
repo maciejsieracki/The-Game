@@ -7,13 +7,14 @@ import type { Playbook, PlaybookRule, PlaybookUpdate, PlaybookThresholds, RuleSt
 
 const DEFAULT_PLAYBOOK_PATH = path.resolve(__dirname, '..', 'playbook.json');
 
-/** Normalizacja statusu legacy → kanoniczny */
+/** Normalizacja statusu legacy → kanoniczny (v2: PROTECTED / alias PL CHRONIONA) */
 export function normalizeRuleStatus(status: string): RuleStatusCanonical {
   const s = status.toLowerCase();
   if (s === 'active' || s === 'candidate') return 'ACTIVE';
   if (s === 'deprecated') return 'RETIRED';
   if (s === 'quarantine') return 'QUARANTINE';
   if (s === 'retired') return 'RETIRED';
+  if (s === 'protected' || s === 'chroniona') return 'PROTECTED';
   return status as RuleStatusCanonical;
 }
 
@@ -49,7 +50,8 @@ export function normalizePlaybook(raw: Record<string, unknown>): Playbook {
   const thresholds = (raw.thresholds as PlaybookThresholds) ?? {
     promoteMinWinRate: 0.6,
     deprecateBelowWinRate: 0.3,
-    minRunsForSignificance: 5,
+    // v2 Protokół AutoBot (Maciej 2026-08-07): min. 10 zastosowań przed zmianą statusu.
+    minRunsForSignificance: 10,
     thresholdAdjustDelayHours: 24,
     minEventsForWinner: 1000,
     evaluationDelayHours: 48,
@@ -75,6 +77,9 @@ export function normalizePlaybook(raw: Record<string, unknown>): Playbook {
     rules,
     quarantine_rules: quarantine,
     operatorContextAttributes: (raw.operatorContextAttributes as string[]) ?? [],
+    errorLog: (raw.errorLog as Playbook['errorLog']) ?? [],
+    conclusionsJournal: (raw.conclusionsJournal as Playbook['conclusionsJournal']) ?? [],
+    openMatters: (raw.openMatters as Playbook['openMatters']) ?? [],
   };
 }
 

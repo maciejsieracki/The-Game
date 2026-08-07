@@ -3,8 +3,14 @@
  * R-PROC-AUTOBOT · Spec v1 — 5 modułów · Maciej 2026-08-05
  */
 
-/** Kanoniczne statusy reguł (spec v1). Stare aliasy mapowane w playbook-manager. */
-export type RuleStatusCanonical = 'ACTIVE' | 'RETIRED' | 'QUARANTINE';
+/**
+ * Kanoniczne statusy reguł (spec v1 + v2 Protokół AutoBot, Maciej 2026-08-07).
+ * PROTECTED (alias PL: CHRONIONA) — bariery bezpieczeństwa i reguły zatwierdzone
+ * wprost przez człowieka; nie podlegają licznikom win/fail ani automatycznemu
+ * RETIRED (retireWeakRules pomija wszystko poza ACTIVE — działa "za darmo").
+ * Status PROTECTED nadaje WYŁĄCZNIE człowiek, nigdy agent samodzielnie.
+ */
+export type RuleStatusCanonical = 'ACTIVE' | 'RETIRED' | 'QUARANTINE' | 'PROTECTED';
 
 /** Aliasy historyczne — normalizowane przy loadPlaybook */
 export type RuleStatusLegacy = 'active' | 'deprecated' | 'candidate';
@@ -52,6 +58,50 @@ export interface PlaybookRule {
   deprecatedReason?: string;
 }
 
+/**
+ * Rejestr błędów — v2 Protokół AutoBot (Maciej 2026-08-07). Lista "NIGDY WIĘCEJ",
+ * odrębna od `rules[]` (liczniki win/fail): tu żyje CHRONOLOGICZNY, czytelny dla
+ * człowieka zapis konkretnych pomyłek + ich przyczyny źródłowej, żeby powtórka
+ * (recydywa) była natychmiast rozpoznawalna przez porównanie z tą listą.
+ */
+export interface ErrorLogEntry {
+  id: string;
+  dateIso: string;
+  /** Co się stało — konkretnie, bez ogólników */
+  whatHappened: string;
+  /** Przyczyna ŹRÓDŁOWA, nie "kto zawinił" — patrz protokół błędu, R-PROC-AUTOBOT-BLAD */
+  rootCause: string;
+  /** ID reguły zapobiegawczej w rules[] powstałej z tego błędu */
+  preventiveRuleId: string;
+  /** true = ten błąd już RAZ powtórzył wcześniejszy wpis (recydywa = incydent krytyczny) */
+  isRecidivism?: boolean;
+}
+
+/**
+ * Dziennik wniosków — v2 Protokół AutoBot. Ważniejszy niż same reguły: pokazuje
+ * DLACZEGO reguły wyglądają tak, a nie inaczej. Najnowsze na górze.
+ */
+export interface ConclusionJournalEntry {
+  dateIso: string;
+  /** Nazwa/ID zadania lub paczki, której dotyczy wpis */
+  task: string;
+  done: string;
+  /** Miara zewnętrzna (nie samoocena) — lub "oczekuje, patrz Sprawy otwarte" */
+  outcome: string;
+  conclusion: string;
+}
+
+/**
+ * Sprawy otwarte — zadania, których wyniku nie dało się jeszcze zmierzyć.
+ * Przeglądane obowiązkowo na starcie każdej sesji AutoBot (rytuał startowy).
+ */
+export interface OpenMatter {
+  dateIso: string;
+  whatIsPending: string;
+  /** Konkretna data lub zdarzenie, po którym wynik będzie znany */
+  whenExpected: string;
+}
+
 export interface Playbook {
   version: number;
   updatedAtIso: string;
@@ -64,6 +114,12 @@ export interface Playbook {
   quarantine_rules: PlaybookRule[];
   /** Atrybuty kontekstu dozwolone w payloadzie Operatora (po feature pruning) */
   operatorContextAttributes: string[];
+  /** v2: Rejestr błędów — patrz ErrorLogEntry. Najnowsze na górze (indeks 0). */
+  errorLog: ErrorLogEntry[];
+  /** v2: Dziennik wniosków — patrz ConclusionJournalEntry. Najnowsze na górze. */
+  conclusionsJournal: ConclusionJournalEntry[];
+  /** v2: Sprawy otwarte — patrz OpenMatter. */
+  openMatters: OpenMatter[];
 }
 
 export type ActionRisk = 'safe' | 'elevated' | 'critical' | 'forbidden';

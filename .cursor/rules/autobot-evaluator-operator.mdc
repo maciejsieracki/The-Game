@@ -73,9 +73,11 @@ Grok wkleja do promptu Evaluatora szablon 5 pytań z decision doc (sekcja „SCO
 
 ## Playbook + pruning + guardrails
 
-- Reguły: `win_count` / `fail_count` / `win_rate`; `< 30%` → `RETIRED`
+- Reguły: `win_count` / `fail_count` / `win_rate`; próg **min. 10 zastosowań** (v2, 2026-08-07); `< 30%` → `RETIRED`, `30–60%` → `QUARANTINE` (nadal stosowana), `> 60%` → `ACTIVE`, `PROTECTED` (CHRONIONA) nadaje wyłącznie Maciej — poza licznikami
 - Feature pruning: atrybuty z \|corr\| < 0.05 poza kontekstem Operatora
 - Guardrails w **kodzie**: bez merge→main; deploy tylko hasło Macieja; HITL; delay 48h **lub** N≥1000 przed winnerem
+
+**Protokół błędu (v2, R-PROC-AUTOBOT-BLAD)** — po KAŻDYM błędzie (Maciej poprawił/odrzucił, liczba nie przeszła weryfikacji, coś do przeróbki): NAPRAW → przyczyna nie winny → sprawdź wstecz inne miejsca → zapisz do `errorLog` w `playbook.json` → przekuj w regułę (`ACTIVE`, licznik 0/0). Recydywa (powtórka z `errorLog`) = incydent krytyczny, zgłoś Maciejowi wprost. Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` §„v2 — Protokół AutoBot".
 
 ## Logging
 

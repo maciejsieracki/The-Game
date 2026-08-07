@@ -16,6 +16,15 @@
 
 **Evaluator — STRICT-SAVE (Maciej „1+2” oś B save/load, 2026-08-05):** nowe trwałe pole bez snapshot/restore lub restore bez `?? default`; Operator bez roundtrip → **FAIL #9** (`rule_109`, `R-PROC-AUTOBOT-EVAL-STRICT-SAVE`).
 
+## v2 — Protokół AutoBot (Maciej 2026-08-07)
+
+Źródło: `protokol-v1.2/` (dokumenty dostarczone przez Macieja). Integracja: `docs/decyzje/R-PROC-AUTOBOT.md` §„v2 — Protokół AutoBot". Skrót:
+
+- **`playbook.json`** ma teraz 3 nowe sekcje: `errorLog` (Rejestr błędów — chronologiczny, „NIGDY WIĘCEJ"), `conclusionsJournal` (Dziennik wniosków), `openMatters` (Sprawy otwarte).
+- **Status reguły `PROTECTED`** (alias CHRONIONA) — nadaje wyłącznie Maciej, poza licznikami win/fail i poza automatycznym `RETIRED`.
+- **Próg istotności statystycznej** podniesiony z 5 do **10** zastosowań (`thresholds.minRunsForSignificance`).
+- **Protokół błędu** (5 kroków, natychmiast po każdym błędzie): NAPRAW → przyczyna nie winny → sprawdź wstecz → zapisz do `errorLog` → przekuj w regułę (`ACTIVE`, 0/0). Recydywa = incydent krytyczny.
+
 ## Architektura — 5 modułów
 
 ```
