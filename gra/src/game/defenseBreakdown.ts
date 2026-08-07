@@ -14,28 +14,28 @@
  * bonusu -- jedno zrodlo prawdy w city-defense.ts / veteran.ts / civ-bonuses.ts, ten
  * plik go tylko konsumuje).
  *
- * Runda 3 (po FAIL Evaluatora rundy 2, 3 warunki naprawione tutaj):
- * 1) defenderCivBonusBreakdown liczy "N z M jednostek" per bonus_obrona przez
- *    unitMatchesCel(u.celShape, b.cel) (civ-bonuses.ts -- DOKLADNIE ten sam predykat,
- *    ktorym realna walka bramkuje bonusApplies()) -- bonus ktory nie pasuje do
- *    ZADNEJ jednostki rosteru (N=0) NIE jest pokazywany wcale (wczesniej: pokazywany
- *    bezwarunkowo, klamliwie sugerujac ze dotyczy calego rosteru).
- * 2) cityDefenseBreakdownLines + buildDefenseRosterUnits to PELNA, CZYSTA agregacja
- *    (roster -> linie panelu) ktora main.ts tylko OPAKOWUJE cienkim wrapperem
- *    (przekazujac realne unitGetsFortifyBonus/veteranCombatBonusFrac/unitDefFor jako
- *    wstrzykniete funkcje) -- test bunduje WYLACZNIE ten plik + city-defense.ts +
- *    civ-bonuses.ts (esbuild, bez main.ts/DOM), wiec pokrywa realna sciezke 1:1, nie
- *    tylko fragmenty.
- * 3) DefenseRosterUnit NIE niesie juz `meleeDefence` -- pole bylo liczone kosztownie
- *    w main.ts (unitObrona(fortifyFieldScaledDefFor(u)) na kazdego obronce przy
- *    KAZDYM otwarciu panelu) ale zaden konsument produkcyjny go nie czytal (ani
- *    garrisonFortifyBreakdown, ani bestVeteranAmongRoster, ani defenderCivBonusBreakdown
- *    -- wszystkie licza WYLACZNIE po getsFortifyBonus/veteranFrac/celShape). Usunieto
- *    razem z defenseRosterRealSum (byla WYLACZNIE do testu poprzedniej rundy, ktory
- *    zostal przebudowany od zera -- patrz gra/tools/defense-breakdown-test.cjs).
+ * Runda 4 (domkniecie luki znalezionej przez Evaluatora w rundzie 3):
+ * defenderCivBonusBreakdown liczyl "N z M jednostek" per bonus_obrona WYLACZNIE
+ * przez unitMatchesCel(u.celShape, b.cel) -- realna walka bramkuje bonus_obrona
+ * PELNA funkcja bonusApplies() (civ-bonuses.ts), ktora oprocz unitMatchesCel
+ * sprawdza DODATKOWO opisForestOrCharge/opisMentionsForest (bonus dziala tylko
+ * w lesie/dzungli/na wzgorzu -- ctx.terrain) i opisChargeOnly (bonus dziala
+ * tylko przy szarzy -- ctx.isChargeRound). Dzis (2026-08-07) zero rozbieznosci
+ * w danych (wszystkie wpisy bonus_obrona w civs.json maja prosty cel bez tych
+ * dodatkowych warunkow), ale KAZDY NOWY wpis bonus_obrona z opisem o lesie/
+ * szarzy sprawilby, ze panel preBattle klamalby (pokazywalby bonus jako
+ * dotyczacy jednostek, dla ktorych faktycznie NIE zadziala w bitwie). Naprawa:
+ * defenderCivBonusBreakdown wola TERAZ bonusApplies() (eksportowana z
+ * civ-bonuses.ts), budujac CivCombatContext {side:'defender', terrain,
+ * isChargeRound:false} -- `terrain` to opcjonalny parametr wstrzykniety z
+ * main.ts (teren heksu miasta bronionego, patrz cityDefenseBreakdownFor),
+ * `isChargeRound` zawsze false w preBattle (szarza jeszcze sie nie odbyla --
+ * konserwatywnie NIE pokazujemy bonusu wymagajacego szarzy, dopoki faktycznie
+ * nie nastapi w bitwie). Zero zmiany funkcjonalnosci "N z M jednostek" -- to
+ * WYLACZNIE doszczelnienie predykatu dopasowania.
  */
 
-import { isCombatModifierBonus, unitMatchesCel, type CivBonusUnitShape } from './civ-bonuses';
+import { isCombatModifierBonus, bonusApplies, type CivBonusUnitShape, type CivCombatContext } from './civ-bonuses';
 import type { CivBonusLite } from './production';
 
 // ---------------------------------------------------------------------------
@@ -205,26 +205,39 @@ export function bestVeteranAmongRoster(
 }
 
 /**
- * defenderCivBonusBreakdown (warunek 1, runda 3) -- bonusy cyw. obrończe
- * (isDefenseOnlyCivBonus) filtrowane DODATKOWO przez unitMatchesCel(u.celShape,
- * b.cel) -- realna walka bramkuje bonus_obrona TAK SAMO (bonusApplies() w
- * civ-bonuses.ts). Bonus, ktory nie pasuje do ZADNEJ jednostki rosteru (np.
- * grecka Falanga cel='piechota' na rosterze zlozonym z samej kawalerii/rydwanow)
- * jest POMIJANY calkowicie (affected===0 -> nie trafia do wyniku) -- panel juz
- * nie klamie, ze bonus dotyczy jednostek, ktorych realnie nie wzmacnia.
+ * defenderCivBonusBreakdown (runda 4 -- domkniecie luki rundy 3) -- bonusy cyw.
+ * obroncze (isDefenseOnlyCivBonus) filtrowane PELNA funkcja bonusApplies()
+ * (civ-bonuses.ts) -- DOKLADNIE ten sam predykat, ktorym realna walka bramkuje
+ * bonus_obrona (unitMatchesCel + opisForestOrCharge/opisMentionsForest +
+ * opisChargeOnly). `terrain` to teren heksu miasta bronionego (opcjonalny --
+ * main.ts go wstrzykuje z mapy). Brak terenu ('' / undefined) NIE jest jednolicie
+ * konserwatywny: galaz `opisForestOrCharge` wymaga jawnie forestOk LUB chargeOk
+ * (brak terenu = bonus ukryty), ale galaz `opisMentionsForest` (bez „lub") sprawdza
+ * WYLACZNIE `terrain.length > 0 && !terrainIsForestOrJungle(terrain)` -- przy pustym
+ * terenie ten warunek jest falszywy, wiec bonus zostaje POKAZANY (permisywnie), nie
+ * ukryty. `isChargeRound` jest ZAWSZE false tutaj -- panel preBattle dziala PRZED
+ * bitwa, szarza jeszcze sie nie odbyla, wiec bonus wymagajacy szarzy NIE jest
+ * obiecywany z gory (moze sie nie zmaterializowac, gdyby szarzy nie bylo). Bonus,
+ * ktory nie pasuje do ZADNEJ jednostki rosteru (np. grecka Falanga cel='piechota'
+ * na rosterze zlozonym z samej kawalerii/rydwanow, ALBO bonus lesny na terenie
+ * nie-lesnym gdy teren JEST znany) jest POMIJANY calkowicie (affected===0 -> nie
+ * trafia do wyniku) -- panel nie klamie, ze bonus dotyczy jednostek/warunkow,
+ * ktorych realnie nie wzmacnia.
  */
 export function defenderCivBonusBreakdown(
   roster: readonly DefenseRosterUnit[],
   bonusy: readonly CivBonusLite[],
+  terrain?: string,
 ): RosterBonusBreakdown[] {
   const total = roster.length;
   if (total === 0) return [];
+  const ctx: CivCombatContext = { side: 'defender', terrain, isChargeRound: false };
   const out: RosterBonusBreakdown[] = [];
   for (const b of bonusy) {
     if (!isDefenseOnlyCivBonus(b)) continue;
     const text = (b.opis ?? '').trim();
     if (!text) continue;
-    const affected = roster.filter(u => unitMatchesCel(u.celShape, b.cel)).length;
+    const affected = roster.filter(u => bonusApplies(b, u.celShape, ctx)).length;
     if (affected === 0) continue;
     out.push({
       text: text + ' — ' + String(affected) + ' z ' + String(total) + ' jednostek',
@@ -264,6 +277,14 @@ export interface CityDefenseBreakdownOpts {
    * Macieja (R-OBRONA-MIASTA-MP-SCOPE-Q1) -- NIE zmieniac/usuwac bez jego decyzji.
    */
   difficultyMult: number;
+  /**
+   * Teren heksu miasta bronionego (runda 4) -- wstrzykniety z main.ts (patrz
+   * cityDefenseBreakdownFor), przekazywany dalej do defenderCivBonusBreakdown
+   * jako CivCombatContext.terrain. Opcjonalny -- zachowanie przy braku terenu
+   * NIE jest jednolite: patrz jsdoc defenderCivBonusBreakdown (galaz
+   * opisForestOrCharge ukrywa bonus, opisMentionsForest go POKAZUJE).
+   */
+  terrain?: string;
 }
 
 /**
@@ -285,7 +306,7 @@ export function cityDefenseBreakdownLines(
   const veteran = bestVeteranAmongRoster(roster);
   if (veteran) out.push({ tekst: veteran.text, typ: 'pos' });
 
-  const civLines = defenderCivBonusBreakdown(roster, opts.civBonusy);
+  const civLines = defenderCivBonusBreakdown(roster, opts.civBonusy, opts.terrain);
   for (const c of civLines) out.push({ tekst: 'Bonus cywilizacji obrońcy: ' + c.text, typ: 'pos' });
 
   if (opts.difficultyMult > 1) {

@@ -125,7 +125,7 @@ function opisForestOrCharge(opis: string): boolean {
   return o.includes(' lub ') && opisMentionsForest(opis) && (o.includes('pierwsz') || o.includes('zasadzk'));
 }
 
-function bonusApplies(
+export function bonusApplies(
   b: CivBonusEntry,
   unit: CivBonusUnitShape,
   ctx: CivCombatContext,

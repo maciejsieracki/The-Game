@@ -17707,7 +17707,7 @@ async function boot(): Promise<void> {
      * civBonusyForOwnerId, difficultyCombatMultForOwner) -- zero rownoleglego
      * przeliczania, zero duplikatu logiki.
      */
-    function cityDefenseBreakdownFor(defRoster: RuntimeUnit[]): PreBattleModifier[] {
+    function cityDefenseBreakdownFor(defRoster: RuntimeUnit[], terrain?: string): PreBattleModifier[] {
       if (defRoster.length === 0) return [];
       const rosterUnits = buildDefenseRosterUnits(
         defRoster,
@@ -17720,6 +17720,7 @@ async function boot(): Promise<void> {
         fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
         civBonusy: civBonusyForOwnerId(defenderOwnerId),
         difficultyMult: difficultyCombatMultForOwner(defenderOwnerId),
+        terrain,
       });
     }
 
@@ -17764,7 +17765,7 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: true,
-        warunki: cityDefenseBreakdownFor(defRoster),
+        warunki: cityDefenseBreakdownFor(defRoster, dTeren4),
       };
 
       const atkRosterRef = atkRoster.slice();
@@ -18191,7 +18192,7 @@ async function boot(): Promise<void> {
         tura: turn,
         canRetreat: false,
         defenderCanRetreat: playerDefends,
-        warunki: cityDefenseBreakdownFor(defRosterRef),
+        warunki: cityDefenseBreakdownFor(defRosterRef, terrain),
       };
 
       const atkStartSnap = snapshotRosterPositions(atkRosterRef);
@@ -19368,7 +19369,7 @@ async function boot(): Promise<void> {
         lokacja: '(' + city.q + ',' + city.r + ')',
         tura: turn,
         canRetreat: true,
-        warunki: cityDefenseBreakdownFor(defRoster),
+        warunki: cityDefenseBreakdownFor(defRoster, dTeren),
       };
 
       const atkRosterRef = atkRoster.slice();

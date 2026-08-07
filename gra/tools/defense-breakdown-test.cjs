@@ -2,11 +2,18 @@
 /**
  * defense-breakdown-test.cjs
  *
- * R-OBRONA-MIASTA-MP-Q1=A (Maciej 2026-08-06), runda 3 -- pokrycie testem
+ * R-OBRONA-MIASTA-MP-Q1=A (Maciej 2026-08-06) -- pokrycie testem
  * gra/src/game/defenseBreakdown.ts (panel preBattle "Rozbicie obrony": garnizon
- * +50%, cyw, weteran, liczba obroncow) PO FAIL Evaluatora rundy 2 (warunek 2:
- * cityDefenseBreakdownFor w main.ts miala ZERO asercji -- test bundowal wylacznie
- * czesc modulu, nie realna sciezke).
+ * +50%, cyw, weteran, liczba obroncow).
+ *
+ * Runda 4 (domkniecie luki znalezionej przez Evaluatora w rundzie 3, warunek 1):
+ * defenderCivBonusBreakdown liczyla "N z M jednostek" WYLACZNIE przez
+ * unitMatchesCel -- realna walka bramkuje bonus_obrona PELNA funkcja
+ * bonusApplies() (civ-bonuses.ts), ktora oprocz unitMatchesCel sprawdza
+ * DODATKOWO teren (las/dzungla/wzniesienie) i szarze. Sekcja G ponizej pokrywa
+ * FIKCYJNYM bonusem lesnym: panel na terenie NIE-lesnym MUSI pominac bonus
+ * calkowicie (affected=0, linia niepokazana), a na terenie lesnym pokazac go
+ * normalnie z licznikiem N z M.
  *
  * Ten test bunduje TRZY pure moduly (esbuild, bez main.ts/DOM):
  *   - game/defenseBreakdown.ts  -- agregacja panelu (buildDefenseRosterUnits,
@@ -14,14 +21,14 @@
  *     defenderCivBonusBreakdown, civBonusUnitShapeFromDef, bonusChipTexts)
  *   - game/city-defense.ts      -- REALNY predykat fortyfikacji
  *     (unitGetsFortifyDefenseBonus) -- ten sam, ktorego main.ts.unitGetsFortifyBonus
- *     wola 1:1 (zero rownoleglej reimplementacji w tescie -- warunek 2 zadania).
+ *     wola 1:1 (zero rownoleglej reimplementacji w tescie).
  *   - game/siege.ts             -- FORTIFY_OBRONA_PROC_FIELD (realna wartosc %
  *     z combat-params.json, nie hardkodowana w tescie).
  *
  * oraz czyta REALNE data/civs.json (bonus_obrona Grecja/Falanga, cel='piechota')
  * i data/units.json (Konnica=kawaleria, Rydwan mykenski=rydwany, Wojownik=piechota
- * wg unitCombatCategory -- civ-bonuses.ts), zeby warunek 1 (licznik "N z M" per
- * `cel` bonusu) byl sprawdzony na realnych danych gry, nie fixture'ach.
+ * wg unitCombatCategory -- civ-bonuses.ts), zeby warunek "N z M" per `cel` bonusu
+ * byl sprawdzony na realnych danych gry, nie fixture'ach.
  *
  * Usage (z gra/): node tools/defense-breakdown-test.cjs
  */
@@ -111,7 +118,7 @@ const grecy = civsRaw.cywilizacje.find((c) => c['Cywilizacja'] === 'Grecy');
 if (!grecy) throw new Error('Grecy nie znalezieni w civs.json');
 const falangaBonus = grecy.bonusy.find((b) => b.typ === 'bonus_obrona');
 if (!falangaBonus) throw new Error('bonus_obrona Grecji (Falanga) nie znaleziony');
-assert(falangaBonus.cel === 'piechota', 'DANE: Falanga (Grecy) bonus_obrona.cel === "piechota" (fundament warunku 1)');
+assert(falangaBonus.cel === 'piechota', 'DANE: Falanga (Grecy) bonus_obrona.cel === "piechota" (fundament warunku "N z M")');
 
 const unitsRaw = JSON.parse(fs.readFileSync(path.join(GRA_ROOT, 'data/units.json'), 'utf8'));
 const unitsByName = {};
@@ -126,10 +133,10 @@ function celShape(unitName) {
   return civBonusUnitShapeFromDef(getUnitDef(unitName), unitName);
 }
 
-console.log('defense-breakdown-test (R-OBRONA-MIASTA-MP-Q1, runda 3)\n');
+console.log('defense-breakdown-test (R-OBRONA-MIASTA-MP-Q1)\n');
 
 // ===========================================================================
-// WARUNEK 2 -- garrisonFortifyBreakdown / buildDefenseRosterUnits z REALNYM
+// A -- garrisonFortifyBreakdown / buildDefenseRosterUnits z REALNYM
 // predykatem unitGetsFortifyDefenseBonus (city-defense.ts), roster 4 obroncow:
 //   u1: ufortyfikowany W POLU, NIE w garnizonie (dist<=1 od miasta, poza murami)
 //   u2, u3: W GARNIZONIE (fizycznie w miescie), nie ufortyfikowani w polu
@@ -157,7 +164,7 @@ function getsFortifyBonusFor(builtIds) {
 }
 
 function fakeCelShape() {
-  // Nieistotne dla testu A (typ bonusu civ liczony osobno w B) -- placeholder stały.
+  // Nieistotne dla testu A (typ bonusu civ liczony osobno w B/G) -- placeholder staly.
   return { typNazwa: 'Wojownik', rola: 'Wrecz', missileAttack: 0 };
 }
 
@@ -211,9 +218,9 @@ function fakeCelShape() {
 }
 
 // ===========================================================================
-// WARUNEK 1 -- defenderCivBonusBreakdown liczy "N z M" per bonus przez
-// unitMatchesCel (civ-bonuses.ts), a bonus ktory nie pasuje do ZADNEJ jednostki
-// (N=0) NIE jest pokazany wcale.
+// B -- defenderCivBonusBreakdown liczy "N z M" per bonus przez bonusApplies
+// (civ-bonuses.ts, przez unitMatchesCel dla bonusow bez warunku terenu/szarzy),
+// a bonus ktory nie pasuje do ZADNEJ jednostki (N=0) NIE jest pokazany wcale.
 // ===========================================================================
 console.log('\n--- B. Bonus cywilizacji (Falanga, cel="piechota") -- licznik N z M ---');
 
@@ -263,7 +270,7 @@ console.log('\n--- B. Bonus cywilizacji (Falanga, cel="piechota") -- licznik N z
 }
 
 // ===========================================================================
-// Weteran -- najwyzszy % OBECNY w rosterze + ile jednostek dokladnie na tym poziomie.
+// C -- Weteran: najwyzszy % OBECNY w rosterze + ile jednostek dokladnie na tym poziomie.
 // ===========================================================================
 console.log('\n--- C. Premia weterana (bestVeteranAmongRoster) ---');
 
@@ -286,9 +293,9 @@ console.log('\n--- C. Premia weterana (bestVeteranAmongRoster) ---');
 }
 
 // ===========================================================================
-// WARUNEK 2 (integracja) -- cityDefenseBreakdownLines: pelna sciezka main.ts
-// (garnizon -> weteran -> bonusy cyw. -> trudnosc AI), na tym samym rosterze 4
-// obroncow (bez murow) uzytym w Czesci A, ROZSZERZONYM o veteranFrac i celShape.
+// D -- cityDefenseBreakdownLines: pelna sciezka main.ts (garnizon -> weteran ->
+// bonusy cyw. -> trudnosc AI), na tym samym rosterze 4 obroncow (bez murow)
+// uzytym w Czesci A, ROZSZERZONYM o veteranFrac i celShape.
 // ===========================================================================
 console.log('\n--- D. cityDefenseBreakdownLines (integracja pelnej sciezki main.ts) ---');
 
@@ -331,28 +338,103 @@ console.log('\n--- D. cityDefenseBreakdownLines (integracja pelnej sciezki main.
 }
 
 // ===========================================================================
-// WARUNEK 3 -- meleeDefence / defenseRosterRealSum USUNIETE (martwy kod).
+// E -- meleeDefence / defenseRosterRealSum nie sa czescia publicznego API
+// (roster nie niesie zbednych/kosztownych pol).
 // ===========================================================================
-console.log('\n--- E. Warunek 3: martwy kod (meleeDefence / defenseRosterRealSum) usuniety ---');
+console.log('\n--- E. DefenseRosterUnit bez zbednych pol (meleeDefence / defenseRosterRealSum) ---');
 
 {
   const dbModule = require(DB_BUNDLE);
-  assert(typeof dbModule.defenseRosterRealSum === 'undefined', 'defenseRosterRealSum NIE jest juz eksportowana z defenseBreakdown.ts');
+  assert(typeof dbModule.defenseRosterRealSum === 'undefined', 'defenseRosterRealSum NIE jest eksportowana z defenseBreakdown.ts');
   const roster = buildDefenseRosterUnits([{ id: 'x' }], () => true, () => 0, fakeCelShape);
   assert(
     !Object.prototype.hasOwnProperty.call(roster[0], 'meleeDefence'),
-    'DefenseRosterUnit zbudowany przez buildDefenseRosterUnits NIE niesie juz pola meleeDefence',
+    'DefenseRosterUnit zbudowany przez buildDefenseRosterUnits NIE niesie pola meleeDefence',
   );
 }
 
 // ---------------------------------------------------------------------------
-// bonusChipTexts -- regresja: dalej dziala jak w preBattle.ts (chipy atakujacy/obronca,
-// filtr domyslny isCombatModifierBonus -- WSZYSTKIE liczbowe bonusy walki, nie tylko obrone).
+// F -- bonusChipTexts -- regresja: dalej dziala jak w preBattle.ts (chipy
+// atakujacy/obronca, filtr domyslny isCombatModifierBonus -- WSZYSTKIE
+// liczbowe bonusy walki, nie tylko obrone).
 // ---------------------------------------------------------------------------
 console.log('\n--- F. bonusChipTexts (regresja -- uzywane przez ui/preBattle.ts) ---');
 {
   const chips = bonusChipTexts(grecy.bonusy);
   assert(chips.length === 1 && chips[0] === falangaBonus.opis, 'bonusChipTexts(Grecy): 1 chip liczbowy walki (Falanga) -- jednostka_specjalna/ekonomia odrzucone przez isCombatModifierBonus');
+}
+
+// ===========================================================================
+// G (RUNDA 4 -- domkniecie luki Evaluatora) -- defenderCivBonusBreakdown musi
+// bramkowac bonus_obrona PELNA funkcja bonusApplies() (civ-bonuses.ts), nie
+// samym unitMatchesCel: FIKCYJNY bonus wymagajacy lasu ("w lesie" w opisie)
+// -- na terenie NIE-lesnym MUSI byc pominiety CALKOWICIE (affected=0, linia
+// niepokazana), a na terenie lesnym pokazany normalnie z licznikiem N z M.
+// ===========================================================================
+console.log('\n--- G. Bonus obrony wymagajacy lasu -- gating przez teren (runda 4) ---');
+
+const fikcyjnyBonusLesny = {
+  typ: 'bonus_obrona',
+  cel: 'piechota',
+  wartosc: 0.15,
+  opis: 'Zasadzka w lesie: +15% obrony piechoty',
+  realizuje: 'walka',
+};
+
+{
+  const rosterAllInfantry = ['Wojownik', 'Wojownik', 'Wojownik'].map((n) => ({ celShape: celShape(n) }));
+
+  // Teren NIE-lesny (Rownina) -- bonus lesny NIE pasuje do ZADNEJ jednostki,
+  // mimo ze cel='piechota' i roster to sama piechota -- musi byc pominiety
+  // calkowicie (affected=0 -> brak linii w wyniku), panel nie klamie.
+  const linesRownina = defenderCivBonusBreakdown(rosterAllInfantry, [fikcyjnyBonusLesny], 'Rownina');
+  assert(linesRownina.length === 0, 'Bonus lesny na terenie Rownina (NIE-lesnym): defenderCivBonusBreakdown zwraca PUSTA liste (affected=0, linia niepokazana)');
+
+  // Teren lesny (Las) -- bonus lesny pasuje normalnie do calej piechoty -> 3 z 3.
+  const linesLas = defenderCivBonusBreakdown(rosterAllInfantry, [fikcyjnyBonusLesny], 'Las');
+  assert(linesLas.length === 1, 'Bonus lesny na terenie Las: defenderCivBonusBreakdown zwraca DOKLADNIE 1 linie');
+  if (linesLas.length === 1) {
+    assert(linesLas[0].affectedCount === 3 && linesLas[0].totalCount === 3, 'Bonus lesny na terenie Las: 3 z 3 jednostek (cala piechota) -- licznik = ' + linesLas[0].affectedCount + '/' + linesLas[0].totalCount);
+    assert(linesLas[0].text.endsWith(' — 3 z 3 jednostek'), 'Bonus lesny na terenie Las: tekst konczy sie "— 3 z 3 jednostek" ("' + linesLas[0].text + '")');
+    assert(linesLas[0].text.startsWith(fikcyjnyBonusLesny.opis), 'Bonus lesny na terenie Las: tekst zaczyna sie od oryginalnego opisu (bez utraty tresci)');
+  }
+
+  // Bez terenu wcale (main.ts nie zna terenu -- teoretyczny brzeg) -- traktowane
+  // jak teren pusty w bonusApplies(), bonus lesny NIE dopasowany (konserwatywnie).
+  const linesNoTerrain = defenderCivBonusBreakdown(rosterAllInfantry, [fikcyjnyBonusLesny]);
+  assert(linesNoTerrain.length === 1, 'Bonus lesny BEZ przekazanego terrain (main.ts brzeg): dziala jak bonusApplies (terrain="" -> gating lesny nie odpala, cel="piechota" nadal dopasowany)');
+
+  // Falanga (grecka, bez warunku lesnego) na tym samym rosterze na terenie
+  // NIE-lesnym -- MUSI dzialac normalnie (regresja: gating lesny nie dotyka
+  // bonusow, ktorych opis nie mowi o lesie).
+  const linesFalangaRownina = defenderCivBonusBreakdown(rosterAllInfantry, grecy.bonusy, 'Rownina');
+  assert(linesFalangaRownina.length === 1 && linesFalangaRownina[0].affectedCount === 3, 'REGRESJA: Falanga (bez warunku terenowego) na terenie Rownina nadal dziala normalnie -- 3 z 3');
+}
+
+{
+  // cityDefenseBreakdownLines: terrain przekazany przez CityDefenseBreakdownOpts.terrain
+  // musi dotrzec do defenderCivBonusBreakdown (integracja pelnej sciezki main.ts).
+  const roster = buildDefenseRosterUnits(
+    ['Wojownik', 'Wojownik'].map((n) => ({ celShapeName: n })),
+    () => false,
+    () => 0,
+    (u) => celShape(u.celShapeName),
+  );
+  const linesRownina = cityDefenseBreakdownLines(roster, {
+    fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
+    civBonusy: [fikcyjnyBonusLesny],
+    difficultyMult: 1.0,
+    terrain: 'Rownina',
+  });
+  assert(linesRownina.length === 0, 'cityDefenseBreakdownLines(terrain="Rownina"): bonus lesny pominiety calkowicie (zero linii)');
+
+  const linesLas = cityDefenseBreakdownLines(roster, {
+    fortifyPct: FORTIFY_OBRONA_PROC_FIELD,
+    civBonusy: [fikcyjnyBonusLesny],
+    difficultyMult: 1.0,
+    terrain: 'Las',
+  });
+  assert(linesLas.length === 1 && linesLas[0].tekst.endsWith('2 z 2 jednostek'), 'cityDefenseBreakdownLines(terrain="Las"): bonus lesny pokazany, 2 z 2 jednostek ("' + (linesLas[0] && linesLas[0].tekst) + '")');
 }
 
 // ---------------------------------------------------------------------------
