@@ -1,6 +1,6 @@
 # P-MAPGEN-PANGEA-OBRYS — sekcja „Pangea nieregularna" czerwona, bo metryka mierzy zły obrys
 
-**Status:** 🟡 **OTWARTE — czeka na literę ABC** (2026-08-07)
+**Status:** 🟡 **PYTANIE 1 = A** (2026-08-07) · pytania 2, 3 i 4 otwarte
 **Wykonanie diagnostyki:** AutoBot Operator→Evaluator, `w2vcni6m1`. Werdykt Evaluatora na raport
 Operatora: **FAIL** — pomiar był poprawny, ale dwa wnioski były fałszywe, a właściwej przyczyny
 Operator nie znalazł. Poniżej wersja po korektach Evaluatora, zweryfikowana niezależnie.
@@ -121,7 +121,7 @@ te trzy decyzje są **rozłączne** i można je rozstrzygnąć osobno oraz róż
 | **B** | **Zostawić metrykę, obniżyć próg** (np. 3,7) | 1. Zmiana wyłącznie w pliku testu, zerowe ryzyko dla gry. 2. Natychmiast zdejmuje czerwień. | 1. Utrwala wadliwą metrykę na stałe. 2. seed 123 (3,7987) leży tak blisko granicy, że przy nowym seedzie test znów zacznie oscylować. |
 | **C** | **Zmienić generator**, żeby trafiał > 3,8 przy obecnej metryce | 1. Bramka zostaje twarda bez zmiany testu. | 1. Goni metrykę, która mierzy krawędź pierścienia wody — praca w złym miejscu. 2. Ingerencja w `landSea` ryzykuje spawny, rzeki i determinizm; margines to 0,0013–0,0222 jednostki, brak metryki „ile nieregularności wystarczy". |
 
-**Rekomendacja: A.**
+**ODPOWIEDŹ MACIEJA: A** (2026-08-07). Metryka do naprawy, generator nietknięty.
 
 ### PYTANIE 2 — na czym oprzeć nowy próg (dotyczy tylko, jeśli PYTANIE 1 = A)
 
@@ -154,3 +154,37 @@ maskuje każdą realną czerwień.
 call-site, bezpieczniej dodać wariant `strict`); bramki: `map-gen-regression-test.cjs` (długi,
 w tle), `logic-test.cjs`, `fair-play-grid-test.cjs`, `relief-grid-coverage-test.cjs`,
 `npx tsc --noEmit`; worktree przygotowuje orkiestrator na tipie gałęzi roboczej.
+
+
+---
+
+### PYTANIE 4 — zmiana nazwy `Wybrzeze` → „płytkie morze" (propozycja Macieja 2026-08-07)
+
+**Jego słowa:** *„zgodnie z moimi wcześniejszymi odpowiedziami wybrzeże jest to część płytkiego
+morza. Więc może zmieńmy tą nazwę z wybrzeża na płytkie morze i wtedy już nie będzie nigdy
+w przyszłości żadnych wątpliwości."*
+
+**Zmierzony zakres (nie szacunek):**
+
+| Co | Ile | Ryzyko |
+|---|---:|---|
+| Identyfikator TS `TerenBazowy.Wybrzeze` | **190 wystąpień w 33 plikach** | **niskie** — kompilator łapie każde pominięcie |
+| Literały stringowe `'wybrzeze'` w `gra/src` | **7** (`ai.ts:2627`, `clusters.ts:331`, `battleScene.ts:538`, `battle-terrain.ts:253/315/337`, `hex.ts:17`) | **wysokie** — porównania na surowych stringach, kompilator ich NIE pilnuje |
+| Dane JSON | `civ-matrix.json` **34** · `wonders.json` **4** | średnie — muszą iść w tej samej paczce |
+| Pliki testów | **34** | niskie |
+| **Migracja zapisów gry** | **ZERO** | `save.ts:35-36`: *„The map itself is NOT stored here: it is regenerated deterministically from `seed` on load"* — wartość enuma **nigdy nie ląduje w zapisie** |
+
+**Fakt, który trzeba powiedzieć wprost:** sama zmiana nazwy **nie zapobiegłaby dzisiejszemu
+błędowi**. `groupLandMassKeys` wykluczało tylko `Morze` — to jedno ze **142 miejsc**, które ręcznie
+porównują `=== TerenBazowy.Morze`, zamiast wołać istniejący już helper **`isWaterTerrain()`**
+(`gra/src/units/setup.ts`). Nazwa poprawia czytelność dla człowieka; klasę błędu usuwa dopiero
+przepięcie tych 142 porównań na jeden helper.
+
+| Litera | Opcja | Za | Przeciw |
+|---|---|---|---|
+| **A** | **Sama zmiana nazwy** — identyfikator, wartość `'plytkie_morze'`, JSON, etykiety UI | 1. Realizuje wprost intencję („żeby nigdy nie było wątpliwości"). 2. Zero migracji zapisów. 3. 190 z 197 miejsc pilnuje kompilator. | 1. **Nie usuwa klasy błędu** — 142 ręczne porównania z `Morze` zostają. 2. 7 literałów stringowych to realne ryzyko cichego pominięcia. |
+| **B** | **Zmiana nazwy + przepięcie 142 porównań na `isWaterTerrain()`** | 1. Usuwa nazwę myląca **i** mechanizm, który dziś zawiódł. 2. Kolejny teren wodny wystarczy dodać w jednym miejscu. 3. Test strukturalny (wzorem sekcji 12 `wiarygodnosc-test`) może potem pilnować, że nikt nie wraca do ręcznych porównań. | 1. Wyraźnie większa paczka — dotyka 33+ plików w `src`. 2. Część z tych 142 może celowo pytać **tylko** o `Morze` (np. głębia dla renderu) — każde trzeba przejrzeć, nie zamienić hurtem. |
+| **C** | **Bez zmiany nazwy — tylko przepięcie porównań + JSDoc przy enumie** | 1. Najmniejszy diff, zero ruchu w danych i testach. 2. Usuwa klasę błędu. | 1. Nazwa nadal myli — dokładnie to, czemu Maciej chce zapobiec. 2. `civ-matrix.json` i `wonders.json` dalej mówią „wybrzeze". |
+
+**Rekomendacja: B.** Cel „żeby już nigdy nie było wątpliwości" spełnia dopiero nazwa **plus**
+mechanizm — a rename jest tańszy, niż wyglądał, bo zapisy gry nie trzymają terenu.
