@@ -1,11 +1,11 @@
 {
-  "version": 2,
-  "updatedAtIso": "2026-08-05T09:41:56.870Z",
+  "version": 8,
+  "updatedAtIso": "2026-08-07T17:22:01.500Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
     "deprecateBelowWinRate": 0.3,
-    "minRunsForSignificance": 5,
+    "minRunsForSignificance": 10,
     "thresholdAdjustDelayHours": 24,
     "minEventsForWinner": 1000,
     "evaluationDelayHours": 48
@@ -21,7 +21,7 @@
       "wins": 13,
       "losses": 2,
       "win_rate": 0.8666666666666667,
-      "lastUpdatedIso": "2026-08-05T09:41:56.870Z"
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
     },
     {
       "id": "rule_102",
@@ -33,7 +33,7 @@
       "wins": 11,
       "losses": 1,
       "win_rate": 0.9166666666666666,
-      "lastUpdatedIso": "2026-08-05T09:41:56.870Z"
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
     },
     {
       "id": "rule_103",
@@ -45,7 +45,7 @@
       "wins": 9,
       "losses": 0,
       "win_rate": 1,
-      "lastUpdatedIso": "2026-08-05T09:41:56.870Z"
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
     },
     {
       "id": "rule_104",
@@ -57,7 +57,163 @@
       "wins": 7,
       "losses": 1,
       "win_rate": 0.875,
-      "lastUpdatedIso": "2026-08-05T09:41:56.870Z"
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_105",
+      "rule_text": "Evaluator: zmiany ściśle do tematu (SCOPE); zakaz ubocznych zmian i regresji; luki testów / brak asercji AC → FAIL (nie NOTES)",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-scope-no-regression",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_106",
+      "rule_text": "Evaluator STRICT: brak celowanego testu / czerwone testy tematu / tsc≠0 → FAIL (nie NOTES); happy-path-only → rule_107 EDGE; asymetria gracz/AI/MP → rule_108 PARITY; luki save/load → rule_109 SAVE",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-strict-tests",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_107",
+      "rule_text": "Evaluator STRICT-EDGE: testy tematu tylko happy-path bez edge/negacji/repro → FAIL; parytet ownerId → rule_108",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-strict-edge",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_108",
+      "rule_text": "Evaluator STRICT-PARITY: asymetria gracz/AI/MP lub test tylko ownerId=0 bez decyzji → FAIL",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-strict-parity",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_109",
+      "rule_text": "Evaluator STRICT-SAVE: nowe trwałe pole bez snapshot/restore lub restore bez ?? default → FAIL",
+      "status": "ACTIVE",
+      "actionId": "verify-eval-strict-save",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_110",
+      "rule_text": "Test failure ≠ automatycznie 'przestarzały test'. Najpierw git blame/log kodu I danych, których dotyczy, ORAZ sprawdź czy realne wywołania produkcyjne (main.ts) faktycznie przechodzą tą samą ścieżką/wartością co test mierzy — sama 'świadoma zmiana widoczna w commicie' NIE WYSTARCZA, jeśli produkcja nie dostała analogicznej zmiany (patrz Rejestr błędów: UNIT-REPLACE-EVOCATI-Q1 runda 1 — błędny wniosek 'silnik był poprawny')",
+      "status": "ACTIVE",
+      "actionId": "verify-test-vs-engine-staleness",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_111",
+      "rule_text": "Zmiana wpływająca na balans gry (progi liczbowe, koszty, mnożniki, mechanika akceptacji/odrzucenia ofert AI, wymagania Relacji/Zaufania/Respektu) wymaga pełnego ABC ZAWSZE — niezależnie od pewności diagnozy. Samodzielne poprawki (bez ABC) mogą dotyczyć wyłącznie kwestii, które NIE zmieniają balansu (literówki, testy dogania­jące już wdrożoną zmianę silnika, martwy kod, refaktor bez zmiany zachowania, dokumentacja). Kanon: R-PROC-ABC-BALANS, PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md §3b",
+      "status": "PROTECTED",
+      "actionId": "respect-balance-abc-gate",
+      "win_count": 0,
+      "fail_count": 0,
+      "wins": 0,
+      "losses": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T07:00:00.000Z"
+    },
+    {
+      "id": "rule_112",
+      "rule_text": "Skrypty Workflow (agent()/pipeline()) to zwykły JS bez require/fs/Date.now()/Math.random() — treść osadzana w template literals (patche, kod źródłowy do embedowania) musi mieć escapowane backticki (\\`) i sekwencje ${ (\\${) przed wklejeniem, inaczej skrypt pęka na starcie bez uruchomienia ŻADNEGO agenta. To samo dotyczy zwykłych stringów w apostrofach: treść polska w skryptach Workflow trafia do stringów, a apostrof w środku polskiego słowa (np. liczba mnoga w stylu \"call-site'ów\") wewnątrz stringu otoczonego apostrofami zamyka string przedwcześnie i wywala cały skrypt na 'Unexpected token' — używać cudzysłowów zamiast apostrofów albo przeformułować zdanie bez apostrofu, i NIE ufać, że komunikat błędu wskaże właściwe miejsce (wskazuje zwykle dalszy fragment skryptu, nie faktyczne miejsce złamania)",
+      "status": "ACTIVE",
+      "actionId": "verify-workflow-script-escaping",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_113",
+      "rule_text": "PREWENCJA: worktree dla subagenta przygotowuje ORKIESTRATOR na tipie gałęzi roboczej (`git worktree add --detach <ścieżka> HEAD` + symlink node_modules) — NIE na main — bo isolation:\"worktree\" domyślnie odbija od main, a nie od gałęzi roboczej; subagent dostaje gotową ścieżkę w zleceniu i ma na starcie zaraportować `pwd && git rev-parse HEAD`, żeby dryf był widoczny natychmiast, zanim powstanie jakikolwiek patch. Dryf uderzył 2026-08-07 TRZY razy (zlecenia wb8coodo3, w2vcni6m1, wupki7quq), za każdym razem kosztując całą rundę Operatora. DETEKCJA (druga linia obrony): worktree subagenta może mieć bazę (git log -1) starszą niż aktualny main, zwłaszcza po kilku kolejnych rundach tego samego tematu — przed scaleniem sprawdź `git apply --check`; jeśli nie nakłada się czysto, użyj `git apply --3way` (merge trójstronny) zamiast zakładać nierozwiązywalny konflikt lub odrzucać poprawną pracę Operatora",
+      "status": "ACTIVE",
+      "actionId": "verify-worktree-base-drift",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_114",
+      "rule_text": "Nigdy nie usuwaj (`git worktree remove`) worktree zawierającego pracę Operatora, dopóki: (a) Evaluator jej nie zrecenzował, LUB (b) nie wyciągnięto z niego pełnego diffu/artefaktów potrzebnych do scalenia. Brak flagi 'locked' w `git worktree list` NIE oznacza 'bezpieczny do skasowania' — to tylko blokada współbieżnego dostępu, nie znacznik ukończenia pracy",
+      "status": "ACTIVE",
+      "actionId": "verify-worktree-retention-before-delete",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_115",
+      "rule_text": "Kod wyjścia procesu opakowującego (wrapper, uruchomienie w tle, harness) to NIE kod wyjścia testu. Wypadek: uruchomienie bramki w tle przez wrapper zwróciło exit 0, choć `node tools/<test>.cjs` zwracał 1 — na tej podstawie wyciągnięto błędny wniosek, że determinizm przeszedł. Regula: wynik bramki czytać z JEJ WŁASNEGO stdout i własnego kodu wyjścia, nigdy z opakowania; przy licznikach zbiorczych prześledzić CAŁĄ ścieżkę licznika (`grep -n \"\\bfail\\b\"`), nie tylko nazwę własną licznika sekcji — sekcja może mieć zielony nagłówek, a i tak zasilać `fail++` licznika nadrzędnego.",
+      "status": "ACTIVE",
+      "actionId": "verify-gate-exit-code-source",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_116",
+      "rule_text": "Cytat z dokumentu repo NIE jest potwierdzeniem samodzielnym. Wypadek: Operator przepisał z PYTANIA-OTWARTE.md fałszywe twierdzenie i opatrzył je etykietą 'potwierdzone samodzielnie', przez co błąd zyskał trzecie 'niezależne potwierdzenie'. Regula: twierdzenie o zachowaniu kodu potwierdza się ODCZYTEM KODU albo uruchomieniem, nigdy cytatem z dokumentacji — dokumentacja bywa nieaktualna i to jest często sedno zlecenia (zlecenie istnieje właśnie po to, żeby zweryfikować stan, nie żeby go powtórzyć).",
+      "status": "ACTIVE",
+      "actionId": "verify-claim-via-code-not-doc-quote",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
+    },
+    {
+      "id": "rule_117",
+      "rule_text": "Naprawa testu nie może polegać na rozbrojeniu asercji. Wypadki: asercja `d < 5` zamieniona na `d < MIN_CITY_DISTANCE` importowane z testowanego modułu (tautologia, przechodzi dla dowolnego progu); predykat rozszerzony o `=== undefined`, czyli akceptujący dokładnie ten stan, który wcześniej wykrywał. Regula: przy naprawie testu porównać asercje przed/po i wykazać, że pokrycie NIE zmalało; asercja importująca próg z testowanego modułu wymaga OSOBNEGO przypięcia wartości (literał niezależny od modułu), inaczej test przestaje wykrywać regresję progu, którą miał pilnować.",
+      "status": "ACTIVE",
+      "actionId": "verify-test-fix-not-assertion-disarm",
+      "win_count": 1,
+      "fail_count": 0,
+      "wins": 1,
+      "losses": 0,
+      "win_rate": 1,
+      "lastUpdatedIso": "2026-08-07T17:22:01.499Z"
     }
   ],
   "quarantine_rules": [],
@@ -68,5 +224,64 @@
     "touchedFiles",
     "testCommands",
     "relatedPlaybookRuleIds"
+  ],
+  "errorLog": [
+    {
+      "id": "err_20260807_01",
+      "dateIso": "2026-08-07T06:00:00.000Z",
+      "whatHappened": "Runda 1 UNIT-REPLACE-EVOCATI-Q1: Operator naprawił wyłącznie kontekst testowy (dodał empireResourceStock do RZYM_ZELAZO_CTX) i zaraportował 'silnik był poprawny — main.ts zawsze przekazuje oba pola razem', cytując nieistniejące numery linii. Evaluator wykrył, że to był REALNY bug produkcyjny — main.ts nigdy nie przekazywał empireResourceStock do kontekstu 'Zastąp', więc mechanizm gubił wszystkie jednostki brązowe/żelazne w prawdziwej grze od FALI 96.",
+      "rootCause": "Operator zaufał 'wygląda znajomo' bez zweryfikowania REALNYCH call site'ów w main.ts (computeUnitReplacements, replaceAvailabilityCtxForCity/EmpireWide) — sprawdził tylko czy da się skonstruować kontekst z polem, nie czy produkcja faktycznie je dostarcza.",
+      "preventiveRuleId": "rule_110"
+    },
+    {
+      "id": "err_20260807_02",
+      "dateIso": "2026-08-07T05:30:00.000Z",
+      "whatHappened": "Runda 3 R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1: naprawiając regresję rundy 2 (kierunek AI→gracz), Operator samodzielnie usunął 'handel' z PROPOSER_PW_FAIRNESS_ACTIONS bez podłogi parytetu, otwierając lukę pozwalającą graczowi 'skimować' do ~15% wartości każdej transakcji handlowej z AI (AI dopłacało do wymiany).",
+      "rootCause": "Operator wykonał zmianę balansu (usunięcie bramki ochronnej) wykraczającą poza literalne zlecenie rundy ('napraw kierunek AI→gracz'), bez weryfikacji czy usunięcie ma efekty uboczne na inne scenariusze tej samej bramki.",
+      "preventiveRuleId": "rule_111"
+    },
+    {
+      "id": "err_20260807_03",
+      "dateIso": "2026-08-07T02:00:00.000Z",
+      "whatHappened": "Dwie kolejne próby uruchomienia Workflow (batch 7 tematów, potem runda 4 dyplomacji) padały na starcie: pierwsza z 'require is not defined' (osadzone require(fs) i niezdefiniowane zmienne w skrypcie), druga (po naprawie require) z parse errorem na nieescapowanym backticku wewnątrz osadzonego patcha diff.",
+      "rootCause": "Workflow scripts to plain JS bez API Node.js (brak require/fs), a treść diff/kodu embedowana jako punkt startowy dla Operatora w kolejnej rundzie zawierała surowe backticki i ${} z oryginalnego TypeScript, które template literal JS interpretował jako własną składnię.",
+      "preventiveRuleId": "rule_112"
+    },
+    {
+      "id": "err_20260807_04",
+      "dateIso": "2026-08-07T01:00:00.000Z",
+      "whatHappened": "Runda 2 UNIT-REPLACE-EVOCATI-Q1: worktree Operatora stał na bazie 26 commitów za aktualnym main (m.in. brakował całego batcha 5 scalonych tematów). Prosty `git apply` patcha na main FAIL-owałby albo (gdyby wymuszony) nadpisał nieświadomie inne zmiany w main.ts.",
+      "rootCause": "Worktree utworzony wcześnie w sesji, zanim kilka kolejnych rund/batchy zdążyło scalić zmiany do main — czas życia worktree przekroczył czas życia jego bazy.",
+      "preventiveRuleId": "rule_113"
+    },
+    {
+      "id": "err_20260806_01",
+      "dateIso": "2026-08-06T18:00:00.000Z",
+      "whatHappened": "Podczas porządków dyskowych (czyszczenie worktree'ów po przekroczeniu limitu miejsca) dwukrotnie usunięto worktree zawierający niescaloną, nieocenioną jeszcze pracę Operatora (gold-deficit, potem rydwan-kapadokijski/super-dispatch-fix) — worktree nie był oznaczony 'locked', co błędnie zinterpretowano jako 'bezpieczny do skasowania'.",
+      "rootCause": "Utożsamienie braku flagi 'locked' w `git worktree list` z ukończeniem/bezpieczeństwem pracy, zamiast sprawdzenia czy Evaluator już ją zrecenzował lub czy diff został wyciągnięty.",
+      "preventiveRuleId": "rule_114",
+      "isRecidivism": true
+    }
+  ],
+  "conclusionsJournal": [
+    {
+      "dateIso": "2026-08-07T07:00:00.000Z",
+      "task": "Integracja Protokołu AutoBot v1.2 (playbook.md/AUTOBOT-PROMPT/AUTOBOT-opis-i-wdrozenie od Macieja) z istniejącym scaffoldem dyspozycje/autobot/",
+      "done": "Dodano status PROTECTED (alias CHRONIONA) do typów i normalizacji; dodano ErrorLogEntry/ConclusionJournalEntry/OpenMatter jako nowe sekcje Playbook; podniesiono minRunsForSignificance z 5 na 10 zgodnie z nowym protokołem; zasilono Rejestr błędów pięcioma realnymi incydentami z tej sesji (2 misdiagnozy, 1 luka balansu, 1 crash skryptu, 1 recydywa usunięcia worktree) i przekuto każdy w regułę (rule_110–114).",
+      "outcome": "oczekuje — patrz Sprawy otwarte (pierwsze realne zastosowanie reguł rule_110–114 w kolejnych rundach AutoBot)",
+      "conclusion": "Najcenniejsza nowość względem istniejącego systemu (rules[] z win/fail) to Rejestr błędów jako chronologiczny, czytelny zapis KONKRETNYCH pomyłek z przyczyną źródłową — bez niego powtórka tej samej klasy błędu (jak dwukrotne usunięcie worktree z niescaloną pracą) nie była rozpoznawalna jako recydywa, tylko jako 'kolejny pojedynczy incydent'."
+    }
+  ],
+  "openMatters": [
+    {
+      "dateIso": "2026-08-07T07:00:00.000Z",
+      "whatIsPending": "Skuteczność reguł rule_110–114 (0/0, za mało zastosowań na wniosek — próg 10 z thresholds.minRunsForSignificance)",
+      "whenExpected": "po min. 10 kolejnych rundach AutoBot, w których dana reguła miała zastosowanie"
+    },
+    {
+      "dateIso": "2026-08-07T07:00:00.000Z",
+      "whatIsPending": "R-WIARYGODNOSC-S9-Q1 — tabela 43 parametrów gotowa, czeka na 'OK' Macieja przed kodem",
+      "whenExpected": "odpowiedź Macieja w czacie"
+    }
   ]
 }

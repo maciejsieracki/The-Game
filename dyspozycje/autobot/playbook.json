@@ -131,7 +131,7 @@
     },
     {
       "id": "rule_112",
-      "rule_text": "Skrypty Workflow (agent()/pipeline()) to zwykły JS bez require/fs/Date.now()/Math.random() — treść osadzana w template literals (patche, kod źródłowy do embedowania) musi mieć escapowane backticki (\\`) i sekwencje ${ (\\${) przed wklejeniem, inaczej skrypt pęka na starcie bez uruchomienia ŻADNEGO agenta",
+      "rule_text": "Skrypty Workflow (agent()/pipeline()) to zwykły JS bez require/fs/Date.now()/Math.random() — treść osadzana w template literals (patche, kod źródłowy do embedowania) musi mieć escapowane backticki (\\`) i sekwencje ${ (\\${) przed wklejeniem, inaczej skrypt pęka na starcie bez uruchomienia ŻADNEGO agenta. To samo dotyczy zwykłych stringów w apostrofach: treść polska w skryptach Workflow trafia do stringów, a apostrof w środku polskiego słowa (np. liczba mnoga w stylu \"call-site'ów\") wewnątrz stringu otoczonego apostrofami zamyka string przedwcześnie i wywala cały skrypt na 'Unexpected token' — używać cudzysłowów zamiast apostrofów albo przeformułować zdanie bez apostrofu, i NIE ufać, że komunikat błędu wskaże właściwe miejsce (wskazuje zwykle dalszy fragment skryptu, nie faktyczne miejsce złamania)",
       "status": "ACTIVE",
       "actionId": "verify-workflow-script-escaping",
       "win_count": 0,
@@ -141,7 +141,7 @@
     },
     {
       "id": "rule_113",
-      "rule_text": "Worktree subagenta może mieć bazę (git log -1) starszą niż aktualny main, zwłaszcza po kilku kolejnych rundach tego samego tematu — przed scaleniem sprawdź `git apply --check`; jeśli nie nakłada się czysto, użyj `git apply --3way` (merge trójstronny) zamiast zakładać nierozwiązywalny konflikt lub odrzucać poprawną pracę Operatora",
+      "rule_text": "PREWENCJA: worktree dla subagenta przygotowuje ORKIESTRATOR na tipie gałęzi roboczej (`git worktree add --detach <ścieżka> HEAD` + symlink node_modules) — NIE na main — bo isolation:\"worktree\" domyślnie odbija od main, a nie od gałęzi roboczej; subagent dostaje gotową ścieżkę w zleceniu i ma na starcie zaraportować `pwd && git rev-parse HEAD`, żeby dryf był widoczny natychmiast, zanim powstanie jakikolwiek patch. Dryf uderzył 2026-08-07 TRZY razy (zlecenia wb8coodo3, w2vcni6m1, wupki7quq), za każdym razem kosztując całą rundę Operatora. DETEKCJA (druga linia obrony): worktree subagenta może mieć bazę (git log -1) starszą niż aktualny main, zwłaszcza po kilku kolejnych rundach tego samego tematu — przed scaleniem sprawdź `git apply --check`; jeśli nie nakłada się czysto, użyj `git apply --3way` (merge trójstronny) zamiast zakładać nierozwiązywalny konflikt lub odrzucać poprawną pracę Operatora",
       "status": "ACTIVE",
       "actionId": "verify-worktree-base-drift",
       "win_count": 0,
@@ -158,6 +158,36 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-07T07:00:00.000Z"
+    },
+    {
+      "id": "rule_115",
+      "rule_text": "Kod wyjścia procesu opakowującego (wrapper, uruchomienie w tle, harness) to NIE kod wyjścia testu. Wypadek: uruchomienie bramki w tle przez wrapper zwróciło exit 0, choć `node tools/<test>.cjs` zwracał 1 — na tej podstawie wyciągnięto błędny wniosek, że determinizm przeszedł. Regula: wynik bramki czytać z JEJ WŁASNEGO stdout i własnego kodu wyjścia, nigdy z opakowania; przy licznikach zbiorczych prześledzić CAŁĄ ścieżkę licznika (`grep -n \"\\bfail\\b\"`), nie tylko nazwę własną licznika sekcji — sekcja może mieć zielony nagłówek, a i tak zasilać `fail++` licznika nadrzędnego.",
+      "status": "ACTIVE",
+      "actionId": "verify-gate-exit-code-source",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "id": "rule_116",
+      "rule_text": "Cytat z dokumentu repo NIE jest potwierdzeniem samodzielnym. Wypadek: Operator przepisał z PYTANIA-OTWARTE.md fałszywe twierdzenie i opatrzył je etykietą 'potwierdzone samodzielnie', przez co błąd zyskał trzecie 'niezależne potwierdzenie'. Regula: twierdzenie o zachowaniu kodu potwierdza się ODCZYTEM KODU albo uruchomieniem, nigdy cytatem z dokumentacji — dokumentacja bywa nieaktualna i to jest często sedno zlecenia (zlecenie istnieje właśnie po to, żeby zweryfikować stan, nie żeby go powtórzyć).",
+      "status": "ACTIVE",
+      "actionId": "verify-claim-via-code-not-doc-quote",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T00:00:00.000Z"
+    },
+    {
+      "id": "rule_117",
+      "rule_text": "Naprawa testu nie może polegać na rozbrojeniu asercji. Wypadki: asercja `d < 5` zamieniona na `d < MIN_CITY_DISTANCE` importowane z testowanego modułu (tautologia, przechodzi dla dowolnego progu); predykat rozszerzony o `=== undefined`, czyli akceptujący dokładnie ten stan, który wcześniej wykrywał. Regula: przy naprawie testu porównać asercje przed/po i wykazać, że pokrycie NIE zmalało; asercja importująca próg z testowanego modułu wymaga OSOBNEGO przypięcia wartości (literał niezależny od modułu), inaczej test przestaje wykrywać regresję progu, którą miał pilnować.",
+      "status": "ACTIVE",
+      "actionId": "verify-test-fix-not-assertion-disarm",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T00:00:00.000Z"
     }
   ],
   "quarantine_rules": [],
