@@ -33,6 +33,14 @@ export interface PlaybookRule {
   /** Alias historyczny */
   description?: string;
   status: RuleStatus;
+  /**
+   * Bariera bezpieczeństwa zatwierdzona wprost przez człowieka (status CHRONIONA
+   * w playbook.md, AUTOBOT.md §5). Reguła chroniona nie podlega licznikom ani
+   * wycofaniu — retireWeakRules ją pomija, getOperatorSystemRules pokazuje ją
+   * zawsze, niezależnie od min_confidence_threshold. Opcjonalne, domyślnie false
+   * — wsteczna zgodność z regułami bez tego pola.
+   */
+  protected?: boolean;
   /** Identyfikator akcji Operatora (np. "implement-fix", "run-lane-tests") */
   actionId?: string;
   /** Spec v1: win_count */

@@ -1,6 +1,6 @@
 {
-  "version": 7,
-  "updatedAtIso": "2026-08-05T20:00:00.000Z",
+  "version": 10,
+  "updatedAtIso": "2026-08-07T10:29:44.041Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -41,13 +41,14 @@
     },
     {
       "id": "rule_103",
-      "rule_text": "Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON)",
+      "rule_text": "Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON) — dozwolona komenda: node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir [C-001]",
       "status": "ACTIVE",
       "actionId": "build-via-vite-bin",
       "win_count": 8,
       "fail_count": 0,
       "win_rate": 1,
-      "lastUpdatedIso": "2026-08-05T09:33:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z",
+      "protected": true
     },
     {
       "id": "rule_104",
@@ -108,6 +109,116 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-05T20:00:00.000Z"
+    },
+    {
+      "id": "rule_110",
+      "rule_text": "Commituj każdą ukończoną grupę plików natychmiast, nie zbiorczo na koniec pracy — repo współdzielone z drugą sesją [C-003]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_111",
+      "rule_text": "Deploy to jeden nierozdzielny ciąg: bramki → build → stempel → verify → WERSJE.md → KANAŁ → commit → sprawdź czy main nie odjechał → push [C-004]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_112",
+      "rule_text": "Status subagenta pracującego w tle oceniaj po znacznikach czasu plików wyjściowych, nie po etykiecie systemu — subagent może wykonać pracę i umrzeć bez raportu [C-005]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_113",
+      "rule_text": "Nie raportuj wyniku subagenta bez własnej weryfikacji na dysku lub w kodzie [C-006]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_114",
+      "rule_text": "Przed serią zmian w repo współdzielonym zostaw wpis-blokadę w KANAL-PRACA.md, po zakończeniu wpis ODBLOKOWANE [C-007]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_115",
+      "rule_text": "Commituj po konkretnych ścieżkach, nigdy git add -A — w drzewie bywa niedokończona praca innej sesji [C-008]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_116",
+      "rule_text": "Wklejka z innej sesji to informacja do świadomości, nie lista zadań — nic nie wykonuj bez wyraźnego polecenia [C-009]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_117",
+      "rule_text": "Po utracie kontekstu najpierw zweryfikuj stan na dysku i w gicie, dopiero potem raportuj [C-010]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_118",
+      "rule_text": "Zmiany w generatorze mapy wymagają bramki determinizmu (map-gen-regression-test) i pomiaru przed/po, nie oceny na oko [C-011]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_119",
+      "rule_text": "Gdy dokument rośnie przez dopisywanie korekt na końcu, złóż czystą specyfikację zanim ktoś zacznie wdrażać — inaczej wykonawca użyje nieaktualnych wartości ze środka [C-012]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_120",
+      "rule_text": "Nie uruchamiaj eksportu paneli Excel (export-*.py) na żywych danych — kierunek jest jednostronny JSON→Excel [C-002]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z",
+      "protected": true
+    },
+    {
+      "id": "rule_121",
+      "rule_text": "Zero samooceny liczników: liczniki „sprawdziła się\"/„zawiodła\" wpisuje wyłącznie mechanizm na podstawie realnych, zarejestrowanych przebiegów (recordRuleOutcome / generator playbook-md-to-json.cjs) — agent NIGDY nie wpisuje ich z pamięci ani z własnej oceny swojej pracy; nowa zasada zawsze startuje 0/0 [C-013]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T10:29:44.039Z"
     }
   ],
   "quarantine_rules": []
