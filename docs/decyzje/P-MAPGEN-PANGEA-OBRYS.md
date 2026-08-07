@@ -103,25 +103,54 @@ zawsze na tym sprzęcie**, niezależnie od Pangei.
 
 ---
 
-## [TEMAT: metryka kształtu pangei]
+## [TEMAT: metryka kształtu pangei] — TRZY NIEZALEŻNE PYTANIA
 
 **ID:** `P-MAPGEN-PANGEA-OBRYS`
-**Sytuacja / Cel / Dlaczego teraz:** jak wyżej — mamy liczby, przyczynę i proweniencję progu.
+**Sytuacja / Cel / Dlaczego teraz:** mamy liczby, przyczynę i proweniencję progu (sekcje 1–5 wyżej).
 Bramka obowiązkowa świeci czerwono z powodu, który nie jest defektem gry.
 
-| | Opcja | Za | Przeciw |
+**Uwaga o formie:** pierwsza wersja tego dokumentu sklejała temat w jedną tabelę D/B/A. To był błąd —
+te trzy decyzje są **rozłączne** i można je rozstrzygnąć osobno oraz różnie. Poniżej wersja rozbita.
+**Żadna litera nie jest jeszcze wybrana.**
+
+### PYTANIE 1 — co zrobić z metryką
+
+| Litera | Opcja | Za | Przeciw |
 |---|---|---|---|
-| **D** | **Naprawić metrykę** — w `pangeaShapeMetrics` traktować `Wybrzeze` jako wodę (albo dodać `groupLandMassKeysStrict`) | 1. Usuwa **przyczynę**, nie objaw: mierzy to, co nazwa metryki obiecuje — linię brzegową lądu. 2. Zero zmian w generatorze → zero ryzyka dla spawnów, rzek i determinizmu, dopiero co dostrojonych przy `C-MAPA-Q1=B`. 3. Wszystkie 5 seedów przechodzi z zapasem 39–55 % nad progiem — bez „teaching to the test". | 1. Zmienia znaczenie liczby `coastRatio` w historycznych logach — stare wpisy przestają być porównywalne. 2. Próg 3,8 po naprawie staje się bardzo luźny (wszystko przechodzi z ogromnym zapasem) i przestaje cokolwiek bramkować — trzeba go osobno przekalibrować, żeby miał sens. |
-| **B** | **Obniżyć próg** do wartości pod zmierzonym zakresem (np. 3,7) | 1. Zmiana wyłącznie w pliku testu — zerowe ryzyko dla gry. 2. Natychmiast zdejmuje czerwień. | 1. Utrwala **wadliwą metrykę** na stałe — nadal mierzymy krawędź pierścienia wody. 2. Dopasowanie testu pod obecny wynik; margines seed=123 (3,7987) jest tak blisko granicy, że przy nowym seedzie test znów zacznie oscylować. |
-| **A** | **Podnieść nieregularność generatora**, żeby trwale trafiał `coastRatio > 3,8` | 1. Gdyby metryka była poprawna, to byłaby naprawa przyczyny. 2. Bramka zostałaby twarda. | 1. **Goni metrykę, która i tak mierzy krawędź pierścienia wody** — praca w złym miejscu. 2. Ingerencja w `landSea` ryzykuje spawny, rzeki i determinizm; margines to 0,0013–0,0222 jednostki, brak metryki „ile nieregularności wystarczy" → ryzyko nadkorekty. |
+| **A** | **Naprawić metrykę** — `Wybrzeze` liczone jako woda (nowy `groupLandMassKeysStrict` albo parametr) | 1. Usuwa przyczynę: mierzy to, co nazwa obiecuje — linię brzegową lądu. 2. Zero zmian w generatorze → zero ryzyka dla spawnów, rzek i determinizmu. | 1. Historyczne wartości `coastRatio` w logach przestają być porównywalne. 2. Wymusza przekalibrowanie progu (PYTANIE 2) — inaczej nic nie bramkuje. |
+| **B** | **Zostawić metrykę, obniżyć próg** (np. 3,7) | 1. Zmiana wyłącznie w pliku testu, zerowe ryzyko dla gry. 2. Natychmiast zdejmuje czerwień. | 1. Utrwala wadliwą metrykę na stałe. 2. seed 123 (3,7987) leży tak blisko granicy, że przy nowym seedzie test znów zacznie oscylować. |
+| **C** | **Zmienić generator**, żeby trafiał > 3,8 przy obecnej metryce | 1. Bramka zostaje twarda bez zmiany testu. | 1. Goni metrykę, która mierzy krawędź pierścienia wody — praca w złym miejscu. 2. Ingerencja w `landSea` ryzykuje spawny, rzeki i determinizm; margines to 0,0013–0,0222 jednostki, brak metryki „ile nieregularności wystarczy". |
 
-**Rekomendacja: D.** Opcja **D dominuje A i B** — usuwa przyczynę, nie dotyka generatora i zdejmuje
-czerwień bez naginania testu. Zastrzeżenie do D jest realne: po naprawie próg 3,8 przestaje
-bramkować cokolwiek, więc **w tym samym zleceniu** trzeba go przekalibrować — sensownie na percentylu
-z ≥30 seedów, nie z 5.
+**Rekomendacja: A.**
 
-**Osobno, niezależnie od litery:** rozważyć, czy progi czasowe AC (`standard <7 s`, `duża <15 s`)
-mają nadal wchodzić do `allOk`, skoro na wolnej maszynie zawsze dają exit 1 i przez to maskują
-każdą realną czerwień w tej bramce. To odrębny temat — nie mieszać z metryką kształtu.
+### PYTANIE 2 — na czym oprzeć nowy próg (dotyczy tylko, jeśli PYTANIE 1 = A)
 
+| Litera | Opcja | Za | Przeciw |
+|---|---|---|---|
+| **A** | **Rozkład z ≥30 seedów**, próg = min − margines, reguła zapisana w komentarzu | 1. Pierwsza liczba w tej metryce z jawnym uzasadnieniem. 2. Odporna na nowy seed. | 1. ~30 generacji mapy standardowej (~40 s każda w tym środowisku). 2. Wybór marginesu nadal arbitralny. |
+| **B** | **Próg z kształtów odniesienia** — musi odrzucić dysk i prostokąt, przepuścić obecny generator | 1. Próg zaczyna mierzyć **nieregularność**, a nie wielkość. 2. Sens niezależny od dzisiejszego generatora. | 1. Wymaga przeliczenia dysku i prostokąta przy nowej metryce. 2. Węższe okno — łatwiej o fałszywy alarm. |
+| **C** | **Zostawić 3,8**, sekcja czysto informacyjna (wypiąć `fail++`) | 1. Zero pracy. 2. Bramka przestaje fałszywie czerwienić. | 1. Sekcja przestaje cokolwiek pilnować — martwy kod w teście. 2. Regresja kształtu przejdzie niezauważona. |
 
+**Rekomendacja: B** — dopiero to daje progowi sens, którego dziś nie ma.
+
+### PYTANIE 3 — progi czasowe AC (niezależne od pytań 1 i 2)
+
+`standard <7 s` przy zmierzonych **130,01 s**, `duża <15 s` przy **1194,15 s**. Oba są koniunktami
+`allOk`, więc **ta bramka zwraca exit 1 zawsze na tej maszynie**, niezależnie od Pangei — i przez to
+maskuje każdą realną czerwień.
+
+| Litera | Opcja | Za | Przeciw |
+|---|---|---|---|
+| **A** | **Wypiąć progi czasowe z `allOk`**, zostawić jako pomiar w logu | 1. Bramka zaczyna świecić na treść, nie na sprzęt. 2. Zgodne z tym, co handoff §6 już mówi („to pomiar wydajności, nie regresja"). | 1. Znika automatyczny sygnał realnego spowolnienia generatora. 2. Ktoś musi patrzeć na liczby w logu. |
+| **B** | **Podnieść progi** do realnych wartości tej maszyny (np. 180 s / 1500 s) | 1. Zachowuje automatyczny sygnał regresji wydajności. | 1. Progi stają się zależne od sprzętu — na Windowsie znaczą co innego. 2. Aktualizacja przy każdej zmianie środowiska. |
+| **C** | **Zostawić bez zmian** | 1. Zero pracy. | 1. Bramka pozostaje trwale czerwona i bezużyteczna jako sygnał. |
+
+**Rekomendacja: A.**
+
+---
+
+**Osobno, niezależnie od liter:** wymogi wdrożenia (gdy padną decyzje) — zero zmian w
+`gra/src/map/generator.ts`; nie psuć `groupLandMassKeys` dla innych wołających (sprawdzić wszystkie
+call-site, bezpieczniej dodać wariant `strict`); bramki: `map-gen-regression-test.cjs` (długi,
+w tle), `logic-test.cjs`, `fair-play-grid-test.cjs`, `relief-grid-coverage-test.cjs`,
+`npx tsc --noEmit`; worktree przygotowuje orkiestrator na tipie gałęzi roboczej.
