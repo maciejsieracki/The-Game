@@ -466,7 +466,7 @@ node tools/tech-tree-test.cjs        # 19/19
 node tools/research-test.cjs         # 33/33
 node tools/unit-replace-test.cjs     # 10/10
 node tools/map-gen-regression-test.cjs   # determinizm A=B + 0 rzek bez ujścia
-node tools/logic-test.cjs            # 207/208  (1 pre-istniejący fail garnizon — NIE regresja sesji F29–31)
+node tools/logic-test.cjs            # 213/213, exit 0  (R-BRAMKA-MINDIST-Q1=A, 2026-08-07; fail garnizon naprawiony)
 node tools/manpower-test.cjs         # 62/62    (FALA 31, B-MP-Q1 HP heal)
 node tools/picker-test.cjs           # 140/140  (FALA 31, pickMapTarget)
 node tools/combat-test.cjs           # 6/6      (NAPRAWIONE 2026-07-20)
@@ -485,7 +485,7 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 **⚠️ KOREKTA starego handoffu:** notatka o „21 porażkach `logic-test`" i „`combat-test` rzuca wyjątek" jest **NIEAKTUALNA** — oba **naprawione 2026-07-20** i zielone (203/203, 6/6). Zweryfikowane na baseline.
 
 **Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-27 (sesja F29–31):**
-- `logic-test.cjs` → **207/208** — 1 fail **garnizon** (pre-istniejący przed sesją F29–31; potwierdzony przy każdym deployu F29/F30/F31).
+- ~~`logic-test.cjs` → **207/208** — 1 fail **garnizon**~~ — **NIEAKTUALNE.** Fail garnizon naprawiony (`C-GARN-Q1=A`), a decyzją **`R-BRAMKA-MINDIST-Q1 = A` (2026-08-07)** punktem odniesienia jest **`213/213`, exit 0**. Wynik 209 lub 208 oznacza cofnięcie tej decyzji, nie normę.
 - `currency-test.cjs` → **5 porażek** (dot. `pieniadzZPracy`/Efekt2 i mnożnika per-cyw). Zweryfikowane identycznie na baseline `git stash`.
 - `map-gen-regression-test.cjs` — progi czasowe „AC" (generacja <5s/<15s) FAIL na wolnej maszynie = pomiar wydajności, nie regresja.
 - **KOREKTA 2026-07-26:** `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs`, `upgrade-budynki-test.cjs`, `deposit-building-gate-test.cjs` figurowały tu jako czerwone (wpis 2026-07-25) — **audyt zweryfikował przez faktyczne uruchomienie z `gra/`, że wszystkie pięć są dziś ZIELONE**: `upgrade-budynki-test.cjs` 48/48, `deposit-building-gate-test.cjs` 34/34, `akwedukt-popcap-test.cjs` 5/5, `auto-manage-test.cjs` 29/29, `growthmult-compound-test.cjs` 24/24. Zdjęte z listy.

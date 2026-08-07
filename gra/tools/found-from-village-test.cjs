@@ -97,7 +97,7 @@ assert(r1.ok && r1.population === 1, 'nowe miasto ma populacje 1');
 
 // --- Test 2: blad - zbyt blisko istniejacego miasta -------------------------
 console.log('\n2. Blad: zbyt blisko istniejacego miasta');
-// Miasto w (0,0), MIN_CITY_DISTANCE = 5 -> pozycja (1,0) jest za blisko
+// Miasto w (0,0), MIN_CITY_DISTANCE = 4 heksy -> pozycja (1,0) jest za blisko
 const r2 = foundCityFromVillage(1, 0, cityAt00, map);
 assert(r2.ok === false, 'ok === false gdy za blisko');
 assert(!r2.ok && typeof r2.reason === 'string' && r2.reason.length > 0,
@@ -111,7 +111,7 @@ assert(!r3.ok && r3.reason === 'poza mapa', 'reason === "poza mapa"');
 
 // --- Test 4: sukces - wystarczajacy dystans od istniejacego miasta ----------
 console.log('\n4. Sukces: wystarczajacy dystans od istniejacego miasta');
-// MIN_CITY_DISTANCE = 5; (6,0) powinnien byc ok
+// MIN_CITY_DISTANCE = 4 heksy; (6,0) powinnien byc ok
 const r4 = foundCityFromVillage(6, 0, cityAt00, map);
 assert(r4.ok === true, 'ok === true dla heksu w odleglosci ' + 6 + ' od (0,0)');
 

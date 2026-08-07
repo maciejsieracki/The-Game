@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "updatedAtIso": "2026-08-07T19:30:00.000Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
@@ -190,7 +190,7 @@
       "lastUpdatedIso": "2026-08-07T16:30:00.000Z"
     },
     {
-      "id": "rule_118",
+      "id": "rule_122",
       "rule_text": "CYKL ZYCIA WORKTREE (Maciej, R-DYSK-WORKTREE-Q1=C): worktree subagenta jest usuwany jako OSTATNI krok zamkniecia zlecenia — po scaleniu wyniku albo po jego odrzuceniu — dokladnie tak samo obowiazkowo jak wpis do rejestru. Zasada nadrzedna wlasnymi slowami wlasciciela: „wykonujesz dana prace, komitujesz do GitHuba i tyle, a potem czyscisz dysk”; dane trzymamy lokalnie TYLKO wtedy, gdy jest z nimi jeszcze cos do zrobienia (temat niedokonczony, praca do wykonania). Przed usunieciem: jesli w worktree sa zmiany niescommitowane, zapisz je na galezi `zapas/<nazwa-worktree>` i wypchnij na origin — `git worktree remove` kasuje wylacznie katalog roboczy, commity i galezie zostaja w .git, wiec ryzyko dotyczy WYLACZNIE stanu niescommitowanego. Ta sama zasada obowiazuje scratchpad sesji. WYPADEK 2026-08-07: 22 porzucone worktree x ~810 MB = 18 GB, scratchpad 7,9 GB, dysk sesji chmurowej na 86% i 0 MB wolnego — `Bash` zaczal zwracac ENOSPC BEZ wykonania polecenia, `Write` blad; Evaluator handoffu nie uruchomil ANI JEDNEJ bramki, a bramka map-gen-regression zginela przy restarcie kontenera. Praca w toku przepadla dwa razy tego samego dnia.",
       "status": "ACTIVE",
       "actionId": "worktree-lifecycle-cleanup-after-close",
@@ -200,8 +200,8 @@
       "lastUpdatedIso": "2026-08-07T19:30:00.000Z"
     },
     {
-      "id": "rule_119",
-      "rule_text": "SPARSE-CHECKOUT DLA WORKTREE (Maciej, R-DYSK-WORKTREE-Q1=C): worktree subagenta zakladaj BEZ katalogow, ktorych subagent do pracy nie potrzebuje — `gra-robocza/` (~328 MB zbudowanych bundli HTML), `gra-kanon/` (~109 MB) oraz katalogi `dist/`. Rozmiar jednego worktree spada z ~810 MB do ~370 MB, czyli o 54%. Procedura: `git worktree add --detach <sciezka> HEAD` → `git -C <sciezka> sparse-checkout init --cone` → `git -C <sciezka> sparse-checkout set` z lista potrzebnych katalogow (typowo `gra docs dyspozycje panele-sterowania`) → symlink node_modules. WYJATEK: subagent, ktory ma robic build lub deploy do ROBOCZA, potrzebuje `gra-robocza/` — dla niego dobierz ten katalog jawnie (`sparse-checkout add gra-robocza`), inaczej publikacja bundla nie ma gdzie trafic. To DRUGA linia obrony wzgledem rule_118: dziala takze wtedy, gdy regula cyklu zycia zostanie pominieta.",
+      "id": "rule_123",
+      "rule_text": "SPARSE-CHECKOUT DLA WORKTREE (Maciej, R-DYSK-WORKTREE-Q1=C): worktree subagenta zakladaj BEZ katalogow, ktorych subagent do pracy nie potrzebuje — `gra-robocza/` (~328 MB zbudowanych bundli HTML), `gra-kanon/` (~109 MB) oraz katalogi `dist/`. Rozmiar jednego worktree spada z ~810 MB do ~370 MB, czyli o 54%. Procedura: `git worktree add --detach <sciezka> HEAD` → `git -C <sciezka> sparse-checkout init --cone` → `git -C <sciezka> sparse-checkout set` z lista potrzebnych katalogow (typowo `gra docs dyspozycje panele-sterowania`) → symlink node_modules. WYJATEK: subagent, ktory ma robic build lub deploy do ROBOCZA, potrzebuje `gra-robocza/` — dla niego dobierz ten katalog jawnie (`sparse-checkout add gra-robocza`), inaczej publikacja bundla nie ma gdzie trafic. To DRUGA linia obrony wzgledem rule_122: dziala takze wtedy, gdy regula cyklu zycia zostanie pominieta.",
       "status": "ACTIVE",
       "actionId": "worktree-sparse-checkout-exclude-bundles",
       "win_count": 0,
