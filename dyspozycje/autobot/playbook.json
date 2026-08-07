@@ -1,6 +1,6 @@
 {
-  "version": 13,
-  "updatedAtIso": "2026-08-07T20:24:08.282Z",
+  "version": 14,
+  "updatedAtIso": "2026-08-07T21:03:18.937Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -239,6 +239,26 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-07T19:30:00.000Z"
+    },
+    {
+      "id": "rule_124",
+      "rule_text": "Sprawdzaj, co JEST W PLIKACH, nie co pamiętasz — każde twierdzenie przedstawiane właścicielowi jako fakt musi mieć świeży odczyt z repozytorium albo uruchomienie bramki. Przy audycie rekordu danych wypisuj WSZYSTKIE pola, nigdy sztywną listę kolumn dobraną z góry: pominięta kolumna wygląda w raporcie identycznie jak kolumna o wartości zero [C-016]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T21:03:18.925Z"
+    },
+    {
+      "id": "rule_125",
+      "rule_text": "Orkiestrator prowadzi WŁASNĄ pracę przez pętlę AutoBot tak samo jak pracę subagentów — jest Operatorem swojej zmiany i nie ocenia sam siebie; werdykt wydaje osobny Evaluator, bo cudze błędy widać lepiej niż własne. Dotyczy każdej zmiany zapisanej do repozytorium i każdej liczby podanej właścicielowi jako fakt; czynności czysto odczytowe są wyłączone [C-017]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T21:03:18.926Z"
     }
   ],
   "quarantine_rules": []
