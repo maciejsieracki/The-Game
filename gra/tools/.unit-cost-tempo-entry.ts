@@ -1,2 +1,2 @@
 
-export { KOSZT_JEDNOSTEK_PACE, applyUnitCostPace } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/unit-cost-tempo";
+export { KOSZT_JEDNOSTEK_PACE, applyUnitCostPace } from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/unit-cost-tempo";

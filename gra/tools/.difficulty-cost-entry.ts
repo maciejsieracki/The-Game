@@ -6,6 +6,6 @@ export {
   getPopulationGrowthDifficultyMultiplier,
   getPopulationGrowthThresholdMultiplier,
   applyPopulationGrowthThreshold,
-} from "/workspace/gra/src/game/difficulty-cost";
-export { applyBuildingCostPace } from "/workspace/gra/src/game/building-cost-tempo";
-export { applyGrowthThresholdPace } from "/workspace/gra/src/game/population-growth-tempo";
+} from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/difficulty-cost";
+export { applyBuildingCostPace } from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/building-cost-tempo";
+export { applyGrowthThresholdPace } from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/population-growth-tempo";

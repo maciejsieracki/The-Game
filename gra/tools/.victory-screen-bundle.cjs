@@ -37,12 +37,78 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 4, typy_cywilizacji: 4, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 5, typy_cywilizacji: 5, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 6, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 7, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 10, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 12, hex_w: 672, hex_h: 476 }
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 5,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 8, min: 7, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -64,9 +130,19 @@ var e_start_params_default = {
     forest_threshold_high: 0.5
   },
   tempo_gry: {
-    szybka: 0.2,
-    standardowa: 1,
-    dluga: 5
+    szybka: 1,
+    standardowa: 2,
+    dluga: 4
+  },
+  koszt_budynkow_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  koszt_jednostek_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
   },
   zwyciestwo: {
     ostatnia_epoka_v1: 3,
@@ -141,7 +217,49 @@ var CIV_ALIASES_CSS = `
   --civ-radius-panel: var(--tg-radius-panel);
 }
 `;
-var CIV_BRAND_ROOT_CSS = tokens_default + CIV_ALIASES_CSS;
+var CIV_GLOBAL_SCROLLBAR_CSS = `
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #e0b24a #0a0e14;
+}
+html * {
+  scrollbar-width: thin;
+  scrollbar-color: #e0b24a #0a0e14;
+}
+html::-webkit-scrollbar,
+html *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html::-webkit-scrollbar-track,
+html *::-webkit-scrollbar-track {
+  background: #0a0e14;
+}
+html::-webkit-scrollbar-thumb,
+html *::-webkit-scrollbar-thumb {
+  background: #e0b24a;
+  border-radius: 5px;
+  border: 2px solid #0a0e14;
+}
+html::-webkit-scrollbar-thumb:hover,
+html *::-webkit-scrollbar-thumb:hover {
+  background: #d4af5a;
+}
+html::-webkit-scrollbar-button,
+html *::-webkit-scrollbar-button {
+  background: #0a0e14;
+  border: 1px solid #1a1f28;
+}
+html::-webkit-scrollbar-button:hover,
+html *::-webkit-scrollbar-button:hover {
+  background: #141a22;
+}
+html::-webkit-scrollbar-corner,
+html *::-webkit-scrollbar-corner {
+  background: #0a0e14;
+}
+`;
+var CIV_BRAND_ROOT_CSS = tokens_default + CIV_ALIASES_CSS + CIV_GLOBAL_SCROLLBAR_CSS;
 
 // src/ui/victoryScreen.ts
 function formatVictoryTitle(rodzaj, turn) {
@@ -165,7 +283,7 @@ function formatVictorySubtitle(rodzaj, stats) {
     case "nauka":
       return "Wszystkie technologie w zakresie gry zbadane. Rakieta z robotami wyruszy\u0142a na najbli\u017Csz\u0105 planet\u0119.";
     case "przegrana":
-      return "Twoje panowanie dobieg\u0142o ko\u0144ca. Utraci\u0142e\u015B wszystkie miasta i osadnik\xF3w.";
+      return "Twoje panowanie dobieg\u0142o ko\u0144ca. Utraci\u0142e\u015B wszystkie miasta.";
   }
 }
 function formatVictoryConditionLabel(rodzaj) {

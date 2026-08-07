@@ -21,10 +21,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var scout_auto_explore_exports = {};
 __export(scout_auto_explore_exports, {
   advanceScoutAutoExplore: () => advanceScoutAutoExplore,
+  clearScoutAutoExplore: () => clearScoutAutoExplore,
   isScoutUnit: () => isScoutUnit,
   pickScoutExploreTarget: () => pickScoutExploreTarget,
   runScoutsAutoExplore: () => runScoutsAutoExplore,
-  scoreHexForExplore: () => scoreHexForExplore
+  scoreHexForExplore: () => scoreHexForExplore,
+  scoreMarginalReveal: () => scoreMarginalReveal
 });
 module.exports = __toCommonJS(scout_auto_explore_exports);
 
@@ -135,7 +137,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -169,7 +171,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -902,6 +904,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MOVE_SPEED_MULT = 3;
@@ -1292,6 +1295,11 @@ var terrain_yields_default = {
   ]
 };
 
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domy\u015Blnie = manpowerNaLudka; epoka 1 = po\u0142owa \u2014 Maciej 2026-08-03: wi\u0119ksza armia w Kamieniu).",
@@ -1620,8 +1628,12 @@ var WYZYWIENIE_LEVELS = Array.from(
   { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
   (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
 );
+var DEFAULT_POZIOM_RACJI = 4;
 
 // src/game/cities.ts
+var DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
+  DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX * 100
+);
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
 // src/game/okolica.ts
@@ -1662,6 +1674,21 @@ var SCOUT_TYPE_ID = "Zwiadowca";
 function isScoutUnit(unit) {
   return unit.category === "zwiadowca" || unit.typeId === SCOUT_TYPE_ID;
 }
+function clearScoutAutoExplore(unit) {
+  if (!isScoutUnit(unit)) return false;
+  if (unit.autoExplore !== true) return false;
+  unit.autoExplore = false;
+  return true;
+}
+function scoreMarginalReveal(fromQ, fromR, toQ, toR, explored, map, sight) {
+  const fromVisible = computeVisibleAt(fromQ, fromR, map, sight);
+  const toVisible = computeVisibleAt(toQ, toR, map, sight);
+  let count = 0;
+  for (const k of toVisible) {
+    if (!explored.has(k) && !fromVisible.has(k)) count++;
+  }
+  return count;
+}
 function scoreHexForExplore(q, r, explored, map, sight) {
   let score = 0;
   for (const k of computeVisibleAt(q, r, map, sight)) {
@@ -1688,7 +1715,9 @@ function deductStepCost(unit, cost) {
     unit.ruchLeft = 0;
   }
 }
-function pickKnownVillageTarget(unit, map, explored, occupied) {
+function pickKnownVillageTarget(unit, map, explored, occupied, sight) {
+  const visible = computeVisibleAt(unit.q, unit.r, map, sight);
+  const reachable = computeReachable(unit, map, new Set(occupied));
   let bestPathLen = Infinity;
   let best = null;
   for (const key of explored) {
@@ -1696,6 +1725,8 @@ function pickKnownVillageTarget(unit, map, explored, occupied) {
     if (!hex?.wioska?.istnieje) continue;
     if (hex.wlasciciel !== null) continue;
     const { q, r } = hex.coords;
+    const hutKey = keyOf(q, r);
+    if (!visible.has(hutKey) && !reachable.has(hutKey)) continue;
     const path = computePath(unit, map, q, r, new Set(occupied));
     if (path.length === 0) continue;
     if (path.length < bestPathLen) {
@@ -1705,31 +1736,45 @@ function pickKnownVillageTarget(unit, map, explored, occupied) {
   }
   return best;
 }
-function pickScoutExploreTarget(unit, map, explored, occupied, sight, rng) {
-  const villageTarget = pickKnownVillageTarget(unit, map, explored, occupied);
-  if (villageTarget) return villageTarget;
+function pickBestExploreStep(unit, map, explored, occupied, sight, rng) {
   const reachable = computeReachable(unit, map, new Set(occupied));
   reachable.delete(keyOf(unit.q, unit.r));
   if (reachable.size === 0) return null;
-  let bestScore = -Infinity;
-  const candidates = [];
+  const positive = [];
+  const zero = [];
   for (const key of reachable) {
     const parts = key.split(",");
     if (parts.length !== 2) continue;
     const q = Number(parts[0]);
     const r = Number(parts[1]);
     if (!Number.isFinite(q) || !Number.isFinite(r)) continue;
-    const score = scoreHexForExplore(q, r, explored, map, sight) + rng() * 1.5;
-    if (score > bestScore + 1e-3) {
-      bestScore = score;
+    const path = computePath(unit, map, q, r, new Set(occupied));
+    if (path.length !== 1) continue;
+    const gain = scoreMarginalReveal(unit.q, unit.r, q, r, explored, map, sight);
+    if (gain > 0) positive.push({ q, r, gain });
+    else if (gain === 0) zero.push({ q, r });
+  }
+  const pool = positive.length > 0 ? positive : zero.map((c) => ({ ...c, gain: 0 }));
+  if (pool.length === 0) return null;
+  let bestGain = -Infinity;
+  const candidates = [];
+  for (const c of pool) {
+    const score = c.gain + rng() * 1e-3;
+    if (score > bestGain + 5e-4) {
+      bestGain = score;
       candidates.length = 0;
-      candidates.push({ q, r });
-    } else if (Math.abs(score - bestScore) <= 1e-3) {
-      candidates.push({ q, r });
+      candidates.push({ q: c.q, r: c.r });
+    } else if (Math.abs(score - bestGain) <= 5e-4) {
+      candidates.push({ q: c.q, r: c.r });
     }
   }
   if (candidates.length === 0) return null;
   return candidates[Math.floor(rng() * candidates.length)];
+}
+function pickScoutExploreTarget(unit, map, explored, occupied, sight, rng) {
+  const villageTarget = pickKnownVillageTarget(unit, map, explored, occupied, sight);
+  if (villageTarget) return villageTarget;
+  return pickBestExploreStep(unit, map, explored, occupied, sight, rng);
 }
 function advanceScoutAutoExplore(unit, map, explored, allUnits, sight, rng = Math.random, onAfterStep) {
   if (!isScoutUnit(unit)) return { moved: false, steps: 0 };
@@ -1790,8 +1835,10 @@ function runScoutsAutoExplore(units, map, explored, playerOwnerId, sightResolver
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   advanceScoutAutoExplore,
+  clearScoutAutoExplore,
   isScoutUnit,
   pickScoutExploreTarget,
   runScoutsAutoExplore,
-  scoreHexForExplore
+  scoreHexForExplore,
+  scoreMarginalReveal
 });

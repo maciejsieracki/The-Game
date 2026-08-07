@@ -87,7 +87,7 @@ function buildHubTechEntries(input) {
       id: node.id,
       name: node.nazwa,
       epoka: node.epoka,
-      koszt: costFor(node.koszt),
+      koszt: costFor(node.koszt, node.epoka),
       locked: false,
       isTarget: slug === targetNorm
     });
@@ -100,7 +100,7 @@ function buildHubTechEntries(input) {
       id: node.id,
       name: node.nazwa,
       epoka: node.epoka,
-      koszt: costFor(node.koszt),
+      koszt: costFor(node.koszt, node.epoka),
       locked: true,
       isTarget: false
     });
@@ -112,6 +112,11 @@ function buildHubTechEntries(input) {
   });
   return entries;
 }
+
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
 
 // src/game/research.ts
 var BRAK_PREREQ = /* @__PURE__ */ new Set(["", "-", "\u2014", "\u2013", "brak", "none"]);
@@ -191,6 +196,7 @@ function createPlayerState() {
     zbadane: /* @__PURE__ */ new Set(),
     badana: null,
     playerResearchTargetId: null,
+    researchQueue: [],
     era: 1,
     pieniadzMnoznik: 1,
     tempoGry: "standardowa",

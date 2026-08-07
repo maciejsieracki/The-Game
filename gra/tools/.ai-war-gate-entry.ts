@@ -1,5 +1,5 @@
 
-export { decideAITurn, planCityFounding } from "/workspace/gra/src/game/ai";
+export { decideAITurn, planCityFounding } from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/ai";
 export {
   aiFoundingWorkReserve,
   aiTreasuryPracaForFounding,
@@ -7,4 +7,4 @@ export {
   aiPowerGoalFoundingInterval,
   aiClusterOutsidePenalty,
   EKSPANSJA_KLASTR_BYPASS,
-} from "/workspace/gra/src/game/ai-expansion";
+} from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/ai-expansion";

@@ -1,6 +1,6 @@
 
 export {
-  evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation,
+  evaluateProposal, createNegotiation, applyCounterOffer, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   resolvePlayerAcceptsAiPending, generateCounterOffer, negotiationAsProposal,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation,

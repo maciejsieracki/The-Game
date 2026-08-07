@@ -1,10 +1,10 @@
 
-export { decideAITurn, RESUP_TIERS } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/ai";
+export { decideAITurn, RESUP_TIERS, CS_WAVE_ATTACK_MIN_STACK } from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/ai";
 export {
   DIPLOMACY_PARAMS, sisterAllianceDiplomacyParams, sisterAllianceEligible,
-} from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/diplomacy";
-export { hexDistance } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/units/setup";
+} from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/diplomacy";
+export { hexDistance } from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/units/setup";
 export {
   startRelationForPair, startRelationForPlayerSameCivCityState,
   applyCityStateDifficultyTrust, CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
-} from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/diplomacy-layers";
+} from "/home/user/The-Game/.claude/worktrees/bramki-r2/gra/src/game/diplomacy-layers";

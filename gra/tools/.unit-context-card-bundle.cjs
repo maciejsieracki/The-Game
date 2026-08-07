@@ -117,8 +117,9 @@ var terrain_yields_default = {
       Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 8,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Glina: 2,
+      Suma: 10,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105; +2 glina (szt./tur\u0119) przy rzece \u2014 plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +10 z glin\u0105"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
@@ -127,11 +128,499 @@ var terrain_yields_default = {
       Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
+      Glina: 0,
       Suma: 7,
       Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
   ]
 };
+
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+
+// data/map-gen-params.json
+var map_gen_params_default = {
+  _meta: {
+    opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
+    panel: "panele-sterowania/Panel-A.xlsx",
+    export: "panele-sterowania/export-a.py"
+  },
+  mgla: {
+    default_sight_jednostki: {
+      wartosc: 3,
+      opis: "Domy\u015Blny promie\u0144 wzroku jednostki"
+    }
+  },
+  gestosc: {
+    surowce_mult: {
+      low: 0.6,
+      medium: 1,
+      high: 1.4
+    },
+    baseline_rarity_mult: 1.35,
+    rzeki_max_mala_mapa: {
+      low: 20,
+      medium: 50,
+      high: 120
+    },
+    river_scale: {
+      mala: 1,
+      srednia: 1.35,
+      duza: 1.7,
+      ogromna: 2.1,
+      super: 2.6
+    },
+    desert_noise_threshold: {
+      low: 0.68,
+      medium: 0.63,
+      high: 0.58
+    },
+    forest_noise_threshold: {
+      low: 0.65,
+      medium: 0.58,
+      high: 0.5
+    },
+    mountain_noise_threshold: {
+      low: 0.8,
+      medium: 0.68,
+      high: 0.52
+    },
+    highland_noise_threshold: {
+      low: 0.66,
+      medium: 0.5,
+      high: 0.38
+    },
+    relief_land_fraction: {
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
+    },
+    relief_overflow_cap_frac: {
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
+    },
+    pasma_gorskie: {
+      _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
+      low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
+      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
+      high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
+    }
+  },
+  mapa_skala: {
+    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
+    aktywne_typy: {
+      mala: 4,
+      srednia: 5,
+      duza: 6,
+      ogromna: 12,
+      super: 15
+    },
+    domyslni_rywale: {
+      mala: 12,
+      srednia: 14,
+      duza: 18,
+      ogromna: 22,
+      super: 30
+    }
+  },
+  generator: {
+    default_width: 36,
+    default_height: 28,
+    rozmiar_dims: {
+      malenki: [76, 52],
+      maly: [108, 74],
+      standardowy: [168, 120],
+      duzy: [240, 168],
+      ogromny: [336, 238],
+      superogromny: [672, 476]
+    }
+  },
+  deposit_rules: {
+    miedz: { rarity: 0.1 },
+    zelazo: { rarity: 0.08 },
+    glina: {
+      rarity: 0.3,
+      _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
+    },
+    konie: { rarity: 0.025 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
+  },
+  metal_deposit_min_era: {
+    miedz: 2,
+    zelazo: 3,
+    wegiel: 8
+  }
+};
+
+// src/data/map-gen-params-loader.ts
+var FALLBACK_ROZMIAR = {
+  malenki: [76, 52],
+  maly: [108, 74],
+  standardowy: [168, 120],
+  duzy: [240, 168],
+  ogromny: [336, 238],
+  superogromny: [672, 476]
+};
+var FALLBACK_BASELINE_RARITY = 1.35;
+var FALLBACK_RIVER_SCALE = {
+  mala: 1,
+  srednia: 1.35,
+  duza: 1.7,
+  ogromna: 2.1,
+  super: 2.6
+};
+var FALLBACK_METAL_ERA = { miedz: 2, zelazo: 3, wegiel: 8 };
+var FALLBACK_DEPOSIT_RARITY = {
+  miedz: 0.1,
+  zelazo: 0.08,
+  glina: 0.3,
+  konie: 0.1,
+  wegiel: 0,
+  owce: 0.08,
+  bydlo: 0.07,
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
+};
+function mapGenResourceBaselineRarity() {
+  const v = map_gen_params_default.gestosc?.baseline_rarity_mult;
+  return typeof v === "number" && v > 0 ? v : FALLBACK_BASELINE_RARITY;
+}
+function mapGenRiverScale(size) {
+  const rs = map_gen_params_default.gestosc?.river_scale;
+  const lut = {
+    mala: "mala",
+    srednia: "srednia",
+    duza: "duza",
+    ogromna: "ogromna",
+    super: "super"
+  };
+  const v = rs?.[lut[size]];
+  return typeof v === "number" && v > 0 ? v : FALLBACK_RIVER_SCALE[size];
+}
+function mapGenRozmiarDims() {
+  const src = map_gen_params_default.generator?.rozmiar_dims;
+  const out = { ...FALLBACK_ROZMIAR };
+  if (!src) return out;
+  for (const key of Object.keys(out)) {
+    const pair = src[key];
+    if (Array.isArray(pair) && pair.length >= 2 && pair.every((n) => typeof n === "number" && n > 0)) {
+      out[key] = [pair[0], pair[1]];
+    }
+  }
+  return out;
+}
+function mapGenMetalDepositMinEra() {
+  const m = map_gen_params_default.metal_deposit_min_era;
+  if (!m || typeof m !== "object") return { ...FALLBACK_METAL_ERA };
+  return { ...FALLBACK_METAL_ERA, ...m };
+}
+function mapGenAllDepositRarities() {
+  const out = { ...FALLBACK_DEPOSIT_RARITY };
+  const rules = map_gen_params_default.deposit_rules;
+  if (rules) {
+    for (const [id, row] of Object.entries(rules)) {
+      if (typeof row?.rarity === "number" && row.rarity >= 0) out[id] = row.rarity;
+    }
+  }
+  return out;
+}
+
+// data/e-start-params.json
+var e_start_params_default = {
+  _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
+  defaulty: {
+    player_civ_id: "rzymianie",
+    start_epoch_id: "kamien",
+    map_quality_default: "\u015Arednia",
+    render_quality_bundled: "medium"
+  },
+  skala_mapy: {
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 5,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 8, min: 7, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
+  },
+  generator_e2: {
+    resource_mult_low: 0.6,
+    resource_mult_normal: 1,
+    resource_mult_high: 1.4,
+    resource_baseline_rarity: 1.35,
+    river_base_low: 20,
+    river_base_normal: 50,
+    river_base_high: 80,
+    river_scale_mala: 1,
+    river_scale_srednia: 1.35,
+    river_scale_duza: 1.7,
+    river_scale_ogromna: 2.1,
+    desert_threshold_low: 0.68,
+    desert_threshold_normal: 0.63,
+    desert_threshold_high: 0.58,
+    forest_threshold_low: 0.65,
+    forest_threshold_normal: 0.58,
+    forest_threshold_high: 0.5
+  },
+  tempo_gry: {
+    szybka: 1,
+    standardowa: 2,
+    dluga: 4
+  },
+  koszt_budynkow_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  koszt_jednostek_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  zwyciestwo: {
+    ostatnia_epoka_v1: 3,
+    prog_dominacji_power: 0.5,
+    dominacja_wymaga_ostatniej_epoki: true,
+    nauka_wymaga_rakiety: true
+  },
+  kreator_zaawansowane: {
+    seed_mode_default: "random",
+    manual_seed_default: 424242,
+    barbarians_enabled_default: true,
+    battle_always_manual_default: false,
+    fog_debug_reveal_all_default: false,
+    victory_power_and_dominance_default: true
+  },
+  decyzje_kanon: {
+    e1_reset_nowa_gra: true,
+    e1_tech_kaskada_epok: true,
+    e1_ziemia_preset_staly: true,
+    e1_zloza_tylko_gory: true,
+    e1_zloza_ukryte_do_epoki: true,
+    e2_barbarzyncy_do_przed_sredniowiecza: true,
+    e2_buntownicy_od_sredniowiecza: true
+  }
+};
+
+// src/data/e-start-params-loader.ts
+var R = e_start_params_default;
+function eStartPlayerCivId() {
+  return R.defaulty?.player_civ_id ?? "rzymianie";
+}
+function eStartEpochId() {
+  return R.defaulty?.start_epoch_id ?? "kamien";
+}
+function eStartRenderQualityBundled() {
+  const q = R.defaulty?.render_quality_bundled ?? "medium";
+  if (q === "low" || q === "high") return q;
+  return "medium";
+}
+
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
+// src/map/generator.ts
+var ROZMIAR_DIMS = mapGenRozmiarDims();
+
+// src/map/newGameMapDefaults.ts
+var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
+var DEFAULT_START_EPOCH_ID = eStartEpochId();
+var DEFAULT_RENDER_QUALITY = eStartRenderQualityBundled();
+var RIVER_SCALE_BY_SIZE = {
+  mala: mapGenRiverScale("mala"),
+  srednia: mapGenRiverScale("srednia"),
+  duza: mapGenRiverScale("duza"),
+  ogromna: mapGenRiverScale("ogromna"),
+  super: mapGenRiverScale("super")
+};
+var RIVER_REF_AREA = 168 * 120;
+var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
+
+// src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
+var ERODE_TERRAIN_ORDER = [
+  "wybrzeze" /* Wybrzeze */,
+  "laka" /* Laka */,
+  "pustynia" /* Pustynia */,
+  "rownina" /* Rownina */,
+  "wzgorza" /* Wzgorza */,
+  "gory" /* Gory */
+];
+function isDryLandTerrain(tb) {
+  return tb !== "morze" /* Morze */ && tb !== "wybrzeze" /* Wybrzeze */;
+}
+var ELEVATION_RANK = {
+  ["morze" /* Morze */]: 0,
+  ["wybrzeze" /* Wybrzeze */]: 1,
+  ["laka" /* Laka */]: 2,
+  ["pustynia" /* Pustynia */]: 3,
+  ["rownina" /* Rownina */]: 4,
+  ["wzgorza" /* Wzgorza */]: 5,
+  ["gory" /* Gory */]: 6,
+  ["polarny" /* Polarny */]: 2
+};
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
+var BASE_DEPOSIT_RULES = [
+  {
+    id: "miedz",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
+    rarity: 0.1
+  },
+  {
+    id: "zelazo",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    rarity: 0.08
+  },
+  {
+    id: "glina",
+    nakladka: "zloze_gliny" /* ZlozeGliny */,
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
+    rarity: 0.3
+  },
+  {
+    id: "konie",
+    nakladka: "zloze_konia" /* ZlozeKonia */,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "rownina" /* Rownina */,
+    rarity: 0.1
+  },
+  {
+    id: "wegiel",
+    nakladka: null,
+    // brak w enumie Nakladka -> znacznik hex.zloze
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    rarity: 0.1
+  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
+  {
+    id: "sol",
+    nakladka: null,
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
+    rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
+  }
+];
+var _depositRarities = mapGenAllDepositRarities();
+var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
+  const rarity = _depositRarities[rule.id];
+  return typeof rarity === "number" ? { ...rule, rarity } : rule;
+});
+
+// src/map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
 
 // data/terrain-improvements.json
 var terrain_improvements_default = {
@@ -143,7 +632,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia zelaza->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -201,8 +690,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -240,22 +729,6 @@ var terrain_improvements_default = {
     tech: "Je\u017Adziectwo",
     odblokowuje: "Ko\u0144 (jednostki konne)"
   },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2,
-      handel: 3
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
-  },
   glinianka: {
     nazwa: "Glinianka",
     epoka: 2,
@@ -265,8 +738,8 @@ var terrain_improvements_default = {
       handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -335,8 +808,8 @@ var terrain_improvements_default = {
       handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -455,12 +928,29 @@ var terrain_improvements_default = {
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
     surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+  },
+  kopalnia_zelaza: {
+    nazwa: "Kopalnia \u017Celaza",
+    epoka: 3,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda_zelaza",
+    surowiecOdblokowany_uwaga: "Ruda \u017Celaza (Odlewnia \u017Celaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce \u017Celaza (hex.zloze=zelazo)",
+    warunek: "ruda \u017Celaza \u2192 magazyn (Odlewnia \u017Celaza)",
+    koszt_praca: 22,
+    tech: "Hutnictwo \u017Celaza",
+    odblokowuje: "Odlewnia \u017Celaza (budynek miejski)",
+    uwagi: "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
   },
   kopalnia_zlota: {
     nazwa: "Kopalnia z\u0142ota",
@@ -504,6 +994,12 @@ var terrain_improvements_default = {
 // src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -520,17 +1016,40 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domy\u015Blnie = manpowerNaLudka; epoka 1 = po\u0142owa \u2014 Maciej 2026-08-03: wi\u0119ksza armia w Kamieniu).",
   _formuly: {
     ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
     manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
+    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka (ep1: 500 \u2192 2 jednostki / ludek przy pe\u0142nej puli)"
   },
   epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 500 },
     { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
     { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
     { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
@@ -546,7 +1065,7 @@ var epoka_ludnosc_manpower_default = {
 // data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
-    wartosc: 5,
+    wartosc: 4,
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
@@ -637,6 +1156,11 @@ var miasto_params_default = {
     jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
     opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
+  bonus_obrona_palisada_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (wczesna palisada drewniana)",
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Kamienia, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+  },
   zasieg_okolicy_baza: {
     wartosc: 5,
     jednostka: "pola/strona",
@@ -704,8 +1228,8 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
   kuznia: ["Ruda"],
-  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
-  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  odlewnia_brazu: ["Ruda"],
+  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
   mennica: [ZLOTO_LABEL]
 };
 var ASCII_BY_LABEL = Object.fromEntries(
@@ -724,21 +1248,27 @@ function unitParametryBonusProc(unit) {
   const v = unit?.parametryBonusProc;
   return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
 }
-var PATH_A_MAX_PP = 45;
-var PATH_B_MAX_PP = 50;
-function pathBadgeLevelFromPp(pp, maxPp) {
+var ARMOR_PATH_MAX_PP = 45;
+var SOFT_PATH_MAX_PP = 50;
+var ARMOR_PATH_LEVEL_MAX_PP = [
+  Math.floor(ARMOR_PATH_MAX_PP / 3),
+  Math.floor(ARMOR_PATH_MAX_PP * 2 / 3)
+];
+var SOFT_PATH_LEVEL_MAX_PP = [
+  Math.floor(SOFT_PATH_MAX_PP / 3),
+  Math.floor(SOFT_PATH_MAX_PP * 2 / 3)
+];
+function pathBadgeLevelFromPp(pp, bounds) {
   if (!Number.isFinite(pp) || pp <= 0) return 0;
-  const t1 = Math.floor(maxPp / 3);
-  const t2 = Math.floor(maxPp * 2 / 3);
-  if (pp <= t1) return 1;
-  if (pp <= t2) return 2;
+  if (pp <= bounds[0]) return 1;
+  if (pp <= bounds[1]) return 2;
   return 3;
 }
 function armorPathBadgeLevel(unit) {
-  return pathBadgeLevelFromPp(unitPancerzBonusProc(unit), PATH_A_MAX_PP);
+  return pathBadgeLevelFromPp(unitPancerzBonusProc(unit), ARMOR_PATH_LEVEL_MAX_PP);
 }
 function softPathBadgeLevel(unit) {
-  return pathBadgeLevelFromPp(unitParametryBonusProc(unit), PATH_B_MAX_PP);
+  return pathBadgeLevelFromPp(unitParametryBonusProc(unit), SOFT_PATH_LEVEL_MAX_PP);
 }
 
 // src/game/production.ts
@@ -778,9 +1308,7 @@ function terrainRowToTileYield(row) {
     handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
-    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
-    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0,
+    glina: Number(row.Glina ?? 0),
     ruda: 0,
     ruda_zelaza: 0
   };
@@ -801,7 +1329,7 @@ var TERRAIN_YIELDS = buildTerrainYields();
 var RIVER_MODIFIER = terrainModifier("Rzeka");
 var FOREST_MODIFIER = terrainModifier("Las (nak\u0142adka)");
 
-// node_modules/three/build/three.module.js
+// ../../../../gra/node_modules/three/build/three.module.js
 var REVISION = "169";
 var FrontSide = 0;
 var NormalBlending = 1;
@@ -2670,6 +3198,245 @@ var Vector3 = class _Vector3 {
 };
 var _vector$c = /* @__PURE__ */ new Vector3();
 var _quaternion$4 = /* @__PURE__ */ new Quaternion();
+var _vector$a = /* @__PURE__ */ new Vector3();
+var _segCenter = /* @__PURE__ */ new Vector3();
+var _segDir = /* @__PURE__ */ new Vector3();
+var _diff = /* @__PURE__ */ new Vector3();
+var _edge1 = /* @__PURE__ */ new Vector3();
+var _edge2 = /* @__PURE__ */ new Vector3();
+var _normal$1 = /* @__PURE__ */ new Vector3();
+var Ray = class {
+  constructor(origin = new Vector3(), direction = new Vector3(0, 0, -1)) {
+    this.origin = origin;
+    this.direction = direction;
+  }
+  set(origin, direction) {
+    this.origin.copy(origin);
+    this.direction.copy(direction);
+    return this;
+  }
+  copy(ray) {
+    this.origin.copy(ray.origin);
+    this.direction.copy(ray.direction);
+    return this;
+  }
+  at(t, target) {
+    return target.copy(this.origin).addScaledVector(this.direction, t);
+  }
+  lookAt(v) {
+    this.direction.copy(v).sub(this.origin).normalize();
+    return this;
+  }
+  recast(t) {
+    this.origin.copy(this.at(t, _vector$a));
+    return this;
+  }
+  closestPointToPoint(point, target) {
+    target.subVectors(point, this.origin);
+    const directionDistance = target.dot(this.direction);
+    if (directionDistance < 0) {
+      return target.copy(this.origin);
+    }
+    return target.copy(this.origin).addScaledVector(this.direction, directionDistance);
+  }
+  distanceToPoint(point) {
+    return Math.sqrt(this.distanceSqToPoint(point));
+  }
+  distanceSqToPoint(point) {
+    const directionDistance = _vector$a.subVectors(point, this.origin).dot(this.direction);
+    if (directionDistance < 0) {
+      return this.origin.distanceToSquared(point);
+    }
+    _vector$a.copy(this.origin).addScaledVector(this.direction, directionDistance);
+    return _vector$a.distanceToSquared(point);
+  }
+  distanceSqToSegment(v0, v1, optionalPointOnRay, optionalPointOnSegment) {
+    _segCenter.copy(v0).add(v1).multiplyScalar(0.5);
+    _segDir.copy(v1).sub(v0).normalize();
+    _diff.copy(this.origin).sub(_segCenter);
+    const segExtent = v0.distanceTo(v1) * 0.5;
+    const a01 = -this.direction.dot(_segDir);
+    const b0 = _diff.dot(this.direction);
+    const b1 = -_diff.dot(_segDir);
+    const c = _diff.lengthSq();
+    const det = Math.abs(1 - a01 * a01);
+    let s0, s1, sqrDist, extDet;
+    if (det > 0) {
+      s0 = a01 * b1 - b0;
+      s1 = a01 * b0 - b1;
+      extDet = segExtent * det;
+      if (s0 >= 0) {
+        if (s1 >= -extDet) {
+          if (s1 <= extDet) {
+            const invDet = 1 / det;
+            s0 *= invDet;
+            s1 *= invDet;
+            sqrDist = s0 * (s0 + a01 * s1 + 2 * b0) + s1 * (a01 * s0 + s1 + 2 * b1) + c;
+          } else {
+            s1 = segExtent;
+            s0 = Math.max(0, -(a01 * s1 + b0));
+            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+          }
+        } else {
+          s1 = -segExtent;
+          s0 = Math.max(0, -(a01 * s1 + b0));
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        }
+      } else {
+        if (s1 <= -extDet) {
+          s0 = Math.max(0, -(-a01 * segExtent + b0));
+          s1 = s0 > 0 ? -segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        } else if (s1 <= extDet) {
+          s0 = 0;
+          s1 = Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = s1 * (s1 + 2 * b1) + c;
+        } else {
+          s0 = Math.max(0, -(a01 * segExtent + b0));
+          s1 = s0 > 0 ? segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        }
+      }
+    } else {
+      s1 = a01 > 0 ? -segExtent : segExtent;
+      s0 = Math.max(0, -(a01 * s1 + b0));
+      sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+    }
+    if (optionalPointOnRay) {
+      optionalPointOnRay.copy(this.origin).addScaledVector(this.direction, s0);
+    }
+    if (optionalPointOnSegment) {
+      optionalPointOnSegment.copy(_segCenter).addScaledVector(_segDir, s1);
+    }
+    return sqrDist;
+  }
+  intersectSphere(sphere, target) {
+    _vector$a.subVectors(sphere.center, this.origin);
+    const tca = _vector$a.dot(this.direction);
+    const d2 = _vector$a.dot(_vector$a) - tca * tca;
+    const radius2 = sphere.radius * sphere.radius;
+    if (d2 > radius2) return null;
+    const thc = Math.sqrt(radius2 - d2);
+    const t0 = tca - thc;
+    const t1 = tca + thc;
+    if (t1 < 0) return null;
+    if (t0 < 0) return this.at(t1, target);
+    return this.at(t0, target);
+  }
+  intersectsSphere(sphere) {
+    return this.distanceSqToPoint(sphere.center) <= sphere.radius * sphere.radius;
+  }
+  distanceToPlane(plane) {
+    const denominator = plane.normal.dot(this.direction);
+    if (denominator === 0) {
+      if (plane.distanceToPoint(this.origin) === 0) {
+        return 0;
+      }
+      return null;
+    }
+    const t = -(this.origin.dot(plane.normal) + plane.constant) / denominator;
+    return t >= 0 ? t : null;
+  }
+  intersectPlane(plane, target) {
+    const t = this.distanceToPlane(plane);
+    if (t === null) {
+      return null;
+    }
+    return this.at(t, target);
+  }
+  intersectsPlane(plane) {
+    const distToPoint = plane.distanceToPoint(this.origin);
+    if (distToPoint === 0) {
+      return true;
+    }
+    const denominator = plane.normal.dot(this.direction);
+    if (denominator * distToPoint < 0) {
+      return true;
+    }
+    return false;
+  }
+  intersectBox(box, target) {
+    let tmin, tmax, tymin, tymax, tzmin, tzmax;
+    const invdirx = 1 / this.direction.x, invdiry = 1 / this.direction.y, invdirz = 1 / this.direction.z;
+    const origin = this.origin;
+    if (invdirx >= 0) {
+      tmin = (box.min.x - origin.x) * invdirx;
+      tmax = (box.max.x - origin.x) * invdirx;
+    } else {
+      tmin = (box.max.x - origin.x) * invdirx;
+      tmax = (box.min.x - origin.x) * invdirx;
+    }
+    if (invdiry >= 0) {
+      tymin = (box.min.y - origin.y) * invdiry;
+      tymax = (box.max.y - origin.y) * invdiry;
+    } else {
+      tymin = (box.max.y - origin.y) * invdiry;
+      tymax = (box.min.y - origin.y) * invdiry;
+    }
+    if (tmin > tymax || tymin > tmax) return null;
+    if (tymin > tmin || isNaN(tmin)) tmin = tymin;
+    if (tymax < tmax || isNaN(tmax)) tmax = tymax;
+    if (invdirz >= 0) {
+      tzmin = (box.min.z - origin.z) * invdirz;
+      tzmax = (box.max.z - origin.z) * invdirz;
+    } else {
+      tzmin = (box.max.z - origin.z) * invdirz;
+      tzmax = (box.min.z - origin.z) * invdirz;
+    }
+    if (tmin > tzmax || tzmin > tmax) return null;
+    if (tzmin > tmin || tmin !== tmin) tmin = tzmin;
+    if (tzmax < tmax || tmax !== tmax) tmax = tzmax;
+    if (tmax < 0) return null;
+    return this.at(tmin >= 0 ? tmin : tmax, target);
+  }
+  intersectsBox(box) {
+    return this.intersectBox(box, _vector$a) !== null;
+  }
+  intersectTriangle(a, b, c, backfaceCulling, target) {
+    _edge1.subVectors(b, a);
+    _edge2.subVectors(c, a);
+    _normal$1.crossVectors(_edge1, _edge2);
+    let DdN = this.direction.dot(_normal$1);
+    let sign;
+    if (DdN > 0) {
+      if (backfaceCulling) return null;
+      sign = 1;
+    } else if (DdN < 0) {
+      sign = -1;
+      DdN = -DdN;
+    } else {
+      return null;
+    }
+    _diff.subVectors(this.origin, a);
+    const DdQxE2 = sign * this.direction.dot(_edge2.crossVectors(_diff, _edge2));
+    if (DdQxE2 < 0) {
+      return null;
+    }
+    const DdE1xQ = sign * this.direction.dot(_edge1.cross(_diff));
+    if (DdE1xQ < 0) {
+      return null;
+    }
+    if (DdQxE2 + DdE1xQ > DdN) {
+      return null;
+    }
+    const QdN = -sign * _diff.dot(_normal$1);
+    if (QdN < 0) {
+      return null;
+    }
+    return this.at(QdN / DdN, target);
+  }
+  applyMatrix4(matrix4) {
+    this.origin.applyMatrix4(matrix4);
+    this.direction.transformDirection(matrix4);
+    return this;
+  }
+  equals(ray) {
+    return ray.origin.equals(this.origin) && ray.direction.equals(this.direction);
+  }
+  clone() {
+    return new this.constructor().copy(this);
+  }
+};
 var Matrix4 = class _Matrix4 {
   constructor(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44) {
     _Matrix4.prototype.isMatrix4 = true;
@@ -6843,6 +7610,73 @@ PropertyBinding.prototype.SetterByBindingTypeAndVersioning = [
   ]
 ];
 var _controlInterpolantsResultBuffer = new Float32Array(1);
+var _matrix = /* @__PURE__ */ new Matrix4();
+var Raycaster = class {
+  constructor(origin, direction, near = 0, far = Infinity) {
+    this.ray = new Ray(origin, direction);
+    this.near = near;
+    this.far = far;
+    this.camera = null;
+    this.layers = new Layers();
+    this.params = {
+      Mesh: {},
+      Line: { threshold: 1 },
+      LOD: {},
+      Points: { threshold: 1 },
+      Sprite: {}
+    };
+  }
+  set(origin, direction) {
+    this.ray.set(origin, direction);
+  }
+  setFromCamera(coords, camera) {
+    if (camera.isPerspectiveCamera) {
+      this.ray.origin.setFromMatrixPosition(camera.matrixWorld);
+      this.ray.direction.set(coords.x, coords.y, 0.5).unproject(camera).sub(this.ray.origin).normalize();
+      this.camera = camera;
+    } else if (camera.isOrthographicCamera) {
+      this.ray.origin.set(coords.x, coords.y, (camera.near + camera.far) / (camera.near - camera.far)).unproject(camera);
+      this.ray.direction.set(0, 0, -1).transformDirection(camera.matrixWorld);
+      this.camera = camera;
+    } else {
+      console.error("THREE.Raycaster: Unsupported camera type: " + camera.type);
+    }
+  }
+  setFromXRController(controller) {
+    _matrix.identity().extractRotation(controller.matrixWorld);
+    this.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    this.ray.direction.set(0, 0, -1).applyMatrix4(_matrix);
+    return this;
+  }
+  intersectObject(object, recursive = true, intersects = []) {
+    intersect(object, this, intersects, recursive);
+    intersects.sort(ascSort);
+    return intersects;
+  }
+  intersectObjects(objects, recursive = true, intersects = []) {
+    for (let i = 0, l = objects.length; i < l; i++) {
+      intersect(objects[i], this, intersects, recursive);
+    }
+    intersects.sort(ascSort);
+    return intersects;
+  }
+};
+function ascSort(a, b) {
+  return a.distance - b.distance;
+}
+function intersect(object, raycaster, intersects, recursive) {
+  let propagate = true;
+  if (object.layers.test(raycaster.layers)) {
+    const result = object.raycast(raycaster, intersects);
+    if (result === false) propagate = false;
+  }
+  if (propagate === true && recursive === true) {
+    const children = object.children;
+    for (let i = 0, l = children.length; i < l; i++) {
+      intersect(children[i], raycaster, intersects, true);
+    }
+  }
+}
 if (typeof __THREE_DEVTOOLS__ !== "undefined") {
   __THREE_DEVTOOLS__.dispatchEvent(new CustomEvent("register", { detail: {
     revision: REVISION
@@ -6856,392 +7690,6 @@ if (typeof window !== "undefined") {
   }
 }
 
-// data/map-gen-params.json
-var map_gen_params_default = {
-  _meta: {
-    opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
-    panel: "panele-sterowania/Panel-A.xlsx",
-    export: "panele-sterowania/export-a.py"
-  },
-  mgla: {
-    default_sight_jednostki: {
-      wartosc: 3,
-      opis: "Domy\u015Blny promie\u0144 wzroku jednostki"
-    }
-  },
-  gestosc: {
-    surowce_mult: {
-      low: 0.6,
-      medium: 1,
-      high: 1.4
-    },
-    baseline_rarity_mult: 1.35,
-    rzeki_max_mala_mapa: {
-      low: 20,
-      medium: 50,
-      high: 120
-    },
-    river_scale: {
-      mala: 1,
-      srednia: 1.35,
-      duza: 1.7,
-      ogromna: 2.1,
-      super: 2.6
-    },
-    desert_noise_threshold: {
-      low: 0.68,
-      medium: 0.63,
-      high: 0.58
-    },
-    forest_noise_threshold: {
-      low: 0.65,
-      medium: 0.58,
-      high: 0.5
-    },
-    mountain_noise_threshold: {
-      low: 0.8,
-      medium: 0.68,
-      high: 0.52
-    },
-    highland_noise_threshold: {
-      low: 0.66,
-      medium: 0.5,
-      high: 0.38
-    },
-    relief_land_fraction: {
-      low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.075, highland: 0.125 },
-      high: { mountain: 0.18, highland: 0.27 }
-    },
-    relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
-      low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.05, highland: 0.085 },
-      high: { mountain: 0.12, highland: 0.18 }
-    },
-    pasma_gorskie: {
-      _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
-      low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
-      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
-      high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
-    }
-  },
-  mapa_skala: {
-    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). \xD72 balans 2026-07-20, aktywne_typy przyci\u0119te do sufitu rosteru 15 nacji (ogromna/super).",
-    aktywne_typy: {
-      mala: 8,
-      srednia: 10,
-      duza: 12,
-      ogromna: 15,
-      super: 15
-    },
-    domyslni_rywale: {
-      mala: 12,
-      srednia: 14,
-      duza: 18,
-      ogromna: 22,
-      super: 30
-    }
-  },
-  generator: {
-    default_width: 36,
-    default_height: 28,
-    rozmiar_dims: {
-      malenki: [76, 52],
-      maly: [108, 74],
-      standardowy: [168, 120],
-      duzy: [240, 168],
-      ogromny: [336, 238],
-      superogromny: [672, 476]
-    }
-  },
-  deposit_rules: {
-    miedz: { rarity: 0.1 },
-    zelazo: { rarity: 0.08 },
-    glina: { rarity: 0.1 },
-    konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
-    sol: { rarity: 0.12 },
-    zloto: { rarity: 0.03 }
-  },
-  metal_deposit_min_era: {
-    miedz: 2,
-    zelazo: 3,
-    wegiel: 8
-  }
-};
-
-// src/data/map-gen-params-loader.ts
-var FALLBACK_ROZMIAR = {
-  malenki: [76, 52],
-  maly: [108, 74],
-  standardowy: [168, 120],
-  duzy: [240, 168],
-  ogromny: [336, 238],
-  superogromny: [672, 476]
-};
-var FALLBACK_BASELINE_RARITY = 1.35;
-var FALLBACK_RIVER_SCALE = {
-  mala: 1,
-  srednia: 1.35,
-  duza: 1.7,
-  ogromna: 2.1,
-  super: 2.6
-};
-var FALLBACK_METAL_ERA = { miedz: 2, zelazo: 3, wegiel: 8 };
-var FALLBACK_DEPOSIT_RARITY = {
-  miedz: 0.1,
-  zelazo: 0.08,
-  glina: 0.1,
-  konie: 0.1,
-  wegiel: 0.1,
-  owce: 0.08,
-  bydlo: 0.07,
-  sol: 0.12,
-  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
-  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
-  zloto: 0.03
-};
-function mapGenResourceBaselineRarity() {
-  const v = map_gen_params_default.gestosc?.baseline_rarity_mult;
-  return typeof v === "number" && v > 0 ? v : FALLBACK_BASELINE_RARITY;
-}
-function mapGenRiverScale(size) {
-  const rs = map_gen_params_default.gestosc?.river_scale;
-  const lut = {
-    mala: "mala",
-    srednia: "srednia",
-    duza: "duza",
-    ogromna: "ogromna",
-    super: "super"
-  };
-  const v = rs?.[lut[size]];
-  return typeof v === "number" && v > 0 ? v : FALLBACK_RIVER_SCALE[size];
-}
-function mapGenRozmiarDims() {
-  const src = map_gen_params_default.generator?.rozmiar_dims;
-  const out = { ...FALLBACK_ROZMIAR };
-  if (!src) return out;
-  for (const key of Object.keys(out)) {
-    const pair = src[key];
-    if (Array.isArray(pair) && pair.length >= 2 && pair.every((n) => typeof n === "number" && n > 0)) {
-      out[key] = [pair[0], pair[1]];
-    }
-  }
-  return out;
-}
-function mapGenMetalDepositMinEra() {
-  const m = map_gen_params_default.metal_deposit_min_era;
-  if (!m || typeof m !== "object") return { ...FALLBACK_METAL_ERA };
-  return { ...FALLBACK_METAL_ERA, ...m };
-}
-function mapGenAllDepositRarities() {
-  const out = { ...FALLBACK_DEPOSIT_RARITY };
-  const rules = map_gen_params_default.deposit_rules;
-  if (rules) {
-    for (const [id, row] of Object.entries(rules)) {
-      if (typeof row?.rarity === "number" && row.rarity >= 0) out[id] = row.rarity;
-    }
-  }
-  return out;
-}
-
-// data/e-start-params.json
-var e_start_params_default = {
-  _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
-  defaulty: {
-    player_civ_id: "rzymianie",
-    start_epoch_id: "kamien",
-    map_quality_default: "\u015Arednia",
-    render_quality_bundled: "medium"
-  },
-  skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
-  },
-  generator_e2: {
-    resource_mult_low: 0.6,
-    resource_mult_normal: 1,
-    resource_mult_high: 1.4,
-    resource_baseline_rarity: 1.35,
-    river_base_low: 20,
-    river_base_normal: 50,
-    river_base_high: 80,
-    river_scale_mala: 1,
-    river_scale_srednia: 1.35,
-    river_scale_duza: 1.7,
-    river_scale_ogromna: 2.1,
-    desert_threshold_low: 0.68,
-    desert_threshold_normal: 0.63,
-    desert_threshold_high: 0.58,
-    forest_threshold_low: 0.65,
-    forest_threshold_normal: 0.58,
-    forest_threshold_high: 0.5
-  },
-  tempo_gry: {
-    szybka: 1,
-    standardowa: 2,
-    dluga: 4
-  },
-  koszt_budynkow_pace: {
-    niski: 1,
-    normalny: 2,
-    wysoki: 4
-  },
-  koszt_jednostek_pace: {
-    niski: 1,
-    normalny: 2,
-    wysoki: 4
-  },
-  zwyciestwo: {
-    ostatnia_epoka_v1: 3,
-    prog_dominacji_power: 0.5,
-    dominacja_wymaga_ostatniej_epoki: true,
-    nauka_wymaga_rakiety: true
-  },
-  kreator_zaawansowane: {
-    seed_mode_default: "random",
-    manual_seed_default: 424242,
-    barbarians_enabled_default: true,
-    battle_always_manual_default: false,
-    fog_debug_reveal_all_default: false,
-    victory_power_and_dominance_default: true
-  },
-  decyzje_kanon: {
-    e1_reset_nowa_gra: true,
-    e1_tech_kaskada_epok: true,
-    e1_ziemia_preset_staly: true,
-    e1_zloza_tylko_gory: true,
-    e1_zloza_ukryte_do_epoki: true,
-    e2_barbarzyncy_do_przed_sredniowiecza: true,
-    e2_buntownicy_od_sredniowiecza: true
-  }
-};
-
-// src/data/e-start-params-loader.ts
-var R = e_start_params_default;
-function eStartPlayerCivId() {
-  return R.defaulty?.player_civ_id ?? "rzymianie";
-}
-function eStartEpochId() {
-  return R.defaulty?.start_epoch_id ?? "kamien";
-}
-function eStartRenderQualityBundled() {
-  const q = R.defaulty?.render_quality_bundled ?? "medium";
-  if (q === "low" || q === "high") return q;
-  return "medium";
-}
-
-// src/map/generator.ts
-var ROZMIAR_DIMS = mapGenRozmiarDims();
-
-// src/map/newGameMapDefaults.ts
-var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
-var DEFAULT_START_EPOCH_ID = eStartEpochId();
-var DEFAULT_RENDER_QUALITY = eStartRenderQualityBundled();
-var RIVER_SCALE_BY_SIZE = {
-  mala: mapGenRiverScale("mala"),
-  srednia: mapGenRiverScale("srednia"),
-  duza: mapGenRiverScale("duza"),
-  ogromna: mapGenRiverScale("ogromna"),
-  super: mapGenRiverScale("super")
-};
-var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
-
-// src/map/gen-helpers.ts
-var ERODE_TERRAIN_ORDER = [
-  "wybrzeze" /* Wybrzeze */,
-  "laka" /* Laka */,
-  "pustynia" /* Pustynia */,
-  "rownina" /* Rownina */,
-  "wzgorza" /* Wzgorza */,
-  "gory" /* Gory */
-];
-function isDryLandTerrain(tb) {
-  return tb !== "morze" /* Morze */ && tb !== "wybrzeze" /* Wybrzeze */;
-}
-var ELEVATION_RANK = {
-  ["morze" /* Morze */]: 0,
-  ["wybrzeze" /* Wybrzeze */]: 1,
-  ["laka" /* Laka */]: 2,
-  ["pustynia" /* Pustynia */]: 3,
-  ["rownina" /* Rownina */]: 4,
-  ["wzgorza" /* Wzgorza */]: 5,
-  ["gory" /* Gory */]: 6,
-  ["polarny" /* Polarny */]: 2
-};
-var BASE_DEPOSIT_RULES = [
-  {
-    id: "miedz",
-    nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
-    rarity: 0.1
-  },
-  {
-    id: "zelazo",
-    nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
-    rarity: 0.08
-  },
-  {
-    id: "glina",
-    nakladka: "zloze_gliny" /* ZlozeGliny */,
-    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
-    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
-    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
-    rarity: 0.1
-  },
-  {
-    id: "konie",
-    nakladka: "zloze_konia" /* ZlozeKonia */,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "rownina" /* Rownina */,
-    rarity: 0.1
-  },
-  {
-    id: "wegiel",
-    nakladka: null,
-    // brak w enumie Nakladka -> znacznik hex.zloze
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
-    rarity: 0.1
-  },
-  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
-  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
-  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
-  {
-    id: "sol",
-    nakladka: null,
-    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
-    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
-    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
-    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
-    requiresCoastalLand: true,
-    rarity: 0.12
-  },
-  {
-    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
-    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
-    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
-    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
-    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
-    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
-    id: "zloto",
-    nakladka: null,
-    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
-    rarity: 0.03
-  }
-];
-var _depositRarities = mapGenAllDepositRarities();
-var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
-  const rarity = _depositRarities[rule.id];
-  return typeof rarity === "number" ? { ...rule, rarity } : rule;
-});
-
 // src/render/hexutil.ts
 var HEX_R = 1;
 var SQRT3 = Math.sqrt(3);
@@ -7251,20 +7699,24 @@ var TEREN_MATERIAL = new MeshLambertMaterial({
   vertexColors: true,
   flatShading: true
 });
+var promien = new Raycaster();
+var promienStart = new Vector3();
+var promienDol = new Vector3(0, -1, 0);
 
 // src/render/mapRenderStyle.ts
 var SEA_SURFACE_TOP_Y = 0.18;
-var WYBRZEZE_SURFACE_TOP_Y = 0.2;
-var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.35;
+var WYBRZEZE_SURFACE_TOP_Y = 0.22;
+var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.28;
+var FLAT_LAND_SURFACE_Y = SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA;
 var TERRAIN_SURFACE_Y = {
   ["morze" /* Morze */]: SEA_SURFACE_TOP_Y,
   ["wybrzeze" /* Wybrzeze */]: WYBRZEZE_SURFACE_TOP_Y,
-  ["laka" /* Laka */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA,
-  ["rownina" /* Rownina */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
-  ["pustynia" /* Pustynia */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
+  ["laka" /* Laka */]: FLAT_LAND_SURFACE_Y,
+  ["rownina" /* Rownina */]: FLAT_LAND_SURFACE_Y,
+  ["pustynia" /* Pustynia */]: FLAT_LAND_SURFACE_Y,
   ["wzgorza" /* Wzgorza */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
   ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
-  ["polarny" /* Polarny */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.04
+  ["polarny" /* Polarny */]: FLAT_LAND_SURFACE_Y
 };
 var ROBLOX_TERRAIN_VIS = {
   ["morze" /* Morze */]: { height: 0.3, yOffset: 0 },
@@ -7322,7 +7774,7 @@ var TERRAIN_MINECRAFT = {
 };
 
 // src/render/pastwisko-modele.ts
-var PASTWISKO_S = 2.05 / 3;
+var PASTWISKO_S = 2.05 / 3 * 1.5;
 var az = (deg, r) => ({
   x: +(r * Math.sin(deg * Math.PI / 180)).toFixed(3),
   z: +(-r * Math.cos(deg * Math.PI / 180)).toFixed(3)
@@ -7441,7 +7893,20 @@ var OWNER_CAPPED_RESOURCE_KEYS = [
 ];
 var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
 
+// src/game/population-growth-v85.ts
+var WYZYWIENIE_MIN = 0;
+var WYZYWIENIE_MAX = 6;
+var WYZYWIENIE_STEP = 0.5;
+var WYZYWIENIE_LEVELS = Array.from(
+  { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
+  (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
+);
+var DEFAULT_POZIOM_RACJI = 4;
+
 // src/game/cities.ts
+var DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
+  DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX * 100
+);
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
 // src/game/okolica.ts
@@ -7484,10 +7949,9 @@ var TERRAIN_ALLOW = {
   lama: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   // decyzja 3a: lama tylko wzgórza + góry
   stadnina: /* @__PURE__ */ new Set(["laka" /* Laka */, "rownina" /* Rownina */]),
-  kopalnia: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   glinianka: null,
   kamieniolom: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
-  // Maciej 2026-07-24: Wzgórza+Góry (nie zawsze mamy dostęp do gór); teren, bez złoża
+  // Maciej 2026-07-24: Wzgórza+Góry
   oboz_lowiecki: null,
   wyrab: null,
   lodzie_rybackie: /* @__PURE__ */ new Set(["wybrzeze" /* Wybrzeze */, "morze" /* Morze */]),
@@ -7497,6 +7961,7 @@ var TERRAIN_ALLOW = {
   droga_brukowana: null,
   posterunek: null,
   kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
+  kopalnia_zelaza: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
   // gen-helpers.ts id='zloto').
   kopalnia_zlota: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
@@ -7507,6 +7972,12 @@ var NAKLADKI_ZWIERZECZE = /* @__PURE__ */ new Set([
   "zloze_bydla" /* ZlozeBydla */,
   "zloze_lamy" /* ZlozeLamy */
 ]);
+
+// src/render/unitVitalsPalette.ts
+var VITALS_HP_DARK_CSS = "#1a6020";
+var VITALS_HP_FULL_CSS = "#50b070";
+var VITALS_MOVE_DARK_CSS = "#2a5080";
+var VITALS_MOVE_FULL_CSS = "#60a8e8";
 
 // src/map/deposit-era.ts
 var METAL_DEPOSIT_MIN_ERA = mapGenMetalDepositMinEra();
@@ -7561,6 +8032,8 @@ var combat_params_default = {
     hill_defense_mult: 1.5,
     mountain_defense_mult: 1.75,
     fortify_obrona_bonus: 2,
+    fortify_obrona_proc: 50,
+    _fortify_obrona_proc_opis: "ufortyfikowanyWPolu (fortyfikacja W POLU, NIE garnizon): +50% Obrony jednostki (mno\u017Cnik na efektywnej Obronie przed terenem/brodem). Garnizon miasta nadal u\u017Cywa fortify_obrona_bonus (flat +2 pkt).",
     militia_pop_fraction: 0.2,
     militia_strength_fraction: 0.5,
     siege_max_rounds: 30
@@ -7578,6 +8051,10 @@ var combat_params_default = {
     missile_divisor: 2,
     hp_field_divisor: 2,
     hp_siege_divisor: 10
+  },
+  battle_loot: {
+    _opis: "\u0141up po wygranej bitwie \u2014 % bazowego kosztu rekrutacji (Pieni\u0105dz + Surowiec) ka\u017Cdej jednostki wroga usuni\u0119tej z mapy po walce.",
+    recruit_cost_pct: 100
   }
 };
 
@@ -7620,17 +8097,13 @@ function fieldPower(u, coeff = loadUnitPowerCoeffs()) {
 }
 
 // src/game/veteran.ts
-function veteranBattlesSurvived(unit) {
+var VETERAN_MAX_BATTLES_TRACKED = 3;
+function veteranBattlesWon(unit) {
   const v = unit?.battlesSurvived;
   return typeof v === "number" && Number.isFinite(v) && v > 0 ? Math.floor(v) : 0;
 }
-function veteranLevelFromBattles(battlesSurvived) {
-  if (battlesSurvived >= 2) return 3;
-  if (battlesSurvived >= 1) return 2;
-  return 1;
-}
-function veteranLevel(unit) {
-  return veteranLevelFromBattles(veteranBattlesSurvived(unit));
+function veteranStarCount(unit) {
+  return Math.min(VETERAN_MAX_BATTLES_TRACKED, veteranBattlesWon(unit));
 }
 
 // tools/.stubs/brandAssets-stub.ts
@@ -7639,6 +8112,14 @@ function brandIconSvg(_key, _size) {
 }
 function unitIconSvg(_key) {
   return "";
+}
+
+// src/ui/formatPl.ts
+function formatLiczbaPl(n, maxMiejsca = 1) {
+  if (!Number.isFinite(n)) return "0";
+  const zaokr = Number(n.toFixed(Math.max(0, Math.min(6, maxMiejsca))));
+  const bezMinusZera = Object.is(zaokr, -0) ? 0 : zaokr;
+  return String(bezMinusZera).replace(".", ",");
 }
 
 // src/ui/unitCardStatus.ts
@@ -7650,6 +8131,21 @@ var PATH_BADGE_COLOR = {
 function pathBadgeColor(level) {
   if (level === 0) return "#5a5040";
   return PATH_BADGE_COLOR[level];
+}
+function pickUnitSufferingFields(src) {
+  return {
+    poziomTrudnosciLabel: src.poziomTrudnosciLabel,
+    glodWojska: src.glodWojska,
+    glodWojskaStatMult: src.glodWojskaStatMult,
+    glodWojskaHpFrac: src.glodWojskaHpFrac,
+    glodWojskaAtrycjaAktywna: src.glodWojskaAtrycjaAktywna,
+    glodWojskaTurDoAtrycji: src.glodWojskaTurDoAtrycji,
+    zlotoDeficyt: src.zlotoDeficyt,
+    zlotoDeficytStatMult: src.zlotoDeficytStatMult,
+    zlotoDeficytHpFrac: src.zlotoDeficytHpFrac,
+    zlotoDeficytAtrycjaAktywna: src.zlotoDeficytAtrycjaAktywna,
+    zlotoDeficytTurDoAtrycji: src.zlotoDeficytTurDoAtrycji
+  };
 }
 function formatCardStatNum(n) {
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
@@ -7681,7 +8177,7 @@ function buildPathLevelIconsRowHtml(input) {
   const esc2 = input.esc;
   const softLvl = softPathBadgeLevel({ parametryBonusProc: input.parametryPathPp ?? 0 });
   const armorLvl = armorPathBadgeLevel({ pancerzBonusProc: input.pancerzPathPp ?? 0 });
-  const vetLvl = veteranLevel(input.veteranProgress ?? null);
+  const vetStars = veteranStarCount(input.veteranProgress ?? null);
   const koszaryIc = brandIconSvg("bld-koszary", 16) || "\u{1F6E1}";
   const kuzniaIc = brandIconSvg("bld-kuznia", 16) || "\u2692";
   const vetIc = '<span class="uc-vet-ic">\u2605</span>';
@@ -7697,7 +8193,7 @@ function buildPathLevelIconsRowHtml(input) {
       pathLevelDotsHtml(armorLvl, pathBadgeColor(armorLvl)),
       "Pancerz \u015Bcie\u017Cka (ku\u017Ania)"
     ),
-    pathIconCell(vetIc, pathLevelDotsHtml(vetLvl, "#f4d35e"), vetTip)
+    pathIconCell(vetIc, pathLevelDotsHtml(vetStars, "#f4d35e"), vetTip)
   ];
   return `<div class="uc-path-icons-row">${cells.join("")}</div>`;
 }
@@ -7709,6 +8205,36 @@ function pathStatusRowHasChips(input) {
   if (input.veteranBadgeLabel) return true;
   return false;
 }
+function turyPl(n) {
+  if (n === 1) return "1 tur\u0119";
+  const dziesiatki = n % 100;
+  const jednosci = n % 10;
+  const maloMnogie = jednosci >= 2 && jednosci <= 4 && !(dziesiatki >= 12 && dziesiatki <= 14);
+  return `${n} ${maloMnogie ? "tury" : "tur"}`;
+}
+function sufferingStatusLineHtml(opts) {
+  const esc2 = opts.esc;
+  const czlony = [`${esc2(opts.naglowek)} \u2014 ${esc2(opts.przyczyna)}`];
+  if (typeof opts.statMult === "number" && opts.statMult > 0 && opts.statMult < 1) {
+    const ubytekProc = formatLiczbaPl((1 - opts.statMult) * 100, 1);
+    czlony.push(
+      `Atak / Obrona / HP bojowe \xD7 ${formatLiczbaPl(opts.statMult, 2)} = \u2212${ubytekProc}% warto\u015Bci bojowej (bez Pancerza; parametr <code>${esc2(opts.statMultParam)}</code>, mno\u017Cnik)`
+    );
+  }
+  if (typeof opts.hpFrac === "number" && opts.hpFrac > 0) {
+    const procMaxHp = formatLiczbaPl(opts.hpFrac * 100, 1);
+    const atrycja = `\u2212${procMaxHp}% maxHP na tur\u0119 (parametr <code>${esc2(opts.hpFracParam)}</code>, u\u0142amek maxHP)`;
+    if (opts.atrycjaAktywna) {
+      czlony.push(`atrycja HP TRWA: ${atrycja}`);
+    } else if (typeof opts.turDoAtrycji === "number" && opts.turDoAtrycji > 0) {
+      czlony.push(`atrycja HP za ${turyPl(opts.turDoAtrycji)}: ${atrycja}`);
+    } else {
+      czlony.push(`po karencji atrycja HP: ${atrycja}`);
+    }
+  }
+  const kontekst = opts.poziomTrudnosciLabel ? ` <span class="uc-suffer-ctx">warto\u015Bci dla poziomu trudno\u015Bci: ${esc2(opts.poziomTrudnosciLabel)}</span>` : "";
+  return `<div class="uc-extra-status ${opts.klasa}">Status: ${czlony.join("; ")}.${kontekst}</div>`;
+}
 function buildUnitExtraStatusLinesHtml(input) {
   const esc2 = input.esc;
   const lines = [];
@@ -7719,10 +8245,40 @@ function buildUnitExtraStatusLinesHtml(input) {
     lines.push(`<div class="uc-extra-status">Status: czuwa (nie budzi si\u0119 na ruch wroga)</div>`);
   }
   if (input.ufortyfikowanyWPolu) {
-    lines.push(`<div class="uc-extra-status">Status: ufortyfikowana w polu</div>`);
+    lines.push(`<div class="uc-extra-status">Status: ufortyfikowana w polu (+50% Obrony)</div>`);
   }
   if (input.oblegaCityName) {
     lines.push(`<div class="uc-extra-status">Status: oblega ${esc2(input.oblegaCityName)}</div>`);
+  }
+  if (input.glodWojska) {
+    lines.push(sufferingStatusLineHtml({
+      esc: esc2,
+      naglowek: "g\u0142\xF3d wojska",
+      przyczyna: "zapasy \u017Bywno\u015Bci pa\u0144stwa < 0 po koszcie armii",
+      statMult: input.glodWojskaStatMult,
+      statMultParam: "glod_wojska_stat_mult",
+      hpFrac: input.glodWojskaHpFrac,
+      hpFracParam: "glod_wojska_hp_frac",
+      atrycjaAktywna: input.glodWojskaAtrycjaAktywna,
+      turDoAtrycji: input.glodWojskaTurDoAtrycji,
+      poziomTrudnosciLabel: input.poziomTrudnosciLabel,
+      klasa: "uc-suffer-glod"
+    }));
+  }
+  if (input.zlotoDeficyt) {
+    lines.push(sufferingStatusLineHtml({
+      esc: esc2,
+      naglowek: "deficyt Z\u0142ota",
+      przyczyna: "Skarbiec pa\u0144stwa < 0 po zbankowaniu tury",
+      statMult: input.zlotoDeficytStatMult,
+      statMultParam: "zloto_deficyt_stat_mult",
+      hpFrac: input.zlotoDeficytHpFrac,
+      hpFracParam: "zloto_deficyt_hp_frac",
+      atrycjaAktywna: input.zlotoDeficytAtrycjaAktywna,
+      turDoAtrycji: input.zlotoDeficytTurDoAtrycji,
+      poziomTrudnosciLabel: input.poziomTrudnosciLabel,
+      klasa: "uc-suffer-zloto"
+    }));
   }
   return lines.join("");
 }
@@ -7755,11 +8311,19 @@ var UNIT_CARD_STATUS_CSS = `
 .uc-veteran-xp{margin:4px 0 0;font-size:0.68em;color:#c8b878;line-height:1.4;}
 .uc-veteran-edu{margin:2px 0 0;font-size:0.65em;color:#a89868;line-height:1.4;}
 .uc-extra-status{margin:3px 0 0;font-size:0.68em;color:var(--civ-text-muted,#8a8070);line-height:1.4;}
+/* R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C \u2014 kolory zgodne z ikonami na mapie:
+   czerwie\u0144 czaszki g\u0142odu (#e01e1e) i z\u0142oto przekre\u015Blonej monety (#e8c84a). */
+.uc-extra-status.uc-suffer-glod{color:#e06a60;}
+.uc-extra-status.uc-suffer-zloto{color:#e0bf5a;}
+.uc-extra-status code{font-family:ui-monospace,Consolas,monospace;font-size:0.94em;opacity:.85;}
+.uc-suffer-ctx{color:var(--civ-text-muted,#8a8070);opacity:.9;}
 .uc-stat-eff{font-weight:700;color:var(--civ-text-primary,#e8e0c8);}
 .uc-stat-base{font-weight:400;font-size:0.85em;color:var(--civ-text-muted,#8a8070);margin-left:4px;}
 .uc-unit-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;}
-.uc-unit-head .uc-owner-emblem{flex:0 0 auto;width:40px;height:40px;line-height:0;}
-.uc-unit-head .uc-owner-emblem .dip-leader-medallion{width:40px;height:40px;}
+.uc-unit-head .uc-owner-emblem{flex:0 0 auto;width:40px;height:40px;line-height:0;overflow:hidden;position:relative;}
+.uc-unit-head .uc-owner-emblem .dip-leader-medallion{width:40px!important;height:40px!important;margin:0;
+  overflow:hidden;border-width:2px;box-shadow:none!important;}
+.uc-unit-head .uc-owner-emblem .dip-leader-ic{width:100%!important;height:100%!important;}
 .uc-unit-head .uc-owner-emblem.uc-owner-barb{display:flex;align-items:center;justify-content:center;
   width:40px;height:40px;border-radius:50%;border:2px solid rgba(180,60,60,.55);
   background:rgba(40,12,12,.75);color:#e07070;}
@@ -7779,9 +8343,11 @@ var ACTION_ICONS = {
   replace: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 3v14"/><path d="M4.5 6 7.5 3l3 3"/><path d="M16.5 21V7"/><path d="M19.5 18l-3 3-3-3"/></svg>',
   skip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5l6.5 7-6.5 7"/><path d="M12.5 5l6.5 7-6.5 7"/></svg>',
   split: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M8 7 4 11l4 4"/><path d="M16 7l4 4-4 4"/></svg>',
-  sentry: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/></svg>'
+  merge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7 4 11l4 4"/><path d="M16 7l4 4-4 4"/><path d="M12 3v18"/></svg>',
+  sentry: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.7 14.9A9 9 0 1 1 9.4 3.3a7.2 7.2 0 0 0 11.3 11.6z"/></svg>',
+  "scout-explore": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><path d="m8 8 8 8M16 8l-8 8" stroke-width="1.5" opacity=".35"/></svg>'
 };
-var COMPACT_ACTION_ORDER = ["fortify", "split", "replace", "sentry", "skip"];
+var COMPACT_ACTION_ORDER = ["fortify", "sentry", "scout-explore", "split", "merge", "replace", "skip"];
 function buildUnitActionBarHtml(actions) {
   const byId = new Map(actions.map((a) => [a.id, a]));
   let html = '<div class="uc-act-bar">';
@@ -7790,7 +8356,9 @@ function buildUnitActionBarHtml(actions) {
     if (!a) continue;
     const icon = ACTION_ICONS[id];
     if (!icon) continue;
-    html += `<button type="button" class="uc-act-btn" data-act="${esc(id)}" title="${esc(a.label)}" aria-label="${esc(a.label)}"` + (a.disabled ? " disabled" : "") + `><span class="uc-act-ic">${icon}</span></button>`;
+    const onCls = a.active ? " uc-act-btn--on" : "";
+    const ariaPressed = typeof a.active === "boolean" ? ` aria-pressed="${a.active ? "true" : "false"}"` : "";
+    html += `<button type="button" class="uc-act-btn${onCls}" data-act="${esc(id)}" title="${esc(a.label)}" aria-label="${esc(a.label)}"${ariaPressed}` + (a.disabled ? " disabled" : "") + `><span class="uc-act-ic">${icon}</span></button>`;
   }
   const disband = byId.get("disband");
   if (disband) {
@@ -7803,11 +8371,18 @@ var UNIT_ACTION_BAR_CSS = `
 .uc-act-bar{display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;
   border-top:1px solid rgba(212,175,90,.28);flex-wrap:wrap;}
 .uc-act-btn{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;
-  padding:0 8px;border-radius:6px;cursor:pointer;
-  background:rgba(18,22,30,.85);border:1px solid rgba(232,216,138,.28);color:var(--civ-text-primary,#e8e0c8);
-  transition:border-color .12s,background .12s;}
-.uc-act-btn:hover:not(:disabled){border-color:rgba(232,216,138,.5);background:rgba(32,38,48,.95);}
-.uc-act-btn:disabled{opacity:.38;cursor:not-allowed;}
+  padding:0 8px;border-radius:6px;cursor:pointer;box-sizing:border-box;
+  background:rgba(18,22,30,.85);border:1px solid rgba(232,216,138,.22);
+  color:rgba(200,192,168,.72);transition:border-color .12s,border-width .12s,background .12s,color .12s,box-shadow .12s;}
+.uc-act-btn:hover:not(:disabled):not(.uc-act-btn--on){border-color:rgba(232,216,138,.38);
+  background:rgba(28,34,44,.92);color:rgba(220,212,188,.88);}
+.uc-act-btn--on{border-width:3px;border-color:var(--civ-gold-primary,#e8d88a);
+  background:linear-gradient(180deg,rgba(232,216,138,.22),rgba(232,216,138,.08));
+  color:var(--civ-gold-primary,#e8d88a);box-shadow:0 0 12px rgba(232,216,138,.22);}
+.uc-act-btn--on:hover:not(:disabled){border-color:#f5e6a8;
+  background:linear-gradient(180deg,rgba(232,216,138,.28),rgba(232,216,138,.12));
+  box-shadow:0 0 14px rgba(232,216,138,.28);}
+.uc-act-btn:disabled{opacity:.38;cursor:not-allowed;color:var(--civ-text-primary,#e8e0c8);}
 .uc-act-ic{width:17px;height:17px;display:flex;align-items:center;justify-content:center;}
 .uc-act-ic svg{width:100%;height:100%;display:block;}
 .uc-act-disband{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.08em;
@@ -7845,6 +8420,8 @@ function unitCardStatusFromTooltip(u) {
     sentry: u.sentry,
     ufortyfikowanyWPolu: u.ufortyfikowanyWPolu,
     oblegaCityName: u.oblegaCityName,
+    // R-STATUS-PRZYCZYNA-CIERPIENIA-Q1=C: głód wojska + deficyt Złota.
+    ...pickUnitSufferingFields(u),
     esc: u.esc
   };
 }
@@ -7945,12 +8522,18 @@ ${UNIT_CARD_STATUS_CSS}
 .sp-unit-stack-bars{display:flex;flex-direction:column;gap:3px;margin-top:5px;padding:0 3px;}
 .sp-unit-stack-bar{height:4px;background:rgba(0,0,0,.38);border-radius:2px;overflow:hidden;}
 .sp-unit-stack-bar i{display:block;height:100%;border-radius:2px;}
-.sp-unit-stack-bar-hp i{background:linear-gradient(90deg,#1a6020,#50b070);}
-.sp-unit-stack-bar-mov i{background:linear-gradient(90deg,#2a5080,#60a8e8);}
+.sp-unit-stack-bar-hp i{background:linear-gradient(90deg,${VITALS_HP_DARK_CSS},${VITALS_HP_FULL_CSS});}
+.sp-unit-stack-bar-mov i{background:linear-gradient(90deg,${VITALS_MOVE_DARK_CSS},${VITALS_MOVE_FULL_CSS});}
 .sp-unit-stack-meta{font-size:8px;color:var(--civ-text-muted,#8a8070);margin-top:4px;}
 .uc-unit-head-meta{font-size:10px;color:var(--civ-text-muted,#a09880);margin-top:3px;font-weight:400;}
 ${UNIT_ACTION_BAR_CSS}
 .sp-unit-card-body{display:flex;flex-direction:column;gap:0;}
+.sp-unit-card-expanded .sp-unit-card-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;align-items:start;}
+.sp-unit-card-expanded .sp-unit-card-col{min-width:0;}
+.sp-unit-card-expanded .sp-unit-card-col-detail{border-left:1px solid rgba(212,175,90,.18);padding-left:12px;}
+.sp-unit-card-foot{display:flex;flex-direction:column;gap:0;margin-top:8px;}
+.sp-unit-card-expanded .sp-unit-card-foot{margin-top:8px;}
+.sp-unit-card-expanded .sp-unit-stack{flex-wrap:wrap;overflow-x:visible;justify-content:flex-start;}
 .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
   border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
   color:var(--civ-gold-primary,#e8d88a);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
@@ -7964,9 +8547,18 @@ function buildArmySelectedUnitLabelHtml(cards, esc2) {
   if (!active) return "";
   return `<div class="sp-army-sel-lbl">Wybrana jednostka: <b>${esc2(active.name)}</b></div>`;
 }
-function buildUnitContextTooltipHtml(u) {
-  const statusInput = unitCardStatusFromTooltip(u);
-  const expanded = u.expanded === true;
+function buildUnitDetailExtrasHtml(u, statusInput) {
+  const parts = [buildUnitExpandedStatsHtml(u)];
+  const extra = buildUnitExtraStatusLinesHtml(statusInput);
+  if (extra) parts.push(`<div class="cp-sub">${extra}</div>`);
+  const vetEdu = buildUnitVeteranEducationHtml(statusInput);
+  if (vetEdu) parts.push(`<div class="cp-sub">${vetEdu}</div>`);
+  if (u.buildingBonusLabel && !pathStatusRowHasChips(statusInput)) {
+    parts.push(subLine("Ulepszenia (budynki)", u.esc(u.buildingBonusLabel)));
+  }
+  return parts.join("");
+}
+function buildUnitCompactBodyHtml(u, statusInput) {
   const isArmy = (u.stackCards?.length ?? 0) > 1;
   const lines = [buildUnitHeadHtml(u)];
   if (isArmy && u.stackCards) {
@@ -7976,29 +8568,39 @@ function buildUnitContextTooltipHtml(u) {
     lines.push(buildUnitForcesHtml(u));
     lines.push(buildPathLevelIconsRowHtml(statusInput));
   }
-  if (expanded) {
-    if (isArmy && u.stackCards) {
-      lines.push(buildArmySelectedUnitLabelHtml(u.stackCards, u.esc));
-      lines.push(buildUnitVitalsHtml(u));
-      lines.push(buildUnitForcesHtml(u));
-      lines.push(buildPathLevelIconsRowHtml(statusInput));
-    }
-    lines.push(buildUnitExpandedStatsHtml(u));
-    const extra = buildUnitExtraStatusLinesHtml(statusInput);
-    if (extra) lines.push(`<div class="cp-sub">${extra}</div>`);
-    const vetEdu = buildUnitVeteranEducationHtml(statusInput);
-    if (vetEdu) lines.push(`<div class="cp-sub">${vetEdu}</div>`);
-    if (u.buildingBonusLabel && !pathStatusRowHasChips(statusInput)) {
-      lines.push(subLine("Ulepszenia (budynki)", u.esc(u.buildingBonusLabel)));
-    }
+  return lines.join("");
+}
+function buildUnitExpandedBodyHtml(u, statusInput) {
+  const isArmy = (u.stackCards?.length ?? 0) > 1;
+  let basicCol = buildUnitHeadHtml(u);
+  let detailCol = "";
+  if (isArmy && u.stackCards) {
+    basicCol += buildUnitStackCardsHtml(u.stackCards, u.esc);
+    detailCol += buildArmySelectedUnitLabelHtml(u.stackCards, u.esc);
+    detailCol += buildUnitVitalsHtml(u);
+    detailCol += buildUnitForcesHtml(u);
+    detailCol += buildPathLevelIconsRowHtml(statusInput);
+  } else {
+    basicCol += buildUnitVitalsHtml(u);
+    basicCol += buildUnitForcesHtml(u);
+    basicCol += buildPathLevelIconsRowHtml(statusInput);
   }
+  detailCol += buildUnitDetailExtrasHtml(u, statusInput);
+  return `<div class="sp-unit-card-cols"><div class="sp-unit-card-col sp-unit-card-col-basic">${basicCol}</div><div class="sp-unit-card-col sp-unit-card-col-detail">${detailCol}</div></div>`;
+}
+function buildUnitContextTooltipHtml(u) {
+  const statusInput = unitCardStatusFromTooltip(u);
+  const expanded = u.expanded === true;
+  const bodyHtml = expanded ? buildUnitExpandedBodyHtml(u, statusInput) : buildUnitCompactBodyHtml(u, statusInput);
+  const footer = [];
   if (u.expandable) {
-    lines.push(buildUnitExpandButtonHtml(expanded));
+    footer.push(buildUnitExpandButtonHtml(expanded));
   }
   if (u.actions && u.actions.length > 0) {
-    lines.push(buildUnitActionBarHtml(u.actions));
+    footer.push(buildUnitActionBarHtml(u.actions));
   }
-  return `<div class="sp-unit-card-body">${lines.join("")}</div>`;
+  const footHtml = footer.length ? `<div class="sp-unit-card-foot">${footer.join("")}</div>` : "";
+  return `<div class="sp-unit-card-body${expanded ? " sp-unit-card-expanded" : ""}">${bodyHtml}${footHtml}</div>`;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
