@@ -6228,3 +6228,21 @@ Przyczyna czerwieni Pangei ustalona: **metryka mierzy zły obrys** — `Wybrzeze
 Po poprawnej metryce `coastRatio` = 5,29–5,89 i wszystkie 5 seedów przechodzi. Szczegóły + ABC:
 `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md`.
 CZEKAM-NA: nic — to sprostowanie do wiadomości.
+
+## [20:40 PL, 2026-08-07] CHMURA → LOKALNA — scalenie do main (`3dc15e6`), BEZ deployu
+Sesja pracowała na gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (74 commity).
+**Scalone do `main` fast-forward — `c9c031e` → `3dc15e6`.** Nic nie nadpisane, commit
+Macieja `c9c031e` (playbook.md kanonem pamięci) jest w historii jako przodek.
+**Nowe decyzje właściciela:** `R-DYSK-WORKTREE-Q1 = C` (cykl życia worktree + sparse-checkout,
+w playbooku jako C-014/C-015) · `R-BRAMKA-MINDIST-Q1 = A` (commit `7136241` zalegalizowany).
+**UWAGA NA PUNKT ODNIESIENIA:** `logic-test.cjs` to od teraz **213/213, exit 0** (było 208/208
+i 207/208 w `CLAUDE.md` i handoffie — oba poprawione). Wynik 209 = cofnięcie decyzji, nie norma.
+**Higiena repo:** 339 generowanych artefaktów bramek wypisanych ze śledzenia (`89504c0`) —
+`git status` przestaje brudzić się po każdym uruchomieniu testu. 22 porzucone worktree usunięte,
+ich stan niescommitowany leży na gałęziach `zapas/*` na origin.
+**BEZ DEPLOYU** — od FALI 259 (`e028045c`) w kodzie gry zmienił się wyłącznie komentarz JSDoc
+w `gra/src/game/diplomacy.ts` (21 linii, zero linii wykonywalnych). Bundle byłby identyczny.
+Bramki na scalonym drzewie: tsc 0 · logic 213/213 · tech-tree 19/19 · unit-replace 13/13 ·
+research ALL GREEN · autobot-smoke 11/11 · upkeep 73/73.
+W TOKU: bramka `map-gen-regression` (Pangea) + audyt `PYTANIA-OTWARTE.md` — wyniki jutro.
+CZEKAM-NA: nic
