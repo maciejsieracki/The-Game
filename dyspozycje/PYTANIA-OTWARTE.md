@@ -2049,7 +2049,7 @@ generujący entry przed `esbuild`, identycznie jak w działających plikach.
 **Do poprawienia przy okazji:** `.gitignore:53-56` — komentarz twierdzący, że WSZYSTKIE bramki
 generują entry same, jest dziś nieprawdziwy; poprawić po naprawieniu 10 plików.
 
-## R-MOC-MUR-PARADOKS-Q1 (2026-08-07, nota N4 Evaluatora) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+## R-MOC-MUR-PARADOKS-Q1 (2026-08-07, nota N4 Evaluatora) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`f94216e`, A)
 **Ustalenie:** po wdrożeniu `R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B` tabliczka jednostki w garnizonie
 pokazuje wyższą Moc **w szczerym polu** niż **za murem miasta** — bo bonus muru (do +400%,
 `structBonusPct`) wchodzi dopiero w rozstrzygnięciu bitwy (`effectiveDefenderM`), nie w tabliczce
@@ -2064,7 +2064,7 @@ i zaakceptować ten paradoks jako znany, opisany gdzieś w UI (np. tooltip).
 **Kotwice:** `gra/src/game/armyMerge.ts::stackFieldPowerM`, `gra/src/game/city-defense.ts`
 (`shouldApplyGarrisonFortifyBonus`), `gra/src/main.ts::effectiveDefenderM`.
 
-## R-MOC-RANKING-ROZJAZD-Q1 (2026-08-07, nota N9 Evaluatora) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+## R-MOC-RANKING-ROZJAZD-Q1 (2026-08-07, nota N9 Evaluatora) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`d1f7b91`, B)
 **Ustalenie:** `sumArmyMForOwner` (`main.ts:1581`, panel Mocy imperium + progi decyzji AI
 w dyplomacji) NIE zostało objęte decyzją B — pozostaje nominalne, świadomie (zakres decyzji
 dotyczył dosłownie „tabliczki nad żetonem"). Skutek: ta sama armia weteranów ma teraz **dwie
@@ -2079,7 +2079,7 @@ nie tylko wyświetlania, i wymaga osobnej bramki/pomiaru przed wdrożeniem.
 **Kotwice:** `gra/src/main.ts:1581` (`sumArmyMForOwner`), `ui/powerOverlayHud.ts` (panel),
 `main.ts` linie ~12955/13950/21784/21974 (`militaryRatioFromArmyM`, progi wojny).
 
-## R-PRZEMARSZ-WYGASANIE-Q1 (2026-08-07, noty N-D1/N-D2 Evaluatora, runda 2) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA**
+## R-PRZEMARSZ-WYGASANIE-Q1 (2026-08-07, noty N-D1/N-D2 Evaluatora, runda 2) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`8fe51b3`, A)
 **Ustalenie:** naprawa „cel kamery się starzeje" + „dismiss nie działa trwale" (obie z rundy 1)
 została zrobiona jednym mechanizmem — stabilne id per kierunek, usuwane i wstawiane na nowo
 przy każdym wystąpieniu naruszenia w kolejnej turze. To **wprowadziło nowy defekt**, gorszy
