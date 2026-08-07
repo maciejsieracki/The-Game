@@ -1,11 +1,11 @@
 {
-  "version": 9,
-  "updatedAtIso": "2026-08-07T19:30:00.000Z",
+  "version": 12,
+  "updatedAtIso": "2026-08-07T19:56:31.705Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
     "deprecateBelowWinRate": 0.3,
-    "minRunsForSignificance": 10,
+    "minRunsForSignificance": 5,
     "thresholdAdjustDelayHours": 24,
     "minEventsForWinner": 1000,
     "evaluationDelayHours": 48
@@ -41,13 +41,14 @@
     },
     {
       "id": "rule_103",
-      "rule_text": "Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON)",
+      "rule_text": "Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON) — dozwolona komenda: node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir [C-001]",
       "status": "ACTIVE",
       "actionId": "build-via-vite-bin",
       "win_count": 8,
       "fail_count": 0,
       "win_rate": 1,
-      "lastUpdatedIso": "2026-08-05T09:33:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z",
+      "protected": true
     },
     {
       "id": "rule_104",
@@ -111,87 +112,117 @@
     },
     {
       "id": "rule_110",
-      "rule_text": "Test failure ≠ automatycznie 'przestarzały test'. Najpierw git blame/log kodu I danych, których dotyczy, ORAZ sprawdź czy realne wywołania produkcyjne (main.ts) faktycznie przechodzą tą samą ścieżką/wartością co test mierzy — sama 'świadoma zmiana widoczna w commicie' NIE WYSTARCZA, jeśli produkcja nie dostała analogicznej zmiany (patrz Rejestr błędów: UNIT-REPLACE-EVOCATI-Q1 runda 1 — błędny wniosek 'silnik był poprawny')",
+      "rule_text": "Commituj każdą ukończoną grupę plików natychmiast, nie zbiorczo na koniec pracy — repo współdzielone z drugą sesją [C-003]",
       "status": "ACTIVE",
-      "actionId": "verify-test-vs-engine-staleness",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T07:00:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
     },
     {
       "id": "rule_111",
-      "rule_text": "Zmiana wpływająca na balans gry (progi liczbowe, koszty, mnożniki, mechanika akceptacji/odrzucenia ofert AI, wymagania Relacji/Zaufania/Respektu) wymaga pełnego ABC ZAWSZE — niezależnie od pewności diagnozy. Samodzielne poprawki (bez ABC) mogą dotyczyć wyłącznie kwestii, które NIE zmieniają balansu (literówki, testy dogania­jące już wdrożoną zmianę silnika, martwy kod, refaktor bez zmiany zachowania, dokumentacja). Kanon: R-PROC-ABC-BALANS, PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md §3b",
-      "status": "PROTECTED",
-      "actionId": "respect-balance-abc-gate",
+      "rule_text": "Deploy to jeden nierozdzielny ciąg: bramki → build → stempel → verify → WERSJE.md → KANAŁ → commit → sprawdź czy main nie odjechał → push [C-004]",
+      "status": "ACTIVE",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T07:00:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
     },
     {
       "id": "rule_112",
-      "rule_text": "Skrypty Workflow (agent()/pipeline()) to zwykły JS bez require/fs/Date.now()/Math.random() — treść osadzana w template literals (patche, kod źródłowy do embedowania) musi mieć escapowane backticki (\\`) i sekwencje ${ (\\${) przed wklejeniem, inaczej skrypt pęka na starcie bez uruchomienia ŻADNEGO agenta. To samo dotyczy zwykłych stringów w apostrofach: treść polska w skryptach Workflow trafia do stringów, a apostrof w środku polskiego słowa (np. liczba mnoga w stylu \"call-site'ów\") wewnątrz stringu otoczonego apostrofami zamyka string przedwcześnie i wywala cały skrypt na 'Unexpected token' — używać cudzysłowów zamiast apostrofów albo przeformułować zdanie bez apostrofu, i NIE ufać, że komunikat błędu wskaże właściwe miejsce (wskazuje zwykle dalszy fragment skryptu, nie faktyczne miejsce złamania)",
+      "rule_text": "Status subagenta pracującego w tle oceniaj po znacznikach czasu plików wyjściowych, nie po etykiecie systemu — subagent może wykonać pracę i umrzeć bez raportu [C-005]",
       "status": "ACTIVE",
-      "actionId": "verify-workflow-script-escaping",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T16:30:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
     },
     {
       "id": "rule_113",
-      "rule_text": "PREWENCJA: worktree dla subagenta przygotowuje ORKIESTRATOR na tipie gałęzi roboczej (`git worktree add --detach <ścieżka> HEAD` + symlink node_modules) — NIE na main — bo isolation:\"worktree\" domyślnie odbija od main, a nie od gałęzi roboczej; subagent dostaje gotową ścieżkę w zleceniu i ma na starcie zaraportować `pwd && git rev-parse HEAD`, żeby dryf był widoczny natychmiast, zanim powstanie jakikolwiek patch. Dryf uderzył 2026-08-07 TRZY razy (zlecenia wb8coodo3, w2vcni6m1, wupki7quq), za każdym razem kosztując całą rundę Operatora. DETEKCJA (druga linia obrony): worktree subagenta może mieć bazę (git log -1) starszą niż aktualny main, zwłaszcza po kilku kolejnych rundach tego samego tematu — przed scaleniem sprawdź `git apply --check`; jeśli nie nakłada się czysto, użyj `git apply --3way` (merge trójstronny) zamiast zakładać nierozwiązywalny konflikt lub odrzucać poprawną pracę Operatora",
+      "rule_text": "Nie raportuj wyniku subagenta bez własnej weryfikacji na dysku lub w kodzie [C-006]",
       "status": "ACTIVE",
-      "actionId": "verify-worktree-base-drift",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T16:30:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
     },
     {
       "id": "rule_114",
-      "rule_text": "Nigdy nie usuwaj (`git worktree remove`) worktree zawierającego pracę Operatora, dopóki: (a) Evaluator jej nie zrecenzował, LUB (b) nie wyciągnięto z niego pełnego diffu/artefaktów potrzebnych do scalenia. Brak flagi 'locked' w `git worktree list` NIE oznacza 'bezpieczny do skasowania' — to tylko blokada współbieżnego dostępu, nie znacznik ukończenia pracy",
+      "rule_text": "Przed serią zmian w repo współdzielonym zostaw wpis-blokadę w KANAL-PRACA.md, po zakończeniu wpis ODBLOKOWANE [C-007]",
       "status": "ACTIVE",
-      "actionId": "verify-worktree-retention-before-delete",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T07:00:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
     },
     {
       "id": "rule_115",
-      "rule_text": "Kod wyjścia procesu opakowującego (wrapper, uruchomienie w tle, harness) to NIE kod wyjścia testu. Wypadek: uruchomienie bramki w tle przez wrapper zwróciło exit 0, choć `node tools/<test>.cjs` zwracał 1 — na tej podstawie wyciągnięto błędny wniosek, że determinizm przeszedł. Regula: wynik bramki czytać z JEJ WŁASNEGO stdout i własnego kodu wyjścia, nigdy z opakowania; przy licznikach zbiorczych prześledzić CAŁĄ ścieżkę licznika (`grep -n \"\\bfail\\b\"`), nie tylko nazwę własną licznika sekcji — sekcja może mieć zielony nagłówek, a i tak zasilać `fail++` licznika nadrzędnego.",
+      "rule_text": "Commituj po konkretnych ścieżkach, nigdy git add -A — w drzewie bywa niedokończona praca innej sesji [C-008]",
       "status": "ACTIVE",
-      "actionId": "verify-gate-exit-code-source",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T16:30:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
     },
     {
       "id": "rule_116",
-      "rule_text": "Cytat z dokumentu repo NIE jest potwierdzeniem samodzielnym. Wypadek: Operator przepisał z PYTANIA-OTWARTE.md fałszywe twierdzenie i opatrzył je etykietą 'potwierdzone samodzielnie', przez co błąd zyskał trzecie 'niezależne potwierdzenie'. Regula: twierdzenie o zachowaniu kodu potwierdza się ODCZYTEM KODU albo uruchomieniem, nigdy cytatem z dokumentacji — dokumentacja bywa nieaktualna i to jest często sedno zlecenia (zlecenie istnieje właśnie po to, żeby zweryfikować stan, nie żeby go powtórzyć).",
+      "rule_text": "Wklejka z innej sesji to informacja do świadomości, nie lista zadań — nic nie wykonuj bez wyraźnego polecenia [C-009]",
       "status": "ACTIVE",
-      "actionId": "verify-claim-via-code-not-doc-quote",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T16:30:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
     },
     {
       "id": "rule_117",
-      "rule_text": "Naprawa testu nie może polegać na rozbrojeniu asercji. Wypadki: asercja `d < 5` zamieniona na `d < MIN_CITY_DISTANCE` importowane z testowanego modułu (tautologia, przechodzi dla dowolnego progu); predykat rozszerzony o `=== undefined`, czyli akceptujący dokładnie ten stan, który wcześniej wykrywał. Regula: przy naprawie testu porównać asercje przed/po i wykazać, że pokrycie NIE zmalało; asercja importująca próg z testowanego modułu wymaga OSOBNEGO przypięcia wartości (literał niezależny od modułu), inaczej test przestaje wykrywać regresję progu, którą miał pilnować.",
+      "rule_text": "Po utracie kontekstu najpierw zweryfikuj stan na dysku i w gicie, dopiero potem raportuj [C-010]",
       "status": "ACTIVE",
-      "actionId": "verify-test-fix-not-assertion-disarm",
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-07T16:30:00.000Z"
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_118",
+      "rule_text": "Zmiany w generatorze mapy wymagają bramki determinizmu (map-gen-regression-test) i pomiaru przed/po, nie oceny na oko [C-011]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_119",
+      "rule_text": "Gdy dokument rośnie przez dopisywanie korekt na końcu, złóż czystą specyfikację zanim ktoś zacznie wdrażać — inaczej wykonawca użyje nieaktualnych wartości ze środka [C-012]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z"
+    },
+    {
+      "id": "rule_120",
+      "rule_text": "Nie uruchamiaj eksportu paneli Excel (export-*.py) na żywych danych — kierunek jest jednostronny JSON→Excel [C-002]",
+      "status": "ACTIVE",
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T15:00:00.000Z",
+      "protected": true
+    },
+    {
+      "id": "rule_121",
+      "rule_text": "Zero samooceny liczników: liczniki „sprawdziła się\"/„zawiodła\" wpisuje wyłącznie mechanizm na podstawie realnych, zarejestrowanych przebiegów (recordRuleOutcome / generator playbook-md-to-json.cjs) — agent NIGDY nie wpisuje ich z pamięci ani z własnej oceny swojej pracy; nowa zasada zawsze startuje 0/0 [C-013]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-07T10:29:44.039Z"
     },
     {
       "id": "rule_122",
-      "rule_text": "CYKL ZYCIA WORKTREE (Maciej, R-DYSK-WORKTREE-Q1=C): worktree subagenta jest usuwany jako OSTATNI krok zamkniecia zlecenia — po scaleniu wyniku albo po jego odrzuceniu — dokladnie tak samo obowiazkowo jak wpis do rejestru. Zasada nadrzedna wlasnymi slowami wlasciciela: „wykonujesz dana prace, komitujesz do GitHuba i tyle, a potem czyscisz dysk”; dane trzymamy lokalnie TYLKO wtedy, gdy jest z nimi jeszcze cos do zrobienia (temat niedokonczony, praca do wykonania). Przed usunieciem: jesli w worktree sa zmiany niescommitowane, zapisz je na galezi `zapas/<nazwa-worktree>` i wypchnij na origin — `git worktree remove` kasuje wylacznie katalog roboczy, commity i galezie zostaja w .git, wiec ryzyko dotyczy WYLACZNIE stanu niescommitowanego. Ta sama zasada obowiazuje scratchpad sesji. WYPADEK 2026-08-07: 22 porzucone worktree x ~810 MB = 18 GB, scratchpad 7,9 GB, dysk sesji chmurowej na 86% i 0 MB wolnego — `Bash` zaczal zwracac ENOSPC BEZ wykonania polecenia, `Write` blad; Evaluator handoffu nie uruchomil ANI JEDNEJ bramki, a bramka map-gen-regression zginela przy restarcie kontenera. Praca w toku przepadla dwa razy tego samego dnia.",
+      "rule_text": "Worktree subagenta usuwaj jako ostatni krok zamknięcia zlecenia (po scaleniu albo odrzuceniu) — tak samo obowiązkowo jak wpis do rejestru; stan niescommitowany zapisz wcześniej na gałąź zapas/<nazwa> i wypchnij na origin. Zasada nadrzędna: wykonana praca → commit na GitHub → czyszczenie dysku; lokalnie zostaje tylko to, z czym jest jeszcze coś do zrobienia [C-014]",
       "status": "ACTIVE",
       "actionId": "worktree-lifecycle-cleanup-after-close",
       "win_count": 0,
@@ -201,7 +232,7 @@
     },
     {
       "id": "rule_123",
-      "rule_text": "SPARSE-CHECKOUT DLA WORKTREE (Maciej, R-DYSK-WORKTREE-Q1=C): worktree subagenta zakladaj BEZ katalogow, ktorych subagent do pracy nie potrzebuje — `gra-robocza/` (~328 MB zbudowanych bundli HTML), `gra-kanon/` (~109 MB) oraz katalogi `dist/`. Rozmiar jednego worktree spada z ~810 MB do ~370 MB, czyli o 54%. Procedura: `git worktree add --detach <sciezka> HEAD` → `git -C <sciezka> sparse-checkout init --cone` → `git -C <sciezka> sparse-checkout set` z lista potrzebnych katalogow (typowo `gra docs dyspozycje panele-sterowania`) → symlink node_modules. WYJATEK: subagent, ktory ma robic build lub deploy do ROBOCZA, potrzebuje `gra-robocza/` — dla niego dobierz ten katalog jawnie (`sparse-checkout add gra-robocza`), inaczej publikacja bundla nie ma gdzie trafic. To DRUGA linia obrony wzgledem rule_122: dziala takze wtedy, gdy regula cyklu zycia zostanie pominieta.",
+      "rule_text": "Worktree zakładaj przez sparse-checkout, bez gra-robocza/, gra-kanon/ i katalogów dist/ — ~370 MB zamiast ~810 MB rozmiaru jednego worktree na dysku; wyjątek: subagent robiący build lub deploy dobiera gra-robocza jawnie, inaczej publikacja bundla nie ma gdzie trafić [C-015]",
       "status": "ACTIVE",
       "actionId": "worktree-sparse-checkout-exclude-bundles",
       "win_count": 0,
@@ -210,64 +241,5 @@
       "lastUpdatedIso": "2026-08-07T19:30:00.000Z"
     }
   ],
-  "quarantine_rules": [],
-  "errorLog": [
-    {
-      "id": "err_20260807_01",
-      "dateIso": "2026-08-07T06:00:00.000Z",
-      "whatHappened": "Runda 1 UNIT-REPLACE-EVOCATI-Q1: Operator naprawił wyłącznie kontekst testowy (dodał empireResourceStock do RZYM_ZELAZO_CTX) i zaraportował 'silnik był poprawny — main.ts zawsze przekazuje oba pola razem', cytując nieistniejące numery linii. Evaluator wykrył, że to był REALNY bug produkcyjny — main.ts nigdy nie przekazywał empireResourceStock do kontekstu 'Zastąp', więc mechanizm gubił wszystkie jednostki brązowe/żelazne w prawdziwej grze od FALI 96.",
-      "rootCause": "Operator zaufał 'wygląda znajomo' bez zweryfikowania REALNYCH call site'ów w main.ts (computeUnitReplacements, replaceAvailabilityCtxForCity/EmpireWide) — sprawdził tylko czy da się skonstruować kontekst z polem, nie czy produkcja faktycznie je dostarcza.",
-      "preventiveRuleId": "rule_110"
-    },
-    {
-      "id": "err_20260807_02",
-      "dateIso": "2026-08-07T05:30:00.000Z",
-      "whatHappened": "Runda 3 R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1: naprawiając regresję rundy 2 (kierunek AI→gracz), Operator samodzielnie usunął 'handel' z PROPOSER_PW_FAIRNESS_ACTIONS bez podłogi parytetu, otwierając lukę pozwalającą graczowi 'skimować' do ~15% wartości każdej transakcji handlowej z AI (AI dopłacało do wymiany).",
-      "rootCause": "Operator wykonał zmianę balansu (usunięcie bramki ochronnej) wykraczającą poza literalne zlecenie rundy ('napraw kierunek AI→gracz'), bez weryfikacji czy usunięcie ma efekty uboczne na inne scenariusze tej samej bramki.",
-      "preventiveRuleId": "rule_111"
-    },
-    {
-      "id": "err_20260807_03",
-      "dateIso": "2026-08-07T02:00:00.000Z",
-      "whatHappened": "Dwie kolejne próby uruchomienia Workflow (batch 7 tematów, potem runda 4 dyplomacji) padały na starcie: pierwsza z 'require is not defined' (osadzone require(fs) i niezdefiniowane zmienne w skrypcie), druga (po naprawie require) z parse errorem na nieescapowanym backticku wewnątrz osadzonego patcha diff.",
-      "rootCause": "Workflow scripts to plain JS bez API Node.js (brak require/fs), a treść diff/kodu embedowana jako punkt startowy dla Operatora w kolejnej rundzie zawierała surowe backticki i ${} z oryginalnego TypeScript, które template literal JS interpretował jako własną składnię.",
-      "preventiveRuleId": "rule_112"
-    },
-    {
-      "id": "err_20260807_04",
-      "dateIso": "2026-08-07T01:00:00.000Z",
-      "whatHappened": "Runda 2 UNIT-REPLACE-EVOCATI-Q1: worktree Operatora stał na bazie 26 commitów za aktualnym main (m.in. brakował całego batcha 5 scalonych tematów). Prosty `git apply` patcha na main FAIL-owałby albo (gdyby wymuszony) nadpisał nieświadomie inne zmiany w main.ts.",
-      "rootCause": "Worktree utworzony wcześnie w sesji, zanim kilka kolejnych rund/batchy zdążyło scalić zmiany do main — czas życia worktree przekroczył czas życia jego bazy.",
-      "preventiveRuleId": "rule_113"
-    },
-    {
-      "id": "err_20260806_01",
-      "dateIso": "2026-08-06T18:00:00.000Z",
-      "whatHappened": "Podczas porządków dyskowych (czyszczenie worktree'ów po przekroczeniu limitu miejsca) dwukrotnie usunięto worktree zawierający niescaloną, nieocenioną jeszcze pracę Operatora (gold-deficit, potem rydwan-kapadokijski/super-dispatch-fix) — worktree nie był oznaczony 'locked', co błędnie zinterpretowano jako 'bezpieczny do skasowania'.",
-      "rootCause": "Utożsamienie braku flagi 'locked' w `git worktree list` z ukończeniem/bezpieczeństwem pracy, zamiast sprawdzenia czy Evaluator już ją zrecenzował lub czy diff został wyciągnięty.",
-      "preventiveRuleId": "rule_114",
-      "isRecidivism": true
-    }
-  ],
-  "conclusionsJournal": [
-    {
-      "dateIso": "2026-08-07T07:00:00.000Z",
-      "task": "Integracja Protokołu AutoBot v1.2 (playbook.md/AUTOBOT-PROMPT/AUTOBOT-opis-i-wdrozenie od Macieja) z istniejącym scaffoldem dyspozycje/autobot/",
-      "done": "Dodano status PROTECTED (alias CHRONIONA) do typów i normalizacji; dodano ErrorLogEntry/ConclusionJournalEntry/OpenMatter jako nowe sekcje Playbook; podniesiono minRunsForSignificance z 5 na 10 zgodnie z nowym protokołem; zasilono Rejestr błędów pięcioma realnymi incydentami z tej sesji (2 misdiagnozy, 1 luka balansu, 1 crash skryptu, 1 recydywa usunięcia worktree) i przekuto każdy w regułę (rule_110–114).",
-      "outcome": "oczekuje — patrz Sprawy otwarte (pierwsze realne zastosowanie reguł rule_110–114 w kolejnych rundach AutoBot)",
-      "conclusion": "Najcenniejsza nowość względem istniejącego systemu (rules[] z win/fail) to Rejestr błędów jako chronologiczny, czytelny zapis KONKRETNYCH pomyłek z przyczyną źródłową — bez niego powtórka tej samej klasy błędu (jak dwukrotne usunięcie worktree z niescaloną pracą) nie była rozpoznawalna jako recydywa, tylko jako 'kolejny pojedynczy incydent'."
-    }
-  ],
-  "openMatters": [
-    {
-      "dateIso": "2026-08-07T07:00:00.000Z",
-      "whatIsPending": "Skuteczność reguł rule_110–114 (0/0, za mało zastosowań na wniosek — próg 10 z thresholds.minRunsForSignificance)",
-      "whenExpected": "po min. 10 kolejnych rundach AutoBot, w których dana reguła miała zastosowanie"
-    },
-    {
-      "dateIso": "2026-08-07T07:00:00.000Z",
-      "whatIsPending": "R-WIARYGODNOSC-S9-Q1 — tabela 43 parametrów gotowa, czeka na 'OK' Macieja przed kodem",
-      "whenExpected": "odpowiedź Macieja w czacie"
-    }
-  ]
+  "quarantine_rules": []
 }

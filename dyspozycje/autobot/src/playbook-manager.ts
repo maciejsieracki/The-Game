@@ -42,6 +42,8 @@ export function normalizeRule(raw: Record<string, unknown>): PlaybookRule {
     lastUpdatedIso: (raw.lastUpdatedIso as string) ?? new Date().toISOString(),
     retiredReason: (raw.retiredReason as string) ?? (raw.deprecatedReason as string),
     deprecatedReason: raw.deprecatedReason as string | undefined,
+    /** Wsteczna zgodność: brak pola w źródle -> false, nie undefined-crash. */
+    protected: (raw.protected as boolean | undefined) ?? false,
   };
 }
 
@@ -124,6 +126,9 @@ export function getOperatorSystemRules(pb: Playbook): PlaybookRule[] {
   return pb.rules.filter(r => {
     const status = normalizeRuleStatus(r.status);
     if (status !== 'ACTIVE') return false;
+    // CHRONIONA (protected) — zawsze widoczna dla Operatora, bez względu na
+    // min_confidence_threshold i liczbę runów (Maciej 2026-08-07).
+    if (r.protected) return true;
     const n = r.win_count + r.fail_count;
     if (n === 0) return true;
     return r.win_rate >= minConf;
@@ -169,6 +174,12 @@ export function retireWeakRules(
 
   for (const rule of pb.rules) {
     if (normalizeRuleStatus(rule.status) !== 'ACTIVE') {
+      remaining.push(rule);
+      continue;
+    }
+    // CHRONIONA (protected) — bariera bezpieczeństwa zatwierdzona przez człowieka;
+    // nie podlega wycofaniu bez względu na liczniki (Maciej 2026-08-07).
+    if (rule.protected) {
       remaining.push(rule);
       continue;
     }

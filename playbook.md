@@ -1,0 +1,118 @@
+# PLAYBOOK — Civ „The Game"
+Ostatnia aktualizacja: 2026-08-07 · sesja nr 1 (w protokole AutoBot)
+
+> Playbook zasiany lekcjami z sesji roboczych 2026-07-21…07-26 (praca nad grą przed wdrożeniem
+> protokołu). Zasady i wpisy w rejestrze pochodzą z rzeczywistych zdarzeń, nie z teorii.
+
+## 0. Pliki robocze projektu
+<!-- Lista plików, które mają istnieć na starcie sesji (rytuał, krok 4).
+     Aktualizowana przy każdym ZAMKNIĘCIU. -->
+| Plik | Rola | Ostatnia aktualizacja |
+|---|---|---|
+| AUTOBOT.md | protokół pracy (v1.2) | 2026-08-07 |
+| playbook.md | pamięć projektu | 2026-08-07 |
+| CLAUDE.md | zasady krytyczne projektu (ładowane automatycznie) | — |
+| STAN-PRACY-HANDOFF.md | punkt wejścia każdej sesji: stan, co wolno, co w toku | — |
+| dyspozycje/WERSJE.md | rejestr wersji — każdy deploy logowany natychmiast | — |
+| dyspozycje/_handoff/KANAL-PRACA.md | kanał między sesjami (lokalna / chmurowa / integrator) | — |
+| dyspozycje/REJESTR-PROSB-I-ZADAN.md | jedyny rejestr statusu próśb właściciela | — |
+| dyspozycje/autobot/playbook.json | GENEROWANY z playbook.md — nie edytować ręcznie (generator: `dyspozycje/autobot/tools/playbook-md-to-json.cjs`) | 2026-08-07 |
+
+## 1. Fakty ustalone
+<!-- Liczby i decyzje potwierdzone przez człowieka.
+     Agent ich nie zmienia — może tylko zgłosić rozbieżność. -->
+| Data | Fakt | Kto/co potwierdziło |
+|---|---|---|
+| — | `gra/src` + `gra/data` to kanon; kopie w innych katalogach są zamrożone | CLAUDE.md |
+| — | Trzy poziomy wydań: ROBOCZA (często) → KANON (po teście właściciela) → FINALNA (rzadko, na wyraźne polecenie) | Maciej |
+| — | Push na GitHub wyłącznie na hasło „push"; „sprawdź" = przegląd kanału | Maciej |
+| 2026-07-22 | Naprawy wykonują subagenci Sonnet 5 — jedno zadanie = jeden subagent; orkiestrator robi bramki, commit i deploy | Maciej |
+| 2026-07-22 | Przed deployem zawsze `git pull` — inny integrator pracuje równolegle | Maciej |
+| 2026-07-26 | Każdy temat → osobny subagent; każda decyzja i każdy napotkany problem → zapis do pliku w repo | Maciej |
+| 2026-07-26 | Decyzje produktowe zapadają w formacie ABC (Sytuacja/Cel/warianty z Za i Przeciw/Rekomendacja), max 3 pytania w pakiecie | Maciej |
+| 2026-07-26 | Zasada nadrzędna projektu: PARYTET AI — każdy mechanizm działa identycznie dla gracza i AI | Maciej |
+| 2026-07-26 | „Nie zmieniamy tego, co już działa — tylko dostosuj" (dot. istniejących mechanizmów gry) | Maciej |
+
+## 2. Zasady
+<!-- Statusy: AKTYWNA / W OBSERWACJI / WYCOFANA / CHRONIONA.
+     Nowa zasada startuje jako AKTYWNA z licznikiem 0/0.
+     Licznik aktualizuj tylko wtedy, gdy zasada miała zastosowanie. -->
+| ID | Zasada | Kiedy ma zastosowanie | Sprawdziła się | Zawiodła | Status |
+|---|---|---|---|---|---|
+| C-001 | Zakaz npm run build/dev w gra/ (export-data nadpisuje JSON) — dozwolona komenda: node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir | każdy build gry | — | — | CHRONIONA (bariera — utrata danych; z CLAUDE.md) |
+| C-002 | Nie uruchamiaj eksportu paneli Excel (export-*.py) na żywych danych — kierunek jest jednostronny JSON→Excel | praca z panelami sterowania | — | — | CHRONIONA (bariera — utrata danych; z CLAUDE.md) |
+| C-003 | Commituj każdą ukończoną grupę plików natychmiast, nie zbiorczo na koniec pracy — repo współdzielone z drugą sesją | praca wieloetapowa w repo współdzielonym z inną sesją | 0 | 0 | AKTYWNA |
+| C-004 | Deploy to jeden nierozdzielny ciąg: bramki → build → stempel → verify → WERSJE.md → KANAŁ → commit → sprawdź czy main nie odjechał → push | każdy deploy | 0 | 0 | AKTYWNA |
+| C-005 | Status subagenta pracującego w tle oceniaj po znacznikach czasu plików wyjściowych, nie po etykiecie systemu — subagent może wykonać pracę i umrzeć bez raportu | pytanie o postęp pracy w tle | 0 | 0 | AKTYWNA |
+| C-006 | Nie raportuj wyniku subagenta bez własnej weryfikacji na dysku lub w kodzie | każdy powrót subagenta z raportem | 0 | 0 | AKTYWNA |
+| C-007 | Przed serią zmian w repo współdzielonym zostaw wpis-blokadę w KANAL-PRACA.md, po zakończeniu wpis ODBLOKOWANE | praca dłuższa niż jedna operacja, gdy inna sesja może commitować | 0 | 0 | AKTYWNA |
+| C-008 | Commituj po konkretnych ścieżkach, nigdy git add -A — w drzewie bywa niedokończona praca innej sesji | każdy commit w repo współdzielonym | 0 | 0 | AKTYWNA |
+| C-009 | Wklejka z innej sesji to informacja do świadomości, nie lista zadań — nic nie wykonuj bez wyraźnego polecenia | właściciel wkleja transkrypt/fragment pracy innej sesji | 0 | 0 | AKTYWNA |
+| C-010 | Po utracie kontekstu najpierw zweryfikuj stan na dysku i w gicie, dopiero potem raportuj | wznowienie pracy po przerwie lub kompresji kontekstu | 0 | 0 | AKTYWNA |
+| C-011 | Zmiany w generatorze mapy wymagają bramki determinizmu (map-gen-regression-test) i pomiaru przed/po, nie oceny na oko | zmiany w `gra/src/map/*` lub `map-gen-params.json` | 0 | 0 | AKTYWNA |
+| C-012 | Gdy dokument rośnie przez dopisywanie korekt na końcu, złóż czystą specyfikację zanim ktoś zacznie wdrażać — inaczej wykonawca użyje nieaktualnych wartości ze środka | dokument projektowy z wieloma turami zmian | 0 | 0 | AKTYWNA |
+| C-013 | Zero samooceny liczników: liczniki „sprawdziła się"/„zawiodła" wpisuje wyłącznie mechanizm na podstawie realnych, zarejestrowanych przebiegów (recordRuleOutcome / generator playbook-md-to-json.cjs) — agent NIGDY nie wpisuje ich z pamięci ani z własnej oceny swojej pracy; nowa zasada zawsze startuje 0/0 | zapis lub aktualizacja liczników w playbooku | 0 | 0 | AKTYWNA |
+| C-014 | Worktree subagenta usuwaj jako ostatni krok zamknięcia zlecenia (po scaleniu albo odrzuceniu) — tak samo obowiązkowo jak wpis do rejestru; stan niescommitowany zapisz wcześniej na gałąź `zapas/<nazwa>` i wypchnij na origin. Zasada nadrzędna: wykonana praca → commit na GitHub → czyszczenie dysku; lokalnie zostaje tylko to, z czym jest jeszcze coś do zrobienia | zamknięcie każdego zlecenia subagenta oraz sprzątanie scratchpada | 0 | 0 | AKTYWNA |
+| C-015 | Worktree zakładaj przez sparse-checkout, bez `gra-robocza/`, `gra-kanon/` i katalogów `dist/` — ~370 MB zamiast ~810 MB rozmiaru jednego worktree na dysku; wyjątek: subagent robiący build lub deploy dobiera `gra-robocza` jawnie, inaczej publikacja bundla nie ma gdzie trafić | zakładanie worktree dla subagenta | 0 | 0 | AKTYWNA |
+
+## 3. Rejestr błędów — NIGDY WIĘCEJ
+<!-- Najnowsze na górze. Powtórka błędu z tej listy = incydent krytyczny. -->
+| Data | Co się stało | Przyczyna | Reguła zapobiegawcza (→ ID zasady) |
+|---|---|---|---|
+| 2026-08-07 | Orkiestrator zapisał w `playbook.json` liczniki dziesięciu nowych zasad (C-003…C-012) z pamięci zamiast startując je 0/0 — wartości sprzeczne z tym rejestrem (np. C-008 „recydywa czwarty raz”, a licznik pokazywał 6/1 zamiast realnej porażki). Przy tym samym scaleniu zgubiono `C-002` (całkowicie) oraz fragment `C-001` (dozwoloną komendę builda). Evaluator odrzucił iterację | samoocena zamiast pomiaru (naruszenie sekcji 4 protokołu: „agent oceniający własną pracę zawsze wystawi sobie szóstkę”) + brak weryfikacji kompletności po scaleniu dwóch źródeł zasad | wszystkie nowe zasady → 0/0 przy zapisie (sekcja 3 protokołu, krok 5); `playbook.json` od teraz GENEROWANY z `playbook.md` przez `dyspozycje/autobot/tools/playbook-md-to-json.cjs`, nigdy edytowany ręcznie; liczniki nigdy z pamięci orkiestratora → C-013 |
+| 2026-07-26 | Trzykrotnie na pytanie właściciela odpowiedziałem „subagent pracuje", choć pliki wyjściowe nie zmieniały się od 25 minut, a transkrypt agenta miał 0 B. Właściciel sam musiał zauważyć, że nic się nie dzieje | powtarzałem status z systemu zamiast sprawdzić znaczniki czasu, które sam wcześniej wyświetliłem | sprawdzaj pliki, nie etykietę → C-005 |
+| 2026-07-26 | Skrypt promocji KANONU wykonał się mimo odrzucenia operacji przez właściciela — PowerShell zdążył wystartować; pliki `gra-kanon/*` zostały podmienione bez zgody | brak sprawdzenia skutków po odrzuconej operacji | po odrzuconej/przerwanej operacji sprawdź, czy nie zostawiła skutków, i zgłoś je → wzmocnienie C-010 |
+| 2026-07-26 | Zamiast wdrożenia mechanizmu Wiarygodności do kodu wyprodukowałem 1800 linii dokumentacji — właściciel prosił o działającą funkcję w grze | pomylenie projektowania z wykonaniem; brak pytania o oczekiwany produkt | pytaj o produkt końcowy przed rozpoczęciem (sekcja 8.1 protokołu) |
+| 2026-07-26 | `git add -A` zgarnął niedokończoną pracę innego agenta do commita o mylącym tytule | użycie `-A` zamiast konkretnych ścieżek, mimo wcześniejszej deklaracji, że tego nie robię | commit po ścieżkach → C-008 (recydywa — czwarty raz w projekcie) |
+| 2026-07-22 | Trzygodzinna praca 51 subagentów pozostała niezacommitowana i została zmieciona przez commity równolegle działającego integratora; część uratowana ze stashy | zebranie wszystkich zmian do jednego commita na końcu zamiast commitowania grupami | commit natychmiast po grupie → C-003; blokada w kanale → C-007 |
+| 2026-07-21 | Po utracie kontekstu zaraportowałem nieprawdziwy stan wersji (wskazałem starszy deploy jako aktualny) | raport z pamięci, bez weryfikacji md5 i historii gita | weryfikuj przed raportowaniem → C-010 |
+| 2026-07-21 | Trzy deploye nie trafiły do `WERSJE.md` ani do kanału — inne sesje nie wiedziały, co jest w grze | logowanie traktowane jako krok opcjonalny po deployu | deploy jako jeden nierozdzielny ciąg → C-004 |
+| 2026-07-20 | Subagent zaraportował „składnia OK dla obu skryptów", podczas gdy jeden miał cztery błędy składni (brak BOM, polskie znaki zepsuły parsowanie) | przyjęcie raportu subagenta bez weryfikacji | weryfikuj raporty subagentów → C-006 |
+
+## 4. Dziennik wniosków
+<!-- Najnowsze na górze. Ten dziennik jest ważniejszy od samych zasad —
+     pokazuje, DLACZEGO zasady wyglądają tak, a nie inaczej.
+     Gdy miary jeszcze nie ma, wpisz: „Skutek: oczekuje — patrz Sprawy otwarte”. -->
+### 2026-08-07 — naprawa po odrzuceniu przez Evaluatora (K1–K4) + generator playbook.json
+- Zrobiono: wyzerowano liczniki C-003…C-012 (rule_110–119) do 0/0 zgodnie z sekcją 3
+  protokołu; przywrócono `C-002` jako `rule_120`; uzupełniono `C-001`/`rule_103`
+  o dozwoloną komendę builda; napisano generator `playbook-md-to-json.cjs`
+  (`playbook.md` = kanon, `playbook.json` = wyprowadzony, z zachowaniem realnych
+  liczników rule_101–109 i rule_103).
+- Skutek (miara): `getOperatorSystemRules` na kopii w scratchpadzie zwraca
+  wszystkie 20 aktywnych zasad (0 martwych), `retireWeakRules` wycofuje 0 —
+  patrz raport zadania. Smoke test 11/11.
+- Wniosek: liczniki playbooka nie mogą powstawać z pamięci orkiestratora —
+  muszą pochodzić albo z realnych `recordRuleOutcome()`, albo (dla nowych zasad)
+  ze stałej wartości 0/0. Generator wymusza to mechanicznie zamiast polegać na
+  dyscyplinie w danym momencie edycji.
+
+### 2026-08-07 — wdrożenie protokołu AutoBot do projektu Civ
+- Zrobiono: skopiowano protokół jako `AUTOBOT.md`; założono ten playbook, zasiany
+  lekcjami z sesji 2026-07-21…07-26; dopisano ładowanie protokołu do `CLAUDE.md`.
+- Skutek (miara): oczekuje — patrz Sprawy otwarte.
+- Wniosek: playbook zasiany realnymi błędami startuje z 12 zasadami i 8 wpisami
+  w rejestrze zamiast pustych tabel. Dwie klasy błędów miały już recydywę przed
+  wdrożeniem protokołu (`git add -A` — czterokrotnie; brak commitu grupami —
+  dwukrotnie), co potwierdza tezę protokołu: bez zapisu błąd wraca.
+
+### 2026-07-21…07-26 — sesje robocze przed wdrożeniem protokołu (retrospektywa)
+- Zrobiono: audyt kodu (73 znaleziska, 124 werdykty adwersaryjne), naprawa 71 z nich
+  przez subagentów, kilkanaście deployów ROBOCZEJ, projekt mechanizmu Wiarygodności.
+- Skutek (miara): audyt — 0 znalezisk odrzuconych z 20 zweryfikowanych podwójnie
+  w pierwszej turze; z 53 pozostałych 50 potwierdzonych, 1 odrzucone jako już
+  naprawione, 2 sporne. Naprawy — wszystkie bramki zielone po każdej fali.
+- Wniosek: adwersaryjna weryfikacja przez niezależnych subagentów („spróbuj to obalić")
+  wychwyciła zarówno fałszywe znaleziska, jak i błędy w mojej własnej ocenie wag —
+  to samo, co protokół nazywa trybem adwokata diabła. Największe straty w tych sesjach
+  nie wynikały z błędów merytorycznych, lecz z dyscypliny operacyjnej: niezacommitowana
+  praca, brak logowania deployów, raportowanie bez weryfikacji.
+
+## 5. Sprawy otwarte — czekają na dane
+<!-- W kolumnie „Kiedy/skąd” podawaj konkretną datę lub zdarzenie.
+     Sekcja przeglądana obowiązkowo na starcie każdej sesji (rytuał, krok 2). -->
+| Data | Co czeka na weryfikację | Kiedy/skąd przyjdzie wynik |
+|---|---|---|
+| 2026-08-07 | Czy protokół ogranicza powtórki błędów operacyjnych w tym projekcie (miara: liczba wpisów-recydyw w rejestrze) | po 10 sesjach roboczych w protokole |
+| 2026-07-26 | Czy pokrycie lasem 38/58/77% jest grywalne — zwłaszcza czy przy „Mało" nie powstają starty bez dostępu do drewna | playtest właściciela |
+| 2026-07-26 | Czy współczynniki mechanizmu Wiarygodności (kary N1–N7, nagrody, tempo zapominania) są wyważone | playtest po wdrożeniu mechanizmu |

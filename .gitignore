@@ -76,3 +76,6 @@ gra/tools/.ai-balans-step3-*.cjs
 gra/tools/.ai-balans-step3-*.ts
 gra/tools/.ai-difficulty-bonus-*.cjs
 gra/tools/.ai-difficulty-bonus-*.ts
+
+# Plik tymczasowy bramki autobot-smoke (nadpisywany przy kazdym uruchomieniu)
+dyspozycje/autobot/logs/playbook-smoke-tmp.json
