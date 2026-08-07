@@ -1,12 +1,24 @@
 /** node gra/tools/army-merge-colocated-test.cjs — coLocatedForMergePrompt (garnizon + widoczne) */
+const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 
 const ROOT = path.join(__dirname, '..');
+const ENTRY = path.join(__dirname, '.army-merge-colocated-entry.ts');
 const BUNDLE = path.join(__dirname, '.army-merge-colocated-bundle.cjs');
 
+fs.writeFileSync(
+  ENTRY,
+  `export {
+  coLocatedForMergePrompt,
+  visibleStackOnHex,
+  stackHudMergeSplitActions,
+} from '../src/game/armyMerge';`,
+  'utf8',
+);
+
 esbuild.buildSync({
-  entryPoints: [path.join(__dirname, '.army-merge-colocated-entry.ts')],
+  entryPoints: [ENTRY],
   bundle: true,
   platform: 'node',
   format: 'cjs',

@@ -1,12 +1,28 @@
 'use strict';
 /** node gra/tools/terrain-hill-movement-test.cjs — wzgórza przejezdne, MIN-MOVE na trasie */
+const fs = require('fs');
 const esbuild = require('esbuild');
 const nodePath = require('path');
 
+const ENTRY = nodePath.join(__dirname, '.terrain-hill-movement-entry.ts');
 const BUNDLE = nodePath.join(__dirname, '.terrain-hill-movement-bundle.cjs');
 
+fs.writeFileSync(
+  ENTRY,
+  `export {
+  terrainMoveCost,
+  configureTerrainMovement,
+  computeReachable,
+  computePath,
+  pathCost,
+} from '../src/units/setup';
+export { truncatePathToBudget, executeMarchStep } from '../src/game/planned-march';
+export { TerenBazowy, Nakladka } from '../src/types/hex';`,
+  'utf8',
+);
+
 esbuild.buildSync({
-  entryPoints: [nodePath.join(__dirname, '.terrain-hill-movement-entry.ts')],
+  entryPoints: [ENTRY],
   bundle: true,
   platform: 'node',
   format: 'cjs',

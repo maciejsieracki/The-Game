@@ -1,11 +1,25 @@
 'use strict';
 /** escape-overlay-stack-test.cjs — push/pop + Escape → onClose bez DOM */
+const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 
 const GRA_ROOT = path.resolve(__dirname, '..');
 const ENTRY = path.join(__dirname, '.escape-overlay-stack-test-entry.ts');
 const BUNDLE = path.join(__dirname, '.escape-overlay-stack-bundle.cjs');
+
+fs.writeFileSync(
+  ENTRY,
+  `export {
+  pushOverlay,
+  popOverlay,
+  top,
+  _resetEscapeOverlayStackForTest,
+  _getEscapeOverlayStackDepthForTest,
+  _dispatchEscapeForTest,
+} from '../src/ui/escapeOverlayStack';`,
+  'utf8',
+);
 
 esbuild.buildSync({
   entryPoints: [ENTRY],

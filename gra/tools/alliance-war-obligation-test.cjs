@@ -10,6 +10,13 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 const ENTRY = path.resolve(__dirname, '.alliance-war-obligation-entry.ts');
 const BUNDLE = path.resolve(__dirname, '.alliance-war-obligation-bundle.cjs');
 
+fs.writeFileSync(
+  ENTRY,
+  `export { shouldHonorAllianceWarObligation } from '../src/game/alliance-war-obligation';
+export { aiHonorsAllianceWarObligation } from '../src/game/ai';`,
+  'utf8',
+);
+
 esbuild.buildSync({
   entryPoints: [ENTRY],
   bundle: true,

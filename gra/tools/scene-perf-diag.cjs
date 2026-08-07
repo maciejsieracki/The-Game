@@ -8,6 +8,18 @@ const GRA = path.resolve(__dirname, '..');
 const ENTRY = path.join(__dirname, '.scene-perf-diag-entry.ts');
 const BUNDLE = path.join(__dirname, '.scene-perf-diag-bundle.cjs');
 
+fs.writeFileSync(
+  ENTRY,
+  `export { generujSwiat } from '../src/map/generator';
+export { landRiverRenderPath } from '../src/map/gen-helpers';
+export {
+  computeRiverMouthEdgeKeys,
+  computeRiverDeltaHexKeys,
+} from '../src/render/mapRenderStyle';
+export { countSceneOverlayCandidates } from '../src/render/countSceneOverlayCandidates';`,
+  'utf8',
+);
+
 esbuild.buildSync({
   entryPoints: [ENTRY],
   bundle: true,

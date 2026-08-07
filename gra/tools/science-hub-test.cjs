@@ -8,6 +8,13 @@ const GRA_ROOT = path.resolve(__dirname, '..');
 const ENTRY = path.join(__dirname, '.science-hub-test-entry.ts');
 const BUNDLE = path.join(__dirname, '.science-hub-bundle.cjs');
 
+fs.writeFileSync(
+  ENTRY,
+  `export { availableTechs } from '../src/game/playerState';
+export { buildHubTechEntries } from '../src/ui/scienceHubSnapshotLogic';`,
+  'utf8',
+);
+
 esbuild.buildSync({
   entryPoints: [ENTRY],
   bundle: true,

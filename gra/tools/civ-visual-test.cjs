@@ -9,6 +9,19 @@ const GRA = path.resolve(__dirname, '..');
 const entry = path.join(__dirname, '.civ-visual-entry.ts');
 const bundle = path.join(__dirname, '.civ-visual-bundle.cjs');
 
+fs.writeFileSync(
+  entry,
+  `export {
+  OWNER_COLORS_FALLBACK,
+  parseHexColor,
+  civColorHex,
+  civColorForIkonaId,
+  civColorForOwner,
+  civColorCssForOwner,
+} from '../src/game/civ-visual';`,
+  'utf8',
+);
+
 esbuild.buildSync({
   entryPoints: [entry],
   bundle: true,

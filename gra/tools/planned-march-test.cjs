@@ -1,12 +1,32 @@
 'use strict';
 /** node gra/tools/planned-march-test.cjs — A3 marsz redesign */
+const fs = require('fs');
 const esbuild = require('esbuild');
 const path = require('path');
 
+const ENTRY = path.join(__dirname, '.planned-march-entry.ts');
 const BUNDLE = path.join(__dirname, '.planned-march-bundle.cjs');
 
+fs.writeFileSync(
+  ENTRY,
+  `export {
+  truncatePathAtFogFrontier,
+  applyFogToPathPlan,
+  truncatePathToBudget,
+  planPathTurns,
+  shouldStopAtObstacle,
+  executeMarchStep,
+  validateAutoMarchFromSave,
+  plannedMarchesFromSave,
+  plannedMarchesToSave,
+} from '../src/game/planned-march';
+export { pathCost } from '../src/units/setup';
+export { serializeGame, deserializeGame } from '../src/game/save';`,
+  'utf8',
+);
+
 esbuild.buildSync({
-  entryPoints: [path.join(__dirname, '.planned-march-entry.ts')],
+  entryPoints: [ENTRY],
   bundle: true,
   platform: 'node',
   format: 'cjs',

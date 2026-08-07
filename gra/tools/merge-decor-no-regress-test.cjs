@@ -1,13 +1,28 @@
 'use strict';
 /** merge-decor-no-regress-test.cjs — skip podwójnego collapse + offline overlay count */
+const fs = require('fs');
 const path = require('path');
 const esbuild = require('esbuild');
 
 const ROOT = path.join(__dirname, '..');
+const ENTRY = path.join(__dirname, '.merge-decor-no-regress-entry.ts');
 const BUNDLE = path.join(__dirname, '.merge-decor-no-regress-bundle.cjs');
 
+fs.writeFileSync(
+  ENTRY,
+  `export {
+  MERGED_DECOR_FLAG,
+  isAlreadyMergedDecor,
+  countMeshesInGroup,
+  collapseToMergedMesh,
+} from '../src/render/mergeDecor';
+export { generujSwiat } from '../src/map/generator';
+export { countSceneOverlayCandidates } from '../src/render/countSceneOverlayCandidates';`,
+  'utf8',
+);
+
 esbuild.buildSync({
-  entryPoints: [path.join(__dirname, '.merge-decor-no-regress-entry.ts')],
+  entryPoints: [ENTRY],
   bundle: true,
   platform: 'node',
   format: 'cjs',
