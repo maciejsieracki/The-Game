@@ -1,6 +1,6 @@
 {
-  "version": 12,
-  "updatedAtIso": "2026-08-07T19:56:31.705Z",
+  "version": 13,
+  "updatedAtIso": "2026-08-07T20:24:08.282Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,

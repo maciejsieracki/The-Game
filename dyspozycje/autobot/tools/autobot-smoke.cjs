@@ -99,6 +99,7 @@ async function main() {
   fs.copyFileSync(pbPath, TMP_PB);
   const pb = mod.loadPlaybook(TMP_PB);
   // >= 9 zamiast strictEqual: generator bumpuje version przy każdym --write
+  // (ślad regeneracji), więc nie wymaga ręcznej edycji tego testu przy bumpie.
   assert.ok(pb.version >= 9, `playbook version >= 9 (got ${pb.version})`);
   assert.ok(pb.min_confidence_threshold >= 0.6, 'min_confidence_threshold');
   assert.ok(Array.isArray(pb.rules) && pb.rules.length >= 4, 'rules array');
@@ -108,6 +109,34 @@ async function main() {
   const operatorRules = mod.getOperatorSystemRules(pb);
   assert.ok(operatorRules.length >= 4, 'getOperatorSystemRules ACTIVE');
   console.log('2. load playbook — PASS');
+  passed++;
+
+  // 2b. K1 tripwire — KAŻDA reguła o statusie ACTIVE musi trafić do getOperatorSystemRules.
+  //     Regresja z 2026-08-07: liczniki wpisane "z pamięci" (nie 0/0) potrafiły po cichu
+  //     wykluczyć świeżą regułę z promptu Operatora na zawsze (poniżej min_confidence_threshold,
+  //     ale poniżej progu istotności retireWeakRules — zombie: ani widoczna, ani wycofana).
+  const activeIds = pb.rules.filter(r => r.status === 'ACTIVE').map(r => r.id).sort();
+  const visibleIds = mod.getOperatorSystemRules(pb).map(r => r.id).sort();
+  const invisibleActive = activeIds.filter(id => !visibleIds.includes(id));
+  assert.deepStrictEqual(
+    invisibleActive,
+    [],
+    `reguły ACTIVE niewidoczne w getOperatorSystemRules (K1 tripwire): ${invisibleActive.join(', ')}`,
+  );
+  // Rozszerzenie 2b (Evaluator 2026-08-07): reguła o statusie spoza słownika
+  // kanonicznego (ACTIVE/RETIRED/QUARANTINE) jest "zombie" — jednocześnie
+  // niewidoczna w getOperatorSystemRules (bo filtr wymaga status === 'ACTIVE')
+  // i niewycofana do quarantine_rules (bo retireWeakRules też wymaga 'ACTIVE').
+  const CANONICAL_STATUSES = ['ACTIVE', 'RETIRED', 'QUARANTINE'];
+  const zombieStatusRules = [...pb.rules, ...pb.quarantine_rules]
+    .filter(r => !CANONICAL_STATUSES.includes(r.status))
+    .map(r => `${r.id}:${r.status}`);
+  assert.deepStrictEqual(
+    zombieStatusRules,
+    [],
+    `reguły ze statusem spoza słownika kanonicznego (zombie tripwire): ${zombieStatusRules.join(', ')}`,
+  );
+  console.log('2b. every ACTIVE rule visible in getOperatorSystemRules + no out-of-vocabulary status (K1 + zombie tripwire) — PASS');
   passed++;
 
   // 3. Operator stub safe action
@@ -406,7 +435,7 @@ async function main() {
   passed++;
 
   restoreSmokeHistory();
-  console.log(`\nautobot-smoke: ${passed}/10 PASS`);
+  console.log(`\nautobot-smoke: ${passed}/11 PASS`);
   process.exit(0);
 }
 
