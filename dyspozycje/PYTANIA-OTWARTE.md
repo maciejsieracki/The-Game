@@ -1821,10 +1821,28 @@ do naprawy."*
 | `Pieniądz (koszt)` | 8 pkt Pieniądza | ❓ do rozstrzygnięcia — właściciel wymienił żywność i surowce, NIE Pieniądz |
 | `Utrzymanie (Pieniądz/turę)` | 0 pkt/turę | ✅ zgodne |
 | `żywność/turę` | 0 pkt/turę | ✅ zgodne |
-**Wniosek:** utrzymanie jest JUŻ zerowe (zero Pieniądza/turę, zero żywności/turę) — zgłoszenie
-w tej części jest już spełnione. Realny defekt to **koszt budowy: 10 szt. Drewna**.
-**DO DECYZJI (ABC na jutro):** czy zerujemy sam surowiec (Drewno 10 → 0), czy również koszt
-Pieniądza (8 → 0), czyli Zwiadowca całkowicie darmowy poza kosztem Ludności = 1.
+**⛔ KOREKTA 2026-08-07 (właściciel obalił moje pierwsze ustalenie).** Napisałem mu, że
+„utrzymanie Zwiadowcy jest już zerowe" — **NIEPRAWDA**. Sprawdziłem tylko kolumny
+`Utrzymanie (Pieniądz/turę)` i `żywność/turę` (obie 0) i pominąłem **dwie kolumny utrzymania
+surowcowego**, bo wypisałem sztywną listę kolumn zamiast wszystkich. Jego słowa:
+*„jak nie jest wprowadzone, jak musiałem wydać 10 sztuk drewna na rekrutację zwiadowcy"*,
+potwierdzone zrzutem panelu REKRUTACJA: „Zwiadowca · 32 Pieniądz · **10 Drewno** · **−2 Drewno/t**".
+**PEŁNY stan faktyczny — `gra/data/units.json`, wiersz „Zwiadowca":**
+| Parametr | Wartość | Zgodność z zasadą |
+|---|---|---|
+| `Surowiec` / `Surowiec (ilość)` | Drewno / **10 szt.** (koszt rekrutacji) | ⛔ NIEZGODNE |
+| `Utrzymanie surowiec` / `Utrzymanie surowiec (ilość)` | Drewno / **2 szt. na turę** | ⛔ NIEZGODNE — POMINIĘTE w pierwszym sprawdzeniu |
+| `Utrzymanie (Pieniądz/turę)` | 0 pkt/turę | ✅ zgodne |
+| `żywność/turę` | 0 pkt/turę | ✅ zgodne |
+| `Pieniądz (koszt)` | 8 pkt (w panelu 32 po przeskalowaniu tempem/trudnością) | ❓ właściciel nie wymienił Pieniądza |
+**Realny zakres naprawy:** wyzerować **oba** kanały surowcowe — `Surowiec (ilość)` 10 → 0
+ORAZ `Utrzymanie surowiec (ilość)` 2 → 0. Zgłoszenie właściciela obejmowało oba
+(*„nie miała wymagać żadnych surowców ANI nie miała spożytkowywać"*).
+**DO DECYZJI (ABC):** czy zerujemy same surowce (oba kanały), czy również koszt Pieniądza
+(8 pkt → 0), czyli Zwiadowca całkowicie darmowy poza kosztem Ludności = 1.
+**LEKCJA (do playbooka):** przy audycie rekordu danych wypisuj **WSZYSTKIE** pola, nigdy sztywną
+listę kolumn dobraną z góry — pominięcie kolumny wygląda w raporcie identycznie jak jej zerowa
+wartość. Ten błąd trafił do właściciela jako fakt.
 **Uwaga na kierunek zmiany:** źródłem prawdy są JSON-y w `gra/data/` (CLAUDE.md §2); panel Excel
 dogania JSON przez `gen-panel-*.py`, NIGDY odwrotnie.
 
