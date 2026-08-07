@@ -3593,9 +3593,12 @@ async function boot(): Promise<void> {
         // warEventLog (deferredHintsToSidePanelEvents, prefiks eot-hint-) obok tego poniżej —
         // duplikat tej samej treści. Wpis WYDARZENIA (border-march-*, klikalny, ze skokiem
         // kamery) niesie całą treść, więc toast jest zbędny.
-        // N5 (+N3+N4): stabilne id per kierunek (nie per-turę) — przy każdym wystąpieniu
-        // naruszenia usuwamy stary wpis o tym id i wstawiamy świeży z aktualnym hexem/nazwami,
-        // co eliminuje starzenie się celu kamery bez potrzeby osobnej logiki wygasania.
+        // R-PRZEMARSZ-WYGASANIE-Q1=A: wpis w borderMarchEventLog — logu per-turowym, zerowanym
+        // co turę przy turn++ (main.ts ~villageEventLog.length = 0). Ta funkcja biegnie PO tym
+        // resecie w tej samej sekwencji EOT (runDiplomacyTurnTick wywoływane po zerowaniu), więc
+        // log jest tu zawsze pusty na starcie — nie trzeba findIndex+splice jak przy stabilnym
+        // id w warEventLog: gdy naruszenie trwa, wpis powstaje na nowo; gdy ustaje, po prostu nie
+        // powstaje i znika sam (bo stary już wyczyścił reset), bez osobnej logiki wygasania.
         if (notice.playerBorderViolated) {
           const names = [...new Set(notice.violatingIntruders.map(v => ownerDiploLabel(v.ownerId)))];
           const namesLabel = names.join(', ');
@@ -3605,16 +3608,13 @@ async function boot(): Promise<void> {
             evId,
             target && target.q != null && target.r != null ? { q: target.q, r: target.r } : null,
           );
-          const existingIdx = warEventLog.findIndex(e => e.id === evId);
-          if (existingIdx >= 0) warEventLog.splice(existingIdx, 1);
-          warEventLog.unshift({
+          borderMarchEventLog.unshift({
             id: evId,
             icon: '⚠️',
             title: 'Granice naruszone',
             subtitle: `Twoje granice naruszone — ${namesLabel}: −${kara} pkt Zaufania/turę u każdej naruszającej cywilizacji`,
             kind: 'diplo',
           });
-          if (warEventLog.length > 8) warEventLog.length = 8;
         }
         if (notice.playerTrespassing) {
           const names = [...new Set(notice.trespassedOwners.map(v => ownerDiploLabel(v.ownerId)))];
@@ -3625,17 +3625,15 @@ async function boot(): Promise<void> {
             evId,
             target && target.q != null && target.r != null ? { q: target.q, r: target.r } : null,
           );
-          const existingIdx = warEventLog.findIndex(e => e.id === evId);
-          if (existingIdx >= 0) warEventLog.splice(existingIdx, 1);
-          warEventLog.unshift({
+          borderMarchEventLog.unshift({
             id: evId,
             icon: '⚠️',
             title: 'Jednostka na cudzym terenie',
             subtitle: `Twoja jednostka na cudzym terenie (${namesLabel}): −${kara} pkt Zaufania/turę u właściciela terenu`,
             kind: 'diplo',
           });
-          if (warEventLog.length > 8) warEventLog.length = 8;
         }
+        if (borderMarchEventLog.length > 8) borderMarchEventLog.length = 8;
       }
 
       // N7 (§2, §8) — jednorazowo PRZY WEJŚCIU do nieautoryzowanej "wizyty" (NIE co turę
@@ -10461,6 +10459,13 @@ async function boot(): Promise<void> {
     const tradeRouteEventLog: SidePanelEvent[] = [];
     /** SPICH-AUTO-Q1: komunikat auto-obniżenia racji — widoczny przez turę gracza po EOT. */
     const rationAutoEventLog: SidePanelEvent[] = [];
+    // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy naruszeń granic (przemarsz/wtargnięcie),
+    // symetrycznie do villageEventLog — czyszczony co turę w tym samym miejscu (zob.
+    // `villageEventLog.length = 0;` przy turn++). Zastępuje stare stabilne-id-w-warEventLog
+    // podejście: wpis powstaje na nowo w KAŻDEJ turze, w której naruszenie trwa
+    // (applyBorderMarchPenaltiesEndTurn), a gdy naruszenie ustaje — po prostu nie powstaje,
+    // więc znika sam przy resecie zamiast wisieć w warEventLog (który nie jest czyszczony co turę).
+    const borderMarchEventLog: SidePanelEvent[] = [];
     let pendingAutoRationForNextTurn: AutoRationAdjustResult | null = null;
     /** R-EOT-EVENT-DEFER-Q1=A: toasty z fazy EOT — flush na starcie tury gracza. */
     const deferredEotHints: DeferredEotHint[] = [];
@@ -10822,6 +10827,7 @@ async function boot(): Promise<void> {
           ...warEventLog,
           ...villageEventLog,
           ...tradeRouteEventLog,
+          ...borderMarchEventLog,
         ];
       for (const city of cities) {
         if (city.ownerId !== 0) continue;
@@ -15694,11 +15700,12 @@ async function boot(): Promise<void> {
             return;
           }
           if (id.startsWith('border-march-')) {
-            // N4: bez tej gałęzi id wpadał w ogólny dismissedSidePanelEventIds, czyszczony przy
-            // zmianie tury — wpis wracał mimo odrzucenia. Wzorzec identyczny do 'war-' wyżej.
-            const idx = warEventLog.findIndex(e => e.id === id);
+            // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy (borderMarchEventLog), wzorzec
+            // identyczny do 'village-' niżej — splice wystarcza, bo log i tak zeruje się
+            // przy turn++; dismiss nie musi przetrwać do następnej tury.
+            const idx = borderMarchEventLog.findIndex(e => e.id === id);
             if (idx >= 0) {
-              warEventLog.splice(idx, 1);
+              borderMarchEventLog.splice(idx, 1);
               refreshD1bHud();
             }
             return;
@@ -20104,6 +20111,12 @@ async function boot(): Promise<void> {
         // TEMAT #5: log tras handlowych — ta sama zasada (widoczny do końca tury bieżącej).
         tradeRouteEventLog.length = 0;
         rationAutoEventLog.length = 0;
+        // R-PRZEMARSZ-WYGASANIE-Q1=A: log naruszeń granic — ta sama zasada (widoczny do końca
+        // tury bieżącej; applyBorderMarchPenaltiesEndTurn go odbuduje niżej w tej samej sekwencji
+        // EOT, jeśli naruszenie nadal trwa). Mapa celów kamery nie musi przetrwać między turami —
+        // wpis i tak powstaje na nowo co turę, więc zerujemy ją tu samo jak log.
+        borderMarchEventLog.length = 0;
+        borderMarchEventTargets.clear();
         pruneVeteranEnemyEducationJournal();
         dismissedSidePanelEventIds.clear();
 
