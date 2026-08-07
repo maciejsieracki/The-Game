@@ -6718,7 +6718,7 @@ async function boot(): Promise<void> {
     function tickWiarygodnoscStreamFor(ownerId: number, partnerId: number, typ: CredibilityStreamEvent): void {
       const m = wiarygodnoscStrumienByOwner.get(ownerId) ?? new Map<string, CredibilityStreamEntry>();
       const key = wiarygodnoscStreamKey(partnerId, typ);
-      const existing = m.get(key) ?? freshCredibilityStreamEntry(typ);
+      const existing = m.get(key) ?? freshCredibilityStreamEntry(typ, _menuDifficulty);
       m.set(key, tickCredibilityStreamEntry(existing));
       wiarygodnoscStrumienByOwner.set(ownerId, m);
     }

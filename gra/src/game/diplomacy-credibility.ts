@@ -280,17 +280,41 @@ export interface CredibilityStreamEntry {
   sumaAktywna: number;
 }
 
-/** Waga per turę (§3 tabela A) danego zobowiązania strumienia. */
-export function credibilityStreamWeight(typ: CredibilityStreamEvent): number {
+/**
+ * Waga per turę (§3 tabela A) danego zobowiązania strumienia. S1/S2 stałe niezależnie
+ * od trudności; S3/S4 rozbite PER POZIOM TRUDNOŚCI (R-WIARYGODNOSC-S9 2026-08-07 —
+ * S4 podniesione trzykrotnie, S3 podniesione proporcjonalnie, żeby zachować
+ * S3/S4 = 1,5 na każdym poziomie), wzorem `wiarygodnoscStartowa`.
+ */
+export function credibilityStreamWeight(
+  typ: CredibilityStreamEvent,
+  poziomTrudnosci: GameDifficulty,
+): number {
   switch (typ) {
     case 'strumien_sojusz':
       return DIPLOMACY_PARAMS.wiarygodnoscS1SojuszPerTure;
     case 'strumien_nap':
       return DIPLOMACY_PARAMS.wiarygodnoscS2NapPerTure;
     case 'strumien_handel':
-      return DIPLOMACY_PARAMS.wiarygodnoscS3HandelPerTure;
+      switch (poziomTrudnosci) {
+        case 'easy':
+          return DIPLOMACY_PARAMS.wiarygodnoscS3HandelPerTureLatwy;
+        case 'hard':
+          return DIPLOMACY_PARAMS.wiarygodnoscS3HandelPerTureTrudny;
+        case 'normal':
+        default:
+          return DIPLOMACY_PARAMS.wiarygodnoscS3HandelPerTureNormalny;
+      }
     case 'strumien_przemarsz':
-      return DIPLOMACY_PARAMS.wiarygodnoscS4PrzemarszPerTure;
+      switch (poziomTrudnosci) {
+        case 'easy':
+          return DIPLOMACY_PARAMS.wiarygodnoscS4PrzemarszPerTureLatwy;
+        case 'hard':
+          return DIPLOMACY_PARAMS.wiarygodnoscS4PrzemarszPerTureTrudny;
+        case 'normal':
+        default:
+          return DIPLOMACY_PARAMS.wiarygodnoscS4PrzemarszPerTureNormalny;
+      }
   }
 }
 
@@ -301,9 +325,15 @@ export function sumaStrumienia(wpisy: readonly CredibilityStreamEntry[]): number
   return suma;
 }
 
-/** Świeży wpis STRUMIENIA (sumaAktywna=0) dla danego typu zobowiązania — waga z DIPLOMACY_PARAMS. */
-export function freshCredibilityStreamEntry(typ: CredibilityStreamEvent): CredibilityStreamEntry {
-  return { typ, wartoscNaTure: credibilityStreamWeight(typ), sumaAktywna: 0 };
+/**
+ * Świeży wpis STRUMIENIA (sumaAktywna=0) dla danego typu zobowiązania i poziomu
+ * trudności — waga z DIPLOMACY_PARAMS (S3/S4 zależne od trudności, R-WIARYGODNOSC-S9).
+ */
+export function freshCredibilityStreamEntry(
+  typ: CredibilityStreamEvent,
+  poziomTrudnosci: GameDifficulty,
+): CredibilityStreamEntry {
+  return { typ, wartoscNaTure: credibilityStreamWeight(typ, poziomTrudnosci), sumaAktywna: 0 };
 }
 
 /**
@@ -550,22 +580,26 @@ export function buildWiarygodnoscBreakdown(
 
 /**
  * Mnożnik tempa wzrostu Zaufania od Wiarygodności (§5, WIAR-Q3=C):
- *   wzrostMult(W) = 1 + (W/100) × 0,5
+ *   wzrostMult(W) = 1 + (W/100) × wiarygodnoscTempoAmplituda (0,5)
  * W=+100 → ×1,5 · W=0 → ×1,0 · W=−100 → ×0,5
+ * R-WIARYGODNOSC-S9 2026-08-07: amplituda nazwana jako DIPLOMACY_PARAMS.wiarygodnoscTempoAmplituda
+ * (był literał 0,5), wartość bez zmian.
  */
 export function wiarygodnoscWzrostMult(w: number): number {
   const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
-  return 1 + (wKlamrowane / 100) * 0.5;
+  return 1 + (wKlamrowane / 100) * DIPLOMACY_PARAMS.wiarygodnoscTempoAmplituda;
 }
 
 /**
  * Mnożnik tempa spadku Zaufania od Wiarygodności (§5, WIAR-Q3=C):
- *   spadekMult(W) = 1 − (W/100) × 0,5
+ *   spadekMult(W) = 1 − (W/100) × wiarygodnoscTempoAmplituda (0,5)
  * W=+100 → ×0,5 · W=0 → ×1,0 · W=−100 → ×1,5
+ * R-WIARYGODNOSC-S9 2026-08-07: amplituda nazwana jako DIPLOMACY_PARAMS.wiarygodnoscTempoAmplituda
+ * (był literał 0,5), wartość bez zmian.
  */
 export function wiarygodnoscSpadekMult(w: number): number {
   const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
-  return 1 - (wKlamrowane / 100) * 0.5;
+  return 1 - (wKlamrowane / 100) * DIPLOMACY_PARAMS.wiarygodnoscTempoAmplituda;
 }
 
 /**
@@ -578,13 +612,13 @@ export function applyWiarygodnoscTempoDoDelty(dZ: number, w: number | undefined)
   return dZ * wiarygodnoscSpadekMult(w);
 }
 
-/** REL-WIARYG-DRIFT-Q1 — pasywny ΔZaufanie/turę od globalnej Wiarygodności (niezależny od umów). */
-export const WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
-
 /**
  * Pasywny dryf Zaufania co turę z Wiarygodności (REL-WIARYG-DRIFT-Q1):
  *   W=+100 → +3/turę · W=−100 → −3/turę · liniowo · W=0 → 0.
- * Wzór: `clamp(W, −100, 100) × 0,03`.
+ * Wzór: `clamp(W, −100, 100) × DIPLOMACY_PARAMS.wiarygodnoscZaufanieDryfNa100` (0,03).
+ * R-WIARYGODNOSC-S9 2026-08-07: przeniesione z modułowej stałej
+ * `WIARYGODNOSC_ZAUFANIE_DRYF_NA_100` do `DIPLOMACY_PARAMS.wiarygodnoscZaufanieDryfNa100`
+ * (spójność z resztą parametrów Wiarygodności, eksport do JSON) — wartość bez zmian.
  */
 export function zaufanieDryfOdWiarygodnosci(w: number): number {
   const wKlamrowane = clamp(
@@ -592,7 +626,7 @@ export function zaufanieDryfOdWiarygodnosci(w: number): number {
     DIPLOMACY_PARAMS.wiarygodnoscSkalaMin,
     DIPLOMACY_PARAMS.wiarygodnoscSkalaMax,
   );
-  return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
+  return wKlamrowane * DIPLOMACY_PARAMS.wiarygodnoscZaufanieDryfNa100;
 }
 
 /**

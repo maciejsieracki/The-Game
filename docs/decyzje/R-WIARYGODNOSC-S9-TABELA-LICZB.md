@@ -1,8 +1,11 @@
-# R-WIARYGODNOSC-S9-LICZBY-Q1 — pełna tabela liczb Wiarygodności (PROPOZYCJA, czeka na OK)
+# R-WIARYGODNOSC-S9-LICZBY-Q1 — pełna tabela liczb Wiarygodności (WDROŻONE)
 
-**Data:** 2026-08-06
-**Status:** 🟡 **PROPOZYCJA — CZEKA NA DECYZJĘ MACIEJA.** Zero kodu wdrożone. Zero zmian w
-`gra/data/diplomacy.json` ani w `gra/src/game/diplomacy.ts` / `diplomacy-credibility.ts`.
+**Data propozycji:** 2026-08-06 · **Data wdrożenia:** 2026-08-07
+**Status:** 🟢 **WDROŻONE.** Wszystkie 39 parametrów ze statusem POTWIERDZENIE wyeksportowane
+1:1 z `DIPLOMACY_PARAMS` (TypeScript) do `gra/data/diplomacy.json` → `params`, plus 7 korekt
+wartości zatwierdzonych przez Macieja 2026-08-07 (`wiarygodnoscProgNapMin` −40→0 oraz rozbicie
+S3/S4 na trudność) i 3 korekty opakowania. Szczegóły wykonania i wyniki bramek: sekcja
+**10. Wdrożenie 2026-08-07** na końcu dokumentu. Tabele §0–§8 pozostają kanonem wartości.
 **Wariant:** `R-WIARYGODNOSC-S9-LICZBY-Q1 = B` — najpierw ta tabela w czacie, dopiero po `OK`
 (lub literach per-parametr) wchodzi kod.
 **Źródła:** `dyspozycje/WIARYGODNOSC-SPECYFIKACJA.md` (kanon wzorów, §1–§10) ·
@@ -214,13 +217,76 @@ parametr sama specyfikacja oznaczyła jako niepewny (`wiarygodnoscOdwetOknoTur`)
 stałe żyjące poza systemem danych, które warto — przy okazji, nie pilnie — przenieść do
 `DIPLOMACY_PARAMS` dla spójności z resztą projektu.
 
-**To jest PROPOZYCJA.** Nic z powyższego nie zostało wdrożone — `gra/data/diplomacy.json` i
-`gra/src/game/**` są dziś dokładnie takie, jak przed tym zleceniem. Czekam na:
-- **„OK"** — zatwierdzenie całości (wszystkie 41 wartości bez zmian + zgoda na 3 korekty
-  opakowania przy najbliższej okazji kodowej), **albo**
-- **litery/komentarze per parametr** tam, gdzie Maciej chce inaczej.
+**Historyczne (stan propozycji, 2026-08-06):** dokument czekał wtedy na `OK` całości albo litery
+per-parametr. Odpowiedź Macieja padła 2026-08-07 — patrz sekcja 10.
 
-Dopiero po odpowiedzi: eksport tych 41 wartości do `gra/data/diplomacy.json` (`params` — dopisanie
-kluczy `wiarygodnosc*`, zero zmian wartości domyślnych w TS, bo są identyczne) + ewentualne
-korekty opakowania + rozszerzenie `wiarygodnosc-test.cjs` o asercję „JSON ma te same wartości co
-TS default" — osobne zlecenie kodowe, po `numer+ABC+commit`.
+---
+
+## 10. Wdrożenie 2026-08-07
+
+Maciej zatwierdził **OK dla wszystkich 39 wartości ze statusem POTWIERDZENIE**, plus **7 korekt
+wartości** i **3 korekty opakowania** zgłoszone w tej samej turze. Kanoniczne liczby są w
+tabelach §0–§8 wyżej (już zaktualizowanych) — ta sekcja opisuje **wykonanie**, nie liczby.
+
+### 10.1 Co weszło do kodu
+
+| # | Zmiana | Skutek w `DIPLOMACY_PARAMS` |
+|---|---|---|
+| 1 | `wiarygodnoscProgNapMin`: −40 → **0** pkt Wiarygodności | wartość zmieniona (jedyna zmieniona wartość spośród 38 przeniesionych 1:1) |
+| 2 | S3/S4 strumienia rozbite na trudność | `wiarygodnoscS3HandelPerTure` i `wiarygodnoscS4PrzemarszPerTure` **USUNIĘTE**, w ich miejsce 6 nowych kluczy `...Latwy/Normalny/Trudny` (§3A) |
+| 3 | Komentarz `wiarygodnoscZaufanieDzielnikPerTura` | przepisany — opisuje dziś jedyne rzeczywiste użycie (Dźwignia 4, `modyfikatorZaufaniaD4OdWiarygodnosci`), nie ANULOWANY strumień W→Zaufanie/turę |
+| 4 | `WIARYGODNOSC_ZAUFANIE_DRYF_NA_100` (moduł-const) | przeniesiona → `DIPLOMACY_PARAMS.wiarygodnoscZaufanieDryfNa100 = 0,03` |
+| 5 | Literał `0,5` w `wiarygodnoscWzrostMult`/`wiarygodnoscSpadekMult` | nazwany → `DIPLOMACY_PARAMS.wiarygodnoscTempoAmplituda = 0,5` |
+
+**Eksport do JSON:** wszystkie **47** kluczy `wiarygodnosc*` finalnego `DIPLOMACY_PARAMS`
+(41 oryginalnych − 2 płaskie S3/S4 + 6 nowych per-trudność + 2 z korekt opakowania) dopisane do
+`gra/data/diplomacy.json` → `params`. Blok `params` urósł z 85 do 132 kluczy. Wartości identyczne
+z domyślnymi w TS — zweryfikowane nową sekcją 10 testu przez `loadDiplomacyParams()`.
+
+### 10.2 Zmienione pliki
+
+- `gra/src/game/diplomacy.ts` — `DIPLOMACY_PARAMS` wg tabeli 10.1.
+- `gra/src/game/diplomacy-credibility.ts` — `credibilityStreamWeight(typ, poziomTrudnosci)` oraz
+  `freshCredibilityStreamEntry(typ, poziomTrudnosci)` dostały **WYMAGANY** (nie opcjonalny) drugi
+  parametr `GameDifficulty`; `strumien_handel`/`strumien_przemarsz` robią switch po trudności,
+  `strumien_sojusz`/`strumien_nap` bez zmian (S1/S2 pozostają płaskie).
+- `gra/src/main.ts` — `tickWiarygodnoscStreamFor`: `freshCredibilityStreamEntry(typ, _menuDifficulty)`
+  (jedyne realne wywołanie w repo).
+- `gra/data/diplomacy.json` — 47 kluczy `wiarygodnosc*` w `params`.
+- `gra/tools/wiarygodnosc-test.cjs` — +60 asercji; S3/S4 rozbite na 3 poziomy × 2 typy, asercje
+  „wartości RÓŻNIĄ SIĘ między trudnościami" i „stosunek S3/S4 = 1,5 na każdym poziomie";
+  próg NAP w Dźwigni 3 zaktualizowany (W=−40 teraz ODRZUCANY, W=0 to nowy próg); nowa sekcja 10
+  — spójność JSON↔TS dla wszystkich 47 kluczy.
+
+### 10.3 Wynik bramek (uruchomione i potwierdzone niezależnie przez Evaluatora)
+
+| Bramka | Wynik |
+|---|---|
+| `npx tsc --noEmit` | **0 błędów** |
+| `wiarygodnosc-test.cjs` | **212 / 0** (baseline 152 → +60) |
+| `diplomacy-test.cjs` | 148 / 0 |
+| `diplomacy-acceptance-points-test.cjs` | 225 / 0 |
+| `tech-tree-test.cjs` | 19 / 0 |
+| `research-test.cjs` | 33 / 33 |
+
+**Test mutacyjny sygnatury (Evaluator):** usunięcie drugiego argumentu w `main.ts` daje
+`TS2554: Expected 2 arguments, but got 1` — kompilator jest realną siatką bezpieczeństwa, czyste
+`tsc` jest więc **dowodem** pokrycia wszystkich wywołań, nie założeniem.
+**Falsyfikacja nowej bramki JSON↔TS:** podmiana jednej wartości w JSON (0,4→0,41) lub usunięcie
+klucza → **210 / 2 fail**. Test jest nośny.
+**Dryf względem baseline:** usunięte dokładnie 2 klucze, dodane dokładnie 8, zmieniona dokładnie
+1 wartość; **86 parametrów nie-`wiarygodnosc` bez żadnej zmiany**.
+
+### 10.4 Konsekwencje do odnotowania (noty Evaluatora)
+
+- **N3 — JSON jest dziś lustrem, nie źródłem prawdy.** Funkcje Wiarygodności czytają surową stałą
+  `DIPLOMACY_PARAMS`, nie `getBaseDiplomacyParams()`/`loadDiplomacyParams()`. Edycja tych 47 kluczy
+  w `diplomacy.json` ma **zerowy wpływ na rozgrywkę**, dopóki czytniki nie przejdą na
+  `getBaseDiplomacyParams()`. Nowy test pilnuje tylko równości JSON==TS. To powielenie istniejącego
+  wzorca całego bloku Wiarygodności, nie defekt tej zmiany — ale **workflow Panel-D/Excel na tych
+  parametrach nie zadziała** bez osobnego zlecenia. Zapisane w `dyspozycje/PYTANIA-OTWARTE.md`.
+- **N4 — stare zapisy zachowają stare wagi S3/S4.** `wartoscNaTure` jest zamrażana we wpisie
+  strumienia przy tworzeniu i persystowana; `freshCredibilityStreamEntry` odpala się wyłącznie na
+  fallbacku, gdy klucza brak. Zapis sprzed tej zmiany utrzyma S3=0,3 / S4=0,2 dla już aktywnych
+  traktatów bezterminowo — migracji nie ma. **Playtest musi startować NOWĄ grę**, żeby zobaczyć
+  potrojone S4.
