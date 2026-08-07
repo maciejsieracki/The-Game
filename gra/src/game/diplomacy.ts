@@ -511,6 +511,27 @@ const DIPLO_RESPEKT_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
  * Eksportowana (R-DYPLO-JSON-ZRODLO-PRAWDY-Q1=B) — czytniki dyplomacji (diplomacy-credibility.ts,
  * diplomacy-layers.ts, diplomacy-value-catalog.ts) mają czytać stąd, nie z surowej stałej
  * DIPLOMACY_PARAMS, żeby edycja diplomacy.json/Panelu-D realnie wpływała na rozgrywkę.
+ *
+ * ⚠️ PUŁAPKA CYKLU IMPORTÓW (nota N2, R-DYPLO-JSON-ZRODLO-PRAWDY-Q1, zweryfikowana eksperymentalnie
+ * 2026-08-07): ten plik (diplomacy.ts) importuje `diplomacy-credibility.ts` (linia ~31), a
+ * `diplomacy-credibility.ts` importuje z powrotem `getBaseDiplomacyParams` STĄD — to jest cykl
+ * importów. WOLNO wywoływać `getBaseDiplomacyParams()` WYŁĄCZNIE wewnątrz ciała funkcji/metody
+ * (np. w `getEffectiveDiplomacyParams()` niżej) — NIGDY na poziomie modułu (np.
+ * `const X = getBaseDiplomacyParams().cokolwiek;` poza funkcją) w żadnym pliku uczestniczącym
+ * w tym cyklu (dziś: `diplomacy-credibility.ts`). Powód: w takim wywołaniu ani stała
+ * `DIPLOMACY_PARAMS` (linia ~101), ani cache `_baseDiplomacyParams` (linia ~468) nie są jeszcze
+ * zainicjalizowane — oba stoją w kodzie źródłowym PO imporcie z linii 31, więc w chwili
+ * importu `diplomacy-credibility.ts` (który zachodzi w trakcie wykonywania linii 31 tego pliku)
+ * `diplomacy.ts` nie zdążył jeszcze do nich dotrzeć.
+ * Objaw NIE jest czytelnym `ReferenceError` o TDZ: po zbudowaniu bundlem (esbuild --bundle,
+ * zarówno format iife jak i esm; tak samo spodziewane przy Rollup/Vite, bo to ten sam mechanizm
+ * spłaszczania modułów do jednej funkcji/pliku) bundler porządkuje moduły cyklu wg własnej
+ * kolejności topologicznej, NIE wg fizycznej pozycji instrukcji w pliku — więc PRZENIESIENIE
+ * samej deklaracji `_baseDiplomacyParams` (a nawet razem z `DIPLOMACY_PARAMS`) przed import z
+ * linii 31 NIE naprawia pułapki (zweryfikowano eksperymentalnie: crash utrzymuje się w obu
+ * wariantach). Realny efekt to `TypeError: Cannot convert undefined or null to object`, rzucony
+ * przez `Object.keys(DIPLOMACY_PARAMS)` w `loadDiplomacyParams()` — komunikat nie wskazuje ani
+ * cyklu importów, ani prawdziwej przyczyny. Jedyne bezpieczne miejsce wywołania: wewnątrz funkcji.
  */
 export function getBaseDiplomacyParams(): DiplomacyParams {
   if (!_baseDiplomacyParams) {

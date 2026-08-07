@@ -13,7 +13,6 @@ export {
   wiarygodnoscSpadekMult,
   applyWiarygodnoscTempoDoDelty,
   zaufanieDryfOdWiarygodnosci,
-  WIARYGODNOSC_ZAUFANIE_DRYF_NA_100,
   modyfikatorZaufaniaD4OdWiarygodnosci,
   zaufaniePierwszyKontaktZD4,
   freshCredibilityStreamEntry,
@@ -27,7 +26,7 @@ export {
   credibilityEventLabelPl,
 } from '../src/game/diplomacy-credibility';
 export { wiarygodnoscTooltipPl, wiarygodnoscBadgeHtml } from '../src/game/diplomacy-display';
-export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent } from '../src/game/diplomacy';
+export { DIPLOMACY_PARAMS, tickDiplomacy, computeTickZaufanieDelta, applyDiplomaticEvent, loadDiplomacyParams } from '../src/game/diplomacy';
 export {
   diplomacyPnRelacjaParams,
   diplomacyClampTrustGainNaTure,
