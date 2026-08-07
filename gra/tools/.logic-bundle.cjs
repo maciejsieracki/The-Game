@@ -162,15 +162,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.045, highland: 0.105 },
-      medium: { mountain: 0.075, highland: 0.125 },
-      high: { mountain: 0.18, highland: 0.27 }
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
     },
     relief_overflow_cap_frac: {
-      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Suma mountain+highland \u2248 docelowa g\xF3rzysto\u015B\u0107 l\u0105du per tier suwaka 'Relief': low\u224812%, medium\u224815% (R-MAPGEN-KOLEJNOSC-Q2=C: 0,05+0,085 \u2014 progi fair-play-grid-test.cjs czyta mapGenReliefOverflowCapFrac), high\u224830%.",
-      low: { mountain: 0.045, highland: 0.075 },
-      medium: { mountain: 0.05, highland: 0.085 },
-      high: { mountain: 0.12, highland: 0.18 }
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -211,9 +211,12 @@ var map_gen_params_default = {
   deposit_rules: {
     miedz: { rarity: 0.1 },
     zelazo: { rarity: 0.08 },
-    glina: { rarity: 0.1 },
+    glina: {
+      rarity: 0.3,
+      _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
+    },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -249,9 +252,9 @@ var FALLBACK_FOREST = { low: 0.65, medium: 0.58, high: 0.5 };
 var FALLBACK_MOUNTAIN = { low: 0.8, medium: 0.68, high: 0.52 };
 var FALLBACK_HIGHLAND = { low: 0.66, medium: 0.5, high: 0.38 };
 var FALLBACK_RELIEF_OVERFLOW_CAP = {
-  low: { mountain: 0.045, highland: 0.075 },
-  medium: { mountain: 0.05, highland: 0.085 },
-  high: { mountain: 0.12, highland: 0.18 }
+  low: { mountain: 0.09, highland: 0.132 },
+  medium: { mountain: 0.1, highland: 0.15 },
+  high: { mountain: 0.24, highland: 0.318 }
 };
 var FALLBACK_MOUNTAIN_RANGE = {
   low: { hexyNaPasmo: 320, maxPasmNaMase: 2, dlugoscMin: 9, dlugoscMax: 15, minMasaHexow: 40, obrzezeSzansa: 0.3 },
@@ -261,9 +264,9 @@ var FALLBACK_MOUNTAIN_RANGE = {
 var FALLBACK_DEPOSIT_RARITY = {
   miedz: 0.1,
   zelazo: 0.08,
-  glina: 0.1,
+  glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -275,30 +278,30 @@ function tierKey(t) {
   return t;
 }
 function mapGenDefaultSight() {
-  var _a9, _b3;
-  const v = (_b3 = (_a9 = map_gen_params_default.mgla) == null ? void 0 : _a9.default_sight_jednostki) == null ? void 0 : _b3.wartosc;
+  var _a11, _b5;
+  const v = (_b5 = (_a11 = map_gen_params_default.mgla) == null ? void 0 : _a11.default_sight_jednostki) == null ? void 0 : _b5.wartosc;
   return typeof v === "number" && v > 0 ? v : FALLBACK_SIGHT;
 }
 function mapGenResourceMult(tier) {
-  var _a9;
-  const m = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.surowce_mult;
+  var _a11;
+  const m = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.surowce_mult;
   return (m == null ? void 0 : m[tierKey(tier)]) ?? FALLBACK_RESOURCE_MULT[tier];
 }
 function mapGenResourceBaselineRarity() {
-  var _a9;
-  const v = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.baseline_rarity_mult;
+  var _a11;
+  const v = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.baseline_rarity_mult;
   return typeof v === "number" && v > 0 ? v : FALLBACK_BASELINE_RARITY;
 }
 function mapGenMaxRiversBase(tier) {
-  var _a9;
-  const g = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.rzeki_max_mala_mapa;
+  var _a11;
+  const g = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.rzeki_max_mala_mapa;
   const k = tierKey(tier);
   if (g && typeof g[k] === "number") return g[k];
   return FALLBACK_RIVERS[tier];
 }
 function mapGenRiverScale(size) {
-  var _a9;
-  const rs = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.river_scale;
+  var _a11;
+  const rs = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.river_scale;
   const lut = {
     mala: "mala",
     srednia: "srednia",
@@ -310,37 +313,37 @@ function mapGenRiverScale(size) {
   return typeof v === "number" && v > 0 ? v : FALLBACK_RIVER_SCALE[size];
 }
 function mapGenDesertThreshold(tier) {
-  var _a9;
-  const d = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.desert_noise_threshold;
+  var _a11;
+  const d = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.desert_noise_threshold;
   const k = tierKey(tier);
   if (d && typeof d[k] === "number") return d[k];
   return FALLBACK_DESERT[tier];
 }
 function mapGenForestThreshold(tier) {
-  var _a9;
-  const f = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.forest_noise_threshold;
+  var _a11;
+  const f = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.forest_noise_threshold;
   const k = tierKey(tier);
   if (f && typeof f[k] === "number") return f[k];
   return FALLBACK_FOREST[tier];
 }
 function mapGenMountainThreshold(tier) {
-  var _a9;
-  const m = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.mountain_noise_threshold;
+  var _a11;
+  const m = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.mountain_noise_threshold;
   const k = tierKey(tier);
   if (m && typeof m[k] === "number") return m[k];
   return FALLBACK_MOUNTAIN[tier];
 }
 function mapGenHighlandThreshold(tier) {
-  var _a9;
-  const h = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.highland_noise_threshold;
+  var _a11;
+  const h = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.highland_noise_threshold;
   const k = tierKey(tier);
   if (h && typeof h[k] === "number") return h[k];
   return FALLBACK_HIGHLAND[tier];
 }
 function mapGenReliefOverflowCapFrac(tier) {
-  var _a9;
+  var _a11;
   const fb = FALLBACK_RELIEF_OVERFLOW_CAP[tier];
-  const src = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.relief_overflow_cap_frac;
+  const src = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.relief_overflow_cap_frac;
   const row = src == null ? void 0 : src[tierKey(tier)];
   if (!row) return { ...fb };
   const mountain = typeof row.mountain === "number" && row.mountain > 0 ? row.mountain : fb.mountain;
@@ -348,9 +351,9 @@ function mapGenReliefOverflowCapFrac(tier) {
   return { mountain, highland };
 }
 function mapGenMountainRangeParams(tier) {
-  var _a9;
+  var _a11;
   const fb = FALLBACK_MOUNTAIN_RANGE[tier];
-  const src = (_a9 = map_gen_params_default.gestosc) == null ? void 0 : _a9.pasma_gorskie;
+  const src = (_a11 = map_gen_params_default.gestosc) == null ? void 0 : _a11.pasma_gorskie;
   const row = src == null ? void 0 : src[tierKey(tier)];
   if (!row) return { ...fb };
   const dlugoscMin = typeof row.dlugosc_min === "number" && row.dlugosc_min > 0 ? row.dlugosc_min : fb.dlugoscMin;
@@ -364,8 +367,8 @@ function mapGenMountainRangeParams(tier) {
   };
 }
 function mapGenRozmiarDims() {
-  var _a9;
-  const src = (_a9 = map_gen_params_default.generator) == null ? void 0 : _a9.rozmiar_dims;
+  var _a11;
+  const src = (_a11 = map_gen_params_default.generator) == null ? void 0 : _a11.rozmiar_dims;
   const out = { ...FALLBACK_ROZMIAR };
   if (!src) return out;
   for (const key of Object.keys(out)) {
@@ -423,7 +426,7 @@ var e_start_params_default = {
     },
     Standardowy: {
       rywale_ai: 6,
-      miasta_panstwa: 6,
+      miasta_panstwa: 5,
       typy_cywilizacji: 6,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 5, min: 4, max: 6 },
@@ -435,7 +438,7 @@ var e_start_params_default = {
     },
     Du\u017Cy: {
       rywale_ai: 7,
-      miasta_panstwa: 7,
+      miasta_panstwa: 6,
       typy_cywilizacji: 10,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 6, min: 5, max: 7 },
@@ -447,7 +450,7 @@ var e_start_params_default = {
     },
     Ogromny: {
       rywale_ai: 8,
-      miasta_panstwa: 8,
+      miasta_panstwa: 7,
       typy_cywilizacji: 12,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 7, min: 6, max: 8 },
@@ -462,7 +465,7 @@ var e_start_params_default = {
       miasta_panstwa: 8,
       typy_cywilizacji: 14,
       typy_cywilizacji_per_epoka: {
-        kamien: { default: 7, min: 6, max: 8 },
+        kamien: { default: 8, min: 7, max: 8 },
         braz: { default: 13, min: 12, max: 14 },
         zelazo: { default: 14, min: 13, max: 15 }
       },
@@ -553,16 +556,16 @@ function skalaRow(menuLabel) {
   return void 0;
 }
 function eStartPlayerCivId() {
-  var _a9;
-  return ((_a9 = R.defaulty) == null ? void 0 : _a9.player_civ_id) ?? "rzymianie";
+  var _a11;
+  return ((_a11 = R.defaulty) == null ? void 0 : _a11.player_civ_id) ?? "rzymianie";
 }
 function eStartEpochId() {
-  var _a9;
-  return ((_a9 = R.defaulty) == null ? void 0 : _a9.start_epoch_id) ?? "kamien";
+  var _a11;
+  return ((_a11 = R.defaulty) == null ? void 0 : _a11.start_epoch_id) ?? "kamien";
 }
 function eStartRenderQualityBundled() {
-  var _a9;
-  const q = ((_a9 = R.defaulty) == null ? void 0 : _a9.render_quality_bundled) ?? "medium";
+  var _a11;
+  const q = ((_a11 = R.defaulty) == null ? void 0 : _a11.render_quality_bundled) ?? "medium";
   if (q === "low" || q === "high") return q;
   return "medium";
 }
@@ -573,10 +576,10 @@ function normEpochId(epochId) {
   return "kamien";
 }
 function eStartTypyCywilizacjiPerEpoka(menuLabel, epochId) {
-  var _a9;
+  var _a11;
   const row = skalaRow(menuLabel);
   const ep = normEpochId(epochId);
-  const triple = (_a9 = row == null ? void 0 : row.typy_cywilizacji_per_epoka) == null ? void 0 : _a9[ep];
+  const triple = (_a11 = row == null ? void 0 : row.typy_cywilizacji_per_epoka) == null ? void 0 : _a11[ep];
   if (!triple) return void 0;
   const { default: def, min, max } = triple;
   if (typeof def !== "number" || typeof min !== "number" || typeof max !== "number" || !Number.isFinite(def) || !Number.isFinite(min) || !Number.isFinite(max)) {
@@ -585,15 +588,15 @@ function eStartTypyCywilizacjiPerEpoka(menuLabel, epochId) {
   return { default: def, min, max };
 }
 function eStartTypyCywilizacji(menuLabel) {
-  var _a9, _b3;
+  var _a11, _b5;
   const row = skalaRow(menuLabel);
-  const kamien = (_b3 = (_a9 = row == null ? void 0 : row.typy_cywilizacji_per_epoka) == null ? void 0 : _a9.kamien) == null ? void 0 : _b3.default;
+  const kamien = (_b5 = (_a11 = row == null ? void 0 : row.typy_cywilizacji_per_epoka) == null ? void 0 : _a11.kamien) == null ? void 0 : _b5.default;
   if (typeof kamien === "number" && kamien > 0) return kamien;
   return row == null ? void 0 : row.typy_cywilizacji;
 }
 function eStartMiastaPanstwa(menuLabel) {
-  var _a9;
-  return (_a9 = skalaRow(menuLabel)) == null ? void 0 : _a9.miasta_panstwa;
+  var _a11;
+  return (_a11 = skalaRow(menuLabel)) == null ? void 0 : _a11.miasta_panstwa;
 }
 
 // src/game/civ-entry-epoch.ts
@@ -675,6 +678,11 @@ function riverMinPathLengthForTier(tier) {
   if (tier === "low") return 15;
   return 25;
 }
+function riverGridCellSizeForTier(tier) {
+  if (tier === "high") return 5;
+  if (tier === "low") return 10;
+  return 5;
+}
 var RIVER_REF_AREA = 168 * 120;
 function riverMapAreaScale(w, h) {
   return Math.sqrt(w * h / RIVER_REF_AREA);
@@ -685,15 +693,13 @@ function clamp(n, lo, hi) {
 function resolveRiverMapParams(tier, w, h) {
   const areaScale = riverMapAreaScale(w, h);
   const minDim = Math.min(w, h);
-  const mainBase = tier === "high" ? 4 : tier === "low" ? 11 : 7;
-  const tribBase = tier === "high" ? 2 : tier === "low" ? 6 : 4;
   const tierMinLen = riverMinPathLengthForTier(tier);
   const tierCap = tier === "low" ? 5 : tier === "high" ? 8 : 6;
-  const mainCell = clamp(Math.round(mainBase * areaScale), 4, 32);
-  const tributaryCell = clamp(Math.round(tribBase * areaScale), 2, 18);
-  const mainGridStride = areaScale < 0.55 ? 2 : 3;
+  const mainCell = riverGridCellSizeForTier(tier);
+  const tributaryCell = Math.max(3, Math.round(mainCell * 0.5));
+  const mainGridStride = 1;
   const minLen = Math.min(
-    clamp(Math.round(tierMinLen * areaScale), 6, tierMinLen),
+    clamp(Math.round(tierMinLen * Math.max(0.65, areaScale)), 6, tierMinLen),
     Math.floor(minDim * 0.35)
   );
   const maxLen = Math.min(
@@ -710,8 +716,9 @@ function resolveRiverMapParams(tier, w, h) {
   const mouthTailLen = clamp(Math.round(5 * areaScale), 3, 5);
   const minInlandFromSea = minDim >= 40 ? 2 : 1;
   const reliefSearchMax = clamp(Math.round(14 * areaScale), 6, 28);
-  const feederPasses = clamp(3 + Math.floor(areaScale), 3, 8);
-  const topUpPasses = clamp(4 + Math.floor(areaScale * 1.5), 4, 12);
+  const largeMap = areaScale >= 1.35;
+  const feederPasses = largeMap ? clamp(2 + Math.floor(areaScale * 0.4), 2, 4) : clamp(4 + Math.floor(areaScale), 4, 10);
+  const topUpPasses = largeMap ? clamp(2 + Math.floor(areaScale * 0.4), 2, 4) : clamp(6 + Math.floor(areaScale * 2), 6, 16);
   const minInlandCell = Math.max(4, Math.floor(minLen * 0.35));
   return {
     areaScale,
@@ -728,7 +735,7 @@ function resolveRiverMapParams(tier, w, h) {
     minInlandFromSea,
     reliefSearchMin: 2,
     reliefSearchMax,
-    reliefSourceBonus: 80,
+    reliefSourceBonus: 0,
     feederPasses,
     topUpPasses,
     feederSourceSepMult: 0.35,
@@ -811,9 +818,9 @@ var MAP_MENU_TIER_ORDER = [
 var MIASTA_PANSTWA_MENU_BY_TIER = [
   { min: 2, default: 3, max: 4 },
   { min: 3, default: 4, max: 5 },
-  { min: 4, default: 6, max: 7 },
-  { min: 5, default: 7, max: 8 },
-  { min: 6, default: 8, max: MAX_MIAST_PANSTWA },
+  { min: 4, default: 5, max: 7 },
+  { min: 5, default: 6, max: 8 },
+  { min: 6, default: 7, max: MAX_MIAST_PANSTWA },
   { min: 7, default: 8, max: MAX_MIAST_PANSTWA }
 ];
 var EPOCH_CIV_TYPE_POOL = {
@@ -837,7 +844,7 @@ function tripleFromDefault(def, pool) {
   return { min, default: adjustedDef, max };
 }
 var TYPY_CYWILIZACJI_DEFAULT_BY_TIER = {
-  kamien: [3, 4, 5, 6, 7, 7],
+  kamien: [3, 4, 5, 6, 7, 8],
   braz: [4, 5, 6, 9, 11, 13],
   zelazo: [4, 5, 6, 10, 12, 14]
 };
@@ -884,6 +891,57 @@ function defaultCivTypesFromMapLabel(menuLabel, epochId = "kamien", civRoster) {
     def = Math.min(def, maxCivTypesForStartEpoch(epochId, civRoster));
   }
   return Math.max(1, def);
+}
+
+// src/map/riverGenSwitch.ts
+var RIVER_GEN_STORAGE_KEY = "civ-river-gen";
+var RIVER_GEN_PHASE_STORAGE_KEY = "civ-river-gen-phase";
+var _override = null;
+var _phaseOverride = null;
+function parse01(raw) {
+  if (raw === "0" || raw === "false") return false;
+  if (raw === "1" || raw === "true") return true;
+  return null;
+}
+function parsePhase(raw) {
+  if (raw === "main" || raw === "main+medium" || raw === "all") return raw;
+  return null;
+}
+function getRiverGenEnabled() {
+  if (_override !== null) return _override;
+  if (typeof location !== "undefined") {
+    const fromUrl = parse01(new URLSearchParams(location.search).get("riverGen"));
+    if (fromUrl !== null) return fromUrl;
+  }
+  try {
+    if (typeof localStorage !== "undefined") {
+      const fromStore = parse01(localStorage.getItem(RIVER_GEN_STORAGE_KEY));
+      if (fromStore !== null) return fromStore;
+    }
+  } catch {
+  }
+  return true;
+}
+function getRiverGenPhase() {
+  if (_phaseOverride !== null) return _phaseOverride;
+  if (typeof location !== "undefined") {
+    const fromUrl = parsePhase(new URLSearchParams(location.search).get("riverGenPhase"));
+    if (fromUrl !== null) return fromUrl;
+  }
+  try {
+    if (typeof localStorage !== "undefined") {
+      const fromStore = parsePhase(localStorage.getItem(RIVER_GEN_PHASE_STORAGE_KEY));
+      if (fromStore !== null) return fromStore;
+    }
+  } catch {
+  }
+  return "main+medium";
+}
+function isRiverGenMainOnly() {
+  return getRiverGenPhase() === "main";
+}
+function isRiverGenFull() {
+  return getRiverGenPhase() === "all";
 }
 
 // src/map/earth-land-mask.generated.ts
@@ -1310,7 +1368,13 @@ function earthSouthOceanRows(height) {
 }
 function earthPolarOceanRows(height) {
   const innerH = earthPlayableInnerHeight(height);
-  return Math.max(2, Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H));
+  const scaled = Math.round(EARTH_POLAR_OCEAN_REF_ROWS * innerH / EARTH_POLAR_OCEAN_REF_INNER_H);
+  const cap = Math.max(
+    EARTH_POLAR_OCEAN_REF_ROWS,
+    Math.round(innerH * 0.12)
+    // max ~12% wysokości na biegun
+  );
+  return Math.max(2, Math.min(scaled, cap));
 }
 function earthPlayableInnerHeight(height) {
   const b = EARTH_PLAYABLE_BORDER;
@@ -1466,6 +1530,9 @@ function hexKey(q, r) {
   return `${q},${r}`;
 }
 var CLIMATE_POLAR_FRAC = 0.05;
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
+var CLIMATE_PLAINS_HALF_FRAC = 0.075;
 var CLIMATE_PROCEDURAL_LAT_BUFFER_FRAC = 0.05;
 function climateBandAt(_q, r, height, isEarth = false) {
   const buf = latitudinalOceanBufferRows(height, isEarth);
@@ -1474,11 +1541,17 @@ function climateBandAt(_q, r, height, isEarth = false) {
   if (relR < 0 || relR > 1) {
     return r < height / 2 ? "polar_north" : "polar_south";
   }
+  const desertHalfFrac = CLIMATE_DESERT_HALF_ROWS / innerH;
+  const center = 0.5;
+  const desertLo = center - desertHalfFrac;
+  const desertHi = center + desertHalfFrac;
+  const plainsNorthLo = desertLo - CLIMATE_PLAINS_HALF_FRAC;
+  const plainsSouthHi = desertHi + CLIMATE_PLAINS_HALF_FRAC;
   if (relR < CLIMATE_POLAR_FRAC) return "polar_north";
-  if (relR < 0.275) return "temperate_north";
-  if (relR < 0.425) return "plains_north";
-  if (relR < 0.575) return "desert";
-  if (relR < 0.725) return "plains_south";
+  if (relR < plainsNorthLo) return "temperate_north";
+  if (relR < desertLo) return "plains_north";
+  if (relR < desertHi) return "desert";
+  if (relR < plainsSouthHi) return "plains_south";
   if (relR < 1 - CLIMATE_POLAR_FRAC) return "temperate_south";
   return "polar_south";
 }
@@ -1621,20 +1694,113 @@ function landMaskKontynenty(q, r, width, height, centers, perm, noiseScale) {
   const angleNoise = fbm(perm, Math.cos(angle) * 4 + zoneIdx * 11, Math.sin(angle) * 4 + 220, 2) * 0.1;
   return Math.min(1, Math.max(0, (radial + warpCoarse + warpFine + angleNoise - 0.09) * borderFade * edgeRect));
 }
-function landMaskPangea(q, r, width, height, perm, noiseScale, sparseLand = false) {
-  const cx = (width - 1) / 2;
-  const cy = (height - 1) / 2;
-  const dx = (q - cx) / (cx + 0.5);
-  const dy = (r - cy) / (cy + 0.5);
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  const radialDiv = sparseLand ? 0.42 : 0.82;
-  const radialPow = sparseLand ? 2.35 : 1.6;
-  const radial = Math.max(0, 1 - Math.pow(dist / radialDiv, radialPow));
-  const edgeRect = mapEdgeRectFade(q, r, width, height);
-  const centerBias = sparseLand ? 1 : mapCenterRadialBias(q, r, width, height);
-  const warp = fbm(perm, q * noiseScale * 0.6 + 200, r * noiseScale * 0.6 + 200, 3) * (sparseLand ? 0.18 : 0.3);
+function mapIsotropicFromCenter(q, r, width, height) {
+  const maxDim = Math.max(1, width - 1, height - 1);
+  return {
+    x: (q - (width - 1) / 2) / maxDim,
+    y: (r - (height - 1) / 2) / maxDim
+  };
+}
+function normToIsotropic(nq, nr, width, height) {
+  const maxDim = Math.max(1, width - 1, height - 1);
+  return {
+    x: (nq - 0.5) * (width - 1) / maxDim,
+    y: (nr - 0.5) * (height - 1) / maxDim
+  };
+}
+function pangeaLandT(landFraction) {
+  return Math.max(0, Math.min(1, (landFraction - 0.15) / 0.7));
+}
+function pangeaLandLayoutParams(landFraction, width, height) {
+  const t = pangeaLandT(landFraction);
+  const mapScale = Math.sqrt(width * height / 20160);
+  const sizeBoost = Math.min(0.06, Math.max(0, (mapScale - 1) * 0.04));
+  const highLand = Math.max(0, (t - 0.55) / 0.45);
+  const lowLand = Math.max(0, 1 - t / 0.45);
+  const ringPull = 0.02 + sizeBoost * 0.55 + highLand * 0.04 + lowLand * 0.03;
+  return {
+    // Przy niskim % lądu: mniej blobów, wszystkie w centrum — daleki pierścień = donut.
+    nBlobs: t < 0.28 ? 2 : t < 0.55 ? 4 : 6,
+    blobRadiusMin: 0.1 + t * 0.11 + sizeBoost * 0.45,
+    blobRadiusMax: 0.16 + t * 0.18 + sizeBoost * 0.9,
+    ringRMin: Math.max(5e-3, 0.012 + t * 0.02 + sizeBoost * 0.06 - ringPull),
+    ringRMax: Math.max(0.02, 0.035 + t * 0.07 + sizeBoost * 0.16 - ringPull * 1.2),
+    clusterRadius: 0.18 + t * 0.36 + sizeBoost,
+    threshold: 0.17 - t * 0.1,
+    mergeSum: 0.36 + t * 0.16 + sizeBoost * 0.12 + highLand * 0.08,
+    mergeMax: 0.22 + t * 0.18 + sizeBoost * 0.06 + highLand * 0.06,
+    globalWarp: 0.04 + t * 0.22,
+    // FALA 195: valley NIE może być najwyższe przy niskim % — to rzeźbiło moat rdzeń↔obręcz.
+    valley: Math.max(0.015, 0.045 + t * 0.025 - lowLand * 0.02),
+    fillMinScore: 0.03 + t * 0.08
+  };
+}
+function buildPangeaBlobCenters(rand, width, height, landFraction) {
+  const layout = pangeaLandLayoutParams(landFraction, width, height);
+  const borderMargin = Math.max(
+    mapBorderWidth(width, height) / Math.max(1, width - 1),
+    mapBorderWidth(width, height) / Math.max(1, height - 1),
+    0.12
+  );
+  const clamp012 = (v) => Math.max(borderMargin, Math.min(1 - borderMargin, v));
+  const jitter = () => (rand() - 0.5) * 0.028;
+  const pickR = () => layout.blobRadiusMin + rand() * (layout.blobRadiusMax - layout.blobRadiusMin);
+  const maxDim = Math.max(1, width - 1, height - 1);
+  const nBlobs = layout.nBlobs;
+  const centers = [];
+  centers.push({
+    nq: clamp012(0.5 + jitter()),
+    nr: clamp012(0.5 + jitter()),
+    radius: pickR()
+  });
+  const ringSlots = nBlobs - 1;
+  const pickRRing = () => {
+    const span = layout.blobRadiusMax - layout.blobRadiusMin;
+    return layout.blobRadiusMin * 1.06 + rand() * span * 1.12;
+  };
+  for (let i = 0; i < ringSlots; i++) {
+    const angle = 2 * Math.PI * i / ringSlots + (rand() - 0.5) * 0.45;
+    const ringR = layout.ringRMin + rand() * (layout.ringRMax - layout.ringRMin);
+    const ix = Math.cos(angle) * ringR;
+    const iy = Math.sin(angle) * ringR;
+    centers.push({
+      nq: clamp012(0.5 + ix * maxDim / (width - 1) + jitter()),
+      nr: clamp012(0.5 + iy * maxDim / (height - 1) + jitter()),
+      radius: pickRRing()
+    });
+  }
+  return centers;
+}
+function pangeaBlobScore(q, r, width, height, c, zoneIdx, perm, noiseScale) {
+  const p = mapIsotropicFromCenter(q, r, width, height);
+  const cIso = normToIsotropic(c.nq, c.nr, width, height);
+  const distC = Math.hypot(p.x - cIso.x, p.y - cIso.y);
+  const radial = Math.max(0, 1 - Math.pow(distC / c.radius, 1.55));
+  const warpCoarse = fbm(perm, q * noiseScale * 0.55 + 100 + zoneIdx * 37, r * noiseScale * 0.55 + 100, 4) * 0.24;
+  const warpFine = fbm(perm, q * noiseScale * 1.45 + 510 + zoneIdx * 17, r * noiseScale * 1.45 + 510, 3) * 0.16;
+  const angle = Math.atan2(p.y - cIso.y, p.x - cIso.x);
+  const angleNoise = fbm(perm, Math.cos(angle) * 4 + zoneIdx * 11, Math.sin(angle) * 4 + 220, 2) * 0.1;
+  return radial + warpCoarse + warpFine + angleNoise - 0.09;
+}
+function landMaskPangea(q, r, width, height, centers, perm, noiseScale, landFraction) {
+  const layout = pangeaLandLayoutParams(landFraction, width, height);
   const borderFade = landMaskBorderFade(q, r, width, height);
-  return Math.min(1, Math.max(0, (radial + warp - (sparseLand ? 0.12 : 0.05)) * edgeRect * borderFade * centerBias));
+  if (borderFade <= 0) return 0;
+  let blobMax = 0;
+  let blobSum = 0;
+  for (let zoneIdx = 0; zoneIdx < centers.length; zoneIdx++) {
+    const c = centers[zoneIdx];
+    const s = pangeaBlobScore(q, r, width, height, c, zoneIdx, perm, noiseScale);
+    blobMax = Math.max(blobMax, s);
+    blobSum += Math.max(0, s);
+  }
+  const merged = Math.min(1, blobSum * layout.mergeSum + blobMax * layout.mergeMax);
+  const iso = mapIsotropicFromCenter(q, r, width, height);
+  const clusterDist = Math.hypot(iso.x, iso.y);
+  const clusterFade = Math.max(0, 1 - Math.pow(clusterDist / layout.clusterRadius, 2.2));
+  const valley = fbm(perm, q * noiseScale * 0.38 + 900, r * noiseScale * 0.38 + 900, 4) * layout.valley;
+  const globalWarp = fbm(perm, q * noiseScale * 0.45 + 200, r * noiseScale * 0.45 + 200, 3) * layout.globalWarp;
+  return Math.min(1, Math.max(0, (merged + globalWarp - valley - layout.threshold) * clusterFade * borderFade));
 }
 var ISLAND_GRID_DIVISIONS = 4;
 function buildSixteenGridIslandCenters(rand, width, height) {
@@ -1789,6 +1955,7 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
   const share = FOREST_SHARE_OF_DRY_LAND[forestTier];
   const cellSize = forestCoverageCellSize(forestTier);
   const minLand = minLandHexesForFairPlayCell(cellSize);
+  const seaDist = buildSeaDistanceField(hexes);
   for (const hex of Object.values(hexes)) {
     if (hex.nakladka === "las" /* Las */) hex.nakladka = "brak" /* Brak */;
   }
@@ -1796,9 +1963,14 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
   const partitions = landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents);
   for (const part of partitions) {
     const massSet = new Set(part.filter((k) => {
-      var _a9;
-      return ((_a9 = hexes[k]) == null ? void 0 : _a9.terenBazowy) !== "morze" /* Morze */;
+      var _a11;
+      return ((_a11 = hexes[k]) == null ? void 0 : _a11.terenBazowy) !== "morze" /* Morze */;
     }));
+    let maxSeaInPart = 1;
+    for (const k of massSet) {
+      const d = seaDist.get(k) ?? 0;
+      if (d > maxSeaInPart) maxSeaInPart = d;
+    }
     for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
       if (land.length < minLand) continue;
       const eligible = land.filter(([q, r]) => {
@@ -1807,8 +1979,10 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
         if (mapHeight && climateBandAt(q, r, mapHeight) === "desert") return false;
         return true;
       }).map(([q, r]) => {
-        var _a9;
-        return { k: hexKey(q, r), n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.forNoise) ?? 0 };
+        var _a11;
+        const sd = seaDist.get(hexKey(q, r)) ?? 0;
+        const inlandBoost = maxSeaInPart > 1 ? sd / maxSeaInPart * 0.14 : 0;
+        return { k: hexKey(q, r), n: (((_a11 = scratch.get(hexKey(q, r))) == null ? void 0 : _a11.forNoise) ?? 0) + inlandBoost };
       }).sort((a, b) => b.n - a.n);
       if (eligible.length === 0) continue;
       const mid = land[Math.floor(land.length / 2)];
@@ -1826,9 +2000,9 @@ function reapplyForestOverlay(hexes, scratch, thresholds, typ, forestTier, conti
   return assigned;
 }
 var REAPPLY_RELIEF_BUDGET_FRAC = {
-  low: 0.1,
-  medium: 0.15,
-  high: 0.3
+  low: 0.186,
+  medium: 0.25,
+  high: 0.564
 };
 function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight, reliefTier = "medium") {
   const reliefCandidates = [];
@@ -1885,9 +2059,9 @@ function reapplyLandTerrain(hexes, scratch, seed, thresholds, mapHeight, reliefT
   }
 }
 var FALLBACK_RELIEF_FRAC = {
-  low: { mountain: 0.045, highland: 0.105 },
-  medium: { mountain: 0.075, highland: 0.125 },
-  high: { mountain: 0.18, highland: 0.27 }
+  low: { mountain: 0.06, highland: 0.126 },
+  medium: { mountain: 0.1, highland: 0.15 },
+  high: { mountain: 0.24, highland: 0.324 }
 };
 function reliefLandFractions(tier) {
   return { ...FALLBACK_RELIEF_FRAC[tier] };
@@ -1977,14 +2151,6 @@ function landMaskBorderFade(q, r, width, height) {
   if (cap <= 0) return 0;
   return Math.min(1, cap / 0.45);
 }
-function mapCenterRadialBias(q, r, width, height) {
-  const cx = (width - 1) / 2;
-  const cy = (height - 1) / 2;
-  const dx = (q - cx) / (cx + 0.5);
-  const dy = (r - cy) / (cy + 0.5);
-  const dist = Math.sqrt(dx * dx + dy * dy);
-  return Math.max(0.12, 1 - Math.pow(dist / 0.94, 2));
-}
 function mapEdgeRectFade(q, r, width, height) {
   const b = mapBorderWidth(width, height);
   const nq = q / Math.max(1, width - 1);
@@ -2058,6 +2224,89 @@ function groupLandMassKeys(hexes) {
   }
   return groups;
 }
+function computeLandMassCentroid(hexes, massKeys) {
+  let sumQ = 0;
+  let sumR = 0;
+  let count = 0;
+  for (const k of massKeys) {
+    const h = hexes[k];
+    if (!h || !isRiverLandTerrain(h.terenBazowy)) continue;
+    const { q, r } = parseHexKey(k);
+    sumQ += q;
+    sumR += r;
+    count++;
+  }
+  if (count === 0) return null;
+  return { q: sumQ / count, r: sumR / count };
+}
+var CONTINENT_CENTER_SQUARE_SIZE = 5;
+function continentCenterSquare(hexes, massKeys, size = CONTINENT_CENTER_SQUARE_SIZE) {
+  const landKeys = [];
+  for (const k of massKeys) {
+    const h = hexes[k];
+    if (!h || !isRiverLandTerrain(h.terenBazowy)) continue;
+    landKeys.push(k);
+  }
+  if (landKeys.length === 0) return null;
+  const centroid = computeLandMassCentroid(hexes, landKeys);
+  if (!centroid) return null;
+  let qMin = Infinity;
+  let qMax = -Infinity;
+  let rMin = Infinity;
+  let rMax = -Infinity;
+  for (const k of landKeys) {
+    const { q, r } = parseHexKey(k);
+    qMin = Math.min(qMin, q);
+    qMax = Math.max(qMax, q);
+    rMin = Math.min(rMin, r);
+    rMax = Math.max(rMax, r);
+  }
+  const spanQ = qMax - qMin + 1;
+  const spanR = rMax - rMin + 1;
+  let bboxQMin;
+  let bboxQMax;
+  let bboxRMin;
+  let bboxRMax;
+  if (spanQ <= size && spanR <= size) {
+    bboxQMin = qMin;
+    bboxQMax = qMax;
+    bboxRMin = rMin;
+    bboxRMax = rMax;
+  } else {
+    const cq = Math.round(centroid.q);
+    const cr = Math.round(centroid.r);
+    const half = Math.floor(size / 2);
+    bboxQMin = cq - half;
+    bboxQMax = cq + half;
+    bboxRMin = cr - half;
+    bboxRMax = cr + half;
+  }
+  const keys = /* @__PURE__ */ new Set();
+  for (const k of landKeys) {
+    const { q, r } = parseHexKey(k);
+    if (q >= bboxQMin && q <= bboxQMax && r >= bboxRMin && r <= bboxRMax) {
+      keys.add(k);
+    }
+  }
+  if (keys.size === 0) {
+    for (const k of landKeys) keys.add(k);
+  }
+  return {
+    keys,
+    bbox: { qMin: bboxQMin, qMax: bboxQMax, rMin: bboxRMin, rMax: bboxRMax },
+    centroid
+  };
+}
+function hexDistanceToCenterSquare(q, r, square) {
+  if (!square || square.keys.size === 0) return 0;
+  if (square.keys.has(hexKey(q, r))) return 0;
+  let minD = Infinity;
+  for (const hk of square.keys) {
+    const { q: cq, r: cr } = parseHexKey(hk);
+    minD = Math.min(minD, hexAxialDistance(q, r, cq, cr));
+  }
+  return minD;
+}
 function isForestEligibleTerrain(tb) {
   return tb !== "morze" /* Morze */ && tb !== "wybrzeze" /* Wybrzeze */ && tb !== "gory" /* Gory */ && tb !== "pustynia" /* Pustynia */ && tb !== "polarny" /* Polarny */;
 }
@@ -2086,20 +2335,20 @@ function applyReliefToLandKeys(hexes, scratch, tier, keys, width, height) {
   applyCopperHighlandsToLandKeys(hexes, scratch, tier, keys, width, height);
 }
 function reliefBonusCapMountain(tier, landCount) {
-  const frac = tier === "high" ? 0.14 : tier === "low" ? 0.05 : 0.075;
+  const frac = tier === "high" ? 0.187 : tier === "low" ? 0.067 : 0.1;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 function reliefBonusCapHighland(tier, landCount) {
-  const frac = tier === "high" ? 0.22 : tier === "low" ? 0.08 : 0.12;
+  const frac = tier === "high" ? 0.275 : tier === "low" ? 0.1 : 0.15;
   return Math.max(0, Math.ceil(landCount * frac));
 }
 function reliefSpreadCapMountain(tier, landCount) {
   const frac = mapGenReliefOverflowCapFrac(tier).mountain;
-  return Math.max(MIN_MOUNTAINS_IRON_CELL, Math.ceil(landCount * frac));
+  return Math.max(minMountainsIronCell(tier), Math.ceil(landCount * frac));
 }
 function reliefSpreadCapHighland(tier, landCount) {
   const frac = mapGenReliefOverflowCapFrac(tier).highland;
-  return Math.max(MIN_HIGHLANDS_COPPER_CELL, Math.ceil(landCount * frac));
+  return Math.max(minHighlandsCopperCell(tier), Math.ceil(landCount * frac));
 }
 function applyIronMountainsToLandKeys(hexes, scratch, tier, keys, width, height) {
   const fr = reliefLandFractions(tier);
@@ -2113,10 +2362,10 @@ function applyIronMountainsToLandKeys(hexes, scratch, tier, keys, width, height)
       if (!hex || hex.terenBazowy === "gory" /* Gory */) return false;
       return isReliefCandidateHex(hex, q, r, width, height);
     }).map(([q, r]) => {
-      var _a9;
+      var _a11;
       return {
         k: hexKey(q, r),
-        n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0
+        n: ((_a11 = scratch.get(hexKey(q, r))) == null ? void 0 : _a11.mtnNoise) ?? 0
       };
     }).sort((a, b) => b.n - a.n);
     if (candidates.length === 0) continue;
@@ -2141,10 +2390,10 @@ function applyCopperHighlandsToLandKeys(hexes, scratch, tier, keys, width, heigh
       if (!hex || hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
       return isReliefCandidateHex(hex, q, r, width, height);
     }).map(([q, r]) => {
-      var _a9;
+      var _a11;
       return {
         k: hexKey(q, r),
-        n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0
+        n: ((_a11 = scratch.get(hexKey(q, r))) == null ? void 0 : _a11.mtnNoise) ?? 0
       };
     }).sort((a, b) => b.n - a.n);
     if (candidates.length === 0) continue;
@@ -2187,12 +2436,20 @@ function applyReliefByNoiseRank(hexes, scratch, tier, width, height, typ = "pang
     applyReliefToLandKeys(hexes, scratch, tier, keys, width, height);
   }
 }
-var MIN_HIGHLANDS_COPPER_CELL = 2;
-var MIN_MOUNTAINS_IRON_CELL = 2;
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+function minMountainsIronCell(tier = "medium") {
+  return RELIEF_MIN_MOUNTAINS[tier];
+}
+function minHighlandsCopperCell(tier = "medium") {
+  return RELIEF_MIN_HIGHLANDS[tier];
+}
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
 function ironCoverageCellSize(tier = "medium") {
-  if (tier === "high") return 20;
-  if (tier === "low") return 35;
-  return 25;
+  if (tier === "high") return 12;
+  if (tier === "low") return 21;
+  return 15;
 }
 function copperCoverageCellSize(tier = "medium") {
   if (tier === "high") return 12;
@@ -2214,26 +2471,54 @@ function minLandHexesForReliefCell(cellSize) {
   return Math.max(8, Math.floor(cellSize * 0.32));
 }
 function countMountainsInCell(cellLand, hexes) {
-  var _a9;
+  var _a11;
   let n = 0;
   for (const [q, r] of cellLand) {
-    if (((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "gory" /* Gory */) n++;
+    if (((_a11 = hexes[hexKey(q, r)]) == null ? void 0 : _a11.terenBazowy) === "gory" /* Gory */) n++;
   }
   return n;
 }
 function countHighlandsInCell(cellLand, hexes) {
-  var _a9;
+  var _a11;
   let n = 0;
   for (const [q, r] of cellLand) {
-    if (((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "wzgorza" /* Wzgorza */) n++;
+    if (((_a11 = hexes[hexKey(q, r)]) == null ? void 0 : _a11.terenBazowy) === "wzgorza" /* Wzgorza */) n++;
   }
   return n;
 }
-function cellHasIronPackage(cellLand, hexes) {
-  return countMountainsInCell(cellLand, hexes) >= MIN_MOUNTAINS_IRON_CELL;
+function cellHasIronPackage(cellLand, hexes, tier = "medium") {
+  return countMountainsInCell(cellLand, hexes) >= minMountainsIronCell(tier);
 }
-function cellHasCopperPackage(cellLand, hexes) {
-  return countHighlandsInCell(cellLand, hexes) >= MIN_HIGHLANDS_COPPER_CELL;
+function cellHasCopperPackage(cellLand, hexes, tier = "medium") {
+  return countHighlandsInCell(cellLand, hexes) >= minHighlandsCopperCell(tier);
+}
+function eligibleReliefLandCount(land, hexes) {
+  var _a11;
+  let n = 0;
+  for (const [q, r] of land) {
+    const tb = (_a11 = hexes[hexKey(q, r)]) == null ? void 0 : _a11.terenBazowy;
+    if (tb !== void 0 && tb !== "morze" /* Morze */ && tb !== "wybrzeze" /* Wybrzeze */) n++;
+  }
+  return n;
+}
+function eligibleDepositLandCount(land, hexes) {
+  return eligibleReliefLandCount(land, hexes);
+}
+function cellCanHostDepositPackage(land, hexes, minLand) {
+  var _a11, _b5;
+  if (eligibleDepositLandCount(land, hexes) < minLand) return false;
+  for (const [q, r] of land) {
+    if ((_b5 = (_a11 = hexes[hexKey(q, r)]) == null ? void 0 : _a11.rzeka) == null ? void 0 : _b5.obecna) return true;
+  }
+  return false;
+}
+function eligibleForestLandCount(land, hexes) {
+  let n = 0;
+  for (const [q, r] of land) {
+    const hex = hexes[hexKey(q, r)];
+    if (hex && isForestEligibleTerrain(hex.terenBazowy)) n++;
+  }
+  return n;
 }
 function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, rand, protectHighland = false, protectMountain = false) {
   const ranked = land.filter(([q, r]) => {
@@ -2252,9 +2537,9 @@ function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, ra
     }
     return true;
   }).map(([q, r]) => {
-    var _a9;
+    var _a11;
     const k = hexKey(q, r);
-    let score = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+    let score = ((_a11 = scratch.get(k)) == null ? void 0 : _a11.mtnNoise) ?? 0;
     if (want === "highland") score *= 0.9;
     score += Math.min(8, hexBorderDistance(q, r, width, height)) * 0.04;
     if (hexes[k].terenBazowy === "wybrzeze" /* Wybrzeze */) score -= 0.15;
@@ -2264,15 +2549,15 @@ function pickReliefForceHex(land, hexes, scratch, width, height, want, avoid, ra
   if (ranked.length === 0) return null;
   return [ranked[0].q, ranked[0].r];
 }
-function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, minCount) {
+function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, minCount, tier) {
   const countFn = () => want === "mountain" ? countMountainsInCell(land, hexes) : countHighlandsInCell(land, hexes);
   if (countFn() >= minCount) return false;
   let changed = false;
   const placed = /* @__PURE__ */ new Set();
   let guard = 0;
   while (countFn() < minCount && guard++ < land.length + 8) {
-    const protectHighland = want === "mountain" && countHighlandsInCell(land, hexes) <= MIN_HIGHLANDS_COPPER_CELL;
-    const protectMountain = want === "highland" && countMountainsInCell(land, hexes) <= MIN_MOUNTAINS_IRON_CELL;
+    const protectHighland = want === "mountain" && countHighlandsInCell(land, hexes) <= minHighlandsCopperCell(tier);
+    const protectMountain = want === "highland" && countMountainsInCell(land, hexes) <= minMountainsIronCell(tier);
     let spot = pickReliefForceHex(
       land,
       hexes,
@@ -2310,8 +2595,8 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
         if (want === "highland" && hex.terenBazowy === "wzgorza" /* Wzgorza */) return false;
         return true;
       }).map(([q, r]) => {
-        var _a9;
-        return { q, r, n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0 };
+        var _a11;
+        return { q, r, n: ((_a11 = scratch.get(hexKey(q, r))) == null ? void 0 : _a11.mtnNoise) ?? 0 };
       }).sort((a, b) => b.n - a.n);
       if (ranked.length === 0) break;
       spot = [ranked[0].q, ranked[0].r];
@@ -2326,7 +2611,7 @@ function forceReliefTypeInCell(land, hexes, scratch, width, height, rand, want, 
   }
   return changed;
 }
-function forceIronMountainsInCell(land, hexes, scratch, width, height, rand) {
+function forceIronMountainsInCell(land, hexes, scratch, width, height, rand, tier) {
   return forceReliefTypeInCell(
     land,
     hexes,
@@ -2335,10 +2620,11 @@ function forceIronMountainsInCell(land, hexes, scratch, width, height, rand) {
     height,
     rand,
     "mountain",
-    MIN_MOUNTAINS_IRON_CELL
+    minMountainsIronCell(tier),
+    tier
   );
 }
-function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand) {
+function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand, tier) {
   return forceReliefTypeInCell(
     land,
     hexes,
@@ -2347,7 +2633,8 @@ function forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand) {
     height,
     rand,
     "highland",
-    MIN_HIGHLANDS_COPPER_CELL
+    minHighlandsCopperCell(tier),
+    tier
   );
 }
 var RELIEF_OVERFLOW_CAP_MULT = 1;
@@ -2355,24 +2642,25 @@ function isDepositProtectedFromOverflowCap(hex) {
   return !!hex && !!hex.zloze;
 }
 function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(MIN_MOUNTAINS_IRON_CELL, reliefBonusCapMountain(tier, land.length) + MIN_MOUNTAINS_IRON_CELL);
+  const minMtn = minMountainsIronCell(tier);
+  const baseMaxMtn = spreadOnly ? reliefSpreadCapMountain(tier, land.length) : Math.max(minMtn, reliefBonusCapMountain(tier, land.length) + minMtn);
   const maxMtn = baseMaxMtn * RELIEF_OVERFLOW_CAP_MULT;
   const mountains = land.filter(([q, r]) => {
-    var _a9;
-    return ((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "gory" /* Gory */;
+    var _a11;
+    return ((_a11 = hexes[hexKey(q, r)]) == null ? void 0 : _a11.terenBazowy) === "gory" /* Gory */;
   }).map(([q, r]) => {
-    var _a9;
+    var _a11;
     return {
       q,
       r,
-      n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0,
+      n: ((_a11 = scratch.get(hexKey(q, r))) == null ? void 0 : _a11.mtnNoise) ?? 0,
       protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)])
     };
   }).sort((a, b) => a.n - b.n);
   let changed = false;
   let total = mountains.length;
   let i = 0;
-  while (total > maxMtn && total > MIN_MOUNTAINS_IRON_CELL && i < mountains.length) {
+  while (total > maxMtn && total > minMtn && i < mountains.length) {
     const cand = mountains[i];
     if (cand.protected) {
       i++;
@@ -2389,24 +2677,25 @@ function capMountainOverflowInCell(land, hexes, scratch, tier, spreadOnly = fals
   return changed;
 }
 function capHighlandOverflowInCell(land, hexes, scratch, tier, spreadOnly = false) {
-  const baseMaxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(MIN_HIGHLANDS_COPPER_CELL, reliefBonusCapHighland(tier, land.length) + MIN_HIGHLANDS_COPPER_CELL);
+  const minHi = minHighlandsCopperCell(tier);
+  const baseMaxHi = spreadOnly ? reliefSpreadCapHighland(tier, land.length) : Math.max(minHi, reliefBonusCapHighland(tier, land.length) + minHi);
   const maxHi = baseMaxHi * RELIEF_OVERFLOW_CAP_MULT;
   const highlands = land.filter(([q, r]) => {
-    var _a9;
-    return ((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.terenBazowy) === "wzgorza" /* Wzgorza */;
+    var _a11;
+    return ((_a11 = hexes[hexKey(q, r)]) == null ? void 0 : _a11.terenBazowy) === "wzgorza" /* Wzgorza */;
   }).map(([q, r]) => {
-    var _a9;
+    var _a11;
     return {
       q,
       r,
-      n: ((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.mtnNoise) ?? 0,
+      n: ((_a11 = scratch.get(hexKey(q, r))) == null ? void 0 : _a11.mtnNoise) ?? 0,
       protected: isDepositProtectedFromOverflowCap(hexes[hexKey(q, r)])
     };
   }).sort((a, b) => a.n - b.n);
   let changed = false;
   let total = highlands.length;
   let i = 0;
-  while (total > maxHi && total > MIN_HIGHLANDS_COPPER_CELL && i < highlands.length) {
+  while (total > maxHi && total > minHi && i < highlands.length) {
     const cand = highlands[i];
     if (cand.protected) {
       i++;
@@ -2434,7 +2723,7 @@ function capIronCellReliefSpread(hexes, scratch, tier, massSet) {
 function ensureMassIronGridCoverage(hexes, scratch, tier, width, height, massSet, rand, skipCap = false) {
   const ironSize = ironCoverageCellSize(tier);
   const minIronLand = minLandHexesForReliefCell(ironSize);
-  const eligibleCells = [...landHexesByCoverageCell(massSet, ironSize).values()].filter((land) => land.length >= minIronLand);
+  const eligibleCells = [...landHexesByCoverageCell(massSet, ironSize).values()].filter((land) => eligibleReliefLandCount(land, hexes) >= minIronLand);
   let fixed = 0;
   if (!skipCap) {
     for (const land of eligibleCells) {
@@ -2443,10 +2732,10 @@ function ensureMassIronGridCoverage(hexes, scratch, tier, width, height, massSet
   }
   for (let pass = 0; pass < 14; pass++) {
     let inner = 0;
-    const cells = [...eligibleCells].sort((a, b) => (cellHasIronPackage(a, hexes) ? 1 : 0) - (cellHasIronPackage(b, hexes) ? 1 : 0));
+    const cells = [...eligibleCells].sort((a, b) => (cellHasIronPackage(a, hexes, tier) ? 1 : 0) - (cellHasIronPackage(b, hexes, tier) ? 1 : 0));
     for (const land of cells) {
-      if (cellHasIronPackage(land, hexes)) continue;
-      if (forceIronMountainsInCell(land, hexes, scratch, width, height, rand)) inner++;
+      if (cellHasIronPackage(land, hexes, tier)) continue;
+      if (forceIronMountainsInCell(land, hexes, scratch, width, height, rand, tier)) inner++;
     }
     fixed += inner;
     if (inner === 0) break;
@@ -2456,7 +2745,7 @@ function ensureMassIronGridCoverage(hexes, scratch, tier, width, height, massSet
 function ensureMassCopperGridCoverage(hexes, scratch, tier, width, height, massSet, rand, skipCap = false) {
   const copperSize = copperCoverageCellSize(tier);
   const minCopperLand = minLandHexesForReliefCell(copperSize);
-  const eligibleCells = [...landHexesByCoverageCell(massSet, copperSize).values()].filter((land) => land.length >= minCopperLand);
+  const eligibleCells = [...landHexesByCoverageCell(massSet, copperSize).values()].filter((land) => eligibleReliefLandCount(land, hexes) >= minCopperLand);
   let fixed = 0;
   if (!skipCap) {
     for (const land of eligibleCells) {
@@ -2465,10 +2754,10 @@ function ensureMassCopperGridCoverage(hexes, scratch, tier, width, height, massS
   }
   for (let pass = 0; pass < 14; pass++) {
     let inner = 0;
-    const cells = [...eligibleCells].sort((a, b) => (cellHasCopperPackage(a, hexes) ? 1 : 0) - (cellHasCopperPackage(b, hexes) ? 1 : 0));
+    const cells = [...eligibleCells].sort((a, b) => (cellHasCopperPackage(a, hexes, tier) ? 1 : 0) - (cellHasCopperPackage(b, hexes, tier) ? 1 : 0));
     for (const land of cells) {
-      if (cellHasCopperPackage(land, hexes)) continue;
-      if (forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand)) inner++;
+      if (cellHasCopperPackage(land, hexes, tier)) continue;
+      if (forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand, tier)) inner++;
     }
     fixed += inner;
     if (inner === 0) break;
@@ -2491,12 +2780,35 @@ function ensureReliefGridCoverage(hexes, scratch, tier, width, height, _typ, _co
   for (const mass of masses) {
     capIronCellReliefSpread(hexes, scratch, tier, new Set(mass));
   }
-  for (let restore = 0; restore < 3; restore++) {
+  for (let restore = 0; restore < 8; restore++) {
     let passFixed = 0;
     for (const mass of masses) {
       const massSet = new Set(mass);
       passFixed += ensureMassIronGridCoverage(hexes, scratch, tier, width, height, massSet, rand, true);
       passFixed += ensureMassCopperGridCoverage(hexes, scratch, tier, width, height, massSet, rand, true);
+    }
+    fixed += passFixed;
+    if (passFixed === 0) break;
+  }
+  const ironSize = ironCoverageCellSize(tier);
+  const copperSize = copperCoverageCellSize(tier);
+  const minIron = minLandHexesForReliefCell(ironSize);
+  const minCopper = minLandHexesForReliefCell(copperSize);
+  for (let mop = 0; mop < 16; mop++) {
+    let passFixed = 0;
+    for (const mass of masses) {
+      if (mass.length < 150) continue;
+      const massSet = new Set(mass);
+      for (const land of landHexesByCoverageCell(massSet, ironSize).values()) {
+        if (eligibleReliefLandCount(land, hexes) < minIron) continue;
+        if (cellHasIronPackage(land, hexes, tier)) continue;
+        if (forceIronMountainsInCell(land, hexes, scratch, width, height, rand, tier)) passFixed++;
+      }
+      for (const land of landHexesByCoverageCell(massSet, copperSize).values()) {
+        if (eligibleReliefLandCount(land, hexes) < minCopper) continue;
+        if (cellHasCopperPackage(land, hexes, tier)) continue;
+        if (forceCopperHighlandsInCell(land, hexes, scratch, width, height, rand, tier)) passFixed++;
+      }
     }
     fixed += passFixed;
     if (passFixed === 0) break;
@@ -2572,9 +2884,9 @@ function capMountainRangeClusterSize(hexes, scratch, terrain, fallbackTerrain, m
       const biggest = comps[0];
       if (!biggest || biggest.length <= maxSize) break;
       const sorted = [...biggest].sort((a, b) => {
-        var _a9, _b3;
-        const na = ((_a9 = scratch.get(a)) == null ? void 0 : _a9.mtnNoise) ?? 0;
-        const nb = ((_b3 = scratch.get(b)) == null ? void 0 : _b3.mtnNoise) ?? 0;
+        var _a11, _b5;
+        const na = ((_a11 = scratch.get(a)) == null ? void 0 : _a11.mtnNoise) ?? 0;
+        const nb = ((_b5 = scratch.get(b)) == null ? void 0 : _b5.mtnNoise) ?? 0;
         if (na !== nb) return na - nb;
         return a < b ? -1 : a > b ? 1 : 0;
       });
@@ -2615,8 +2927,8 @@ function mountainRangeSeedCandidates(mass, hexes, scratch, width, height, rand) 
     const { q, r } = parseHexKey(k);
     return isReliefCandidateHex(hex, q, r, width, height);
   }).map((k) => {
-    var _a9;
-    return { k, n: (((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0) + rand() * 0.15 };
+    var _a11;
+    return { k, n: (((_a11 = scratch.get(k)) == null ? void 0 : _a11.mtnNoise) ?? 0) + rand() * 0.15 };
   }).sort((a, b) => b.n - a.n);
 }
 function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
@@ -2632,8 +2944,8 @@ function walkMountainRange(hexes, scratch, width, height, rand, start, steps) {
       const { q: nq, r: nr } = parseHexKey(k);
       return isReliefCandidateHex(hex, nq, nr, width, height);
     }).map((k) => {
-      var _a9;
-      return { k, n: (((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0) + rand() * 0.3 };
+      var _a11;
+      return { k, n: (((_a11 = scratch.get(k)) == null ? void 0 : _a11.mtnNoise) ?? 0) + rand() * 0.3 };
     }).sort((a, b) => b.n - a.n);
     if (candidates.length === 0) break;
     cur = candidates[0].k;
@@ -2674,17 +2986,17 @@ function walkMountainRangeAvoiding(hexes, scratch, width, height, rand, start, s
   for (let i = 0; i < steps; i++) {
     const { q, r } = parseHexKey(cur);
     const candidates = HEX_DIRECTIONS.map(([dq, dr]) => hexKey(q + dq, r + dr)).filter((k) => {
-      var _a9;
+      var _a11;
       if (visited.has(k)) return false;
       const hex = hexes[k];
       if (!hex) return false;
       const { q: nq, r: nr } = parseHexKey(k);
       if (!isReliefCandidateHex(hex, nq, nr, width, height)) return false;
-      const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+      const n = ((_a11 = scratch.get(k)) == null ? void 0 : _a11.mtnNoise) ?? 0;
       return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
     }).map((k) => {
-      var _a9;
-      return { k, n: (((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0) + rand() * 0.3 };
+      var _a11;
+      return { k, n: (((_a11 = scratch.get(k)) == null ? void 0 : _a11.mtnNoise) ?? 0) + rand() * 0.3 };
     }).sort((a, b) => b.n - a.n);
     if (candidates.length === 0) break;
     cur = candidates[0].k;
@@ -2694,7 +3006,7 @@ function walkMountainRangeAvoiding(hexes, scratch, width, height, rand, start, s
   return path;
 }
 function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses, mtnTh, hiTh, deficit) {
-  var _a9;
+  var _a11;
   if (deficit <= 0 || masses.length === 0) return 0;
   const excludedGory = /* @__PURE__ */ new Set();
   const excludedWzgorza = /* @__PURE__ */ new Set();
@@ -2715,17 +3027,17 @@ function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses,
     const mass = masses[massIdx % masses.length];
     massIdx++;
     const seedCandidates = mass.filter((k) => {
-      var _a10;
+      var _a12;
       const hex = hexes[k];
       if (!hex) return false;
       if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) return false;
       const { q, r } = parseHexKey(k);
       if (!isReliefCandidateHex(hex, q, r, width, height)) return false;
-      const n = ((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0;
+      const n = ((_a12 = scratch.get(k)) == null ? void 0 : _a12.mtnNoise) ?? 0;
       return !isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza);
     }).map((k) => {
-      var _a10;
-      return { k, n: (((_a10 = scratch.get(k)) == null ? void 0 : _a10.mtnNoise) ?? 0) + rand() * 0.15 };
+      var _a12;
+      return { k, n: (((_a12 = scratch.get(k)) == null ? void 0 : _a12.mtnNoise) ?? 0) + rand() * 0.15 };
     }).sort((a, b) => b.n - a.n);
     if (seedCandidates.length === 0) {
       attemptsSinceProgress++;
@@ -2752,7 +3064,7 @@ function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses,
       const hex = hexes[k];
       if (!hex) continue;
       if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) continue;
-      const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+      const n = ((_a11 = scratch.get(k)) == null ? void 0 : _a11.mtnNoise) ?? 0;
       if (isExcludedForRegrow(k, n, mtnTh, hiTh, excludedGory, excludedWzgorza)) continue;
       if (n > mtnTh) {
         hex.terenBazowy = "gory" /* Gory */;
@@ -2784,7 +3096,7 @@ function regrowLostMountainClusters(hexes, scratch, width, height, rand, masses,
   return recovered;
 }
 function growMountainRanges(hexes, scratch, tier, width, height, rand) {
-  var _a9, _b3, _c3;
+  var _a11, _b5, _c3;
   const params = mapGenMountainRangeParams(tier);
   const mtnTh = mapGenMountainThreshold(tier);
   const hiTh = mapGenHighlandThreshold(tier);
@@ -2812,7 +3124,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
         if (hex.terenBazowy !== "laka" /* Laka */ && hex.terenBazowy !== "rownina" /* Rownina */ && hex.terenBazowy !== "pustynia" /* Pustynia */) {
           continue;
         }
-        const n = ((_a9 = scratch.get(k)) == null ? void 0 : _a9.mtnNoise) ?? 0;
+        const n = ((_a11 = scratch.get(k)) == null ? void 0 : _a11.mtnNoise) ?? 0;
         if (n > mtnTh) {
           addedByThisRun.push({ k, n, wasHighland: false, prev: hex.terenBazowy });
           hex.terenBazowy = "gory" /* Gory */;
@@ -2839,7 +3151,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
           if (nhex.terenBazowy !== "laka" /* Laka */ && nhex.terenBazowy !== "rownina" /* Rownina */ && nhex.terenBazowy !== "pustynia" /* Pustynia */) continue;
           if (!isReliefCandidateHex(nhex, nq, nr, width, height)) continue;
           if (rand() >= params.obrzezeSzansa) continue;
-          const n = ((_b3 = scratch.get(nk)) == null ? void 0 : _b3.mtnNoise) ?? 0;
+          const n = ((_b5 = scratch.get(nk)) == null ? void 0 : _b5.mtnNoise) ?? 0;
           addedByThisRun.push({ k: nk, n, wasHighland: true, prev: nhex.terenBazowy });
           nhex.terenBazowy = "wzgorza" /* Wzgorza */;
           nhex.nakladka = "brak" /* Brak */;
@@ -2899,7 +3211,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       if (item.isHighland) {
         const ck = cellIdOf(item.q, item.r, copperSize);
         const cnt = copperCellCount.get(ck) ?? 0;
-        if (cnt <= MIN_HIGHLANDS_COPPER_CELL) continue;
+        if (cnt <= minHighlandsCopperCell(tier)) continue;
         hex.terenBazowy = "rownina" /* Rownina */;
         hex.nakladka = "brak" /* Brak */;
         delete hex.zloze;
@@ -2907,7 +3219,7 @@ function growMountainRanges(hexes, scratch, tier, width, height, rand) {
       } else {
         const ck = cellIdOf(item.q, item.r, ironSize);
         const cnt = ironCellCount.get(ck) ?? 0;
-        if (cnt <= MIN_MOUNTAINS_IRON_CELL) continue;
+        if (cnt <= minMountainsIronCell(tier)) continue;
         hex.terenBazowy = "rownina" /* Rownina */;
         hex.nakladka = "brak" /* Brak */;
         delete hex.zloze;
@@ -3134,7 +3446,8 @@ function enforceEarthTemplateOnHexes(hexes, width, height) {
   }
   return fixed;
 }
-function applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height) {
+var PANGEA_LAND_FILL_MIN_SCORE = 0.11;
+function applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, fillBias = "center", minMaskFillScore = PANGEA_LAND_FILL_MIN_SCORE) {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
   const keys = Object.keys(hexes);
   const total = keys.length;
@@ -3153,10 +3466,15 @@ function applyLandFractionByScore(hexes, landScores, targetLandFraction, width, 
     return hexBorderDistance(q, r, width, height) > MAP_MARGIN_LAND_ZONE_HEXES;
   };
   if (land < targetLand) {
-    const morseCandidates = keys.filter((k) => hexes[k].terenBazowy === "morze" /* Morze */ && borderOk(k)).sort((a, b) => {
+    const morseCandidates = keys.filter((k) => {
+      if (hexes[k].terenBazowy !== "morze" /* Morze */ || !borderOk(k)) return false;
+      if (fillBias === "mask" && (landScores.get(k) ?? 0) < minMaskFillScore) return false;
+      return true;
+    }).sort((a, b) => {
       const sa = landScores.get(a) ?? 0;
       const sb = landScores.get(b) ?? 0;
       if (Math.abs(sb - sa) > 0.04) return sb - sa;
+      if (fillBias === "mask") return a.localeCompare(b);
       const pa = parseHexKey(a);
       const pb = parseHexKey(b);
       const da = hasBorder ? mapCenterDistanceNorm(pa.q, pa.r, width, height) : 0;
@@ -3170,7 +3488,11 @@ function applyLandFractionByScore(hexes, landScores, targetLandFraction, width, 
       adjusted++;
     }
     if (land < targetLand && hasBorder) {
-      const interiorMorse = keys.filter((k) => hexes[k].terenBazowy === "morze" /* Morze */ && interiorOk(k)).sort((a, b) => (landScores.get(b) ?? 0) - (landScores.get(a) ?? 0));
+      const interiorMorse = keys.filter((k) => {
+        if (hexes[k].terenBazowy !== "morze" /* Morze */ || !interiorOk(k)) return false;
+        if (fillBias === "mask" && (landScores.get(k) ?? 0) < minMaskFillScore) return false;
+        return true;
+      }).sort((a, b) => (landScores.get(b) ?? 0) - (landScores.get(a) ?? 0));
       for (const k of interiorMorse) {
         if (land >= targetLand) break;
         setHexToLaka(hexes[k]);
@@ -3180,7 +3502,7 @@ function applyLandFractionByScore(hexes, landScores, targetLandFraction, width, 
     }
   } else if (land > targetLand) {
     const landCandidates = sortLandKeysForErosion(
-      keys.filter((k) => hexes[k].terenBazowy !== "morze" /* Morze */),
+      keys.filter((k) => isDryLandTerrain(hexes[k].terenBazowy)),
       hexes,
       landScores,
       width ?? 1,
@@ -3203,6 +3525,107 @@ function rebalanceLandFractionWithMargins(hexes, landScores, targetLandFraction,
   applyMarginalLandZoneCaps(hexes, landScores, width, height);
   enforceMapBorderOcean(hexes, width, height);
   applyDoubleCoastRing(hexes);
+}
+function erodePangeaBboxLowScoreRim(hexes, landScores, targetBboxFill = 0.74, maxErode = 1200) {
+  const landKeys = Object.keys(hexes).filter((k) => isDryLandTerrain(hexes[k].terenBazowy));
+  if (landKeys.length === 0) return 0;
+  let qMin = Infinity, qMax = -Infinity, rMin = Infinity, rMax = -Infinity;
+  for (const k of landKeys) {
+    const { q, r } = parseHexKey(k);
+    qMin = Math.min(qMin, q);
+    qMax = Math.max(qMax, q);
+    rMin = Math.min(rMin, r);
+    rMax = Math.max(rMax, r);
+  }
+  const bboxArea = Math.max(1, (qMax - qMin + 1) * (rMax - rMin + 1));
+  let landCount = landKeys.length;
+  let bboxFill = landCount / bboxArea;
+  if (bboxFill <= targetBboxFill) return 0;
+  const midQ = (qMin + qMax) / 2;
+  const midR = (rMin + rMax) / 2;
+  const rim = landKeys.filter((k) => {
+    const { q, r } = parseHexKey(k);
+    return q <= qMin + 2 || q >= qMax - 2 || r <= rMin + 2 || r >= rMax - 2;
+  }).sort((a, b) => {
+    const sa = landScores.get(a) ?? 0;
+    const sb = landScores.get(b) ?? 0;
+    if (Math.abs(sa - sb) > 0.02) return sa - sb;
+    const pa = parseHexKey(a);
+    const pb = parseHexKey(b);
+    const da = Math.hypot(pa.q - midQ, pa.r - midR);
+    const db = Math.hypot(pb.q - midQ, pb.r - midR);
+    return db - da;
+  });
+  let eroded = 0;
+  for (const k of rim) {
+    if (bboxFill <= targetBboxFill || eroded >= maxErode) break;
+    setHexToMorze(hexes[k]);
+    landCount--;
+    bboxFill = landCount / bboxArea;
+    eroded++;
+  }
+  return eroded;
+}
+function carvePangeaLongSideGulfs(hexes, landScores, perm, maxAspect = 1.85, maxCarve = 900) {
+  const landKeys = Object.keys(hexes).filter((k) => isDryLandTerrain(hexes[k].terenBazowy));
+  if (landKeys.length < 80) return 0;
+  let qMin = Infinity, qMax = -Infinity, rMin = Infinity, rMax = -Infinity;
+  for (const k of landKeys) {
+    const { q, r } = parseHexKey(k);
+    qMin = Math.min(qMin, q);
+    qMax = Math.max(qMax, q);
+    rMin = Math.min(rMin, r);
+    rMax = Math.max(rMax, r);
+  }
+  const spanQ = qMax - qMin + 1;
+  const spanR = rMax - rMin + 1;
+  const aspect = Math.max(spanQ, spanR) / Math.max(1, Math.min(spanQ, spanR));
+  if (aspect <= maxAspect) return 0;
+  const longIsQ = spanQ >= spanR;
+  const midLong = longIsQ ? (qMin + qMax) / 2 : (rMin + rMax) / 2;
+  const shortMin = longIsQ ? rMin : qMin;
+  const shortMax = longIsQ ? rMax : qMax;
+  const shortSpan = shortMax - shortMin + 1;
+  const carveDepth = Math.max(3, Math.floor(shortSpan * 0.28));
+  const scored = landKeys.map((k) => {
+    const { q, r } = parseHexKey(k);
+    const along = longIsQ ? q : r;
+    const across = longIsQ ? r : q;
+    const onLongSide = across <= shortMin + carveDepth || across >= shortMax - carveDepth;
+    const nearMid = Math.abs(along - midLong) < Math.max(spanQ, spanR) * 0.42;
+    const noise = fbm(perm, q * 0.08 + 40, r * 0.08 + 40, 3);
+    return { k, score: (landScores.get(k) ?? 0) + noise * 0.15, onLongSide, nearMid, across };
+  }).filter((x) => x.onLongSide && x.nearMid).sort((a, b) => a.score - b.score);
+  let carved = 0;
+  for (const x of scored) {
+    if (carved >= maxCarve) break;
+    const distEdge = Math.min(x.across - shortMin, shortMax - x.across);
+    if (distEdge > carveDepth) continue;
+    setHexToMorze(hexes[x.k]);
+    carved++;
+  }
+  return carved;
+}
+function rebalanceLandFractionPangea(hexes, landScores, targetLandFraction, width, height, perm) {
+  const fillMin = pangeaLandLayoutParams(targetLandFraction, width, height).fillMinScore;
+  fillPangeaAnnularSeaCorridors(hexes, width, height);
+  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, "mask", fillMin);
+  enforceMapBorderOcean(hexes, width, height);
+  erodePangeaBboxLowScoreRim(hexes, landScores);
+  carvePangeaLongSideGulfs(hexes, landScores, perm);
+  fillPangeaAnnularSeaCorridors(hexes, width, height);
+  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, "mask", fillMin);
+  enforceMapBorderOcean(hexes, width, height);
+  erodePangeaBboxLowScoreRim(hexes, landScores);
+  carvePangeaLongSideGulfs(hexes, landScores, perm);
+  fillPangeaAnnularSeaCorridors(hexes, width, height);
+  ensurePangeaSingleContinent(hexes, width, height);
+  applyLandFractionByScore(hexes, landScores, targetLandFraction, width, height, "mask", fillMin);
+  enforceMapBorderOcean(hexes, width, height);
+  applyJaggedCoastNoise(hexes, perm, width, height, 5);
+  fillPangeaAnnularSeaCorridors(hexes, width, height);
+  ensurePangeaSingleContinent(hexes, width, height);
+  enforceMapBorderOcean(hexes, width, height);
 }
 function applyLandFractionByContinent(hexes, landScores, continentOf, nContinents, targetLandFraction, width, height) {
   const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
@@ -3230,7 +3653,7 @@ function applyLandFractionByContinent(hexes, landScores, continentOf, nContinent
     const keys = zoneKeys[ci];
     const quota = ci === nContinents - 1 ? targetLand - assigned : Math.round(targetLand * (scoreSums[ci] / totalScore));
     assigned += quota;
-    let land = keys.filter((k) => hexes[k].terenBazowy !== "morze" /* Morze */).length;
+    let land = keys.filter((k) => isDryLandTerrain(hexes[k].terenBazowy)).length;
     if (land < quota) {
       const morseCandidates = keys.filter((k) => hexes[k].terenBazowy === "morze" /* Morze */ && borderOk(k)).sort((a, b) => {
         const sa = landScores.get(a) ?? 0;
@@ -3250,7 +3673,7 @@ function applyLandFractionByContinent(hexes, landScores, continentOf, nContinent
       }
     } else if (land > quota) {
       const landCandidates = sortLandKeysForErosion(
-        keys.filter((k) => hexes[k].terenBazowy !== "morze" /* Morze */),
+        keys.filter((k) => isDryLandTerrain(hexes[k].terenBazowy)),
         hexes,
         landScores,
         width ?? 1,
@@ -3340,7 +3763,7 @@ function findDryLandTouchingSea(hexes) {
   return bad;
 }
 function sanitizeCoastHexes(hexes) {
-  var _a9;
+  var _a11;
   const valid = /* @__PURE__ */ new Set();
   const queue = [];
   for (const [key, hex] of Object.entries(hexes)) {
@@ -3365,7 +3788,7 @@ function sanitizeCoastHexes(hexes) {
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
       if (valid.has(nk)) continue;
-      if (((_a9 = hexes[nk]) == null ? void 0 : _a9.terenBazowy) === "wybrzeze" /* Wybrzeze */) {
+      if (((_a11 = hexes[nk]) == null ? void 0 : _a11.terenBazowy) === "wybrzeze" /* Wybrzeze */) {
         valid.add(nk);
         queue.push(nk);
       }
@@ -3409,12 +3832,44 @@ function oceanConnectedWaterKeys(hexes, width, height) {
   }
   return connected;
 }
+function oceanConnectedMorseKeys(hexes, width, height) {
+  const connected = /* @__PURE__ */ new Set();
+  const queue = [];
+  for (let r = 0; r < height; r++) {
+    for (let q = 0; q < width; q++) {
+      if (q !== 0 && r !== 0 && q !== width - 1 && r !== height - 1) continue;
+      const key = hexKey(q, r);
+      const hex = hexes[key];
+      if (!hex || hex.terenBazowy !== "morze" /* Morze */) continue;
+      connected.add(key);
+      queue.push(key);
+    }
+  }
+  while (queue.length > 0) {
+    const key = queue.pop();
+    const parts = key.split(",");
+    const q = Number(parts[0]);
+    const r = Number(parts[1]);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      const nh = hexes[nk];
+      if (!nh || nh.terenBazowy !== "morze" /* Morze */ || connected.has(nk)) continue;
+      connected.add(nk);
+      queue.push(nk);
+    }
+  }
+  return connected;
+}
 function findInlandWaterHexes(hexes, width, height) {
   const ocean = oceanConnectedWaterKeys(hexes, width, height);
   return Object.entries(hexes).filter(([k, h]) => {
     const tb = h.terenBazowy;
     return (tb === "morze" /* Morze */ || tb === "wybrzeze" /* Wybrzeze */) && !ocean.has(k);
   }).map(([k]) => k);
+}
+function findInlandSeaHexes(hexes, width, height) {
+  const ocean = oceanConnectedMorseKeys(hexes, width, height);
+  return Object.entries(hexes).filter(([k, h]) => h.terenBazowy === "morze" /* Morze */ && !ocean.has(k)).map(([k]) => k);
 }
 function removeInlandWaterPools(hexes, width, height) {
   const inland = findInlandWaterHexes(hexes, width, height);
@@ -3545,6 +4000,226 @@ function removeSmallInlandWaterPools(hexes, width, height, maxPoolSize) {
 }
 function removeInlandSeaPools(hexes, width, height) {
   return removeInlandWaterPools(hexes, width, height);
+}
+function pangeaAnnularMaxCorridorWidth(width, height) {
+  const mapScale = Math.sqrt(width * height / 20160);
+  return Math.max(6, Math.min(22, Math.round(6 + mapScale * 2.6)));
+}
+function groupDryLandMassKeys(hexes) {
+  const visited = /* @__PURE__ */ new Set();
+  const groups = [];
+  for (const key of Object.keys(hexes)) {
+    const hex = hexes[key];
+    if (!hex || !isDryLandTerrain(hex.terenBazowy)) continue;
+    if (visited.has(key)) continue;
+    const mass = [];
+    const stack = [key];
+    visited.add(key);
+    while (stack.length) {
+      const k = stack.pop();
+      mass.push(k);
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (visited.has(nk)) continue;
+        const nh = hexes[nk];
+        if (!nh || !isDryLandTerrain(nh.terenBazowy)) continue;
+        visited.add(nk);
+        stack.push(nk);
+      }
+    }
+    groups.push(mass);
+  }
+  return groups;
+}
+function isPangeaBridgeWater(tb) {
+  return tb === "morze" /* Morze */ || tb === "wybrzeze" /* Wybrzeze */;
+}
+function ensurePangeaSingleContinent(hexes, width, height) {
+  const mapScale = Math.sqrt(width * height / 20160);
+  const maxBridge = Math.max(18, Math.min(48, Math.round(16 + mapScale * 6)));
+  let converted = 0;
+  for (let iter = 0; iter < 12; iter++) {
+    const masses = groupDryLandMassKeys(hexes).sort((a, b) => b.length - a.length);
+    if (masses.length <= 1) break;
+    const main = masses[0];
+    const mainSet = new Set(main);
+    const dist = /* @__PURE__ */ new Map();
+    const parent = /* @__PURE__ */ new Map();
+    const queue = [];
+    for (const k of main) {
+      const { q, r } = parseHexKey(k);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        const nh = hexes[nk];
+        if (!nh || !isPangeaBridgeWater(nh.terenBazowy)) continue;
+        if (dist.has(nk)) continue;
+        dist.set(nk, 1);
+        parent.set(nk, k);
+        queue.push(nk);
+      }
+    }
+    let hitSea = null;
+    let qi = 0;
+    while (qi < queue.length) {
+      const cur2 = queue[qi++];
+      const d = dist.get(cur2);
+      if (d > maxBridge) continue;
+      const { q, r } = parseHexKey(cur2);
+      let foundForeign = false;
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        const nh = hexes[nk];
+        if (!nh) continue;
+        if (isDryLandTerrain(nh.terenBazowy)) {
+          if (!mainSet.has(nk)) {
+            hitSea = cur2;
+            foundForeign = true;
+            break;
+          }
+          continue;
+        }
+        if (!isPangeaBridgeWater(nh.terenBazowy)) continue;
+        if (dist.has(nk)) continue;
+        dist.set(nk, d + 1);
+        parent.set(nk, cur2);
+        queue.push(nk);
+      }
+      if (foundForeign) break;
+    }
+    if (!hitSea) {
+      for (let mi = 1; mi < masses.length; mi++) {
+        const other = masses[mi];
+        if (other.length > Math.max(60, Math.floor(main.length * 0.25))) continue;
+        for (const k of other) {
+          const h = hexes[k];
+          if (h && isDryLandTerrain(h.terenBazowy)) {
+            setHexToMorze(h);
+            converted++;
+          }
+        }
+      }
+      break;
+    }
+    let cur = hitSea;
+    let pathLen = 0;
+    while (cur && pathLen <= maxBridge + 2) {
+      const h = hexes[cur];
+      if (!h) break;
+      if (isPangeaBridgeWater(h.terenBazowy)) {
+        setHexToLaka(h);
+        converted++;
+      }
+      if (mainSet.has(cur)) break;
+      cur = parent.get(cur);
+      pathLen++;
+    }
+  }
+  converted += fillPangeaAnnularSeaCorridors(hexes, width, height);
+  return converted;
+}
+function pangeaLandCentroid(hexes) {
+  const landKeys = Object.keys(hexes).filter((k) => isDryLandTerrain(hexes[k].terenBazowy));
+  if (landKeys.length < 40) return null;
+  let sumQ = 0;
+  let sumR = 0;
+  for (const k of landKeys) {
+    const { q, r } = parseHexKey(k);
+    sumQ += q;
+    sumR += r;
+  }
+  return { cQ: sumQ / landKeys.length, cR: sumR / landKeys.length };
+}
+function pangeaRadialDryLandSteps(hexes, q, r, cQ, cR, towardCenter, maxSteps) {
+  const distSelf = Math.hypot(q - cQ, r - cR);
+  if (distSelf < 0.01) return null;
+  const uq = (q - cQ) / distSelf;
+  const ur = (r - cR) / distSelf;
+  const sign = towardCenter ? -1 : 1;
+  for (let step = 1; step <= maxSteps; step++) {
+    const nq = Math.round(q + sign * uq * step);
+    const nr = Math.round(r + sign * ur * step);
+    const nh = hexes[hexKey(nq, nr)];
+    if (!nh) return null;
+    if (isDryLandTerrain(nh.terenBazowy)) return step;
+    if (!isPangeaBridgeWater(nh.terenBazowy)) return null;
+  }
+  return null;
+}
+function pangeaSeaHexIsAnnularCorridor(hexes, q, r, cQ, cR, maxCorridorWidth) {
+  const inward = pangeaRadialDryLandSteps(hexes, q, r, cQ, cR, true, maxCorridorWidth);
+  const outward = pangeaRadialDryLandSteps(hexes, q, r, cQ, cR, false, maxCorridorWidth);
+  if (inward == null || outward == null) return false;
+  return inward <= maxCorridorWidth && outward <= maxCorridorWidth;
+}
+function measurePangeaAnnularCorridorHexes(hexes, width = 0, height = 0) {
+  const centroid = pangeaLandCentroid(hexes);
+  if (!centroid) return 0;
+  const { cQ, cR } = centroid;
+  const maxW = width > 0 && height > 0 ? pangeaAnnularMaxCorridorWidth(width, height) : 6;
+  let annular = 0;
+  for (const hex of Object.values(hexes)) {
+    if (!isPangeaBridgeWater(hex.terenBazowy)) continue;
+    const { q, r } = hex.coords;
+    if (pangeaSeaHexIsAnnularCorridor(hexes, q, r, cQ, cR, maxW)) annular++;
+  }
+  return annular;
+}
+var pangeaBagelAuditSnaps = null;
+function snapPangeaBagelAudit(stage, hexes, width, height) {
+  if (!pangeaBagelAuditSnaps) return;
+  const masses = groupDryLandMassKeys(hexes);
+  let dryLand = 0;
+  for (const m of masses) dryLand += m.length;
+  pangeaBagelAuditSnaps.push({
+    stage,
+    annular: measurePangeaAnnularCorridorHexes(hexes, width, height),
+    dryMasses: masses.length,
+    dryLand,
+    inlandMorze: findInlandSeaHexes(hexes, width, height).length
+  });
+}
+function fillPangeaAnnularSeaCorridors(hexes, width, height, maxCorridorWidth) {
+  const maxW = maxCorridorWidth ?? pangeaAnnularMaxCorridorWidth(width, height);
+  const borderDepth = morseDepthFromMapBorder(hexes, width, height);
+  let converted = 0;
+  for (let pass = 0; pass < maxW + 2; pass++) {
+    const centroid = pangeaLandCentroid(hexes);
+    if (!centroid) break;
+    const { cQ, cR } = centroid;
+    let passConverted = 0;
+    for (const [key, hex] of Object.entries(hexes)) {
+      if (!isPangeaBridgeWater(hex.terenBazowy)) continue;
+      const { q, r } = hex.coords;
+      if (!pangeaSeaHexIsAnnularCorridor(hexes, q, r, cQ, cR, maxW)) continue;
+      if (borderDepth.has(key)) {
+        const distSelf = Math.hypot(q - cQ, r - cR);
+        const uq = (q - cQ) / Math.max(0.01, distSelf);
+        const ur = (r - cR) / Math.max(0.01, distSelf);
+        let seaBand = 1;
+        for (let step = 1; step <= maxW + 2; step++) {
+          const oq = Math.round(q + uq * step);
+          const or = Math.round(r + ur * step);
+          const oh = hexes[hexKey(oq, or)];
+          if (!oh || !isPangeaBridgeWater(oh.terenBazowy)) break;
+          seaBand++;
+        }
+        for (let step = 1; step <= maxW + 2; step++) {
+          const iq = Math.round(q - uq * step);
+          const ir = Math.round(r - ur * step);
+          const ih = hexes[hexKey(iq, ir)];
+          if (!ih || !isPangeaBridgeWater(ih.terenBazowy)) break;
+          seaBand++;
+        }
+        if (seaBand > maxW + 1) continue;
+      }
+      setHexToLaka(hex);
+      passConverted++;
+    }
+    converted += passConverted;
+    if (passConverted === 0) break;
+  }
+  return converted;
 }
 function morseDepthFromMapBorder(hexes, width, height) {
   const dist = /* @__PURE__ */ new Map();
@@ -3703,16 +4378,16 @@ function thickenCoastAndSmoothInlets(hexes, width, height, coastWidth = 2) {
   return changed;
 }
 function flattenFalseCoastalRiverNotches(hexes, width, height) {
-  var _a9, _b3;
+  var _a11, _b5;
   const toFlatten = [];
   for (const [key, hex] of Object.entries(hexes)) {
     if (hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) continue;
-    if ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna) continue;
+    if ((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna) continue;
     const { q, r } = parseHexKey(key);
     if (isInMapBorder(q, r, width, height)) continue;
     let morzeN = 0;
     for (const [dq, dr] of HEX_DIRECTIONS) {
-      if (((_b3 = hexes[hexKey(q + dq, r + dr)]) == null ? void 0 : _b3.terenBazowy) === "morze" /* Morze */) morzeN++;
+      if (((_b5 = hexes[hexKey(q + dq, r + dr)]) == null ? void 0 : _b5.terenBazowy) === "morze" /* Morze */) morzeN++;
     }
     if (morzeN >= 5) toFlatten.push(key);
   }
@@ -3811,6 +4486,30 @@ function finalizeLandMassAfterCoast(hexes, typ, width, height, coastOpts, coastP
   enforceMapBorderOcean(hexes, width, height);
   return total;
 }
+var DRY_LAND_FRACTION_TOLERANCE_PP = 3;
+function enforceTargetDryLandFraction(hexes, landScores, targetLandFraction, width, height, coastOpts, tolerancePctPoints = DRY_LAND_FRACTION_TOLERANCE_PP, fillBias = "center", minMaskFillScore = PANGEA_LAND_FILL_MIN_SCORE) {
+  const clamped = Math.max(0.15, Math.min(0.85, targetLandFraction));
+  const total = Object.keys(hexes).length;
+  const targetLand = Math.round(total * clamped);
+  const toleranceHexes = Math.max(1, Math.round(total * tolerancePctPoints / 100));
+  let adjusted = 0;
+  adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore);
+  enforceMapBorderOcean(hexes, width, height);
+  finalizeCoastAndInlandWater(hexes, width, height, 1, coastOpts);
+  enforceMapBorderOcean(hexes, width, height);
+  let { land } = countLandSeaHexes(hexes);
+  if (Math.abs(land - targetLand) > toleranceHexes) {
+    adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore);
+    enforceMapBorderOcean(hexes, width, height);
+    applyCoastRing(hexes);
+    land = countLandSeaHexes(hexes).land;
+    if (Math.abs(land - targetLand) > toleranceHexes) {
+      adjusted += applyLandFractionByScore(hexes, landScores, clamped, width, height, fillBias, minMaskFillScore);
+      enforceMapBorderOcean(hexes, width, height);
+    }
+  }
+  return adjusted;
+}
 var ELEVATION_RANK = {
   ["morze" /* Morze */]: 0,
   ["wybrzeze" /* Wybrzeze */]: 1,
@@ -3854,6 +4553,14 @@ function purgeStrayLandOutsideEarthMask(hexes, width, height) {
     if (!isDryLandTerrain(hex.terenBazowy)) continue;
     setHexToMorze(hex);
     n++;
+  }
+  return n;
+}
+function countMediumInlandLandHexes(hexes, path) {
+  let n = 0;
+  for (const p of path) {
+    const h = hexes[hexKey(p.q, p.r)];
+    if (h && isRiverLandTerrain(h.terenBazowy)) n++;
   }
   return n;
 }
@@ -3914,6 +4621,24 @@ var RIVER_MIN_INLAND_FROM_SEA = 2;
 var RIVER_MIN_MAIN_LEN = 3;
 var RIVER_HARD_MEANDER_LEN = 8;
 var RIVER_MOUTH_TAIL_LEN = 5;
+var MAIN_RIVER_MIN_PATH_SEP = 3;
+var MEDIUM_TRIBUTARY_SPACING_HEX = 4;
+function mediumTributarySpacingHex(_width, _height, _largeMapPerf = false) {
+  return MEDIUM_TRIBUTARY_SPACING_HEX;
+}
+var MEDIUM_TRIBUTARY_MIN_NET_LEN = 7;
+function mediumTributaryMinNetLen(width, height) {
+  const minDim = Math.min(width, height);
+  if (minDim < 80) return 4;
+  if (minDim < 120) return 5;
+  return MEDIUM_TRIBUTARY_MIN_NET_LEN;
+}
+var MAIN_RIVER_COAST_MOUTH_MAX_GAP = 7;
+function mainRiverCoastMouthMaxGapForDims(w, h) {
+  const label = mapSizeLabelFromDims(w, h);
+  if (label === "mala") return 5;
+  return MAIN_RIVER_COAST_MOUTH_MAX_GAP;
+}
 function riverPathRespectsSeaBuffer(hexes, path, seaDist, minInland = RIVER_MIN_INLAND_FROM_SEA, mouthTail = RIVER_MOUTH_TAIL_LEN) {
   if (path.length === 0) return false;
   const bodyEnd = Math.max(0, path.length - mouthTail);
@@ -3990,6 +4715,54 @@ function buildOpenOceanDistanceField(hexes, width, height, oceanConnected) {
   }
   return dist;
 }
+var _a, _b;
+var RIVER_PROFILE_ON = ((_b = (_a = globalThis.process) == null ? void 0 : _a.env) == null ? void 0 : _b.CIV_RIVER_PROFILE) === "1";
+function rpNow() {
+  if (typeof performance !== "undefined") return performance.now();
+  return Date.now();
+}
+var _riverProfile = null;
+function rpEnsure() {
+  if (!_riverProfile) {
+    _riverProfile = {
+      fieldCacheMs: 0,
+      fieldCacheCalls: 0,
+      generateRiversMs: 0,
+      genStage1Ms: 0,
+      genStage2Ms: 0,
+      genStage3Ms: 0,
+      genDecorMs: 0,
+      genDryPatchMs: 0,
+      genStage2Rounds: 0,
+      topUpMs: 0,
+      topUpPassMs: [],
+      topUpHardStartsMs: 0,
+      topUpDryPatchMs: 0,
+      topUpGridProxMs: 0,
+      traceRiverCalls: 0,
+      traceRiverMs: 0,
+      aStarCalls: 0,
+      aStarMs: 0,
+      forceFillCalls: 0
+    };
+  }
+  return _riverProfile;
+}
+function buildRiverFieldCache(hexes, width, height) {
+  const t0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
+  const out = {
+    seaDist: buildSeaDistanceField(hexes),
+    oceanConnected,
+    openOceanDist: buildOpenOceanDistanceField(hexes, width, height, oceanConnected)
+  };
+  if (RIVER_PROFILE_ON) {
+    const s = rpEnsure();
+    s.fieldCacheMs += rpNow() - t0;
+    s.fieldCacheCalls++;
+  }
+  return out;
+}
 function inferMapDimsFromHexes(hexes) {
   let maxQ = 0;
   let maxR = 0;
@@ -4019,11 +4792,11 @@ function pathEndsAtSea(hexes, path, width, height, oceanConnected) {
 function isReliefTerrain(t) {
   return t === "gory" /* Gory */ || t === "wzgorza" /* Wzgorza */;
 }
-function canRiverFlowThrough(hex, cellKey, sourceKey, blockExisting = false, allowKey) {
-  var _a9;
+function canRiverFlowThrough(hex, cellKey, sourceKey, blockExisting = false, allowKey, allowReliefTraversal = false) {
+  var _a11;
   if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
-  if (isReliefTerrain(hex.terenBazowy)) return cellKey === sourceKey;
-  if (blockExisting && ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna) && cellKey !== allowKey) return false;
+  if (isReliefTerrain(hex.terenBazowy) && !allowReliefTraversal) return cellKey === sourceKey;
+  if (blockExisting && ((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna) && cellKey !== allowKey) return false;
   return true;
 }
 function riverStepDir(from, to) {
@@ -4043,33 +4816,215 @@ function reconstructRiverPath(cameFrom, endK) {
   path.reverse();
   return path;
 }
-function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, rand, inlandTargetLen, stepCap, hardMeanderLen = RIVER_HARD_MEANDER_LEN) {
+function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, rand, inlandTargetLen, stepCap, hardMeanderLen = RIVER_HARD_MEANDER_LEN, allowReliefTraversal = false, relaxSeaBuffer = false, inlandGrowthMax, blockRiverKeys, minPathSep = 0, landCentroid = null, landCenterSquare = null) {
   const srcKey = hexKey(sq, sr);
   const path = [{ q: sq, r: sr }];
   const visited = /* @__PURE__ */ new Set([srcKey]);
-  while (path.length < inlandTargetLen && path.length < stepCap) {
+  const centroid = landCentroid ?? (landCenterSquare == null ? void 0 : landCenterSquare.centroid) ?? estimateLandCentroidFromSeed(hexes, sq, sr, allowReliefTraversal);
+  const growthTarget = Math.min(
+    stepCap,
+    inlandGrowthMax != null ? Math.max(inlandTargetLen, inlandGrowthMax) : inlandTargetLen
+  );
+  while (path.length < growthTarget && path.length < stepCap) {
     const cur = path[path.length - 1];
-    const curKey = hexKey(cur.q, cur.r);
-    const curD = seaDist.get(curKey) ?? 0;
-    const curOd = openOceanDist.get(curKey) ?? Infinity;
     const hardMeander = path.length < hardMeanderLen;
-    const candidates = [];
+    const growBase = {
+      hexes,
+      path,
+      cur,
+      srcKey,
+      seaDist,
+      openOceanDist,
+      landCentroid: centroid,
+      landCenterSquare,
+      rand,
+      blockRiverKeys,
+      minPathSep,
+      allowReliefTraversal,
+      hardMeander,
+      relaxHardMeander: false,
+      relaxSeaBuffer
+    };
+    let candidates = collectInlandDrainGrowCandidates(growBase).filter((c) => !visited.has(hexKey(c.q, c.r)));
+    if (candidates.length === 0) {
+      candidates = collectInlandDrainGrowCandidates({ ...growBase, relaxHardMeander: true }).filter((c) => !visited.has(hexKey(c.q, c.r)));
+    }
+    if (candidates.length === 0) {
+      if (hardMeander && path.length < hardMeanderLen) {
+        const softCandidates = collectInlandDrainGrowCandidates({
+          ...growBase,
+          relaxHardMeander: true,
+          relaxSeaBuffer
+        }).filter((c) => !visited.has(hexKey(c.q, c.r)));
+        if (softCandidates.length === 0) break;
+        softCandidates.sort((a, b) => b.score - a.score);
+        const pick5 = softCandidates[0];
+        path.push({ q: pick5.q, r: pick5.r });
+        visited.add(hexKey(pick5.q, pick5.r));
+        continue;
+      }
+      break;
+    }
+    candidates.sort((a, b) => b.score - a.score);
+    const pickIdx = Math.min(candidates.length - 1, Math.floor(rand() * Math.min(3, candidates.length)));
+    const pick4 = candidates[pickIdx] ?? candidates[0];
+    path.push({ q: pick4.q, r: pick4.r });
+    visited.add(hexKey(pick4.q, pick4.r));
+  }
+  return path;
+}
+function riverHexDirDelta(lastDir, newDir) {
+  return ((newDir - lastDir) % 6 + 6) % 6;
+}
+function estimateLandCentroidFromSeed(hexes, mq, mr, allowReliefTraversal, visitCap = 6e3) {
+  const mouthKey = hexKey(mq, mr);
+  let sumQ = 0;
+  let sumR = 0;
+  let count = 0;
+  const queue = [mouthKey];
+  const seen = /* @__PURE__ */ new Set([mouthKey]);
+  while (queue.length > 0 && seen.size < visitCap) {
+    const k = queue.shift();
+    const { q, r } = parseHexKey(k);
+    const h = hexes[k];
+    if (h && isRiverLandTerrain(h.terenBazowy)) {
+      sumQ += q;
+      sumR += r;
+      count++;
+    }
     for (const [dq, dr] of HEX_DIRECTIONS) {
-      const nq = cur.q + dq;
-      const nr = cur.r + dr;
-      const nk = hexKey(nq, nr);
-      if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, srcKey, true)) continue;
-      const nd = seaDist.get(nk) ?? 0;
-      if (nd < RIVER_MIN_INLAND_FROM_SEA) continue;
-      const od = openOceanDist.get(nk) ?? Infinity;
-      if (hardMeander && od < curOd) continue;
-      let score = 1200 - od * 30;
-      if (od > curOd + 0.5) score -= 18;
-      if (nd > curD + 1) score -= 10;
-      if (nd === RIVER_MIN_INLAND_FROM_SEA && od < curOd) score += 8;
-      score += rand() * 0.35;
-      candidates.push({ q: nq, r: nr, score });
+      const nk = hexKey(q + dq, r + dr);
+      if (seen.has(nk)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, mouthKey, false, void 0, allowReliefTraversal)) continue;
+      seen.add(nk);
+      queue.push(nk);
+    }
+  }
+  if (count === 0) return null;
+  return { q: sumQ / count, r: sumR / count };
+}
+function estimateLandCentroidFromMouth(hexes, mq, mr, allowReliefTraversal, visitCap = 6e3) {
+  return estimateLandCentroidFromSeed(hexes, mq, mr, allowReliefTraversal, visitCap);
+}
+function scoreRiverStepTowardCentroid(q, r, nq, nr, centroid) {
+  if (!centroid) return 0;
+  const curD = hexAxialDistance(q, r, centroid.q, centroid.r);
+  const nextD = hexAxialDistance(nq, nr, centroid.q, centroid.r);
+  if (nextD < curD) return 22;
+  if (nextD > curD) return -12;
+  return 3;
+}
+function scoreRiverStepTowardCenterSquare(q, r, nq, nr, square) {
+  if (!square) return 0;
+  const curD = hexDistanceToCenterSquare(q, r, square);
+  const nextD = hexDistanceToCenterSquare(nq, nr, square);
+  if (square.keys.has(hexKey(nq, nr))) return 40;
+  if (nextD < curD) return 32;
+  if (nextD > curD) return -22;
+  return 4;
+}
+function scoreRiverStepTowardLandCenter(q, r, nq, nr, square, centroid) {
+  if (square) return scoreRiverStepTowardCenterSquare(q, r, nq, nr, square);
+  return scoreRiverStepTowardCentroid(q, r, nq, nr, centroid);
+}
+function riverGrowStepPassesSep(nq, nr, blockRiverKeys, minPathSep, spatialIndex) {
+  if (!blockRiverKeys || blockRiverKeys.size === 0 || minPathSep <= 0) return true;
+  return nearestRiverHexDistance(nq, nr, blockRiverKeys, spatialIndex) >= minPathSep;
+}
+function collectCoastInlandGrowCandidates(o) {
+  const curKey = hexKey(o.cur.q, o.cur.r);
+  const curD = o.seaDist.get(curKey) ?? 0;
+  const out = [];
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    const nq = o.cur.q + dq;
+    const nr = o.cur.r + dr;
+    const nk = hexKey(nq, nr);
+    if (!isRiverWindowTurnAllowed(o.path, nq, nr)) continue;
+    if (!canRiverFlowThrough(o.hexes[nk], nk, o.mouthKey, true, void 0, o.allowReliefTraversal)) continue;
+    if (!riverGrowStepPassesSep(nq, nr, o.blockRiverKeys, o.minPathSep, o.sepIndex)) continue;
+    const nd = o.seaDist.get(nk) ?? 0;
+    if (o.path.length >= 1 && nd < RIVER_MIN_INLAND_FROM_SEA) continue;
+    if (o.hardMeander && !o.relaxHardMeander && nd < curD) continue;
+    const centerStep = scoreRiverStepTowardLandCenter(
+      o.cur.q,
+      o.cur.r,
+      nq,
+      nr,
+      o.landCenterSquare,
+      o.landCentroid
+    );
+    let score = nd * 28;
+    if (nd > curD) score += 18;
+    else if (nd === curD) {
+      score += centerStep > 8 ? 22 : centerStep < 0 ? -36 : 2;
+    }
+    score += centerStep * 6.5;
+    if (centerStep < 0) score -= 18;
+    score += o.rand() * 0.35;
+    out.push({ q: nq, r: nr, score });
+  }
+  return out;
+}
+function collectInlandDrainGrowCandidates(o) {
+  const curKey = hexKey(o.cur.q, o.cur.r);
+  const curD = o.seaDist.get(curKey) ?? 0;
+  const curOd = o.openOceanDist.get(curKey) ?? Infinity;
+  const out = [];
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    const nq = o.cur.q + dq;
+    const nr = o.cur.r + dr;
+    const nk = hexKey(nq, nr);
+    if (!isRiverWindowTurnAllowed(o.path, nq, nr)) continue;
+    if (!canRiverFlowThrough(o.hexes[nk], nk, o.srcKey, true, void 0, o.allowReliefTraversal)) continue;
+    if (!riverGrowStepPassesSep(nq, nr, o.blockRiverKeys, o.minPathSep, o.sepIndex)) continue;
+    const nd = o.seaDist.get(nk) ?? 0;
+    if (!o.relaxSeaBuffer && nd < RIVER_MIN_INLAND_FROM_SEA) continue;
+    const od = o.openOceanDist.get(nk) ?? Infinity;
+    if (o.hardMeander && !o.relaxHardMeander && od < curOd) continue;
+    let score = 1200 - od * 30;
+    if (od > curOd + 0.5) score -= 18;
+    if (nd > curD + 1) score -= 10;
+    if (nd === RIVER_MIN_INLAND_FROM_SEA && od < curOd) score += 8;
+    score += scoreRiverStepTowardLandCenter(
+      o.cur.q,
+      o.cur.r,
+      nq,
+      nr,
+      o.landCenterSquare,
+      o.landCentroid
+    );
+    score += o.rand() * 0.35;
+    out.push({ q: nq, r: nr, score });
+  }
+  return out;
+}
+function growRiverFromCoastInland(hexes, mq, mr, seaDist, openOceanDist, rand, stepCap, hardMeanderLen = RIVER_HARD_MEANDER_LEN, allowReliefTraversal = false, blockRiverKeys, minPathSep = MAIN_RIVER_MIN_PATH_SEP, landCentroid = null, landCenterSquare = null, sepIndex) {
+  const mouthKey = hexKey(mq, mr);
+  const path = [{ q: mq, r: mr }];
+  const visited = /* @__PURE__ */ new Set([mouthKey]);
+  const centroid = landCentroid ?? (landCenterSquare == null ? void 0 : landCenterSquare.centroid) ?? estimateLandCentroidFromMouth(hexes, mq, mr, allowReliefTraversal);
+  while (path.length < stepCap) {
+    const cur = path[path.length - 1];
+    const hardMeander = path.length < hardMeanderLen;
+    const growBase = {
+      hexes,
+      path,
+      cur,
+      mouthKey,
+      seaDist,
+      landCentroid: centroid,
+      landCenterSquare,
+      rand,
+      blockRiverKeys,
+      sepIndex,
+      minPathSep,
+      allowReliefTraversal,
+      hardMeander,
+      relaxHardMeander: false
+    };
+    let candidates = collectCoastInlandGrowCandidates(growBase).filter((c) => !visited.has(hexKey(c.q, c.r)));
+    if (candidates.length === 0) {
+      candidates = collectCoastInlandGrowCandidates({ ...growBase, relaxHardMeander: true }).filter((c) => !visited.has(hexKey(c.q, c.r)));
     }
     if (candidates.length === 0) break;
     candidates.sort((a, b) => b.score - a.score);
@@ -4080,7 +5035,42 @@ function growRiverInlandBeforeDrainage(hexes, sq, sr, seaDist, openOceanDist, ra
   }
   return path;
 }
-function greedyRiverDrainToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, maxLen, rand, sourceKey) {
+function traceRiverFromCoast(hexes, mq, mr, maxLen, traceOpts = {}) {
+  const seaDist = traceOpts.seaDist ?? buildSeaDistanceField(hexes);
+  const dims = traceOpts.mapWidth != null && traceOpts.mapHeight != null ? { width: traceOpts.mapWidth, height: traceOpts.mapHeight } : inferMapDimsFromHexes(hexes);
+  const openOceanDist = traceOpts.openOceanDist ?? buildOpenOceanDistanceField(hexes, dims.width, dims.height, traceOpts.oceanConnected);
+  const oceanConnected = traceOpts.oceanConnected ?? oceanConnectedWaterKeys(hexes, dims.width, dims.height);
+  const rand = traceOpts.rand ?? (() => 0);
+  const mouthKey = hexKey(mq, mr);
+  const startD = seaDist.get(mouthKey);
+  if (startD == null || startD > 2) return [];
+  const hardMeanderLen = traceOpts.hardMeanderLen ?? RIVER_HARD_MEANDER_LEN;
+  const allowReliefTraversal = traceOpts.allowReliefTraversal ?? false;
+  const growthCap = maxLen;
+  const blockRiverKeys = traceOpts.blockRiverKeys;
+  const minPathSep = traceOpts.minPathSep ?? MAIN_RIVER_MIN_PATH_SEP;
+  const mouthToInland = growRiverFromCoastInland(
+    hexes,
+    mq,
+    mr,
+    seaDist,
+    openOceanDist,
+    rand,
+    growthCap,
+    hardMeanderLen,
+    allowReliefTraversal,
+    blockRiverKeys,
+    minPathSep,
+    traceOpts.landCentroid ?? null,
+    traceOpts.landCenterSquare ?? null,
+    traceOpts.riverSepIndex
+  );
+  if (mouthToInland.length < 2) return [];
+  const reversed = [...mouthToInland].reverse();
+  if (!pathEndsAtSea(hexes, reversed, dims.width, dims.height, oceanConnected)) return [];
+  return reversed;
+}
+function greedyRiverDrainToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, maxLen, rand, sourceKey, allowReliefTraversal = false) {
   const startK = hexKey(sq, sr);
   const path = [{ q: sq, r: sr }];
   const visited = /* @__PURE__ */ new Set([startK]);
@@ -4103,7 +5093,8 @@ function greedyRiverDrainToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConne
       const nr = cur.r + dr;
       const nk = hexKey(nq, nr);
       if (visited.has(nk)) continue;
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true)) continue;
+      if (!isRiverWindowTurnAllowed(path, nq, nr)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, void 0, allowReliefTraversal)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       const od = openOceanDist.get(nk) ?? Infinity;
@@ -4127,27 +5118,81 @@ function greedyRiverDrainToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConne
     oceanConnected
   ) ? path : [];
 }
-function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, maxLen, rand = () => 0) {
+var RiverAStarOpenHeap = class {
+  constructor() {
+    this.data = [];
+  }
+  push(f, seq, key) {
+    const d = this.data;
+    d.push([f, seq, key]);
+    let i = d.length - 1;
+    while (i > 0) {
+      const p = i - 1 >> 1;
+      if (this.less(d[i], d[p])) {
+        [d[i], d[p]] = [d[p], d[i]];
+        i = p;
+      } else break;
+    }
+  }
+  pop() {
+    const d = this.data;
+    if (d.length === 0) return void 0;
+    const top = d[0];
+    const last = d.pop();
+    if (d.length > 0) {
+      d[0] = last;
+      let i = 0;
+      for (; ; ) {
+        let best = i;
+        const l = 2 * i + 1;
+        const r = l + 1;
+        if (l < d.length && this.less(d[l], d[best])) best = l;
+        if (r < d.length && this.less(d[r], d[best])) best = r;
+        if (best === i) break;
+        [d[i], d[best]] = [d[best], d[i]];
+        i = best;
+      }
+    }
+    return top;
+  }
+  get size() {
+    return this.data.length;
+  }
+  less(a, b) {
+    return a[0] < b[0] || a[0] === b[0] && a[1] < b[1];
+  }
+};
+function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, maxLen, rand = () => 0, allowReliefTraversal = false) {
+  const _rpT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  if (RIVER_PROFILE_ON) rpEnsure().aStarCalls++;
+  const _rpDone = (result) => {
+    if (RIVER_PROFILE_ON) rpEnsure().aStarMs += rpNow() - _rpT0;
+    return result;
+  };
   const startK = hexKey(sq, sr);
   const h0 = openOceanDist.get(startK) ?? seaDist.get(startK);
-  if (h0 == null) return [];
-  if (oceanConnected.has(startK)) return [{ q: sq, r: sr }];
+  if (h0 == null) return _rpDone([]);
+  if (oceanConnected.has(startK)) return _rpDone([{ q: sq, r: sr }]);
   const gScore = /* @__PURE__ */ new Map([[startK, 0]]);
   const cameFrom = /* @__PURE__ */ new Map();
   const stepDir = /* @__PURE__ */ new Map();
   const open = /* @__PURE__ */ new Set([startK]);
   const fScore = /* @__PURE__ */ new Map([[startK, h0]]);
+  const openHeap = new RiverAStarOpenHeap();
+  let heapSeq = 0;
+  openHeap.push(h0, heapSeq++, startK);
   let bestK = startK;
   let bestH = h0;
   while (open.size > 0) {
     let current = "";
-    let bestF = Infinity;
-    for (const k of open) {
+    while (openHeap.size > 0) {
+      const entry = openHeap.pop();
+      const k = entry[2];
+      if (!open.has(k)) continue;
       const f = fScore.get(k) ?? Infinity;
-      if (f < bestF) {
-        bestF = f;
-        current = k;
-      }
+      if (f !== entry[0]) continue;
+      current = k;
+      break;
     }
     if (!current) break;
     const curG = gScore.get(current);
@@ -4158,7 +5203,7 @@ function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, 
       bestK = current;
     }
     if (isRiverDrainageGoal(q, r, seaDist, hexes, startK, oceanConnected)) {
-      return reconstructRiverPath(cameFrom, current);
+      return _rpDone(reconstructRiverPath(cameFrom, current));
     }
     open.delete(current);
     if (curG >= maxLen) continue;
@@ -4170,7 +5215,7 @@ function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, 
     }
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, startK, true)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, startK, true, void 0, allowReliefTraversal)) continue;
       const nd = seaDist.get(nk) ?? Infinity;
       if (!canRiverDrainStep(nk, nd, openOceanDist, oceanConnected, true)) continue;
       let stepCost = 1;
@@ -4181,17 +5226,19 @@ function aStarRiverToSea(hexes, sq, sr, seaDist, openOceanDist, oceanConnected, 
       cameFrom.set(nk, current);
       stepDir.set(nk, [dq, dr]);
       gScore.set(nk, tg);
-      fScore.set(nk, tg + (openOceanDist.get(nk) ?? Infinity));
+      const nf = tg + (openOceanDist.get(nk) ?? Infinity);
+      fScore.set(nk, nf);
       open.add(nk);
+      openHeap.push(nf, heapSeq++, nk);
     }
   }
   if (bestK !== startK) {
     const { q, r } = parseHexKey(bestK);
     if (isRiverDrainageGoal(q, r, seaDist, hexes, startK, oceanConnected)) {
-      return reconstructRiverPath(cameFrom, bestK);
+      return _rpDone(reconstructRiverPath(cameFrom, bestK));
     }
   }
-  return [{ q: sq, r: sr }];
+  return _rpDone([{ q: sq, r: sr }]);
 }
 function findRiverMeanderStep(hexes, cur, target, seaDist, used, rand) {
   const curK = hexKey(cur.q, cur.r);
@@ -4250,6 +5297,31 @@ function injectRiverMeanders(path, hexes, seaDist, rand, maxExtraSteps) {
     i += 2;
   }
   return repairRiverPathAdjacency(sanitizeRiverPath(result), hexes, hexKey(path[0].q, path[0].r));
+}
+function extendRiverToMinimumLength(path, hexes, seaDist, rand, minLen, stepCap) {
+  if (path.length >= minLen || path.length < 3) return path;
+  const srcKey = hexKey(path[0].q, path[0].r);
+  let out = path;
+  for (let pass = 0; pass < 12 && out.length < minLen && out.length < stepCap; pass++) {
+    const need = Math.min(minLen - out.length, stepCap - out.length, 6);
+    const meandered = injectRiverMeanders(out, hexes, seaDist, rand, need);
+    if (meandered.length > out.length) {
+      out = meandered;
+      continue;
+    }
+    const mid = Math.max(1, Math.floor(out.length * 0.45));
+    const used = new Set(out.map((p) => hexKey(p.q, p.r)));
+    const a = out[mid];
+    const b = out[Math.min(out.length - 1, mid + 1)];
+    const bend = findRiverMeanderStep(hexes, a, b, seaDist, used, rand);
+    if (bend) {
+      out = [...out.slice(0, mid + 1), bend, ...out.slice(mid + 1)];
+      out = repairRiverPathAdjacency(sanitizeRiverPath(out), hexes, srcKey);
+    } else {
+      break;
+    }
+  }
+  return out;
 }
 function extendRiverToWybrzeze(hexes, path, seaDist) {
   if (path.length === 0) return path;
@@ -4319,6 +5391,12 @@ function finishRiverMouthAtSea(hexes, path, seaDist, openOceanDist, oceanConnect
   return path;
 }
 function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
+  const _rpT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  if (RIVER_PROFILE_ON) rpEnsure().traceRiverCalls++;
+  const _rpDone = (result) => {
+    if (RIVER_PROFILE_ON) rpEnsure().traceRiverMs += rpNow() - _rpT0;
+    return result;
+  };
   const seaDist = traceOpts.seaDist ?? buildSeaDistanceField(hexes);
   const dims = traceOpts.mapWidth != null && traceOpts.mapHeight != null ? { width: traceOpts.mapWidth, height: traceOpts.mapHeight } : inferMapDimsFromHexes(hexes);
   const openOceanDist = traceOpts.openOceanDist ?? buildOpenOceanDistanceField(hexes, dims.width, dims.height, traceOpts.oceanConnected);
@@ -4326,13 +5404,19 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
   const rand = traceOpts.rand ?? (() => 0);
   const srcKey = hexKey(sq, sr);
   const startDist = seaDist.get(srcKey);
-  if (startDist == null || !Number.isFinite(startDist)) return [];
+  if (startDist == null || !Number.isFinite(startDist)) return _rpDone([]);
   const inlandTarget = traceOpts.minLen ?? 4;
   const mouthTailLen = traceOpts.mouthTailLen ?? RIVER_MOUTH_TAIL_LEN;
   const hardMeanderLen = traceOpts.hardMeanderLen ?? RIVER_HARD_MEANDER_LEN;
+  const allowReliefTraversal = traceOpts.allowReliefTraversal ?? false;
+  const relaxSeaBuffer = traceOpts.relaxSeaBuffer ?? false;
   const stepCap = Math.max(
     inlandTarget + mouthTailLen + 12,
     Math.min(maxLen, Math.ceil(startDist * 2.5) + inlandTarget + 10)
+  );
+  const inlandGrowthMax = Math.min(
+    stepCap - mouthTailLen - 4,
+    maxLen
   );
   let path = growRiverInlandBeforeDrainage(
     hexes,
@@ -4343,7 +5427,14 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
     rand,
     inlandTarget,
     stepCap,
-    hardMeanderLen
+    hardMeanderLen,
+    allowReliefTraversal,
+    relaxSeaBuffer,
+    inlandGrowthMax,
+    traceOpts.blockRiverKeys,
+    traceOpts.minPathSep ?? 0,
+    traceOpts.landCentroid ?? null,
+    traceOpts.landCenterSquare ?? null
   );
   const tailFrom = path[path.length - 1];
   const drainBudget = Math.max(mouthTailLen + 4, stepCap - path.length + 1);
@@ -4355,7 +5446,8 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
     openOceanDist,
     oceanConnected,
     drainBudget,
-    rand
+    rand,
+    allowReliefTraversal
   );
   if (drainPath.length <= 1) {
     drainPath = greedyRiverDrainToSea(
@@ -4367,7 +5459,8 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
       oceanConnected,
       drainBudget,
       rand,
-      srcKey
+      srcKey,
+      allowReliefTraversal
     );
   }
   if (drainPath.length > 1) {
@@ -4381,7 +5474,8 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
       openOceanDist,
       oceanConnected,
       stepCap,
-      rand
+      rand,
+      allowReliefTraversal
     );
     if (path.length <= 1) {
       path = greedyRiverDrainToSea(
@@ -4393,7 +5487,8 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
         oceanConnected,
         stepCap,
         rand,
-        srcKey
+        srcKey,
+        allowReliefTraversal
       );
     }
   }
@@ -4401,13 +5496,34 @@ function traceRiver(hexes, sq, sr, maxLen = 40, traceOpts = {}) {
   path = extendRiverToWybrzeze(hexes, path, seaDist);
   path = finishRiverMouthAtSea(hexes, path, seaDist, openOceanDist, oceanConnected, srcKey);
   path = repairRiverPathAdjacency(path, hexes, srcKey);
-  if (!riverPathRespectsSeaBuffer(hexes, path, seaDist) || !pathEndsAtSea(hexes, path, dims.width, dims.height, oceanConnected)) {
-    return [];
+  path = sanitizeRiverTurnWindow(path, hexes, srcKey);
+  if (!relaxSeaBuffer) {
+    if (!riverPathRespectsSeaBuffer(hexes, path, seaDist) || !pathEndsAtSea(hexes, path, dims.width, dims.height, oceanConnected)) {
+      return _rpDone([]);
+    }
+  } else if (!pathEndsAtSea(hexes, path, dims.width, dims.height, oceanConnected)) {
+    return _rpDone([]);
   }
-  return path;
+  return _rpDone(path);
+}
+function traceRiverForGridFill(hexes, sq, sr, maxLen, catalogMinLen, acceptLen, traceOpts, relaxSeaBuffer = false, fastMode = false) {
+  const tries = fastMode ? [acceptLen, Math.max(3, Math.floor(acceptLen * 0.75))] : [catalogMinLen, Math.max(acceptLen, Math.floor(catalogMinLen * 0.6)), acceptLen, 3];
+  const seen = /* @__PURE__ */ new Set();
+  for (const tryMin of tries) {
+    if (seen.has(String(tryMin))) continue;
+    seen.add(String(tryMin));
+    const path = traceRiver(hexes, sq, sr, maxLen, { ...traceOpts, minLen: tryMin });
+    if (path.length < acceptLen) continue;
+    if (!relaxSeaBuffer) return path;
+    const seaDist = traceOpts.seaDist ?? buildSeaDistanceField(hexes);
+    const dims = traceOpts.mapWidth != null && traceOpts.mapHeight != null ? { width: traceOpts.mapWidth, height: traceOpts.mapHeight } : inferMapDimsFromHexes(hexes);
+    const ocean = traceOpts.oceanConnected ?? oceanConnectedWaterKeys(hexes, dims.width, dims.height);
+    if (pathEndsAtSea(hexes, path, dims.width, dims.height, ocean)) return path;
+  }
+  return [];
 }
 function isRiverLandTerrain(t) {
-  return t === "laka" /* Laka */ || t === "rownina" /* Rownina */ || t === "wzgorza" /* Wzgorza */ || t === "gory" /* Gory */ || t === "pustynia" /* Pustynia */;
+  return t === "laka" /* Laka */ || t === "rownina" /* Rownina */ || t === "wzgorza" /* Wzgorza */ || t === "gory" /* Gory */ || t === "pustynia" /* Pustynia */ || t === "polarny" /* Polarny */;
 }
 function neighborDirIndex(q, r, nq, nr) {
   const dq = nq - q;
@@ -4418,15 +5534,230 @@ function neighborDirIndex(q, r, nq, nr) {
   }
   return -1;
 }
+var RIVER_TURN_WINDOW_HEX = 6;
+var RIVER_TURN_WINDOW_MAX_SUM = 1;
+function signedRiverDirDelta(lastDir, newDir) {
+  const raw = riverHexDirDelta(lastDir, newDir);
+  return raw <= 3 ? raw : raw - 6;
+}
+function pathSegmentDirs(path) {
+  const dirs = [];
+  for (let i = 0; i < path.length - 1; i++) {
+    const d = neighborDirIndex(path[i].q, path[i].r, path[i + 1].q, path[i + 1].r);
+    if (d >= 0) dirs.push(d);
+  }
+  return dirs;
+}
+function pathSignedTurnDeltas(segmentDirs) {
+  const out = [];
+  for (let i = 1; i < segmentDirs.length; i++) {
+    out.push(signedRiverDirDelta(segmentDirs[i - 1], segmentDirs[i]));
+  }
+  return out;
+}
+function isRiverWindowTurnAllowed(path, nq, nr, windowHex = RIVER_TURN_WINDOW_HEX, maxSum = RIVER_TURN_WINDOW_MAX_SUM) {
+  const cur = path[path.length - 1];
+  const stepDir = neighborDirIndex(cur.q, cur.r, nq, nr);
+  if (stepDir < 0) return false;
+  const dirs = pathSegmentDirs(path);
+  if (dirs.length === 0) return true;
+  const stepSigned = signedRiverDirDelta(dirs[dirs.length - 1], stepDir);
+  if (Math.abs(stepSigned) > 1) return false;
+  dirs.push(stepDir);
+  const deltas = pathSignedTurnDeltas(dirs);
+  const window = deltas.slice(-windowHex);
+  const sum = window.reduce((a, b) => a + b, 0);
+  return Math.abs(sum) <= maxSum;
+}
+function riverSegmentUnitVector(a, b) {
+  const x1 = Math.sqrt(3) * (a.q + a.r / 2);
+  const y1 = 1.5 * a.r;
+  const x2 = Math.sqrt(3) * (b.q + b.r / 2);
+  const y2 = 1.5 * b.r;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-9) return { x: 0, y: 0 };
+  return { x: dx / len, y: dy / len };
+}
+function riverPathHasSharpUTurn(path) {
+  if (path.length < 3) return false;
+  for (let i = 0; i < path.length - 2; i++) {
+    const v1 = riverSegmentUnitVector(path[i], path[i + 1]);
+    const v2 = riverSegmentUnitVector(path[i + 1], path[i + 2]);
+    if (v1.x * v2.x + v1.y * v2.y < -0.01) return true;
+  }
+  return false;
+}
+function riverPathViolatesTurnWindow(path, windowHex = RIVER_TURN_WINDOW_HEX, maxSum = RIVER_TURN_WINDOW_MAX_SUM) {
+  if (path.length < 3) return false;
+  if (riverPathHasSharpUTurn(path)) return true;
+  const deltas = pathSignedTurnDeltas(pathSegmentDirs(path));
+  for (let i = 0; i < deltas.length; i++) {
+    if (Math.abs(deltas[i]) > 1) return true;
+    if (i + 1 < windowHex) continue;
+    const window = deltas.slice(i + 1 - windowHex, i + 1);
+    const sum = window.reduce((a, b) => a + b, 0);
+    if (Math.abs(sum) > maxSum) return true;
+  }
+  return false;
+}
+function sanitizeRiverTurnWindow(path, hexes, sourceKey) {
+  let out = sanitizeRiverPath(path);
+  for (let guard = 0; guard < 48 && out.length >= 3; guard++) {
+    if (!riverPathViolatesTurnWindow(out)) return out;
+    const deltas = pathSignedTurnDeltas(pathSegmentDirs(out));
+    let cutAt = -1;
+    for (let i = 0; i < deltas.length; i++) {
+      if (Math.abs(deltas[i]) > 1) {
+        cutAt = i + 1;
+        break;
+      }
+      if (i + 1 >= RIVER_TURN_WINDOW_HEX) {
+        const w = deltas.slice(i + 1 - RIVER_TURN_WINDOW_HEX, i + 1);
+        if (Math.abs(w.reduce((a, b) => a + b, 0)) > RIVER_TURN_WINDOW_MAX_SUM) {
+          cutAt = i + 1;
+          break;
+        }
+      }
+    }
+    if (cutAt <= 0 || cutAt >= out.length - 1) break;
+    out = sanitizeRiverPath([...out.slice(0, cutAt), ...out.slice(cutAt + 1)]);
+    out = repairRiverPathAdjacency(out, hexes, sourceKey);
+  }
+  return out;
+}
+function canReceiveRiverYieldMark(hex) {
+  if (!hex || hex.terenBazowy === "morze" /* Morze */) return false;
+  return isDryLandTerrain(hex.terenBazowy) || hex.terenBazowy === "wybrzeze" /* Wybrzeze */;
+}
 function markRiverEdge(hexes, q, r, edgeIdx) {
-  var _a9;
+  var _a11;
   if (edgeIdx < 0) return;
   const hex = hexes[hexKey(q, r)];
-  if (!hex || hex.terenBazowy === "morze" /* Morze */) return;
-  if (!isRiverLandTerrain(hex.terenBazowy) && hex.terenBazowy !== "wybrzeze" /* Wybrzeze */) return;
-  const edges = ((_a9 = hex.rzeka) == null ? void 0 : _a9.krawedzie) ?? [];
+  if (!canReceiveRiverYieldMark(hex)) return;
+  const edges = ((_a11 = hex.rzeka) == null ? void 0 : _a11.krawedzie) ?? [];
   if (!edges.includes(edgeIdx)) edges.push(edgeIdx);
   hex.rzeka = { obecna: edges.length > 0, krawedzie: edges };
+}
+function markRiverEdgePair(hexes, q, r, edgeIdx) {
+  if (edgeIdx < 0) return;
+  markRiverEdge(hexes, q, r, edgeIdx);
+  const dir = HEX_DIRECTIONS[edgeIdx];
+  if (!dir) return;
+  markRiverEdge(hexes, q + dir[0], r + dir[1], (edgeIdx + 3) % 6);
+}
+function riverHexCornerStep(from, cw) {
+  return cw ? (from + 1) % 6 : (from + 5) % 6;
+}
+function walkRiverHexPerimeter(fromCorner, toCorner, cw) {
+  if (fromCorner === toCorner) return [fromCorner];
+  const out = [];
+  let c = fromCorner;
+  for (let guard = 0; guard < 7; guard++) {
+    out.push(c);
+    if (c === toCorner) break;
+    c = riverHexCornerStep(c, cw);
+  }
+  return out;
+}
+function riverCornersAlongHexEdges(dirIn, dirOut, hexParity) {
+  const a = (dirIn % 6 + 6) % 6;
+  const b = (dirOut % 6 + 6) % 6;
+  if (a === b) return [];
+  const entryOpts = [(a + 1) % 6, (a + 2) % 6];
+  const exitOpts = [(b + 1) % 6, (b + 2) % 6];
+  const MIN_BOKI = 1;
+  let best = [];
+  let bestScore = Infinity;
+  let fallback = [];
+  let fallbackScore = Infinity;
+  for (const entry of entryOpts) {
+    for (const exit of exitOpts) {
+      for (const cw of [true, false]) {
+        const walked = walkRiverHexPerimeter(entry, exit, cw);
+        if (walked.length === 0) continue;
+        let score = walked.length;
+        if (score === bestScore && hexParity % 2 === 0) score += cw ? 0 : 0.01;
+        else if (score === bestScore) score += cw ? 0.01 : 0;
+        if (score < fallbackScore) {
+          fallbackScore = score;
+          fallback = walked;
+        }
+        if (walked.length - 1 < MIN_BOKI) continue;
+        if (score < bestScore) {
+          bestScore = score;
+          best = walked;
+        }
+      }
+    }
+  }
+  return best.length ? best : fallback;
+}
+function riverEdgeBetweenCorners(c1, c2) {
+  if (c2 === (c1 + 1) % 6) return (c1 + 5) % 6;
+  if (c2 === (c1 + 5) % 6) return (c2 + 5) % 6;
+  return -1;
+}
+function riverTransitEdgeIndices(dirIn, dirOut, hexParity) {
+  const corners = riverCornersAlongHexEdges(dirIn, dirOut, hexParity);
+  if (corners.length < 2) return [];
+  const edges = [];
+  for (let i = 0; i < corners.length - 1; i++) {
+    const ei = riverEdgeBetweenCorners(corners[i], corners[i + 1]);
+    if (ei >= 0 && !edges.includes(ei)) edges.push(ei);
+  }
+  return edges;
+}
+function simplifyRiverRenderPath(path) {
+  const p = path.map((h) => ({ q: h.q, r: h.r }));
+  if (p.length < 3) return p;
+  let changed = true;
+  let guard = 0;
+  while (changed && guard++ < 4e3) {
+    changed = false;
+    for (let i = 1; i < p.length - 1; i++) {
+      const a = p[i - 1];
+      const c = p[i + 1];
+      if (a.q === c.q && a.r === c.r) {
+        p.splice(i, 2);
+        changed = true;
+        break;
+      }
+      if (neighborDirIndex(a.q, a.r, c.q, c.r) >= 0) {
+        p.splice(i, 1);
+        changed = true;
+        break;
+      }
+    }
+  }
+  return p;
+}
+function markRiverTransitEdgesOnPath(hexes, path) {
+  const rp = simplifyRiverRenderPath(path);
+  if (rp.length < 2) return;
+  for (let i = 0; i < rp.length; i++) {
+    const cur = rp[i];
+    const dirIn = i > 0 ? neighborDirIndex(cur.q, cur.r, rp[i - 1].q, rp[i - 1].r) : -1;
+    const dirOut = i < rp.length - 1 ? neighborDirIndex(cur.q, cur.r, rp[i + 1].q, rp[i + 1].r) : -1;
+    if (dirIn < 0 || dirOut < 0) continue;
+    for (const ei of riverTransitEdgeIndices(dirIn, dirOut, cur.q + cur.r)) {
+      markRiverEdgePair(hexes, cur.q, cur.r, ei);
+    }
+  }
+}
+function syncRiverEdgeBonusHexes(hexes, maxPasses = 2) {
+  var _a11, _b5;
+  for (let pass = 0; pass < maxPasses; pass++) {
+    const work = [];
+    for (const [k, h] of Object.entries(hexes)) {
+      if (!((_b5 = (_a11 = h.rzeka) == null ? void 0 : _a11.krawedzie) == null ? void 0 : _b5.length)) continue;
+      const { q, r } = parseHexKey(k);
+      for (const ei of h.rzeka.krawedzie) work.push({ q, r, ei });
+    }
+    if (work.length === 0) return;
+    for (const { q, r, ei } of work) markRiverEdgePair(hexes, q, r, ei);
+  }
 }
 function markRiverPath(hexes, path) {
   for (let i = 0; i < path.length - 1; i++) {
@@ -4441,10 +5772,9 @@ function markRiverPath(hexes, path) {
       if (!coastal) continue;
     }
     const eA = neighborDirIndex(a.q, a.r, b.q, b.r);
-    const eB = neighborDirIndex(b.q, b.r, a.q, a.r);
-    markRiverEdge(hexes, a.q, a.r, eA);
-    markRiverEdge(hexes, b.q, b.r, eB);
+    markRiverEdgePair(hexes, a.q, a.r, eA);
   }
+  markRiverTransitEdgesOnPath(hexes, path);
 }
 function riverSegmentEdgeMarks(hexes, a, b) {
   const ha = hexes[hexKey(a.q, a.r)];
@@ -4458,25 +5788,25 @@ function riverSegmentEdgeMarks(hexes, a, b) {
   const out = [];
   const eA = neighborDirIndex(a.q, a.r, b.q, b.r);
   const eB = neighborDirIndex(b.q, b.r, a.q, a.r);
-  const eligible = (h) => h.terenBazowy !== "morze" /* Morze */ && (isRiverLandTerrain(h.terenBazowy) || h.terenBazowy === "wybrzeze" /* Wybrzeze */);
+  const eligible = (h) => canReceiveRiverYieldMark(h);
   if (eA >= 0 && eligible(ha)) out.push({ key: hexKey(a.q, a.r), edge: eA });
   if (eB >= 0 && eligible(hb)) out.push({ key: hexKey(b.q, b.r), edge: eB });
   return out;
 }
 function trimRiverPathRings(hexes, path) {
-  var _a9;
+  var _a11;
   if (path.length < 3) return path;
   const priorCount = /* @__PURE__ */ new Map();
   const laid = /* @__PURE__ */ new Map();
   const totalOnHex = (key) => {
-    var _a10;
+    var _a12;
     return (priorCount.get(key) ?? (() => {
-      var _a11, _b3;
+      var _a13, _b5;
       const h = hexes[key];
-      const c = ((_b3 = (_a11 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a11.krawedzie) == null ? void 0 : _b3.length) ?? 0;
+      const c = ((_b5 = (_a13 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a13.krawedzie) == null ? void 0 : _b5.length) ?? 0;
       priorCount.set(key, c);
       return c;
-    })()) + (((_a10 = laid.get(key)) == null ? void 0 : _a10.size) ?? 0);
+    })()) + (((_a12 = laid.get(key)) == null ? void 0 : _a12.size) ?? 0);
   };
   const hadPrior = (key) => {
     if (!priorCount.has(key)) totalOnHex(key);
@@ -4485,7 +5815,7 @@ function trimRiverPathRings(hexes, path) {
   for (let i = 0; i < path.length - 1; i++) {
     const marks = riverSegmentEdgeMarks(hexes, path[i], path[i + 1]);
     for (const m of marks) {
-      const already = ((_a9 = laid.get(m.key)) == null ? void 0 : _a9.has(m.edge)) ?? false;
+      const already = ((_a11 = laid.get(m.key)) == null ? void 0 : _a11.has(m.edge)) ?? false;
       if (already) continue;
       const cur = totalOnHex(m.key);
       const limit = hadPrior(m.key) ? 4 : 3;
@@ -4501,6 +5831,17 @@ function trimRiverPathRings(hexes, path) {
   }
   return path;
 }
+function finalizeMainRiverPath(hexes, path, width, height, oceanConnected) {
+  if (path.length < 2) return null;
+  const cleaned = sanitizeRiverPath(path);
+  if (cleaned.length < RIVER_MIN_MAIN_LEN) return null;
+  const turnSafe = riverPathViolatesTurnWindow(cleaned) ? sanitizeRiverTurnWindow(cleaned, hexes, hexKey(path[0].q, path[0].r)) : cleaned;
+  if (turnSafe.length < RIVER_MIN_MAIN_LEN) return null;
+  const trimmed = trimRiverPathRings(hexes, turnSafe);
+  if (trimmed.length < RIVER_MIN_MAIN_LEN) return null;
+  if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return null;
+  return trimmed;
+}
 function appendJunctionDownstreamHex(path, down) {
   if (!down || path.length < 2) return path;
   const last = path[path.length - 1];
@@ -4510,11 +5851,497 @@ function appendJunctionDownstreamHex(path, down) {
   if (path.some((p) => p.q === down.q && p.r === down.r)) return path;
   return [...path, { q: down.q, r: down.r }];
 }
-function networkDownstreamNeighbor(hexes, junction, approach) {
-  var _a9, _b3;
+function tributaryTouchesOceanReachable(path, reached) {
+  for (const p of path) {
+    if (reached.has(hexKey(p.q, p.r))) return true;
+  }
+  const end = path[path.length - 1];
+  if (!end) return false;
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    const nk = hexKey(end.q + dq, end.r + dr);
+    if (reached.has(nk)) return true;
+  }
+  return false;
+}
+function finalizeTributaryPath(hexes, path, riverPaths, riverKinds, width, height, oceanConnected) {
+  let out = trimRiverPathRings(hexes, path);
+  if (out.length < 3) return null;
+  if (out.length >= 2) {
+    const junction = out[out.length - 1];
+    const approach = out[out.length - 2];
+    const down = networkDownstreamNeighbor(hexes, junction, approach, riverPaths);
+    out = appendJunctionDownstreamHex(out, down);
+  }
+  if (pathEndsAtSea(hexes, out, width, height, oceanConnected)) return out;
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes,
+    riverPaths,
+    riverKinds,
+    width,
+    height,
+    oceanConnected
+  );
+  if (!tributaryTouchesOceanReachable(out, reached)) return null;
+  return out;
+}
+function pathTouchesMainNetwork(path, mainKeys) {
+  if (mainKeys.size === 0) return false;
+  for (const p of path) {
+    if (mainKeys.has(hexKey(p.q, p.r))) return true;
+  }
+  const end = path[path.length - 1];
+  if (!end) return false;
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    if (mainKeys.has(hexKey(end.q + dq, end.r + dr))) return true;
+  }
+  return false;
+}
+function trimMediumTailAlongMain(path, mainKeys) {
+  if (path.length < 3 || mainKeys.size === 0) return path;
+  const out = [...path];
+  while (out.length >= 3) {
+    const last = out[out.length - 1];
+    const prev = out[out.length - 2];
+    if (mainKeys.has(hexKey(last.q, last.r)) && mainKeys.has(hexKey(prev.q, prev.r))) {
+      out.pop();
+    } else break;
+  }
+  return out;
+}
+function isMediumJoinTargetHex(q, r, mainKeys, networkKeys) {
+  const k = hexKey(q, r);
+  if (mainKeys.has(k) || networkKeys.has(k)) return true;
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    const nk = hexKey(q + dq, r + dr);
+    if (mainKeys.has(nk) || networkKeys.has(nk)) return true;
+  }
+  return false;
+}
+function isHexWrapTriplet(a, b, c) {
+  const dAB = neighborDirIndex(a.q, a.r, b.q, b.r);
+  const dBC = neighborDirIndex(b.q, b.r, c.q, c.r);
+  if (dAB < 0 || dBC < 0) return false;
+  if (Math.abs(signedRiverDirDelta(dAB, dBC)) !== 2) return false;
+  return hexAxialDistance(a.q, a.r, c.q, c.r) === 1;
+}
+function trimMediumJoinHexWrap(path, mainKeys, networkKeys) {
+  let out = [...path];
+  for (let guard = 0; guard < 8 && out.length >= 3; guard++) {
+    const a = out[out.length - 3];
+    const b = out[out.length - 2];
+    const c = out[out.length - 1];
+    if (mainKeys.has(hexKey(b.q, b.r))) break;
+    if (!isMediumJoinTargetHex(c.q, c.r, mainKeys, networkKeys)) break;
+    if (!isHexWrapTriplet(a, b, c)) break;
+    out.splice(out.length - 2, 1);
+  }
+  return out;
+}
+function trimMediumBranchHexWrap(path, mainKeys) {
+  let out = [...path];
+  for (let guard = 0; guard < 8 && out.length >= 3; guard++) {
+    const a = out[0];
+    const b = out[1];
+    const c = out[2];
+    if (!mainKeys.has(hexKey(a.q, a.r))) break;
+    if (mainKeys.has(hexKey(b.q, b.r))) break;
+    if (!isHexWrapTriplet(a, b, c)) break;
+    out.splice(1, 1);
+  }
+  return out;
+}
+function pickPerpDirTowardLandCenter(perpDirs, spawnQ, spawnR, square, centroid, sideToggle) {
+  if (perpDirs.length === 0) return [0, 0];
+  if (perpDirs.length === 1) return perpDirs[0];
+  const scored = perpDirs.map((d) => ({
+    d,
+    s: scoreRiverStepTowardLandCenter(
+      spawnQ,
+      spawnR,
+      spawnQ + d[0],
+      spawnR + d[1],
+      square,
+      centroid
+    )
+  }));
+  scored.sort((a, b) => b.s - a.s);
+  if (scored[0].s >= scored[1].s + 10) return scored[0].d;
+  return perpDirs[sideToggle % perpDirs.length];
+}
+function mainFlowDirIndex(flowDir) {
+  for (let i = 0; i < HEX_DIRECTIONS.length; i++) {
+    const d = HEX_DIRECTIONS[i];
+    if (d[0] === flowDir[0] && d[1] === flowDir[1]) return i;
+  }
+  return -1;
+}
+function perpendicularHexDirections(flowDir) {
+  const idx = mainFlowDirIndex(flowDir);
+  if (idx < 0) return [];
+  return [HEX_DIRECTIONS[(idx + 2) % 6], HEX_DIRECTIONS[(idx + 4) % 6]];
+}
+function localMainFlowDirAt(path, index) {
+  if (path.length < 2) return null;
+  if (index > 0 && index < path.length) {
+    return riverStepDir(path[index - 1], path[index]);
+  }
+  if (index === 0) return riverStepDir(path[0], path[1]);
+  return riverStepDir(path[path.length - 2], path[path.length - 1]);
+}
+function mediumPathEndHasRiverJunction(end, pathIndex, hexToPaths, hexes) {
+  var _a11;
+  const eh = hexes[hexKey(end.q, end.r)];
+  for (const edgeIdx of ((_a11 = eh == null ? void 0 : eh.rzeka) == null ? void 0 : _a11.krawedzie) ?? []) {
+    const dir = HEX_DIRECTIONS[edgeIdx];
+    if (!dir) continue;
+    const owners = hexToPaths.get(hexKey(end.q + dir[0], end.r + dir[1]));
+    if (owners && [...owners].some((x) => x !== pathIndex)) return true;
+  }
+  return false;
+}
+function mediumEndsOrphanOnFlatLand(hexes, end, pathIndex, hexToPaths, otherRiverKeys, minPathSep) {
+  const endKey = hexKey(end.q, end.r);
+  const h = hexes[endKey];
+  if (!h || !isRiverLandTerrain(h.terenBazowy)) return true;
+  if (isReliefTerrain(h.terenBazowy)) return false;
+  if (otherRiverKeys.has(endKey)) return false;
+  if (mediumPathEndHasRiverJunction(end, pathIndex, hexToPaths, hexes)) return false;
+  const dist = nearestRiverHexDistance(end.q, end.r, otherRiverKeys);
+  if (dist >= minPathSep && dist <= minPathSep + 1) return false;
+  return true;
+}
+function collectMediumTributaryGrowCandidates(o) {
+  const out = [];
+  let inDir = null;
+  if (o.path.length >= 2) inDir = riverStepDir(o.path[o.path.length - 2], o.cur);
+  for (const [dq, dr] of HEX_DIRECTIONS) {
+    const nq = o.cur.q + dq;
+    const nr = o.cur.r + dr;
+    const nk = hexKey(nq, nr);
+    if (!isRiverWindowTurnAllowed(o.path, nq, nr)) continue;
+    const onRiver = o.blockRiverKeys.has(nk);
+    const isJunction = onRiver && nk !== o.startKey && o.path.length >= 2;
+    if (onRiver && !isJunction) continue;
+    const netSoFar = mediumTributaryNetHexCount(o.path, o.mainKeys);
+    if (isJunction && netSoFar < o.minNetLen) continue;
+    const nh = o.hexes[nk];
+    if (!isJunction && !canRiverFlowThrough(nh, nk, o.startKey, true, void 0, false)) continue;
+    if (!isJunction && netSoFar < o.minNetLen && (nh == null ? void 0 : nh.terenBazowy) === "wybrzeze" /* Wybrzeze */ && o.path.length > 1) continue;
+    if (!isJunction) {
+      const effectiveSep = netSoFar < o.minNetLen ? 1 : o.minPathSep;
+      const sepKeys = netSoFar < o.minNetLen ? o.sepBlockKeys : o.blockRiverKeys;
+      if (o.path.length > 1 && !riverGrowStepPassesSep(nq, nr, sepKeys, effectiveSep, o.sepIndex)) continue;
+      if (o.path.length <= 1 && o.blockRiverKeys.has(nk) && nk !== o.startKey) continue;
+    }
+    const inlandSteps = netSoFar;
+    let score = 0;
+    if (inDir && sameRiverDir(inDir, [dq, dr])) score += inlandSteps <= 2 ? 30 : 16;
+    if (dq === o.preferredDir[0] && dr === o.preferredDir[1]) {
+      score += inlandSteps <= 0 ? 48 : inlandSteps <= 1 ? 16 : 3;
+    }
+    const centerBias = scoreRiverStepTowardLandCenter(
+      o.cur.q,
+      o.cur.r,
+      nq,
+      nr,
+      o.landCenterSquare,
+      o.landCentroid
+    );
+    score += inlandSteps <= 1 ? centerBias * 3.2 : centerBias * 5;
+    if (centerBias < 0 && inlandSteps > 1) score -= 28;
+    if ((nh == null ? void 0 : nh.terenBazowy) === "wybrzeze" /* Wybrzeze */ && inlandSteps > 0) score -= 90;
+    score += o.rand() * (inlandSteps <= 1 ? 0.25 : 0.12);
+    if (isJunction) {
+      score += 55;
+      if (o.mainKeys.has(nk)) score += 45;
+      if (o.path.length >= 2) {
+        const prev = o.path[o.path.length - 2];
+        if (isHexWrapTriplet(prev, o.cur, { q: nq, r: nr })) {
+          score -= 120;
+        } else if (hexAxialDistance(prev.q, prev.r, nq, nr) === 1) {
+          score += 30;
+        }
+      }
+    }
+    out.push({ q: nq, r: nr, score, junction: isJunction });
+  }
+  return out;
+}
+function growMediumTributaryFromMain(hexes, spawnQ, spawnR, perpDir, maxLen, blockRiverKeys, minPathSep, rand, mainKeys, seaDist, minNetLen = MEDIUM_TRIBUTARY_MIN_NET_LEN, landCenterSquare = null, parentMainKeys, sepIndex) {
+  const startKey = hexKey(spawnQ, spawnR);
+  const path = [{ q: spawnQ, r: spawnR }];
+  const visited = /* @__PURE__ */ new Set([startKey]);
+  const landCentroid = (landCenterSquare == null ? void 0 : landCenterSquare.centroid) ?? estimateLandCentroidFromSeed(hexes, spawnQ, spawnR, false, 4e3);
+  const sepBlockKeys = /* @__PURE__ */ new Set();
+  const parent = parentMainKeys ?? mainKeys;
+  for (const k of blockRiverKeys) {
+    if (!parent.has(k)) sepBlockKeys.add(k);
+  }
+  while (path.length < maxLen) {
+    const cur = path[path.length - 1];
+    const growBase = {
+      hexes,
+      path,
+      cur,
+      startKey,
+      preferredDir: perpDir,
+      blockRiverKeys,
+      sepBlockKeys,
+      sepIndex: sepIndex ?? void 0,
+      minPathSep,
+      mainKeys,
+      minNetLen,
+      landCentroid,
+      landCenterSquare,
+      rand
+    };
+    const candidates = collectMediumTributaryGrowCandidates(growBase).filter((c) => !visited.has(hexKey(c.q, c.r)));
+    if (candidates.length === 0) break;
+    const netNow = mediumTributaryNetHexCount(path, mainKeys);
+    const junctionReady = candidates.filter((c) => c.junction && netNow >= minNetLen);
+    const pool = junctionReady.length > 0 ? junctionReady : candidates;
+    pool.sort((a, b) => b.score - a.score);
+    const pick4 = pool[0];
+    path.push({ q: pick4.q, r: pick4.r });
+    visited.add(hexKey(pick4.q, pick4.r));
+    if (pick4.junction && netNow >= minNetLen) break;
+  }
+  let out = trimMediumBranchHexWrap(path, mainKeys);
+  out = trimMediumJoinHexWrap(out, mainKeys, blockRiverKeys);
+  if (seaDist && out.length >= 3 && mediumTributaryNetHexCount(out, mainKeys) < minNetLen) {
+    const targetLen = Math.min(maxLen, out.length + minNetLen);
+    let extended = extendRiverToMinimumLength(out, hexes, seaDist, rand, targetLen, maxLen);
+    extended = repairRiverPathAdjacency(extended, hexes, startKey);
+    if (!riverPathViolatesTurnWindow(extended)) {
+      out = extended;
+    }
+  }
+  out = trimMediumBranchHexWrap(out, mainKeys);
+  out = trimMediumJoinHexWrap(out, mainKeys, blockRiverKeys);
+  return out;
+}
+function mediumPathStartsOnMain(path, mainKeys) {
+  const p0 = path[0];
+  if (!p0) return false;
+  return mainKeys.has(hexKey(p0.q, p0.r));
+}
+function mediumTributaryNetHexCount(path, mainKeys) {
+  let n = 0;
+  for (const p of path) {
+    if (!mainKeys.has(hexKey(p.q, p.r))) n++;
+  }
+  return n;
+}
+function generateMediumTributariesFromMainRivers(ctx, massSet, maxLen, minPathSep = MAIN_RIVER_MIN_PATH_SEP) {
+  var _a11;
+  const mainKeys = ctx.mainKeysCache ?? collectPathHexKeysForKinds(ctx.riverPaths, ctx.riverKinds, ["main"]);
+  const blockRiverKeys = collectRiverPathHexKeys(ctx.riverPaths);
+  const riverSepIndex = ctx.riverSepIndex ?? RiverHexSpatialIndex.fromKeys(blockRiverKeys);
+  ctx.riverSepIndex = riverSepIndex;
+  const usedSpawn = ctx.usedMediumSpawnKeys ?? /* @__PURE__ */ new Set();
+  ctx.usedMediumSpawnKeys = usedSpawn;
+  let placed = 0;
+  let sideToggle = 0;
+  const minNetLen = mediumTributaryMinNetLen(ctx.width, ctx.height);
+  const spawnSpacing = mediumTributarySpacingHex(ctx.width, ctx.height, !!ctx.largeMapPerf);
+  for (let pi = 0; pi < ctx.riverPaths.length; pi++) {
+    if (ctx.riverKinds[pi] !== "main") continue;
+    const mainPath = ctx.riverPaths[pi] ?? [];
+    if (mainPath.length < 3) continue;
+    const parentMainKeys = new Set(mainPath.map((mp) => hexKey(mp.q, mp.r)));
+    let sinceSpawn = 0;
+    for (let i = 0; i < mainPath.length; i++) {
+      const p = mainPath[i];
+      const pk = hexKey(p.q, p.r);
+      if (!massSet.has(pk)) continue;
+      sinceSpawn++;
+      if (sinceSpawn < spawnSpacing) continue;
+      sinceSpawn = 0;
+      if (usedSpawn.has(pk)) continue;
+      const flowDir = localMainFlowDirAt(mainPath, i);
+      if (!flowDir) continue;
+      const perpDirs = perpendicularHexDirections(flowDir);
+      if (perpDirs.length === 0) continue;
+      const landSquare = ctx.massCenterSquare ?? null;
+      const landCentroid = (landSquare == null ? void 0 : landSquare.centroid) ?? estimateLandCentroidFromSeed(ctx.hexes, p.q, p.r, false, 4e3);
+      const perpDir = pickPerpDirTowardLandCenter(
+        perpDirs,
+        p.q,
+        p.r,
+        landSquare,
+        landCentroid,
+        sideToggle
+      );
+      sideToggle++;
+      const tryGrow = (dir) => growMediumTributaryFromMain(
+        ctx.hexes,
+        p.q,
+        p.r,
+        dir,
+        maxLen,
+        blockRiverKeys,
+        minPathSep,
+        ctx.rand,
+        mainKeys,
+        ctx.seaDist,
+        minNetLen,
+        landSquare,
+        parentMainKeys,
+        riverSepIndex
+      );
+      let tribPath = tryGrow(perpDir);
+      if (mediumTributaryNetHexCount(tribPath, mainKeys) < minNetLen && perpDirs.length > 1) {
+        const altDir = perpDirs[(sideToggle - 1 + 1) % perpDirs.length];
+        const altPath = tryGrow(altDir);
+        if (mediumTributaryNetHexCount(altPath, mainKeys) > mediumTributaryNetHexCount(tribPath, mainKeys)) {
+          tribPath = altPath;
+        }
+      }
+      if (mediumTributaryNetHexCount(tribPath, mainKeys) < minNetLen) continue;
+      if (!((_a11 = ctx.pushMedium) == null ? void 0 : _a11.call(ctx, tribPath, p.q, p.r))) continue;
+      placed++;
+      usedSpawn.add(pk);
+      for (const tp of tribPath) {
+        const tk = hexKey(tp.q, tp.r);
+        blockRiverKeys.add(tk);
+        riverSepIndex.add(tk);
+      }
+    }
+  }
+  return placed;
+}
+function buildMediumRouteTargetKeys(hexes, paths, kinds, width, height, oceanConnected) {
+  const mainKeys = collectPathHexKeysForKinds(paths, kinds, ["main"]);
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes,
+    paths,
+    kinds,
+    width,
+    height,
+    oceanConnected
+  );
+  const targets = new Set(mainKeys);
+  for (const k of collectPathHexKeysForKinds(paths, kinds, ["medium"])) {
+    if (reached.has(k)) targets.add(k);
+  }
+  return targets;
+}
+function traceMediumRiver(hexes, sq, sr, tq, tr, maxLen, seaDist, rand, minLen = 3) {
+  const srcKey = hexKey(sq, sr);
+  let path = aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, srcKey);
+  if (path.length < 3) return [];
+  path = extendRiverToMinimumLength(path, hexes, seaDist, rand, minLen, maxLen);
+  path = repairRiverPathAdjacency(path, hexes, srcKey);
+  if (path.length > maxLen) path = path.slice(0, maxLen);
+  if (riverPathViolatesTurnWindow(path)) {
+    path = sanitizeRiverTurnWindow(path, hexes, srcKey);
+  }
+  return path.length >= 3 ? path : [];
+}
+function finalizeMediumPath(hexes, path, riverPaths, riverKinds, width, height, oceanConnected) {
+  if (path.length < 2) return null;
+  const mainKeysEarly = collectPathHexKeysForKinds(riverPaths, riverKinds, ["main"]);
+  if (path.length < 3 && !mediumPathStartsOnMain(path, mainKeysEarly)) return null;
+  const srcKey = hexKey(path[0].q, path[0].r);
+  let out = sanitizeRiverPath(path);
+  if (riverPathViolatesTurnWindow(out)) {
+    out = sanitizeRiverTurnWindow(out, hexes, srcKey);
+  }
+  if (out.length < 2) return null;
+  const mainKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ["main"]);
+  if (out.length < 3 && !mediumPathStartsOnMain(out, mainKeys)) return null;
+  out = trimRiverPathRings(hexes, out);
+  const networkKeys = collectRiverPathHexKeys(riverPaths);
+  out = trimMediumBranchHexWrap(out, mainKeys);
+  out = trimMediumJoinHexWrap(out, mainKeys, networkKeys);
+  out = trimMediumTailAlongMain(out, mainKeys);
+  if (out.length < 2) return null;
+  if (out.length < 3 && !mediumPathStartsOnMain(out, mainKeys)) return null;
+  if (!mediumPathStartsOnMain(out, mainKeys)) return null;
+  if (mediumTributaryNetHexCount(out, mainKeys) < mediumTributaryMinNetLen(width, height)) return null;
+  if (countMediumInlandLandHexes(hexes, out) < 3) return null;
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes,
+    riverPaths,
+    riverKinds,
+    width,
+    height,
+    oceanConnected
+  );
+  const touchesMain = pathTouchesMainNetwork(out, mainKeys);
+  const onNetwork = tributaryTouchesOceanReachable(out, reached);
+  const endsSea = pathEndsAtSea(hexes, out, width, height, oceanConnected);
+  if (!onNetwork && !endsSea) return null;
+  if (!touchesMain && !onNetwork) {
+    if (!endsSea) return null;
+  }
+  if (!touchesMain && onNetwork && !endsSea) {
+  }
+  const hexToPaths = /* @__PURE__ */ new Map();
+  for (let pi = 0; pi < riverPaths.length; pi++) {
+    for (const p of riverPaths[pi] ?? []) {
+      const k = hexKey(p.q, p.r);
+      const s = hexToPaths.get(k) ?? /* @__PURE__ */ new Set();
+      s.add(pi);
+      hexToPaths.set(k, s);
+    }
+  }
+  const pathIndex = riverPaths.length;
+  const end = out[out.length - 1];
+  const otherRiverKeys = collectRiverPathHexKeys(riverPaths);
+  if (!endsSea && !mediumPathStartsOnMain(out, mainKeys) && mediumEndsOrphanOnFlatLand(
+    hexes,
+    end,
+    pathIndex,
+    hexToPaths,
+    otherRiverKeys,
+    MAIN_RIVER_MIN_PATH_SEP
+  )) return null;
+  return out;
+}
+function finalizeShortPath(hexes, path, riverPaths, riverKinds, width, height, oceanConnected) {
+  let out = trimRiverPathRings(hexes, path);
+  if (out.length < 3) return null;
+  if (out.length >= 2) {
+    const junction = out[out.length - 1];
+    const approach = out[out.length - 2];
+    const down = networkDownstreamNeighbor(hexes, junction, approach, riverPaths);
+    out = appendJunctionDownstreamHex(out, down);
+  }
+  const ocean = oceanConnected;
+  if (pathEndsAtSea(hexes, out, width, height, ocean)) return null;
+  const mediumKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ["medium"]);
+  if (mediumKeys.size === 0) return null;
+  const end = out[out.length - 1];
+  const endKey = hexKey(end.q, end.r);
+  let onMedium = mediumKeys.has(endKey);
+  if (!onMedium) {
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(end.q + dq, end.r + dr);
+      if (mediumKeys.has(nk)) {
+        onMedium = true;
+        break;
+      }
+    }
+  }
+  if (!onMedium) return null;
+  const reached = buildOceanReachableRiverHexKeys(
+    hexes,
+    riverPaths,
+    riverKinds,
+    width,
+    height,
+    ocean
+  );
+  if (!tributaryTouchesOceanReachable(out, reached)) return null;
+  return out;
+}
+function networkDownstreamNeighbor(hexes, junction, approach, riverPaths) {
+  var _a11, _b5;
   const jh = hexes[hexKey(junction.q, junction.r)];
-  const edges = (_a9 = jh == null ? void 0 : jh.rzeka) == null ? void 0 : _a9.krawedzie;
+  const edges = (_a11 = jh == null ? void 0 : jh.rzeka) == null ? void 0 : _a11.krawedzie;
   if (!edges || edges.length === 0) return void 0;
+  const candidates = [];
   for (const edgeIdx of edges) {
     const dir = HEX_DIRECTIONS[edgeIdx];
     if (!dir) continue;
@@ -4522,24 +6349,46 @@ function networkDownstreamNeighbor(hexes, junction, approach) {
     const nr = junction.r + dir[1];
     if (approach && nq === approach.q && nr === approach.r) continue;
     const nh = hexes[hexKey(nq, nr)];
-    if (((_b3 = nh == null ? void 0 : nh.rzeka) == null ? void 0 : _b3.obecna) && nh.terenBazowy !== "morze" /* Morze */) return { q: nq, r: nr };
+    if (((_b5 = nh == null ? void 0 : nh.rzeka) == null ? void 0 : _b5.obecna) && nh.terenBazowy !== "morze" /* Morze */) {
+      candidates.push({ q: nq, r: nr });
+    }
   }
-  return void 0;
+  if (candidates.length === 0) return void 0;
+  if (riverPaths && riverPaths.length > 0) {
+    const junctionKey = hexKey(junction.q, junction.r);
+    for (const path of riverPaths) {
+      for (let i = 0; i < path.length - 1; i++) {
+        const a = path[i];
+        const b = path[i + 1];
+        const ak = hexKey(a.q, a.r);
+        const bk = hexKey(b.q, b.r);
+        if (ak === junctionKey) {
+          const hit = candidates.find((c) => c.q === b.q && c.r === b.r);
+          if (hit) return hit;
+        }
+        if (bk === junctionKey) {
+          const hit = candidates.find((c) => c.q === a.q && c.r === a.r);
+          if (hit) return hit;
+        }
+      }
+    }
+  }
+  return candidates[0];
 }
 function stripRiverMarksFromOpenSea(hexes) {
-  var _a9;
+  var _a11;
   let n = 0;
   for (const hex of Object.values(hexes)) {
-    if (hex.terenBazowy !== "morze" /* Morze */ || !((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna)) continue;
+    if (hex.terenBazowy !== "morze" /* Morze */ || !((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna)) continue;
     hex.rzeka = { obecna: false, krawedzie: [] };
     n++;
   }
   return n;
 }
 function clearRiverMarks(hexes) {
-  var _a9;
+  var _a11;
   for (const hex of Object.values(hexes)) {
-    if ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna) hex.rzeka = { obecna: false, krawedzie: [] };
+    if ((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna) hex.rzeka = { obecna: false, krawedzie: [] };
   }
 }
 function tributaryCountForLength(pathLen, areaScale = 1) {
@@ -4547,7 +6396,7 @@ function tributaryCountForLength(pathLen, areaScale = 1) {
   if (pathLen < 22) return Math.max(2, Math.round(6 * areaScale));
   return Math.min(12, Math.floor(pathLen / 8 * 3 * areaScale));
 }
-function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey) {
+function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey, allowReliefTraversal = false) {
   const startK = hexKey(sq, sr);
   const targetK = hexKey(tq, tr);
   if (startK === targetK) return [{ q: sq, r: sr }];
@@ -4574,7 +6423,7 @@ function aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, sourceKey) {
     const { q, r } = parseHexKey(current);
     for (const [dq, dr] of HEX_DIRECTIONS) {
       const nk = hexKey(q + dq, r + dr);
-      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK)) continue;
+      if (!canRiverFlowThrough(hexes[nk], nk, sourceKey, true, targetK, allowReliefTraversal)) continue;
       const tg = curG + 1;
       if (tg > maxLen) continue;
       if (tg >= (gScore.get(nk) ?? Infinity)) continue;
@@ -4606,16 +6455,18 @@ function findTributarySource(hexes, junction, mainPathKeys, usedSources, rand, s
   candidates.sort((a, b) => a.score - b.score);
   return [candidates[0].q, candidates[0].r];
 }
-function traceTributary(hexes, sq, sr, tq, tr, maxLen, seaDist, rand) {
+function traceTributary(hexes, sq, sr, tq, tr, maxLen, seaDist, rand, minLen = 3) {
   const srcKey = hexKey(sq, sr);
   let path = aStarRiverToTarget(hexes, sq, sr, tq, tr, maxLen, srcKey);
   if (path.length < 3) return [];
-  const maxMeander = Math.min(2, Math.floor(path.length * 0.08));
+  path = extendRiverToMinimumLength(path, hexes, seaDist, rand, minLen, maxLen);
+  const maxMeander = Math.min(10, Math.max(2, maxLen - path.length));
   path = injectRiverMeanders(path, hexes, seaDist, rand, maxMeander);
   path = repairRiverPathAdjacency(path, hexes, srcKey);
+  if (path.length > maxLen) path = path.slice(0, maxLen);
   return path;
 }
-function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, riverPaths, riverKinds, usedSources, minSourceSep, areaScale = 1, reliefSearchMin = 3, reliefSearchMax = 8) {
+function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, riverPaths, riverKinds, usedSources, minSourceSep, width, height, oceanConnected, areaScale = 1, reliefSearchMin = 3, reliefSearchMax = 8) {
   const n = tributaryCountForLength(mainPath.length, areaScale);
   if (n <= 0) return;
   const mainKeys = new Set(mainPath.map((p) => hexKey(p.q, p.r)));
@@ -4644,17 +6495,20 @@ function addTributariesForMainRiver(hexes, mainPath, seaDist, rand, maxLen, rive
     const tribLen = Math.min(maxLen, Math.max(5, Math.floor(mainPath.length * 0.4)));
     let path = traceTributary(hexes, src[0], src[1], junction.q, junction.r, tribLen, seaDist, rand);
     if (path.length < 3) continue;
-    path = trimRiverPathRings(hexes, path);
-    if (path.length >= 2) {
-      const end = path[path.length - 1];
-      const approach = path[path.length - 2];
-      const down = networkDownstreamNeighbor(hexes, end, approach);
-      path = appendJunctionDownstreamHex(path, down);
-    }
-    riverPaths.push(path);
+    const finalized = finalizeTributaryPath(
+      hexes,
+      path,
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!finalized) continue;
+    riverPaths.push(finalized);
     riverKinds.push("tributary");
     usedSources.add(srcKey);
-    markRiverPath(hexes, path);
+    markRiverPath(hexes, finalized);
   }
 }
 function landHexesByCoverageCell(massSet, cellSize) {
@@ -4668,12 +6522,13 @@ function landHexesByCoverageCell(massSet, cellSize) {
   }
   return cells;
 }
-var MAIN_RIVER_GRID_STRIDE = 3;
+var SHORT_RIVER_MAX_DIST_FROM_MEDIUM = 5;
+var MAIN_RIVER_GRID_STRIDE = 1;
 function cellHasRiverHex(cellLand, hexes) {
-  var _a9;
+  var _a11;
   for (const [q, r] of cellLand) {
     const h = hexes[hexKey(q, r)];
-    if ((_a9 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a9.obecna) return true;
+    if ((_a11 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a11.obecna) return true;
   }
   return false;
 }
@@ -4686,15 +6541,27 @@ function isSparseMainCoverageCell(land, cellSize, stride = MAIN_RIVER_GRID_STRID
   return cq % stride === 0 && cr % stride === 0;
 }
 function collectRiverHexKeys(hexes) {
-  var _a9;
+  var _a11;
   const keys = /* @__PURE__ */ new Set();
   for (const [k, h] of Object.entries(hexes)) {
-    if ((_a9 = h.rzeka) == null ? void 0 : _a9.obecna) keys.add(k);
+    if ((_a11 = h.rzeka) == null ? void 0 : _a11.obecna) keys.add(k);
   }
   return keys;
 }
+function collectPathHexKeysForKinds(paths, kinds, allowed) {
+  const allow = allowed instanceof Set ? allowed : new Set(allowed);
+  const keys = /* @__PURE__ */ new Set();
+  for (let i = 0; i < paths.length; i++) {
+    if (!allow.has(kinds[i] ?? "main")) continue;
+    for (const p of paths[i] ?? []) keys.add(hexKey(p.q, p.r));
+  }
+  return keys;
+}
+function isNonMainRiverKind(kind) {
+  return kind === "medium" || kind === "short" || kind === "tributary";
+}
 function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oceanConnected) {
-  var _a9, _b3;
+  var _a11, _b5;
   const ocean = oceanConnected ?? oceanConnectedWaterKeys(hexes, width, height);
   const riverHexes = collectRiverHexKeys(hexes);
   const reached = /* @__PURE__ */ new Set();
@@ -4714,7 +6581,7 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
     const k = queue.shift();
     const { q, r } = parseHexKey(k);
     const h = hexes[k];
-    if (!((_b3 = (_a9 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a9.krawedzie) == null ? void 0 : _b3.length)) continue;
+    if (!((_b5 = (_a11 = h == null ? void 0 : h.rzeka) == null ? void 0 : _a11.krawedzie) == null ? void 0 : _b5.length)) continue;
     for (const edgeIdx of h.rzeka.krawedzie) {
       const dir = HEX_DIRECTIONS[edgeIdx];
       if (!dir) continue;
@@ -4728,7 +6595,7 @@ function buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, oce
   return reached;
 }
 function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
-  var _a9;
+  var _a11;
   let curPaths = paths.slice();
   let curKinds = kinds.slice();
   for (let iter = 0; iter < 10; iter++) {
@@ -4764,11 +6631,11 @@ function pruneOrphanRiverPaths(hexes, paths, kinds, width, height) {
         dropped = true;
         continue;
       }
-      if (curKinds[i] === "tributary" && !pathEndsAtSea(hexes, p, width, height, ocean)) {
+      if (isNonMainRiverKind(curKinds[i]) && !pathEndsAtSea(hexes, p, width, height, ocean)) {
         const end = p[p.length - 1];
         const eh = hexes[hexKey(end.q, end.r)];
         let closed = false;
-        for (const ei of ((_a9 = eh == null ? void 0 : eh.rzeka) == null ? void 0 : _a9.krawedzie) ?? []) {
+        for (const ei of ((_a11 = eh == null ? void 0 : eh.rzeka) == null ? void 0 : _a11.krawedzie) ?? []) {
           const dir = HEX_DIRECTIONS[ei];
           if (!dir) continue;
           const owners = hexToPaths.get(hexKey(end.q + dir[0], end.r + dir[1]));
@@ -4812,6 +6679,149 @@ function pruneRiversNotReachingRealSea(hexes, paths, kinds, width, height) {
   for (const p of keptPaths) markRiverPath(hexes, p);
   return pruneOrphanRiverPaths(hexes, keptPaths, keptKinds, width, height);
 }
+function ensureRiverOutlets(hexes, paths, kinds, width, height) {
+  let result = pruneOrphanRiverPaths(hexes, paths, kinds, width, height);
+  result = pruneRiversNotReachingRealSea(hexes, result.paths, result.kinds, width, height);
+  const ocean = oceanConnectedWaterKeys(hexes, width, height);
+  result = pruneInvalidShortRiverPaths(hexes, result.paths, result.kinds, width, height, ocean);
+  scrubStrayRiverHexMarks(hexes, result.paths);
+  syncRiverEdgeBonusHexes(hexes);
+  return result;
+}
+function scrubStrayRiverHexMarks(hexes, paths) {
+  clearRiverMarks(hexes);
+  for (const path of paths) {
+    if (path == null ? void 0 : path.length) markRiverPath(hexes, path);
+  }
+  syncRiverEdgeBonusHexes(hexes);
+}
+function pruneInvalidShortRiverPaths(hexes, paths, kinds, width, height, oceanConnected) {
+  const mediumKeys = collectPathHexKeysForKinds(paths, kinds, ["medium"]);
+  if (mediumKeys.size === 0) return { paths, kinds };
+  const drop = /* @__PURE__ */ new Set();
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== "short") continue;
+    const p = paths[i] ?? [];
+    const p0 = p[0];
+    if (!p0) {
+      drop.add(i);
+      continue;
+    }
+    if (nearestRiverHexDistance(p0.q, p0.r, mediumKeys) > SHORT_RIVER_MAX_DIST_FROM_MEDIUM) {
+      drop.add(i);
+      continue;
+    }
+    if (pathEndsAtSea(hexes, p, width, height, oceanConnected)) {
+      drop.add(i);
+      continue;
+    }
+    const end = p[p.length - 1];
+    let onMedium = mediumKeys.has(hexKey(end.q, end.r));
+    if (!onMedium) {
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        if (mediumKeys.has(hexKey(end.q + dq, end.r + dr))) {
+          onMedium = true;
+          break;
+        }
+      }
+    }
+    if (!onMedium) drop.add(i);
+  }
+  if (drop.size === 0) return { paths, kinds };
+  const keptPaths = paths.filter((_, i) => !drop.has(i));
+  const keptKinds = kinds.filter((_, i) => !drop.has(i));
+  clearRiverMarks(hexes);
+  for (const p of keptPaths) markRiverPath(hexes, p);
+  return { paths: keptPaths, kinds: keptKinds };
+}
+function pruneInvalidMediumRiverPaths(hexes, paths, kinds, width, height, oceanConnected) {
+  var _a11, _b5;
+  const ocean = oceanConnected ?? oceanConnectedWaterKeys(hexes, width, height);
+  const mainKeys = collectPathHexKeysForKinds(paths, kinds, ["main"]);
+  const networkKeys = collectRiverPathHexKeys(paths);
+  let joinRepaired = false;
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== "medium") continue;
+    let trimmed = trimMediumBranchHexWrap(paths[i] ?? [], mainKeys);
+    trimmed = trimMediumJoinHexWrap(trimmed, mainKeys, networkKeys);
+    if (trimmed.length !== (((_a11 = paths[i]) == null ? void 0 : _a11.length) ?? 0)) {
+      paths[i] = trimmed;
+      joinRepaired = true;
+    }
+  }
+  if (joinRepaired) {
+    clearRiverMarks(hexes);
+    for (const p of paths) markRiverPath(hexes, p);
+  }
+  const reached = buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, ocean);
+  const hexToPaths = /* @__PURE__ */ new Map();
+  for (let pi = 0; pi < paths.length; pi++) {
+    for (const p of paths[pi] ?? []) {
+      const k = hexKey(p.q, p.r);
+      const s = hexToPaths.get(k) ?? /* @__PURE__ */ new Set();
+      s.add(pi);
+      hexToPaths.set(k, s);
+    }
+  }
+  const drop = /* @__PURE__ */ new Set();
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== "medium") continue;
+    const p = paths[i] ?? [];
+    if (p.length < 2) {
+      drop.add(i);
+      continue;
+    }
+    if (p.length < 3 && !mediumPathStartsOnMain(p, mainKeys)) {
+      drop.add(i);
+      continue;
+    }
+    if (mediumTributaryNetHexCount(p, mainKeys) < mediumTributaryMinNetLen(width, height)) {
+      drop.add(i);
+      continue;
+    }
+    if (riverPathViolatesTurnWindow(p)) {
+      drop.add(i);
+      continue;
+    }
+    if (countMediumInlandLandHexes(hexes, p) < 3) {
+      drop.add(i);
+      continue;
+    }
+    const endsSea = pathEndsAtSea(hexes, p, width, height, ocean);
+    const onNetwork = tributaryTouchesOceanReachable(p, reached);
+    const touchesMain = pathTouchesMainNetwork(p, mainKeys);
+    if (!onNetwork && !endsSea) {
+      drop.add(i);
+      continue;
+    }
+    if (!touchesMain && !onNetwork && endsSea) {
+      drop.add(i);
+      continue;
+    }
+    const startsOnMain = mediumPathStartsOnMain(p, mainKeys);
+    if (!endsSea && !startsOnMain) {
+      const end = p[p.length - 1];
+      const eh = hexes[hexKey(end.q, end.r)];
+      let closed = false;
+      for (const edgeIdx of ((_b5 = eh == null ? void 0 : eh.rzeka) == null ? void 0 : _b5.krawedzie) ?? []) {
+        const dir = HEX_DIRECTIONS[edgeIdx];
+        if (!dir) continue;
+        const owners = hexToPaths.get(hexKey(end.q + dir[0], end.r + dir[1]));
+        if (owners && [...owners].some((x) => x !== i)) {
+          closed = true;
+          break;
+        }
+      }
+      if (!closed) drop.add(i);
+    }
+  }
+  if (drop.size === 0) return { paths, kinds };
+  const keptPaths = paths.filter((_, i) => !drop.has(i));
+  const keptKinds = kinds.filter((_, i) => !drop.has(i));
+  clearRiverMarks(hexes);
+  for (const p of keptPaths) markRiverPath(hexes, p);
+  return { paths: keptPaths, kinds: keptKinds };
+}
 function collectRiverPathHexKeys(paths) {
   const keys = /* @__PURE__ */ new Set();
   for (const path of paths) {
@@ -4819,10 +6829,10 @@ function collectRiverPathHexKeys(paths) {
   }
   return keys;
 }
-function rankNetworkJunctionCandidates(sq, sr, junctionKeys, seaDist, maxLen, rand) {
+function rankNetworkJunctionCandidates(sq, sr, junctionKeys, seaDist, maxLen, rand, junctionCap = 16) {
   const out = [];
   const maxD = maxLen + 6;
-  for (let dist = 3; dist <= maxD && out.length < 16; dist++) {
+  for (let dist = 3; dist <= maxD && out.length < junctionCap; dist++) {
     for (let dq = -dist; dq <= dist; dq++) {
       for (let dr = -dist; dr <= dist; dr++) {
         if (hexAxialDistance(0, 0, dq, dr) !== dist) continue;
@@ -4837,19 +6847,652 @@ function rankNetworkJunctionCandidates(sq, sr, junctionKeys, seaDist, maxLen, ra
     }
   }
   out.sort((a, b) => a.score - b.score);
-  return out.slice(0, 8);
+  return out.slice(0, junctionCap);
+}
+var RIVER_SPATIAL_CELL = 6;
+var RiverHexSpatialIndex = class _RiverHexSpatialIndex {
+  constructor() {
+    this.buckets = /* @__PURE__ */ new Map();
+    this.count = 0;
+  }
+  static fromKeys(keys) {
+    const idx = new _RiverHexSpatialIndex();
+    for (const k of keys) idx.add(k);
+    return idx;
+  }
+  get size() {
+    return this.count;
+  }
+  add(key) {
+    const { q, r } = parseHexKey(key);
+    const cell = _RiverHexSpatialIndex.cellId(q, r);
+    const bucket = this.buckets.get(cell);
+    if (bucket) {
+      if (bucket.includes(key)) return;
+      bucket.push(key);
+    } else {
+      this.buckets.set(cell, [key]);
+    }
+    this.count++;
+  }
+  addPath(path) {
+    for (const p of path) this.add(hexKey(p.q, p.r));
+  }
+  static cellId(q, r) {
+    return `${Math.floor(q / RIVER_SPATIAL_CELL)},${Math.floor(r / RIVER_SPATIAL_CELL)}`;
+  }
+  nearestDistance(sq, sr, earlyExitBelow = 0) {
+    if (this.count === 0) return Infinity;
+    const cq0 = Math.floor(sq / RIVER_SPATIAL_CELL);
+    const cr0 = Math.floor(sr / RIVER_SPATIAL_CELL);
+    let ring = 0;
+    let best = Infinity;
+    const maxRing = 24;
+    while (ring <= maxRing) {
+      for (let dq = -ring; dq <= ring; dq++) {
+        for (let dr = -ring; dr <= ring; dr++) {
+          if (ring > 0 && Math.abs(dq) !== ring && Math.abs(dr) !== ring) continue;
+          const bucket = this.buckets.get(`${cq0 + dq},${cr0 + dr}`);
+          if (!bucket) continue;
+          for (const k of bucket) {
+            const { q, r } = parseHexKey(k);
+            const d = hexAxialDistance(sq, sr, q, r);
+            if (d < best) {
+              best = d;
+              if (earlyExitBelow > 0 && d < earlyExitBelow) return d;
+            }
+          }
+        }
+      }
+      if (best !== Infinity && best <= ring * RIVER_SPATIAL_CELL) break;
+      ring++;
+    }
+    return best;
+  }
+};
+function nearestRiverHexDistance(sq, sr, riverKeys, spatialIndex) {
+  if (spatialIndex && spatialIndex.size > 0) {
+    return spatialIndex.nearestDistance(sq, sr);
+  }
+  let best = Infinity;
+  for (const k of riverKeys) {
+    const { q, r } = parseHexKey(k);
+    best = Math.min(best, hexAxialDistance(sq, sr, q, r));
+  }
+  return best;
+}
+function isPathTooCloseToRiverHexes(path, riverKeys, minSep, spatialIndex) {
+  if (riverKeys.size === 0 || minSep <= 0) return false;
+  if (spatialIndex && spatialIndex.size > 0) {
+    for (const p of path) {
+      if (spatialIndex.nearestDistance(p.q, p.r, minSep) < minSep) return true;
+    }
+    return false;
+  }
+  for (const p of path) {
+    for (const k of riverKeys) {
+      const { q, r } = parseHexKey(k);
+      if (hexAxialDistance(p.q, p.r, q, r) < minSep) return true;
+    }
+  }
+  return false;
+}
+function pathHasValidRiverOutlet(hexes, path, paths, kinds, width, height) {
+  if (!(path == null ? void 0 : path.length)) return false;
+  const ocean = oceanConnectedWaterKeys(hexes, width, height);
+  if (pathEndsAtSea(hexes, path, width, height, ocean)) return true;
+  const reached = buildOceanReachableRiverHexKeys(hexes, paths, kinds, width, height, ocean);
+  return tributaryTouchesOceanReachable(path, reached);
+}
+function buildGridRouteCandidates(ctx, sq, sr, massSet) {
+  const {
+    hexes,
+    width,
+    height,
+    riverPaths,
+    seaDist,
+    openOceanDist,
+    oceanConnected,
+    rand,
+    minLen,
+    maxLen,
+    acceptLen,
+    traceMinLen,
+    traceOptsBase,
+    seaBufferOpts
+  } = ctx;
+  const srcKey = hexKey(sq, sr);
+  const startSeaDist = seaDist.get(srcKey) ?? 999;
+  const traceMax = riverTraceBudgetForSeaDist(startSeaDist, minLen, maxLen, ctx.largeMapPerf);
+  const out = [];
+  const mode = ctx.placeMode ?? "auto";
+  const junctionCap = ctx.largeMapPerf ? 6 : 16;
+  if (mode !== "short") {
+    const fastTrace = !!(ctx.pangeaSingleMass || ctx.largeMapPerf);
+    const seaPath = traceRiverForGridFill(
+      hexes,
+      sq,
+      sr,
+      traceMax,
+      minLen,
+      acceptLen,
+      {
+        seaDist,
+        openOceanDist,
+        oceanConnected,
+        mapWidth: width,
+        mapHeight: height,
+        rand,
+        ...traceOptsBase,
+        allowReliefTraversal: ctx.allowReliefTraversal,
+        relaxSeaBuffer: ctx.relaxSeaBuffer
+      },
+      ctx.relaxSeaBuffer,
+      fastTrace
+    );
+    if (seaPath.length >= acceptLen && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected) && (ctx.relaxSeaBuffer || riverPathRespectsSeaBuffer(
+      hexes,
+      seaPath,
+      seaDist,
+      seaBufferOpts.minInland,
+      seaBufferOpts.mouthTail
+    ))) {
+      out.push({ path: seaPath, kind: "main", len: seaPath.length });
+    }
+  }
+  if (mode === "main-only") return out;
+  const riverKeys = new Set(
+    [...collectRiverPathHexKeys(riverPaths)].filter((k) => !massSet || massSet.has(k))
+  );
+  const tribTargetKinds = ctx.targetRiverKinds ?? (mode === "short" ? ["medium"] : void 0);
+  let tribKeysForTrace;
+  if (mode === "medium") {
+    tribKeysForTrace = buildMediumRouteTargetKeys(
+      hexes,
+      riverPaths,
+      ctx.riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+  } else {
+    const tribRiverKeys = tribTargetKinds ? collectPathHexKeysForKinds(riverPaths, ctx.riverKinds, tribTargetKinds) : riverKeys;
+    tribKeysForTrace = tribRiverKeys.size > 0 ? tribRiverKeys : riverKeys;
+  }
+  if (tribKeysForTrace.size > 0) {
+    let bestTrib = [];
+    let bestTribLen = Infinity;
+    const traceFn = mode === "medium" ? traceMediumRiver : traceTributary;
+    for (const j of rankNetworkJunctionCandidates(sq, sr, tribKeysForTrace, seaDist, traceMax, rand, junctionCap)) {
+      const p = traceFn(hexes, sq, sr, j.q, j.r, traceMax, seaDist, rand, minLen);
+      if (p.length >= acceptLen && p.length < bestTribLen) {
+        bestTrib = p;
+        bestTribLen = p.length;
+      }
+    }
+    if (bestTrib.length >= acceptLen) {
+      out.push({ path: bestTrib, kind: "tributary", len: bestTrib.length });
+    }
+  }
+  return out;
+}
+function pickPhase2Route(candidates) {
+  const tribs = candidates.filter((c) => c.kind === "tributary");
+  if (tribs.length > 0) {
+    return tribs.reduce((a, b) => a.len <= b.len ? a : b);
+  }
+  const seas = candidates.filter((c) => c.kind === "main");
+  if (seas.length === 0) return null;
+  return seas.reduce((a, b) => a.len <= b.len ? a : b);
+}
+function pickGeographicLongestRoute(candidates, startSeaDist, nearestRiverDist) {
+  if (candidates.length === 0) return null;
+  const tribs = candidates.filter((c) => c.kind === "tributary");
+  const seas = candidates.filter((c) => c.kind === "main");
+  let pool;
+  if (tribs.length === 0) pool = seas;
+  else if (seas.length === 0) pool = tribs;
+  else if (nearestRiverDist < startSeaDist) pool = tribs;
+  else if (nearestRiverDist > startSeaDist) pool = seas;
+  else pool = candidates;
+  return pool.reduce((a, b) => a.len >= b.len ? a : b);
+}
+function collectMassOceanCoastalLandKeys(massSet, hexes, oceanConnected) {
+  const coastal = /* @__PURE__ */ new Set();
+  for (const k of massSet) {
+    const { q, r } = parseHexKey(k);
+    if (!isCoastalLandHex(hexes, q, r)) continue;
+    let touchesOcean = false;
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (oceanConnected.has(nk)) {
+        touchesOcean = true;
+        break;
+      }
+    }
+    if (touchesOcean) coastal.add(k);
+  }
+  return coastal;
+}
+function buildCoastalAdjacency(coastalKeys) {
+  const adj = /* @__PURE__ */ new Map();
+  for (const k of coastalKeys) {
+    const { q, r } = parseHexKey(k);
+    const nbs = [];
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (coastalKeys.has(nk)) nbs.push(nk);
+    }
+    adj.set(k, nbs);
+  }
+  return adj;
+}
+function largestCoastalComponent(coastalKeys) {
+  if (coastalKeys.size === 0) return coastalKeys;
+  const adj = buildCoastalAdjacency(coastalKeys);
+  const visited = /* @__PURE__ */ new Set();
+  let best = [];
+  for (const start of coastalKeys) {
+    if (visited.has(start)) continue;
+    const comp = [];
+    const queue = [start];
+    visited.add(start);
+    let qi = 0;
+    while (qi < queue.length) {
+      const k = queue[qi++];
+      comp.push(k);
+      for (const nb of adj.get(k) ?? []) {
+        if (visited.has(nb)) continue;
+        visited.add(nb);
+        queue.push(nb);
+      }
+    }
+    if (comp.length > best.length) best = comp;
+  }
+  return new Set(best);
+}
+function coveredCoastalKeysFromMainRivers(coastalKeys, paths, kinds, massSet, seaDist) {
+  const covered = /* @__PURE__ */ new Set();
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== "main") continue;
+    const path = paths[i] ?? [];
+    const tailStart = Math.max(0, path.length - RIVER_MOUTH_TAIL_LEN);
+    for (let pi = tailStart; pi < path.length; pi++) {
+      const p = path[pi];
+      const pk = hexKey(p.q, p.r);
+      const pd = seaDist.get(pk) ?? 999;
+      if (!massSet.has(pk) && pd > 2) continue;
+      if (pd > 3) continue;
+      for (const ck of coastalKeys) {
+        const { q, r } = parseHexKey(ck);
+        if (hexDistanceAxial(p.q, p.r, q, r) <= 1) covered.add(ck);
+      }
+    }
+  }
+  return covered;
+}
+function coastalMouthDistances(coastalKeys, coveredCoastal) {
+  const dist = /* @__PURE__ */ new Map();
+  const queue = [];
+  for (const k of coveredCoastal) {
+    if (!coastalKeys.has(k)) continue;
+    dist.set(k, 0);
+    queue.push(k);
+  }
+  let qi = 0;
+  while (qi < queue.length) {
+    const k = queue[qi++];
+    const d = dist.get(k);
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (!coastalKeys.has(nk) || dist.has(nk)) continue;
+      dist.set(nk, d + 1);
+      queue.push(nk);
+    }
+  }
+  return dist;
+}
+function worstCoastalMouthGap(coastalKeys, mouthDist) {
+  let worst = 0;
+  for (const k of coastalKeys) {
+    const d = mouthDist.get(k);
+    if (d == null) {
+      if (coastalKeys.size > worst) worst = coastalKeys.size;
+      continue;
+    }
+    if (d > worst) worst = d;
+  }
+  return worst;
+}
+function farthestUncoveredCoastalHexes(coastalKeys, mouthDist, limit = 8) {
+  const ranked = [...coastalKeys].map((k) => ({ k, d: mouthDist.get(k) ?? coastalKeys.size })).sort((a, b) => b.d - a.d || parseHexKey(a.k).q - parseHexKey(b.k).q);
+  return ranked.slice(0, limit).map((x) => x.k);
+}
+function worstMainRiverCoastMouthGapOnMass(massSet, hexes, paths, kinds, _width, _height, oceanConnected, maxAllowedGap, seaDist) {
+  const coastal = largestCoastalComponent(
+    collectMassOceanCoastalLandKeys(massSet, hexes, oceanConnected)
+  );
+  if (coastal.size < 2) return { ok: true, worstGap: 0 };
+  const dist = seaDist ?? buildSeaDistanceField(hexes);
+  const coveredCoastal = coveredCoastalKeysFromMainRivers(coastal, paths, kinds, massSet, dist);
+  const mouthDist = coastalMouthDistances(coastal, coveredCoastal);
+  const worst = worstCoastalMouthGap(coastal, mouthDist);
+  return { ok: worst <= maxAllowedGap, worstGap: worst };
+}
+function topUpMainRiverCoastMouthGapsOnce(massSet, seaDist, gridCtx, maxGap, softAcceptLen) {
+  const gapCtx = { ...gridCtx, allowReliefTraversal: true };
+  const coastal = largestCoastalComponent(
+    collectMassOceanCoastalLandKeys(massSet, gapCtx.hexes, gapCtx.oceanConnected)
+  );
+  if (coastal.size < 2) return 0;
+  let mainKeys = gapCtx.mainKeysCache ?? collectPathHexKeysForKinds(gapCtx.riverPaths, gapCtx.riverKinds, ["main"]);
+  const gapPathSep = 2;
+  const gapPushMain = (path, sq, sr) => {
+    if (isPathTooCloseToRiverHexes(path, mainKeys, gapPathSep)) return false;
+    const finalized = finalizeMainRiverPath(
+      gapCtx.hexes,
+      path,
+      gapCtx.width,
+      gapCtx.height,
+      gapCtx.oceanConnected
+    );
+    if (!finalized) return false;
+    gapCtx.riverPaths.push(finalized);
+    gapCtx.riverKinds.push("main");
+    gapCtx.usedSources.add(hexKey(sq, sr));
+    markRiverPath(gapCtx.hexes, finalized);
+    addPathKeysToSet(finalized, mainKeys);
+    if (gapCtx.mainKeysCache && gapCtx.mainKeysCache !== mainKeys) {
+      addPathKeysToSet(finalized, gapCtx.mainKeysCache);
+    }
+    return true;
+  };
+  gapCtx.pushMain = gapPushMain;
+  const tryAtKey = (k) => {
+    const { q, r } = parseHexKey(k);
+    const tryCoords = [[q, r]];
+    for (const [dq, dr] of HEX_DIRECTIONS) tryCoords.push([q + dq, r + dr]);
+    for (const [nq, nr] of tryCoords) {
+      const d = seaDist.get(hexKey(nq, nr)) ?? 999;
+      if (d < 1 || d > 2) continue;
+      if (tryPlaceMainRiverAtMouth(gapCtx, nq, nr, mainKeys, softAcceptLen, gapPathSep)) {
+        mainKeys = gapCtx.mainKeysCache ?? collectPathHexKeysForKinds(gapCtx.riverPaths, gapCtx.riverKinds, ["main"]);
+        return true;
+      }
+    }
+    return false;
+  };
+  let placed = 0;
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const coveredCoastalNow = coveredCoastalKeysFromMainRivers(
+      coastal,
+      gapCtx.riverPaths,
+      gapCtx.riverKinds,
+      massSet,
+      seaDist
+    );
+    const mouthDistNow = coastalMouthDistances(coastal, coveredCoastalNow);
+    if (worstCoastalMouthGap(coastal, mouthDistNow) <= maxGap) break;
+    const picks = farthestUncoveredCoastalHexes(coastal, mouthDistNow, 16);
+    let okPlace = false;
+    for (const pick4 of picks) {
+      if (tryAtKey(pick4)) {
+        okPlace = true;
+        break;
+      }
+    }
+    if (!okPlace) {
+      const allFar = [...coastal].map((k) => ({ k, d: mouthDistNow.get(k) ?? coastal.size })).filter((x) => x.d > maxGap).sort((a, b) => b.d - a.d || parseHexKey(a.k).q - parseHexKey(b.k).q);
+      for (const { k } of allFar) {
+        if (tryAtKey(k)) {
+          okPlace = true;
+          break;
+        }
+      }
+    }
+    if (!okPlace) break;
+    placed++;
+  }
+  return placed;
+}
+function topUpMainRiverCoastMouthGaps(massSet, seaDist, gridCtx, maxGap, softAcceptLen) {
+  let placed = 0;
+  const gapAcceptLen = Math.max(2, softAcceptLen ?? 3);
+  for (let round = 0; round < 48; round++) {
+    const roundPlaced = topUpMainRiverCoastMouthGapsOnce(
+      massSet,
+      seaDist,
+      gridCtx,
+      maxGap,
+      gapAcceptLen
+    );
+    placed += roundPlaced;
+    if (roundPlaced === 0) break;
+    const check = worstMainRiverCoastMouthGapOnMass(
+      massSet,
+      gridCtx.hexes,
+      gridCtx.riverPaths,
+      gridCtx.riverKinds,
+      gridCtx.width,
+      gridCtx.height,
+      gridCtx.oceanConnected,
+      maxGap,
+      seaDist
+    );
+    if (check.ok) break;
+  }
+  return placed;
+}
+function refillMainRiverCoastMouthGapsOnMap(hexes, width, height, riverPaths, riverKinds, rand, riverParams, minLen) {
+  const { seaDist, oceanConnected, openOceanDist } = buildRiverFieldCache(hexes, width, height);
+  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 5).sort((a, b) => b.length - a.length);
+  const riverPerf = buildRiverPerfCtx(masses, riverParams.areaScale);
+  const catalogMinLen = minLen ?? riverParams.minLen;
+  const maxLen = riverParams.maxLen;
+  const usedSources = /* @__PURE__ */ new Set();
+  const mainKeysCache = collectPathHexKeysForKinds(riverPaths, riverKinds, ["main"]);
+  const pushMain = (path, sq, sr) => {
+    if (isPathTooCloseToRiverHexes(path, mainKeysCache, MAIN_RIVER_MIN_PATH_SEP)) return false;
+    const finalized = finalizeMainRiverPath(hexes, path, width, height, oceanConnected);
+    if (!finalized) return false;
+    riverPaths.push(finalized);
+    riverKinds.push("main");
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, finalized);
+    addPathKeysToSet(finalized, mainKeysCache);
+    return true;
+  };
+  const gridCtx = {
+    hexes,
+    width,
+    height,
+    riverPaths,
+    riverKinds,
+    usedSources,
+    seaDist,
+    openOceanDist,
+    oceanConnected,
+    rand,
+    minLen: catalogMinLen,
+    maxLen,
+    acceptLen: riverParams.gridTraceMinLen,
+    sourceSep: Math.max(2, Math.floor(riverParams.mainCell * 0.25)),
+    traceMinLen: riverParams.gridTraceMinLen,
+    traceOptsBase: {
+      hardMeanderLen: riverParams.hardMeanderLen,
+      mouthTailLen: riverParams.mouthTailLen
+    },
+    seaBufferOpts: {
+      minInland: riverParams.minInlandFromSea,
+      mouthTail: riverParams.mouthTailLen
+    },
+    pushMain,
+    pushTributary: () => false,
+    pangeaSingleMass: riverPerf.pangeaSingleMass,
+    largeMapPerf: riverPerf.largeMapPerf,
+    mainKeysCache,
+    allowReliefTraversal: true,
+    placeMode: "main-only"
+  };
+  const maxGap = mainRiverCoastMouthMaxGapForDims(width, height);
+  let placed = 0;
+  for (const mass of masses) {
+    const massSet = new Set(mass);
+    setMassRiverTargets(hexes, massSet, gridCtx);
+    placed += topUpMainRiverCoastMouthGaps(
+      massSet,
+      seaDist,
+      gridCtx,
+      maxGap,
+      2
+    );
+  }
+  return placed;
+}
+function setMassRiverTargets(hexes, massSet, ctx) {
+  ctx.massCentroid = computeLandMassCentroid(hexes, massSet);
+  ctx.massCenterSquare = continentCenterSquare(hexes, massSet);
+}
+function collectCoastMouthCandidates(cells, hexes, seaDist, maxSeaDist = 2) {
+  const out = [];
+  for (const [q, r] of cells) {
+    const h = hexes[hexKey(q, r)];
+    if (!h || !isRiverLandTerrain(h.terenBazowy)) continue;
+    const d = seaDist.get(hexKey(q, r)) ?? 999;
+    if (d < 1 || d > maxSeaDist) continue;
+    out.push({ q, r, d });
+  }
+  return out;
+}
+function tryPlaceMainRiverAtMouth(ctx, mq, mr, mainKeys, softAcceptLen, pathSep = MAIN_RIVER_MIN_PATH_SEP) {
+  const targetLen = ctx.minLen;
+  const acceptThreshold = softAcceptLen != null && softAcceptLen < targetLen ? softAcceptLen : targetLen;
+  const mouthKey = hexKey(mq, mr);
+  const startD = ctx.seaDist.get(mouthKey);
+  if (startD == null || startD < 1 || startD > 2) return false;
+  const traceMax = riverTraceBudgetForSeaDist(startD, targetLen, ctx.maxLen, ctx.largeMapPerf);
+  const path = traceRiverFromCoast(
+    ctx.hexes,
+    mq,
+    mr,
+    Math.max(traceMax, ctx.maxLen),
+    {
+      seaDist: ctx.seaDist,
+      openOceanDist: ctx.openOceanDist,
+      oceanConnected: ctx.oceanConnected,
+      mapWidth: ctx.width,
+      mapHeight: ctx.height,
+      rand: ctx.rand,
+      minLen: targetLen,
+      blockRiverKeys: mainKeys,
+      minPathSep: pathSep,
+      landCentroid: ctx.massCentroid ?? null,
+      landCenterSquare: ctx.massCenterSquare ?? null,
+      ...ctx.traceOptsBase,
+      allowReliefTraversal: ctx.allowReliefTraversal
+    }
+  );
+  if (path.length < acceptThreshold) return false;
+  if (isPathTooCloseToRiverHexes(path, mainKeys, pathSep)) return false;
+  const sq = path[0].q;
+  const sr = path[0].r;
+  if (ctx.pushMain(path, sq, sr)) {
+    addPathKeysToSet(path, mainKeys);
+    if (ctx.mainKeysCache && ctx.mainKeysCache !== mainKeys) {
+      addPathKeysToSet(path, ctx.mainKeysCache);
+    }
+    return true;
+  }
+  return false;
+}
+function tryPlaceMainRiverFromCoast(ctx, land, massSet, mainKeysCache, softAcceptLen) {
+  const mainKeys = mainKeysCache ?? ctx.mainKeysCache ?? collectPathHexKeysForKinds(ctx.riverPaths, ctx.riverKinds, ["main"]);
+  const mouths = collectCoastMouthCandidates(land, ctx.hexes, ctx.seaDist, 2);
+  if (!ctx.pangeaSingleMass) {
+    for (const [q, r] of expandRiverSourceCandidates(land, massSet, 2)) {
+      const h = ctx.hexes[hexKey(q, r)];
+      if (!h || !isRiverLandTerrain(h.terenBazowy)) continue;
+      const d = ctx.seaDist.get(hexKey(q, r)) ?? 999;
+      if (d >= 1 && d <= 2) mouths.push({ q, r, d });
+    }
+  }
+  mouths.sort((a, b) => a.d - b.d || ctx.rand() * 2 - 1);
+  const seen = /* @__PURE__ */ new Set();
+  const mouthLimit = ctx.pangeaSingleMass ? ctx.largeMapPerf ? 24 : 12 : ctx.largeMapPerf ? 8 : mouths.length;
+  for (const mouth of mouths.slice(0, mouthLimit)) {
+    const mk = hexKey(mouth.q, mouth.r);
+    if (seen.has(mk)) continue;
+    seen.add(mk);
+    if (tryPlaceMainRiverAtMouth(ctx, mouth.q, mouth.r, mainKeys, softAcceptLen)) {
+      return true;
+    }
+  }
+  return false;
+}
+function tryPlaceGridSource(ctx, sq, sr, massSet) {
+  const srcKey = hexKey(sq, sr);
+  if (ctx.usedSources.has(srcKey)) return false;
+  if (isTooCloseToRiverSource(sq, sr, ctx.usedSources, ctx.sourceSep)) return false;
+  const h = ctx.hexes[srcKey];
+  if (!h || !isRiverLandTerrain(h.terenBazowy)) return false;
+  const mode = ctx.placeMode ?? "auto";
+  if (mode === "short") {
+    const mediumKeys = collectPathHexKeysForKinds(ctx.riverPaths, ctx.riverKinds, ["medium"]);
+    if (mediumKeys.size === 0) return false;
+    const dist = nearestRiverHexDistance(sq, sr, mediumKeys);
+    if (dist > SHORT_RIVER_MAX_DIST_FROM_MEDIUM) return false;
+  }
+  const startSeaDist = ctx.seaDist.get(srcKey) ?? 999;
+  const riverKeys = new Set(
+    [...collectRiverPathHexKeys(ctx.riverPaths)].filter((k) => !massSet || massSet.has(k))
+  );
+  const nearestRiverDist = nearestRiverHexDistance(sq, sr, riverKeys);
+  const candidates = buildGridRouteCandidates(ctx, sq, sr, massSet);
+  let chosen = null;
+  if (mode === "main-only") {
+    chosen = candidates.filter((c) => c.kind === "main").reduce(
+      (a, b) => a && a.len >= b.len ? a : b,
+      null
+    );
+  } else if (mode === "medium") {
+    chosen = pickPhase2Route(candidates);
+  } else if (mode === "short") {
+    chosen = candidates.filter((c) => c.kind === "tributary").reduce(
+      (a, b) => a && a.len >= b.len ? a : b,
+      null
+    );
+  } else {
+    chosen = pickGeographicLongestRoute(candidates, startSeaDist, nearestRiverDist);
+  }
+  if (!chosen) return false;
+  if (chosen.kind === "main") return ctx.pushMain(chosen.path, sq, sr);
+  if (mode === "medium" && ctx.pushMedium) return ctx.pushMedium(chosen.path, sq, sr);
+  if (mode === "short" && ctx.pushShort) return ctx.pushShort(chosen.path, sq, sr);
+  return ctx.pushTributary(chosen.path, sq, sr);
+}
+function landMassHasMainRiver(massLandKeys, paths, kinds) {
+  const massSet = new Set(massLandKeys);
+  for (let i = 0; i < paths.length; i++) {
+    if (kinds[i] !== "main") continue;
+    for (const p of paths[i] ?? []) {
+      if (massSet.has(hexKey(p.q, p.r))) return true;
+    }
+  }
+  return false;
 }
 function cellHasMainRiverSource(cellLand, paths, kinds) {
-  var _a9;
+  var _a11;
   const cellSet = new Set(cellLand.map(([q, r]) => hexKey(q, r)));
   for (let i = 0; i < paths.length; i++) {
     if (kinds[i] !== "main") continue;
-    const p0 = (_a9 = paths[i]) == null ? void 0 : _a9[0];
+    const p0 = (_a11 = paths[i]) == null ? void 0 : _a11[0];
     if (p0 && cellSet.has(hexKey(p0.q, p0.r))) return true;
   }
   return false;
 }
 function isTooCloseToRiverSource(sq, sr, usedSources, minSep) {
+  if (minSep <= 0) return false;
   for (const sk of usedSources) {
     const { q, r } = parseHexKey(sk);
     if (hexAxialDistance(q, r, sq, sr) < minSep) return true;
@@ -4857,7 +7500,240 @@ function isTooCloseToRiverSource(sq, sr, usedSources, minSep) {
   return false;
 }
 function minLandHexesForRiverCell(cellSize) {
-  return Math.max(4, Math.floor(cellSize * 0.35));
+  return Math.max(3, Math.floor(cellSize * 0.2));
+}
+var RIVER_PROXIMITY_MAX_DIST = 5;
+function riverProximityMaxDist(cellSize) {
+  return Math.max(RIVER_PROXIMITY_MAX_DIST, Math.ceil(cellSize / 2));
+}
+function riverProximityEnforceTarget(cellSize) {
+  const proxLimit = riverProximityMaxDist(cellSize);
+  return Math.min(proxLimit + 5, Math.max(proxLimit, Math.ceil(cellSize * 2)));
+}
+function riverTraceBudgetForSeaDist(startSeaDist, minLen, maxLen, largeMapPerf = false) {
+  const raw = Math.max(maxLen, minLen + 24, Math.ceil(startSeaDist * 3) + minLen);
+  const inlandBonus = Math.min(16, Math.floor(startSeaDist / 3));
+  if (!largeMapPerf) return raw + inlandBonus;
+  return Math.max(maxLen, Math.min(raw, maxLen + Math.ceil(startSeaDist * 2) + 24)) + inlandBonus;
+}
+function isPangeaSingleMass(masses) {
+  return masses.length === 1;
+}
+function buildRiverPerfCtx(masses, areaScale) {
+  let totalLandHexes = 0;
+  let maxMassSize = 0;
+  for (const m of masses) {
+    totalLandHexes += m.length;
+    if (m.length > maxMassSize) maxMassSize = m.length;
+  }
+  return {
+    pangeaSingleMass: isPangeaSingleMass(masses),
+    largeMapPerf: areaScale >= 1.35,
+    totalLandHexes,
+    maxMassSize
+  };
+}
+var HUGE_LAND_MASS_HEXES = 4800;
+var LARGE_MAP_TOTAL_LAND_HEXES = 5e3;
+var LARGE_MAP_MASS_HEXES = 800;
+function riverRoundProfile(massSize, perf) {
+  if (perf.pangeaSingleMass) return "pangea";
+  if (massSize >= HUGE_LAND_MASS_HEXES) return "huge-mass";
+  if (perf.largeMapPerf) {
+    if (massSize >= 2e3 || perf.totalLandHexes >= LARGE_MAP_TOTAL_LAND_HEXES) return "huge-mass";
+    if (massSize >= LARGE_MAP_MASS_HEXES) return "large-map";
+    return "large-map";
+  }
+  return "normal";
+}
+function massRiverCoveragePasses(massSize, profile = "normal") {
+  const base = Math.max(6, Math.min(24, 6 + Math.floor(Math.sqrt(massSize / 300))));
+  if (profile === "normal") return base;
+  if (profile === "large-map") {
+    return Math.max(3, Math.min(8, 3 + Math.floor(Math.sqrt(massSize / 700))));
+  }
+  if (profile === "huge-mass") {
+    return Math.max(2, Math.min(5, 2 + Math.floor(Math.sqrt(massSize / 1200))));
+  }
+  if (profile === "pangea") {
+    return Math.max(3, Math.min(8, 3 + Math.floor(Math.sqrt(massSize / 6e3))));
+  }
+  return Math.max(2, Math.min(4, 2 + Math.floor(Math.sqrt(massSize / 2500))));
+}
+function riverProximityMaxRounds(massSize, profile = "normal") {
+  const base = Math.max(16, Math.min(48, 12 + Math.floor(massSize / 350)));
+  if (profile === "normal") return Math.min(52, base + 6);
+  if (profile === "large-map") {
+    return Math.max(6, Math.min(14, 6 + Math.floor(massSize / 1200)));
+  }
+  if (profile === "huge-mass") {
+    return Math.max(6, Math.min(12, 6 + Math.floor(massSize / 2e3)));
+  }
+  return Math.max(3, Math.min(6, 3 + Math.floor(massSize / 4e3)));
+}
+function effectiveTopUpPasses(basePasses, perf) {
+  if (perf.pangeaSingleMass) return Math.max(3, Math.min(basePasses, 8));
+  if (perf.largeMapPerf) return Math.max(2, Math.min(basePasses, 6));
+  return basePasses;
+}
+function effectiveFeederPasses(basePasses, perf) {
+  if (perf.pangeaSingleMass) return Math.min(2, basePasses);
+  if (perf.largeMapPerf) return Math.min(3, basePasses);
+  return basePasses;
+}
+function riverAggressivePerf(perf) {
+  return perf.pangeaSingleMass || perf.largeMapPerf;
+}
+function pangeaBootstrapMaxConsecutiveFails(areaScale) {
+  return Math.max(10, Math.min(40, Math.round(10 + areaScale * 6)));
+}
+function pangeaBootstrapMouthMinSep(width, height) {
+  const areaScale = riverMapAreaScale(width, height);
+  if (areaScale >= 3.5) return 5;
+  if (areaScale >= 2) return 6;
+  return 8;
+}
+function pangeaCoastRiverGrowthCap(baseMaxLen, minDim) {
+  return Math.min(
+    Math.floor(minDim * 0.62),
+    Math.max(baseMaxLen, Math.round(baseMaxLen * 1.85))
+  );
+}
+function riverGridCellAvgSeaDist(cells, seaDist) {
+  if (cells.length === 0) return 0;
+  let s = 0;
+  for (const [q, r] of cells) s += seaDist.get(hexKey(q, r)) ?? 0;
+  return s / cells.length;
+}
+function ensurePangeaInteriorMainRivers(hexes, massSet, seaDist, gridCtx, riverParams, baseMaxLen, onAttempt) {
+  const interiorMinSea = Math.max(18, Math.round(riverParams.minDim * 0.14));
+  const cellSize = riverParams.mainCell;
+  const minLand = minLandHexesForRiverCell(cellSize);
+  const growthCap = pangeaCoastRiverGrowthCap(baseMaxLen, riverParams.minDim);
+  const cellList = [...landHexesByCoverageCell(massSet, cellSize).values()].filter((land) => land.length >= minLand).filter((land) => !cellHasRiverHex(land, hexes)).filter((land) => riverGridCellAvgSeaDist(land, seaDist) >= interiorMinSea).sort((a, b) => riverGridCellAvgSeaDist(b, seaDist) - riverGridCellAvgSeaDist(a, seaDist));
+  const maxCells = Math.max(28, Math.min(160, Math.round(cellList.length * 0.42)));
+  let placed = 0;
+  for (const land of cellList.slice(0, maxCells)) {
+    onAttempt == null ? void 0 : onAttempt();
+    const ranked = land.filter(([q, r]) => !gridCtx.usedSources.has(hexKey(q, r))).map(([q, r]) => {
+      const h = hexes[hexKey(q, r)];
+      const d = seaDist.get(hexKey(q, r)) ?? 0;
+      let score = d + gridCtx.rand() * 3;
+      if (h && isReliefRiverSource(h.terenBazowy)) score += 24;
+      else if (h && isRiverLandTerrain(h.terenBazowy)) score += 8;
+      return { q, r, d, score };
+    }).filter((c) => {
+      var _a11;
+      return c.d >= interiorMinSea && isRiverLandTerrain(((_a11 = hexes[hexKey(c.q, c.r)]) == null ? void 0 : _a11.terenBazowy) ?? "morze" /* Morze */);
+    }).sort((a, b) => b.score - a.score);
+    for (const c of ranked.slice(0, 10)) {
+      const traceMax = Math.min(
+        growthCap + Math.ceil(c.d * 0.35),
+        Math.floor(riverParams.minDim * 0.72)
+      );
+      const path = traceRiver(hexes, c.q, c.r, traceMax, {
+        seaDist: gridCtx.seaDist,
+        openOceanDist: gridCtx.openOceanDist,
+        oceanConnected: gridCtx.oceanConnected,
+        mapWidth: gridCtx.width,
+        mapHeight: gridCtx.height,
+        rand: gridCtx.rand,
+        minLen: Math.max(3, gridCtx.traceMinLen - 1),
+        blockRiverKeys: gridCtx.mainKeysCache,
+        minPathSep: MAIN_RIVER_MIN_PATH_SEP,
+        riverSepIndex: gridCtx.riverSepIndex,
+        landCentroid: gridCtx.massCentroid ?? null,
+        landCenterSquare: gridCtx.massCenterSquare ?? null,
+        allowReliefTraversal: true,
+        ...gridCtx.traceOptsBase
+      });
+      if (path.length < gridCtx.traceMinLen) continue;
+      if (gridCtx.pushMain(path, c.q, c.r)) {
+        placed++;
+        if (gridCtx.mainKeysCache) addPathKeysToSet(path, gridCtx.mainKeysCache);
+        break;
+      }
+    }
+  }
+  return placed;
+}
+function addPathKeysToSet(path, keys) {
+  for (const p of path) keys.add(hexKey(p.q, p.r));
+}
+function dryPatchEnforceMaxRounds(profile) {
+  if (profile === "pangea") return 4;
+  if (profile === "huge-mass") return 6;
+  if (profile === "large-map") return 8;
+  return 28;
+}
+function proximityMopRounds(profile) {
+  if (profile === "pangea") return 1;
+  if (profile === "huge-mass") return 1;
+  if (profile === "large-map") return 3;
+  return 8;
+}
+function cellEligibleForRiverPlacement(land, seaDist, minInland = 2) {
+  return land.some(([q, r]) => (seaDist.get(hexKey(q, r)) ?? 0) >= minInland);
+}
+function isRiverProximityWalkTerrain(t) {
+  return isRiverLandTerrain(t) || t === "wybrzeze" /* Wybrzeze */;
+}
+function computeRiverProximityStats(massSet, hexes, allowReliefTraversal = true) {
+  var _a11, _b5;
+  const riverKeys = /* @__PURE__ */ new Set();
+  for (const k of massSet) {
+    if ((_b5 = (_a11 = hexes[k]) == null ? void 0 : _a11.rzeka) == null ? void 0 : _b5.obecna) riverKeys.add(k);
+  }
+  if (riverKeys.size === 0) return { maxDist: 999, farthest: null };
+  const distToRiver = /* @__PURE__ */ new Map();
+  const queue = [];
+  for (const k of riverKeys) {
+    distToRiver.set(k, 0);
+    queue.push(k);
+  }
+  let qi = 0;
+  while (qi < queue.length) {
+    const k = queue[qi++];
+    const d = distToRiver.get(k);
+    const { q, r } = parseHexKey(k);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (distToRiver.has(nk)) continue;
+      if (!massSet.has(nk)) continue;
+      const nh = hexes[nk];
+      if (!nh || !isRiverProximityWalkTerrain(nh.terenBazowy)) continue;
+      if (!allowReliefTraversal && isReliefTerrain(nh.terenBazowy)) continue;
+      distToRiver.set(nk, d + 1);
+      queue.push(nk);
+    }
+  }
+  let maxD = 0;
+  let farthest = null;
+  for (const k of massSet) {
+    const h = hexes[k];
+    if (!h || !isRiverProximityWalkTerrain(h.terenBazowy)) continue;
+    if (isReliefTerrain(h.terenBazowy)) continue;
+    const dist = distToRiver.get(k);
+    if (dist == null) continue;
+    const { q, r } = parseHexKey(k);
+    const effective = dist === 0 && riverKeys.has(k) ? 1 : dist;
+    if (effective > maxD) {
+      maxD = effective;
+      farthest = { q, r, dist: effective };
+    }
+  }
+  return { maxDist: maxD, farthest };
+}
+function trySubdivideDryPatch(ctx, component, massSet) {
+  if (RIVER_PROFILE_ON) rpEnsure().forceFillCalls++;
+  const step = Math.max(3, Math.floor(Math.sqrt(component.length) / 2));
+  const ranked = component.map(([q, r]) => ({ q, r, d: ctx.seaDist.get(hexKey(q, r)) ?? 0 })).sort((a, b) => b.d - a.d);
+  for (let i = 0; i < ranked.length; i += step) {
+    const c = ranked[i];
+    if (tryForceCellRiverConnection(ctx, [[c.q, c.r]], massSet)) return true;
+    if (tryPlaceGridSource(ctx, c.q, c.r, massSet)) return true;
+  }
+  return false;
 }
 function expandRiverSourceCandidates(land, massSet, radius = 2) {
   const out = /* @__PURE__ */ new Map();
@@ -4875,42 +7751,808 @@ function expandRiverSourceCandidates(land, massSet, radius = 2) {
   }
   return [...out.values()];
 }
+function bfsNearestRiverHexOnLowland(hexes, sq, sr, riverKeys, massSet, maxDist, allowReliefTraversal = false) {
+  const startK = hexKey(sq, sr);
+  const queue = [[sq, sr, 0]];
+  const visited = /* @__PURE__ */ new Set([startK]);
+  while (queue.length > 0) {
+    const [q, r, d] = queue.shift();
+    const k = hexKey(q, r);
+    if (riverKeys.has(k) && d > 0) return { q, r, dist: d };
+    if (d >= maxDist) continue;
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nq = q + dq;
+      const nr = r + dr;
+      const nk = hexKey(nq, nr);
+      if (visited.has(nk) || !massSet.has(nk)) continue;
+      const nh = hexes[nk];
+      if (!nh) continue;
+      const walkable = isRiverLandTerrain(nh.terenBazowy) || allowReliefTraversal && nh.terenBazowy === "wybrzeze" /* Wybrzeze */;
+      if (!walkable) continue;
+      if (!allowReliefTraversal && isReliefTerrain(nh.terenBazowy)) continue;
+      visited.add(nk);
+      queue.push([nq, nr, d + 1]);
+    }
+  }
+  return null;
+}
+function bfsLowlandRiverPath(hexes, sq, sr, tq, tr, massSet, maxLen, allowReliefTraversal = false) {
+  const startK = hexKey(sq, sr);
+  const targetK = hexKey(tq, tr);
+  if (startK === targetK) return [{ q: sq, r: sr }];
+  const cameFrom = /* @__PURE__ */ new Map();
+  const queue = [startK];
+  const visited = /* @__PURE__ */ new Set([startK]);
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (current === targetK) {
+      const path = [];
+      let cur = current;
+      while (cur) {
+        const { q: q2, r: r2 } = parseHexKey(cur);
+        path.push({ q: q2, r: r2 });
+        cur = cameFrom.get(cur);
+      }
+      path.reverse();
+      return path.length <= maxLen ? path : path.slice(0, maxLen);
+    }
+    if (visited.size > maxLen + 4) break;
+    const { q, r } = parseHexKey(current);
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nk = hexKey(q + dq, r + dr);
+      if (visited.has(nk) || !massSet.has(nk)) continue;
+      const nh = hexes[nk];
+      if (!nh || !isRiverLandTerrain(nh.terenBazowy)) continue;
+      if (!allowReliefTraversal && isReliefTerrain(nh.terenBazowy) && nk !== targetK) continue;
+      visited.add(nk);
+      cameFrom.set(nk, current);
+      queue.push(nk);
+    }
+  }
+  return [];
+}
+function tryForceCellRiverConnection(ctx, land, massSet) {
+  var _a11, _b5, _c3, _d3;
+  if (RIVER_PROFILE_ON) rpEnsure().forceFillCalls++;
+  const riverKeys = new Set(
+    [...collectRiverPathHexKeys(ctx.riverPaths)].filter((k) => massSet.has(k))
+  );
+  if (riverKeys.size === 0) return false;
+  const lowland = land.filter(([q, r]) => {
+    const k = hexKey(q, r);
+    if (ctx.usedSources.has(k)) return false;
+    const h = ctx.hexes[k];
+    return h && isDryLandWithoutRiver(h);
+  }).map(([q, r]) => ({
+    q,
+    r,
+    d: ctx.seaDist.get(hexKey(q, r)) ?? 0,
+    tie: ctx.rand()
+  })).sort((a, b) => b.d - a.d || a.tie - b.tie);
+  let bestSrc = null;
+  let bestTarget = null;
+  let bestDist = Infinity;
+  const allowRelief = ctx.allowReliefTraversal ?? true;
+  for (const c of lowland.slice(0, 16)) {
+    const near = bfsNearestRiverHexOnLowland(
+      ctx.hexes,
+      c.q,
+      c.r,
+      riverKeys,
+      massSet,
+      Math.max(80, ctx.maxLen + 24),
+      allowRelief
+    );
+    if (!near || near.dist >= bestDist) continue;
+    bestDist = near.dist;
+    bestSrc = [c.q, c.r];
+    bestTarget = [near.q, near.r];
+  }
+  const maxBfsDist = Math.max(100, Math.ceil(Math.sqrt(land.length) * 4) + 16);
+  if (!bestSrc || !bestTarget || bestDist > maxBfsDist) return false;
+  const [sq, sr] = bestSrc;
+  const [tq, tr] = bestTarget;
+  const srcKey = hexKey(sq, sr);
+  const traceBudget = Math.max(ctx.maxLen, Math.ceil(bestDist * 1.5) + 12);
+  let path = aStarRiverToTarget(ctx.hexes, sq, sr, tq, tr, traceBudget, srcKey, allowRelief);
+  if (path.length < 3) {
+    path = bfsLowlandRiverPath(ctx.hexes, sq, sr, tq, tr, massSet, traceBudget, allowRelief);
+  }
+  if (path.length < 3) return false;
+  const forceCtx = { ...ctx, acceptLen: 3, sourceSep: 0, allowReliefTraversal: allowRelief };
+  const reached = buildOceanReachableRiverHexKeys(
+    ctx.hexes,
+    ctx.riverPaths,
+    ctx.riverKinds,
+    ctx.width,
+    ctx.height,
+    ctx.oceanConnected
+  );
+  if (tributaryTouchesOceanReachable(path, reached) && ((_a11 = forceCtx.pushMedium) == null ? void 0 : _a11.call(forceCtx, path, sq, sr))) return true;
+  if ((_b5 = forceCtx.pushShort) == null ? void 0 : _b5.call(forceCtx, path, sq, sr)) return true;
+  if (forceCtx.pushTributary(path, sq, sr)) return true;
+  const startSeaDist = ctx.seaDist.get(srcKey) ?? 0;
+  const traceMax = riverTraceBudgetForSeaDist(startSeaDist, ctx.minLen, ctx.maxLen, ctx.largeMapPerf);
+  const seaPath = traceRiverForGridFill(
+    ctx.hexes,
+    sq,
+    sr,
+    traceMax,
+    ctx.minLen,
+    3,
+    {
+      seaDist: ctx.seaDist,
+      openOceanDist: ctx.openOceanDist,
+      oceanConnected: ctx.oceanConnected,
+      mapWidth: ctx.width,
+      mapHeight: ctx.height,
+      rand: ctx.rand,
+      ...ctx.traceOptsBase,
+      allowReliefTraversal: allowRelief,
+      relaxSeaBuffer: true
+    },
+    true
+  );
+  if (seaPath.length >= 3 && ((_c3 = forceCtx.pushMain) == null ? void 0 : _c3.call(forceCtx, seaPath, sq, sr))) return true;
+  if (seaPath.length >= 3 && pathHasValidRiverOutlet(ctx.hexes, seaPath, ctx.riverPaths, ctx.riverKinds, ctx.width, ctx.height) && ((_d3 = forceCtx.pushMedium) == null ? void 0 : _d3.call(forceCtx, seaPath, sq, sr))) return true;
+  return false;
+}
+var MAX_DRY_LOWLAND_PATCH_HEXES = 25;
+function isDryLandWithoutRiver(hex) {
+  var _a11;
+  return !!hex && isRiverLandTerrain(hex.terenBazowy) && ((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna) !== true;
+}
+function isDryLowlandPatchHex(hex) {
+  var _a11;
+  return !!hex && isRiverLandTerrain(hex.terenBazowy) && !isReliefTerrain(hex.terenBazowy) && ((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna) !== true;
+}
+function maxDryLowlandPatchSize(massLandKeys, hexes) {
+  const massSet = massLandKeys instanceof Set ? massLandKeys : new Set(massLandKeys);
+  const visited = /* @__PURE__ */ new Set();
+  let maxSize = 0;
+  for (const k of massSet) {
+    if (visited.has(k) || !isDryLowlandPatchHex(hexes[k])) continue;
+    const queue = [k];
+    visited.add(k);
+    let size = 0;
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      size++;
+      const { q, r } = parseHexKey(cur);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandPatchHex(hexes[nk])) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    if (size > maxSize) maxSize = size;
+  }
+  return maxSize;
+}
+function tryDrainDryPatchFromRelief(ctx, component, massSet) {
+  var _a11, _b5;
+  const compSet = new Set(component.map(([q, r]) => hexKey(q, r)));
+  const reliefCandidates = [];
+  for (const [q, r] of component) {
+    const k = hexKey(q, r);
+    const h = ctx.hexes[k];
+    if (h && isReliefRiverSource(h.terenBazowy) && !ctx.usedSources.has(k)) {
+      const d = ctx.seaDist.get(k) ?? 0;
+      reliefCandidates.push({ q, r, score: d + ctx.rand() * 2 });
+    }
+    for (const [dq, dr] of HEX_DIRECTIONS) {
+      const nq = q + dq;
+      const nr = r + dr;
+      const nk = hexKey(nq, nr);
+      if (!massSet.has(nk) || compSet.has(nk)) continue;
+      const nh = ctx.hexes[nk];
+      if (!nh || !isReliefRiverSource(nh.terenBazowy) || ctx.usedSources.has(nk)) continue;
+      const d = ctx.seaDist.get(nk) ?? 0;
+      reliefCandidates.push({ q: nq, r: nr, score: d + ctx.rand() * 2 });
+    }
+  }
+  reliefCandidates.sort((a, b) => b.score - a.score);
+  const traceOpts = {
+    seaDist: ctx.seaDist,
+    openOceanDist: ctx.openOceanDist,
+    oceanConnected: ctx.oceanConnected,
+    mapWidth: ctx.width,
+    mapHeight: ctx.height,
+    rand: ctx.rand,
+    ...ctx.traceOptsBase,
+    allowReliefTraversal: true,
+    relaxSeaBuffer: true
+  };
+  for (const c of reliefCandidates.slice(0, 10)) {
+    const startSeaDist = ctx.seaDist.get(hexKey(c.q, c.r)) ?? 0;
+    const traceMax = riverTraceBudgetForSeaDist(startSeaDist, ctx.minLen, ctx.maxLen, ctx.largeMapPerf);
+    const seaPath = traceRiverForGridFill(
+      ctx.hexes,
+      c.q,
+      c.r,
+      traceMax,
+      ctx.minLen,
+      3,
+      traceOpts,
+      true
+    );
+    if (seaPath.length >= 3 && ctx.pushMain(seaPath, c.q, c.r)) return true;
+    if (seaPath.length >= 3 && ((_a11 = ctx.pushMedium) == null ? void 0 : _a11.call(ctx, seaPath, c.q, c.r))) return true;
+  }
+  const riverKeys = new Set(
+    [...collectRiverPathHexKeys(ctx.riverPaths)].filter((k) => massSet.has(k))
+  );
+  if (riverKeys.size === 0) return false;
+  for (const c of reliefCandidates.slice(0, 8)) {
+    let bestJ = null;
+    let bestD = Infinity;
+    for (const jk of riverKeys) {
+      const { q: jq, r: jr } = parseHexKey(jk);
+      const d = hexAxialDistance(c.q, c.r, jq, jr);
+      if (d < bestD) {
+        bestD = d;
+        bestJ = { q: jq, r: jr };
+      }
+    }
+    if (!bestJ || bestD > ctx.maxLen) continue;
+    const tribPath = traceTributary(
+      ctx.hexes,
+      c.q,
+      c.r,
+      bestJ.q,
+      bestJ.r,
+      ctx.maxLen,
+      ctx.seaDist,
+      ctx.rand,
+      3
+    );
+    if (tribPath.length >= 3 && ((_b5 = ctx.pushMedium) == null ? void 0 : _b5.call(ctx, tribPath, c.q, c.r))) return true;
+  }
+  return false;
+}
+function tryForceRiverThroughDryPatch(ctx, component, massSet) {
+  var _a11, _b5;
+  if (RIVER_PROFILE_ON) rpEnsure().forceFillCalls++;
+  const forceCtx = {
+    ...ctx,
+    acceptLen: 3,
+    sourceSep: 0,
+    relaxSeaBuffer: true,
+    allowReliefTraversal: true
+  };
+  const candidates = component.filter(([q, r]) => !ctx.usedSources.has(hexKey(q, r))).map(([q, r]) => ({
+    q,
+    r,
+    d: ctx.seaDist.get(hexKey(q, r)) ?? 0,
+    tie: ctx.rand()
+  })).sort((a, b) => b.d - a.d || a.tie - b.tie);
+  for (const c of candidates.slice(0, ctx.largeMapPerf ? 12 : 40)) {
+    if (tryPlaceGridSource(forceCtx, c.q, c.r, massSet)) return true;
+    const startSeaDist = ctx.seaDist.get(hexKey(c.q, c.r)) ?? 0;
+    const traceMax = riverTraceBudgetForSeaDist(
+      startSeaDist,
+      ctx.minLen,
+      ctx.maxLen,
+      ctx.largeMapPerf
+    );
+    const seaPath = traceRiverForGridFill(
+      ctx.hexes,
+      c.q,
+      c.r,
+      traceMax,
+      ctx.minLen,
+      3,
+      {
+        seaDist: ctx.seaDist,
+        openOceanDist: ctx.openOceanDist,
+        oceanConnected: ctx.oceanConnected,
+        mapWidth: ctx.width,
+        mapHeight: ctx.height,
+        rand: ctx.rand,
+        ...ctx.traceOptsBase,
+        allowReliefTraversal: true,
+        relaxSeaBuffer: true
+      },
+      true
+    );
+    if (seaPath.length >= 3 && ((_a11 = ctx.pushMedium) == null ? void 0 : _a11.call(ctx, seaPath, c.q, c.r))) return true;
+    if (seaPath.length >= 3 && ((_b5 = ctx.pushShort) == null ? void 0 : _b5.call(ctx, seaPath, c.q, c.r))) return true;
+    if (seaPath.length >= 3 && ctx.pushTributary(seaPath, c.q, c.r)) return true;
+  }
+  return false;
+}
+function fillDryLowlandPatches(massSet, gridCtx, minPatchSize, maxPasses, processAllOversized = false) {
+  let placed = 0;
+  for (let pass = 0; pass < maxPasses; pass++) {
+    let passPlaced = 0;
+    const patches = [];
+    const visited = /* @__PURE__ */ new Set();
+    for (const k of massSet) {
+      if (visited.has(k) || !isDryLandWithoutRiver(gridCtx.hexes[k])) continue;
+      const component = [];
+      const queue = [k];
+      visited.add(k);
+      while (queue.length > 0) {
+        const cur = queue.shift();
+        const { q, r } = parseHexKey(cur);
+        component.push([q, r]);
+        for (const [dq, dr] of HEX_DIRECTIONS) {
+          const nk = hexKey(q + dq, r + dr);
+          if (!massSet.has(nk) || visited.has(nk) || !isDryLandWithoutRiver(gridCtx.hexes[nk])) continue;
+          visited.add(nk);
+          queue.push(nk);
+        }
+      }
+      if (component.length >= minPatchSize) patches.push({ land: component, size: component.length });
+    }
+    patches.sort((a, b) => b.size - a.size);
+    const batchLimit = processAllOversized ? patches.length : Math.max(12, patches.filter((p) => p.size > MAX_DRY_LOWLAND_PATCH_HEXES).length);
+    for (const { land, size } of patches.slice(0, batchLimit)) {
+      if (cellHasRiverHex(land, gridCtx.hexes)) continue;
+      const forceCtx = {
+        ...gridCtx,
+        acceptLen: 3,
+        sourceSep: 0,
+        relaxSeaBuffer: true,
+        allowReliefTraversal: true
+      };
+      if (tryDrainDryPatchFromRelief(forceCtx, land, massSet)) {
+        passPlaced++;
+        placed++;
+        continue;
+      }
+      if (tryForceCellRiverConnection(forceCtx, land, massSet)) {
+        passPlaced++;
+        placed++;
+        continue;
+      }
+      if (size > MAX_DRY_LOWLAND_PATCH_HEXES && tryForceRiverThroughDryPatch(forceCtx, land, massSet)) {
+        passPlaced++;
+        placed++;
+      }
+    }
+    if (passPlaced === 0) break;
+  }
+  return placed;
+}
+function enforceMaxDryLowlandPatches(massSet, gridCtx, roundProfile = "normal") {
+  const maxHex = MAX_DRY_LOWLAND_PATCH_HEXES;
+  fillDryLowlandPatches(massSet, gridCtx, 4, 10);
+  if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
+  const maxRounds = dryPatchEnforceMaxRounds(roundProfile);
+  for (let round = 0; round < maxRounds; round++) {
+    if (maxDryLowlandPatchSize(massSet, gridCtx.hexes) <= maxHex) return;
+    const n = fillDryLowlandPatches(massSet, gridCtx, maxHex + 1, 6, true);
+    if (n > 0) continue;
+    const oversized = findAllOversizedDryLandPatches(massSet, gridCtx.hexes, maxHex);
+    if (oversized.length === 0) break;
+    let anySuccess = false;
+    for (const patch of oversized) {
+      const forceCtx = {
+        ...gridCtx,
+        acceptLen: 3,
+        sourceSep: 0,
+        relaxSeaBuffer: true,
+        allowReliefTraversal: true
+      };
+      if (tryForceCellRiverConnection(forceCtx, patch, massSet)) anySuccess = true;
+      else if (tryForceRiverThroughDryPatch(forceCtx, patch, massSet)) anySuccess = true;
+      else if (trySubdivideDryPatch(forceCtx, patch, massSet)) anySuccess = true;
+    }
+    if (!anySuccess) break;
+  }
+}
+function findAllOversizedDryLandPatches(massSet, hexes, maxHex) {
+  const visited = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const k of massSet) {
+    if (visited.has(k) || !isDryLowlandPatchHex(hexes[k])) continue;
+    const component = [];
+    const queue = [k];
+    visited.add(k);
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      const { q, r } = parseHexKey(cur);
+      component.push([q, r]);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandPatchHex(hexes[nk])) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    if (component.length > maxHex) out.push(component);
+  }
+  out.sort((a, b) => b.length - a.length);
+  return out;
+}
+function findLargestDryLowlandPatch(massSet, hexes) {
+  const visited = /* @__PURE__ */ new Set();
+  let best = null;
+  for (const k of massSet) {
+    if (visited.has(k) || !isDryLowlandPatchHex(hexes[k])) continue;
+    const component = [];
+    const queue = [k];
+    visited.add(k);
+    while (queue.length > 0) {
+      const cur = queue.shift();
+      const { q, r } = parseHexKey(cur);
+      component.push([q, r]);
+      for (const [dq, dr] of HEX_DIRECTIONS) {
+        const nk = hexKey(q + dq, r + dr);
+        if (!massSet.has(nk) || visited.has(nk) || !isDryLowlandPatchHex(hexes[nk])) continue;
+        visited.add(nk);
+        queue.push(nk);
+      }
+    }
+    if (!best || component.length > best.length) best = component;
+  }
+  return best;
+}
+function listUnfilledRiverGridCells(massSet, hexes, cellSize, seaDist, minInland = 2) {
+  const minLand = minLandHexesForRiverCell(cellSize);
+  const cellAvgSeaDist = (cells) => {
+    let s = 0;
+    for (const [q, r] of cells) s += seaDist.get(hexKey(q, r)) ?? 0;
+    return cells.length > 0 ? s / cells.length : 0;
+  };
+  return [...landHexesByCoverageCell(massSet, cellSize).values()].filter((land) => land.length >= minLand).filter((land) => cellEligibleForRiverPlacement(land, seaDist, minInland)).filter((land) => !cellHasRiverHex(land, hexes)).sort((a, b) => cellAvgSeaDist(b) - cellAvgSeaDist(a));
+}
+function ensureRiverGridAndProximity(hexes, massSet, cellSize, seaDist, gridCtx, maxProximityDist = RIVER_PROXIMITY_MAX_DIST, roundProfile = "normal") {
+  const maxRounds = riverProximityMaxRounds(massSet.size, roundProfile);
+  const forceCtx = {
+    ...gridCtx,
+    acceptLen: 3,
+    sourceSep: 0,
+    relaxSeaBuffer: true,
+    allowReliefTraversal: true,
+    placeMode: gridCtx.placeMode ?? "medium"
+  };
+  let placed = 0;
+  for (let round = 0; round < maxRounds; round++) {
+    const proxStats = computeRiverProximityStats(massSet, hexes, true);
+    const proxGap = proxStats.maxDist;
+    const dryGapEarly = maxDryLowlandPatchSize(massSet, hexes);
+    const unfilledEarly = listUnfilledRiverGridCells(massSet, hexes, cellSize, seaDist);
+    if (proxGap <= maxProximityDist && dryGapEarly <= MAX_DRY_LOWLAND_PATCH_HEXES + 5 && unfilledEarly.length === 0) break;
+    let roundPlaced = 0;
+    const unfilled = unfilledEarly;
+    for (const land of unfilled) {
+      if (cellHasRiverHex(land, hexes)) continue;
+      if (tryForceCellRiverConnection(forceCtx, land, massSet)) {
+        roundPlaced++;
+        continue;
+      }
+      if (tryForceRiverThroughDryPatch(forceCtx, land, massSet)) {
+        roundPlaced++;
+        continue;
+      }
+      for (const [q, r] of land.slice(0, 10)) {
+        if (tryPlaceGridSource(forceCtx, q, r, massSet)) {
+          roundPlaced++;
+          break;
+        }
+      }
+    }
+    if (roundPlaced === 0 && proxGap > maxProximityDist) {
+      const far = proxStats.farthest;
+      if (far && far.dist > maxProximityDist) {
+        if (tryForceCellRiverConnection(forceCtx, [[far.q, far.r]], massSet)) roundPlaced++;
+        else if (tryPlaceGridSource(forceCtx, far.q, far.r, massSet)) roundPlaced++;
+      }
+      const dry = findLargestDryLowlandPatch(massSet, hexes);
+      if (roundPlaced === 0 && dry && dry.length >= 4) {
+        if (tryForceCellRiverConnection(forceCtx, dry, massSet)) roundPlaced++;
+        else if (tryForceRiverThroughDryPatch(forceCtx, dry, massSet)) roundPlaced++;
+        else if (dry.length > MAX_DRY_LOWLAND_PATCH_HEXES && trySubdivideDryPatch(forceCtx, dry, massSet)) {
+          roundPlaced++;
+        }
+      }
+    }
+    if (maxDryLowlandPatchSize(massSet, hexes) > MAX_DRY_LOWLAND_PATCH_HEXES) {
+      enforceMaxDryLowlandPatches(massSet, forceCtx, roundProfile);
+    }
+    placed += roundPlaced;
+    const dryGap = maxDryLowlandPatchSize(massSet, hexes);
+    if (roundPlaced === 0 && unfilled.length === 0 && proxGap <= maxProximityDist && dryGap <= MAX_DRY_LOWLAND_PATCH_HEXES + 5) break;
+  }
+  const mopRounds = proximityMopRounds(roundProfile);
+  for (let mop = 0; mop < mopRounds; mop++) {
+    const finalProx = computeRiverProximityStats(massSet, hexes, true);
+    if (finalProx.maxDist <= maxProximityDist) break;
+    if (!finalProx.farthest) break;
+    const far = finalProx.farthest;
+    let fixed = false;
+    if (tryForceCellRiverConnection(forceCtx, [[far.q, far.r]], massSet)) fixed = true;
+    else if (tryPlaceGridSource(forceCtx, far.q, far.r, massSet)) fixed = true;
+    else if (tryForceRiverThroughDryPatch(forceCtx, [[far.q, far.r]], massSet)) fixed = true;
+    if (fixed) placed++;
+    else break;
+  }
+  return placed;
+}
+function bootstrapMainRiversFromCoast(massSet, seaDist, gridCtx, maxRivers, onAttempt, softAcceptLen) {
+  let placed = 0;
+  const targetLen = gridCtx.minLen;
+  const acceptThreshold = softAcceptLen != null && softAcceptLen < targetLen ? softAcceptLen : targetLen;
+  const land = [];
+  for (const k of massSet) {
+    const { q, r } = parseHexKey(k);
+    land.push([q, r]);
+  }
+  const mouths = collectCoastMouthCandidates(land, gridCtx.hexes, seaDist, 2);
+  mouths.sort((a, b) => a.d - b.d || gridCtx.rand() * 2 - 1);
+  const minSep = pangeaBootstrapMouthMinSep(gridCtx.width, gridCtx.height);
+  const unlimited = !Number.isFinite(maxRivers);
+  const mouthPoolCap = unlimited ? mouths.length : maxRivers + 12;
+  const picked = [];
+  for (const m of mouths) {
+    if (picked.length >= mouthPoolCap) break;
+    if (picked.every((p) => hexDistanceAxial(p.q, p.r, m.q, m.r) >= minSep)) picked.push(m);
+  }
+  const candidates = picked.length > 0 ? picked : mouths.slice(0, Math.max(1, mouthPoolCap));
+  let mainKeys = gridCtx.mainKeysCache ?? collectPathHexKeysForKinds(gridCtx.riverPaths, gridCtx.riverKinds, ["main"]);
+  let consecutiveFails = 0;
+  const maxConsecutiveFails = unlimited ? Math.max(candidates.length, 1) : pangeaBootstrapMaxConsecutiveFails(
+    riverMapAreaScale(gridCtx.width, gridCtx.height)
+  );
+  const pangeaGrowthCap = pangeaCoastRiverGrowthCap(
+    gridCtx.maxLen,
+    Math.min(gridCtx.width, gridCtx.height)
+  );
+  for (const mouth of candidates) {
+    if (placed >= maxRivers) break;
+    if (consecutiveFails >= maxConsecutiveFails) break;
+    onAttempt == null ? void 0 : onAttempt();
+    const traceMax = riverTraceBudgetForSeaDist(
+      mouth.d,
+      targetLen,
+      pangeaGrowthCap,
+      gridCtx.largeMapPerf
+    );
+    const path = traceRiverFromCoast(
+      gridCtx.hexes,
+      mouth.q,
+      mouth.r,
+      traceMax,
+      {
+        seaDist: gridCtx.seaDist,
+        openOceanDist: gridCtx.openOceanDist,
+        oceanConnected: gridCtx.oceanConnected,
+        mapWidth: gridCtx.width,
+        mapHeight: gridCtx.height,
+        rand: gridCtx.rand,
+        minLen: targetLen,
+        blockRiverKeys: mainKeys,
+        minPathSep: MAIN_RIVER_MIN_PATH_SEP,
+        riverSepIndex: gridCtx.riverSepIndex,
+        landCentroid: gridCtx.massCentroid ?? null,
+        landCenterSquare: gridCtx.massCenterSquare ?? null,
+        ...gridCtx.traceOptsBase,
+        allowReliefTraversal: gridCtx.allowReliefTraversal
+      }
+    );
+    if (path.length < acceptThreshold) {
+      consecutiveFails++;
+      continue;
+    }
+    if (isPathTooCloseToRiverHexes(path, mainKeys, MAIN_RIVER_MIN_PATH_SEP, gridCtx.riverSepIndex)) {
+      consecutiveFails++;
+      continue;
+    }
+    const sq = path[0].q;
+    const sr = path[0].r;
+    if (gridCtx.pushMain(path, sq, sr)) {
+      placed++;
+      consecutiveFails = 0;
+      addPathKeysToSet(path, mainKeys);
+    } else {
+      consecutiveFails++;
+    }
+  }
+  if (!landMassHasMainRiver([...massSet], gridCtx.riverPaths, gridCtx.riverKinds) && land.length > 0) {
+    onAttempt == null ? void 0 : onAttempt();
+    if (tryPlaceMainRiverFromCoast(gridCtx, land, massSet, mainKeys, softAcceptLen)) placed++;
+  }
+  return placed;
+}
+function generatePhase1MainRivers(hexes, massSet, seaDist, riverPaths, riverKinds, usedSources, gridCtx, maxLen, riverParams, riverPerf, onAttempt) {
+  const ctx = { ...gridCtx, placeMode: "main-only" };
+  if (riverPerf.pangeaSingleMass) {
+    const landHexCount = massSet.size;
+    const gridStride2 = riverParams.areaScale >= 3 ? 2 : 3;
+    const maxRivers = Number.POSITIVE_INFINITY;
+    let placed2 = bootstrapMainRiversFromCoast(massSet, seaDist, ctx, maxRivers, onAttempt);
+    const tryCoastNoop = (_sq, _sr) => false;
+    placed2 += ensureMassRiverGridCoverage(
+      hexes,
+      massSet,
+      riverParams.mainCell,
+      seaDist,
+      riverPaths,
+      riverKinds,
+      usedSources,
+      tryCoastNoop,
+      gridCtx.rand,
+      maxLen,
+      {
+        sparseMainOnly: true,
+        gridStride: gridStride2,
+        reliefSourceBonus: 0,
+        expandSourceRadius: 1,
+        minInlandFromSea: 1,
+        gridCtx: ctx,
+        acceptLen: gridCtx.minLen,
+        maxCellsToProcess: Number.POSITIVE_INFINITY,
+        skipHeavyFallback: false,
+        coastOnlyMain: false
+      }
+    );
+    placed2 += topUpMainRiverCoastMouthGaps(
+      massSet,
+      seaDist,
+      ctx,
+      mainRiverCoastMouthMaxGapForDims(gridCtx.width, gridCtx.height),
+      2
+    );
+    placed2 += ensurePangeaInteriorMainRivers(
+      hexes,
+      massSet,
+      seaDist,
+      ctx,
+      riverParams,
+      maxLen,
+      onAttempt
+    );
+    return placed2;
+  }
+  const gridStride = riverPerf.largeMapPerf ? Math.max(2, riverParams.mainGridStride) : riverParams.mainGridStride;
+  const cellList = [...landHexesByCoverageCell(massSet, riverParams.mainCell).values()].filter((land) => land.length >= minLandHexesForRiverCell(riverParams.mainCell)).filter((land) => isSparseMainCoverageCell(land, riverParams.mainCell, gridStride)).filter((land) => cellEligibleForRiverPlacement(land, seaDist, 1));
+  let placed = 0;
+  let cellIdx = 0;
+  const softLen = Math.max(3, gridCtx.traceMinLen);
+  for (const land of cellList) {
+    cellIdx++;
+    onAttempt == null ? void 0 : onAttempt();
+    if (tryPlaceMainRiverFromCoast(ctx, land, massSet) || tryPlaceMainRiverFromCoast(ctx, land, massSet, void 0, softLen)) {
+      placed++;
+    }
+    if (cellIdx % 4 === 0) onAttempt == null ? void 0 : onAttempt();
+  }
+  if (!riverPerf.largeMapPerf) {
+    placed += ensureMassRiverGridCoverage(
+      hexes,
+      massSet,
+      riverParams.mainCell,
+      seaDist,
+      riverPaths,
+      riverKinds,
+      usedSources,
+      () => false,
+      gridCtx.rand,
+      maxLen,
+      {
+        sparseMainOnly: true,
+        gridStride,
+        reliefSourceBonus: 0,
+        expandSourceRadius: riverParams.expandSourceRadius,
+        minInlandFromSea: 1,
+        gridCtx: ctx,
+        acceptLen: gridCtx.minLen,
+        coastOnlyMain: true
+      }
+    );
+  }
+  if (!landMassHasMainRiver([...massSet], riverPaths, riverKinds)) {
+    const minLand = minLandHexesForRiverCell(riverParams.mainCell);
+    for (const land of landHexesByCoverageCell(massSet, riverParams.mainCell).values()) {
+      if (land.length < minLand) continue;
+      onAttempt == null ? void 0 : onAttempt();
+      if (tryPlaceMainRiverFromCoast(ctx, land, massSet, void 0, softLen)) {
+        placed++;
+        break;
+      }
+      if (landMassHasMainRiver([...massSet], riverPaths, riverKinds)) break;
+    }
+  }
+  placed += topUpMainRiverCoastMouthGaps(
+    massSet,
+    seaDist,
+    ctx,
+    mainRiverCoastMouthMaxGapForDims(gridCtx.width, gridCtx.height),
+    2
+  );
+  return placed;
+}
+function generatePhase3ShortRivers(massSet, tributaryCell, seaDist, gridCtx, feederMinLen, feederSourceSep, feederPasses) {
+  const mediumKeys = collectPathHexKeysForKinds(gridCtx.riverPaths, gridCtx.riverKinds, ["medium"]);
+  if (mediumKeys.size === 0) return 0;
+  let placed = 0;
+  const ctx = {
+    ...gridCtx,
+    placeMode: "short",
+    targetRiverKinds: ["medium"],
+    acceptLen: feederMinLen,
+    sourceSep: feederSourceSep
+  };
+  for (let pass = 0; pass < feederPasses; pass++) {
+    let passPlaced = 0;
+    const minLand = minLandHexesForRiverCell(tributaryCell);
+    for (const land of landHexesByCoverageCell(massSet, tributaryCell).values()) {
+      if (land.length < minLand) continue;
+      const ranked = land.filter(([q, r]) => !gridCtx.usedSources.has(hexKey(q, r))).map(([q, r]) => ({
+        q,
+        r,
+        riverD: nearestRiverHexDistance(q, r, mediumKeys),
+        inland: seaDist.get(hexKey(q, r)) ?? 0
+      })).filter((c) => c.riverD > 0 && c.riverD <= SHORT_RIVER_MAX_DIST_FROM_MEDIUM).sort((a, b) => a.riverD - b.riverD || b.inland - a.inland);
+      for (const c of ranked.slice(0, 6)) {
+        if (tryPlaceGridSource(ctx, c.q, c.r, massSet)) {
+          passPlaced++;
+          placed++;
+          break;
+        }
+      }
+    }
+    if (passPlaced === 0) break;
+  }
+  return placed;
+}
 function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPaths, riverKinds, usedSources, tryPlace, rand, maxLen, opts = {}) {
   const minLand = minLandHexesForRiverCell(cellSize);
   const gridStride = opts.gridStride ?? MAIN_RIVER_GRID_STRIDE;
-  const reliefBonus = opts.reliefSourceBonus ?? 55;
+  const reliefBonus = opts.reliefSourceBonus ?? 0;
   const expandRadius = opts.expandSourceRadius ?? 2;
   const minInlandFromSea = opts.minInlandFromSea ?? RIVER_MIN_INLAND_FROM_SEA;
+  const maxCells = opts.maxCellsToProcess ?? Infinity;
+  const skipHeavy = opts.skipHeavyFallback ?? false;
+  const coastOnlyMain = opts.coastOnlyMain === true;
   let placed = 0;
-  const cellList = [...landHexesByCoverageCell(massSet, cellSize).values()].filter((land) => land.length >= minLand).filter((land) => !opts.sparseMainOnly || isSparseMainCoverageCell(land, cellSize, gridStride)).filter(
-    (land) => land.some(([q, r]) => {
-      const d = seaDist.get(hexKey(q, r)) ?? 999;
-      return d >= 2 && d <= maxLen + 8;
-    })
-  ).sort((a, b) => {
+  const cellList = [...landHexesByCoverageCell(massSet, cellSize).values()].filter((land) => land.length >= minLand).filter((land) => !opts.sparseMainOnly || isSparseMainCoverageCell(land, cellSize, gridStride)).filter((land) => cellEligibleForRiverPlacement(land, seaDist, minInlandFromSea)).sort((a, b) => {
     const avg = (cells) => {
       let s = 0;
       for (const [q, r] of cells) s += seaDist.get(hexKey(q, r)) ?? 0;
       return s / cells.length;
     };
-    return avg(b) - avg(a);
+    return avg(a) - avg(b);
   });
   const cellSatisfied = (land) => {
     if (opts.requireRiverHex) return cellHasRiverHex(land, hexes);
     return cellHasMainRiverSource(land, riverPaths, riverKinds);
   };
+  let mainKeysCache = opts.gridCtx ? collectPathHexKeysForKinds(riverPaths, riverKinds, ["main"]) : void 0;
+  let cellsProcessed = 0;
   for (const land of cellList) {
+    if (cellsProcessed >= maxCells) break;
+    cellsProcessed++;
     if (cellSatisfied(land)) continue;
+    if (opts.sparseMainOnly && opts.gridCtx) {
+      const acceptLen = opts.acceptLen ?? opts.gridCtx.minLen;
+      if (tryPlaceMainRiverFromCoast(opts.gridCtx, land, massSet, mainKeysCache, acceptLen < opts.gridCtx.minLen ? acceptLen : void 0)) {
+        placed++;
+        continue;
+      }
+      if (coastOnlyMain) {
+        const soft = Math.max(3, typeof acceptLen === "number" ? acceptLen : 3);
+        if (tryPlaceMainRiverFromCoast(opts.gridCtx, land, massSet, mainKeysCache, soft)) {
+          placed++;
+        }
+        continue;
+      }
+    }
+    if (coastOnlyMain) continue;
     const ranked = land.filter(([q, r]) => !usedSources.has(hexKey(q, r))).map(([q, r]) => {
       const h = hexes[hexKey(q, r)];
       const d = seaDist.get(hexKey(q, r)) ?? 0;
       let score = d + rand() * 4;
-      if (h && isReliefRiverSource(h.terenBazowy)) score += reliefBonus;
+      if (reliefBonus > 0 && h && isReliefRiverSource(h.terenBazowy)) score += reliefBonus;
       else if (h && isRiverLandTerrain(h.terenBazowy)) score += 12;
       return { q, r, d, score };
     }).filter((c) => c.d >= minInlandFromSea).sort((a, b) => b.score - a.score);
+    const rankedLimit = skipHeavy ? 3 : ranked.length;
     let ok = false;
-    for (const c of ranked) {
+    for (const c of ranked.slice(0, rankedLimit)) {
       if (tryPlace(c.q, c.r)) {
         placed++;
         ok = true;
@@ -4918,6 +8560,7 @@ function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPat
       }
     }
     if (ok || cellSatisfied(land)) continue;
+    if (skipHeavy) continue;
     const expanded = expandRiverSourceCandidates(land, massSet, expandRadius);
     for (const [q, r] of expanded) {
       if (tryPlace(q, r)) {
@@ -4937,26 +8580,26 @@ function ensureMassRiverGridCoverage(hexes, massSet, cellSize, seaDist, riverPat
   return placed;
 }
 function generateRivers(hexes, width, height, rand, opts = {}) {
+  var _a11;
+  const _genT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  const mainOnly = isRiverGenMainOnly();
   const riversTier = opts.riversTier ?? "medium";
   const riverParams = opts.riverParams ?? resolveRiverMapParams(riversTier, width, height);
   const minLen = opts.minLen ?? riverParams.minLen;
   const maxLen = opts.maxLen ?? riverParams.maxLen;
-  const seaDist = buildSeaDistanceField(hexes);
-  const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
-  const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
+  const { seaDist, oceanConnected, openOceanDist } = buildRiverFieldCache(hexes, width, height);
   const riverPaths = [];
   const riverKinds = [];
   const usedSources = /* @__PURE__ */ new Set();
-  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8).sort((a, b) => b.length - a.length);
+  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 5).sort((a, b) => b.length - a.length);
+  const riverPerf = buildRiverPerfCtx(masses, riverParams.areaScale);
+  const { pangeaSingleMass, largeMapPerf } = riverPerf;
   const cellSize = riverParams.mainCell;
   const tributaryCell = riverParams.tributaryCell;
   const gridTraceMinLen = riverParams.gridTraceMinLen;
   const feederMinLen = riverParams.feederMinLen;
-  const minSourceSep = Math.max(2, Math.floor(cellSize * 0.75));
-  const feederMinSourceSep = Math.max(
-    2,
-    Math.floor(tributaryCell * 0.75 * riverParams.feederSourceSepMult)
-  );
+  const minSourceSep = Math.max(2, Math.floor(cellSize * 0.25));
+  const feederMinSourceSep = Math.max(2, Math.floor(tributaryCell * 0.35));
   const traceOptsBase = {
     hardMeanderLen: riverParams.hardMeanderLen,
     mouthTailLen: riverParams.mouthTailLen
@@ -4965,189 +8608,162 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
     minInland: riverParams.minInlandFromSea,
     mouthTail: riverParams.mouthTailLen
   };
-  const gridOptsBase = {
-    gridStride: riverParams.mainGridStride,
-    reliefSourceBonus: riverParams.reliefSourceBonus,
-    expandSourceRadius: riverParams.expandSourceRadius,
-    minInlandFromSea: riverParams.minInlandFromSea
-  };
+  const mainKeysCache = /* @__PURE__ */ new Set();
+  const mainSepIndex = new RiverHexSpatialIndex();
   const pushMain = (path, sq, sr) => {
-    const trimmed = trimRiverPathRings(hexes, path);
-    if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
-    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
-    riverPaths.push(trimmed);
+    if (isPathTooCloseToRiverHexes(path, mainKeysCache, MAIN_RIVER_MIN_PATH_SEP, mainSepIndex)) return false;
+    const finalized = finalizeMainRiverPath(hexes, path, width, height, oceanConnected);
+    if (!finalized) return false;
+    riverPaths.push(finalized);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
-    markRiverPath(hexes, trimmed);
+    markRiverPath(hexes, finalized);
+    addPathKeysToSet(finalized, mainKeysCache);
+    mainSepIndex.addPath(finalized);
     return true;
   };
   const pushTributary = (path, sq, sr) => {
-    let out = trimRiverPathRings(hexes, path);
-    if (out.length >= 2) {
-      const junction = out[out.length - 1];
-      const approach = out[out.length - 2];
-      const down = networkDownstreamNeighbor(hexes, junction, approach);
-      out = appendJunctionDownstreamHex(out, down);
-    }
+    const out = finalizeTributaryPath(
+      hexes,
+      path,
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!out) return false;
     riverPaths.push(out);
     riverKinds.push("tributary");
     usedSources.add(hexKey(sq, sr));
     markRiverPath(hexes, out);
     return true;
   };
-  const tryPlaceGridRiver = (sq, sr) => {
-    const srcKey = hexKey(sq, sr);
-    if (usedSources.has(srcKey)) return false;
-    if (isTooCloseToRiverSource(sq, sr, usedSources, minSourceSep)) return false;
-    if (openOceanDist.get(srcKey) == null) return false;
-    const startDist = seaDist.get(srcKey) ?? 999;
-    const traceMax = Math.max(maxLen, minLen + 24, Math.ceil(startDist * 2.8) + minLen);
-    const path = traceRiver(hexes, sq, sr, traceMax, {
-      seaDist,
-      openOceanDist,
-      oceanConnected,
-      mapWidth: width,
-      mapHeight: height,
-      rand,
-      minLen,
-      ...traceOptsBase
-    });
-    if (path.length < gridTraceMinLen) return false;
-    if (!pathEndsAtSea(hexes, path, width, height, oceanConnected)) return false;
-    if (!riverPathRespectsSeaBuffer(
+  const pushMedium = (path, sq, sr) => {
+    const out = finalizeMediumPath(
       hexes,
       path,
-      seaDist,
-      seaBufferOpts.minInland,
-      seaBufferOpts.mouthTail
-    )) return false;
-    return pushMain(path, sq, sr);
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!out) return false;
+    riverPaths.push(out);
+    riverKinds.push("medium");
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, out);
+    return true;
   };
-  const tryPlaceFeederRiver = (sq, sr, junctionKeysOverride) => {
-    const srcKey = hexKey(sq, sr);
-    if (usedSources.has(srcKey)) return false;
-    if (isTooCloseToRiverSource(sq, sr, usedSources, feederMinSourceSep)) {
-      return false;
-    }
-    if (openOceanDist.get(srcKey) == null) return false;
-    const startDist = seaDist.get(srcKey) ?? 999;
-    const traceMax = Math.max(maxLen, minLen + 20, Math.ceil(startDist * 2.6) + minLen);
-    const junctionKeys = junctionKeysOverride ?? (() => {
-      const reach = buildOceanReachableRiverHexKeys(
-        hexes,
-        riverPaths,
-        riverKinds,
-        width,
-        height,
-        oceanConnected
-      );
-      const pool = /* @__PURE__ */ new Set();
-      for (const k of collectRiverPathHexKeys(riverPaths)) {
-        if (reach.has(k)) pool.add(k);
-      }
-      return pool;
-    })();
-    if (junctionKeys.size === 0) {
-      const seaPath2 = traceRiver(hexes, sq, sr, traceMax, {
-        seaDist,
-        openOceanDist,
-        oceanConnected,
-        mapWidth: width,
-        mapHeight: height,
-        rand,
-        minLen,
-        ...traceOptsBase
-      });
-      if (seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
-        hexes,
-        seaPath2,
-        seaDist,
-        seaBufferOpts.minInland,
-        seaBufferOpts.mouthTail
-      )) {
-        return pushMain(seaPath2, sq, sr);
-      }
-      return false;
-    }
-    let bestNetPath = [];
-    let bestNetLen = Infinity;
-    for (const j of rankNetworkJunctionCandidates(sq, sr, junctionKeys, seaDist, traceMax, rand)) {
-      const p = traceTributary(hexes, sq, sr, j.q, j.r, traceMax, seaDist, rand);
-      if (p.length < 3 || p.length < feederMinLen - 2) continue;
-      if (p.length < bestNetLen) {
-        bestNetLen = p.length;
-        bestNetPath = p;
-      }
-    }
-    if (bestNetPath.length >= 3) {
-      const needSeaCompare = bestNetLen > Math.min(traceMax * 0.5, startDist + 6);
-      if (needSeaCompare) {
-        const seaPath2 = traceRiver(hexes, sq, sr, traceMax, {
-          seaDist,
-          openOceanDist,
-          oceanConnected,
-          mapWidth: width,
-          mapHeight: height,
-          rand,
-          minLen,
-          ...traceOptsBase
-        });
-        const seaOk = seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
-          hexes,
-          seaPath2,
-          seaDist,
-          seaBufferOpts.minInland,
-          seaBufferOpts.mouthTail
-        );
-        if (seaOk && seaPath2.length < bestNetLen) {
-          return pushMain(seaPath2, sq, sr);
+  const pushShort = (path, sq, sr) => {
+    const mediumKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ["medium"]);
+    if (mediumKeys.size === 0) return false;
+    if (nearestRiverHexDistance(sq, sr, mediumKeys) > SHORT_RIVER_MAX_DIST_FROM_MEDIUM) return false;
+    const out = finalizeShortPath(
+      hexes,
+      path,
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!out) return false;
+    riverPaths.push(out);
+    riverKinds.push("short");
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, out);
+    return true;
+  };
+  const usedMediumSpawnKeys = /* @__PURE__ */ new Set();
+  const gridCtx = {
+    hexes,
+    width,
+    height,
+    riverPaths,
+    riverKinds,
+    usedSources,
+    seaDist,
+    openOceanDist,
+    oceanConnected,
+    rand,
+    minLen,
+    maxLen,
+    acceptLen: gridTraceMinLen,
+    traceMinLen: gridTraceMinLen,
+    sourceSep: minSourceSep,
+    traceOptsBase,
+    seaBufferOpts,
+    pushMain,
+    pushTributary,
+    pushMedium,
+    pushShort,
+    pangeaSingleMass,
+    largeMapPerf,
+    mainKeysCache,
+    riverSepIndex: mainSepIndex,
+    usedMediumSpawnKeys
+  };
+  const report = (localPct) => {
+    var _a12;
+    (_a12 = opts.onProgress) == null ? void 0 : _a12.call(opts, Math.max(0, Math.min(100, localPct)));
+  };
+  const nMasses = masses.length || 1;
+  let stage2Steps = 0;
+  let stage2Total = 0;
+  for (const mass of masses) {
+    stage2Total += massRiverCoveragePasses(mass.length, riverRoundProfile(mass.length, riverPerf));
+  }
+  stage2Total = Math.max(1, stage2Total);
+  const _s1T0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  let stage1Attempts = 0;
+  const stage1Budget = riverAggressivePerf(riverPerf) ? Math.max(24, Math.min(120, Math.floor((((_a11 = masses[0]) == null ? void 0 : _a11.length) ?? 100) / 400))) : nMasses;
+  for (let mi = 0; mi < masses.length; mi++) {
+    const mass = masses[mi];
+    const massSet = new Set(mass);
+    setMassRiverTargets(hexes, massSet, gridCtx);
+    generatePhase1MainRivers(
+      hexes,
+      massSet,
+      seaDist,
+      riverPaths,
+      riverKinds,
+      usedSources,
+      gridCtx,
+      maxLen,
+      riverParams,
+      riverPerf,
+      () => {
+        stage1Attempts++;
+        if (riverAggressivePerf(riverPerf)) {
+          report(stage1Attempts / stage1Budget * 28);
         }
       }
-      return pushTributary(bestNetPath, sq, sr);
-    }
-    const seaPath = traceRiver(hexes, sq, sr, traceMax, {
-      seaDist,
-      openOceanDist,
-      oceanConnected,
-      mapWidth: width,
-      mapHeight: height,
-      rand,
-      minLen,
-      ...traceOptsBase
-    });
-    if (seaPath.length >= feederMinLen && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
-      hexes,
-      seaPath,
-      seaDist,
-      seaBufferOpts.minInland,
-      seaBufferOpts.mouthTail
-    )) {
-      return pushMain(seaPath, sq, sr);
-    }
-    return false;
-  };
-  for (let pass = 0; pass < 6; pass++) {
-    let passPlaced = 0;
-    for (const mass of masses) {
-      passPlaced += ensureMassRiverGridCoverage(
-        hexes,
-        new Set(mass),
-        cellSize,
-        seaDist,
-        riverPaths,
-        riverKinds,
-        usedSources,
-        tryPlaceGridRiver,
-        rand,
-        maxLen,
-        { sparseMainOnly: true, ...gridOptsBase }
-      );
-    }
-    if (passPlaced === 0) break;
+    );
+    if (!riverAggressivePerf(riverPerf)) report((mi + 1) / nMasses * 28);
   }
-  for (let pass = 0; pass < riverParams.feederPasses; pass++) {
-    let passPlaced = 0;
-    const reach = buildOceanReachableRiverHexKeys(
+  if (riverAggressivePerf(riverPerf)) report(28);
+  if (RIVER_PROFILE_ON) rpEnsure().genStage1Ms += rpNow() - _s1T0;
+  if (mainOnly) {
+    report(100);
+    if (RIVER_PROFILE_ON) rpEnsure().generateRiversMs += rpNow() - _genT0;
+    return { paths: riverPaths, kinds: riverKinds };
+  }
+  const _s2T0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  const mediumCtx = { ...gridCtx, placeMode: "medium" };
+  for (let mi = 0; mi < masses.length; mi++) {
+    const mass = masses[mi];
+    const massSet = new Set(mass);
+    setMassRiverTargets(hexes, massSet, mediumCtx);
+    generateMediumTributariesFromMainRivers(mediumCtx, massSet, maxLen);
+    stage2Steps++;
+    if (RIVER_PROFILE_ON) rpEnsure().genStage2Rounds++;
+    report(28 + stage2Steps / stage2Total * 42);
+  }
+  if (RIVER_PROFILE_ON) rpEnsure().genStage2Ms += rpNow() - _s2T0;
+  {
+    const pruned = pruneInvalidMediumRiverPaths(
       hexes,
       riverPaths,
       riverKinds,
@@ -5155,85 +8771,100 @@ function generateRivers(hexes, width, height, rand, opts = {}) {
       height,
       oceanConnected
     );
-    const junctionKeys = /* @__PURE__ */ new Set();
-    for (const k of collectRiverPathHexKeys(riverPaths)) {
-      if (reach.has(k)) junctionKeys.add(k);
-    }
-    const tryFeeder = (sq, sr) => tryPlaceFeederRiver(sq, sr, junctionKeys);
-    for (const mass of masses) {
-      passPlaced += ensureMassRiverGridCoverage(
-        hexes,
+    riverPaths.splice(0, riverPaths.length, ...pruned.paths);
+    riverKinds.splice(0, riverKinds.length, ...pruned.kinds);
+  }
+  if (!isRiverGenFull()) {
+    report(100);
+    if (RIVER_PROFILE_ON) rpEnsure().generateRiversMs += rpNow() - _genT0;
+    return { paths: riverPaths, kinds: riverKinds };
+  }
+  const _s3T0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  const feederPasses = effectiveFeederPasses(riverParams.feederPasses, riverPerf);
+  if (feederPasses > 0) {
+    for (let mi = 0; mi < masses.length; mi++) {
+      const mass = masses[mi];
+      generatePhase3ShortRivers(
         new Set(mass),
         tributaryCell,
         seaDist,
+        gridCtx,
+        feederMinLen,
+        feederMinSourceSep,
+        feederPasses
+      );
+      report(70 + (mi + 1) / nMasses * 18);
+    }
+  } else {
+    report(88);
+  }
+  if (RIVER_PROFILE_ON) rpEnsure().genStage3Ms += rpNow() - _s3T0;
+  const _decorT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  if (!pangeaSingleMass && !largeMapPerf) {
+    const pathCountBeforeDecor = riverPaths.length;
+    for (let i = 0; i < pathCountBeforeDecor; i++) {
+      if (riverKinds[i] !== "main") continue;
+      const path = riverPaths[i];
+      if (!path || path.length < 10) continue;
+      addTributariesForMainRiver(
+        hexes,
+        path,
+        seaDist,
+        rand,
+        maxLen,
         riverPaths,
         riverKinds,
         usedSources,
-        tryFeeder,
-        rand,
-        maxLen,
-        { requireRiverHex: true, ...gridOptsBase }
+        minSourceSep,
+        width,
+        height,
+        oceanConnected,
+        riverParams.areaScale,
+        riverParams.reliefSearchMin,
+        riverParams.reliefSearchMax
       );
+      if (i % 3 === 0) report(88 + i / Math.max(1, pathCountBeforeDecor) * 8);
     }
-    if (passPlaced === 0) break;
+  } else {
+    report(96);
   }
-  for (const mass of masses) {
+  if (RIVER_PROFILE_ON) rpEnsure().genDecorMs += rpNow() - _decorT0;
+  const _genDryT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+  for (let mi = 0; mi < masses.length; mi++) {
+    const mass = masses[mi];
+    if (!mass) continue;
     const massSet = new Set(mass);
-    const minLand = minLandHexesForRiverCell(tributaryCell);
-    for (const land of landHexesByCoverageCell(massSet, tributaryCell).values()) {
-      if (land.length < minLand) continue;
-      if (cellHasRiverHex(land, hexes)) continue;
-      const reachable = land.some(([q, r]) => {
-        const d = seaDist.get(hexKey(q, r)) ?? 999;
-        return d >= riverParams.minInlandFromSea && d <= maxLen + 40;
-      });
-      if (!reachable) continue;
-      for (const [q, r] of land) {
-        if (openOceanDist.get(hexKey(q, r)) == null) continue;
-        if (tryPlaceFeederRiver(q, r)) break;
-      }
-    }
+    const massProfile = riverRoundProfile(mass.length, riverPerf);
+    enforceMaxDryLowlandPatches(massSet, gridCtx, massProfile);
+    report(96 + (mi + 1) / nMasses * 4);
   }
-  const pathCountBeforeDecor = riverPaths.length;
-  for (let i = 0; i < pathCountBeforeDecor; i++) {
-    if (riverKinds[i] !== "main") continue;
-    const path = riverPaths[i];
-    if (!path || path.length < 10) continue;
-    addTributariesForMainRiver(
-      hexes,
-      path,
-      seaDist,
-      rand,
-      maxLen,
-      riverPaths,
-      riverKinds,
-      usedSources,
-      minSourceSep,
-      riverParams.areaScale,
-      riverParams.reliefSearchMin,
-      riverParams.reliefSearchMax
-    );
-  }
+  if (RIVER_PROFILE_ON) rpEnsure().genDryPatchMs += rpNow() - _genDryT0;
+  report(100);
+  syncRiverEdgeBonusHexes(hexes);
+  if (RIVER_PROFILE_ON) rpEnsure().generateRiversMs += rpNow() - _genT0;
   return { paths: riverPaths, kinds: riverKinds };
 }
-function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, rand, riversTier = "medium", minLen = 4, maxLen = 40, riverParams) {
-  var _a9;
+function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, rand, riversTier = "medium", minLen = 4, maxLen = 40, riverParams, onProgress) {
+  var _a11, _b5;
+  const _topT0 = RIVER_PROFILE_ON ? rpNow() : 0;
   const params = riverParams ?? resolveRiverMapParams(riversTier, width, height);
-  const seaDist = buildSeaDistanceField(hexes);
-  const oceanConnected = oceanConnectedWaterKeys(hexes, width, height);
-  const openOceanDist = buildOpenOceanDistanceField(hexes, width, height, oceanConnected);
+  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 5).sort((a, b) => b.length - a.length);
+  const riverPerf = buildRiverPerfCtx(masses, params.areaScale);
+  const topUpPasses = effectiveTopUpPasses(params.topUpPasses, riverPerf);
+  if (topUpPasses === 0) {
+    onProgress == null ? void 0 : onProgress(100);
+    if (RIVER_PROFILE_ON) rpEnsure().topUpMs += rpNow() - _topT0;
+    return 0;
+  }
+  const { seaDist, oceanConnected, openOceanDist } = buildRiverFieldCache(hexes, width, height);
   const usedSources = /* @__PURE__ */ new Set();
   for (let i = 0; i < riverPaths.length; i++) {
-    const p0 = (_a9 = riverPaths[i]) == null ? void 0 : _a9[0];
+    const p0 = (_a11 = riverPaths[i]) == null ? void 0 : _a11[0];
     if (p0) usedSources.add(hexKey(p0.q, p0.r));
   }
-  const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8).sort((a, b) => b.length - a.length);
-  const cellSize = params.tributaryCell;
-  const feederMinLen = params.feederMinLen;
-  const feederMinSourceSep = Math.max(
-    2,
-    Math.floor(cellSize * 0.75 * params.feederSourceSepMult)
-  );
+  const { pangeaSingleMass, largeMapPerf } = riverPerf;
+  const cellSize = params.mainCell;
+  const minSourceSep = Math.max(2, Math.floor(cellSize * 0.25));
   const traceOptsBase = {
     hardMeanderLen: params.hardMeanderLen,
     mouthTailLen: params.mouthTailLen
@@ -5242,170 +8873,135 @@ function topUpRiverGridCoverage(hexes, width, height, riverPaths, riverKinds, ra
     minInland: params.minInlandFromSea,
     mouthTail: params.mouthTailLen
   };
-  const gridOptsBase = {
-    reliefSourceBonus: params.reliefSourceBonus,
-    expandSourceRadius: params.expandSourceRadius,
-    minInlandFromSea: params.minInlandFromSea
-  };
+  const mainKeysCache = /* @__PURE__ */ new Set();
+  for (let i = 0; i < riverPaths.length; i++) {
+    if (riverKinds[i] !== "main") continue;
+    addPathKeysToSet(riverPaths[i] ?? [], mainKeysCache);
+  }
+  const topUpSepIndex = RiverHexSpatialIndex.fromKeys(mainKeysCache);
+  const usedMediumSpawnKeys = /* @__PURE__ */ new Set();
+  for (let i = 0; i < riverPaths.length; i++) {
+    if (riverKinds[i] !== "medium") continue;
+    const p0 = (_b5 = riverPaths[i]) == null ? void 0 : _b5[0];
+    if (p0 && mainKeysCache.has(hexKey(p0.q, p0.r))) {
+      usedMediumSpawnKeys.add(hexKey(p0.q, p0.r));
+    }
+  }
   const pushMain = (path, sq, sr) => {
-    const trimmed = trimRiverPathRings(hexes, path);
-    if (!pathEndsAtSea(hexes, trimmed, width, height, oceanConnected)) return false;
-    if (trimmed.length < RIVER_MIN_MAIN_LEN) return false;
-    riverPaths.push(trimmed);
+    const mainKeys = collectPathHexKeysForKinds(riverPaths, riverKinds, ["main"]);
+    if (isPathTooCloseToRiverHexes(path, mainKeys, MAIN_RIVER_MIN_PATH_SEP, topUpSepIndex)) return false;
+    const finalized = finalizeMainRiverPath(hexes, path, width, height, oceanConnected);
+    if (!finalized) return false;
+    riverPaths.push(finalized);
     riverKinds.push("main");
     usedSources.add(hexKey(sq, sr));
-    markRiverPath(hexes, trimmed);
+    markRiverPath(hexes, finalized);
+    addPathKeysToSet(finalized, mainKeysCache);
+    topUpSepIndex.addPath(finalized);
     return true;
   };
   const pushTributary = (path, sq, sr) => {
-    let out = trimRiverPathRings(hexes, path);
-    if (out.length >= 2) {
-      const junction = out[out.length - 1];
-      const approach = out[out.length - 2];
-      const down = networkDownstreamNeighbor(hexes, junction, approach);
-      out = appendJunctionDownstreamHex(out, down);
-    }
-    riverPaths.push(out);
-    riverKinds.push("tributary");
-    usedSources.add(hexKey(sq, sr));
-    markRiverPath(hexes, out);
-    return true;
-  };
-  const tryPlaceFeederRiver = (sq, sr, junctionKeysOverride) => {
-    const srcKey = hexKey(sq, sr);
-    if (usedSources.has(srcKey)) return false;
-    if (isTooCloseToRiverSource(sq, sr, usedSources, feederMinSourceSep)) {
-      return false;
-    }
-    if (openOceanDist.get(srcKey) == null) return false;
-    const startDist = seaDist.get(srcKey) ?? 999;
-    const traceMax = Math.max(maxLen, minLen + 20, Math.ceil(startDist * 2.6) + minLen);
-    const junctionKeys = junctionKeysOverride ?? (() => {
-      const reach = buildOceanReachableRiverHexKeys(
-        hexes,
-        riverPaths,
-        riverKinds,
-        width,
-        height,
-        oceanConnected
-      );
-      const pool = /* @__PURE__ */ new Set();
-      for (const k of collectRiverPathHexKeys(riverPaths)) {
-        if (reach.has(k)) pool.add(k);
-      }
-      return pool;
-    })();
-    if (junctionKeys.size === 0) {
-      const seaPath2 = traceRiver(hexes, sq, sr, traceMax, {
-        seaDist,
-        openOceanDist,
-        oceanConnected,
-        mapWidth: width,
-        mapHeight: height,
-        rand,
-        minLen,
-        ...traceOptsBase
-      });
-      if (seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
-        hexes,
-        seaPath2,
-        seaDist,
-        seaBufferOpts.minInland,
-        seaBufferOpts.mouthTail
-      )) {
-        return pushMain(seaPath2, sq, sr);
-      }
-      return false;
-    }
-    let bestNetPath = [];
-    let bestNetLen = Infinity;
-    for (const j of rankNetworkJunctionCandidates(sq, sr, junctionKeys, seaDist, traceMax, rand)) {
-      const p = traceTributary(hexes, sq, sr, j.q, j.r, traceMax, seaDist, rand);
-      if (p.length < 3 || p.length < feederMinLen - 2) continue;
-      if (p.length < bestNetLen) {
-        bestNetLen = p.length;
-        bestNetPath = p;
-      }
-    }
-    if (bestNetPath.length >= 3) {
-      const needSeaCompare = bestNetLen > Math.min(traceMax * 0.5, startDist + 6);
-      if (needSeaCompare) {
-        const seaPath2 = traceRiver(hexes, sq, sr, traceMax, {
-          seaDist,
-          openOceanDist,
-          oceanConnected,
-          mapWidth: width,
-          mapHeight: height,
-          rand,
-          minLen,
-          ...traceOptsBase
-        });
-        const seaOk = seaPath2.length >= feederMinLen && pathEndsAtSea(hexes, seaPath2, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
-          hexes,
-          seaPath2,
-          seaDist,
-          seaBufferOpts.minInland,
-          seaBufferOpts.mouthTail
-        );
-        if (seaOk && seaPath2.length < bestNetLen) return pushMain(seaPath2, sq, sr);
-      }
-      return pushTributary(bestNetPath, sq, sr);
-    }
-    const seaPath = traceRiver(hexes, sq, sr, traceMax, {
-      seaDist,
-      openOceanDist,
-      oceanConnected,
-      mapWidth: width,
-      mapHeight: height,
-      rand,
-      minLen,
-      ...traceOptsBase
-    });
-    if (seaPath.length >= feederMinLen && pathEndsAtSea(hexes, seaPath, width, height, oceanConnected) && riverPathRespectsSeaBuffer(
+    const out = finalizeTributaryPath(
       hexes,
-      seaPath,
-      seaDist,
-      seaBufferOpts.minInland,
-      seaBufferOpts.mouthTail
-    )) {
-      return pushMain(seaPath, sq, sr);
-    }
-    return false;
-  };
-  let placed = 0;
-  for (let pass = 0; pass < params.topUpPasses; pass++) {
-    let passPlaced = 0;
-    const reach = buildOceanReachableRiverHexKeys(
-      hexes,
+      path,
       riverPaths,
       riverKinds,
       width,
       height,
       oceanConnected
     );
-    const junctionKeys = /* @__PURE__ */ new Set();
-    for (const k of collectRiverPathHexKeys(riverPaths)) {
-      if (reach.has(k)) junctionKeys.add(k);
-    }
-    const tryFeeder = (sq, sr) => tryPlaceFeederRiver(sq, sr, junctionKeys);
+    if (!out) return false;
+    riverPaths.push(out);
+    riverKinds.push("tributary");
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, out);
+    return true;
+  };
+  const pushMedium = (path, sq, sr) => {
+    const out = finalizeMediumPath(
+      hexes,
+      path,
+      riverPaths,
+      riverKinds,
+      width,
+      height,
+      oceanConnected
+    );
+    if (!out) return false;
+    riverPaths.push(out);
+    riverKinds.push("medium");
+    usedSources.add(hexKey(sq, sr));
+    markRiverPath(hexes, out);
+    return true;
+  };
+  const gridCtx = {
+    hexes,
+    width,
+    height,
+    riverPaths,
+    riverKinds,
+    usedSources,
+    seaDist,
+    openOceanDist,
+    oceanConnected,
+    rand,
+    minLen: params.minLen,
+    maxLen,
+    acceptLen: params.gridTraceMinLen,
+    traceMinLen: params.gridTraceMinLen,
+    sourceSep: minSourceSep,
+    traceOptsBase,
+    seaBufferOpts,
+    pushMain,
+    pushTributary,
+    pushMedium,
+    placeMode: "medium",
+    pangeaSingleMass,
+    largeMapPerf,
+    mainKeysCache,
+    usedMediumSpawnKeys
+  };
+  let placed = 0;
+  const totalSteps = Math.max(1, topUpPasses * masses.length);
+  let step = 0;
+  for (let pass = 0; pass < topUpPasses; pass++) {
+    const _passT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+    let passPlaced = 0;
+    const isLastPass = pass === topUpPasses - 1;
     for (const mass of masses) {
-      passPlaced += ensureMassRiverGridCoverage(
-        hexes,
-        new Set(mass),
-        cellSize,
-        seaDist,
-        riverPaths,
-        riverKinds,
-        usedSources,
-        tryFeeder,
-        rand,
-        maxLen,
-        { requireRiverHex: true, ...gridOptsBase }
-      );
+      const massSet = new Set(mass);
+      setMassRiverTargets(hexes, massSet, gridCtx);
+      const massProfile = riverRoundProfile(mass.length, riverPerf);
+      if (massProfile === "normal" || pass === 0 || isLastPass) {
+        const _hsT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+        passPlaced += generateMediumTributariesFromMainRivers(gridCtx, massSet, maxLen);
+        if (RIVER_PROFILE_ON) rpEnsure().topUpHardStartsMs += rpNow() - _hsT0;
+      }
+      if (massProfile === "normal" || isLastPass) {
+        const _dpT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+        enforceMaxDryLowlandPatches(massSet, gridCtx, massProfile);
+        if (RIVER_PROFILE_ON) rpEnsure().topUpDryPatchMs += rpNow() - _dpT0;
+        const _gpT0 = RIVER_PROFILE_ON ? rpNow() : 0;
+        passPlaced += ensureRiverGridAndProximity(
+          hexes,
+          massSet,
+          cellSize,
+          seaDist,
+          gridCtx,
+          riverProximityEnforceTarget(cellSize),
+          massProfile
+        );
+        if (RIVER_PROFILE_ON) rpEnsure().topUpGridProxMs += rpNow() - _gpT0;
+      }
+      step++;
+      onProgress == null ? void 0 : onProgress(Math.min(100, step / totalSteps * 100));
     }
+    if (RIVER_PROFILE_ON) rpEnsure().topUpPassMs.push(rpNow() - _passT0);
     placed += passPlaced;
     if (passPlaced === 0) break;
   }
+  onProgress == null ? void 0 : onProgress(100);
+  if (RIVER_PROFILE_ON) rpEnsure().topUpMs += rpNow() - _topT0;
   return placed;
 }
 var BASE_DEPOSIT_RULES = [
@@ -5428,10 +9024,10 @@ var BASE_DEPOSIT_RULES = [
     // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
     // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
     allowedOn: (h) => {
-      var _a9;
-      return isDryLandTerrain(h.terenBazowy) && ((_a9 = h.rzeka) == null ? void 0 : _a9.obecna) === true;
+      var _a11;
+      return isDryLandTerrain(h.terenBazowy) && ((_a11 = h.rzeka) == null ? void 0 : _a11.obecna) === true;
     },
-    rarity: 0.1
+    rarity: 0.3
   },
   {
     id: "konie",
@@ -5499,19 +9095,15 @@ function placeDeposits(hexes, seed, rules = DEPOSIT_RULES, resourceMult = 1, bas
   for (const key of keys) {
     const hex = hexes[key];
     if (!hex) continue;
-    if (hex.nakladka !== "brak" /* Brak */) continue;
     if (hex.zloze) continue;
+    if (nakladkaBlocksDepositSpawn(hex.nakladka)) continue;
     if (hex.terenBazowy === "morze" /* Morze */ || hex.terenBazowy === "wybrzeze" /* Wybrzeze */) continue;
     const [depQ, depR] = key.split(",").map(Number);
     for (const rule of rules) {
       if (!rule.allowedOn(hex)) continue;
       if (rule.requiresCoastalLand && !isCoastalLandHex(hexes, depQ, depR)) continue;
       if (rand() < Math.min(1, rule.rarity * baselineMult * resourceMult)) {
-        if (rule.nakladka !== null) {
-          hex.nakladka = rule.nakladka;
-        } else {
-          hex.zloze = rule.id;
-        }
+        applyDepositToHex(hex, rule);
         counts[rule.id] = (counts[rule.id] ?? 0) + 1;
         break;
       }
@@ -5537,9 +9129,10 @@ function depositRuleById(id) {
   return rule;
 }
 function hexCarriesDepositType(hex, id) {
+  if (hex.zloze === id) return true;
   const rule = depositRuleById(id);
   if (rule.nakladka !== null) return hex.nakladka === rule.nakladka;
-  return hex.zloze === id;
+  return false;
 }
 function cellCarriesDepositType(cellLand, hexes, id) {
   for (const [q, r] of cellLand) {
@@ -5548,24 +9141,29 @@ function cellCarriesDepositType(cellLand, hexes, id) {
   }
   return false;
 }
-function hexCanAcceptDeposit(hex, rule, allowForestClear) {
+function nakladkaBlocksDepositSpawn(nakladka) {
+  return nakladka !== "brak" /* Brak */ && nakladka !== "las" /* Las */;
+}
+function hexCanAcceptDeposit(hex, rule) {
   if (hex.terenBazowy === "morze" /* Morze */) return false;
   if (hex.terenBazowy === "wybrzeze" /* Wybrzeze */) return false;
   if (hex.zloze) return false;
-  if (hex.nakladka !== "brak" /* Brak */) {
-    if (!allowForestClear || hex.nakladka !== "las" /* Las */) return false;
-  }
+  if (nakladkaBlocksDepositSpawn(hex.nakladka)) return false;
   return rule.allowedOn(hex);
 }
-function forceDepositOnHex(hex, rule) {
-  if (hex.nakladka === "las" /* Las */) hex.nakladka = "brak" /* Brak */;
-  if (rule.nakladka !== null) {
+function applyDepositToHex(hex, rule) {
+  if (hex.nakladka === "las" /* Las */) {
+    hex.zloze = rule.id;
+  } else if (rule.nakladka !== null) {
     hex.nakladka = rule.nakladka;
   } else {
     hex.zloze = rule.id;
   }
   if (rule.id === "miedz" && hex.zlozeMinEra == null) hex.zlozeMinEra = 2;
   if (rule.id === "zelazo" && hex.zlozeMinEra == null) hex.zlozeMinEra = 3;
+}
+function forceDepositOnHex(hex, rule) {
+  applyDepositToHex(hex, rule);
 }
 function prepareTerrainForDeposit(hex, rule) {
   hex.nakladka = "brak" /* Brak */;
@@ -5613,51 +9211,53 @@ function forceDepositInCell(land, hexes, id, rand) {
   return true;
 }
 function pickDepositForceHex(land, hexes, rule, rand) {
-  const tryPick = (allowForestClear) => {
-    const ranked = land.filter(([q, r]) => {
-      const hex = hexes[hexKey(q, r)];
-      return hex != null && hexCanAcceptDeposit(hex, rule, allowForestClear);
-    }).map(([q, r]) => {
-      var _a9;
-      let score = 0;
-      const hex = hexes[hexKey(q, r)];
-      if (rule.id === "glina" && ((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna)) score += 2;
-      if (rule.id === "glina" && hex.terenBazowy === "laka" /* Laka */) score += 1;
-      score += rand() * 0.2;
-      return { q, r, score };
-    }).sort((a, b) => b.score - a.score);
-    if (ranked.length === 0) return null;
-    return [ranked[0].q, ranked[0].r];
-  };
-  return tryPick(false) ?? tryPick(true);
+  const ranked = land.filter(([q, r]) => {
+    const hex = hexes[hexKey(q, r)];
+    return hex != null && hexCanAcceptDeposit(hex, rule);
+  }).map(([q, r]) => {
+    var _a11;
+    let score = 0;
+    const hex = hexes[hexKey(q, r)];
+    if (rule.id === "glina" && ((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna)) score += 2;
+    if (rule.id === "glina" && hex.terenBazowy === "laka" /* Laka */) score += 1;
+    score += rand() * 0.2;
+    return { q, r, score };
+  }).sort((a, b) => b.score - a.score);
+  if (ranked.length === 0) return null;
+  return [ranked[0].q, ranked[0].r];
 }
 function cellHasForest(cellLand, hexes) {
-  var _a9;
+  var _a11;
   for (const [q, r] of cellLand) {
-    if (((_a9 = hexes[hexKey(q, r)]) == null ? void 0 : _a9.nakladka) === "las" /* Las */) return true;
+    if (((_a11 = hexes[hexKey(q, r)]) == null ? void 0 : _a11.nakladka) === "las" /* Las */) return true;
   }
   return false;
 }
-function ensureDepositGridCoverage(hexes, tier, typ, continentOf, nContinents, rand) {
+function ensureDepositGridCoverage(hexes, tier, _typ, _continentOf, _nContinents, rand) {
   const cellSize = fairPlayResourceCellSize(tier);
   const minLand = minLandHexesForFairPlayCell(cellSize);
-  const partitions = landPartitionKeysForDistribution(hexes, typ, continentOf, nContinents);
+  const partitions = groupLandMassKeys(hexes).filter((m) => m.length >= 8);
   let fixed = 0;
   for (const part of partitions) {
-    const massSet = new Set(part.filter((k) => {
-      var _a9;
-      return ((_a9 = hexes[k]) == null ? void 0 : _a9.terenBazowy) !== "morze" /* Morze */;
-    }));
-    for (let pass = 0; pass < 6; pass++) {
+    const massSet = new Set(part);
+    for (let pass = 0; pass < 10; pass++) {
       let passFixed = 0;
       for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-        if (land.length < minLand) continue;
+        if (!cellCanHostDepositPackage(land, hexes, minLand)) continue;
         for (const id of FAIR_PLAY_DEPOSIT_IDS) {
           if (forceDepositInCell(land, hexes, id, rand)) passFixed++;
         }
       }
       fixed += passFixed;
       if (passFixed === 0) break;
+    }
+    for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
+      if (!cellCanHostDepositPackage(land, hexes, minLand)) continue;
+      for (const id of FAIR_PLAY_DEPOSIT_IDS) {
+        if (!cellCarriesDepositType(land, hexes, id)) {
+          forceDepositInCell(land, hexes, id, rand);
+        }
+      }
     }
   }
   capMountainRangeClusterSize(
@@ -5681,21 +9281,21 @@ function ensureForestGridCoverage(hexes, scratch, forestTier, _typ, _continentOf
   const minLand = minLandHexesForFairPlayCell(cellSize);
   const masses = groupLandMassKeys(hexes).filter((m) => m.length >= 8).sort((a, b) => b.length - a.length);
   let fixed = 0;
-  for (let outer = 0; outer < 4; outer++) {
+  for (let outer = 0; outer < 6; outer++) {
     let passFixed = 0;
     for (const mass of masses) {
       const massSet = new Set(mass);
       for (const land of landHexesByCoverageCell(massSet, cellSize).values()) {
-        if (land.length < minLand || cellHasForest(land, hexes)) continue;
+        if (eligibleForestLandCount(land, hexes) < minLand || cellHasForest(land, hexes)) continue;
         const eligible = land.filter(([q, r]) => {
           const h = hexes[hexKey(q, r)];
           return h && isForestEligibleTerrain(h.terenBazowy) && h.nakladka === "brak" /* Brak */;
         }).map(([q, r]) => {
-          var _a9;
+          var _a11;
           return {
             q,
             r,
-            score: (((_a9 = scratch.get(hexKey(q, r))) == null ? void 0 : _a9.forNoise) ?? 0) + rand() * 0.15
+            score: (((_a11 = scratch.get(hexKey(q, r))) == null ? void 0 : _a11.forNoise) ?? 0) + rand() * 0.15
           };
         }).sort((a, b) => b.score - a.score);
         if (eligible.length === 0) continue;
@@ -5847,6 +9447,57 @@ function placeVillages(hexes, cities, existingCamps, seed, opts) {
   return result;
 }
 
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_TOTAL = 10;
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+function reportMapGenPhase(onProgress, phaseNum, faza, localPct, phaseTotal = MAP_GEN_PHASE_TOTAL) {
+  if (!onProgress) return;
+  const clampedLocal = Math.max(0, Math.min(100, localPct));
+  const globalPct = (phaseNum - 1 + clampedLocal / 100) / phaseTotal * 100;
+  const capped = phaseNum >= phaseTotal && clampedLocal >= 100 ? 100 : Math.min(99, Math.round(globalPct));
+  onProgress(faza, capped, phaseNum, phaseTotal);
+}
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+function createMapGenTimer() {
+  const ms = {};
+  const genStart = performance.now();
+  let lastMark = genStart;
+  let current = null;
+  return {
+    begin(key) {
+      const now = performance.now();
+      if (current) {
+        ms[current] = Math.round(now - lastMark);
+      }
+      current = key;
+      lastMark = now;
+    },
+    finish() {
+      const now = performance.now();
+      if (current) {
+        ms[current] = Math.round(now - lastMark);
+      }
+      const result = {};
+      for (const k of MAP_GEN_PHASE_KEYS) {
+        result[k] = ms[k] ?? 0;
+      }
+      result.total = Math.round(now - genStart);
+      return result;
+    }
+  };
+}
+
 // data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
@@ -5857,7 +9508,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia zelaza->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -5953,22 +9604,6 @@ var terrain_improvements_default = {
     koszt_praca: 28,
     tech: "Je\u017Adziectwo",
     odblokowuje: "Ko\u0144 (jednostki konne)"
-  },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2,
-      handel: 3
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
   },
   glinianka: {
     nazwa: "Glinianka",
@@ -6169,12 +9804,29 @@ var terrain_improvements_default = {
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
     surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+  },
+  kopalnia_zelaza: {
+    nazwa: "Kopalnia \u017Celaza",
+    epoka: 3,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda_zelaza",
+    surowiecOdblokowany_uwaga: "Ruda \u017Celaza (Odlewnia \u017Celaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce \u017Celaza (hex.zloze=zelazo)",
+    warunek: "ruda \u017Celaza \u2192 magazyn (Odlewnia \u017Celaza)",
+    koszt_praca: 22,
+    tech: "Hutnictwo \u017Celaza",
+    odblokowuje: "Odlewnia \u017Celaza (budynek miejski)",
+    uwagi: "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
   },
   kopalnia_zlota: {
     nazwa: "Kopalnia z\u0142ota",
@@ -6222,10 +9874,10 @@ var LEGACY_KEY_ALIASES = {
 };
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
 function normalizeImprovementKey(raw) {
-  var _a9;
+  var _a11;
   if (!raw || raw === "brak") return void 0;
   const key = LEGACY_KEY_ALIASES[raw] ?? raw;
-  return ((_a9 = IMPROVEMENTS[key]) == null ? void 0 : _a9.bonus) !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
+  return ((_a11 = IMPROVEMENTS[key]) == null ? void 0 : _a11.bonus) !== void 0 || IMPROVEMENTS[key] ? key : IMPROVEMENTS[raw] ? raw : void 0;
 }
 function improvementBonusForKey(key) {
   const row = IMPROVEMENTS[key];
@@ -6247,14 +9899,12 @@ var ORE_YIELD_PER_MINE = 2;
 function oreYieldFromImprovements(improvementKeys, zloze) {
   let ruda = 0;
   let ruda_zelaza = 0;
-  const z = zloze == null ? void 0 : zloze.trim().toLowerCase();
   for (const raw of improvementKeys) {
     const key = normalizeImprovementKey(raw);
     if (key === "kopalnia_miedzi") {
       ruda += ORE_YIELD_PER_MINE;
-    } else if (key === "kopalnia") {
-      if (z === "zelazo") ruda_zelaza += ORE_YIELD_PER_MINE;
-      else ruda += ORE_YIELD_PER_MINE;
+    } else if (key === "kopalnia_zelaza") {
+      ruda_zelaza += ORE_YIELD_PER_MINE;
     }
   }
   return { ruda, ruda_zelaza };
@@ -6269,7 +9919,7 @@ var TERRITORY_YIELD_IMPROVEMENTS = /* @__PURE__ */ new Set([
   "kamieniolom",
   "glinianka",
   "kopalnia_miedzi",
-  "kopalnia",
+  "kopalnia_zelaza",
   "warzelnia_soli",
   "stadnina",
   "kopalnia_zlota"
@@ -6292,35 +9942,61 @@ function territoryResourceYieldForImprovement(key, zloze) {
       return { resourceKey: "glina", amount: territoryYieldAmountForKey(norm) };
     case "kopalnia_miedzi":
       return { resourceKey: "ruda", amount: territoryYieldAmountForKey(norm) };
+    case "kopalnia_zelaza":
+      return { resourceKey: "ruda_zelaza", amount: territoryYieldAmountForKey(norm) };
     case "warzelnia_soli":
       return { resourceKey: "sol", amount: territoryYieldAmountForKey(norm) };
     case "stadnina":
       return { resourceKey: "kon", amount: 1 };
     case "kopalnia_zlota":
       return { resourceKey: "zloto", amount: 1 };
-    case "kopalnia": {
-      const z = zloze == null ? void 0 : zloze.trim().toLowerCase();
-      return { resourceKey: z === "zelazo" ? "ruda_zelaza" : "ruda", amount: territoryYieldAmountForKey(norm) };
-    }
     default:
       return null;
   }
 }
 function improvementKeysForHex(hex) {
-  var _a9;
-  if ((_a9 = hex.ulepszenia) == null ? void 0 : _a9.length) {
+  var _a11;
+  if ((_a11 = hex.ulepszenia) == null ? void 0 : _a11.length) {
     const keys = hex.ulepszenia.map((k) => normalizeImprovementKey(String(k))).filter((k) => !!k);
     return [...new Set(keys)];
   }
   const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
   return single ? [single] : [];
 }
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  var _a11;
+  const s = (_a11 = IMPROVEMENTS[k]) == null ? void 0 : _a11.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
+var _a2, _b2;
+var FARMA_POTENTIAL_FOOD_BONUS = ((_b2 = (_a2 = IMPROVEMENTS.farma) == null ? void 0 : _a2.bonus) == null ? void 0 : _b2.zywnosc) ?? 3;
+var FOREST_FOOD_POTENTIAL_PENALTY = -3;
+var FOOD_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
+  "farma",
+  "irygacja",
+  "tarasy",
+  "bydlo",
+  "owce",
+  "lama",
+  "oboz_lowiecki",
+  "lodzie_rybackie"
+]);
+function foodPotentialForHex(terenBazowy, nakladka, improvementKeys) {
+  const keys = improvementKeys.map((k) => normalizeImprovementKey(k)).filter((k) => !!k);
+  if (keys.some((k) => FOOD_IMPROVEMENT_KEYS.has(k))) return 0;
+  if (nakladka === "las" /* Las */) return FOREST_FOOD_POTENTIAL_PENALTY;
+  if (terenBazowy === "laka" /* Laka */ || terenBazowy === "rownina" /* Rownina */) {
+    return FARMA_POTENTIAL_FOOD_BONUS;
+  }
+  return 0;
+}
 var RESOURCE_UPKEEP_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
   "tartak",
   "kamieniolom",
   "glinianka",
-  "kopalnia",
   "kopalnia_miedzi",
+  "kopalnia_zelaza",
   "warzelnia_soli",
   "stadnina",
   // PYTANIE-84-B4: Kopalnia złota produkuje zloto/t do magazynu państwa (TERRITORY_YIELD powyżej).
@@ -6332,8 +10008,8 @@ var ROAD_MOVE_SPEED_MULT = 3;
 var ROAD_MIN_MOVE_COST = 1 / 3;
 var RAW = terrain_improvements_default;
 function cobblestoneMoveBonus() {
-  var _a9;
-  return ((_a9 = RAW.droga_brukowana) == null ? void 0 : _a9.bonus_ruch) ?? 2;
+  var _a11;
+  return ((_a11 = RAW.droga_brukowana) == null ? void 0 : _a11.bonus_ruch) ?? 2;
 }
 function applyRoadMovementModifier(cost, hex) {
   if (cost === Infinity) return Infinity;
@@ -6380,6 +10056,29 @@ var DEFAULT_TERRAIN_COSTS = {
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
 var _forestExtra = 1;
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 function terrainScore(tb) {
   switch (tb) {
     case "laka" /* Laka */:
@@ -6476,8 +10175,8 @@ var HEX_NEIGHBORS = [
 ];
 var RIVER_HEX_MOVE_COST = 1;
 function terrainMoveCost(hex) {
-  var _a9;
-  if (((_a9 = hex.rzeka) == null ? void 0 : _a9.obecna) === true) {
+  var _a11;
+  if (((_a11 = hex.rzeka) == null ? void 0 : _a11.obecna) === true) {
     const tb = hex.terenBazowy;
     if (tb === "morze" /* Morze */ || tb === "wybrzeze" /* Wybrzeze */ || tb === "polarny" /* Polarny */) {
       return Infinity;
@@ -6683,6 +10382,9 @@ function computePath(unit, map, destQ, destR, occupied, costFn = terrainMoveCost
 
 // src/map/clusters.ts
 var MIN_MASS_HEXES_FOR_CENTER = 12;
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
+var DEVELOPMENT_SPACE_RADIUS = 6;
 var LOCAL_LAND_DOMINANCE_FRAC = 0.7;
 var LOCAL_LAND_DOMINANCE_RADIUS = 3;
 var PLAYER_START_MIN_MASS_HEXES = 25;
@@ -6695,6 +10397,16 @@ function buildMassHexIndex(masses) {
     }
   }
   return idx;
+}
+function massLandCacheFromMasses(masses) {
+  return {
+    masses,
+    hexIndex: buildMassHexIndex(masses),
+    massSets: masses.map((m) => new Set(m.map((h) => `${h.q},${h.r}`)))
+  };
+}
+function resolveMassLandCache(massesOrCache) {
+  return Array.isArray(massesOrCache) ? massLandCacheFromMasses(massesOrCache) : massesOrCache;
 }
 function massContainingHex(hexIndex, q, r) {
   const mi = hexIndex.get(`${q},${r}`);
@@ -6722,16 +10434,36 @@ function localLandFraction(map, q, r, radius = LOCAL_LAND_DOMINANCE_RADIUS) {
 function passesLocalLandGate(map, q, r, minFrac = LOCAL_LAND_DOMINANCE_FRAC, radius = LOCAL_LAND_DOMINANCE_RADIUS) {
   return localLandFraction(map, q, r, radius).ratio >= minFrac;
 }
-function massSizeAtHex(q, r, masses) {
-  const idx = buildMassHexIndex(masses);
-  const mi = massContainingHex(idx, q, r);
-  return mi !== null ? masses[mi].length : 0;
+function developmentSpaceScore(map, q, r, massesOrCache, radius = DEVELOPMENT_SPACE_RADIUS) {
+  const cache = resolveMassLandCache(massesOrCache);
+  const mi = massContainingHex(cache.hexIndex, q, r);
+  if (mi === null) return 0;
+  const massSet = cache.massSets[mi];
+  let count = 0;
+  for (let dq = -radius; dq <= radius; dq++) {
+    const r1 = Math.max(-radius, -dq - radius);
+    const r2 = Math.min(radius, -dq + radius);
+    for (let dr = r1; dr <= r2; dr++) {
+      const nq = q + dq;
+      const nr = r + dr;
+      if (!massSet.has(`${nq},${nr}`)) continue;
+      const h = map.hexes[`${nq},${nr}`];
+      if (h && isSpawnHabitableTerrain(h.terenBazowy)) count++;
+    }
+  }
+  return count;
 }
-function passesPlayerStartMassGate(map, q, r, masses) {
-  var _a9;
+function massSizeAtHex(q, r, massesOrCache) {
+  const cache = resolveMassLandCache(massesOrCache);
+  const mi = massContainingHex(cache.hexIndex, q, r);
+  return mi !== null ? cache.masses[mi].length : 0;
+}
+function passesPlayerStartMassGate(map, q, r, massesOrCache) {
+  var _a11;
   if (!passesLocalLandGate(map, q, r)) return false;
-  const massSize = massSizeAtHex(q, r, masses);
-  const largest = ((_a9 = masses[0]) == null ? void 0 : _a9.length) ?? 0;
+  const cache = resolveMassLandCache(massesOrCache);
+  const massSize = massSizeAtHex(q, r, cache);
+  const largest = ((_a11 = cache.masses[0]) == null ? void 0 : _a11.length) ?? 0;
   const scaledMin = Math.max(
     PLAYER_START_MASS_MIN_ABSOLUTE,
     Math.floor(largest * 0.08)
@@ -6780,8 +10512,8 @@ function hexAt(map, q, r) {
   return map.hexes[keyOf(q, r)];
 }
 function hasRiver(map, q, r) {
-  var _a9, _b3;
-  return ((_b3 = (_a9 = hexAt(map, q, r)) == null ? void 0 : _a9.rzeka) == null ? void 0 : _b3.obecna) === true;
+  var _a11, _b5;
+  return ((_b5 = (_a11 = hexAt(map, q, r)) == null ? void 0 : _a11.rzeka) == null ? void 0 : _b5.obecna) === true;
 }
 function isArable(tb) {
   return tb === "laka" /* Laka */ || tb === "rownina" /* Rownina */;
@@ -6853,9 +10585,11 @@ function findBestPlayerStartHex(map) {
     if (!passesPlayerStartMassGate(map, q, r, masses)) continue;
     const s = scoreCityStartHex(map, q, r);
     if (s === -Infinity) continue;
+    const devBonus = developmentSpaceScore(map, q, r, masses) * 0.05;
+    const combined = s + devBonus;
     const cd = hexDistance(q, r, cq, cr);
-    if (s > bestScore || s === bestScore && cd < bestCenterDist) {
-      bestScore = s;
+    if (combined > bestScore || combined === bestScore && cd < bestCenterDist) {
+      bestScore = combined;
       bestCenterDist = cd;
       best = { q, r };
     }
@@ -6866,8 +10600,10 @@ function findBestPlayerStartHex(map) {
 // src/map/generator.ts
 var DEFAULT_WIDTH = 36;
 var DEFAULT_HEIGHT = 28;
-function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, typ = "kontynenty", genOpts) {
-  var _a9, _b3, _c3, _d3;
+function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, typ = "kontynenty", genOpts, onProgress) {
+  var _a11, _b5, _c3, _d3;
+  const genTimer = createMapGenTimer();
+  genTimer.begin("prep");
   const effectiveSeed = seed || 42;
   const wgn = resolveWorldGenNumbers(genOpts);
   const landFraction = resolveLandFraction(genOpts, typ);
@@ -6894,25 +10630,26 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     zoneCenters = buildFiveZoneContinentCenters(rand, width, height, kontynentyRadiusMin, kontynentyRadiusMax);
   } else if (typ === "wyspy") {
     zoneCenters = buildSixteenGridIslandCenters(rand, width, height);
+  } else if (typ === "pangea") {
+    zoneCenters = buildPangeaBlobCenters(rand, width, height, landFraction);
   } else {
-    zoneCenters = buildContinentCenters(
-      rand,
-      nCenters,
-      { width, height, anchorCenter: typ === "pangea" }
-    );
+    zoneCenters = buildContinentCenters(rand, nCenters, { width, height });
   }
   const nZones = typ === "kontynenty" || typ === "wyspy" ? zoneCenters.length : 0;
   const zoneOf = typ === "kontynenty" ? assignContinentIndices(width, height, zoneCenters) : typ === "wyspy" ? assignIslandGridIndices(width, height) : null;
   const hexes = {};
   const landScores = /* @__PURE__ */ new Map();
   const terrainScratch = /* @__PURE__ */ new Map();
+  reportMapGenPhase(onProgress, 1, MAP_GEN_PHASE_LABELS.prep, 100);
+  genTimer.begin("terrain");
+  const terrainRowStep = Math.max(1, Math.floor(height / 24));
   for (let r = 0; r < height; r++) {
     for (let q = 0; q < width; q++) {
       const coords = { q, r };
       const key = `${q},${r}`;
       let landMask;
       if (typ === "pangea") {
-        landMask = landMaskPangea(q, r, width, height, perm, shape.noiseScale, sparseLand);
+        landMask = landMaskPangea(q, r, width, height, zoneCenters, perm, shape.noiseScale, landFraction);
       } else if (typ === "wyspy") {
         landMask = landMaskWyspy(q, r, width, height, zoneCenters, perm, shape.noiseScale);
       } else if (typ === "ziemia") {
@@ -6954,7 +10691,13 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
         rzeka: { obecna: false, krawedzie: [] }
       };
     }
+    if (onProgress && (r % terrainRowStep === 0 || r === height - 1)) {
+      reportMapGenPhase(onProgress, 2, MAP_GEN_PHASE_LABELS.terrain, (r + 1) / height * 100);
+    }
   }
+  reportMapGenPhase(onProgress, 2, MAP_GEN_PHASE_LABELS.terrain, 100);
+  genTimer.begin("landSea");
+  reportMapGenPhase(onProgress, 3, MAP_GEN_PHASE_LABELS.landSea, 5);
   const coastOpts = typ === "pangea" ? { maxInlandPoolSize: 24 } : typ === "kontynenty" ? { maxInlandPoolSize: 8 } : void 0;
   if (typ === "kontynenty") {
     removeSmallInlandWaterPools(hexes, width, height, 8);
@@ -6963,8 +10706,10 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     removeInlandWaterPools(hexes, width, height);
   } else {
     removeInlandSeaPools(hexes, width, height);
+    fillPangeaAnnularSeaCorridors(hexes, width, height);
   }
   if (typ === "pangea") {
+    snapPangeaBagelAudit("01_po_mask_annular", hexes, width, height);
     trimDeepOceanBays(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
@@ -6986,6 +10731,9 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   } else if (typ === "ziemia") {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
+  } else if (typ === "pangea") {
+    rebalanceLandFractionPangea(hexes, landScores, landFraction, width, height, perm);
+    snapPangeaBagelAudit("02_po_rebalance1", hexes, width, height);
   } else {
     rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height);
   }
@@ -6995,7 +10743,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     purgeInlandWaterForMultiLandTyp(hexes, width, height);
   }
   finalizeCoastAndInlandWater(hexes, width, height, 3, coastOpts);
-  const reliefTier = ((_a9 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _a9.relief) ?? ((_b3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _b3.rivers) ?? "medium";
+  reportMapGenPhase(onProgress, 3, MAP_GEN_PHASE_LABELS.landSea, 55);
+  const reliefTier = ((_a11 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _a11.relief) ?? ((_b5 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _b5.rivers) ?? "medium";
   const forestTier = ((_c3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _c3.forest) ?? "medium";
   reapplyLandTerrain(hexes, terrainScratch, effectiveSeed, terrainTh, height, reliefTier);
   if (typ !== "pangea") {
@@ -7009,6 +10758,9 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   }
   finalizeCoastAndInlandWater(hexes, width, height, 2, coastOpts);
   purgeReliefValleyWater(hexes, width, height);
+  reportMapGenPhase(onProgress, 3, MAP_GEN_PHASE_LABELS.landSea, 100);
+  genTimer.begin("relief");
+  reportMapGenPhase(onProgress, 4, MAP_GEN_PHASE_LABELS.relief, 10);
   if (typ === "pangea") {
     trimDeepOceanBays(hexes, width, height);
   }
@@ -7024,10 +10776,13 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
   if (typ === "ziemia") {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
+  } else if (typ === "pangea") {
+    rebalanceLandFractionPangea(hexes, landScores, landFraction, width, height, perm);
+    snapPangeaBagelAudit("03_po_rebalance2", hexes, width, height);
   } else {
     rebalanceLandFractionWithMargins(hexes, landScores, landFraction, width, height);
   }
-  if (typ !== "ziemia") {
+  if (typ !== "ziemia" && typ !== "pangea") {
     applyJaggedCoastNoise(hexes, perm, width, height, 1);
   }
   removeSmallInlandWaterPools(hexes, width, height, 14);
@@ -7056,44 +10811,134 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     rand
   );
   growMountainRanges(hexes, terrainScratch, reliefTier, width, height, rand);
+  reportMapGenPhase(onProgress, 4, MAP_GEN_PHASE_LABELS.relief, 75);
   applyClimateBandsToHexes(hexes, height, effectiveSeed, typ === "ziemia");
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === "ziemia");
   purgeInlandWaterForMultiLandTyp(hexes, width, height);
   purgeDesertEnclaveWater(hexes, width, height);
+  reportMapGenPhase(onProgress, 4, MAP_GEN_PHASE_LABELS.relief, 100);
+  genTimer.begin("coast");
+  reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 20);
   thickenCoastAndSmoothInlets(hexes, width, height, 2);
+  if (typ === "pangea") {
+    snapPangeaBagelAudit("04_po_thickenCoast", hexes, width, height);
+  }
   if (typ === "ziemia") {
     purgeStrayLandOutsideEarthMask(hexes, width, height);
     applyCoastRing(hexes);
   }
   enforceMapBorderOcean(hexes, width, height);
   enforceLatitudinalOceanBuffer(hexes, width, height, typ === "ziemia");
+  if (typ !== "ziemia") {
+    const pangeaFillMin = typ === "pangea" ? pangeaLandLayoutParams(landFraction, width, height).fillMinScore : void 0;
+    enforceTargetDryLandFraction(
+      hexes,
+      landScores,
+      landFraction,
+      width,
+      height,
+      coastOpts,
+      void 0,
+      typ === "pangea" ? "mask" : "center",
+      pangeaFillMin
+    );
+    if (typ === "pangea") {
+      snapPangeaBagelAudit("05_po_enforceLandPct", hexes, width, height);
+      fillPangeaAnnularSeaCorridors(hexes, width, height);
+      ensurePangeaSingleContinent(hexes, width, height);
+      snapPangeaBagelAudit("06_po_ensure_A", hexes, width, height);
+      enforceMapBorderOcean(hexes, width, height);
+      finalizeCoastAndInlandWater(hexes, width, height, 1, coastOpts);
+      snapPangeaBagelAudit("07_po_finalizeCoast", hexes, width, height);
+      fillPangeaAnnularSeaCorridors(hexes, width, height);
+      ensurePangeaSingleContinent(hexes, width, height);
+      snapPangeaBagelAudit("08_po_ensure_B", hexes, width, height);
+      enforceMapBorderOcean(hexes, width, height);
+      applyCoastRing(hexes);
+    }
+  }
+  if (typ === "pangea") {
+    fillPangeaAnnularSeaCorridors(hexes, width, height);
+    ensurePangeaSingleContinent(hexes, width, height);
+    snapPangeaBagelAudit("09_przed_rzekami", hexes, width, height);
+  }
+  reportMapGenPhase(onProgress, 5, MAP_GEN_PHASE_LABELS.coast, 100);
+  genTimer.begin("riversMain");
+  const riverGenOn = getRiverGenEnabled();
+  const riverGenMainOnly = riverGenOn && isRiverGenMainOnly();
+  if (!riverGenOn) {
+    console.info("[civ] riverGen: WY\u0141\u0104CZONE (kill-switch FALA 160 \u2014 ?riverGen=1 / localStorage civ-river-gen)");
+  } else if (riverGenMainOnly) {
+    console.info("[civ] riverGenPhase: main (tylko g\u0142\xF3wne; pe\u0142ny tor: ?riverGenPhase=all)");
+  } else if (getRiverGenPhase() === "main+medium") {
+    console.info("[civ] riverGenPhase: main+medium (g\u0142\xF3wne+\u015Brednie; pe\u0142ny tor: ?riverGenPhase=all)");
+  }
+  reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 0);
   const riversTier = ((_d3 = genOpts == null ? void 0 : genOpts.worldDensity) == null ? void 0 : _d3.rivers) ?? "medium";
   const riverParams = resolveRiverMapParams(riversTier, width, height);
   clearRiverMarks(hexes);
-  let { paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
-    minLen: riverParams.minLen,
-    maxLen: riverParams.maxLen,
-    margin: wgn.riverTrace.margin,
-    riversTier,
-    worldTyp: typ,
-    riverParams
-  });
-  topUpRiverGridCoverage(
-    hexes,
-    width,
-    height,
-    riverPaths,
-    riverPathKinds,
-    rand,
-    riversTier,
-    riverParams.minLen,
-    riverParams.maxLen,
-    riverParams
-  );
-  stripRiverMarksFromOpenSea(hexes);
-  ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
-  ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+  let riverPaths = [];
+  let riverPathKinds = [];
+  if (riverGenOn) {
+    ({ paths: riverPaths, kinds: riverPathKinds } = generateRivers(hexes, width, height, rand, {
+      minLen: riverParams.minLen,
+      maxLen: riverParams.maxLen,
+      margin: wgn.riverTrace.margin,
+      riversTier,
+      worldTyp: typ,
+      riverParams,
+      onProgress: (localPct) => {
+        reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, localPct);
+      }
+    }));
+  }
+  reportMapGenPhase(onProgress, 6, MAP_GEN_PHASE_LABELS.riversMain, 100);
+  genTimer.begin("riversFill");
+  reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 0);
+  if (riverGenOn && !riverGenMainOnly) {
+    stripRiverMarksFromOpenSea(hexes);
+    ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+    ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+    ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+    ({ paths: riverPaths, kinds: riverPathKinds } = pruneRiversNotReachingRealSea(hexes, riverPaths, riverPathKinds, width, height));
+    topUpRiverGridCoverage(
+      hexes,
+      width,
+      height,
+      riverPaths,
+      riverPathKinds,
+      rand,
+      riversTier,
+      riverParams.minLen,
+      riverParams.maxLen,
+      riverParams,
+      (localPct) => {
+        reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 5 + localPct * 0.75);
+      }
+    );
+    ({ paths: riverPaths, kinds: riverPathKinds } = ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+  } else if (riverGenMainOnly) {
+    stripRiverMarksFromOpenSea(hexes);
+    ({ paths: riverPaths, kinds: riverPathKinds } = pruneOrphanRiverPaths(hexes, riverPaths, riverPathKinds, width, height));
+    reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 100);
+  }
+  reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 85);
   flattenFalseCoastalRiverNotches(hexes, width, height);
+  if (riverGenOn) {
+    refillMainRiverCoastMouthGapsOnMap(
+      hexes,
+      width,
+      height,
+      riverPaths,
+      riverPathKinds,
+      rand,
+      riverParams,
+      riverParams.minLen
+    );
+  }
+  if (typ === "pangea") {
+    snapPangeaBagelAudit("10_po_rzekach", hexes, width, height);
+  }
   capReliefClusterSizeSafetyNet(hexes, terrainScratch);
   ensureReliefGridCoverage(
     hexes,
@@ -7106,11 +10951,20 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     nZones,
     rand
   );
+  reportMapGenPhase(onProgress, 7, MAP_GEN_PHASE_LABELS.riversFill, 100);
+  genTimer.begin("forest");
+  reportMapGenPhase(onProgress, 8, MAP_GEN_PHASE_LABELS.forest, 10);
   reapplyForestOverlay(hexes, terrainScratch, terrainTh, typ, forestTier, zoneOf, nZones, height);
   ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
+  reportMapGenPhase(onProgress, 8, MAP_GEN_PHASE_LABELS.forest, 100);
+  genTimer.begin("deposits");
+  reportMapGenPhase(onProgress, 9, MAP_GEN_PHASE_LABELS.deposits, 15);
   placeDeposits(hexes, effectiveSeed, void 0, wgn.resourceMult, wgn.resourceBaseline);
   ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
   stripDepositsFromWater(hexes);
+  reportMapGenPhase(onProgress, 9, MAP_GEN_PHASE_LABELS.deposits, 100);
+  genTimer.begin("starts");
+  reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 10);
   const startPositions = computeStartPositions(hexes, effectiveSeed, {
     minCount: 5,
     minDist: 5,
@@ -7131,6 +10985,7 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     const hex = hexes[`${site.q},${site.r}`];
     if (hex) hex.wioska = { istnieje: true, ludnosc: 1 };
   }
+  reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 70);
   if (typ === "ziemia") {
     enforceEarthTemplateOnHexes(hexes, width, height);
     purgeOceanInsideEarthLandMask(hexes, width, height);
@@ -7149,6 +11004,41 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
     stripDepositsFromWater(hexes);
   }
+  ({ paths: riverPaths, kinds: riverPathKinds } = ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+  finalizeCoastAndInlandWater(hexes, width, height, 2, coastOpts);
+  ({ paths: riverPaths, kinds: riverPathKinds } = ensureRiverOutlets(hexes, riverPaths, riverPathKinds, width, height));
+  capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+  ensureReliefGridCoverage(
+    hexes,
+    terrainScratch,
+    reliefTier,
+    width,
+    height,
+    typ,
+    zoneOf,
+    nZones,
+    rand
+  );
+  ensureForestGridCoverage(hexes, terrainScratch, forestTier, typ, zoneOf, nZones, rand);
+  ensureDepositGridCoverage(hexes, reliefTier, typ, zoneOf, nZones, rand);
+  stripDepositsFromWater(hexes);
+  capReliefClusterSizeSafetyNet(hexes, terrainScratch);
+  ensureReliefGridCoverage(
+    hexes,
+    terrainScratch,
+    reliefTier,
+    width,
+    height,
+    typ,
+    zoneOf,
+    nZones,
+    rand
+  );
+  reportMapGenPhase(onProgress, 10, MAP_GEN_PHASE_LABELS.starts, 100);
+  const mapGenTimings = genTimer.finish();
+  console.info(
+    `[civ] mapGen ms | prep=${mapGenTimings.prep} terrain=${mapGenTimings.terrain} landSea=${mapGenTimings.landSea} relief=${mapGenTimings.relief} coast=${mapGenTimings.coast} riversMain=${mapGenTimings.riversMain} riversFill=${mapGenTimings.riversFill} forest=${mapGenTimings.forest} deposits=${mapGenTimings.deposits} starts=${mapGenTimings.starts} total=${mapGenTimings.total}`
+  );
   return {
     szerokoscQ: width,
     wysokoscR: height,
@@ -7156,7 +11046,8 @@ function generateMap(width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT, seed = 42, 
     seed: effectiveSeed,
     riverPaths,
     riverPathKinds,
-    startPositions
+    startPositions,
+    mapGenTimings
   };
 }
 var ROZMIAR_DIMS = mapGenRozmiarDims();
@@ -7273,8 +11164,9 @@ var terrain_yields_default = {
       Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 8,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Glina: 2,
+      Suma: 10,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105; +2 glina (szt./tur\u0119) przy rzece \u2014 plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +10 z glin\u0105"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
@@ -7283,6 +11175,7 @@ var terrain_yields_default = {
       Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
+      Glina: 0,
       Suma: 7,
       Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
@@ -7300,8 +11193,28 @@ function applyTempoKoszt(bazowyKoszt, tempo) {
   return Math.max(1, Math.round(bazowyKoszt * mnoznik));
 }
 
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+function stripDiacriticsLower(s) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+function normalizeResearchEra(epoka) {
+  if (!epoka) return "kamien";
+  const n = stripDiacriticsLower(epoka);
+  if (n === "braz" || n === "br\u0105z") return "braz";
+  if (n === "zelazo" || n === "\u017Celazo") return "zelazo";
+  if (n === "kamien" || n === "kamie\u0144") return "kamien";
+  return n;
+}
+function isResearchEraFala2Extra(epoka) {
+  const era = normalizeResearchEra(epoka);
+  return era === "braz" || era === "zelazo";
+}
+
 // src/game/difficulty-cost.ts
-var GLOBAL_RESEARCH_COST_MULT = 1;
+var GLOBAL_RESEARCH_COST_MULT = R_STAWKI_KOSZT_MULT;
 function isPlayerOwner(ownerId) {
   return ownerId === 0;
 }
@@ -7314,22 +11227,25 @@ function applyDifficultyCostMultiplier(costAfterPace, ownerId, difficulty) {
   const mult = getCostMultiplierForOwner(ownerId, difficulty);
   return Math.max(1, Math.round(costAfterPace * mult));
 }
-function scaledResearchCost(baseCost, tempo, ownerId, difficulty) {
+function scaledResearchCost(baseCost, tempo, ownerId, difficulty, epoka) {
   const afterTempo = applyTempoKoszt(baseCost, tempo);
-  const afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
+  let afterGlobal = Math.max(1, Math.round(afterTempo * GLOBAL_RESEARCH_COST_MULT));
+  if (isResearchEraFala2Extra(epoka)) {
+    afterGlobal = Math.max(1, Math.round(afterGlobal * R_STAWKI_FALA2_MULT));
+  }
   return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
 }
 
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domy\u015Blnie = manpowerNaLudka; epoka 1 = po\u0142owa \u2014 Maciej 2026-08-03: wi\u0119ksza armia w Kamieniu).",
   _formuly: {
     ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
     manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
+    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka (ep1: 500 \u2192 2 jednostki / ludek przy pe\u0142nej puli)"
   },
   epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 500 },
     { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
     { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
     { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
@@ -7345,7 +11261,7 @@ var epoka_ludnosc_manpower_default = {
 // data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
-    wartosc: 5,
+    wartosc: 4,
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
@@ -7439,7 +11355,7 @@ var miasto_params_default = {
   bonus_obrona_palisada_proc: {
     wartosc: 100,
     jednostka: "% Obrony (wczesna palisada drewniana)",
-    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Br\u0105zu, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Kamienia, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
   },
   zasieg_okolicy_baza: {
     wartosc: 5,
@@ -7574,9 +11490,9 @@ function tickManpowerUnitReplenishment(cities, units, difficulty, resolveOwnerEr
   return { healedCount, totalMpSpent };
 }
 function loadManpowerRegenParams(raw = miasto_params_default) {
-  var _a9, _b3;
-  const pct = (_a9 = raw.manpower_regen_proc_max_tura) == null ? void 0 : _a9.wartosc;
-  const block = (_b3 = raw.manpower_regen_blok_oblezenie) == null ? void 0 : _b3.wartosc;
+  var _a11, _b5;
+  const pct = (_a11 = raw.manpower_regen_proc_max_tura) == null ? void 0 : _a11.wartosc;
+  const block = (_b5 = raw.manpower_regen_blok_oblezenie) == null ? void 0 : _b5.wartosc;
   return {
     regenProcMaxPerTurn: typeof pct === "number" && pct >= 0 ? pct : DEFAULT_REGEN.regenProcMaxPerTurn,
     blockWhenBesieged: block === void 0 ? true : block !== 0
@@ -7711,32 +11627,32 @@ function ownerResourceStockAll(cities, ownerId) {
   return pool;
 }
 function ownerResourceStock(cities, ownerId, key) {
-  var _a9;
+  var _a11;
   let total = 0;
   for (const c of cities) {
     if (c.ownerId !== ownerId) continue;
-    total += ((_a9 = c.surowce) == null ? void 0 : _a9[key]) ?? 0;
+    total += ((_a11 = c.surowce) == null ? void 0 : _a11[key]) ?? 0;
   }
   return total;
 }
 function deductBuildingStockCostAcrossCities(cities, ownerId, cost) {
-  var _a9;
+  var _a11;
   const ownerCities = cities.filter((c) => c.ownerId === ownerId);
   for (const [key, needRaw] of Object.entries(cost)) {
     let need = needRaw;
     if (!(need > 0)) continue;
     const holders = ownerCities.filter((c) => {
-      var _a10;
-      return (((_a10 = c.surowce) == null ? void 0 : _a10[key]) ?? 0) > 0;
+      var _a12;
+      return (((_a12 = c.surowce) == null ? void 0 : _a12[key]) ?? 0) > 0;
     }).sort((a, b) => {
-      var _a10, _b3;
-      const diff = (((_a10 = b.surowce) == null ? void 0 : _a10[key]) ?? 0) - (((_b3 = a.surowce) == null ? void 0 : _b3[key]) ?? 0);
+      var _a12, _b5;
+      const diff = (((_a12 = b.surowce) == null ? void 0 : _a12[key]) ?? 0) - (((_b5 = a.surowce) == null ? void 0 : _b5[key]) ?? 0);
       if (diff !== 0) return diff;
       return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
     });
     for (const c of holders) {
       if (need <= 0) break;
-      const have = ((_a9 = c.surowce) == null ? void 0 : _a9[key]) ?? 0;
+      const have = ((_a11 = c.surowce) == null ? void 0 : _a11[key]) ?? 0;
       const take = Math.min(have, need);
       if (!c.surowce) c.surowce = {};
       c.surowce[key] = have - take;
@@ -7755,8 +11671,8 @@ function creditOwnerResourceStock(cities, ownerId, key, amount, capPerType) {
   }
   if (toAdd <= 0) return 0;
   const target = [...ownerCities].sort((a, b) => {
-    var _a9, _b3;
-    const diff = (((_a9 = a.surowce) == null ? void 0 : _a9[key]) ?? 0) - (((_b3 = b.surowce) == null ? void 0 : _b3[key]) ?? 0);
+    var _a11, _b5;
+    const diff = (((_a11 = a.surowce) == null ? void 0 : _a11[key]) ?? 0) - (((_b5 = b.surowce) == null ? void 0 : _b5[key]) ?? 0);
     if (diff !== 0) return diff;
     return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
   })[0];
@@ -7833,11 +11749,11 @@ var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
 function buildingRequiredActiveLabels(building) {
-  var _a9;
+  var _a11;
   const out = /* @__PURE__ */ new Set();
   const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
   if (hard) hard.forEach((l) => out.add(l));
-  const key = (_a9 = building.wymaganySurowiec) == null ? void 0 : _a9.trim().toLowerCase();
+  const key = (_a11 = building.wymaganySurowiec) == null ? void 0 : _a11.trim().toLowerCase();
   if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
   return [...out];
 }
@@ -8005,19 +11921,19 @@ function buildingEffectAtLevel(baza, przyrost, level) {
   const n = Math.max(1, Math.floor(level));
   return baza + przyrost * (n - 1);
 }
-var _a;
-var DEFAULT_UNIT_COST = ((_a = miasto_params_default.jednostka_koszt_domyslny) == null ? void 0 : _a.wartosc) ?? 10;
-var _a2, _b, _c, _d, _e;
+var _a3;
+var DEFAULT_UNIT_COST = ((_a3 = miasto_params_default.jednostka_koszt_domyslny) == null ? void 0 : _a3.wartosc) ?? 10;
+var _a4, _b3, _c, _d, _e;
 var DEFAULT_COST_BY_ROLE = {
-  Wsparcie: ((_a2 = miasto_params_default.jednostka_koszt_rola_wsparcie) == null ? void 0 : _a2.wartosc) ?? 12,
-  Dystans: ((_b = miasto_params_default.jednostka_koszt_rola_dystans) == null ? void 0 : _b.wartosc) ?? 8,
+  Wsparcie: ((_a4 = miasto_params_default.jednostka_koszt_rola_wsparcie) == null ? void 0 : _a4.wartosc) ?? 12,
+  Dystans: ((_b3 = miasto_params_default.jednostka_koszt_rola_dystans) == null ? void 0 : _b3.wartosc) ?? 8,
   "Wr\u0119cz": ((_c = miasto_params_default.jednostka_koszt_rola_wrecz) == null ? void 0 : _c.wartosc) ?? 10,
   // melee role key
   Wrecz: ((_d = miasto_params_default.jednostka_koszt_rola_wrecz) == null ? void 0 : _d.wartosc) ?? 10,
   Konnica: ((_e = miasto_params_default.jednostka_koszt_rola_konnica) == null ? void 0 : _e.wartosc) ?? 16
 };
-var _a3;
-var UNIT_POPULATION_COST = ((_a3 = miasto_params_default.jednostka_koszt_ludnosci) == null ? void 0 : _a3.wartosc) ?? 1;
+var _a5;
+var UNIT_POPULATION_COST = ((_a5 = miasto_params_default.jednostka_koszt_ludnosci) == null ? void 0 : _a5.wartosc) ?? 1;
 function cityPracaInteger(raw) {
   return Number.isFinite(raw) && raw > 0 ? Math.round(raw) : 0;
 }
@@ -8027,10 +11943,10 @@ function splitPraca(cityPraca, udzialBudynki) {
   const doBudynkow = Math.round(total * u);
   return { doBudynkow, doPuli: total - doBudynkow };
 }
-var _a4, _b2, _c2, _d2;
+var _a6, _b4, _c2, _d2;
 var DEFAULT_OUTPUT_SHARES = Object.freeze({
-  produkcja: ((_a4 = miasto_params_default.udzial_output_produkcja) == null ? void 0 : _a4.wartosc) ?? 0.4,
-  pieniadz: ((_b2 = miasto_params_default.udzial_output_pieniadz) == null ? void 0 : _b2.wartosc) ?? 0.3,
+  produkcja: ((_a6 = miasto_params_default.udzial_output_produkcja) == null ? void 0 : _a6.wartosc) ?? 0.4,
+  pieniadz: ((_b4 = miasto_params_default.udzial_output_pieniadz) == null ? void 0 : _b4.wartosc) ?? 0.3,
   nauka: ((_c2 = miasto_params_default.udzial_output_nauka) == null ? void 0 : _c2.wartosc) ?? 0.2,
   rozwoj: ((_d2 = miasto_params_default.udzial_output_rozwoj) == null ? void 0 : _d2.wartosc) ?? 0.1
 });
@@ -8116,9 +12032,7 @@ function terrainRowToTileYield(row) {
     handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
-    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
-    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0,
+    glina: Number(row.Glina ?? 0),
     ruda: 0,
     ruda_zelaza: 0
   };
@@ -8139,7 +12053,7 @@ var TERRAIN_YIELDS = buildTerrainYields();
 var RIVER_MODIFIER = terrainModifier("Rzeka");
 var FOREST_MODIFIER = terrainModifier("Las (nak\u0142adka)");
 function tileYield(tile) {
-  var _a9;
+  var _a11;
   const base = TERRAIN_YIELDS[tile.terenBazowy] ?? ZERO_YIELD;
   let zywnosc = base.zywnosc;
   let praca = base.praca;
@@ -8159,6 +12073,7 @@ function tileYield(tile) {
     zywnosc += RIVER_MODIFIER.zywnosc;
     praca += RIVER_MODIFIER.praca;
     handel += RIVER_MODIFIER.handel;
+    glina += RIVER_MODIFIER.glina;
   }
   const out = {
     zywnosc: Math.max(0, zywnosc),
@@ -8170,7 +12085,7 @@ function tileYield(tile) {
     ruda: 0,
     ruda_zelaza: 0
   };
-  const impKeys = ((_a9 = tile.ulepszeniaKeys) == null ? void 0 : _a9.length) ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
+  const impKeys = ((_a11 = tile.ulepszeniaKeys) == null ? void 0 : _a11.length) ? tile.ulepszeniaKeys : tile.ulepszenieKey ? [tile.ulepszenieKey] : [];
   if (impKeys.length) {
     applyImprovementBonuses(out, impKeys);
     out.zywnosc = Math.max(0, out.zywnosc);
@@ -8210,8 +12125,8 @@ function cityBuildingEntriesFromBuiltIds(builtIds, catalog, cityEpoch, unlockedT
   return entries;
 }
 function mnoznikHandelPieniadzRawForCiv(civKey, civs) {
-  var _a9;
-  if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return void 0;
+  var _a11;
+  if (!civKey || !((_a11 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a11.length)) return void 0;
   const key = civKey.toLowerCase();
   for (const row of civs.cywilizacje) {
     if (!row) continue;
@@ -8233,8 +12148,8 @@ function mnoznikHandelPieniadzForCivByDifficulty(civKey, civs, difficulty, fallb
   return raw + (MNOZNIK_HANDEL_TRUDNOSC_DELTA[difficulty] ?? 0);
 }
 function civBonusyForCivKey(civKey, civs) {
-  var _a9;
-  if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return [];
+  var _a11;
+  if (!civKey || !((_a11 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a11.length)) return [];
   const key = civKey.toLowerCase();
   for (const row of civs.cywilizacje) {
     if (!row) continue;
@@ -8872,7 +12787,7 @@ function ownerResourceCapacityPerType(magazynCount, p = DEFAULT_OWNER_STORAGE_PA
   return p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt;
 }
 function reconcileOwnerResourceCaps(cities, capForOwner) {
-  var _a9, _b3;
+  var _a11, _b5;
   const byOwner = /* @__PURE__ */ new Map();
   for (const c of cities) {
     if (!c.surowce) continue;
@@ -8891,21 +12806,21 @@ function reconcileOwnerResourceCaps(cities, capForOwner) {
     }
     for (const key of keys) {
       let total = 0;
-      for (const c of ownerCities) total += ((_a9 = c.surowce) == null ? void 0 : _a9[key]) ?? 0;
+      for (const c of ownerCities) total += ((_a11 = c.surowce) == null ? void 0 : _a11[key]) ?? 0;
       let excess = total - cap;
       if (excess <= 0) continue;
       const holders = ownerCities.filter((c) => {
-        var _a10;
-        return (((_a10 = c.surowce) == null ? void 0 : _a10[key]) ?? 0) > 0;
+        var _a12;
+        return (((_a12 = c.surowce) == null ? void 0 : _a12[key]) ?? 0) > 0;
       }).sort((a, b) => {
-        var _a10, _b4;
-        const diff = (((_a10 = b.surowce) == null ? void 0 : _a10[key]) ?? 0) - (((_b4 = a.surowce) == null ? void 0 : _b4[key]) ?? 0);
+        var _a12, _b6;
+        const diff = (((_a12 = b.surowce) == null ? void 0 : _a12[key]) ?? 0) - (((_b6 = a.surowce) == null ? void 0 : _b6[key]) ?? 0);
         if (diff !== 0) return diff;
         return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
       });
       for (const c of holders) {
         if (excess <= 0) break;
-        const have = ((_b3 = c.surowce) == null ? void 0 : _b3[key]) ?? 0;
+        const have = ((_b5 = c.surowce) == null ? void 0 : _b5[key]) ?? 0;
         const take = Math.min(have, excess);
         c.surowce[key] = have - take;
         excess -= take;
@@ -8928,12 +12843,15 @@ function loadUpkeepParams(raw, difficulty = "normal") {
 }
 function buildingUpkeep(building, level, flatOverride) {
   const lvl = level >= 1 ? level : 1;
+  let raw;
   if (!Number.isFinite(building.utrzymanie)) {
-    return typeof flatOverride === "number" && Number.isFinite(flatOverride) ? flatOverride : 0;
+    raw = typeof flatOverride === "number" && Number.isFinite(flatOverride) ? flatOverride : 0;
+  } else {
+    const base = building.utrzymanie;
+    const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
+    raw = Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
   }
-  const base = building.utrzymanie;
-  const wzrost = Number.isFinite(building.przyrostUtrzymania) ? building.przyrostUtrzymania : 0;
-  return Math.floor(buildingEffectAtLevel(base, wzrost, lvl));
+  return Math.floor(raw * R_STAWKI_FALA2_MULT);
 }
 function totalBuildingUpkeep(buildings, flatOverride) {
   let sum = 0;
@@ -8941,6 +12859,55 @@ function totalBuildingUpkeep(buildings, flatOverride) {
     sum += buildingUpkeep(b.record, b.level, flatOverride);
   }
   return sum;
+}
+function buildingResourceUpkeep(building) {
+  const raw = building == null ? void 0 : building.koszt_surowce;
+  if (!raw || typeof raw !== "object") return {};
+  const out = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) {
+      out[k] = 1;
+    }
+  }
+  return out;
+}
+function addResourceCosts(acc, add) {
+  for (const [k, v] of Object.entries(add)) {
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) {
+      acc[k] = (acc[k] ?? 0) + v;
+    }
+  }
+}
+function totalBuildingResourceUpkeep(buildings) {
+  const out = {};
+  for (const b of buildings) {
+    addResourceCosts(out, buildingResourceUpkeep(
+      b.record
+    ));
+  }
+  return out;
+}
+function stripDiacriticsLower2(s) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+function unitResourceUpkeep(unitDef) {
+  const out = {};
+  if (!unitDef) return out;
+  const rawName = (unitDef["Utrzymanie surowiec"] ?? "").toString().trim();
+  if (!rawName || rawName === "-") return out;
+  const ilosc = unitDef["Utrzymanie surowiec (ilo\u015B\u0107)"];
+  if (typeof ilosc === "number" && Number.isFinite(ilosc) && ilosc > 0) {
+    const key = stripDiacriticsLower2(rawName);
+    if (key) out[key] = ilosc;
+  }
+  return out;
+}
+function totalUnitResourceUpkeep(units, resolveDef) {
+  const out = {};
+  for (const u of units) {
+    addResourceCosts(out, unitResourceUpkeep(resolveDef(u.typeId)));
+  }
+  return out;
 }
 var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
   osadnik: 0,
@@ -8964,10 +12931,13 @@ var DEFAULT_UNIT_UPKEEP_BY_CATEGORY = {
 function unitUpkeep(unit, table, standardUpkeep) {
   const byCat = DEFAULT_UNIT_UPKEEP_BY_CATEGORY[unit.category];
   if (typeof byCat === "number" && byCat === 0) return 0;
+  let base;
   const byType = table[unit.typeId];
-  if (typeof byType === "number" && Number.isFinite(byType)) return byType;
-  if (typeof byCat === "number" && Number.isFinite(byCat)) return byCat;
-  return Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
+  if (typeof byType === "number" && Number.isFinite(byType)) base = byType;
+  else if (typeof byCat === "number" && Number.isFinite(byCat)) base = byCat;
+  else base = Number.isFinite(standardUpkeep) ? standardUpkeep : 0;
+  if (base <= 0) return 0;
+  return Math.round(base * R_STAWKI_FALA1_FALA2_MULT);
 }
 function totalUnitUpkeep(units, table, standardUpkeep) {
   let sum = 0;
@@ -11656,7 +15626,29 @@ function civMatrixParam(civKey, paramId) {
 }
 
 // src/game/population-growth-v85.ts
-var DEFAULT_POZIOM_RACJI = 2;
+var WYZYWIENIE_MIN = 0;
+var WYZYWIENIE_MAX = 6;
+var WYZYWIENIE_STEP = 0.5;
+var WYZYWIENIE_LEVELS = Array.from(
+  { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
+  (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
+);
+var WYZYWIENIE_GROWTH_PCT = {
+  0: -10,
+  0.5: -6,
+  1: -2,
+  1.5: 0,
+  2: 1.5,
+  2.5: 3,
+  3: 3.5,
+  3.5: 4,
+  4: 4.5,
+  4.5: 5,
+  5: 5.5,
+  5.5: 6,
+  6: 7
+};
+var DEFAULT_POZIOM_RACJI = 4;
 function pick2(row, d, fallback) {
   if (!row) return fallback;
   const v = row[d];
@@ -11674,29 +15666,23 @@ function buildRationParams(raw, difficulty = "normal") {
   };
 }
 function clampPoziomRacji(n) {
-  if (n >= 3) return 3;
-  if (n <= 1) return 1;
-  return 2;
+  const clamped = Math.min(WYZYWIENIE_MAX, Math.max(WYZYWIENIE_MIN, n));
+  return Math.round(clamped / WYZYWIENIE_STEP) * WYZYWIENIE_STEP;
 }
 function migrateProcentRozwojToPoziomRacji(procentRozwoj) {
   if (procentRozwoj === void 0) return DEFAULT_POZIOM_RACJI;
-  if (procentRozwoj >= 90) return 3;
-  if (procentRozwoj >= 50) return 2;
-  return 1;
+  return clampPoziomRacji(procentRozwoj / 100 * WYZYWIENIE_MAX);
 }
 function getCityRationLevel(city) {
   if (city.poziomRacji !== void 0) return clampPoziomRacji(city.poziomRacji);
   return migrateProcentRozwojToPoziomRacji(city.procentRozwoj);
 }
-function rationFoodCostPerPop(level, params) {
-  if (level === 3) return params.racjeZywnosc3;
-  if (level === 1) return params.racjeZywnosc1;
-  return params.racjeZywnosc2;
+function rationFoodCostPerPop(level, _params) {
+  return clampPoziomRacji(level) * R_STAWKI_KOSZT_MULT;
 }
-function rationGrowthPercent(level, params) {
-  if (level === 3) return params.racjeWzrostProc3;
-  if (level === 1) return params.racjeWzrostProc1;
-  return params.racjeWzrostProc2;
+function rationGrowthPercent(level, _params) {
+  const key = clampPoziomRacji(level);
+  return WYZYWIENIE_GROWTH_PCT[key] ?? 0;
 }
 function computeCityRationCost(population, level, params, spichlerzState) {
   const base = Math.max(0, population) * rationFoodCostPerPop(level, params);
@@ -11727,7 +15713,9 @@ var DEFAULT_PODZIAL_HANDLU = {
 var DEFAULT_PODZIAL_PRACY = {
   procentBudynki: 70
 };
-var DEFAULT_PROCENT_ROZWOJ = 100;
+var DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
+  DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX * 100
+);
 var HANDEL_PCT_STEP = 10;
 function snapHandelPct(n) {
   return Math.max(0, Math.min(100, Math.round(n / HANDEL_PCT_STEP) * HANDEL_PCT_STEP));
@@ -11751,8 +15739,8 @@ function freshCityPodzial() {
     podzialPracy: { ...DEFAULT_PODZIAL_PRACY }
   };
 }
-var _a5;
-var MIN_CITY_DISTANCE = ((_a5 = miasto_params_default.min_dystans_miast) == null ? void 0 : _a5.wartosc) ?? 5;
+var _a7;
+var MIN_CITY_DISTANCE = ((_a7 = miasto_params_default.min_dystans_miast) == null ? void 0 : _a7.wartosc) ?? 5;
 var MIN_CITY_DISTANCE_START_CITY_STATE = 3;
 function canFoundCity(q, r, cities, map, opts) {
   const key = `${q},${r}`;
@@ -11768,10 +15756,12 @@ function canFoundCity(q, r, cities, map, opts) {
       return { ok: false, reason: "gory" };
     }
   }
-  for (const city of cities) {
-    const minDist = (opts == null ? void 0 : opts.foundingCityState) || city.startCityState ? MIN_CITY_DISTANCE_START_CITY_STATE : MIN_CITY_DISTANCE;
-    if (hexDistance(q, r, city.q, city.r) < minDist) {
-      return { ok: false, reason: "za blisko innego miasta" };
+  if (!(opts == null ? void 0 : opts.clusterStartSlot)) {
+    for (const city of cities) {
+      const minDist = (opts == null ? void 0 : opts.foundingCityState) || city.startCityState ? MIN_CITY_DISTANCE_START_CITY_STATE : MIN_CITY_DISTANCE;
+      if (hexDistance(q, r, city.q, city.r) < minDist) {
+        return { ok: false, reason: "za blisko innego miasta" };
+      }
     }
   }
   if ((opts == null ? void 0 : opts.withinTerritory) && !opts.withinTerritory(q, r)) {
@@ -11796,11 +15786,12 @@ function foundCity(settler, cities, map, name, opts) {
     wealthImmunityRemaining: 5,
     podzialHandluOverride: false,
     podzialPracy: podzial.podzialPracy,
-    procentRozwoj: DEFAULT_PROCENT_ROZWOJ
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
+    poziomRacji: DEFAULT_POZIOM_RACJI
   };
 }
-function foundCityAt(q, r, ownerId, cities, map, name, foundingCityState = false) {
-  const { ok } = canFoundCity(q, r, cities, map, { foundingCityState });
+function foundCityAt(q, r, ownerId, cities, map, name, foundingCityState = false, clusterStartSlot = false) {
+  const { ok } = canFoundCity(q, r, cities, map, { foundingCityState, clusterStartSlot });
   if (!ok) {
     return null;
   }
@@ -11816,7 +15807,9 @@ function foundCityAt(q, r, ownerId, cities, map, name, foundingCityState = false
     wealthImmunityRemaining: 5,
     podzialHandluOverride: false,
     podzialPracy: podzial.podzialPracy,
-    procentRozwoj: DEFAULT_PROCENT_ROZWOJ
+    procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
+    poziomRacji: DEFAULT_POZIOM_RACJI,
+    ...foundingCityState ? { startCityState: true } : {}
   };
 }
 var CITY_NAMES = [
@@ -11924,12 +15917,12 @@ function reconcileAllWorkedTiles(cities, territoryNodes) {
 }
 
 // src/game/okolica.ts
-var _a6;
-var OKOLICA_RADIUS = ((_a6 = miasto_params_default.zasieg_okolicy_miasta) == null ? void 0 : _a6.wartosc) ?? 5;
-var _a7;
-var CITY_RANGE_MIN = ((_a7 = miasto_params_default.zasieg_okolicy_baza) == null ? void 0 : _a7.wartosc) ?? 5;
 var _a8;
-var CITY_RANGE_CAP = ((_a8 = miasto_params_default.zasieg_okolicy_max) == null ? void 0 : _a8.wartosc) ?? 15;
+var OKOLICA_RADIUS = ((_a8 = miasto_params_default.zasieg_okolicy_miasta) == null ? void 0 : _a8.wartosc) ?? 5;
+var _a9;
+var CITY_RANGE_MIN = ((_a9 = miasto_params_default.zasieg_okolicy_baza) == null ? void 0 : _a9.wartosc) ?? 5;
+var _a10;
+var CITY_RANGE_CAP = ((_a10 = miasto_params_default.zasieg_okolicy_max) == null ? void 0 : _a10.wartosc) ?? 15;
 function cityRangeForPopulation(population) {
   const pop = Number.isFinite(population) ? Math.floor(population) : 0;
   if (pop <= 0) return 0;
@@ -11974,6 +15967,41 @@ function tileScore(y, wagi) {
   const wh = (wagi == null ? void 0 : wagi.handel) ?? 1;
   return (y.zywnosc ?? 0) * wz + (y.praca ?? 0) * wp + (y.handel ?? 0) * wh;
 }
+function tileAssignScore(y, wagi, foodPotential = 0) {
+  return tileScore(y, wagi) + foodPotential;
+}
+function compareScoredOkolicaTiles(a, b, focus) {
+  if (b.s !== a.s) return b.s - a.s;
+  if (focus === "zywnosc") {
+    const az = a.y.zywnosc ?? 0;
+    const bz = b.y.zywnosc ?? 0;
+    if (bz !== az) return bz - az;
+    if (b.potential !== a.potential) return b.potential - a.potential;
+  }
+  if (a.t.dist !== b.t.dist) return a.t.dist - b.t.dist;
+  return a.t.key.localeCompare(b.t.key);
+}
+function scoreOkolicaTile(t, yieldOf, opts) {
+  var _a11;
+  const y = yieldOf(t.q, t.r);
+  const potential = ((_a11 = opts.potentialOf) == null ? void 0 : _a11.call(opts, t.q, t.r)) ?? 0;
+  return { t, s: tileAssignScore(y, opts.wagi, potential), y, potential };
+}
+function foodPotentialOfMapHex(map, q, r) {
+  const h = map.hexes[`${q},${r}`];
+  if (!h) return 0;
+  const key = normalizeImprovementKey(String(h.ulepszenie ?? "brak"));
+  const keys = key ? [key] : [];
+  return foodPotentialForHex(h.terenBazowy, h.nakladka ?? "brak" /* Brak */, keys);
+}
+function assignOptionsForFocus(base, focus, map) {
+  if (focus !== "zywnosc") return base;
+  return {
+    ...base,
+    focus,
+    potentialOf: (q, r) => foodPotentialOfMapHex(map, q, r)
+  };
+}
 function effectiveIsWorkable(opts) {
   const { territoryNodes, ownerId, isWorkable } = opts;
   if (territoryNodes != null && ownerId != null) {
@@ -11984,19 +16012,15 @@ function effectiveIsWorkable(opts) {
 function assignWorkedTiles(centerQ, centerR, population, map, yieldOf, opts = {}) {
   const radius = opts.radius ?? cityRangeForPopulation(population);
   const tiles = okolicaTiles(centerQ, centerR, radius, map, effectiveIsWorkable(opts));
-  const scored = tiles.map((t) => ({ t, s: tileScore(yieldOf(t.q, t.r), opts.wagi) }));
-  scored.sort((a, b) => {
-    if (b.s !== a.s) return b.s - a.s;
-    if (a.t.dist !== b.t.dist) return a.t.dist - b.t.dist;
-    return a.t.key.localeCompare(b.t.key);
-  });
+  const scored = tiles.map((t) => scoreOkolicaTile(t, yieldOf, opts));
+  scored.sort((a, b) => compareScoredOkolicaTiles(a, b, opts.focus));
   const n = Math.max(0, Math.min(Math.floor(Number.isFinite(population) ? population : 0), scored.length));
   return scored.slice(0, n).map((x) => x.t);
 }
 function wagiForFocus(focus = DEFAULT_OKOLICA_FOCUS) {
   switch (focus) {
     case "zywnosc":
-      return { zywnosc: 3, praca: 0.5, handel: 0.5 };
+      return { zywnosc: 10, praca: 0, handel: 0 };
     case "produkcja":
       return { zywnosc: 0.5, praca: 3, handel: 0.5 };
     case "podatki":
@@ -12025,13 +16049,13 @@ function resolveWorkedTiles(city, map, yieldOf, opts = {}) {
     if (out.length > pop) return out.slice(0, pop);
     return out;
   }
-  return assignWorkedTiles(city.q, city.r, pop, map, yieldOf, {
+  return assignWorkedTiles(city.q, city.r, pop, map, yieldOf, assignOptionsForFocus({
     radius,
     isWorkable: opts.isWorkable,
     territoryNodes: opts.territoryNodes,
     ownerId: opts.ownerId ?? city.ownerId,
     wagi: wagiForFocus(focus)
-  });
+  }, focus, map));
 }
 
 // src/game/visibility.ts
@@ -12119,8 +16143,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 10,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -12166,7 +16190,9 @@ var units_default = [
     chargeBonus: 2,
     health: 22,
     missileAttack: 0,
-    fieldPower: 27
+    fieldPower: 27,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz",
@@ -12175,8 +16201,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -12222,7 +16248,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik",
@@ -12231,8 +16259,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -12278,7 +16306,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik",
@@ -12287,8 +16317,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -12334,7 +16364,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 3,
-    fieldPower: 17.5
+    fieldPower: 17.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Zwiadowca",
@@ -12343,8 +16375,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 0,
     Atak: 0,
@@ -12390,7 +16422,9 @@ var units_default = [
     chargeBonus: 0,
     health: 10,
     missileAttack: 0,
-    fieldPower: 6
+    fieldPower: 6,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik",
@@ -12400,7 +16434,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -12446,7 +16480,9 @@ var units_default = [
     chargeBonus: 4,
     health: 32,
     missileAttack: 0,
-    fieldPower: 44
+    fieldPower: 44,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z mieczem i tarcz\u0105",
@@ -12456,7 +16492,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -12502,7 +16538,9 @@ var units_default = [
     chargeBonus: 4,
     health: 28,
     missileAttack: 0,
-    fieldPower: 39
+    fieldPower: 39,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan (wo\u0142y)",
@@ -12512,7 +16550,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -12558,7 +16596,9 @@ var units_default = [
     chargeBonus: 10,
     health: 48,
     missileAttack: 0,
-    fieldPower: 52
+    fieldPower: 52,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Konnica",
@@ -12568,7 +16608,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 22,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -12614,7 +16654,9 @@ var units_default = [
     chargeBonus: 10,
     health: 28,
     missileAttack: 0,
-    fieldPower: 49
+    fieldPower: 49,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Galera",
@@ -12624,7 +16666,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -12670,7 +16712,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 25
+    fieldPower: 25,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Falanga",
@@ -12680,7 +16724,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -12726,7 +16770,9 @@ var units_default = [
     chargeBonus: 7,
     health: 40,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
@@ -12736,7 +16782,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -12782,7 +16828,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Hastati",
@@ -12792,7 +16840,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -12838,7 +16886,9 @@ var units_default = [
     chargeBonus: 7,
     health: 38,
     missileAttack: 4,
-    fieldPower: 57.5
+    fieldPower: 57.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Triari",
@@ -12848,7 +16898,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -12894,7 +16944,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Je\u017Adziec chi\u0144ski",
@@ -12904,7 +16956,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -12950,7 +17002,9 @@ var units_default = [
     chargeBonus: 5,
     health: 44,
     missileAttack: 0,
-    fieldPower: 45.5
+    fieldPower: 45.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hu Ben Wei (Gwardia Tygrysa)",
@@ -12960,7 +17014,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -13006,7 +17060,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Impi",
@@ -13016,7 +17072,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -13062,7 +17118,9 @@ var units_default = [
     chargeBonus: 3,
     health: 36,
     missileAttack: 0,
-    fieldPower: 38.5
+    fieldPower: 38.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik Zulu (Izijula)",
@@ -13071,8 +17129,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13118,7 +17176,9 @@ var units_default = [
     chargeBonus: 0,
     health: 20,
     missileAttack: 4,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "uThulwana (Bia\u0142e Tarcze)",
@@ -13128,7 +17188,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -13174,7 +17234,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik z maczug\u0105 (Chaska)",
@@ -13183,8 +17245,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -13230,7 +17292,9 @@ var units_default = [
     chargeBonus: 2,
     health: 20,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z toporem",
@@ -13240,7 +17304,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -13286,7 +17350,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 32.5
+    fieldPower: 32.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz (Huaracoc)",
@@ -13295,8 +17361,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -13342,7 +17408,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik (Est\xF3lica)",
@@ -13351,8 +17419,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13398,7 +17466,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Kr\xF3lewska Gwardia",
@@ -13408,7 +17478,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -13454,7 +17524,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Rydwan konny",
@@ -13464,7 +17536,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -13510,7 +17582,9 @@ var units_default = [
     chargeBonus: 8,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54
+    fieldPower: 54,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik egipski",
@@ -13519,8 +17593,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13566,7 +17640,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 6,
-    fieldPower: 15
+    fieldPower: 15,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan egipski",
@@ -13576,7 +17652,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13622,7 +17698,9 @@ var units_default = [
     chargeBonus: 7,
     health: 56,
     missileAttack: 5,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z khopesh",
@@ -13632,7 +17710,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -13678,7 +17756,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Med\u017Caj (Gwardia Faraona)",
@@ -13688,7 +17768,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -13734,7 +17814,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 3,
-    fieldPower: 64.5
+    fieldPower: 64.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "\u0141ucznik nubijski",
@@ -13743,8 +17825,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13790,7 +17872,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 6,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik sumeryjski",
@@ -13799,8 +17883,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13846,7 +17930,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan sumeryjski",
@@ -13856,7 +17942,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 38,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -13902,7 +17988,9 @@ var units_default = [
     chargeBonus: 9,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54.5
+    fieldPower: 54.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik sumeryjski",
@@ -13912,7 +18000,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13958,7 +18046,9 @@ var units_default = [
     chargeBonus: 2,
     health: 40,
     missileAttack: 0,
-    fieldPower: 41
+    fieldPower: 41,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardia Kr\xF3lewska Sumeru",
@@ -13968,7 +18058,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -14014,7 +18104,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik myke\u0144ski",
@@ -14024,7 +18116,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14070,7 +18162,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 34.5
+    fieldPower: 34.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan myke\u0144ski",
@@ -14080,7 +18174,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14126,7 +18220,9 @@ var units_default = [
     chargeBonus: 9,
     health: 52,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik Sherden",
@@ -14136,7 +18232,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -14182,7 +18278,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 35.5
+    fieldPower: 35.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Halabardnik Shang",
@@ -14192,7 +18290,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -14238,7 +18336,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 36
+    fieldPower: 36,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan Shang",
@@ -14248,7 +18348,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14294,7 +18394,9 @@ var units_default = [
     chargeBonus: 8,
     health: 60,
     missileAttack: 0,
-    fieldPower: 58
+    fieldPower: 58,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik akadyjski",
@@ -14303,8 +18405,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -14350,7 +18452,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 5,
-    fieldPower: 15.5
+    fieldPower: 15.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gaesatae",
@@ -14360,7 +18464,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14406,14 +18510,16 @@ var units_default = [
     chargeBonus: 5,
     health: 22,
     missileAttack: 0,
-    fieldPower: 29.5
+    fieldPower: 29.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14459,7 +18565,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 5,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan celtycki",
@@ -14469,7 +18577,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -14515,7 +18623,9 @@ var units_default = [
     chargeBonus: 10,
     health: 52,
     missileAttack: 0,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik germa\u0144ski",
@@ -14525,7 +18635,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14571,7 +18681,9 @@ var units_default = [
     chargeBonus: 4,
     health: 30,
     missileAttack: 4,
-    fieldPower: 37
+    fieldPower: 37,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Berserker germa\u0144ski",
@@ -14581,7 +18693,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -14627,7 +18739,9 @@ var units_default = [
     chargeBonus: 6,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33
+    fieldPower: 33,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Taran",
@@ -14636,8 +18750,8 @@ var units_default = [
     Tech: "Obr\xF3bka drewna",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -14685,7 +18799,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 14,
     fieldPower: 352.5,
-    siegePower: 85
+    siegePower: 85,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Taran okuty",
@@ -14695,7 +18811,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -14743,7 +18859,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 18,
     fieldPower: 377.5,
-    siegePower: 94
+    siegePower: 94,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Katapulta",
@@ -14753,7 +18871,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 1,
@@ -14801,7 +18919,9 @@ var units_default = [
     missileAttack: 4,
     wallAttack: 16,
     fieldPower: 128,
-    siegePower: 45
+    siegePower: 45,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wie\u017Ca obl\u0119\u017Cnicza",
@@ -14811,7 +18931,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 0,
@@ -14859,7 +18979,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 6,
     fieldPower: 451,
-    siegePower: 97
+    siegePower: 97,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik tyrre\u0144ski",
@@ -14869,7 +18991,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 15,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14915,7 +19037,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik szekelesz",
@@ -14925,7 +19049,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -14971,14 +19095,16 @@ var units_default = [
     chargeBonus: 2,
     health: 28,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -15024,14 +19150,16 @@ var units_default = [
     meleeAttack: 9,
     weaponDamage: 8,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15077,14 +19205,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 2,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -15130,14 +19260,16 @@ var units_default = [
     meleeAttack: 2,
     weaponDamage: 2,
     meleeDefence: 3,
-    missileAttack: 4
+    missileAttack: 4,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -15183,14 +19315,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15236,14 +19370,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -15289,14 +19425,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 4,
     meleeDefence: 9,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15342,14 +19480,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -15395,14 +19535,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 34,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -15448,14 +19590,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 7,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15501,14 +19645,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -15554,14 +19700,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -15607,14 +19755,16 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 7,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15660,14 +19810,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -15713,14 +19865,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -15766,14 +19920,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -15819,14 +19975,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 4,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -15872,7 +20030,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Thorakites",
@@ -15882,7 +20042,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15925,7 +20085,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Evocati",
@@ -15935,7 +20097,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -15978,7 +20140,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "iButho z iklwa",
@@ -15988,7 +20152,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -16031,7 +20195,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardzista z champi",
@@ -16041,7 +20207,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -16084,7 +20250,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 5,
-    missileAttack: 5
+    missileAttack: 5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z \u017Celaznym khopesh",
@@ -16094,7 +20262,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -16137,7 +20305,9 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Mur tarcz (Sargonid)",
@@ -16147,7 +20317,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -16190,7 +20360,9 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 10,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Miecznik galijski",
@@ -16200,7 +20372,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -16243,7 +20415,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 6,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   }
 ];
 
@@ -17049,7 +21223,7 @@ var buildings_default = [
     nazwa: "Palisada drewniana",
     kategoria: "Obrona",
     grupa: "Wojsko i obrona",
-    epokaWejscia: 2,
+    epokaWejscia: 1,
     maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
@@ -17077,7 +21251,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "Palisada drewniana (Maciej 2026-07-28): wczesna obrona miasta w epoce Br\u0105zu, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
+    uwagi: "Palisada drewniana (Maciej 2026-07-28, korekta 2026-07-29): wczesna obrona miasta w epoce Kamienia, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo, epoka Br\u0105z). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
     techUnlock: "Obr\xF3bka drewna",
     odblokowuje: "maMur",
     koszt_surowce: {
@@ -17281,12 +21455,9 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bez kosztu surowcowego (C-PALAC-Q1=A, start pula=0); tylko kosztBudowy Praca; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "-",
-    lokalizacja: "stolica",
-    koszt_surowce: {
-      drewno: 8
-    }
+    lokalizacja: "stolica"
   },
   {
     id: "palac_ii",
@@ -22921,6 +27092,7 @@ var diplomacy_default = {
     zdrada_zaufanie: -50,
     szpiegWykryty_zaufanie: -15,
     rywalizacjaTenSamTyp_zaufanie: -20,
+    miastoPanstwoSameCiv_zaufanie: 20,
     roznicaKulturowa_zaufanie: -5,
     przewagaMilitarna_respekt: 15,
     slabszyMilitarnie_respekt: -10,
@@ -22954,7 +27126,6 @@ var diplomacy_default = {
     progPoboczneAkceptacja: 60,
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
-    progNapZaufanie: 40,
     progNapRelacja: 50,
     progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
@@ -22984,8 +27155,6 @@ var diplomacy_default = {
     progTrybutOfertaBaseGold: 10,
     progTrybutOfertaEpokaGold: 5,
     progHandelWillingnessMin: 0.5,
-    progHandelFairRatioMin: 0.8,
-    progHandelFairRatioMax: 1.2,
     progNamowWojneZaufanie: 50,
     progNamowWojneBribeBase: 30,
     progGraniceZaufanie: 45,
@@ -22994,7 +27163,11 @@ var diplomacy_default = {
     karaPrzemarszNieautoryzowany_zaufanie_perTura: 5,
     progUltimatumMilitaryRatio: 1.3,
     progUltimatumMinGold: 20,
-    progWasalDefaultGoldPerTurn: 10
+    progWasalDefaultGoldPerTurn: 10,
+    graczWchlonieciePoWasaluTur: 10,
+    graczWchloniecieKosztBaza: 150,
+    graczWchloniecieKosztPerLudnosc: 25,
+    graczWchloniecieKosztMin: 200
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -23077,12 +27250,7 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1,
-    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
-    wiarygodnosc_limit_zaufanie_chwiejny: 3,
-    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
-    wiarygodnosc_limit_zaufanie_dno: 0,
-    wiarygodnosc_limit_prog_dno: -70
+    dobra_wola_zaufanie_per_tura: 1
   },
   akcje_dyplomatyczne: [
     {
@@ -23102,36 +27270,36 @@ var diplomacy_default = {
       Efekt: "Flaga NAP aktywny na 10\u201320 tur (negocjowalne). UPR: automatyczny, sta\u0142y czas 10 tur"
     },
     {
-      Akcja: "3. Sojusz wojskowy",
-      Opis: "Formalne przymierze: atak na jedn\u0105 stron\u0119 = atak na obie. Wypowiedzenie: \u221225 Relacja, \u221220 Zaufanie.",
+      Akcja: "3. Sojusz (pe\u0142ny lub defensywny)",
+      Opis: "Formalne przymierze: pe\u0142ny = wojna sojusznika to twoja wojna; defensywny = wchodzisz tylko gdy sojusznik jest atakowany. Wypowiedzenie: \u221225 Relacja, \u221220 Zaufanie.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "NIE",
       Koszt: "Negocjacja \u2014 mo\u017Ce wymaga\u0107 op\u0142aty lub wymiany technologii jako gwarantu",
       Efekt: "Automatyczne wej\u015Bcie do wojen partnera (lub odmowa: \u221215 Zaufanie). Czas: bezterminowy"
     },
     {
-      Akcja: "4. Otwarte granice / prawo przemarszu",
-      Opis: "Zezwolenie na swobodny ruch jednostek cywilnych lub wojskowych. Nieautoryzowany przemarsz: \u22125 Zaufanie/tura u w\u0142a\u015Bciciela (koniec tury, bez stacku jednostek).",
+      Akcja: "4. Traktat przemarszu",
+      Opis: "Zezwolenie na przemarsz jednostek cywilnych lub wojskowych przez terytorium. Nieautoryzowany przemarsz: \u22125 Zaufanie/tura u w\u0142a\u015Bciciela (koniec tury, bez stacku jednostek).",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "UPR",
       Koszt: "Cywilne: 10\u201330 Pieni\u0119dzy; Wojskowe: 20\u201360 Pieni\u0119dzy + wzajemno\u015B\u0107",
       Efekt: "Jednostki poruszaj\u0105 si\u0119 swobodnie przez obce terytorium. UPR: tylko cywilne, bez negocjacji ceny"
     },
     {
-      Akcja: "5. Traktat szlak\xF3w handlowych",
+      Akcja: "5. Traktat handlowy",
       Opis: "Otwiera i utrzymuje szlaki handlowe mi\u0119dzy miastami (+1 Zaufanie/tur\u0119). Bez koszyka towar\xF3w \u2014 wymiana surowc\xF3w to osobna umowa (akcja 14). Zerwanie: \u221215 Relacja, \u221210 Zaufanie.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "UPR",
       Koszt: "Okre\u015Blony w tre\u015Bci umowy (np. 10 Pieni\u0119dzy/tura za dost\u0119p do rudy)",
-      Efekt: "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie szlak\xF3w. UPR: jednorazowe transakcje (akcja 14)"
+      Efekt: "Szlaki handlowe; +2 Relacja/tura, +1 Zaufanie/tura przy aktywnym traktacie handlowym. UPR: jednorazowe transakcje (akcja 14)"
     },
     {
       Akcja: "14. Umowa wymiany surowc\xF3w",
-      Opis: "Koszyk towar\xF3w jednorazowo lub co tur\u0119 (PN, surowce). Nie otwiera szlak\xF3w \u2014 wymaga osobnego traktatu szlak\xF3w (akcja 5) na trasy handlowe.",
+      Opis: "Koszyk towar\xF3w jednorazowo lub co tur\u0119 (PN, surowce). Nie otwiera szlak\xF3w \u2014 wymaga osobnego traktatu handlowego (akcja 5) na trasy handlowe.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "UPR",
       Koszt: "Okre\u015Blony w koszyku negocjacji",
-      Efekt: "Transfer zasob\xF3w wg umowy; nie zast\u0119puje traktatu szlak\xF3w"
+      Efekt: "Transfer zasob\xF3w wg umowy; nie zast\u0119puje traktatu handlowego"
     },
     {
       Akcja: "6. Wymiana / sprzeda\u017C technologii",
@@ -23182,12 +27350,20 @@ var diplomacy_default = {
       Efekt: "Z casus belli: \u221210 Relacja u wszystkich. Bez c.b.: \u221225 Relacja u wszystkich, \u221220 Zaufanie, flaga agresor"
     },
     {
-      Akcja: "12. Wasalizacja / wch\u0142oni\u0119cie",
-      Opis: "S\u0142absza cywilizacja staje si\u0119 wasalem (zachowuje terytorium, p\u0142aci trybut) lub zostaje w pe\u0142ni wch\u0142oni\u0119ta przez gracza.",
+      Akcja: "12. Wasalizacja",
+      Opis: "Miasto-pa\u0144stwo staje si\u0119 wasalem \u2014 zachowuje terytorium, p\u0142aci trybut co tur\u0119. Wymaga Respektu \u2265 prog_wasalizacja.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "TAK",
-      Koszt: "Wasalizacja: 100\u2013300 Pieni\u0119dzy gwarancji + zobowi\u0105zanie ochrony; Wch\u0142oni\u0119cie: kary reputacyjne",
-      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wch\u0142oni\u0119cie: miasta przechodz\u0105, niezadowolenie N tur"
+      Koszt: "Wasalizacja: trybut \xA4/tur\u0119 (domy\u015Blnie 10) + zobowi\u0105zanie ochrony",
+      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody suzerena"
+    },
+    {
+      Akcja: "15. Wch\u0142oni\u0119cie",
+      Opis: "Po aktywnym wasalu (min. 10 tur) gracz mo\u017Ce w pe\u0142ni wch\u0142oni\u0107 miasto-pa\u0144stwo \u2014 jednorazowa op\u0142ata \xA4 (skala ludno\u015Bci), zgoda wasala.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "NIE",
+      "Dost\u0119pne: Poboczni": "TAK",
+      Koszt: "max(200, 150 + 25 \xD7 ludno\u015B\u0107 MP) \xA4 jednorazowo",
+      Efekt: "Miasta MP przechodz\u0105 do gracza; wasalizacja znika; MP eliminowane z mapy"
     },
     {
       Akcja: "13. Prezent / dar",
@@ -24519,46 +28695,109 @@ var econ_params_default = {
   },
   handel_surowce: {
     cena_drewno: {
-      easy: 2,
-      normal: 2,
-      hard: 2,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B (2026-07-23): cena jednostkowa Drewna w koszyku PN dyplomacji (pozycja surowiec_ilosc, diplomacy-value-catalog.ts) \u2014 warto\u015B\u0107 PN pozycji = pakiety \xD7 pakiet_wielkosc \xD7 cena. PLACEHOLDER do strojenia przez w\u0142a\u015Bciciela w panelu Excel (gen-panel-*.py) \u2014 nie warto\u015B\u0107 finalna. Ta sama cena na wszystkich trudno\u015Bciach (parametr handlu, nie skalowania trudno\u015Bci)."
-    },
-    cena_kamien: {
-      easy: 3,
-      normal: 3,
-      hard: 3,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Kamienia w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      easy: 1,
+      normal: 1,
+      hard: 1,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Drewna (surowiec_ilosc). Warto\u015B\u0107 pozycji koszyka = pakiety \xD7 pakiet_wielkosc \xD7 cena (PN/szt.). Ta sama cena na wszystkich trudno\u015Bciach."
     },
     cena_glina: {
       easy: 2,
       normal: 2,
       hard: 2,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Gliny w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Gliny \u2014 patrz cena_drewno."
+    },
+    cena_kamien: {
+      easy: 3,
+      normal: 3,
+      hard: 3,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Kamienia \u2014 patrz cena_drewno."
+    },
+    cena_ruda: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Rudy miedzi (klucz magazynu: ruda) \u2014 patrz cena_drewno."
+    },
+    cena_ruda_zelaza: {
+      easy: 10,
+      normal: 10,
+      hard: 10,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Rudy \u017Celaza (klucz magazynu: ruda_zelaza) \u2014 patrz cena_drewno."
     },
     cena_cegla: {
       easy: 5,
       normal: 5,
       hard: 5,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Ceg\u0142y w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Ceg\u0142y \u2014 patrz cena_drewno."
     },
-    cena_ruda: {
-      easy: 4,
-      normal: 4,
-      hard: 4,
-      jednostka: "\xA4/szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: cena jednostkowa Rudy w koszyku PN dyplomacji. PLACEHOLDER \u2014 patrz cena_drewno."
+    cena_sol: {
+      easy: 2,
+      normal: 2,
+      hard: 2,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Soli (jak glina) \u2014 patrz cena_drewno."
+    },
+    cena_kon: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Konia (jak ruda miedzi) \u2014 patrz cena_drewno."
+    },
+    cena_ceramika: {
+      easy: 5,
+      normal: 5,
+      hard: 5,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Ceramiki (jak ceg\u0142a) \u2014 patrz cena_drewno."
+    },
+    cena_braz: {
+      easy: 15,
+      normal: 15,
+      hard: 15,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Br\u0105zu (przetworzone) \u2014 patrz cena_drewno."
+    },
+    cena_zelazo: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. \u017Belaza przetworzonego \u2014 patrz cena_drewno."
+    },
+    cena_stal: {
+      easy: 25,
+      normal: 25,
+      hard: 25,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Stali (przetworzone) \u2014 patrz cena_drewno."
+    },
+    cena_zloto: {
+      easy: 50,
+      normal: 50,
+      hard: 50,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. Z\u0142ota (surowiec w magazynie pa\u0144stwa, klucz zloto) \u2014 patrz cena_drewno. Odr\u0119bne od Pieni\u0105dza (\xA4) w koszyku typ zloto."
+    },
+    cena_wegiel: {
+      easy: 20,
+      normal: 20,
+      hard: 20,
+      jednostka: "PN/szt.",
+      opis: "Maciej 2026-07-29: PN za 1 szt. W\u0119gla w magazynie (gdy stock istnieje). Dost\u0119p do z\u0142o\u017Ca w\u0119gla = osobny cennik z\u0142o\u017Ca (handel_zloze)."
     },
     pakiet_wielkosc: {
       easy: 10,
       normal: 10,
       hard: 10,
       jednostka: "szt.",
-      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
+      opis: "C-DYP-SUROWCE-Q1=B: wielko\u015B\u0107 pakietu handlu ilo\u015Bciowego (surowiec_ilosc) \u2014 handel odbywa si\u0119 w pakietach po tyle sztuk. PN pozycji = cena_PN/szt. \xD7 (pakiety \xD7 pakiet_wielkosc). Ta sama warto\u015B\u0107 na wszystkich trudno\u015Bciach."
     }
   }
 };
@@ -24590,6 +28829,21 @@ var ai_params_default = {
     sekcja: "\xA77 Trudno\u015B\u0107 Lv1",
     opis: "Bonus % do statystyk walki jednostek AI na poziomie Prostym."
   },
+  trudnosc_poziom1_agresja_mnoznik: {
+    wartosc: 0.85,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv1",
+    opis: "Spryt AI: mno\u017Cnik agresji reakcji militarnych (0,85 = \u0142agodniejszy Prosty)."
+  },
+  trudnosc_poziom1_dyplomacja_aktywnosc: {
+    wartosc: 0.8,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv1",
+    opis: "Spryt AI: aktywno\u015B\u0107 dyplomacji \u2014 sojusze i handel (0,8 = pasywny Prosty)."
+  },
+  trudnosc_poziom1_cel_obranie: {
+    wartosc: 0,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv1",
+    opis: "Spryt AI: cel ataku \u2014 0 = najbli\u017Cszy wr\xF3g; wy\u017Csze = preferuj s\u0142abszego (Prosty: 0)."
+  },
   trudnosc_poziom2_bonus_produkcja: {
     wartosc: 0.1,
     sekcja: "\xA77 Trudno\u015B\u0107 Lv2",
@@ -24615,15 +28869,30 @@ var ai_params_default = {
     sekcja: "\xA77 Trudno\u015B\u0107 Lv2",
     opis: "Bonus % do statystyk walki jednostek AI na poziomie Normalnym."
   },
+  trudnosc_poziom2_agresja_mnoznik: {
+    wartosc: 1,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv2",
+    opis: "Spryt AI: mno\u017Cnik agresji reakcji militarnych (1,0 = Normalny)."
+  },
+  trudnosc_poziom2_dyplomacja_aktywnosc: {
+    wartosc: 1,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv2",
+    opis: "Spryt AI: aktywno\u015B\u0107 dyplomacji \u2014 sojusze i handel (1,0 = Normalny)."
+  },
+  trudnosc_poziom2_cel_obranie: {
+    wartosc: 0.5,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv2",
+    opis: "Spryt AI: cel ataku \u2014 0 = najbli\u017Cszy; 0,5 = mieszanka odleg\u0142o\u015Bci i si\u0142y (Normalny)."
+  },
   trudnosc_poziom3_bonus_produkcja: {
     wartosc: 0.25,
     sekcja: "\xA77 Trudno\u015B\u0107 Lv3",
     opis: "Bonus do produkcji Pracy AI na poziomie Trudnym (+25%)."
   },
   trudnosc_poziom3_bonus_nauka: {
-    wartosc: 0,
+    wartosc: 2,
     sekcja: "\xA77 Trudno\u015B\u0107 Lv3",
-    opis: "Bonus punkt\xF3w Nauki/tur\u0119 AI na poziomie Trudnym (0 = bez bonusu nauka)."
+    opis: "Bonus punkt\xF3w Nauki/tur\u0119 AI na poziomie Trudnym (+2/tur\u0119; nie gorszy od Normalnego)."
   },
   trudnosc_poziom3_startowe_jednostki: {
     wartosc: 0,
@@ -24639,6 +28908,21 @@ var ai_params_default = {
     wartosc: 0.05,
     sekcja: "\xA77 Trudno\u015B\u0107 Lv3",
     opis: "Bonus do statystyk walki jednostek AI na poziomie Trudnym (+5%)."
+  },
+  trudnosc_poziom3_agresja_mnoznik: {
+    wartosc: 1.2,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv3",
+    opis: "Spryt AI: mno\u017Cnik agresji reakcji militarnych (1,2 = agresywny Trudny)."
+  },
+  trudnosc_poziom3_dyplomacja_aktywnosc: {
+    wartosc: 1.25,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv3",
+    opis: "Spryt AI: aktywno\u015B\u0107 dyplomacji \u2014 sojusze i handel (1,25 = aktywny Trudny)."
+  },
+  trudnosc_poziom3_cel_obranie: {
+    wartosc: 1,
+    sekcja: "\xA77 Trudno\u015B\u0107 Lv3",
+    opis: "Spryt AI: cel ataku \u2014 1,0 = preferuj s\u0142abszego wroga (Trudny)."
   },
   archetype_grecy_wojsko_priorytet: {
     wartosc: 0,
@@ -24886,9 +29170,14 @@ var ai_params_default = {
     opis: "Pr\xF3g Health (% startowego) poni\u017Cej kt\xF3rego jednostka AI wycofuje si\u0119 do obozu/miasta."
   },
   ekspansja_min_dystans_miast: {
-    wartosc: 5,
+    wartosc: 4,
     sekcja: "\xA73 Ekspansja",
     opis: "Minimalna odleg\u0142o\u015B\u0107 (pola heksagonalne) mi\u0119dzy miastami AI przy zak\u0142adaniu nowego."
+  },
+  ekspansja_min_score_hex: {
+    wartosc: 3,
+    sekcja: "\xA73 Ekspansja",
+    opis: "Minimalny hexCityScore heksa kandydata przy founding AI (R-AI-KOLONIZACJA \u2014 odrzuca s\u0142abe lokalizacje)."
   },
   ekspansja_zagroz_zasieg: {
     wartosc: 7,
@@ -25151,14 +29440,14 @@ var ai_params_default = {
     opis: "PR\xD3G DO AKCEPTACJI: poziom Normalny \u2014 AI rozwa\u017Ca kolejkowanie cudu co 5 tur."
   },
   cuda_poziom3_prog_koszt_x: {
-    wartosc: 70,
+    wartosc: 80,
     sekcja: "\xA79 Cuda AI",
-    opis: "PR\xD3G DO AKCEPTACJI: poziom Trudny \u2014 AI kolejkuje cud agresywnie, nawet przy koszcie <= 70\xD7 Praca/tur\u0119 miasta."
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Trudny \u2014 AI kolejkuje cud agresywnie, nawet przy koszcie <= 80\xD7 Praca/tur\u0119 miasta (STEP4: 70\u219280)."
   },
   cuda_poziom3_throttle_tur: {
-    wartosc: 3,
+    wartosc: 2,
     sekcja: "\xA79 Cuda AI",
-    opis: "PR\xD3G DO AKCEPTACJI: poziom Trudny \u2014 AI rozwa\u017Ca kolejkowanie cudu co 3 tury (agresywnie, cz\u0119\u015Bciej ni\u017C inne poziomy)."
+    opis: "PR\xD3G DO AKCEPTACJI: poziom Trudny \u2014 AI rozwa\u017Ca kolejkowanie cudu co 2 tury (agresywnie, cz\u0119\u015Bciej ni\u017C inne poziomy)."
   },
   ludy_morza_max_obozy: {
     wartosc: 3,
@@ -27496,8 +31785,8 @@ function applyWonderCityYields(yld, bonus) {
   if (bonus.praca) yld.praca += bonus.praca;
 }
 function civDisplayNameForKey(civKey, civs) {
-  var _a9;
-  if (!civKey || !((_a9 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a9.length)) return null;
+  var _a11;
+  if (!civKey || !((_a11 = civs == null ? void 0 : civs.cywilizacje) == null ? void 0 : _a11.length)) return null;
   const key = civKey.toLowerCase();
   for (const row of civs.cywilizacje) {
     if (!row) continue;
@@ -27637,9 +31926,9 @@ function cityHasWaterAccess(city, map) {
     return s;
   })();
   function hexHasRiver(q, r) {
-    var _a9;
+    var _a11;
     const hex = map.hexes[`${q},${r}`];
-    if ((_a9 = hex == null ? void 0 : hex.rzeka) == null ? void 0 : _a9.obecna) return true;
+    if ((_a11 = hex == null ? void 0 : hex.rzeka) == null ? void 0 : _a11.obecna) return true;
     if (riverHexSet.has(`${q},${r}`)) return true;
     for (const [dq, dr] of HEX_NEIGHBORS2) {
       if (riverHexSet.has(`${q + dq},${r + dr}`)) return true;
@@ -27785,15 +32074,23 @@ function applyStolarniaDrewnoMapInflow(baseDrewno, stolarniaCount, bonusPerBuild
   if (!Number.isFinite(baseDrewno) || baseDrewno <= 0) return 0;
   return Math.floor(baseDrewno * stolarniaDrewnoMapInflowMult(stolarniaCount, bonusPerBuilding));
 }
-function computeWorkedDrewnoByCity(cities, map, territoryNodes) {
+var ZERO_WORKED_MAGAZYN = { drewno: 0, kamien: 0, glina: 0 };
+function computeWorkedMagazynYieldsByCity(cities, map, territoryNodes) {
   const out = /* @__PURE__ */ new Map();
   for (const city of cities) {
     const worked = cityWorkedTilesForEconomy(city, map, territoryNodes);
-    let sum = 0;
+    let drewno = 0;
+    let kamien = 0;
+    let glina = 0;
     for (const tile of worked) {
-      sum += tileYield(tile).drewno;
+      const y = tileYield(tile);
+      drewno += y.drewno;
+      kamien += y.kamien;
+      glina += y.glina;
     }
-    if (sum > 0) out.set(city.id, sum);
+    if (drewno > 0 || kamien > 0 || glina > 0) {
+      out.set(city.id, { drewno, kamien, glina });
+    }
   }
   return out;
 }
@@ -27920,10 +32217,11 @@ function runtimeActiveBuiltIdsForCity(builtIds, ownerId, resolveOwnerActiveLabel
     gateOptions
   );
 }
-function tickEmpireResourcePipeline(cities, builtByCity, territoryResourceByCity, workedDrewnoByCity, stolarniaCountByOwner, kamieniarskiCountByOwner, stolarniaBonusDrewnaCiv, kamieniarskiBonusKamieniaCiv, converterThroughputs, ownerResourceCapFor, resolveOwnerActiveLabels, resolveOwnerZlotoAccess) {
+function tickEmpireResourcePipeline(cities, builtByCity, territoryResourceByCity, workedMagazynByCity, stolarniaCountByOwner, kamieniarskiCountByOwner, stolarniaBonusDrewnaCiv, kamieniarskiBonusKamieniaCiv, converterThroughputs, ownerResourceCapFor, resolveOwnerActiveLabels, resolveOwnerZlotoAccess) {
   const ownerIds = new Set(cities.map((c) => c.ownerId));
   for (const city of cities) {
     const terrYield = territoryResourceByCity.get(city.id);
+    const worked = workedMagazynByCity.get(city.id) ?? ZERO_WORKED_MAGAZYN;
     const ownerId = city.ownerId;
     const cap = ownerResourceCapFor(ownerId);
     const stolarniaCount = stolarniaCountByOwner.get(ownerId) ?? 0;
@@ -27932,7 +32230,7 @@ function tickEmpireResourcePipeline(cities, builtByCity, territoryResourceByCity
       if (raw == null || !(raw > 0)) return;
       creditOwnerResourceStock(cities, ownerId, key, Math.floor(raw * mult), cap);
     };
-    const drewnoMapBase = ((terrYield == null ? void 0 : terrYield.drewno) ?? 0) + (workedDrewnoByCity.get(city.id) ?? 0);
+    const drewnoMapBase = ((terrYield == null ? void 0 : terrYield.drewno) ?? 0) + worked.drewno;
     const drewnoCredit = applyStolarniaDrewnoMapInflow(
       drewnoMapBase,
       stolarniaCount,
@@ -27941,9 +32239,11 @@ function tickEmpireResourcePipeline(cities, builtByCity, territoryResourceByCity
     if (drewnoCredit > 0) {
       creditOwnerResourceStock(cities, ownerId, "drewno", drewnoCredit, cap);
     }
+    const kamienMapBase = ((terrYield == null ? void 0 : terrYield.kamien) ?? 0) + worked.kamien;
+    creditTerritory("kamien", kamienMapBase, kamienMult);
+    const glinaMapBase = ((terrYield == null ? void 0 : terrYield.glina) ?? 0) + worked.glina;
+    creditTerritory("glina", glinaMapBase);
     if (!terrYield) continue;
-    creditTerritory("kamien", terrYield.kamien, kamienMult);
-    creditTerritory("glina", terrYield.glina);
     creditTerritory("ruda", terrYield.ruda);
     creditTerritory("ruda_zelaza", terrYield.ruda_zelaza);
     creditTerritory("sol", terrYield.sol);
@@ -28007,7 +32307,7 @@ function applyMennicaZlotoDrainForOwners(cities, mennicaOwners, resolveOwnerTech
   }
 }
 function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits = [], growthMultByCity = /* @__PURE__ */ new Map(), builtByCity = /* @__PURE__ */ new Map(), playerEra = 1, playerZbadane = /* @__PURE__ */ new Set(), ownerCivByOwnerId = /* @__PURE__ */ new Map(), orderMultByCity = /* @__PURE__ */ new Map(), resolveOwnerEra, resolveOwnerTech, wzrostLudnosciPace = "wysoki", tradeRouteCountByCity = /* @__PURE__ */ new Map(), tradeIncomeByCity = /* @__PURE__ */ new Map(), cityReligionByCityId = /* @__PURE__ */ new Map(), wonderCityYieldsByOwner = /* @__PURE__ */ new Map(), resolveOwnerZlotoAccess = () => true, resolveOwnerActiveLabels, resolveOwnerEmpireStock, ownerDefaultPodzialHandluByOwner = /* @__PURE__ */ new Map(), manpowerHeal) {
-  var _a9;
+  var _a11;
   const gameDifficulty = difficulty;
   const params = buildEconParams(data2, difficulty);
   const buildingCatalog = data2.buildings;
@@ -28104,15 +32404,16 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     growth: 0,
     starved: 0,
     upkeepByOwner: /* @__PURE__ */ new Map(),
+    resourceUpkeepByOwner: /* @__PURE__ */ new Map(),
     pracaUpkeepByOwner
   };
   const incomeByOwner = /* @__PURE__ */ new Map();
-  const workedDrewnoByCity = computeWorkedDrewnoByCity(cities, map, territoryNodes);
+  const workedMagazynByCity = computeWorkedMagazynYieldsByCity(cities, map, territoryNodes);
   const spichlerzByCity = tickEmpireResourcePipeline(
     cities,
     builtByCity,
     territoryResourceByCity,
-    workedDrewnoByCity,
+    workedMagazynByCity,
     stolarniaCountByOwner,
     kamieniarskiCountByOwner,
     stolarniaBonusDrewnaCiv,
@@ -28250,7 +32551,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     city.wealthState = { poziom: wt.poziom, pula: wt.pula };
     const pieniadzPoWealth = Math.floor(yld.pieniadz * wt.mnoznik);
     const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
-    const udzialBudynki = (((_a9 = city.podzialPracy) == null ? void 0 : _a9.procentBudynki) ?? params.suwaakPracaBudynki) / 100;
+    const udzialBudynki = (((_a11 = city.podzialPracy) == null ? void 0 : _a11.procentBudynki) ?? params.suwaakPracaBudynki) / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
     if (ctx.maTargowisko && walutaOdkryta) {
       const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
@@ -28298,7 +32599,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
         maSpichlerzII,
         spichlerzCeramika: spichlerzState.ceramikaActive,
         spichlerzSol: spichlerzState.solActive,
-        procentRozwoj: poziomRacji * 33,
+        procentRozwoj: Math.round(poziomRacji / 6 * 100),
         zywnoscBrutto: 0,
         kosztRacji: 0,
         bilansLokalny: 0,
@@ -28370,7 +32671,7 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
       maSpichlerzII,
       spichlerzCeramika: spichlerzState.ceramikaActive,
       spichlerzSol: spichlerzState.solActive,
-      procentRozwoj: poziomRacji * 33,
+      procentRozwoj: Math.round(poziomRacji / 6 * 100),
       zywnoscBrutto,
       kosztRacji: foodBal.kosztRacji,
       bilansLokalny: foodBal.bilansLokalny,
@@ -28426,6 +32727,17 @@ function advanceCityEconomy(cities, map, data2, difficulty = "normal", econUnits
     const ounits = econUnits.filter((u) => u.ownerId === oid);
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
+    const resUpkeep = totalBuildingResourceUpkeep(
+      buildingsByOwner.get(oid) ?? []
+    );
+    addResourceCosts(
+      resUpkeep,
+      totalUnitResourceUpkeep(
+        ounits,
+        (typeId) => data2.units.find((u) => u.Jednostka === typeId)
+      )
+    );
+    result.resourceUpkeepByOwner.set(oid, resUpkeep);
   }
   if (manpowerHeal) {
     tickManpowerUnitReplenishment(
@@ -28606,7 +32918,8 @@ function researchStep(state, techs, gate, difficulty = "normal") {
       techCost(def),
       state.tempoGry ?? "standardowa",
       0,
-      difficulty
+      difficulty,
+      def.Epoka
     );
     if (state.nauka < cost) break;
     if (gate && !researchGatesMet(def, asResearchGate(gate))) break;
@@ -28659,7 +32972,8 @@ function getResearchState(state, techs, naukaPerTurn, difficulty = "normal") {
     techCost(def),
     state.tempoGry ?? "standardowa",
     0,
-    difficulty
+    difficulty,
+    def.Epoka
   ) : 0;
   const pula = state.nauka;
   let postepFraction = 0;
@@ -28768,10 +33082,10 @@ var MILITIA_POP_FRACTION = OBL.militia_pop_fraction;
 var MILITIA_STRENGTH_FRACTION = OBL.militia_strength_fraction;
 var SIEGE_MAX_ROUNDS = OBL.siege_max_rounds;
 function wallParamsFromBuildings(buildings) {
-  var _a9, _b3;
+  var _a11, _b5;
   const mury = buildings.find((b) => b && b.id === "mury");
-  const base = (_a9 = mury == null ? void 0 : mury.baza) == null ? void 0 : _a9.obrona;
-  const per = (_b3 = mury == null ? void 0 : mury.przyrost) == null ? void 0 : _b3.obrona;
+  const base = (_a11 = mury == null ? void 0 : mury.baza) == null ? void 0 : _a11.obrona;
+  const per = (_b5 = mury == null ? void 0 : mury.przyrost) == null ? void 0 : _b5.obrona;
   return {
     wallBaseObrona: typeof base === "number" ? base : WALL_BASE_OBRONA,
     wallPerLevelObrona: typeof per === "number" ? per : WALL_PER_LEVEL_OBRONA

@@ -282,13 +282,17 @@ assert('computePlayerVisibility start fallback radius <= 5', startDistMax <= 5,
   `maxDist=${startDistMax}`);
 
 // ── Test 5c: unitsVisibleOnMap (FoW — obcy tylko w bieżącym zasięgu) ───────
+// Semantyka garnizonu (C-GARN-Q1, FALA 23-25, commit 579dec89 2026-07-26): garnizon
+// WŁASNY gracza jest widoczny jako token na heksie miasta (koszary); garnizon PRZECIWNIKA
+// pozostaje ukryty niezależnie od zasięgu widzenia (nie ujawnia siły obrony miasta wroga).
 const fogPlayer = { id: 'p0', ownerId: 0, q: settler.q, r: settler.r, typeId: 'Osadnik', inGarnizon: false };
 const fogEnemyHidden = { id: 'e0', ownerId: 2, q: settler.q + 20, r: settler.r, typeId: 'Wojownik', inGarnizon: false };
 const fogEnemyVisible = { id: 'e1', ownerId: 2, q: settler.q + 1, r: settler.r, typeId: 'Wojownik', inGarnizon: false };
 const fogGarnizon = { id: 'g0', ownerId: 0, q: settler.q, r: settler.r, typeId: 'Wojownik', inGarnizon: true };
+const fogEnemyGarnizon = { id: 'g1', ownerId: 2, q: settler.q + 1, r: settler.r, typeId: 'Wojownik', inGarnizon: true };
 const fogVisHexes = new Set([keyOf(settler.q, settler.r), keyOf(settler.q + 1, settler.r)]);
 const fogOnMap = unitsVisibleOnMap(
-  [fogPlayer, fogEnemyHidden, fogEnemyVisible, fogGarnizon],
+  [fogPlayer, fogEnemyHidden, fogEnemyVisible, fogGarnizon, fogEnemyGarnizon],
   fogVisHexes,
   0,
 );
@@ -297,7 +301,10 @@ assert('unitsVisibleOnMap hides enemy outside current vision',
   !fogOnMap.some(u => u.id === 'e0'));
 assert('unitsVisibleOnMap shows enemy on visible hex',
   fogOnMap.some(u => u.id === 'e1'));
-assert('unitsVisibleOnMap hides garnizon', !fogOnMap.some(u => u.id === 'g0'));
+assert('unitsVisibleOnMap shows own garnizon (token na heksie miasta)',
+  fogOnMap.some(u => u.id === 'g0'));
+assert('unitsVisibleOnMap hides enemy garnizon even on visible hex',
+  !fogOnMap.some(u => u.id === 'g1'));
 
 // ── Test 6: canFoundCity ───────────────────────────────────────────────────
 const cities = [];
