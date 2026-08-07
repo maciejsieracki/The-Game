@@ -645,5 +645,7 @@ Spróbujmy rozwiązać wszystkie te problemy" — luka Evaluatora „efekt ubocz
 chęci handlu" wyeskalowała w analizie do szerszego problemu w `proposerUnfairToPartnerGate`.
 **WERDYKT AutoBot:** ESKALACJA-ZASADNA (Operator poprawnie rozpoznał, że wymaga decyzji
 Macieja, nie autonomicznej naprawy — zero kodu zmienione).
-**Status:** 🟡 CZEKA NA DECYZJĘ MACIEJA — pełna ABC przedstawiona w czacie 2026-08-07.
-Szczegóły techniczne, dowody, kontrprzykłady: patrz raport Evaluatora w transkrypcie sesji.
+**Status:** 🟢 **ZAPISANA — A** (Maciej 2026-08-07). Rozszerzyć wzorzec naprawy handlu na
+wszystkich 8 akcji z `PROPOSER_PW_FAIRNESS_ACTIONS`, jedną skoordynowaną sesją AutoBot.
+Szczegóły, wymogi wdrożenia, odrzucony wariant C: `docs/decyzje/R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1.md`.
+Wdrożenie: AutoBot Operator→Evaluator w toku.
