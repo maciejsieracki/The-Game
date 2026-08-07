@@ -1,1 +1,0 @@
-export { buildingRequiredActiveLabels } from '../src/game/building-resource-gate';
