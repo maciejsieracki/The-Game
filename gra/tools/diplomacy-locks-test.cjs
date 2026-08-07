@@ -232,8 +232,17 @@ eq(
   eq(r.note, 'już zawarta', 'id5: note "już zawarta" (forma żeńska -- Umowa)');
 }
 {
-  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '5', relTotal: 10 }));
-  eq(r.locked, true, 'id5: locked gdy Relacja poniżej progu i brak umowy');
+  // R-PROGI-MARTWE-CLEANUP: progHandelRelacja obniżony do 0 pkt Relacji deployem Maciej
+  // 2026-07-26 (commit 579dec8, "Maciej 2026-07-26: 0 = od neutralnej") i utwierdzony
+  // 2026-08-03 (commit d7e8fa1, docs/decyzje/R-PROGI-MARTWE-CLEANUP-2026-08-03.md) --
+  // gra/src/game/diplomacy.ts:432 dokumentuje to jako celowe: prog Relacji dla handlu
+  // trzymany poza skalą trudności, stały z JSON = 0. relacjaGate(prog=0, masz) blokuje
+  // tylko gdy masz < 0 pkt Relacji, co nie występuje w realnym zakresie Relacji (0-200 pkt).
+  // Case '5' (Traktat handlowy) NIE jest już dziś nigdy blokowany samym progiem Relacji,
+  // niezależnie od relTotal -- handel wymaga tylko braku wojny/istniejącej umowy (+ osobno
+  // willingnessTrade w diplomacy-proposals.ts, poza zakresem resolveDiplomacyActionLock).
+  const r = resolveDiplomacyActionLock(baseCtx({ actionId: '5', relTotal: 0 }));
+  eq(r.locked, false, 'id5: NIE locked przy relTotal=0 -- prog Relacji handlu = 0, martwy prog usunięty (Maciej 2026-07-26 / R-PROGI-MARTWE-CLEANUP-2026-08-03)');
 }
 
 // ===========================================================================
