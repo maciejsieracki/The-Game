@@ -460,7 +460,17 @@ const DIPLO_RESPEKT_THRESHOLD_KEYS: readonly (keyof DiplomacyParams)[] = [
   'progPoboczneAkceptacja',
 ];
 
-function getBaseDiplomacyParams(): DiplomacyParams {
+/**
+ * R-DYPLO-JSON-ZRODLO-PRAWDY-Q1=B — akcesor bazowych parametrów dyplomacji
+ * (kanon + override z data/diplomacy.json), BEZ skalowania po trudności
+ * (skalowanie żyje osobno w scaleDiplomacyParamsForDifficulty /
+ * getEffectiveDiplomacyParams). Eksportowany, żeby moduły czytające
+ * pojedyncze klucze (diplomacy-credibility.ts, diplomacy-layers.ts,
+ * diplomacy-value-catalog.ts) przestały czytać surową stałą DIPLOMACY_PARAMS
+ * z pominięciem JSON-a (nota N3, commit 2e67219). Memoizowany — patrz
+ * `resetEffectiveDiplomacyParamsCache()` dla testów/hot-reload.
+ */
+export function getBaseDiplomacyParams(): DiplomacyParams {
   if (!_baseDiplomacyParams) {
     _baseDiplomacyParams = {
       ...DIPLOMACY_PARAMS,

@@ -21,7 +21,7 @@
  * `ownerId` służy WYŁĄCZNIE do wyboru właściwej mapy u wywołującego (main.ts).
  */
 
-import { DIPLOMACY_PARAMS } from './diplomacy';
+import { getBaseDiplomacyParams } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
 
 // ---------------------------------------------------------------------------
@@ -50,9 +50,10 @@ const WIARYGODNOSC_LABELE_PL: Record<WiarygodnoscBand, string> = {
  * prezentacji UI (poza zakresem Etapu 1), nie klasyfikacji pasma.
  */
 export function wiarygodnoscBand(w: number): WiarygodnoscBand {
-  if (w >= DIPLOMACY_PARAMS.wiarygodnoscProgWzorCnoty) return 'wzor_cnoty';
+  const P = getBaseDiplomacyParams();
+  if (w >= P.wiarygodnoscProgWzorCnoty) return 'wzor_cnoty';
   if (w >= 0) return 'uczciwy';
-  if (w > DIPLOMACY_PARAMS.wiarygodnoscProgWiarolomny) return 'chwiejny';
+  if (w > P.wiarygodnoscProgWiarolomny) return 'chwiejny';
   return 'wiarolomny';
 }
 
@@ -67,14 +68,15 @@ export function wiarygodnoscLabelPl(w: number): string {
  * (parytet — WIAR-Q6 zmienione: bez różnicowania per cywilizacja).
  */
 export function wiarygodnoscStartowa(poziomTrudnosci: GameDifficulty): number {
+  const P = getBaseDiplomacyParams();
   switch (poziomTrudnosci) {
     case 'easy':
-      return DIPLOMACY_PARAMS.wiarygodnoscStartLatwy;
+      return P.wiarygodnoscStartLatwy;
     case 'hard':
-      return DIPLOMACY_PARAMS.wiarygodnoscStartTrudny;
+      return P.wiarygodnoscStartTrudny;
     case 'normal':
     default:
-      return DIPLOMACY_PARAMS.wiarygodnoscStartNormalny;
+      return P.wiarygodnoscStartNormalny;
   }
 }
 
@@ -169,25 +171,26 @@ export function appendCredibilityEvent(
  * (odwrócone — poziom trudności to charakter świata, nie tylko liczba).
  */
 function czasZapomnienia(znak: CredibilityEventSign, poziomTrudnosci: GameDifficulty): number {
+  const P = getBaseDiplomacyParams();
   if (znak === 'kara') {
     switch (poziomTrudnosci) {
       case 'easy':
-        return DIPLOMACY_PARAMS.wiarygodnoscCzasZapomnieniaKaraLatwy;
+        return P.wiarygodnoscCzasZapomnieniaKaraLatwy;
       case 'hard':
-        return DIPLOMACY_PARAMS.wiarygodnoscCzasZapomnieniaKaraTrudny;
+        return P.wiarygodnoscCzasZapomnieniaKaraTrudny;
       case 'normal':
       default:
-        return DIPLOMACY_PARAMS.wiarygodnoscCzasZapomnieniaKaraNormalny;
+        return P.wiarygodnoscCzasZapomnieniaKaraNormalny;
     }
   }
   switch (poziomTrudnosci) {
     case 'easy':
-      return DIPLOMACY_PARAMS.wiarygodnoscCzasZapomnieniaNagrodaLatwy;
+      return P.wiarygodnoscCzasZapomnieniaNagrodaLatwy;
     case 'hard':
-      return DIPLOMACY_PARAMS.wiarygodnoscCzasZapomnieniaNagrodaTrudny;
+      return P.wiarygodnoscCzasZapomnieniaNagrodaTrudny;
     case 'normal':
     default:
-      return DIPLOMACY_PARAMS.wiarygodnoscCzasZapomnieniaNagrodaNormalny;
+      return P.wiarygodnoscCzasZapomnieniaNagrodaNormalny;
   }
 }
 
@@ -215,7 +218,8 @@ export function wartoscBiezaca(
   if (!Number.isFinite(czas) || czas <= 0) return zdarzenie.wartoscPierwotna;
   const elapsed = tura - zdarzenie.turaWystapienia;
   const frac = elapsed / czas;
-  const mnoznik = clamp(1 - frac, DIPLOMACY_PARAMS.wiarygodnoscTrwalaPodlogaProcent, 1);
+  const P = getBaseDiplomacyParams();
+  const mnoznik = clamp(1 - frac, P.wiarygodnoscTrwalaPodlogaProcent, 1);
   return zdarzenie.wartoscPierwotna * mnoznik;
 }
 
@@ -237,7 +241,8 @@ export function sumaWiarygodnosci(
   for (const zdarzenie of zdarzenia) {
     suma += wartoscBiezaca(zdarzenie, tura, poziomTrudnosci);
   }
-  return clamp(suma, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  const P = getBaseDiplomacyParams();
+  return clamp(suma, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
 }
 
 // ---------------------------------------------------------------------------
@@ -282,15 +287,16 @@ export interface CredibilityStreamEntry {
 
 /** Waga per turę (§3 tabela A) danego zobowiązania strumienia. */
 export function credibilityStreamWeight(typ: CredibilityStreamEvent): number {
+  const P = getBaseDiplomacyParams();
   switch (typ) {
     case 'strumien_sojusz':
-      return DIPLOMACY_PARAMS.wiarygodnoscS1SojuszPerTure;
+      return P.wiarygodnoscS1SojuszPerTure;
     case 'strumien_nap':
-      return DIPLOMACY_PARAMS.wiarygodnoscS2NapPerTure;
+      return P.wiarygodnoscS2NapPerTure;
     case 'strumien_handel':
-      return DIPLOMACY_PARAMS.wiarygodnoscS3HandelPerTure;
+      return P.wiarygodnoscS3HandelPerTure;
     case 'strumien_przemarsz':
-      return DIPLOMACY_PARAMS.wiarygodnoscS4PrzemarszPerTure;
+      return P.wiarygodnoscS4PrzemarszPerTure;
   }
 }
 
@@ -341,7 +347,8 @@ export function sumaWiarygodnosciCalkowita(
     suma += wartoscBiezaca(zdarzenie, tura, poziomTrudnosci);
   }
   suma += sumaStrumienia(wpisyStrumienia);
-  return clamp(suma, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  const P = getBaseDiplomacyParams();
+  return clamp(suma, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
 }
 
 // ---------------------------------------------------------------------------
@@ -350,7 +357,7 @@ export function sumaWiarygodnosciCalkowita(
 
 /** Trwały ślad jednorazowego zdarzenia — 10% wartości pierwotnej (§4, na zawsze). */
 export function trwalySlad(zdarzenie: CredibilityEventRecord): number {
-  return zdarzenie.wartoscPierwotna * DIPLOMACY_PARAMS.wiarygodnoscTrwalaPodlogaProcent;
+  return zdarzenie.wartoscPierwotna * getBaseDiplomacyParams().wiarygodnoscTrwalaPodlogaProcent;
 }
 
 /**
@@ -399,12 +406,13 @@ export function rozbicieWiarygodnosci(
   const strumien = sumaStrumienia(wpisyStrumienia);
   const biezaceUczynki = aktywneZdarzenia + strumien;
   const surowa = startowa + trwalyZyciorys + biezaceUczynki;
+  const P = getBaseDiplomacyParams();
   return {
     startowa,
     trwalyZyciorys,
     biezaceUczynki,
     strumien,
-    razem: clamp(surowa, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax),
+    razem: clamp(surowa, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax),
   };
 }
 
@@ -554,7 +562,8 @@ export function buildWiarygodnoscBreakdown(
  * W=+100 → ×1,5 · W=0 → ×1,0 · W=−100 → ×0,5
  */
 export function wiarygodnoscWzrostMult(w: number): number {
-  const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
   return 1 + (wKlamrowane / 100) * 0.5;
 }
 
@@ -564,7 +573,8 @@ export function wiarygodnoscWzrostMult(w: number): number {
  * W=+100 → ×0,5 · W=0 → ×1,0 · W=−100 → ×1,5
  */
 export function wiarygodnoscSpadekMult(w: number): number {
-  const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
   return 1 - (wKlamrowane / 100) * 0.5;
 }
 
@@ -587,10 +597,11 @@ export const WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
  * Wzór: `clamp(W, −100, 100) × 0,03`.
  */
 export function zaufanieDryfOdWiarygodnosci(w: number): number {
+  const P = getBaseDiplomacyParams();
   const wKlamrowane = clamp(
     w,
-    DIPLOMACY_PARAMS.wiarygodnoscSkalaMin,
-    DIPLOMACY_PARAMS.wiarygodnoscSkalaMax,
+    P.wiarygodnoscSkalaMin,
+    P.wiarygodnoscSkalaMax,
   );
   return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
 }
@@ -603,8 +614,9 @@ export function zaufanieDryfOdWiarygodnosci(w: number): number {
  * D4 nadal używa `modyfikatorZaufaniaD4OdWiarygodnosci` (round(W/20)) — NIE ruszać.
  */
 export function strumienWiarygodnoscDoZaufania(w: number): number {
-  const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
-  return wKlamrowane / DIPLOMACY_PARAMS.wiarygodnoscZaufanieDzielnikPerTura;
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
+  return wKlamrowane / P.wiarygodnoscZaufanieDzielnikPerTura;
 }
 
 // ---------------------------------------------------------------------------
@@ -616,8 +628,9 @@ export function strumienWiarygodnoscDoZaufania(w: number): number {
  * pierwszym ustaleniu relacji: `round(W / dzielnik)` (dzielnik = 20, ten sam co Dźwignia 1).
  */
 export function modyfikatorZaufaniaD4OdWiarygodnosci(w: number): number {
-  const wKlamrowane = clamp(w, DIPLOMACY_PARAMS.wiarygodnoscSkalaMin, DIPLOMACY_PARAMS.wiarygodnoscSkalaMax);
-  return Math.round(wKlamrowane / DIPLOMACY_PARAMS.wiarygodnoscZaufanieDzielnikPerTura);
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
+  return Math.round(wKlamrowane / P.wiarygodnoscZaufanieDzielnikPerTura);
 }
 
 /**

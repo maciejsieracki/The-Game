@@ -765,5 +765,89 @@ function r4ExpectedAfterNTicks(baseZ, wa, wb, wSelf, n) {
   ok(WC.diplomacyClampTrustGainNaTure(5, 5) === 0, 'flat clamp: sufit wyczerpany -> 0');
 }
 
+// ---------------------------------------------------------------------------
+// 10) R-DYPLO-JSON-ZRODLO-PRAWDY-Q1=B / dowod zamkniecia noty N3 -- edycja
+// gra/data/diplomacy.json (klucze wiarygodnosc*) zmienia wynik funkcji
+// Wiarygodnosci i Warstw, bo te moduly czytaja `getBaseDiplomacyParams()`
+// (kanon + override JSON), a NIE surowa stala `DIPLOMACY_PARAMS` z TS.
+//
+// esbuild inline'uje `import ... from '.../diplomacy.json'` jako literal JS w
+// CHWILI BUDOWANIA bundla -- nie da sie podmienic JSON-a "w locie" po
+// zbudowaniu i samym `resetEffectiveDiplomacyParamsCache()` (ten czysci
+// WYLACZNIE memoizacje `_baseDiplomacyParams` w JUZ zbudowanym module, nie
+// tresc pliku JSON, ktora jest zamrozona w bundlu). Dlatego dowod buduje
+// DRUGI, OSOBNY bundle z modyfikowanej KOPII drzewa src+data w katalogu
+// tymczasowym -- prawdziwy `gra/data/diplomacy.json` zostaje NIETKNIETY (W1).
+// Sekcje 1-9 wyzej (WC, zbudowany z prawdziwych, niezmodyfikowanych danych)
+// juz sluza jako kontrola "przed": wiarygodnoscStartowa('hard')===0 (linia
+// ok. 271), band(10) miesci sie w 'uczciwy' bo band(39)==='uczciwy' i
+// band(40)==='wzor_cnoty' (linie 214-215) -- domyslne wartosci TS bez
+// override. Ten blok pokazuje wartosci PO override JSON-a.
+// ---------------------------------------------------------------------------
+
+{
+  const os = require('os');
+  const tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wiar-json-override-'));
+  try {
+    const srcCopy = path.join(tmpRoot, 'src');
+    const dataCopy = path.join(tmpRoot, 'data');
+    fs.cpSync(path.resolve(GRA_ROOT, 'src'), srcCopy, { recursive: true });
+    fs.cpSync(path.resolve(GRA_ROOT, 'data'), dataCopy, { recursive: true });
+
+    const dataJsonPath = path.join(dataCopy, 'diplomacy.json');
+    const dataJson = JSON.parse(fs.readFileSync(dataJsonPath, 'utf8'));
+    // Wartosci celowo rozne od TS defaults (src/game/diplomacy.ts):
+    // wiarygodnoscStartTrudny=0, wiarygodnoscProgWzorCnoty=40, startZaufanie=20.
+    // Gdyby funkcje nadal czytaly surowa stale TS, ponizsze asercje by padly.
+    dataJson.params.wiarygodnoscStartTrudny = 77;
+    dataJson.params.wiarygodnoscProgWzorCnoty = 5;
+    dataJson.params.startZaufanie = 63;
+    fs.writeFileSync(dataJsonPath, JSON.stringify(dataJson, null, 2), 'utf8');
+
+    const entryPath = path.join(tmpRoot, 'entry.ts');
+    fs.writeFileSync(
+      entryPath,
+      `export { wiarygodnoscStartowa, wiarygodnoscBand } from './src/game/diplomacy-credibility';
+export { defaultNeutralRelation } from './src/game/diplomacy-layers';
+export { resetEffectiveDiplomacyParamsCache } from './src/game/diplomacy';\n`,
+      'utf8',
+    );
+    const outBundle = path.join(tmpRoot, 'bundle.cjs');
+    esbuild.buildSync({
+      entryPoints: [entryPath],
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      target: 'node18',
+      outfile: outBundle,
+      absWorkingDir: tmpRoot,
+      logLevel: 'silent',
+    });
+    const WCOverride = require(outBundle);
+    // Wywolanie kontraktu resetu (main.ts robi to samo przy zmianie trudnosci
+    // w trakcie sesji) -- w swiezo zaladowanym module cache i tak startuje
+    // pusty, ale wolamy jawnie, zeby dowod pokrywal caly kontrakt z W5.
+    WCOverride.resetEffectiveDiplomacyParamsCache();
+
+    // -- diplomacy-credibility.ts, funkcja 1: wiarygodnoscStartowa (bezposrednie przejscie JSON -> wynik) --
+    const startTrudny = WCOverride.wiarygodnoscStartowa('hard');
+    ok(startTrudny === 77,
+      `N3: wiarygodnoscStartowa('hard') czyta JSON override wiarygodnoscStartTrudny (got ${startTrudny}, want 77, TS default byl 0)`);
+
+    // -- diplomacy-credibility.ts, funkcja 2: wiarygodnoscBand (prog z JSON przesuwa granice pasma) --
+    // TS domyslnie wzorCnoty>=40 -> W=10 to 'uczciwy'. Po override progu na 5 -> W=10 to 'wzor_cnoty'.
+    const bandPoOverride = WCOverride.wiarygodnoscBand(10);
+    ok(bandPoOverride === 'wzor_cnoty',
+      `N3: wiarygodnoscBand(10) po override wiarygodnoscProgWzorCnoty=5 zwraca 'wzor_cnoty' (got ${bandPoOverride}, TS default dawal 'uczciwy')`);
+
+    // -- diplomacy-layers.ts, funkcja: defaultNeutralRelation (startZaufanie z JSON) --
+    const relPoOverride = WCOverride.defaultNeutralRelation();
+    ok(relPoOverride.zaufanie === 63,
+      `N3: defaultNeutralRelation().zaufanie czyta JSON override startZaufanie (got ${relPoOverride.zaufanie}, want 63, TS default byl 20)`);
+  } finally {
+    fs.rmSync(tmpRoot, { recursive: true, force: true });
+  }
+}
+
 console.log(`wiarygodnosc-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);

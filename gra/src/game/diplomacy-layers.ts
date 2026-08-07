@@ -5,7 +5,7 @@
  */
 
 import type { AIDiplomacyCommand } from './ai';
-import { DIPLOMACY_PARAMS, type Relation } from './diplomacy';
+import { getBaseDiplomacyParams, type Relation } from './diplomacy';
 import { zaufaniePierwszyKontaktZD4 } from './diplomacy-credibility';
 import { isBarbarian } from './barbarians';
 
@@ -40,7 +40,7 @@ function hexKey(q: number, r: number): string {
 
 /** Relacja startowa gracz ↔ AI (z modyfikatorem typu). */
 export function startRelationForPair(sameType: boolean): Relation {
-  const p = DIPLOMACY_PARAMS;
+  const p = getBaseDiplomacyParams();
   let zaufanie = p.startZaufanie;
   if (sameType) {
     zaufanie += p.rywalizacjaTenSamTyp_zaufanie;
@@ -59,7 +59,7 @@ export function startRelationForPair(sameType: boolean): Relation {
  * Bez rywalizacjaTenSamTyp_zaufanie (−20); AI↔AI ten sam typ nadal startRelationForPair(true).
  */
 export function startRelationForPlayerSameCivCityState(): Relation {
-  const p = DIPLOMACY_PARAMS;
+  const p = getBaseDiplomacyParams();
   const zaufanie = clamp(p.startZaufanie + p.miastoPanstwoSameCiv_zaufanie, 0, 100);
   return {
     zaufanie,
@@ -73,7 +73,7 @@ export function startRelationForPlayerSameCivCityState(): Relation {
  * Nie dotyka gracza ↔ MP (startRelationForPlayerSameCivCityState).
  */
 export function startRelationForAiMajorSameCivCityState(): Relation {
-  const p = DIPLOMACY_PARAMS;
+  const p = getBaseDiplomacyParams();
   return {
     zaufanie: 100,
     respekt: p.progWchloniecieRespekt,
@@ -180,7 +180,7 @@ export function applyCityStateDifficultyTrust(
 
 /** Domyślna relacja neutralna (lazy init bez kontekstu typu). */
 export function defaultNeutralRelation(): Relation {
-  const p = DIPLOMACY_PARAMS;
+  const p = getBaseDiplomacyParams();
   return {
     zaufanie: p.startZaufanie,
     respekt: p.startRespekt,
@@ -199,7 +199,7 @@ export function defaultNeutralRelation(): Relation {
  * aiOwnerList filtruje tylko ownerId > 0).
  */
 export function barbarianWarRelation(): Relation {
-  const p = DIPLOMACY_PARAMS;
+  const p = getBaseDiplomacyParams();
   return {
     zaufanie: 0,
     respekt: p.startRespekt,

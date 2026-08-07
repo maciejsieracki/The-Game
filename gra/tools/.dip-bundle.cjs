@@ -3906,7 +3906,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -3939,7 +3939,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -4652,6 +4652,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -4696,12 +4697,28 @@ var TERRAIN_MOVEMENT_KEY_ALIASES = {
 function clamp(v, min, max) {
   return Math.min(max, Math.max(min, v));
 }
+function wiarygodnoscWzrostMult(w) {
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
+  return 1 + wKlamrowane / 100 * 0.5;
+}
+function wiarygodnoscSpadekMult(w) {
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(w, P.wiarygodnoscSkalaMin, P.wiarygodnoscSkalaMax);
+  return 1 - wKlamrowane / 100 * 0.5;
+}
+function applyWiarygodnoscTempoDoDelty(dZ, w) {
+  if (w === void 0 || dZ === 0) return dZ;
+  if (dZ > 0) return dZ * wiarygodnoscWzrostMult(w);
+  return dZ * wiarygodnoscSpadekMult(w);
+}
 var WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
 function zaufanieDryfOdWiarygodnosci(w) {
+  const P = getBaseDiplomacyParams();
   const wKlamrowane = clamp(
     w,
-    DIPLOMACY_PARAMS.wiarygodnoscSkalaMin,
-    DIPLOMACY_PARAMS.wiarygodnoscSkalaMax
+    P.wiarygodnoscSkalaMin,
+    P.wiarygodnoscSkalaMax
   );
   return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
 }
@@ -5109,7 +5126,7 @@ function relationScore(rel) {
     200
   );
 }
-function applyDiplomaticEvent(rel, event, params = {}) {
+function applyDiplomaticEvent(rel, event, params = {}, wiarygodnosc) {
   const p = { ...DIPLOMACY_PARAMS, ...params };
   let dZ = 0;
   let dR = 0;
@@ -5190,6 +5207,7 @@ function applyDiplomaticEvent(rel, event, params = {}) {
       dZ = -15;
       break;
   }
+  dZ = applyWiarygodnoscTempoDoDelty(dZ, wiarygodnosc);
   const newZ = clamp2(rel.zaufanie + dZ, 0, 100);
   const newR = clamp2(rel.respekt + dR, 0, 100);
   return clampRelationForWar({
@@ -5441,6 +5459,7 @@ function computeTickZaufanieDelta(ctx, atWar) {
   if (ctx.wspolnaReligia) dZ += p.wspolnaReligia_zaufanie_perTura;
   if (ctx.odmiennaReligia) dZ += p.odmiennaReligia_zaufanie_perTura;
   if (ctx.ekspansjaPrzyGranicy) dZ += p.ekspansjaGranica_zaufanie_perTura;
+  dZ = applyWiarygodnoscTempoDoDelty(dZ, ctx.wiarygodnoscSelf);
   if (atWar && dZ > 0) dZ = 0;
   return dZ;
 }

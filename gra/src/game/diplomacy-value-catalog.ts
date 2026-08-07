@@ -11,7 +11,7 @@ import buildingsJson from '../../data/buildings.json';
 import econParamsJson from '../../data/econ-params.json';
 import { diplomacyDepositBasePrice } from './diplomacy-deposit-trade';
 import { applyTempoKoszt, type TempoGry } from './tech-tempo';
-import { scaleRelationThreshold, DIPLOMACY_PARAMS } from './diplomacy';
+import { scaleRelationThreshold, getBaseDiplomacyParams } from './diplomacy';
 import type { GameDifficulty } from './difficulty-cost';
 
 /** Typ pozycji w koszyku wymiany / daru (v1.0). Ulepszenia terenu — poza koszykiem. */
@@ -612,5 +612,5 @@ export function diplomacyProgDarRelacja(
  * oferty: „co turę" vs „jednorazowo") — informacyjna, silnik nalicza to osobno w ticku.
  */
 export function diplomacyHandelZaufaniePerTura(): number {
-  return DIPLOMACY_PARAMS.handel_zaufanie_perTura;
+  return getBaseDiplomacyParams().handel_zaufanie_perTura;
 }

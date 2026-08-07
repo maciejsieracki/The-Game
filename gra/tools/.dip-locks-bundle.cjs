@@ -42,6 +42,7 @@ var diplomacy_default = {
     zdrada_zaufanie: -50,
     szpiegWykryty_zaufanie: -15,
     rywalizacjaTenSamTyp_zaufanie: -20,
+    miastoPanstwoSameCiv_zaufanie: 20,
     roznicaKulturowa_zaufanie: -5,
     przewagaMilitarna_respekt: 15,
     slabszyMilitarnie_respekt: -10,
@@ -75,7 +76,6 @@ var diplomacy_default = {
     progPoboczneAkceptacja: 60,
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
-    progNapZaufanie: 40,
     progNapRelacja: 50,
     progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
@@ -105,8 +105,6 @@ var diplomacy_default = {
     progTrybutOfertaBaseGold: 10,
     progTrybutOfertaEpokaGold: 5,
     progHandelWillingnessMin: 0.5,
-    progHandelFairRatioMin: 0.8,
-    progHandelFairRatioMax: 1.2,
     progNamowWojneZaufanie: 50,
     progNamowWojneBribeBase: 30,
     progGraniceZaufanie: 45,
@@ -202,12 +200,7 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1,
-    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
-    wiarygodnosc_limit_zaufanie_chwiejny: 3,
-    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
-    wiarygodnosc_limit_zaufanie_dno: 0,
-    wiarygodnosc_limit_prog_dno: -70
+    dobra_wola_zaufanie_per_tura: 1
   },
   akcje_dyplomatyczne: [
     {
@@ -1050,7 +1043,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -1083,7 +1076,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -1796,6 +1789,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -1836,6 +1830,21 @@ var TERRAIN_MOVEMENT_KEY_ALIASES = {
   polarny: "polarny" /* Polarny */
 };
 
+// src/game/diplomacy-credibility.ts
+function clamp(v, min, max) {
+  return Math.min(max, Math.max(min, v));
+}
+var WIARYGODNOSC_ZAUFANIE_DRYF_NA_100 = 0.03;
+function zaufanieDryfOdWiarygodnosci(w) {
+  const P = getBaseDiplomacyParams();
+  const wKlamrowane = clamp(
+    w,
+    P.wiarygodnoscSkalaMin,
+    P.wiarygodnoscSkalaMax
+  );
+  return wKlamrowane * WIARYGODNOSC_ZAUFANIE_DRYF_NA_100;
+}
+
 // src/game/diplomacy.ts
 var DIPLOMACY_PARAMS = {
   // ---- one-shot Zaufanie deltas (jednorazowo) ----
@@ -1857,6 +1866,8 @@ var DIPLOMACY_PARAMS = {
   szpiegWykryty_zaufanie: -15,
   /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
   rywalizacjaTenSamTyp_zaufanie: -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie: 20,
   /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
   roznicaKulturowa_zaufanie: -5,
   // ---- one-shot Respekt deltas (jednorazowo) ----
@@ -1930,9 +1941,7 @@ var DIPLOMACY_PARAMS = {
    */
   progPoboczneWojna: 15,
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Zaufanie >= wartość wymagane do NAP */
-  progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
   progNapRelacja: 50,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja: 0,
@@ -1987,10 +1996,6 @@ var DIPLOMACY_PARAMS = {
   progTrybutOfertaEpokaGold: 5,
   /** willingnessTrade min dla handlu */
   progHandelWillingnessMin: 0.5,
-  /** Fair deal: offered/fair min */
-  progHandelFairRatioMin: 0.8,
-  /** Fair deal: offered/fair max */
-  progHandelFairRatioMax: 1.2,
   /** Zaufanie min dla namówienia do wojny */
   progNamowWojneZaufanie: 50,
   /** Łapówka min = base × (epoka + 1) */
@@ -2141,7 +2146,6 @@ var DIPLO_RELATION_THRESHOLD_KEYS = [
 var DIPLO_ZAUFANIE_THRESHOLD_KEYS = [
   "progSojuszZaufanie",
   "progWymianaTechZaufanie",
-  "progNapZaufanie",
   "progNamowWojneZaufanie",
   "progGraniceZaufanie",
   "progTrybutOfertaNearWarZaufanie",
@@ -2435,6 +2439,10 @@ function pushRow(pozytywne, negatywne, label, value, perTurn) {
 function buildRelationBreakdown(log, continuous, params) {
   const pozytywne = [];
   const negatywne = [];
+  if (!continuous.atWar && continuous.wiarygodnoscSelf !== void 0) {
+    const drift = zaufanieDryfOdWiarygodnosci(continuous.wiarygodnoscSelf);
+    pushRow(pozytywne, negatywne, "Wiarygodno\u015B\u0107 (dryf)", drift, true);
+  }
   if (continuous.aktywnyHandel) {
     pushRow(pozytywne, negatywne, "Aktywny handel", params.handel_zaufanie_perTura, true);
   }
@@ -2442,8 +2450,6 @@ function buildRelationBreakdown(log, continuous, params) {
     pushRow(pozytywne, negatywne, "Aktywny sojusz", params.sojusz_zaufanie_perTura, true);
   } else if (continuous.pokojTrustTier === "nap") {
     pushRow(pozytywne, negatywne, "Trwaj\u0105cy pakt o nieagresji", params.nap_zaufanie_perTura, true);
-  } else if (continuous.pokojTrustTier === "pokoj") {
-    pushRow(pozytywne, negatywne, "Pokojowy kontakt", params.pokoj_zaufanie_perTura, true);
   }
   if (continuous.wspolnaReligia) {
     pushRow(pozytywne, negatywne, "Wsp\xF3lna religia", params.wspolnaReligia_zaufanie_perTura, true);
@@ -2456,6 +2462,9 @@ function buildRelationBreakdown(log, continuous, params) {
   }
   if (continuous.rywalizacjaTenSamTyp) {
     pushRow(pozytywne, negatywne, "Rywalizacja (ten sam typ nacji)", params.rywalizacjaTenSamTyp_zaufanie);
+  }
+  if (continuous.miastoPanstwoSameCiv) {
+    pushRow(pozytywne, negatywne, "Ten sam typ (miasto-pa\u0144stwo)", params.miastoPanstwoSameCiv_zaufanie);
   }
   if (continuous.roznicaKulturowa) {
     pushRow(pozytywne, negatywne, "R\xF3\u017Cna kultura", params.roznicaKulturowa_zaufanie);
