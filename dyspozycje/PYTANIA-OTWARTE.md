@@ -1842,3 +1842,32 @@ wzroście zerowym lub ujemnym (głód) — czy pokazujemy `0 %`, znak minus, czy
 **Kotwice:** plakietka miasta w `gra/src/render/**` / `gra/src/ui/**`; wzrost populacji
 w `gra/src/game/turn-economy.ts`.
 **Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
+
+## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — przyczyna ustalona**
+**Jego słowa:** *„jakieś niezautoryzowane niby przemarsze, których ja nie widzę, bo ja nie widzę,
+żeby ktoś robił przemarsz przez mój teren, a ja też nie mam jeszcze żadnych jednostek."*
+**Objaw:** panel WYDARZENIA pokazuje wielokrotnie „Koniec tury — Nieautoryzowany przemarsz:
+−5 Zauf./para", mimo że gracz **nie posiada ani jednej jednostki** i nikt nie wchodzi na jego teren.
+**PRZYCZYNA USTALONA — `gra/src/main.ts:3570-3575`:**
+```ts
+if (penalizedPairs > 0) {
+  showHintMessage(`Nieautoryzowany przemarsz: −${borderParams.karaPrzemarszNieautoryzowany_zaufanie_perTura} Zauf./para`, 3500);
+}
+```
+Komunikat leci **bezwarunkowo**, gdy ukarano JAKĄKOLWIEK parę w świecie. Brak filtru na gracza.
+Łańcuch: `applyBorderMarchPenaltiesEndTurn()` (`main.ts:3541`) → `collectUnauthorizedBorderPairs`
+zbiera pary z **całego** `units` (wszyscy właściciele, także AI↔AI i barbarzyńcy) →
+`applyUnauthorizedBorderPenalties` zwraca `penalizedPairs` = liczba wszystkich ukaranych par →
+komunikat. **Żaden krok nie sprawdza `ownerId === gracz`.** Gracz dostaje powiadomienie
+o przekroczeniach granic między obcymi cywilizacjami.
+**Uwaga:** sama KARA jest najpewniej poprawna (relacje AI↔AI mają się psuć niezależnie od gracza)
+— defektem jest wyłącznie POWIADAMIANIE gracza o cudzych sprawach. Rozdzielić jedno od drugiego.
+**DO DECYZJI (ABC):** kiedy gracz ma widzieć ten komunikat —
+(A) tylko gdy ktoś wszedł na TERYTORIUM GRACZA (`territoryOwnerId === gracz`) — informacja
+    o naruszeniu jego granic;
+(B) tylko gdy to JEGO jednostki naruszyły cudzy teren (`intruderOwnerId === gracz`) — ostrzeżenie
+    o karze, którą sam ponosi;
+(C) w obu tych przypadkach, ale NIGDY dla par obcy↔obcy; opcjonalnie z rozróżnieniem treści
+    („Twoje granice naruszone" vs „Twoja jednostka na cudzym terenie").
+**Kotwice:** `gra/src/main.ts:3541-3596` · `gra/src/game/diplomacy-credibility.ts:492`
+· `gra/src/game/wiarygodnosc-types.ts:37`. Bramka do rozszerzenia: brak testu na adresata komunikatu.
