@@ -481,12 +481,19 @@ function treatyPnGate(
     return null;
   }
 
-  const hasBasket = givePn > 0 || (payload.giveItems?.length ?? 0) > 0;
+  // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A: sprawdzamy OBIE strony koszyka (nie tylko
+  // `give`) — inaczej koszyk „tylko odbieram" (receiveItems bez giveItems) omija
+  // bramkę fair-trade poniżej, bo hasBasket byłby false. Realne dla nap/sojusz/
+  // granice/wasal/umowa_szlakow/umowa_handlowa odkąd te akcje wypadły z
+  // PROPOSER_PW_FAIRNESS_ACTIONS (ta funkcja jest teraz ich jedyną ochroną koszyka).
+  const hasBasket = givePn > 0 || receivePn > 0
+    || (payload.giveItems?.length ?? 0) > 0
+    || (payload.receiveItems?.length ?? 0) > 0;
   if (!hasBasket) return null;
   // Dwustronna wymiana przy traktacie — tylko fair trade koszyka (bez dublowania bazy NAP).
   if (receivePn > 0) {
     if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-      return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
+      return { accepted: false, reason: `Oferta nieuczciwa dla partnera — poniżej wartości PW @ Relacji (masz ${givePn} PW, potrzeba więcej wobec ${receivePn} PW od partnera)` };
     }
     return null;
   }
@@ -504,38 +511,75 @@ function treatyPnGate(
 /**
  * Akcje z bilansem PW — gracz-proponent nie może dać partnerowi ujemnego netto.
  *
- * R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C: 'handel' CELOWO POZA tym zbiorze
- * (usunięty tu w rundzie 3 rekonstrukcji). Ta ogólna bramka sprawdza uczciwość PW
- * BEZ modyfikatora chęci partnera i uruchamia się PRZED case'em 'handel' w switchu
- * evaluateProposal — gdyby 'handel' w niej zostało, każda nieuczciwa oferta gracza
- * odrzucałaby się tu (komunikat „Przewaga u Ciebie") zanim handelFairnessGate (case
- * 'handel', z mnożnikiem chęci — patrz handelWillingnessMultiplier) w ogóle dostałby
- * szansę zadziałać — dwie niezależne, nachodzące na siebie bramki uczciwości, dokładnie
- * ten sam konflikt priorytetów, który decyzja Q1 miała rozwiązać. handelFairnessGate
- * w case 'handel' jest teraz JEDYNYM i pełnym następcą tej bramki dla handlu — liczy
- * uczciwość PW @ Relacji (ten sam pnDealAcceptedByAi/diplomacyFairGivePn co tutaj),
- * dodatkowo modyfikowaną chęcią respondenta (patrz handelWillingnessMultiplier) — a
- * PODŁOGA PARYTETU w handelFairnessGate (Math.max(receivePn, …)) gwarantuje, że próg
- * PW nigdy nie spada poniżej „oddaje tyle ile bierze" niezależnie od chęci partnera —
- * ochrona przed przepłatą AI (R-PW-ACCEPT-OVERPAY-Q1) jest RÓWNOWAŻNA tej ogólnej
- * bramce WYŁĄCZNIE W CZĘŚCI PARYTETOWEJ (przy relTotal ≥ 100 pkt Relacji); powyżej
- * parytetu (relTotal < 100 pkt) próg jest dodatkowo modulowany chęcią respondenta
- * (−15%…+20%, patrz handelWillingnessMultiplier) — to zamierzone zachowanie Q1=B+C,
- * nie luka. Skonsolidowana w jednym miejscu z poprawną, przyczynowo trafną wiadomością
- * dla gracza (runda 4: naprawiono lukę „skimowania" do ~15% wartości transakcji,
- * którą usunięcie 'handel' stąd w rundzie 3 otworzyło).
- * Pozostałe akcje (w tym umowa_szlakow/umowa_handlowa) — bez zmian, poza zakresem rundy 3.
+ * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A (2026-08-07): PUSTY zbiór — ta ogólna,
+ * przed-switchowa bramka jest teraz INERTNA dla wszystkich 8 akcji, które kiedyś
+ * przez nią przechodziły. Nie usunięto samej funkcji (`proposerUnfairToPartnerGate`
+ * niżej) ani jej wywołania w `evaluateProposal`, żeby nie zmieniać kształtu funkcji
+ * przy okazji — ale przy pustym zbiorze `PROPOSER_PW_FAIRNESS_ACTIONS.has(actionId)`
+ * jest zawsze `false`, więc funkcja zwraca `null` dla każdej akcji (early return,
+ * patrz jej ciało).
+ *
+ * Historia rozdziału (dwie rundy naprawy tej samej klasy błędu):
+ *  - `'handel'` naprawiony jako pierwszy, osobno (`R-DYPLOMACJA-HANDEL-BRAMKA-
+ *    PRIORYTET-Q1=B+C`, 4 rundy, commit `9fc3821`) — dostał WŁASNĄ, w pełni
+ *    autonomiczną bramkę `handelFairnessGate` bezpośrednio w `case 'handel'`
+ *    (patrz niżej), z mnożnikiem chęci partnera i podłogą parytetu. Case 'handel'
+ *    NIE odczytuje `PROPOSER_PW_FAIRNESS_ACTIONS` w żaden sposób — usunięcie
+ *    `'handel'` STĄD (już zrobione w rundzie 3 tamtej naprawy) jest NIEZALEŻNE
+ *    od tej zmiany i pozostaje bez zmian.
+ *  - Pozostałe 7 akcji (`nap`, `sojusz_defensywny`, `sojusz_pelny`, `granice`,
+ *    `wasal`, `umowa_szlakow`, `umowa_handlowa`, `pokoj`) miały tu ten sam
+ *    kod uruchamiany BEZWARUNKOWO przed `switch(actionId)` — przy niskiej Relacji
+ *    (relTotal<100) zawsze dawał generyczny komunikat „Przewaga u Ciebie" nawet
+ *    przy PUSTYM koszyku, maskując dedykowane komunikaty w case'ach (np. „Relacja
+ *    zbyt niska na pakt" dla `nap`). Rozdzielone tak (`R-DYPLO-FAIRNESS-GATE-
+ *    ZAKRES-Q1=A`):
+ *     - `nap`/`sojusz_defensywny`/`sojusz_pelny`/`granice`/`wasal` mają REALNE,
+ *       niezerowe progi Relacji/Zaufania/Respektu we własnym case'ie
+ *       (progNapRelacja=50, progSojuszRelacja=151, progGraniceRelacja=100,
+ *       progWasalizacjaRespekt=70) — przy pustym koszyku wystarczy im próg
+ *       case'a; ochrona przed koszykiem nieuczciwym dla partnera (np. „daj mi
+ *       coś za darmo w koszyku") zostaje w `treatyPnGate` (uruchamianym i tak
+ *       przed switch, dla WSZYSTKICH akcji traktatowych — poszerzonym niżej o
+ *       sprawdzanie strony `receive`, nie tylko `give`).
+ *     - `pokoj` i `umowa_szlakow`/`umowa_handlowa` mają w acceptance-points.json
+ *       prog_relacja=0 (dla traktatów handlowych) albo brak progu w ogóle
+ *       (pokój) — czyli w praktyce TA bramka była jedynym realnym wymuszeniem
+ *       zapłaty bazy PN traktatu. Dostały więc DEDYKOWANĄ bramkę lokalnie w
+ *       swoim case'ie (patrz `treatyBaseFairnessGap`), żeby nie otworzyć
+ *       exploita „traktat/pokój za darmo".
  */
-const PROPOSER_PW_FAIRNESS_ACTIONS: ReadonlySet<string> = new Set([
-  'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'pokoj', 'wasal',
-  'umowa_szlakow', 'umowa_handlowa',
-]);
+const PROPOSER_PW_FAIRNESS_ACTIONS: ReadonlySet<string> = new Set<string>([]);
+
+/**
+ * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A: matematyka bazowej uczciwości PW traktatu —
+ * identyczna z dawną, przed-switchową `proposerUnfairToPartnerGate` (gracz @
+ * Relacji vs partner na stałej bazie), przeniesiona do współdzielonego helpera
+ * używanego lokalnie w case'ach `pokoj` i `umowa_szlakow`/`umowa_handlowa`
+ * (jedyne dwie grupy akcji bez realnego progu Relacji blokującego pusty koszyk —
+ * patrz komentarz przy PROPOSER_PW_FAIRNESS_ACTIONS). Dodatnia wartość = ile PW
+ * proponentowi brakuje do parytetu (0 lub ujemna = oferta uczciwa lub proponent
+ * daje więcej).
+ */
+function treatyBaseFairnessGap(
+  basePn: number,
+  givePn: number,
+  receivePn: number,
+  relTotal: number,
+): number {
+  const playerRequired = effectiveTreatyPnRequired(basePn, relTotal);
+  const partnerRequired = partnerTreatyPnRequired(basePn);
+  const proposerDisplay = playerRequired + givePn;
+  const responderDisplay = partnerRequired + receivePn;
+  return responderDisplay - proposerDisplay;
+}
 
 /**
  * Bramka bilateralnego netto PW (proponent vs respondent) — spójna z
  * computePlayerAcceptanceSides / incomingTradeNetBalancePw (R-PW-ACCEPT-OVERPAY-Q1=A).
  * Ujemne netto = respondent oddaje więcej niż proponent → AI jako respondent odrzuca.
  * pnDealAcceptedByAi @ wysokiej Relacji może przejść przy give < receive — ta bramka domyka lukę.
+ * Po R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A dotyczy już tylko `'handel'` (patrz zbiór wyżej).
  */
 function proposerUnfairToPartnerGate(
   actionId: string,
@@ -861,15 +905,29 @@ export function evaluateProposal(
     }
 
     case 'pokoj': {
+      // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A, wymóg #2 (ostrożność „darmowy pokój"):
+      // peaceProposalOfferPn ma samospełniający się warunek przy pustym koszyku
+      // (offerPn = required + max(0, 0-0) = required, więc offerPn < required
+      // nigdy nie jest prawdą) — jedyną realną ochroną przed „darmowym pokojem
+      // podczas wojny" była dawna generyczna proposerUnfairToPartnerGate. Ta
+      // bramka przenosi TĘ SAMĄ matematykę (treatyBaseFairnessGap) lokalnie,
+      // z dedykowanym komunikatem, żeby pokój dalej wymagał albo Relacji bliskiej
+      // neutralnej, albo dopłaty koszykiem pokrywającej różnicę.
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
       const basePn = treatyBasePnFromConfig('pokoj');
-      const proposerIsPlayer = proposerOwnerId === 0;
-      const { offerPn, required } = peaceProposalOfferPn(givePn, receivePn, basePn, relation, proposerIsPlayer);
-      if (offerPn < required) {
-        return {
-          accepted: false,
-          reason: `Oferta za niska na pokój (wymagane ≥ ${required} PW @ Relacji)`,
-        };
+      const proposerIsPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
+      if (proposerIsPlayer && basePn > 0) {
+        const relTotal = treatyEvalRelationTotal(relation);
+        const gap = treatyBaseFairnessGap(basePn, givePn, receivePn, relTotal);
+        if (gap > 0) {
+          return {
+            accepted: false,
+            reason: `Brakuje ${gap} PW do uczciwej oferty pokoju @ Relacji (baza ${basePn} PW) — oferta nieuczciwa dla partnera`,
+          };
+        }
+        if (receivePn > 0 && !pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
+          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
+        }
       }
       return { accepted: true, reason: 'Warunki pokoju spełnione', oneShotTrade: true };
     }
@@ -1001,6 +1059,24 @@ export function evaluateProposal(
       }
       if (score < p.progHandelRelacja) {
         return { accepted: false, reason: `Relacja zbyt niska na traktat handlowy (wymagane ≥ ${p.progHandelRelacja})` };
+      }
+      // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A: umowa_szlakow/umowa_handlowa mają
+      // prog_relacja=0 w acceptance-points.json (efektywnie wyłączone — score<0
+      // nigdy prawda) — czyli check wyżej NIGDY nie blokuje. Baza PN traktatu
+      // (80 PW) była więc egzekwowana wyłącznie przez dawną generyczną
+      // proposerUnfairToPartnerGate; ta bramka przenosi tę samą matematykę
+      // (treatyBaseFairnessGap) lokalnie, żeby traktat handlowy bez koszyka przy
+      // niskiej Relacji dalej wymagał dopłaty zamiast przechodzić za darmo.
+      const treatyBasePn = treatyBasePnFromConfig(actionId);
+      const proposerIsTreatyPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
+      if (treatyBasePn > 0 && proposerIsTreatyPlayer) {
+        const gap = treatyBaseFairnessGap(treatyBasePn, givePn, receivePn, relTotal);
+        if (gap > 0) {
+          return {
+            accepted: false,
+            reason: `Brakuje ${gap} PW do uczciwej oferty traktatu handlowego @ Relacji (baza ${treatyBasePn} PW) — oferta nieuczciwa dla partnera`,
+          };
+        }
       }
       const hasItems = (payload.giveItems?.length ?? 0) > 0 || (payload.receiveItems?.length ?? 0) > 0;
       if (hasItems) {
