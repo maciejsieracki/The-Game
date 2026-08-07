@@ -939,3 +939,40 @@ współrzędne hexa pierwszej/najbliższej pary). `main.ts:3573-3589` — komuni
 z listy zadań tej sesji, „Centrowanie kamery po kliknięciu jednostki w panelu", już wdrożone).
 Model: Sonnet 5 (logika + UI zdarzeń, nie `gra/src/render/**` — jeśli dotknie faktycznego
 sterowania kamerą 3D, ten fragment przekazać do Opus 5 zgodnie z zasadą 4 CLAUDE.md).
+
+## R-MOC-MUR-PARADOKS-Q1 (2026-08-07) — tabliczka: dociągnąć mur/teren = **A**
+**Decyzja Macieja: A.** Tabliczka jednostki ma dociągnąć bonusy muru/palisady i terenu, nie
+tylko weterana i fortyfikację polową — staje się zależna od heksu, na którym jednostka stoi.
+**Powód:** dziś tabliczka Konnicy w garnizonie pokazuje 52 bez murów, 49 z murami, mimo że
+realna Obrona rośnie z 49 do 95 — mylące, wygląda jak bug przy budowie obrony.
+**Implementacja:** `gra/src/game/armyMerge.ts::stackFieldPowerM` ma doliczać `structBonusPct`
+i `terrainDefenseMultiplier` analogicznie do `effectiveDefenderM` (`main.ts`). Wymaga przekazania
+kontekstu terenu/miasta do `defOf` — dziś ta funkcja zna tylko jednostkę.
+**Kotwice:** `armyMerge.ts::stackFieldPowerM`, `game/city-defense.ts`, `main.ts::effectiveDefenderM`.
+Model: Sonnet 5 (logika gry).
+
+## R-MOC-RANKING-ROZJAZD-Q1 (2026-08-07) — panel rankingu na efektywną, progi AI zostają = **B**
+**Decyzja Macieja: B.** Panel Mocy imperium (widoczny dla gracza) przechodzi na Moc efektywną,
+dla spójności z tabliczką. Progi decyzji dyplomatycznych AI (`militaryRatioFromArmyM`,
+`progWojnaSila`) **zostają nominalne** — to zmiana balansu, nie tylko wyświetlania, i nie jest
+częścią tej decyzji.
+**Implementacja:** `main.ts:1581 sumArmyMForOwner` — rozdzielić na dwie funkcje/ścieżki: jedna
+karmiąca `ui/powerOverlayHud.ts` (przechodzi na `combatPowerScaledDefFor`), druga karmiąca
+`militaryRatioFromArmyM` i progi wojny (zostaje `unitDefFor`, bez zmian).
+**Kotwice:** `main.ts:1581`, `ui/powerOverlayHud.ts:136`, `main.ts` ~12955/13950/21784/21974.
+Model: Sonnet 5.
+
+## R-PRZEMARSZ-WYGASANIE-Q1 (2026-08-07) — osobny log czyszczony co turę = **A**
+**Decyzja Macieja: A.** Komunikat o naruszeniu granic przechodzi z `warEventLog` do osobnego
+logu per-turowego (wzorem `villageEventLog`), czyszczonego przy `turn++`. Wpis znika sam, gdy
+naruszenie ustaje; „✕" działa jak przy innych chipach per-turowych.
+**Powód:** symulacja Evaluatora (20 000 tur) pokazała, że obecny mechanizm (stabilne id w
+`warEventLog`, odświeżane co turę) nigdy nie pozwala trwale odrzucić komunikatu (34629/34629)
+i w 79% przypadków zostawia w panelu nieaktualną liczbę kary po ustaniu naruszenia.
+**Implementacja:** nowy `borderMarchEventLog` (albo rozszerzenie istniejącego wzorca
+per-turowego), czyszczony w tym samym miejscu co `villageEventLog`/`tradeRouteEventLog`
+(main.ts ~20096-20100). Usunąć stabilne id + splice/unshift z `warEventLog`, przenieść logikę
+`borderMarchEventTargets` (skok kamery) do nowego mechanizmu.
+**Kotwice:** `main.ts::applyBorderMarchPenaltiesEndTurn` (~3578-3640), `onEventDismiss`,
+miejsce resetu per-tura (~20096-20100).
+Model: Sonnet 5.
