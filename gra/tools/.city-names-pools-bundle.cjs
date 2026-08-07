@@ -23,43 +23,71 @@ __export(city_names_pools_entry_exports, {
   MIASTA_CYWILIZACJI_LEN: () => MIASTA_CYWILIZACJI_LEN,
   NAZWY_KLASTRA_LEN: () => NAZWY_KLASTRA_LEN,
   pickAiFoundedCityName: () => pickAiFoundedCityName,
-  validateCityNamesPools: () => validateCityNamesPools
+  validateCityNamesPools: () => validateCityNamesPools2
 });
 module.exports = __toCommonJS(city_names_pools_entry_exports);
 
-// src/game/civ-names.ts
-var NAZWY_KLASTRA_LEN = 10;
-var MIASTA_CYWILIZACJI_LEN = 100;
-function getMiastaCywilizacji(pools, ikonaId) {
-  return pools[ikonaId]?.miasta_cywilizacji ?? [];
+// src/game/city-names-pool.ts
+var CITY_NAMES_POOL_REGULAR_LEN = 100;
+var CITY_NAMES_POOL_STATE_LEN = 10;
+var NAZWY_KLASTRA_LEN = CITY_NAMES_POOL_STATE_LEN;
+function poolEntry(pools, ikonaId) {
+  return pools[ikonaId];
 }
-function pickAiFoundedCityName(pools, ikonaId, usedNames, ownerCityCount) {
-  const pool = getMiastaCywilizacji(pools, ikonaId);
-  for (const name of pool) {
+function cityNameWithSuffix(base, ordinal) {
+  if (ordinal <= 1) return base;
+  const roman = ["", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  const suffix = ordinal <= 10 ? roman[ordinal] : String(ordinal);
+  return `${base} ${suffix}`;
+}
+function pickNextRegularCityName(pools, ikonaId, usedNames) {
+  const regular = poolEntry(pools, ikonaId)?.miasta_cywilizacji ?? [];
+  for (const name of regular) {
     if (!usedNames.has(name)) return name;
   }
-  return `Miasto ${ownerCityCount + 1}`;
+  const base = regular[0] ?? "Miasto";
+  let ord = 2;
+  while (usedNames.has(cityNameWithSuffix(base, ord))) ord++;
+  return cityNameWithSuffix(base, ord);
 }
 function validateCityNamesPools(pools, civs) {
   const errs = [];
-  for (const c of civs.cywilizacje) {
-    const id = c.ikonaId;
-    if (!id) continue;
-    const entry = pools[id];
+  const civIds = civs.cywilizacje.map((c) => c.ikonaId).filter((id) => Boolean(id));
+  for (const cid of civIds) {
+    const entry = pools[cid];
     if (!entry) {
-      errs.push(`Brak puli: ${id}`);
+      errs.push(`${cid}: brak wpisu w city-names-pools.json`);
       continue;
     }
     const cyw = entry.miasta_cywilizacji ?? [];
     const pan = entry.miasta_panstwa ?? [];
-    if (cyw.length !== MIASTA_CYWILIZACJI_LEN) {
-      errs.push(`${id}: miasta_cywilizacji ${cyw.length}/${MIASTA_CYWILIZACJI_LEN}`);
+    if (cyw.length < CITY_NAMES_POOL_REGULAR_LEN) {
+      errs.push(`${cid}: miasta_cywilizacji ${cyw.length} < ${CITY_NAMES_POOL_REGULAR_LEN}`);
     }
-    if (pan.length !== NAZWY_KLASTRA_LEN) {
-      errs.push(`${id}: miasta_panstwa ${pan.length}/${NAZWY_KLASTRA_LEN}`);
+    if (pan.length !== CITY_NAMES_POOL_STATE_LEN) {
+      errs.push(`${cid}: miasta_panstwa ${pan.length} !== ${CITY_NAMES_POOL_STATE_LEN}`);
     }
-    if (new Set(cyw).size !== cyw.length) errs.push(`${id}: duplikaty miasta_cywilizacji`);
-    if (new Set(pan).size !== pan.length) errs.push(`${id}: duplikaty miasta_panstwa`);
+    if (new Set(cyw).size !== cyw.length) {
+      errs.push(`${cid}: duplikaty w miasta_cywilizacji`);
+    }
+    if (new Set(pan).size !== pan.length) {
+      errs.push(`${cid}: duplikaty w miasta_panstwa`);
+    }
+  }
+  return errs;
+}
+
+// src/game/civ-names.ts
+var MIASTA_CYWILIZACJI_LEN = 100;
+function pickAiFoundedCityName(pools, ikonaId, usedNames, _ownerCityCount) {
+  return pickNextRegularCityName(pools, ikonaId, usedNames);
+}
+function validateCityNamesPools2(pools, civs) {
+  const errs = validateCityNamesPools(pools, civs);
+  for (const c of civs.cywilizacje) {
+    const id = c.ikonaId;
+    if (!id || !pools[id]) continue;
+    const pan = pools[id].miasta_panstwa ?? [];
     const klastra = c.nazwyKlastra ?? [];
     if (JSON.stringify(klastra) !== JSON.stringify(pan)) {
       errs.push(`${id}: nazwyKlastra \u2260 miasta_panstwa`);

@@ -33,6 +33,11 @@ function gameEpochIndex(epochId) {
   return i >= 0 ? i : GAME_EPOCH_ORDER.length;
 }
 
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+
 // src/game/research.ts
 function grantTechEpokWczesniejszych(techs, epochId) {
   const granted = /* @__PURE__ */ new Set();

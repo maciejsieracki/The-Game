@@ -36,6 +36,7 @@ var TerenBazowy = /* @__PURE__ */ ((TerenBazowy3) => {
   TerenBazowy3["Wybrzeze"] = "wybrzeze";
   TerenBazowy3["Morze"] = "morze";
   TerenBazowy3["Pustynia"] = "pustynia";
+  TerenBazowy3["Polarny"] = "polarny";
   return TerenBazowy3;
 })(TerenBazowy || {});
 var Nakladka = /* @__PURE__ */ ((Nakladka3) => {
@@ -50,7 +51,7 @@ var Nakladka = /* @__PURE__ */ ((Nakladka3) => {
   return Nakladka3;
 })(Nakladka || {});
 
-// node_modules/three/build/three.module.js
+// ../../../../gra/node_modules/three/build/three.module.js
 var REVISION = "169";
 var FrontSide = 0;
 var NormalBlending = 1;
@@ -1919,6 +1920,245 @@ var Vector3 = class _Vector3 {
 };
 var _vector$c = /* @__PURE__ */ new Vector3();
 var _quaternion$4 = /* @__PURE__ */ new Quaternion();
+var _vector$a = /* @__PURE__ */ new Vector3();
+var _segCenter = /* @__PURE__ */ new Vector3();
+var _segDir = /* @__PURE__ */ new Vector3();
+var _diff = /* @__PURE__ */ new Vector3();
+var _edge1 = /* @__PURE__ */ new Vector3();
+var _edge2 = /* @__PURE__ */ new Vector3();
+var _normal$1 = /* @__PURE__ */ new Vector3();
+var Ray = class {
+  constructor(origin = new Vector3(), direction = new Vector3(0, 0, -1)) {
+    this.origin = origin;
+    this.direction = direction;
+  }
+  set(origin, direction) {
+    this.origin.copy(origin);
+    this.direction.copy(direction);
+    return this;
+  }
+  copy(ray) {
+    this.origin.copy(ray.origin);
+    this.direction.copy(ray.direction);
+    return this;
+  }
+  at(t, target) {
+    return target.copy(this.origin).addScaledVector(this.direction, t);
+  }
+  lookAt(v) {
+    this.direction.copy(v).sub(this.origin).normalize();
+    return this;
+  }
+  recast(t) {
+    this.origin.copy(this.at(t, _vector$a));
+    return this;
+  }
+  closestPointToPoint(point, target) {
+    target.subVectors(point, this.origin);
+    const directionDistance = target.dot(this.direction);
+    if (directionDistance < 0) {
+      return target.copy(this.origin);
+    }
+    return target.copy(this.origin).addScaledVector(this.direction, directionDistance);
+  }
+  distanceToPoint(point) {
+    return Math.sqrt(this.distanceSqToPoint(point));
+  }
+  distanceSqToPoint(point) {
+    const directionDistance = _vector$a.subVectors(point, this.origin).dot(this.direction);
+    if (directionDistance < 0) {
+      return this.origin.distanceToSquared(point);
+    }
+    _vector$a.copy(this.origin).addScaledVector(this.direction, directionDistance);
+    return _vector$a.distanceToSquared(point);
+  }
+  distanceSqToSegment(v0, v1, optionalPointOnRay, optionalPointOnSegment) {
+    _segCenter.copy(v0).add(v1).multiplyScalar(0.5);
+    _segDir.copy(v1).sub(v0).normalize();
+    _diff.copy(this.origin).sub(_segCenter);
+    const segExtent = v0.distanceTo(v1) * 0.5;
+    const a01 = -this.direction.dot(_segDir);
+    const b0 = _diff.dot(this.direction);
+    const b1 = -_diff.dot(_segDir);
+    const c = _diff.lengthSq();
+    const det = Math.abs(1 - a01 * a01);
+    let s0, s1, sqrDist, extDet;
+    if (det > 0) {
+      s0 = a01 * b1 - b0;
+      s1 = a01 * b0 - b1;
+      extDet = segExtent * det;
+      if (s0 >= 0) {
+        if (s1 >= -extDet) {
+          if (s1 <= extDet) {
+            const invDet = 1 / det;
+            s0 *= invDet;
+            s1 *= invDet;
+            sqrDist = s0 * (s0 + a01 * s1 + 2 * b0) + s1 * (a01 * s0 + s1 + 2 * b1) + c;
+          } else {
+            s1 = segExtent;
+            s0 = Math.max(0, -(a01 * s1 + b0));
+            sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+          }
+        } else {
+          s1 = -segExtent;
+          s0 = Math.max(0, -(a01 * s1 + b0));
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        }
+      } else {
+        if (s1 <= -extDet) {
+          s0 = Math.max(0, -(-a01 * segExtent + b0));
+          s1 = s0 > 0 ? -segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        } else if (s1 <= extDet) {
+          s0 = 0;
+          s1 = Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = s1 * (s1 + 2 * b1) + c;
+        } else {
+          s0 = Math.max(0, -(a01 * segExtent + b0));
+          s1 = s0 > 0 ? segExtent : Math.min(Math.max(-segExtent, -b1), segExtent);
+          sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+        }
+      }
+    } else {
+      s1 = a01 > 0 ? -segExtent : segExtent;
+      s0 = Math.max(0, -(a01 * s1 + b0));
+      sqrDist = -s0 * s0 + s1 * (s1 + 2 * b1) + c;
+    }
+    if (optionalPointOnRay) {
+      optionalPointOnRay.copy(this.origin).addScaledVector(this.direction, s0);
+    }
+    if (optionalPointOnSegment) {
+      optionalPointOnSegment.copy(_segCenter).addScaledVector(_segDir, s1);
+    }
+    return sqrDist;
+  }
+  intersectSphere(sphere, target) {
+    _vector$a.subVectors(sphere.center, this.origin);
+    const tca = _vector$a.dot(this.direction);
+    const d2 = _vector$a.dot(_vector$a) - tca * tca;
+    const radius2 = sphere.radius * sphere.radius;
+    if (d2 > radius2) return null;
+    const thc = Math.sqrt(radius2 - d2);
+    const t0 = tca - thc;
+    const t1 = tca + thc;
+    if (t1 < 0) return null;
+    if (t0 < 0) return this.at(t1, target);
+    return this.at(t0, target);
+  }
+  intersectsSphere(sphere) {
+    return this.distanceSqToPoint(sphere.center) <= sphere.radius * sphere.radius;
+  }
+  distanceToPlane(plane) {
+    const denominator = plane.normal.dot(this.direction);
+    if (denominator === 0) {
+      if (plane.distanceToPoint(this.origin) === 0) {
+        return 0;
+      }
+      return null;
+    }
+    const t = -(this.origin.dot(plane.normal) + plane.constant) / denominator;
+    return t >= 0 ? t : null;
+  }
+  intersectPlane(plane, target) {
+    const t = this.distanceToPlane(plane);
+    if (t === null) {
+      return null;
+    }
+    return this.at(t, target);
+  }
+  intersectsPlane(plane) {
+    const distToPoint = plane.distanceToPoint(this.origin);
+    if (distToPoint === 0) {
+      return true;
+    }
+    const denominator = plane.normal.dot(this.direction);
+    if (denominator * distToPoint < 0) {
+      return true;
+    }
+    return false;
+  }
+  intersectBox(box, target) {
+    let tmin, tmax, tymin, tymax, tzmin, tzmax;
+    const invdirx = 1 / this.direction.x, invdiry = 1 / this.direction.y, invdirz = 1 / this.direction.z;
+    const origin = this.origin;
+    if (invdirx >= 0) {
+      tmin = (box.min.x - origin.x) * invdirx;
+      tmax = (box.max.x - origin.x) * invdirx;
+    } else {
+      tmin = (box.max.x - origin.x) * invdirx;
+      tmax = (box.min.x - origin.x) * invdirx;
+    }
+    if (invdiry >= 0) {
+      tymin = (box.min.y - origin.y) * invdiry;
+      tymax = (box.max.y - origin.y) * invdiry;
+    } else {
+      tymin = (box.max.y - origin.y) * invdiry;
+      tymax = (box.min.y - origin.y) * invdiry;
+    }
+    if (tmin > tymax || tymin > tmax) return null;
+    if (tymin > tmin || isNaN(tmin)) tmin = tymin;
+    if (tymax < tmax || isNaN(tmax)) tmax = tymax;
+    if (invdirz >= 0) {
+      tzmin = (box.min.z - origin.z) * invdirz;
+      tzmax = (box.max.z - origin.z) * invdirz;
+    } else {
+      tzmin = (box.max.z - origin.z) * invdirz;
+      tzmax = (box.min.z - origin.z) * invdirz;
+    }
+    if (tmin > tzmax || tzmin > tmax) return null;
+    if (tzmin > tmin || tmin !== tmin) tmin = tzmin;
+    if (tzmax < tmax || tmax !== tmax) tmax = tzmax;
+    if (tmax < 0) return null;
+    return this.at(tmin >= 0 ? tmin : tmax, target);
+  }
+  intersectsBox(box) {
+    return this.intersectBox(box, _vector$a) !== null;
+  }
+  intersectTriangle(a, b, c, backfaceCulling, target) {
+    _edge1.subVectors(b, a);
+    _edge2.subVectors(c, a);
+    _normal$1.crossVectors(_edge1, _edge2);
+    let DdN = this.direction.dot(_normal$1);
+    let sign;
+    if (DdN > 0) {
+      if (backfaceCulling) return null;
+      sign = 1;
+    } else if (DdN < 0) {
+      sign = -1;
+      DdN = -DdN;
+    } else {
+      return null;
+    }
+    _diff.subVectors(this.origin, a);
+    const DdQxE2 = sign * this.direction.dot(_edge2.crossVectors(_diff, _edge2));
+    if (DdQxE2 < 0) {
+      return null;
+    }
+    const DdE1xQ = sign * this.direction.dot(_edge1.cross(_diff));
+    if (DdE1xQ < 0) {
+      return null;
+    }
+    if (DdQxE2 + DdE1xQ > DdN) {
+      return null;
+    }
+    const QdN = -sign * _diff.dot(_normal$1);
+    if (QdN < 0) {
+      return null;
+    }
+    return this.at(QdN / DdN, target);
+  }
+  applyMatrix4(matrix4) {
+    this.origin.applyMatrix4(matrix4);
+    this.direction.transformDirection(matrix4);
+    return this;
+  }
+  equals(ray) {
+    return ray.origin.equals(this.origin) && ray.direction.equals(this.direction);
+  }
+  clone() {
+    return new this.constructor().copy(this);
+  }
+};
 var Matrix4 = class _Matrix4 {
   constructor(n11, n12, n13, n14, n21, n22, n23, n24, n31, n32, n33, n34, n41, n42, n43, n44) {
     _Matrix4.prototype.isMatrix4 = true;
@@ -6092,6 +6332,73 @@ PropertyBinding.prototype.SetterByBindingTypeAndVersioning = [
   ]
 ];
 var _controlInterpolantsResultBuffer = new Float32Array(1);
+var _matrix = /* @__PURE__ */ new Matrix4();
+var Raycaster = class {
+  constructor(origin, direction, near = 0, far = Infinity) {
+    this.ray = new Ray(origin, direction);
+    this.near = near;
+    this.far = far;
+    this.camera = null;
+    this.layers = new Layers();
+    this.params = {
+      Mesh: {},
+      Line: { threshold: 1 },
+      LOD: {},
+      Points: { threshold: 1 },
+      Sprite: {}
+    };
+  }
+  set(origin, direction) {
+    this.ray.set(origin, direction);
+  }
+  setFromCamera(coords, camera) {
+    if (camera.isPerspectiveCamera) {
+      this.ray.origin.setFromMatrixPosition(camera.matrixWorld);
+      this.ray.direction.set(coords.x, coords.y, 0.5).unproject(camera).sub(this.ray.origin).normalize();
+      this.camera = camera;
+    } else if (camera.isOrthographicCamera) {
+      this.ray.origin.set(coords.x, coords.y, (camera.near + camera.far) / (camera.near - camera.far)).unproject(camera);
+      this.ray.direction.set(0, 0, -1).transformDirection(camera.matrixWorld);
+      this.camera = camera;
+    } else {
+      console.error("THREE.Raycaster: Unsupported camera type: " + camera.type);
+    }
+  }
+  setFromXRController(controller) {
+    _matrix.identity().extractRotation(controller.matrixWorld);
+    this.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    this.ray.direction.set(0, 0, -1).applyMatrix4(_matrix);
+    return this;
+  }
+  intersectObject(object, recursive = true, intersects = []) {
+    intersect(object, this, intersects, recursive);
+    intersects.sort(ascSort);
+    return intersects;
+  }
+  intersectObjects(objects, recursive = true, intersects = []) {
+    for (let i = 0, l = objects.length; i < l; i++) {
+      intersect(objects[i], this, intersects, recursive);
+    }
+    intersects.sort(ascSort);
+    return intersects;
+  }
+};
+function ascSort(a, b) {
+  return a.distance - b.distance;
+}
+function intersect(object, raycaster, intersects, recursive) {
+  let propagate = true;
+  if (object.layers.test(raycaster.layers)) {
+    const result = object.raycast(raycaster, intersects);
+    if (result === false) propagate = false;
+  }
+  if (propagate === true && recursive === true) {
+    const children = object.children;
+    for (let i = 0, l = children.length; i < l; i++) {
+      intersect(children[i], raycaster, intersects, true);
+    }
+  }
+}
 if (typeof __THREE_DEVTOOLS__ !== "undefined") {
   __THREE_DEVTOOLS__.dispatchEvent(new CustomEvent("register", { detail: {
     revision: REVISION
@@ -6158,9 +6465,15 @@ var map_gen_params_default = {
       high: 0.38
     },
     relief_land_fraction: {
-      low: { mountain: 0.03, highland: 0.07 },
-      medium: { mountain: 0.06, highland: 0.11 },
-      high: { mountain: 0.12, highland: 0.18 }
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
+    },
+    relief_overflow_cap_frac: {
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
     },
     pasma_gorskie: {
       _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
@@ -6170,12 +6483,12 @@ var map_gen_params_default = {
     }
   },
   mapa_skala: {
-    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). \xD72 balans 2026-07-20, aktywne_typy przyci\u0119te do sufitu rosteru 15 nacji (ogromna/super).",
+    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
     aktywne_typy: {
-      mala: 8,
-      srednia: 10,
-      duza: 12,
-      ogromna: 15,
+      mala: 4,
+      srednia: 5,
+      duza: 6,
+      ogromna: 12,
       super: 15
     },
     domyslni_rywale: {
@@ -6201,10 +6514,14 @@ var map_gen_params_default = {
   deposit_rules: {
     miedz: { rarity: 0.1 },
     zelazo: { rarity: 0.08 },
-    glina: { rarity: 0.1 },
+    glina: {
+      rarity: 0.3,
+      _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
+    },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
-    sol: { rarity: 0.12 }
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
   },
   metal_deposit_min_era: {
     miedz: 2,
@@ -6233,12 +6550,15 @@ var FALLBACK_RIVER_SCALE = {
 var FALLBACK_DEPOSIT_RARITY = {
   miedz: 0.1,
   zelazo: 0.08,
-  glina: 0.1,
+  glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
-  sol: 0.12
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
 };
 function mapGenResourceBaselineRarity() {
   const v = map_gen_params_default.gestosc?.baseline_rarity_mult;
@@ -6289,12 +6609,78 @@ var e_start_params_default = {
     render_quality_bundled: "medium"
   },
   skala_mapy: {
-    Malenki: { rywale_ai: 2, miasta_panstwa: 3, typy_cywilizacji: 7, hex_w: 76, hex_h: 52 },
-    Ma\u0142y: { rywale_ai: 3, miasta_panstwa: 4, typy_cywilizacji: 10, hex_w: 108, hex_h: 74 },
-    Standardowy: { rywale_ai: 6, miasta_panstwa: 6, typy_cywilizacji: 12, hex_w: 168, hex_h: 120 },
-    Du\u017Cy: { rywale_ai: 7, miasta_panstwa: 7, typy_cywilizacji: 14, hex_w: 240, hex_h: 168 },
-    Ogromny: { rywale_ai: 8, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 336, hex_h: 238 },
-    "Super Huge": { rywale_ai: 10, miasta_panstwa: 8, typy_cywilizacji: 15, hex_w: 672, hex_h: 476 }
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 5,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 8, min: 7, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
   },
   generator_e2: {
     resource_mult_low: 0.6,
@@ -6369,6 +6755,21 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
 // data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
@@ -6378,14 +6779,16 @@ var terrain_improvements_default = {
     decyzje_MIASTO: "lodzie_rybackie = TAK teraz; kamieniolom OSOBNO od kopalni (rozne surowce); teren NIE daje +Nauka/+Kultura (te z budynkow/specjalistow/suwaka). Tarasy = +zywnosc (nie kultura).",
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
-    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (Maciej 2026-07-23, korekta po ECHO placeholdera): Tartak->drewno 4, Kamieniolom->kamien 4, Glinianka->glina 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2. Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia zelaza->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
     epoka: 1,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
@@ -6398,7 +6801,9 @@ var terrain_improvements_default = {
     nazwa: "Irygacja",
     epoka: 2,
     bonus: {
-      zywnosc: 5
+      zywnosc: 5,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
@@ -6412,7 +6817,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 4,
+      handel: 3
     },
     surowiecOdblokowany: "bydlo",
     surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
@@ -6427,12 +6833,13 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -6440,9 +6847,11 @@ var terrain_improvements_default = {
   lama: {
     nazwa: "Lama",
     epoka: 1,
+    cywilizacje: ["inkowie"],
     bonus: {
       zywnosc: 1,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
@@ -6456,41 +6865,29 @@ var terrain_improvements_default = {
     nazwa: "Stadnina",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "kon",
-    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo",
+    surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
+    surowiec_ilosc_tura: 1,
     teren: "\u0141\u0105ka, R\xF3wnina",
     warunek: "solo; tylko heks ze z\u0142o\u017Cem konia w terytorium",
     koszt_praca: 28,
     tech: "Je\u017Adziectwo",
     odblokowuje: "Ko\u0144 (jednostki konne)"
   },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
-  },
   glinianka: {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
       praca: 1,
-      glina: 2
+      glina: 2,
+      handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. Stawka SUROW-TERYT-01: 4/ture, podniesiona do 5 przy C-SUROW-CEGLA=A (Maciej 2026-07-24, odciazenie cegly wg symulacji -- glina musi nadazyc za Cegielnia 3/ture). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 5,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -6502,7 +6899,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       praca: 1,
-      kamien: 1
+      kamien: 1,
+      handel: 2
     },
     surowiecOdblokowany: "kamien",
     surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
@@ -6518,7 +6916,9 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      pieniadz: 1
+      pieniadz: 1,
+      praca: 1,
+      handel: 2
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
@@ -6532,7 +6932,9 @@ var terrain_improvements_default = {
     nazwa: "Wyr\u0105b",
     typ: "wycinka",
     epoka: 1,
-    bonus: {},
+    bonus: {
+      handel: 1
+    },
     surowiecOdblokowany: null,
     teren: "Las",
     warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
@@ -6550,11 +6952,12 @@ var terrain_improvements_default = {
     typ: "ulepszenie",
     epoka: 1,
     bonus: {
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja -- patrz surowiec_ilosc_tura (REALNA stawka 4/ture, nie placeholder).",
-    surowiec_ilosc_tura: 4,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -6565,22 +6968,30 @@ var terrain_improvements_default = {
     nazwa: "Tarasy uprawne",
     epoka: 2,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
-    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu",
+    warunek: "Wzg\xF3rze w terytorium; solo; +\u017Cywno\u015B\u0107; nie na z\u0142o\u017Cu; UNIKALNE kulturowe (tylko Chi\u0144czycy + Inkowie)",
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    uwagi: "T-TECH-4 Maciej 2026-07-04: po Rolnictwie \u2014 wszystkie cywilizacje"
+    cywilizacje: [
+      "chinczycy",
+      "inkowie"
+    ],
+    cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
+    uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
   lodzie_rybackie: {
     nazwa: "\u0141odzie rybackie",
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
@@ -6595,10 +7006,13 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       pieniadz: 1,
-      zywnosc: 1
+      zywnosc: 1,
+      praca: 1,
+      handel: 3
     },
     surowiecOdblokowany: "sol",
-    surowiecOdblokowany_uwaga: "klucz 'sol' \u2014 Sol nie ma wpisu w resources.json v0.1 (brak Surowiec='Sol'); propozycja EKONOMIA: dodac 'sol' do resources.json; wymaga uzgodnienia z DANE",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
+    surowiec_ilosc_tura: 10,
     teren: "Wybrze\u017Ce, z\u0142o\u017Ce soli (hex.zloze=sol)",
     warunek: "s\xF3l \u2014 wy\u0142\u0105cznie wybrze\u017Ce morskie (kanon: z\u0142o\u017Ca soli przy brzegu) lub hex.zloze=sol",
     koszt_praca: 20,
@@ -6639,7 +7053,9 @@ var terrain_improvements_default = {
     nazwa: "Droga brukowana",
     typ: "ulepszenie",
     epoka: 3,
-    bonus: {},
+    bonus: {
+      handel: 2
+    },
     bonus_ruch: 2,
     surowiecOdblokowany: null,
     upgradeFrom: "droga",
@@ -6654,17 +7070,52 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 5
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
     surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+  },
+  kopalnia_zelaza: {
+    nazwa: "Kopalnia \u017Celaza",
+    epoka: 3,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda_zelaza",
+    surowiecOdblokowany_uwaga: "Ruda \u017Celaza (Odlewnia \u017Celaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce \u017Celaza (hex.zloze=zelazo)",
+    warunek: "ruda \u017Celaza \u2192 magazyn (Odlewnia \u017Celaza)",
+    koszt_praca: 22,
+    tech: "Hutnictwo \u017Celaza",
+    odblokowuje: "Odlewnia \u017Celaza (budynek miejski)",
+    uwagi: "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
+  },
+  kopalnia_zlota: {
+    nazwa: "Kopalnia z\u0142ota",
+    epoka: 2,
+    bonus: {
+      praca: 2,
+      handel: 10
+    },
+    surowiecOdblokowany: "zloto",
+    surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
+    surowiec_ilosc_tura: 1,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce z\u0142ota (hex.zloze=zloto)",
+    warunek: "z\u0142o\u017Ce z\u0142ota \u2014 produkcja do magazynu pa\u0144stwa",
+    koszt_praca: 22,
+    tech: "Waluta",
+    odblokowuje: "Mennica (Z\u0142oto w skarbcu + Targowisko w stolicy)",
+    uwagi: "PYTANIE-84: z\u0142oto magazynowane (game/zloto-access.ts). Dodatkowe kopalnie \u2192 nadwy\u017Cka na handel/eksport (U-13)."
   },
   posterunek: {
     nazwa: "Posterunek (Stra\u017Cnica)",
@@ -6707,6 +7158,17 @@ function improvementKeysForHex(hex) {
   const single = normalizeImprovementKey(String(hex.ulepszenie ?? "brak"));
   return single ? [single] : [];
 }
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
+function isLivestockImprovementKey(key) {
+  const norm = normalizeImprovementKey(key);
+  if (!norm) return false;
+  return LIVESTOCK_IMPROVEMENT_KEYS.includes(norm);
+}
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -6726,9 +7188,37 @@ var DEFAULT_TERRAIN_COSTS = {
   ["wybrzeze" /* Wybrzeze */]: Infinity,
   ["wzgorza" /* Wzgorza */]: 2,
   ["gory" /* Gory */]: Infinity,
-  ["morze" /* Morze */]: Infinity
+  ["morze" /* Morze */]: Infinity,
+  ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
+
+// src/map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
 
 // src/map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
@@ -6744,10 +7234,16 @@ var RIVER_SCALE_BY_SIZE = {
   ogromna: mapGenRiverScale("ogromna"),
   super: mapGenRiverScale("super")
 };
+var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
-var RELIEF_OVERFLOW_CAP_MULT = Number.POSITIVE_INFINITY;
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
 var ERODE_TERRAIN_ORDER = [
   "wybrzeze" /* Wybrzeze */,
   "laka" /* Laka */,
@@ -6766,8 +7262,10 @@ var ELEVATION_RANK = {
   ["pustynia" /* Pustynia */]: 3,
   ["rownina" /* Rownina */]: 4,
   ["wzgorza" /* Wzgorza */]: 5,
-  ["gory" /* Gory */]: 6
+  ["gory" /* Gory */]: 6,
+  ["polarny" /* Polarny */]: 2
 };
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
 var BASE_DEPOSIT_RULES = [
   {
     id: "miedz",
@@ -6788,7 +7286,7 @@ var BASE_DEPOSIT_RULES = [
     // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
     // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
-    rarity: 0.1
+    rarity: 0.3
   },
   {
     id: "konie",
@@ -6816,6 +7314,18 @@ var BASE_DEPOSIT_RULES = [
     allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
     requiresCoastalLand: true,
     rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
   }
 ];
 var _depositRarities = mapGenAllDepositRarities();
@@ -6833,19 +7343,24 @@ var TEREN_MATERIAL = new MeshLambertMaterial({
   vertexColors: true,
   flatShading: true
 });
+var promien = new Raycaster();
+var promienStart = new Vector3();
+var promienDol = new Vector3(0, -1, 0);
 
 // src/render/mapRenderStyle.ts
 var SEA_SURFACE_TOP_Y = 0.18;
-var WYBRZEZE_SURFACE_TOP_Y = 0.2;
-var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.35;
+var WYBRZEZE_SURFACE_TOP_Y = 0.22;
+var LAND_MIN_CLEARANCE_ABOVE_SEA = 0.28;
+var FLAT_LAND_SURFACE_Y = SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA;
 var TERRAIN_SURFACE_Y = {
   ["morze" /* Morze */]: SEA_SURFACE_TOP_Y,
   ["wybrzeze" /* Wybrzeze */]: WYBRZEZE_SURFACE_TOP_Y,
-  ["laka" /* Laka */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA,
-  ["rownina" /* Rownina */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.02,
-  ["pustynia" /* Pustynia */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.08,
+  ["laka" /* Laka */]: FLAT_LAND_SURFACE_Y,
+  ["rownina" /* Rownina */]: FLAT_LAND_SURFACE_Y,
+  ["pustynia" /* Pustynia */]: FLAT_LAND_SURFACE_Y,
   ["wzgorza" /* Wzgorza */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.18,
-  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32
+  ["gory" /* Gory */]: SEA_SURFACE_TOP_Y + LAND_MIN_CLEARANCE_ABOVE_SEA + 0.32,
+  ["polarny" /* Polarny */]: FLAT_LAND_SURFACE_Y
 };
 var ROBLOX_TERRAIN_VIS = {
   ["morze" /* Morze */]: { height: 0.3, yOffset: 0 },
@@ -6856,7 +7371,8 @@ var ROBLOX_TERRAIN_VIS = {
   /** Pustynia = profil wzgórza (Maciej 2026-07-04: nie zalewa morze). */
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.42, yOffset: 0.08 },
-  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 }
+  ["gory" /* Gory */]: { height: 0.46, yOffset: 0.12 },
+  ["polarny" /* Polarny */]: { height: 0.36, yOffset: 0.06 }
 };
 var COAST_WATER_CAP_THICKNESS = 0.038 * 1.15;
 var CIV_TERRAIN_VIS = {
@@ -6866,7 +7382,8 @@ var CIV_TERRAIN_VIS = {
   ["rownina" /* Rownina */]: { height: 0.45, yOffset: 0.08 },
   ["pustynia" /* Pustynia */]: { height: 0.42, yOffset: 0.08 },
   ["wzgorza" /* Wzgorza */]: { height: 0.7, yOffset: 0.15 },
-  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 }
+  ["gory" /* Gory */]: { height: 1.2, yOffset: 0.4 },
+  ["polarny" /* Polarny */]: { height: 0.38, yOffset: 0.06 }
 };
 var TERRAIN_CIV = {
   ["morze" /* Morze */]: 2054790,
@@ -6875,7 +7392,8 @@ var TERRAIN_CIV = {
   ["rownina" /* Rownina */]: 11121239,
   ["pustynia" /* Pustynia */]: 14270841,
   ["wzgorza" /* Wzgorza */]: 5209396,
-  ["gory" /* Gory */]: 10133929
+  ["gory" /* Gory */]: 10133929,
+  ["polarny" /* Polarny */]: 15265525
 };
 var TERRAIN_ROBLOX = {
   ["morze" /* Morze */]: 5608621,
@@ -6885,7 +7403,8 @@ var TERRAIN_ROBLOX = {
   ["rownina" /* Rownina */]: 11586174,
   ["pustynia" /* Pustynia */]: 14731406,
   ["wzgorza" /* Wzgorza */]: 8300658,
-  ["gory" /* Gory */]: 10332340
+  ["gory" /* Gory */]: 10332340,
+  ["polarny" /* Polarny */]: 15659768
 };
 var TERRAIN_MINECRAFT = {
   ["morze" /* Morze */]: 2842280,
@@ -6894,11 +7413,12 @@ var TERRAIN_MINECRAFT = {
   ["rownina" /* Rownina */]: 7249987,
   ["pustynia" /* Pustynia */]: 14402396,
   ["wzgorza" /* Wzgorza */]: 4880946,
-  ["gory" /* Gory */]: 9080985
+  ["gory" /* Gory */]: 9080985,
+  ["polarny" /* Polarny */]: 14476526
 };
 
 // src/render/pastwisko-modele.ts
-var PASTWISKO_S = 2.05 / 3;
+var PASTWISKO_S = 2.05 / 3 * 1.5;
 var az = (deg, r) => ({
   x: +(r * Math.sin(deg * Math.PI / 180)).toFixed(3),
   z: +(-r * Math.cos(deg * Math.PI / 180)).toFixed(3)
@@ -6954,6 +7474,18 @@ var NH_LEG_TOP_R = 0.2 * HEX_R;
 // src/render/styleResources.ts
 var S = 2.05 / 3;
 
+// src/render/kopalnia-zlota-opus5.ts
+var _a = new Vector3();
+var _b = new Vector3();
+var _dir = new Vector3();
+var _up = new Vector3(0, 1, 0);
+var SL_TILT = 0.4;
+var SL_YAW = 0.55;
+var SL_Q = new Quaternion().setFromEuler(
+  new Euler(SL_TILT, SL_YAW, 0, "YXZ")
+);
+var _sl = new Vector3();
+
 // data/terrain-yields.json
 var terrain_yields_default = {
   terrain_types: [
@@ -6961,17 +7493,17 @@ var terrain_yields_default = {
       Teren: "\u0141\u0105ka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 1,
-      Handel: 1,
+      Podatek: 2,
       Drewno: 1,
       Kamie\u0144: 0,
-      Suma: 6,
+      Suma: 7,
       Uwagi: null
     },
     {
       Teren: "R\xF3wnina",
       \u017Bywno\u015B\u0107: 2,
       Praca: 2,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 2,
       Kamie\u0144: 1,
       Suma: 8,
@@ -6981,7 +7513,7 @@ var terrain_yields_default = {
       Teren: "Wzg\xF3rza",
       \u017Bywno\u015B\u0107: 1,
       Praca: 3,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 2,
       Suma: 8,
@@ -6991,7 +7523,7 @@ var terrain_yields_default = {
       Teren: "G\xF3ry",
       \u017Bywno\u015B\u0107: 0,
       Praca: 4,
-      Handel: 0,
+      Podatek: 0,
       Drewno: 2,
       Kamie\u0144: 5,
       Suma: 11,
@@ -7001,7 +7533,7 @@ var terrain_yields_default = {
       Teren: "Wybrze\u017Ce",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 7,
@@ -7011,7 +7543,7 @@ var terrain_yields_default = {
       Teren: "Morze",
       \u017Bywno\u015B\u0107: 2,
       Praca: 0,
-      Handel: 2,
+      Podatek: 2,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 4,
@@ -7021,11 +7553,21 @@ var terrain_yields_default = {
       Teren: "Pustynia",
       \u017Bywno\u015B\u0107: 0,
       Praca: 0,
-      Handel: 1,
+      Podatek: 1,
       Drewno: 0,
       Kamie\u0144: 0,
       Suma: 1,
       Uwagi: null
+    },
+    {
+      Teren: "Polarny",
+      \u017Bywno\u015B\u0107: 0,
+      Praca: 0,
+      Podatek: 0,
+      Drewno: 0,
+      Kamie\u0144: 0,
+      Suma: 0,
+      Uwagi: "Strefa polarna (\u015Bnieg) \u2014 niezamieszkana, C-MAP-Q3b"
     }
   ],
   terrain_modifiers: [
@@ -7033,35 +7575,42 @@ var terrain_yields_default = {
       Modyfikator: "Rzeka",
       \u017Bywno\u015B\u0107: 3,
       Praca: 2,
-      Handel: 2,
+      Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 7,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +7 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Glina: 2,
+      Suma: 10,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105; +2 glina (szt./tur\u0119) przy rzece \u2014 plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +10 z glin\u0105"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
       \u017Bywno\u015B\u0107: -1,
       Praca: 3,
-      Handel: -1,
+      Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
-      Suma: 4,
-      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, \u2212handel, +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
+      Glina: 0,
+      Suma: 7,
+      Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
   ]
 };
 
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domy\u015Blnie = manpowerNaLudka; epoka 1 = po\u0142owa \u2014 Maciej 2026-08-03: wi\u0119ksza armia w Kamieniu).",
   _formuly: {
     ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
     manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
+    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka (ep1: 500 \u2192 2 jednostki / ludek przy pe\u0142nej puli)"
   },
   epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 500 },
     { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
     { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
     { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
@@ -7077,7 +7626,7 @@ var epoka_ludnosc_manpower_default = {
 // data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
-    wartosc: 5,
+    wartosc: 4,
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
@@ -7095,6 +7644,13 @@ var miasto_params_default = {
     wartosc: 1,
     jednostka: "0/1",
     opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
+  },
+  manpower_uzupelnienie_hp_proc_max_tura: {
+    easy: 25,
+    normal: 20,
+    hard: 15,
+    jednostka: "% maxHP/tura",
+    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
   },
   jednostka_koszt_domyslny: {
     wartosc: 10,
@@ -7156,6 +7712,16 @@ var miasto_params_default = {
     jednostka: "% Obrony (dodatkowo do muru)",
     opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
   },
+  bonus_obrona_baszta_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
+    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
+  },
+  bonus_obrona_palisada_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (wczesna palisada drewniana)",
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Kamienia, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+  },
   zasieg_okolicy_baza: {
     wartosc: 5,
     jednostka: "pola/strona",
@@ -7196,6 +7762,9 @@ var miasto_params_default = {
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
+// src/game/zloto-access.ts
+var ZLOTO_LABEL = "Z\u0142oto";
+
 // src/game/building-resource-gate.ts
 var LABEL_BY_ASCII = {
   drewno: "Drewno",
@@ -7207,11 +7776,41 @@ var LABEL_BY_ASCII = {
   braz: "Br\u0105z",
   sol: "S\xF3l",
   cegla: "Ceg\u0142a",
-  ceramika: "Ceramika"
+  ceramika: "Ceramika",
+  zloto: ZLOTO_LABEL,
+  kon: "Ko\u0144"
+};
+var DEPOSIT_LINKED_BUILDING_LABELS = {
+  garncarnia: ["Glina"],
+  cegielnia: ["Glina"],
+  // PYTANIE-84-U-24: Spichlerz I — brak bramki Ceramika przy budowie; drain B6 po postawieniu.
+  // spichlerz — celowo brak wpisu (bonusy z drain co turę, patrz sekcja Spichlerz niżej).
+  spichlerz_ii: ["S\xF3l"],
+  stolarnia: ["Drewno"],
+  kamieniarski: ["Kamie\u0144"],
+  kuznia: ["Ruda"],
+  odlewnia_brazu: ["Ruda"],
+  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
+  mennica: [ZLOTO_LABEL]
 };
 var ASCII_BY_LABEL = Object.fromEntries(
   Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
 );
+var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
+  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
+);
+
+// src/game/unit-building-bonuses.ts
+var ARMOR_PATH_MAX_PP = 45;
+var SOFT_PATH_MAX_PP = 50;
+var ARMOR_PATH_LEVEL_MAX_PP = [
+  Math.floor(ARMOR_PATH_MAX_PP / 3),
+  Math.floor(ARMOR_PATH_MAX_PP * 2 / 3)
+];
+var SOFT_PATH_LEVEL_MAX_PP = [
+  Math.floor(SOFT_PATH_MAX_PP / 3),
+  Math.floor(SOFT_PATH_MAX_PP * 2 / 3)
+];
 
 // src/game/production.ts
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
@@ -7240,18 +7839,17 @@ var TERRAIN_NAME_TO_ENUM = {
   "G\xF3ry": "gory" /* Gory */,
   "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
   "Morze": "morze" /* Morze */,
-  "Pustynia": "pustynia" /* Pustynia */
+  "Pustynia": "pustynia" /* Pustynia */,
+  "Polarny": "polarny" /* Polarny */
 };
 function terrainRowToTileYield(row) {
   return {
     zywnosc: Number(row["\u017Bywno\u015B\u0107"] ?? 0),
     praca: Number(row["Praca"] ?? 0),
-    handel: Number(row["Handel"] ?? 0),
+    handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
-    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
-    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0,
+    glina: Number(row.Glina ?? 0),
     ruda: 0,
     ruda_zelaza: 0
   };
@@ -7305,8 +7903,45 @@ var FALLBACK_RELIGION_PARAMS = Object.freeze({
   konwersjaKregiPct: 2
 });
 
+// src/game/economy-upkeep.ts
+var OWNER_CAPPED_RESOURCE_KEYS = [
+  "drewno",
+  "kamien",
+  "glina",
+  "ruda",
+  "ruda_zelaza",
+  "cegla",
+  "ceramika",
+  "braz",
+  "zelazo",
+  "stal",
+  "sol",
+  "zloto",
+  "kon"
+];
+var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
+
+// src/game/population-growth-v85.ts
+var WYZYWIENIE_MIN = 0;
+var WYZYWIENIE_MAX = 6;
+var WYZYWIENIE_STEP = 0.5;
+var WYZYWIENIE_LEVELS = Array.from(
+  { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
+  (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
+);
+var DEFAULT_POZIOM_RACJI = 4;
+
 // src/game/cities.ts
+var DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
+  DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX * 100
+);
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
+
+// src/map/territory-work.ts
+function isTerritoryHexOwnedBy(q, r, ownerId, territoryNodes) {
+  if (!territoryNodes.length) return false;
+  return territoryOwnerAt(q, r, territoryNodes) === ownerId;
+}
 
 // src/game/okolica.ts
 var OKOLICA_RADIUS = miasto_params_default.zasieg_okolicy_miasta?.wartosc ?? 5;
@@ -7350,9 +7985,10 @@ function territoryOwnerAt(q, r, nodes) {
   return bestOwner;
 }
 function isPlayerTerritoryHex(q, r, playerNodes, allNodes, playerOwnerId = 0) {
-  if (!isInTerritory(q, r, playerNodes)) return false;
-  if (!allNodes.length) return true;
-  return territoryOwnerAt(q, r, allNodes) === playerOwnerId;
+  if (allNodes.length > 0) {
+    return territoryOwnerAt(q, r, allNodes) === playerOwnerId;
+  }
+  return isInTerritory(q, r, playerNodes);
 }
 
 // src/game/livestock-unlock.ts
@@ -7367,11 +8003,11 @@ var DEPOSIT_FOR_LIVESTOCK = {
   owce: "zloze_owiec" /* ZlozeOwiec */,
   lama: "zloze_lamy" /* ZlozeLamy */
 };
-var INCA_CIV_TYPES = /* @__PURE__ */ new Set(["inkowie", "inka", "incas"]);
+var INCA_CIV_TYPES = /* @__PURE__ */ new Set(["inkowie", "inka", "incas", "astekowie", "astek", "aztekowie", "aztek"]);
 function isIncaCiv(civType) {
   if (!civType) return false;
   const t = civType.toLowerCase().trim();
-  return INCA_CIV_TYPES.has(t) || t.includes("inkow");
+  return INCA_CIV_TYPES.has(t) || t.includes("inkow") || t.includes("astek") || t.includes("aztek");
 }
 function isNewWorldCiv(civType) {
   return isIncaCiv(civType);
@@ -7386,7 +8022,8 @@ function livestockKeyFromImprovement(improvementKey) {
   return null;
 }
 function hexHasLivestockDeposit(hex, key) {
-  return hex.nakladka === DEPOSIT_FOR_LIVESTOCK[key];
+  if (hex.nakladka === DEPOSIT_FOR_LIVESTOCK[key]) return true;
+  return hex.zloze?.trim().toLowerCase() === key;
 }
 function hexHasHorseDeposit(hex) {
   return hex.nakladka === "zloze_konia" /* ZlozeKonia */;
@@ -7412,8 +8049,8 @@ function keysOnPlacedHex(imp) {
 }
 function computeEmpireLivestockUnlocks(placedImprovements, map, ownerId) {
   const unlocked = /* @__PURE__ */ new Set();
-  for (const [hexKey, impRaw] of placedImprovements) {
-    const hex = map.hexes[hexKey];
+  for (const [hexKey2, impRaw] of placedImprovements) {
+    const hex = map.hexes[hexKey2];
     if (!hex) continue;
     if (ownerId != null && hex.wlasciciel !== ownerId) continue;
     for (const impKey of keysOnPlacedHex(impRaw)) {
@@ -7457,21 +8094,61 @@ function isFarmBaseTerrain(teren, nakladka) {
   if (FLAT_FARM.has(teren)) return true;
   return nakladka === "las" /* Las */ && teren === "wzgorza" /* Wzgorza */;
 }
+function isLivestockImprovementBlockedOnForest(key, nakladka) {
+  return nakladka === "las" /* Las */ && isLivestockImprovementKey(key);
+}
+var FOREST_COEXIST_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
+  "farma",
+  "tartak",
+  "oboz_lowiecki",
+  "glinianka"
+]);
+var FOREST_BLOCKED_IMPROVEMENT_KEYS = /* @__PURE__ */ new Set([
+  "irygacja",
+  "tarasy"
+]);
+function isImprovementBlockedOnForest(key, nakladka) {
+  if (nakladka !== "las" /* Las */) return false;
+  if (FOREST_COEXIST_IMPROVEMENT_KEYS.has(key)) return false;
+  if (key === "wyrab") return false;
+  if (isLivestockImprovementBlockedOnForest(key, nakladka)) return true;
+  return FOREST_BLOCKED_IMPROVEMENT_KEYS.has(key);
+}
+function isOwceBaseTerrain(teren, nakladka) {
+  if (teren !== "wzgorza" /* Wzgorza */) return false;
+  if (nakladka === "zloze_owiec" /* ZlozeOwiec */) return true;
+  if (nakladka === "las" /* Las */) return false;
+  return nakladka === "brak" /* Brak */;
+}
+var FOOD_LAYER_KEYS = /* @__PURE__ */ new Set([
+  "farma",
+  "irygacja",
+  "bydlo",
+  "owce",
+  "lama",
+  "tarasy"
+]);
+var SOLO_FOOD_KEYS = /* @__PURE__ */ new Set(["tarasy", "owce", "lama"]);
 var SEKTOR_OF = {
   // bok 1 — surowce + ich ulepszenia
-  kopalnia: "surowiec",
   glinianka: "surowiec",
   stadnina: "surowiec",
   kopalnia_miedzi: "surowiec",
+  kopalnia_zelaza: "surowiec",
+  // Maciej 2026-07-25: Kopalnia złota — dedykowane ulepszenie jak kopalnia_miedzi (tylko na
+  // hex.zloze==='zloto'); sektor 'surowiec' jest tu bezpieczny bo tylko JEDNO złoże może
+  // istnieć na heksie (placeDeposits — break po pierwszym trafieniu), więc nigdy nie koliduje
+  // z kopalnią miedzi/węgla/żelaza na tym samym polu.
+  kopalnia_zlota: "surowiec",
   // Kamieniołom = WŁASNY sektor NIE-wykluczający (Maciej 2026-07-24, C-SUR kamień=b): kamień to
   // zasób terenowy i ma współistnieć z kopalniami rudy / glinianką / stadniną na tym samym heksie
   // — żeby budowa kamieniołomu nie zablokowała późniejszego wydobycia rudy (zwłaszcza żelaza,
   // ukrytego do epoki 3). Zostaje unikalny wobec samego siebie (existing.includes w qualifies).
   kamieniolom: "kamien",
-  // las (bok 1 — surowiec leśny)
+  // las (bok 1 — surowiec leśny); obóz łowiecki osobny sektor — współistnieje z tartakiem (Maciej 2026-07-29)
   wyrab: "las",
   tartak: "las",
-  oboz_lowiecki: "las",
+  oboz_lowiecki: "lowiectwo",
   // bok 2 — pole (food-teren)
   farma: "foodteren",
   tarasy: "foodteren",
@@ -7495,6 +8172,52 @@ var SEKTOR_OF = {
   warzelnia_soli: "woda"
 };
 var EXCLUSIVE_SEKTORY = /* @__PURE__ */ new Set(["surowiec", "las", "foodteren", "hodowla", "militaria"]);
+function improvementsReplacedByBuild(key, existing) {
+  const removed = [];
+  const add = (k) => {
+    if (k !== key && !removed.includes(k)) removed.push(k);
+  };
+  const sekt = SEKTOR_OF[key];
+  if (sekt && EXCLUSIVE_SEKTORY.has(sekt)) {
+    for (const k of existing) {
+      if (SEKTOR_OF[k] === sekt) add(k);
+    }
+  }
+  if (SOLO_FOOD_KEYS.has(key)) {
+    for (const k of existing) {
+      if (FOOD_LAYER_KEYS.has(k)) add(k);
+    }
+  } else if (isFoodKey(key)) {
+    for (const k of existing) {
+      if (SOLO_FOOD_KEYS.has(k)) add(k);
+    }
+  }
+  return removed;
+}
+function existingAfterSimulatedRemoval(existing, removed) {
+  const rm = new Set(removed);
+  return existing.filter((k) => !rm.has(k));
+}
+function computeImprovementBuildImpact(key, hex, existing) {
+  if (isImprovementBlockedOnForest(key, hex.nakladka)) return null;
+  if (key === "owce" && !isOwceBaseTerrain(hex.terenBazowy, hex.nakladka)) {
+    return null;
+  }
+  const removedImprovements = improvementsReplacedByBuild(key, existing);
+  const after = existingAfterSimulatedRemoval(existing, removedImprovements);
+  if (after.includes(key)) {
+    return null;
+  }
+  const sekt = SEKTOR_OF[key];
+  if (key !== "droga" && sekt && EXCLUSIVE_SEKTORY.has(sekt) && after.some((k) => SEKTOR_OF[k] === sekt)) {
+    return null;
+  }
+  if (isFoodKey(key) && !canAddFoodLayer(after, key)) {
+    return null;
+  }
+  const removesForest = false;
+  return { removedImprovements, removesForest };
+}
 var TERRAIN_ALLOW = {
   farma: FLAT_FARM,
   irygacja: FLAT_IRR,
@@ -7503,10 +8226,9 @@ var TERRAIN_ALLOW = {
   lama: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   // decyzja 3a: lama tylko wzgórza + góry
   stadnina: /* @__PURE__ */ new Set(["laka" /* Laka */, "rownina" /* Rownina */]),
-  kopalnia: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
   glinianka: null,
   kamieniolom: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
-  // Maciej 2026-07-24: Wzgórza+Góry (nie zawsze mamy dostęp do gór); teren, bez złoża
+  // Maciej 2026-07-24: Wzgórza+Góry
   oboz_lowiecki: null,
   wyrab: null,
   lodzie_rybackie: /* @__PURE__ */ new Set(["wybrzeze" /* Wybrzeze */, "morze" /* Morze */]),
@@ -7515,10 +8237,17 @@ var TERRAIN_ALLOW = {
   droga: null,
   droga_brukowana: null,
   posterunek: null,
-  kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
+  kopalnia_miedzi: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
+  kopalnia_zelaza: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */]),
+  // Maciej 2026-07-25: złoto żyłowe — Wzgórza/Góry, jak kopalnia_miedzi (patrz DEPOSIT_RULES
+  // gen-helpers.ts id='zloto').
+  kopalnia_zlota: /* @__PURE__ */ new Set(["wzgorza" /* Wzgorza */, "gory" /* Gory */])
 };
 function hasBlockingDepositForFarm(_hex) {
   return false;
+}
+function hexHasClayDeposit(hex) {
+  return hex.nakladka === "zloze_gliny" /* ZlozeGliny */ || hex.zloze?.trim().toLowerCase() === "glina";
 }
 function depositAllowsPlayerImprovement(key, hex) {
   const nakladka = hex.nakladka;
@@ -7526,16 +8255,15 @@ function depositAllowsPlayerImprovement(key, hex) {
   const teren = hex.terenBazowy;
   switch (key) {
     case "glinianka":
-      return nakladka === "zloze_gliny" /* ZlozeGliny */;
-    case "kopalnia":
-      if (teren === "gory" /* Gory */) {
-        return zloze === "zelazo" || zloze === "wegiel" || nakladka === "zloze_rudy" /* ZlozeRudy */;
-      }
-      return nakladka === "zloze_rudy" /* ZlozeRudy */;
+      return hexHasClayDeposit(hex);
     case "warzelnia_soli":
       return zloze === "sol";
     case "kopalnia_miedzi":
-      return zloze === "miedz";
+      return zloze === "miedz" || nakladka === "zloze_rudy" /* ZlozeRudy */ || zloze === "ruda";
+    case "kopalnia_zelaza":
+      return zloze === "zelazo";
+    case "kopalnia_zlota":
+      return zloze === "zloto";
     case "bydlo":
       return nakladka === "zloze_bydla" /* ZlozeBydla */;
     case "owce":
@@ -7550,13 +8278,35 @@ function depositAllowsPlayerImprovement(key, hex) {
       return false;
   }
 }
+function canAddFoodLayer(existing, newKey) {
+  const ex = existing.filter((k) => FOOD_LAYER_KEYS.has(k));
+  if (ex.includes(newKey)) return false;
+  if (SOLO_FOOD_KEYS.has(newKey)) return ex.length === 0;
+  if (ex.some((k) => SOLO_FOOD_KEYS.has(k))) return false;
+  const hasF = ex.includes("farma");
+  const hasI = ex.includes("irygacja");
+  const hasB = ex.includes("bydlo");
+  switch (newKey) {
+    case "farma":
+      if (ex.length === 0) return true;
+      return ex.length === 1 && (hasI || hasB);
+    case "irygacja":
+      if (ex.length === 0) return true;
+      return ex.length === 1 && hasF && !hasB;
+    case "bydlo":
+      if (ex.length === 0) return true;
+      return ex.length === 1 && hasF && !hasI;
+    default:
+      return false;
+  }
+}
 function keysOnPlacedHex2(imp) {
   if (typeof imp === "string") return imp ? [imp] : [];
   return imp.map(String);
 }
-function getHexLayers(hexKey, hex, placedImprovements) {
+function getHexLayers(hexKey2, hex, placedImprovements) {
   const keys = new Set(improvementKeysForHex(hex));
-  const ext = placedImprovements?.get(hexKey);
+  const ext = placedImprovements?.get(hexKey2);
   if (ext) {
     for (const k of keysOnPlacedHex2(ext)) {
       const n = k.toLowerCase().trim();
@@ -7564,6 +8314,9 @@ function getHexLayers(hexKey, hex, placedImprovements) {
     }
   }
   return [...keys];
+}
+function isFoodKey(key) {
+  return FOOD_LAYER_KEYS.has(key);
 }
 function buildPlacedImprovementsMap(map, placedImprovements) {
   if (placedImprovements) return placedImprovements;
@@ -7623,14 +8376,10 @@ function createQualifier(state) {
   );
   if (state.tradeRouteKonUnlocked) empireUnlocks.add("kon");
   function inPlayerTerritory(q, r) {
-    return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
-  }
-  function isOnTerritoryEdge(q, r) {
-    if (inPlayerTerritory(q, r)) return true;
-    for (const nb of hexNeighbors(q, r)) {
-      if (inPlayerTerritory(nb.q, nb.r)) return true;
+    if (territoryNodes.length > 0) {
+      return isTerritoryHexOwnedBy(q, r, playerOwnerIdNum, territoryNodes);
     }
-    return false;
+    return isPlayerTerritoryHex(q, r, cityNodes, territoryNodes, playerOwnerIdNum);
   }
   function isRoadQualified(q, r) {
     for (const nb of hexNeighbors(q, r)) {
@@ -7657,107 +8406,90 @@ function createQualifier(state) {
     return false;
   }
   function qualifies(key, q, r) {
-    const hexKey = `${q},${r}`;
-    const hex = map.hexes[hexKey];
+    const hexKey2 = `${q},${r}`;
+    const hex = map.hexes[hexKey2];
     if (!hex) return false;
     const teren = hex.terenBazowy;
     const nakladka = hex.nakladka;
     const zloze = hexZloze(hex);
-    const existing = getHexLayers(hexKey, hex, placedMap);
+    const existing = getHexLayers(hexKey2, hex, placedMap);
     if (key === "droga_brukowana") {
       if (!TERENY_LADU.has(teren)) return false;
+      if (!inPlayerTerritory(q, r)) return false;
       const hasDroga = existing.includes("droga") || hex.ulepszenie === "droga" /* Droga */;
       const hasBruk = existing.includes("droga_brukowana") || hex.ulepszenie === "droga_brukowana" /* DrogaBrukowana */;
       return hasDroga && !hasBruk;
     }
-    if (state.pendingUndoKeys?.has(`${hexKey}:${key}`)) return true;
-    if (key !== "droga") {
-      if (existing.includes(key)) return false;
-      const sekt = SEKTOR_OF[key];
-      if (sekt && EXCLUSIVE_SEKTORY.has(sekt) && existing.some((k) => SEKTOR_OF[k] === sekt)) return false;
-    } else if (placedKeys.has(hexKey)) {
-      return false;
-    }
+    if (state.pendingUndoKeys?.has(`${hexKey2}:${key}`)) return true;
+    if (key !== "droga" && existing.includes(key)) return false;
+    if (key === "droga" && placedKeys.has(hexKey2)) return false;
+    let terrainOk = false;
     switch (key) {
       case "farma":
-        if (!isFarmBaseTerrain(teren, nakladka)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        return true;
+        terrainOk = isFarmBaseTerrain(teren, nakladka) && !hasBlockingDepositForFarm(hex) && inPlayerTerritory(q, r);
+        break;
       case "irygacja":
-        if (!FLAT_IRR.has(teren)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        return isRiverAdjacent(q, r);
+        terrainOk = FLAT_IRR.has(teren) && !hasBlockingDepositForFarm(hex) && inPlayerTerritory(q, r) && isRiverAdjacent(q, r);
+        break;
       case "bydlo":
-        if (!FLAT_FARM.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = FLAT_FARM.has(teren) && !isLivestockImprovementBlockedOnForest(key, nakladka) && inPlayerTerritory(q, r) && isLivestockAllowed(playerCivArchetype, key, playerEra) && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case "owce":
-        if (teren !== "wzgorza" /* Wzgorza */) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = isOwceBaseTerrain(teren, nakladka) && inPlayerTerritory(q, r) && isLivestockAllowed(playerCivArchetype, key, playerEra) && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case "lama":
-        if (teren === "pustynia" /* Pustynia */) return false;
-        if (!TERRAIN_ALLOW.lama?.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = teren !== "pustynia" /* Pustynia */ && !isLivestockImprovementBlockedOnForest(key, nakladka) && (TERRAIN_ALLOW.lama?.has(teren) ?? false) && inPlayerTerritory(q, r) && isLivestockAllowed(playerCivArchetype, key, playerEra) && isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        break;
       case "stadnina":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== "laka" /* Laka */ && teren !== "rownina" /* Rownina */) return false;
-        if (!isLivestockAllowed(playerCivArchetype, key, playerEra)) return false;
-        return hex.nakladka === "zloze_konia" /* ZlozeKonia */ || isLivestockUnlockedForPlacement(key, hex, empireUnlocks);
+        terrainOk = inPlayerTerritory(q, r) && !isLivestockImprovementBlockedOnForest(key, nakladka) && (teren === "laka" /* Laka */ || teren === "rownina" /* Rownina */) && isLivestockAllowed(playerCivArchetype, key, playerEra) && (hex.nakladka === "zloze_konia" /* ZlozeKonia */ || isLivestockUnlockedForPlacement(key, hex, empireUnlocks));
+        break;
       case "droga":
         return TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && isRoadQualified(q, r);
       case "posterunek":
-        return TERENY_LADU.has(teren) && isOnTerritoryEdge(q, r);
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        break;
       case "fort":
-        return TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r);
+        break;
       case "glinianka":
-        return nakladka === "zloze_gliny" /* ZlozeGliny */ && inPlayerTerritory(q, r);
-      case "kopalnia":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== "gory" /* Gory */) return nakladka === "zloze_rudy" /* ZlozeRudy */;
-        return zloze === "zelazo" || zloze === "wegiel" || nakladka === "zloze_rudy" /* ZlozeRudy */;
+        terrainOk = hexHasClayDeposit(hex) && inPlayerTerritory(q, r);
+        break;
+      case "kopalnia_zelaza":
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wzgorza" /* Wzgorza */ || teren === "gory" /* Gory */) && zloze === "zelazo";
+        break;
       case "wyrab":
-        if (state.pendingUndoKeys?.has(`${hexKey}:wyrab`)) return true;
-        if (state.clearingHexKeys?.has(hexKey)) return false;
-        return nakladka === "las" /* Las */ && inPlayerTerritory(q, r);
-      case "tartak": {
-        if (!inPlayerTerritory(q, r)) return false;
-        return TARTAK_TERENY.has(teren);
-      }
-      case "oboz_lowiecki": {
-        if (!inPlayerTerritory(q, r)) return false;
-        return nakladka === "las" /* Las */ || hasAnimalDeposit(nakladka);
-      }
+        if (state.pendingUndoKeys?.has(`${hexKey2}:wyrab`)) return true;
+        terrainOk = !state.clearingHexKeys?.has(hexKey2) && nakladka === "las" /* Las */ && inPlayerTerritory(q, r);
+        break;
+      case "tartak":
+        terrainOk = inPlayerTerritory(q, r) && nakladka === "las" /* Las */ && TARTAK_TERENY.has(teren);
+        break;
+      case "oboz_lowiecki":
+        terrainOk = inPlayerTerritory(q, r) && (nakladka === "las" /* Las */ || hasAnimalDeposit(nakladka));
+        break;
       case "warzelnia_soli":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren === "wybrzeze" /* Wybrzeze */) return true;
-        return zloze === "sol";
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wybrzeze" /* Wybrzeze */ || zloze === "sol");
+        break;
       case "kopalnia_miedzi":
-        if (!inPlayerTerritory(q, r)) return false;
-        if (teren !== "wzgorza" /* Wzgorza */ && teren !== "gory" /* Gory */) return false;
-        return zloze === "miedz";
-      case "tarasy": {
-        if (!inPlayerTerritory(q, r)) return false;
-        if (hasBlockingDepositForFarm(hex)) return false;
-        return teren === "wzgorza" /* Wzgorza */;
-      }
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wzgorza" /* Wzgorza */ || teren === "gory" /* Gory */) && (zloze === "miedz" || nakladka === "zloze_rudy" /* ZlozeRudy */ || zloze === "ruda");
+        break;
+      case "kopalnia_zlota":
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wzgorza" /* Wzgorza */ || teren === "gory" /* Gory */) && zloze === "zloto";
+        break;
+      case "tarasy":
+        terrainOk = inPlayerTerritory(q, r) && !hasBlockingDepositForFarm(hex) && teren === "wzgorza" /* Wzgorza */;
+        break;
       case "lodzie_rybackie":
-        if (!inPlayerTerritory(q, r)) return false;
-        return teren === "wybrzeze" /* Wybrzeze */ || teren === "morze" /* Morze */;
+        terrainOk = inPlayerTerritory(q, r) && (teren === "wybrzeze" /* Wybrzeze */ || teren === "morze" /* Morze */);
+        break;
       default: {
         const allowed = TERRAIN_ALLOW[key];
-        if (!TERENY_LADU.has(teren)) return false;
-        if (!inPlayerTerritory(q, r)) return false;
-        if (allowed && !allowed.has(teren)) return false;
-        return true;
+        terrainOk = TERENY_LADU.has(teren) && inPlayerTerritory(q, r) && (!allowed || allowed.has(teren));
+        break;
       }
     }
+    if (!terrainOk) return false;
+    return computeImprovementBuildImpact(key, hex, existing) !== null;
   }
   return qualifies;
 }

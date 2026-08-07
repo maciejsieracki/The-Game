@@ -31,6 +31,482 @@ __export(army_hunger_combat_entry_exports, {
 });
 module.exports = __toCommonJS(army_hunger_combat_entry_exports);
 
+// data/map-gen-params.json
+var map_gen_params_default = {
+  _meta: {
+    opis: "Panel-A export \u2014 generator E2 + mg\u0142a. Kod czyta po P3 / handoff Integratora.",
+    panel: "panele-sterowania/Panel-A.xlsx",
+    export: "panele-sterowania/export-a.py"
+  },
+  mgla: {
+    default_sight_jednostki: {
+      wartosc: 3,
+      opis: "Domy\u015Blny promie\u0144 wzroku jednostki"
+    }
+  },
+  gestosc: {
+    surowce_mult: {
+      low: 0.6,
+      medium: 1,
+      high: 1.4
+    },
+    baseline_rarity_mult: 1.35,
+    rzeki_max_mala_mapa: {
+      low: 20,
+      medium: 50,
+      high: 120
+    },
+    river_scale: {
+      mala: 1,
+      srednia: 1.35,
+      duza: 1.7,
+      ogromna: 2.1,
+      super: 2.6
+    },
+    desert_noise_threshold: {
+      low: 0.68,
+      medium: 0.63,
+      high: 0.58
+    },
+    forest_noise_threshold: {
+      low: 0.65,
+      medium: 0.58,
+      high: 0.5
+    },
+    mountain_noise_threshold: {
+      low: 0.8,
+      medium: 0.68,
+      high: 0.52
+    },
+    highland_noise_threshold: {
+      low: 0.66,
+      medium: 0.5,
+      high: 0.38
+    },
+    relief_land_fraction: {
+      low: { mountain: 0.06, highland: 0.126 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.324 }
+    },
+    relief_overflow_cap_frac: {
+      _opis: "Sufit g\u0119sto\u015Bci reliefu (G\xF3ry+Wzg\xF3rza) per kom\xF3rka fair-play, egzekwowany PRZY ZASIEWANIU i PO ROZRO\u015ACIE pasm (RELIEF_OVERFLOW_CAP_MULT w gen-helpers.ts). Maciej 2026-07-29: medium=10% G\xF3ry + 15% Wzg\xF3rza w kom\xF3rce 15\xD715; Ma\u0142o/Du\u017Co przeskalowane wzgl\u0119dem poprzedniego stosunku tier\xF3w.",
+      low: { mountain: 0.09, highland: 0.132 },
+      medium: { mountain: 0.1, highland: 0.15 },
+      high: { mountain: 0.24, highland: 0.318 }
+    },
+    pasma_gorskie: {
+      _opis: "Zadanie HILLS Q1/Q2 (2026-07-20): skupiska g\xF3r/wzg\xF3rz (seed-and-grow), spi\u0119te z tierem suwaka Relief (mountain_noise_threshold/highland_noise_threshold). Bez nowego suwaka UI. ZADANIE 3 (2026-07-20): d\u0142u\u017Csze/w\u0119\u017Csze \u0142a\u0144cuchy (kordyliery) zamiast okr\u0105g\u0142ych plam \u2014 dlugosc_min/max w g\xF3r\u0119, max_pasm_na_mase w d\xF3\u0142 (mniej ale d\u0142u\u017Cszych pasm), nowy obrzeze_szansa < 1 zmniejsza rozlewanie foothills na boki.",
+      low: { hexy_na_pasmo: 320, max_pasm_na_mase: 2, dlugosc_min: 9, dlugosc_max: 11, min_masa_hexow: 40, obrzeze_szansa: 0.3 },
+      medium: { hexy_na_pasmo: 240, max_pasm_na_mase: 3, dlugosc_min: 11, dlugosc_max: 14, min_masa_hexow: 30, obrzeze_szansa: 0.35 },
+      high: { hexy_na_pasmo: 170, max_pasm_na_mase: 5, dlugosc_min: 13, dlugosc_max: 17, min_masa_hexow: 24, obrzeze_szansa: 0.4 }
+    }
+  },
+  mapa_skala: {
+    _opis: "Trzeciorz\u0119dny fallback (u\u017Cywany tylko gdy skala_mapy w e-start-params.json nie ma wpisu). Sync z Panel-E 2026-07-28 (typy_cywilizacji per rozmiar mapy).",
+    aktywne_typy: {
+      mala: 4,
+      srednia: 5,
+      duza: 6,
+      ogromna: 12,
+      super: 15
+    },
+    domyslni_rywale: {
+      mala: 12,
+      srednia: 14,
+      duza: 18,
+      ogromna: 22,
+      super: 30
+    }
+  },
+  generator: {
+    default_width: 36,
+    default_height: 28,
+    rozmiar_dims: {
+      malenki: [76, 52],
+      maly: [108, 74],
+      standardowy: [168, 120],
+      duzy: [240, 168],
+      ogromny: [336, 238],
+      superogromny: [672, 476]
+    }
+  },
+  deposit_rules: {
+    miedz: { rarity: 0.1 },
+    zelazo: { rarity: 0.08 },
+    glina: {
+      rarity: 0.3,
+      _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
+    },
+    konie: { rarity: 0.025 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
+    sol: { rarity: 0.12 },
+    zloto: { rarity: 0.03 }
+  },
+  metal_deposit_min_era: {
+    miedz: 2,
+    zelazo: 3,
+    wegiel: 8
+  }
+};
+
+// src/data/map-gen-params-loader.ts
+var FALLBACK_ROZMIAR = {
+  malenki: [76, 52],
+  maly: [108, 74],
+  standardowy: [168, 120],
+  duzy: [240, 168],
+  ogromny: [336, 238],
+  superogromny: [672, 476]
+};
+var FALLBACK_BASELINE_RARITY = 1.35;
+var FALLBACK_RIVER_SCALE = {
+  mala: 1,
+  srednia: 1.35,
+  duza: 1.7,
+  ogromna: 2.1,
+  super: 2.6
+};
+var FALLBACK_DEPOSIT_RARITY = {
+  miedz: 0.1,
+  zelazo: 0.08,
+  glina: 0.3,
+  konie: 0.1,
+  wegiel: 0,
+  owce: 0.08,
+  bydlo: 0.07,
+  sol: 0.12,
+  // Maciej 2026-07-25: złoto — surowiec dostępowy Mennicy, celowo RZADSZY niż miedź/żelazo
+  // (patrz gen-helpers.ts DEPOSIT_RULES komentarz przy id='zloto').
+  zloto: 0.03
+};
+function mapGenResourceBaselineRarity() {
+  const v = map_gen_params_default.gestosc?.baseline_rarity_mult;
+  return typeof v === "number" && v > 0 ? v : FALLBACK_BASELINE_RARITY;
+}
+function mapGenRiverScale(size) {
+  const rs = map_gen_params_default.gestosc?.river_scale;
+  const lut = {
+    mala: "mala",
+    srednia: "srednia",
+    duza: "duza",
+    ogromna: "ogromna",
+    super: "super"
+  };
+  const v = rs?.[lut[size]];
+  return typeof v === "number" && v > 0 ? v : FALLBACK_RIVER_SCALE[size];
+}
+function mapGenRozmiarDims() {
+  const src = map_gen_params_default.generator?.rozmiar_dims;
+  const out = { ...FALLBACK_ROZMIAR };
+  if (!src) return out;
+  for (const key of Object.keys(out)) {
+    const pair = src[key];
+    if (Array.isArray(pair) && pair.length >= 2 && pair.every((n) => typeof n === "number" && n > 0)) {
+      out[key] = [pair[0], pair[1]];
+    }
+  }
+  return out;
+}
+function mapGenAllDepositRarities() {
+  const out = { ...FALLBACK_DEPOSIT_RARITY };
+  const rules = map_gen_params_default.deposit_rules;
+  if (rules) {
+    for (const [id, row] of Object.entries(rules)) {
+      if (typeof row?.rarity === "number" && row.rarity >= 0) out[id] = row.rarity;
+    }
+  }
+  return out;
+}
+
+// data/e-start-params.json
+var e_start_params_default = {
+  _opis: "Panel-E (Grupa E): start, meta, generator E2, zwyci\u0119stwo, tempo. \u0179r\xF3d\u0142o: panele-sterowania/Panel-E.xlsx \u2192 export-e.py. ui-params.json = etykiety kreatora; ten plik = liczby i regu\u0142y silnika (docelowo odczyt w TS \u2014 dzi\u015B sync z kodem).",
+  defaulty: {
+    player_civ_id: "rzymianie",
+    start_epoch_id: "kamien",
+    map_quality_default: "\u015Arednia",
+    render_quality_bundled: "medium"
+  },
+  skala_mapy: {
+    Malenki: {
+      rywale_ai: 2,
+      miasta_panstwa: 3,
+      typy_cywilizacji: 4,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 3, min: 2, max: 4 },
+        braz: { default: 4, min: 3, max: 5 },
+        zelazo: { default: 4, min: 3, max: 5 }
+      },
+      hex_w: 76,
+      hex_h: 52
+    },
+    Ma\u0142y: {
+      rywale_ai: 3,
+      miasta_panstwa: 4,
+      typy_cywilizacji: 5,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 4, min: 3, max: 5 },
+        braz: { default: 5, min: 4, max: 6 },
+        zelazo: { default: 5, min: 4, max: 6 }
+      },
+      hex_w: 108,
+      hex_h: 74
+    },
+    Standardowy: {
+      rywale_ai: 6,
+      miasta_panstwa: 5,
+      typy_cywilizacji: 6,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 5, min: 4, max: 6 },
+        braz: { default: 6, min: 5, max: 7 },
+        zelazo: { default: 6, min: 5, max: 7 }
+      },
+      hex_w: 168,
+      hex_h: 120
+    },
+    Du\u017Cy: {
+      rywale_ai: 7,
+      miasta_panstwa: 6,
+      typy_cywilizacji: 10,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 6, min: 5, max: 7 },
+        braz: { default: 9, min: 8, max: 10 },
+        zelazo: { default: 10, min: 9, max: 11 }
+      },
+      hex_w: 240,
+      hex_h: 168
+    },
+    Ogromny: {
+      rywale_ai: 8,
+      miasta_panstwa: 7,
+      typy_cywilizacji: 12,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 7, min: 6, max: 8 },
+        braz: { default: 11, min: 10, max: 12 },
+        zelazo: { default: 12, min: 11, max: 13 }
+      },
+      hex_w: 336,
+      hex_h: 238
+    },
+    "Super Huge": {
+      rywale_ai: 10,
+      miasta_panstwa: 8,
+      typy_cywilizacji: 14,
+      typy_cywilizacji_per_epoka: {
+        kamien: { default: 8, min: 7, max: 8 },
+        braz: { default: 13, min: 12, max: 14 },
+        zelazo: { default: 14, min: 13, max: 15 }
+      },
+      hex_w: 672,
+      hex_h: 476
+    }
+  },
+  generator_e2: {
+    resource_mult_low: 0.6,
+    resource_mult_normal: 1,
+    resource_mult_high: 1.4,
+    resource_baseline_rarity: 1.35,
+    river_base_low: 20,
+    river_base_normal: 50,
+    river_base_high: 80,
+    river_scale_mala: 1,
+    river_scale_srednia: 1.35,
+    river_scale_duza: 1.7,
+    river_scale_ogromna: 2.1,
+    desert_threshold_low: 0.68,
+    desert_threshold_normal: 0.63,
+    desert_threshold_high: 0.58,
+    forest_threshold_low: 0.65,
+    forest_threshold_normal: 0.58,
+    forest_threshold_high: 0.5
+  },
+  tempo_gry: {
+    szybka: 1,
+    standardowa: 2,
+    dluga: 4
+  },
+  koszt_budynkow_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  koszt_jednostek_pace: {
+    niski: 1,
+    normalny: 2,
+    wysoki: 4
+  },
+  zwyciestwo: {
+    ostatnia_epoka_v1: 3,
+    prog_dominacji_power: 0.5,
+    dominacja_wymaga_ostatniej_epoki: true,
+    nauka_wymaga_rakiety: true
+  },
+  kreator_zaawansowane: {
+    seed_mode_default: "random",
+    manual_seed_default: 424242,
+    barbarians_enabled_default: true,
+    battle_always_manual_default: false,
+    fog_debug_reveal_all_default: false,
+    victory_power_and_dominance_default: true
+  },
+  decyzje_kanon: {
+    e1_reset_nowa_gra: true,
+    e1_tech_kaskada_epok: true,
+    e1_ziemia_preset_staly: true,
+    e1_zloza_tylko_gory: true,
+    e1_zloza_ukryte_do_epoki: true,
+    e2_barbarzyncy_do_przed_sredniowiecza: true,
+    e2_buntownicy_od_sredniowiecza: true
+  }
+};
+
+// src/data/e-start-params-loader.ts
+var R = e_start_params_default;
+function eStartPlayerCivId() {
+  return R.defaulty?.player_civ_id ?? "rzymianie";
+}
+function eStartEpochId() {
+  return R.defaulty?.start_epoch_id ?? "kamien";
+}
+function eStartRenderQualityBundled() {
+  const q = R.defaulty?.render_quality_bundled ?? "medium";
+  if (q === "low" || q === "high") return q;
+  return "medium";
+}
+
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
+// src/map/generator.ts
+var ROZMIAR_DIMS = mapGenRozmiarDims();
+
+// src/map/newGameMapDefaults.ts
+var DEFAULT_PLAYER_CIV_ID = eStartPlayerCivId();
+var DEFAULT_START_EPOCH_ID = eStartEpochId();
+var DEFAULT_RENDER_QUALITY = eStartRenderQualityBundled();
+var RIVER_SCALE_BY_SIZE = {
+  mala: mapGenRiverScale("mala"),
+  srednia: mapGenRiverScale("srednia"),
+  duza: mapGenRiverScale("duza"),
+  ogromna: mapGenRiverScale("ogromna"),
+  super: mapGenRiverScale("super")
+};
+var RIVER_REF_AREA = 168 * 120;
+var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
+
+// src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
+var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
+var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
+var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
+var MIN_HIGHLANDS_COPPER_CELL = RELIEF_MIN_HIGHLANDS.medium;
+var ERODE_TERRAIN_ORDER = [
+  "wybrzeze" /* Wybrzeze */,
+  "laka" /* Laka */,
+  "pustynia" /* Pustynia */,
+  "rownina" /* Rownina */,
+  "wzgorza" /* Wzgorza */,
+  "gory" /* Gory */
+];
+function isDryLandTerrain(tb) {
+  return tb !== "morze" /* Morze */ && tb !== "wybrzeze" /* Wybrzeze */;
+}
+var ELEVATION_RANK = {
+  ["morze" /* Morze */]: 0,
+  ["wybrzeze" /* Wybrzeze */]: 1,
+  ["laka" /* Laka */]: 2,
+  ["pustynia" /* Pustynia */]: 3,
+  ["rownina" /* Rownina */]: 4,
+  ["wzgorza" /* Wzgorza */]: 5,
+  ["gory" /* Gory */]: 6,
+  ["polarny" /* Polarny */]: 2
+};
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
+var BASE_DEPOSIT_RULES = [
+  {
+    id: "miedz",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "wzgorza" /* Wzgorza */,
+    rarity: 0.1
+  },
+  {
+    id: "zelazo",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    rarity: 0.08
+  },
+  {
+    id: "glina",
+    nakladka: "zloze_gliny" /* ZlozeGliny */,
+    // TEMAT 12 (2026-07-24, Maciej): glina TYLKO przy rzece — gałąź "Łąka bez rzeki" usunięta.
+    // placeDeposits() jest teraz wołane PO generateRivers (generator.ts), więc h.rzeka.obecna
+    // odzwierciedla finalny stan rzek, nie "zawsze false" jak dawniej.
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.rzeka?.obecna === true,
+    rarity: 0.3
+  },
+  {
+    id: "konie",
+    nakladka: "zloze_konia" /* ZlozeKonia */,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "rownina" /* Rownina */,
+    rarity: 0.1
+  },
+  {
+    id: "wegiel",
+    nakladka: null,
+    // brak w enumie Nakladka -> znacznik hex.zloze
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && h.terenBazowy === "gory" /* Gory */,
+    rarity: 0.1
+  },
+  // Model B (Maciej 2026-07-09): USUNIĘTE złoża owiec/bydła (ZlozeOwiec/ZlozeBydla) — hodowla to
+  // teraz CZYSTE ulepszenie (Owczarnia/Pastwisko), budowane jak farma, nie surowiec na mapie.
+  // Koń (wyżej) zostaje surowcem. Zmienia hash mapy (zamierzone).
+  {
+    id: "sol",
+    nakladka: null,
+    // C-MAP-SOL-ZIEMIA=B (Maciej 2026-07-25): sól na LĄDZIE najbliższym wybrzeża
+    // (suchy ląd graniczący z płytkim morzem/Wybrzeżem), NIE na osobnym kaflu Wybrzeże.
+    // Ta definicja działa też na mapie Ziemia (brak kafli Wybrzeże, ale jest ląd przy Morzu).
+    // Koniunkcja: allowedOn (suchy ląd) + requiresCoastalLand (isCoastalLandHex w placeDeposits).
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy),
+    requiresCoastalLand: true,
+    rarity: 0.12
+  },
+  {
+    // Maciej 2026-07-25: złoto jako surowiec DOSTĘPOWY dla Mennicy — „wystarczy tylko
+    // dostęp, nie trzeba budować wielu kopalni". Reguła terenowa: żyłowe w Górach/Wzgórzach
+    // (Nubia, Anatolia, Iberia) — forma okruchowa (rzeki) świadomie pominięta (uproszczenie,
+    // patrz RAPORT KOŃCOWY zloto-test.cjs). Rzadkość dużo niższa niż miedź (0.10) / żelazo
+    // (0.08) — dobrana empirycznie w map-gen-params.json tak, by przy tym samym typie/rozmiarze
+    // mapy złoto liczebnie wypadało rzadsze niż miedź (patrz zloto-test.cjs).
+    id: "zloto",
+    nakladka: null,
+    allowedOn: (h) => isDryLandTerrain(h.terenBazowy) && (h.terenBazowy === "wzgorza" /* Wzgorza */ || h.terenBazowy === "gory" /* Gory */),
+    rarity: 0.03
+  }
+];
+var _depositRarities = mapGenAllDepositRarities();
+var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
+  const rarity = _depositRarities[rule.id];
+  return typeof rarity === "number" ? { ...rule, rarity } : rule;
+});
+
+// src/map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
+
 // data/terrain-improvements.json
 var terrain_improvements_default = {
   _meta: {
@@ -41,7 +517,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia zelaza->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -99,8 +575,8 @@ var terrain_improvements_default = {
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -108,6 +584,7 @@ var terrain_improvements_default = {
   lama: {
     nazwa: "Lama",
     epoka: 1,
+    cywilizacje: ["inkowie"],
     bonus: {
       zywnosc: 1,
       praca: 3,
@@ -137,22 +614,6 @@ var terrain_improvements_default = {
     tech: "Je\u017Adziectwo",
     odblokowuje: "Ko\u0144 (jednostki konne)"
   },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2,
-      handel: 3
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
-  },
   glinianka: {
     nazwa: "Glinianka",
     epoka: 2,
@@ -162,8 +623,8 @@ var terrain_improvements_default = {
       handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -232,8 +693,8 @@ var terrain_improvements_default = {
       handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -352,12 +813,29 @@ var terrain_improvements_default = {
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
     surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+  },
+  kopalnia_zelaza: {
+    nazwa: "Kopalnia \u017Celaza",
+    epoka: 3,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda_zelaza",
+    surowiecOdblokowany_uwaga: "Ruda \u017Celaza (Odlewnia \u017Celaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce \u017Celaza (hex.zloze=zelazo)",
+    warunek: "ruda \u017Celaza \u2192 magazyn (Odlewnia \u017Celaza)",
+    koszt_praca: 22,
+    tech: "Hutnictwo \u017Celaza",
+    odblokowuje: "Odlewnia \u017Celaza (budynek miejski)",
+    uwagi: "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
   },
   kopalnia_zlota: {
     nazwa: "Kopalnia z\u0142ota",
@@ -401,6 +879,12 @@ var terrain_improvements_default = {
 // src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -417,6 +901,29 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
 // src/game/army-starvation.ts
 function round4(x) {
@@ -439,16 +946,21 @@ function applyArmyHungerStatMultToCombatUnit(cu, mult) {
   };
 }
 
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = manpowerNaLudka (koszt rekrutacji 1 jednostki = pe\u0142ny slot manpower; 1 ludek = 1 jednostka przy pe\u0142nej puli).",
+  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domy\u015Blnie = manpowerNaLudka; epoka 1 = po\u0142owa \u2014 Maciej 2026-08-03: wi\u0119ksza armia w Kamieniu).",
   _formuly: {
     ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
     manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] = manpowerNaLudka[epoka] per jednostka"
+    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka (ep1: 500 \u2192 2 jednostki / ludek przy pe\u0142nej puli)"
   },
   epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 1e3 },
+    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 500 },
     { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
     { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
     { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
@@ -464,7 +976,7 @@ var epoka_ludnosc_manpower_default = {
 // data/miasto-params.json
 var miasto_params_default = {
   min_dystans_miast: {
-    wartosc: 5,
+    wartosc: 4,
     jednostka: "heksy",
     opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
   },
@@ -555,6 +1067,11 @@ var miasto_params_default = {
     jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
     opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
   },
+  bonus_obrona_palisada_proc: {
+    wartosc: 100,
+    jednostka: "% Obrony (wczesna palisada drewniana)",
+    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Kamienia, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
+  },
   zasieg_okolicy_baza: {
     wartosc: 5,
     jednostka: "pola/strona",
@@ -622,8 +1139,8 @@ var DEPOSIT_LINKED_BUILDING_LABELS = {
   stolarnia: ["Drewno"],
   kamieniarski: ["Kamie\u0144"],
   kuznia: ["Ruda"],
-  // PYTANIE-84-R9/U-13: Mennica wymaga Złota w magazynie państwa (R3=B) LUB aktywnego
-  // źródła (Kopalnia złota / szlak → stock). Runtime drain 1/t — game/zloto-access.ts.
+  odlewnia_brazu: ["Ruda"],
+  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
   mennica: [ZLOTO_LABEL]
 };
 var ASCII_BY_LABEL = Object.fromEntries(
@@ -640,6 +1157,18 @@ function spichlerzArmyFoodCostMultiplier(opts) {
   if (opts.isGarrisonInSolCity) m *= 0.5;
   return m;
 }
+
+// src/game/unit-building-bonuses.ts
+var ARMOR_PATH_MAX_PP = 45;
+var SOFT_PATH_MAX_PP = 50;
+var ARMOR_PATH_LEVEL_MAX_PP = [
+  Math.floor(ARMOR_PATH_MAX_PP / 3),
+  Math.floor(ARMOR_PATH_MAX_PP * 2 / 3)
+];
+var SOFT_PATH_LEVEL_MAX_PP = [
+  Math.floor(SOFT_PATH_MAX_PP / 3),
+  Math.floor(SOFT_PATH_MAX_PP * 2 / 3)
+];
 
 // src/game/production.ts
 var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
@@ -688,7 +1217,9 @@ function unitFoodPerTurn(unit, p, foodTable = {}) {
   }
   const onOwnTerritory = unit.onOwnTerritory ?? true;
   const mnoznikTerytorium = onOwnTerritory ? p.zywnoscMnoznikTerytorium ?? 1 : p.zywnoscMnoznikPozaTerytorium ?? 2;
-  return base * mnoznikTerytorium;
+  const food = base * mnoznikTerytorium;
+  if (food <= 0) return 0;
+  return food * R_STAWKI_FALA1_FALA2_MULT;
 }
 
 // data/terrain-yields.json
@@ -783,8 +1314,9 @@ var terrain_yields_default = {
       Podatek: 3,
       Drewno: 0,
       Kamie\u0144: 0,
-      Suma: 8,
-      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105 (Tw\xF3j opis); razem +8 \u2014 mocny, mo\u017Cna stonowa\u0107"
+      Glina: 2,
+      Suma: 10,
+      Uwagi: "Dodaje bonus do DOWOLNEGO pola z rzek\u0105; +2 glina (szt./tur\u0119) przy rzece \u2014 plon produkcji (R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29); razem +10 z glin\u0105"
     },
     {
       Modyfikator: "Las (nak\u0142adka)",
@@ -793,6 +1325,7 @@ var terrain_yields_default = {
       Podatek: 2,
       Drewno: 3,
       Kamie\u0144: 0,
+      Glina: 0,
       Suma: 7,
       Uwagi: "Pod lasem zawsze jest teren bazowy; las: \u2212\u017Cywno\u015B\u0107, +handel (+2), +praca (+3), +drewno \u2014 bez wzgl\u0119du na \u{1F464}/jednostk\u0119"
     }
@@ -818,9 +1351,7 @@ function terrainRowToTileYield(row) {
     handel: Number(row["Podatek"] ?? row["Handel"] ?? 0),
     drewno: Number(row["Drewno"] ?? 0),
     kamien: Number(row["Kamie\u0144"] ?? 0),
-    // Glina nie ma bazy terenu ani modyfikatora w terrain-yields.json -- wylacznie z bonusu
-    // ulepszenia (glinianka, GLINA-Q1=A), doklejane w tileYield() nizej.
-    glina: 0,
+    glina: Number(row.Glina ?? 0),
     ruda: 0,
     ruda_zelaza: 0
   };
@@ -880,6 +1411,14 @@ var CITY_RANGE_MIN = miasto_params_default.zasieg_okolicy_baza?.wartosc ?? 5;
 var CITY_RANGE_CAP = miasto_params_default.zasieg_okolicy_max?.wartosc ?? 15;
 
 // src/game/population-growth-v85.ts
+var WYZYWIENIE_MIN = 0;
+var WYZYWIENIE_MAX = 6;
+var WYZYWIENIE_STEP = 0.5;
+var WYZYWIENIE_LEVELS = Array.from(
+  { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
+  (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
+);
+var DEFAULT_POZIOM_RACJI = 4;
 function pick(row, d, fallback) {
   if (!row) return fallback;
   const v = row[d];
@@ -888,9 +1427,9 @@ function pick(row, d, fallback) {
 function buildRationParams(raw, difficulty = "normal") {
   const section = raw.ekonomia_miasta ?? raw;
   return {
-    racjeZywnosc1: pick(section.racje_zywnosc_1, difficulty, 1),
-    racjeZywnosc2: pick(section.racje_zywnosc_2, difficulty, 2),
-    racjeZywnosc3: pick(section.racje_zywnosc_3, difficulty, 3),
+    racjeZywnosc1: pick(section.racje_zywnosc_1, difficulty, 2),
+    racjeZywnosc2: pick(section.racje_zywnosc_2, difficulty, 4),
+    racjeZywnosc3: pick(section.racje_zywnosc_3, difficulty, 6),
     racjeWzrostProc1: pick(section.racje_wzrost_proc_1, difficulty, 3),
     racjeWzrostProc2: pick(section.racje_wzrost_proc_2, difficulty, 5),
     racjeWzrostProc3: pick(section.racje_wzrost_proc_3, difficulty, 7)
@@ -898,6 +1437,9 @@ function buildRationParams(raw, difficulty = "normal") {
 }
 
 // src/game/cities.ts
+var DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
+  DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX * 100
+);
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 
 // src/game/order.ts
@@ -1724,6 +2266,12 @@ function militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable 
   return sum;
 }
 
+// src/game/barbarians.ts
+var BARBARIAN_OWNER_ID = -1;
+function isBarbarian(ownerId) {
+  return ownerId === BARBARIAN_OWNER_ID;
+}
+
 // src/game/empire-food.ts
 function pick2(row, d, fallback) {
   if (!row) return fallback;
@@ -1737,7 +2285,7 @@ function buildEmpireFoodParams(raw, difficulty = "normal") {
     centralCapBaza: pick2(
       gl.magazyn_centralny_baza_zywnosc ?? em.magazyn_centralny_baza_zywnosc,
       difficulty,
-      500
+      1e3
     ),
     centralCapBonusMagazyn: pick2(
       gl.magazyn_centralny_bonus_zywnosc_na_budynek ?? em.magazyn_centralny_bonus_zywnosc_na_budynek,
@@ -1785,6 +2333,7 @@ function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}, 
     ...units.map((u) => u.ownerId)
   ]);
   for (const ownerId of ownerIds) {
+    if (isBarbarian(ownerId)) continue;
     const st = states.get(ownerId) ?? freshEmpireFoodState();
     if (!states.has(ownerId)) states.set(ownerId, st);
     const zapasyPrzed = st.zapasyPanstwa;
@@ -1831,7 +2380,6 @@ function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}, 
     const spichlerzStolicy = central;
     const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable);
     central -= kosztArmii;
-    const przyrostZapasow = central - zapasyPrzed;
     const maxCap = computeCentralFoodCap(
       ownerId,
       econ.perCity,
@@ -1839,11 +2387,13 @@ function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}, 
       params
     );
     if (central > maxCap) central = maxCap;
-    if (central < 0) central = central;
+    const glodWojska = central < 0;
+    central = Math.max(0, central);
+    const przyrostZapasow = central - zapasyPrzed;
     st.zapasyPanstwa = central;
     _maxCapByOwner.set(ownerId, maxCap);
     const turyUjemnychZapasowPrzed = st.turyUjemnychZapasow ?? 0;
-    const turyUjemnychZapasowPo = central < 0 ? turyUjemnychZapasowPrzed + 1 : 0;
+    const turyUjemnychZapasowPo = glodWojska ? turyUjemnychZapasowPrzed + 1 : 0;
     st.turyUjemnychZapasow = turyUjemnychZapasowPo;
     const tick = {
       ownerId,
@@ -1858,7 +2408,7 @@ function advanceEmpireFood(econ, units, states, upkeep, params, foodTable = {}, 
       zapasyPo: central,
       maxCap,
       kosztArmii,
-      glodWojska: central < 0,
+      glodWojska,
       turyUjemnychZapasowPo,
       glodWojskaAtrycjaAktywna: turyUjemnychZapasowPo >= params.glodWojskaKarencjaTur,
       zywnoscBrutto: uprawaHodowla,
@@ -1880,9 +2430,11 @@ function bindEmpireFoodRuntime(states) {
   _statesRef = states;
 }
 function isArmyHungry(ownerId) {
+  if (isBarbarian(ownerId)) return false;
   return _lastTicks.get(ownerId)?.glodWojska ?? false;
 }
 function isArmyStarving(ownerId) {
+  if (isBarbarian(ownerId)) return false;
   return _lastTicks.get(ownerId)?.glodWojskaAtrycjaAktywna ?? false;
 }
 function _setLastEmpireFoodTicks(ticks) {

@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var city_state_alliance_test_entry_exports = {};
 __export(city_state_alliance_test_entry_exports, {
   CITY_STATE_TRUST_DELTA_BY_DIFFICULTY: () => CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
+  CS_WAVE_ATTACK_MIN_STACK: () => CS_WAVE_ATTACK_MIN_STACK,
   DIPLOMACY_PARAMS: () => DIPLOMACY_PARAMS,
   RESUP_TIERS: () => RESUP_TIERS,
   applyCityStateDifficultyTrust: () => applyCityStateDifficultyTrust,
@@ -140,7 +141,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -173,7 +174,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -917,6 +918,7 @@ function isImprovementAllowedForCiv(key, typCywilizacji) {
   if (!t) return false;
   return allowed.some((c) => c.trim().toLowerCase() === t);
 }
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MOVE_SPEED_MULT = 3;
@@ -946,6 +948,12 @@ function applyRoadMovementModifier(cost, hex) {
 }
 
 // src/units/setup.ts
+var CIVILIAN_CATEGORIES = /* @__PURE__ */ new Set(["osadnik", "robotnik", "zwiadowca"]);
+var CIVILIAN_TYPE_IDS = /* @__PURE__ */ new Set(["Zwiadowca", "Osadnik", "Robotnik"]);
+function isCivilianUnit(u) {
+  if (CIVILIAN_CATEGORIES.has(u.category)) return true;
+  return CIVILIAN_TYPE_IDS.has(u.typeId);
+}
 function keyOf(q, r) {
   return `${q},${r}`;
 }
@@ -1204,6 +1212,70 @@ function computePath(unit, map, destQ, destR, occupied, costFn = terrainMoveCost
   return path;
 }
 
+// src/game/city-state-difficulty.ts
+function cityStateMilitaryProductionCap(gameDifficulty) {
+  switch (gameDifficulty) {
+    case "hard":
+      return 0;
+    case "normal":
+      return 1;
+    default:
+      return null;
+  }
+}
+
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+function scaleStockCostRecord(raw) {
+  const out = {};
+  if (!raw) return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) {
+      out[k] = Math.max(1, Math.round(v * R_STAWKI_FALA2_MULT));
+    }
+  }
+  return out;
+}
+function scaleImprovementWorkCost(base) {
+  if (!Number.isFinite(base) || base <= 0) return 0;
+  return Math.max(1, Math.round(base * R_STAWKI_FALA2_MULT));
+}
+
+// src/game/building-stock-cost.ts
+function buildingStockCost(building) {
+  return scaleStockCostRecord(building?.koszt_surowce);
+}
+function stripDiacriticsLower(s) {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+}
+var MOUNT_UNIT_HORSE_STOCK_COST = 5;
+var MOUNT_UNIT_HORSE_STOCK_KEY = "kon";
+var MOUNT_HORSE_EXEMPT_UNIT = "Rydwan (wo\u0142y)";
+function unitRequiresMountHorseStock(unit) {
+  if (!unit) return false;
+  if ((unit.Typ ?? "").toString().trim() !== "Mount") return false;
+  const name = (unit.Jednostka ?? "").toString().trim();
+  return name !== MOUNT_HORSE_EXEMPT_UNIT;
+}
+function unitStockCost(unit) {
+  const out = {};
+  if (!unit) return out;
+  const rawName = (unit.Surowiec ?? "").toString().trim();
+  if (rawName && rawName !== "-") {
+    const ilosc = unit["Surowiec (ilo\u015B\u0107)"];
+    if (typeof ilosc === "number" && Number.isFinite(ilosc) && ilosc > 0) {
+      const key = stripDiacriticsLower(rawName);
+      if (key) out[key] = ilosc;
+    }
+  }
+  if (unitRequiresMountHorseStock(unit)) {
+    out[MOUNT_UNIT_HORSE_STOCK_KEY] = (out[MOUNT_UNIT_HORSE_STOCK_KEY] ?? 0) + MOUNT_UNIT_HORSE_STOCK_COST;
+  }
+  return out;
+}
+
 // data/epoka-ludnosc-manpower.json
 var epoka_ludnosc_manpower_default = {
   _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domy\u015Blnie = manpowerNaLudka; epoka 1 = po\u0142owa \u2014 Maciej 2026-08-03: wi\u0119ksza armia w Kamieniu).",
@@ -1365,17 +1437,6 @@ var miasto_params_default = {
 // src/game/manpower.ts
 var ROWS = epoka_ludnosc_manpower_default.epoki;
 
-// src/game/building-stock-cost.ts
-function buildingStockCost(building) {
-  const raw = building?.koszt_surowce;
-  const out = {};
-  if (!raw) return out;
-  for (const [k, v] of Object.entries(raw)) {
-    if (typeof v === "number" && Number.isFinite(v) && v > 0) out[k] = v;
-  }
-  return out;
-}
-
 // src/game/zloto-access.ts
 var ZLOTO_LABEL = "Z\u0142oto";
 
@@ -1461,6 +1522,31 @@ var OWNER_CAPPED_RESOURCE_KEYS = [
   "kon"
 ];
 var OWNER_CAPPED_RESOURCE_KEY_SET = new Set(OWNER_CAPPED_RESOURCE_KEYS);
+function stripDiacriticsLower2(s) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+}
+function unitResourceUpkeep(unitDef) {
+  const out = {};
+  if (!unitDef) return out;
+  const rawName = (unitDef["Utrzymanie surowiec"] ?? "").toString().trim();
+  if (!rawName || rawName === "-") return out;
+  const ilosc = unitDef["Utrzymanie surowiec (ilo\u015B\u0107)"];
+  if (typeof ilosc === "number" && Number.isFinite(ilosc) && ilosc > 0) {
+    const key = stripDiacriticsLower2(rawName);
+    if (key) out[key] = ilosc;
+  }
+  return out;
+}
+var UNIT_RECRUIT_UPKEEP_RESERVE_TURNS = 1;
+function unitRecruitUpkeepReserve(unitDef, turns = UNIT_RECRUIT_UPKEEP_RESERVE_TURNS) {
+  const upkeep = unitResourceUpkeep(unitDef);
+  if (turns === 1) return upkeep;
+  const out = {};
+  for (const [k, v] of Object.entries(upkeep)) {
+    if (v > 0) out[k] = v * turns;
+  }
+  return out;
+}
 
 // data/terrain-yields.json
 var terrain_yields_default = {
@@ -1719,9 +1805,13 @@ var WYZYWIENIE_LEVELS = Array.from(
   { length: Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 1 },
   (_, i) => WYZYWIENIE_MIN + i * WYZYWIENIE_STEP
 );
+var DEFAULT_POZIOM_RACJI = 4;
 
 // src/game/cities.ts
 var DEFAULT_ULEPSZENIA_FOCUS = "zrownowazone";
+var DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE = Math.round(
+  DEFAULT_POZIOM_RACJI / WYZYWIENIE_MAX * 100
+);
 var MIN_CITY_DISTANCE = miasto_params_default.min_dystans_miast?.wartosc ?? 5;
 var MIN_CITY_DISTANCE_START_CITY_STATE = 3;
 function canFoundCity(q, r, cities, map, opts) {
@@ -1772,7 +1862,7 @@ function foundCityPopulationCost() {
 function isSubsequentFoundCity(playerCities, ownerId) {
   return playerCities.filter((c) => c.ownerId === ownerId).length > 0;
 }
-var AI_FOUNDING_SOURCE_MIN_POP = 5;
+var AI_FOUNDING_SOURCE_MIN_POP = 2;
 function pickSourceCityForFounding(cities, ownerId, rand = Math.random) {
   const popCost = foundCityPopulationCost();
   const minPop = ownerId > 0 ? Math.max(popCost + 1, AI_FOUNDING_SOURCE_MIN_POP) : popCost + 1;
@@ -1853,16 +1943,22 @@ function aiProductionScoreBoosts(profile) {
 
 // src/game/ai-threat-mode.ts
 var AI_THREAT_RANGE_DEFAULT = 7;
+var AI_THREAT_MAJOR_UNIT_SCORE_BASE = 300;
+var AI_THREAT_MAJOR_DEV_BOOST = 120;
 var AI_THREAT_WALL_SCORE_BASE = 300;
-function aiThreatPrioritizeWalls(powerRank) {
-  return (powerRank ?? 1) <= 1;
-}
-function aiThreatWallProductionScore(defenseScore, powerRank) {
-  if (!aiThreatPrioritizeWalls(powerRank)) return null;
+function aiThreatWallProductionScore(defenseScore, powerRank, defensiveCopy = false) {
+  if (!defensiveCopy) return null;
   return AI_THREAT_WALL_SCORE_BASE + defenseScore;
 }
+function aiThreatMajorUnitScores(militaryScore) {
+  const base = AI_THREAT_MAJOR_UNIT_SCORE_BASE + militaryScore;
+  return { wojownik: base, lucznik: base - 15 };
+}
+function aiThreatMajorDevScore(baseScore) {
+  return baseScore + AI_THREAT_MAJOR_DEV_BOOST;
+}
 
-// node_modules/three/build/three.module.js
+// ../../../../gra/node_modules/three/build/three.module.js
 var REVISION = "169";
 var FrontSide = 0;
 var NormalBlending = 1;
@@ -8307,7 +8403,7 @@ var TERRAIN_MINECRAFT = {
 };
 
 // src/render/pastwisko-modele.ts
-var PASTWISKO_S = 2.05 / 3;
+var PASTWISKO_S = 2.05 / 3 * 1.5;
 var az = (deg, r) => ({
   x: +(r * Math.sin(deg * Math.PI / 180)).toFixed(3),
   z: +(-r * Math.cos(deg * Math.PI / 180)).toFixed(3)
@@ -8482,7 +8578,7 @@ function readMeta(key) {
     key,
     nazwa: row.nazwa ?? key,
     epoka: row.epoka ?? 1,
-    kosztPraca: row.koszt_praca ?? 0,
+    kosztPraca: scaleImprovementWorkCost(row.koszt_praca ?? 0),
     techId: normalizeTech(row.tech ?? null),
     typ,
     clearing
@@ -13800,8 +13896,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 10,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -13847,7 +13943,9 @@ var units_default = [
     chargeBonus: 2,
     health: 22,
     missileAttack: 0,
-    fieldPower: 27
+    fieldPower: 27,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz",
@@ -13856,8 +13954,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -13903,7 +14001,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik",
@@ -13912,8 +14012,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -13959,7 +14059,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik",
@@ -13968,8 +14070,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -14015,7 +14117,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 3,
-    fieldPower: 17.5
+    fieldPower: 17.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Zwiadowca",
@@ -14024,8 +14128,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 0,
     Atak: 0,
@@ -14071,7 +14175,9 @@ var units_default = [
     chargeBonus: 0,
     health: 10,
     missileAttack: 0,
-    fieldPower: 6
+    fieldPower: 6,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik",
@@ -14081,7 +14187,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14127,7 +14233,9 @@ var units_default = [
     chargeBonus: 4,
     health: 32,
     missileAttack: 0,
-    fieldPower: 44
+    fieldPower: 44,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z mieczem i tarcz\u0105",
@@ -14137,7 +14245,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14183,7 +14291,9 @@ var units_default = [
     chargeBonus: 4,
     health: 28,
     missileAttack: 0,
-    fieldPower: 39
+    fieldPower: 39,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan (wo\u0142y)",
@@ -14193,7 +14303,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14239,7 +14349,9 @@ var units_default = [
     chargeBonus: 10,
     health: 48,
     missileAttack: 0,
-    fieldPower: 52
+    fieldPower: 52,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Konnica",
@@ -14249,7 +14361,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 22,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14295,7 +14407,9 @@ var units_default = [
     chargeBonus: 10,
     health: 28,
     missileAttack: 0,
-    fieldPower: 49
+    fieldPower: 49,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Galera",
@@ -14305,7 +14419,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -14351,7 +14465,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 25
+    fieldPower: 25,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Falanga",
@@ -14361,7 +14477,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14407,7 +14523,9 @@ var units_default = [
     chargeBonus: 7,
     health: 40,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
@@ -14417,7 +14535,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14463,7 +14581,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Hastati",
@@ -14473,7 +14593,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -14519,7 +14639,9 @@ var units_default = [
     chargeBonus: 7,
     health: 38,
     missileAttack: 4,
-    fieldPower: 57.5
+    fieldPower: 57.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Triari",
@@ -14529,7 +14651,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14575,7 +14697,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Je\u017Adziec chi\u0144ski",
@@ -14585,7 +14709,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14631,7 +14755,9 @@ var units_default = [
     chargeBonus: 5,
     health: 44,
     missileAttack: 0,
-    fieldPower: 45.5
+    fieldPower: 45.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hu Ben Wei (Gwardia Tygrysa)",
@@ -14641,7 +14767,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -14687,7 +14813,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Impi",
@@ -14697,7 +14825,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -14743,7 +14871,9 @@ var units_default = [
     chargeBonus: 3,
     health: 36,
     missileAttack: 0,
-    fieldPower: 38.5
+    fieldPower: 38.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik Zulu (Izijula)",
@@ -14752,8 +14882,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -14799,7 +14929,9 @@ var units_default = [
     chargeBonus: 0,
     health: 20,
     missileAttack: 4,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "uThulwana (Bia\u0142e Tarcze)",
@@ -14809,7 +14941,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14855,7 +14987,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik z maczug\u0105 (Chaska)",
@@ -14864,8 +14998,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14911,7 +15045,9 @@ var units_default = [
     chargeBonus: 2,
     health: 20,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z toporem",
@@ -14921,7 +15057,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -14967,7 +15103,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 32.5
+    fieldPower: 32.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz (Huaracoc)",
@@ -14976,8 +15114,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -15023,7 +15161,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik (Est\xF3lica)",
@@ -15032,8 +15172,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -15079,7 +15219,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Kr\xF3lewska Gwardia",
@@ -15089,7 +15231,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -15135,7 +15277,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Rydwan konny",
@@ -15145,7 +15289,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -15191,7 +15335,9 @@ var units_default = [
     chargeBonus: 8,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54
+    fieldPower: 54,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik egipski",
@@ -15200,8 +15346,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -15247,7 +15393,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 6,
-    fieldPower: 15
+    fieldPower: 15,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan egipski",
@@ -15257,7 +15405,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -15303,7 +15451,9 @@ var units_default = [
     chargeBonus: 7,
     health: 56,
     missileAttack: 5,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z khopesh",
@@ -15313,7 +15463,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -15359,7 +15509,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Med\u017Caj (Gwardia Faraona)",
@@ -15369,7 +15521,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -15415,7 +15567,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 3,
-    fieldPower: 64.5
+    fieldPower: 64.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "\u0141ucznik nubijski",
@@ -15424,8 +15578,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -15471,7 +15625,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 6,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik sumeryjski",
@@ -15480,8 +15636,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -15527,7 +15683,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan sumeryjski",
@@ -15537,7 +15695,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 38,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -15583,7 +15741,9 @@ var units_default = [
     chargeBonus: 9,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54.5
+    fieldPower: 54.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik sumeryjski",
@@ -15593,7 +15753,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -15639,7 +15799,9 @@ var units_default = [
     chargeBonus: 2,
     health: 40,
     missileAttack: 0,
-    fieldPower: 41
+    fieldPower: 41,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardia Kr\xF3lewska Sumeru",
@@ -15649,7 +15811,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -15695,7 +15857,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik myke\u0144ski",
@@ -15705,7 +15869,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -15751,7 +15915,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 34.5
+    fieldPower: 34.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan myke\u0144ski",
@@ -15761,7 +15927,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -15807,7 +15973,9 @@ var units_default = [
     chargeBonus: 9,
     health: 52,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik Sherden",
@@ -15817,7 +15985,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15863,7 +16031,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 35.5
+    fieldPower: 35.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Halabardnik Shang",
@@ -15873,7 +16043,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -15919,7 +16089,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 36
+    fieldPower: 36,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan Shang",
@@ -15929,7 +16101,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -15975,7 +16147,9 @@ var units_default = [
     chargeBonus: 8,
     health: 60,
     missileAttack: 0,
-    fieldPower: 58
+    fieldPower: 58,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik akadyjski",
@@ -15984,8 +16158,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -16031,7 +16205,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 5,
-    fieldPower: 15.5
+    fieldPower: 15.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gaesatae",
@@ -16041,7 +16217,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -16087,14 +16263,16 @@ var units_default = [
     chargeBonus: 5,
     health: 22,
     missileAttack: 0,
-    fieldPower: 29.5
+    fieldPower: 29.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -16140,7 +16318,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 5,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan celtycki",
@@ -16150,7 +16330,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -16196,7 +16376,9 @@ var units_default = [
     chargeBonus: 10,
     health: 52,
     missileAttack: 0,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik germa\u0144ski",
@@ -16206,7 +16388,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -16252,7 +16434,9 @@ var units_default = [
     chargeBonus: 4,
     health: 30,
     missileAttack: 4,
-    fieldPower: 37
+    fieldPower: 37,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Berserker germa\u0144ski",
@@ -16262,7 +16446,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -16308,7 +16492,9 @@ var units_default = [
     chargeBonus: 6,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33
+    fieldPower: 33,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Taran",
@@ -16317,8 +16503,8 @@ var units_default = [
     Tech: "Obr\xF3bka drewna",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -16366,7 +16552,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 14,
     fieldPower: 352.5,
-    siegePower: 85
+    siegePower: 85,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Taran okuty",
@@ -16376,7 +16564,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -16424,7 +16612,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 18,
     fieldPower: 377.5,
-    siegePower: 94
+    siegePower: 94,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Katapulta",
@@ -16434,7 +16624,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 1,
@@ -16482,7 +16672,9 @@ var units_default = [
     missileAttack: 4,
     wallAttack: 16,
     fieldPower: 128,
-    siegePower: 45
+    siegePower: 45,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wie\u017Ca obl\u0119\u017Cnicza",
@@ -16492,7 +16684,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 0,
@@ -16540,7 +16732,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 6,
     fieldPower: 451,
-    siegePower: 97
+    siegePower: 97,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik tyrre\u0144ski",
@@ -16550,7 +16744,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 15,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -16596,7 +16790,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik szekelesz",
@@ -16606,7 +16802,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -16652,14 +16848,16 @@ var units_default = [
     chargeBonus: 2,
     health: 28,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -16705,14 +16903,16 @@ var units_default = [
     meleeAttack: 9,
     weaponDamage: 8,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -16758,14 +16958,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 2,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -16811,14 +17013,16 @@ var units_default = [
     meleeAttack: 2,
     weaponDamage: 2,
     meleeDefence: 3,
-    missileAttack: 4
+    missileAttack: 4,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -16864,14 +17068,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -16917,14 +17123,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -16970,14 +17178,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 4,
     meleeDefence: 9,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -17023,14 +17233,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -17076,14 +17288,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 34,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -17129,14 +17343,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 7,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -17182,14 +17398,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -17235,14 +17453,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -17288,14 +17508,16 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 7,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -17341,14 +17563,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -17394,14 +17618,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -17447,14 +17673,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -17500,14 +17728,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 4,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -17553,7 +17783,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Thorakites",
@@ -17563,7 +17795,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -17606,7 +17838,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Evocati",
@@ -17616,7 +17850,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -17659,7 +17893,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "iButho z iklwa",
@@ -17669,7 +17905,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -17712,7 +17948,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardzista z champi",
@@ -17722,7 +17960,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -17765,7 +18003,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 5,
-    missileAttack: 5
+    missileAttack: 5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z \u017Celaznym khopesh",
@@ -17775,7 +18015,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -17818,7 +18058,9 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Mur tarcz (Sargonid)",
@@ -17828,7 +18070,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -17871,7 +18113,9 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 10,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Miecznik galijski",
@@ -17881,7 +18125,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -17924,7 +18168,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 6,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   }
 ];
 
@@ -18962,12 +19208,9 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bez kosztu surowcowego (C-PALAC-Q1=A, start pula=0); tylko kosztBudowy Praca; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "-",
-    lokalizacja: "stolica",
-    koszt_surowce: {
-      drewno: 8
-    }
+    lokalizacja: "stolica"
   },
   {
     id: "palac_ii",
@@ -20593,7 +20836,7 @@ function loadDifficultyParams(data, poziom = 2) {
   const n = poziom;
   return {
     bonusProdukcja: getAiParam(data, `trudnosc_poziom${n}_bonus_produkcja`, n === 1 ? 0 : n === 2 ? 0.1 : 0.25),
-    bonusNauka: getAiParam(data, `trudnosc_poziom${n}_bonus_nauka`, n === 1 ? 0 : n === 2 ? 1 : 0),
+    bonusNauka: getAiParam(data, `trudnosc_poziom${n}_bonus_nauka`, n === 1 ? 0 : n === 2 ? 1 : 2),
     startoweJednostki: getAiParam(data, `trudnosc_poziom${n}_startowe_jednostki`, n === 1 ? 0 : n === 2 ? 1 : 0),
     startoweMiasta: getAiParam(data, `trudnosc_poziom${n}_startowe_miasta`, n === 1 ? 0 : n === 2 ? 0 : 1),
     bonusWalka: getAiParam(data, `trudnosc_poziom${n}_bonus_walka`, n === 1 ? 0 : n === 2 ? 0 : 0.05),
@@ -20634,10 +20877,25 @@ function firstStep(unit, map, destQ, destR, units) {
   return path[0] ?? null;
 }
 var AI_EARLY_SCOUT_TARGET = 2;
+var AI_EARLY_SCOUT_REPEAT_PENALTY = 80;
 var SCOUT_TYPE_ID = "Zwiadowca";
-var AI_LOCAL_VILLAGE_SEARCH_RADIUS = 24;
-var AI_LOCAL_PHASE_MAX_TURN = 45;
+function countOwnerMilitaryUnits(allUnits, ownerId) {
+  return allUnits.filter((u) => u.ownerId === ownerId && !isCivilianUnit(u)).length;
+}
+function isMilitaryProductionCandidate(id, buildingNames) {
+  if (buildingNames.has(id)) return false;
+  return !isCivilianUnit({ typeId: id, category: "" });
+}
+var AI_LOCAL_PHASE_MAX_TURN = 20;
 var AI_COLONIZATION_SOURCE_MIN_POP = 5;
+var AI_COLONIZATION_SOURCE_MIN_POP_L3 = 4;
+function colonizationSourceMinPop(poziomTrudnosci) {
+  return poziomTrudnosci === 3 ? AI_COLONIZATION_SOURCE_MIN_POP_L3 : AI_COLONIZATION_SOURCE_MIN_POP;
+}
+function hasColonizationSource(myCities, poziomTrudnosci) {
+  const minPop = colonizationSourceMinPop(poziomTrudnosci);
+  return myCities.some((c) => c.population >= minPop);
+}
 var AI_COLONIZATION_AGGRESSIVE_ERA_MAX = 3;
 var AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS = 15;
 var AI_COLONIZATION_SURGE_MAX_PER_TURN = 2;
@@ -20653,8 +20911,8 @@ function countFreeIndependentCityStates(cities, vassalizedOwnerIds = []) {
   }
   return free;
 }
-function aiHasColonizationReadyCity(myCities) {
-  return myCities.some((c) => c.population >= AI_COLONIZATION_SOURCE_MIN_POP);
+function aiHasColonizationReadyCity(myCities, poziomTrudnosci) {
+  return hasColonizationSource(myCities, poziomTrudnosci);
 }
 function isHexWithinAnyCityReach(q, r, allCities) {
   for (const c of allCities) {
@@ -20665,7 +20923,7 @@ function isHexWithinAnyCityReach(q, r, allCities) {
 }
 function aiColonizationAggressiveMode(opts, myCities) {
   const era = opts.civEra ?? 1;
-  return era <= AI_COLONIZATION_AGGRESSIVE_ERA_MAX && aiHasColonizationReadyCity(myCities);
+  return era <= AI_COLONIZATION_AGGRESSIVE_ERA_MAX && aiHasColonizationReadyCity(myCities, opts.poziomTrudnosci);
 }
 function aiMaxFoundingPerTurn(cities, opts, playerId) {
   const myCityCount = cities.filter((c) => c.ownerId === playerId).length;
@@ -20679,29 +20937,20 @@ function isScoutUnit(unit) {
 function countPlayerScouts(allUnits, playerId) {
   return allUnits.filter((u) => u.ownerId === playerId && isScoutUnit(u)).length;
 }
+function computeEarlyScoutProductionScore(scoutCount, economyScore) {
+  let score = 320 + economyScore;
+  if (scoutCount >= 1) score -= AI_EARLY_SCOUT_REPEAT_PENALTY;
+  return score;
+}
 function isVillageExploreRacePhase(opts, myCities) {
   return !opts.defensiveCopy && myCities.length < 3;
 }
-function countNeutralVillagesInRange(map, myCities, radius) {
-  if (myCities.length === 0) return 0;
-  let count = 0;
-  for (const key of Object.keys(map.hexes)) {
-    const hex = map.hexes[key];
-    if (hex === void 0) continue;
-    if (!hex.wioska.istnieje) continue;
-    if (hex.wlasciciel !== null) continue;
-    const { q, r } = hex.coords;
-    const near = myCities.some((c) => hexDistance(q, r, c.q, c.r) <= radius);
-    if (near) count += 1;
-  }
-  return count;
-}
-function isLocalExpansionPhase(opts, myCities, map, units, playerId, allCities = myCities) {
+function isLocalExpansionPhase(opts, myCities, _map, units, playerId, allCities = myCities) {
   if (opts.defensiveCopy) return false;
   if (myCities.length === 0) return false;
   const ekspansywnosc = opts.civAiProfile?.ekspansywnosc ?? 0;
   const clusterTargets = opts.clusterStateTargets ?? [];
-  const colonizationReady = aiHasColonizationReadyCity(myCities);
+  const colonizationReady = aiHasColonizationReadyCity(myCities, opts.poziomTrudnosci);
   const freeCs = countFreeIndependentCityStates(allCities, opts.vassalizedCityStateOwnerIds);
   const aggressiveColonization = aiColonizationAggressiveMode(opts, myCities);
   if ((aggressiveColonization || freeCs === 0 && colonizationReady) && !opts.clusterConquestDeadlineActive) {
@@ -20711,8 +20960,7 @@ function isLocalExpansionPhase(opts, myCities, map, units, playerId, allCities =
   const turn = opts.currentTurn ?? 0;
   if (turn >= AI_LOCAL_PHASE_MAX_TURN) return false;
   if (clusterTargets.length > 0 && !aiMayBypassClusterConsolidation(ekspansywnosc, opts)) return true;
-  if (countPlayerScouts(units, playerId) < AI_EARLY_SCOUT_TARGET) return true;
-  if (countNeutralVillagesInRange(map, myCities, AI_LOCAL_VILLAGE_SEARCH_RADIUS) > 0) return true;
+  if (countPlayerScouts(units, playerId) < 1) return true;
   return false;
 }
 function planScoutExploreStep(unit, map, myCities, units, villages) {
@@ -20787,10 +21035,68 @@ function hexCityScore(hex, q, r, data, enemyCities, opts) {
   }
   return score;
 }
+var AI_MAJOR_EARLY_MAX_TURN = 40;
+var AI_MAJOR_EARLY_MAX_TURN_L1 = 25;
+var AI_MAJOR_EARLY_ECON_BUILDING_MULT = 0.7;
+var AI_MAJOR_EARLY_MAX_AVG_POP = 5;
+var AI_MAJOR_EARLY_MAX_BUILDINGS_AVG = 4;
+var AI_L3_PEACE_WARRIOR_SCORE_PENALTY = 40;
+var AI_ARCHETYPE_BIAS_PER_POINT = 0.05;
+var AI_MAJOR_EARLY_IMPROVEMENT_PRACA_SURPLUS = 10;
+function isMajorAiOwner(opts) {
+  return !opts.defensiveCopy;
+}
+function computeMajorAiEarlyGame(opts, myCities, avgBuildingsPerCity) {
+  if (!isMajorAiOwner(opts)) return false;
+  const turn = opts.currentTurn ?? 0;
+  let maxTurn = AI_MAJOR_EARLY_MAX_TURN;
+  if (opts.poziomTrudnosci === 1) {
+    maxTurn = AI_MAJOR_EARLY_MAX_TURN_L1;
+  } else if (opts.poziomTrudnosci === 3 && (opts.startoweMiasta ?? 0) >= 1) {
+    maxTurn = AI_MAJOR_EARLY_MAX_TURN_L1;
+  }
+  if (turn <= maxTurn) return true;
+  if (myCities.length === 0) return false;
+  const avgPop = myCities.reduce((s, c) => s + c.population, 0) / myCities.length;
+  if (avgPop < AI_MAJOR_EARLY_MAX_AVG_POP) return true;
+  if (avgBuildingsPerCity < AI_MAJOR_EARLY_MAX_BUILDINGS_AVG) return true;
+  return false;
+}
+function applyL3PeaceWarriorPenalty(candidates, opts, underThreat) {
+  if (!isMajorAiOwner(opts) || opts.poziomTrudnosci !== 3 || underThreat) return;
+  for (const c of candidates) {
+    if (c.id === "Wojownik") {
+      c.score -= AI_L3_PEACE_WARRIOR_SCORE_PENALTY;
+    }
+  }
+}
+function computeMajorArchetypeMilitaryFraction(mods) {
+  const delta = (mods.wojsko - mods.ekonomia) * AI_ARCHETYPE_BIAS_PER_POINT;
+  return Math.min(0.6, Math.max(0.4, 0.5 + delta));
+}
+function applyMajorArchetypeProductionBias(candidates, data, militaryFraction) {
+  const unitNames = new Set(data.units.map((u) => u.Jednostka));
+  const buildingIds = new Set(data.buildings.map((b) => b.id));
+  const milBoost = Math.round((militaryFraction - 0.5) * 160);
+  const infraIds = /* @__PURE__ */ new Set(["spichlerz", "mury", "koszary", "studnia", "garncarnia"]);
+  for (const c of candidates) {
+    if (unitNames.has(c.id)) {
+      c.score += milBoost;
+    } else if (buildingIds.has(c.id) && !infraIds.has(c.id)) {
+      c.score -= milBoost;
+    }
+  }
+}
 function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, opts, map, difficultyParams) {
   const built = opts.cityBuildings?.[cityId] ?? [];
   const city = myCities.find((c) => c.id === cityId);
   if (city === void 0) return null;
+  const avgBuiltPerCity = myCities.reduce((s, c) => {
+    const n = opts.cityBuildings?.[c.id]?.length ?? 0;
+    return s + n;
+  }, 0) / Math.max(1, myCities.length);
+  const majorEarly = computeMajorAiEarlyGame(opts, myCities, avgBuiltPerCity);
+  const majorMilFrac = isMajorAiOwner(opts) ? computeMajorArchetypeMilitaryFraction(mods) : 0.5;
   const threatRange = getAiParam(data, "ekspansja_zagroz_zasieg", AI_THREAT_RANGE_DEFAULT);
   const enemyUnits = allUnits.filter((u) => u.ownerId !== playerId);
   const underThreat = enemyUnits.some(
@@ -20798,19 +21104,41 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
   );
   const diffProdBonus = Math.round(difficultyParams.bonusProdukcja * 200);
   const panelBoost = aiProductionScoreBoosts(opts.civAiProfile);
-  const powerGoalBoost = opts.currentTurn !== void 0 && opts.currentTurn % 3 === 0 && (opts.powerRank ?? 1) > 1;
+  const powerGoalBoost = opts.currentTurn !== void 0 && opts.currentTurn % 3 === 0 && (opts.powerRank ?? 1) > 1 && !majorEarly;
   const economyScore = 100 + mods.ekonomia * 20 + diffProdBonus + panelBoost.economy + (powerGoalBoost ? 40 : 0);
   const militaryScore = 100 + mods.wojsko * 20 + panelBoost.military;
   const defenseScore = 100 + mods.obrona * 20;
   const scienceScore = 100 + mods.nauka * 20 + panelBoost.science;
-  const candidates = [];
+  let candidates = [];
   const earlyPhase = myCities.length < 3 && !opts.defensiveCopy;
   if (underThreat) {
-    const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank);
-    if (!built.includes("mury") && wallScore !== null) {
-      candidates.push({ id: "mury", score: wallScore });
+    if (opts.defensiveCopy) {
+      const wallScore = aiThreatWallProductionScore(defenseScore, opts.powerRank, true);
+      if (!built.includes("mury") && wallScore !== null) {
+        candidates.push({ id: "mury", score: wallScore });
+      }
+      candidates.push({ id: "Wojownik", score: 280 + militaryScore });
+    } else if (isMajorAiOwner(opts)) {
+      const threatUnits = aiThreatMajorUnitScores(militaryScore);
+      candidates.push({ id: "Wojownik", score: threatUnits.wojownik });
+      candidates.push({ id: "\u0141ucznik", score: threatUnits.lucznik });
+      if (!built.includes("spichlerz")) {
+        candidates.push({ id: "spichlerz", score: aiThreatMajorDevScore(250) });
+      }
+      if (!built.includes("koszary")) {
+        candidates.push({ id: "koszary", score: aiThreatMajorDevScore(200 + militaryScore) });
+      }
+      for (const b of ["stolarnia", "cegielnia", "odlewnia_brazu", "magazyn", "targowisko"]) {
+        if (!built.includes(b)) {
+          candidates.push({ id: b, score: aiThreatMajorDevScore(140 + economyScore) });
+        }
+      }
+      if (!built.includes("biblioteka")) {
+        candidates.push({ id: "biblioteka", score: aiThreatMajorDevScore(135 + scienceScore) });
+      }
+    } else {
+      candidates.push({ id: "Wojownik", score: 280 + militaryScore });
     }
-    candidates.push({ id: "Wojownik", score: 280 + militaryScore });
   }
   if (opts.defensiveCopy) {
     const guardDC = allUnits.filter(
@@ -20831,15 +21159,24 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
       candidates.push({ id: "spichlerz", score: 250 });
     }
     if (!opts.defensiveCopy && countPlayerScouts(allUnits, playerId) < AI_EARLY_SCOUT_TARGET) {
-      candidates.push({ id: SCOUT_TYPE_ID, score: 320 + economyScore });
+      const scoutCount = countPlayerScouts(allUnits, playerId);
+      candidates.push({
+        id: SCOUT_TYPE_ID,
+        score: computeEarlyScoutProductionScore(scoutCount, economyScore)
+      });
     }
     const cityGuard = allUnits.filter(
       (u) => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1
     );
     if (cityGuard.length === 0) {
-      candidates.push({ id: "Wojownik", score: 190 + militaryScore });
+      const guardScore = majorEarly ? 110 + militaryScore * majorMilFrac : 190 + militaryScore;
+      candidates.push({ id: "Wojownik", score: guardScore });
     }
-    candidates.push({ id: "\u0141ucznik", score: 180 + militaryScore });
+    if (!majorEarly) {
+      candidates.push({ id: "\u0141ucznik", score: 180 + militaryScore });
+    } else {
+      candidates.push({ id: "\u0141ucznik", score: 90 + militaryScore * majorMilFrac });
+    }
   } else {
     if (!built.includes("koszary")) {
       candidates.push({ id: "koszary", score: 200 + militaryScore });
@@ -20858,6 +21195,7 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
       candidates.push({ id: "akademia", score: 130 + scienceScore });
     }
   }
+  const hardOffensive = opts.cityStateOffensiveSupport === true;
   if (opts.defensiveCopy) {
     const cityGuardCount = allUnits.filter(
       (u) => u.ownerId === playerId && hexDistance(u.q, u.r, city.q, city.r) <= 1
@@ -20873,25 +21211,51 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
         "targowisko",
         adminBuilding
       ];
+      const prodAllowed = opts.isProductionAllowed;
       for (let i = 0; i < infraOrder.length; i++) {
         const bid = infraOrder[i];
         if (!built.includes(bid)) {
+          if (prodAllowed?.(cityId, bid) === false) continue;
           candidates.push({ id: bid, score: 450 - i * 12 });
         }
       }
       for (const c of candidates) {
         if (c.id === "mury" || c.id === "koszary") {
-          c.score -= 90;
+          c.score -= hardOffensive ? 25 : 90;
         }
+      }
+      if (hardOffensive && !built.includes("koszary")) {
+        candidates.push({ id: "koszary", score: 400 + militaryScore });
       }
     }
     if (cityGuardCount >= 1 && !underThreat && infraBootstrap) {
       for (const c of candidates) {
         if (c.id === "Wojownik" || c.id === "\u0141ucznik") {
-          c.score -= 250;
+          c.score -= hardOffensive ? 60 : 250;
         }
       }
     }
+    if (hardOffensive && cityGuardCount >= 1) {
+      for (const c of candidates) {
+        if (c.id === "Wojownik") c.score += 70;
+        if (c.id === "\u0141ucznik") c.score += 55;
+      }
+    }
+  }
+  if (isMajorAiOwner(opts)) {
+    applyMajorArchetypeProductionBias(candidates, data, majorMilFrac);
+    if (majorEarly) {
+      for (const c of candidates) {
+        if (c.id === "Wojownik" || c.id === "\u0141ucznik") {
+          c.score = Math.round(c.score * 0.65);
+        }
+        const earlyEconBuildings = ["stolarnia", "cegielnia", "odlewnia_brazu", "magazyn", "targowisko", "biblioteka", "akademia"];
+        if (earlyEconBuildings.includes(c.id)) {
+          c.score = Math.round(c.score * AI_MAJOR_EARLY_ECON_BUILDING_MULT);
+        }
+      }
+    }
+    applyL3PeaceWarriorPenalty(candidates, opts, underThreat);
   }
   if (opts.canAfford) {
     const canAfford2 = opts.canAfford;
@@ -20926,19 +21290,34 @@ function chooseCityProduction(cityId, myCities, allUnits, playerId, data, mods, 
   }
   const deficitKeys = opts.resourceDeficitKeys;
   if (deficitKeys?.length) {
-    for (const resKey of deficitKeys) {
-      for (const buildingId of AI_BUILDING_FOR_DEFICIT[resKey] ?? []) {
-        if (built.includes(buildingId)) continue;
-        const idx = candidates.findIndex((c) => c.id === buildingId);
-        if (idx >= 0) {
-          candidates[idx].score += 85;
-        } else {
-          candidates.push({ id: buildingId, score: 200 + economyScore });
-        }
+    boostCandidatesForResourceDeficits(candidates, deficitKeys, built, economyScore);
+  }
+  const buildingNames = new Set(data.buildings.map((b) => b.id));
+  if (opts.canAfford) {
+    const recruitGapKeys = collectMilitaryRecruitStockDeficits(
+      cityId,
+      candidates,
+      buildingNames,
+      data,
+      opts
+    );
+    if (recruitGapKeys.length > 0) {
+      boostCandidatesForResourceDeficits(candidates, recruitGapKeys, built, economyScore);
+      if (!opts.recruitStockDeficitScratch) opts.recruitStockDeficitScratch = /* @__PURE__ */ new Set();
+      for (const k of recruitGapKeys) opts.recruitStockDeficitScratch.add(k);
+    }
+  }
+  if (opts.defensiveCopy && opts.menuDifficulty !== void 0) {
+    const milCap = cityStateMilitaryProductionCap(opts.menuDifficulty);
+    if (milCap !== null) {
+      const militaryOwned = countOwnerMilitaryUnits(allUnits, playerId);
+      if (militaryOwned >= milCap) {
+        candidates = candidates.filter(
+          (c) => !isMilitaryProductionCandidate(c.id, buildingNames)
+        );
       }
     }
   }
-  const buildingNames = new Set(data.buildings.map((b) => b.id));
   let available = candidates.filter((c) => {
     if (buildingNames.has(c.id) && built.includes(c.id)) return false;
     return true;
@@ -20987,6 +21366,48 @@ var AI_BUILDING_FOR_DEFICIT = {
   stal: ["wielka_odlewnia"],
   ceramika: ["garncarnia"]
 };
+var UPSTREAM_FOR_PROCESSED_RESOURCE = {
+  braz: ["ruda"],
+  zelazo: ["ruda_zelaza"],
+  cegla: ["glina", "drewno"]
+};
+function expandRecruitResourceKeys(keys) {
+  const out = /* @__PURE__ */ new Set();
+  for (const k of keys) {
+    out.add(k);
+    for (const up of UPSTREAM_FOR_PROCESSED_RESOURCE[k] ?? []) out.add(up);
+  }
+  return [...out];
+}
+function boostCandidatesForResourceDeficits(candidates, deficitKeys, built, economyScore) {
+  for (const resKey of deficitKeys) {
+    for (const buildingId of AI_BUILDING_FOR_DEFICIT[resKey] ?? []) {
+      if (built.includes(buildingId)) continue;
+      const idx = candidates.findIndex((c) => c.id === buildingId);
+      if (idx >= 0) {
+        candidates[idx].score += 85;
+      } else {
+        candidates.push({ id: buildingId, score: 200 + economyScore });
+      }
+    }
+  }
+}
+function collectMilitaryRecruitStockDeficits(cityId, candidates, buildingNames, data, opts) {
+  const canAfford = opts.canAfford;
+  if (!canAfford) return [];
+  const keys = /* @__PURE__ */ new Set();
+  for (const c of candidates) {
+    if (!isMilitaryProductionCandidate(c.id, buildingNames)) continue;
+    if (opts.isProductionAllowed && opts.isProductionAllowed(cityId, c.id) === false) continue;
+    if (canAfford(cityId, c.id)) continue;
+    const unitDef = data.units.find((u) => u.Jednostka === c.id);
+    const cost = unitStockCost(unitDef);
+    const reserve = unitRecruitUpkeepReserve(unitDef);
+    for (const k of Object.keys(cost)) keys.add(k);
+    for (const k of Object.keys(reserve)) keys.add(k);
+  }
+  return expandRecruitResourceKeys(keys);
+}
 function improvementPriorityForDeficits(base, deficitKeys) {
   if (!deficitKeys?.length) return [...base];
   const boost = /* @__PURE__ */ new Set();
@@ -21000,15 +21421,23 @@ var AI_IMPROVEMENT_PRACA_SURPLUS = 30;
 function planCityImprovements(myCities, ownerId, map, opts) {
   const territoryNodes = opts.territoryNodes;
   if (!territoryNodes || myCities.length === 0) return [];
+  const pracaAvailable = opts.pracaAvailable ?? 0;
+  const avgBuilt = myCities.reduce((s, c) => {
+    const n = opts.cityBuildings?.[c.id]?.length ?? 0;
+    return s + n;
+  }, 0) / Math.max(1, myCities.length);
+  const majorEarly = computeMajorAiEarlyGame(opts, myCities, avgBuilt);
+  const pracaSurplusGate = majorEarly ? AI_MAJOR_EARLY_IMPROVEMENT_PRACA_SURPLUS : AI_IMPROVEMENT_PRACA_SURPLUS;
+  if (pracaAvailable <= pracaSurplusGate) return [];
   const picks = pickAutoImprovements({
     cities: myCities,
     ownerId,
     map,
     territoryNodes,
     placedImprovements: opts.placedImprovements,
-    pracaAvailable: opts.pracaAvailable ?? 0,
+    pracaAvailable,
     unlockedTechs: opts.improvementTechs ?? /* @__PURE__ */ new Set(),
-    pracaSurplusThreshold: AI_IMPROVEMENT_PRACA_SURPLUS,
+    pracaSurplusThreshold: 0,
     skipWyrab: false,
     civArchetype: opts.civType,
     playerEra: opts.civEra ?? 1,
@@ -21110,9 +21539,13 @@ function decideAITurn(playerId, units, cities, map, data, opts = {}) {
   const mods = readArchMods(data, archKey);
   const difficultyLevel = opts.poziomTrudnosci ?? 2;
   const difficultyParams = loadDifficultyParams(data, difficultyLevel);
+  if (opts.startoweMiasta === void 0) {
+    opts.startoweMiasta = difficultyParams.startoweMiasta;
+  }
   if (opts.defensiveCopy) {
     return decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts, difficultyParams);
   }
+  opts.recruitStockDeficitScratch = /* @__PURE__ */ new Set();
   const commands = [];
   const myUnits = units.filter((u) => u.ownerId === playerId);
   const myCities = cities.filter((c) => c.ownerId === playerId);
@@ -21162,6 +21595,11 @@ function decideAITurn(playerId, units, cities, map, data, opts = {}) {
     if (buildId !== null) {
       commands.push({ type: "build", cityId: city.id, buildingId: buildId });
     }
+  }
+  if (opts.recruitStockDeficitScratch.size > 0) {
+    const merged = new Set(opts.resourceDeficitKeys ?? []);
+    for (const k of opts.recruitStockDeficitScratch) merged.add(k);
+    opts.resourceDeficitKeys = [...merged];
   }
   for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
     commands.push(cmd);
@@ -21324,7 +21762,21 @@ var RESUP_TIERS = {
   strong: { threatRadius: 2, minGuard: 1, maxPerTurn: 2 }
 };
 var CS_OFFENSIVE_CAMPAIGN_RADIUS = 12;
-function planCityStateOffensiveMove(unit, map, allUnits, myCities, enemyUnits, enemyCities, friendlyOwnerIds, homeGuardCount, minGuardToSend) {
+var CS_WAVE_ATTACK_MIN_STACK = 3;
+function countFriendlyMilitaryOnHex(q, r, ownerIds, allUnits) {
+  return allUnits.filter(
+    (u) => u.q === q && u.r === r && ownerIds.has(u.ownerId) && !isScoutUnit(u)
+  ).length;
+}
+function countOwnerFieldArmy(ownerId, ownerUnits, myCities) {
+  return ownerUnits.filter((u) => {
+    if (isScoutUnit(u)) return false;
+    const home = nearest(u.q, u.r, myCities, (c) => c.q, (c) => c.r);
+    if (home === void 0) return true;
+    return hexDistance(u.q, u.r, home.q, home.r) > 1;
+  }).length;
+}
+function planCityStateOffensiveMove(unit, map, allUnits, myCities, enemyUnits, enemyCities, friendlyOwnerIds, homeGuardCount, minGuardToSend, minFieldArmyBeforeSend = 0) {
   if (isScoutUnit(unit)) return null;
   const homeCity = nearest(unit.q, unit.r, myCities, (c) => c.q, (c) => c.r);
   if (homeCity === void 0) return null;
@@ -21333,6 +21785,14 @@ function planCityStateOffensiveMove(unit, map, allUnits, myCities, enemyUnits, e
   if (atHome) {
     const guardCount = homeGuardCount.get(homeCity.id) ?? 0;
     if (guardCount < minGuardToSend) return null;
+    if (minFieldArmyBeforeSend > 0) {
+      const ownerUnits = allUnits.filter((u) => u.ownerId === unit.ownerId);
+      const fieldArmy = countOwnerFieldArmy(unit.ownerId, ownerUnits, myCities);
+      const totalMilitary = ownerUnits.filter((u) => !isScoutUnit(u)).length;
+      if (totalMilitary - minGuardToSend < minFieldArmyBeforeSend && fieldArmy < minFieldArmyBeforeSend) {
+        return null;
+      }
+    }
   } else if (distHome > CS_OFFENSIVE_CAMPAIGN_RADIUS) {
     return null;
   }
@@ -21372,6 +21832,7 @@ function planCityStateOffensiveMove(unit, map, allUnits, myCities, enemyUnits, e
 }
 function decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts, difficultyParams) {
   const commands = [];
+  opts.recruitStockDeficitScratch = /* @__PURE__ */ new Set();
   const myUnits = units.filter((u) => u.ownerId === playerId);
   const myCities = cities.filter((c) => c.ownerId === playerId);
   const enemyUnits = units.filter((u) => u.ownerId !== playerId);
@@ -21391,6 +21852,11 @@ function decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts,
     if (buildId !== null) {
       commands.push({ type: "build", cityId: city.id, buildingId: buildId });
     }
+  }
+  if (opts.recruitStockDeficitScratch.size > 0) {
+    const merged = new Set(opts.resourceDeficitKeys ?? []);
+    for (const k of opts.recruitStockDeficitScratch) merged.add(k);
+    opts.resourceDeficitKeys = [...merged];
   }
   for (const cmd of planCityImprovements(myCities, playerId, map, opts)) {
     commands.push(cmd);
@@ -21414,19 +21880,46 @@ function decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts,
   const enemyCitiesAtWar = cities.filter(
     (c) => c.ownerId !== playerId && aiCanEngageOwner(opts, c.ownerId) && !sisterOwnerIds.has(c.ownerId)
   );
+  const offensiveSupport = opts.cityStateOffensiveSupport === true;
+  const waveStackOwnerIds = /* @__PURE__ */ new Set([
+    playerId,
+    ...sisterOwnerIds,
+    ...opts.warAllyOwnerIds ?? []
+  ]);
   const friendlyArmyOwnerIds = /* @__PURE__ */ new Set([
     ...sisterOwnerIds,
     ...opts.warAllyOwnerIds ?? []
   ]);
-  const offensiveSupport = opts.cityStateOffensiveSupport === true;
+  const maxOffensiveMovesPerTurn = offensiveSupport ? 3 : RESUP_MAX_PER_TURN;
+  const isOwnCityThreatened = () => myCities.some(
+    (city) => nonSisterEnemyUnits.some(
+      (eu) => hexDistance(eu.q, eu.r, city.q, city.r) <= RESUP_THREAT_RADIUS
+    )
+  );
   for (const unit of myUnits) {
     if (unit.ruchLeft <= 0) continue;
     const adjacentEnemy = nonSisterEnemyUnits.find(
       (eu) => isAdjacent(unit.q, unit.r, eu.q, eu.r)
     );
     if (adjacentEnemy !== void 0) {
-      commands.push({ type: "attack", unitId: unit.id, targetUnitId: adjacentEnemy.id });
-      continue;
+      let doAttack = true;
+      if (offensiveSupport && aiCanEngageOwner(opts, adjacentEnemy.ownerId)) {
+        if (!isOwnCityThreatened()) {
+          const stackSize = countFriendlyMilitaryOnHex(
+            unit.q,
+            unit.r,
+            waveStackOwnerIds,
+            units
+          );
+          if (stackSize < CS_WAVE_ATTACK_MIN_STACK) {
+            doAttack = false;
+          }
+        }
+      }
+      if (doAttack) {
+        commands.push({ type: "attack", unitId: unit.id, targetUnitId: adjacentEnemy.id });
+        continue;
+      }
     }
     let moved = false;
     for (const city of myCities) {
@@ -21470,12 +21963,8 @@ function decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts,
         }
       }
     }
-    if (offensiveSupport && offensiveMovesThisTurn < RESUP_MAX_PER_TURN && (nonSisterEnemyUnits.length > 0 || enemyCitiesAtWar.length > 0)) {
-      const ownThreatened = myCities.some(
-        (city) => nonSisterEnemyUnits.some(
-          (eu) => hexDistance(eu.q, eu.r, city.q, city.r) <= RESUP_THREAT_RADIUS
-        )
-      );
+    if (offensiveSupport && offensiveMovesThisTurn < maxOffensiveMovesPerTurn && (nonSisterEnemyUnits.length > 0 || enemyCitiesAtWar.length > 0)) {
+      const ownThreatened = isOwnCityThreatened();
       if (!ownThreatened) {
         const offStep = planCityStateOffensiveMove(
           unit,
@@ -21486,7 +21975,8 @@ function decideDefensiveCopyTurn(playerId, units, cities, map, data, mods, opts,
           enemyCitiesAtWar,
           friendlyArmyOwnerIds,
           homeGuardCount,
-          RESUP_MIN_GUARD_TO_SEND
+          RESUP_MIN_GUARD_TO_SEND,
+          CS_WAVE_ATTACK_MIN_STACK
         );
         if (offStep !== null) {
           commands.push({ type: "move", unitId: unit.id, toQ: offStep.q, toR: offStep.r });
@@ -21604,6 +22094,7 @@ function applyCityStateDifficultyTrust(base, difficulty) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CITY_STATE_TRUST_DELTA_BY_DIFFICULTY,
+  CS_WAVE_ATTACK_MIN_STACK,
   DIPLOMACY_PARAMS,
   RESUP_TIERS,
   applyCityStateDifficultyTrust,

@@ -21,10 +21,15 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var garnizon_exit_entry_exports = {};
 __export(garnizon_exit_entry_exports, {
   activeUnitStack: () => activeUnitStack,
+  enterFieldFortify: () => enterFieldFortify,
   enterGarnizon: () => enterGarnizon,
+  exitFieldFortify: () => exitFieldFortify,
   exitGarnizon: () => exitGarnizon,
+  planningStackRuchLeft: () => planningStackRuchLeft,
+  stackRuchLeft: () => stackRuchLeft,
   unitAtRepresentative: () => unitAtRepresentative,
-  visibleStackOnHex: () => visibleStackOnHex
+  visibleStackOnHex: () => visibleStackOnHex,
+  wakeStackForMoveOrder: () => wakeStackForMoveOrder
 });
 module.exports = __toCommonJS(garnizon_exit_entry_exports);
 
@@ -135,7 +140,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -168,7 +173,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -881,6 +886,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -961,6 +967,20 @@ function exitGarnizon(u) {
   }
   return true;
 }
+function enterFieldFortify(u) {
+  u.fortifyRuchSnapshot = u.ruchLeft;
+  u.ufortyfikowanyWPolu = true;
+  u.ruchLeft = 0;
+}
+function exitFieldFortify(u) {
+  if (u.ufortyfikowanyWPolu !== true) return false;
+  u.ufortyfikowanyWPolu = false;
+  if (u.fortifyRuchSnapshot !== void 0) {
+    u.ruchLeft = u.fortifyRuchSnapshot;
+    delete u.fortifyRuchSnapshot;
+  }
+  return true;
+}
 function pickStackRepresentative(stack, attackOf) {
   return stack.reduce((best, u) => {
     const a = attackOf(u);
@@ -982,11 +1002,39 @@ function unitAtRepresentative(q, r, units, attackOf) {
   if (stack.length === 1) return stack[0];
   return pickStackRepresentative(stack, attackOf);
 }
+function stackRuchLeft(stack) {
+  if (stack.length === 0) return 0;
+  return Math.min(...stack.map((u) => u.ruchLeft));
+}
+function planningStackRuchLeft(stack) {
+  if (stack.length === 0) return 0;
+  return Math.min(...stack.map(planningUnitRuchLeft));
+}
+function planningUnitRuchLeft(u) {
+  if ((u.inGarnizon === true || u.ufortyfikowanyWPolu === true) && u.fortifyRuchSnapshot !== void 0) {
+    return u.fortifyRuchSnapshot;
+  }
+  return u.ruchLeft;
+}
+function wakeStackForMoveOrder(stack) {
+  let leftGarnizon = false;
+  for (const su of stack) {
+    if (exitGarnizon(su)) leftGarnizon = true;
+    exitFieldFortify(su);
+    if (su.sentry === true) su.sentry = false;
+  }
+  return leftGarnizon;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   activeUnitStack,
+  enterFieldFortify,
   enterGarnizon,
+  exitFieldFortify,
   exitGarnizon,
+  planningStackRuchLeft,
+  stackRuchLeft,
   unitAtRepresentative,
-  visibleStackOnHex
+  visibleStackOnHex,
+  wakeStackForMoveOrder
 });

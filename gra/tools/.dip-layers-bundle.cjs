@@ -140,7 +140,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -173,7 +173,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -886,6 +886,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -902,6 +903,29 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
 // src/game/barbarians.ts
 var BARBARIAN_OWNER_ID = -1;
@@ -930,6 +954,8 @@ var DIPLOMACY_PARAMS = {
   szpiegWykryty_zaufanie: -15,
   /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
   rywalizacjaTenSamTyp_zaufanie: -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie: 20,
   /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
   roznicaKulturowa_zaufanie: -5,
   // ---- one-shot Respekt deltas (jednorazowo) ----
@@ -1003,9 +1029,7 @@ var DIPLOMACY_PARAMS = {
    */
   progPoboczneWojna: 15,
   // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
-  /** Zaufanie >= wartość wymagane do NAP */
-  progNapZaufanie: 40,
-  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal) */
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
   progNapRelacja: 50,
   /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
   progHandelRelacja: 0,
@@ -1060,10 +1084,6 @@ var DIPLOMACY_PARAMS = {
   progTrybutOfertaEpokaGold: 5,
   /** willingnessTrade min dla handlu */
   progHandelWillingnessMin: 0.5,
-  /** Fair deal: offered/fair min */
-  progHandelFairRatioMin: 0.8,
-  /** Fair deal: offered/fair max */
-  progHandelFairRatioMax: 1.2,
   /** Zaufanie min dla namówienia do wojny */
   progNamowWojneZaufanie: 50,
   /** Łapówka min = base × (epoka + 1) */
@@ -1080,6 +1100,14 @@ var DIPLOMACY_PARAMS = {
   progUltimatumMinGold: 20,
   /** Domyślny trybut wasala (¤/turę) */
   progWasalDefaultGoldPerTurn: 10,
+  /** R-GRACZ-WCHLONIECIE: min tur wasalu przed wchłonięciem MP przez gracza */
+  graczWchlonieciePoWasaluTur: 10,
+  /** R-GRACZ-WCHLONIECIE: baza kosztu wchłonięcia (¤) */
+  graczWchloniecieKosztBaza: 150,
+  /** R-GRACZ-WCHLONIECIE: koszt per ludność MP (¤) */
+  graczWchloniecieKosztPerLudnosc: 25,
+  /** R-GRACZ-WCHLONIECIE: minimalny koszt wchłonięcia (¤) */
+  graczWchloniecieKosztMin: 200,
   // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
   // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
   // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —

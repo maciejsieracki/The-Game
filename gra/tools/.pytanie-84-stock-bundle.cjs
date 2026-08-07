@@ -28,6 +28,11 @@ __export(pytanie_84_stock_entry_exports, {
 });
 module.exports = __toCommonJS(pytanie_84_stock_entry_exports);
 
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+
 // src/game/building-stock-cost.ts
 var STOCK_RESOURCE_LABEL = {
   drewno: "Drewno",
@@ -42,6 +47,7 @@ var STOCK_RESOURCE_LABEL = {
   stal: "Stal",
   sol: "S\xF3l",
   zloto: "Z\u0142oto (surowiec)",
+  wegiel: "W\u0119giel",
   kon: "Ko\u0144"
 };
 var EMPIRE_STOCK_RESOURCE_KEYS = [
@@ -57,6 +63,7 @@ var EMPIRE_STOCK_RESOURCE_KEYS = [
   "stal",
   "sol",
   "zloto",
+  "wegiel",
   "kon"
 ];
 function stripDiacriticsLower(s) {
@@ -98,13 +105,15 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 20, Glinianka->glina 20 (PYTANIE-84-B1/B9/U-18), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia zelaza->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
     epoka: 1,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina; Wzg\xF3rza z lasem",
@@ -117,7 +126,9 @@ var terrain_improvements_default = {
     nazwa: "Irygacja",
     epoka: 2,
     bonus: {
-      zywnosc: 5
+      zywnosc: 5,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "\u0141\u0105ka, R\xF3wnina, Pustynia",
@@ -131,7 +142,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 4,
+      handel: 3
     },
     surowiecOdblokowany: "bydlo",
     surowiecOdblokowany_uwaga: "ABC-18: dost\u0119p dopiero po postawieniu na z\u0142o\u017Cu trzody",
@@ -146,12 +158,13 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "owce",
     surowiecOdblokowany_uwaga: "pierwsze na zlozu owiec; solo na wzgorzu; bez farmy/bydla",
-    teren: "Wzg\xF3rza",
-    warunek: "solo wzg\xF3rze; pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
+    teren: "Wzg\xF3rza (bez lasu)",
+    warunek: "solo otwarte wzg\xF3rze (nak\u0142adka Las zabroniona); pierwsze: z\u0142o\u017Ce owiec; potem wzg\xF3rze bez z\u0142o\u017Ca po odblokowaniu",
     koszt_praca: 20,
     tech: "Oswojenie zwierz\u0105t",
     odblokowuje: "Owce (we\u0142na / jedzenie)"
@@ -159,9 +172,11 @@ var terrain_improvements_default = {
   lama: {
     nazwa: "Lama",
     epoka: 1,
+    cywilizacje: ["inkowie"],
     bonus: {
       zywnosc: 1,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "lama",
     surowiecOdblokowany_uwaga: "TYLKO Inkowie; solo \u2014 bez innych ulepszen na heksie; pierwsze na zlozu lamy",
@@ -175,7 +190,8 @@ var terrain_improvements_default = {
     nazwa: "Stadnina",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: "kon",
     surowiecOdblokowany_uwaga: "ABC-18: tylko na z\u0142o\u017Cu konia + tech Je\u017Adziectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Ko\u0144 do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture.",
@@ -186,31 +202,17 @@ var terrain_improvements_default = {
     tech: "Je\u017Adziectwo",
     odblokowuje: "Ko\u0144 (jednostki konne)"
   },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
-  },
   glinianka: {
     nazwa: "Glinianka",
     epoka: 2,
     bonus: {
       praca: 1,
-      glina: 2
+      glina: 2,
+      handel: 2
     },
     surowiecOdblokowany: "glina",
-    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture (Cegielnia 3/t + Garncarnia 6/t + nadwy\u017Cka). NIE bonus.glina (2) -- osobne pola.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 \u2014 magazyn PE\u0141NY). NIE bonus.glina (2) -- osobne pola.",
+    surowiec_ilosc_tura: 15,
     teren: "z\u0142o\u017Ce Gliny",
     warunek: "glina \u2192 ceg\u0142a (wa\u017Cne w br\u0105zie)",
     koszt_praca: 20,
@@ -222,7 +224,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       praca: 1,
-      kamien: 1
+      kamien: 1,
+      handel: 2
     },
     surowiecOdblokowany: "kamien",
     surowiecOdblokowany_uwaga: "klucz 'kamien' wg Surowiec='Kamie\u0144' w resources.json; brak pola id \u2014 propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu \u2014 DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture.",
@@ -238,7 +241,9 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 1,
-      pieniadz: 1
+      pieniadz: 1,
+      praca: 1,
+      handel: 2
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "dzika zwierzyna nie jest osobnym surowcem w resources.json v0.1 \u2014 brak klucza; plony ekonomiczne (zywnosc+pieniadz) jako substytut",
@@ -252,7 +257,9 @@ var terrain_improvements_default = {
     nazwa: "Wyr\u0105b",
     typ: "wycinka",
     epoka: 1,
-    bonus: {},
+    bonus: {
+      handel: 1
+    },
     surowiecOdblokowany: null,
     teren: "Las",
     warunek: "koszt 5 Pracy na start; plon +5 Drewna \xD7 1 tura (surowiec do puli pa\u0144stwa, Maciej 2026-07-24); potem teren bazowy bez lasu",
@@ -270,11 +277,12 @@ var terrain_improvements_default = {
     typ: "ulepszenie",
     epoka: 1,
     bonus: {
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: "drewno",
-    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture.",
-    surowiec_ilosc_tura: 20,
+    surowiecOdblokowany_uwaga: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 \u2014 magazyn PE\u0141NY).",
+    surowiec_ilosc_tura: 10,
     teren: "L\u0105d w terytorium (\u0142\u0105ka, lasy, wzg\xF3rza\u2026)",
     warunek: "sta\u0142e ulepszenie; MO\u017BE na lesie \u2014 las NIE znika; odblokowuje dost\u0119p do drewna (v0.1 bez ilo\u015Bci)",
     koszt_praca: 25,
@@ -285,7 +293,9 @@ var terrain_improvements_default = {
     nazwa: "Tarasy uprawne",
     epoka: 2,
     bonus: {
-      zywnosc: 3
+      zywnosc: 3,
+      praca: 2,
+      handel: 2
     },
     surowiecOdblokowany: null,
     teren: "Wzg\xF3rza",
@@ -293,7 +303,10 @@ var terrain_improvements_default = {
     koszt_praca: 25,
     tech: "Rolnictwo",
     odblokowuje: "",
-    cywilizacje: ["chinczycy", "inkowie"],
+    cywilizacje: [
+      "chinczycy",
+      "inkowie"
+    ],
     cywilizacje_uwaga: "Pole og\xF3lne (konwencja z wonders.json: WonderDef.cywilizacje + canCivBuildWonder) \u2014 czytane przez isImprovementAllowedForCiv (game/terrain-improvements.ts), NIE hardkod per-ulepszenie. Brak pola / pusta lista = dost\u0119pne dla wszystkich cywilizacji.",
     uwagi: "C-TARASY-Q1 Maciej 2026-07-26: cofni\u0119cie T-TECH-4 (2026-07-04, 'po Rolnictwie \u2014 wszystkie cywilizacje') \u2014 zgodno\u015B\u0107 historyczna: chi\u0144skie tarasy ry\u017Cowe i andyjskie tarasy Ink\xF3w. Od teraz WY\u0141\u0104CZNIE Chi\u0144czycy + Inkowie (po Rolnictwie)."
   },
@@ -302,7 +315,8 @@ var terrain_improvements_default = {
     epoka: 1,
     bonus: {
       zywnosc: 2,
-      praca: 3
+      praca: 3,
+      handel: 3
     },
     surowiecOdblokowany: null,
     surowiecOdblokowany_uwaga: "ryby nie sa osobnym surowcem w resources.json v0.1; plony (zywnosc) jako substytut; DANE moze dodac klucz 'ryby' w przyszlosci",
@@ -317,7 +331,9 @@ var terrain_improvements_default = {
     epoka: 2,
     bonus: {
       pieniadz: 1,
-      zywnosc: 1
+      zywnosc: 1,
+      praca: 1,
+      handel: 3
     },
     surowiecOdblokowany: "sol",
     surowiecOdblokowany_uwaga: "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja S\xF3l do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 \u017Bywno\u015B\u0107, +1 Pieni\u0105dz) zostaje obok surowca_ilosc_tura.",
@@ -362,7 +378,9 @@ var terrain_improvements_default = {
     nazwa: "Droga brukowana",
     typ: "ulepszenie",
     epoka: 3,
-    bonus: {},
+    bonus: {
+      handel: 2
+    },
     bonus_ruch: 2,
     surowiecOdblokowany: null,
     upgradeFrom: "droga",
@@ -377,23 +395,42 @@ var terrain_improvements_default = {
     nazwa: "Kopalnia miedzi",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 5
     },
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
     surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+  },
+  kopalnia_zelaza: {
+    nazwa: "Kopalnia \u017Celaza",
+    epoka: 3,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda_zelaza",
+    surowiecOdblokowany_uwaga: "Ruda \u017Celaza (Odlewnia \u017Celaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce \u017Celaza (hex.zloze=zelazo)",
+    warunek: "ruda \u017Celaza \u2192 magazyn (Odlewnia \u017Celaza)",
+    koszt_praca: 22,
+    tech: "Hutnictwo \u017Celaza",
+    odblokowuje: "Odlewnia \u017Celaza (budynek miejski)",
+    uwagi: "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
   },
   kopalnia_zlota: {
     nazwa: "Kopalnia z\u0142ota",
     epoka: 2,
     bonus: {
-      praca: 2
+      praca: 2,
+      handel: 10
     },
     surowiecOdblokowany: "zloto",
     surowiecOdblokowany_uwaga: "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Z\u0142oto do magazynu pa\u0144stwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/tur\u0119. Mennica zu\u017Cywa 1 Z\u0142oto/tur\u0119 ze skarbca przy mno\u017Cniku handlu\u2192Pieni\u0105dz (U-13).",
@@ -443,7 +480,7 @@ var TERRITORY_YIELD_IMPROVEMENTS = /* @__PURE__ */ new Set([
   "kamieniolom",
   "glinianka",
   "kopalnia_miedzi",
-  "kopalnia",
+  "kopalnia_zelaza",
   "warzelnia_soli",
   "stadnina",
   "kopalnia_zlota"
@@ -466,20 +503,24 @@ function territoryResourceYieldForImprovement(key, zloze) {
       return { resourceKey: "glina", amount: territoryYieldAmountForKey(norm) };
     case "kopalnia_miedzi":
       return { resourceKey: "ruda", amount: territoryYieldAmountForKey(norm) };
+    case "kopalnia_zelaza":
+      return { resourceKey: "ruda_zelaza", amount: territoryYieldAmountForKey(norm) };
     case "warzelnia_soli":
       return { resourceKey: "sol", amount: territoryYieldAmountForKey(norm) };
     case "stadnina":
       return { resourceKey: "kon", amount: 1 };
     case "kopalnia_zlota":
       return { resourceKey: "zloto", amount: 1 };
-    case "kopalnia": {
-      const z = zloze?.trim().toLowerCase();
-      return { resourceKey: z === "zelazo" ? "ruda_zelaza" : "ruda", amount: territoryYieldAmountForKey(norm) };
-    }
     default:
       return null;
   }
 }
+var LIVESTOCK_SUROWIEC_KEYS = /* @__PURE__ */ new Set(["bydlo", "owce", "lama", "kon"]);
+var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
+  const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
+  return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
+});
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   EMPIRE_STOCK_RESOURCE_KEYS,

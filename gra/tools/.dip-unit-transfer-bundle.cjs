@@ -37,6 +37,7 @@ var diplomacy_default = {
     zdrada_zaufanie: -50,
     szpiegWykryty_zaufanie: -15,
     rywalizacjaTenSamTyp_zaufanie: -20,
+    miastoPanstwoSameCiv_zaufanie: 20,
     roznicaKulturowa_zaufanie: -5,
     przewagaMilitarna_respekt: 15,
     slabszyMilitarnie_respekt: -10,
@@ -70,7 +71,6 @@ var diplomacy_default = {
     progPoboczneAkceptacja: 60,
     progPoboczneHandel: 30,
     progPoboczneWojna: 15,
-    progNapZaufanie: 40,
     progNapRelacja: 50,
     progHandelRelacja: 0,
     progSojuszPartnerRwMin: 0.4,
@@ -100,8 +100,6 @@ var diplomacy_default = {
     progTrybutOfertaBaseGold: 10,
     progTrybutOfertaEpokaGold: 5,
     progHandelWillingnessMin: 0.5,
-    progHandelFairRatioMin: 0.8,
-    progHandelFairRatioMax: 1.2,
     progNamowWojneZaufanie: 50,
     progNamowWojneBribeBase: 30,
     progGraniceZaufanie: 45,
@@ -110,7 +108,11 @@ var diplomacy_default = {
     karaPrzemarszNieautoryzowany_zaufanie_perTura: 5,
     progUltimatumMilitaryRatio: 1.3,
     progUltimatumMinGold: 20,
-    progWasalDefaultGoldPerTurn: 10
+    progWasalDefaultGoldPerTurn: 10,
+    graczWchlonieciePoWasaluTur: 10,
+    graczWchloniecieKosztBaza: 150,
+    graczWchloniecieKosztPerLudnosc: 25,
+    graczWchloniecieKosztMin: 200
   },
   handel_zloze: {
     _opis: "Dost\u0119p do jednego z\u0142o\u017Ca mineralnego/strategicznego (hex) \u2014 NIE hodowla (byd\u0142o/owce/lama = ulepszenia terenu, poza tym cennikiem). Cena w \xA4 lub Praca @ Rel 100.",
@@ -193,12 +195,7 @@ var diplomacy_default = {
     dobra_wola_po_wymianie: true,
     dobra_wola_tur: 3,
     dobra_wola_min_nadmiar_pn: 100,
-    dobra_wola_zaufanie_per_tura: 1,
-    _opis_wiarygodnosc_limit: "Dzwignia 2 (WIARYGODNOSC-SPECYFIKACJA.md \xA75, decyzja WIAR-9.5b=B, 2026-07-26): limit max_zaufanie_na_ture zaleny od Wiarygodnosci SPRAWCY daru/handlu (proposerId). Reputacja dodatnia (W>=0) NIE zmienia limitu (zostaje max_zaufanie_na_ture=5) \u2014 karzemy zla reputacje, nie nagradzamy dobrej. Pasmo Chwiejny (W<0, W>wiarygodnoscProgWiarolomny=-40): limit obnizony. Pasmo Wiarolomny gorne (-70<W<=-40): limit dalej obnizony. Dno (W<=-70): zakup Zaufania darem calkowicie zablokowany.",
-    wiarygodnosc_limit_zaufanie_chwiejny: 3,
-    wiarygodnosc_limit_zaufanie_wiarolomny: 1,
-    wiarygodnosc_limit_zaufanie_dno: 0,
-    wiarygodnosc_limit_prog_dno: -70
+    dobra_wola_zaufanie_per_tura: 1
   },
   akcje_dyplomatyczne: [
     {
@@ -298,12 +295,20 @@ var diplomacy_default = {
       Efekt: "Z casus belli: \u221210 Relacja u wszystkich. Bez c.b.: \u221225 Relacja u wszystkich, \u221220 Zaufanie, flaga agresor"
     },
     {
-      Akcja: "12. Wasalizacja / wch\u0142oni\u0119cie",
-      Opis: "S\u0142absza cywilizacja staje si\u0119 wasalem (zachowuje terytorium, p\u0142aci trybut) lub zostaje w pe\u0142ni wch\u0142oni\u0119ta przez gracza.",
+      Akcja: "12. Wasalizacja",
+      Opis: "Miasto-pa\u0144stwo staje si\u0119 wasalem \u2014 zachowuje terytorium, p\u0142aci trybut co tur\u0119. Wymaga Respektu \u2265 prog_wasalizacja.",
       "Dost\u0119pne: G\u0142\xF3wni rywale": "TAK",
       "Dost\u0119pne: Poboczni": "TAK",
-      Koszt: "Wasalizacja: 100\u2013300 Pieni\u0119dzy gwarancji + zobowi\u0105zanie ochrony; Wch\u0142oni\u0119cie: kary reputacyjne",
-      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody. Wch\u0142oni\u0119cie: miasta przechodz\u0105, niezadowolenie N tur"
+      Koszt: "Wasalizacja: trybut \xA4/tur\u0119 (domy\u015Blnie 10) + zobowi\u0105zanie ochrony",
+      Efekt: "Wasal: trybut, prawo przemarszu, zakaz sojuszy bez zgody suzerena"
+    },
+    {
+      Akcja: "15. Wch\u0142oni\u0119cie",
+      Opis: "Po aktywnym wasalu (min. 10 tur) gracz mo\u017Ce w pe\u0142ni wch\u0142oni\u0107 miasto-pa\u0144stwo \u2014 jednorazowa op\u0142ata \xA4 (skala ludno\u015Bci), zgoda wasala.",
+      "Dost\u0119pne: G\u0142\xF3wni rywale": "NIE",
+      "Dost\u0119pne: Poboczni": "TAK",
+      Koszt: "max(200, 150 + 25 \xD7 ludno\u015B\u0107 MP) \xA4 jednorazowo",
+      Efekt: "Miasta MP przechodz\u0105 do gracza; wasalizacja znika; MP eliminowane z mapy"
     },
     {
       Akcja: "13. Prezent / dar",
@@ -1369,7 +1374,7 @@ var terrain_improvements_default = {
     kanon_zywnosc_hodowla: "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) \u2014 obowiazuje nad tym plikiem do wdrozenia",
     decyzje_EKONOMIA: "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     klucze_surowcow_ASCII: "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia (zloze zelaza)->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    pole_surowiec_ilosc_tura: "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE: Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 4, Kopalnia miedzi->ruda 2, Kopalnia zelaza->ruda_zelaza 2, Warzelnia soli->sol 10 (B2), Stadnina->kon 1 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
   },
   farma: {
     nazwa: "Farma",
@@ -1465,22 +1470,6 @@ var terrain_improvements_default = {
     koszt_praca: 28,
     tech: "Je\u017Adziectwo",
     odblokowuje: "Ko\u0144 (jednostki konne)"
-  },
-  kopalnia: {
-    nazwa: "Kopalnia",
-    epoka: 1,
-    bonus: {
-      praca: 2,
-      handel: 3
-    },
-    surowiecOdblokowany: "ruda",
-    surowiecOdblokowany_uwaga: "ruda miedzi lub ruda_zelaza (zale\u017Cnie od z\u0142o\u017Ca); plon 2/t z kopalni. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture dla ruda_zelaza (kopalnia na z\u0142o\u017Cu \u017Celaza).",
-    surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce rudy miedzi lub \u017Celaza",
-    warunek: "wydobycie rudy do magazynu miasta (ruda / ruda_zelaza)",
-    koszt_praca: 25,
-    tech: "Murarstwo",
-    odblokowuje: "Metal/Br\u0105z (jednostki br\u0105zowe, mury)"
   },
   glinianka: {
     nazwa: "Glinianka",
@@ -1681,12 +1670,29 @@ var terrain_improvements_default = {
     surowiecOdblokowany: "ruda",
     surowiecOdblokowany_uwaga: "ruda miedzi (Odlewnia br\u0105zu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture.",
     surowiec_ilosc_tura: 2,
-    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz)",
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     warunek: "ruda miedzi \u2192 magazyn (Odlewnia br\u0105zu)",
     koszt_praca: 22,
     tech: "Br\u0105zownictwo",
     odblokowuje: "Odlewnia br\u0105zu (budynek miejski)",
-    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy"
+    uwagi: "ABC-7 + ABC-14 Maciej 2026-07-04: tylko heks ze z\u0142o\u017Cem rudy; R-KOPALNIA-UNIWERSALNA-Q1=B: legacy nakladka ZlozeRudy"
+  },
+  kopalnia_zelaza: {
+    nazwa: "Kopalnia \u017Celaza",
+    epoka: 3,
+    bonus: {
+      praca: 2,
+      handel: 5
+    },
+    surowiecOdblokowany: "ruda_zelaza",
+    surowiecOdblokowany_uwaga: "Ruda \u017Celaza (Odlewnia \u017Celaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture.",
+    surowiec_ilosc_tura: 2,
+    teren: "Wzg\xF3rza, G\xF3ry, z\u0142o\u017Ce \u017Celaza (hex.zloze=zelazo)",
+    warunek: "ruda \u017Celaza \u2192 magazyn (Odlewnia \u017Celaza)",
+    koszt_praca: 22,
+    tech: "Hutnictwo \u017Celaza",
+    odblokowuje: "Odlewnia \u017Celaza (budynek miejski)",
+    uwagi: "R-KOPALNIA-UNIWERSALNA-Q1=B (Maciej 2026-07-30): osobne ulepszenie zamiast uniwersalnej kopalnia"
   },
   kopalnia_zlota: {
     nazwa: "Kopalnia z\u0142ota",
@@ -1736,8 +1742,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 10,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -1783,7 +1789,9 @@ var units_default = [
     chargeBonus: 2,
     health: 22,
     missileAttack: 0,
-    fieldPower: 27
+    fieldPower: 27,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz",
@@ -1792,8 +1800,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -1839,7 +1847,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik",
@@ -1848,8 +1858,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -1895,7 +1905,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik",
@@ -1904,8 +1916,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 6,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -1951,7 +1963,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 3,
-    fieldPower: 17.5
+    fieldPower: 17.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Zwiadowca",
@@ -1960,8 +1974,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 0,
     Atak: 0,
@@ -2007,7 +2021,9 @@ var units_default = [
     chargeBonus: 0,
     health: 10,
     missileAttack: 0,
-    fieldPower: 6
+    fieldPower: 6,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik",
@@ -2017,7 +2033,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -2063,7 +2079,9 @@ var units_default = [
     chargeBonus: 4,
     health: 32,
     missileAttack: 0,
-    fieldPower: 44
+    fieldPower: 44,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z mieczem i tarcz\u0105",
@@ -2073,7 +2091,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -2119,7 +2137,9 @@ var units_default = [
     chargeBonus: 4,
     health: 28,
     missileAttack: 0,
-    fieldPower: 39
+    fieldPower: 39,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan (wo\u0142y)",
@@ -2129,7 +2149,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -2175,7 +2195,9 @@ var units_default = [
     chargeBonus: 10,
     health: 48,
     missileAttack: 0,
-    fieldPower: 52
+    fieldPower: 52,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Konnica",
@@ -2185,7 +2207,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 22,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -2231,7 +2253,9 @@ var units_default = [
     chargeBonus: 10,
     health: 28,
     missileAttack: 0,
-    fieldPower: 49
+    fieldPower: 49,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Galera",
@@ -2241,7 +2265,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -2287,7 +2311,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 25
+    fieldPower: 25,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Falanga",
@@ -2297,7 +2323,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -2343,7 +2369,9 @@ var units_default = [
     chargeBonus: 7,
     health: 40,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hieros Lochos (\u015Awi\u0119ty Zast\u0119p)",
@@ -2353,7 +2381,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -2399,7 +2427,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Hastati",
@@ -2409,7 +2439,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -2455,7 +2485,9 @@ var units_default = [
     chargeBonus: 7,
     health: 38,
     missileAttack: 4,
-    fieldPower: 57.5
+    fieldPower: 57.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Triari",
@@ -2465,7 +2497,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -2511,7 +2543,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Je\u017Adziec chi\u0144ski",
@@ -2521,7 +2555,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -2567,7 +2601,9 @@ var units_default = [
     chargeBonus: 5,
     health: 44,
     missileAttack: 0,
-    fieldPower: 45.5
+    fieldPower: 45.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Hu Ben Wei (Gwardia Tygrysa)",
@@ -2577,7 +2613,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -2623,7 +2659,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Impi",
@@ -2633,7 +2671,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -2679,7 +2717,9 @@ var units_default = [
     chargeBonus: 3,
     health: 36,
     missileAttack: 0,
-    fieldPower: 38.5
+    fieldPower: 38.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik Zulu (Izijula)",
@@ -2688,8 +2728,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -2735,7 +2775,9 @@ var units_default = [
     chargeBonus: 0,
     health: 20,
     missileAttack: 4,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "uThulwana (Bia\u0142e Tarcze)",
@@ -2745,7 +2787,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -2791,7 +2833,9 @@ var units_default = [
     chargeBonus: 10,
     health: 42,
     missileAttack: 0,
-    fieldPower: 61
+    fieldPower: 61,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik z maczug\u0105 (Chaska)",
@@ -2800,8 +2844,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -2847,7 +2891,9 @@ var units_default = [
     chargeBonus: 2,
     health: 20,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z toporem",
@@ -2857,7 +2903,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -2903,7 +2949,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 32.5
+    fieldPower: 32.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Procarz (Huaracoc)",
@@ -2912,8 +2960,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 8,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 2,
@@ -2959,7 +3007,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Oszczepnik (Est\xF3lica)",
@@ -2968,8 +3018,8 @@ var units_default = [
     Tech: "-",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3015,7 +3065,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Kr\xF3lewska Gwardia",
@@ -3025,7 +3077,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -3071,7 +3123,9 @@ var units_default = [
     chargeBonus: 8,
     health: 40,
     missileAttack: 0,
-    fieldPower: 62
+    fieldPower: 62,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Rydwan konny",
@@ -3081,7 +3135,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3127,7 +3181,9 @@ var units_default = [
     chargeBonus: 8,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54
+    fieldPower: 54,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik egipski",
@@ -3136,8 +3192,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3183,7 +3239,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 6,
-    fieldPower: 15
+    fieldPower: 15,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan egipski",
@@ -3193,7 +3251,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3239,7 +3297,9 @@ var units_default = [
     chargeBonus: 7,
     health: 56,
     missileAttack: 5,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z khopesh",
@@ -3249,7 +3309,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3295,7 +3355,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Med\u017Caj (Gwardia Faraona)",
@@ -3305,7 +3367,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -3351,7 +3413,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 3,
-    fieldPower: 64.5
+    fieldPower: 64.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "\u0141ucznik nubijski",
@@ -3360,8 +3424,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3407,7 +3471,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 6,
-    fieldPower: 16
+    fieldPower: 16,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik sumeryjski",
@@ -3416,8 +3482,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 9,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3463,7 +3529,9 @@ var units_default = [
     chargeBonus: 0,
     health: 16,
     missileAttack: 4,
-    fieldPower: 12
+    fieldPower: 12,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan sumeryjski",
@@ -3473,7 +3541,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 38,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -3519,7 +3587,9 @@ var units_default = [
     chargeBonus: 9,
     health: 56,
     missileAttack: 0,
-    fieldPower: 54.5
+    fieldPower: 54.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "W\u0142\xF3cznik sumeryjski",
@@ -3529,7 +3599,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3575,7 +3645,9 @@ var units_default = [
     chargeBonus: 2,
     health: 40,
     missileAttack: 0,
-    fieldPower: 41
+    fieldPower: 41,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardia Kr\xF3lewska Sumeru",
@@ -3585,7 +3657,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -3631,7 +3703,9 @@ var units_default = [
     chargeBonus: 8,
     health: 42,
     missileAttack: 0,
-    fieldPower: 63
+    fieldPower: 63,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik myke\u0144ski",
@@ -3641,7 +3715,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3687,7 +3761,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 34.5
+    fieldPower: 34.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan myke\u0144ski",
@@ -3697,7 +3773,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3743,7 +3819,9 @@ var units_default = [
     chargeBonus: 9,
     health: 52,
     missileAttack: 0,
-    fieldPower: 52.5
+    fieldPower: 52.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik Sherden",
@@ -3753,7 +3831,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -3799,7 +3877,9 @@ var units_default = [
     chargeBonus: 3,
     health: 28,
     missileAttack: 0,
-    fieldPower: 35.5
+    fieldPower: 35.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Halabardnik Shang",
@@ -3809,7 +3889,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -3855,7 +3935,9 @@ var units_default = [
     chargeBonus: 2,
     health: 24,
     missileAttack: 0,
-    fieldPower: 36
+    fieldPower: 36,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan Shang",
@@ -3865,7 +3947,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -3911,7 +3993,9 @@ var units_default = [
     chargeBonus: 8,
     health: 60,
     missileAttack: 0,
-    fieldPower: 58
+    fieldPower: 58,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "\u0141ucznik akadyjski",
@@ -3920,8 +4004,8 @@ var units_default = [
     Tech: "\u0141ucznictwo",
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -3967,7 +4051,9 @@ var units_default = [
     chargeBonus: 0,
     health: 18,
     missileAttack: 5,
-    fieldPower: 15.5
+    fieldPower: 15.5,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gaesatae",
@@ -3977,7 +4063,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -4023,14 +4109,16 @@ var units_default = [
     chargeBonus: 5,
     health: 22,
     missileAttack: 0,
-    fieldPower: 29.5
+    fieldPower: 29.5,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -4076,7 +4164,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 5,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Rydwan celtycki",
@@ -4086,7 +4176,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 28,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -4132,7 +4222,9 @@ var units_default = [
     chargeBonus: 10,
     health: 52,
     missileAttack: 0,
-    fieldPower: 53
+    fieldPower: 53,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik germa\u0144ski",
@@ -4142,7 +4234,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -4188,7 +4280,9 @@ var units_default = [
     chargeBonus: 4,
     health: 30,
     missileAttack: 4,
-    fieldPower: 37
+    fieldPower: 37,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Berserker germa\u0144ski",
@@ -4198,7 +4292,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -4244,7 +4338,9 @@ var units_default = [
     chargeBonus: 6,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33
+    fieldPower: 33,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Taran",
@@ -4253,8 +4349,8 @@ var units_default = [
     Tech: "Obr\xF3bka drewna",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 3,
@@ -4302,7 +4398,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 14,
     fieldPower: 352.5,
-    siegePower: 85
+    siegePower: 85,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Taran okuty",
@@ -4312,7 +4410,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 4,
@@ -4360,7 +4458,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 18,
     fieldPower: 377.5,
-    siegePower: 94
+    siegePower: 94,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Katapulta",
@@ -4370,7 +4470,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 1,
@@ -4418,7 +4518,9 @@ var units_default = [
     missileAttack: 4,
     wallAttack: 16,
     fieldPower: 128,
-    siegePower: 45
+    siegePower: 45,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wie\u017Ca obl\u0119\u017Cnicza",
@@ -4428,7 +4530,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 20,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 0,
@@ -4476,7 +4578,9 @@ var units_default = [
     missileAttack: 0,
     wallAttack: 6,
     fieldPower: 451,
-    siegePower: 97
+    siegePower: 97,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "Wojownik tyrre\u0144ski",
@@ -4486,7 +4590,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 15,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -4532,7 +4636,9 @@ var units_default = [
     chargeBonus: 3,
     health: 24,
     missileAttack: 0,
-    fieldPower: 33.5
+    fieldPower: 33.5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik szekelesz",
@@ -4542,7 +4648,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -4588,14 +4694,16 @@ var units_default = [
     chargeBonus: 2,
     health: 28,
     missileAttack: 0,
-    fieldPower: 32
+    fieldPower: 32,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 32,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 10,
@@ -4641,14 +4749,16 @@ var units_default = [
     meleeAttack: 9,
     weaponDamage: 8,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 30,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -4694,14 +4804,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 2,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
-    Surowiec: "-",
-    "Surowiec (ilo\u015B\u0107)": 0,
+    Surowiec: "Drewno",
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -4747,14 +4859,16 @@ var units_default = [
     meleeAttack: 2,
     weaponDamage: 2,
     meleeDefence: 3,
-    missileAttack: 4
+    missileAttack: 4,
+    "Utrzymanie surowiec": "Drewno",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -4800,14 +4914,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 26,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -4853,14 +4969,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 4,
-    missileAttack: 7
+    missileAttack: 7,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -4906,14 +5024,16 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 4,
     meleeDefence: 9,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -4959,14 +5079,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5012,14 +5134,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 34,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 3,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5065,14 +5189,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 7,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -5118,14 +5244,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -5171,14 +5299,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -5224,14 +5354,16 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 7,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -5277,14 +5409,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 5,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5330,14 +5464,16 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 5,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5383,14 +5519,16 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 3,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "Br\u0105z",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5436,14 +5574,16 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 4,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Epoka: "\u017Belazo",
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5489,7 +5629,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Thorakites",
@@ -5499,7 +5641,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 7,
@@ -5542,7 +5684,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Evocati",
@@ -5552,7 +5696,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 0,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 3,
+    "Surowiec (ilo\u015B\u0107)": 15,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 0,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -5595,7 +5739,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 8,
     meleeDefence: 8,
-    missileAttack: 6
+    missileAttack: 6,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 3
   },
   {
     Jednostka: "iButho z iklwa",
@@ -5605,7 +5751,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 16,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 5,
@@ -5648,7 +5794,9 @@ var units_default = [
     meleeAttack: 5,
     weaponDamage: 4,
     meleeDefence: 7,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Gwardzista z champi",
@@ -5658,7 +5806,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "Br\u0105z",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5701,7 +5849,9 @@ var units_default = [
     meleeAttack: 7,
     weaponDamage: 6,
     meleeDefence: 5,
-    missileAttack: 5
+    missileAttack: 5,
+    "Utrzymanie surowiec": "Br\u0105z",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Wojownik z \u017Celaznym khopesh",
@@ -5711,7 +5861,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 8,
@@ -5754,7 +5904,9 @@ var units_default = [
     meleeAttack: 6,
     weaponDamage: 6,
     meleeDefence: 6,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Mur tarcz (Sargonid)",
@@ -5764,7 +5916,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 18,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 2,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 6,
@@ -5807,7 +5959,9 @@ var units_default = [
     meleeAttack: 4,
     weaponDamage: 3,
     meleeDefence: 10,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   },
   {
     Jednostka: "Miecznik galijski",
@@ -5817,7 +5971,7 @@ var units_default = [
     "Pieni\u0105dz (koszt)": 14,
     Ludno\u015B\u0107: 1,
     Surowiec: "\u017Belazo",
-    "Surowiec (ilo\u015B\u0107)": 2,
+    "Surowiec (ilo\u015B\u0107)": 10,
     "Utrzymanie (Pieni\u0105dz/tur\u0119)": 1,
     "\u017Cywno\u015B\u0107/tur\u0119": 1,
     Atak: 9,
@@ -5860,7 +6014,9 @@ var units_default = [
     meleeAttack: 8,
     weaponDamage: 6,
     meleeDefence: 2,
-    missileAttack: 0
+    missileAttack: 0,
+    "Utrzymanie surowiec": "\u017Belazo",
+    "Utrzymanie surowiec (ilo\u015B\u0107)": 2
   }
 ];
 
@@ -6666,7 +6822,7 @@ var buildings_default = [
     nazwa: "Palisada drewniana",
     kategoria: "Obrona",
     grupa: "Wojsko i obrona",
-    epokaWejscia: 2,
+    epokaWejscia: 1,
     maksPoziom: 1,
     nazwyPoziomow: [],
     baza: {
@@ -6694,7 +6850,7 @@ var buildings_default = [
     utrzymanie: 1,
     przyrostUtrzymania: 0,
     wymagania: "",
-    uwagi: "Palisada drewniana (Maciej 2026-07-28): wczesna obrona miasta w epoce Br\u0105zu, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
+    uwagi: "Palisada drewniana (Maciej 2026-07-28, korekta 2026-07-29): wczesna obrona miasta w epoce Kamienia, odblokowana po Obr\xF3bce drewna -- przed kamiennymi Murami (tech Budownictwo, epoka Br\u0105z). Obrona miasta WY\u0141\u0104CZNIE procentowa: +100% Obrony -- patrz miasto-params.json bonus_obrona_palisada_proc + game/city-defense.ts cityWallDefenseBonusPercent. Kamienne Mury (+200%) zast\u0119puj\u0105 bonus palisady (nie stackuj\u0105). Po uko\u0144czeniu Mur\xF3w palisada jest usuwana z cityBuilt (production.ts).",
     techUnlock: "Obr\xF3bka drewna",
     odblokowuje: "maMur",
     koszt_surowce: {
@@ -6898,12 +7054,9 @@ var buildings_default = [
     utrzymanie: 2,
     przyrostUtrzymania: 1,
     wymagania: "-",
-    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bramka drewno; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
+    uwagi: "B-PALAC-TIER I (Kamie\u0144): 1/miasto; bez kosztu surowcowego (C-PALAC-Q1=A, start pula=0); tylko kosztBudowy Praca; bonus bazowy \xD71; upgrade\u2192Pa\u0142ac II. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Pa\u0142ac II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     techUnlock: "-",
-    lokalizacja: "stolica",
-    koszt_surowce: {
-      drewno: 8
-    }
+    lokalizacja: "stolica"
   },
   {
     id: "palac_ii",
@@ -8509,7 +8662,7 @@ var map_gen_params_default = {
       _opis: "Maciej 2026-07-29: \xD73 g\u0119sto\u015Bci z\u0142\xF3\u017C gliny vs poprzedni standard (0.10\u21920.30). Szansa spawnu na kwal. heks = rarity \xD7 baseline_rarity_mult (1.35) \xD7 surowce_mult tieru (Ma\u0142o 0.6 / Normalnie 1.0 / Du\u017Co 1.4) \u2014 proporcje tier\xF3w bez zmian."
     },
     konie: { rarity: 0.025 },
-    wegiel: { rarity: 0.1 },
+    wegiel: { rarity: 0, _opis: "SUR-WEGIEL=B: ukryty \u2014 brak spawnu na mapie (dyplomacja bez zmian)" },
     sol: { rarity: 0.12 },
     zloto: { rarity: 0.03 }
   },
@@ -8542,7 +8695,7 @@ var FALLBACK_DEPOSIT_RARITY = {
   zelazo: 0.08,
   glina: 0.3,
   konie: 0.1,
-  wegiel: 0.1,
+  wegiel: 0,
   owce: 0.08,
   bydlo: 0.07,
   sol: 0.12,
@@ -8625,7 +8778,7 @@ var e_start_params_default = {
     },
     Standardowy: {
       rywale_ai: 6,
-      miasta_panstwa: 6,
+      miasta_panstwa: 5,
       typy_cywilizacji: 6,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 5, min: 4, max: 6 },
@@ -8637,7 +8790,7 @@ var e_start_params_default = {
     },
     Du\u017Cy: {
       rywale_ai: 7,
-      miasta_panstwa: 7,
+      miasta_panstwa: 6,
       typy_cywilizacji: 10,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 6, min: 5, max: 7 },
@@ -8649,7 +8802,7 @@ var e_start_params_default = {
     },
     Ogromny: {
       rywale_ai: 8,
-      miasta_panstwa: 8,
+      miasta_panstwa: 7,
       typy_cywilizacji: 12,
       typy_cywilizacji_per_epoka: {
         kamien: { default: 7, min: 6, max: 8 },
@@ -8664,7 +8817,7 @@ var e_start_params_default = {
       miasta_panstwa: 8,
       typy_cywilizacji: 14,
       typy_cywilizacji_per_epoka: {
-        kamien: { default: 7, min: 6, max: 8 },
+        kamien: { default: 8, min: 7, max: 8 },
         braz: { default: 13, min: 12, max: 14 },
         zelazo: { default: 14, min: 13, max: 15 }
       },
@@ -8745,6 +8898,21 @@ function eStartRenderQualityBundled() {
   return "medium";
 }
 
+// src/map/mapGenProgress.ts
+var MAP_GEN_PHASE_LABELS = {
+  prep: "Przygotowanie siatki",
+  terrain: "Klimat i teren bazowy",
+  landSea: "L\u0105d i ocean",
+  relief: "Relief (g\xF3ry i wzg\xF3rza)",
+  coast: "Wybrze\u017Ce",
+  riversMain: "Rzeki \u2014 g\u0142\xF3wne",
+  riversFill: "Rzeki \u2014 uzupe\u0142nianie",
+  forest: "Las i ro\u015Blinno\u015B\u0107",
+  deposits: "Z\u0142o\u017Ca mineralne",
+  starts: "Pozycje startowe"
+};
+var MAP_GEN_PHASE_KEYS = Object.keys(MAP_GEN_PHASE_LABELS);
+
 // src/map/generator.ts
 var ROZMIAR_DIMS = mapGenRozmiarDims();
 
@@ -8763,6 +8931,8 @@ var RIVER_REF_AREA = 168 * 120;
 var RESOURCE_BASELINE_RARITY_MULT = mapGenResourceBaselineRarity();
 
 // src/map/gen-helpers.ts
+var CLIMATE_DESERT_HALF_ROWS = 3.5;
+var CLIMATE_DESERT_HALF_FRAC = CLIMATE_DESERT_HALF_ROWS / 108;
 var RELIEF_MIN_MOUNTAINS = { low: 2, medium: 4, high: 5 };
 var RELIEF_MIN_HIGHLANDS = { low: 2, medium: 4, high: 5 };
 var MIN_MOUNTAINS_IRON_CELL = RELIEF_MIN_MOUNTAINS.medium;
@@ -8788,6 +8958,7 @@ var ELEVATION_RANK = {
   ["gory" /* Gory */]: 6,
   ["polarny" /* Polarny */]: 2
 };
+var RIVER_PROFILE_ON = globalThis.process?.env?.CIV_RIVER_PROFILE === "1";
 var BASE_DEPOSIT_RULES = [
   {
     id: "miedz",
@@ -8856,6 +9027,10 @@ var DEPOSIT_RULES = BASE_DEPOSIT_RULES.map((rule) => {
   return typeof rarity === "number" ? { ...rule, rarity } : rule;
 });
 
+// src/map/clusters.ts
+var MIN_DEVELOPMENT_HEX_PER_CIV = 90;
+var SMALL_MASS_CAP_THRESHOLD = 2 * MIN_DEVELOPMENT_HEX_PER_CIV;
+
 // src/game/terrain-improvements.ts
 var IMPROVEMENTS = terrain_improvements_default;
 var IMPROVEMENT_KEYS = Object.keys(IMPROVEMENTS).filter((k) => !k.startsWith("_"));
@@ -8864,6 +9039,7 @@ var LIVESTOCK_IMPROVEMENT_KEYS = IMPROVEMENT_KEYS.filter((k) => {
   const s = IMPROVEMENTS[k]?.surowiecOdblokowany;
   return typeof s === "string" && LIVESTOCK_SUROWIEC_KEYS.has(s);
 });
+var FARMA_POTENTIAL_FOOD_BONUS = IMPROVEMENTS.farma?.bonus?.zywnosc ?? 3;
 
 // src/map/road-movement.ts
 var ROAD_MIN_MOVE_COST = 1 / 3;
@@ -8927,8 +9103,300 @@ var DEFAULT_TERRAIN_COSTS = {
   ["polarny" /* Polarny */]: Infinity
 };
 var _terrainCosts = { ...DEFAULT_TERRAIN_COSTS };
+var TERRAIN_MOVEMENT_KEY_ALIASES = {
+  Laka: "laka" /* Laka */,
+  "\u0141\u0105ka": "laka" /* Laka */,
+  laka: "laka" /* Laka */,
+  Rownina: "rownina" /* Rownina */,
+  "R\xF3wnina": "rownina" /* Rownina */,
+  rownina: "rownina" /* Rownina */,
+  Pustynia: "pustynia" /* Pustynia */,
+  pustynia: "pustynia" /* Pustynia */,
+  Wybrzeze: "wybrzeze" /* Wybrzeze */,
+  "Wybrze\u017Ce": "wybrzeze" /* Wybrzeze */,
+  wybrzeze: "wybrzeze" /* Wybrzeze */,
+  Wzgorza: "wzgorza" /* Wzgorza */,
+  "Wzg\xF3rza": "wzgorza" /* Wzgorza */,
+  wzgorza: "wzgorza" /* Wzgorza */,
+  Gory: "gory" /* Gory */,
+  "G\xF3ry": "gory" /* Gory */,
+  gory: "gory" /* Gory */,
+  Morze: "morze" /* Morze */,
+  morze: "morze" /* Morze */,
+  Polarny: "polarny" /* Polarny */,
+  polarny: "polarny" /* Polarny */
+};
 
 // src/game/diplomacy.ts
+var DIPLOMACY_PARAMS = {
+  // ---- one-shot Zaufanie deltas (jednorazowo) ----
+  /** "Zawarcie umowy handlowej" (+2 Zaufanie, jednorazowo) */
+  handelZawarcie_zaufanie: 2,
+  /** "Pomoc w wojnie sojusznikowi" (+10 Zaufanie, jednorazowo) */
+  pomocSojusznikowi_zaufanie: 10,
+  /** "Wspolny wrog -- nawiazanie kooperacji" (+5 Zaufanie, jednorazowo) */
+  wspolnyWrogNawiazanie_zaufanie: 5,
+  /** "Podarunek surowca / Pieniadza (gratis)" (+6 Zaufanie, jednorazowo) */
+  dar_zaufanie: 6,
+  /** "Zlamany pakt przez gracza" (-40 Zaufanie, jednorazowo) */
+  zlamanaPaktGracz_zaufanie: -40,
+  /** "Zlamany pakt przez AI" (-20 Zaufanie, jednorazowo) */
+  zlamanaPaktAI_zaufanie: -20,
+  /** "Zdrada / atak z zaskoczenia (na gracza)" (-50 Zaufanie, jednorazowo) */
+  zdrada_zaufanie: -50,
+  /** "Szpiegostwo wykryte przez przeciwnika" (-15 Zaufanie, jednorazowo) */
+  szpiegWykryty_zaufanie: -15,
+  /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
+  rywalizacjaTenSamTyp_zaufanie: -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie: 20,
+  /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
+  roznicaKulturowa_zaufanie: -5,
+  // ---- one-shot Respekt deltas (jednorazowo) ----
+  /** "Znaczaca przewaga militarna gracza" (+15 Respekt, jednorazowo; 2x or 5x threshold) */
+  przewagaMilitarna_respekt: 15,
+  /** "Gracz slabszy militarnie od partnera" (-10 Respekt, jednorazowo) */
+  slabszyMilitarnie_respekt: -10,
+  /** "Wygrana bitwa (historia bojowa)" (+5 Respekt, jednorazowo) */
+  wygraBitwa_respekt: 5,
+  /** "Akceptacja zadania trybutu" (+10 Respekt, jednorazowo) */
+  trybut_respekt: 10,
+  /** "Wspolny wrog zaakceptowany" (+10 Respekt, jednorazowo) */
+  wspolnyWrogAkceptacja_respekt: 10,
+  // ---- per-turn Zaufanie deltas (co ture) ----
+  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) — stackuje z tierem pokoju */
+  handel_zaufanie_perTura: 1,
+  /** "Aktywny sojusz wojskowy" (+3/ture, Maciej 2026-07-21) */
+  sojusz_zaufanie_perTura: 3,
+  /** "Aktywny pakt nieagresji" (+2/ture, Maciej 2026-07-21) */
+  nap_zaufanie_perTura: 2,
+  /** "Pokojowy kontakt bez wojny/NAP/sojuszu" (+1/ture, Maciej 2026-07-21) */
+  pokoj_zaufanie_perTura: 1,
+  /** @deprecated — zastąpione przez nap/sojusz/pokoj (2026-07-21); zostaje w JSON roundtrip */
+  aktywnyPakt_zaufanie_perTura: 1,
+  /** "Efekt dobrej woli (podarunek)" (+1/ture przez kilka tur) */
+  dobraWola_zaufanie_perTura: 1,
+  /** "Wspolny wrog (kooperacja trwa)" (+1/ture) */
+  wspolnyWrog_zaufanie_perTura: 1,
+  /** "Wspolna religia" (+0.5/ture, max +15) */
+  wspolnaReligia_zaufanie_perTura: 0.5,
+  /** "Odmienna religia" (-0.5/ture, max -10) */
+  odmiennaReligia_zaufanie_perTura: -0.5,
+  /** "Ekspansja przy granicy" (-2/ture) */
+  ekspansjaGranica_zaufanie_perTura: -2,
+  /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
+  urazyHistoryczne_zaufanie_perTura: -2,
+  // ---- thresholds (progi akcji; sekcja C) ----
+  /** Zaufanie >= 91 required for SojuszWojskowy (przy równowadze sił >90%) */
+  progSojuszZaufanie: 91,
+  /** Zaufanie >= 70 required for WymianaTechnologii */
+  progWymianaTechZaufanie: 70,
+  /** Respekt >= 70 required to demand Wasalizacja */
+  progWasalizacjaRespekt: 70,
+  /** Respekt >= 90 required to demand Wchloniecie */
+  progWchloniecieRespekt: 90,
+  /** Relacja < 30 = diplomacy nearly impossible */
+  progMinimalnyRelacja: 30,
+  /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
+  progSojuszRelacja: 151,
+  /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (>150); premia siły nie obniża */
+  progUmowaMinRelacja: 151,
+  // ---- starting values (wartosci startowe) ----
+  startZaufanie: 20,
+  startRespekt: 30,
+  // ---- global multipliers (sekcja E) ----
+  mnoznikZaufania: 1,
+  mnoznikRespektu: 1,
+  mnoznikPodarunku: 1,
+  turyEfektuPodarunku: 5,
+  // ---- simplified minor-civ threshold (paragraph 5.2) ----
+  /** Minor civ accepts tribute / NAP / annexation when player Respekt > this */
+  progPoboczneAkceptacja: 60,
+  /** Minor civ at peace when Relacja > this */
+  progPoboczneHandel: 30,
+  /**
+   * Minor civ may go to war when Relacja drops BELOW this (0-200 scale).
+   * Remaps Dyplomacja-szablon.md 5.2 "Relacja < -40" onto the 3.1 range 0-200:
+   * Relacja = Zaufanie + Respekt is clamped >= 0, so a negative floor is
+   * unreachable -- "very hostile" is modelled as a low positive threshold.
+   * (The "player attacks" war trigger from 5.2 is handled by the engine.)
+   */
+  progPoboczneWojna: 15,
+  // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
+  progNapRelacja: 50,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
+  progHandelRelacja: 0,
+  /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
+  progSojuszPartnerRwMin: 0.4,
+  progSojuszPartnerRwMax: 0.7,
+  /** Max obniżka progu willingnessAlly gdy proponent silniejszy (Moc/Respekt) */
+  progSojuszPremiaSilniejszyMax: 0.25,
+  /** Wkład przewagi Mocy (milRatio−1) × skok w premii progu */
+  progSojuszPremiaMilSkok: 0.08,
+  /** Wkład przewagi Respektu proponenta × skok w premii progu */
+  progSojuszPremiaRespektSkok: 0.15,
+  /** Poniżej tego stosunku M proponent/respondent — wymagana pełna relacja (score≥120) */
+  progSojuszSlabyProponentMilRatio: 0.5,
+  /** Bonus willingnessAlly gdy rozmówca silniejszy (AI słabsze — sojusz z hegemonem) */
+  progSojuszPremiaSilniejszyInny: 0.2,
+  /** aiDiplomacyStance.willingnessAlly min dla sojuszu */
+  progSojuszWillingnessMin: 0.68,
+  /** v1.3 — max podwyżka progów gdy respondent (AI) silniejszy od proponenta */
+  progSojuszKaraSilniejszyMax: 0.4,
+  /** v1.3 — wkład przewagi respondenta (1/milProponent − 1) × skok */
+  progSojuszKaraMilSkok: 0.15,
+  /** v1.3 — kara willingnessAlly na jednostkę przewagi respondenta */
+  progSojuszKaraAllySkok: 0.18,
+  /** v1.3 — poniżej tego stosunku M proponent/respondent → hegemon odmawia sojuszu (słaby proponent) */
+  progSojuszHegemonMilRatio: 0.42,
+  /** v1.3 — powyżej tego stosunku M proponent/respondent → hegemon nie szuka sojuszu równoprawnego */
+  progSojuszHegemonProposerMaxMil: 2.38,
+  /** v1.3c — progresywne podłogi Zauf. gdy gracz silniejszy (2×≈85, 3×≈83 — oba „w okolicy 85") */
+  progSojuszPremiaGracz2xMilRatio: 2,
+  progSojuszPremiaGracz2xMinZaufanie: 85,
+  progSojuszPremiaGracz2xBonus: 0.06,
+  progSojuszPremiaGracz3xMilRatio: 2.8,
+  progSojuszPremiaGracz3xMinZaufanie: 83,
+  progSojuszPremiaGracz3xBonus: 0.1,
+  /** Minimalny trybut żądany (¤/turę) */
+  progTrybutMinGoldPerTurn: 10,
+  /** Respekt proponenta musi być > tej wartości, by żądać trybutu (spokój) */
+  progTrybutZadanieMinRespekt: 70,
+  /** Limit górny żądania trybutu (¤/turę) przy Respekt tuż powyżej progu (audyt #21) */
+  progTrybutZadanieMaxGoldBase: 50,
+  /** Limit górny: dodatek ¤/turę za każdy punkt Respektu ponad próg żądania (audyt #21) */
+  progTrybutZadanieMaxGoldPerRespekt: 5,
+  /** militaryRatio > wartość → „blisko wojny” (oferta trybutu) */
+  progTrybutOfertaNearWarRatio: 1.2,
+  /** Zaufanie < wartość → „blisko wojny” (oferta trybutu) */
+  progTrybutOfertaNearWarZaufanie: 30,
+  /** Minimalna oferta trybutu (¤) */
+  progTrybutOfertaMinGold: 5,
+  /** Bazowa oferta trybutu poza „blisko wojny”: base + epoka × epokaGold */
+  progTrybutOfertaBaseGold: 10,
+  progTrybutOfertaEpokaGold: 5,
+  /** willingnessTrade min dla handlu */
+  progHandelWillingnessMin: 0.5,
+  /** Zaufanie min dla namówienia do wojny */
+  progNamowWojneZaufanie: 50,
+  /** Łapówka min = base × (epoka + 1) */
+  progNamowWojneBribeBase: 30,
+  /** Zaufanie min dla otwartych granic */
+  progGraniceZaufanie: 45,
+  /** Relacja min dla otwartych granic / przemarszu (G1-A) */
+  progGraniceRelacja: 100,
+  /** Respekt min dla prawa wojskowego przemarszu */
+  progGraniceWojskoweRespekt: 55,
+  /** militaryRatio min dla ultimatum */
+  progUltimatumMilitaryRatio: 1.3,
+  /** Jednorazowe złoto min przy ultimatum */
+  progUltimatumMinGold: 20,
+  /** Domyślny trybut wasala (¤/turę) */
+  progWasalDefaultGoldPerTurn: 10,
+  /** R-GRACZ-WCHLONIECIE: min tur wasalu przed wchłonięciem MP przez gracza */
+  graczWchlonieciePoWasaluTur: 10,
+  /** R-GRACZ-WCHLONIECIE: baza kosztu wchłonięcia (¤) */
+  graczWchloniecieKosztBaza: 150,
+  /** R-GRACZ-WCHLONIECIE: koszt per ludność MP (¤) */
+  graczWchloniecieKosztPerLudnosc: 25,
+  /** R-GRACZ-WCHLONIECIE: minimalny koszt wchłonięcia (¤) */
+  graczWchloniecieKosztMin: 200,
+  // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
+  // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
+  // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
+  // wzorem loadDiplomacyParams() dla reszty DIPLOMACY_PARAMS.
+  // -- §1: skala i wartość startowa (pkt Wiarygodności, skala −100…+100) --
+  /** Dolna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMin: -100,
+  /** Górna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMax: 100,
+  /** Próg pasma „Wzór cnoty" — W >= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWzorCnoty: 40,
+  /** Próg pasma „Wiarołomny" — W <= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWiarolomny: -40,
+  /** Wartość startowa Wiarygodności, poziom Łatwy (pkt Wiarygodności), §1. */
+  wiarygodnoscStartLatwy: 40,
+  /** Wartość startowa Wiarygodności, poziom Normalny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartNormalny: 20,
+  /** Wartość startowa Wiarygodności, poziom Trudny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartTrudny: 0,
+  // -- §2: KARY N1–N7 (pkt Wiarygodności, jednorazowo, wszystkie poziomy trudności) --
+  /** N1 — wypowiedzenie wojny bez ostrzeżenia / atak w tej samej turze co deklaracja (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN1BezOstrzezenia: -10,
+  /** N1 — okno karencji: liczba tur po wypowiedzeniu wojny, w której atak jeszcze liczy się jako "bez ostrzeżenia" (tury). */
+  wiarygodnoscN1KarencjaTur: 1,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Paktu o Nieagresji (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuNap: -18,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Sojuszu (pełny/defensywny), także atak na sojusznika (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuSojusz: -25,
+  /** N3 — atak w oknie karencji po zakończeniu porozumienia (pkt Wiarygodności, jednorazowo, na wierzchu N1/N2). */
+  wiarygodnoscN3AtakWOknieKarencji: -12,
+  /** N3 — okno karencji (tury) po jednostronnym anulowaniu porozumienia BEZTERMINOWEGO lub po zawarciu pokoju, przed którym atak = kara N3. */
+  wiarygodnoscN3KarencjaBezterminoweTur: 10,
+  /** N4 — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego, kara WYŁĄCZNIE dla odmawiającego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN4OdmowaObowiazkuSojuszu: -15,
+  /** N5 — dobrowolne zerwanie traktatu CZASOWEGO (nie handlowego) (pkt Wiarygodności, jednorazowo). Bezterminowe = brak kary (patrz N3). */
+  wiarygodnoscN5ZerwanieTraktatCzasowy: -6,
+  /** N5 — dobrowolne zerwanie umowy handlowej CZASOWEJ (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN5ZerwanieHandelCzasowy: -4,
+  /** N6 — niedotrzymanie handlu cyklicznego (3 tury z rzędu z winy strony), kara wyłącznie dla winnego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+  /** N6 — próg kolejnych tur z rzędu z winy TEJ SAMEJ strony (dawca bez zapasu / biorca bez środków), po którym nalicza się kara (tury). */
+  wiarygodnoscN6ProgTurZRzedu: 3,
+  /** N7 — nieautoryzowany przemarsz, jednorazowo przy pierwszym wykryciu w danej "wizycie" (pkt Wiarygodności). Zwiadowcy wykluczeni (C-WIAR-SKAUT=A). */
+  wiarygodnoscN7NieautoryzowanyPrzemarsz: -2,
+  /** Odwet (C-WIAR-ODWET=A) — okno (tury) od cudzego N1/N2/N4 wobec nas, w którym nasza odwetowa wojna NIE nalicza N1/N2. */
+  wiarygodnoscOdwetOknoTur: 10,
+  // -- §3: NAGRODY — tabela A STRUMIEŃ (pkt Wiarygodności NA TURĘ, za każde aktualnie dotrzymywane zobowiązanie) --
+  /** S1 — Sojusz (pełny lub defensywny) aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS1SojuszPerTure: 1,
+  /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS2NapPerTure: 0.5,
+  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTure: 0.3,
+  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTure: 0.2,
+  // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
+  /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP1FiniszSojusz: 10,
+  /** P2 — Pakt o nieagresji dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszNap: 5,
+  /** P2 — Umowa handlowa dotrwana do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszHandel: 5,
+  /** P3 — Handel cykliczny ze 100% dostaw aż do końca umowy (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP3FiniszHandelCykliczny: 1,
+  // -- §3: NAGRODY — tabela C CZYNY (pkt Wiarygodności, jednorazowo, niepowiązane z trwającym zobowiązaniem) --
+  /** P4 — kamień milowy "bez wojny" (pkt Wiarygodności, jednorazowo, powtarzalny co wiarygodnoscP4OknoBezWojnyTur tur). */
+  wiarygodnoscP4BezWojny30Tur: 3,
+  /** P4 — długość okna "bez wojny" wymaganego do naliczenia kamienia milowego (tury). */
+  wiarygodnoscP4OknoBezWojnyTur: 30,
+  /** P5 — pomoc sojusznikowi w wojnie, dołączenie z własnej woli LUB na wezwanie (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP5PomocSojusznikowi: 20,
+  // -- §4: model zapominania — krzywa liniowa z trwałą podłogą (tury do osiągnięcia podłogi, wg trudności i znaku zdarzenia) --
+  /** Czas zapomnienia KAR, poziom Łatwy (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraLatwy: 40,
+  /** Czas zapomnienia KAR, poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraNormalny: 80,
+  /** Czas zapomnienia KAR, poziom Trudny (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraTrudny: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Łatwy (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaLatwy: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaNormalny: 80,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Trudny (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaTrudny: 40,
+  /** Trwała podłoga krzywej zapominania — ułamek [0,1] wartości pierwotnej, który zostaje NA ZAWSZE po pełnym wygaśnięciu (dotyczy WYŁĄCZNIE zdarzeń jednorazowych, nie STRUMIENIA — C-WIAR-SLAD=A). */
+  wiarygodnoscTrwalaPodlogaProcent: 0.1,
+  // -- §5: wpływ Wiarygodności na Zaufanie --
+  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgSojuszMin: 0,
+  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgNapMin: -40
+};
+var WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
 var ARCHETYPE_AGGRESSION = {
   ["grecy" /* Grecy */]: 0.4,
   ["rzymianie" /* Rzymianie */]: 0.75,
@@ -9029,10 +9497,6 @@ var DEFAULT_DOBRA_WOLA_TUR = 3;
 var DEFAULT_PN_NA_ZAUFANIE = 100;
 var DEFAULT_MAX_ZAUFANIE_NA_TURE = 5;
 var DEFAULT_MIN_NADMIAR = 1;
-var DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY = 3;
-var DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY = 1;
-var DEFAULT_WIARYGODNOSC_LIMIT_DNO = 0;
-var DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO = -70;
 function loadPnRelacjaParams() {
   const block = diplomacy_default.pn_relacja ?? {};
   const maxNaTure = typeof block.max_zaufanie_na_ture === "number" && block.max_zaufanie_na_ture > 0 ? block.max_zaufanie_na_ture : typeof block.max_zaufanie_jednorazowo === "number" && block.max_zaufanie_jednorazowo > 0 ? block.max_zaufanie_jednorazowo : DEFAULT_MAX_ZAUFANIE_NA_TURE;
@@ -9043,11 +9507,7 @@ function loadPnRelacjaParams() {
     prog_dar_relacja: typeof block.prog_dar_relacja === "number" && block.prog_dar_relacja >= 0 ? block.prog_dar_relacja : DEFAULT_PROG_DAR_RELACJA,
     dobra_wola_min_nadmiar_pn: typeof block.dobra_wola_min_nadmiar_pn === "number" && block.dobra_wola_min_nadmiar_pn > 0 ? block.dobra_wola_min_nadmiar_pn : DEFAULT_DOBRA_WOLA_MIN_PN,
     dobra_wola_tur: typeof block.dobra_wola_tur === "number" && block.dobra_wola_tur > 0 ? block.dobra_wola_tur : DEFAULT_DOBRA_WOLA_TUR,
-    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1,
-    wiarygodnosc_limit_zaufanie_chwiejny: typeof block.wiarygodnosc_limit_zaufanie_chwiejny === "number" && block.wiarygodnosc_limit_zaufanie_chwiejny >= 0 ? block.wiarygodnosc_limit_zaufanie_chwiejny : DEFAULT_WIARYGODNOSC_LIMIT_CHWIEJNY,
-    wiarygodnosc_limit_zaufanie_wiarolomny: typeof block.wiarygodnosc_limit_zaufanie_wiarolomny === "number" && block.wiarygodnosc_limit_zaufanie_wiarolomny >= 0 ? block.wiarygodnosc_limit_zaufanie_wiarolomny : DEFAULT_WIARYGODNOSC_LIMIT_WIAROLOMNY,
-    wiarygodnosc_limit_zaufanie_dno: typeof block.wiarygodnosc_limit_zaufanie_dno === "number" && block.wiarygodnosc_limit_zaufanie_dno >= 0 ? block.wiarygodnosc_limit_zaufanie_dno : DEFAULT_WIARYGODNOSC_LIMIT_DNO,
-    wiarygodnosc_limit_prog_dno: typeof block.wiarygodnosc_limit_prog_dno === "number" ? block.wiarygodnosc_limit_prog_dno : DEFAULT_WIARYGODNOSC_LIMIT_PROG_DNO
+    dobra_wola_zaufanie_per_tura: typeof block.dobra_wola_zaufanie_per_tura === "number" && block.dobra_wola_zaufanie_per_tura > 0 ? block.dobra_wola_zaufanie_per_tura : 1
   };
 }
 var _pnRelacja = loadPnRelacjaParams();

@@ -21,7 +21,8 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var ai_resource_needs_entry_exports = {};
 __export(ai_resource_needs_entry_exports, {
   detectOwnerResourceNeeds: () => detectOwnerResourceNeeds,
-  resourceKeysNeededForBuildingQueue: () => resourceKeysNeededForBuildingQueue
+  resourceKeysNeededForBuildingQueue: () => resourceKeysNeededForBuildingQueue,
+  resourceKeysNeededForUnitQueue: () => resourceKeysNeededForUnitQueue
 });
 module.exports = __toCommonJS(ai_resource_needs_entry_exports);
 
@@ -39,15 +40,24 @@ function detectPricedResourceDeficits(goods, pricedKeys, pakietWielkosc) {
   return deficits.map((d) => d.key);
 }
 
-// src/game/building-stock-cost.ts
-function buildingStockCost(building) {
-  const raw = building?.koszt_surowce;
+// src/game/r-stawki-strojenie.ts
+var R_STAWKI_KOSZT_MULT = 2;
+var R_STAWKI_FALA2_MULT = 2;
+var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
+function scaleStockCostRecord(raw) {
   const out = {};
   if (!raw) return out;
   for (const [k, v] of Object.entries(raw)) {
-    if (typeof v === "number" && Number.isFinite(v) && v > 0) out[k] = v;
+    if (typeof v === "number" && Number.isFinite(v) && v > 0) {
+      out[k] = Math.max(1, Math.round(v * R_STAWKI_FALA2_MULT));
+    }
   }
   return out;
+}
+
+// src/game/building-stock-cost.ts
+function buildingStockCost(building) {
+  return scaleStockCostRecord(building?.koszt_surowce);
 }
 
 // src/game/ai-resource-needs.ts
@@ -76,6 +86,18 @@ function resourceKeysNeededForBuildingQueue(input) {
   }
   return [...needed];
 }
+function resourceKeysNeededForUnitQueue(input) {
+  const needed = /* @__PURE__ */ new Set();
+  const stockByKey = new Map(input.goods.map((g) => [g.key, g.ilosc ?? 0]));
+  for (const unitTypeId of input.queuedUnitTypeIds) {
+    const cost = input.lookupUnitStockCost(unitTypeId) ?? {};
+    for (const [key, amount] of Object.entries(cost)) {
+      const have = stockByKey.get(key) ?? 0;
+      if (have < amount) needed.add(key);
+    }
+  }
+  return [...needed];
+}
 function detectOwnerResourceNeeds(input) {
   const pakiet = Math.max(1, input.pakietWielkosc);
   const stockDeficits = detectPricedResourceDeficits(
@@ -88,7 +110,12 @@ function detectOwnerResourceNeeds(input) {
     goods: input.goods,
     lookupBuildingStockCost: input.lookupBuildingStockCost
   }) : [];
-  const deficitKeys = mergeDeficitKeys(stockDeficits, buildDeficits);
+  const unitDeficits = input.queuedUnitTypeIds?.length && input.lookupUnitStockCost ? resourceKeysNeededForUnitQueue({
+    queuedUnitTypeIds: input.queuedUnitTypeIds,
+    goods: input.goods,
+    lookupUnitStockCost: input.lookupUnitStockCost
+  }) : [];
+  const deficitKeys = mergeDeficitKeys(mergeDeficitKeys(stockDeficits, buildDeficits), unitDeficits);
   const needsResource = {};
   for (const k of deficitKeys) needsResource[k] = true;
   const foodThreshold = input.foodUrgentThreshold ?? FOOD_URGENT_THRESHOLD;
@@ -113,5 +140,6 @@ function detectOwnerResourceNeeds(input) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   detectOwnerResourceNeeds,
-  resourceKeysNeededForBuildingQueue
+  resourceKeysNeededForBuildingQueue,
+  resourceKeysNeededForUnitQueue
 });

@@ -28,7 +28,8 @@ __export(display_names_entry_exports, {
   isOwnerClusterCityState: () => isOwnerClusterCityState,
   isTechnicalOwnerLabel: () => isTechnicalOwnerLabel,
   resolveOwnerBaseName: () => resolveOwnerBaseName,
-  sanitizeOwnerDisplayBase: () => sanitizeOwnerDisplayBase
+  sanitizeOwnerDisplayBase: () => sanitizeOwnerDisplayBase,
+  shouldForceCultureIconForOwner: () => shouldForceCultureIconForOwner
 });
 module.exports = __toCommonJS(display_names_entry_exports);
 
@@ -57,6 +58,16 @@ function isOwnerClusterCityState(ownerId, opts) {
   if (opts?.simplifiedOwners?.has(ownerId)) return true;
   if (opts?.typCopyOwners?.has(ownerId)) return true;
   if (opts?.cities?.some((c) => c.ownerId === ownerId && c.startCityState)) return true;
+  return false;
+}
+function shouldForceCultureIconForOwner(ownerId, opts) {
+  if (ownerId <= 0) return false;
+  if (isOwnerClusterCityState(ownerId, opts)) return true;
+  const playerKey = (opts?.playerCivKey ?? "").trim();
+  const ownerKey = (opts?.ownerCivKey ?? "").trim();
+  if (playerKey && ownerKey && playerKey === ownerKey && !opts?.clusterCapitalOwnerIds?.has(ownerId)) {
+    return true;
+  }
   return false;
 }
 function formatCityMapLabel(city) {
@@ -121,5 +132,6 @@ function sanitizeOwnerDisplayBase(base, civDisplayName) {
   isOwnerClusterCityState,
   isTechnicalOwnerLabel,
   resolveOwnerBaseName,
-  sanitizeOwnerDisplayBase
+  sanitizeOwnerDisplayBase,
+  shouldForceCultureIconForOwner
 });

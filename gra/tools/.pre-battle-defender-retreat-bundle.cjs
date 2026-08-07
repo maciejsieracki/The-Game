@@ -92,23 +92,122 @@ function stopPreBattleMusic() {
 function setArmyStackHudSuppressed() {
 }
 
+// src/ui/escapeOverlayStack.ts
+var stack = [];
+var escapeLocked = false;
+var globalListenerAttached = false;
+function keyboardLockApi() {
+  const nav = navigator;
+  const kb = nav.keyboard;
+  if (kb === void 0 || typeof kb.lock !== "function" || typeof kb.unlock !== "function") return null;
+  return kb;
+}
+function lockEscapeKey() {
+  if (escapeLocked) return;
+  const kb = keyboardLockApi();
+  if (kb === null) return;
+  escapeLocked = true;
+  void kb.lock(["Escape"]).catch(() => {
+    escapeLocked = false;
+  });
+}
+function unlockEscapeKey() {
+  if (!escapeLocked) return;
+  escapeLocked = false;
+  const kb = keyboardLockApi();
+  if (kb === null) return;
+  try {
+    kb.unlock();
+  } catch {
+  }
+}
+function lockEscapeWhileStacked() {
+  if (stack.length > 0) lockEscapeKey();
+  else unlockEscapeKey();
+}
+function syncKeyboardLock() {
+  lockEscapeWhileStacked();
+}
+function onGlobalKeyDown(e) {
+  if (e.key !== "Escape") return;
+  const entry = stack[stack.length - 1];
+  if (entry === void 0) return;
+  e.preventDefault();
+  e.stopPropagation();
+  entry.onClose();
+}
+function hasDocument() {
+  return typeof globalThis !== "undefined" && "document" in globalThis;
+}
+function ensureGlobalListener() {
+  if (globalListenerAttached || !hasDocument()) return;
+  document.addEventListener("keydown", onGlobalKeyDown, true);
+  globalListenerAttached = true;
+}
+function removeGlobalListenerIfEmpty() {
+  if (stack.length > 0 || !globalListenerAttached || !hasDocument()) return;
+  document.removeEventListener("keydown", onGlobalKeyDown, true);
+  globalListenerAttached = false;
+}
+function pushOverlay(id, onClose) {
+  const existing = stack.findIndex((e) => e.id === id);
+  if (existing >= 0) stack.splice(existing, 1);
+  stack.push({ id, onClose });
+  ensureGlobalListener();
+  syncKeyboardLock();
+}
+function popOverlay(id) {
+  if (id === void 0) {
+    stack.pop();
+  } else {
+    const idx = stack.findIndex((e) => e.id === id);
+    if (idx >= 0) stack.splice(idx, 1);
+  }
+  removeGlobalListenerIfEmpty();
+  syncKeyboardLock();
+}
+
 // src/ui/preBattle.ts
 var overlayEl = null;
+var mapScrimEl = null;
 var keyHandler = null;
 var pbCfg = {};
 var saveToastEl = null;
 var saveToastTimer = null;
+var activePreBattleCb = null;
+var activePreBattleRetreat = false;
+function showMapScrim() {
+  ensureStyles();
+  mapScrimEl = document.createElement("div");
+  mapScrimEl.className = "pb-map-scrim";
+  mapScrimEl.setAttribute("aria-hidden", "true");
+  document.body.appendChild(mapScrimEl);
+}
+function hideMapScrim() {
+  if (mapScrimEl !== null) {
+    mapScrimEl.remove();
+    mapScrimEl = null;
+  }
+}
 function showPreBattle(info, cb, opts) {
   hidePreBattle();
+  showMapScrim();
   overlayEl = buildOverlay(info, cb, opts);
   document.body.appendChild(overlayEl);
+  activePreBattleCb = cb;
+  activePreBattleRetreat = retreatUiEnabled(info);
   attachKeyboard(cb, info, opts);
+  pushOverlay("pre-battle", handlePreBattleEscape);
   startPreBattleMusic();
   setArmyStackHudSuppressed(true);
 }
 function hidePreBattle() {
+  popOverlay("pre-battle");
   detachKeyboard();
+  activePreBattleCb = null;
+  activePreBattleRetreat = false;
   clearPreBattleSaveToast();
+  hideMapScrim();
   if (overlayEl !== null) {
     overlayEl.remove();
     overlayEl = null;
@@ -160,10 +259,16 @@ function ensureStyles() {
   --pb-font-main:Georgia,"Times New Roman",serif;
   --pb-font-ui:"Segoe UI",Tahoma,sans-serif;
 }
+.pb-map-scrim{position:fixed;inset:0;z-index:9899;pointer-events:none;
+  background:rgba(6,8,14,.58);
+  backdrop-filter:saturate(.38) brightness(.7);
+  -webkit-backdrop-filter:saturate(.38) brightness(.7);
+  animation:pb-scrimIn .24s ease-out}
 .pb-overlay{position:fixed;inset:0;z-index:9900;font-family:var(--pb-font-ui);color:var(--pb-text);
   user-select:none;pointer-events:none;overflow:hidden;animation:pb-fadeIn .22s ease-out}
 .pb-overlay *{box-sizing:border-box}
 .pb-overlay button{font:inherit;cursor:pointer}
+@keyframes pb-scrimIn{from{opacity:0}to{opacity:1}}
 @keyframes pb-fadeIn{from{opacity:0}to{opacity:1}}
 
 .pb-cmd{position:absolute;top:14px;display:flex;align-items:center;gap:12px;z-index:5;pointer-events:auto;
@@ -339,15 +444,15 @@ function defaultVerdict(atkPct) {
 function retreatUiEnabled(info) {
   return info.canRetreat !== false || info.defenderCanRetreat === true;
 }
+function handlePreBattleEscape() {
+  if (!activePreBattleRetreat || activePreBattleCb === null) return;
+  activePreBattleCb.onCancel();
+  hidePreBattle();
+}
 function attachKeyboard(cb, info, opts) {
-  const showRetreat = retreatUiEnabled(info);
   const defaultManual = (opts?.defaultAction ?? "manual") === "manual";
   keyHandler = (e) => {
-    if (e.key === "Escape" && showRetreat) {
-      e.preventDefault();
-      cb.onCancel();
-      hidePreBattle();
-    } else if (e.key === "Enter") {
+    if (e.key === "Enter") {
       e.preventDefault();
       if (defaultManual) cb.onBattlefield();
       else cb.onAuto();
@@ -440,7 +545,7 @@ function buildDeployPanel(info, canRetreat, defaultManual, hasSave) {
   const kicker = canRetreat ? "ROZSTAWIENIE BITWY" : "WR\xD3G ATAKUJE";
   const title = (canRetreat ? "Atakujesz: " : "Broni si\u0119: ") + esc(place);
   const allMods = [...info.modyfikatory ?? [], ...info.warunki ?? []];
-  const deployLabel = canRetreat ? "Bitwa" : "Bro\u0144 si\u0119 \u2014 rozstawienie";
+  const deployLabel = "BITWA";
   const deployIcon = canRetreat ? PB_ICON_DEPLOY : PB_ICON_SHIELD;
   const btns = [];
   if (showRetreat) {
