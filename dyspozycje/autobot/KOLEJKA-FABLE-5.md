@@ -37,7 +37,7 @@ psuje się cicho w KAŻDEJ przyszłej partii/mapie, oraz **(2)** ile jest do wym
 
 | ID | Kat. | Temat | Dlaczego najmocniejszy model | Źródło |
 |---|:---:|---|---|---|
-| **F-01** | **A** | **Pangea `coastRatio` — czerwień niewidoczna w bramkach.** `map-gen-regression-test.cjs` raportuje 4 fail na 5 seedów (seed 777: `coastRatio` **3,778** przy progu **> 3,8**; seed 2026: **3,780**), ale `pangeaShapeFail` **nie wchodzi** do warunku `allOk`, więc harness kończy `exit 0` — czerwony wynik jest systematycznie niewidoczny w CI i przy deployu. | Trzeba rozstrzygnąć, czy to regresja generatora po `C-MAPA-Q1=B` (`807b177`, `41eed4d`), czy próg 3,8 był od początku zbyt ostry. Wymaga analizy geometrii wybrzeża, nie naprawy jednej linijki. | `dyspozycje/PYTANIA-OTWARTE.md:1729-1747` |
+| ~~**F-01**~~ | ~~A~~ | ~~**Pangea `coastRatio`**~~ — **ZDJĘTE Z KOLEJKI 2026-08-07.** Diagnostyka AutoBot rozstrzygnęła temat: metryka mierzy zły obrys (`Wybrzeze` liczone jako ląd), po naprawie wszystkie 5 seedów przechodzi. To zwykły bug z jasną naprawą, nie zadanie K3. Przeniesione do `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md` jako otwarte ABC. | — | `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md` |
 | **F-02** | **B** | **Re-audyt bilansu surowców na 100 tur.** Audyt z 2026-07-25 (10 miast / 100 tur) wykazał **rosnący z liczbą miast nadmiar** surowców — cap civ-wide jest płaski, imperium 4-miejskie marnuje „setki–tysiące sztuk"/100 tur, kamień „bez odbiorcy", magazyn „traci sens po turze ~15". Od tego czasu weszło kilkanaście zmian ekonomii (`R-STAWKI` ×2, `R-NADMIAR-POOLS` dodatkowe ×2, magazyn 100→500+100/budynek, redesign Daniny/Podatku, weterani, korupcja ×0,5, zróżnicowane utrzymanie budynków) i **nikt nie przepuścił pełnej symulacji ponownie**. | Wymaga zbudowania nowej symulacji wieloturowej i wielomiastowej — nie ma gotowego narzędzia dla stanu po tych zmianach — oraz osądu, które z kilkunastu nałożonych decyzji się znoszą, a które kumulują. | `dyspozycje/BILANS-SUROWCE-100T-2026-07-25.md:1,40` · `REJESTR:187,209` |
 | **F-03** | **B** | **Przepaść Mocy gracz vs AI.** AI mają wciąż **12–15× mniej Mocy** niż gracz (playtest: gracz **6725**, Zulusi **536**, Chińczycy **436**) mimo FALI 220. Root cause #2 — `canAfford` → pusta kolejka produkcji, surowce tylko rosną („myszkowanie") — pozostaje **otwarty, bez zaprojektowanej naprawy**. | Nikt nie zapisał, JAK naprawić projektowo pustą kolejkę AI przy `canAfford`. Wymaga wymyślenia nowej heurystyki decyzyjnej AI (brak wzorca w kodzie) i sprawdzenia jej na pełnych partiach wielu cywilizacji, żeby nie zepsuć parytetu. | `dyspozycje/PYTANIA-OTWARTE.md:1673-1690` |
 | **F-04** | **C** | **Rzeki bez limitera vs czas generacji.** Maciej żąda usunięcia **wszystkich** twardych limitów liczby rzek („powinny siewić tak długo, jak są w stanie"), ale generator na Super Huge Pangea (320 tys. heksów) zajmuje już **14,6 min**, z czego same rzeki główne **523 s (~70 %)**. Zdjęcie capów bez nowego algorytmu grozi generacją o wiele minut dłuższą. | Wymaga zaprojektowania nowej struktury/algorytmu (przebudowa `RiverHexSpatialIndex`, inny sposób siewu niż `pangeaBootstrapRiverTarget`/`gridStride`) godzącego dwa sprzeczne wymagania właściciela. Dotyka rdzenia generatora używanego w każdej nowej grze. | `dyspozycje/PYTANIA-OTWARTE.md:1561-1580,1611-1614` |
@@ -52,17 +52,18 @@ psuje się cicho w KAŻDEJ przyszłej partii/mapie, oraz **(2)** ile jest do wym
 
 | Kategoria | Pozycje | Liczba |
 |---|---|---:|
-| **A** — dziury i nieścisłości | F-01, F-10 | 2 |
+| **A** — dziury i nieścisłości | F-10 (F-01 zdjęte) | 1 |
 | **B** — balans i audyt rozgrywki | F-02, F-03, F-05, F-06 | 4 |
 | **C** — refaktory architektoniczne | F-04, F-07, F-08, F-09 | 4 |
-| **RAZEM** | | **10** |
+| **RAZEM** | | **9** |
 
 ### Uwagi do konkretnych pozycji
 
-- **F-01** — diagnostyka (pomiar 5 seedów przed/po `C-MAPA-Q1=B` + proweniencja progu 3,8) jest
-  **w toku na Opusie 5** w ramach `P-MAPGEN-PANGEA-OBRYS`. Jeśli diagnostyka wykaże czystą regresję
-  z jasną przyczyną — pozycja **wypada z kolejki** jako zwykły bug. Zostaje w kolejce tylko wtedy,
-  gdy odpowiedź brzmi „obrys jest za gładki, ale nie wiadomo dlaczego" albo „próg był od początku zły".
+- **F-01 — ZDJĘTE 2026-08-07.** Diagnostyka AutoBot rozstrzygnęła temat w jednej rundzie:
+  to **nie** regresja (pomiar przed/po `C-MAPA-Q1=B` identyczny co do bitu) i **nie** kwestia
+  progu, tylko **wadliwa metryka** — `Wybrzeze` jest wodą, a `groupLandMassKeys` liczy je jako ląd.
+  Po naprawie metryki wszystkie 5 seedów przechodzi. Zwykły bug z jasną naprawą → nie kwalifikuje
+  się do kolejki. **Kolejka ma dziś 9 pozycji, nie 10.**
 - **F-02** i **F-05** dotykają tej samej warstwy (skumulowane mnożniki ekonomiczne) — puszczone razem
   dadzą spójniejszy obraz niż osobno. **F-06** jest ich naturalnym trzecim elementem.
 - **F-07** i **F-08** to ta sama rodzina (model dostępu do surowca: binarny vs ilościowy) —

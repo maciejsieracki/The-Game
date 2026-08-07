@@ -1726,9 +1726,25 @@ Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCi
 - **R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1, notatka Evaluatora rundy 4 (N3) — ZAMKNIĘTE 2026-08-07**: mnożnik chęci handlu (`handelWillingnessMultiplier`) działa też dla par AI↔AI, bo `responderIsPlayer` jest fałszywe dla obu proponentów-AI. Sweep (1728 przypadków) potwierdził kierunek bezpieczny (tylko zaostrzenie, nigdy nowy exploit). Dodano pokrycie testowe: `diplomacy-proposal-test.cjs` — 3 bloki, 8 asercji AI(1)→AI(2) (niska chęć respondenta → odrzucenie z komunikatem „Niechęć"; wysoka chęć → mirror dokładny ulgi gracz→AI, identyczne progi; kontrola strukturalna podłogi parytetu — brak realnej luki, `proposerUnfairToPartnerGate` jest nieobecny dla `'handel'` niezależnie od tożsamości proponenta, `handelFairnessGate` jest proposer-identity-agnostyczny). 107/109 PASS (baseline 99/101 + 8 nowych, zero regresji — te same 2 pre-istniejące fails niezwiązane: „granice reject rel 90 zauf 50", „traktat handlowy bez koszyka @ niska Rel"). Mutation-tested przez Evaluatora (neutralizacja mnożnika / usunięcie podłogi parytetu → 5 z 8 nowych asercji ginie).
 
 **Zamknięte (audyt R-PUŁKA 2026-08-05):** `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP` · `R-AI-MIASTA-BUDOWY` · paczka `R-PUŁKA-PYTANIA-29-07`
-## P-MAPGEN-PANGEA-OBRYS (2026-08-07) — sekcja „Pangea nieregularna" czerwona, ale NIE liczy się do exit code
-**Skąd:** pełny przebieg `node tools/map-gen-regression-test.cjs` (2026-08-07). Test kończy się
-**exit 0**, bo warunek `allOk` (linia 257-258) **nie zawiera** `pangeaShapeFail` — natomiast sekcja
+## P-MAPGEN-PANGEA-OBRYS (2026-08-07) — sekcja „Pangea nieregularna" czerwona; metryka mierzy zły obrys
+> ### ⛔ KOREKTA 2026-08-07 — pierwotna wersja tego wpisu była BŁĘDNA w dwóch punktach
+> **(1) „Nie liczy się do exit code" — NIEPRAWDA.** Blok porażki inkrementuje nie tylko
+> `pangeaShapeFail`, ale też **wspólny licznik `fail`** (`map-gen-regression-test.cjs:214`),
+> a `fail === 0` **jest** koniunktem `allOk` (linia 258). Przy 4 porażkach `fail = 4` →
+> `allOk = false` → **`process.exit(1)`**. Bramka jest CZERWONA, nie zielona.
+> Dodatkowo `stdOk`/`duzyOk` (progi czasowe: standard <7 s, duża <15 s) też są `false` na tej
+> maszynie (zmierzone 130,01 s i 1194,15 s) — to znany, udokumentowany artefakt wolnego sprzętu,
+> ale **niezależnie wymusza exit 1**.
+> **(2) „Do rozstrzygnięcia: regresja czy zbyt ostry próg" — FAŁSZYWA ALTERNATYWA.**
+> Metryka mierzy **nie ten obrys**: `TerenBazowy.Wybrzeze` jest **wodą**
+> (`gra/src/types/hex.ts:17`, commit `bed3ea1` „wybrzeze jako woda"), ale `groupLandMassKeys`
+> (`gra/src/map/gen-helpers.ts:1402`) wyklucza **wyłącznie** `Morze` — więc cały pierścień
+> płytkiej wody wchodzi do `landCount` (2 042–2 162 heksów = 15,3–16,2 % rzekomego „lądu"),
+> a mierzony obrys to zewnętrzna krawędź pierścienia wody, nie linia brzegowa lądu.
+> **Przy poprawnej metryce (woda = Morze + Wybrzeże) `coastRatio` wynosi 5,29–5,89 — wszystkie
+> 5 seedów przechodzi z zapasem.** Generator robi dokładnie to, czego chciała FALA 187.
+
+**Skąd:** pełny przebieg `node tools/map-gen-regression-test.cjs` (2026-08-07). Sekcja
 `=== Pangea nieregularna (FALA 187, 5 seedów standardowy) ===` raportuje `1 masa + nieregularny obrys:
 FAIL (4 fail)`.
 **Konkret (2 z 4 zapisanych seedów):**
@@ -1744,4 +1760,6 @@ coastRatio > 3,8`. Oba seedy spełniają trzy pierwsze warunki i przegrywają na
 **Do rozstrzygnięcia:** czy to regresja generatora po `C-MAPA-Q1=B` (`41eed4d`, `807b177`,
 2026-08-06 — jedyne dzisiejsze zmiany w `gra/src/map/**`), czy próg 3,8 był od początku zbyt ostry.
 Brak porównywalnego baseline: wcześniejsze przebiegi z 2026-08-06 nie doszły do tej sekcji.
-**Nie blokuje deployu** — bramka wg `CLAUDE.md` to „determinizm A=B + 0 rzek bez ujścia", oba zielone.
+**Merytorycznie nie blokuje deployu** — kryteria wg `CLAUDE.md` to „determinizm A=B + 0 rzek bez
+ujścia": determinizm **PASS** (hash A=`85ec40a7` B=`85ec40a7`, IDENTYCZNY), trasy **2124/2124**,
+główne rzeki **1235/1235**. Ale **formalnie bramka zwraca exit 1** — patrz korekta wyżej.

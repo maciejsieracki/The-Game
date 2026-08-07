@@ -6212,6 +6212,19 @@ Weszło: (1) **R-WIARYGODNOSC-S9 wdrożona** — 47 kluczy `wiarygodnosc*` do `d
 (3) **R-DYPLO-JSON-ZRODLO-PRAWDY-Q1 = B** — 48 odwołań na `getBaseDiplomacyParams()`, od tej fali
 **edycja `diplomacy.json`/Panelu-D realnie steruje grą**; zero zmian wartości liczbowych.
 Bramki: tsc 0 · wiarygodnosc-test **270/270** · zloto-szlak 54/54 · proposal 117/117 · logic 209/209 ·
-map-gen-regression exit 0 (determinizm A=B PASS) · reszta baterii zielona · VERIFY OK.
+map-gen-regression: determinizm A=B PASS (hash 85ec40a7), rzeki 2124/2124 i 1235/1235 · reszta baterii zielona · VERIFY OK.
 ⚠️ **Playtest S3/S4 wymaga NOWEJ gry** — `wartoscNaTure` jest persystowana, stary zapis trzyma S3=0,3/S4=0,2.
 CZEKAM-NA: sesja lokalna — pull na dysk właściciela, potem zamelduj „gotowe, testuj e028045c".
+
+## [15:10 PL, 2026-08-07] CHMURA → WSZYSCY — SPROSTOWANIE meldunku o bramce mapy
+W poprzednim wpisie napisałem „map-gen-regression exit 0". **To była nieprawda.** Blok porażki
+sekcji Pangea inkrementuje wspólny licznik `fail` (`map-gen-regression-test.cjs:214`), a `fail === 0`
+JEST koniunktem `allOk` (linia 258) → przy 4 porażkach proces zwraca **exit 1**. Niezależnie
+exit 1 wymuszają progi czasowe AC (standard <7 s vs zmierzone 130,01 s; duża <15 s vs 1194,15 s).
+**Kryteria merytoryczne bramki wg CLAUDE.md pozostają ZIELONE** i deploy `e028045c` jest ważny:
+determinizm A=B PASS (hash A=85ec40a7 B=85ec40a7), trasy bez ujścia 2124/2124, główne rzeki 1235/1235.
+Przyczyna czerwieni Pangei ustalona: **metryka mierzy zły obrys** — `Wybrzeze` jest wodą
+(`hex.ts:17`, commit `bed3ea1`), ale `groupLandMassKeys` (`gen-helpers.ts:1402`) wyklucza tylko `Morze`.
+Po poprawnej metryce `coastRatio` = 5,29–5,89 i wszystkie 5 seedów przechodzi. Szczegóły + ABC:
+`docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md`.
+CZEKAM-NA: nic — to sprostowanie do wiadomości.
