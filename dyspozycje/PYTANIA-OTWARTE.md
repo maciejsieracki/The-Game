@@ -1726,3 +1726,22 @@ Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCi
 - **R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1, notatka Evaluatora rundy 4 (N3) — ZAMKNIĘTE 2026-08-07**: mnożnik chęci handlu (`handelWillingnessMultiplier`) działa też dla par AI↔AI, bo `responderIsPlayer` jest fałszywe dla obu proponentów-AI. Sweep (1728 przypadków) potwierdził kierunek bezpieczny (tylko zaostrzenie, nigdy nowy exploit). Dodano pokrycie testowe: `diplomacy-proposal-test.cjs` — 3 bloki, 8 asercji AI(1)→AI(2) (niska chęć respondenta → odrzucenie z komunikatem „Niechęć"; wysoka chęć → mirror dokładny ulgi gracz→AI, identyczne progi; kontrola strukturalna podłogi parytetu — brak realnej luki, `proposerUnfairToPartnerGate` jest nieobecny dla `'handel'` niezależnie od tożsamości proponenta, `handelFairnessGate` jest proposer-identity-agnostyczny). 107/109 PASS (baseline 99/101 + 8 nowych, zero regresji — te same 2 pre-istniejące fails niezwiązane: „granice reject rel 90 zauf 50", „traktat handlowy bez koszyka @ niska Rel"). Mutation-tested przez Evaluatora (neutralizacja mnożnika / usunięcie podłogi parytetu → 5 z 8 nowych asercji ginie).
 
 **Zamknięte (audyt R-PUŁKA 2026-08-05):** `D-DYPLO-KATALOG-AKCJI` · `D-DYPLO-CELOWNIK-STOLICA` · `D-DYPLO-AKCJE-SZARE` · `BUG-DYPLO-PANEL-OVERLAP` · `R-AI-MIASTA-BUDOWY` · paczka `R-PUŁKA-PYTANIA-29-07`
+## P-MAPGEN-PANGEA-OBRYS (2026-08-07) — sekcja „Pangea nieregularna" czerwona, ale NIE liczy się do exit code
+**Skąd:** pełny przebieg `node tools/map-gen-regression-test.cjs` (2026-08-07). Test kończy się
+**exit 0**, bo warunek `allOk` (linia 257-258) **nie zawiera** `pangeaShapeFail` — natomiast sekcja
+`=== Pangea nieregularna (FALA 187, 5 seedów standardowy) ===` raportuje `1 masa + nieregularny obrys:
+FAIL (4 fail)`.
+**Konkret (2 z 4 zapisanych seedów):**
+
+| seed | masy | dom | bboxFill | coast/√A | który próg złamany |
+|---|---:|---:|---:|---:|---|
+| 777 | 1 | 1,000 | **0,853** | **3,778** | `coastRatio > 3,8` — jest 3,778 |
+| 2026 | 1 | 1,000 | **0,851** | **3,780** | `coastRatio > 3,8` — jest 3,780 |
+
+Progi w teście (linia 210-211): `massCount === 1 && dominantRatio >= 0,97 && bboxFill < 0,87 &&
+coastRatio > 3,8`. Oba seedy spełniają trzy pierwsze warunki i przegrywają na czwartym o
+**0,020–0,022 jednostki** (coast/√A). Czyli obrys pangei jest **odrobinę zbyt gładki** wobec progu.
+**Do rozstrzygnięcia:** czy to regresja generatora po `C-MAPA-Q1=B` (`41eed4d`, `807b177`,
+2026-08-06 — jedyne dzisiejsze zmiany w `gra/src/map/**`), czy próg 3,8 był od początku zbyt ostry.
+Brak porównywalnego baseline: wcześniejsze przebiegi z 2026-08-06 nie doszły do tej sekcji.
+**Nie blokuje deployu** — bramka wg `CLAUDE.md` to „determinizm A=B + 0 rzek bez ujścia", oba zielone.
