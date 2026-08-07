@@ -1871,3 +1871,35 @@ o przekroczeniach granic między obcymi cywilizacjami.
     („Twoje granice naruszone" vs „Twoja jednostka na cudzym terenie").
 **Kotwice:** `gra/src/main.ts:3541-3596` · `gra/src/game/diplomacy-credibility.ts:492`
 · `gra/src/game/wiarygodnosc-types.ts:37`. Bramka do rozszerzenia: brak testu na adresata komunikatu.
+
+## BUG-BRAMKA-DREWNO-BRAK (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — przyczyna ustalona, wymaga litery**
+**Jego słowa:** *„miasto, państwo nie ma start-upu, a buduje jednostki. A przecież do pierwszych
+jednostek potrzebne jest drewno."*
+**PRZYCZYNA — `gra/src/game/production.ts:858-863`:**
+```ts
+// DOSTEP-SUROWCE-Q1 (2026-07-29): jednostki brązowe/żelazne — tylko zapas w magazynie państwa.
+if (surowiec === 'braz'   && !empireStockHas(ctx.empireResourceStock, 'braz'))   continue;
+if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) continue;
+```
+Bramka dostępu do surowca obejmuje **wyłącznie `braz` i `zelazo`**. **`drewno` nie jest sprawdzane
+nigdzie** — analogicznej gałęzi po prostu nie ma.
+**Zakres realny — NIE dotyczy tylko miast-państw:** luka obejmuje **każdego właściciela**
+(gracz, AI major, miasta-państwa, barbarzyńcy) i **każdą jednostkę epoki Kamienia** wymagającą
+Drewna. Przykłady z `gra/data/units.json`: Wojownik (Drewno 10 szt.), Zwiadowca (Drewno 10 szt.).
+Miasto-państwo było tylko miejscem, w którym właściciel to zauważył.
+**To może być stan ZAMIERZONY, nie regresja:** decyzja `DOSTEP-SUROWCE-Q1` (2026-07-29) jest
+w komentarzu zacytowana jako obejmująca *„jednostki brązowe/żelazne"* — czyli zakres mógł być
+świadomie zawężony do dwóch surowców epok Brązu i Żelaza, a Kamień celowo zostawiony bez bramki
+(żeby start gry nie blokował się na braku drewna). **Do zweryfikowania w oryginale decyzji** —
+czy właściciel wykluczył Drewno świadomie, czy temat nigdy nie został postawiony.
+**DO DECYZJI (ABC):**
+(A) rozszerzyć bramkę na Drewno — jednostka wymagająca Drewna niedostępna bez zapasu w magazynie;
+(B) zostawić bez bramki — Drewno jako surowiec „startowy" ma nie blokować pierwszych jednostek;
+(C) bramka na Drewno, ale z progiem startowym / zapasem początkowym dla każdego państwa,
+    żeby początek gry nie stanął.
+**Powiązane, do rozstrzygnięcia razem:** `BUG-ZWIADOWCA-KOSZT-SUROWCA` — jeśli Zwiadowca ma
+w ogóle nie kosztować surowca, przy wariancie (A) i tak przestanie podlegać bramce.
+**Kotwice:** `gra/src/game/production.ts:845-870` (lista produkcji) i `:950-960` (druga kopia
+warunku) · `gra/data/units.json` (kolumny `Surowiec`, `Surowiec (ilość)`).
+**Uwaga:** warunek występuje w DWÓCH miejscach (`:859-863` i `:956-957`) — każda zmiana musi
+objąć oba, inaczej lista produkcji i faktyczna możliwość budowy się rozjadą.
