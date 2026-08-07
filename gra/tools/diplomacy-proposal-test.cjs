@@ -824,5 +824,33 @@ ok(
 r = evaluateProposal(prop('pokoj', 0, 1, {}), ctx({ stanWojny: true, relation: rel(50, 50, 'wojna') }));
 ok(!r.accepted, 'pokój bez koszyka @ wojna, Relacja przedwojenna neutralna: wciąż wymaga dopłaty (WAR_RELATION_SCORE_CAP)');
 
+// ---------------------------------------------------------------------------
+// 19f-g R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A — zakres treatyPnGate receive-side
+// ŚWIADOMIE zawężony do proposerIsPlayer (jak dawna proposerUnfairToPartnerGate),
+// żeby nie wykraczać poza literę decyzji A ("bug komunikatu, nie logiki
+// akceptacji"). Mutation-test dowód: cofnięcie guardu `!proposerIsPlayer` w
+// treatyPnGate NIE zmienia wyniku poniższych dwóch asercji (bo 19f i tak
+// oczekuje odrzucenia); usunięcie CAŁEGO receive-side sprawdzenia (przywrócenie
+// starego hasBasket liczącego tylko `give`) łamie 19f.
+// ---------------------------------------------------------------------------
+
+// 19f proposer=gracz, koszyk "tylko odbieram" (receivePn bez givePn) dla nap —
+// nadal zablokowane (zachowanie sprzed poszerzenia zakresu, proposerIsPlayer=true).
+r = evaluateProposal(prop('nap', 0, 1, { receivePn: 100 }), ctx({ relation: rel(50, 50) }));
+ok(
+  !r.accepted && r.reason.includes('nieuczciwa'),
+  'nap proposer=gracz, koszyk tylko-odbieram (receivePn=100, givePn=0): odrzucone jako nieuczciwe dla partnera',
+);
+
+// 19g proposer=AI, ten sam koszyk "tylko odbieram" — treatyPnGate (receive-side)
+// świadomie NIE blokuje (poza zakresem decyzji A, guard proposerIsPlayer),
+// zgodnie z dawnym zachowaniem proposerUnfairToPartnerGate. Test przypina ZAKRES,
+// nie deklaruje że to pożądane docelowo — patrz komentarz przy guardzie w kodzie.
+r = evaluateProposal(prop('nap', 1, 0, { receivePn: 100 }), ctx({ relation: rel(50, 50) }));
+ok(
+  r.accepted !== false || !r.reason.includes('nieuczciwa dla partnera'),
+  'nap proposer=AI, koszyk tylko-odbieram: treatyPnGate receive-side NIE odrzuca (zakres zawężony do proposerIsPlayer, poza literą decyzji A)',
+);
+
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);

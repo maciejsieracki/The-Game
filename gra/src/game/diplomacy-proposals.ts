@@ -486,6 +486,13 @@ function treatyPnGate(
   // bramkę fair-trade poniżej, bo hasBasket byłby false. Realne dla nap/sojusz/
   // granice/wasal/umowa_szlakow/umowa_handlowa odkąd te akcje wypadły z
   // PROPOSER_PW_FAIRNESS_ACTIONS (ta funkcja jest teraz ich jedyną ochroną koszyka).
+  // ŚWIADOMIE zawężone do proposerIsPlayer (jak dawna proposerUnfairToPartnerGate
+  // miała `if (!proposerIsPlayer) return null;`) — decyzja Q1=A dotyczy WYŁĄCZNIE
+  // komunikatu (bug UX), nie logiki akceptacji; poszerzenie tej bramki na AI-jako-
+  // proponenta zmieniałoby balans/mechanikę akceptacji poza literą decyzji, co
+  // wymaga osobnej ABC (R-PROC-ABC-BALANS) — zgłoszone jako temat na przyszłość,
+  // nie wdrożone tutaj.
+  if (!proposerIsPlayer) return null;
   const hasBasket = givePn > 0 || receivePn > 0
     || (payload.giveItems?.length ?? 0) > 0
     || (payload.receiveItems?.length ?? 0) > 0;
@@ -1053,7 +1060,10 @@ export function evaluateProposal(
     case 'umowa_handlowa':
     case 'umowa_szlakow': {
       const { givePn, receivePn } = resolveProposalPn(payload, pnOpts);
-      const relTotal = relationTotal(relation);
+      // treatyEvalRelationTotal (nie goły relationTotal) — spójne z dawną
+      // proposerUnfairToPartnerGate/treatyPnGate (clamp wojenny), choć w praktyce
+      // nieosiągalne tutaj (evaluateProposal blokuje te akcje przy stanWojny wcześniej).
+      const relTotal = treatyEvalRelationTotal(relation);
       if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
         return { accepted: false, reason: 'Brak chęci do handlu' };
       }
