@@ -279,9 +279,82 @@ export function needsRiverRibbonIndexUpdate(
   return lastFogSig !== fogSig;
 }
 
+// ---------------------------------------------------------------------------
+// Mgła PER-HEKS na SCALONYM batchu wstęg (BUG-RZEKI-MEDIUM-FOW-REGRESJA-2).
+//
+// Rzeki medium/short/tributary trafiają do jednego mesha po 32 (lub 128 na gęstej
+// mapie) tras — patrz `renderLandRiversFromPaths` w scene.ts. Dawna reguła
+// widoczności takiego batcha (`mergedRiverVisibleInFog`) to „ukryj CAŁY mesh,
+// gdy KTÓRYKOLWIEK heks jest w czerni", czyli w praktyce: przy FoW ON znika
+// komplet średnich rzek, przy FoW OFF wracają. Poniższe helpery robią dla batcha
+// to samo, co `buildRiverRibbonFogIndex` dla pojedynczej wstęgi: wycinają
+// z indeksu WYŁĄCZNIE quady dotykające czerni, zachowując jeden draw call.
+//
+// Układ wierzchołków: każdy odcinek to wstęga `sharp` z buildRibbonGeometry —
+// punkt i → wierzchołki 2i, 2i+1. `mergeGeometries` skleja bufory po kolei, więc
+// odcinek k zaczyna się od wierzchołka 2 * (suma długości odcinków 0..k-1).
+// Quady NIE przechodzą przez granicę odcinków (osobne rzeki się nie łączą).
+// ---------------------------------------------------------------------------
+
+/** Lista `pointHex` per odcinek scalonego batcha (kolejność = kolejność scalania). */
+export type RiverRibbonSegments = ReadonlyArray<readonly string[]>;
+
+/** Pełny indeks scalonego batcha (wszystkie quady wszystkich odcinków). */
+export function buildMergedRiverFullIndex(segments: RiverRibbonSegments): number[] {
+  const idx: number[] = [];
+  let base = 0;
+  for (const seg of segments) {
+    for (let j = 0; j < seg.length - 1; j++) {
+      const b = base + 2 * j;
+      idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+    }
+    base += 2 * seg.length;
+  }
+  return idx;
+}
+
+/** Indeks scalonego batcha z quadami tylko na odkrytych odcinkach (mgła per-heks). */
+export function buildMergedRiverFogIndex(
+  segments: RiverRibbonSegments,
+  riverHidden: (hexKey: string) => boolean,
+): number[] {
+  const idx: number[] = [];
+  let base = 0;
+  for (const seg of segments) {
+    for (let j = 0; j < seg.length - 1; j++) {
+      if (riverHidden(seg[j]!) || riverHidden(seg[j + 1]!)) continue;
+      const b = base + 2 * j;
+      idx.push(b, b + 2, b + 1, b + 1, b + 2, b + 3);
+    }
+    base += 2 * seg.length;
+  }
+  return idx;
+}
+
+/** Hash stanu mgły całego batcha — pomija zbędne `setIndex` (ten sam algorytm co per wstęga). */
+export function computeMergedRiverFogSig(
+  segments: RiverRibbonSegments,
+  riverHidden: (hexKey: string) => boolean,
+): number {
+  let sig = 0;
+  for (const seg of segments) {
+    for (let k = 0; k < seg.length; k++) {
+      sig = (Math.imul(sig, 31) + (riverHidden(seg[k]!) ? 1 : 0)) | 0;
+    }
+    // Separator odcinków — dwie różne segmentacje tych samych punktów dają różny hash.
+    sig = (Math.imul(sig, 31) + 2) | 0;
+  }
+  return sig;
+}
+
 /**
  * Widoczność scalonej wstęgi (medium/short/tributary bez pointHex) przy aktywnej mgle.
  * Gdy fogActive=false (FoW wyłączony / brak ukrytych heksów) → zawsze true.
+ *
+ * UWAGA: to reguła ALL-OR-NOTHING dla całego mesha. Została WYŁĄCZNIE dla wstęg bez
+ * mapowania punkt→heks (delty/ujścia budowane CatmullRomem, gdzie 2 wierzchołki na punkt
+ * wejściowy nie obowiązują). Batche medium/short/tributary mają `segPointHex` i idą
+ * ścieżką indeksową wyżej — patrz BUG-RZEKI-MEDIUM-FOW-REGRESJA-2.
  */
 export function mergedRiverVisibleInFog(
   fogActive: boolean,

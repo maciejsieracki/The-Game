@@ -111,6 +111,9 @@ import {
   buildRiverRibbonFullIndex,
   buildRiverRibbonFogIndex,
   needsRiverRibbonIndexUpdate,
+  buildMergedRiverFullIndex,
+  buildMergedRiverFogIndex,
+  computeMergedRiverFogSig,
 } from './riverLod';
 import {
   landRiverRenderPath,
@@ -255,6 +258,14 @@ interface RiverEntry {
    * zostaje. Brak (delty scalone) → fog per całą wstęgę.
    */
   pointHex?: string[];
+  /**
+   * BUG-RZEKI-MEDIUM-FOW-REGRESJA-2: `pointHex` per ODCINEK scalonego batcha
+   * (medium/short/tributary — 32/128 tras w jednym meshu). Pozwala na mgłę per-heks także
+   * na batchu; bez tego cały batch znikał, gdy KTÓRYKOLWIEK z ~200 heksów był w czerni
+   * (efekt: przy FoW ON średnie rzeki nie istnieją, przy FoW OFF wracają).
+   * Ustawiane tylko gdy KAŻDY odcinek batcha to wstęga `sharp` z 1:1 punkt→heks.
+   */
+  segPointHex?: string[][];
   /** PERF: hash stanu mgły (odkryte/ciemne per punkt) z ostatniej przebudowy — pomija `setIndex`,
    *  gdy mgła tej rzeki się nie zmieniła (np. przy samym zoomie). Bez re-uploadu GPU bez potrzeby. */
   lastFogSig?: number;
@@ -268,6 +279,12 @@ interface RiverGeoBucket {
   geos: THREE.BufferGeometry[];
   hexKeys: Set<string>;
   renderOrder: number;
+  /**
+   * `pointHex` odcinka i (równolegle do `geos`) — tylko wstęgi `sharp` z 1:1 punkt→heks.
+   * Wypełniane wyłącznie przez batche medium/short/tributary; delty/ujścia (CatmullRom)
+   * zostawiają to puste i lądują na regule all-or-nothing.
+   */
+  segPointHex?: string[][];
 }
 
 export interface SceneBuildDetailTimings {
@@ -1215,22 +1232,40 @@ function buildRiverPointsFromHexPath(
   return { pts, hexKeys, widths, pointHex };
 }
 
-/** FALA 147: rzadsze punkty wstęgi batched medium/tributary (bez pointHex — mgła per hexKeys). */
-function decimateRiverRibbonPoints(pts: THREE.Vector3[], minDist: number): THREE.Vector3[] {
-  if (pts.length < 3 || minDist <= 0) return pts;
+/**
+ * FALA 147: rzadsze punkty wstęgi batched medium/tributary.
+ * BUG-RZEKI-MEDIUM-FOW-REGRESJA-2: przerzedza RÓWNOLEGLE `pointHex`, żeby scalony batch
+ * dalej miał mapowanie punkt→heks (bez tego mgła per-heks na batchu byłaby przesunięta).
+ * Decyzje o zachowaniu punktu są identyczne jak przed zmianą → geometria bez zmian.
+ */
+function decimateRiverRibbonPoints(
+  pts: THREE.Vector3[],
+  pointHex: string[],
+  minDist: number,
+): { pts: THREE.Vector3[]; pointHex: string[] } {
+  if (pts.length < 3 || minDist <= 0) return { pts, pointHex };
   const out: THREE.Vector3[] = [pts[0]!];
+  const outHex: string[] = [pointHex[0] ?? ''];
   for (let i = 1; i < pts.length - 1; i++) {
-    if (out[out.length - 1]!.distanceTo(pts[i]!) >= minDist) out.push(pts[i]!);
+    if (out[out.length - 1]!.distanceTo(pts[i]!) >= minDist) {
+      out.push(pts[i]!);
+      outHex.push(pointHex[i] ?? '');
+    }
   }
-  const last = pts[pts.length - 1]!;
-  if (out[out.length - 1] !== last) out.push(last);
-  return out;
+  const lastI = pts.length - 1;
+  const last = pts[lastI]!;
+  if (out[out.length - 1] !== last) {
+    out.push(last);
+    outHex.push(pointHex[lastI] ?? '');
+  }
+  return { pts: out, pointHex: outHex };
 }
 
 /** Jedna ciągła wstęga na trasę riverPaths — rogi i środki krawędzi (NIE przez środek heksa).
  * hex.rzeka.krawedzie zostaje dla logiki gry; render idzie po pełnej ścieżce.
  */
-async function renderLandRiversFromPaths(
+/** Eksport dla bramki `tools/river-fog-visibility-test.cjs` (headless, bez WebGL). */
+export async function renderLandRiversFromPaths(
   map: GameMap,
   paths: Array<Array<{ q: number; r: number }>>,
   kinds: Array<'main' | 'medium' | 'short' | 'tributary' | undefined>,
@@ -1318,10 +1353,12 @@ async function renderLandRiversFromPaths(
       if (!batchBucket) {
         batchBucket = { mat: riverMat, geos: [], hexKeys: new Set(), renderOrder };
       }
-      const renderPts = opts?.tributaryDecimateDist
-        ? decimateRiverRibbonPoints(pts, opts.tributaryDecimateDist)
-        : pts;
-      pushRiverMesh(batchBucket, renderPts, hexKeys, halfWidth, ribbonSegs, true);
+      const dec = opts?.tributaryDecimateDist
+        ? decimateRiverRibbonPoints(pts, pointHex, opts.tributaryDecimateDist)
+        : { pts, pointHex };
+      pushRiverMesh(
+        batchBucket, dec.pts, hexKeys, halfWidth, ribbonSegs, true, dec.pointHex,
+      );
       batchCount++;
       if (batchCount >= batchSize) flushBatch();
     }
@@ -1373,6 +1410,12 @@ function flushRiverBucket(
     merged: bucket.geos.length > 1,
     // Per-heks fog tylko dla jednowstęgowej geo (merge przesuwa offsety wierzchołków → niepewne).
     pointHex: bucket.geos.length === 1 ? pointHex : undefined,
+    // Scalony batch: mgła per-heks po odcinkach — offsety wierzchołków są policzalne
+    // (wstęga `sharp` = 2 wierzchołki na punkt, mergeGeometries skleja bufory po kolei).
+    // Warunek `length === geos.length` odrzuca batche mieszane (gdyby doszła geo bez pointHex).
+    segPointHex: bucket.segPointHex?.length === bucket.geos.length
+      ? bucket.segPointHex
+      : undefined,
   });
   if (bucket.geos.length > 1) {
     for (const g of bucket.geos) g.dispose();
@@ -1386,10 +1429,15 @@ function pushRiverMesh(
   halfWidth: number | number[],
   segmentsPerSpan = 16,
   sharp = true,
+  /** Heks per punkt tej wstęgi (mgła per-heks na scalonym batchu). Wymaga sharp=true i 1:1 z `pts`. */
+  pointHex?: string[],
 ): void {
   if (pts.length < 2) return;
   const geo = buildRibbonGeometry(pts, halfWidth, segmentsPerSpan, sharp);
   queueRiverGeo(bucket, geo, hexKeys);
+  if (sharp && pointHex && pointHex.length === pts.length) {
+    (bucket.segPointHex ??= []).push(pointHex);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -3286,7 +3334,10 @@ export async function buildScene(
     // mgła PER-HEKS. Dla rzek jednowstęgowych (entry.pointHex) rysujemy tylko te quady, których
     // OBA końce leżą na odkrytym polu — przez przebudowę INDEKSU (pozycje wierzchołków nietknięte
     // → identyczny wygląd, 1 draw-call). Ciemne odcinki po prostu wypadają z indeksu.
-    // Delty scalone (bez pointHex) → fallback: ukryj całą wstęgę, gdy KTÓRYKOLWIEK heks w czerni.
+    // Batche medium/short/tributary (32/128 tras w jednym meshu) mają `segPointHex` i idą TĄ SAMĄ
+    // ścieżką indeksową — offsety wierzchołków po odcinkach (BUG-RZEKI-MEDIUM-FOW-REGRESJA-2).
+    // Delty/ujścia (CatmullRom, brak 1:1 punkt→wierzchołki) → fallback: ukryj całą wstęgę,
+    // gdy KTÓRYKOLWIEK heks w czerni.
     // Gdy mgła nieaktywna (lastAnyHidden=false, np. FoW wyłączony F) → cała rzeka widoczna.
     //
     // FIX (TEMAT #7, 2026-07-23): rzeki reaguja WYLACZNIE na mgle (isHidden), NIGDY na
@@ -3302,6 +3353,10 @@ export async function buildScene(
       isHidden(k) && !(lastRiverRevealKeys?.has(k));
     for (const entry of riverEntries) {
       const ph = entry.pointHex;
+      // BUG-RZEKI-MEDIUM-FOW-REGRESJA-2: scalony batch medium/short/tributary ma mapowanie
+      // punkt→heks per odcinek, więc obsługujemy go TAK SAMO jak pojedynczą wstęgę (indeks),
+      // zamiast chować cały mesh 32/128 rzek przez jeden ciemny heks.
+      const segs = ph ? undefined : entry.segPointHex;
       if (!fogActive) {
         // FoW wyłączony / brak ukrytych heksów — ZAWSZE przywróć pełną wstęgę (indeks) i pokaż mesh.
         // Sentinel RIVER_FOG_SIG_OFF (−1) ≠ hash mgły (w tym 0 = wszystkie punkty odkryte przy FoW ON).
@@ -3314,13 +3369,34 @@ export async function buildScene(
           } else {
             entry.hasVisibleQuads = true;
           }
+        } else if (segs) {
+          if (needsRiverRibbonIndexUpdate(false, entry.lastFogSig, 0)) {
+            entry.lastFogSig = RIVER_FOG_SIG_OFF;
+            const idx = buildMergedRiverFullIndex(segs);
+            entry.waterGeo.setIndex(idx);
+            entry.hasVisibleQuads = idx.length > 0;
+          } else {
+            entry.hasVisibleQuads = true;
+          }
         }
         const riverVis = zoomFlags.rivers;
         entry.waterMesh.visible = riverVis;
         entry.bankMesh.visible = riverVis;
         continue;
       }
-      if (ph && ph.length >= 2) {
+      if (segs) {
+        // Batch scalony: ten sam mechanizm co niżej, tylko indeks liczony po odcinkach.
+        const sig = computeMergedRiverFogSig(segs, riverHidden);
+        if (needsRiverRibbonIndexUpdate(true, entry.lastFogSig, sig)) {
+          entry.lastFogSig = sig;
+          const idx = buildMergedRiverFogIndex(segs, riverHidden);
+          entry.waterGeo.setIndex(idx);
+          entry.hasVisibleQuads = idx.length > 0;
+        }
+        const riverVis = zoomFlags.rivers && (entry.hasVisibleQuads ?? true);
+        entry.waterMesh.visible = riverVis;
+        entry.bankMesh.visible = riverVis;
+      } else if (ph && ph.length >= 2) {
         // PERF: `setIndex` (re-upload GPU) TYLKO gdy zmienił się stan mgły tej rzeki. Sygnatura =
         // tani 32-bit hash odkryte/ciemne per punkt (same Set.has). Zoom lub setFog na niezmienionej
         // rzece → sam hash, ZERO setIndex/alokacji. Pętla i tak nie odpala się per-klatka.
