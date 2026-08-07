@@ -1,11 +1,12 @@
 # R-MENNICA-BRAZ-ZLOTO-ASYMETRIA-Q1 — asymetria brąz-vs-złoto w `placedImprovementsWithTradeGrants`
 
-**Status:** 🟡 CZĘŚCIOWO ZAMKNIĘTE (RUNDA 2, audyt weryfikacyjny AutoBot, 2026-08-07):
+**Status:** 🟢 ZAMKNIĘTE (RUNDA 3, migracja testu wykonana, 2026-08-07):
 - Pytanie główne ("czy 10 realnych wołań w main.ts polega na syntetycznym kluczu złota") — 🟢 **FAŁSZYWY ALARM,
   POTWIERDZONE** (Evaluator zaakceptował RUNDĘ 1 w tej części, patrz sekcje niżej).
-- Decyzja (b) ("czy zostawić martwy kod `placedImprovementsWithZlotoTradeGrant` bez zmian") — 🔴 **OTWARTE,
-  WYMAGA ABC MACIEJA** (RUNDA 1 podała fałszywe uzasadnienie — patrz sekcja „Decyzja (b)" niżej, unieważniona
-  przez Evaluatora RUNDY 1).
+- Decyzja (b) ("czy zostawić martwy kod `placedImprovementsWithZlotoTradeGrant` bez zmian") — 🟢 **ZAMKNIĘTE,
+  Maciej wybrał Opcję (i)=A 2026-08-07** (zmigrować `zloto-szlak-test.cjs` do modelu opartego na stanie,
+  zamiast usuwać martwy kod — patrz sekcja „RUNDA 3" niżej). `placedImprovementsWithZlotoTradeGrant` /
+  `TRADE_GRANT_ZLOTO_SYNTHETIC_KEY` ZOSTAJĄ jako deprecated no-op (nietknięte, poza zakresem tej rundy).
 
 **Źródło zgłoszenia:** Evaluator, sesja MENNICA-GRACE-VERIFY-Q1, nota N3 (`dyspozycje/PYTANIA-OTWARTE.md`).
 **Zakres audytu:** WYŁĄCZNIE `placedImprovementsWithTradeGrants` (main.ts) i `placedImprovementsWithZlotoTradeGrant`
@@ -221,3 +222,59 @@ przed usunięciem przez realne uruchomienie testu na zrebase'owanym drzewie (nie
 | `node tools/mennica-magazyn-test.cjs` | ✅ 41/41 |
 | `node tools/waluta-mennica-test.cjs` | ✅ 57/57 |
 | `vite build` | nie dotyczy — main.ts NIEDOTKNIĘTY (zero zmian kodu w obu rundach) |
+
+## RUNDA 3 (2026-08-07) — migracja `zloto-szlak-test.cjs`, decyzja (b)=Opcja (i)=A wykonana
+
+**Zlecenie:** Maciej wybrał **Opcję (i)=A** z RUNDY 2 ("zmigrować `zloto-szlak-test.cjs` do modelu opartego na
+stanie, analogicznie do `mennica-uspienie-test.cjs`", zamigrowanego wcześniej commitem `72672f9`). Operator
+przeczytał `mennica-uspienie-test.cjs` jako wzorzec stylu/podejścia PRZED napisaniem czegokolwiek (zgodnie
+z instrukcją zlecenia).
+
+**Zakres:** WYŁĄCZNIE `gra/tools/zloto-szlak-test.cjs` (przepisany w całości — nagłówek, helpery, 7 sekcji).
+Zero zmian w `gra/src/**`/`gra/data/**` — `placedImprovementsWithZlotoTradeGrant` i
+`TRADE_GRANT_ZLOTO_SYNTHETIC_KEY` (zloto-access.ts) ZOSTAJĄ jako deprecated no-op, nietknięte, poza zakresem
+tej rundy (zgodnie z instrukcją zlecenia).
+
+### Co dokładnie się zmieniło w teście, sekcja po sekcji
+
+| Sekcja | Przed (26p/19f) | Po migracji | Co się zmieniło |
+|---|---|---|---|
+| **1** (własna kopalnia, bez szlaku) | 2/3 fail | ✅ wszystkie PASS (+1 nowa kontrola) | Fixture buduje `activeLabelsFor`/`mennicaBuildable` z realnym `empireStock={zloto:1}` (symuluje zapas już wyprodukowany przez kopalnię) zamiast pustych opcji. Dodano kontrolę: sama Kopalnia na mapie BEZ zapasu w magazynie → Mennica NIEBUDOWALNA (dowód, że bramka budowy patrzy wyłącznie na magazyn, nigdy na mapę, dla złota — w przeciwieństwie do Brązu/Żelaza). |
+| **2** (brak złoża, brak szlaku) | 1/3 fail | ✅ wszystkie PASS | Fixture teraz ustawia `ctx.empireResourceStock` jawnie (przedtem w ogóle nie istniało w ctx — helper `ctxFor` używał nieistniejącego pola `activeResourceLabels` zamiast realnego `empireResourceStock`/`empireActiveResourceLabels`). Oczekiwanie ODWRÓCONE: zweryfikowano w `building-resource-gate.ts` (`DEPOSIT_LINKED_BUILDING_LABELS.mennica = ['Złoto']` + `CITY_BUILDING_PREREQ.mennica = 'targowisko'`, komentarz linia 111 „obok bramki surowcowej Złota powyżej"), że Mennica wymaga OBU warunków (Targowisko W MIEŚCIE **ORAZ** zapas Złota w magazynie) — Targowisko samo NIGDY nie wystarczał(a) budowie Mennicy, stara asercja „kanon magazyn: dostęp nie jest wymagany wcale" była błędnym założeniem, nie faktem z kodu. |
+| **3** (szlak → dostęp, SERCE tematu) | 4/11 fail | ✅ wszystkie PASS (+4 nowe asercje) | Usunięto test „augmentacji przez syntetyczny klucz" (`empireHasKopalniaZlota`/etykieta/`mennicaBuildable` PO `placedImprovementsWithZlotoTradeGrant`). W jego miejsce: (a) realny przepływ ilościowy przez trasę (`computeTradeRouteResourceFlow`, TRADE_ROUTE_STOCK_FLOW_KEYS zawiera 'zloto' — patrz sekcja 4) zasila `empireStock`, który następnie otwiera `ownerHasZlotoStock`/etykietę/`mennicaBuildable`/`buildingRuntimeGateMet` (fallback); (b) `buildingRuntimeGateMet` z parametrem `resolveOwnerZlotoAccess` — bezpośredni odpowiednik main.ts `ownerHasZlotoAccessNow` — testuje RUNTIME gate reagujący na sam boolean-grant (bez stocku); (c) kontrola: BUILD gate (w przeciwieństwie do RUNTIME) NIE reaguje na sam boolean-grant bez realnego zapasu — dokumentuje realną asymetrię build-vs-runtime; (d) zachowany dowód no-op (`placedImprovementsWithZlotoTradeGrant` zwraca ten sam obiekt niezależnie od `hasTradeGrant`). |
+| **4** (przepływ ilościowy) | 1/8 fail | ✅ wszystkie PASS | **ZBADANE, NIE bug — świadoma, udokumentowana decyzja Maciej.** `TRADE_ROUTE_STOCK_FLOW_KEYS` (`trade-routes.ts:1057`) **ZAWIERA** `'zloto'` — potwierdzone wprost w `docs/decyzje/PYTANIE-84.md` wiersz **PYTANIE-84-U3=A**: „szlaki dostarczają sztuki do magazynu państwa co turę, nie tylko flagę dostępu" oraz w komentarzu źródłowym `trade-routes.ts:928-931`. Stara asercja (`!TRADE_ROUTE_STOCK_FLOW_KEYS.includes('zloto')`) testowała PIERWOTNY, PRZEDMIGRACYJNY model (PYTANIE-77=A, 2026-07-25 — złoto jak Koń, dostęp bez przepływu), świadomie zastąpiony PYTANIE-84-U3=A (2026-07-27). Oczekiwanie test ODWRÓCONE (teraz asercjonuje, że zloto JEST w liście) + dopisany dowód poprawności mechanizmu (kierunek transferu partner→gracz, wysokość = nadwyżka ponad `minStockReserve`). Zero zmian w `gra/src/**` — poprawiony wyłącznie test, którego stare oczekiwanie było przestarzałe. |
+| **5** (parytet AI) | 4/8 fail | ✅ wszystkie PASS (+4 nowe asercje) | Te same 4 wzorce co sekcja 3, przesunięte na ownerId=5/6 (kopalnia partnera 6→gracz AI 5), plus ten sam `buildingRuntimeGateMet`+resolver i kontrola „bez zapasu → niebudowalna" dla obu stron. |
+| **F** (zerwanie szlaku) | 1/5 fail | ✅ wszystkie PASS (+1 nowa asercja) | Ta sama przyczyna co sekcja 2 (magazyn pusty w starym fixture) — ALE odkryto dodatkową, realną nuansę: magazyn zgromadzony PRZED zerwaniem szlaku (z sekcji 3) **PRZETRWAŁ** zerwanie (bramka budowy nie sprawdza, czy trasa wciąż istnieje, tylko bieżący stan magazynu), podczas gdy boolean-grant (RUNTIME) jest cofnięty natychmiast — oryginalny komentarz „bramka budowy = magazyn, nie dostęp Złota" okazał się TRAFNY w duchu, tylko fixture nie miał żadnego magazynu do przetestowania tej tezy. |
+| **G** (kompozycja main.ts) | 6/7 fail | ✅ wszystkie PASS (+1 nowa asercja) | Wszystkie 6 starych asercji testowało, że kompozycja DOKLEJA syntetyczny wpis złota do `placedImprovements` (2 wpisy w mapie) — to jest DOKŁADNIE zachowanie, które już nie istnieje (no-op = zamierzony, PYTANIE-84-U3). Przepisano: kompozycja ma **dokładnie 1 wpis** (tylko brązu), `empireHasKopalniaZlota` po kompozycji = **false** (no-op), ALE dostęp do złota mimo to działa przez zupełnie inną, niezależną ścieżkę (`empireStock` → `ownerHasZlotoStock`/etykieta/`mennicaBuildable`) — dokładnie zgodnie ze zleceniem: „mapa nie dodaje nic dla złota, ale dostęp przez magazyn działa". |
+
+### Wynik testu docelowego (cel zlecenia: WSZYSTKIE asercje PASS)
+
+```
+node tools/zloto-szlak-test.cjs   (z gra/)
+zloto-szlak-test: 54 passed, 0 failed
+```
+
+**54/54 — cel osiągnięty.** (Liczba asercji wzrosła z 45 do 54 — kilka sekcji dostały dodatkowe „kontrola"
+asercje dokumentujące realne asymetrie build-vs-runtime i mapa-vs-magazyn odkryte podczas migracji, patrz
+tabela wyżej.)
+
+### Bramki (RUNDA 3, z `gra/`)
+
+| Bramka | Wynik |
+|--------|-------|
+| `npx tsc --noEmit` | ✅ 0 błędów (test jest `.cjs`, zero zmian `.ts`) |
+| `node tools/zloto-szlak-test.cjs` | ✅ **54 passed, 0 failed** (cel osiągnięty, było 26p/19f) |
+| `node tools/mennica-uspienie-test.cjs` | ✅ 49/49 — plik NIETKNIĘTY tą rundą, zielony jak przed migracją |
+| `node tools/mennica-magazyn-test.cjs` | ✅ 41/41 |
+| `node tools/waluta-mennica-test.cjs` | ✅ 57/57 |
+| `vite build` | nie dotyczy — zero zmian w `gra/src/**`/`gra/data/**` |
+
+### Pliki zmienione w RUNDZIE 3
+
+| Plik | Zmiana |
+|------|--------|
+| `gra/tools/zloto-szlak-test.cjs` | Przepisany w całości (helpery + 7 sekcji) — model empireStock zamiast syntetycznego klucza augmentacji |
+| `docs/decyzje/R-MENNICA-BRAZ-ZLOTO-ASYMETRIA-Q1.md` | Ta sekcja (RUNDA 3) + status na górze pliku |
+
+**Kod produkcyjny (`gra/src/**`/`gra/data/**`) NIETKNIĘTY** — zero zmian, zgodnie z zakresem zlecenia.
+`placedImprovementsWithZlotoTradeGrant`/`TRADE_GRANT_ZLOTO_SYNTHETIC_KEY` zostają jako deprecated no-op.
