@@ -797,7 +797,7 @@ Operator przygotowuje propozycję nowej treści sekcji, orkiestrator wkleja po z
 ## KOLEJKA ZLECEŃ AUTOBOT — polecenie Macieja 2026-08-07 („później niezależni agenci")
 | # | Zlecenie | Stan | Uwaga |
 |---|---|---|---|
-| 1 | **`P-MAPGEN-PANGEA-OBRYS` = D** — `Wybrzeze` jako woda w `pangeaShapeMetrics` + przekalibrowanie progu na rozkładzie ≥30 seedów | 🟢 decyzja zapisana, **wdrożenie wstrzymane** | Wymogi wdrożenia w `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md` |
+| 1 | **`P-MAPGEN-PANGEA-OBRYS`** — ABC otwarte (D / B / A) | 🟡 **CZEKA NA LITERĘ** | Analiza i tabela ABC w `docs/decyzje/P-MAPGEN-PANGEA-OBRYS.md`. Rekomendacja D, ale decyzji NIE MA |
 | 3 | **Powtórka `R-BRAMKI-AUDYT-KANONU`** na właściwej bazie | ⏸️ w kolejce — osobny agent AutoBot | Runda 1 FAIL: Operator audytował drzewo starsze o 57 commitów. Ustalenia o `relief-grid`/`fair-play` (naprawione, nie rozbrojone) się bronią i można je przenieść |
 | 4 | **Runda 2 kanonu Evaluatora** (`R-AUTOBOT-EVAL-CHECKLIST-KONFIG` + `R-FABLE-KOLEJKA-TYGODNIOWA`) | ⏸️ w kolejce — osobny agent AutoBot | Runda 1 FAIL: uzasadnienie („nikt nie zapisał «przetestuj mapę Ogromny»") jest **fałszywe** — przypadek `Ogromny Ziemia seed 99` stoi w `relief-grid-coverage-test.cjs:51` od commita `1341975` z 2026-07-09. Potrzebna nowa podstawa albo rezygnacja z tego punktu |
 
