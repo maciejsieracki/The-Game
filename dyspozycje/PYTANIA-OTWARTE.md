@@ -1763,3 +1763,48 @@ Brak porównywalnego baseline: wcześniejsze przebiegi z 2026-08-06 nie doszły 
 **Merytorycznie nie blokuje deployu** — kryteria wg `CLAUDE.md` to „determinizm A=B + 0 rzek bez
 ujścia": determinizm **PASS** (hash A=`85ec40a7` B=`85ec40a7`, IDENTYCZNY), trasy **2124/2124**,
 główne rzeki **1235/1235**. Ale **formalnie bramka zwraca exit 1** — patrz korekta wyżej.
+
+---
+
+## BUG-TRAKTAT-KOSZYK-REGRESJA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — REGRESJA wobec wdrożonej decyzji**
+**Jego słowa:** *„Pamiętam, że zgodnie z zasadami w traktatach handlowych miały nie być wymiany
+surowców, tylko temat dotyczący akurat tego traktatu. A jak widać, znowu to nie jest rozłączone."*
+**Obowiązująca decyzja:** `HANDEL-SPLIT-Q1 = B`, `docs/decyzje/HANDEL-SPLIT-Q1.md:18` — *„dwa osobne
+kafle na stole (akcja 5 = traktat szlaków BEZ KOSZYKA; akcja 14 = umowa wymiany z koszykiem).
+Klik traktatu szlaków NIE otwiera koszyka wymiany."* Zdeployowane FALA 80 (`7d266143`),
+typy `umowa_szlakow` / `umowa_wymiany` w `diplomacy.ts` / `diplomacy-proposals.ts`.
+**Stan faktyczny na zrzucie (bundle `e028045c`, FALA 259):** okno „Traktat handlowy" (partner:
+Sparta · Grecy · miasto-państwo) zawiera prawą kolumnę **„Opcjonalnie — dołóż wymianę PW
+(nie jest wymagana do zaproponowania traktatu)"** z pełnym koszykiem: tryb wymiany
+Jednorazowo / Co turę, oraz kafle **Pieniądze · Praca · Żywność · Technologia · Surowiec**
+po obu stronach (MY ODDAJEMY / ONI ODDAJĄ), z ilością i „+ DODAJ PROPOZYCJĘ".
+**Do ustalenia w diagnozie:** czy okno na zrzucie to `umowa_szlakow` (wtedy koszyk nie ma prawa
+się pokazać) czy `umowa_wymiany` z mylącym tytułem „Traktat handlowy" (wtedy błędem jest
+nazewnictwo/etykieta, nie logika). Kotwice: `gra/src/game/diplomacy-proposals.ts`,
+`gra/src/ui/**` (okno traktatu), `gra/tools/diplomacy-proposal-test.cjs`.
+**Uwaga:** `diplomacy-proposal-test.cjs` ma dziś 2 pre-istniejące porażki, jedna nazwana
+„traktat handlowy bez koszyka @ niska Rel" — możliwe, że bramka już to łapie i została uznana
+za szum.
+
+## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** *„na przybliżeniu miasta grafika jest okropna."*
+**Objaw:** przy dużym przybliżeniu kamery plakietka nazwy miasta („ATENY · korona · W4 · 1")
+jest rozmyta i pikselowata — tekst i obramowanie tracą ostrość, medalion władcy w lewym kółku
+rozmazany do nieczytelnej plamy. Wygląda na etykietę renderowaną do tekstury o stałej
+rozdzielczości (canvas/sprite) i skalowaną w górę przy zoomie, zamiast przerysowywanej
+w rozdzielczości docelowej lub rysowanej jako element DOM/HUD.
+**Kotwice:** `gra/src/render/**` (etykiety miast), `gra/src/ui/**`.
+**Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
+
+## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** *„na państwach, miastach są dziwne kwadraty obrócone, a jak się najedzie
+przyciskiem, to pojawia się dopiero grafika danej kultury."*
+**Objaw:** w kółku po lewej stronie plakietki miasta domyślnie widnieje **obrócony kwadrat
+(romb/diament)** — placeholder. Właściwa ikona kultury pojawia się **dopiero po najechaniu
+kursorem**. Zrzuty: „TEBY · MIASTO…" — przed najechaniem romb, po najechaniu ikona budowli
+klasycznej. Dotyczy państw i miast.
+**Hipoteza do sprawdzenia (nie potwierdzona):** ikona kultury ładowana leniwie i podmieniana
+dopiero na zdarzeniu hover, zamiast przy tworzeniu plakietki; albo brak fallbacku na czas
+ładowania i romb jest kształtem domyślnym.
+**Kotwice:** `gra/src/render/**`, `gra/src/ui/**` (plakietka miasta, ikony kultur).
+**Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
