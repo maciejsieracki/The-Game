@@ -39,7 +39,7 @@ import {
   type BasketItem,
   type ResolveProposalPnOptions,
 } from './diplomacy-pn-engine';
-import { diplomacyProgDarRelacja } from './diplomacy-value-catalog';
+import { diplomacyProgDarRelacja, diplomacyFairGivePn } from './diplomacy-value-catalog';
 import {
   isCurrencyProposalForbiddenDuringWar,
 } from './diplomacy-war-gates';
@@ -501,10 +501,34 @@ function treatyPnGate(
  * na stole — uczciwa oferta PW @ Relacji nie może paść na „Brak chęci do handlu",
  * a sam traktat handlowy bez koszyka wymaga tylko progów Relacji (Maciej 2026-08-02).
  */
-/** Akcje z bilansem PW — gracz-proponent nie może dać partnerowi ujemnego netto. */
+/**
+ * Akcje z bilansem PW — gracz-proponent nie może dać partnerowi ujemnego netto.
+ *
+ * R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C: 'handel' CELOWO POZA tym zbiorze
+ * (usunięty tu w rundzie 3 rekonstrukcji). Ta ogólna bramka sprawdza uczciwość PW
+ * BEZ modyfikatora chęci partnera i uruchamia się PRZED case'em 'handel' w switchu
+ * evaluateProposal — gdyby 'handel' w niej zostało, każda nieuczciwa oferta gracza
+ * odrzucałaby się tu (komunikat „Przewaga u Ciebie") zanim handelFairnessGate (case
+ * 'handel', z mnożnikiem chęci — patrz handelWillingnessMultiplier) w ogóle dostałby
+ * szansę zadziałać — dwie niezależne, nachodzące na siebie bramki uczciwości, dokładnie
+ * ten sam konflikt priorytetów, który decyzja Q1 miała rozwiązać. handelFairnessGate
+ * w case 'handel' jest teraz JEDYNYM i pełnym następcą tej bramki dla handlu — liczy
+ * uczciwość PW @ Relacji (ten sam pnDealAcceptedByAi/diplomacyFairGivePn co tutaj),
+ * dodatkowo modyfikowaną chęcią respondenta (patrz handelWillingnessMultiplier) — a
+ * PODŁOGA PARYTETU w handelFairnessGate (Math.max(receivePn, …)) gwarantuje, że próg
+ * PW nigdy nie spada poniżej „oddaje tyle ile bierze" niezależnie od chęci partnera —
+ * ochrona przed przepłatą AI (R-PW-ACCEPT-OVERPAY-Q1) jest RÓWNOWAŻNA tej ogólnej
+ * bramce WYŁĄCZNIE W CZĘŚCI PARYTETOWEJ (przy relTotal ≥ 100 pkt Relacji); powyżej
+ * parytetu (relTotal < 100 pkt) próg jest dodatkowo modulowany chęcią respondenta
+ * (−15%…+20%, patrz handelWillingnessMultiplier) — to zamierzone zachowanie Q1=B+C,
+ * nie luka. Skonsolidowana w jednym miejscu z poprawną, przyczynowo trafną wiadomością
+ * dla gracza (runda 4: naprawiono lukę „skimowania" do ~15% wartości transakcji,
+ * którą usunięcie 'handel' stąd w rundzie 3 otworzyło).
+ * Pozostałe akcje (w tym umowa_szlakow/umowa_handlowa) — bez zmian, poza zakresem rundy 3.
+ */
 const PROPOSER_PW_FAIRNESS_ACTIONS: ReadonlySet<string> = new Set([
   'nap', 'sojusz_defensywny', 'sojusz_pelny', 'granice', 'pokoj', 'wasal',
-  'handel', 'umowa_szlakow', 'umowa_handlowa',
+  'umowa_szlakow', 'umowa_handlowa',
 ]);
 
 /**
@@ -560,6 +584,111 @@ function tradeWillingnessBlocksAcceptance(
   if (!hasBasket) return false;
   if (pnDealAcceptedByAi(givePn, receivePn, relTotal)) return false;
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C (2026-08-06/07): uczciwość PW @
+// Relacji zostaje GŁÓWNYM kryterium akceptacji case'u 'handel'; chęć partnera
+// do handlu (willingnessTrade) przestaje być osobną, wykluczającą bramką "przed"
+// i staje się MODYFIKATOREM wymaganego progu PW (niska chęć podnosi próg, wysoka
+// go obniża) — nigdy osobnym niezależnym odrzuceniem. Komunikat dla gracza zawsze
+// pokazuje PRAWDZIWY powód z realnymi liczbami PW (nie generyczny tekst).
+//
+// KIERUNEK: modyfikator odzwierciedla chęć RESPONDENTA. Gdy respondentem jest
+// realne AI (proposerIsPlayer, czyli gracz proponuje AI — najczęstszy scenariusz,
+// dla którego mechanizm został zaprojektowany), stance.willingnessTrade to
+// prawdziwa chęć tego AI i modyfikator ma sens. Gdy respondentem jest GRACZ
+// (AI proponuje graczowi), "chęć AI" nikt nie pyta w tym kierunku — AI jest
+// proponentem, nie respondentem — więc stance liczona przez stanceForEval(ctx)
+// dla tego kierunku to sztuczne "nastawienie" cywilizacji gracza wstawione przez
+// buildProposalEvalContext (main.ts) wyłącznie jako placeholder kontekstu, NIE
+// prawdziwa chęć. Używanie jej jako modyfikatora fałszywie przypisywało winę
+// odrzucenia "niechęci AI", której nikt nie liczył (regresja rundy 2, naprawiona
+// tu przez wymuszenie multiplier=1 gdy responderIsPlayer===true).
+//
+// PODŁOGA PARYTETU (runda 4, naprawa FAIL rundy 3): niezależnie od modyfikatora,
+// wymagany próg PW nigdy nie spada poniżej receivePn (parytet — „oddaje tyle ile
+// bierze"). Ulga z wysokiej chęci respondenta może obniżać próg TYLKO w obszarze
+// powyżej parytetu (realnie działa gdy relTotal < 100 pkt Relacji, gdzie fair >
+// receivePn) — nigdy poniżej. Bez tej podłogi gracz mógł "skimować" do ~15%
+// wartości transakcji przy relTotal=100 pkt (fair=receivePn=parytet) i wysokiej
+// chęci partnera, dopłacając np. 5 PW zamiast oddać pełne 110 PW za 110 PW.
+// ---------------------------------------------------------------------------
+
+/** Max ulga progu PW przy willingnessTrade=1 (pełna chęć respondenta-AI do handlu). */
+const HANDEL_WILLINGNESS_EASE_MAX_PCT = 0.15;
+/** Max kara progu PW przy willingnessTrade=0 (zero chęci respondenta-AI do handlu). */
+const HANDEL_WILLINGNESS_PENALTY_MAX_PCT = 0.20;
+
+/**
+ * Mnożnik wymaganego progu PW handlu — ciągła funkcja liniowa willingnessTrade
+ * wokół punktu neutralnego params.progHandelWillingnessMin (multiplier=1 dokładnie
+ * na progu, bez „martwej strefy" płaskiej wokół niego — obie gałęzie dochodzą do 1
+ * z przeciwnych stron tym samym tempem względem odległości do progu).
+ */
+function handelWillingnessMultiplier(
+  stance: ReturnType<typeof aiDiplomacyStance>,
+  params: ReturnType<typeof getEffectiveDiplomacyParams>,
+  responderIsPlayer: boolean,
+): number {
+  if (responderIsPlayer) return 1;
+  const w = stance.willingnessTrade;
+  const mid = params.progHandelWillingnessMin;
+  if (w >= mid) {
+    const span = Math.max(1e-6, 1 - mid);
+    const t = Math.min(1, (w - mid) / span);
+    return 1 - HANDEL_WILLINGNESS_EASE_MAX_PCT * t;
+  }
+  const span = Math.max(1e-6, mid);
+  const t = Math.min(1, (mid - w) / span);
+  return 1 + HANDEL_WILLINGNESS_PENALTY_MAX_PCT * t;
+}
+
+/** Komunikat odrzucenia bramki uczciwości handlu — realne liczby PW, prawdziwa przyczyna. */
+function handelFairnessReject(
+  givePn: number,
+  requiredPn: number,
+  multiplier: number,
+): ProposalEvalResult {
+  if (multiplier > 1) {
+    const pct = Math.round((multiplier - 1) * 100);
+    return {
+      accepted: false,
+      reason: `Niechęć partnera do handlu podniosła wymagany próg PW o ${pct}% `
+        + `— oferta nieuczciwa dla partnera (wymagane ≥ ${requiredPn} PW, oferujesz ${givePn} PW)`,
+    };
+  }
+  return {
+    accepted: false,
+    reason: `Oferta nieuczciwa dla partnera — poniżej uczciwej wartości PW @ Relacji `
+      + `(wymagane ≥ ${requiredPn} PW, oferujesz ${givePn} PW)`,
+  };
+}
+
+/**
+ * Bramka uczciwości PW handlu z modyfikatorem chęci (patrz komentarz bloku wyżej).
+ * PODŁOGA PARYTETU (runda 4): requiredPn nigdy nie schodzi poniżej receivePn —
+ * ulga z chęci respondenta działa tylko powyżej parytetu (relTotal < 100 pkt Relacji).
+ * Zwraca wynik odrzucenia lub null = próg spełniony.
+ */
+function handelFairnessGate(
+  givePn: number,
+  receivePn: number,
+  relTotal: number,
+  multiplier: number,
+): ProposalEvalResult | null {
+  if (givePn <= 0 && receivePn <= 0) {
+    return { accepted: false, reason: 'Brak wartości w ofercie' };
+  }
+  const relForFair = Math.min(100, Math.max(1, relTotal));
+  const requiredPn = Math.max(
+    receivePn,
+    Math.ceil(diplomacyFairGivePn(receivePn, relForFair) * multiplier),
+  );
+  if (givePn < requiredPn) {
+    return handelFairnessReject(givePn, requiredPn, multiplier);
+  }
+  return null;
 }
 
 /**
@@ -793,12 +922,16 @@ export function evaluateProposal(
         return { accepted: true, reason: 'Dar przyjęty', oneShotTrade: true };
       }
 
-      if (tradeWillingnessBlocksAcceptance(stance, p, givePn, receivePn, relTotal, payload)) {
-        return { accepted: false, reason: 'Brak chęci do handlu' };
-      }
       if (score < p.progHandelRelacja) {
         return { accepted: false, reason: `Relacja zbyt niska na handel (wymagane ≥ ${p.progHandelRelacja})` };
       }
+
+      // R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1=B+C: JEDNA deklaracja mnożnika chęci
+      // dla całego case'u 'handel' (współdzielona przez ścieżkę cykliczną i PW).
+      // responderIsPlayer=true (AI proponuje graczowi) → multiplier=1 zawsze — patrz
+      // komentarz bloku handelWillingnessMultiplier wyżej (naprawa regresji rundy 2).
+      const responderIsPlayer = responderOwnerId === 0;
+      const handelMultiplier = handelWillingnessMultiplier(stance, p, responderIsPlayer);
 
       const hasPnPath = givePn > 0 || receivePn > 0 || payload.giveItems?.length || payload.receiveItems?.length;
       if (proposalHasResourceAccess(payload)) {
@@ -808,14 +941,14 @@ export function evaluateProposal(
       // HANDEL-SUROWCE-CYKL (2026-07-24): tryb „Wymiana przez X tur" — surowiec_ilosc
       // (+ ewentualna zapłata zloto/praca) płynie CO TURĘ zamiast raz. ownerId-agnostyczne:
       // ta sama ścieżka niezależnie od tego, czy proponentem jest gracz czy AI (obie strony
-      // oceniane tym samym pnDealAcceptedByAi — AI realnie może odrzucić ofertę gracza).
+      // oceniane tą samą bramką uczciwości @ mnożnik chęci — AI realnie może odrzucić
+      // ofertę gracza).
       const hasQuantityResourceItems =
         (payload.giveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false)
         || (payload.receiveItems?.some(i => i.typ === 'surowiec_ilosc') ?? false);
       if (payload.resourceTradeMode === 'per_turn' && hasQuantityResourceItems) {
-        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
-        }
+        const cyklFairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        if (cyklFairnessReject) return cyklFairnessReject;
         const turns = clampDealTurns(payload.turns);
         const cyklicznyItems = buildHandelSurowiecCykliczny(
           proposerOwnerId, responderOwnerId, payload.giveItems, payload.receiveItems,
@@ -842,9 +975,8 @@ export function evaluateProposal(
       }
 
       if (hasPnPath) {
-        if (!pnDealAcceptedByAi(givePn, receivePn, relTotal)) {
-          return { accepted: false, reason: 'Oferta poniżej uczciwej wartości PW @ Relacji' };
-        }
+        const fairnessReject = handelFairnessGate(givePn, receivePn, relTotal, handelMultiplier);
+        if (fairnessReject) return fairnessReject;
         return { accepted: true, reason: 'Wymiana PW zaakceptowana', oneShotTrade: true };
       }
 

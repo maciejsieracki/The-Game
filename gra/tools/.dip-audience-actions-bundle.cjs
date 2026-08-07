@@ -17,73 +17,17 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// tools/.unit-replace-entry.ts
-var unit_replace_entry_exports = {};
-__export(unit_replace_entry_exports, {
-  availableProduction: () => availableProduction,
-  availableReplacementsFor: () => availableReplacementsFor,
-  epochNumber: () => epochNumber
+// tools/.dip-audience-actions-entry.ts
+var dip_audience_actions_entry_exports = {};
+__export(dip_audience_actions_entry_exports, {
+  AUDIENCE_BASIC_IDS: () => AUDIENCE_BASIC_IDS,
+  AUDIENCE_LOCK_NOTE_CITY_STATE: () => AUDIENCE_LOCK_NOTE_CITY_STATE,
+  audienceActionBarLockNote: () => audienceActionBarLockNote,
+  audienceActionStatusNote: () => audienceActionStatusNote,
+  buildAudienceActionsList: () => buildAudienceActionsList,
+  diplomacyActionIdFromLabel: () => diplomacyActionIdFromLabel
 });
-module.exports = __toCommonJS(unit_replace_entry_exports);
-
-// src/game/building-cost-tempo.ts
-var KOSZT_BUDYNKOW_PACE = {
-  niski: 1,
-  normalny: 2,
-  wysoki: 4
-};
-function applyBuildingCostPace(bazowyKoszt, pace) {
-  const mnoznik = typeof pace === "number" ? pace : KOSZT_BUDYNKOW_PACE[pace];
-  return Math.max(1, Math.round(bazowyKoszt * mnoznik));
-}
-
-// src/game/unit-cost-tempo.ts
-var KOSZT_JEDNOSTEK_PACE = {
-  niski: 1,
-  normalny: 2,
-  wysoki: 4
-};
-function applyUnitCostPace(bazowyKoszt, pace) {
-  const mnoznik = typeof pace === "number" ? pace : KOSZT_JEDNOSTEK_PACE[pace];
-  return Math.max(1, Math.round(bazowyKoszt * mnoznik));
-}
-
-// src/game/r-stawki-strojenie.ts
-var R_STAWKI_KOSZT_MULT = 2;
-var R_STAWKI_FALA2_MULT = 2;
-var R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT;
-
-// src/game/difficulty-cost.ts
-function isPlayerOwner(ownerId) {
-  return ownerId === 0;
-}
-function getCostMultiplierForOwner(ownerId, difficulty) {
-  if (difficulty === "normal") return 1;
-  if (difficulty === "easy") return isPlayerOwner(ownerId) ? 1 : 2;
-  return isPlayerOwner(ownerId) ? 2 : 1;
-}
-function applyDifficultyCostMultiplier(costAfterPace, ownerId, difficulty) {
-  const mult = getCostMultiplierForOwner(ownerId, difficulty);
-  return Math.max(1, Math.round(costAfterPace * mult));
-}
-
-// src/game/civ-bonuses.ts
-function civBuildingCostDiscount(bonusy) {
-  if (!bonusy?.length) return 0;
-  let disc = 0;
-  for (const b of bonusy) {
-    if (b.realizuje !== "miasto") continue;
-    if (b.typ !== "koszt_redukcja") continue;
-    if (b.cel !== "budynki") continue;
-    if (typeof b.wartosc === "number" && b.wartosc > 0) disc += b.wartosc;
-  }
-  return Math.min(disc, 0.75);
-}
-function buildingCostAfterCivDiscount(baseCost, bonusy) {
-  const disc = civBuildingCostDiscount(bonusy);
-  if (disc <= 0 || baseCost <= 0) return baseCost;
-  return Math.max(1, Math.floor(baseCost * (1 - disc)));
-}
+module.exports = __toCommonJS(dip_audience_actions_entry_exports);
 
 // data/map-gen-params.json
 var map_gen_params_default = {
@@ -979,604 +923,560 @@ var TERRAIN_MOVEMENT_KEY_ALIASES = {
   polarny: "polarny" /* Polarny */
 };
 
-// data/epoka-ludnosc-manpower.json
-var epoka_ludnosc_manpower_default = {
-  _opis: "Skala ludno\u015Bci i Manpower per epoka imperium (wiersze 1\u201310). 1 ludek = ludno\u015B\u0107 absolutna na slot population (1\u201310). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domy\u015Blnie = manpowerNaLudka; epoka 1 = po\u0142owa \u2014 Maciej 2026-08-03: wi\u0119ksza armia w Kamieniu).",
-  _formuly: {
-    ludnoscAbsolutna: "population \xD7 ludekNaLudka[epoka]",
-    manpowerMax: "population \xD7 manpowerNaLudka[epoka]",
-    kosztRekrutacji: "manpowerNaJednostke[epoka] per jednostka (ep1: 500 \u2192 2 jednostki / ludek przy pe\u0142nej puli)"
-  },
-  epoki: [
-    { epoka: 1, ludekNaLudka: 1e4, manpowerNaLudka: 1e3, manpowerNaJednostke: 500 },
-    { epoka: 2, ludekNaLudka: 2e4, manpowerNaLudka: 2e3, manpowerNaJednostke: 2e3 },
-    { epoka: 3, ludekNaLudka: 4e4, manpowerNaLudka: 4e3, manpowerNaJednostke: 4e3 },
-    { epoka: 4, ludekNaLudka: 8e4, manpowerNaLudka: 8e3, manpowerNaJednostke: 8e3 },
-    { epoka: 5, ludekNaLudka: 16e4, manpowerNaLudka: 16e3, manpowerNaJednostke: 16e3 },
-    { epoka: 6, ludekNaLudka: 32e4, manpowerNaLudka: 32e3, manpowerNaJednostke: 32e3 },
-    { epoka: 7, ludekNaLudka: 64e4, manpowerNaLudka: 64e3, manpowerNaJednostke: 64e3 },
-    { epoka: 8, ludekNaLudka: 12e5, manpowerNaLudka: 12e4, manpowerNaJednostke: 12e4 },
-    { epoka: 9, ludekNaLudka: 24e5, manpowerNaLudka: 24e4, manpowerNaJednostke: 24e4 },
-    { epoka: 10, ludekNaLudka: 48e5, manpowerNaLudka: 48e4, manpowerNaJednostke: 48e4 }
-  ]
+// src/game/diplomacy.ts
+var DIPLOMACY_PARAMS = {
+  // ---- one-shot Zaufanie deltas (jednorazowo) ----
+  /** "Zawarcie umowy handlowej" (+2 Zaufanie, jednorazowo) */
+  handelZawarcie_zaufanie: 2,
+  /** "Pomoc w wojnie sojusznikowi" (+10 Zaufanie, jednorazowo) */
+  pomocSojusznikowi_zaufanie: 10,
+  /** "Wspolny wrog -- nawiazanie kooperacji" (+5 Zaufanie, jednorazowo) */
+  wspolnyWrogNawiazanie_zaufanie: 5,
+  /** "Podarunek surowca / Pieniadza (gratis)" (+6 Zaufanie, jednorazowo) */
+  dar_zaufanie: 6,
+  /** "Zlamany pakt przez gracza" (-40 Zaufanie, jednorazowo) */
+  zlamanaPaktGracz_zaufanie: -40,
+  /** "Zlamany pakt przez AI" (-20 Zaufanie, jednorazowo) */
+  zlamanaPaktAI_zaufanie: -20,
+  /** "Zdrada / atak z zaskoczenia (na gracza)" (-50 Zaufanie, jednorazowo) */
+  zdrada_zaufanie: -50,
+  /** "Szpiegostwo wykryte przez przeciwnika" (-15 Zaufanie, jednorazowo) */
+  szpiegWykryty_zaufanie: -15,
+  /** "Rywalizacja tego samego typu (start gry)" (-20 Zaufanie, jednorazowo) */
+  rywalizacjaTenSamTyp_zaufanie: -20,
+  /** REL-MP-SAME-Q1: gracz ↔ miasto-państwo kopii typu gracza (+20 Zaufanie, start) */
+  miastoPanstwoSameCiv_zaufanie: 20,
+  /** "Duza roznica kulturowa (rozny typ)" (-5 Zaufanie, jednorazowo) */
+  roznicaKulturowa_zaufanie: -5,
+  // ---- one-shot Respekt deltas (jednorazowo) ----
+  /** "Znaczaca przewaga militarna gracza" (+15 Respekt, jednorazowo; 2x or 5x threshold) */
+  przewagaMilitarna_respekt: 15,
+  /** "Gracz slabszy militarnie od partnera" (-10 Respekt, jednorazowo) */
+  slabszyMilitarnie_respekt: -10,
+  /** "Wygrana bitwa (historia bojowa)" (+5 Respekt, jednorazowo) */
+  wygraBitwa_respekt: 5,
+  /** "Akceptacja zadania trybutu" (+10 Respekt, jednorazowo) */
+  trybut_respekt: 10,
+  /** "Wspolny wrog zaakceptowany" (+10 Respekt, jednorazowo) */
+  wspolnyWrogAkceptacja_respekt: 10,
+  // ---- per-turn Zaufanie deltas (co ture) ----
+  /** "Aktywny handel (trwa umowa handlowa)" (+1/ture) — stackuje z tierem pokoju */
+  handel_zaufanie_perTura: 1,
+  /** "Aktywny sojusz wojskowy" (+3/ture, Maciej 2026-07-21) */
+  sojusz_zaufanie_perTura: 3,
+  /** "Aktywny pakt nieagresji" (+2/ture, Maciej 2026-07-21) */
+  nap_zaufanie_perTura: 2,
+  /** "Pokojowy kontakt bez wojny/NAP/sojuszu" (+1/ture, Maciej 2026-07-21) */
+  pokoj_zaufanie_perTura: 1,
+  /** @deprecated — zastąpione przez nap/sojusz/pokoj (2026-07-21); zostaje w JSON roundtrip */
+  aktywnyPakt_zaufanie_perTura: 1,
+  /** "Efekt dobrej woli (podarunek)" (+1/ture przez kilka tur) */
+  dobraWola_zaufanie_perTura: 1,
+  /** "Wspolny wrog (kooperacja trwa)" (+1/ture) */
+  wspolnyWrog_zaufanie_perTura: 1,
+  /** "Wspolna religia" (+0.5/ture, max +15) */
+  wspolnaReligia_zaufanie_perTura: 0.5,
+  /** "Odmienna religia" (-0.5/ture, max -10) */
+  odmiennaReligia_zaufanie_perTura: -0.5,
+  /** "Ekspansja przy granicy" (-2/ture) */
+  ekspansjaGranica_zaufanie_perTura: -2,
+  /** "Urazy historyczne (zanikajace)" (-2/ture; fades every 20 turns) */
+  urazyHistoryczne_zaufanie_perTura: -2,
+  // ---- thresholds (progi akcji; sekcja C) ----
+  /** Zaufanie >= 91 required for SojuszWojskowy (przy równowadze sił >90%) */
+  progSojuszZaufanie: 91,
+  /** Zaufanie >= 70 required for WymianaTechnologii */
+  progWymianaTechZaufanie: 70,
+  /** Respekt >= 70 required to demand Wasalizacja */
+  progWasalizacjaRespekt: 70,
+  /** Respekt >= 90 required to demand Wchloniecie */
+  progWchloniecieRespekt: 90,
+  /** Relacja < 30 = diplomacy nearly impossible */
+  progMinimalnyRelacja: 30,
+  /** Relacja >= 151 = sojusz (Maciej 2026-06-30: powyżej 150) */
+  progSojuszRelacja: 151,
+  /** Twarda podłoga Relacji na dobrowolne umowy pozytywne (>150); premia siły nie obniża */
+  progUmowaMinRelacja: 151,
+  // ---- starting values (wartosci startowe) ----
+  startZaufanie: 20,
+  startRespekt: 30,
+  // ---- global multipliers (sekcja E) ----
+  mnoznikZaufania: 1,
+  mnoznikRespektu: 1,
+  mnoznikPodarunku: 1,
+  turyEfektuPodarunku: 5,
+  // ---- simplified minor-civ threshold (paragraph 5.2) ----
+  /** Minor civ accepts tribute / NAP / annexation when player Respekt > this */
+  progPoboczneAkceptacja: 60,
+  /** Minor civ at peace when Relacja > this */
+  progPoboczneHandel: 30,
+  /**
+   * Minor civ may go to war when Relacja drops BELOW this (0-200 scale).
+   * Remaps Dyplomacja-szablon.md 5.2 "Relacja < -40" onto the 3.1 range 0-200:
+   * Relacja = Zaufanie + Respekt is clamped >= 0, so a negative floor is
+   * unreachable -- "very hostile" is modelled as a low positive threshold.
+   * (The "player attacks" war trigger from 5.2 is handled by the engine.)
+   */
+  progPoboczneWojna: 15,
+  // ---- propozycje v1.1 (Panel-D → evaluateProposal) ----
+  /** Relacja >= wartość wymagana do NAP (Maciej 2026-07-21: 50 @ normal; tylko Rel, bez Zauf) */
+  progNapRelacja: 50,
+  /** Relacja >= wartość wymagana do handlu ¤/Praca/złoża/surowce (Maciej 2026-07-26: 0 = od neutralnej) */
+  progHandelRelacja: 0,
+  /** @deprecated v1.2 — usunięte „tylko równi”; zostaje w JSON dla roundtrip */
+  progSojuszPartnerRwMin: 0.4,
+  progSojuszPartnerRwMax: 0.7,
+  /** Max obniżka progu willingnessAlly gdy proponent silniejszy (Moc/Respekt) */
+  progSojuszPremiaSilniejszyMax: 0.25,
+  /** Wkład przewagi Mocy (milRatio−1) × skok w premii progu */
+  progSojuszPremiaMilSkok: 0.08,
+  /** Wkład przewagi Respektu proponenta × skok w premii progu */
+  progSojuszPremiaRespektSkok: 0.15,
+  /** Poniżej tego stosunku M proponent/respondent — wymagana pełna relacja (score≥120) */
+  progSojuszSlabyProponentMilRatio: 0.5,
+  /** Bonus willingnessAlly gdy rozmówca silniejszy (AI słabsze — sojusz z hegemonem) */
+  progSojuszPremiaSilniejszyInny: 0.2,
+  /** aiDiplomacyStance.willingnessAlly min dla sojuszu */
+  progSojuszWillingnessMin: 0.68,
+  /** v1.3 — max podwyżka progów gdy respondent (AI) silniejszy od proponenta */
+  progSojuszKaraSilniejszyMax: 0.4,
+  /** v1.3 — wkład przewagi respondenta (1/milProponent − 1) × skok */
+  progSojuszKaraMilSkok: 0.15,
+  /** v1.3 — kara willingnessAlly na jednostkę przewagi respondenta */
+  progSojuszKaraAllySkok: 0.18,
+  /** v1.3 — poniżej tego stosunku M proponent/respondent → hegemon odmawia sojuszu (słaby proponent) */
+  progSojuszHegemonMilRatio: 0.42,
+  /** v1.3 — powyżej tego stosunku M proponent/respondent → hegemon nie szuka sojuszu równoprawnego */
+  progSojuszHegemonProposerMaxMil: 2.38,
+  /** v1.3c — progresywne podłogi Zauf. gdy gracz silniejszy (2×≈85, 3×≈83 — oba „w okolicy 85") */
+  progSojuszPremiaGracz2xMilRatio: 2,
+  progSojuszPremiaGracz2xMinZaufanie: 85,
+  progSojuszPremiaGracz2xBonus: 0.06,
+  progSojuszPremiaGracz3xMilRatio: 2.8,
+  progSojuszPremiaGracz3xMinZaufanie: 83,
+  progSojuszPremiaGracz3xBonus: 0.1,
+  /** Minimalny trybut żądany (¤/turę) */
+  progTrybutMinGoldPerTurn: 10,
+  /** Respekt proponenta musi być > tej wartości, by żądać trybutu (spokój) */
+  progTrybutZadanieMinRespekt: 70,
+  /** Limit górny żądania trybutu (¤/turę) przy Respekt tuż powyżej progu (audyt #21) */
+  progTrybutZadanieMaxGoldBase: 50,
+  /** Limit górny: dodatek ¤/turę za każdy punkt Respektu ponad próg żądania (audyt #21) */
+  progTrybutZadanieMaxGoldPerRespekt: 5,
+  /** militaryRatio > wartość → „blisko wojny” (oferta trybutu) */
+  progTrybutOfertaNearWarRatio: 1.2,
+  /** Zaufanie < wartość → „blisko wojny” (oferta trybutu) */
+  progTrybutOfertaNearWarZaufanie: 30,
+  /** Minimalna oferta trybutu (¤) */
+  progTrybutOfertaMinGold: 5,
+  /** Bazowa oferta trybutu poza „blisko wojny”: base + epoka × epokaGold */
+  progTrybutOfertaBaseGold: 10,
+  progTrybutOfertaEpokaGold: 5,
+  /** willingnessTrade min dla handlu */
+  progHandelWillingnessMin: 0.5,
+  /** Zaufanie min dla namówienia do wojny */
+  progNamowWojneZaufanie: 50,
+  /** Łapówka min = base × (epoka + 1) */
+  progNamowWojneBribeBase: 30,
+  /** Zaufanie min dla otwartych granic */
+  progGraniceZaufanie: 45,
+  /** Relacja min dla otwartych granic / przemarszu (G1-A) */
+  progGraniceRelacja: 100,
+  /** Respekt min dla prawa wojskowego przemarszu */
+  progGraniceWojskoweRespekt: 55,
+  /** militaryRatio min dla ultimatum */
+  progUltimatumMilitaryRatio: 1.3,
+  /** Jednorazowe złoto min przy ultimatum */
+  progUltimatumMinGold: 20,
+  /** Domyślny trybut wasala (¤/turę) */
+  progWasalDefaultGoldPerTurn: 10,
+  /** R-GRACZ-WCHLONIECIE: min tur wasalu przed wchłonięciem MP przez gracza */
+  graczWchlonieciePoWasaluTur: 10,
+  /** R-GRACZ-WCHLONIECIE: baza kosztu wchłonięcia (¤) */
+  graczWchloniecieKosztBaza: 150,
+  /** R-GRACZ-WCHLONIECIE: koszt per ludność MP (¤) */
+  graczWchloniecieKosztPerLudnosc: 25,
+  /** R-GRACZ-WCHLONIECIE: minimalny koszt wchłonięcia (¤) */
+  graczWchloniecieKosztMin: 200,
+  // ---- Wiarygodność cywilizacji (WIARYGODNOSC-SPECYFIKACJA.md, Etap 1) ----
+  // Uwaga: wartości tymczasowo hardkodowane tutaj; docelowo mają trafić do
+  // gra/data/diplomacy.json przez Panel-D Excela (poza zakresem Etapu 1) —
+  // wzorem loadDiplomacyParams() dla reszty DIPLOMACY_PARAMS.
+  // -- §1: skala i wartość startowa (pkt Wiarygodności, skala −100…+100) --
+  /** Dolna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMin: -100,
+  /** Górna granica skali Wiarygodności (pkt Wiarygodności), §1. */
+  wiarygodnoscSkalaMax: 100,
+  /** Próg pasma „Wzór cnoty" — W >= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWzorCnoty: 40,
+  /** Próg pasma „Wiarołomny" — W <= wartość (pkt Wiarygodności), §1. */
+  wiarygodnoscProgWiarolomny: -40,
+  /** Wartość startowa Wiarygodności, poziom Łatwy (pkt Wiarygodności), §1. */
+  wiarygodnoscStartLatwy: 40,
+  /** Wartość startowa Wiarygodności, poziom Normalny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartNormalny: 20,
+  /** Wartość startowa Wiarygodności, poziom Trudny (pkt Wiarygodności), §1. */
+  wiarygodnoscStartTrudny: 0,
+  // -- §2: KARY N1–N7 (pkt Wiarygodności, jednorazowo, wszystkie poziomy trudności) --
+  /** N1 — wypowiedzenie wojny bez ostrzeżenia / atak w tej samej turze co deklaracja (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN1BezOstrzezenia: -10,
+  /** N1 — okno karencji: liczba tur po wypowiedzeniu wojny, w której atak jeszcze liczy się jako "bez ostrzeżenia" (tury). */
+  wiarygodnoscN1KarencjaTur: 1,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Paktu o Nieagresji (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuNap: -18,
+  /** N2 — wypowiedzenie wojny mimo aktywnego Sojuszu (pełny/defensywny), także atak na sojusznika (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN2ZlamaniePaktuSojusz: -25,
+  /** N3 — atak w oknie karencji po zakończeniu porozumienia (pkt Wiarygodności, jednorazowo, na wierzchu N1/N2). */
+  wiarygodnoscN3AtakWOknieKarencji: -12,
+  /** N3 — okno karencji (tury) po jednostronnym anulowaniu porozumienia BEZTERMINOWEGO lub po zawarciu pokoju, przed którym atak = kara N3. */
+  wiarygodnoscN3KarencjaBezterminoweTur: 10,
+  /** N4 — odmowa pomocy sojusznikowi na wezwanie obowiązku sojuszniczego, kara WYŁĄCZNIE dla odmawiającego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN4OdmowaObowiazkuSojuszu: -15,
+  /** N5 — dobrowolne zerwanie traktatu CZASOWEGO (nie handlowego) (pkt Wiarygodności, jednorazowo). Bezterminowe = brak kary (patrz N3). */
+  wiarygodnoscN5ZerwanieTraktatCzasowy: -6,
+  /** N5 — dobrowolne zerwanie umowy handlowej CZASOWEJ (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN5ZerwanieHandelCzasowy: -4,
+  /** N6 — niedotrzymanie handlu cyklicznego (3 tury z rzędu z winy strony), kara wyłącznie dla winnego (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscN6NiedotrzymanieHandluCyklicznego: -2,
+  /** N6 — próg kolejnych tur z rzędu z winy TEJ SAMEJ strony (dawca bez zapasu / biorca bez środków), po którym nalicza się kara (tury). */
+  wiarygodnoscN6ProgTurZRzedu: 3,
+  /** N7 — nieautoryzowany przemarsz, jednorazowo przy pierwszym wykryciu w danej "wizycie" (pkt Wiarygodności). Zwiadowcy wykluczeni (C-WIAR-SKAUT=A). */
+  wiarygodnoscN7NieautoryzowanyPrzemarsz: -2,
+  /** Odwet (C-WIAR-ODWET=A) — okno (tury) od cudzego N1/N2/N4 wobec nas, w którym nasza odwetowa wojna NIE nalicza N1/N2. */
+  wiarygodnoscOdwetOknoTur: 10,
+  // -- §3: NAGRODY — tabela A STRUMIEŃ (pkt Wiarygodności NA TURĘ, za każde aktualnie dotrzymywane zobowiązanie) --
+  /** S1 — Sojusz (pełny lub defensywny) aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS1SojuszPerTure: 1,
+  /** S2 — Pakt o nieagresji aktywny (pkt Wiarygodności / turę). */
+  wiarygodnoscS2NapPerTure: 0.5,
+  /** S3 — Umowa handlowa / handel cykliczny ze 100% zrealizowanych dostaw tej tury (pkt Wiarygodności / turę). */
+  wiarygodnoscS3HandelPerTure: 0.3,
+  /** S4 — Prawo przemarszu / otwarte granice aktywne (pkt Wiarygodności / turę). */
+  wiarygodnoscS4PrzemarszPerTure: 0.2,
+  // -- §3: NAGRODY — tabela B FINISZ (pkt Wiarygodności, jednorazowo, za dotrwanie do zapisanego terminu) --
+  /** P1 — Sojusz dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP1FiniszSojusz: 10,
+  /** P2 — Pakt o nieagresji dotrwany do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszNap: 5,
+  /** P2 — Umowa handlowa dotrwana do końca (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP2FiniszHandel: 5,
+  /** P3 — Handel cykliczny ze 100% dostaw aż do końca umowy (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP3FiniszHandelCykliczny: 1,
+  // -- §3: NAGRODY — tabela C CZYNY (pkt Wiarygodności, jednorazowo, niepowiązane z trwającym zobowiązaniem) --
+  /** P4 — kamień milowy "bez wojny" (pkt Wiarygodności, jednorazowo, powtarzalny co wiarygodnoscP4OknoBezWojnyTur tur). */
+  wiarygodnoscP4BezWojny30Tur: 3,
+  /** P4 — długość okna "bez wojny" wymaganego do naliczenia kamienia milowego (tury). */
+  wiarygodnoscP4OknoBezWojnyTur: 30,
+  /** P5 — pomoc sojusznikowi w wojnie, dołączenie z własnej woli LUB na wezwanie (pkt Wiarygodności, jednorazowo). */
+  wiarygodnoscP5PomocSojusznikowi: 20,
+  // -- §4: model zapominania — krzywa liniowa z trwałą podłogą (tury do osiągnięcia podłogi, wg trudności i znaku zdarzenia) --
+  /** Czas zapomnienia KAR, poziom Łatwy (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraLatwy: 40,
+  /** Czas zapomnienia KAR, poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraNormalny: 80,
+  /** Czas zapomnienia KAR, poziom Trudny (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaKaraTrudny: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Łatwy (tury; 0,833%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaLatwy: 120,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Normalny (tury; 1,25%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaNormalny: 80,
+  /** Czas zapomnienia NAGRÓD (FINISZ/CZYNY), poziom Trudny (tury; 2,5%/turę). */
+  wiarygodnoscCzasZapomnieniaNagrodaTrudny: 40,
+  /** Trwała podłoga krzywej zapominania — ułamek [0,1] wartości pierwotnej, który zostaje NA ZAWSZE po pełnym wygaśnięciu (dotyczy WYŁĄCZNIE zdarzeń jednorazowych, nie STRUMIENIA — C-WIAR-SLAD=A). */
+  wiarygodnoscTrwalaPodlogaProcent: 0.1,
+  // -- §5: wpływ Wiarygodności na Zaufanie --
+  /** Dzielnik strumienia Wiarygodność→Zaufanie: ΔZaufanie/turę = Wiarygodność / wartość (C-WIAR-SKALA=20). */
+  wiarygodnoscZaufanieDzielnikPerTura: 20,
+  /** Dźwignia 3 — twardy próg: Sojusz wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgSojuszMin: 0,
+  /** Dźwignia 3 — twardy próg: Pakt o Nieagresji wymaga W >= wartość (pkt Wiarygodności), niezależnie od Zaufania/Respektu. */
+  wiarygodnoscProgNapMin: -40
+};
+var WAR_RELATION_SCORE_CAP = DIPLOMACY_PARAMS.progMinimalnyRelacja - 1;
+var ARCHETYPE_AGGRESSION = {
+  ["grecy" /* Grecy */]: 0.4,
+  ["rzymianie" /* Rzymianie */]: 0.75,
+  ["chinczycy" /* Chinczycy */]: 0.2,
+  ["inkowie" /* Inkowie */]: 0.45,
+  ["zulusi" /* Zulusi */]: 0.9,
+  ["egipt" /* Egipt */]: 0.35,
+  ["babilon" /* Babilon */]: 0.3,
+  ["sumer" /* Sumer */]: 0.3,
+  ["celtowie" /* Celtowie */]: 0.6,
+  ["germanie" /* Germanie */]: 0.65,
+  ["harappa" /* Harappa */]: 0.2,
+  ["hetyci" /* Hetyci */]: 0.5,
+  ["slowianie" /* Slowianie */]: 0.6,
+  ["babilonia" /* Babilonia */]: 0.4,
+  ["asyria" /* Asyria */]: 0.8,
+  ["fenicjanie" /* Fenicjanie */]: 0.3,
+  ["drobna_cywilizacja" /* DrobnaCywilizacja */]: 0.15
+};
+var ARCHETYPE_TRADE = {
+  ["grecy" /* Grecy */]: 0.75,
+  ["rzymianie" /* Rzymianie */]: 0.5,
+  ["chinczycy" /* Chinczycy */]: 0.85,
+  ["inkowie" /* Inkowie */]: 0.25,
+  ["zulusi" /* Zulusi */]: 0.2,
+  ["egipt" /* Egipt */]: 0.6,
+  ["babilon" /* Babilon */]: 0.65,
+  ["sumer" /* Sumer */]: 0.65,
+  ["celtowie" /* Celtowie */]: 0.35,
+  ["germanie" /* Germanie */]: 0.3,
+  ["harappa" /* Harappa */]: 0.8,
+  ["hetyci" /* Hetyci */]: 0.5,
+  ["slowianie" /* Slowianie */]: 0.4,
+  ["babilonia" /* Babilonia */]: 0.6,
+  ["asyria" /* Asyria */]: 0.3,
+  ["fenicjanie" /* Fenicjanie */]: 0.9,
+  ["drobna_cywilizacja" /* DrobnaCywilizacja */]: 0.6
 };
 
-// data/miasto-params.json
-var miasto_params_default = {
-  min_dystans_miast: {
-    wartosc: 4,
-    jednostka: "heksy",
-    opis: "Minimalny dystans (w heksach) miedzy dwoma miastami przy zakladaniu. Uzywane w cities.canFoundCity (reason 'za blisko innego miasta')."
-  },
-  jednostka_koszt_ludnosci: {
-    wartosc: 0,
-    jednostka: "ludnosc",
-    opis: "Koszt ludnosci miasta za ukonczenie jednostki z kolejki (rekrutacja). USTAWIONE 0 (Maciej 2026-07-21): rekrutacja NIE zabiera juz populacji miasta \u2014 jedynym kosztem werbu jest pula Manpower (epoka-ludnosc-manpower.json / manpower.ts). production.populationCostOf; przy 0 populacja pozostaje bez zmian."
-  },
-  manpower_regen_proc_max_tura: {
-    wartosc: 2,
-    jednostka: "% max/ture",
-    opis: "Co koniec tury miasto odzyskuje floor(manpowerMax \xD7 wartosc/100) Manpower (do cap). Ep1, 10 ludkow, max=10k \u2192 +200/ture. Pusta pula \u224850 tur do pelna. manpower.tickManpowerRegen."
-  },
-  manpower_regen_blok_oblezenie: {
-    wartosc: 1,
-    jednostka: "0/1",
-    opis: "1 = brak odnowy Manpower gdy city.oblegane=true. 0 = regen normalnie podczas obl\u0119\u017Cenia."
-  },
-  manpower_uzupelnienie_hp_proc_max_tura: {
-    easy: 25,
-    normal: 20,
-    hard: 15,
-    jednostka: "% maxHP/tura",
-    opis: "Co koniec tury (po odnowie puli Manpower): jednostka wojskowa leczy floor(maxHP \xD7 warto\u015B\u0107/100) HP z puli imperium. Koszt MP = ceil(healHp/maxHP \xD7 kosztJednostki). Przy braku MP \u2014 leczenie cz\u0119\u015Bciowe do dost\u0119pnej puli. manpower.tickManpowerUnitReplenishment."
-  },
-  jednostka_koszt_domyslny: {
-    wartosc: 10,
-    jednostka: "Praca",
-    opis: "Domyslny koszt Pracy jednostki, gdy brak pola 'Pieniadz (koszt)' w units.json i brak dopasowania roli. production.DEFAULT_UNIT_COST."
-  },
-  zaloz_miasto_koszt_praca: {
-    wartosc: 20,
-    jednostka: "Praca",
-    opis: "Koszt za\u0142o\u017Cenia miasta z mapy (tryb Budowa) \u2014 jak historyczny Osadnik (B1 Maciej 2026-06-29). Pierwsze miasto onboarding = 0 (Silnik)."
-  },
-  zaloz_miasto_koszt_ludnosci: {
-    wartosc: 1,
-    jednostka: "ludnosc",
-    opis: "Ludno\u015B\u0107 pobierana przy za\u0142o\u017Ceniu kolejnego miasta (jak Osadnik Ludno\u015B\u0107=1)."
-  },
-  jednostka_koszt_rola_wsparcie: {
-    wartosc: 12,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Wsparcie', gdy brak 'Pieniadz (koszt)'."
-  },
-  jednostka_koszt_rola_dystans: {
-    wartosc: 8,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Dystans' (jednostki dystansowe)."
-  },
-  jednostka_koszt_rola_wrecz: {
-    wartosc: 10,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Wrecz' (piechota wrecz)."
-  },
-  jednostka_koszt_rola_konnica: {
-    wartosc: 16,
-    jednostka: "Praca",
-    opis: "Fallback kosztu Pracy dla roli 'Konnica'."
-  },
-  zasieg_okolicy_miasta: {
-    wartosc: 10,
-    jednostka: "pola/strona",
-    opis: "Promien okolicy roboczej miasta (pola na plony) z kazdej strony = 10 (bylo 5; ROZSZERZONE o +5 z kazdej strony, decyzja Naster). ~21x21 ~331 heksow. Tu przydzielasz mieszkancow; to tez zasieg budowy miasta."
-  },
-  zasieg_okolicy_max: {
-    wartosc: 15,
-    jednostka: "pola/strona",
-    opis: "Maksymalny promien okolicy miasta (cap) w modelu: cityRangeForPopulation(pop)=max(zasieg_okolicy_baza, min(pop,cap)). Maciej 2026-06-27: start min 5, rosnie 1:1 z pop."
-  },
-  praca_udzial_budynki: {
-    wartosc: 0.7,
-    jednostka: "udzial [0..1]",
-    opis: "Q4: czesc Pracy miasta do kolejki budynkow; reszta -> globalna pula Pracy w skarbcu."
-  },
-  bonus_obrona_mur_proc: {
-    wartosc: 200,
-    jednostka: "% Obrony",
-    opis: "Miasto Z MUREM (budynek 'mury', City.maMur) daje +200% Obrony broniacym sie jednostkom (bitwa/oblezenie). Decyzja Naster 2026-06-25. Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Miasto bez muru = brak tego bonusu. Miasto z Cytadela (upgrade Murow, patrz bonus_obrona_cytadela_proc) dostaje ten bonus RAZEM z dodatkowym -- lacznie +300%, nie osobnymi warstwami w kodzie (jeden zwracany procent: 200 albo 300)."
-  },
-  bonus_obrona_cytadela_proc: {
-    wartosc: 100,
-    jednostka: "% Obrony (dodatkowo do muru)",
-    opis: `Miasto z Cytadela (budynek 'fort' -- UWAGA: to jest budynek Cytadela, upgrade Murow; NIE mylic z ulepszeniem terenowym 'fort' na mapie, ktore daje osobny bonus +100% dla obozujacych jednostek poza miastem) daje DODATKOWE +100% Obrony PONAD bonus muru -- lacznie +300% (200 mur + 100 cytadela). Decyzja Maciej 2026-07-25: "3, 100%. Bo to juz by bylo za duzo, i tak z murami jest 300%." Cytadela to upgrade budynku 'mury' (ID podmieniane w cityBuilt), wiec miasto z Cytadela NIE ma juz 'mury' w liscie budynkow -- flaga City.maMur pozostaje true (main.ts ustawia ja dla obu ID), a rozroznienie mur/cytadela robi structureDefenseBonusFor po cityBuilt.includes('fort'). Konsumuje main.ts structureDefenseBonusFor -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway).`
-  },
-  bonus_obrona_baszta_proc: {
-    wartosc: 100,
-    jednostka: "% Obrony (dodatkowo do muru+cytadeli)",
-    opis: "Decyzja 41B (Maciej 2026-07-25): Baszta -- TRZECI, niezalezny budynek obronny (buildings.json id='baszta'), dokladany obok Murow i Cytadeli (brak upgradeFrom, zaden nie zastepuje pozostalych). Daje DODATKOWE +100% Obrony PONAD Mury (+200%) i Cytadele (+100%) -- miasto z kompletem trzech budowli obronnych = +400% lacznie (200 mur + 100 cytadela + 100 baszta). Konsumuje main.ts structureDefenseBonusFor -> game/city-defense.ts cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Baszta sama (bez Murow/Cytadeli) daje WYLACZNIE swoj wlasny +100% -- baza 'mur' (200%) aktywuje sie tylko gdy w miescie stoi realnie budynek 'mury' lub 'fort'."
-  },
-  bonus_obrona_palisada_proc: {
-    wartosc: 100,
-    jednostka: "% Obrony (wczesna palisada drewniana)",
-    opis: "Palisada drewniana (buildings.json id='palisada') -- wczesna obrona miasta przed Mury kamienne: +100% Obrony broni\u0105cym si\u0119 jednostkom. Epoka Kamienia, tech Obr\xF3bka drewna. Mury (+200%) ZAST\u0118PUJ\u0104 bonus palisady (nie stackuj\u0105 -- patrz game/city-defense.ts). Konsumuje main.ts structureDefenseBonusFor -> cityWallDefenseBonusPercent -> combat.ts structureDefBonusPct + battleScene.ts (onWallWalkway). Odblokowuje City.maMur (jak Mury) dla bramki terenu przy obronie miasta."
-  },
-  zasieg_okolicy_baza: {
-    wartosc: 5,
-    jednostka: "pola/strona",
-    opis: "Minimalny promien okolicy przy populacji 1..4 (start miasta = 5 heksow). Czytane przez okolica.cityRangeForPopulation (Maciej 2026-06-27)."
-  },
-  zasieg_okolicy_pop5: {
-    wartosc: 10,
-    jednostka: "pola/strona",
-    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 5 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
-  },
-  zasieg_okolicy_pop10: {
-    wartosc: 15,
-    jednostka: "pola/strona",
-    opis: "[LEGACY - nieuzywane od 2026-06-25] Zasieg okolicy przy populacji >= 10 (stary model schodkowy). Zachowane dla wstecznej zgodnosci parsowania."
-  },
-  udzial_output_produkcja: {
-    wartosc: 0.4,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia PRODUKCJA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_pieniadz: {
-    wartosc: 0.3,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia PIENIADZ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_nauka: {
-    wartosc: 0.2,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia NAUKA. production.DEFAULT_OUTPUT_SHARES / splitOutput."
-  },
-  udzial_output_rozwoj: {
-    wartosc: 0.1,
-    jednostka: "udzial [0..1]",
-    opis: "Domyslny udzial outputu miasta kierowany do strumienia ROZWOJ. production.DEFAULT_OUTPUT_SHARES / splitOutput."
+// src/game/diplomacy-layers.ts
+var AUDIENCE_LOCK_NOTE_CITY_STATE = "Niedost\u0119pne u miasta-pa\u0144stwa";
+var AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL = "Niedost\u0119pne u rywala tego samego typu";
+function audienceRestrictedActionLockNote(ownerId, simplifiedOwners) {
+  if (simplifiedOwners.has(ownerId)) return AUDIENCE_LOCK_NOTE_SAME_TYPE_RIVAL;
+  return AUDIENCE_LOCK_NOTE_CITY_STATE;
+}
+function playerDiplomacyActionAllowed(layer, action) {
+  if (layer === "pre_contact") return false;
+  if (layer === "simplified") return true;
+  return action === "war" || action === "peace" || action === "trade";
+}
+
+// src/game/diplomacy-locks.ts
+function fmtProg(n) {
+  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+}
+function formatLockedNote(label, prog, masz) {
+  return `zablokowana \u2014 wymaga ${label} ${fmtProg(prog)} (masz ${fmtProg(masz)})`;
+}
+function zaufanieGate(prog, masz) {
+  if (masz >= prog) return null;
+  return {
+    locked: true,
+    requirement: { kind: "zaufanie", prog, masz },
+    note: formatLockedNote("Zaufania", prog, masz)
+  };
+}
+function respektGate(prog, masz) {
+  if (masz >= prog) return null;
+  return {
+    locked: true,
+    requirement: { kind: "respekt", prog, masz },
+    note: formatLockedNote("Respektu", prog, masz)
+  };
+}
+function relacjaGate(prog, masz) {
+  if (masz >= prog) return null;
+  return {
+    locked: true,
+    requirement: { kind: "stan", prog, masz },
+    note: formatLockedNote("Relacji", prog, masz)
+  };
+}
+function dualGate(relTotal, zaufanie, minRel, minZauf) {
+  const relOk = relTotal >= minRel;
+  const zaufOk = zaufanie >= minZauf;
+  if (relOk && zaufOk) return null;
+  if (!zaufOk && !relOk) {
+    return {
+      locked: true,
+      requirement: { kind: "zaufanie", prog: minZauf, masz: zaufanie },
+      note: `zablokowana \u2014 wymaga Zaufania ${fmtProg(minZauf)} (masz ${fmtProg(zaufanie)}) i Relacji ${fmtProg(minRel)} (masz ${fmtProg(relTotal)})`
+    };
   }
+  if (!zaufOk) return zaufanieGate(minZauf, zaufanie);
+  return relacjaGate(minRel, relTotal);
+}
+var ALREADY_NOTE = {
+  "2": "ju\u017C zawarty",
+  "3": "ju\u017C zawarty",
+  "5": "ju\u017C zawarta",
+  "14": "ju\u017C zawarta"
 };
-
-// src/game/manpower.ts
-var ROWS = epoka_ludnosc_manpower_default.epoki;
-
-// src/game/zloto-access.ts
-var ZLOTO_LABEL = "Z\u0142oto";
-
-// src/game/building-resource-gate.ts
-var LABEL_BY_ASCII = {
-  drewno: "Drewno",
-  kamien: "Kamie\u0144",
-  glina: "Glina",
-  ruda: "Ruda",
-  zelazo: "\u017Belazo",
-  stal: "Stal",
-  braz: "Br\u0105z",
-  sol: "S\xF3l",
-  cegla: "Ceg\u0142a",
-  ceramika: "Ceramika",
-  zloto: ZLOTO_LABEL,
-  kon: "Ko\u0144"
-};
-var DEPOSIT_LINKED_BUILDING_LABELS = {
-  garncarnia: ["Glina"],
-  cegielnia: ["Glina"],
-  // PYTANIE-84-U-24: Spichlerz I — brak bramki Ceramika przy budowie; drain B6 po postawieniu.
-  // spichlerz — celowo brak wpisu (bonusy z drain co turę, patrz sekcja Spichlerz niżej).
-  spichlerz_ii: ["S\xF3l"],
-  stolarnia: ["Drewno"],
-  kamieniarski: ["Kamie\u0144"],
-  kuznia: ["Ruda"],
-  odlewnia_brazu: ["Ruda"],
-  // PYTANIE-84-R9/U-13 + DOSTEP-SUROWCE-Q1: Mennica — Złoto w magazynie państwa.
-  mennica: [ZLOTO_LABEL]
-};
-var CITY_BUILDING_PREREQ = {
-  warsztat_oblezniczy: ["koszary", "akademia_wojskowa"],
-  laznia_publiczna: "studnia",
-  akademia: "biblioteka",
-  fort: "mury",
-  akademia_wojskowa: "koszary",
-  swiatynia: "kamienne_kregi",
-  // ZLOTO (Maciej 2026-07-25, decyzja 54c=A): Mennica wymaga Targowiska W TYM SAMYM MIEŚCIE
-  // (obok bramki surowcowej Złota powyżej — DEPOSIT_LINKED_BUILDING_LABELS).
-  mennica: "targowisko",
-  // DECYZJA 54a (Maciej 2026-07-25): Baszta wymaga Murów w tym samym mieście.
-  baszta: "mury",
-  // DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mieście.
-  akwedukt: "studnia"
-};
-function cityBuildingPrereqMet(prereq, builtList, buildings, isSuperseded) {
-  if (!prereq) return true;
-  const ids = typeof prereq === "string" ? [prereq] : prereq;
-  return ids.some((id) => builtList.includes(id) || isSuperseded(id, builtList, buildings));
-}
-var WATER_ACCESS_BUILDING_IDS = /* @__PURE__ */ new Set(["port", "port_wielki"]);
-var ASCII_BY_LABEL = Object.fromEntries(
-  Object.entries(LABEL_BY_ASCII).map(([ascii, label]) => [label, ascii])
-);
-function empireLabelSatisfied(label, empireBuiltIds, empireStock) {
-  if (label === "Ceg\u0142a" && empireBuiltIds?.includes("cegielnia")) return true;
-  if (label === "Ceramika" && empireBuiltIds?.includes("garncarnia")) return true;
-  const asciiKey = ASCII_BY_LABEL[label];
-  if (asciiKey && empireStock && (empireStock[asciiKey] ?? 0) > 0) return true;
-  return false;
-}
-function buildingRequiredActiveLabels(building) {
-  const out = /* @__PURE__ */ new Set();
-  const hard = DEPOSIT_LINKED_BUILDING_LABELS[building.id];
-  if (hard) hard.forEach((l) => out.add(l));
-  const key = building.wymaganySurowiec?.trim().toLowerCase();
-  if (key && LABEL_BY_ASCII[key]) out.add(LABEL_BY_ASCII[key]);
-  return [...out];
-}
-function buildingResourceGateMet(building, _activeLabels, empireBuiltIds, empireStock) {
-  const required = buildingRequiredActiveLabels(building);
-  if (required.length === 0) return true;
-  return required.every(
-    (label) => empireLabelSatisfied(label, empireBuiltIds, empireStock)
-  );
-}
-var DEPOSIT_RUNTIME_GATED_BUILDING_IDS = Object.freeze(
-  Object.keys(DEPOSIT_LINKED_BUILDING_LABELS)
-);
-
-// src/game/unit-building-bonuses.ts
-var ARMOR_PATH_MAX_PP = 45;
-var SOFT_PATH_MAX_PP = 50;
-var ARMOR_PATH_LEVEL_MAX_PP = [
-  Math.floor(ARMOR_PATH_MAX_PP / 3),
-  Math.floor(ARMOR_PATH_MAX_PP * 2 / 3)
-];
-var SOFT_PATH_LEVEL_MAX_PP = [
-  Math.floor(SOFT_PATH_MAX_PP / 3),
-  Math.floor(SOFT_PATH_MAX_PP * 2 / 3)
-];
-
-// src/game/building-upgrades.ts
-function isBuildingSuppressedFromProduction(building) {
-  return building.suppressed === true;
-}
-function upgradeProductionDisplayName(target, buildings) {
-  const from = (target.upgradeFrom ?? "").trim();
-  if (!from) return target.nazwa;
-  const prev = buildings.find((b) => b.id === from);
-  return `Rozbuduj ${prev?.nazwa ?? from} \u2192 ${target.nazwa}`;
-}
-
-// src/game/production.ts
-var EPOCH_BY_NAME = {
-  Kamien: 1,
-  "Kamie\u0144": 1,
-  // matches data key (U+0144)
-  Braz: 2,
-  "Br\u0105z": 2,
-  // matches data key (U+0105)
-  Zelazo: 3,
-  "\u017Belazo": 3
-  // matches data key (U+017B)
-};
-function epochNumber(epoka) {
-  if (epoka == null) return 1;
-  const n = EPOCH_BY_NAME[epoka];
-  return typeof n === "number" ? n : 1;
-}
-var DEFAULT_UNIT_COST = miasto_params_default.jednostka_koszt_domyslny?.wartosc ?? 10;
-var DEFAULT_COST_BY_ROLE = {
-  Wsparcie: miasto_params_default.jednostka_koszt_rola_wsparcie?.wartosc ?? 12,
-  Dystans: miasto_params_default.jednostka_koszt_rola_dystans?.wartosc ?? 8,
-  "Wr\u0119cz": miasto_params_default.jednostka_koszt_rola_wrecz?.wartosc ?? 10,
-  // melee role key
-  Wrecz: miasto_params_default.jednostka_koszt_rola_wrecz?.wartosc ?? 10,
-  Konnica: miasto_params_default.jednostka_koszt_rola_konnica?.wartosc ?? 16
-};
-function unitCostFromDef(def) {
-  const raw = def["Pieni\u0105dz (koszt)"];
-  if (typeof raw === "number" && Number.isFinite(raw)) {
-    if (raw > 0) return raw;
-    if (raw === 0 && def["Super-jednostka"] === "TAK") return 0;
-  }
-  const rola = def["Rola (linia)"];
-  if (rola != null) {
-    const byRole = DEFAULT_COST_BY_ROLE[rola];
-    if (typeof byRole === "number") return byRole;
-  }
-  return DEFAULT_UNIT_COST;
-}
-function findBuilding(data, id) {
-  return data.buildings.find((b) => b.id === id);
-}
-function findUnit(data, id) {
-  return data.units.find((u) => u.Jednostka === id);
-}
-function itemCost(kind, id, data, cityLevelOrEpoch) {
-  if (kind === "budynek") {
-    const b = findBuilding(data, id);
-    if (!b) return 0;
-    const level = Number.isFinite(cityLevelOrEpoch) ? Math.max(1, Math.floor(cityLevelOrEpoch)) : 1;
-    const przyrostKosztu = Number.isFinite(b.przyrostKosztu) ? b.przyrostKosztu : 0;
-    return Math.round(b.kosztBudowy + przyrostKosztu * (level - 1));
-  }
-  const u = findUnit(data, id);
-  if (!u) return 0;
-  return unitCostFromDef(u);
-}
-function buildingLocationAllowed(lokalizacja, isCapital) {
-  if (lokalizacja === "stolica") return isCapital === true;
-  if (lokalizacja === "region") return isCapital === false;
-  return true;
-}
-var GLOBAL_BUILDING_PROD_MULT = 0.5;
-function buildingWorkCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
-  const afterCiv = buildingCostAfterCivDiscount(baseCost, civBonusy);
-  const afterPace = pace ? applyBuildingCostPace(afterCiv, pace) : afterCiv;
-  const afterGlobal = Math.max(
-    1,
-    Math.round(afterPace * GLOBAL_BUILDING_PROD_MULT * R_STAWKI_KOSZT_MULT * R_STAWKI_FALA2_MULT)
-  );
-  return applyDifficultyCostMultiplier(afterGlobal, ownerId, difficulty);
-}
-function unitMoneyCost(baseCost, civBonusy, pace, ownerId = 0, difficulty = "normal") {
-  let koszt = baseCost;
-  const recDisc = civRecruitmentDiscount(civBonusy);
-  if (recDisc > 0) {
-    koszt = Math.max(1, Math.floor(koszt * (1 - recDisc)));
-  }
-  const afterPace = pace ? applyUnitCostPace(koszt, pace) : koszt;
-  const afterFala2 = Math.max(1, Math.round(afterPace * R_STAWKI_FALA2_MULT));
-  return applyDifficultyCostMultiplier(afterFala2, ownerId, difficulty);
-}
-function civRecruitmentDiscount(bonusy) {
-  if (!bonusy?.length) return 0;
-  for (const b of bonusy) {
-    if (b.realizuje !== "ekonomia") continue;
-    const opis = (b.opis ?? "").toLowerCase();
-    if (opis.includes("rekrutacji") && typeof b.wartosc === "number" && b.wartosc > 0) {
-      return b.wartosc;
+function resolveDiplomacyActionLock(ctx) {
+  const { actionId } = ctx;
+  switch (actionId) {
+    case "2": {
+      if (ctx.hasNap) return { locked: false, active: true, note: ALREADY_NOTE["2"] };
+      if (ctx.atWar) return { locked: true, note: "zablokowany \u2014 trwa wojna" };
+      const gate = relacjaGate(ctx.progNapRelacja, ctx.relTotal);
+      if (gate) return gate;
+      return { locked: false, note: "" };
     }
-  }
-  return 0;
-}
-function empireStockHas(stock, asciiKey) {
-  return (stock?.[asciiKey] ?? 0) > 0;
-}
-function stripDiacritics(s) {
-  return s.normalize("NFD").replace(/[\u0300-\u036F]/g, "").toLowerCase();
-}
-function unitAllowedForCivNation(unitNacja, civUnitNacja) {
-  const n = unitNacja.trim();
-  if (!n) return true;
-  const c = (civUnitNacja ?? "").trim();
-  if (!c) return false;
-  return stripDiacritics(n) === stripDiacritics(c);
-}
-function buildingTypeCommitted(buildingId, builtIds, queue) {
-  for (const id of builtIds) if (id === buildingId) return true;
-  for (const it of queue) {
-    if (it.kind === "budynek" && it.id === buildingId) return true;
-  }
-  return false;
-}
-function isBuildingSupersededByUpgrade(buildingId, builtIds, buildings) {
-  for (const b of buildings) {
-    if (b.upgradeFrom === buildingId && builtIds.includes(b.id)) return true;
-  }
-  return false;
-}
-function isBlankReplacement(zamiast) {
-  return zamiast.length === 0 || zamiast === "-" || zamiast === "\u2014";
-}
-function civSpecialUnitNameTokens(bonusy) {
-  if (!bonusy?.length) return [];
-  const tokens = [];
-  for (const b of bonusy) {
-    if (b.typ !== "jednostka_specjalna") continue;
-    const rawValues = Array.isArray(b.wartosc) ? b.wartosc.map((v) => String(v ?? "")) : [String(b.wartosc ?? "")];
-    for (const rawValue of rawValues) {
-      const raw = rawValue.trim();
-      if (!raw) continue;
-      for (const part of raw.split("/")) {
-        const trimmed = part.trim();
-        if (!trimmed) continue;
-        tokens.push(trimmed);
-        const primary = trimmed.split("(")[0]?.trim();
-        if (primary && primary !== trimmed) tokens.push(primary);
+    case "3": {
+      if (ctx.hasSojusz) return { locked: false, active: true, note: ALREADY_NOTE["3"] };
+      if (ctx.atWar) return { locked: true, note: "zablokowany \u2014 trwa wojna" };
+      const gate = dualGate(ctx.relTotal, ctx.zaufanie, ctx.progSojuszRelacja, ctx.progSojuszZaufanie);
+      if (gate) return gate;
+      return { locked: false, note: "" };
+    }
+    case "4": {
+      if (ctx.atWar) return { locked: true, note: "zablokowane \u2014 trwa wojna" };
+      const gate = dualGate(ctx.relTotal, ctx.zaufanie, ctx.progGraniceRelacja, ctx.progGraniceZaufanie);
+      if (gate) return gate;
+      return { locked: false, note: "przemarsz wojsk dozwolony" };
+    }
+    case "5": {
+      if (ctx.atWar) return { locked: true, note: "handel niedost\u0119pny w wojnie" };
+      if (ctx.hasHandel) return { locked: false, active: true, note: ALREADY_NOTE["5"] };
+      const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
+      if (gate) return gate;
+      return { locked: false, note: "szlaki handlowe, +1 Zaufanie/tur\u0119" };
+    }
+    case "14": {
+      if (ctx.atWar) return { locked: true, note: "handel niedost\u0119pny w wojnie" };
+      if (ctx.hasWymiana) return { locked: false, active: true, note: ALREADY_NOTE["14"] };
+      const gate = relacjaGate(ctx.progHandelRelacja, ctx.relTotal);
+      if (gate) return gate;
+      return { locked: false, note: "koszyk towar\xF3w jednorazowo / co tur\u0119" };
+    }
+    case "6": {
+      const gate = dualGate(ctx.relTotal, ctx.zaufanie, ctx.progHandelRelacja, ctx.progWymianaTechZaufanie);
+      if (gate) return gate;
+      if (ctx.sellableTechCount === 0) {
+        return { locked: true, note: "zablokowana \u2014 brak technologii do wymiany" };
       }
+      return { locked: false, note: "" };
     }
-  }
-  return tokens;
-}
-function unitMatchesSpecialName(unitName, tokens) {
-  if (!tokens.length) return false;
-  const un = stripDiacritics(unitName);
-  for (const token of tokens) {
-    const tn = stripDiacritics(token);
-    if (!tn) continue;
-    if (un === tn || un.startsWith(tn) || tn.startsWith(un) || un.includes(tn) || tn.includes(un)) {
-      return true;
+    case "7": {
+      const gate = zaufanieGate(ctx.progNamowWojneZaufanie, ctx.zaufanie);
+      if (gate) return gate;
+      if (ctx.knownRivalsCount === 0) {
+        return { locked: true, note: "zablokowana \u2014 brak znanych cel\xF3w wojny" };
+      }
+      return { locked: false, note: "" };
     }
+    case "8": {
+      if (ctx.atWar) {
+        return { locked: false, note: "oferta reparacji za pok\xF3j" };
+      }
+      const gate = respektGate(ctx.progTrybutZadanieMinRespekt, ctx.respekt);
+      if (gate) return gate;
+      return { locked: false, note: "" };
+    }
+    case "9": {
+      if (ctx.atWar) return { locked: true, note: "zablokowane \u2014 wymaga pokoju (trwa wojna)" };
+      return { locked: false, note: "" };
+    }
+    case "10": {
+      if (!ctx.atWar) {
+        return { locked: true, note: "niedost\u0119pna \u2014 nie trwa wojna" };
+      }
+      return { locked: false, note: "" };
+    }
+    case "11": {
+      if (ctx.atWar) return { locked: true, note: "ju\u017C w stanie wojny" };
+      if (ctx.breaksTreatyLabel) {
+        return { locked: false, note: `zrywa ${ctx.breaksTreatyLabel}` };
+      }
+      return { locked: false, note: "" };
+    }
+    case "12": {
+      if (ctx.atWar) return { locked: true, note: "zablokowana \u2014 trwa wojna" };
+      const gate = respektGate(ctx.progWasalizacjaRespekt, ctx.respekt);
+      if (gate) return gate;
+      return { locked: false, note: "" };
+    }
+    case "15": {
+      if (ctx.atWar) return { locked: true, note: "zablokowana \u2014 trwa wojna" };
+      if (!ctx.isCityStatePartner) {
+        return { locked: true, note: "zablokowana \u2014 tylko miasta-pa\u0144stwa" };
+      }
+      if (!ctx.hasWasal) {
+        return { locked: true, note: "zablokowana \u2014 brak aktywnej wasalizacji" };
+      }
+      const minAge = ctx.graczWchlonieciePoWasaluTur ?? 10;
+      const age = ctx.wasalAgeTurns ?? 0;
+      if (age < minAge) {
+        const remain = minAge - age;
+        return {
+          locked: true,
+          note: `zablokowana \u2014 wasal musi trwa\u0107 \u2265 ${minAge} tur (pozosta\u0142o ${remain})`
+        };
+      }
+      const wchRespekt = ctx.progWchloniecieRespekt ?? 90;
+      const gate = respektGate(wchRespekt, ctx.respekt);
+      if (gate) return gate;
+      return { locked: false, note: "jednorazowa op\u0142ata \xA4 + zgoda wasala" };
+    }
+    case "13": {
+      if (ctx.atWar) return { locked: true, note: "dar niedost\u0119pny w wojnie" };
+      const gate = relacjaGate(ctx.progDarRelacja, ctx.relTotal);
+      if (gate) return gate;
+      return { locked: false, note: "" };
+    }
+    default:
+      return { locked: false, note: "" };
   }
-  return false;
 }
-function availableProduction(city, data, unlockedTechs, ctx = {}) {
-  const epoch = Number.isFinite(ctx.epoch) ? ctx.epoch : 1;
-  const level = Number.isFinite(ctx.buildingLevel) ? ctx.buildingLevel : 1;
-  const builtList = ctx.builtBuildingIds ?? [];
-  const queue = ctx.productionQueue ?? [];
-  const techs = new Set(unlockedTechs);
-  const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
-  const ownerId = ctx.ownerId ?? 0;
-  const difficulty = ctx.difficulty ?? "normal";
-  const items = [];
-  for (const b of data.buildings) {
-    if (b.epokaWejscia > epoch) continue;
-    if (isBuildingSuppressedFromProduction(b)) continue;
-    if (b.id === "palisada" && (builtList.includes("mury") || builtList.includes("fort"))) continue;
-    const upgradeFrom = (b.upgradeFrom ?? "").trim();
-    if (upgradeFrom.length > 0) {
-      if (!builtList.includes(upgradeFrom)) continue;
-      if (buildingTypeCommitted(b.id, builtList, queue)) continue;
+
+// src/game/diplomacy-audience-actions.ts
+var AUDIENCE_BASIC_IDS = /* @__PURE__ */ new Set(["2", "5", "14", "10", "11", "15"]);
+function diplomacyActionIdFromLabel(akcja) {
+  const m = /^(\d+)/.exec(akcja);
+  return m ? m[1] : akcja;
+}
+function buildAudienceActionsList(opts) {
+  const { akcje, ownerId, restrictToBasicActions, simplifiedOwners, layer, lockCtxBase } = opts;
+  const out = [];
+  for (const row of akcje) {
+    const raw = row["Akcja"] ?? "";
+    const id = diplomacyActionIdFromLabel(raw);
+    if (id === "1") continue;
+    const label = raw.replace(/^\d+\.\s*/, "");
+    let enabled = true;
+    let tooltip = row["Opis"] ?? "";
+    let locked;
+    let lockNote;
+    let active;
+    if (restrictToBasicActions && !AUDIENCE_BASIC_IDS.has(id)) {
+      locked = true;
+      enabled = false;
+      lockNote = audienceRestrictedActionLockNote(ownerId, simplifiedOwners);
+      tooltip = lockNote;
+    } else if (id === "11" && !playerDiplomacyActionAllowed(layer, "war")) {
+      locked = true;
+      enabled = false;
+      lockNote = "Niedost\u0119pne";
+      tooltip = lockNote;
+    } else if ((id === "5" || id === "14") && !playerDiplomacyActionAllowed(layer, "trade")) {
+      locked = true;
+      enabled = false;
+      lockNote = "Handel niedost\u0119pny";
+      tooltip = lockNote;
     } else {
-      if (isBuildingSupersededByUpgrade(b.id, builtList, data.buildings)) continue;
-      if (buildingTypeCommitted(b.id, builtList, queue)) continue;
+      const result = resolveDiplomacyActionLock({ actionId: id, ...lockCtxBase });
+      locked = result.locked;
+      enabled = !result.locked;
+      lockNote = result.note || void 0;
+      tooltip = result.note || tooltip;
+      active = result.active;
     }
-    const tech = (b.techUnlock ?? "").trim();
-    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
-    if (!buildingLocationAllowed(b.lokalizacja, ctx.isCapital)) continue;
-    if (!cityBuildingPrereqMet(CITY_BUILDING_PREREQ[b.id], builtList, data.buildings, isBuildingSupersededByUpgrade)) {
-      continue;
-    }
-    if (WATER_ACCESS_BUILDING_IDS.has(b.id) && !ctx.cityHasCoastOrRiver) {
-      continue;
-    }
-    if (!buildingResourceGateMet(
-      b,
-      ctx.empireActiveResourceLabels,
-      ctx.empireBuiltIds,
-      ctx.empireResourceStock
-    )) {
-      continue;
-    }
-    items.push({
-      kind: "budynek",
-      id: b.id,
-      nazwa: upgradeProductionDisplayName(b, data.buildings),
-      koszt: buildingWorkCost(
-        itemCost("budynek", b.id, data, level),
-        ctx.civBonusy,
-        ctx.buildingCostPace,
-        ownerId,
-        difficulty
-      )
-    });
+    out.push({ id, label, enabled, tooltip, opis: row["Opis"], locked, lockNote, active });
   }
-  const built = new Set(builtList);
-  for (const u of data.units) {
-    if (epochNumber(u.Epoka) > epoch) continue;
-    const nacja = (u.Nacja ?? "").toString().trim();
-    if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) continue;
-    const zamiast = (u["W zamian za"] ?? "").toString().trim();
-    const isReplacement = !isBlankReplacement(zamiast);
-    if (isReplacement) {
-      if (!unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
-    } else if (specTokens.length > 0) {
-      const replacedBySpec = data.units.some((su) => {
-        const sz = (su["W zamian za"] ?? "").toString().trim();
-        if (isBlankReplacement(sz) || sz !== u.Jednostka) return false;
-        return unitMatchesSpecialName(su.Jednostka, specTokens);
-      });
-      if (replacedBySpec) continue;
-    }
-    const tech = (u.Tech ?? "").toString().trim();
-    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) continue;
-    if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) continue;
-    const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
-    if (surowiec === "braz" && !empireStockHas(ctx.empireResourceStock, "braz")) {
-      continue;
-    }
-    if (surowiec === "zelazo" && !empireStockHas(ctx.empireResourceStock, "zelazo")) {
-      continue;
-    }
-    if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) continue;
-    const koszt = unitMoneyCost(
-      itemCost("jednostka", u.Jednostka, data, 1),
-      ctx.civBonusy,
-      ctx.kosztJednostekPace,
-      ownerId,
-      difficulty
-    );
-    items.push({
-      kind: "jednostka",
-      id: u.Jednostka,
-      nazwa: u.Jednostka,
-      koszt
-    });
-  }
-  items.sort((a, b) => {
-    if (a.kind !== b.kind) return a.kind === "budynek" ? -1 : 1;
-    if (a.koszt !== b.koszt) return a.koszt - b.koszt;
-    return a.nazwa.localeCompare(b.nazwa);
-  });
-  return items;
+  return out;
 }
-function availableReplacementsFor(currentUnitName, data, unlockedTechs, ctx = {}) {
-  const current = findUnit(data, currentUnitName);
-  if (!current) return [];
-  const currentTyp = (current.Typ ?? "").toString().trim();
-  const epoch = Number.isFinite(ctx.epoch) ? ctx.epoch : 1;
-  const builtList = ctx.builtBuildingIds ?? [];
-  const built = new Set(builtList);
-  const techs = new Set(unlockedTechs);
-  const specTokens = civSpecialUnitNameTokens(ctx.civBonusy);
-  const ownerId = ctx.ownerId ?? 0;
-  const difficulty = ctx.difficulty ?? "normal";
-  function passesAvailabilityGates(u) {
-    if (epochNumber(u.Epoka) > epoch) return false;
-    const nacja = (u.Nacja ?? "").toString().trim();
-    if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) return false;
-    const tech = (u.Tech ?? "").toString().trim();
-    if (tech.length > 0 && tech !== "-" && tech !== "\u2014" && !techs.has(tech)) return false;
-    if (epochNumber(u.Epoka) === 2 && !built.has("koszary") && !isBuildingSupersededByUpgrade("koszary", builtList, data.buildings)) return false;
-    const surowiec = stripDiacritics((u.Surowiec ?? "").toString().trim());
-    if (surowiec === "braz" && !empireStockHas(ctx.empireResourceStock, "braz")) return false;
-    if (surowiec === "zelazo" && !empireStockHas(ctx.empireResourceStock, "zelazo")) return false;
-    if (u["Super-jednostka"] === "TAK" && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;
-    return true;
+function audienceActionStatusNote(action, onTable = false) {
+  if (onTable) return "na stole \u2014 Przyjmij w PN";
+  if (action.active) return "ju\u017C zawarta";
+  if (action.locked || !action.enabled) {
+    return action.lockNote || action.tooltip || "Niedost\u0119pne";
   }
-  function costOf(u) {
-    return unitMoneyCost(
-      itemCost("jednostka", u.Jednostka, data, 1),
-      ctx.civBonusy,
-      ctx.kosztJednostekPace,
-      ownerId,
-      difficulty
-    );
-  }
-  const items = [];
-  const seen = /* @__PURE__ */ new Set();
-  for (const u of data.units) {
-    if (u.Jednostka === currentUnitName) continue;
-    const utyp = (u.Typ ?? "").toString().trim();
-    if (!utyp || utyp !== currentTyp) continue;
-    if (!passesAvailabilityGates(u)) continue;
-    const zamiast = (u["W zamian za"] ?? "").toString().trim();
-    if (!isBlankReplacement(zamiast) && !unitMatchesSpecialName(u.Jednostka, specTokens)) continue;
-    items.push({ kind: "jednostka", id: u.Jednostka, nazwa: u.Jednostka, koszt: costOf(u) });
-    seen.add(u.Jednostka);
-  }
-  const specialName = (current["Zast\u0105p specjalnie"] ?? "").toString().trim();
-  if (specialName && !isBlankReplacement(specialName)) {
-    for (const rawName of specialName.split("/")) {
-      const name = rawName.trim();
-      if (!name || name === currentUnitName || seen.has(name)) continue;
-      const specialUnit = findUnit(data, name);
-      if (!specialUnit) continue;
-      if (!passesAvailabilityGates(specialUnit)) continue;
-      items.push({
-        kind: "jednostka",
-        id: specialUnit.Jednostka,
-        nazwa: specialUnit.Jednostka,
-        koszt: costOf(specialUnit)
-      });
-      seen.add(specialUnit.Jednostka);
-    }
-  }
-  items.sort((a, b) => {
-    if (a.koszt !== b.koszt) return a.koszt - b.koszt;
-    return a.nazwa.localeCompare(b.nazwa);
-  });
-  return items;
+  return "";
 }
-var UNIT_POPULATION_COST = miasto_params_default.jednostka_koszt_ludnosci?.wartosc ?? 1;
-var DEFAULT_OUTPUT_SHARES = Object.freeze({
-  produkcja: miasto_params_default.udzial_output_produkcja?.wartosc ?? 0.4,
-  pieniadz: miasto_params_default.udzial_output_pieniadz?.wartosc ?? 0.3,
-  nauka: miasto_params_default.udzial_output_nauka?.wartosc ?? 0.2,
-  rozwoj: miasto_params_default.udzial_output_rozwoj?.wartosc ?? 0.1
-});
+function audienceActionBarLockNote(action) {
+  if (!action || action.enabled) return "";
+  return action.lockNote || action.tooltip || "Niedost\u0119pne";
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  availableProduction,
-  availableReplacementsFor,
-  epochNumber
+  AUDIENCE_BASIC_IDS,
+  AUDIENCE_LOCK_NOTE_CITY_STATE,
+  audienceActionBarLockNote,
+  audienceActionStatusNote,
+  buildAudienceActionsList,
+  diplomacyActionIdFromLabel
 });

@@ -4,6 +4,6 @@ export {
   aiDiplomacyStance, initialRelation, toRelation, loadDiplomacyParams,
   relationTier, TIER_NAMES,
   computePotegaNacji, computeRespekt, computeMilitaryRatioFromArmyM, DEFAULT_POTEGA_WAGI, tickDiplomacy,
-} from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/game/diplomacy";
-export { TypCywilizacji } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/types/player";
-export { StanWojny, RodzajTraktatu } from "C:\\Users\\macie\\OneDrive - NASTER S.A\\_NOWA_STRUKTURA\\06_Prywatne\\Gry\\Civ\\gra\\src/types/diplomacy";
+} from "/home/user/The-Game/.claude/worktrees/wf_89e8dbd1-bcb-8/gra/src/game/diplomacy";
+export { TypCywilizacji } from "/home/user/The-Game/.claude/worktrees/wf_89e8dbd1-bcb-8/gra/src/types/player";
+export { StanWojny, RodzajTraktatu } from "/home/user/The-Game/.claude/worktrees/wf_89e8dbd1-bcb-8/gra/src/types/diplomacy";
