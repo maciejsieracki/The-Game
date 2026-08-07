@@ -1,7 +1,7 @@
 
 export {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
-  makeDealId, proposalHasResourceAccess, clampDealTurns,
+  makeDealId, proposalHasResourceAccess, clampDealTurns, resolveNapDealExpiry,
   resolvePlayerAcceptsAiPending, AI_TRADE_GOLD_ONCE, AI_TRADE_GOLD_MAX,
   enrichAiCommandWithTreasury, formatAiDiplomacyPlayerMessage,
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
