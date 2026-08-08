@@ -1751,15 +1751,14 @@ function negotiationActionBarHtml(st: DiplomacyAudienceState): string {
   const rows = filterActionableNegotiationRows(st.pendingNegotiations ?? []);
   if (rows.length === 0) return '<div class="da-negot-actionbar"></div>';
 
+  // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: canAccept wyłącznie z panelu — balancePanelDataFromRows
+  // jest JEDYNYM miejscem liczącym tę decyzję (i już package-aware dla umowa_szlakow/
+  // umowa_handlowa, patrz jej komentarz). Duplikat `rows.every(...)` z tym samym,
+  // nie-package-aware `acceptanceTheir.accepted` usunięty — dawał rozjazd: panel liczył
+  // net PW pakietu poprawnie, a ten drugi warunek i tak blokował przycisk per-wiersz
+  // (BUG-PAKIET-BILANS-DODATNI-BLOKADA).
   const panel = balancePanelDataFromRows(st.pendingNegotiations ?? []);
-  const canAccept = panel?.canAccept !== false && rows.every(r => {
-    if (r.direction === 'incoming') return r.canAccept !== false;
-    if (r.awaitingAiResponse) {
-      return r.responderPreview?.accepted !== false
-        && (r.acceptanceTheir?.accepted !== false);
-    }
-    return true;
-  });
+  const canAccept = panel?.canAccept !== false;
   const acceptTitle = !canAccept
     ? esc(panel?.responderPreview?.reason ?? 'Warunki pakietu niespełnione')
     : '';

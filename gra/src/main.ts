@@ -11836,6 +11836,82 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: akcje z WŁASNĄ bramką treatyBaseFairnessGap
+     * (diplomacy-proposals.ts) — wykluczone z sumy sąsiadów w packageSiblingPn.
+     *
+     * KOREKTA (Evaluator, znalezisko #4): to wykluczenie NIE chroni przed dwoma traktatami
+     * (np. umowa_szlakow + umowa_handlowa) na jednym stole obiema czerpiącymi z TEGO SAMEGO
+     * sąsiada spoza zbioru (np. jednego `handel` wartego 100 PW) — sprawdzone ręcznie:
+     * packageSiblingPn liczy sąsiadów NIEZALEŻNIE dla każdego traktatu z osobna, więc oba
+     * dostałyby pełny kredyt z tego samego koszyka. Ten scenariusz (dwa traktaty handlowe
+     * na jednym stole) jest dziś osiągalny wyłącznie z legacy save — obecne UI tworzy
+     * zawsze `umowa_szlakow` — więc NIE jest blokerem, ale wymaga poprawnego opisu: to, co
+     * ten zbiór FAKTYCZNIE robi, to zapobiega, żeby dedykowany koszyk `pokoj` (własna baza
+     * 500 PW, evaluateProposal case 'pokoj') zasilał TEŻ próg umowa_szlakow/umowa_handlowa
+     * jako „sąsiad" — jedna klasa traktatu nie dubluje się w koszyk innej dedykowanej klasy
+     * traktatu. `pokoj` NIE jest dziś objęty samą naprawą Q2 (poza zakresem zlecenia), ale
+     * zostaje w tym zbiorze wykluczeń z tego właśnie powodu.
+     */
+    const TREATY_GATED_NEGOTIATION_ACTIONS: ReadonlySet<string> = new Set([
+      'pokoj', 'umowa_szlakow', 'umowa_handlowa',
+    ]);
+
+    function isTreatyBaseFairnessAction(actionId: string): boolean {
+      return actionId === 'umowa_szlakow' || actionId === 'umowa_handlowa';
+    }
+
+    /** Partner AI (ownerId≠0) dla wpisu stołu gracz↔AI — proposerOwnerId lub responderOwnerId, którykolwiek nie jest graczem. */
+    function negotiationPartnerOwnerIdOf(entry: Pick<PendingNegotiation, 'proposerOwnerId' | 'responderOwnerId'>): number {
+      return entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+    }
+
+    /**
+     * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: suma PW z INNYCH pozycji NA TYM SAMYM stole,
+     * między tymi samymi stronami i w TYM SAMYM kierunku (proposerId→responderId) —
+     * doliczana do treatyBaseFairnessGap (patrz ProposalEvalContext.packageSiblingGivePn/
+     * packageSiblingReceivePn). Pomija pozycje objęte WŁASNĄ bramką treatyBaseFairnessGap
+     * (TREATY_GATED_NEGOTIATION_ACTIONS). `scopeIds`, gdy podane, zawęża sumę do KONKRETNEGO
+     * zbioru id (snapshot pakietu SPRZED wykonania jakiejkolwiek pozycji) — inaczej kolejność
+     * wykonania pakietu (id sortowane alfabetycznie w actionableNegotiationIdsForPair — np.
+     * 'negot-handel-…' < 'negot-umowa_szlakow-…') zdejmowałaby sąsiada ze stołu PRZED oceną
+     * traktatu i zgubiłaby kredyt pakietu (patrz handleNegotiationAcceptPackage niżej).
+     */
+    function packageSiblingPn(
+      proposerId: number,
+      responderId: number,
+      excludeId: string,
+      scopeIds?: readonly string[],
+    ): { givePn: number; receivePn: number } {
+      let givePn = 0;
+      let receivePn = 0;
+      for (const n of negotiationTable) {
+        if (n.id === excludeId) continue;
+        if (n.proposerOwnerId !== proposerId || n.responderOwnerId !== responderId) continue;
+        if (TREATY_GATED_NEGOTIATION_ACTIONS.has(n.actionId)) continue;
+        if (scopeIds && !scopeIds.includes(n.id)) continue;
+        const pn = resolveProposalPn(n.payload, {
+          difficulty: _menuDifficulty,
+          proposerOwnerId: proposerId,
+          playerOwnerId: 0,
+          ...proposalPnTurnsMultiplier(n.payload),
+        });
+        givePn += pn.givePn;
+        receivePn += pn.receivePn;
+      }
+      return { givePn, receivePn };
+    }
+
+    /** Sąsiad pakietu dla WPISU stołu (live scan) — używany, gdy wołający nie ma gotowego snapshotu. */
+    function livePackageSiblingFor(
+      entry: Pick<PendingNegotiation, 'id' | 'actionId' | 'proposerOwnerId' | 'responderOwnerId'>,
+    ): { givePn: number; receivePn: number } | undefined {
+      if (!isTreatyBaseFairnessAction(entry.actionId)) return undefined;
+      const partnerId = negotiationPartnerOwnerIdOf(entry);
+      const scopeIds = actionableNegotiationIdsForPair(partnerId);
+      return packageSiblingPn(entry.proposerOwnerId, entry.responderOwnerId, entry.id, scopeIds);
+    }
+
+    /**
      * C-DYP-Q1=B (2026-07-26, Maciej — po playteście: negocjacja NA ŻYWO, bez czekania na
      * koniec tury; jego słowa: „wszystkie decyzje powinny być na bieżąco rozwiązywane",
      * „gracz będzie myślał, że coś się nie udało… to jest nielogiczne"). Rozstrzyga JEDEN
@@ -11849,8 +11925,16 @@ async function boot(): Promise<void> {
      * jako AWARYJNA siatka bezpieczeństwa w turze AI — w normalnym biegu nie powinna mieć
      * już nic do zrobienia (każdy wpis rozstrzyga się w miejscu powstania), ale chroni na
      * wypadek wpisu, który z jakiegoś powodu przetrwał nierozstrzygnięty.
+     *
+     * `siblingOverride` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A): sąsiad pakietu policzony NA
+     * SNAPSHOCIE stołu sprzed wykonania (patrz handleNegotiationAcceptPackage) — gdy podany,
+     * wygrywa nad live scanem (`livePackageSiblingFor`), żeby kolejność wykonania pakietu nie
+     * gubiła kredytu dla traktatu ocenianego PO usunięciu sąsiada ze stołu.
      */
-    function resolveNegotiationEntryAt(ni: number): void {
+    function resolveNegotiationEntryAt(
+      ni: number,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): void {
       const entry = negotiationTable[ni];
       if (!entry) return;
       const awaitingId = entry.awaitingOwnerId;
@@ -11864,7 +11948,8 @@ async function boot(): Promise<void> {
         showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
         return;
       }
-      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+      const sibling = siblingOverride ?? livePackageSiblingFor(entry);
+      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
       const outcome = resolveNegotiationAsResponder(entry, ctx, turn);
       if (outcome.kind === 'countered') {
         const clampedPayload = clampNegotiationPayloadToRealResources(
@@ -11906,11 +11991,25 @@ async function boot(): Promise<void> {
      */
     function resolvePendingNegotiationsForOwner(ownerId: number): void {
       let changed = false;
+      // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: snapshot pakietu SPRZED pierwszej pozycji
+      // rozstrzygniętej w tej pętli — ta sama ochrona co handleNegotiationAcceptPackage
+      // (patrz packageSiblingPn), inaczej rozstrzygnięcie i usunięcie sąsiada wcześniej w
+      // TEJ SAMEJ pętli zgubiłoby jego kredyt dla traktatu ocenianego później.
+      const scopeIds = negotiationTable
+        .filter(n => n.awaitingOwnerId === ownerId && (n.proposerOwnerId === 0 || n.responderOwnerId === 0))
+        .map(n => n.id);
+      const siblingByTreatyId = new Map<string, { givePn: number; receivePn: number }>();
+      for (const id of scopeIds) {
+        const e = negotiationTable.find(n => n.id === id);
+        if (e && isTreatyBaseFairnessAction(e.actionId)) {
+          siblingByTreatyId.set(id, packageSiblingPn(e.proposerOwnerId, e.responderOwnerId, id, scopeIds));
+        }
+      }
       for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
         const entry = negotiationTable[ni]!;
         if (entry.awaitingOwnerId !== ownerId) continue;
         if (entry.proposerOwnerId !== 0 && entry.responderOwnerId !== 0) continue;
-        resolveNegotiationEntryAt(ni);
+        resolveNegotiationEntryAt(ni, siblingByTreatyId.get(entry.id));
         changed = true;
       }
       if (changed) {
@@ -11919,8 +12018,20 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** Gracz Przyjmuje wpis stołu — incoming: akceptacja AI; own: wysłanie propozycji do partnera (Przyjmij w PN). */
-    function handleNegotiationAccept(negotiationId: string): void {
+    /**
+     * Gracz Przyjmuje wpis stołu — incoming: akceptacja AI; own: wysłanie propozycji do
+     * partnera (Przyjmij w PN).
+     *
+     * `siblingOverride` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A): sąsiad pakietu na SNAPSHOCIE
+     * stołu sprzed wykonania (patrz handleNegotiationAcceptPackage) — gdy podany, wygrywa
+     * nad live scanem, żeby decyzja tu i decyzja przy realnym rozstrzygnięciu AI
+     * (resolveNegotiationEntryAt niżej) były SPÓJNE nawet gdy wcześniejsza pozycja
+     * pakietu została w międzyczasie zdjęta ze stołu.
+     */
+    function handleNegotiationAccept(
+      negotiationId: string,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): void {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
@@ -11939,15 +12050,15 @@ async function boot(): Promise<void> {
         return;
       }
       if (entry.awaitingOwnerId !== 0) {
-        const aiPreview = previewNegotiationEntry(entry);
+        const aiPreview = previewNegotiationEntry(entry, siblingOverride);
         if (!aiPreview.accepted) {
           showHintMessage('Nie można wysłać — ' + (aiPreview.reason ?? 'oferta nieuczciwa dla partnera'), 4000);
           return;
         }
-        handleRequestAiNegotiationResponse(negotiationId);
+        handleRequestAiNegotiationResponse(negotiationId, siblingOverride);
         return;
       }
-      const preview = previewNegotiationEntry(entry);
+      const preview = previewNegotiationEntry(entry, siblingOverride);
       if (!preview.accepted) {
         showHintMessage('Nie można przyjąć — ' + (preview.reason ?? 'warunki niespełnione'), 4000);
         return;
@@ -12024,12 +12135,32 @@ async function boot(): Promise<void> {
         .sort((a, b) => a.localeCompare(b));
     }
 
-    /** R-DYPLO-STOL-ACCEPT-Q1=A — Przyjmij cały pakiet (stabilna kolejność). */
+    /**
+     * R-DYPLO-STOL-ACCEPT-Q1=A — Przyjmij cały pakiet (stabilna kolejność).
+     *
+     * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: sąsiad pakietu dla KAŻDEJ pozycji objętej bramką
+     * treatyBaseFairnessGap (umowa_szlakow/umowa_handlowa) liczony RAZ, na snapshocie `ids`
+     * SPRZED wykonania jakiejkolwiek pozycji — `ids` są sortowane alfabetycznie
+     * (actionableNegotiationIdsForPair), więc np. 'negot-handel-…' wykonuje się PRZED
+     * 'negot-umowa_szlakow-…' i zostaje zdjęty ze stołu; live scan w tym momencie
+     * zgubiłby jego PW jako kredyt dla traktatu. Snapshot eliminuje tę zależność od
+     * kolejności — decyzja jest identyczna z tym, co pokazał panel PRZED kliknięciem.
+     */
     function handleNegotiationAcceptPackage(ownerId: number): void {
       const ids = actionableNegotiationIdsForPair(ownerId);
+      const siblingByTreatyId = new Map<string, { givePn: number; receivePn: number }>();
+      for (const id of ids) {
+        const entry = negotiationTable.find(n => n.id === id);
+        if (entry && isTreatyBaseFairnessAction(entry.actionId)) {
+          siblingByTreatyId.set(
+            id,
+            packageSiblingPn(entry.proposerOwnerId, entry.responderOwnerId, id, ids),
+          );
+        }
+      }
       for (const id of ids) {
         if (negotiationTable.some(n => n.id === id)) {
-          handleNegotiationAccept(id);
+          handleNegotiationAccept(id, siblingByTreatyId.get(id));
         }
       }
     }
@@ -12066,12 +12197,15 @@ async function boot(): Promise<void> {
     }
 
     /** Gracz prosi AI o odpowiedź na własną propozycję (bez auto-resolve przy wysłaniu). */
-    function handleRequestAiNegotiationResponse(negotiationId: string): void {
+    function handleRequestAiNegotiationResponse(
+      negotiationId: string,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): void {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
       if (entry.awaitingOwnerId === 0) return;
-      resolveNegotiationEntryAt(idx);
+      resolveNegotiationEntryAt(idx, siblingOverride);
       refreshD1bHud();
       updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
@@ -12123,11 +12257,20 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** Podgląd oceny warunków przez respondenta (evaluateProposal, bez mutacji stanu). */
+    /**
+     * Podgląd oceny warunków przez respondenta (evaluateProposal, bez mutacji stanu).
+     *
+     * `siblingOverride` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A): sąsiad pakietu z gotowego
+     * snapshotu (handleNegotiationAcceptPackage/resolvePendingNegotiationsForOwner) — gdy
+     * brak, liczony live (`livePackageSiblingFor`), co jest poprawne dla pojedynczego
+     * Przyjmij poza pakietem (nic jeszcze nie zniknęło ze stołu).
+     */
     function previewNegotiationEntry(
       entry: PendingNegotiation,
+      siblingOverride?: { givePn: number; receivePn: number },
     ): { accepted: boolean; reason?: string } {
-      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+      const sibling = siblingOverride ?? livePackageSiblingFor(entry);
+      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
       const relTotal = treatyEvalRelationTotal(ctx.relation);
       const incoming = entry.awaitingOwnerId === 0;
       if (incoming) {
@@ -14195,7 +14338,19 @@ async function boot(): Promise<void> {
       })).slice(0, 12);
     }
 
-    function buildProposalEvalContext(proposerId: number, responderId: number): ProposalEvalContext {
+    /**
+     * `sibling` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A, opcjonalny): PW z sąsiednich pozycji NA
+     * TYM SAMYM stole (patrz packageSiblingPn) — wprost do ProposalEvalContext.
+     * packageSiblingGivePn/packageSiblingReceivePn, gdzie diplomacy-proposals.ts dolicza go
+     * WYŁĄCZNIE do treatyBaseFairnessGap traktatu handlowego. Pominięty (undefined) dla
+     * wywołań spoza stołu negocjacji (np. previewNegotiatedProposal — podgląd formularza
+     * przed dodaniem propozycji na stół, gdzie „sąsiad" jeszcze nie istnieje jako wpis).
+     */
+    function buildProposalEvalContext(
+      proposerId: number,
+      responderId: number,
+      sibling?: { givePn: number; receivePn: number },
+    ): ProposalEvalContext {
       const relRaw = getDiploRelation(proposerId, responderId);
       const potProposer = objectivePowerByOwner.get(proposerId)?.power ?? 0;
       const potResponder = objectivePowerByOwner.get(responderId)?.power ?? 0;
@@ -14243,6 +14398,8 @@ async function boot(): Promise<void> {
         wasalAgeTurns: wasalAgeTurns(findWasalDeal(activeDeals, proposerId, responderId), turn),
         proposerWiarygodnosc: getWiarygodnosc(proposerId),
         responderWiarygodnosc: getWiarygodnosc(responderId),
+        packageSiblingGivePn: sibling?.givePn,
+        packageSiblingReceivePn: sibling?.receivePn,
       };
     }
 

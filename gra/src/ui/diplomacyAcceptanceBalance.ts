@@ -237,14 +237,17 @@ export function balancePanelDataFromRows(
     if (!d) continue;
     myOfferPn += d.myOfferPn;
     theirOfferPn += d.theirOfferPn;
-    if (row.direction === 'own' && row.awaitingAiResponse) {
-      const ownOk = row.responderPreview?.accepted !== false
-        && (row.acceptanceTheir?.accepted !== false);
-      if (!ownOk) {
-        blockReason = row.responderPreview?.reason
-          ?? row.acceptanceTheir?.statusLabel
-          ?? 'Oferta nieuczciwa dla partnera';
-      }
+    // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: responderPreview (evaluateProposal, package-aware
+    // od Q2 dla umowa_szlakow/umowa_handlowa — patrz main.ts previewNegotiationEntry) jest
+    // JEDYNYM źródłem prawdy, tym samym, którego użyje backend przy realnym wysłaniu
+    // (handleRequestAiNegotiationResponse → resolveNegotiationEntryAt → ta sama
+    // evaluateProposal). `acceptanceTheir.accepted` (computePlayerAcceptanceSides) to
+    // RÓWNOLEGŁA, nie-package-aware kalkulacja wyświetlania — poleganie na niej TU dawało
+    // false negative: traktat bez własnego koszyka pokryty sąsiadem na stole (panel sumuje
+    // PW poprawnie — patrz net niżej) i tak blokował Przyjmij, bo jego WŁASNY (nie-pakietowy)
+    // bilans wciąż wychodził ujemny (BUG-PAKIET-BILANS-DODATNI-BLOKADA).
+    if (row.direction === 'own' && row.awaitingAiResponse && row.responderPreview?.accepted === false) {
+      blockReason = row.responderPreview.reason ?? 'Oferta nieuczciwa dla partnera';
     }
   }
 
@@ -255,10 +258,7 @@ export function balancePanelDataFromRows(
   if (!allIncoming && blockReason == null) {
     canAccept = actionable.every(row => {
       if (row.direction === 'incoming') return row.canAccept !== false;
-      if (row.awaitingAiResponse) {
-        return row.responderPreview?.accepted !== false
-          && (row.acceptanceTheir?.accepted !== false);
-      }
+      if (row.awaitingAiResponse) return row.responderPreview?.accepted !== false;
       return true;
     });
   }

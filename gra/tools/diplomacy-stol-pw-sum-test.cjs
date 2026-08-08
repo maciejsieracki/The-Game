@@ -153,6 +153,59 @@ ok(
   'engine: their sum includes treaty + basket',
 );
 
+// R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A (BUG-PAKIET-BILANS-DODATNI-BLOKADA): pakiet WŁASNY
+// (direction:'own', gracz proponuje AI) — traktat bez koszyka (umowa_szlakow, deficyt własny
+// 40 PW, patrz diplomacy-proposal-test.cjs "Q2: BEZ sąsiada") + osobny handel na tym samym
+// stole pokrywający deficyt. `responderPreview` symuluje evaluateProposal PO naprawie Q2
+// (package-aware, main.ts previewNegotiationEntry dolicza sąsiada) — `acceptanceTheir`
+// (computePlayerAcceptanceSides, CELOWO nie zmieniana w Q2 — per-item, nie zna sąsiadów)
+// zostaje ujemna, dokładnie tak jak przed naprawą. Przed Q2 `ownOk` wymagał OBU flag →
+// pakiet blokowany mimo dodatniej sumy PW; po Q2 liczy się WYŁĄCZNIE responderPreview.
+{
+  const treatyOwnRow = {
+    id: 'own-treaty',
+    direction: 'own',
+    actionLabel: 'Traktat handlowy',
+    awaitingAiResponse: true,
+    acceptanceMy: treatySide(0, 80, 40),
+    acceptanceTheir: { ...treatySide(0, 80, 80), accepted: false, statusLabel: 'Brakuje 40 PW — dopłać' },
+    responderPreview: { accepted: true },
+  };
+  const handelOwnRow = {
+    id: 'own-handel',
+    direction: 'own',
+    actionLabel: 'Wymiana',
+    awaitingAiResponse: true,
+    acceptanceMy: basketSide(54, 0, 0),
+    acceptanceTheir: basketSide(0, 54, 0),
+    responderPreview: { accepted: true },
+  };
+  const ownPackagePositive = mod.balancePanelDataFromRows([treatyOwnRow, handelOwnRow]);
+  ok(ownPackagePositive != null, 'Q2 own pakiet: data');
+  ok(
+    ownPackagePositive.canAccept === true,
+    'Q2 own pakiet BUG-PAKIET-BILANS-DODATNI-BLOKADA: canAccept=true gdy responderPreview (package-aware) mówi accepted mimo ujemnej acceptanceTheir per-item (legacy, nieznająca sąsiada)',
+  );
+
+  // Kontrola negatywna — responderPreview SAM mówi odrzucone (np. sąsiad na stole za mały,
+  // patrz "Q2: sąsiad 20 PW < deficyt" w diplomacy-proposal-test.cjs) → pakiet nadal blokowany,
+  // niezależnie od acceptanceTheir. Dowodzi, że fix NIE zdjął bramki, tylko przeniósł źródło
+  // prawdy z podwójnego (i rozjeżdżającego się) warunku na jeden — ten sam, którego użyje backend.
+  const treatyOwnRowBlocked = {
+    ...treatyOwnRow,
+    responderPreview: { accepted: false, reason: 'Brakuje 20 PW do uczciwej oferty traktatu handlowego @ Relacji (baza 80 PW, licząc pakiet na stole) — oferta nieuczciwa dla partnera' },
+  };
+  const ownPackageBlocked = mod.balancePanelDataFromRows([treatyOwnRowBlocked, handelOwnRow]);
+  ok(
+    ownPackageBlocked.canAccept === false,
+    'Q2 own pakiet kontrola negatywna: canAccept=false gdy responderPreview mówi odrzucone (sąsiad na stole nadal za mały)',
+  );
+  ok(
+    ownPackageBlocked.responderPreview?.reason?.includes('pakiet na stole'),
+    'Q2 own pakiet kontrola negatywna: komunikat blokady = responderPreview.reason (package-aware), nie stary generyczny tekst',
+  );
+}
+
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 
 console.log(`diplomacy-stol-pw-sum-test: ${pass} pass, ${fail} fail`);

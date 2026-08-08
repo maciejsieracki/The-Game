@@ -2530,7 +2530,7 @@ indeks/wiersz.
 logika usuwania powiązana z ID/parą propozycji.
 **Model:** Sonnet 5 (poza `render/**`).
 
-## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`docs/decyzje/R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2.md`)
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 
 ### Część 1 — tabela cen (na żądanie: „wypisz mi wartość surowców jakie mamy przypisane")
 **Potwierdzone w kodzie:** „40" pokazane przy 4 pakietach Drewna (pakiet ×10) **to Punkty
@@ -2588,6 +2588,31 @@ jakby to on decydował. Minimum: komunikat/UI powinny być spójne z tym, co fak
 **Kotwice:** `gra/src/game/diplomacy-proposals.ts` (`treatyBaseFairnessGap`, linia ~1082),
 `gra/src/ui/diplomacyAcceptanceBalance.ts` (panel „Punkty Wymiany", agregacja pakietu).
 **Model:** Sonnet 5 (poza `render/**`).
+
+**NAPRAWIONE (2026-08-08):** Decyzja `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A` (`docs/decyzje/R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2.md`).
+Przyczyna: bramka uczciwości liczyła PW wyłącznie per-traktat (`umowa_szlakow`/`umowa_handlowa`), nie widząc
+nadwyżki z siostrzanej pozycji w tym samym pakiecie („Umowa wymiany surowców"), co dawało niespójność
+z panelem „Bilans (Netto)". Naprawa: `ProposalEvalContext` rozszerzony o `packageSiblingGivePn`/
+`packageSiblingReceivePn`, liczone przez nową `packageSiblingPn()` w `main.ts` i wpięte WYŁĄCZNIE w gałąź
+traktatową (`umowa_szlakow`/`umowa_handlowa`) — `pokoj` i inne akcje bez zmian (zgodnie z zakresem Q2=A).
+Naprawiony też błąd kolejności: `handleNegotiationAcceptPackage` i `resolvePendingNegotiationsForOwner`
+budują teraz mapę `siblingByTreatyId` JEDNORAZOWO przed pętlą wykonania, zamiast liczyć siostrzaną pozycję
+na żywo w trakcie pętli (poprzednia wersja traciła dane o już wykonanej pozycji siostrzanej — pozycje
+w `negotiationTable` są usuwane przez `resolveNegotiationEntryAt` w miarę wykonania). Usunięto 3 zduplikowane,
+nadmiarowe sprawdzenia `acceptanceTheir.accepted` per-pozycja (2× `diplomacyAcceptanceBalance.ts`,
+1× `diplomacyAudience.ts`) na rzecz jednego już pakieto-świadomego `responderPreview`.
+Ewaluator: runda 1 PASS-WITH-NOTES (test źródłowy używał słabego sprawdzenia `indexOf()`, które — jak
+wykazał Ewaluator wstrzykując realną regresję — nie łapało błędu kolejności mimo zielonego wyniku 17/17;
+plus nieścisły komentarz o zakresie wykluczenia `pokoj`). Runda 2 PASS — Ewaluator samodzielnie zweryfikował
+przez wstrzyknięcie dokładnej regresji w OBA miejsca (`handleNegotiationAcceptPackage` i
+`resolvePendingNegotiationsForOwner`) i potwierdził, że nowy detektor `nearestEnclosingForBlock()` w
+`gra/tools/diplomacy-fairness-gate-package-q2-test.cjs` łapie oba przypadki (test spada z regresją, wraca
+do zielonego po jej cofnięciu). STRICT-PARITY: potwierdzono, że istniejąca asymetria `treatyPnGate`
+(`proposerIsTreatyPlayer`) jest przedwcześniejsza/celowo odłożona, nie wprowadzona tą poprawką.
+Testy: `npx tsc --noEmit` 0 błędów · `diplomacy-fairness-gate-package-q2-test.cjs` 24/24 ·
+`diplomacy-proposal-test.cjs` 126/126 · `diplomacy-stol-pw-sum-test.cjs` 26/26.
+Zakres: dotyka tego samego obszaru kodu co `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` (nota Evaluatora
+BUG-TRAKTAT-KOSZYK-REGRESJA) — ta nota pozostaje osobno śledzona, nie jest tą poprawką zamknięta.
 
 ## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„ok, zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy.
