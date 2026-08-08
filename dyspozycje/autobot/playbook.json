@@ -1,6 +1,6 @@
 {
-  "version": 23,
-  "updatedAtIso": "2026-08-08T21:18:46.646Z",
+  "version": 24,
+  "updatedAtIso": "2026-08-08T21:44:29.461Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -379,6 +379,16 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-08T21:18:46.634Z"
+    },
+    {
+      "id": "rule_138",
+      "rule_text": "C-027 mówi „każde zgłoszenie od razu\" — ale w praktyce sprawdzało się to TYLKO dla zgłoszenia, które orkiestrator akurat rejestrował w danym momencie, nie dla całej listy. Skutek: 4 zgłoszenia z jednego dnia playtestu zostały zarejestrowane, ale nigdy nie trafiły do subagenta — wykryte dopiero na wyraźne pytanie właściciela „czy wszystko zlecone\", nie proaktywnie. **Poprawka mechaniczna:** po KAŻDEJ serii rejestracji w PYTANIA-OTWARTE.md (nie tylko po jednej) — zanim orkiestrator przejdzie do innego wątku/tematu — grep całego pliku po dzisiejszej dacie + STATUS: **OTWARTE** (sam status, bez dopisku „ZDECYDOWANE\"/„W REALIZACJI\"/„NAPRAWIONE\") i potwierdzić dla KAŻDEGO trafienia: albo jest subagent w locie, albo jest pytanie ABC zadane, albo jest jawny, zapisany powód odłożenia. Nie wystarczy sprawdzić najnowszy wpis — trzeba przejrzeć wszystkie z bieżącej daty. To ten sam mechanizm co C-023 (świeży przegląd zamiast pamięci), ale stosowany PROAKTYWNIE po własnej pracy, nie tylko REAKTYWNIE na pytanie właściciela. Jego słowa (2026-08-08, po tym samym incydencie po raz kolejny): „to jest jakaś notoryczna skleroza... co mam kazać ci gdzie zapisać żebyś nie zapominał o błędach, które zgłaszam, i wszystkie od razu realizował przez subagentów\" [C-030]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T21:44:29.440Z"
     }
   ],
   "quarantine_rules": []

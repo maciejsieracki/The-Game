@@ -173,6 +173,18 @@ dwa konkretne, powtarzalne mechanizmy zawodne w tej sesji, nie jednorazowe pomy�
   `git status --short` PRZED każdym commitem po `git add` z więcej niż jedną ścieżką;
   usunięte pliki dodawać osobnym wywołaniem.
 
+## C-030 — przegląd całej listy, nie tylko najnowszego zgłoszenia (Maciej 2026-08-08)
+
+C-027 mówi „każde zgłoszenie od razu do subagenta" — ale w praktyce stosowane było punktowo
+(dla zgłoszenia właśnie rejestrowanego), nie jako przegląd całej listy. Skutek: 4 zgłoszenia
+z jednego dnia zostały zarejestrowane, ale nigdy nie dostały subagenta — wykryte dopiero na
+pytanie właściciela wprost. **Po KAŻDEJ serii rejestracji w `PYTANIA-OTWARTE.md`, przed
+przejściem do innego tematu**: `grep` całego pliku po dzisiejszej dacie + `STATUS: **OTWARTE**`
+(sam status, nie „ZDECYDOWANE"/„W REALIZACJI"/„NAPRAWIONE") i potwierdzić dla każdego trafienia
+subagenta w locie, pytanie ABC, albo jawny powód odłożenia. Jego słowa: *„to jest jakaś
+notoryczna skleroza… co mam kazać ci gdzie zapisać żebyś nie zapominał o błędach, które
+zgłaszam, i wszystkie od razu realizował przez subagentów."*
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.
