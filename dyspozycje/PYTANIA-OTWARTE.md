@@ -2546,3 +2546,42 @@ dla niektórych cywilizacji). Wynik dochodzenia doda się do tego wpisu po zako�
 **Kotwice:** TBD — do uzupełnienia po dochodzeniu.
 **Model:** dochodzenie na Explore/Sonnet 5; jeśli finalna naprawa dotknie `render/**` (granice
 to prawdopodobnie geometria na mapie) → Opus 5 per zgoda stała CLAUDE.md §4.
+
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile
+jest dokładnie produkowane w tym miejscu surowców żywności i tak dalej."*
+**Objaw (zrzut, okolice TEBY):** każdy heks w zasięgu miasta pokazuje trzy liczby z ikonami
+(Praca/młotek, Żywność/kłos, Pieniądz/moneta — np. „6 / 3 / 5"), ale heksy zajęte przez samo
+miasto (zielone kółko z sylwetką osoby) **nie pokazują żadnych liczb** — puste. Gracz nie
+widzi ile dokładnie dany heks miejski produkuje, tylko że jest „aktywny" (zielony).
+**Do zdiagnozowania:** kod rysujący nakładkę plonów heksu (prawdopodobnie
+`gra/src/render/**` lub `gra/src/ui/**`, warstwa „yields"/„plony") — sprawdzić czy jest
+warunek pomijający rysowanie liczb, gdy `hex.cityId`/`hex.owner` wskazuje na zajęcie przez
+miasto, i czy dane produkcji dla heksu miejskiego w ogóle istnieją w silniku (być może miasto
+zjada/zeruje bazowy plon terenu i faktycznie nic tam nie ma do pokazania — do sprawdzenia
+zamiast zakładać).
+**Kotwice:** TBD — do zdiagnozowania.
+**Model:** `render/**` → Opus 5 (zgoda stała CLAUDE.md §4), jeśli przyczyna w silniku
+(`game/**`) → Sonnet 5.
+
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — REGRESJA**
+**Jego słowa:** *„jedno naprawiasz, drugie psujesz. Znowu jest problem, mianowicie coś co
+wcześniej działało nagle przestało działać. Przesuwanie góra-dół i usuwanie z kolejki w trybie
+budowania zarówno jednostek i budynków nie działa. Trzeba kombinować gdzie kliknąć. Niestety
+gdzieś to po prostu jest rozjechane."*
+**Objaw (zrzut, kolejka budowy „Pałac"/„Palisada drewniana"):** przyciski ↑ (przesuń w górę),
+↓ (przesuń w dół), ✕ (usuń) przy pozycjach kolejki budowy — kliknięcie w widoczny przycisk
+często nie trafia w jego handler; trzeba „kombinować gdzie kliknąć" — obszar klikalny (hit
+area) najwyraźniej nie pokrywa się z tym, co narysowane (offset/rozjazd CSS).
+**Wagę podnosi explicite:** właściciel wprost nazywa to REGRESJĄ świeżej pracy („jedno
+naprawiasz, drugie psujesz") — sugeruje, że jakaś niedawna zmiana w tym samym panelu
+(kolejka budowy jednostek/budynków) przesunęła layout bez przeliczenia obszarów klikalnych.
+**Do zdiagnozowania:** znaleźć komponent kolejki budowy (prawdopodobnie
+`gra/src/ui/cityPanel.ts` lub pokrewny plik panelu produkcji) — przyciski ↑/↓/✕ przy
+pozycjach kolejki, sprawdzić CSS/layout (flex/grid, `position: absolute` z sztywnymi
+współrzędnymi, padding/margin niezgodny z faktycznym rozmiarem klikalnego elementu) oraz
+`git log -p` / `git blame` na tym fragmencie, żeby znaleźć COMMIT, który ostatnio dotknął tego
+panelu — to najszybsza droga do zidentyfikowania która zmiana to rozjechała.
+**Kotwice:** TBD — do zdiagnozowania (prawdopodobnie `gra/src/ui/cityPanel.ts`, sekcja kolejki
+budowy/`renderBuildQueue`).
+**Model:** Sonnet 5 (UI/CSS, nie render 3D).

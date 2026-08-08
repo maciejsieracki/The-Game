@@ -1387,3 +1387,18 @@ agresywne osadnictwo („zjadanie" populacji na nowych osadników). Diagnoza w t
 Explore, `gra/src/render/**` granice terytorium, `gra/src/game/**` wzrost populacji/AI
 osadnictwa). Zarejestrowane w `PYTANIA-OTWARTE.md`.
 Do decyzji Macieja: pakiet zbiorczo czy per-umowa; minimum UI musi być spójne z bramką.
+
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — nowe zgłoszenie z playtestu
+„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile jest dokładnie
+produkowane w tym miejscu surowców żywności i tak dalej." Heksy w zasięgu miasta pokazują
+liczby plonów (Praca/Żywność/Pieniądz), ale heks zajęty przez samo miasto — nie. Do
+zdiagnozowania czy to bug renderu czy silnik faktycznie nie ma tam danych do pokazania.
+Zarejestrowane w `PYTANIA-OTWARTE.md`.
+
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — REGRESJA, nowe zgłoszenie
+„jedno naprawiasz, drugie psujesz... Przesuwanie góra-dół i usuwanie z kolejki w trybie
+budowania zarówno jednostek i budynków nie działa. Trzeba kombinować gdzie kliknąć... gdzieś
+to po prostu jest rozjechane." Przyciski ↑/↓/✕ w kolejce budowy — obszar klikalny nie
+pokrywa się z narysowanym przyciskiem. Wprost nazwane regresją najnowszej pracy nad tym
+panelem — priorytet: znaleźć commit, który to rozjechał (`git log -p`/`git blame` na panelu
+kolejki budowy). Zarejestrowane w `PYTANIA-OTWARTE.md`, dochodzenie zlecone.
