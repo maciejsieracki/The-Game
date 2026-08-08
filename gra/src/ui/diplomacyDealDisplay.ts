@@ -9,7 +9,6 @@ import {
   splitNegotiationDealPlayerSides,
   type BasketItemFormatCtx,
 } from '../game/diplomacy-display';
-import { diplomacyHandelSurowcePakietWielkosc } from '../game/diplomacy-value-catalog';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 
 function esc(s: string): string {
@@ -54,9 +53,8 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
       return `${ic}<span class="da-deal-amt">${amt} ¤</span><span class="da-deal-once">jednorazowo</span>`;
     }
     case 'surowiec_ilosc': {
-      const pakietSize = diplomacyHandelSurowcePakietWielkosc();
-      const pakiety = item.ilosc ?? 1;
-      const szt = pakiety * pakietSize;
+      // R-DYP-PAKIET-USUN (2026-08-08): item.ilosc to sztuki wprost.
+      const szt = item.ilosc ?? 1;
       const label = resourceDisplayLabel(item.id);
       const ic = resourceIconHtml(label, 16);
       if (perTurn) {

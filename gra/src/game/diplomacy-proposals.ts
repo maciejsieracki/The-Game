@@ -374,8 +374,9 @@ export function sweetenerEasePoints(payload: ProposalPayload, pnOpts?: ResolvePr
 /**
  * HANDEL-SUROWCE-CYKL (2026-07-24): koszyk `surowiec_ilosc` (+ opcjonalna zapłata
  * zloto/praca po stronie przeciwnej) → przepływy CO TURĘ. `ilosc` na pozycji
- * `surowiec_ilosc` to PAKIETY/turę (ta sama jednostka co w trybie jednorazowym —
- * main.ts transferBasketItems mnoży przez diplomacyHandelSurowcePakietWielkosc()).
+ * `surowiec_ilosc` to SZTUKI/turę (ta sama jednostka co w trybie jednorazowym —
+ * R-DYP-PAKIET-USUN 2026-08-08: bez mnożenia przez pakiet, main.ts transferBasketItems
+ * i tickCyclicResourceTradeDeals traktują `ilosc`/`pakietyPerTura` jako sztuki wprost).
  * Obsługuje oba kierunki naraz (barter surowiec-za-surowiec) — zwykle jeden wpis.
  * ownerId-agnostyczne: proposerId/responderId mogą być gracz LUB dowolne AI.
  */
@@ -1331,10 +1332,10 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'zaproponuj_handel_surowiec': {
       const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
       if (cmd.kierunek === 'zakup') {
-        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} pakiet(y)/turę`
+        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} szt./turę`
           + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
       }
-      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} pakiet(y)/turę`
+      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} szt./turę`
         + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
     }
     default:

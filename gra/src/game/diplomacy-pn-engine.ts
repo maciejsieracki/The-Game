@@ -331,12 +331,12 @@ export interface QuickDealGoodOption {
   label: string;
 }
 
-/** Surowiec ILOŚCIOWY (pakiety) — C-DYP-SUROWCE-Q1=B (2026-07-23), patrz diplomacy-goods.ts. */
+/** Surowiec ILOŚCIOWY (sztuki) — C-DYP-SUROWCE-Q1=B (2026-07-23), patrz diplomacy-goods.ts. */
 export interface QuickDealQuantityGoodOption {
   id: string;
   label: string;
-  /** Max pakietów, ile ta strona może realnie zaoferować (floor(zapas/pakiet)). */
-  maxPakiety: number;
+  /** Max sztuk, ile ta strona może realnie zaoferować (R-DYP-PAKIET-USUN 2026-08-08). */
+  maxQty: number;
 }
 
 export interface QuickDealInput {
@@ -349,12 +349,12 @@ export interface QuickDealInput {
   /** Surowce boolean, które partner faktycznie ma (to co możemy dostać). */
   theirResourceOptions: readonly QuickDealGoodOption[];
   /**
-   * Surowce ILOŚCIOWE, które MY faktycznie mamy (pakiety) — tanie, dobrze dopełniają
+   * Surowce ILOŚCIOWE, które MY faktycznie mamy (sztuki) — tanie, dobrze dopełniają
    * bilans zamiast/obok złota. Opcjonalne (callery bez wpięcia diplomacy-goods.ts
    * po prostu nie dostaną tego dopełniacza).
    */
   ourQuantityResourceOptions?: readonly QuickDealQuantityGoodOption[];
-  /** Surowce ILOŚCIOWE partnera (pakiety) — do quick-deal zamiast wycofanego dostępu boolean. */
+  /** Surowce ILOŚCIOWE partnera (sztuki) — do quick-deal zamiast wycofanego dostępu boolean. */
   theirQuantityResourceOptions?: readonly QuickDealQuantityGoodOption[];
   /** Poziom trudności — Normal/Trudny: trim nadwyżki PW (D-DYPLO-AI-OFERTA-ZERO). */
   difficulty?: GameDifficulty;
@@ -380,15 +380,20 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
   const receiveItems: BasketItem[] = [];
   let receivePn = 0;
 
-  // SUROW-TERYT: partner oddaje pakiety surowca (nie trwały dostęp civ-wide).
+  // SUROW-TERYT: partner oddaje sztuki surowca (nie trwały dostęp civ-wide).
   const theirQtyPriced = (input.theirQuantityResourceOptions ?? [])
-    .map(o => ({ ...o, pnPerPakiet: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
-    .filter(o => o.pnPerPakiet > 0 && o.maxPakiety > 0)
-    .sort((a, b) => a.pnPerPakiet - b.pnPerPakiet);
+    .map(o => ({ ...o, pnPerUnit: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
+    .filter(o => o.pnPerUnit > 0 && o.maxQty > 0)
+    .sort((a, b) => a.pnPerUnit - b.pnPerUnit);
   if (theirQtyPriced.length > 0) {
     const pick = theirQtyPriced[0]!;
-    receiveItems.push({ typ: 'surowiec_ilosc', id: pick.id, ilosc: 1 });
-    receivePn = diplomacyPnSurowiecIlosc(pick.id, 1) ?? 0;
+    // R-DYP-PAKIET-USUN (2026-08-08, Evaluator minor-1): dawniej `ilosc: 1` znaczyło
+    // „1 pakiet" = 10 sztuk — samo usunięcie pojęcia pakietu bez korekty tej stałej
+    // cichutko skurczyłoby domyślną propozycję „Szybkiej umowy" 10×. Kotwica = 10 sztuk
+    // (ten sam realny wolumen co dawniej), przycięta do realnego zapasu partnera.
+    const seedQty = Math.min(10, pick.maxQty);
+    receiveItems.push({ typ: 'surowiec_ilosc', id: pick.id, ilosc: seedQty });
+    receivePn = diplomacyPnSurowiecIlosc(pick.id, seedQty) ?? 0;
   }
 
   const giveItems: BasketItem[] = [];
@@ -409,22 +414,22 @@ export function computeQuickDealBasket(input: QuickDealInput): QuickDealResult {
   const fairMin = diplomacyFairGivePn(receivePn, input.relacjaTotal);
   let giveSum = 0;
 
-  // C-DYP-SUROWCE-Q1=B: dopełniacz z surowców ILOŚCIOWYCH (pakiety) — tanie, dobrze
-  // domykają bilans granularnie, zanim sięgniemy po złoto. Najtańszy PN/pakiet pierwszy.
+  // C-DYP-SUROWCE-Q1=B: dopełniacz z surowców ILOŚCIOWYCH (sztuki) — tanie, dobrze
+  // domykają bilans granularnie, zanim sięgniemy po złoto. Najtańszy PN/szt. pierwszy.
   if (giveSum < fairMin && input.ourQuantityResourceOptions?.length) {
     const ourQtyPriced = input.ourQuantityResourceOptions
-      .map(o => ({ ...o, pnPerPakiet: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
-      .filter(o => o.pnPerPakiet > 0 && o.maxPakiety > 0)
-      .sort((a, b) => a.pnPerPakiet - b.pnPerPakiet);
+      .map(o => ({ ...o, pnPerUnit: diplomacyPnSurowiecIlosc(o.id, 1) ?? 0 }))
+      .filter(o => o.pnPerUnit > 0 && o.maxQty > 0)
+      .sort((a, b) => a.pnPerUnit - b.pnPerUnit);
 
     for (const item of ourQtyPriced) {
       if (giveSum >= fairMin) break;
-      let pakiety = 0;
-      while (pakiety < item.maxPakiety && giveSum < fairMin) {
-        pakiety += 1;
-        giveSum += item.pnPerPakiet;
+      let qty = 0;
+      while (qty < item.maxQty && giveSum < fairMin) {
+        qty += 1;
+        giveSum += item.pnPerUnit;
       }
-      if (pakiety > 0) giveItems.push({ typ: 'surowiec_ilosc', id: item.id, ilosc: pakiety });
+      if (qty > 0) giveItems.push({ typ: 'surowiec_ilosc', id: item.id, ilosc: qty });
     }
   }
 

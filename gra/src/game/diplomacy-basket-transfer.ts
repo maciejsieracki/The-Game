@@ -204,7 +204,8 @@ export interface ResourceIloscTransferResult {
  * zapasie surowca (remis rozstrzyga id miasta rosnąco), zbiera aż do `totalUnits`
  * lub wyczerpania zapasów (nigdy nie schodzi poniżej 0 — realny transfer może być
  * mniejszy niż żądany, patrz `moved`; wołający — main.ts — ogranicza ofertę do
- * floor(zapas/pakiet) PRZED zawarciem umowy, więc to tylko defensywny fallback).
+ * realnego zapasu (sztuki wprost, R-DYP-PAKIET-USUN 2026-08-08) PRZED zawarciem
+ * umowy, więc to tylko defensywny fallback).
  * Pure: nie mutuje wejściowej tablicy `cities`, zwraca nową.
  */
 export function transferSurowiecIlosc(

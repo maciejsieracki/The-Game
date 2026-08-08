@@ -89,10 +89,11 @@ export interface NegotiationModalContext {
    * ceramika/ruda — City.surowce, patrz diplomacy-goods.ts) per STRONA, z prostą ceną
    * jednostkową (econ-params.json „handel_surowce"). Odrębne od giveResourceOptions
    * (surowiec_boolean = dostęp civ-wide) — to realne sztuki z magazynu miast, max
-   * pakietów ograniczony do tego, co strona faktycznie posiada (`maxPakiety`).
+   * sztuk ograniczony do tego, co strona faktycznie posiada (`maxQty`).
+   * R-DYP-PAKIET-USUN (2026-08-08): sztuki wprost, bez pojęcia pakietu.
    */
-  giveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxPakiety: number }>;
-  receiveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxPakiety: number }>;
+  giveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxQty: number }>;
+  receiveQuantityResourceOptions?: ReadonlyArray<{ id: string; label: string; maxQty: number }>;
 }
 
 const STYLE_ID = 'civ-diplo-neg-css-1e';
@@ -157,18 +158,18 @@ function esc(s: string): string {
  * zbiorem: '6' (tech ma własną cenę), '7' (namów-wojnę ma bribeGold), '9' (ultimatum ma
  * reparacje) — tam "dołóż" nakładałby się na istniejące pole gold/cena.
  * Minimalna sekcja (nie pełny koszyk diplomacyTradeBasket.ts — patrz raport zadania):
- * jedno pole złota + jeden wybór surowca (dostęp LUB ilość) + ilość pakietów.
+ * jedno pole złota + jeden wybór surowca (dostęp LUB ilość) + ilość sztuk.
  */
 const SWEETENER_ACTION_IDS = new Set<string>();
 
 function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
   const goldMax = Math.max(0, Math.floor(ctx.playerSkarbiec ?? 0));
-  const qtyOpts = (ctx.giveQuantityResourceOptions ?? []).filter(o => o.maxPakiety > 0);
+  const qtyOpts = (ctx.giveQuantityResourceOptions ?? []).filter(o => o.maxQty > 0);
   const resOptions =
     '<option value="">— brak —</option>'
     + qtyOpts.map(o =>
-      '<option value="qty:' + esc(o.id) + '" data-max="' + o.maxPakiety + '">'
-      + esc(o.label) + ' (ilość, max ' + o.maxPakiety + ' pak.)</option>',
+      '<option value="qty:' + esc(o.id) + '" data-max="' + o.maxQty + '">'
+      + esc(o.label) + ' (ilość, max ' + o.maxQty + ' szt.)</option>',
     ).join('');
   return (
     '<div class="cdn-sweetener" style="margin-top:12px;border-top:1px dashed rgba(232,216,138,.18);padding-top:8px">'
@@ -178,7 +179,7 @@ function sweetenerSectionHtml(ctx: NegotiationModalContext): string {
     + '<label>Surowiec</label>'
     + '<select id="cdn-sw-res">' + resOptions + '</select>'
     + '<div id="cdn-sw-qty-wrap" style="display:none">'
-    + numInput('cdn-sw-qty', 'Liczba pakietów', 1, 1)
+    + numInput('cdn-sw-qty', 'Ilość (sztuki)', 1, 1)
     + '</div>'
     + '</div>'
   );
@@ -469,7 +470,7 @@ export function showNegotiationModal(
   }
 
   // C-DYP-STOL-Q1=B: sekcja „Dołóż do umowy" — pokaż pole ilości tylko dla surowca ILOŚCIOWEGO
-  // (qty:...), i ogranicz je do maxPakiety tej pozycji (analogicznie do koszyka handlu).
+  // (qty:...), i ogranicz je do maxQty tej pozycji (analogicznie do koszyka handlu).
   const swResSel = box.querySelector('#cdn-sw-res') as HTMLSelectElement | null;
   if (swResSel) {
     const swQtyWrap = box.querySelector('#cdn-sw-qty-wrap') as HTMLElement | null;

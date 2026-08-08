@@ -25,7 +25,6 @@ import {
   diplomacyZywnoscNaPn,
   diplomacyResourceAccessCatalog,
   diplomacyHandelZaufaniePerTura,
-  diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowceCatalog,
   type WartoscPozycjaTyp,
 } from '../game/diplomacy-value-catalog';
@@ -63,7 +62,7 @@ const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   tech: 'Technologia',
   jednostka: 'Jednostka',
   surowiec_boolean: 'Dostęp do surowca',
-  surowiec_ilosc: 'Surowiec (sztuki, pakiety)',
+  surowiec_ilosc: 'Surowiec (sztuki)',
 };
 
 /** Krótkie etykiety chipów (te same ikony co HUD / magazyn). */
@@ -408,19 +407,19 @@ function defaultResourceOptions(): Array<{ id: string; label: string }> {
 
 /**
  * Fallback (legacy/testy bez wpięcia diplomacy-goods.ts) — katalog cen, BEZ realnego
- * stanu magazynu, więc `maxPakiety` jest umowną górną granicą (nie odzwierciedla
+ * stanu magazynu, więc `maxQty` jest umowną górną granicą (nie odzwierciedla
  * faktycznych zapasów). main.ts zawsze podaje realne `giveQuantityResourceOptions` /
  * `receiveQuantityResourceOptions` — ten fallback praktycznie nie jest używany w grze.
+ * R-DYP-PAKIET-USUN (2026-08-08): sztuki wprost, bez pojęcia pakietu.
  */
-const FALLBACK_QUANTITY_MAX_PAKIETY = 99;
+const FALLBACK_QUANTITY_MAX_QTY = 99;
 
-function defaultQuantityResourceOptions(): Array<{ id: string; label: string; maxPakiety: number }> {
+function defaultQuantityResourceOptions(): Array<{ id: string; label: string; maxQty: number }> {
   const cat = diplomacyHandelSurowceCatalog();
-  const pakiet = diplomacyHandelSurowcePakietWielkosc();
   return Object.keys(cat).map(id => ({
     id,
-    label: id.charAt(0).toUpperCase() + id.slice(1) + ' ×' + pakiet + ' (pakiet)',
-    maxPakiety: FALLBACK_QUANTITY_MAX_PAKIETY,
+    label: id.charAt(0).toUpperCase() + id.slice(1),
+    maxQty: FALLBACK_QUANTITY_MAX_QTY,
   }));
 }
 
@@ -431,7 +430,7 @@ function basketHasResourceAccess(...lists: ReadonlyArray<readonly BasketItem[]>)
   return false;
 }
 
-/** HANDEL-SUROWCE-CYKL (2026-07-24): czy koszyk zawiera surowiec ILOŚCIOWY (pakiety ze spichlerza miast). */
+/** HANDEL-SUROWCE-CYKL (2026-07-24): czy koszyk zawiera surowiec ILOŚCIOWY (sztuki ze spichlerza miast). */
 function basketHasQuantityResource(...lists: ReadonlyArray<readonly BasketItem[]>): boolean {
   for (const items of lists) {
     if (items.some(i => i.typ === 'surowiec_ilosc')) return true;
@@ -1058,7 +1057,6 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
     : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
-  const pakiet = diplomacyHandelSurowcePakietWielkosc();
   const defaultResId = qtyResources[0]?.id ?? '';
   const qtyResChips = qtyResources.map((r, i) => {
     const label = resourceDisplayLabel(r.id);
@@ -1070,10 +1068,10 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
       i === 0,
       typChipIconHtml('surowiec_ilosc', r.id),
       short,
-      ' data-max="' + r.maxPakiety + '" title="' + esc(label) + ' ×' + pakiet + '"',
+      ' data-max="' + r.maxQty + '" title="' + esc(label) + ' (dost. ' + r.maxQty + ' szt.)"',
     );
   }).join('');
-  const qtyResFirstMax = qtyResources[0]?.maxPakiety ?? 1;
+  const qtyResFirstMax = qtyResources[0]?.maxQty ?? 1;
 
   const zywnHint = diplomacyZywnoscNaPn();
 
@@ -1101,10 +1099,10 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
     + '<input type="hidden" class="cdb-tech" data-side="' + prefix + '" value="' + esc(defaultTech) + '" />'
     + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-resqty">'
-    + '<label>Surowiec (pakiety ×' + pakiet + ')</label>'
+    + '<label>Surowiec</label>'
     + '<div class="cdb-chip-grid cdb-resqty-chips">' + qtyResChips + '</div>'
     + '<input type="hidden" class="cdb-res-qty-sel" data-side="' + prefix + '" value="' + esc(defaultResId) + '" data-max="' + qtyResFirstMax + '" />'
-    + '<label>Liczba pakietów</label>'
+    + '<label>Ilość (sztuki)</label>'
     + qtyStepperHtml('cdb-res-qty-num', prefix, 1, 1, qtyResFirstMax)
     + '</div>'
     + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj propozycję</button>'
@@ -1131,7 +1129,7 @@ function basketItemMaxQty(
       ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
       : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
     const found = opts.find(o => o.id === item.id);
-    return found?.maxPakiety ?? qty;
+    return found?.maxQty ?? qty;
   }
   return undefined;
 }
@@ -1546,7 +1544,7 @@ function renderBasket(
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
   const dealSettingsHint = !hasQtyRes && !hasResourceAccess
-    ? 'Tryb „Co turę" i czas obowiązują po dodaniu surowca (pakiety) do koszyka.'
+    ? 'Tryb „Co turę" i czas obowiązują po dodaniu surowca (sztuki) do koszyka.'
     : undefined;
 
   const dealSettings = (blocked || !showReceiveCol)

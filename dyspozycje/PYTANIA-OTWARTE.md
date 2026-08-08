@@ -2564,7 +2564,7 @@ jakby to on decydował. Minimum: komunikat/UI powinny być spójne z tym, co fak
 `gra/src/ui/diplomacyAcceptanceBalance.ts` (panel „Punkty Wymiany", agregacja pakietu).
 **Model:** Sonnet 5 (poza `render/**`).
 
-## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **W REALIZACJI**
+## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„ok, zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy.
 Po prostu podajemy sztuki. Jeden, dziesięć, sto i tak dalej. Żadnych pakietów! Usuń dla
 wszystkich surowców pakiet."*
@@ -2581,6 +2581,18 @@ zmienia się tylko to, co gracz wpisuje i co widzi jako jednostkę.
 `diplomacyHandelSurowcePakietWielkosc()`), `gra/data/econ-params.json`
 (`handel_surowce.pakiet_wielkosc`).
 **Model:** Sonnet 5 (poza `render/**`) — zwykły kod UI/logika handlu, nie render.
+
+**NAPRAWIONE (2026-08-08):** `BasketItem.ilosc` dla surowców ilościowych to teraz sztuki
+wprost (nie pakiety) w całym łańcuchu — cena, transfer jednorazowy, dostawa cykliczna „co
+turę", oferty AI. `pakiet_wielkosc` (10) przetrwał wyłącznie jako próg heurystyki niedoboru
+AI, nie jako mnożnik. Evaluator (Opus 5) PASS-WITH-NOTES po 2 rundach — runda 1 złapała 2
+zepsute pakiety testów zgłoszone jako naprawione (nie były) i realny błąd: nazwa surowca z
+metadanymi przeciekała do wiadomości AI („Drewno — dost. 40" zamiast „Drewno"); runda 2
+potwierdziła obie poprawki niezależnie (własna reprodukcja Evaluatora, nie zaufanie
+raportowi). 19 pakietów testów, wszystkie zielone, `tsc` czyste.
+**Nota do wiedzy (niska pilność):** `computeQuickDealBasket` („Szybka umowa") nie ma żadnego
+testu — poprawiona wartość startowa (10 szt., nie 1) jest dziś niczym niechroniona przed
+przyszłą regresją.
 
 ## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — diagnoza w toku**
 **Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile

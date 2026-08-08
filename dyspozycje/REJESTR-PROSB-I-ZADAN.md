@@ -1375,7 +1375,9 @@ wymiany surowców (`diplomacyTradeBasket.ts`, `diplomacy-value-catalog.ts`
 `diplomacyHandelSurowcePakietWielkosc()`, `econ-params.json:pakiet_wielkosc`), zastąpić
 wprowadzaniem surowej liczby sztuk (stepper +1/+10/+100 na sztukach, nie na pakietach).
 Cena PN/szt. z `econ-params.json:handel_surowce.cena_*` zostaje bez zmian — zmienia się tylko
-jednostka wejścia UI. W realizacji.
+jednostka wejścia UI. **NAPRAWIONE**, Evaluator PASS-WITH-NOTES po 2 rundach (2 zepsute
+pakiety testów + błąd wycieku etykiety do wiadomości AI, oba naprawione i niezależnie
+zweryfikowane). Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
 ## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU (2026-08-08) — DIAGNOZA ZAKOŃCZONA
 Hipoteza właściciela (Zulusi „zjadają" własną ludność) **potwierdzona kodem**: koszt

@@ -12,7 +12,6 @@ import type { ActiveDeal, TreatyKind } from './diplomacy-treaties';
 import { normalizeTreatyKind } from './diplomacy-treaties';
 import type { BasketItem } from './diplomacy-pn-engine';
 import type { ProposalPayload } from './diplomacy-proposals';
-import { diplomacyHandelSurowcePakietWielkosc } from './diplomacy-value-catalog';
 import {
   wiarygodnoscLabelPl,
   wiarygodnoscTooltipRozbiciePl,
@@ -476,9 +475,8 @@ export function formatBasketItemBrief(item: BasketItem, ctx?: BasketItemFormatCt
     case 'surowiec_boolean':
       return `dostęp do surowca: ${resourceDisplayLabel(item.id)} (nieaktualne)`;
     case 'surowiec_ilosc': {
-      const pakietSize = diplomacyHandelSurowcePakietWielkosc();
-      const pakiety = item.ilosc ?? 1;
-      const szt = pakiety * pakietSize;
+      // R-DYP-PAKIET-USUN (2026-08-08): item.ilosc to sztuki wprost.
+      const szt = item.ilosc ?? 1;
       const label = resourceDisplayLabel(item.id);
       if (perTurn) {
         const base = `${szt} ${label} na turę`;

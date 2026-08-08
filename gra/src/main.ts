@@ -2313,24 +2313,30 @@ async function boot(): Promise<void> {
     /**
      * C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE (magazyn miast — drewno/kamień/
      * glina/cegła/ceramika/ruda) FAKTYCZNIE posiadane przez ownera, wycenione prostą
-     * ceną jednostkową (econ-params.json „handel_surowce"). Strona może zaoferować
-     * max tyle pakietów, ile ma pełnych — floor(zapas/pakiet); zero pełnych pakietów
-     * → pozycja pominięta (nie ma czym handlować).
+     * ceną jednostkową (econ-params.json „handel_surowce"). R-DYP-PAKIET-USUN
+     * (2026-08-08, Maciej): strona może zaoferować max tyle SZTUK, ile faktycznie ma
+     * w magazynie — bez pakietów, bez ×10; zero zapasu → pozycja pominięta (nie ma
+     * czym handlować).
+     * BUGFIX (Evaluator 2026-08-08, blocker 2): `label` to ZAWSZE czysta nazwa surowca —
+     * bez dopisywania „— dost. N" do stringa. Ilość dostępna jest osobnym polem `maxQty`;
+     * kto chce ją pokazać graczowi, składa tekst sam (patrz diplomacyTradeBasket.ts). Wcześniej
+     * dopisywanie do `label` psuło `diplomacy-resource-trade-pick.ts#buildOffer`, który
+     * wycina z tego stringa czystą nazwę do komunikatów AI (`sellerOpt.label.split(' ×')[0]`)
+     * — dopisek bez separatora ' ×' przechodził w całości do tekstu ofert AI.
      */
-    function quantityTradableGoodOptions(ownerId: number): Array<{ id: string; label: string; maxPakiety: number }> {
+    function quantityTradableGoodOptions(ownerId: number): Array<{ id: string; label: string; maxQty: number }> {
       const priced = diplomacyHandelSurowceCatalog();
-      const pakiet = diplomacyHandelSurowcePakietWielkosc();
       return tradableGoodsIndexForOwner(ownerId)
         .filter(g => Object.prototype.hasOwnProperty.call(priced, g.key))
         .map(g => {
-          const maxPakiety = Math.floor((g.ilosc ?? 0) / pakiet);
+          const maxQty = Math.floor(g.ilosc ?? 0);
           return {
             id: g.key,
-            label: g.label + ' ×' + pakiet + ' (pakiet)' + (maxPakiety > 0 ? ' — dost. ' + maxPakiety : ''),
-            maxPakiety,
+            label: g.label,
+            maxQty,
           };
         })
-        .filter(g => g.maxPakiety > 0);
+        .filter(g => g.maxQty > 0);
     }
 
     /**
@@ -7141,7 +7147,10 @@ async function boot(): Promise<void> {
         praca: ownerPracaPool(ownerId),
         foodReserve: empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0,
         stock: ownerSurowcePoolFor(ownerId),
-        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+        // R-DYP-PAKIET-USUN (2026-08-08): diplomacy-ai-balance.ts liczy koszyk w sztukach
+        // wprost — pakietWielkosc=1 (no-op) zamiast diplomacyHandelSurowcePakietWielkosc()
+        // (10), żeby nie mnożyć realnych sztuk × pakiet przy sprawdzaniu pokrycia zapasem.
+        pakietWielkosc: 1,
         resourceRates: mergedResourceRatesForOwner(ownerId),
       };
     }
@@ -7186,7 +7195,9 @@ async function boot(): Promise<void> {
         partnerStock: ownerSurowcePoolFor(0),
         aiResourceRates: mergedResourceRatesForOwner(aiOwnerId),
         partnerResourceRates: mergedResourceRatesForOwner(0),
-        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+        // R-DYP-PAKIET-USUN (2026-08-08): patrz komentarz w ownerBasketAffordCtx powyżej —
+        // pakietyPerTura to dziś sztuki wprost, pakietWielkosc=1 (no-op) w clampie.
+        pakietWielkosc: 1,
         defaultTurns: 10,
       };
     }
@@ -7317,8 +7328,9 @@ async function boot(): Promise<void> {
             break;
           }
           case 'surowiec_ilosc': {
-            // C-DYP-SUROWCE-Q1=B: `qty` z koszyka = liczba PAKIETÓW, nie sztuk.
-            const totalUnits = qty * diplomacyHandelSurowcePakietWielkosc();
+            // R-DYP-PAKIET-USUN (2026-08-08): `qty` z koszyka to SZTUKI wprost (dawniej
+            // liczba pakietów × pakiet_wielkosc — usunięte na życzenie właściciela).
+            const totalUnits = qty;
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
             const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
@@ -13244,7 +13256,7 @@ async function boot(): Promise<void> {
 
     /** Cache na jedną turę AI ownera — pickResourceTradeRelOffer wołany O(N²) w dyplomacji. */
     let aiDiploTradeGoodsCache: Map<number, TradeGoodEntry[]> | null = null;
-    let aiDiploQtyOptionsCache: Map<number, Array<{ id: string; label: string; maxPakiety: number }>> | null = null;
+    let aiDiploQtyOptionsCache: Map<number, Array<{ id: string; label: string; maxQty: number }>> | null = null;
 
     function tradableGoodsForAiDiplo(ownerId: number): TradeGoodEntry[] {
       if (!aiDiploTradeGoodsCache) return tradableGoodsIndexForOwner(ownerId);
@@ -13255,7 +13267,7 @@ async function boot(): Promise<void> {
       return v;
     }
 
-    function quantityOptionsForAiDiplo(ownerId: number): Array<{ id: string; label: string; maxPakiety: number }> {
+    function quantityOptionsForAiDiplo(ownerId: number): Array<{ id: string; label: string; maxQty: number }> {
       if (!aiDiploQtyOptionsCache) return quantityTradableGoodOptions(ownerId);
       const hit = aiDiploQtyOptionsCache.get(ownerId);
       if (hit) return hit;
@@ -13310,7 +13322,9 @@ async function boot(): Promise<void> {
       const sellerOwnerId = pick.sellerOwnerId;
       const sellerRates = mergedResourceRatesForOwner(sellerOwnerId);
       const sellerRate = sellerRates[pick.surowiecKey] ?? 0;
-      const maxFromProduction = Math.floor(sellerRate / pakiet);
+      // R-DYP-PAKIET-USUN (2026-08-08): sellerRate to już sztuki/turę — bez dzielenia
+      // przez wielkość pakietu (usunięta z handlu, patrz diplomacy-value-catalog.ts).
+      const maxFromProduction = Math.floor(sellerRate);
       let pakietyPerTura = Math.min(
         pick.pakietyPerTura,
         maxFromProduction,
@@ -13410,7 +13424,7 @@ async function boot(): Promise<void> {
       return {
         type: 'zaproponuj_handel_surowiec',
         targetId: '0',
-        powod: `${verb}: ${offer.pakietyPerTura} pakiet(y)/turę`
+        powod: `${verb}: ${offer.pakietyPerTura} szt./turę`
           + ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${AI_RESOURCE_TRADE_DEFAULT_TURNS} tur`
           + (offer.powod === 'deficyt' ? ' (deficyt surowca)' : ''),
         surowiecKey: offer.surowiecKey,
@@ -13604,7 +13618,7 @@ async function boot(): Promise<void> {
           if (handelSurowiecCykliczny) {
             console.log(
               `[Dyplomacja] AI↔AI handel surowcem: ${ownerDiploLabel(bestOffer!.seller)} → ` +
-              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} pakiet(y)/turę`,
+              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} szt./turę`,
             );
           }
           syncRelationFromDeals(a, b);
@@ -13888,10 +13902,10 @@ async function boot(): Promise<void> {
       sellerAtFault: boolean,
       buyerAtFault: boolean,
       treasury: ReturnType<typeof buildDiploTreasury>,
-      pakietWielkosc: number,
     ): boolean {
       if (delivered) {
-        const totalUnits = item.pakietyPerTura * pakietWielkosc;
+        // R-DYP-PAKIET-USUN (2026-08-08): pakietyPerTura to sztuki/turę wprost.
+        const totalUnits = item.pakietyPerTura;
         const capId = capitalCityIdForOwner(item.buyerOwnerId);
         const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
         const result = transferSurowiecIlosc(
@@ -13952,16 +13966,16 @@ async function boot(): Promise<void> {
       wiarygodnoscCyclicDeliveryOkThisTurn.clear();
       if (!activeDeals.some(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0)) return;
       const treasury = buildDiploTreasury();
-      const pakietWielkosc = diplomacyHandelSurowcePakietWielkosc();
 
       for (const deal of activeDeals) {
         const items = deal.handelSurowiecCykliczny;
         if (!items?.length) continue;
 
         const handled = new Set<number>();
+        // R-DYP-PAKIET-USUN (2026-08-08): pakietyPerTura to sztuki/turę wprost.
         const sellerOkOf = (item: HandelSurowiecCyklicznyItem): boolean =>
           item.sellerOwnerId !== item.buyerOwnerId
-          && ownerResourceStock(item.sellerOwnerId, item.surowiecKey) >= item.pakietyPerTura * pakietWielkosc;
+          && ownerResourceStock(item.sellerOwnerId, item.surowiecKey) >= item.pakietyPerTura;
 
         for (let i = 0; i < items.length; i++) {
           if (handled.has(i)) continue;
@@ -13982,8 +13996,8 @@ async function boot(): Promise<void> {
             const aOk = sellerOkOf(a);
             const bOk = sellerOkOf(b);
             const bothOk = aOk && bOk; // atomowość: barter dochodzi do skutku W CAŁOŚCI albo wcale
-            const okA = applyCyclicDeliveryOutcome(deal, a, bothOk, !aOk, false, treasury, pakietWielkosc);
-            const okB = applyCyclicDeliveryOutcome(deal, b, bothOk, !bOk, false, treasury, pakietWielkosc);
+            const okA = applyCyclicDeliveryOutcome(deal, a, bothOk, !aOk, false, treasury);
+            const okB = applyCyclicDeliveryOutcome(deal, b, bothOk, !bOk, false, treasury);
             wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, okA);
             wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${bIdx}`, okB);
             continue;
@@ -13998,7 +14012,7 @@ async function boot(): Promise<void> {
           } else if (sellerOk && zaplata > 0 && a.zaplataTyp === 'praca') {
             buyerOk = ownerPracaPool(a.buyerOwnerId) >= zaplata;
           }
-          const ok = applyCyclicDeliveryOutcome(deal, a, sellerOk && buyerOk, !sellerOk, sellerOk && !buyerOk, treasury, pakietWielkosc);
+          const ok = applyCyclicDeliveryOutcome(deal, a, sellerOk && buyerOk, !sellerOk, sellerOk && !buyerOk, treasury);
           wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, ok);
         }
       }
