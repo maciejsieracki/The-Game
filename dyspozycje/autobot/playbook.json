@@ -1,6 +1,6 @@
 {
-  "version": 15,
-  "updatedAtIso": "2026-08-08T09:51:29.583Z",
+  "version": 16,
+  "updatedAtIso": "2026-08-08T10:14:06.479Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -269,6 +269,16 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-08T09:51:29.569Z"
+    },
+    {
+      "id": "rule_127",
+      "rule_text": "RECYDYWA (2. wystąpienie 2026-08-08, 1. hud-moc-warstwa): Operator w worktree mimo jawnego \"MIEJSCE PRACY — WYŁĄCZNIE ta ścieżka\" czasem i tak zapisuje (całość albo kopię) do współdzielonego drzewa głównego. Za 1. razem sam to wykrył i naprawił (git checkout -- w main), za 2. razem NIE zgłosił tego w raporcie — wykryte wyłącznie przez stop-hook (\"uncommitted changes\") + ręczne porównanie git diff obu drzew. Przeciwdziałanie: orkiestrator sprawdza git status --porcelain na drzewie głównym PO KAŻDYM powrocie Operatora pracującego w worktree, nie tylko gdy hook o tym przypomni — traktować to jako stały krok zamknięcia zlecenia, nie reakcję na alarm [C-019] [C-019]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T10:14:06.465Z"
     }
   ],
   "quarantine_rules": []
