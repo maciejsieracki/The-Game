@@ -71,13 +71,14 @@ export interface EmpireResourceRow {
   /**
    * SUROW-CIV-01 (Maciej 2026-07-24): cap CAŁEGO PAŃSTWA (civ-wide) dla tego typu
    * surowca — capBase + capBonusPerMagazyn×liczba Magazynów ownera. Brak (undefined)
-   * dla wierszy dostępu (Ceramika/Sól/Koń/Złoto — patrz empire-resource-access.ts).
+   * tylko gdy surowiec nie jest magazynowany (dziś: żaden z katalogu — R-SUROWCE-DOSTEP-ILOSC-Q1
+   * cofnęło 331aa180, wszystkie 13 surowców mają realny cap).
    */
   cap?: number;
   /**
    * SUROW-UI-A1 (2026-07-24): baza capu (econ-params.json magazyn_baza_surowce, DZIŚ
    * 1000) — pozwala UI wyliczyć tekst „baza + bonus × Magazyny” bez zaszywania starej
-   * wartości 100 na sztywno. Brak (undefined) dla wierszy dostępu.
+   * wartości 100 na sztywno.
    */
   capBase?: number;
   /** Bonus capu za KAŻDY Magazyn (econ-params.json magazyn_bonus_surowce_na_budynek). */

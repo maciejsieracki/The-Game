@@ -264,22 +264,6 @@ function ensureStyles(): void {
 .civ-emp-res-bar.good>span{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-res-bar.warn>span{background:linear-gradient(90deg,#6a4010,#d9a441);}
 .civ-emp-res-bar.bad>span{background:linear-gradient(90deg,#5a2020,#e07a7a);}
-.civ-emp-res-access-row{display:flex;gap:8px;flex-wrap:wrap;}
-.civ-emp-res-acc{display:flex;align-items:center;gap:8px;padding:8px 11px;border-radius:8px;
-  border:1px solid #2b3543;background:#171e2a;min-width:120px;flex:1 1 auto;}
-.civ-emp-res-acc .ic{flex:none;width:16px;height:16px;display:flex;align-items:center;
-  justify-content:center;color:#cfd5de;}
-.civ-emp-res-acc .ic svg{width:100%;height:100%;display:block;}
-.civ-emp-res-acc .dot{width:8px;height:8px;border-radius:50%;flex:none;}
-.civ-emp-res-acc.on .dot{background:#78c95a;box-shadow:0 0 6px #78c95a;}
-.civ-emp-res-acc.off .dot{background:#e07a7a;}
-.civ-emp-res-acc .nm-wrap{min-width:0;display:flex;flex-direction:column;gap:1px;}
-.civ-emp-res-acc .nm{font-size:12.5px;font-weight:600;color:#e2e6ec;}
-.civ-emp-res-acc .src{font-size:10px;color:#7d8798;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.civ-emp-res-acc .st{margin-left:auto;flex:none;font-size:10px;letter-spacing:.03em;text-transform:uppercase;
-  font-weight:700;}
-.civ-emp-res-acc.on .st{color:#78c95a;}
-.civ-emp-res-acc.off .st{color:#e07a7a;}
 .civ-emp-res-foodnote{margin:14px 0 4px;padding:10px 12px;border-radius:8px;border:1px dashed #2b3543;
   background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;display:flex;gap:9px;
   align-items:flex-start;}
@@ -676,23 +660,6 @@ function resCardHtml(r: EmpireResourceRow): string {
     + `</div>`;
 }
 
-/**
- * Wiersz dostępu (boolean) — surowce nie magazynowane (dziś: brak w katalogu).
- * Zachowane na wypadek przyszłych surowców „tylko dostęp".
- * (nawet gdy dostep=false — "masz"/"brak"), a gdy źródło jest znane (r.zrodlo — własne
- * złoże/budynek albo szlak handlowy) pokazujemy je jako podpis pod nazwą surowca.
- */
-function resAccessHtml(r: EmpireResourceRow): string {
-  const cls = r.dostep ? 'on' : 'off';
-  const zrodloHtml = r.dostep && r.zrodlo
-    ? `<div class="src">${esc(r.zrodlo)}</div>`
-    : '';
-  return `<div class="civ-emp-res-acc ${cls}" data-section="econ-surowiec-${esc(r.id)}" title="${resTooltipHtml(r)}">`
-    + `<span class="dot"></span><span class="ic">${resIconHtml(r.label, 16)}</span>`
-    + `<div class="nm-wrap"><div class="nm">${esc(r.label)}</div>${zrodloHtml}</div>`
-    + `<span class="st">${r.dostep ? 'masz' : 'brak'}</span></div>`;
-}
-
 /** Tooltip nagłówka magazynu państwa — pojemność, formuła, reguła nadmiaru (Maciej UI). */
 function magazynPanstwaTooltip(
   cap: number,
@@ -727,8 +694,10 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
     return sur;
   }
 
+  // R-SUROWCE-DOSTEP-ILOSC-Q1 (Maciej 2026-08-08, decyzja A): cofnięcie 331aa180 —
+  // wszystkie 13 surowców katalogu mają realny cap, jedna siatka „Magazynowane".
+  // Podsekcja „Dostęp — nie magazynowane" usunięta (był to martwy kod po tym cofnięciu).
   const stored = rows.filter(r => r.cap != null);
-  const access = rows.filter(r => r.cap == null);
   const cap = stored[0]?.cap ?? 0;
   const capBase = stored[0]?.capBase;
   const capBonus = stored[0]?.capBonusPerMagazyn;
@@ -749,17 +718,6 @@ function renderSurowceSection(rows: EmpireResourceRow[]): string {
   if (stored.length > 0) {
     sur += `<div class="civ-emp-res-lbl">Magazynowane</div>`
       + `<div class="civ-emp-res-grid">${stored.map(resCardHtml).join('')}</div>`;
-  }
-
-  if (access.length > 0) {
-    // ZGŁOSZENIE (Maciej 2026-07-26): podsekcja osobna od magazynu, zawsze widoczna
-    // (także gdy owner nie ma dostępu do żadnego z tych surowców — kafelek pokazuje
-    // wtedy "brak", nie znika) + krótkie wyjaśnienie różnicy wobec magazynu powyżej.
-    sur += `<div class="civ-emp-res-lbl">Dostęp — nie magazynowane</div>`
-      + `<div class="civ-emp-note" style="margin:-2px 0 8px;font-size:11.5px">`
-      + `Te surowce nie gromadzą się w magazynie państwa — liczy się tylko, czy imperium ma do nich dostęp `
-      + `(własne złoże/budynek albo szlak handlowy). „Brak" = jeszcze nieodblokowane, nie błąd.</div>`
-      + `<div class="civ-emp-res-access-row">${access.map(resAccessHtml).join('')}</div>`;
   }
 
   sur += `<div class="civ-emp-res-foodnote"><span class="k">Żywność</span>`
