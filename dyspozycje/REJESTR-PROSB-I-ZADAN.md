@@ -1342,3 +1342,12 @@ Dwa zgłoszenia z panelu propozycji dyplomacji, zarejestrowane w `PYTANIA-OTWART
 (2) usunięcie pustej karty „Oni oferują" (druga strona nic nie daje) kasuje też sparowaną,
 realną propozycję po naszej stronie — nielogiczna kaskada, niezdiagnozowana jeszcze która
 funkcja odpowiada za to sparowanie.
+
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08) — dwa powiązane tematy
+Zarejestrowane w `PYTANIA-OTWARTE.md` z pełną tabelą cen surowców (Drewno 1 PN/szt. ... Złoto
+50 PN/szt., `econ-params.json:handel_surowce`) i zlokalizowanym mechanizmem bloku pakietu:
+`diplomacy-proposals.ts:1082` (`treatyBaseFairnessGap`) liczy uczciwość WYŁĄCZNIE dla
+pojedynczej umowy w pakiecie (`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`, świadome), ale panel UI
+pokazuje zbiorczy dodatni bilans pakietu (+14 PW) sugerując inaczej — niespójność UI vs
+logika akceptacji. Powiązane z już znanym `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY`.
+Do decyzji Macieja: pakiet zbiorczo czy per-umowa; minimum UI musi być spójne z bramką.

@@ -2425,3 +2425,62 @@ indeks/wiersz.
 **Kotwice:** te same pliki co `R-PROPOZYCJA-BRAK-EDYCJI` — panel propozycji pokazany na zrzucie,
 logika usuwania powiązana z ID/parą propozycji.
 **Model:** Sonnet 5 (poza `render/**`).
+
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+
+### Część 1 — tabela cen (na żądanie: „wypisz mi wartość surowców jakie mamy przypisane")
+**Potwierdzone w kodzie:** „40" pokazane przy 4 pakietach Drewna (pakiet ×10) **to Punkty
+Wymiany (PW/PN), nie surowa liczba sztuk** — w tym konkretnym przypadku liczbowo się pokrywa,
+bo cena Drewna wynosi dokładnie 1 PN/szt. Źródło: `gra/data/econ-params.json` →
+`handel_surowce`, ta sama cena na wszystkich trudnościach (`easy`/`normal`/`hard` identyczne):
+
+| Surowiec | Cena (PN/szt.) |
+|---|---:|
+| Drewno | 1 |
+| Glina | 2 |
+| Sól | 2 |
+| Kamień | 3 |
+| Ruda miedzi | 5 |
+| Koń | 5 |
+| Cegła | 5 |
+| Ceramika | 5 |
+| Ruda żelaza | 10 |
+| Brąz | 15 |
+| Żelazo | 20 |
+| Węgiel | 20 |
+| Stal | 25 |
+| Złoto (surowiec) | 50 |
+
+Pakiet = 10 szt. (`pakiet_wielkosc`). PN pozycji = cena × pakiety × 10.
+**Jego obawa („zbyt łatwo przekupić surowcami"):** Drewno przy 1 PN/szt. jest najtańsze i
+zwykle najliczniej magazynowane — 250 Drewna (widziane w innym zrzucie tej rozmowy) to **250
+PN**, więcej niż baza 80 PW pełnego traktatu handlowego. Temat wart analizy: czy tania,
+masowa produkcja Drewna nie omija ekonomicznego sensu droższych surowców w handlu
+dyplomatycznym. **Nie zdiagnozowane jeszcze jako bug** — to pytanie balansu do ABC, nie
+potwierdzony błąd.
+
+### Część 2 — BUG: pakiet z dodatnim bilansem i tak blokuje akceptację
+**Jego słowa:** „co gorsza, chociaż bilans jest na plusie, to i tak nie mogę zaakceptować i
+przyjąć tej oferty. Prawdopodobnie to jest jakiś regres z przeszłości."
+**Objaw (zrzut, pakiet 2 umów: Traktat handlowy + Umowa wymiany surowców):** panel „PUNKTY
+WYMIANY" pokazuje **MY ODDAJEMY 94 PW · BILANS (NETTO) +14 · ONI ODDAJĄ 80 PW** — zagregowany
+bilans całego pakietu jest DODATNI. Mimo to poniżej: „Nie spełnia warunków: Brakuje 26 PW do
+uczciwej oferty traktatu handlowego @ Relacji (baza 80 PW) — oferta nieuczciwa dla partnera" —
+**Przyjmij zablokowany**.
+**Przyczyna zlokalizowana w kodzie** (`gra/src/game/diplomacy-proposals.ts:1073-1090`, komentarz
+`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`): bramka uczciwości dla `umowa_handlowa`/`umowa_szlakow`
+liczy **WYŁĄCZNIE PW TEGO JEDNEGO traktatu** (`treatyBaseFairnessGap(treatyBasePn, givePn,
+receivePn, relTotal)`) — **nie widzi** nadwyżki z innej umowy w tym samym pakiecie
+(„Umowa wymiany surowców", 40 PW netto na naszą niekorzyść/korzyść zależnie od strony). To
+było **świadome** (komentarz: „traktat handlowy bez koszyka przy niskiej Relacji dalej wymagał
+dopłaty zamiast przechodzić za darmo") — ale **UI wprowadza w błąd**, bo panel „Bilans (Netto)"
+sugeruje ocenę na poziomie całego pakietu, podczas gdy bramka akceptacji działa per-umowa.
+**Powiązane, już znane w tej sesji:** `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` (nota
+Evaluatora BUG-TRAKTAT-KOSZYK-REGRESJA, „nie naprawiać teraz, poza zakresem =A") — ten sam obszar
+kodu, już wcześniej oznaczony jako niedomknięty.
+**Do decyzji:** czy pakiet wielu umów ma być oceniany zbiorczo (bilans pakietu decyduje) czy
+per-umowa (każda musi sama spełnić próg) — dziś jest per-umowa, ale UI pokazuje zbiorczy bilans
+jakby to on decydował. Minimum: komunikat/UI powinny być spójne z tym, co faktycznie bramkuje.
+**Kotwice:** `gra/src/game/diplomacy-proposals.ts` (`treatyBaseFairnessGap`, linia ~1082),
+`gra/src/ui/diplomacyAcceptanceBalance.ts` (panel „Punkty Wymiany", agregacja pakietu).
+**Model:** Sonnet 5 (poza `render/**`).
