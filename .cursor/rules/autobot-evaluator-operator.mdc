@@ -117,6 +117,27 @@ właściciela też**, po incydencie z przestarzałym statusem `BUG-TOOLTIP-MOC-N
   stanu plików/kodu. Jego słowa: *„jeżeli o coś pytam i Ty odpowiadasz, to ponownie
   sprawdzić sobie przez ewaluatora, czy Twoja odpowiedź jest prawidłowa."*
 
+## Zakres naprawy błędu — zero regresji „przy okazji" (C-025, C-026 — Maciej 2026-08-08)
+
+Po serii regresji, gdzie naprawa jednego miejsca psuła inne bez wykrycia przed playtestem
+(`BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE`, `BUG-TRAKTAT-KOSZYK-REGRESJA`,
+`BUG-RZEKI-MEDIUM-FOW-REGRESJA`, 4-rundowa naprawa `R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1`).
+Jego słowa: *„70% mojego czasu to jest spędzanie nad poprawkami które już kiedyś były
+naprawione... kompletnie tego nie rozumiem."*
+
+- **C-025** — zlecenie Operatora naprawiającego zgłoszony błąd ma zakres = **TYLKO ten błąd**.
+  Zakaz „przy okazji"/„skoro już tu jestem": refaktorów, sprzątania stylu, zmian poza tym, co
+  wynika wprost z przyczyny błędu — nawet jeśli wyglądają jak ulepszenie. Prompt zlecenia MUSI
+  wypisać granicę zakresu (konkretne pliki/funkcje) i wprost zakazać zmian poza nią. Jego
+  słowa: *„jeżeli jest jakiś błąd, to agent powinien się zająć tylko i wyłącznie poprawieniem
+  tego błędu, a nie kopać w kodzie i psuć czegoś innego."*
+- **C-026** — gdy naprawa MUSI dotknąć kodu współdzielonego z innymi ekranami/funkcjami (bo to
+  jedyny poprawny zakres), Operator PRZED zmianą wypisuje wszystkie miejsca użycia (grep) i PO
+  zmianie weryfikuje KAŻDE z osobna — „to powinno nadal działać" bez sprawdzenia jest
+  zakazane. Evaluator sprawdza, czy ta lista w ogóle powstała, nie tylko czy diff wygląda
+  bezpiecznie. Jego słowa: *„jeżeli zmienia daną rzecz, a ma ona wpływ na inne kwestie, to
+  powinien to przemyśleć i przewidzieć."*
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.
