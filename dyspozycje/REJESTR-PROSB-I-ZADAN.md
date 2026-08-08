@@ -1203,3 +1203,27 @@ bariera słabsza niż reszta "Immovable barriers"). Runda 2 PASS po naprawie wsz
 czterech, zweryfikowane bezpośrednio w plikach. Zero przecieków Civ/PL/nazw modeli
 potwierdzone grepem w obu rundach.
 Model: Sonnet 5 (orkiestrator) + Opus 5 Evaluator (2 rundy).
+
+## R-SCALENIE-MAIN-2026-08-08 (2026-08-08) — scalenie gałęzi roboczej do main, wariant A
+**Decyzja Macieja: A — scal całą gałąź (21 commitów: deploy FALA 260 + skille AutoBot/
+civ-autobot + R-PROFIL-TURNIEJ-PUNKTACJA-Q1 + dokumentacja) do main.** Bezpośrednia
+przyczyna: playtest wykazał, że FALA 260 (naprawa Zwiadowcy/traktatu) nie była osiągalna
+z main — sesja lokalna pulluje z main, nie z gałęzi roboczej, więc żadne odświeżanie
+przeglądarki nie mogło pokazać naprawy, dopóki main jej fizycznie nie miał.
+**Wykonanie:** `git merge` (nie force-push) na lokalnej gałęzi `main-merge` z origin/main,
+scalenie 21 commitów moich + zachowanie 4 commitów sesji lokalnej wykonanych w
+międzyczasie (`4be7e8ba`..`bdd69824`). **Konflikt merytoryczny wykryty i rozwiązany
+ręcznie:** obie strony niezależnie dodały nowe reguły playbooka pod tymi samymi ID
+(`C-016`/`C-017`/`C-018`) — moje `C-018` (turniej ABC) kolidowało z regułami sesji
+lokalnej o tej samej etykiecie dot. przeglądu schowków git. Reguły sesji lokalnej
+przenumerowane na `C-020`/`C-021`/`C-022` (treść bez zmian), referencje w rejestrze
+błędów i kanale zaktualizowane, `playbook.json` zregenerowany generatorem (wersja 19,
+liczniki zachowane). `.gitignore` i `KANAL-PRACA.md` scaliły się z drobnymi ręcznymi
+poprawkami (append-only, oba wpisy zachowane w kolejności chronologicznej).
+**Weryfikacja przed push:** tsc 0 błędów, logic-test 213/213, tech-tree 19/19,
+unit-replace 13/13, autobot-smoke 11/11 — wszystko na scalonym drzewie.
+**Po push:** potwierdzone md5 `gra-robocza/Gra-ROBOCZA.html` na `origin/main` =
+`e0fa2ec12fdbaf26800f610bb5e82e23` (zgodne z FALA 260), potwierdzone że `rule_126` w
+`playbook.json` na main to turniej ABC (nie reguła schowków) — brak kolizji ID.
+Commit scalenia: `a659f4a1` (main-merge → main, push bez force).
+Model: Sonnet 5 (orkiestrator, wykonanie scalenia po wyraźnej zgodzie Macieja).
