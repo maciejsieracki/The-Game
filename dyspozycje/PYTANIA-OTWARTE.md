@@ -2120,12 +2120,14 @@ więc rozjazd jest fizycznie widoczny w jednej klatce.
 **Kotwice:** `gra/src/main.ts:12579` (`buildHudState`), `gra/src/ui/hud.ts:1022,1102`.
 
 ## Znaleziska poboczne z dzisiejszej pracy nad Mocą (nie blokują, do wiedzy)
-- **`openDiplomacyAudience` i `buildPlayerDiploSummary`** (`main.ts:14621-14622`,
-  `formatPowerRelationLine`) — kolejny ekran z parą liczb Mocy, nominalny. Evaluator ocenił
-  jako niższe ryzyko niż HUD (gracz nie widzi tego obok panelu Mocy) — świadomie pozostawione.
-- **Pozycja Mocy w rankingu na ekranie dyplomacji** (`buildAbsolutePowerRank`, nominalna)
-  może się różnić od pozycji w panelu Mocy (`buildAbsolutePowerRankEffective`) — ten sam
-  gracz, dwa różne miejsca w rankingu na dwóch ekranach.
+- ~~**`openDiplomacyAudience` i `buildPlayerDiploSummary`**~~ → **ROZWIĄZANE** przez
+  `R-MOC-HUD-GLOWNY-Q1=C` — `playerPower`/`otherPower`/`militaryPower` przełączone na
+  `objectivePowerForOwnerEffective`, `formatPowerRelationLine` porównuje teraz dwie liczby
+  efektywne po obu stronach.
+- ~~**Pozycja Mocy w rankingu na ekranie dyplomacji** (`buildAbsolutePowerRank`, nominalna)
+  może się różnić od pozycji w panelu Mocy~~ → **ROZWIĄZANE** przez `R-MOC-HUD-GLOWNY-Q1=C` —
+  `buildAbsolutePowerRank` (wariant nominalny UI) usunięty jako martwy kod, ekran dyplomacji
+  czyta teraz `buildAbsolutePowerRankEffective`, tak samo jak panel Mocy/Empire.
 - **Mnożnik trudności AI jest częściowo gubiony** (pre-istniejące, nie wprowadzone dziś):
   `applyDifficultyCombatToUnitDef` nie usuwa cache `fieldPower` dla jednostek bez weterana
   i bez fortyfikacji — dla takich jednostek AI mnożnik trudności jest po cichu ignorowany
@@ -2135,3 +2137,32 @@ więc rozjazd jest fizycznie widoczny w jednej klatce.
   (`R-MOC-MUR-PARADOKS-Q1`) — wnosi do bitwy 49 pkt (poprawnie), tabliczka pokazuje 95 —
   artefakt semantyki „tabliczka = Moc w obronie TEGO miasta", nie błąd, ale warty wzmianki
   w tooltipie jeśli gracz kiedyś zapyta.
+
+## R-MOC-KOSZYK-RELACJA-SWIADOME (2026-08-08, nota Evaluatora R-MOC-HUD-GLOWNY-Q1) · STATUS: **DO WIADOMOŚCI WŁAŚCICIELA — pozostawione nominalne przez Evaluatora, ale zakres dekretu C rozstrzyga wyłącznie Maciej**
+**Uwaga procesowa (drugi Evaluator, ponowna weryfikacja):** ścisłe czytanie dekretu
+`R-MOC-HUD-GLOWNY-Q1=C` — „cała warstwa UI naraz" — może obejmować też liczbę „obecnie: Y"
+w koszyku. Pierwszy Evaluator ocenił to jako świadomie poza zakresem (bo koszyk musi pokazywać
+liczbę, której realnie używa próg mechaniki), ale o zakresie WŁASNEGO dekretu rozstrzyga
+Maciej, nie agent — status obniżony z ZAMKNIĘTE do „do wiadomości", nic więcej nie zmieniono
+w kodzie.
+**Ustalenie:** `getNegotiationContext.relacjaTotal` (`main.ts`) jest **NOMINALNA** — świadomie,
+bo bramkuje realną mechanikę `diplomacyFairGivePn` i progi handlu/daru (patrz punkt „CO ZOSTAJE
+NOMINALNE" w `gra/tools/hud-moc-warstwa-test.cjs`, decyzja R-MOC-HUD-GLOWNY-Q1=C). Ta sama
+nominalna liczba trafia do koszyka wymiany i tam jest **WYŚWIETLANA** graczowi jako liczba
+w komunikatach typu „Handel wymaga Relacji ≥ X (obecnie: Y)"
+(`gra/src/ui/diplomacyTradeBasket.ts:~1247,~1458,~1460`) — mechanizm: `diplomacyAudience.ts:~1881`
+`mergeBasketCtx` daje pierwszeństwo nominalnej `negCtx.relacjaTotal` nad efektywną `st.relacjaTotal`.
+**Efekt widoczny dla gracza:** ekran audiencji pokazuje np. „Relacja 142/200" (EFEKTYWNA,
+`audienceRelTotalEffective`), gracz otwiera stamtąd koszyk wymiany i widzi „obecnie: 138"
+(NOMINALNA, `audienceRelTotal`) — dwie różne liczby tej samej wielkości na dwóch nakładających
+się, kolejno otwieranych ekranach.
+**To NIE jest bug do naprawienia w kodzie.** W koszyku poprawnie pokazywana jest liczba, której
+naprawdę używa próg mechaniki (`diplomacyFairGivePn`) — przełączenie jej na efektywną wprowadzałoby
+gracza w błąd co do realnego progu odblokowania handlu/daru (progi w koszyku muszą zostać zgodne
+z tym, co faktycznie sprawdza silnik, nie z liczbą kosmetyczną z panelu Mocy). Rozjazd między
+ekranem audiencji (efektywna, kosmetyczna) a koszykiem (nominalna, mechaniczna) jest zamierzoną
+konsekwencją decyzji R-MOC-HUD-GLOWNY-Q1=C, nie regresją tej pracy.
+**Zapisane, żeby nie zostało odkryte za tydzień jako „nowa regresja".**
+**Kotwice:** `gra/src/main.ts` (`getNegotiationContext.relacjaTotal`, `audienceRelTotal`,
+`audienceRelTotalEffective`), `gra/src/ui/diplomacyTradeBasket.ts:~1247,~1458,~1460`,
+`gra/src/ui/diplomacyAudience.ts:~1881` (`mergeBasketCtx`).

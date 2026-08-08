@@ -1744,6 +1744,25 @@ async function boot(): Promise<void> {
     function objectiveRespektPctToward(theirOwnerId: number): number {
       return computeRespekt(objectivePowerForOwner(0), objectivePowerForOwner(theirOwnerId));
     }
+    /**
+     * R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): wariant EFEKTYWNY respektu —
+     * jedyna różnica vs objectiveRespektPctToward: obie strony liczone przez
+     * objectivePowerForOwnerEffective zamiast objectivePowerForOwner (symetrycznie,
+     * inaczej porównanie "nasza moc vs ich moc" byłoby fałszywe — jedna strona
+     * z bonusem weterana/fortyfikacji/trudności, druga bez). Karmi WYŁĄCZNIE
+     * UI widoczne dla gracza (lista dyplomacji — buildPlayerDiploRelations,
+     * ekran audiencji — patrz audienceRelTotalEffective). NIE wolno jej podłączyć
+     * do progów blokad akcji/negocjacji (buildDiplomacyLockContextBase,
+     * getNegotiationContext.relacjaTotal, diplomacyFairGivePn) — te zostają na
+     * objectiveRespektPctToward nominalnej, bo bramkują realne mechaniki
+     * (dostępność akcji, uczciwość koszyka PN), nie tylko wyświetlaną liczbę.
+     */
+    function objectiveRespektPctTowardEffective(theirOwnerId: number): number {
+      return computeRespekt(
+        objectivePowerForOwnerEffective(0),
+        objectivePowerForOwnerEffective(theirOwnerId),
+      );
+    }
     function unitCountOnHex(q: number, r: number): number {
       let n = 0;
       for (const u of units) {
@@ -4890,8 +4909,14 @@ async function boot(): Promise<void> {
           layer,
           tier: relationTier(rel),
           zaufanie: Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0))),
-          respekt: objectiveRespektPctToward(otherId),
-          theirRespekt: computeRespekt(objectivePowerForOwner(otherId), objectivePowerForOwner(0)),
+          // R-MOC-HUD-GLOWNY-Q1=C: lista dyplomacji (karta per-cywilizacja) -> respekt
+          // EFEKTYWNY, dla spójności z ekranem audiencji (otwieranym z tej samej listy),
+          // który liczy respekt tym samym wariantem — patrz audienceRelTotalEffective.
+          respekt: objectiveRespektPctTowardEffective(otherId),
+          theirRespekt: computeRespekt(
+            objectivePowerForOwnerEffective(otherId),
+            objectivePowerForOwnerEffective(0),
+          ),
           population: cities.filter(c => c.ownerId === otherId).reduce((s, c) => s + c.population, 0),
           armyCount: units.filter(u => u.ownerId === otherId).length,
           cultureLabel: civCultureLabelForKey(civKeyForOwner(otherId)),
@@ -4915,8 +4940,10 @@ async function boot(): Promise<void> {
       const civKey = civKeyForOwner(0);
       const playerCities = cities.filter(c => c.ownerId === 0);
       const lines = formatDiploPlayerSummaryLines({
-        militaryPower: objectivePowerForOwner(0),
-        powerRank: buildAbsolutePowerRank(),
+        // R-MOC-HUD-GLOWNY-Q1=C: podsumowanie gracza na liście dyplomacji ("Moc: X",
+        // "Ranking mocy: Y. z Z") -> EFEKTYWNA, jak reszta warstwy UI Mocy.
+        militaryPower: objectivePowerForOwnerEffective(0),
+        powerRank: buildAbsolutePowerRankEffective(),
         wiarygodnosc: getWiarygodnosc(0),
         population: playerCities.reduce((s, c) => s + c.population, 0),
         armyCount: units.filter(u => u.ownerId === 0).length,
@@ -11106,7 +11133,7 @@ async function boot(): Promise<void> {
         civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
         // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy (widoczny dla gracza) liczy Moc
         // EFEKTYWNIE — patrz sumArmyMForOwnerEffective. Progi decyzji AI (militaryRatioFromArmyM,
-        // computeRespekt spoza tego panelu) zostają na objectivePowerForOwner nominalnej.
+        // computeRespekt w ścieżkach AI) zostają na objectivePowerForOwner nominalnej.
         power: objectivePowerForOwnerEffective(oid),
         isPlayer: oid === 0,
         rank: 0,
@@ -11143,18 +11170,13 @@ async function boot(): Promise<void> {
      * R-RANKING-MOC (Maciej 2026-07-24): pozycja gracza wśród WSZYSTKICH żyjących
      * cywilizacji (miasta-państwa wyłączone), niezależnie od odkrycia w mgle wojny —
      * gracz ma znać swoje konkretne miejsce, nawet nie znając rywali.
-     */
-    function buildAbsolutePowerRank(): { rank: number; total: number } {
-      return computeAbsolutePowerRank(0, allPowerOwnerIds(), objectivePowerForOwner, {
-        cityStateOpts: ownerCityStateOpts(),
-      });
-    }
-
-    /**
-     * R-MOC-RANKING-ROZJAZD-Q1=B: wariant efektywny buildAbsolutePowerRank — WYŁĄCZNIE
-     * dla `absoluteRank` w panelu Mocy (buildPowerOverlayData). buildAbsolutePowerRank
-     * nominalna zostaje nietknięta — nadal karmi buildPlayerDiploSummary (ekran dyplomacji,
-     * poza zakresem tej decyzji).
+     *
+     * R-MOC-RANKING-ROZJAZD-Q1=B: wariant EFEKTYWNY (objectivePowerForOwnerEffective) —
+     * karmi `absoluteRank` w panelu Mocy (buildPowerOverlayData) ORAZ buildPlayerDiploSummary
+     * (ekran dyplomacji), obie ścieżki widoczne dla gracza. Wariant nominalny
+     * (objectivePowerForOwner) dla tego samego rankingu żyje osobno jako inline callback
+     * w computeAbsolutePowerRank wewnątrz pętli tury AI (~linia 21907) — tam liczy pozycję
+     * per-AI-owner na potrzeby decyzji AI, nietknięty tą decyzją.
      */
     function buildAbsolutePowerRankEffective(): { rank: number; total: number } {
       return computeAbsolutePowerRank(0, allPowerOwnerIds(), objectivePowerForOwnerEffective, {
@@ -11293,8 +11315,8 @@ async function boot(): Promise<void> {
       // patrz buildPowerOverlayData), więc `obj`/`powerComponents` (headline Moc + rozbicie
       // na składniki w tym samym ekranie) muszą liczyć tym samym wariantem — inaczej gracz
       // widziałby DWIE różne liczby Mocy dla siebie na jednym ekranie (dokładnie ten sam
-      // rozjazd, który ta decyzja ma naprawić). AI (militaryRatioFromArmyM, respekt poza
-      // tym ekranem) nadal czyta wyłącznie nominalny objectivePowerByOwner/buildObjectivePowerForOwner
+      // rozjazd, który ta decyzja ma naprawić). AI (militaryRatioFromArmyM, computeRespekt
+      // w ścieżkach AI) nadal czyta wyłącznie nominalny objectivePowerByOwner/buildObjectivePowerForOwner
       // — nietknięte.
       const obj = buildObjectivePowerForOwnerEffective(0);
       const totalPts = Math.max(1, obj.components.reduce((s, c) => s + c.points, 0));
@@ -12586,7 +12608,10 @@ async function boot(): Promise<void> {
       const pop = pc.reduce((s, c) => s + c.population, 0);
       const pobor = empirePoborTotals(cities, 0, player.era, civManpowerMultsForOwner(0).maxMult);
       const chips = collectDiploChipCounts();
-      const power = objectivePowerForOwner(0);
+      // R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): licznik Mocy w HUD (klikalny,
+      // otwiera panel Mocy który już liczy efektywnie — d1f7b91) -> EFEKTYWNA,
+      // dla spójności z panelem, który się pod nim otwiera.
+      const power = objectivePowerForOwnerEffective(0);
       const foodReserve = Math.floor(getEmpireFoodReserve(0));
       const foodMaxCap = projectPlayerFoodMaxCap();
       const foodProj = projectPlayerFoodProjection();
@@ -14434,6 +14459,25 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): wariant EFEKTYWNY audienceRelTotal —
+     * WYŁĄCZNIE dla pola `relacjaTotal` w payloadzie getState() ekranu audiencji
+     * (main.ts, showDiplomacyAudience), które trafia na TEN SAM ekran co
+     * `respekt`/`playerPower`/`otherPower` liczone teraz efektywnie (formatPowerRelationLine).
+     * Bez tej wersji pasek "Respekt X/100" (efektywny) i liczba "relacja / 200"
+     * (nominalna) pokazywałyby DWIE różne wartości respektu dla tej samej pary —
+     * dokładnie ten rozjazd, który cała ta decyzja ma eliminować.
+     * NIE używać do bramkowania: buildAudienceActions (lockCtxBase — progi
+     * odblokowania akcji dyplomatycznych) i getNegotiationContext (relacjaTotal —
+     * próg handlu/daru, diplomacyFairGivePn) zostają na audienceRelTotal
+     * NOMINALNEJ — to mechaniki/progi gry, nie sama wyświetlana liczba Mocy.
+     */
+    function audienceRelTotalEffective(ownerId: number, rel: Relation): number {
+      return Math.round(
+        Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + objectiveRespektPctTowardEffective(ownerId))),
+      );
+    }
+
+    /**
      * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 4) — kontekst progowy dla
      * resolveDiplomacyActionLock (diplomacy-locks.ts), wspólny dla wszystkich akcji
      * poza '1' (kontakt, bramkowany osobno). Progi REALNE z silnika
@@ -14628,8 +14672,12 @@ async function boot(): Promise<void> {
             contacted,
           );
           const zaufanieNorm = Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0)));
-          const playerPower = objectivePowerForOwner(0);
-          const otherPower = objectivePowerForOwner(ownerId);
+          // R-MOC-HUD-GLOWNY-Q1=C: obie strony EFEKTYWNE — playerPower i otherPower
+          // trafiają do formatPowerRelationLine w TEJ SAMEJ linii porównawczej
+          // ("Twoja moc X vs Y"); gdyby tylko jedna strona liczyła efektywnie,
+          // porównanie i wynikowy Respekt byłyby fałszywe.
+          const playerPower = objectivePowerForOwnerEffective(0);
+          const otherPower = objectivePowerForOwnerEffective(ownerId);
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
           const respektNorm = powerLine.respekt;
           const pairMeta = getDiploPairMeta(0, ownerId);
@@ -14669,7 +14717,10 @@ async function boot(): Promise<void> {
             otherCivName: ownerDiploLabel(ownerId),
             zaufanie: zaufanieNorm,
             respekt: respektNorm,
-            relacjaTotal: audienceRelTotal(ownerId, rel),
+            // R-MOC-HUD-GLOWNY-Q1=C: audienceRelTotalEffective — spójność z `respekt`
+            // (respektNorm, już efektywny wyżej) na TYM SAMYM ekranie; audienceRelTotal
+            // nominalna zostaje jako gate w buildAudienceActions/getNegotiationContext.
+            relacjaTotal: audienceRelTotalEffective(ownerId, rel),
             zaufanieDeltaPerTurn,
             relacjaDeltaPerTurn: zaufanieDeltaPerTurn,
             trustPnGainedThisTurn: pairMeta.trustPnGainedThisTurn,
