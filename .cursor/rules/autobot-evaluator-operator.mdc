@@ -45,6 +45,20 @@ Potrójna warstwa (`R-PROC-POTROJNA-WARSTWA`) = **wbudowana** w kroki 1–3 Auto
 
 ---
 
+## Pytanie ABC — obowiązkowy turniej dwóch projektów (Maciej 2026-08-08)
+
+Kanon: `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md` · playbook `C-018` (`playbook.md`) / `rule_126` (`dyspozycje/autobot/playbook.json`)
+
+**Każde NOWE pytanie ABC** (temat, na który właściciel jeszcze nie odpowiedział literą) — zanim trafi do właściciela:
+
+1. Proponent 1 (orkiestrator/Operator, kto natrafił na temat) pisze pełny projekt ABC.
+2. Proponent 2 — NIEZALEŻNY agent, bez podglądu projektu 1, pisze własny osobny projekt.
+3. Sędzia (rola Evaluatora) porównuje oba, weryfikuje zgodność z danymi, wydaje werdykt lub syntetyzuje finalną wersję. Tylko zwycięska/zsyntetyzowana wersja idzie do właściciela.
+
+**Nie dotyczy:** tematów, na które właściciel już odpowiedział literą (tylko ECHO + zapis), ani czysto inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza.
+
+---
+
 ## Evaluator — obowiązkowy SCOPE + regresja (Maciej 2026-08-05)
 
 Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · playbook `rule_105`  

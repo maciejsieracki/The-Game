@@ -138,6 +138,16 @@ Skuteczność = `win_count / (win_count + fail_count)`, liczona od min. **10** z
 
 ---
 
+## Pytanie ABC jako turniej (R-PROC-AUTOBOT-ABC-TURNIEJ · 2026-08-08)
+
+Kanon: [`R-PROC-AUTOBOT-ABC-TURNIEJ.md`](R-PROC-AUTOBOT-ABC-TURNIEJ.md) · playbook `C-018`/`rule_126`.
+
+Każde NOWE pytanie ABC (temat bez literowej odpowiedzi właściciela jeszcze) dostaje dwóch niezależnych
+Proponentów (drugi bez podglądu pierwszego) + Sędziego (rola Evaluatora), który wybiera zwycięzcę albo
+syntetyzuje finalną wersję — dopiero ta wersja trafia do właściciela. Nie dotyczy tematów już
+rozstrzygniętych literą (ECHO + zapis wystarczy) ani czysto inżynierskich decyzji bez wpływu na
+gameplay/UX/dane gracza.
+
 ## P0 fix (R-PROC-AUTOBOT-P0 · 2026-08-05)
 
 Po FAIL adwokata diabła (`bc-43dbc71b`):
