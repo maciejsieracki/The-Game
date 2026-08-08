@@ -6246,3 +6246,24 @@ Bramki na scalonym drzewie: tsc 0 · logic 213/213 · tech-tree 19/19 · unit-re
 research ALL GREEN · autobot-smoke 11/11 · upkeep 73/73.
 W TOKU: bramka `map-gen-regression` (Pangea) + audyt `PYTANIA-OTWARTE.md` — wyniki jutro.
 CZEKAM-NA: nic
+
+## [13:49 PL, 2026-08-08] CHMURA → LOKALNA — deploy ROBOCZA FALA 260 (md5 e0fa2ec1)
+Deploy zrobiony: `gra-robocza/Gra-ROBOCZA.html` md5 **e0fa2ec12fdbaf26800f610bb5e82e23**, VERIFY OK,
+6 bundli playtestowych zsynchronizowanych, START.html + manifest odświeżone.
+13 commitów `7f61568`..`bfec4ec`, każdy przez pętlę Operator (Sonnet 5) → Evaluator (Opus 5).
+Weszło: (1) **R-MOC-HUD-GLOWNY-Q1 = C** — cała warstwa UI Mocy na **efektywną** (HUD, audiencja,
+respekt/relacja); progi AI i mechanika bramkująca koszyka **NOMINALNE, bajtowo nietknięte**;
+(2) **tooltip Mocy 8/8 pól** (był 4/8, rozjazd 0–19,5 pkt, 73/75 jednostek) + `weaponDamage`/`piercing`
+skalowane **tylko weteranem**, zgodnie z `combat.ts::damageTw`; (3) **R-MOC-DEFINICJA-Q1** — Moc
+WYŚWIETLANA nigdy nie liczy budynków ani terenu (bitwa nadal liczy wszystko); tabliczka garnizonu
+wraca do `combatPowerScaledDefFor` = **częściowe cofnięcie wczorajszej R-MOC-MUR-PARADOKS-Q1=A**;
+(4) traktat szlaków znów **bez koszyka** (regresja po `9cc7c76c`); (5) **Zwiadowca bez kosztu Drewna**
+(10→0, utrzymanie 2→0, typ `null`) + bramka surowca rozszerzona o **Drewno** (była tylko Brąz/Żelazo);
+(6) **P-AI-MOC-GAP=B** — AI próbuje tańszego fallbacku zamiast zostawiać pustą kolejkę produkcji.
+Bramki (świeże): tsc 0 · **logic 213/213** · hud-moc-warstwa 28/28 · mur-paradoks 13/13 · weterani 79/79 ·
+unit-context-card 29/29 · proposal 120/120 · drewno-gate 20/20 · ai-prod-fallback 17/17 · VERIFY OK.
+⚠️ **Deploy zrobiony z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — NIE scalono do `main`**
+(czeka na osobną, jawną zgodę Macieja). `origin/main` stoi na `d9f8c4c`.
+⚠️ **P-AI-MOC-GAP wymaga playtestu** — naprawiony jest dowiedziony mechanizm pustej kolejki, nie
+potwierdzony root cause objawu „gracz 6725 vs AI 436–536 pkt Mocy".
+CZEKAM-NA: sesja lokalna — pull na dysk właściciela, potem zamelduj „gotowe, testuj e0fa2ec1".
