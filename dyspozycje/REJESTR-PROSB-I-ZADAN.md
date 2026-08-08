@@ -1355,17 +1355,17 @@ pojedynczej umowy w pakiecie (`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`, świadome), a
 pokazuje zbiorczy dodatni bilans pakietu (+14 PW) sugerując inaczej — niespójność UI vs
 logika akceptacji. Powiązane z już znanym `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY`.
 
-## BUG-ETYKIETA-MIASTA-ROZMYTA — przyczyna potwierdzona w kodzie (2026-08-08)
-Powtórka zgłoszenia z 2026-08-07 (nowy zrzut „NODWENGU") — sprawdzone w historii gita:
-**żaden commit nigdy nie dotknął tematu**, mimo wcześniejszej rejestracji. Przyczyna
-zlokalizowana: `gra/src/render/cityMapStatChip.ts` (`paintCityMapBadgeOntoCanvas`,
-`makeCityMapBadgeSprite`) liczy `canvas.width`/`canvas.height` wyłącznie z treści (tekst +
-ikony w pikselach CSS), **zero odniesienia do `devicePixelRatio`** — canvas trafia do
-`THREE.CanvasTexture`/`THREE.Sprite`, przy zbliżeniu kamery sprite zajmuje więcej pikseli
-ekranu niż natywna rozdzielczość tekstury → rozciąganie (texture magnification). Naprawa
-(niewdrożona): renderować canvas w rozdzielczości × `devicePixelRatio`, standardowy wzorzec
-„retina canvas" dla tekstur Three.js. Szczegóły w `PYTANIA-OTWARTE.md`. Status nadal OTWARTE
-— tylko diagnoza, nie fix.
+## BUG-ETYKIETA-MIASTA-ROZMYTA + BUG-IKONA-KULTURY-PLACEHOLDER — NAPRAWIONE, czeka na deploy+playtest
+Oba w `gra/src/render/cityMapStatChip.ts`. Rozmycie: canvas renderowany teraz ×`devicePixelRatio`
+(cap ×3), standardowy wzorzec „retina canvas" dla tekstur Three.js. Placeholder: kolejkowanie
+callbacków sygnetu cywilizacji zamiast gubienia ich przy równoległych żądaniach. Evaluator
+(Opus 5) PASS-WITH-NOTES po 3 rundach — runda 1 złapała 2 realne błędy, runda 2 znalazła lukę
+pokrycia testu (błąd realny, ale test go nie łapał), runda 3 potwierdziła domknięcie własnymi
+kontrfaktykami (7 mutacji, 6/7 złapanych, 1 nieszkodliwy wyciek pamięci bez efektu wizualnego).
+`R-ETYKIETA-MIASTA-WZROST-PROCENT` (procent wzrostu zamiast „W5") pozostaje OTWARTE — próba
+naprawy świadomie wycofana (użyłaby innej liczby niż panel miasta), prawdziwa przyczyna
+zablokowania (migawka z końca tury vs. panel na żywo) znaleziona i opisana, czeka na decyzję.
+Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
 ## R-HANDEL-PAKIETY-USUNAC (2026-08-08) — decyzja właściciela, w realizacji
 **Jego słowa:** „zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy. Po

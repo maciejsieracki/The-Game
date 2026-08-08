@@ -1786,7 +1786,7 @@ nazewnictwo/etykieta, nie logika). Kotwice: `gra/src/game/diplomacy-proposals.ts
 „traktat handlowy bez koszyka @ niska Rel" — możliwe, że bramka już to łapie i została uznana
 za szum.
 
-## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — przyczyna teraz potwierdzona w kodzie (2026-08-08)**
+## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa (2026-08-07):** *„na przybliżeniu miasta grafika jest okropna."*
 **Jego słowa (2026-08-08, powtórka zgłoszenia z nowym zrzutem „NODWENGU"):** „kolejny temat,
 który nie stał rozwiązany... coś z tym robiłeś, ale jak zwykle temat w ogóle nie został
@@ -1813,7 +1813,7 @@ władcy) — ten sam mechanizm rysowania, to samo ryzyko rozmycia.
 `makeCityMapBadgeSprite`).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
-## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
+## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„na państwach, miastach są dziwne kwadraty obrócone, a jak się najedzie
 przyciskiem, to pojawia się dopiero grafika danej kultury."*
 **Objaw:** w kółku po lewej stronie plakietki miasta domyślnie widnieje **obrócony kwadrat
@@ -1879,7 +1879,7 @@ wartość. Ten błąd trafił do właściciela jako fakt.
 **Uwaga na kierunek zmiany:** źródłem prawdy są JSON-y w `gra/data/` (CLAUDE.md §2); panel Excel
 dogania JSON przez `gen-panel-*.py`, NIGDY odwrotnie.
 
-## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
+## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — próba naprawy wycofana świadomie, przyczyna zablokowania znaleziona**
 **Jego słowa:** *„tam jeszcze chciałem procentowy wzrost czyli na przykład 5 i pół procent
 o ile wyrośnie populacja a nie W5 bez litery W. na przykład 5 i pół procent albo 5 procent."*
 **Stan faktyczny:** plakietka miasta pokazuje **„ATENY · W5 · 1"** — segment `W5` to skrót,
@@ -1893,6 +1893,20 @@ wzroście zerowym lub ujemnym (głód) — czy pokazujemy `0 %`, znak minus, czy
 **Kotwice:** plakietka miasta w `gra/src/render/**` / `gra/src/ui/**`; wzrost populacji
 w `gra/src/game/turn-economy.ts`.
 **Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
+
+**PRÓBA NAPRAWY WYCOFANA (2026-08-08):** pierwsza próba użyła tylko 1 z 6 składników wzoru
+wzrostu (`racje` zamiast `computeGrowthPercentV85().total` — panel miasta pokazuje sumę 6
+składników: racje+małe miasto+spichlerz+zdrowie+szczęście+cywilizacja), co dałoby na
+plakietce INNĄ liczbę niż w panelu tego samego miasta. Operator poprawnie **wycofał** tę
+próbę zamiast wysłać złą liczbę. **Prawdziwa przeszkoda (potwierdzona w kodzie):** wartość
+z panelu to migawka z KOŃCA tury (`_setLastEmpireFoodTicks`, jedyne wywołanie wewnątrz
+`advanceEmpireFood`, jedyne wywołanie na końcu tury) — rozjedzie się z panelem, jeśli gracz
+zmieni racje/przydział robotników w trakcie tury. Realna naprawa wymaga albo (a) przeliczenia
+na żywo w miejscu renderu plakietki (wymaga dociągnięcia `zdrowie`/`szczęście`/`spichlerz`/
+`civKey` do `CityRenderOptions`, dziś ich tam nie ma), albo (b) świadomej decyzji, że
+plakietka może pokazywać migawkę z opóźnieniem — do rozstrzygnięcia, nie kodować na ślepo.
+**Do decyzji (ABC) pozostaje aktualne**: format zapisu + zachowanie przy głodzie/wzroście
+ujemnym, PLUS teraz też: migawka czy przeliczenie na żywo.
 
 ## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C`)
 **Jego słowa:** *„jakieś niezautoryzowane niby przemarsze, których ja nie widzę, bo ja nie widzę,

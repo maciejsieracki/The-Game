@@ -16,6 +16,9 @@ export {
   wallKindFromBuilt,
   cityMapBadgeKey,
   civInitialForIconId,
+  drawCityMapBadgeCanvas,
+  makeCityMapBadgeSprite,
+  setCityMapBadgeCivSigil,
 } from '../src/render/cityMapStatChip';
 `, 'utf8');
 
@@ -30,6 +33,46 @@ esbuild.buildSync({
   absWorkingDir: GRA,
   logLevel: 'silent',
 });
+
+// --- Atrapa DOM/kanwy: pigułka rysuje się na canvasie, a sygnet doczytuje przez Image. ---
+// Potrzebne dla asercji BUG-ETYKIETA-MIASTA-ROZMYTA (dpr) i BUG-IKONA-KULTURY-PLACEHOLDER
+// (kolejka onReady). Instalowane PRZED require(bundle).
+const stubCanvases = [];
+function makeStubCtx(canvas) {
+  let t = [1, 0, 0, 1, 0, 0];
+  return {
+    _transform: () => t,
+    setTransform(a, b, c, d, e, f) { t = [a, b, c, d, e, f]; },
+    save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {},
+    quadraticCurveTo() {}, closePath() {}, fill() {}, stroke() {}, clip() {},
+    arc() {}, clearRect() {},
+    drawImage() { canvas._imageCount++; },
+    createLinearGradient: () => ({ addColorStop() {} }),
+    measureText: (s) => ({ width: String(s).length * 9 }),
+    fillText(s) { canvas._texts.push(String(s)); },
+    font: '', fillStyle: '', strokeStyle: '', lineWidth: 1, textAlign: '', textBaseline: '',
+  };
+}
+function makeStubCanvas() {
+  const c = { width: 300, height: 150, _imageCount: 0, _texts: [], _ctx: null, nodeName: 'CANVAS' };
+  c.getContext = () => (c._ctx || (c._ctx = makeStubCtx(c)));
+  stubCanvases.push(c);
+  return c;
+}
+global.document = { createElement: (tag) => (tag === 'canvas' ? makeStubCanvas() : {}) };
+global.window = { devicePixelRatio: 1 };
+global.self = global;
+let pendingImageLoads = [];
+let deferImageLoads = false;
+global.Image = class {
+  constructor() { this.width = 64; this.height = 64; }
+  set src(_v) {
+    const fire = () => { if (this.onload) this.onload(); };
+    if (deferImageLoads) pendingImageLoads.push(fire); else fire();
+  }
+};
+global.HTMLImageElement = global.Image;
+global.btoa = (s) => Buffer.from(s, 'binary').toString('base64');
 
 const M = require(bundle);
 
@@ -150,6 +193,133 @@ assert(keyNieStolica === keyBase, 'brak isCapital === isCapital:false (ten sam k
 assert(M.civInitialForIconId('grecy') === 'G', 'grecy → G');
 assert(M.civInitialForIconId('rzym') === 'R', 'rzym → R');
 assert(M.civInitialForIconId('') === '?', 'pusty → ?');
+
+// --- BUG-ETYKIETA-MIASTA-ROZMYTA — gęstość pikseli tekstury pigułki ---------------
+// Kanwa musi rosnąć z window.devicePixelRatio (inaczej sprite rozmywa się przy zoomie),
+// ale aspect musi zostać bez zmian, żeby plakietka miała tę samą wielkość w świecie.
+const badgeBase = { cityName: 'Ateny', population: 5, defenseTier: 1, civIconId: 'grecy' };
+global.window.devicePixelRatio = 1;
+const canvasDpr1 = M.drawCityMapBadgeCanvas({ ...badgeBase });
+global.window.devicePixelRatio = 2;
+const canvasDpr2 = M.drawCityMapBadgeCanvas({ ...badgeBase });
+global.window.devicePixelRatio = 8;
+const canvasDpr8 = M.drawCityMapBadgeCanvas({ ...badgeBase });
+global.window.devicePixelRatio = 1;
+assert(
+  canvasDpr2.width === canvasDpr1.width * 2 && canvasDpr2.height === canvasDpr1.height * 2,
+  'dpr=2 → kanwa pigułki 2× w obu wymiarach (ostrość przy zoomie)',
+);
+assert(
+  Math.abs((canvasDpr2.width / canvasDpr2.height) - (canvasDpr1.width / canvasDpr1.height)) < 1e-9,
+  'dpr nie zmienia aspect → sprite tej samej wielkości w świecie',
+);
+assert(
+  canvasDpr8.width === canvasDpr1.width * 3 && canvasDpr8.height === canvasDpr1.height * 3,
+  'dpr=8 przycięte capem do 3× (bez patologicznych tekstur)',
+);
+assert(
+  canvasDpr2._ctx._transform()[0] === 2 && canvasDpr2._ctx._transform()[3] === 2,
+  'kontekst przeskalowany o dpr → geometria dalej liczona w px CSS',
+);
+
+// --- BUG-IKONA-KULTURY-PLACEHOLDER — kolejka onReady dla sygnetu w locie ----------
+// Dwie plakietki tej samej cywilizacji zamawiają ten sam sygnet; druga trafia, gdy pierwsza
+// jest jeszcze 'loading'. Obie muszą dostać przerysowanie, inaczej druga zostaje z rombem.
+M.setCityMapBadgeCivSigil(() => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M1 1"/></svg>');
+deferImageLoads = true;
+pendingImageLoads = [];
+const texCache = new Map();
+const spriteA = M.makeCityMapBadgeSprite({ ...badgeBase, cityName: 'Ateny', isCityState: true }, texCache);
+const spriteB = M.makeCityMapBadgeSprite({ ...badgeBase, cityName: 'Teby', isCityState: true }, texCache);
+const canvasA = spriteA.material.map.image;
+const canvasB = spriteB.material.map.image;
+assert(pendingImageLoads.length === 1, 'wspólny sygnet ładowany tylko raz dla obu plakietek');
+assert(
+  canvasA._texts.includes('◆') && canvasB._texts.includes('◆'),
+  'przed doczytaniem obie plakietki mają placeholder-romb (stan wyjściowy)',
+);
+const imgCountBefore = { a: canvasA._imageCount, b: canvasB._imageCount };
+canvasA._texts.length = 0;
+canvasB._texts.length = 0;
+pendingImageLoads.forEach((fire) => fire());
+assert(canvasA._imageCount > imgCountBefore.a, 'pierwszy zamawiający dostaje przerysowanie z sygnetem');
+assert(
+  canvasB._imageCount > imgCountBefore.b,
+  'DRUGI zamawiający (przegrał wyścig) też dostaje sygnet — brak trwałego rombu',
+);
+assert(
+  canvasB._texts.length > 0 && !canvasB._texts.includes('◆'),
+  'po doczytaniu druga plakietka przerysowana BEZ rombu',
+);
+
+// Przewiązanie sygnetu (setCityMapBadgeCivSigil leci z wireUnitRendererRingStance, m.in. przy
+// wypowiedzeniu wojny) NIE MOŻE gubić kolejki żądań będących w locie.
+deferImageLoads = true;
+pendingImageLoads = [];
+const texCacheWar = new Map();
+const spriteWar = M.makeCityMapBadgeSprite(
+  { ...badgeBase, cityName: 'Sparta', civIconId: 'persja', isCityState: true },
+  texCacheWar,
+);
+const canvasWar = spriteWar.material.map.image;
+assert(pendingImageLoads.length === 1, 'żądanie sygnetu Sparty wystartowało (w locie)');
+M.setCityMapBadgeCivSigil(() => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 2"/></svg>');
+const warImgBefore = canvasWar._imageCount;
+canvasWar._texts.length = 0;
+pendingImageLoads.forEach((fire) => fire());
+assert(
+  canvasWar._imageCount > warImgBefore,
+  'przewiązanie sygnetu w trakcie ładowania NIE gubi callbacku (brak trwałego rombu)',
+);
+// Najtrudniejszy przeplot: żądanie A w locie → przewiązanie (clear kasuje TYLKO bookkeeping,
+// prawdziwe ładowanie obrazka leci dalej) → żądanie B o TEN SAM sygnet trafia na pustą mapę
+// i idzie ścieżką „świeżego ładowania". Ta ścieżka MUSI dopisać się do kolejki A, nie nadpisać ją
+// — inaczej callback A ginie na zawsze i plakietka A zostaje z rombem.
+deferImageLoads = true;
+pendingImageLoads = [];
+const texCacheRace = new Map();
+const spriteRaceA = M.makeCityMapBadgeSprite(
+  { ...badgeBase, cityName: 'Memfis', civIconId: 'egipt', isCityState: true },
+  texCacheRace,
+);
+const canvasRaceA = spriteRaceA.material.map.image;
+assert(pendingImageLoads.length === 1, 'żądanie A (Memfis) wystartowało — sygnet w locie');
+// Przewiązanie w trakcie ładowania A: czyści civSigilImageById, więc znacznik 'loading' znika,
+// ale obrazek A wciąż się ładuje i jego onload dopiero nadejdzie.
+M.setCityMapBadgeCivSigil(() => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 3"/></svg>');
+const spriteRaceB = M.makeCityMapBadgeSprite(
+  { ...badgeBase, cityName: 'Teby', civIconId: 'egipt', isCityState: true },
+  texCacheRace,
+);
+const canvasRaceB = spriteRaceB.material.map.image;
+assert(
+  pendingImageLoads.length === 2,
+  'żądanie B po przewiązaniu startuje własne ładowanie (bookkeeping był wyczyszczony)',
+);
+assert(canvasRaceA !== canvasRaceB, 'A i B to dwie różne plakietki (różne klucze cache tekstur)');
+const raceImgBefore = { a: canvasRaceA._imageCount, b: canvasRaceB._imageCount };
+canvasRaceA._texts.length = 0;
+canvasRaceB._texts.length = 0;
+pendingImageLoads.forEach((fire) => fire());
+assert(
+  canvasRaceA._imageCount > raceImgBefore.a,
+  'przeplot A→clear→B: callback A NIE zginął — plakietka A dostała sygnet',
+);
+assert(
+  canvasRaceB._imageCount > raceImgBefore.b,
+  'przeplot A→clear→B: plakietka B też dostała sygnet',
+);
+// Warunek `_texts.length > 0` jest tu istotny: na kanwie, która NIE została przerysowana,
+// „brak rombu" byłby prawdziwy pusto (nic nie narysowano) i asercja nic by nie wykrywała.
+assert(
+  canvasRaceA._texts.length > 0 && !canvasRaceA._texts.includes('◆'),
+  'przeplot A→clear→B: plakietka A faktycznie przerysowana i BEZ rombu',
+);
+assert(
+  canvasRaceB._texts.length > 0 && !canvasRaceB._texts.includes('◆'),
+  'przeplot A→clear→B: plakietka B faktycznie przerysowana i BEZ rombu',
+);
+deferImageLoads = false;
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

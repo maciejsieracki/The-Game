@@ -63,6 +63,20 @@ const PROD_SLOT_W = 20;
 const GROWTH_SLOT_W = 30;
 const HOVER_ROW_H = 22;
 
+/**
+ * BUG-ETYKIETA-MIASTA-ROZMYTA — gęstość pikseli tekstury pigułki.
+ * Cała geometria niżej liczona jest w px CSS; kanwa dostaje `dpr`× tyle pikseli fizycznych,
+ * a kontekst jest przeskalowany, więc sprite ma tę samą wielkość w świecie (aspect bez zmian),
+ * a tekstura — `dpr`× więcej pikseli, więc nie rozmywa się przy przybliżeniu kamery.
+ * Cap 3 chroni przed patologicznymi rozmiarami tekstur na ekranach o bardzo wysokim DPI.
+ */
+const BADGE_MAX_DPR = 3;
+
+function badgePixelRatio(): number {
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+  return Math.min(Math.max(Number.isFinite(dpr) && dpr > 0 ? dpr : 1, 1), BADGE_MAX_DPR);
+}
+
 // --- MAP-UX-MARKER-Q1 = C — marker stolicy (obwódka + korona) --------------------
 /** Grubość obwódki pigułki ZWYKŁEGO miasta: 2 px na kanwie pigułki. */
 const PILL_RING_LINE_W = 2;
@@ -86,6 +100,13 @@ const CAPITAL_CROWN_H = 13;
 
 let civSigilSvgFn: ((civIconId: string) => string) | null = null;
 const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
+/**
+ * BUG-IKONA-KULTURY-PLACEHOLDER — kolejka `onReady` dla sygnetu, który jest właśnie w locie.
+ * Bez niej drugi (i każdy kolejny) zamawiający ten sam sygnet gubił callback, a że tekstura
+ * plakietki powstaje jednorazowo (`if (!tex)`), zostawał na niej romb-placeholder aż do najazdu
+ * kursorem (hover zmienia klucz cache → świeża tekstura trafiała już w gotowy obrazek).
+ */
+const civSigilPendingById = new Map<string, Array<(img: HTMLImageElement) => void>>();
 
 let leaderPortraitUrlFn: ((civIconId: string, era: number) => string | null) | null = null;
 const leaderPortraitImageByKey = new Map<string, HTMLImageElement | 'loading'>();
@@ -100,6 +121,11 @@ const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
 export function setCityMapBadgeCivSigil(fn: (civIconId: string) => string): void {
   civSigilSvgFn = fn;
   civSigilImageById.clear();
+  // UWAGA: `civSigilPendingById` celowo NIE jest czyszczone. Ta funkcja jest wołana z ciała
+  // `wireUnitRendererRingStance()` (main.ts:6217), a ono z 9 miejsc — także przy wypowiedzeniu
+  // wojny i zobowiązaniach sojuszniczych. Wyczyszczenie kolejki zgubiłoby callbacki żądań
+  // będących akurat w locie i plakietka zostałaby z rombem NA STAŁE — czyli dokładnie ten bug,
+  // który kolejka naprawia, tylko wyzwalany zdarzeniem dyplomatycznym.
 }
 
 /**
@@ -350,6 +376,13 @@ function civSigilCacheKey(civIconId: string): string {
   return (civIconId || '').trim().toLowerCase() || 'unknown';
 }
 
+/** Dopisuje callback do kolejki oczekujących na sygnet o danym kluczu (nigdy nie nadpisuje). */
+function queueCivSigilCallback(key: string, onReady: (img: HTMLImageElement) => void): void {
+  const queue = civSigilPendingById.get(key);
+  if (queue) queue.push(onReady);
+  else civSigilPendingById.set(key, [onReady]);
+}
+
 function requestCivSigilImage(
   civIconId: string,
   onReady: (img: HTMLImageElement) => void,
@@ -361,14 +394,25 @@ function requestCivSigilImage(
     onReady(cached);
     return;
   }
-  if (cached === 'loading') return;
+  // BUG-IKONA-KULTURY-PLACEHOLDER: żądanie w locie → dopisz callback do kolejki zamiast go zgubić.
+  if (cached === 'loading') {
+    queueCivSigilCallback(key, onReady);
+    return;
+  }
   const raw = civSigilSvgFn(civIconId);
   const svg = prepareSvgForCanvas(raw, CIV_SIGIL_STROKE);
   if (!svg) return;
   civSigilImageById.set(key, 'loading');
+  // Dopisanie (nie nadpisanie) jest tu istotne: `setCityMapBadgeCivSigil` czyści
+  // `civSigilImageById` przy każdym przewiązaniu, więc znacznik 'loading' może zniknąć,
+  // gdy poprzednie ładowanie wciąż trwa. Kolejka przeżywa taki reset i zostaje domknięta
+  // przez to ładowanie, które skończy się pierwsze.
+  queueCivSigilCallback(key, onReady);
   loadImageInto(svgToDataUri(svg), (img) => {
     civSigilImageById.set(key, img);
-    onReady(img);
+    const queue = civSigilPendingById.get(key) ?? [];
+    civSigilPendingById.delete(key);
+    for (const cb of queue) cb(img);
   });
 }
 
@@ -492,7 +536,26 @@ function drawHoverProdRow(
   }
 }
 
-/** Kompaktowa etykieta poziomu Wyżywienia (poziomRacji) — tylko miasta gracza. */
+/**
+ * Kompaktowa etykieta poziomu Wyżywienia (poziomRacji) — tylko miasta gracza.
+ *
+ * R-ETYKIETA-MIASTA-WZROST-PROCENT (NIEZREALIZOWANE — problem AKTUALNOŚCI, nie dostępu):
+ * właściciel chce tu procent wzrostu ludności zamiast skrótu „W5". Wartość MUSI być ta sama,
+ * którą pokazuje panel miasta (`view.wzrostProcent` = `computeGrowthPercentV85().total`,
+ * `—` przy głodzie), a nie sam składnik racji `rationGrowthPercent(level)` — ten drugi jest
+ * tylko jednym z sześciu składników sumy i dałby na mapie INNĄ liczbę niż w panelu.
+ *
+ * ⚠️ NIE podpinaj tu `getLastEmpireFoodTick(ownerId).perCityRows[]` (`.wzrostProcent`,
+ * `.nakarmione`). To źródło JEST dostępne — wyeksportowane w game/empire-food.ts:339
+ * i zaimportowane w main.ts:793 — ale jest to MIGAWKA Z KOŃCA TURY: `_setLastEmpireFoodTicks`
+ * woła się wyłącznie z `advanceEmpireFood` (empire-food.ts:291, jedyne wywołanie main.ts:20526).
+ * Gdy gracz w trakcie tury ruszy suwak Wyżywienia albo przestawi robotników, panel przeliczy
+ * się na żywo, a migawka zostanie stara → mapa i panel znowu pokażą DWIE RÓŻNE liczby, czyli
+ * dokładnie ten błąd, dla którego to wycofano. Żywej wartości dostarcza `computeView`
+ * (ui/cityPanel.ts) — prywatny, wymaga `map` + `data`; przewód trzeba poprowadzić przez
+ * `CityRenderOptions` (render/cities.ts::_buildBadgeInput) i dołożyć procent do
+ * `cityMapBadgeKey`, bo zmienia się co turę i tekstura z cache inaczej zwietrzeje.
+ */
 function drawGrowthLabel(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -567,9 +630,14 @@ function paintCityMapBadgeOntoCanvas(
   );
   const H = baseH + (hasHoverDetail ? HOVER_ROW_H : 0);
 
-  canvas.width = W;
-  canvas.height = H;
+  // BUG-ETYKIETA-MIASTA-ROZMYTA: kanwa w pikselach fizycznych (W×dpr, H×dpr), rysowanie
+  // dalej w px CSS dzięki przeskalowaniu kontekstu. Sprite liczy aspect z img.width/img.height,
+  // a oba wymiary rosną tym samym mnożnikiem → wielkość plakietki w świecie bez zmian.
+  const dpr = badgePixelRatio();
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
   const ctx = canvas.getContext('2d')!;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   ctx.clearRect(0, 0, W, H);
   const pillR = Math.min(H * 0.45, baseH * 0.45);
