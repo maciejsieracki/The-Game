@@ -1178,3 +1178,28 @@ playbook.json, fałszywe "Wdrożenie: gotowe"), checklista końcowa. Pointer dod
 (`R-AUTOBOT-EVALUATOR-WARSTWY-MODELI.md`), niedoliczone incydenty w §5. Runda 2 PASS —
 wszystkie braki zweryfikowane jako naprawione bezpośrednio w repo (nie na słowo).
 Model: Sonnet 5 (orkiestrator) + Opus 5 Evaluator (2 rundy).
+
+## R-PROFIL-TURNIEJ-UNIWERSALNY-Q1 (2026-08-08) — mechanizm "typ"+profil przeniesiony do lean-loop (uogólniony)
+**Decyzja Macieja:** wprost — "musimy to wprowadzić z nasadek ogólnych, ale mechanizm
+pozostaje ten sam, różni się tylko szczegółami" — przenieść poziom 2 turnieju (typ
+Proponentów + punktacja wg pamięci preferencji) do uniwersalnego skilla, bez treści
+specyficznej dla Civ, z wyraźnym celem: żeby żaden projekt nie sprawiał wrażenia, że
+"użytkownik mówi do ściany" (poprawki/sugestie/odpowiedzi giną między sesjami).
+**Wykonanie w `/root/.claude/skills/lean-loop/` (POZA tym repo, plik nie jest pod git —
+brak commita/push, tylko zapis decyzji tutaj):**
+- `references/playbook-pattern.md` — nowa sekcja "A second kind of memory: how the human
+  decides" (3 typy sygnału: forced-choice, korekty kierunku bez błędu, wolontariat
+  preferencji; osobny plik `decision-profile.md`; ten sam rygor statystyczny co playbook;
+  wpięcie w rytuał startu/zamknięcia sesji; twarda bariera "nigdy nie zastępuje pytania").
+- `references/high-stakes.md` — rozszerzona sekcja turnieju o "pick" + punktację Sędziego
+  wg tej pamięci.
+- `references/error-protocol.md` — rozróżnienie błąd (rejestr błędów) vs preferencja
+  (nowy rejestr), żeby dwa rejestry się nie nakładały.
+- `SKILL.md` — zaktualizowany opis trybu "memory".
+**Werdykt Evaluatora (Opus 5, 2 rundy):** runda 1 PASS-WITH-NOTES — 4 uwagi (wiszący
+odsyłacz do nieistniejącej sekcji turnieju w tym samym pliku, jednokierunkowe nakładanie
+się rejestru błędów i nowego rejestru, brak rytuału startu dla nowego pliku pamięci,
+bariera słabsza niż reszta "Immovable barriers"). Runda 2 PASS po naprawie wszystkich
+czterech, zweryfikowane bezpośrednio w plikach. Zero przecieków Civ/PL/nazw modeli
+potwierdzone grepem w obu rundach.
+Model: Sonnet 5 (orkiestrator) + Opus 5 Evaluator (2 rundy).
