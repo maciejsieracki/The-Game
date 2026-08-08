@@ -1231,9 +1231,9 @@ Model: Sonnet 5 (orkiestrator, wykonanie scalenia po wyraźnej zgodzie Macieja).
 ## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08) — nowe zgłoszenie z playtestu
 **Jego słowa:** „podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
 co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
-ulepszeń." Zarejestrowane w `dyspozycje/PYTANIA-OTWARTE.md`. Nie zdiagnozowane jeszcze
-w kodzie — do zbadania, czy zablokowanie zoomu jest celowe (ochrona trybu placementu przed
-scrollem) czy przypadkowy efekt uboczny.
+ulepszeń." — **NAPRAWIONE**: jeden warunek blokował jednocześnie przeciąganie i zoom;
+rozdzielone na `blockPointerAt`/`blockWheelAt` w `camera.ts`. Evaluator PASS-WITH-NOTES po
+dołożeniu testu regresji (`camera-zoom-block-test.cjs`, 4/4). Czeka na deploy+playtest.
 
 ## R-AUDYT-ZGLOSZEN-2-DNI (2026-08-08) — pełny audyt zgłoszeń Macieja z ostatnich 2 dni
 **Prośba:** sprawdzić wszystkie błędy zgłoszone przez właściciela w ciągu ostatnich 2 dni,

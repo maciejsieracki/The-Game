@@ -2290,7 +2290,7 @@ decyzji: albo poprawić `playbook.json` na `10` (zgodnie z kanonem), albo cofną
 `5` (jeśli `10` było error/nieaktualną decyzją), albo rozszerzyć generator o pole
 `thresholds` w `playbook.md`. Nie blokuje niczego pilnie — czysto informacyjne.
 
-## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
 co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
 ulepszeń."*
@@ -2302,6 +2302,20 @@ celu ulepszenia — czy to celowe zablokowanie zoomu na czas trybu placementu (n
 gubić trybu przy scrollu), czy przypadkowy efekt uboczny nasłuchu zdarzeń.
 **Kotwice:** `gra/src/render/**` (kamera/zoom), `gra/src/ui/**` (tryb budowania ulepszeń).
 **Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
+
+**NAPRAWIONE (2026-08-08):** `gra/src/render/camera.ts` miał jeden warunek (`blockPointerAt`)
+blokujący jednocześnie przeciąganie mapy (`_onMouseDown`) i scroll/zoom (`_onWheel`) w trybie
+budowania ulepszeń/zakładania miasta — zamierzone dla przeciągania (żeby klik trafiał w
+placement, nie w pan), przypadkowy efekt uboczny dla zoomu. Rozdzielone na dwa warunki:
+`blockPointerAt` (bez zmian, nadal blokuje przeciąganie) i nowy `blockWheelAt` (blokuje zoom
+tylko nad panelem miasta, nie w trybie budowania). Domyślnie każdy inny konsument
+`CameraController` bez jawnego `blockWheelAt` zachowuje stare zachowanie (fallback na
+`blockPointerAt`) — potwierdzone: 6 miejsc tworzenia `CameraController` w `main.ts`, wszystkie
+przez ten sam `cameraControllerOpts()`, żaden inny system (bitwa, drzewko technologii,
+podgląd cudu) nie współdzieli tej kamery. Zweryfikowane przez Evaluatora (Opus 5,
+PASS-WITH-NOTES po rundzie poprawek — dodano test regresji
+`gra/tools/camera-zoom-block-test.cjs`, 4/4: repro, negacja, fallback, brak regresji
+przeciągania). `npx tsc --noEmit` czyste.
 
 ## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — nowe zgłoszenie, nie regresja**
 **Jego słowa:** „brakuje danych z całej cywilizacji, jeżeli chodzi o te elementy, które są w
@@ -2323,7 +2337,7 @@ per-lokalizacja), tylko dla tych sześciu wskaźników.
 `gra/src/main.ts`.
 **Model:** czysty UI w `cityPanel.ts` — Sonnet 5 wystarczy (nie `render/**`).
 
-## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — KONFLIKT Z WCZEŚNIEJSZYM POLECENIEM, WSTRZYMANE, CZEKA NA DECYZJĘ**
 **Jego słowa:** „bardzo często jest problem że w kolejce jednostek kiedy naciśniemy spację
 zamiast przechodzić do kolejnej która ma wolne ruchy przechodzi do jakiejś kolejnej która nie
 wiem jest w kolejce jakiejś zawsze ruch powinien po spacji powinien odbywać się od
@@ -2339,6 +2353,26 @@ cyklowania nie gubi/pomija jednostek spełniających warunek.
 **Kotwice:** `gra/src/ui/**` (obsługa klawiszy, panel jednostek), `gra/src/main.ts` (stan tury,
 lista jednostek z ruchem).
 **Model:** Sonnet 5 (logika UI/tury, nie `render/**`).
+
+**⛔ KONFLIKT ZNALEZIONY PRZEZ EVALUATORA (2026-08-08):** naprawa (przywrócenie filtra
+„tylko jednostki z ruchem" w `cyclablePlayerArmyLeads()`, `main.ts`) **cofa jawne, wcześniejsze
+polecenie Macieja z 2026-07-28** (`docs/archiwum-czatow/.../MASTER-Work_KORESPONDENCJA.md`,
+dwukrotnie): *„Danej spacji miało zmieniać jednostki na następną **niezależnie od tego, czy ma
+ona ruch, czy nie**."* — dokładnie zaimplementowane w FALA 64 (commit `953e689f`), zalogowane
+jako dostarczone w `WERSJE.md:1255`. Dziś (08.08) Maciej mówi coś przeciwnego: cyklowanie ma
+iść WYŁĄCZNIE po jednostkach z ruchem. **Dwa jego własne polecenia, w różnym czasie, są ze
+sobą sprzeczne** — per CLAUDE.md §7 („nie zgaduj przy niejednoznaczności — pytaj") to
+wymaga jego decyzji, nie cichego wyboru przez agenta.
+**Dodatkowe ustalenie Evaluatora:** ścisły filtr (tylko z ruchem) ma nieprzetestowany efekt
+uboczny na 2 z 4 miejsc użycia tej samej funkcji: gdy WSZYSTKIE jednostki wyczerpią ruch,
+Spacja odznacza zaznaczenie zamiast cyklować (`clearPlayerUnitSelection()`), a strzałki
+◀▶ w HUD armii (`armyStackHud.ts:226`, dodane 2026-07-27 jako przeglądanie „stylem
+miasta") zostają całkowicie wyłączone (`canCycleUnits() → false`). Trzeci punkt: kolejność
+cyklowania to globalne sortowanie przestrzenne `(q+r,q,r)`, nie faktycznie „najbliższa" liczona
+od aktualnie wybranej jednostki — więc nawet ze ścisłym filtrem fraza „od najbliższej możliwej"
+nie jest w pełni spełniona.
+**Naprawa GOTOWA W KODZIE (worktree `agent-a268a6afcf89df0e1`, commit `a9efb243`), ale
+WSTRZYMANA do decyzji właściciela** — nie scalać bez jego odpowiedzi.
 
 ## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — POTWIERDZONY REGRES, przyczyna znaleziona**
 **Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
@@ -2690,3 +2724,14 @@ wzorzec kolejkowania callbacków jak w naprawie `BUG-IKONA-KULTURY-PLACEHOLDER`.
 **Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestLeaderPortraitImage`,
 `requestProdIconImage`).
 **Model:** Opus 5 (render/**).
+
+## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **OTWARTE**
+Dla pakietów PRZYCHODZĄCYCH (`allIncoming`) panel liczy `canAccept = net &gt;= 0` na sumie
+całego stołu (`diplomacyAcceptanceBalance.ts:252-254`), więc przycisk „Przyjmij" bywa aktywny
+gdy suma jest dodatnia. Ale realne wykonanie (`main.ts:11977`,
+`handleNegotiationAcceptPackage` → `handleNegotiationAccept` per `id`) woła
+`previewIncomingPlayerAccept` osobno na każdą pozycję i odrzuca tę, która sama nie spełnia
+progu — efekt: **pakiet stosuje się częściowo**, z komunikatem w toaście (`showHintMessage`)
+zamiast blokadą całości. Niezależny od tego, jak rozstrzygnie się `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2`.
+**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts:252-254`, `gra/src/main.ts:11977`.
+**Model:** Sonnet 5.

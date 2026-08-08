@@ -1357,6 +1357,15 @@ async function boot(): Promise<void> {
           if (foundCityMode || (buildModeOpen && (activeImprovementKey || activeWonderId))) return true;
           return false;
         },
+        // BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (Maciej 2026-08-08): zoom kółkiem NIE korzysta
+        // z pełnego blockPointerAt powyżej — ten blokuje też podczas trybu zakładania miasta
+        // i trybu stawiania ulepszenia/cudu (po wybraniu celu), żeby drag/klik trafiał w
+        // placement, a nie w pan kamery. Zoom nie koliduje z placementem (nie przesuwa targetu
+        // ani nie zmienia wskazywanego heksu w płaszczyźnie XZ), więc gracz ma nadal móc
+        // przybliżać/oddalać mapę, żeby precyzyjnie wskazać heks — blokujemy zoom tylko, gdy
+        // kursor faktycznie jest nad panelem UI miasta (scroll nad panelem nie ma zoomować mapy
+        // pod spodem).
+        blockWheelAt: (x, y) => isPointOverCityPanelUi(x, y),
         // C-EDGEPAN-Q1=B (Maciej 2026-07-25): edge-pan ZAWSZE aktywny na mapie świata
         // (konwencja 4X), niezależnie od zaznaczenia jednostki. isWorldMapUnitMode() nadal
         // wyklucza panele/nakładki (miasto, bitwa, oblężenie…), żeby mapa nie „uciekała"
