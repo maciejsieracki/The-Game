@@ -138,6 +138,9 @@ drobny drift procesu.
 każda zmiana zapisana do repozytorium i każda liczba podana właścicielowi jako fakt
 przechodzi przez osobnego Evaluatora na Opus 5; orkiestrator jest wtedy Operatorem
 własnej zmiany i **nie ocenia sam siebie**. Czynności czysto odczytowe są wyłączone.
+Furtka z `lean-loop` („gdy nie ma niezależnego recenzenta, przejdź listę sam i oznacz werdykt
+jako samoocenę") **w tym repozytorium nie obowiązuje**: subagent-Evaluator jest zawsze
+dostępny, więc „nie było kogo zapytać" nigdy nie jest tu usprawiedliwieniem.
 
 **Self-check przed „gotowe":** był Operator? był Evaluator? był final? playbook
 i guardrails uszanowane? Choć jedno „nie" → nie zamykaj paczki.
@@ -147,7 +150,21 @@ i guardrails uszanowane? Choć jedno „nie" → nie zamykaj paczki.
 
 - **„Zwycięzca testu"** (zmiana progu / uznanie wariantu za lepszy) — `canDeclareWinner` / `assertEvaluationDelay` wymagają **N ≥ 1000 zastosowań LUB ≥ 48 h**. Nigdy po jednym runie.
 - **Feature pruning** — atrybut o **|korelacji Pearsona| < 0,05** względem sukcesu wypada z kontekstu Operatora (`action_taken: "Removed feature X"`); śmieciowego kontekstu nie pakujesz.
+- **Wycofywanie zasad jest zautomatyzowane** (`retireWeakRules`, `dyspozycje/autobot/src/playbook-manager.ts`): `win_rate < deprecateBelowWinRate` (0,3) po co najmniej `minRunsForSignificance` zastosowaniach → `RETIRED` + przeniesienie do `quarantine_rules`. Zasada **CHRONIONA** (`protected: true`) jest z tego automatu **wyłączona bez względu na liczniki** — status nadaje wyłącznie właściciel.
+  **Rozbieżność do rozstrzygnięcia przez właściciela:** kanon v2 i wartość domyślna w kodzie to **10** zastosowań (`R-PROC-AUTOBOT` §v2 · `dyspozycje/autobot/README.md`: „podniesiony z 5 do 10"), ale żywy `dyspozycje/autobot/playbook.json` ma dziś **`minRunsForSignificance: 5`** — a generator `playbook-md-to-json.cjs` przepisuje `thresholds` bez zmian, więc 5 obowiązuje aż do ręcznej poprawki. Odczytaj wartość z pliku, nie z pamięci.
+- **`promoteMinWinRate = 0,6` nie jest progiem powrotu zasady do AKTYWNEJ** — takiej ścieżki w kodzie nie ma, wycofaną przywraca wyłącznie człowiek. To domyślna wartość `min_confidence_threshold`: progu, od którego zasada ACTIVE w ogóle trafia do promptu Operatora (`getOperatorSystemRules`; zasada z 0 runów i zasada CHRONIONA przechodzą zawsze).
 - **`R-PROC-POTROJNA-WARSTWA` jest WBUDOWANA w kroki 1–3** pętli Operator → Evaluator → final — nie jest osobnym, opcjonalnym rytuałem, którego można „nie odpalić przy drobiazgu".
+
+**Bariery są w KODZIE, nie tylko w prompcie** (`dyspozycje/autobot/src/guardrails.ts`) — prompt
+agent zawsze może sobie zreinterpretować, uprawnienia nie. `assertActionAllowed` działa
+**deny-by-default**: akcja spoza `CATALOG` jest odrzucana. `FORBIDDEN_ACTION_IDS` ma 10 pozycji,
+z czego siedem jest zablokowanych twardo, bez żadnej furtki: `git-merge-main` ·
+`git-push-main-force` · `npm-run-build-gra` · `npm-run-dev-gra` · `delete-gra-data` ·
+`mass-mail` · `real-money-transfer`. Pozostałe trzy to `deploy-robocza` / `-kanon` / `-finalna`
+— jedyne z bramką ratunkową: przechodzą wyłącznie z `humanApproved` **i** `deployPasswordGiven`.
+`assertProdIsolation` blokuje wszystko z tej listy i każde `deploy-*` przy `env=production`. To jest
+mechaniczne wymuszenie zakazów z §6 — nie zastępuje ich czytania, ale to ono jest ostatnią
+linią, gdy pętla zawiedzie.
 
 ## 5. Izolacja pracy subagentów
 
