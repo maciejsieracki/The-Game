@@ -2205,17 +2205,17 @@ console.log('\n--- T7D-f: bez defensiveCopy -> foundCityAt gdy stac (regresja) -
 // TESTY T8: R-AI-KOLONIZACJA — pop≥5, dystans 4, surge MP
 // ============================================================================
 
-console.log('\n--- T8a: AI-FOUND-Q1=A pickSourceCityForFounding wymaga pop >= 2 ---');
+console.log('\n--- T8a: R-AI-FOUNDING-THROTTLE-Q1=A pickSourceCityForFounding wymaga pop >= 3 ---');
 {
   const cities8a = [
-    { id: 'c-low', ownerId: 1, population: 1 },
-    { id: 'c-ok', ownerId: 1, population: 2 },
+    { id: 'c-low', ownerId: 1, population: 2 },
+    { id: 'c-ok', ownerId: 1, population: 3 },
   ];
-  const srcLow = pickSourceCityForFounding(cities8a.filter(c => c.population < 2), 1);
-  assert(srcLow === null, 'T8a: pop 1 -> brak zrodla');
+  const srcLow = pickSourceCityForFounding(cities8a.filter(c => c.population < 3), 1);
+  assert(srcLow === null, 'T8a: pop 2 -> brak zrodla');
   const srcOk = pickSourceCityForFounding(cities8a, 1);
-  assert(srcOk && srcOk.id === 'c-ok', 'T8a: pop 2 -> zrodlo OK');
-  eq(AI_FOUNDING_SOURCE_MIN_POP, 2, 'T8a: prog min pop AI = 2');
+  assert(srcOk && srcOk.id === 'c-ok', 'T8a: pop 3 -> zrodlo OK');
+  eq(AI_FOUNDING_SOURCE_MIN_POP, 3, 'T8a: prog min pop AI = 3');
   eq(AI_COLONIZATION_SOURCE_MIN_POP, 5, 'T8a: prog kolonizacji AI bez zmian');
 }
 

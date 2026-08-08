@@ -2608,7 +2608,7 @@ raportowi). 19 pakietów testów, wszystkie zielone, `tsc` czyste.
 testu — poprawiona wartość startowa (10 szt., nie 1) jest dziś niczym niechroniona przed
 przyszłą regresją.
 
-## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDECYDOWANE — A, próg 3 (2026-08-08) — w realizacji** (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: nadal niezdiagnozowana**
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: NAPRAWIONE (kod), czeka na deploy+playtest** (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: nadal niezdiagnozowana**
 **Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
 być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
 jakby ich nie było. Dodatkowo, te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają
@@ -2688,6 +2688,13 @@ Hipoteza właściciela („zjada swoją ludność") trafna. Łańcuch:
 runtime.
 **Model:** populacja/AI → Sonnet 5 (`game/**`); jeśli naprawa granic dotknie `render/**` →
 Opus 5 per zgoda stała CLAUDE.md §4.
+
+**NAPRAWIONE — CZĘŚĆ POPULACJA (2026-08-08):** `AI_FOUNDING_SOURCE_MIN_POP` z 2 na 3
+(`gra/src/game/city-founding.ts`). Evaluator (Opus 5) PASS-WITH-NOTES — potwierdził efekt
+uczciwie: **pętla nie znika, tylko przesuwa się z 1↔2 na 2↔3** (świadomie zaakceptowane
+ryzyko z `docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`). Jeśli po playteście problem nadal
+widoczny — do rozważenia wariant B (cooldown per-miasto) jako dopełnienie. `ai-test.cjs`
+274/8 (8 pre-istniejących, niezwiązanych), `tsc` czyste.
 
 ## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile
