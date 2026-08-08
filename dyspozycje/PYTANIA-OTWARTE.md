@@ -2317,7 +2317,7 @@ PASS-WITH-NOTES po rundzie poprawek — dodano test regresji
 `gra/tools/camera-zoom-block-test.cjs`, 4/4: repro, negacja, fallback, brak regresji
 przeciągania). `npx tsc --noEmit` czyste.
 
-## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — nowe zgłoszenie, nie regresja**
+## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** „brakuje danych z całej cywilizacji, jeżeli chodzi o te elementy, które są w
 podglądzie miasta. Mówię tu o pracy, żywności, skarbcu, nauce, kulturze i religii. Potrzebny
 jest stan całej cywilizacji i plus to, co jest w danym mieście, ale mniejszymi cyframi. Czyli
@@ -2336,6 +2336,17 @@ per-lokalizacja), tylko dla tych sześciu wskaźników.
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`buildCityOnlyW3FlankChips`), dane cywilizacji z
 `gra/src/main.ts`.
 **Model:** czysty UI w `cityPanel.ts` — Sonnet 5 wystarczy (nie `render/**`).
+
+**NAPRAWIONE (2026-08-08):** każdy z 6 chipów pokazuje teraz dużą liczbę = agregat
+cywilizacji (z tego samego, silnikowego źródła co główny HUD mapy — `buildHudState()`,
+`empire-hud-totals.ts`, nowy plik) + małą liczbę `+N`/`−N` = wkład TEGO miasta. Po jednej
+naprawie od Evaluatora (błąd kompilacji + reimplementacja agregacji zamiast reużycia
+istniejącego, silnikowego źródła prawdy) — Evaluator (Opus 5) PASS-WITH-NOTES. Nowy test
+`gra/tools/hud-miasto-stan-cywilizacji-test.cjs`, 20/20. `tsc` czyste.
+**⚠️ Do wiedzy przy playteście:** duża liczba jest NETTO (po utrzymaniu ulepszeń, tak jak
+główny HUD), mała liczba per-miasto jest BRUTTO — sumy miast NIE zsumują się dokładnie do
+liczby cywilizacji dla Pracy/Skarbca/Żywności. Celowe (spójność z głównym HUD), ale może być
+odczytane jako błąd, jeśli ktoś spróbuje to zsumować ręcznie.
 
 ## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — KONFLIKT Z WCZEŚNIEJSZYM POLECENIEM, WSTRZYMANE, CZEKA NA DECYZJĘ**
 **Jego słowa:** „bardzo często jest problem że w kolejce jednostek kiedy naciśniemy spację

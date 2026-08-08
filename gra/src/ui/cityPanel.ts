@@ -59,6 +59,7 @@ import {
 } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
+import { civWideSixStatsFromEmpireSnap } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
@@ -1317,6 +1318,11 @@ function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | nul
   let naukaRate = 0;
   let kulturaRate = 0;
   let zywnoscRate = 0;
+  // R-HUD-MIASTO-STAN-CYWILIZACJI: brakowało religii w tej (nieengine'owej,
+  // np. miasta AI) ścieżce — dogrywamy sumę tym samym polem co CityOnly
+  // (cfg.getReligionState(cityId).przyrostWiernych), analogicznie do reszty
+  // pól wyżej i do relAgg.spreadRateTotal po stronie silnika (getEmpireHud).
+  let religionRate = 0;
   for (const c of peers) {
     const v = computeView(c, map, data);
     if (!v) continue;
@@ -1325,6 +1331,7 @@ function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | nul
     naukaRate += v.nauka;
     kulturaRate += v.kultura;
     zywnoscRate += v.zywnoscNetto;
+    religionRate += Math.round(cfg.getReligionState?.(c.id)?.przyrostWiernych ?? 0);
   }
   const foodSt = cfg.getEmpireFoodState?.(city.ownerId);
   const foodTick = cfg.getEmpireFoodTick?.(city.ownerId);
@@ -1336,6 +1343,7 @@ function resolveEmpireSnap(city: City, map: GameMap | null, data: GameData | nul
     zywnoscReserve: foodSt?.zapasyPanstwa,
     zywnoscRate: foodTick != null ? foodTick.zapasyPo - foodTick.zapasyPrzed : zywnoscRate,
     kulturaRate,
+    religionRate,
   };
 }
 
@@ -2114,6 +2122,11 @@ function ensureStyles(): void {
 .civ-v-w3-chip-val.blue{color:#7cb4e4;}
 .civ-v-w3-chip-val.green{color:var(--green);}
 .civ-v-w3-chip-val.red{color:var(--red);}
+/* R-HUD-MIASTO-STAN-CYWILIZACJI: wkład TEGO miasta — mała liczba obok dużej sumy
+   cywilizacji (.civ-v-w3-chip-val), ta sama konwencja co .civ-v-res-delta niżej. */
+.civ-v-w3-chip-delta{font-size:0.62em;font-weight:700;margin-left:0.18em;line-height:1;}
+.civ-v-w3-chip-delta.green{color:var(--green);}
+.civ-v-w3-chip-delta.red{color:var(--red);}
 .civ-v-w3-chip-sep{width:1px;height:1.45em;background:rgba(232,216,138,0.2);flex-shrink:0;}
 .civ-v-w3-top-actions{display:flex;align-items:center;gap:0.75rem;flex-shrink:0;margin-left:0.35rem;}
 .civ-v-exit-map-btn{display:inline-flex;align-items:center;gap:0.38em;padding:0.38em 0.85em 0.38em 0.65em;
@@ -8680,61 +8693,91 @@ function w3CityChip(
   cls: string,
   statId: string,
   hint: string,
+  /** R-HUD-MIASTO-STAN-CYWILIZACJI: wkład TEGO miasta — mała liczba obok dużej
+   *  (`val`, suma całej cywilizacji). Ten sam field co `val` przed zsumowaniem. */
+  cityDelta?: number,
 ): string {
+  const d = cityDelta !== undefined ? fmtResDelta(Math.round(cityDelta)) : { html: '', cls: '' };
   return `<button type="button" class="civ-v-w3-chip civ-v-res-interactive" data-res-stat="${statId}" ` +
     `title="${hint.replace(/"/g, '&quot;')}" aria-label="${hint.replace(/"/g, '&quot;')}">` +
     `<span class="civ-v-w3-chip-icon">${icon}</span>` +
     `<span class="civ-v-w3-chip-lbl">${label}</span>` +
     `<span class="civ-v-w3-chip-val ${cls}">${val}</span>` +
+    (d.html ? `<span class="civ-v-w3-chip-delta ${d.cls}">${d.html}</span>` : '') +
     `</button>`;
 }
 
-/** Górny pasek widoku miasta — chipy po bokach nazwy miasta (lewo: ekonomia, prawo: kultura/nauka). */
-function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | null): { left: string; right: string } {
+/**
+ * Górny pasek widoku miasta — chipy po bokach nazwy miasta (lewo: ekonomia, prawo: kultura/nauka).
+ * R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08): duża liczba w każdym chipie = suma całej
+ * cywilizacji (z `resolveEmpireSnap`, ten sam source-of-truth co reszta panelu i głównego
+ * HUD mapy); mała liczba (`+N`/`−N`) = wkład/ubytek TEGO miasta — jak `resGlobalLocal` niżej.
+ */
+function buildCityOnlyW3FlankChips(
+  city: City,
+  view: CityView,
+  data: GameData | null,
+  map: GameMap | null,
+): { left: string; right: string } {
   const pracaSplit = cityPracaSplit(city, view, data);
-  const pracaCls = pracaSplit.total > 0 ? 'green' : pracaSplit.total < 0 ? 'red' : '';
 
   const splitHandel = readPodzialHandlu(city, data);
   const est = estimateHandelChips(view, splitHandel);
-  const goldCls = view.pieniadz > 0 ? 'green' : view.pieniadz < 0 ? 'red' : '';
   const skarbHandel = est.skarb;
   const wealthHandel = est.zam;
   const daninaLblChip = daninaLabelForCity(city);
 
   const foodSplit = cityFoodSplit(view);
-  const foodCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : '';
-
-  const kultCls = view.kultura > 0 ? 'gold' : view.kultura < 0 ? 'red' : '';
-  const naukaCls = view.nauka > 0 ? 'blue' : view.nauka < 0 ? 'red' : 'blue';
 
   const relSt = cfg.getReligionState?.(city.id);
   const cityRel = Math.round(relSt?.przyrostWiernych ?? 0);
-  const relCls = cityRel > 0 ? 'gold' : cityRel < 0 ? 'red' : '';
+
+  const empire = resolveEmpireSnap(city, map, data);
+  const civ = civWideSixStatsFromEmpireSnap(empire, {
+    praca: pracaSplit.total,
+    zywnosc: foodSplit.total,
+    zloto: view.pieniadz,
+    nauka: view.nauka,
+    kultura: view.kultura,
+    religia: cityRel,
+  });
+  const pracaCls = civ.praca > 0 ? 'green' : civ.praca < 0 ? 'red' : '';
+  const foodCls = civ.zywnosc > 0 ? 'green' : civ.zywnosc < 0 ? 'red' : '';
+  const goldCls = civ.zloto > 0 ? 'green' : civ.zloto < 0 ? 'red' : '';
+  const naukaCls = civ.nauka > 0 ? 'blue' : civ.nauka < 0 ? 'red' : 'blue';
+  const kultCls = civ.kultura > 0 ? 'gold' : civ.kultura < 0 ? 'red' : '';
+  const relCls = civ.religia > 0 ? 'gold' : civ.religia < 0 ? 'red' : '';
 
   const economyRow = [
     w3CityChip(
       cityPanelChipIcon('res-work', 20),
       'Praca',
-      signed(pracaSplit.total),
+      signed(civ.praca),
       pracaCls,
       'praca',
-      `Praca tego miasta · budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}`,
+      `Praca całej cywilizacji ${signed(civ.praca)} · to miasto ${signed(pracaSplit.total)} ` +
+        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)})`,
+      pracaSplit.total,
     ),
     w3CityChip(
       cityPanelChipIcon('res-food', 20),
       'Żywność',
-      signed(foodSplit.total),
+      signed(civ.zywnosc),
       foodCls,
       'zywnosc',
-      `Bilans żywności: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ${signed(foodSplit.total)} · WZROST ${view.wzrostProcent}%`,
+      `Bilans żywności całej cywilizacji ${signed(civ.zywnosc)} · to miasto: produkcja ${signed(foodSplit.produkcja)} ` +
+        `− racje ${foodSplit.racje} = ${signed(foodSplit.total)} · WZROST ${view.wzrostProcent}%`,
+      foodSplit.total,
     ),
     w3CityChip(
       cityPanelChipIcon('res-treasury', 20),
       'Skarbiec',
-      signed(view.pieniadz),
+      signed(civ.zloto),
       goldCls,
       'zloto',
-      `Netto pieniędzy tego miasta → skarbiec · ${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
+      `Netto pieniędzy całej cywilizacji ${signed(civ.zloto)} → skarbiec · to miasto ${signed(view.pieniadz)} · ` +
+        `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
+      view.pieniadz,
     ),
   ].join('');
 
@@ -8742,26 +8785,29 @@ function buildCityOnlyW3FlankChips(city: City, view: CityView, data: GameData | 
     w3CityChip(
       cityPanelChipIcon('res-science', 20),
       'Nauka',
-      signed(view.nauka),
+      signed(civ.nauka),
       naukaCls,
       'nauka',
-      `Nauka generowana w tym mieście`,
+      `Nauka generowana przez całą cywilizację ${signed(civ.nauka)} · to miasto ${signed(view.nauka)}`,
+      view.nauka,
     ),
     w3CityChip(
       cityPanelChipIcon('res-culture', 20),
       'Kultura',
-      signed(view.kultura),
+      signed(civ.kultura),
       kultCls,
       'kultura',
-      `Kultura generowana w tym mieście`,
+      `Kultura generowana przez całą cywilizację ${signed(civ.kultura)} · to miasto ${signed(view.kultura)}`,
+      view.kultura,
     ),
     w3CityChip(
       cityPanelChipIcon('res-religion', 20),
       'Religia',
-      signed(cityRel),
+      signed(civ.religia),
       relCls,
       'religia',
-      `Przyrost wiernych w tym mieście`,
+      `Przyrost wiernych całej cywilizacji ${signed(civ.religia)} · to miasto ${signed(cityRel)}`,
+      cityRel,
     ),
   ].join('');
 
@@ -8931,7 +8977,7 @@ function renderCivResourceTopBar(
   data: GameData | null,
   _onClose?: () => void,
 ): void {
-  const flank = view ? buildCityOnlyW3FlankChips(city, view, data) : { left: '', right: '' };
+  const flank = view ? buildCityOnlyW3FlankChips(city, view, data, map) : { left: '', right: '' };
   const multi = ownerCities(city).length > 1;
   const navDis = multi ? '' : 'disabled';
   mount.innerHTML =

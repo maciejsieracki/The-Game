@@ -1312,13 +1312,17 @@ pojęcie dostępu) — wdrożenie 05.08 poszło za starszą, unieważnioną już
 **Do decyzji Macieja:** czy sekcja „Dostęp — nie magazynowane" w panelu imperium ma wrócić do
 pokazywania `stock/cap` (cofnięcie `331aa180`) czy zostać czysto informacyjna.
 
-## R-HUD-MIASTO-STAN-CYWILIZACJI + R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08) — dwa nowe zgłoszenia zarejestrowane
-Zarejestrowane w `PYTANIA-OTWARTE.md` z pełnymi cytatami: (1) górny pasek panelu miasta
-pokazuje wyłącznie wartości TEGO miasta (`buildCityOnlyW3FlankChips`, cityPanel.ts:8692) —
-brak sumy całej cywilizacji obok; (2) klawisz Spacja czasem zapętla się na jednostkach, które
-już wykonały ruch, zamiast przechodzić do najbliższej z dostępnym ruchem. Żadne z nich nie
-było wcześniej zgłoszone (sprawdzone grepem). Nie zdiagnozowane jeszcze w kodzie poza (1),
-gdzie potwierdzono brak wariantu „empire" funkcji nagłówka.
+## R-HUD-MIASTO-STAN-CYWILIZACJI — NAPRAWIONE, czeka na deploy+playtest
+6 chipów nagłówka miasta (Praca/Żywność/Skarbiec/Nauka/Kultura/Religia) pokazuje teraz dużą
+liczbę = agregat cywilizacji z tego samego silnikowego źródła co główny HUD mapy + małą
+liczbę = wkład tego miasta. Evaluator (Opus 5) PASS-WITH-NOTES po jednej rundzie poprawek
+(błąd kompilacji + reużycie istniejącej agregacji zamiast nowej). Test 20/20. **Do wiedzy:**
+duża liczba NETTO, mała BRUTTO — nie zsumują się dokładnie. Pełne kotwice w
+`PYTANIA-OTWARTE.md`.
+
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — patrz osobny, zaktualizowany wpis w `PYTANIA-OTWARTE.md`
+(rozstrzygnięcie: Spacja = tylko z ruchem, strzałki HUD = wszystkie jednostki, dwie osobne
+kontrolki — decyzja właściciela 2026-08-08).
 
 ## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08) — nowe zgłoszenie z playtestu
 **Jego słowa:** „powinny być pokazywane tylko technologie te które są niedostępne dla innej
