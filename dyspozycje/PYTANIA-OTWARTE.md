@@ -1670,7 +1670,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## P-AI-MOC-GAP — AI pełne cywilizacje ~10× mniej Mocy niż gracz · STATUS: **OTWARTE — częściowo złagodzone** (FALA 220, bez playtestu zamknięcia)
+## P-AI-MOC-GAP — AI pełne cywilizacje ~10× mniej Mocy niż gracz · STATUS: **ZDECYDOWANE — B (2026-08-08, kodować teraz bez playtestu) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 
 **Źródło:** playtest Macieja — gracz 6725 vs Zulusi 536 / Chińczycy 436 (poz. 1/8).
 **Werdykt audytu:** gap **REALNY** (nie bug rankingu/mgły). Głównie design + martwe parametry trudności.
@@ -1766,7 +1766,7 @@ główne rzeki **1235/1235**. Ale **formalnie bramka zwraca exit 1** — patrz k
 
 ---
 
-## BUG-TRAKTAT-KOSZYK-REGRESJA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — REGRESJA wobec wdrożonej decyzji**
+## BUG-TRAKTAT-KOSZYK-REGRESJA (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Jego słowa:** *„Pamiętam, że zgodnie z zasadami w traktatach handlowych miały nie być wymiany
 surowców, tylko temat dotyczący akurat tego traktatu. A jak widać, znowu to nie jest rozłączone."*
 **Obowiązująca decyzja:** `HANDEL-SPLIT-Q1 = B`, `docs/decyzje/HANDEL-SPLIT-Q1.md:18` — *„dwa osobne
@@ -1809,7 +1809,7 @@ dopiero na zdarzeniu hover, zamiast przy tworzeniu plakietki; albo brak fallback
 **Kotwice:** `gra/src/render/**`, `gra/src/ui/**` (plakietka miasta, ikony kultur).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
-## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — do naprawy**
+## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Jego słowa:** *„jednostka zwiadowcy nie miała wymagać żadnych surowców ani nie miała
 spożytkowywać podczas… nie powinno być żadnym kosztem ani jedzenia ani surowców — silny błąd
 do naprawy."*
@@ -1890,7 +1890,7 @@ o przekroczeniach granic między obcymi cywilizacjami.
 **Kotwice:** `gra/src/main.ts:3541-3596` · `gra/src/game/diplomacy-credibility.ts:492`
 · `gra/src/game/wiarygodnosc-types.ts:37`. Bramka do rozszerzenia: brak testu na adresata komunikatu.
 
-## BUG-BRAMKA-DREWNO-BRAK (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — przyczyna ustalona, wymaga litery**
+## BUG-BRAMKA-DREWNO-BRAK (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Jego słowa:** *„miasto, państwo nie ma start-upu, a buduje jednostki. A przecież do pierwszych
 jednostek potrzebne jest drewno."*
 **PRZYCZYNA — `gra/src/game/production.ts:858-863`:**
@@ -2100,7 +2100,7 @@ z potencjalnie nieprawdziwą liczbą, którego nie da się skutecznie odrzucić.
 **Kotwice:** `gra/src/main.ts` (`applyBorderMarchPenaltiesEndTurn`, ~3578-3640),
 `borderMarchEventTargets`, `onEventDismiss`.
 
-## R-MOC-HUD-GLOWNY-Q1 (2026-08-07, nota Evaluatora w R-MOC-RANKING-ROZJAZD-Q1) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA — blokuje DEPLOY, nie scalenie**
+## R-MOC-HUD-GLOWNY-Q1 (2026-08-07, nota Evaluatora w R-MOC-RANKING-ROZJAZD-Q1) · STATUS: **ZDECYDOWANE — C (2026-08-08) — Operator złożył pracę, czeka na Evaluatora** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Ustalenie:** po `d1f7b91` (panel Mocy imperium na efektywną) Evaluator znalazł **piąty
 konsument**, którego nikt nie zgłaszał: główny, stale widoczny licznik Mocy w górnym pasku
 HUD (`main.ts:12579`, `buildHudState` → `hud.ts:1022`, `<span class="p-val-num">`) nadal

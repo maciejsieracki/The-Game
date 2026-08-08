@@ -1,6 +1,6 @@
 {
-  "version": 14,
-  "updatedAtIso": "2026-08-07T21:03:18.937Z",
+  "version": 15,
+  "updatedAtIso": "2026-08-08T09:51:29.583Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -259,6 +259,16 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-07T21:03:18.926Z"
+    },
+    {
+      "id": "rule_126",
+      "rule_text": "Pytanie ABC dla właściciela zawsze jako turniej, nie pojedyncza propozycja: orkiestrator pisze własny projekt A/B/C, NIEZALEŻNY drugi agent (świeże oczy, nie widzi projektu orkiestratora) pisze własny, osobny Sędzia (Evaluator) porównuje oba i wybiera/syntetyzuje zwycięzcę — dopiero zwycięska wersja trafia do właściciela. Dotyczy KAŻDEGO pytania ABC formułowanego od nowa; nie dotyczy pytań, na które właściciel już odpowiedział wprost literą (te tylko się ECHO'uje i zapisuje) [C-018] [C-018]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T09:51:29.569Z"
     }
   ],
   "quarantine_rules": []
