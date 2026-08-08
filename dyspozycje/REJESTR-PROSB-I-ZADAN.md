@@ -1063,9 +1063,13 @@ lub nie. Liczymy wszystkie pozostale elementy, ale bez elementu terenu i budynku
    Uzasadnienie: jednostka jest przenosna (moze stac w roznych miastach/budynkach, byc
    zafortyfikowana lub nie) — Moc ma byc stabilna cecha jednostki, nie zalezec od tego,
    gdzie akurat stoi.
-**NAPIECIE DO ROZSTRZYGNIECIA:** decyzja `R-MOC-MUR-PARADOKS-Q1=A` (2026-08-07, ta sama
-sesja) wprowadzila `tabliczkaGarnizonScaledDefFor()`, ktora DLA GARNIZONU W MIESCIE Z MUREM
-doklada do "Mocy" na tabliczce bonus struktury obronnej + mnoznik terenu — dokladnie to, co
-nowa zasada zdaje sie wykluczac ("moze byc zafortyfikowana lub nie"). Wymaga wprost pytania
-do Macieja, nie zgadywania — patrz rozmowa.
+**NAPIECIE ROZSTRZYGNIETE (2026-08-08, ta sama sesja, pytanie zamkniete):** decyzja
+`R-MOC-MUR-PARADOKS-Q1=A` (2026-08-07) wprowadzila `tabliczkaGarnizonScaledDefFor()`, ktora
+DLA GARNIZONU W MIESCIE Z MUREM dokladala do "Mocy" na tabliczce bonus struktury obronnej +
+mnoznik terenu. **Decyzja Macieja: wraca do czystej Mocy (bez muru)** — tabliczka cofnieta do
+`combatPowerScaledDefFor(u)` (weteran + trudnosc AI, bez bonusu struktury/terenu), zgodnie
+z nowa zasada R-MOC-DEFINICJA-Q1. To **CZESCIOWO COFA** `R-MOC-MUR-PARADOKS-Q1=A` — sam
+paradoks garnizonu (49 pkt realnie wnoszone do bitwy vs 95 na tabliczce) wraca, ale teraz
+jako SWIADOMA konsekwencja zasady "Moc = wskazniki wlasne + weteran, bez kontekstu miejsca",
+nie przeoczenie.
 Model: Sonnet 5 (logika/dane), `gra/src/render/**` gdyby dotkniete = Opus 5.
