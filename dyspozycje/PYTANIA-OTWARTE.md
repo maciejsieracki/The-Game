@@ -2676,3 +2676,17 @@ grepem Evaluatora, nie tylko samooceną Operatora. `npx tsc --noEmit` czyste (ex
 głównym drzewie). Evaluator dodał notatkę: **wymaga playtestu** (długa nazwa budynku w
 kolejce, sprawdzić wielokropek i trafialność ↑/↓/✕ za pierwszym kliknięciem) — to zmiana
 czysto wizualna, w repo nie ma harnessu DOM/CSS do zautomatyzowania testu.
+
+## R-PORTRET-PRODIKONA-DROPPED-CALLBACK (2026-08-08, znalezisko Operatora przy okazji BUG-IKONA-KULTURY-PLACEHOLDER) · STATUS: **OTWARTE — zarejestrowane, nie naprawione (świadomie, poza zakresem tamtego zlecenia)**
+Operator naprawiający `BUG-IKONA-KULTURY-PLACEHOLDER` znalazł identyczny wzorzec błędu
+(`if (cached === 'loading') return;` gubi callback zamiast go kolejkować) w dwóch innych
+miejscach tego samego pliku: `requestLeaderPortraitImage` i `requestProdIconImage`
+(`gra/src/render/cityMapStatChip.ts`). Nie powoduje zgłoszonego objawu (placeholder diamentu)
+— przegrana wyścigu o portret spada na herb (już naprawiony), a przegrana o ikonę produkcji
+gubi tylko glif produkcji do najbliższej zmiany klucza tekstury — ale to ten sam mechanizm
+błędu, może dawać własne, niezgłoszone jeszcze objawy. Zostawione świadomie nietknięte
+zgodnie z C-025 (zakres tamtego zlecenia = tylko 3 zgłoszone bugi). Do naprawy: taki sam
+wzorzec kolejkowania callbacków jak w naprawie `BUG-IKONA-KULTURY-PLACEHOLDER`.
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestLeaderPortraitImage`,
+`requestProdIconImage`).
+**Model:** Opus 5 (render/**).
