@@ -1292,3 +1292,30 @@ o stan projektu/kod/pliki (weryfikowalne fakty); czysto konwersacyjne pytania be
 weryfikowalnej treści faktograficznej nie wymagają Evaluatora — jeśli Maciej chce szerszy
 zakres, powie wprost.
 Model: Sonnet 5 (orkiestrator, zapis już podjętej decyzji).
+
+## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08) — zastosowanie C-024, moja pierwsza diagnoza była błędna
+**Zgłoszenie Macieja:** regres w panelu imperium — surowce „dostępu" (Ceramika/Sól/Koń/Złoto)
+straciły wyświetlaną ilość, pokazują tylko masz/brak.
+**Zastosowanie nowej zasady C-024:** napisałem diagnozę wskazującą `cityPanel.ts`/
+`renderSurowce` jako źródło problemu i konkluzję „to raczej nie regres, tylko inny panel
+informacyjny". Wysłałem to do Evaluatora (Opus 5) PRZED przedstawieniem właścicielowi —
+**Evaluator wydał FAIL**: zły panel wskazany (prawdziwy to `empireDetailPanel.ts`), i **regres
+faktycznie istnieje**, ze zidentyfikowanym commitem `331aa180` (2026-08-05) usuwającym `cap`
+(a przez to ilość `stock/cap`) dla surowców dostępu. Dodatkowo znalazł, że temat już wcześniej
+był w rejestrze (`R-SUROWCE-DOSTEP`, 2026-07-26) — mój grep go przeoczył.
+**Wniosek:** dokładnie ten scenariusz, przed którym C-024 miał chronić — pierwsza wersja
+mojej odpowiedzi byłaby fałszywie uspokajająca („to nie regres, mylisz panele"), a właściciel
+miał rację od początku. Poprawiona diagnoza zapisana w `PYTANIA-OTWARTE.md`
+(`BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA`), z pełną chronologią sprzeczności między
+`R-SUROWCE-DOSTEP` (26.07, chce widoczności dostępu) i `DOSTEP-SUROWCE-Q1` (29.07, usuwa
+pojęcie dostępu) — wdrożenie 05.08 poszło za starszą, unieważnioną już prośbą.
+**Do decyzji Macieja:** czy sekcja „Dostęp — nie magazynowane" w panelu imperium ma wrócić do
+pokazywania `stock/cap` (cofnięcie `331aa180`) czy zostać czysto informacyjna.
+
+## R-HUD-MIASTO-STAN-CYWILIZACJI + R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08) — dwa nowe zgłoszenia zarejestrowane
+Zarejestrowane w `PYTANIA-OTWARTE.md` z pełnymi cytatami: (1) górny pasek panelu miasta
+pokazuje wyłącznie wartości TEGO miasta (`buildCityOnlyW3FlankChips`, cityPanel.ts:8692) —
+brak sumy całej cywilizacji obok; (2) klawisz Spacja czasem zapętla się na jednostkach, które
+już wykonały ruch, zamiast przechodzić do najbliższej z dostępnym ruchem. Żadne z nich nie
+było wcześniej zgłoszone (sprawdzone grepem). Nie zdiagnozowane jeszcze w kodzie poza (1),
+gdzie potwierdzono brak wariantu „empire" funkcji nagłówka.

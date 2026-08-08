@@ -2285,3 +2285,73 @@ celu ulepszenia — czy to celowe zablokowanie zoomu na czas trybu placementu (n
 gubić trybu przy scrollu), czy przypadkowy efekt uboczny nasłuchu zdarzeń.
 **Kotwice:** `gra/src/render/**` (kamera/zoom), `gra/src/ui/**` (tryb budowania ulepszeń).
 **Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
+
+## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — nowe zgłoszenie, nie regresja**
+**Jego słowa:** „brakuje danych z całej cywilizacji, jeżeli chodzi o te elementy, które są w
+podglądzie miasta. Mówię tu o pracy, żywności, skarbcu, nauce, kulturze i religii. Potrzebny
+jest stan całej cywilizacji i plus to, co jest w danym mieście, ale mniejszymi cyframi. Czyli
+to, co z cywilizacji pokazujemy jako duże całej cywilizacji, a dodatkowo plus to jest to co
+w danym mieście przybywa lub ubywa."
+**Stan faktyczny (sprawdzone w kodzie, `gra/src/ui/cityPanel.ts:8692-8768`,
+`buildCityOnlyW3FlankChips`):** górny pasek widoku miasta pokazuje **wyłącznie wartości TEGO
+miasta** — funkcja jest nazwana dosłownie `CityOnly`, każdy tooltip mówi „tego miasta"/„w tym
+mieście". **Nie ma odpowiednika pokazującego sumę całej cywilizacji** — sprawdzone: brak
+drugiej, „empire" wersji tej funkcji czy przełącznika. To nie jest regresja — brak dowodu, że
+kiedykolwiek pokazywano tu sumę cywilizacji.
+**Do zrobienia:** dodać do paska dużą liczbę = suma cywilizacji (Praca/Żywność/Skarbiec/
+Nauka/Kultura/Religia z puli państwa) + mniejszą liczbą przyrost/ubytek z TEGO miasta —
+dokładnie jak działa już `buildEmpireResourceRows` w `main.ts:2425` dla surowców (stock +
+per-lokalizacja), tylko dla tych sześciu wskaźników.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`buildCityOnlyW3FlankChips`), dane cywilizacji z
+`gra/src/main.ts`.
+**Model:** czysty UI w `cityPanel.ts` — Sonnet 5 wystarczy (nie `render/**`).
+
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** „bardzo często jest problem że w kolejce jednostek kiedy naciśniemy spację
+zamiast przechodzić do kolejnej która ma wolne ruchy przechodzi do jakiejś kolejnej która nie
+wiem jest w kolejce jakiejś zawsze ruch powinien po spacji powinien odbywać się od
+najbliższej możliwej jednostki która jeszcze ma ruch. Czasem jest tak, że kręci się wybór
+tylko wokół tych jednostek, które już odbyły ruch, a nie przechodzi do jednostek, które
+jeszcze ruch mogą odbyć."
+**Objaw:** klawisz Spacja (przejście do następnej jednostki z ruchem) czasem zapętla się
+wyłącznie na jednostkach, które JUŻ wykonały ruch w tej turze, pomijając te, które nadal mają
+ruch dostępny — zamiast zawsze iść do najbliższej jednostki z pozostałym ruchem.
+**Do zbadania:** handler klawisza Spacja / logika „następna jednostka" — czy filtr
+„ma jeszcze ruch" jest poprawnie stosowany przy budowaniu listy kandydatów, czy kolejność
+cyklowania nie gubi/pomija jednostek spełniających warunek.
+**Kotwice:** `gra/src/ui/**` (obsługa klawiszy, panel jednostek), `gra/src/main.ts` (stan tury,
+lista jednostek z ruchem).
+**Model:** Sonnet 5 (logika UI/tury, nie `render/**`).
+
+## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — POTWIERDZONY REGRES, przyczyna znaleziona**
+**Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
+dostęp powinny być już pełni w surowcach ilości surowców widzę że to jest jakiś regres i
+znowu jakaś poprawka sprawiła że to zostało cofnięte."
+⛔ **Pierwsza diagnoza tej sesji była błędna** (wskazywała `cityPanel.ts`/`renderSurowce` —
+zły panel). Poprawiona po weryfikacji adwokata diabła (Opus 5, zgodnie z nową zasadą C-024):
+
+**Prawdziwy panel:** `empireDetailPanel.ts` (`renderSurowceSection`), sekcja „Dostęp — nie
+magazynowane" — dokładnie ten ekran ze zrzutu (Ceramika/Sól/Koń/Złoto, kropka + „masz"/„brak").
+
+**Regres potwierdzony, dokładny commit:** `331aa180` (2026-08-05,
+`fix(R-SUROWCE-DOSTEP): access rows cap null for empire panel`). Przed tym commitem
+**wszystkie 13 surowców** miały `cap = empireCap` bezwarunkowo — Ceramika/Sól/Koń/Złoto
+pokazywały pasek **`stock / cap`, czyli z realną ilością** z magazynu. Ten commit ustawił
+`cap = undefined` dla „surowców dostępu" — filtr panelu (`rows.filter(r => r.cap == null)`)
+przeniósł je do osobnej sekcji „Dostęp", gdzie liczy się TYLKO boolean masz/brak, **ilość
+znika z widoku mimo że silnik nadal ją trzyma** (`empire-resource-access.ts:5-6` mówi to
+wprost w komentarzu). Nic nie zginęło w danych — tylko w tym, co panel pokazuje.
+
+**Chronologia sprzeczności:** 2026-07-26 `R-SUROWCE-DOSTEP` (Maciej: „powinno być chociaż
+zasugerowane miejsce na surowce, które są dostępem") → 2026-07-29 `DOSTEP-SUROWCE-Q1`
+(Maciej: „kwestię dostępu usuwamy CAŁKOWICIE z gry") → 2026-08-05 wdrożenie prośby z 26.07
+**3 dni po decyzji, która ją unieważniła**. `DOSTEP-SUROWCE-Q1` wymienia `cityPanel.ts` w
+plikach wdrożenia, ale **nie `empireDetailPanel.ts`/`main.ts::buildEmpireResourceRows`** —
+panel imperium nigdy nie został dociągnięty do kanonu Q1.
+**Do decyzji:** czy sekcja „Dostęp — nie magazynowane" ma wrócić do pokazywania `stock/cap`
+(cofnięcie `331aa180`, zgodne z kanonem Q1: liczy się tylko magazyn) — czy zostać jako
+czysto informacyjny wskaźnik dostępu geograficznego, oddzielny od ilości (wymaga wtedy
+osobnego miejsca na ilość tych samych surowców).
+**Kotwice:** `gra/src/main.ts` (`buildEmpireResourceRows`), `gra/src/ui/empireDetailPanel.ts`
+(`renderSurowceSection`), `gra/src/game/empire-resource-access.ts`.
+**Model:** Sonnet 5 (poza `render/**`).
