@@ -268,6 +268,11 @@ ${DIPLO_1E_SHARED_CSS}
   padding:5px 7px;margin:3px 0;border-radius:6px;background:rgba(40,48,60,0.45);font-size:0.78em;}
 .civ-diplo-basket .cdb-item-pn{color:#e8d88a;white-space:nowrap;}
 .civ-diplo-basket .cdb-rm{background:none;border:none;color:#e08a8a;cursor:pointer;font-size:1em;padding:0 4px;}
+.civ-diplo-basket .cdb-edit-item{padding:1px 7px;font-size:0.78em;line-height:1.3;flex-shrink:0;}
+.civ-diplo-basket .cdb-deal-row-editing{border-radius:6px;background:rgba(232,216,138,.08);outline:1px dashed rgba(232,216,138,.35);}
+.civ-diplo-basket .cdb-add-editing{border-top-color:rgba(232,216,138,.4);}
+.civ-diplo-basket .cdb-add-btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.civ-diplo-basket .cdb-edit-cancel{margin-top:6px;}
 .civ-diplo-basket .cdb-add{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(232,216,138,.15);}
 .civ-diplo-basket label{display:block;margin:4px 0 2px;font-size:0.72em;color:#a8a090;}
 .civ-diplo-basket select,.civ-diplo-basket input[type=number],.civ-diplo-basket input[type=text]{
@@ -1019,13 +1024,37 @@ function proposalActionIdFromUi(
   return 'handel';
 }
 
-function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mode: TradeBasketMode, actionId = '14', tributeMode?: 'demand' | 'offer'): string {
-  if (mode === 'gift' && side === 'receive') return '';
+/** R-PROPOZYCJA-BRAK-EDYCJI: pozycja z koszyka aktualnie edytowana przez `buildAddForm`. */
+interface BasketEditItem {
+  item: BasketItem;
+  idx: number;
+}
 
-  const prefix = side === 'give' ? 'give' : 'recv';
+/** Wskaźnik „która pozycja koszyka jest teraz edytowana" — trzymany w closure `showTradeBasketModal`. */
+interface EditingItemRef {
+  side: 'give' | 'receive';
+  idx: number;
+}
+
+/** Typy koszyka posiadające sensowny formularz edycji (reużywa buildAddForm zamiast usuń+dodaj). */
+const ITEM_EDIT_TYPES = new Set<WartoscPozycjaTyp>(['zloto', 'praca', 'zywnosc', 'tech', 'surowiec_ilosc']);
+
+/**
+ * Lista typów pozycji dostępnych w formularzu „Dodaj" dla danej strony/trybu/akcji —
+ * wydzielona z `buildAddForm`, żeby wiersze koszyka (przycisk „✎ Edytuj") mogły sprawdzić,
+ * czy typ ISTNIEJĄCEJ pozycji wciąż jest wybieralny (np. złoto/praca w wojnie, tech poniżej
+ * progu Relacji) — inaczej „Zapisz zmiany" po cichu podmienia typ na pierwszy dostępny.
+ */
+export function computeAvailableTypes(
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode?: 'demand' | 'offer',
+): WartoscPozycjaTyp[] {
   const allowWarCurrency = !ctx.atWar
     || uiActionAllowsWarCurrency(actionId, mode, tributeMode);
-  const availableTypes = (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
+  return (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
     .filter(t => {
       if (WITHDRAWN_BASKET_ACCESS_TYPES.has(t)) return false;
       if (t === 'jednostka') return false;
@@ -1037,7 +1066,38 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
       }
       return true;
     });
-  const defaultTyp = availableTypes[0] ?? 'zloto';
+}
+
+/**
+ * Czy pozycja koszyka ma dziś dostępny formularz edycji (typ + wciąż wybieralny w tym kontekście).
+ * Eksport do testów (R-PROPOZYCJA-BRAK-EDYCJI pkt 4 — gating przycisku „✎ Edytuj").
+ */
+export function basketItemEditAvailable(
+  item: BasketItem,
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode?: 'demand' | 'offer',
+): boolean {
+  if (!ITEM_EDIT_TYPES.has(item.typ)) return false;
+  return computeAvailableTypes(side, ctx, mode, actionId, tributeMode).includes(item.typ);
+}
+
+function buildAddForm(
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId = '14',
+  tributeMode?: 'demand' | 'offer',
+  editItem?: BasketEditItem,
+): string {
+  if (mode === 'gift' && side === 'receive') return '';
+
+  const prefix = side === 'give' ? 'give' : 'recv';
+  const availableTypes = computeAvailableTypes(side, ctx, mode, actionId, tributeMode);
+  const editTyp = editItem && availableTypes.includes(editItem.item.typ) ? editItem.item.typ : undefined;
+  const defaultTyp = editTyp ?? availableTypes[0] ?? 'zloto';
 
   const typChips = availableTypes.map(t =>
     buildChipBtn(
@@ -1054,14 +1114,17 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const cities = side === 'give'
     ? (ctx.cityOptions ?? [])
     : (ctx.receiveCityOptions ?? ctx.cityOptions ?? []);
-  const defaultCity = cities[0]?.id ?? '';
+  const editCityId = editTyp === 'zywnosc' ? (editItem!.item.cityId ?? editItem!.item.id) : undefined;
+  const defaultCity = (editCityId != null && cities.some(c => c.id === editCityId))
+    ? editCityId
+    : (cities[0]?.id ?? '');
   const cityChips = cities.length > 0
-    ? cities.map((c, i) =>
+    ? cities.map(c =>
       buildChipBtn(
         'cdb-chip-city',
         c.id,
         prefix,
-        i === 0,
+        c.id === defaultCity,
         typChipIconHtml('zywnosc'),
         c.label,
       ),
@@ -1076,13 +1139,16 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const techs = side === 'give'
     ? (ctx.giveTechOptions ?? ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })))
     : (ctx.receiveTechOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })));
-  const defaultTech = techs[0]?.id ?? '';
-  const techChips = techs.map((t, i) =>
+  const editTechId = editTyp === 'tech' ? editItem!.item.id : undefined;
+  const defaultTech = (editTechId != null && techs.some(t => t.id === editTechId))
+    ? editTechId
+    : (techs[0]?.id ?? '');
+  const techChips = techs.map(t =>
     buildChipBtn(
       'cdb-chip-tech',
       t.id,
       prefix,
-      i === 0,
+      t.id === defaultTech,
       typChipIconHtml('tech'),
       t.label,
     ),
@@ -1091,8 +1157,11 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
     : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
-  const defaultResId = qtyResources[0]?.id ?? '';
-  const qtyResChips = qtyResources.map((r, i) => {
+  const editResId = editTyp === 'surowiec_ilosc' ? editItem!.item.id : undefined;
+  const defaultResId = (editResId != null && qtyResources.some(r => r.id === editResId))
+    ? editResId
+    : (qtyResources[0]?.id ?? '');
+  const qtyResChips = qtyResources.map(r => {
     const label = resourceDisplayLabel(r.id);
     const short = label.length > 10 ? label.slice(0, 9) + '…' : label;
     // R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP: widoczna odznaka zapasu WYŁĄCZNIE po stronie
@@ -1107,34 +1176,46 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
       'cdb-chip-resqty',
       r.id,
       prefix,
-      i === 0,
+      r.id === defaultResId,
       typChipIconHtml('surowiec_ilosc', r.id),
       short,
       ' data-max="' + r.maxQty + '" title="' + esc(label) + ' (dost. ' + r.maxQty + ' szt.)"',
       stockBadge,
     );
   }).join('');
-  const qtyResFirstMax = qtyResources[0]?.maxQty ?? 1;
+  const qtyResFirstMax = qtyResources.find(r => r.id === defaultResId)?.maxQty ?? qtyResources[0]?.maxQty ?? 1;
 
   const zywnHint = diplomacyZywnoscNaPn();
 
+  const initialQty = (editTyp === 'zloto' || editTyp === 'praca') ? Math.max(1, editItem!.item.ilosc ?? 10) : 10;
+  const initialFoodQty = editTyp === 'zywnosc' ? Math.max(1, editItem!.item.ilosc ?? 10) : 10;
+  const initialResQty = editTyp === 'surowiec_ilosc'
+    ? Math.min(qtyResFirstMax, Math.max(1, editItem!.item.ilosc ?? 1))
+    : 1;
+
+  const editAttrs = editItem ? ' data-edit-idx="' + editItem.idx + '"' : '';
+  const submitLabel = editItem ? 'Zapisz zmiany' : '+ Dodaj propozycję';
+  const cancelBtn = editItem
+    ? '<button type="button" class="dip-muted-btn cdb-edit-cancel" data-side="' + prefix + '">Anuluj edycję</button>'
+    : '';
+
   return (
-    '<div class="cdb-add" data-side="' + prefix + '">'
+    '<div class="cdb-add' + (editItem ? ' cdb-add-editing' : '') + '" data-side="' + prefix + '">'
     + '<input type="hidden" class="cdb-typ cdb-typ-hidden" data-side="' + prefix + '" value="' + defaultTyp + '" />'
     + '<div class="cdb-add-section">'
-    + '<div class="cdb-add-section-title">Co dodajesz</div>'
+    + '<div class="cdb-add-section-title">' + (editItem ? 'Edytujesz pozycję' : 'Co dodajesz') + '</div>'
     + '<div class="cdb-chip-grid cdb-typ-chips">' + typChips + '</div>'
     + '</div>'
     + '<div class="cdb-fields-extra visible" data-extra="' + prefix + '-qty">'
     + '<label>Ilość</label>'
-    + qtyStepperHtml('cdb-qty', prefix, 10)
+    + qtyStepperHtml('cdb-qty', prefix, initialQty)
     + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-city">'
     + '<label>Miasto (spichlerz)</label>'
     + '<div class="cdb-chip-grid cdb-city-chips">' + cityChips + '</div>'
     + '<input type="hidden" class="cdb-city" data-side="' + prefix + '" value="' + esc(defaultCity) + '" />'
     + '<label>Ilość żywności <span style="color:#7a8494">(1 PW = ' + zywnHint + ')</span></label>'
-    + qtyStepperHtml('cdb-food-qty', prefix, 10)
+    + qtyStepperHtml('cdb-food-qty', prefix, initialFoodQty)
     + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-tech">'
     + '<label>Technologia</label>'
@@ -1146,9 +1227,12 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
     + '<div class="cdb-chip-grid cdb-resqty-chips">' + qtyResChips + '</div>'
     + '<input type="hidden" class="cdb-res-qty-sel" data-side="' + prefix + '" value="' + esc(defaultResId) + '" data-max="' + qtyResFirstMax + '" />'
     + '<label>Ilość (sztuki)</label>'
-    + qtyStepperHtml('cdb-res-qty-num', prefix, 1, 1, qtyResFirstMax)
+    + qtyStepperHtml('cdb-res-qty-num', prefix, initialResQty, 1, qtyResFirstMax)
     + '</div>'
-    + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj propozycję</button>'
+    + '<div class="cdb-add-btn-row">'
+    + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '"' + editAttrs + '>' + esc(submitLabel) + '</button>'
+    + cancelBtn
+    + '</div>'
     + '</div>'
   );
 }
@@ -1201,6 +1285,10 @@ function editableDealItemsHtml(
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
   ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode: 'demand' | 'offer' | undefined,
+  editingIdx: number | null,
 ): string {
   if (items.length === 0) return '<span class="da-deal-empty">—</span>';
   const fmtCtx: BasketItemFormatCtx = {
@@ -1211,10 +1299,16 @@ function editableDealItemsHtml(
     const qtyHtml = basketItemQtyEditable(item)
       ? basketRowQtyStepperHtml(item, side, idx, ctx)
       : '';
+    const canEdit = basketItemEditAvailable(item, side, ctx, mode, actionId, tributeMode);
+    const editBtn = canEdit
+      ? '<button type="button" class="dip-muted-btn cdb-edit-item" data-side="' + side + '" data-idx="' + idx + '" title="Edytuj pozycję">✎ Edytuj</button>'
+      : '';
+    const rowCls = 'cdb-deal-row' + (editingIdx === idx ? ' cdb-deal-row-editing' : '');
     return (
-      '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">' +
+      '<div class="' + rowCls + '" data-side="' + side + '" data-idx="' + idx + '">' +
         '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>' +
         qtyHtml +
+        editBtn +
         '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
       '</div>'
     );
@@ -1229,12 +1323,16 @@ function dealSideColumnHtml(
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
   ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode: 'demand' | 'offer' | undefined,
+  editingIdx: number | null,
 ): string {
   return (
     '<div class="da-deal-col ' + colClass + '">' +
       '<div class="da-deal-col-head">' + esc(head) + '</div>' +
       '<div class="da-deal-col-body" data-list="' + side + '">' +
-        editableDealItemsHtml(items, side, resourceTradeMode, dealTurns, ctx) +
+        editableDealItemsHtml(items, side, resourceTradeMode, dealTurns, ctx, mode, actionId, tributeMode, editingIdx) +
       '</div>' +
     '</div>'
   );
@@ -1246,10 +1344,20 @@ function tradeDealPreviewHtml(
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
   ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode: 'demand' | 'offer' | undefined,
+  editingItem: EditingItemRef | null,
 ): string {
   let html = '<div class="cdb-deal-preview"><div class="da-deal-table">';
-  html += dealSideColumnHtml('Oferujemy', 'da-deal-col-we', giveItems, 'give', resourceTradeMode, dealTurns, ctx);
-  html += dealSideColumnHtml('Oferują', 'da-deal-col-they', receiveItems, 'receive', resourceTradeMode, dealTurns, ctx);
+  html += dealSideColumnHtml(
+    'Oferujemy', 'da-deal-col-we', giveItems, 'give', resourceTradeMode, dealTurns, ctx,
+    mode, actionId, tributeMode, editingItem?.side === 'give' ? editingItem.idx : null,
+  );
+  html += dealSideColumnHtml(
+    'Oferują', 'da-deal-col-they', receiveItems, 'receive', resourceTradeMode, dealTurns, ctx,
+    mode, actionId, tributeMode, editingItem?.side === 'receive' ? editingItem.idx : null,
+  );
   html += '</div>';
   if (resourceTradeMode === 'per_turn' && dealTurns > 0) {
     html += '<div class="da-deal-sched-foot">Wymiana co turę przez ' + dealTurns + ' tur</div>';
@@ -1485,12 +1593,20 @@ function renderBasket(
   resourceTradeMode: 'once' | 'per_turn',
   treatyState: TreatyFormState,
   warThreat: boolean,
+  editingItem: EditingItemRef | null,
   modalOpts?: TradeBasketModalOptions,
 ): void {
   const rel = ctx.relacjaTotal ?? 0;
   const progHandel = ctx.progHandelRelacja ?? PROG_HANDEL_REL;
   const progDar = ctx.progDarRelacja ?? diplomacyProgDarRelacja();
   const isTreatyOnly = mode === 'treaty' && isTreatyOnlyFormAction(action.id);
+  /** Pozycja aktualnie edytowana (jeśli wciąż istnieje pod tym indeksem po tej stronie). */
+  const editItemFor = (side: 'give' | 'receive'): BasketEditItem | undefined => {
+    if (!editingItem || editingItem.side !== side) return undefined;
+    const list = side === 'give' ? giveItems : receiveItems;
+    const item = list[editingItem.idx];
+    return item ? { item, idx: editingItem.idx } : undefined;
+  };
 
   let blocked = '';
   if (ctx.atWar && mode !== 'treaty' && !uiActionAllowsWarCurrency(action.id, mode, treatyState.tributeMode)) {
@@ -1556,21 +1672,27 @@ function renderBasket(
   const giveCol =
     '<div class="cdb-col">' +
       '<div class="cdb-col-title">' + (mode === 'treaty' ? 'My oddajemy (opcjonalnie)' : 'Dodaj do oferty') + '</div>' +
-      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm, action.id, treatyState.tributeMode)) +
+      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('give'))) +
     '</div>';
 
   const recvCol = showReceiveCol
     ? '<div class="cdb-col">' +
         '<div class="cdb-col-title">' + (mode === 'treaty' ? 'Oni oddają (opcjonalnie)' : 'Dodaj do kontrpropozycji') + '</div>' +
-        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm, action.id, treatyState.tributeMode)) +
+        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('receive'))) +
       '</div>'
     : '';
 
   const dealPreview = showDealPreview
-    ? tradeDealPreviewHtml(giveItems, receiveItems, resourceTradeMode, dealTurns, ctx)
+    ? tradeDealPreviewHtml(
+      giveItems, receiveItems, resourceTradeMode, dealTurns, ctx,
+      mode, action.id, treatyState.tributeMode, editingItem,
+    )
     : (mode === 'gift' && !blocked
       ? '<div class="cdb-deal-preview"><div class="da-deal-table">' +
-        dealSideColumnHtml('Co oddajesz', 'da-deal-col-we', giveItems, 'give', 'once', dealTurns, ctx) +
+        dealSideColumnHtml(
+          'Co oddajesz', 'da-deal-col-we', giveItems, 'give', 'once', dealTurns, ctx,
+          mode, action.id, treatyState.tributeMode, editingItem?.side === 'give' ? editingItem.idx : null,
+        ) +
         '</div></div>'
       : '');
 
@@ -1696,6 +1818,8 @@ export function showTradeBasketModal(
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
   let warThreat = action.id === '9';
   let treatyState = defaultTreatyState(action.id, initial, ctx);
+  /** R-PROPOZYCJA-BRAK-EDYCJI: pozycja koszyka aktualnie otwarta do edycji (✎ Edytuj). */
+  let editingItem: EditingItemRef | null = null;
 
   overlay = document.createElement('div');
   overlay.className = 'civ-diplo-basket-overlay';
@@ -1720,7 +1844,7 @@ export function showTradeBasketModal(
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState);
-    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, modalOpts);
+    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, editingItem, modalOpts);
     bindEvents();
   };
 
@@ -1864,8 +1988,34 @@ export function showTradeBasketModal(
         const side = btn.getAttribute('data-side') === 'recv' ? 'receive' : 'give';
         const item = readItemFromForm(side, box, ctx);
         if (!item) return;
-        if (side === 'give') giveItems = [...giveItems, item];
-        else receiveItems = [...receiveItems, item];
+        const editIdxAttr = btn.getAttribute('data-edit-idx');
+        const editIdx = editIdxAttr != null ? parseInt(editIdxAttr, 10) : -1;
+        if (editIdx >= 0) {
+          // R-PROPOZYCJA-BRAK-EDYCJI: „Zapisz zmiany" — podmień pozycję na miejscu, nie dodawaj nowej.
+          if (side === 'give') giveItems = giveItems.map((it, i) => (i === editIdx ? item : it));
+          else receiveItems = receiveItems.map((it, i) => (i === editIdx ? item : it));
+          editingItem = null;
+        } else {
+          if (side === 'give') giveItems = [...giveItems, item];
+          else receiveItems = [...receiveItems, item];
+        }
+        refresh();
+      });
+    });
+
+    box.querySelectorAll('.cdb-edit-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const side = btn.getAttribute('data-side') === 'receive' ? 'receive' : 'give';
+        const idx = parseInt(btn.getAttribute('data-idx') ?? '-1', 10);
+        if (idx < 0) return;
+        editingItem = { side, idx };
+        refresh();
+      });
+    });
+
+    box.querySelectorAll('.cdb-edit-cancel').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingItem = null;
         refresh();
       });
     });
@@ -1877,6 +2027,8 @@ export function showTradeBasketModal(
         if (idx < 0) return;
         if (side === 'give') giveItems = giveItems.filter((_, i) => i !== idx);
         else receiveItems = receiveItems.filter((_, i) => i !== idx);
+        // Indeksy po tej stronie przesunęły się — edycja w toku dla tej strony traci sens.
+        if (editingItem && editingItem.side === side) editingItem = null;
         refresh();
       });
     });

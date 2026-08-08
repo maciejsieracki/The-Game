@@ -39,7 +39,7 @@ import { actionUsesTradeBasket, getTradeBasketMode, showTradeBasketModal, openQu
 import { civCardDisplayName, leaderName } from './leaderPortraits';
 import { civBrandLineForKey } from './civBrandDisplay';
 import type { TradeGoodsCategories } from '../game/diplomacy-goods';
-import { renderNegotiationTableDealSideHtml } from './diplomacyDealDisplay';
+import { renderNegotiationTableDealSideHtml, negotiationTableDealSideHasContent } from './diplomacyDealDisplay';
 import { bilateralTreatyDisplayPw, partnerTreatyDisplayPw, playerTreatyDisplayPw } from '../game/diplomacy-acceptance-points';
 import {
   balancePanelDataFromRows,
@@ -1590,6 +1590,19 @@ function bilateralTreatyLabel(r: PendingNegotiationRow): string | undefined {
   return undefined;
 }
 
+/**
+ * R-PROPOZYCJA-KASACJA-UI-Q1=A: czy KONKRETNA wizualna karta (jedna strona stołu, jeden
+ * wpis negotiationTable) ma realną treść — gating dla przycisku „Usuń" w
+ * `negotiationCardActionsHtml`, MUSI być zgodny z tym co faktycznie renderuje `tableDealSideHtml`
+ * (ten sam focus/incoming/treatyLabel). Brak `dealPayload` (stary tekstowy fallback,
+ * `pendingDealFallbackHtml`) traktowany jako „ma treść" — nie ma tam wykrywalnej pustej strony,
+ * bez regresji dla tej rzadkiej ścieżki.
+ */
+function negotiationCardHasContent(r: PendingNegotiationRow, focus: 'we' | 'they', incoming: boolean): boolean {
+  if (!r.dealPayload) return true;
+  return negotiationTableDealSideHasContent(r.dealPayload, focus, incoming, bilateralTreatyLabel(r));
+}
+
 /** HTML jednej strony dealu — wyłącznie przedmiot (koszyk lub traktat). */
 function tableDealSideHtml(
   r: PendingNegotiationRow,
@@ -1624,16 +1637,23 @@ function negotiationBalanceBarHtml(st: DiplomacyAudienceState): string {
   return renderPnBalancePanelHtml(data);
 }
 
-/** Przyciski Edytuj / Usuń na karcie pozycji stołu (bez stepperów na karcie). */
-function negotiationCardActionsHtml(r: PendingNegotiationRow): string {
+/**
+ * Przyciski Edytuj / Usuń na karcie pozycji stołu (bez stepperów na karcie).
+ * `showRemove` — R-PROPOZYCJA-KASACJA-UI-Q1=A: ukryty na pustej/mirror karcie (żeby klik
+ * „Usuń" na czymś co wygląda pusto nie kasował skojarzonej karty z realną treścią po
+ * drugiej stronie w niezrozumiały sposób).
+ */
+function negotiationCardActionsHtml(r: PendingNegotiationRow, showRemove: boolean): string {
   const showEdit = !!r.canCounter && actionUsesTradeBasket(r.uiActionId);
   let html = '<div class="da-card-actions">';
   if (showEdit) {
     html += '<button type="button" data-negot-id="' + esc(r.id) + '" data-negot-act="edit" data-negot-aid="'
       + esc(r.uiActionId) + '">Edytuj</button>';
   }
-  html += '<button type="button" class="da-rm-negot" data-negot-id="' + esc(r.id)
-    + '" data-negot-act="remove">Usuń</button>';
+  if (showRemove) {
+    html += '<button type="button" class="da-rm-negot" data-negot-id="' + esc(r.id)
+      + '" data-negot-act="remove">Usuń</button>';
+  }
   html += '</div>';
   return html;
 }
@@ -1649,7 +1669,7 @@ function renderOwnPendingCard(r: PendingNegotiationRow): string {
       '<div class="da-nm"><span class="dir">' + esc('Twoja propozycja') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       pendingNegotiationMetaHtml(r) +
-      negotiationCardActionsHtml(r) +
+      negotiationCardActionsHtml(r, negotiationCardHasContent(r, 'we', false)) +
     '</div>'
   );
 }
@@ -1671,7 +1691,7 @@ function renderIncomingPendingWeLinked(r: PendingNegotiationRow): string {
       dealBlock +
       editHint +
       pendingNegotiationMetaHtml(r) +
-      negotiationCardActionsHtml(r) +
+      negotiationCardActionsHtml(r, negotiationCardHasContent(r, 'we', true)) +
     '</div>'
   );
 }
@@ -1702,7 +1722,7 @@ function renderIncomingPendingTheyCard(r: PendingNegotiationRow): string {
       legacyNote +
       editHint +
       pendingNegotiationMetaHtml(r) +
-      negotiationCardActionsHtml(r) +
+      negotiationCardActionsHtml(r, negotiationCardHasContent(r, 'they', true)) +
     '</div>'
   );
 }
@@ -1718,7 +1738,7 @@ function renderOwnPendingTheyCard(r: PendingNegotiationRow): string {
       '<div class="da-nm"><span class="dir">' + esc('Oni oferują') + '</span>' + esc(r.actionLabel) + '</div>' +
       dealBlock +
       pendingNegotiationMetaHtml(r) +
-      negotiationCardActionsHtml(r) +
+      negotiationCardActionsHtml(r, negotiationCardHasContent(r, 'they', false)) +
     '</div>'
   );
 }
