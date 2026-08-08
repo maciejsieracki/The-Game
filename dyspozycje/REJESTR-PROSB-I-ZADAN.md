@@ -1335,3 +1335,10 @@ czytelny sposób pokazywania tej większej ilości". Zarejestrowane w `PYTANIA-O
 Dwa wymagania: (1) dopisać liczbę zapasu do chipów surowca w koszyku wymiany
 (`diplomacyTradeBasket.ts`), (2) zaprojektować skalowalny układ na przyszłość (więcej
 surowców niż dziś 3 w rzędzie).
+
+## R-PROPOZYCJA-BRAK-EDYCJI + BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08)
+Dwa zgłoszenia z panelu propozycji dyplomacji, zarejestrowane w `PYTANIA-OTWARTE.md`:
+(1) brak przycisku Edytuj — potwierdzone w kodzie, tylko „Usuń" (`diplomacyTradeBasket.ts:1177`);
+(2) usunięcie pustej karty „Oni oferują" (druga strona nic nie daje) kasuje też sparowaną,
+realną propozycję po naszej stronie — nielogiczna kaskada, niezdiagnozowana jeszcze która
+funkcja odpowiada za to sparowanie.
