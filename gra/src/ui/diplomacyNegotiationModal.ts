@@ -45,7 +45,17 @@ export interface NegotiationModalContext {
   civName: string;
   aiCounterOffer?: string;
   rivalOptions?: ReadonlyArray<{ ownerId: number; label: string }>;
+  /** Legacy/pojedynczy kierunek (akcja '6' „sprzedaj technologię" — gracz → responder). */
   techOptions?: ReadonlyArray<{ id: string; label: string; suggestedPrice: number }>;
+  /**
+   * R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08): koszyk ogólny (akcja '14') —
+   * technologie po STRONIE „daję" (gracz ma, responder nie) i „dostaję" (responder ma,
+   * gracz nie) filtrowane niezależnie, analogicznie do give/receiveResourceOptions.
+   * Technologia znana przez OBIE strony nie ma prawa pojawić się w żadnej z list —
+   * wymiana nie miałaby sensu (nic by nie zmieniła).
+   */
+  giveTechOptions?: ReadonlyArray<{ id: string; label: string; suggestedPrice: number }>;
+  receiveTechOptions?: ReadonlyArray<{ id: string; label: string; suggestedPrice: number }>;
   borderFeeCivil?: number;
   borderFeeMilitary?: number;
   resourceOptions?: ReadonlyArray<{ id: string; label: string }>;

@@ -1041,7 +1041,14 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
     ).join('')
     : '<span class="cdb-sub">— brak miast (SILNIK) —</span>';
 
-  const techs = ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 }));
+  // R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08): strona „daję" i „dostaję" filtrują
+  // niezależnie (patrz NegotiationModalContext) — technologia znana przez obie strony nie
+  // ma prawa pojawić się w żadnej z list. `techOptions` to legacy pojedynczy kierunek
+  // (akcja '6'), NIE fallback dla strony receive — inaczej obie strony znów pokazałyby tę
+  // samą listę (pierwotny bug ze zgłoszenia).
+  const techs = side === 'give'
+    ? (ctx.giveTechOptions ?? ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })))
+    : (ctx.receiveTechOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })));
   const defaultTech = techs[0]?.id ?? '';
   const techChips = techs.map((t, i) =>
     buildChipBtn(

@@ -1457,3 +1457,17 @@ PASS z niezależną reprodukcją. `tsc` czyste, `diplomacy-fairness-gate-package
 24/24, `diplomacy-proposal-test.cjs` 126/126, `diplomacy-stol-pw-sum-test.cjs` 26/26.
 Osobno wciąż otwarte: `BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA` (kierunek przychodzący,
 dispatch w toku).
+
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE — NAPRAWIONE, czeka na deploy+playtest
+Wymiana technologii filtruje teraz obie strony po `ownerResearchedTechs` responder-a
+(`tradeableTechIdsForSide`) zamiast pokazywać identyczną listę wszystkich zbadanych przez
+oferującego. Evaluator PASS-WITH-NOTES (merge clean, tsc 0 błędów, pełny pakiet dyplomacji
+zielony). 3 noty niepilne zarejestrowane osobno w `PYTANIA-OTWARTE.md`
+(`P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU`, `P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`, +
+świadoma konsekwencja ukrywania akcji `'6'`).
+
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — FAIL, runda 2 w toku
+Evaluator FAIL: worktree bazował na commit sprzed mergu `66ae74c8` (packet-removal), pole
+`maxPakiety` w tym starym drzewie niosło PAKIETY (×10), nie sztuki — odznaka pokazywała
+wartość 10× za niską z błędną jednostką „szt.". Kolizja z `66ae74c8`, który już częściowo
+realizuje ten sam ticket (`maxQty`, „dost. N szt." w title). Redispatch na aktualnym HEAD.

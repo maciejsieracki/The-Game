@@ -2460,7 +2460,7 @@ callerów, sprawdzone grepem całego repo). Tooltip źródła dostępu działa d
 i zapasie 0 kafelek pokazuje neutralne „0/1200" bez żadnej wzmianki o dostępie (dotyczy
 głównie Złota/Mennicy, patrz decyzja). Do rozważenia po playteście, jeśli okaże się mylące.
 
-## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** „kiedy wymieniamy surowce i na przykład chcemy się wymienić technologiami
 powinny być pokazywane tylko technologie te które są niedostępne dla innej cywilizacji
 zarówno po jednej jak i po drugiej stronie. Jeżeli jedna i druga cywilizacja ma tą
@@ -2479,6 +2479,39 @@ zasila konkretnie ten ekran koszyka ogólnego handlu ze zrzutu — wymaga doczyt
 **Kotwice:** `gra/src/main.ts` (`getSellableTechForPlayer`), `gra/src/ui/diplomacyTradeBasket.ts`
 (`defaultTechOptions`, budowa `techChips` dla obu stron).
 **Model:** Sonnet 5 (poza `render/**`).
+
+**NAPRAWIONE (2026-08-08):** Nowy `gra/src/game/diplomacy-tech-trade.ts`
+(`tradeableTechIdsForSide(ownKnown, otherKnown)`), wołany symetrycznie dla obu stron.
+`getSellableTechForPlayer(responderOwnerId)` teraz filtruje względem `ownerResearchedTechs
+(responderOwnerId)`; nowa `getBuyableTechFromOwner(responderOwnerId)` dla strony „otrzymuję".
+`getNegotiationContext` dostarcza osobne `giveTechOptions`/`receiveTechOptions`.
+`diplomacyTradeBasket.ts` czyta odpowiednie pole per strona zamiast jednego wspólnego
+`ctx.techOptions`. Akcja `'6'` (jednokierunkowa „sprzedaj technologię") celowo nietknięta.
+Evaluator: PASS-WITH-NOTES, `tsc` 0 błędów, `diplomacy-tech-trade-test.cjs` 8/8 + pełny pakiet
+dyplomacji (29 plików) zielony, w tym `diplomacy-proposal-test.cjs` 126/126,
+`diplomacy-locks-test.cjs` 70/70, `diplomacy-test.cjs` 148/148,
+`diplomacy-negotiation-table-test.cjs` 54/54, `tech-tree-test.cjs` 19/19, `research-test.cjs` 33/33.
+**Trzy noty Evaluatora, niepilne, zarejestrowane osobno poniżej:** pusta lista technologii bez
+komunikatu placeholder; `grantTechToOwner` bez sprawdzenia prerekwizytów/epoki (ścieżka nowo
+osiągalna po filtrze); `sellableTechCount`/akcja `'6'` może się teraz ukryć, gdy AI zna wszystko
+co gracz (świadoma, udokumentowana konsekwencja filtra, nie błąd).
+
+## P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **OTWARTE — niepilne**
+Po filtrze lista technologii do wymiany bywa realnie pusta (wcześniej nigdy nie była).
+`techChips=''`, ale chip „Technologia" nadal klikalny — pusta siatka, „Dodaj" cicho nic nie robi
+(`readItemFromForm` zwraca `null`). Miasta mają placeholder „— brak miast (SILNIK) —",
+technologie nie mają analogicznego. Do dołożenia tym samym wzorcem.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts:1051-1108`.
+**Model:** Sonnet 5.
+
+## P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **OTWARTE — pre-istniejące, nowo osiągalne**
+`gra/src/game/diplomacy-basket-transfer.ts:68-96` (`grantTechToOwner`) sprawdza tylko „nieznana"/
+„już zbadana", NIE sprawdza prerekwizytów drzewka ani epoki. Wcześniej ścieżka „gracz dostaje
+technologię AI" była praktycznie nieosiągalna (lista `receive` pokazywała własne techy gracza,
+`granted` zawsze `false`) — po dzisiejszym filtrze gracz realnie może zdobyć technologię z
+pominięciem drzewka. Pre-istniejący dług, nowo odblokowany.
+**Kotwice:** `gra/src/game/diplomacy-basket-transfer.ts:68-96`.
+**Model:** Sonnet 5.
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być

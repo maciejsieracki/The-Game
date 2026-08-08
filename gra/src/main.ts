@@ -751,6 +751,7 @@ import {
   type TradeGoodEntry,
   type TradeGoodsCategories,
 } from './game/diplomacy-goods';
+import { tradeableTechIdsForSide } from './game/diplomacy-tech-trade';
 import {
   pickResourceTradeBetweenOwners,
   pickResourceDeficitForOwnerPair,
@@ -14330,12 +14331,35 @@ async function boot(): Promise<void> {
       return out;
     }
 
-    function getSellableTechForPlayer(): Array<{ id: string; label: string; suggestedPrice: number }> {
-      return Array.from(player.zbadane).map(slug => ({
-        id: slug,
-        label: techNameFromSlug(slug) ?? slug,
-        suggestedPrice: 50 + player.era * 20,
-      })).slice(0, 12);
+    /**
+     * R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja): technologie,
+     * które gracz może ZAOFEROWAĆ responderowi — gracz je ma zbadane, responder jeszcze
+     * NIE (jeśli responder też je ma, wymiana nie ma sensu — nie dojdzie do niczego).
+     * Filtr per-responder (nie globalny): ta sama technologia bywa sellable dla jednej
+     * cywilizacji i niesellable dla innej, zależnie od jej stanu badań.
+     */
+    function getSellableTechForPlayer(responderOwnerId: number): Array<{ id: string; label: string; suggestedPrice: number }> {
+      const responderKnown = ownerResearchedTechs(responderOwnerId);
+      return tradeableTechIdsForSide(player.zbadane, responderKnown)
+        .map(slug => ({
+          id: slug,
+          label: techNameFromSlug(slug) ?? slug,
+          suggestedPrice: 50 + player.era * 20,
+        })).slice(0, 12);
+    }
+
+    /**
+     * R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE — lustrzane odbicie getSellableTechForPlayer
+     * dla strony „dostaję": technologie, które responder ma zbadane, a gracz jeszcze nie.
+     */
+    function getBuyableTechFromOwner(responderOwnerId: number): Array<{ id: string; label: string; suggestedPrice: number }> {
+      const responderKnown = ownerResearchedTechs(responderOwnerId);
+      return tradeableTechIdsForSide(responderKnown, player.zbadane)
+        .map(slug => ({
+          id: slug,
+          label: techNameFromSlug(slug) ?? slug,
+          suggestedPrice: 50 + player.era * 20,
+        })).slice(0, 12);
     }
 
     /**
@@ -14729,7 +14753,7 @@ async function boot(): Promise<void> {
         hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
         hasSojusz,
         breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
-        sellableTechCount: getSellableTechForPlayer().length,
+        sellableTechCount: getSellableTechForPlayer(ownerId).length,
         knownRivalsCount: getKnownRivalsFor(ownerId).length,
         progNapRelacja: dip.progNapRelacja,
         progHandelRelacja: dip.progHandelRelacja,
@@ -15041,7 +15065,13 @@ async function boot(): Promise<void> {
           return {
             civName: ownerDiploLabel(ownerId),
             rivalOptions: getKnownRivalsFor(ownerId),
-            techOptions: getSellableTechForPlayer(),
+            // R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE: techOptions = legacy/pojedynczy kierunek
+            // (akcja '6' „sprzedaj technologię", zawsze gracz -> responder = strona „daję").
+            // give/receiveTechOptions zasilają koszyk ogólny (akcja '14'), gdzie obie strony
+            // muszą filtrować niezależnie (patrz buildAddForm w diplomacyTradeBasket.ts).
+            techOptions: getSellableTechForPlayer(ownerId),
+            giveTechOptions: getSellableTechForPlayer(ownerId),
+            receiveTechOptions: getBuyableTechFromOwner(ownerId),
             borderFeeCivil: 20,
             borderFeeMilitary: 40,
             relacjaTotal: audienceRelTotal(ownerId, rel),
