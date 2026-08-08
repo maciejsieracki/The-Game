@@ -2166,3 +2166,17 @@ konsekwencją decyzji R-MOC-HUD-GLOWNY-Q1=C, nie regresją tej pracy.
 **Kotwice:** `gra/src/main.ts` (`getNegotiationContext.relacjaTotal`, `audienceRelTotal`,
 `audienceRelTotalEffective`), `gra/src/ui/diplomacyTradeBasket.ts:~1247,~1458,~1460`,
 `gra/src/ui/diplomacyAudience.ts:~1881` (`mergeBasketCtx`).
+
+## R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY (2026-08-08, nota Evaluatora BUG-TRAKTAT-KOSZYK-REGRESJA) · STATUS: **DO WIEDZY — nie naprawiać teraz, poza zakresem =A**
+**Ustalenie:** naprawa `BUG-TRAKTAT-KOSZYK-REGRESJA=A` usunęła z `TRADE_BASKET_ACTION_IDS`
+(`gra/src/ui/diplomacyTradeBasket.ts`) wyłącznie akcję `'5'` (traktat szlaków) — zgodnie z
+literą decyzji. Przy okazji weryfikacji Evaluator ustalił, że commit `9cc7c76c` (2026-08-05,
+„NAP bezterminowy na stole audiencji") wprowadził DWIE inne, nieudokumentowane zmiany zakresu,
+poza NAP i poza akcją `'5'`:
+1. Skurczył `TREATY_ONLY_FORM_IDS` z 7 pozycji do 1 (`'2','3','4','8','10','12','15'` → `'15'`).
+2. Dopisał do `TRADE_BASKET_ACTION_IDS` również akcje `'6'` (propozycja technologii), `'7'`
+   (namów na wojnę), `'9'` (ultimatum) — nie tylko `'5'`.
+**Czy to zamierzone czy kolejna, dotąd niezauważona regresja tej samej klasy co
+`BUG-TRAKTAT-KOSZYK-REGRESJA` — NIEUSTALONE.** Świadomie NIE naprawiane teraz — poza zakresem
+decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zniknęło z pola widzenia.
+**Kotwice:** `git show 9cc7c76c` (obie listy w `diplomacyTradeBasket.ts`).

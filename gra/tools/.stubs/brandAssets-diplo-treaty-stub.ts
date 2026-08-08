@@ -1,0 +1,16 @@
+export function brandIconSvg() { return ''; }
+export function improvementIconSvg() { return ''; }
+export function mapResourceIconSvg() { return ''; }
+export function terrainIconSvg() { return ''; }
+export function buildingIconSvg() { return ''; }
+export function unitIconSvg() { return ''; }
+export function civIconSvg() { return ''; }
+export function epochIconSvg() { return ''; }
+export function settingIconSvg() { return ''; }
+export function brandMenuComponentsCss() { return ''; }
+export function menuIconSvg() { return ''; }
+export function brandMenuEmblemSvg() { return ''; }
+export function newGameIntroEmblemSvg() { return ''; }
+export function brandMotionCss() { return ''; }
+export function brandMenuBackgroundCss() { return ''; }
+export function svgThumbHtml() { return ''; }

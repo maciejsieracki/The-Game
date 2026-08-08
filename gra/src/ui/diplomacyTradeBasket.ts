@@ -1974,9 +1974,15 @@ export function openQuickDealBasket(
   showTradeBasketModal('trade', action, ctx, onSubmit, onCancel, quick);
 }
 
-/** Akcje obsługiwane przez koszyk PN (handel + dar + traktaty). R-DYP-STOL-A=C */
+/**
+ * Akcje obsługiwane przez koszyk PN (handel + dar + traktaty). R-DYP-STOL-A=C
+ * Akcja 5 (traktat szlaków, `umowa_szlakow`) CELOWO wyłączona — HANDEL-SPLIT-Q1=B:
+ * traktat szlaków jest całkowicie bez koszyka wymiany (idzie od razu na stół, patrz
+ * diplomacyAudience.ts case aid==='5'). BUG-TRAKTAT-KOSZYK-REGRESJA=A (2026-08-08):
+ * commit 9cc7c76c przypadkiem dopisał '5' tutaj, cofając to rozdzielenie — przywrócone.
+ */
 export const TRADE_BASKET_ACTION_IDS = new Set([
-  '2', '3', '4', '5', '6', '7', '8', '9', '10', '12', '13', '14', '15',
+  '2', '3', '4', '6', '7', '8', '9', '10', '12', '13', '14', '15',
 ]);
 
 export function getTradeBasketMode(actionId: string): TradeBasketMode {
