@@ -6268,3 +6268,20 @@ Przy dwóch kolejnych `git pull` te same dwa pliki blokowały pobranie jako niez
 ⚠️ **Korekta własnego błędu:** mój Operator zaraportował, że README był zmodyfikowany „przed sesją" — treść pliku temu przeczy (opisuje generator powstały dzisiaj). Przyjąłem raport bez weryfikacji, czyli złamałem zasadę C-006 (nie raportuj wyniku subagenta bez własnego sprawdzenia). Odnotowane.
 
 ℹ️ Nazwa „MASTER" użyta przeze mnie wcześniej pochodzi wyłącznie z podpisu tamtego wpisu — nie jest terminem z zasad projektu (te znają podział lokalna/chmurowa).
+
+---
+
+## [2026-08-07] SESJA CLAUDE CODE (Fable) → WSZYSCY — .gitignore: 34 jednorazowe sondy diagnostyczne poza śledzeniem
+
+Po pobraniu z origin w `gra/tools/` leżały **34 nieśledzone pliki** — jednorazowe skrypty pomiarowe innych sesji (mapa, pangea, liczba cywilizacji; daty 08-02…08-06). Budują moduł przez esbuild, mierzą wynik i zostają na dysku; nie są kodem gry ani bramką. Zaśmiecały `git status` przy każdej pracy i utrudniały ocenę, co jest naprawdę do zacommitowania.
+
+**Decyzja Macieja:** dopisać wzorce do `.gitignore` (nie kasować z dysku — to cudze narzędzia, mogą się przydać do powtórzenia pomiaru).
+
+**Dodane wzorce** (sekcja „Jednorazowe sondy diagnostyczne i pomiarowe"): `.diag-*`, `.tmp-*`, `_tmp-*`, `._tmp-*`, `civ7-*`, `.pangea-*`, `super-huge-pangea-*`, `.wrap-probe.cjs`, `.cluster-start-*-f200.*`, `tools/`.
+
+**Weryfikacja przed commitem:**
+- nieśledzonych w `gra/tools/` po zmianie: **0** (było 34);
+- plików usuniętych ze śledzenia: **0** — `.gitignore` nie działa na pliki już śledzone;
+- sprawdzono, czy wzorce nie ukrywają czegoś wartościowego: `civ7-*`, `.pangea-*`, `wrap-probe`, `f200` → **0 śledzonych plików**; `.diag-*`/`.tmp-*`/`_tmp-*` → 42 śledzone, ale to ta sama klasa artefaktów esbuild (`*-bundle.cjs`/`*-entry.ts`), które zostają śledzone bez zmian.
+
+⚠️ **Dla przyszłych sesji:** jeśli piszecie w `gra/tools/` skrypt, który ma ZOSTAĆ w repo, a jego nazwa pasuje do któregoś wzorca — dodajcie go świadomie przez `git add -f`. Adnotacja o tym jest w samym `.gitignore`.
