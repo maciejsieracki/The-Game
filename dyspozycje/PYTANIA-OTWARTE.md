@@ -2375,3 +2375,21 @@ zasila konkretnie ten ekran koszyka ogólnego handlu ze zrzutu — wymaga doczyt
 **Kotwice:** `gra/src/main.ts` (`getSellableTechForPlayer`), `gra/src/ui/diplomacyTradeBasket.ts`
 (`defaultTechOptions`, budowa `techChips` dla obu stron).
 **Model:** Sonnet 5 (poza `render/**`).
+
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
+liczba tych surowców, które mamy dostępne i pomyśl o tym, że trzeba będzie przewidzieć, że
+tych surowców będzie kiedyś znacznie więcej, więc musi być w jakiś sposób czytelny pokazywania
+tej większej ilości surowców."
+**Objaw (zrzut, koszyk wymiany, sekcja „Surowiec (pakiety ×10)"):** chipy Drewno/Kamień/Glina
+pokazują tylko ikonę i nazwę — **bez liczby posiadanego zapasu**. Gracz musi zgadywać, ile ma,
+zanim doda pakiet do oferty.
+**Dwa osobne wymagania w zgłoszeniu:** (1) dopisać liczbę dostępnego zapasu pod/przy każdym
+chipie surowca — analogicznie do wzorca, który już istnieje w `buildEmpireResourceRows`
+(main.ts) i w panelu imperium (`stock`); (2) **zaprojektować układ skalowalny** — dziś 3
+surowce w rzędzie, docelowo może być ich znacznie więcej (kolejne epoki/surowce) — sam dopisek
+liczby nie wystarczy, trzeba przemyśleć siatkę/scroll/kategorie, żeby nie rozjechało się przy
+większej liczbie pozycji.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (chipy surowców w koszyku wymiany).
+**Model:** jeśli zmiana dotknie układu/renderowania wizualnego — do ustalenia czy to
+`render/**` czy czysty DOM/CSS w `ui/**` (prawdopodobnie to drugie, Sonnet 5 wystarczy).

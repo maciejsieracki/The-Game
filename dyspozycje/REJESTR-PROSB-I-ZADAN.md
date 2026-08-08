@@ -1327,3 +1327,11 @@ ma tą technologię to nie ma sensu jej pokazywać". Zarejestrowane w `PYTANIA-O
 Wstępnie: `getSellableTechForPlayer()` (main.ts:14137) filtruje tylko po własnych zbadanych
 technologiach oferującego, nie po tym czy odbiorca już je ma — pasuje do zgłoszenia, ale
 niepewne czy to funkcja zasilająca akurat ten ekran koszyka (do doczytania).
+
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08) — nowe zgłoszenie z playtestu
+**Jego słowa:** „pod symbolem surowca powinna być liczba tych surowców, które mamy
+dostępne... trzeba przewidzieć, że tych surowców będzie znacznie więcej, więc musi być
+czytelny sposób pokazywania tej większej ilości". Zarejestrowane w `PYTANIA-OTWARTE.md`.
+Dwa wymagania: (1) dopisać liczbę zapasu do chipów surowca w koszyku wymiany
+(`diplomacyTradeBasket.ts`), (2) zaprojektować skalowalny układ na przyszłość (więcej
+surowców niż dziś 3 w rzędzie).
