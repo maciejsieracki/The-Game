@@ -49,7 +49,17 @@ assert(duzy.w * duzy.h === 40320, 'Duży → 40320 heksów');
 
 const eDims = M.eStartHexDims('Duży');
 assert(eDims && eDims[0] === 240 && eDims[1] === 168, 'Panel-E Duży hex dims');
-assert(M.eStartMiastaPanstwa('Duży') === 14, 'Panel-E Duży miasta_panstwa=14');
+
+// eStartMiastaPanstwa() to czysty passthrough skala_mapy[label].miasta_panstwa z
+// gra/data/e-start-params.json (Panel-E) — wartość wyprowadzona z żywych danych,
+// żeby test nie gnił przy każdym rebalansie Panel-E (2026-08-08: 14 było martwe od
+// cofniętego eksperymentu ×2 miast-państw, commit 4a60fa6 → d807467, nigdy nie zsynced).
+const eStartParams = JSON.parse(fs.readFileSync(path.join(GRA, 'data', 'e-start-params.json'), 'utf8'));
+const duzyMiastaPanstwaExpected = eStartParams.skala_mapy['Duży'].miasta_panstwa;
+assert(
+  M.eStartMiastaPanstwa('Duży') === duzyMiastaPanstwaExpected,
+  `Panel-E Duży miasta_panstwa=${duzyMiastaPanstwaExpected} (z e-start-params.json skala_mapy.Duży.miasta_panstwa)`,
+);
 
 for (const label of M.ROZMIAR_MENU_LABELS) {
   const key = M.rozmiarFromMenuLabel(label);
