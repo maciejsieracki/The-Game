@@ -79,3 +79,8 @@ gra/tools/.ai-difficulty-bonus-*.ts
 
 # Plik tymczasowy bramki autobot-smoke (nadpisywany przy kazdym uruchomieniu)
 dyspozycje/autobot/logs/playbook-smoke-tmp.json
+
+# Stub tej bramki (unit-context-card-test.cjs), pisany wlasna nazwa zeby nie
+# brudzic wspoldzielonego trackowanego gra/tools/.stubs/brandAssets-stub.ts
+# (BUG-TOOLTIP-MOC-NIEPELNA N4, 2026-08-08)
+gra/tools/.stubs/unit-context-card-brandAssets-stub.ts

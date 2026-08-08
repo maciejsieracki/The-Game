@@ -17804,6 +17804,12 @@ async function boot(): Promise<void> {
         obrona: unitObrona(def),
         hpMax: unitHealth(def),
         pancerz: normFieldVal(def['armor'] ?? def['Pancerz'], 0),
+        // BUG-TOOLTIP-MOC-NIEPELNA: pozostałe 4 składowe fieldPower() (unit-power.ts),
+        // te same nazwy pól co unitDefFor()/combatUnitFromDef() (TW v3 EN, units.json).
+        weaponDamage: normFieldVal(def['weaponDamage'], 0),
+        piercing: normFieldVal(def['piercing'], 0),
+        chargeBonus: normFieldVal(def['chargeBonus'], 0),
+        missileAttack: normFieldVal(def['missileAttack'], 0),
       }, u);
     }
 

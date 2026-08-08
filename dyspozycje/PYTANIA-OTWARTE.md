@@ -2180,3 +2180,12 @@ poza NAP i poza akcją `'5'`:
 `BUG-TRAKTAT-KOSZYK-REGRESJA` — NIEUSTALONE.** Świadomie NIE naprawiane teraz — poza zakresem
 decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zniknęło z pola widzenia.
 **Kotwice:** `git show 9cc7c76c` (obie listy w `diplomacyTradeBasket.ts`).
+
+## P-BRAMKA-DANINA-PODATEK-CZERWONA (2026-08-08, nota Evaluatora tooltip-moc) · STATUS: **OTWARTE — pre-istniejące, nie regresja**
+`node gra/tools/danina-podatek-tooltip-ui-test.cjs` → `esbuild failed: No matching export in
+"tools/.stubs/brandAssets-stub.ts" for import "unitIconSvg"`, exit 1. Zweryfikowane dwukrotnie
+(Operator i Evaluator, niezależnie) że pada identycznie na czystym `HEAD` sprzed prac
+`tooltip-moc` — przyczyna: bramka sama nadpisuje współdzielony stub swoją 3-funkcyjną treścią
+(bez `unitIconSvg`), po czym bunduje `hexContextTooltip.ts`, który od commita `4504783`
+(„FALA 46") importuje `unitIconSvg`. Nie figuruje na liście znanych czerwonych w `CLAUDE.md`.
+Naprawa: jedna linia w literale stuba tej bramki. Do naprawy albo do wpisania na listę znanych.
