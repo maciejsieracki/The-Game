@@ -1,3 +1,11 @@
+## [09:00 UTC, 2026-08-07] SESJA LOKALNA (MASTER) → Maciej / GROK — PULL WYKONANY: dysk = origin/main f3437e3 (FALA 256 na dysku)
+
+Zamykam CZEKAM-NA z [13:24]: dysk właściciela zsynchronizowany do `f3437e3` (tip `41eed4d6`/FALA 256 zawarty).
+|- Przebieg niestandardowy: zwykły `git pull` odbił się o (a) osierocony `index.lock` po przerwanym scaleniu, (b) masowy dryf CRLF + przestarzałe kopie ~3,4k plików na dysku. ZWERYFIKOWANO przed naprawą: dysk był ścisłym PODZBIOREM origin (kanał 5524→6173 linii, WERSJE/DZIENNIK — origin ⊃ dysk; DYSPOZYCJA-GRAFIKA-JEDNOSTKI diff=0) → wyrównanie do origin/main bez utraty czegokolwiek (checkout partiami przez `git archive|tar` — limit czasu wywołań omija pełny reset).
+|- Asekuracja: `gra-robocza/_sandbox/MASTER/backup-dyspozycje-2026-08-07.tar.gz` (5,4 MB, pełne dyspozycje sprzed wyrównania).
+|- Stan: HEAD=index=drzewo=f3437e3 · WERSJE: ROBOCZA **693a2c57** AKTUALNA · START.html gotowy do testu.
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra na `693a2c57` · litery DOPREC / `działaj` (6 Autobotów ECHO) wg [13:05]/[13:24].
+
 ## [13:24 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 256 693a2c57
 
 Maciej „3” = merge+deploy relief (osobno od paczki ABC 6)
@@ -6246,3 +6254,17 @@ Bramki na scalonym drzewie: tsc 0 · logic 213/213 · tech-tree 19/19 · unit-re
 research ALL GREEN · autobot-smoke 11/11 · upkeep 73/73.
 W TOKU: bramka `map-gen-regression` (Pangea) + audyt `PYTANIA-OTWARTE.md` — wyniki jutro.
 CZEKAM-NA: nic
+
+---
+
+## [2026-08-07] SESJA CLAUDE CODE (Fable) → WSZYSCY — zabezpieczenie niezacommitowanych zmian przy pull
+
+Przy dwóch kolejnych `git pull` te same dwa pliki blokowały pobranie jako niezacommitowane. **Nie odrzuciłem ich** — sekwencja: `git stash` (po ścieżkach, nie całe drzewo) → `pull --rebase` → `stash pop` → weryfikacja, czy treść nie przyszła już z origin → commit. Zero konfliktów.
+
+**Co zacommitowane (na prośbę Macieja — jawnie, z diffem):**
+1. `dyspozycje/_handoff/KANAL-PRACA.md` (+8 linii) — wpis podpisany „SESJA LOKALNA (MASTER) → Maciej / GROK" z 09:00 UTC o synchronizacji dysku do `f3437e3`. **Nie moja praca** — zweryfikowałem po pobraniu, że tej treści NIE MA na origin, więc jej zabezpieczenie było konieczne (inaczej ginie przy kolejnym pull).
+2. `dyspozycje/autobot/README.md` (+24/−1) — dokumentacja generatora `playbook-md-to-json.cjs` i zasady „playbook.json jest GENEROWANY, nie edytować ręcznie". Treść zgodna z dzisiejszymi decyzjami Macieja.
+
+⚠️ **Korekta własnego błędu:** mój Operator zaraportował, że README był zmodyfikowany „przed sesją" — treść pliku temu przeczy (opisuje generator powstały dzisiaj). Przyjąłem raport bez weryfikacji, czyli złamałem zasadę C-006 (nie raportuj wyniku subagenta bez własnego sprawdzenia). Odnotowane.
+
+ℹ️ Nazwa „MASTER" użyta przeze mnie wcześniej pochodzi wyłącznie z podpisu tamtego wpisu — nie jest terminem z zasad projektu (te znają podział lokalna/chmurowa).
