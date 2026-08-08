@@ -1966,7 +1966,7 @@ wyłącznie na gruncie rozgrywki, nie kosztu.
 `battle/mapFieldBattle.ts:143`) pokazuje Moc nominalną OBOK prognozy szans liczonej ze skalowanej
 — zostałby ostatnim miejscem z wariantem A.
 
-## P-BRAMKA-UNIT-POWER-CZERWONA (2026-08-07) · STATUS: **OTWARTE — bramka czerwona, nieudokumentowana**
+## P-BRAMKA-UNIT-POWER-CZERWONA (2026-08-07) · STATUS: **ZAMKNIĘTE — udokumentowana w CLAUDE.md §BRAMKI**
 `node gra/tools/unit-power-test.cjs` → **4 pass, 2 fail, exit 1**:
 `FAIL: Hastati M_pole=50 (got 57.5)` · `FAIL: sumArmyFieldPower 3 units (got 167.5)`.
 Stan **pre-istniejący** (drzewo bez zmian), przyczyna: zdezaktualizowane wartości oczekiwane
