@@ -1159,3 +1159,22 @@ rozmowa" ujednolicony we wszystkich pięciu plikach, ale trzeci, STARSZY wyjąte
 dopisuje brakujący wyjątek inżynierski do `playbook.md` C-018 i regeneruje `playbook.json`
 (wersja 18) — wszystkie trzy wyjątki teraz identyczne semantycznie w pięciu plikach.
 Model: Sonnet 5 (orkiestrator, wdrożenie już potwierdzonej decyzji) + Opus 5 Evaluator.
+
+## R-JAK-EDYTOWAC-AUTOBOT-DOKUMENT (2026-08-08) — meta-dokument: zasady edycji samego systemu AutoBot
+**Prośba Macieja:** „spisz jeszcze zasady, jakimi się kierowałeś przy tworzeniu tego
+skillsa autobot w przyszłości, żeby mógł zawsze robić zmiany w autobocie", doprecyzowana:
+„kluczowe jest to, żeby nowy Skills odtworzył cały mechanizm działania łącznie z plikami,
+które muszą być założone i używane w całym procesie kodowania i tworzenia".
+**Wykonanie:** nowy plik `dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` — §0
+pełna mapa mechanizmu w 5 warstwach (wejście / kanon / pamięć / egzekwowanie w kodzie /
+ślad-księgowość, łącznie ok. 40 plików i ścieżek), §1-10 zasady wyniesione z konkretnych
+incydentów tej sesji (m.in. rozjazd 5 plików przy R-PROFIL-TURNIEJ-PUNKTACJA-Q1, generator
+playbook.json, fałszywe "Wdrożenie: gotowe"), checklista końcowa. Pointer dodany w
+`civ-autobot/SKILL.md` (sekcja „Reguła nadrzędna").
+**Werdykt Evaluatora (Opus 5):** runda 1 FAIL — mapa §0 niekompletna: pominięte 5 plików
+`.mdc` (w tym `alwaysApply: true` konkurencyjne dla `autobot-evaluator-operator.mdc`),
+6 z 10 plików `src/`, 4 pliki spoza src (`PROMPT-AUTOBOT-DLA-AGENTOW.md`,
+`protokol-v1.2/`, `KOLEJKA-FABLE-5.md`, `dist-smoke/`), 1 plik kanonu
+(`R-AUTOBOT-EVALUATOR-WARSTWY-MODELI.md`), niedoliczone incydenty w §5. Runda 2 PASS —
+wszystkie braki zweryfikowane jako naprawione bezpośrednio w repo (nie na słowo).
+Model: Sonnet 5 (orkiestrator) + Opus 5 Evaluator (2 rundy).

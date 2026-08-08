@@ -53,6 +53,11 @@ Kanon procesu: `docs/decyzje/R-PROC-AUTOBOT.md` · `R-PROC-AUTOBOT-EVAL-SCOPE.md
 `R-PROC-AUTOBOT-EVAL-STRICT*.md` · `R-PROC-AUTOBOT-ABC-TURNIEJ.md` ·
 `.cursor/rules/autobot-evaluator-operator.mdc`. Zasady krytyczne: `CLAUDE.md`.
 
+**Zmieniasz reguły samego AutoBota (nie kod gry)?** Najpierw przeczytaj
+`dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` — mapa WSZYSTKICH plików
+mechanizmu (5 warstw) i checklista, która w praktyce (`R-PROFIL-TURNIEJ-PUNKTACJA-Q1`)
+złapała 3 kolejne rundy realnych braków, zanim zmiana była naprawdę kompletna.
+
 ## 0. Rytuał startu sesji (zanim cokolwiek zrobisz)
 
 1. `git pull --ff-only origin main` — nad repo pracuje kilka sesji, które **nie widzą się nawzajem**; jedynym łącznikiem jest repozytorium, właściciel nie jest listonoszem.
