@@ -88,6 +88,21 @@ export interface AICmdBuild {
   cityId: string;
   /** id key matching Budynek or Jednostka in data JSON */
   buildingId: string;
+  /**
+   * P-AI-MOC-GAP (Maciej 2026-08-08): kolejni kandydaci (tańsi/inni) z TEJ SAMEJ
+   * listy chooseCityProduction, w malejącym priorytecie, WYŁĄCZAJĄC buildingId.
+   * Powód: decyzja zapada dla wszystkich miast jednego ownera z odczytu tego
+   * samego, jeszcze nienaruszonego stanu puli surowców państwa (NIE snapshot/
+   * kopia — żywy odczyt stanu, który w tej chwili jeszcze się nie zmienił) —
+   * dopiero egzekucja
+   * (main.ts, cmd.type==='build') faktycznie odejmuje surowce, więc miasto
+   * przetwarzane później w tej samej turze może zastać już opróżnioną pulę po
+   * mieście przetworzonym wcześniej. Silnik próbuje buildingId, a gdy egzekucyjny
+   * canAfford* mu odmówi — kolejno pozycje z fallbackIds, zamiast zostawiać
+   * kolejkę produkcji pustą mimo że miasto stać na coś tańszego z tej samej listy.
+   * Gdy brak/puste — zero regresji (dokładnie jak dziś, jedna próba).
+   */
+  fallbackIds?: readonly string[];
 }
 
 /**
@@ -381,6 +396,16 @@ export interface AITurnOpts {
   powerRank?: number;
   /** Moc państwa ownerId — do wyboru słabszego celu wojskowego (C-AI-MOC-Q2=A). */
   powerOfOwner?: (ownerId: number) => number;
+  /**
+   * Scratch per wywołanie chooseCityProduction (P-AI-MOC-GAP, Maciej 2026-08-08):
+   * lista POZOSTAŁYCH kandydatów przechodzących budżetową bramkę canAfford (bez
+   * wybranego zwycięzcy), w malejącym priorytecie (score, ew. score/koszt).
+   * Silnik NIE ustawia — chooseCityProduction nadpisuje przy KAŻDYM wywołaniu
+   * (także pustą tablicą, gdy nie było czego wybrać z opts.canAfford); decideAITurn
+   * / decideDefensiveCopyTurn odczytują natychmiast po wywołaniu i dopisują do
+   * AICmdBuild.fallbackIds, zanim kolejne miasto nadpisze to pole ponownie.
+   */
+  lastProductionFallbackIds?: string[];
 }
 
 /** Bramka walki AI — domyślnie przepuszcza (testy bez silnika). */
@@ -1103,6 +1128,10 @@ export function chooseCityProduction(
   map: GameMap,
   difficultyParams: DifficultyParams,
 ): string | null {
+  // P-AI-MOC-GAP: reset scratch na KAŻDE wywołanie (jedno miasto = jedno wywołanie) --
+  // patrz AITurnOpts.lastProductionFallbackIds, odczyt natychmiast po return w decideAITurn.
+  opts.lastProductionFallbackIds = [];
+
   const built: string[] = opts.cityBuildings?.[cityId] ?? [];
 
   const city = myCities.find(c => c.id === cityId);
@@ -1442,6 +1471,10 @@ export function chooseCityProduction(
     }
     // Something affordable: choose best by score/cost ratio when itemCost provided,
     // otherwise by score alone (preserves existing behaviour when itemCost absent).
+    // P-AI-MOC-GAP-EVAL (Maciej 2026-08-08): opts.itemCost NIGDY nie jest ustawiane
+    // przez main.ts (ani żadne inne wywołanie produkcyjne) — gałąź poniżej jest dziś
+    // MARTWA w produkcji (żywa tylko w testach, np. ai-test.cjs T5d). Zostaje jako
+    // przygotowanie na przyszłość (ratio score/koszt), nie usuwać bez świadomej decyzji.
     const getItemCost = opts.itemCost;
     if (getItemCost !== undefined) {
       // Prefer the top-scored affordable item; if the top by score has a much worse
@@ -1456,9 +1489,16 @@ export function chooseCityProduction(
         const costB = Math.max(getItemCost(b.id), 1);
         return (b.score / costB) - (a.score / costA);
       });
-      return topBand[0]?.id ?? affordable[0]?.id ?? null;
+      const winnerId = topBand[0]?.id ?? affordable[0]?.id ?? null;
+      // P-AI-MOC-GAP: reszta affordable (bez zwycięzcy), w kolejności topBand -> reszta
+      // affordable po score. Fallback dla egzekucji (main.ts), patrz AICmdBuild.fallbackIds.
+      opts.lastProductionFallbackIds = [...topBand, ...affordable]
+        .map(c => c.id)
+        .filter((id, idx, arr) => id !== winnerId && arr.indexOf(id) === idx);
+      return winnerId;
     }
     // No itemCost — pick highest-scored affordable item (already sorted)
+    opts.lastProductionFallbackIds = affordable.slice(1).map(c => c.id);
     return affordable[0]?.id ?? null;
   }
 
@@ -1996,7 +2036,14 @@ export function decideAITurn(
       city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
     );
     if (buildId !== null) {
-      commands.push({ type: 'build', cityId: city.id, buildingId: buildId });
+      // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
+      // samej pętli nadpisze opts.lastProductionFallbackIds przy następnym wywołaniu).
+      commands.push({
+        type: 'build',
+        cityId: city.id,
+        buildingId: buildId,
+        fallbackIds: opts.lastProductionFallbackIds ?? [],
+      });
     }
   }
 
@@ -2376,7 +2423,14 @@ function decideDefensiveCopyTurn(
       city.id, myCities, units, playerId, data, mods, opts, map, difficultyParams,
     );
     if (buildId !== null) {
-      commands.push({ type: 'build', cityId: city.id, buildingId: buildId });
+      // P-AI-MOC-GAP: dołącz fallbacki (odczyt NATYCHMIAST — kolejne miasto w tej
+      // samej pętli nadpisze opts.lastProductionFallbackIds przy następnym wywołaniu).
+      commands.push({
+        type: 'build',
+        cityId: city.id,
+        buildingId: buildId,
+        fallbackIds: opts.lastProductionFallbackIds ?? [],
+      });
     }
   }
 
@@ -3728,6 +3782,94 @@ export function decideAIDiplomacy(
   }
 
   return komendy;
+}
+
+/**
+ * Checks injected by main.ts into pickExecutableCandidate() (P-AI-MOC-GAP-EVAL,
+ * Maciej 2026-08-08) -- wszystkie CZYTAJĄ stan gry (kolejka, tech/epoka, dane
+ * przedmiotu, pula surowców/rush-eligibility), ŻADEN nie mutuje. Efekty uboczne
+ * (deductOwnerStockCost, purchaseRecruitmentUnit, enqueue) main.ts wykonuje SAM,
+ * PO otrzymaniu zwycięzcy z pickExecutableCandidate -- helper tylko WYBIERA.
+ */
+export interface ExecutableCandidateChecks<TItem> {
+  /** Kandydat już siedzi w kolejce produkcji -- STOP (sukces, nic więcej nie trzeba). */
+  isAlreadyQueued: (id: string) => boolean;
+  /** Tech/epoka/teren pozwalają budować ten element (availableProduction). */
+  isBuildAllowed: (id: string) => boolean;
+  /** budynek -> buildingProductionItem / jednostka -> unitProductionItem; null = nieznane id. */
+  resolveItem: (id: string) => TItem | null;
+  /**
+   * Czy stać nas na ten przedmiot Z PULI SUROWCÓW PAŃSTWA (budynek: koszt
+   * surowcowy; jednostka: canAffordUnitRecruitFull) -- CZYSTY odczyt, nic nie
+   * pobiera naprawdę (to main.ts robi po otrzymaniu zwycięzcy).
+   * P-AI-MOC-GAP-EVAL/R2 (Maciej 2026-08-08, Evaluator): dla jednostek to NIE
+   * jest "surowiec LUB rush za złoto" -- rush (shouldAIRushBuyUnit, main.ts,
+   * PO wyborze zwycięzcy) to wyłącznie opcja TEMPA płatności (złoto zamiast
+   * tur pracy), bramkowana TYM SAMYM progiem magazynowym co zwykły zakup
+   * (jego purchaseRecruitmentUnit wewnątrz woła pickUnitRecruitHint, co jest
+   * matematycznie równoważne canAffordUnitRecruitFull===true) -- nie jest to
+   * niezależna, alternatywna ścieżka finansowania. Traktowanie jej jako takiej
+   * pozwalało wybrać kandydata bez pokrycia magazynowego jako "afordowalny",
+   * co gwarantowało porażkę egzekucji i blokowało próbę kolejnych fallbacków.
+   */
+  canAfford: (item: TItem) => boolean;
+}
+
+/** Wynik pickExecutableCandidate -- patrz komentarz przy funkcji. */
+export type ExecutableCandidateResult<TItem> =
+  | { id: string; item: TItem; alreadyQueued: false }
+  | { id: string; item: null; alreadyQueued: true }
+  | null;
+
+/**
+ * P-AI-MOC-GAP-EVAL/R2 (Maciej 2026-08-08, Evaluator, punkt 3): jedyne miejsce
+ * budujące listę kandydatów [główny + fallbacki] dla pickExecutableCandidate --
+ * wyekstrahowane z main.ts (`cmd.type==='build'`, było `[cmd.buildingId,
+ * ...(cmd.fallbackIds ?? [])]` inline) właśnie po to, żeby
+ * tools/ai-prod-fallback-test.cjs (executeBuild()) mógł IMPORTOWAĆ tę samą
+ * funkcję zamiast duplikować jej treść -- duplikat nie czerwienił się pod
+ * mutacją tej jednej linii w main.ts, bo test odtwarzał logikę osobno zamiast
+ * czytać prawdziwe okablowanie main.ts.
+ */
+export function buildCandidateIds(
+  cmd: { buildingId: string; fallbackIds?: readonly string[] },
+): string[] {
+  return [cmd.buildingId, ...(cmd.fallbackIds ?? [])];
+}
+
+/**
+ * P-AI-MOC-GAP-EVAL (Maciej 2026-08-08): CZYSTY odpowiednik pętli egzekucji
+ * komendy `build` w main.ts (`cmd.type === 'build'`) -- wyekstrahowany z main.ts,
+ * żeby retry-po-fallbackach dało się testować mutacyjnie (patrz
+ * tools/ai-prod-fallback-test.cjs T3e/T3f/T3g), wzorem shouldAIRushBuyUnit niżej.
+ *
+ * Próbuje kandydatów w KOLEJNOŚCI z `candidateIds` (główny kandydat +
+ * AICmdBuild.fallbackIds), zatrzymując się na pierwszym, który:
+ *   1) NIE jest już w kolejce miasta (isAlreadyQueued) -- jeśli JEST, cała próba
+ *      kończy się natychmiast jako "już załatwione" (alreadyQueued:true, item:null),
+ *      bez sprawdzania kolejnych kandydatów (identycznie jak `break` w main.ts);
+ *   2) przechodzi bramkę tech/epoka/teren (isBuildAllowed);
+ *   3) da się rozwiązać do realnego przedmiotu produkcji (resolveItem);
+ *   4) ma pokrycie finansowe (canAfford).
+ * Kandydaci odrzuceni na (2)/(3)/(4) są POMIJANI (nie przerywają próby) --
+ * dokładnie jak `continue` w main.ts. Gdy WSZYSCY kandydaci zawiodą -> null
+ * (main.ts zostawia kolejkę pustą na tę turę -- naprawdę nie stać na nic z listy).
+ */
+export function pickExecutableCandidate<TItem>(
+  candidateIds: readonly string[],
+  checks: ExecutableCandidateChecks<TItem>,
+): ExecutableCandidateResult<TItem> {
+  for (const id of candidateIds) {
+    if (checks.isAlreadyQueued(id)) {
+      return { id, item: null, alreadyQueued: true };
+    }
+    if (!checks.isBuildAllowed(id)) continue;
+    const item = checks.resolveItem(id);
+    if (item === null) continue;
+    if (!checks.canAfford(item)) continue;
+    return { id, item, alreadyQueued: false };
+  }
+  return null;
 }
 
 /**
