@@ -862,6 +862,12 @@ export function availableProduction(
     if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) {
       continue;
     }
+    // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): jednostki drewniane — analogiczna
+    // bramka do brązu/żelaza, tylko zapas w magazynie państwa. Bez progu startowego
+    // (odrzucona opcja C) — świadome ryzyko blokady startu gry bez Drewna w zapasie.
+    if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) {
+      continue;
+    }
     // Super-jednostka (audyt #11, decyzja A3=A): max 1 ŻYWA sztuka na cywilizację --
     // znika z listy produkcji dopóki egzemplarz danej nazwy żyje (respawn po śmierci
     // działa samoczynnie, bo aliveUnitTypeNames liczy się z bieżącego rosteru).
@@ -955,6 +961,8 @@ export function availableReplacementsFor(
     const surowiec = stripDiacritics((u.Surowiec ?? '').toString().trim());
     if (surowiec === 'braz' && !empireStockHas(ctx.empireResourceStock, 'braz')) return false;
     if (surowiec === 'zelazo' && !empireStockHas(ctx.empireResourceStock, 'zelazo')) return false;
+    // BUG-BRAMKA-DREWNO-BRAK (Maciej, decyzja A): ta sama bramka drewna co w availableProduction.
+    if (surowiec === 'drewno' && !empireStockHas(ctx.empireResourceStock, 'drewno')) return false;
     // Super-jednostka (audyt #11, decyzja A3=A): "Zastąp" nie może dać drugiej żywej
     // sztuki -- ta sama bramka co availableProduction (aliveUnitTypeNames).
     if (u['Super-jednostka'] === 'TAK' && ctx.aliveUnitTypeNames?.has(u.Jednostka)) return false;

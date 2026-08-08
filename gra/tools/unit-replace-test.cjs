@@ -96,12 +96,14 @@ const RZYM_ZELAZO_CTX = {
   placedImprovements: null,
   hasKopalniaNaZlozuZelaza: true,
   // UNIT-REPLACE-EVOCATI-Q1 runda 2: passesAvailabilityGates (production.ts) sprawdza
-  // dostep do surowca Braz/Zelazo przez empireStockHas(ctx.empireResourceStock, ...) --
-  // bez tego pola KAZDA jednostka Surowiec=Braz/Zelazo jest odrzucana (undefined ?? 0 > 0
-  // = false). Symulacja gracza z pelnym magazynem obu surowcow (10 jednostek kazdy) --
+  // dostep do surowca Braz/Zelazo/Drewno przez empireStockHas(ctx.empireResourceStock, ...) --
+  // bez tego pola KAZDA jednostka Surowiec=Braz/Zelazo/Drewno jest odrzucana (undefined ?? 0 > 0
+  // = false). Symulacja gracza z pelnym magazynem wszystkich trzech surowcow (10 jednostek kazdy) --
   // zgodna z tym, co main.ts realnie przekazuje po naprawie replaceAvailabilityCtxForCity/
   // replaceAvailabilityCtxEmpireWide (citySurowceSumForOwner).
-  empireResourceStock: { braz: 10, zelazo: 10 },
+  // BUG-BRAMKA-DREWNO-BRAK: dodano 'drewno' -- bez niego Wojownik (Surowiec=Drewno) znika
+  // z listy zamienników mimo ze test celowo symuluje gracza z pelnym dostepem do surowcow.
+  empireResourceStock: { braz: 10, zelazo: 10, drewno: 10 },
 };
 const TECHS_ZELAZO = ['Brazownictwo', 'Brązownictwo', 'Hutnictwo żelaza'];
 

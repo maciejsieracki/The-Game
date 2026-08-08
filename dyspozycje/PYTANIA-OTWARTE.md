@@ -2216,3 +2216,30 @@ bitwę), ale pytanie „czy fortyfikacja polowa garnizonu też ma zniknąć z ta
 Moc była naprawdę niezależna od miejsca postoju" nie zostało zadane wprost.
 **Kotwice:** `gra/src/main.ts` (`combatPowerScaledDefFor`, `fortifyFieldScaledDefFor`,
 `unitGetsFortifyDefenseBonus`).
+
+## P-DREWNO-BRAMKA-RYZYKO-STARTU (2026-08-08, nota N1 Evaluatora zwiadowca-drewno) · STATUS: **DO WIEDZY — świadome ryzyko z decyzji BUG-BRAMKA-DREWNO-BRAK=A**
+**Zmierzone:** miasta startują z pustym magazynem surowców (`cities.ts:415`); Drewno
+pochodzi wyłącznie z ulepszenia terenu `tartak`. 14 z 75 jednostek w `units.json` wymaga
+Drewna. **Przy pustym magazynie państwa jedyną budowalną jednostką w epokach 1-3 jest
+Zwiadowca** — dokładnie ryzyko, na które właściciel świadomie się zgodził (odrzucona opcja
+C z progiem startowym). AI ma parytet (ta sama bramka, ten sam `empireResourceStock`).
+Do potwierdzenia playtestem — czy to realnie blokuje wczesną grę, czy tartak/handel
+wystarczająco szybko rozwiązuje brak Drewna.
+
+## P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
+`gra/tools/.stubs/brandAssets-stub.ts` jest plikiem ŚLEDZONYM w gicie, a co najmniej
+4 bramki (`army-merge-dismiss-bounce-test.cjs`, `pre-battle-defender-retreat-test.cjs`,
+`unit-context-card-test.cjs`, `danina-podatek-tooltip-ui-test.cjs`) nadpisują go własną
+treścią przy każdym uruchomieniu — każde szersze omiatanie testów zostawia fałszywy `M`
+na tym pliku w `git status`. Ten sam wzorzec doprowadził już dziś do dedykowanych stubów
+w `tooltip-moc` (`unit-context-card-brandAssets-stub.ts`) i `traktat-koszyk`
+(`brandAssets-diplo-treaty-stub.ts`). Do rozważenia: systemowa naprawa (każda bramka
+dostaje własny, niededykowany katalog stubów) zamiast punktowych obejść przy każdej
+kolejnej kolizji.
+
+## P-UNIT-STOCK-COST-TEST-DLUG (2026-08-08, nota N4 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — pre-istniejące, do dopisania na listę znanych czerwonych**
+`node gra/tools/unit-stock-cost-test.cjs` → 53 pass, **4 fail**, m.in. „Wojownik: brak
+kosztu magazynowego (got {drewno:10}, want {})" i „Konnica ... want {braz:2} got {braz:10}".
+Zdezaktualizowane oczekiwania po wcześniejszych zmianach `units.json` — dług testowy, nie
+regresja. Potwierdzone identyczne na czystym `HEAD` sprzed prac `zwiadowca-drewno`. Nie
+figuruje na liście znanych czerwonych w `CLAUDE.md`.
