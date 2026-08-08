@@ -1786,14 +1786,31 @@ nazewnictwo/etykieta, nie logika). Kotwice: `gra/src/game/diplomacy-proposals.ts
 „traktat handlowy bez koszyka @ niska Rel" — możliwe, że bramka już to łapie i została uznana
 za szum.
 
-## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
-**Jego słowa:** *„na przybliżeniu miasta grafika jest okropna."*
-**Objaw:** przy dużym przybliżeniu kamery plakietka nazwy miasta („ATENY · korona · W4 · 1")
-jest rozmyta i pikselowata — tekst i obramowanie tracą ostrość, medalion władcy w lewym kółku
-rozmazany do nieczytelnej plamy. Wygląda na etykietę renderowaną do tekstury o stałej
-rozdzielczości (canvas/sprite) i skalowaną w górę przy zoomie, zamiast przerysowywanej
-w rozdzielczości docelowej lub rysowanej jako element DOM/HUD.
-**Kotwice:** `gra/src/render/**` (etykiety miast), `gra/src/ui/**`.
+## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — przyczyna teraz potwierdzona w kodzie (2026-08-08)**
+**Jego słowa (2026-08-07):** *„na przybliżeniu miasta grafika jest okropna."*
+**Jego słowa (2026-08-08, powtórka zgłoszenia z nowym zrzutem „NODWENGU"):** „kolejny temat,
+który nie stał rozwiązany... coś z tym robiłeś, ale jak zwykle temat w ogóle nie został
+popchnięty do przodu."
+⛔ **Sprawdzone uczciwie w historii gita:** to prawda — **żaden commit nigdy nie dotknął tego
+tematu**. Jedyne dwa wcześniejsze wystąpienia w repo to same wpisy dokumentacyjne (rejestracja
++ audyt), zero pracy w kodzie. Zgłoszenie leżało nietknięte od 2026-08-07.
+
+**Przyczyna znaleziona teraz** (`gra/src/render/cityMapStatChip.ts:563-571`,
+`paintCityMapBadgeOntoCanvas`/`makeCityMapBadgeSprite`): hipoteza z pierwotnego zgłoszenia
+się potwierdza. `canvas.width`/`canvas.height` liczone są **wyłącznie z treści** (szerokość
+tekstu nazwy + sloty ikon, w surowych pikselach CSS, np. `nameFont = '700 22px ...'`) — **bez
+żadnego odniesienia do `devicePixelRatio` ani do poziomu zoomu kamery** (sprawdzone grepem:
+`devicePixelRatio` — zero trafień w całym pliku). Ten canvas trafia do `THREE.CanvasTexture`
+i jest rysowany jako `THREE.Sprite` w przestrzeni 3D. Gdy kamera zbliża się do miasta, sprite
+zajmuje więcej pikseli ekranu niż canvas ma natywnej rozdzielczości → **klasyczne rozciąganie
+tekstury (texture magnification)**, stąd rozmycie tekstu i medalionu.
+**Naprawa (niewdrożona, do zrobienia):** renderować canvas w rozdzielczości pomnożonej przez
+`window.devicePixelRatio` (i/lub przez współczynnik zależny od aktualnego zoomu), skalując
+z powrotem przez `tex.image.style`/rozmiar sprite'a — standardowy wzorzec „retina canvas" dla
+tekstur Three.js. Analogicznie sprawdzić inne plakietki w tym samym pliku (produkcja, portret
+władcy) — ten sam mechanizm rysowania, to samo ryzyko rozmycia.
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`paintCityMapBadgeOntoCanvas`,
+`makeCityMapBadgeSprite`).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
 ## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**

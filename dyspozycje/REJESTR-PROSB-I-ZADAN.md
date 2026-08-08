@@ -1350,4 +1350,16 @@ Zarejestrowane w `PYTANIA-OTWARTE.md` z pełną tabelą cen surowców (Drewno 1 
 pojedynczej umowy w pakiecie (`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`, świadome), ale panel UI
 pokazuje zbiorczy dodatni bilans pakietu (+14 PW) sugerując inaczej — niespójność UI vs
 logika akceptacji. Powiązane z już znanym `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY`.
+
+## BUG-ETYKIETA-MIASTA-ROZMYTA — przyczyna potwierdzona w kodzie (2026-08-08)
+Powtórka zgłoszenia z 2026-08-07 (nowy zrzut „NODWENGU") — sprawdzone w historii gita:
+**żaden commit nigdy nie dotknął tematu**, mimo wcześniejszej rejestracji. Przyczyna
+zlokalizowana: `gra/src/render/cityMapStatChip.ts` (`paintCityMapBadgeOntoCanvas`,
+`makeCityMapBadgeSprite`) liczy `canvas.width`/`canvas.height` wyłącznie z treści (tekst +
+ikony w pikselach CSS), **zero odniesienia do `devicePixelRatio`** — canvas trafia do
+`THREE.CanvasTexture`/`THREE.Sprite`, przy zbliżeniu kamery sprite zajmuje więcej pikseli
+ekranu niż natywna rozdzielczość tekstury → rozciąganie (texture magnification). Naprawa
+(niewdrożona): renderować canvas w rozdzielczości × `devicePixelRatio`, standardowy wzorzec
+„retina canvas" dla tekstur Three.js. Szczegóły w `PYTANIA-OTWARTE.md`. Status nadal OTWARTE
+— tylko diagnoza, nie fix.
 Do decyzji Macieja: pakiet zbiorczo czy per-umowa; minimum UI musi być spójne z bramką.
