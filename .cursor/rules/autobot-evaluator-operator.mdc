@@ -138,6 +138,23 @@ naprawione... kompletnie tego nie rozumiem."*
   bezpiecznie. Jego słowa: *„jeżeli zmienia daną rzecz, a ma ona wpływ na inne kwestie, to
   powinien to przemyśleć i przewidzieć."*
 
+## Rejestracja → ABC lub natychmiastowy subagent — zero zaległości (C-027 — Maciej 2026-08-08)
+
+Po skardze, że zgłoszenia „siedzą w rejestrze" bez ruchu: *„a myślisz, że po co Ci zgłaszam te
+problemy? Żeby sobie siedziały w rejestrze?"* i *„tak właśnie gubią się tematy, które ci
+zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic."*
+
+**C-027** — każde zgłoszenie, w tej samej turze, bez przerwy:
+1. rejestracja w `PYTANIA-OTWARTE.md` + `REJESTR-PROSB-I-ZADAN.md`;
+2. wymaga realnego wyboru kompromisu (balans/gameplay/UX z alternatywami) → **pytanie ABC od
+   razu**, nie odłożone na później;
+3. NIE wymaga ABC (błąd do naprawienia, prośba z jasno opisanym oczekiwanym zachowaniem) →
+   **odpal subagenta Sonnet 5 od razu, w tej samej turze**, w pętli Operator → Evaluator —
+   „zarejestrowane, zajmę się później" jest zakazane. Jego słowa: *„jeżeli coś jest zgłoszone
+   rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to
+   odpalasz subagenta Sonet od razu do rozwiązania tego problemu... to jest najważniejsze,
+   żeby sprawy szły do przodu i nic nie zostało zapomniane."*
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.

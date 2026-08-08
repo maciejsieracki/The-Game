@@ -96,6 +96,15 @@ Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 3. **ECHO** — po odpowiedzi w formie `ID + litera` potwierdź treść decyzji, zapisz do plików (rejestr + `dyspozycje/PYTANIA-OTWARTE.md` + ewentualny `docs/decyzje/`), dopiero potem kod i commit.
 4. **DEPLOY** — wyłącznie na hasło `deploy`. Commit po `ID+A|B|C` **nie** publikuje ROBOCZA.
 
+**Rozwidlenie NUMER → co dalej (`C-027`, Maciej 2026-08-08):** krok „ABC" dotyczy WYŁĄCZNIE
+zgłoszeń wymagających realnego wyboru z kompromisem (balans/gameplay/UX z alternatywami).
+Gdy zgłoszenie jest błędem do naprawienia albo prośbą z jednoznacznie opisanym oczekiwanym
+zachowaniem (brak realnej alternatywy do wyboru) — **NUMER → od razu subagent Sonnet 5**
+w pętli Operator → Evaluator, **w tej samej turze**, bez czekania na cokolwiek. „Rejestr to
+punkt startowy pracy, nie miejsce składowania" — jego słowa po serii skarg: *„a myślisz, że
+po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?"*, *„tak właśnie gubią się
+tematy, które ci zgłaszam... zgłaszam coś, a wy nie robicie z tym nic."*
+
 **⛔ Zakaz otwierania nowych wątków pytaniami.** Wolno wyłącznie pytania doprecyzowujące
 do wątku aktualnie prowadzonego. Problemy znalezione przy okazji → **cicho** do
 `dyspozycje/PYTANIA-OTWARTE.md`, bez wspominania w czacie. Każde pytanie/bug właściciela

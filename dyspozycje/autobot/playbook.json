@@ -1,6 +1,6 @@
 {
-  "version": 21,
-  "updatedAtIso": "2026-08-08T19:24:35.884Z",
+  "version": 22,
+  "updatedAtIso": "2026-08-08T19:44:52.567Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -349,6 +349,16 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-08T19:24:35.867Z"
+    },
+    {
+      "id": "rule_135",
+      "rule_text": "KAŻDE zgłoszenie właściciela (błąd/prośba/pomysł) przechodzi natychmiast, w tej samej turze, przez trzy kroki bez przerwy: (1) rejestracja w PYTANIA-OTWARTE.md+REJESTR-PROSB-I-ZADAN.md; (2) jeśli rozwiązanie wymaga wyboru z realnym kompromisem (balans/gameplay/UX z alternatywami) → pytanie ABC od razu, nie odkładane; (3) jeśli NIE wymaga ABC (błąd do naprawienia, prośba z jednoznacznie opisanym oczekiwanym zachowaniem) → **odpalenie subagenta Sonnet 5 od razu**, w tej samej turze, w pętli AutoBot (Operator → Evaluator), nie „zarejestrowane, zajmę się później\". Rejestr to punkt startowy pracy, nie miejsce składowania. Zasada Macieja 2026-08-08 po serii skarg na temat gubienia zgłoszeń: „a myślisz, że po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?\" i „tak właśnie gubią się tematy, które ci zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic\" — dopisz: „jeżeli coś jest zgłoszone rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to odpalasz subagenta Sonet od razu do rozwiązania tego problemu zgodnie z zasadą autobot — to jest najważniejsze, żeby sprawy szły do przodu i nic nie zostało zapomniane\" [C-027]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T19:44:52.555Z"
     }
   ],
   "quarantine_rules": []
