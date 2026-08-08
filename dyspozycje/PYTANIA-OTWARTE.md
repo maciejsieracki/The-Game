@@ -2871,7 +2871,7 @@ wzorzec kolejkowania callbacków jak w naprawie `BUG-IKONA-KULTURY-PLACEHOLDER`.
 `requestProdIconImage`).
 **Model:** Opus 5 (render/**).
 
-## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **OTWARTE**
+## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 Dla pakietów PRZYCHODZĄCYCH (`allIncoming`) panel liczy `canAccept = net &gt;= 0` na sumie
 całego stołu (`diplomacyAcceptanceBalance.ts:252-254`), więc przycisk „Przyjmij" bywa aktywny
 gdy suma jest dodatnia. Ale realne wykonanie (`main.ts:11977`,
@@ -2880,6 +2880,38 @@ gdy suma jest dodatnia. Ale realne wykonanie (`main.ts:11977`,
 progu — efekt: **pakiet stosuje się częściowo**, z komunikatem w toaście (`showHintMessage`)
 zamiast blokadą całości. Niezależny od tego, jak rozstrzygnie się `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2`.
 **Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts:252-254`, `gra/src/main.ts:11977`.
+**Model:** Sonnet 5.
+
+**NAPRAWIONE (2026-08-08):** `canAccept`/`blockReason` w `balancePanelDataFromRows` liczone
+teraz jednolicie z `row.responderPreview.accepted` dla KAŻDEJ akcjonowalnej pozycji (incoming
+ORAZ own+awaitingAiResponse), zamiast osobnej gałęzi sumy netto dla `allIncoming`.
+`responderPreview` to ta sama `previewNegotiationEntry`, którą backend woła przy realnym
+wykonaniu (`handleNegotiationAccept`) — UI i wykonanie zgodne z definicji, nie przez przypadek.
+`net` (suma PW) zostaje wyłącznie jako wyświetlany bilans, nie jako bramka. Evaluator:
+PASS-WITH-NOTES, potwierdzone jedno źródło prawdy, brak kolizji z dzisiejszym
+`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2`, STRICT-PARITY OK (wyłącznie ścieżka UI gracza), 28 plików
+testów dyplomacji zielonych (m.in. `diplomacy-test.cjs` 148/148, `diplomacy-proposal-test.cjs`
+126/126, `diplomacy-acceptance-points-test.cjs` 225/225, `diplomacy-stol-pw-sum-test.cjs` 31/31
+z nową reprodukcją dokładnego przypadku ze zrzutu — 94 vs 80, net +14, jedna pozycja
+zablokowana). **4 noty niepilne, zarejestrowane osobno poniżej:** wizualna niespójność
+panelu przy net ujemnym z przyciskiem mimo to aktywnym; fail-open (`canAccept=true`) przy braku
+`responderPreview` (dziś nieosiągalne); rozluźnienie `legacyAccess`-gatingu, zgodne z
+wykonaniem ale nietestowane; słaba asercja w jednym teście.
+
+## P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **OTWARTE — niepilne**
+Dla traktatu incoming z net ujemnym (np. −20 PW), panel pokazuje klasę „no" (czerwony) i hint
+„Brakuje N PW — dopłać do bilansu", ale jednocześnie werdykt „Spełnia warunki — możesz przyjąć"
+i przycisk AKTYWNY. Powstaje bo `canAccept` przestał iść za `net` (naprawa wyżej), a cały
+display nadal idzie za `net`. Funkcjonalnie poprawne (przycisk odzwierciedla realną
+akceptowalność), wizualnie mylące. Osiągalne przy Relacji &lt;100 (asymetryczne PW traktatu).
+**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`).
+**Model:** Sonnet 5.
+
+## P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **OTWARTE — niepilne, dziś nieosiągalne**
+Gdy `row.responderPreview` jest `undefined` (pole opcjonalne w typie), `canAccept` domyślnie
+wychodzi `true` (bramka otwarta), nie bezpieczne `false`. Dziś `main.ts:12318` zawsze ustawia
+preview, więc nieosiągalne w praktyce — ale brak testu i brak jawnego fallbacku na `false`.
+**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`).
 **Model:** Sonnet 5.
 
 ## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08, nota Evaluatora przy R-HEKS-PLONY-UKRYTE-POD-MIASTEM) · STATUS: **OTWARTE — pre-istniejące, nie regresja tej naprawy**

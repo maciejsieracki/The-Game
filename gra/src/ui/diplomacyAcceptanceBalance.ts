@@ -246,25 +246,28 @@ export function balancePanelDataFromRows(
     // false negative: traktat bez własnego koszyka pokryty sąsiadem na stole (panel sumuje
     // PW poprawnie — patrz net niżej) i tak blokował Przyjmij, bo jego WŁASNY (nie-pakietowy)
     // bilans wciąż wychodził ujemny (BUG-PAKIET-BILANS-DODATNI-BLOKADA).
-    if (row.direction === 'own' && row.awaitingAiResponse && row.responderPreview?.accepted === false) {
-      blockReason = row.responderPreview.reason ?? 'Oferta nieuczciwa dla partnera';
+    //
+    // BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA: ten sam responderPreview bramkuje TAKŻE
+    // wiersze incoming (nie tylko `own` powyżej) — to dokładnie ta sama funkcja
+    // (previewNegotiationEntry), którą realne wykonanie woła PER POZYCJA
+    // (main.ts handleNegotiationAcceptPackage → handleNegotiationAccept → previewNegotiationEntry).
+    // Wcześniej incoming było bramkowane wyłącznie SUMĄ PW całego stołu (`net >= 0` niżej) —
+    // suma dodatnia z jedną pozycją, która sama nie przechodzi swojej bramki (np. czysty
+    // traktat bez koszyka, gdzie `computeIncomingPlayerAcceptNetPw` zwraca null i
+    // `row.canAccept` jest zawsze `true`), aktywowała przycisk „Przyjmij pakiet"; kliknięcie
+    // wykonywało pakiet CZĘŚCIOWO — ta jedna pozycja odrzucana osobno, z toastem, reszta
+    // wykonana. `net` niżej zostaje jako WYŚWIETLANY bilans (opis), nie jako bramka.
+    if (
+      row.responderPreview?.accepted === false
+      && (row.direction === 'incoming' || (row.direction === 'own' && row.awaitingAiResponse))
+    ) {
+      blockReason = row.responderPreview.reason
+        ?? (row.direction === 'incoming' ? 'Warunki niespełnione' : 'Oferta nieuczciwa dla partnera');
     }
   }
 
   const net = myOfferPn - theirOfferPn;
-  const allIncoming = actionable.every(r => r.direction === 'incoming');
-  // Incoming: decyzja z sumy PW (nie per-wiersz canAccept — inaczej traktat 72/80 + koszyk blokuje mimo net 0).
-  let canAccept = allIncoming ? net >= 0 : blockReason == null;
-  if (!allIncoming && blockReason == null) {
-    canAccept = actionable.every(row => {
-      if (row.direction === 'incoming') return row.canAccept !== false;
-      if (row.awaitingAiResponse) return row.responderPreview?.accepted !== false;
-      return true;
-    });
-  }
-  if (allIncoming && !canAccept) {
-    blockReason = `Brakuje ${Math.abs(net)} PW`;
-  }
+  const canAccept = blockReason == null;
 
   const statusLabel = net > 0
     ? `Nadwyżka +${net} PW`

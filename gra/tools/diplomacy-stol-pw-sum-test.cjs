@@ -101,7 +101,7 @@ ok(aggregated.theirOfferPn === 82, 'aggregated: theirOfferPn 82 (80+2)');
 ok(aggregated.extraOnTable === 0, 'aggregated: extraOnTable 0 (bez badge)');
 ok(aggregated.actionLabel.includes('Pakiet na stole'), 'aggregated: label pakietu');
 ok(aggregated.actionLabel.includes('2 umów'), 'aggregated: label z liczbą umów');
-ok(aggregated.canAccept === true, 'aggregated: canAccept true przy net 0 (suma PW, nie per-wiersz)');
+ok(aggregated.canAccept === true, 'aggregated: canAccept true przy net 0 (brak responderPreview blokującego w fixture)');
 ok(aggregated.theirBalance.balancePn === 0, 'aggregated: balancePn net 0');
 ok(aggregated.theirBalance.accepted === true, 'aggregated: theirBalance accepted');
 
@@ -203,6 +203,62 @@ ok(
   ok(
     ownPackageBlocked.responderPreview?.reason?.includes('pakiet na stole'),
     'Q2 own pakiet kontrola negatywna: komunikat blokady = responderPreview.reason (package-aware), nie stary generyczny tekst',
+  );
+}
+
+// BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08): pakiet PRZYCHODZĄCY (allIncoming) —
+// suma PW pakietu jest DODATNIA (net +14, jak w zrzucie Macieja: 94 vs 80), ale JEDNA pozycja
+// (czysty traktat bez koszyka) sama nie przechodzi swojej bramki uczciwości — responderPreview
+// (ta sama previewNegotiationEntry, którą realne wykonanie woła PER ID w
+// handleNegotiationAcceptPackage → handleNegotiationAccept) mówi accepted:false. Przed naprawą
+// canAccept dla allIncoming liczył WYŁĄCZNIE `net >= 0` — przycisk „Przyjmij" byłby aktywny,
+// a kliknięcie wykonałoby pakiet częściowo (koszyk wykonany, traktat odrzucony osobnym
+// toastem). Po naprawie: canAccept = false, jeśli KTÓRAKOLWIEK pozycja incoming ma
+// responderPreview.accepted===false — zgodnie z faktycznym wykonaniem per-pozycja.
+{
+  const treatyRowBlocked = {
+    id: 'neg-treaty-blocked',
+    direction: 'incoming',
+    actionLabel: 'Traktat handlowy',
+    acceptanceMy: treatySide(0, 80, 94),
+    acceptanceTheir: treatySide(0, 80, 80),
+    canAccept: true, // pole legacy per-wiersz (computeIncomingPlayerAcceptNetPw) — null dla traktatu bez koszyka, zawsze true; NIE jest już źródłem prawdy
+    responderPreview: {
+      accepted: false,
+      reason: 'Brakuje 26 PW do uczciwej oferty traktatu handlowego @ Relacji (baza 80 PW) — oferta nieuczciwa dla partnera',
+    },
+  };
+  const basketRowOk = {
+    id: 'neg-basket-ok',
+    direction: 'incoming',
+    actionLabel: 'Wymiana surowców',
+    acceptanceMy: basketSide(0, 0, 0),
+    acceptanceTheir: basketSide(0, 0, 0),
+    canAccept: true,
+    responderPreview: { accepted: true },
+  };
+  const positiveSumButBlocked = mod.balancePanelDataFromRows([treatyRowBlocked, basketRowOk]);
+  ok(positiveSumButBlocked != null, 'BUG-PAKIET-INCOMING: data');
+  ok(
+    positiveSumButBlocked.myOfferPn - positiveSumButBlocked.theirOfferPn > 0,
+    'BUG-PAKIET-INCOMING: suma netto pakietu jest DODATNIA (+14, jak w zgłoszeniu)',
+  );
+  ok(
+    positiveSumButBlocked.canAccept === false,
+    'BUG-PAKIET-INCOMING: canAccept=false mimo dodatniej sumy — jedna pozycja (responderPreview) nie przechodzi',
+  );
+  ok(
+    positiveSumButBlocked.responderPreview?.reason?.includes('26 PW'),
+    'BUG-PAKIET-INCOMING: komunikat blokady = responderPreview.reason tej pozycji (parytet z realnym wykonaniem)',
+  );
+
+  // Kontrola pozytywna — obie pozycje incoming przechodzą własną bramkę (responderPreview
+  // accepted:true) → pakiet nadal do przyjęcia jednym klikiem, mimo że suma i tak dodatnia.
+  const treatyRowOk = { ...treatyRowBlocked, id: 'neg-treaty-ok', responderPreview: { accepted: true } };
+  const bothOk = mod.balancePanelDataFromRows([treatyRowOk, basketRowOk]);
+  ok(
+    bothOk.canAccept === true,
+    'BUG-PAKIET-INCOMING kontrola pozytywna: canAccept=true gdy KAŻDA pozycja incoming przechodzi własny responderPreview',
   );
 }
 

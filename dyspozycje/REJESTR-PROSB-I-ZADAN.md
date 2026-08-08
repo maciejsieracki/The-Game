@@ -1466,6 +1466,12 @@ zielony). 3 noty niepilne zarejestrowane osobno w `PYTANIA-OTWARTE.md`
 (`P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU`, `P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`, +
 świadoma konsekwencja ukrywania akcji `'6'`).
 
+## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA — NAPRAWIONE, czeka na deploy+playtest
+`canAccept` dla pakietów przychodzących liczony teraz per-pozycja przez `responderPreview`
+(ta sama funkcja co realne wykonanie), nie z sumy netto PW całego stołu — przycisk „Przyjmij"
+i wykonanie są teraz zgodne z definicji. Evaluator PASS-WITH-NOTES, 28 plików testów dyplomacji
+zielonych. 2 noty niepilne w `PYTANIA-OTWARTE.md`.
+
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — FAIL, runda 2 w toku
 Evaluator FAIL: worktree bazował na commit sprzed mergu `66ae74c8` (packet-removal), pole
 `maxPakiety` w tym starym drzewie niosło PAKIETY (×10), nie sztuki — odznaka pokazywała
