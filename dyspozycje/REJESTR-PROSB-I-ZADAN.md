@@ -992,3 +992,214 @@ i zostaje wylaczona ze wszystkich dotychczasowych decyzji `R-MOC-*` z dzisiejsze
 `buildAbsolutePowerRank` w kontekscie dyplomacji (odroznic od juz-efektywnego uzycia w panelu
 Mocy/Empire).
 Model: Sonnet 5 (logika/UI danych, nie `gra/src/render/**`).
+
+## BUG-TRAKTAT-KOSZYK-REGRESJA (2026-08-08) — ktora wersja kodu zachowac = **A**
+**Decyzja Macieja: A.** Przywrocic stan sprzed `9cc7c76c` — traktat szlakow (akcja 5,
+`umowa_szlakow`) calkowicie bez koszyka wymiany, zgodnie z `HANDEL-SPLIT-Q1=B` (2026-07-29).
+Commit `9cc7c76c` (2026-08-05, zmiana NAP bezterminowego) przy okazji skurczyl liste
+"traktatow bez koszyka" z 7 pozycji do 1, cofajac rozdzielenie.
+**Kotwice:** `gra/src/game/diplomacy-proposals.ts`, `gra/src/ui/**` (okno traktatu),
+`gra/tools/diplomacy-proposal-test.cjs`.
+Model: Sonnet 5.
+
+## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-08) — same surowce czy tez Pieniadz = **A**
+**Decyzja Macieja: A.** Zerujemy tylko surowiec (oba kanaly): `Surowiec (ilosc)` Drewno
+10 -> 0 przy rekrutacji, `Utrzymanie surowiec (ilosc)` Drewno 2 -> 0 na ture. Koszt Pieniadza
+(8 pkt) zostaje bez zmian.
+**Kotwice:** `gra/data/units.json` (wiersz "Zwiadowca").
+Model: Sonnet 5 (dane JSON — zrodlo prawdy, CLAUDE.md §2, NIE `export-*.py`).
+
+## BUG-BRAMKA-DREWNO-BRAK (2026-08-08) — rozszerzyc bramke na Drewno = **A**
+**Decyzja Macieja: A.** Rozszerzyc bramke dostepu do surowca (`production.ts`) o Drewno,
+zgodnie z ogolna zasada `DOSTEP-SUROWCE-Q1` (2026-07-29) — jednostka wymagajaca Drewna
+niedostepna bez zapasu w magazynie panstwa. BEZ progu startowego/zapasu poczatkowego
+(odrzucona rekomendacja C) — swiadome ryzyko zablokowania startu gry przy braku drewna.
+**Powiazane:** `BUG-ZWIADOWCA-KOSZT-SUROWCA=A` — po wyzerowaniu kosztu Drewna Zwiadowcy,
+Zwiadowca przestaje podlegac tej bramce (wymog 0 = zawsze spelniony).
+**Kotwice:** `gra/src/game/production.ts:858-863` i `:950-960` (DWIE kopie warunku, obie
+musza zostac zmienione razem).
+Model: Sonnet 5.
+
+## P-AI-MOC-GAP (2026-08-08) — trzecia przyczyna gapu Mocy AI: kodowac teraz bez pomiaru = **B**
+**Decyzja Macieja: B.** Kodowac naprawe `canAfford`/pustej kolejki produkcji AI TERAZ, bez
+uprzedniego swiezego playtestu (odrzucona rekomendacja A — najpierw zmierzyc obecny gap).
+**Uzasadnienie wlasciciela:** pusta kolejka + nieotwarta produkcja + namnazajace sie surowce
+(AI "myszkuje" zasobami bez ich wydawania) to kluczowy problem, ktory trzeba rozwiazac wprost.
+**Kotwice:** miejsce w silniku AI gdzie `canAfford` decyduje o wpisach kolejki produkcji —
+do zlokalizowania przez Operatora (kandydat: `gra/src/game/ai-*.ts`, `production.ts`,
+logika tury AI w `main.ts`).
+Model: Sonnet 5. Zakres: znalezc root cause (dlaczego AI nie zmienia zadania produkcji gdy
+`canAfford` odrzuca biezacy wybor — czy probuje inny wpis kolejki, czy zostawia kolejke pusta
+i akumuluje surowce bez konsumpcji) i naprawic tak, zeby AI zawsze mialo cos w produkcji,
+jesli stac je na cokolwiek z dostepnej listy.
+
+## BUG-TOOLTIP-MOC-BUDYNKI-Q1 (2026-08-08) — Obrazenia Broni/Przebicie w tooltipie: tylko weteran = **A**
+**Decyzja Macieja: A.** Obrazenia Broni (`weaponDamage`) i Przebicie (`piercing`) w tooltipie
+jednostki skalowane WYLACZNIE premia weterana (zgodnie z tym, co realnie liczy silnik walki
+`damageTw()`), NIE pelnym `softFrac` (weteran+budynki). Pozostale 6 pol wzoru `fieldPower()`
+(w tym Szarza, Atak dystansowy) zostaja bez zmian — dla nich silnik faktycznie stosuje premie
+budynkowa, wiec pelny `softFrac` tam jest poprawny.
+**Pytanie przeszlo przez turniej ABC (C-018):** dwa niezalezne projekty (orkiestrator +
+niezalezny agent) zbiegly sie na tej samej rekomendacji A; Sedzia (Opus 5) zweryfikowal
+liczby w kodzie i zsyntetyzowal finalna wersje pytania.
+**Kotwice:** `gra/src/game/unit-card-stats.ts` (`unitCardCombatDisplay`), worktree
+`.claude/worktrees/tooltip-moc`.
+Model: Sonnet 5.
+
+## R-MOC-DEFINICJA-Q1 (2026-08-08) — co wchodzi w skladowa "Moc" wyswietlana graczowi
+**Zasada Macieja (cytat, do zachowania):** *"W aspekcie liczenia mocy jednostek czy armii
+przed bitwa i na przyklad automatycznym rozpoznaniem bitwy i mocy oraz automatycznego
+rezultatu, trzeba policzyc wszystkie wskazniki, takze parametry, ktore wspomniales, czyli
+pelna premia budynkowa, weteran. I wszystkie mozliwe wskazniki, ktore wczesniej byly
+ustalone. Ale w wypadku mocy power nie liczymy budynkow, dlatego ze ta sama jednostka moze
+byc w jednym budynku, moze byc w drugim, moze byc w jednej formie, moze byc zafortyfikowana
+lub nie. Liczymy wszystkie pozostale elementy, ale bez elementu terenu i budynku."*
+**Rozroznienie dwoch odrebnych obliczen:**
+1. **Rzeczywiste rozstrzygniecie bitwy** (pre-battle, auto-bitwa, wynik) — liczy WSZYSTKO:
+   pelna premia budynkowa, weteran, teren, wszystkie ustalone wskazniki. Bez zmian wobec
+   dzisiejszej pracy `combatPowerScaledDefFor`/`tabliczkaGarnizonScaledDefFor`.
+2. **"Moc" jako wyswietlany wskaznik** (tooltip, tabliczka, panel rankingu, HUD, Empire) —
+   NIE liczy budynkow ani terenu — tylko wskazniki wlasne jednostki + premia weterana.
+   Uzasadnienie: jednostka jest przenosna (moze stac w roznych miastach/budynkach, byc
+   zafortyfikowana lub nie) — Moc ma byc stabilna cecha jednostki, nie zalezec od tego,
+   gdzie akurat stoi.
+**NAPIECIE ROZSTRZYGNIETE (2026-08-08, ta sama sesja, pytanie zamkniete):** decyzja
+`R-MOC-MUR-PARADOKS-Q1=A` (2026-08-07) wprowadzila `tabliczkaGarnizonScaledDefFor()`, ktora
+DLA GARNIZONU W MIESCIE Z MUREM dokladala do "Mocy" na tabliczce bonus struktury obronnej +
+mnoznik terenu. **Decyzja Macieja: wraca do czystej Mocy (bez muru)** — tabliczka cofnieta do
+`combatPowerScaledDefFor(u)` (weteran + trudnosc AI, bez bonusu struktury/terenu), zgodnie
+z nowa zasada R-MOC-DEFINICJA-Q1. To **CZESCIOWO COFA** `R-MOC-MUR-PARADOKS-Q1=A` — sam
+paradoks garnizonu (49 pkt realnie wnoszone do bitwy vs 95 na tabliczce) wraca, ale teraz
+jako SWIADOMA konsekwencja zasady "Moc = wskazniki wlasne + weteran, bez kontekstu miejsca",
+nie przeoczenie.
+Model: Sonnet 5 (logika/dane), `gra/src/render/**` gdyby dotkniete = Opus 5.
+
+## R-SKILL-LEAN-LOOP-CIVAUTOBOT (2026-08-08) — synteza Ponytail + AutoBot w dwa skille Claude Code
+**Prosba Macieja:** przeczytac w calosci skill "Ponytail" (minimalizm kodu) i kanon AutoBot
+tego projektu (w tym 3 oryginalne pliki `AUTOBOT-PROMPT.md`/`AUTOBOT-opis-i-wdrozenie.md`/
+`playbook.md` v1.2 dostarczone przez wlasciciela), i zsyntetyzowac je w DWA skille: (1)
+uniwersalny, tech-agnostyczny, przenosny do innych projektow/agentow; (2) projektowy dla
+Civ, dziedziczacy z uniwersalnego. Twarda instrukcja: **"Nic nie usuwamy"** — kompletnosc
+jest kryterium sukcesu, nie tylko poprawnosc; przy niepewnosci decyzji syntezy — turniej.
+**Wykonanie (Operator/Evaluator na Opus 5, na wyrazne polecenie Macieja dla tego tematu):**
+- **`lean-loop`** — `/root/.claude/skills/lean-loop/` (SKILL.md + 5 plikow `references/`,
+  1097 linii razem). Zero odniesien do Civ/gry/polskiego/modeli AI po nazwie (zweryfikowane
+  dwukrotnie, niezaleznymi grepami + enumeracja znakow non-ASCII). Laczy drabine decyzyjna
+  Ponytaila (YAGNI→reuse→stdlib→natywne→zaleznosc→jedna linia→minimum), "przyczyna nie objaw"
+  (grep callerow), protokol bledu AutoBota 5-krokowy, rozdzial rol Operator/Evaluator (agent
+  nie ocenia sam siebie), wzorzec playbooka z liczby win/fail i progami statusu, turniej
+  dwoch propozycji + Sedzia, oraz — po dyskusji o zakresie — checkliste pisarska R-001..R-012
+  z playbooka-meta wlasciciela (dokument o dokumentach, uznana za pasujaca do agenta
+  kodujacego, ktory tez pisze specyfikacje/prompty/runbooki).
+- **`civ-autobot`** — `.claude/skills/civ-autobot/SKILL.md` (239 linii). Dziedziczy z
+  `lean-loop`, doklada WYLACZNIE specyfike tego repo: przydzial modeli, NUMER→ABC→DEPLOY,
+  turniej ABC jako twarda reguła (nie opcja), 3 twarde FAIL Evaluatora (edge/parytet/save-
+  load), izolacja worktree, zakazy build/dev/export-*.py, runbook deployu, bramki i baseline'y.
+**Incydent w trakcie pracy:** automatyczny skaner bezpieczenstwa oznaczyl fragment Skilla B
+(wyjatek "drobiazg 1-3 linie tekstu nie wymaga pelnej ceremonii") jako mozliwe "zatrucie
+instrukcji". Zweryfikowane osobiscie: cytat byl prawdziwy (`.mdc:28,33`), ale sam plik
+zrodlowy jest WEWNETRZNIE SPRZECZNY (naglowek tej samej reguly mowi "bez wyjatku «to tylko
+drobiazg»"). Nie rozstrzygniete samodzielnie — poprawione na wersje ostrozniejsza (domyslnie
+BRAK wyjatku, pelna petla) z jawna flaga sprzecznosci u zrodla, czekajaca na Twoje rozstrzygniecie
+w `.cursor/rules/autobot-evaluator-operator.mdc:28` (czy tam faktycznie ma byc wyjatek dla
+1-3 linii, czy to bylo nieprecyzyjne sformulowanie bez takiej intencji).
+**Do Twojej decyzji (nie blokuje niczego, informacyjnie):** czy powyzsza sprzecznosc w
+`.mdc` ma zostac rozstrzygnieta, i w ktora strone.
+Model: Opus 5 (wyrazne polecenie Macieja dla tego tematu, obie role).
+
+## R-SPRZECZNOSC-DROBIAZG-MDC-Q1 (2026-08-08) — wyjatek 1-3 linie tekstu: doprecyzowany, nie usuniety = **B**
+**Decyzja Macieja: B.** Wyjatek z `.cursor/rules/autobot-evaluator-operator.mdc:28`
+zostaje, ale doprecyzowany do trzech LACZNYCH warunkow: (a) wylacznie plik dokumentacji/
+notatek, NIGDY `gra/src`; (b) wylacznie jako dopisek do paczki ktora JUZ przeszla przez
+Evaluatora w tej samej sesji — nie samodzielna, nieoceniona zmiana; (c) zawsze zalogowany
+w `KANAL-PRACA.md` lub tresci commita. Brak ktoregokolwiek warunku → pelna petla, bez
+zgadywania "czy to drobiazg" (self-grading, ktoremu AutoBot ma zapobiegac).
+**Wdrozenie:** `.cursor/rules/autobot-evaluator-operator.mdc:28` przepisane; `.claude/
+skills/civ-autobot/SKILL.md` (sekcja "Reguła nadrzędna") zaktualizowany z flagi
+sprzecznosci na rozstrzygniete dwa wyjatki.
+Model: Sonnet 5 (mechaniczne wdrozenie juz podjetej decyzji, bez nowej oceny).
+
+## R-PROFIL-TURNIEJ-PUNKTACJA-Q1 (2026-08-08) — profil decyzyjny jako kryterium punktacji w turnieju ABC
+**Decyzja Macieja: potwierdzenie w rozmowie (wariant A+B połączony, opisany przeze mnie i
+zaakceptowany wprost — „Tak, potwierdzam. Zgadzam się z tym, co napisałeś.").**
+**Mechanizm:** obaj Proponenci turnieju ABC (`R-PROC-AUTOBOT-ABC-TURNIEJ.md`) wskazują
+własny „typ" (którą literę uważają za najlepszą) z uzasadnieniem odwołującym się do
+`PROFIL-DECYZYJNY-MACIEJ.md`. Sędzia punktuje dwuwarstwowo: Warstwa 1 (dominująca) —
+trafność rozpoznania kategorii tematu i jakość zastosowania wzorca z profilu; Warstwa 2
+(niuanse, tiebreaker) — zgodność ze źródłami, kompletność wariantów. Do właściciela trafia
+zwycięska/zsyntetyzowana wersja z jawną adnotacją „wg profilu: typowana X, bo …" przy
+Rekomendacji — zawsze obok pełnego A/B/C, nigdy jako zamiennik wyboru. Wybór litery
+pozostaje w 100% właściciela — mechanizm nie zmienia tego, kto decyduje, tylko jak dobrze
+formułowana jest rekomendacja w projekcie ABC.
+**Wdrożenie (runda 1 + poprawki po FAIL Evaluatora, ta sama sesja):** `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md`
+(§Zasada rozszerzona o „typ" + punktację dwuwarstwową), `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md`
+(baner ZAKAZ doprecyzowany o usankcjonowany wyjątek + odsyłacz przy starym zdaniu „wymaga
+przeglądu" w §DOKOŃCZONE runda 2), `.claude/skills/civ-autobot/SKILL.md` §3 (zaktualizowany
+opis turnieju), `.cursor/rules/autobot-evaluator-operator.mdc` §„Pytanie ABC" (**krytyczne —
+to plik `alwaysApply: true`, ładuje się przed kanonem i bez tej poprawki przyszły agent
+uruchamiałby stary turniej**), `playbook.md` (`C-018`, treść rozszerzona) →
+`dyspozycje/autobot/playbook.json` (`rule_126`, wygenerowany generatorem, liczniki 0/0
+zachowane, wersja 17).
+**Doprecyzowania po pierwszym werdykcie FAIL (Opus 5 Evaluator):** (a) „typ" JEST literą
+w polu `Rekomendacja`, adnotacja „wg profilu" to dopisek uzasadnienia, nie drugie,
+konkurencyjne pole; (b) gdy profil nie ma wzorca pasującego do kategorii tematu, „typ"
+zostaje obowiązkowy z jawnym stwierdzeniem braku wzorca — nie blokuje turnieju; (c) ta
+decyzja **nie przeszła** turnieju C-018 sama — wyjątek „bezpośrednie ustalenie wypracowane
+żywą rozmową z właścicielem" dopisany do zakresu wyjątków we wszystkich czterech miejscach
+(kanon `R-PROC-AUTOBOT-ABC-TURNIEJ.md`, `civ-autobot/SKILL.md` §3, `.mdc`, `playbook.md`),
+bo Maciej współtworzył projekt w dialogu, nie odpowiadał literą na cudzy gotowy projekt.
+**Werdykt Evaluatora:** runda 1 FAIL (3 pliki zaktualizowane, 3 kluczowe — `.mdc`,
+`playbook.md/json` — pominięte; nieprawdziwe „Wdrożenie" w tym wpisie); runda 2 FAIL
+(kluczowe pliki naprawione i zweryfikowane generatorem w trybie dry-run — „brak różnic",
+ale wyjątek „żywa rozmowa" dopisany tylko do `.mdc`/`playbook.md`, brakował w kanonie
+i skillu, plus nieprawdziwe „trzy miejsca" w tym wpisie); runda 3 FAIL (wyjątek „żywa
+rozmowa" ujednolicony we wszystkich pięciu plikach, ale trzeci, STARSZY wyjątek —
+„czysto inżynierskie decyzje bez wpływu na gameplay/UX/dane gracza" — brakował w
+`playbook.md`/`playbook.json`, obecny tylko w kanonie/`.mdc`/skillu); runda 4 (ta wersja)
+dopisuje brakujący wyjątek inżynierski do `playbook.md` C-018 i regeneruje `playbook.json`
+(wersja 18) — wszystkie trzy wyjątki teraz identyczne semantycznie w pięciu plikach.
+Model: Sonnet 5 (orkiestrator, wdrożenie już potwierdzonej decyzji) + Opus 5 Evaluator.
+
+## R-JAK-EDYTOWAC-AUTOBOT-DOKUMENT (2026-08-08) — meta-dokument: zasady edycji samego systemu AutoBot
+**Prośba Macieja:** „spisz jeszcze zasady, jakimi się kierowałeś przy tworzeniu tego
+skillsa autobot w przyszłości, żeby mógł zawsze robić zmiany w autobocie", doprecyzowana:
+„kluczowe jest to, żeby nowy Skills odtworzył cały mechanizm działania łącznie z plikami,
+które muszą być założone i używane w całym procesie kodowania i tworzenia".
+**Wykonanie:** nowy plik `dyspozycje/autobot/JAK-BEZPIECZNIE-EDYTOWAC-AUTOBOT.md` — §0
+pełna mapa mechanizmu w 5 warstwach (wejście / kanon / pamięć / egzekwowanie w kodzie /
+ślad-księgowość, łącznie ok. 40 plików i ścieżek), §1-10 zasady wyniesione z konkretnych
+incydentów tej sesji (m.in. rozjazd 5 plików przy R-PROFIL-TURNIEJ-PUNKTACJA-Q1, generator
+playbook.json, fałszywe "Wdrożenie: gotowe"), checklista końcowa. Pointer dodany w
+`civ-autobot/SKILL.md` (sekcja „Reguła nadrzędna").
+**Werdykt Evaluatora (Opus 5):** runda 1 FAIL — mapa §0 niekompletna: pominięte 5 plików
+`.mdc` (w tym `alwaysApply: true` konkurencyjne dla `autobot-evaluator-operator.mdc`),
+6 z 10 plików `src/`, 4 pliki spoza src (`PROMPT-AUTOBOT-DLA-AGENTOW.md`,
+`protokol-v1.2/`, `KOLEJKA-FABLE-5.md`, `dist-smoke/`), 1 plik kanonu
+(`R-AUTOBOT-EVALUATOR-WARSTWY-MODELI.md`), niedoliczone incydenty w §5. Runda 2 PASS —
+wszystkie braki zweryfikowane jako naprawione bezpośrednio w repo (nie na słowo).
+Model: Sonnet 5 (orkiestrator) + Opus 5 Evaluator (2 rundy).
+
+## R-PROFIL-TURNIEJ-UNIWERSALNY-Q1 (2026-08-08) — mechanizm "typ"+profil przeniesiony do lean-loop (uogólniony)
+**Decyzja Macieja:** wprost — "musimy to wprowadzić z nasadek ogólnych, ale mechanizm
+pozostaje ten sam, różni się tylko szczegółami" — przenieść poziom 2 turnieju (typ
+Proponentów + punktacja wg pamięci preferencji) do uniwersalnego skilla, bez treści
+specyficznej dla Civ, z wyraźnym celem: żeby żaden projekt nie sprawiał wrażenia, że
+"użytkownik mówi do ściany" (poprawki/sugestie/odpowiedzi giną między sesjami).
+**Wykonanie w `/root/.claude/skills/lean-loop/` (POZA tym repo, plik nie jest pod git —
+brak commita/push, tylko zapis decyzji tutaj):**
+- `references/playbook-pattern.md` — nowa sekcja "A second kind of memory: how the human
+  decides" (3 typy sygnału: forced-choice, korekty kierunku bez błędu, wolontariat
+  preferencji; osobny plik `decision-profile.md`; ten sam rygor statystyczny co playbook;
+  wpięcie w rytuał startu/zamknięcia sesji; twarda bariera "nigdy nie zastępuje pytania").
+- `references/high-stakes.md` — rozszerzona sekcja turnieju o "pick" + punktację Sędziego
+  wg tej pamięci.
+- `references/error-protocol.md` — rozróżnienie błąd (rejestr błędów) vs preferencja
+  (nowy rejestr), żeby dwa rejestry się nie nakładały.
+- `SKILL.md` — zaktualizowany opis trybu "memory".
+**Werdykt Evaluatora (Opus 5, 2 rundy):** runda 1 PASS-WITH-NOTES — 4 uwagi (wiszący
+odsyłacz do nieistniejącej sekcji turnieju w tym samym pliku, jednokierunkowe nakładanie
+się rejestru błędów i nowego rejestru, brak rytuału startu dla nowego pliku pamięci,
+bariera słabsza niż reszta "Immovable barriers"). Runda 2 PASS po naprawie wszystkich
+czterech, zweryfikowane bezpośrednio w plikach. Zero przecieków Civ/PL/nazw modeli
+potwierdzone grepem w obu rundach.
+Model: Sonnet 5 (orkiestrator) + Opus 5 Evaluator (2 rundy).

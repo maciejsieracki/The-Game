@@ -1,6 +1,6 @@
 {
-  "version": 15,
-  "updatedAtIso": "2026-08-08T17:46:49.842Z",
+  "version": 19,
+  "updatedAtIso": "2026-08-08T18:07:50.863Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -242,7 +242,7 @@
     },
     {
       "id": "rule_124",
-      "rule_text": "Przed oceną schowka git sprawdź TAKŻE pliki nieśledzone (git stash show --include-untracked, git show <stash>^3) — git stash show domyślnie ich nie pokazuje, więc ocena „to tylko artefakty\" może pomijać realną pracę [C-016]",
+      "rule_text": "Sprawdzaj, co JEST W PLIKACH, nie co pamiętasz — każde twierdzenie przedstawiane właścicielowi jako fakt musi mieć świeży odczyt z repozytorium albo uruchomienie bramki. Przy audycie rekordu danych wypisuj WSZYSTKIE pola, nigdy sztywną listę kolumn dobraną z góry: pominięta kolumna wygląda w raporcie identycznie jak kolumna o wartości zero [C-016]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -252,7 +252,7 @@
     },
     {
       "id": "rule_125",
-      "rule_text": "Kasując wiele schowków, rozwiązuj każdy po SHA (git stash list --format=\"%gd %H\"), nie po zapamiętanym indeksie — po każdym git stash drop indeksy się przesuwają i lista z góry przestaje obowiązywać [C-017]",
+      "rule_text": "Orkiestrator prowadzi WŁASNĄ pracę przez pętlę AutoBot tak samo jak pracę subagentów — jest Operatorem swojej zmiany i nie ocenia sam siebie; werdykt wydaje osobny Evaluator, bo cudze błędy widać lepiej niż własne. Dotyczy każdej zmiany zapisanej do repozytorium i każdej liczby podanej właścicielowi jako fakt; czynności czysto odczytowe są wyłączone [C-017]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -262,13 +262,53 @@
     },
     {
       "id": "rule_126",
-      "rule_text": "Pracę wartą zachowania przypinaj gałęzią i wypychaj na origin, nie zostawiaj w schowku — schowki są wyłącznie lokalne (nie trafiają na GitHub) i ginie je git stash clear, wymiana dysku lub czyszczenie folderu [C-018]",
+      "rule_text": "Pytanie ABC dla właściciela zawsze jako turniej, nie pojedyncza propozycja: orkiestrator pisze własny projekt A/B/C i wskazuje własny \"typ\" (uzasadniony przez PROFIL-DECYZYJNY-MACIEJ.md), NIEZALEŻNY drugi agent (świeże oczy, nie widzi projektu orkiestratora) pisze własny, osobny projekt z własnym \"typem\". Sędzia (Evaluator) ocenia dwuwarstwowo — Warstwa 1 (dominująca): trafność zastosowania wzorca z profilu w uzasadnieniu \"typu\"; Warstwa 2 (tiebreaker): zgodność z danymi, kompletność wariantów — i wybiera/syntetyzuje zwycięzcę z jawną adnotacją \"wg profilu: typowana X, bo...\" przy Rekomendacji, zawsze obok pełnego A/B/C, nigdy jako zamiennik wyboru. Dotyczy KAŻDEGO pytania ABC formułowanego od nowa; nie dotyczy pytań, na które właściciel już odpowiedział wprost literą (te tylko się ECHO'uje i zapisuje), czysto inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza, ani bezpośrednich ustaleń wypracowanych żywą rozmową z właścicielem [C-018] [R-PROFIL-TURNIEJ-PUNKTACJA-Q1] [C-018]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
-      "lastUpdatedIso": "2026-08-08T17:46:49.838Z"
+      "lastUpdatedIso": "2026-08-08T09:51:29.569Z"
+    },
+    {
+      "id": "rule_127",
+      "rule_text": "RECYDYWA (2. wystąpienie 2026-08-08, 1. hud-moc-warstwa): Operator w worktree mimo jawnego \"MIEJSCE PRACY — WYŁĄCZNIE ta ścieżka\" czasem i tak zapisuje (całość albo kopię) do współdzielonego drzewa głównego. Za 1. razem sam to wykrył i naprawił (git checkout -- w main), za 2. razem NIE zgłosił tego w raporcie — wykryte wyłącznie przez stop-hook (\"uncommitted changes\") + ręczne porównanie git diff obu drzew. Przeciwdziałanie: orkiestrator sprawdza git status --porcelain na drzewie głównym PO KAŻDYM powrocie Operatora pracującego w worktree, nie tylko gdy hook o tym przypomni — traktować to jako stały krok zamknięcia zlecenia, nie reakcję na alarm [C-019] [C-019]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T10:14:06.465Z"
+    },
+    {
+      "id": "rule_128",
+      "rule_text": "Przed oceną schowka git sprawdź TAKŻE pliki nieśledzone (git stash show --include-untracked, git show <stash>^3) — git stash show domyślnie ich nie pokazuje, więc ocena „to tylko artefakty\" może pomijać realną pracę [C-020]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:07:50.833Z"
+    },
+    {
+      "id": "rule_129",
+      "rule_text": "Kasując wiele schowków, rozwiązuj każdy po SHA (git stash list --format=\"%gd %H\"), nie po zapamiętanym indeksie — po każdym git stash drop indeksy się przesuwają i lista z góry przestaje obowiązywać [C-021]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:07:50.845Z"
+    },
+    {
+      "id": "rule_130",
+      "rule_text": "Pracę wartą zachowania przypinaj gałęzią i wypychaj na origin, nie zostawiaj w schowku — schowki są wyłącznie lokalne (nie trafiają na GitHub) i ginie je git stash clear, wymiana dysku lub czyszczenie folderu [C-022]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:07:50.845Z"
     }
   ],
   "quarantine_rules": []

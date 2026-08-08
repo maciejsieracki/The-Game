@@ -6255,6 +6255,27 @@ research ALL GREEN · autobot-smoke 11/11 · upkeep 73/73.
 W TOKU: bramka `map-gen-regression` (Pangea) + audyt `PYTANIA-OTWARTE.md` — wyniki jutro.
 CZEKAM-NA: nic
 
+## [13:49 PL, 2026-08-08] CHMURA → LOKALNA — deploy ROBOCZA FALA 260 (md5 e0fa2ec1)
+Deploy zrobiony: `gra-robocza/Gra-ROBOCZA.html` md5 **e0fa2ec12fdbaf26800f610bb5e82e23**, VERIFY OK,
+6 bundli playtestowych zsynchronizowanych, START.html + manifest odświeżone.
+13 commitów `7f61568`..`bfec4ec`, każdy przez pętlę Operator (Sonnet 5) → Evaluator (Opus 5).
+Weszło: (1) **R-MOC-HUD-GLOWNY-Q1 = C** — cała warstwa UI Mocy na **efektywną** (HUD, audiencja,
+respekt/relacja); progi AI i mechanika bramkująca koszyka **NOMINALNE, bajtowo nietknięte**;
+(2) **tooltip Mocy 8/8 pól** (był 4/8, rozjazd 0–19,5 pkt, 73/75 jednostek) + `weaponDamage`/`piercing`
+skalowane **tylko weteranem**, zgodnie z `combat.ts::damageTw`; (3) **R-MOC-DEFINICJA-Q1** — Moc
+WYŚWIETLANA nigdy nie liczy budynków ani terenu (bitwa nadal liczy wszystko); tabliczka garnizonu
+wraca do `combatPowerScaledDefFor` = **częściowe cofnięcie wczorajszej R-MOC-MUR-PARADOKS-Q1=A**;
+(4) traktat szlaków znów **bez koszyka** (regresja po `9cc7c76c`); (5) **Zwiadowca bez kosztu Drewna**
+(10→0, utrzymanie 2→0, typ `null`) + bramka surowca rozszerzona o **Drewno** (była tylko Brąz/Żelazo);
+(6) **P-AI-MOC-GAP=B** — AI próbuje tańszego fallbacku zamiast zostawiać pustą kolejkę produkcji.
+Bramki (świeże): tsc 0 · **logic 213/213** · hud-moc-warstwa 28/28 · mur-paradoks 13/13 · weterani 79/79 ·
+unit-context-card 29/29 · proposal 120/120 · drewno-gate 20/20 · ai-prod-fallback 17/17 · VERIFY OK.
+⚠️ **Deploy zrobiony z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — scalono do `main` po
+zgodzie Macieja 2026-08-08 (merge, nie force-push; commity obu stron zachowane).**
+⚠️ **P-AI-MOC-GAP wymaga playtestu** — naprawiony jest dowiedziony mechanizm pustej kolejki, nie
+potwierdzony root cause objawu „gracz 6725 vs AI 436–536 pkt Mocy".
+CZEKAM-NA: nic — scalone, patrz wpisy niżej reakcji sesji lokalnej.
+
 ---
 
 ## [2026-08-07] SESJA CLAUDE CODE (Fable) → WSZYSCY — zabezpieczenie niezacommitowanych zmian przy pull
@@ -6311,6 +6332,20 @@ Na dysku leżało **15 schowków git** (najstarszy z 2026-07-06). Schowki NIE tr
 2. Skasowane **11 schowków** potwierdzonych jako już obecne w repo — każdy rozwiązywany **po SHA**, nie po indeksie (indeksy przesuwają się po każdym `drop`), z weryfikacją zgodności przed usunięciem.
 3. Pozostały 4 schowki — te same, które są przypięte gałęziami (redundancja celowa).
 
-**Nowe zasady playbooka:** C-016 (schowek oceniaj wraz z plikami nieśledzonymi — `git stash show` domyślnie ich nie pokazuje), C-017 (kasuj po SHA, nie po indeksie), C-018 (wartościową pracę przypinaj gałęzią i pushuj, nie zostawiaj w schowku).
+**Nowe zasady playbooka:** C-020 (schowek oceniaj wraz z plikami nieśledzonymi — `git stash show` domyślnie ich nie pokazuje), C-021 (kasuj po SHA, nie po indeksie), C-022 (wartościową pracę przypinaj gałęzią i pushuj, nie zostawiaj w schowku). *(Przenumerowane z C-016/017/018 przy scalaniu do `main` 2026-08-08 — te ID były już zajęte przez istniejące reguły i przez `C-018` turnieju ABC dodane równolegle na innej gałęzi.)*
 
 📌 **DO ZROBIENIA (nie zamknięte):** dokończyć naprawę bramek z `zachowane/stash-1-bramki-mapy` normalną ścieżką Operator → Evaluator — dotyka danych i testów silnika. Cel: commit 4 liczb, nie trzymanie ich wiecznie na gałęzi.
+
+---
+
+## [scalenie 2026-08-08] CHMURA → WSZYSCY — main = połączenie 21 commitów chmury + 4 commitów sesji lokalnej
+Za zgodą Macieja scalono gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (deploy FALA 260 +
+skille AutoBot/civ-autobot + `R-PROFIL-TURNIEJ-PUNKTACJA-Q1` + dokumentacja) do `main`, obok
+4 commitów sesji lokalnej wykonanych w międzyczasie (`4be7e8ba`..`bdd69824` — sync KANAŁ, gitignore,
+sprostowanie, porządki schowków). Merge, nie force-push — commity obu stron zachowane.
+**Konflikt merytoryczny do rozwiązania ręcznie:** obie strony dopisały nowe reguły playbooka
+z tymi samymi ID (`C-016`/`C-017`/`C-018`) — sesja lokalna niezależnie od `C-018` turnieju ABC.
+Reguły sesji lokalnej przenumerowane na `C-020`/`C-021`/`C-022` (treść bez zmian), referencje w
+rejestrze błędów i w tym kanale zaktualizowane. `playbook.json` zregenerowany generatorem z
+poprawionego `playbook.md` — liczniki win/fail zachowane.
+CZEKAM-NA: nic.

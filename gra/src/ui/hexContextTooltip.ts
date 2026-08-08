@@ -658,11 +658,22 @@ function buildUnitVitalsHtml(u: UnitContextTooltipInput): string {
 
 function buildUnitForcesHtml(u: UnitContextTooltipInput): string {
   const { combat } = u;
+  // BUG-TOOLTIP-MOC-NIEPELNA (2026-08-08): wzór kanoniczny fieldPower() ma 8 pól
+  // wejściowych; brakowało tu weaponDamage/piercing/chargeBonus/missileAttack —
+  // luka 0-19,5 pkt Mocy, mediana 7 pkt, niezerowa dla 73/75 jednostek w
+  // units.json (zerowa dla Zwiadowcy i Wieży oblężniczej; przedział 18-19,5 pkt
+  // to tylko 8/75 jednostek, nie wartość typowa). Wszystkie 8 pól czytane z tej samej konwencji "*Effective"
+  // (softFrac budynki+weteran) co atakEffective/obronaEffective, dla spójności
+  // wewnątrz tego tooltipa.
   const power = fieldPower({
     meleeAttack: combat.atakEffective,
     meleeDefence: combat.obronaEffective,
     armor: combat.pancerzEffective,
     health: combat.hpMaxEffective,
+    weaponDamage: combat.weaponDamageEffective,
+    piercing: combat.piercingEffective,
+    chargeBonus: combat.chargeBonusEffective,
+    missileAttack: combat.missileAttackEffective,
   });
   return '<div class="sp-unit-forces">'
     + '<div class="sp-unit-forces-head">Siły zastosowane</div>'

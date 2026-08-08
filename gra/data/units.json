@@ -238,8 +238,8 @@
     "Tech": "-",
     "Pieniądz (koszt)": 8,
     "Ludność": 1,
-    "Surowiec": "Drewno",
-    "Surowiec (ilość)": 10,
+    "Surowiec": null,
+    "Surowiec (ilość)": 0,
     "Utrzymanie (Pieniądz/turę)": 0,
     "żywność/turę": 0,
     "Atak": 0,
@@ -286,8 +286,8 @@
     "health": 10,
     "missileAttack": 0,
     "fieldPower": 6,
-    "Utrzymanie surowiec": "Drewno",
-    "Utrzymanie surowiec (ilość)": 2
+    "Utrzymanie surowiec": null,
+    "Utrzymanie surowiec (ilość)": 0
   },
   {
     "Jednostka": "Włócznik",

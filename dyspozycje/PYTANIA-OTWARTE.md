@@ -1670,7 +1670,7 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 
 ---
 
-## P-AI-MOC-GAP — AI pełne cywilizacje ~10× mniej Mocy niż gracz · STATUS: **OTWARTE — częściowo złagodzone** (FALA 220, bez playtestu zamknięcia)
+## P-AI-MOC-GAP — AI pełne cywilizacje ~10× mniej Mocy niż gracz · STATUS: **ZDECYDOWANE — B (2026-08-08, kodować teraz bez playtestu) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 
 **Źródło:** playtest Macieja — gracz 6725 vs Zulusi 536 / Chińczycy 436 (poz. 1/8).
 **Werdykt audytu:** gap **REALNY** (nie bug rankingu/mgły). Głównie design + martwe parametry trudności.
@@ -1766,7 +1766,7 @@ główne rzeki **1235/1235**. Ale **formalnie bramka zwraca exit 1** — patrz k
 
 ---
 
-## BUG-TRAKTAT-KOSZYK-REGRESJA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — REGRESJA wobec wdrożonej decyzji**
+## BUG-TRAKTAT-KOSZYK-REGRESJA (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Jego słowa:** *„Pamiętam, że zgodnie z zasadami w traktatach handlowych miały nie być wymiany
 surowców, tylko temat dotyczący akurat tego traktatu. A jak widać, znowu to nie jest rozłączone."*
 **Obowiązująca decyzja:** `HANDEL-SPLIT-Q1 = B`, `docs/decyzje/HANDEL-SPLIT-Q1.md:18` — *„dwa osobne
@@ -1809,7 +1809,7 @@ dopiero na zdarzeniu hover, zamiast przy tworzeniu plakietki; albo brak fallback
 **Kotwice:** `gra/src/render/**`, `gra/src/ui/**` (plakietka miasta, ikony kultur).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
-## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — do naprawy**
+## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Jego słowa:** *„jednostka zwiadowcy nie miała wymagać żadnych surowców ani nie miała
 spożytkowywać podczas… nie powinno być żadnym kosztem ani jedzenia ani surowców — silny błąd
 do naprawy."*
@@ -1890,7 +1890,7 @@ o przekroczeniach granic między obcymi cywilizacjami.
 **Kotwice:** `gra/src/main.ts:3541-3596` · `gra/src/game/diplomacy-credibility.ts:492`
 · `gra/src/game/wiarygodnosc-types.ts:37`. Bramka do rozszerzenia: brak testu na adresata komunikatu.
 
-## BUG-BRAMKA-DREWNO-BRAK (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — przyczyna ustalona, wymaga litery**
+## BUG-BRAMKA-DREWNO-BRAK (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Jego słowa:** *„miasto, państwo nie ma start-upu, a buduje jednostki. A przecież do pierwszych
 jednostek potrzebne jest drewno."*
 **PRZYCZYNA — `gra/src/game/production.ts:858-863`:**
@@ -2049,7 +2049,7 @@ generujący entry przed `esbuild`, identycznie jak w działających plikach.
 **Do poprawienia przy okazji:** `.gitignore:53-56` — komentarz twierdzący, że WSZYSTKIE bramki
 generują entry same, jest dziś nieprawdziwy; poprawić po naprawieniu 10 plików.
 
-## R-MOC-MUR-PARADOKS-Q1 (2026-08-07, nota N4 Evaluatora) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`f94216e`, A)
+## R-MOC-MUR-PARADOKS-Q1 (2026-08-07, nota N4 Evaluatora) · STATUS: **CZĘŚCIOWO COFNIĘTE (2026-08-08)** — decyzja `=A` z `f94216e` zastąpiona przez `R-MOC-DEFINICJA-Q1` (tabliczka wraca do czystej Mocy bez bonusu muru; `tabliczkaGarnizonScaledDefFor()` usunięta)
 **Ustalenie:** po wdrożeniu `R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B` tabliczka jednostki w garnizonie
 pokazuje wyższą Moc **w szczerym polu** niż **za murem miasta** — bo bonus muru (do +400%,
 `structBonusPct`) wchodzi dopiero w rozstrzygnięciu bitwy (`effectiveDefenderM`), nie w tabliczce
@@ -2100,7 +2100,7 @@ z potencjalnie nieprawdziwą liczbą, którego nie da się skutecznie odrzucić.
 **Kotwice:** `gra/src/main.ts` (`applyBorderMarchPenaltiesEndTurn`, ~3578-3640),
 `borderMarchEventTargets`, `onEventDismiss`.
 
-## R-MOC-HUD-GLOWNY-Q1 (2026-08-07, nota Evaluatora w R-MOC-RANKING-ROZJAZD-Q1) · STATUS: **CZEKA NA LITERĘ WŁAŚCICIELA — blokuje DEPLOY, nie scalenie**
+## R-MOC-HUD-GLOWNY-Q1 (2026-08-07, nota Evaluatora w R-MOC-RANKING-ROZJAZD-Q1) · STATUS: **ZDECYDOWANE — C (2026-08-08) — Operator złożył pracę, czeka na Evaluatora** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
 **Ustalenie:** po `d1f7b91` (panel Mocy imperium na efektywną) Evaluator znalazł **piąty
 konsument**, którego nikt nie zgłaszał: główny, stale widoczny licznik Mocy w górnym pasku
 HUD (`main.ts:12579`, `buildHudState` → `hud.ts:1022`, `<span class="p-val-num">`) nadal
@@ -2120,18 +2120,139 @@ więc rozjazd jest fizycznie widoczny w jednej klatce.
 **Kotwice:** `gra/src/main.ts:12579` (`buildHudState`), `gra/src/ui/hud.ts:1022,1102`.
 
 ## Znaleziska poboczne z dzisiejszej pracy nad Mocą (nie blokują, do wiedzy)
-- **`openDiplomacyAudience` i `buildPlayerDiploSummary`** (`main.ts:14621-14622`,
-  `formatPowerRelationLine`) — kolejny ekran z parą liczb Mocy, nominalny. Evaluator ocenił
-  jako niższe ryzyko niż HUD (gracz nie widzi tego obok panelu Mocy) — świadomie pozostawione.
-- **Pozycja Mocy w rankingu na ekranie dyplomacji** (`buildAbsolutePowerRank`, nominalna)
-  może się różnić od pozycji w panelu Mocy (`buildAbsolutePowerRankEffective`) — ten sam
-  gracz, dwa różne miejsca w rankingu na dwóch ekranach.
+- ~~**`openDiplomacyAudience` i `buildPlayerDiploSummary`**~~ → **ROZWIĄZANE** przez
+  `R-MOC-HUD-GLOWNY-Q1=C` — `playerPower`/`otherPower`/`militaryPower` przełączone na
+  `objectivePowerForOwnerEffective`, `formatPowerRelationLine` porównuje teraz dwie liczby
+  efektywne po obu stronach.
+- ~~**Pozycja Mocy w rankingu na ekranie dyplomacji** (`buildAbsolutePowerRank`, nominalna)
+  może się różnić od pozycji w panelu Mocy~~ → **ROZWIĄZANE** przez `R-MOC-HUD-GLOWNY-Q1=C` —
+  `buildAbsolutePowerRank` (wariant nominalny UI) usunięty jako martwy kod, ekran dyplomacji
+  czyta teraz `buildAbsolutePowerRankEffective`, tak samo jak panel Mocy/Empire.
 - **Mnożnik trudności AI jest częściowo gubiony** (pre-istniejące, nie wprowadzone dziś):
   `applyDifficultyCombatToUnitDef` nie usuwa cache `fieldPower` dla jednostek bez weterana
   i bez fortyfikacji — dla takich jednostek AI mnożnik trudności jest po cichu ignorowany
   w całej ścieżce Mocy (tabliczka, auto-bitwa, teraz też ranking). Dotyczy `R-MOC-*`
   całościowo, nie tego konkretnego commita. Do naprawy: `game/ai-difficulty-bonus.ts`.
-- **Garnizon wspierający szturm sąsiedniego miasta bez opuszczania własnego garnizonu**
-  (`R-MOC-MUR-PARADOKS-Q1`) — wnosi do bitwy 49 pkt (poprawnie), tabliczka pokazuje 95 —
-  artefakt semantyki „tabliczka = Moc w obronie TEGO miasta", nie błąd, ale warty wzmianki
-  w tooltipie jeśli gracz kiedyś zapyta.
+- ~~**Garnizon wspierający szturm sąsiedniego miasta bez opuszczania własnego garnizonu**
+  (`R-MOC-MUR-PARADOKS-Q1`) — wnosi do bitwy 49 pkt (poprawnie), tabliczka pokazuje 95~~ →
+  **NIEAKTUALNE po 2026-08-08** (`R-MOC-DEFINICJA-Q1`, częściowe cofnięcie
+  `R-MOC-MUR-PARADOKS-Q1=A`) — tabliczka pokazuje teraz 49, zgodnie z tym co jednostka
+  wnosi do bitwy gdziekolwiek. Paradoks wrócił w INNĄ stronę — patrz nowy wpis
+  `R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY` niżej.
+
+## R-MOC-KOSZYK-RELACJA-SWIADOME (2026-08-08, nota Evaluatora R-MOC-HUD-GLOWNY-Q1) · STATUS: **DO WIADOMOŚCI WŁAŚCICIELA — pozostawione nominalne przez Evaluatora, ale zakres dekretu C rozstrzyga wyłącznie Maciej**
+**Uwaga procesowa (drugi Evaluator, ponowna weryfikacja):** ścisłe czytanie dekretu
+`R-MOC-HUD-GLOWNY-Q1=C` — „cała warstwa UI naraz" — może obejmować też liczbę „obecnie: Y"
+w koszyku. Pierwszy Evaluator ocenił to jako świadomie poza zakresem (bo koszyk musi pokazywać
+liczbę, której realnie używa próg mechaniki), ale o zakresie WŁASNEGO dekretu rozstrzyga
+Maciej, nie agent — status obniżony z ZAMKNIĘTE do „do wiadomości", nic więcej nie zmieniono
+w kodzie.
+**Ustalenie:** `getNegotiationContext.relacjaTotal` (`main.ts`) jest **NOMINALNA** — świadomie,
+bo bramkuje realną mechanikę `diplomacyFairGivePn` i progi handlu/daru (patrz punkt „CO ZOSTAJE
+NOMINALNE" w `gra/tools/hud-moc-warstwa-test.cjs`, decyzja R-MOC-HUD-GLOWNY-Q1=C). Ta sama
+nominalna liczba trafia do koszyka wymiany i tam jest **WYŚWIETLANA** graczowi jako liczba
+w komunikatach typu „Handel wymaga Relacji ≥ X (obecnie: Y)"
+(`gra/src/ui/diplomacyTradeBasket.ts:~1247,~1458,~1460`) — mechanizm: `diplomacyAudience.ts:~1881`
+`mergeBasketCtx` daje pierwszeństwo nominalnej `negCtx.relacjaTotal` nad efektywną `st.relacjaTotal`.
+**Efekt widoczny dla gracza:** ekran audiencji pokazuje np. „Relacja 142/200" (EFEKTYWNA,
+`audienceRelTotalEffective`), gracz otwiera stamtąd koszyk wymiany i widzi „obecnie: 138"
+(NOMINALNA, `audienceRelTotal`) — dwie różne liczby tej samej wielkości na dwóch nakładających
+się, kolejno otwieranych ekranach.
+**To NIE jest bug do naprawienia w kodzie.** W koszyku poprawnie pokazywana jest liczba, której
+naprawdę używa próg mechaniki (`diplomacyFairGivePn`) — przełączenie jej na efektywną wprowadzałoby
+gracza w błąd co do realnego progu odblokowania handlu/daru (progi w koszyku muszą zostać zgodne
+z tym, co faktycznie sprawdza silnik, nie z liczbą kosmetyczną z panelu Mocy). Rozjazd między
+ekranem audiencji (efektywna, kosmetyczna) a koszykiem (nominalna, mechaniczna) jest zamierzoną
+konsekwencją decyzji R-MOC-HUD-GLOWNY-Q1=C, nie regresją tej pracy.
+**Zapisane, żeby nie zostało odkryte za tydzień jako „nowa regresja".**
+**Kotwice:** `gra/src/main.ts` (`getNegotiationContext.relacjaTotal`, `audienceRelTotal`,
+`audienceRelTotalEffective`), `gra/src/ui/diplomacyTradeBasket.ts:~1247,~1458,~1460`,
+`gra/src/ui/diplomacyAudience.ts:~1881` (`mergeBasketCtx`).
+
+## R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY (2026-08-08, nota Evaluatora BUG-TRAKTAT-KOSZYK-REGRESJA) · STATUS: **DO WIEDZY — nie naprawiać teraz, poza zakresem =A**
+**Ustalenie:** naprawa `BUG-TRAKTAT-KOSZYK-REGRESJA=A` usunęła z `TRADE_BASKET_ACTION_IDS`
+(`gra/src/ui/diplomacyTradeBasket.ts`) wyłącznie akcję `'5'` (traktat szlaków) — zgodnie z
+literą decyzji. Przy okazji weryfikacji Evaluator ustalił, że commit `9cc7c76c` (2026-08-05,
+„NAP bezterminowy na stole audiencji") wprowadził DWIE inne, nieudokumentowane zmiany zakresu,
+poza NAP i poza akcją `'5'`:
+1. Skurczył `TREATY_ONLY_FORM_IDS` z 7 pozycji do 1 (`'2','3','4','8','10','12','15'` → `'15'`).
+2. Dopisał do `TRADE_BASKET_ACTION_IDS` również akcje `'6'` (propozycja technologii), `'7'`
+   (namów na wojnę), `'9'` (ultimatum) — nie tylko `'5'`.
+**Czy to zamierzone czy kolejna, dotąd niezauważona regresja tej samej klasy co
+`BUG-TRAKTAT-KOSZYK-REGRESJA` — NIEUSTALONE.** Świadomie NIE naprawiane teraz — poza zakresem
+decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zniknęło z pola widzenia.
+**Kotwice:** `git show 9cc7c76c` (obie listy w `diplomacyTradeBasket.ts`).
+
+## P-BRAMKA-DANINA-PODATEK-CZERWONA (2026-08-08, nota Evaluatora tooltip-moc) · STATUS: **OTWARTE — pre-istniejące, nie regresja**
+`node gra/tools/danina-podatek-tooltip-ui-test.cjs` → `esbuild failed: No matching export in
+"tools/.stubs/brandAssets-stub.ts" for import "unitIconSvg"`, exit 1. Zweryfikowane dwukrotnie
+(Operator i Evaluator, niezależnie) że pada identycznie na czystym `HEAD` sprzed prac
+`tooltip-moc` — przyczyna: bramka sama nadpisuje współdzielony stub swoją 3-funkcyjną treścią
+(bez `unitIconSvg`), po czym bunduje `hexContextTooltip.ts`, który od commita `4504783`
+(„FALA 46") importuje `unitIconSvg`. Nie figuruje na liście znanych czerwonych w `CLAUDE.md`.
+Naprawa: jedna linia w literale stuba tej bramki. Do naprawy albo do wpisania na listę znanych.
+
+## P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (2026-08-08, nota N1 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — pre-istniejące, nie wprowadzone tą zmianą**
+Sekcja 5 `gra/tools/mur-paradoks-test.cjs` (asercja „realna Obrona > tabliczka") liczy
+`realDefenseWithMur` z REIMPLEMENTACJI wzoru w samym teście, nie z prawdziwego
+`effectiveDefenderM` w `main.ts` — dowód mutacyjny Evaluatora: wstrzyknięcie
+`combinedDefPct = 0 * structBonusPct + ...` (zerowanie bonusu muru w REALNEJ bitwie) do
+`main.ts` zostawia `mur-paradoks-test.cjs`, `logic-test.cjs` i `combat-test.cjs` w 100%
+zielone. `city-defense-terrain-gate-test.cjs` ma tę samą lukę (własna reimplementacja,
+linia 227). Żadna bramka w repo nie chroni dziś linii `combinedDefPct = structBonusPct +
+(cityTerrMult - 1) * 100` w `effectiveDefenderM`. Naprawa: asercja źródłowa (regex) na
+main.ts przypinająca tę linię, wzorem starej (usuniętej dziś) asercji na `scaleField`.
+
+## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — do decyzji, nie blokuje**
+Po częściowym cofnięciu `R-MOC-MUR-PARADOKS-Q1=A` (decyzja `R-MOC-DEFINICJA-Q1`, tabliczka
+garnizonu = `combatPowerScaledDefFor(u)` bez bonusu muru) — tabliczka mimo to NADAL zmienia
+się po wybudowaniu muru: **51,5 pkt Mocy bez muru → 49,0 pkt Mocy z murem** (dla tego
+samego garnizonu, ta sama jednostka). Przyczyna: `unitGetsFortifyDefenseBonus` wyłącza
+premię fortyfikacji polowej garnizonu (+50%) właśnie wtedy, gdy miasto ma mur — więc
+zasada „Moc wyświetlana nigdy nie zależy od budynku" nie jest spełniona w 100%: tabliczka
+nadal reaguje na obecność muru, tylko w dół zamiast w górę. Świadomie zaakceptowane przez
+Macieja jako część powrotu do `combatPowerScaledDefFor` (ta sama funkcja żywi realną
+bitwę), ale pytanie „czy fortyfikacja polowa garnizonu też ma zniknąć z tabliczki, żeby
+Moc była naprawdę niezależna od miejsca postoju" nie zostało zadane wprost.
+**Kotwice:** `gra/src/main.ts` (`combatPowerScaledDefFor`, `fortifyFieldScaledDefFor`,
+`unitGetsFortifyDefenseBonus`).
+
+## P-DREWNO-BRAMKA-RYZYKO-STARTU (2026-08-08, nota N1 Evaluatora zwiadowca-drewno) · STATUS: **DO WIEDZY — świadome ryzyko z decyzji BUG-BRAMKA-DREWNO-BRAK=A**
+**Zmierzone:** miasta startują z pustym magazynem surowców (`cities.ts:415`); Drewno
+pochodzi wyłącznie z ulepszenia terenu `tartak`. 14 z 75 jednostek w `units.json` wymaga
+Drewna. **Przy pustym magazynie państwa jedyną budowalną jednostką w epokach 1-3 jest
+Zwiadowca** — dokładnie ryzyko, na które właściciel świadomie się zgodził (odrzucona opcja
+C z progiem startowym). AI ma parytet (ta sama bramka, ten sam `empireResourceStock`).
+Do potwierdzenia playtestem — czy to realnie blokuje wczesną grę, czy tartak/handel
+wystarczająco szybko rozwiązuje brak Drewna.
+
+## P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
+`gra/tools/.stubs/brandAssets-stub.ts` jest plikiem ŚLEDZONYM w gicie, a co najmniej
+4 bramki (`army-merge-dismiss-bounce-test.cjs`, `pre-battle-defender-retreat-test.cjs`,
+`unit-context-card-test.cjs`, `danina-podatek-tooltip-ui-test.cjs`) nadpisują go własną
+treścią przy każdym uruchomieniu — każde szersze omiatanie testów zostawia fałszywy `M`
+na tym pliku w `git status`. Ten sam wzorzec doprowadził już dziś do dedykowanych stubów
+w `tooltip-moc` (`unit-context-card-brandAssets-stub.ts`) i `traktat-koszyk`
+(`brandAssets-diplo-treaty-stub.ts`). Do rozważenia: systemowa naprawa (każda bramka
+dostaje własny, niededykowany katalog stubów) zamiast punktowych obejść przy każdej
+kolejnej kolizji.
+
+## P-UNIT-STOCK-COST-TEST-DLUG (2026-08-08, nota N4 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — pre-istniejące, do dopisania na listę znanych czerwonych**
+`node gra/tools/unit-stock-cost-test.cjs` → 53 pass, **4 fail**, m.in. „Wojownik: brak
+kosztu magazynowego (got {drewno:10}, want {})" i „Konnica ... want {braz:2} got {braz:10}".
+Zdezaktualizowane oczekiwania po wcześniejszych zmianach `units.json` — dług testowy, nie
+regresja. Potwierdzone identyczne na czystym `HEAD` sprzed prac `zwiadowca-drewno`. Nie
+figuruje na liście znanych czerwonych w `CLAUDE.md`.
+
+## P-AUTOBOT-MINRUNS-ROZJAZD-5-VS-10 (2026-08-08, adwokat diabła: audyt skillsa `civ-autobot`) · STATUS: **DO WIEDZY — rozjazd konfiguracji, nie błąd skillsa**
+Kanon (`R-PROC-AUTOBOT` §v2, `dyspozycje/autobot/README.md`) mówi, że próg istotności
+statystycznej `minRunsForSignificance` został **podniesiony z 5 do 10**. Ale żywy plik
+`dyspozycje/autobot/playbook.json` ma dziś **`minRunsForSignificance: 5`** — generator
+`dyspozycje/autobot/tools/playbook-md-to-json.cjs` przepisuje sekcję `thresholds` bez
+zmian (nie wyprowadza jej z `playbook.md`), więc wartość `5` **realnie obowiązuje** aż do
+ręcznej poprawki. Znalezione przy trzecim, adwokackim przeglądzie nowego skillsa
+`civ-autobot` (`.claude/skills/civ-autobot/SKILL.md`) — zapisane tam jako uwaga „odczytaj
+wartość z pliku, nie z pamięci", ale sam rozjazd wykracza poza zakres skillsa i wymaga
+decyzji: albo poprawić `playbook.json` na `10` (zgodnie z kanonem), albo cofnąć kanon do
+`5` (jeśli `10` było error/nieaktualną decyzją), albo rozszerzyć generator o pole
+`thresholds` w `playbook.md`. Nie blokuje niczego pilnie — czysto informacyjne.

@@ -930,7 +930,7 @@ import {
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
-import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx } from './game/ai';
+import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
@@ -1743,6 +1743,25 @@ async function boot(): Promise<void> {
     /** Respekt % (Power gracza vs partner) — kanon objective v2. */
     function objectiveRespektPctToward(theirOwnerId: number): number {
       return computeRespekt(objectivePowerForOwner(0), objectivePowerForOwner(theirOwnerId));
+    }
+    /**
+     * R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): wariant EFEKTYWNY respektu —
+     * jedyna różnica vs objectiveRespektPctToward: obie strony liczone przez
+     * objectivePowerForOwnerEffective zamiast objectivePowerForOwner (symetrycznie,
+     * inaczej porównanie "nasza moc vs ich moc" byłoby fałszywe — jedna strona
+     * z bonusem weterana/fortyfikacji/trudności, druga bez). Karmi WYŁĄCZNIE
+     * UI widoczne dla gracza (lista dyplomacji — buildPlayerDiploRelations,
+     * ekran audiencji — patrz audienceRelTotalEffective). NIE wolno jej podłączyć
+     * do progów blokad akcji/negocjacji (buildDiplomacyLockContextBase,
+     * getNegotiationContext.relacjaTotal, diplomacyFairGivePn) — te zostają na
+     * objectiveRespektPctToward nominalnej, bo bramkują realne mechaniki
+     * (dostępność akcji, uczciwość koszyka PN), nie tylko wyświetlaną liczbę.
+     */
+    function objectiveRespektPctTowardEffective(theirOwnerId: number): number {
+      return computeRespekt(
+        objectivePowerForOwnerEffective(0),
+        objectivePowerForOwnerEffective(theirOwnerId),
+      );
     }
     function unitCountOnHex(q: number, r: number): number {
       let n = 0;
@@ -4890,8 +4909,14 @@ async function boot(): Promise<void> {
           layer,
           tier: relationTier(rel),
           zaufanie: Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0))),
-          respekt: objectiveRespektPctToward(otherId),
-          theirRespekt: computeRespekt(objectivePowerForOwner(otherId), objectivePowerForOwner(0)),
+          // R-MOC-HUD-GLOWNY-Q1=C: lista dyplomacji (karta per-cywilizacja) -> respekt
+          // EFEKTYWNY, dla spójności z ekranem audiencji (otwieranym z tej samej listy),
+          // który liczy respekt tym samym wariantem — patrz audienceRelTotalEffective.
+          respekt: objectiveRespektPctTowardEffective(otherId),
+          theirRespekt: computeRespekt(
+            objectivePowerForOwnerEffective(otherId),
+            objectivePowerForOwnerEffective(0),
+          ),
           population: cities.filter(c => c.ownerId === otherId).reduce((s, c) => s + c.population, 0),
           armyCount: units.filter(u => u.ownerId === otherId).length,
           cultureLabel: civCultureLabelForKey(civKeyForOwner(otherId)),
@@ -4915,8 +4940,10 @@ async function boot(): Promise<void> {
       const civKey = civKeyForOwner(0);
       const playerCities = cities.filter(c => c.ownerId === 0);
       const lines = formatDiploPlayerSummaryLines({
-        militaryPower: objectivePowerForOwner(0),
-        powerRank: buildAbsolutePowerRank(),
+        // R-MOC-HUD-GLOWNY-Q1=C: podsumowanie gracza na liście dyplomacji ("Moc: X",
+        // "Ranking mocy: Y. z Z") -> EFEKTYWNA, jak reszta warstwy UI Mocy.
+        militaryPower: objectivePowerForOwnerEffective(0),
+        powerRank: buildAbsolutePowerRankEffective(),
         wiarygodnosc: getWiarygodnosc(0),
         population: playerCities.reduce((s, c) => s + c.population, 0),
         armyCount: units.filter(u => u.ownerId === 0).length,
@@ -8193,12 +8220,22 @@ async function boot(): Promise<void> {
         // polowa/garnizon bez muru + mnożnik trudności AI), której realnie
         // używa rosterFieldPowerM()/resolveAutoBattleByPower() do rozstrzygania
         // auto-bitwy (patrz combatPowerScaledDefFor niżej w tym pliku).
-        // R-MOC-MUR-PARADOKS-Q1=A (Maciej 2026-08-07): dla garnizonu w mieście
-        // z murem, combatPowerScaledDefFor SAM nie dociąga bonusu struktury/
-        // terenu (żeby effectiveDefenderM go nie policzyło podwójnie -- patrz
-        // komentarz przy tabliczkaGarnizonScaledDefFor), więc tabliczka woła
-        // dodatkową, tabliczkowo-lokalną warstwę nad tą samą bazą.
-        defOf: (u: RuntimeUnit) => tabliczkaGarnizonScaledDefFor(u),
+        // R-MOC-DEFINICJA-Q1 (Maciej 2026-08-08): "Moc" WYŚWIETLANA graczowi
+        // (tabliczka nad żetonem, tooltip, panel rankingu, HUD, Empire) NIGDY
+        // nie liczy budynków ani terenu -- tylko własne wskaźniki jednostki +
+        // premia weterana. Częściowe cofnięcie R-MOC-MUR-PARADOKS-Q1=A
+        // (2026-08-07, commit f94216e): funkcja tabliczkaGarnizonScaledDefFor(),
+        // która dla garnizonu za murem dociągała bonus struktury/terenu na
+        // tabliczkę, została USUNIĘTA -- tabliczka znów woła gołe
+        // combatPowerScaledDefFor(u) (weteran + fortyfikacja polowa/garnizon
+        // bez muru + trudność AI, ale bez bonusu STRUKTURY muru/terenu),
+        // tak jak przed tamtą decyzją. Rzeczywiste rozstrzygnięcie bitwy
+        // (effectiveDefenderM, gałąź isCity) nadal liczy PEŁNY bonus struktury/
+        // terenu -- to jest ŚWIADOMY, udokumentowany paradoks tabliczki:
+        // tabliczka garnizonu za murem pokazuje NIŻSZĄ Moc niż realna Obrona
+        // tego miasta w bitwie (patrz mur-paradoks-test.cjs, zaktualizowany
+        // pod tę decyzję).
+        defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u),
       });
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
@@ -11106,7 +11143,7 @@ async function boot(): Promise<void> {
         civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
         // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy (widoczny dla gracza) liczy Moc
         // EFEKTYWNIE — patrz sumArmyMForOwnerEffective. Progi decyzji AI (militaryRatioFromArmyM,
-        // computeRespekt spoza tego panelu) zostają na objectivePowerForOwner nominalnej.
+        // computeRespekt w ścieżkach AI) zostają na objectivePowerForOwner nominalnej.
         power: objectivePowerForOwnerEffective(oid),
         isPlayer: oid === 0,
         rank: 0,
@@ -11143,18 +11180,13 @@ async function boot(): Promise<void> {
      * R-RANKING-MOC (Maciej 2026-07-24): pozycja gracza wśród WSZYSTKICH żyjących
      * cywilizacji (miasta-państwa wyłączone), niezależnie od odkrycia w mgle wojny —
      * gracz ma znać swoje konkretne miejsce, nawet nie znając rywali.
-     */
-    function buildAbsolutePowerRank(): { rank: number; total: number } {
-      return computeAbsolutePowerRank(0, allPowerOwnerIds(), objectivePowerForOwner, {
-        cityStateOpts: ownerCityStateOpts(),
-      });
-    }
-
-    /**
-     * R-MOC-RANKING-ROZJAZD-Q1=B: wariant efektywny buildAbsolutePowerRank — WYŁĄCZNIE
-     * dla `absoluteRank` w panelu Mocy (buildPowerOverlayData). buildAbsolutePowerRank
-     * nominalna zostaje nietknięta — nadal karmi buildPlayerDiploSummary (ekran dyplomacji,
-     * poza zakresem tej decyzji).
+     *
+     * R-MOC-RANKING-ROZJAZD-Q1=B: wariant EFEKTYWNY (objectivePowerForOwnerEffective) —
+     * karmi `absoluteRank` w panelu Mocy (buildPowerOverlayData) ORAZ buildPlayerDiploSummary
+     * (ekran dyplomacji), obie ścieżki widoczne dla gracza. Wariant nominalny
+     * (objectivePowerForOwner) dla tego samego rankingu żyje osobno jako inline callback
+     * w computeAbsolutePowerRank wewnątrz pętli tury AI (~linia 21907) — tam liczy pozycję
+     * per-AI-owner na potrzeby decyzji AI, nietknięty tą decyzją.
      */
     function buildAbsolutePowerRankEffective(): { rank: number; total: number } {
       return computeAbsolutePowerRank(0, allPowerOwnerIds(), objectivePowerForOwnerEffective, {
@@ -11293,8 +11325,8 @@ async function boot(): Promise<void> {
       // patrz buildPowerOverlayData), więc `obj`/`powerComponents` (headline Moc + rozbicie
       // na składniki w tym samym ekranie) muszą liczyć tym samym wariantem — inaczej gracz
       // widziałby DWIE różne liczby Mocy dla siebie na jednym ekranie (dokładnie ten sam
-      // rozjazd, który ta decyzja ma naprawić). AI (militaryRatioFromArmyM, respekt poza
-      // tym ekranem) nadal czyta wyłącznie nominalny objectivePowerByOwner/buildObjectivePowerForOwner
+      // rozjazd, który ta decyzja ma naprawić). AI (militaryRatioFromArmyM, computeRespekt
+      // w ścieżkach AI) nadal czyta wyłącznie nominalny objectivePowerByOwner/buildObjectivePowerForOwner
       // — nietknięte.
       const obj = buildObjectivePowerForOwnerEffective(0);
       const totalPts = Math.max(1, obj.components.reduce((s, c) => s + c.points, 0));
@@ -12586,7 +12618,10 @@ async function boot(): Promise<void> {
       const pop = pc.reduce((s, c) => s + c.population, 0);
       const pobor = empirePoborTotals(cities, 0, player.era, civManpowerMultsForOwner(0).maxMult);
       const chips = collectDiploChipCounts();
-      const power = objectivePowerForOwner(0);
+      // R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): licznik Mocy w HUD (klikalny,
+      // otwiera panel Mocy który już liczy efektywnie — d1f7b91) -> EFEKTYWNA,
+      // dla spójności z panelem, który się pod nim otwiera.
+      const power = objectivePowerForOwnerEffective(0);
       const foodReserve = Math.floor(getEmpireFoodReserve(0));
       const foodMaxCap = projectPlayerFoodMaxCap();
       const foodProj = projectPlayerFoodProjection();
@@ -14434,6 +14469,25 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-MOC-HUD-GLOWNY-Q1=C (Maciej 2026-08-08): wariant EFEKTYWNY audienceRelTotal —
+     * WYŁĄCZNIE dla pola `relacjaTotal` w payloadzie getState() ekranu audiencji
+     * (main.ts, showDiplomacyAudience), które trafia na TEN SAM ekran co
+     * `respekt`/`playerPower`/`otherPower` liczone teraz efektywnie (formatPowerRelationLine).
+     * Bez tej wersji pasek "Respekt X/100" (efektywny) i liczba "relacja / 200"
+     * (nominalna) pokazywałyby DWIE różne wartości respektu dla tej samej pary —
+     * dokładnie ten rozjazd, który cała ta decyzja ma eliminować.
+     * NIE używać do bramkowania: buildAudienceActions (lockCtxBase — progi
+     * odblokowania akcji dyplomatycznych) i getNegotiationContext (relacjaTotal —
+     * próg handlu/daru, diplomacyFairGivePn) zostają na audienceRelTotal
+     * NOMINALNEJ — to mechaniki/progi gry, nie sama wyświetlana liczba Mocy.
+     */
+    function audienceRelTotalEffective(ownerId: number, rel: Relation): number {
+      return Math.round(
+        Math.max(0, Math.min(200, (rel.zaufanie ?? 0) + objectiveRespektPctTowardEffective(ownerId))),
+      );
+    }
+
+    /**
      * FAZA 1 (Makieta DYPLOMACJA v1.1, KROK 3 pkt 4) — kontekst progowy dla
      * resolveDiplomacyActionLock (diplomacy-locks.ts), wspólny dla wszystkich akcji
      * poza '1' (kontakt, bramkowany osobno). Progi REALNE z silnika
@@ -14628,8 +14682,12 @@ async function boot(): Promise<void> {
             contacted,
           );
           const zaufanieNorm = Math.round(Math.max(0, Math.min(100, rel.zaufanie ?? 0)));
-          const playerPower = objectivePowerForOwner(0);
-          const otherPower = objectivePowerForOwner(ownerId);
+          // R-MOC-HUD-GLOWNY-Q1=C: obie strony EFEKTYWNE — playerPower i otherPower
+          // trafiają do formatPowerRelationLine w TEJ SAMEJ linii porównawczej
+          // ("Twoja moc X vs Y"); gdyby tylko jedna strona liczyła efektywnie,
+          // porównanie i wynikowy Respekt byłyby fałszywe.
+          const playerPower = objectivePowerForOwnerEffective(0);
+          const otherPower = objectivePowerForOwnerEffective(ownerId);
           const powerLine = formatPowerRelationLine(playerPower, otherPower);
           const respektNorm = powerLine.respekt;
           const pairMeta = getDiploPairMeta(0, ownerId);
@@ -14669,7 +14727,10 @@ async function boot(): Promise<void> {
             otherCivName: ownerDiploLabel(ownerId),
             zaufanie: zaufanieNorm,
             respekt: respektNorm,
-            relacjaTotal: audienceRelTotal(ownerId, rel),
+            // R-MOC-HUD-GLOWNY-Q1=C: audienceRelTotalEffective — spójność z `respekt`
+            // (respektNorm, już efektywny wyżej) na TYM SAMYM ekranie; audienceRelTotal
+            // nominalna zostaje jako gate w buildAudienceActions/getNegotiationContext.
+            relacjaTotal: audienceRelTotalEffective(ownerId, rel),
             zaufanieDeltaPerTurn,
             relacjaDeltaPerTurn: zaufanieDeltaPerTurn,
             trustPnGainedThisTurn: pairMeta.trustPnGainedThisTurn,
@@ -17753,6 +17814,12 @@ async function boot(): Promise<void> {
         obrona: unitObrona(def),
         hpMax: unitHealth(def),
         pancerz: normFieldVal(def['armor'] ?? def['Pancerz'], 0),
+        // BUG-TOOLTIP-MOC-NIEPELNA: pozostałe 4 składowe fieldPower() (unit-power.ts),
+        // te same nazwy pól co unitDefFor()/combatUnitFromDef() (TW v3 EN, units.json).
+        weaponDamage: normFieldVal(def['weaponDamage'], 0),
+        piercing: normFieldVal(def['piercing'], 0),
+        chargeBonus: normFieldVal(def['chargeBonus'], 0),
+        missileAttack: normFieldVal(def['missileAttack'], 0),
       }, u);
     }
 
@@ -18323,76 +18390,6 @@ async function boot(): Promise<void> {
       // przed tą zmianą, mimo że komentarz mówi "obrona x0,5" (patrz raport).
       const embarkMult = defRoster[0]?.embarked === true ? EMBARK_DEFENSE_MULT : 1;
       return Math.round((terrAdjAttack + terrAdjDefense) * embarkMult * 10) / 10;
-    }
-
-    /**
-     * R-MOC-MUR-PARADOKS-Q1 = A (Maciej 2026-08-07): tabliczka nad żetonem
-     * garnizonu ma dociągnąć bonus struktury obronnej (mur/Palisada/Cytadela/
-     * Baszta -- structureDefenseBonusFor) i mnożnik terenu miasta
-     * (cityGatedTerrainMultiplier), DOKŁADNIE tak jak effectiveDefenderM liczy
-     * realną Obronę w bitwie -- inaczej tabliczka garnizonu z murem POKAZUJE
-     * NIŻSZĄ Moc niż bez murów (fortifyFieldScaledDefFor nie dolicza swojego
-     * +50%, bo unitGetsFortifyDefenseBonus zwraca false gdy jest mur), mimo że
-     * realna Obrona rośnie do +400%.
-     *
-     * ⚠ CELOWO NIE PODMIENIA combatPowerScaledDefFor() -- ta funkcja karmi
-     * effectiveDefenderM (patrz sumRosterFieldMSplit wyżej w effectiveDefenderM),
-     * które SAMO dolicza structBonusPct/cityGatedTerrainMultiplier na
-     * split.defense. Gdyby bonus wszedł już do combatPowerScaledDefFor(),
-     * effectiveDefenderM policzyłby go PODWÓJNIE (raz tu, raz przez
-     * combinedDefPct) i realna bitwa (rosterFieldPowerM dla atakującego też
-     * korzysta z combatPowerScaledDefFor) zaczęłaby liczyć struct bonus nawet
-     * dla atakującego. Dlatego to OSOBNA funkcja, wpięta WYŁĄCZNIE pod defOf
-     * tabliczki (syncUnitsRender, patrz niżej w tym pliku) -- ranking Mocy
-     * (sumArmyMForOwner) i panel pre-battle (preBattleUnitFromRuntime) jej
-     * NIE używają.
-     *
-     * Zastosowanie -- WYŁĄCZNIE jednostka w garnizonie (u.inGarnizon===true)
-     * miasta (cityAtUnit) na heksie, który cityWallStatusAtHex uznaje za
-     * miasto: skaluje meleeDefence/armor/health (SKŁADOWE Obrony w
-     * fieldPower(), unit-power.ts -- defense = meleeDefence+armor+health/2)
-     * o ten sam % co effectiveDefenderM liczy dla split.defense w gałęzi
-     * isCity -- combinedDefPct = structBonusPct + (cityGatedTerrainMultiplier-1)*100,
-     * ADDYTYWNIE (nie mnożone), zgodnie z C-COMBAT-Q2. Gdy miasto nie ma
-     * żadnego budynku obronnego, structBonusPct=0 i cityGatedTerrainMultiplier
-     * gate'uje się na 1.0 -- combinedDefPct=0, funkcja jest wtedy no-opem
-     * (zwraca base bez zmian, tabliczka garnizonu bez murów NIEZMIENIONA).
-     *
-     * Atak jednostki (meleeAttack/weaponDamage/piercing/chargeBonus/
-     * missileAttack) NIE dostaje żadnego bonusu -- mur broni Obronę, nie
-     * wzmacnia Ataku (ta sama zasada co effectiveDefenderM, punkt 3 zadania:
-     * jednostka ATAKUJĄCA z sąsiedniego heksu nigdy nie stoi NA heksie miasta
-     * obrońcy, więc ten branch jej po prostu nie dotyczy -- gating jest przez
-     * pozycję (u.q,u.r) jednostki, nie przez rolę w bitwie).
-     *
-     * Jednostka NIE w garnizonie (w polu, w tym ufortyfikowana polowo) --
-     * zwraca combatPowerScaledDefFor(u) bez zmian (zachowanie sprzed decyzji).
-     */
-    function tabliczkaGarnizonScaledDefFor(u: RuntimeUnit): Record<string, unknown> {
-      const base = combatPowerScaledDefFor(u);
-      if (u.inGarnizon !== true) return base;
-      if (!cityAtUnit(u)) return base;
-      const { isCity, hasMur } = cityWallStatusAtHex(u.q, u.r);
-      if (!isCity) return base;
-      const structBonusPct = structureDefenseBonusFor(u.q, u.r);
-      const hex = map.hexes[keyOf(u.q, u.r)];
-      const terrain = hex ? (hex.terenBazowy as string) : 'Rownina';
-      const cityTerrMult = cityGatedTerrainMultiplier(
-        hasMur,
-        terrain,
-        terrainCombatData as unknown as TerrainEntry[],
-      );
-      const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
-      if (combinedDefPct <= 0) return base;
-      const mult = 1 + combinedDefPct / 100;
-      const scaleField = (v: unknown): unknown => (typeof v === 'number' ? v * mult : v);
-      const { fieldPower: _staleFieldPower3, ...rest } = base as Record<string, unknown>;
-      return {
-        ...rest,
-        meleeDefence: scaleField(rest.meleeDefence),
-        armor: scaleField(rest.armor),
-        health: scaleField(rest.health),
-      };
     }
 
     /** Auto-walka M v2b + wspólne skutki mapy (identyczne reguły ruchu co ręczna). */
@@ -22695,146 +22692,226 @@ async function boot(): Promise<void> {
                   // #31: klasyfikacja po id budynku (katalog buildings.json), nie po nazwie --
                   // buildingProductionItem/findBuilding niżej porównują wyłącznie b.id.
                   const buildingNames = new Set(data.buildings.map(b => b.id));
-                  const isBuilding = buildingNames.has(cmd.buildingId);
                   const prod0 = cityProd.get(cmd.cityId) ?? { kolejka: [], postep: 0 };
-                  // Don't re-enqueue if already in queue
-                  const alreadyQueued = prod0.kolejka.some(it => it.id === cmd.buildingId);
-                  if (!alreadyQueued) {
-                    const builtIds = cityBuilt.get(city.id) ?? [];
-                    const ownImprovements = placedImprovementsForOwner(ownerId);
-                    const allowed = availableProduction(
-                      city,
-                      data,
-                      Array.from(unlockedTechSetForOwner(ownerId)),
-                      {
-                        epoch: empireEpochForOwner(ownerId),
-                        builtBuildingIds: builtIds,
-                        productionQueue: prod0.kolejka,
-                        civBonusy: civBonusyForOwnerId(ownerId),
-                        civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
-                        placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
-                        hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
-                        // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
-                        aliveUnitTypeNames: new Set(
-                          units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
-                        ),
-                        buildingCostPace: player.buildingCostPace ?? 'niski',
-                        ownerId,
-                        difficulty: effectiveGameDifficultyForOwner(ownerId),
-                        // TEMAT 8 Q2 (2026-07-24, PARYTET AI): bez tych 4 pól bramki surowcowe/
-                        // terenowe (Glina/Ceramika/Sól/Drewno/Kamień/Ruda/Port — w tym stolarnia,
-                        // którą AI faktycznie proponuje w ai.ts) byłyby tu zawsze niespełnione,
-                        // więc polecenie 'build' AI byłoby odrzucane mimo realnego dostępu —
-                        // te same wejścia co tryAutoEnqueueBuild / cityPanel.ts (ręczna budowa gracza).
-                        empireActiveResourceLabels: empireActiveResourceLabelsForOwner(ownerId),
-                        empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
-                        empireResourceStock: citySurowceSumForOwner(ownerId),
-                        cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
-                        // ADMIN-STOLICA (2026-07-25, PARYTET AI): parytet — patrz uwaga w
-                        // tryAutoEnqueueBuild; jedno źródło prawdy capitalCityIdForOwner,
-                        // identyczne dla ownerId=0 (gracz) i każdej cywilizacji AI.
-                        isCapital: capitalCityIdForOwner(ownerId) === city.id,
-                      },
-                    );
-                    const buildAllowed = allowed.some(
-                      (a) => a.id === cmd.buildingId || a.nazwa === cmd.buildingId,
-                    );
-                    if (!buildAllowed) {
-                      console.warn(
-                        `[AI ${ownerId}] Build blocked (epoka/tech): ${cmd.buildingId}`,
-                      );
-                      continue;
-                    }
-                    const item = isBuilding
-                      ? buildingProductionItem(
-                        cmd.buildingId,
+
+                  // P-AI-MOC-GAP / P-AI-MOC-GAP-EVAL (Maciej 2026-08-08): kandydat główny +
+                  // fallbacki (ai.ts chooseCityProduction, AICmdBuild.fallbackIds) — tańsze/inne
+                  // pozycje z TEJ SAMEJ listy, w malejącym priorytecie. Powód: decyzja o
+                  // produkcji dla WSZYSTKICH miast jednego ownera zapada w ai.ts z odczytu tego
+                  // samego, jeszcze nienaruszonego stanu puli surowców państwa (opts.canAfford;
+                  // NIE snapshot/kopia — żywy odczyt, który w chwili decyzji jeszcze się nie
+                  // zmienił) — dopiero TU, w egzekucji, faktycznie odejmujemy surowce
+                  // (deductOwnerStockCost). Miasto przetwarzane w tej pętli PÓŹNIEJ może więc
+                  // zastać już opróżnioną wspólną pulę po mieście przetworzonym wcześniej w tej
+                  // samej turze -- bez fallbacku ponowny canAfford* odrzucał kandydata i kolejka
+                  // miasta zostawała PUSTA na całą turę, mimo że stać je było na coś tańszego
+                  // z tej samej listy.
+                  //
+                  // Wybór KANDYDATA to teraz wywołanie CZYSTEGO pickExecutableCandidate
+                  // (game/ai.ts) -- ten sam kod, który testuje tools/ai-prod-fallback-test.cjs
+                  // (T3e/T3f/T3g, mutacyjnie: usunięcie fallbackIds w decideAITurn ORAZ
+                  // wyłączenie fallbacku tutaj muszą zaczerwienić test). Checks poniżej TYLKO
+                  // CZYTAJĄ stan gry (kolejka/tech/epoka/dane przedmiotu/pula/rush-eligibility)
+                  // -- efekty uboczne (deduct/purchase/enqueue) aplikujemy PO otrzymaniu wyniku,
+                  // niżej, dokładnie jak dawniej.
+                  // buildCandidateIds (game/ai.ts, P-AI-MOC-GAP-EVAL/R2, Maciej 2026-08-08):
+                  // ta sama funkcja, którą importuje i woła tools/ai-prod-fallback-test.cjs
+                  // (executeBuild()) -- dawniej test duplikował tę jedną linię inline, więc
+                  // mutacja OKABLOWANIA main.ts (np. obcięcie do [cmd.buildingId]) nie
+                  // czerwieniła testu; teraz test czyta prawdziwą wartość.
+                  const candidateIds = buildCandidateIds(cmd);
+                  const builtIds = cityBuilt.get(city.id) ?? [];
+                  const ownImprovements = placedImprovementsForOwner(ownerId);
+
+                  const checks: ExecutableCandidateChecks<ProductionItem> = {
+                    isAlreadyQueued: (id) => prod0.kolejka.some(it => it.id === id),
+                    isBuildAllowed: (id) => {
+                      const allowed = availableProduction(
+                        city,
                         data,
-                        1,
-                        civBonusyForOwnerId(ownerId),
-                        player.buildingCostPace ?? 'niski',
-                        ownerId,
-                        effectiveGameDifficultyForOwner(ownerId),
-                      )
-                      : unitProductionItem(
-                        cmd.buildingId,
-                        data,
-                        civBonusyForOwnerId(ownerId),
-                        player.kosztJednostekPace ?? 'niski',
-                        ownerId,
-                        effectiveGameDifficultyForOwner(ownerId),
+                        Array.from(unlockedTechSetForOwner(ownerId)),
+                        {
+                          epoch: empireEpochForOwner(ownerId),
+                          builtBuildingIds: builtIds,
+                          productionQueue: prod0.kolejka,
+                          civBonusy: civBonusyForOwnerId(ownerId),
+                          civUnitNacja: unitNacjaForCivKey(civKeyForOwnerId(ownerId)),
+                          placedImprovements: placedImprovementsWithTradeGrants(ownerId, ownImprovements),
+                          hasKopalniaNaZlozuZelaza: hasKopalniaNaZlozuZelazaOrTradeGrant(ownerId, ownImprovements),
+                          // audyt #11: AI też podlega limitowi 1 żywej Super-jednostka.
+                          aliveUnitTypeNames: new Set(
+                            units.filter(x => x.ownerId === ownerId).map(x => x.typeId),
+                          ),
+                          buildingCostPace: player.buildingCostPace ?? 'niski',
+                          ownerId,
+                          difficulty: effectiveGameDifficultyForOwner(ownerId),
+                          // TEMAT 8 Q2 (2026-07-24, PARYTET AI): bez tych 4 pól bramki surowcowe/
+                          // terenowe (Glina/Ceramika/Sól/Drewno/Kamień/Ruda/Port — w tym stolarnia,
+                          // którą AI faktycznie proponuje w ai.ts) byłyby tu zawsze niespełnione,
+                          // więc polecenie 'build' AI byłoby odrzucane mimo realnego dostępu —
+                          // te same wejścia co tryAutoEnqueueBuild / cityPanel.ts (ręczna budowa gracza).
+                          empireActiveResourceLabels: empireActiveResourceLabelsForOwner(ownerId),
+                          empireBuiltIds: [...empireBuiltIdsForOwner(ownerId)],
+                          empireResourceStock: citySurowceSumForOwner(ownerId),
+                          cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
+                          // ADMIN-STOLICA (2026-07-25, PARYTET AI): parytet — patrz uwaga w
+                          // tryAutoEnqueueBuild; jedno źródło prawdy capitalCityIdForOwner,
+                          // identyczne dla ownerId=0 (gracz) i każdej cywilizacji AI.
+                          isCapital: capitalCityIdForOwner(ownerId) === city.id,
+                        },
                       );
-                    if (item !== null) {
-                      // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24) / JEDNOSTKI-SUROWIEC-01
-                      // (2026-07-24): siatka bezpieczeństwa — AI zwykle nie wybiera budynku/
-                      // jednostki bez pokrycia (opts.canAfford w decideAITurn, patrz wyżej), ale
-                      // sprawdzamy ponownie tu (jedyne miejsce, ktore faktycznie enqueue'uje i
-                      // pobiera surowiec) — AI POMIJA element (continue), nie zawiesza tury.
-                      // Afordancja/pobor liczone Z PULI PAŃSTWA ownera (nie tylko lokalne
-                      // City.surowce tego miasta) — identycznie jak dla gracza, zero specjalnej
-                      // ścieżki AI (parytet: buildingStockCost/unitStockCost, ta sama funkcja
-                      // deductOwnerStockCost dla obu rodzajow kosztu).
+                      const buildAllowed = allowed.some(
+                        (a) => a.id === id || a.nazwa === id,
+                      );
+                      if (!buildAllowed) {
+                        console.warn(`[AI ${ownerId}] Build blocked (epoka/tech): ${id}`);
+                      }
+                      return buildAllowed;
+                    },
+                    resolveItem: (id) => {
+                      const isBuilding = buildingNames.has(id);
+                      const item = isBuilding
+                        ? buildingProductionItem(
+                          id,
+                          data,
+                          1,
+                          civBonusyForOwnerId(ownerId),
+                          player.buildingCostPace ?? 'niski',
+                          ownerId,
+                          effectiveGameDifficultyForOwner(ownerId),
+                        )
+                        : unitProductionItem(
+                          id,
+                          data,
+                          civBonusyForOwnerId(ownerId),
+                          player.kosztJednostekPace ?? 'niski',
+                          ownerId,
+                          effectiveGameDifficultyForOwner(ownerId),
+                        );
+                      if (item === null) {
+                        console.warn(`[AI ${ownerId}] Build no-op: nieznany ${id}`);
+                      }
+                      return item;
+                    },
+                    // TEMAT #6 (2026-07-23) / SUROW-CIV-01 (2026-07-24) / JEDNOSTKI-SUROWIEC-01
+                    // (2026-07-24): siatka bezpieczeństwa — AI zwykle nie wybiera budynku/
+                    // jednostki bez pokrycia (opts.canAfford w decideAITurn, patrz wyżej), ale
+                    // sprawdzamy ponownie tu (odczyt, przed jedynym miejscem które faktycznie
+                    // enqueue'uje i pobiera surowiec, niżej) — gdy odmówi, próbujemy kolejnego
+                    // kandydata (fallbackIds) zamiast zawieszać całą turę produkcyjną tego
+                    // miasta (P-AI-MOC-GAP). Afordancja liczona Z PULI PAŃSTWA ownera (nie
+                    // tylko lokalne City.surowce tego miasta) — identycznie jak dla gracza.
+                    // Dla jednostek: afordowalne WYŁĄCZNIE gdy stać na pełny koszt surowcowy
+                    // Z MAGAZYNU PAŃSTWA (canAffordUnitRecruitFull). P-AI-MOC-GAP-EVAL/R2
+                    // (Maciej 2026-08-08, Evaluator): shouldAIRushBuyUnit NIE jest tu niezależną
+                    // ścieżką finansowania -- to CZYSTO decyzja o TEMPIE zapłaty (złoto zamiast
+                    // tur), sama w sobie w ogóle nie sprawdza surowców, więc jako dysjunkt
+                    // potrafiła zwrócić true dla kandydata, na którego owner NIE miał pokrycia
+                    // magazynowego. Egzekucja niżej i tak próbuje NAJPIERW rush (przez
+                    // purchaseRecruitmentUnit, która wewnątrz woła pickUnitRecruitHint --
+                    // matematycznie równoważne canAffordUnitRecruitFull, więc rush zawsze
+                    // zawodzi dokładnie wtedy gdy ten predykat zwraca false), a dopiero potem
+                    // magazyn -- więc taki kandydat gwarantowanie przepadał na egzekucji, a
+                    // helper (myśląc że kandydat jest wykonalny) zatrzymywał się na nim i NIGDY
+                    // nie próbował kolejnych fallbacków. Usunięcie dysjunktu przywraca prawdziwe
+                    // znaczenie canAfford: "stać nas, przez magazyn" -- rush jako opcja tempa
+                    // płatności nadal działa niżej, bramkowany TYM SAMYM progiem.
+                    canAfford: (item) => {
                       if (item.kind === 'budynek') {
                         const def = data.buildings.find(b => b.id === item.id);
                         const cost = buildingStockCost(def);
-                        if (Object.keys(cost).length > 0) {
-                          if (!canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost)) {
-                            console.warn(
-                              `[AI ${ownerId}] Build skipped (brak surowca w magazynie panstwa): ${cmd.buildingId}`,
-                            );
-                            continue;
-                          }
-                          deductOwnerStockCost(ownerId, cost);
-                        }
-                      } else if (item.kind === 'jednostka') {
-                        // R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): przed zwykłym
-                        // kolejkowaniem Pracą, spróbuj ZACHOWAWCZEGO rush-zakupu za złoto --
-                        // sama decyzja to CZYSTY predykat shouldAIRushBuyUnit (game/ai.ts,
-                        // testy w tools/ai-unit-rush-test.cjs). AI kupuje tylko gdy jest w
-                        // stanie wojny z kimkolwiek, zostaje bufor >= reserve po zapłacie,
-                        // miasto ma pokrycie Manpower i owner nie kupił jeszcze w tej turze
-                        // (cap aiRushParams.maxPerTurn, R-STAWKI-STROJENIE: econ-params.json
-                        // globalne.ai_rush_jednostka_max_na_ture). purchaseRecruitmentUnit
-                        // (ownerId-agnostyczne, patrz definicja) sam pobiera złoto+surowiec+
-                        // Manpower i kolejkuje -- NIE pobieramy nic drugi raz tutaj.
-                        const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
-                          || aiOwnerList.some(
-                            (other) => other !== ownerId && getDiploRelation(ownerId, other).status === 'wojna',
-                          );
-                        const boughtThisTurn = aiUnitGoldRushBoughtByOwner.get(ownerId) ?? 0;
-                        const wantsRush = shouldAIRushBuyUnit({
-                          atWar: atWarWithAnyone,
-                          treasury: ownerTreasury(ownerId),
-                          reserve: aiRushParams.reserve,
-                          goldCost: item.koszt,
-                          hasManpower: canAffordUnitManpowerEmpire(
-                            cities, ownerId, city, empireEpochForOwner(ownerId),
-                            UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, cmd.buildingId,
-                          ),
-                          boughtThisTurn,
-                          maxPerTurn: aiRushParams.maxPerTurn,
-                        });
-                        if (wantsRush && purchaseRecruitmentUnit(cmd.cityId, cmd.buildingId, item.koszt, ownerId)) {
-                          aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
-                          console.log(`[AI ${ownerId}] Rush jednostki za zloto: ${cmd.buildingId}`);
-                          continue;
-                        }
-                        const unitDef = data.units.find(u => u.Jednostka === item.id);
-                        const cost = unitStockCost(unitDef);
-                        const pool = ownerSurowcePoolFor(ownerId);
-                        if (!canAffordUnitRecruitFull(pool, unitDef)) {
-                          console.warn(
-                            `[AI ${ownerId}] Build skipped (brak surowca / rezerwy utrzymania): ${cmd.buildingId}`,
-                          );
-                          continue;
-                        }
-                        if (Object.keys(cost).length > 0) {
-                          deductOwnerStockCost(ownerId, cost);
-                        }
+                        if (Object.keys(cost).length === 0) return true;
+                        return canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost);
                       }
-                      cityProd.set(cmd.cityId, enqueue(prod0, item));
-                    } else {
-                      console.warn(`[AI ${ownerId}] Build no-op: nieznany ${cmd.buildingId}`);
+                      const unitDef = data.units.find(u => u.Jednostka === item.id);
+                      return canAffordUnitRecruitFull(ownerSurowcePoolFor(ownerId), unitDef);
+                    },
+                  };
+
+                  const pick = pickExecutableCandidate(candidateIds, checks);
+                  // null: żaden kandydat nie przeszedł -- naprawdę nie stać na nic z listy,
+                  // kolejka zostaje pusta na tę turę (identycznie jak dawniej). alreadyQueued:
+                  // pierwszy napotkany kandydat już siedzi w kolejce -- nic więcej nie trzeba
+                  // (dawne `break` bez enqueue), nie porażka afordancji.
+                  if (pick === null || pick.alreadyQueued) {
+                    continue;
+                  }
+                  const candId = pick.id;
+                  const item = pick.item;
+
+                  if (item.kind === 'budynek') {
+                    const def = data.buildings.find(b => b.id === item.id);
+                    const cost = buildingStockCost(def);
+                    if (Object.keys(cost).length > 0) {
+                      if (!canAffordBuildingStock(ownerSurowcePoolFor(ownerId), cost)) {
+                        // Rzadki brzeg: checks.canAfford (odczyt) powiedział "tak", ale stan
+                        // zmienił się między selekcją a egzekucją w obrębie TEJ SAMEJ, synchro-
+                        // nicznej iteracji -- w praktyce nie zdarza się (nic pomiędzy nie
+                        // mutuje puli), zostawiona jako siatka bezpieczeństwa jak dawniej.
+                        console.warn(
+                          `[AI ${ownerId}] Build skipped (brak surowca w magazynie panstwa): ${candId}`,
+                        );
+                        continue;
+                      }
+                      deductOwnerStockCost(ownerId, cost);
                     }
+                    cityProd.set(cmd.cityId, enqueue(prod0, item));
+                  } else if (item.kind === 'jednostka') {
+                    // R-AI-KUP-JEDN (Maciej 2026-07-24, parytet AI): przed zwykłym
+                    // kolejkowaniem Pracą, spróbuj ZACHOWAWCZEGO rush-zakupu za złoto --
+                    // sama decyzja to CZYSTY predykat shouldAIRushBuyUnit (game/ai.ts,
+                    // testy w tools/ai-unit-rush-test.cjs). AI kupuje tylko gdy jest w
+                    // stanie wojny z kimkolwiek, zostaje bufor >= reserve po zapłacie,
+                    // miasto ma pokrycie Manpower i owner nie kupił jeszcze w tej turze
+                    // (cap aiRushParams.maxPerTurn, R-STAWKI-STROJENIE: econ-params.json
+                    // globalne.ai_rush_jednostka_max_na_ture). purchaseRecruitmentUnit
+                    // (ownerId-agnostyczne, patrz definicja) sam pobiera złoto+surowiec+
+                    // Manpower i kolejkuje -- NIE pobieramy nic drugi raz tutaj.
+                    const atWarWithAnyone = getDiploRelation(ownerId, 0).status === 'wojna'
+                      || aiOwnerList.some(
+                        (other) => other !== ownerId && getDiploRelation(ownerId, other).status === 'wojna',
+                      );
+                    const boughtThisTurn = aiUnitGoldRushBoughtByOwner.get(ownerId) ?? 0;
+                    const wantsRush = shouldAIRushBuyUnit({
+                      atWar: atWarWithAnyone,
+                      treasury: ownerTreasury(ownerId),
+                      reserve: aiRushParams.reserve,
+                      goldCost: item.koszt,
+                      hasManpower: canAffordUnitManpowerEmpire(
+                        cities, ownerId, city, empireEpochForOwner(ownerId),
+                        UNIT_POPULATION_COST, civManpowerMultsForOwner(ownerId).maxMult, candId,
+                      ),
+                      boughtThisTurn,
+                      maxPerTurn: aiRushParams.maxPerTurn,
+                    });
+                    if (wantsRush && purchaseRecruitmentUnit(cmd.cityId, candId, item.koszt, ownerId)) {
+                      aiUnitGoldRushBoughtByOwner.set(ownerId, boughtThisTurn + 1);
+                      console.log(`[AI ${ownerId}] Rush jednostki za zloto: ${candId}`);
+                      continue;
+                    }
+                    const unitDef = data.units.find(u => u.Jednostka === item.id);
+                    const cost = unitStockCost(unitDef);
+                    const pool = ownerSurowcePoolFor(ownerId);
+                    if (!canAffordUnitRecruitFull(pool, unitDef)) {
+                      // P-AI-MOC-GAP-EVAL/R2 (Maciej 2026-08-08): checks.canAfford (wyżej) już
+                      // wymagał canAffordUnitRecruitFull===true dla TEGO kandydata przed jego
+                      // wyborem, a pula między selekcją a tym miejscem NIE mogła się zmienić --
+                      // rush powyżej (purchaseRecruitmentUnit) albo się udał (return true,
+                      // continue wcześniej), albo zawiódł PRZED jakąkolwiek mutacją PULI
+                      // SUROWCÓW (jego pickUnitRecruitHint-check jest przed deductem puli --
+                      // Manpower może zostać dotknięty osobno, patrz definicja funkcji).
+                      // Ta gałąź jest więc dziś realnie nieosiągalna -- zostaje jako siatka
+                      // bezpieczeństwa na wypadek przyszłej zmiany porządku operacji, tak samo
+                      // jak bliźniacza gałąź budynku wyżej (linia ~22845).
+                      console.warn(
+                        `[AI ${ownerId}] Build skipped (brak surowca / rezerwy utrzymania): ${candId}`,
+                      );
+                      continue;
+                    }
+                    if (Object.keys(cost).length > 0) {
+                      deductOwnerStockCost(ownerId, cost);
+                    }
+                    cityProd.set(cmd.cityId, enqueue(prod0, item));
                   }
                   continue;
                 }

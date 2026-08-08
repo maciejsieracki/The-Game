@@ -10,6 +10,55 @@ const esbuild = (() => {
 
 const BUNDLE = path.resolve(__dirname, '.dip-proposal-bundle.cjs');
 const entryFile = path.resolve(__dirname, '.dip-proposal-entry.ts');
+// diplomacyTradeBasket.ts (importowany dla actionUsesTradeBasket/TRADE_BASKET_ACTION_IDS,
+// BUG-TRAKTAT-KOSZYK-REGRESJA=A) ciągnie przez diploUiSkin.ts -> leaderPortraits.ts ORAZ
+// bezpośrednio przez ./icons/brandAssets.ts -- oba robią Vite-owy `import.meta.glob(...)`,
+// czego esbuild w trybie node/cjs nie obsługuje (wzorzec stubowania jak w
+// tools/army-merge-dismiss-bounce-test.cjs — tam stubowany jest icons/brandAssets).
+// Treść portretów liderów i ikon jest tu bez znaczenia (test nie asercjonuje wyglądu,
+// tylko logikę koszyka), więc podmieniamy oba moduły na lekkie stuby.
+// Nazwy plików WŁASNE dla tego testu (nie te z tools/.stubs/leaderPortraits-stub.ts i
+// brandAssets-stub.ts używane przez army-merge-dismiss-bounce-test.cjs / danina-podatek-
+// tooltip-ui-test.cjs) — inny zestaw eksportów jest tam potrzebny niż tutaj, więc osobne
+// pliki, żeby nie nadpisywać ani nie łamać cudzego testu współdzielonym stubem.
+const STUB_DIR = path.resolve(__dirname, '.stubs');
+const LEADER_PORTRAITS_STUB = path.resolve(STUB_DIR, 'leaderPortraits-diplo-treaty-stub.ts');
+const BRAND_ASSETS_STUB = path.resolve(STUB_DIR, 'brandAssets-diplo-treaty-stub.ts');
+fs.mkdirSync(STUB_DIR, { recursive: true });
+fs.writeFileSync(
+  LEADER_PORTRAITS_STUB,
+  [
+    "export function leaderPortraitUrl() { return null; }",
+    "export function leaderName() { return null; }",
+    "export function leaderNameFromPool() { return null; }",
+    "export function civDisplayNameFromKey() { return null; }",
+    "export function civCardDisplayName(label) { return label; }",
+    "export function civIconIdFromCivLabel() { return null; }",
+  ].join('\n'),
+  'utf8',
+);
+fs.writeFileSync(
+  BRAND_ASSETS_STUB,
+  [
+    "export function brandIconSvg() { return ''; }",
+    "export function improvementIconSvg() { return ''; }",
+    "export function mapResourceIconSvg() { return ''; }",
+    "export function terrainIconSvg() { return ''; }",
+    "export function buildingIconSvg() { return ''; }",
+    "export function unitIconSvg() { return ''; }",
+    "export function civIconSvg() { return ''; }",
+    "export function epochIconSvg() { return ''; }",
+    "export function settingIconSvg() { return ''; }",
+    "export function brandMenuComponentsCss() { return ''; }",
+    "export function menuIconSvg() { return ''; }",
+    "export function brandMenuEmblemSvg() { return ''; }",
+    "export function newGameIntroEmblemSvg() { return ''; }",
+    "export function brandMotionCss() { return ''; }",
+    "export function brandMenuBackgroundCss() { return ''; }",
+    "export function svgThumbHtml() { return ''; }",
+  ].join('\n'),
+  'utf8',
+);
 fs.writeFileSync(entryFile, `
 export {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
@@ -24,9 +73,21 @@ export { capAiGoldOffer, AI_TRADE_GOLD_MAX as ECO_GOLD_MAX } from '../src/game/d
 export { addTreaty, hasTreaty, treatiesBrokenByWar, resolvePokojTrustTier } from '../src/game/diplomacy-treaties.ts';
 export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';
 export { diplomacyFairGivePn } from '../src/game/diplomacy-value-catalog.ts';
+export {
+  actionUsesTradeBasket, getTradeBasketMode, isTreatyOnlyFormAction, TRADE_BASKET_ACTION_IDS,
+} from '../src/ui/diplomacyTradeBasket.ts';
 `);
 
-esbuild.buildSync({
+const stubViteAssetsPlugin = {
+  name: 'stub-vite-assets',
+  setup(build) {
+    build.onResolve({ filter: /leaderPortraits$/ }, () => ({ path: LEADER_PORTRAITS_STUB }));
+    build.onResolve({ filter: /icons\/brandAssets$/ }, () => ({ path: BRAND_ASSETS_STUB }));
+  },
+};
+
+async function main() {
+await esbuild.build({
   entryPoints: [entryFile],
   bundle: true,
   platform: 'node',
@@ -34,6 +95,8 @@ esbuild.buildSync({
   outfile: BUNDLE,
   absWorkingDir: path.resolve(__dirname, '..'),
   logLevel: 'silent',
+  loader: { '.json': 'json', '.svg': 'text', '.css': 'text' },
+  plugins: [stubViteAssetsPlugin],
 });
 
 const {
@@ -45,6 +108,7 @@ const {
   negotiationStillValid, TRIBUTE_PROPOSAL_ACTIONS,
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
   evaluatePendingFromAI, diplomacyFairGivePn,
+  actionUsesTradeBasket, getTradeBasketMode, isTreatyOnlyFormAction, TRADE_BASKET_ACTION_IDS,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -852,5 +916,31 @@ ok(
   'nap proposer=AI, koszyk tylko-odbieram: treatyPnGate receive-side NIE odrzuca (zakres zawężony do proposerIsPlayer, poza literą decyzji A)',
 );
 
+// ---------------------------------------------------------------------------
+// 20 BUG-TRAKTAT-KOSZYK-REGRESJA=A (2026-08-08) — akcja 5 (traktat szlaków,
+// `umowa_szlakow`) MUSI zostać poza koszykiem wymiany (HANDEL-SPLIT-Q1=B).
+// Commit 9cc7c76c przypadkiem dopisał '5' do TRADE_BASKET_ACTION_IDS w
+// diplomacyTradeBasket.ts, co otwierało pełny koszyk PW pod klikiem "Traktat
+// handlowy". Test wprost na warstwie UI-eligibility, nie tylko na silniku.
+// ---------------------------------------------------------------------------
+ok(
+  actionUsesTradeBasket('5') === false,
+  'UI: akcja 5 (traktat szlaków) NIE używa koszyka wymiany (actionUsesTradeBasket)',
+);
+ok(
+  !TRADE_BASKET_ACTION_IDS.has('5'),
+  'UI: TRADE_BASKET_ACTION_IDS nie zawiera akcji 5 (traktat szlaków bez koszyka)',
+);
+// Kontrola pozytywna: 14 (umowa wymiany) i 13 (dar) — sąsiednie akcje na tym
+// samym stole — MUSZĄ zostać w koszyku, żeby asercja wyżej nie przechodziła
+// przez przypadek (np. pusty zbiór po literówce).
+ok(
+  actionUsesTradeBasket('14') === true && actionUsesTradeBasket('13') === true,
+  'UI: kontrola pozytywna — akcje 13 (dar) i 14 (umowa wymiany) nadal używają koszyka',
+);
+
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);
+}
+
+main().catch(err => { console.error(err); process.exit(1); });
