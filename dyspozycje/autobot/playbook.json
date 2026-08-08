@@ -1,6 +1,6 @@
 {
-  "version": 14,
-  "updatedAtIso": "2026-08-07T21:03:18.937Z",
+  "version": 15,
+  "updatedAtIso": "2026-08-08T17:46:49.842Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -242,7 +242,7 @@
     },
     {
       "id": "rule_124",
-      "rule_text": "Sprawdzaj, co JEST W PLIKACH, nie co pamiętasz — każde twierdzenie przedstawiane właścicielowi jako fakt musi mieć świeży odczyt z repozytorium albo uruchomienie bramki. Przy audycie rekordu danych wypisuj WSZYSTKIE pola, nigdy sztywną listę kolumn dobraną z góry: pominięta kolumna wygląda w raporcie identycznie jak kolumna o wartości zero [C-016]",
+      "rule_text": "Przed oceną schowka git sprawdź TAKŻE pliki nieśledzone (git stash show --include-untracked, git show <stash>^3) — git stash show domyślnie ich nie pokazuje, więc ocena „to tylko artefakty\" może pomijać realną pracę [C-016]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
@@ -252,13 +252,23 @@
     },
     {
       "id": "rule_125",
-      "rule_text": "Orkiestrator prowadzi WŁASNĄ pracę przez pętlę AutoBot tak samo jak pracę subagentów — jest Operatorem swojej zmiany i nie ocenia sam siebie; werdykt wydaje osobny Evaluator, bo cudze błędy widać lepiej niż własne. Dotyczy każdej zmiany zapisanej do repozytorium i każdej liczby podanej właścicielowi jako fakt; czynności czysto odczytowe są wyłączone [C-017]",
+      "rule_text": "Kasując wiele schowków, rozwiązuj każdy po SHA (git stash list --format=\"%gd %H\"), nie po zapamiętanym indeksie — po każdym git stash drop indeksy się przesuwają i lista z góry przestaje obowiązywać [C-017]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-07T21:03:18.926Z"
+    },
+    {
+      "id": "rule_126",
+      "rule_text": "Pracę wartą zachowania przypinaj gałęzią i wypychaj na origin, nie zostawiaj w schowku — schowki są wyłącznie lokalne (nie trafiają na GitHub) i ginie je git stash clear, wymiana dysku lub czyszczenie folderu [C-018]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T17:46:49.838Z"
     }
   ],
   "quarantine_rules": []

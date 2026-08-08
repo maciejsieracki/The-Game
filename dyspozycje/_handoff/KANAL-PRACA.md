@@ -6295,3 +6295,22 @@ W poprzednim wpisie wymieniłem ten wzorzec wśród dodanych, ale go NIE opisał
 ⚠️ **Usterka do naprawy przy okazji** (nie blokuje niczego): sonda `wrap-probe` zapisuje wynik ścieżką względną bez zakotwiczenia w katalogu projektu. Przy kolejnym uruchomieniu z niewłaściwego katalogu roboczego zagnieżdżenie powstanie ponownie. Autor skryptu: rozważcie `path.resolve(__dirname, ...)` zamiast ścieżki względnej — tak jak robią to sąsiednie narzędzia w `gra/tools/`.
 
 Wzorzec w `.gitignore` zostaje — katalog jest artefaktem błędu, nie miejscem na kod.
+
+---
+
+## [2026-08-07] SESJA CLAUDE CODE (Fable) → WSZYSCY — porządki w schowkach git: 11 skasowanych, 4 przypięte gałęziami
+
+Na dysku leżało **15 schowków git** (najstarszy z 2026-07-06). Schowki NIE trafiają na GitHub — przy wymianie dysku, czyszczeniu folderu lub `git stash clear` przepadają bezpowrotnie. Przegląd w pętli AutoBot: Operator (Sonnet) → Evaluator (Opus, adwokat diabła) → Final.
+
+⚠️ **NAJWAŻNIEJSZE ZNALEZISKO — Evaluator obalił werdykt Operatora.** Operator orzekł „13 do skasowania, ŻADEN nie wymaga ratowania". Nieprawda:
+- **`stash@{1}`** (2026-08-04) zawiera **gotową naprawę DWÓCH czerwonych bramek regresji**. Potwierdzone uruchomieniem: `rozmiar-label-test.cjs` → 1 błąd, `map-scale-menu-test.cjs` → **8 błędów**. Przyczyna: commit `6f96f08` (08-02) zmienił `gra/data/e-start-params.json` (miasta-państwa 5/6/7, kamień Super Huge 7/8/8), a testy nadal asertują stare wartości (`eStartMiastaPanstwa('Duży') === 14`, dane mówią 6). Ktoś zaczął synchronizować testy 08-04, schował w połowie i nie wrócił. **Do naprawy zostały 4 liczby w 2 plikach — praca praktycznie gotowa.**
+- **`stash@{12}`** zawiera finalną wersję `AUDYT-KODU-2026-07-21.md` (bilans 20 NAPRAWIONE / 50 POTWIERDZONE / 2 PRAWDOPODOBNE / 1 ODRZUCONE + korekty wag). W repo leży wersja „przerwany na etapie weryfikacji". Wiedza odtwarzalna z dwóch innych plików, konsolidacja — nie.
+
+**WYKONANE (kolejność ważna — nic nie kasowane przed zabezpieczeniem):**
+1. Przypięte gałęziami i **wypchnięte na origin** (SHA zweryfikowane zdalnie): `zachowane/stash-1-bramki-mapy` (c8f3a54), `zachowane/stash-12-audyt-final` (b04a366), `zachowane/stash-7-deploy-all` (db2b70c), `zachowane/stash-14-sandbox` (cb9e816).
+2. Skasowane **11 schowków** potwierdzonych jako już obecne w repo — każdy rozwiązywany **po SHA**, nie po indeksie (indeksy przesuwają się po każdym `drop`), z weryfikacją zgodności przed usunięciem.
+3. Pozostały 4 schowki — te same, które są przypięte gałęziami (redundancja celowa).
+
+**Nowe zasady playbooka:** C-016 (schowek oceniaj wraz z plikami nieśledzonymi — `git stash show` domyślnie ich nie pokazuje), C-017 (kasuj po SHA, nie po indeksie), C-018 (wartościową pracę przypinaj gałęzią i pushuj, nie zostawiaj w schowku).
+
+📌 **DO ZROBIENIA (nie zamknięte):** dokończyć naprawę bramek z `zachowane/stash-1-bramki-mapy` normalną ścieżką Operator → Evaluator — dotyka danych i testów silnika. Cel: commit 4 liczb, nie trzymanie ich wiecznie na gałęzi.
