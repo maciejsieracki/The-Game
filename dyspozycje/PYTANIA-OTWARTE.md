@@ -2630,12 +2630,36 @@ area) najwyraźniej nie pokrywa się z tym, co narysowane (offset/rozjazd CSS).
 **Wagę podnosi explicite:** właściciel wprost nazywa to REGRESJĄ świeżej pracy („jedno
 naprawiasz, drugie psujesz") — sugeruje, że jakaś niedawna zmiana w tym samym panelu
 (kolejka budowy jednostek/budynków) przesunęła layout bez przeliczenia obszarów klikalnych.
-**Do zdiagnozowania:** znaleźć komponent kolejki budowy (prawdopodobnie
-`gra/src/ui/cityPanel.ts` lub pokrewny plik panelu produkcji) — przyciski ↑/↓/✕ przy
-pozycjach kolejki, sprawdzić CSS/layout (flex/grid, `position: absolute` z sztywnymi
-współrzędnymi, padding/margin niezgodny z faktycznym rozmiarem klikalnego elementu) oraz
-`git log -p` / `git blame` na tym fragmencie, żeby znaleźć COMMIT, który ostatnio dotknął tego
-panelu — to najszybsza droga do zidentyfikowania która zmiana to rozjechała.
-**Kotwice:** TBD — do zdiagnozowania (prawdopodobnie `gra/src/ui/cityPanel.ts`, sekcja kolejki
-budowy/`renderBuildQueue`).
+**WYNIK DOCHODZENIA (2026-08-08):** dwa niezależne defekty flex-layoutu, oba w
+`gra/src/ui/cityPanel.ts`, oba pochodzące z **tego samego, jednego commita sprzed 10 dni**
+(`daacd43a`, 2026-07-29, „FALA 96 DEPLOY ALL: DOSTEP-SUROWCE-Q1"), **nie z pracy ostatnich
+dni** — mimo że objawiło się dopiero dziś (dopiero teraz kolejka urosła / nazwa budynku była
+dość długa, żeby ujawnić bug):
+1. **Kolejka BUDYNKÓW — brak guardu przepełnienia etykiety.** Kolejka JEDNOSTEK (linia 6877)
+   ma `qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+   white-space:nowrap;'`. Kolejka BUDYNKÓW (linia 6957) ma tylko `qLabel.style.flex = '1';` —
+   bez `min-width:0`/`nowrap`. Długa nazwa („Palisada drewniana") rozpycha wiersz, kontener ma
+   `overflow-x:hidden`, więc część przycisku bywa wizualnie ucięta, choć jego obszar klikalny
+   nadal istnieje gdzie indziej.
+2. **Oba wiersze — przyciski bez `flex-shrink:0`.** `.civ-cs .btn` (linia 1697) nie ustawia
+   `flex-shrink`, więc gdy etykieta+chip kosztu+chip ETA (wszystkie `flex-shrink:0`) zajmą
+   miejsce, to WŁAŚNIE przyciski ↑/↓/✕ się kurczą poniżej wygodnego obszaru kliku — dokładnie
+   „trzeba kombinować gdzie kliknąć".
+**Sprawdzone (`git log`/`git blame`):** żaden commit z ostatnich 2 dni nie dotykał tego
+fragmentu — jedyny niedawny commit w `cityPanel.ts` (`a51c364e`, 6 sierpnia) zmieniał tylko
+kolorowanie kosztu w chipach rekrutacji, nic layoutowego. To NIE jest regresja świeżej pracy w
+sensie „zepsute wczoraj" — to uśpiony bug z 29 lipca, ujawniony dopiero dziś przy dłuższej
+nazwie budynku/dłuższej kolejce. Sprawdzone też pod kątem duplikatu: jedyny wcześniejszy wpis
+o przyciskach kolejki to `BUG-KOLEJKA-ZWROT-SUROWCA` (WDROŻONE, FALA 201) — inny temat (zwrot
+surowców po ✕, nie hitbox) — brak konfliktu/regresji własnej wcześniejszej naprawy.
+**Zakres naprawy (wąski, zgodnie z C-025):** WYŁĄCZNIE dwie zmiany CSS w `cityPanel.ts`:
+(a) skopiować `min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;` z
+`qLabel` kolejki jednostek (linia 6877) do `qLabel` kolejki budynków (linia ~6957); (b) dodać
+`flex-shrink:0` do przycisków wewnątrz `.qitem` — per C-026 zawęzić selektor do
+`.civ-cs .qitem .btn` (NIE globalnie `.civ-cs .btn`, żeby nie dotknąć przycisków poza kolejką)
+i sprawdzić grepem `.civ-cs .btn`/`class="btn` w `cityPanel.ts`, czy selektor rzeczywiście
+trafia tylko w te trzy przyciski. Żadnych innych zmian.
+**Kotwice:** `gra/src/ui/cityPanel.ts` — kolejka jednostek `qLabel` (linia ~6877), kolejka
+budynków `qLabel` (linia ~6957), CSS `.civ-cs .btn`/`.btn-sm` (linie ~1697-1717), `.qitem`
+(linia ~1850).
 **Model:** Sonnet 5 (UI/CSS, nie render 3D).

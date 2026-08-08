@@ -1391,10 +1391,11 @@ liczby plonów (Praca/Żywność/Pieniądz), ale heks zajęty przez samo miasto 
 zdiagnozowania czy to bug renderu czy silnik faktycznie nie ma tam danych do pokazania.
 Zarejestrowane w `PYTANIA-OTWARTE.md`.
 
-## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — REGRESJA, nowe zgłoszenie
-„jedno naprawiasz, drugie psujesz... Przesuwanie góra-dół i usuwanie z kolejki w trybie
-budowania zarówno jednostek i budynków nie działa. Trzeba kombinować gdzie kliknąć... gdzieś
-to po prostu jest rozjechane." Przyciski ↑/↓/✕ w kolejce budowy — obszar klikalny nie
-pokrywa się z narysowanym przyciskiem. Wprost nazwane regresją najnowszej pracy nad tym
-panelem — priorytet: znaleźć commit, który to rozjechał (`git log -p`/`git blame` na panelu
-kolejki budowy). Zarejestrowane w `PYTANIA-OTWARTE.md`, dochodzenie zlecone.
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — DIAGNOZA ZAKOŃCZONA, fix w toku
+Diagnoza (`cityPanel.ts`): dwa defekty flex-layoutu, oba z commita `daacd43a` (2026-07-29,
+sprzed 10 dni) — NIE ze świeżej pracy, ujawnione dopiero dziś. (1) `qLabel` kolejki BUDYNKÓW
+brakuje `min-width:0;overflow:hidden;...;white-space:nowrap;` które ma kolejka jednostek —
+długa nazwa budynku rozpycha wiersz; (2) przyciski ↑/↓/✕ bez `flex-shrink:0` — kurczą się
+poniżej wygodnego obszaru kliku pod naporem etykiety+chipów. Zakres naprawy wąski (C-025): 2
+zmiany CSS, zero innych zmian; selektor przycisków zawężony do `.civ-cs .qitem .btn` (C-026),
+nie globalnie `.civ-cs .btn`. Pełne kotwice w `PYTANIA-OTWARTE.md`.
