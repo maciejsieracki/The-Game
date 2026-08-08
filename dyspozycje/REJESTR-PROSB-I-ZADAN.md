@@ -1373,20 +1373,16 @@ wprowadzaniem surowej liczby sztuk (stepper +1/+10/+100 na sztukach, nie na paki
 Cena PN/szt. z `econ-params.json:handel_surowce.cena_*` zostaje bez zmian — zmienia się tylko
 jednostka wejścia UI. W realizacji.
 
-## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU (2026-08-08) — nowe zgłoszenie z playtestu
-**Jego słowa:** „odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
-być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
-jakby ich nie było... te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają 4-5 już
-ludności, to te mają po jednym. Chyba że się mylę bo to jest jedna cywilizacja Zulusi być może
-tak szybko stawiała miasta że zjadała swoją ludność. Nie mniej jednak nie mają granic — wygląda
-jakby ich nie było na mapie, trzeba dopiero odkryć mapę i pojawiają się, ale bez granicy."
-Dwa zjawiska w jednym zgłoszeniu, prawdopodobnie powiązane (cywilizacja Zulusi): (1) brak
-kolorowej granicy terytorium na mapie dla części cywilizacji mimo istniejących miast, (2)
-miasta tej cywilizacji utknięte na populacji 1 (inne cywilizacje 4-5), hipoteza właściciela:
-agresywne osadnictwo („zjadanie" populacji na nowych osadników). Diagnoza w toku (agent
-Explore, `gra/src/render/**` granice terytorium, `gra/src/game/**` wzrost populacji/AI
-osadnictwa). Zarejestrowane w `PYTANIA-OTWARTE.md`.
-Do decyzji Macieja: pakiet zbiorczo czy per-umowa; minimum UI musi być spójne z bramką.
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU (2026-08-08) — DIAGNOZA ZAKOŃCZONA
+Hipoteza właściciela (Zulusi „zjadają" własną ludność) **potwierdzona kodem**: koszt
+założenia miasta = 1 pkt ludności pobierany z najludniejszego miasta (`city-founding.ts`),
+AI (`ai.ts:planCityFounding`) zbiera to co turę bez throttle gdy miasto urośnie 1→2 —
+samopodtrzymująca się pętla 1↔2. Wzmocnione karą wzrostu Zulusów (`civ-matrix.json
+lud_wzrost_proc=-0.05`) i wysoką agresywnością/ekspansywnością (`civ-ai.json`). **Do decyzji
+ABC** (throttle w AI). Brak granic — **NIE znaleziono przyczyny**, 3 hipotezy odrzucone
+dowodami z kodu (brak gate'u odkrycia, kolor OK, promień terytorium OK nawet dla pop=1);
+jedyna pozostała hipoteza (remis w `territoryOwnerAt` przy gęstym osadnictwie) wymaga
+diagnozy na żywym zapisie, nie samą lekturą kodu. Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
 ## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — nowe zgłoszenie z playtestu
 „w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile jest dokładnie

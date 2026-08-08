@@ -2537,15 +2537,69 @@ pokazuje populację **„1"**, podczas gdy inne cywilizacje mają 4-5.
 zakłada nowe miasta (osadnicy), że „zjada" własną ludność zamiast pozwolić jej rosnąć; brak
 granic może być tym samym efektem (terytorium nigdy nie „dojrzewa" bo miasta nie rosną) albo
 osobnym bugiem renderowania granic niezależnym od populacji.
-**Status diagnozy:** zlecone dochodzenie w kodzie (agent Explore, read-only) —
-`gra/src/render/**`/`gra/src/map/**` dla logiki rysowania granic terytorium (co warunkuje
-pominięcie granicy dla danej cywilizacji — odkrycie/fog-of-war vs. czysta własność heksu) oraz
-`gra/src/game/**` dla logiki wzrostu populacji i priorytetu osadnictwa AI (czy koszt osadnika
-płacony jest z populacji miasta źródłowego, czy jest pętla AI która nigdy nie odpala wzrostu
-dla niektórych cywilizacji). Wynik dochodzenia doda się do tego wpisu po zakończeniu.
-**Kotwice:** TBD — do uzupełnienia po dochodzeniu.
-**Model:** dochodzenie na Explore/Sonnet 5; jeśli finalna naprawa dotknie `render/**` (granice
-to prawdopodobnie geometria na mapie) → Opus 5 per zgoda stała CLAUDE.md §4.
+**WYNIK DOCHODZENIA (2026-08-08, agent Explore, read-only):**
+
+**A) Populacja utknięta na 1 — PRZYCZYNA POTWIERDZONA, dobrze uzasadniona kodem.**
+Hipoteza właściciela („zjada swoją ludność") trafna. Łańcuch:
+- `gra/src/game/city-founding.ts:31-36` (`foundCityPopulationCost`) — założenie nowego miasta
+  kosztuje **1 pkt ludności** (`zaloz_miasto_koszt_ludnosci`, `gra/data/miasto-params.json`),
+  pobierane z miasta źródłowego, NIE z produkcji/surowców.
+- `city-founding.ts:60-76` (`pickSourceCityForFounding`) — źródłem zawsze jest miasto
+  z **najwyższą aktualną populacją** w danej cywilizacji.
+- `city-founding.ts:66-68` — próg minimalny dla AI to `AI_FOUNDING_SOURCE_MIN_POP = 2` —
+  **każde miasto, które urośnie z 1→2, jest natychmiast kandydatem do zebrania**.
+- `gra/src/game/ai.ts:1818-1868` (`planCityFounding`) sprawdza to **co turę AI**, bez żadnego
+  „poczekaj aż populacja się odbuduje" — do 2 nowych miast/turę
+  (`AI_COLONIZATION_SURGE_MAX_PER_TURN = 2`, `ai.ts:792`).
+- **Efekt:** gdy tylko któreś miasto Zulusów urośnie 1→2, AI natychmiast traktuje je jako
+  „największe" i zbiera z powrotem do 1, żeby założyć kolejne miasto — samopodtrzymująca się
+  pętla 1↔2, widoczna jako trwałe „1" na każdym mieście. Dokładnie zgodne ze zrzutem (10 miast,
+  każde „1").
+- **Czynniki wzmacniające specyficzne dla Zulusów:** `gra/data/civ-matrix.json` (wiersz
+  Zulusi, ~linia 1375) `"lud_wzrost_proc": -0.05` — **jedyna/jedna z niewielu cywilizacji
+  z karą do wzrostu ludności** (-5 pkt proc. do tempa wzrostu, `population-growth-v85.ts:171-182`),
+  wydłuża czas powrotu 1→2 i zwiększa ekspozycję na kolejne „zbiory". Dodatkowo
+  `gra/data/civ-ai.json:51-60` — Zulusi mają `agresywnosc: 9` i `ekspansywnosc: 4`, jedne
+  z najwyższych w rejestrze cywilizacji → ta AI trafia w pętlę częściej/mocniej niż spokojniejsze.
+- **To NIE jest zepsuty wzrost** (`applyPostCentralPopulationGrowth`,
+  `population-growth-v85.ts:319-391` działa jednolicie dla wszystkich właścicieli, brak
+  pominięcia per-cywilizacja) — to interakcja projektowego kosztu osadnika (populacja) z
+  nieodhamowaną, priorytetową pętlą zakładania miast AI.
+- **Do decyzji (ABC potrzebne, wpływa na balans/AI):** dodać throttle w `planCityFounding`
+  (np. wymagany odstęp tur od ostatniego „zbioru" tego miasta, albo podniesienie
+  `AI_FOUNDING_SOURCE_MIN_POP` powyżej 2, albo wymóg nadwyżki żywności/bufora przed zbiorem).
+
+**B) Brak granic — NIE ZNALEZIONO jednoznacznej przyczyny, dwie hipotezy odrzucone dowodami z kodu.**
+- **Odrzucone:** brak „odkrycia"/spotkania cywilizacji jako warunku — taki warunek **nie
+  istnieje w kodzie**. Jedyny filtr widoczności granic (`main.ts:8899-8913`,
+  `refreshTerritoryBorderOverlay`) to czysta własność heksu + fog-of-war (`vis.has(key) ||
+  explored.has(key)`) — mechanika „odkryj mapę i granica się pojawi" jest architektonicznie
+  poprawna i powinna działać.
+- **Odrzucone:** brak koloru cywilizacji — `civColorForOwner`
+  (`gra/src/game/civ-visual.ts:59-70`) zawsze zwraca kolor; Zulusi mają jawny
+  `kolorHex: "#2E7D32"` w `gra/data/civs.json:711` (ciemna zieleń — UWAGA: wizualnie zbliżony
+  do standardowego „zielonego" koloru gracza/innej cywilizacji, osobny, drobny problem
+  czytelności, nie przyczyna zniknięcia).
+- **Odrzucone:** populacja 1 zerująca promień terytorium — `cityRangeForPopulation`
+  (`gra/src/game/okolica.ts:46-50`) daje promień min. 5 nawet dla populacji 1 (floor
+  `CITY_RANGE_MIN=5`), więc samo utknięcie na populacji 1 nie powinno zerować terytorium.
+- **Pozostała, niesprawdzona jeszcze hipoteza:** `territoryOwnerAt()`
+  (`gra/src/map/territory.ts:106-125`) rozstrzyga remisy „kto jest właścicielem heksu" na
+  rzecz węzła wcześniejszego w tablicy `cities` — w połączeniu z bardzo gęstym, ciasno
+  skupionym osadnictwem Zulusów (10 miast blisko siebie) może to wchodzić w konflikt z
+  `traceTerritoryBoundaryLoops` (`gra/src/map/territory-border.ts:150`, śledzenie krawędzi
+  wielokątów) na złożonych/nakładających się zbiorach heksów. **Wymaga weryfikacji na żywym
+  zapisie** (np. zalogowanie `byOwner.get(zulusiOwnerId)?.size`), nie da się potwierdzić samą
+  lekturą kodu.
+
+**Kotwice:** populacja — `gra/src/game/city-founding.ts` (`foundCityPopulationCost`,
+`pickSourceCityForFounding`), `gra/src/game/ai.ts` (`planCityFounding`, ~linia 1818),
+`gra/data/civ-matrix.json` (Zulusi `lud_wzrost_proc`), `gra/data/civ-ai.json` (Zulusi
+`agresywnosc`/`ekspansywnosc`). Granice — `gra/src/map/territory.ts` (`territoryOwnerAt`),
+`gra/src/map/territory-border.ts` (`traceTerritoryBoundaryLoops`) — wymaga dalszej diagnozy
+runtime.
+**Model:** populacja/AI → Sonnet 5 (`game/**`); jeśli naprawa granic dotknie `render/**` →
+Opus 5 per zgoda stała CLAUDE.md §4.
 
 ## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
 **Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile
