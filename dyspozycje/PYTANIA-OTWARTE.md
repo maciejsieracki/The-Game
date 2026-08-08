@@ -2355,3 +2355,23 @@ osobnego miejsca na ilość tych samych surowców).
 **Kotwice:** `gra/src/main.ts` (`buildEmpireResourceRows`), `gra/src/ui/empireDetailPanel.ts`
 (`renderSurowceSection`), `gra/src/game/empire-resource-access.ts`.
 **Model:** Sonnet 5 (poza `render/**`).
+
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** „kiedy wymieniamy surowce i na przykład chcemy się wymienić technologiami
+powinny być pokazywane tylko technologie te które są niedostępne dla innej cywilizacji
+zarówno po jednej jak i po drugiej stronie. Jeżeli jedna i druga cywilizacja ma tą
+technologię to nie ma sensu jej pokazywać, bo przecież nie dojdzie do wymiany."
+**Objaw (zrzut, koszyk wymiany „DODAJ DO OFERTY" / „DODAJ DO KONTRPROPOZYCJI"):** obie strony
+pokazują **identyczną listę technologii** (Obróbka drewna, Rolnictwo, Oswojenie zwierząt,
+Łowiectwo, Garncarstwo, Murarstwo) — bez filtrowania po tym, czy druga strona już ją ma.
+**Wstępnie sprawdzone w kodzie:** `gra/src/main.ts::getSellableTechForPlayer()` (linia 14137)
+filtruje TYLKO po `player.zbadane` (własne zbadane technologie oferującego) — **nie sprawdza
+w ogóle, czy odbiorca już tę technologię posiada**. Ten sam wzorzec prawdopodobnie w
+`defaultTechOptions()` (`diplomacyTradeBasket.ts:389`), który czyta WSZYSTKIE technologie z
+`tech.json` bezwarunkowo — używany jako fallback, gdy `ctx.techOptions` nie jest podany.
+**Niezweryfikowane jeszcze:** który dokładnie z tych dwóch (albo trzeci, jeszcze nieznaleziony)
+zasila konkretnie ten ekran koszyka ogólnego handlu ze zrzutu — wymaga doczytania, skąd
+`ctx.techOptions` pochodzi dla akcji `'6'` (tech) w kontekście `zaproponuj_handel`.
+**Kotwice:** `gra/src/main.ts` (`getSellableTechForPlayer`), `gra/src/ui/diplomacyTradeBasket.ts`
+(`defaultTechOptions`, budowa `techChips` dla obu stron).
+**Model:** Sonnet 5 (poza `render/**`).

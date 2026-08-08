@@ -1319,3 +1319,11 @@ brak sumy całej cywilizacji obok; (2) klawisz Spacja czasem zapętla się na je
 już wykonały ruch, zamiast przechodzić do najbliższej z dostępnym ruchem. Żadne z nich nie
 było wcześniej zgłoszone (sprawdzone grepem). Nie zdiagnozowane jeszcze w kodzie poza (1),
 gdzie potwierdzono brak wariantu „empire" funkcji nagłówka.
+
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08) — nowe zgłoszenie z playtestu
+**Jego słowa:** „powinny być pokazywane tylko technologie te które są niedostępne dla innej
+cywilizacji zarówno po jednej jak i po drugiej stronie... jeżeli jedna i druga cywilizacja
+ma tą technologię to nie ma sensu jej pokazywać". Zarejestrowane w `PYTANIA-OTWARTE.md`.
+Wstępnie: `getSellableTechForPlayer()` (main.ts:14137) filtruje tylko po własnych zbadanych
+technologiach oferującego, nie po tym czy odbiorca już je ma — pasuje do zgłoszenia, ale
+niepewne czy to funkcja zasilająca akurat ten ekran koszyka (do doczytania).
