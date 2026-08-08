@@ -101,6 +101,22 @@ Grok wkleja do promptu Evaluatora szablon 5 pytań z decision doc (sekcja „SCO
 
 **Protokół błędu (v2, R-PROC-AUTOBOT-BLAD)** — po KAŻDYM błędzie (Maciej poprawił/odrzucił, liczba nie przeszła weryfikacji, coś do przeróbki): NAPRAW → przyczyna nie winny → sprawdź wstecz inne miejsca → zapisz do `errorLog` w `playbook.json` → przekuj w regułę (`ACTIVE`, licznik 0/0). Recydywa (powtórka z `errorLog`) = incydent krytyczny, zgłoś Maciejowi wprost. Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` §„v2 — Protokół AutoBot".
 
+## Weryfikacja odpowiedzi na pytania właściciela (C-023, C-024 — Maciej 2026-08-08)
+
+Nie tylko zmiana w repo wymaga pętli — **każda odpowiedź orkiestratora na pytanie
+właściciela też**, po incydencie z przestarzałym statusem `BUG-TOOLTIP-MOC-NIEPELNA`
+(plik mówił „OTWARTE", naprawa była wdrożona od FALA 260).
+
+- **C-023** — pytanie „czy jest jeszcze coś do zrobienia/nienaprawionego" → ZAWSZE świeży
+  przegląd `PYTANIA-OTWARTE.md` + `REJESTR-PROSB-I-ZADAN.md` + realny stan w kodzie dla
+  pozycji oznaczonych jako naprawione. Status w pliku bywa przestarzały — sama etykieta
+  „zamknięte" bez sprawdzenia kodu to wciąż odpowiadanie z pamięci pliku, nie ze stanu
+  faktycznego.
+- **C-024** — KAŻDA odpowiedź na pytanie właściciela (nie tylko zmiana w repo) przechodzi
+  przed wysłaniem przez osobnego Evaluatora, który sprawdza jej poprawność wobec realnego
+  stanu plików/kodu. Jego słowa: *„jeżeli o coś pytam i Ty odpowiadasz, to ponownie
+  sprawdzić sobie przez ewaluatora, czy Twoja odpowiedź jest prawidłowa."*
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.

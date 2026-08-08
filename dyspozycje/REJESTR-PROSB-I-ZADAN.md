@@ -1271,3 +1271,24 @@ zaktualizowany po fixie. Dwa realne, wciąż nienaprawione bugi UI: `BUG-ETYKIET
 `BUG-IKONA-KULTURY-PLACEHOLDER` (przyczyna teraz znana) — plus otwarte od dawna
 `R-ETYKIETA-MIASTA-WZROST-PROCENT`, i nowo zgłoszony `BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN`.
 Model: Sonnet 5 (orkiestrator, audyt + diagnoza kodu, bez zmian w `gra/src`).
+
+## R-WERYFIKACJA-ODPOWIEDZI-EWALUATOR (2026-08-08) — C-023/C-024, każda odpowiedź przez Evaluatora
+**Decyzja Macieja:** „przyjmuję, że jeżeli pytam się, czy jest coś do zrobienia, to powinien
+sprawdzić w plikach, czy nie wiszą jakieś tematy nierozwiązane, a nie odpowiadać z głowy i
+kłamać" oraz „zapisz tą zasadę do plików autobota i stosuj zasadę autobota. Pierwsza zasada,
+jeżeli o coś pytam i Ty odpowiadasz to ponownie sprawdzić sobie przez ewaluatora czy Twoja
+odpowiedź jest prawidłowa."
+**Powód:** znaleziony w tej sesji przestarzały status `BUG-TOOLTIP-MOC-NIEPELNA` (plik mówił
+„OTWARTE", naprawa wdrożona od FALA 260) plus wcześniejsze niedoprecyzowane „repo czyste i
+zsynchronizowane" (prawdziwe tylko dla mojej gałęzi, nie dla `main`).
+**Wykonanie:** `playbook.md` — nowe reguły `C-023` (świeży przegląd plików+kodu na pytanie
+o otwarte tematy, nigdy z pamięci) i `C-024` (każda odpowiedź na pytanie właściciela
+przechodzi przez Evaluatora przed wysłaniem, nie tylko zmiana w repo) + wpis w rejestrze
+błędów. `playbook.json` zregenerowany (wersja 20, `rule_131`/`rule_132`, liczniki 0/0).
+`.cursor/rules/autobot-evaluator-operator.mdc` (alwaysApply) rozszerzony o tę samą treść —
+priorytet, bo ładuje się przed kanonem.
+**Zakres C-024 (do doprecyzowania z czasem):** stosowana od razu do odpowiedzi na pytania
+o stan projektu/kod/pliki (weryfikowalne fakty); czysto konwersacyjne pytania bez
+weryfikowalnej treści faktograficznej nie wymagają Evaluatora — jeśli Maciej chce szerszy
+zakres, powie wprost.
+Model: Sonnet 5 (orkiestrator, zapis już podjętej decyzji).

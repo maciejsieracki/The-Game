@@ -1,6 +1,6 @@
 {
-  "version": 19,
-  "updatedAtIso": "2026-08-08T18:07:50.863Z",
+  "version": 20,
+  "updatedAtIso": "2026-08-08T18:43:45.219Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -309,6 +309,26 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-08T18:07:50.845Z"
+    },
+    {
+      "id": "rule_131",
+      "rule_text": "Na pytanie właściciela „czy jest jeszcze coś do zrobienia/nienaprawionego\" ZAWSZE świeży przegląd plików (PYTANIA-OTWARTE.md, REJESTR-PROSB-I-ZADAN.md) i realnego stanu w kodzie dla pozycji oznaczonych jako naprawione — nigdy odpowiedź z pamięci rozmowy. Status zapisany w pliku bywa przestarzały (fix wdrożony, etykieta nieaktualizowana) — samo „plik mówi zamknięte\" bez sprawdzenia kodu to wciąż odpowiadanie z pamięci pliku, nie ze stanu faktycznego [C-023]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:43:45.178Z"
+    },
+    {
+      "id": "rule_132",
+      "rule_text": "KAŻDA odpowiedź orkiestratora na pytanie właściciela — nie tylko zmiana w repozytorium — przechodzi przed wysłaniem przez osobnego Evaluatora, który sprawdza jej poprawność wobec realnego stanu plików/kodu. Nie tylko „czy kod działa\", ale „czy to, co mówię właścicielowi, jest prawdą\". Zasada Macieja 2026-08-08 po incydencie z przestarzałym statusem BUG-TOOLTIP-MOC-NIEPELNA: „jeżeli o coś pytam i Ty odpowiadasz, to ponownie sprawdzić sobie przez ewaluatora, czy Twoja odpowiedź jest prawidłowa\" [C-024]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:43:45.194Z"
     }
   ],
   "quarantine_rules": []
