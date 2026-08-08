@@ -1472,6 +1472,12 @@ zielony). 3 noty niepilne zarejestrowane osobno w `PYTANIA-OTWARTE.md`
 i wykonanie są teraz zgodne z definicji. Evaluator PASS-WITH-NOTES, 28 plików testów dyplomacji
 zielonych. 2 noty niepilne w `PYTANIA-OTWARTE.md`.
 
+## R-PROPOZYCJA-KASACJA-UI-Q1 — ABC zadane, czeka na odpowiedź
+Evaluator: FAIL dla `R-PROPOZYCJA-BRAK-EDYCJI`+`BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC`
+(dwa powody: worktree stale — mechaniczne, do redispatchu; Operator wybrał sposób naprawy
+kasacji bez pytania ABC, mimo że oryginalne zgłoszenie wprost sugerowało że to wymaga decyzji).
+ABC zadane właścicielowi w czacie 2026-08-08.
+
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — FAIL, runda 2 w toku
 Evaluator FAIL: worktree bazował na commit sprzed mergu `66ae74c8` (packet-removal), pole
 `maxPakiety` w tym starym drzewie niosło PAKIETY (×10), nie sztuki — odznaka pokazywała
