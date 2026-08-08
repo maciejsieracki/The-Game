@@ -6285,3 +6285,13 @@ Po pobraniu z origin w `gra/tools/` leżały **34 nieśledzone pliki** — jedno
 - sprawdzono, czy wzorce nie ukrywają czegoś wartościowego: `civ7-*`, `.pangea-*`, `wrap-probe`, `f200` → **0 śledzonych plików**; `.diag-*`/`.tmp-*`/`_tmp-*` → 42 śledzone, ale to ta sama klasa artefaktów esbuild (`*-bundle.cjs`/`*-entry.ts`), które zostają śledzone bez zmian.
 
 ⚠️ **Dla przyszłych sesji:** jeśli piszecie w `gra/tools/` skrypt, który ma ZOSTAĆ w repo, a jego nazwa pasuje do któregoś wzorca — dodajcie go świadomie przez `git add -f`. Adnotacja o tym jest w samym `.gitignore`.
+
+### Sprostowanie do wpisu wyżej — wzorzec `gra/tools/tools/`
+
+W poprzednim wpisie wymieniłem ten wzorzec wśród dodanych, ale go NIE opisałem — słusznie wychwycone przy weryfikacji. Uzupełniam:
+
+`gra/tools/tools/` zawiera **jeden plik**: `.wrap-probe.cjs` (36 KB, 2026-08-02 18:04 — ta sama minuta co `gra/tools/.wrap-probe.cjs`, ale **inna zawartość**). To zagnieżdżony katalog powstały z **błędu ścieżki względnej**: skrypt zapisuje wynik pod `tools/.wrap-probe.cjs`, a został uruchomiony już z katalogu `gra/tools/` zamiast z `gra/` — stąd `tools/tools/`.
+
+⚠️ **Usterka do naprawy przy okazji** (nie blokuje niczego): sonda `wrap-probe` zapisuje wynik ścieżką względną bez zakotwiczenia w katalogu projektu. Przy kolejnym uruchomieniu z niewłaściwego katalogu roboczego zagnieżdżenie powstanie ponownie. Autor skryptu: rozważcie `path.resolve(__dirname, ...)` zamiast ścieżki względnej — tak jak robią to sąsiednie narzędzia w `gra/tools/`.
+
+Wzorzec w `.gitignore` zostaje — katalog jest artefaktem błędu, nie miejscem na kod.
