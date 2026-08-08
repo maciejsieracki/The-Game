@@ -1,6 +1,6 @@
 {
-  "version": 22,
-  "updatedAtIso": "2026-08-08T19:44:52.567Z",
+  "version": 23,
+  "updatedAtIso": "2026-08-08T21:18:46.646Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -359,6 +359,26 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-08T19:44:52.555Z"
+    },
+    {
+      "id": "rule_136",
+      "rule_text": "git add z listą kilku ścieżek, gdzie jedna nie istnieje (typowo: plik usunięty przez git apply, jeszcze niedodany do indeksu) — kończy się fatal: ... did not match any files, a pozostałe ścieżki z TEGO SAMEGO wywołania mogą zostać PO CICHU pominięte, bez wyraźnego ostrzeżenia w normalnym przebiegu pracy. Po każdym git add obejmującym więcej niż jedną ścieżkę, zwłaszcza gdy lista zawiera plik usunięty, sprawdź git status --short PRZED commitem — nie ufaj, że błąd na jednej ścieżce nie wpłynął na resztę. Bezpieczniej: dodawać usunięte pliki osobnym wywołaniem (git add -u <ścieżka> lub git rm <ścieżka>), nie w jednej liście z nowymi/zmienionymi. Incydent 2026-08-08: commit 5ca2e449 scalił kod naprawy R-SUROWCE-DOSTEP-ILOSC-Q1, ale dwa pliki dokumentacji (PYTANIA-OTWARTE.md, REJESTR-PROSB-I-ZADAN.md) z tej samej listy git add zostały pominięte — wychwycone dopiero przez zewnętrzny stop-hook, nie przez własną weryfikację [C-028]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T21:18:46.634Z"
+    },
+    {
+      "id": "rule_137",
+      "rule_text": "Worktree subagenta bez gra/node_modules sprawia, że npx tsc PO CICHU pobiera/uruchamia niepinowany, globalny TypeScript zamiast wersji projektu (5.9.3) — raportowany błąd (TS5101 baseUrl deprecated) jest z INNEGO kompilatora i maskuje prawdziwy wynik (bywało: 0 błędów na złej wersji, realne błędy na prawidłowej — i odwrotnie). PRZED zaufaniem jakiemukolwiek wynikowi tsc w worktree: symlinkować gra/node_modules z drzewa głównego (ln -s <główne drzewo>/gra/node_modules gra/node_modules) i zweryfikować wersję (npx tsc --version → musi być 5.9.3), dopiero potem czytać wynik jako prawdziwy. Symlink jest gitignored (node_modules/ w .gitignore NIE łapie symlinka o tej samej nazwie przy git add -A — patrz uwaga w wielu raportach Evaluatorów tej sesji) — nigdy nie commitować go, usuwać po zakończeniu pracy. Ten dokładny błąd (zły kompilator → mylący wynik → fałszywy raport „tsc czyste\"/„błąd kompilacji\") powtórzył się w tej sesji **co najmniej 5 razy** w różnych zleceniach (etykiety miast, HUD cywilizacji, zoom, pakiety handlu, panel surowców) — recydywa w rozumieniu protokołu błędu, mimo że przyczyna jest znana i udokumentowana [C-029]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T21:18:46.634Z"
     }
   ],
   "quarantine_rules": []

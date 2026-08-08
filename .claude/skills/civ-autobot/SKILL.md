@@ -247,6 +247,22 @@ tam, nie z pamięci: `logic-test.cjs` = 213/213, `combat-test.cjs` zielony 6/6,
 `unit-power-test.cjs` czerwony pre-istniejąco (4 pass / 2 fail). Zawsze czytaj kod wyjścia
 **testu**, nie procesu opakowującego.
 
+**⛔ `tsc` w worktree jest bezwartościowy bez weryfikacji kompilatora (`C-029`, recydywa
+≥5× w jednej sesji 2026-08-08).** Worktree bez `gra/node_modules` sprawia, że `npx tsc`
+po cichu uruchamia globalny, niepinowany TypeScript zamiast wersji projektu (5.9.3) —
+mylący wynik w obie strony (fałszywe „0 błędów" maskujące realne, albo fałszywy błąd
+kompilacji niebędący błędem projektu). Przed zaufaniem KAŻDEMU wynikowi `tsc` w
+worktree: `ln -s <drzewo główne>/gra/node_modules gra/node_modules`, potem
+`npx tsc --version` MUSI pokazać `5.9.3` — dopiero wtedy wynik `tsc --noEmit` jest
+wiarygodny. Symlink nigdy nie trafia do commita, usuwaj po zakończeniu pracy.
+
+**`git add` z wieloma ścieżkami i plikiem usuniętym w liście (`C-028`).** Gdy jedna ze
+ścieżek nie istnieje (typowo: plik usunięty przez `git apply`, jeszcze nie w indeksie),
+`git add` zgłasza `fatal: ... did not match any files` i pozostałe ścieżki z TEGO SAMEGO
+wywołania mogą zostać po cichu pominięte. `git status --short` PRZED każdym commitem po
+`git add` obejmującym więcej niż jedną ścieżkę; usunięte pliki dodawaj osobnym
+wywołaniem, nie w jednej liście z nowymi/zmienionymi.
+
 ## 8. Deploy i trzy poziomy bundli
 
 Trzy poziomy promowane **niezależnie**: **ROBOCZA** (`gra-robocza/`, częste deploye,

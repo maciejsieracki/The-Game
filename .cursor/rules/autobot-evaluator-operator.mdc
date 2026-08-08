@@ -155,6 +155,24 @@ zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie rob
    odpalasz subagenta Sonet od razu do rozwiązania tego problemu... to jest najważniejsze,
    żeby sprawy szły do przodu i nic nie zostało zapomniane."*
 
+## Dwie techniczne pułapki wykryte w tej sesji (C-028, C-029 — Maciej 2026-08-08)
+
+Po jego pytaniu „to wszystkie błędy, które zauważyłeś, warto dołożyć do autobota" —
+dwa konkretne, powtarzalne mechanizmy zawodne w tej sesji, nie jednorazowe pomyłki:
+
+- **C-029 (recydywa ≥5×)** — worktree bez `gra/node_modules` sprawia, że `npx tsc` po cichu
+  uruchamia globalny, niepinowany TypeScript zamiast wersji projektu (5.9.3), dając mylący
+  wynik w obie strony (fałszywe „0 błędów" albo fałszywy błąd kompilacji niebędący błędem
+  projektu). Przed zaufaniem KAŻDEMU wynikowi `tsc` w worktree: symlink `node_modules` z
+  drzewa głównego + `npx tsc --version` musi pokazać `5.9.3`. Symlink nigdy nie trafia do
+  commita (usuwać po pracy, `git add -A` by go złapał mimo `.gitignore` — nazwa katalogu
+  zgodna z wpisem, ale symlink to nie katalog).
+- **C-028** — `git add` z listą kilku ścieżek, gdy jedna nie istnieje (typowo: plik usunięty
+  przez `git apply`, jeszcze nie w indeksie) — kończy się `fatal: ... did not match any
+  files`, a pozostałe ścieżki z TEGO SAMEGO wywołania mogą zostać po cichu pominięte.
+  `git status --short` PRZED każdym commitem po `git add` z więcej niż jedną ścieżką;
+  usunięte pliki dodawać osobnym wywołaniem.
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.
