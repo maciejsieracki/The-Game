@@ -1477,8 +1477,9 @@ Maciej: `A` — zostaw rozwiązanie Operatora (ukryj „Usuń" na pustej/mirror 
 `docs/decyzje/R-PROPOZYCJA-KASACJA-UI-Q1.md`. Redispatch Operatora: rebase na aktualny HEAD
 (konflikt z `66ae74c8`/`82bdbd92`) + dopisanie testów dla edycji.
 
-## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — FAIL, runda 2 w toku
-Evaluator FAIL: worktree bazował na commit sprzed mergu `66ae74c8` (packet-removal), pole
-`maxPakiety` w tym starym drzewie niosło PAKIETY (×10), nie sztuki — odznaka pokazywała
-wartość 10× za niską z błędną jednostką „szt.". Kolizja z `66ae74c8`, który już częściowo
-realizuje ten sam ticket (`maxQty`, „dost. N szt." w title). Redispatch na aktualnym HEAD.
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — NAPRAWIONE, czeka na deploy+playtest
+Runda 1: FAIL (worktree stale, `maxPakiety` zamiast `maxQty`, 10× za niska wartość). Runda 2:
+worktree naprawione przed kodowaniem, widoczna odznaka zapasu po stronie „daję", kompaktowy
+format dla dużych wartości. Evaluator PASS-WITH-NOTES, 31 plików testów dyplomacji zielonych.
+Skorygowany przy scaleniu: nieprawdziwy komentarz w kodzie o powodzie wyłączenia strony
+„dostaję" (title/data-max już dziś ujawniają zapas AI bezwarunkowo, to nie był powód).

@@ -2513,7 +2513,7 @@ pominięciem drzewka. Pre-istniejący dług, nowo odblokowany.
 **Kotwice:** `gra/src/game/diplomacy-basket-transfer.ts:68-96`.
 **Model:** Sonnet 5.
 
-## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
 liczba tych surowców, które mamy dostępne i pomyśl o tym, że trzeba będzie przewidzieć, że
 tych surowców będzie kiedyś znacznie więcej, więc musi być w jakiś sposób czytelny pokazywania
@@ -2530,6 +2530,20 @@ większej liczbie pozycji.
 **Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (chipy surowców w koszyku wymiany).
 **Model:** jeśli zmiana dotknie układu/renderowania wizualnego — do ustalenia czy to
 `render/**` czy czysty DOM/CSS w `ui/**` (prawdopodobnie to drugie, Sonnet 5 wystarczy).
+
+**NAPRAWIONE (2026-08-08):** Widoczna odznaka (nie tylko `title` na hover) z ilością zapasu
+pod każdym chipem po stronie „daję" (`side==='give'`), źródło `maxQty` (realne sztuki, nie
+pakiety — potwierdzone niezależnie przez Evaluatora w `main.ts:2327-2339`). Kompaktowy format
+(`formatCompactQty`: <1000 wprost, ≥1000 → „1.2k"/„1.2M") adresuje wymaganie (2) na dzisiejszą
+skalę (13 surowców w katalogu, 3 chipy naraz) — pełna siatka/scroll/kategorie świadomie uznane
+za nieproporcjonalne, do rewizji gdyby katalog realnie urósł. Strona „dostaję" bez odznaki
+(zgłoszenie mówiło o „które MAMY"). Runda 1: FAIL (worktree stale, `maxPakiety` zamiast
+`maxQty` — 10× za niska wartość). Runda 2: PASS-WITH-NOTES, worktree naprawione przed
+kodowaniem (fast-forward na aktualny HEAD, zweryfikowane), `tsc` 0 błędów, wszystkie 31 plików
+testów dyplomacji zielone. Nota Evaluatora (nieblokująca, poprawiona przy scaleniu): komentarz
+w kodzie błędnie sugerował że odznaka na „dostaję" ujawniłaby zapasy AI — `title`/`data-max` już
+dziś ujawniają je bezwarunkowo dla obu stron, jedyny realny powód wyłączenia to zawężenie
+zakresu zgłoszenia, nie ujawnianie informacji.
 
 ## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **W REALIZACJI — kod napisany, Evaluator FAIL (worktree stale), redispatch w toku**
 **Jego słowa:** „nie ma możliwości edytowania propozycji. Jest tylko możliwość usunięcia.

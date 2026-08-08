@@ -110,14 +110,38 @@ function buildChipBtn(
   iconHtml: string,
   label: string,
   extraAttrs = '',
+  badgeHtml = '',
 ): string {
   return (
     '<button type="button" class="cdb-chip ' + cls + (selected ? ' selected' : '') + '"'
     + ' data-side="' + side + '" data-value="' + esc(value) + '"' + extraAttrs + '>'
     + iconHtml
     + '<span class="cdb-chip-lbl">' + esc(label) + '</span>'
+    + badgeHtml
     + '</button>'
   );
+}
+
+/**
+ * R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, runda 2): format kompaktowy odznaki
+ * zapasu na chipie surowca — budżet szerokości chipa to ~62-72px (patrz .cdb-chip /
+ * .cdb-chip-lbl w ensureStyles), zapasy 4-cyfrowe i większe (dziś realne przy dużych
+ * miastach) muszą zmieścić się czytelnie. Dokładna, nieskrócona wartość idzie do `title`
+ * chipa (już budowany przez wywołującego, patrz `qtyResChips`), nie do tej odznaki.
+ */
+function formatCompactQty(n: number): string {
+  const v = Math.trunc(n);
+  const abs = Math.abs(v);
+  if (abs < 1000) return String(v);
+  const units: Array<[number, string]> = [[1_000_000_000, 'B'], [1_000_000, 'M'], [1_000, 'k']];
+  for (const [div, suf] of units) {
+    if (abs >= div) {
+      const scaled = Math.round((v / div) * 10) / 10;
+      const str = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1);
+      return str + suf;
+    }
+  }
+  return String(v);
 }
 
 function qtyStepperHtml(
@@ -288,6 +312,9 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-chip-ic svg{display:block;}
 .civ-diplo-basket .cdb-chip-lbl{text-align:center;line-height:1.2;max-width:72px;}
 .civ-diplo-basket .cdb-chip-meta{font-size:0.85em;color:#8a8070;}
+.civ-diplo-basket .cdb-chip-stock{display:inline-block;max-width:64px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;font-size:0.86em;font-weight:600;line-height:1.15;
+  padding:1px 6px;border-radius:8px;background:rgba(232,216,138,.14);color:#d8c888;}
 .civ-diplo-basket .cdb-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;}
 .civ-diplo-basket .cdb-chip.cdb-chip-mode{flex-direction:row;min-width:0;padding:8px 12px;gap:6px;font-size:0.78em;}
 .civ-diplo-basket .cdb-chip.cdb-chip-turn{min-width:36px;padding:6px 10px;font-size:0.78em;font-weight:600;}
@@ -1068,6 +1095,14 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const qtyResChips = qtyResources.map((r, i) => {
     const label = resourceDisplayLabel(r.id);
     const short = label.length > 10 ? label.slice(0, 9) + '…' : label;
+    // R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP: widoczna odznaka zapasu WYŁĄCZNIE po stronie
+    // „daję" (side==='give') — zgłoszenie mówiło o surowcach „które MAMY", nie o stronie
+    // „dostaję". Zapas AI jest już dziś ujawniony bezwarunkowo w title/data-max (linia niżej,
+    // od dawna) niezależnie od tej odznaki — to nie jest powód wyłączenia, tylko zawężenie
+    // zakresu tego zgłoszenia.
+    const stockBadge = side === 'give'
+      ? '<span class="cdb-chip-stock">' + esc(formatCompactQty(r.maxQty)) + '</span>'
+      : '';
     return buildChipBtn(
       'cdb-chip-resqty',
       r.id,
@@ -1076,6 +1111,7 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
       typChipIconHtml('surowiec_ilosc', r.id),
       short,
       ' data-max="' + r.maxQty + '" title="' + esc(label) + ' (dost. ' + r.maxQty + ' szt.)"',
+      stockBadge,
     );
   }).join('');
   const qtyResFirstMax = qtyResources[0]?.maxQty ?? 1;
