@@ -4,7 +4,7 @@ description: >
   Nakładka projektowa Civ „The Game" na uniwersalny skill `lean-loop` — wszystko, co
   w TYM repozytorium działa inaczej niż w dowolnym innym: rytuał startu sesji (pull →
   KANAL-PRACA → STAN-PRACY-HANDOFF → playbook.md), nienegocjowalna reguła „żadnej pracy
-  poza pętlą AutoBot" z jedynym wąskim wyjątkiem, pętla Operator → Evaluator →
+  poza pętlą AutoBot" z dwoma wąskimi wyjątkami, pętla Operator → Evaluator →
   final z przydziałem modeli (wykonawca Sonnet 5, Evaluator i deploy Opus 5, każdy
   render w `gra/src/render/**` zawsze Opus 5), procedura NUMER → ABC → COMMIT → DEPLOY
   z rejestrem próśb, obowiązkowy turniej dwóch niezależnych projektów przed każdym
@@ -36,18 +36,18 @@ idzie przez pętlę Operator → Evaluator → final. Reguła NIENEGOCJOWALNA**
 **bez wyjątku „to tylko drobiazg" / „zrobię sam poza pętlą"**. Obejmuje tak samo pracę
 własną orkiestratora (§4) jak pracę subagenta.
 
-**Wyjątek wąski — jedyny pewny:** czysta rozmowa ABC / zapis decyzji właściciela **bez
-zmiany `gra/src`** — wtedy Operator nie koduje, ale final i tak trzyma reguły playbooka
-(NUMER→ABC, bramka `deploy`). Wszystko ponad to → pełna pętla Operator→Evaluator.
+**Wyjątki — dwa, oba wąskie:**
+1. Czysta rozmowa ABC / zapis decyzji właściciela **bez zmiany `gra/src`** — wtedy Operator
+   nie koduje, ale final i tak trzyma reguły playbooka (NUMER→ABC, bramka `deploy`).
+2. **Dopisek 1–3 linie czysto tekstowe** (`R-SKILL-LEAN-LOOP-CIVAUTOBOT=B`, Maciej
+   2026-08-08) — bez osobnego Operatora TYLKO gdy **wszystkie trzy** warunki naraz: (a)
+   wyłącznie plik dokumentacji/notatek, **nigdy `gra/src`**; (b) dopisek do paczki, która
+   **już przeszła przez Evaluatora w tej samej sesji** — nie samodzielna, nieoceniona
+   zmiana; (c) zawsze zalogowany w `KANAL-PRACA.md` lub treści commita. Brak
+   któregokolwiek warunku → pełna pętla, bez zgadywania czy „to tylko drobiazg".
 
-**⚠️ Sprzeczność w źródle, nierozstrzygnięta — nie zgaduj, potraktuj jako brak wyjątku.**
-`.cursor/rules/autobot-evaluator-operator.mdc:28` ma fragment, który przy jednym czytaniu
-sugeruje drugi wyjątek („drobiazg 1–3 linie czysto tekstowe" bez pełnej ceremonii) —
-ale ten sam plik w nagłówku (linia 12) mówi wprost „bez wyjątku «to tylko drobiazg»".
-Dopóki właściciel nie rozstrzygnie tej sprzeczności u źródła (w `.mdc`, nie tutaj) —
-**domyślnie NIE korzystaj z tego domniemanego wyjątku**: nawet 1-linijkowa zmiana poza
-czystym zapisem decyzji ABC idzie przez pełną pętlę. Self-grading „to tylko drobiazg"
-jest dokładnie tym mechanizmem, przed którym cały AutoBot ma chronić.
+Wszystko ponad te dwa wyjątki → pełna pętla Operator→Evaluator. Kanon wyjątku 2:
+`.cursor/rules/autobot-evaluator-operator.mdc:28`.
 
 Kanon procesu: `docs/decyzje/R-PROC-AUTOBOT.md` · `R-PROC-AUTOBOT-EVAL-SCOPE.md` ·
 `R-PROC-AUTOBOT-EVAL-STRICT*.md` · `R-PROC-AUTOBOT-ABC-TURNIEJ.md` ·

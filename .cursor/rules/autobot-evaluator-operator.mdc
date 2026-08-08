@@ -25,7 +25,11 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` · scaffold: `dyspozycje/autobot/` · pl
 
 **ZAKAZ:**
 
-- ❌ Wykonać paczkę kodu / docs bez Operatora (gdy > drobny 1–3 linie czysto tekstowe — i tak loguj w duchu AutoBot)
+- ❌ Wykonać paczkę kodu / docs bez Operatora — **wyjątek doprecyzowany (Maciej 2026-08-08,
+  R-SKILL-LEAN-LOOP-CIVAUTOBOT=B):** dozwolone bez osobnego Operatora WYŁĄCZNIE 1–3 linie
+  czysto tekstowe, WYŁĄCZNIE w plikach dokumentacji/notatek (NIGDY w `gra/src`), i WYŁĄCZNIE
+  jako dopisek do paczki, która już przeszła przez Evaluatora w tej samej sesji — nie jako
+  samodzielna, nieoceniona zmiana. Zawsze z wpisem w `KANAL-PRACA.md` lub treści commita.
 - ❌ Zamknąć „gotowe w kodzie” / prosić `deploy` bez Evaluator + final Groka
 - ❌ Omijać `playbook.json` / guardrails „na skróty”
 - ❌ Self-grade bez twardej metryki (testy, typecheck, playtest OK/BUG, md5)

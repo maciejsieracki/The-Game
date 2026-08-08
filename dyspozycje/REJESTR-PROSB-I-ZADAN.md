@@ -1106,3 +1106,15 @@ w `.cursor/rules/autobot-evaluator-operator.mdc:28` (czy tam faktycznie ma byc w
 **Do Twojej decyzji (nie blokuje niczego, informacyjnie):** czy powyzsza sprzecznosc w
 `.mdc` ma zostac rozstrzygnieta, i w ktora strone.
 Model: Opus 5 (wyrazne polecenie Macieja dla tego tematu, obie role).
+
+## R-SPRZECZNOSC-DROBIAZG-MDC-Q1 (2026-08-08) — wyjatek 1-3 linie tekstu: doprecyzowany, nie usuniety = **B**
+**Decyzja Macieja: B.** Wyjatek z `.cursor/rules/autobot-evaluator-operator.mdc:28`
+zostaje, ale doprecyzowany do trzech LACZNYCH warunkow: (a) wylacznie plik dokumentacji/
+notatek, NIGDY `gra/src`; (b) wylacznie jako dopisek do paczki ktora JUZ przeszla przez
+Evaluatora w tej samej sesji — nie samodzielna, nieoceniona zmiana; (c) zawsze zalogowany
+w `KANAL-PRACA.md` lub tresci commita. Brak ktoregokolwiek warunku → pelna petla, bez
+zgadywania "czy to drobiazg" (self-grading, ktoremu AutoBot ma zapobiegac).
+**Wdrozenie:** `.cursor/rules/autobot-evaluator-operator.mdc:28` przepisane; `.claude/
+skills/civ-autobot/SKILL.md` (sekcja "Reguła nadrzędna") zaktualizowany z flagi
+sprzecznosci na rozstrzygniete dwa wyjatki.
+Model: Sonnet 5 (mechaniczne wdrozenie juz podjetej decyzji, bez nowej oceny).
