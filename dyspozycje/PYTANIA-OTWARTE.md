@@ -2243,3 +2243,16 @@ kosztu magazynowego (got {drewno:10}, want {})" i „Konnica ... want {braz:2} g
 Zdezaktualizowane oczekiwania po wcześniejszych zmianach `units.json` — dług testowy, nie
 regresja. Potwierdzone identyczne na czystym `HEAD` sprzed prac `zwiadowca-drewno`. Nie
 figuruje na liście znanych czerwonych w `CLAUDE.md`.
+
+## P-AUTOBOT-MINRUNS-ROZJAZD-5-VS-10 (2026-08-08, adwokat diabła: audyt skillsa `civ-autobot`) · STATUS: **DO WIEDZY — rozjazd konfiguracji, nie błąd skillsa**
+Kanon (`R-PROC-AUTOBOT` §v2, `dyspozycje/autobot/README.md`) mówi, że próg istotności
+statystycznej `minRunsForSignificance` został **podniesiony z 5 do 10**. Ale żywy plik
+`dyspozycje/autobot/playbook.json` ma dziś **`minRunsForSignificance: 5`** — generator
+`dyspozycje/autobot/tools/playbook-md-to-json.cjs` przepisuje sekcję `thresholds` bez
+zmian (nie wyprowadza jej z `playbook.md`), więc wartość `5` **realnie obowiązuje** aż do
+ręcznej poprawki. Znalezione przy trzecim, adwokackim przeglądzie nowego skillsa
+`civ-autobot` (`.claude/skills/civ-autobot/SKILL.md`) — zapisane tam jako uwaga „odczytaj
+wartość z pliku, nie z pamięci", ale sam rozjazd wykracza poza zakres skillsa i wymaga
+decyzji: albo poprawić `playbook.json` na `10` (zgodnie z kanonem), albo cofnąć kanon do
+`5` (jeśli `10` było error/nieaktualną decyzją), albo rozszerzyć generator o pole
+`thresholds` w `playbook.md`. Nie blokuje niczego pilnie — czysto informacyjne.
