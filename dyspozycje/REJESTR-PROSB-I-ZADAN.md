@@ -1032,3 +1032,40 @@ Model: Sonnet 5. Zakres: znalezc root cause (dlaczego AI nie zmienia zadania pro
 `canAfford` odrzuca biezacy wybor — czy probuje inny wpis kolejki, czy zostawia kolejke pusta
 i akumuluje surowce bez konsumpcji) i naprawic tak, zeby AI zawsze mialo cos w produkcji,
 jesli stac je na cokolwiek z dostepnej listy.
+
+## BUG-TOOLTIP-MOC-BUDYNKI-Q1 (2026-08-08) — Obrazenia Broni/Przebicie w tooltipie: tylko weteran = **A**
+**Decyzja Macieja: A.** Obrazenia Broni (`weaponDamage`) i Przebicie (`piercing`) w tooltipie
+jednostki skalowane WYLACZNIE premia weterana (zgodnie z tym, co realnie liczy silnik walki
+`damageTw()`), NIE pelnym `softFrac` (weteran+budynki). Pozostale 6 pol wzoru `fieldPower()`
+(w tym Szarza, Atak dystansowy) zostaja bez zmian — dla nich silnik faktycznie stosuje premie
+budynkowa, wiec pelny `softFrac` tam jest poprawny.
+**Pytanie przeszlo przez turniej ABC (C-018):** dwa niezalezne projekty (orkiestrator +
+niezalezny agent) zbiegly sie na tej samej rekomendacji A; Sedzia (Opus 5) zweryfikowal
+liczby w kodzie i zsyntetyzowal finalna wersje pytania.
+**Kotwice:** `gra/src/game/unit-card-stats.ts` (`unitCardCombatDisplay`), worktree
+`.claude/worktrees/tooltip-moc`.
+Model: Sonnet 5.
+
+## R-MOC-DEFINICJA-Q1 (2026-08-08) — co wchodzi w skladowa "Moc" wyswietlana graczowi
+**Zasada Macieja (cytat, do zachowania):** *"W aspekcie liczenia mocy jednostek czy armii
+przed bitwa i na przyklad automatycznym rozpoznaniem bitwy i mocy oraz automatycznego
+rezultatu, trzeba policzyc wszystkie wskazniki, takze parametry, ktore wspomniales, czyli
+pelna premia budynkowa, weteran. I wszystkie mozliwe wskazniki, ktore wczesniej byly
+ustalone. Ale w wypadku mocy power nie liczymy budynkow, dlatego ze ta sama jednostka moze
+byc w jednym budynku, moze byc w drugim, moze byc w jednej formie, moze byc zafortyfikowana
+lub nie. Liczymy wszystkie pozostale elementy, ale bez elementu terenu i budynku."*
+**Rozroznienie dwoch odrebnych obliczen:**
+1. **Rzeczywiste rozstrzygniecie bitwy** (pre-battle, auto-bitwa, wynik) — liczy WSZYSTKO:
+   pelna premia budynkowa, weteran, teren, wszystkie ustalone wskazniki. Bez zmian wobec
+   dzisiejszej pracy `combatPowerScaledDefFor`/`tabliczkaGarnizonScaledDefFor`.
+2. **"Moc" jako wyswietlany wskaznik** (tooltip, tabliczka, panel rankingu, HUD, Empire) —
+   NIE liczy budynkow ani terenu — tylko wskazniki wlasne jednostki + premia weterana.
+   Uzasadnienie: jednostka jest przenosna (moze stac w roznych miastach/budynkach, byc
+   zafortyfikowana lub nie) — Moc ma byc stabilna cecha jednostki, nie zalezec od tego,
+   gdzie akurat stoi.
+**NAPIECIE DO ROZSTRZYGNIECIA:** decyzja `R-MOC-MUR-PARADOKS-Q1=A` (2026-08-07, ta sama
+sesja) wprowadzila `tabliczkaGarnizonScaledDefFor()`, ktora DLA GARNIZONU W MIESCIE Z MUREM
+doklada do "Mocy" na tabliczce bonus struktury obronnej + mnoznik terenu — dokladnie to, co
+nowa zasada zdaje sie wykluczac ("moze byc zafortyfikowana lub nie"). Wymaga wprost pytania
+do Macieja, nie zgadywania — patrz rozmowa.
+Model: Sonnet 5 (logika/dane), `gra/src/render/**` gdyby dotkniete = Opus 5.
