@@ -54,12 +54,26 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
    subagent w locie, pytanie ABC czekające na odpowiedź, LUB udokumentowany w tej samej sekcji powód
    odłożenia (np. „pre-istniejące, nie blokuje"). Brak wszystkich trzech = natychmiastowy dispatch
    subagenta Sonnet 5, bez pytania o zgodę (C-027) — nie zostawiaj tego „na później".
-   **Druga warstwa (automatyczna, nie tylko z pamięci):** godzinowy Routine (`trig_01HPsKia4Z9MrKGhsf3NCDB6`,
-   „Civ — godzinowy audyt kompletności (bez deployu)") uruchamia dokładnie tę komendę (bez kotwicy)
-   NA CAŁYM pliku, bez filtra daty (celowo szerzej niż punkt (b) — pozycje z udokumentowanym
-   „pre-istniejące" nie wymagają ponownego dispatchu) niezależnie od tego, czy sesja o tym pamięta.
-   Backstop, nie substytut punktu (b) powyżej. Routine **NIE deployuje** — tylko audytuje
-   i dispatchuje naprawy; deploy zawsze wymaga hasła `deploy` od właściciela (§0).
+   **Druga warstwa (automatyczna, nie tylko z pamięci) — ZDARZENIOWA, nie stały cykl (Maciej
+   2026-08-08 po wprowadzeniu godzinowego Routine, zamieniona tego samego dnia):** stały
+   godzinowy Routine został **usunięty** — kosztował ~20+ wywołań/dobę niezależnie od tego, czy
+   trwała realna praca (efektywnie ~8h/dobę). Jego słowa: „nie zależy mi na tym, żebyś co
+   godzinę sprawdzał... punktem startu są nowe błędy i nowe błędy wymuszają audyt godzinowy, aż
+   nie zostaną wszystkie rozwiązane. Wtedy już nie ponawiasz audytu."
+   **Nowy mechanizm — jednorazowy, samo-uzbrajający się trigger:** gdy w tej sesji rejestrujesz
+   nowe zgłoszenie, którego NIE da się w pełni domknąć w tej samej turze (czeka na subagenta w
+   tle albo na odpowiedź ABC właściciela) — uzbrój JEDEN `run_once_at` (`send_later` albo
+   `create_trigger` z `run_once_at`, ~1h) z promptem: uruchom powyższą komendę na całym pliku;
+   jeśli wszystko domknięte (subagent skończył i scalony, ABC odpowiedziane) — zakończ cicho,
+   **NIE uzbrajaj kolejnego** (pętla się zatrzymuje); jeśli coś nadal czeka — uzbrój KOLEJNY
+   `run_once_at` za godzinę i tak dalej, aż wszystko się domknie. Efekt: audyt odpala się tylko
+   wtedy, gdy jest realna, nierozstrzygnięta praca — nie na ślepo co godzinę.
+   **Ryzyko (Evaluator, 2026-08-08):** w przeciwieństwie do stałego cyklu, ten łańcuch ma dwa
+   punkty zależne od pamięci — pierwsze uzbrojenie i KAŻDE re-uzbrojenie; zgubione ogniwo kończy
+   pętlę na stałe, nie samo się leczy. Świadomie zaakceptowane (to dosłowne polecenie
+   właściciela), ale **prompt każdego uzbrajanego triggera MUSI sam zawierać instrukcję
+   re-uzbrojenia** (nie polegaj na tym, że przyszła sesja to wymyśli) — i **Routine NIGDY nie
+   deployuje**, tylko audytuje i dispatchuje naprawy; deploy zawsze wymaga hasła `deploy` (§0).
 
 1. **NIGDY `npm run build` ani `npm run dev`** w `gra/` — `prebuild`/`predev` uruchamia `tools/export-data.py`, który **NADPISUJE ręcznie edytowane pliki JSON** w `gra/data/`. Cała praca nad danymi (drzewko, jednostki, cywilizacje) żyje w JSON. Buduj **wyłącznie** z katalogu `gra`:
    `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`

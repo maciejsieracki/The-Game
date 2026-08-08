@@ -111,9 +111,11 @@ kotwicy `^## ` — gubi nagłówki `### `) i potwierdź dla każdego trafienia: 
 pytanie ABC / udokumentowany powód odłożenia. Ta sama komenda żyje TAKŻE w `CLAUDE.md` §0c (plik
 zawsze ładowany do kontekstu w Claude Code — w przeciwieństwie do tego skilla i playbooka, które
 wymagają świadomego odczytu i mogą zniknąć z pola widzenia po kompaktowaniu długiej sesji; nawet
-`CLAUDE.md` to migawka z początku sesji, nie odczyt co turę). Godzinowy automatyczny Routine
-(„Civ — godzinowy audyt kompletności (bez deployu)") uruchamia DOKŁADNIE tę komendę na CAŁYM
-pliku, bez filtra daty, jako backstop niezależny od pamięci sesji; nie deployuje.
+`CLAUDE.md` to migawka z początku sesji, nie odczyt co turę). **[2026-08-08]** Druga warstwa
+NIE jest już stałym godzinowym Routine (usunięty — kosztował 20+ wywołań/dobę niezależnie od
+realnej pracy) tylko jednorazowym, samo-uzbrajającym się `run_once_at` triggerem: uzbrajanym
+TYLKO gdy nowe zgłoszenie nie da się domknąć w tej samej turze, re-uzbrajanym co ~1h dopóki coś
+czeka, milknącym bez re-uzbrojenia gdy wszystko domknięte. Pełny opis: `CLAUDE.md` §0c.
 
 **⛔ Zakaz otwierania nowych wątków pytaniami.** Wolno wyłącznie pytania doprecyzowujące
 do wątku aktualnie prowadzonego. Problemy znalezione przy okazji → **cicho** do

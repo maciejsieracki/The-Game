@@ -199,10 +199,12 @@ zmiana w `CLAUDE.md` w trakcie bieżącej sesji zaczyna realnie działać dopier
 utrata trafienia wykazana przez Evaluatora rundy 1: `grep -n 'STATUS: \*\*OTWARTE'
 dyspozycje/PYTANIA-OTWARTE.md`) zduplikowana w `CLAUDE.md` §0c — nie tylko odwołanie do reguły,
 tam gdzie orkiestrator ją faktycznie zawsze zobaczy. Druga, niezależna od pamięci warstwa:
-godzinowy automatyczny Routine (`trig_01HPsKia4Z9MrKGhsf3NCDB6`, „Civ — godzinowy audyt
-kompletności (bez deployu)") uruchamia DOKŁADNIE tę komendę (bez kotwicy) na CAŁYM pliku, bez
-filtra daty (celowo szerzej niż ręczna kontrola — pozycje z udokumentowanym „pre-istniejące" nie
-wymagają ponownego dispatchu) niezależnie od stanu kontekstu sesji; nie deployuje.
+**[2026-08-08, ZASTĄPIONE tego samego dnia]** druga warstwa BYŁA stałym godzinowym Routine —
+usunięta na polecenie Macieja po ~20+ jałowych wywołaniach/dobę niezależnie od realnej pracy.
+Zastąpiona jednorazowym, samo-uzbrajającym się `run_once_at` triggerem: uzbrajany TYLKO gdy nowe
+zgłoszenie nie da się domknąć w tej samej turze, odpala tę samą komendę za ~1h, re-uzbraja
+kolejny jeśli coś nadal czeka, kończy się cicho bez re-uzbrojenia gdy wszystko domknięte. Pełny
+opis: `CLAUDE.md` §0c.
 Ryzyko rozjazdu 4 kopii tej samej komendy (CLAUDE.md/playbook.md/.mdc/SKILL.md) świadomie
 zaakceptowane na razie, bez mechanicznego zabezpieczenia (jak generator `playbook.json`) — do
 rozważenia później. Zasada ogólna: każda reguła oznaczona jako krytyczna (0/0a/0b/0c) powinna
