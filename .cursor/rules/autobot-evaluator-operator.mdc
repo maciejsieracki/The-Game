@@ -185,6 +185,31 @@ subagenta w locie, pytanie ABC, albo jawny powód odłożenia. Jego słowa: *„
 notoryczna skleroza… co mam kazać ci gdzie zapisać żebyś nie zapominał o błędach, które
 zgłaszam, i wszystkie od razu realizował przez subagentów."*
 
+## C-031 — krytyczna komenda żyje TAKŻE w CLAUDE.md, nie tylko tutaj (Maciej 2026-08-08)
+
+C-030 istniała jako reguła od godzin tej samej sesji, a mimo to nie została zastosowana
+proaktywnie ani razu, dopóki właściciel wprost nie zapytał, gdzie to zapisać, żeby się nie
+powtarzało. Przyczyna: ten plik i `playbook.md` NIE są wstrzykiwane do kontekstu automatycznie
+w Claude Code (w Cursorze ten plik JEST auto-ładowany dzięki `alwaysApply: true` — zastrzeżenie
+dodane po rundzie 1 Evaluatora) — wymagają świadomego `Read`, a po kompaktowaniu długiej sesji
+znikają z pola widzenia bez świadomej decyzji o pominięciu. `CLAUDE.md` NATOMIAST jest ładowany
+do kontekstu KAŻDEJ tury w Claude Code — ale jako migawka z początku sesji, nie odczyt co turę;
+zmiana w `CLAUDE.md` w trakcie bieżącej sesji zaczyna realnie działać dopiero w NOWEJ sesji.
+**Poprawka:** sama komenda z C-030, BEZ kotwicy `^## ` (kotwica gubi nagłówki `### ` — realna
+utrata trafienia wykazana przez Evaluatora rundy 1: `grep -n 'STATUS: \*\*OTWARTE'
+dyspozycje/PYTANIA-OTWARTE.md`) zduplikowana w `CLAUDE.md` §0c — nie tylko odwołanie do reguły,
+tam gdzie orkiestrator ją faktycznie zawsze zobaczy. Druga, niezależna od pamięci warstwa:
+godzinowy automatyczny Routine (`trig_01HPsKia4Z9MrKGhsf3NCDB6`, „Civ — godzinowy audyt
+kompletności (bez deployu)") uruchamia DOKŁADNIE tę komendę (bez kotwicy) na CAŁYM pliku, bez
+filtra daty (celowo szerzej niż ręczna kontrola — pozycje z udokumentowanym „pre-istniejące" nie
+wymagają ponownego dispatchu) niezależnie od stanu kontekstu sesji; nie deployuje.
+Ryzyko rozjazdu 4 kopii tej samej komendy (CLAUDE.md/playbook.md/.mdc/SKILL.md) świadomie
+zaakceptowane na razie, bez mechanicznego zabezpieczenia (jak generator `playbook.json`) — do
+rozważenia później. Zasada ogólna: każda reguła oznaczona jako krytyczna (0/0a/0b/0c) powinna
+mieć swoją mechaniczną komendę zduplikowaną w pliku zawsze ładowanym do kontekstu, nie tylko w
+playbooku/regułach `.cursor`. Jego słowa: *„przygotuj rozwiązanie żeby o takich rzeczach nie
+zapominać, gdzie to powinno być zapisane, procedura żeby to się już nie powtarzało."*
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.

@@ -105,6 +105,16 @@ punkt startowy pracy, nie miejsce składowania" — jego słowa po serii skarg: 
 po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?"*, *„tak właśnie gubią się
 tematy, które ci zgłaszam... zgłaszam coś, a wy nie robicie z tym nic."*
 
+**Kontrola kompletności (`C-030`/`C-031`):** po KAŻDEJ serii rejestracji w `PYTANIA-OTWARTE.md`,
+przed zmianą wątku — uruchom `grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` (BEZ
+kotwicy `^## ` — gubi nagłówki `### `) i potwierdź dla każdego trafienia: subagent w locie /
+pytanie ABC / udokumentowany powód odłożenia. Ta sama komenda żyje TAKŻE w `CLAUDE.md` §0c (plik
+zawsze ładowany do kontekstu w Claude Code — w przeciwieństwie do tego skilla i playbooka, które
+wymagają świadomego odczytu i mogą zniknąć z pola widzenia po kompaktowaniu długiej sesji; nawet
+`CLAUDE.md` to migawka z początku sesji, nie odczyt co turę). Godzinowy automatyczny Routine
+(„Civ — godzinowy audyt kompletności (bez deployu)") uruchamia DOKŁADNIE tę komendę na CAŁYM
+pliku, bez filtra daty, jako backstop niezależny od pamięci sesji; nie deployuje.
+
 **⛔ Zakaz otwierania nowych wątków pytaniami.** Wolno wyłącznie pytania doprecyzowujące
 do wątku aktualnie prowadzonego. Problemy znalezione przy okazji → **cicho** do
 `dyspozycje/PYTANIA-OTWARTE.md`, bez wspominania w czacie. Każde pytanie/bug właściciela
