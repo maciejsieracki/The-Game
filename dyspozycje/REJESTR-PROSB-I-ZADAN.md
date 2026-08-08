@@ -1384,12 +1384,19 @@ dowodami z kodu (brak gate'u odkrycia, kolor OK, promień terytorium OK nawet dl
 jedyna pozostała hipoteza (remis w `territoryOwnerAt` przy gęstym osadnictwie) wymaga
 diagnozy na żywym zapisie, nie samą lekturą kodu. Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
-## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — nowe zgłoszenie z playtestu
-„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile jest dokładnie
-produkowane w tym miejscu surowców żywności i tak dalej." Heksy w zasięgu miasta pokazują
-liczby plonów (Praca/Żywność/Pieniądz), ale heks zajęty przez samo miasto — nie. Do
-zdiagnozowania czy to bug renderu czy silnik faktycznie nie ma tam danych do pokazania.
-Zarejestrowane w `PYTANIA-OTWARTE.md`.
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — NAPRAWIONE, czeka na deploy+playtest
+Przyczyna: render (`cityOkolicaOverlay.ts`) pomijał liczby plonów na KAŻDYM heksie z
+„ulepszeniem", w tym na centrum miasta — silnik zawsze ma tam realny plon. Fix: wyjątek dla
+heksu centrum. Evaluator (Opus 5) PASS-WITH-NOTES, `tsc` czyste. Dwie notatki do osobnej
+rejestracji (dopisane jako `P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE`, niska pilność, i
+uwaga do zweryfikowania na playteście: zgłoszenie mówiło o „zielonym kółku", centrum
+faktycznie jest niebieskie — jeśli po deployu problem nadal widoczny na zielonych heksach,
+to inny temat). Pełne kotwice w `PYTANIA-OTWARTE.md`.
+
+## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08) — znalezisko Evaluatora, zarejestrowane
+Render czyta tylko ostatnią warstwę ulepszenia heksu, silnik liczy wszystkie — przy
+wielowarstwowych ulepszeniach na centrum miasta render może zaniżać plon. Niska pilność,
+osobny temat od naprawy powyżej. Pełny opis w `PYTANIA-OTWARTE.md`.
 
 ## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — NAPRAWIONE, czeka na deploy+playtest
 Fix scommitowany (2 zmiany CSS w `cityPanel.ts`), Evaluator (Opus 5) PASS-WITH-NOTES —

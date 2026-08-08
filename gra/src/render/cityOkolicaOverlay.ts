@@ -234,7 +234,13 @@ export function buildCityOkolicaOverlayGroup(
       const { q, r } = hex.coords;
       const t = hex.terenBazowy;
       if (t === TerenBazowy.Morze || t === TerenBazowy.Gory) continue;
-      if (hexHasCoveringTerrainImprovement(hex)) continue;
+      // R-HEKS-PLONY-UKRYTE-POD-MIASTEM (Maciej 2026-08-08): heks centrum miasta ZAWSZE
+      // ma realne plony z wlasnego terenu (silnik: cityWorkedTilesForEconomy — "Centrum
+      // (hex miasta) ZAWSZE daje plony z wlasnego terenu — bez 👤"), wiec nie pomijamy go
+      // nawet gdy przypadkiem niesie klasyfikacje "ulepszenie" (np. ocalale przy zalozeniu
+      // wg macierzy B, lub postawione po fakcie) — inaczej gracz nie widzi w ogole liczb na
+      // wlasnym hexie miasta, mimo ze silnik je liczy.
+      if (key !== cityKey && hexHasCoveringTerrainImprovement(hex)) continue;
 
       const yld = params.yieldOf(q, r);
       const parts = yieldLabelLines(yld);

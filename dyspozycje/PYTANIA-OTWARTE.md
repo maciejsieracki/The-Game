@@ -2652,7 +2652,7 @@ runtime.
 **Model:** populacja/AI → Sonnet 5 (`game/**`); jeśli naprawa granic dotknie `render/**` →
 Opus 5 per zgoda stała CLAUDE.md §4.
 
-## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile
 jest dokładnie produkowane w tym miejscu surowców żywności i tak dalej."*
 **Objaw (zrzut, okolice TEBY):** każdy heks w zasięgu miasta pokazuje trzy liczby z ikonami
@@ -2665,9 +2665,25 @@ warunek pomijający rysowanie liczb, gdy `hex.cityId`/`hex.owner` wskazuje na za
 miasto, i czy dane produkcji dla heksu miejskiego w ogóle istnieją w silniku (być może miasto
 zjada/zeruje bazowy plon terenu i faktycznie nic tam nie ma do pokazania — do sprawdzenia
 zamiast zakładać).
-**Kotwice:** TBD — do zdiagnozowania.
-**Model:** `render/**` → Opus 5 (zgoda stała CLAUDE.md §4), jeśli przyczyna w silniku
-(`game/**`) → Sonnet 5.
+**Kotwice:** `gra/src/render/cityOkolicaOverlay.ts` (pętla etykiet plonów).
+**Model:** Sonnet 5 (przyczyna okazała się w warunku renderu, nie w 3D/geometrii).
+
+**NAPRAWIONE (2026-08-08):** przyczyna (a) — render, nie silnik. Pętla etykiet w
+`cityOkolicaOverlay.ts` (dodana w FALA 96, `daacd43a`) pomijała rysowanie liczb dla KAŻDEGO
+heksu z „ulepszeniem" terenu (`hexHasCoveringTerrainImprovement`), **w tym także dla heksu
+centrum miasta**, gdy ten niósł klasyfikację ulepszenia (częsty przypadek — `auto-improvements.ts`
+nie wyklucza współrzędnych centrum miasta z kandydatów do automatycznego ulepszenia). Silnik
+zawsze liczy realny, niezerowy plon centrum (`turn-economy.ts`, komentarz „Centrum ZAWSZE
+daje plony... bez 👤"). Fix: wyjątek `key !== cityKey` w warunku pomijania — sąsiednie
+prawdziwie ulepszone heksy nadal poprawnie pomijane. Evaluator (Opus 5) PASS-WITH-NOTES,
+zweryfikowany niezależnie (1 call site funkcji, `tsc` czyste). Dwie notatki Evaluatora do
+osobnej rejestracji: (1) render czyta tylko OSTATNIĄ warstwę `hex.ulepszenie`, silnik czyta
+WSZYSTKIE warstwy — przy wielowarstwowych ulepszeniach na centrum render może zaniżać plon
+(wcześniej niewidoczne, bo każdy ulepszony heks był całkowicie ukryty); (2) do potwierdzenia
+na żywym zapisie: zgłoszenie mówiło o „zielonym kółku" (overlay pracy), a centrum miasta
+faktycznie renderuje się na niebiesko — jeśli po deployu liczby nadal brakuje na ZIELONYCH
+(nie niebieskich) heksach, to inny, nieobjęty tą naprawą problem (celowe pominięcie sąsiadów
+z prawdziwym ulepszeniem).
 
 ## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„jedno naprawiasz, drugie psujesz. Znowu jest problem, mianowicie coś co
@@ -2751,4 +2767,13 @@ gdy suma jest dodatnia. Ale realne wykonanie (`main.ts:11977`,
 progu — efekt: **pakiet stosuje się częściowo**, z komunikatem w toaście (`showHintMessage`)
 zamiast blokadą całości. Niezależny od tego, jak rozstrzygnie się `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2`.
 **Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts:252-254`, `gra/src/main.ts:11977`.
+**Model:** Sonnet 5.
+
+## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08, nota Evaluatora przy R-HEKS-PLONY-UKRYTE-POD-MIASTEM) · STATUS: **OTWARTE — pre-istniejące, nie regresja tej naprawy**
+Render plonów (`gra/src/main.ts:9281`, `yieldOfMapHex`) czyta tylko OSTATNIĄ warstwę
+`hex.ulepszenie`, silnik (`hexToWorkedTile`) czyta WSZYSTKIE warstwy ulepszeń. Wcześniej
+niewidoczne (każdy ulepszony heks był całkowicie ukryty), po naprawie centrum miasta z
+wielowarstwowym ulepszeniem może pokazywać zaniżony plon (mniej niż silnik faktycznie liczy).
+Do zdiagnozowania osobno, niska pilność.
+**Kotwice:** `gra/src/main.ts:9281` (`yieldOfMapHex`), silnik `hexToWorkedTile`.
 **Model:** Sonnet 5.
