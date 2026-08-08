@@ -2374,6 +2374,23 @@ nie jest w pełni spełniona.
 **Naprawa GOTOWA W KODZIE (worktree `agent-a268a6afcf89df0e1`, commit `a9efb243`), ale
 WSTRZYMANA do decyzji właściciela** — nie scalać bez jego odpowiedzi.
 
+**DECYZJA WŁAŚCICIELA (2026-08-08):** hybryda, doprecyzowana własnymi słowami: *„na starcie
+jednostek powinna być strzałka w prawo, w lewo, przejść do następnej jednostki. Przejście
+powinno być niezależne już od tego czy jest aktywne czy nie. Powinna być jedna strzałka
+przejść do następnej jednostki, oraz przejść do następnej aktywnej jednostki z pulltipem, że
+spacja to jest przejście do następnej aktywnej jednostki, a strzałka to jest do następnej
+jakiejkolwiek."* Rozstrzyga też konflikt z 28.07 bez sprzeczności — to DWIE różne kontrolki:
+- **Spacja** = następna jednostka **z ruchem** (dzisiejsze zgłoszenie) — naprawa `a9efb243`
+  zostaje, dotyczy WYŁĄCZNIE klawisza Spacja.
+- **Strzałki ◀▶ w HUD** = następna jednostka **niezależnie od ruchu** (polecenie z 28.07,
+  FALA 64) — mają wrócić do niefiltrowanej listy, NIE korzystać z tej samej ścisłej funkcji
+  co Spacja.
+- **Tooltips obowiązkowe**: Spacja → „przejście do następnej aktywnej jednostki"; strzałka →
+  „przejście do następnej jakiejkolwiek [jednostki]".
+**Status:** zlecone do wdrożenia — rozdzielić `cyclablePlayerArmyLeads()` (dla Spacji, z
+filtrem `stackCanMove`) od nowej/przywróconej niefiltrowanej listy dla strzałek HUD, dopisać
+tooltips.
+
 ## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — POTWIERDZONY REGRES, przyczyna znaleziona**
 **Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
 dostęp powinny być już pełni w surowcach ilości surowców widzę że to jest jakiś regres i
