@@ -2416,7 +2416,7 @@ jakiejkolwiek."* Rozstrzyga też konflikt z 28.07 bez sprzeczności — to DWIE 
 filtrem `stackCanMove`) od nowej/przywróconej niefiltrowanej listy dla strzałek HUD, dopisać
 tooltips.
 
-## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`docs/decyzje/R-SUROWCE-DOSTEP-ILOSC-Q1.md`)
+## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
 dostęp powinny być już pełni w surowcach ilości surowców widzę że to jest jakiś regres i
 znowu jakaś poprawka sprawiła że to zostało cofnięte."
@@ -2448,6 +2448,17 @@ osobnego miejsca na ilość tych samych surowców).
 **Kotwice:** `gra/src/main.ts` (`buildEmpireResourceRows`), `gra/src/ui/empireDetailPanel.ts`
 (`renderSurowceSection`), `gra/src/game/empire-resource-access.ts`.
 **Model:** Sonnet 5 (poza `render/**`).
+
+**NAPRAWIONE (2026-08-08):** pełne cofnięcie `331aa180` — wszystkie 13 surowców liczy teraz
+`cap = empireCap` jednolicie, sekcja „Dostęp — nie magazynowane" fizycznie usunięta (nie
+ukryta), `gra/src/game/empire-resource-access.ts` skasowany jako martwy kod (zero innych
+callerów, sprawdzone grepem całego repo). Tooltip źródła dostępu działa dalej dla wszystkich
+4 surowców (niezależna od `cap` ścieżka danych). Evaluator (Opus 5) PASS-WITH-NOTES.
+`surowce-dostep-test.cjs` przepisany, 13/13, `tsc` czyste.
+**Nota (niska pilność, do osobnej rejestracji):** martwa gałąź w `resTooltipHtml` sprawia,
+że komunikat „Dostęp: brak — nie odblokowano" jest dziś nieosiągalny — przy braku dostępu
+i zapasie 0 kafelek pokazuje neutralne „0/1200" bez żadnej wzmianki o dostępie (dotyczy
+głównie Złota/Mennicy, patrz decyzja). Do rozważenia po playteście, jeśli okaże się mylące.
 
 ## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
 **Jego słowa:** „kiedy wymieniamy surowce i na przykład chcemy się wymienić technologiami

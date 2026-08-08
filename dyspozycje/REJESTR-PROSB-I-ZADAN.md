@@ -1438,3 +1438,10 @@ traktatowych). Decyzje zapisane w `docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`,
 ## R-AI-FOUNDING-THROTTLE-Q1 — NAPRAWIONE, czeka na deploy+playtest
 `AI_FOUNDING_SOURCE_MIN_POP` 2→3. Evaluator PASS-WITH-NOTES — pętla 1↔2 przesuwa się na 2↔3
 (świadome ryzyko z decyzji), nie znika całkowicie. `ai-test.cjs` 274/8 (8 pre-istniejących).
+
+## R-SUROWCE-DOSTEP-ILOSC-Q1 — NAPRAWIONE, czeka na deploy+playtest
+Pełne cofnięcie `331aa180`. Wszystkie 13 surowców pokazuje realną ilość, sekcja boolean
+„Dostęp" usunięta wraz z martwym modułem `empire-resource-access.ts`. Tooltip źródła
+nietknięty. Evaluator (Opus 5) PASS-WITH-NOTES — zgłosił martwą gałąź komunikatu „brak
+dostępu" w tooltipie (dziś nieosiągalna) jako osobny, niepilny follow-up. `tsc` czyste,
+13/13.
