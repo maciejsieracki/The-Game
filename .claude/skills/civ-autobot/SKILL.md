@@ -151,6 +151,25 @@ wcześniejszego fixu. **PASS-WITH-NOTES** tylko: pre-existing baseline poza tema
 z dowodem z `main`, docs drift, cross-lane z handoffem, GATE=A wyłącznie wizualny,
 drobny drift procesu.
 
+**Zakres naprawy = tylko błąd, impact-analiza dla kodu współdzielonego** (`C-025`,
+`C-026` — Maciej 2026-08-08, po serii regresji: kolejka budowy, traktat-koszyk,
+rzeki-medium-fow, 4-rundowa naprawa handel-bramka-priorytet — „70% mojego czasu to
+poprawki tego, co już było naprawione"):
+
+- **C-025** — prompt zlecenia dla Operatora naprawiającego zgłoszony błąd MUSI
+  wypisać granicę zakresu (konkretne pliki/funkcje) i wprost zakazać zmian poza nią.
+  Zero „przy okazji"/„skoro już tu jestem" — refaktorów, sprzątania stylu, przenoszenia
+  kodu, nawet gdy wyglądają jak ulepszenie. Evaluator odrzuca (FAIL) diff, który robi
+  więcej niż to, co przyczyna błędu wymagała, niezależnie od tego, czy dodatkowa zmiana
+  sama w sobie wygląda słusznie.
+- **C-026** — gdy naprawa MUSI dotknąć funkcji/komponentu współdzielonego (bo to jedyny
+  poprawny zakres, nie wybór Operatora), Operator PRZED zmianą wypisuje wszystkie
+  miejsca użycia (grep/referencje) i PO zmianie weryfikuje każde z osobna — „to powinno
+  nadal działać" bez sprawdzenia jest zakazane. Evaluator sprawdza, czy ta lista w ogóle
+  powstała i czy jest wiarygodna (przelicza grepem sam, nie ufa samoocenie Operatora),
+  nie tylko czy diff „wygląda" bezpiecznie — to nakładka na COUPLING z `lean-loop`,
+  z twardym wymogiem enumeracji, nie tylko oceny „na oko".
+
 **Orkiestrator nie jest zwolniony z pętli** (`CLAUDE.md` §0b, `playbook.md` → `C-017`):
 każda zmiana zapisana do repozytorium i każda liczba podana właścicielowi jako fakt
 przechodzi przez osobnego Evaluatora na Opus 5; orkiestrator jest wtedy Operatorem

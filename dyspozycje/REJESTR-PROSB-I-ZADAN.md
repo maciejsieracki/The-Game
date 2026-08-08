@@ -1391,7 +1391,12 @@ liczby plonów (Praca/Żywność/Pieniądz), ale heks zajęty przez samo miasto 
 zdiagnozowania czy to bug renderu czy silnik faktycznie nie ma tam danych do pokazania.
 Zarejestrowane w `PYTANIA-OTWARTE.md`.
 
-## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — DIAGNOZA ZAKOŃCZONA, fix w toku
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — NAPRAWIONE, czeka na deploy+playtest
+Fix scommitowany (2 zmiany CSS w `cityPanel.ts`), Evaluator (Opus 5) PASS-WITH-NOTES —
+niezależnie zweryfikowany zakres (dokładnie 2 zmiany), C-026 (enumeracja miejsc użycia `.btn`)
+potwierdzona własnym grepem Evaluatora, nie tylko self-raportem Operatora. `tsc --noEmit`
+czyste. Nota Evaluatora: wymaga realnego playtestu (zmiana czysto wizualna, brak harnessu
+DOM/CSS w repo). Poprzedni wpis poniżej — historia diagnozy.
 Diagnoza (`cityPanel.ts`): dwa defekty flex-layoutu, oba z commita `daacd43a` (2026-07-29,
 sprzed 10 dni) — NIE ze świeżej pracy, ujawnione dopiero dziś. (1) `qLabel` kolejki BUDYNKÓW
 brakuje `min-width:0;overflow:hidden;...;white-space:nowrap;` które ma kolejka jednostek —

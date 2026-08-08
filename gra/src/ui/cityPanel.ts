@@ -1861,6 +1861,7 @@ function ensureStyles(): void {
 .civ-cs .qitem .qitem-ic{width:1.05em;height:1.05em;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;overflow:hidden;}
 .civ-cs .qitem .qitem-ic svg{width:1.05em;height:1.05em;display:block;}
 .civ-cs .qitem .qitem-ic .unit-infographic-medallion{width:1.05em;height:1.05em;border:none;}
+.civ-cs .qitem .btn{flex-shrink:0;}
 .civ-cs .hpb{height:0.4em;background:var(--panel2);border:1px solid var(--border);border-radius:2px;overflow:hidden;margin-top:0.15em;}
 .civ-cs .hpf{height:100%;border-radius:2px;background:var(--green);} .civ-cs .hpl{background:var(--red);}
 .civ-cs .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:0.25em;}
@@ -6954,7 +6955,7 @@ function appendBuildQueueSection(
       }
       qi.appendChild(productionQueueIconSpan(data, it));
       const qLabel = el('span');
-      qLabel.style.flex = '1';
+      qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       qLabel.textContent = it.nazwa;
       qi.appendChild(qLabel);
       const cumEta = queueItemCumulativeEta(prod, i, pracaBudynki);

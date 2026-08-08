@@ -2618,7 +2618,7 @@ zamiast zakładać).
 **Model:** `render/**` → Opus 5 (zgoda stała CLAUDE.md §4), jeśli przyczyna w silniku
 (`game/**`) → Sonnet 5.
 
-## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — REGRESJA**
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** *„jedno naprawiasz, drugie psujesz. Znowu jest problem, mianowicie coś co
 wcześniej działało nagle przestało działać. Przesuwanie góra-dół i usuwanie z kolejki w trybie
 budowania zarówno jednostek i budynków nie działa. Trzeba kombinować gdzie kliknąć. Niestety
@@ -2663,3 +2663,16 @@ trafia tylko w te trzy przyciski. Żadnych innych zmian.
 budynków `qLabel` (linia ~6957), CSS `.civ-cs .btn`/`.btn-sm` (linie ~1697-1717), `.qitem`
 (linia ~1850).
 **Model:** Sonnet 5 (UI/CSS, nie render 3D).
+
+**NAPRAWIONE (2026-08-08):** dwie zmiany CSS w `cityPanel.ts` — (1) `qLabel` kolejki budynków
+dostał ten sam `min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;`, co
+kolejka jednostek już miała; (2) nowa, wąsko zawężona reguła `.civ-cs .qitem .btn{flex-shrink:0;}`
+(NIE globalnie `.civ-cs .btn`, żeby nie dotknąć 4 innych grup przycisków w pliku poza kolejkami).
+Zakres zweryfikowany przez Operatora i niezależnie przez Evaluatora (Opus 5, PASS-WITH-NOTES):
+diff = dokładnie te dwie zmiany, żadnej innej linii; `.qitem` istnieje wyłącznie w tym pliku
+w dwóch miejscach (obie kolejki); z 14 użyć klasy `.btn` w pliku tylko 6 (po 3 na kolejkę)
+leży wewnątrz `.qitem`, pozostałe 8 poza zasięgiem nowej reguły — potwierdzone niezależnym
+grepem Evaluatora, nie tylko samooceną Operatora. `npx tsc --noEmit` czyste (exit 0 na
+głównym drzewie). Evaluator dodał notatkę: **wymaga playtestu** (długa nazwa budynku w
+kolejce, sprawdzić wielokropek i trafialność ↑/↓/✕ za pierwszym kliknięciem) — to zmiana
+czysto wizualna, w repo nie ma harnessu DOM/CSS do zautomatyzowania testu.
