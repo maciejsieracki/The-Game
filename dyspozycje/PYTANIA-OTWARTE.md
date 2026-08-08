@@ -2531,7 +2531,7 @@ większej liczbie pozycji.
 **Model:** jeśli zmiana dotknie układu/renderowania wizualnego — do ustalenia czy to
 `render/**` czy czysty DOM/CSS w `ui/**` (prawdopodobnie to drugie, Sonnet 5 wystarczy).
 
-## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **W REALIZACJI — kod napisany, Evaluator FAIL (worktree stale), redispatch w toku**
 **Jego słowa:** „nie ma możliwości edytowania propozycji. Jest tylko możliwość usunięcia.
 Przecież miała być możliwość jeszcze edytowania."
 **Potwierdzone w kodzie:** `gra/src/ui/diplomacyTradeBasket.ts:1177` renderuje wyłącznie
@@ -2545,7 +2545,7 @@ propozycji ze zrzutu — prawdopodobnie `diplomacyAudience.ts` / `diplomacyDealD
 który dokładnie renderuje ten konkretny widok kolumnowy).
 **Model:** Sonnet 5 (poza `render/**`).
 
-## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — redispatch w toku**
 **Jego słowa:** „jeżeli my dajemy umowę surowców, po drugiej stronie nie musi być umowy
 wymiany surowców, jeżeli ta druga strona nic nie daje. I w takiej sytuacji jeżeli usuniemy
 u drugiej strony to nic nie daje, usuwa się też cała nasza propozycja. To w ogóle jest
@@ -2561,6 +2561,14 @@ przycisków „Usuń"), czy to błąd w logice usuwania, który przypadkiem kasu
 indeks/wiersz.
 **Kotwice:** te same pliki co `R-PROPOZYCJA-BRAK-EDYCJI` — panel propozycji pokazany na zrzucie,
 logika usuwania powiązana z ID/parą propozycji.
+
+**ZDECYDOWANE (2026-08-08):** `R-PROPOZYCJA-KASACJA-UI-Q1=A` (`docs/decyzje/R-PROPOZYCJA-KASACJA-UI-Q1.md`)
+— ukryj przycisk „Usuń" na pustej/mirror karcie, zostaw jeden aktywny na karcie z treścią.
+Kod już napisany w rundzie 1 Operatora (worktree było wtedy stale, wybór zrobiony bez pytania —
+stąd ABC post-factum, decyzja potwierdza wybrane rozwiązanie). Redispatch: rebase na aktualny
+HEAD (konflikt w `diplomacyTradeBasket.ts` z równolegle scalonym `66ae74c8`/`82bdbd92`) +
+dopisanie brakującego pokrycia testami dla `R-PROPOZYCJA-BRAK-EDYCJI` (Evaluator: zero asercji
+dla funkcji edycji, tylko dla kasacji).
 **Model:** Sonnet 5 (poza `render/**`).
 
 ## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
