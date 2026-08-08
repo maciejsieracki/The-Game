@@ -2416,7 +2416,7 @@ jakiejkolwiek."* Rozstrzyga też konflikt z 28.07 bez sprzeczności — to DWIE 
 filtrem `stackCanMove`) od nowej/przywróconej niefiltrowanej listy dla strzałek HUD, dopisać
 tooltips.
 
-## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — POTWIERDZONY REGRES, przyczyna znaleziona**
+## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`docs/decyzje/R-SUROWCE-DOSTEP-ILOSC-Q1.md`)
 **Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
 dostęp powinny być już pełni w surowcach ilości surowców widzę że to jest jakiś regres i
 znowu jakaś poprawka sprawiła że to zostało cofnięte."
@@ -2519,7 +2519,7 @@ indeks/wiersz.
 logika usuwania powiązana z ID/parą propozycji.
 **Model:** Sonnet 5 (poza `render/**`).
 
-## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`docs/decyzje/R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2.md`)
 
 ### Część 1 — tabela cen (na żądanie: „wypisz mi wartość surowców jakie mamy przypisane")
 **Potwierdzone w kodzie:** „40" pokazane przy 4 pakietach Drewna (pakiet ×10) **to Punkty
@@ -2608,7 +2608,7 @@ raportowi). 19 pakietów testów, wszystkie zielone, `tsc` czyste.
 testu — poprawiona wartość startowa (10 szt., nie 1) jest dziś niczym niechroniona przed
 przyszłą regresją.
 
-## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — diagnoza w toku**
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDECYDOWANE — A, próg 3 (2026-08-08) — w realizacji** (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: nadal niezdiagnozowana**
 **Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
 być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
 jakby ich nie było. Dodatkowo, te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają
