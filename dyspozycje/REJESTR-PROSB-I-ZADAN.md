@@ -1227,3 +1227,47 @@ unit-replace 13/13, autobot-smoke 11/11 — wszystko na scalonym drzewie.
 `playbook.json` na main to turniej ABC (nie reguła schowków) — brak kolizji ID.
 Commit scalenia: `a659f4a1` (main-merge → main, push bez force).
 Model: Sonnet 5 (orkiestrator, wykonanie scalenia po wyraźnej zgodzie Macieja).
+
+## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08) — nowe zgłoszenie z playtestu
+**Jego słowa:** „podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
+co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
+ulepszeń." Zarejestrowane w `dyspozycje/PYTANIA-OTWARTE.md`. Nie zdiagnozowane jeszcze
+w kodzie — do zbadania, czy zablokowanie zoomu jest celowe (ochrona trybu placementu przed
+scrollem) czy przypadkowy efekt uboczny.
+
+## R-AUDYT-ZGLOSZEN-2-DNI (2026-08-08) — pełny audyt zgłoszeń Macieja z ostatnich 2 dni
+**Prośba:** sprawdzić wszystkie błędy zgłoszone przez właściciela w ciągu ostatnich 2 dni,
+potwierdzić czy są zarejestrowane i czy naprawione; przygotować listę tych nienaprawionych
+lub błędnie oznaczonych jako naprawione.
+**Wynik audytu 9 zgłoszeń playtestowych (2026-08-07/08, `dyspozycje/PYTANIA-OTWARTE.md`):**
+- **BUG-ETYKIETA-MIASTA-ROZMYTA** — OTWARTE, potwierdzone niezmienione.
+- **BUG-IKONA-KULTURY-PLACEHOLDER** — OTWARTE, potwierdzone niezmienione. **Przyczyna
+  zdiagnozowana teraz w kodzie** (`gra/src/render/cityMapStatChip.ts`): `requestCivSigilImage()`
+  (linia ~364) porzuca `onReady` bez kolejkowania, gdy inny badge tej samej cywilizacji już
+  ładuje ten sam sygnet (`if (cached === 'loading') return;`) — plakietka, która przegrała ten
+  wyścig, zostaje trwale z rombem, bo tekstura tworzona jest raz (`if (!tex)`, linia ~744) i
+  nigdy nie ponawia żądania. Hover naprawia to przypadkiem: `hoverExpanded` wchodzi do klucza
+  cache tekstury (linia 714), więc hover tworzy NOWĄ teksturę, która trafia już na wypełniony
+  globalny cache obrazu i rysuje ikonę od razu. Analogiczny wzorzec cache w
+  `requestLeaderPortraitImage`/`requestProdIconImage` — niesprawdzony, prawdopodobnie ten sam błąd.
+- **R-ETYKIETA-MIASTA-WZROST-PROCENT** ("W5" zamiast "5,5%") — OTWARTE, potwierdzone
+  niezmienione i **poprawnie zarejestrowane** dosłownym cytatem właściciela — nie zostało
+  pominięte, tylko wciąż czeka na realizację.
+- **BUG-ZWIADOWCA-KOSZT-SUROWCA** — naprawione i wdrożone (FALA 260, zweryfikowane w
+  `units.json` wcześniej tej sesji).
+- **BUG-PRZEMARSZ-KOMUNIKAT-OBCY** — zamknięte, scalone.
+- **BUG-BRAMKA-DREWNO-BRAK** — naprawione i wdrożone (FALA 260).
+- **BUG-TOOLTIP-MOC-NIEPELNA** — **naprawione i wdrożone (FALA 260, `eff727e`), potwierdzone
+  teraz w kodzie** (`gra/src/ui/hexContextTooltip.ts:668-677`, wszystkie 8 pól obecne) — ale
+  **status w `PYTANIA-OTWARTE.md` wciąż mówi OTWARTE**. To rozjazd dokumentacji, nie
+  pominięty fix — naprawa realnie istnieje i działa, tylko etykieta statusu nie została
+  zaktualizowana po deployu.
+- **BUG-RZEKI-MEDIUM-FOW-REGRESJA-2** — zamknięte, scalone.
+- **BUG-TRAKTAT-KOSZYK-REGRESJA** — naprawione i wdrożone (FALA 260, zweryfikowane na
+  `origin/main` wcześniej tej sesji).
+**Wniosek:** żadne zgłoszenie nie zostało pominięte w rejestrze — każde ma wpis z cytatem.
+Jeden realny problem dokumentacyjny znaleziony: status `BUG-TOOLTIP-MOC-NIEPELNA` nie
+zaktualizowany po fixie. Dwa realne, wciąż nienaprawione bugi UI: `BUG-ETYKIETA-MIASTA-ROZMYTA`,
+`BUG-IKONA-KULTURY-PLACEHOLDER` (przyczyna teraz znana) — plus otwarte od dawna
+`R-ETYKIETA-MIASTA-WZROST-PROCENT`, i nowo zgłoszony `BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN`.
+Model: Sonnet 5 (orkiestrator, audyt + diagnoza kodu, bez zmian w `gra/src`).

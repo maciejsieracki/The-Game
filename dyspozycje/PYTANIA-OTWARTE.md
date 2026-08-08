@@ -1803,10 +1803,26 @@ przyciskiem, to pojawia się dopiero grafika danej kultury."*
 (romb/diament)** — placeholder. Właściwa ikona kultury pojawia się **dopiero po najechaniu
 kursorem**. Zrzuty: „TEBY · MIASTO…" — przed najechaniem romb, po najechaniu ikona budowli
 klasycznej. Dotyczy państw i miast.
-**Hipoteza do sprawdzenia (nie potwierdzona):** ikona kultury ładowana leniwie i podmieniana
+**Hipoteza do sprawdzenia (nie potwierdzona):** ~~ikona kultury ładowana leniwie i podmieniana
 dopiero na zdarzeniu hover, zamiast przy tworzeniu plakietki; albo brak fallbacku na czas
-ładowania i romb jest kształtem domyślnym.
-**Kotwice:** `gra/src/render/**`, `gra/src/ui/**` (plakietka miasta, ikony kultur).
+ładowania i romb jest kształtem domyślnym.~~
+⛔ **PRZYCZYNA POTWIERDZONA W KODZIE (2026-08-08, audyt zgłoszeń):**
+`gra/src/render/cityMapStatChip.ts`, funkcja `requestCivSigilImage()` (~linia 353-373):
+gdy druga (i każda kolejna) plakietka tej samej cywilizacji prosi o sygnet, podczas gdy
+PIERWSZA wciąż go ładuje asynchronicznie, funkcja robi `if (cached === 'loading') return;`
+— **porzuca `onReady` bez kolejkowania**. Ta plakietka nigdy nie dostaje callbacku z gotowym
+obrazkiem. Tekstura Three.js jest tworzona TYLKO RAZ na unikalny klucz (`if (!tex)`,
+~linia 744, `makeCityMapBadgeSprite`) — więc przegrana plakietka zostaje z rombem trwale,
+żadnego ponowienia. **Hover naprawia to przypadkiem:** `hoverExpanded` wchodzi do klucza
+cache tekstury (`cityMapBadgeKey`, ~linia 714: `` `h${a.hoverExpanded ? 1 : 0}` ``) — hover
+tworzy więc CAŁKOWICIE NOWĄ teksturę, która trafia na już wypełniony globalny cache obrazu
+(`civSigilImageById`) i rysuje ikonę od razu, synchronicznie.
+**Naprawa (niewdrożona, do zrobienia):** `requestCivSigilImage` powinien kolejkować wiele
+`onReady` per klucz podczas stanu `'loading'` (np. `Map<string, Array<(img)=>void>>`) i
+wywołać wszystkie po dociągnięciu obrazu — ten sam wzorzec do sprawdzenia w
+`requestLeaderPortraitImage`/`requestProdIconImage` (analogiczny cache `'loading'`,
+niesprawdzony, prawdopodobnie ta sama luka).
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (plakietka miasta, ikony kultur).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
 ## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
@@ -1922,7 +1938,7 @@ warunku) · `gra/data/units.json` (kolumny `Surowiec`, `Surowiec (ilość)`).
 **Uwaga:** warunek występuje w DWÓCH miejscach (`:859-863` i `:956-957`) — każda zmiana musi
 objąć oba, inaczej lista produkcji i faktyczna możliwość budowy się rozjadą.
 
-## BUG-TOOLTIP-MOC-NIEPELNA (2026-08-07) · STATUS: **OTWARTE — defekt systemowy, do naprawy bez pytania**
+## BUG-TOOLTIP-MOC-NIEPELNA (2026-08-07) · STATUS: **ZAMKNIĘTE — NAPRAWIONE I WDROŻONE** (FALA 260, `eff727e`; status skorygowany 2026-08-08 przy audycie zgłoszeń — poprzedni zapis „OTWARTE" był przestarzały, fix już istniał w kodzie)
 **Źródło:** pętla AutoBot `R-MOC-TABLICZKA-VS-BITWA` — Operator (Sonnet 5) → Evaluator (Opus 5),
 werdykt PASS-WITH-NOTES, nota N4.
 **Defekt:** `gra/src/ui/hexContextTooltip.ts:661-665` woła `fieldPower({meleeAttack, meleeDefence,
@@ -2256,3 +2272,16 @@ wartość z pliku, nie z pamięci", ale sam rozjazd wykracza poza zakres skillsa
 decyzji: albo poprawić `playbook.json` na `10` (zgodnie z kanonem), albo cofnąć kanon do
 `5` (jeśli `10` było error/nieaktualną decyzją), albo rozszerzyć generator o pole
 `thresholds` w `playbook.md`. Nie blokuje niczego pilnie — czysto informacyjne.
+
+## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **OTWARTE**
+**Jego słowa:** *„podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
+co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
+ulepszeń."*
+**Objaw:** po wejściu w tryb budowania ulepszeń terenu i wybraniu konkretnego ulepszenia
+do postawienia, scroll/zoom kamery mapy przestaje działać — nie da się przybliżyć ani
+oddalić widoku, co utrudnia precyzyjne wskazanie heksu docelowego.
+**Do zbadania:** który handler wejścia (scroll/wheel) jest blokowany w trybie wyboru
+celu ulepszenia — czy to celowe zablokowanie zoomu na czas trybu placementu (np. żeby nie
+gubić trybu przy scrollu), czy przypadkowy efekt uboczny nasłuchu zdarzeń.
+**Kotwice:** `gra/src/render/**` (kamera/zoom), `gra/src/ui/**` (tryb budowania ulepszeń).
+**Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
