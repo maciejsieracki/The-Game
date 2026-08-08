@@ -1,6 +1,6 @@
 {
-  "version": 16,
-  "updatedAtIso": "2026-08-08T10:14:06.479Z",
+  "version": 18,
+  "updatedAtIso": "2026-08-08T15:10:57.386Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -262,7 +262,7 @@
     },
     {
       "id": "rule_126",
-      "rule_text": "Pytanie ABC dla właściciela zawsze jako turniej, nie pojedyncza propozycja: orkiestrator pisze własny projekt A/B/C, NIEZALEŻNY drugi agent (świeże oczy, nie widzi projektu orkiestratora) pisze własny, osobny Sędzia (Evaluator) porównuje oba i wybiera/syntetyzuje zwycięzcę — dopiero zwycięska wersja trafia do właściciela. Dotyczy KAŻDEGO pytania ABC formułowanego od nowa; nie dotyczy pytań, na które właściciel już odpowiedział wprost literą (te tylko się ECHO'uje i zapisuje) [C-018] [C-018]",
+      "rule_text": "Pytanie ABC dla właściciela zawsze jako turniej, nie pojedyncza propozycja: orkiestrator pisze własny projekt A/B/C i wskazuje własny \"typ\" (uzasadniony przez PROFIL-DECYZYJNY-MACIEJ.md), NIEZALEŻNY drugi agent (świeże oczy, nie widzi projektu orkiestratora) pisze własny, osobny projekt z własnym \"typem\". Sędzia (Evaluator) ocenia dwuwarstwowo — Warstwa 1 (dominująca): trafność zastosowania wzorca z profilu w uzasadnieniu \"typu\"; Warstwa 2 (tiebreaker): zgodność z danymi, kompletność wariantów — i wybiera/syntetyzuje zwycięzcę z jawną adnotacją \"wg profilu: typowana X, bo...\" przy Rekomendacji, zawsze obok pełnego A/B/C, nigdy jako zamiennik wyboru. Dotyczy KAŻDEGO pytania ABC formułowanego od nowa; nie dotyczy pytań, na które właściciel już odpowiedział wprost literą (te tylko się ECHO'uje i zapisuje), czysto inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza, ani bezpośrednich ustaleń wypracowanych żywą rozmową z właścicielem [C-018] [R-PROFIL-TURNIEJ-PUNKTACJA-Q1] [C-018]",
       "status": "ACTIVE",
       "protected": false,
       "win_count": 0,

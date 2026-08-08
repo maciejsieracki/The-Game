@@ -55,11 +55,15 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md` · playbook `C-018` (`playbo
 
 **Każde NOWE pytanie ABC** (temat, na który właściciel jeszcze nie odpowiedział literą) — zanim trafi do właściciela:
 
-1. Proponent 1 (orkiestrator/Operator, kto natrafił na temat) pisze pełny projekt ABC.
-2. Proponent 2 — NIEZALEŻNY agent, bez podglądu projektu 1, pisze własny osobny projekt.
-3. Sędzia (rola Evaluatora) porównuje oba, weryfikuje zgodność z danymi, wydaje werdykt lub syntetyzuje finalną wersję. Tylko zwycięska/zsyntetyzowana wersja idzie do właściciela.
+1. Proponent 1 (orkiestrator/Operator, kto natrafił na temat) pisze pełny projekt ABC **oraz wskazuje własny „typ"** (którą literę uważa za najlepszą) z uzasadnieniem odwołującym się do `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md`.
+2. Proponent 2 — NIEZALEŻNY agent, bez podglądu projektu 1, pisze własny osobny projekt, z własnym „typem" na tych samych zasadach.
+3. Sędzia (rola Evaluatora) ocenia dwuwarstwowo: Warstwa 1 (dominująca) — trafność zastosowania wzorca z profilu w uzasadnieniu „typu"; Warstwa 2 (niuanse, tiebreaker) — zgodność z danymi, kompletność wariantów. Wydaje werdykt lub syntetyzuje finalną wersję. Do właściciela idzie zwycięska/zsyntetyzowana wersja **z jawną adnotacją „wg profilu: typowana X, bo …"** przy Rekomendacji — zawsze obok pełnego A/B/C, nigdy jako zamiennik wyboru (`R-PROFIL-TURNIEJ-PUNKTACJA-Q1`, Maciej 2026-08-08).
 
-**Nie dotyczy:** tematów, na które właściciel już odpowiedział literą (tylko ECHO + zapis), ani czysto inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza.
+**Gdy profil nie ma dziś wzorca pasującego do kategorii tematu** (np. temat spoza §3.1–3.5 `PROFIL-DECYZYJNY-MACIEJ.md`): „typ" pozostaje obowiązkowy, ale uzasadnienie wprost stwierdza „profil nie ma dziś pasującego wzorca — typ oparty wyłącznie na analizie inżynierskiej tematu". To nie blokuje turnieju.
+
+**„Typ" a „Rekomendacja":** to nie dwa osobne pola — „typ" JEST literą wpisaną w pole `Rekomendacja` projektu ABC; adnotacja „wg profilu: …" to dopisek uzasadnienia tej samej rekomendacji, nie druga, konkurencyjna wskazówka.
+
+**Nie dotyczy:** tematów, na które właściciel już odpowiedział literą (tylko ECHO + zapis), czysto inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza, ani bezpośrednich ustaleń wypracowanych żywą rozmową z właścicielem (właściciel sam kształtuje projekt w dialogu, turniej broni przed ślepym kątem jednego autora — tu autorów efektywnie jest już dwóch).
 
 ---
 

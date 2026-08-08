@@ -106,17 +106,29 @@ weryfikacja w grze) **oraz** `### Następny krok` (wyłącznie kolejne zmiany ko
 
 ## 3. Turniej ABC — tutaj TWARDA reguła, nie opcja
 
-Kanon: `R-PROC-AUTOBOT-ABC-TURNIEJ.md` · `playbook.md` → `C-018`.
+Kanon: `R-PROC-AUTOBOT-ABC-TURNIEJ.md` · `playbook.md` → `C-018` ·
+`R-PROFIL-TURNIEJ-PUNKTACJA-Q1` (punktacja wg profilu, Maciej 2026-08-08).
 
 **Każde NOWE pytanie ABC** (temat, na który właściciel jeszcze nie odpowiedział literą)
 przechodzi przed pokazaniem właścicielowi przez trzy role: **Proponent 1** (orkiestrator
 lub Operator, który natrafił na temat) · **Proponent 2** — niezależny agent Sonnet 5
-**bez podglądu** projektu 1, dostaje wyłącznie surowe fakty i dane źródłowe · **Sędzia**
-(rola Evaluatora, Opus 5) — wybiera zwycięzcę albo syntetyzuje finalną wersję. Do
-właściciela idzie tylko wersja zwycięska/zsyntetyzowana.
+**bez podglądu** projektu 1, dostaje wyłącznie surowe fakty i dane źródłowe. **Obaj
+Proponenci wskazują własny „typ"** — którą literę uważają za najlepszą, z uzasadnieniem
+odwołującym się wprost do `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md` (który wzorzec pasuje
+do kategorii tematu).
 
-**Nie dotyczy:** tematów już rozstrzygniętych literą (wtedy samo ECHO + zapis) ani
-czysto inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza.
+**Sędzia** (rola Evaluatora, Opus 5) ocenia dwuwarstwowo: **Warstwa 1 (dominująca)** —
+trafność rozpoznania kategorii i jakość uzasadnienia „typu" względem profilu, nie czy
+zgadł literę właściciela; **Warstwa 2 (niuanse, tiebreaker)** — zgodność ze źródłami,
+kompletność wariantów, trafność Za/Przeciw. Wybiera zwycięzcę albo syntetyzuje finalną
+wersję. Do właściciela idzie zwycięska/zsyntetyzowana wersja **z jawną adnotacją przy
+Rekomendacji** („wg profilu: typowana X, bo …") — zawsze obok pełnego A/B/C z Za/Przeciw,
+nigdy jako zamiennik wyboru. Wybór litery pozostaje w 100% właściciela.
+
+**Nie dotyczy:** tematów już rozstrzygniętych literą (wtedy samo ECHO + zapis), czysto
+inżynierskich decyzji bez wpływu na gameplay/UX/dane gracza, ani bezpośrednich ustaleń
+wypracowanych żywą rozmową z właścicielem (właściciel sam kształtuje projekt w dialogu —
+turniej broni przed ślepym kątem jednego autora, tu autorów jest już dwóch).
 
 ## 4. Evaluator — nakładka projektowa na przegląd z `lean-loop`
 

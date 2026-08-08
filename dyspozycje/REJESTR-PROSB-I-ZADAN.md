@@ -1118,3 +1118,44 @@ zgadywania "czy to drobiazg" (self-grading, ktoremu AutoBot ma zapobiegac).
 skills/civ-autobot/SKILL.md` (sekcja "Reguła nadrzędna") zaktualizowany z flagi
 sprzecznosci na rozstrzygniete dwa wyjatki.
 Model: Sonnet 5 (mechaniczne wdrozenie juz podjetej decyzji, bez nowej oceny).
+
+## R-PROFIL-TURNIEJ-PUNKTACJA-Q1 (2026-08-08) — profil decyzyjny jako kryterium punktacji w turnieju ABC
+**Decyzja Macieja: potwierdzenie w rozmowie (wariant A+B połączony, opisany przeze mnie i
+zaakceptowany wprost — „Tak, potwierdzam. Zgadzam się z tym, co napisałeś.").**
+**Mechanizm:** obaj Proponenci turnieju ABC (`R-PROC-AUTOBOT-ABC-TURNIEJ.md`) wskazują
+własny „typ" (którą literę uważają za najlepszą) z uzasadnieniem odwołującym się do
+`PROFIL-DECYZYJNY-MACIEJ.md`. Sędzia punktuje dwuwarstwowo: Warstwa 1 (dominująca) —
+trafność rozpoznania kategorii tematu i jakość zastosowania wzorca z profilu; Warstwa 2
+(niuanse, tiebreaker) — zgodność ze źródłami, kompletność wariantów. Do właściciela trafia
+zwycięska/zsyntetyzowana wersja z jawną adnotacją „wg profilu: typowana X, bo …" przy
+Rekomendacji — zawsze obok pełnego A/B/C, nigdy jako zamiennik wyboru. Wybór litery
+pozostaje w 100% właściciela — mechanizm nie zmienia tego, kto decyduje, tylko jak dobrze
+formułowana jest rekomendacja w projekcie ABC.
+**Wdrożenie (runda 1 + poprawki po FAIL Evaluatora, ta sama sesja):** `docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md`
+(§Zasada rozszerzona o „typ" + punktację dwuwarstwową), `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md`
+(baner ZAKAZ doprecyzowany o usankcjonowany wyjątek + odsyłacz przy starym zdaniu „wymaga
+przeglądu" w §DOKOŃCZONE runda 2), `.claude/skills/civ-autobot/SKILL.md` §3 (zaktualizowany
+opis turnieju), `.cursor/rules/autobot-evaluator-operator.mdc` §„Pytanie ABC" (**krytyczne —
+to plik `alwaysApply: true`, ładuje się przed kanonem i bez tej poprawki przyszły agent
+uruchamiałby stary turniej**), `playbook.md` (`C-018`, treść rozszerzona) →
+`dyspozycje/autobot/playbook.json` (`rule_126`, wygenerowany generatorem, liczniki 0/0
+zachowane, wersja 17).
+**Doprecyzowania po pierwszym werdykcie FAIL (Opus 5 Evaluator):** (a) „typ" JEST literą
+w polu `Rekomendacja`, adnotacja „wg profilu" to dopisek uzasadnienia, nie drugie,
+konkurencyjne pole; (b) gdy profil nie ma wzorca pasującego do kategorii tematu, „typ"
+zostaje obowiązkowy z jawnym stwierdzeniem braku wzorca — nie blokuje turnieju; (c) ta
+decyzja **nie przeszła** turnieju C-018 sama — wyjątek „bezpośrednie ustalenie wypracowane
+żywą rozmową z właścicielem" dopisany do zakresu wyjątków we wszystkich czterech miejscach
+(kanon `R-PROC-AUTOBOT-ABC-TURNIEJ.md`, `civ-autobot/SKILL.md` §3, `.mdc`, `playbook.md`),
+bo Maciej współtworzył projekt w dialogu, nie odpowiadał literą na cudzy gotowy projekt.
+**Werdykt Evaluatora:** runda 1 FAIL (3 pliki zaktualizowane, 3 kluczowe — `.mdc`,
+`playbook.md/json` — pominięte; nieprawdziwe „Wdrożenie" w tym wpisie); runda 2 FAIL
+(kluczowe pliki naprawione i zweryfikowane generatorem w trybie dry-run — „brak różnic",
+ale wyjątek „żywa rozmowa" dopisany tylko do `.mdc`/`playbook.md`, brakował w kanonie
+i skillu, plus nieprawdziwe „trzy miejsca" w tym wpisie); runda 3 FAIL (wyjątek „żywa
+rozmowa" ujednolicony we wszystkich pięciu plikach, ale trzeci, STARSZY wyjątek —
+„czysto inżynierskie decyzje bez wpływu na gameplay/UX/dane gracza" — brakował w
+`playbook.md`/`playbook.json`, obecny tylko w kanonie/`.mdc`/skillu); runda 4 (ta wersja)
+dopisuje brakujący wyjątek inżynierski do `playbook.md` C-018 i regeneruje `playbook.json`
+(wersja 18) — wszystkie trzy wyjątki teraz identyczne semantycznie w pięciu plikach.
+Model: Sonnet 5 (orkiestrator, wdrożenie już potwierdzonej decyzji) + Opus 5 Evaluator.

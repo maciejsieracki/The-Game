@@ -12,6 +12,13 @@
 > pytania ani zawęzić opcji A/B/C. Obowiązuje `CLAUDE.md` §7 i §6 sekcji „JAK PRACOWAĆ": **przy
 > niejednoznaczności pytasz właściciela, nie zgadujesz** — profil statystyczny nie jest zgodą.
 >
+> **Wyjątek usankcjonowany (`R-PROFIL-TURNIEJ-PUNKTACJA-Q1`, Maciej 2026-08-08):** w turnieju ABC
+> (`docs/decyzje/R-PROC-AUTOBOT-ABC-TURNIEJ.md`) wolno używać tego profilu do (a) uzasadnienia „typu"
+> każdego Proponenta i (b) głównego kryterium punktacji Sędziego. Warunki, które to odróżniają od
+> zakazanego użycia powyżej: **zawsze jawne** (adnotacja „wg profilu: X" trafia do właściciela wprost,
+> nigdy nie jest ukryta) i **zawsze obok pełnego A/B/C z Za/Przeciw** — właściciel dostaje dodatkową
+> informację, nie zawężoną albo zdecydowaną za niego opcję. Wybór litery pozostaje w 100% jego.
+>
 > **Korekty Evaluatora naniesione bezpośrednio w tekście** (szczegóły w raporcie): wiersz #8 (P-AI-008),
 > statystyka w §2, akapit „Pominięte świadomie", „Uwaga o reprezentatywności", punktor
 > R-WIARYGODNOSC-S9-Q1 w §3.2, zdanie o P-AI-008 w §3.3.
@@ -25,7 +32,9 @@
 > 1 wykluczony z 81 par w tabeli); (d) wiersz #60 sprawdzony przy źródle i **wykluczony** ze statystyki
 > (brak zapisanej litery od Macieja); (e) język §3 złagodzony tam, gdzie dowodów jest mało (§3.1, §3.2,
 > §3.4). Ta runda **nie jest** zdjęciem statusu DRAFT — profil nadal wymaga przeglądu właściciela przed
-> jakimkolwiek wykorzystaniem poza kalibracją pytań ABC.
+> jakimkolwiek wykorzystaniem poza kalibracją pytań ABC, **poza jednym usankcjonowanym wyjątkiem
+> dopisanym później tego samego dnia** — patrz banner na górze tego dokumentu, akapit „Wyjątek
+> usankcjonowany (`R-PROFIL-TURNIEJ-PUNKTACJA-Q1`)".
 >
 > **DOKOŃCZONE przez Operatora (2026-08-08, trzecia runda)** — 4 punkty precyzyjnie wskazane w zleceniu
 > tej rundy: (1) dopisano **3 pary** z `PACZKA-2-EKO-TECH-ABC-2026-07-04.md` (ABC-10/11/14, wszystkie T) —
