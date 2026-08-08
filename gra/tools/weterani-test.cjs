@@ -505,29 +505,30 @@ check(
 // (Evaluator, nota N7, 2026-08-07): czyta main.ts jako tekst (wzor jak w
 // tools/plony-budynkow-test.cjs) i sprawdza literalne wstrzykniecie.
 //
-// R-MOC-MUR-PARADOKS-Q1=A (Maciej 2026-08-07): defOf tabliczki od tej decyzji
-// wola tabliczkaGarnizonScaledDefFor(u) -- OPAKOWANIE nad combatPowerScaledDefFor(u)
-// ktore dla garnizonu w miescie z murem DODATKOWO dolicza structBonusPct/
-// cityGatedTerrainMultiplier (main.ts, patrz komentarz przy definicji funkcji;
-// asercja dedykowana temu scenariuszowi -- tools/mur-paradoks-test.cjs).
-// Nie goly combatPowerScaledDefFor(u) jak wczesniej -- wzorzec ponizej to
-// zaktualizowano, zeby lapac cofniecie ZARÓWNO do #1 (surowy defForUnit) JAK
-// I do stanu SPRZED tej decyzji (goly combatPowerScaledDefFor(u) bez opakowania).
+// R-MOC-DEFINICJA-Q1 (Maciej 2026-08-08): CZESCIOWE COFNIECIE
+// R-MOC-MUR-PARADOKS-Q1=A (2026-08-07, commit f94216e). Funkcja
+// tabliczkaGarnizonScaledDefFor() -- opakowanie nad combatPowerScaledDefFor(u),
+// ktore dla garnizonu w miescie z murem DODATKOWO doliczalo structBonusPct/
+// cityGatedTerrainMultiplier -- zostala USUNIETA jako martwy kod (jej jedyny
+// wywolujacy znikl). defOf tabliczki znow wola GOLY combatPowerScaledDefFor(u)
+// (weteran + fortyfikacja polowa/garnizon bez muru + trudnosc AI, BEZ muru/
+// terenu) -- dokladnie jak przed tamta decyzja. Szczegoly nowego, swiadomego
+// paradoksu tabliczki (garnizon za murem pokazuje NIZSZA Moc niz realna Obrona
+// tego miasta w bitwie) -- tools/mur-paradoks-test.cjs.
 const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
-const hasScaledDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*tabliczkaGarnizonScaledDefFor\(u\)/.test(mainTsSrc);
+const hasPlainDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*combatPowerScaledDefFor\(u\)/.test(mainTsSrc);
 check(
-  'ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje tabliczkaGarnizonScaledDefFor(u) (nie surowy defForUnit/lookupUnitDef, nie goly combatPowerScaledDefFor(u) sprzed R-MOC-MUR-PARADOKS-Q1) -- lapie cofniecie zmiany #1 i cofniecie muru/terenu na tabliczce',
-  hasScaledDefOf,
-  hasScaledDefOf ? 'OK' : 'wzorzec "defOf: (u: RuntimeUnit) => tabliczkaGarnizonScaledDefFor(u)" NIE znaleziony w main.ts',
+  'ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje goly combatPowerScaledDefFor(u) (nie surowy defForUnit/lookupUnitDef, nie tabliczkaGarnizonScaledDefFor(u) po cofnieciu R-MOC-MUR-PARADOKS-Q1=A przez R-MOC-DEFINICJA-Q1) -- lapie cofniecie zmiany #1 ORAZ przywrocenie muru/terenu na tabliczce',
+  hasPlainDefOf,
+  hasPlainDefOf ? 'OK' : 'wzorzec "defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u)" NIE znaleziony w main.ts',
 );
-// tabliczkaGarnizonScaledDefFor() SAMA MUSI wywolywac combatPowerScaledDefFor(u)
-// jako baze -- zeby premia weterana/fortyfikacji polowej/trudnosci AI (sekcje
-// 1-9 powyzej) zostala na tabliczce zachowana, nie zastapiona.
-const wrapperCallsBase = /function tabliczkaGarnizonScaledDefFor\(u: RuntimeUnit\)[\s\S]{0,200}combatPowerScaledDefFor\(u\)/.test(mainTsSrc);
+// tabliczkaGarnizonScaledDefFor() NIE MOZE juz istniec w main.ts -- martwy kod
+// usuniety razem z jedynym wywolujacym (R-MOC-DEFINICJA-Q1).
+const hasTabliczkaFnDefinition = /function tabliczkaGarnizonScaledDefFor\(/.test(mainTsSrc);
 check(
-  'ZRODLO main.ts: tabliczkaGarnizonScaledDefFor() woła combatPowerScaledDefFor(u) jako baze (premia weterana/fortyfikacji/trudnosci AI z sekcji 1-9 nie znika z tabliczki po R-MOC-MUR-PARADOKS-Q1)',
-  wrapperCallsBase,
-  wrapperCallsBase ? 'OK' : 'wzorzec wywolania combatPowerScaledDefFor(u) wewnatrz tabliczkaGarnizonScaledDefFor NIE znaleziony',
+  'ZRODLO main.ts: funkcja tabliczkaGarnizonScaledDefFor() NIE ISTNIEJE juz (martwy kod usuniety po R-MOC-DEFINICJA-Q1, patrz tools/mur-paradoks-test.cjs)',
+  !hasTabliczkaFnDefinition,
+  hasTabliczkaFnDefinition ? 'funkcja tabliczkaGarnizonScaledDefFor() nadal ISTNIEJE w main.ts -- powinna byc usunieta' : 'OK',
 );
 console.log('');
 

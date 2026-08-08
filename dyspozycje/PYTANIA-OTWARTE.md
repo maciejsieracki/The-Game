@@ -2049,7 +2049,7 @@ generujący entry przed `esbuild`, identycznie jak w działających plikach.
 **Do poprawienia przy okazji:** `.gitignore:53-56` — komentarz twierdzący, że WSZYSTKIE bramki
 generują entry same, jest dziś nieprawdziwy; poprawić po naprawieniu 10 plików.
 
-## R-MOC-MUR-PARADOKS-Q1 (2026-08-07, nota N4 Evaluatora) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`f94216e`, A)
+## R-MOC-MUR-PARADOKS-Q1 (2026-08-07, nota N4 Evaluatora) · STATUS: **CZĘŚCIOWO COFNIĘTE (2026-08-08)** — decyzja `=A` z `f94216e` zastąpiona przez `R-MOC-DEFINICJA-Q1` (tabliczka wraca do czystej Mocy bez bonusu muru; `tabliczkaGarnizonScaledDefFor()` usunięta)
 **Ustalenie:** po wdrożeniu `R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B` tabliczka jednostki w garnizonie
 pokazuje wyższą Moc **w szczerym polu** niż **za murem miasta** — bo bonus muru (do +400%,
 `structBonusPct`) wchodzi dopiero w rozstrzygnięciu bitwy (`effectiveDefenderM`), nie w tabliczce
@@ -2133,10 +2133,12 @@ więc rozjazd jest fizycznie widoczny w jednej klatce.
   i bez fortyfikacji — dla takich jednostek AI mnożnik trudności jest po cichu ignorowany
   w całej ścieżce Mocy (tabliczka, auto-bitwa, teraz też ranking). Dotyczy `R-MOC-*`
   całościowo, nie tego konkretnego commita. Do naprawy: `game/ai-difficulty-bonus.ts`.
-- **Garnizon wspierający szturm sąsiedniego miasta bez opuszczania własnego garnizonu**
-  (`R-MOC-MUR-PARADOKS-Q1`) — wnosi do bitwy 49 pkt (poprawnie), tabliczka pokazuje 95 —
-  artefakt semantyki „tabliczka = Moc w obronie TEGO miasta", nie błąd, ale warty wzmianki
-  w tooltipie jeśli gracz kiedyś zapyta.
+- ~~**Garnizon wspierający szturm sąsiedniego miasta bez opuszczania własnego garnizonu**
+  (`R-MOC-MUR-PARADOKS-Q1`) — wnosi do bitwy 49 pkt (poprawnie), tabliczka pokazuje 95~~ →
+  **NIEAKTUALNE po 2026-08-08** (`R-MOC-DEFINICJA-Q1`, częściowe cofnięcie
+  `R-MOC-MUR-PARADOKS-Q1=A`) — tabliczka pokazuje teraz 49, zgodnie z tym co jednostka
+  wnosi do bitwy gdziekolwiek. Paradoks wrócił w INNĄ stronę — patrz nowy wpis
+  `R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY` niżej.
 
 ## R-MOC-KOSZYK-RELACJA-SWIADOME (2026-08-08, nota Evaluatora R-MOC-HUD-GLOWNY-Q1) · STATUS: **DO WIADOMOŚCI WŁAŚCICIELA — pozostawione nominalne przez Evaluatora, ale zakres dekretu C rozstrzyga wyłącznie Maciej**
 **Uwaga procesowa (drugi Evaluator, ponowna weryfikacja):** ścisłe czytanie dekretu
@@ -2189,3 +2191,28 @@ decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zni
 (bez `unitIconSvg`), po czym bunduje `hexContextTooltip.ts`, który od commita `4504783`
 („FALA 46") importuje `unitIconSvg`. Nie figuruje na liście znanych czerwonych w `CLAUDE.md`.
 Naprawa: jedna linia w literale stuba tej bramki. Do naprawy albo do wpisania na listę znanych.
+
+## P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (2026-08-08, nota N1 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — pre-istniejące, nie wprowadzone tą zmianą**
+Sekcja 5 `gra/tools/mur-paradoks-test.cjs` (asercja „realna Obrona > tabliczka") liczy
+`realDefenseWithMur` z REIMPLEMENTACJI wzoru w samym teście, nie z prawdziwego
+`effectiveDefenderM` w `main.ts` — dowód mutacyjny Evaluatora: wstrzyknięcie
+`combinedDefPct = 0 * structBonusPct + ...` (zerowanie bonusu muru w REALNEJ bitwie) do
+`main.ts` zostawia `mur-paradoks-test.cjs`, `logic-test.cjs` i `combat-test.cjs` w 100%
+zielone. `city-defense-terrain-gate-test.cjs` ma tę samą lukę (własna reimplementacja,
+linia 227). Żadna bramka w repo nie chroni dziś linii `combinedDefPct = structBonusPct +
+(cityTerrMult - 1) * 100` w `effectiveDefenderM`. Naprawa: asercja źródłowa (regex) na
+main.ts przypinająca tę linię, wzorem starej (usuniętej dziś) asercji na `scaleField`.
+
+## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — do decyzji, nie blokuje**
+Po częściowym cofnięciu `R-MOC-MUR-PARADOKS-Q1=A` (decyzja `R-MOC-DEFINICJA-Q1`, tabliczka
+garnizonu = `combatPowerScaledDefFor(u)` bez bonusu muru) — tabliczka mimo to NADAL zmienia
+się po wybudowaniu muru: **51,5 pkt Mocy bez muru → 49,0 pkt Mocy z murem** (dla tego
+samego garnizonu, ta sama jednostka). Przyczyna: `unitGetsFortifyDefenseBonus` wyłącza
+premię fortyfikacji polowej garnizonu (+50%) właśnie wtedy, gdy miasto ma mur — więc
+zasada „Moc wyświetlana nigdy nie zależy od budynku" nie jest spełniona w 100%: tabliczka
+nadal reaguje na obecność muru, tylko w dół zamiast w górę. Świadomie zaakceptowane przez
+Macieja jako część powrotu do `combatPowerScaledDefFor` (ta sama funkcja żywi realną
+bitwę), ale pytanie „czy fortyfikacja polowa garnizonu też ma zniknąć z tabliczki, żeby
+Moc była naprawdę niezależna od miejsca postoju" nie zostało zadane wprost.
+**Kotwice:** `gra/src/main.ts` (`combatPowerScaledDefFor`, `fortifyFieldScaledDefFor`,
+`unitGetsFortifyDefenseBonus`).
