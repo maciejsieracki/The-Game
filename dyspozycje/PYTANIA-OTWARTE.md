@@ -2501,3 +2501,48 @@ jakby to on decydował. Minimum: komunikat/UI powinny być spójne z tym, co fak
 **Kotwice:** `gra/src/game/diplomacy-proposals.ts` (`treatyBaseFairnessGap`, linia ~1082),
 `gra/src/ui/diplomacyAcceptanceBalance.ts` (panel „Punkty Wymiany", agregacja pakietu).
 **Model:** Sonnet 5 (poza `render/**`).
+
+## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **W REALIZACJI**
+**Jego słowa:** *„ok, zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy.
+Po prostu podajemy sztuki. Jeden, dziesięć, sto i tak dalej. Żadnych pakietów! Usuń dla
+wszystkich surowców pakiet."*
+**Kontekst:** padło jako decyzja podczas rozmowy o `R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP`
+(liczba zapasu w chipach koszyka) — właściciel doszedł do wniosku, że sama koncepcja
+„pakietu ×10" w koszyku wymiany surowców jest nieintuicyjna niezależnie od tamtego tematu.
+**Zakres:** usunąć „pakiet" jako jednostkę wejścia UI dla WSZYSTKICH surowców w koszyku
+wymiany (`gra/src/ui/diplomacyTradeBasket.ts`) — zamiast „Liczba pakietów" (krok ×10) wejście
+ma być wprost w sztukach, ze steperem +1/+10/+100 (jak podał: „Jeden, dziesięć, sto i tak
+dalej"). Cena PN/szt. (`gra/data/econ-params.json:handel_surowce.cena_*`) się nie zmienia —
+zmienia się tylko to, co gracz wpisuje i co widzi jako jednostkę.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (stepper/pole „Liczba pakietów"),
+`gra/src/game/diplomacy-value-catalog.ts` (`DEFAULT_HANDEL_SUROWCE_PAKIET`,
+`diplomacyHandelSurowcePakietWielkosc()`), `gra/data/econ-params.json`
+(`handel_surowce.pakiet_wielkosc`).
+**Model:** Sonnet 5 (poza `render/**`) — zwykły kod UI/logika handlu, nie render.
+
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — diagnoza w toku**
+**Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
+być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
+jakby ich nie było. Dodatkowo, te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają
+4-5 już ludności, to te mają po jednym. Chyba że się mylę bo to jest jedna cywilizacja Zulusi
+być może tak szybko stawiała miasta że zjadała swoją ludność. Nie mniej jednak nie mają granic
+wygląda jak by ich nie było na mapie trzeba dopiero odkryć mapę i pojawiają się ale bez
+granicy."*
+**Objaw (2 zrzuty załączone):** na mapie widoczne liczne miasta cywilizacji „Zulusi"
+(Ondini, Nobamba, KwaBulaw…, Umgungun…, Kwadukuza, Isandlwana, Kwagqokli, Mahlabat…,
+Nodwengu, Babanango — 10 miast) — **żadne nie ma kolorowego obrysu terytorium** na mapie
+(inne cywilizacje w kadrze, np. w tle, mają widoczne granice). Każda etykieta miasta Zulusi
+pokazuje populację **„1"**, podczas gdy inne cywilizacje mają 4-5.
+**Hipoteza właściciela:** dwa zjawiska mogą być powiązane — cywilizacja tak agresywnie
+zakłada nowe miasta (osadnicy), że „zjada" własną ludność zamiast pozwolić jej rosnąć; brak
+granic może być tym samym efektem (terytorium nigdy nie „dojrzewa" bo miasta nie rosną) albo
+osobnym bugiem renderowania granic niezależnym od populacji.
+**Status diagnozy:** zlecone dochodzenie w kodzie (agent Explore, read-only) —
+`gra/src/render/**`/`gra/src/map/**` dla logiki rysowania granic terytorium (co warunkuje
+pominięcie granicy dla danej cywilizacji — odkrycie/fog-of-war vs. czysta własność heksu) oraz
+`gra/src/game/**` dla logiki wzrostu populacji i priorytetu osadnictwa AI (czy koszt osadnika
+płacony jest z populacji miasta źródłowego, czy jest pętla AI która nigdy nie odpala wzrostu
+dla niektórych cywilizacji). Wynik dochodzenia doda się do tego wpisu po zakończeniu.
+**Kotwice:** TBD — do uzupełnienia po dochodzeniu.
+**Model:** dochodzenie na Explore/Sonnet 5; jeśli finalna naprawa dotknie `render/**` (granice
+to prawdopodobnie geometria na mapie) → Opus 5 per zgoda stała CLAUDE.md §4.

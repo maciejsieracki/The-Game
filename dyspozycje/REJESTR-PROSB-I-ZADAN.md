@@ -1362,4 +1362,28 @@ ekranu niż natywna rozdzielczość tekstury → rozciąganie (texture magnifica
 (niewdrożona): renderować canvas w rozdzielczości × `devicePixelRatio`, standardowy wzorzec
 „retina canvas" dla tekstur Three.js. Szczegóły w `PYTANIA-OTWARTE.md`. Status nadal OTWARTE
 — tylko diagnoza, nie fix.
+
+## R-HANDEL-PAKIETY-USUNAC (2026-08-08) — decyzja właściciela, w realizacji
+**Jego słowa:** „zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy. Po
+prostu podajemy sztuki. Jeden, dziesięć, sto i tak dalej. Żadnych pakietów! Usuń dla
+wszystkich surowców pakiet." Decyzja wprost, nie ABC — usunąć koncepcję „pakiet ×10" z UI
+wymiany surowców (`diplomacyTradeBasket.ts`, `diplomacy-value-catalog.ts`
+`diplomacyHandelSurowcePakietWielkosc()`, `econ-params.json:pakiet_wielkosc`), zastąpić
+wprowadzaniem surowej liczby sztuk (stepper +1/+10/+100 na sztukach, nie na pakietach).
+Cena PN/szt. z `econ-params.json:handel_surowce.cena_*` zostaje bez zmian — zmienia się tylko
+jednostka wejścia UI. W realizacji.
+
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU (2026-08-08) — nowe zgłoszenie z playtestu
+**Jego słowa:** „odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
+być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
+jakby ich nie było... te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają 4-5 już
+ludności, to te mają po jednym. Chyba że się mylę bo to jest jedna cywilizacja Zulusi być może
+tak szybko stawiała miasta że zjadała swoją ludność. Nie mniej jednak nie mają granic — wygląda
+jakby ich nie było na mapie, trzeba dopiero odkryć mapę i pojawiają się, ale bez granicy."
+Dwa zjawiska w jednym zgłoszeniu, prawdopodobnie powiązane (cywilizacja Zulusi): (1) brak
+kolorowej granicy terytorium na mapie dla części cywilizacji mimo istniejących miast, (2)
+miasta tej cywilizacji utknięte na populacji 1 (inne cywilizacje 4-5), hipoteza właściciela:
+agresywne osadnictwo („zjadanie" populacji na nowych osadników). Diagnoza w toku (agent
+Explore, `gra/src/render/**` granice terytorium, `gra/src/game/**` wzrost populacji/AI
+osadnictwa). Zarejestrowane w `PYTANIA-OTWARTE.md`.
 Do decyzji Macieja: pakiet zbiorczo czy per-umowa; minimum UI musi być spójne z bramką.
