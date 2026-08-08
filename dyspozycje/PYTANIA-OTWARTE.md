@@ -2362,7 +2362,7 @@ główny HUD), mała liczba per-miasto jest BRUTTO — sumy miast NIE zsumują s
 liczby cywilizacji dla Pracy/Skarbca/Żywności. Celowe (spójność z głównym HUD), ale może być
 odczytane jako błąd, jeśli ktoś spróbuje to zsumować ręcznie.
 
-## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **OTWARTE — KONFLIKT Z WCZEŚNIEJSZYM POLECENIEM, WSTRZYMANE, CZEKA NA DECYZJĘ**
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** „bardzo często jest problem że w kolejce jednostek kiedy naciśniemy spację
 zamiast przechodzić do kolejnej która ma wolne ruchy przechodzi do jakiejś kolejnej która nie
 wiem jest w kolejce jakiejś zawsze ruch powinien po spacji powinien odbywać się od
@@ -2814,3 +2814,17 @@ wielowarstwowym ulepszeniem może pokazywać zaniżony plon (mniej niż silnik f
 Do zdiagnozowania osobno, niska pilność.
 **Kotwice:** `gra/src/main.ts:9281` (`yieldOfMapHex`), silnik `hexToWorkedTile`.
 **Model:** Sonnet 5.
+
+## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)
+Rozdzielono na dwie kontrolki jak zdecydowałeś: `cyclablePlayerArmyLeadsBase(requireMoves)` —
+Spacja i „bęben" po ruchu używają `requireMoves=true` (tylko jednostki z ruchem), strzałki HUD
+◀▶ używają `requireMoves=false` (wszystkie jednostki, zgodnie z Twoim poleceniem z 28.07).
+Oba tooltips strzałek niosą teraz obie informacje („dowolna — Spacja: aktywna"). Dodatkowo
+naprawiony efekt uboczny: gdy jednostka, od której zaczynało się cyklowanie, wypadła z listy
+(typowy przypadek po „bębnie"), stare `cur=0` pomijało pierwszą jednostkę na liście przy
+cyklowaniu w przód — teraz trafia poprawnie w najbliższą. Evaluator (Opus 5) PASS-WITH-NOTES
+po 2 rundach (własna symulacja arytmetyki indeksów, nie zaufanie raportowi). `tsc` czyste,
+bramki ruchu/armii zielone.
+**Nota (niska pilność):** logika cyklowania nie ma dedykowanego testu regresji (żyje jako
+domknięcie wewnątrz `boot()` w `main.ts`, ekstrakcja byłaby refaktorem poza zakresem tej
+naprawy) — do rozważenia przy następnym dotknięciu tego kodu.

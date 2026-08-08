@@ -4510,9 +4510,17 @@ async function boot(): Promise<void> {
         && u.ufortyfikowanyWPolu !== true;
     }
 
-    /** Wszystkie armie gracza (1 wiodąca/heks) — tylko aktywne do ruchu; kolejność przestrzenna. */
-    function cyclablePlayerArmyLeads(): RuntimeUnit[] {
-      const playerUnits = units.filter(u => u.ownerId === 0 && isUnitActiveForCycle(u));
+    /**
+     * Wspólna implementacja list cyklowania armii gracza (1 wiodąca/heks; kolejność przestrzenna).
+     * `requireMoves=true` → tylko stosy z dostępnym ruchem w tej turze (Spacja, auto-cykl „bęben”).
+     * `requireMoves=false` → wszystkie aktywne stosy, niezależnie od ruchu (strzałki HUD ◀▶;
+     * decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA, 2026-08-08: strzałka = dowolna
+     * następna jednostka, Spacja = następna AKTYWNA (z ruchem) jednostka).
+     */
+    function cyclablePlayerArmyLeadsBase(requireMoves: boolean): RuntimeUnit[] {
+      const playerUnits = units.filter(
+        u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || stackCanMove(u)),
+      );
       const stacks = new Map<string, RuntimeUnit[]>();
       for (const u of playerUnits) {
         const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
@@ -4534,19 +4542,45 @@ async function boot(): Promise<void> {
       return out;
     }
 
+    /** Wszystkie armie gracza (1 wiodąca/heks) z DOSTĘPNYM RUCHEM — kolejność przestrzenna.
+     * Używane przez Spację i auto-cykl „bęben” po wyczerpaniu ruchu. */
+    function cyclablePlayerArmyLeads(): RuntimeUnit[] {
+      return cyclablePlayerArmyLeadsBase(true);
+    }
+
+    /** Wszystkie armie gracza (1 wiodąca/heks), NIEZALEŻNIE od dostępnego ruchu — kolejność
+     * przestrzenna. Używane przez strzałki HUD ◀▶ (decyzja właściciela 2026-08-08). */
+    function cyclablePlayerArmyLeadsAll(): RuntimeUnit[] {
+      return cyclablePlayerArmyLeadsBase(false);
+    }
+
     function armyLeadHexKey(u: RuntimeUnit): string {
       return u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
     }
 
-    /** Spacja, strzałki HUD i auto-cykl po ruchu — cykl po wszystkich armiach gracza (nie tylko z ruchem). */
-    function cycleToAdjacentPlayerUnit(afterId: string | null, delta: 1 | -1): void {
+    /**
+     * Spacja i auto-cykl „bęben” po ruchu — cykl WYŁĄCZNIE po armiach gracza, które jeszcze mają
+     * dostępny ruch w tej turze. Strzałki HUD ◀▶ wołają tę samą funkcję z `opts.all=true`, co
+     * przełącza na `cyclablePlayerArmyLeadsAll()` (wszystkie armie, niezależnie od ruchu) —
+     * decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08).
+     */
+    function cycleToAdjacentPlayerUnit(
+      afterId: string | null,
+      delta: 1 | -1,
+      opts?: { all?: boolean },
+    ): void {
       if (!isWorldMapUnitMode()) return;
-      const list = cyclablePlayerArmyLeads();
+      const list = opts?.all === true ? cyclablePlayerArmyLeadsAll() : cyclablePlayerArmyLeads();
       if (list.length === 0) {
         clearPlayerUnitSelection();
         return;
       }
-      let cur = afterId === null ? (delta > 0 ? -1 : 0) : 0;
+      // Domyślnie (brak zaznaczenia LUB zaznaczona jednostka nie występuje już w `list` — np.
+      // bęben po ruchu, kiedy jednostka właśnie wyczerpała ruch i wypadła z listy „z ruchem"):
+      // start tuż PRZED pierwszym/PO ostatnim elemencie, żeby +delta wylądował na list[0]
+      // (w przód) albo list[list.length-1] (wstecz) — bez pomijania najbliższej możliwej
+      // jednostki w kierunku ruchu.
+      let cur = delta > 0 ? -1 : 0;
       if (afterId !== null) {
         const idxById = list.findIndex(u => u.id === afterId);
         if (idxById >= 0) {
@@ -15773,8 +15807,11 @@ async function boot(): Promise<void> {
           },
           onSplit: () => openSplitPanelForSelected(),
           onAction: handleSelectedUnitHudAction,
-          onCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta),
-          canCycleUnits: () => cyclablePlayerArmyLeads().length > 1,
+          // Strzałki HUD ◀▶: cykl po WSZYSTKICH armiach gracza, niezależnie od dostępnego ruchu
+          // (decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA, 2026-08-08 — Spacja pozostaje
+          // ograniczona do jednostek z ruchem, patrz cycleToAdjacentPlayerUnit()).
+          onCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta, { all: true }),
+          canCycleUnits: () => cyclablePlayerArmyLeadsAll().length > 1,
           onClose: () => {
             clearPlayerUnitSelection();
             refreshD1bHud();
@@ -23355,7 +23392,7 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // --- Spacja: następna armia gracza (wszystkie stosy; nie tylko z ruchem) ---
+      // --- Spacja: następna armia gracza, która wciąż ma dostępny ruch w tej turze ---
       if (e.code === 'Space' || e.key === ' ') {
         const ae = document.activeElement as HTMLElement | null;
         if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
@@ -23589,7 +23626,8 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           processMarchQueue();
           // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
-          // wieloturowego w toku) → przejdź do następnej armii (wszystkie, nie tylko z ruchem).
+          // wieloturowego w toku) → przejdź do następnej armii, która wciąż ma dostępny ruch
+          // (te same semantyki co Spacja — R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA).
           if (u && u.ownerId === 0 && selectedId === finishedId
               && !stackCanMove(u) && !plannedMarches.has(finishedId)
               && !isAnimating && isWorldMapUnitMode()) {

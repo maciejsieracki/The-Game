@@ -1320,9 +1320,11 @@ liczbę = wkład tego miasta. Evaluator (Opus 5) PASS-WITH-NOTES po jednej rundz
 duża liczba NETTO, mała BRUTTO — nie zsumują się dokładnie. Pełne kotwice w
 `PYTANIA-OTWARTE.md`.
 
-## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — patrz osobny, zaktualizowany wpis w `PYTANIA-OTWARTE.md`
-(rozstrzygnięcie: Spacja = tylko z ruchem, strzałki HUD = wszystkie jednostki, dwie osobne
-kontrolki — decyzja właściciela 2026-08-08).
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE, czeka na deploy+playtest
+Spacja/bęben = tylko jednostki z ruchem, strzałki HUD = wszystkie jednostki — dwie osobne
+kontrolki (decyzja właściciela 2026-08-08). Plus fix efektu ubocznego: cyklowanie po
+„bębnie" nie pomija już pierwszej jednostki na liście. Evaluator PASS-WITH-NOTES po 2
+rundach. Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
 ## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08) — nowe zgłoszenie z playtestu
 **Jego słowa:** „powinny być pokazywane tylko technologie te które są niedostępne dla innej
