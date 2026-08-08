@@ -1,6 +1,6 @@
 {
-  "version": 18,
-  "updatedAtIso": "2026-08-08T15:10:57.386Z",
+  "version": 19,
+  "updatedAtIso": "2026-08-08T18:07:50.863Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -279,6 +279,36 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-08T10:14:06.465Z"
+    },
+    {
+      "id": "rule_128",
+      "rule_text": "Przed oceną schowka git sprawdź TAKŻE pliki nieśledzone (git stash show --include-untracked, git show <stash>^3) — git stash show domyślnie ich nie pokazuje, więc ocena „to tylko artefakty\" może pomijać realną pracę [C-020]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:07:50.833Z"
+    },
+    {
+      "id": "rule_129",
+      "rule_text": "Kasując wiele schowków, rozwiązuj każdy po SHA (git stash list --format=\"%gd %H\"), nie po zapamiętanym indeksie — po każdym git stash drop indeksy się przesuwają i lista z góry przestaje obowiązywać [C-021]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:07:50.845Z"
+    },
+    {
+      "id": "rule_130",
+      "rule_text": "Pracę wartą zachowania przypinaj gałęzią i wypychaj na origin, nie zostawiaj w schowku — schowki są wyłącznie lokalne (nie trafiają na GitHub) i ginie je git stash clear, wymiana dysku lub czyszczenie folderu [C-022]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-08T18:07:50.845Z"
     }
   ],
   "quarantine_rules": []

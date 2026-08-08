@@ -1,3 +1,11 @@
+## [09:00 UTC, 2026-08-07] SESJA LOKALNA (MASTER) → Maciej / GROK — PULL WYKONANY: dysk = origin/main f3437e3 (FALA 256 na dysku)
+
+Zamykam CZEKAM-NA z [13:24]: dysk właściciela zsynchronizowany do `f3437e3` (tip `41eed4d6`/FALA 256 zawarty).
+|- Przebieg niestandardowy: zwykły `git pull` odbił się o (a) osierocony `index.lock` po przerwanym scaleniu, (b) masowy dryf CRLF + przestarzałe kopie ~3,4k plików na dysku. ZWERYFIKOWANO przed naprawą: dysk był ścisłym PODZBIOREM origin (kanał 5524→6173 linii, WERSJE/DZIENNIK — origin ⊃ dysk; DYSPOZYCJA-GRAFIKA-JEDNOSTKI diff=0) → wyrównanie do origin/main bez utraty czegokolwiek (checkout partiami przez `git archive|tar` — limit czasu wywołań omija pełny reset).
+|- Asekuracja: `gra-robocza/_sandbox/MASTER/backup-dyspozycje-2026-08-07.tar.gz` (5,4 MB, pełne dyspozycje sprzed wyrównania).
+|- Stan: HEAD=index=drzewo=f3437e3 · WERSJE: ROBOCZA **693a2c57** AKTUALNA · START.html gotowy do testu.
+CZEKAM-NA: Maciej — Ctrl+F5 + Nowa gra na `693a2c57` · litery DOPREC / `działaj` (6 Autobotów ECHO) wg [13:05]/[13:24].
+
 ## [13:24 UTC, 2026-08-06] GROK → Maciej / sesja lokalna — DEPLOY FALA 256 693a2c57
 
 Maciej „3” = merge+deploy relief (osobno od paczki ABC 6)
@@ -6262,8 +6270,82 @@ wraca do `combatPowerScaledDefFor` = **częściowe cofnięcie wczorajszej R-MOC-
 (6) **P-AI-MOC-GAP=B** — AI próbuje tańszego fallbacku zamiast zostawiać pustą kolejkę produkcji.
 Bramki (świeże): tsc 0 · **logic 213/213** · hud-moc-warstwa 28/28 · mur-paradoks 13/13 · weterani 79/79 ·
 unit-context-card 29/29 · proposal 120/120 · drewno-gate 20/20 · ai-prod-fallback 17/17 · VERIFY OK.
-⚠️ **Deploy zrobiony z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — NIE scalono do `main`**
-(czeka na osobną, jawną zgodę Macieja). `origin/main` stoi na `d9f8c4c`.
+⚠️ **Deploy zrobiony z gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` — scalono do `main` po
+zgodzie Macieja 2026-08-08 (merge, nie force-push; commity obu stron zachowane).**
 ⚠️ **P-AI-MOC-GAP wymaga playtestu** — naprawiony jest dowiedziony mechanizm pustej kolejki, nie
 potwierdzony root cause objawu „gracz 6725 vs AI 436–536 pkt Mocy".
-CZEKAM-NA: sesja lokalna — pull na dysk właściciela, potem zamelduj „gotowe, testuj e0fa2ec1".
+CZEKAM-NA: nic — scalone, patrz wpisy niżej reakcji sesji lokalnej.
+
+---
+
+## [2026-08-07] SESJA CLAUDE CODE (Fable) → WSZYSCY — zabezpieczenie niezacommitowanych zmian przy pull
+
+Przy dwóch kolejnych `git pull` te same dwa pliki blokowały pobranie jako niezacommitowane. **Nie odrzuciłem ich** — sekwencja: `git stash` (po ścieżkach, nie całe drzewo) → `pull --rebase` → `stash pop` → weryfikacja, czy treść nie przyszła już z origin → commit. Zero konfliktów.
+
+**Co zacommitowane (na prośbę Macieja — jawnie, z diffem):**
+1. `dyspozycje/_handoff/KANAL-PRACA.md` (+8 linii) — wpis podpisany „SESJA LOKALNA (MASTER) → Maciej / GROK" z 09:00 UTC o synchronizacji dysku do `f3437e3`. **Nie moja praca** — zweryfikowałem po pobraniu, że tej treści NIE MA na origin, więc jej zabezpieczenie było konieczne (inaczej ginie przy kolejnym pull).
+2. `dyspozycje/autobot/README.md` (+24/−1) — dokumentacja generatora `playbook-md-to-json.cjs` i zasady „playbook.json jest GENEROWANY, nie edytować ręcznie". Treść zgodna z dzisiejszymi decyzjami Macieja.
+
+⚠️ **Korekta własnego błędu:** mój Operator zaraportował, że README był zmodyfikowany „przed sesją" — treść pliku temu przeczy (opisuje generator powstały dzisiaj). Przyjąłem raport bez weryfikacji, czyli złamałem zasadę C-006 (nie raportuj wyniku subagenta bez własnego sprawdzenia). Odnotowane.
+
+ℹ️ Nazwa „MASTER" użyta przeze mnie wcześniej pochodzi wyłącznie z podpisu tamtego wpisu — nie jest terminem z zasad projektu (te znają podział lokalna/chmurowa).
+
+---
+
+## [2026-08-07] SESJA CLAUDE CODE (Fable) → WSZYSCY — .gitignore: 34 jednorazowe sondy diagnostyczne poza śledzeniem
+
+Po pobraniu z origin w `gra/tools/` leżały **34 nieśledzone pliki** — jednorazowe skrypty pomiarowe innych sesji (mapa, pangea, liczba cywilizacji; daty 08-02…08-06). Budują moduł przez esbuild, mierzą wynik i zostają na dysku; nie są kodem gry ani bramką. Zaśmiecały `git status` przy każdej pracy i utrudniały ocenę, co jest naprawdę do zacommitowania.
+
+**Decyzja Macieja:** dopisać wzorce do `.gitignore` (nie kasować z dysku — to cudze narzędzia, mogą się przydać do powtórzenia pomiaru).
+
+**Dodane wzorce** (sekcja „Jednorazowe sondy diagnostyczne i pomiarowe"): `.diag-*`, `.tmp-*`, `_tmp-*`, `._tmp-*`, `civ7-*`, `.pangea-*`, `super-huge-pangea-*`, `.wrap-probe.cjs`, `.cluster-start-*-f200.*`, `tools/`.
+
+**Weryfikacja przed commitem:**
+- nieśledzonych w `gra/tools/` po zmianie: **0** (było 34);
+- plików usuniętych ze śledzenia: **0** — `.gitignore` nie działa na pliki już śledzone;
+- sprawdzono, czy wzorce nie ukrywają czegoś wartościowego: `civ7-*`, `.pangea-*`, `wrap-probe`, `f200` → **0 śledzonych plików**; `.diag-*`/`.tmp-*`/`_tmp-*` → 42 śledzone, ale to ta sama klasa artefaktów esbuild (`*-bundle.cjs`/`*-entry.ts`), które zostają śledzone bez zmian.
+
+⚠️ **Dla przyszłych sesji:** jeśli piszecie w `gra/tools/` skrypt, który ma ZOSTAĆ w repo, a jego nazwa pasuje do któregoś wzorca — dodajcie go świadomie przez `git add -f`. Adnotacja o tym jest w samym `.gitignore`.
+
+### Sprostowanie do wpisu wyżej — wzorzec `gra/tools/tools/`
+
+W poprzednim wpisie wymieniłem ten wzorzec wśród dodanych, ale go NIE opisałem — słusznie wychwycone przy weryfikacji. Uzupełniam:
+
+`gra/tools/tools/` zawiera **jeden plik**: `.wrap-probe.cjs` (36 KB, 2026-08-02 18:04 — ta sama minuta co `gra/tools/.wrap-probe.cjs`, ale **inna zawartość**). To zagnieżdżony katalog powstały z **błędu ścieżki względnej**: skrypt zapisuje wynik pod `tools/.wrap-probe.cjs`, a został uruchomiony już z katalogu `gra/tools/` zamiast z `gra/` — stąd `tools/tools/`.
+
+⚠️ **Usterka do naprawy przy okazji** (nie blokuje niczego): sonda `wrap-probe` zapisuje wynik ścieżką względną bez zakotwiczenia w katalogu projektu. Przy kolejnym uruchomieniu z niewłaściwego katalogu roboczego zagnieżdżenie powstanie ponownie. Autor skryptu: rozważcie `path.resolve(__dirname, ...)` zamiast ścieżki względnej — tak jak robią to sąsiednie narzędzia w `gra/tools/`.
+
+Wzorzec w `.gitignore` zostaje — katalog jest artefaktem błędu, nie miejscem na kod.
+
+---
+
+## [2026-08-07] SESJA CLAUDE CODE (Fable) → WSZYSCY — porządki w schowkach git: 11 skasowanych, 4 przypięte gałęziami
+
+Na dysku leżało **15 schowków git** (najstarszy z 2026-07-06). Schowki NIE trafiają na GitHub — przy wymianie dysku, czyszczeniu folderu lub `git stash clear` przepadają bezpowrotnie. Przegląd w pętli AutoBot: Operator (Sonnet) → Evaluator (Opus, adwokat diabła) → Final.
+
+⚠️ **NAJWAŻNIEJSZE ZNALEZISKO — Evaluator obalił werdykt Operatora.** Operator orzekł „13 do skasowania, ŻADEN nie wymaga ratowania". Nieprawda:
+- **`stash@{1}`** (2026-08-04) zawiera **gotową naprawę DWÓCH czerwonych bramek regresji**. Potwierdzone uruchomieniem: `rozmiar-label-test.cjs` → 1 błąd, `map-scale-menu-test.cjs` → **8 błędów**. Przyczyna: commit `6f96f08` (08-02) zmienił `gra/data/e-start-params.json` (miasta-państwa 5/6/7, kamień Super Huge 7/8/8), a testy nadal asertują stare wartości (`eStartMiastaPanstwa('Duży') === 14`, dane mówią 6). Ktoś zaczął synchronizować testy 08-04, schował w połowie i nie wrócił. **Do naprawy zostały 4 liczby w 2 plikach — praca praktycznie gotowa.**
+- **`stash@{12}`** zawiera finalną wersję `AUDYT-KODU-2026-07-21.md` (bilans 20 NAPRAWIONE / 50 POTWIERDZONE / 2 PRAWDOPODOBNE / 1 ODRZUCONE + korekty wag). W repo leży wersja „przerwany na etapie weryfikacji". Wiedza odtwarzalna z dwóch innych plików, konsolidacja — nie.
+
+**WYKONANE (kolejność ważna — nic nie kasowane przed zabezpieczeniem):**
+1. Przypięte gałęziami i **wypchnięte na origin** (SHA zweryfikowane zdalnie): `zachowane/stash-1-bramki-mapy` (c8f3a54), `zachowane/stash-12-audyt-final` (b04a366), `zachowane/stash-7-deploy-all` (db2b70c), `zachowane/stash-14-sandbox` (cb9e816).
+2. Skasowane **11 schowków** potwierdzonych jako już obecne w repo — każdy rozwiązywany **po SHA**, nie po indeksie (indeksy przesuwają się po każdym `drop`), z weryfikacją zgodności przed usunięciem.
+3. Pozostały 4 schowki — te same, które są przypięte gałęziami (redundancja celowa).
+
+**Nowe zasady playbooka:** C-020 (schowek oceniaj wraz z plikami nieśledzonymi — `git stash show` domyślnie ich nie pokazuje), C-021 (kasuj po SHA, nie po indeksie), C-022 (wartościową pracę przypinaj gałęzią i pushuj, nie zostawiaj w schowku). *(Przenumerowane z C-016/017/018 przy scalaniu do `main` 2026-08-08 — te ID były już zajęte przez istniejące reguły i przez `C-018` turnieju ABC dodane równolegle na innej gałęzi.)*
+
+📌 **DO ZROBIENIA (nie zamknięte):** dokończyć naprawę bramek z `zachowane/stash-1-bramki-mapy` normalną ścieżką Operator → Evaluator — dotyka danych i testów silnika. Cel: commit 4 liczb, nie trzymanie ich wiecznie na gałęzi.
+
+---
+
+## [scalenie 2026-08-08] CHMURA → WSZYSCY — main = połączenie 21 commitów chmury + 4 commitów sesji lokalnej
+Za zgodą Macieja scalono gałąź `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (deploy FALA 260 +
+skille AutoBot/civ-autobot + `R-PROFIL-TURNIEJ-PUNKTACJA-Q1` + dokumentacja) do `main`, obok
+4 commitów sesji lokalnej wykonanych w międzyczasie (`4be7e8ba`..`bdd69824` — sync KANAŁ, gitignore,
+sprostowanie, porządki schowków). Merge, nie force-push — commity obu stron zachowane.
+**Konflikt merytoryczny do rozwiązania ręcznie:** obie strony dopisały nowe reguły playbooka
+z tymi samymi ID (`C-016`/`C-017`/`C-018`) — sesja lokalna niezależnie od `C-018` turnieju ABC.
+Reguły sesji lokalnej przenumerowane na `C-020`/`C-021`/`C-022` (treść bez zmian), referencje w
+rejestrze błędów i w tym kanale zaktualizowane. `playbook.json` zregenerowany generatorem z
+poprawionego `playbook.md` — liczniki win/fail zachowane.
+CZEKAM-NA: nic.

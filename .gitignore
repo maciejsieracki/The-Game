@@ -64,6 +64,22 @@ gra/tools/.probe-*
 gra/tools/.capital-sep-*-entry.ts
 gra/tools/.capital-sep-*-bundle.cjs
 
+# Jednorazowe sondy diagnostyczne i pomiarowe (Maciej 2026-08-07)
+# Skrypty pisane ad hoc pod jeden pomiar: buduja modul przez esbuild, mierza wynik
+# i zostaja na dysku. Nie sa kodem gry ani bramka — do repo nie wchodza.
+# Jesli ktorys ma zostac na stale, dodaj go swiadomie przez `git add -f`.
+gra/tools/.diag-*
+gra/tools/.tmp-*
+gra/tools/_tmp-*
+gra/tools/._tmp-*
+gra/tools/civ7-*
+gra/tools/.pangea-*
+gra/tools/super-huge-pangea-*
+gra/tools/.wrap-probe.cjs
+gra/tools/.cluster-start-*-f200.cjs
+gra/tools/.cluster-start-*-f200.ts
+gra/tools/tools/
+
 # Test harness temp (esbuild entry/bundle from tools/*-test.cjs)
 gra/tools/.ai-recruit-upkeep-gate-*.cjs
 gra/tools/.ai-recruit-upkeep-gate-*.ts

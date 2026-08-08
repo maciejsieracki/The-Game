@@ -74,6 +74,29 @@
 | 4 | Guardrails | `src/guardrails.ts` | Prod isolation, HITL, data exposure delay |
 | 5 | Dashboard Logger | `src/logging.ts`, `logs/postmortems.jsonl` | Strukturalny JSONL pod dashboard |
 
+## `playbook.json` jest GENEROWANY — nie edytuj ręcznie (Maciej, 2026-08-07)
+
+**Kanon pamięci to `playbook.md` w korzeniu repo** (sekcja „## 2. Zasady"). `playbook.json`
+w tym katalogu jest z niego wyprowadzony przez `tools/playbook-md-to-json.cjs` i nie wolno
+go poprawiać ręcznie — ręczna edycja to dokładnie ten błąd, który 2026-08-07 doprowadził
+do odrzucenia iteracji przez Evaluatora (liczniki wpisane „z pamięci" zamiast 0/0; zgubione
+`C-002` przy scaleniu — patrz `playbook.md` §3/§4).
+
+Generator dopasowuje wiersz markdownu do reguły JSON po tagu `[C-0NN]` na końcu `rule_text`
+(to jedyne pole, które przetrwa `loadPlaybook`/`savePlaybook`) i **zawsze zachowuje już
+zebrane liczniki** (`win_count`/`fail_count`) — nigdy ich nie zeruje dla istniejącej reguły.
+Nowe wiersze (bez dopasowania) dostają nowe `rule_1NN` i zawsze startują 0/0
+(protokół `AUTOBOT.md` §3 krok 5). Reguły `rule_101`, `102`, `104`–`109` istniały przed
+generatorem (bez tagu) — generator ich nie rusza.
+
+```bash
+# podgląd różnic, bez zapisu (domyślne, bezpieczne)
+node dyspozycje/autobot/tools/playbook-md-to-json.cjs --dry-run
+
+# zapis do playbook.json — wyłącznie jawne wywołanie z --write
+node dyspozycje/autobot/tools/playbook-md-to-json.cjs --write
+```
+
 ## Playbook (spec v1)
 
 ```json
@@ -139,7 +162,7 @@ const result = ev.evaluate({
 # Typecheck
 node gra/node_modules/typescript/bin/tsc -p dyspozycje/autobot/tsconfig.json
 
-# Smoke (6 scenariuszy)
+# Smoke (11 scenariuszy)
 node dyspozycje/autobot/tools/autobot-smoke.cjs
 ```
 
