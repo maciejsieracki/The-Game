@@ -4177,3 +4177,49 @@ bramki ruchu/armii zielone.
 **Nota (niska pilność):** logika cyklowania nie ma dedykowanego testu regresji (żyje jako
 domknięcie wewnątrz `boot()` w `main.ts`, ekstrakcja byłaby refaktorem poza zakresem tej
 naprawy) — do rozważenia przy następnym dotknięciu tego kodu.
+
+---
+
+## R-MERGE-MAIN-RYTM-Q1 (2026-08-09, pytanie Macieja „kiedy dany commit powinien trafić do main") · STATUS: **OTWARTE — ABC, czeka na literę**
+
+**Sytuacja:** CLAUDE.md §3 deklaruje projekt jako trunk-based na `main` („brak feature-branchy"),
+ale harness tej sesji (Claude Code Remote) twardo przypina rozwój i `push` wyłącznie do gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`, zakazując pushowania na `main` bez wyraźnej, osobnej
+zgody właściciela. W praktyce od ostatniego scalenia (2026-08-08, `a659f4a1`, 21 commitów) main
+stoi w miejscu, a na gałęzi narosło **85 commitów** — nie tylko dzisiejszy maraton AutoBot (FALA
+263, 28 commitów), ale też starsze prace sprzed dzisiejszej sesji. Main nie ma nic swojego czego
+nie ma gałąź (`git log HEAD..origin/main` = puste) — to nie konflikt, tylko zaległość. Nie ma
+dziś ustalonej reguły KIEDY scalać — dotąd działo się to ad hoc, na pojedyncze polecenie Macieja.
+
+**Cel pytania:** ustalić stały rytm scalania gałęzi do `main`, żeby nie trzeba było pytać od nowa
+za każdym razem i żeby main nie odjeżdżał w nieskończoność od rzeczywistego stanu prac.
+
+**Dlaczego teraz:** Maciej sam o to spytał, mamy świeży, konkretny przykład (85 niescalonych
+commitów) ilustrujący skalę problemu.
+
+- **A — Scalaj po każdym pojedynczym temacie AutoBot zamkniętym PASS/PASS-WITH-NOTES** (praktycznie
+  codziennie, czasem kilka razy dziennie), ze stałą zgodą Macieja „zawsze scalaj po zamknięciu
+  tematu, informuj w kanale, bez osobnego pytania za każdym razem".
+  Za: main zawsze blisko rzeczywistości, zgodne z deklarowaną zasadą trunk-based z CLAUDE.md §3;
+  małe diffy łatwe do audytu pojedynczo.
+  Przeciw: częstsze operacje na `main` (szum w historii); wymaga zaufania, że sam werdykt
+  Evaluatora PASS/PASS-WITH-NOTES wystarcza jako bramka jakości bez dodatkowego spojrzenia na
+  poziomie „co idzie na trunk".
+
+- **B — Scalaj po zamkniętej większej paczce pracy / na koniec sesji** (tak jak dotąd, ad hoc na
+  pojedyncze polecenie „scal do main"), bez ustalonego stałego rytmu.
+  Za: pełna kontrola Macieja, zero ryzyka scalenia w złym momencie (np. w trakcie kolejnej rundy
+  pracy nad tym samym plikiem, zanim temat faktycznie się domknie).
+  Przeciw: łatwo odłożyć/zapomnieć — dokładnie to się stało (main w tyle o 85 commitów, 2 dni);
+  im dłużej gałąź żyje, tym większe ryzyko konfliktu przy w końcu wykonanym scaleniu.
+
+- **C — Scalaj automatycznie jako część runbooku deployu do ROBOCZA** (merge do `main` dzieje się
+  razem z każdym „deploy", nie jako osobny krok).
+  Za: jeden mniej krok do pamiętania, main zawsze odzwierciedla to co jest w ROBOCZA.
+  Przeciw: deploy (publikacja bundla) i merge (zmiana trunk-a) to dwa różne ryzyka o różnej wadze
+  — łączenie ich w jeden automatyzm zaciera rozróżnienie i utrudnia cofnięcie jednego bez drugiego.
+
+**Rekomendacja:** A — scalaj po każdym zamkniętym temacie AutoBot (PASS/PASS-WITH-NOTES), z
+krótkim wpisem w kanale zamiast osobnego pytania za każdym razem. Trzyma main blisko rzeczywistości
+zgodnie z własną deklaracją projektu (CLAUDE.md §3), a AutoBot już dziś pełni rolę bramki jakości
+przed wejściem na gałąź — dodatkowe opóźnienie do main niczego nie zabezpiecza, tylko generuje dług.
