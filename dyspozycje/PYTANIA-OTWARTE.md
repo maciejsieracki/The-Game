@@ -7069,3 +7069,40 @@ dowód, że potrzebna jest twarda, mechaniczna reguła (nie tylko przypomnienie 
 sekcja z nowymi regułami AutoBot niżej w tym pliku (do przygotowania).
 
 ---
+
+## AC-RZEKI-BEZ-LIMITERA i AC-RZEKI-PER-MASA — WDROŻONE, status skorygowany (2026-08-09/10)
+
+Oba tematy z audytu „zapomnianych" okazały się **fałszywym alarmem co do treści** (kod naprawiony
+tego samego wieczoru, 2026-08-02, commit `6f96f08`, FALA 199-200, ROBOCZA `26b05753`), prawdziwym
+alarmem co do **procesu** (status w tym pliku nigdy nie przełączony na WDROŻONE mimo jednoznacznej
+dokumentacji w `WERSJE.md`/`docs/MACIEJ-GOTOWE.md`). Potwierdzone dwoma niezależnymi Explore
+(analiza statyczna + uruchomienie `pangea-river-interior-test.cjs`, 5/5 seedów PASS, interiorShare
+19-35%). Dispatch napraw NIE jest potrzebny — status koryguję na WDROŻONE.
+
+Dwa drobne follow-upy (dług techniczny, NIE nowe ACs, niepilne): (1) `feederPasses`/`topUpPasses`
+dla dopływów/short rivers mają twardy sufit rund, mocniej przycięty na dużych mapach/Pangei —
+teoretycznie mogłyby zatrzymać dosiewanie zanim wyczerpią się kandydatury; (2) brak testu
+regresyjnego pokrycia rzek dla małych wysp 5-79 hex (istniejące testy filtrują `mass.length>=80`).
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator RUNDA 4 (finalna): PASS-WITH-NOTES, 0 blokujących, GOTOWE DO SCALENIA (2026-08-09/10)
+
+Wszystkie mutacje E/F/G złapane niezależnie + 10/14 własnych dodatkowych mutacji Evaluatora
+złapanych (4 przeżyły — T/V/W/X, wszystkie POZA computeView, dotyczą literału zwracanego obiektu i
+tekstu renderu chipu/karty — nota N1 do rejestru, niepilne, kod merytorycznie poprawny). Własny
+dowód behawioralny drabinki 5/8/12 (16/16, w tym zamrożenie zamiast ścinania przy przekroczeniu
+capu). Bramki na SCALONYM drzewie (aktualny HEAD): tsc 0, logic-test 213/213, akwedukt-popcap 7/7,
+population-growth-v85 48/50 (2 pre-istniejące potwierdzone bajtowo), growthmult-compound 17/24 (7
+pre-istniejące potwierdzone), spichlerz-cap-citypanel-wiring 12/12. Parytet gracz/AI potwierdzony
+strukturalnie (ten sam kanał `builtIds` co już sprawdzony `maAkwedukt`). Scalenie praktycznie
+przetestowane (zero dryfu 10 plików między bazą a HEAD).
+
+Notatki niepilne do rejestru (nie blokują): N1 (chip/karta renderu tekstu nie ma pokrycia bramki —
+3 tanie asercje do dołożenia kiedyś), N3 (kanon `B-popcap-akwedukt-audit.md` aktywnie zaprzecza
+dzisiejszemu capowi 12 zamiast 15), N4 (martwy `ownerHasSpichlerz()`), N8 (panel Excel niedogoniony
+JSON→Excel).
+
+Dispatch scalenia NASTĘPUJE teraz.
+
+---
