@@ -4343,7 +4343,7 @@ async function boot(): Promise<void> {
     function buildContextPanelData(): {
       kind: 'hex' | 'unit';
       html: string;
-      headLabel?: string;
+      ownUnit?: boolean;
       expandable?: boolean;
       expandInHtml?: boolean;
     } | null {
@@ -4362,12 +4362,10 @@ async function boot(): Promise<void> {
       }
       if (unitMsg) {
         const ownSelected = selectedId !== null && units.some(x => x.id === selectedId && x.ownerId === 0);
-        const stackState = ownSelected ? buildArmyStackHudStateInner() : null;
-        const isArmyStack = (stackState?.unitCount ?? 0) > 1;
         return {
           kind: 'unit',
           html: unitMsg,
-          headLabel: isArmyStack ? 'Armia' : undefined,
+          ownUnit: ownSelected,
           expandable: ownSelected || foreignUnitInspectId !== null,
           expandInHtml: ownSelected || foreignUnitInspectId !== null,
         };
@@ -16211,6 +16209,10 @@ async function boot(): Promise<void> {
         },
         onContextSelectUnit: (id) => selectPlayerUnit(id, true, unitSideDetailExpanded),
         onContextAction: handleSelectedUnitHudAction,
+        // R-KARTA-JEDNOSTKI-STRZALKI-CYKL: strzałki ◀▶ karty własnej jednostki w panelu bocznym —
+        // reużywają DOKŁADNIE ten sam cykl co strzałki dolnego paska armii (linie 16041-16045 wyżej).
+        onContextCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta, { all: true }),
+        canContextCycleUnit: () => cyclablePlayerArmyLeadsAll().length > 1,
         getContextPanelMessage: () => buildContextPanelMessage(),
         onEventClick: (id) => {
           if (id.startsWith('border-march-')) {

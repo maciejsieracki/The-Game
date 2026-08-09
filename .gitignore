@@ -100,3 +100,8 @@ dyspozycje/autobot/logs/playbook-smoke-tmp.json
 # brudzic wspoldzielonego trackowanego gra/tools/.stubs/brandAssets-stub.ts
 # (BUG-TOOLTIP-MOC-NIEPELNA N4, 2026-08-08)
 gra/tools/.stubs/unit-context-card-brandAssets-stub.ts
+
+# Stuby tej bramki (side-panel-unit-cycle-arrows-test.cjs), wlasna nazwa z tego
+# samego powodu co wyzej (R-KARTA-JEDNOSTKI-STRZALKI-CYKL, 2026-08-09).
+gra/tools/.stubs/side-panel-unit-cycle-brandAssets-stub.ts
+gra/tools/.stubs/side-panel-unit-cycle-brandTokenVars-stub.ts

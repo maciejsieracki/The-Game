@@ -43,8 +43,9 @@ export type ContextPanelKind = 'hex' | 'unit';
 export interface ContextPanelData {
   kind: ContextPanelKind;
   html: string;
-  /** Nadpisanie nagłówka karty (np. „Armia" zamiast „Jednostka"). */
-  headLabel?: string;
+  /** Własna jednostka gracza — karta pokazuje strzałki cyklowania ◀▶ zamiast nagłówka
+   * (R-KARTA-JEDNOSTKI-STRZALKI-CYKL, Maciej 2026-08-09). */
+  ownUnit?: boolean;
   /** Jednostka — przycisk „Więcej szczegółów” w panelu bocznym. */
   expandable?: boolean;
   /** Przycisk rozwijania jest już w html (nad paskiem akcji). */
@@ -61,6 +62,10 @@ export interface SidePanelHudConfig {
   isContextExpanded?: () => boolean;
   onContextAction?: (actionId: string) => void;
   onContextSelectUnit?: (unitId: string) => void;
+  /** Strzałki ◀▶ karty własnej jednostki — cyklowanie do sąsiedniej armii gracza. */
+  onContextCycleUnit?: (delta: -1 | 1) => void;
+  /** Czy jest >1 armia gracza do cyklowania (steruje disabled strzałek). */
+  canContextCycleUnit?: () => boolean;
   onEventClick?: (id: string) => void;
   onEventDismiss?: (id: string) => void;
 }
@@ -166,6 +171,13 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-ctx-dock .sp-ctx-card.sp-ctx-interactive,.civ-side-panel .sp-ctx-card.sp-ctx-interactive{pointer-events:auto;}
 .civ-side-ctx-dock .sp-ctx-head,.civ-side-panel .sp-ctx-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
   letter-spacing:.22em;margin-bottom:8px;text-align:right;}
+.civ-side-ctx-dock .sp-ctx-nav,.civ-side-panel .sp-ctx-nav{display:flex;gap:8px;margin-bottom:10px;}
+.civ-side-ctx-dock .sp-ctx-nav-arr,.civ-side-panel .sp-ctx-nav-arr{flex:1 1 0;padding:6px 10px;border-radius:6px;
+  border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
+  color:var(--civ-gold-primary,#e8d88a);font-size:13px;line-height:1;
+  cursor:pointer;font-family:inherit;text-align:center;}
+.civ-side-ctx-dock .sp-ctx-nav-arr:hover,.civ-side-panel .sp-ctx-nav-arr:hover{border-color:rgba(212,175,90,.55);background:rgba(28,34,46,.9);}
+.civ-side-ctx-dock .sp-ctx-nav-arr:disabled,.civ-side-panel .sp-ctx-nav-arr:disabled{opacity:.35;cursor:default;}
 .civ-side-ctx-dock .cp-msg,.civ-side-panel .sp-ctx-card .cp-msg{font-size:12px;color:var(--civ-text-primary,#e8e0c8);line-height:1.55;text-align:left;}
 .civ-side-ctx-dock .sp-ctx-expand,.civ-side-panel .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
   border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
@@ -226,9 +238,21 @@ function contextHeadLabel(kind: ContextPanelKind): string {
   return kind === 'hex' ? 'Pole mapy — kliknięty heks' : 'Jednostka';
 }
 
-function buildContextCardHtml(ctx: ContextPanelData, expanded: boolean): string {
+function buildContextCardHtml(ctx: ContextPanelData, expanded: boolean, canCycle = false): string {
   const interactive = ctx.kind === 'unit';
-  const headHtml = `<div class="sp-ctx-head">${ctx.headLabel ?? contextHeadLabel(ctx.kind)}</div>`;
+  let headHtml = '';
+  if (ctx.kind === 'hex') {
+    headHtml = `<div class="sp-ctx-head">${contextHeadLabel(ctx.kind)}</div>`;
+  } else if (ctx.ownUnit === true) {
+    // R-KARTA-JEDNOSTKI-STRZALKI-CYKL (Maciej 2026-08-09): nagłówek „Jednostka" usunięty
+    // dla obu kart jednostki (własna/cudza); w jego miejsce, TYLKO dla własnej jednostki,
+    // strzałki cyklowania do sąsiedniej armii gracza — reużywają istniejący cykl HUD ◀▶.
+    const disabledAttr = canCycle ? '' : ' disabled';
+    headHtml = '<div class="sp-ctx-nav">'
+      + `<button type="button" class="sp-ctx-nav-arr" data-sp-cycle="-1"${disabledAttr} aria-label="Poprzednia jednostka">◀</button>`
+      + `<button type="button" class="sp-ctx-nav-arr" data-sp-cycle="1"${disabledAttr} aria-label="Następna jednostka">▶</button>`
+      + '</div>';
+  }
   let html = `<div class="sp-ctx-card${interactive ? ' sp-ctx-interactive' : ''}">`
     + headHtml
     + `<div class="cp-msg">${ctx.html}</div>`;
@@ -262,6 +286,14 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         if (id) config.onContextAction?.(id);
       });
     });
+    root.querySelectorAll('[data-sp-cycle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if ((btn as HTMLButtonElement).disabled) return;
+        const raw = (btn as HTMLElement).getAttribute('data-sp-cycle');
+        const delta: -1 | 1 = raw === '-1' ? -1 : 1;
+        config.onContextCycleUnit?.(delta);
+      });
+    });
     if (ctx.kind !== 'unit') return;
     root.querySelectorAll('[data-unit]').forEach(chip => {
       const go = () => {
@@ -287,7 +319,8 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     const hideUnitDock = unitCtx !== null && isDiploObscuringUnitDock();
 
     if (unitCtx !== null && !hideUnitDock) {
-      ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded);
+      const canCycle = config.canContextCycleUnit?.() ?? false;
+      ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded, canCycle);
       ctxEl.classList.add('open');
       if (expanded && unitCtx.expandable) {
         ctxEl.classList.add('sp-ctx-expanded');

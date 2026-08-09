@@ -235,6 +235,9 @@ export interface HudConfig {
   isContextExpanded?: () => boolean;
   onContextAction?: (actionId: string) => void;
   onContextSelectUnit?: (unitId: string) => void;
+  /** R-KARTA-JEDNOSTKI-STRZALKI-CYKL: strzałki ◀▶ karty własnej jednostki w panelu bocznym. */
+  onContextCycleUnit?: (delta: -1 | 1) => void;
+  canContextCycleUnit?: () => boolean;
 
   /** Panel boczny (D1=C): wydarzenia z tury od silnika. */
   getEvents?: () => SidePanelEvent[];
@@ -1374,6 +1377,8 @@ function mountSidePanel(): void {
     isContextExpanded: cfg.isContextExpanded,
     onContextAction: cfg.onContextAction,
     onContextSelectUnit: cfg.onContextSelectUnit,
+    onContextCycleUnit: cfg.onContextCycleUnit,
+    canContextCycleUnit: cfg.canContextCycleUnit,
     onEventClick: cfg.onEventClick,
     onEventDismiss: cfg.onEventDismiss,
   });
