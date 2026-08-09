@@ -2129,3 +2129,9 @@ propozycja spotkania), dopiero potem pełny panel wizyty. Dispatch Explore przed
 Odtworzone od zera, N1+N2 domknięte, druga runda Evaluatora PASS-WITH-NOTES bez not blokujących.
 Scalone chirurgicznie (3 z 4 plików zdywergowane, per-hunk weryfikacja kotwic). N3-N8 niepilne w
 rejestrze. Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK — SCALONE `b057d248` (2026-08-09)
+Modal wymagający potwierdzenia zamiast dymka, po 3 rundach AutoBot (Evaluator PASS finalnie).
+Root cause: stary showHintMessage dzielił toast z komunikatem ELIMINACJA i go nadpisywał.
+Niepilne noty do rejestru (kapitulacja z głodu nadal gubi ELIMINACJA — poza zakresem). Pełna
+treść w `PYTANIA-OTWARTE.md`.

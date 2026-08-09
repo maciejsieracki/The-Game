@@ -5302,6 +5302,21 @@ odtworzone mutacje z pierwszej rundy Evaluatora teraz czerwienieją (15/16 każd
 16/16. Bramki: tsc 0, logic-test 213/213, nowy test 16/16, istniejący `triumph-city-state-test.cjs`
 bez regresji 10/10. Kapitulacja z głodu świadomie nieruszona (poza zakresem).
 
+**Evaluator (trzecia, finalna runda): PASS.** Wszystkie 3 mutacje odtworzone SAMODZIELNIE, każda
+czerwieni dokładnie jedną, właściwą asercję. **SCALONE `b057d248`** — orkiestrator zweryfikował
+dywergencję `main.ts` (3 kotwice tekstowe niezmienione mimo 338-liniowej dywergencji pliku od
+wielu innych scaleń tej sesji), zastosował chirurgicznie. Bramki na scalonym stanie: tsc 0,
+logic-test 213/213, nowy test 16/16, `triumph-city-state-test.cjs` 10/10.
+
+**Niepilne, do rejestru (nie blokowały scalenia, znalezione przez Evaluatora):** (a) asercja 14
+łapie tylko `setTimeout` dosłownie w źródle — `setInterval`/zewnętrzny timer w `main.ts` mogłyby
+ominąć (potwierdzone eksperymentalnie); (b) okno 800 znaków asercji 15-16 jest szersze niż
+potrzeba (realny dystans 561 znaków) — teoretycznie mogłoby złapać wywołanie POZA gałęzią `if`,
+nie tylko wewnątrz niej; (c) **kapitulacja z głodu (`resolveSiegeSurrender`) nadal gubi komunikat
+ELIMINACJA** przez inny, współdzielony `showHintMessage` na tej samej linii — pre-istniejące, POZA
+zakresem tej naprawy (dotyczyła tylko ścieżki bitewnej). Żadne z trzech nie wymaga natychmiastowej
+akcji.
+
 ---
 
 ## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — rozpoznanie gotowe, wymaga ABC (2026-08-09)
