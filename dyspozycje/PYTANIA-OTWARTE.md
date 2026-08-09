@@ -5858,3 +5858,38 @@ przestarzały, standardowa procedura scalania to naprawi).
 
 **Dispatch runda 2** z dokładną specyfikacją napraw B1-B4 od Evaluatora. N1 NIE jest w zakresie
 rundy 2 — osobne pytanie ABC do zadania po zamknięciu tego tematu.
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — Evaluator RUNDA 1: PASS-WITH-NOTES (3 BLOKUJĄCE), runda 2 w toku (2026-08-09)
+
+Zgłoszony scenariusz jest realnie naprawiony, ale 3 noty BLOKUJĄCE (Evaluator jednolinijkowo je
+tak oznaczył mimo etykiety „PASS-WITH-NOTES" — traktowane jak FAIL, wymagają poprawki przed
+scaleniem, zgodnie ze STRICT z kanonu AutoBot):
+
+- **B1 — regres wydajności +80% czasu tury AI**, zmierzone: 640-877ms → 1050-1318ms na
+  `decideAITurn` (mapa 100×100, 10 miast, 100 wrogich jednostek). Przyczyna: `isEnemyNearOwnTerritory`
+  wołana teraz per JEDNOSTKA (setki) zamiast per MIASTO (kilkanaście), pełny skan promienia dla
+  każdej dalekiej jednostki. Poprawka jednolinijkowa: wstępny filtr `hexDistance ≤ 9` przed
+  wywołaniem drogiej funkcji (zmierzone: przywraca czas do 649ms, test nadal 9/9).
+- **B2 — nieprawdziwa liczba w komentarzu kodu.** JSDoc mówi „promień 2 heksy poza granicą", ale
+  `isEnemyNearOwnTerritory` liczy `maxDist` DWUKROTNIE (promień iteracji + sprawdzenie) — faktyczny
+  zasięg wykrywania to 9-19 heksów OD CENTRUM miasta (4 heksy za granicą, nie 2), zależnie od
+  populacji. Błąd pre-istniejący w helperze (nie do naprawy tu), ale nowy komentarz nie może
+  powielać nieprawdy jako faktu.
+- **B3 — obrońca wybierany kolejnością w tablicy jednostek, nie odległością do zagrożenia.**
+  Potwierdzone empirycznie: jednostka stojąca pod wrogim miastem (40 heksów od zagrożenia) bywa
+  zawracana do domu, podczas gdy jednostka 2 heksy od zagrożenia kontynuuje marsz — bo kolejność w
+  `sortedUnits` (tworzenia jednostek, `super` na początku) decyduje, kto dostaje slot obrońcy, nie
+  odległość. Dodatkowo: jednostki, które już zaatakowały zagrożenie w kroku 4b, NIE są liczone do
+  kworum — powoduje podwójne zaangażowanie (druga jednostka zawracana do już obsłużonego
+  zagrożenia).
+
+**Niepilne (N1-N3, do rundy 2 albo później):** N1 — faza wyścigu o wioski (`myCities.length < 3`)
+ma pierwszeństwo PRZED obroną domu, co łamie „zawsze najwyższy priorytet" z decyzji A w early-game
+— wymaga świadomej decyzji (poprawić kolejność vs udokumentować jako celowe odstępstwo), nie
+przemilczenia. N2 — luki testu (3 zmutowane parametry przeżyły próbę mutacyjną: promień, górny
+limit kworum, sztywne kworum). N3 — jednostki cywilne mogą dostać rozkaz obrony (zajmują slot).
+
+Dispatch runda 2 z dokładną specyfikacją B1-B3. N1 flagowane jako osobna decyzja do Macieja PO
+zamknięciu tej rundy, nie zgadywana teraz.
