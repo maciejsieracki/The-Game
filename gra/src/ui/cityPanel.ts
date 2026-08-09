@@ -1844,6 +1844,7 @@ function ensureStyles(): void {
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
+.civ-cs .auto-wyzywienie-btn{width:100%;min-width:0;}
 .civ-cs .wyzwienie-w4-hint{font-size:0.62em;color:var(--muted);text-align:center;margin-top:0.2em;}
 .civ-cs .food-bilans-row{display:flex;justify-content:space-between;align-items:center;gap:0.35em;font-size:0.76em;margin:0.28em 0 0.12em;padding:0.35em 0.45em;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,.02);}
 .civ-cs .food-bilans-row .pos{color:var(--green);}
@@ -4639,21 +4640,20 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   sliderWrap.appendChild(sliderRow);
   if (rationEditable && cfg.onCityAutoWyzywienieChange) {
     const autoRow = el('div', 'slider-row auto-wyzywienie-row');
-    const autoLabel = el('label');
-    autoLabel.style.cssText = 'display:flex;align-items:center;gap:0.35em;cursor:pointer;';
-    const autoCb = document.createElement('input');
-    autoCb.type = 'checkbox';
-    autoCb.checked = city.autoWyzywienie === true;
-    autoCb.title =
+    const autoBtn = document.createElement('button');
+    autoBtn.type = 'button';
+    autoBtn.className = 'hbtn auto-wyzywienie-btn';
+    autoBtn.textContent = 'Auto Wyżywienie';
+    const autoWyzywienieOn = city.autoWyzywienie === true;
+    if (autoWyzywienieOn) autoBtn.classList.add('active');
+    autoBtn.setAttribute('aria-pressed', String(autoWyzywienieOn));
+    autoBtn.title =
       'WŁ: automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0). ' +
-      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.';
-    autoLabel.appendChild(autoCb);
-    const autoTxt = document.createElement('span');
-    autoTxt.textContent = 'Auto Wyżywienie';
-    autoLabel.appendChild(autoTxt);
-    autoRow.appendChild(autoLabel);
-    autoCb.addEventListener('change', () => {
-      cfg.onCityAutoWyzywienieChange?.(city.id, autoCb.checked);
+      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.' +
+      (autoWyzywienieOn ? '' : ' Auto WYŁ — bez auto-obniżania/podnoszenia.');
+    autoRow.appendChild(autoBtn);
+    autoBtn.addEventListener('click', () => {
+      cfg.onCityAutoWyzywienieChange?.(city.id, !city.autoWyzywienie);
       rerender();
     });
     sliderWrap.appendChild(autoRow);
@@ -4665,9 +4665,6 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   }
   if (view.poziomRacji > maxSafe) {
     hint.textContent += ' · poziom zostanie obniżony do limitu na koniec tury';
-  }
-  if (rationEditable && city.autoWyzywienie !== true) {
-    hint.textContent += ' · Auto WYŁ — bez auto-obniżania/podnoszenia';
   }
   sliderWrap.appendChild(hint);
   mount.appendChild(sliderWrap);
