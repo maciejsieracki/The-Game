@@ -2265,7 +2265,7 @@ poza NAP i poza akcją `'5'`:
 decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zniknęło z pola widzenia.
 **Kotwice:** `git show 9cc7c76c` (obie listy w `diplomacyTradeBasket.ts`).
 
-## P-BRAMKA-DANINA-PODATEK-CZERWONA (2026-08-08, nota Evaluatora tooltip-moc) · STATUS: **OTWARTE — pre-istniejące, nie regresja**
+## P-BRAMKA-DANINA-PODATEK-CZERWONA (2026-08-08, nota Evaluatora tooltip-moc) · STATUS: **ZAMKNIĘTE 2026-08-09**
 `node gra/tools/danina-podatek-tooltip-ui-test.cjs` → `esbuild failed: No matching export in
 "tools/.stubs/brandAssets-stub.ts" for import "unitIconSvg"`, exit 1. Zweryfikowane dwukrotnie
 (Operator i Evaluator, niezależnie) że pada identycznie na czystym `HEAD` sprzed prac
@@ -2273,6 +2273,17 @@ decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zni
 (bez `unitIconSvg`), po czym bunduje `hexContextTooltip.ts`, który od commita `4504783`
 („FALA 46") importuje `unitIconSvg`. Nie figuruje na liście znanych czerwonych w `CLAUDE.md`.
 Naprawa: jedna linia w literale stuba tej bramki. Do naprawy albo do wpisania na listę znanych.
+
+**ZAMKNIĘTE (2026-08-09):** Dedykowany `danina-podatek-brandAssets-stub.ts` (wzorem już
+istniejących `pre-battle-brandAssets-stub.ts`/`brandAssets-diplo-treaty-stub.ts`/
+`unit-context-card-brandAssets-stub.ts`) z pełnym kompletem 4 eksportów (`brandIconSvg`,
+`mapResourceIconSvg`, `terrainIconSvg`, `unitIconSvg`) wymaganych przez cały łańcuch importów
+`hexContextTooltip.ts`. Evaluator: PASS, niezależnie zbudował tranzytywny graf importów
+(114 plików) i potwierdził kompletność eksportów. `danina-podatek-tooltip-ui-test.cjs` 12/12
+(było `esbuild failed`), `tsc` 0 błędów. **Nota Evaluatora (niepilna):** nowy stub jest śledzony
+w gicie i jednocześnie nadpisywany dynamicznie przy każdym uruchomieniu (działa dzięki bajtowej
+zgodności) — inny precedens (`unit-context-card-brandAssets-stub.ts`) wybrał `.gitignore` +
+plik nieśledzony. Rozjazd konwencji do ujednolicenia kiedyś, nie dziś.
 
 ## P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (2026-08-08, nota N1 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — pre-istniejące, nie wprowadzone tą zmianą**
 Sekcja 5 `gra/tools/mur-paradoks-test.cjs` (asercja „realna Obrona > tabliczka") liczy
@@ -2362,7 +2373,7 @@ C z progiem startowym). AI ma parytet (ta sama bramka, ten sam `empireResourceSt
 Do potwierdzenia playtestem — czy to realnie blokuje wczesną grę, czy tartak/handel
 wystarczająco szybko rozwiązuje brak Drewna.
 
-## P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
+## P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora zwiadowca-drewno) · STATUS: **ZAMKNIĘTE 2026-08-09** (wszystkie 4 bramki mają dziś dedykowane stuby)
 `gra/tools/.stubs/brandAssets-stub.ts` jest plikiem ŚLEDZONYM w gicie, a co najmniej
 4 bramki (`army-merge-dismiss-bounce-test.cjs`, `pre-battle-defender-retreat-test.cjs`,
 `unit-context-card-test.cjs`, `danina-podatek-tooltip-ui-test.cjs`) nadpisują go własną
@@ -2372,6 +2383,15 @@ w `tooltip-moc` (`unit-context-card-brandAssets-stub.ts`) i `traktat-koszyk`
 (`brandAssets-diplo-treaty-stub.ts`). Do rozważenia: systemowa naprawa (każda bramka
 dostaje własny, niededykowany katalog stubów) zamiast punktowych obejść przy każdej
 kolejnej kolizji.
+
+**ZAMKNIĘTE (2026-08-09):** Ostatnie 2 z 4 bramek na liście (`danina-podatek-tooltip-ui-test.cjs`,
+`army-merge-dismiss-bounce-test.cjs`) przepięte na dedykowane stuby — `army-merge-dismiss-bounce-test.cjs`
+dostał `army-merge-brandAssets-stub.ts`. Pozostałe dwie (`pre-battle-defender-retreat-test.cjs`,
+`unit-context-card-test.cjs`) już miały dedykowane stuby z wcześniejszych napraw — Evaluator
+potwierdził niezależnie. `git status --short` na `tools/.stubs/brandAssets-stub.ts` czyste po
+pełnym biegu testów — plik jest dziś **osierocony** (śledzony, zero konsumentów, można rozważyć
+usunięcie przy okazji). Nota Evaluatora o rozjeździe konwencji (śledzony vs `.gitignore`) — patrz
+`P-BRAMKA-DANINA-PODATEK-CZERWONA` wyżej.
 
 ## P-UNIT-STOCK-COST-TEST-DLUG (2026-08-08, nota N4 Evaluatora zwiadowca-drewno) · STATUS: **ZAMKNIĘTE 2026-08-09** (asercje zaktualizowane, test 58/58)
 `node gra/tools/unit-stock-cost-test.cjs` → 53 pass, **4 fail**, m.in. „Wojownik: brak
