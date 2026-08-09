@@ -4800,7 +4800,39 @@ miasta-państwa jako efekt uboczny nieudanego/błędnego ataku (np. traktowanie 
 jako zdobycia miasta z jakimś warunkiem brzegowym, albo czyszczenie encji przy błędzie stanu).
 **WSTRZYMANE — patrz wycofanie zgłoszenia w nagłówku wyżej, nie dispatchować.**
 
-## P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga pilnego rozpoznania, potencjalna utrata możliwości cofnięcia się**
+## P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA — PRZYCZYNA ZNALEZIONA, dispatch naprawy (2026-08-09)
+
+**Rozpoznanie (Explore):** dwa zgłoszone objawy mają WSPÓLNĄ przyczynę, druga część zgłoszenia
+(przelicznik tura→rok) okazała się NIE być błędem.
+
+1. **Rzeczywista przyczyna (potwierdzony bug):** `doRotatingAutosave()` (`gra/src/main.ts:20554-
+   20571`) przy niepowodzeniu `saveToLocal()` (np. przekroczenie limitu quota `localStorage`, ok.
+   5-10 MB/origin) **milczy całkowicie** — brak `console.warn`, brak komunikatu dla gracza (w
+   przeciwieństwie do `doQuickSave()`, który przy błędzie POKAZUJE komunikat), i co gorsza NIE
+   przesuwa indeksu rotacji (`AUTOSAVE_ROT_IDX_KEY` aktualizowany tylko przy sukcesie). Skutek:
+   gdy raz zabraknie miejsca, WSZYSTKIE kolejne próby rotacyjnego autozapisu celują w ten sam,
+   już-nieudany slot i cicho zawodzą — reszta puli 10 slotów zamraża się na starej treści, dokładnie
+   jak na zrzucie (różne godziny zapisu, ta sama wczesna tura). Prawdopodobna przyczyna
+   przepełnienia: pełny snapshot rośnie z każdą turą (m.in. `explored` heksy), zapisywany w 10
+   rotacyjnych slotach + slot szybkiego zapisu + WSZYSTKIE ręczne zapisy (nigdy automatycznie nie
+   czyszczone, `uniqueSlotIdFromLabel` tworzy nowy unikalny klucz za każdym razem). Pula rotacyjna
+   jest też globalna między różnymi rozgrywkami (`AUTOSAVE_ROT_IDX_KEY` nie resetuje się przy nowej
+   grze).
+2. **Przelicznik tura→rok jest POPRAWNY** — `4000 − (tura−1)×50`, tura 37 → dokładnie 2200 p.n.e.
+   (zgodne z tym co zgłosił Maciej), potwierdzone w dwóch miejscach kodu (zduplikowana logika,
+   `main.ts:15835` i `save-label.ts:34-38`, dziś zgodne). Objaw „TURA 2? · 2200 P.N.E." na ekranie
+   to najprawdopodobniej efekt objawu #1 (wczytanie zamrożonego autozapisu) albo błędny odczyt
+   drobnego napisu (Maciej sam zaznaczył znakiem zapytania) — nie osobny błąd konwersji.
+
+**Dispatch naprawy (bez ABC — czysto techniczny bug, nie decyzja projektowa):** (1) ujawnić
+niepowodzenie rotacyjnego autozapisu graczowi (komunikat + log, wzorem `doQuickSave()`); (2)
+rozróżnić `QuotaExceededError` od innych błędów w `saveToLocal()`. **Odłożone do osobnej decyzji
+(niepilne, wpływa na zachowanie, nie tylko widoczność błędu):** limit/sprzątanie ręcznych zapisów,
+reset rotacji per nowa gra, scalenie zdublowanej formuły tura→rok.
+
+---
+
+## P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
 
 **Cytat Macieja:** „coś też jest z zapisywaniem tur, mianowicie automatycznie miało się np.
 zapisywać 10 ostatnich tur, a widzę, że nie zapisują się, zapisuje się tylko i wyłącznie ostatnia.
