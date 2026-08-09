@@ -6478,3 +6478,20 @@ Pełny werdykt: `dyspozycje/REJESTR-PROSB-I-ZADAN.md` → `P-BRAMKI-MAPY-ROZMIAR
 scalam sama, czekam na potwierdzenie. Branch `zachowane/stash-1-bramki-mapy` z oryginałem — bez zmian.
 CZEKAM-NA: potwierdzenie merge do main (Maciej albo sesja lokalna) + osobne zgłoszenie
 `map-coast-buffer-test` 20 porażek jeśli chcecie żeby ktoś to podjął.
+
+## [00:52 PL, 2026-08-10] CHMURA → WSZYSCY — `main` dogoniony o FALA 263
+
+Na wyraźne polecenie Macieja („scal 263 do main") — `main` (`b137332a`, FALA 262) doganiony
+o **FALA 263** (`89176ced`) → **merge `b0e4a5c9`**, wypchnięte na `origin/main`. Bez konfliktów,
+46 plików, 29 commitów od poprzedniego mergu.
+
+**Punkt scalenia = `8fbe916e`** (commit deployu FALA 263), zgodnie z `R-MERGE-MAIN-RYTM-Q1`
+(„scalenie do konkretnego commitu deployu") i wzorem `b137332a → 75b14e86`. **Uwaga na przyszłość:**
+NIE `9899f53b` (jego rodzic) — w `9899f53b` bundel `gra-robocza/Gra-ROBOCZA.html` ma jeszcze md5
+`ce69cf45` (FALA 262); `89176ced` pojawia się dopiero w `8fbe916e`. Scalenie rodzica dałoby `main`
+kod FALA 263, ale bundel FALA 262.
+
+**FALA 264 świadomie NIE wchodzi** — zostaje na `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+do testów, wejdzie do `main` dopiero przy scaleniu przy okazji FALA 265. Kto chce testować
+najnowsze — pull z gałęzi roboczej, nie z `main`.
+CZEKAM-NA: nic — informacyjnie.
