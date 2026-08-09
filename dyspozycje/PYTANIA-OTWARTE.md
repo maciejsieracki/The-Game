@@ -5196,6 +5196,12 @@ wołany BEZPOŚREDNIO PRZED komunikatem TRIUMPH, więc **ELIMINACJA nigdy się n
 wzorowany na `wonderCompletedNotice.ts`, podmiana `showHintMessage(...)` w `main.ts:19744-19747` —
 rozwiąże oba problemy naraz (przeoczenie i konflikt nadpisania).
 
+**Zaimplementowane w worktree, czeka na Evaluatora:** nowy `triumphCityStateNotice.ts` (108 linii,
+wzorowany na `wonderCompletedNotice.ts`), podmiana w `main.ts`, nowy test 13/13. **Potwierdzony
+pozytywny efekt uboczny:** komunikat ELIMINACJA (6000ms) teraz faktycznie zdąży się pokazać, bo
+TRIUMPH już nie dzieli z nim elementu `hintToast`. Bramki: tsc 0, logic-test 213/213, nowy test
+13/13, istniejący `triumph-city-state-test.cjs` bez regresji 10/10.
+
 ---
 
 ## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — rozpoznanie gotowe, wymaga ABC (2026-08-09)
