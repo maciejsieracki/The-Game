@@ -2087,10 +2087,15 @@ Mechanizm istnieje (`triumph-city-state.ts`, main.ts:19735) ale dymek się nie p
 Maciej chce pełnoprawnego popupu zamiast 9,5s hinta. Dispatch Explore (wzorzec istniejącego modala)
 przed implementacją. Pełna treść w `PYTANIA-OTWARTE.md`.
 
-## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — OTWARTE, bug AI, wymaga rozpoznania (2026-08-09)
-AI zakłada miasta bez respektowania minimalnej odległości/zwartości terytorium jak gracz — mapa
-pokazuje "miszmasz" rozrzuconych miast wielu cywilizacji. Dispatch Explore przed naprawą
-(prawdopodobnie wymaga ABC — parytet zasad gracz/AI). Pełna treść w `PYTANIA-OTWARTE.md`.
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+Odległość min. (4 heksy) identyczna gracz/AI — to nie problem. AI brak `withinTerritory` (gracz go
+ma) + premia +15 pkt za zakładanie POZA zasięgiem własnych miast — realna przyczyna. ABC A/B/C,
+rekomendacja C (złagodzić scoring, nie twardy zakaz). Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY — Evaluator PASS-WITH-NOTES, 3 noty do naprawy (2026-08-09)
+Duża/mała/zapas potwierdzone merytorycznie. N1: test nie strzeże deliverable (2 mutacje nie
+złapane). N2: fallback Pracy dla panelu rywala miesza tempo/zapas. N3: komentarz-kanon zawiera
+fałszywe słowo "nigdy". Pełna treść w `PYTANIA-OTWARTE.md`.
 
 ## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — OTWARTE, wymaga rozpoznania (2026-08-09)
 Checkbox "Auto Wyżywienie" ma stać się przyciskiem w stylu przycisku auto-produkcji/"Auto-

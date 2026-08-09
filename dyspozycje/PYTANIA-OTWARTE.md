@@ -4706,6 +4706,23 @@ istniejące pola `*Rate`.
 **Odłożone na później, tylko zarejestrowane (P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC niżej) —
 NIE robić teraz.**
 
+**Evaluator (Opus 5): PASS-WITH-NOTES, dowód mutacyjny (6 mutacji, 2 nie złapane).** Duża/mała/zapas
+potwierdzone merytorycznie (nie tylko nazwy zmiennych), trzeci element = ta sama wielkość co główny
+HUD mapy dla WSZYSTKICH 6 surowców gracza (tabela zgodności w pełnym raporcie). **3 noty do naprawy
+przed scaleniem:**
+- **N1 (najważniejsza):** test NIE strzeże głównego deliverable — usunięcie renderu trzeciego
+  elementu ORAZ odcięcie wiring caller→`w3CityChip` (2 niezależne mutacje) przechodzą 29/29 zielono.
+  Test sprawdza tylko obecność tekstu w martwym kodzie, nie faktyczny render.
+- **N2:** fallback `stock: empire.pracaPool ?? empire.pracaRate ?? 0` dla PANELU MIASTA RYWALA
+  (ownerId≠0, brak `pracaPool` na tej ścieżce) pokazuje TEMPO zamiast zapasu, mimo że tooltip nazywa
+  to „zapas" — jedyny z 6 surowców z tym problemem, poprawka jednotokenowa (usunąć `?? pracaRate`).
+- **N3:** komentarz-kanon w kodzie (`cityPanel.ts:8807`) twierdzi że `doBudynkow` „nigdy" nie trafia
+  do puli imperium — OBALONE przez `production.ts:1389-1394` (trafia, gdy kolejka budowy jest
+  pusta). Kierunek zastrzeżenia słuszny, słowo „nigdy" fałszywe — trafiło do repo jako fakt wbrew
+  CLAUDE.md §0b, do przeredagowania.
+Niepilne: N4 (przestarzały docstring sąsiedniego testu), N5 (chip miasta rywala pokazuje mylące
+„(0)" zamiast pomijać element gdy brak danych zapasu).
+
 ## P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC (2026-08-09, uwaga Macieja przy R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY) · STATUS: **OTWARTE — niepilne, „temat na później" (cytat Macieja)**
 
 Maciej zwrócił uwagę, że trzeba ujednolicić zasady kolorów prezentacji surowców między panelem
@@ -5174,7 +5191,40 @@ rozwiąże oba problemy naraz (przeoczenie i konflikt nadpisania).
 
 ---
 
-## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (2026-08-09, zgłoszenie z playtestu, bug AI) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** reguła min. odległości (4 heksy) jest DZIŚ IDENTYCZNA liczbowo dla
+gracza i AI (dwa osobne, ale zsynchronizowane parametry JSON, zgodnie z decyzją R-AI-KOLONIZACJA
+2026-08-03) — to NIE jest przyczyną „miszmaszu". **Prawdziwa przyczyna:** gracz ma DRUGI, twardy
+wymóg — `withinTerritory` (nowe miasto musi leżeć w promieniu terytorium JEDNEGO z już
+posiadanych miast gracza, `main.ts:7639-7659`). **AI NIE MA tego wymogu w ogóle** — egzekucja
+`foundCityAt` dla AI (`main.ts:23084`) woła `canFoundCity` BEZ `withinTerritory`. Co więcej, AI
+dostaje systemową PREMIĘ +15 pkt w heurystyce wyboru heksu za zakładanie miasta POZA zasięgiem
+jakiegokolwiek istniejącego miasta (`ai.ts:2694`) — czyli lokalizacje daleko od własnego terytorium
+są dziś faworyzowane, nie karane. Jedyny miękki (nie twardy) czynnik ciągnący w stronę własnego
+regionu to bonus +50×skala za bliskość klastra startowego — łatwo przebity innymi składnikami
+scoringu. Explore ocenia to jako niedopatrzenie/lukę, nie świadomą decyzję — dokument
+R-AI-KOLONIZACJA mówi o „pokryciu całej mapy" jako celu ekspansji AI w kolejnych fazach, ale nie
+adresuje w ogóle kwestii zwartości terytorium tej samej cywilizacji AI. Osobny czynnik
+współprzyczyniający: `findCityFoundingHex` skanuje CAŁĄ mapę bez ograniczenia do lądu połączonego
+z istniejącymi miastami AI — na mapach z wieloma wyspami/kontynentami to dodatkowo pogłębia efekt.
+
+**[TEMAT: Czy AI ma dostać wymóg `withinTerritory` jak gracz]**
+- **A — Dodać AI ten sam twardy wymóg co gracz** (`withinTerritory` względem WŁASNYCH miast AI).
+  Za: pełny parytet zasad gracz/AI, zgodny z życzeniem Macieja. Przeciw: może ograniczyć realizację
+  celu „pokrycie całej mapy" z R-AI-KOLONIZACJA (Q3=B) — AI miałoby trudniej kolonizować odległe,
+  dobre tereny; wymaga przemyślenia razem z premią +15 za bycie poza zasięgiem (dziś w bezpośredniej
+  sprzeczności z proponowaną zmianą).
+- **B — Nie zmieniać** — zostawić dzisiejsze zachowanie (świadoma szeroka ekspansja AI po całej
+  mapie), tylko wyjaśnić Maciejowi że to jest celowe (cel „pokrycie mapy" z wcześniejszej decyzji).
+- **C — Złagodzić, nie usunąć:** zamiast twardego `withinTerritory`, dodać miękką karę punktową za
+  odległość od najbliższego WŁASNEGO miasta (analogicznie do istniejącego bonusu klastra
+  startowego, ale silniejszą i bez wygasania po epoce 3), usuwając jednocześnie premię +15 za bycie
+  poza zasięgiem. AI nadal mogłoby zakładać miasta daleko, ale rzadziej niż dziś, z preferencją dla
+  ciągłości terytorium.
+
+Rekomendacja: **C** — pełny twardy zakaz (A) realnie koliduje z już podjętą decyzją o pokryciu
+całej mapy przez AI; złagodzenie scoringu daje kompromis bez cofania wcześniejszej decyzji.
 
 **Cytat Macieja:** „ewidentnie zapomniałem się jeszcze o jednym zgłoszeniu. Mianowicie napisałem,
 że cywilizacje budują sobie miasta w oddaleniu od swojej cywilizacji, a powinny budować zgodnie z
@@ -5270,7 +5320,29 @@ ilościowym. Explore rekomenduje diagnostykę zamiast zgadywanej poprawki: tymcz
 w `creditOwnerResourceStock` gdy `capPerType === undefined && amount > 0`, złapany na żywo w
 kolejnej sesji playtestu Macieja, zamiast naprawiać na ślepo.
 
-**Dispatch naprawy (bez ABC — czysto techniczny bug, brakujący parametr):** (1) dodać `capPerType`
+**NAPRAWIONE przez Operatora (w worktree, czeka na Evaluatora):** `main.ts:21045` (drewno) — dodany
+`capPerType`; audyt 3 call-site'ów: `main.ts:2950` (zwrot) świadomie zostawiony bez capu — komentarz
+w kodzie to dokumentuje; `main.ts:19083` (łup z bitwy) — naprawiony, ten sam wzorzec ryzyka co
+drewno (może odbyć się wielokrotnie w turze przed reconcile); `main.ts:20756` (przepływ handlowy) —
+naprawiony defensywnie, choć leci PRZED reconcile więc mniej pilne. Diagnostyka `console.warn`
+dodana w `building-stock-cost.ts`.
+
+**⛔ GLINA — NOWY, silny trop znaleziony przy audycie (NIE naprawiony, wymaga decyzji):**
+`gra/src/game/diplomacy-basket-transfer.ts:274` (`transferSurowiecIlosc`, wołane z `main.ts:7403`
+przy jednorazowej dostawie koszyka dyplomatycznego i `main.ts:14127` przy handlu cyklicznym) mutuje
+`city.surowce` **BEZPOŚREDNIO, z pominięciem `creditOwnerResourceStock` całkowicie** — żaden cap,
+diagnostyka `console.warn` tego NIE złapie. Dostawa jednorazowa (`main.ts:7403`) trafia do stolicy
+biorcy natychmiast po zamknięciu umowy dyplomatycznej, niezależnie od końca tury — bardzo
+prawdopodobny kandydat na zgłoszony objaw „Glina 1086/1000 PEŁNY". Handel cykliczny leci przed
+reconcile więc mniej ryzykowny. Operator świadomie NIE naprawił (poza zleconym zakresem) —
+zgłaszam do decyzji: czy naprawić teraz (wygląda na ten sam typ bugu co drewno, ale w innym module)
+czy potwierdzić najpierw diagnostyką na żywo.
+
+**Bramki Operatora:** tsc 0 błędów, logic-test 213/213, nowy test (sekcja F, +8 asercji) zielony,
+33 sąsiednie testy — zero regresji względem `main` (zweryfikowane `git stash` porównaniem, w tym
+liczne PRE-ISTNIEJĄCE czerwone testy niezwiązane ze zmianą, niezmienione przed/po).
+
+**Dispatch naprawy (BYŁO, wykonane przez Operatora — historyczna treść zlecenia):** (1) dodać `capPerType`
 do wywołania w `main.ts:21130` (wzorem `tickEmpireResourcePipeline`); (2) przy okazji sprawdzić
 pozostałe 3 miejsca `creditOwnerResourceStock(...)` bez `capPerType` (`main.ts:2950` — zwrot,
 prawdopodobnie celowo; `main.ts:19180` — łup z bitwy, ryzykowne dla Brąz/Żelazo; `main.ts:20847` —
