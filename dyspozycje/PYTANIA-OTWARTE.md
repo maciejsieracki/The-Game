@@ -4432,3 +4432,36 @@ dziś zawsze równe, ale bez wspólnego źródła — ryzyko cichego rozjazdu w 
 klamrowany ≥0) — sygnał ostrzegawczy przetrwał na małej liczbie, degradacja nie utrata.
 **N6 (do rejestru, niepilne, nieosiągalne w grze):** ścieżka fallback `resolveEmpireSnap` nie ma
 4 z 6 pól — dziś nieosiągalna (panel tylko dla gracza), ryzyko czysto latentne.
+
+---
+
+## R-WYDARZENIA-FILTR-KATEGORII — zaimplementowane, 1 pytanie otwarte (2026-08-09)
+
+Zaimplementowano: (1) etykieta „Dyplomacja" zamiast „Koniec tury" wyłącznie dla wpisów handlu
+AI↔AI (jedyny realny typ zaśmiecający panel — Operator sprawdził WSZYSTKIE typy wpisów przechodzące
+przez `eot-event-defer.ts`, to mieszanka: badania gracza, wzrost/głód, deficyt złota,
+auto-ulepszenia, zwycięstwo — tylko handel AI↔AI jest „nie-nasze"); (2) przełącznik `🌍 Inne cyw.`
+u góry panelu, domyślnie **WYŁĄCZONY** (chowa spam handlu AI↔AI) — decyzja Operatora, uzasadniona;
+(3) przycisk „Usuń wszystkie".
+
+**⛔ Pytanie otwarte:** żądanie Macieja wymieniało TRZY kategorie (własna cywilizacja / pozostałe
+umowy innych cywilizacji / wojny-pokoje-najważniejsze innych cywilizacji), ale silnik dziś **nie
+generuje w ogóle** trzeciej kategorii (wojny/pokoje między dwoma AI, nie dotyczące gracza) jako
+wpisu w panelu — takie zdarzenia lecą tylko do `console.log`, nigdy do `showHintMessage`. Operator
+przygotował pole `origin` generycznie (jedna linia doda tę kategorię później), ale NIE zbudował
+przełącznika bez danych za nim (zgodnie z zakazem martwego UI, CLAUDE.md). Pytanie: czy chcesz
+żebym teraz dodała tę trzecią kategorię (wymaga nowego typu zdarzenia w silniku dla wojen/pokoi
+AI↔AI), czy zostaje odłożone.
+
+## R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY — zaimplementowane, 1 pytanie otwarte (2026-08-09)
+
+Kolor Zulusów zmieniony `#2E7D32` (ciemna zieleń) → `#C8E838` (limonka/chartreuse), zmierzony
+naukowo (kontrast CIE-Lab dE76 względem 18 odcieni terenu): najgorszy przypadek 4,6→23,5 (5,1×
+lepiej). Nowa asercja regresyjna w `civ-visual-test.cjs` (próg dE76≥20), dowód negatywny wykonany
+(przywrócenie starego koloru zapala test czerwonym).
+
+**⛔ Znalezisko przy okazji, ten sam problem u innej cywilizacji:** Celtowie `#3D6B35` mają
+najgorszy przypadek dE76 = **6,4** — GORZEJ niż Zulusi przed poprawką. Pozostałe 13 cywilizacji
+bezpieczne (≥23,4). Operator świadomie NIE ruszył Celtów — kolor tożsamościowy, wymaga tej samej
+rozmowy co Zulusi. Pytanie: chcesz żebym teraz też poprawiła kolor Celtów (ta sama metoda), czy
+najpierw zobaczysz Zulusów w grze?
