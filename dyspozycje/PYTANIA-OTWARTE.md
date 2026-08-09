@@ -4638,6 +4638,32 @@ dostrojenia AI realne ryzyko to cywilizacje AI utykające w Kamieniu/Brązie na 
 
 ---
 
+## R-WYDARZENIA-FILTR-KATEGORII — SCALONE `2984b707` (2026-08-09)
+
+Odtworzone od zera (redo-Operator), N1+N2 domknięte, druga runda Evaluatora dała PASS-WITH-NOTES
+bez żadnej noty blokującej (5 własnych mutacji Evaluatora, wszystkie złapane; 44/44 bramek w
+przekroju zielone). Scalone bezpośrednio przez orkiestratora — 3 z 4 zmienionych plików (`main.ts`,
+`sidePanelHud.ts`, `hud.ts`) miały zdywergowaną bazę worktree (zawsze `main`), zweryfikowane
+per-hunk (kotwice tekstowe unikalne i niezmienione w HEAD) i zastosowane chirurgicznie przez Edit;
+`eot-event-defer.ts` identyczny base=HEAD, bezpieczny `git apply`. Nowy plik `sidePanelEventFilter.ts`
++ test + stub skopiowane bezpośrednio (bez ryzyka dywergencji). Bramki na scalonym stanie: tsc 0 ·
+logic-test 213/213 · eot-event-defer-test 5/5 · sidepanel-events-toolbar-test 19/19.
+
+**Niepilne noty z drugiej rundy Evaluatora, do rejestru (nie blokowały scalenia):** N3 — okablowanie
+`main.ts→hud.ts→sidePanelHud.ts` (przekazanie `onDismissAll`) nadal bez pokrycia testem (dowód
+mutacyjny: usunięcie jednej linii w `hud.ts` nie czerwieni żadnej bramki) — zamykalne dodaniem
+drugiego esbuild-stuba (`scienceOwlIcon.ts`), ale żadna istniejąca bramka tego dziś nie robi. N4 —
+`AI_AI_TRADE_MARKER` w `eot-event-defer.ts` duplikuje literał komunikatu z `main.ts:13629` zamiast
+dzielić wspólną stałą — rozjazd treści po cichu zepsułby i etykietę, i filtr. N5 — artefakt bramki
+`.sidepanel-events-toolbar-bundle.css` nieobjęty `.gitignore` (wzorzec łapie tylko `.cjs`). N6 —
+toolbar renderuje się nawet przy 0 wydarzeniach (kosmetyka). N7 — `clearAllSidePanelEvents` omija
+flagę `blocking:true` (dziś nieużywaną nigdzie w kodzie — uśpione ryzyko). **N8 — do potwierdzenia
+u Macieja:** przełącznik „Inne cyw." jest ADDYTYWNY (wyłączony = tylko nasze, włączony = nasze+obce),
+nie rozłączny — nie da się zobaczyć WYŁĄCZNIE cudzych wydarzeń. Może to być lepsze UX niż dosłowne
+żądanie, ale to interpretacja, nie 1:1 spełnienie.
+
+---
+
 ## R-WYDARZENIA-FILTR-KATEGORII — Evaluator PASS-WITH-NOTES, 2 noty blokujące (2026-08-09)
 
 Klasyfikacja AI↔AI i filtracja innych źródeł zdarzeń potwierdzone niezależnie (w tym jeden tor
@@ -5057,14 +5083,31 @@ na pierwszym końcu tury, bez okresu karencji. Chatki mogą leżeć wewnątrz cu
 
 ---
 
-## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — zaimplementowane w worktree, czeka na Evaluatora (2026-08-09)
+## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — Evaluator PASS-WITH-NOTES, gotowe do scalenia (2026-08-09)
 
 **Operator wykonał** (`cityPanel.ts` ~4636-4663): checkbox→`<button class="hbtn auto-wyzywienie-btn">`,
 stan z `city.autoWyzywienie` (nie DOM), handler `click`, tekst „Auto WYŁ..." przeniesiony do `title`,
-podsumowanie zostało widoczne. **Brak jakiegokolwiek testu regresyjnego dla tego markupu** (Operator
-potwierdził grepem że nic go dziś nie testowało) — Evaluator powinien ocenić czy to akceptowalne dla
-czysto kosmetycznej zmiany, czy wymaga dołożenia testu przed scaleniem. Bramki Operatora: tsc 0,
-logic-test 213/213, testy sąsiednie zielone.
+podsumowanie zostało widoczne.
+
+**Evaluator (Opus 5): PASS-WITH-NOTES.** Wszystkie 4 punkty weryfikacji (stan żywy nie martwy,
+handler czyta stan nie DOM — potwierdzona ta sama referencja obiektu przez `rerender()`, `title`
+warunkowy poprawny, podsumowanie nietknięte) potwierdzone samodzielnie. Brak testu regresyjnego
+uznany za AKCEPTOWALNY (zero logiki biznesowej, zero edge case'ów) — ale uzasadnienie Operatora
+(„niemożliwe do zbundlowania") skorygowane: bariera jest tylko tranzytywna (brandAssets/
+scienceOwlIcon), repo ma już gotowy wzorzec obejścia (esbuild stub, 3 precedensy w `gra/tools/*`),
+więc technicznie możliwe, tylko kosztowne — decyzja słuszna, nie z tego powodu co podano.
+
+**Noty do domknięcia (niepilne, nie blokują scalenia):** N1 — brak `aria-pressed` (dostępność,
+precedens `gamePauseMenu.ts:84-108`, fix jednolinijkowy); N2 — `title` przy stanie WŁ nie ma
+jawnego markera „WŁĄCZONY" jak wzorzec `#cs-manager`; N3 — **higiena scalania:** symlink
+`node_modules` w worktree NIE jest łapany przez `.gitignore` (wzorzec `node_modules/` z ukośnikiem
+nie dopasowuje symlinka) — pilnować przy `git add`, nie używać `git add -A`; N4 kosmetyka OK.
+**Ryzyko layoutu (do potwierdzenia w playteście, nie z kodu):** font 0,74em→0,8em, wyższy rząd —
+może przesunąć elementy pod spodem, ale też ubył jeden fragment tekstu w hincie, efekt netto
+niepewny bez wizualnego testu.
+
+**SCALONE bezpośrednio przez orkiestratora** (małe, jednoplikowe, PASS-WITH-NOTES bez blokujących
+not) — patrz commit poniżej w kanale.
 
 **Rozpoznanie (Explore):** checkbox w `cityPanel.ts:4640-4660`, wzorzec przycisku auto-produkcji
 („Zarządca automatyczny") w `cityPanel.ts:8669` (markup `<button class="hbtn">`) +

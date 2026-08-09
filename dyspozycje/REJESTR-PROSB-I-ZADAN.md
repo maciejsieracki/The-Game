@@ -2124,3 +2124,8 @@ Dwa żądania: (1) cywilizacje zawsze na górze listy dyplomacji, nad miastami-p
 kliknięcie cywilizacji ma najpierw pokazać pop-up podsumowania (wojny/sojusze/umowy handlowe +
 propozycja spotkania), dopiero potem pełny panel wizyty. Dispatch Explore przed ABC. Pełna treść w
 `PYTANIA-OTWARTE.md`.
+
+## R-WYDARZENIA-FILTR-KATEGORII — SCALONE `2984b707` (2026-08-09)
+Odtworzone od zera, N1+N2 domknięte, druga runda Evaluatora PASS-WITH-NOTES bez not blokujących.
+Scalone chirurgicznie (3 z 4 plików zdywergowane, per-hunk weryfikacja kotwic). N3-N8 niepilne w
+rejestrze. Pełna treść w `PYTANIA-OTWARTE.md`.
