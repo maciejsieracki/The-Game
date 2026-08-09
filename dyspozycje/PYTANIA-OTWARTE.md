@@ -4828,6 +4828,14 @@ turę czy nadpisuje/duplikuje istniejący; (b) sprawdzić przeliczenie numer-tur
 czy wyświetlany numer tury w HUD-zie faktycznie pochodzi z tego samego licznika co ten zapisany w
 sejwie. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
 
+## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE (2026-08-09, żądanie danych od Macieja przy P-MAGAZYN-PRZEKROCZENIE-LIMITU) · STATUS: **OTWARTE — czyste zestawienie danych, decyzja o zmianie balansu odłożona do odpowiedzi Macieja**
+
+**Cytat Macieja:** „to oznacza że powinniśmy zmniejszyć produkcję drewna i gliny. Ale to trzeba do
+tego podejść kompleksowo. Napisz mi ile produkuje się w danych ulepszeniach drewna gliny kamienia,
+zdecyduję czy coś zmieniamy." Zestawienie do przygotowania i pokazania Maciejowi (nie decyzja o
+zmianie balansu — to on zdecyduje po zobaczeniu liczb). Każda liczba z nazwanym parametrem/
+jednostką/kontekstem (epoka/poziom), zgodnie z CLAUDE.md pkt 3.
+
 ## P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA — ODPOWIEDZIANE FAKTOGRAFICZNIE (2026-08-09)
 
 **Odpowiedź (Explore, potwierdzone w kodzie):** Mechanizm istnieje i **dotyczy też miast-państw** —
