@@ -4949,7 +4949,20 @@ raz, przy okazji tego zadania, niż pisać odpowiednik od zera.
 
 ---
 
-## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI (2026-08-09, zgłoszenie z playtestu, bug AI) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — przyczyna znaleziona, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** potwierdzone — mechanizm „zagrożenie lokalne ma priorytet" **NIE
+istnieje** dla ruchu wojsk AI, tylko dla decyzji produkcyjnych (miasto pod zagrożeniem buduje
+jednostki obronne, ale nie przekierowuje już istniejącej armii). Wybór celu marszu armii
+(`gra/src/game/ai.ts:2155-2217`, `citiesForMarch`/scoring) rozważa WYŁĄCZNIE miasta wrogich
+cywilizacji (gdziekolwiek na mapie) — barbarzyńcy nigdy nie trafiają do tej puli (nie są `City`),
+i nie ma żadnego malusa/bonusu za to, że własne miasto jest właśnie oblegane. Skutek dokładnie jak
+zgłoszono: jeśli AI jest w wojnie z KIMKOLWIEK (choćby daleko), krok „marsz na wrogie miasto" zawsze
+znajdzie cel i cała armia rusza tam, ignorując barbarzyńców pod własnym miastem.
+
+**To realna zmiana logiki AI (priorytetyzacja celów), nie prosta poprawka — wymaga ABC** zanim
+ktokolwiek zacznie kodować (może wpłynąć na balans/trudność, wymaga decyzji jak dokładnie ważyć
+priorytet obrony względem trwającej wojny).
 
 **Cytat Macieja:** „barbarzyńcy oblegają jedno z miast innej cywilizacji, a ta cywilizacja zamiast
 iść wojskiem i najpierw zwalczyć zagrożenie, to siedzi, nie wiadomo co, idzie w przeciwnym
@@ -4979,7 +4992,23 @@ pathfinding/celu. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, ni
 duża zmiana w logice AI (priorytetyzacja) — po rozpoznaniu prawdopodobnie wymaga ABC, nie tylko
 prostej naprawy.
 
-## R-EPOKA-BRAZU-WYMUSZONA-WOJNA (2026-08-09, propozycja nowej zasady z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga rozpoznania przed ABC**
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** mechanizm wypowiadania wojen AI→AI i AI→gracz istnieje
+(`decideAIDiplomacy`, `ai.ts`), ale jest rzadki (wymaga przewagi siły ≥60%, wysokiej agresji,
+relacji <30 pkt). Sąsiedztwo terytorialne NIE jest dziś używane do wyboru celu wojny (tylko do
+wyboru celów bojowych już W TRAKCIE wojny) — trzeba by dobudować taki filtr. Ranking Mocy istnieje,
+ale kierunek preferencji sojuszy jest dziś ODWROTNY do życzenia Macieja: silniejsza cywilizacja ma
+dziś MNIEJSZĄ (nie większą) chęć sojuszu z podległym/słabszym — trzeba by dodać osobny bonus.
+Istnieje dobry precedens architektoniczny do wzorowania się (`clusterForceWarTargetId`) i jasny
+punkt zaczepienia w kodzie epoki (`main.ts:22130`, `reconcileAllOwnerErasFromResearch()`).
+Dodatkowa hipoteza (do zweryfikowania razem z `P-AI-NIE-BRONI-WLASNYCH-MIAST`): AI ma dziś
+mechanizm SZYBKIEJ kapitulacji/oferty pokoju gdy zaczyna przegrywać (`ai.ts:3504-3527`) — może to
+współtłumaczyć „statyczność mapy" niezależnie od rzadkości wypowiadania wojen.
+
+**To realna, wieloczęściowa zmiana logiki AI (nowa reguła wymuszonej wojny + filtr sąsiedztwa +
+odwrócenie kierunku preferencji sojuszy) — wymaga ABC**, prawdopodobnie do rozbicia na osobne
+decyzje (reguła wojny osobno, kierunek sojuszy osobno).
 
 **Cytat Macieja:** „wydaje mi się, że w momencie gdy nastąpi epoka brązu, to każda cywilizacja,
 która wejdzie w epokę brązu, powinna wypowiedzieć wojnę przynajmniej jednej innej cywilizacji, tak
@@ -5035,6 +5064,23 @@ faktycznie istnieje w kodzie, w którym commicie powstał, czy jest realnie pod�
 żywej ścieżce gry, i czy „zjednoczenie całej Grecji" to inny/szerszy warunek niż zjednoczenie
 pojedynczych miast-państw (może dotyczyć konkretnie greckiej grupy cywilizacji, nie ogólnego
 mechanizmu).
+
+**ODPOWIEDŹ (zbadane bezpośrednio, bez subagenta):** mechanizm ISTNIEJE i JEST podłączony na żywej
+ścieżce. Plik `gra/src/game/triumph-city-state.ts`, wprowadzony commitem `906155a0` (2026-08-03,
+„Feat: Zwiedzaj EOT-only (Q2=B) + triumf ostatniego MP cywu (Q1=B)"), jest na bieżącej gałęzi
+(potwierdzone `git merge-base --is-ancestor`). Wołany z `main.ts:19735-19748` wewnątrz gałęzi
+eliminacji miasta-państwa. **Prawdopodobna przyczyna, dlaczego Maciej go nie zauważył:** (1)
+komunikat pokazuje się przez `showHintMessage(...)` (dymek/hint na 9,5 sekundy) — **NIE jest to
+osobne wyskakujące okno/modal**, którego Maciej mógł się spodziewać po opisie „plansza z
+informacją"; (2) warunek wyzwolenia jest węższy niż „zjednoczenie całej Grecji" w sensie ogólnym —
+wymaga, żeby eliminowane miasto-państwo było tego SAMEGO klucza cywilizacji co gracz
+(`playerCivKey === oldCiv`) I żeby to było OSTATNIE pozostałe miasto-państwo tego klucza — jeśli
+Maciej grał inną cywilizacją niż grecka, albo „ostatnie Państwo Miasto" w jego opisie nie było
+akurat tym konkretnym warunkiem (np. zdobył miasto-państwo NIE swojego klucza cywilizacji, albo
+zostały jeszcze inne miasta-państwa tego samego klucza gdzie indziej na mapie), komunikat świadomie
+się nie pokazał — to nie byłby błąd, tylko spełniony warunek „nie". Do potwierdzenia z Maciejem: czy
+widział krótki dymek (mógł przeoczyć) czy oczekuje pełnoprawnego modala, i czy scenariusz z jego
+gry faktycznie spełniał wąski warunek funkcji.
 
 **⛔ Doprecyzowanie Macieja (dosłowny cytat, ważne ograniczenia reguły):** „tylko żeby nie było
 tak, że wszyscy wypowiedzą wojnę graczowi. Generalnie powinno się wypowiadać wojny sąsiadowi, a

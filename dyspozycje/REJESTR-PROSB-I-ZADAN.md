@@ -2073,6 +2073,21 @@ AI nie broni oblężonego miasta przed barbarzyńcami, armia idzie w przeciwnym 
 wdrożenia: obrona własnego terytorium ma najwyższy priorytet nad innymi celami AI. Dispatch
 Explore przed naprawą (może wymagać ABC po rozpoznaniu). Pełna treść w `PYTANIA-OTWARTE.md`.
 
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — przyczyna znaleziona, wymaga ABC (2026-08-09)
+Ruch wojsk AI (ai.ts:2155-2217) rozważa tylko wrogie miasta, nigdy barbarzyńców — brak priorytetu
+obrony własnego terytorium. Realna zmiana logiki AI, wymaga ABC. Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+Mechanizm wojen AI istnieje ale rzadki; brak filtra sąsiedztwa do wyboru celu; kierunek preferencji
+sojuszy dziś odwrotny do życzenia Macieja (silny woli słabego mniej, nie bardziej). Wieloczęściowa
+zmiana, wymaga ABC. Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK — ODPOWIEDZIANE (2026-08-09)
+Mechanizm istnieje i jest podłączony (`triumph-city-state.ts`, commit 906155a0, main.ts:19735).
+Pokazuje się jako hint 9,5s (nie modal) i tylko gdy eliminowane miasto-państwo jest OSTATNIM tego
+samego klucza cywilizacji co gracz — może nie być błędem, tylko wąskim warunkiem/przeoczonym
+dymkiem. Pełna treść w `PYTANIA-OTWARTE.md`.
+
 ## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — OTWARTE, wymaga rozpoznania (2026-08-09)
 Odkrycie jednostki wojskowej z chatki ze skarbami na cudzym terytorium liczy się jako naruszenie
 granicy i karze dyplomację, mimo że gracz nic złego nie zrobił. Propozycja: pula nagród z chatek na
