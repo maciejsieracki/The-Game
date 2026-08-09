@@ -4359,3 +4359,28 @@ Główny HUD mapy (`gra/src/ui/hud.ts` → `renderBarD1B`) formatuje 5 z 6 chip�
 (bo to zapas, nie delta), ale chip „Kultura" niekonsekwentnie używa `signed(s.kultura)` (wymuszony
 znak „+"). Prawdopodobnie drobny, pre-istniejący błąd formatowania, niezwiązany ze zgłoszeniem
 zapas-vs-tempo. Nie naprawione, poza zakresem.
+
+---
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — ZWERYFIKOWANE, Evaluator PASS-WITH-NOTES (2026-08-09)
+
+Niezależny Evaluator (Opus 5) potwierdził naprawę na żywo (dowód mutacyjny własny, nie ufając
+Operatorowi): kod SPRZED naprawy daje 15/9 (dokładnie jak zgłoszono), cofnięcie kolejności wywołań
+23/1, przywrócenie sztywnej zieleni 20/4, **ale** przywrócenie oryginalnej geometrii glifu 24/0 —
+asercja „glif mieści się w krążku" jest niedyskryminująca (i stary, i nowy kod ją spełniają, mimo
+różnicy w czytelności). Realny wniosek Evaluatora o czytelności: to **złoty krążek + obwódka**
+naprawiają problem, nie zmniejszenie glifu — parytet pikselowy z odznaką mapy świata (znaną jako
+czytelną-złotą) jest mocniejszym argumentem niż teoria o kolorze emoji.
+
+**4 noty do domknięcia przy scaleniu (nie blokują merytorycznie):**
+1. Etykieta plonów urosła ~11,5% w świecie 3D (`worldH` 0,856→0,954) — efekt uboczny większej
+   odznaki, Operator tego nie zgłosił. Do obejrzenia w grze pod kątem nachodzenia sąsiednich pól.
+2. Asercja glifu do wzmocnienia (próg na stosunek glif/średnica) albo usunięcia — dziś nic nie chroni.
+3. Komentarz „Używane przez okolicapreview" w `cityOkolicaOverlay.ts` nieaktualny — brak takiego wywołującego.
+4. Diagnoza „zamrożone na zawsze" nieścisła — realnie ginie na ścieżkach `onOkolicaSetFocus`/
+   `onOkolicaEnterManual`/`onOkolicaRestoreAuto`/`onSwitchCity`/wzrost populacji, nie wszędzie.
+
+**Potwierdzone jako realne (nie naprawione, osobna sprawa):** `P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI`
+(trasy handlowe + pigułki miast, ten sam wzorzec błędu) — Evaluator niezależnie potwierdził.
+Wszystkie bramki Operatora potwierdzone co do liczby: tsc 0 · logic-test 213/213 · nowy test 24/0
+· okolica 46/46 · city-map-badge 62/0 · camera-zoom-block 4/0.
