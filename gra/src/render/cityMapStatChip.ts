@@ -115,37 +115,116 @@ const CAPITAL_CROWN_SLOT_W = 19;
 const CAPITAL_CROWN_W = 17;
 const CAPITAL_CROWN_H = 13;
 
-let civSigilSvgFn: ((civIconId: string) => string) | null = null;
-const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
 /**
- * BUG-IKONA-KULTURY-PLACEHOLDER — kolejka `onReady` dla sygnetu, który jest właśnie w locie.
- * Bez niej drugi (i każdy kolejny) zamawiający ten sam sygnet gubił callback, a że tekstura
- * plakietki powstaje jednorazowo (`if (!tex)`), zostawał na niej romb-placeholder aż do najazdu
- * kursorem (hover zmienia klucz cache → świeża tekstura trafiała już w gotowy obrazek).
+ * P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC — JEDNO miejsce logiki kolejkowania żądań obrazka,
+ * współdzielone przez wszystkie trzy zasoby pigułki (sygnet cywilizacji, portret władcy,
+ * ikona produkcji).
+ *
+ * Do tej pory ten sam wzorzec stał w pliku w TRZECH niezależnych kopiach, dopisywanych osobno,
+ * w trzech różnych zleceniach — i dokładnie stąd wziął się błąd: naprawiono kopię sygnetu
+ * (BUG-IKONA-KULTURY-PLACEHOLDER), a portret i ikona produkcji zostały z `if (cached ===
+ * 'loading') return;`, czyli dalej gubiły callback drugiego zamawiającego
+ * (R-PORTRET-PRODIKONA-DROPPED-CALLBACK). Czwarty zasób ma NIE dostawać własnej kopii —
+ * ma wywołać `createImageRequestQueue()` i tym samym odziedziczyć naprawę.
+ *
+ * Kontrakt (dokładnie ten sam, który miały trzy kopie — patrz `city-map-badge-test.cjs`):
+ * - obrazek gotowy w cache → `onReady` natychmiast, synchronicznie, bez ładowania;
+ * - żądanie tego samego klucza w locie (`'loading'`) → callback DOPISANY do kolejki:
+ *   nigdy zgubiony i nigdy nadpisujący cudzy;
+ * - zimna ścieżka → znacznik `'loading'`, callback pierwszego zamawiającego też idzie do
+ *   kolejki (a nie obok niej), potem JEDNO `loadImageInto` na klucz;
+ * - po `onload` → obrazek do cache, kolejka odczytana i usunięta, wszystkie callbacki wołane.
  */
-const civSigilPendingById = new Map<string, Array<(img: HTMLImageElement) => void>>();
+interface ImageRequestQueue {
+  /**
+   * @param key klucz cache zasobu — liczy go wywołujący (`civSigilCacheKey`,
+   *        `leaderPortraitCacheKey`, `prodIconCacheKey`), bo tylko on wie, co zasób rozróżnia.
+   * @param resolveSrc źródło obrazka (URL albo data URI). Wołane WYŁĄCZNIE na zimnej ścieżce,
+   *        czyli dopiero po chybieniu cache i kolejki. Wynik pusty / `null` przerywa żądanie
+   *        i NIE zostawia po sobie znacznika `'loading'`.
+   */
+  request(
+    key: string,
+    resolveSrc: () => string | null,
+    onReady: (img: HTMLImageElement) => void,
+  ): void;
+  /**
+   * Czyści WYŁĄCZNIE cache obrazków — kolejki oczekujących zostają NIETKNIĘTE.
+   * To rozróżnienie jest istotą naprawy, nie detalem: settery `setCityMapBadge*` lecą z ciała
+   * `wireUnitRendererRingStance()` (main.ts, 9 wywołań — m.in. wypowiedzenie wojny), więc
+   * wyczyszczenie kolejki zgubiłoby callbacki żądań będących akurat w locie i plakietka
+   * zostałaby z rombem NA STAŁE — czyli dokładnie ten bug, który kolejka naprawia,
+   * tylko wyzwalany zdarzeniem dyplomatycznym.
+   */
+  clearImages(): void;
+}
+
+function createImageRequestQueue(): ImageRequestQueue {
+  const imageByKey = new Map<string, HTMLImageElement | 'loading'>();
+  const pendingByKey = new Map<string, Array<(img: HTMLImageElement) => void>>();
+
+  /** Dopisuje callback do kolejki oczekujących na dany klucz (nigdy nie nadpisuje). */
+  const queueCallback = (key: string, onReady: (img: HTMLImageElement) => void): void => {
+    const queue = pendingByKey.get(key);
+    if (queue) queue.push(onReady);
+    else pendingByKey.set(key, [onReady]);
+  };
+
+  return {
+    request(key, resolveSrc, onReady) {
+      const cached = imageByKey.get(key);
+      if (cached instanceof HTMLImageElement) {
+        onReady(cached);
+        return;
+      }
+      // Żądanie w locie → dopisz callback do kolejki zamiast go zgubić. Tekstura plakietki
+      // powstaje jednorazowo (`if (!tex)` w `makeCityMapBadgeSprite`), więc zgubiony callback
+      // = brak przerysowania aż do najbliższej zmiany klucza cache (hover / populacja / epoka).
+      if (cached === 'loading') {
+        queueCallback(key, onReady);
+        return;
+      }
+      const src = resolveSrc();
+      if (!src) return;
+      imageByKey.set(key, 'loading');
+      // Dopisanie (nie nadpisanie) jest tu istotne: `clearImages()` z settera zasobu kasuje
+      // cache obrazków przy każdym przewiązaniu, więc znacznik 'loading' może zniknąć, gdy
+      // poprzednie ładowanie wciąż trwa, a kolejny zamawiający pójdzie tą zimną ścieżką.
+      // Kolejka przeżywa taki reset i zostaje domknięta przez to ładowanie, które skończy
+      // się pierwsze.
+      queueCallback(key, onReady);
+      loadImageInto(src, (img) => {
+        imageByKey.set(key, img);
+        const queue = pendingByKey.get(key) ?? [];
+        pendingByKey.delete(key);
+        for (const cb of queue) cb(img);
+      });
+    },
+    clearImages() {
+      imageByKey.clear();
+    },
+  };
+}
+
+let civSigilSvgFn: ((civIconId: string) => string) | null = null;
+/** Sygnet cywilizacji — medalion pigułki (BUG-IKONA-KULTURY-PLACEHOLDER). */
+const civSigilQueue = createImageRequestQueue();
 
 let leaderPortraitUrlFn: ((civIconId: string, era: number) => string | null) | null = null;
-const leaderPortraitImageByKey = new Map<string, HTMLImageElement | 'loading'>();
 /**
- * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejka `onReady` dla portretu, który jest w locie.
- * Ten sam mechanizm co `civSigilPendingById`. Bez niej drugi (i każdy kolejny) zamawiający ten
- * sam portret gubił callback: `_syncStatChip` (render/cities.ts) tworzy plakietkę osobno dla
- * KAŻDEGO miasta, więc dwa miasta tej samej cywilizacji i epoki zamawiają ten sam portret w tej
- * samej klatce. Przegrany wyścigu zostawał na fallbacku medalionu (sygnet kultury zamiast
- * portretu władcy) aż do najbliższej zmiany klucza tekstury (hover / populacja / epoka).
+ * Portret władcy — medalion majora (R-PORTRET-PRODIKONA-DROPPED-CALLBACK).
+ * `_syncStatChip` (render/cities.ts) tworzy plakietkę osobno dla KAŻDEGO miasta, więc dwa
+ * miasta tej samej cywilizacji i epoki zamawiają ten sam portret w tej samej klatce.
  */
-const leaderPortraitPendingByKey = new Map<string, Array<(img: HTMLImageElement) => void>>();
+const leaderPortraitQueue = createImageRequestQueue();
 
 let prodIconSvgFn: ((kind: ProductionKind, id: string) => string) | null = null;
-const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
 /**
- * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejka `onReady` dla ikony produkcji w locie.
- * Ten sam mechanizm co wyżej: dwa miasta produkujące TO SAMO (np. dwie osady stawiające
- * koszary) zamawiają tę samą ikonę w jednej klatce, a przegrany wyścigu tracił callback
- * i jego pigułka zostawała BEZ glifu produkcji do najbliższej zmiany klucza tekstury.
+ * Ikona produkcji — glif frontu kolejki (R-PORTRET-PRODIKONA-DROPPED-CALLBACK).
+ * Ten sam zbieg co przy portrecie: dwa miasta produkujące TO SAMO (np. dwie osady stawiające
+ * koszary) zamawiają tę samą ikonę w jednej klatce.
  */
-const prodIconPendingByKey = new Map<string, Array<(img: HTMLImageElement) => void>>();
+const prodIconQueue = createImageRequestQueue();
 
 /**
  * Wstrzykuje SVG sygnetu cywilizacji (main.ts → civIconSvg).
@@ -153,12 +232,13 @@ const prodIconPendingByKey = new Map<string, Array<(img: HTMLImageElement) => vo
  */
 export function setCityMapBadgeCivSigil(fn: (civIconId: string) => string): void {
   civSigilSvgFn = fn;
-  civSigilImageById.clear();
-  // UWAGA: `civSigilPendingById` celowo NIE jest czyszczone. Ta funkcja jest wołana z ciała
-  // `wireUnitRendererRingStance()` (main.ts:6217), a ono z 9 miejsc — także przy wypowiedzeniu
-  // wojny i zobowiązaniach sojuszniczych. Wyczyszczenie kolejki zgubiłoby callbacki żądań
-  // będących akurat w locie i plakietka zostałaby z rombem NA STAŁE — czyli dokładnie ten bug,
-  // który kolejka naprawia, tylko wyzwalany zdarzeniem dyplomatycznym.
+  // UWAGA: `clearImages()` kasuje WYŁĄCZNIE cache obrazków — kolejka oczekujących celowo
+  // zostaje. Ta funkcja jest wołana z ciała `wireUnitRendererRingStance()` (main.ts:6217),
+  // a ono z 9 miejsc — także przy wypowiedzeniu wojny i zobowiązaniach sojuszniczych.
+  // Wyczyszczenie kolejki zgubiłoby callbacki żądań będących akurat w locie i plakietka
+  // zostałaby z rombem NA STAŁE — czyli dokładnie ten bug, który kolejka naprawia, tylko
+  // wyzwalany zdarzeniem dyplomatycznym. Gwarancję daje dziś sam helper, nie ten komentarz.
+  civSigilQueue.clearImages();
 }
 
 /**
@@ -169,11 +249,11 @@ export function setCityMapBadgeLeaderPortrait(
   fn: (civIconId: string, era: number) => string | null,
 ): void {
   leaderPortraitUrlFn = fn;
-  leaderPortraitImageByKey.clear();
-  // UWAGA: `leaderPortraitPendingByKey` celowo NIE jest czyszczone — z tego samego powodu co
-  // kolejka sygnetu wyżej. Ta funkcja leci z `wireUnitRendererRingStance()` (9 wywołań, m.in.
-  // wypowiedzenie wojny), a wyczyszczenie kolejki zgubiłoby callbacki żądań w locie i medalion
-  // zostałby bez portretu NA STAŁE.
+  // UWAGA: kolejka oczekujących celowo NIE jest czyszczona — z tego samego powodu co przy
+  // sygnecie wyżej. Ta funkcja leci z `wireUnitRendererRingStance()` (9 wywołań, m.in.
+  // wypowiedzenie wojny), a wyczyszczenie kolejki zgubiłoby callbacki żądań w locie
+  // i medalion zostałby bez portretu NA STAŁE.
+  leaderPortraitQueue.clearImages();
 }
 
 /**
@@ -182,8 +262,8 @@ export function setCityMapBadgeLeaderPortrait(
  */
 export function setCityMapBadgeProdIcon(fn: (kind: ProductionKind, id: string) => string): void {
   prodIconSvgFn = fn;
-  prodIconImageByKey.clear();
-  // UWAGA: `prodIconPendingByKey` celowo NIE jest czyszczone — patrz komentarz przy sygnecie.
+  // UWAGA: kolejka oczekujących celowo NIE jest czyszczona — patrz komentarz przy sygnecie.
+  prodIconQueue.clearImages();
 }
 
 const CIV_INITIALS: Record<string, string> = {
@@ -414,44 +494,24 @@ function civSigilCacheKey(civIconId: string): string {
   return (civIconId || '').trim().toLowerCase() || 'unknown';
 }
 
-/** Dopisuje callback do kolejki oczekujących na sygnet o danym kluczu (nigdy nie nadpisuje). */
-function queueCivSigilCallback(key: string, onReady: (img: HTMLImageElement) => void): void {
-  const queue = civSigilPendingById.get(key);
-  if (queue) queue.push(onReady);
-  else civSigilPendingById.set(key, [onReady]);
-}
-
+/**
+ * BUG-IKONA-KULTURY-PLACEHOLDER — kolejkowanie żyje w `civSigilQueue`; tu zostaje wyłącznie
+ * to, co dla sygnetu specyficzne: bramka wstrzykniętego SVG, klucz cache i źródło obrazka.
+ */
 function requestCivSigilImage(
   civIconId: string,
   onReady: (img: HTMLImageElement) => void,
 ): void {
-  if (!civSigilSvgFn) return;
-  const key = civSigilCacheKey(civIconId);
-  const cached = civSigilImageById.get(key);
-  if (cached instanceof HTMLImageElement) {
-    onReady(cached);
-    return;
-  }
-  // BUG-IKONA-KULTURY-PLACEHOLDER: żądanie w locie → dopisz callback do kolejki zamiast go zgubić.
-  if (cached === 'loading') {
-    queueCivSigilCallback(key, onReady);
-    return;
-  }
-  const raw = civSigilSvgFn(civIconId);
-  const svg = prepareSvgForCanvas(raw, CIV_SIGIL_STROKE);
-  if (!svg) return;
-  civSigilImageById.set(key, 'loading');
-  // Dopisanie (nie nadpisanie) jest tu istotne: `setCityMapBadgeCivSigil` czyści
-  // `civSigilImageById` przy każdym przewiązaniu, więc znacznik 'loading' może zniknąć,
-  // gdy poprzednie ładowanie wciąż trwa. Kolejka przeżywa taki reset i zostaje domknięta
-  // przez to ładowanie, które skończy się pierwsze.
-  queueCivSigilCallback(key, onReady);
-  loadImageInto(svgToDataUri(svg), (img) => {
-    civSigilImageById.set(key, img);
-    const queue = civSigilPendingById.get(key) ?? [];
-    civSigilPendingById.delete(key);
-    for (const cb of queue) cb(img);
-  });
+  const svgFn = civSigilSvgFn;
+  if (!svgFn) return;
+  civSigilQueue.request(
+    civSigilCacheKey(civIconId),
+    () => {
+      const svg = prepareSvgForCanvas(svgFn(civIconId), CIV_SIGIL_STROKE);
+      return svg ? svgToDataUri(svg) : null;
+    },
+    onReady,
+  );
 }
 
 function leaderPortraitCacheKey(civIconId: string, era: number): string {
@@ -459,92 +519,49 @@ function leaderPortraitCacheKey(civIconId: string, era: number): string {
   return `${civSigilCacheKey(civIconId)}:${e}`;
 }
 
-/** Dopisuje callback do kolejki oczekujących na portret o danym kluczu (nigdy nie nadpisuje). */
-function queueLeaderPortraitCallback(
-  key: string,
-  onReady: (img: HTMLImageElement) => void,
-): void {
-  const queue = leaderPortraitPendingByKey.get(key);
-  if (queue) queue.push(onReady);
-  else leaderPortraitPendingByKey.set(key, [onReady]);
-}
-
+/**
+ * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejkowanie żyje w `leaderPortraitQueue`.
+ * Specyficzne dla portretu: bramka wstrzykniętego URL-a, klucz z epoką i samo źródło
+ * (gotowy URL, bez przejścia przez SVG).
+ */
 function requestLeaderPortraitImage(
   civIconId: string,
   era: number,
   onReady: (img: HTMLImageElement) => void,
 ): void {
-  if (!leaderPortraitUrlFn) return;
-  const key = leaderPortraitCacheKey(civIconId, era);
-  const cached = leaderPortraitImageByKey.get(key);
-  if (cached instanceof HTMLImageElement) {
-    onReady(cached);
-    return;
-  }
-  // R-PORTRET-PRODIKONA-DROPPED-CALLBACK: żądanie w locie → dopisz callback do kolejki
-  // zamiast go zgubić (wzorzec 1:1 z `requestCivSigilImage`).
-  if (cached === 'loading') {
-    queueLeaderPortraitCallback(key, onReady);
-    return;
-  }
-  const url = leaderPortraitUrlFn(civIconId, era);
-  if (!url) return;
-  leaderPortraitImageByKey.set(key, 'loading');
-  // Dopisanie (nie nadpisanie) jest tu istotne: `setCityMapBadgeLeaderPortrait` czyści
-  // `leaderPortraitImageByKey` przy każdym przewiązaniu, więc znacznik 'loading' może zniknąć,
-  // gdy poprzednie ładowanie wciąż trwa. Kolejka przeżywa taki reset i zostaje domknięta
-  // przez to ładowanie, które skończy się pierwsze.
-  queueLeaderPortraitCallback(key, onReady);
-  loadImageInto(url, (img) => {
-    leaderPortraitImageByKey.set(key, img);
-    const queue = leaderPortraitPendingByKey.get(key) ?? [];
-    leaderPortraitPendingByKey.delete(key);
-    for (const cb of queue) cb(img);
-  });
+  const urlFn = leaderPortraitUrlFn;
+  if (!urlFn) return;
+  leaderPortraitQueue.request(
+    leaderPortraitCacheKey(civIconId, era),
+    () => urlFn(civIconId, era),
+    onReady,
+  );
 }
 
 function prodIconCacheKey(kind: ProductionKind, id: string): string {
   return `${kind}:${(id || '').trim()}`;
 }
 
-/** Dopisuje callback do kolejki oczekujących na ikonę produkcji (nigdy nie nadpisuje). */
-function queueProdIconCallback(key: string, onReady: (img: HTMLImageElement) => void): void {
-  const queue = prodIconPendingByKey.get(key);
-  if (queue) queue.push(onReady);
-  else prodIconPendingByKey.set(key, [onReady]);
-}
-
+/**
+ * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejkowanie żyje w `prodIconQueue`.
+ * Specyficzne dla ikony produkcji: bramka wstrzykniętego SVG, klucz `rodzaj:id` i pogrubienie
+ * kreski 1,2× (glif ma 16 px na kanwie pigułki, więc mniej niż domyślne 1,6× sygnetu).
+ */
 function requestProdIconImage(
   kind: ProductionKind,
   id: string,
   onReady: (img: HTMLImageElement) => void,
 ): void {
-  if (!prodIconSvgFn) return;
-  const key = prodIconCacheKey(kind, id);
-  const cached = prodIconImageByKey.get(key);
-  if (cached instanceof HTMLImageElement) {
-    onReady(cached);
-    return;
-  }
-  // R-PORTRET-PRODIKONA-DROPPED-CALLBACK: żądanie w locie → dopisz callback do kolejki
-  // zamiast go zgubić (wzorzec 1:1 z `requestCivSigilImage`).
-  if (cached === 'loading') {
-    queueProdIconCallback(key, onReady);
-    return;
-  }
-  const raw = prodIconSvgFn(kind, id);
-  const svg = prepareSvgForCanvas(raw, '#e8d88a', 1.2);
-  if (!svg) return;
-  prodIconImageByKey.set(key, 'loading');
-  // Dopisanie (nie nadpisanie): `setCityMapBadgeProdIcon` czyści `prodIconImageByKey` przy
-  // każdym przewiązaniu, więc znacznik 'loading' może zniknąć w trakcie ładowania.
-  queueProdIconCallback(key, onReady);
-  loadImageInto(svgToDataUri(svg), (img) => {
-    prodIconImageByKey.set(key, img);
-    const queue = prodIconPendingByKey.get(key) ?? [];
-    prodIconPendingByKey.delete(key);
-    for (const cb of queue) cb(img);
-  });
+  const svgFn = prodIconSvgFn;
+  if (!svgFn) return;
+  prodIconQueue.request(
+    prodIconCacheKey(kind, id),
+    () => {
+      const svg = prepareSvgForCanvas(svgFn(kind, id), '#e8d88a', 1.2);
+      return svg ? svgToDataUri(svg) : null;
+    },
+    onReady,
+  );
 }
 
 /** Ikona frontu kolejki (SVG z brandAssets) — bez generycznego trójkąta/prostokąta. */

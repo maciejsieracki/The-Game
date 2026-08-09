@@ -3380,14 +3380,38 @@ Operatora, tam błędnie „47", zweryfikowane niezależnie przez Evaluatora), `
 kopie tego samego wzorca współbieżności w jednym pliku (sygnet, portret, ikona produkcji),
 świadomie nieuogólnione (C-025, zakres tego zlecenia), do rozważenia przy czwartej kopii.
 
-## P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC (2026-08-09, nota Evaluatora R-PORTRET-PRODIKONA-DROPPED-CALLBACK) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
-`gra/src/render/cityMapStatChip.ts` ma dziś TRZY niezależne, strukturalnie identyczne kopie
+## P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC (2026-08-09, nota Evaluatora R-PORTRET-PRODIKONA-DROPPED-CALLBACK) · STATUS: **NAPRAWIONE 2026-08-09 (refaktor) — czeka na deploy+playtest**
+`gra/src/render/cityMapStatChip.ts` miał TRZY niezależne, strukturalnie identyczne kopie
 tego samego wzorca kolejkowania callbacków przy równoległych żądaniach obrazka (sygnet
 cywilizacji, portret władcy, ikona produkcji) — każda naprawiona osobno, w osobnym zleceniu,
 w innym dniu. Evaluator: „ten bug istniał dokładnie dlatego, że naprawiono jedną kopię, a dwie
-zapomniano". Do rozważenia: wspólny helper zamiast czwartej kopii przy następnym takim zasobie.
-**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestCivSigilImage`,
-`requestLeaderPortraitImage`, `requestProdIconImage`).
+zapomniano".
+
+**NAPRAWIONE (2026-08-09, subagent Opus 5, refaktor render/**):** nowy prywatny helper
+`createImageRequestQueue()` (fabryka domykająca, `{request(key, resolveSrc, onReady), clearImages()}`)
+— wszystkie trzy funkcje przepisane żeby korzystały z jednej instancji tego helpera zamiast
+trzech niezależnych implementacji. Zero zmiany zachowania (dowiedzione: wyjście testu bajt w
+bajt identyczne z bazą, 0 różnic w 66 liniach). `clearImages()` (nie surowe `.clear()`) wymusza
+niezmiennik „czyścimy obrazki, NIGDY kolejki" przez kształt API zamiast tylko powtórzonego
+komentarza.
+
+Evaluator PASS-WITH-NOTES z bardzo dokładną weryfikacją: potwierdził linia-po-linii że
+wszystkie trzy oryginalne funkcje miały bramkę `!svgFn` w IDENTYCZNYM miejscu (żadnego cichego
+ujednolicenia rozjechanych wariantów), zweryfikował 7 wariantów mutacyjnych (3 własne dodatkowe
+poza dowodem Operatora) — mutacja rdzenia wywala 16 asercji naraz u wszystkich trzech zasobów
+naraz (dowód że logika jest realnie scalona, nie tylko przeniesiona), mutacje specyficzne dla
+jednego zasobu (klucz cache, źródło obrazka) trafiają tylko ten jeden zasób — poprawnie, bo ta
+logika Z DEFINICJI musi być per-zasób. `tsc` 0 błędów, `city-map-badge-test.cjs` 62/62
+(identyczne z bazą), `logic-test` 213/213, `vite build` 799 modułów OK.
+
+**Dwie bardzo niepilne noty Evaluatora (nie blokują, nie wymagają akcji):** (1) umiejscowienie
+bramki `!svgFn` nie jest samo w sobie pokryte testem — Operator trafił bo przeczytał oryginał,
+nie dlatego że bramka testowa by go poprawiła, jeśli ktoś kiedyś to „posprząta" żadna bramka
+nie krzyknie; (2) `requestCivSigilImage`/`requestProdIconImage` nadal niosą identyczny
+2-liniowy potok `prepareSvgForCanvas→svgToDataUri` — Evaluator rekomenduje ZOSTAWIĆ (dalsze
+zwijanie byłoby nadmiarową abstrakcją, nie usterką).
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`createImageRequestQueue`,
+`requestCivSigilImage`, `requestLeaderPortraitImage`, `requestProdIconImage`).
 **Model:** Opus 5 (render/**).
 
 ## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
