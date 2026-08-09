@@ -6141,3 +6141,45 @@ N7 (wojna z MP powinna czy nie liczyć się jako „już w wojnie" — do rozstr
 TS nie w JSON, Maciej nie dostroi z panelu), N9 (map-gen nieukończona, ryzyko zerowe).
 
 Dispatch runda 2 dla B1, B3, B4, B5, B6 (mechaniczne). B2 wymaga ABC — patrz wiadomość na czacie.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 1: PASS-WITH-NOTES (3 BLOKUJĄCE), runda 2 w toku (2026-08-09)
+
+Rdzeń logiki poprawny (12/12/8 tech potwierdzone, Petra = jedyny cud cross-epoch, brak 5. miejsca
+mutującego player.era w normalnej ścieżce awansu, isMajorAiOwner pre-istniejące i poprawne, brak
+cofania epoki, miasta-państwa nie kradną cudu). Korekta na korzyść Operatora: ryzyko Fenicjan
+przeszacowane — Inżynieria to najniższy tier Żelaza, realny koszt to JEDNA technologia ponad
+komplet Brązu, nie „kilkadziesiąt tur".
+
+**B1 (BLOKUJĄCA) — cała integracja main.ts bez pokrycia.** Ta sama klasa problemu jak w kilku
+innych tematach dziś: mutacja usuwająca gałąź `isMajorAiOwner` w `syncOwnerEraFromResearch` +
+usunięcie wywołania `reconcileEraForOwner()` po ukończeniu cudu → wszystkie bramki zielone.
+
+**B2 (BLOKUJĄCA, wymaga ABC) — nowe złamanie zgodności sejwów + parytetu.** On-load przeliczanie
+epoki AI (`main.ts:25870`) NADPISUJE zapisaną epokę nową, ostrzejszą regułą — ale gracz NIE jest
+przeliczany przy wczytaniu. Skutek: na KAŻDYM istniejącym zapisie, AI które było w Brązie na starej
+regule zostaje po cichu zdegradowane do Kamienia, a gracz zachowuje starą epokę — cały świat AI
+cofa się, gracz nie. Wymaga decyzji: migracja starych zapisów / `Math.max` z zapisaną epoką /
+świadome zaakceptowanie że stare zapisy się nie wczytają poprawnie.
+
+**B3 (BLOKUJĄCA, wymaga ABC) — ryzyko utknięcia AI niezmierzone mimo wyraźnego polecenia.**
+Zmierzone przez Evaluatora: reguła cudu jest MARTWA dla 6 z 15 cywilizacji (celtowie, chińczycy,
+germanie, grecy, rzymianie, słowianie — ich cud E leży w Żelazie, ostatniej epoce, pętla capuje się
+na maxDefinedEra=3, warunek epoki 3 nigdy nie jest ewaluowany) — efekt gameplayowy węższy niż
+zapowiadane 1/3 przejść. Realne ryzyko trwałego zablokowania AI dla pozostałych 9 cywilizacji:
+zbudowanie cudu wymaga JEDNOCZEŚNIE throttle trafienia + pustej kolejki produkcji + progu
+opłacalności + rezerwy żywności, bez żadnego fallbacku/rozluźnienia z czasem — trwałe niespełnienie
+= cywilizacja nigdy nie opuszcza epoki.
+
+Niepilne: N1 (zdobycie stolicy łupi technologie i może po cichu przesunąć epokę bez powiadomienia —
+samoleczące się w ≤1 turę, ale ciche), N2 (kolejność inicjalizacji przy starcie — dziś nieszkodliwe,
+cicha pułapka na przyszłość), N3 (`owner-epoch-test.cjs` przeterminowany, testuje już nieaktualną
+ścieżkę), N4 (round-robin civType — uzasadnienie w kodzie błędne, realny powód inny, do poprawy
+komentarza), N5 (ważne ostrzeżenie: pole `wymagaTerenu` cudów zadeklarowane w danych, ale NIGDZIE
+nieegzekwowane w kodzie — jeśli ktoś to kiedyś "dokończy", bramka epoki stanie się nieusuwalną
+blokadą dla cywilizacji bez odpowiedniego terenu, np. Egipt bez pustyni-rzeki), N6 (interakcja
+epokaWejscia×techUnlock niezaasercjonowana).
+
+Dispatch runda 2 dla B1 (mechaniczne). B2 i B3 wymagają ABC — zostaną przedstawione po domknięciu
+aktualnie otwartego wątku (kolejka pytań, max 3 na turę).
