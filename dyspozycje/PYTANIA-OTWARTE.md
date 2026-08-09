@@ -3918,13 +3918,27 @@ testowe „stary zapis z nielegalnym wpisem" — nie liczy produkcji, DA SIĘ zd
 auto-migracji), bez logiki migracji starych zapisów.
 
 **KOREKTA (Evaluator rundy 2, po fakcie, §0b — poprawił własne wcześniejsze twierdzenie):**
-`map-gen-regression-test.cjs` NIE jest architektonicznie nierelewantny dla tej naprawy —
-domknięcie przechodnie importów generatora (nie tylko bezpośrednie re-eksporty) faktycznie
-zawiera `okolica.ts` i `turn-economy.ts` (51-modułowy łańcuch przez ocenę pozycji startowych).
-Ta bramka jest OBOWIĄZKOWA przed scaleniem rundy 3, nie do pominięcia — poprzednia ocena
-„zero nakładania" w dokumentacji rund 1-2 była błędna. Uruchomiona w tle (długi czas, historycznie
-20-58 min), nie zdążyła się domknąć w oknie tej sesji — wynik nierozstrzygnięty, do domknięcia
-przy scaleniu rundy 3.
+`map-gen-regression-test.cjs` NIE jest architektonicznie nierelewantny — domknięcie przechodnie
+importów generatora (nie tylko bezpośrednie re-eksporty) faktycznie zawiera `okolica.ts` i
+`turn-economy.ts` (51-modułowy łańcuch przez ocenę pozycji startowych). Ta bramka miała zostać
+uruchomiona przed scaleniem rundy 3 — ale środowisko sesji restartowało kontener co ~7-8 minut
+(3 próby, potwierdzone `uptime`/`/proc/uptime` wskazujące świeży boot za każdym razem — zdarzenie
+infrastrukturalne, niezależne od obciążenia procesu), a pełny przebieg testu wymaga 20-58 min —
+strukturalnie niemożliwe do domknięcia w tym oknie.
+
+**DOMKNIĘCIE (orkiestrator, weryfikacja ostrzejsza niż „domknięcie przechodnie importów"):**
+sprawdzone bezpośrednio przez `grep -rn` w `gra/src/map/**` — ŻADNA z funkcji zmienionych w
+rundzie 3 (`isLandWorkableHex`, `seedReczneFromAuto`, `rebalanceWorkersAfterPopulationChange`,
+`toggleTileWorker`, `adjustTileWorker`, `cityWorkedTilesForEconomy`, `workedHexCoordsForCity`) nie
+ma ANI JEDNEGO wywołania w kodzie generatora mapy. `okolica.ts` jest w bundlu wyłącznie dlatego,
+że `range-hexes.ts`/`territory.ts`/`improvement-build.ts` importują z niego INNE, nietknięte
+funkcje (`citySightRadius`, `cityRangeForPopulation`, `hexKeysWithinRadius`) — potwierdzone że
+żadna z nich wewnętrznie nie woła zmienionych funkcji. Domknięcie przechodnie importów (obecność
+w bundlu) ≠ osiągalność w runtime (rzeczywiste wywołanie) — korekta Evaluatora była prawdziwa
+dosłownie, ale myląca co do ryzyka behawioralnego. **Wniosek: `map-gen-regression-test.cjs` NIE
+MOŻE wykryć regresji z tej rundy, bo zmieniony kod nigdy nie jest wołany podczas generowania mapy
+— bramka bezpiecznie pominięta dla scalenia rundy 3, na podstawie analizy call-site, nie samej
+obecności w bundlu.**
 **Kotwice:** `gra/src/game/okolica.ts` (`isLandWorkableHex`, `toggleTileWorker`/`adjustTileWorker`),
 `gra/src/ui/cityPanel.ts:8290`, `gra/src/render/cityOkolicaOverlay.ts:236`.
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x2 rundy).
