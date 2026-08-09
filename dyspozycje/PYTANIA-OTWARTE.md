@@ -6533,3 +6533,32 @@ zmian w src — scalać wolno TYLKO jedną wersję, inaczej konflikt/podwójny p
 
 Dispatch runda 3, wąska: scal test T1/T2/T4/T5 z rundy 1 (kopiuj z niescalonego worktree
 `a58e4934721d28f29`) + sekcja B rundy 2 (z poprawkami N2/N3) w jeden plik.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 2: PASS-WITH-NOTES (1 BLOKUJĄCA, tylko test), runda 3 w toku (2026-08-09)
+
+**Kod gry jest poprawny i gotowy do scalenia** — Evaluator zrobił 9 własnych mutacji (2 ze
+zlecenia + 7 dodatkowych: obie ścieżki cudu, handel tech, chatka, koniec tury, delegacja gracz/AI,
+zamiana gałęzi ternary), wszystkie złapane. Potwierdzone: `tsc` NIE łapie tej klasy regresji (kod
+kompiluje się czysto nawet zmutowany) — bramka tekstowa jest uzasadniona merytorycznie.
+
+**E1 (BLOKUJĄCA, dotyczy WYŁĄCZNIE pliku testu, zero zmian w kodzie gry) — kruchość kotwic
+regexowych.** 8 z 11 sond na NIESZKODLIWE zmiany (zmiana nazwy zmiennej, usunięcie/zmiana
+komentarza, reformat wieloliniowy, cudzysłów zamiast apostrofu) fałszywie czerwieni bramkę.
+Najpoważniejsze: kotwiczenie na TREŚCI KOMENTARZA — a zasada #9 CLAUDE.md nakazuje komentarze
+dwujęzyczne PL+EN, czyli ta bramka pęknie przy realizowaniu INNEJ reguły projektu, jeśli ktoś
+kiedyś przetłumaczy te konkretne komentarze. Naprawa mechaniczna, dokładnie wskazana przez
+Evaluatora: przenieść kotwice z treści komentarzy/nazw zmiennych na strukturalne wzorce kodu
+(`researchStep\(\s*player\b` zamiast dosłownego literału, `case\s*['"]tech['"]\s*:` zamiast
+wymuszonych apostrofów, poszerzyć okna wycinania ciała funkcji z 500/600 znaków na ~2000 lub
+lepiej: zliczanie klamer zamiast okna bajtowego).
+
+Niepilne: N1 (komentarz w kodzie przesadza — „jedyne źródło prawdy" nieprawdziwe dla ścieżek
+inicjalizacyjnych, doprecyzować), N2 (asercja pilnuje ISTNIEJĄCYCH miejsc, nie „każdego przyszłego
+wywołania researchStep(player" — do rozważenia inwersji asercji), N3 (nowy test nie jest
+zarejestrowany w żadnym runnerze/liście bramek — dopisać przy scalaniu), N4 (B2/B3 potwierdzone
+nadal otwarte i słusznie poza zakresem, ta runda ich nie pogarsza).
+
+Dispatch runda 3, wąska: WYŁĄCZNIE plik testu, obowiązek powtórzenia wszystkich 9 mutacji
+merytorycznych (8/8+1 FAIL) i wszystkich 11 sond kruchości (11/11 PASS).
