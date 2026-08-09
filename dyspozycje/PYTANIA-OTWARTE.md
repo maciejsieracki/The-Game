@@ -3009,7 +3009,7 @@ przez `git apply --check -3` bez konfliktu.
 `gra/tools/diplomacy-tech-trade-test.cjs`.
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A (x2) — RUNDA 1 Evaluator FAIL, runda 2 w toku z ROZSZERZONYM zakresem (tech-za-tech)** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A (x2) — RUNDY 1-2 Evaluator FAIL, runda 3 dispatched** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
 
 **Pytanie ABC o zakres B3 (2026-08-09) — MACIEJ ODPOWIEDZIAŁ: A** (via AskUserQuestion) —
 „Rozszerzyć teraz o tech-za-tech": runda 2 ma dołożyć wymianę technologia-za-technologię RAZEM
@@ -3107,11 +3107,52 @@ nagłówków, nie automatycznego).
 **Runda 2 dispatched** wyłącznie dla B1/B2/N1/N2/N4 (bugi niezależne od odpowiedzi na pytanie
 zakresu) — bramka płatności musi być naprawiona niezależnie od wyniku ABC. Osobne pytanie ABC do
 Macieja o B3 (zakres tech-za-tech) zadane równolegle.
-**Kotwice:** `gra/src/main.ts` (`executeTechTradeDeal` ok. linii 7351-7376),
-`gra/src/game/diplomacy-tech-trade.ts` (`resolveTechTradeParties`),
+
+**MACIEJ ODPOWIEDZIAŁ NA B3: A** — rozszerzyć rundę 2 o tech-za-tech, razem z naprawą exploita,
+nie odkładać. Korekta zakresu wysłana do już działającego Operatora rundy 2.
+
+**RUNDA 2 (commity `b5a76611`+`d30c2b9e`, worktree `agent-a3559889ee803787b`, NIESCALONA) —
+Evaluator FAIL, DWA nowe blokery.** Pozytywnie potwierdzone: B1 gotówkowy naprawiony poprawnie na
+wszystkich 4 kombinacjach tryb×kierunek (happy path + brak zapłaty → zerowy transfer w obie
+strony), `canGrantTech` (podgląd bez mutacji) zweryfikowany jako bezpieczny, bramki prereq/epoka/
+tier symetryczne w obu kierunkach, N1/N2 z rundy 1 naprawione realnie.
+
+**BLOKER 1 (krytyczny — funkcja nie działa w grze):** `main.ts::buildProposalFromPayload` składa
+`uiPayload` z białej listy pól i GUBI `techPaymentMode`/`techOfferId` — jedyna droga z formularza
+do stołu negocjacyjnego. Skutek zmierzony na realnym kodzie: `techPrice` wylicza się jako 0 dla
+trybu tech-za-tech (bo `goldOnce=0` w tym trybie, a `??` nie łapie zera), `evaluateProposal` idzie
+gałęzią gotówkową i ZAWSZE odrzuca ofertę komunikatem „Cena poniżej minimum (50 ¤)". Gracz klika
+„Wymiana technologia-za-technologię" i dostaje ślepy zaułek — funkcja jest martwa mimo 41/41
+zielonych testów, bo te testy wołają rdzeń (`executeTechTradeDealCore`) bezpośrednio, z ręcznie
+sklejonym payloadem, omijając dokładnie tę zepsutą warstwę okablowania. **To ten sam wzorzec luki
+co B2 z rundy 1, powtórzony piętro wyżej** — test rdzenia bez testu okablowania UI→silnik.
+
+**BLOKER 2 (druga połowa exploita z rundy 1, nienaprawiona):** silnik sprawdza czy oddający
+zapłatę-technologię ją posiada (`ownerHasTech` dla `techOfferId`), ale NIGDZIE nie sprawdza czy
+dawca GŁÓWNEJ technologii (ta faktycznie przekazywana) w ogóle ją zna. Zmierzone na realnych
+modułach: gracz „sprzedaje" technologię, której nie posiada — AI ją dostaje z niczego, gracz
+inkasuje gotówkę; w trybie tech-za-tech gracz oddaje nieposiadaną technologię i otrzymuje w
+zamian prawdziwą. Dziś nieklikalne z UI (listy filtrowane po znanych technologiach), ale wpisy
+`negotiationTable` są serializowane do save'a i odtwarzane rzutowaniem BEZ rewalidacji — luka
+zaufania na poziomie silnika, dokładnie ten typ ryzyka, którego dotyczyła lekcja rundy 1
+(„silnik nie może ufać filtrowi UI").
+
+Dowód mutacyjny Evaluatora: 5 z 6 własnych mutacji złapanych, w tym dosłowny exploit rundy 1 w
+trybie gotówkowym (nadal złapany — nie regresja). Zakres (`diplomacy-locks.ts`, etykiety) uznany
+za uzasadniony w ramach C-026, nie scope creep.
+
+**Runda 3 dispatched**: (1) dopisać `techPaymentMode`+`techOfferId` do białej listy
+`buildProposalFromPayload`, naprawić wyliczenie `techPrice` dla trybu tech; (2) dołożyć
+`ownerHasTech(granterId, techId)` przed grantem w OBU trybach zapłaty; (3) test musi przechodzić
+PRZEZ `buildProposalFromPayload`, nie obok niego — inaczej runda 3 powtórzy ten sam błąd trzeci
+raz z rzędu; (4) domknąć noty N-A (guard `techOfferId===techId` niepokryty) i N-B (etykieta
+AI-akceptacji sztywno „Sprzedaż" niezależnie od trybu, dziś nieosiągalna ale mina na przyszłość).
+**Kotwice:** `gra/src/main.ts` (`buildProposalFromPayload`, `executeTechTradeDeal`),
+`gra/src/game/diplomacy-tech-trade.ts` (`resolveTechTradeParties`, `canGrantTech`/`grantTech`),
 `gra/src/ui/diplomacyTradeBasket.ts` (`readTreatyStateFromDom`, `validateTreatyForm` case '6'),
-`gra/src/game/diplomacy-proposals.ts` (`case 'tech'`, `generateCounterOffer`).
-**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
+`gra/src/game/diplomacy-proposals.ts` (`case 'tech'`, `generateCounterOffer`,
+`resolvePlayerAcceptsAiPending`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x2 rundy).
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
@@ -3945,9 +3986,46 @@ dosłownie, ale myląca co do ryzyka behawioralnego. **Wniosek: `map-gen-regress
 MOŻE wykryć regresji z tej rundy, bo zmieniony kod nigdy nie jest wołany podczas generowania mapy
 — bramka bezpiecznie pominięta dla scalenia rundy 3, na podstawie analizy call-site, nie samej
 obecności w bundlu.**
-**Kotwice:** `gra/src/game/okolica.ts` (`isLandWorkableHex`, `toggleTileWorker`/`adjustTileWorker`),
-`gra/src/ui/cityPanel.ts:8290`, `gra/src/render/cityOkolicaOverlay.ts:236`.
-**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x2 rundy).
+
+**RUNDA 3 (worktree `agent-a97a3b6210599ea27`, commit `3d57c23d`, NIESCALONA) — Evaluator FAIL,
+TRZECI z rzędu, ale po raz pierwszy z powodu regresji WPROWADZONEJ przez samą naprawę, nie luki
+pozostawionej.** B1 rundy 2 (kolejność bramek w `toggleTileWorker`) **potwierdzony jako naprawdę
+naprawiony** — własny harness Evaluatora (42 asercje, nie testy Operatora) zielony na toggle/
+adjust(+1)/adjust(−1), z/bez `territoryNodes`, wpis poza promieniem, wpis na nieistniejącym
+heksie, wpis na obcym terytorium, dwuklik. `map-gen-regression` potwierdzone empirycznie jeszcze
+mocniej niż analiza orkiestratora — zbundlowany entry bramki, 0 z 10 zmienionych symboli w
+654 019-znakowym bundlu.
+
+**BLOKER B3 (nowa regresja, WPROST łamie `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`):**
+`rebalanceWorkersAfterPopulationChange` dostał w tej rundzie filtr terenu — w gałęzi SPADKU
+populacji nielegalny wpis znika ze ścieżki `!t → delete+excess--`, ale PO PĘTLI i tak wykonuje się
+`if (worstKey) delete reczne[worstKey]`, kasując DODATKOWO pole legalne. Zmierzone: stary zapis,
+pop 5→4, 3 legalne + 2 nielegalne wpisy, `excess=1` — skasowane **3 wpisy zamiast 1**, zginął
+legalny, produkcyjny robotnik. Miasto zostaje z pustymi slotami NA STAŁE. Jedyny caller produkcyjny
+to `population-growth-v85.ts:396` — wywoływany co turę przy każdej zmianie populacji (wzrost/głód),
+NIE wymaga żadnej akcji gracza. To dokładnie ta auto-migracja/cicha utrata, której zakazała decyzja
+właściciela — i ta sama klasa błędu, która wywaliła rundę 1.
+
+**BLOKER B4 (druga dziura pokrycia tej samej klasy co B2 rundy 2):** dowód mutacyjny Evaluatora —
+usunięcie filtra terenu z `seedReczneFromAuto` (jedna z 5 „zabezpieczonych" ścieżek) NIE zostaje
+złapane przez żaden test (`okolica-test` 64/64, `silnik-test` 15/15, oba zielone mimo mutacji).
+Zmierzony skutek mutacji: tryb ręczny obsadza WSZYSTKIE 6 robotników na Górach, silnik liczy 0 przy
+pop 6 — całkowity zanik produkcji, przy zielonych bramkach. Deklaracja „wszystkie 5 ścieżek" jest
+niezweryfikowana testami.
+
+**Nota (nie bloker):** uzasadnienie komentarza przy `cityPanel.ts:8290` („surowy odczyt potrzebny
+żeby klik mógł zdjąć") jest FAKTYCZNIE NIEPRAWDZIWE — klikalność nie zależy od `isWorked` (pętla
+tworząca przyciski nie ma takiego warunku). Wybór jest obronny, uzasadnienie nie.
+
+**Runda 4 dispatched** z precyzyjną listą Evaluatora: (1) napraw B3 — gałąź `!t` nie może kasować
+ani dekrementować `excess`, ALBO `worstKey` nie może kasować dodatkowo w tej samej iteracji;
+wymaganie: spadek pop o 1 = zniknięcie DOKŁADNIE 1 robotnika, nielegalne wpisy nietknięte; (2) test
+na B3 (liczba usuniętych == `excess`, zero legalnych strat, nielegalne nadal obecne); (3) zamknij
+B4 — test przypinający filtr w `seedReczneFromAuto` (i analogicznie pozostałych ścieżek dodawania);
+(4) popraw nieprawdziwy komentarz przy `cityPanel.ts:8290`.
+**Kotwice:** `gra/src/game/okolica.ts` (`rebalanceWorkersAfterPopulationChange`, `seedReczneFromAuto`),
+`gra/src/ui/cityPanel.ts:8290`.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x3 rundy).
 
 ## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)
 Rozdzielono na dwie kontrolki jak zdecydowałeś: `cyclablePlayerArmyLeadsBase(requireMoves)` —
