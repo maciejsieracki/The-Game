@@ -5057,7 +5057,14 @@ na pierwszym końcu tury, bez okresu karencji. Chatki mogą leżeć wewnątrz cu
 
 ---
 
-## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — rozpoznanie gotowe, dispatch naprawy (2026-08-09)
+## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — zaimplementowane w worktree, czeka na Evaluatora (2026-08-09)
+
+**Operator wykonał** (`cityPanel.ts` ~4636-4663): checkbox→`<button class="hbtn auto-wyzywienie-btn">`,
+stan z `city.autoWyzywienie` (nie DOM), handler `click`, tekst „Auto WYŁ..." przeniesiony do `title`,
+podsumowanie zostało widoczne. **Brak jakiegokolwiek testu regresyjnego dla tego markupu** (Operator
+potwierdził grepem że nic go dziś nie testowało) — Evaluator powinien ocenić czy to akceptowalne dla
+czysto kosmetycznej zmiany, czy wymaga dołożenia testu przed scaleniem. Bramki Operatora: tsc 0,
+logic-test 213/213, testy sąsiednie zielone.
 
 **Rozpoznanie (Explore):** checkbox w `cityPanel.ts:4640-4660`, wzorzec przycisku auto-produkcji
 („Zarządca automatyczny") w `cityPanel.ts:8669` (markup `<button class="hbtn">`) +
