@@ -5504,6 +5504,15 @@ przenieść/dodać asercję sekcji F na poziomie faktycznie pokrywającym `main.
 bibliotekę); (c) uzupełnić audyt o 2 pominięte call-site'y; (d) skorygować opis tropu Gliny na
 „przejściowe w obrębie tury", nie „trwałe".
 
+**Wszystkie 4 punkty domknięte przez Operatora (worktree `agent-a2955e5564faaff41`), czeka na
+scalenie:** nowa sekcja G w `surow-civ-storage-test.cjs` — strażnik tekstowy wzorem
+`border-march-wygasanie-test.cjs`, dowód mutacyjny na żywym `main.ts:21045` potwierdza że G
+czerwienieje tam, gdzie F zostaje zielone. `console.warn` NIE dodany (opcja: usunąć całkowicie —
+diagnostyka już spełniła rolę, root cause drewna znaleziony i naprawiony). Audyt potwierdza 2
+dodatkowe call-site'y celowo bez capu (`building-stock-cost.ts:171,279`). Opis tropu Gliny
+skorygowany na „widoczne w trakcie tury, nie trwałe". Bramki: tsc 0, logic-test 213/213,
+`surow-civ-storage-test.cjs` 43 passed/14 failed (te same 14 pre-istniejące, +5 nowych w passed).
+
 **Dispatch naprawy (BYŁO, wykonane przez Operatora — historyczna treść zlecenia):** (1) dodać `capPerType`
 do wywołania w `main.ts:21130` (wzorem `tickEmpireResourcePipeline`); (2) przy okazji sprawdzić
 pozostałe 3 miejsca `creditOwnerResourceStock(...)` bez `capPerType` (`main.ts:2950` — zwrot,
