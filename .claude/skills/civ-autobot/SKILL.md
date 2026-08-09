@@ -93,6 +93,7 @@ Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 
 1. **NUMER** — każdy case/bug/poprawka/innowacja dostaje ID w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`.
 2. **ABC** — **nie koduj od razu**; przedstaw rozwiązanie w pełnej formie: nagłówek `[TEMAT: …]` · **ID** · Sytuacja · Cel pytania · Dlaczego teraz · **A / B / C** (każdy wariant ≥2 Za i ≥2 Przeciw) · Rekomendacja. **Maks. 3 pytania na turę.**
+   **Jeśli sytuacja/rekomendacja koliduje z już podjętą decyzją** (ID + litera + data w rejestrze) — **nazwij to wprost** w pytaniu: która decyzja, jakie ID, kiedy. Maciej (2026-08-09): „powinno być wyraźnie zapisane, że jeżeli pytanie ABC podważa wcześniejsze moje decyzje, to powinno być to wyraźnie wskazane... żebym miał świadomość, że mogę cofnąć pewne inne swoje ustalenia." Kanon w `CLAUDE.md` §1a.
 3. **ECHO** — po odpowiedzi w formie `ID + litera` potwierdź treść decyzji, zapisz do plików (rejestr + `dyspozycje/PYTANIA-OTWARTE.md` + ewentualny `docs/decyzje/`), dopiero potem kod i commit.
 4. **DEPLOY** — wyłącznie na hasło `deploy`. Commit po `ID+A|B|C` **nie** publikuje ROBOCZA.
 
