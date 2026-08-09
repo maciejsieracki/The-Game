@@ -59,7 +59,7 @@ import {
 } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
-import { civWideSixStatsFromEmpireSnap } from '../game/empire-hud-totals';
+import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
@@ -977,6 +977,8 @@ export interface EmpireHudSnap {
   zywnoscReserve?: number;
   zywnoscRate?: number;
   kulturaRate?: number;
+  /** Kultura nagromadzona całej cywilizacji (ZAPAS, nie tempo — jak na HUD mapy). */
+  kultura?: number;
   /** Suma wiernych religii państwa (imperium). */
   religionStock?: number;
   /** Suma szerzenia wiernych / turę (wszystkie miasta). */
@@ -2203,6 +2205,9 @@ function ensureStyles(): void {
 .civ-v-w3-chip-delta{font-size:0.62em;font-weight:700;margin-left:0.18em;line-height:1;}
 .civ-v-w3-chip-delta.green{color:var(--green);}
 .civ-v-w3-chip-delta.red{color:var(--red);}
+/* R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY: trzeci element — realny ZAPAS całej
+   cywilizacji, w nawiasie, ZŁOTY (odrębny kolor od tempa), pod małą liczbą. */
+.civ-v-w3-chip-stock{font-size:0.62em;font-weight:700;margin-left:0.18em;line-height:1;color:#e8b84a;}
 .civ-v-w3-chip-sep{width:1px;height:1.45em;background:rgba(232,216,138,0.2);flex-shrink:0;}
 .civ-v-w3-top-actions{display:flex;align-items:center;gap:0.75rem;flex-shrink:0;margin-left:0.35rem;}
 .civ-v-exit-map-btn{display:inline-flex;align-items:center;gap:0.38em;padding:0.38em 0.85em 0.38em 0.65em;
@@ -8798,25 +8803,33 @@ function w3CityChip(
   cls: string,
   statId: string,
   hint: string,
-  /** R-HUD-MIASTO-STAN-CYWILIZACJI: wkład TEGO miasta — mała liczba obok dużej
-   *  (`val`, suma całej cywilizacji). Ten sam field co `val` przed zsumowaniem. */
-  cityDelta?: number,
+  /** R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY: mała liczba (+N) = tempo CAŁEJ
+   *  cywilizacji (suma wszystkich miast). Duża liczba (`val`) = tempo TEGO miasta.
+   *  / EN: small number = civ-wide rate; big number (`val`) = this city's rate. */
+  civRate?: number,
+  /** Trzeci element `(N)`, złoty: realny ZAPAS całej cywilizacji (ta sama wielkość
+   *  co duża liczba na głównym HUD mapy). / EN: gold civ-wide stock. */
+  civStock?: number,
 ): string {
-  const d = cityDelta !== undefined ? fmtResDelta(Math.round(cityDelta)) : { html: '', cls: '' };
   return `<button type="button" class="civ-v-w3-chip civ-v-res-interactive" data-res-stat="${statId}" ` +
     `title="${hint.replace(/"/g, '&quot;')}" aria-label="${hint.replace(/"/g, '&quot;')}">` +
     `<span class="civ-v-w3-chip-icon">${icon}</span>` +
     `<span class="civ-v-w3-chip-lbl">${label}</span>` +
     `<span class="civ-v-w3-chip-val ${cls}">${val}</span>` +
-    (d.html ? `<span class="civ-v-w3-chip-delta ${d.cls}">${d.html}</span>` : '') +
+    buildChipDeltaStockHtml(civRate, civStock) +
     `</button>`;
 }
 
 /**
  * Górny pasek widoku miasta — chipy po bokach nazwy miasta (lewo: ekonomia, prawo: kultura/nauka).
- * R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08): duża liczba w każdym chipie = suma całej
- * cywilizacji (z `resolveEmpireSnap`, ten sam source-of-truth co reszta panelu i głównego
- * HUD mapy); mała liczba (`+N`/`−N`) = wkład/ubytek TEGO miasta — jak `resGlobalLocal` niżej.
+ * R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zastępuje układ z R-HUD-MIASTO-STAN-CYWILIZACJI
+ * 2026-08-08): każdy chip pokazuje TRZY elementy —
+ *   1. duża liczba  = tempo TEGO miasta (przyrost/turę wkładu tego miasta);
+ *   2. mała liczba (`+N`/`−N`) = tempo CAŁEJ cywilizacji (suma wszystkich miast,
+ *      `civWideSixStatsFromEmpireSnap`);
+ *   3. `(N)` złote = realny ZAPAS całej cywilizacji (`resolveEmpireSnap`, ta sama
+ *      wielkość co duża liczba na głównym HUD mapy: skarbiec / magazyn / nauka nagromadzona).
+ * / EN: three chip elements — this city's rate, civ-wide rate, gold civ-wide stock.
  */
 function buildCityOnlyW3FlankChips(
   city: City,
@@ -8846,43 +8859,73 @@ function buildCityOnlyW3FlankChips(
     kultura: view.kultura,
     religia: cityRel,
   });
-  const pracaCls = civ.praca > 0 ? 'green' : civ.praca < 0 ? 'red' : '';
-  const foodCls = civ.zywnosc > 0 ? 'green' : civ.zywnosc < 0 ? 'red' : '';
-  const goldCls = civ.zloto > 0 ? 'green' : civ.zloto < 0 ? 'red' : '';
-  const naukaCls = civ.nauka > 0 ? 'blue' : civ.nauka < 0 ? 'red' : 'blue';
-  const kultCls = civ.kultura > 0 ? 'gold' : civ.kultura < 0 ? 'red' : '';
-  const relCls = civ.religia > 0 ? 'gold' : civ.religia < 0 ? 'red' : '';
+  /**
+   * Trzy elementy każdego chipu, zebrane per surowiec, żeby 7. i 8. argument
+   * `w3CityChip(...)` NIGDY nie rozjechały się na różne surowce.
+   * `big`   — tempo TEGO miasta (duża liczba);
+   * `small` — tempo CAŁEJ cywilizacji (mała liczba `+N`);
+   * `stock` — realny ZAPAS całej cywilizacji (trzeci element, złoty, w nawiasie).
+   * / EN: per-resource triple (this-city rate, civ-wide rate, civ-wide stock).
+   *
+   * ⚠ Zastrzeżenie (N3 z R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, przeniesione 1:1):
+   * dla Pracy i Żywności `big` (tempo tego miasta) NIE jest w całości tym, co
+   * dolicza się do `stock` — Praca dzieli się na `doBudynkow` (kolejka budowy
+   * tego miasta) i `doUlepszen` (pula imperium); `doBudynkow` NIE trafia do puli,
+   * DOPÓKI kolejka budowy nie jest pusta (`game/production.ts`, przelew reszty
+   * do puli przy pustej kolejce). Analogicznie Żywność: `big` to netto miasta,
+   * `stock` to zapasy państwa. Obie liczby są uczciwie nazwane w podpowiedzi.
+   */
+  const chip = {
+    praca:   { big: pracaSplit.total, small: civ.praca,   stock: empire.pracaPool ?? 0 },
+    zywnosc: { big: foodSplit.total,  small: civ.zywnosc, stock: empire.zywnoscReserve ?? 0 },
+    zloto:   { big: view.pieniadz,    small: civ.zloto,   stock: empire.zloto ?? 0 },
+    nauka:   { big: view.nauka,       small: civ.nauka,   stock: empire.nauka ?? 0 },
+    kultura: { big: view.kultura,     small: civ.kultura, stock: empire.kultura ?? 0 },
+    religia: { big: cityRel,          small: civ.religia, stock: empire.religionStock ?? 0 },
+  };
+  const pracaCls = chip.praca.big > 0 ? 'green' : chip.praca.big < 0 ? 'red' : '';
+  const foodCls = chip.zywnosc.big > 0 ? 'green' : chip.zywnosc.big < 0 ? 'red' : '';
+  const goldCls = chip.zloto.big > 0 ? 'green' : chip.zloto.big < 0 ? 'red' : '';
+  const naukaCls = chip.nauka.big > 0 ? 'blue' : chip.nauka.big < 0 ? 'red' : 'blue';
+  const kultCls = chip.kultura.big > 0 ? 'gold' : chip.kultura.big < 0 ? 'red' : '';
+  const relCls = chip.religia.big > 0 ? 'gold' : chip.religia.big < 0 ? 'red' : '';
 
   const economyRow = [
     w3CityChip(
       cityPanelChipIcon('res-work', 20),
       'Praca',
-      signed(civ.praca),
+      signed(chip.praca.big),
       pracaCls,
       'praca',
-      `Praca całej cywilizacji ${signed(civ.praca)} · to miasto ${signed(pracaSplit.total)} ` +
-        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)})`,
-      pracaSplit.total,
+      `Praca TEGO miasta ${signed(chip.praca.big)} ` +
+        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}) · ` +
+        `cała cywilizacja ${signed(chip.praca.small)} / turę · zapas cywilizacji ${chip.praca.stock}`,
+      chip.praca.small,
+      chip.praca.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-food', 20),
       'Żywność',
-      signed(civ.zywnosc),
+      signed(chip.zywnosc.big),
       foodCls,
       'zywnosc',
-      `Bilans żywności całej cywilizacji ${signed(civ.zywnosc)} · to miasto: produkcja ${signed(foodSplit.produkcja)} ` +
-        `− racje ${foodSplit.racje} = ${signed(foodSplit.total)} · WZROST ${view.wzrostProcent}%`,
-      foodSplit.total,
+      `Żywność TEGO miasta: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ` +
+        `${signed(chip.zywnosc.big)} · WZROST ${view.wzrostProcent}% · cała cywilizacja ` +
+        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}`,
+      chip.zywnosc.small,
+      chip.zywnosc.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-treasury', 20),
       'Skarbiec',
-      signed(civ.zloto),
+      signed(chip.zloto.big),
       goldCls,
       'zloto',
-      `Netto pieniędzy całej cywilizacji ${signed(civ.zloto)} → skarbiec · to miasto ${signed(view.pieniadz)} · ` +
-        `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
-      view.pieniadz,
+      `Netto pieniędzy TEGO miasta ${signed(chip.zloto.big)} → skarbiec · ` +
+        `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)} · ` +
+        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}`,
+      chip.zloto.small,
+      chip.zloto.stock,
     ),
   ].join('');
 
@@ -8890,29 +8933,35 @@ function buildCityOnlyW3FlankChips(
     w3CityChip(
       cityPanelChipIcon('res-science', 20),
       'Nauka',
-      signed(civ.nauka),
+      signed(chip.nauka.big),
       naukaCls,
       'nauka',
-      `Nauka generowana przez całą cywilizację ${signed(civ.nauka)} · to miasto ${signed(view.nauka)}`,
-      view.nauka,
+      `Nauka TEGO miasta ${signed(chip.nauka.big)} / turę · cała cywilizacja ` +
+        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}`,
+      chip.nauka.small,
+      chip.nauka.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-culture', 20),
       'Kultura',
-      signed(civ.kultura),
+      signed(chip.kultura.big),
       kultCls,
       'kultura',
-      `Kultura generowana przez całą cywilizację ${signed(civ.kultura)} · to miasto ${signed(view.kultura)}`,
-      view.kultura,
+      `Kultura TEGO miasta ${signed(chip.kultura.big)} / turę · cała cywilizacja ` +
+        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}`,
+      chip.kultura.small,
+      chip.kultura.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-religion', 20),
       'Religia',
-      signed(civ.religia),
+      signed(chip.religia.big),
       relCls,
       'religia',
-      `Przyrost wiernych całej cywilizacji ${signed(civ.religia)} · to miasto ${signed(cityRel)}`,
-      cityRel,
+      `Przyrost wiernych TEGO miasta ${signed(chip.religia.big)} / turę · cała cywilizacja ` +
+        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}`,
+      chip.religia.small,
+      chip.religia.stock,
     ),
   ].join('');
 

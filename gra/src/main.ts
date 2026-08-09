@@ -5596,6 +5596,9 @@ async function boot(): Promise<void> {
             zywnoscReserve: parseInt(hs.zywnoscLabel, 10) || 0,
             zywnoscRate: hs.zywnoscRate ?? 0,
             kulturaRate: hs.kulturaRate ?? 0,
+            // R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY: ZAPAS Kultury (nagromadzona),
+            // ta sama liczba co duża wartość na głównym HUD mapy.
+            kultura: hs.kultura ?? 0,
             religionStock: relAgg.stateAdherents,
             religionRate: relAgg.spreadRateTotal,
             stateReligion: stateRel,
