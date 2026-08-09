@@ -6022,3 +6022,16 @@ N4 (spichlerz_prog_ludnosci płaski 8/8/8 mimo że akwedukt_prog_ludnosci skaluj
 zgodne z dosłownymi słowami Macieja, tylko do wiadomości), N5 (obejście capu przy buncie,
 pre-istniejące), N7 (CLAUDE.md ma nieaktualny zapis `upgrade-budynki 48/48`, realnie 48/1 fail
 pre-istniejący).
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE-B1 — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A.** Rozszerzyć globalny mechanizm o `budowaPriorytetTypow` (pełną listę
+priorytetów, nie tylko `budowaFocus`), żeby globalny „Priorytet produkcji" faktycznie działał dla
+istniejących miast, zgodnie z pierwotną prośbą.
+
+**Kolejność pracy:** B2/B3 (runda 2, mechaniczne naprawy transferu właściciela + migracji) są już
+w toku (Operator `a7eb4511bbdb4e3b9`, ten sam plik `empire-city-defaults.ts`/`main.ts`). B1
+dispatchowane jako OSOBNE zlecenie DOPIERO po zakończeniu i weryfikacji rundy B2/B3, żeby uniknąć
+dwóch równoległych Operatorów na tych samych plikach — kolejkowane, nie odkładane bez terminu.

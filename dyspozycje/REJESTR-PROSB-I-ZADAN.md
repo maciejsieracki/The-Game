@@ -2226,3 +2226,7 @@ B1: ulepszenie do Spichlerz II odbiera cap 8 (builtIds traci 'spichlerz' przy up
 'spichlerz_ii' w warunku - zmierzone empirycznie). B2: test nie strzeze tej linii (mutacja
 przechodzi wszystko). B3: karta budynkow pokazuje falszywy opis capu. Wszystkie mechaniczne, bez
 ABC. Dispatch rundy 2. Pelna tresc w `PYTANIA-OTWARTE.md`.
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE-B1 — ECHO A (2026-08-09)
+Decyzja Macieja: A. Rozszerzyc broadcast o budowaPriorytetTypow. Kolejkowane po zakonczeniu rundy
+B2/B3 (ten sam plik), zeby uniknac kolizji dwoch Operatorow. Pelna tresc w `PYTANIA-OTWARTE.md`.
