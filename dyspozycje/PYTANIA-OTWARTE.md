@@ -6844,3 +6844,26 @@ potwierdzone identyczne na czystym main bez patcha), growthmult-compound-test 17
 porażek potwierdzone identyczne na czystym main). Dispatch Evaluatora rundy 3 NASTĘPUJE teraz.
 
 ---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — Operator dostarczył (2026-08-09), czeka na Evaluatora
+
+Worktree `agent-a832dc5c0cab4943e`. Część B (brama produkcji morskiej, jednostki `Typ='Naval'`):
+gate w `production.ts` (`availableProduction` + `availableReplacementsFor`), naprawiona przy okazji
+luka (`replaceAvailabilityCtxForCity`/`EmpireWide` w `main.ts` w ogóle nie przekazywały
+`cityHasCoastOrRiver` do kontekstu „Zastąp"), osobny gate w `purchaseRecruitmentUnit` (zakup za
+złoto — ścieżka NIEOBJĘTA wspólnym mechanizmem, Operator sam to znalazł i domknął). Parytet AI
+potwierdzony strukturalnie (AI woła tę samą `availableProduction`, wpięcie `cityHasCoastOrRiver`
+istniało od TEMAT 8 Q2). Grandfather (decyzja B) potwierdzony strukturalnie — `production.ts` jest
+pure-logic, fizycznie nie może usuwać/przenosić jednostek. Część A (ekonomia): nowy
+`computeSeaTradeRouteCountByCity`/`PORT_SEA_TRADE_BONUS_PIENIADZ=1`/turę za KAŻDY aktywny szlak
+morski ponad pierwszy, Port-gated naturalnie przez wymóg Portu w obu miastach dla trasy morskiej.
+Test `naval-water-access-gate-test.cjs` 27/27. Bramki: tsc 0, logic-test 213/213, unit-replace
+13/13, deposit-building-gate 47/47, ai-production-priority 9/9, trade-routes 51/51,
+trade-routes-income 52/53 (1 pre-istniejąca porażka potwierdzona identyczna na czystym `main`,
+niezwiązana ze zmianą — test używa wyłącznie `medium:'lad'`). `map-gen-regression-test` był w
+trakcie (~15+ min, wolna bramka) w momencie zamknięcia raportu — strukturalnie niezależny (dotyka
+tylko `src/map/**`/`src/types/hex`, zero wspólnych plików ze zmianą), zerowe ryzyko regresji.
+
+Dispatch Evaluatora NASTĘPUJE teraz.
+
+---
