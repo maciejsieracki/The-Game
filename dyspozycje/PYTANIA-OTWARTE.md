@@ -5949,3 +5949,42 @@ grozi wcale) — czyli wykluczenie działa szerzej niż potrzeba. Pytanie ABC do
 uwzględnić te 4 zwolnienia w warunku wykluczenia.
 
 Dispatch runda 2 dla B1 (naprawa spawn-hex). N2 wymaga ABC — patrz wiadomość na czacie.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 2: FAIL, runda 3 w toku (2026-08-09)
+
+Postęp realny (B1 arytmetyka i B3 funkcja są dobre, złapane własnymi mutacjami M1/M2 Evaluatora),
+ale 2 noty nadal BLOKUJĄCE:
+
+- **BB1 — B4 wciąż nie chroni main.ts.** Trzy niezależne mutacje WPROST w `main.ts` (przywrócenie
+  exploita B1 przez zmianę argumentu na `moveCost`; usunięcie całego zwrotu ruchu — dokładnie ta
+  sama mutacja co w rundzie 1; przywrócenie teleportu bez sprawdzenia z B3) — wszystkie dają
+  16/16 PASS. Bramka chroni czyste funkcje w `armyMerge.ts`, ale NIE ich wpięcie w `main.ts`.
+  **Rozwiązanie wskazane przez Evaluatora:** repo ma już wzorzec na dokładnie ten problem — 7
+  istniejących testów (`border-march-wygasanie-test.cjs` jako kanoniczny wzorzec) czyta
+  `src/main.ts` jako TEKST i asercjonuje regexem na wyciętym ciele funkcji, że zawiera właściwe
+  wywołania i NIE zawiera cofniętych. Dokładna specyfikacja do wdrożenia podana przez Evaluatora
+  (wytnij ciało `onSeparate`, sprawdź obecność `computeSeparateReturn(movedUnits, deductedRuch)` +
+  `resolveSeparateReturnHex(...)`, brak `computeSeparateReturn(movedUnits, moveCost)` i `const dest
+  = { q: fromQ, r: fromR }`; osobno sprawdzić że wszystkie 3 wywołania `promptMergeIfCoLocated`
+  mają 5. argument `deductedRuch`).
+- **BB2 — B2 naprawione tylko częściowo.** `skipStackRuchSync=true` pomija sync w jednym
+  wywołaniu, ale zostawia stos w stanie nieznormalizowanym — w scenariuszu z heksem startowym
+  zajętym przez inną własną jednostkę o NIŻSZEJ puli (rzadki, ale dokładnie ten opisany w nocie
+  B2 z rundy 1): zwrot jest bezużyteczny natychmiast (podświetlenie/`stackCanMove` liczy minimum
+  całego heksu) i znika przy pierwszym kolejnym kliknięciu. Do wyboru: naprawić realnie albo
+  udokumentować jako świadome ograniczenie (systemowa reguła „pula stosu = minimum") i zapytać
+  Macieja ABC — nie zamykać po cichu jako naprawione.
+
+Niepilne: N1 (ostateczny fallback teleportuje na origin mimo blokady, gdy WSZYSCY sąsiedzi zajęci —
+bezpieczniejszy fallback: nie ruszać wcale), N2 (pre-istniejące, armia lądowa może odbić na wodę),
+N3 (stare testy bounce certyfikują martwy kod, nie dowodzą braku regresji w onSeparate). **N4
+wymaga ABC (nie wina Operatora):** pełny zwrot puli po marszu WIELOHEKSOWYM nie cofa efektów
+ubocznych trasy (odsłonięta mgła, chatki, bonusy z odwiedzin miast, auto-capture pustego miasta) —
+pozwala w jednej turze skanować kolejne trasy tym samym stosem za darmo („marsz → Zostaw osobno"
+bezkosztowy). To konsekwencja decyzji A („pełny zwrot ruchu"), nie błąd implementacji.
+
+Dispatch runda 3, wąski zakres: TYLKO BB1 (test tekstowy wzorem `border-march-wygasanie-test.cjs`)
+i BB2 (naprawa realna, decyzja Operatora którą opcję wybrać z uzasadnieniem w raporcie). N4
+wymaga ABC — patrz wiadomość na czacie.
