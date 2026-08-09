@@ -6696,3 +6696,151 @@ bez dodatkowego wymogu posiadania budynku.
 morskiej WEDŁUG DOSTĘPU DO WODY [nie wymaga zbudowanego Portu], dostęp do wody = morze LUB rzeka,
 grandfather=B) są teraz w pełni zdecydowane. Maciej polecił (2026-08-09, ta sama tura): „wszystkie
 nowe tematy i decyzje ABC odpalaj nowych subagentów do działania" — dispatch NASTĘPUJE teraz.
+
+---
+
+## AUDYT KOMPLETNOŚCI + odczyt zaległych wyników (2026-08-09, po C-032 sprzątaniu dysku)
+
+C-032: przed nowym batchem sprawdzony `git worktree list` + `du -sh` — 18 worktree, ~14GB, dysk na
+9,8GB wolnego. Zidentyfikowano i usunięte 9 nieaktualnych/zastąpionych worktree (starsze rundy tych
+samych tematów, których finalna runda już istnieje osobno) — odzyskane ~7GB, teraz 17GB wolnego.
+
+**Luka #1 — R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 3** zarejestrowana jako „w toku" (wpis wyżej), ale
+subagent NIGDY realnie nie wystartował. Dispatch NASTĘPUJE teraz (patrz niżej).
+
+**Luka #2 — R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 3** (wąski test tekstowy dla `cityPanel.ts:1016`,
+zarejestrowana jako „w toku" wyżej) — subagent NIGDY realnie nie wystartował. Dispatch NASTĘPUJE
+teraz.
+
+**Odczytane zaległe wyniki (subagenci wykonali pracę, wynik nieprzetworzony do tej pory):**
+
+1. **R-EPOKA-CUD-WARUNEK-AWANSU runda 3 (Operator, `abd2a1f136bf908ec`)** — naprawiony WYŁĄCZNIE
+   plik testu (`era-cud-main-ts-integracja-test.cjs`), kod gry 1:1 odtworzony z potwierdzonej rundy
+   2/3 (zero zmian). Nowe kotwice: zliczanie klamer zamiast okna bajtowego, wzorzec strukturalny
+   `researchStep\(\s*player\b` zamiast literału, `case\s*['"]tech['"]` zamiast sztywnego
+   cudzysłowu. Weryfikacja własna Operatora: 9/9 mutacji szkodliwych złapane, 11/11 sond
+   niegroźnych (rename, reformat, usunięcie komentarzy, cudzysłów, niepowiązany kod) przechodzi.
+   Bramki: tsc 0, logic-test 213/213, era-cud-warunek-awansu-test 35/35, owner-epoch-test 13/13,
+   era-cud-main-ts-integracja-test 11/11. **Dispatch Evaluatora rundy 3 NASTĘPUJE teraz.**
+
+2. **P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI runda 3 — Evaluator (`aba5f772818d82056`):
+   WERDYKT PASS-WITH-NOTES, 0 blokujących.** Własny dowód tożsamości formuły
+   `isHomeDefenseThreatForCity` (1,32 mln porównań heks-po-heksie, 0 rozbieżności ze starym
+   helperem na 11 pozycjach miasta × 12 populacji × cała mapa). Wydajność: nowa formuła 2,3× szybsza
+   niż stary helper, +37% całkowitego czasu to efekt WEWNĘTRZNY decyzji ECHO A (AI maszeruje dalej
+   po przeadresowaniu jednostek), nie narzut detekcji. Próba mutacyjna 17/17: 12 zabitych, 5
+   przeżyło jako notatki niepilne do rejestru (M9 wybór „pierwszy w tablicy" zamiast „najbliższy"
+   nieochroniony, M11 brak ochrony `ruchLeft>0`, M12 brak ochrony `!isScoutUnit`, M15 wykrywanie
+   wielomiastowe nieochronione, M16 podwójna komenda dla jednostki nieochroniona). Bramki: tsc 0,
+   logic-test 213/213, ai-home-defense-vs-barbarians-test 38/38, ai-war-gate-test 24/24,
+   combat-test 6/6, ai-test 274/282 (8 awarii bajtowo identycznych z bazą, pre-istniejące).
+   Scalenie bezpieczne potwierdzone (`ai.ts` niezmieniony na `main` od bazy worktree).
+   Notatka N-A (dla Macieja, niepilne): brak limitu odległości obrońcy — garstka barbarzyńców 50
+   heksów od ofensywy potrafi ściągnąć całą jednostkę z powrotem (konsekwencja ECHO A + przydziału
+   1:1, do świadomości, nie blokuje). **TEMAT GOTOWY DO SCALENIA — dispatch merge NASTĘPUJE teraz**
+   (razem z R-CHATKA, patrz wyżej — już zlecone).
+
+3. **P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI runda 3 — Evaluator (`ae0138a167afaadce`):
+   WERDYKT PASS-WITH-NOTES, 1 BLOKUJĄCA (B3).** Kod gry (`ai.ts`+`main.ts`) potwierdzony poprawny
+   i gotowy — 3. runda nic w nim nie zmieniła, wszystkie mutacje kodu łapane (M1/M2/M4/N3 z
+   poprzedniej rundy własnoręcznie odtworzone i złapane). Scalenie sekcji testu A+B bez konfliktów,
+   27/27 potwierdzone. **B3 — scalenie zgubiło scenariusz parytetu „AI bez własnych miast zakłada
+   pierwsze miasto bez restrykcji terytorium"** (był w rundzie 1 jako T3, w rundzie 2 jako A4, zniknął
+   przy scalaniu do rundy 3 bo dispatch mówił dosłownie „T1/T2/T4/T5"). Mutacja E13 (usunięcie
+   warunku ucieczki dla AI bez miast) daje 27/27+13/13+213/213 wszystko zielone mimo całkowitego
+   paraliżu zakładania pierwszego miasta — realny brak pokrycia. Evaluator dostarczył gotowy,
+   dwustronnie zwalidowany patch (8 linii, dosłowna kopia z niescalonej rundy 1) do wklejenia przed
+   blokiem T4. Dodatkowo notatki niepilne: N2 (bramka `guardedCallRe` zbyt luźna na E1/E2/E3/E6,
+   Evaluator dał gotowe 2 linie naprawy, zalecenie: doklejyć przy temacie Fort/Strażnica, bo ten
+   dotknie `foundingTerytoryOpts`), N7 (E7 obce-terytorium niezłapane, do osobnego scenariusza),
+   N9 (test niezarejestrowany w liście bramek CLAUDE.md — dopisać przy scalaniu), N10 (usunąć po
+   scaleniu 2 nieaktualne worktree rundy 1/2 — WYKONANE w ramach C-032 sprzątania wyżej).
+   **Dispatch rundy 4 (wąski, mechaniczny: wklejenie gotowego patcha T3) NASTĘPUJE teraz.**
+
+4. **P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO runda 4 (Operator, `ac2a4b9cdd827f97e`)** — BB1 (bramka
+   main.ts dla `onSeparate`) naprawiona i potwierdzona mutacyjnie (3 warianty, wszystkie złapane),
+   17/17. **BB2 (utrata puli ruchu przy współdzieleniu heksu) — Operator TYM RAZEM uczciwie
+   udokumentował, że pełnej naprawy NIE zrobił**, zamiast fałszywie twierdzić o częściowej ochronie
+   (czego dotyczył FAIL rundy 3). Zaimplementował wąską, bezpieczną łatkę (`skipStackRuchSync`
+   chroniący JEDNO bezpośrednio następujące wywołanie) i wprost nazwał że pełna naprawa wymaga
+   nowej tożsamości stosu niezależnej od heksu (`stackGroupId`) — duży refaktor ~10 funkcji w
+   wielu miejscach `main.ts`, który częściowo odtwarzałby odrzuconą wcześniej opcję B tego samego
+   tematu (ECHO A: „bez funkcji B, żadnego rozpraszania"). Operator zgłasza to jako NOWE pytanie
+   ABC (A=zostać jak jest, B=pełny refaktor stackGroupId, C=wąska naprawa tylko dla powrotu na
+   zajęty origin) zamiast decydować sam — poprawne zachowanie zgodne z §0b. Bramki: tsc 0,
+   logic-test 213/213, army-merge-separate-return-test 16/16, army-merge-bounce-test 4/4,
+   army-merge-dismiss-bounce-test 16/16, army-stack-ruch-test 5/5,
+   army-merge-separate-return-mainguard-test (BB1) 17/17, plus bez regresji: combat-test 6/6,
+   tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13,
+   army-merge-colocated-test 4/4. **Dispatch Evaluatora rundy 4 NASTĘPUJE teraz** — pytanie ABC o
+   BB2 (A/B/C) do Macieja dopiero PO werdykcie Evaluatora (czy uczciwość dokumentacji tym razem
+   się broni), żeby nie zadawać pytania, które i tak wróci z Evaluatora ze zmianami.
+
+5. **R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA runda 2 (Operator, `af8e111e57660342d`)** — pop-up
+   podsumowania pary odtworzony od zera z 3 poprawkami blokującymi rundy 1: B1 (barbarzyńcy
+   wykluczeni przez `isBarbarian()`, analogicznie do precedensu C-BARB-Q1/Q2), B2 (mgła wojny —
+   `isVisiblePartner` jako parametr testowalny, gracz [id=0] pokazywany z etykietą „Ty" bo pop-up
+   dotyczy konkretnie oglądanej cywilizacji), B3 (sortowanie chronione jsdom-owym testem
+   renderującym prawdziwy DOM, dowód mutacyjny: usunięcie sortu → 19/1 fail). N2 (zamykanie
+   pop-upu przy otwarciu audiencji) też zrobione. Bramki: tsc 0, logic-test 213/213,
+   diplomacy-lista-podglad-przed-wizyta-test 29/29, diplomacy-treaties-test 17/17,
+   diplomacy-display-test 35/35. **Dispatch Evaluatora rundy 2 NASTĘPUJE teraz.**
+
+---
+
+## KONTROLA KOMPLETNOŚCI wg CLAUDE.md §0c — audyt „STATUS: OTWARTE" (2026-08-09, na żądanie Macieja)
+
+`grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` → 24 trafienia. Plik jest append-only:
+nagłówek zachowuje status z MOMENTU zgłoszenia, prawdziwy aktualny stan trzeba sprawdzić po dalszych
+wpisach pod tym samym tytułem. Zweryfikowane każde z 24: 19 ma udokumentowany powód odłożenia
+(niepilne/pre-istniejące/WSTRZYMANE na prośbę Macieja/czeka na odpowiedź) LUB jest już faktycznie
+zamknięte dalej w pliku (nagłówek po prostu nieaktualny — np. R-WYDARZENIA-FILTR-KATEGORII SCALONE
+`2984b707`, R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE SCALONE `8692b61b`, P-TRIUMF-ZJEDNOCZENIE-GRECJI
+SCALONE `b057d248`, R-MERGE-MAIN-RYTM-Q1 odpowiedziane i wdrożone jako CLAUDE.md §4a). **2 realne
+luki znalezione:**
+
+**Luka #3 — R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY.** Trzy rundy Operator→Evaluator już przeszły
+(worktree `agent-a67d5e9f736e1d984` runda 1-2, `agent-aaf9af7386d8ca891` runda 3: naprawa N6/N7/N8 —
+asercje AST wymuszające dokładnie 2 argumenty `buildChipDeltaStockHtml(civRate, civStock)`, spójny
+prefiks obiektu bazowego 7./8. argumentu, 7. argument kończący się na `.small`; dowód mutacyjny:
+wszystkie 3 mutacje drugiej rundy Evaluatora czerwienieją, 42/42 na czystym kodzie). Ostatni wpis:
+„czeka na finalną weryfikację Evaluatora" — nikt jej nie zrobił, żaden worktree już nie istnieje na
+dysku (posprzątany wcześniej, transkrypt agenta zachowany). Dispatch: świeży Evaluator odtwarza kod
+1:1 wg opisu w rejestrze (jak przy R-EPOKA-CUD rundzie 3) i wydaje finalny werdykt.
+
+**Luka #4 — P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE.** Realna, osiągalna w grze nieszczelność znaleziona
+przez Evaluatora przy okazji `R-DYP-STOL-A-KOREKTA`: kontroferta AI może wstrzyknąć złoto-słodzik do
+koszyka traktatów objętych rozłączeniem (nap/sojusz/granice/wasal/pokój) tylnymi drzwiami — gracz
+inicjujący ma czysty formularz (0 pól), ale „Edytuj propozycję na stole" dla kontroferty AI otwiera
+formularz z już wypełnionym koszykiem, bez UI do podglądu/edycji/usunięcia tych pozycji. Nigdy nie
+przedstawione Maciejowi jako pytanie ABC.
+
+Dispatch Luki #3 następuje teraz. Luka #4 wymaga decyzji Macieja — pytanie ABC do zadania w tej
+samej turze.
+
+Dodatkowo: **P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI runda 4 (Operator)** dostarczona —
+wklejony gotowy patch T3 Evaluatora, 28/28, dowód mutacyjny potwierdzony. Dispatch finalnego
+Evaluatora rundy 4 następuje teraz.
+
+---
+
+## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A** — sweetener AI zostaje (AI zachowuje narzędzie negocjacyjne złota-słodzika
+w kontrofertach traktatowych), ale dodajemy UI do podglądu/edycji/usunięcia pozycji koszyka w
+formularzu „Edytuj propozycję na stole" dla kontroferty AI — symetria informacyjna zamiast
+symetrii funkcjonalnej. Dispatch NASTĘPUJE teraz.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — runda 3 dostarczona (Operator), czeka na Evaluatora (2026-08-09)
+
+Worktree `/tmp/wt-spichlerz-r3` (poza standardowym `.claude/worktrees/`, świeży detached checkout
+z HEAD `b0825d5e`). Nowy test `spichlerz-cap-citypanel-wiring-test.cjs` chroni `cityPanel.ts:1040`
+(`maSpichlerz = cityHasSpichlerzBuilding(built)`), 8/8, dowód mutacyjny potwierdzony (cofnięcie do
+`built.includes('spichlerz')` daje 6/8 FAIL, przywrócenie 8/8 PASS). Bramki: tsc 0, logic-test
+213/213, akwedukt-popcap-test 5/5, population-growth-v85-test 48/50 (2 pre-istniejące porażki
+potwierdzone identyczne na czystym main bez patcha), growthmult-compound-test 17/24 (7 pre-istniejących
+porażek potwierdzone identyczne na czystym main). Dispatch Evaluatora rundy 3 NASTĘPUJE teraz.
+
+---
