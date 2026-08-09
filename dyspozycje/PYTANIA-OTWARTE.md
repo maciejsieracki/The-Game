@@ -4749,6 +4749,16 @@ przed scaleniem:**
 Niepilne: N4 (przestarzały docstring sąsiedniego testu), N5 (chip miasta rywala pokazuje mylące
 „(0)" zamiast pomijać element gdy brak danych zapasu).
 
+**N1-N3 naprawione przez Operatora (worktree `agent-a67d5e9f736e1d984`), czeka na Evaluatora.**
+N1: logika renderu trzeciego elementu wydzielona do nowej, eksportowanej, DOM-free funkcji
+`buildChipDeltaStockHtml()` w `empire-hud-totals.ts` — test przepisany, teraz woła tę funkcję
+naprawdę + AST-owa kontrola (przez `typescript` compiler API) że wszystkie 6 wywołań `w3CityChip(`
+mają 8 argumentów kończących się na `.stock`. Dowód: obie wcześniej-nieuchwycone mutacje teraz
+czerwienieją (35/38 i 36/38). N2: usunięty `?? empire.pracaRate` z fallbacku. N3: komentarz
+przeredagowany na „NIE trafia do puli, DOPÓKI kolejka budowy nie jest pusta". N4 też naprawione.
+N5 świadomie pominięte (wymaga decyzji produktowej). Bramki Operatora: tsc 0, logic-test 213/213,
+nowy test 38/38, sąsiedni test 20/20 bez regresji.
+
 ## P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC (2026-08-09, uwaga Macieja przy R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY) · STATUS: **OTWARTE — niepilne, „temat na później" (cytat Macieja)**
 
 Maciej zwrócił uwagę, że trzeba ujednolicić zasady kolorów prezentacji surowców między panelem
@@ -5244,6 +5254,24 @@ wzorowany na `wonderCompletedNotice.ts`), podmiana w `main.ts`, nowy test 13/13.
 pozytywny efekt uboczny:** komunikat ELIMINACJA (6000ms) teraz faktycznie zdąży się pokazać, bo
 TRIUMPH już nie dzieli z nim elementu `hintToast`. Bramki: tsc 0, logic-test 213/213, nowy test
 13/13, istniejący `triumph-city-state-test.cjs` bez regresji 10/10.
+
+**Evaluator (Opus 5): PASS-WITH-NOTES z 3 warunkami do PODNIESIENIA DO PASS (dowód mutacyjny — 2 z 3
+mutacji uciekły):**
+- **M1 uciekła:** test w pełni synchroniczny, nie łapie próby dodania auto-hide (`setTimeout`) —
+  główne wymaganie zgłoszenia („modal wymaga kliknięcia, nie znika sam") nie ma ŻADNEJ asercji.
+- **M2 uciekła:** asercja treści cityName jest pusta z definicji (`includes('miasto')` przechodzi
+  nawet przy `cityName === undefined`, bo karta zawsze zawiera słowo „miasto" w opisie stałym).
+- **M3 uciekła:** brak strażnika że `showTriumphCityStateNotice(` faktycznie jest wołane z
+  `main.ts` (istnieje precedens w repo: `border-march-wygasanie-test.cjs` czyta main.ts jako tekst).
+**Dodatkowe znalezisko (częściowo obala twierdzenie Operatora o ELIMINACJI):** ścieżka kapitulacji
+z głodu (`resolveSiegeSurrender`) NADAL gubi komunikat ELIMINACJA — inny `showHintMessage` na tej
+samej linii co `runCapitalCapturePlunder` dzieli TEN SAM toast. Twierdzenie prawdziwe tylko dla
+ścieżki bitewnej, nie dla kapitulacji głodowej (pre-istniejące, nie z tej pracy). Zauważona też
+utrata trwałego śladu w panelu WYDARZENIA — poprzednio triumf w EOT trafiał do `warEventLog`,
+teraz modal pokazuje się od razu i nic nie zostawia po zamknięciu.
+**Martwy kod (niepilne):** `TRIUMPH_CS_HINT_MS`/`buildTriumphCityStateUnificationMessage` używane
+już tylko przez własny test — treść komunikatu istnieje teraz w DWÓCH miejscach (stary string +
+nowy modal), mogą się rozjechać bez wykrycia. Dispatch redo naprawiającego 3 warunki PASS.
 
 ---
 
