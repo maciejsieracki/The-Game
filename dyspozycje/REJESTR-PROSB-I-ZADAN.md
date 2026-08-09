@@ -1986,10 +1986,10 @@ plikach między zdeployowanym buildem a HEAD). Przyczyna: defekt CSS flex-layout
 ## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — SCALONE `872c1e0d` (2026-08-09)
 Dwukrotnie zweryfikowane przez Evaluatora. Pełna treść w `PYTANIA-OTWARTE.md`.
 
-## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — OTWARTE, rozpoznanie w toku (2026-08-09)
-Globalne ustawienie Skarbiec/Praca/Spichlerz/Nauka per cywilizacja z opcją nadpisania lokalnie per
-miasto — żeby nie trzeba było ustawiać każdego nowego miasta od zera. Pełna treść w
-`PYTANIA-OTWARTE.md`. Dispatch rozpoznania (Explore, bez kodowania).
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — ECHO A, dispatch implementacji (2026-08-09)
+Decyzja Macieja: A — wdrożyć wzorem Danina/Handel (Mapa<ownerId, wartość domyślna> +
+`override: boolean` per miasto) dla Praca/Żywność, podziału Praca, priorytetu produkcji. Pełna
+treść w `PYTANIA-OTWARTE.md`.
 
 ## R-EPOKA-CUD-WARUNEK-AWANSU — OTWARTE, wymaga ABC (2026-08-09)
 Nowa reguła: awans epoki wymaga zbudowania cudu przypisanego cywilizacji w bieżącej epoce (jeśli

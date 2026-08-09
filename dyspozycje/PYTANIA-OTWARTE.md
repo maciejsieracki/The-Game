@@ -4588,6 +4588,29 @@ mechanizmu w grze się to odnosi (priorytet Praca/Żywność per miasto? coś zw
 zarządzaj"? inny suwak?). Dispatchuję czyste rozpoznanie (Explore/Sonnet 5, bez kodowania) —
 dopiero po zebraniu faktów przedstawię ewentualne warianty do decyzji.
 
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — ECHO A, decyzja Macieja (2026-08-09)
+
+**Rozpoznanie:** mechanizm „globalne domyślne + lokalne nadpisanie" istnieje już DWA razy w
+kodzie w innym kontekście (Danina/Handel — `Map<ownerId, CityPodzialHandlu>` +
+`City.podzialHandluOverride` + `resolveCityPodzialHandlu()`; auto-ulepszenia terenu —
+`City.ulepszeniaOverride`), ale NIE dla Praca/Żywność (`okolicaFocus`), podziału Praca budynki/
+skarbiec (`podzialPracy`) ani priorytetu produkcji (`budowaFocus`/`budowaTryb`) — te trzy pola
+dziś zawsze startują od tej samej wartości domyślnej dla każdego nowego miasta.
+
+**[TEMAT: Globalne vs lokalne ustawienia miasta]**
+- **A — Wdrożyć wzorem Danina/Handel** (Mapa<ownerId, wartość domyślna> + `override: boolean` per
+  miasto). Za: gotowy, sprawdzony wzorzec w kodzie; spójny z istniejącym UI. Przeciw: interfejs
+  Danina/Handel jest w innym miejscu ekranu niż suwaki Praca/Żywność/Produkcja — trzeba
+  zaprojektować nowe umiejscowienie przycisku „lokalnie".
+- **B — Wdrożyć wzorem auto-ulepszeń terenu** (`City.override` boolean + resolver). Za: prostszy
+  model danych. Przeciw: auto-ulepszenia to jednorazowa decyzja, nie stały suwak — może nie pasować.
+- **C — Nowy, wspólny mechanizm dla wszystkich trzech pól naraz**, zaprojektowany od zera. Za:
+  najlepiej dopasowany. Przeciw: najwięcej nowego kodu.
+
+Rekomendacja Sonnet 5 była B. **Decyzja Macieja: A** (dosłownie „ID: R-MIASTO-USTAWIENIA-GLOBALNE-
+VS-LOKALNE a"). ECHO potwierdzone w czacie. Dispatch implementacji wzorem Danina/Handel — bez
+deployu, zgodnie z procedurą NUMER→ABC→COMMIT→DEPLOY.
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga ABC**
 
 **Cytat Macieja:** „Cywilizacja nie może przejść do następnego etapu, jeżeli nie stworzy cudu,
