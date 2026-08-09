@@ -6683,7 +6683,16 @@ Maciej da sygnał do przejścia do kroku 2.
 morskie w miastach bez dostępu do wody pozostają nietknięte (efektywnie tożsame z A, bez
 nazywania tego osobnym wyjątkiem — potwierdzone jako właściwe podejście).
 
+**Doprecyzowanie zasady B (brama produkcji morskiej):** „jedynie zasada taka, że galerię możemy
+budować tylko w tych miastach, w których możemy wybudować port, czyli trzeba mieć dostęp do rzeki
+lub morza." — WAŻNE uproszczenie względem pierwotnej opcji B z turnieju: warunek to WYŁĄCZNIE
+dostęp do wody (morze LUB rzeka), TAKI SAM jak wymóg budowy samego Portu — Galera NIE wymaga, żeby
+Port faktycznie był już zbudowany w tym mieście, wystarczy że miasto KWALIFIKUJE SIĘ do budowy
+Portu (ma dostęp do wody). To węższy, tańszy zakres niż „Port zbudowany + dostęp do wody" z
+pierwotnej opcji B Sędziego — dokładnie ta sama bramka terenowa (`cityHasCoastOrRiverAccess`),
+bez dodatkowego wymogu posiadania budynku.
+
 **Status:** wszystkie elementy R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (=C: ekonomia+brama produkcji
-morskiej, dostęp do wody = morze LUB rzeka, grandfather=B) są teraz w pełni zdecydowane. Temat
-oznaczony przez Macieja jako niepilne „na później" — NIE dispatchować teraz bez wyraźnego sygnału,
-zapisane i gotowe.
+morskiej WEDŁUG DOSTĘPU DO WODY [nie wymaga zbudowanego Portu], dostęp do wody = morze LUB rzeka,
+grandfather=B) są teraz w pełni zdecydowane. Maciej polecił (2026-08-09, ta sama tura): „wszystkie
+nowe tematy i decyzje ABC odpalaj nowych subagentów do działania" — dispatch NASTĘPUJE teraz.
