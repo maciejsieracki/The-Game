@@ -14,7 +14,7 @@ import type { GameMap } from '../types/map';
 import { Nakladka } from '../types/hex';
 import { hexDistance } from '../units/setup';
 import { tileYield } from './economy';
-import { foodPotentialForHex, improvementKeysForHex, normalizeImprovementKey } from './terrain-improvements';
+import { foodPotentialForHex, improvementKeysForHex } from './terrain-improvements';
 import miastoParams from '../../data/miasto-params.json';
 import { cityBorderRadius } from './culture-religion';
 import type { City, OkolicaFocus, OkolicaTryb } from './cities';
@@ -162,12 +162,20 @@ function scoreOkolicaTile(
   return { t, s: tileAssignScore(y, opts.wagi, potential), y, potential };
 }
 
-/** Potencjał żywności heksu mapy (fokus żywność w auto-okolicy). */
+/**
+ * Potencjał żywności heksu mapy (fokus żywność w auto-okolicy).
+ * P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09): musi czytać WSZYSTKIE
+ * warstwy ulepszeń (`hex.ulepszenia`) przez `improvementKeysForHex`, tak jak
+ * `yieldOfMapHex` wyżej i silnik (`hexToWorkedTile`) — nie tylko legacy pojedyncze
+ * pole `hex.ulepszenie` (ostatnia postawiona warstwa). Inaczej heks z farmą
+ * postawioną NA dodatkowej warstwie (np. `['glinianka','farma']`, legacy
+ * `hex.ulepszenie` wskazujące na coś innego) dalej dostaje nienależny bonus
+ * potencjału, mimo że `FOOD_IMPROVEMENT_KEYS` powinno go wyzerować.
+ */
 export function foodPotentialOfMapHex(map: GameMap, q: number, r: number): number {
   const h = map.hexes[`${q},${r}`];
   if (!h) return 0;
-  const key = normalizeImprovementKey(String(h.ulepszenie ?? 'brak'));
-  const keys = key ? [key] : [];
+  const keys = improvementKeysForHex(h);
   return foodPotentialForHex(h.terenBazowy, h.nakladka ?? Nakladka.Brak, keys);
 }
 

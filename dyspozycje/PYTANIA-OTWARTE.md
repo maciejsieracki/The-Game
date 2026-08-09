@@ -3342,7 +3342,7 @@ liczby: `tsc` czyste, `heks-plony-warstwy-test` (nowy) 19/19, `okolica-test` 46/
 **Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`), silnik `turn-economy.ts`
 (`hexToWorkedTile`).
 
-## P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09, nota N3 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — podniesiona pilność, Evaluator zaleca nie odkładać**
+## P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09, nota N3 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
 `foodPotentialOfMapHex` (`gra/src/game/okolica.ts`) to drugi człon tego samego wzoru rankingu
 co `yieldOfMapHex` (`scoreOkolicaTile` łączy oba w `tileAssignScore`) i ma identyczny,
 NIEnaprawiony wzorzec: czyta tylko `h.ulepszenie` (ostatnią warstwę), nie
@@ -3351,9 +3351,44 @@ warstw — heks z wielowarstwowym ulepszeniem żywnościowym dostaje teraz popra
 farmy ORAZ nadal nienależny `FARMA_POTENTIAL_FOOD_BONUS`, więc zawyżenie w rankingu
 auto-przydziału pól przy `focus:'zywnosc'` jest WIĘKSZE w liczbach bezwzględnych niż przed
 naprawą (nie regresja — oba człony były błędne już wcześniej, rozjazd między nimi jest nowy).
-Naprawa to ten sam jednolinijkowiec: `improvementKeysForHex(h)` zamiast ręcznego `[key]`
-w `okolica.ts:169-170`.
-**Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`, linie 169-170).
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5):** ten sam jednolinijkowiec co `yieldOfMapHex` —
+`improvementKeysForHex(h)` zamiast ręcznego `[key]` w `okolica.ts` (`foodPotentialOfMapHex`).
+Evaluator PASS-WITH-NOTES, dowód mutacyjny (cofnięcie fixu → 21/24, dokładnie 3 nowe asercje
+padają, `okolica-test`/`logic-test` pozostają zielone pod mutacją — nowy test jest JEDYNYM który
+łapie ten błąd). Osiągalność potwierdzona empirycznie na realnym, codziennym przypadku: heks
+Równina z warstwami `['farma','droga']`, legacy `ulepszenie='droga'` (droga nadpisuje legacy przy
+budowie) — stary kod dawał nienależne 3 pkt potencjału mimo że farma już stoi, nowy kod 0 pkt.
+`heks-plony-warstwy-test.cjs` 24/24 (baza 19/19 + 4 nowe), `okolica-test` 46/46,
+`hex-plony-magazyn-test` 11/11, `plony-budynkow-test` 68/68, `logic-test` 213/213,
+`auto-manage-test` 45/45, `tsc` 0 błędów. C-026: 3 wywołania (`okolica.ts:191` przydział pól,
+`okolica.ts:403` rebalans po zmianie populacji, `auto-manage.ts:334` AI zarządcy) — wszystkie
+konsystentne z fixem.
+
+**Nota gameplayowa Evaluatora:** `rebalanceWorkersAfterPopulationChange` może teraz wybrać INNE
+pole do odjęcia robotnika przy kurczeniu się miasta z fokusem żywność — kierunek poprawny (fix
+usuwa wewnętrzną niespójność, nie wprowadza nowej), ale widoczna zmiana zachowania w playteście.
+
+**Trzeci, NIEnaprawiony człon tej samej rodziny błędu, znaleziony przez Evaluatora i
+zarejestrowany osobno:** `P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA` — `cityPanel.ts` (`tileYieldLabel`,
+`appendOkolicaYieldLabel`) ma identyczny wzorzec, widoczny graczowi w tooltipach pól i liczbach
+na mapce okolicy miasta.
+**Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`).
+**Model:** Sonnet 5.
+
+## P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA (2026-08-09, nota N1 Evaluatora P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — realny, widoczny błąd, niepilne tylko z braku playtestu**
+Trzeci człon tej samej rodziny błędu (obok już naprawionych `yieldOfMapHex` i
+`foodPotentialOfMapHex`): `gra/src/ui/cityPanel.ts` — `tileYieldLabel()` (linia ~8198) i
+`appendOkolicaYieldLabel()` (linia ~8214) budują `WorkedTile` z
+`ulepszenieKey: normalizeImprovementKey(String(hex.ulepszenie ?? 'brak'))`, NIE przekazują
+`ulepszeniaKeys` — `tileYield` bez tego pola liczy tylko JEDNĄ (legacy) warstwę.
+
+**To NIE jest teoretyczne — Evaluator zmierzył na tym samym heksie testowym** (Równina,
+`['farma','droga']`, legacy `'droga'`): silnik (`hexToWorkedTile`) liczy Żywność=5/Praca=5/
+Handel=5 pkt/turę, panel (`cityPanel.ts:8198`) pokazuje graczowi **2/2/2** — mniej niż połowę
+realnej wartości. Widoczne w: tooltipach pól (linie ~8310, 8312, 8313, 8384, 8385) oraz w
+liczbach plonów rysowanych NA heksie w mapce okolicy miasta (linia ~8349).
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`tileYieldLabel`, `appendOkolicaYieldLabel`).
 **Model:** Sonnet 5.
 
 ## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
