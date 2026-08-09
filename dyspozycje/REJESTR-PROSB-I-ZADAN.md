@@ -2088,7 +2088,7 @@ Pokazuje się jako hint 9,5s (nie modal) i tylko gdy eliminowane miasto-państwo
 samego klucza cywilizacji co gracz — może nie być błędem, tylko wąskim warunkiem/przeoczonym
 dymkiem. Pełna treść w `PYTANIA-OTWARTE.md`.
 
-## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — OTWARTE, wymaga rozpoznania (2026-08-09)
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — hipoteza potwierdzona, wymaga ABC (2026-08-09)
 Odkrycie jednostki wojskowej z chatki ze skarbami na cudzym terytorium liczy się jako naruszenie
 granicy i karze dyplomację, mimo że gracz nic złego nie zrobił. Propozycja: pula nagród z chatek na
 cudzym terenie ma wykluczać jednostki wojskowe. Dispatch Explore przed ABC. Pełna treść w

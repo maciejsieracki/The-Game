@@ -5027,7 +5027,16 @@ broni; (c) ustalić czy dziś istnieje pojęcie „epoka Brąz" jako punkt zacze
 epoki (tak, potwierdzone przy innym zgłoszeniu `R-EPOKA-CUD-WARUNEK-AWANSU` — Brązownictwo K→B).
 Zanim przedstawię ABC — zebrać fakty o dzisiejszym zachowaniu AI w kwestii wojen.
 
-## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga rozpoznania przed ABC**
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — hipoteza POTWIERDZONA, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** hipoteza Macieja potwierdzona jednoznacznie. Pula nagród chatki
+(`villageRewards.ts`: złoto 50%/tech 30%/jednostka 20%) NIE rozróżnia czyje jest terytorium chatki
+— era 1 daje Zwiadowcę (typ „Civilian", zwolniony z kary), era 2+ daje **Włócznika** (typ
+„Spearman", jednostka wojskowa, BRAK zwolnienia). Kara za intruzję terytorialną
+(`border-march-scan.ts`/`diplomacy-border-march.ts`, −5 Zaufania/turę) skanuje WSZYSTKIE jednostki
+na cudzym terenie bez wyjątku dla „pochodzenia" (spawn z eventu vs ruch gracza) — nalicza się już
+na pierwszym końcu tury, bez okresu karencji. Chatki mogą leżeć wewnątrz cudzego terytorium
+(dystans min. 3 heksy od miasta, promień terytorium rośnie z populacją, może przekroczyć 3).
 
 **Cytat Macieja:** „jeżeli nasz zwiadowca na terenie innej cywilizacji znajdzie chatkę, a w tej
 chatce zostanie odkryta jednostka wojskowa, to narusza się wtedy granicę i cierpi nasze statystyki
