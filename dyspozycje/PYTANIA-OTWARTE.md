@@ -6382,3 +6382,29 @@ tekstowej (K-5, ryzyko fałszywych alarmów w przyszłości). BB2 pozostaje NIEZ
 świadomie i uczciwie udokumentowane — pełne, poprawione pytanie ABC (5 opcji: A-nic-nie-rób-udokumentuj-uczciwie,
 B-pełny-refaktor-stackGroupId, C-propozycja-Operatora-re-prompt, D-traktuj-jak-brak-origin,
 E-sync-do-wartości-armii) idzie do Macieja po zamknięciu tej rundy.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — korekta zakresu Macieja (2026-08-09)
+
+**Korekta:** „Port to jakaś pomyłka. Nie mamy portu w grze. Ale dobry pomysł. Pomyślę o tym, że
+możemy to jakoś użyć w przyszłości." Temat R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA dotyczy
+WYŁĄCZNIE Fortu i Strażnicy/Posterunku — Port usunięty z tego tematu, przeniesiony do osobnego
+zgłoszenia (patrz niżej), NIE pilny, świadomie odłożony do przyszłości.
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — przyszła funkcja, niepilne**
+
+**Cytat Macieja:** „w ogóle też można wprowadzić jakieś budynki portowe dla miast nadbrzeżnych."
+Świadomie odłożone przez samego Macieja („pomyślę o tym") — NIE wymaga dispatchu teraz, ale
+zarejestrowane żeby nie zginęło (C-027/C-030).
+
+**Instrukcja Macieja (ta sama tura):** „zaproponuj jakieś rozwiązania z tymi dwoma wątkami i zrób
+turnament na najlepszą propozycję" — dotyczy OBU tematów (Fort/Strażnica-zasięg-zakładania ORAZ
+budynek portowy). Uruchamiam pełny turniej ABC (2 niezależnych Proponentów + Sędzia, `C-018`) dla
+obu, mimo że temat portowy jest jawnie oznaczony jako niepilny — turniej produkuje GOTOWĄ propozycję
+do rozważenia, nie wymusza natychmiastowego wdrożenia.
+
+Kontekst dostępny do rozpoznania: w grze istnieje już jednostka morska (`Galley`, `Typ: Naval`,
+`units.json:557`) — port mógłby np. odblokowywać/przyspieszać produkcję jednostek morskich, dawać
+bonus handlowy dla miast nadmorskich, albo łączyć oba. Rozpoznanie stanu „miasto nadbrzeżne"
+(czy silnik już wykrywa sąsiedztwo wody dla miasta) do zbadania przez Proponentów.
