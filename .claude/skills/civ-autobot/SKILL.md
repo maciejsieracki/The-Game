@@ -190,6 +190,16 @@ poprawki tego, co już było naprawione"):
   powstała i czy jest wiarygodna (przelicza grepem sam, nie ufa samoocenie Operatora),
   nie tylko czy diff „wygląda" bezpiecznie — to nakładka na COUPLING z `lean-loop`,
   z twardym wymogiem enumeracji, nie tylko oceny „na oko".
+- **Operator wykracza poza literalny scenariusz zgłoszenia własnym dowodem, nie tylko
+  odtwarza raport** (wzmocnienie `lean-loop` §„Lean code without its check" — boundary/
+  negative/repro to MINIMUM, nie sufit). Zanim Operator zgłosi gotowość, buduje min. 2
+  własne przypadki brzegowe tego samego niezmiennika (np. `excess=0` z nielegalnymi
+  wpisami obecnymi, wszystkie wpisy nielegalne naraz, remis w kryterium wyboru) — nie
+  tylko literalny przykład z tickieta. Realny powód (2026-08-09, `P-HEKS-ISWORKABLE…`):
+  dwie kolejne rundy przeszły własny dowód mutacyjny Operatora na scenariuszu z raportu i
+  mimo to wprowadziły nową regresję, którą złapał dopiero Evaluator budując SWOJE
+  scenariusze. Evaluator sprawdza czy te własne przypadki w ogóle istnieją w raporcie
+  Operatora, nie tylko czy dowód mutacyjny na scenariuszu z tickieta przechodzi.
 
 **Orkiestrator nie jest zwolniony z pętli** (`CLAUDE.md` §0b, `playbook.md` → `C-017`):
 każda zmiana zapisana do repozytorium i każda liczba podana właścicielowi jako fakt
@@ -235,6 +245,18 @@ scalenie → zgoda właściciela przy kolizji z cudzą pracą → bramki → bui
 
 - **Po KAŻDYM powrocie Operatora z worktree** sprawdź `git status --porcelain` na drzewie głównym — stały krok zamknięcia, nie reakcja na alarm (`C-019`, recydywa).
 - Worktree usuwaj **jako ostatni** krok, po scaleniu albo odrzuceniu; niescommitowany stan wcześniej na gałąź `zapas/<nazwa>` i na origin (`C-014`).
+- **Kontynuacja rundy po FAIL Evaluatora** — wznawiaj `SendMessage` do agenta/worktree z
+  poprzedniej rundy (zachowuje kontekst, historię commitów, świeżość względem `main`), NIE
+  nowy `Agent` z izolacją od zera, chyba że worktree jest uszkodzony/usunięty. Sprawdzone
+  wielokrotnie 2026-08-09 (4 rundy `P-HEKS-ISWORKABLE…`, 3 rundy `P-HANDEL-TECH-…`) — szybsze
+  i taniej niż odtwarzanie stanu od podstaw, agent od razu widzi pełną listę Evaluatora.
+- **Po podejrzeniu przerwania środowiska** (restart, cisza wyraźnie dłuższa niż oczekiwana,
+  brak spodziewanej notyfikacji) — sprawdź stan BEZPOŚREDNIO (`git log`/`git status` w
+  worktree agenta), zanim uznasz zadanie za wiszące lub zgubione; nie polegaj wyłącznie na
+  ciszy jako sygnale. Realny przypadek 2026-08-09: restart kontenera ubił kilku subagentów
+  w trakcie pracy (w tym w trakcie długiego `map-gen-regression-test.cjs`) BEZ żadnej
+  notyfikacji o przerwaniu — jedynym sygnałem był brak wpisu na `ListAgents` przy braku
+  wcześniejszej notyfikacji `completed`.
 - **Przed KAŻDĄ dłuższą serią zmian** (pracą dłuższą niż jedna operacja, gdy inna sesja może w tym czasie commitować) — **wpis-blokada w `KANAL-PRACA.md` przed startem, a po zakończeniu wpis `ODBLOKOWANE`** (`C-007`). Obowiązuje **niezależnie od izolacji** — worktree chroni przed konfliktem plików, nie przed tym, że druga sesja robi równolegle to samo zadanie. Gdy izolacja jest niemożliwa, blokada wymienia dodatkowo REZERWOWANE PLIKI, a commitujesz **wyłącznie pliki zamkniętego zlecenia**.
 - **Nigdy `git add -A`** (`C-008`, recydywa czterokrotna) · commituj każdą ukończoną grupę natychmiast (`C-003`) · nie raportuj wyniku subagenta bez własnej weryfikacji na dysku (`C-006`) · status pracy w tle oceniaj po znacznikach czasu plików, nie po etykiecie systemu (`C-005`).
 
