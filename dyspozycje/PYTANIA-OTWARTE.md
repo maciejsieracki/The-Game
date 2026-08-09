@@ -7155,3 +7155,41 @@ NIEJEDNOZNACZNE, wymagają realnego pomiaru (F12 Macieja w grze), nie do rozstrz
 kodu — do zgłoszenia Maciejowi jako prośba o pomiar, nie do dispatchu subagenta kodującego.
 
 ---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 4 (świeża implementacja): PASS-WITH-NOTES, 2 BLOKUJĄCE, runda 5 w toku (2026-08-09/10)
+
+Rdzeń logiki potwierdzony poprawny i zgodny z decyzją Macieja (zweryfikowane niezależnie: 16/16
+cudów E epok przechodzi bramkę dostępności bez zakleszczenia, zasięg reguły policzony na danych —
+9 cywilizacji objętych, 6 z martwą regułą bo cud w epoce 3).
+
+**B1 (BLOKUJĄCA, realny bug w kodzie gry):** blok chatki skarbów (`main.ts:17163`) używa STAREGO
+warunku `if (step.completed.some(d => d.awansEpoki))` do odświeżenia nakładek złóż/`setEra()`
+zamiast nowego `eraAdvanced` — przy awansie epoki BEZ starej flagi `awansEpoki` (realny, częsty
+przypadek: gracz zbadał Brązownictwo wcześniej, chatka domyka resztę Kamienia) epoka realnie
+awansuje ale wizualia/muzyka NIE odświeżają się. Naprawa: jeden token,
+`if (step.completed.some(d => d.awansEpoki))` → `if (eraAdvanced)`.
+
+**B2 (BLOKUJĄCA, bramka):** własna kampania 15 mutacji Evaluatora — 9/15 złapanych, **6/15
+przeżyło**, w tym 4 łamiące wprost sedno zlecenia (parytet gracz/AI, per-cywilizacyjność): E3
+(gracz na sztywno `'grecy'` zamiast `civTypeForOwner(0)`), E4 (gracz dostaje `[]` zamiast
+`completedWorldWonders` — trwałe zakleszczenie), E5 (AI dostaje civType gracza — cała
+per-cywilizacyjność ginie), E15 (wynik przeliczenia AI wyrzucany do kosza — cała strona AI
+martwa). Przyczyna: kotwice regexowe sprawdzają nazwę wołanej funkcji, ale NIE jej argumenty ani
+zapis wyniku. Naprawa zdefiniowana precyzyjnie (4 punkty, patrz pełny werdykt wyżej).
+
+**Dodatkowe znalezisko:** `reconcileEraForOwner()` — funkcja opisana w zleceniu jako „dyspozytor
+gracz/AI wpięty w 4 miejsca" jest w rzeczywistości MARTWYM KODEM, nigdzie nie wołana (wszystkie 4
+wpięcia wołają bezpośrednio `reconcilePlayerEraFromResearch`/`syncOwnerEraFromResearch`). Bramka
+asercjonuje istnienie martwej funkcji. Do rozstrzygnięcia przy scaleniu: użyć dyspozytora
+faktycznie, albo usunąć razem z asercją.
+
+**B2 z rejestru (zgodność sejwów) zaostrzona:** poprzedni opis („AI zdegradowane, gracz zachowuje
+starą epokę") jest niepełny — degradacja dotyczy OBU stron: AI natychmiast przy wczytaniu, gracz
+przy pierwszym końcu tury/badaniu/chatce/handlu tech (bo `reconcilePlayerEraFromResearch` robi
+`player.era = next`, nie `Math.max`). Każdy zapis sprzed tej zmiany cofa CAŁY świat o 1-2 epoki.
+Nadal wymaga ABC, z poprawioną diagnozą.
+
+Dispatch runda 5, wąska (B1 jeden token + B2 cztery rozszerzenia regex + decyzja o
+`reconcileEraForOwner`) NASTĘPUJE teraz.
+
+---
