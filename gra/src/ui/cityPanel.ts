@@ -365,6 +365,13 @@ export interface CityPanelConfig {
     reczne?: Record<string, number>;
   } | null;
   onOkolicaFocusChange?: (cityId: string, focus: OkolicaFocus) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Priorytet
+   * Praca/Żywność tego miasta jest odpięty od globalnego defaultu imperium.
+   */
+  getOkolicaFocusOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Priorytetu Okolicy (global ⇄ lokalny override). */
+  onOkolicaFocusOverrideToggle?: (cityId: string) => void;
   onOkolicaEnterManual?: (cityId: string) => void;
   onOkolicaRestoreAuto?: (cityId: string) => void;
   onOkolicaTileAdjust?: (cityId: string, q: number, r: number, delta: number) => void;
@@ -378,6 +385,14 @@ export interface CityPanelConfig {
     biblioteka?: BudowaListaBiblioteka;
   } | null;
   onBudowaPriorytetChange?: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Priorytet
+   * produkcji (budowaFocus+budowaTryb) tego miasta jest odpięty od globalnego
+   * defaultu imperium. NIE obejmuje budowaPriorytetTypow (B1, poza zakresem).
+   */
+  getBudowaFocusOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Priorytetu produkcji (global ⇄ lokalny override). */
+  onBudowaFocusOverrideToggle?: (cityId: string) => void;
   onBudowaEnterManual?: (cityId: string) => void;
   onBudowaListaChange?: (cityId: string, lista: string[], tryb: 'lista') => void;
   onBudowaListaCreateTemplate?: (cityId: string, nazwa: string) => void;
@@ -431,6 +446,13 @@ export interface CityPanelConfig {
   onPodzialHandluChange?: (cityId: string, split: PodzialHandluSplit) => void;
   /** Gracz zmienil suwak Pracy (opcjonalnie). */
   onPodzialPracyChange?: (cityId: string, split: PodzialPracySplit) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Podział Pracy
+   * tego miasta jest odpięty od globalnego defaultu imperium (override lokalny).
+   */
+  getPodzialPracyOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Podziału Pracy (global ⇄ lokalny override). */
+  onPodzialPracyOverrideToggle?: (cityId: string) => void;
   /** Kup jednostke za Pieniadz ze skarbca (purchasableUnits). */
   onPurchaseUnit?: (cityId: string, itemId: string, koszt: number) => void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */

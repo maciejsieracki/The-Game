@@ -395,6 +395,16 @@ export function findCityOnHex(cities: City[], q: number, r: number): City | unde
 
 export interface CityCaptureOpts {
   civKeyForOwner?: (ownerId: number) => string;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A, B2 (Maciej 2026-08-09, Evaluator RUNDA 1:
+   * FAIL): zdobycie miasta w bitwie zmienia ownerId, ale bez tego callbacku
+   * okolicaFocus/budowaFocus/budowaTryb/podzialPracy zostają przy wartościach
+   * POPRZEDNIEGO właściciela (silnik czyta city.* bezpośrednio — panel pokazywałby co
+   * innego niż robi silnik). main.ts przekazuje tu seedCityOwnerDefaults(city), która
+   * resetuje override=false i synchronizuje pola z globalnym defaultem NOWEGO właściciela
+   * (patrz empire-city-defaults.ts).
+   */
+  onOwnerChanged?: (city: City) => void;
 }
 
 export function applyCityCaptureAfterBattle(
@@ -440,6 +450,8 @@ export function applyCityCaptureAfterBattle(
   city.ownerId = atkOwner;
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;
+  // B2 (Evaluator RUNDA 1: FAIL) — patrz komentarz przy CityCaptureOpts.onOwnerChanged wyżej.
+  captureOpts?.onOwnerChanged?.(city);
   onCityCapturedCulture(city, atkOwner, prevOwner, {
     civKeyForOwner: captureOpts?.civKeyForOwner,
   });
