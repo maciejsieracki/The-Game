@@ -1490,15 +1490,24 @@ pilność, „nie odkładać" — drugi człon tego samego wzoru rankingu ma ide
 wzorzec), `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE` (dziś nieszkodliwe), oraz niezweryfikowana
 hipoteza `P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA`.
 
-## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA — POTWIERDZONA, naprawa NIEKOMPLETNA (Evaluator FAIL, 2026-08-09)
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA — POTWIERDZONA, naprawa NIEKOMPLETNA (Evaluator FAIL RUNDA 2, 2026-08-09)
 Hipoteza potwierdzona żywą symulacją: silnik ekonomii przypisywał robotników na Morze/Góry,
-których overlay nigdy by nie pokazał (Góry mają najwyższą Pracę ze wszystkich terenów). Fix
-(`isLandWorkableHex`, wspólne źródło prawdy) naprawia 2 z 5 miejsc przypisania — Evaluator
-odrzucił scalenie: tryb RĘCZNY pozostaje bez filtra, co tworzy CICHĄ utratę produkcji (zmierzone:
-27→15 Pracy/turę, 3 z 6 obywateli bezczynnych po jednym kliknięciu) i dotyka istniejących
-zapisów gry. Kontynuacja dispatched z pełną listą Evaluatora (rebase + 3 brakujące ścieżki +
-test dla fokusu podatki/Morze). Decyzja właściciela potrzebna: co z istniejącymi zapisami z
-robotnikami na Górach — zadana jako ABC.
+których overlay nigdy by nie pokazał (Góry mają najwyższą Pracę ze wszystkich terenów).
+
+**Runda 1:** fix naprawił 2 z 5 miejsc przypisania — Evaluator FAIL (tryb ręczny bez filtra,
+cicha utrata produkcji, 27→15 Pracy/turę). Decyzja właściciela `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`:
+tylko stare zapisy, bez migracji, mechanizm ręczny zostaje funkcjonalnie bez zmian.
+
+**Runda 2:** wszystkich 5 ścieżek dostało filtr (potwierdzone niezależną enumeracją Evaluatora —
+10 miejsc, zero szóstego writera, dowód mutacyjny na wszystkich). Ale **NOWY, sprzeczny z kanonem
+decyzji bloker**: filtr terenu w `toggleTileWorker` blokuje też ZDEJMOWANIE robotnika, więc stary
+zapis z nielegalnym przydziałem zakleszcza się (robotnik na Górach nie da się zdjąć klikiem) —
+dokładnie zabronione przez `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1` („mechanizm zostaje bez zmian
+funkcjonalnych"). Dodatkowo `cityPanel.ts:8290` liczy `isWorked` bez filtra — nowy rozjazd
+panel↔silnik. Drugi blocker: zero testów dla AC „stary zapis nie liczy produkcji, bez
+auto-naprawy" z kanonu decyzji — luka pokrycia, która pozwoliła pierwszemu blokerowi przejść
+niezauważenie. Kierunek naprawy (5 linii, gałąź zdejmowania przed bramką terenu) zweryfikowany
+osobiście przez Evaluatora, działa bez regresji. Runda 3 dispatched z pełną listą.
 
 ## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE — NAPRAWIONE 2026-08-09
 `yieldOfMapHex` nie przekazywała `zloze` do `tileYield()`, silnik (`hexToWorkedTile`) tak.

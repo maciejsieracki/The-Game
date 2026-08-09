@@ -3826,12 +3826,55 @@ poważniejszy rozjazd niż naprawiła:**
 stare zapisy, bez migracji; mechanizm ręcznego przydziału zostaje bez zmian funkcjonalnych.
 Decyzja: `docs/decyzje/R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1.md`.
 
-**Kontynuacja dispatched** z pełną listą Evaluatora (rebase, dołożenie filtra do 3 brakujących
-ścieżek z jawnym komunikatem odmowy, uzupełnienie testu o fokus=podatki+Morze), bez logiki
-migracji starych zapisów.
-**Kotwice:** `gra/src/game/okolica.ts` (`isLandWorkableHex`, `seedReczneFromAuto`,
-`rebalanceWorkersAfterPopulationChange`), `gra/src/main.ts` (`toggleTileWorker`/`adjustTileWorker`).
-**Model:** Sonnet 5.
+**RUNDA 2 (2026-08-09, worktree `agent-af2924b405f0dac83`, commit `91088b36`, niescalony)** —
+Operator naprawił dokładnie to, co zażądała runda 1: filtr terenu dołożony do WSZYSTKICH 5
+ścieżek zapisu (potwierdzone przez Evaluatora niezależną enumeracją 10 miejsc, nie tylko listą
+Operatora — zerowa regresja starego bugu, symulacja E2E z pełnym pierścieniem Gór/Morza daje
+PARYTET auto/ręczny, dowód mutacyjny na wszystkich 7 punktach filtra). Brak logiki migracji
+zgodnie z decyzją. Test 20 przeprojektowany po własnym dowodzie mutacyjnym Operatora (wersja
+mieszana nie łapała regresji, deterministyczna łapie zawsze) — Evaluator potwierdził to osobiście.
+
+**Evaluator (Opus 5) werdyktem FAIL wstrzymał scalenie PONOWNIE — z zupełnie INNEGO powodu niż
+runda 1 (nowa regresja, nie niedokończone pokrycie):**
+
+1. **B1 (blokujący, sprzeczny z kanonem decyzji `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`):** ta
+   decyzja mówi wprost „mechanizm ręcznego przydziału zostaje w grze BEZ ZMIAN FUNKCJONALNYCH —
+   dotyczy WYŁĄCZNIE danych w starych zapisach". Commit rundy 2 ZMIENIA mechanizm: w
+   `toggleTileWorker` bramka `inRange` (teraz z filtrem terenu) stoi PRZED gałęzią zdejmowania
+   robotnika, więc robotnik na Górach/Morzu w STARYM zapisie **nie da się zdjąć klikiem** —
+   zakleszczenie. Zmierzone (miasto pop=6, 6 wpisów `okolicaReczne`, 3 nielegalne): baza liczy
+   6/6 robotników (16 pkt Pracy), commit rundy 2 liczy 3/6 (8 pkt, legalnie byłoby 12) — I klik na
+   Górach z robotnikiem zwraca `ok=false, teren_nieobsadzalny`, robotnik zostaje uwięziony,
+   podczas gdy komunikaty UI aktywnie mylą gracza („zabierz robotnika z innego pola" — nie da
+   się, bo te legalne już pracują). To ten sam obraz co bloker rundy 1, przeniesiony ze świeżej
+   gry do starego zapisu. Dodatkowo `cityPanel.ts:8290` liczy `isWorked` z surowego `reczne` bez
+   filtra — panel rysuje 👤 na Górach, którego overlay 3D i silnik już nie widzą — NOWY rozjazd
+   overlay↔silnik, dokładnie klasa błędu, którą to zgłoszenie miało zlikwidować.
+   **Kierunek naprawy zweryfikowany osobiście przez Evaluatora** (5 linii: gałąź zdejmowania
+   `reczne[key]>=1 → delete` MUSI iść przed bramką terenu — zdjęcie nigdy nie tworzy nielegalnego
+   stanu, więc nie może być przez filtr blokowane) — potwierdzone że naprawia bez regresji
+   (`okolica-test` 65/65, `silnik-test` 17/17, `logic-test` 213/213), ale Evaluator NIE zostawił
+   zmiany w worktree (zgodnie z rolą — to diagnoza, nie scalenie).
+2. **B2 (blokujący, reguła 4 CLAUDE.md — brak asercji dla AC właściciela):** kanon decyzji
+   definiuje jawne oczekiwane zachowanie („silnik po prostu nie liczy tej produkcji … bez
+   auto-przestawienia") — ŻADEN test tego nie przypina. Ani `okolica-isworkable-silnik-test.cjs`
+   (zero przypadków trybu ręcznego), ani `okolica-test.cjs` (Testy 18–20 sprawdzają wyłącznie
+   DOKŁADANIE robotnika, nigdy stanu ZASTANEGO z nielegalnym wpisem już obecnym). Ta luka w
+   pokryciu jest dokładnie tym, co pozwoliło B1 przejść niezauważone przez Operatora.
+
+**Noty niebokujące:** N1 (nieujawniona zmiana kodu odmowy `obce_terytorium`→`poza_zasiegiem` w
+3/4 przypadków, na plus ale niepokryta testem), N2 (`cityOkolicaOverlay.ts:236` ma NIEZALEŻNĄ,
+zahardkodowaną kopię predykatu terenu dla etykiet plonów — drugie miejsce poza wspólnym źródłem
+prawdy, dziś kosmetyczne), N3 (pominięcie zadania 5 — fallback miasta otoczonego Górami/Morzem —
+uzasadnione, nie ukryte niedokończenie).
+
+**Runda 3 dispatched** z pełną listą Evaluatora: B1 (przenieść gałąź zdejmowania przed bramkę
+terenu we WSZYSTKICH ścieżkach usuwania, w tym `cityPanel.ts:8290`), B2 (dołożyć jawne przypadki
+testowe „stary zapis z nielegalnym wpisem" — nie liczy produkcji, DA SIĘ zdjąć klikiem, bez
+auto-migracji), bez logiki migracji starych zapisów.
+**Kotwice:** `gra/src/game/okolica.ts` (`isLandWorkableHex`, `toggleTileWorker`/`adjustTileWorker`),
+`gra/src/ui/cityPanel.ts:8290`, `gra/src/render/cityOkolicaOverlay.ts:236`.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x2 rundy).
 
 ## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)
 Rozdzielono na dwie kontrolki jak zdecydowałeś: `cyclablePlayerArmyLeadsBase(requireMoves)` —
