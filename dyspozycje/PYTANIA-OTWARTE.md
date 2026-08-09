@@ -2796,17 +2796,58 @@ luki co `P-BRAMKA-TECH-TIER-NIEPOKRYTA`, jedna warstwa dalej.
 `gra/tools/diplomacy-tech-trade-test.cjs`.
 **Model:** Sonnet 5.
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne, pre-istniejące wzmocnione**
-`gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" (Szybka Umowa?) gdy
-`sellableTechCount === 0` — liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr
-(`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`) zmniejsza listę „dostaje" u odbiorcy, ale to lista
-„daję" u nadawcy decyduje o blokadzie — gracz bez własnych technologii do oddania nie może
-przez akcję „6" also *kupić* niczego, mimo że strona „dostaję" może mieć poprawne pozycje.
-Asymetria była pre-istniejąca (nie stworzona tą naprawą), dziś częściej odczuwalna bo lista
-„dostaję" jest teraz krótsza (bardziej realistyczna). Skutek uboczny: placeholder „brak
-technologii" po stronie „daję" w akcji 6 jest w praktyce trudno osiągalny; pozostaje osiągalny
-po stronie „dostaję" i w innych trybach koszyka.
-**Kotwice:** `gra/src/game/diplomacy-locks.ts:201`.
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — ABC do właściciela, próba naprawy odrzucona przez Evaluatora**
+`gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" gdy `sellableTechCount === 0` —
+liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr (`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`)
+zmniejsza listę „dostaje" u odbiorcy, ale to lista „daję" u nadawcy decyduje o blokadzie.
+
+**Subagent dostał zadanie zdiagnozować i naprawić bez pytania TYLKO jeśli jednoznaczne. Zrobił
+to (commit `98cfe36c`, dodał `buyableTechCount` do warunku blokady), ale Evaluator werdyktem
+**FAIL** odrzucił scalenie** — diagnoza Operatora była błędna na poziomie implementacji, mimo
+poprawnego odczytu specyfikacji danych (`data/diplomacy.json` opisuje akcję „6" dwutrybowo:
+Sprzedaż/Wymiana).
+
+**Rzeczywisty stan kodu (potwierdzony komentarzem w `main.ts:15122-15125`, dopisanym w TYM
+SAMYM commicie `82bdbd92` na który powoływał się Operator):** akcja „6" jest dziś zaimplementowana
+JEDNOKIERUNKOWO — gracz zawsze sprzedaje (`techOptions = getSellableTechForPlayer`), pole
+`getBuyableTechFromOwner` zasila WYŁĄCZNIE koszyk ogólny (akcja „14"), nie akcję „6". Formularz
+akcji „6" (`diplomacyTradeBasket.ts`) i ścieżka legacy (`diplomacyNegotiationModal.ts`) czytają
+wyłącznie stronę „daję" — **odblokowanie akcji przez `buyableTechCount` nie zmienia formularza
+ani walidacji**, więc gracz bez własnych technologii, po odblokowaniu, i tak dostaje formularz
+„Brak technologii do sprzedaży." i walidację blokującą wysyłkę z komunikatem „Wybierz technologię
+do sprzedaży" — **gorsze doświadczenie niż dziś** (dziś: uczciwie zablokowany przycisk; po
+naprawie: odblokowany przycisk prowadzący do ślepego zaułka).
+
+**[TEMAT: Akcja „6" w dyplomacji — sprzedaż jednokierunkowa czy pełny handel dwukierunkowy]**
+**Sytuacja:** dane gry (`diplomacy.json`) opisują akcję „6" jako dwutrybową (Sprzedaż za gotówkę
+LUB Wymiana tech-za-tech), ale kod implementuje wyłącznie Sprzedaż (gracz zawsze oddaje, nigdy
+nie kupuje). Blokada przycisku jest dziś spójna z faktyczną (jednokierunkową) implementacją.
+**Cel pytania:** czy dociągnąć implementację do specyfikacji danych (prawdziwy handel
+dwukierunkowy) czy pozostawić jednokierunkową sprzedaż i uznać to za zamierzone uproszczenie.
+**Dlaczego teraz:** naprawa blokady bez naprawy formularza tworzy widoczny dla gracza ślepy
+zaułek — bezpieczniej rozstrzygnąć kierunek niż zostawić samą blokadę (choć asymetryczną, to
+dziś spójną z resztą UI).
+- **A — Dociągnąć implementację do specyfikacji (pełny handel dwukierunkowy w akcji „6").**
+  Za: gra zgodna z własnym opisem w `diplomacy.json`; gracz bez nic do oddania może faktycznie
+  kupić technologię za gotówkę, zgodnie z opisem „Sprzedaż: 50-300 Pieniędzy". Przeciw: realny
+  zakres prac — formularz traktatu, walidacja, payload wykonania muszą obsłużyć oba kierunki;
+  większe ryzyko regresji w kodzie który dziś działa poprawnie dla jedynego wspieranego kierunku.
+- **B — Zostawić jednokierunkową sprzedaż, zamknąć zgłoszenie jako „nie bug".** Za: zero ryzyka,
+  zero pracy, kod i UI są dziś wewnętrznie spójne (blokada pasuje do formularza). Przeciw: opis
+  w `diplomacy.json` „Wymiana: technologia o zbliżonej wartości" pozostaje niezrealizowaną
+  obietnicą wobec gracza czytającego opis akcji.
+- **C — Zostawić blokadę jednokierunkową, ale doprecyzować treść komunikatu/opisu akcji „6" w UI
+  żeby nie sugerował trybu kupna.** Za: tania poprawka czytelności bez ryzyka kodu; usuwa
+  rozbieżność między opisem a zachowaniem. Przeciw: nie realizuje pierwotnego zgłoszenia
+  (asymetria formalnie zostaje, tylko lepiej opisana).
+**Rekomendacja:** C jako natychmiastowy, tani krok (0 ryzyka), z A jako możliwy przyszły temat
+jeśli handel dwukierunkowy okaże się pożądany produktowo — ale to decyzja właściciela, nie
+subagenta.
+
+**Stan kodu:** commit `98cfe36c` NIE scalony, pozostaje w worktree `agent-ad040e1d2f58230ac`
+(`.claude/worktrees/`), niescięty, do wykorzystania lub odrzucenia po odpowiedzi.
+**Kotwice:** `gra/src/game/diplomacy-locks.ts:201`, `gra/src/main.ts:15122-15125` (komentarz
+dokumentujący jednokierunkowość), `gra/src/ui/diplomacyTradeBasket.ts` (formularz akcji „6").
 **Model:** Sonnet 5.
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
