@@ -2082,11 +2082,20 @@ Mechanizm wojen AI istnieje ale rzadki; brak filtra sąsiedztwa do wyboru celu; 
 sojuszy dziś odwrotny do życzenia Macieja (silny woli słabego mniej, nie bardziej). Wieloczęściowa
 zmiana, wymaga ABC. Pełna treść w `PYTANIA-OTWARTE.md`.
 
-## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK — ODPOWIEDZIANE (2026-08-09)
-Mechanizm istnieje i jest podłączony (`triumph-city-state.ts`, commit 906155a0, main.ts:19735).
-Pokazuje się jako hint 9,5s (nie modal) i tylko gdy eliminowane miasto-państwo jest OSTATNIM tego
-samego klucza cywilizacji co gracz — może nie być błędem, tylko wąskim warunkiem/przeoczonym
-dymkiem. Pełna treść w `PYTANIA-OTWARTE.md`.
+## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK — OTWARTE, Maciej chce bardziej wyrazistego komunikatu (2026-08-09)
+Mechanizm istnieje (`triumph-city-state.ts`, main.ts:19735) ale dymek się nie pojawił/przeoczony —
+Maciej chce pełnoprawnego popupu zamiast 9,5s hinta. Dispatch Explore (wzorzec istniejącego modala)
+przed implementacją. Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — OTWARTE, wymaga rozpoznania (2026-08-09)
+Checkbox "Auto Wyżywienie" ma stać się przyciskiem w stylu przycisku auto-produkcji/"Auto-
+zarządzaj", tekst "Auto WYŁ — bez auto-obniżania/podnoszenia" ma iść do tooltipa. Dispatch Explore
+przed naprawą. Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## P-DOPRECYZOWANIE-GLOBALNE-USTAWIENIA-NIE-ISTNIEJA — ODPOWIEDZIANE (2026-08-09)
+Nieporozumienie wyjaśnione: "globalne ustawienia" żywności/pieniędzy/produkcji NIE istnieją dziś w
+grze — to dokładnie to, o co Maciej poprosił jako nową funkcję w
+R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (wciąż czeka na ABC). Pełna treść w `PYTANIA-OTWARTE.md`.
 
 ## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — hipoteza potwierdzona, wymaga ABC (2026-08-09)
 Odkrycie jednostki wojskowej z chatki ze skarbami na cudzym terytorium liczy się jako naruszenie

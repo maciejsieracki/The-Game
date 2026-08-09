@@ -5038,6 +5038,52 @@ na cudzym terenie bez wyjątku dla „pochodzenia" (spawn z eventu vs ruch gracz
 na pierwszym końcu tury, bez okresu karencji. Chatki mogą leżeć wewnątrz cudzego terytorium
 (dystans min. 3 heksy od miasta, promień terytorium rośnie z populacją, może przekroczyć 3).
 
+---
+
+## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — kosmetyka UI, wymaga rozpoznania przed naprawą**
+
+**Cytat Macieja:** „popraw trochę wygląd, dodatkowa informacja: Auto-wyłącz, to jest auto-
+obniżanie, podnoszenie. Dotyczy auto-wyżywienia, powinno być to w tooltipie. Raczej to powinien być
+przycisk, coś podobnego jak przy produkcji. Gdzie mamy auto-produkcję, ten przycisk powinien
+wyglądać tak samo, a nie checkbox."
+
+Dwa żądania: (1) checkbox „Auto Wyżywienie" w panelu miasta ma stać się PRZYCISKIEM w tym samym
+stylu co istniejący przycisk auto-produkcji/„Auto-zarządzaj" (dziś to zwykły `<input type=
+"checkbox">` + etykieta, zrzut potwierdza); (2) tekst „Auto WYŁ — bez auto-obniżania/podnoszenia"
+(dziś widoczny jako inline tekst pod przełącznikiem, patrz zrzut stanu wyłączonego) ma trafić do
+TOOLTIPA zamiast/obok stałego tekstu.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć dokładny render checkboxa „Auto
+Wyżywienie" w `gra/src/ui/cityPanel.ts` (pole `city.autoWyzywienie`, logika w
+`gra/src/game/empire-food.ts:355-358` `isCityAutoWyzywienieEnabled`); (b) znaleźć istniejący
+przycisk auto-produkcji/„Auto-zarządzaj" (`gra/src/game/auto-manage.ts` i jego render w UI) jako
+wzorzec stylu do skopiowania; (c) ustalić czy zamiana na przycisk wymaga zmiany zachowania (dziś
+checkbox, zwykłe kliknięcie = toggle — przycisk pewnie ma być tak samo, tylko inny wygląd) czy
+tylko CSS/markup.
+
+**ODPOWIEDŹ na pytanie Macieja „czym było Auto-Wyżywienie" (zbadane bezpośrednio):** to istniejący
+mechanizm — gdy WŁĄCZONY, silnik automatycznie podnosi/obniża suwak Wyżywienia co turę, żeby
+zbilansować produkcję żywności miasta (najpierw obniża do zera przed cięciem budżetu na wojsko,
+podnosi przy trwałej nadwyżce). Gdy WYŁĄCZONY, suwak zostaje dokładnie tam, gdzie gracz go ustawił
+ręcznie — brak automatycznej zmiany. Kod: `gra/src/game/empire-food.ts:352-368`
+(`isCityAutoWyzywienieEnabled`, komentarze `SPICH-AUTO-Q1`, `R-AUTO-RACJE-RAISE-Q5=A`).
+
+## P-DOPRECYZOWANIE-GLOBALNE-USTAWIENIA-NIE-ISTNIEJA (2026-08-09, pytanie Macieja) · STATUS: **ODPOWIEDZIANE — wyjaśnienie nieporozumienia**
+
+**Cytat Macieja:** „nie wiem, w którym miejscu są globalne ustawienia dla żywności, pieniędzy i
+produkcji, o których mówisz."
+
+**Wyjaśnienie:** to nieporozumienie — „globalne ustawienia" NIE ISTNIEJĄ dziś w grze. To jest
+DOKŁADNIE to, o co Maciej poprosił jako NOWĄ funkcję w `R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE`
+(zarejestrowane wcześniej w tej sesji, wciąż czeka na odpowiedź ABC, rekomendacja B). Rozpoznanie
+Explore ustaliło, że wzorzec „globalne ustawienie + nadpisanie lokalne per miasto" jest już
+zaimplementowany DWA RAZY w innym kontekście (Danina/Handel — Skarb/Nauka/Zamożność; auto-
+ulepszenia terenu), ale NIE dla priorytetu Praca/Żywność (`okolicaFocus`) ani podziału Praca
+budynki/skarbiec (`podzialPracy`) ani priorytetu produkcji (`budowaFocus`/`budowaTryb`) — te trzy
+pola dziś zawsze startują od tej samej wartości domyślnej dla każdego nowego miasta, bez żadnego
+globalnego przełącznika. Jeśli Maciej chce tej funkcji, potrzebna jest odpowiedź na ABC z
+`R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE` (wciąż otwarte, poniżej w tym pliku).
+
 **Cytat Macieja:** „jeżeli nasz zwiadowca na terenie innej cywilizacji znajdzie chatkę, a w tej
 chatce zostanie odkryta jednostka wojskowa, to narusza się wtedy granicę i cierpi nasze statystyki
 w dyplomacji. Więc powinna być taka zasada, że w chatkach ze skarbami na terenie innej cywilizacji
@@ -5090,6 +5136,18 @@ zostały jeszcze inne miasta-państwa tego samego klucza gdzie indziej na mapie)
 się nie pokazał — to nie byłby błąd, tylko spełniony warunek „nie". Do potwierdzenia z Maciejem: czy
 widział krótki dymek (mógł przeoczyć) czy oczekuje pełnoprawnego modala, i czy scenariusz z jego
 gry faktycznie spełniał wąski warunek funkcji.
+
+**⛔ Odpowiedź Macieja — POTWIERDZA że dymek się nie pojawił, żąda bardziej wyrazistego komunikatu
+(dosłowny cytat):** „to ten dymek się nie pojawił, chyba że nie wiem, w którym miejscu on był.
+Powinno coś być bardziej wyrazistego." Czyli STATUS zmienia się z „odpowiedziane" na OTWARTE
+zgłoszenie: potrzebny bardziej wyrazisty komunikat triumfu (pełnoprawny popup/modal zamiast
+9,5-sekundowego dymka `showHintMessage`, który łatwo przeoczyć) — TREŚĆ HINT MESSAGE zgodna z
+`buildTriumphCityStateUnificationMessage()`. Do zbadania przed implementacją (Explore, bez
+kodowania): jaki wzorzec modala/popupu już istnieje w grze do naśladowania (np. ekran zwycięstwa,
+odkrycie cudu, inny „duży" komunikat), żeby nie wymyślać nowego stylu od zera — dopiero potem
+zaimplementować podmianę `showHintMessage` na ten wzorzec w `main.ts:19744-19747`. Osobno: czy
+wąski warunek wyzwolenia (tylko miasta-państwa TEGO SAMEGO klucza cywilizacji co gracz) faktycznie
+pasuje do sceny z gry Macieja (do potwierdzenia po naprawie widoczności, nie zgadywać teraz).
 
 **⛔ Doprecyzowanie Macieja (dosłowny cytat, ważne ograniczenia reguły):** „tylko żeby nie było
 tak, że wszyscy wypowiedzą wojnę graczowi. Generalnie powinno się wypowiadać wojny sąsiadowi, a
