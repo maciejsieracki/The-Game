@@ -3009,7 +3009,7 @@ przez `git apply --check -3` bez konfliktu.
 `gra/tools/diplomacy-tech-trade-test.cjs`.
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A — w realizacji (subagent dispatched)** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A — RUNDA 1 (dwukierunkowy handel) Evaluator FAIL, runda 2 dispatched + nowe pytanie ABC w toku** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
 `gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" gdy `sellableTechCount === 0` —
 liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr (`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`)
 zmniejsza listę „dostaje" u odbiorcy, ale to lista „daję" u nadawcy decyduje o blokadzie.
@@ -3057,11 +3057,55 @@ dziś spójną z resztą UI).
 jeśli handel dwukierunkowy okaże się pożądany produktowo — ale to decyzja właściciela, nie
 subagenta.
 
-**Stan kodu:** commit `98cfe36c` NIE scalony, pozostaje w worktree `agent-ad040e1d2f58230ac`
-(`.claude/worktrees/`), niescięty, do wykorzystania lub odrzucenia po odpowiedzi.
-**Kotwice:** `gra/src/game/diplomacy-locks.ts:201`, `gra/src/main.ts:15122-15125` (komentarz
-dokumentujący jednokierunkowość), `gra/src/ui/diplomacyTradeBasket.ts` (formularz akcji „6").
-**Model:** Sonnet 5.
+**Stan kodu (przed odpowiedzią A):** commit `98cfe36c` NIE scalony, worktree usunięty.
+
+**MACIEJ ODPOWIEDZIAŁ: A** (via AskUserQuestion, opcja „pełny handel dwukierunkowy") — decyzja
+zapisana `docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`.
+
+**RUNDA 1 realizacji (worktree `agent-ab7a2baa748c80718`, commit `e0caef33`, NIESCALONY):**
+Operator zbudował przełącznik Sprzedaż/Kupno w żywym formularzu (`diplomacyTradeBasket.ts`),
+podpiął `receiveTechOptions` do trybu Kupna. **Znalazł i naprawił REALNY, wcześniej istniejący
+bug niezwiązany z tym zgłoszeniem:** `executePnDealTransfer` nigdy nie czytał `techId` — stara
+„sprzedaż" technologii przelewała WYŁĄCZNIE gotówkę, nigdy nie przekazywała technologii (zmierzone
+przez Evaluatora na kodzie bazowym `9d886ced`). Naprawione nowym `executeTechTradeDeal` +
+`resolveTechTradeParties`, oba kierunki symetryczne (potwierdzone niezależnie przez Evaluatora).
+
+**Evaluator (Opus 5) werdyktem FAIL — trzy blokery, w tym trywialnie osiągalny exploit:**
+1. **B1 (najpoważniejszy — exploit „darmowa technologia"):** `executeTechTradeDeal` przyznaje
+   technologię PRZED próbą zapłaty i IGNORUJE zwracaną wartość transferu gotówki
+   (`applyOneShotGoldTransfer` jest strict — brak środków = `{ok:false}`, zero transferu, ale
+   nic tego nie sprawdza). Zmierzone na realnych modułach: gracz z 0 ¤ w trybie Kupna, cena 50,
+   progi Relacji/Zaufania spełnione → **dostaje technologię za darmo**, zloto AI bez zmian. Tryb
+   Sprzedaży: AI z 0 ¤ → gracz oddaje technologię i nic nie dostaje. Żadna warstwa wyżej tego nie
+   łapie (`evaluateProposal case 'tech'` sprawdza tylko cenę i `techId`, nie skarbiec płatnika).
+2. **B2 (zero pokrycia mutacyjnego okablowania):** mutacja Evaluatora w `executeTechTradeDeal`
+   (grant zawsze do `responderId`, gotówka zawsze proposer→responder — dokładnie błąd, który ten
+   commit ma naprawiać) **przeżywa cały pakiet bramek** (29× `diplomacy-*-test.cjs` zielone,
+   `logic-test` 213/213). Testowana jest czysta funkcja `resolveTechTradeParties`, nie to czy
+   wynik jest faktycznie używany poprawnie.
+3. **B3 (naruszenie pisemnej decyzji, nie tylko specyfikacji danych):** Operator świadomie pominął
+   wymianę tech-za-tech („uproszczenie na własną odpowiedzialność") — ale decyzja `R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`
+   mówi wprost: „gracz może też otrzymać technologię od AI, płacąc gotówką **LUB oddając inną
+   technologię**". To wycięcie połowy zatwierdzonego trybu, nie decyzja do podjęcia przez
+   Operatora — wymaga nowego pytania ABC do właściciela (patrz niżej).
+
+**Noty (do naprawy w rundzie 2, nieblokujące same w sobie):** N1 (przycisk Kupna aktywny mimo
+pustej listy technologii — `readTreatyStateFromDom` czyta stary DOM przy przełączeniu kierunku,
+klik kończy się bez komunikatu), N2 (`techPrice` i `goldOnce` rozjeżdżają się po kontrofercie AI
+na trudności Łatwy — etykieta pokazuje jedną liczbę, transfer wykonuje inną), N4 (brak testu
+save/load dla nowego pola `techDirection` — strukturalnie bezpieczne, ale nieprzypięte), N5
+(worktree 9 commitów za HEAD, realny konflikt tekstowy w `diplomacy-tech-trade-test.cjs` z dziś
+scaloną `P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA` — rozwiązywalny, ale wymaga ręcznego scalenia
+nagłówków, nie automatycznego).
+
+**Runda 2 dispatched** wyłącznie dla B1/B2/N1/N2/N4 (bugi niezależne od odpowiedzi na pytanie
+zakresu) — bramka płatności musi być naprawiona niezależnie od wyniku ABC. Osobne pytanie ABC do
+Macieja o B3 (zakres tech-za-tech) zadane równolegle.
+**Kotwice:** `gra/src/main.ts` (`executeTechTradeDeal` ok. linii 7351-7376),
+`gra/src/game/diplomacy-tech-trade.ts` (`resolveTechTradeParties`),
+`gra/src/ui/diplomacyTradeBasket.ts` (`readTreatyStateFromDom`, `validateTreatyForm` case '6'),
+`gra/src/game/diplomacy-proposals.ts` (`case 'tech'`, `generateCounterOffer`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
@@ -3872,6 +3916,15 @@ uzasadnione, nie ukryte niedokończenie).
 terenu we WSZYSTKICH ścieżkach usuwania, w tym `cityPanel.ts:8290`), B2 (dołożyć jawne przypadki
 testowe „stary zapis z nielegalnym wpisem" — nie liczy produkcji, DA SIĘ zdjąć klikiem, bez
 auto-migracji), bez logiki migracji starych zapisów.
+
+**KOREKTA (Evaluator rundy 2, po fakcie, §0b — poprawił własne wcześniejsze twierdzenie):**
+`map-gen-regression-test.cjs` NIE jest architektonicznie nierelewantny dla tej naprawy —
+domknięcie przechodnie importów generatora (nie tylko bezpośrednie re-eksporty) faktycznie
+zawiera `okolica.ts` i `turn-economy.ts` (51-modułowy łańcuch przez ocenę pozycji startowych).
+Ta bramka jest OBOWIĄZKOWA przed scaleniem rundy 3, nie do pominięcia — poprzednia ocena
+„zero nakładania" w dokumentacji rund 1-2 była błędna. Uruchomiona w tle (długi czas, historycznie
+20-58 min), nie zdążyła się domknąć w oknie tej sesji — wynik nierozstrzygnięty, do domknięcia
+przy scaleniu rundy 3.
 **Kotwice:** `gra/src/game/okolica.ts` (`isLandWorkableHex`, `toggleTileWorker`/`adjustTileWorker`),
 `gra/src/ui/cityPanel.ts:8290`, `gra/src/render/cityOkolicaOverlay.ts:236`.
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x2 rundy).
