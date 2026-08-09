@@ -4594,3 +4594,33 @@ zanim przedstawię ABC.
 
 Dwukrotnie zweryfikowane, martwy kod `isArmyStack`/`headLabel:'Armia'` domknięty. Bramki: tsc 0 ·
 logic-test 213/213 · nowy test 20/20 · unit-context-card-test 29/29 bez regresji.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — rozpoznanie gotowe, pytanie ABC (2026-08-09)
+
+**Fakty:** awans epoki dziś = wyłącznie 1 konkretna technologia (Brązownictwo K→B, Hutnictwo
+żelaza B→Ż), zero powiązania z cudami. Gra ma dziś 3 epoki (Kamień/Brąz/Żelazo), epoki 4+ to
+nieaktywny placeholder. Każda z 15 cywilizacji ma dokładnie **1 cud wyłączny (E)**, ale tylko w
+**1 z 3 epok** (Egipt→Kamień, 8 cywilizacji→Brąz, 6→Żelazo) — czyli **30 z 45 par civ×epoka nie
+ma przypisanego cudu**, więc wg Twojej własnej zasady „jeśli epoka nie ma cudu, nie ma warunku"
+reguła realnie dotyczyłaby TYLKO jednego z 2 przejść na cywilizację, nie obu. Osobno istnieją cuda
+wyścigowe (R) — dostępne dla wszystkich 15, ale max 1 na całym świecie — to NIE jest cud
+„przypisany" jednej cywilizacji, więc nie powinien liczyć się do tego warunku.
+**Ryzyko:** AI ma świadomą logikę budowy cudów (priorytet własny E), ale throttlowaną (co 2-8 tur
+zależnie od trudności) i progową (musi mieć nadwyżkę Pracy) — nie ma dziś gwarancji, że AI zdąży
+zbudować swój cud E zanim spełni warunek technologiczny awansu. Realne ryzyko: AI utyka w epoce.
+
+**[TEMAT: Cud jako warunek awansu epoki]**
+- **A — Wdrożyć wprost:** brak cudu E w danej epoce = brak warunku (zgodnie z Twoim opisem).
+  Za: dokładnie to o co prosiłeś. Przeciw: dotyczy tylko 1/3 przejść na cywilizację (bo tylko tam
+  ma przypisany cud), więc efekt gameplayowy będzie węższy niż mogłoby się wydawać z opisu; ryzyko
+  usidlenia AI wymaga wcześniej dostrojenia progu/throttle budowy cudów.
+- **B — Nie wdrażać teraz** — zbyt wąski efekt (1/3 przejść) i realne ryzyko blokady AI bez
+  wcześniejszego dostrojenia jego logiki budowy cudów.
+- **C — Wdrożyć, ale najpierw podnieść priorytet/częstotliwość budowy WŁASNEGO cudu E w AI**
+  (zmniejszyć throttle, obniżyć próg opłacalności) tak, żeby AI realnie zdążyło, zanim zablokuje
+  się gate.
+
+Rekomendacja: **C** — sama reguła jest prosta i zgodna z Twoim opisem, ale bez wcześniejszego
+dostrojenia AI realne ryzyko to cywilizacje AI utykające w Kamieniu/Brązie na stałe.
