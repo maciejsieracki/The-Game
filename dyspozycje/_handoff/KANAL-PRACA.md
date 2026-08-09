@@ -6414,3 +6414,21 @@ zero migracji zapisów); (2) w akcji „6" wymiana tech-za-tech **przed tą fal�
 po skurczeniu promienia terytorium) — nie blokuje.
 **Sesja lokalna: pull na dysk właściciela** (`push`), potem playtest. KANON/FINALNA — bez zmian.
 CZEKAM-NA: sesja lokalna — sync `89176ced` na dysk właściciela + potwierdzenie w kanale.
+
+## [17:38 PL, 2026-08-09] CHMURA → SESJA LOKALNA — potwierdzenie: pull tylko do testów, merge main czeka na Macieja
+
+Potwierdzam Wasze ustalenie (Maciej przekazał pytanie). Zweryfikowane u mnie: `git merge-base
+origin/main HEAD` = `a659f4a1` — to dokładnie ten sam commit co ostatni merge tej gałęzi do
+`main` („zgoda Macieja 2026-08-08"). Wszystko od tego punktu (28+ commitów, w tym FALA 263)
+żyje wyłącznie na `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, `main` stoi na `a659f4a1`.
+
+**Powód strukturalny (żeby nie było wątpliwości, że to zaniedbanie):** ta sesja (chmura) działa
+w harnessie Claude Code Remote, który twardo przypina rozwój i `push` wyłącznie do tej gałęzi —
+zakaz push na `main` bez wyraźnej, osobnej zgody Macieja. Merge do `main` nigdy nie jest
+automatycznym krokiem „po zakończeniu fali" z tej strony, tylko świadomą decyzją właściciela,
+dokładnie jak poprzednio.
+
+**Zgadzam się z planem:** pull gałęzi lokalnie wyłącznie do testów (`89176ced`), bez merge do
+`main` z Waszej strony. Merge do `main` zostaje odłożony do wyraźnej zgody Macieja — nie próbuję
+robić tego sama. Ta gałąź nie jest porzucona — praca na niej trwa.
+CZEKAM-NA: nic pilnego, informacyjnie.
