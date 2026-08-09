@@ -1821,7 +1821,7 @@ nazewnictwo/etykieta, nie logika). Kotwice: `gra/src/game/diplomacy-proposals.ts
 „traktat handlowy bez koszyka @ niska Rel" — możliwe, że bramka już to łapie i została uznana
 za szum.
 
-## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa (2026-08-07):** *„na przybliżeniu miasta grafika jest okropna."*
 **Jego słowa (2026-08-08, powtórka zgłoszenia z nowym zrzutem „NODWENGU"):** „kolejny temat,
 który nie stał rozwiązany... coś z tym robiłeś, ale jak zwykle temat w ogóle nie został
@@ -1848,7 +1848,7 @@ władcy) — ten sam mechanizm rysowania, to samo ryzyko rozmycia.
 `makeCityMapBadgeSprite`).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
-## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** *„na państwach, miastach są dziwne kwadraty obrócone, a jak się najedzie
 przyciskiem, to pojawia się dopiero grafika danej kultury."*
 **Objaw:** w kółku po lewej stronie plakietki miasta domyślnie widnieje **obrócony kwadrat
@@ -1914,7 +1914,7 @@ wartość. Ten błąd trafił do właściciela jako fakt.
 **Uwaga na kierunek zmiany:** źródłem prawdy są JSON-y w `gra/data/` (CLAUDE.md §2); panel Excel
 dogania JSON przez `gen-panel-*.py`, NIGDY odwrotnie.
 
-## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
+## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
 **Jego słowa:** *„tam jeszcze chciałem procentowy wzrost czyli na przykład 5 i pół procent
 o ile wyrośnie populacja a nie W5 bez litery W. na przykład 5 i pół procent albo 5 procent."*
 **Stan faktyczny:** plakietka miasta pokazuje **„ATENY · W5 · 1"** — segment `W5` to skrót,
@@ -2396,7 +2396,7 @@ bonusami (teren, fortyfikacja, mur, weteran); Moc cywilizacji (ranking/HUD/Empir
 terenu/fortyfikacji/muru, tylko naturalne wskaźniki + ulepszenia + weteran. Pełna decyzja:
 `docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md`. Kod w dispatchu.
 
-## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 Rozdział dwóch liczb Mocy, które wcześniejsza decyzja błędnie zunifikowała: tabliczka/tooltip
 jednostki na mapie = REALNA Moc ze wszystkimi bonusami (teren/fortyfikacja/mur/weteran); Moc
 cywilizacji (panel rankingu, HUD, Empire) = tylko naturalne wskaźniki + ulepszenia + weteran,
@@ -2504,7 +2504,7 @@ decyzji: albo poprawić `playbook.json` na `10` (zgodnie z kanonem), albo cofną
 `5` (jeśli `10` było error/nieaktualną decyzją), albo rozszerzyć generator o pole
 `thresholds` w `playbook.md`. Nie blokuje niczego pilnie — czysto informacyjne.
 
-## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** *„podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
 co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
 ulepszeń."*
@@ -2531,7 +2531,7 @@ PASS-WITH-NOTES po rundzie poprawek — dodano test regresji
 `gra/tools/camera-zoom-block-test.cjs`, 4/4: repro, negacja, fallback, brak regresji
 przeciągania). `npx tsc --noEmit` czyste.
 
-## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „brakuje danych z całej cywilizacji, jeżeli chodzi o te elementy, które są w
 podglądzie miasta. Mówię tu o pracy, żywności, skarbcu, nauce, kulturze i religii. Potrzebny
 jest stan całej cywilizacji i plus to, co jest w danym mieście, ale mniejszymi cyframi. Czyli
@@ -2562,7 +2562,7 @@ główny HUD), mała liczba per-miasto jest BRUTTO — sumy miast NIE zsumują s
 liczby cywilizacji dla Pracy/Skarbca/Żywności. Celowe (spójność z głównym HUD), ale może być
 odczytane jako błąd, jeśli ktoś spróbuje to zsumować ręcznie.
 
-## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „bardzo często jest problem że w kolejce jednostek kiedy naciśniemy spację
 zamiast przechodzić do kolejnej która ma wolne ruchy przechodzi do jakiejś kolejnej która nie
 wiem jest w kolejce jakiejś zawsze ruch powinien po spacji powinien odbywać się od
@@ -2616,7 +2616,7 @@ jakiejkolwiek."* Rozstrzyga też konflikt z 28.07 bez sprzeczności — to DWIE 
 filtrem `stackCanMove`) od nowej/przywróconej niefiltrowanej listy dla strzałek HUD, dopisać
 tooltips.
 
-## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
 dostęp powinny być już pełni w surowcach ilości surowców widzę że to jest jakiś regres i
 znowu jakaś poprawka sprawiła że to zostało cofnięte."
@@ -2660,7 +2660,7 @@ callerów, sprawdzone grepem całego repo). Tooltip źródła dostępu działa d
 i zapasie 0 kafelek pokazuje neutralne „0/1200" bez żadnej wzmianki o dostępie (dotyczy
 głównie Złota/Mennicy, patrz decyzja). Do rozważenia po playteście, jeśli okaże się mylące.
 
-## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „kiedy wymieniamy surowce i na przykład chcemy się wymienić technologiami
 powinny być pokazywane tylko technologie te które są niedostępne dla innej cywilizacji
 zarówno po jednej jak i po drugiej stronie. Jeżeli jedna i druga cywilizacja ma tą
@@ -2696,7 +2696,7 @@ komunikatu placeholder; `grantTechToOwner` bez sprawdzenia prerekwizytów/epoki 
 osiągalna po filtrze); `sellableTechCount`/akcja `'6'` może się teraz ukryć, gdy AI zna wszystko
 co gracz (świadoma, udokumentowana konsekwencja filtra, nie błąd).
 
-## P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZAMKNIĘTE 2026-08-09**
+## P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
 Po filtrze lista technologii do wymiany bywa realnie pusta (wcześniej nigdy nie była).
 `techChips=''`, ale chip „Technologia" nadal klikalny — pusta siatka, „Dodaj" cicho nic nie robi
 (`readItemFromForm` zwraca `null`). Miasta mają placeholder „— brak miast (SILNIK) —",
@@ -2708,7 +2708,7 @@ PASS-WITH-NOTES, `diplomacy-tech-trade-test.cjs` 24/24, `tsc` 0 błędów.
 **Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (`buildAddForm`).
 **Model:** Sonnet 5.
 
-## P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZAMKNIĘTE 2026-08-09**
+## P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
 `gra/src/game/diplomacy-basket-transfer.ts:68-96` (`grantTechToOwner`) sprawdza tylko „nieznana"/
 „już zbadana", NIE sprawdza prerekwizytów drzewka ani epoki. Wcześniej ścieżka „gracz dostaje
 technologię AI" była praktycznie nieosiągalna (lista `receive` pokazywała własne techy gracza,
@@ -2757,7 +2757,7 @@ po stronie „dostaję" i w innych trybach koszyka.
 **Kotwice:** `gra/src/game/diplomacy-locks.ts:201`.
 **Model:** Sonnet 5.
 
-## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
 liczba tych surowców, które mamy dostępne i pomyśl o tym, że trzeba będzie przewidzieć, że
 tych surowców będzie kiedyś znacznie więcej, więc musi być w jakiś sposób czytelny pokazywania
@@ -2789,7 +2789,7 @@ w kodzie błędnie sugerował że odznaka na „dostaję" ujawniłaby zapasy AI 
 dziś ujawniają je bezwarunkowo dla obu stron, jedyny realny powód wyłączenia to zawężenie
 zakresu zgłoszenia, nie ujawnianie informacji.
 
-## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „nie ma możliwości edytowania propozycji. Jest tylko możliwość usunięcia.
 Przecież miała być możliwość jeszcze edytowania."
 **Potwierdzone w kodzie:** `gra/src/ui/diplomacyTradeBasket.ts:1177` renderuje wyłącznie
@@ -2813,7 +2813,7 @@ gatingu „Usuń" na karcie traktatu, opisany niżej), runda 3 PASS-WITH-NOTES p
 HEAD — Evaluator zweryfikował własnym harnessem (nie kopią testu Operatora) że edycja działa dla
 wszystkich 5 typów. Nowy test `diplomacy-basket-edit-test.cjs` 25/25. `tsc` 0 błędów.
 
-## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli my dajemy umowę surowców, po drugiej stronie nie musi być umowy
 wymiany surowców, jeżeli ta druga strona nic nie daje. I w takiej sytuacji jeżeli usuniemy
 u drugiej strony to nic nie daje, usuwa się też cała nasza propozycja. To w ogóle jest
@@ -2849,7 +2849,7 @@ Testy: `diplomacy-basket-edit-test.cjs` 25/25, `diplomacy-proposal-test.cjs` 126
 `hud-moc-warstwa-test.cjs` 28/28, `tsc` 0 błędów. STRICT-PARITY: wyłącznie UI gracza.
 **Model:** Sonnet 5 (poza `render/**`).
 
-## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 
 ### Część 1 — tabela cen (na żądanie: „wypisz mi wartość surowców jakie mamy przypisane")
 **Potwierdzone w kodzie:** „40" pokazane przy 4 pakietach Drewna (pakiet ×10) **to Punkty
@@ -2933,7 +2933,7 @@ Testy: `npx tsc --noEmit` 0 błędów · `diplomacy-fairness-gate-package-q2-tes
 Zakres: dotyka tego samego obszaru kodu co `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` (nota Evaluatora
 BUG-TRAKTAT-KOSZYK-REGRESJA) — ta nota pozostaje osobno śledzona, nie jest tą poprawką zamknięta.
 
-## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** *„ok, zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy.
 Po prostu podajemy sztuki. Jeden, dziesięć, sto i tak dalej. Żadnych pakietów! Usuń dla
 wszystkich surowców pakiet."*
@@ -2963,7 +2963,7 @@ raportowi). 19 pakietów testów, wszystkie zielone, `tsc` czyste.
 testu — poprawiona wartość startowa (10 szt., nie 1) jest dziś niczym niechroniona przed
 przyszłą regresją.
 
-## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: naprawiona fragmentacja obrysu (kod, 2026-08-09) — do potwierdzenia playtestem, czy to wyczerpuje objaw**
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: ZDEPLOYOWANE `ce69cf45` FALA 262 — naprawiona fragmentacja obrysu, do potwierdzenia playtestem czy to wyczerpuje objaw**
 **Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
 być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
 jakby ich nie było. Dodatkowo, te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają
@@ -3100,7 +3100,7 @@ ten sam test był już wymieniony przy `P-TEST-UPKEEP-R-STAWKI` (2026-08-09).
 
 **Poza zakresem (C-025):** populacja pozostaje nietknięta (throttle 2→3 z sekcji wyżej).
 
-## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile
 jest dokładnie produkowane w tym miejscu surowców żywności i tak dalej."*
 **Objaw (zrzut, okolice TEBY):** każdy heks w zasięgu miasta pokazuje trzy liczby z ikonami
@@ -3133,7 +3133,7 @@ faktycznie renderuje się na niebiesko — jeśli po deployu liczby nadal brakuj
 (nie niebieskich) heksach, to inny, nieobjęty tą naprawą problem (celowe pominięcie sąsiadów
 z prawdziwym ulepszeniem).
 
-## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** *„jedno naprawiasz, drugie psujesz. Znowu jest problem, mianowicie coś co
 wcześniej działało nagle przestało działać. Przesuwanie góra-dół i usuwanie z kolejki w trybie
 budowania zarówno jednostek i budynków nie działa. Trzeba kombinować gdzie kliknąć. Niestety
@@ -3230,7 +3230,7 @@ zapomniano". Do rozważenia: wspólny helper zamiast czwartej kopii przy następ
 `requestLeaderPortraitImage`, `requestProdIconImage`).
 **Model:** Opus 5 (render/**).
 
-## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
+## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 Dla pakietów PRZYCHODZĄCYCH (`allIncoming`) panel liczy `canAccept = net &gt;= 0` na sumie
 całego stołu (`diplomacyAcceptanceBalance.ts:252-254`), więc przycisk „Przyjmij" bywa aktywny
 gdy suma jest dodatnia. Ale realne wykonanie (`main.ts:11977`,
@@ -3257,7 +3257,7 @@ panelu przy net ujemnym z przyciskiem mimo to aktywnym; fail-open (`canAccept=tr
 `responderPreview` (dziś nieosiągalne); rozluźnienie `legacyAccess`-gatingu, zgodne z
 wykonaniem ale nietestowane; słaba asercja w jednym teście.
 
-## P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **CZĘŚCIOWO NAPRAWIONE 2026-08-09 — zawężone do gałęzi own+basket**
+## P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **CZĘŚCIOWO ZDEPLOYOWANE `ce69cf45` FALA 262 (tryb traktatu) — pozostaje otwarte dla gałęzi own+basket**
 Dla traktatu incoming z net ujemnym (np. −20 PW), panel pokazywał klasę „no" (czerwony) i hint
 „Brakuje N PW — dopłać do bilansu", ale jednocześnie werdykt „Spełnia warunki — możesz przyjąć"
 i przycisk AKTYWNY. Powstawało bo `canAccept` przestał iść za `net` (naprawa wyżej), a cały
@@ -3278,7 +3278,7 @@ zgłoszenia trybu traktatu).
 `!incomingTrade && !isTreatyMode`).
 **Model:** Sonnet 5.
 
-## P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **ZAMKNIĘTE 2026-08-09**
+## P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
 Gdy `row.responderPreview` był `undefined` (pole opcjonalne w typie), `canAccept` domyślnie
 wychodził `true` (bramka otwarta), nie bezpieczne `false`. Dziś `main.ts:12318` zawsze ustawia
 preview, więc nieosiągalne w praktyce — ale brak testu i brak jawnego fallbacku na `false`.
@@ -3291,7 +3291,7 @@ commit Operatora, `2e56050c`).
 **Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`).
 **Model:** Sonnet 5.
 
-## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08, nota Evaluatora przy R-HEKS-PLONY-UKRYTE-POD-MIASTEM) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
+## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08, nota Evaluatora przy R-HEKS-PLONY-UKRYTE-POD-MIASTEM) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
 Render plonów (`yieldOfMapHex`, dziś w `gra/src/game/okolica.ts` — funkcja przeniesiona z
 `main.ts` przed tą naprawą, stara kotwica `main.ts:9281` nieaktualna) czytał tylko OSTATNIĄ
 warstwę `hex.ulepszenie`, silnik (`hexToWorkedTile` → `improvementKeysForHex`) sumuje WSZYSTKIE
