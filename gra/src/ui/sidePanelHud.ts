@@ -24,6 +24,7 @@ import {
 } from './minimapLayout';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 import { isDiploObscuringUnitDock } from './unitCtxDockDiploGate';
+import { filterSidePanelEvents } from './sidePanelEventFilter';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -36,6 +37,11 @@ export interface SidePanelEvent {
   blocking?: boolean;
   /** SPICH-AUTO-Q1: wymusza czerwony styl (jak wydarzenia negatywne). */
   negative?: boolean;
+  /** R-WYDARZENIA-FILTR-KATEGORII: wpis „nie-nasz" (dziś wyłącznie handel AI↔AI) —
+   * chip 🌍 „Inne cyw." (domyślnie wyłączony) go filtruje. Wszystkie inne źródła
+   * SidePanelEvent są już filtrowane w silniku do par z udziałem gracza, więc nie
+   * potrzebują tego pola. */
+  origin?: 'other-civs';
 }
 
 export type ContextPanelKind = 'hex' | 'unit';
@@ -68,6 +74,10 @@ export interface SidePanelHudConfig {
   canContextCycleUnit?: () => boolean;
   onEventClick?: (id: string) => void;
   onEventDismiss?: (id: string) => void;
+  /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" — silnik decyduje co to znaczy
+   * (patrz main.ts clearAllSidePanelEvents: iteruje NIEfiltrowaną listę, więc kasuje
+   * też wpisy ukryte chipem 🌍 „Inne cyw." — to jest zamierzone). */
+  onDismissAll?: () => void;
 }
 
 export interface SidePanelHudApi {
@@ -141,6 +151,18 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   bottom:calc(${unitCardDockBottomCss(true)} + (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px);}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
+.civ-side-panel .sp-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;
+  padding:0 4px 2px;margin-bottom:2px;}
+.civ-side-panel .sp-toolbar-chip{font:10px var(--civ-font-ui);letter-spacing:.06em;
+  color:var(--civ-text-muted);background:rgba(20,26,38,.7);border:1px solid rgba(232,216,138,.22);
+  border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+.civ-side-panel .sp-toolbar-chip:hover{border-color:rgba(232,216,138,.4);}
+.civ-side-panel .sp-toolbar-chip.sp-toolbar-chip-active{color:var(--civ-gold-primary);
+  border-color:var(--civ-gold-primary);background:rgba(232,216,138,.14);}
+.civ-side-panel .sp-toolbar-dismiss-all{font:10px var(--civ-font-ui);letter-spacing:.06em;
+  color:var(--civ-text-muted);background:transparent;border:1px solid rgba(232,216,138,.22);
+  border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
+.civ-side-panel .sp-toolbar-dismiss-all:hover{border-color:var(--tg-red);color:var(--tg-red);}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
   cursor:pointer;transition:border-color .15s,box-shadow .15s;
   background:linear-gradient(90deg,rgba(200,64,64,.12),rgba(20,26,38,.92));
@@ -274,6 +296,10 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   const ctxEl = document.createElement('div');
   ctxEl.className = 'civ-side-ctx-dock';
 
+  // R-WYDARZENIA-FILTR-KATEGORII: stan chipa 🌍 „Inne cyw." — zmienna domknięcia,
+  // przeżywa update()/tury (nie jest resetowana przy każdym render()).
+  let showOtherCivsEvents = false;
+
   function bindContextInteractions(root: HTMLElement, ctx: ContextPanelData): void {
     root.querySelector('[data-sp-expand]')?.addEventListener('click', () => {
       config.onContextExpand?.();
@@ -341,10 +367,23 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
 
     html += '<div class="sp-header">Wydarzenia</div>';
 
-    if (events.length === 0) {
+    const visibleEvents = filterSidePanelEvents(events, showOtherCivsEvents);
+
+    if (!isPlaceholder) {
+      html += '<div class="sp-toolbar">'
+        + '<button type="button" class="sp-toolbar-chip'
+        + (showOtherCivsEvents ? ' sp-toolbar-chip-active' : '')
+        + '" data-sp-toggle-other-civs>\u{1F30D} Inne cyw.</button>'
+        + (config.onDismissAll !== undefined
+          ? '<button type="button" class="sp-toolbar-dismiss-all" data-sp-dismiss-all>Usuń wszystkie</button>'
+          : '')
+        + '</div>';
+    }
+
+    if (visibleEvents.length === 0) {
       html += '<div class="sp-placeholder">Brak wydarzeń w tej turze.</div>';
     } else {
-      for (const ev of events) {
+      for (const ev of visibleEvents) {
         const blockCls = ev.blocking ? ' sp-blocking' : '';
         const icInner = eventIconHtml(ev.kind, ev.icon);
         const icoContent = icInner.startsWith('<svg')
@@ -368,6 +407,16 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       const card = el.querySelector('.sp-ctx-card');
       if (card) bindContextInteractions(el, hexCtx);
     }
+
+    el.querySelector('[data-sp-toggle-other-civs]')?.addEventListener('click', () => {
+      showOtherCivsEvents = !showOtherCivsEvents;
+      render();
+    });
+
+    el.querySelector('[data-sp-dismiss-all]')?.addEventListener('click', () => {
+      config.onDismissAll?.();
+      render();
+    });
 
     el.querySelectorAll('.sp-event[data-id]').forEach(chip => {
       chip.addEventListener('click', (e: Event) => {

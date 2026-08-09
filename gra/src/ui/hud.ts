@@ -243,6 +243,8 @@ export interface HudConfig {
   getEvents?: () => SidePanelEvent[];
   onEventClick?: (id: string) => void;
   onEventDismiss?: (id: string) => void;
+  /** R-WYDARZENIA-FILTR-KATEGORII: przycisk „Usuń wszystkie" w toolbarze panelu WYDARZENIA. */
+  onDismissAll?: () => void;
 
   /**
    * A1-Q5: wojny prowadzone Z GRACZEM — tylko te na pasku mapy (minimalizm).
@@ -1381,6 +1383,7 @@ function mountSidePanel(): void {
     canContextCycleUnit: cfg.canContextCycleUnit,
     onEventClick: cfg.onEventClick,
     onEventDismiss: cfg.onEventDismiss,
+    onDismissAll: cfg.onDismissAll,
   });
   document.body.appendChild(sidePanelApi.el);
   document.body.appendChild(sidePanelApi.ctxEl);

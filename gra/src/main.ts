@@ -805,6 +805,7 @@ import {
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 import {
   deferredHintsToSidePanelEvents,
+  dismissEotOrEraWarLogEntry,
   shouldDeferEotEvents,
   type DeferredEotHint,
 } from './game/eot-event-defer';
@@ -15757,6 +15758,80 @@ async function boot(): Promise<void> {
       },
     });
 
+    /**
+     * Dismiss pojedynczego wpisu panelu WYDARZENIA (✕ przy karcie LUB „Usuń wszystkie" —
+     * patrz clearAllSidePanelEvents niżej, który woła to samo per id).
+     *
+     * N1 (Evaluator PASS-WITH-NOTES, R-WYDARZENIA-FILTR-KATEGORII): wpisy `eot-hint-*`
+     * (deferredHintsToSidePanelEvents — w tym „Dyplomacja" dla handlu AI↔AI) i `era-*`
+     * (notifyPlayerEraChangeIfAdvanced) trafiają do warEventLog, który NIE czyści się co
+     * turę (tylko przycina do 8 pozycji) — bez tej gałęzi dismiss spadał do miękkiego
+     * `dismissedSidePanelEventIds`, które JEST czyszczone na końcu KAŻDEJ tury (linia
+     * `dismissedSidePanelEventIds.clear()` w sekwencji EOT) → skasowany wpis wracał w
+     * kolejnej turze. Naprawa: usuń TRWALE ze źródłowego logu (findIndex+splice), tak
+     * samo jak już działało dla `war-*` niżej; fallback do miękkiego ukrycia tylko gdy
+     * wpisu nie znaleziono w warEventLog (nie powinno się zdarzyć, ale nie chcemy cichej
+     * no-op — lepiej ukryć niż zostawić widoczny martwy wpis).
+     */
+    function handleSidePanelEventDismiss(id: string): void {
+      if (id.startsWith('war-')) {
+        const idx = warEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          warEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
+      // N1 fix — logika w game/eot-event-defer.ts (dismissEotOrEraWarLogEntry), testowana
+      // niezależnie od main.ts w tools/sidepanel-events-toolbar-test.cjs.
+      if (dismissEotOrEraWarLogEntry(warEventLog, id)) {
+        refreshD1bHud();
+        return;
+      }
+      if (id.startsWith('border-march-')) {
+        // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy (borderMarchEventLog), wzorzec
+        // identyczny do 'village-' niżej — splice wystarcza, bo log i tak zeruje się
+        // przy turn++; dismiss nie musi przetrwać do następnej tury.
+        const idx = borderMarchEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          borderMarchEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
+      if (id.startsWith('village-')) {
+        const idx = villageEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          villageEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
+      if (id.startsWith('prod-empty-')) {
+        const cityId = cityIdFromProdEmptyEventId(id);
+        const city = cityId ? cities.find(c => c.id === cityId) : undefined;
+        if (city) {
+          prodEmptyDismissFp.set(city.id, productionOptionsFingerprint(city));
+          refreshD1bHud();
+        }
+        return;
+      }
+      // Propozycja pokoju / negocjacje / inne dyplo — ukryj do końca tury (✕ nie
+      // usuwa propozycji z inboxu; wraca w następnej turze, jeśli nadal aktualna).
+      dismissedSidePanelEventIds.add(id);
+      refreshD1bHud();
+    }
+
+    /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" w toolbarze panelu WYDARZENIA.
+     * Iteruje NIEfiltrowaną collectTurnEvents() (nie to, co chip 🌍 „Inne cyw." akurat
+     * pokazuje w UI) — więc kasuje też wpisy ukryte tym przełącznikiem. To jest ZAMIERZONE
+     * (Maciej/Evaluator): „Usuń wszystkie" ma czyścić WSZYSTKO, nie tylko widoczną resztę. */
+    function clearAllSidePanelEvents(): void {
+      for (const ev of collectTurnEvents()) {
+        handleSidePanelEventDismiss(ev.id);
+      }
+    }
+
     function mountD1bHud(): void {
       d1bHudActive = true;
       createCityListHud({
@@ -16254,48 +16329,8 @@ async function boot(): Promise<void> {
             openCityPanelForPlayer(city);
           }
         },
-        onEventDismiss: (id) => {
-          if (id.startsWith('war-')) {
-            const idx = warEventLog.findIndex(e => e.id === id);
-            if (idx >= 0) {
-              warEventLog.splice(idx, 1);
-              refreshD1bHud();
-            }
-            return;
-          }
-          if (id.startsWith('border-march-')) {
-            // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy (borderMarchEventLog), wzorzec
-            // identyczny do 'village-' niżej — splice wystarcza, bo log i tak zeruje się
-            // przy turn++; dismiss nie musi przetrwać do następnej tury.
-            const idx = borderMarchEventLog.findIndex(e => e.id === id);
-            if (idx >= 0) {
-              borderMarchEventLog.splice(idx, 1);
-              refreshD1bHud();
-            }
-            return;
-          }
-          if (id.startsWith('village-')) {
-            const idx = villageEventLog.findIndex(e => e.id === id);
-            if (idx >= 0) {
-              villageEventLog.splice(idx, 1);
-              refreshD1bHud();
-            }
-            return;
-          }
-          if (id.startsWith('prod-empty-')) {
-            const cityId = cityIdFromProdEmptyEventId(id);
-            const city = cityId ? cities.find(c => c.id === cityId) : undefined;
-            if (city) {
-              prodEmptyDismissFp.set(city.id, productionOptionsFingerprint(city));
-              refreshD1bHud();
-            }
-            return;
-          }
-          // Propozycja pokoju / negocjacje / inne dyplo — ukryj do końca tury (✕ nie
-          // usuwa propozycji z inboxu; wraca w następnej turze, jeśli nadal aktualna).
-          dismissedSidePanelEventIds.add(id);
-          refreshD1bHud();
-        },
+        onEventDismiss: handleSidePanelEventDismiss,
+        onDismissAll: clearAllSidePanelEvents,
       });
       ensurePerfReportChip();
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
