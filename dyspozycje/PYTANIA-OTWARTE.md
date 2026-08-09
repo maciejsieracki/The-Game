@@ -5479,6 +5479,31 @@ czy potwierdzić najpierw diagnostyką na żywo.
 33 sąsiednie testy — zero regresji względem `main` (zweryfikowane `git stash` porównaniem, w tym
 liczne PRE-ISTNIEJĄCE czerwone testy niezwiązane ze zmianą, niezmienione przed/po).
 
+**Evaluator: PASS-WITH-NOTES — sama naprawa POPRAWNA, ale 2 realne problemy do naprawy przed
+scaleniem/deployem (nie tylko kosmetyka):**
+1. **⛔ Sekcja F NIE chroni naprawy (dowód mutacyjny negatywny) — blokujące dla treści rejestru.**
+   Evaluator cofnął naprawę w `main.ts:21045` i sekcja F **nadal dawała 38/38 zielono** — bo test
+   woła `creditOwnerResourceStock(...)` BEZPOŚREDNIO, nigdy nie dotyka kodu w `main.ts`, gdzie był
+   bug. „Kontrola negatywna" jest tautologiczna (sprawdza że funkcja bez opcjonalnego argumentu nie
+   capuje — prawda z definicji sygnatury). Naprawa jest dobra, ale dziś NIEUCHRONIONA przed
+   regresją w miejscu, gdzie faktycznie wystąpiła.
+2. **⛔ `console.warn` w `building-stock-cost.ts:232` jest szkodliwy i ślepy na cel — blokujące dla
+   deployu.** Odpala się też na ścieżkach CELOWO bez capu, których audyt nie uwzględnił
+   (`refundBuildingStockCostAcrossCities`, `assignOwnerResourceStockFromPool` — ta druga wołana co
+   turę × każdy owner × każdy surowiec z `tickEmpireResourcePipeline`). Empirycznie: 9 ostrzeżeń w
+   jednym przebiegu testu, 6 fałszywych alarmów. **Paradoksalnie ślepy na cel, w którym go dodano**
+   — `diplomacy-basket-transfer.ts:274` (trop Gliny) omija `creditOwnerResourceStock` CAŁKOWICIE,
+   więc nigdy nie dojdzie do tego warna.
+3. Niezależnie potwierdzone „zero regresji" na WSZYSTKICH 274 testach (nie tylko próbce 33) —
+   liczby Operatora dokładne, zbiór 14 porażek `surow-civ-storage-test` identyczny przed/po.
+4. **Trop Gliny potwierdzony, ale przeszacowany:** oba call-site'y (`main.ts:7403` jednorazowa
+   dostawa, `main.ts:14127` handel cykliczny) lecą PRZED reconcile w tej samej turze — mogą dać
+   przekroczenie WIDOCZNE W TRAKCIE tury (pasuje do zgłoszenia), ale nie TRWAŁE jak drewno.
+Dispatch naprawy: (a) usunąć/zawęzić `console.warn` do ścieżek gdzie faktycznie ma sens; (b)
+przenieść/dodać asercję sekcji F na poziomie faktycznie pokrywającym `main.ts:21045` (nie tylko
+bibliotekę); (c) uzupełnić audyt o 2 pominięte call-site'y; (d) skorygować opis tropu Gliny na
+„przejściowe w obrębie tury", nie „trwałe".
+
 **Dispatch naprawy (BYŁO, wykonane przez Operatora — historyczna treść zlecenia):** (1) dodać `capPerType`
 do wywołania w `main.ts:21130` (wzorem `tickEmpireResourcePipeline`); (2) przy okazji sprawdzić
 pozostałe 3 miejsca `creditOwnerResourceStock(...)` bez `capPerType` (`main.ts:2950` — zwrot,
