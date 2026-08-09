@@ -6074,3 +6074,70 @@ decyzja do zapisania przy naprawie B2), N10 (dane statyczne, akceptowalne).
 
 Dispatch runda 2 dla B1+B2+B3 (+N2 przy okazji, ta sama okolica kodu). Wszystkie mechaniczne, bez
 ABC.
+
+---
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — Evaluator RUNDA 2: FAIL, runda 3 w toku (2026-08-09)
+
+Merytoryka naprawy B1 (spawn-hex zamiast hut-hex) jest POPRAWNA i potwierdzona niezależnie
+(czystość funkcji, brak podwójnego wywołania, matematyka scenariusza, mapowanie era→wojskowość —
+wszystko sprawdzone i zielone). Ale **bramka nadal nie chroni main.ts** — ta sama klasa problemu co
+w rundzie 1 (i jak w P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO): 3 niezależne mutacje w `main.ts`
+(przywrócenie oceny na heksie chatki zamiast spawnu; wyłączenie całej funkcji wykluczenia;
+odwrócenie bezpiecznika `?? true`→`?? false`) dają 73/73 PASS. Sekcja 11 testu w ogóle nie czyta
+`main.ts` — reimplementuje logikę inline w pliku testu, certyfikuje więc TEZĘ, nie WPIĘCIE.
+
+**Naprawa (dokładna specyfikacja Evaluatora):** wzorzec `hud-moc-warstwa-test.cjs` (czyta
+`main.ts` jako tekst, wycina ciało funkcji, asercjonuje regexem) zastosowany do `checkVillageRewardAt`:
+(1) obecność `territoryOwnerAtLive(rewardUnitDest.q, rewardUnitDest.r)` I brak
+`territoryOwnerAtLive(q, r)`; (2) obecność `pickVillageReward(Math.random(), { excludeUnit })`;
+(3) obecność `isVillageRewardUnitMilitary(player.era)`; (4) DOKŁADNIE JEDNO wystąpienie
+`findVillageRewardSpawnHex(` w tym ciele (dowód że liczone raz, nie dwa); (5) do sekcji 10 dołożyć
+`isVillageRewardUnitMilitary(3)===true` i `(99)===true` (łapie odwrócony bezpiecznik).
+
+Niepilne do zrobienia przy okazji (ten sam plik, jednolinijkowe): N1 (zdublowane źródło prawdy —
+`VILLAGE_UNIT_IS_MILITARY_BY_ERA` powiela `units.json`'s `Typ`, lepiej wyprowadzić z
+`lookupUnitDef(...)['Typ'] !== 'Civilian'`, ten sam predykat co silnik kary), N2 (komentarz sugeruje
+nieistniejącą ogólną regułę „cywile zwolnieni z kary" — poprawić na odwołanie do konkretnego
+prefiltra `main.ts:3697`).
+
+Dispatch runda 3, wąski zakres: test tekstowy (główne) + N1/N2 przy okazji.
+
+---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — Evaluator RUNDA 1: FAIL (6 BLOKUJĄCYCH), runda 2 w toku (2026-08-09)
+
+Architektura dobra (czysty moduł, reużycie kanału DOW), ale 6 not BLOKUJĄCYCH:
+
+- **B1** — `applyCityCaptureToMap` NIE jest jedynym funnelem (twierdzenie Operatora nieprawdziwe):
+  `resolveSiegeSurrender()` (kapitulacja głodowa) zmienia właściciela BEZ wywołania haka licznika.
+  Konsekwencja cięższa niż wygląda: dla pary AI↔AI nie ma ŻADNEJ innej ścieżki pokoju (negocjacje
+  pokojowe dziś działają tylko z graczem) — zgubiony licznik = wojna wieczna, dokładnie czego
+  Maciej chciał uniknąć.
+- **B2 (wymaga ABC)** — kaskada sojusznicza celu nieobsłużona: wymuszona wojna odpala
+  `applyAllianceObligationsOnWar`, więc sojusznicy CELU też wchodzą w wojnę z napastnikiem, ale te
+  wojny poboczne nie są objęte licznikiem pary — auto-pokój po 2 miastach kończy tylko parę A-B,
+  a A zostaje w wieczystej wojnie z sojusznikami B (AI↔AI nie ma wyjścia, patrz B1). Pytanie do
+  Macieja: czy wymuszona wojna ma w ogóle odpalać casus foederis, a jeśli tak — czy auto-pokój ma
+  kończyć też wojny kaskadowe.
+- **B3** — sojusz z CELEM nie blokuje wyboru (sprzeczne z Twoim „nie powinny zrywać sojuszy") —
+  dziś blokowany jest tylko pakt nieagresji, sojusz NIE, i zostaje zerwany przy wypowiedzeniu.
+- **B4** — mechanizm może wyłączyć się TRWALE i po cichu: `pending` konsumowane niezależnie od
+  wyniku, zapis do cyklu tylko po SUKCESIE — cywilizacja, która w chwili awansu jest w
+  jakiejkolwiek wojnie (częste, bo mechanizm klastrowy wymusza wojny od tury ≥20, dokładnie w oknie
+  K→B) nigdy więcej nie dostanie szansy w całej partii.
+- **B5** — brak zapisu do save/load: żadna z 4 nowych struktur stanu nie trafia do snapshotu ani
+  nie jest odtwarzana — po wczytaniu zapisu w trakcie wymuszonej wojny stan wyparowuje (wojna
+  wieczna + wypadnięcie z cyklu na stałe). Kanon AutoBot: twardy FAIL (STRICT-SAVE).
+- **B6** — bramka nie chroni main.ts (ta sama klasa problemu co inne tematy dziś): usunięcie
+  sprawdzenia eligibility LUB usunięcie wywołania haka licznika przy przejęciu miasta — oba dają
+  27/27 ALL GREEN.
+
+Niepilne: N1 (gracz nigdy nie jest celem — cicha decyzja zakresowa, nie w specyfikacji), N2
+(„sąsiad" liczony bardzo zgrubnie, bez maks. promienia), N3 (kandydat już w wojnie z kimś innym nie
+wykluczany), N4 (odpoczynek uzbrajany tylko dla napastnika), N5 (koniec przez eliminację nie daje
+odpoczynku), N6 (cooldown 20 tur tylko na ścieżce progowej, inna ścieżka pokoju daje 10),
+N7 (wojna z MP powinna czy nie liczyć się jako „już w wojnie" — do rozstrzygnięcia), N8 (stałe w
+TS nie w JSON, Maciej nie dostroi z panelu), N9 (map-gen nieukończona, ryzyko zerowe).
+
+Dispatch runda 2 dla B1, B3, B4, B5, B6 (mechaniczne). B2 wymaga ABC — patrz wiadomość na czacie.
