@@ -4895,7 +4895,118 @@ nie asymetria cywilizacja/miasto-państwo. Nie wymaga naprawy — pytanie było 
 
 ---
 
-## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa funkcja UI, wymaga rozpoznania przed ABC**
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore), znalezisko wstępne — martwy kod prawie gotowy do wykorzystania:** w repo
+istnieją DWA komponenty wyglądające jak panel listy dyplomacji: `gra/src/ui/diploListHud.ts`
+(żywy, realnie otwierany z toolbara) oraz `gra/src/ui/diplomacyPanel.ts` — **całkowicie martwy
+kod**, zaimportowany w `main.ts:986`, ale NIGDY faktycznie wywoływany. Ten martwy panel ma już
+GOTOWĄ sekcję „Wojny znane (wywiad)" pokazującą wojny MIĘDZY INNYMI cywilizacjami
+(`diplomacyPanel.ts:281-289`, korzysta z `getKnownWarsBetweenOthers`) — dokładnie część tego, o co
+prosi Maciej.
+
+**Fakt 1 (sortowanie):** dziś WYŁĄCZNIE alfabetyczne (`main.ts:5023`), bez rozróżnienia typu —
+miasta-państwa i pełne cywilizacje są przemieszane. Flaga `isCityState` jest liczona
+(`isOwnerClusterCityState`, `display-names.ts:50-59`) ale NIE jest przenoszona do struktury, którą
+renderuje żywy panel (`DiploListEntry`, `diploListHud.ts:23-33`) — trzeba dodać pole i posortować.
+
+**Fakt 2 (brak kroku pośredniego):** kliknięcie wiersza dziś idzie WPROST do pełnego panelu
+audiencji (`main.ts:15789-15799` → `openDiplomacyAudience` → `diplomacyAudience.ts`, 2106 linii) —
+zamykając listę. Żadnego pop-upu podsumowania nie ma.
+
+**Fakt 3 (dane do podsumowania — częściowo gotowe, częściowo z ograniczeniem silnika):** surowe
+dane o wojnach dowolnej pary (`diplomacyRelations`) i sojuszach/handlu dowolnej pary
+(`activeDeals.strony` + funkcja `dealInvolvesOwners`) już istnieją w silniku — trzeba by je dopiero
+zagregować w nowym/martwym UI. **Ograniczenie silnika do ujawnienia Maciejowi:** sojusze AI↔AI są
+dziś generowane WYŁĄCZNIE między „siostrami" tego samego klastra cywilizacyjnego (komentarz w
+kodzie wprost: „dyplomacja AI↔AI dziś NIE ISTNIEJE poza gracz↔AI... siostry nigdy by się nie
+sprzymierzyły same" — `main.ts:13426`) — czyli podsumowanie „z kim ma sojusze" pokaże realnie tylko
+sojusze siostrzane, nie pełny obraz dyplomacji AI-AI, bo silnik szerszych sojuszy AI-AI po prostu
+nie tworzy. Handel AI↔AI jest szerszy (nie tylko siostry).
+
+**[TEMAT: Zakres wdrożenia listy + podglądu dyplomacji]**
+- **A — Wdrożyć oba żądania od razu, wykorzystując martwy `diplomacyPanel.ts` jako bazę nowego
+  pop-upu** (ma już sekcję wojen osób trzecich — dopisać sojusze/handel + przycisk propozycji
+  spotkania) + naprawić sortowanie w `diploListHud.ts`. Za: reużycie istniejącego, częściowo
+  gotowego kodu zamiast pisania od zera; spełnia oba żądania naraz. Przeciw: największy zakres z
+  trzech opcji, wymaga zrozumienia i ewentualnie naprawy martwego kodu (nieznana jakość/aktualność
+  po tym jak nigdy nie był używany na żywo).
+- **B — Tylko sortowanie teraz** (cywilizacje nad miastami-państwami, tani i niskiego ryzyka), pop-up
+  podsumowania jako osobny temat później. Za: szybkie, punktowe, bez ryzyka. Przeciw: nie spełnia
+  drugiej, prawdopodobnie ważniejszej dla Macieja części życzenia.
+- **C — Oba żądania, ale zbudować pop-up jako NOWY, mniejszy komponent zamiast reanimować martwy
+  `diplomacyPanel.ts`** (użyć tylko jego pomysłu/wzorca zapytań o dane, nie jego kodu UI). Za:
+  unika ryzyka ukrytych błędów w nigdy-nietestowanym-na-żywo kodzie. Przeciw: więcej pracy niż A,
+  bo nie reużywa gotowego UI.
+
+Rekomendacja: **A** — martwy kod ma dokładnie pasujący kształt (sekcja wojen trzecich stron), a
+skoro nigdy nie był wywołany, i tak wymaga przeglądu/testu zanim trafi na żywo — lepiej to zrobić
+raz, przy okazji tego zadania, niż pisać odpowiednik od zera.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA (2026-08-09, zgłoszenie z playtestu) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI (2026-08-09, zgłoszenie z playtestu, bug AI) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+
+**Cytat Macieja:** „barbarzyńcy oblegają jedno z miast innej cywilizacji, a ta cywilizacja zamiast
+iść wojskiem i najpierw zwalczyć zagrożenie, to siedzi, nie wiadomo co, idzie w przeciwnym
+kierunku. Generalnie głównym celem armii danej cywilizacji powinno być zlikwidowanie wrogich wojsk
+na własnym terenie lub w okolicach tego terenu. Jeżeli jest stan pokoju [z resztą] — [priorytet to
+zagrożenie]. Jeżeli jest stan wojny, no to oczywiście walczy z tym [wrogiem wojny] i z tyłu
+[zagrożeniem lokalnym] walczy, ale [jeśli] ktoś inny jest też wrogiem, to też stara się go
+atakować. Widzę, że AI ma z tym trochę problem." Zrzuty: barbarzyńcy (czerwone ikony) wokół miasta
+Kwabulaw... (cywilizacja Zulusów, epoka Brąz sądząc po symbolach), miasto oblężone, ale jednostki
+tej cywilizacji nie idą na odsiecz.
+
+**Zasada, jaką Maciej chce widzieć w priorytecie celów AI:** (1) zawsze najwyższy priorytet —
+zlikwidować wrogie siły (w tym barbarzyńców) na własnym terytorium lub w jego bezpośredniej
+okolicy, niezależnie od stanu pokoju/wojny z kimkolwiek innym; (2) jeśli jest w stanie wojny z
+konkretną cywilizacją, walczy z nią NORMALNIE (nie tylko defensywnie); (3) jeśli ma więcej niż
+jednego wroga jednocześnie, stara się atakować też pozostałych, nie tylko jednego.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć logikę AI odpowiedzialną za priorytetyzację
+celów armii (prawdopodobnie `gra/src/game/ai.ts` lub podobny, szukać obsługi zagrożeń/oblężenia/
+barbarzyńców, funkcje typu `decideAiMilitary`/`threatResponse`/podobne); (b) ustalić czy AI w ogóle
+ma dziś pojęcie „zagrożenie na własnym terytorium ma priorytet nad wszystkim innym" — czy istnieje
+gdzieś taka reguła, czy jest po prostu nieobecna/przegrywana przez inne priorytety (ekspansja,
+budowa, inny cel wojenny); (c) sprawdzić konkretnie dlaczego w tym przypadku (oblężone miasto
+Zulusów) armia poszła w przeciwnym kierunku — czy to celowy inny priorytet (np. realizacja innego
+zlecenia AI), błąd w ocenie zagrożenia (nie widzi barbarzyńców jako zagrożenia?), czy błąd w logice
+pathfinding/celu. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać. To może być
+duża zmiana w logice AI (priorytetyzacja) — po rozpoznaniu prawdopodobnie wymaga ABC, nie tylko
+prostej naprawy.
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA (2026-08-09, propozycja nowej zasady z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga rozpoznania przed ABC**
+
+**Cytat Macieja:** „wydaje mi się, że w momencie gdy nastąpi epoka brązu, to każda cywilizacja,
+która wejdzie w epokę brązu, powinna wypowiedzieć wojnę przynajmniej jednej innej cywilizacji, tak
+żeby coś na tej mapie się działo."
+
+Nowa reguła projektowa: przy awansie do epoki Brąz, cywilizacja (AI) automatycznie wypowiada wojnę
+co najmniej jednej innej cywilizacji, jeśli jeszcze nie jest w stanie wojny z nikim. Cel: ożywić
+mapę, dziś (sugeruje kontekst zgłoszenia obok) zbyt statyczną/pokojową rozgrywkę AI-AI.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) sprawdzić czy istnieje dziś jakikolwiek mechanizm
+wymuszający/zachęcający AI do wypowiadania wojen (poza reaktywnymi, np. w odpowiedzi na
+zagrożenie) — jaka jest dziś częstotliwość/prawdopodobieństwo wojen AI-AI w ogóle; (b) sprawdzić
+czy to zgłoszenie łączy się z powyższym `P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI` — czy
+przyczyną „statycznej mapy" jest brak wojen AI-AI, czy raczej że AI wchodzi w wojny ale się słabo
+broni; (c) ustalić czy dziś istnieje pojęcie „epoka Brąz" jako punkt zaczepienia w kodzie awansu
+epoki (tak, potwierdzone przy innym zgłoszeniu `R-EPOKA-CUD-WARUNEK-AWANSU` — Brązownictwo K→B).
+Zanim przedstawię ABC — zebrać fakty o dzisiejszym zachowaniu AI w kwestii wojen.
+
+**⛔ Doprecyzowanie Macieja (dosłowny cytat, ważne ograniczenia reguły):** „tylko żeby nie było
+tak, że wszyscy wypowiedzą wojnę graczowi. Generalnie powinno się wypowiadać wojny sąsiadowi, a
+sojusze zawierać z podleglejszymi ludami." Czyli DWA dodatkowe warunki do uwzględnienia w
+rozpoznaniu/ABC: (1) cel wypowiedzenia wojny przy awansie do Brązu ma być preferencyjnie SĄSIAD
+(geograficznie przyległa cywilizacja), NIE zawsze/domyślnie gracz — trzeba sprawdzić czy dzisiejsza
+logika AI w ogóle ma pojęcie „sąsiedztwa terytorialnego" do wyboru celu; (2) przy tej samej okazji
+(lub ogólnie) AI powinno preferować zawieranie SOJUSZY z cywilizacjami słabszymi/podległymi
+(„podleglejsze ludy") — do zbadania czy istnieje dziś jakaś miara siły/rankingu do takiego wyboru
+(np. `R-RANKING-MOC` z wcześniejszych zadań).
 
 **Cytat Macieja:** „Fajnie żeby w momencie gdy się wejdzie do dyplomacji można było sprawdzić
 wszystkie główne cywilizacje z których mamy kontakt. Żeby można było ewentualnie z nimi
