@@ -4223,3 +4223,29 @@ commitów) ilustrujący skalę problemu.
 krótkim wpisem w kanale zamiast osobnego pytania za każdym razem. Trzyma main blisko rzeczywistości
 zgodnie z własną deklaracją projektu (CLAUDE.md §3), a AutoBot już dziś pełni rolę bramki jakości
 przed wejściem na gałąź — dodatkowe opóźnienie do main niczego nie zabezpiecza, tylko generuje dług.
+
+**ECHO Maciej 2026-08-09 — DECYZJA WŁASNA (wariant D, nie A/B/C z propozycji), ZAMKNIĘTE:**
+„Myślę, że zawsze można scalać poprzednią falę, a nową zostawiamy do testów. Jeżeli robisz kolejną
+falę, to znowu możesz robić scalenie. Czyli zawsze będzie scalenie o jedną falę do tyłu. Da to nam
+możliwość cofnięcia się i łatwiejszego zarządzania błędami." + doprecyzowanie (AskUserQuestion):
+nowa fala ROBOCZA powstaje **wyłącznie na wyraźne słowo „deploy"** od właściciela — zero
+autonomicznego tworzenia kolejnych fal w trakcie sesji, nawet jeśli nazbiera się dużo zamkniętych
+tematów (dotychczasowa praktyka tej sesji — kilka fal dziennie — była zbyt częsta).
+
+**Reguła kanoniczna (dwie części):**
+1. **Rytm scalania do main = zawsze jedna fala ROBOCZA do tyłu.** Gdy powstaje fala N (deploy do
+   ROBOCZA na wyraźne „deploy"), fala N−1 (jeśli jeszcze nie scalona) kwalifikuje się do scalenia
+   do `main`. Fala N zostaje na gałęzi roboczej wyłącznie do testów, NIE jest scalana, dopóki nie
+   powstanie fala N+1 (wtedy fala N staje się „poprzednią" i można ją scalić). Daje to stały bufor
+   jednej fali do cofnięcia się w razie błędu wykrytego dopiero na main.
+2. **Nowa fala ROBOCZA tworzona wyłącznie na wyraźne słowo „deploy"** — nie automatycznie po
+   zamknięciu tematu ani po nagromadzeniu progu tematów. To zaostrzenie/doprecyzowanie już
+   istniejącej reguły CLAUDE.md §5 („Publikacja/deploy tylko na hasło deploy"), reagujące na
+   praktykę tej sesji (kilka fal dziennie, w tym FALA 261 nigdy niescommitowana bo gałąź odjechała
+   w trakcie oczekiwania na bramkę).
+
+**Wykonane od razu (2026-08-09, ta sama tura):** pierwsze scalenie wg nowej reguły —
+`main` (`a659f4a1`) doganie o FALA 262 (`ce69cf45`, commit deployu `75b14e86`) →
+**merge `b137332a`**, wypchnięte. FALA 263 (`89176ced`) świadomie NIE wchodzi w ten merge,
+zostaje na `claude/sprawdzenie-funkcjonalnosci-ek4ra0` do testów — wejdzie do main dopiero przy
+kolejnej fali. Kanon decyzji: `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`.

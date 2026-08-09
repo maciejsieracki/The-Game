@@ -1850,8 +1850,11 @@ dowód mutacyjny potwierdził izolację. `diplomacy-basket-transfer-test.cjs` 20
 `techIdsWithPrereqsMetForRecipient` — naprawiona analogicznym scenariuszem `tierCatalog`,
 Evaluator PASS-WITH-NOTES, `diplomacy-tech-trade-test.cjs` 26/26).
 
-## R-MERGE-MAIN-RYTM-Q1 — OTWARTE, ABC czeka na literę (2026-08-09)
-Pytanie Macieja: kiedy dana gałąź powinna być scalana do `main`. Stan: `origin/main` = `a659f4a1`
-(2026-08-08), gałąź robocza ma dziś **85 niescalonych commitów** (nie tylko dzisiejszy maraton —
-też starsze prace). Brak dziś stałej reguły, dotąd ad hoc. Pełna forma ABC w `PYTANIA-OTWARTE.md`
-→ `R-MERGE-MAIN-RYTM-Q1`. Rekomendacja: A (scalaj po każdym zamkniętym temacie AutoBot).
+## R-MERGE-MAIN-RYTM-Q1 — ZAMKNIĘTE, ECHO Maciej 2026-08-09 (wariant własny, nie A/B/C)
+Decyzja: **rytm scalania do main = zawsze jedna fala ROBOCZA do tyłu** (fala N-1 scalana dopiero
+gdy powstanie fala N; bieżąca fala zostaje na gałęzi wyłącznie do testów) + **nowa fala ROBOCZA
+wyłącznie na wyraźne słowo „deploy"** od właściciela (zero autonomicznego tworzenia kolejnych fal
+w trakcie sesji). Wykonane od razu: `main` doganie o FALA 262 → **merge `b137332a`** (55 commitów
+od `a659f4a1`), wypchnięte. FALA 263 (`89176ced`) świadomie zostaje na
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`. Pełna treść ECHO + reguła w `PYTANIA-OTWARTE.md`.
+Kanon: `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`.

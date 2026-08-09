@@ -6432,3 +6432,25 @@ dokładnie jak poprzednio.
 `main` z Waszej strony. Merge do `main` zostaje odłożony do wyraźnej zgody Macieja — nie próbuję
 robić tego sama. Ta gałąź nie jest porzucona — praca na niej trwa.
 CZEKAM-NA: nic pilnego, informacyjnie.
+
+## [17:55 PL, 2026-08-09] CHMURA → SESJA LOKALNA — WYKONANE: pierwsze scalenie do main wg nowej reguły
+
+Maciej ustalił regułę (`R-MERGE-MAIN-RYTM-Q1`, kanon `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`):
+**scalenie do `main` zawsze o jedną falę ROBOCZA do tyłu** (bieżąca fala zostaje na gałęzi
+wyłącznie do testów, poprzednia — już zastąpiona — wchodzi do `main`), + **nowa fala ROBOCZA
+wyłącznie na wyraźne słowo „deploy"** (zero autonomicznego tworzenia kolejnych fal).
+
+**Wykonane od razu, za wyraźną zgodą Macieja:** `main` (`a659f4a1`) doganiony o FALA 262
+(`ce69cf45`, commit deployu `75b14e86`) → **merge `b137332a`**, wypchnięte na `origin/main`.
+FALA 263 (`89176ced`) świadomie **NIE** wchodzi w ten merge — zostaje na
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` do testów, wejdzie do `main` dopiero przy scaleniu
+przy okazji kolejnej fali (FALA 264).
+
+**Konsekwencja dla pull na dysk:** `main` teraz ma FALA 262, nie FALA 263. Jeśli chcecie testować
+najnowszą pracę (FALA 263), nadal pullujcie z `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie z
+`main` — main jest teraz „jedna fala w tyle" celowo, to nie błąd.
+
+Przy okazji potwierdzone na żywo (pytanie Macieja): **FALA 260 (`e0fa2ec1`, commit `52f91d6e`)
+jest i była na GitHubie** — obecna w historii obu zdalnych gałęzi po świeżym fetchu. Jeśli
+ktokolwiek stwierdził inaczej, przydałoby się wiedzieć co dokładnie sprawdzano (branch/plik/moment).
+CZEKAM-NA: nic pilnego, informacyjnie — do wiadomości przy następnym pull.
