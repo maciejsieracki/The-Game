@@ -4998,6 +4998,28 @@ broni; (c) ustalić czy dziś istnieje pojęcie „epoka Brąz" jako punkt zacze
 epoki (tak, potwierdzone przy innym zgłoszeniu `R-EPOKA-CUD-WARUNEK-AWANSU` — Brązownictwo K→B).
 Zanim przedstawię ABC — zebrać fakty o dzisiejszym zachowaniu AI w kwestii wojen.
 
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga rozpoznania przed ABC**
+
+**Cytat Macieja:** „jeżeli nasz zwiadowca na terenie innej cywilizacji znajdzie chatkę, a w tej
+chatce zostanie odkryta jednostka wojskowa, to narusza się wtedy granicę i cierpi nasze statystyki
+w dyplomacji. Więc powinna być taka zasada, że w chatkach ze skarbami na terenie innej cywilizacji
+nie znajdujemy jednostek wojskowych, tylko inne skarby."
+
+Zgłoszony problem: odkrycie jednostki wojskowej z chatki ze skarbami na TERYTORIUM innej
+cywilizacji powoduje, że ta nowo powstała jednostka (przypisana graczowi) fizycznie stoi na cudzym
+terenie, co jest traktowane jak naruszenie granicy i karze relacje dyplomatyczne — mimo że gracz
+nie zrobił nic poza odkryciem chatki zwiadowcą. Proponowana reguła: pula możliwych „skarbów" z
+chatek ma być inna (bez jednostek wojskowych) gdy chatka leży na cudzym terytorium, niż gdy leży na
+neutralnym/własnym.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) znaleźć logikę chatek ze skarbami (prawdopodobnie
+`gra/src/game/**`, szukać „chatka"/„skarb"/„hut"/„goodie" itp.) i pulę możliwych nagród, w tym czy
+jednostki wojskowe są dziś jedną z opcji; (b) potwierdzić że odkrycie jednostki na cudzym terytorium
+faktycznie liczy się jako naruszenie granicy w mechanice kar dyplomatycznych (żeby nie zgadywać czy
+to naprawdę dzieje się tak jak opisuje Maciej); (c) sprawdzić czy silnik rozróżnia dziś kontekst
+„chatka na czyim terytorium" przy losowaniu nagrody, czy pula jest zawsze taka sama niezależnie od
+lokalizacji. Zanim przedstawię ABC — zebrać fakty, nie zgadywać zakresu zmian.
+
 **⛔ Doprecyzowanie Macieja (dosłowny cytat, ważne ograniczenia reguły):** „tylko żeby nie było
 tak, że wszyscy wypowiedzą wojnę graczowi. Generalnie powinno się wypowiadać wojny sąsiadowi, a
 sojusze zawierać z podleglejszymi ludami." Czyli DWA dodatkowe warunki do uwzględnienia w
