@@ -24,6 +24,21 @@ export type PoziomRacji = number;
 
 export const WYZYWIENIE_MIN = 0;
 export const WYZYWIENIE_MAX = 6;
+/**
+ * ⚠️ NIEZMIENNIK — P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD (2026-08-09): panel miasta zaokrągla
+ * WZROST% przez `Number(x.toFixed(1))` (`formatLiczbaPl` w `ui/formatPl.ts`), plakietka mapy
+ * przez `Math.round(x*10)/10` (`formatCityGrowthPercentLabel` w `render/cityMapStatChip.ts`).
+ * Te dwa wzory dają IDENTYCZNY wynik dla kroków będących wielokrotnością 0,1 (w tym 0,5) —
+ * rozjazd pojawia się dopiero przy krokach generujących NIEPARZYSTE wielokrotności 0,05, np.
+ * 0,25 / 0,05 / 0,01 (`0.15` → „0,1%" vs „0,2%", błąd reprezentacji zmiennoprzecinkowej `toFixed`
+ * przy remisie zaokrąglenia). `computeGrowthPercentV85()` sumuje sześć składników, z których
+ * każdy jest dziś wielokrotnością `WYZYWIENIE_STEP` (0,5) — stąd suma też jest, i parytet
+ * panel↔plakietka trzyma się BEZ osobnej naprawy kodu formatującego. Jeśli kiedyś zmienisz ten
+ * krok na wartość generującą nieparzyste wielokrotności 0,05 (np. 0,25) — sprawdź NAJPIERW test
+ * `gra/tools/city-growth-percent-rounding-parity-test.cjs` (przypina ten niezmiennik i wysypie
+ * się przy zmianie kroku) i rozważ ujednolicenie obu formuł zaokrąglenia, bo dopiero wtedy
+ * rozjazd staje się realny w grze.
+ */
 export const WYZYWIENIE_STEP = 0.5;
 
 /** Wszystkie dozwolone poziomy Wyżywienia (0, 0.5, …, 6). */

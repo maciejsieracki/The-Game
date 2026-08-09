@@ -2077,15 +2077,39 @@ znak) albo zmienić szablon na samo `signed(...)`.
 **Kotwice:** `gra/src/ui/cityPanel.ts:4394,4418`.
 **Model:** Sonnet 5.
 
-## P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD (2026-08-09, nota Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — bardzo niepilne, dziś nieosiągalne**
-Panel zaokrągla przez `Number(x.toFixed(1))`, plakietka przez `Math.round(x*10)/10` — 200
-rozbieżnych wartości w zakresie [−20, 20] przy kroku 0,01 (np. `0.15` → panel „0,1%", plakietka
-„0,2%"). Dziś nieosiągalne — krok realny wzoru wzrostu to 0,5, przy którym 0 rozbieżności.
-Ryzyko tylko jeśli krok formuły kiedyś się zmieni; test parytetu próbkuje za mało wartości żeby
-to złapać.
-**Kotwice:** `gra/src/ui/cityPanel.ts`, `gra/src/render/cityMapStatChip.ts`
-(`formatCityGrowthPercentLabel`).
-**Model:** Sonnet 5.
+## P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD — ZAMKNIĘTE 2026-08-09 (decyzja B: test/dokumentacja, nie zmiana silnika)
+Panel zaokrągla przez `Number(x.toFixed(1))`, plakietka przez `Math.round(x*10)/10` — rozbieżne
+przy krokach generujących nieparzyste wielokrotności 0,05 (np. `0.15` → panel „0,1%", plakietka
+„0,2%"). Dziś nieosiągalne — krok realny wzoru wzrostu to 0,5.
+
+**Decyzja B (Operator, uzasadniona liczbami, nie tylko oceną):** nie zmieniać kodu produkcyjnego
+— przypiąć osiągalność testem + niezmiennikiem w komentarzu. Wyczerpująca enumeracja wszystkich
+6 składników `computeGrowthPercentV85` (52 140 543 kombinacji) i parytet cyfr panel↔plakietka na
+wielokrotnościach 0,5 w [−100000, 100000] (400 001 wartości) — **0 rozjazdów w obu przypadkach**.
+Zmiana kodu produkcyjnego dziś dałaby zero zmian w wyświetlanym tekście przy niezerowym ryzyku
+regresji.
+
+Nowy test `gra/tools/city-growth-percent-rounding-parity-test.cjs` (16/16): pin `WYZYWIENIE_STEP
+=== 0,5`, parytet na 801 wartościach w realnym zakresie, kanarek dowodzący siły wykrywczej sekcji
+[2] (mutacja kroku na 0,25/0,01/0,1 — 2 z 3 łapane, patrz noty). Komentarz-niezmiennik dodany przy
+`WYZYWIENIE_STEP` w `population-growth-v85.ts`.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES z blokującą korektą domkniętą przy scaleniu**: dowód
+matematyczny potwierdzony niezależnie i mocniejszy (wyczerpująca enumeracja, nie próbkowanie).
+Kanarek zweryfikowany mutacyjnie na źródle produkcyjnym (nie tylko symulacją) — sekcja [2] ma
+realną siłę wykrywczą (kroki 0,25/0,01 łapane, exit 1). **Komentarz-niezmiennik zawierał
+nieprawdziwe zdania** („identyczny wynik TYLKO dla wielokrotności 0,5" — fałsz, krok 0,1 i 0,2
+też dają 0 rozjazdów; przykład „0,1" jako rozjazdogenny — błędny, 0,1 nigdy nie rozjeżdża się).
+Prawdziwa reguła: rozjazd wymaga NIEPARZYSTEJ wielokrotności 0,05 (0,25/0,05/0,01 tak, 0,1/0,2/0,5
+nigdy). **Poprawione przy scaleniu** — komentarz przy `WYZYWIENIE_STEP` przeformułowany zgodnie z
+dokładną regułą Evaluatora. Kierunek błędu był zachowawczy (ostrzegał za dużo, nie za mało), test
+i commit message nie powielały nieprawdy.
+Zmierzone: `city-growth-percent-rounding-parity-test.cjs` 16/16, `city-badge-growth-percent-test.cjs`
+38/38, `city-panel-growth-percent-separator-test.cjs` 29/29, `logic-test.cjs` 213/213, `tsc
+--noEmit` 0 błędów.
+**Kotwice:** `gra/src/game/population-growth-v85.ts` (`WYZYWIENIE_STEP`), `gra/src/ui/cityPanel.ts`,
+`gra/src/render/cityMapStatChip.ts` (`formatCityGrowthPercentLabel`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
 
 ## P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY — ZAMKNIĘTE 2026-08-09
 Karta „Wyżywienie i wzrost — szczegóły" (`buildRacjeWzrostDetailCard`), sekcja „WZROST% —
