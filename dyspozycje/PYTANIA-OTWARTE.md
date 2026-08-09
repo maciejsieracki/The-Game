@@ -4092,7 +4092,13 @@ zamiast dodać drugiego, semantyka toggle pod nazwą „+1").
 `gra/src/ui/cityPanel.ts:8290`.
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x4 rundy).
 
-## P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1 (2026-08-09, nota N2 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **OTWARTE — pytanie ABC do Macieja**
+## P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1 (2026-08-09, nota N2 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **ECHO B — zaparkowane do następnej paczki pracy (Maciej: „innymi rzeczami zajmiemy się później")**
+
+**MACIEJ ODPOWIEDZIAŁ: B** — rozróżnić dwie kategorie „pole niedostępne": teren nielegalny
+(Góry/Morze, stare zapisy — zostaje chroniony bez migracji) vs pole poza aktualnym promieniem po
+skurczeniu terytorium (zwykła dynamika gry — wraca do dawnego, automatycznego czyszczenia).
+Wdrożenie odłożone na następną paczkę pracy (właściciel: najpierw deploy bieżących zmian i
+playtest, „innymi rzeczami zajmiemy się później") — NIE dispatchowane teraz.
 **[TEMAT: Fantomowe sloty robotników po skurczeniu promienia terytorium — czy czyścić automatycznie]**
 **Sytuacja:** naprawa B3 (runda 4) poprawnie chroni stare zapisy z robotnikami na Górach/Morzu
 przed nadmiernym kasowaniem — ale ten sam mechanizm chroni też CAŁKIEM INNY przypadek: pola, które
