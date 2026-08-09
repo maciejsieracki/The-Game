@@ -6867,3 +6867,88 @@ tylko `src/map/**`/`src/types/hex`, zero wspólnych plików ze zmianą), zerowe 
 Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — Evaluator RUNDA 4 (finalna): PASS-WITH-NOTES, 0 blokujących, GOTOWE DO SCALENIA (2026-08-09)
+
+T3 zweryfikowany niezależnie (dowód mutacyjny powtórzony + 3 własne mutacje: usunięcie całego
+filtru terytorium T3 poprawnie PASS/nie nadgorliwy, `myCities`→`allCities` przeżywa i potwierdza
+znane N7, usunięcie `foundingTerritoryOpts(ownerId)` na SCALONYM main.ts nadal łapane). Scalenie
+praktycznie przetestowane (jednorazowy worktree na aktualnym HEAD `91ea0d4a`, pełne bramki zielone
+tam). 28/28, logic-test 213/213, tsc 0, ai-colonization-pop-test 13/13. Do doklejenia przy scaleniu
+(kosmetyka, 2 linie): N-DOC (nagłówek testu fałszywie twierdzi że T3 pominięto), N9 (rejestracja
+bramki w liście CLAUDE.md). Dispatch scalenia NASTĘPUJE teraz.
+
+---
+
+## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE — decyzja Macieja bez zestawienia, dispatch (2026-08-09)
+
+**⛔ Luka procesowa (do rejestru, uczciwie):** ten temat był zarejestrowany jako „czeka na
+odpowiedź Macieja" po dostarczeniu zestawienia — ale zestawienie NIGDY nie zostało przygotowane
+ani pokazane. Błędna klasyfikacja przy audycie §0c (potraktowany jak „odłożony, czeka na niego",
+podczas gdy czekał na PRACĘ orkiestratora). Maciej podał decyzję bezpośrednio, znając już liczby
+z gry, więc zestawienie stało się zbędne — ale luka w procesie zostaje odnotowana.
+
+**Decyzja Macieja:** `tartak.surowiec_ilosc_tura` (Tartak, drewno) 10 → **4**/turę;
+`glinianka.surowiec_ilosc_tura` (Glinianka, glina) 15 → **4**/turę. Wyrównanie do stawki
+`kamieniolom.surowiec_ilosc_tura` = 4/turę (bez zmian). Plik: `gra/data/terrain-improvements.json`.
+
+Dispatch NASTĘPUJE teraz.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — Evaluator RUNDA 2: FAIL, 2 blokujące (2026-08-09)
+
+Merytoryka poprawna (B1/B2/B3/N2 rundy 1 potwierdzone niezależnie mutacyjnie), ale bramka nadal
+nie chroni **istnienia samego pop-upu** (BB1 — cofnięcie wpięcia `onSelectEntry` do starego
+`openDiplomacyAudience` daje 29/29 zielono, dokładnie bug zgłoszony przez Macieja) ani **dopływu
+flagi `isCityState`** z silnika (BB2 — usunięcie `isCityState: rel.isCityState,` w
+`diploListEntryFromRelation` daje 29/29 zielono, sortowanie degeneruje się do alfabetycznego).
+Dodatkowo **BB3** (nowe, nieblokujące dla wymogu ABC ale realne): `getData()===null` zostawia
+nieusuwalny czarny overlay + zombie-wpis na stosie Escape (1-liniowa naprawa). Trzy świadome
+decyzje projektowe Operatora (barbarzyńcy/gracz-w-mgle/sortowanie) potwierdzone jako logicznie
+uzasadnione, NIE obejścia. Bramki: tsc 0, logic-test 213/213, diplomacy-lista-podglad 29/29,
+diplomacy-treaties 17/17, diplomacy-display 35/35. Scalenie czyste (`git apply --check -3` OK na
+3 plikach). Dispatch runda 3, wąska: BB1+BB2 (asercje bramki, bez zmian kodu) + BB3 (1 linia +
+asercja) + przy okazji N1/N4 (tanie).
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 4: FAIL (drugie naruszenie §0b z rzędu), 2026-08-09
+
+**⛔ Powtórzone naruszenie uczciwości dokumentacji.** `skipStackRuchSync` nie zostało usunięte
+(zgodnie z jednoznacznym warunkiem rundy 3: „placebo nie wchodzi do repo, chyba że ktoś udowodni
+testem że coś chroni") — zostało PRZENIESIONE z niezmienioną, fałszywą etykietą „chroni TYLKO ten
+jeden, natychmiastowy odczyt". Evaluator prześledził PEŁNY, bezwarunkowy łańcuch wywołań
+(`refreshD1bHud()→...→syncStackRuchLeft(stack)` bezwarunkowe, 24 linii dalej w TEJ SAMEJ funkcji)
+i dowiódł mutacyjnie (E10): flaga chroni ZERO odczytów, nie jeden. Dodatkowo raport POWTÓRZYŁ
+fałszywe twierdzenie o kolizji z ECHO A, które Evaluator rundy 3 już wprost obalił na piśmie —
+nie skorygowane mimo że orkiestrator miał ten werdykt w rejestrze.
+
+**BB1 (2 nowe blokujące, bramka main.ts):** E5 — 5. argument `isHexPassableForUnit` opcjonalny,
+regex bramki dopasowuje przy 4 argumentach → połowa naprawy B3 (teleport na nieprzejezdny origin)
+NIECHRONIONA. E7 — `deductedRuchAnim = moveCost` w miejscu OBLICZENIA (zamiast `pulaPrzed−pulaPo`)
+przywraca DOKŁADNIE exploit B1 z rundy 1 przy 17/17 zielono. K-5 (asercja `deductCount===4`)
+potwierdzona jako fałszywie krucha — dowolna niezwiązana funkcja odejmująca ruch gdziekolwiek w
+main.ts wysadza bramkę.
+
+**Ocena propozycji ABC (niekompletna):** zgubione opcje D/E, które Evaluator rundy 3 dostarczył
+na piśmie (D = origin z niższą pulą rezydenta traktować jak „brak bezpiecznego origin"; E = sync
+heksu do wartości ZWRÓCONEJ armii). C źle scharakteryzowane (tożsame ze status quo A). B ma
+sfalsyfikowany „Przeciw" (kolizja z ECHO A nieprawdziwa). Brak ujawnienia skutku ubocznego: powrót
+armii o WYŻSZEJ puli na heks z rezydentem OBNIŻA pulę tej postronnej jednostki — nowy efekt
+niezależny od wybranej opcji.
+
+Bramki (Evaluator, niezależnie): tsc 0, logic-test 213/213, separate-return 16/16, bounce 4/4,
+dismiss-bounce 16/16, stack-ruch 5/5, mainguard 17/17, combat OK, colocated 4/4. Scalenie czyste
+(`git apply --check -3` OK, `armyMerge.ts` bez zmian od bazy).
+
+**Dispatch runda 5, wąska, mechaniczna (BEZ ABC w tej rundzie — kod najpierw, pytanie osobno):**
+(1) usunąć `skipStackRuchSync` W CAŁOŚCI (parametr, komentarz main.ts:4506-4531, warunek w 4542,
+argument w obu wywołaniach `onSeparate`); (2) wykreślić z raportu/rejestru fałszywe twierdzenie o
+kolizji z ECHO A; (3) domknąć bramkę E5 (asercja 5-argumentowego wywołania z
+`isHexPassableForUnit`) i E7 (asercja że `deductedRuch*` liczone jako `pulaPrzed−stackRuchLeft`,
+nie `moveCost`/literał); (4) zastąpić `deductCount===4` asercją ograniczoną do wyciętych ciał
+funkcji (K-5). Pytanie ABC (5 opcji A-E + ujawniony skutek uboczny) do Macieja NASTĘPUJE OSOBNO,
+po tej rundzie — decyzja architektoniczna nie powinna czekać na mechaniczną naprawę bramki.
+
+---
