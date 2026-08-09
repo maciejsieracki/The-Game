@@ -4538,6 +4538,54 @@ zastosował zmianę chirurgicznie przez Edit na aktualnym pliku, plus bezpieczny
 testowego (czysty append, kotwice zweryfikowane identyczne przed zastosowaniem). Bramki na scalonym
 stanie: `tsc` 0 błędów · `logic-test` 213/213 · `diplomacy-proposal-test.cjs` **187/187** (184
 zweryfikowane przez Evaluatora + 3 pre-istniejące testy tech-za-tech z akcji-6, oba zestawy
-zachowane). Diff ograniczony do 2 plików, +130/−4 linii, zero przypadkowych zmian. Czeka na
-niezależną weryfikację (§0b — orkiestrator nie jest zwolniony z pętli mimo że dwukrotnie
-zweryfikowana treść).
+zachowane). Diff ograniczony do 2 plików, +130/−4 linii, zero przypadkowych zmian. **SCALONE**
+`872c1e0d` po własnej weryfikacji orkiestratora (druga runda Evaluatora dała PASS wcześniej na tej
+samej treści, przed odkryciem procesowym).
+
+---
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — SCALONE `872c1e0d` (2026-08-09)
+
+Evaluator potwierdzający dał PASS-WITH-NOTES (nota #4 = tylko literówka w komentarzu, poprawiona
+przy scaleniu). Ustalenie dodatkowe Evaluatora: przeniesienie kolejności **częściowo naprawia**
+`P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI` (ścieżka otwierania panelu) — kto podejmie tamten
+temat, zastanie objaw już nieobecny na tej ścieżce.
+
+## P-REKRUTACJA-NAZWY-ZNIKAJA — SCALONE `872c1e0d` (2026-08-09)
+
+Potwierdzone: NIE regresja z dzisiejszej sesji (zero zmian w dotkniętych plikach między
+zdeployowanym buildem `35a8b636` a HEAD sprzed naprawy). Przyczyna: defekt CSS flex-layout
+(kolumna kosztu `flex:none` wypychała kolumnę nazwy do zera przy szerszych chipach), obecny od
+2026-08-06. Naprawa: 2 linie CSS. Nowy test regresyjny 17/17.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — wymaga rozpoznania przed decyzją**
+
+**Cytat Macieja:** „powinien być [w] panelu miasta tryb ustawienia globalnego dla skarbu, dla
+jedzenia i dla produkcji. Po naciśnięciu przycisku tylko dla tego miasta powinien właśnie się
+robić wyjątek dla tego miasta, ale przy normalnym przesuwaniu wszystkie przyciski czy wskaźniki
+powinny zmieniać się dla całego państwa [...] dlatego że przy zakładaniu kolejnych miast potem to
+jest żmudne ustalanie za każdym razem nowego, domyślnego ustawienia dla całej cywilizacji."
+Druga, alternatywna propozycja tego samego mechanizmu: chipy Skarbiec/Praca/Spichlerz(/Nauka) na
+głównym HUD mapy (zrzut: „Skarbiec 316 +14 · Praca 12 +62 · Spichlerz 164 +29 · Nauka 87 +76") jako
+miejsce ustawiania wartości GLOBALNEJ, z osobnym przyciskiem „lokalnie" do nadpisania per miasto,
+bez wpływu globalnych na już-lokalnie-nadpisane miasta. Ma obejmować też Naukę.
+
+**Nie inicjuję jeszcze implementacji ani ABC** — nie wiem dokładnie, do jakiego DZISIEJSZEGO
+mechanizmu w grze się to odnosi (priorytet Praca/Żywność per miasto? coś związanego z „Auto-
+zarządzaj"? inny suwak?). Dispatchuję czyste rozpoznanie (Explore/Sonnet 5, bez kodowania) —
+dopiero po zebraniu faktów przedstawię ewentualne warianty do decyzji.
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga ABC**
+
+**Cytat Macieja:** „Cywilizacja nie może przejść do następnego etapu, jeżeli nie stworzy cudu,
+który jest jej przypisany w danej epoce. Czyli żeby przejść na przykład do brązu, musi wybudować
+cud, który odpowiada [...] cywilizacji w kamieniu. Jeżeli w jakiejś epoce nie ma swojego cudu, to
+nie ma tego warunku." Nowa reguła: awans do kolejnej epoki wymaga zbudowania cywilizacyjnego cudu
+przypisanego do BIEŻĄCEJ epoki (jeśli taki cud istnieje dla danej cywilizacji w tej epoce — jeśli
+nie istnieje, warunek nie obowiązuje). To realna zmiana zasad gry (twardy gate na awans epoki),
+nie naprawa błędu — wymaga pełnej formy ABC przed kodowaniem (wpływ na balans, AI musi też to
+respektować — parytet gracz/AI). Do zrobienia: rozpoznanie ile cywilizacji ma dziś przypisane
+cuda per epoka (czy każda ma dokładnie jeden, czy są luki), jak dziś działa mechanizm awansu epoki,
+zanim przedstawię ABC.

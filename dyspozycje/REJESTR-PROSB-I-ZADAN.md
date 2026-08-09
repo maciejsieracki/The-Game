@@ -1979,3 +1979,18 @@ regresja z DZISIEJSZEJ pracy (żaden z dzisiejszych zarejestrowanych tematów ni
 units.json/production.ts/unitRecruitCard.ts wprost — sprawdzić `git log` na te pliki) czy
 pre-istniejący błąd dopiero teraz zauważony; (3) naprawić. PILNE — zgłoszone z aktywnego niepokoju
 właściciela o regresję.
+
+**SCALONE `872c1e0d`** — potwierdzone: NIE regresja z dzisiejszej sesji (zero zmian w dotkniętych
+plikach między zdeployowanym buildem a HEAD). Przyczyna: defekt CSS flex-layout od 2026-08-06.
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — SCALONE `872c1e0d` (2026-08-09)
+Dwukrotnie zweryfikowane przez Evaluatora. Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — OTWARTE, rozpoznanie w toku (2026-08-09)
+Globalne ustawienie Skarbiec/Praca/Spichlerz/Nauka per cywilizacja z opcją nadpisania lokalnie per
+miasto — żeby nie trzeba było ustawiać każdego nowego miasta od zera. Pełna treść w
+`PYTANIA-OTWARTE.md`. Dispatch rozpoznania (Explore, bez kodowania).
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — OTWARTE, wymaga ABC (2026-08-09)
+Nowa reguła: awans epoki wymaga zbudowania cudu przypisanego cywilizacji w bieżącej epoce (jeśli
+taki cud istnieje). Pełna treść w `PYTANIA-OTWARTE.md`. Dispatch rozpoznania przed ABC.
