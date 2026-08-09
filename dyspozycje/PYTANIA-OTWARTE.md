@@ -4894,7 +4894,16 @@ się) i sprawdzić czy przenosi surowce (skarbiec/zapasy) zwycięzcy; (b) sprawd
 własną pulę surowców do przejęcia, czy to inny model niż pełne cywilizacje. Odpowiedzieć faktami
 z kodu, bez zgadywania.
 
-## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą, rozpoznanie w toku**
+
+**⛔ Dopisek Macieja po kolejnej turze (obserwacja, nie nowe zgłoszenie):** „widzę, że wyrównuję
+stan surowców do liczby 1000" — kolejny zrzut pokazuje Drewno **975/1000** (+123, NIE przekracza) i
+Glina **1000/1000 PEŁNY** (+84, dokładnie na granicy, nie ponad nią). Czyli objaw NIE jest stały —
+czasem wartość zostaje sprowadzona z powrotem do 1000 (lub poniżej), a czasem (jak w pierwszym
+zrzucie: 1298/1000, 1086/1000) widocznie go przekracza. Sugeruje to, że klamrowanie do capu
+DZIEJE SIĘ w jakimś momencie (np. na starcie kolejnej tury), ale w MIĘDZYCZASIE (w trakcie tej samej
+tury, po doliczeniu przychodu z budynków) wartość może chwilowo przekroczyć limit zanim zostanie
+przycięta — do potwierdzenia przez Explore, nie zgadywać którego dokładnie momentu to dotyczy.
 
 **Cytat Macieja:** „odkłada mi się więcej gliny i drewna niż mam magazyn." Zrzut panelu
 „MAGAZYNOWANE": Drewno **1298/1000** (+114/turę) oznaczone „PEŁNY", Glina **1086/1000** (+76/turę)
