@@ -3009,7 +3009,13 @@ przez `git apply --check -3` bez konfliktu.
 `gra/tools/diplomacy-tech-trade-test.cjs`.
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A — RUNDA 1 (dwukierunkowy handel) Evaluator FAIL, runda 2 dispatched + nowe pytanie ABC w toku** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A (x2) — RUNDA 1 Evaluator FAIL, runda 2 w toku z ROZSZERZONYM zakresem (tech-za-tech)** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
+
+**Pytanie ABC o zakres B3 (2026-08-09) — MACIEJ ODPOWIEDZIAŁ: A** (via AskUserQuestion) —
+„Rozszerzyć teraz o tech-za-tech": runda 2 ma dołożyć wymianę technologia-za-technologię RAZEM
+z naprawą exploita B1/B2, nie odkładać jej na osobne zgłoszenie. Orkiestrator rekomendował B
+(najpierw exploit, wymiana osobno) — Maciej wybrał A, decyzja wiążąca, praca w toku dostała
+korektę zakresu (patrz niżej).
 `gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" gdy `sellableTechCount === 0` —
 liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr (`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`)
 zmniejsza listę „dostaje" u odbiorcy, ale to lista „daję" u nadawcy decyduje o blokadzie.
