@@ -7227,3 +7227,26 @@ worktree — to trzeci raz gdy ten temat wisi niescalony, dwa poprzednie skończ
 Dispatch runda 3 (wąska, wyłącznie testy) NASTĘPUJE teraz.
 
 ---
+
+## R-BUDYNEK-PORTOWY — konsolidacja: druga niezależna ocena potwierdza te same luki (2026-08-09/10)
+
+Agent oryginalnego Evaluatora rundy 1 (`a315e180c5d1bbbfd`) zameldował się powtórnie z dodatkową
+analizą: porównał zgubiony test rundy 1 (286 linii, nigdy niescommitowany, bezpowrotnie stracony
+w incydencie) z testem rundy 2 (358 linii, ocalony) i wykrył że runda 2 **zamieniła** pokrycie
+zamiast je rozszerzyć — zyskała piny M4/M5/M11/M17 (ctx „Zastąp", wpięcie bonusu), ale **zgubiła**
+M13 (parytet AI w `isBuildAllowed` — DOKŁADNIE to samo co B2 z pełnej re-weryfikacji Evaluatora
+`aac04a79b95efcd21`) i M8/M9/M10 (bonus liczony od 1. trasy, brak filtra `medium`/`status` —
+DOKŁADNIE ten sam obszar co B1 tamtej oceny). Dwie niezależne ścieżki oceny zbiegają się w tych
+samych lukach — mocny sygnał że runda 3 (już w dispatchu, `a6fb470d3a3c88349`) obejmuje właściwy
+zakres.
+
+Agent dodatkowo przygotował gotowy, zweryfikowany pakiet odzyskujący (`scratchpad/wt-recover`,
+patch `naval.patch`, 32/32 na aktualnym HEAD) jako rezerwową ścieżkę, gdyby runda 3 nie
+wystarczyła — do wykorzystania tylko w razie potrzeby, priorytet ma dokończenie rundy 3 w toku.
+
+Uwaga procesowa (do playbooka): agresywne środowisko współdzielone — inny agent nadpisał ścieżkę
+logu tego Evaluatora, worktree Operatora zniknął w trakcie oceny. Rekomendacja: unikalne nazwy
+plików logów per zlecenie w scratchpadzie (ten sam wniosek co z incydentu R-EPOKA-CUD wcześniej
+tej nocy — trzecie niezależne potwierdzenie tego samego problemu).
+
+---
