@@ -2525,14 +2525,38 @@ niepilne (dług testowy o niskim ryzyku, nie luka w realnej logice gry).
 **Kotwice:** `gra/src/main.ts` (`combatPowerFullDisplayDefFor`), `gra/tools/mur-paradoks-test.cjs`.
 **Model:** Sonnet 5.
 
-## P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA (2026-08-09, nota Evaluatora P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA) · STATUS: **OTWARTE — bardzo niepilne, dług testowy**
-`mur-paradoks-test.cjs` sprawdza „brak skalowania pól Ataku" przez czarną listę nazw helperów
-(`scaleField`) zamiast białej listy dozwolonych kluczy w bloku `return`. Konwencja całego pliku
-(dotyczy też starszych asercji dla `combatPowerScaledDefFor`/`sumArmyMForOwnerEffective`), nie
-coś nowego. Evaluator dowiódł mutacyjnie że nowy helper o innej nazwie albo inline skalowanie
-przechodzi niewykryte. Naprawa: przepisać na białą listę kluczy zamiast czarnej listy nazw.
+## P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA — ZAMKNIĘTE 2026-08-09
+`mur-paradoks-test.cjs` sprawdzał „brak skalowania pól Ataku" w `combatPowerFullDisplayDefFor`
+przez czarną listę nazw helperów (`scaleField`) — skalowanie tego samego pola przez INNY helper
+albo inline mnożenie przechodziło niewykryte.
+
+**Naprawa:** nowy mechanizm parsuje prawdziwy blok `return {...}` z ciała funkcji i dla każdej
+linii `klucz: wartość` rozpoznaje skalowanie PO KSZTAŁCIE prawej strony (`SCALING_SHAPE_RE` —
+dowolne wywołanie funkcji LUB mnożenie), nie po nazwie konkretnego helpera. Każdy tak wykryty
+klucz musi być w `ALLOWED_SCALED_KEYS = ['meleeDefence','armor','health']` — prawdziwa biała
+lista. Zawężenie zakresu (tylko ta jedna asercja, nie pozostałe dwie w pliku) zweryfikowane przez
+Operatora czytaniem całych ciał `combatPowerScaledDefFor`/`sumArmyMForOwnerEffective` — żadna nie
+buduje `return {...}` ze skalowanymi polami w tym kształcie.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: zawężenie zakresu potwierdzone niezależnie (przeczytane
+całe ciała obu funkcji). 8 mutacji własnych (2 powtórzone Operatora + 6 nowych) — złapane: nowy
+helper, inline mnożenie, usunięcie skalowania, refaktor na `Object.assign`. Świeżość worktree:
+`git rev-list --count` do `origin/main`/`main` = 0 w obie strony, scalenie bezkonfliktowe.
+Zmierzone: `mur-paradoks-test.cjs` 29/29, `city-defense-terrain-gate-test.cjs` 34/34,
+`combat-test.cjs` 6/6, `logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+
+**Trzy noty Evaluatora (nie blokują, nie wymagają osobnych zgłoszeń — udokumentowane tutaj):**
+(1) luka realna, ale wydumana — skalowanie przez zmienną pośrednią (`const s = scaleField(x);
+return {meleeAttack: s}`) omija regex badający tylko prawą stronę dwukropka; materialność niska,
+naturalny zapis regresji (`meleeAttack: scaleField(...)`) jest łapany; (2) nowy mechanizm nie
+jest ścisłym nadzbiorem starego — gołe przypisanie referencji funkcji (`meleeAttack: scaleField,`
+bez wywołania) było łapane przez starą czarną listę, nie jest przez nową białą (przypadek
+wydumany, inna klasa błędu — korupcja pola, nie skalowanie); (3) sąsiad bez pokrycia poza
+zakresem: `fortifyFieldScaledDefFor` (`main.ts:18078`) ma identyczny kształt `return {...
+meleeDefence: ...}` bez żadnego testu pinującego źródło — kandydat na osobne zgłoszenie, jeśli
+temat zostanie kiedyś podjęty.
 **Kotwice:** `gra/tools/mur-paradoks-test.cjs`.
-**Model:** Sonnet 5.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
 ## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **ZASTĄPIONE — `R-MOC-TABLICZKA-VS-CIVPOWER-Q1` (2026-08-09)**
 Po częściowym cofnięciu `R-MOC-MUR-PARADOKS-Q1=A` (decyzja `R-MOC-DEFINICJA-Q1`, tabliczka

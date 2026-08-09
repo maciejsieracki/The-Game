@@ -445,17 +445,54 @@ if (combatPowerFullDisplayDefForMatch) {
       '(ta sama ADDYTYWNA formula co effectiveDefenderM, galaz isCity) -- lapie regresje/wyzerowanie bonusu struktury w PODGLADZIE tabliczki, ' +
       'ktorej sekcje 1-4 wyzej NIE lapia (wlasna reimplementacja w JS)',
   );
+  // P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA (Evaluator, dowod mutacyjny): sprawdzanie
+  // BRAKU konkretnego literalu "<pole>: scaleField" (czarna lista NAZWY helpera)
+  // przepuszcza NIEWYKRYTE skalowanie pola Ataku przez INNY helper (np.
+  // "meleeAttack: scaleAtk(...)") albo inline ("meleeAttack: (rest.meleeAttack as
+  // number) * mult") -- zaden z tych wariantow nie zawiera literalu "scaleField".
+  // BIALA LISTA nizej odczytuje NAPRAWDE blok `return { ... }` funkcji PODGLADU i
+  // dla KAZDEJ linii postaci `klucz: wartosc` (pomijajac `...rest,` spread)
+  // rozpoznaje "skalowanie" PO KSZTALCIE wartosci (DOWOLNE wywolanie funkcji
+  // `identyfikator(` LUB mnozenie `*` po prawej stronie dwukropka), NIE po
+  // nazwie konkretnego helpera -- lapie kazda forme skalowania, niezaleznie od
+  // tego jak sie nazywa czy czy jest inline.
+  const returnBlockMatch = body.match(/return \{([\s\S]*?)\};/);
   assert(
-    /meleeDefence: scaleField\(rest\.meleeDefence\),/.test(body) &&
-      /armor: scaleField\(rest\.armor\),/.test(body) &&
-      /health: scaleField\(rest\.health\),/.test(body),
-    'combatPowerFullDisplayDefFor() stosuje mult (1 + combinedDefPct / 100) na meleeDefence/armor/health -- skladowe Obrony w fieldPower()',
+    !!returnBlockMatch,
+    'combatPowerFullDisplayDefFor() ma blok return { ... } (obiekt wynikowy funkcji PODGLADU) do przeanalizowania',
   );
-  assert(
-    !/meleeAttack: scaleField|weaponDamage: scaleField|piercing: scaleField|chargeBonus: scaleField|missileAttack: scaleField/.test(body),
-    'combatPowerFullDisplayDefFor() NIE skaluje zadnego pola Ataku (meleeAttack/weaponDamage/piercing/chargeBonus/missileAttack) -- ' +
-      'mur/struktura "nie chroni" skladowej ofensywnej, ta sama zasada co effectiveDefenderM',
-  );
+  if (returnBlockMatch) {
+    const ALLOWED_SCALED_KEYS = ['meleeDefence', 'armor', 'health'];
+    const propLineRe = /^([A-Za-z_$][\w$]*)\s*:\s*(.+?),?\s*$/;
+    // "skalowanie" = wywolanie DOWOLNEJ funkcji (identyfikator + otwierajacy
+    // nawias, np. scaleField(...)/scaleAtk(...)/cokolwiekInnego(...)) LUB
+    // mnozenie (*) po prawej stronie dwukropka -- lapie tez inline
+    // "(rest.x as number) * mult", ktore nie ma wywolania funkcji w ogole.
+    const SCALING_SHAPE_RE = /[A-Za-z_$][\w$]*\s*\(|\*/;
+    const scaledKeysFound = [];
+    const disallowedScaledLines = [];
+    for (const rawLine of returnBlockMatch[1].split('\n')) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('...')) continue; // pomin spread (`...rest,`)
+      const m = line.match(propLineRe);
+      if (!m) continue;
+      const [, key, value] = m;
+      if (!SCALING_SHAPE_RE.test(value)) continue; // pole przepisane bez zmian, nie "skalowanie"
+      scaledKeysFound.push(key);
+      if (!ALLOWED_SCALED_KEYS.includes(key)) disallowedScaledLines.push(line);
+    }
+    assert(
+      disallowedScaledLines.length === 0,
+      'combatPowerFullDisplayDefFor(): BIALA LISTA -- w return{} skalowane (wywolaniem funkcji LUB mnozeniem, ' +
+        'dowolna nazwa helpera) jest WYLACZNIE ' + ALLOWED_SCALED_KEYS.join('/') + ' (skladowe Obrony w fieldPower()) -- ' +
+        'znaleziono niedozwolone skalowanie: ' + JSON.stringify(disallowedScaledLines),
+    );
+    assert(
+      ALLOWED_SCALED_KEYS.every(k => scaledKeysFound.includes(k)),
+      'combatPowerFullDisplayDefFor() stosuje mult (1 + combinedDefPct / 100) na meleeDefence/armor/health -- skladowe Obrony w fieldPower() (' +
+        'znalezione skalowane pola: ' + scaledKeysFound.join(', ') + ')',
+    );
+  }
 }
 
 console.log('');
