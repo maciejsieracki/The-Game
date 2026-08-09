@@ -2148,12 +2148,36 @@ C-026 tamtego zgłoszenia.
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`buildTopBarZywnoscDetailCard`, linie ~4839, ~4841).
 **Model:** Sonnet 5.
 
-## P-BRAMKA-SPICHLERZ-WIDOCZNOSC-CZERWONA (2026-08-09, znalezisko Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — pre-istniejące, niezwiązane, do rejestru**
-`spichlerz-widocznosc-test.cjs` — 13 pass / 14 fail. Potwierdzone identyczne na czystym `main`
-sprzed jakichkolwiek zmian tej sesji (nie regresja). Nie był dotąd na liście znanych czerwonych
-bramek w `CLAUDE.md` — do dopisania przy najbliższej aktualizacji.
+## P-BRAMKA-SPICHLERZ-WIDOCZNOSC-CZERWONA — ZAMKNIĘTE 2026-08-09 (test przestarzały, silnik poprawny — NIE dopisywać do listy czerwonych bramek CLAUDE.md)
+`spichlerz-widocznosc-test.cjs` — 13 pass / 14 fail. Diagnoza Operatora: test NIE odzwierciedlał
+dwóch późniejszych decyzji produktowych — `DOSTEP-SUROWCE-Q1` (2026-07-29, bramka etykiety
+złoża wymaga `empireStock[klucz] > 0`, nie samej technologii) i `R-STAWKI`/`R-NADMIAR-POOLS` FALA2
+(`R_STAWKI_FALA2_MULT = 2`, mnożnik kosztów surowcowych budynków). Silnik jest poprawny, test był
+z tyłu za dwiema zmianami danych.
+
+**Naprawa:** test przepisany całkowicie (44/0, ręcznie przeliczone wszystkie 8 wartości
+`koszt_surowce × 2`). Kod produkcyjny nietknięty.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: diagnoza zweryfikowana niezależnie z dokumentu decyzji
+(`docs/decyzje/DOSTEP-SUROWCE-Q1.md`, sekcja „Pliki wdrożenia" nie wymienia tego testu — niezależne
+wyjaśnienie dlaczego akurat on został z tyłu), nie tylko ze słów Operatora. Wszystkie 8 przeliczeń
+sprawdzone ręcznie, zgadzają się co do jednostki. Jedna nota istotna: pierwotny dowód mutacyjny
+`R_STAWKI_FALA2_MULT` pinował mnożnik tylko „z góry" (cofnięcie 2→1 zostawiało test zielony,
+mimo że `r-stawki-strojenie.ts` explicite przewiduje taki powrót po playteście: „ustaw 1 aby
+cofnąć") — **domknięte przy scaleniu**: dodana asercja graniczna (`drewno:15`, poniżej progu
+×2=16, musi zostać `locked`) — zweryfikowana osobiście przez orkiestratora: mutacja MULT 2→1 daje
+44 pass/1 fail (łapie), przywrócone → 45/0.
+Zmierzone: `spichlerz-widocznosc-test.cjs` 45/45, `deposit-building-gate-test.cjs` 47/47,
+`tech-tree-test.cjs` 19/19, `research-test.cjs` 33/33, `logic-test.cjs` 213/213, `tsc --noEmit`
+0 błędów.
+
+**Dwie drobne pre-istniejące luki (Evaluator, poza zakresem, nie wymagają osobnych zgłoszeń):**
+`spichlerz_ii: ['Sól']` w `DEPOSIT_LINKED_BUILDING_LABELS` nie jest pokryty testem (stary test
+też go nie miał); `map-gen-regression-test.cjs` nie zmieścił się w budżecie czasu Evaluatora — nie
+uruchomiony do końca, ale logicznie niedotknięty (commit zmienia wyłącznie ten jeden plik testowy,
+zero importów gdzie indziej).
 **Kotwice:** `gra/tools/spichlerz-widocznosc-test.cjs`.
-**Model:** Sonnet 5.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
 
 ## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C`)
 **Jego słowa:** *„jakieś niezautoryzowane niby przemarsze, których ja nie widzę, bo ja nie widzę,
