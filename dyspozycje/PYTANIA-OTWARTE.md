@@ -4453,18 +4453,29 @@ przełącznika bez danych za nim (zgodnie z zakazem martwego UI, CLAUDE.md). Pyt
 żebym teraz dodała tę trzecią kategorię (wymaga nowego typu zdarzenia w silniku dla wojen/pokoi
 AI↔AI), czy zostaje odłożone.
 
-## R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY — zaimplementowane, 1 pytanie otwarte (2026-08-09)
+## R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY — zaimplementowane w worktree, jeszcze NIE scalone do gałęzi (2026-08-09)
 
-Kolor Zulusów zmieniony `#2E7D32` (ciemna zieleń) → `#C8E838` (limonka/chartreuse), zmierzony
-naukowo (kontrast CIE-Lab dE76 względem 18 odcieni terenu): najgorszy przypadek 4,6→23,5 (5,1×
-lepiej). Nowa asercja regresyjna w `civ-visual-test.cjs` (próg dE76≥20), dowód negatywny wykonany
-(przywrócenie starego koloru zapala test czerwonym).
+**⛔ KOREKTA LICZB (2026-08-09, niezależna weryfikacja Evaluatora Opus 5 — pierwotny meldunek
+Operatora zawierał błędy):** Kolor Zulusów zmieniony `#2E7D32` (ciemna zieleń) → `#C8E838`
+(limonka/chartreuse), kontrast liczony metryką CIE-Lab dE76 względem odcieni terenu: najgorszy
+przypadek dla Zulusów 4,6→23,5 (5,1× lepiej). **Poprawka framingu:** próg dE76≥20 użyty w teście
+regresyjnym jest **dobrany empirycznie**, nie „zmierzony naukowo" — próg JND (granica ledwo
+zauważalnej różnicy) to ok. 2,3 dE76, próg 20 to świadomy zapas bezpieczeństwa, nie standard
+naukowy. **Poprawka zakresu:** „pozostałe 13 cywilizacji bezpieczne (≥23,4)" dotyczy tylko
+**podzbioru odcieni zieleni** użytych w teście — na pełnej palecie terenu (pustynia/piasek/góry/
+biegun/morze/mury) Babilonia/Germanie/Asyria spadają do 16,5–18,6, czyli poniżej progu 20. Fix
+Zulusów samych w sobie stoi, ale test nie sprawdza pełnego terenu dla WSZYSTKICH cywilizacji.
+Fix i test siedzą dziś wyłącznie w worktree `agent-ae0ba1d148fe9acf8` (baza `b137332a`) —
+**nie scalone** do bieżącej gałęzi roboczej; wymaga standardowej procedury bezpiecznego scalenia
+(`git merge-base --is-ancestor`) przed commitem na aktualnej gałęzi.
 
 **⛔ Znalezisko przy okazji, ten sam problem u innej cywilizacji:** Celtowie `#3D6B35` mają
-najgorszy przypadek dE76 = **6,4** — GORZEJ niż Zulusi przed poprawką. Pozostałe 13 cywilizacji
-bezpieczne (≥23,4). Operator świadomie NIE ruszył Celtów — kolor tożsamościowy, wymaga tej samej
-rozmowy co Zulusi. Pytanie: chcesz żebym teraz też poprawiła kolor Celtów (ta sama metoda), czy
-najpierw zobaczysz Zulusów w grze?
+najgorszy przypadek dE76 = **~3,3** (poprawiona liczba — pierwotny meldunek Operatora podawał
+błędnie 6,4, obalone niezależną implementacją Lab przez Evaluatora ORAZ uruchomieniem kodu
+Operatora na kolorze Celtów) — mimo korekty liczby, wniosek pozostaje ten sam: to GORZEJ niż
+Zulusi przed poprawką i poniżej progu JND. Operator świadomie NIE ruszył Celtów — kolor
+tożsamościowy, wymaga tej samej rozmowy co Zulusi. Pytanie: chcesz żebym teraz też poprawiła kolor
+Celtów (ta sama metoda), czy najpierw zobaczysz Zulusów w grze?
 
 ---
 
@@ -4653,3 +4664,124 @@ tury" obok poprawnie nazwanego `war-*` — ten sam kod ma już wzorzec unikania 
 **Proces:** ten wpis miał zły format nagłówka (nie łapał go grep z CLAUDE.md §0c) — poprawiony.
 
 Dispatch domknięcia N1+N2 przed scaleniem.
+
+---
+
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — koryguje dopiero co zatwierdzoną R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, dispatch Sonnet 5**
+
+**⛔ To zgłoszenie PODWAŻA decyzję zatwierdzoną chwilę wcześniej dziś** (`R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO`, Evaluator PASS-WITH-NOTES powyżej, jeszcze NIE scalona do gałęzi) — zgodnie z CLAUDE.md §1a
+oznaczam to wprost. Agent `a35d817d715b1b210`, który dokańczał N1/N2 tamtej naprawy, został
+zatrzymany w trakcie — zdążył tylko zameldować, jakie pola danych w silniku są do ponownego użycia
+(patrz niżej), nic więcej z jego pracy się nie liczy.
+
+**Cytat Macieja (dosłowny, koryguje własną wcześniejszą prośbę z tego samego dnia):** „duża liczba
+to powinno być ile dochodzi w tym mieście, a mała liczba ile w całej cywilizacji [...] z jednej
+strony jest to ok, może tak zostać, ale nadal brakuje informacji o całej cywilizacji — ile
+zeskładowanej sumy surowców [jest w całej cywilizacji] dałbym w nawiasie poniżej małej liczby,
+poniżej tego plusa [...] inny kolor, na przykład złoty."
+
+**Nowy, docelowy układ trzech elementów w chipie karty miasta (zastępuje układ z poprzedniej
+decyzji, NIE dodaje się do niego):**
+1. **Duża liczba** = tempo TEGO miasta (przyrost/turę wkładu tego konkretnego miasta) — to jest
+   dokładnie to, co dziś liczy `w3CityChip` jako „mała liczba (+N)" w aktualnym (niescalonym) kodzie.
+2. **Mała liczba (+N)** = tempo CAŁEJ cywilizacji (suma wszystkich miast) — to jest dokładnie to,
+   co dziś liczy `w3CityChip` jako „dużą liczbę" (`civWideSixStatsFromEmpireSnap`) — czyli #1 i #2
+   to w istocie ZAMIANA MIEJSC wielkości dużej i małej liczby względem tego, co jest dziś w kodzie
+   (i względem tego, co właśnie miała zrobić `R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO` — ta praca się
+   nie liczy, patrz wyżej).
+3. **NOWY, trzeci element** — w nawiasie, w osobnym kolorze (propozycja: złoty), pod małą liczbą:
+   realny ZAPAS całej cywilizacji (ta sama wielkość co dziś na głównym HUD mapy — skarbiec/magazyn/
+   nauka nagromadzona), czyli dokładnie to co próbowała pokazać jako „dużą liczbę"
+   `R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO` (ale tam bez wyróżnienia kolorem i bez nawiasu).
+
+**Zastrzeżenie N3 z poprzedniej naprawy (Praca/Żywność: mała liczba miasta ≠ realny wkład do puli
+imperium) NADAL obowiązuje** i przenosi się na nowy układ 1:1 — dotyczy teraz elementu #1 (duża
+liczba, dawniej małej). Nie zgadywać, przenieść ostrzeżenie do implementacji.
+
+**Źródła danych już potwierdzone (przez zatrzymanego agenta `a35d817d715b1b210`, do ponownego
+użycia, nie trzeba odkrywać na nowo):** zapas cywilizacji (element #3) — `EmpireHudSnap.pracaPool` /
+`zywnoscReserve` / `zloto` / `nauka` / `kultura` / `religionStock`; tempo (elementy #1 i #2) —
+istniejące pola `*Rate`.
+
+**Odłożone na później, tylko zarejestrowane (P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC niżej) —
+NIE robić teraz.**
+
+## P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC (2026-08-09, uwaga Macieja przy R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY) · STATUS: **OTWARTE — niepilne, „temat na później" (cytat Macieja)**
+
+Maciej zwrócił uwagę, że trzeba ujednolicić zasady kolorów prezentacji surowców między panelem
+miasta a głównym HUD-em mapy świata — dziś różne miejsca używają różnych konwencji kolorystycznych
+dla tych samych sześciu surowców (Praca/Żywność/Skarbiec/Nauka/Kultura/Religia). Jego słowa: „to
+jest temat na później" — świadomie nie inicjuję ABC ani implementacji, tylko rejestruję, żeby nie
+zgubić.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+
+**Cytat Macieja:** „gdy armią najechałem na miejsce innej jednostki jest przycisk połącz lub zostaw
+osobno. W momencie, gdy dałem zostaw osobno, to wszystkie jednostki rozpierzchły się na wszystkie
+strony i cała armia się rozsypała. A to powinno mówić o tym, że wtedy jest armia oraz dana jednostka
+w tym samym hexie. Po prostu można wybrać, którą chce się funkcjonować [użyć] i kierować i powinny
+mieć możliwość bycia na jednym hexie."
+
+**Oczekiwane zachowanie:** wybór „zostaw osobno" powinien pozwolić, żeby armia (stack) ORAZ
+pojedyncza jednostka współistniały na tym samym heksie jako dwa odrębne, wybieralne cele — gracz
+przełącza się między nimi, żadna nie jest wypychana. **Obserwowane zachowanie:** cała armia (wiele
+jednostek w stacku) rozpada się i rozprasza na sąsiednie heksy, zamiast zostać na miejscu obok
+pojedynczej jednostki. Dispatch Explore (bez kodowania) — znaleźć logikę obsługi przycisku „zostaw
+osobno" (prawdopodobnie okolice army-merge / stack-split w `gra/src/game/**` lub `gra/src/ui/**`,
+por. istniejący wzorzec `army-merge-dismiss-bounce-test.cjs`) i ustalić czy to founded bug w logice
+rozstawienia po odrzuceniu połączenia, zanim przedstawię ABC/naprawę.
+
+## P-PANSTWO-MIASTO-ZNIKA-PO-NAJEZDZIE-BEZ-BITWY (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — WSTRZYMANE na prośbę Macieja, nie podejmować pracy**
+
+**⛔ Maciej wycofał zgłoszenie do czasu potwierdzenia (dosłowny cytat):** „Co do tego znikającego
+miasta? Na razie nic z tym nie rób. Możliwe że to była chatka ze skarbami i omyłkowo pomyślałem że
+to było miasto które znikło. Jak to [ponownie] się pojawi, to wtedy to zgłoszę do sprawdzenia
+ponownie." **Nie dispatchować Explore ani żadnej pracy na ten temat** — zostaje w rejestrze wyłącznie
+jako ślad, żeby nie zgubić kontekstu, gdyby wrócił z potwierdzeniem.
+
+**Cytat Macieja:** „będąc pod murami miasta oszczepnikiem jednostka państwa miasta zaatakowała albo
+chciała zaatakować tego oszczepnika. Ale zamiast Ataku po prostu wjechała na miejsce mojego
+oszczepnika i nie doszło do bitwy, ale z jakiegoś przyczyny znikło w ogóle miasto tego państwa
+miasta. Nie wiadomo dlaczego."
+
+**Obserwowana sekwencja:** (1) jednostka gracza (oszczepnik) stoi pod murami miasta-państwa; (2)
+jednostka miasta-państwa próbuje zaatakować, ale zamiast walki wchodzi na hex jednostki gracza
+(brak bitwy — sugeruje błąd w rozstrzyganiu kolizji ruch-kontra-atak, możliwe że silnik potraktował
+to jako ruch, nie atak, mimo zajętego heksa); (3) samo miasto-państwo **znika z mapy** bez
+wyjaśnienia. To jest poważniejsze niż kosmetyka — utrata bytu w świecie gry bez śladu przyczyny.
+Dispatch Explore (bez kodowania), priorytet wysoki: (a) sprawdzić logikę AI/silnika rozstrzygania
+ruch-vs-atak na zajęty heks pod murami miasta (czy jednostka miasta-państwa mogła „wejść" zamiast
+zaatakować — błąd walidacji kolizji); (b) sprawdzić czy istnieje ścieżka kodu, która usuwa miasto
+miasta-państwa jako efekt uboczny nieudanego/błędnego ataku (np. traktowanie ruchu na zajęty hex
+jako zdobycia miasta z jakimś warunkiem brzegowym, albo czyszczenie encji przy błędzie stanu).
+**WSTRZYMANE — patrz wycofanie zgłoszenia w nagłówku wyżej, nie dispatchować.**
+
+## P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga pilnego rozpoznania, potencjalna utrata możliwości cofnięcia się**
+
+**Cytat Macieja:** „coś też jest z zapisywaniem tur, mianowicie automatycznie miało się np.
+zapisywać 10 ostatnich tur, a widzę, że nie zapisują się, zapisuje się tylko i wyłącznie ostatnia.
+Co więcej widać po datach, że one nie następują po sobie, bo mamy 37. turę a dopiero 2200 rok przed
+naszą erą."
+
+**Dwa osobne objawy na zrzucie „Wczytaj grę":**
+1. **Rotacja autozapisu nie działa jak zaprojektowano** — lista pokazuje wiele wpisów „Autozapis",
+   ale wszystkie (poza jednym z „tura 3") mają identyczną „tura 2 · rok 3950 p.n.e." mimo różnych
+   znaczników czasu zapisu (13:56, 10:45, 09:54, 08:13, 08:13...) — wygląda jakby silnik zapisywał
+   wielokrotnie ten sam wczesny stan gry zamiast 10 KOLEJNYCH tur, albo jakby numer tury/rok w
+   zapisanym stanie nie aktualizował się poprawnie przy kolejnych autozapisach.
+2. **Niespójność tura↔rok** — na drugim zrzucie (ekran „Zakończ turę") widać „TURA 2? · 2200 P.N.E."
+   w grze, którą Maciej opisuje jako będącą na 37 turze — czyli albo licznik tury wyświetlany w HUD
+   nie zgadza się z rzeczywistym stanem, albo przeliczenie tura→rok kalendarzowy jest zepsute
+   (37 tur powinno dawać znacznie mniej ujemny rok niż 2200 p.n.e., zależnie od kalibracji, ale na
+   pewno nie identyczny z zapisami z „tury 2").
+
+**Ryzyko:** jeśli autozapis realnie nie rotuje 10 ostatnich tur (tylko duplikuje/nadpisuje wczesny
+stan), gracz w praktyce NIE MA możliwości cofnięcia się do niedawnej tury po błędzie/regresie w
+grze — to podważa samą funkcję autozapisu. Dispatch Explore (bez kodowania), priorytet wysoki: (a)
+znaleźć mechanizm autozapisu (prawdopodobnie `gra/src/game/**` lub `gra/src/ui/**`, zapis do
+localStorage/IndexedDB, rotacja/limit 10 slotów) i sprawdzić czy faktycznie tworzy nowy slot co
+turę czy nadpisuje/duplikuje istniejący; (b) sprawdzić przeliczenie numer-tury→rok-kalendarzowy i
+czy wyświetlany numer tury w HUD-zie faktycznie pochodzi z tego samego licznika co ten zapisany w
+sejwie. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
