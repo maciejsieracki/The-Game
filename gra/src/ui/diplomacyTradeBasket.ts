@@ -901,6 +901,49 @@ function validateTreatyForm(actionId: string, state: TreatyFormState, ctx?: Nego
   return { valid: true };
 }
 
+/**
+ * P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09): kiedy kontrofertę AI do traktatu
+ * "tylko formularz" (isTreatyOnlyFormAction) silnik dołożył słodzikiem — złotem, patrz
+ * withExtraSweetenerGold w diplomacy-proposals.ts — gracz musi te pozycje ZOBACZYĆ,
+ * ZMIENIĆ (ilość) i USUNĄĆ. Reużywa DOKŁADNIE tych samych klas co zwykły koszyk wymiany
+ * (.cdb-row-qty / .cdb-rm), więc generyczne event listenery w bindEvents() (querySelectorAll
+ * po klasie, patrz showTradeBasketModal) obsługują te wiersze BEZ dodatkowego wiązania —
+ * usunięcie/zmiana ilości mutuje te same tablice giveItems/receiveItems, które
+ * buildTreatyPayload() wysyła dalej w payload.giveItems/receiveItems. Świadomie BEZ
+ * przycisku „dodaj" — decyzja Macieja (ECHO A): symetria informacyjna, nie funkcjonalna,
+ * gracz nie dostaje własnego narzędzia dokładania koszyka do traktatu.
+ */
+function treatySweetenerEditableRowsHtml(
+  giveItems: BasketItem[],
+  receiveItems: BasketItem[],
+  ctx: NegotiationModalContext,
+  resourceTradeMode: 'once' | 'per_turn',
+  dealTurns: number,
+): string {
+  const fmtCtx: BasketItemFormatCtx = { perTurn: resourceTradeMode === 'per_turn', turns: dealTurns };
+  const rowsHtml = (items: BasketItem[], side: 'give' | 'receive'): string =>
+    items.map((item, idx) => {
+      const qtyHtml = basketItemQtyEditable(item) ? basketRowQtyStepperHtml(item, side, idx, ctx) : '';
+      return (
+        '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">'
+        + '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>'
+        + qtyHtml
+        + '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń pozycję">×</button>'
+        + '</div>'
+      );
+    }).join('');
+  let html = '';
+  if (giveItems.length > 0) {
+    html += '<div class="da-deal-col-head" style="margin-top:8px">My oddajemy</div>'
+      + '<div class="da-deal-col-body" data-list="give">' + rowsHtml(giveItems, 'give') + '</div>';
+  }
+  if (receiveItems.length > 0) {
+    html += '<div class="da-deal-col-head" style="margin-top:8px">Oni oddają</div>'
+      + '<div class="da-deal-col-body" data-list="receive">' + rowsHtml(receiveItems, 'receive') + '</div>';
+  }
+  return html;
+}
+
 function treatySummaryHtml(
   action: AudienceAction,
   treatyState: TreatyFormState,
@@ -909,6 +952,12 @@ function treatySummaryHtml(
   ctx: NegotiationModalContext,
   dealTurns: number,
   resourceTradeMode: 'once' | 'per_turn',
+  /**
+   * true w kontekście isTreatyOnlyFormAction (renderBasket) — tam koszyk NIE ma osobnych
+   * kolumn "My oddajemy/Oni oddają" (patrz gałąź isTreatyOnly), więc jedyne miejsce na
+   * podgląd pozycji to ten summary block; musi być edytowalny, nie tylko tekst.
+   */
+  editable = false,
 ): string {
   const payload = buildTreatyPayload(
     action.id, treatyState, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode,
@@ -950,6 +999,9 @@ function treatySummaryHtml(
   html += '</div>';
   if (net > 0) {
     html += '<div>Słodzik netto: <b>' + net + ' PW</b> — zwiększa szansę akceptacji</div>';
+  }
+  if (editable) {
+    html += treatySweetenerEditableRowsHtml(giveItems, receiveItems, ctx, resourceTradeMode, dealTurns);
   }
   html += '</div>';
   return html;
@@ -1831,7 +1883,9 @@ function renderBasket(
   if (isTreatyOnly) {
     const summaryBlock = blocked
       ? ''
-      : treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode);
+      // editable=true: dołożony słodzik AI (giveItems/receiveItems) musi mieć UI
+      // podglądu/edycji/usunięcia — patrz treatySweetenerEditableRowsHtml wyżej.
+      : treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, true);
     const treatyOnlyFooter = (blocked ? '' : warThreatBlockHtml(warThreat, true))
       + invalidHtml
       + '<div class="cdb-btns cdb-btns-center">'
