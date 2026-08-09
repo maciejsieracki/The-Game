@@ -1721,9 +1721,31 @@ Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCi
 
 `ai-major-absorb.ts` · `docs/decyzje/P-AI-MAJOR-ABSORB.md`
 
-### P-TEST-UPKEEP-R-STAWKI — upkeep-test 24× fail · STATUS: **OTWARTE** (pre-existing)
+### P-TEST-UPKEEP-R-STAWKI — upkeep-test 24× fail · STATUS: **ZAMKNIĘTE 2026-08-09** (już naprawione, wpis był nieaktualny)
 
 `upkeep-test.cjs` 49/73 — 24 porażek przez ×2 koszty `R-STAWKI` / `R-NADMIAR-POOLS` (nie regres FALA 220).
+
+**Diagnoza (subagent Sonnet 5, 2026-08-09):** ten wpis był nieaktualny od 2026-08-05 —
+test już wtedy naprawiony commitem `12ecd09d` („test(upkeep): zaktualizuj asercje pod
+R-STAWKI ×4 i FALA2 ×2", współautor Maciej), a wpis tutaj nigdy nie oznaczony ZAMKNIĘTE.
+**Dziś (weryfikacja `node tools/upkeep-test.cjs` z `gra/`): `73 passed, 0 failed`, exit 0.**
+Klasyfikacja: **opcja (b) test był przestarzały**, nie bug silnika — asercje testu
+zakładały stawki sprzed `R-STAWKI`/`R-NADMIAR-POOLS`; silnik celowo mnoży ×2 utrzymanie
+budynków (`R_STAWKI_FALA2_MULT`, `gra/src/game/r-stawki-strojenie.ts:9`, stosowane w
+`economy-upkeep.ts:578`) i ×4 utrzymanie jednostek + żywność wojska
+(`R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT × R_STAWKI_FALA2_MULT`,
+`economy-upkeep.ts:884,979`) — decyzje Macieja z `r-stawki-strojenie.ts:1-4`. Test już
+odzwierciedla te mnożniki. Żadna zmiana silnika nie była (i nie jest) potrzebna.
+**C-026 (impact 22 testów ekonomii/utrzymania/kosztów, uruchomione z `gra/`):** wszystkie
+zielone poza 4 **niezwiązanymi, pre-istniejącymi** (bez ×2/×4 R-STAWKI w komunikacie
+błędu, zweryfikowane brakiem zmiany kodu w tej sesji): `upgrade-budynki-test.cjs`
+(48 pass/1 fail — „no handel bonus on bruk"), `unit-stock-cost-test.cjs`
+(53 pass/4 fail — już zarejestrowane osobno jako `P-UNIT-STOCK-COST-TEST-DLUG`),
+`grupy-budynkow-test.cjs` (80 pass/3 fail — rozjazd liczby budynków JSON 41 vs test 40),
+`budynek-civ-bonus-u17-test.cjs` (2 pass/4 fail — baza kamienia z mapy 5 vs oczekiwane 4),
+`prereq-budynkow-test.cjs` (51 pass/8 fail — status `ready`/`locked` katalogu budynków).
+`npx tsc --noEmit` (worktree z symlinkiem `node_modules`, `5.9.3` potwierdzone) — 0 błędów.
+Bez zmian w `gra/src/**` ani `gra/data/**` w tej paczce — wyłącznie ten wpis (dokumentacja).
 
 ### MAP-UX-CLUSTER-LABEL — **ZASTĄPIONE** → paczka [`ABC-PACZKA-2026-08-06-KOLEJKA`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) **[3/5]** (nie duplikować tutaj)
 
@@ -1799,7 +1821,7 @@ nazewnictwo/etykieta, nie logika). Kotwice: `gra/src/game/diplomacy-proposals.ts
 „traktat handlowy bez koszyka @ niska Rel" — możliwe, że bramka już to łapie i została uznana
 za szum.
 
-## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa (2026-08-07):** *„na przybliżeniu miasta grafika jest okropna."*
 **Jego słowa (2026-08-08, powtórka zgłoszenia z nowym zrzutem „NODWENGU"):** „kolejny temat,
 który nie stał rozwiązany... coś z tym robiłeś, ale jak zwykle temat w ogóle nie został
@@ -1826,7 +1848,7 @@ władcy) — ten sam mechanizm rysowania, to samo ryzyko rozmycia.
 `makeCityMapBadgeSprite`).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
-## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** *„na państwach, miastach są dziwne kwadraty obrócone, a jak się najedzie
 przyciskiem, to pojawia się dopiero grafika danej kultury."*
 **Objaw:** w kółku po lewej stronie plakietki miasta domyślnie widnieje **obrócony kwadrat
@@ -2284,7 +2306,7 @@ bonusami (teren, fortyfikacja, mur, weteran); Moc cywilizacji (ranking/HUD/Empir
 terenu/fortyfikacji/muru, tylko naturalne wskaźniki + ulepszenia + weteran. Pełna decyzja:
 `docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md`. Kod w dispatchu.
 
-## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 Rozdział dwóch liczb Mocy, które wcześniejsza decyzja błędnie zunifikowała: tabliczka/tooltip
 jednostki na mapie = REALNA Moc ze wszystkimi bonusami (teren/fortyfikacja/mur/weteran); Moc
 cywilizacji (panel rankingu, HUD, Empire) = tylko naturalne wskaźniki + ulepszenia + weteran,
@@ -2351,12 +2373,24 @@ w `tooltip-moc` (`unit-context-card-brandAssets-stub.ts`) i `traktat-koszyk`
 dostaje własny, niededykowany katalog stubów) zamiast punktowych obejść przy każdej
 kolejnej kolizji.
 
-## P-UNIT-STOCK-COST-TEST-DLUG (2026-08-08, nota N4 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — pre-istniejące, do dopisania na listę znanych czerwonych**
+## P-UNIT-STOCK-COST-TEST-DLUG (2026-08-08, nota N4 Evaluatora zwiadowca-drewno) · STATUS: **ZAMKNIĘTE 2026-08-09** (asercje zaktualizowane, test 58/58)
 `node gra/tools/unit-stock-cost-test.cjs` → 53 pass, **4 fail**, m.in. „Wojownik: brak
 kosztu magazynowego (got {drewno:10}, want {})" i „Konnica ... want {braz:2} got {braz:10}".
 Zdezaktualizowane oczekiwania po wcześniejszych zmianach `units.json` — dług testowy, nie
 regresja. Potwierdzone identyczne na czystym `HEAD` sprzed prac `zwiadowca-drewno`. Nie
 figuruje na liście znanych czerwonych w `CLAUDE.md`.
+
+**ZAMKNIĘTE (2026-08-09):** 4 asercje zaktualizowane do dzisiejszego `units.json`: Konnica/Rydwan
+(woły) `Brąz 2→10`, Wojownik `brak→Drewno 10` (commit `7d4ad9690`, 2026-08-06, „utrzymanie
+surowcowe ×5", **potwierdzony współautor Maciej** w trailerze commita), fixtura `Surowiec='-'`
+→ `null` (commit `5682c066`, 2026-08-08). Evaluator: PASS-WITH-NOTES, niezależnie zweryfikował
+wszystkie 4 wartości w `units.json` na obu commitach, policzył **11 wywołań `unitStockCost()`
+w 5 plikach** (nie 4 jak w raporcie Operatora) — wszystkie czytają na żywo z `units.json`, brak
+zahardkodowanych ścieżek/cache rozjeżdżającego się z danymi. `unit-stock-cost-test.cjs` 58/58,
+`tsc` 0 błędów, siostrzane bramki (unit-resource-upkeep, pytanie-84-stock-keys, ai-recruit-upkeep-gate,
+unit-replace, drewno-gate) zielone. Drobna nota: fixtura `Surowiec===null` węższa niż kontrakt
+silnika (`unitStockCost` nadal obsługuje też `'-'`) — ryzyko niskie, `export-c.py` nigdy nie
+zapisuje `'-'` dziś.
 
 ## P-AUTOBOT-MINRUNS-ROZJAZD-5-VS-10 (2026-08-08, adwokat diabła: audyt skillsa `civ-autobot`) · STATUS: **DO WIEDZY — rozjazd konfiguracji, nie błąd skillsa**
 Kanon (`R-PROC-AUTOBOT` §v2, `dyspozycje/autobot/README.md`) mówi, że próg istotności
@@ -2371,7 +2405,7 @@ decyzji: albo poprawić `playbook.json` na `10` (zgodnie z kanonem), albo cofną
 `5` (jeśli `10` było error/nieaktualną decyzją), albo rozszerzyć generator o pole
 `thresholds` w `playbook.md`. Nie blokuje niczego pilnie — czysto informacyjne.
 
-## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** *„podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
 co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
 ulepszeń."*
@@ -2398,7 +2432,7 @@ PASS-WITH-NOTES po rundzie poprawek — dodano test regresji
 `gra/tools/camera-zoom-block-test.cjs`, 4/4: repro, negacja, fallback, brak regresji
 przeciągania). `npx tsc --noEmit` czyste.
 
-## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** „brakuje danych z całej cywilizacji, jeżeli chodzi o te elementy, które są w
 podglądzie miasta. Mówię tu o pracy, żywności, skarbcu, nauce, kulturze i religii. Potrzebny
 jest stan całej cywilizacji i plus to, co jest w danym mieście, ale mniejszymi cyframi. Czyli
@@ -2429,7 +2463,7 @@ główny HUD), mała liczba per-miasto jest BRUTTO — sumy miast NIE zsumują s
 liczby cywilizacji dla Pracy/Skarbca/Żywności. Celowe (spójność z głównym HUD), ale może być
 odczytane jako błąd, jeśli ktoś spróbuje to zsumować ręcznie.
 
-## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** „bardzo często jest problem że w kolejce jednostek kiedy naciśniemy spację
 zamiast przechodzić do kolejnej która ma wolne ruchy przechodzi do jakiejś kolejnej która nie
 wiem jest w kolejce jakiejś zawsze ruch powinien po spacji powinien odbywać się od
@@ -2483,7 +2517,7 @@ jakiejkolwiek."* Rozstrzyga też konflikt z 28.07 bez sprzeczności — to DWIE 
 filtrem `stackCanMove`) od nowej/przywróconej niefiltrowanej listy dla strzałek HUD, dopisać
 tooltips.
 
-## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
 dostęp powinny być już pełni w surowcach ilości surowców widzę że to jest jakiś regres i
 znowu jakaś poprawka sprawiła że to zostało cofnięte."
@@ -2527,7 +2561,7 @@ callerów, sprawdzone grepem całego repo). Tooltip źródła dostępu działa d
 i zapasie 0 kafelek pokazuje neutralne „0/1200" bez żadnej wzmianki o dostępie (dotyczy
 głównie Złota/Mennicy, patrz decyzja). Do rozważenia po playteście, jeśli okaże się mylące.
 
-## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** „kiedy wymieniamy surowce i na przykład chcemy się wymienić technologiami
 powinny być pokazywane tylko technologie te które są niedostępne dla innej cywilizacji
 zarówno po jednej jak i po drugiej stronie. Jeżeli jedna i druga cywilizacja ma tą
@@ -2580,7 +2614,7 @@ pominięciem drzewka. Pre-istniejący dług, nowo odblokowany.
 **Kotwice:** `gra/src/game/diplomacy-basket-transfer.ts:68-96`.
 **Model:** Sonnet 5.
 
-## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
 liczba tych surowców, które mamy dostępne i pomyśl o tym, że trzeba będzie przewidzieć, że
 tych surowców będzie kiedyś znacznie więcej, więc musi być w jakiś sposób czytelny pokazywania
@@ -2612,7 +2646,7 @@ w kodzie błędnie sugerował że odznaka na „dostaję" ujawniłaby zapasy AI 
 dziś ujawniają je bezwarunkowo dla obu stron, jedyny realny powód wyłączenia to zawężenie
 zakresu zgłoszenia, nie ujawnianie informacji.
 
-## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** „nie ma możliwości edytowania propozycji. Jest tylko możliwość usunięcia.
 Przecież miała być możliwość jeszcze edytowania."
 **Potwierdzone w kodzie:** `gra/src/ui/diplomacyTradeBasket.ts:1177` renderuje wyłącznie
@@ -2636,7 +2670,7 @@ gatingu „Usuń" na karcie traktatu, opisany niżej), runda 3 PASS-WITH-NOTES p
 HEAD — Evaluator zweryfikował własnym harnessem (nie kopią testu Operatora) że edycja działa dla
 wszystkich 5 typów. Nowy test `diplomacy-basket-edit-test.cjs` 25/25. `tsc` 0 błędów.
 
-## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli my dajemy umowę surowców, po drugiej stronie nie musi być umowy
 wymiany surowców, jeżeli ta druga strona nic nie daje. I w takiej sytuacji jeżeli usuniemy
 u drugiej strony to nic nie daje, usuwa się też cała nasza propozycja. To w ogóle jest
@@ -2672,7 +2706,7 @@ Testy: `diplomacy-basket-edit-test.cjs` 25/25, `diplomacy-proposal-test.cjs` 126
 `hud-moc-warstwa-test.cjs` 28/28, `tsc` 0 błędów. STRICT-PARITY: wyłącznie UI gracza.
 **Model:** Sonnet 5 (poza `render/**`).
 
-## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 
 ### Część 1 — tabela cen (na żądanie: „wypisz mi wartość surowców jakie mamy przypisane")
 **Potwierdzone w kodzie:** „40" pokazane przy 4 pakietach Drewna (pakiet ×10) **to Punkty
@@ -2756,7 +2790,7 @@ Testy: `npx tsc --noEmit` 0 błędów · `diplomacy-fairness-gate-package-q2-tes
 Zakres: dotyka tego samego obszaru kodu co `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` (nota Evaluatora
 BUG-TRAKTAT-KOSZYK-REGRESJA) — ta nota pozostaje osobno śledzona, nie jest tą poprawką zamknięta.
 
-## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** *„ok, zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy.
 Po prostu podajemy sztuki. Jeden, dziesięć, sto i tak dalej. Żadnych pakietów! Usuń dla
 wszystkich surowców pakiet."*
@@ -2786,7 +2820,7 @@ raportowi). 19 pakietów testów, wszystkie zielone, `tsc` czyste.
 testu — poprawiona wartość startowa (10 szt., nie 1) jest dziś niczym niechroniona przed
 przyszłą regresją.
 
-## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: NAPRAWIONE (kod), czeka na deploy+playtest** (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: nadal niezdiagnozowana**
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: nadal niezdiagnozowana**
 **Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
 być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
 jakby ich nie było. Dodatkowo, te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają
@@ -2874,7 +2908,7 @@ ryzyko z `docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`). Jeśli po playteście pro
 widoczny — do rozważenia wariant B (cooldown per-miasto) jako dopełnienie. `ai-test.cjs`
 274/8 (8 pre-istniejących, niezwiązanych), `tsc` czyste.
 
-## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile
 jest dokładnie produkowane w tym miejscu surowców żywności i tak dalej."*
 **Objaw (zrzut, okolice TEBY):** każdy heks w zasięgu miasta pokazuje trzy liczby z ikonami
@@ -2907,7 +2941,7 @@ faktycznie renderuje się na niebiesko — jeśli po deployu liczby nadal brakuj
 (nie niebieskich) heksach, to inny, nieobjęty tą naprawą problem (celowe pominięcie sąsiadów
 z prawdziwym ulepszeniem).
 
-## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** *„jedno naprawiasz, drugie psujesz. Znowu jest problem, mianowicie coś co
 wcześniej działało nagle przestało działać. Przesuwanie góra-dół i usuwanie z kolejki w trybie
 budowania zarówno jednostek i budynków nie działa. Trzeba kombinować gdzie kliknąć. Niestety
@@ -2980,7 +3014,7 @@ wzorzec kolejkowania callbacków jak w naprawie `BUG-IKONA-KULTURY-PLACEHOLDER`.
 `requestProdIconImage`).
 **Model:** Opus 5 (render/**).
 
-## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 Dla pakietów PRZYCHODZĄCYCH (`allIncoming`) panel liczy `canAccept = net &gt;= 0` na sumie
 całego stołu (`diplomacyAcceptanceBalance.ts:252-254`), więc przycisk „Przyjmij" bywa aktywny
 gdy suma jest dodatnia. Ale realne wykonanie (`main.ts:11977`,
