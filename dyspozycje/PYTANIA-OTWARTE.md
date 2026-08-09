@@ -6508,3 +6508,28 @@ własny węzeł terytorium niezależnie od tego, czy "nasz" fort tam nadal fizyc
 
 Dispatch turnieju ABC (2 niezależnych Proponentów + Sędzia, `C-018`) w toku dla całego tematu,
 uwzględniając tę rozbudowaną mechanikę.
+
+---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — Evaluator RUNDA 2: PASS-WITH-NOTES (1 nowa BLOKUJĄCA), runda 3 w toku (2026-08-09)
+
+B1 (bramka main.ts) potwierdzone ZAMKNIĘTE. **B2 (nowa) — runda 2 zgubiła pokrycie strony `ai.ts`
+z rundy 1.** Operator przepisał test od zera i utracił scenariusze T1/T2/T4/T5 z rundy 1. Mutacja
+usuwająca twardy filtr w `findCityFoundingHex` (zostawiając tylko re-walidację w
+`planCityFounding`) daje 16/16 PASS, ale ma REALNY skutek gameplayowy: AI z legalnym, dostępnym
+heksem w zasięgu nagle nie zakłada NICZEGO (paraliż ekspansji) — potwierdzone na konkretnym
+scenariuszu przez Evaluatora. Test rundy 1 (wciąż istnieje w niescalonym worktree) TĘ mutację
+łapie (15/15 → 3 FAIL). Naprawa praktycznie darmowa: złożyć plik z sekcji A rundy 1 (T1-T5,
+przechodzą 15/15 na kodzie rundy 2 BEZ ŻADNEJ zmiany w src) + sekcji B rundy 2 (strażnik main.ts).
+
+Niepilne: N2 (regex strażnika main.ts wrażliwy na reformat wieloliniowy z przecinkiem końcowym —
+odporniejsza forma podana przez Evaluatora), N3 (jeden z pinów, `B1e`, ma leniwy regex który
+przeskakuje przez instrukcje i nie łapie dopisania cichego zwolnienia AI z wymogu — do zawężenia),
+N4 (ważne dla NASTĘPNEGO tematu w kolejce: R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA będzie
+modyfikował dokładnie `foundingTerritoryOpts`, funkcję pilnowaną dziś tylko tekstowo — pamiętać o
+N3 przy tamtym dispatchu), N5 (AI traci ekspansję zamorską — potwierdzone, nietknięte, do
+świadomości przed playtestem), N6 (worktree rundy 1 ma równoległą, niescaloną kopię tych samych
+zmian w src — scalać wolno TYLKO jedną wersję, inaczej konflikt/podwójny plik testu).
+
+Dispatch runda 3, wąska: scal test T1/T2/T4/T5 z rundy 1 (kopiuj z niescalonego worktree
+`a58e4934721d28f29`) + sekcja B rundy 2 (z poprawkami N2/N3) w jeden plik.
