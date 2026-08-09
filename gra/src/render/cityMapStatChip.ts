@@ -5,7 +5,6 @@
  */
 import * as THREE from 'three';
 import type { ProductionKind } from '../game/production';
-import { formatWyzwienieLabel } from '../game/population-growth-v85';
 import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
 
 /** 0 = brak tarczy · 1 = palisada (szara) · 2 = mury lub cytadela (złota). */
@@ -27,8 +26,21 @@ export interface CityMapBadgeInput {
   prodKind?: ProductionKind | null;
   /** id frontu kolejki (budynek.id lub jednostka Jednostka) — ikona kanoniczna z brandAssets. */
   prodId?: string | null;
-  /** Poziom Wyżywienia (poziomRacji) — tylko miasta gracza. */
-  growthLevel?: number | null;
+  /**
+   * R-ETYKIETA-MIASTA-WZROST-PROCENT — WZROST% miasta: procent przyrostu ludności NA TURĘ
+   * (nie poziom Wyżywienia, nie numer, nie tura do przyrostu). Wartość ma być tą samą liczbą,
+   * którą pokazuje wiersz „WZROST%" w panelu TEGO miasta, czyli sumą SZEŚCIU składników
+   * (`computeGrowthPercentV85().total`: racje + małe miasto + spichlerz + zdrowie + szczęście
+   * + cywilizacja) przeliczoną na żywo — patrz `CityRenderOptions.getCityGrowth`.
+   * `null`/brak = segment nie jest rysowany (miasto nie należy do gracza albo brak danych).
+   */
+  growthPercent?: number | null;
+  /**
+   * true = miasto nienakarmione (głód) → segment pokazuje „—" zamiast liczby, dokładnie jak
+   * wiersz „WZROST%" w panelu miasta (`fed ? `${wzrostProcent}%` : '—'`). Bez tej flagi
+   * plakietka obiecywałaby wzrost miastu, które w tej turze traci ludność z głodu.
+   */
+  growthStarving?: boolean;
   /** Ostrzeżenie surowców (hover: brak w magazynie państwa). */
   resourceWarning?: boolean;
   /** true = rozszerzona pigułka (hover na mapie). */
@@ -60,8 +72,27 @@ const CIV_SIGIL_STROKE = '#e8d88a';
 const CIV_MEDALLION_R = 16;
 const CIV_SLOT_W = 38;
 const PROD_SLOT_W = 20;
-const GROWTH_SLOT_W = 30;
+/**
+ * R-ETYKIETA-MIASTA-WZROST-PROCENT — font segmentu WZROST%. Slot NIE ma już stałej szerokości
+ * (dawne `GROWTH_SLOT_W = 30` starczało na „W5", ale nie na „−10,5%"): szerokość liczy się
+ * z `measureText` dokładnie tym fontem, więc długi zapis nie wchodzi na glif produkcji.
+ */
+const GROWTH_FONT = '700 13px Arial, Helvetica, sans-serif';
 const HOVER_ROW_H = 22;
+
+/**
+ * BUG-ETYKIETA-MIASTA-ROZMYTA — gęstość pikseli tekstury pigułki.
+ * Cała geometria niżej liczona jest w px CSS; kanwa dostaje `dpr`× tyle pikseli fizycznych,
+ * a kontekst jest przeskalowany, więc sprite ma tę samą wielkość w świecie (aspect bez zmian),
+ * a tekstura — `dpr`× więcej pikseli, więc nie rozmywa się przy przybliżeniu kamery.
+ * Cap 3 chroni przed patologicznymi rozmiarami tekstur na ekranach o bardzo wysokim DPI.
+ */
+const BADGE_MAX_DPR = 3;
+
+function badgePixelRatio(): number {
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio : 1;
+  return Math.min(Math.max(Number.isFinite(dpr) && dpr > 0 ? dpr : 1, 1), BADGE_MAX_DPR);
+}
 
 // --- MAP-UX-MARKER-Q1 = C — marker stolicy (obwódka + korona) --------------------
 /** Grubość obwódki pigułki ZWYKŁEGO miasta: 2 px na kanwie pigułki. */
@@ -86,12 +117,35 @@ const CAPITAL_CROWN_H = 13;
 
 let civSigilSvgFn: ((civIconId: string) => string) | null = null;
 const civSigilImageById = new Map<string, HTMLImageElement | 'loading'>();
+/**
+ * BUG-IKONA-KULTURY-PLACEHOLDER — kolejka `onReady` dla sygnetu, który jest właśnie w locie.
+ * Bez niej drugi (i każdy kolejny) zamawiający ten sam sygnet gubił callback, a że tekstura
+ * plakietki powstaje jednorazowo (`if (!tex)`), zostawał na niej romb-placeholder aż do najazdu
+ * kursorem (hover zmienia klucz cache → świeża tekstura trafiała już w gotowy obrazek).
+ */
+const civSigilPendingById = new Map<string, Array<(img: HTMLImageElement) => void>>();
 
 let leaderPortraitUrlFn: ((civIconId: string, era: number) => string | null) | null = null;
 const leaderPortraitImageByKey = new Map<string, HTMLImageElement | 'loading'>();
+/**
+ * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejka `onReady` dla portretu, który jest w locie.
+ * Ten sam mechanizm co `civSigilPendingById`. Bez niej drugi (i każdy kolejny) zamawiający ten
+ * sam portret gubił callback: `_syncStatChip` (render/cities.ts) tworzy plakietkę osobno dla
+ * KAŻDEGO miasta, więc dwa miasta tej samej cywilizacji i epoki zamawiają ten sam portret w tej
+ * samej klatce. Przegrany wyścigu zostawał na fallbacku medalionu (sygnet kultury zamiast
+ * portretu władcy) aż do najbliższej zmiany klucza tekstury (hover / populacja / epoka).
+ */
+const leaderPortraitPendingByKey = new Map<string, Array<(img: HTMLImageElement) => void>>();
 
 let prodIconSvgFn: ((kind: ProductionKind, id: string) => string) | null = null;
 const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
+/**
+ * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejka `onReady` dla ikony produkcji w locie.
+ * Ten sam mechanizm co wyżej: dwa miasta produkujące TO SAMO (np. dwie osady stawiające
+ * koszary) zamawiają tę samą ikonę w jednej klatce, a przegrany wyścigu tracił callback
+ * i jego pigułka zostawała BEZ glifu produkcji do najbliższej zmiany klucza tekstury.
+ */
+const prodIconPendingByKey = new Map<string, Array<(img: HTMLImageElement) => void>>();
 
 /**
  * Wstrzykuje SVG sygnetu cywilizacji (main.ts → civIconSvg).
@@ -100,6 +154,11 @@ const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
 export function setCityMapBadgeCivSigil(fn: (civIconId: string) => string): void {
   civSigilSvgFn = fn;
   civSigilImageById.clear();
+  // UWAGA: `civSigilPendingById` celowo NIE jest czyszczone. Ta funkcja jest wołana z ciała
+  // `wireUnitRendererRingStance()` (main.ts:6217), a ono z 9 miejsc — także przy wypowiedzeniu
+  // wojny i zobowiązaniach sojuszniczych. Wyczyszczenie kolejki zgubiłoby callbacki żądań
+  // będących akurat w locie i plakietka zostałaby z rombem NA STAŁE — czyli dokładnie ten bug,
+  // który kolejka naprawia, tylko wyzwalany zdarzeniem dyplomatycznym.
 }
 
 /**
@@ -111,6 +170,10 @@ export function setCityMapBadgeLeaderPortrait(
 ): void {
   leaderPortraitUrlFn = fn;
   leaderPortraitImageByKey.clear();
+  // UWAGA: `leaderPortraitPendingByKey` celowo NIE jest czyszczone — z tego samego powodu co
+  // kolejka sygnetu wyżej. Ta funkcja leci z `wireUnitRendererRingStance()` (9 wywołań, m.in.
+  // wypowiedzenie wojny), a wyczyszczenie kolejki zgubiłoby callbacki żądań w locie i medalion
+  // zostałby bez portretu NA STAŁE.
 }
 
 /**
@@ -120,6 +183,7 @@ export function setCityMapBadgeLeaderPortrait(
 export function setCityMapBadgeProdIcon(fn: (kind: ProductionKind, id: string) => string): void {
   prodIconSvgFn = fn;
   prodIconImageByKey.clear();
+  // UWAGA: `prodIconPendingByKey` celowo NIE jest czyszczone — patrz komentarz przy sygnecie.
 }
 
 const CIV_INITIALS: Record<string, string> = {
@@ -350,6 +414,13 @@ function civSigilCacheKey(civIconId: string): string {
   return (civIconId || '').trim().toLowerCase() || 'unknown';
 }
 
+/** Dopisuje callback do kolejki oczekujących na sygnet o danym kluczu (nigdy nie nadpisuje). */
+function queueCivSigilCallback(key: string, onReady: (img: HTMLImageElement) => void): void {
+  const queue = civSigilPendingById.get(key);
+  if (queue) queue.push(onReady);
+  else civSigilPendingById.set(key, [onReady]);
+}
+
 function requestCivSigilImage(
   civIconId: string,
   onReady: (img: HTMLImageElement) => void,
@@ -361,20 +432,41 @@ function requestCivSigilImage(
     onReady(cached);
     return;
   }
-  if (cached === 'loading') return;
+  // BUG-IKONA-KULTURY-PLACEHOLDER: żądanie w locie → dopisz callback do kolejki zamiast go zgubić.
+  if (cached === 'loading') {
+    queueCivSigilCallback(key, onReady);
+    return;
+  }
   const raw = civSigilSvgFn(civIconId);
   const svg = prepareSvgForCanvas(raw, CIV_SIGIL_STROKE);
   if (!svg) return;
   civSigilImageById.set(key, 'loading');
+  // Dopisanie (nie nadpisanie) jest tu istotne: `setCityMapBadgeCivSigil` czyści
+  // `civSigilImageById` przy każdym przewiązaniu, więc znacznik 'loading' może zniknąć,
+  // gdy poprzednie ładowanie wciąż trwa. Kolejka przeżywa taki reset i zostaje domknięta
+  // przez to ładowanie, które skończy się pierwsze.
+  queueCivSigilCallback(key, onReady);
   loadImageInto(svgToDataUri(svg), (img) => {
     civSigilImageById.set(key, img);
-    onReady(img);
+    const queue = civSigilPendingById.get(key) ?? [];
+    civSigilPendingById.delete(key);
+    for (const cb of queue) cb(img);
   });
 }
 
 function leaderPortraitCacheKey(civIconId: string, era: number): string {
   const e = Math.max(1, Math.round(era) || 1);
   return `${civSigilCacheKey(civIconId)}:${e}`;
+}
+
+/** Dopisuje callback do kolejki oczekujących na portret o danym kluczu (nigdy nie nadpisuje). */
+function queueLeaderPortraitCallback(
+  key: string,
+  onReady: (img: HTMLImageElement) => void,
+): void {
+  const queue = leaderPortraitPendingByKey.get(key);
+  if (queue) queue.push(onReady);
+  else leaderPortraitPendingByKey.set(key, [onReady]);
 }
 
 function requestLeaderPortraitImage(
@@ -389,18 +481,37 @@ function requestLeaderPortraitImage(
     onReady(cached);
     return;
   }
-  if (cached === 'loading') return;
+  // R-PORTRET-PRODIKONA-DROPPED-CALLBACK: żądanie w locie → dopisz callback do kolejki
+  // zamiast go zgubić (wzorzec 1:1 z `requestCivSigilImage`).
+  if (cached === 'loading') {
+    queueLeaderPortraitCallback(key, onReady);
+    return;
+  }
   const url = leaderPortraitUrlFn(civIconId, era);
   if (!url) return;
   leaderPortraitImageByKey.set(key, 'loading');
+  // Dopisanie (nie nadpisanie) jest tu istotne: `setCityMapBadgeLeaderPortrait` czyści
+  // `leaderPortraitImageByKey` przy każdym przewiązaniu, więc znacznik 'loading' może zniknąć,
+  // gdy poprzednie ładowanie wciąż trwa. Kolejka przeżywa taki reset i zostaje domknięta
+  // przez to ładowanie, które skończy się pierwsze.
+  queueLeaderPortraitCallback(key, onReady);
   loadImageInto(url, (img) => {
     leaderPortraitImageByKey.set(key, img);
-    onReady(img);
+    const queue = leaderPortraitPendingByKey.get(key) ?? [];
+    leaderPortraitPendingByKey.delete(key);
+    for (const cb of queue) cb(img);
   });
 }
 
 function prodIconCacheKey(kind: ProductionKind, id: string): string {
   return `${kind}:${(id || '').trim()}`;
+}
+
+/** Dopisuje callback do kolejki oczekujących na ikonę produkcji (nigdy nie nadpisuje). */
+function queueProdIconCallback(key: string, onReady: (img: HTMLImageElement) => void): void {
+  const queue = prodIconPendingByKey.get(key);
+  if (queue) queue.push(onReady);
+  else prodIconPendingByKey.set(key, [onReady]);
 }
 
 function requestProdIconImage(
@@ -415,14 +526,24 @@ function requestProdIconImage(
     onReady(cached);
     return;
   }
-  if (cached === 'loading') return;
+  // R-PORTRET-PRODIKONA-DROPPED-CALLBACK: żądanie w locie → dopisz callback do kolejki
+  // zamiast go zgubić (wzorzec 1:1 z `requestCivSigilImage`).
+  if (cached === 'loading') {
+    queueProdIconCallback(key, onReady);
+    return;
+  }
   const raw = prodIconSvgFn(kind, id);
   const svg = prepareSvgForCanvas(raw, '#e8d88a', 1.2);
   if (!svg) return;
   prodIconImageByKey.set(key, 'loading');
+  // Dopisanie (nie nadpisanie): `setCityMapBadgeProdIcon` czyści `prodIconImageByKey` przy
+  // każdym przewiązaniu, więc znacznik 'loading' może zniknąć w trakcie ładowania.
+  queueProdIconCallback(key, onReady);
   loadImageInto(svgToDataUri(svg), (img) => {
     prodIconImageByKey.set(key, img);
-    onReady(img);
+    const queue = prodIconPendingByKey.get(key) ?? [];
+    prodIconPendingByKey.delete(key);
+    for (const cb of queue) cb(img);
   });
 }
 
@@ -492,15 +613,43 @@ function drawHoverProdRow(
   }
 }
 
-/** Kompaktowa etykieta poziomu Wyżywienia (poziomRacji) — tylko miasta gracza. */
+/**
+ * R-ETYKIETA-MIASTA-WZROST-PROCENT — tekst segmentu WZROST% na plakietce miasta.
+ * Zastąpił skrót „W5" (poziom Wyżywienia), o który prosił właściciel: *„procentowy wzrost,
+ * czyli na przykład 5 i pół procent, o ile wyrośnie populacja, a nie W5"*.
+ *
+ * Reguły zapisu (wybór domyślny — do potwierdzenia przez właściciela):
+ * - **część ułamkowa tylko gdy istnieje**: `5` → `5%`, `5,5` → `5,5%` (nie `5,0%`), bo obie
+ *   formy padły w jego zdaniu („5 i pół procent albo 5 procent”);
+ * - **przecinek**, nie kropka — zapis polski, ta sama konwencja co `formatWyzwienieLabel`;
+ * - **1 miejsce po przecinku** (wartość zaokrąglana) — suma sześciu składników ma krok 0,5,
+ *   więc jedno miejsce wystarcza i nie gubi nic z liczby pokazywanej w panelu;
+ * - **wzrost zerowy → `0%`** (nie puste, nie `—`) — miasto stoi w miejscu, to informacja;
+ * - **wzrost ujemny → znak minus U+2212** (`−2,1%`), a nie ukryte zero: przy Wyżywieniu
+ *   poniżej 1,5 miasto realnie się kurczy i gracz ma to widzieć;
+ * - **głód (miasto nienakarmione) → `—`**, dokładnie ten sam symbol co wiersz „WZROST%”
+ *   w panelu miasta (`fed ? `${wzrostProcent}%` : '—'`). Bez tego mapa obiecywałaby wzrost
+ *   miastu, które w tej turze traci ludność.
+ *
+ * `−0` nie powstaje: wartości z przedziału (−0,05; 0) zaokrąglają się do `-0`, a warunek
+ * `rounded < 0` jest dla `-0` fałszywy, więc wychodzi `0%`.
+ */
+export function formatCityGrowthPercentLabel(pct: number, starving = false): string {
+  if (starving) return '—';
+  const rounded = Math.round((Number.isFinite(pct) ? pct : 0) * 10) / 10;
+  const abs = Math.abs(rounded);
+  const digits = Number.isInteger(abs) ? String(abs) : abs.toFixed(1).replace('.', ',');
+  return `${rounded < 0 ? '−' : ''}${digits}%`;
+}
+
+/** Kompaktowa etykieta WZROST% (procent przyrostu ludności / turę) — tylko miasta gracza. */
 function drawGrowthLabel(
   ctx: CanvasRenderingContext2D,
   x: number,
   cy: number,
-  level: number,
+  label: string,
 ): void {
-  const label = `W${formatWyzwienieLabel(level)}`;
-  ctx.font = '700 13px Arial, Helvetica, sans-serif';
+  ctx.font = GROWTH_FONT;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#d4c48a';
@@ -541,16 +690,25 @@ function paintCityMapBadgeOntoCanvas(
   const defenseW = hasDefense ? 22 : 0;
   const civW = CIV_SLOT_W;
   const prodW = input.prodActive ? PROD_SLOT_W : 0;
-  const growthW = input.growthLevel != null ? GROWTH_SLOT_W : 0;
   const isCapital = input.isCapital === true;
   const crownW = isCapital ? CAPITAL_CROWN_SLOT_W : 0;
   const nameFont = '700 22px Georgia, "Times New Roman", serif';
   const popFont = '700 16px Arial, Helvetica, sans-serif';
 
   const measure = document.createElement('canvas').getContext('2d')!;
+  // R-ETYKIETA-MIASTA-WZROST-PROCENT: slot WZROST% mierzony, nie stały — „−10,5%" jest
+  // ~1,5× szersze od dawnego „W5" i przy stałej szerokości wchodziłoby na glif produkcji.
+  const growthLabel = input.growthPercent != null
+    ? formatCityGrowthPercentLabel(input.growthPercent, input.growthStarving === true)
+    : null;
+  let growthW = 0;
+  if (growthLabel !== null) {
+    measure.font = GROWTH_FONT;
+    growthW = Math.ceil(measure.measureText(growthLabel).width);
+  }
   measure.font = nameFont;
   let displayName = name;
-  // Budżet nazwy: 200 px kanwy minus sloty glifu produkcji / Wyżywienia / korony stolicy.
+  // Budżet nazwy: 200 px kanwy minus sloty glifu produkcji / WZROST% / korony stolicy.
   const maxNameW = 200 - prodW - growthW - crownW;
   if (measure.measureText(name).width > maxNameW) {
     displayName = truncateName(measure, name, maxNameW, nameFont);
@@ -567,9 +725,14 @@ function paintCityMapBadgeOntoCanvas(
   );
   const H = baseH + (hasHoverDetail ? HOVER_ROW_H : 0);
 
-  canvas.width = W;
-  canvas.height = H;
+  // BUG-ETYKIETA-MIASTA-ROZMYTA: kanwa w pikselach fizycznych (W×dpr, H×dpr), rysowanie
+  // dalej w px CSS dzięki przeskalowaniu kontekstu. Sprite liczy aspect z img.width/img.height,
+  // a oba wymiary rosną tym samym mnożnikiem → wielkość plakietki w świecie bez zmian.
+  const dpr = badgePixelRatio();
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
   const ctx = canvas.getContext('2d')!;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   ctx.clearRect(0, 0, W, H);
   const pillR = Math.min(H * 0.45, baseH * 0.45);
@@ -623,8 +786,8 @@ function paintCityMapBadgeOntoCanvas(
   ctx.fillText(displayName, nameX, cy);
 
   let afterNameX = nameX + nameW;
-  if (input.growthLevel != null) {
-    drawGrowthLabel(ctx, afterNameX + gap, cy, input.growthLevel);
+  if (growthLabel !== null) {
+    drawGrowthLabel(ctx, afterNameX + gap, cy, growthLabel);
     afterNameX += gap + growthW;
   }
   if (input.prodActive) {
@@ -692,8 +855,12 @@ export function cityMapBadgeKey(
   const prod = a.prodActive
     ? `${a.prodKind ?? 'b'}:${(a.prodId || '').trim()}`
     : '-';
-  const growth = a.growthLevel != null
-    ? `g${formatWyzwienieLabel(a.growthLevel)}`
+  // R-ETYKIETA-MIASTA-WZROST-PROCENT: do klucza idzie GOTOWA etykieta (a nie surowa liczba),
+  // więc klucz zmienia się dokładnie wtedy, gdy zmienia się narysowany tekst — i tylko wtedy.
+  // Bez tego segmentu zmiana WZROST% (suwak Wyżywienia, przydział robotników, koniec tury)
+  // trafiałaby w starą teksturę z cache i plakietka pokazywałaby liczbę sprzed zmiany.
+  const growth = a.growthPercent != null
+    ? `g${formatCityGrowthPercentLabel(a.growthPercent, a.growthStarving === true)}`
     : 'g-';
   const cs = a.isCityState ? 'cs1' : 'cs0';
   // MAP-UX-MARKER-Q1 = C — bez tego segmentu przejście stolica↔nie-stolica (przeniesienie

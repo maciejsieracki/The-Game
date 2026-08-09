@@ -37,7 +37,6 @@ import { buildMiastoKamien } from './miasto-kamien';
 import { buildMiastoBraz } from './miasto-braz';
 import type { CityProduction, ProductionItem } from '../game/production';
 import { frontItem } from '../game/production';
-import { getCityRationLevel } from '../game/population-growth-v85';
 import {
   canAffordBuildingStock,
 } from '../game/building-stock-cost';
@@ -358,6 +357,36 @@ export interface CityRenderOptions {
    * MAP-UX-CLUSTER-LABEL-Q1=B+C: etykieta stolicy OBCEGO państwa zamiast nazwy miasta.
    */
   getCivDisplayName?: (ownerId: number) => string | undefined;
+
+  /**
+   * R-ETYKIETA-MIASTA-WZROST-PROCENT — WZROST% miasta liczony NA ŻYWO (segment plakietki
+   * w miejscu dawnego „W5"). Musi zwracać tę samą liczbę, którą pokazuje wiersz „WZROST%”
+   * w panelu TEGO miasta, czyli `computeGrowthPercentV85().total` (suma sześciu składników:
+   * racje + małe miasto + spichlerz + zdrowie + szczęście + cywilizacja) — dostarcza ją
+   * `cityGrowthLive()` z `ui/cityPanel.ts`, ten sam `computeView`, z którego żyje panel.
+   *
+   * ⚠️ NIE podpinaj tu `getLastEmpireFoodTick(ownerId).perCityRows[].wzrostProcent`:
+   * to migawka z KOŃCA tury (`_setLastEmpireFoodTicks` woła się wyłącznie z `advanceEmpireFood`),
+   * więc po ruszeniu suwaka Wyżywienia albo przestawieniu robotników mapa i panel pokazałyby
+   * DWIE RÓŻNE liczby — dokładnie błąd, dla którego pierwszą próbę naprawy wycofano.
+   *
+   * Typ celowo strukturalny (bez importu z `ui/`): `render/` nie zależy od warstwy UI.
+   * `null` = brak danych → segment nie jest rysowany. Renderer pyta tylko o miasta gracza.
+   *
+   * WYDAJNOŚĆ — świadomie BEZ cache'u. Pomiar (node, ten sam kod JS, mapa 60×40):
+   * najcięższy składnik `computeView`, czyli `cityWorkedTilesForEconomy`, kosztuje
+   * 0,11 ms (ludność 4) · 0,45 ms (10) · 0,72 ms (15) na wywołanie; sam wzór
+   * `computeGrowthPercentV85` — 0,0001 ms. Koszt płacą WYŁĄCZNIE miasta gracza i wyłącznie
+   * przy odświeżeniu plakietek, które leci ze ZDARZEŃ (`syncUnitsRender`, wejście/zejście
+   * kursora z plakietki, koniec tury), a NIE z pętli renderu — w `renderLoop` nie ma ani
+   * jednego bezwarunkowego `syncStatChips`. Cache odrzucony celowo: każdy wariant
+   * (TTL jednej klatki albo odcisk stanu) przywraca klasę błędu, dla której to zgłoszenie
+   * powstało — plakietka pokazująca inną liczbę niż panel — a pełnego sygnału unieważnienia
+   * nie ma (robotników można przestawić także w widoku okolicy, przy widocznej plakietce).
+   * Gdyby playtest pokazał zacięcia przy wielu dużych miastach, właściwym miejscem na cache
+   * jest `cityGrowthLive` w `ui/cityPanel.ts`, nie ten callback.
+   */
+  getCityGrowth?: (city: City) => { procentNaTure: number; nakarmione: boolean } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -737,6 +766,9 @@ export class CityRenderer {
     const prodCategoryLabel = front
       ? (front.kind === 'budynek' ? 'Budynek' : 'Jednostka')
       : null;
+    // R-ETYKIETA-MIASTA-WZROST-PROCENT: pytamy TYLKO o miasta gracza — tak jak dawny slot „W5",
+    // i tak jak wcześniej: obce miasta nie płacą tu ani grosza czasu (callback się nie woła).
+    const growth = isPlayerCity ? (options?.getCityGrowth?.(city) ?? null) : null;
     return {
       cityName,
       population: city.population ?? 1,
@@ -746,7 +778,8 @@ export class CityRenderer {
       prodActive: front !== null && prod?.wstrzymana !== true,
       prodKind: front?.kind ?? null,
       prodId: front?.id ?? null,
-      growthLevel: isPlayerCity ? getCityRationLevel(city) : null,
+      growthPercent: growth ? growth.procentNaTure : null,
+      growthStarving: growth ? !growth.nakarmione : false,
       resourceWarning,
       hoverExpanded,
       prodCategoryLabel,

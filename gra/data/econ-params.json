@@ -731,7 +731,7 @@
       "normal": 1,
       "hard": 1,
       "jednostka": "PN/szt.",
-      "opis": "Maciej 2026-07-29: PN za 1 szt. Drewna (surowiec_ilosc). Wartość pozycji koszyka = pakiety × pakiet_wielkosc × cena (PN/szt.). Ta sama cena na wszystkich trudnościach."
+      "opis": "Maciej 2026-07-29: PN za 1 szt. Drewna (surowiec_ilosc). Wartość pozycji koszyka = sztuki × cena (PN/szt.) — R-DYP-PAKIET-USUN 2026-08-08: koszyk handlu podaje sztuki wprost, bez pakietów. Ta sama cena na wszystkich trudnościach."
     },
     "cena_glina": {
       "easy": 2,
@@ -829,7 +829,7 @@
       "normal": 10,
       "hard": 10,
       "jednostka": "szt.",
-      "opis": "C-DYP-SUROWCE-Q1=B: wielkość pakietu handlu ilościowego (surowiec_ilosc) — handel odbywa się w pakietach po tyle sztuk. PN pozycji = cena_PN/szt. × (pakiety × pakiet_wielkosc). Ta sama wartość na wszystkich trudnościach."
+      "opis": "R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu NIE liczy już w pakietach — gracz podaje sztuki wprost (jeden, dziesięć, sto...). Ta wartość NIE mnoży już żadnego transferu; zostaje wyłącznie jako wewnętrzny próg heurystyki AI (deficyt surowca = zapas poniżej tej liczby sztuk, patrz diplomacy-resource-trade-pick.ts / ai-resource-needs.ts). Dawny opis (nieaktualny): C-DYP-SUROWCE-Q1=B wielkość pakietu handlu ilościowego."
     }
   }
 }

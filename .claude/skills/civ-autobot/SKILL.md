@@ -96,6 +96,27 @@ Kanon: `dyspozycje/PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
 3. **ECHO** — po odpowiedzi w formie `ID + litera` potwierdź treść decyzji, zapisz do plików (rejestr + `dyspozycje/PYTANIA-OTWARTE.md` + ewentualny `docs/decyzje/`), dopiero potem kod i commit.
 4. **DEPLOY** — wyłącznie na hasło `deploy`. Commit po `ID+A|B|C` **nie** publikuje ROBOCZA.
 
+**Rozwidlenie NUMER → co dalej (`C-027`, Maciej 2026-08-08):** krok „ABC" dotyczy WYŁĄCZNIE
+zgłoszeń wymagających realnego wyboru z kompromisem (balans/gameplay/UX z alternatywami).
+Gdy zgłoszenie jest błędem do naprawienia albo prośbą z jednoznacznie opisanym oczekiwanym
+zachowaniem (brak realnej alternatywy do wyboru) — **NUMER → od razu subagent Sonnet 5**
+w pętli Operator → Evaluator, **w tej samej turze**, bez czekania na cokolwiek. „Rejestr to
+punkt startowy pracy, nie miejsce składowania" — jego słowa po serii skarg: *„a myślisz, że
+po co Ci zgłaszam te problemy? Żeby sobie siedziały w rejestrze?"*, *„tak właśnie gubią się
+tematy, które ci zgłaszam... zgłaszam coś, a wy nie robicie z tym nic."*
+
+**Kontrola kompletności (`C-030`/`C-031`):** po KAŻDEJ serii rejestracji w `PYTANIA-OTWARTE.md`,
+przed zmianą wątku — uruchom `grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` (BEZ
+kotwicy `^## ` — gubi nagłówki `### `) i potwierdź dla każdego trafienia: subagent w locie /
+pytanie ABC / udokumentowany powód odłożenia. Ta sama komenda żyje TAKŻE w `CLAUDE.md` §0c (plik
+zawsze ładowany do kontekstu w Claude Code — w przeciwieństwie do tego skilla i playbooka, które
+wymagają świadomego odczytu i mogą zniknąć z pola widzenia po kompaktowaniu długiej sesji; nawet
+`CLAUDE.md` to migawka z początku sesji, nie odczyt co turę). **[2026-08-08]** Druga warstwa
+NIE jest już stałym godzinowym Routine (usunięty — kosztował 20+ wywołań/dobę niezależnie od
+realnej pracy) tylko jednorazowym, samo-uzbrajającym się `run_once_at` triggerem: uzbrajanym
+TYLKO gdy nowe zgłoszenie nie da się domknąć w tej samej turze, re-uzbrajanym co ~1h dopóki coś
+czeka, milknącym bez re-uzbrojenia gdy wszystko domknięte. Pełny opis: `CLAUDE.md` §0c.
+
 **⛔ Zakaz otwierania nowych wątków pytaniami.** Wolno wyłącznie pytania doprecyzowujące
 do wątku aktualnie prowadzonego. Problemy znalezione przy okazji → **cicho** do
 `dyspozycje/PYTANIA-OTWARTE.md`, bez wspominania w czacie. Każde pytanie/bug właściciela
@@ -150,6 +171,25 @@ czerwone testy tematu, `tsc --noEmit ≠ 0`, SCOPE gameplay bez handoffu, cofni�
 wcześniejszego fixu. **PASS-WITH-NOTES** tylko: pre-existing baseline poza tematem
 z dowodem z `main`, docs drift, cross-lane z handoffem, GATE=A wyłącznie wizualny,
 drobny drift procesu.
+
+**Zakres naprawy = tylko błąd, impact-analiza dla kodu współdzielonego** (`C-025`,
+`C-026` — Maciej 2026-08-08, po serii regresji: kolejka budowy, traktat-koszyk,
+rzeki-medium-fow, 4-rundowa naprawa handel-bramka-priorytet — „70% mojego czasu to
+poprawki tego, co już było naprawione"):
+
+- **C-025** — prompt zlecenia dla Operatora naprawiającego zgłoszony błąd MUSI
+  wypisać granicę zakresu (konkretne pliki/funkcje) i wprost zakazać zmian poza nią.
+  Zero „przy okazji"/„skoro już tu jestem" — refaktorów, sprzątania stylu, przenoszenia
+  kodu, nawet gdy wyglądają jak ulepszenie. Evaluator odrzuca (FAIL) diff, który robi
+  więcej niż to, co przyczyna błędu wymagała, niezależnie od tego, czy dodatkowa zmiana
+  sama w sobie wygląda słusznie.
+- **C-026** — gdy naprawa MUSI dotknąć funkcji/komponentu współdzielonego (bo to jedyny
+  poprawny zakres, nie wybór Operatora), Operator PRZED zmianą wypisuje wszystkie
+  miejsca użycia (grep/referencje) i PO zmianie weryfikuje każde z osobna — „to powinno
+  nadal działać" bez sprawdzenia jest zakazane. Evaluator sprawdza, czy ta lista w ogóle
+  powstała i czy jest wiarygodna (przelicza grepem sam, nie ufa samoocenie Operatora),
+  nie tylko czy diff „wygląda" bezpiecznie — to nakładka na COUPLING z `lean-loop`,
+  z twardym wymogiem enumeracji, nie tylko oceny „na oko".
 
 **Orkiestrator nie jest zwolniony z pętli** (`CLAUDE.md` §0b, `playbook.md` → `C-017`):
 każda zmiana zapisana do repozytorium i każda liczba podana właścicielowi jako fakt
@@ -218,6 +258,22 @@ okazji") — aktualna lista jest w `CLAUDE.md` sekcja BRAMKI i w handoffie §7. 
 tam, nie z pamięci: `logic-test.cjs` = 213/213, `combat-test.cjs` zielony 6/6,
 `unit-power-test.cjs` czerwony pre-istniejąco (4 pass / 2 fail). Zawsze czytaj kod wyjścia
 **testu**, nie procesu opakowującego.
+
+**⛔ `tsc` w worktree jest bezwartościowy bez weryfikacji kompilatora (`C-029`, recydywa
+≥5× w jednej sesji 2026-08-08).** Worktree bez `gra/node_modules` sprawia, że `npx tsc`
+po cichu uruchamia globalny, niepinowany TypeScript zamiast wersji projektu (5.9.3) —
+mylący wynik w obie strony (fałszywe „0 błędów" maskujące realne, albo fałszywy błąd
+kompilacji niebędący błędem projektu). Przed zaufaniem KAŻDEMU wynikowi `tsc` w
+worktree: `ln -s <drzewo główne>/gra/node_modules gra/node_modules`, potem
+`npx tsc --version` MUSI pokazać `5.9.3` — dopiero wtedy wynik `tsc --noEmit` jest
+wiarygodny. Symlink nigdy nie trafia do commita, usuwaj po zakończeniu pracy.
+
+**`git add` z wieloma ścieżkami i plikiem usuniętym w liście (`C-028`).** Gdy jedna ze
+ścieżek nie istnieje (typowo: plik usunięty przez `git apply`, jeszcze nie w indeksie),
+`git add` zgłasza `fatal: ... did not match any files` i pozostałe ścieżki z TEGO SAMEGO
+wywołania mogą zostać po cichu pominięte. `git status --short` PRZED każdym commitem po
+`git add` obejmującym więcej niż jedną ścieżkę; usunięte pliki dodawaj osobnym
+wywołaniem, nie w jednej liście z nowymi/zmienionymi.
 
 ## 8. Deploy i trzy poziomy bundli
 

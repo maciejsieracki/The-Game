@@ -29,6 +29,7 @@ esbuild.buildSync({
 const {
   pickResourceTradeBetweenOwners,
   pickResourceDeficitForOwnerPair,
+  pickResourceSurplusForOwnerPair,
   detectPricedResourceDeficits,
   resourceTradeKierunekForProposer,
   applyTradeArchetypePriceMargin,
@@ -59,7 +60,7 @@ const deficitPick = pickResourceTradeBetweenOwners({
   goodsA: [{ key: 'drewno', label: 'Drewno', ilosc: 0 }],
   goodsB: [{ key: 'drewno', label: 'Drewno', ilosc: 100 }],
   sellerOptionsA: [],
-  sellerOptionsB: [{ id: 'drewno', label: 'Drewno ×10', maxPakiety: 10 }],
+  sellerOptionsB: [{ id: 'drewno', label: 'Drewno ×10', maxQty: 10 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
   maxPakietyPerTura: 3,
@@ -67,6 +68,7 @@ const deficitPick = pickResourceTradeBetweenOwners({
 });
 ok(deficitPick?.powod === 'deficyt', 'priorytet deficyt');
 ok(deficitPick?.sellerOwnerId === 0 && deficitPick?.buyerOwnerId === 1, 'AI(1) kupuje od gracza(0)');
+ok(Number.isFinite(deficitPick?.pakietyPerTura) && deficitPick.pakietyPerTura > 0, 'deficitPick: ilość skończona i > 0 (nie NaN — maxQty musi być czytane poprawnie)');
 ok(
   resourceTradeKierunekForProposer(1, deficitPick) === 'zakup',
   'kierunek zakup dla AI-proponenta',
@@ -77,7 +79,7 @@ const deficitDirect = pickResourceDeficitForOwnerPair({
   sellerOwnerId: 0,
   goodsBuyer: [{ key: 'glina', label: 'Glina', ilosc: 0 }],
   goodsSeller: [{ key: 'glina', label: 'Glina', ilosc: 100 }],
-  sellerOptions: [{ id: 'glina', label: 'Glina ×10', maxPakiety: 10 }],
+  sellerOptions: [{ id: 'glina', label: 'Glina ×10', maxQty: 10 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
   maxPakietyPerTura: 3,
@@ -94,14 +96,34 @@ const surplusPick = pickResourceTradeBetweenOwners({
   ownerB: 3,
   goodsA: [{ key: 'glina', label: 'Glina', ilosc: 80 }],
   goodsB: [{ key: 'glina', label: 'Glina', ilosc: 80 }],
-  sellerOptionsA: [{ id: 'glina', label: 'Glina ×10', maxPakiety: 8 }],
-  sellerOptionsB: [{ id: 'glina', label: 'Glina ×10', maxPakiety: 8 }],
+  sellerOptionsA: [{ id: 'glina', label: 'Glina ×10', maxQty: 8 }],
+  sellerOptionsB: [{ id: 'glina', label: 'Glina ×10', maxQty: 8 }],
   pricedKeys: priced,
   pakietWielkosc: pakiet,
   maxPakietyPerTura: 3,
   pricePerPakiet: price,
 });
 ok(surplusPick?.powod === 'nadwyzka', 'bez deficytu -> nadwyzka');
+
+// BUGFIX regresja (Evaluator 2026-08-08, blocker 2): main.ts quantityTradableGoodOptions()
+// od R-DYP-PAKIET-USUN daje CZYSTY label (bez sufiksu "— dost. N") — buildOffer nie może
+// znowu zacząć wycinać/dopisywać czegokolwiek do niego, bo to leci wprost do komunikatów AI
+// (`Kupię od ciebie ${offer.label}...`, main.ts buildHandelSurowiecCmdFromOffer / ai.ts).
+const cleanLabelPick = pickResourceSurplusForOwnerPair({
+  sellerOwnerId: 5,
+  buyerOwnerId: 6,
+  goodsSeller: [{ key: 'drewno', label: 'Drewno', ilosc: 40 }],
+  goodsBuyer: [{ key: 'drewno', label: 'Drewno', ilosc: 0 }],
+  sellerOptions: [{ id: 'drewno', label: 'Drewno', maxQty: 40 }],
+  pricedKeys: priced,
+  pakietWielkosc: pakiet,
+  maxPakietyPerTura: 30,
+  pricePerPakiet: price,
+});
+ok(
+  cleanLabelPick?.label === 'Drewno',
+  `label nie jest zaśmiecony informacją o zapasie (got ${JSON.stringify(cleanLabelPick?.label)})`,
+);
 
 ok(
   applyTradeArchetypePriceMargin(100, 0.8, 'zakup') > 100,

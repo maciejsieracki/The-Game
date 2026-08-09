@@ -779,6 +779,64 @@ r = evaluateProposal(prop('umowa_handlowa', 0, 1, { turns: 20 }), { ...lowTradeC
 ok(r.accepted && r.deal?.rodzaj === 'umowa_szlakow', 'umowa_handlowa alias @ rel 100: accepted + deal szlaków (R-DYPLO-PRZYJMIJ-TRADE)');
 r = evaluateProposal(prop('umowa_handlowa', 0, 1, { turns: 20 }), lowTradeCtx);
 ok(!r.accepted && r.reason?.includes('nieuczciwa'), 'umowa_handlowa @ niska Rel bez koszyka: odrzucenie jak szlaki');
+
+// 17f R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A (BUG-PAKIET-BILANS-DODATNI-BLOKADA): treatyBaseFairnessGap
+// dolicza PW z INNYCH pozycji na tym samym stole (packageSiblingGivePn/packageSiblingReceivePn w
+// ProposalEvalContext — main.ts packageSiblingPn liczy je z negotiationTable i wątki tego samego
+// kierunku proposerId→responderId). Baseline (linia 769-770 wyżej): umowa_szlakow bez koszyka @
+// lowTradeCtx (rel 25/25 → relTotal 50 pkt) ma DOKŁADNIE 40 PW deficytu (playerRequired=40,
+// partnerRequired=80, gap=40) — liczby poniżej pochodzą z TEGO baseline, nie z ilustracyjnych
+// "80 baza / 54 bezpośrednio" z opisu zadania (ten opis nie ma źródłowego dokumentu w repo do
+// zweryfikowania dokładnych liczb — patrz raport sesji).
+r = evaluateProposal(
+  prop('umowa_szlakow', 0, 1, { turns: 20 }),
+  { ...lowTradeCtx, packageSiblingGivePn: 40 },
+);
+ok(
+  r.accepted && r.deal?.rodzaj === 'umowa_szlakow',
+  'Q2: traktat bez własnego koszyka + sąsiad na stole daje DOKŁADNIE 40 PW (== deficyt 40): pakiet akceptowany',
+);
+r = evaluateProposal(
+  prop('umowa_szlakow', 0, 1, { turns: 20 }),
+  { ...lowTradeCtx, packageSiblingGivePn: 54 },
+);
+ok(
+  r.accepted && r.deal?.rodzaj === 'umowa_szlakow',
+  'Q2: sąsiad 54 PW > deficyt 40 PW: pakiet akceptowany z nadwyżką (scenariusz zgłoszenia — pakiet total ≥ wymagane)',
+);
+r = evaluateProposal(
+  prop('umowa_szlakow', 0, 1, { turns: 20 }),
+  { ...lowTradeCtx, packageSiblingGivePn: 20 },
+);
+ok(
+  !r.accepted && r.reason.includes('Brakuje 20 PW') && r.reason.includes('pakiet na stole'),
+  'Q2: sąsiad 20 PW < deficyt 40 PW: nadal zablokowane, komunikat "Brakuje 20 PW ... pakiet na stole" (nie stara liczba 40 licząca sam traktat)',
+);
+r = evaluateProposal(
+  prop('umowa_szlakow', 0, 1, { turns: 20 }),
+  lowTradeCtx,
+);
+ok(
+  !r.accepted && r.reason.includes('Brakuje 40 PW') && !r.reason.includes('pakiet na stole'),
+  'Q2: BEZ sąsiada (ctx bez packageSiblingGivePn/receivePn) — zachowanie identyczne jak przed Q2 (Brakuje 40 PW, bez wzmianki o pakiecie): brak regresji dla wywołań spoza stołu',
+);
+r = evaluateProposal(
+  prop('umowa_szlakow', 0, 1, { turns: 20 }),
+  { ...lowTradeCtx, packageSiblingGivePn: 50, packageSiblingReceivePn: 15 },
+);
+ok(
+  !r.accepted && r.reason.includes('Brakuje 5 PW'),
+  'Q2: sąsiad z OBIE stronami koszyka (give 50, receive 15) — receive sąsiada TEŻ liczy się do gapu (80+15) - (40+50) = 5 PW, nie tylko give',
+);
+r = evaluateProposal(
+  prop('umowa_handlowa', 0, 1, { turns: 20 }),
+  { ...lowTradeCtx, packageSiblingGivePn: 40 },
+);
+ok(
+  r.accepted && r.deal?.rodzaj === 'umowa_szlakow',
+  'Q2: alias umowa_handlowa też package-aware (ten sam case w evaluateProposal)',
+);
+
 r = evaluateProposal(prop('pokoj', 0, 1, { givePn: 355, receivePn: 0 }), {
   ...lowTradeCtx,
   stanWojny: true,

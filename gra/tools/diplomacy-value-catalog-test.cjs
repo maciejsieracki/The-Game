@@ -128,11 +128,14 @@ eq(D.diplomacyHandelSurowiecCenaJednostkowa('zelazo'), 20, 'zelazo 20 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('stal'), 25, 'stal 25 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('zloto'), 50, 'zloto-surowiec 50 PN/szt.');
 eq(D.diplomacyHandelSurowiecCenaJednostkowa('wegiel'), 20, 'wegiel 20 PN/szt.');
-eq(D.diplomacyPnSurowiecIlosc('drewno', 1), 10, '1 pakiet drewno = 10 PN (1×10×1)');
-eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 2), 200, '2 pakiety ruda_zelaza = 200 PN (2×10×10)');
-eq(D.diplomacyPnSurowiecIlosc('stal', 1), 250, '1 pakiet stal = 250 PN (1×10×25)');
-eq(D.diplomacyPnSurowiecIlosc('zloto', 1), 500, '1 pakiet zloto = 500 PN (1×10×50)');
-eq(D.diplomacyPnSurowiecIlosc('wegiel', 1), 200, '1 pakiet wegiel = 200 PN (1×10×20)');
+// R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu podaje sztuki wprost — bez
+// pakietów, bez ×10. PN pozycji = sztuki × cena_PN/szt., nic więcej.
+eq(D.diplomacyPnSurowiecIlosc('drewno', 1), 1, '1 szt. drewno = 1 PN (1×1)');
+eq(D.diplomacyPnSurowiecIlosc('drewno', 4), 4, '4 szt. drewno = 4 PN (4×1) — „wpisujesz 4, dostajesz 4”');
+eq(D.diplomacyPnSurowiecIlosc('ruda_zelaza', 2), 20, '2 szt. ruda_zelaza = 20 PN (2×10)');
+eq(D.diplomacyPnSurowiecIlosc('stal', 1), 25, '1 szt. stal = 25 PN (1×25)');
+eq(D.diplomacyPnSurowiecIlosc('zloto', 1), 50, '1 szt. zloto = 50 PN (1×50)');
+eq(D.diplomacyPnSurowiecIlosc('wegiel', 1), 20, '1 szt. wegiel = 20 PN (1×20)');
 const handelCat = D.diplomacyHandelSurowceCatalog();
 ok(Object.keys(handelCat).length === 14, 'katalog handlu: 14 surowców ilościowych');
 

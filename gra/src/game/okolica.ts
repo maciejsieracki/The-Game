@@ -14,7 +14,7 @@ import type { GameMap } from '../types/map';
 import { Nakladka } from '../types/hex';
 import { hexDistance } from '../units/setup';
 import { tileYield } from './economy';
-import { foodPotentialForHex, normalizeImprovementKey } from './terrain-improvements';
+import { foodPotentialForHex, improvementKeysForHex, normalizeImprovementKey } from './terrain-improvements';
 import miastoParams from '../../data/miasto-params.json';
 import { cityBorderRadius } from './culture-religion';
 import type { City, OkolicaFocus, OkolicaTryb } from './cities';
@@ -274,15 +274,24 @@ export function resolveWorkedTiles(
   }, focus, map));
 }
 
-/** Plony heksu do rankingu auto (spójne z turn-economy / cityPanel). */
+/**
+ * Plony heksu do rankingu auto (spójne z turn-economy / cityPanel).
+ * P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08/09): musi czytać WSZYSTKIE
+ * warstwy ulepszeń (`hex.ulepszenia`), tak jak silnik (`hexToWorkedTile` →
+ * `improvementKeysForHex`) — nie tylko legacy pojedyncze pole `hex.ulepszenie`
+ * (które trzyma jedynie OSTATNIĄ postawioną warstwę, i to tylko dla części typów
+ * ulepszeń — patrz main.ts `improvementKeyToUlepszenie`).
+ */
 export function yieldOfMapHex(map: GameMap, q: number, r: number): TileYield {
   const h = map.hexes[`${q},${r}`];
   if (!h) return {};
+  const ulepszeniaKeys = improvementKeysForHex(h);
   const y = tileYield({
     terenBazowy: h.terenBazowy,
     nakladka: h.nakladka ?? Nakladka.Brak,
     maRzeke: !!(h.rzeka && h.rzeka.obecna),
-    ulepszenieKey: normalizeImprovementKey(String(h.ulepszenie ?? 'brak')),
+    ulepszenieKey: ulepszeniaKeys[0],
+    ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
   return { zywnosc: y.zywnosc, praca: y.praca, handel: y.handel };
 }

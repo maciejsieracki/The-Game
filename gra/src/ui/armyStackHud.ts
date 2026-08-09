@@ -227,13 +227,13 @@ export function createArmyStackHud(config: ArmyStackHudConfig): ArmyStackHudApi 
 
     let html = '<div class="ash-hdr">'
       + '<button type="button" class="ash-nav-arr" data-cycle="-1"' + cycleDis
-      + ' title="Poprzednia jednostka">◀</button>'
+      + ' title="Poprzednia jednostka (dowolna, niezależnie od ruchu) — Spacja: następna AKTYWNA jednostka">◀</button>'
       + '<div class="ash-title-wrap">'
       + armyIc
       + '<div><div class="ash-title">Armia · ' + esc(st.hexLabel) + '</div>'
       + '<div class="ash-meta">' + formatJednostkiCount(st.unitCount) + ' na heksie</div></div></div>'
       + '<button type="button" class="ash-nav-arr" data-cycle="1"' + cycleDis
-      + ' title="Następna jednostka">▶</button>'
+      + ' title="Następna jednostka (dowolna, niezależnie od ruchu) — Spacja: następna AKTYWNA jednostka">▶</button>'
       + '<div class="ash-hdr-actions">';
 
     if (config.onOpenArmyList) {

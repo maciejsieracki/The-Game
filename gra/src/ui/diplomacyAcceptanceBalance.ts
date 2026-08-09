@@ -237,34 +237,45 @@ export function balancePanelDataFromRows(
     if (!d) continue;
     myOfferPn += d.myOfferPn;
     theirOfferPn += d.theirOfferPn;
-    if (row.direction === 'own' && row.awaitingAiResponse) {
-      const ownOk = row.responderPreview?.accepted !== false
-        && (row.acceptanceTheir?.accepted !== false);
-      if (!ownOk) {
-        blockReason = row.responderPreview?.reason
-          ?? row.acceptanceTheir?.statusLabel
-          ?? 'Oferta nieuczciwa dla partnera';
+    // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: responderPreview (evaluateProposal, package-aware
+    // od Q2 dla umowa_szlakow/umowa_handlowa — patrz main.ts previewNegotiationEntry) jest
+    // JEDYNYM źródłem prawdy, tym samym, którego użyje backend przy realnym wysłaniu
+    // (handleRequestAiNegotiationResponse → resolveNegotiationEntryAt → ta sama
+    // evaluateProposal). `acceptanceTheir.accepted` (computePlayerAcceptanceSides) to
+    // RÓWNOLEGŁA, nie-package-aware kalkulacja wyświetlania — poleganie na niej TU dawało
+    // false negative: traktat bez własnego koszyka pokryty sąsiadem na stole (panel sumuje
+    // PW poprawnie — patrz net niżej) i tak blokował Przyjmij, bo jego WŁASNY (nie-pakietowy)
+    // bilans wciąż wychodził ujemny (BUG-PAKIET-BILANS-DODATNI-BLOKADA).
+    //
+    // BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA: ten sam responderPreview bramkuje TAKŻE
+    // wiersze incoming (nie tylko `own` powyżej) — to dokładnie ta sama funkcja
+    // (previewNegotiationEntry), którą realne wykonanie woła PER POZYCJA
+    // (main.ts handleNegotiationAcceptPackage → handleNegotiationAccept → previewNegotiationEntry).
+    // Wcześniej incoming było bramkowane wyłącznie SUMĄ PW całego stołu (`net >= 0` niżej) —
+    // suma dodatnia z jedną pozycją, która sama nie przechodzi swojej bramki (np. czysty
+    // traktat bez koszyka, gdzie `computeIncomingPlayerAcceptNetPw` zwraca null i
+    // `row.canAccept` jest zawsze `true`), aktywowała przycisk „Przyjmij pakiet"; kliknięcie
+    // wykonywało pakiet CZĘŚCIOWO — ta jedna pozycja odrzucana osobno, z toastem, reszta
+    // wykonana. `net` niżej zostaje jako WYŚWIETLANY bilans (opis), nie jako bramka.
+    // P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN: brak responderPreview (pole opcjonalne w typie) NIE
+    // może domyślnie dawać canAccept=true (fail-open) — fail-closed, jak każda inna bramka
+    // bezpieczeństwa. Dziś main.ts zawsze ustawia preview (previewNegotiationEntry wołane
+    // bezwarunkowo w buildPendingNegotiationRows), więc nieosiągalne w praktyce, ale funkcja
+    // nie może na tym polegać (defensywnie, nie z założenia "zawsze ustawione").
+    const isActionableDirection = row.direction === 'incoming'
+      || (row.direction === 'own' && row.awaitingAiResponse);
+    if (isActionableDirection) {
+      if (row.responderPreview == null) {
+        blockReason = 'Brak podglądu odpowiedzi (responderPreview) — nie można potwierdzić akceptacji';
+      } else if (row.responderPreview.accepted === false) {
+        blockReason = row.responderPreview.reason
+          ?? (row.direction === 'incoming' ? 'Warunki niespełnione' : 'Oferta nieuczciwa dla partnera');
       }
     }
   }
 
   const net = myOfferPn - theirOfferPn;
-  const allIncoming = actionable.every(r => r.direction === 'incoming');
-  // Incoming: decyzja z sumy PW (nie per-wiersz canAccept — inaczej traktat 72/80 + koszyk blokuje mimo net 0).
-  let canAccept = allIncoming ? net >= 0 : blockReason == null;
-  if (!allIncoming && blockReason == null) {
-    canAccept = actionable.every(row => {
-      if (row.direction === 'incoming') return row.canAccept !== false;
-      if (row.awaitingAiResponse) {
-        return row.responderPreview?.accepted !== false
-          && (row.acceptanceTheir?.accepted !== false);
-      }
-      return true;
-    });
-  }
-  if (allIncoming && !canAccept) {
-    blockReason = `Brakuje ${Math.abs(net)} PW`;
-  }
+  const canAccept = blockReason == null;
 
   const statusLabel = net > 0
     ? `Nadwyżka +${net} PW`
@@ -434,9 +445,22 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
       ? data.myOfferPn - data.theirOfferPn
       : their.balancePn;
   const treatyAccepted = myBal?.accepted ?? their.accepted;
+  // P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT: w trybie traktatu kolor i hint muszą iść
+  // za data.canAccept (ten sam responderPreview per-pozycja, który bramkuje przycisk Przyjmij
+  // w balancePanelDataFromRows), NIE za surowym znakiem netPw — inaczej panel pokazuje "no"
+  // (czerwony) + hint "Brakuje...dopłać" mimo aktywnego przycisku (net ujemny, ale
+  // canAccept=true, bo per-pozycja przechodzi), albo odwrotnie "ok" mimo zablokowanego
+  // przycisku (net dodatni, ale canAccept=false — oryginalny
+  // BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA). Gdy canAccept jest undefined (jedyny fallback:
+  // pojedynczy wiersz 'own' nie-awaitingAiResponse, poza pakietem — patrz
+  // balancePanelDataFromRow), zostaje stare zachowanie oparte na myBal/their.accepted. netPw
+  // (liczba w `delta` niżej) zostaje niezmieniony — wyłącznie wyświetlany bilans informacyjny.
+  const treatyModeAccepted = data.canAccept != null ? data.canAccept : treatyAccepted;
   const balCls = incomingTrade
     ? (data.canAccept !== false ? 'ok' : 'no')
-    : (treatyAccepted ? 'ok' : 'no');
+    : isTreatyMode
+      ? (treatyModeAccepted ? 'ok' : 'no')
+      : (treatyAccepted ? 'ok' : 'no');
   const delta = incomingTrade || isTreatyMode
     ? (netPw > 0 ? `+${netPw}` : String(netPw))
     : formatBalanceDelta(their.balancePn, their.accepted);
@@ -445,11 +469,13 @@ export function renderPnBalancePanelHtml(data: PnBalancePanelData | null): strin
   const hint = incomingTrade
     ? incomingTradeBalanceHint(netPw)
     : isTreatyMode
-      ? (netPw < 0
-        ? `Brakuje ${Math.abs(netPw)} PW — dopłać do bilansu`
-        : netPw > 0
-          ? `Nadwyżka +${netPw} PW`
-          : 'Równo — spełnia')
+      ? (!treatyModeAccepted
+        ? (data.responderPreview?.reason ?? their.statusLabel ?? 'Nie spełnia warunków')
+        : netPw < 0
+          ? `Spełnia warunki (bilans ${netPw} PW)`
+          : netPw > 0
+            ? `Nadwyżka +${netPw} PW`
+            : 'Równo — spełnia')
       : balanceHint(their);
   const verdict = verdictHtml(data);
   const extraNote = (data.extraOnTable ?? 0) > 0

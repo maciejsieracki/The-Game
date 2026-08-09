@@ -3588,7 +3588,7 @@ export function decideAIDiplomacy(
       komendy.push({
         type:     'zaproponuj_handel_surowiec',
         targetId: rel.partnerId,
-        powod:    `${verb}: ${resOffer.pakietyPerTura} pakiet(y)/turę` +
+        powod:    `${verb}: ${resOffer.pakietyPerTura} szt./turę` +
           ` za ${resOffer.zaplataPerTura} ${zaplataLabel}/turę przez ${resOffer.turns} tur` +
           (isDeficitTrade ? ' (deficyt surowca)' : ''),
         surowiecKey: resOffer.surowiecKey,

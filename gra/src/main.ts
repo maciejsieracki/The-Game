@@ -528,7 +528,7 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive } from './ui/cityPanel';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
@@ -751,6 +751,7 @@ import {
   type TradeGoodEntry,
   type TradeGoodsCategories,
 } from './game/diplomacy-goods';
+import { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } from './game/diplomacy-tech-trade';
 import {
   pickResourceTradeBetweenOwners,
   pickResourceDeficitForOwnerPair,
@@ -1027,7 +1028,6 @@ import {
   type AllianceObligation,
 } from './game/diplomacy-treaties';
 import { empireDiploResourceFlowPerTurn } from './game/empire-diplo-resource-flow';
-import { isEmpireAccessResource } from './game/empire-resource-access';
 import {
   activeDealsToPaymentDeals, tickDiplomacyPayments, applyOneShotGoldTransfer,
   tributeBreakPairsFromDeals, canAiProposeTradeAgreement,
@@ -1357,6 +1357,15 @@ async function boot(): Promise<void> {
           if (foundCityMode || (buildModeOpen && (activeImprovementKey || activeWonderId))) return true;
           return false;
         },
+        // BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (Maciej 2026-08-08): zoom kółkiem NIE korzysta
+        // z pełnego blockPointerAt powyżej — ten blokuje też podczas trybu zakładania miasta
+        // i trybu stawiania ulepszenia/cudu (po wybraniu celu), żeby drag/klik trafiał w
+        // placement, a nie w pan kamery. Zoom nie koliduje z placementem (nie przesuwa targetu
+        // ani nie zmienia wskazywanego heksu w płaszczyźnie XZ), więc gracz ma nadal móc
+        // przybliżać/oddalać mapę, żeby precyzyjnie wskazać heks — blokujemy zoom tylko, gdy
+        // kursor faktycznie jest nad panelem UI miasta (scroll nad panelem nie ma zoomować mapy
+        // pod spodem).
+        blockWheelAt: (x, y) => isPointOverCityPanelUi(x, y),
         // C-EDGEPAN-Q1=B (Maciej 2026-07-25): edge-pan ZAWSZE aktywny na mapie świata
         // (konwencja 4X), niezależnie od zaznaczenia jednostki. isWorldMapUnitMode() nadal
         // wyklucza panele/nakładki (miasto, bitwa, oblężenie…), żeby mapa nie „uciekała"
@@ -1590,11 +1599,40 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * R-MOC-RANKING-ROZJAZD-Q1=B (Maciej 2026-08-07): wariant EFEKTYWNY sumy Mocy
-     * armii — jedyna różnica vs sumArmyMForOwner: combatPowerScaledDefFor(u) zamiast
-     * unitDefFor(u) (ta sama def skalowana co tabliczka jednostki nad żetonem,
-     * R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B, main.ts:8062 — weteran + fortyfikacja polowa
-     * + mnożnik trudności AI). Zero nowej matematyki poza tym podstawieniem.
+     * R-MOC-RANKING-ROZJAZD-Q1=B (Maciej 2026-08-07), formuła skorygowana przez
+     * R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): wariant EFEKTYWNY sumy
+     * Mocy armii — Moc cywilizacji (panel rankingu, HUD, Empire) liczy WYŁĄCZNIE
+     * naturalne wskaźniki jednostki + premia weterana (veteranScaledDefFor(u)) —
+     * BEZ terenu, fortyfikacji (polowej i garnizonowej), muru/struktury miasta i
+     * BEZ mnożnika trudności AI (bonusWalka) — bo to wszystko zależy od TEGO,
+     * gdzie jednostka akurat stoi / jakim ownerem jest, nie od jej siły samej w
+     * sobie. TO NIE JEST ta sama liczba co tabliczka nad żetonem
+     * (combatPowerFullDisplayDefFor, main.ts wyżej) — dwie różne, jawnie
+     * rozdzielone definicje, patrz docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md.
+     *
+     * Do 2026-08-09 ta funkcja wołała combatPowerScaledDefFor(u) (weteran +
+     * fortyfikacja polowa/garnizon bez muru + mnożnik trudności AI) — ZA DUŻO
+     * względem decyzji: civ-power AI dostawał dodatkowy bonus z trudności gry,
+     * którego jednostka gracza (bez tego mnożnika) nie ma, co psuło porównanie
+     * "surowej" siły cywilizacji niezależnie od tego, gdzie akurat stoi jej armia.
+     *
+     * "bonusy z ulepszeń jednostki" (trwałe, zapisane w definicji) — SPRAWDZONE
+     * (2026-08-09): jedyny mechanizm zmieniający DEFINICJĘ jednostki na trwałe to
+     * podmiana typeId przy ulepszeniu technologicznym (unit-replace) — to już jest
+     * w pełni wliczone w unitDefFor()/lookupUnitDef() (veteranScaledDefFor bazuje
+     * na unitDefFor). ISTNIEJE też DRUGI, niezależny system trwałych bonusów --
+     * RuntimeUnit.pancerzBonusProc/parametryBonusProc (game/unit-building-bonuses.ts,
+     * zdobywane przez wizytę w mieście z budynkami kuźniczymi/szkoleniowymi,
+     * "trwałe: nie znikają po wyjściu z miasta") — te NIE są dziś wliczone w
+     * unitDefFor()/veteranScaledDefFor() ani w żadną funkcję M-mocy (są używane
+     * WYŁĄCZNIE do wyświetlania karty jednostki, unitCardCombatFor, i do
+     * bitwy OGLĄDANEJ przez osobne pole BattleUnit.pancerzBonusFrac/
+     * parametryBonusFrac -- runtimeToBattleUnit) -- OTWARTE, poza zakresem tego
+     * zadania (wymagałoby wpięcia całkiem nowej ścieżki w M-power, potencjalnie
+     * dotykającej też auto-walki mocą / effectiveDefenderM, co jest zakazane przez
+     * C-025 tego zadania) -- zgłoszone do PYTANIA-OTWARTE zamiast domyślnego
+     * doliczenia bez decyzji właściciela.
+     *
      * Karmi WYŁĄCZNIE panel Mocy imperium widoczny dla gracza (buildPowerRankingByOwner/
      * buildPowerOverlayData/buildEmpireDetailSnap — ścieżka (a)). NIE wolno jej podłączyć
      * do militaryRatioFromArmyM ani do żadnego progu decyzji dyplomatycznej AI — te
@@ -1606,7 +1644,7 @@ async function boot(): Promise<void> {
       for (const u of units) {
         if (u.ownerId !== ownerId) continue;
         if (!opcje.liczyOsadnikWArmii && u.category === 'osadnik') continue;
-        sum += armyFieldPower(combatPowerScaledDefFor(u));
+        sum += armyFieldPower(veteranScaledDefFor(u));
       }
       return sum;
     }
@@ -1835,6 +1873,13 @@ async function boot(): Promise<void> {
         // po ownerId, więc gracz i AI liczeni identycznie (PARYTET AI).
         getCapitalCityId: (ownerId) => capitalCityIdForOwner(ownerId),
         getCivDisplayName: (ownerId) => civDisplayNameForOwner(ownerId),
+        // R-ETYKIETA-MIASTA-WZROST-PROCENT — segment WZROST% plakietki (dawne „W5").
+        // Jedno źródło prawdy z panelem miasta: cityGrowthLive() woła ten sam computeView(),
+        // z którego żyje wiersz „WZROST%" w panelu — nie migawkę z końca tury. Renderer pyta
+        // wyłącznie o miasta gracza (render/cities.ts::_buildBadgeInput), a syncStatChips leci
+        // ze zdarzeń (ruch/hover/koniec tury), nie z pętli renderu — patrz nota wydajnościowa
+        // w cities.ts przy getCityGrowth.
+        getCityGrowth: (city) => cityGrowthLive(city, map),
       };
     };
 
@@ -2304,24 +2349,30 @@ async function boot(): Promise<void> {
     /**
      * C-DYP-SUROWCE-Q1=B (2026-07-23): surowce ILOŚCIOWE (magazyn miast — drewno/kamień/
      * glina/cegła/ceramika/ruda) FAKTYCZNIE posiadane przez ownera, wycenione prostą
-     * ceną jednostkową (econ-params.json „handel_surowce"). Strona może zaoferować
-     * max tyle pakietów, ile ma pełnych — floor(zapas/pakiet); zero pełnych pakietów
-     * → pozycja pominięta (nie ma czym handlować).
+     * ceną jednostkową (econ-params.json „handel_surowce"). R-DYP-PAKIET-USUN
+     * (2026-08-08, Maciej): strona może zaoferować max tyle SZTUK, ile faktycznie ma
+     * w magazynie — bez pakietów, bez ×10; zero zapasu → pozycja pominięta (nie ma
+     * czym handlować).
+     * BUGFIX (Evaluator 2026-08-08, blocker 2): `label` to ZAWSZE czysta nazwa surowca —
+     * bez dopisywania „— dost. N" do stringa. Ilość dostępna jest osobnym polem `maxQty`;
+     * kto chce ją pokazać graczowi, składa tekst sam (patrz diplomacyTradeBasket.ts). Wcześniej
+     * dopisywanie do `label` psuło `diplomacy-resource-trade-pick.ts#buildOffer`, który
+     * wycina z tego stringa czystą nazwę do komunikatów AI (`sellerOpt.label.split(' ×')[0]`)
+     * — dopisek bez separatora ' ×' przechodził w całości do tekstu ofert AI.
      */
-    function quantityTradableGoodOptions(ownerId: number): Array<{ id: string; label: string; maxPakiety: number }> {
+    function quantityTradableGoodOptions(ownerId: number): Array<{ id: string; label: string; maxQty: number }> {
       const priced = diplomacyHandelSurowceCatalog();
-      const pakiet = diplomacyHandelSurowcePakietWielkosc();
       return tradableGoodsIndexForOwner(ownerId)
         .filter(g => Object.prototype.hasOwnProperty.call(priced, g.key))
         .map(g => {
-          const maxPakiety = Math.floor((g.ilosc ?? 0) / pakiet);
+          const maxQty = Math.floor(g.ilosc ?? 0);
           return {
             id: g.key,
-            label: g.label + ' ×' + pakiet + ' (pakiet)' + (maxPakiety > 0 ? ' — dost. ' + maxPakiety : ''),
-            maxPakiety,
+            label: g.label,
+            maxQty,
           };
         })
-        .filter(g => g.maxPakiety > 0);
+        .filter(g => g.maxQty > 0);
     }
 
     /**
@@ -2495,12 +2546,9 @@ async function boot(): Promise<void> {
         const diploOut = flow?.outPerTurn ?? 0;
         const diploIn = flow?.inPerTurn ?? 0;
         const ratePerTurn = production - diploOut + diploIn;
-        // R-SUROWCE-DOSTEP: wiersze dostępu (Ceramika/Sól/Koń/Złoto) muszą mieć cap
-        // undefined — panel imperium filtruje access po `cap == null`.
-        const isAccessRow = isEmpireAccessResource(c.id);
-        const cap = isAccessRow ? undefined : empireCap;
-        const capBase = isAccessRow ? undefined : storageParams.bazaSurowcePanstwo;
-        const capBonusPerMagazyn = isAccessRow ? undefined : storageParams.bonusSurowceNaBudynek;
+        const cap = empireCap;
+        const capBase = storageParams.bazaSurowcePanstwo;
+        const capBonusPerMagazyn = storageParams.bonusSurowceNaBudynek;
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
           rateProductionPerTurn: production,
@@ -4495,9 +4543,17 @@ async function boot(): Promise<void> {
         && u.ufortyfikowanyWPolu !== true;
     }
 
-    /** Wszystkie armie gracza (1 wiodąca/heks) — tylko aktywne do ruchu; kolejność przestrzenna. */
-    function cyclablePlayerArmyLeads(): RuntimeUnit[] {
-      const playerUnits = units.filter(u => u.ownerId === 0 && isUnitActiveForCycle(u));
+    /**
+     * Wspólna implementacja list cyklowania armii gracza (1 wiodąca/heks; kolejność przestrzenna).
+     * `requireMoves=true` → tylko stosy z dostępnym ruchem w tej turze (Spacja, auto-cykl „bęben”).
+     * `requireMoves=false` → wszystkie aktywne stosy, niezależnie od ruchu (strzałki HUD ◀▶;
+     * decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA, 2026-08-08: strzałka = dowolna
+     * następna jednostka, Spacja = następna AKTYWNA (z ruchem) jednostka).
+     */
+    function cyclablePlayerArmyLeadsBase(requireMoves: boolean): RuntimeUnit[] {
+      const playerUnits = units.filter(
+        u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || stackCanMove(u)),
+      );
       const stacks = new Map<string, RuntimeUnit[]>();
       for (const u of playerUnits) {
         const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
@@ -4519,19 +4575,45 @@ async function boot(): Promise<void> {
       return out;
     }
 
+    /** Wszystkie armie gracza (1 wiodąca/heks) z DOSTĘPNYM RUCHEM — kolejność przestrzenna.
+     * Używane przez Spację i auto-cykl „bęben” po wyczerpaniu ruchu. */
+    function cyclablePlayerArmyLeads(): RuntimeUnit[] {
+      return cyclablePlayerArmyLeadsBase(true);
+    }
+
+    /** Wszystkie armie gracza (1 wiodąca/heks), NIEZALEŻNIE od dostępnego ruchu — kolejność
+     * przestrzenna. Używane przez strzałki HUD ◀▶ (decyzja właściciela 2026-08-08). */
+    function cyclablePlayerArmyLeadsAll(): RuntimeUnit[] {
+      return cyclablePlayerArmyLeadsBase(false);
+    }
+
     function armyLeadHexKey(u: RuntimeUnit): string {
       return u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
     }
 
-    /** Spacja, strzałki HUD i auto-cykl po ruchu — cykl po wszystkich armiach gracza (nie tylko z ruchem). */
-    function cycleToAdjacentPlayerUnit(afterId: string | null, delta: 1 | -1): void {
+    /**
+     * Spacja i auto-cykl „bęben” po ruchu — cykl WYŁĄCZNIE po armiach gracza, które jeszcze mają
+     * dostępny ruch w tej turze. Strzałki HUD ◀▶ wołają tę samą funkcję z `opts.all=true`, co
+     * przełącza na `cyclablePlayerArmyLeadsAll()` (wszystkie armie, niezależnie od ruchu) —
+     * decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08).
+     */
+    function cycleToAdjacentPlayerUnit(
+      afterId: string | null,
+      delta: 1 | -1,
+      opts?: { all?: boolean },
+    ): void {
       if (!isWorldMapUnitMode()) return;
-      const list = cyclablePlayerArmyLeads();
+      const list = opts?.all === true ? cyclablePlayerArmyLeadsAll() : cyclablePlayerArmyLeads();
       if (list.length === 0) {
         clearPlayerUnitSelection();
         return;
       }
-      let cur = afterId === null ? (delta > 0 ? -1 : 0) : 0;
+      // Domyślnie (brak zaznaczenia LUB zaznaczona jednostka nie występuje już w `list` — np.
+      // bęben po ruchu, kiedy jednostka właśnie wyczerpała ruch i wypadła z listy „z ruchem"):
+      // start tuż PRZED pierwszym/PO ostatnim elemencie, żeby +delta wylądował na list[0]
+      // (w przód) albo list[list.length-1] (wstecz) — bez pomijania najbliższej możliwej
+      // jednostki w kierunku ruchu.
+      let cur = delta > 0 ? -1 : 0;
       if (afterId !== null) {
         const idxById = list.findIndex(u => u.id === afterId);
         if (idxById >= 0) {
@@ -7132,7 +7214,10 @@ async function boot(): Promise<void> {
         praca: ownerPracaPool(ownerId),
         foodReserve: empireFoodStates.get(ownerId)?.zapasyPanstwa ?? 0,
         stock: ownerSurowcePoolFor(ownerId),
-        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+        // R-DYP-PAKIET-USUN (2026-08-08): diplomacy-ai-balance.ts liczy koszyk w sztukach
+        // wprost — pakietWielkosc=1 (no-op) zamiast diplomacyHandelSurowcePakietWielkosc()
+        // (10), żeby nie mnożyć realnych sztuk × pakiet przy sprawdzaniu pokrycia zapasem.
+        pakietWielkosc: 1,
         resourceRates: mergedResourceRatesForOwner(ownerId),
       };
     }
@@ -7177,7 +7262,9 @@ async function boot(): Promise<void> {
         partnerStock: ownerSurowcePoolFor(0),
         aiResourceRates: mergedResourceRatesForOwner(aiOwnerId),
         partnerResourceRates: mergedResourceRatesForOwner(0),
-        pakietWielkosc: diplomacyHandelSurowcePakietWielkosc(),
+        // R-DYP-PAKIET-USUN (2026-08-08): patrz komentarz w ownerBasketAffordCtx powyżej —
+        // pakietyPerTura to dziś sztuki wprost, pakietWielkosc=1 (no-op) w clampie.
+        pakietWielkosc: 1,
         defaultTurns: 10,
       };
     }
@@ -7308,8 +7395,9 @@ async function boot(): Promise<void> {
             break;
           }
           case 'surowiec_ilosc': {
-            // C-DYP-SUROWCE-Q1=B: `qty` z koszyka = liczba PAKIETÓW, nie sztuk.
-            const totalUnits = qty * diplomacyHandelSurowcePakietWielkosc();
+            // R-DYP-PAKIET-USUN (2026-08-08): `qty` z koszyka to SZTUKI wprost (dawniej
+            // liczba pakietów × pakiet_wielkosc — usunięte na życzenie właściciela).
+            const totalUnits = qty;
             const capId = capitalCityIdForOwner(toOwnerId);
             const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
             const result = transferSurowiecIlosc(item.id, totalUnits, fromOwnerId, toOwnerId, capId, refs);
@@ -8215,27 +8303,33 @@ async function boot(): Promise<void> {
         // (hpMaxEffective z game/unit-card-stats.ts) — mapa i panel nie mogą
         // pokazać innego maksimum HP dla tej samej jednostki.
         maxHpOf: (u: RuntimeUnit) => unitCardCombatFor(u, defForUnit(u)).hpMaxEffective,
-        // R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B (Maciej 2026-08-07): Moc EFEKTYWNA,
-        // nie nominalna -- ta sama definicja skalowana (weteran + fortyfikacja
-        // polowa/garnizon bez muru + mnożnik trudności AI), której realnie
-        // używa rosterFieldPowerM()/resolveAutoBattleByPower() do rozstrzygania
-        // auto-bitwy (patrz combatPowerScaledDefFor niżej w tym pliku).
-        // R-MOC-DEFINICJA-Q1 (Maciej 2026-08-08): "Moc" WYŚWIETLANA graczowi
-        // (tabliczka nad żetonem, tooltip, panel rankingu, HUD, Empire) NIGDY
-        // nie liczy budynków ani terenu -- tylko własne wskaźniki jednostki +
-        // premia weterana. Częściowe cofnięcie R-MOC-MUR-PARADOKS-Q1=A
-        // (2026-08-07, commit f94216e): funkcja tabliczkaGarnizonScaledDefFor(),
-        // która dla garnizonu za murem dociągała bonus struktury/terenu na
-        // tabliczkę, została USUNIĘTA -- tabliczka znów woła gołe
-        // combatPowerScaledDefFor(u) (weteran + fortyfikacja polowa/garnizon
-        // bez muru + trudność AI, ale bez bonusu STRUKTURY muru/terenu),
-        // tak jak przed tamtą decyzją. Rzeczywiste rozstrzygnięcie bitwy
-        // (effectiveDefenderM, gałąź isCity) nadal liczy PEŁNY bonus struktury/
-        // terenu -- to jest ŚWIADOMY, udokumentowany paradoks tabliczki:
-        // tabliczka garnizonu za murem pokazuje NIŻSZĄ Moc niż realna Obrona
-        // tego miasta w bitwie (patrz mur-paradoks-test.cjs, zaktualizowany
-        // pod tę decyzję).
-        defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u),
+        // R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): tabliczka nad
+        // żetonem pokazuje REALNĄ Moc, ze WSZYSTKIMI bonusami jednostki --
+        // teren, fortyfikacja (polowa i garnizonowa), mur/struktura miasta,
+        // weteran. TO NIE JEST ta sama liczba co Moc cywilizacji (panel
+        // rankingu/HUD/Empire, sumArmyMForOwnerEffective niżej w tym pliku) --
+        // tamta liczy WYŁĄCZNIE wskaźniki własne jednostki + weteran, BEZ
+        // terenu/fortyfikacji/muru (bo to zależy od tego, gdzie jednostka
+        // akurat stoi, nie od jej siły samej w sobie). Dwie różne liczby,
+        // każda z osobną, jawną definicją -- patrz docs/decyzje/
+        // R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md.
+        //
+        // combatPowerFullDisplayDefFor(u) (niżej w tym pliku) = combatPowerScaledDefFor(u)
+        // (weteran + fortyfikacja polowa/garnizon bez muru + trudność AI) +
+        // bonus STRUKTURY/terenu miasta gdy jednostka jest w garnizonie za
+        // murem -- identycznie jak realne rozstrzygnięcie bitwy
+        // (effectiveDefenderM, gałąź isCity), ale bez efektu ubocznego na
+        // samą bitwę (osobna funkcja, wyłącznie do PODGLĄDU).
+        //
+        // KOREKTA zakresu R-MOC-DEFINICJA-Q1 (2026-08-08) -- ta decyzja
+        // błędnie zunifikowała WSZYSTKIE wyświetlenia Mocy (w tym tabliczkę)
+        // pod regułą "nigdy nie liczy budynków ani terenu", co spowodowało
+        // paradoks: tabliczka garnizonu za murem pokazywała NIŻSZĄ Moc niż
+        // bez murów. R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09) naprawia to,
+        // rozdzielając na dwie funkcje -- mur-paradoks-test.cjs sprawdza teraz
+        // WPROST, że tabliczka za murem jest WYŻSZA (lub równa), nie dokumentuje
+        // świadomego paradoksu.
+        defOf: (u: RuntimeUnit) => combatPowerFullDisplayDefFor(u),
       });
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
@@ -11785,6 +11879,82 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: akcje z WŁASNĄ bramką treatyBaseFairnessGap
+     * (diplomacy-proposals.ts) — wykluczone z sumy sąsiadów w packageSiblingPn.
+     *
+     * KOREKTA (Evaluator, znalezisko #4): to wykluczenie NIE chroni przed dwoma traktatami
+     * (np. umowa_szlakow + umowa_handlowa) na jednym stole obiema czerpiącymi z TEGO SAMEGO
+     * sąsiada spoza zbioru (np. jednego `handel` wartego 100 PW) — sprawdzone ręcznie:
+     * packageSiblingPn liczy sąsiadów NIEZALEŻNIE dla każdego traktatu z osobna, więc oba
+     * dostałyby pełny kredyt z tego samego koszyka. Ten scenariusz (dwa traktaty handlowe
+     * na jednym stole) jest dziś osiągalny wyłącznie z legacy save — obecne UI tworzy
+     * zawsze `umowa_szlakow` — więc NIE jest blokerem, ale wymaga poprawnego opisu: to, co
+     * ten zbiór FAKTYCZNIE robi, to zapobiega, żeby dedykowany koszyk `pokoj` (własna baza
+     * 500 PW, evaluateProposal case 'pokoj') zasilał TEŻ próg umowa_szlakow/umowa_handlowa
+     * jako „sąsiad" — jedna klasa traktatu nie dubluje się w koszyk innej dedykowanej klasy
+     * traktatu. `pokoj` NIE jest dziś objęty samą naprawą Q2 (poza zakresem zlecenia), ale
+     * zostaje w tym zbiorze wykluczeń z tego właśnie powodu.
+     */
+    const TREATY_GATED_NEGOTIATION_ACTIONS: ReadonlySet<string> = new Set([
+      'pokoj', 'umowa_szlakow', 'umowa_handlowa',
+    ]);
+
+    function isTreatyBaseFairnessAction(actionId: string): boolean {
+      return actionId === 'umowa_szlakow' || actionId === 'umowa_handlowa';
+    }
+
+    /** Partner AI (ownerId≠0) dla wpisu stołu gracz↔AI — proposerOwnerId lub responderOwnerId, którykolwiek nie jest graczem. */
+    function negotiationPartnerOwnerIdOf(entry: Pick<PendingNegotiation, 'proposerOwnerId' | 'responderOwnerId'>): number {
+      return entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+    }
+
+    /**
+     * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: suma PW z INNYCH pozycji NA TYM SAMYM stole,
+     * między tymi samymi stronami i w TYM SAMYM kierunku (proposerId→responderId) —
+     * doliczana do treatyBaseFairnessGap (patrz ProposalEvalContext.packageSiblingGivePn/
+     * packageSiblingReceivePn). Pomija pozycje objęte WŁASNĄ bramką treatyBaseFairnessGap
+     * (TREATY_GATED_NEGOTIATION_ACTIONS). `scopeIds`, gdy podane, zawęża sumę do KONKRETNEGO
+     * zbioru id (snapshot pakietu SPRZED wykonania jakiejkolwiek pozycji) — inaczej kolejność
+     * wykonania pakietu (id sortowane alfabetycznie w actionableNegotiationIdsForPair — np.
+     * 'negot-handel-…' < 'negot-umowa_szlakow-…') zdejmowałaby sąsiada ze stołu PRZED oceną
+     * traktatu i zgubiłaby kredyt pakietu (patrz handleNegotiationAcceptPackage niżej).
+     */
+    function packageSiblingPn(
+      proposerId: number,
+      responderId: number,
+      excludeId: string,
+      scopeIds?: readonly string[],
+    ): { givePn: number; receivePn: number } {
+      let givePn = 0;
+      let receivePn = 0;
+      for (const n of negotiationTable) {
+        if (n.id === excludeId) continue;
+        if (n.proposerOwnerId !== proposerId || n.responderOwnerId !== responderId) continue;
+        if (TREATY_GATED_NEGOTIATION_ACTIONS.has(n.actionId)) continue;
+        if (scopeIds && !scopeIds.includes(n.id)) continue;
+        const pn = resolveProposalPn(n.payload, {
+          difficulty: _menuDifficulty,
+          proposerOwnerId: proposerId,
+          playerOwnerId: 0,
+          ...proposalPnTurnsMultiplier(n.payload),
+        });
+        givePn += pn.givePn;
+        receivePn += pn.receivePn;
+      }
+      return { givePn, receivePn };
+    }
+
+    /** Sąsiad pakietu dla WPISU stołu (live scan) — używany, gdy wołający nie ma gotowego snapshotu. */
+    function livePackageSiblingFor(
+      entry: Pick<PendingNegotiation, 'id' | 'actionId' | 'proposerOwnerId' | 'responderOwnerId'>,
+    ): { givePn: number; receivePn: number } | undefined {
+      if (!isTreatyBaseFairnessAction(entry.actionId)) return undefined;
+      const partnerId = negotiationPartnerOwnerIdOf(entry);
+      const scopeIds = actionableNegotiationIdsForPair(partnerId);
+      return packageSiblingPn(entry.proposerOwnerId, entry.responderOwnerId, entry.id, scopeIds);
+    }
+
+    /**
      * C-DYP-Q1=B (2026-07-26, Maciej — po playteście: negocjacja NA ŻYWO, bez czekania na
      * koniec tury; jego słowa: „wszystkie decyzje powinny być na bieżąco rozwiązywane",
      * „gracz będzie myślał, że coś się nie udało… to jest nielogiczne"). Rozstrzyga JEDEN
@@ -11798,8 +11968,16 @@ async function boot(): Promise<void> {
      * jako AWARYJNA siatka bezpieczeństwa w turze AI — w normalnym biegu nie powinna mieć
      * już nic do zrobienia (każdy wpis rozstrzyga się w miejscu powstania), ale chroni na
      * wypadek wpisu, który z jakiegoś powodu przetrwał nierozstrzygnięty.
+     *
+     * `siblingOverride` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A): sąsiad pakietu policzony NA
+     * SNAPSHOCIE stołu sprzed wykonania (patrz handleNegotiationAcceptPackage) — gdy podany,
+     * wygrywa nad live scanem (`livePackageSiblingFor`), żeby kolejność wykonania pakietu nie
+     * gubiła kredytu dla traktatu ocenianego PO usunięciu sąsiada ze stołu.
      */
-    function resolveNegotiationEntryAt(ni: number): void {
+    function resolveNegotiationEntryAt(
+      ni: number,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): void {
       const entry = negotiationTable[ni];
       if (!entry) return;
       const awaitingId = entry.awaitingOwnerId;
@@ -11813,7 +11991,8 @@ async function boot(): Promise<void> {
         showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
         return;
       }
-      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+      const sibling = siblingOverride ?? livePackageSiblingFor(entry);
+      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
       const outcome = resolveNegotiationAsResponder(entry, ctx, turn);
       if (outcome.kind === 'countered') {
         const clampedPayload = clampNegotiationPayloadToRealResources(
@@ -11855,11 +12034,25 @@ async function boot(): Promise<void> {
      */
     function resolvePendingNegotiationsForOwner(ownerId: number): void {
       let changed = false;
+      // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: snapshot pakietu SPRZED pierwszej pozycji
+      // rozstrzygniętej w tej pętli — ta sama ochrona co handleNegotiationAcceptPackage
+      // (patrz packageSiblingPn), inaczej rozstrzygnięcie i usunięcie sąsiada wcześniej w
+      // TEJ SAMEJ pętli zgubiłoby jego kredyt dla traktatu ocenianego później.
+      const scopeIds = negotiationTable
+        .filter(n => n.awaitingOwnerId === ownerId && (n.proposerOwnerId === 0 || n.responderOwnerId === 0))
+        .map(n => n.id);
+      const siblingByTreatyId = new Map<string, { givePn: number; receivePn: number }>();
+      for (const id of scopeIds) {
+        const e = negotiationTable.find(n => n.id === id);
+        if (e && isTreatyBaseFairnessAction(e.actionId)) {
+          siblingByTreatyId.set(id, packageSiblingPn(e.proposerOwnerId, e.responderOwnerId, id, scopeIds));
+        }
+      }
       for (let ni = negotiationTable.length - 1; ni >= 0; ni--) {
         const entry = negotiationTable[ni]!;
         if (entry.awaitingOwnerId !== ownerId) continue;
         if (entry.proposerOwnerId !== 0 && entry.responderOwnerId !== 0) continue;
-        resolveNegotiationEntryAt(ni);
+        resolveNegotiationEntryAt(ni, siblingByTreatyId.get(entry.id));
         changed = true;
       }
       if (changed) {
@@ -11868,8 +12061,20 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** Gracz Przyjmuje wpis stołu — incoming: akceptacja AI; own: wysłanie propozycji do partnera (Przyjmij w PN). */
-    function handleNegotiationAccept(negotiationId: string): void {
+    /**
+     * Gracz Przyjmuje wpis stołu — incoming: akceptacja AI; own: wysłanie propozycji do
+     * partnera (Przyjmij w PN).
+     *
+     * `siblingOverride` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A): sąsiad pakietu na SNAPSHOCIE
+     * stołu sprzed wykonania (patrz handleNegotiationAcceptPackage) — gdy podany, wygrywa
+     * nad live scanem, żeby decyzja tu i decyzja przy realnym rozstrzygnięciu AI
+     * (resolveNegotiationEntryAt niżej) były SPÓJNE nawet gdy wcześniejsza pozycja
+     * pakietu została w międzyczasie zdjęta ze stołu.
+     */
+    function handleNegotiationAccept(
+      negotiationId: string,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): void {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
@@ -11888,15 +12093,15 @@ async function boot(): Promise<void> {
         return;
       }
       if (entry.awaitingOwnerId !== 0) {
-        const aiPreview = previewNegotiationEntry(entry);
+        const aiPreview = previewNegotiationEntry(entry, siblingOverride);
         if (!aiPreview.accepted) {
           showHintMessage('Nie można wysłać — ' + (aiPreview.reason ?? 'oferta nieuczciwa dla partnera'), 4000);
           return;
         }
-        handleRequestAiNegotiationResponse(negotiationId);
+        handleRequestAiNegotiationResponse(negotiationId, siblingOverride);
         return;
       }
-      const preview = previewNegotiationEntry(entry);
+      const preview = previewNegotiationEntry(entry, siblingOverride);
       if (!preview.accepted) {
         showHintMessage('Nie można przyjąć — ' + (preview.reason ?? 'warunki niespełnione'), 4000);
         return;
@@ -11973,12 +12178,32 @@ async function boot(): Promise<void> {
         .sort((a, b) => a.localeCompare(b));
     }
 
-    /** R-DYPLO-STOL-ACCEPT-Q1=A — Przyjmij cały pakiet (stabilna kolejność). */
+    /**
+     * R-DYPLO-STOL-ACCEPT-Q1=A — Przyjmij cały pakiet (stabilna kolejność).
+     *
+     * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: sąsiad pakietu dla KAŻDEJ pozycji objętej bramką
+     * treatyBaseFairnessGap (umowa_szlakow/umowa_handlowa) liczony RAZ, na snapshocie `ids`
+     * SPRZED wykonania jakiejkolwiek pozycji — `ids` są sortowane alfabetycznie
+     * (actionableNegotiationIdsForPair), więc np. 'negot-handel-…' wykonuje się PRZED
+     * 'negot-umowa_szlakow-…' i zostaje zdjęty ze stołu; live scan w tym momencie
+     * zgubiłby jego PW jako kredyt dla traktatu. Snapshot eliminuje tę zależność od
+     * kolejności — decyzja jest identyczna z tym, co pokazał panel PRZED kliknięciem.
+     */
     function handleNegotiationAcceptPackage(ownerId: number): void {
       const ids = actionableNegotiationIdsForPair(ownerId);
+      const siblingByTreatyId = new Map<string, { givePn: number; receivePn: number }>();
+      for (const id of ids) {
+        const entry = negotiationTable.find(n => n.id === id);
+        if (entry && isTreatyBaseFairnessAction(entry.actionId)) {
+          siblingByTreatyId.set(
+            id,
+            packageSiblingPn(entry.proposerOwnerId, entry.responderOwnerId, id, ids),
+          );
+        }
+      }
       for (const id of ids) {
         if (negotiationTable.some(n => n.id === id)) {
-          handleNegotiationAccept(id);
+          handleNegotiationAccept(id, siblingByTreatyId.get(id));
         }
       }
     }
@@ -12015,12 +12240,15 @@ async function boot(): Promise<void> {
     }
 
     /** Gracz prosi AI o odpowiedź na własną propozycję (bez auto-resolve przy wysłaniu). */
-    function handleRequestAiNegotiationResponse(negotiationId: string): void {
+    function handleRequestAiNegotiationResponse(
+      negotiationId: string,
+      siblingOverride?: { givePn: number; receivePn: number },
+    ): void {
       const idx = negotiationTable.findIndex(n => n.id === negotiationId);
       if (idx < 0) return;
       const entry = negotiationTable[idx]!;
       if (entry.awaitingOwnerId === 0) return;
-      resolveNegotiationEntryAt(idx);
+      resolveNegotiationEntryAt(idx, siblingOverride);
       refreshD1bHud();
       updateDiplomacyAudience();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
@@ -12072,11 +12300,20 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** Podgląd oceny warunków przez respondenta (evaluateProposal, bez mutacji stanu). */
+    /**
+     * Podgląd oceny warunków przez respondenta (evaluateProposal, bez mutacji stanu).
+     *
+     * `siblingOverride` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A): sąsiad pakietu z gotowego
+     * snapshotu (handleNegotiationAcceptPackage/resolvePendingNegotiationsForOwner) — gdy
+     * brak, liczony live (`livePackageSiblingFor`), co jest poprawne dla pojedynczego
+     * Przyjmij poza pakietem (nic jeszcze nie zniknęło ze stołu).
+     */
     function previewNegotiationEntry(
       entry: PendingNegotiation,
+      siblingOverride?: { givePn: number; receivePn: number },
     ): { accepted: boolean; reason?: string } {
-      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId);
+      const sibling = siblingOverride ?? livePackageSiblingFor(entry);
+      const ctx = buildProposalEvalContext(entry.proposerOwnerId, entry.responderOwnerId, sibling);
       const relTotal = treatyEvalRelationTotal(ctx.relation);
       const incoming = entry.awaitingOwnerId === 0;
       if (incoming) {
@@ -13235,7 +13472,7 @@ async function boot(): Promise<void> {
 
     /** Cache na jedną turę AI ownera — pickResourceTradeRelOffer wołany O(N²) w dyplomacji. */
     let aiDiploTradeGoodsCache: Map<number, TradeGoodEntry[]> | null = null;
-    let aiDiploQtyOptionsCache: Map<number, Array<{ id: string; label: string; maxPakiety: number }>> | null = null;
+    let aiDiploQtyOptionsCache: Map<number, Array<{ id: string; label: string; maxQty: number }>> | null = null;
 
     function tradableGoodsForAiDiplo(ownerId: number): TradeGoodEntry[] {
       if (!aiDiploTradeGoodsCache) return tradableGoodsIndexForOwner(ownerId);
@@ -13246,7 +13483,7 @@ async function boot(): Promise<void> {
       return v;
     }
 
-    function quantityOptionsForAiDiplo(ownerId: number): Array<{ id: string; label: string; maxPakiety: number }> {
+    function quantityOptionsForAiDiplo(ownerId: number): Array<{ id: string; label: string; maxQty: number }> {
       if (!aiDiploQtyOptionsCache) return quantityTradableGoodOptions(ownerId);
       const hit = aiDiploQtyOptionsCache.get(ownerId);
       if (hit) return hit;
@@ -13301,7 +13538,9 @@ async function boot(): Promise<void> {
       const sellerOwnerId = pick.sellerOwnerId;
       const sellerRates = mergedResourceRatesForOwner(sellerOwnerId);
       const sellerRate = sellerRates[pick.surowiecKey] ?? 0;
-      const maxFromProduction = Math.floor(sellerRate / pakiet);
+      // R-DYP-PAKIET-USUN (2026-08-08): sellerRate to już sztuki/turę — bez dzielenia
+      // przez wielkość pakietu (usunięta z handlu, patrz diplomacy-value-catalog.ts).
+      const maxFromProduction = Math.floor(sellerRate);
       let pakietyPerTura = Math.min(
         pick.pakietyPerTura,
         maxFromProduction,
@@ -13401,7 +13640,7 @@ async function boot(): Promise<void> {
       return {
         type: 'zaproponuj_handel_surowiec',
         targetId: '0',
-        powod: `${verb}: ${offer.pakietyPerTura} pakiet(y)/turę`
+        powod: `${verb}: ${offer.pakietyPerTura} szt./turę`
           + ` za ${offer.zaplataPerTura} ${zaplataLabel}/turę przez ${AI_RESOURCE_TRADE_DEFAULT_TURNS} tur`
           + (offer.powod === 'deficyt' ? ' (deficyt surowca)' : ''),
         surowiecKey: offer.surowiecKey,
@@ -13595,7 +13834,7 @@ async function boot(): Promise<void> {
           if (handelSurowiecCykliczny) {
             console.log(
               `[Dyplomacja] AI↔AI handel surowcem: ${ownerDiploLabel(bestOffer!.seller)} → ` +
-              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} pakiet(y)/turę`,
+              `${ownerDiploLabel(bestOffer!.buyer)}: ${bestOffer!.offer.label} ×${bestOffer!.offer.pakietyPerTura} szt./turę`,
             );
           }
           syncRelationFromDeals(a, b);
@@ -13879,10 +14118,10 @@ async function boot(): Promise<void> {
       sellerAtFault: boolean,
       buyerAtFault: boolean,
       treasury: ReturnType<typeof buildDiploTreasury>,
-      pakietWielkosc: number,
     ): boolean {
       if (delivered) {
-        const totalUnits = item.pakietyPerTura * pakietWielkosc;
+        // R-DYP-PAKIET-USUN (2026-08-08): pakietyPerTura to sztuki/turę wprost.
+        const totalUnits = item.pakietyPerTura;
         const capId = capitalCityIdForOwner(item.buyerOwnerId);
         const refs = cities.map(c => ({ id: c.id, ownerId: c.ownerId, surowce: c.surowce ?? {} }));
         const result = transferSurowiecIlosc(
@@ -13943,16 +14182,16 @@ async function boot(): Promise<void> {
       wiarygodnoscCyclicDeliveryOkThisTurn.clear();
       if (!activeDeals.some(d => (d.handelSurowiecCykliczny?.length ?? 0) > 0)) return;
       const treasury = buildDiploTreasury();
-      const pakietWielkosc = diplomacyHandelSurowcePakietWielkosc();
 
       for (const deal of activeDeals) {
         const items = deal.handelSurowiecCykliczny;
         if (!items?.length) continue;
 
         const handled = new Set<number>();
+        // R-DYP-PAKIET-USUN (2026-08-08): pakietyPerTura to sztuki/turę wprost.
         const sellerOkOf = (item: HandelSurowiecCyklicznyItem): boolean =>
           item.sellerOwnerId !== item.buyerOwnerId
-          && ownerResourceStock(item.sellerOwnerId, item.surowiecKey) >= item.pakietyPerTura * pakietWielkosc;
+          && ownerResourceStock(item.sellerOwnerId, item.surowiecKey) >= item.pakietyPerTura;
 
         for (let i = 0; i < items.length; i++) {
           if (handled.has(i)) continue;
@@ -13973,8 +14212,8 @@ async function boot(): Promise<void> {
             const aOk = sellerOkOf(a);
             const bOk = sellerOkOf(b);
             const bothOk = aOk && bOk; // atomowość: barter dochodzi do skutku W CAŁOŚCI albo wcale
-            const okA = applyCyclicDeliveryOutcome(deal, a, bothOk, !aOk, false, treasury, pakietWielkosc);
-            const okB = applyCyclicDeliveryOutcome(deal, b, bothOk, !bOk, false, treasury, pakietWielkosc);
+            const okA = applyCyclicDeliveryOutcome(deal, a, bothOk, !aOk, false, treasury);
+            const okB = applyCyclicDeliveryOutcome(deal, b, bothOk, !bOk, false, treasury);
             wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, okA);
             wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${bIdx}`, okB);
             continue;
@@ -13989,7 +14228,7 @@ async function boot(): Promise<void> {
           } else if (sellerOk && zaplata > 0 && a.zaplataTyp === 'praca') {
             buyerOk = ownerPracaPool(a.buyerOwnerId) >= zaplata;
           }
-          const ok = applyCyclicDeliveryOutcome(deal, a, sellerOk && buyerOk, !sellerOk, sellerOk && !buyerOk, treasury, pakietWielkosc);
+          const ok = applyCyclicDeliveryOutcome(deal, a, sellerOk && buyerOk, !sellerOk, sellerOk && !buyerOk, treasury);
           wiarygodnoscCyclicDeliveryOkThisTurn.set(`${deal.id}#${i}`, ok);
         }
       }
@@ -14134,15 +14373,58 @@ async function boot(): Promise<void> {
       return out;
     }
 
-    function getSellableTechForPlayer(): Array<{ id: string; label: string; suggestedPrice: number }> {
-      return Array.from(player.zbadane).map(slug => ({
-        id: slug,
-        label: techNameFromSlug(slug) ?? slug,
-        suggestedPrice: 50 + player.era * 20,
-      })).slice(0, 12);
+    /**
+     * R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja): technologie,
+     * które gracz może ZAOFEROWAĆ responderowi — gracz je ma zbadane, responder jeszcze
+     * NIE (jeśli responder też je ma, wymiana nie ma sensu — nie dojdzie do niczego).
+     * Filtr per-responder (nie globalny): ta sama technologia bywa sellable dla jednej
+     * cywilizacji i niesellable dla innej, zależnie od jej stanu badań.
+     */
+    function getSellableTechForPlayer(responderOwnerId: number): Array<{ id: string; label: string; suggestedPrice: number }> {
+      const responderKnown = ownerResearchedTechs(responderOwnerId);
+      // P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-09): odbiorcą tu jest responder
+      // (AI) — poza tradeableTechIdsForSide filtrujemy też do techów, których prereqy/
+      // epokę responder już ma zbadane (patrz techIdsWithPrereqsMetForRecipient).
+      const tradeable = tradeableTechIdsForSide(player.zbadane, responderKnown);
+      return techIdsWithPrereqsMetForRecipient(tradeable, responderKnown, data.tech)
+        .map(slug => ({
+          id: slug,
+          label: techNameFromSlug(slug) ?? slug,
+          suggestedPrice: 50 + player.era * 20,
+        })).slice(0, 12);
     }
 
-    function buildProposalEvalContext(proposerId: number, responderId: number): ProposalEvalContext {
+    /**
+     * R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE — lustrzane odbicie getSellableTechForPlayer
+     * dla strony „dostaję": technologie, które responder ma zbadane, a gracz jeszcze nie.
+     */
+    function getBuyableTechFromOwner(responderOwnerId: number): Array<{ id: string; label: string; suggestedPrice: number }> {
+      const responderKnown = ownerResearchedTechs(responderOwnerId);
+      // P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-09): odbiorcą tu jest gracz —
+      // filtr lustrzany do powyższego, żeby lista „dostaję" nigdy nie zaproponowała
+      // techu, którego gracz nie mógłby dziś sam zbadać (pominięte drzewko/epoka).
+      const tradeable = tradeableTechIdsForSide(responderKnown, player.zbadane);
+      return techIdsWithPrereqsMetForRecipient(tradeable, player.zbadane, data.tech)
+        .map(slug => ({
+          id: slug,
+          label: techNameFromSlug(slug) ?? slug,
+          suggestedPrice: 50 + player.era * 20,
+        })).slice(0, 12);
+    }
+
+    /**
+     * `sibling` (R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A, opcjonalny): PW z sąsiednich pozycji NA
+     * TYM SAMYM stole (patrz packageSiblingPn) — wprost do ProposalEvalContext.
+     * packageSiblingGivePn/packageSiblingReceivePn, gdzie diplomacy-proposals.ts dolicza go
+     * WYŁĄCZNIE do treatyBaseFairnessGap traktatu handlowego. Pominięty (undefined) dla
+     * wywołań spoza stołu negocjacji (np. previewNegotiatedProposal — podgląd formularza
+     * przed dodaniem propozycji na stół, gdzie „sąsiad" jeszcze nie istnieje jako wpis).
+     */
+    function buildProposalEvalContext(
+      proposerId: number,
+      responderId: number,
+      sibling?: { givePn: number; receivePn: number },
+    ): ProposalEvalContext {
       const relRaw = getDiploRelation(proposerId, responderId);
       const potProposer = objectivePowerByOwner.get(proposerId)?.power ?? 0;
       const potResponder = objectivePowerByOwner.get(responderId)?.power ?? 0;
@@ -14190,6 +14472,8 @@ async function boot(): Promise<void> {
         wasalAgeTurns: wasalAgeTurns(findWasalDeal(activeDeals, proposerId, responderId), turn),
         proposerWiarygodnosc: getWiarygodnosc(proposerId),
         responderWiarygodnosc: getWiarygodnosc(responderId),
+        packageSiblingGivePn: sibling?.givePn,
+        packageSiblingReceivePn: sibling?.receivePn,
       };
     }
 
@@ -14519,7 +14803,7 @@ async function boot(): Promise<void> {
         hasWymiana: hasWymianaTreaty(activeDeals, 0, ownerId),
         hasSojusz,
         breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
-        sellableTechCount: getSellableTechForPlayer().length,
+        sellableTechCount: getSellableTechForPlayer(ownerId).length,
         knownRivalsCount: getKnownRivalsFor(ownerId).length,
         progNapRelacja: dip.progNapRelacja,
         progHandelRelacja: dip.progHandelRelacja,
@@ -14831,7 +15115,13 @@ async function boot(): Promise<void> {
           return {
             civName: ownerDiploLabel(ownerId),
             rivalOptions: getKnownRivalsFor(ownerId),
-            techOptions: getSellableTechForPlayer(),
+            // R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE: techOptions = legacy/pojedynczy kierunek
+            // (akcja '6' „sprzedaj technologię", zawsze gracz -> responder = strona „daję").
+            // give/receiveTechOptions zasilają koszyk ogólny (akcja '14'), gdzie obie strony
+            // muszą filtrować niezależnie (patrz buildAddForm w diplomacyTradeBasket.ts).
+            techOptions: getSellableTechForPlayer(ownerId),
+            giveTechOptions: getSellableTechForPlayer(ownerId),
+            receiveTechOptions: getBuyableTechFromOwner(ownerId),
             borderFeeCivil: 20,
             borderFeeMilitary: 40,
             relacjaTotal: audienceRelTotal(ownerId, rel),
@@ -15750,8 +16040,11 @@ async function boot(): Promise<void> {
           },
           onSplit: () => openSplitPanelForSelected(),
           onAction: handleSelectedUnitHudAction,
-          onCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta),
-          canCycleUnits: () => cyclablePlayerArmyLeads().length > 1,
+          // Strzałki HUD ◀▶: cykl po WSZYSTKICH armiach gracza, niezależnie od dostępnego ruchu
+          // (decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA, 2026-08-08 — Spacja pozostaje
+          // ograniczona do jednostek z ruchem, patrz cycleToAdjacentPlayerUnit()).
+          onCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta, { all: true }),
+          canCycleUnits: () => cyclablePlayerArmyLeadsAll().length > 1,
           onClose: () => {
             clearPlayerUnitSelection();
             refreshD1bHud();
@@ -18390,6 +18683,90 @@ async function boot(): Promise<void> {
       // przed tą zmianą, mimo że komentarz mówi "obrona x0,5" (patrz raport).
       const embarkMult = defRoster[0]?.embarked === true ? EMBARK_DEFENSE_MULT : 1;
       return Math.round((terrAdjAttack + terrAdjDefense) * embarkMult * 10) / 10;
+    }
+
+    /**
+     * R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): def SKALOWANA DLA
+     * WYŚWIETLANIA (tabliczka nad żetonem + tooltip jednostki na mapie) --
+     * dociąga bonus struktury obronnej miasta (mur/Palisada/Cytadela/Baszta,
+     * structureDefenseBonusFor) i bramkowany mnożnik terenu miasta
+     * (cityGatedTerrainMultiplier), DOKŁADNIE tak jak effectiveDefenderM liczy
+     * realną Obronę w bitwie (gałąź isCity) -- inaczej tabliczka garnizonu z
+     * murem POKAZUJE NIŻSZĄ Moc niż bez murów (fortifyFieldScaledDefFor nie
+     * dolicza swojego +50%, bo unitGetsFortifyDefenseBonus zwraca false gdy
+     * jest mur), mimo że realna Obrona rośnie do +400%.
+     *
+     * Reinkarnacja main.ts::tabliczkaGarnizonScaledDefFor (R-MOC-MUR-PARADOKS-Q1=A,
+     * commit f94216e9, 2026-08-07) -- ten sam, już zweryfikowany przez Evaluatora
+     * wzór (1125 porównań, zero rozbieżności), USUNIĘTY dzień później przez
+     * R-MOC-DEFINICJA-Q1 gdy ta decyzja błędnie zunifikowała WSZYSTKIE
+     * wyświetlenia Mocy pod jedną (zbyt wąską) regułą. R-MOC-TABLICZKA-VS-
+     * CIVPOWER-Q1 koryguje zakres tamtej decyzji -- tabliczka wraca do PEŁNEJ
+     * Mocy, civ-power (sumArmyMForOwnerEffective, patrz niżej w tym pliku)
+     * zostaje na czystych wskaźnikach jednostki + weteran.
+     *
+     * ⚠ CELOWO NIE PODMIENIA combatPowerScaledDefFor() -- ta funkcja karmi
+     * effectiveDefenderM (patrz sumRosterFieldMSplit wyżej w effectiveDefenderM),
+     * które SAMO dolicza structBonusPct/cityGatedTerrainMultiplier na
+     * split.defense. Gdyby bonus wszedł już do combatPowerScaledDefFor(),
+     * effectiveDefenderM policzyłby go PODWÓJNIE (raz tu, raz przez
+     * combinedDefPct) i realna bitwa (rosterFieldPowerM dla atakującego też
+     * korzysta z combatPowerScaledDefFor) zaczęłaby liczyć struct bonus nawet
+     * dla atakującego. Dlatego to OSOBNA funkcja, wyłącznie dla PODGLĄDU
+     * (tabliczka/tooltip) -- BEZ efektu ubocznego na rozstrzygnięcie bitwy
+     * (C-025, zakres tego zadania).
+     *
+     * Zastosowanie -- WYŁĄCZNIE jednostka w garnizonie (u.inGarnizon===true)
+     * miasta (cityAtUnit) na heksie, który cityWallStatusAtHex uznaje za
+     * miasto: skaluje meleeDefence/armor/health (SKŁADOWE Obrony w
+     * fieldPower(), unit-power.ts -- defense = meleeDefence+armor+health/2)
+     * o ten sam % co effectiveDefenderM liczy dla split.defense w gałęzi
+     * isCity -- combinedDefPct = structBonusPct + (cityGatedTerrainMultiplier-1)*100,
+     * ADDYTYWNIE (nie mnożone), zgodnie z C-COMBAT-Q2. Gdy miasto nie ma
+     * żadnego budynku obronnego, structBonusPct=0 i cityGatedTerrainMultiplier
+     * gate'uje się na 1.0 -- combinedDefPct=0, funkcja jest wtedy no-opem
+     * (zwraca base bez zmian).
+     *
+     * Atak jednostki (meleeAttack/weaponDamage/piercing/chargeBonus/
+     * missileAttack) NIE dostaje żadnego bonusu -- mur broni Obronę, nie
+     * wzmacnia Ataku (ta sama zasada co effectiveDefenderM).
+     *
+     * Bitwa w polu poza miastem (w tym fort/posterunek terenowe) -- teren
+     * ogólny (terrainDefenseMultiplier) w effectiveDefenderM zależy od Roli
+     * (linia) ATAKUJĄCEGO, czyli nie da się policzyć poza kontekstem realnej
+     * bitwy (nie ma atakującego dla statycznej tabliczki) -- POZA ZAKRESEM
+     * tej funkcji, zgodnie z decyzją: fortyfikacja polowa jest już objęta
+     * przez fortifyFieldScaledDefFor wewnątrz combatPowerScaledDefFor (base).
+     *
+     * Jednostka NIE w garnizonie miasta (w polu, w tym ufortyfikowana polowo,
+     * lub w mieście bez żadnego budynku obronnego) -- zwraca
+     * combatPowerScaledDefFor(u) bez zmian.
+     */
+    function combatPowerFullDisplayDefFor(u: RuntimeUnit): Record<string, unknown> {
+      const base = combatPowerScaledDefFor(u);
+      if (u.inGarnizon !== true) return base;
+      if (!cityAtUnit(u)) return base;
+      const { isCity, hasMur } = cityWallStatusAtHex(u.q, u.r);
+      if (!isCity) return base;
+      const structBonusPct = structureDefenseBonusFor(u.q, u.r);
+      const hex = map.hexes[keyOf(u.q, u.r)];
+      const terrain = hex ? (hex.terenBazowy as string) : 'Rownina';
+      const cityTerrMult = cityGatedTerrainMultiplier(
+        hasMur,
+        terrain,
+        terrainCombatData as unknown as TerrainEntry[],
+      );
+      const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
+      if (combinedDefPct <= 0) return base;
+      const mult = 1 + combinedDefPct / 100;
+      const scaleField = (v: unknown): unknown => (typeof v === 'number' ? v * mult : v);
+      const { fieldPower: _staleFieldPower3, ...rest } = base as Record<string, unknown>;
+      return {
+        ...rest,
+        meleeDefence: scaleField(rest.meleeDefence),
+        armor: scaleField(rest.armor),
+        health: scaleField(rest.health),
+      };
     }
 
     /** Auto-walka M v2b + wspólne skutki mapy (identyczne reguły ruchu co ręczna). */
@@ -23332,7 +23709,7 @@ async function boot(): Promise<void> {
         return;
       }
 
-      // --- Spacja: następna armia gracza (wszystkie stosy; nie tylko z ruchem) ---
+      // --- Spacja: następna armia gracza, która wciąż ma dostępny ruch w tej turze ---
       if (e.code === 'Space' || e.key === ' ') {
         const ae = document.activeElement as HTMLElement | null;
         if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
@@ -23566,7 +23943,8 @@ async function boot(): Promise<void> {
           refreshD1bHud();
           processMarchQueue();
           // C: auto-cykl „bęben" — jednostka gracza wyczerpała ruch (bez marszu
-          // wieloturowego w toku) → przejdź do następnej armii (wszystkie, nie tylko z ruchem).
+          // wieloturowego w toku) → przejdź do następnej armii, która wciąż ma dostępny ruch
+          // (te same semantyki co Spacja — R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA).
           if (u && u.ownerId === 0 && selectedId === finishedId
               && !stackCanMove(u) && !plannedMarches.has(finishedId)
               && !isAnimating && isWorldMapUnitMode()) {

@@ -35,8 +35,17 @@ export interface CameraControllerOptions {
   mousePanFactor?: number;
   /** Współczynnik zoomu na jedno "kliknięcie" kółka. */
   zoomFactor?: number;
-  /** Gdy true — nie obsługuj drag/zoom (np. kursor nad panelem miasta). */
+  /** Gdy true — nie obsługuj drag/pan (np. kursor nad panelem miasta, tryb zakładania miasta/
+   *  stawiania ulepszenia — tam klik ma trafić w placement, nie w pan kamery). */
   blockPointerAt?: (clientX: number, clientY: number) => boolean;
+  /**
+   * Gdy true — nie obsługuj zoomu kółkiem. Osobny predykat od `blockPointerAt`
+   * (BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN, Maciej 2026-08-08): tryb budowania ulepszeń/cudu
+   * blokował dotąd zoom razem z panem, bo oba korzystały z tego samego `blockPointerAt` —
+   * gracz nie mógł przybliżyć/oddalić mapy przy wskazywaniu heksu docelowego. Domyślnie (gdy
+   * nieustawione) = `blockPointerAt`, więc wywołania bez tej opcji zachowują stare zachowanie.
+   */
+  blockWheelAt?: (clientX: number, clientY: number) => boolean;
   /**
    * C-EDGEPAN-Q1 = **B** (Maciej 2026-07-25): edge-pan aktywny na mapie świata,
    * gdy predykat zwraca true (w main.ts: `isWorldMapUnitMode()` — nie wymaga
@@ -81,6 +90,7 @@ export class CameraController {
   private mousePanFactor: number;
   private zoomFactor: number;
   private blockPointerAt?: (clientX: number, clientY: number) => boolean;
+  private blockWheelAt?: (clientX: number, clientY: number) => boolean;
   private edgePanActive?: () => boolean;
   private edgePanZonePx: number;
   private edgePanSpeed: number;
@@ -100,6 +110,9 @@ export class CameraController {
     this.mousePanFactor = opts.mousePanFactor ?? 0.002;
     this.zoomFactor     = opts.zoomFactor     ?? 0.12;
     this.blockPointerAt = opts.blockPointerAt;
+    // Domyślnie = blockPointerAt (stare zachowanie), gdy wywołujący nie poda osobnego
+    // predykatu dla kółka — patrz komentarz przy `blockWheelAt` w interfejsie wyżej.
+    this.blockWheelAt   = opts.blockWheelAt ?? opts.blockPointerAt;
     this.edgePanActive  = opts.edgePanActive;
     this.edgePanZonePx  = opts.edgePanZonePx  ?? 32;
     this.edgePanSpeed   = opts.edgePanSpeed   ?? this.keyPanSpeed;
@@ -200,7 +213,7 @@ export class CameraController {
   private _onDocMouseLeave = () => { this.mouseClientX = null; this.mouseClientY = null; };
 
   private _onWheel = (e: WheelEvent) => {
-    if (this.blockPointerAt?.(e.clientX, e.clientY)) return;
+    if (this.blockWheelAt?.(e.clientX, e.clientY)) return;
     e.preventDefault();
     const dir = e.deltaY > 0 ? 1 : -1; // >0 = scroll down = zoom out
     this._zoom(dir);

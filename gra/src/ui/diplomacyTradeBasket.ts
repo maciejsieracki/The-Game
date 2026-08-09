@@ -25,7 +25,6 @@ import {
   diplomacyZywnoscNaPn,
   diplomacyResourceAccessCatalog,
   diplomacyHandelZaufaniePerTura,
-  diplomacyHandelSurowcePakietWielkosc,
   diplomacyHandelSurowceCatalog,
   type WartoscPozycjaTyp,
 } from '../game/diplomacy-value-catalog';
@@ -63,7 +62,7 @@ const TYP_LABELS: Record<WartoscPozycjaTyp, string> = {
   tech: 'Technologia',
   jednostka: 'Jednostka',
   surowiec_boolean: 'Dostęp do surowca',
-  surowiec_ilosc: 'Surowiec (sztuki, pakiety)',
+  surowiec_ilosc: 'Surowiec (sztuki)',
 };
 
 /** Krótkie etykiety chipów (te same ikony co HUD / magazyn). */
@@ -111,14 +110,38 @@ function buildChipBtn(
   iconHtml: string,
   label: string,
   extraAttrs = '',
+  badgeHtml = '',
 ): string {
   return (
     '<button type="button" class="cdb-chip ' + cls + (selected ? ' selected' : '') + '"'
     + ' data-side="' + side + '" data-value="' + esc(value) + '"' + extraAttrs + '>'
     + iconHtml
     + '<span class="cdb-chip-lbl">' + esc(label) + '</span>'
+    + badgeHtml
     + '</button>'
   );
+}
+
+/**
+ * R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, runda 2): format kompaktowy odznaki
+ * zapasu na chipie surowca — budżet szerokości chipa to ~62-72px (patrz .cdb-chip /
+ * .cdb-chip-lbl w ensureStyles), zapasy 4-cyfrowe i większe (dziś realne przy dużych
+ * miastach) muszą zmieścić się czytelnie. Dokładna, nieskrócona wartość idzie do `title`
+ * chipa (już budowany przez wywołującego, patrz `qtyResChips`), nie do tej odznaki.
+ */
+function formatCompactQty(n: number): string {
+  const v = Math.trunc(n);
+  const abs = Math.abs(v);
+  if (abs < 1000) return String(v);
+  const units: Array<[number, string]> = [[1_000_000_000, 'B'], [1_000_000, 'M'], [1_000, 'k']];
+  for (const [div, suf] of units) {
+    if (abs >= div) {
+      const scaled = Math.round((v / div) * 10) / 10;
+      const str = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1);
+      return str + suf;
+    }
+  }
+  return String(v);
 }
 
 function qtyStepperHtml(
@@ -245,6 +268,11 @@ ${DIPLO_1E_SHARED_CSS}
   padding:5px 7px;margin:3px 0;border-radius:6px;background:rgba(40,48,60,0.45);font-size:0.78em;}
 .civ-diplo-basket .cdb-item-pn{color:#e8d88a;white-space:nowrap;}
 .civ-diplo-basket .cdb-rm{background:none;border:none;color:#e08a8a;cursor:pointer;font-size:1em;padding:0 4px;}
+.civ-diplo-basket .cdb-edit-item{padding:1px 7px;font-size:0.78em;line-height:1.3;flex-shrink:0;}
+.civ-diplo-basket .cdb-deal-row-editing{border-radius:6px;background:rgba(232,216,138,.08);outline:1px dashed rgba(232,216,138,.35);}
+.civ-diplo-basket .cdb-add-editing{border-top-color:rgba(232,216,138,.4);}
+.civ-diplo-basket .cdb-add-btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.civ-diplo-basket .cdb-edit-cancel{margin-top:6px;}
 .civ-diplo-basket .cdb-add{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(232,216,138,.15);}
 .civ-diplo-basket label{display:block;margin:4px 0 2px;font-size:0.72em;color:#a8a090;}
 .civ-diplo-basket select,.civ-diplo-basket input[type=number],.civ-diplo-basket input[type=text]{
@@ -289,6 +317,9 @@ ${DIPLO_1E_SHARED_CSS}
 .civ-diplo-basket .cdb-chip-ic svg{display:block;}
 .civ-diplo-basket .cdb-chip-lbl{text-align:center;line-height:1.2;max-width:72px;}
 .civ-diplo-basket .cdb-chip-meta{font-size:0.85em;color:#8a8070;}
+.civ-diplo-basket .cdb-chip-stock{display:inline-block;max-width:64px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;font-size:0.86em;font-weight:600;line-height:1.15;
+  padding:1px 6px;border-radius:8px;background:rgba(232,216,138,.14);color:#d8c888;}
 .civ-diplo-basket .cdb-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;}
 .civ-diplo-basket .cdb-chip.cdb-chip-mode{flex-direction:row;min-width:0;padding:8px 12px;gap:6px;font-size:0.78em;}
 .civ-diplo-basket .cdb-chip.cdb-chip-turn{min-width:36px;padding:6px 10px;font-size:0.78em;font-weight:600;}
@@ -408,19 +439,19 @@ function defaultResourceOptions(): Array<{ id: string; label: string }> {
 
 /**
  * Fallback (legacy/testy bez wpięcia diplomacy-goods.ts) — katalog cen, BEZ realnego
- * stanu magazynu, więc `maxPakiety` jest umowną górną granicą (nie odzwierciedla
+ * stanu magazynu, więc `maxQty` jest umowną górną granicą (nie odzwierciedla
  * faktycznych zapasów). main.ts zawsze podaje realne `giveQuantityResourceOptions` /
  * `receiveQuantityResourceOptions` — ten fallback praktycznie nie jest używany w grze.
+ * R-DYP-PAKIET-USUN (2026-08-08): sztuki wprost, bez pojęcia pakietu.
  */
-const FALLBACK_QUANTITY_MAX_PAKIETY = 99;
+const FALLBACK_QUANTITY_MAX_QTY = 99;
 
-function defaultQuantityResourceOptions(): Array<{ id: string; label: string; maxPakiety: number }> {
+function defaultQuantityResourceOptions(): Array<{ id: string; label: string; maxQty: number }> {
   const cat = diplomacyHandelSurowceCatalog();
-  const pakiet = diplomacyHandelSurowcePakietWielkosc();
   return Object.keys(cat).map(id => ({
     id,
-    label: id.charAt(0).toUpperCase() + id.slice(1) + ' ×' + pakiet + ' (pakiet)',
-    maxPakiety: FALLBACK_QUANTITY_MAX_PAKIETY,
+    label: id.charAt(0).toUpperCase() + id.slice(1),
+    maxQty: FALLBACK_QUANTITY_MAX_QTY,
   }));
 }
 
@@ -431,7 +462,7 @@ function basketHasResourceAccess(...lists: ReadonlyArray<readonly BasketItem[]>)
   return false;
 }
 
-/** HANDEL-SUROWCE-CYKL (2026-07-24): czy koszyk zawiera surowiec ILOŚCIOWY (pakiety ze spichlerza miast). */
+/** HANDEL-SUROWCE-CYKL (2026-07-24): czy koszyk zawiera surowiec ILOŚCIOWY (sztuki ze spichlerza miast). */
 function basketHasQuantityResource(...lists: ReadonlyArray<readonly BasketItem[]>): boolean {
   for (const items of lists) {
     if (items.some(i => i.typ === 'surowiec_ilosc')) return true;
@@ -993,13 +1024,37 @@ function proposalActionIdFromUi(
   return 'handel';
 }
 
-function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mode: TradeBasketMode, actionId = '14', tributeMode?: 'demand' | 'offer'): string {
-  if (mode === 'gift' && side === 'receive') return '';
+/** R-PROPOZYCJA-BRAK-EDYCJI: pozycja z koszyka aktualnie edytowana przez `buildAddForm`. */
+interface BasketEditItem {
+  item: BasketItem;
+  idx: number;
+}
 
-  const prefix = side === 'give' ? 'give' : 'recv';
+/** Wskaźnik „która pozycja koszyka jest teraz edytowana" — trzymany w closure `showTradeBasketModal`. */
+interface EditingItemRef {
+  side: 'give' | 'receive';
+  idx: number;
+}
+
+/** Typy koszyka posiadające sensowny formularz edycji (reużywa buildAddForm zamiast usuń+dodaj). */
+const ITEM_EDIT_TYPES = new Set<WartoscPozycjaTyp>(['zloto', 'praca', 'zywnosc', 'tech', 'surowiec_ilosc']);
+
+/**
+ * Lista typów pozycji dostępnych w formularzu „Dodaj" dla danej strony/trybu/akcji —
+ * wydzielona z `buildAddForm`, żeby wiersze koszyka (przycisk „✎ Edytuj") mogły sprawdzić,
+ * czy typ ISTNIEJĄCEJ pozycji wciąż jest wybieralny (np. złoto/praca w wojnie, tech poniżej
+ * progu Relacji) — inaczej „Zapisz zmiany" po cichu podmienia typ na pierwszy dostępny.
+ */
+export function computeAvailableTypes(
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode?: 'demand' | 'offer',
+): WartoscPozycjaTyp[] {
   const allowWarCurrency = !ctx.atWar
     || uiActionAllowsWarCurrency(actionId, mode, tributeMode);
-  const availableTypes = (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
+  return (Object.keys(TYP_LABELS) as WartoscPozycjaTyp[])
     .filter(t => {
       if (WITHDRAWN_BASKET_ACCESS_TYPES.has(t)) return false;
       if (t === 'jednostka') return false;
@@ -1011,7 +1066,42 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
       }
       return true;
     });
-  const defaultTyp = availableTypes[0] ?? 'zloto';
+}
+
+/**
+ * Czy pozycja koszyka ma dziś dostępny formularz edycji (typ + wciąż wybieralny w tym kontekście).
+ * Eksport do testów (R-PROPOZYCJA-BRAK-EDYCJI pkt 4 — gating przycisku „✎ Edytuj").
+ */
+export function basketItemEditAvailable(
+  item: BasketItem,
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode?: 'demand' | 'offer',
+): boolean {
+  if (!ITEM_EDIT_TYPES.has(item.typ)) return false;
+  return computeAvailableTypes(side, ctx, mode, actionId, tributeMode).includes(item.typ);
+}
+
+/**
+ * Eksport do testów (P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU) — pozwala zweryfikować
+ * placeholder pustej listy (miasto/technologia) bez renderowania całego modala.
+ */
+export function buildAddForm(
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId = '14',
+  tributeMode?: 'demand' | 'offer',
+  editItem?: BasketEditItem,
+): string {
+  if (mode === 'gift' && side === 'receive') return '';
+
+  const prefix = side === 'give' ? 'give' : 'recv';
+  const availableTypes = computeAvailableTypes(side, ctx, mode, actionId, tributeMode);
+  const editTyp = editItem && availableTypes.includes(editItem.item.typ) ? editItem.item.typ : undefined;
+  const defaultTyp = editTyp ?? availableTypes[0] ?? 'zloto';
 
   const typChips = availableTypes.map(t =>
     buildChipBtn(
@@ -1028,72 +1118,116 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
   const cities = side === 'give'
     ? (ctx.cityOptions ?? [])
     : (ctx.receiveCityOptions ?? ctx.cityOptions ?? []);
-  const defaultCity = cities[0]?.id ?? '';
+  const editCityId = editTyp === 'zywnosc' ? (editItem!.item.cityId ?? editItem!.item.id) : undefined;
+  const defaultCity = (editCityId != null && cities.some(c => c.id === editCityId))
+    ? editCityId
+    : (cities[0]?.id ?? '');
   const cityChips = cities.length > 0
-    ? cities.map((c, i) =>
+    ? cities.map(c =>
       buildChipBtn(
         'cdb-chip-city',
         c.id,
         prefix,
-        i === 0,
+        c.id === defaultCity,
         typChipIconHtml('zywnosc'),
         c.label,
       ),
     ).join('')
     : '<span class="cdb-sub">— brak miast (SILNIK) —</span>';
 
-  const techs = ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 }));
-  const defaultTech = techs[0]?.id ?? '';
-  const techChips = techs.map((t, i) =>
-    buildChipBtn(
-      'cdb-chip-tech',
-      t.id,
-      prefix,
-      i === 0,
-      typChipIconHtml('tech'),
-      t.label,
-    ),
-  ).join('');
+  // R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08): strona „daję" i „dostaję" filtrują
+  // niezależnie (patrz NegotiationModalContext) — technologia znana przez obie strony nie
+  // ma prawa pojawić się w żadnej z list. `techOptions` to legacy pojedynczy kierunek
+  // (akcja '6'), NIE fallback dla strony receive — inaczej obie strony znów pokazałyby tę
+  // samą listę (pierwotny bug ze zgłoszenia).
+  const techs = side === 'give'
+    ? (ctx.giveTechOptions ?? ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })))
+    : (ctx.receiveTechOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })));
+  const editTechId = editTyp === 'tech' ? editItem!.item.id : undefined;
+  const defaultTech = (editTechId != null && techs.some(t => t.id === editTechId))
+    ? editTechId
+    : (techs[0]?.id ?? '');
+  // P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-09): po filtrze
+  // R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE lista bywa realnie pusta — placeholder
+  // analogiczny do „— brak miast (SILNIK) —" wyżej, żeby pusta siatka nie wyglądała
+  // jak błąd renderu. `defaultTech` zostaje wtedy '' → readItemFromForm (case 'tech')
+  // zwraca null, więc „Dodaj"/„Zapisz zmiany" bezpiecznie no-opuje (ten sam wzorzec co
+  // dla miasta: id puste = brak pozycji, nie pusty/nieprawidłowy koszyk).
+  const techChips = techs.length > 0
+    ? techs.map(t =>
+      buildChipBtn(
+        'cdb-chip-tech',
+        t.id,
+        prefix,
+        t.id === defaultTech,
+        typChipIconHtml('tech'),
+        t.label,
+      ),
+    ).join('')
+    : '<span class="cdb-sub">— brak technologii (SILNIK) —</span>';
 
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
     : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
-  const pakiet = diplomacyHandelSurowcePakietWielkosc();
-  const defaultResId = qtyResources[0]?.id ?? '';
-  const qtyResChips = qtyResources.map((r, i) => {
+  const editResId = editTyp === 'surowiec_ilosc' ? editItem!.item.id : undefined;
+  const defaultResId = (editResId != null && qtyResources.some(r => r.id === editResId))
+    ? editResId
+    : (qtyResources[0]?.id ?? '');
+  const qtyResChips = qtyResources.map(r => {
     const label = resourceDisplayLabel(r.id);
     const short = label.length > 10 ? label.slice(0, 9) + '…' : label;
+    // R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP: widoczna odznaka zapasu WYŁĄCZNIE po stronie
+    // „daję" (side==='give') — zgłoszenie mówiło o surowcach „które MAMY", nie o stronie
+    // „dostaję". Zapas AI jest już dziś ujawniony bezwarunkowo w title/data-max (linia niżej,
+    // od dawna) niezależnie od tej odznaki — to nie jest powód wyłączenia, tylko zawężenie
+    // zakresu tego zgłoszenia.
+    const stockBadge = side === 'give'
+      ? '<span class="cdb-chip-stock">' + esc(formatCompactQty(r.maxQty)) + '</span>'
+      : '';
     return buildChipBtn(
       'cdb-chip-resqty',
       r.id,
       prefix,
-      i === 0,
+      r.id === defaultResId,
       typChipIconHtml('surowiec_ilosc', r.id),
       short,
-      ' data-max="' + r.maxPakiety + '" title="' + esc(label) + ' ×' + pakiet + '"',
+      ' data-max="' + r.maxQty + '" title="' + esc(label) + ' (dost. ' + r.maxQty + ' szt.)"',
+      stockBadge,
     );
   }).join('');
-  const qtyResFirstMax = qtyResources[0]?.maxPakiety ?? 1;
+  const qtyResFirstMax = qtyResources.find(r => r.id === defaultResId)?.maxQty ?? qtyResources[0]?.maxQty ?? 1;
 
   const zywnHint = diplomacyZywnoscNaPn();
 
+  const initialQty = (editTyp === 'zloto' || editTyp === 'praca') ? Math.max(1, editItem!.item.ilosc ?? 10) : 10;
+  const initialFoodQty = editTyp === 'zywnosc' ? Math.max(1, editItem!.item.ilosc ?? 10) : 10;
+  const initialResQty = editTyp === 'surowiec_ilosc'
+    ? Math.min(qtyResFirstMax, Math.max(1, editItem!.item.ilosc ?? 1))
+    : 1;
+
+  const editAttrs = editItem ? ' data-edit-idx="' + editItem.idx + '"' : '';
+  const submitLabel = editItem ? 'Zapisz zmiany' : '+ Dodaj propozycję';
+  const cancelBtn = editItem
+    ? '<button type="button" class="dip-muted-btn cdb-edit-cancel" data-side="' + prefix + '">Anuluj edycję</button>'
+    : '';
+
   return (
-    '<div class="cdb-add" data-side="' + prefix + '">'
+    '<div class="cdb-add' + (editItem ? ' cdb-add-editing' : '') + '" data-side="' + prefix + '">'
     + '<input type="hidden" class="cdb-typ cdb-typ-hidden" data-side="' + prefix + '" value="' + defaultTyp + '" />'
     + '<div class="cdb-add-section">'
-    + '<div class="cdb-add-section-title">Co dodajesz</div>'
+    + '<div class="cdb-add-section-title">' + (editItem ? 'Edytujesz pozycję' : 'Co dodajesz') + '</div>'
     + '<div class="cdb-chip-grid cdb-typ-chips">' + typChips + '</div>'
     + '</div>'
     + '<div class="cdb-fields-extra visible" data-extra="' + prefix + '-qty">'
     + '<label>Ilość</label>'
-    + qtyStepperHtml('cdb-qty', prefix, 10)
+    + qtyStepperHtml('cdb-qty', prefix, initialQty)
     + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-city">'
     + '<label>Miasto (spichlerz)</label>'
     + '<div class="cdb-chip-grid cdb-city-chips">' + cityChips + '</div>'
     + '<input type="hidden" class="cdb-city" data-side="' + prefix + '" value="' + esc(defaultCity) + '" />'
     + '<label>Ilość żywności <span style="color:#7a8494">(1 PW = ' + zywnHint + ')</span></label>'
-    + qtyStepperHtml('cdb-food-qty', prefix, 10)
+    + qtyStepperHtml('cdb-food-qty', prefix, initialFoodQty)
     + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-tech">'
     + '<label>Technologia</label>'
@@ -1101,13 +1235,16 @@ function buildAddForm(side: 'give' | 'receive', ctx: NegotiationModalContext, mo
     + '<input type="hidden" class="cdb-tech" data-side="' + prefix + '" value="' + esc(defaultTech) + '" />'
     + '</div>'
     + '<div class="cdb-fields-extra" data-extra="' + prefix + '-resqty">'
-    + '<label>Surowiec (pakiety ×' + pakiet + ')</label>'
+    + '<label>Surowiec</label>'
     + '<div class="cdb-chip-grid cdb-resqty-chips">' + qtyResChips + '</div>'
     + '<input type="hidden" class="cdb-res-qty-sel" data-side="' + prefix + '" value="' + esc(defaultResId) + '" data-max="' + qtyResFirstMax + '" />'
-    + '<label>Liczba pakietów</label>'
-    + qtyStepperHtml('cdb-res-qty-num', prefix, 1, 1, qtyResFirstMax)
+    + '<label>Ilość (sztuki)</label>'
+    + qtyStepperHtml('cdb-res-qty-num', prefix, initialResQty, 1, qtyResFirstMax)
     + '</div>'
-    + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '">+ Dodaj propozycję</button>'
+    + '<div class="cdb-add-btn-row">'
+    + '<button type="button" class="dip-gold-btn cdb-add-btn" data-side="' + prefix + '"' + editAttrs + '>' + esc(submitLabel) + '</button>'
+    + cancelBtn
+    + '</div>'
     + '</div>'
   );
 }
@@ -1131,7 +1268,7 @@ function basketItemMaxQty(
       ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
       : (ctx.receiveQuantityResourceOptions ?? defaultQuantityResourceOptions());
     const found = opts.find(o => o.id === item.id);
-    return found?.maxPakiety ?? qty;
+    return found?.maxQty ?? qty;
   }
   return undefined;
 }
@@ -1160,6 +1297,10 @@ function editableDealItemsHtml(
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
   ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode: 'demand' | 'offer' | undefined,
+  editingIdx: number | null,
 ): string {
   if (items.length === 0) return '<span class="da-deal-empty">—</span>';
   const fmtCtx: BasketItemFormatCtx = {
@@ -1170,10 +1311,16 @@ function editableDealItemsHtml(
     const qtyHtml = basketItemQtyEditable(item)
       ? basketRowQtyStepperHtml(item, side, idx, ctx)
       : '';
+    const canEdit = basketItemEditAvailable(item, side, ctx, mode, actionId, tributeMode);
+    const editBtn = canEdit
+      ? '<button type="button" class="dip-muted-btn cdb-edit-item" data-side="' + side + '" data-idx="' + idx + '" title="Edytuj pozycję">✎ Edytuj</button>'
+      : '';
+    const rowCls = 'cdb-deal-row' + (editingIdx === idx ? ' cdb-deal-row-editing' : '');
     return (
-      '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">' +
+      '<div class="' + rowCls + '" data-side="' + side + '" data-idx="' + idx + '">' +
         '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>' +
         qtyHtml +
+        editBtn +
         '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń">×</button>' +
       '</div>'
     );
@@ -1188,12 +1335,16 @@ function dealSideColumnHtml(
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
   ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode: 'demand' | 'offer' | undefined,
+  editingIdx: number | null,
 ): string {
   return (
     '<div class="da-deal-col ' + colClass + '">' +
       '<div class="da-deal-col-head">' + esc(head) + '</div>' +
       '<div class="da-deal-col-body" data-list="' + side + '">' +
-        editableDealItemsHtml(items, side, resourceTradeMode, dealTurns, ctx) +
+        editableDealItemsHtml(items, side, resourceTradeMode, dealTurns, ctx, mode, actionId, tributeMode, editingIdx) +
       '</div>' +
     '</div>'
   );
@@ -1205,10 +1356,20 @@ function tradeDealPreviewHtml(
   resourceTradeMode: 'once' | 'per_turn',
   dealTurns: number,
   ctx: NegotiationModalContext,
+  mode: TradeBasketMode,
+  actionId: string,
+  tributeMode: 'demand' | 'offer' | undefined,
+  editingItem: EditingItemRef | null,
 ): string {
   let html = '<div class="cdb-deal-preview"><div class="da-deal-table">';
-  html += dealSideColumnHtml('Oferujemy', 'da-deal-col-we', giveItems, 'give', resourceTradeMode, dealTurns, ctx);
-  html += dealSideColumnHtml('Oferują', 'da-deal-col-they', receiveItems, 'receive', resourceTradeMode, dealTurns, ctx);
+  html += dealSideColumnHtml(
+    'Oferujemy', 'da-deal-col-we', giveItems, 'give', resourceTradeMode, dealTurns, ctx,
+    mode, actionId, tributeMode, editingItem?.side === 'give' ? editingItem.idx : null,
+  );
+  html += dealSideColumnHtml(
+    'Oferują', 'da-deal-col-they', receiveItems, 'receive', resourceTradeMode, dealTurns, ctx,
+    mode, actionId, tributeMode, editingItem?.side === 'receive' ? editingItem.idx : null,
+  );
   html += '</div>';
   if (resourceTradeMode === 'per_turn' && dealTurns > 0) {
     html += '<div class="da-deal-sched-foot">Wymiana co turę przez ' + dealTurns + ' tur</div>';
@@ -1321,7 +1482,11 @@ function summaryHtml(
   return html;
 }
 
-function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: NegotiationModalContext): BasketItem | null {
+/**
+ * Eksport do testów (P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU) — dowód, że formularz
+ * z pustą listą (id='') faktycznie no-opuje zamiast dodać pozycję-widmo do koszyka.
+ */
+export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: NegotiationModalContext): BasketItem | null {
   const prefix = side === 'give' ? 'give' : 'recv';
   const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLInputElement)?.value as WartoscPozycjaTyp;
   if (!typ) return null;
@@ -1444,12 +1609,20 @@ function renderBasket(
   resourceTradeMode: 'once' | 'per_turn',
   treatyState: TreatyFormState,
   warThreat: boolean,
+  editingItem: EditingItemRef | null,
   modalOpts?: TradeBasketModalOptions,
 ): void {
   const rel = ctx.relacjaTotal ?? 0;
   const progHandel = ctx.progHandelRelacja ?? PROG_HANDEL_REL;
   const progDar = ctx.progDarRelacja ?? diplomacyProgDarRelacja();
   const isTreatyOnly = mode === 'treaty' && isTreatyOnlyFormAction(action.id);
+  /** Pozycja aktualnie edytowana (jeśli wciąż istnieje pod tym indeksem po tej stronie). */
+  const editItemFor = (side: 'give' | 'receive'): BasketEditItem | undefined => {
+    if (!editingItem || editingItem.side !== side) return undefined;
+    const list = side === 'give' ? giveItems : receiveItems;
+    const item = list[editingItem.idx];
+    return item ? { item, idx: editingItem.idx } : undefined;
+  };
 
   let blocked = '';
   if (ctx.atWar && mode !== 'treaty' && !uiActionAllowsWarCurrency(action.id, mode, treatyState.tributeMode)) {
@@ -1515,21 +1688,27 @@ function renderBasket(
   const giveCol =
     '<div class="cdb-col">' +
       '<div class="cdb-col-title">' + (mode === 'treaty' ? 'My oddajemy (opcjonalnie)' : 'Dodaj do oferty') + '</div>' +
-      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm, action.id, treatyState.tributeMode)) +
+      (blocked ? '' : buildAddForm('give', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('give'))) +
     '</div>';
 
   const recvCol = showReceiveCol
     ? '<div class="cdb-col">' +
         '<div class="cdb-col-title">' + (mode === 'treaty' ? 'Oni oddają (opcjonalnie)' : 'Dodaj do kontrpropozycji') + '</div>' +
-        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm, action.id, treatyState.tributeMode)) +
+        (blocked ? '' : buildAddForm('receive', ctx, basketModeForForm, action.id, treatyState.tributeMode, editItemFor('receive'))) +
       '</div>'
     : '';
 
   const dealPreview = showDealPreview
-    ? tradeDealPreviewHtml(giveItems, receiveItems, resourceTradeMode, dealTurns, ctx)
+    ? tradeDealPreviewHtml(
+      giveItems, receiveItems, resourceTradeMode, dealTurns, ctx,
+      mode, action.id, treatyState.tributeMode, editingItem,
+    )
     : (mode === 'gift' && !blocked
       ? '<div class="cdb-deal-preview"><div class="da-deal-table">' +
-        dealSideColumnHtml('Co oddajesz', 'da-deal-col-we', giveItems, 'give', 'once', dealTurns, ctx) +
+        dealSideColumnHtml(
+          'Co oddajesz', 'da-deal-col-we', giveItems, 'give', 'once', dealTurns, ctx,
+          mode, action.id, treatyState.tributeMode, editingItem?.side === 'give' ? editingItem.idx : null,
+        ) +
         '</div></div>'
       : '');
 
@@ -1546,7 +1725,7 @@ function renderBasket(
     ? 'Dostęp do surowców trwa przez wybrany czas. Po wygaśnięciu umowa wymaga odnowienia (re-negocjacji).'
     : 'Surowiec i zapłata płyną CO TURĘ przez wybrany czas. Deal znika po wygaśnięciu, zerwaniu traktatu lub wojnie.';
   const dealSettingsHint = !hasQtyRes && !hasResourceAccess
-    ? 'Tryb „Co turę" i czas obowiązują po dodaniu surowca (pakiety) do koszyka.'
+    ? 'Tryb „Co turę" i czas obowiązują po dodaniu surowca (sztuki) do koszyka.'
     : undefined;
 
   const dealSettings = (blocked || !showReceiveCol)
@@ -1655,6 +1834,8 @@ export function showTradeBasketModal(
   let resourceTradeMode: 'once' | 'per_turn' = initial?.resourceTradeMode ?? 'once';
   let warThreat = action.id === '9';
   let treatyState = defaultTreatyState(action.id, initial, ctx);
+  /** R-PROPOZYCJA-BRAK-EDYCJI: pozycja koszyka aktualnie otwarta do edycji (✎ Edytuj). */
+  let editingItem: EditingItemRef | null = null;
 
   overlay = document.createElement('div');
   overlay.className = 'civ-diplo-basket-overlay';
@@ -1679,7 +1860,7 @@ export function showTradeBasketModal(
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
     if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState);
-    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, modalOpts);
+    renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, editingItem, modalOpts);
     bindEvents();
   };
 
@@ -1823,8 +2004,34 @@ export function showTradeBasketModal(
         const side = btn.getAttribute('data-side') === 'recv' ? 'receive' : 'give';
         const item = readItemFromForm(side, box, ctx);
         if (!item) return;
-        if (side === 'give') giveItems = [...giveItems, item];
-        else receiveItems = [...receiveItems, item];
+        const editIdxAttr = btn.getAttribute('data-edit-idx');
+        const editIdx = editIdxAttr != null ? parseInt(editIdxAttr, 10) : -1;
+        if (editIdx >= 0) {
+          // R-PROPOZYCJA-BRAK-EDYCJI: „Zapisz zmiany" — podmień pozycję na miejscu, nie dodawaj nowej.
+          if (side === 'give') giveItems = giveItems.map((it, i) => (i === editIdx ? item : it));
+          else receiveItems = receiveItems.map((it, i) => (i === editIdx ? item : it));
+          editingItem = null;
+        } else {
+          if (side === 'give') giveItems = [...giveItems, item];
+          else receiveItems = [...receiveItems, item];
+        }
+        refresh();
+      });
+    });
+
+    box.querySelectorAll('.cdb-edit-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const side = btn.getAttribute('data-side') === 'receive' ? 'receive' : 'give';
+        const idx = parseInt(btn.getAttribute('data-idx') ?? '-1', 10);
+        if (idx < 0) return;
+        editingItem = { side, idx };
+        refresh();
+      });
+    });
+
+    box.querySelectorAll('.cdb-edit-cancel').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingItem = null;
         refresh();
       });
     });
@@ -1836,6 +2043,8 @@ export function showTradeBasketModal(
         if (idx < 0) return;
         if (side === 'give') giveItems = giveItems.filter((_, i) => i !== idx);
         else receiveItems = receiveItems.filter((_, i) => i !== idx);
+        // Indeksy po tej stronie przesunęły się — edycja w toku dla tej strony traci sens.
+        if (editingItem && editingItem.side === side) editingItem = null;
         refresh();
       });
     });

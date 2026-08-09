@@ -122,10 +122,16 @@ console.log('\n-- A. unitStockCost: mapowanie diakrytyki -> klucze ASCII (City.s
   // Kontrola na prawdziwych danych units.json (jednostki z realnym kosztem Brąz/Żelazo).
   const brazUnit = units.find(u => u.Surowiec === 'Brąz');
   const zelazoUnit = units.find(u => u.Surowiec === 'Żelazo');
-  const dashUnit = units.find(u => u.Surowiec === '-');
+  // P-UNIT-STOCK-COST-TEST-DLUG (2026-08-09): commit 5682c066 (BUG-ZWIADOWCA-KOSZT-SUROWCA=A,
+  // 2026-08-08) zmienil jedyny dotychczasowy rekord Surowiec='-' (Zwiadowca) na Surowiec=null
+  // (ten sam semantyczny "brak surowca", ale inna reprezentacja w JSON -- funkcja unitStockCost
+  // obsluguje oba przez `(unit.Surowiec ?? '').toString().trim()`, ktore normalizuje null i '-'
+  // identycznie do pustego stringa). Dzis w units.json nie istnieje juz zaden rekord z '-';
+  // fixtura sanity zaktualizowana do dashUnit == null-Surowiec, nie zmiana logiki testu.
+  const dashUnit = units.find(u => u.Surowiec === null);
   assert(!!brazUnit, 'units.json: istnieje co najmniej jedna jednostka z Surowiec=Brąz (fixtura sanity)');
   assert(!!zelazoUnit, 'units.json: istnieje co najmniej jedna jednostka z Surowiec=Żelazo (fixtura sanity)');
-  assert(!!dashUnit, "units.json: istnieje co najmniej jedna jednostka z Surowiec='-' (fixtura sanity)");
+  assert(!!dashUnit, "units.json: istnieje co najmniej jedna jednostka z Surowiec=null (fixtura sanity, dawniej '-')");
   if (brazUnit) {
     deepEq(
       M.unitStockCost(brazUnit),
@@ -141,7 +147,7 @@ console.log('\n-- A. unitStockCost: mapowanie diakrytyki -> klucze ASCII (City.s
     );
   }
   if (dashUnit) {
-    deepEq(M.unitStockCost(dashUnit), {}, `units.json realny rekord '-' (${dashUnit.Jednostka}): brak kosztu`);
+    deepEq(M.unitStockCost(dashUnit), {}, `units.json realny rekord Surowiec=null (${dashUnit.Jednostka}): brak kosztu`);
   }
 }
 
@@ -250,25 +256,37 @@ console.log('\n-- E. PYTANIE-84 U-15: koszt +5 Koni dla Typ Mount (wyjątek Rydw
   eq(M.MOUNT_UNIT_HORSE_STOCK_KEY, 'kon', "MOUNT_UNIT_HORSE_STOCK_KEY = 'kon'");
   eq(M.MOUNT_HORSE_EXEMPT_UNIT, 'Rydwan (woły)', 'wyjątek: Rydwan (woły)');
 
+  // P-UNIT-STOCK-COST-TEST-DLUG (2026-08-09): oczekiwane wartosci ponizej zaktualizowane do
+  // zgodnosci z dzisiejszym units.json, NIE zmiana logiki testu. Sledztwo (git blame na
+  // gra/data/units.json): commit 7d4ad9690 "feat: utrzymanie surowcowe jednostek (x5 rekrutacja
+  // + upkeep/turę)" (2026-08-06, co-authored-by maciejsieracki) podniosl Surowiec (ilość) dla
+  // Konnicy i Rydwanu (woły) z Brąz=2 na Brąz=10 (x5 rebalans -- ta sama sesja rownolegle
+  // wprowadzila analogiczny x5 dla utrzymania surowcowego jednostek) i nadal ta sama sesja
+  // ustawila Wojownikowi Surowiec='Drewno'/ilość=10 (wczesniej Wojownik nie mial kosztu
+  // magazynowego wcale). Silnik (unitStockCost w building-stock-cost.ts) poprawnie czyta
+  // te pola live z units.json przez data.units we wszystkich miejscach wywolania (main.ts,
+  // ai.ts, cityPanel.ts, economy-upkeep.ts) -- zweryfikowane grepem, brak sciezki z
+  // zahardkodowanymi/starymi wartosciami. To dlug testowy (zdezaktualizowane `want` po
+  // legalnej zmianie danych), nie regresja silnika.
   if (konnica) {
     assert(M.unitRequiresMountHorseStock(konnica), 'Konnica wymaga Koni');
     deepEq(
       M.unitStockCost(konnica),
-      { braz: 2, kon: 5 },
-      'Konnica: Brąz 2 + Konie 5 ze skarbca',
+      { braz: 10, kon: 5 },
+      'Konnica: Brąz 10 + Konie 5 ze skarbca',
     );
   }
   if (rydwanWoly) {
     assert(!M.unitRequiresMountHorseStock(rydwanWoly), 'Rydwan (woły) bez kosztu Koni');
     deepEq(
       M.unitStockCost(rydwanWoly),
-      { braz: 2 },
-      'Rydwan (woły): tylko Brąz, bez Koni',
+      { braz: 10 },
+      'Rydwan (woły): tylko Brąz (10), bez Koni',
     );
   }
   if (wojownik) {
     assert(!M.unitRequiresMountHorseStock(wojownik), 'Wojownik (nie Mount) bez Koni');
-    deepEq(M.unitStockCost(wojownik), {}, 'Wojownik: brak kosztu magazynowego');
+    deepEq(M.unitStockCost(wojownik), { drewno: 10 }, 'Wojownik: koszt magazynowy Drewno 10 (od 2026-08-06)');
   }
 
   const mountUnits = units.filter(u => u.Typ === 'Mount');

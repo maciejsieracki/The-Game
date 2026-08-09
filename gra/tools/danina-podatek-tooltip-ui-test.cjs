@@ -10,7 +10,17 @@ const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild')
 
 const GRA = path.resolve(__dirname, '..');
 const STUB_DIR = path.resolve(__dirname, '.stubs');
-const STUB_FILE = path.resolve(STUB_DIR, 'brandAssets-stub.ts');
+// P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora
+// zwiadowca-drewno): NIE 'brandAssets-stub.ts' — ten plik jest współdzielony
+// i ŚLEDZONY w gicie (patrz army-merge-dismiss-bounce-test.cjs), a jego
+// zawartość różni się między bramkami. Każde uruchomienie brudziło
+// niezwiązany trackowany plik w git status. Nazwa własna dla tej bramki
+// (wzorem pre-battle-brandAssets-stub.ts / brandAssets-diplo-treaty-stub.ts)
+// trzyma stub poza współdzielonym plikiem. Zestaw eksportów = dokładnie to,
+// czego wymaga cały łańcuch importów hexContextTooltip.ts (bezpośrednio i
+// przez unitCardStatus.ts) — brandIconSvg, mapResourceIconSvg, terrainIconSvg,
+// unitIconSvg (ten ostatni brakował tu wcześniej: P-BRAMKA-DANINA-PODATEK-CZERWONA).
+const STUB_FILE = path.resolve(STUB_DIR, 'danina-podatek-brandAssets-stub.ts');
 const ENTRY_FILE = path.resolve(__dirname, '.danina-podatek-tooltip-ui-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.danina-podatek-tooltip-ui-bundle.cjs');
 
@@ -19,6 +29,7 @@ fs.writeFileSync(STUB_FILE, `
 export function brandIconSvg(_key, _size) { return ''; }
 export function mapResourceIconSvg(_key, _size) { return ''; }
 export function terrainIconSvg(_key, _size) { return ''; }
+export function unitIconSvg(_key) { return ''; }
 `, 'utf8');
 
 fs.writeFileSync(ENTRY_FILE, `

@@ -274,8 +274,14 @@ export function canAiRequestAudience(
 /** Domyślny czas trwania cyklicznej umowy surowcowej proponowanej przez AI (tur). PLACEHOLDER: 10. */
 export const AI_RESOURCE_TRADE_DEFAULT_TURNS = 10;
 
-/** Ile pakietów/turę AI oferuje na raz z nadwyżki (nie wyprzedaje całego zapasu jednorazowo). PLACEHOLDER: 3. */
-export const AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA = 3;
+/**
+ * Ile sztuk/turę AI oferuje na raz z nadwyżki (nie wyprzedaje całego zapasu jednorazowo).
+ * R-DYP-PAKIET-USUN (2026-08-08): wartość w SZTUKACH (dawniej 3 „pakiety" × 10 szt./pakiet =
+ * 30 szt. — po usunięciu pojęcia pakietu z handlu przeliczone 1:1, by zachować dotychczasowy
+ * realny wolumen ofert AI). Nazwa stałej zostaje niezmieniona (patrz CLAUDE.md — priorytet dla
+ * poprawności nad kosmetyką nazw, zbyt wiele miejsc odwołania).
+ */
+export const AI_RESOURCE_TRADE_MAX_PAKIETY_PER_TURA = 30;
 
 /** Czy AI może zaproponować kolejną cykliczną umowę surowcową tej samej parze. */
 export function canAiProposeResourceTrade(

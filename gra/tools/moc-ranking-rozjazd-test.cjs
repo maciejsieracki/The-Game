@@ -2,20 +2,32 @@
  * moc-ranking-rozjazd-test.cjs
  *
  * R-MOC-RANKING-ROZJAZD-Q1=B (Maciej 2026-08-07): panel Mocy imperium (widoczny
- * dla gracza) ma liczyc Moc EFEKTYWNA (weteran + fortyfikacja polowa + mnoznik
- * trudnosci AI), dla spojnosci z tabliczka jednostki (juz zmieniona w 304eff9,
- * R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B). Progi decyzji dyplomatycznych AI
- * (militaryRatioFromArmyM, progi wojny) ZOSTAJA NOMINALNE -- to NIE jest
- * czesc tej decyzji.
+ * dla gracza) ma liczyc Moc EFEKTYWNA, nie NOMINALNA (unitDefFor surowy, ktory
+ * nie zna battlesSurvived) -- to jest RDZEN tej decyzji i zostaje NIEZMIENIONY.
+ * Progi decyzji dyplomatycznych AI (militaryRatioFromArmyM, progi wojny)
+ * ZOSTAJA NOMINALNE -- to NIE jest czesc tej decyzji.
+ *
+ * CO TO ZNACZY "EFEKTYWNA" skorygowane przez R-MOC-TABLICZKA-VS-CIVPOWER-Q1
+ * (Maciej 2026-08-09): do 2026-08-09 "efektywna" = weteran + fortyfikacja
+ * polowa/garnizonowa + mnoznik trudnosci AI (combatPowerScaledDefFor, spojnie
+ * z tabliczka jednostki). OD 2026-08-09 tabliczka i civ-power sa DWIEMA
+ * ROZNYMI liczbami (Moc cywilizacji NIE ma juz zalezec od tego, gdzie akurat
+ * stoi jednostka ani od trudnosci gry AI) -- civ-power "efektywna" = WYLACZNIE
+ * weteran (veteranScaledDefFor), BEZ fortyfikacji/terenu/muru/trudnosci AI.
+ * Numerycznie WYNIK TEGO TESTU SIE NIE ZMIENIA (patrz komentarz przy fixture
+ * nizej): dla gracza (ownerId=0, brak bonusu trudnosci AI) i jednostki
+ * nieufortyfikowanej, stary combatPowerScaledDefFor(u) i nowy
+ * veteranScaledDefFor(u) dawaly IDENTYCZNA liczbe -- zmienia sie WYLACZNIE
+ * literalne zrodlo w main.ts (sekcja 3 nizej), nie zachowanie funkcjonalne
+ * tego konkretnego scenariusza.
  *
  * Konwencja jak tools/weterani-test.cjs:
  *   1. esbuild bundluje src/game/veteran.ts i src/game/unit-power.ts do CJS.
  *   2. Reimplementuje 1:1 sumArmyMForOwner (nominalna) i sumArmyMForOwnerEffective
  *      (main.ts) z armyFieldPower() na surowym def (nominalna) vs. def
- *      przeskalowanym przez applyVeteranFracToCombatUnit (efektywna, dla gracza
- *      nieufortyfikowanego bez bonusu trudnosci AI combatPowerScaledDefFor ==
- *      veteranScaledDefFor -- patrz main.ts fortifyFieldScaledDefFor/
- *      combatPowerScaledDefFor i identyczny skrot w weterani-test.cjs sekcja 10).
+ *      przeskalowanym przez applyVeteranFracToCombatUnit (efektywna -- dokladnie
+ *      main.ts::veteranScaledDefFor, ktorego sumArmyMForOwnerEffective dzis wola
+ *      wprost).
  *   3. Ten sam fixture (Konnica, units.json) i ten sam wynik (49 -> 58.0) co
  *      weterani-test.cjs sekcje 9-10 i commit 304eff9 -- bezposrednio
  *      porownywalny "ta sama armia, dwie liczby Mocy" przyklad.
@@ -118,7 +130,7 @@ const armySumEffectiveWeteran = armyFieldPower(veteranScaledUnitRow(konnicaRaw, 
 const konnicaArmor = konnicaRaw.armor;
 const expectedEffectiveWeteran = Math.round((armySumEffectiveRekrut * 1.20 - konnicaArmor * 0.20) * 10) / 10;
 check(
-  'sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla weterana ★★★ (combatPowerScaledDefFor)',
+  'sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla weterana ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
   approxEq(armySumEffectiveWeteran, expectedEffectiveWeteran, 0.05),
   armySumEffectiveWeteran + ' vs oczekiwane ' + expectedEffectiveWeteran,
 );
@@ -162,8 +174,9 @@ console.log('3. main.ts: wpiecie efektywnej WYLACZNIE do panelu Mocy, AI nietkni
 const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
 check(
-  'sumArmyMForOwnerEffective() istnieje i uzywa combatPowerScaledDefFor(u)',
-  /function sumArmyMForOwnerEffective\(ownerId: number\): number \{[\s\S]{0,400}?armyFieldPower\(combatPowerScaledDefFor\(u\)\)/.test(mainTsSrc),
+  'sumArmyMForOwnerEffective() istnieje i uzywa veteranScaledDefFor(u) (R-MOC-TABLICZKA-VS-CIVPOWER-Q1, '
+    + 'BEZ fortyfikacji/terenu/muru/trudnosci AI -- korekta zakresu wzgledem R-MOC-RANKING-ROZJAZD-Q1=B)',
+  /function sumArmyMForOwnerEffective\(ownerId: number\): number \{[\s\S]{0,3000}?armyFieldPower\(veteranScaledDefFor\(u\)\)/.test(mainTsSrc),
 );
 check(
   'sumArmyMForOwner() (NOMINALNA) nietknieta -- nadal armyFieldPower(unitDefFor(u))',

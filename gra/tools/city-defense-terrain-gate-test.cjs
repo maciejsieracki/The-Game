@@ -45,6 +45,14 @@
  *   Caly grid + kontrola (b): "miasto z murem na wzgorzu" daje IDENTYCZNY
  *   combinedMult jak sciezka Auto (Czesc B).
  *
+ *   CZESC D -- ZRODLO main.ts (P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA,
+ *   nota N1 Evaluatora moc-mur-revert, 2026-08-08): Czesc B reimplementuje
+ *   effectiveDefenderMCity WLASNA funkcja (main.ts nie da sie zaimportowac w
+ *   izolacji -- caly silnik gry/DOM), wiec NIE lapie dryfu SAMEGO WZORU w
+ *   produkcyjnym main.ts::effectiveDefenderM -- dowod mutacyjny: wyzerowanie
+ *   bonusu muru w REALNEJ bitwie (main.ts) zostawialo caly ten plik zielonym.
+ *   Literalna asercja zrodlowa pinuje formule combinedDefPct w galezi isCity.
+ *
  * Usage (z gra/): node tools/city-defense-terrain-gate-test.cjs
  */
 
@@ -54,6 +62,7 @@ const os = require('os');
 const esbuild = require(path.resolve(__dirname, '..', 'node_modules', 'esbuild'));
 
 const GRA_DIR = path.resolve(__dirname, '..');
+const MAIN_TS = path.join(GRA_DIR, 'src/main.ts');
 const UNITS_JSON = path.join(GRA_DIR, 'data/units.json');
 const TERRAIN_JSON = path.join(GRA_DIR, 'data/terrain-combat.json');
 
@@ -412,6 +421,36 @@ for (const [label, builtIds, terrain, expStructPct, expRazemPct] of GRID) {
     hitHill < hitFlat,
     'KONTROLA (a), Taktyczna/Pomin: bitwa w polu na wzgorzu (hitPct atakujacego ' + hitHill
       + '% < plasko ' + hitFlat + '%) -- bonus terenu w polu bez zmian (brak override/gate)',
+  );
+}
+
+// ===========================================================================
+// CZESC D -- ZRODLO main.ts (P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA,
+// nota N1 Evaluatora moc-mur-revert, 2026-08-08): Czesc B wyzej reimplementuje
+// effectiveDefenderMCity WLASNA funkcja (main.ts uruchamia caly silnik gry/
+// DOM, nie da sie go zaimportowac w izolacji), wiec NIE lapie dryfu SAMEGO
+// WZORU wewnatrz produkcyjnego main.ts::effectiveDefenderM -- dowod mutacyjny
+// Evaluatora: wstrzykniecie `combinedDefPct = 0 * structBonusPct + (cityTerrMult
+// - 1) * 100` (zerowanie bonusu muru w REALNEJ bitwie) zostawialo caly ten
+// plik zielonym. Literalna asercja zrodlowa pinuje formule w galezi isCity.
+// ===========================================================================
+console.log('\n--- D. Zrodlo main.ts (effectiveDefenderM, galaz isCity, REALNA bitwa) ---');
+
+const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
+const effectiveDefenderMMatch = mainTsSrc.match(
+  /function effectiveDefenderM\(\s*defRoster: RuntimeUnit\[\],\s*terrain: string,\s*structBonusPct: number,\s*atkLeadDef: Record<string, unknown>,\s*q: number,\s*r: number,\s*\): number \{([\s\S]*?)\n {4}\}/,
+);
+assert(!!effectiveDefenderMMatch, 'effectiveDefenderM() znaleziona w main.ts (funkcja produkcyjna realnej bitwy)');
+if (effectiveDefenderMMatch) {
+  const body = effectiveDefenderMMatch[1];
+  assert(
+    /const combinedDefPct = structBonusPct \+ \(cityTerrMult - 1\) \* 100;/.test(body),
+    'effectiveDefenderM() (galaz isCity, REALNA bitwa) liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 -- ' +
+      'ta sama ADDYTYWNA formula co Czesc B wyzej (reimplementacja) -- lapie dryf/wyzerowanie bonusu muru w produkcyjnym kodzie',
+  );
+  assert(
+    /terrAdjDefense = split\.defense \* \(1 \+ combinedDefPct \/ 100\);/.test(body),
+    'effectiveDefenderM() stosuje combinedDefPct WYLACZNIE na czesc Obrony (terrAdjDefense = split.defense * (1 + combinedDefPct / 100))',
   );
 }
 

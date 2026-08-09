@@ -3,7 +3,7 @@
  * Jednostka: UNITS (`diplomacy-unit-transfer.ts`). Hook w main.ts: Integrator F.
  */
 import type { ResearchTechDef } from './research';
-import { findTech } from './research';
+import { epochGateMet, epochTierGateMet, findTech, prerequisitesOf } from './research';
 
 /** Trwały dostęp boolean do surowca (od grantora u grantee). */
 export interface SurowiecBooleanGrant {
@@ -75,8 +75,9 @@ export function grantTechToOwner(
     return { context: ctx, granted: false, reason: 'Brak identyfikatora technologii' };
   }
 
+  let def: ResearchTechDef | undefined;
   if (ctx.techCatalog?.length) {
-    const def = findTech(ctx.techCatalog, id);
+    def = findTech(ctx.techCatalog, id);
     if (!def) {
       return { context: ctx, granted: false, reason: `Nieznana technologia: ${id}` };
     }
@@ -86,6 +87,21 @@ export function grantTechToOwner(
   const current = next.researchedByOwner.get(toOwnerId) ?? new Set<string>();
   if (current.has(id)) {
     return { context: ctx, granted: false, reason: 'Technologia już zbadana' };
+  }
+
+  // P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-09): odbiorca musi mieć zbadane
+  // prerekwizyty drzewka i spełnioną bramkę epoki/tieru, dokładnie jak przy normalnym
+  // badaniu (research.ts::canResearch) — bez bramki budynku/ulepszenia, bo dar
+  // dyplomatyczny nie wymaga posiadania konkretnego budynku, tylko pozycji w drzewku.
+  // Gated za `ctx.techCatalog` tak samo jak walidacja „nieznana technologia" wyżej —
+  // wołający bez katalogu (np. stare testy) świadomie pomija tę walidację.
+  if (def && ctx.techCatalog) {
+    const prereqsMet = prerequisitesOf(def).every((p) => current.has(p));
+    const epochOk = epochGateMet(def, ctx.techCatalog, current);
+    const tierOk = epochTierGateMet(def, ctx.techCatalog, current);
+    if (!prereqsMet || !epochOk || !tierOk) {
+      return { context: ctx, granted: false, reason: `Brak wymaganych prerekwizytów/epoki: ${id}` };
+    }
   }
 
   const updated = new Set(current);
@@ -204,7 +220,8 @@ export interface ResourceIloscTransferResult {
  * zapasie surowca (remis rozstrzyga id miasta rosnąco), zbiera aż do `totalUnits`
  * lub wyczerpania zapasów (nigdy nie schodzi poniżej 0 — realny transfer może być
  * mniejszy niż żądany, patrz `moved`; wołający — main.ts — ogranicza ofertę do
- * floor(zapas/pakiet) PRZED zawarciem umowy, więc to tylko defensywny fallback).
+ * realnego zapasu (sztuki wprost, R-DYP-PAKIET-USUN 2026-08-08) PRZED zawarciem
+ * umowy, więc to tylko defensywny fallback).
  * Pure: nie mutuje wejściowej tablicy `cities`, zwraca nową.
  */
 export function transferSurowiecIlosc(

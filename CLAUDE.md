@@ -31,6 +31,50 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
    nie wymagają Evaluatora. Wymaga go **każda zmiana zapisana do repozytorium** i **każda
    liczba/twierdzenie przedstawione właścicielowi jako fakt**.
 
+0c. **KONTROLA KOMPLETNOŚCI ZGŁOSZEŃ — KOMENDA TU, NIE TYLKO W PLAYBOOKU (Maciej 2026-08-08).**
+   Powód wpisania akurat tutaj: `playbook.md`/`.cursor/rules/autobot-evaluator-operator.mdc` (gdzie
+   żyją pełne C-027/C-030) **nie są ładowane do kontekstu automatycznie** — trzeba je świadomie
+   odczytać (`Read`). Po kompaktowaniu/resecie kontekstu w długiej sesji realne ryzyko, że reguła
+   zostanie pominięta nie ze złej woli, tylko dlatego że po prostu nie ma jej w polu widzenia. `CLAUDE.md`
+   NATOMIAST jest wstrzykiwany do kontekstu **KAŻDEJ tury automatycznie** (w Claude Code; w Cursorze
+   analogiczną rolę pełni `.cursor/rules/*.mdc` z `alwaysApply: true`) — dlatego sama komenda,
+   nie tylko odwołanie do reguły, ma być właśnie tu. **Zastrzeżenie:** to wstrzyknięcie jest
+   migawką z początku sesji, nie odczytem co turę — jeśli ten plik zmienia się W TRAKCIE bieżącej
+   sesji (jak teraz), poprawka zaczyna realnie działać dopiero w NOWEJ sesji, nie w tej, która ją
+   wprowadziła. Nie polegaj wyłącznie na pamięci nawet z tym zabezpieczeniem — traktuj jako
+   zmniejszenie ryzyka, nie jego eliminację.
+   ```
+   grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md
+   ```
+   (BEZ kotwicy `^## ` — nagłówki bywają też `### `, kotwica po `##` gubi je po cichu; patrz
+   incydent w rejestrze błędów playbooka przy C-031).
+   **Uruchom ją:** (a) na starcie sesji, razem z odczytem handoffu (zasada 6 niżej); (b) po KAŻDEJ
+   serii nowych rejestracji w `PYTANIA-OTWARTE.md`, **przed** zmianą wątku lub zakończeniem tury;
+   (c) przed jakimkolwiek „koniec pracy" / deployem. Dla KAŻDEGO trafienia potwierdź jedno z trzech:
+   subagent w locie, pytanie ABC czekające na odpowiedź, LUB udokumentowany w tej samej sekcji powód
+   odłożenia (np. „pre-istniejące, nie blokuje"). Brak wszystkich trzech = natychmiastowy dispatch
+   subagenta Sonnet 5, bez pytania o zgodę (C-027) — nie zostawiaj tego „na później".
+   **Druga warstwa (automatyczna, nie tylko z pamięci) — ZDARZENIOWA, nie stały cykl (Maciej
+   2026-08-08 po wprowadzeniu godzinowego Routine, zamieniona tego samego dnia):** stały
+   godzinowy Routine został **usunięty** — kosztował ~20+ wywołań/dobę niezależnie od tego, czy
+   trwała realna praca (efektywnie ~8h/dobę). Jego słowa: „nie zależy mi na tym, żebyś co
+   godzinę sprawdzał... punktem startu są nowe błędy i nowe błędy wymuszają audyt godzinowy, aż
+   nie zostaną wszystkie rozwiązane. Wtedy już nie ponawiasz audytu."
+   **Nowy mechanizm — jednorazowy, samo-uzbrajający się trigger:** gdy w tej sesji rejestrujesz
+   nowe zgłoszenie, którego NIE da się w pełni domknąć w tej samej turze (czeka na subagenta w
+   tle albo na odpowiedź ABC właściciela) — uzbrój JEDEN `run_once_at` (`send_later` albo
+   `create_trigger` z `run_once_at`, ~1h) z promptem: uruchom powyższą komendę na całym pliku;
+   jeśli wszystko domknięte (subagent skończył i scalony, ABC odpowiedziane) — zakończ cicho,
+   **NIE uzbrajaj kolejnego** (pętla się zatrzymuje); jeśli coś nadal czeka — uzbrój KOLEJNY
+   `run_once_at` za godzinę i tak dalej, aż wszystko się domknie. Efekt: audyt odpala się tylko
+   wtedy, gdy jest realna, nierozstrzygnięta praca — nie na ślepo co godzinę.
+   **Ryzyko (Evaluator, 2026-08-08):** w przeciwieństwie do stałego cyklu, ten łańcuch ma dwa
+   punkty zależne od pamięci — pierwsze uzbrojenie i KAŻDE re-uzbrojenie; zgubione ogniwo kończy
+   pętlę na stałe, nie samo się leczy. Świadomie zaakceptowane (to dosłowne polecenie
+   właściciela), ale **prompt każdego uzbrajanego triggera MUSI sam zawierać instrukcję
+   re-uzbrojenia** (nie polegaj na tym, że przyszła sesja to wymyśli) — i **Routine NIGDY nie
+   deployuje**, tylko audytuje i dispatchuje naprawy; deploy zawsze wymaga hasła `deploy` (§0).
+
 1. **NIGDY `npm run build` ani `npm run dev`** w `gra/` — `prebuild`/`predev` uruchamia `tools/export-data.py`, który **NADPISUJE ręcznie edytowane pliki JSON** w `gra/data/`. Cała praca nad danymi (drzewko, jednostki, cywilizacje) żyje w JSON. Buduj **wyłącznie** z katalogu `gra`:
    `node ./node_modules/vite/bin/vite.js build --outDir dist --emptyOutDir`
 2. **Źródłem prawdy są JSON-y w `gra/data/`.** Panele Excel (`panele-sterowania/`) DOGANIAMY do JSON — kierunek **JSON→Excel** przez `gen-panel-*.py`, NIGDY odwrotnie. **Nie uruchamiaj `export-*.py` na żywym `gra/data`** (nadpisze grę starym Excelem). Round-trip zawsze na kopii (`--data-dir <tmp>`).

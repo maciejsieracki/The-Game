@@ -24,7 +24,11 @@ export interface HandelDealPayload {
 export interface HandelSurowiecCyklicznyItem {
   /** Klucz ASCII surowca (cities.ts City.surowce / diplomacy-value-catalog cennik). */
   surowiecKey: string;
-  /** Ile PAKIETÓW surowca (diplomacyHandelSurowcePakietWielkosc) płynie sprzedawca→kupujący co turę. */
+  /**
+   * Ile SZTUK surowca płynie sprzedawca→kupujący co turę. R-DYP-PAKIET-USUN (2026-08-08):
+   * nazwa pola zostaje (zbyt wiele miejsc odwołania), ale wartość to dziś sztuki wprost,
+   * nie krotność diplomacyHandelSurowcePakietWielkosc().
+   */
   pakietyPerTura: number;
   /** Dawca surowca (traci zapas z magazynu miast). */
   sellerOwnerId: number;

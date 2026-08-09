@@ -111,12 +111,13 @@ const labels = mod.activeTreatyLabelsForPair([
 ok(labels.length === 2 && labels.includes('Pakt nieagresji') && labels.includes('Umowa handlowa'),
   'activeTreatyLabelsForPair: tylko para 0↔2');
 
+// R-DYP-PAKIET-USUN (2026-08-08, Maciej): ilosc to sztuki wprost — bez ×10 pakietu.
 const woodPerTurn = mod.formatBasketItemBrief(
   { typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 },
   { perTurn: true, turns: 10 },
 );
-ok(woodPerTurn.includes('10 Drewno na turę'), 'surowiec per turn: ilość na turę');
-ok(woodPerTurn.includes('łącznie 100 Drewno przez 10 tur'), 'surowiec per turn: suma');
+ok(woodPerTurn.includes('1 Drewno na turę'), 'surowiec per turn: ilość na turę');
+ok(woodPerTurn.includes('łącznie 10 Drewno przez 10 tur'), 'surowiec per turn: suma');
 
 const goldOnce = mod.formatBasketItemBrief({ typ: 'zloto', id: 'zloto', ilosc: 21 }, { perTurn: false });
 ok(goldOnce.includes('jednorazowo 21'), 'złoto jednorazowo');

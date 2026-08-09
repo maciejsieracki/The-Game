@@ -237,7 +237,9 @@ export function diplomacyResourceAccessCatalog(): Readonly<Record<string, number
 // ---------------------------------------------------------------------------
 // C-DYP-SUROWCE-Q1=B (2026-07-23) + Maciej 2026-07-29: handel ILOŚCIOWY
 // surowcami miejskimi (surowiec_ilosc) — PN/szt. z econ-params.json handel_surowce.
-// PN pozycji = cena_PN/szt. × ilość sztuk (pakiety × pakiet_wielkosc).
+// PN pozycji = cena_PN/szt. × ilość sztuk. R-DYP-PAKIET-USUN (2026-08-08, Maciej):
+// koszyk handlu podaje sztuki wprost (bez pakietów) — `ilosc` na BasketItem
+// surowiec_ilosc to zawsze SZTUKI, nie krotność pakietu.
 // ---------------------------------------------------------------------------
 
 type RawHandelSurowceRow = Record<string, number | string | undefined>;
@@ -250,8 +252,7 @@ const _handelSurowce = (econParamsJson as RawEconParamsJsonHandelSurowce).handel
 
 /**
  * Klucz ASCII surowca (cities.ts City.surowce) → klucz wiersza cennika w econ-params.json.
- * Maciej 2026-07-29: wycena za 1 szt. (PN/szt.); PN pozycji = cena × ilość sztuk
- * (pakiety × pakiet_wielkosc gdy koszyk liczy w pakietach).
+ * Maciej 2026-07-29: wycena za 1 szt. (PN/szt.); PN pozycji = cena × ilość sztuk wprost.
  */
 const HANDEL_SUROWCE_CENA_ROW: Readonly<Record<string, string>> = {
   drewno: 'cena_drewno',
@@ -278,7 +279,13 @@ function readHandelSurowceParam(rowKey: string, fallback: number): number {
   return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
 }
 
-/** Wielkość pakietu handlu ilościowego (econ-params.json handel_surowce.pakiet_wielkosc). */
+/**
+ * R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk handlu NIE liczy już w pakietach —
+ * gracz podaje sztuki wprost (patrz diplomacyPnSurowiecIlosc, main.ts transferBasketItems).
+ * Ta wartość (econ-params.json handel_surowce.pakiet_wielkosc) zostaje WYŁĄCZNIE jako
+ * wewnętrzny próg heurystyki AI (detectPricedResourceDeficits / ai-resource-needs.ts —
+ * "zapas poniżej X sztuk = deficyt") — nie mnoży już żadnej realnej ilości transferu.
+ */
 export function diplomacyHandelSurowcePakietWielkosc(): number {
   const v = readHandelSurowceParam('pakiet_wielkosc', DEFAULT_HANDEL_SUROWCE_PAKIET);
   return v > 0 ? Math.floor(v) : DEFAULT_HANDEL_SUROWCE_PAKIET;
@@ -293,17 +300,17 @@ export function diplomacyHandelSurowiecCenaJednostkowa(surowiecKey: string): num
 }
 
 /**
- * PN pozycji koszyka surowiec_ilosc = pakiety × pakiet_wielkosc × cena_PN/szt.
- * `pakietyQty` = liczba pakietów (nie sztuk) — spójne z polem `ilosc` w BasketItem.
- * Efekt: PN/szt. × łączna liczba sztuk w pozycji.
+ * PN pozycji koszyka surowiec_ilosc = sztuki × cena_PN/szt.
+ * R-DYP-PAKIET-USUN (2026-08-08): `iloscSztuk` to SZTUKI wprost — spójne z polem
+ * `ilosc` w BasketItem (dawniej „pakiety", usunięte na życzenie właściciela: „podajemy
+ * sztuki. Jeden, dziesięć, sto — żadnych pakietów").
  */
-export function diplomacyPnSurowiecIlosc(surowiecKey: string, pakietyQty: number): number | null {
+export function diplomacyPnSurowiecIlosc(surowiecKey: string, iloscSztuk: number): number | null {
   const cena = diplomacyHandelSurowiecCenaJednostkowa(surowiecKey);
   if (cena == null) return null;
-  const pakiety = Math.floor(pakietyQty);
-  if (!Number.isFinite(pakiety) || pakiety <= 0) return 0;
-  const pakiet = diplomacyHandelSurowcePakietWielkosc();
-  return Math.max(0, Math.round(pakiety * pakiet * cena));
+  const sztuki = Math.floor(iloscSztuk);
+  if (!Number.isFinite(sztuki) || sztuki <= 0) return 0;
+  return Math.max(0, Math.round(sztuki * cena));
 }
 
 /** Lista surowców ilościowych z ceną jednostkową (debug / UI fallback). */
@@ -328,7 +335,7 @@ export interface DiplomacySumPnOptions {
   tempo?: TempoGry | number;
   /** Handel cykliczny — mnożnik pełnego cyklu (turns tur). */
   turnsMultiplier?: number;
-  /** Gdy true + turnsMultiplier>1 — mnoży PN pozycji ilościowych (¤/Praca/żywność/pakiety). */
+  /** Gdy true + turnsMultiplier>1 — mnoży PN pozycji ilościowych (¤/Praca/żywność/sztuki surowca). */
   perTurn?: boolean;
 }
 
@@ -386,7 +393,7 @@ export function diplomacySumPn(
         pn = diplomacyPnSurowiecBoolean(item.id);
         break;
       case 'surowiec_ilosc':
-        // diplomacyPnSurowiecIlosc już mnoży przez qty (pakiety) — jak zloto/praca/zywnosc.
+        // diplomacyPnSurowiecIlosc już mnoży przez qty (sztuki) — jak zloto/praca/zywnosc.
         pn = diplomacyPnSurowiecIlosc(item.id, qty);
         break;
       default:

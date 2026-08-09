@@ -101,6 +101,117 @@ Grok wkleja do promptu Evaluatora szablon 5 pytań z decision doc (sekcja „SCO
 
 **Protokół błędu (v2, R-PROC-AUTOBOT-BLAD)** — po KAŻDYM błędzie (Maciej poprawił/odrzucił, liczba nie przeszła weryfikacji, coś do przeróbki): NAPRAW → przyczyna nie winny → sprawdź wstecz inne miejsca → zapisz do `errorLog` w `playbook.json` → przekuj w regułę (`ACTIVE`, licznik 0/0). Recydywa (powtórka z `errorLog`) = incydent krytyczny, zgłoś Maciejowi wprost. Kanon: `docs/decyzje/R-PROC-AUTOBOT.md` §„v2 — Protokół AutoBot".
 
+## Weryfikacja odpowiedzi na pytania właściciela (C-023, C-024 — Maciej 2026-08-08)
+
+Nie tylko zmiana w repo wymaga pętli — **każda odpowiedź orkiestratora na pytanie
+właściciela też**, po incydencie z przestarzałym statusem `BUG-TOOLTIP-MOC-NIEPELNA`
+(plik mówił „OTWARTE", naprawa była wdrożona od FALA 260).
+
+- **C-023** — pytanie „czy jest jeszcze coś do zrobienia/nienaprawionego" → ZAWSZE świeży
+  przegląd `PYTANIA-OTWARTE.md` + `REJESTR-PROSB-I-ZADAN.md` + realny stan w kodzie dla
+  pozycji oznaczonych jako naprawione. Status w pliku bywa przestarzały — sama etykieta
+  „zamknięte" bez sprawdzenia kodu to wciąż odpowiadanie z pamięci pliku, nie ze stanu
+  faktycznego.
+- **C-024** — KAŻDA odpowiedź na pytanie właściciela (nie tylko zmiana w repo) przechodzi
+  przed wysłaniem przez osobnego Evaluatora, który sprawdza jej poprawność wobec realnego
+  stanu plików/kodu. Jego słowa: *„jeżeli o coś pytam i Ty odpowiadasz, to ponownie
+  sprawdzić sobie przez ewaluatora, czy Twoja odpowiedź jest prawidłowa."*
+
+## Zakres naprawy błędu — zero regresji „przy okazji" (C-025, C-026 — Maciej 2026-08-08)
+
+Po serii regresji, gdzie naprawa jednego miejsca psuła inne bez wykrycia przed playtestem
+(`BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE`, `BUG-TRAKTAT-KOSZYK-REGRESJA`,
+`BUG-RZEKI-MEDIUM-FOW-REGRESJA`, 4-rundowa naprawa `R-DYPLOMACJA-HANDEL-BRAMKA-PRIORYTET-Q1`).
+Jego słowa: *„70% mojego czasu to jest spędzanie nad poprawkami które już kiedyś były
+naprawione... kompletnie tego nie rozumiem."*
+
+- **C-025** — zlecenie Operatora naprawiającego zgłoszony błąd ma zakres = **TYLKO ten błąd**.
+  Zakaz „przy okazji"/„skoro już tu jestem": refaktorów, sprzątania stylu, zmian poza tym, co
+  wynika wprost z przyczyny błędu — nawet jeśli wyglądają jak ulepszenie. Prompt zlecenia MUSI
+  wypisać granicę zakresu (konkretne pliki/funkcje) i wprost zakazać zmian poza nią. Jego
+  słowa: *„jeżeli jest jakiś błąd, to agent powinien się zająć tylko i wyłącznie poprawieniem
+  tego błędu, a nie kopać w kodzie i psuć czegoś innego."*
+- **C-026** — gdy naprawa MUSI dotknąć kodu współdzielonego z innymi ekranami/funkcjami (bo to
+  jedyny poprawny zakres), Operator PRZED zmianą wypisuje wszystkie miejsca użycia (grep) i PO
+  zmianie weryfikuje KAŻDE z osobna — „to powinno nadal działać" bez sprawdzenia jest
+  zakazane. Evaluator sprawdza, czy ta lista w ogóle powstała, nie tylko czy diff wygląda
+  bezpiecznie. Jego słowa: *„jeżeli zmienia daną rzecz, a ma ona wpływ na inne kwestie, to
+  powinien to przemyśleć i przewidzieć."*
+
+## Rejestracja → ABC lub natychmiastowy subagent — zero zaległości (C-027 — Maciej 2026-08-08)
+
+Po skardze, że zgłoszenia „siedzą w rejestrze" bez ruchu: *„a myślisz, że po co Ci zgłaszam te
+problemy? Żeby sobie siedziały w rejestrze?"* i *„tak właśnie gubią się tematy, które ci
+zgłaszam. To jest jeden z głównych mechanizmów. Zgłaszam coś, a wy nie robicie z tym nic."*
+
+**C-027** — każde zgłoszenie, w tej samej turze, bez przerwy:
+1. rejestracja w `PYTANIA-OTWARTE.md` + `REJESTR-PROSB-I-ZADAN.md`;
+2. wymaga realnego wyboru kompromisu (balans/gameplay/UX z alternatywami) → **pytanie ABC od
+   razu**, nie odłożone na później;
+3. NIE wymaga ABC (błąd do naprawienia, prośba z jasno opisanym oczekiwanym zachowaniem) →
+   **odpal subagenta Sonnet 5 od razu, w tej samej turze**, w pętli Operator → Evaluator —
+   „zarejestrowane, zajmę się później" jest zakazane. Jego słowa: *„jeżeli coś jest zgłoszone
+   rejestrujesz dane zadanie, jeżeli trzeba zadać pytanie ABC to zadajesz, jeżeli nie to
+   odpalasz subagenta Sonet od razu do rozwiązania tego problemu... to jest najważniejsze,
+   żeby sprawy szły do przodu i nic nie zostało zapomniane."*
+
+## Dwie techniczne pułapki wykryte w tej sesji (C-028, C-029 — Maciej 2026-08-08)
+
+Po jego pytaniu „to wszystkie błędy, które zauważyłeś, warto dołożyć do autobota" —
+dwa konkretne, powtarzalne mechanizmy zawodne w tej sesji, nie jednorazowe pomyłki:
+
+- **C-029 (recydywa ≥5×)** — worktree bez `gra/node_modules` sprawia, że `npx tsc` po cichu
+  uruchamia globalny, niepinowany TypeScript zamiast wersji projektu (5.9.3), dając mylący
+  wynik w obie strony (fałszywe „0 błędów" albo fałszywy błąd kompilacji niebędący błędem
+  projektu). Przed zaufaniem KAŻDEMU wynikowi `tsc` w worktree: symlink `node_modules` z
+  drzewa głównego + `npx tsc --version` musi pokazać `5.9.3`. Symlink nigdy nie trafia do
+  commita (usuwać po pracy, `git add -A` by go złapał mimo `.gitignore` — nazwa katalogu
+  zgodna z wpisem, ale symlink to nie katalog).
+- **C-028** — `git add` z listą kilku ścieżek, gdy jedna nie istnieje (typowo: plik usunięty
+  przez `git apply`, jeszcze nie w indeksie) — kończy się `fatal: ... did not match any
+  files`, a pozostałe ścieżki z TEGO SAMEGO wywołania mogą zostać po cichu pominięte.
+  `git status --short` PRZED każdym commitem po `git add` z więcej niż jedną ścieżką;
+  usunięte pliki dodawać osobnym wywołaniem.
+
+## C-030 — przegląd całej listy, nie tylko najnowszego zgłoszenia (Maciej 2026-08-08)
+
+C-027 mówi „każde zgłoszenie od razu do subagenta" — ale w praktyce stosowane było punktowo
+(dla zgłoszenia właśnie rejestrowanego), nie jako przegląd całej listy. Skutek: 4 zgłoszenia
+z jednego dnia zostały zarejestrowane, ale nigdy nie dostały subagenta — wykryte dopiero na
+pytanie właściciela wprost. **Po KAŻDEJ serii rejestracji w `PYTANIA-OTWARTE.md`, przed
+przejściem do innego tematu**: `grep` całego pliku po dzisiejszej dacie + `STATUS: **OTWARTE**`
+(sam status, nie „ZDECYDOWANE"/„W REALIZACJI"/„NAPRAWIONE") i potwierdzić dla każdego trafienia
+subagenta w locie, pytanie ABC, albo jawny powód odłożenia. Jego słowa: *„to jest jakaś
+notoryczna skleroza… co mam kazać ci gdzie zapisać żebyś nie zapominał o błędach, które
+zgłaszam, i wszystkie od razu realizował przez subagentów."*
+
+## C-031 — krytyczna komenda żyje TAKŻE w CLAUDE.md, nie tylko tutaj (Maciej 2026-08-08)
+
+C-030 istniała jako reguła od godzin tej samej sesji, a mimo to nie została zastosowana
+proaktywnie ani razu, dopóki właściciel wprost nie zapytał, gdzie to zapisać, żeby się nie
+powtarzało. Przyczyna: ten plik i `playbook.md` NIE są wstrzykiwane do kontekstu automatycznie
+w Claude Code (w Cursorze ten plik JEST auto-ładowany dzięki `alwaysApply: true` — zastrzeżenie
+dodane po rundzie 1 Evaluatora) — wymagają świadomego `Read`, a po kompaktowaniu długiej sesji
+znikają z pola widzenia bez świadomej decyzji o pominięciu. `CLAUDE.md` NATOMIAST jest ładowany
+do kontekstu KAŻDEJ tury w Claude Code — ale jako migawka z początku sesji, nie odczyt co turę;
+zmiana w `CLAUDE.md` w trakcie bieżącej sesji zaczyna realnie działać dopiero w NOWEJ sesji.
+**Poprawka:** sama komenda z C-030, BEZ kotwicy `^## ` (kotwica gubi nagłówki `### ` — realna
+utrata trafienia wykazana przez Evaluatora rundy 1: `grep -n 'STATUS: \*\*OTWARTE'
+dyspozycje/PYTANIA-OTWARTE.md`) zduplikowana w `CLAUDE.md` §0c — nie tylko odwołanie do reguły,
+tam gdzie orkiestrator ją faktycznie zawsze zobaczy. Druga, niezależna od pamięci warstwa:
+**[2026-08-08, ZASTĄPIONE tego samego dnia]** druga warstwa BYŁA stałym godzinowym Routine —
+usunięta na polecenie Macieja po ~20+ jałowych wywołaniach/dobę niezależnie od realnej pracy.
+Zastąpiona jednorazowym, samo-uzbrajającym się `run_once_at` triggerem: uzbrajany TYLKO gdy nowe
+zgłoszenie nie da się domknąć w tej samej turze, odpala tę samą komendę za ~1h, re-uzbraja
+kolejny jeśli coś nadal czeka, kończy się cicho bez re-uzbrojenia gdy wszystko domknięte. Pełny
+opis: `CLAUDE.md` §0c.
+Ryzyko rozjazdu 4 kopii tej samej komendy (CLAUDE.md/playbook.md/.mdc/SKILL.md) świadomie
+zaakceptowane na razie, bez mechanicznego zabezpieczenia (jak generator `playbook.json`) — do
+rozważenia później. Zasada ogólna: każda reguła oznaczona jako krytyczna (0/0a/0b/0c) powinna
+mieć swoją mechaniczną komendę zduplikowaną w pliku zawsze ładowanym do kontekstu, nie tylko w
+playbooku/regułach `.cursor`. Jego słowa: *„przygotuj rozwiązanie żeby o takich rzeczach nie
+zapominać, gdzie to powinno być zapisane, procedura żeby to się już nie powtarzało."*
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.

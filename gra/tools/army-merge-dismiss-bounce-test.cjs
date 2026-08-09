@@ -64,7 +64,14 @@ catch (e) {
 
 const GRA = path.resolve(__dirname, '..');
 const STUB_DIR = path.resolve(__dirname, '.stubs');
-const STUB_FILE = path.resolve(STUB_DIR, 'brandAssets-stub.ts');
+// P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora
+// zwiadowca-drewno): NIE 'brandAssets-stub.ts' — ten plik jest współdzielony
+// i ŚLEDZONY w gicie (patrz danina-podatek-tooltip-ui-test.cjs), a jego
+// zawartość różni się między bramkami. Każde uruchomienie brudziło
+// niezwiązany trackowany plik w git status. Nazwa własna dla tej bramki
+// (wzorem pre-battle-brandAssets-stub.ts / brandAssets-diplo-treaty-stub.ts)
+// trzyma stub poza współdzielonym plikiem.
+const STUB_FILE = path.resolve(STUB_DIR, 'army-merge-brandAssets-stub.ts');
 const ENTRY = path.join(__dirname, '.army-merge-dismiss-entry.ts');
 const BUNDLE = path.join(__dirname, '.army-merge-dismiss-bundle.cjs');
 

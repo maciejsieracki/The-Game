@@ -170,6 +170,27 @@ export interface ProposalEvalContext {
   proposerWiarygodnosc?: number;
   /** Globalna Wiarygodność respondenta (−100…+100) — Dźwignia 3 (opcjonalnie). */
   responderWiarygodnosc?: number;
+  /**
+   * R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: PW z INNYCH pozycji na TYM SAMYM stole negocjacji,
+   * między tymi samymi stronami i w TYM SAMYM kierunku (identyczny proposerOwnerId/
+   * responderOwnerId) — doliczane WYŁĄCZNIE do `treatyBaseFairnessGap` traktatu handlowego
+   * (`umowa_szlakow`/`umowa_handlowa`), żeby pakiet {traktat bez własnego koszyka + osobna
+   * wymiana (np. `handel`) na tym samym stole} mógł pokryć bazę traktatu SUMĄ pakietu, nie
+   * tylko koszykiem samego traktatu (właściciel, opcja A). SCOPED (Q2, Przeciw #1): to NIE
+   * jest ogólna pula PW dla wszystkich akcji — pola te wpływają WYŁĄCZNIE na case
+   * 'umowa_handlowa'/'umowa_szlakow' poniżej; wywołujący (main.ts) liczy je z pominięciem
+   * innych pozycji objętych WŁASNĄ bramką treatyBaseFairnessGap (`pokoj`/`umowa_szlakow`/
+   * `umowa_handlowa`) — czyli dedykowany koszyk `pokoj` (baza 500 PW) nie zasila też progu
+   * traktatu handlowego jako „sąsiad". KOREKTA (Evaluator): to NIE jest ogólna ochrona
+   * przed dwoma traktatami handlowymi na jednym stole obiema czerpiącymi z tego samego
+   * niehandlowego sąsiada (np. `handel`) — packageSiblingPn liczy każdy traktat osobno,
+   * więc taki scenariusz nie jest wykluczony; jest dziś nieosiągalny inaczej niż z legacy
+   * save (obecne UI tworzy zawsze `umowa_szlakow`, nigdy dwóch traktatów handlowych
+   * naraz), więc świadomie NIE naprawiane w tym zleceniu. `undefined` = brak sąsiadów /
+   * nieliczone (domyślne dla wywołań spoza stołu).
+   */
+  packageSiblingGivePn?: number;
+  packageSiblingReceivePn?: number;
 }
 
 export interface ProposalEvalResult {
@@ -374,8 +395,9 @@ export function sweetenerEasePoints(payload: ProposalPayload, pnOpts?: ResolvePr
 /**
  * HANDEL-SUROWCE-CYKL (2026-07-24): koszyk `surowiec_ilosc` (+ opcjonalna zapłata
  * zloto/praca po stronie przeciwnej) → przepływy CO TURĘ. `ilosc` na pozycji
- * `surowiec_ilosc` to PAKIETY/turę (ta sama jednostka co w trybie jednorazowym —
- * main.ts transferBasketItems mnoży przez diplomacyHandelSurowcePakietWielkosc()).
+ * `surowiec_ilosc` to SZTUKI/turę (ta sama jednostka co w trybie jednorazowym —
+ * R-DYP-PAKIET-USUN 2026-08-08: bez mnożenia przez pakiet, main.ts transferBasketItems
+ * i tickCyclicResourceTradeDeals traktują `ilosc`/`pakietyPerTura` jako sztuki wprost).
  * Obsługuje oba kierunki naraz (barter surowiec-za-surowiec) — zwykle jeden wpis.
  * ownerId-agnostyczne: proposerId/responderId mogą być gracz LUB dowolne AI.
  */
@@ -1080,11 +1102,23 @@ export function evaluateProposal(
       const treatyBasePn = treatyBasePnFromConfig(actionId);
       const proposerIsTreatyPlayer = proposerOwnerId === (pnOpts.playerOwnerId ?? 0);
       if (treatyBasePn > 0 && proposerIsTreatyPlayer) {
-        const gap = treatyBaseFairnessGap(treatyBasePn, givePn, receivePn, relTotal);
+        // R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A: dolicz PW z sąsiednich pozycji NA TYM SAMYM
+        // stole (np. osobny `handel` między tymi samymi stronami) — pakiet jako całość
+        // pokrywa bazę traktatu, nawet gdy sam traktat nie ma własnego koszyka. Sąsiad
+        // NIE wpływa na wyświetlany koszyk traktatu (givePn/receivePn poniżej, hasItems) —
+        // tylko na próg tej bramki, żeby nie dublować PW w sumie pakietu na panelu (main.ts).
+        const siblingGivePn = ctx.packageSiblingGivePn ?? 0;
+        const siblingReceivePn = ctx.packageSiblingReceivePn ?? 0;
+        const gap = treatyBaseFairnessGap(
+          treatyBasePn, givePn + siblingGivePn, receivePn + siblingReceivePn, relTotal,
+        );
         if (gap > 0) {
+          const packageNote = (siblingGivePn > 0 || siblingReceivePn > 0)
+            ? ', licząc pakiet na stole'
+            : '';
           return {
             accepted: false,
-            reason: `Brakuje ${gap} PW do uczciwej oferty traktatu handlowego @ Relacji (baza ${treatyBasePn} PW) — oferta nieuczciwa dla partnera`,
+            reason: `Brakuje ${gap} PW do uczciwej oferty traktatu handlowego @ Relacji (baza ${treatyBasePn} PW${packageNote}) — oferta nieuczciwa dla partnera`,
           };
         }
       }
@@ -1331,10 +1365,10 @@ export function formatAiDiplomacyPlayerMessage(cmd: AIDiplomacyCommand): string 
     case 'zaproponuj_handel_surowiec': {
       const zaplataLabel = cmd.zaplataTyp === 'praca' ? 'Praca' : '¤';
       if (cmd.kierunek === 'zakup') {
-        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} pakiet(y)/turę`
+        return `Kupię od ciebie ${cmd.label} — ${cmd.pakietyPerTura} szt./turę`
           + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
       }
-      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} pakiet(y)/turę`
+      return `Mamy nadwyżkę surowca ${cmd.label} — oferujemy ${cmd.pakietyPerTura} szt./turę`
         + ` za ${cmd.zaplataPerTura} ${zaplataLabel}/turę przez ${cmd.turns} tur.`;
     }
     default:

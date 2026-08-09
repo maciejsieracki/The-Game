@@ -97,8 +97,11 @@ const minGold = M.pickMinimalSweetenerGold(
 );
 ok(minGold === 50, `minimal sweetener: 50¤ nie 500¤ (${minGold})`);
 
+// R-DYP-PAKIET-USUN (2026-08-08, Maciej): koszyk podaje sztuki wprost (cena_drewno=1 PN/szt.)
+// — `ilosc: 10` odtwarza dokładnie ten sam scenariusz „10 PN drewna vs 1 PN złota”, który
+// przed usunięciem pakietów dawało `ilosc: 1` (1 pakiet × 10 szt. × 1 PN/szt.).
 const cyclicRaw = {
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 10 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
   resourceTradeMode: 'per_turn',
   turns: 10,
@@ -108,14 +111,14 @@ const cyclicTrimmed = M.trimProposalForZeroBalance(cyclicRaw, 100, 'normal');
 const cyclicSurplusAfter = M.aiProposalPlayerBenefitSurplus(cyclicTrimmed, 100);
 const cyclicGold = cyclicTrimmed.receiveItems?.find(i => i.typ === 'zloto')?.ilosc ?? 0;
 const cyclicWood = cyclicTrimmed.giveItems?.find(i => i.typ === 'surowiec_ilosc')?.ilosc ?? 0;
-ok(cyclicSurplusBefore >= 8, `scenariusz zrzutu: 10 drewna/turę + 1¤ → nadwyżka ≥8 (${cyclicSurplusBefore})`);
+ok(cyclicSurplusBefore >= 8, `scenariusz zrzutu: 10 szt. drewna/turę + 1¤ → nadwyżka ≥8 (${cyclicSurplusBefore})`);
 ok(
   cyclicSurplusAfter <= 5 || (!cyclicTrimmed.giveItems?.length && !cyclicTrimmed.receiveItems?.length),
   `normal: nadwyżka ≤5 lub oferta wycofana (${cyclicSurplusAfter})`,
 );
 
 const cyclicFair = {
-  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 1 }],
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'drewno', ilosc: 10 }],
   receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 10 }],
   resourceTradeMode: 'per_turn',
   turns: 10,
@@ -123,19 +126,28 @@ const cyclicFair = {
 const cyclicFairTrimmed = M.trimProposalForZeroBalance(cyclicFair, 100, 'normal');
 ok(
   M.aiProposalPlayerBenefitSurplus(cyclicFairTrimmed, 100) <= 5,
-  `fair 10¤ za pakiet drewna: nadwyżka ≤5`,
+  `fair 10¤ za 10 szt. drewna: nadwyżka ≤5`,
 );
 
 const cyclicEasy = M.trimProposalForZeroBalance(cyclicRaw, 100, 'easy');
 ok(
-  cyclicEasy.giveItems[0].ilosc === 1 && cyclicEasy.receiveItems[0].ilosc === 1,
+  cyclicEasy.giveItems[0].ilosc === 10 && cyclicEasy.receiveItems[0].ilosc === 1,
   'easy: bez trimu cyklicznego',
 );
 
-const cyclicClamped = M.trimProposalForZeroBalance(cyclicRaw, 100, 'normal');
+// Nawet 1 szt. (minimum, dalej zejść się nie da) wciąż za droga względem 1¤ — pełne
+// wycofanie oferty. zelazo=20 PN/szt. gwarantuje nadwyżkę > tolerancji już przy ilosc=1
+// (odtwarza scenariusz sprzed R-DYP-PAKIET-USUN, gdzie 1 pakiet = najmniejsza jednostka).
+const cyclicNoRoom = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'zelazo', ilosc: 1 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
+  resourceTradeMode: 'per_turn',
+  turns: 10,
+};
+const cyclicClamped = M.trimProposalForZeroBalance(cyclicNoRoom, 100, 'normal');
 ok(
   !cyclicClamped.giveItems?.length && !cyclicClamped.receiveItems?.length,
-  'po clamp 1¤: oferta wycofana (nie 10 drewna za 1¤)',
+  'po clamp 1¤: oferta wycofana (nie 1 szt. zelaza za 1¤)',
 );
 
 console.log(`\ndiplomacy-ai-offer-balance-test: ${pass} passed, ${fail} failed`);

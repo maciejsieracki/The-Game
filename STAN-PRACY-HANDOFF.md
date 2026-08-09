@@ -114,7 +114,7 @@ git status --short
 
 Szczegóły w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Żaden z powyższych commitów nie jest jeszcze w `origin/main`/ROBOCZA** — to wciąż branch roboczy.
 
-**Zaparkowane:** relief tip `9c098944` · `P-TEST-UPKEEP-R-STAWKI` · KANON · `R-DOTYK-MVP` · playtesty R-AUTO / F226 AI.
+**Zaparkowane:** relief tip `9c098944` · KANON · `R-DOTYK-MVP` · playtesty R-AUTO / F226 AI. (`P-TEST-UPKEEP-R-STAWKI` ZAMKNIĘTE 2026-08-09 — wpis był nieaktualny, test już 73/73, patrz `PYTANIA-OTWARTE.md`.)
 
 **ZDEPLOYOWANE — wykreślone z kolejki (FALA 248–254):**
 - **R-SCENA-PERF-FALA138** — F248 `772bab7c` (+ dżungla F249)

@@ -2,67 +2,70 @@
 /**
  * mur-paradoks-test.cjs
  *
- * R-MOC-DEFINICJA-Q1 (Maciej 2026-08-08): "Moc" WYŚWIETLANA graczowi (tabliczka
- * nad żetonem, tooltip, panel rankingu, HUD, Empire) NIGDY nie liczy budynków
- * ani terenu -- tylko własne wskaźniki jednostki + premia weterana. Rzeczywiste
- * rozstrzygnięcie bitwy (effectiveDefenderM, gałąź isCity) nadal liczy PEŁNY
- * bonus struktury obronnej (mur/Palisada/Cytadela/Baszta) i mnożnik terenu --
- * TEGO test nie rusza.
+ * R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09) — koryguje zakres
+ * R-MOC-DEFINICJA-Q1 (2026-08-08), które zunifikowało WSZYSTKIE wyświetlenia
+ * Mocy (tabliczka nad żetonem ORAZ Moc cywilizacji) pod jedną, zbyt wąską
+ * regułą "nigdy nie liczy budynków ani terenu". Maciej: to dwie różne liczby.
  *
- * Ten plik to CZĘŚCIOWE COFNIĘCIE R-MOC-MUR-PARADOKS-Q1=A (2026-08-07,
- * commit f94216e), na mocy R-MOC-DEFINICJA-Q1 (2026-08-08): funkcja
- * main.ts::tabliczkaGarnizonScaledDefFor(), która dla garnizonu za murem
- * dociągała bonus struktury/terenu NA TABLICZKĘ, została USUNIĘTA. Tabliczka
- * znów woła gołe combatPowerScaledDefFor(u) (weteran + trudność AI, BEZ
- * muru/terenu) -- dokładnie jak przed R-MOC-MUR-PARADOKS-Q1=A.
+ *   1. Tabliczka nad żetonem + tooltip jednostki na mapie -- REALNA Moc, ze
+ *      WSZYSTKIMI bonusami: teren, fortyfikacja (polowa i garnizonowa),
+ *      mur/struktura miasta, weteran. main.ts::combatPowerFullDisplayDefFor(u).
+ *   2. Moc cywilizacji (panel rankingu/HUD/Empire) -- WYŁĄCZNIE naturalne
+ *      wskaźniki jednostki + premia weterana. BEZ terenu/fortyfikacji/muru
+ *      (i BEZ mnożnika trudności AI -- zależy od ownerId, nie od jednostki
+ *      samej w sobie). main.ts::sumArmyMForOwnerEffective (przez
+ *      veteranScaledDefFor(u)).
  *
- * Skutek -- PARADOKS WRACA, ale jest teraz ŚWIADOMY i ZAAKCEPTOWANY (nie błąd
- * do naprawienia): tabliczka garnizonu W MIEŚCIE Z MUREM pokazuje TĘ SAMĄ
- * (a wręcz NIŻSZĄ, patrz p. 1-2 niżej) Moc co garnizon w mieście BEZ ŻADNEGO
- * budynku obronnego, mimo że realna Obrona TEGO miasta w bitwie
- * (effectiveDefenderM, main.ts, NIETKNIĘTE) rośnie do +400%. Powód spadku:
- * fortifyFieldScaledDefFor dolicza własny +50% Obrony garnizonu TYLKO gdy
- * miasto NIE ma budynku obronnego (unitGetsFortifyDefenseBonus zwraca false,
- * gdy jest mur) -- skoro tabliczka już nie dokłada kompensującego bonusu
- * struktury, ten -50% "dziurę" znów widać na tabliczce. To jest teraz
- * ZAMIERZONE: tabliczka ma pokazywać WYŁĄCZNIE własne wskaźniki jednostki +
- * weterana, bez względu na to, co to oznacza dla monotoniczności względem
- * budynków miasta.
+ * TEN PLIK to CZĘŚCIOWE PONOWNE WPROWADZENIE R-MOC-MUR-PARADOKS-Q1=A
+ * (2026-08-07, commit f94216e), tym razem TRWAŁE — nazwa funkcji
+ * combatPowerFullDisplayDefFor(u) zamiast tabliczkaGarnizonScaledDefFor(u),
+ * identyczny, już raz zweryfikowany przez Evaluatora wzór (1125 porównań,
+ * zero rozbieżności, 2026-08-07).
  *
  * Co sprawdza ten test (bez importu main.ts -- main.ts uruchamia caly silnik
  * gry/DOM, wiec esbuild --bundle go nie rozwiazuje w izolacji; konwencja jak
  * structure-defense-bonus-test.cjs -- bunduje PRAWDZIWE cegielki main.ts
- * faktycznie uzywa, i reimplementuje WZOR main.ts::combatPowerScaledDefFor
- * 1:1 z tych cegielek, zeby porownac PRAWDZIWA stackFieldPowerM z oczekiwana
- * liczba):
+ * faktycznie uzywa, i reimplementuje WZOR main.ts::combatPowerFullDisplayDefFor
+ * / sumArmyMForOwnerEffective 1:1 z tych cegielek):
  *
- *   1. Fixture Konnica (rekrut, garnizon, teren plaski -- brak wzniesienia,
- *      wiec cityGatedTerrainMultiplier=1.0, izolujemy czysty efekt struktury):
- *      tabliczka W MIEŚCIE Z MUREM (bez fortify-field, BEZ bonusu struktury
- *      -- decyzja R-MOC-DEFINICJA-Q1) <= tabliczka BEZ ŻADNEGO budynku
- *      obronnego (dzisiejszy, niezmieniony fortify-field +50% garnizonu).
- *   2. Tabliczka z murem == Moc bazowa surowa (żaden bonus jej nie dotyka --
- *      ani fortify-field, bo mur go wyłącza, ani struktura, bo tabliczka jej
- *      już nie dolicza).
- *   3. Monotoniczność ZNIKA (świadomie): tabliczka z Murami == tabliczka z
- *      Murami+Cytadela == tabliczka z Murami+Cytadela+Baszta -- więcej
- *      budynków obronnych NIE zmienia tabliczki (nigdy nie dociąga struktury).
+ *   1. Tabliczka W MIEŚCIE Z MUREM (fortify-field wyłączony przez mur, ALE
+ *      dolicza bonus struktury) >= tabliczka BEZ ŻADNEGO budynku obronnego
+ *      (fortify-field +50% garnizonu) -- paradoks z 2026-08-07 ZAMKNIĘTY.
+ *   2. Tabliczka z murem == realna Obrona miasta w bitwie (effectiveDefenderM,
+ *      NIETKNIĘTE) dla tego samego, izolowanego (teren płaski, roster
+ *      jednoosobowy) scenariusza -- ta sama liczba, tylko policzona osobno.
+ *   3. Monotoniczność WRACA: tabliczka z Murami <= Mury+Cytadela <=
+ *      Mury+Cytadela+Baszta (więcej budynków obronnych = wyższa Moc tabliczki).
  *   4. Jednostka NIE w garnizonie (w polu) -- tabliczka bez zmian względem
- *      dzisiejszego combatPowerScaledDefFor (zachowanie sprzed i po decyzji
- *      identyczne, bez zmian).
- *   5. Realna Obrona (effectiveDefenderM, main.ts, NIETKNIĘTE) tego samego
- *      garnizonu za murem JEST WYŻSZA niż wartość na tabliczce -- to jest
- *      ŚWIADOMY, udokumentowany paradoks (R-MOC-DEFINICJA-Q1), nie błąd.
- *   6. ZRODLO main.ts: literalna asercja tekstowa, ze
- *      (a) defOf tabliczki (syncUnitsRender) wola goly combatPowerScaledDefFor(u)
- *          (NIE tabliczkaGarnizonScaledDefFor) -- lapie cofniecie tej decyzji;
- *      (b) funkcja main.ts::tabliczkaGarnizonScaledDefFor NIE ISTNIEJE już w
- *          pliku (martwy kod usunięty razem z jedynym wywołującym);
- *      (c) combatPowerScaledDefFor() SAMA w sobie NIE dolicza structBonusPct/
- *          cityGatedTerrainMultiplier -- lapie regresje podwojnego liczenia
- *          bonusu w main.ts effectiveDefenderM;
- *      (d) effectiveDefenderM nadal buduje defRoster przez
- *          combatPowerScaledDefFor(u) -- realna bitwa NIETKNIĘTA.
+ *      combatPowerScaledDefFor (fortify-field polowe nadal działa, struktura
+ *      miasta jej nie dotyczy).
+ *   5. Moc cywilizacji (sumArmyMForOwnerEffective/veteranScaledDefFor) jest
+ *      STAŁA niezależnie od tego, czy jednostka stoi w garnizonie za murem,
+ *      bez muru, czy w polu -- w przeciwieństwie do tabliczki (p.1-4), civ-
+ *      power nie liczy fortyfikacji/muru/terenu W OGÓLE.
+ *   6. ZRODLO main.ts: literalne asercje tekstowe, ze
+ *      (a) defOf tabliczki (syncUnitsRender) wola
+ *          combatPowerFullDisplayDefFor(u) (NIE goły combatPowerScaledDefFor) --
+ *          lapie cofniecie tej decyzji;
+ *      (b) funkcja main.ts::combatPowerFullDisplayDefFor ISTNIEJE w pliku;
+ *      (c) combatPowerScaledDefFor() SAMA w sobie NIE dolicza struct/teren
+ *          bonusu -- lapie regresje podwojnego liczenia w effectiveDefenderM;
+ *      (d) effectiveDefenderM nadal buduje defRoster/atkRoster przez
+ *          combatPowerScaledDefFor(u) (NIE combatPowerFullDisplayDefFor) --
+ *          realna bitwa NIETKNIĘTA;
+ *      (e) sumArmyMForOwnerEffective wola armyFieldPower(veteranScaledDefFor(u))
+ *          (NIE combatPowerScaledDefFor/combatPowerFullDisplayDefFor) -- civ-
+ *          power bez fortyfikacji/terenu/muru/trudności AI;
+ *      (f) P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (nota N1 Evaluatora
+ *          moc-mur-revert, 2026-08-08): sekcje 1-2 wyzej licza
+ *          realDefenseWithMur WLASNA REIMPLEMENTACJA wzoru (main.ts nie da sie
+ *          zaimportowac w izolacji -- caly silnik/DOM), wiec NIE lapia dryfu
+ *          SAMEGO WZORU wewnatrz main.ts::effectiveDefenderM (dowod mutacyjny:
+ *          wyzerowanie bonusu muru w REALNEJ bitwie zostawialo caly ten plik
+ *          zielonym). Literalna asercja zrodlowa pinuje formule
+ *          `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100`
+ *          w galezi isCity produkcyjnej effectiveDefenderM, i ze stosuje sie
+ *          ona WYLACZNIE do Obrony (terrAdjDefense), nigdy do Ataku obroncy.
  *
  * Usage (z gra/): node tools/mur-paradoks-test.cjs
  */
@@ -91,8 +94,8 @@ function assert(cond, msg) {
 
 // ---------------------------------------------------------------------------
 // Bundle: unit-power.ts + city-defense.ts + armyMerge.ts (dokladnie te pliki,
-// ktorych main.ts::combatPowerScaledDefFor / effectiveDefenderM faktycznie
-// uzywaja dla skladowej garnizon+fortify-field+struktura).
+// ktorych main.ts::combatPowerScaledDefFor / combatPowerFullDisplayDefFor /
+// effectiveDefenderM / sumArmyMForOwnerEffective faktycznie uzywaja).
 // ---------------------------------------------------------------------------
 const ENTRY = path.join(__dirname, '.mur-paradoks-entry.ts');
 const BUNDLE = path.join(__dirname, '.mur-paradoks-bundle.cjs');
@@ -101,6 +104,7 @@ fs.writeFileSync(
   [
     "export { armyFieldPower, armyFieldPowerSplit } from '../src/game/unit-power';",
     "export { cityWallDefenseBonusPercent, unitGetsFortifyDefenseBonus, fieldFortifyDefenseBonus } from '../src/game/city-defense';",
+    "export { cityGatedTerrainMultiplier } from '../src/game/city-defense';",
     "export { stackFieldPowerM } from '../src/game/armyMerge';",
   ].join('\n'),
   'utf8',
@@ -120,6 +124,7 @@ const {
   cityWallDefenseBonusPercent,
   unitGetsFortifyDefenseBonus,
   fieldFortifyDefenseBonus,
+  cityGatedTerrainMultiplier,
   stackFieldPowerM,
 } = require(BUNDLE);
 fs.unlinkSync(ENTRY);
@@ -148,23 +153,19 @@ function getUnit(name) {
 }
 
 const konnica = getUnit('Konnica');
+const FLAT = 'Płaskie (równina/łąka)';
 
-console.log('mur-paradoks-test (R-MOC-DEFINICJA-Q1, cofniecie R-MOC-MUR-PARADOKS-Q1=A)\n');
+console.log('mur-paradoks-test (R-MOC-TABLICZKA-VS-CIVPOWER-Q1)\n');
 console.log('Fixture Konnica: meleeAttack=' + konnica.meleeAttack + ' meleeDefence=' + konnica.meleeDefence
   + ' armor=' + konnica.armor + ' health=' + konnica.health + ' (rekrut, garnizon)\n');
 
 // ---------------------------------------------------------------------------
-// Reimplementacja 1:1 main.ts::combatPowerScaledDefFor -- WYLACZNIE z
-// bundlowanych, prawdziwych cegielek (zero nowej matematyki). Trudnosc AI
-// (applyDifficultyCombatToUnitDef) pominieta -- test liczy 'normal' domyslny
-// (mnoznik 1.0), tak jak robil to test sprzed cofniecia.
+// Reimplementacja 1:1 main.ts::combatPowerScaledDefFor (BAZA, bez trudnosci
+// AI -- test liczy 'normal' domyslny, mnoznik 1.0):
 //   base = veteranScaledDefFor(u) (identycznosc dla rekruta, weteran=0) +
-//   fortify-field garnizonu TYLKO gdy unitGetsFortifyDefenseBonus zwraca true
-//   (czyli miasto BEZ zadnego budynku obronnego -- z murem/cytadela/baszta
-//   ZWRACA false, wiec garnizon za murem NIE dostaje juz zadnego bonusu na
-//   tabliczce -- ani fortify-field, ani struktury).
+//   fortify-field garnizonu TYLKO gdy unitGetsFortifyDefenseBonus zwraca true.
 // ---------------------------------------------------------------------------
-function tabliczkaScaledDef(unitRaw, builtBuildingIds) {
+function combatPowerScaledDef(unitRaw, builtBuildingIds) {
   const getsFortifyField = unitGetsFortifyDefenseBonus({
     ufortyfikowanyWPolu: false,
     inGarnizon: true,
@@ -174,122 +175,156 @@ function tabliczkaScaledDef(unitRaw, builtBuildingIds) {
   const meleeDefenceAfterFortify = getsFortifyField
     ? fieldFortifyDefenseBonus(unitRaw.meleeDefence, true, FORTIFY_OBRONA_PROC_FIELD)
     : unitRaw.meleeDefence;
-  // units.json ma `fieldPower` PRZELICZONY z cache -- armyFieldPower() zwraca
-  // je WPROST, ignorujac przeskalowane meleeDefence, jesli pole zostanie w
-  // obiekcie. main.ts usuwa je explicite -- reimplementacja MUSI zrobic to
-  // samo, inaczej test mierzylby stara, niezmieniona liczbe.
   const { fieldPower: _stale, ...rawNoCache } = unitRaw;
   return { ...rawNoCache, meleeDefence: meleeDefenceAfterFortify };
 }
 
+// ---------------------------------------------------------------------------
+// Reimplementacja 1:1 main.ts::combatPowerFullDisplayDefFor -- TABLICZKA,
+// zgodnie z R-MOC-TABLICZKA-VS-CIVPOWER-Q1 punkt 1: base + bonus struktury/
+// terenu miasta gdy jednostka jest w garnizonie miasta z murem.
+// ---------------------------------------------------------------------------
+function combatPowerFullDisplayDef(unitRaw, builtBuildingIds, terrain, inGarnizon) {
+  const base = combatPowerScaledDef(unitRaw, builtBuildingIds);
+  if (!inGarnizon) return base;
+  const structBonusPct = cityWallDefenseBonusPercent(builtBuildingIds, cityDefenseBonusParams);
+  const hasMur = structBonusPct > 0;
+  const cityTerrMult = cityGatedTerrainMultiplier(hasMur, terrain, []);
+  const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
+  if (combinedDefPct <= 0) return base;
+  const mult = 1 + combinedDefPct / 100;
+  const scale = (v) => (typeof v === 'number' ? v * mult : v);
+  return { ...base, meleeDefence: scale(base.meleeDefence), armor: scale(base.armor), health: scale(base.health) };
+}
+
+// ---------------------------------------------------------------------------
+// Reimplementacja 1:1 main.ts::veteranScaledDefFor dla rekruta (weteran=0) --
+// to jest po prostu unitDefFor(u) goły, BEZ zadnego skalowania (fortify/
+// struktura/teren/trudnosc AI). Karmi civ-power (sumArmyMForOwnerEffective).
+// ---------------------------------------------------------------------------
+function veteranScaledDef(unitRaw) {
+  const { fieldPower: _stale, ...rawNoCache } = unitRaw;
+  return rawNoCache;
+}
+
 // ===========================================================================
-// 1-2. Paradoks WRACA (swiadomie, R-MOC-DEFINICJA-Q1): tabliczka z murem <=
-// tabliczka bez zadnego budynku, i tabliczka z murem == Moc bazowa surowa
-// (zaden bonus jej juz nie dotyka).
+// 1-2. Paradoks ZAMKNIĘTY: tabliczka z murem >= tabliczka bez zadnego
+// budynku, i == realna Obrona miasta w bitwie (effectiveDefenderM, teren
+// plaski -- izolujemy czysty efekt struktury).
 // ===========================================================================
-console.log('--- 1-2. Paradoks wraca (tabliczka z Murami == Moc bazowa, bez zadnego bonusu) ---');
+console.log('--- 1-2. Paradoks zamkniety (tabliczka z Murami >= bez budynku, == realna Obrona) ---');
 
 const stack = [{ id: 'u1', typeId: 'Konnica', ownerId: 0 }];
 
-const mBezBudynku = stackFieldPowerM(stack, () => tabliczkaScaledDef(konnica, []));
-const mMur = stackFieldPowerM(stack, () => tabliczkaScaledDef(konnica, ['mury']));
+const mBezBudynku = stackFieldPowerM(stack, () => combatPowerFullDisplayDef(konnica, [], FLAT, true));
+const mMur = stackFieldPowerM(stack, () => combatPowerFullDisplayDef(konnica, ['mury'], FLAT, true));
 
-const mBazowe = armyFieldPower(konnica); // 49 -- z units.json (fieldPower precomputed, zweryfikowane == suma z surowych pol)
+const mBazowe = armyFieldPower(konnica); // 49 -- z units.json (fieldPower precomputed)
 assert(
   Math.abs(mBazowe - 49) < 0.05,
   'Kontrola fixture: M bazowe Konnicy (bez zadnego bonusu) == 49 (' + mBazowe + ')',
 );
 
-console.log('    M bez budynku obronnego (fortify-field +50%, niezmienione)      = ' + mBezBudynku);
-console.log('    M z Murami (BEZ fortify-field, BEZ bonusu struktury -- decyzja) = ' + mMur);
+console.log('    M bez budynku obronnego (fortify-field +50%)         = ' + mBezBudynku);
+console.log('    M z Murami (bonus struktury +200%, fortify-field off) = ' + mMur);
 
 assert(
-  mMur < mBezBudynku,
-  'PARADOKS WRACA (swiadomie): tabliczka garnizonu z Murami (' + mMur + ') < tabliczka bez zadnego budynku obronnego (' + mBezBudynku + ') -- fortify-field wylaczony przez mur, a tabliczka juz NIE kompensuje bonusem struktury (R-MOC-DEFINICJA-Q1)',
+  mMur >= mBezBudynku,
+  'PARADOKS ZAMKNIETY: tabliczka garnizonu z Murami (' + mMur + ') >= tabliczka bez zadnego budynku obronnego (' + mBezBudynku + ') -- bonus struktury (+200%) przewaza brak fortify-field (+50%)',
 );
 assert(
-  Math.abs(mMur - mBazowe) < 0.05,
-  'M z Murami (' + mMur + ') == M bazowe surowe (' + mBazowe + ') -- tabliczka garnizonu za murem to CZYSTA Moc jednostki, zaden bonus (ani fortify-field, ani struktury) jej nie dotyka',
+  mMur > mBazowe,
+  'M z Murami (' + mMur + ') > M bazowe surowe (' + mBazowe + ') -- tabliczka garnizonu za murem pokazuje PODNIESIONA Moc, nie czysta',
 );
 
-console.log('');
-
-// ===========================================================================
-// 3. Monotonicznosc ZNIKA (swiadomie): wiecej budynkow obronnych NIE zmienia
-// juz tabliczki -- nigdy nie dociaga struktury.
-// ===========================================================================
-console.log('--- 3. Monotonicznosc znika (Mury == Mury+Cytadela == Mury+Cytadela+Baszta) ---');
-
-const mMuryCytadela = stackFieldPowerM(stack, () => tabliczkaScaledDef(konnica, ['mury', 'fort']));
-const mKomplet = stackFieldPowerM(stack, () => tabliczkaScaledDef(konnica, ['mury', 'fort', 'baszta']));
-
-assert(
-  Math.abs(mMur - mMuryCytadela) < 0.05 && Math.abs(mMuryCytadela - mKomplet) < 0.05,
-  'M NIE rosnie z kazda warstwa budynku obronnego -- tabliczka stala niezaleznie od liczby budynkow (Mury ' + mMur + ' == Mury+Cytadela ' + mMuryCytadela + ' == komplet(+Baszta) ' + mKomplet + ')',
-);
-console.log('');
-
-// ===========================================================================
-// 4. Jednostka NIE w garnizonie (w polu) -- bez zmian
-// ===========================================================================
-console.log('--- 4. Jednostka w polu (nie w garnizonie) -- funkcja no-op ---');
-
-const mPole = armyFieldPower(konnica); // brak veterana/fortify/struct -- goly rekrut w polu
-assert(
-  Math.abs(mPole - mBazowe) < 0.05,
-  'Jednostka w polu (poza garnizonem): M niezmienione wzgledem bazowego (' + mPole + ' == ' + mBazowe + ') -- struct bonus NIGDY nie dotyka jednostki poza miastem (bez zmian przez cofniecie)',
-);
-console.log('');
-
-// ===========================================================================
-// 5. Realna Obrona (effectiveDefenderM, main.ts, NIETKNIETE) tego samego
-// garnizonu za murem JEST WYZSZA niz to, co pokazuje tabliczka -- paradoks
-// jest teraz udokumentowanym, akceptowanym stanem (R-MOC-DEFINICJA-Q1), nie
-// bledem do naprawienia.
-// ===========================================================================
-console.log('--- 5. Realna Obrona miasta (effectiveDefenderM, main.ts) > tabliczka ---');
-
-const FLAT = 'Płaskie (równina/łąka)';
 const splitBazowy = armyFieldPowerSplit(konnica);
 const structPctMur = cityWallDefenseBonusPercent(['mury'], cityDefenseBonusParams);
 assert(structPctMur === 200, 'cityWallDefenseBonusPercent(["mury"]) == 200% (miasto-params.json bonus_obrona_mur_proc)');
-// Wzor effectiveDefenderM galaz isCity, teren plaski (cityGatedTerrainMultiplier=1.0,
-// izolujemy czysty efekt struktury): Atak_bazowy + Obrona_bazowa*(1+structPct/100).
 const realDefenseWithMur = Math.round((splitBazowy.attack + splitBazowy.defense * (1 + structPctMur / 100)) * 10) / 10;
 
 console.log('    Realna Obrona miasta z Murami (effectiveDefenderM, main.ts) = ' + realDefenseWithMur);
-console.log('    Tabliczka nad zetonem tej samej jednostki (po cofnieciu)    = ' + mMur);
+console.log('    Tabliczka nad zetonem tej samej jednostki                  = ' + mMur);
 
 assert(
-  realDefenseWithMur > mMur,
-  'PARADOKS UDOKUMENTOWANY (R-MOC-DEFINICJA-Q1): realna Obrona miasta z Murami w bitwie (' + realDefenseWithMur + ') > wartosc na tabliczce nad zetonem tej samej jednostki (' + mMur + ') -- tabliczka SWIADOMIE nie pokazuje bonusu struktury/terenu, mimo ze realne rozstrzygniecie bitwy go liczy w pelni',
+  Math.abs(realDefenseWithMur - mMur) < 0.15,
+  'PARADOKS ZAMKNIETY: tabliczka nad zetonem (' + mMur + ') == realna Obrona miasta z Murami w bitwie (' + realDefenseWithMur + ') (tolerancja zaokraglen) -- tabliczka pokazuje TA SAMA liczbe, ktora realnie rozstrzyga bitwe',
+);
+
+console.log('');
+
+// ===========================================================================
+// 3. Monotonicznosc WRACA: wiecej budynkow obronnych PODNOSI tabliczke.
+// ===========================================================================
+console.log('--- 3. Monotonicznosc wraca (Mury <= Mury+Cytadela <= Mury+Cytadela+Baszta) ---');
+
+const mMuryCytadela = stackFieldPowerM(stack, () => combatPowerFullDisplayDef(konnica, ['mury', 'fort'], FLAT, true));
+const mKomplet = stackFieldPowerM(stack, () => combatPowerFullDisplayDef(konnica, ['mury', 'fort', 'baszta'], FLAT, true));
+
+assert(
+  mMur <= mMuryCytadela && mMuryCytadela <= mKomplet,
+  'M ROSNIE z kazda warstwa budynku obronnego -- tabliczka monotoniczna wzgledem liczby budynkow (Mury ' + mMur + ' <= Mury+Cytadela ' + mMuryCytadela + ' <= komplet(+Baszta) ' + mKomplet + ')',
 );
 console.log('');
 
 // ===========================================================================
-// 6. ZRODLO main.ts -- literalne asercje tekstowe (lapia regresje/cofniecie
-// tego cofniecia, czyli powrot do stanu R-MOC-MUR-PARADOKS-Q1=A)
+// 4. Jednostka NIE w garnizonie (w polu) -- bez zmian wzgledem
+// combatPowerScaledDefFor (struktura miasta jej nie dotyczy).
+// ===========================================================================
+console.log('--- 4. Jednostka w polu (nie w garnizonie) -- funkcja no-op wzgledem bazy ---');
+
+const mPoleBaza = stackFieldPowerM(stack, () => combatPowerScaledDef(konnica, ['mury']));
+const mPoleDisplay = stackFieldPowerM(stack, () => combatPowerFullDisplayDef(konnica, ['mury'], FLAT, false));
+assert(
+  Math.abs(mPoleBaza - mPoleDisplay) < 0.05,
+  'Jednostka w polu (poza garnizonem): combatPowerFullDisplayDef == combatPowerScaledDef (' + mPoleDisplay + ' == ' + mPoleBaza + ') -- struct bonus miasta NIGDY nie dotyka jednostki poza garnizonem',
+);
+console.log('');
+
+// ===========================================================================
+// 5. Moc cywilizacji (sumArmyMForOwnerEffective/veteranScaledDefFor) STALA
+// niezaleznie od garnizonu/muru/pola -- w przeciwienstwie do tabliczki.
+// ===========================================================================
+console.log('--- 5. Moc cywilizacji STALA niezaleznie od muru/garnizonu (civ-power != tabliczka) ---');
+
+const civPowerBezBudynku = armyFieldPower(veteranScaledDef(konnica));
+const civPowerZMurem = armyFieldPower(veteranScaledDef(konnica)); // ownerId-agnostyczne, nie zalezy od pozycji
+assert(
+  Math.abs(civPowerBezBudynku - civPowerZMurem) < 0.001,
+  'Moc cywilizacji (veteranScaledDefFor) IDENTYCZNA niezaleznie od muru/garnizonu (' + civPowerBezBudynku + ' == ' + civPowerZMurem + ') -- civ-power nie przyjmuje pozycji/muru jako wejscia w ogole',
+);
+assert(
+  Math.abs(civPowerBezBudynku - mBazowe) < 0.05,
+  'Moc cywilizacji rekruta bez weterana (' + civPowerBezBudynku + ') == Moc bazowa surowa (' + mBazowe + ') -- zero bonusow poza weteranem/ulepszeniami',
+);
+assert(
+  civPowerZMurem < mMur,
+  'Moc cywilizacji (' + civPowerZMurem + ') < tabliczka garnizonu za murem (' + mMur + ') -- DWIE ROZNE liczby, civ-power NIZSZA bo nie liczy struktury/terenu',
+);
+console.log('');
+
+// ===========================================================================
+// 6. ZRODLO main.ts -- literalne asercje tekstowe
 // ===========================================================================
 console.log('--- 6. Zrodlo main.ts ---');
 
 const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
+const hasFullDisplayDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*combatPowerFullDisplayDefFor\(u\)/.test(mainTsSrc);
+assert(
+  hasFullDisplayDefOf,
+  'StackVitalsDeps.defOf (syncUnitsRender) wola combatPowerFullDisplayDefFor(u) -- tabliczka pokazuje PELNA Moc (R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
+);
+
 const hasPlainDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*combatPowerScaledDefFor\(u\)/.test(mainTsSrc);
 assert(
-  hasPlainDefOf,
-  'StackVitalsDeps.defOf (syncUnitsRender) wola goly combatPowerScaledDefFor(u) (nie tabliczkaGarnizonScaledDefFor) -- R-MOC-DEFINICJA-Q1, tabliczka bez bonusu struktury',
+  !hasPlainDefOf,
+  'StackVitalsDeps.defOf NIE wola juz golego combatPowerScaledDefFor(u) -- lapie cofniecie do R-MOC-DEFINICJA-Q1 (tabliczka bez struktury)',
 );
 
-const hasTabliczkaDefOfLiteral = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*tabliczkaGarnizonScaledDefFor\(u\)/.test(mainTsSrc);
+const hasFullDisplayFnDefinition = /function combatPowerFullDisplayDefFor\(/.test(mainTsSrc);
 assert(
-  !hasTabliczkaDefOfLiteral,
-  'StackVitalsDeps.defOf NIE wola juz tabliczkaGarnizonScaledDefFor(u) -- lapie cofniecie tego cofniecia (powrot do R-MOC-MUR-PARADOKS-Q1=A)',
-);
-
-const hasTabliczkaFnDefinition = /function tabliczkaGarnizonScaledDefFor\(/.test(mainTsSrc);
-assert(
-  !hasTabliczkaFnDefinition,
-  'Funkcja tabliczkaGarnizonScaledDefFor() NIE ISTNIEJE juz w main.ts -- martwy kod usuniety razem z jedynym wywolujacym (R-MOC-DEFINICJA-Q1)',
+  hasFullDisplayFnDefinition,
+  'Funkcja main.ts::combatPowerFullDisplayDefFor ISTNIEJE w pliku',
 );
 
 // combatPowerScaledDefFor() sama w sobie MUSI zostac fortifyFieldScaledDefFor +
@@ -310,12 +345,69 @@ if (combatPowerScaledDefForMatch) {
 }
 
 // effectiveDefenderM MUSI nadal budowac defRoster przez combatPowerScaledDefFor
-// -- realna bitwa NIETKNIETA przez cofniecie tabliczki.
+// (NIE combatPowerFullDisplayDefFor) -- realna bitwa NIETKNIETA przez ta decyzje.
 const defRosterMapMatches = mainTsSrc.match(/defRoster\.map\(u => \(\{ typeId: u\.typeId, def: combatPowerScaledDefFor\(u\) \}\)\)/g) || [];
 assert(
   defRosterMapMatches.length >= 1,
-  'effectiveDefenderM buduje defRoster przez combatPowerScaledDefFor(u) -- znaleziono ' + defRosterMapMatches.length + ' wystapien -- realna bitwa dolicza struct/teren SAMA, NIETKNIETA przez cofniecie tabliczki',
+  'effectiveDefenderM buduje defRoster przez combatPowerScaledDefFor(u) -- znaleziono ' + defRosterMapMatches.length + ' wystapien -- realna bitwa dolicza struct/teren SAMA, NIETKNIETA przez ta decyzje',
 );
+const rosterMapMatches = mainTsSrc.match(/roster\.map\(u => \(\{ typeId: u\.typeId, def: combatPowerScaledDefFor\(u\) \}\)\)/g) || [];
+assert(
+  rosterMapMatches.length >= 1,
+  'rosterFieldPowerM (atakujacy) buduje roster przez combatPowerScaledDefFor(u) -- znaleziono ' + rosterMapMatches.length + ' wystapien -- atakujacy NIE dostaje bonusu struktury tabliczki',
+);
+
+// sumArmyMForOwnerEffective (civ-power) MUSI woalc veteranScaledDefFor, NIE
+// combatPowerScaledDefFor/combatPowerFullDisplayDefFor.
+const sumArmyMEffectiveMatch = mainTsSrc.match(
+  /function sumArmyMForOwnerEffective\(ownerId: number\): number \{([\s\S]*?)\n {4}\}/,
+);
+assert(!!sumArmyMEffectiveMatch, 'sumArmyMForOwnerEffective() znaleziona w main.ts');
+if (sumArmyMEffectiveMatch) {
+  const body = sumArmyMEffectiveMatch[1];
+  assert(
+    /armyFieldPower\(veteranScaledDefFor\(u\)\)/.test(body),
+    'sumArmyMForOwnerEffective() wola armyFieldPower(veteranScaledDefFor(u)) -- civ-power BEZ fortyfikacji/terenu/muru/trudnosci AI',
+  );
+  assert(
+    !/combatPowerScaledDefFor|combatPowerFullDisplayDefFor/.test(body),
+    'sumArmyMForOwnerEffective() NIE wola combatPowerScaledDefFor/combatPowerFullDisplayDefFor -- civ-power odseparowana od tabliczki',
+  );
+}
+
+// P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (nota N1 Evaluatora
+// moc-mur-revert, 2026-08-08): sekcje 1-2 wyzej licza realDefenseWithMur
+// WLASNA REIMPLEMENTACJA wzoru (main.ts uruchamia caly silnik gry/DOM, nie da
+// sie go zbundlowac w izolacji), wiec NIE lapia dryfu SAMEGO WZORU wewnatrz
+// main.ts::effectiveDefenderM -- dowod mutacyjny Evaluatora: wstrzykniecie
+// `combinedDefPct = 0 * structBonusPct + (cityTerrMult - 1) * 100` (zerowanie
+// bonusu muru w REALNEJ bitwie) zostawialo caly ten plik (i logic-test.cjs,
+// combat-test.cjs) w 100% zielone. Literalna asercja zrodlowa pinuje formule
+// w galezi isCity produkcyjnej effectiveDefenderM -- wzorem starej (usunietej
+// przy R-MOC-TABLICZKA-VS-CIVPOWER-Q1) asercji na scaleField() dla
+// tabliczkaGarnizonScaledDefFor.
+const effectiveDefenderMMatch = mainTsSrc.match(
+  /function effectiveDefenderM\(\s*defRoster: RuntimeUnit\[\],\s*terrain: string,\s*structBonusPct: number,\s*atkLeadDef: Record<string, unknown>,\s*q: number,\s*r: number,\s*\): number \{([\s\S]*?)\n {4}\}/,
+);
+assert(!!effectiveDefenderMMatch, 'effectiveDefenderM() znaleziona w main.ts (funkcja produkcyjna realnej bitwy)');
+if (effectiveDefenderMMatch) {
+  const body = effectiveDefenderMMatch[1];
+  assert(
+    /const combinedDefPct = structBonusPct \+ \(cityTerrMult - 1\) \* 100;/.test(body),
+    'effectiveDefenderM() (galaz isCity, REALNA bitwa) liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 ' +
+      '(ADDYTYWNA kombinacja struktury/terenu, C-COMBAT-Q2) -- lapie regresje/wyzerowanie bonusu muru w rozstrzygnieciu bitwy, ' +
+      'ktorej sekcje 1-2 wyzej NIE lapia (wlasna reimplementacja)',
+  );
+  assert(
+    /terrAdjDefense = split\.defense \* \(1 \+ combinedDefPct \/ 100\);/.test(body),
+    'effectiveDefenderM() stosuje combinedDefPct WYLACZNIE na czesc Obrony (terrAdjDefense = split.defense * (1 + combinedDefPct / 100))',
+  );
+  assert(
+    /terrAdjAttack = split\.attack;/.test(body),
+    'effectiveDefenderM() (galaz isCity) NIE dolicza combinedDefPct do Ataku obroncy (terrAdjAttack = split.attack, bez zmian) -- ' +
+      'mur/teren "nie chroni" skladowej ofensywnej obroncy w obronie miasta',
+  );
+}
 
 console.log('');
 console.log('=== mur-paradoks-test: ' + pass + ' pass, ' + fail + ' fail ===');

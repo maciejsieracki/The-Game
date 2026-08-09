@@ -9,7 +9,6 @@ import {
   splitNegotiationDealPlayerSides,
   type BasketItemFormatCtx,
 } from '../game/diplomacy-display';
-import { diplomacyHandelSurowcePakietWielkosc } from '../game/diplomacy-value-catalog';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 
 function esc(s: string): string {
@@ -54,9 +53,8 @@ export function renderBasketItemValueHtml(item: BasketItem, ctx: BasketItemForma
       return `${ic}<span class="da-deal-amt">${amt} ¤</span><span class="da-deal-once">jednorazowo</span>`;
     }
     case 'surowiec_ilosc': {
-      const pakietSize = diplomacyHandelSurowcePakietWielkosc();
-      const pakiety = item.ilosc ?? 1;
-      const szt = pakiety * pakietSize;
+      // R-DYP-PAKIET-USUN (2026-08-08): item.ilosc to sztuki wprost.
+      const szt = item.ilosc ?? 1;
       const label = resourceDisplayLabel(item.id);
       const ic = resourceIconHtml(label, 16);
       if (perTurn) {
@@ -172,6 +170,35 @@ export function renderNegotiationTableDealSideHtml(
   }
 
   return '<div class="da-deal-single da-deal-side-only"><span class="da-deal-empty">—</span></div>';
+}
+
+/**
+ * Czy strona stołu negocjacji ma realną treść do pokazania — MUSI być DOKŁADNIE zgodne
+ * z warunkiem renderowania w `renderNegotiationTableDealSideHtml` powyżej (ta sama funkcja,
+ * ten sam plik, celowo trzymane obok siebie). R-PROPOZYCJA-KASACJA-UI-Q1=A: gdy false, UI
+ * chowa przycisk „Usuń" na tej karcie (pusta/mirror karta nie powinna wyglądać jak coś, co da
+ * się skasować osobno — kasacja i tak usuwa cały wpis).
+ *
+ * BUG naprawiony (runda 3): wcześniejsza wersja dodatkowo wymagała `pw != null && pw > 0` dla
+ * gałęzi traktatu dwustronnego — warunek, którego render (wyżej) NIE MA. Traktat z PW=0/undefined
+ * (realny przypadek — `treatyBasePn > 0 ? … : 0` w diplomacy-acceptance-points.ts) renderował się
+ * WIDOCZNIE (etykieta traktatu), ale gating zwracał false → „Usuń" znikał na karcie z treścią,
+ * odwrotnie niż wymaga decyzja A. Naprawa: ta sama gałąź co render — `!!treatyFallbackLabel`
+ * (truthy, jak `if (treatyFallbackLabel)` w renderze — nie `!= null`, żeby też `''` zgadzało się
+ * z rendera „—" zamiast etykiety; znalezisko Evaluatora rundy 3, nieosiągalne dziś bo
+ * `treatyFallbackLabel` pochodzi z katalogu akcji i nigdy nie jest pustym stringiem, ale trzymane
+ * dokładnie zgodne z komentarzem powyżej).
+ */
+export function negotiationTableDealSideHasContent(
+  payload: ProposalPayload,
+  focus: 'we' | 'they',
+  incoming: boolean,
+  treatyFallbackLabel?: string,
+): boolean {
+  const split = splitNegotiationDealPlayerSides(payload, incoming);
+  const items = split ? (focus === 'we' ? split.weOffer : split.theyOffer) : [];
+  if (items.length > 0) return true;
+  return !!treatyFallbackLabel;
 }
 
 /** Jedna kolumna stołu (bez kontekstu drugiej strony) — do linked pending split. */

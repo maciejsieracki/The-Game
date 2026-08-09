@@ -8,20 +8,33 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## ABC-PACZKA-2026-08-06-DOPREC — doprecyzowanie Autobot · STATUS: **OTWARTE** (2026-08-06)
+## ABC-PACZKA-2026-08-06-DOPREC — doprecyzowanie Autobot · STATUS: **NIEAKTUALNE — zastąpione, zamknięte bez odpowiedzi (2026-08-09)**
 
 **Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md)
 
-| # | ID | Temat |
-|---|-----|--------|
-| 1 | **R-DZIALAJ-SCOPE-Q1** | `działaj` = wszystkie 6 / jeden / pierwsze 3 |
-| 2 | **R-DEPLOY-AUTOBOT-Q1** | Deploy po każdym / zbiorczo / po milestone |
-| 3 | **MAP-UX-MARKER-Q1** | Marker stolicy: obwódka / korona / oba |
-| 4 | **R-KAMIEN-FUTURE-Q1** | Prefix kopalnia* vs lista vs prefix+test |
-| 5 | **R-WIARYGODNOSC-S9-LICZBY-Q1** | Liczby §9 od razu / tabela OK / krytyczne |
-| 6 | **R-DESIGN-V2-KANAL-Q1** | Brief Design + kto pinguje |
+Audyt 2026-08-09 (na polecenie „wypchnąć wszystkie aktywne pytania i rozwiązać"): wszystkie 6
+pytań zostało w międzyczasie rozstrzygnięte lub zdezaktualizowane INNĄ drogą, nie przez wprost
+odpowiedź na tę paczkę — status po prostu nigdy nie został zaktualizowany. Sprawdzone w kodzie/
+dokumentach, nie z pamięci:
+1. **R-DZIALAJ-SCOPE-Q1** (zakres hasła „działaj") — model operacyjny „jedno `działaj` = N
+   tematów" zastąpiony przez `C-027` (każde zgłoszenie dispatchowane od razu, osobno, bez
+   czekania na zbiorcze hasło). Pytanie nieaktualne strukturalnie.
+2. **R-DEPLOY-AUTOBOT-Q1** (rytm deployu) — rozstrzygnięte inną, twardszą regułą: deploy
+   WYŁĄCZNIE na hasło `deploy` od właściciela (`CLAUDE.md` §0/§5), nie automatycznie po
+   temacie/zbiorczo.
+3. **MAP-UX-MARKER-Q1** (marker stolicy) — **wdrożone jako C** (obwódka + korona), potwierdzone
+   w kodzie: `gra/src/render/cityMapStatChip.ts` (komentarze „MAP-UX-MARKER-Q1 = C", linie 47/80/650/767).
+4. **R-KAMIEN-FUTURE-Q1** (przyszłe kopalnie) — wdrożone, `gra/src/game/relief-preserving-improvements.ts`
+   (wydzielone z `main.ts`, gdzie był `PRESERVES_HILL_RELIEF_KEYS`).
+5. **R-WIARYGODNOSC-S9-LICZBY-Q1** (liczby §9) — rozstrzygnięte jako A wcześniej
+   (`R-WIARYGODNOSC-S9-Q1=A`), tabela liczb gotowa i wdrożona (commit `2e67219`,
+   `docs/decyzje/R-WIARYGODNOSC-S9-TABELA-LICZB.md`).
+6. **R-DESIGN-V2-KANAL-Q1** (dostarczenie briefu Design v2) — rozstrzygnięte jako C, potwierdzone
+   w `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md` (wiersz 53: `R-DESIGN-PANEL-MIASTA-V2-Q1` = C) i w
+   `dyspozycje/DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md`.
 
-**Odpowiedź:** `A B C …` albo `ID=litera`.
+Nic z tej paczki nie wymaga dziś odpowiedzi — zamykam bez pytania, żeby nie przedstawiać
+nieaktualnych pytań jako żywych.
 
 ---
 
@@ -1708,9 +1721,31 @@ Spawn MP: suwak Wyżywienie startował ~3 zamiast 4 — **root cause:** `foundCi
 
 `ai-major-absorb.ts` · `docs/decyzje/P-AI-MAJOR-ABSORB.md`
 
-### P-TEST-UPKEEP-R-STAWKI — upkeep-test 24× fail · STATUS: **OTWARTE** (pre-existing)
+### P-TEST-UPKEEP-R-STAWKI — upkeep-test 24× fail · STATUS: **ZAMKNIĘTE 2026-08-09** (już naprawione, wpis był nieaktualny)
 
 `upkeep-test.cjs` 49/73 — 24 porażek przez ×2 koszty `R-STAWKI` / `R-NADMIAR-POOLS` (nie regres FALA 220).
+
+**Diagnoza (subagent Sonnet 5, 2026-08-09):** ten wpis był nieaktualny od 2026-08-05 —
+test już wtedy naprawiony commitem `12ecd09d` („test(upkeep): zaktualizuj asercje pod
+R-STAWKI ×4 i FALA2 ×2", współautor Maciej), a wpis tutaj nigdy nie oznaczony ZAMKNIĘTE.
+**Dziś (weryfikacja `node tools/upkeep-test.cjs` z `gra/`): `73 passed, 0 failed`, exit 0.**
+Klasyfikacja: **opcja (b) test był przestarzały**, nie bug silnika — asercje testu
+zakładały stawki sprzed `R-STAWKI`/`R-NADMIAR-POOLS`; silnik celowo mnoży ×2 utrzymanie
+budynków (`R_STAWKI_FALA2_MULT`, `gra/src/game/r-stawki-strojenie.ts:9`, stosowane w
+`economy-upkeep.ts:578`) i ×4 utrzymanie jednostek + żywność wojska
+(`R_STAWKI_FALA1_FALA2_MULT = R_STAWKI_KOSZT_MULT × R_STAWKI_FALA2_MULT`,
+`economy-upkeep.ts:884,979`) — decyzje Macieja z `r-stawki-strojenie.ts:1-4`. Test już
+odzwierciedla te mnożniki. Żadna zmiana silnika nie była (i nie jest) potrzebna.
+**C-026 (impact 22 testów ekonomii/utrzymania/kosztów, uruchomione z `gra/`):** wszystkie
+zielone poza 4 **niezwiązanymi, pre-istniejącymi** (bez ×2/×4 R-STAWKI w komunikacie
+błędu, zweryfikowane brakiem zmiany kodu w tej sesji): `upgrade-budynki-test.cjs`
+(48 pass/1 fail — „no handel bonus on bruk"), `unit-stock-cost-test.cjs`
+(53 pass/4 fail — już zarejestrowane osobno jako `P-UNIT-STOCK-COST-TEST-DLUG`),
+`grupy-budynkow-test.cjs` (80 pass/3 fail — rozjazd liczby budynków JSON 41 vs test 40),
+`budynek-civ-bonus-u17-test.cjs` (2 pass/4 fail — baza kamienia z mapy 5 vs oczekiwane 4),
+`prereq-budynkow-test.cjs` (51 pass/8 fail — status `ready`/`locked` katalogu budynków).
+`npx tsc --noEmit` (worktree z symlinkiem `node_modules`, `5.9.3` potwierdzone) — 0 błędów.
+Bez zmian w `gra/src/**` ani `gra/data/**` w tej paczce — wyłącznie ten wpis (dokumentacja).
 
 ### MAP-UX-CLUSTER-LABEL — **ZASTĄPIONE** → paczka [`ABC-PACZKA-2026-08-06-KOLEJKA`](../docs/decyzje/ABC-PACZKA-2026-08-06-KOLEJKA.md) **[3/5]** (nie duplikować tutaj)
 
@@ -1786,27 +1821,60 @@ nazewnictwo/etykieta, nie logika). Kotwice: `gra/src/game/diplomacy-proposals.ts
 „traktat handlowy bez koszyka @ niska Rel" — możliwe, że bramka już to łapie i została uznana
 za szum.
 
-## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
-**Jego słowa:** *„na przybliżeniu miasta grafika jest okropna."*
-**Objaw:** przy dużym przybliżeniu kamery plakietka nazwy miasta („ATENY · korona · W4 · 1")
-jest rozmyta i pikselowata — tekst i obramowanie tracą ostrość, medalion władcy w lewym kółku
-rozmazany do nieczytelnej plamy. Wygląda na etykietę renderowaną do tekstury o stałej
-rozdzielczości (canvas/sprite) i skalowaną w górę przy zoomie, zamiast przerysowywanej
-w rozdzielczości docelowej lub rysowanej jako element DOM/HUD.
-**Kotwice:** `gra/src/render/**` (etykiety miast), `gra/src/ui/**`.
+## BUG-ETYKIETA-MIASTA-ROZMYTA (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa (2026-08-07):** *„na przybliżeniu miasta grafika jest okropna."*
+**Jego słowa (2026-08-08, powtórka zgłoszenia z nowym zrzutem „NODWENGU"):** „kolejny temat,
+który nie stał rozwiązany... coś z tym robiłeś, ale jak zwykle temat w ogóle nie został
+popchnięty do przodu."
+⛔ **Sprawdzone uczciwie w historii gita:** to prawda — **żaden commit nigdy nie dotknął tego
+tematu**. Jedyne dwa wcześniejsze wystąpienia w repo to same wpisy dokumentacyjne (rejestracja
++ audyt), zero pracy w kodzie. Zgłoszenie leżało nietknięte od 2026-08-07.
+
+**Przyczyna znaleziona teraz** (`gra/src/render/cityMapStatChip.ts:563-571`,
+`paintCityMapBadgeOntoCanvas`/`makeCityMapBadgeSprite`): hipoteza z pierwotnego zgłoszenia
+się potwierdza. `canvas.width`/`canvas.height` liczone są **wyłącznie z treści** (szerokość
+tekstu nazwy + sloty ikon, w surowych pikselach CSS, np. `nameFont = '700 22px ...'`) — **bez
+żadnego odniesienia do `devicePixelRatio` ani do poziomu zoomu kamery** (sprawdzone grepem:
+`devicePixelRatio` — zero trafień w całym pliku). Ten canvas trafia do `THREE.CanvasTexture`
+i jest rysowany jako `THREE.Sprite` w przestrzeni 3D. Gdy kamera zbliża się do miasta, sprite
+zajmuje więcej pikseli ekranu niż canvas ma natywnej rozdzielczości → **klasyczne rozciąganie
+tekstury (texture magnification)**, stąd rozmycie tekstu i medalionu.
+**Naprawa (niewdrożona, do zrobienia):** renderować canvas w rozdzielczości pomnożonej przez
+`window.devicePixelRatio` (i/lub przez współczynnik zależny od aktualnego zoomu), skalując
+z powrotem przez `tex.image.style`/rozmiar sprite'a — standardowy wzorzec „retina canvas" dla
+tekstur Three.js. Analogicznie sprawdzić inne plakietki w tym samym pliku (produkcja, portret
+władcy) — ten sam mechanizm rysowania, to samo ryzyko rozmycia.
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`paintCityMapBadgeOntoCanvas`,
+`makeCityMapBadgeSprite`).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
-## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
+## BUG-IKONA-KULTURY-PLACEHOLDER (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** *„na państwach, miastach są dziwne kwadraty obrócone, a jak się najedzie
 przyciskiem, to pojawia się dopiero grafika danej kultury."*
 **Objaw:** w kółku po lewej stronie plakietki miasta domyślnie widnieje **obrócony kwadrat
 (romb/diament)** — placeholder. Właściwa ikona kultury pojawia się **dopiero po najechaniu
 kursorem**. Zrzuty: „TEBY · MIASTO…" — przed najechaniem romb, po najechaniu ikona budowli
 klasycznej. Dotyczy państw i miast.
-**Hipoteza do sprawdzenia (nie potwierdzona):** ikona kultury ładowana leniwie i podmieniana
+**Hipoteza do sprawdzenia (nie potwierdzona):** ~~ikona kultury ładowana leniwie i podmieniana
 dopiero na zdarzeniu hover, zamiast przy tworzeniu plakietki; albo brak fallbacku na czas
-ładowania i romb jest kształtem domyślnym.
-**Kotwice:** `gra/src/render/**`, `gra/src/ui/**` (plakietka miasta, ikony kultur).
+ładowania i romb jest kształtem domyślnym.~~
+⛔ **PRZYCZYNA POTWIERDZONA W KODZIE (2026-08-08, audyt zgłoszeń):**
+`gra/src/render/cityMapStatChip.ts`, funkcja `requestCivSigilImage()` (~linia 353-373):
+gdy druga (i każda kolejna) plakietka tej samej cywilizacji prosi o sygnet, podczas gdy
+PIERWSZA wciąż go ładuje asynchronicznie, funkcja robi `if (cached === 'loading') return;`
+— **porzuca `onReady` bez kolejkowania**. Ta plakietka nigdy nie dostaje callbacku z gotowym
+obrazkiem. Tekstura Three.js jest tworzona TYLKO RAZ na unikalny klucz (`if (!tex)`,
+~linia 744, `makeCityMapBadgeSprite`) — więc przegrana plakietka zostaje z rombem trwale,
+żadnego ponowienia. **Hover naprawia to przypadkiem:** `hoverExpanded` wchodzi do klucza
+cache tekstury (`cityMapBadgeKey`, ~linia 714: `` `h${a.hoverExpanded ? 1 : 0}` ``) — hover
+tworzy więc CAŁKOWICIE NOWĄ teksturę, która trafia na już wypełniony globalny cache obrazu
+(`civSigilImageById`) i rysuje ikonę od razu, synchronicznie.
+**Naprawa (niewdrożona, do zrobienia):** `requestCivSigilImage` powinien kolejkować wiele
+`onReady` per klucz podczas stanu `'loading'` (np. `Map<string, Array<(img)=>void>>`) i
+wywołać wszystkie po dociągnięciu obrazu — ten sam wzorzec do sprawdzenia w
+`requestLeaderPortraitImage`/`requestProdIconImage` (analogiczny cache `'loading'`,
+niesprawdzony, prawdopodobnie ta sama luka).
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (plakietka miasta, ikony kultur).
 **Model:** praca w `gra/src/render/**` = **Opus 5** (zgoda stała Macieja, CLAUDE.md §4).
 
 ## BUG-ZWIADOWCA-KOSZT-SUROWCA (2026-08-07, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — w realizacji** (`dyspozycje/REJESTR-PROSB-I-ZADAN.md`)
@@ -1846,7 +1914,7 @@ wartość. Ten błąd trafił do właściciela jako fakt.
 **Uwaga na kierunek zmiany:** źródłem prawdy są JSON-y w `gra/data/` (CLAUDE.md §2); panel Excel
 dogania JSON przez `gen-panel-*.py`, NIGDY odwrotnie.
 
-## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **OTWARTE**
+## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
 **Jego słowa:** *„tam jeszcze chciałem procentowy wzrost czyli na przykład 5 i pół procent
 o ile wyrośnie populacja a nie W5 bez litery W. na przykład 5 i pół procent albo 5 procent."*
 **Stan faktyczny:** plakietka miasta pokazuje **„ATENY · W5 · 1"** — segment `W5` to skrót,
@@ -1860,6 +1928,77 @@ wzroście zerowym lub ujemnym (głód) — czy pokazujemy `0 %`, znak minus, czy
 **Kotwice:** plakietka miasta w `gra/src/render/**` / `gra/src/ui/**`; wzrost populacji
 w `gra/src/game/turn-economy.ts`.
 **Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
+
+**PRÓBA NAPRAWY WYCOFANA (2026-08-08):** pierwsza próba użyła tylko 1 z 6 składników wzoru
+wzrostu (`racje` zamiast `computeGrowthPercentV85().total` — panel miasta pokazuje sumę 6
+składników: racje+małe miasto+spichlerz+zdrowie+szczęście+cywilizacja), co dałoby na
+plakietce INNĄ liczbę niż w panelu tego samego miasta. Operator poprawnie **wycofał** tę
+próbę zamiast wysłać złą liczbę. **Prawdziwa przeszkoda (potwierdzona w kodzie):** wartość
+z panelu to migawka z KOŃCA tury (`_setLastEmpireFoodTicks`, jedyne wywołanie wewnątrz
+`advanceEmpireFood`, jedyne wywołanie na końcu tury) — rozjedzie się z panelem, jeśli gracz
+zmieni racje/przydział robotników w trakcie tury. Realna naprawa wymaga albo (a) przeliczenia
+na żywo w miejscu renderu plakietki (wymaga dociągnięcia `zdrowie`/`szczęście`/`spichlerz`/
+`civKey` do `CityRenderOptions`, dziś ich tam nie ma), albo (b) świadomej decyzji, że
+plakietka może pokazywać migawkę z opóźnieniem — do rozstrzygnięcia, nie kodować na ślepo.
+**Do decyzji (ABC) pozostaje aktualne**: format zapisu + zachowanie przy głodzie/wzroście
+ujemnym, PLUS teraz też: migawka czy przeliczenie na żywo.
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5, wariant (a) — przeliczenie na żywo).** Nowy
+eksport `cityGrowthLive(city, map)` w `gra/src/ui/cityPanel.ts` woła TEN SAM `computeView()`,
+z którego żyje wiersz „WZROST%" w panelu miasta — plakietka i panel pokazują matematycznie tę
+samą liczbę (sumę 6 składników), żadnej drugiej reimplementacji wzoru. Przewód:
+`CityRenderOptions.getCityGrowth?: (city) => {procentNaTure, nakarmione} | null` (typ
+STRUKTURALNY, `render/` nadal nie importuje `ui/`), `_buildBadgeInput` pyta tylko o miasta
+gracza, etykieta wchodzi do `cityMapBadgeKey` (zmiana wartości przerysowuje teksturę, stara
+NIE jest reużywana). Boot-order guard: `cityGrowthLive` zwraca `null` przy nieskonfigurowanym
+panelu zamiast liczyć z zaślepek.
+
+**Format (zgodny z istniejącą konwencją kodu, nie arbitralny wybór — patrz uzasadnienie
+Evaluatora niżej):** całkowita `5%`, ułamkowa `5,5%` (przecinek, 1 miejsce), zero `0%`, ujemna
+`−2,1%` (U+2212, nie ukrywamy kurczenia), głód (nienakarmione) `—` (parytet z panelem).
+`-0` nie powstaje (warunek `< 0` fałszywy dla `-0`).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**, dowód mutacyjny (3 warianty, w tym mutacja usuwająca
+WZROST% z klucza cache — 30/38 fail, złapane end-to-end łącznie z nieaktualizowaniem tekstury).
+Bramki zmierzone niezależnie: `tsc` czyste, `city-badge-growth-percent-test` (nowy) 38/38,
+`city-map-badge-test` 62/62 (baza 49 + tę naprawę), `logic-test` 213/213 — wszystkie
+potwierdzone ponownie w drzewie głównym po scaleniu, identyczne liczby.
+
+**Format NIE wymaga osobnego pytania ABC** (Evaluator, uzasadnienie): rdzeń liczbowy to znak
+po znaku ten sam wzorzec co już istniejący w kodzie `formatWyzwienieLabel`
+(`population-growth-v85.ts:133-136`) ORAZ niezależnie `formatLiczbaPl` (`ui/formatPl.ts`) —
+dwa niezależne precedensy w repo, nie arbitralny wybór Operatora. „—" przy głodzie to parytet
+z panelem, nie decyzja. U+2212 ma 64 precedensy w `src/`. Treść żądania Macieja („procent, nie
+W5", „5 i pół procent albo 5 procent") jest pokryta obiema formami z jego zdania.
+
+**Cztery noty Evaluatora, żadna nie blokuje:**
+1. `cityGrowthLive` (15-liniowa delegacja) nie ma własnego testu jednostkowego — dziś poprawna
+   (zweryfikowane czytaniem), ale przyszła regresja (np. zamiana na `rationGrowthPercent`) nie
+   zostałaby złapana. Sugestia na przyszłość, niepilne.
+2. **Rozjazd separatora, poza zakresem tej naprawy — zarejestrowany osobno:**
+   `P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD` (panel „5.5%" kropka, plakietka „5,5%" przecinek).
+3. Cztery czerwone testy wzrostu ludności (`population-growth-v85-test` 45/2,
+   `population-growth-v85-bonus-test` 18/2, `population-growth-tempo-test` FAIL,
+   `growthmult-compound-test` 17/7) potwierdzone **identyczne w worktree na commicie-rodzicu
+   sprzed tej zmiany** — nie regresja tej naprawy. Przyczyna: dług testowy po świadomych
+   decyzjach balansowych R-STAWKI (×2/×4, 2026-08-03) — `got` = dokładnie 2× `want` w
+   komunikatach błędów. Zapis w CLAUDE.md („`growthmult-compound` zielony 24/24") jest
+   nieaktualny — do sprostowania przy najbliższej aktualizacji CLAUDE.md, niepilne, nie tu.
+4. `formatCityGrowthPercentLabel` duplikuje `formatLiczbaPl` (ta sama logika, jedyna różnica:
+   znak minusa U+2212 vs ASCII `-`) — duplikacja wymuszona architektonicznie (`render/` nie
+   importuje `ui/`). Rejestrowane jako dług do ewentualnego przyszłego refaktoru wspólnej
+   warstwy formaterów, niepilne, nie tu.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`cityGrowthLive`), `gra/src/render/cityMapStatChip.ts`
+(`formatCityGrowthPercentLabel`), `gra/src/render/cities.ts` (`getCityGrowth`).
+
+## P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD (2026-08-09, nota Evaluatora R-ETYKIETA-MIASTA-WZROST-PROCENT) · STATUS: **OTWARTE — niepilne, dług UI**
+Panel miasta renderuje surowo `${view.wzrostProcent}%` → „5.5%" (kropka, notacja JS), plakietka
+mapy → „5,5%" (przecinek, konwencja polska projektu — `formatLiczbaPl`, `formatWyzwienieLabel`).
+Ta sama liczba, inny separator w dwóch miejscach UI tego samego miasta. Naprawa panelu
+poruszyłaby ~10 miejsc w `cityPanel.ts` — świadomie poza zakresem naprawy plakietki. To panel
+odstaje od własnej konwencji projektu (cała gra po polsku), nie plakietka.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (wiersz „WZROST%", `${view.wzrostProcent}%`).
+**Model:** Sonnet 5.
 
 ## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C`)
 **Jego słowa:** *„jakieś niezautoryzowane niby przemarsze, których ja nie widzę, bo ja nie widzę,
@@ -1922,7 +2061,7 @@ warunku) · `gra/data/units.json` (kolumny `Surowiec`, `Surowiec (ilość)`).
 **Uwaga:** warunek występuje w DWÓCH miejscach (`:859-863` i `:956-957`) — każda zmiana musi
 objąć oba, inaczej lista produkcji i faktyczna możliwość budowy się rozjadą.
 
-## BUG-TOOLTIP-MOC-NIEPELNA (2026-08-07) · STATUS: **OTWARTE — defekt systemowy, do naprawy bez pytania**
+## BUG-TOOLTIP-MOC-NIEPELNA (2026-08-07) · STATUS: **ZAMKNIĘTE — NAPRAWIONE I WDROŻONE** (FALA 260, `eff727e`; status skorygowany 2026-08-08 przy audycie zgłoszeń — poprzedni zapis „OTWARTE" był przestarzały, fix już istniał w kodzie)
 **Źródło:** pętla AutoBot `R-MOC-TABLICZKA-VS-BITWA` — Operator (Sonnet 5) → Evaluator (Opus 5),
 werdykt PASS-WITH-NOTES, nota N4.
 **Defekt:** `gra/src/ui/hexContextTooltip.ts:661-665` woła `fieldPower({meleeAttack, meleeDefence,
@@ -2183,7 +2322,7 @@ poza NAP i poza akcją `'5'`:
 decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zniknęło z pola widzenia.
 **Kotwice:** `git show 9cc7c76c` (obie listy w `diplomacyTradeBasket.ts`).
 
-## P-BRAMKA-DANINA-PODATEK-CZERWONA (2026-08-08, nota Evaluatora tooltip-moc) · STATUS: **OTWARTE — pre-istniejące, nie regresja**
+## P-BRAMKA-DANINA-PODATEK-CZERWONA (2026-08-08, nota Evaluatora tooltip-moc) · STATUS: **ZAMKNIĘTE 2026-08-09**
 `node gra/tools/danina-podatek-tooltip-ui-test.cjs` → `esbuild failed: No matching export in
 "tools/.stubs/brandAssets-stub.ts" for import "unitIconSvg"`, exit 1. Zweryfikowane dwukrotnie
 (Operator i Evaluator, niezależnie) że pada identycznie na czystym `HEAD` sprzed prac
@@ -2192,7 +2331,18 @@ decyzji `=A`, która dotyczyła wyłącznie akcji `'5'`. Zapisane, żeby nie zni
 („FALA 46") importuje `unitIconSvg`. Nie figuruje na liście znanych czerwonych w `CLAUDE.md`.
 Naprawa: jedna linia w literale stuba tej bramki. Do naprawy albo do wpisania na listę znanych.
 
-## P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (2026-08-08, nota N1 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — pre-istniejące, nie wprowadzone tą zmianą**
+**ZAMKNIĘTE (2026-08-09):** Dedykowany `danina-podatek-brandAssets-stub.ts` (wzorem już
+istniejących `pre-battle-brandAssets-stub.ts`/`brandAssets-diplo-treaty-stub.ts`/
+`unit-context-card-brandAssets-stub.ts`) z pełnym kompletem 4 eksportów (`brandIconSvg`,
+`mapResourceIconSvg`, `terrainIconSvg`, `unitIconSvg`) wymaganych przez cały łańcuch importów
+`hexContextTooltip.ts`. Evaluator: PASS, niezależnie zbudował tranzytywny graf importów
+(114 plików) i potwierdził kompletność eksportów. `danina-podatek-tooltip-ui-test.cjs` 12/12
+(było `esbuild failed`), `tsc` 0 błędów. **Nota Evaluatora (niepilna):** nowy stub jest śledzony
+w gicie i jednocześnie nadpisywany dynamicznie przy każdym uruchomieniu (działa dzięki bajtowej
+zgodności) — inny precedens (`unit-context-card-brandAssets-stub.ts`) wybrał `.gitignore` +
+plik nieśledzony. Rozjazd konwencji do ujednolicenia kiedyś, nie dziś.
+
+## P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (2026-08-08, nota N1 Evaluatora moc-mur-revert) · STATUS: **ZAMKNIĘTE 2026-08-09**
 Sekcja 5 `gra/tools/mur-paradoks-test.cjs` (asercja „realna Obrona > tabliczka") liczy
 `realDefenseWithMur` z REIMPLEMENTACJI wzoru w samym teście, nie z prawdziwego
 `effectiveDefenderM` w `main.ts` — dowód mutacyjny Evaluatora: wstrzyknięcie
@@ -2203,7 +2353,29 @@ linia 227). Żadna bramka w repo nie chroni dziś linii `combinedDefPct = struct
 (cityTerrMult - 1) * 100` w `effectiveDefenderM`. Naprawa: asercja źródłowa (regex) na
 main.ts przypinająca tę linię, wzorem starej (usuniętej dziś) asercji na `scaleField`.
 
-## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — do decyzji, nie blokuje**
+**ZAMKNIĘTE (2026-08-09):** Asercja źródłowa (regex na treść `main.ts`, wyodrębnia ciało
+`effectiveDefenderM` żeby jednoznacznie odróżnić od identycznej tekstowo linii w NOWEJ
+`combatPowerFullDisplayDefFor`, dzisiejsza zmiana `R-MOC-TABLICZKA-VS-CIVPOWER-Q1`) dodana do
+`mur-paradoks-test.cjs` i `city-defense-terrain-gate-test.cjs` (ten drugi wcześniej miał ZERO
+kotwicy do `main.ts` — czysta reimplementacja, luka była poważniejsza niż sądzono). Evaluator:
+PASS-WITH-NOTES, własny dowód mutacyjny (4 warianty, w tym M2 potwierdzający że regex NIE łapie
+przypadkiem `combatPowerFullDisplayDefFor`). `mur-paradoks-test.cjs` 24/24 (było 20/20),
+`city-defense-terrain-gate-test.cjs` 34/34 (było 31/31), `logic-test.cjs` 213/213,
+`combat-test.cjs` 6/6, `tsc` 0 błędów. **Nowe znalezisko Evaluatora, zarejestrowane osobno:**
+`P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA` — analogiczna, symetryczna luka w NOWEJ
+`combatPowerFullDisplayDefFor` (kod dodany wczoraj, jeszcze nigdy nie miał żadnej bramki).
+
+## P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA) · STATUS: **OTWARTE — niepilne**
+Dowód mutacyjny (M2, Evaluator): wyzerowanie bonusu struktury/muru w `combatPowerFullDisplayDefFor`
+(nowa funkcja z `R-MOC-TABLICZKA-VS-CIVPOWER-Q1`, karmi tabliczkę nad żetonem) zostawia
+`mur-paradoks-test.cjs` i `city-defense-terrain-gate-test.cjs` w 100% zielone — ta sama klasa
+luki co dziś naprawiona dla `effectiveDefenderM`, ale w kodzie dodanym dopiero wczoraj, więc
+nigdy nie miała żadnej bramki. Naprawa: analogiczna asercja źródłowa (regex) przypinająca linię
+`combinedDefPct` w ciele `combatPowerFullDisplayDefFor`, wzorem tej dla `effectiveDefenderM`.
+**Kotwice:** `gra/src/main.ts` (`combatPowerFullDisplayDefFor`), `gra/tools/mur-paradoks-test.cjs`.
+**Model:** Sonnet 5.
+
+## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **ZASTĄPIONE — `R-MOC-TABLICZKA-VS-CIVPOWER-Q1` (2026-08-09)**
 Po częściowym cofnięciu `R-MOC-MUR-PARADOKS-Q1=A` (decyzja `R-MOC-DEFINICJA-Q1`, tabliczka
 garnizonu = `combatPowerScaledDefFor(u)` bez bonusu muru) — tabliczka mimo to NADAL zmienia
 się po wybudowaniu muru: **51,5 pkt Mocy bez muru → 49,0 pkt Mocy z murem** (dla tego
@@ -2217,6 +2389,60 @@ Moc była naprawdę niezależna od miejsca postoju" nie zostało zadane wprost.
 **Kotwice:** `gra/src/main.ts` (`combatPowerScaledDefFor`, `fortifyFieldScaledDefFor`,
 `unitGetsFortifyDefenseBonus`).
 
+**ZASTĄPIONE (2026-08-09):** Pytanie okazało się objawem błędu zakresu w `R-MOC-DEFINICJA-Q1` —
+zunifikowała regułę „bez budynków/terenu" dla tabliczki NA MAPIE i dla Mocy CYWILIZACJI, gdy to
+dwie różne liczby. Maciej wprost: tabliczka na mapie ma pokazywać REALNĄ Moc ze wszystkimi
+bonusami (teren, fortyfikacja, mur, weteran); Moc cywilizacji (ranking/HUD/Empire) ma być BEZ
+terenu/fortyfikacji/muru, tylko naturalne wskaźniki + ulepszenia + weteran. Pełna decyzja:
+`docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md`. Kod w dispatchu.
+
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+Rozdział dwóch liczb Mocy, które wcześniejsza decyzja błędnie zunifikowała: tabliczka/tooltip
+jednostki na mapie = REALNA Moc ze wszystkimi bonusami (teren/fortyfikacja/mur/weteran); Moc
+cywilizacji (panel rankingu, HUD, Empire) = tylko naturalne wskaźniki + ulepszenia + weteran,
+BEZ terenu/fortyfikacji/muru. Zamyka jednocześnie `R-MOC-MUR-PARADOKS-Q1` i
+`R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY` (obie strony tego samego błędnego założenia „to jedna
+liczba"). Pełna decyzja i plan wdrożenia: `docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md`.
+**Kotwice:** `gra/src/main.ts` (`computeStackDisplay`/`defOf` — tabliczka; `sumArmyMForOwnerEffective`
+— civ-power; `combatPowerScaledDefFor`, `veteranScaledDefFor`, `fortifyFieldScaledDefFor`,
+`effectiveDefenderM`), `gra/tools/mur-paradoks-test.cjs`.
+**Model:** Sonnet 5 (poza `render/**` — to zmiana logiki liczenia, nie renderu).
+
+**NAPRAWIONE (2026-08-09):** Nowa `combatPowerFullDisplayDefFor(u)` w `main.ts` (wskrzeszenie —
+potwierdzone identyczne co do bajtu — wcześniej cofniętej `tabliczkaGarnizonScaledDefFor` z
+commitu `f94216e9`) karmi tabliczkę nad żetonem/`computeStackDisplay`. `sumArmyMForOwnerEffective`
+przełączone na `veteranScaledDefFor(u)` (weteran, bez fortyfikacji/terenu/muru — i bez mnożnika
+trudności AI, zgodnie z literalnym brzmieniem decyzji „zamienić na `veteranScaledDefFor`").
+Realna bitwa (`effectiveDefenderM`, `rosterFieldPowerM`, `mapFieldBattle.ts`) niedotknięta —
+zweryfikowane niezależnie przez Evaluatora (dokładnie 3 wywołania `combatPowerScaledDefFor`
+w całym repo, wszystkie ścieżka bitwy). Paradoks zamknięty: tabliczka garnizonu za murem = 95 pkt
+== realna Obrona bitwy 95 pkt (wcześniej 49,0 vs prawdziwe 95). STRICT-PARITY POPRAWIONE przy
+okazji: usunięcie mnożnika trudności z civ-power zdejmuje wcześniej istniejące zawyżenie rankingu
+Mocy AI na wyższych poziomach trudności (`bonusWalka` już nie wchodzi do civ-power).
+
+**Dwa znaleziska, świadomie NIE zaimplementowane w tej rundzie (Evaluator zaakceptował
+pozostawienie, wymagał tylko rejestracji):**
+1. `hexContextTooltip.ts` „Moc pola" (tooltip jednostki po najechaniu na heks) liczy Moc inną,
+   starą ścieżką (`unitCardCombatFor`: bonusy budynków + weteran, ZERO terenu/fortyfikacji/muru)
+   — literalnie decyzja obejmuje też „tooltip jednostki na mapie", ale zmiana samej linii „Moc
+   pola" bez reszty panelu (Atak/Obrona/Pancerz, spójnie zbudowanego na konwencji `*Effective`)
+   stworzyłaby wewnętrzną niespójność panelu. Osobne zlecenie.
+2. `RuntimeUnit.pancerzBonusProc`/`parametryBonusProc` (trwałe bonusy zdobyte odwiedzinami
+   budynków) nie są dziś wpięte w `unitDefFor`/`veteranScaledDefFor`/żadną formułę Mocy — tylko
+   w kartę jednostki i obserwowaną bitwę. Czy to się liczy jako „bonusy z ulepszeń jednostki" dla
+   civ-power (decyzja to wspomina) — dwuznaczne, bo trwałe, ale nie zapisane w definicji
+   jednostki. Doliczenie dotknęłoby `effectiveDefenderM` (bitwa) — poza zakresem C-025 tej rundy.
+
+Testy: `tsc` 0 błędów, `mur-paradoks-test.cjs` 20/20, `weterani-test.cjs` 79/79,
+`moc-ranking-rozjazd-test.cjs` 19/19, `hud-moc-warstwa-test.cjs` 28/28, `logic-test.cjs` 213/213,
+`combat-test.cjs` 6/6, `city-defense-terrain-gate-test.cjs` 31/31, `ai-moc-diag-test.cjs` 22/22,
+`auto-battle-power-test.cjs` 14/14, `power-objective-test.cjs` 15/15, `power-ranking-test.cjs`
+10/10, `power-options-test.cjs` 5/5, `manpower-test.cjs` 62/62.
+
+**Do wiadomości Macieja (widoczne w playteście):** Moc cywilizacji AI w rankingu SPADNIE na
+wyższych poziomach trudności — poprawny efekt tej decyzji (civ-power już nie liczy mnożnika
+trudności AI), nie regresja.
+
 ## P-DREWNO-BRAMKA-RYZYKO-STARTU (2026-08-08, nota N1 Evaluatora zwiadowca-drewno) · STATUS: **DO WIEDZY — świadome ryzyko z decyzji BUG-BRAMKA-DREWNO-BRAK=A**
 **Zmierzone:** miasta startują z pustym magazynem surowców (`cities.ts:415`); Drewno
 pochodzi wyłącznie z ulepszenia terenu `tartak`. 14 z 75 jednostek w `units.json` wymaga
@@ -2226,7 +2452,7 @@ C z progiem startowym). AI ma parytet (ta sama bramka, ten sam `empireResourceSt
 Do potwierdzenia playtestem — czy to realnie blokuje wczesną grę, czy tartak/handel
 wystarczająco szybko rozwiązuje brak Drewna.
 
-## P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
+## P-BRAMKA-STUB-KOLIZJA-WSPOLDZIELONY (2026-08-08, nota N5 Evaluatora zwiadowca-drewno) · STATUS: **ZAMKNIĘTE 2026-08-09** (wszystkie 4 bramki mają dziś dedykowane stuby)
 `gra/tools/.stubs/brandAssets-stub.ts` jest plikiem ŚLEDZONYM w gicie, a co najmniej
 4 bramki (`army-merge-dismiss-bounce-test.cjs`, `pre-battle-defender-retreat-test.cjs`,
 `unit-context-card-test.cjs`, `danina-podatek-tooltip-ui-test.cjs`) nadpisują go własną
@@ -2237,12 +2463,33 @@ w `tooltip-moc` (`unit-context-card-brandAssets-stub.ts`) i `traktat-koszyk`
 dostaje własny, niededykowany katalog stubów) zamiast punktowych obejść przy każdej
 kolejnej kolizji.
 
-## P-UNIT-STOCK-COST-TEST-DLUG (2026-08-08, nota N4 Evaluatora zwiadowca-drewno) · STATUS: **OTWARTE — pre-istniejące, do dopisania na listę znanych czerwonych**
+**ZAMKNIĘTE (2026-08-09):** Ostatnie 2 z 4 bramek na liście (`danina-podatek-tooltip-ui-test.cjs`,
+`army-merge-dismiss-bounce-test.cjs`) przepięte na dedykowane stuby — `army-merge-dismiss-bounce-test.cjs`
+dostał `army-merge-brandAssets-stub.ts`. Pozostałe dwie (`pre-battle-defender-retreat-test.cjs`,
+`unit-context-card-test.cjs`) już miały dedykowane stuby z wcześniejszych napraw — Evaluator
+potwierdził niezależnie. `git status --short` na `tools/.stubs/brandAssets-stub.ts` czyste po
+pełnym biegu testów — plik jest dziś **osierocony** (śledzony, zero konsumentów, można rozważyć
+usunięcie przy okazji). Nota Evaluatora o rozjeździe konwencji (śledzony vs `.gitignore`) — patrz
+`P-BRAMKA-DANINA-PODATEK-CZERWONA` wyżej.
+
+## P-UNIT-STOCK-COST-TEST-DLUG (2026-08-08, nota N4 Evaluatora zwiadowca-drewno) · STATUS: **ZAMKNIĘTE 2026-08-09** (asercje zaktualizowane, test 58/58)
 `node gra/tools/unit-stock-cost-test.cjs` → 53 pass, **4 fail**, m.in. „Wojownik: brak
 kosztu magazynowego (got {drewno:10}, want {})" i „Konnica ... want {braz:2} got {braz:10}".
 Zdezaktualizowane oczekiwania po wcześniejszych zmianach `units.json` — dług testowy, nie
 regresja. Potwierdzone identyczne na czystym `HEAD` sprzed prac `zwiadowca-drewno`. Nie
 figuruje na liście znanych czerwonych w `CLAUDE.md`.
+
+**ZAMKNIĘTE (2026-08-09):** 4 asercje zaktualizowane do dzisiejszego `units.json`: Konnica/Rydwan
+(woły) `Brąz 2→10`, Wojownik `brak→Drewno 10` (commit `7d4ad9690`, 2026-08-06, „utrzymanie
+surowcowe ×5", **potwierdzony współautor Maciej** w trailerze commita), fixtura `Surowiec='-'`
+→ `null` (commit `5682c066`, 2026-08-08). Evaluator: PASS-WITH-NOTES, niezależnie zweryfikował
+wszystkie 4 wartości w `units.json` na obu commitach, policzył **11 wywołań `unitStockCost()`
+w 5 plikach** (nie 4 jak w raporcie Operatora) — wszystkie czytają na żywo z `units.json`, brak
+zahardkodowanych ścieżek/cache rozjeżdżającego się z danymi. `unit-stock-cost-test.cjs` 58/58,
+`tsc` 0 błędów, siostrzane bramki (unit-resource-upkeep, pytanie-84-stock-keys, ai-recruit-upkeep-gate,
+unit-replace, drewno-gate) zielone. Drobna nota: fixtura `Surowiec===null` węższa niż kontrakt
+silnika (`unitStockCost` nadal obsługuje też `'-'`) — ryzyko niskie, `export-c.py` nigdy nie
+zapisuje `'-'` dziś.
 
 ## P-AUTOBOT-MINRUNS-ROZJAZD-5-VS-10 (2026-08-08, adwokat diabła: audyt skillsa `civ-autobot`) · STATUS: **DO WIEDZY — rozjazd konfiguracji, nie błąd skillsa**
 Kanon (`R-PROC-AUTOBOT` §v2, `dyspozycje/autobot/README.md`) mówi, że próg istotności
@@ -2256,3 +2503,889 @@ wartość z pliku, nie z pamięci", ale sam rozjazd wykracza poza zakres skillsa
 decyzji: albo poprawić `playbook.json` na `10` (zgodnie z kanonem), albo cofnąć kanon do
 `5` (jeśli `10` było error/nieaktualną decyzją), albo rozszerzyć generator o pole
 `thresholds` w `playbook.md`. Nie blokuje niczego pilnie — czysto informacyjne.
+
+## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** *„podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
+co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
+ulepszeń."*
+**Objaw:** po wejściu w tryb budowania ulepszeń terenu i wybraniu konkretnego ulepszenia
+do postawienia, scroll/zoom kamery mapy przestaje działać — nie da się przybliżyć ani
+oddalić widoku, co utrudnia precyzyjne wskazanie heksu docelowego.
+**Do zbadania:** który handler wejścia (scroll/wheel) jest blokowany w trybie wyboru
+celu ulepszenia — czy to celowe zablokowanie zoomu na czas trybu placementu (np. żeby nie
+gubić trybu przy scrollu), czy przypadkowy efekt uboczny nasłuchu zdarzeń.
+**Kotwice:** `gra/src/render/**` (kamera/zoom), `gra/src/ui/**` (tryb budowania ulepszeń).
+**Model:** jeśli zmiana dotknie `gra/src/render/**` — **Opus 5** (zgoda stała, CLAUDE.md §4).
+
+**NAPRAWIONE (2026-08-08):** `gra/src/render/camera.ts` miał jeden warunek (`blockPointerAt`)
+blokujący jednocześnie przeciąganie mapy (`_onMouseDown`) i scroll/zoom (`_onWheel`) w trybie
+budowania ulepszeń/zakładania miasta — zamierzone dla przeciągania (żeby klik trafiał w
+placement, nie w pan), przypadkowy efekt uboczny dla zoomu. Rozdzielone na dwa warunki:
+`blockPointerAt` (bez zmian, nadal blokuje przeciąganie) i nowy `blockWheelAt` (blokuje zoom
+tylko nad panelem miasta, nie w trybie budowania). Domyślnie każdy inny konsument
+`CameraController` bez jawnego `blockWheelAt` zachowuje stare zachowanie (fallback na
+`blockPointerAt`) — potwierdzone: 6 miejsc tworzenia `CameraController` w `main.ts`, wszystkie
+przez ten sam `cameraControllerOpts()`, żaden inny system (bitwa, drzewko technologii,
+podgląd cudu) nie współdzieli tej kamery. Zweryfikowane przez Evaluatora (Opus 5,
+PASS-WITH-NOTES po rundzie poprawek — dodano test regresji
+`gra/tools/camera-zoom-block-test.cjs`, 4/4: repro, negacja, fallback, brak regresji
+przeciągania). `npx tsc --noEmit` czyste.
+
+## R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** „brakuje danych z całej cywilizacji, jeżeli chodzi o te elementy, które są w
+podglądzie miasta. Mówię tu o pracy, żywności, skarbcu, nauce, kulturze i religii. Potrzebny
+jest stan całej cywilizacji i plus to, co jest w danym mieście, ale mniejszymi cyframi. Czyli
+to, co z cywilizacji pokazujemy jako duże całej cywilizacji, a dodatkowo plus to jest to co
+w danym mieście przybywa lub ubywa."
+**Stan faktyczny (sprawdzone w kodzie, `gra/src/ui/cityPanel.ts:8692-8768`,
+`buildCityOnlyW3FlankChips`):** górny pasek widoku miasta pokazuje **wyłącznie wartości TEGO
+miasta** — funkcja jest nazwana dosłownie `CityOnly`, każdy tooltip mówi „tego miasta"/„w tym
+mieście". **Nie ma odpowiednika pokazującego sumę całej cywilizacji** — sprawdzone: brak
+drugiej, „empire" wersji tej funkcji czy przełącznika. To nie jest regresja — brak dowodu, że
+kiedykolwiek pokazywano tu sumę cywilizacji.
+**Do zrobienia:** dodać do paska dużą liczbę = suma cywilizacji (Praca/Żywność/Skarbiec/
+Nauka/Kultura/Religia z puli państwa) + mniejszą liczbą przyrost/ubytek z TEGO miasta —
+dokładnie jak działa już `buildEmpireResourceRows` w `main.ts:2425` dla surowców (stock +
+per-lokalizacja), tylko dla tych sześciu wskaźników.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`buildCityOnlyW3FlankChips`), dane cywilizacji z
+`gra/src/main.ts`.
+**Model:** czysty UI w `cityPanel.ts` — Sonnet 5 wystarczy (nie `render/**`).
+
+**NAPRAWIONE (2026-08-08):** każdy z 6 chipów pokazuje teraz dużą liczbę = agregat
+cywilizacji (z tego samego, silnikowego źródła co główny HUD mapy — `buildHudState()`,
+`empire-hud-totals.ts`, nowy plik) + małą liczbę `+N`/`−N` = wkład TEGO miasta. Po jednej
+naprawie od Evaluatora (błąd kompilacji + reimplementacja agregacji zamiast reużycia
+istniejącego, silnikowego źródła prawdy) — Evaluator (Opus 5) PASS-WITH-NOTES. Nowy test
+`gra/tools/hud-miasto-stan-cywilizacji-test.cjs`, 20/20. `tsc` czyste.
+**⚠️ Do wiedzy przy playteście:** duża liczba jest NETTO (po utrzymaniu ulepszeń, tak jak
+główny HUD), mała liczba per-miasto jest BRUTTO — sumy miast NIE zsumują się dokładnie do
+liczby cywilizacji dla Pracy/Skarbca/Żywności. Celowe (spójność z głównym HUD), ale może być
+odczytane jako błąd, jeśli ktoś spróbuje to zsumować ręcznie.
+
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** „bardzo często jest problem że w kolejce jednostek kiedy naciśniemy spację
+zamiast przechodzić do kolejnej która ma wolne ruchy przechodzi do jakiejś kolejnej która nie
+wiem jest w kolejce jakiejś zawsze ruch powinien po spacji powinien odbywać się od
+najbliższej możliwej jednostki która jeszcze ma ruch. Czasem jest tak, że kręci się wybór
+tylko wokół tych jednostek, które już odbyły ruch, a nie przechodzi do jednostek, które
+jeszcze ruch mogą odbyć."
+**Objaw:** klawisz Spacja (przejście do następnej jednostki z ruchem) czasem zapętla się
+wyłącznie na jednostkach, które JUŻ wykonały ruch w tej turze, pomijając te, które nadal mają
+ruch dostępny — zamiast zawsze iść do najbliższej jednostki z pozostałym ruchem.
+**Do zbadania:** handler klawisza Spacja / logika „następna jednostka" — czy filtr
+„ma jeszcze ruch" jest poprawnie stosowany przy budowaniu listy kandydatów, czy kolejność
+cyklowania nie gubi/pomija jednostek spełniających warunek.
+**Kotwice:** `gra/src/ui/**` (obsługa klawiszy, panel jednostek), `gra/src/main.ts` (stan tury,
+lista jednostek z ruchem).
+**Model:** Sonnet 5 (logika UI/tury, nie `render/**`).
+
+**⛔ KONFLIKT ZNALEZIONY PRZEZ EVALUATORA (2026-08-08):** naprawa (przywrócenie filtra
+„tylko jednostki z ruchem" w `cyclablePlayerArmyLeads()`, `main.ts`) **cofa jawne, wcześniejsze
+polecenie Macieja z 2026-07-28** (`docs/archiwum-czatow/.../MASTER-Work_KORESPONDENCJA.md`,
+dwukrotnie): *„Danej spacji miało zmieniać jednostki na następną **niezależnie od tego, czy ma
+ona ruch, czy nie**."* — dokładnie zaimplementowane w FALA 64 (commit `953e689f`), zalogowane
+jako dostarczone w `WERSJE.md:1255`. Dziś (08.08) Maciej mówi coś przeciwnego: cyklowanie ma
+iść WYŁĄCZNIE po jednostkach z ruchem. **Dwa jego własne polecenia, w różnym czasie, są ze
+sobą sprzeczne** — per CLAUDE.md §7 („nie zgaduj przy niejednoznaczności — pytaj") to
+wymaga jego decyzji, nie cichego wyboru przez agenta.
+**Dodatkowe ustalenie Evaluatora:** ścisły filtr (tylko z ruchem) ma nieprzetestowany efekt
+uboczny na 2 z 4 miejsc użycia tej samej funkcji: gdy WSZYSTKIE jednostki wyczerpią ruch,
+Spacja odznacza zaznaczenie zamiast cyklować (`clearPlayerUnitSelection()`), a strzałki
+◀▶ w HUD armii (`armyStackHud.ts:226`, dodane 2026-07-27 jako przeglądanie „stylem
+miasta") zostają całkowicie wyłączone (`canCycleUnits() → false`). Trzeci punkt: kolejność
+cyklowania to globalne sortowanie przestrzenne `(q+r,q,r)`, nie faktycznie „najbliższa" liczona
+od aktualnie wybranej jednostki — więc nawet ze ścisłym filtrem fraza „od najbliższej możliwej"
+nie jest w pełni spełniona.
+**Naprawa GOTOWA W KODZIE (worktree `agent-a268a6afcf89df0e1`, commit `a9efb243`), ale
+WSTRZYMANA do decyzji właściciela** — nie scalać bez jego odpowiedzi.
+
+**DECYZJA WŁAŚCICIELA (2026-08-08):** hybryda, doprecyzowana własnymi słowami: *„na starcie
+jednostek powinna być strzałka w prawo, w lewo, przejść do następnej jednostki. Przejście
+powinno być niezależne już od tego czy jest aktywne czy nie. Powinna być jedna strzałka
+przejść do następnej jednostki, oraz przejść do następnej aktywnej jednostki z pulltipem, że
+spacja to jest przejście do następnej aktywnej jednostki, a strzałka to jest do następnej
+jakiejkolwiek."* Rozstrzyga też konflikt z 28.07 bez sprzeczności — to DWIE różne kontrolki:
+- **Spacja** = następna jednostka **z ruchem** (dzisiejsze zgłoszenie) — naprawa `a9efb243`
+  zostaje, dotyczy WYŁĄCZNIE klawisza Spacja.
+- **Strzałki ◀▶ w HUD** = następna jednostka **niezależnie od ruchu** (polecenie z 28.07,
+  FALA 64) — mają wrócić do niefiltrowanej listy, NIE korzystać z tej samej ścisłej funkcji
+  co Spacja.
+- **Tooltips obowiązkowe**: Spacja → „przejście do następnej aktywnej jednostki"; strzałka →
+  „przejście do następnej jakiejkolwiek [jednostki]".
+**Status:** zlecone do wdrożenia — rozdzielić `cyclablePlayerArmyLeads()` (dla Spacji, z
+filtrem `stackCanMove`) od nowej/przywróconej niefiltrowanej listy dla strzałek HUD, dopisać
+tooltips.
+
+## BUG-SUROWCE-DOSTEP-ILOSC-ZNIKLA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** „surowce które kiedyś były tylko jako surowce które miały mieć sygnalizowany
+dostęp powinny być już pełni w surowcach ilości surowców widzę że to jest jakiś regres i
+znowu jakaś poprawka sprawiła że to zostało cofnięte."
+⛔ **Pierwsza diagnoza tej sesji była błędna** (wskazywała `cityPanel.ts`/`renderSurowce` —
+zły panel). Poprawiona po weryfikacji adwokata diabła (Opus 5, zgodnie z nową zasadą C-024):
+
+**Prawdziwy panel:** `empireDetailPanel.ts` (`renderSurowceSection`), sekcja „Dostęp — nie
+magazynowane" — dokładnie ten ekran ze zrzutu (Ceramika/Sól/Koń/Złoto, kropka + „masz"/„brak").
+
+**Regres potwierdzony, dokładny commit:** `331aa180` (2026-08-05,
+`fix(R-SUROWCE-DOSTEP): access rows cap null for empire panel`). Przed tym commitem
+**wszystkie 13 surowców** miały `cap = empireCap` bezwarunkowo — Ceramika/Sól/Koń/Złoto
+pokazywały pasek **`stock / cap`, czyli z realną ilością** z magazynu. Ten commit ustawił
+`cap = undefined` dla „surowców dostępu" — filtr panelu (`rows.filter(r => r.cap == null)`)
+przeniósł je do osobnej sekcji „Dostęp", gdzie liczy się TYLKO boolean masz/brak, **ilość
+znika z widoku mimo że silnik nadal ją trzyma** (`empire-resource-access.ts:5-6` mówi to
+wprost w komentarzu). Nic nie zginęło w danych — tylko w tym, co panel pokazuje.
+
+**Chronologia sprzeczności:** 2026-07-26 `R-SUROWCE-DOSTEP` (Maciej: „powinno być chociaż
+zasugerowane miejsce na surowce, które są dostępem") → 2026-07-29 `DOSTEP-SUROWCE-Q1`
+(Maciej: „kwestię dostępu usuwamy CAŁKOWICIE z gry") → 2026-08-05 wdrożenie prośby z 26.07
+**3 dni po decyzji, która ją unieważniła**. `DOSTEP-SUROWCE-Q1` wymienia `cityPanel.ts` w
+plikach wdrożenia, ale **nie `empireDetailPanel.ts`/`main.ts::buildEmpireResourceRows`** —
+panel imperium nigdy nie został dociągnięty do kanonu Q1.
+**Do decyzji:** czy sekcja „Dostęp — nie magazynowane" ma wrócić do pokazywania `stock/cap`
+(cofnięcie `331aa180`, zgodne z kanonem Q1: liczy się tylko magazyn) — czy zostać jako
+czysto informacyjny wskaźnik dostępu geograficznego, oddzielny od ilości (wymaga wtedy
+osobnego miejsca na ilość tych samych surowców).
+**Kotwice:** `gra/src/main.ts` (`buildEmpireResourceRows`), `gra/src/ui/empireDetailPanel.ts`
+(`renderSurowceSection`), `gra/src/game/empire-resource-access.ts`.
+**Model:** Sonnet 5 (poza `render/**`).
+
+**NAPRAWIONE (2026-08-08):** pełne cofnięcie `331aa180` — wszystkie 13 surowców liczy teraz
+`cap = empireCap` jednolicie, sekcja „Dostęp — nie magazynowane" fizycznie usunięta (nie
+ukryta), `gra/src/game/empire-resource-access.ts` skasowany jako martwy kod (zero innych
+callerów, sprawdzone grepem całego repo). Tooltip źródła dostępu działa dalej dla wszystkich
+4 surowców (niezależna od `cap` ścieżka danych). Evaluator (Opus 5) PASS-WITH-NOTES.
+`surowce-dostep-test.cjs` przepisany, 13/13, `tsc` czyste.
+**Nota (niska pilność, do osobnej rejestracji):** martwa gałąź w `resTooltipHtml` sprawia,
+że komunikat „Dostęp: brak — nie odblokowano" jest dziś nieosiągalny — przy braku dostępu
+i zapasie 0 kafelek pokazuje neutralne „0/1200" bez żadnej wzmianki o dostępie (dotyczy
+głównie Złota/Mennicy, patrz decyzja). Do rozważenia po playteście, jeśli okaże się mylące.
+
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** „kiedy wymieniamy surowce i na przykład chcemy się wymienić technologiami
+powinny być pokazywane tylko technologie te które są niedostępne dla innej cywilizacji
+zarówno po jednej jak i po drugiej stronie. Jeżeli jedna i druga cywilizacja ma tą
+technologię to nie ma sensu jej pokazywać, bo przecież nie dojdzie do wymiany."
+**Objaw (zrzut, koszyk wymiany „DODAJ DO OFERTY" / „DODAJ DO KONTRPROPOZYCJI"):** obie strony
+pokazują **identyczną listę technologii** (Obróbka drewna, Rolnictwo, Oswojenie zwierząt,
+Łowiectwo, Garncarstwo, Murarstwo) — bez filtrowania po tym, czy druga strona już ją ma.
+**Wstępnie sprawdzone w kodzie:** `gra/src/main.ts::getSellableTechForPlayer()` (linia 14137)
+filtruje TYLKO po `player.zbadane` (własne zbadane technologie oferującego) — **nie sprawdza
+w ogóle, czy odbiorca już tę technologię posiada**. Ten sam wzorzec prawdopodobnie w
+`defaultTechOptions()` (`diplomacyTradeBasket.ts:389`), który czyta WSZYSTKIE technologie z
+`tech.json` bezwarunkowo — używany jako fallback, gdy `ctx.techOptions` nie jest podany.
+**Niezweryfikowane jeszcze:** który dokładnie z tych dwóch (albo trzeci, jeszcze nieznaleziony)
+zasila konkretnie ten ekran koszyka ogólnego handlu ze zrzutu — wymaga doczytania, skąd
+`ctx.techOptions` pochodzi dla akcji `'6'` (tech) w kontekście `zaproponuj_handel`.
+**Kotwice:** `gra/src/main.ts` (`getSellableTechForPlayer`), `gra/src/ui/diplomacyTradeBasket.ts`
+(`defaultTechOptions`, budowa `techChips` dla obu stron).
+**Model:** Sonnet 5 (poza `render/**`).
+
+**NAPRAWIONE (2026-08-08):** Nowy `gra/src/game/diplomacy-tech-trade.ts`
+(`tradeableTechIdsForSide(ownKnown, otherKnown)`), wołany symetrycznie dla obu stron.
+`getSellableTechForPlayer(responderOwnerId)` teraz filtruje względem `ownerResearchedTechs
+(responderOwnerId)`; nowa `getBuyableTechFromOwner(responderOwnerId)` dla strony „otrzymuję".
+`getNegotiationContext` dostarcza osobne `giveTechOptions`/`receiveTechOptions`.
+`diplomacyTradeBasket.ts` czyta odpowiednie pole per strona zamiast jednego wspólnego
+`ctx.techOptions`. Akcja `'6'` (jednokierunkowa „sprzedaj technologię") celowo nietknięta.
+Evaluator: PASS-WITH-NOTES, `tsc` 0 błędów, `diplomacy-tech-trade-test.cjs` 8/8 + pełny pakiet
+dyplomacji (29 plików) zielony, w tym `diplomacy-proposal-test.cjs` 126/126,
+`diplomacy-locks-test.cjs` 70/70, `diplomacy-test.cjs` 148/148,
+`diplomacy-negotiation-table-test.cjs` 54/54, `tech-tree-test.cjs` 19/19, `research-test.cjs` 33/33.
+**Trzy noty Evaluatora, niepilne, zarejestrowane osobno poniżej:** pusta lista technologii bez
+komunikatu placeholder; `grantTechToOwner` bez sprawdzenia prerekwizytów/epoki (ścieżka nowo
+osiągalna po filtrze); `sellableTechCount`/akcja `'6'` może się teraz ukryć, gdy AI zna wszystko
+co gracz (świadoma, udokumentowana konsekwencja filtra, nie błąd).
+
+## P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
+Po filtrze lista technologii do wymiany bywa realnie pusta (wcześniej nigdy nie była).
+`techChips=''`, ale chip „Technologia" nadal klikalny — pusta siatka, „Dodaj" cicho nic nie robi
+(`readItemFromForm` zwraca `null`). Miasta mają placeholder „— brak miast (SILNIK) —",
+technologie nie mają analogicznego. Do dołożenia tym samym wzorcem.
+
+**ZAMKNIĘTE (2026-08-09):** Pusta lista dostaje placeholder „— brak technologii (SILNIK) —"
+analogiczny do miast, chip „Technologia" zostaje klikalny jak chip miasta. Evaluator
+PASS-WITH-NOTES, `diplomacy-tech-trade-test.cjs` 24/24, `tsc` 0 błędów.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (`buildAddForm`).
+**Model:** Sonnet 5.
+
+## P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
+`gra/src/game/diplomacy-basket-transfer.ts:68-96` (`grantTechToOwner`) sprawdza tylko „nieznana"/
+„już zbadana", NIE sprawdza prerekwizytów drzewka ani epoki. Wcześniej ścieżka „gracz dostaje
+technologię AI" była praktycznie nieosiągalna (lista `receive` pokazywała własne techy gracza,
+`granted` zawsze `false`) — po dzisiejszym filtrze gracz realnie może zdobyć technologię z
+pominięciem drzewka. Pre-istniejący dług, nowo odblokowany.
+
+**ZAMKNIĘTE (2026-08-09):** Dwie warstwy (defense in depth): (1) `grantTechToOwner` sprawdza
+teraz prerekwizyty drzewka + bramkę epoki/tieru odbiorcy (`research.ts:
+prerequisitesOf/epochGateMet/epochTierGateMet`, ta sama logika co `canResearch`, bez bramki
+budynku/ulepszenia — świadomie, to inny typ wymogu); (2) lista „dostaje" filtruje się już na
+etapie budowania (`techIdsWithPrereqsMetForRecipient`, nowy `gra/src/game/diplomacy-tech-trade.ts`).
+STRICT-PARITY potwierdzone przez Evaluatora bezpośrednio w `main.ts:7353` (wywołanie przed
+jakąkolwiek gałęzią po `ownerId`) — AI→gracz podlega bramce identycznie jak gracz→AI, bramka
+realnie aktywna w produkcji (`syncBasketResearchFromEngine` zasila `techCatalog` przed
+transferem, nie jest martwym kodem widocznym tylko w teście). Evaluator PASS-WITH-NOTES,
+`diplomacy-tech-trade-test.cjs` 24/24, `diplomacy-basket-transfer-test.cjs` 17/17, `logic-test`
+213/213, `tsc` 0 błędów, 31 plików testów dyplomacji zielonych, `vite build` 799 modułów OK.
+
+**Dwa nowe znaleziska Evaluatora, zarejestrowane osobno (oba niepilne):**
+`P-BRAMKA-TECH-TIER-NIEPOKRYTA` (luka pokrycia — mutacja usuwająca `tierOk` przeżywa testy) i
+`P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA` (nowy filtr zmniejsza listę „daję", więc
+`diplomacy-locks.ts:201` blokuje całą akcję częściej dla graczy bez nic do oddania).
+**Kotwice:** `gra/src/game/diplomacy-basket-transfer.ts` (`grantTechToOwner`),
+`gra/src/game/diplomacy-tech-trade.ts` (`techIdsWithPrereqsMetForRecipient`).
+**Model:** Sonnet 5.
+
+## P-BRAMKA-TECH-TIER-NIEPOKRYTA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne**
+Dowód mutacyjny Evaluatora: usunięcie SAMEGO `tierOk` (bramka tieru epoki) z `grantTechToOwner`
+zostawia `diplomacy-basket-transfer-test.cjs` w 100% zielone (17/17) — usunięcie `epochOk` jest
+złapane, usunięcie `tierOk` nie. Kod jest poprawny (weryfikacja czytaniem), brakuje jednej
+asercji. Opis commita `c8ee16f0` deklarował pokrycie „prereq/epoka/tier/parity" — deklaracja
+dla warstwy tieru była nieprawdziwa, sprostowane tutaj.
+**Kotwice:** `gra/tools/diplomacy-basket-transfer-test.cjs`, `gra/src/game/diplomacy-basket-transfer.ts` (`grantTechToOwner`, `tierOk`).
+**Model:** Sonnet 5.
+
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne, pre-istniejące wzmocnione**
+`gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" (Szybka Umowa?) gdy
+`sellableTechCount === 0` — liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr
+(`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`) zmniejsza listę „dostaje" u odbiorcy, ale to lista
+„daję" u nadawcy decyduje o blokadzie — gracz bez własnych technologii do oddania nie może
+przez akcję „6" also *kupić* niczego, mimo że strona „dostaję" może mieć poprawne pozycje.
+Asymetria była pre-istniejąca (nie stworzona tą naprawą), dziś częściej odczuwalna bo lista
+„dostaję" jest teraz krótsza (bardziej realistyczna). Skutek uboczny: placeholder „brak
+technologii" po stronie „daję" w akcji 6 jest w praktyce trudno osiągalny; pozostaje osiągalny
+po stronie „dostaję" i w innych trybach koszyka.
+**Kotwice:** `gra/src/game/diplomacy-locks.ts:201`.
+**Model:** Sonnet 5.
+
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
+liczba tych surowców, które mamy dostępne i pomyśl o tym, że trzeba będzie przewidzieć, że
+tych surowców będzie kiedyś znacznie więcej, więc musi być w jakiś sposób czytelny pokazywania
+tej większej ilości surowców."
+**Objaw (zrzut, koszyk wymiany, sekcja „Surowiec (pakiety ×10)"):** chipy Drewno/Kamień/Glina
+pokazują tylko ikonę i nazwę — **bez liczby posiadanego zapasu**. Gracz musi zgadywać, ile ma,
+zanim doda pakiet do oferty.
+**Dwa osobne wymagania w zgłoszeniu:** (1) dopisać liczbę dostępnego zapasu pod/przy każdym
+chipie surowca — analogicznie do wzorca, który już istnieje w `buildEmpireResourceRows`
+(main.ts) i w panelu imperium (`stock`); (2) **zaprojektować układ skalowalny** — dziś 3
+surowce w rzędzie, docelowo może być ich znacznie więcej (kolejne epoki/surowce) — sam dopisek
+liczby nie wystarczy, trzeba przemyśleć siatkę/scroll/kategorie, żeby nie rozjechało się przy
+większej liczbie pozycji.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (chipy surowców w koszyku wymiany).
+**Model:** jeśli zmiana dotknie układu/renderowania wizualnego — do ustalenia czy to
+`render/**` czy czysty DOM/CSS w `ui/**` (prawdopodobnie to drugie, Sonnet 5 wystarczy).
+
+**NAPRAWIONE (2026-08-08):** Widoczna odznaka (nie tylko `title` na hover) z ilością zapasu
+pod każdym chipem po stronie „daję" (`side==='give'`), źródło `maxQty` (realne sztuki, nie
+pakiety — potwierdzone niezależnie przez Evaluatora w `main.ts:2327-2339`). Kompaktowy format
+(`formatCompactQty`: <1000 wprost, ≥1000 → „1.2k"/„1.2M") adresuje wymaganie (2) na dzisiejszą
+skalę (13 surowców w katalogu, 3 chipy naraz) — pełna siatka/scroll/kategorie świadomie uznane
+za nieproporcjonalne, do rewizji gdyby katalog realnie urósł. Strona „dostaję" bez odznaki
+(zgłoszenie mówiło o „które MAMY"). Runda 1: FAIL (worktree stale, `maxPakiety` zamiast
+`maxQty` — 10× za niska wartość). Runda 2: PASS-WITH-NOTES, worktree naprawione przed
+kodowaniem (fast-forward na aktualny HEAD, zweryfikowane), `tsc` 0 błędów, wszystkie 31 plików
+testów dyplomacji zielone. Nota Evaluatora (nieblokująca, poprawiona przy scaleniu): komentarz
+w kodzie błędnie sugerował że odznaka na „dostaję" ujawniłaby zapasy AI — `title`/`data-max` już
+dziś ujawniają je bezwarunkowo dla obu stron, jedyny realny powód wyłączenia to zawężenie
+zakresu zgłoszenia, nie ujawnianie informacji.
+
+## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** „nie ma możliwości edytowania propozycji. Jest tylko możliwość usunięcia.
+Przecież miała być możliwość jeszcze edytowania."
+**Potwierdzone w kodzie:** `gra/src/ui/diplomacyTradeBasket.ts:1177` renderuje wyłącznie
+przycisk „Usuń" (`.cdb-rm`) przy każdym wierszu propozycji — **żaden przycisk „Edytuj" nie
+istnieje w tym pliku** (sprawdzone grepem, zero trafień). Nieznane jeszcze: czy edycja była
+kiedyś zaplanowana/obiecana w jakimś dokumencie decyzji (do sprawdzenia), czy to od początku
+brakująca funkcja.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (~linia 1177, render przycisku), panel
+propozycji ze zrzutu — prawdopodobnie `diplomacyAudience.ts` / `diplomacyDealDisplay.ts` /
+`diplomacyNegotiationModal.ts` (zawierają „wygasa za"/„TWOJA PROPOZYCJA" — niezweryfikowane
+który dokładnie renderuje ten konkretny widok kolumnowy).
+**Model:** Sonnet 5 (poza `render/**`).
+
+**NAPRAWIONE (2026-08-09):** Przycisk „✎ Edytuj" obok „✕" dla edytowalnych typów pozycji koszyka
+(`zloto, praca, zywnosc, tech, surowiec_ilosc`) w `gra/src/ui/diplomacyTradeBasket.ts` — reużywa
+`buildAddForm` z nowym `editItem`, pre-wypełnia bieżącą wartość, podmienia pozycję w miejscu.
+Zagateowany członkostwem typu w `availableTypes` (wojna blokuje zloto/praca, tech poniżej progu
+Relacji na stronie receive — nie pozwala „Zapisz zmiany" po cichu zamienić typu). 3 rundy:
+runda 1 FAIL (worktree stale, konflikt niescalalny, zero testów edycji), runda 2 FAIL (bug w
+gatingu „Usuń" na karcie traktatu, opisany niżej), runda 3 PASS-WITH-NOTES po rebase na aktualny
+HEAD — Evaluator zweryfikował własnym harnessem (nie kopią testu Operatora) że edycja działa dla
+wszystkich 5 typów. Nowy test `diplomacy-basket-edit-test.cjs` 25/25. `tsc` 0 błędów.
+
+## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** „jeżeli my dajemy umowę surowców, po drugiej stronie nie musi być umowy
+wymiany surowców, jeżeli ta druga strona nic nie daje. I w takiej sytuacji jeżeli usuniemy
+u drugiej strony to nic nie daje, usuwa się też cała nasza propozycja. To w ogóle jest
+nielogiczne."
+**Objaw (zrzut):** kolumna „Oni oferują" pokazuje kartę „Umowa wymiany surowców" z pustą
+treścią („—", nic nie oferują) — sparowaną z realną kartą „Umowa wymiany surowców" w „My
+oferujemy" (250 Drewno + 5 ¤). Usunięcie **pustej** karty po stronie „Oni oferują" kasuje
+też **naszą realną** propozycję po drugiej stronie — kaskada usuwania między niepowiązanymi
+(z perspektywy gracza) kartami.
+**Do zbadania:** czy te dwie karty są w silniku POŁĄCZONE jako jedna transakcja (co
+uzasadniałoby kaskadę, ale wymaga innego UI — np. „usuń całą wymianę" zamiast dwóch osobnych
+przycisków „Usuń"), czy to błąd w logice usuwania, który przypadkiem kasuje więcej niż wskazany
+indeks/wiersz.
+**Kotwice:** te same pliki co `R-PROPOZYCJA-BRAK-EDYCJI` — panel propozycji pokazany na zrzucie,
+logika usuwania powiązana z ID/parą propozycji.
+
+**ZDECYDOWANE (2026-08-08):** `R-PROPOZYCJA-KASACJA-UI-Q1=A` (`docs/decyzje/R-PROPOZYCJA-KASACJA-UI-Q1.md`)
+— ukryj przycisk „Usuń" na pustej/mirror karcie, zostaw jeden aktywny na karcie z treścią.
+
+**NAPRAWIONE (2026-08-09):** Nowa `negotiationTableDealSideHasContent()`
+(`gra/src/ui/diplomacyDealDisplay.ts`), wołana z `negotiationCardActionsHtml`
+(`diplomacyAudience.ts`) przez wspólny helper `dealSideTreatyInfo()` — jedno źródło prawdy dla
+render i gatingu, żeby nie rozjechały się niezależnie. Runda 2 dostała FAIL: gating dla
+traktatów bilateralnych (NAP/sojusz) wymagał dodatkowo `pw > 0`, którego render NIE MA — traktat
+z PW=0/undefined widocznie pokazywał treść, ale tracił „Usuń" (odwrotnie niż decyzja A). Runda 3:
+naprawione na `treatyFallbackLabel != null`, zgodne z render `if (treatyFallbackLabel)`;
+Evaluator rundy 3 znalazł jeszcze jedną drobną niezgodność (`!= null` vs truthy dla edge case
+`label===''`, dziś nieosiągalny) — poprawione przy scaleniu na `!!treatyFallbackLabel`, dokładnie
+zgodne z renderem. Traktaty bez koszyka zachowują „Usuń", karty z realną treścią też — kontrola
+pozytywna zweryfikowana niezależnym harnessem Evaluatora (nie kopią testu Operatora).
+Testy: `diplomacy-basket-edit-test.cjs` 25/25, `diplomacy-proposal-test.cjs` 126/126,
+`diplomacy-negotiation-table-test.cjs` 54/54, `diplomacy-test.cjs` 148/148,
+`hud-moc-warstwa-test.cjs` 28/28, `tsc` 0 błędów. STRICT-PARITY: wyłącznie UI gracza.
+**Model:** Sonnet 5 (poza `render/**`).
+
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+
+### Część 1 — tabela cen (na żądanie: „wypisz mi wartość surowców jakie mamy przypisane")
+**Potwierdzone w kodzie:** „40" pokazane przy 4 pakietach Drewna (pakiet ×10) **to Punkty
+Wymiany (PW/PN), nie surowa liczba sztuk** — w tym konkretnym przypadku liczbowo się pokrywa,
+bo cena Drewna wynosi dokładnie 1 PN/szt. Źródło: `gra/data/econ-params.json` →
+`handel_surowce`, ta sama cena na wszystkich trudnościach (`easy`/`normal`/`hard` identyczne):
+
+| Surowiec | Cena (PN/szt.) |
+|---|---:|
+| Drewno | 1 |
+| Glina | 2 |
+| Sól | 2 |
+| Kamień | 3 |
+| Ruda miedzi | 5 |
+| Koń | 5 |
+| Cegła | 5 |
+| Ceramika | 5 |
+| Ruda żelaza | 10 |
+| Brąz | 15 |
+| Żelazo | 20 |
+| Węgiel | 20 |
+| Stal | 25 |
+| Złoto (surowiec) | 50 |
+
+Pakiet = 10 szt. (`pakiet_wielkosc`). PN pozycji = cena × pakiety × 10.
+**Jego obawa („zbyt łatwo przekupić surowcami"):** Drewno przy 1 PN/szt. jest najtańsze i
+zwykle najliczniej magazynowane — 250 Drewna (widziane w innym zrzucie tej rozmowy) to **250
+PN**, więcej niż baza 80 PW pełnego traktatu handlowego. Temat wart analizy: czy tania,
+masowa produkcja Drewna nie omija ekonomicznego sensu droższych surowców w handlu
+dyplomatycznym. **Nie zdiagnozowane jeszcze jako bug** — to pytanie balansu do ABC, nie
+potwierdzony błąd.
+
+### Część 2 — BUG: pakiet z dodatnim bilansem i tak blokuje akceptację
+**Jego słowa:** „co gorsza, chociaż bilans jest na plusie, to i tak nie mogę zaakceptować i
+przyjąć tej oferty. Prawdopodobnie to jest jakiś regres z przeszłości."
+**Objaw (zrzut, pakiet 2 umów: Traktat handlowy + Umowa wymiany surowców):** panel „PUNKTY
+WYMIANY" pokazuje **MY ODDAJEMY 94 PW · BILANS (NETTO) +14 · ONI ODDAJĄ 80 PW** — zagregowany
+bilans całego pakietu jest DODATNI. Mimo to poniżej: „Nie spełnia warunków: Brakuje 26 PW do
+uczciwej oferty traktatu handlowego @ Relacji (baza 80 PW) — oferta nieuczciwa dla partnera" —
+**Przyjmij zablokowany**.
+**Przyczyna zlokalizowana w kodzie** (`gra/src/game/diplomacy-proposals.ts:1073-1090`, komentarz
+`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`): bramka uczciwości dla `umowa_handlowa`/`umowa_szlakow`
+liczy **WYŁĄCZNIE PW TEGO JEDNEGO traktatu** (`treatyBaseFairnessGap(treatyBasePn, givePn,
+receivePn, relTotal)`) — **nie widzi** nadwyżki z innej umowy w tym samym pakiecie
+(„Umowa wymiany surowców", 40 PW netto na naszą niekorzyść/korzyść zależnie od strony). To
+było **świadome** (komentarz: „traktat handlowy bez koszyka przy niskiej Relacji dalej wymagał
+dopłaty zamiast przechodzić za darmo") — ale **UI wprowadza w błąd**, bo panel „Bilans (Netto)"
+sugeruje ocenę na poziomie całego pakietu, podczas gdy bramka akceptacji działa per-umowa.
+**Powiązane, już znane w tej sesji:** `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` (nota
+Evaluatora BUG-TRAKTAT-KOSZYK-REGRESJA, „nie naprawiać teraz, poza zakresem =A") — ten sam obszar
+kodu, już wcześniej oznaczony jako niedomknięty.
+**Do decyzji:** czy pakiet wielu umów ma być oceniany zbiorczo (bilans pakietu decyduje) czy
+per-umowa (każda musi sama spełnić próg) — dziś jest per-umowa, ale UI pokazuje zbiorczy bilans
+jakby to on decydował. Minimum: komunikat/UI powinny być spójne z tym, co faktycznie bramkuje.
+**Kotwice:** `gra/src/game/diplomacy-proposals.ts` (`treatyBaseFairnessGap`, linia ~1082),
+`gra/src/ui/diplomacyAcceptanceBalance.ts` (panel „Punkty Wymiany", agregacja pakietu).
+**Model:** Sonnet 5 (poza `render/**`).
+
+**NAPRAWIONE (2026-08-08):** Decyzja `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2=A` (`docs/decyzje/R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2.md`).
+Przyczyna: bramka uczciwości liczyła PW wyłącznie per-traktat (`umowa_szlakow`/`umowa_handlowa`), nie widząc
+nadwyżki z siostrzanej pozycji w tym samym pakiecie („Umowa wymiany surowców"), co dawało niespójność
+z panelem „Bilans (Netto)". Naprawa: `ProposalEvalContext` rozszerzony o `packageSiblingGivePn`/
+`packageSiblingReceivePn`, liczone przez nową `packageSiblingPn()` w `main.ts` i wpięte WYŁĄCZNIE w gałąź
+traktatową (`umowa_szlakow`/`umowa_handlowa`) — `pokoj` i inne akcje bez zmian (zgodnie z zakresem Q2=A).
+Naprawiony też błąd kolejności: `handleNegotiationAcceptPackage` i `resolvePendingNegotiationsForOwner`
+budują teraz mapę `siblingByTreatyId` JEDNORAZOWO przed pętlą wykonania, zamiast liczyć siostrzaną pozycję
+na żywo w trakcie pętli (poprzednia wersja traciła dane o już wykonanej pozycji siostrzanej — pozycje
+w `negotiationTable` są usuwane przez `resolveNegotiationEntryAt` w miarę wykonania). Usunięto 3 zduplikowane,
+nadmiarowe sprawdzenia `acceptanceTheir.accepted` per-pozycja (2× `diplomacyAcceptanceBalance.ts`,
+1× `diplomacyAudience.ts`) na rzecz jednego już pakieto-świadomego `responderPreview`.
+Ewaluator: runda 1 PASS-WITH-NOTES (test źródłowy używał słabego sprawdzenia `indexOf()`, które — jak
+wykazał Ewaluator wstrzykując realną regresję — nie łapało błędu kolejności mimo zielonego wyniku 17/17;
+plus nieścisły komentarz o zakresie wykluczenia `pokoj`). Runda 2 PASS — Ewaluator samodzielnie zweryfikował
+przez wstrzyknięcie dokładnej regresji w OBA miejsca (`handleNegotiationAcceptPackage` i
+`resolvePendingNegotiationsForOwner`) i potwierdził, że nowy detektor `nearestEnclosingForBlock()` w
+`gra/tools/diplomacy-fairness-gate-package-q2-test.cjs` łapie oba przypadki (test spada z regresją, wraca
+do zielonego po jej cofnięciu). STRICT-PARITY: potwierdzono, że istniejąca asymetria `treatyPnGate`
+(`proposerIsTreatyPlayer`) jest przedwcześniejsza/celowo odłożona, nie wprowadzona tą poprawką.
+Testy: `npx tsc --noEmit` 0 błędów · `diplomacy-fairness-gate-package-q2-test.cjs` 24/24 ·
+`diplomacy-proposal-test.cjs` 126/126 · `diplomacy-stol-pw-sum-test.cjs` 26/26.
+Zakres: dotyka tego samego obszaru kodu co `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` (nota Evaluatora
+BUG-TRAKTAT-KOSZYK-REGRESJA) — ta nota pozostaje osobno śledzona, nie jest tą poprawką zamknięta.
+
+## R-HANDEL-PAKIETY-USUNAC (2026-08-08, decyzja właściciela) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** *„ok, zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy.
+Po prostu podajemy sztuki. Jeden, dziesięć, sto i tak dalej. Żadnych pakietów! Usuń dla
+wszystkich surowców pakiet."*
+**Kontekst:** padło jako decyzja podczas rozmowy o `R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP`
+(liczba zapasu w chipach koszyka) — właściciel doszedł do wniosku, że sama koncepcja
+„pakietu ×10" w koszyku wymiany surowców jest nieintuicyjna niezależnie od tamtego tematu.
+**Zakres:** usunąć „pakiet" jako jednostkę wejścia UI dla WSZYSTKICH surowców w koszyku
+wymiany (`gra/src/ui/diplomacyTradeBasket.ts`) — zamiast „Liczba pakietów" (krok ×10) wejście
+ma być wprost w sztukach, ze steperem +1/+10/+100 (jak podał: „Jeden, dziesięć, sto i tak
+dalej"). Cena PN/szt. (`gra/data/econ-params.json:handel_surowce.cena_*`) się nie zmienia —
+zmienia się tylko to, co gracz wpisuje i co widzi jako jednostkę.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (stepper/pole „Liczba pakietów"),
+`gra/src/game/diplomacy-value-catalog.ts` (`DEFAULT_HANDEL_SUROWCE_PAKIET`,
+`diplomacyHandelSurowcePakietWielkosc()`), `gra/data/econ-params.json`
+(`handel_surowce.pakiet_wielkosc`).
+**Model:** Sonnet 5 (poza `render/**`) — zwykły kod UI/logika handlu, nie render.
+
+**NAPRAWIONE (2026-08-08):** `BasketItem.ilosc` dla surowców ilościowych to teraz sztuki
+wprost (nie pakiety) w całym łańcuchu — cena, transfer jednorazowy, dostawa cykliczna „co
+turę", oferty AI. `pakiet_wielkosc` (10) przetrwał wyłącznie jako próg heurystyki niedoboru
+AI, nie jako mnożnik. Evaluator (Opus 5) PASS-WITH-NOTES po 2 rundach — runda 1 złapała 2
+zepsute pakiety testów zgłoszone jako naprawione (nie były) i realny błąd: nazwa surowca z
+metadanymi przeciekała do wiadomości AI („Drewno — dost. 40" zamiast „Drewno"); runda 2
+potwierdziła obie poprawki niezależnie (własna reprodukcja Evaluatora, nie zaufanie
+raportowi). 19 pakietów testów, wszystkie zielone, `tsc` czyste.
+**Nota do wiedzy (niska pilność):** `computeQuickDealBasket` („Szybka umowa") nie ma żadnego
+testu — poprawiona wartość startowa (10 szt., nie 1) jest dziś niczym niechroniona przed
+przyszłą regresją.
+
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: ZDEPLOYOWANE `ce69cf45` FALA 262 — naprawiona fragmentacja obrysu, do potwierdzenia playtestem czy to wyczerpuje objaw**
+**Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
+być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
+jakby ich nie było. Dodatkowo, te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają
+4-5 już ludności, to te mają po jednym. Chyba że się mylę bo to jest jedna cywilizacja Zulusi
+być może tak szybko stawiała miasta że zjadała swoją ludność. Nie mniej jednak nie mają granic
+wygląda jak by ich nie było na mapie trzeba dopiero odkryć mapę i pojawiają się ale bez
+granicy."*
+**Objaw (2 zrzuty załączone):** na mapie widoczne liczne miasta cywilizacji „Zulusi"
+(Ondini, Nobamba, KwaBulaw…, Umgungun…, Kwadukuza, Isandlwana, Kwagqokli, Mahlabat…,
+Nodwengu, Babanango — 10 miast) — **żadne nie ma kolorowego obrysu terytorium** na mapie
+(inne cywilizacje w kadrze, np. w tle, mają widoczne granice). Każda etykieta miasta Zulusi
+pokazuje populację **„1"**, podczas gdy inne cywilizacje mają 4-5.
+**Hipoteza właściciela:** dwa zjawiska mogą być powiązane — cywilizacja tak agresywnie
+zakłada nowe miasta (osadnicy), że „zjada" własną ludność zamiast pozwolić jej rosnąć; brak
+granic może być tym samym efektem (terytorium nigdy nie „dojrzewa" bo miasta nie rosną) albo
+osobnym bugiem renderowania granic niezależnym od populacji.
+**WYNIK DOCHODZENIA (2026-08-08, agent Explore, read-only):**
+
+**A) Populacja utknięta na 1 — PRZYCZYNA POTWIERDZONA, dobrze uzasadniona kodem.**
+Hipoteza właściciela („zjada swoją ludność") trafna. Łańcuch:
+- `gra/src/game/city-founding.ts:31-36` (`foundCityPopulationCost`) — założenie nowego miasta
+  kosztuje **1 pkt ludności** (`zaloz_miasto_koszt_ludnosci`, `gra/data/miasto-params.json`),
+  pobierane z miasta źródłowego, NIE z produkcji/surowców.
+- `city-founding.ts:60-76` (`pickSourceCityForFounding`) — źródłem zawsze jest miasto
+  z **najwyższą aktualną populacją** w danej cywilizacji.
+- `city-founding.ts:66-68` — próg minimalny dla AI to `AI_FOUNDING_SOURCE_MIN_POP = 2` —
+  **każde miasto, które urośnie z 1→2, jest natychmiast kandydatem do zebrania**.
+- `gra/src/game/ai.ts:1818-1868` (`planCityFounding`) sprawdza to **co turę AI**, bez żadnego
+  „poczekaj aż populacja się odbuduje" — do 2 nowych miast/turę
+  (`AI_COLONIZATION_SURGE_MAX_PER_TURN = 2`, `ai.ts:792`).
+- **Efekt:** gdy tylko któreś miasto Zulusów urośnie 1→2, AI natychmiast traktuje je jako
+  „największe" i zbiera z powrotem do 1, żeby założyć kolejne miasto — samopodtrzymująca się
+  pętla 1↔2, widoczna jako trwałe „1" na każdym mieście. Dokładnie zgodne ze zrzutem (10 miast,
+  każde „1").
+- **Czynniki wzmacniające specyficzne dla Zulusów:** `gra/data/civ-matrix.json` (wiersz
+  Zulusi, ~linia 1375) `"lud_wzrost_proc": -0.05` — **jedyna/jedna z niewielu cywilizacji
+  z karą do wzrostu ludności** (-5 pkt proc. do tempa wzrostu, `population-growth-v85.ts:171-182`),
+  wydłuża czas powrotu 1→2 i zwiększa ekspozycję na kolejne „zbiory". Dodatkowo
+  `gra/data/civ-ai.json:51-60` — Zulusi mają `agresywnosc: 9` i `ekspansywnosc: 4`, jedne
+  z najwyższych w rejestrze cywilizacji → ta AI trafia w pętlę częściej/mocniej niż spokojniejsze.
+- **To NIE jest zepsuty wzrost** (`applyPostCentralPopulationGrowth`,
+  `population-growth-v85.ts:319-391` działa jednolicie dla wszystkich właścicieli, brak
+  pominięcia per-cywilizacja) — to interakcja projektowego kosztu osadnika (populacja) z
+  nieodhamowaną, priorytetową pętlą zakładania miast AI.
+- **Do decyzji (ABC potrzebne, wpływa na balans/AI):** dodać throttle w `planCityFounding`
+  (np. wymagany odstęp tur od ostatniego „zbioru" tego miasta, albo podniesienie
+  `AI_FOUNDING_SOURCE_MIN_POP` powyżej 2, albo wymóg nadwyżki żywności/bufora przed zbiorem).
+
+**B) Brak granic — NIE ZNALEZIONO jednoznacznej przyczyny, dwie hipotezy odrzucone dowodami z kodu.**
+- **Odrzucone:** brak „odkrycia"/spotkania cywilizacji jako warunku — taki warunek **nie
+  istnieje w kodzie**. Jedyny filtr widoczności granic (`main.ts:8899-8913`,
+  `refreshTerritoryBorderOverlay`) to czysta własność heksu + fog-of-war (`vis.has(key) ||
+  explored.has(key)`) — mechanika „odkryj mapę i granica się pojawi" jest architektonicznie
+  poprawna i powinna działać.
+- **Odrzucone:** brak koloru cywilizacji — `civColorForOwner`
+  (`gra/src/game/civ-visual.ts:59-70`) zawsze zwraca kolor; Zulusi mają jawny
+  `kolorHex: "#2E7D32"` w `gra/data/civs.json:711` (ciemna zieleń — UWAGA: wizualnie zbliżony
+  do standardowego „zielonego" koloru gracza/innej cywilizacji, osobny, drobny problem
+  czytelności, nie przyczyna zniknięcia).
+- **Odrzucone:** populacja 1 zerująca promień terytorium — `cityRangeForPopulation`
+  (`gra/src/game/okolica.ts:46-50`) daje promień min. 5 nawet dla populacji 1 (floor
+  `CITY_RANGE_MIN=5`), więc samo utknięcie na populacji 1 nie powinno zerować terytorium.
+- **Pozostała, niesprawdzona jeszcze hipoteza:** `territoryOwnerAt()`
+  (`gra/src/map/territory.ts:106-125`) rozstrzyga remisy „kto jest właścicielem heksu" na
+  rzecz węzła wcześniejszego w tablicy `cities` — w połączeniu z bardzo gęstym, ciasno
+  skupionym osadnictwem Zulusów (10 miast blisko siebie) może to wchodzić w konflikt z
+  `traceTerritoryBoundaryLoops` (`gra/src/map/territory-border.ts:150`, śledzenie krawędzi
+  wielokątów) na złożonych/nakładających się zbiorach heksów. **Wymaga weryfikacji na żywym
+  zapisie** (np. zalogowanie `byOwner.get(zulusiOwnerId)?.size`), nie da się potwierdzić samą
+  lekturą kodu.
+
+**Kotwice:** populacja — `gra/src/game/city-founding.ts` (`foundCityPopulationCost`,
+`pickSourceCityForFounding`), `gra/src/game/ai.ts` (`planCityFounding`, ~linia 1818),
+`gra/data/civ-matrix.json` (Zulusi `lud_wzrost_proc`), `gra/data/civ-ai.json` (Zulusi
+`agresywnosc`/`ekspansywnosc`). Granice — `gra/src/map/territory.ts` (`territoryOwnerAt`),
+`gra/src/map/territory-border.ts` (`traceTerritoryBoundaryLoops`) — wymaga dalszej diagnozy
+runtime.
+**Model:** populacja/AI → Sonnet 5 (`game/**`); jeśli naprawa granic dotknie `render/**` →
+Opus 5 per zgoda stała CLAUDE.md §4.
+
+**NAPRAWIONE — CZĘŚĆ POPULACJA (2026-08-08):** `AI_FOUNDING_SOURCE_MIN_POP` z 2 na 3
+(`gra/src/game/city-founding.ts`). Evaluator (Opus 5) PASS-WITH-NOTES — potwierdził efekt
+uczciwie: **pętla nie znika, tylko przesuwa się z 1↔2 na 2↔3** (świadomie zaakceptowane
+ryzyko z `docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`). Jeśli po playteście problem nadal
+widoczny — do rozważenia wariant B (cooldown per-miasto) jako dopełnienie. `ai-test.cjs`
+274/8 (8 pre-istniejących, niezwiązanych), `tsc` czyste.
+
+**NAPRAWIONA FRAGMENTACJA OBRYSU — CZĘŚĆ GRANICE (2026-08-09, subagent Sonnet 5).** Hipoteza
+„pozostała, niesprawdzona" z 2026-08-08 (wyżej) o `territoryOwnerAt()` (remisy właściciela
+heksu) **odrzucona po weryfikacji na żywej symulacji** — nie miała znaczenia. Rzeczywista
+przyczyna: `borderVertexKey()` w `gra/src/map/territory-border.ts` formatowała współrzędne
+wierzchołka `toFixed(5)` bez normalizacji znaku przy zerze. Dwa sąsiednie heksy liczą WSPÓLNY
+narożnik z DWÓCH różnych centrów (`hexCornerWorld` dla różnych (q,r)) — matematycznie ten sam
+punkt, ale szum zmiennoprzecinkowy (~1e-16, z `Math.sin`/`Math.cos`) dawał z jednej strony
+dokładnie `0`, z drugiej np. `-4.44e-16`: `(0).toFixed(5)="0.00000"`,
+`(-4.44e-16).toFixed(5)="-0.00000"` — DWA różne klucze dla TEGO SAMEGO wierzchołka świata.
+Efekt: `traceTerritoryBoundaryLoops` widziała tam wierzchołek stopnia 1 zamiast 2, przerywała
+pętlę w tym miejscu i porzucała resztę obwodu (fragmentacja, gubione krawędzie). Im
+gęstszy/bardziej symetryczny klaster miast względem world (0,0), tym więcej wierzchołków ląduje
+dokładnie na osi zero — stąd bug ujawniał się przy gęstym osadnictwie (Zulusi, 10 miast, min.
+dystans 4 heksy), nie przy pojedynczym izolowanym mieście.
+
+**Fix:** `fixNegativeZeroString()` normalizuje `"-0.00000"` → `"0.00000"` przed użyciem jako
+klucz wierzchołka. Zakres wyłącznie `gra/src/map/**` (logika, bez Three.js/render) — nie
+wymagał Opus 5. Nowy test regresji `gra/tools/territory-border-dense-settlement-test.cjs`
+(15 asercji, 3 scenariusze), zweryfikowany że łapie regresję (7/15 fail na kodzie sprzed
+naprawy, 15/15 po naprawie).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES z niezależnym dowodem skuteczności**: zbudował osobny
+bundel z wersji sprzed naprawy i porównał 400 losowych, gęstych kształtów terytorium —
+**PRZED naprawą 32/400 wadliwe (141 zgubionych segmentów obwodu), PO naprawie 0/400**. Bramki
+zmierzone niezależnie: `tsc --noEmit` czyste, `territory-border-test` 9/9,
+`territory-border-dense-settlement-test` 15/15, `improvement-territory-gate-test` 6/6,
+`border-march-scan-test` 15/15, `border-march-wygasanie-test` 26/26,
+`diplomacy-border-march-test` 39/39, `fair-play-grid-test` 8/8, `logic-test` 213/213 —
+wszystkie potwierdzone ponownie w drzewie głównym po scaleniu, identyczne liczby.
+`fair-play-tier-grid-test` 9/12 (3 fail pre-istniejące — progi gór/wzgórz, C-MAPA-Q1=B,
+potwierdzone identyczne w drzewie sprzed naprawy, test importuje wyłącznie `map/gen-helpers`).
+
+**Zastrzeżenie Evaluatora ważne dla playtestu (powód złagodzenia statusu wyżej z „NAPRAWIONE"
+na „naprawiona fragmentacja obrysu"):** rozszerzona próba na 4000 gęstych kształtów sprzed
+naprawy pokazała że obrys **nigdy nie znikał w całości** (0 przypadków `loops.length === 0`)
+— był poszarpany/niepełny (od ~94% do najgorzej ~70% pokrycia obwodu). Zgłoszenie Macieja
+brzmiało „część cywilizacji w ogóle nie dostaje granic w kolorze — wygląda jakby ich nie było".
+Ten fix naprawia udowodniony, realny błąd fragmentacji, ale zebrany materiał nie dowodzi że
+wyczerpuje objaw „granicy nie ma WCALE". **Do potwierdzenia playtestem.** Jeśli objaw wróci,
+drugim podejrzanym jest ścieżka w której cywilizacja dostaje zbiór 0 heksów
+(`buildTerritoryBorderGroup` pomija takich właścicieli) — niepotwierdzone, tylko hipoteza do
+sprawdzenia.
+
+**Do rejestru pre-istniejących, niezwiązanych czerwonych testów:** `budynek-civ-bonus-u17-test`
+2 pass / 4 fail (identyczne komunikaty w drzewie sprzed i po naprawie — `kamien got 5, want 4`);
+ten sam test był już wymieniony przy `P-TEST-UPKEEP-R-STAWKI` (2026-08-09).
+
+**Poza zakresem (C-025):** populacja pozostaje nietknięta (throttle 2→3 z sekcji wyżej).
+
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile
+jest dokładnie produkowane w tym miejscu surowców żywności i tak dalej."*
+**Objaw (zrzut, okolice TEBY):** każdy heks w zasięgu miasta pokazuje trzy liczby z ikonami
+(Praca/młotek, Żywność/kłos, Pieniądz/moneta — np. „6 / 3 / 5"), ale heksy zajęte przez samo
+miasto (zielone kółko z sylwetką osoby) **nie pokazują żadnych liczb** — puste. Gracz nie
+widzi ile dokładnie dany heks miejski produkuje, tylko że jest „aktywny" (zielony).
+**Do zdiagnozowania:** kod rysujący nakładkę plonów heksu (prawdopodobnie
+`gra/src/render/**` lub `gra/src/ui/**`, warstwa „yields"/„plony") — sprawdzić czy jest
+warunek pomijający rysowanie liczb, gdy `hex.cityId`/`hex.owner` wskazuje na zajęcie przez
+miasto, i czy dane produkcji dla heksu miejskiego w ogóle istnieją w silniku (być może miasto
+zjada/zeruje bazowy plon terenu i faktycznie nic tam nie ma do pokazania — do sprawdzenia
+zamiast zakładać).
+**Kotwice:** `gra/src/render/cityOkolicaOverlay.ts` (pętla etykiet plonów).
+**Model:** Sonnet 5 (przyczyna okazała się w warunku renderu, nie w 3D/geometrii).
+
+**NAPRAWIONE (2026-08-08):** przyczyna (a) — render, nie silnik. Pętla etykiet w
+`cityOkolicaOverlay.ts` (dodana w FALA 96, `daacd43a`) pomijała rysowanie liczb dla KAŻDEGO
+heksu z „ulepszeniem" terenu (`hexHasCoveringTerrainImprovement`), **w tym także dla heksu
+centrum miasta**, gdy ten niósł klasyfikację ulepszenia (częsty przypadek — `auto-improvements.ts`
+nie wyklucza współrzędnych centrum miasta z kandydatów do automatycznego ulepszenia). Silnik
+zawsze liczy realny, niezerowy plon centrum (`turn-economy.ts`, komentarz „Centrum ZAWSZE
+daje plony... bez 👤"). Fix: wyjątek `key !== cityKey` w warunku pomijania — sąsiednie
+prawdziwie ulepszone heksy nadal poprawnie pomijane. Evaluator (Opus 5) PASS-WITH-NOTES,
+zweryfikowany niezależnie (1 call site funkcji, `tsc` czyste). Dwie notatki Evaluatora do
+osobnej rejestracji: (1) render czyta tylko OSTATNIĄ warstwę `hex.ulepszenie`, silnik czyta
+WSZYSTKIE warstwy — przy wielowarstwowych ulepszeniach na centrum render może zaniżać plon
+(wcześniej niewidoczne, bo każdy ulepszony heks był całkowicie ukryty); (2) do potwierdzenia
+na żywym zapisie: zgłoszenie mówiło o „zielonym kółku" (overlay pracy), a centrum miasta
+faktycznie renderuje się na niebiesko — jeśli po deployu liczby nadal brakuje na ZIELONYCH
+(nie niebieskich) heksach, to inny, nieobjęty tą naprawą problem (celowe pominięcie sąsiadów
+z prawdziwym ulepszeniem).
+
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+**Jego słowa:** *„jedno naprawiasz, drugie psujesz. Znowu jest problem, mianowicie coś co
+wcześniej działało nagle przestało działać. Przesuwanie góra-dół i usuwanie z kolejki w trybie
+budowania zarówno jednostek i budynków nie działa. Trzeba kombinować gdzie kliknąć. Niestety
+gdzieś to po prostu jest rozjechane."*
+**Objaw (zrzut, kolejka budowy „Pałac"/„Palisada drewniana"):** przyciski ↑ (przesuń w górę),
+↓ (przesuń w dół), ✕ (usuń) przy pozycjach kolejki budowy — kliknięcie w widoczny przycisk
+często nie trafia w jego handler; trzeba „kombinować gdzie kliknąć" — obszar klikalny (hit
+area) najwyraźniej nie pokrywa się z tym, co narysowane (offset/rozjazd CSS).
+**Wagę podnosi explicite:** właściciel wprost nazywa to REGRESJĄ świeżej pracy („jedno
+naprawiasz, drugie psujesz") — sugeruje, że jakaś niedawna zmiana w tym samym panelu
+(kolejka budowy jednostek/budynków) przesunęła layout bez przeliczenia obszarów klikalnych.
+**WYNIK DOCHODZENIA (2026-08-08):** dwa niezależne defekty flex-layoutu, oba w
+`gra/src/ui/cityPanel.ts`, oba pochodzące z **tego samego, jednego commita sprzed 10 dni**
+(`daacd43a`, 2026-07-29, „FALA 96 DEPLOY ALL: DOSTEP-SUROWCE-Q1"), **nie z pracy ostatnich
+dni** — mimo że objawiło się dopiero dziś (dopiero teraz kolejka urosła / nazwa budynku była
+dość długa, żeby ujawnić bug):
+1. **Kolejka BUDYNKÓW — brak guardu przepełnienia etykiety.** Kolejka JEDNOSTEK (linia 6877)
+   ma `qLabel.style.cssText = 'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+   white-space:nowrap;'`. Kolejka BUDYNKÓW (linia 6957) ma tylko `qLabel.style.flex = '1';` —
+   bez `min-width:0`/`nowrap`. Długa nazwa („Palisada drewniana") rozpycha wiersz, kontener ma
+   `overflow-x:hidden`, więc część przycisku bywa wizualnie ucięta, choć jego obszar klikalny
+   nadal istnieje gdzie indziej.
+2. **Oba wiersze — przyciski bez `flex-shrink:0`.** `.civ-cs .btn` (linia 1697) nie ustawia
+   `flex-shrink`, więc gdy etykieta+chip kosztu+chip ETA (wszystkie `flex-shrink:0`) zajmą
+   miejsce, to WŁAŚNIE przyciski ↑/↓/✕ się kurczą poniżej wygodnego obszaru kliku — dokładnie
+   „trzeba kombinować gdzie kliknąć".
+**Sprawdzone (`git log`/`git blame`):** żaden commit z ostatnich 2 dni nie dotykał tego
+fragmentu — jedyny niedawny commit w `cityPanel.ts` (`a51c364e`, 6 sierpnia) zmieniał tylko
+kolorowanie kosztu w chipach rekrutacji, nic layoutowego. To NIE jest regresja świeżej pracy w
+sensie „zepsute wczoraj" — to uśpiony bug z 29 lipca, ujawniony dopiero dziś przy dłuższej
+nazwie budynku/dłuższej kolejce. Sprawdzone też pod kątem duplikatu: jedyny wcześniejszy wpis
+o przyciskach kolejki to `BUG-KOLEJKA-ZWROT-SUROWCA` (WDROŻONE, FALA 201) — inny temat (zwrot
+surowców po ✕, nie hitbox) — brak konfliktu/regresji własnej wcześniejszej naprawy.
+**Zakres naprawy (wąski, zgodnie z C-025):** WYŁĄCZNIE dwie zmiany CSS w `cityPanel.ts`:
+(a) skopiować `min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;` z
+`qLabel` kolejki jednostek (linia 6877) do `qLabel` kolejki budynków (linia ~6957); (b) dodać
+`flex-shrink:0` do przycisków wewnątrz `.qitem` — per C-026 zawęzić selektor do
+`.civ-cs .qitem .btn` (NIE globalnie `.civ-cs .btn`, żeby nie dotknąć przycisków poza kolejką)
+i sprawdzić grepem `.civ-cs .btn`/`class="btn` w `cityPanel.ts`, czy selektor rzeczywiście
+trafia tylko w te trzy przyciski. Żadnych innych zmian.
+**Kotwice:** `gra/src/ui/cityPanel.ts` — kolejka jednostek `qLabel` (linia ~6877), kolejka
+budynków `qLabel` (linia ~6957), CSS `.civ-cs .btn`/`.btn-sm` (linie ~1697-1717), `.qitem`
+(linia ~1850).
+**Model:** Sonnet 5 (UI/CSS, nie render 3D).
+
+**NAPRAWIONE (2026-08-08):** dwie zmiany CSS w `cityPanel.ts` — (1) `qLabel` kolejki budynków
+dostał ten sam `min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;`, co
+kolejka jednostek już miała; (2) nowa, wąsko zawężona reguła `.civ-cs .qitem .btn{flex-shrink:0;}`
+(NIE globalnie `.civ-cs .btn`, żeby nie dotknąć 4 innych grup przycisków w pliku poza kolejkami).
+Zakres zweryfikowany przez Operatora i niezależnie przez Evaluatora (Opus 5, PASS-WITH-NOTES):
+diff = dokładnie te dwie zmiany, żadnej innej linii; `.qitem` istnieje wyłącznie w tym pliku
+w dwóch miejscach (obie kolejki); z 14 użyć klasy `.btn` w pliku tylko 6 (po 3 na kolejkę)
+leży wewnątrz `.qitem`, pozostałe 8 poza zasięgiem nowej reguły — potwierdzone niezależnym
+grepem Evaluatora, nie tylko samooceną Operatora. `npx tsc --noEmit` czyste (exit 0 na
+głównym drzewie). Evaluator dodał notatkę: **wymaga playtestu** (długa nazwa budynku w
+kolejce, sprawdzić wielokropek i trafialność ↑/↓/✕ za pierwszym kliknięciem) — to zmiana
+czysto wizualna, w repo nie ma harnessu DOM/CSS do zautomatyzowania testu.
+
+## R-PORTRET-PRODIKONA-DROPPED-CALLBACK (2026-08-08, znalezisko Operatora przy okazji BUG-IKONA-KULTURY-PLACEHOLDER) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
+Operator naprawiający `BUG-IKONA-KULTURY-PLACEHOLDER` znalazł identyczny wzorzec błędu
+(`if (cached === 'loading') return;` gubi callback zamiast go kolejkować) w dwóch innych
+miejscach tego samego pliku: `requestLeaderPortraitImage` i `requestProdIconImage`
+(`gra/src/render/cityMapStatChip.ts`). Nie powoduje zgłoszonego objawu (placeholder diamentu)
+— przegrana wyścigu o portret spada na herb (już naprawiony), a przegrana o ikonę produkcji
+gubi tylko glif produkcji do najbliższej zmiany klucza tekstury — ale to ten sam mechanizm
+błędu, może dawać własne, niezgłoszone jeszcze objawy. Zostawione świadomie nietknięte
+zgodnie z C-025 (zakres tamtego zlecenia = tylko 3 zgłoszone bugi). Do naprawy: taki sam
+wzorzec kolejkowania callbacków jak w naprawie `BUG-IKONA-KULTURY-PLACEHOLDER`.
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestLeaderPortraitImage`,
+`requestProdIconImage`).
+**Model:** Opus 5 (render/**).
+
+**NAPRAWIONE (2026-08-09):** Wzorzec kolejkowania z `requestCivSigilImage` (już 3-krotnie
+zweryfikowany) powielony 1:1 na obie funkcje — własna mapa kolejek per zasób, helper
+`queue*Callback` dopisujący (nie nadpisujący), `cached==='loading'` → kolejkuj zamiast `return`,
+callback pierwszego zamawiającego też trafia do kolejki przed `loadImageInto`. Realny (nie
+teoretyczny) wyścig: `_syncStatChip` buduje pigułkę osobno per miasto, więc dwa miasta tej samej
+cywilizacji/epoki mogą zamówić ten sam portret w jednej klatce. Evaluator: PASS-WITH-NOTES,
+własny dowód mutacyjny (4 warianty wstrzyknięcia regresji, wszystkie złapane), własna sonda
+5 miast jednocześnie + przewiązanie w środku serii (kolejka nie ograniczona do pary).
+`city-map-badge-test.cjs` 62/62 (baza sprzed naprawy: **49/49** — poprawka liczby z raportu
+Operatora, tam błędnie „47", zweryfikowane niezależnie przez Evaluatora), `tsc` 0 błędów.
+**Follow-up zarejestrowany osobno:** `P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC` — trzy niezależne
+kopie tego samego wzorca współbieżności w jednym pliku (sygnet, portret, ikona produkcji),
+świadomie nieuogólnione (C-025, zakres tego zlecenia), do rozważenia przy czwartej kopii.
+
+## P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC (2026-08-09, nota Evaluatora R-PORTRET-PRODIKONA-DROPPED-CALLBACK) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
+`gra/src/render/cityMapStatChip.ts` ma dziś TRZY niezależne, strukturalnie identyczne kopie
+tego samego wzorca kolejkowania callbacków przy równoległych żądaniach obrazka (sygnet
+cywilizacji, portret władcy, ikona produkcji) — każda naprawiona osobno, w osobnym zleceniu,
+w innym dniu. Evaluator: „ten bug istniał dokładnie dlatego, że naprawiono jedną kopię, a dwie
+zapomniano". Do rozważenia: wspólny helper zamiast czwartej kopii przy następnym takim zasobie.
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestCivSigilImage`,
+`requestLeaderPortraitImage`, `requestProdIconImage`).
+**Model:** Opus 5 (render/**).
+
+## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
+Dla pakietów PRZYCHODZĄCYCH (`allIncoming`) panel liczy `canAccept = net &gt;= 0` na sumie
+całego stołu (`diplomacyAcceptanceBalance.ts:252-254`), więc przycisk „Przyjmij" bywa aktywny
+gdy suma jest dodatnia. Ale realne wykonanie (`main.ts:11977`,
+`handleNegotiationAcceptPackage` → `handleNegotiationAccept` per `id`) woła
+`previewIncomingPlayerAccept` osobno na każdą pozycję i odrzuca tę, która sama nie spełnia
+progu — efekt: **pakiet stosuje się częściowo**, z komunikatem w toaście (`showHintMessage`)
+zamiast blokadą całości. Niezależny od tego, jak rozstrzygnie się `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2`.
+**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts:252-254`, `gra/src/main.ts:11977`.
+**Model:** Sonnet 5.
+
+**NAPRAWIONE (2026-08-08):** `canAccept`/`blockReason` w `balancePanelDataFromRows` liczone
+teraz jednolicie z `row.responderPreview.accepted` dla KAŻDEJ akcjonowalnej pozycji (incoming
+ORAZ own+awaitingAiResponse), zamiast osobnej gałęzi sumy netto dla `allIncoming`.
+`responderPreview` to ta sama `previewNegotiationEntry`, którą backend woła przy realnym
+wykonaniu (`handleNegotiationAccept`) — UI i wykonanie zgodne z definicji, nie przez przypadek.
+`net` (suma PW) zostaje wyłącznie jako wyświetlany bilans, nie jako bramka. Evaluator:
+PASS-WITH-NOTES, potwierdzone jedno źródło prawdy, brak kolizji z dzisiejszym
+`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2`, STRICT-PARITY OK (wyłącznie ścieżka UI gracza), 28 plików
+testów dyplomacji zielonych (m.in. `diplomacy-test.cjs` 148/148, `diplomacy-proposal-test.cjs`
+126/126, `diplomacy-acceptance-points-test.cjs` 225/225, `diplomacy-stol-pw-sum-test.cjs` 31/31
+z nową reprodukcją dokładnego przypadku ze zrzutu — 94 vs 80, net +14, jedna pozycja
+zablokowana). **4 noty niepilne, zarejestrowane osobno poniżej:** wizualna niespójność
+panelu przy net ujemnym z przyciskiem mimo to aktywnym; fail-open (`canAccept=true`) przy braku
+`responderPreview` (dziś nieosiągalne); rozluźnienie `legacyAccess`-gatingu, zgodne z
+wykonaniem ale nietestowane; słaba asercja w jednym teście.
+
+## P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **CZĘŚCIOWO ZDEPLOYOWANE `ce69cf45` FALA 262 (tryb traktatu) — pozostaje otwarte dla gałęzi own+basket**
+Dla traktatu incoming z net ujemnym (np. −20 PW), panel pokazywał klasę „no" (czerwony) i hint
+„Brakuje N PW — dopłać do bilansu", ale jednocześnie werdykt „Spełnia warunki — możesz przyjąć"
+i przycisk AKTYWNY. Powstawało bo `canAccept` przestał iść za `net` (naprawa wyżej), a cały
+display nadal szedł za `net`. Funkcjonalnie poprawne (przycisk odzwierciedlał realną
+akceptowalność), wizualnie mylące. Osiągalne przy Relacji &lt;100 (asymetryczne PW traktatu).
+
+**NAPRAWIONE dla trybu traktatu (2026-08-09):** `balCls`/hint w gałęzi `isTreatyMode` idą teraz
+za `data.canAccept`, nie za surowym znakiem `netPw`. Fallback (canAccept undefined, jedyny
+wiersz „own" nie-awaitingAiResponse poza pakietem) zachowuje stare zachowanie. Evaluator
+PASS-WITH-NOTES, `diplomacy-stol-pw-sum-test.cjs` 42/42 (było 26/26), `tsc` 0 błędów.
+
+**Nadal OTWARTE — Evaluator wykazał próbą, że ta sama klasa niespójności jest osiągalna także
+w gałęzi `!incomingTrade && !isTreatyMode` (własna oferta + koszyk, poza traktatem)** — zielony
+pasek + hint „Nadwyżka N PW" obok werdyktu blokującego poniżej. Ta gałąź NIE została objęta
+dzisiejszą naprawą (świadome zawężenie zakresu, C-025 — zlecenie dotyczyło konkretnego
+zgłoszenia trybu traktatu).
+**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`, gałąź
+`!incomingTrade && !isTreatyMode`).
+**Model:** Sonnet 5.
+
+## P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
+Gdy `row.responderPreview` był `undefined` (pole opcjonalne w typie), `canAccept` domyślnie
+wychodził `true` (bramka otwarta), nie bezpieczne `false`. Dziś `main.ts:12318` zawsze ustawia
+preview, więc nieosiągalne w praktyce — ale brak testu i brak jawnego fallbacku na `false`.
+
+**ZAMKNIĘTE (2026-08-09):** `balancePanelDataFromRows` ustawia teraz jawnie `canAccept=false` +
+`blockReason` gdy `responderPreview` jest `undefined` na pozycji akcjonowalnej (incoming lub
+own+awaitingAiResponse) — fail-closed zamiast fail-open. Evaluator PASS-WITH-NOTES,
+`diplomacy-stol-pw-sum-test.cjs` 42/42, `tsc` 0 błędów. Scalone razem z naprawą wyżej (jeden
+commit Operatora, `2e56050c`).
+**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`).
+**Model:** Sonnet 5.
+
+## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08, nota Evaluatora przy R-HEKS-PLONY-UKRYTE-POD-MIASTEM) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest
+Render plonów (`yieldOfMapHex`, dziś w `gra/src/game/okolica.ts` — funkcja przeniesiona z
+`main.ts` przed tą naprawą, stara kotwica `main.ts:9281` nieaktualna) czytał tylko OSTATNIĄ
+warstwę `hex.ulepszenie`, silnik (`hexToWorkedTile` → `improvementKeysForHex`) sumuje WSZYSTKIE
+warstwy z `hex.ulepszenia[]`. Wcześniej niewidoczne (każdy ulepszony heks był całkowicie
+ukryty), po naprawie `R-HEKS-PLONY-UKRYTE-POD-MIASTEM` centrum miasta z wielowarstwowym
+ulepszeniem mogło pokazywać zaniżony plon (mniej niż silnik faktycznie liczy).
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5).** `yieldOfMapHex` woła teraz
+`improvementKeysForHex(h)` — ten sam helper co silnik — i przekazuje `ulepszenieKey`+
+`ulepszeniaKeys` do `tileYield()` identycznie jak `hexToWorkedTile`. Zakres wyłącznie to
+rozliczenie warstw, `gra/src/render/**` nietknięte.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**, parytet `yieldOfMapHex` vs `hexToWorkedTile`
+potwierdzony linia po linii (identyczne budowanie kluczy, obsługa `undefined`/pustej tablicy).
+Dowód mutacyjny: cofnięcie fixu daje 12 pass/7 fail (dokładnie na przypadkach 2/3-warstwowych),
+stałe oczekiwane zweryfikowane ręcznie wobec `terrain-yields.json`/`terrain-improvements.json`.
+Własny harness Evaluatora (32/32) pokrył dodatkowe brzegi: brak ulepszeń, `null`/pusta tablica,
+duplikat warstwy (dedup przez `Set`, brak podwójnego liczenia), 21 warstw naraz (suma zgodna
+z JSON), heks poza mapą. Bramki zmierzone niezależnie w drzewie głównym po scaleniu, identyczne
+liczby: `tsc` czyste, `heks-plony-warstwy-test` (nowy) 19/19, `okolica-test` 46/46,
+`hex-plony-magazyn-test` 11/11, `plony-budynkow-test` 68/68, `tech-tree-test` 19/19,
+`research-test` 33/33, `unit-replace-test` 13/13, `logic-test` 213/213.
+
+**Cztery noty Evaluatora:**
+1. Sprostowanie C-026: opis commita mówił „1 wywołanie w `main.ts`" — Evaluator naliczył **2**
+   (`okolicaWorkedKeySet` i `yieldOf` do overlaya), suma 6 się zgadza, tylko rozbicie było
+   błędne. Sprostowane tutaj.
+2. `zloze` (złoże surowca) nie jest przekazywane do `tileYield()` w `yieldOfMapHex`, choć
+   `hexToWorkedTile` je przekazuje — dziś nieszkodliwe (render zwraca tylko z/p/h, nie `ruda`),
+   ale pułapka na przyszłość dla kogoś kto rozszerzy render o rudę. Zarejestrowane osobno:
+   `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE`.
+3. **Ważniejsze niż „uboczne znalezisko" — to DRUGI CZŁON TEGO SAMEGO WZORU:**
+   `foodPotentialOfMapHex` w tym samym pliku (`scoreOkolicaTile` łączy `yieldOf` z
+   `potentialOf` w jedną liczbę rankingu) ma identyczny, nienaprawiony wzorzec (czyta tylko
+   `h.ulepszenie`). Po tej naprawie oba człony wzoru NIE zgadzają się co do warstw — konkretny
+   skutek: heks z wielowarstwowym ulepszeniem żywnościowym dostaje teraz poprawny (wyższy) plon
+   farmy ORAZ nadal nienależny bonus potencjału, zawyżenie w rankingu auto-przydziału jest
+   WIĘKSZE w liczbach bezwzględnych niż przed tą naprawą (nie regresja — oba człony były błędne
+   już wcześniej, ale rozjazd teraz szerszy). Evaluator: „najtańszy możliwy follow-up, nie
+   parkować bezterminowo" — ten sam jednolinijkowiec (`improvementKeysForHex(h)` zamiast
+   ręcznego `[key]`, `okolica.ts:169-170`). Zarejestrowane osobno:
+   `P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA` (podniesiona pilność względem pierwotnego
+   zapisu Operatora — Evaluator zaleca zrobić przy najbliższej okazji, nie odkładać).
+4. Hipoteza NIEZWERYFIKOWANA wykonaniem: `main.ts` (overlay) przekazuje `isWorkable`
+   (wyklucza Morze/Góry), `cityWorkedTilesForEconomy` (silnik) nie przekazuje go wcale — overlay
+   i ekonomia mogą różnić się co do tego, KTÓRY heks jest obsadzony. Zarejestrowane osobno jako
+   hipoteza do sprawdzenia: `P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA`.
+**Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`), silnik `turn-economy.ts`
+(`hexToWorkedTile`).
+
+## P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09, nota N3 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — podniesiona pilność, Evaluator zaleca nie odkładać**
+`foodPotentialOfMapHex` (`gra/src/game/okolica.ts`) to drugi człon tego samego wzoru rankingu
+co `yieldOfMapHex` (`scoreOkolicaTile` łączy oba w `tileAssignScore`) i ma identyczny,
+NIEnaprawiony wzorzec: czyta tylko `h.ulepszenie` (ostatnią warstwę), nie
+`improvementKeysForHex(h)`. Po naprawie `yieldOfMapHex` oba człony przestały się zgadzać co do
+warstw — heks z wielowarstwowym ulepszeniem żywnościowym dostaje teraz poprawny (wyższy) plon
+farmy ORAZ nadal nienależny `FARMA_POTENTIAL_FOOD_BONUS`, więc zawyżenie w rankingu
+auto-przydziału pól przy `focus:'zywnosc'` jest WIĘKSZE w liczbach bezwzględnych niż przed
+naprawą (nie regresja — oba człony były błędne już wcześniej, rozjazd między nimi jest nowy).
+Naprawa to ten sam jednolinijkowiec: `improvementKeysForHex(h)` zamiast ręcznego `[key]`
+w `okolica.ts:169-170`.
+**Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`, linie 169-170).
+**Model:** Sonnet 5.
+
+## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+`hexToWorkedTile` (silnik) przekazuje `tile.zloze` do `tileYield()`, `yieldOfMapHex` (render,
+po dzisiejszej naprawie) go nie przekazuje. Dziś bez wpływu — `yieldOfMapHex` zwraca tylko
+`{zywnosc, praca, handel}`, `zloze` wchodzi wyłącznie do `oreYieldFromImprovements` →
+`ruda`/`ruda_zelaza`, poza kontraktem zwracanym przez tę funkcję. Pułapka na przyszłość: kto
+rozszerzy render o `ruda`, dostanie cichy rozjazd z powrotem.
+**Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`).
+**Model:** Sonnet 5.
+
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA (2026-08-09, nota N4 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE, NIEZWERYFIKOWANA WYKONANIEM) · STATUS: **OTWARTE — hipoteza, do sprawdzenia**
+`main.ts:3971` (`okolicaWorkedKeySet`, overlay) przekazuje `isWorkable: okolicaHexWorkable`
+(wyklucza Morze/Góry), `cityWorkedTilesForEconomy` (`turn-economy.ts:691`, silnik) NIE
+przekazuje `isWorkable` w ogóle; `okolicaTiles` (`okolica.ts:101`) filtruje tylko gdy filtr
+podano — brak domyślnego filtra terenu. Z lektury kodu wynika, że overlay i ekonomia mogą
+różnić się co do tego, KTÓRY heks jest obsadzony — nie zweryfikowane end-to-end, tylko
+hipoteza.
+**Kotwice:** `gra/src/main.ts:3971` (`okolicaWorkedKeySet`), `gra/src/game/turn-economy.ts`
+(`cityWorkedTilesForEconomy`), `gra/src/game/okolica.ts` (`okolicaTiles`).
+**Model:** Sonnet 5.
+
+## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)
+Rozdzielono na dwie kontrolki jak zdecydowałeś: `cyclablePlayerArmyLeadsBase(requireMoves)` —
+Spacja i „bęben" po ruchu używają `requireMoves=true` (tylko jednostki z ruchem), strzałki HUD
+◀▶ używają `requireMoves=false` (wszystkie jednostki, zgodnie z Twoim poleceniem z 28.07).
+Oba tooltips strzałek niosą teraz obie informacje („dowolna — Spacja: aktywna"). Dodatkowo
+naprawiony efekt uboczny: gdy jednostka, od której zaczynało się cyklowanie, wypadła z listy
+(typowy przypadek po „bębnie"), stare `cur=0` pomijało pierwszą jednostkę na liście przy
+cyklowaniu w przód — teraz trafia poprawnie w najbliższą. Evaluator (Opus 5) PASS-WITH-NOTES
+po 2 rundach (własna symulacja arytmetyki indeksów, nie zaufanie raportowi). `tsc` czyste,
+bramki ruchu/armii zielone.
+**Nota (niska pilność):** logika cyklowania nie ma dedykowanego testu regresji (żyje jako
+domknięcie wewnątrz `boot()` w `main.ts`, ekstrakcja byłaby refaktorem poza zakresem tej
+naprawy) — do rozważenia przy następnym dotknięciu tego kodu.

@@ -6349,3 +6349,37 @@ Reguły sesji lokalnej przenumerowane na `C-020`/`C-021`/`C-022` (treść bez zm
 rejestrze błędów i w tym kanale zaktualizowane. `playbook.json` zregenerowany generatorem z
 poprawionego `playbook.md` — liczniki win/fail zachowane.
 CZEKAM-NA: nic.
+
+---
+
+## [10:30 PL, 2026-08-09] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 262, md5 `ce69cf45`
+**Uwaga porządkowa:** wcześniejsza próba tej fali (md5 `ef796bbe`, FALA 261) **nigdy nie
+trafiła do repo** — build odjechał 7 commitów od HEAD, zanim wolna bramka `map-gen-regression`
+się skończyła; ten wpis go zastępuje, nie uzupełnia.
+
+Zdeployowane do `gra-robocza/`: **`Gra-ROBOCZA.html` md5 = `ce69cf459fd8df8e10768c36d597ff59`**
+(stempel `ROBOCZA`, `VERIFY OK`, manifest match OK; „stamp match: WARN" normalny wg runbooku
+§6). 6 bundli playtestowych zsynchronizowane, `START.html` + manifest przegenerowane. Build
+z HEAD `35a8b636` — 17 tematów FALA 261 (dyplomacja/koszyk 9×, mapa/render/UI 5×, HUD/Moc 2×,
+jednostki/AI 2×, panel Imperium 1×) + 6 dodatkowych tematów tej sesji: granice cywilizacji
+(fragmentacja obrysu przy gęstym osadnictwie), plony heksów (wielowarstwowe ulepszenia),
+etykieta WZROST% miasta, handel technologią (pusta lista + prereq), panel dyplomacji
+(fail-open + traktat vs canAccept), bramka mur-paradoks (pokrycie testowe, bez zmian
+gameplayowych). Każdy temat przez pełną pętlę AutoBot Operator→Evaluator, wszystkie
+PASS-WITH-NOTES. Pełny wpis: `dyspozycje/WERSJE.md` → ROBOCZA `ce69cf45` (FALA 262).
+
+Bramki zielone (tsc 0 · 799 modułów · logic-test 213/213 · wszystkie nowe/dotknięte bramki
+tej sesji zielone — pełna lista w `WERSJE.md`); czerwone TYLKO pre-istniejące i udokumentowane
+(`unit-power-test` 4/2, `budynek-civ-bonus-u17-test` 2/4, 4 testy wzrostu ludności — dług
+testowy R-STAWKI). `map-gen-regression`: kryteria wiążące (determinizm A=B, trasy bez ujścia)
+potwierdzone PASS na commicie sprzed tych 6 tematów; dowód że nadal ważne — jedyny dotknięty
+plik w `gra/src/map/**` to `territory-border.ts` (rendering granic, nie generator).
+
+⚠️ Rzeczy do zapowiedzenia Maciejowi przed playtestem: (1) Moc AI w rankingu na wyższych
+trudnościach **spadnie** — poprawka STRICT-PARITY z `R-MOC-TABLICZKA-VS-CIVPOWER-Q1`, nie
+regresja; (2) w chipach nagłówka miasta duża liczba jest NETTO, mała BRUTTO — nie zsumują się;
+(3) granice Zulusów/gęstych klastrów miast — sprawdzić czy obrys jest teraz KOMPLETNY, nie
+tylko mniej poszarpany (Evaluator zastrzegł że to nie jest pewne, tylko mierzone przybliżeniem);
+(4) plakietka miasta pokazuje „WZROST%" zamiast „W5".
+**Sesja lokalna: pull na dysk właściciela** (`push`), potem playtest. KANON/FINALNA — bez zmian.
+CZEKAM-NA: sesja lokalna — sync `ce69cf45` na dysk właściciela + potwierdzenie w kanale.

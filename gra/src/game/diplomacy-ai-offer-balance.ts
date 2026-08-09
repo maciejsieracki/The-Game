@@ -214,7 +214,7 @@ function hasResourcePaymentTrade(payload: ProposalPayload): boolean {
 /**
  * Wyrównaj surowiec ↔ zapłata po ewentualnym clampBasket (zapłata gracza mogła spaść
  * do 1 ¤ przy pełnej cenie drewna). Podnosi zapłatę do targetu, gdy się mieści; inaczej
- * zmniejsza pakiety surowca, aż |nadwyżka gracza| ≤ tolerancji.
+ * zmniejsza sztuki surowca, aż |nadwyżka gracza| ≤ tolerancji.
  */
 export function trimResourcePaymentTradeForZeroBalance(
   payload: ProposalPayload,

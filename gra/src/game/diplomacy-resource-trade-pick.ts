@@ -13,7 +13,8 @@ import type { TradeGoodEntry } from './diplomacy-goods';
 export interface QuantityTradableOption {
   id: string;
   label: string;
-  maxPakiety: number;
+  /** R-DYP-PAKIET-USUN (2026-08-08): sztuki wprost, nie pakiety. */
+  maxQty: number;
 }
 
 export type ResourceTradePickReason = 'deficyt' | 'nadwyzka';
@@ -52,10 +53,16 @@ function buildOffer(
   maxPakietyPerTura: number,
   pricePerPakiet: (key: string, pakiety: number) => number | null,
 ): Omit<ResourceTradePickResult, 'sellerOwnerId' | 'buyerOwnerId' | 'powod'> | null {
-  const pakiety = Math.max(1, Math.min(maxPakietyPerTura, sellerOpt.maxPakiety));
+  const pakiety = Math.max(1, Math.min(maxPakietyPerTura, sellerOpt.maxQty));
   const zaplata = pricePerPakiet(surowiecKey, pakiety) ?? 0;
   if (zaplata <= 0) return null;
-  const label = sellerOpt.label.split(' ×')[0] ?? surowiecKey;
+  // BUGFIX (Evaluator 2026-08-08, blocker 2): sellerOpt.label to CZYSTA nazwa surowca
+  // (patrz main.ts quantityTradableGoodOptions — R-DYP-PAKIET-USUN) — żadnego dopisku
+  // do wyciąć. Dawny `.split(' ×')[0]` zakładał stary format „Drewno ×10 (pakiet)" i
+  // przy nowym, czystym labelu był no-opem w najlepszym razie — a przy jakimkolwiek
+  // dopisku (np. wcześniejsze „— dost. N") przepuszczał cały string do komunikatów AI.
+  // Nie parsuj etykiety w ogóle — użyj jej wprost.
+  const label = sellerOpt.label || surowiecKey;
   return { surowiecKey, label, pakietyPerTura: pakiety, zaplataPerTura: zaplata };
 }
 
@@ -84,7 +91,7 @@ export function pickResourceDeficitForOwnerPair(input: {
   const deficits = detectPricedResourceDeficits(goodsBuyer, pricedKeys, pakietWielkosc);
   for (const key of deficits) {
     const sellerOpt = sellerOptions.find(o => o.id === key);
-    if (!sellerOpt || sellerOpt.maxPakiety <= 0) continue;
+    if (!sellerOpt || sellerOpt.maxQty <= 0) continue;
     const offer = buildOffer(key, sellerOpt, maxPakietyPerTura, pricePerPakiet);
     if (offer) {
       return {
@@ -115,9 +122,9 @@ export function pickResourceSurplusForOwnerPair(input: {
   void pricedKeys;
   void pakietWielkosc;
   const buyerHave = new Set(goodsBuyer.filter(g => (g.ilosc ?? 0) > 0).map(g => g.key));
-  const sorted = [...sellerOptions].sort((a, b) => b.maxPakiety - a.maxPakiety);
+  const sorted = [...sellerOptions].sort((a, b) => b.maxQty - a.maxQty);
   const pick = sorted.find(o => !buyerHave.has(o.id)) ?? sorted[0];
-  if (!pick || pick.maxPakiety <= 0) return null;
+  if (!pick || pick.maxQty <= 0) return null;
   const offer = buildOffer(pick.id, pick, maxPakietyPerTura, pricePerPakiet);
   if (!offer) return null;
   return {

@@ -58,17 +58,19 @@ const dealIn = {
   }],
 };
 
-const flows0 = empireDiploResourceFlowPerTurn([dealOut, dealIn], 0, 10);
-ok(flows0.drewno?.outPerTurn === 20, 'gracz oddaje 2 pakiety × 10 = 20 drewna');
+// R-DYP-PAKIET-USUN (2026-08-08, Maciej): pakietyPerTura to sztuki/turę wprost —
+// bez mnożenia przez pakiet_wielkosc (usunięty 3. parametr funkcji).
+const flows0 = empireDiploResourceFlowPerTurn([dealOut, dealIn], 0);
+ok(flows0.drewno?.outPerTurn === 2, 'gracz oddaje 2 szt./turę drewna');
 ok((flows0.drewno?.inPerTurn ?? 0) === 0, 'brak przychodu drewna');
-ok(flows0.kamien?.inPerTurn === 10, 'gracz dostaje 1 pakiet × 10 = 10 kamienia');
+ok(flows0.kamien?.inPerTurn === 1, 'gracz dostaje 1 szt./turę kamienia');
 ok((flows0.kamien?.outPerTurn ?? 0) === 0, 'brak wychodzącego kamienia');
 
-const flows1 = empireDiploResourceFlowPerTurn([dealOut], 1, 10);
-ok(flows1.drewno?.inPerTurn === 20, 'AI 1 dostaje drewno od gracza');
+const flows1 = empireDiploResourceFlowPerTurn([dealOut], 1);
+ok(flows1.drewno?.inPerTurn === 2, 'AI 1 dostaje drewno od gracza');
 ok((flows1.drewno?.outPerTurn ?? 0) === 0, 'AI 1 nie oddaje drewna');
 
-const empty = empireDiploResourceFlowPerTurn([], 0, 10);
+const empty = empireDiploResourceFlowPerTurn([], 0);
 ok(Object.keys(empty).length === 0, 'brak dealów → pusty obiekt');
 
 console.log(`\nempire-diplo-resource-flow: ${pass} pass, ${fail} fail`);
