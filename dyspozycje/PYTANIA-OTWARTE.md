@@ -2365,14 +2365,42 @@ przypadkiem `combatPowerFullDisplayDefFor`). `mur-paradoks-test.cjs` 24/24 (był
 `P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA` — analogiczna, symetryczna luka w NOWEJ
 `combatPowerFullDisplayDefFor` (kod dodany wczoraj, jeszcze nigdy nie miał żadnej bramki).
 
-## P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA) · STATUS: **OTWARTE — niepilne**
+## P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA) · STATUS: **ZAMKNIĘTE 2026-08-09**
 Dowód mutacyjny (M2, Evaluator): wyzerowanie bonusu struktury/muru w `combatPowerFullDisplayDefFor`
 (nowa funkcja z `R-MOC-TABLICZKA-VS-CIVPOWER-Q1`, karmi tabliczkę nad żetonem) zostawia
 `mur-paradoks-test.cjs` i `city-defense-terrain-gate-test.cjs` w 100% zielone — ta sama klasa
 luki co dziś naprawiona dla `effectiveDefenderM`, ale w kodzie dodanym dopiero wczoraj, więc
-nigdy nie miała żadnej bramki. Naprawa: analogiczna asercja źródłowa (regex) przypinająca linię
-`combinedDefPct` w ciele `combatPowerFullDisplayDefFor`, wzorem tej dla `effectiveDefenderM`.
+nigdy nie miała żadnej bramki.
+
+**ZAMKNIĘTE (2026-08-09):** analogiczna asercja źródłowa (regex zakotwiczony na unikalnej,
+jednoparametrowej sygnaturze `function combatPowerFullDisplayDefFor(u: RuntimeUnit)` — odróżnienie
+od 6-parametrowej `effectiveDefenderM` nie wymaga nawet odróżniania treści, sama nazwa+sygnatura
+już rozstrzyga) przypinająca linię `combinedDefPct` w ciele `combatPowerFullDisplayDefFor`, plus
+asercje że skalowanie dotyczy WYŁĄCZNIE `meleeDefence`/`armor`/`health`, NIE pól Ataku. Evaluator
+PASS-WITH-NOTES, własny dowód mutacyjny (6 wariantów: zerowanie bonusu w obu funkcjach osobno —
+złapane, brak crosstalku między nimi w żadną stronę; próba przycięcia regexu wstrzykniętym `}` —
+manifestuje się na czerwono, nigdy jako cichy PASS). `mur-paradoks-test.cjs` 28/28 (było 24/24),
+`city-defense-terrain-gate-test.cjs` 34/34 (bez zmian), `logic-test.cjs` 213/213, `combat-test.cjs`
+6/6, `tsc` 0 błędów.
+
+**Nota Evaluatora (niepilna, nie blokuje):** asercja „brak skalowania pól Ataku" sprawdza tylko
+BRAK literału `<pole>: scaleField` w dopasowanym tekście — Evaluator dowiódł mutacyjnie że
+skalowanie Ataku przez INNY helper (`scaleAtk`) albo inline zostaje niewykryte (28/28 zielone
+mimo wstrzykniętego błędu). Ta sama forma słabości jest już konwencją pliku (pre-istniejące
+asercje negatywne dla `combatPowerScaledDefFor`/`sumArmyMForOwnerEffective`), nie regresja.
+Rekomendacja Evaluatora na przyszłość: zamienić czarną listę helperów na białą listę dozwolonych
+kluczy w bloku `return` — zarejestrowane jako `P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA`, bardzo
+niepilne (dług testowy o niskim ryzyku, nie luka w realnej logice gry).
 **Kotwice:** `gra/src/main.ts` (`combatPowerFullDisplayDefFor`), `gra/tools/mur-paradoks-test.cjs`.
+**Model:** Sonnet 5.
+
+## P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA (2026-08-09, nota Evaluatora P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA) · STATUS: **OTWARTE — bardzo niepilne, dług testowy**
+`mur-paradoks-test.cjs` sprawdza „brak skalowania pól Ataku" przez czarną listę nazw helperów
+(`scaleField`) zamiast białej listy dozwolonych kluczy w bloku `return`. Konwencja całego pliku
+(dotyczy też starszych asercji dla `combatPowerScaledDefFor`/`sumArmyMForOwnerEffective`), nie
+coś nowego. Evaluator dowiódł mutacyjnie że nowy helper o innej nazwie albo inline skalowanie
+przechodzi niewykryte. Naprawa: przepisać na białą listę kluczy zamiast czarnej listy nazw.
+**Kotwice:** `gra/tools/mur-paradoks-test.cjs`.
 **Model:** Sonnet 5.
 
 ## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **ZASTĄPIONE — `R-MOC-TABLICZKA-VS-CIVPOWER-Q1` (2026-08-09)**

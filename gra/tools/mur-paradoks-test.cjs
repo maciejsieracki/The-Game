@@ -65,7 +65,21 @@
  *          zielonym). Literalna asercja zrodlowa pinuje formule
  *          `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100`
  *          w galezi isCity produkcyjnej effectiveDefenderM, i ze stosuje sie
- *          ona WYLACZNIE do Obrony (terrAdjDefense), nigdy do Ataku obroncy.
+ *          ona WYLACZNIE do Obrony (terrAdjDefense), nigdy do Ataku obroncy;
+ *      (g) P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (Evaluator, dowod mutacyjny
+ *          2026-08-09, znaleziona przy zamykaniu (f) powyzej): SIOSTRZANA luka
+ *          w main.ts::combatPowerFullDisplayDefFor (funkcja PODGLADU tabliczki,
+ *          bez efektow ubocznych na bitwe) -- ta sama tekstowo linia
+ *          `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100` istnieje
+ *          TAKZE tutaj (patrz komentarz nad funkcja w main.ts), ale zaden test
+ *          jej nie pinowal zrodlowo -- dowod mutacyjny: wyzerowanie bonusu
+ *          struktury w combatPowerFullDisplayDefFor zostawialo caly ten plik
+ *          zielonym (sekcje 1-4 wyzej licza wlasna reimplementacje, nie
+ *          importuja main.ts). Literalna asercja zrodlowa nizej pinuje formule
+ *          W CIELE combatPowerFullDisplayDefFor -- odrebnym regexem od (f),
+ *          rozrozniona PO NAZWIE FUNKCJI (jednoznaczna, main.ts ma tylko jedna
+ *          funkcje o tej nazwie) tak samo jak combatPowerScaledDefFor wyzej --
+ *          zeby nie zlapac przypadkiem tej samej linii w effectiveDefenderM.
  *
  * Usage (z gra/): node tools/mur-paradoks-test.cjs
  */
@@ -406,6 +420,41 @@ if (effectiveDefenderMMatch) {
     /terrAdjAttack = split\.attack;/.test(body),
     'effectiveDefenderM() (galaz isCity) NIE dolicza combinedDefPct do Ataku obroncy (terrAdjAttack = split.attack, bez zmian) -- ' +
       'mur/teren "nie chroni" skladowej ofensywnej obroncy w obronie miasta',
+  );
+}
+
+// P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (Evaluator, dowod mutacyjny
+// 2026-08-09): SIOSTRZANA funkcja main.ts::combatPowerFullDisplayDefFor (tab-
+// liczka/tooltip PODGLADU, bez efektow ubocznych na bitwe) liczy TA SAMA
+// tekstowo linie `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100`
+// co effectiveDefenderM wyzej, ale zaden test jej nie pinowal zrodlowo --
+// wyzerowanie bonusu struktury TUTAJ zostawialo caly ten plik zielonym (sekcje
+// 1-4 licza wlasna reimplementacje w JS, nie main.ts). Regex ponizej rozroznia
+// sie od bloku effectiveDefenderM wylacznie PO NAZWIE FUNKCJI w sygnaturze
+// (main.ts ma dokladnie jedna funkcje o kazdej z tych nazw) -- ten sam wzorzec
+// jednoznacznosci co juz uzyty dla combatPowerScaledDefFor wyzej w tym pliku.
+const combatPowerFullDisplayDefForMatch = mainTsSrc.match(
+  /function combatPowerFullDisplayDefFor\(u: RuntimeUnit\): Record<string, unknown> \{([\s\S]*?)\n {4}\}/,
+);
+assert(!!combatPowerFullDisplayDefForMatch, 'combatPowerFullDisplayDefFor() znaleziona w main.ts (funkcja PODGLADU tabliczki)');
+if (combatPowerFullDisplayDefForMatch) {
+  const body = combatPowerFullDisplayDefForMatch[1];
+  assert(
+    /const combinedDefPct = structBonusPct \+ \(cityTerrMult - 1\) \* 100;/.test(body),
+    'combatPowerFullDisplayDefFor() liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 ' +
+      '(ta sama ADDYTYWNA formula co effectiveDefenderM, galaz isCity) -- lapie regresje/wyzerowanie bonusu struktury w PODGLADZIE tabliczki, ' +
+      'ktorej sekcje 1-4 wyzej NIE lapia (wlasna reimplementacja w JS)',
+  );
+  assert(
+    /meleeDefence: scaleField\(rest\.meleeDefence\),/.test(body) &&
+      /armor: scaleField\(rest\.armor\),/.test(body) &&
+      /health: scaleField\(rest\.health\),/.test(body),
+    'combatPowerFullDisplayDefFor() stosuje mult (1 + combinedDefPct / 100) na meleeDefence/armor/health -- skladowe Obrony w fieldPower()',
+  );
+  assert(
+    !/meleeAttack: scaleField|weaponDamage: scaleField|piercing: scaleField|chargeBonus: scaleField|missileAttack: scaleField/.test(body),
+    'combatPowerFullDisplayDefFor() NIE skaluje zadnego pola Ataku (meleeAttack/weaponDamage/piercing/chargeBonus/missileAttack) -- ' +
+      'mur/struktura "nie chroni" skladowej ofensywnej, ta sama zasada co effectiveDefenderM',
   );
 }
 
