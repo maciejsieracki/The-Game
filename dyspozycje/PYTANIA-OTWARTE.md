@@ -4589,3 +4589,8 @@ nie naprawa błędu — wymaga pełnej formy ABC przed kodowaniem (wpływ na bal
 respektować — parytet gracz/AI). Do zrobienia: rozpoznanie ile cywilizacji ma dziś przypisane
 cuda per epoka (czy każda ma dokładnie jeden, czy są luki), jak dziś działa mechanizm awansu epoki,
 zanim przedstawię ABC.
+
+## R-KARTA-JEDNOSTKI-STRZALKI-CYKL — SCALONE `02a5e095` (2026-08-09)
+
+Dwukrotnie zweryfikowane, martwy kod `isArmyStack`/`headLabel:'Armia'` domknięty. Bramki: tsc 0 ·
+logic-test 213/213 · nowy test 20/20 · unit-context-card-test 29/29 bez regresji.
