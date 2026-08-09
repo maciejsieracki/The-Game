@@ -6469,3 +6469,42 @@ funkcja jest domknięciem w `boot()`, niebehawioralnie łatwo testowalna bez wi�
 
 Dispatch runda 4, wąska, w pełni określona: wyciągnięcie `shouldExcludeUnitReward` + tabela prawdy
 + 3 piny.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — rozbudowana mechanika kontestowana (Maciej, 2026-08-09)
+
+**Cytat pełny:** „to wymagałoby zmiany że port i strażnice można budować w dowolnym miejscu pod
+warunkiem że to nie jest już teren innej cywilizacji. W drugą stronę to tak nie powinno działać.
+fort czy strażnica nie blokuje terenu i inne cywilizacje mogą tam coś wybudować — to tylko
+zabezpiecza dla nas miejsce że możemy tam wybudować miasto, ale jeżeli inna cywilizacja wcześniej
+postawi swój fort albo po prostu będzie w zasięgu innych miast możliwość budowania tam miasta, to
+będzie w stanie to wybudować, a nasz fort będzie bezużyteczny. A nawet więcej — po wybudowaniu
+miasta przez inną cywilizację wokół tego fortu przejmuje na swoją użyteczność cały fort. Chyba że
+są tam jakieś nasze jednostki, to nasze jednostki wtedy z tego fortu muszą być usunięte. Sprawdź,
+czy to jest logiczne i czy możemy coś takiego wprowadzić."
+
+**Rozbicie na reguły (do oceny przez turniej ABC, "Port" w tym kontekście = literówka/uproszczenie,
+temat dotyczy Fortu/Strażnicy — Port jako osobny budynek jest już w grze, patrz osobny wątek):**
+1. Budowa dozwolona WSZĘDZIE poza terenem należącym już do INNEJ cywilizacji (odwrócenie dzisiejszego
+   `inPlayerTerritory` na coś bliższego `!terytoriumObcego`).
+2. Fort/Strażnica NIE blokuje terenu dla innych — to "miękka rezerwacja", nie wyłączność.
+3. Kontestacja: jeśli inna cywilizacja skolonizuje/rozszerzy terytorium (przez własne miasto LUB
+   własny fort) na ten sam heks WCZEŚNIEJ/skuteczniej, nasz fort staje się bezużyteczny dla nas.
+4. Przejęcie: gdy obca cywilizacja założy miasto, które swoim zasięgiem obejmuje nasz fort, PRZEJMUJE
+   go na swoją użyteczność (nie niszczy, nie neutralizuje — realnie zmienia "właściciela" efektu).
+5. Ewakuacja: jeśli w forcie stacjonowały nasze jednostki w momencie przejęcia, muszą zostać z niego
+   usunięte (analogia do istniejącej logiki wymuszonego wycofania - patrz P-ARMIA-ROZPAD tej sesji).
+
+Moja wstępna ocena logiczności (do zweryfikowania przez turniej): reguły 1-3 są spójne i tworzą
+sensowną mechanikę "wyścigu o pogranicze" (fort jako słaba, tymczasowa opcja, prawdziwe miasto jako
+mocna, trwała) — dobrze komponuje się z resztą decyzji tej sesji (parytet gracz/AI, "zwarta grupa").
+Reguła 4 (przejęcie NA WŁASNOŚĆ obcej cywilizacji, nie zniszczenie) wymaga precyzyjnej definicji:
+co dokładnie "przejęcie" oznacza technicznie (czy fort dosłownie zmienia ownerId i dalej działa,
+tylko teraz dla przejmującego? czy tylko przestaje działać dla nas, a przejmujący dostaje NOWY,
+własny węzeł terytorium niezależnie od tego, czy "nasz" fort tam nadal fizycznie stoi?). Reguła 5
+(ewakuacja) jest spójna z istniejącym mechanizmem kary za obcą jednostkę na cudzym terenie
+(border-march), więc naturalna.
+
+Dispatch turnieju ABC (2 niezależnych Proponentów + Sędzia, `C-018`) w toku dla całego tematu,
+uwzględniając tę rozbudowaną mechanikę.
