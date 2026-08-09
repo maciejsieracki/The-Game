@@ -3000,7 +3000,7 @@ głównym drzewie). Evaluator dodał notatkę: **wymaga playtestu** (długa nazw
 kolejce, sprawdzić wielokropek i trafialność ↑/↓/✕ za pierwszym kliknięciem) — to zmiana
 czysto wizualna, w repo nie ma harnessu DOM/CSS do zautomatyzowania testu.
 
-## R-PORTRET-PRODIKONA-DROPPED-CALLBACK (2026-08-08, znalezisko Operatora przy okazji BUG-IKONA-KULTURY-PLACEHOLDER) · STATUS: **OTWARTE — zarejestrowane, nie naprawione (świadomie, poza zakresem tamtego zlecenia)**
+## R-PORTRET-PRODIKONA-DROPPED-CALLBACK (2026-08-08, znalezisko Operatora przy okazji BUG-IKONA-KULTURY-PLACEHOLDER) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 Operator naprawiający `BUG-IKONA-KULTURY-PLACEHOLDER` znalazł identyczny wzorzec błędu
 (`if (cached === 'loading') return;` gubi callback zamiast go kolejkować) w dwóch innych
 miejscach tego samego pliku: `requestLeaderPortraitImage` i `requestProdIconImage`
@@ -3012,6 +3012,30 @@ zgodnie z C-025 (zakres tamtego zlecenia = tylko 3 zgłoszone bugi). Do naprawy:
 wzorzec kolejkowania callbacków jak w naprawie `BUG-IKONA-KULTURY-PLACEHOLDER`.
 **Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestLeaderPortraitImage`,
 `requestProdIconImage`).
+**Model:** Opus 5 (render/**).
+
+**NAPRAWIONE (2026-08-09):** Wzorzec kolejkowania z `requestCivSigilImage` (już 3-krotnie
+zweryfikowany) powielony 1:1 na obie funkcje — własna mapa kolejek per zasób, helper
+`queue*Callback` dopisujący (nie nadpisujący), `cached==='loading'` → kolejkuj zamiast `return`,
+callback pierwszego zamawiającego też trafia do kolejki przed `loadImageInto`. Realny (nie
+teoretyczny) wyścig: `_syncStatChip` buduje pigułkę osobno per miasto, więc dwa miasta tej samej
+cywilizacji/epoki mogą zamówić ten sam portret w jednej klatce. Evaluator: PASS-WITH-NOTES,
+własny dowód mutacyjny (4 warianty wstrzyknięcia regresji, wszystkie złapane), własna sonda
+5 miast jednocześnie + przewiązanie w środku serii (kolejka nie ograniczona do pary).
+`city-map-badge-test.cjs` 62/62 (baza sprzed naprawy: **49/49** — poprawka liczby z raportu
+Operatora, tam błędnie „47", zweryfikowane niezależnie przez Evaluatora), `tsc` 0 błędów.
+**Follow-up zarejestrowany osobno:** `P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC` — trzy niezależne
+kopie tego samego wzorca współbieżności w jednym pliku (sygnet, portret, ikona produkcji),
+świadomie nieuogólnione (C-025, zakres tego zlecenia), do rozważenia przy czwartej kopii.
+
+## P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC (2026-08-09, nota Evaluatora R-PORTRET-PRODIKONA-DROPPED-CALLBACK) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
+`gra/src/render/cityMapStatChip.ts` ma dziś TRZY niezależne, strukturalnie identyczne kopie
+tego samego wzorca kolejkowania callbacków przy równoległych żądaniach obrazka (sygnet
+cywilizacji, portret władcy, ikona produkcji) — każda naprawiona osobno, w osobnym zleceniu,
+w innym dniu. Evaluator: „ten bug istniał dokładnie dlatego, że naprawiono jedną kopię, a dwie
+zapomniano". Do rozważenia: wspólny helper zamiast czwartej kopii przy następnym takim zasobie.
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestCivSigilImage`,
+`requestLeaderPortraitImage`, `requestProdIconImage`).
 **Model:** Opus 5 (render/**).
 
 ## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja

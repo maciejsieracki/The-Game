@@ -110,9 +110,25 @@ const civSigilPendingById = new Map<string, Array<(img: HTMLImageElement) => voi
 
 let leaderPortraitUrlFn: ((civIconId: string, era: number) => string | null) | null = null;
 const leaderPortraitImageByKey = new Map<string, HTMLImageElement | 'loading'>();
+/**
+ * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejka `onReady` dla portretu, który jest w locie.
+ * Ten sam mechanizm co `civSigilPendingById`. Bez niej drugi (i każdy kolejny) zamawiający ten
+ * sam portret gubił callback: `_syncStatChip` (render/cities.ts) tworzy plakietkę osobno dla
+ * KAŻDEGO miasta, więc dwa miasta tej samej cywilizacji i epoki zamawiają ten sam portret w tej
+ * samej klatce. Przegrany wyścigu zostawał na fallbacku medalionu (sygnet kultury zamiast
+ * portretu władcy) aż do najbliższej zmiany klucza tekstury (hover / populacja / epoka).
+ */
+const leaderPortraitPendingByKey = new Map<string, Array<(img: HTMLImageElement) => void>>();
 
 let prodIconSvgFn: ((kind: ProductionKind, id: string) => string) | null = null;
 const prodIconImageByKey = new Map<string, HTMLImageElement | 'loading'>();
+/**
+ * R-PORTRET-PRODIKONA-DROPPED-CALLBACK — kolejka `onReady` dla ikony produkcji w locie.
+ * Ten sam mechanizm co wyżej: dwa miasta produkujące TO SAMO (np. dwie osady stawiające
+ * koszary) zamawiają tę samą ikonę w jednej klatce, a przegrany wyścigu tracił callback
+ * i jego pigułka zostawała BEZ glifu produkcji do najbliższej zmiany klucza tekstury.
+ */
+const prodIconPendingByKey = new Map<string, Array<(img: HTMLImageElement) => void>>();
 
 /**
  * Wstrzykuje SVG sygnetu cywilizacji (main.ts → civIconSvg).
@@ -137,6 +153,10 @@ export function setCityMapBadgeLeaderPortrait(
 ): void {
   leaderPortraitUrlFn = fn;
   leaderPortraitImageByKey.clear();
+  // UWAGA: `leaderPortraitPendingByKey` celowo NIE jest czyszczone — z tego samego powodu co
+  // kolejka sygnetu wyżej. Ta funkcja leci z `wireUnitRendererRingStance()` (9 wywołań, m.in.
+  // wypowiedzenie wojny), a wyczyszczenie kolejki zgubiłoby callbacki żądań w locie i medalion
+  // zostałby bez portretu NA STAŁE.
 }
 
 /**
@@ -146,6 +166,7 @@ export function setCityMapBadgeLeaderPortrait(
 export function setCityMapBadgeProdIcon(fn: (kind: ProductionKind, id: string) => string): void {
   prodIconSvgFn = fn;
   prodIconImageByKey.clear();
+  // UWAGA: `prodIconPendingByKey` celowo NIE jest czyszczone — patrz komentarz przy sygnecie.
 }
 
 const CIV_INITIALS: Record<string, string> = {
@@ -421,6 +442,16 @@ function leaderPortraitCacheKey(civIconId: string, era: number): string {
   return `${civSigilCacheKey(civIconId)}:${e}`;
 }
 
+/** Dopisuje callback do kolejki oczekujących na portret o danym kluczu (nigdy nie nadpisuje). */
+function queueLeaderPortraitCallback(
+  key: string,
+  onReady: (img: HTMLImageElement) => void,
+): void {
+  const queue = leaderPortraitPendingByKey.get(key);
+  if (queue) queue.push(onReady);
+  else leaderPortraitPendingByKey.set(key, [onReady]);
+}
+
 function requestLeaderPortraitImage(
   civIconId: string,
   era: number,
@@ -433,18 +464,37 @@ function requestLeaderPortraitImage(
     onReady(cached);
     return;
   }
-  if (cached === 'loading') return;
+  // R-PORTRET-PRODIKONA-DROPPED-CALLBACK: żądanie w locie → dopisz callback do kolejki
+  // zamiast go zgubić (wzorzec 1:1 z `requestCivSigilImage`).
+  if (cached === 'loading') {
+    queueLeaderPortraitCallback(key, onReady);
+    return;
+  }
   const url = leaderPortraitUrlFn(civIconId, era);
   if (!url) return;
   leaderPortraitImageByKey.set(key, 'loading');
+  // Dopisanie (nie nadpisanie) jest tu istotne: `setCityMapBadgeLeaderPortrait` czyści
+  // `leaderPortraitImageByKey` przy każdym przewiązaniu, więc znacznik 'loading' może zniknąć,
+  // gdy poprzednie ładowanie wciąż trwa. Kolejka przeżywa taki reset i zostaje domknięta
+  // przez to ładowanie, które skończy się pierwsze.
+  queueLeaderPortraitCallback(key, onReady);
   loadImageInto(url, (img) => {
     leaderPortraitImageByKey.set(key, img);
-    onReady(img);
+    const queue = leaderPortraitPendingByKey.get(key) ?? [];
+    leaderPortraitPendingByKey.delete(key);
+    for (const cb of queue) cb(img);
   });
 }
 
 function prodIconCacheKey(kind: ProductionKind, id: string): string {
   return `${kind}:${(id || '').trim()}`;
+}
+
+/** Dopisuje callback do kolejki oczekujących na ikonę produkcji (nigdy nie nadpisuje). */
+function queueProdIconCallback(key: string, onReady: (img: HTMLImageElement) => void): void {
+  const queue = prodIconPendingByKey.get(key);
+  if (queue) queue.push(onReady);
+  else prodIconPendingByKey.set(key, [onReady]);
 }
 
 function requestProdIconImage(
@@ -459,14 +509,24 @@ function requestProdIconImage(
     onReady(cached);
     return;
   }
-  if (cached === 'loading') return;
+  // R-PORTRET-PRODIKONA-DROPPED-CALLBACK: żądanie w locie → dopisz callback do kolejki
+  // zamiast go zgubić (wzorzec 1:1 z `requestCivSigilImage`).
+  if (cached === 'loading') {
+    queueProdIconCallback(key, onReady);
+    return;
+  }
   const raw = prodIconSvgFn(kind, id);
   const svg = prepareSvgForCanvas(raw, '#e8d88a', 1.2);
   if (!svg) return;
   prodIconImageByKey.set(key, 'loading');
+  // Dopisanie (nie nadpisanie): `setCityMapBadgeProdIcon` czyści `prodIconImageByKey` przy
+  // każdym przewiązaniu, więc znacznik 'loading' może zniknąć w trakcie ładowania.
+  queueProdIconCallback(key, onReady);
   loadImageInto(svgToDataUri(svg), (img) => {
     prodIconImageByKey.set(key, img);
-    onReady(img);
+    const queue = prodIconPendingByKey.get(key) ?? [];
+    prodIconPendingByKey.delete(key);
+    for (const cb of queue) cb(img);
   });
 }
 

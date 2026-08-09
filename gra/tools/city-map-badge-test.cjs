@@ -19,6 +19,8 @@ export {
   drawCityMapBadgeCanvas,
   makeCityMapBadgeSprite,
   setCityMapBadgeCivSigil,
+  setCityMapBadgeLeaderPortrait,
+  setCityMapBadgeProdIcon,
 } from '../src/render/cityMapStatChip';
 `, 'utf8');
 
@@ -46,7 +48,11 @@ function makeStubCtx(canvas) {
     save() {}, restore() {}, beginPath() {}, moveTo() {}, lineTo() {},
     quadraticCurveTo() {}, closePath() {}, fill() {}, stroke() {}, clip() {},
     arc() {}, clearRect() {},
-    drawImage() { canvas._imageCount++; },
+    // `_drawnSrcs` (a nie sam licznik) jest tu konieczne: przy współdzielonych żądaniach
+    // plakietka dostaje przerysowanie także od SYGNETU, więc `_imageCount` rośnie nawet gdy
+    // callback portretu / ikony produkcji zginął. Bez rozróżnienia ŹRÓDŁA obrazka asercja
+    // przechodziłaby niezależnie od tego, czy naprawa jest obecna.
+    drawImage(img) { canvas._imageCount++; canvas._drawnSrcs.push((img && img._src) || ''); },
     createLinearGradient: () => ({ addColorStop() {} }),
     measureText: (s) => ({ width: String(s).length * 9 }),
     fillText(s) { canvas._texts.push(String(s)); },
@@ -54,7 +60,10 @@ function makeStubCtx(canvas) {
   };
 }
 function makeStubCanvas() {
-  const c = { width: 300, height: 150, _imageCount: 0, _texts: [], _ctx: null, nodeName: 'CANVAS' };
+  const c = {
+    width: 300, height: 150, _imageCount: 0, _texts: [], _drawnSrcs: [],
+    _ctx: null, nodeName: 'CANVAS',
+  };
   c.getContext = () => (c._ctx || (c._ctx = makeStubCtx(c)));
   stubCanvases.push(c);
   return c;
@@ -65,11 +74,13 @@ global.self = global;
 let pendingImageLoads = [];
 let deferImageLoads = false;
 global.Image = class {
-  constructor() { this.width = 64; this.height = 64; }
-  set src(_v) {
+  constructor() { this.width = 64; this.height = 64; this._src = ''; }
+  set src(v) {
+    this._src = String(v);
     const fire = () => { if (this.onload) this.onload(); };
     if (deferImageLoads) pendingImageLoads.push(fire); else fire();
   }
+  get src() { return this._src; }
 };
 global.HTMLImageElement = global.Image;
 global.btoa = (s) => Buffer.from(s, 'binary').toString('base64');
@@ -319,6 +330,130 @@ assert(
   canvasRaceB._texts.length > 0 && !canvasRaceB._texts.includes('◆'),
   'przeplot A→clear→B: plakietka B faktycznie przerysowana i BEZ rombu',
 );
+// --- R-PORTRET-PRODIKONA-DROPPED-CALLBACK ----------------------------------------
+// Ten sam wzorzec błędu co wyżej, w dwóch pozostałych funkcjach pliku:
+// `requestLeaderPortraitImage` i `requestProdIconImage` robiły `if (cached === 'loading') return;`,
+// czyli gubiły callback drugiego zamawiającego zamiast go kolejkować.
+// Realny zbieg: `_syncStatChip` (render/cities.ts) buduje plakietkę osobno dla KAŻDEGO miasta,
+// więc dwa miasta tej samej cywilizacji (ten sam portret) albo produkujące to samo (ta sama
+// ikona) trafiają na siebie w jednej klatce.
+//
+// UWAGA METODYCZNA: obie plakietki zamawiają też WSPÓLNY SYGNET, którego kolejka już działa —
+// więc przegrany wyścigu dostaje przerysowanie tak czy inaczej i `_imageCount` rośnie nawet
+// z cofniętą naprawą. Dlatego asercje niżej sprawdzają, KTÓRY obrazek trafił na kanwę
+// (`_drawnSrcs`), a nie ile ich było.
+const SIGIL_MARK = 'SIGIL-MARK';
+function decodeDrawnSrc(src) {
+  const prefix = 'data:image/svg+xml;charset=utf-8,';
+  if (typeof src === 'string' && src.startsWith(prefix)) {
+    try { return decodeURIComponent(src.slice(prefix.length)); } catch (_e) { return src; }
+  }
+  return String(src || '');
+}
+function drewSrcContaining(canvas, needle) {
+  return canvas._drawnSrcs.some((s) => decodeDrawnSrc(s).includes(needle));
+}
+
+// (1) PORTRET WŁADCY — dwa miasta tej samej cywilizacji i epoki (ten sam klucz portretu).
+M.setCityMapBadgeCivSigil(
+  () => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="${SIGIL_MARK}"/></svg>`,
+);
+M.setCityMapBadgeLeaderPortrait((civId, era) => `portret://${civId}/${era}`);
+deferImageLoads = true;
+pendingImageLoads = [];
+const texCachePortret = new Map();
+const majorBase = {
+  population: 5, defenseTier: 1, civIconId: 'rzym', isCityState: false, era: 2,
+};
+const spritePortA = M.makeCityMapBadgeSprite({ ...majorBase, cityName: 'Rzym' }, texCachePortret);
+const spritePortB = M.makeCityMapBadgeSprite({ ...majorBase, cityName: 'Ostia' }, texCachePortret);
+const canvasPortA = spritePortA.material.map.image;
+const canvasPortB = spritePortB.material.map.image;
+assert(canvasPortA !== canvasPortB, 'portret: dwa miasta = dwie różne plakietki');
+assert(
+  pendingImageLoads.length === 2,
+  'portret: wspólny sygnet + wspólny portret ładowane po razie (drugi zamawiający tylko czeka)',
+);
+canvasPortA._drawnSrcs.length = 0;
+canvasPortB._drawnSrcs.length = 0;
+pendingImageLoads.forEach((fire) => fire());
+assert(
+  drewSrcContaining(canvasPortA, 'portret://rzym/2'),
+  'portret: pierwszy zamawiający dostaje portret władcy na medalionie',
+);
+assert(
+  drewSrcContaining(canvasPortB, SIGIL_MARK),
+  'portret: druga plakietka W OGÓLE się przerysowała (kontrola — inaczej asercja niżej nic nie znaczy)',
+);
+assert(
+  drewSrcContaining(canvasPortB, 'portret://rzym/2'),
+  'portret: DRUGI zamawiający (przegrał wyścig) też dostaje portret — nie zostaje na fallbacku sygnetu',
+);
+
+// (2) IKONA PRODUKCJI — dwa miasta produkujące TO SAMO (ten sam klucz ikony).
+M.setCityMapBadgeProdIcon(
+  (kind, id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="PROD-${kind}-${id}"/></svg>`,
+);
+deferImageLoads = true;
+pendingImageLoads = [];
+const texCacheProd = new Map();
+const prodBase = {
+  population: 4, defenseTier: 0, civIconId: 'grecy', isCityState: true,
+  prodActive: true, prodKind: 'budynek', prodId: 'koszary',
+};
+const spriteProdA = M.makeCityMapBadgeSprite({ ...prodBase, cityName: 'Ateny' }, texCacheProd);
+const spriteProdB = M.makeCityMapBadgeSprite({ ...prodBase, cityName: 'Korynt' }, texCacheProd);
+const canvasProdA = spriteProdA.material.map.image;
+const canvasProdB = spriteProdB.material.map.image;
+assert(canvasProdA !== canvasProdB, 'ikona produkcji: dwa miasta = dwie różne plakietki');
+assert(
+  pendingImageLoads.length === 2,
+  'ikona produkcji: wspólny sygnet + wspólna ikona ładowane po razie',
+);
+canvasProdA._drawnSrcs.length = 0;
+canvasProdB._drawnSrcs.length = 0;
+pendingImageLoads.forEach((fire) => fire());
+assert(
+  drewSrcContaining(canvasProdA, 'PROD-budynek-koszary'),
+  'ikona produkcji: pierwszy zamawiający dostaje glif produkcji',
+);
+assert(
+  drewSrcContaining(canvasProdB, SIGIL_MARK),
+  'ikona produkcji: druga plakietka W OGÓLE się przerysowała (kontrola)',
+);
+assert(
+  drewSrcContaining(canvasProdB, 'PROD-budynek-koszary'),
+  'ikona produkcji: DRUGI zamawiający (przegrał wyścig) też dostaje glif — pigułka nie zostaje bez ikony',
+);
+
+// (3) Przewiązanie w trakcie ładowania (wireUnitRendererRingStance, 9 wywołań w main.ts)
+// NIE MOŻE gubić kolejek portretu ani ikony produkcji — settery czyszczą cache obrazków,
+// więc znacznik 'loading' znika, a żądanie w locie leci dalej.
+deferImageLoads = true;
+pendingImageLoads = [];
+const texCacheRewire = new Map();
+const spriteRewireA = M.makeCityMapBadgeSprite(
+  { ...majorBase, civIconId: 'persja', cityName: 'Persepolis', prodActive: true,
+    prodKind: 'jednostka', prodId: 'Wojownik' },
+  texCacheRewire,
+);
+const canvasRewireA = spriteRewireA.material.map.image;
+assert(pendingImageLoads.length === 3, 'przewiązanie: sygnet + portret + ikona w locie');
+M.setCityMapBadgeLeaderPortrait((civId, era) => `portret://${civId}/${era}`);
+M.setCityMapBadgeProdIcon(
+  (kind, id) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="PROD-${kind}-${id}"/></svg>`,
+);
+canvasRewireA._drawnSrcs.length = 0;
+pendingImageLoads.forEach((fire) => fire());
+assert(
+  drewSrcContaining(canvasRewireA, 'portret://persja/2'),
+  'przewiązanie portretu w trakcie ładowania NIE gubi callbacku',
+);
+assert(
+  drewSrcContaining(canvasRewireA, 'PROD-jednostka-Wojownik'),
+  'przewiązanie ikony produkcji w trakcie ładowania NIE gubi callbacku',
+);
+
 deferImageLoads = false;
 
 console.log(`\n${passed} passed, ${failed} failed`);

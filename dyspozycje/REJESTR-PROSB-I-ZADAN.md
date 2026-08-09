@@ -1228,12 +1228,12 @@ unit-replace 13/13, autobot-smoke 11/11 — wszystko na scalonym drzewie.
 Commit scalenia: `a659f4a1` (main-merge → main, push bez force).
 Model: Sonnet 5 (orkiestrator, wykonanie scalenia po wyraźnej zgodzie Macieja).
 
-## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08) — nowe zgłoszenie z playtestu
+## BUG-ZOOM-ZABLOKOWANY-TRYB-ULEPSZEN (2026-08-08) — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 **Jego słowa:** „podczas budowania w trybie budowania ulepszeń, kiedy wybierzemy już coś,
 co chcemy ulepszać, nie da się przybliżać i oddalać mapy. Czasem to utrudnia stawianie
 ulepszeń." — **NAPRAWIONE**: jeden warunek blokował jednocześnie przeciąganie i zoom;
 rozdzielone na `blockPointerAt`/`blockWheelAt` w `camera.ts`. Evaluator PASS-WITH-NOTES po
-dołożeniu testu regresji (`camera-zoom-block-test.cjs`, 4/4). Czeka na deploy+playtest.
+dołożeniu testu regresji (`camera-zoom-block-test.cjs`, 4/4). ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest.
 
 ## R-AUDYT-ZGLOSZEN-2-DNI (2026-08-08) — pełny audyt zgłoszeń Macieja z ostatnich 2 dni
 **Prośba:** sprawdzić wszystkie błędy zgłoszone przez właściciela w ciągu ostatnich 2 dni,
@@ -1312,7 +1312,7 @@ pojęcie dostępu) — wdrożenie 05.08 poszło za starszą, unieważnioną już
 **Do decyzji Macieja:** czy sekcja „Dostęp — nie magazynowane" w panelu imperium ma wrócić do
 pokazywania `stock/cap` (cofnięcie `331aa180`) czy zostać czysto informacyjna.
 
-## R-HUD-MIASTO-STAN-CYWILIZACJI — NAPRAWIONE, czeka na deploy+playtest
+## R-HUD-MIASTO-STAN-CYWILIZACJI — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 6 chipów nagłówka miasta (Praca/Żywność/Skarbiec/Nauka/Kultura/Religia) pokazuje teraz dużą
 liczbę = agregat cywilizacji z tego samego silnikowego źródła co główny HUD mapy + małą
 liczbę = wkład tego miasta. Evaluator (Opus 5) PASS-WITH-NOTES po jednej rundzie poprawek
@@ -1320,7 +1320,7 @@ liczbę = wkład tego miasta. Evaluator (Opus 5) PASS-WITH-NOTES po jednej rundz
 duża liczba NETTO, mała BRUTTO — nie zsumują się dokładnie. Pełne kotwice w
 `PYTANIA-OTWARTE.md`.
 
-## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE, czeka na deploy+playtest
+## R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Spacja/bęben = tylko jednostki z ruchem, strzałki HUD = wszystkie jednostki — dwie osobne
 kontrolki (decyzja właściciela 2026-08-08). Plus fix efektu ubocznego: cyklowanie po
 „bębnie" nie pomija już pierwszej jednostki na liście. Evaluator PASS-WITH-NOTES po 2
@@ -1349,7 +1349,7 @@ Dwa zgłoszenia z panelu propozycji dyplomacji, zarejestrowane w `PYTANIA-OTWART
 realną propozycję po naszej stronie — nielogiczna kaskada, niezdiagnozowana jeszcze która
 funkcja odpowiada za to sparowanie.
 
-## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08) — dwa powiązane tematy
+## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08) — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Zarejestrowane w `PYTANIA-OTWARTE.md` z pełną tabelą cen surowców (Drewno 1 PN/szt. ... Złoto
 50 PN/szt., `econ-params.json:handel_surowce`) i zlokalizowanym mechanizmem bloku pakietu:
 `diplomacy-proposals.ts:1082` (`treatyBaseFairnessGap`) liczy uczciwość WYŁĄCZNIE dla
@@ -1357,7 +1357,7 @@ pojedynczej umowy w pakiecie (`R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`, świadome), a
 pokazuje zbiorczy dodatni bilans pakietu (+14 PW) sugerując inaczej — niespójność UI vs
 logika akceptacji. Powiązane z już znanym `R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY`.
 
-## BUG-ETYKIETA-MIASTA-ROZMYTA + BUG-IKONA-KULTURY-PLACEHOLDER — NAPRAWIONE, czeka na deploy+playtest
+## BUG-ETYKIETA-MIASTA-ROZMYTA + BUG-IKONA-KULTURY-PLACEHOLDER — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Oba w `gra/src/render/cityMapStatChip.ts`. Rozmycie: canvas renderowany teraz ×`devicePixelRatio`
 (cap ×3), standardowy wzorzec „retina canvas" dla tekstur Three.js. Placeholder: kolejkowanie
 callbacków sygnetu cywilizacji zamiast gubienia ich przy równoległych żądaniach. Evaluator
@@ -1369,7 +1369,7 @@ naprawy świadomie wycofana (użyłaby innej liczby niż panel miasta), prawdziw
 zablokowania (migawka z końca tury vs. panel na żywo) znaleziona i opisana, czeka na decyzję.
 Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
-## R-HANDEL-PAKIETY-USUNAC (2026-08-08) — decyzja właściciela, w realizacji
+## R-HANDEL-PAKIETY-USUNAC (2026-08-08) — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 **Jego słowa:** „zlikwiduj te pakiety, bo to będzie kompletnie niezrozumiałe dla graczy. Po
 prostu podajemy sztuki. Jeden, dziesięć, sto i tak dalej. Żadnych pakietów! Usuń dla
 wszystkich surowców pakiet." Decyzja wprost, nie ABC — usunąć koncepcję „pakiet ×10" z UI
@@ -1392,7 +1392,7 @@ dowodami z kodu (brak gate'u odkrycia, kolor OK, promień terytorium OK nawet dl
 jedyna pozostała hipoteza (remis w `territoryOwnerAt` przy gęstym osadnictwie) wymaga
 diagnozy na żywym zapisie, nie samą lekturą kodu. Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
-## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — NAPRAWIONE, czeka na deploy+playtest
+## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Przyczyna: render (`cityOkolicaOverlay.ts`) pomijał liczby plonów na KAŻDYM heksie z
 „ulepszeniem", w tym na centrum miasta — silnik zawsze ma tam realny plon. Fix: wyjątek dla
 heksu centrum. Evaluator (Opus 5) PASS-WITH-NOTES, `tsc` czyste. Dwie notatki do osobnej
@@ -1406,7 +1406,7 @@ Render czyta tylko ostatnią warstwę ulepszenia heksu, silnik liczy wszystkie �
 wielowarstwowych ulepszeniach na centrum miasta render może zaniżać plon. Niska pilność,
 osobny temat od naprawy powyżej. Pełny opis w `PYTANIA-OTWARTE.md`.
 
-## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — NAPRAWIONE, czeka na deploy+playtest
+## BUG-KOLEJKA-BUDOWY-PRZYCISKI-ROZJECHANE (2026-08-08) — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Fix scommitowany (2 zmiany CSS w `cityPanel.ts`), Evaluator (Opus 5) PASS-WITH-NOTES —
 niezależnie zweryfikowany zakres (dokładnie 2 zmiany), C-026 (enumeracja miejsc użycia `.btn`)
 potwierdzona własnym grepem Evaluatora, nie tylko self-raportem Operatora. `tsc --noEmit`
@@ -1435,18 +1435,18 @@ traktatowych). Decyzje zapisane w `docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`,
 `R-SUROWCE-DOSTEP-ILOSC-Q1.md`, `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2.md`. Kod w realizacji —
 3 subagenty Sonnet 5 równolegle, per C-027.
 
-## R-AI-FOUNDING-THROTTLE-Q1 — NAPRAWIONE, czeka na deploy+playtest
+## R-AI-FOUNDING-THROTTLE-Q1 — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 `AI_FOUNDING_SOURCE_MIN_POP` 2→3. Evaluator PASS-WITH-NOTES — pętla 1↔2 przesuwa się na 2↔3
 (świadome ryzyko z decyzji), nie znika całkowicie. `ai-test.cjs` 274/8 (8 pre-istniejących).
 
-## R-SUROWCE-DOSTEP-ILOSC-Q1 — NAPRAWIONE, czeka na deploy+playtest
+## R-SUROWCE-DOSTEP-ILOSC-Q1 — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Pełne cofnięcie `331aa180`. Wszystkie 13 surowców pokazuje realną ilość, sekcja boolean
 „Dostęp" usunięta wraz z martwym modułem `empire-resource-access.ts`. Tooltip źródła
 nietknięty. Evaluator (Opus 5) PASS-WITH-NOTES — zgłosił martwą gałąź komunikatu „brak
 dostępu" w tooltipie (dziś nieosiągalna) jako osobny, niepilny follow-up. `tsc` czyste,
 13/13.
 
-## R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2 — NAPRAWIONE, czeka na deploy+playtest
+## R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2 — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Bramka uczciwości traktatu (`umowa_szlakow`/`umowa_handlowa`) teraz widzi nadwyżkę siostrzanej
 pozycji w tym samym pakiecie (`packageSiblingGivePn`/`packageSiblingReceivePn`), zgodnie z
 UI „Bilans (Netto)". Naprawiony przy okazji błąd kolejności (snapshot `siblingByTreatyId`
@@ -1458,7 +1458,7 @@ PASS z niezależną reprodukcją. `tsc` czyste, `diplomacy-fairness-gate-package
 Osobno wciąż otwarte: `BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA` (kierunek przychodzący,
 dispatch w toku).
 
-## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE — NAPRAWIONE, czeka na deploy+playtest
+## R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Wymiana technologii filtruje teraz obie strony po `ownerResearchedTechs` responder-a
 (`tradeableTechIdsForSide`) zamiast pokazywać identyczną listę wszystkich zbadanych przez
 oferującego. Evaluator PASS-WITH-NOTES (merge clean, tsc 0 błędów, pełny pakiet dyplomacji
@@ -1466,13 +1466,13 @@ zielony). 3 noty niepilne zarejestrowane osobno w `PYTANIA-OTWARTE.md`
 (`P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU`, `P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`, +
 świadoma konsekwencja ukrywania akcji `'6'`).
 
-## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA — NAPRAWIONE, czeka na deploy+playtest
+## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 `canAccept` dla pakietów przychodzących liczony teraz per-pozycja przez `responderPreview`
 (ta sama funkcja co realne wykonanie), nie z sumy netto PW całego stołu — przycisk „Przyjmij"
 i wykonanie są teraz zgodne z definicji. Evaluator PASS-WITH-NOTES, 28 plików testów dyplomacji
 zielonych. 2 noty niepilne w `PYTANIA-OTWARTE.md`.
 
-## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 — NAPRAWIONE, czeka na deploy+playtest
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Tabliczka nad żetonem = pełna Moc (teren/fortyfikacja/mur/weteran), civ-power = tylko naturalne
 wskaźniki + weteran. Evaluator PASS-WITH-NOTES, 14 plików testów zielonych. Przy okazji
 naprawiony STRICT-PARITY: civ-power AI już nie zawyżony mnożnikiem trudności — **widoczne w
@@ -1495,7 +1495,7 @@ marker stolicy → wdrożony C (`cityMapStatChip.ts`); przyszłe kopalnie → wd
 (`relief-preserving-improvements.ts`); liczby §9 → wdrożone (`2e67219`); brief Design v2 →
 rozstrzygnięte C (`PROFIL-DECYZYJNY-MACIEJ.md`). Szczegóły w `PYTANIA-OTWARTE.md`.
 
-## R-PROPOZYCJA-BRAK-EDYCJI + BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC — NAPRAWIONE, czeka na deploy+playtest
+## R-PROPOZYCJA-BRAK-EDYCJI + BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 3 rundy. Runda 1: worktree stale, niescalalne, zero testów edycji. Runda 2: worktree świeże,
 FAIL za gating „Usuń" na karcie traktatu niezgodny z renderem (PW-check którego render nie ma).
 Runda 3: worktree ZNOWU stale (40 commitów) — naprawione rebase'm w tym samym worktree zamiast
@@ -1504,9 +1504,30 @@ Jednolinijkowa poprawka przy scaleniu (`!= null`→truthy, zgodność z renderem
 Edycja działa dla 5 typów koszyka, kasacja pustej/mirror karty zgodna z decyzją
 `R-PROPOZYCJA-KASACJA-UI-Q1=A`. `diplomacy-basket-edit-test.cjs` 25/25, `tsc` czyste.
 
-## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — NAPRAWIONE, czeka na deploy+playtest
+## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Runda 1: FAIL (worktree stale, `maxPakiety` zamiast `maxQty`, 10× za niska wartość). Runda 2:
 worktree naprawione przed kodowaniem, widoczna odznaka zapasu po stronie „daję", kompaktowy
 format dla dużych wartości. Evaluator PASS-WITH-NOTES, 31 plików testów dyplomacji zielonych.
 Skorygowany przy scaleniu: nieprawdziwy komentarz w kodzie o powodzie wyłączenia strony
 „dostaję" (title/data-max już dziś ujawniają zapas AI bezwarunkowo, to nie był powód).
+
+## R-PORTRET-PRODIKONA-DROPPED-CALLBACK — NAPRAWIONE, czeka na deploy+playtest
+Wzorzec kolejkowania z `requestCivSigilImage` powielony na `requestLeaderPortraitImage`/
+`requestProdIconImage`. Evaluator PASS-WITH-NOTES, własny dowód mutacyjny + sonda 5 miast.
+`city-map-badge-test.cjs` 62/62 (baza 49, nie 47 jak w pierwotnym raporcie). Follow-up
+zarejestrowany: `P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC` (3 kopie tego samego wzorca).
+
+## P-TEST-UPKEEP-R-STAWKI — ZAMKNIĘTE, wpis był nieaktualny (dokumentacja, bez zmian silnika)
+Diagnoza (subagent Sonnet 5, 2026-08-09): stary wpis „49/73, 24 porażek przez ×2 koszty
+R-STAWKI/R-NADMIAR-POOLS" był nieaktualny już od 2026-08-05 — commit `12ecd09d`
+(„test(upkeep): zaktualizuj asercje pod R-STAWKI ×4 i FALA2 ×2", współautor Maciej) już
+wtedy naprawił asercje testu pod obowiązujące mnożniki, tylko nikt nie oznaczył wpisu jako
+zamknięty. Dziś `node tools/upkeep-test.cjs` z `gra/`: **73 passed, 0 failed**. Klasyfikacja:
+test był przestarzały (opcja b), nie bug silnika — mnożniki ×2 budynki (`R_STAWKI_FALA2_MULT`)
+i ×4 jednostki/żywność wojska (`R_STAWKI_FALA1_FALA2_MULT`) w `r-stawki-strojenie.ts` są
+świadomą decyzją Macieja, test już je odzwierciedla. Żadna zmiana silnika. C-026: 22 testy
+ekonomii/utrzymania uruchomione, wszystkie zielone poza 4 pre-istniejącymi i niezwiązanymi
+(`upgrade-budynki-test.cjs`, `unit-stock-cost-test.cjs` — już `P-UNIT-STOCK-COST-TEST-DLUG`,
+`grupy-budynkow-test.cjs`, `budynek-civ-bonus-u17-test.cjs`) — żaden komunikat błędu nie
+wspomina R-STAWKI/×2/×4. `tsc --noEmit` 0 błędów. Jedyna zmiana: `dyspozycje/PYTANIA-OTWARTE.md`
++ `STAN-PRACY-HANDOFF.md` (status zamknięcia).
