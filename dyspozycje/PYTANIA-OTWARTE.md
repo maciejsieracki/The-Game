@@ -4759,6 +4759,27 @@ przeredagowany na „NIE trafia do puli, DOPÓKI kolejka budowy nie jest pusta".
 N5 świadomie pominięte (wymaga decyzji produktowej). Bramki Operatora: tsc 0, logic-test 213/213,
 nowy test 38/38, sąsiedni test 20/20 bez regresji.
 
+**Evaluator (druga runda): PASS-WITH-NOTES, ⛔ N6 BLOKUJĄCA — N1 nadal nie domknięte, szew
+przesunięty o jeden poziom.** N2, N3, N4 potwierdzone POPRAWNE (własna weryfikacja, nie na słowo).
+Evaluator wykonał 7 własnych mutacji (nie tylko powtórzył 2 Operatora) — 3 nowe uciekły:
+- **N6 (blokująca):** mutacja `buildChipDeltaStockHtml(civRate, civStock)` → `buildChipDeltaStockHtml(civRate)`
+  (usunięcie DRUGIEGO argumentu w miejscu WYWOŁANIA wewnątrz `w3CityChip()`) kasuje trzeci element
+  ze WSZYSTKICH 6 chipów, a bateria bramek zostaje w pełni zielona (38/38, tsc 0). AST-owa kontrola
+  sprawdza tylko że wywołanie istnieje i trafia do `return` — NIGDY nie sprawdza jego argumentów.
+  Ta sama klasa błędu co oryginalna N1, tylko przesunięta o jeden poziom (z callera `w3CityChip`
+  na wnętrze `w3CityChip` wołające `buildChipDeltaStockHtml`).
+- **N7 (niepilna):** AST nie sprawdza że 8. argument (`.stock`) odnosi się do TEGO SAMEGO surowca
+  co 7. argument — podmiana na zapas złego surowca (np. chip Nauki pokazujący zapas Pracy)
+  przechodzi niezauważona.
+- **N8 (niepilna):** 7. argument (mała liczba, tempo cywilizacji) w ogóle niestrzeżony przez AST —
+  podmiana na zapas zamiast tempa przechodzi niezauważona.
+- **N9 (niepilna, do rejestru osobno):** `main.ts:21004` przejściowo ustawia `_lastKultura` na
+  wartość TEMPA przed nadpisaniem realnym zapasem w linii 22006 — jeśli faza „MIASTO" rzuci
+  wyjątkiem między tymi liniami, trzeci element Kultury pokaże tempo zamiast zapasu. Pre-istniejące,
+  tylko ścieżka błędu, semantyka Operatora poza tym poprawna.
+Naprawa N6+N7+N8 to ~8 linii w istniejącym bloku AST testu (linie 258-293), bez dotykania kodu
+produkcyjnego. Dispatch trzeciej rundy naprawy, skupionej wyłącznie na wzmocnieniu asercji AST.
+
 ## P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC (2026-08-09, uwaga Macieja przy R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY) · STATUS: **OTWARTE — niepilne, „temat na później" (cytat Macieja)**
 
 Maciej zwrócił uwagę, że trzeba ujednolicić zasady kolorów prezentacji surowców między panelem
