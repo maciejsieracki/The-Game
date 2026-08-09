@@ -4384,3 +4384,17 @@ czytelną-złotą) jest mocniejszym argumentem niż teoria o kolorze emoji.
 (trasy handlowe + pigułki miast, ten sam wzorzec błędu) — Evaluator niezależnie potwierdził.
 Wszystkie bramki Operatora potwierdzone co do liczby: tsc 0 · logic-test 213/213 · nowy test 24/0
 · okolica 46/46 · city-map-badge 62/0 · camera-zoom-block 4/0.
+
+---
+
+## R-DYP-STOL-A-KOREKTA — odtworzone na bezpiecznej bazie, obie noty Evaluatora domknięte (2026-08-09)
+
+Pierwsza próba (worktree na przestarzałej bazie) odrzucona ze względów bezpieczeństwa scalania, nie
+merytorycznych — Evaluator dał PASS-WITH-NOTES na treść. Odtworzone od nowa na aktualnym HEAD +
+domknięte obie noty: (1) martwy tekst „Opcjonalnie dołóż wymianę PW poniżej." usunięty z `case '10'`;
+(2) test wzmocniony — zamiast tautologicznej flagi `isTreatyOnlyFormAction()`, nowa sekcja 21 woła
+**realny** `showTradeBasketModal()` i sprawdza wynikowy markup (brak `cdb-add`/`cdb-chip-typ`, brak
+nagłówków „(opcjonalnie)"), z kontrolami negatywnymi dla akcji 9/13/14. Dowód mutacyjny: cofnięcie
+`TREATY_ONLY_FORM_IDS` do `['15']` → 148/184 (36 czerwonych, po 6 na każdą z 6 przywróconych akcji);
+po naprawie 184/184. Bramki: tsc 0 · logic-test 213/213 · wszystkie 31 `diplomacy*.cjs` exit 0.
+Gotowe do finalnej (krótszej, potwierdzającej) weryfikacji Evaluatora przed scaleniem.
