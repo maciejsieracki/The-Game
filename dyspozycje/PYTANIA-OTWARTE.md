@@ -4798,3 +4798,23 @@ się) i sprawdzić czy przenosi surowce (skarbiec/zapasy) zwycięzcy; (b) sprawd
 ścieżka (albo osobna) obejmuje podbój/zniszczenie miast-państw — czy miasta-państwa w ogóle mają
 własną pulę surowców do przejęcia, czy to inny model niż pełne cywilizacje. Odpowiedzieć faktami
 z kodu, bez zgadywania.
+
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+
+**Cytat Macieja:** „odkłada mi się więcej gliny i drewna niż mam magazyn." Zrzut panelu
+„MAGAZYNOWANE": Drewno **1298/1000** (+114/turę) oznaczone „PEŁNY", Glina **1086/1000** (+76/turę)
+też oznaczone „PEŁNY" — obie wartości PRZEKRACZAJĄ deklarowany limit magazynu (1000), mimo że pasek
+postępu i etykieta „PEŁNY" sugerują, że limit jest respektowany. Ruda żelaza na tym samym zrzucie
+poprawnie pokazuje 0/1000.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć logikę limitu/capu magazynu surowców
+(prawdopodobnie `gra/src/game/**`, szukać „magazyn"/„spichlerz"/cap/limit powiązanego z
+Drewno/Glina — może być inny mechanizm niż dla Żywności/Skarbca, skoro te dwa konkretne surowce
+mają problem a Ruda nie); (b) ustalić czy klamrowanie (`Math.min(x, cap)`) jest w ogóle stosowane
+dla Drewna/Gliny przy dopisywaniu przychodu z budynków/eksploatacji złóż, czy dolicza się produkcję
+bez sprawdzania capu i tylko WYŚWIETLANY pasek/etykieta „PEŁNY" jest liczony osobno (stąd
+rozjazd — realna wartość rośnie bez ograniczeń, tylko UI mylnie pokazuje "PEŁNY" gdy przekroczy
+próg); (c) sprawdzić czy to dotyczy też innych surowców pozamiastowych, czy wyłącznie Drewna/Gliny
+(np. bo mają inny tor akumulacji niż Żywność/Skarbiec/Nauka, które są objęte innym, już
+sprawdzonym kodem zapasu cywilizacji z `R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO`). Zanim cokolwiek
+naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.

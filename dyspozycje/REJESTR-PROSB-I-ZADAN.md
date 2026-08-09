@@ -2036,3 +2036,8 @@ tury. Dispatch Explore (bez kodowania) przed naprawą. Pełna treść w `PYTANIA
 ## P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA — OTWARTE, pytanie faktograficzne (2026-08-09)
 Czy podbój/eliminacja cywilizacji przejmuje jej surowce, i czy to samo dotyczy miast-państw. Czyste
 pytanie, dispatch Explore bez kodowania. Pełna treść w `PYTANIA-OTWARTE.md`.
+
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO — OTWARTE, bug zgłoszony z playtestu (2026-08-09)
+Drewno 1298/1000 i Glina 1086/1000, oba oznaczone „PEŁNY" mimo przekroczenia limitu magazynu —
+Ruda żelaza poprawnie 0/1000. Dispatch Explore (bez kodowania) przed naprawą. Pełna treść w
+`PYTANIA-OTWARTE.md`.
