@@ -4330,3 +4330,25 @@ empire-wide zapas Pracy czy coś innego (np. sumę BIEŻĄCYCH kolejek budowy ws
 jest tym samym co "zapas"). Kultura/Religia — sprawdzić czy silnik w ogóle śledzi ich empire-wide
 zapas, czy tylko tempo. Jeśli dla któregoś surowca nie ma sensownego zapasu — zgłosić, nie
 wymuszać sztucznej liczby.
+
+---
+
+## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09, nota D1 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — realna luka, do decyzji**
+
+Evaluator (Opus 5) przy weryfikacji naprawy `R-DYP-STOL-A-KOREKTA` znalazł osiągalną w grze
+nieszczelność: `SWEETENER_COUNTER_ELIGIBLE` (`gra/src/game/diplomacy-proposals.ts:1936`) obejmuje
+dokładnie przywrócony zestaw treaty-only (nap/sojusz/granice/wasal/pokój) — gdy AI kontruje
+ofertę, `withExtraSweetenerGold` **samo wstrzykuje złoto do koszyka** tej kontroferty. Dalej
+„Edytuj propozycję na stole" otwiera formularz treaty-only **z pozycjami koszyka już w środku**
+(zweryfikowane na żywym renderze: blok „Dołóż do umowy (koszyk PW)" się pojawia), bez UI do
+podejrzenia/edycji/usunięcia tych pozycji — payload i tak leci z `receiveItems`. Traktat
+inicjowany przez GRACZA jest czysty (0 pól), ale kontroferta AI może wprowadzić koszyk tylnymi
+drzwiami. Pytanie do rozstrzygnięcia: czy AI ma w ogóle dokładać złoto-słodzik do traktatów objętych
+rozłączeniem, skoro cel decyzji to właśnie ich rozdzielenie od wymiany.
+
+## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (2026-08-09, nota D2 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — niepilne, kosmetyka komunikatu**
+
+Komunikaty „Brakuje X PW — dopłać" / „Dopłać X PW" (`diplomacyAcceptanceBalance.ts:625,631`,
+`diplomacy-acceptance-points.ts:363-371`) każą graczowi zrobić coś, co w formularzu treaty-only
+jest już niemożliwe (brak pól do dopłaty). Powinny kierować do zrobienia osobnej umowy — to
+dosłownie cel dzisiejszej decyzji o rozłączeniu.
