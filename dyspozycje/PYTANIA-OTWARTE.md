@@ -5273,6 +5273,14 @@ teraz modal pokazuje się od razu i nic nie zostawia po zamknięciu.
 już tylko przez własny test — treść komunikatu istnieje teraz w DWÓCH miejscach (stary string +
 nowy modal), mogą się rozjechać bez wykrycia. Dispatch redo naprawiającego 3 warunki PASS.
 
+**Wszystkie 3 warunki naprawione przez Operatora (worktree `agent-a8af239534cbb3d38`), czeka na
+finalną weryfikację Evaluatora:** asercja 4 (unikalny `cityName: 'Testopolis'` zamiast generycznego
+„miasto"), asercja 14 (czyta źródło modułu, sprawdza brak `setTimeout`), asercje 15-16 (strażnik
+tekstowy wywołania w `main.ts`, wzorem `border-march-wygasanie-test.cjs`). Dowód: wszystkie 3
+odtworzone mutacje z pierwszej rundy Evaluatora teraz czerwienieją (15/16 każda), po przywróceniu
+16/16. Bramki: tsc 0, logic-test 213/213, nowy test 16/16, istniejący `triumph-city-state-test.cjs`
+bez regresji 10/10. Kapitulacja z głodu świadomie nieruszona (poza zakresem).
+
 ---
 
 ## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — rozpoznanie gotowe, wymaga ABC (2026-08-09)
