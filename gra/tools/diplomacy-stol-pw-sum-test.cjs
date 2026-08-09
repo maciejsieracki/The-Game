@@ -72,6 +72,10 @@ function treatySide(offerPn, treatyBase, treatyEffective, mode = 'treaty') {
 }
 
 // R-DYPLO-STOL-PW-SUM: dwa wiersze — traktat 72/80 + koszyk 10/2 → suma 82/82, net 0
+// responderPreview jawnie ustawiony accepted:true na obu (P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN:
+// od naprawy fail-closed, brak responderPreview na pozycji incoming daje canAccept=false, więc
+// ten fixture, testujący ścieżkę "canAccept=true", musi go mieć jawnie ustawionego — zgodnie
+// z realnym main.ts, które ZAWSZE ustawia responderPreview, patrz buildPendingNegotiationRows).
 const treatyRow = {
   id: 'neg-treaty',
   direction: 'incoming',
@@ -79,6 +83,7 @@ const treatyRow = {
   acceptanceMy: treatySide(0, 80, 72),
   acceptanceTheir: treatySide(0, 80, 80),
   canAccept: false,
+  responderPreview: { accepted: true },
 };
 const basketRow = {
   id: 'neg-basket',
@@ -87,6 +92,7 @@ const basketRow = {
   acceptanceMy: basketSide(10, 2, 2),
   acceptanceTheir: basketSide(2, 10, 2),
   canAccept: true,
+  responderPreview: { accepted: true },
 };
 
 const singleTreaty = mod.balancePanelDataFromRow(treatyRow, 0);
@@ -101,7 +107,7 @@ ok(aggregated.theirOfferPn === 82, 'aggregated: theirOfferPn 82 (80+2)');
 ok(aggregated.extraOnTable === 0, 'aggregated: extraOnTable 0 (bez badge)');
 ok(aggregated.actionLabel.includes('Pakiet na stole'), 'aggregated: label pakietu');
 ok(aggregated.actionLabel.includes('2 umów'), 'aggregated: label z liczbą umów');
-ok(aggregated.canAccept === true, 'aggregated: canAccept true przy net 0 (brak responderPreview blokującego w fixture)');
+ok(aggregated.canAccept === true, 'aggregated: canAccept true przy net 0 (responderPreview.accepted=true na obu pozycjach)');
 ok(aggregated.theirBalance.balancePn === 0, 'aggregated: balancePn net 0');
 ok(aggregated.theirBalance.accepted === true, 'aggregated: theirBalance accepted');
 
@@ -252,6 +258,19 @@ ok(
     'BUG-PAKIET-INCOMING: komunikat blokady = responderPreview.reason tej pozycji (parytet z realnym wykonaniem)',
   );
 
+  // P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (kierunek 1/2): net DODATNI, ale
+  // canAccept=false — panel HTML musi pokazać "no" (czerwony), spójnie z zablokowanym
+  // przyciskiem Przyjmij, NIE "ok" jak sugerowałby sam znak net dodatniego.
+  const positiveSumBlockedHtml = mod.renderPnBalancePanelHtml(positiveSumButBlocked);
+  ok(
+    positiveSumBlockedHtml.includes('da-pn-balance-bar no'),
+    'P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC: net dodatni + canAccept=false -> panel HTML tone "no" (spójne z canAccept, nie z dodatnim net)',
+  );
+  ok(
+    !positiveSumBlockedHtml.includes('da-pn-balance-bar ok'),
+    'P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC: net dodatni + canAccept=false -> panel HTML NIE ma tone "ok"',
+  );
+
   // Kontrola pozytywna — obie pozycje incoming przechodzą własną bramkę (responderPreview
   // accepted:true) → pakiet nadal do przyjęcia jednym klikiem, mimo że suma i tak dodatnia.
   const treatyRowOk = { ...treatyRowBlocked, id: 'neg-treaty-ok', responderPreview: { accepted: true } };
@@ -259,6 +278,87 @@ ok(
   ok(
     bothOk.canAccept === true,
     'BUG-PAKIET-INCOMING kontrola pozytywna: canAccept=true gdy KAŻDA pozycja incoming przechodzi własny responderPreview',
+  );
+}
+
+// P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN: brak responderPreview (undefined) na pozycji
+// akcjonowalnej (incoming) MUSI dawać canAccept=false (fail-closed), NIE true (fail-open).
+// Dziś main.ts zawsze ustawia responderPreview (previewNegotiationEntry wołane bezwarunkowo
+// w buildPendingNegotiationRows), więc nieosiągalne w praktyce — ale funkcja nie może na tym
+// polegać jako na jedynym zabezpieczeniu.
+{
+  const noPreviewRow = {
+    id: 'neg-no-preview',
+    direction: 'incoming',
+    actionLabel: 'Traktat handlowy',
+    acceptanceMy: treatySide(0, 80, 80),
+    acceptanceTheir: treatySide(0, 80, 80),
+    canAccept: true, // pole legacy — NIE jest już źródłem prawdy
+    // responderPreview celowo pominięty (undefined) — to jest właśnie testowany przypadek
+  };
+  const failClosed = mod.balancePanelDataFromRows([noPreviewRow]);
+  ok(failClosed != null, 'P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN: data');
+  ok(
+    failClosed.canAccept === false,
+    'P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN: canAccept=false gdy responderPreview=undefined (fail-closed, nie fail-open jak przed naprawą)',
+  );
+
+  // Kontrola pozytywna w tym samym przypadku — gdy JEDNA pozycja w pakiecie ma
+  // responderPreview i jest odrzucona, a DRUGA nie ma responderPreview wcale, całość musi
+  // pozostać zablokowana (obie ścieżki blokady, undefined i accepted:false, muszą działać
+  // razem w tym samym pakiecie, nie wzajemnie się maskować).
+  const mixedRow = {
+    id: 'neg-mixed-no-preview',
+    direction: 'incoming',
+    actionLabel: 'Wymiana surowców',
+    acceptanceMy: basketSide(0, 0, 0),
+    acceptanceTheir: basketSide(0, 0, 0),
+    canAccept: true,
+  };
+  const failClosedPackage = mod.balancePanelDataFromRows([noPreviewRow, mixedRow]);
+  ok(
+    failClosedPackage.canAccept === false,
+    'P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN pakiet: canAccept=false gdy KTÓRAKOLWIEK pozycja ma responderPreview=undefined',
+  );
+}
+
+// P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (kierunek 2/2): net UJEMNY, ale
+// responderPreview (per pozycja) mówi accepted:true -> canAccept=true. Kolor/hint MUSZĄ iść
+// za canAccept, nie za znakiem net — inaczej panel pokazuje "no" (czerwony) + mylący hint
+// "Brakuje...dopłać do bilansu" mimo aktywnego przycisku Przyjmij (dokładnie zgłoszenie
+// Macieja: traktat incoming z net −20 PW, werdykt "możesz przyjąć" ale panel czerwony).
+{
+  const treatyRowNegNet = {
+    id: 'neg-treaty-negnet',
+    direction: 'incoming',
+    actionLabel: 'Traktat handlowy',
+    acceptanceMy: treatySide(0, 80, 60),
+    acceptanceTheir: treatySide(0, 80, 80),
+    canAccept: true,
+    responderPreview: { accepted: true },
+  };
+  const negNetAccepted = mod.balancePanelDataFromRows([treatyRowNegNet]);
+  ok(negNetAccepted != null, 'net ujemny + canAccept=true: data');
+  ok(
+    negNetAccepted.myOfferPn - negNetAccepted.theirOfferPn === -20,
+    'net ujemny + canAccept=true: net -20 PW (60-80), jak w zgłoszeniu',
+  );
+  ok(
+    negNetAccepted.canAccept === true,
+    'net ujemny + canAccept=true: canAccept=true (responderPreview per-pozycja przechodzi mimo ujemnej sumy)',
+  );
+  const negNetHtml = mod.renderPnBalancePanelHtml(negNetAccepted);
+  ok(
+    negNetHtml.includes('da-pn-balance-bar ok'),
+    'P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC: net ujemny + canAccept=true -> panel HTML tone "ok" (spójne z canAccept, nie z ujemnym net)',
+  );
+  ok(
+    !negNetHtml.includes('da-pn-balance-bar no'),
+    'P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC: net ujemny + canAccept=true -> panel HTML NIE ma tone "no"',
+  );
+  ok(
+    !negNetHtml.includes('dopłać do bilansu'),
+    'P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC: net ujemny + canAccept=true -> brak mylącego hintu "dopłać do bilansu"',
   );
 }
 

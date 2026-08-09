@@ -3107,19 +3107,37 @@ panelu przy net ujemnym z przyciskiem mimo to aktywnym; fail-open (`canAccept=tr
 `responderPreview` (dziś nieosiągalne); rozluźnienie `legacyAccess`-gatingu, zgodne z
 wykonaniem ale nietestowane; słaba asercja w jednym teście.
 
-## P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **OTWARTE — niepilne**
-Dla traktatu incoming z net ujemnym (np. −20 PW), panel pokazuje klasę „no" (czerwony) i hint
+## P-DYPLO-PANEL-WIZUALNA-NIESPOJNOSC-VS-CANACCEPT (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **CZĘŚCIOWO NAPRAWIONE 2026-08-09 — zawężone do gałęzi own+basket**
+Dla traktatu incoming z net ujemnym (np. −20 PW), panel pokazywał klasę „no" (czerwony) i hint
 „Brakuje N PW — dopłać do bilansu", ale jednocześnie werdykt „Spełnia warunki — możesz przyjąć"
-i przycisk AKTYWNY. Powstaje bo `canAccept` przestał iść za `net` (naprawa wyżej), a cały
-display nadal idzie za `net`. Funkcjonalnie poprawne (przycisk odzwierciedla realną
+i przycisk AKTYWNY. Powstawało bo `canAccept` przestał iść za `net` (naprawa wyżej), a cały
+display nadal szedł za `net`. Funkcjonalnie poprawne (przycisk odzwierciedlał realną
 akceptowalność), wizualnie mylące. Osiągalne przy Relacji &lt;100 (asymetryczne PW traktatu).
-**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`).
+
+**NAPRAWIONE dla trybu traktatu (2026-08-09):** `balCls`/hint w gałęzi `isTreatyMode` idą teraz
+za `data.canAccept`, nie za surowym znakiem `netPw`. Fallback (canAccept undefined, jedyny
+wiersz „own" nie-awaitingAiResponse poza pakietem) zachowuje stare zachowanie. Evaluator
+PASS-WITH-NOTES, `diplomacy-stol-pw-sum-test.cjs` 42/42 (było 26/26), `tsc` 0 błędów.
+
+**Nadal OTWARTE — Evaluator wykazał próbą, że ta sama klasa niespójności jest osiągalna także
+w gałęzi `!incomingTrade && !isTreatyMode` (własna oferta + koszyk, poza traktatem)** — zielony
+pasek + hint „Nadwyżka N PW" obok werdyktu blokującego poniżej. Ta gałąź NIE została objęta
+dzisiejszą naprawą (świadome zawężenie zakresu, C-025 — zlecenie dotyczyło konkretnego
+zgłoszenia trybu traktatu).
+**Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`, gałąź
+`!incomingTrade && !isTreatyMode`).
 **Model:** Sonnet 5.
 
-## P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **OTWARTE — niepilne, dziś nieosiągalne**
-Gdy `row.responderPreview` jest `undefined` (pole opcjonalne w typie), `canAccept` domyślnie
-wychodzi `true` (bramka otwarta), nie bezpieczne `false`. Dziś `main.ts:12318` zawsze ustawia
+## P-DYPLO-RESPONDERPREVIEW-FAIL-OPEN (2026-08-08, nota Evaluatora BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA) · STATUS: **ZAMKNIĘTE 2026-08-09**
+Gdy `row.responderPreview` był `undefined` (pole opcjonalne w typie), `canAccept` domyślnie
+wychodził `true` (bramka otwarta), nie bezpieczne `false`. Dziś `main.ts:12318` zawsze ustawia
 preview, więc nieosiągalne w praktyce — ale brak testu i brak jawnego fallbacku na `false`.
+
+**ZAMKNIĘTE (2026-08-09):** `balancePanelDataFromRows` ustawia teraz jawnie `canAccept=false` +
+`blockReason` gdy `responderPreview` jest `undefined` na pozycji akcjonowalnej (incoming lub
+own+awaitingAiResponse) — fail-closed zamiast fail-open. Evaluator PASS-WITH-NOTES,
+`diplomacy-stol-pw-sum-test.cjs` 42/42, `tsc` 0 błędów. Scalone razem z naprawą wyżej (jeden
+commit Operatora, `2e56050c`).
 **Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`).
 **Model:** Sonnet 5.
 
