@@ -3643,9 +3643,13 @@ poważniejszy rozjazd niż naprawiła:**
    Morza) — nie złapałyby przyszłego rozwalenia wykluczenia Morza.
 5. Worktree był 6 commitów za HEAD w chwili weryfikacji, 2 z nich dotykały `okolica.ts`.
 
+**ECHO — punkt „co zrobić z ISTNIEJĄCYMI zapisami z robotnikami na Górach":** Maciej — tylko
+stare zapisy, bez migracji; mechanizm ręcznego przydziału zostaje bez zmian funkcjonalnych.
+Decyzja: `docs/decyzje/R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1.md`.
+
 **Kontynuacja dispatched** z pełną listą Evaluatora (rebase, dołożenie filtra do 3 brakujących
-ścieżek z jawnym komunikatem odmowy, uzupełnienie testu o fokus=podatki+Morze). Punkt „co zrobić
-z ISTNIEJĄCYMI zapisami z robotnikami na Górach" wymaga decyzji właściciela — zadane jako ABC.
+ścieżek z jawnym komunikatem odmowy, uzupełnienie testu o fokus=podatki+Morze), bez logiki
+migracji starych zapisów.
 **Kotwice:** `gra/src/game/okolica.ts` (`isLandWorkableHex`, `seedReczneFromAuto`,
 `rebalanceWorkersAfterPopulationChange`), `gra/src/main.ts` (`toggleTileWorker`/`adjustTileWorker`).
 **Model:** Sonnet 5.
