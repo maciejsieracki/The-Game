@@ -6183,3 +6183,34 @@ epokaWejscia×techUnlock niezaasercjonowana).
 
 Dispatch runda 2 dla B1 (mechaniczne). B2 i B3 wymagają ABC — zostaną przedstawione po domknięciu
 aktualnie otwartego wątku (kolejka pytań, max 3 na turę).
+
+---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — Evaluator RUNDA 1: PASS-WITH-NOTES (1 BLOKUJĄCA), runda 2 w toku (2026-08-09)
+
+Implementacja merytorycznie poprawna, zweryfikowana niezależnie punkt po punkcie (matematyka
+early-game 4/5 potwierdzona ze źródeł, `foundingTerritoryOpts` generyczna, spójność 3 sprawdzeń
+terytorium potwierdzona matematycznie, usunięcie `requireOutsideTerritory` nie było scope creepem,
+wydajność zmierzona niezależnie: −27%, stary kod realnie wybierał róg mapy 20 heksów od miasta —
+bezpośrednia reprodukcja zgłoszonego „miszmaszu"). Zero fałszywych twierdzeń w raporcie Operatora.
+
+**B1 (BLOKUJĄCA) — bramka nie chroni main.ts.** Ten sam wzorzec problemu co kilka innych tematów
+dziś: test nigdy nie ładuje `main.ts`, cofnięcie JEDYNEJ linii realizującej parytet gracz-AI na
+poziomie egzekucji (`canFoundCity(..., foundingTerritoryOpts(ownerId))` → goły `canFoundCity(...)`
+bez opcji) daje 15/15 PASS. To ma znaczenie merytoryczne: filtr w `ai.ts` to tylko planista na
+migawce stanu, bramka w `main.ts` to jedyne miejsce, gdzie wymóg jest EGZEKWOWANY.
+
+**Ważna informacja dla Ciebie (N2, nie blokuje, ale zasługuje na świadomość PRZED playtestem):**
+konsekwencja decyzji A jest silniejsza niż opisana w pierwotnym ABC. AI zakłada miasta wyłącznie
+przez panel budowy (bez osadnika) — więc żadna cywilizacja AI nie założy już miasta na INNYM
+LĄDZIE/WYSPIE, chyba że jej miasto urośnie populacyjnie na tyle, że promień terytorium (max 15) tam
+sięgnie. Ekspansja zamorska AI de facto znika — obce kontynenty AI może zdobywać już tylko
+podbojem. Zgodne z literą Twojej decyzji („zwarta grupa"), ale warto wiedzieć wprost, zanim
+zobaczysz to w grze.
+
+Niepilne: N1 (re-walidacja w `planCityFounding` nieprotestowana), N3 (AI bez żadnego miasta zakłada
+je bez wymogu terytorium — pre-istniejące, symetryczne z pierwszym miastem gracza), N4 (ciche
+`continue` przy odrzuceniu — pre-istniejące), N5 (map-gen/cluster-start nierozstrzygnięte
+środowiskowo, niezwiązane).
+
+Dispatch runda 2, wąski zakres: TYLKO B1 (test tekstowy).
