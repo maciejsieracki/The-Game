@@ -4785,3 +4785,16 @@ localStorage/IndexedDB, rotacja/limit 10 slotów) i sprawdzić czy faktycznie tw
 turę czy nadpisuje/duplikuje istniejący; (b) sprawdzić przeliczenie numer-tury→rok-kalendarzowy i
 czy wyświetlany numer tury w HUD-zie faktycznie pochodzi z tego samego licznika co ten zapisany w
 sejwie. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
+
+## P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA (2026-08-09, pytanie z playtestu) · STATUS: **OTWARTE — czyste pytanie faktograficzne, dispatch Explore**
+
+**Cytat Macieja:** „po przejęciu danej cywilizacji, także w wypadku państw miast, miało być
+przejęcie ich wszystkich surowców. Sprawdź czy to jest w kodzie i czy dotyczy to też państw miast."
+
+To pytanie o istniejący/zamierzony mechanizm, nie zgłoszenie błędu — Maciej chce faktu, nie
+naprawy na razie. Dispatch Explore (bez kodowania): (a) znaleźć logikę przejęcia
+cywilizacji/eliminacji (prawdopodobnie `gra/src/game/**`, zdobycie ostatniego miasta / poddanie
+się) i sprawdzić czy przenosi surowce (skarbiec/zapasy) zwycięzcy; (b) sprawdzić czy ta sama
+ścieżka (albo osobna) obejmuje podbój/zniszczenie miast-państw — czy miasta-państwa w ogóle mają
+własną pulę surowców do przejęcia, czy to inny model niż pełne cywilizacje. Odpowiedzieć faktami
+z kodu, bez zgadywania.
