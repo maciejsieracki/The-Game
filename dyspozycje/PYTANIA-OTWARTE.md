@@ -5045,7 +5045,38 @@ się) i sprawdzić czy przenosi surowce (skarbiec/zapasy) zwycięzcy; (b) sprawd
 własną pulę surowców do przejęcia, czy to inny model niż pełne cywilizacje. Odpowiedzieć faktami
 z kodu, bez zgadywania.
 
-## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą, rozpoznanie w toku**
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO — PRZYCZYNA DREWNA ZNALEZIONA, dispatch naprawy (2026-08-09)
+
+**Rozpoznanie (Explore):** to jest osobny system niż zbadany wcześniej przy `R-HUD-MIASTO-KOREKTA-
+ZAPAS-VS-TEMPO` (surowce cywilizacyjne Praca/Żywność/Skarbiec/Nauka mają inny magazyn niż surowce
+budowlane Drewno/Glina/Kamień/Ruda/etc. — te drugie żyją w `City.surowce`, sumowane civ-wide,
+capping przez `OWNER_CAPPED_RESOURCE_KEYS` w `gra/src/game/economy-upkeep.ts`).
+
+**DREWNO — bug potwierdzony jednoznacznie:** w `gra/src/main.ts:21130`, pętla obsługująca
+wieloturowy „wyrąb lasu" (hex clearing) woła `creditOwnerResourceStock(cities, ownerId, 'drewno',
+drewnoCredit)` **BEZ piątego argumentu `capPerType`** — w przeciwieństwie do normalnej produkcji
+terenowej, która capuje poprawnie. Ta pętla wykonuje się PO jedynym w turze wywołaniu
+`reconcileOwnerResourceCaps()` (siatka bezpieczeństwa ścinająca nadwyżkę), więc przy kilku
+równoległych wyrębach lasu drewno rośnie bez ograniczenia aż do końca tury — dokładnie tłumaczy
+zgłoszony objaw (+114/turę, wartość ponad cap).
+
+**GLINA — przyczyny NIE znaleziono jednoznacznie.** Wszystkie znalezione ścieżki produkcji gliny są
+poprawnie capowane; żaden konwerter jej nie produkuje (tylko zużywa); nie jest objęta handlem
+ilościowym. Explore rekomenduje diagnostykę zamiast zgadywanej poprawki: tymczasowy `console.warn`
+w `creditOwnerResourceStock` gdy `capPerType === undefined && amount > 0`, złapany na żywo w
+kolejnej sesji playtestu Macieja, zamiast naprawiać na ślepo.
+
+**Dispatch naprawy (bez ABC — czysto techniczny bug, brakujący parametr):** (1) dodać `capPerType`
+do wywołania w `main.ts:21130` (wzorem `tickEmpireResourcePipeline`); (2) przy okazji sprawdzić
+pozostałe 3 miejsca `creditOwnerResourceStock(...)` bez `capPerType` (`main.ts:2950` — zwrot,
+prawdopodobnie celowo; `main.ts:19180` — łup z bitwy, ryzykowne dla Brąz/Żelazo; `main.ts:20847` —
+przepływ handlowy, wykonuje się przed reconcile, więc mniej ryzykowne, ale zweryfikować); (3) dodać
+diagnostyczny `console.warn` (jak wyżej) żeby złapać ewentualny analogiczny bug gliny na żywo,
+zamiast zgadywać teraz.
+
+---
+
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
 
 **⛔ Dopisek Macieja po kolejnej turze (obserwacja, nie nowe zgłoszenie):** „widzę, że wyrównuję
 stan surowców do liczby 1000" — kolejny zrzut pokazuje Drewno **975/1000** (+123, NIE przekracza) i

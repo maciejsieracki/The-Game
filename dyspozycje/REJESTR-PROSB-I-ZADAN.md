@@ -2037,9 +2037,10 @@ tury. Dispatch Explore (bez kodowania) przed naprawą. Pełna treść w `PYTANIA
 Czy podbój/eliminacja cywilizacji przejmuje jej surowce, i czy to samo dotyczy miast-państw. Czyste
 pytanie, dispatch Explore bez kodowania. Pełna treść w `PYTANIA-OTWARTE.md`.
 
-## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO — OTWARTE, bug zgłoszony z playtestu (2026-08-09)
-Drewno 1298/1000 i Glina 1086/1000, oba oznaczone „PEŁNY" mimo przekroczenia limitu magazynu —
-Ruda żelaza poprawnie 0/1000. Dispatch Explore (bez kodowania) przed naprawą. Pełna treść w
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO — przyczyna drewna znaleziona, dispatch naprawy (2026-08-09)
+Drewno: `main.ts:21130` woła `creditOwnerResourceStock` bez `capPerType` w pętli wyrębu lasu, po
+jedynym w turze `reconcileOwnerResourceCaps()` — potwierdzony bug. Glina: przyczyny nie znaleziono
+jednoznacznie, zalecona diagnostyka (console.warn) zamiast zgadywanej poprawki. Pełna treść w
 `PYTANIA-OTWARTE.md`.
 
 ## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — rozpoznanie gotowe, wymaga ABC (2026-08-09)
