@@ -2852,16 +2852,26 @@ zgłoszenia (które wskazywały tylko `grantTechToOwner`).
 **Kotwice:** `gra/tools/diplomacy-basket-transfer-test.cjs`, `gra/src/game/diplomacy-basket-transfer.ts` (`grantTechToOwner`, `tierOk`).
 **Model:** Sonnet 5.
 
-## P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-TECH-TIER-NIEPOKRYTA) · STATUS: **OTWARTE — niepilne**
+## P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA — ZAMKNIĘTE 2026-08-09
 Evaluator zmutował `techIdsWithPrereqsMetForRecipient` (`gra/src/game/diplomacy-tech-trade.ts:45`,
 filtr listy „dostaje" na etapie budowania koszyka, DRUGA warstwa defense-in-depth obok
 `grantTechToOwner`) wyłączając SAMĄ składową tieru (`&& true`) — `diplomacy-tech-trade-test.cjs`
 zostaje 24/24 zielone, mutacja przeżywa. Kontrola: wyłączenie CAŁEGO filtra (`return true`) daje
 22/24 — czyli filtr jako całość jest pokryty, ale składowa tieru wewnątrz niego nie. Ta sama klasa
 luki co `P-BRAMKA-TECH-TIER-NIEPOKRYTA`, jedna warstwa dalej.
+
+**Naprawa:** nowy scenariusz testowy z osobnym katalogiem `tierCatalog` (Epoka/Poziom obecne),
+izolujący `tierOk` wewnątrz `techIdsWithPrereqsMetForRecipient` od prereq/epoki — test-only, kod
+produkcyjny nietknięty. Evaluator (Opus 5) **PASS-WITH-NOTES**: dowód mutacyjny silniejszy niż
+żądany — przy siłowo otwartych `prereqsMet`/`epochOk`, scenariusz nadal odrzuca Garncarstwo2,
+jedyną działającą bramką jest `tierOk`. Zmierzone: `diplomacy-tech-trade-test.cjs` 26/26,
+`diplomacy-basket-transfer-test.cjs` 20/20, `logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+Dwie drobne noty Evaluatora domknięte przed scaleniem: (1) nagłówek testu doprecyzowany o opis
+nowego scenariusza; (2) świeżość worktree (2 commity za HEAD, oba niekolidujące) zweryfikowana
+przez `git apply --check -3` bez konfliktu.
 **Kotwice:** `gra/src/game/diplomacy-tech-trade.ts:45` (`techIdsWithPrereqsMetForRecipient`),
 `gra/tools/diplomacy-tech-trade-test.cjs`.
-**Model:** Sonnet 5.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
 ## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A — w realizacji (subagent dispatched)** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
 `gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" gdy `sellableTechCount === 0` —
