@@ -6952,3 +6952,20 @@ funkcji (K-5). Pytanie ABC (5 opcji A-E + ujawniony skutek uboczny) do Macieja N
 po tej rundzie — decyzja architektoniczna nie powinna czekać na mechaniczną naprawę bramki.
 
 ---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — runda 4 dostarczona (Operator), czeka na Evaluatora (2026-08-09)
+
+Worktree `/tmp/wt-spichlerz-r3` (runda 4 dopisana do istniejącego worktree rund 1-3). Domknięcie
+noty blokującej B4 (Evaluator runda 3): dodane 2 asercje (Wymóg 4/5) wymuszające dokładne wywołania
+`cityPopulationCap(maAkwedukt, maSpichlerz, params)` (popCapAktualny) i
+`cityPopulationCap(false, maSpichlerz, params)` (popCapBezAkweduktu) w `computeView` (`cityPanel.ts`).
+Dowód mutacyjny: E (maSpichlerz→false) FAIL, F (powrót do martwego `params.akweduktProgLudnosci`)
+FAIL, G (zamiana argumentów) FAIL — wszystkie 3 mutacje z werdyktu Evaluatora złapane, 12/12 po
+przywróceniu. Przy okazji (tanie, N-1 rundy 3): `akwedukt-popcap-test.cjs` dostał
+`spichlerzProgLudnosci` w params + 2 przypadki `maSpichlerz: true` — 7/7. Bramki: tsc 0, logic-test
+213/213, spichlerz-cap-citypanel-wiring-test 12/12, population-growth-v85-test 48/50 (2
+pre-istniejące potwierdzone), growthmult-compound-test 17/24 (7 pre-istniejące potwierdzone). ZERO
+zmian w kodzie produkcyjnym tej rundy (wyłącznie 2 pliki testów). Dispatch Evaluatora rundy 4
+(finalnej) NASTĘPUJE teraz.
+
+---
