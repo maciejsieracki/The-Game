@@ -4987,6 +4987,34 @@ rozróżnić `QuotaExceededError` od innych błędów w `saveToLocal()`. **Odło
 (niepilne, wpływa na zachowanie, nie tylko widoczność błędu):** limit/sprzątanie ręcznych zapisów,
 reset rotacji per nowa gra, scalenie zdublowanej formuły tura→rok.
 
+**Naprawione przez Operatora, Evaluator: PASS-WITH-NOTES (worktree `agent-aa90d7889e70190cc`,
+czeka na scalenie).** Rozróżnienie quota potwierdzone Evaluatorem na REALNYM `DOMException` (nie
+tylko mocku Operatora) — solidne. Wszystkie 2 wywołania `saveToLocal()` w repo zweryfikowane
+niezależnie, oba dostosowane, `doQuickSave()` nietknięty. 5/5 własnych mutacji Evaluatora złapanych.
+
+**⛔ N1 — WAŻNE, ten wpis NIE zamyka tematu:** naprawa dotyczy WYŁĄCZNIE widoczności błędu (gracz
+teraz dostaje informację zamiast ciszy) — **NIE przywraca rotacji ani realnej możliwości cofnięcia
+się do niedawnej tury**. 10 slotów nadal zamrozi się przy przepełnieniu, gracz dostanie tylko o tym
+wiadomość. To było zgodne z zakresem dispatchu (naprawa widoczności, sprzątanie/reset odłożone
+świadomie), ale ORYGINALNE zgłoszenie Macieja dotyczyło utraty możliwości cofnięcia się — ta
+połowa problemu WCIĄŻ WYMAGA osobnej decyzji (limit/sprzątanie ręcznych zapisów, reset rotacji per
+nowa gra) zanim temat można uznać za w pełni zamknięty.
+
+**N2 (do domknięcia przy scaleniu, nieblokujące):** komunikat o niepowodzeniu NIE pojawia się jako
+osobny dymek — `doRotatingAutosave()` jest wołane w trakcie `endTurnInProgress`, więc
+`showHintMessage()` odkłada go do panelu WYDARZENIA jako zwykły wpis „Koniec tury" (ikona ℹ️),
+nieodróżnialny od rutynowych komunikatów. Słabsze ostrzeżenie niż zamierzone. Do rozważenia: osobny
+tytuł/rodzaj wpisu „ostrzeżenie" zamiast zlewać się z resztą.
+
+**N3 — poprawka do wcześniejszego opisu w tym wpisie:** fraza „i co gorsza NIE przesuwa indeksu
+rotacji" (wyżej w tym wpisie) była MYLĄCA — Evaluator ocenił merytorycznie, że **kod ma rację, nie
+opis**: nieprzsuwanie indeksu po nieudanym zapisie jest PRAWIDŁOWYM zachowaniem (wszystkie tryby
+awarii są globalne, nie specyficzne dla slotu — przesuwanie wskaźnika tylko przepalałoby pozycje
+pierścienia bez realnego zapisu). To NIE jest osobny bug do naprawienia, tylko część tego samego,
+świadomie zachowanego zachowania. Niepilne N4-N7 (literówka bez polskich znaków, `doQuickSave`
+mylący komunikat przy quota, komentarze niedwujęzyczne wbrew CLAUDE.md §9, krucha kotwica testu) —
+do rejestru, nie blokują.
+
 ---
 
 ## P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
