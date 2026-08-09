@@ -56,6 +56,7 @@ desktop.ini
 # generowania zostalo sledzonych i ta regula ich nie rusza — .gitignore nie dziala
 # na pliki juz sledzone. Nowy plik pisany RECZNIE dodaj przez `git add -f`.
 gra/tools/.*-bundle.cjs
+gra/tools/.*-bundle.css
 gra/tools/.*-entry.ts
 
 # tymczasowe artefakty narzedziowe
