@@ -1490,7 +1490,7 @@ pilność, „nie odkładać" — drugi człon tego samego wzoru rankingu ma ide
 wzorzec), `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE` (dziś nieszkodliwe), oraz niezweryfikowana
 hipoteza `P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA`.
 
-## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA — POTWIERDZONA, naprawa NIEKOMPLETNA (Evaluator FAIL RUNDA 2, 2026-08-09)
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA — ZAMKNIĘTE 2026-08-09 (4 rundy, PASS-WITH-NOTES)
 Hipoteza potwierdzona żywą symulacją: silnik ekonomii przypisywał robotników na Morze/Góry,
 których overlay nigdy by nie pokazał (Góry mają najwyższą Pracę ze wszystkich terenów).
 
@@ -1520,6 +1520,24 @@ pokazuje że usunięcie filtra z `seedReczneFromAuto` (1 z 5 „zabezpieczonych"
 łapane przez żaden test — deklaracja „wszystkie 5 ścieżek" niezweryfikowana. Runda 4 dispatched
 z precyzyjną listą (napraw logikę usuwania w rebalance, dołóż test na to, zamknij lukę pokrycia
 seedReczneFromAuto, popraw nieprawdziwy komentarz przy cityPanel.ts:8290).
+
+**Runda 4 (commit `3aba4286`) — Evaluator PASS-WITH-NOTES, SCALONE.** Pierwsza runda, która
+obroniła się pod naciskiem: wpisy nielegalne dostają `score=-Infinity` i przechodzą przez tę samą
+logikę wyboru `worstKey` co legalne, gwarantując dokładnie `excess` usunięć. Nowe testy 23/24
+przypinają filtr w `seedReczneFromAuto` i gałęzi wzrostu. Evaluator zbudował własny harness (10
+scenariuszy poza raportem) i wykonał 6 własnych mutacji, każda złapana przez SPECYFICZNY zestaw
+asercji — dowód realnego, per-ścieżkowego pokrycia. `map-gen-regression` pominięcie potwierdzone
+po raz trzeci (0 wystąpień zmienionych funkcji w bundlu 654 kB). `okolica-test` 72/72,
+`okolica-isworkable-silnik-test` 15/15, `logic-test` 213/213, `tsc` 0 błędów.
+
+**Korekta faktograficzna (Evaluator rundy 4):** zapis „runda 3 wprowadziła nową regresję" był
+nieprecyzyjny co do mechanizmu — błędny blok podwójnego kasowania istniał od dawna (`13419757`),
+runda 3 tylko rozszerzyła zakres `!t` o Góry/Morze, czyniąc go osiągalnym częściej. Poprawiona
+naprawa B3 nie zależy od tego rozróżnienia.
+
+**Nowe pytanie ABC zarejestrowane osobno:** `P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1` — naprawa B3
+chroni też pola, które wypadły z zasięgu przez skurczenie promienia terytorium (zwykła dynamika
+gry, nie tylko stare zapisy), tworząc fantomowe sloty niewidoczne w panelu miasta.
 
 ## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE — NAPRAWIONE 2026-08-09
 `yieldOfMapHex` nie przekazywała `zloze` do `tileYield()`, silnik (`hexToWorkedTile`) tak.

@@ -3909,7 +3909,7 @@ też strukturalnie lepszy kierunek na przyszłość (wspólny czysty helper budo
 **Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`).
 **Model:** Sonnet 5.
 
-## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA (2026-08-09, nota N4 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **POTWIERDZONE i CZĘŚCIOWO NAPRAWIONE — Evaluator FAIL, kontynuacja w toku**
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA — ZAMKNIĘTE 2026-08-09 (4 rundy, PASS-WITH-NOTES + 1 nowe pytanie ABC)
 `main.ts:3971` (`okolicaWorkedKeySet`, overlay) przekazuje `isWorkable: okolicaHexWorkable`
 (wyklucza Morze/Góry), `cityWorkedTilesForEconomy` (`turn-economy.ts:691`, silnik) NIE
 przekazywała `isWorkable` w ogóle; `okolicaTiles` (`okolica.ts:101`) filtruje tylko gdy filtr
@@ -4026,7 +4026,7 @@ heksie, wpis na obcym terytorium, dwuklik. `map-gen-regression` potwierdzone emp
 mocniej niż analiza orkiestratora — zbundlowany entry bramki, 0 z 10 zmienionych symboli w
 654 019-znakowym bundlu.
 
-**BLOKER B3 (nowa regresja, WPROST łamie `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`):**
+**BLOKER B3 (regresja WPROST łamiąca `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`):**
 `rebalanceWorkersAfterPopulationChange` dostał w tej rundzie filtr terenu — w gałęzi SPADKU
 populacji nielegalny wpis znika ze ścieżki `!t → delete+excess--`, ale PO PĘTLI i tak wykonuje się
 `if (worstKey) delete reczne[worstKey]`, kasując DODATKOWO pole legalne. Zmierzone: stary zapis,
@@ -4035,6 +4035,15 @@ legalny, produkcyjny robotnik. Miasto zostaje z pustymi slotami NA STAŁE. Jedyn
 to `population-growth-v85.ts:396` — wywoływany co turę przy każdej zmianie populacji (wzrost/głód),
 NIE wymaga żadnej akcji gracza. To dokładnie ta auto-migracja/cicha utrata, której zakazała decyzja
 właściciela — i ta sama klasa błędu, która wywaliła rundę 1.
+
+**KOREKTA FAKTOGRAFICZNA (Evaluator rundy 4, §0b — sprostowanie własnego wcześniejszego zapisu
+tutaj):** sformułowanie „nowa regresja wprowadzona przez rundę 3" było nieprecyzyjne co do
+mechanizmu, choć prawdziwe co do skutku. Blok `if (!t) { delete reczne[key]; excess--; continue; }`
+istnieje od commita `13419757`, długo przed rundą 3 — zweryfikowane `git show 43afa474:...okolica.ts`.
+Wkładem rundy 3 było dołożenie `terrainAndTerritoryFilter` do `tiles`, co ROZSZERZYŁO znaczenie
+`!t` z „poza zasięgiem" na „poza zasięgiem LUB Góry/Morze" — sam błędny wzorzec podwójnego
+kasowania czekał w kodzie od dawna, runda 3 tylko uczyniła go osiągalnym w nowym, częstszym
+scenariuszu. Naprawa B3 (patrz runda 4 niżej) jest poprawna niezależnie od tego rozróżnienia.
 
 **BLOKER B4 (druga dziura pokrycia tej samej klasy co B2 rundy 2):** dowód mutacyjny Evaluatora —
 usunięcie filtra terenu z `seedReczneFromAuto` (jedna z 5 „zabezpieczonych" ścieżek) NIE zostaje
@@ -4053,9 +4062,83 @@ wymaganie: spadek pop o 1 = zniknięcie DOKŁADNIE 1 robotnika, nielegalne wpisy
 na B3 (liczba usuniętych == `excess`, zero legalnych strat, nielegalne nadal obecne); (3) zamknij
 B4 — test przypinający filtr w `seedReczneFromAuto` (i analogicznie pozostałych ścieżek dodawania);
 (4) popraw nieprawdziwy komentarz przy `cityPanel.ts:8290`.
+
+**RUNDA 4 (commit `3aba4286`, worktree `agent-a97a3b6210599ea27`) — Evaluator PASS-WITH-NOTES,
+SCALONE. Pierwsza runda tego zgłoszenia, która obroniła się pod naciskiem.** Naprawa B3: wpisy
+nielegalne dostają `score = -Infinity` i przechodzą przez TĘ SAMĄ logikę wyboru `worstKey` co
+legalne pola — usuwanie w jednym miejscu, dokładnie raz na iterację, gwarantując dokładnie
+`excess` usunięć. B4: nowe Test 23/24 przypinające filtr w `seedReczneFromAuto` i gałęzi wzrostu
+`rebalance` na mapie deterministycznej (jedyne wolne pola nielegalne). Komentarz przy
+`cityPanel.ts:8290` poprawiony.
+
+Evaluator zbudował WŁASNY harness (10 scenariuszy poza raportem: wszystkie wpisy nielegalne,
+`excess` > liczby nielegalnych, `excess=0`/`excess<0` z nielegalnymi obecnymi, remis w score,
+uszkodzony klucz, tryb auto, spadek do pop=0) — wszystkie przeszły. 6 własnych mutacji, każda
+złapana przez SPECYFICZNY, inny zestaw asercji (dowód że pokrycie B4 jest realnie per-ścieżkowe,
+nie zbiorcze). `map-gen-regression-test.cjs` pominięcie potwierdzone PO RAZ TRZECI (bundel
+entry-pointu, 0 wystąpień na 654 kB).
+
+Zmierzone: `okolica-test.cjs` 72/72, `okolica-isworkable-silnik-test.cjs` 15/15, `logic-test.cjs`
+213/213, `tsc --noEmit` 0 błędów.
+
+**Nowe pytanie ABC zarejestrowane osobno:** `P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1` (naprawa B3
+poprawnie chroni też pola, które wypadły z zasięgu przez skurczenie promienia terytorium przy
+spadku populacji — ale to zwykła dynamika gry, nie tylko stare zapisy, i tworzy „fantomowe" zajęte
+sloty niewidoczne w panelu miasta, czyszczalne tylko klikiem na mapie świata).
+**Nowa nota zarejestrowana osobno:** `P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA` (pre-istniejący,
+poza zakresem tych 4 rund — `adjustTileWorker(delta=+1)` na już obsadzonym polu zdejmuje robotnika
+zamiast dodać drugiego, semantyka toggle pod nazwą „+1").
 **Kotwice:** `gra/src/game/okolica.ts` (`rebalanceWorkersAfterPopulationChange`, `seedReczneFromAuto`),
 `gra/src/ui/cityPanel.ts:8290`.
-**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x3 rundy).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x4 rundy).
+
+## P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1 (2026-08-09, nota N2 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **OTWARTE — pytanie ABC do Macieja**
+**[TEMAT: Fantomowe sloty robotników po skurczeniu promienia terytorium — czy czyścić automatycznie]**
+**Sytuacja:** naprawa B3 (runda 4) poprawnie chroni stare zapisy z robotnikami na Górach/Morzu
+przed nadmiernym kasowaniem — ale ten sam mechanizm chroni też CAŁKIEM INNY przypadek: pola, które
+wypadły z zasięgu bo promień terytorium miasta skurczył się przy spadku populacji (zwykła,
+częsta sytuacja w grze, nie tylko stare zapisy). Zmierzone przez Evaluatora: spadek pop 12→10
+(promień 12→10), 4 z 12 wpisów wypadły poza nowy promień, `excess=2` — po naprawie zostają 2
+wpisy „fantomowe" (poza zasięgiem, zero produkcji), zajmując 2 sloty robotników na stałe. Panel
+miasta (`okolicaPreviewRadius`, `cap=Rwork`) NIE renderuje pól poza aktualnym promieniem — brak
+przycisku w panelu. Jedyny sposób usunięcia to klik na mapie świata (działa, zweryfikowane).
+
+Przed naprawą B3 te fantomy były czyszczone za darmo (przy okazji nadmiernego kasowania, które
+było błędem dla starych zapisów Gór/Morza, ale przypadkiem „naprawiało" ten inny przypadek).
+
+**Cel pytania:** czy rozróżnić dwie kategorie „pole niedostępne" — (a) teren nielegalny
+(Góry/Morze, stare zapisy — chronione zgodnie z `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`, bez
+migracji) vs (b) pole poza aktualnym promieniem po skurczeniu terytorium (zwykła dynamika gry,
+nie „stary zapis") — i pozwolić kategorii (b) na auto-czyszczenie tak jak przed całą tą serią
+napraw, czy zostawić jak jest dziś (wymaga ręcznego kliku na mapie świata).
+**Dlaczego teraz:** to jest bezpośredni skutek uboczny właśnie scalonej naprawy — zanim playtest
+to wykryje jako „zgubione sloty robotników", warto rozstrzygnąć czy to zamierzone.
+- **A — Zostawić jak jest.** Za: spójne z już podjętą decyzją (żadnej auto-migracji/naprawy),
+  zero dodatkowej pracy. Przeciw: gracz może nie zauważyć martwych slotów (brak przycisku w
+  panelu miasta), realna, cicha utrata produkcji przy normalnym skurczeniu populacji — nie tylko
+  przy starych zapisach.
+- **B — Rozróżnić dwie kategorie, auto-czyścić TYLKO (b).** Za: przywraca oczekiwane zachowanie
+  sprzed serii napraw dla zwykłego gameplayu (nie łamie decyzji o starych zapisach, bo to inny
+  przypadek), naprawia realny UX problem. Przeciw: kolejna, piąta runda kodowania i testowania
+  tego samego pliku; wymaga precyzyjnego odróżnienia przyczyny „!t" (teren vs promień) w kodzie.
+- **C — Rozszerzyć panel miasta o widoczność/przycisk dla pól poza aktualnym promieniem** (zamiast
+  auto-czyszczenia), żeby gracz mógł świadomie zdjąć fantom bez czekania na mapę świata. Za: nie
+  łamie zasady „brak migracji" nawet dla przypadku (b), poprawia UX bez zmiany logiki silnika.
+  Przeciw: zmiana UI panelu (rozszerzenie zasięgu podglądu), inny rodzaj pracy niż silnik.
+**Rekomendacja:** B — to inny przypadek niż ten, którego dotyczyła oryginalna decyzja (stare
+zapisy z nielegalnym terenem); zwykła dynamika promienia terytorium nie powinna tworzyć trwale
+martwych slotów bez wyraźnego sygnału dla gracza.
+**Kotwice:** `gra/src/game/okolica.ts` (`rebalanceWorkersAfterPopulationChange`, gałąź `!t`),
+`gra/src/ui/cityPanel.ts` (`okolicaPreviewRadius`, `cap=Rwork`).
+**Model:** Opus 5 (Evaluator, znalezisko).
+
+## P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (2026-08-09, nota N3 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **OTWARTE — pre-istniejące, poza zakresem**
+`adjustTileWorker(delta=+1)` na polu JUŻ obsadzonym robotnikiem zdejmuje go (semantyka toggle),
+zamiast np. być no-opem albo błędem „pole już zajęte". Zachowanie istnieje verbatim od dawna
+(potwierdzone w `43afa474`, przed jakąkolwiek z 4 rund tego zgłoszenia), nietknięte przez całą
+serię napraw. Nie blokuje niczego z `P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA`.
+**Kotwice:** `gra/src/game/okolica.ts` (`adjustTileWorker`).
+**Model:** Opus 5 (Evaluator, znalezisko).
 
 ## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)
 Rozdzielono na dwie kontrolki jak zdecydowałeś: `cyclablePlayerArmyLeadsBase(requireMoves)` —

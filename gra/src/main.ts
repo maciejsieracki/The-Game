@@ -810,7 +810,7 @@ import {
 } from './game/eot-event-defer';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
-import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
+import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
 import { cityCultureMixActive, cultureMixBreakdown, isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import {
@@ -3967,10 +3967,11 @@ async function boot(): Promise<void> {
     }
 
     function okolicaHexWorkable(q: number, r: number): boolean {
-      const hex = map.hexes[keyOf(q, r)];
-      if (!hex) return false;
-      const t = hex.terenBazowy;
-      return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory;
+      // P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA: deleguje do wspolnego zrodla
+      // prawdy (`isLandWorkableHex` w okolica.ts), uzywanego rowniez przez silnik
+      // ekonomii i wszystkie sciezki zapisu trybu recznego -- overlay/silnik/UI
+      // musza zgadzac sie co do tego, ktore pole nadaje sie do obsadzenia.
+      return isLandWorkableHex(map, q, r);
     }
 
     function okolicaWorkedKeySet(city: City): Set<string> {

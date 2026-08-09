@@ -8288,6 +8288,22 @@ function renderWorkedPreview(
     c.isCity = c.d === 0;
     c.fill = hex ? (isLas ? '#142714' : (TEREN_COL[teren] ?? '#2a2a2a')) : '#10141a';
     const tileKey = `${c.q},${c.r}`;
+    // R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1 (decyzja Maciej 2026-08-09): w trybie recznym
+    // isWorked celowo czyta SUROWY stan `reczne`, bez filtra terenu -- to WYLACZNIE
+    // wybor WIZUALNY (czy pole dostaje zielone pasmo + ikonke 👤 licznika ponizej).
+    // Klikalnosc pola NIE zalezy od isWorked ani od legalnosci terenu: przycisk
+    // trafienia dla kazdego pola powstaje bezwarunkowo w petli `if (canAdjust)`
+    // nizej, wiec robotnik na Gorach/Morzu ze STAREGO zapisu (legalny przed naprawa
+    // filtra terenu) daje sie zdjac klikiem niezaleznie od tego jak renderuje sie
+    // isWorked (patrz fireOkolicaTileToggle -> toggleTileWorker, ktory zdejmowanie
+    // zawsze przepuszcza bez filtra terenu). Silnik (cityWorkedTilesForEconomy) juz
+    // filtruje takie wpisy z produkcji po cichu, bez komunikatu -- zgodnie z
+    // kanonem decyzji.
+    // Swiadomie NIE dodano tu osobnego wizualnego oznaczenia "legalne pracujace" vs
+    // "stary nielegalny wpis, nie liczy sie do produkcji" (np. inny kolor pasma /
+    // tekst tooltipa) -- twarda granica zakresu naprawy (kolejnosc bramek
+    // zdejmowania + pokrycie testowe, C-025), rozroznienie wizualne pozostawione
+    // jako oddzielna, nizej priorytetowa nota do rozwazenia.
     const inReczne = (reczne?.[tileKey] ?? 0) > 0;
     const inAutoWorked = workedSet ? workedSet.has(tileKey) : c.d <= 1;
     c.isWorked = !c.isCity && (tryb === 'reczny' ? inReczne : inAutoWorked);
