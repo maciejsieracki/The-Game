@@ -298,6 +298,7 @@ export function yieldOfMapHex(map: GameMap, q: number, r: number): TileYield {
     terenBazowy: h.terenBazowy,
     nakladka: h.nakladka ?? Nakladka.Brak,
     maRzeke: !!(h.rzeka && h.rzeka.obecna),
+    zloze: (h as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });

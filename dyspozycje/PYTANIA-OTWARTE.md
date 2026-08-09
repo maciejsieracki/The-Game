@@ -3551,12 +3551,37 @@ liczbach plonów rysowanych NA heksie w mapce okolicy miasta (linia ~8349).
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`tileYieldLabel`, `appendOkolicaYieldLabel`).
 **Model:** Sonnet 5.
 
-## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
 `hexToWorkedTile` (silnik) przekazuje `tile.zloze` do `tileYield()`, `yieldOfMapHex` (render,
 po dzisiejszej naprawie) go nie przekazuje. Dziś bez wpływu — `yieldOfMapHex` zwraca tylko
 `{zywnosc, praca, handel}`, `zloze` wchodzi wyłącznie do `oreYieldFromImprovements` →
 `ruda`/`ruda_zelaza`, poza kontraktem zwracanym przez tę funkcję. Pułapka na przyszłość: kto
 rozszerzy render o `ruda`, dostanie cichy rozjazd z powrotem.
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5):** dodano `zloze: (h as { zloze?: string }).zloze`
+do wywołania `tileYield()` w `yieldOfMapHex`, dla pełnego parytetu z `hexToWorkedTile`.
+Rzutowanie konieczne bo `zloze` to pole runtime-only, nieobecne w formalnym typie `Hex` —
+zweryfikowane przez Evaluatora jako idiom istniejący już w 5 innych miejscach silnika (dług,
+nie wymysł Operatora). Zerowa zmiana zachowania (dowiedziona: `heks-plony-warstwy-test.cjs`
+19/19 identyczne przed/po). Nowy test `heks-plony-zloze-forward-test.cjs` (5/5) podmienia moduł
+`./economy` na szpiega nagrywającego realny argument — konieczne bo sam wynik funkcji nie może
+wykryć braku przekazania (nie zwraca `ruda`). Evaluator PASS-WITH-NOTES: zweryfikował szpiega
+osobiście (sonda sentinel potwierdzająca że czyta realny argument, nie inny call site),
+potwierdził bezpieczne sprzątanie (`finally`), ocenił technikę jako proporcjonalną („jedyna
+rzecz która realnie przypina to zachowanie" przy ograniczeniu „nie ruszamy silnika").
+`tsc` 0 błędów, `heks-plony-warstwy-test.cjs` 19/19, `okolica-test` 46/46,
+`hex-plony-magazyn-test` 11/11, `logic-test` 213/213.
+
+**Trzy drobne noty Evaluatora, żadna nie blokuje:** (1) plik mocka testu
+(`.heks-plony-zloze-mock-economy.js`) nie jest w `.gitignore` mimo że analogiczne pliki
+`.*-entry.ts`/`.*-bundle.cjs` są, sprzątanie na końcu skryptu zamiast w `finally` — przy
+wyjątku mógłby zostać jako untracked; (2) mock eksportuje tylko `tileYield`, nie pozostałe 7
+wiązań z `./economy` — dziś nieszkodliwe, mylące gdyby ktoś rozszerzył test o ścieżki silnika;
+(3) asercja Testu 2 (`zloze===undefined`) przechodzi z fixem i bez niego, nie niesie sygnału
+mutacyjnego sama w sobie (ratuje ją dopiero sonda sentinel Evaluatora). Evaluator zasugerował
+też strukturalnie lepszy kierunek na przyszłość (wspólny czysty helper budowania argumentu dla
+`okolica.ts`/`turn-economy.ts`, usuwający duplikację u źródła) — poza zakresem tej naprawy,
+świadomie nie realizowany teraz.
 **Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`).
 **Model:** Sonnet 5.
 
