@@ -1991,14 +1991,193 @@ W5", „5 i pół procent albo 5 procent") jest pokryta obiema formami z jego zd
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`cityGrowthLive`), `gra/src/render/cityMapStatChip.ts`
 (`formatCityGrowthPercentLabel`), `gra/src/render/cities.ts` (`getCityGrowth`).
 
-## P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD (2026-08-09, nota Evaluatora R-ETYKIETA-MIASTA-WZROST-PROCENT) · STATUS: **OTWARTE — niepilne, dług UI**
-Panel miasta renderuje surowo `${view.wzrostProcent}%` → „5.5%" (kropka, notacja JS), plakietka
+## P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD (2026-08-09, nota Evaluatora R-ETYKIETA-MIASTA-WZROST-PROCENT) · STATUS: **NAPRAWIONE 2026-08-09 (jeden wiersz) — czeka na deploy+playtest**
+Panel miasta renderował surowo `${view.wzrostProcent}%` → „5.5%" (kropka, notacja JS), plakietka
 mapy → „5,5%" (przecinek, konwencja polska projektu — `formatLiczbaPl`, `formatWyzwienieLabel`).
-Ta sama liczba, inny separator w dwóch miejscach UI tego samego miasta. Naprawa panelu
-poruszyłaby ~10 miejsc w `cityPanel.ts` — świadomie poza zakresem naprawy plakietki. To panel
-odstaje od własnej konwencji projektu (cała gra po polsku), nie plakietka.
-**Kotwice:** `gra/src/ui/cityPanel.ts` (wiersz „WZROST%", `${view.wzrostProcent}%`).
+Ta sama liczba, inny separator w dwóch miejscach UI tego samego miasta.
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5, jeden wiersz):** chip „WZROST%" w
+`renderMagazyn` (`gra/src/ui/cityPanel.ts`, sekcja „Wyżywienie i wzrost", zawsze widoczna, nie
+hover — funkcjonalny odpowiednik plakietki) woła teraz `formatLiczbaPl(view.wzrostProcent)`
+zamiast surowego szablonu. Evaluator PASS-WITH-NOTES: potwierdził że to WŁAŚCIWY wiersz
+(prześledził przepływ liczby od `cities.ts`/`cityPanel.ts` `computeView` do plakietki — ten sam
+`fed`, ta sama liczba źródłowa), dowód mutacyjny (cofnięcie → 20/22, obie asercje lokalizacji
+padają). `city-panel-growth-percent-separator-test.cjs` (nowy) 22/22, `city-badge-growth-percent-test.cjs`
+38/38 (bez zmian — plakietka nietknięta), `city-map-badge-test.cjs` 62/62, `logic-test.cjs`
+213/213, `tsc` 0 błędów.
+
+**C-026 potwierdzone przez Evaluatora mocniej niż deklarował Operator:** 9 wystąpień
+`wzrostProcent` w `cityPanel.ts` = 1 naprawione + 8 pozostawionych (detail-cardy na żądanie,
+tooltip); jedno z ośmiu (`renderCityHeaderCompact`, linia ~9128) to **martwy kod bez żadnego
+call-site w całym repo**. Naprawiony chip jest naprawdę jedynym zawsze widocznym wystąpieniem —
+zawężenie zakresu jest w pełni uzasadnione, nie arbitralne.
+
+**Znak minusa (świadomie NIE naprawiony, decyzja Operatora potwierdzona przez Evaluatora z
+głębszym uzasadnieniem):** panel ma teraz „5,5%" (przecinek, jak plakietka) ALE „-2,1%" (zwykły
+minus) vs plakietka „−2,1%" (U+2212). Operator uzasadnił to jako poza zakresem zlecenia (tylko
+separator). Evaluator poszedł głębiej i znalazł PRAWDZIWY powód nie ruszać tego teraz: panel
+JUŻ DZIŚ miesza glify minusa między chipami tej samej tabeli (Racje: zahardkodowane U+2212,
+Bilans: ASCII przez `signed()`/`signedPl`) — a `signedPl` w `formatPl.ts` ma sprzeczność
+dokumentacji z implementacją (docstring obiecuje U+2212, kod zwraca ASCII). Podmiana glifu w
+samym chipie WZROST% zamieniłaby jeden rozjazd na inny. Właściwa naprawa jest w `formatPl.ts`,
+nie w tym chipie — zarejestrowana osobno.
+
+**Cztery nowe niepilne noty Evaluatora, zarejestrowane osobno:** `P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL`
+(sprzeczność `signedPl` docstring vs implementacja + niespójność Racje/Bilans w tej samej
+tabeli), `P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD` (200 rozbieżnych wartości przy kroku 0,01 —
+dziś nieosiągalne, bo krok realny to 0,5), `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` (jedna
+karta miesza `signed()` dla składników z surowym szablonem dla sumy), `P-BRAMKA-SPICHLERZ-WIDOCZNOSC-CZERWONA`
+(pre-istniejący czerwony test, 13 pass/14 fail, niezwiązany, nie był na liście znanych
+czerwonych w CLAUDE.md).
+**Kotwice:** `gra/src/ui/cityPanel.ts` (wiersz „WZROST%", `renderMagazyn`).
 **Model:** Sonnet 5.
+
+## P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL — ZAMKNIĘTE 2026-08-09
+`signedPl` (`gra/src/ui/formatPl.ts`) miał sprzeczność docstring vs implementacja: dokumentacja
+obiecywała znak U+2212 („−3,5"), implementacja zwracała ASCII `-` (`0x2D`). Panel miasta mieszał
+glify w TEJ SAMEJ tabeli chipów: chip „Racje" ma zahardkodowany U+2212, chip „Bilans" (przez
+`signed()`→`signedPl`) miał ASCII.
+
+**Naprawa:** `signedPl` post-processuje ASCII minus na U+2212 po wywołaniu `formatLiczbaPl`
+(która sama zostaje nietknięta — ma własny, osobny test asercjonujący ASCII z wcześniejszej,
+niezwiązanej naprawy). Nowy test `gra/tools/format-pl-signed-minus-glif-test.cjs` (13/13) +
+2 zaktualizowane asercje w `empire-skarbiec-bilans-test.cjs` (11/11).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: domknięcie tranzytywne importów (29 modułów, 10 wołających
+`signedPl`, 5 testów bundlujących) policzone niezależnie — Operator wymienił tylko 2 bezpośrednich
+wołających, ale wynik i tak poprawny (żaden pominięty test nie asercjonuje tekstu). Parytet
+„Racje"/„Bilans" potwierdzony na realnym kodzie (oba U+2212). Zero konsumentów parsujących ASCII
+myślnik na wyjściu `signedPl` (sprawdzone grepem repo-wide). Kontrfaktyczne dowody symetryczne
+(nowy test × stary kod = 2 fail; stary test × nowy kod = te same 2 fail).
+Zmierzone: `format-pl-signed-minus-glif-test.cjs` 13/13, `empire-skarbiec-bilans-test.cjs` 11/11,
+`city-panel-growth-percent-separator-test.cjs` 22/22, `logic-test.cjs` 213/213, `tsc --noEmit` 0
+błędów.
+
+**Dwie nowe noty Evaluatora, zarejestrowane osobno:** `P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE`,
+`P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI`.
+**Kotwice:** `gra/src/ui/formatPl.ts` (`signedPl`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
+
+## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne, pre-istniejące**
+`map-field-battle-test.cjs` (`TypeError: import_meta.glob is not a function` — konstrukcja Vite
+w bundlu esbuild/CJS, moduł audio `.mp3`) i `pre-battle-save-test.cjs` (`No loader configured for
+".svg" files` — `src/ui/icons/brand/menu-emblem.svg?raw`) padają identycznie z fixem i bez niego
+(zweryfikowane na baseline przed zmianą `signedPl`) — awarie harnessu testowego (brak loaderów
+w skrypcie budującym bundle testu), nie regresja silnika. CLAUDE.md nie wymienia ich w liście
+znanych czerwonych bramek — bez tego wpisu następna sesja mogłaby je wziąć za świeżą regresję.
+**Kotwice:** `gra/tools/map-field-battle-test.cjs`, `gra/tools/pre-battle-save-test.cjs`.
+**Model:** Sonnet 5.
+
+## P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne**
+`cityPanel.ts:4394` i `:4418` renderują `` `+${signed(praca.doBudynkow)}` `` — dla wartości ujemnych
+daje podwójny znak (`"+−5"`, przed naprawą glifu `"+-5"`). Pre-istniejące, nie regresja tej naprawy
+(oba warianty były błędne) — ale naprawa glifu uczyniła anomalię bardziej widoczną (`+−` rzuca się
+w oczy bardziej niż `+-`). Naprawa: usunąć zbędny `+` przed `signed()` (który już dodaje własny
+znak) albo zmienić szablon na samo `signed(...)`.
+**Kotwice:** `gra/src/ui/cityPanel.ts:4394,4418`.
+**Model:** Sonnet 5.
+
+## P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD — ZAMKNIĘTE 2026-08-09 (decyzja B: test/dokumentacja, nie zmiana silnika)
+Panel zaokrągla przez `Number(x.toFixed(1))`, plakietka przez `Math.round(x*10)/10` — rozbieżne
+przy krokach generujących nieparzyste wielokrotności 0,05 (np. `0.15` → panel „0,1%", plakietka
+„0,2%"). Dziś nieosiągalne — krok realny wzoru wzrostu to 0,5.
+
+**Decyzja B (Operator, uzasadniona liczbami, nie tylko oceną):** nie zmieniać kodu produkcyjnego
+— przypiąć osiągalność testem + niezmiennikiem w komentarzu. Wyczerpująca enumeracja wszystkich
+6 składników `computeGrowthPercentV85` (52 140 543 kombinacji) i parytet cyfr panel↔plakietka na
+wielokrotnościach 0,5 w [−100000, 100000] (400 001 wartości) — **0 rozjazdów w obu przypadkach**.
+Zmiana kodu produkcyjnego dziś dałaby zero zmian w wyświetlanym tekście przy niezerowym ryzyku
+regresji.
+
+Nowy test `gra/tools/city-growth-percent-rounding-parity-test.cjs` (16/16): pin `WYZYWIENIE_STEP
+=== 0,5`, parytet na 801 wartościach w realnym zakresie, kanarek dowodzący siły wykrywczej sekcji
+[2] (mutacja kroku na 0,25/0,01/0,1 — 2 z 3 łapane, patrz noty). Komentarz-niezmiennik dodany przy
+`WYZYWIENIE_STEP` w `population-growth-v85.ts`.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES z blokującą korektą domkniętą przy scaleniu**: dowód
+matematyczny potwierdzony niezależnie i mocniejszy (wyczerpująca enumeracja, nie próbkowanie).
+Kanarek zweryfikowany mutacyjnie na źródle produkcyjnym (nie tylko symulacją) — sekcja [2] ma
+realną siłę wykrywczą (kroki 0,25/0,01 łapane, exit 1). **Komentarz-niezmiennik zawierał
+nieprawdziwe zdania** („identyczny wynik TYLKO dla wielokrotności 0,5" — fałsz, krok 0,1 i 0,2
+też dają 0 rozjazdów; przykład „0,1" jako rozjazdogenny — błędny, 0,1 nigdy nie rozjeżdża się).
+Prawdziwa reguła: rozjazd wymaga NIEPARZYSTEJ wielokrotności 0,05 (0,25/0,05/0,01 tak, 0,1/0,2/0,5
+nigdy). **Poprawione przy scaleniu** — komentarz przy `WYZYWIENIE_STEP` przeformułowany zgodnie z
+dokładną regułą Evaluatora. Kierunek błędu był zachowawczy (ostrzegał za dużo, nie za mało), test
+i commit message nie powielały nieprawdy.
+Zmierzone: `city-growth-percent-rounding-parity-test.cjs` 16/16, `city-badge-growth-percent-test.cjs`
+38/38, `city-panel-growth-percent-separator-test.cjs` 29/29, `logic-test.cjs` 213/213, `tsc
+--noEmit` 0 błędów.
+**Kotwice:** `gra/src/game/population-growth-v85.ts` (`WYZYWIENIE_STEP`), `gra/src/ui/cityPanel.ts`,
+`gra/src/render/cityMapStatChip.ts` (`formatCityGrowthPercentLabel`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
+
+## P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY — ZAMKNIĘTE 2026-08-09
+Karta „Wyżywienie i wzrost — szczegóły" (`buildRacjeWzrostDetailCard`), sekcja „WZROST% —
+składniki": 6 składników renderowanych przez `signed()` (przecinek polski), wiersz „Łącznie"
+(suma tych samych składników) surowym szablonem `${view.wzrostProcent}%` (kropka JS) — mieszane
+separatory w jednej karcie.
+
+**Naprawa:** wiersz sumy też przez `signed()`. C-026: sąsiad „Budynki wpływające na wzrost"
+(`bd.spichlerz`) sprawdzony i wykluczony — `spichlerzGrowthBonusPercent()` to trzy literalne
+`return 2/1/0`, nieujemność gwarantowana konstrukcją, nie danymi. Rozszerzony
+`city-panel-growth-percent-separator-test.cjs` (22→29 asercji).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES z blokującą korektą domkniętą przed scaleniem**: sekcja [6]
+testu asercjonowała ASCII myślnik dla ujemnej sumy — po scaleniu równoległej naprawy
+`P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL` (`signedPl` → U+2212) ta asercja padłaby po cichu przy
+scaleniu obu (różne pliki, git scala bez konfliktu tekstowego). **Poprawione przy scaleniu**:
+asercja zmieniona na `'−2,1'` (U+2212), zweryfikowane po fakcie na zmergowanym `signedPl` —
+29/29 zielone. Fix produkcyjny sam w sobie zweryfikowany jako nietrywialny (`WYZYWIENIE_GROWTH_PCT`
+zawiera wartości ułamkowe, stary szablon realnie renderował kropkę).
+Zmierzone (po scaleniu obu zależnych napraw): `city-panel-growth-percent-separator-test.cjs`
+29/29, `logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+
+**Nowa nota Evaluatora, zarejestrowana osobno:** `P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY`
+— analogiczna usterka w sąsiedniej, żywej karcie (`buildTopBarZywnoscDetailCard`).
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`buildRacjeWzrostDetailCard`, linia ~4750/4753).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
+
+## P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) · STATUS: **OTWARTE — niepilne**
+`buildTopBarZywnoscDetailCard` (linia ~4800, kod żywy — wołany przez `attachTopBarStat('zywnosc')`)
+ma dokładnie tę samą usterkę: linia ~4839 renderuje `${view.wzrostProcent}%` surowo, obok
+`signed(foodSplit.total)` (linia ~4830) w TEJ SAMEJ karcie. Dodatkowo linia ~4841 renderuje
+`racje ${bd.racje}%` surowo (`bd.racje` bywa ułamkowe). Formalnie mieści się w 7 pozycjach
+świadomie odłożonych przy naprawie `P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD`, ale to najbliższy
+analogiczny przypadek do `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` — pominięty przy enumeracji
+C-026 tamtego zgłoszenia.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`buildTopBarZywnoscDetailCard`, linie ~4839, ~4841).
+**Model:** Sonnet 5.
+
+## P-BRAMKA-SPICHLERZ-WIDOCZNOSC-CZERWONA — ZAMKNIĘTE 2026-08-09 (test przestarzały, silnik poprawny — NIE dopisywać do listy czerwonych bramek CLAUDE.md)
+`spichlerz-widocznosc-test.cjs` — 13 pass / 14 fail. Diagnoza Operatora: test NIE odzwierciedlał
+dwóch późniejszych decyzji produktowych — `DOSTEP-SUROWCE-Q1` (2026-07-29, bramka etykiety
+złoża wymaga `empireStock[klucz] > 0`, nie samej technologii) i `R-STAWKI`/`R-NADMIAR-POOLS` FALA2
+(`R_STAWKI_FALA2_MULT = 2`, mnożnik kosztów surowcowych budynków). Silnik jest poprawny, test był
+z tyłu za dwiema zmianami danych.
+
+**Naprawa:** test przepisany całkowicie (44/0, ręcznie przeliczone wszystkie 8 wartości
+`koszt_surowce × 2`). Kod produkcyjny nietknięty.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: diagnoza zweryfikowana niezależnie z dokumentu decyzji
+(`docs/decyzje/DOSTEP-SUROWCE-Q1.md`, sekcja „Pliki wdrożenia" nie wymienia tego testu — niezależne
+wyjaśnienie dlaczego akurat on został z tyłu), nie tylko ze słów Operatora. Wszystkie 8 przeliczeń
+sprawdzone ręcznie, zgadzają się co do jednostki. Jedna nota istotna: pierwotny dowód mutacyjny
+`R_STAWKI_FALA2_MULT` pinował mnożnik tylko „z góry" (cofnięcie 2→1 zostawiało test zielony,
+mimo że `r-stawki-strojenie.ts` explicite przewiduje taki powrót po playteście: „ustaw 1 aby
+cofnąć") — **domknięte przy scaleniu**: dodana asercja graniczna (`drewno:15`, poniżej progu
+×2=16, musi zostać `locked`) — zweryfikowana osobiście przez orkiestratora: mutacja MULT 2→1 daje
+44 pass/1 fail (łapie), przywrócone → 45/0.
+Zmierzone: `spichlerz-widocznosc-test.cjs` 45/45, `deposit-building-gate-test.cjs` 47/47,
+`tech-tree-test.cjs` 19/19, `research-test.cjs` 33/33, `logic-test.cjs` 213/213, `tsc --noEmit`
+0 błędów.
+
+**Dwie drobne pre-istniejące luki (Evaluator, poza zakresem, nie wymagają osobnych zgłoszeń):**
+`spichlerz_ii: ['Sól']` w `DEPOSIT_LINKED_BUILDING_LABELS` nie jest pokryty testem (stary test
+też go nie miał); `map-gen-regression-test.cjs` nie zmieścił się w budżecie czasu Evaluatora — nie
+uruchomiony do końca, ale logicznie niedotknięty (commit zmienia wyłącznie ten jeden plik testowy,
+zero importów gdzie indziej).
+**Kotwice:** `gra/tools/spichlerz-widocznosc-test.cjs`.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
 
 ## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C`)
 **Jego słowa:** *„jakieś niezautoryzowane niby przemarsze, których ja nie widzę, bo ja nie widzę,
@@ -2365,15 +2544,67 @@ przypadkiem `combatPowerFullDisplayDefFor`). `mur-paradoks-test.cjs` 24/24 (był
 `P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA` — analogiczna, symetryczna luka w NOWEJ
 `combatPowerFullDisplayDefFor` (kod dodany wczoraj, jeszcze nigdy nie miał żadnej bramki).
 
-## P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA) · STATUS: **OTWARTE — niepilne**
+## P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA) · STATUS: **ZAMKNIĘTE 2026-08-09**
 Dowód mutacyjny (M2, Evaluator): wyzerowanie bonusu struktury/muru w `combatPowerFullDisplayDefFor`
 (nowa funkcja z `R-MOC-TABLICZKA-VS-CIVPOWER-Q1`, karmi tabliczkę nad żetonem) zostawia
 `mur-paradoks-test.cjs` i `city-defense-terrain-gate-test.cjs` w 100% zielone — ta sama klasa
 luki co dziś naprawiona dla `effectiveDefenderM`, ale w kodzie dodanym dopiero wczoraj, więc
-nigdy nie miała żadnej bramki. Naprawa: analogiczna asercja źródłowa (regex) przypinająca linię
-`combinedDefPct` w ciele `combatPowerFullDisplayDefFor`, wzorem tej dla `effectiveDefenderM`.
+nigdy nie miała żadnej bramki.
+
+**ZAMKNIĘTE (2026-08-09):** analogiczna asercja źródłowa (regex zakotwiczony na unikalnej,
+jednoparametrowej sygnaturze `function combatPowerFullDisplayDefFor(u: RuntimeUnit)` — odróżnienie
+od 6-parametrowej `effectiveDefenderM` nie wymaga nawet odróżniania treści, sama nazwa+sygnatura
+już rozstrzyga) przypinająca linię `combinedDefPct` w ciele `combatPowerFullDisplayDefFor`, plus
+asercje że skalowanie dotyczy WYŁĄCZNIE `meleeDefence`/`armor`/`health`, NIE pól Ataku. Evaluator
+PASS-WITH-NOTES, własny dowód mutacyjny (6 wariantów: zerowanie bonusu w obu funkcjach osobno —
+złapane, brak crosstalku między nimi w żadną stronę; próba przycięcia regexu wstrzykniętym `}` —
+manifestuje się na czerwono, nigdy jako cichy PASS). `mur-paradoks-test.cjs` 28/28 (było 24/24),
+`city-defense-terrain-gate-test.cjs` 34/34 (bez zmian), `logic-test.cjs` 213/213, `combat-test.cjs`
+6/6, `tsc` 0 błędów.
+
+**Nota Evaluatora (niepilna, nie blokuje):** asercja „brak skalowania pól Ataku" sprawdza tylko
+BRAK literału `<pole>: scaleField` w dopasowanym tekście — Evaluator dowiódł mutacyjnie że
+skalowanie Ataku przez INNY helper (`scaleAtk`) albo inline zostaje niewykryte (28/28 zielone
+mimo wstrzykniętego błędu). Ta sama forma słabości jest już konwencją pliku (pre-istniejące
+asercje negatywne dla `combatPowerScaledDefFor`/`sumArmyMForOwnerEffective`), nie regresja.
+Rekomendacja Evaluatora na przyszłość: zamienić czarną listę helperów na białą listę dozwolonych
+kluczy w bloku `return` — zarejestrowane jako `P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA`, bardzo
+niepilne (dług testowy o niskim ryzyku, nie luka w realnej logice gry).
 **Kotwice:** `gra/src/main.ts` (`combatPowerFullDisplayDefFor`), `gra/tools/mur-paradoks-test.cjs`.
 **Model:** Sonnet 5.
+
+## P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA — ZAMKNIĘTE 2026-08-09
+`mur-paradoks-test.cjs` sprawdzał „brak skalowania pól Ataku" w `combatPowerFullDisplayDefFor`
+przez czarną listę nazw helperów (`scaleField`) — skalowanie tego samego pola przez INNY helper
+albo inline mnożenie przechodziło niewykryte.
+
+**Naprawa:** nowy mechanizm parsuje prawdziwy blok `return {...}` z ciała funkcji i dla każdej
+linii `klucz: wartość` rozpoznaje skalowanie PO KSZTAŁCIE prawej strony (`SCALING_SHAPE_RE` —
+dowolne wywołanie funkcji LUB mnożenie), nie po nazwie konkretnego helpera. Każdy tak wykryty
+klucz musi być w `ALLOWED_SCALED_KEYS = ['meleeDefence','armor','health']` — prawdziwa biała
+lista. Zawężenie zakresu (tylko ta jedna asercja, nie pozostałe dwie w pliku) zweryfikowane przez
+Operatora czytaniem całych ciał `combatPowerScaledDefFor`/`sumArmyMForOwnerEffective` — żadna nie
+buduje `return {...}` ze skalowanymi polami w tym kształcie.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: zawężenie zakresu potwierdzone niezależnie (przeczytane
+całe ciała obu funkcji). 8 mutacji własnych (2 powtórzone Operatora + 6 nowych) — złapane: nowy
+helper, inline mnożenie, usunięcie skalowania, refaktor na `Object.assign`. Świeżość worktree:
+`git rev-list --count` do `origin/main`/`main` = 0 w obie strony, scalenie bezkonfliktowe.
+Zmierzone: `mur-paradoks-test.cjs` 29/29, `city-defense-terrain-gate-test.cjs` 34/34,
+`combat-test.cjs` 6/6, `logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+
+**Trzy noty Evaluatora (nie blokują, nie wymagają osobnych zgłoszeń — udokumentowane tutaj):**
+(1) luka realna, ale wydumana — skalowanie przez zmienną pośrednią (`const s = scaleField(x);
+return {meleeAttack: s}`) omija regex badający tylko prawą stronę dwukropka; materialność niska,
+naturalny zapis regresji (`meleeAttack: scaleField(...)`) jest łapany; (2) nowy mechanizm nie
+jest ścisłym nadzbiorem starego — gołe przypisanie referencji funkcji (`meleeAttack: scaleField,`
+bez wywołania) było łapane przez starą czarną listę, nie jest przez nową białą (przypadek
+wydumany, inna klasa błędu — korupcja pola, nie skalowanie); (3) sąsiad bez pokrycia poza
+zakresem: `fortifyFieldScaledDefFor` (`main.ts:18078`) ma identyczny kształt `return {...
+meleeDefence: ...}` bez żadnego testu pinującego źródło — kandydat na osobne zgłoszenie, jeśli
+temat zostanie kiedyś podjęty.
+**Kotwice:** `gra/tools/mur-paradoks-test.cjs`.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
 ## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **ZASTĄPIONE — `R-MOC-TABLICZKA-VS-CIVPOWER-Q1` (2026-08-09)**
 Po częściowym cofnięciu `R-MOC-MUR-PARADOKS-Q1=A` (decyzja `R-MOC-DEFINICJA-Q1`, tabliczka
@@ -2735,27 +2966,223 @@ transferem, nie jest martwym kodem widocznym tylko w teście). Evaluator PASS-WI
 `gra/src/game/diplomacy-tech-trade.ts` (`techIdsWithPrereqsMetForRecipient`).
 **Model:** Sonnet 5.
 
-## P-BRAMKA-TECH-TIER-NIEPOKRYTA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne**
+## P-BRAMKA-TECH-TIER-NIEPOKRYTA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ZAMKNIĘTE 2026-08-09**
 Dowód mutacyjny Evaluatora: usunięcie SAMEGO `tierOk` (bramka tieru epoki) z `grantTechToOwner`
 zostawia `diplomacy-basket-transfer-test.cjs` w 100% zielone (17/17) — usunięcie `epochOk` jest
 złapane, usunięcie `tierOk` nie. Kod jest poprawny (weryfikacja czytaniem), brakuje jednej
 asercji. Opis commita `c8ee16f0` deklarował pokrycie „prereq/epoka/tier/parity" — deklaracja
 dla warstwy tieru była nieprawdziwa, sprostowane tutaj.
+
+**ZAMKNIĘTE (2026-08-09):** nowy scenariusz testowy (katalog `tierCatalog`: technologia bez
+formalnego prerekwizytu, ale wyższego tieru tej samej epoki niż zbadana) izoluje `tierOk` od
+`prereqsMet`/`epochOk`. Evaluator PASS-WITH-NOTES, dowód mutacyjny osobisty potwierdził izolację
+(mutacja `tierOk=true` → dokładnie 2 nowe asercje padają; mutacje `prereqsMet=false`/`epochOk=false`
+nie poruszają nowego scenariusza pozytywnego poza jego rolą zapory ogólnej). Kod produkcyjny
+nietknięty (tylko plik testowy). `diplomacy-basket-transfer-test.cjs` 20/20 (baza 17/17),
+`diplomacy-tech-trade-test.cjs` 24/24, `logic-test.cjs` 213/213, `tsc` 0 błędów.
+
+**Nowe znalezisko Evaluatora, zarejestrowane osobno:** `P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA` —
+identyczna luka istnieje w DRUGIEJ warstwie (`techIdsWithPrereqsMetForRecipient` w
+`gra/src/game/diplomacy-tech-trade.ts`, filtr na etapie budowania listy), poza kotwicami tego
+zgłoszenia (które wskazywały tylko `grantTechToOwner`).
 **Kotwice:** `gra/tools/diplomacy-basket-transfer-test.cjs`, `gra/src/game/diplomacy-basket-transfer.ts` (`grantTechToOwner`, `tierOk`).
 **Model:** Sonnet 5.
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne, pre-istniejące wzmocnione**
-`gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" (Szybka Umowa?) gdy
-`sellableTechCount === 0` — liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr
-(`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`) zmniejsza listę „dostaje" u odbiorcy, ale to lista
-„daję" u nadawcy decyduje o blokadzie — gracz bez własnych technologii do oddania nie może
-przez akcję „6" also *kupić* niczego, mimo że strona „dostaję" może mieć poprawne pozycje.
-Asymetria była pre-istniejąca (nie stworzona tą naprawą), dziś częściej odczuwalna bo lista
-„dostaję" jest teraz krótsza (bardziej realistyczna). Skutek uboczny: placeholder „brak
-technologii" po stronie „daję" w akcji 6 jest w praktyce trudno osiągalny; pozostaje osiągalny
-po stronie „dostaję" i w innych trybach koszyka.
-**Kotwice:** `gra/src/game/diplomacy-locks.ts:201`.
-**Model:** Sonnet 5.
+## P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA — ZAMKNIĘTE 2026-08-09
+Evaluator zmutował `techIdsWithPrereqsMetForRecipient` (`gra/src/game/diplomacy-tech-trade.ts:45`,
+filtr listy „dostaje" na etapie budowania koszyka, DRUGA warstwa defense-in-depth obok
+`grantTechToOwner`) wyłączając SAMĄ składową tieru (`&& true`) — `diplomacy-tech-trade-test.cjs`
+zostaje 24/24 zielone, mutacja przeżywa. Kontrola: wyłączenie CAŁEGO filtra (`return true`) daje
+22/24 — czyli filtr jako całość jest pokryty, ale składowa tieru wewnątrz niego nie. Ta sama klasa
+luki co `P-BRAMKA-TECH-TIER-NIEPOKRYTA`, jedna warstwa dalej.
+
+**Naprawa:** nowy scenariusz testowy z osobnym katalogiem `tierCatalog` (Epoka/Poziom obecne),
+izolujący `tierOk` wewnątrz `techIdsWithPrereqsMetForRecipient` od prereq/epoki — test-only, kod
+produkcyjny nietknięty. Evaluator (Opus 5) **PASS-WITH-NOTES**: dowód mutacyjny silniejszy niż
+żądany — przy siłowo otwartych `prereqsMet`/`epochOk`, scenariusz nadal odrzuca Garncarstwo2,
+jedyną działającą bramką jest `tierOk`. Zmierzone: `diplomacy-tech-trade-test.cjs` 26/26,
+`diplomacy-basket-transfer-test.cjs` 20/20, `logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+Dwie drobne noty Evaluatora domknięte przed scaleniem: (1) nagłówek testu doprecyzowany o opis
+nowego scenariusza; (2) świeżość worktree (2 commity za HEAD, oba niekolidujące) zweryfikowana
+przez `git apply --check -3` bez konfliktu.
+**Kotwice:** `gra/src/game/diplomacy-tech-trade.ts:45` (`techIdsWithPrereqsMetForRecipient`),
+`gra/tools/diplomacy-tech-trade-test.cjs`.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
+
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 — ZAMKNIĘTE 2026-08-09 (ECHO A x2, 3 rundy realizacji)
+
+**Pytanie ABC o zakres B3 (2026-08-09) — MACIEJ ODPOWIEDZIAŁ: A** (via AskUserQuestion) —
+„Rozszerzyć teraz o tech-za-tech": runda 2 ma dołożyć wymianę technologia-za-technologię RAZEM
+z naprawą exploita B1/B2, nie odkładać jej na osobne zgłoszenie. Orkiestrator rekomendował B
+(najpierw exploit, wymiana osobno) — Maciej wybrał A, decyzja wiążąca, praca w toku dostała
+korektę zakresu (patrz niżej).
+`gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" gdy `sellableTechCount === 0` —
+liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr (`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`)
+zmniejsza listę „dostaje" u odbiorcy, ale to lista „daję" u nadawcy decyduje o blokadzie.
+
+**Subagent dostał zadanie zdiagnozować i naprawić bez pytania TYLKO jeśli jednoznaczne. Zrobił
+to (commit `98cfe36c`, dodał `buyableTechCount` do warunku blokady), ale Evaluator werdyktem
+**FAIL** odrzucił scalenie** — diagnoza Operatora była błędna na poziomie implementacji, mimo
+poprawnego odczytu specyfikacji danych (`data/diplomacy.json` opisuje akcję „6" dwutrybowo:
+Sprzedaż/Wymiana).
+
+**Rzeczywisty stan kodu (potwierdzony komentarzem w `main.ts:15122-15125`, dopisanym w TYM
+SAMYM commicie `82bdbd92` na który powoływał się Operator):** akcja „6" jest dziś zaimplementowana
+JEDNOKIERUNKOWO — gracz zawsze sprzedaje (`techOptions = getSellableTechForPlayer`), pole
+`getBuyableTechFromOwner` zasila WYŁĄCZNIE koszyk ogólny (akcja „14"), nie akcję „6". Formularz
+akcji „6" (`diplomacyTradeBasket.ts`) i ścieżka legacy (`diplomacyNegotiationModal.ts`) czytają
+wyłącznie stronę „daję" — **odblokowanie akcji przez `buyableTechCount` nie zmienia formularza
+ani walidacji**, więc gracz bez własnych technologii, po odblokowaniu, i tak dostaje formularz
+„Brak technologii do sprzedaży." i walidację blokującą wysyłkę z komunikatem „Wybierz technologię
+do sprzedaży" — **gorsze doświadczenie niż dziś** (dziś: uczciwie zablokowany przycisk; po
+naprawie: odblokowany przycisk prowadzący do ślepego zaułka).
+
+**[TEMAT: Akcja „6" w dyplomacji — sprzedaż jednokierunkowa czy pełny handel dwukierunkowy]**
+**Sytuacja:** dane gry (`diplomacy.json`) opisują akcję „6" jako dwutrybową (Sprzedaż za gotówkę
+LUB Wymiana tech-za-tech), ale kod implementuje wyłącznie Sprzedaż (gracz zawsze oddaje, nigdy
+nie kupuje). Blokada przycisku jest dziś spójna z faktyczną (jednokierunkową) implementacją.
+**Cel pytania:** czy dociągnąć implementację do specyfikacji danych (prawdziwy handel
+dwukierunkowy) czy pozostawić jednokierunkową sprzedaż i uznać to za zamierzone uproszczenie.
+**Dlaczego teraz:** naprawa blokady bez naprawy formularza tworzy widoczny dla gracza ślepy
+zaułek — bezpieczniej rozstrzygnąć kierunek niż zostawić samą blokadę (choć asymetryczną, to
+dziś spójną z resztą UI).
+- **A — Dociągnąć implementację do specyfikacji (pełny handel dwukierunkowy w akcji „6").**
+  Za: gra zgodna z własnym opisem w `diplomacy.json`; gracz bez nic do oddania może faktycznie
+  kupić technologię za gotówkę, zgodnie z opisem „Sprzedaż: 50-300 Pieniędzy". Przeciw: realny
+  zakres prac — formularz traktatu, walidacja, payload wykonania muszą obsłużyć oba kierunki;
+  większe ryzyko regresji w kodzie który dziś działa poprawnie dla jedynego wspieranego kierunku.
+- **B — Zostawić jednokierunkową sprzedaż, zamknąć zgłoszenie jako „nie bug".** Za: zero ryzyka,
+  zero pracy, kod i UI są dziś wewnętrznie spójne (blokada pasuje do formularza). Przeciw: opis
+  w `diplomacy.json` „Wymiana: technologia o zbliżonej wartości" pozostaje niezrealizowaną
+  obietnicą wobec gracza czytającego opis akcji.
+- **C — Zostawić blokadę jednokierunkową, ale doprecyzować treść komunikatu/opisu akcji „6" w UI
+  żeby nie sugerował trybu kupna.** Za: tania poprawka czytelności bez ryzyka kodu; usuwa
+  rozbieżność między opisem a zachowaniem. Przeciw: nie realizuje pierwotnego zgłoszenia
+  (asymetria formalnie zostaje, tylko lepiej opisana).
+**Rekomendacja:** C jako natychmiastowy, tani krok (0 ryzyka), z A jako możliwy przyszły temat
+jeśli handel dwukierunkowy okaże się pożądany produktowo — ale to decyzja właściciela, nie
+subagenta.
+
+**Stan kodu (przed odpowiedzią A):** commit `98cfe36c` NIE scalony, worktree usunięty.
+
+**MACIEJ ODPOWIEDZIAŁ: A** (via AskUserQuestion, opcja „pełny handel dwukierunkowy") — decyzja
+zapisana `docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`.
+
+**RUNDA 1 realizacji (worktree `agent-ab7a2baa748c80718`, commit `e0caef33`, NIESCALONY):**
+Operator zbudował przełącznik Sprzedaż/Kupno w żywym formularzu (`diplomacyTradeBasket.ts`),
+podpiął `receiveTechOptions` do trybu Kupna. **Znalazł i naprawił REALNY, wcześniej istniejący
+bug niezwiązany z tym zgłoszeniem:** `executePnDealTransfer` nigdy nie czytał `techId` — stara
+„sprzedaż" technologii przelewała WYŁĄCZNIE gotówkę, nigdy nie przekazywała technologii (zmierzone
+przez Evaluatora na kodzie bazowym `9d886ced`). Naprawione nowym `executeTechTradeDeal` +
+`resolveTechTradeParties`, oba kierunki symetryczne (potwierdzone niezależnie przez Evaluatora).
+
+**Evaluator (Opus 5) werdyktem FAIL — trzy blokery, w tym trywialnie osiągalny exploit:**
+1. **B1 (najpoważniejszy — exploit „darmowa technologia"):** `executeTechTradeDeal` przyznaje
+   technologię PRZED próbą zapłaty i IGNORUJE zwracaną wartość transferu gotówki
+   (`applyOneShotGoldTransfer` jest strict — brak środków = `{ok:false}`, zero transferu, ale
+   nic tego nie sprawdza). Zmierzone na realnych modułach: gracz z 0 ¤ w trybie Kupna, cena 50,
+   progi Relacji/Zaufania spełnione → **dostaje technologię za darmo**, zloto AI bez zmian. Tryb
+   Sprzedaży: AI z 0 ¤ → gracz oddaje technologię i nic nie dostaje. Żadna warstwa wyżej tego nie
+   łapie (`evaluateProposal case 'tech'` sprawdza tylko cenę i `techId`, nie skarbiec płatnika).
+2. **B2 (zero pokrycia mutacyjnego okablowania):** mutacja Evaluatora w `executeTechTradeDeal`
+   (grant zawsze do `responderId`, gotówka zawsze proposer→responder — dokładnie błąd, który ten
+   commit ma naprawiać) **przeżywa cały pakiet bramek** (29× `diplomacy-*-test.cjs` zielone,
+   `logic-test` 213/213). Testowana jest czysta funkcja `resolveTechTradeParties`, nie to czy
+   wynik jest faktycznie używany poprawnie.
+3. **B3 (naruszenie pisemnej decyzji, nie tylko specyfikacji danych):** Operator świadomie pominął
+   wymianę tech-za-tech („uproszczenie na własną odpowiedzialność") — ale decyzja `R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`
+   mówi wprost: „gracz może też otrzymać technologię od AI, płacąc gotówką **LUB oddając inną
+   technologię**". To wycięcie połowy zatwierdzonego trybu, nie decyzja do podjęcia przez
+   Operatora — wymaga nowego pytania ABC do właściciela (patrz niżej).
+
+**Noty (do naprawy w rundzie 2, nieblokujące same w sobie):** N1 (przycisk Kupna aktywny mimo
+pustej listy technologii — `readTreatyStateFromDom` czyta stary DOM przy przełączeniu kierunku,
+klik kończy się bez komunikatu), N2 (`techPrice` i `goldOnce` rozjeżdżają się po kontrofercie AI
+na trudności Łatwy — etykieta pokazuje jedną liczbę, transfer wykonuje inną), N4 (brak testu
+save/load dla nowego pola `techDirection` — strukturalnie bezpieczne, ale nieprzypięte), N5
+(worktree 9 commitów za HEAD, realny konflikt tekstowy w `diplomacy-tech-trade-test.cjs` z dziś
+scaloną `P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA` — rozwiązywalny, ale wymaga ręcznego scalenia
+nagłówków, nie automatycznego).
+
+**Runda 2 dispatched** wyłącznie dla B1/B2/N1/N2/N4 (bugi niezależne od odpowiedzi na pytanie
+zakresu) — bramka płatności musi być naprawiona niezależnie od wyniku ABC. Osobne pytanie ABC do
+Macieja o B3 (zakres tech-za-tech) zadane równolegle.
+
+**MACIEJ ODPOWIEDZIAŁ NA B3: A** — rozszerzyć rundę 2 o tech-za-tech, razem z naprawą exploita,
+nie odkładać. Korekta zakresu wysłana do już działającego Operatora rundy 2.
+
+**RUNDA 2 (commity `b5a76611`+`d30c2b9e`, worktree `agent-a3559889ee803787b`, NIESCALONA) —
+Evaluator FAIL, DWA nowe blokery.** Pozytywnie potwierdzone: B1 gotówkowy naprawiony poprawnie na
+wszystkich 4 kombinacjach tryb×kierunek (happy path + brak zapłaty → zerowy transfer w obie
+strony), `canGrantTech` (podgląd bez mutacji) zweryfikowany jako bezpieczny, bramki prereq/epoka/
+tier symetryczne w obu kierunkach, N1/N2 z rundy 1 naprawione realnie.
+
+**BLOKER 1 (krytyczny — funkcja nie działa w grze):** `main.ts::buildProposalFromPayload` składa
+`uiPayload` z białej listy pól i GUBI `techPaymentMode`/`techOfferId` — jedyna droga z formularza
+do stołu negocjacyjnego. Skutek zmierzony na realnym kodzie: `techPrice` wylicza się jako 0 dla
+trybu tech-za-tech (bo `goldOnce=0` w tym trybie, a `??` nie łapie zera), `evaluateProposal` idzie
+gałęzią gotówkową i ZAWSZE odrzuca ofertę komunikatem „Cena poniżej minimum (50 ¤)". Gracz klika
+„Wymiana technologia-za-technologię" i dostaje ślepy zaułek — funkcja jest martwa mimo 41/41
+zielonych testów, bo te testy wołają rdzeń (`executeTechTradeDealCore`) bezpośrednio, z ręcznie
+sklejonym payloadem, omijając dokładnie tę zepsutą warstwę okablowania. **To ten sam wzorzec luki
+co B2 z rundy 1, powtórzony piętro wyżej** — test rdzenia bez testu okablowania UI→silnik.
+
+**BLOKER 2 (druga połowa exploita z rundy 1, nienaprawiona):** silnik sprawdza czy oddający
+zapłatę-technologię ją posiada (`ownerHasTech` dla `techOfferId`), ale NIGDZIE nie sprawdza czy
+dawca GŁÓWNEJ technologii (ta faktycznie przekazywana) w ogóle ją zna. Zmierzone na realnych
+modułach: gracz „sprzedaje" technologię, której nie posiada — AI ją dostaje z niczego, gracz
+inkasuje gotówkę; w trybie tech-za-tech gracz oddaje nieposiadaną technologię i otrzymuje w
+zamian prawdziwą. Dziś nieklikalne z UI (listy filtrowane po znanych technologiach), ale wpisy
+`negotiationTable` są serializowane do save'a i odtwarzane rzutowaniem BEZ rewalidacji — luka
+zaufania na poziomie silnika, dokładnie ten typ ryzyka, którego dotyczyła lekcja rundy 1
+(„silnik nie może ufać filtrowi UI").
+
+Dowód mutacyjny Evaluatora: 5 z 6 własnych mutacji złapanych, w tym dosłowny exploit rundy 1 w
+trybie gotówkowym (nadal złapany — nie regresja). Zakres (`diplomacy-locks.ts`, etykiety) uznany
+za uzasadniony w ramach C-026, nie scope creep.
+
+**Runda 3 dispatched**: (1) dopisać `techPaymentMode`+`techOfferId` do białej listy
+`buildProposalFromPayload`, naprawić wyliczenie `techPrice` dla trybu tech; (2) dołożyć
+`ownerHasTech(granterId, techId)` przed grantem w OBU trybach zapłaty; (3) test musi przechodzić
+PRZEZ `buildProposalFromPayload`, nie obok niego — inaczej runda 3 powtórzy ten sam błąd trzeci
+raz z rzędu; (4) domknąć noty N-A (guard `techOfferId===techId` niepokryty) i N-B (etykieta
+AI-akceptacji sztywno „Sprzedaż" niezależnie od trybu, dziś nieosiągalna ale mina na przyszłość).
+**RUNDA 3 (commit `054a9ed4`, worktree `agent-a3559889ee803787b`) — Evaluator PASS-WITH-NOTES,
+SCALONE.** Oba blokery naprawione i zweryfikowane niezależnie na realnych modułach: (1)
+`techPaymentMode`/`techOfferId` dopisane do białej listy `buildProposalFromPayload`, `techPrice`
+liczony wyłącznie dla trybu gotówkowego; nowy `gra/tools/diplomacy-tech-trade-e2e-test.cjs`
+wycina PRAWDZIWY literał `uiPayload` wprost ze źródła `main.ts` (nie kopia — czyta plik przy
+każdym uruchomieniu) i przepuszcza przez CAŁY łańcuch formularz→wykonanie; (2)
+`ownerHasTech(granterId, techId)` dołożone jako warunek wstępny przed każdym grantem, w obu
+trybach zapłaty. Dowód mutacyjny Evaluatora: 6 własnych mutacji, w tym dosłowne odtworzenie
+błędu rundy 2 (białe listy bez nowych pól) — złapane przez nowy plik E2E, na które stary
+`execute-test` był całkowicie ślepy.
+
+**Jedna nota wymagała korekty przed scaleniem (N1, zaadresowana przez orkiestratora):** ostatni
+skok łańcucha w nowym pliku E2E (payload → argumenty `executeTechTradeDealCore`: `gold`,
+`direction`, `paymentMode`) był ręczną kopią trzech linii z `main.ts`, nie ekstrakcją — mutacja
+Evaluatora w tym miejscu (`paymentMode` zawsze `'gold'` w call site) przechodziła przez WSZYSTKIE
+bramki niewykryta. **Poprawione przy scaleniu**: derywacja wycinana tą samą techniką co literał
+`uiPayload` (regex na źródło `main.ts`, `new Function`) — zweryfikowane osobiście: ta sama
+mutacja teraz daje 27 pass/1 fail, przywrócone 28/28.
+
+Pozostałe noty zarejestrowane, nie wymagają dalszych rund: N3 (`diplomacy-tech-trade-execute-test.cjs`
+pokrywa 3 z 4 kombinacji trybu/kierunku dla bramki dawcy — brakuje Kupno×Technologia, kod
+poprawny, tylko brak przypadku testowego), N6 (nowy plik `diplomacy-tech-trade-e2e-test.cjs` nie
+jest wpisany do żadnej zbiorczej listy bramek w CLAUDE.md — zgodne z dotychczasową praktyką repo,
+żaden test dyplomacji tam nie figuruje).
+
+Zmierzone (po scaleniu i korekcie N1): `diplomacy-locks-test.cjs` 71/71, `diplomacy-audience-actions-test.cjs`
+20/20, `diplomacy-tech-trade-test.cjs` 26/26, `diplomacy-proposal-test.cjs` 129/129,
+`diplomacy-negotiation-table-test.cjs` 62/62, `diplomacy-tech-trade-execute-test.cjs` 52/52,
+`diplomacy-tech-trade-e2e-test.cjs` 28/28 (nowy, +1 po korekcie N1), `logic-test.cjs` 213/213,
+`tsc --noEmit` 0 błędów.
+**Kotwice:** `gra/src/main.ts` (`buildProposalFromPayload`, `executeTechTradeDeal`),
+`gra/src/game/diplomacy-tech-trade.ts` (`resolveTechTradeParties`, `canGrantTech`/`grantTech`),
+`gra/src/ui/diplomacyTradeBasket.ts` (`readTreatyStateFromDom`, `validateTreatyForm` case '6'),
+`gra/src/game/diplomacy-proposals.ts` (`case 'tech'`, `generateCounterOffer`,
+`resolvePlayerAcceptsAiPending`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x3 rundy) + korekta orkiestratora przy scaleniu.
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być
@@ -3220,14 +3647,38 @@ Operatora, tam błędnie „47", zweryfikowane niezależnie przez Evaluatora), `
 kopie tego samego wzorca współbieżności w jednym pliku (sygnet, portret, ikona produkcji),
 świadomie nieuogólnione (C-025, zakres tego zlecenia), do rozważenia przy czwartej kopii.
 
-## P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC (2026-08-09, nota Evaluatora R-PORTRET-PRODIKONA-DROPPED-CALLBACK) · STATUS: **OTWARTE — do wiedzy, powtarzający się wzorzec**
-`gra/src/render/cityMapStatChip.ts` ma dziś TRZY niezależne, strukturalnie identyczne kopie
+## P-STATCHIP-KOLEJKA-POWIELONY-WZORZEC (2026-08-09, nota Evaluatora R-PORTRET-PRODIKONA-DROPPED-CALLBACK) · STATUS: **NAPRAWIONE 2026-08-09 (refaktor) — czeka na deploy+playtest**
+`gra/src/render/cityMapStatChip.ts` miał TRZY niezależne, strukturalnie identyczne kopie
 tego samego wzorca kolejkowania callbacków przy równoległych żądaniach obrazka (sygnet
 cywilizacji, portret władcy, ikona produkcji) — każda naprawiona osobno, w osobnym zleceniu,
 w innym dniu. Evaluator: „ten bug istniał dokładnie dlatego, że naprawiono jedną kopię, a dwie
-zapomniano". Do rozważenia: wspólny helper zamiast czwartej kopii przy następnym takim zasobie.
-**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`requestCivSigilImage`,
-`requestLeaderPortraitImage`, `requestProdIconImage`).
+zapomniano".
+
+**NAPRAWIONE (2026-08-09, subagent Opus 5, refaktor render/**):** nowy prywatny helper
+`createImageRequestQueue()` (fabryka domykająca, `{request(key, resolveSrc, onReady), clearImages()}`)
+— wszystkie trzy funkcje przepisane żeby korzystały z jednej instancji tego helpera zamiast
+trzech niezależnych implementacji. Zero zmiany zachowania (dowiedzione: wyjście testu bajt w
+bajt identyczne z bazą, 0 różnic w 66 liniach). `clearImages()` (nie surowe `.clear()`) wymusza
+niezmiennik „czyścimy obrazki, NIGDY kolejki" przez kształt API zamiast tylko powtórzonego
+komentarza.
+
+Evaluator PASS-WITH-NOTES z bardzo dokładną weryfikacją: potwierdził linia-po-linii że
+wszystkie trzy oryginalne funkcje miały bramkę `!svgFn` w IDENTYCZNYM miejscu (żadnego cichego
+ujednolicenia rozjechanych wariantów), zweryfikował 7 wariantów mutacyjnych (3 własne dodatkowe
+poza dowodem Operatora) — mutacja rdzenia wywala 16 asercji naraz u wszystkich trzech zasobów
+naraz (dowód że logika jest realnie scalona, nie tylko przeniesiona), mutacje specyficzne dla
+jednego zasobu (klucz cache, źródło obrazka) trafiają tylko ten jeden zasób — poprawnie, bo ta
+logika Z DEFINICJI musi być per-zasób. `tsc` 0 błędów, `city-map-badge-test.cjs` 62/62
+(identyczne z bazą), `logic-test` 213/213, `vite build` 799 modułów OK.
+
+**Dwie bardzo niepilne noty Evaluatora (nie blokują, nie wymagają akcji):** (1) umiejscowienie
+bramki `!svgFn` nie jest samo w sobie pokryte testem — Operator trafił bo przeczytał oryginał,
+nie dlatego że bramka testowa by go poprawiła, jeśli ktoś kiedyś to „posprząta" żadna bramka
+nie krzyknie; (2) `requestCivSigilImage`/`requestProdIconImage` nadal niosą identyczny
+2-liniowy potok `prepareSvgForCanvas→svgToDataUri` — Evaluator rekomenduje ZOSTAWIĆ (dalsze
+zwijanie byłoby nadmiarową abstrakcją, nie usterką).
+**Kotwice:** `gra/src/render/cityMapStatChip.ts` (`createImageRequestQueue`,
+`requestCivSigilImage`, `requestLeaderPortraitImage`, `requestProdIconImage`).
 **Model:** Opus 5 (render/**).
 
 ## BUG-PAKIET-INCOMING-CZESCIOWA-AKCEPTACJA (2026-08-08, znalezisko Sędziego przy turnieju ABC R-DYPLO-FAIRNESS-GATE-ZAKRES-Q2) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
@@ -3342,7 +3793,7 @@ liczby: `tsc` czyste, `heks-plony-warstwy-test` (nowy) 19/19, `okolica-test` 46/
 **Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`), silnik `turn-economy.ts`
 (`hexToWorkedTile`).
 
-## P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09, nota N3 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — podniesiona pilność, Evaluator zaleca nie odkładać**
+## P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09, nota N3 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
 `foodPotentialOfMapHex` (`gra/src/game/okolica.ts`) to drugi człon tego samego wzoru rankingu
 co `yieldOfMapHex` (`scoreOkolicaTile` łączy oba w `tileAssignScore`) i ma identyczny,
 NIEnaprawiony wzorzec: czyta tylko `h.ulepszenie` (ostatnią warstwę), nie
@@ -3351,30 +3802,367 @@ warstw — heks z wielowarstwowym ulepszeniem żywnościowym dostaje teraz popra
 farmy ORAZ nadal nienależny `FARMA_POTENTIAL_FOOD_BONUS`, więc zawyżenie w rankingu
 auto-przydziału pól przy `focus:'zywnosc'` jest WIĘKSZE w liczbach bezwzględnych niż przed
 naprawą (nie regresja — oba człony były błędne już wcześniej, rozjazd między nimi jest nowy).
-Naprawa to ten sam jednolinijkowiec: `improvementKeysForHex(h)` zamiast ręcznego `[key]`
-w `okolica.ts:169-170`.
-**Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`, linie 169-170).
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5):** ten sam jednolinijkowiec co `yieldOfMapHex` —
+`improvementKeysForHex(h)` zamiast ręcznego `[key]` w `okolica.ts` (`foodPotentialOfMapHex`).
+Evaluator PASS-WITH-NOTES, dowód mutacyjny (cofnięcie fixu → 21/24, dokładnie 3 nowe asercje
+padają, `okolica-test`/`logic-test` pozostają zielone pod mutacją — nowy test jest JEDYNYM który
+łapie ten błąd). Osiągalność potwierdzona empirycznie na realnym, codziennym przypadku: heks
+Równina z warstwami `['farma','droga']`, legacy `ulepszenie='droga'` (droga nadpisuje legacy przy
+budowie) — stary kod dawał nienależne 3 pkt potencjału mimo że farma już stoi, nowy kod 0 pkt.
+`heks-plony-warstwy-test.cjs` 24/24 (baza 19/19 + 4 nowe), `okolica-test` 46/46,
+`hex-plony-magazyn-test` 11/11, `plony-budynkow-test` 68/68, `logic-test` 213/213,
+`auto-manage-test` 45/45, `tsc` 0 błędów. C-026: 3 wywołania (`okolica.ts:191` przydział pól,
+`okolica.ts:403` rebalans po zmianie populacji, `auto-manage.ts:334` AI zarządcy) — wszystkie
+konsystentne z fixem.
+
+**Nota gameplayowa Evaluatora:** `rebalanceWorkersAfterPopulationChange` może teraz wybrać INNE
+pole do odjęcia robotnika przy kurczeniu się miasta z fokusem żywność — kierunek poprawny (fix
+usuwa wewnętrzną niespójność, nie wprowadza nowej), ale widoczna zmiana zachowania w playteście.
+
+**Trzeci, NIEnaprawiony człon tej samej rodziny błędu, znaleziony przez Evaluatora i
+zarejestrowany osobno:** `P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA` — `cityPanel.ts` (`tileYieldLabel`,
+`appendOkolicaYieldLabel`) ma identyczny wzorzec, widoczny graczowi w tooltipach pól i liczbach
+na mapce okolicy miasta.
+**Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`).
 **Model:** Sonnet 5.
 
-## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+## P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA — ZAMKNIĘTE 2026-08-09 (+ RECYDYWA tego samego dnia, naprawiona przed deployem)
+Trzeci człon tej samej rodziny błędu (obok już naprawionych `yieldOfMapHex` i
+`foodPotentialOfMapHex`): `tileYieldLabel()` i `appendOkolicaYieldLabel()` w `cityPanel.ts`
+budowały `WorkedTile` z tylko JEDNĄ (legacy) warstwą — na heksie testowym silnik liczył 5/5/5,
+panel pokazywał graczowi 2/2/2.
+
+**RECYDYWA (2026-08-09, złapana przez agenta deploy przed wypchnięciem FALA 263):** przy scalaniu
+NIEZWIĄZANEJ naprawy `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` orkiestrator policzył patch jako
+`git diff 92341250 cdb29d92` — `cdb29d92` (tip worktree Operatora tamtej naprawy) odgałęził się
+PRZED `92341250`, więc diff po cichu zawierał cofnięcie tej właśnie naprawy. `git apply --check`
+przeszedł czysto (brak konfliktu tekstowego), Evaluator commita scalającego (`d383edec`) tego nie
+złapał (jego zakres to nowa zmiana, nie regresja gdzie indziej w tym samym pliku) — jedynym
+zabezpieczeniem, które zadziałało, była bramka `heks-panel-tooltip-warstwa-test.cjs` uruchomiona
+przez agenta deploy PRZED wypchnięciem (15/22 → czerwona). Naprawione bezpośrednio w drzewie
+głównym (przywrócone 3 fragmenty bit-for-bit identyczne z `92341250`, potwierdzone przez
+niezależny Evaluator Opus 5 pełnym diffem całego pliku + dowodem mutacyjnym). Nowa reguła
+procesowa zapisana w `civ-autobot/SKILL.md` §5: `git diff <A> <B>` do scalenia jest bezpieczny
+wyłącznie gdy `<A>` jest faktycznym przodkiem `<B>` — inaczej używać `git diff $(git merge-base
+<baza> <tip>) <tip>`. Drugi, niezależny mechanizm cichej utraty pracy w tym repo obok `b9867b3`.
+Bramki po naprawie: `heks-panel-tooltip-warstwa-test.cjs` 22/22, `city-panel-growth-percent-separator-test.cjs`
+29/29, `heks-plony-warstwy-test.cjs` 24/24, `city-badge-growth-percent-test.cjs` 38/38,
+`okolica-test.cjs` 72/72, `okolica-isworkable-silnik-test.cjs` 15/15, `logic-test.cjs` 213/213,
+`tsc --noEmit` 0 błędów.
+
+**Naprawa:** obie funkcje wołają teraz `improvementKeysForHex(hex)`, identycznie jak silnik
+(`hexToWorkedTile`) i poranna naprawa `yieldOfMapHex`. Nowy test `gra/tools/heks-panel-tooltip-warstwa-test.cjs`
+(regex na źródło, `cityPanel.ts` nie eksportuje tych funkcji) — 22/22, dowód mutacyjny (`git
+stash` fixu → 7 nowych FAIL).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: fix zweryfikowany parytetem linia-po-linii ze wzorcem,
+4 własne mutacje (w tym częściowy fix tylko jednej z dwóch funkcji) — wszystkie złapane osobno.
+C-026 potwierdzone niezależnie: dokładnie 8 wystąpień, wszystkie w `cityPanel.ts`, rodzina
+zamknięta (przejrzano wszystkich 9 wywołujących `tileYield(` w `src/`).
+Zmierzone: `heks-panel-tooltip-warstwa-test.cjs` 22/22, `heks-plony-warstwy-test.cjs` 24/24,
+`logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+
+**Dwie nowe niepilne noty Evaluatora, zarejestrowane osobno:** `P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE`
+(uzasadnienie „appendOkolicaYieldLabel wymaga DOM" jest nieprawdziwe — jsdom już jest w repo),
+`P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY` (rodzina `zloze` nieprzekazywane, 3 pozostałe miejsca).
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`tileYieldLabel`, `appendOkolicaYieldLabel`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
+
+## P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dokumentacyjne**
+Operator uzasadnił wybór testu regex-owego (zamiast E2E) tym, że `appendOkolicaYieldLabel`
+„wymaga pełnego DOM". Evaluator sprawdził: `jsdom ^29.1.1` jest zadeklarowanym devDependency
+tego repo, leży w `node_modules`, a 9 istniejących testów w `tools/*.cjs` już go używa. Zbudował
+działający test E2E (~40 linii, esbuild+jsdom, bez nowych zależności), który wywołuje obie
+prawdziwe funkcje i odtwarza ticket dokładnie (przed fixem: „2/2/2", po: „5/5/5"). Silniejsze niż
+regex — testuje zachowanie, nie tekst źródła, przeżywa refaktor. Nie blokowało scalenia
+(obecny test regex jest mutation-proof), ale komentarz w teście i uzasadnienie w commit message
+utrwalają fałszywy precedens „`cityPanel.ts` jest nietestowalny E2E" — już raz posłużył jako wzór
+(`city-panel-growth-percent-separator-test.cjs`). Warto skorygować komentarz przy najbliższej
+okazji edycji tego pliku; nie wymaga osobnego zlecenia.
+**Kotwice:** `gra/tools/heks-panel-tooltip-warstwa-test.cjs` (nagłówek/komentarz uzasadnienia).
+**Model:** Sonnet 5.
+
+## P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+Wzorzec `hexToWorkedTile`/`yieldOfMapHex` (po naprawie `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE`,
+commit `3809d4f4`) przekazuje `zloze` do `tileYield()`. Trzy pozostałe miejsca tego NIE robią:
+`cityPanel.ts:8207`, `cityPanel.ts:8225`, `hexContextTooltip.ts:252`. Zweryfikowane: zero wpływu
+widocznego dziś (`formatTileYieldShort` czyta tylko żywność/pracę/handel, `cityYieldOnly` zeruje
+rudę jawnie) — ta sama „pułapka na przyszłość" co `3809d4f4` już raz zamknął gdzie indziej.
+Rodzina NIE jest w pełni zamknięta wbrew wrażeniu poprzednich commit message.
+**Kotwice:** `gra/src/ui/cityPanel.ts:8207,8225`, `gra/src/ui/hexContextTooltip.ts:252`.
+**Model:** Sonnet 5.
+
+## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
 `hexToWorkedTile` (silnik) przekazuje `tile.zloze` do `tileYield()`, `yieldOfMapHex` (render,
 po dzisiejszej naprawie) go nie przekazuje. Dziś bez wpływu — `yieldOfMapHex` zwraca tylko
 `{zywnosc, praca, handel}`, `zloze` wchodzi wyłącznie do `oreYieldFromImprovements` →
 `ruda`/`ruda_zelaza`, poza kontraktem zwracanym przez tę funkcję. Pułapka na przyszłość: kto
 rozszerzy render o `ruda`, dostanie cichy rozjazd z powrotem.
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5):** dodano `zloze: (h as { zloze?: string }).zloze`
+do wywołania `tileYield()` w `yieldOfMapHex`, dla pełnego parytetu z `hexToWorkedTile`.
+Rzutowanie konieczne bo `zloze` to pole runtime-only, nieobecne w formalnym typie `Hex` —
+zweryfikowane przez Evaluatora jako idiom istniejący już w 5 innych miejscach silnika (dług,
+nie wymysł Operatora). Zerowa zmiana zachowania (dowiedziona: `heks-plony-warstwy-test.cjs`
+19/19 identyczne przed/po). Nowy test `heks-plony-zloze-forward-test.cjs` (5/5) podmienia moduł
+`./economy` na szpiega nagrywającego realny argument — konieczne bo sam wynik funkcji nie może
+wykryć braku przekazania (nie zwraca `ruda`). Evaluator PASS-WITH-NOTES: zweryfikował szpiega
+osobiście (sonda sentinel potwierdzająca że czyta realny argument, nie inny call site),
+potwierdził bezpieczne sprzątanie (`finally`), ocenił technikę jako proporcjonalną („jedyna
+rzecz która realnie przypina to zachowanie" przy ograniczeniu „nie ruszamy silnika").
+`tsc` 0 błędów, `heks-plony-warstwy-test.cjs` 19/19, `okolica-test` 46/46,
+`hex-plony-magazyn-test` 11/11, `logic-test` 213/213.
+
+**Trzy drobne noty Evaluatora, żadna nie blokuje:** (1) plik mocka testu
+(`.heks-plony-zloze-mock-economy.js`) nie jest w `.gitignore` mimo że analogiczne pliki
+`.*-entry.ts`/`.*-bundle.cjs` są, sprzątanie na końcu skryptu zamiast w `finally` — przy
+wyjątku mógłby zostać jako untracked; (2) mock eksportuje tylko `tileYield`, nie pozostałe 7
+wiązań z `./economy` — dziś nieszkodliwe, mylące gdyby ktoś rozszerzył test o ścieżki silnika;
+(3) asercja Testu 2 (`zloze===undefined`) przechodzi z fixem i bez niego, nie niesie sygnału
+mutacyjnego sama w sobie (ratuje ją dopiero sonda sentinel Evaluatora). Evaluator zasugerował
+też strukturalnie lepszy kierunek na przyszłość (wspólny czysty helper budowania argumentu dla
+`okolica.ts`/`turn-economy.ts`, usuwający duplikację u źródła) — poza zakresem tej naprawy,
+świadomie nie realizowany teraz.
 **Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`).
 **Model:** Sonnet 5.
 
-## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA (2026-08-09, nota N4 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE, NIEZWERYFIKOWANA WYKONANIEM) · STATUS: **OTWARTE — hipoteza, do sprawdzenia**
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA — ZAMKNIĘTE 2026-08-09 (4 rundy, PASS-WITH-NOTES + 1 nowe pytanie ABC)
 `main.ts:3971` (`okolicaWorkedKeySet`, overlay) przekazuje `isWorkable: okolicaHexWorkable`
 (wyklucza Morze/Góry), `cityWorkedTilesForEconomy` (`turn-economy.ts:691`, silnik) NIE
-przekazuje `isWorkable` w ogóle; `okolicaTiles` (`okolica.ts:101`) filtruje tylko gdy filtr
-podano — brak domyślnego filtra terenu. Z lektury kodu wynika, że overlay i ekonomia mogą
-różnić się co do tego, KTÓRY heks jest obsadzony — nie zweryfikowane end-to-end, tylko
-hipoteza.
-**Kotwice:** `gra/src/main.ts:3971` (`okolicaWorkedKeySet`), `gra/src/game/turn-economy.ts`
-(`cityWorkedTilesForEconomy`), `gra/src/game/okolica.ts` (`okolicaTiles`).
-**Model:** Sonnet 5.
+przekazywała `isWorkable` w ogóle; `okolicaTiles` (`okolica.ts:101`) filtruje tylko gdy filtr
+podano — brak domyślnego filtra terenu.
+
+**POTWIERDZONE żywą symulacją przez subagenta** (miasto pop=6, focus=produkcja, sąsiedztwo
+Gór): silnik przypisywał robotników na Górach (Praca=4, najwyższa wartość terenu w
+`terrain-yields.json`), których overlay nigdy by nie pokazał jako możliwe. Naprawa: nowa
+`isLandWorkableHex()` w `okolica.ts` jako wspólne źródło prawdy, wstrzyknięta w
+`cityWorkedTilesForEconomy` ORAZ `workedHexCoordsForCity` (drugi call site z identycznym
+błędem, znaleziony i naprawiony przy okazji — Evaluator ocenił to jako uzasadnione, nie
+przekroczenie zakresu). `okolicaHexWorkable` w `main.ts` deleguje do tej samej funkcji.
+
+**Evaluator werdyktem FAIL wstrzymał scalenie — naprawa jest niekompletna i tworzy NOWY,
+poważniejszy rozjazd niż naprawiła:**
+1. **Bloker gameplayowy:** fix dotknął tylko 2 z 5 miejsc zapisujących przydział pól. Ścieżki
+   trybu RĘCZNEGO (`seedReczneFromAuto`, `rebalanceWorkersAfterPopulationChange`,
+   `toggleTileWorker`/`adjustTileWorker`) nadal pozwalają przypisać robotnika na Górę/Morze bez
+   ostrzeżenia — ale silnik (po fixie) po cichu NIE liczy tej produkcji. Zmierzone na realnej
+   mapie: jedno kliknięcie „tryb ręczny" w mieście z Górami w zasięgu = spadek z 27 do 15 pkt
+   Pracy/turę, 3 z 6 obywateli bezczynnych, ZERO komunikatu dla gracza. Dodatkowo dotyczy
+   ISTNIEJĄCYCH zapisanych gier — wpisy `okolicaReczne` na Górach z przed tej naprawy tracą po
+   cichu produkcję przy wczytaniu.
+2. Rozszerzona własna symulacja (960 próbek): tryb AUTO to ograniczona korekta (0,9% miast
+   dotkniętych, liczba obsadzonych pól nigdy nie spadła, 0 zmienionych pozycji startowych) — nie
+   nerf psujący rozgrywkę. Bug szerszy niż w raporcie Operatora: dotyczy TAKŻE fokusu „podatki" z
+   Morzem (Podatek=2 &gt; Równina=1), nie tylko Gór pod fokusem „produkcja".
+3. Brak fallbacku dla miasta całkowicie otoczonego Morzem/Górami — spada do samego centrum
+   (7 pól → 1). Nieosiągalne w 960 próbkach realnego generatora, ale kod nie ma zabezpieczenia.
+4. Test regresji ma lukę: asercje dla Morza przechodzą PUSTO (fokus w teście nigdy nie faworyzuje
+   Morza) — nie złapałyby przyszłego rozwalenia wykluczenia Morza.
+5. Worktree był 6 commitów za HEAD w chwili weryfikacji, 2 z nich dotykały `okolica.ts`.
+
+**ECHO — punkt „co zrobić z ISTNIEJĄCYMI zapisami z robotnikami na Górach":** Maciej — tylko
+stare zapisy, bez migracji; mechanizm ręcznego przydziału zostaje bez zmian funkcjonalnych.
+Decyzja: `docs/decyzje/R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1.md`.
+
+**RUNDA 2 (2026-08-09, worktree `agent-af2924b405f0dac83`, commit `91088b36`, niescalony)** —
+Operator naprawił dokładnie to, co zażądała runda 1: filtr terenu dołożony do WSZYSTKICH 5
+ścieżek zapisu (potwierdzone przez Evaluatora niezależną enumeracją 10 miejsc, nie tylko listą
+Operatora — zerowa regresja starego bugu, symulacja E2E z pełnym pierścieniem Gór/Morza daje
+PARYTET auto/ręczny, dowód mutacyjny na wszystkich 7 punktach filtra). Brak logiki migracji
+zgodnie z decyzją. Test 20 przeprojektowany po własnym dowodzie mutacyjnym Operatora (wersja
+mieszana nie łapała regresji, deterministyczna łapie zawsze) — Evaluator potwierdził to osobiście.
+
+**Evaluator (Opus 5) werdyktem FAIL wstrzymał scalenie PONOWNIE — z zupełnie INNEGO powodu niż
+runda 1 (nowa regresja, nie niedokończone pokrycie):**
+
+1. **B1 (blokujący, sprzeczny z kanonem decyzji `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`):** ta
+   decyzja mówi wprost „mechanizm ręcznego przydziału zostaje w grze BEZ ZMIAN FUNKCJONALNYCH —
+   dotyczy WYŁĄCZNIE danych w starych zapisach". Commit rundy 2 ZMIENIA mechanizm: w
+   `toggleTileWorker` bramka `inRange` (teraz z filtrem terenu) stoi PRZED gałęzią zdejmowania
+   robotnika, więc robotnik na Górach/Morzu w STARYM zapisie **nie da się zdjąć klikiem** —
+   zakleszczenie. Zmierzone (miasto pop=6, 6 wpisów `okolicaReczne`, 3 nielegalne): baza liczy
+   6/6 robotników (16 pkt Pracy), commit rundy 2 liczy 3/6 (8 pkt, legalnie byłoby 12) — I klik na
+   Górach z robotnikiem zwraca `ok=false, teren_nieobsadzalny`, robotnik zostaje uwięziony,
+   podczas gdy komunikaty UI aktywnie mylą gracza („zabierz robotnika z innego pola" — nie da
+   się, bo te legalne już pracują). To ten sam obraz co bloker rundy 1, przeniesiony ze świeżej
+   gry do starego zapisu. Dodatkowo `cityPanel.ts:8290` liczy `isWorked` z surowego `reczne` bez
+   filtra — panel rysuje 👤 na Górach, którego overlay 3D i silnik już nie widzą — NOWY rozjazd
+   overlay↔silnik, dokładnie klasa błędu, którą to zgłoszenie miało zlikwidować.
+   **Kierunek naprawy zweryfikowany osobiście przez Evaluatora** (5 linii: gałąź zdejmowania
+   `reczne[key]>=1 → delete` MUSI iść przed bramką terenu — zdjęcie nigdy nie tworzy nielegalnego
+   stanu, więc nie może być przez filtr blokowane) — potwierdzone że naprawia bez regresji
+   (`okolica-test` 65/65, `silnik-test` 17/17, `logic-test` 213/213), ale Evaluator NIE zostawił
+   zmiany w worktree (zgodnie z rolą — to diagnoza, nie scalenie).
+2. **B2 (blokujący, reguła 4 CLAUDE.md — brak asercji dla AC właściciela):** kanon decyzji
+   definiuje jawne oczekiwane zachowanie („silnik po prostu nie liczy tej produkcji … bez
+   auto-przestawienia") — ŻADEN test tego nie przypina. Ani `okolica-isworkable-silnik-test.cjs`
+   (zero przypadków trybu ręcznego), ani `okolica-test.cjs` (Testy 18–20 sprawdzają wyłącznie
+   DOKŁADANIE robotnika, nigdy stanu ZASTANEGO z nielegalnym wpisem już obecnym). Ta luka w
+   pokryciu jest dokładnie tym, co pozwoliło B1 przejść niezauważone przez Operatora.
+
+**Noty niebokujące:** N1 (nieujawniona zmiana kodu odmowy `obce_terytorium`→`poza_zasiegiem` w
+3/4 przypadków, na plus ale niepokryta testem), N2 (`cityOkolicaOverlay.ts:236` ma NIEZALEŻNĄ,
+zahardkodowaną kopię predykatu terenu dla etykiet plonów — drugie miejsce poza wspólnym źródłem
+prawdy, dziś kosmetyczne), N3 (pominięcie zadania 5 — fallback miasta otoczonego Górami/Morzem —
+uzasadnione, nie ukryte niedokończenie).
+
+**Runda 3 dispatched** z pełną listą Evaluatora: B1 (przenieść gałąź zdejmowania przed bramkę
+terenu we WSZYSTKICH ścieżkach usuwania, w tym `cityPanel.ts:8290`), B2 (dołożyć jawne przypadki
+testowe „stary zapis z nielegalnym wpisem" — nie liczy produkcji, DA SIĘ zdjąć klikiem, bez
+auto-migracji), bez logiki migracji starych zapisów.
+
+**KOREKTA (Evaluator rundy 2, po fakcie, §0b — poprawił własne wcześniejsze twierdzenie):**
+`map-gen-regression-test.cjs` NIE jest architektonicznie nierelewantny — domknięcie przechodnie
+importów generatora (nie tylko bezpośrednie re-eksporty) faktycznie zawiera `okolica.ts` i
+`turn-economy.ts` (51-modułowy łańcuch przez ocenę pozycji startowych). Ta bramka miała zostać
+uruchomiona przed scaleniem rundy 3 — ale środowisko sesji restartowało kontener co ~7-8 minut
+(3 próby, potwierdzone `uptime`/`/proc/uptime` wskazujące świeży boot za każdym razem — zdarzenie
+infrastrukturalne, niezależne od obciążenia procesu), a pełny przebieg testu wymaga 20-58 min —
+strukturalnie niemożliwe do domknięcia w tym oknie.
+
+**DOMKNIĘCIE (orkiestrator, weryfikacja ostrzejsza niż „domknięcie przechodnie importów"):**
+sprawdzone bezpośrednio przez `grep -rn` w `gra/src/map/**` — ŻADNA z funkcji zmienionych w
+rundzie 3 (`isLandWorkableHex`, `seedReczneFromAuto`, `rebalanceWorkersAfterPopulationChange`,
+`toggleTileWorker`, `adjustTileWorker`, `cityWorkedTilesForEconomy`, `workedHexCoordsForCity`) nie
+ma ANI JEDNEGO wywołania w kodzie generatora mapy. `okolica.ts` jest w bundlu wyłącznie dlatego,
+że `range-hexes.ts`/`territory.ts`/`improvement-build.ts` importują z niego INNE, nietknięte
+funkcje (`citySightRadius`, `cityRangeForPopulation`, `hexKeysWithinRadius`) — potwierdzone że
+żadna z nich wewnętrznie nie woła zmienionych funkcji. Domknięcie przechodnie importów (obecność
+w bundlu) ≠ osiągalność w runtime (rzeczywiste wywołanie) — korekta Evaluatora była prawdziwa
+dosłownie, ale myląca co do ryzyka behawioralnego. **Wniosek: `map-gen-regression-test.cjs` NIE
+MOŻE wykryć regresji z tej rundy, bo zmieniony kod nigdy nie jest wołany podczas generowania mapy
+— bramka bezpiecznie pominięta dla scalenia rundy 3, na podstawie analizy call-site, nie samej
+obecności w bundlu.**
+
+**RUNDA 3 (worktree `agent-a97a3b6210599ea27`, commit `3d57c23d`, NIESCALONA) — Evaluator FAIL,
+TRZECI z rzędu, ale po raz pierwszy z powodu regresji WPROWADZONEJ przez samą naprawę, nie luki
+pozostawionej.** B1 rundy 2 (kolejność bramek w `toggleTileWorker`) **potwierdzony jako naprawdę
+naprawiony** — własny harness Evaluatora (42 asercje, nie testy Operatora) zielony na toggle/
+adjust(+1)/adjust(−1), z/bez `territoryNodes`, wpis poza promieniem, wpis na nieistniejącym
+heksie, wpis na obcym terytorium, dwuklik. `map-gen-regression` potwierdzone empirycznie jeszcze
+mocniej niż analiza orkiestratora — zbundlowany entry bramki, 0 z 10 zmienionych symboli w
+654 019-znakowym bundlu.
+
+**BLOKER B3 (regresja WPROST łamiąca `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`):**
+`rebalanceWorkersAfterPopulationChange` dostał w tej rundzie filtr terenu — w gałęzi SPADKU
+populacji nielegalny wpis znika ze ścieżki `!t → delete+excess--`, ale PO PĘTLI i tak wykonuje się
+`if (worstKey) delete reczne[worstKey]`, kasując DODATKOWO pole legalne. Zmierzone: stary zapis,
+pop 5→4, 3 legalne + 2 nielegalne wpisy, `excess=1` — skasowane **3 wpisy zamiast 1**, zginął
+legalny, produkcyjny robotnik. Miasto zostaje z pustymi slotami NA STAŁE. Jedyny caller produkcyjny
+to `population-growth-v85.ts:396` — wywoływany co turę przy każdej zmianie populacji (wzrost/głód),
+NIE wymaga żadnej akcji gracza. To dokładnie ta auto-migracja/cicha utrata, której zakazała decyzja
+właściciela — i ta sama klasa błędu, która wywaliła rundę 1.
+
+**KOREKTA FAKTOGRAFICZNA (Evaluator rundy 4, §0b — sprostowanie własnego wcześniejszego zapisu
+tutaj):** sformułowanie „nowa regresja wprowadzona przez rundę 3" było nieprecyzyjne co do
+mechanizmu, choć prawdziwe co do skutku. Blok `if (!t) { delete reczne[key]; excess--; continue; }`
+istnieje od commita `13419757`, długo przed rundą 3 — zweryfikowane `git show 43afa474:...okolica.ts`.
+Wkładem rundy 3 było dołożenie `terrainAndTerritoryFilter` do `tiles`, co ROZSZERZYŁO znaczenie
+`!t` z „poza zasięgiem" na „poza zasięgiem LUB Góry/Morze" — sam błędny wzorzec podwójnego
+kasowania czekał w kodzie od dawna, runda 3 tylko uczyniła go osiągalnym w nowym, częstszym
+scenariuszu. Naprawa B3 (patrz runda 4 niżej) jest poprawna niezależnie od tego rozróżnienia.
+
+**BLOKER B4 (druga dziura pokrycia tej samej klasy co B2 rundy 2):** dowód mutacyjny Evaluatora —
+usunięcie filtra terenu z `seedReczneFromAuto` (jedna z 5 „zabezpieczonych" ścieżek) NIE zostaje
+złapane przez żaden test (`okolica-test` 64/64, `silnik-test` 15/15, oba zielone mimo mutacji).
+Zmierzony skutek mutacji: tryb ręczny obsadza WSZYSTKIE 6 robotników na Górach, silnik liczy 0 przy
+pop 6 — całkowity zanik produkcji, przy zielonych bramkach. Deklaracja „wszystkie 5 ścieżek" jest
+niezweryfikowana testami.
+
+**Nota (nie bloker):** uzasadnienie komentarza przy `cityPanel.ts:8290` („surowy odczyt potrzebny
+żeby klik mógł zdjąć") jest FAKTYCZNIE NIEPRAWDZIWE — klikalność nie zależy od `isWorked` (pętla
+tworząca przyciski nie ma takiego warunku). Wybór jest obronny, uzasadnienie nie.
+
+**Runda 4 dispatched** z precyzyjną listą Evaluatora: (1) napraw B3 — gałąź `!t` nie może kasować
+ani dekrementować `excess`, ALBO `worstKey` nie może kasować dodatkowo w tej samej iteracji;
+wymaganie: spadek pop o 1 = zniknięcie DOKŁADNIE 1 robotnika, nielegalne wpisy nietknięte; (2) test
+na B3 (liczba usuniętych == `excess`, zero legalnych strat, nielegalne nadal obecne); (3) zamknij
+B4 — test przypinający filtr w `seedReczneFromAuto` (i analogicznie pozostałych ścieżek dodawania);
+(4) popraw nieprawdziwy komentarz przy `cityPanel.ts:8290`.
+
+**RUNDA 4 (commit `3aba4286`, worktree `agent-a97a3b6210599ea27`) — Evaluator PASS-WITH-NOTES,
+SCALONE. Pierwsza runda tego zgłoszenia, która obroniła się pod naciskiem.** Naprawa B3: wpisy
+nielegalne dostają `score = -Infinity` i przechodzą przez TĘ SAMĄ logikę wyboru `worstKey` co
+legalne pola — usuwanie w jednym miejscu, dokładnie raz na iterację, gwarantując dokładnie
+`excess` usunięć. B4: nowe Test 23/24 przypinające filtr w `seedReczneFromAuto` i gałęzi wzrostu
+`rebalance` na mapie deterministycznej (jedyne wolne pola nielegalne). Komentarz przy
+`cityPanel.ts:8290` poprawiony.
+
+Evaluator zbudował WŁASNY harness (10 scenariuszy poza raportem: wszystkie wpisy nielegalne,
+`excess` > liczby nielegalnych, `excess=0`/`excess<0` z nielegalnymi obecnymi, remis w score,
+uszkodzony klucz, tryb auto, spadek do pop=0) — wszystkie przeszły. 6 własnych mutacji, każda
+złapana przez SPECYFICZNY, inny zestaw asercji (dowód że pokrycie B4 jest realnie per-ścieżkowe,
+nie zbiorcze). `map-gen-regression-test.cjs` pominięcie potwierdzone PO RAZ TRZECI (bundel
+entry-pointu, 0 wystąpień na 654 kB).
+
+Zmierzone: `okolica-test.cjs` 72/72, `okolica-isworkable-silnik-test.cjs` 15/15, `logic-test.cjs`
+213/213, `tsc --noEmit` 0 błędów.
+
+**Nowe pytanie ABC zarejestrowane osobno:** `P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1` (naprawa B3
+poprawnie chroni też pola, które wypadły z zasięgu przez skurczenie promienia terytorium przy
+spadku populacji — ale to zwykła dynamika gry, nie tylko stare zapisy, i tworzy „fantomowe" zajęte
+sloty niewidoczne w panelu miasta, czyszczalne tylko klikiem na mapie świata).
+**Nowa nota zarejestrowana osobno:** `P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA` (pre-istniejący,
+poza zakresem tych 4 rund — `adjustTileWorker(delta=+1)` na już obsadzonym polu zdejmuje robotnika
+zamiast dodać drugiego, semantyka toggle pod nazwą „+1").
+**Kotwice:** `gra/src/game/okolica.ts` (`rebalanceWorkersAfterPopulationChange`, `seedReczneFromAuto`),
+`gra/src/ui/cityPanel.ts:8290`.
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x4 rundy).
+
+## P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1 (2026-08-09, nota N2 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **ECHO B — zaparkowane do następnej paczki pracy (Maciej: „innymi rzeczami zajmiemy się później")**
+
+**MACIEJ ODPOWIEDZIAŁ: B** — rozróżnić dwie kategorie „pole niedostępne": teren nielegalny
+(Góry/Morze, stare zapisy — zostaje chroniony bez migracji) vs pole poza aktualnym promieniem po
+skurczeniu terytorium (zwykła dynamika gry — wraca do dawnego, automatycznego czyszczenia).
+Wdrożenie odłożone na następną paczkę pracy (właściciel: najpierw deploy bieżących zmian i
+playtest, „innymi rzeczami zajmiemy się później") — NIE dispatchowane teraz.
+**[TEMAT: Fantomowe sloty robotników po skurczeniu promienia terytorium — czy czyścić automatycznie]**
+**Sytuacja:** naprawa B3 (runda 4) poprawnie chroni stare zapisy z robotnikami na Górach/Morzu
+przed nadmiernym kasowaniem — ale ten sam mechanizm chroni też CAŁKIEM INNY przypadek: pola, które
+wypadły z zasięgu bo promień terytorium miasta skurczył się przy spadku populacji (zwykła,
+częsta sytuacja w grze, nie tylko stare zapisy). Zmierzone przez Evaluatora: spadek pop 12→10
+(promień 12→10), 4 z 12 wpisów wypadły poza nowy promień, `excess=2` — po naprawie zostają 2
+wpisy „fantomowe" (poza zasięgiem, zero produkcji), zajmując 2 sloty robotników na stałe. Panel
+miasta (`okolicaPreviewRadius`, `cap=Rwork`) NIE renderuje pól poza aktualnym promieniem — brak
+przycisku w panelu. Jedyny sposób usunięcia to klik na mapie świata (działa, zweryfikowane).
+
+Przed naprawą B3 te fantomy były czyszczone za darmo (przy okazji nadmiernego kasowania, które
+było błędem dla starych zapisów Gór/Morza, ale przypadkiem „naprawiało" ten inny przypadek).
+
+**Cel pytania:** czy rozróżnić dwie kategorie „pole niedostępne" — (a) teren nielegalny
+(Góry/Morze, stare zapisy — chronione zgodnie z `R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`, bez
+migracji) vs (b) pole poza aktualnym promieniem po skurczeniu terytorium (zwykła dynamika gry,
+nie „stary zapis") — i pozwolić kategorii (b) na auto-czyszczenie tak jak przed całą tą serią
+napraw, czy zostawić jak jest dziś (wymaga ręcznego kliku na mapie świata).
+**Dlaczego teraz:** to jest bezpośredni skutek uboczny właśnie scalonej naprawy — zanim playtest
+to wykryje jako „zgubione sloty robotników", warto rozstrzygnąć czy to zamierzone.
+- **A — Zostawić jak jest.** Za: spójne z już podjętą decyzją (żadnej auto-migracji/naprawy),
+  zero dodatkowej pracy. Przeciw: gracz może nie zauważyć martwych slotów (brak przycisku w
+  panelu miasta), realna, cicha utrata produkcji przy normalnym skurczeniu populacji — nie tylko
+  przy starych zapisach.
+- **B — Rozróżnić dwie kategorie, auto-czyścić TYLKO (b).** Za: przywraca oczekiwane zachowanie
+  sprzed serii napraw dla zwykłego gameplayu (nie łamie decyzji o starych zapisach, bo to inny
+  przypadek), naprawia realny UX problem. Przeciw: kolejna, piąta runda kodowania i testowania
+  tego samego pliku; wymaga precyzyjnego odróżnienia przyczyny „!t" (teren vs promień) w kodzie.
+- **C — Rozszerzyć panel miasta o widoczność/przycisk dla pól poza aktualnym promieniem** (zamiast
+  auto-czyszczenia), żeby gracz mógł świadomie zdjąć fantom bez czekania na mapę świata. Za: nie
+  łamie zasady „brak migracji" nawet dla przypadku (b), poprawia UX bez zmiany logiki silnika.
+  Przeciw: zmiana UI panelu (rozszerzenie zasięgu podglądu), inny rodzaj pracy niż silnik.
+**Rekomendacja:** B — to inny przypadek niż ten, którego dotyczyła oryginalna decyzja (stare
+zapisy z nielegalnym terenem); zwykła dynamika promienia terytorium nie powinna tworzyć trwale
+martwych slotów bez wyraźnego sygnału dla gracza.
+**Kotwice:** `gra/src/game/okolica.ts` (`rebalanceWorkersAfterPopulationChange`, gałąź `!t`),
+`gra/src/ui/cityPanel.ts` (`okolicaPreviewRadius`, `cap=Rwork`).
+**Model:** Opus 5 (Evaluator, znalezisko).
+
+## P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (2026-08-09, nota N3 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **OTWARTE — pre-istniejące, poza zakresem**
+`adjustTileWorker(delta=+1)` na polu JUŻ obsadzonym robotnikiem zdejmuje go (semantyka toggle),
+zamiast np. być no-opem albo błędem „pole już zajęte". Zachowanie istnieje verbatim od dawna
+(potwierdzone w `43afa474`, przed jakąkolwiek z 4 rund tego zgłoszenia), nietknięte przez całą
+serię napraw. Nie blokuje niczego z `P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA`.
+**Kotwice:** `gra/src/game/okolica.ts` (`adjustTileWorker`).
+**Model:** Opus 5 (Evaluator, znalezisko).
 
 ## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)
 Rozdzielono na dwie kontrolki jak zdecydowałeś: `cyclablePlayerArmyLeadsBase(requireMoves)` —

@@ -19,6 +19,12 @@ export interface NegotiationPayload {
   targetOwnerId?: number;
   borderMilitary?: boolean;
   techId?: string;
+  /** R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A: kierunek handlu tech (akcja '6'). Domyślnie 'sell'. */
+  techDirection?: 'sell' | 'buy';
+  /** R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A: sposób zapłaty (akcja '6'). Domyślnie 'gold'. */
+  techPaymentMode?: 'gold' | 'tech';
+  /** Technologia oferowana w zamian, gdy techPaymentMode === 'tech'. */
+  techOfferId?: string;
   bribeGold?: number;
   allianceKind?: 'defensywny' | 'pelny';
   tributeMode?: 'demand' | 'offer';

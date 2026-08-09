@@ -65,7 +65,21 @@
  *          zielonym). Literalna asercja zrodlowa pinuje formule
  *          `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100`
  *          w galezi isCity produkcyjnej effectiveDefenderM, i ze stosuje sie
- *          ona WYLACZNIE do Obrony (terrAdjDefense), nigdy do Ataku obroncy.
+ *          ona WYLACZNIE do Obrony (terrAdjDefense), nigdy do Ataku obroncy;
+ *      (g) P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (Evaluator, dowod mutacyjny
+ *          2026-08-09, znaleziona przy zamykaniu (f) powyzej): SIOSTRZANA luka
+ *          w main.ts::combatPowerFullDisplayDefFor (funkcja PODGLADU tabliczki,
+ *          bez efektow ubocznych na bitwe) -- ta sama tekstowo linia
+ *          `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100` istnieje
+ *          TAKZE tutaj (patrz komentarz nad funkcja w main.ts), ale zaden test
+ *          jej nie pinowal zrodlowo -- dowod mutacyjny: wyzerowanie bonusu
+ *          struktury w combatPowerFullDisplayDefFor zostawialo caly ten plik
+ *          zielonym (sekcje 1-4 wyzej licza wlasna reimplementacje, nie
+ *          importuja main.ts). Literalna asercja zrodlowa nizej pinuje formule
+ *          W CIELE combatPowerFullDisplayDefFor -- odrebnym regexem od (f),
+ *          rozrozniona PO NAZWIE FUNKCJI (jednoznaczna, main.ts ma tylko jedna
+ *          funkcje o tej nazwie) tak samo jak combatPowerScaledDefFor wyzej --
+ *          zeby nie zlapac przypadkiem tej samej linii w effectiveDefenderM.
  *
  * Usage (z gra/): node tools/mur-paradoks-test.cjs
  */
@@ -407,6 +421,78 @@ if (effectiveDefenderMMatch) {
     'effectiveDefenderM() (galaz isCity) NIE dolicza combinedDefPct do Ataku obroncy (terrAdjAttack = split.attack, bez zmian) -- ' +
       'mur/teren "nie chroni" skladowej ofensywnej obroncy w obronie miasta',
   );
+}
+
+// P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (Evaluator, dowod mutacyjny
+// 2026-08-09): SIOSTRZANA funkcja main.ts::combatPowerFullDisplayDefFor (tab-
+// liczka/tooltip PODGLADU, bez efektow ubocznych na bitwe) liczy TA SAMA
+// tekstowo linie `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100`
+// co effectiveDefenderM wyzej, ale zaden test jej nie pinowal zrodlowo --
+// wyzerowanie bonusu struktury TUTAJ zostawialo caly ten plik zielonym (sekcje
+// 1-4 licza wlasna reimplementacje w JS, nie main.ts). Regex ponizej rozroznia
+// sie od bloku effectiveDefenderM wylacznie PO NAZWIE FUNKCJI w sygnaturze
+// (main.ts ma dokladnie jedna funkcje o kazdej z tych nazw) -- ten sam wzorzec
+// jednoznacznosci co juz uzyty dla combatPowerScaledDefFor wyzej w tym pliku.
+const combatPowerFullDisplayDefForMatch = mainTsSrc.match(
+  /function combatPowerFullDisplayDefFor\(u: RuntimeUnit\): Record<string, unknown> \{([\s\S]*?)\n {4}\}/,
+);
+assert(!!combatPowerFullDisplayDefForMatch, 'combatPowerFullDisplayDefFor() znaleziona w main.ts (funkcja PODGLADU tabliczki)');
+if (combatPowerFullDisplayDefForMatch) {
+  const body = combatPowerFullDisplayDefForMatch[1];
+  assert(
+    /const combinedDefPct = structBonusPct \+ \(cityTerrMult - 1\) \* 100;/.test(body),
+    'combatPowerFullDisplayDefFor() liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 ' +
+      '(ta sama ADDYTYWNA formula co effectiveDefenderM, galaz isCity) -- lapie regresje/wyzerowanie bonusu struktury w PODGLADZIE tabliczki, ' +
+      'ktorej sekcje 1-4 wyzej NIE lapia (wlasna reimplementacja w JS)',
+  );
+  // P-BRAMKA-CZARNA-LISTA-HELPEROW-SLABA (Evaluator, dowod mutacyjny): sprawdzanie
+  // BRAKU konkretnego literalu "<pole>: scaleField" (czarna lista NAZWY helpera)
+  // przepuszcza NIEWYKRYTE skalowanie pola Ataku przez INNY helper (np.
+  // "meleeAttack: scaleAtk(...)") albo inline ("meleeAttack: (rest.meleeAttack as
+  // number) * mult") -- zaden z tych wariantow nie zawiera literalu "scaleField".
+  // BIALA LISTA nizej odczytuje NAPRAWDE blok `return { ... }` funkcji PODGLADU i
+  // dla KAZDEJ linii postaci `klucz: wartosc` (pomijajac `...rest,` spread)
+  // rozpoznaje "skalowanie" PO KSZTALCIE wartosci (DOWOLNE wywolanie funkcji
+  // `identyfikator(` LUB mnozenie `*` po prawej stronie dwukropka), NIE po
+  // nazwie konkretnego helpera -- lapie kazda forme skalowania, niezaleznie od
+  // tego jak sie nazywa czy czy jest inline.
+  const returnBlockMatch = body.match(/return \{([\s\S]*?)\};/);
+  assert(
+    !!returnBlockMatch,
+    'combatPowerFullDisplayDefFor() ma blok return { ... } (obiekt wynikowy funkcji PODGLADU) do przeanalizowania',
+  );
+  if (returnBlockMatch) {
+    const ALLOWED_SCALED_KEYS = ['meleeDefence', 'armor', 'health'];
+    const propLineRe = /^([A-Za-z_$][\w$]*)\s*:\s*(.+?),?\s*$/;
+    // "skalowanie" = wywolanie DOWOLNEJ funkcji (identyfikator + otwierajacy
+    // nawias, np. scaleField(...)/scaleAtk(...)/cokolwiekInnego(...)) LUB
+    // mnozenie (*) po prawej stronie dwukropka -- lapie tez inline
+    // "(rest.x as number) * mult", ktore nie ma wywolania funkcji w ogole.
+    const SCALING_SHAPE_RE = /[A-Za-z_$][\w$]*\s*\(|\*/;
+    const scaledKeysFound = [];
+    const disallowedScaledLines = [];
+    for (const rawLine of returnBlockMatch[1].split('\n')) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('...')) continue; // pomin spread (`...rest,`)
+      const m = line.match(propLineRe);
+      if (!m) continue;
+      const [, key, value] = m;
+      if (!SCALING_SHAPE_RE.test(value)) continue; // pole przepisane bez zmian, nie "skalowanie"
+      scaledKeysFound.push(key);
+      if (!ALLOWED_SCALED_KEYS.includes(key)) disallowedScaledLines.push(line);
+    }
+    assert(
+      disallowedScaledLines.length === 0,
+      'combatPowerFullDisplayDefFor(): BIALA LISTA -- w return{} skalowane (wywolaniem funkcji LUB mnozeniem, ' +
+        'dowolna nazwa helpera) jest WYLACZNIE ' + ALLOWED_SCALED_KEYS.join('/') + ' (skladowe Obrony w fieldPower()) -- ' +
+        'znaleziono niedozwolone skalowanie: ' + JSON.stringify(disallowedScaledLines),
+    );
+    assert(
+      ALLOWED_SCALED_KEYS.every(k => scaledKeysFound.includes(k)),
+      'combatPowerFullDisplayDefFor() stosuje mult (1 + combinedDefPct / 100) na meleeDefence/armor/health -- skladowe Obrony w fieldPower() (' +
+        'znalezione skalowane pola: ' + scaledKeysFound.join(', ') + ')',
+    );
+  }
 }
 
 console.log('');

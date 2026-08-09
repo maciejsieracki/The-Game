@@ -11,10 +11,10 @@
  *   Przykład: pop 1->5, pop 9->9, pop 15->15, pop 20->15 (cap), 0->0.
  */
 import type { GameMap } from '../types/map';
-import { Nakladka } from '../types/hex';
+import { Nakladka, TerenBazowy } from '../types/hex';
 import { hexDistance } from '../units/setup';
 import { tileYield } from './economy';
-import { foodPotentialForHex, improvementKeysForHex, normalizeImprovementKey } from './terrain-improvements';
+import { foodPotentialForHex, improvementKeysForHex } from './terrain-improvements';
 import miastoParams from '../../data/miasto-params.json';
 import { cityBorderRadius } from './culture-religion';
 import type { City, OkolicaFocus, OkolicaTryb } from './cities';
@@ -76,6 +76,34 @@ export function hexKeysWithinRadius(cq: number, cr: number, rad: number, map: Ga
   return out;
 }
 
+
+/**
+ * Predykat terenu: pole nadaje się do obsadzenia robotnikiem (nie Morze, nie Gory).
+ * P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA (2026-08-09): WSPÓLNE źródło prawdy dla
+ * overlay renderowania (`main.ts::okolicaHexWorkable` deleguje tutaj), silnika ekonomii
+ * (`turn-economy.ts::cityWorkedTilesForEconomy`/`workedHexCoordsForCity`) i wszystkich
+ * ścieżek zapisu trybu ręcznego w tym module (`seedReczneFromAuto`,
+ * `rebalanceWorkersAfterPopulationChange`, `toggleTileWorker`, `adjustTileWorker`).
+ * Brak heksu (poza mapą) -> nieobsadzalne.
+ */
+export function isLandWorkableHex(map: GameMap, q: number, r: number): boolean {
+  const hex = map.hexes[`${q},${r}`];
+  if (!hex) return false;
+  const t = hex.terenBazowy;
+  return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory;
+}
+
+/** Filtr terenu (Morze/Gory) połączony z opcjonalną własnością terytorium miasta. */
+function terrainAndTerritoryFilter(
+  map: GameMap,
+  territoryNodes: readonly TerritoryNode[] | undefined,
+  ownerId: number,
+): (q: number, r: number) => boolean {
+  const terrainOnly = (q: number, r: number) => isLandWorkableHex(map, q, r);
+  return territoryNodes
+    ? makeTerritoryWorkableFilter(territoryNodes, ownerId, terrainOnly)
+    : terrainOnly;
+}
 
 export interface TileYield { zywnosc?: number; praca?: number; handel?: number; }
 export interface OkolicaTile { q: number; r: number; key: string; dist: number; }
@@ -162,12 +190,20 @@ function scoreOkolicaTile(
   return { t, s: tileAssignScore(y, opts.wagi, potential), y, potential };
 }
 
-/** Potencjał żywności heksu mapy (fokus żywność w auto-okolicy). */
+/**
+ * Potencjał żywności heksu mapy (fokus żywność w auto-okolicy).
+ * P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09): musi czytać WSZYSTKIE
+ * warstwy ulepszeń (`hex.ulepszenia`) przez `improvementKeysForHex`, tak jak
+ * `yieldOfMapHex` wyżej i silnik (`hexToWorkedTile`) — nie tylko legacy pojedyncze
+ * pole `hex.ulepszenie` (ostatnia postawiona warstwa). Inaczej heks z farmą
+ * postawioną NA dodatkowej warstwie (np. `['glinianka','farma']`, legacy
+ * `hex.ulepszenie` wskazujące na coś innego) dalej dostaje nienależny bonus
+ * potencjału, mimo że `FOOD_IMPROVEMENT_KEYS` powinno go wyzerować.
+ */
 export function foodPotentialOfMapHex(map: GameMap, q: number, r: number): number {
   const h = map.hexes[`${q},${r}`];
   if (!h) return 0;
-  const key = normalizeImprovementKey(String(h.ulepszenie ?? 'brak'));
-  const keys = key ? [key] : [];
+  const keys = improvementKeysForHex(h);
   return foodPotentialForHex(h.terenBazowy, h.nakladka ?? Nakladka.Brak, keys);
 }
 
@@ -290,6 +326,7 @@ export function yieldOfMapHex(map: GameMap, q: number, r: number): TileYield {
     terenBazowy: h.terenBazowy,
     nakladka: h.nakladka ?? Nakladka.Brak,
     maRzeke: !!(h.rzeka && h.rzeka.obecna),
+    zloze: (h as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
@@ -310,6 +347,7 @@ export function seedReczneFromAuto(
     radius,
     territoryNodes,
     ownerId: city.ownerId,
+    isWorkable: (q, r) => isLandWorkableHex(map, q, r),
     wagi: wagiForFocus(focus),
   }, focus, map));
   const reczne: Record<string, number> = {};
@@ -350,9 +388,7 @@ export function rebalanceWorkersAfterPopulationChange(
   const radius = cityRangeForPopulation(pop);
   const focus = city.okolicaFocus ?? DEFAULT_OKOLICA_FOCUS;
   const wagi = wagiForFocus(focus);
-  const workFilter = territoryNodes
-    ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId)
-    : undefined;
+  const workFilter = terrainAndTerritoryFilter(map, territoryNodes, city.ownerId);
   const tiles = okolicaTiles(city.q, city.r, radius, map, workFilter);
   const yieldOf = (q: number, r: number) => yieldOfMapHex(map, q, r);
 
@@ -385,18 +421,34 @@ export function rebalanceWorkersAfterPopulationChange(
       let worstKey: string | null = null;
       let worstScore = Infinity;
       let worstDist = -1;
+      // B3 (runda 4, Evaluator rundy 3): wpis nielegalny/poza-zasiegiem (np. stary
+      // zapis na Gorach/Morzu sprzed filtra terenu, albo pole utracone przy zmianie
+      // granic) NIE jest usuwany automatycznie tutaj -- nie liczy sie do produkcji,
+      // wiec jest zawsze "najgorszym" kandydatem (score=-Infinity), ale usuwa go
+      // WYLACZNIE ponizsza wspolna logika worstKey, dokladnie jeden wpis na iteracje
+      // petli while. Dawna wersja usuwala KAZDY nielegalny wpis natychmiast w tym
+      // miejscu (bez wzgledu na budzet excess) I DODATKOWO usuwala worstKey na koncu
+      // -- przy excess=1 i 2 nielegalnych wpisach kasowala 3 wpisy zamiast 1 (w tym
+      // legalny, produkcyjny), czyli cicha auto-naprawa/utrata danych ponad budzet
+      // zakazana przez R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1. Teraz znika DOKLADNIE
+      // `excess` wpisow niezaleznie od tego czy sa legalne czy nielegalne; nielegalne
+      // wpisy ponad budzet excess zostaja w danych nietkniete.
       for (const key of keys) {
         const t = tiles.find(x => x.key === key);
+        let s: number;
+        let dist: number;
         if (!t) {
-          delete reczne[key];
-          excess--;
-          continue;
+          s = -Infinity;
+          const parts = key.split(',');
+          dist = hexDistance(city.q, city.r, Number(parts[0]), Number(parts[1]));
+        } else {
+          const potential = focus === 'zywnosc' ? foodPotentialOfMapHex(map, t.q, t.r) : 0;
+          s = tileAssignScore(yieldOf(t.q, t.r), wagi, potential);
+          dist = t.dist;
         }
-        const potential = focus === 'zywnosc' ? foodPotentialOfMapHex(map, t.q, t.r) : 0;
-        const s = tileAssignScore(yieldOf(t.q, t.r), wagi, potential);
-        if (s < worstScore || (s === worstScore && t.dist > worstDist)) {
+        if (s < worstScore || (s === worstScore && dist > worstDist)) {
           worstScore = s;
-          worstDist = t.dist;
+          worstDist = dist;
           worstKey = key;
         }
       }
@@ -427,15 +479,19 @@ export function adjustTileWorker(
   const current = reczne[key] ?? 0;
   const assigned = Object.values(reczne).reduce((s, n) => s + (n > 0 ? 1 : 0), 0);
 
+  // B1 (runda 3): zdejmowanie juz obsadzonego pola NIGDY nie przechodzi przez filtr
+  // terenu/terytorium -- robotnik juz FIZYCZNIE stoi w danych (legalnie, albo jako
+  // stary zapis sprzed tej naprawy), a zdjecie nigdy nie tworzy nielegalnego stanu.
+  // Filtr stosuje sie WYLACZNIE do proby DODANIA nowego robotnika (nizej).
+  // Patrz R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1: mechanizm zdejmowania zostaje bez zmian
+  // funkcjonalnych, takze dla nielegalnych wpisow sprzed filtra terenu.
   if (delta === 1) {
     if (current >= 1) {
       delete reczne[key];
       return { ok: true, reczne };
     }
     if (assigned >= pop) return { ok: false, reczne, reason: 'limit_populacji' };
-    const workFilter = territoryNodes
-      ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId)
-      : undefined;
+    const workFilter = terrainAndTerritoryFilter(map, territoryNodes, city.ownerId);
     const tiles = okolicaTiles(city.q, city.r, rad, map, workFilter);
     if (!tiles.some(t => t.key === key)) {
       if (territoryNodes && !isTerritoryHexOwnedBy(q, r, city.ownerId, territoryNodes)) {
@@ -492,21 +548,27 @@ export function toggleTileWorker(
     }
   }
 
-  const workFilter = territoryNodes
-    ? makeTerritoryWorkableFilter(territoryNodes, city.ownerId)
-    : undefined;
+  // B1 (runda 3, Evaluator rundy 2): zdejmowanie juz obsadzonego pola MUSI wykonac
+  // sie PRZED jakimkolwiek sprawdzeniem filtra terenu/terytorium -- inaczej stary
+  // zapis z robotnikiem na Gorach/Morzu (legalny przed ta naprawa, bo tryb reczny
+  // nigdy wczesniej nie mial filtra terenu) zakleszcza sie: gracz nie moze go zdjac
+  // klikiem, mimo ze zdjecie nigdy nie tworzy nielegalnego stanu. Filtr terenu
+  // stosuje sie WYLACZNIE do galezi "pole wolne -> sprobuj dodac" ponizej.
+  // Patrz R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1: mechanizm zostaje bez zmian
+  // funkcjonalnych, decyzja dotyczy WYLACZNIE danych w starych zapisach.
+  const current = reczne[key] ?? 0;
+  if (current >= 1) {
+    delete reczne[key];
+    return { ok: true, reczne };
+  }
+
+  const workFilter = terrainAndTerritoryFilter(map, territoryNodes, city.ownerId);
   const inRange = okolicaTiles(city.q, city.r, rad, map, workFilter).some(t => t.key === key);
   if (!inRange) {
     if (territoryNodes && !isTerritoryHexOwnedBy(q, r, city.ownerId, territoryNodes)) {
       return { ok: false, reczne, reason: 'obce_terytorium' };
     }
     return { ok: false, reczne, reason: 'poza_zasiegiem' };
-  }
-
-  const current = reczne[key] ?? 0;
-  if (current >= 1) {
-    delete reczne[key];
-    return { ok: true, reczne };
   }
 
   const assigned = Object.values(reczne).reduce((s, n) => s + (n > 0 ? 1 : 0), 0);

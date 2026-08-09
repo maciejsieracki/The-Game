@@ -15,6 +15,10 @@
  *     tu katalog celowo BEZ pól Epoka/Poziom, żeby izolować oś prereq od osi epoki.
  *   - P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU: `buildAddForm`/`readItemFromForm`
  *     (ui/diplomacyTradeBasket.ts) — placeholder pustej listy + brak pozycji-widma.
+ *   - P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA (2026-08-09): dodatkowy scenariusz z osobnym
+ *     katalogiem `tierCatalog` (Epoka/Poziom obecne) — pokrywa bramkę tieru wewnątrz
+ *     `techIdsWithPrereqsMetForRecipient`, izolowaną od prereq/epoki. Główny katalog wyżej
+ *     zostaje bez zmian (nadal izoluje oś prereq od osi epoki, jak w opisie powyżej).
  */
 const fs = require('fs');
 const path = require('path');
@@ -123,6 +127,38 @@ export { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } from '../s
       const filtered = techIdsWithPrereqsMetForRecipient(tradeable, playerKnown, catalog);
       ok(!filtered.includes('Kolo'), 'PO drugiej warstwie: Kolo znika (gracz nie ma prereq Rolnictwo)');
       ok(filtered.includes('Ceramika'), 'Ceramika (bez prereq) zostaje mimo tej samej warstwy filtra');
+    }
+
+    // -----------------------------------------------------------------------
+    // P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA (2026-08-09): scenariusze a-d wyżej
+    // łapią prereqsMet, ale żaden nie izoluje tierOk (epochTierGateMet, Zasada 2 —
+    // niższe Poziom w OBRĘBIE TEJ SAMEJ epoki muszą być zbadane najpierw). Katalog
+    // analogiczny do tierCatalog w diplomacy-basket-transfer-test.cjs (naprawa
+    // P-BRAMKA-TECH-TIER-NIEPOKRYTA, ta sama epoka, brak formalnego prereq na tech
+    // wyższego tieru) — celowo BEZ pola 'Wymaga (prereq)' na Garncarstwo2, żeby
+    // jedyną blokującą bramką był tierOk.
+    // -----------------------------------------------------------------------
+    console.log('techIdsWithPrereqsMetForRecipient — tier w obrębie epoki (P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA)');
+
+    const tierCatalog = [
+      { Technologia: 'Lowiectwo', Epoka: 'Kamien', Poziom: 1 },
+      { Technologia: 'Garncarstwo2', Epoka: 'Kamien', Poziom: 2 }, // brak 'Wymaga (prereq)' — celowo
+    ];
+
+    // e) Odbiorca BEZ zbadanego Lowiectwo (Poziom 1, ta sama epoka Kamien) → Garncarstwo2
+    //    (Poziom 2) odrzucone WYŁĄCZNIE przez tierOk: prereqsMet=true (brak formalnego pola
+    //    prereq), epochOk=true (Kamien to najniższa epoka, epochGateMet trywialnie spełnione).
+    {
+      const recipientKnown = new Set();
+      const out = techIdsWithPrereqsMetForRecipient(['Garncarstwo2'], recipientKnown, tierCatalog);
+      ok(!out.includes('Garncarstwo2'), 'Garncarstwo2 (Poziom 2) bez zbadanego Lowiectwo (Poziom 1, ta sama epoka) → NIE na liście odbiorcy (tierOk)');
+    }
+
+    // f) Tier spełniony (Lowiectwo zbadane) → Garncarstwo2 wraca na listę.
+    {
+      const recipientKnown = new Set(['Lowiectwo']);
+      const out = techIdsWithPrereqsMetForRecipient(['Garncarstwo2'], recipientKnown, tierCatalog);
+      ok(out.includes('Garncarstwo2'), 'Garncarstwo2 PO zbadaniu Lowiectwo (ta sama epoka, niższy tier) → NA liście odbiorcy');
     }
 
     try { fs.unlinkSync(entry); } catch (_) {}

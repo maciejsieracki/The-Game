@@ -485,6 +485,12 @@ interface TreatyFormState {
   tributeTurns: number;
   goldOnce: number;
   techId: string;
+  /** R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A: kierunek handlu tech (akcja '6'). */
+  techDirection: 'sell' | 'buy';
+  /** Sposób zapłaty za `techId` — 'gold' (domyślne) lub 'tech' (tech-za-tech). */
+  techPaymentMode: 'gold' | 'tech';
+  /** Technologia oferowana w zamian, gdy techPaymentMode === 'tech'. */
+  techOfferId: string;
   bribeGold: number;
   targetOwnerId: number;
 }
@@ -499,9 +505,45 @@ export function isTreatyOnlyFormAction(actionId: string): boolean {
   return TREATY_ONLY_FORM_IDS.has(actionId);
 }
 
+/**
+ * R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A: lista technologii GŁÓWNYCH (te, które faktycznie
+ * zmieniają właściciela jako `techId`) dla danego kierunku — 'sell' = to, co gracz może
+ * ZAOFEROWAĆ (`giveTechOptions`/legacy `techOptions`), 'buy' = to, co gracz może DOSTAĆ
+ * (`receiveTechOptions`). Reużywana w defaultTreatyState / treatySectionHtml /
+ * readTreatyStateFromDom, żeby nie rozjeżdżały się trzy niezależne kopie tej samej gałęzi.
+ */
+function techTradeMainOptions(
+  direction: 'sell' | 'buy',
+  ctx?: NegotiationModalContext,
+): ReadonlyArray<{ id: string; label: string; suggestedPrice: number }> {
+  return direction === 'buy'
+    ? (ctx?.receiveTechOptions ?? [])
+    : (ctx?.giveTechOptions ?? ctx?.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })));
+}
+
+/**
+ * Lista technologii OFEROWANYCH W ZAMIAN (tryb zapłaty 'tech', `techOfferId`) — zawsze
+ * PRZECIWNA do `techTradeMainOptions` dla tego samego kierunku (patrz
+ * diplomacy-tech-trade.ts::resolveTechTradeParties — zapłata płynie payer→payee, czyli w
+ * stronę PRZECIWNĄ do głównej technologii).
+ */
+function techTradeOfferOptions(
+  direction: 'sell' | 'buy',
+  ctx?: NegotiationModalContext,
+): ReadonlyArray<{ id: string; label: string; suggestedPrice: number }> {
+  return direction === 'buy'
+    ? (ctx?.giveTechOptions ?? ctx?.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 })))
+    : (ctx?.receiveTechOptions ?? []);
+}
+
 function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?: NegotiationModalContext): TreatyFormState {
   const wchlonGold = ctx?.wchloniecieGoldRequired ?? 200;
-  const techs = ctx?.techOptions ?? defaultTechOptions();
+  // N4/B: brak pola w starym zapisie -> 'sell' (zachowanie sprzed R-HANDEL-TECH-AKCJA6-
+  // DWUKIERUNKOWY-Q1=A, gracz zawsze sprzedawał).
+  const techDirection: 'sell' | 'buy' = initial?.techDirection === 'buy' ? 'buy' : 'sell';
+  const techPaymentMode: 'gold' | 'tech' = initial?.techPaymentMode === 'tech' ? 'tech' : 'gold';
+  const techs = techTradeMainOptions(techDirection, ctx);
+  const offerTechs = techTradeOfferOptions(techDirection, ctx);
   const rivals = ctx?.rivalOptions ?? [];
   const defaultTurns = actionId === '5' ? 20 : (actionId === '2' ? 15 : 10);
   const initialTurns = initial?.turns;
@@ -517,6 +559,9 @@ function defaultTreatyState(actionId: string, initial?: TradeBasketInitial, ctx?
     tributeTurns: initial?.tributeTurns ?? 0,
     goldOnce: initial?.goldOnce ?? (actionId === '15' ? wchlonGold : (actionId === '9' ? 50 : 0)),
     techId: initial?.techId ?? techs[0]?.id ?? '',
+    techDirection,
+    techPaymentMode,
+    techOfferId: initial?.techOfferId ?? offerTechs[0]?.id ?? '',
     bribeGold: initial?.bribeGold ?? 30,
     targetOwnerId: initial?.targetOwnerId ?? rivals[0]?.ownerId ?? -1,
   };
@@ -602,19 +647,59 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
       break;
     }
     case '6': {
-      const techs = ctx.techOptions ?? defaultTechOptions().map(t => ({ ...t, suggestedPrice: 0 }));
+      // R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A (runda 2, pełny zakres decyzji): Sprzedaż
+      // (gracz oddaje) / Kupno (gracz dostaje) × Gotówka / Technologia (tech-za-tech,
+      // diplomacy.json „Wymiana bezpłatna" — bez przepływu gotówki). Listy tych samych
+      // katalogów co ogólny koszyk (akcja '14'): giveTechOptions/techOptions dla sprzedaży,
+      // receiveTechOptions dla kupna (R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) — lista "oferowana
+      // w zamian" jest zawsze PRZECIWNA (patrz techTradeOfferOptions).
+      const dirChips = (['sell', 'buy'] as const).map(d =>
+        '<button type="button" class="cdb-chip cdb-treaty-tech-dir'
+        + (state.techDirection === d ? ' selected' : '') + '" data-value="' + d + '">'
+        + (d === 'sell' ? 'Sprzedaż' : 'Kupno') + '</button>',
+      ).join('');
+      const techs = techTradeMainOptions(state.techDirection, ctx);
+      body = '<label>Kierunek</label>'
+        + '<div class="cdb-chip-row">' + dirChips + '</div>';
       if (techs.length === 0) {
-        body = '<p class="cdb-sub">Brak technologii do sprzedaży.</p>';
+        body += '<p class="cdb-sub">' + (state.techDirection === 'buy'
+          ? 'Brak technologii do kupienia (partner nie ma nic, czego jeszcze nie masz).'
+          : 'Brak technologii do sprzedaży.') + '</p>';
       } else {
         const sel = techs.map(t =>
           '<option value="' + esc(t.id) + '"' + (t.id === state.techId ? ' selected' : '') + '>'
           + esc(t.label) + (t.suggestedPrice ? ' (~' + t.suggestedPrice + ' ¤)' : '') + '</option>',
         ).join('');
-        const price = state.goldOnce > 0 ? state.goldOnce : (techs.find(t => t.id === state.techId)?.suggestedPrice ?? 50);
-        body = '<label>Technologia</label>'
-          + '<select id="cdb-treaty-tech" class="cdb-treaty-tech">' + sel + '</select>'
-          + '<label for="cdb-treaty-tech-price">Cena (¤)</label>'
-          + '<input type="number" id="cdb-treaty-tech-price" class="cdb-treaty-tech-price" value="' + price + '" min="1" />';
+        body += '<label>Technologia</label>'
+          + '<select id="cdb-treaty-tech" class="cdb-treaty-tech">' + sel + '</select>';
+
+        const payChips = (['gold', 'tech'] as const).map(pm =>
+          '<button type="button" class="cdb-chip cdb-treaty-tech-pay'
+          + (state.techPaymentMode === pm ? ' selected' : '') + '" data-value="' + pm + '">'
+          + (pm === 'gold' ? 'Gotówka' : 'Technologia') + '</button>',
+        ).join('');
+        body += '<label>Sposób zapłaty</label>'
+          + '<div class="cdb-chip-row">' + payChips + '</div>';
+
+        if (state.techPaymentMode === 'tech') {
+          const offerTechs = techTradeOfferOptions(state.techDirection, ctx);
+          if (offerTechs.length === 0) {
+            body += '<p class="cdb-sub">' + (state.techDirection === 'buy'
+              ? 'Brak własnej technologii do zaoferowania w zamian.'
+              : 'Partner nie ma czym zapłacić technologią.') + '</p>';
+          } else {
+            const offerSel = offerTechs.map(t =>
+              '<option value="' + esc(t.id) + '"' + (t.id === state.techOfferId ? ' selected' : '') + '>'
+              + esc(t.label) + '</option>',
+            ).join('');
+            body += '<label>Oferowana technologia w zamian</label>'
+              + '<select id="cdb-treaty-tech-offer" class="cdb-treaty-tech-offer">' + offerSel + '</select>';
+          }
+        } else {
+          const price = state.goldOnce > 0 ? state.goldOnce : (techs.find(t => t.id === state.techId)?.suggestedPrice ?? 50);
+          body += '<label for="cdb-treaty-tech-price">Cena (¤)</label>'
+            + '<input type="number" id="cdb-treaty-tech-price" class="cdb-treaty-tech-price" value="' + price + '" min="1" />';
+        }
       }
       break;
     }
@@ -651,7 +736,7 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
     + body + '</div>';
 }
 
-function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): TreatyFormState {
+function readTreatyStateFromDom(actionId: string, prev: TreatyFormState, ctx?: NegotiationModalContext): TreatyFormState {
   const state = { ...prev };
   if (actionId === '2') {
     const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '15', 10);
@@ -674,8 +759,61 @@ function readTreatyStateFromDom(actionId: string, prev: TreatyFormState): Treaty
     const turns = parseInt((document.querySelector('.cdb-treaty-turns') as HTMLInputElement)?.value ?? '20', 10);
     state.turns = Math.max(1, Math.min(20, turns));
   } else if (actionId === '6') {
-    state.techId = (document.querySelector('.cdb-treaty-tech') as HTMLSelectElement)?.value ?? state.techId;
-    state.goldOnce = parseInt((document.querySelector('.cdb-treaty-tech-price') as HTMLInputElement)?.value ?? '0', 10);
+    // N1 (Evaluator runda 1): przełączenie kierunku Sprzedaż/Kupno zmienia listę
+    // technologii, ale w chwili tego odczytu DOM jeszcze pokazuje POPRZEDNI render (ten
+    // odczyt biegnie PRZED renderBasket w refresh()) — sam `<select>` może więc realnie
+    // istnieć, ale należeć do INNEJ (starej) listy niż `state.techDirection` świeżo
+    // odczytany tu wyżej. Dlatego lista aktywnego kierunku jest liczona wprost z `ctx`
+    // (dane, nie DOM) — to jedyne źródło odporne na to opóźnienie o jeden cykl renderu.
+    // Brak przycisku w DOM = jeszcze nie wyrenderowano (pierwsze wywołanie refresh() na
+    // pustym `box`, patrz showTradeBasketModal) -> zachowaj poprzedni kierunek (initial/
+    // domyślny z defaultTreatyState), nie nadpisuj go na sztywno 'sell'.
+    const dirBtn = document.querySelector('.cdb-treaty-tech-dir.selected') as HTMLElement | null;
+    const direction: 'sell' | 'buy' = dirBtn
+      ? (dirBtn.getAttribute('data-value') === 'buy' ? 'buy' : 'sell')
+      : prev.techDirection;
+    state.techDirection = direction;
+    const activeTechs = techTradeMainOptions(direction, ctx);
+    if (activeTechs.length === 0) {
+      // Lista aktualnego kierunku jest pusta -> nie ma czego wybrać, niezależnie od tego,
+      // co select jeszcze POKAZUJE sprzed przerysowania. Bez tego walidacja (i disabled
+      // przycisku, patrz validateTreatyForm) przechodziłaby na nieaktualnym techId.
+      state.techId = '';
+    } else {
+      const domSelect = document.querySelector('.cdb-treaty-tech') as HTMLSelectElement | null;
+      if (domSelect && activeTechs.some(t => t.id === domSelect.value)) {
+        state.techId = domSelect.value;
+      } else if (!activeTechs.some(t => t.id === state.techId)) {
+        state.techId = activeTechs[0]!.id;
+      }
+    }
+
+    // Sposób zapłaty — ten sam wzorzec „brak przycisku w DOM = jeszcze nie wyrenderowano"
+    // co dla kierunku wyżej (zachowaj poprzedni tryb zamiast twardego 'gold').
+    const payBtn = document.querySelector('.cdb-treaty-tech-pay.selected') as HTMLElement | null;
+    const paymentMode: 'gold' | 'tech' = payBtn
+      ? (payBtn.getAttribute('data-value') === 'tech' ? 'tech' : 'gold')
+      : prev.techPaymentMode;
+    state.techPaymentMode = paymentMode;
+
+    if (paymentMode === 'tech') {
+      // Ta sama logika odporna-na-opóźniony-render co dla techId — lista „oferowana w
+      // zamian" liczona z ctx (dane), nie z DOM.
+      const offerTechs = techTradeOfferOptions(direction, ctx);
+      if (offerTechs.length === 0) {
+        state.techOfferId = '';
+      } else {
+        const domOfferSelect = document.querySelector('.cdb-treaty-tech-offer') as HTMLSelectElement | null;
+        if (domOfferSelect && offerTechs.some(t => t.id === domOfferSelect.value)) {
+          state.techOfferId = domOfferSelect.value;
+        } else if (!offerTechs.some(t => t.id === state.techOfferId)) {
+          state.techOfferId = offerTechs[0]!.id;
+        }
+      }
+    } else {
+      const priceInp = document.querySelector('.cdb-treaty-tech-price') as HTMLInputElement | null;
+      if (priceInp) state.goldOnce = parseInt(priceInp.value, 10) || 0;
+    }
   } else if (actionId === '7') {
     state.targetOwnerId = parseInt((document.querySelector('.cdb-treaty-rival') as HTMLSelectElement)?.value ?? '-1', 10);
     state.bribeGold = parseInt((document.querySelector('.cdb-treaty-bribe') as HTMLInputElement)?.value ?? '0', 10);
@@ -717,9 +855,23 @@ function validateTreatyForm(actionId: string, state: TreatyFormState, ctx?: Nego
       break;
     case '6':
       if (!state.techId) {
-        return { valid: false, reason: 'Wybierz technologię do sprzedaży' };
+        return {
+          valid: false,
+          reason: state.techDirection === 'buy'
+            ? 'Brak technologii do kupienia'
+            : 'Wybierz technologię do sprzedaży',
+        };
       }
-      if (state.goldOnce < 1) {
+      if (state.techPaymentMode === 'tech') {
+        if (!state.techOfferId) {
+          return {
+            valid: false,
+            reason: state.techDirection === 'buy'
+              ? 'Wybierz własną technologię do zaoferowania w zamian'
+              : 'Brak technologii partnera do zaoferowania w zamian',
+          };
+        }
+      } else if (state.goldOnce < 1) {
         return { valid: false, reason: 'Cena technologii: minimum 1 ¤' };
       }
       break;
@@ -825,7 +977,14 @@ function buildTreatyPayload(
       break;
     case '6':
       payload.techId = state.techId;
-      payload.goldOnce = state.goldOnce;
+      payload.techDirection = state.techDirection;
+      payload.techPaymentMode = state.techPaymentMode;
+      if (state.techPaymentMode === 'tech') {
+        payload.techOfferId = state.techOfferId;
+        payload.goldOnce = 0;
+      } else {
+        payload.goldOnce = state.goldOnce;
+      }
       break;
     case '7':
       payload.targetOwnerId = state.targetOwnerId;
@@ -1809,6 +1968,9 @@ export interface TradeBasketInitial {
   tributeMode?: 'demand' | 'offer';
   tributeTurns?: number;
   techId?: string;
+  techDirection?: 'sell' | 'buy';
+  techPaymentMode?: 'gold' | 'tech';
+  techOfferId?: string;
   bribeGold?: number;
   targetOwnerId?: number;
 }
@@ -1859,7 +2021,7 @@ export function showTradeBasketModal(
   const refresh = (): void => {
     readDealTurnsFromDom();
     readResourceTradeModeFromDom();
-    if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState);
+    if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState, ctx);
     renderBasket(box, mode, action, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode, treatyState, warThreat, editingItem, modalOpts);
     bindEvents();
   };
@@ -1893,6 +2055,25 @@ export function showTradeBasketModal(
     box.querySelectorAll('.cdb-chip-tech').forEach(btn => {
       btn.addEventListener('click', () => {
         selectChipInGroup(btn, 'cdb-chip-tech', '.cdb-tech');
+      });
+    });
+
+    // R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A: przełącznik Sprzedaż/Kupno (akcja '6').
+    // Klasa dot. przycisku ustawiana TU (przed refresh()) — readTreatyStateFromDom
+    // odczytuje `.selected` z DOM, refresh() dopiero potem przerysowuje resztę formularza
+    // (nową listę technologii dla wybranego kierunku).
+    box.querySelectorAll('.cdb-treaty-tech-dir').forEach(btn => {
+      btn.addEventListener('click', () => {
+        box.querySelectorAll('.cdb-treaty-tech-dir').forEach(c => c.classList.toggle('selected', c === btn));
+        refresh();
+      });
+    });
+
+    // Sposób zapłaty (Gotówka/Technologia) — sam wzorzec co przełącznik kierunku wyżej.
+    box.querySelectorAll('.cdb-treaty-tech-pay').forEach(btn => {
+      btn.addEventListener('click', () => {
+        box.querySelectorAll('.cdb-treaty-tech-pay').forEach(c => c.classList.toggle('selected', c === btn));
+        refresh();
       });
     });
 
@@ -2097,7 +2278,7 @@ export function showTradeBasketModal(
       readResourceTradeModeFromDom();
       const warCb = box.querySelector('.cdb-war-threat-cb') as HTMLInputElement | null;
       if (warCb) warThreat = warCb.checked;
-      if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState);
+      if (mode === 'treaty') treatyState = readTreatyStateFromDom(action.id, treatyState, ctx);
       const validation = validateBasketForm(
         mode, action.id, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, blocked, treatyState,
       );

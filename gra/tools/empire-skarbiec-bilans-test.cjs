@@ -88,7 +88,7 @@ function assert(name, cond, detail) {
 // --- format treasuryBalanceSignedTxt ---
 assert('treasuryBalanceSignedTxt(0) = "0" (nie myślnik)', treasuryBalanceSignedTxt(0) === '0');
 assert('treasuryBalanceSignedTxt(+5) pokazuje +5', treasuryBalanceSignedTxt(5) === '+5');
-assert('treasuryBalanceSignedTxt(-3) pokazuje -3', treasuryBalanceSignedTxt(-3) === '-3');
+assert('treasuryBalanceSignedTxt(-3) pokazuje −3 (U+2212, nie ASCII)', treasuryBalanceSignedTxt(-3) === '−3');
 
 // --- ścieżka danych bilansu (to samo co refreshLiveEmpireRates → buildHudState) ---
 const data = loadGameData();
@@ -137,8 +137,8 @@ if (city) {
     `netto=${netto} txt=${treasuryBalanceSignedTxt(netto)}`,
   );
   assert(
-    'bilans: utrzymanie budynkow jako ujemna kwota (nie myślnik przy >0)',
-    treasuryBalanceSignedTxt(-utrzB) !== '—' && treasuryBalanceSignedTxt(-utrzB).startsWith('-'),
+    'bilans: utrzymanie budynkow jako ujemna kwota (nie myślnik przy >0, U+2212 nie ASCII)',
+    treasuryBalanceSignedTxt(-utrzB) !== '—' && treasuryBalanceSignedTxt(-utrzB).startsWith('−'),
     `txt=${treasuryBalanceSignedTxt(-utrzB)}`,
   );
 

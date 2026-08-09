@@ -59,6 +59,13 @@ export interface DiplomacyActionLockContext {
   /** Etykieta traktatu, który zrywa wypowiedzenie wojny (np. „Pakt o nieagresji"); undefined = brak. */
   breaksTreatyLabel?: string;
   sellableTechCount: number;
+  /**
+   * R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A (2026-08-09): technologie, które gracz może
+   * KUPIĆ od respondenta (`getBuyableTechFromOwner`) — akcja '6' odblokowana, gdy JEST co
+   * sprzedać LUB co kupić (przed tą decyzją: locked zawsze przy `sellableTechCount === 0`,
+   * nawet gdy strona „dostaję" miała poprawne pozycje — ślepy zaułek dla trybu Kupna).
+   */
+  buyableTechCount: number;
   knownRivalsCount: number;
   progNapRelacja: number;
   progHandelRelacja: number;
@@ -198,7 +205,7 @@ export function resolveDiplomacyActionLock(ctx: DiplomacyActionLockContext): Dip
     case '6': { // Wymiana / sprzedaż technologii
       const gate = dualGate(ctx.relTotal, ctx.zaufanie, ctx.progHandelRelacja, ctx.progWymianaTechZaufanie);
       if (gate) return gate;
-      if (ctx.sellableTechCount === 0) {
+      if (ctx.sellableTechCount === 0 && ctx.buyableTechCount === 0) {
         return { locked: true, note: 'zablokowana — brak technologii do wymiany' };
       }
       return { locked: false, note: '' };

@@ -107,6 +107,7 @@ function baseCtx(overrides = {}) {
     hasSojusz: false,
     breaksTreatyLabel: undefined,
     sellableTechCount: 1,
+    buyableTechCount: 0,
     knownRivalsCount: 1,
     progNapRelacja: dip.progNapRelacja,
     progHandelRelacja: dip.progHandelRelacja,
@@ -264,13 +265,23 @@ eq(
 }
 {
   const r = resolveDiplomacyActionLock(baseCtx({
-    actionId: '6', relTotal: 200, zaufanie: 95, sellableTechCount: 0,
+    actionId: '6', relTotal: 200, zaufanie: 95, sellableTechCount: 0, buyableTechCount: 0,
   }));
-  eq(r.locked, true, 'id6: progi spełnione ale brak technologii do wymiany -> locked');
+  eq(r.locked, true, 'id6: progi spełnione ale brak technologii ani do sprzedaży ani do kupna -> locked');
 }
 {
   const r = resolveDiplomacyActionLock(baseCtx({ actionId: '6', relTotal: 200, zaufanie: 95, sellableTechCount: 3 }));
-  eq(r.locked, false, 'id6: odblokowana gdy progi + technologie dostępne');
+  eq(r.locked, false, 'id6: odblokowana gdy progi + technologie do sprzedaży dostępne');
+}
+{
+  // R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A (2026-08-09, punkt 5 zakresu wdrożenia):
+  // sellableTechCount=0, ale buyableTechCount>0 -> gracz nie ma nic do sprzedania, ale MA co
+  // kupić (tryb Kupna) -> akcja MUSI być odblokowana (dawniej locked zawsze przy
+  // sellableTechCount===0, ślepy zaułek dla trybu Kupna).
+  const r = resolveDiplomacyActionLock(baseCtx({
+    actionId: '6', relTotal: 200, zaufanie: 95, sellableTechCount: 0, buyableTechCount: 2,
+  }));
+  eq(r.locked, false, 'id6: odblokowana gdy brak co sprzedać, ale JEST co kupić (buyableTechCount>0)');
 }
 
 // ===========================================================================

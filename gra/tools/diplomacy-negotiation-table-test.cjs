@@ -212,6 +212,58 @@ ok(NEGOTIATION_EXPIRY_TURNS > 0, 'NEGOTIATION_EXPIRY_TURNS > 0');
   ok(roundTripped.payload.giveItems[0].ilosc === 40, 'zagnieżdżony koszyk (giveItems) przetrwa round-trip');
 }
 
+// 8b — N4 (Evaluator runda 2, P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1): pole
+// `techDirection` (akcja '6', R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A) przetrwa
+// save/load (JSON round-trip) tak samo jak reszta payloadu, a STARY zapis SPRZED tej
+// decyzji (brak pola w ogóle) degraduje się bezpiecznie do 'sell' — dokładnie ten sam
+// fallback co main.ts::executeTechTradeDeal i ui/diplomacyTradeBasket.ts::defaultTreatyState
+// (`payload.techDirection === 'buy' ? 'buy' : 'sell'`), nie np. `undefined`/wyjątek.
+{
+  const buyEntry = createNegotiation(
+    { actionId: 'tech', proposerOwnerId: 0, responderOwnerId: 3, payload: { techId: 'Kolo', techPrice: 60, goldOnce: 60, techDirection: 'buy' } },
+    10, 'player', 6,
+  );
+  const roundTripped = JSON.parse(JSON.stringify(buyEntry));
+  ok(JSON.stringify(roundTripped) === JSON.stringify(buyEntry), 'techDirection=\'buy\': PendingNegotiation przetrwa JSON.stringify/parse bez strat');
+  ok(roundTripped.payload.techDirection === 'buy', 'techDirection=\'buy\' przetrwa round-trip bez degradacji');
+
+  // Stary zapis (sprzed tej decyzji) — pole techDirection W OGÓLE nie istnieje w payloadzie.
+  const legacyEntry = createNegotiation(
+    { actionId: 'tech', proposerOwnerId: 0, responderOwnerId: 3, payload: { techId: 'Kolo', techPrice: 60, goldOnce: 60 } },
+    10, 'player', 6,
+  );
+  const legacyRoundTripped = JSON.parse(JSON.stringify(legacyEntry));
+  ok(!('techDirection' in legacyRoundTripped.payload), 'stary zapis bez techDirection: pole faktycznie nieobecne po round-tripie (nie np. null wstawione przez silnik)');
+  const fallbackDirection = legacyRoundTripped.payload.techDirection === 'buy' ? 'buy' : 'sell';
+  ok(fallbackDirection === 'sell', 'stary zapis bez techDirection degraduje się bezpiecznie do \'sell\' (ten sam fallback co main.ts/diplomacyTradeBasket.ts)');
+}
+
+// 8c — N4 rozszerzone (runda 2, pełny zakres decyzji — tech-za-tech): `techPaymentMode` +
+// `techOfferId` przetrwają save/load tak samo, a stary zapis (sprzed tego rozszerzenia,
+// TYLKO techDirection obecne, bez techPaymentMode/techOfferId) degraduje się bezpiecznie do
+// 'gold' — ten sam fallback co main.ts::executeTechTradeDeal
+// (`payload.techPaymentMode === 'tech' ? 'tech' : 'gold'`).
+{
+  const techForTechEntry = createNegotiation(
+    { actionId: 'tech', proposerOwnerId: 0, responderOwnerId: 3, payload: { techId: 'Kolo', techDirection: 'sell', techPaymentMode: 'tech', techOfferId: 'Zelazo' } },
+    10, 'player', 6,
+  );
+  const roundTripped = JSON.parse(JSON.stringify(techForTechEntry));
+  ok(JSON.stringify(roundTripped) === JSON.stringify(techForTechEntry), 'techPaymentMode=\'tech\' + techOfferId: PendingNegotiation przetrwa JSON round-trip bez strat');
+  ok(roundTripped.payload.techPaymentMode === 'tech' && roundTripped.payload.techOfferId === 'Zelazo', 'techPaymentMode/techOfferId przetrwają round-trip bez degradacji');
+
+  // Zapis sprzed rozszerzenia tech-za-tech: techDirection JUŻ istnieje (runda 2, część
+  // gotówkowa), ale techPaymentMode/techOfferId jeszcze nie.
+  const preTechForTechEntry = createNegotiation(
+    { actionId: 'tech', proposerOwnerId: 0, responderOwnerId: 3, payload: { techId: 'Kolo', techDirection: 'buy', techPrice: 60, goldOnce: 60 } },
+    10, 'player', 6,
+  );
+  const preRoundTripped = JSON.parse(JSON.stringify(preTechForTechEntry));
+  ok(!('techPaymentMode' in preRoundTripped.payload) && !('techOfferId' in preRoundTripped.payload), 'zapis sprzed tech-za-tech: pola faktycznie nieobecne po round-tripie');
+  const fallbackPaymentMode = preRoundTripped.payload.techPaymentMode === 'tech' ? 'tech' : 'gold';
+  ok(fallbackPaymentMode === 'gold', 'zapis sprzed tech-za-tech degraduje się bezpiecznie do techPaymentMode=\'gold\' (ten sam fallback co main.ts)');
+}
+
 // 9 — makeNegotiationId: unikalność przez seq, stabilna para właścicieli (mniejszy first).
 {
   const idA = makeNegotiationId('nap', 5, 0, 3, 1);

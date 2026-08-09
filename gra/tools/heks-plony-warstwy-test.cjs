@@ -8,6 +8,13 @@
  * faktycznie doliczany do produkcji miasta) — a nie tylko ostatnią postawioną warstwę
  * (legacy pojedyncze pole `hex.ulepszenie`).
  *
+ * P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09): drugi człon tego samego
+ * wzorca błędu — `foodPotentialOfMapHex` (ranking auto-okolicy fokus żywność) musiał
+ * czytać tylko `h.ulepszenie` zamiast wszystkich warstw `h.ulepszenia`, więc heks
+ * z ulepszeniem żywnościowym w liście warstw, ale innym legacy `ulepszenie`, dostawał
+ * nienależny `FARMA_POTENTIAL_FOOD_BONUS` zamiast 0 (funkcja "nie widziała" że farma
+ * już tam jest).
+ *
  * Run from gra/: node tools/heks-plony-warstwy-test.cjs
  */
 
@@ -27,9 +34,10 @@ const ENTRY = path.join(__dirname, '.heks-plony-warstwy-entry.ts');
 const BUNDLE = path.join(__dirname, '.heks-plony-warstwy-bundle.cjs');
 
 fs.writeFileSync(ENTRY, `
-export { yieldOfMapHex } from '../src/game/okolica';
+export { yieldOfMapHex, foodPotentialOfMapHex } from '../src/game/okolica';
 export { hexToWorkedTile } from '../src/game/turn-economy';
 export { tileYield } from '../src/game/economy';
+export { FARMA_POTENTIAL_FOOD_BONUS } from '../src/game/terrain-improvements';
 `, 'utf8');
 
 esbuild.buildSync({
@@ -44,7 +52,7 @@ esbuild.buildSync({
   logLevel: 'silent',
 });
 
-const { yieldOfMapHex, hexToWorkedTile, tileYield } = require(BUNDLE);
+const { yieldOfMapHex, foodPotentialOfMapHex, hexToWorkedTile, tileYield, FARMA_POTENTIAL_FOOD_BONUS } = require(BUNDLE);
 
 let passed = 0;
 let failed = 0;
@@ -159,6 +167,87 @@ console.log('\n-- P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE: render == silnik d
   eq(renderY.praca, silnikY.praca, 'render == silnik praca (3 warstwy)');
   eq(renderY.handel, silnikY.handel, 'render == silnik handel (3 warstwy)');
   eq(renderY.zywnosc, silnikY.zywnosc, 'render == silnik zywnosc (3 warstwy)');
+}
+
+// ---------------------------------------------------------------------------
+console.log('\n-- P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA: foodPotentialOfMapHex czyta WSZYSTKIE warstwy --\n');
+
+// ---------------------------------------------------------------------------
+// Test 5: heks z ulepszeniem żywnościowym (farma) w LIŚCIE warstw, ale legacy
+// `ulepszenie` wskazuje na inną (niefżywnościową) warstwę -- potencjał MUSI być 0,
+// bo farma już tam stoi. Stara logika (tylko `h.ulepszenie`) nie widziała farmy
+// w liście i zwracała nienależny FARMA_POTENTIAL_FOOD_BONUS.
+{
+  const hex = {
+    coords: { q: 0, r: 0 },
+    terenBazowy: 'rownina',
+    nakladka: 'brak',
+    rzeka: null,
+    // legacy pole NIE jest ostatnim elementem `ulepszenia` -- scenariusz z tickieta:
+    // funkcja nie może polegać na tym polu, musi przeczytać całą listę.
+    ulepszenie: 'glinianka',
+    ulepszenia: ['glinianka', 'farma'],
+  };
+  const map = { hexes: { '0,0': hex } };
+
+  const potential = foodPotentialOfMapHex(map, 0, 0);
+  eq(potential, 0, 'farma w ulepszenia[] zeruje potencjał, mimo że legacy ulepszenie="glinianka"');
+
+  // Dowód wprost, że stara logika (tylko legacy ulepszenie) dałaby NIENALEŻNY bonus.
+  ok(potential !== FARMA_POTENTIAL_FOOD_BONUS,
+    `potencjał NIE zwraca nienależnego FARMA_POTENTIAL_FOOD_BONUS=${FARMA_POTENTIAL_FOOD_BONUS} (regresja do legacy pola)`);
+}
+
+// ---------------------------------------------------------------------------
+// Test 6: pojedyncza warstwa (legacy `ulepszenie` = 'farma', brak tablicy) --
+// potencjał dalej musi być 0 (brak regresji dla prostego, jednowarstwowego przypadku).
+{
+  const hex = {
+    coords: { q: 0, r: 0 },
+    terenBazowy: 'rownina',
+    nakladka: 'brak',
+    rzeka: null,
+    ulepszenie: 'farma',
+  };
+  const map = { hexes: { '0,0': hex } };
+
+  eq(foodPotentialOfMapHex(map, 0, 0), 0, 'farma (1 warstwa, legacy) zeruje potencjał (regresja podstawowa)');
+}
+
+// ---------------------------------------------------------------------------
+// Test 7: brak jakiegokolwiek ulepszenia na otwartej Równinie -- potencjał = pełny
+// FARMA_POTENTIAL_FOOD_BONUS (regresja podstawowa dla przypadku bez warstw).
+{
+  const hex = {
+    coords: { q: 0, r: 0 },
+    terenBazowy: 'rownina',
+    nakladka: 'brak',
+    rzeka: null,
+    ulepszenie: 'brak',
+  };
+  const map = { hexes: { '0,0': hex } };
+
+  eq(foodPotentialOfMapHex(map, 0, 0), FARMA_POTENTIAL_FOOD_BONUS,
+    'brak ulepszenia na Równinie -> pełny potencjał farmy (regresja podstawowa)');
+}
+
+// ---------------------------------------------------------------------------
+// Test 8: trzy warstwy, żywnościowa (irygacja) NIE jest ostatnia w tablicy ani
+// legacy polu (legacy = 'tartak', spoza FOOD_IMPROVEMENT_KEYS) -- musi mimo to
+// zerować potencjał, bo 'irygacja' jest gdziekolwiek w ulepszenia[].
+{
+  const hex = {
+    coords: { q: 0, r: 0 },
+    terenBazowy: 'laka',
+    nakladka: 'brak',
+    rzeka: null,
+    ulepszenie: 'tartak',
+    ulepszenia: ['irygacja', 'tartak'],
+  };
+  const map = { hexes: { '0,0': hex } };
+
+  eq(foodPotentialOfMapHex(map, 0, 0), 0,
+    'irygacja gdziekolwiek w ulepszenia[] zeruje potencjał, niezaleznie od legacy ulepszenie="tartak"');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

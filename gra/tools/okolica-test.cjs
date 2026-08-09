@@ -40,6 +40,7 @@ export {
   rebalanceWorkersAfterPopulationChange,
   buildTerritoryNodesFromCities,
   isTerritoryHexOwnedBy,
+  isLandWorkableHex,
 } from '../src/game/okolica';
 export { territoryOwnerAt } from '../src/map/territory';
 `;
@@ -63,7 +64,7 @@ try {
 }
 
 const M = require(BUNDLE_FILE);
-const { OKOLICA_RADIUS, okolicaTiles, tileScore, tileAssignScore, assignWorkedTiles, wagiForFocus, foodPotentialOfMapHex, resolveWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker, rebalanceWorkersAfterPopulationChange, buildTerritoryNodesFromCities, isTerritoryHexOwnedBy, territoryOwnerAt } = M;
+const { OKOLICA_RADIUS, okolicaTiles, tileScore, tileAssignScore, assignWorkedTiles, wagiForFocus, foodPotentialOfMapHex, resolveWorkedTiles, cityRangeForPopulation, adjustTileWorker, seedReczneFromAuto, toggleTileWorker, rebalanceWorkersAfterPopulationChange, buildTerritoryNodesFromCities, isTerritoryHexOwnedBy, isLandWorkableHex, territoryOwnerAt } = M;
 
 // --- test harness ----------------------------------------------------------
 let passed = 0;
@@ -331,6 +332,160 @@ const balWorked = assignWorkedTiles(0, 0, 1, tieMap, yieldBalancedForestWins, {
   wagi: wagiBal,
 });
 eq(balWorked[0].q, 2, 'balanced: forest (2,0) beats meadow on praca when food similar');
+
+// =============================================================================
+// P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA -- runda 3 (2026-08-09)
+// B2 (Evaluator rundy 2): kanon decyzji R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1 definiuje
+// jawne oczekiwane zachowanie dla trybu RĘCZNEGO ze STARYM, nielegalnym wpisem
+// (Gory/Morze) -- do rundy 3 ŻADEN test go nie przypinał. Testy 18-21 pokrywają
+// dokładnie ten scenariusz, w tym Test 20 -- regresja B1 (bramka terenu blokująca
+// ZDEJMOWANIE, nie tylko dodawanie), która przeszła niezauważona przez rundę 2.
+// =============================================================================
+
+// Mapa z jednym hexem Gór (1,0) w zasięgu -- do testów izWorkable/stary-zapis.
+const goryMap = {
+  szerokoscQ: 23,
+  wysokoscR: 23,
+  seed: 42,
+  hexes: Object.assign({}, hexes, {
+    '1,0': { terenBazowy: 'gory', nakladka: 'brak', ulepszenie: 'brak' },
+    '2,0': { terenBazowy: 'morze', nakladka: 'brak', ulepszenie: 'brak' },
+  }),
+};
+
+// Test 18: isLandWorkableHex -- predykat terenu, wspólne źródło prawdy
+console.log('\n18. isLandWorkableHex (wspolne zrodlo prawdy overlay/silnik/UI)');
+eq(isLandWorkableHex(goryMap, 0, 0), true, 'domyslny hex siatki (nie Gory/Morze) -> workable');
+eq(isLandWorkableHex(goryMap, 1, 0), false, 'Gory -> NIE workable');
+eq(isLandWorkableHex(goryMap, 2, 0), false, 'Morze -> NIE workable');
+eq(isLandWorkableHex(goryMap, 999, 999), false, 'brak hexu (poza mapa) -> NIE workable');
+
+// Test 19: proba DODANIA nowego robotnika na Gory/Morze nadal zablokowana
+// (regresja pierwotnego bledu rundy 1 -- filtr terenu musi dalej dzialac dla ADD)
+console.log('\n19. toggleTileWorker/adjustTileWorker — nowy wpis na Gorach/Morzu odrzucony');
+const cityFreshReczny = { q: 0, r: 0, ownerId: 0, population: 3, okolicaTryb: 'reczny', okolicaReczne: {} };
+const addGory = toggleTileWorker(cityFreshReczny, goryMap, 1, 0);
+assert(!addGory.ok && addGory.reason === 'poza_zasiegiem', 'toggle: nowy robotnik na Gorach (1,0) odrzucony, poza_zasiegiem');
+const addMorze = toggleTileWorker(cityFreshReczny, goryMap, 2, 0);
+assert(!addMorze.ok && addMorze.reason === 'poza_zasiegiem', 'toggle: nowy robotnik na Morzu (2,0) odrzucony, poza_zasiegiem');
+const addGoryAdjust = adjustTileWorker(cityFreshReczny, goryMap, 1, 0, 1);
+assert(!addGoryAdjust.ok && addGoryAdjust.reason === 'poza_zasiegiem', 'adjust delta+1: nowy robotnik na Gorach odrzucony');
+
+// Test 20 (B1 -- KRYTYCZNA regresja rundy 2): STARY zapis z robotnikiem JUZ
+// stojacym na Gorach/Morzu (legalny przed ta naprawa, bo tryb reczny nigdy
+// wczesniej nie mial filtra terenu) -- MUSI dac sie zdjac klikiem. Runda 2
+// zblokowala ta operacje filtrem terenu (zakleszczenie) -- ten test lapie
+// dokladnie ten regres.
+console.log('\n20. toggleTileWorker/adjustTileWorker — STARY nielegalny wpis DA SIE zdjac (B1)');
+const staleReczne = { '1,0': 1, '2,0': 1, '-1,0': 1, '0,1': 1 }; // 2 nielegalne (Gory,Morze) + 2 legalne
+const cityStaleGory = { q: 0, r: 0, ownerId: 0, population: 4, okolicaTryb: 'reczny', okolicaReczne: staleReczne };
+const removeGory = toggleTileWorker(cityStaleGory, goryMap, 1, 0);
+assert(removeGory.ok === true, 'toggle: zdjecie robotnika ze STAREGO wpisu na Gorach zwraca ok=true (nie zakleszcza)');
+assert(removeGory.reczne['1,0'] === undefined, 'toggle: klucz Gor usuniety z reczne po zdjeciu');
+eq(Object.keys(removeGory.reczne).length, 3, 'toggle: pozostale 3 wpisy (w tym Morze) nietkniete');
+assert(removeGory.reczne['2,0'] === 1 && removeGory.reczne['-1,0'] === 1 && removeGory.reczne['0,1'] === 1,
+  'toggle: legalne wpisy i wpis na Morzu (jeszcze nie kliknięty) przetrwaly bez zmian');
+
+const removeMorze = toggleTileWorker(cityStaleGory, goryMap, 2, 0);
+assert(removeMorze.ok === true, 'toggle: zdjecie robotnika ze STAREGO wpisu na Morzu zwraca ok=true');
+assert(removeMorze.reczne['2,0'] === undefined, 'toggle: klucz Morza usuniety z reczne po zdjeciu');
+
+const removeGoryAdjust = adjustTileWorker(cityStaleGory, goryMap, 1, 0, -1);
+assert(removeGoryAdjust.ok === true, 'adjust delta-1: zdjecie robotnika ze STAREGO wpisu na Gorach zwraca ok=true');
+assert(removeGoryAdjust.reczne['1,0'] === undefined, 'adjust delta-1: klucz Gor usuniety z reczne po zdjeciu');
+const removeMorzeAdjust1 = adjustTileWorker(cityStaleGory, goryMap, 2, 0, 1); // delta+1 na juz-obsadzonym = toggle off
+assert(removeMorzeAdjust1.ok === true && removeMorzeAdjust1.reczne['2,0'] === undefined,
+  'adjust delta+1 na juz-obsadzonym STARYM wpisie (Morze) rowniez zdejmuje (toggle-off), nie blokuje');
+
+// Test 21: brak auto-migracji -- samo WYWOLANIE funkcji odczytu/zapisu (bez
+// przypisania wyniku z powrotem do city.okolicaReczne, dokladnie jak przy
+// wczytaniu zapisu i otwarciu panelu) nie zmienia oryginalnego obiektu miasta.
+console.log('\n21. brak logiki auto-migracji/auto-naprawy przy samym odczycie');
+const originalReczneRef = { '1,0': 1, '2,0': 1, '-1,0': 1 }; // Gory + Morze + legalne
+const cityNoMigration = { q: 0, r: 0, ownerId: 0, population: 3, okolicaTryb: 'reczny', okolicaReczne: originalReczneRef };
+const beforeSnapshot = JSON.stringify(cityNoMigration.okolicaReczne);
+toggleTileWorker(cityNoMigration, goryMap, 1, 0); // wolanie BEZ przypisania wyniku z powrotem
+resolveWorkedTiles(cityNoMigration, goryMap, function (q, r) { return { zywnosc: 1 }; });
+eq(cityNoMigration.okolicaReczne, originalReczneRef, 'okolicaReczne wciaz ten sam obiekt (referencja niezmieniona)');
+eq(JSON.stringify(cityNoMigration.okolicaReczne), beforeSnapshot,
+  'okolicaReczne zawartosc niezmieniona po odczycie (Gory/Morze nadal w danych, bez auto-usuniecia)');
+
+// Test 22 (B3 -- runda 4, Evaluator rundy 3): rebalanceWorkersAfterPopulationChange
+// przy SPADKU populacji ze STARYM zapisem (nielegalne wpisy Gory/Morze JUZ obecne w
+// okolicaReczne) musi usunac DOKLADNIE `excess` wpisow -- nie wiecej. Buggy wersja
+// rundy 3 usuwala KAZDY nielegalny wpis natychmiast w petli for (bez wzgledu na
+// budzet excess) I DODATKOWO usuwala jeszcze jeden legalny wpis (worstKey) na koncu
+// -- przy excess=1 i 2 nielegalnych wpisach kasowala 3 wpisy zamiast 1, w tym
+// legalnego, produkcyjnego robotnika. Scenariusz dokladnie jak w raporcie
+// Evaluatora: 5 wpisow (3 legalne + 2 nielegalne), spadek populacji 5->4 (excess=1).
+console.log('\n22. rebalanceWorkersAfterPopulationChange (reczny spadek) — B3: dokladnie excess znika');
+const cityShrinkStale = {
+  id: 'c-shrink', ownerId: 0, q: 0, r: 0, name: 'S', population: 4,
+  okolicaFocus: 'zrownowazone', okolicaTryb: 'reczny',
+  okolicaReczne: { '1,0': 1, '2,0': 1, '-1,0': 1, '0,1': 1, '0,-1': 1 }, // 2 nielegalne (Gory,Morze) + 3 legalne
+};
+rebalanceWorkersAfterPopulationChange(cityShrinkStale, goryMap, 5, 4); // spadek 5->4, excess=1
+const afterShrink = cityShrinkStale.okolicaReczne;
+eq(Object.keys(afterShrink).length, 4,
+  'B3: dokladnie 1 wpis zniknal (excess=1 z 5 wpisow), nie 3 jak w buggy rundzie 3');
+assert(afterShrink['-1,0'] === 1 && afterShrink['0,1'] === 1 && afterShrink['0,-1'] === 1,
+  'B3: WSZYSTKIE 3 legalne, produkcyjne wpisy nietkniete (budzet excess=1 pokryty przez nielegalny wpis)');
+const illegalRemainingCount = (afterShrink['1,0'] ? 1 : 0) + (afterShrink['2,0'] ? 1 : 0);
+eq(illegalRemainingCount, 1,
+  'B3: dokladnie 1 z 2 nielegalnych wpisow zostaje w danych nietkniety (ponad budzet excess=1), zero migracji obu naraz');
+
+// =============================================================================
+// B4 (runda 4, Evaluator rundy 3): dowod mutacyjny Evaluatora -- usuniecie filtra
+// terenu z SAMEJ seedReczneFromAuto NIE bylo lapane przez zaden istniejacy test
+// (Testy 9-10 wolaja ja tylko na mapie bez Gor/Morza; Testy 19-20 wolaja ja
+// posrednio przez toggleTileWorker/adjustTileWorker, ale tylko gdy tryb JUZ jest
+// 'auto' -- co i tak przechodzi przez ta sama funkcje, jednak zaden test tam nie
+// mierzy WYNIKU seedReczneFromAuto wprost). Testy 23-24 przypinaja filtr terenu
+// INDYWIDUALNIE w dwoch sciezkach, ktore do tej pory mialy pokrycie WYLACZNIE
+// zbiorcze (silnik i toggle/adjust byly juz pokryte indywidualnie -- Test 19 dla
+// toggle/adjust, Sekcja 1-2 okolica-isworkable-silnik-test.cjs dla silnika).
+// =============================================================================
+
+// Test 23: seedReczneFromAuto — filtr terenu wprost, bez posrednictwa toggle/adjust.
+// Gory maja najwyzsza Prace w grze (4, terrain-yields.json) -- gdyby filtr byl
+// usuniety z TEJ funkcji, Gory/Morze wygralyby ranking i zostalyby wybrane jako
+// pierwsze (baseline siatki = teren nieznany = ZERO_YIELD, wiec kazdy dodatni score
+// bije baseline pod dowolnym fokusem).
+console.log('\n23. seedReczneFromAuto — filtr terenu bezposrednio (B4, dowod mutacyjny)');
+const cityAutoGory = { q: 0, r: 0, ownerId: 0, population: 6, okolicaFocus: 'zrownowazone' };
+const seededGory = seedReczneFromAuto(cityAutoGory, goryMap);
+assert(seededGory['1,0'] === undefined, 'seedReczneFromAuto: Gory (1,0) NIE wybrane mimo najwyzszej Pracy w grze (4 pkt)');
+assert(seededGory['2,0'] === undefined, 'seedReczneFromAuto: Morze (2,0) NIE wybrane mimo dodatniego score (Zywnosc 2 + Podatek 2)');
+eq(Object.keys(seededGory).length, 6, 'seedReczneFromAuto: mimo wykluczenia 2 pol znaleziono 6 legalnych zastepczych (siatka ma ich pod dostatkiem)');
+
+// Test 24: rebalanceWorkersAfterPopulationChange, galaz WZROSTU (dodawania) — filtr
+// terenu wprost. Mapa celowo "zaglodzona": jedyne WOLNE pola w zasiegu (poza dwoma
+// juz obsadzonymi legalnymi) to Gory i Morze -- jesli filtr zostanie usuniety z
+// `tiles` w tej funkcji, `free` bedzie zawieral WYLACZNIE te dwa nielegalne
+// kandydaty i deterministyczny wybor MUSI wybrac jeden z nich (100% wykrywalne,
+// nie zalezne od losowego trafienia w wiekszej puli).
+console.log('\n24. rebalanceWorkersAfterPopulationChange (reczny wzrost) — filtr terenu w galezi dodawania (B4)');
+const growthFilterMap = {
+  szerokoscQ: 5, wysokoscR: 5, seed: 1,
+  hexes: {
+    '0,0':  { terenBazowy: 0 },
+    '-1,0': { terenBazowy: 0 },
+    '0,1':  { terenBazowy: 0 },
+    '1,0':  { terenBazowy: 'gory', nakladka: 'brak', ulepszenie: 'brak' },
+    '2,0':  { terenBazowy: 'morze', nakladka: 'brak', ulepszenie: 'brak' },
+  },
+};
+const cityGrowthFiltered = {
+  id: 'c-growth-filter', ownerId: 0, q: 0, r: 0, name: 'GF', population: 3,
+  okolicaTryb: 'reczny',
+  okolicaReczne: { '-1,0': 1, '0,1': 1 }, // 2 legalne juz obsadzone; jedyne "wolne" pola sa Gory/Morze
+};
+rebalanceWorkersAfterPopulationChange(cityGrowthFiltered, growthFilterMap, 2, 3); // wzrost 2->3
+const afterGrowthFiltered = cityGrowthFiltered.okolicaReczne;
+eq(Object.keys(afterGrowthFiltered).length, 2,
+  'B4: brak nowego robotnika -- jedyne "wolne" pola (Gory,Morze) sa nielegalne, filtr blokuje dodanie');
+assert(afterGrowthFiltered['1,0'] === undefined && afterGrowthFiltered['2,0'] === undefined,
+  'B4: nowy robotnik NIE trafil na Gory/Morze mimo ze byly jedynymi "wolnymi" polami w zasiegu');
 
 // --- summary ---------------------------------------------------------------
 const total = passed + failed;

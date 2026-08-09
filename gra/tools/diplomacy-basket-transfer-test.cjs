@@ -140,6 +140,41 @@ B.resetBasketTransferGrantSeq(100);
   ok(r.granted, 'brak techCatalog → walidacja prereq pominięta (kompatybilność wsteczna)');
 }
 
+// -----------------------------------------------------------------------
+// P-BRAMKA-TECH-TIER-NIEPOKRYTA (2026-08-09): scenariusze 1-6 wyżej łapią
+// prereqsMet (1/2) i epochOk/Zasada 1 (3/4), ale żaden nie izoluje tierOk
+// (epochTierGateMet, Zasada 2 — niższe Poziom w OBRĘBIE TEJ SAMEJ epoki muszą
+// być zbadane najpierw). Katalog celowo BEZ formalnego pola prereq na tech
+// wyższego tieru i BEZ wcześniejszej epoki — jedyna bramka, która może
+// zablokować, to tierOk.
+// -----------------------------------------------------------------------
+console.log('grantTechToOwner — tier w obrębie epoki (P-BRAMKA-TECH-TIER-NIEPOKRYTA)');
+
+const tierCatalog = [
+  { Technologia: 'Lowiectwo', Epoka: 'Kamien', Poziom: 1 },
+  { Technologia: 'Garncarstwo2', Epoka: 'Kamien', Poziom: 2 }, // brak 'Wymaga (prereq)' — celowo
+];
+
+// 7) Odbiorca 9 nie ma zbadanego Lowiectwo (Poziom 1, ta sama epoka Kamien) →
+//    Garncarstwo2 (Poziom 2) odrzucone WYŁĄCZNIE przez tierOk: prereqsMet=true
+//    (brak formalnego pola prereq), epochOk=true (Kamien to najniższa epoka,
+//    epochGateMet trywialnie spełnione — nie ma epoki < Kamien).
+{
+  let c = B.createEmptyBasketTransferContext(tierCatalog);
+  const r = B.grantTechToOwner('Garncarstwo2', 9, c);
+  ok(!r.granted, 'Garncarstwo2 (Poziom 2) bez zbadanego Lowiectwo (Poziom 1, ta sama epoka) → NIE przyznane (tierOk)');
+  ok(!r.context.researchedByOwner.get(9)?.has('Garncarstwo2'), 'Garncarstwo2 NIE trafia do zbadanych owner 9');
+}
+
+// 8) Tier spełniony (Lowiectwo zbadane najpierw, ten sam tier co scenariusz 7) →
+//    Garncarstwo2 przyznane normalnie.
+{
+  let c = B.createEmptyBasketTransferContext(tierCatalog);
+  c = B.grantTechToOwner('Lowiectwo', 9, c).context;
+  const r = B.grantTechToOwner('Garncarstwo2', 9, c);
+  ok(r.granted, 'Garncarstwo2 PO zbadaniu Lowiectwo (ta sama epoka, niższy tier) → przyznane');
+}
+
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 
 console.log(`\n${pass}/${pass + fail} PASS`);

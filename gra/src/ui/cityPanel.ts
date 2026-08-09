@@ -192,7 +192,7 @@ import {
 import {
   type TradeRoute,
 } from '../game/trade-routes';
-import { normalizeImprovementKey } from '../game/terrain-improvements';
+import { improvementKeysForHex } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
 import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
@@ -226,7 +226,9 @@ import {
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
-import { signedPl } from './formatPl';
+// formatLiczbaPl: separator polski (przecinek) — P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD 2026-08-09,
+// wiersz WZROST% w chipie „Wyżywienie i wzrost" dogania konwencję plakietki mapy (przecinek).
+import { formatLiczbaPl, signedPl } from './formatPl';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -4552,7 +4554,10 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     {
       icon: cityPanelChipIcon('chip-map', 14),
       label: 'WZROST%',
-      value: fed ? `${view.wzrostProcent}%` : '—',
+      // P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD: przecinek polski, zgodnie z plakietką mapy
+      // (formatCityGrowthPercentLabel w cityMapStatChip.ts) — ta sama liczba źródłowo
+      // (view.wzrostProcent), więc oba miejsca UI mają pokazywać ten sam separator.
+      value: fed ? `${formatLiczbaPl(view.wzrostProcent)}%` : '—',
       cls: fed && view.wzrostProcent > 0 ? 'gold' : fed ? 'muted' : 'red',
       title: fed
         ? 'Łączny procent wzrostu ludności w tej turze'
@@ -4742,7 +4747,10 @@ function buildRacjeWzrostDetailCard(
   gridDetailRow(g2, 'Zdrowie', `${signed(bd.zdrowie)}%`);
   gridDetailRow(g2, 'Szczęście', `${signed(bd.szczescie)}%`);
   gridDetailRow(g2, 'Cywilizacja', `${signed(bd.cywilizacja)}%`);
-  gridDetailRow(g2, 'Łącznie', fed ? `${view.wzrostProcent}%` : '— (głód)');
+  // P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY: składniki nad tym wierszem (racje, małe miasto,
+  // spichlerz, zdrowie, szczęście, cywilizacja) idą przez signed() (przecinek polski) -- suma
+  // musi iść tym samym formaterem, inaczej jedna karta miesza separatory (przecinek vs kropka).
+  gridDetailRow(g2, 'Łącznie', fed ? `${signed(view.wzrostProcent)}%` : '— (głód)');
   gridDetailRow(g2, 'Postęp do +1 obywatela', `${fmtDecPl(view.wzrostUlamkowy)} / 1`);
   const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
   const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
@@ -8190,12 +8198,21 @@ function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: numbe
   return parts.length ? parts.join(' ') : '0';
 }
 
+/**
+ * P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA (2026-08-09): musi czytać WSZYSTKIE warstwy
+ * ulepszeń (`hex.ulepszenia`) przez `improvementKeysForHex`, tak jak silnik
+ * (`hexToWorkedTile` w turn-economy.ts) i naprawione już `yieldOfMapHex` /
+ * `foodPotentialOfMapHex` w okolica.ts — nie tylko legacy pojedyncze pole
+ * `hex.ulepszenie` (ostatnia postawiona warstwa).
+ */
 function tileYieldLabel(hex: Hex): string {
+  const ulepszeniaKeys = improvementKeysForHex(hex);
   const y = tileYield({
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
-    ulepszenieKey: normalizeImprovementKey(String(hex.ulepszenie ?? 'brak')),
+    ulepszenieKey: ulepszeniaKeys[0],
+    ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
   return formatTileYieldShort(y);
 }
@@ -8207,11 +8224,13 @@ function appendOkolicaYieldLabel(
   fontScale: number,
 ): void {
   if (!c.hex) return;
+  const ulepszeniaKeys = improvementKeysForHex(c.hex);
   const y = tileYield({
     terenBazowy: c.hex.terenBazowy,
     nakladka: c.hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(c.hex.rzeka && c.hex.rzeka.obecna),
-    ulepszenieKey: normalizeImprovementKey(String(c.hex.ulepszenie ?? 'brak')),
+    ulepszenieKey: ulepszeniaKeys[0],
+    ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
   const ytxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   ytxt.setAttribute('x', String(c.cx));
@@ -8280,6 +8299,22 @@ function renderWorkedPreview(
     c.isCity = c.d === 0;
     c.fill = hex ? (isLas ? '#142714' : (TEREN_COL[teren] ?? '#2a2a2a')) : '#10141a';
     const tileKey = `${c.q},${c.r}`;
+    // R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1 (decyzja Maciej 2026-08-09): w trybie recznym
+    // isWorked celowo czyta SUROWY stan `reczne`, bez filtra terenu -- to WYLACZNIE
+    // wybor WIZUALNY (czy pole dostaje zielone pasmo + ikonke 👤 licznika ponizej).
+    // Klikalnosc pola NIE zalezy od isWorked ani od legalnosci terenu: przycisk
+    // trafienia dla kazdego pola powstaje bezwarunkowo w petli `if (canAdjust)`
+    // nizej, wiec robotnik na Gorach/Morzu ze STAREGO zapisu (legalny przed naprawa
+    // filtra terenu) daje sie zdjac klikiem niezaleznie od tego jak renderuje sie
+    // isWorked (patrz fireOkolicaTileToggle -> toggleTileWorker, ktory zdejmowanie
+    // zawsze przepuszcza bez filtra terenu). Silnik (cityWorkedTilesForEconomy) juz
+    // filtruje takie wpisy z produkcji po cichu, bez komunikatu -- zgodnie z
+    // kanonem decyzji.
+    // Swiadomie NIE dodano tu osobnego wizualnego oznaczenia "legalne pracujace" vs
+    // "stary nielegalny wpis, nie liczy sie do produkcji" (np. inny kolor pasma /
+    // tekst tooltipa) -- twarda granica zakresu naprawy (kolejnosc bramek
+    // zdejmowania + pokrycie testowe, C-025), rozroznienie wizualne pozostawione
+    // jako oddzielna, nizej priorytetowa nota do rozwazenia.
     const inReczne = (reczne?.[tileKey] ?? 0) > 0;
     const inAutoWorked = workedSet ? workedSet.has(tileKey) : c.d <= 1;
     c.isWorked = !c.isCity && (tryb === 'reczny' ? inReczne : inAutoWorked);

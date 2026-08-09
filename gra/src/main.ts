@@ -751,7 +751,7 @@ import {
   type TradeGoodEntry,
   type TradeGoodsCategories,
 } from './game/diplomacy-goods';
-import { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } from './game/diplomacy-tech-trade';
+import { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient, executeTechTradeDealCore } from './game/diplomacy-tech-trade';
 import {
   pickResourceTradeBetweenOwners,
   pickResourceDeficitForOwnerPair,
@@ -810,7 +810,7 @@ import {
 } from './game/eot-event-defer';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
-import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles } from './game/okolica';
+import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
 import { cityCultureMixActive, cultureMixBreakdown, isForeignReligionDominant, resolveOwnCultureShare, stolicaEasyBonusActive } from './game/society-inputs';
 import {
@@ -3967,10 +3967,11 @@ async function boot(): Promise<void> {
     }
 
     function okolicaHexWorkable(q: number, r: number): boolean {
-      const hex = map.hexes[keyOf(q, r)];
-      if (!hex) return false;
-      const t = hex.terenBazowy;
-      return t !== TerenBazowy.Morze && t !== TerenBazowy.Gory;
+      // P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA: deleguje do wspolnego zrodla
+      // prawdy (`isLandWorkableHex` w okolica.ts), uzywanego rowniez przez silnik
+      // ekonomii i wszystkie sciezki zapisu trybu recznego -- overlay/silnik/UI
+      // musza zgadzac sie co do tego, ktore pole nadaje sie do obsadzenia.
+      return isLandWorkableHex(map, q, r);
     }
 
     function okolicaWorkedKeySet(city: City): Set<string> {
@@ -7306,6 +7307,94 @@ async function boot(): Promise<void> {
       return clampNegotiationPayloadToRealResources(aiOwnerId, 0, payload);
     }
 
+    /**
+     * Przyznaje `techId` odbiorcy `toOwnerId` i synchronizuje efekty uboczne (player.zbadane /
+     * aiResearchDone, awans epoki) — wydzielone z transferBasketItems::case 'tech' do
+     * wspólnego użytku z executeTechTradeDeal (P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1,
+     * runda 2). Zwraca `granted` (grantTechToOwner) — false gdy tech już zbadana u odbiorcy
+     * albo brak prereq/epoki/tieru; w tym wypadku ŻADEN stan nie jest mutowany.
+     */
+    function grantTechToOwnerWithSideEffects(techId: string, toOwnerId: number): { granted: boolean; reason?: string } {
+      const r = grantTechToOwner(techId, toOwnerId, basketTransferCtx);
+      basketTransferCtx = r.context;
+      if (!r.granted) return { granted: false, reason: r.reason };
+      if (toOwnerId === 0) {
+        for (const t of basketTransferCtx.researchedByOwner.get(0) ?? []) {
+          player.zbadane.add(t);
+        }
+        // #66: tech-kamień milowy z dyplomacji ma awansować epokę gracza tą samą ścieżką
+        // co własne badanie (playerState.researchStep) — inaczej zbadane/era się rozjeżdżają
+        // (Ludy Morza itp. gatują po era).
+        const grantedDef = data.tech.find(t => t.Technologia === techId);
+        if (grantedDef) {
+          const prevPlayerEra = player.era;
+          const awansTarget = eraAdvanceTarget(grantedDef);
+          if (awansTarget !== null) player.era = Math.max(player.era, awansTarget);
+          if (shouldNotifyPlayerEraChange(prevPlayerEra, player.era)) {
+            overlayDepositEra = player.era;
+            rebuildResourceOverlays();
+            setEra(player.era);
+            notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+          }
+        }
+      } else {
+        aiResearchDone.set(
+          toOwnerId,
+          new Set(basketTransferCtx.researchedByOwner.get(toOwnerId) ?? []),
+        );
+        refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(toOwnerId));
+      }
+      return { granted: true };
+    }
+
+    /**
+     * B1 (Evaluator runda 1 FAIL — exploit „darmowa technologia"), rozszerzone o tech-za-tech
+     * (runda 2, decyzja właściciela — pełny zakres R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1,
+     * TWARDA GRANICA ZAKRESU C-025 rundy 2 dot. wyłącznie gotówki ZNIESIONA): sprzedaż/kupno
+     * pojedynczej technologii (akcja '6'), zapłata gotówką LUB inną technologią. Cienki
+     * wrapper — cała orkiestracja (kolejność zapłata-PRZED-grantem w OBU trybach, anulowanie
+     * CAŁEGO deala bez częściowego transferu) żyje w `executeTechTradeDealCore`
+     * (diplomacy-tech-trade.ts), testowalnej bez odtwarzania całego main.ts (B2 — patrz
+     * diplomacy-tech-trade-execute-test.cjs). Tu tylko podpięcie prawdziwego skarbca /
+     * grantTechToOwnerWithSideEffects / showHintMessage. `syncBasketResearchFromEngine()`
+     * PRZED wywołaniem — `ownerHasTech`/`canGrantTech` muszą widzieć AKTUALNY stan badań
+     * (player.zbadane/aiResearchDone), nie stary basketTransferCtx sprzed tej tury.
+     *
+     * N2 (Evaluator): techPrice i goldOnce rozjeżdżają się po kontrofercie AI na trudności
+     * Łatwy (generateCounterOffer rusza WYŁĄCZNIE techPrice — diplomacy-proposals.ts,
+     * gałąź moneyField==='techPrice' dla actionId==='tech'). techPrice jest tu źródłem
+     * prawdy — to samo pole, względem którego evaluateProposal::case 'tech' waliduje próg
+     * minimalnej ceny — goldOnce zostaje wyłącznie jako fallback dla starszych payloadów
+     * bez techPrice. Wybór udokumentowany w commit message (mniejsze ryzyko regresji niż
+     * douczanie UI/generateCounterOffer o drugim polu). Nie dotyczy trybu 'tech' (bez ceny).
+     */
+    function executeTechTradeDeal(
+      proposerId: number,
+      responderId: number,
+      payload: ProposalPayload,
+    ): void {
+      syncBasketResearchFromEngine();
+      const gold = payload.techPrice ?? payload.goldOnce ?? 0;
+      const direction: 'sell' | 'buy' = payload.techDirection === 'buy' ? 'buy' : 'sell';
+      const paymentMode: 'gold' | 'tech' = payload.techPaymentMode === 'tech' ? 'tech' : 'gold';
+      const treasury = buildDiploTreasury();
+      const executed = executeTechTradeDealCore(
+        proposerId, responderId, payload.techId, gold, direction, paymentMode, payload.techOfferId,
+        {
+          getGold: (ownerId) => treasury.getPieniadze(ownerId),
+          transferGold: (from, to, amount) => { applyOneShotGoldTransfer(from, to, amount, treasury); },
+          ownerHasTech: (ownerId, techId) => (basketTransferCtx.researchedByOwner.get(ownerId) ?? new Set()).has(techId),
+          canGrantTech: (techId, toOwnerId) => {
+            const r = grantTechToOwner(techId, toOwnerId, basketTransferCtx);
+            return { granted: r.granted, reason: r.reason };
+          },
+          grantTech: (techId, toOwnerId) => grantTechToOwnerWithSideEffects(techId, toOwnerId),
+          onCancelled: (reason) => showHintMessage(reason, 3500),
+        },
+      );
+      if (executed && (proposerId === 0 || responderId === 0)) updateHud();
+    }
+
     function transferBasketItems(
       fromOwnerId: number,
       toOwnerId: number,
@@ -7357,36 +7446,7 @@ async function boot(): Promise<void> {
             break;
           }
           case 'tech': {
-            const r = grantTechToOwner(item.id, toOwnerId, basketTransferCtx);
-            basketTransferCtx = r.context;
-            if (r.granted) {
-              if (toOwnerId === 0) {
-                for (const t of basketTransferCtx.researchedByOwner.get(0) ?? []) {
-                  player.zbadane.add(t);
-                }
-                // #66: tech-kamień milowy z dyplomacji ma awansować epokę gracza
-                // tą samą ścieżką co własne badanie (playerState.researchStep) —
-                // inaczej zbadane/era się rozjeżdżają (Ludy Morza itp. gatują po era).
-                const grantedDef = data.tech.find(t => t.Technologia === item.id);
-                if (grantedDef) {
-                  const prevPlayerEra = player.era;
-                  const awansTarget = eraAdvanceTarget(grantedDef);
-                  if (awansTarget !== null) player.era = Math.max(player.era, awansTarget);
-                  if (shouldNotifyPlayerEraChange(prevPlayerEra, player.era)) {
-                    overlayDepositEra = player.era;
-                    rebuildResourceOverlays();
-                    setEra(player.era);
-                    notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
-                  }
-                }
-              } else {
-                aiResearchDone.set(
-                  toOwnerId,
-                  new Set(basketTransferCtx.researchedByOwner.get(toOwnerId) ?? []),
-                );
-                refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(toOwnerId));
-              }
-            }
+            grantTechToOwnerWithSideEffects(item.id, toOwnerId);
             break;
           }
           case 'surowiec_boolean': {
@@ -7429,6 +7489,13 @@ async function boot(): Promise<void> {
       responderId: number,
       payload: ProposalPayload,
     ): void {
+      // B1 (Evaluator runda 1 FAIL): akcja '6' (Sprzedaż/Kupno technologii) niesie
+      // `techId` bez giveItems/receiveItems — dawniej wpadała w gałąź goldOnce niżej,
+      // która przelewała WYŁĄCZNIE gotówkę i nigdy nie przekazywała technologii.
+      if (payload.techId) {
+        executeTechTradeDeal(proposerId, responderId, payload);
+        return;
+      }
       const { giveItems, receiveItems } = payload;
       if (giveItems?.length || receiveItems?.length) {
         transferBasketItems(proposerId, responderId, giveItems);
@@ -12288,7 +12355,15 @@ async function boot(): Promise<void> {
         case 'umowa_handlowa':
         case 'umowa_szlakow':
           return basketDetail || (TRAKTAT_HANDLOWY_LABEL + (p.goldOnce ? ` (+${p.goldOnce} ¤ słodzika)` : ''));
-        case 'tech': return `Sprzedaż technologii za ${p.techPrice ?? p.goldOnce ?? 0} ¤`;
+        case 'tech': {
+          // R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A (runda 2): etykieta musi odzwierciedlać
+          // KIERUNEK (Sprzedaż/Kupno) i SPOSÓB ZAPŁATY (gotówka/tech-za-tech) — stała
+          // „Sprzedaż … za X ¤” była myląca dla Kupna i pokazywała „0 ¤” w trybie tech-za-tech.
+          const dirLabel = p.techDirection === 'buy' ? 'Kupno' : 'Sprzedaż';
+          return p.techPaymentMode === 'tech'
+            ? `${dirLabel} technologii za technologię${p.techOfferId ? ` (${p.techOfferId})` : ''}`
+            : `${dirLabel} technologii za ${p.techPrice ?? p.goldOnce ?? 0} ¤`;
+        }
         case 'namow_wojne': return `Namowa do wojny — łapówka ${p.bribeGold ?? 0} ¤`;
         case 'trybut_zadanie': return `Żądanie trybutu ${p.goldPerTurn ?? 0} ¤/turę`;
         case 'trybut_oferta': return p.goldOnce ? `Trybut jednorazowy ${p.goldOnce} ¤` : `Trybut ${p.goldPerTurn ?? 0} ¤/turę`;
@@ -14674,8 +14749,20 @@ async function boot(): Promise<void> {
         targetOwnerId: payload.targetOwnerId,
         borderMilitary: payload.borderMilitary,
         techId: payload.techId,
+        techDirection: payload.techDirection,
+        // BLOKER 1 (Evaluator runda 3): techPaymentMode/techOfferId brakowały w tej białej
+        // liście — jedynej drodze formularz -> stół negocjacyjny -> executeTechTradeDeal.
+        // Bez nich tryb tech-za-tech gubił oba pola PO buildProposalFromPayload i
+        // evaluateProposal szedł błędnie gałęzią ceny gotówkowej (techPrice=0 < próg 50 ¤ ->
+        // zawsze odrzucone, mimo że użytkownik wybrał wymianę bez gotówki).
+        techPaymentMode: payload.techPaymentMode,
+        techOfferId: payload.techOfferId,
         bribeGold: payload.bribeGold,
-        techPrice: payload.techId ? (payload.goldOnce ?? 50) : undefined,
+        // techPrice liczony WYŁĄCZNIE dla trybu gotówkowego — w trybie 'tech' zostaje
+        // undefined (evaluateProposal::case 'tech' i tak pomija próg ceny gdy
+        // techPaymentMode==='tech', ale undefined zamiast mylącego 0 jest poprawne też dla
+        // innych konsumentów pola, np. main.ts::negotiationSummary).
+        techPrice: payload.techId && payload.techPaymentMode !== 'tech' ? (payload.goldOnce ?? 50) : undefined,
         givePn: (payload as NegotiationPayload & { givePn?: number }).givePn,
         receivePn: (payload as NegotiationPayload & { receivePn?: number }).receivePn,
         giveItems: (payload as NegotiationPayload & { giveItems?: BasketItem[] }).giveItems,
@@ -14804,6 +14891,7 @@ async function boot(): Promise<void> {
         hasSojusz,
         breaksTreatyLabel: breakingDeal ? treatyDisplayLabel(breakingDeal.rodzaj) : undefined,
         sellableTechCount: getSellableTechForPlayer(ownerId).length,
+        buyableTechCount: getBuyableTechFromOwner(ownerId).length,
         knownRivalsCount: getKnownRivalsFor(ownerId).length,
         progNapRelacja: dip.progNapRelacja,
         progHandelRelacja: dip.progHandelRelacja,

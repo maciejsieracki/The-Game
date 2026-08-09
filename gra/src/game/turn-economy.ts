@@ -142,6 +142,7 @@ import {
   rebalanceWorkersAfterPopulationChange,
   reconcileAllWorkedTiles,
   hexKeysWithinRadius,
+  isLandWorkableHex,
   type TileYield as OkolicaTileYield,
 } from './okolica';
 import { buildTerritoryNodesFromCities } from '../map/territory-work';
@@ -688,10 +689,17 @@ export function cityWorkedTilesForEconomy(
   };
 
   // Przypisz N najlepszych pol (auto lub reczny) w zasiegu.
+  // P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA: isWorkable musi byc identyczny z
+  // overlay renderowania (main.ts::okolicaHexWorkable) -- inaczej silnik przypisuje
+  // (i w AUTO faktycznie wybiera) robotnikow na Gorach/Morzu, ktorych gracz nigdy
+  // nie widzi jako mozliwe. W trybie recznym z NIELEGALNYM starym wpisem: filtr tu
+  // powoduje ze ten wpis po prostu nie liczy sie do produkcji (bez komunikatu, bez
+  // auto-naprawy danych) -- zgodnie z R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1.
   const assigned = resolveWorkedTiles(city, map, yieldOf, {
     radius,
     territoryNodes,
     ownerId: city.ownerId,
+    isWorkable: (q, r) => isLandWorkableHex(map, q, r),
   });
 
   // Konwertuj przypisane pozycje na WorkedTile.
@@ -723,6 +731,7 @@ export function workedHexCoordsForCity(
     radius,
     territoryNodes,
     ownerId: city.ownerId,
+    isWorkable: (q, r) => isLandWorkableHex(map, q, r),
   });
   return assigned.map(t => ({ q: t.q, r: t.r }));
 }

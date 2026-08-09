@@ -34,8 +34,18 @@ export function formatLiczbaPl(n: number, maxMiejsca = 1): string {
   return String(bezMinusZera).replace('.', ',');
 }
 
-/** Liczba ze znakiem do chipów HUD/miasta: „+6,6", „0", „−3,5". */
+/**
+ * Liczba ze znakiem do chipów HUD/miasta: „+6,6", „0", „−3,5".
+ *
+ * Ujemne wartości używają U+2212 (matematyczny minus), NIE ASCII „-" (0x2D) —
+ * spójnie z resztą gry (np. `formatCityGrowthPercentLabel` w
+ * `render/cityMapStatChip.ts`). `formatLiczbaPl` (baza tej funkcji) sama
+ * zwraca zwykły ASCII myślnik — podmiana glifu jest świadomie tylko tutaj,
+ * bo `formatLiczbaPl` ma własnych konsumentów, którzy asercjonują ASCII
+ * (P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD, `city-panel-growth-percent-separator-test.cjs`).
+ */
 export function signedPl(n: number, maxMiejsca = 1): string {
   const txt = formatLiczbaPl(n, maxMiejsca);
-  return txt.startsWith('-') || txt === '0' ? txt : '+' + txt;
+  if (txt.startsWith('-')) return '−' + txt.slice(1);
+  return txt === '0' ? txt : '+' + txt;
 }
