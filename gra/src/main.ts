@@ -23404,7 +23404,13 @@ async function boot(): Promise<void> {
                     ownerId,
                   );
                   if (!aff.ok) continue;
-                  const res = canFoundCity(cmd.q, cmd.r, cities, map);
+                  // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (Maciej, decyzja A, 2026-08-09):
+                  // AI dostaje ten sam twardy wymog withinTerritory co gracz (foundingTerritoryOpts)
+                  // egzekwowany TU, na poziomie wykonania rozkazu — ai.ts to tylko planista na
+                  // migawce stanu. / EN: AI gets the same hard withinTerritory requirement as the
+                  // player, enforced HERE at command execution — ai.ts is only a planner on a
+                  // state snapshot.
+                  const res = canFoundCity(cmd.q, cmd.r, cities, map, foundingTerritoryOpts(ownerId));
                   if (!res.ok) continue;
                   aiPracaPoolByOwner.set(
                     ownerId,

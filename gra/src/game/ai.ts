@@ -788,7 +788,6 @@ export function hasColonizationSource(
 }
 /** Epoki pełnej agresji kolonizacyjnej (Kamień → Żelazo). */
 const AI_COLONIZATION_AGGRESSIVE_ERA_MAX = 3;
-const AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS = 15;
 const AI_COLONIZATION_SURGE_MAX_PER_TURN = 2;
 
 /** Liczba wolnych niezależnych miast-państw (bez wasala). */
@@ -1848,8 +1847,14 @@ export function planCityFounding(
   if (!aff.ok) return null;
 
   const enemyCities = cities.filter(c => c.ownerId !== playerId);
-  const era = opts.civEra ?? 1;
-  const requireOutsideTerritory = era > AI_COLONIZATION_AGGRESSIVE_ERA_MAX;
+  // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (Maciej, decyzja A, 2026-08-09): AI dostaje
+  // ten sam twardy wymog withinTerritory co gracz (main.ts:withinTerritory) — nowe miasto
+  // musi leżeć w zasięgu terytorium JEDNEGO z już posiadanych miast TEJ SAMEJ cywilizacji.
+  // Brak własnych miast (pierwsze miasto AI) -> brak restrykcji, parytet z
+  // isAwaitingFirstPlayerCity gracza.
+  // EN: AI now gets the same hard withinTerritory requirement as the player — a new city
+  // must lie within reach of one of the AI's OWN existing cities. No own cities yet (first
+  // city) -> no restriction, matching the player's isAwaitingFirstPlayerCity parity.
   const targetHex = findCityFoundingHex(
     map,
     cities,
@@ -1857,7 +1862,7 @@ export function planCityFounding(
     data,
     minCityDist,
     opts,
-    { excludeHexes, requireOutsideTerritory, applyMinScore: myCities.length > 0 },
+    { excludeHexes, myCities, applyMinScore: myCities.length > 0 },
   );
   if (targetHex === null) return null;
 
@@ -2754,7 +2759,8 @@ function findCityFoundingHex(
   opts: AITurnOpts = {},
   hexOpts: {
     excludeHexes?: readonly { q: number; r: number }[];
-    requireOutsideTerritory?: boolean;
+    /** Wlasne miasta AI (ownerId===playerId) — twardy wymog withinTerritory wzgledem NICH. */
+    myCities?: readonly AICity[];
     applyMinScore?: boolean;
   } = {},
 ): { q: number; r: number } | null {
@@ -2787,12 +2793,16 @@ function findCityFoundingHex(
     const tooClose = allCities.some(c => hexDistance(q, r, c.q, c.r) < minCityDist);
     if (tooClose) continue;
 
-    const withinReach = isHexWithinAnyCityReach(q, r, allCities);
-    if (hexOpts.requireOutsideTerritory && withinReach) continue;
+    // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI: twardy wymog withinTerritory wzgledem
+    // WLASNYCH miast AI (nie dowolnej cywilizacji) — brak wlasnych miast = brak restrykcji
+    // (pierwsze miasto, parytet z isAwaitingFirstPlayerCity gracza).
+    // EN: hard withinTerritory requirement against the AI's OWN cities (not any civ's) — no
+    // own cities yet (first city) means no restriction, matching the player's parity rule.
+    if (hexOpts.myCities !== undefined && hexOpts.myCities.length > 0
+      && !isHexWithinAnyCityReach(q, r, hexOpts.myCities)) continue;
 
     let score = hexCityScore(hex, q, r, data, enemyCities, opts) * ekspansjaScale;
     if (powerGoalBoost) score += 25;
-    if (!withinReach) score += AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS;
 
     // pkt3: cluster bias — prefer hexes inside clusterCenter+clusterRadius
     // Faza 2: po konsolidacji klastra — nadal preferuj wnętrze regionu.
