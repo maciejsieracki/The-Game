@@ -158,9 +158,11 @@ import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import {
-  buildTriumphCityStateUnificationMessage,
   shouldShowPlayerTriumphCityStateUnification,
-  TRIUMPH_CS_HINT_MS,
+  // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu
+  // od P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (modal triumphCityStateNotice.ts
+  // ma własną treść i nie jest toastem czasowym) — nadal eksportowane z
+  // triumph-city-state.ts i pokryte przez triumph-city-state-test.cjs.
 } from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
 import {
@@ -932,6 +934,7 @@ import {
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
+import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
@@ -19776,10 +19779,10 @@ async function boot(): Promise<void> {
           cities,
         })) {
           const triumphCivLabel = civDisplayNameForOwner(0) ?? civLabelForOwner(0);
-          showHintMessage(
-            buildTriumphCityStateUnificationMessage(triumphCivLabel, city.name),
-            TRIUMPH_CS_HINT_MS,
-          );
+          // P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK: modal wymagający potwierdzenia
+          // zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem
+          // ELIMINACJA wołanym linijkę wyżej i natychmiast go nadpisywał.
+          showTriumphCityStateNotice({ civLabel: triumphCivLabel, cityName: city.name });
         }
         eliminateOwner(oldOwner);
       }
