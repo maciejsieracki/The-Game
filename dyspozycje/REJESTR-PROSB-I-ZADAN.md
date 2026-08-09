@@ -1472,7 +1472,15 @@ zielony). 3 noty niepilne zarejestrowane osobno w `PYTANIA-OTWARTE.md`
 i wykonanie są teraz zgodne z definicji. Evaluator PASS-WITH-NOTES, 28 plików testów dyplomacji
 zielonych. 2 noty niepilne w `PYTANIA-OTWARTE.md`.
 
-## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 — ECHO, kod w dispatchu
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 — NAPRAWIONE, czeka na deploy+playtest
+Tabliczka nad żetonem = pełna Moc (teren/fortyfikacja/mur/weteran), civ-power = tylko naturalne
+wskaźniki + weteran. Evaluator PASS-WITH-NOTES, 14 plików testów zielonych. Przy okazji
+naprawiony STRICT-PARITY: civ-power AI już nie zawyżony mnożnikiem trudności — **widoczne w
+playteście jako spadek Mocy AI w rankingu na wyższych poziomach trudności, to poprawny efekt,
+nie regresja**. Dwa znaleziska świadomie odłożone (tooltip heksu, trwałe bonusy budynków) w
+`PYTANIA-OTWARTE.md`.
+
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 — ECHO, kod w dispatchu (ZASTĄPIONE wpisem wyżej)
 Maciej skorygował `R-MOC-DEFINICJA-Q1` (2026-08-08): ta decyzja błędnie zunifikowała tabliczkę
 jednostki na mapie (ma pokazywać REALNĄ Moc ze wszystkimi bonusami — teren/fortyfikacja/mur/
 weteran) z Mocą cywilizacji (ranking/HUD/Empire — ma być BEZ terenu/fortyfikacji/muru, tylko

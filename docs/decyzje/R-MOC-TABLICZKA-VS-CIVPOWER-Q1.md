@@ -55,4 +55,5 @@ cywilizacji.
   korzystają ze starej, zunifikowanej definicji.
 
 ## Status
-ECHO — kod do dispatchu.
+WDROŻONE w kodzie (commit `c2c46afb`, Evaluator PASS-WITH-NOTES). Szczegóły, testy i dwa
+świadomie odłożone znaleziska (tooltip heksu, trwałe bonusy budynków) w `PYTANIA-OTWARTE.md`.

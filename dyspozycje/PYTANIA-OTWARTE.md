@@ -2284,7 +2284,7 @@ bonusami (teren, fortyfikacja, mur, weteran); Moc cywilizacji (ranking/HUD/Empir
 terenu/fortyfikacji/muru, tylko naturalne wskaźniki + ulepszenia + weteran. Pełna decyzja:
 `docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md`. Kod w dispatchu.
 
-## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **ECHO — kod w dispatchu**
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 Rozdział dwóch liczb Mocy, które wcześniejsza decyzja błędnie zunifikowała: tabliczka/tooltip
 jednostki na mapie = REALNA Moc ze wszystkimi bonusami (teren/fortyfikacja/mur/weteran); Moc
 cywilizacji (panel rankingu, HUD, Empire) = tylko naturalne wskaźniki + ulepszenia + weteran,
@@ -2295,6 +2295,41 @@ liczba"). Pełna decyzja i plan wdrożenia: `docs/decyzje/R-MOC-TABLICZKA-VS-CIV
 — civ-power; `combatPowerScaledDefFor`, `veteranScaledDefFor`, `fortifyFieldScaledDefFor`,
 `effectiveDefenderM`), `gra/tools/mur-paradoks-test.cjs`.
 **Model:** Sonnet 5 (poza `render/**` — to zmiana logiki liczenia, nie renderu).
+
+**NAPRAWIONE (2026-08-09):** Nowa `combatPowerFullDisplayDefFor(u)` w `main.ts` (wskrzeszenie —
+potwierdzone identyczne co do bajtu — wcześniej cofniętej `tabliczkaGarnizonScaledDefFor` z
+commitu `f94216e9`) karmi tabliczkę nad żetonem/`computeStackDisplay`. `sumArmyMForOwnerEffective`
+przełączone na `veteranScaledDefFor(u)` (weteran, bez fortyfikacji/terenu/muru — i bez mnożnika
+trudności AI, zgodnie z literalnym brzmieniem decyzji „zamienić na `veteranScaledDefFor`").
+Realna bitwa (`effectiveDefenderM`, `rosterFieldPowerM`, `mapFieldBattle.ts`) niedotknięta —
+zweryfikowane niezależnie przez Evaluatora (dokładnie 3 wywołania `combatPowerScaledDefFor`
+w całym repo, wszystkie ścieżka bitwy). Paradoks zamknięty: tabliczka garnizonu za murem = 95 pkt
+== realna Obrona bitwy 95 pkt (wcześniej 49,0 vs prawdziwe 95). STRICT-PARITY POPRAWIONE przy
+okazji: usunięcie mnożnika trudności z civ-power zdejmuje wcześniej istniejące zawyżenie rankingu
+Mocy AI na wyższych poziomach trudności (`bonusWalka` już nie wchodzi do civ-power).
+
+**Dwa znaleziska, świadomie NIE zaimplementowane w tej rundzie (Evaluator zaakceptował
+pozostawienie, wymagał tylko rejestracji):**
+1. `hexContextTooltip.ts` „Moc pola" (tooltip jednostki po najechaniu na heks) liczy Moc inną,
+   starą ścieżką (`unitCardCombatFor`: bonusy budynków + weteran, ZERO terenu/fortyfikacji/muru)
+   — literalnie decyzja obejmuje też „tooltip jednostki na mapie", ale zmiana samej linii „Moc
+   pola" bez reszty panelu (Atak/Obrona/Pancerz, spójnie zbudowanego na konwencji `*Effective`)
+   stworzyłaby wewnętrzną niespójność panelu. Osobne zlecenie.
+2. `RuntimeUnit.pancerzBonusProc`/`parametryBonusProc` (trwałe bonusy zdobyte odwiedzinami
+   budynków) nie są dziś wpięte w `unitDefFor`/`veteranScaledDefFor`/żadną formułę Mocy — tylko
+   w kartę jednostki i obserwowaną bitwę. Czy to się liczy jako „bonusy z ulepszeń jednostki" dla
+   civ-power (decyzja to wspomina) — dwuznaczne, bo trwałe, ale nie zapisane w definicji
+   jednostki. Doliczenie dotknęłoby `effectiveDefenderM` (bitwa) — poza zakresem C-025 tej rundy.
+
+Testy: `tsc` 0 błędów, `mur-paradoks-test.cjs` 20/20, `weterani-test.cjs` 79/79,
+`moc-ranking-rozjazd-test.cjs` 19/19, `hud-moc-warstwa-test.cjs` 28/28, `logic-test.cjs` 213/213,
+`combat-test.cjs` 6/6, `city-defense-terrain-gate-test.cjs` 31/31, `ai-moc-diag-test.cjs` 22/22,
+`auto-battle-power-test.cjs` 14/14, `power-objective-test.cjs` 15/15, `power-ranking-test.cjs`
+10/10, `power-options-test.cjs` 5/5, `manpower-test.cjs` 62/62.
+
+**Do wiadomości Macieja (widoczne w playteście):** Moc cywilizacji AI w rankingu SPADNIE na
+wyższych poziomach trudności — poprawny efekt tej decyzji (civ-power już nie liczy mnożnika
+trudności AI), nie regresja.
 
 ## P-DREWNO-BRAMKA-RYZYKO-STARTU (2026-08-08, nota N1 Evaluatora zwiadowca-drewno) · STATUS: **DO WIEDZY — świadome ryzyko z decyzji BUG-BRAMKA-DREWNO-BRAK=A**
 **Zmierzone:** miasta startują z pustym magazynem surowców (`cities.ts:415`); Drewno
