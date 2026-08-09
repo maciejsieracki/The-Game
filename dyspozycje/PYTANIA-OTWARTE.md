@@ -6646,3 +6646,44 @@ exit 0 (fałszywy zielony) — Evaluator to wykrył i naprawił przed audytem, l
 naprawieniu symlinka odtworzyły się co do jednej.
 
 Dispatch runda 3, wąska: 4 asercje regex w istniejącym pliku bramki.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — ECHO Q1=B, Q2=B, Q3=A + doprecyzowanie, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: Q1=B, Q2=B, Q3=A** — dokładnie rekomendacja Sędziego turnieju, z doprecyzowaniami:
+
+**Q1=B doprecyzowanie:** „to nie może być teren, który jest ukryty w fog of war. Musi tam być
+jakaś jednostka nasza. I dopiero wtedy możemy budować fort. A po wybudowaniu fortu możemy już w
+dowolnym miejscu budować miasto w zasięgu fortu." — potwierdza wymóg własnej jednostki fizycznie
+obecnej na heksie w chwili budowy (Q1=B) + dodaje wymóg WIDOCZNOŚCI (heks nie może być w fog of
+war — de facto spełnione automatycznie, bo własna jednostka tam stojąca odsłania fog) + potwierdza
+że po zbudowaniu fortu miasto można założyć W DOWOLNYM miejscu w zasięgu fortu (promień 10), nie
+tylko na samym heksie fortu — zgodne z pierwotnym zamysłem (fort jako węzeł terytorium o promieniu,
+nie punktowe zezwolenie).
+
+**Q2=B potwierdzone bez zmian:** fort daje WYŁĄCZNIE prawo do założenia miasta w promieniu, nic
+więcej — granice się nie przesuwają, pola nie stają się nasze, obcy chodzą bez kary, mogą tam
+budować.
+
+**Q3=A doprecyzowanie:** „jednostki automatycznie są przeniesione na poza granice miasta innej
+cywilizacji, która przejęła fort." — odpowiada na otwarty szczegół z pytania Sędziego (dokąd
+wracają ewakuowane jednostki): NIE do najbliższego własnego miasta, NIE giną — automatycznie
+przenoszone na najbliższy heks POZA granicami miasta przejmującej cywilizacji (czyli tuż za
+krawędź jej nowego terytorium).
+
+**Status wdrożenia:** to jest treść „kroku 2" — zgodnie z wcześniejszą decyzją Macieja tego samego
+dnia, krok 2 NIE jest dispatchowany teraz, czeka na krok 1 (`P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI=A`,
+w trakcie rundy 3 Evaluatora). Decyzja Q1/Q2/Q3 jest w pełni zapisana i gotowa do dispatchu, gdy
+Maciej da sygnał do przejścia do kroku 2.
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — ECHO B (grandfather), decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: B** — reguła dotyczy wyłącznie startu NOWEJ produkcji, istniejące jednostki
+morskie w miastach bez dostępu do wody pozostają nietknięte (efektywnie tożsame z A, bez
+nazywania tego osobnym wyjątkiem — potwierdzone jako właściwe podejście).
+
+**Status:** wszystkie elementy R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (=C: ekonomia+brama produkcji
+morskiej, dostęp do wody = morze LUB rzeka, grandfather=B) są teraz w pełni zdecydowane. Temat
+oznaczony przez Macieja jako niepilne „na później" — NIE dispatchować teraz bez wyraźnego sygnału,
+zapisane i gotowe.
