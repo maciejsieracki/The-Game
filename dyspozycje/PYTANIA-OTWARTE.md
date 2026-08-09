@@ -5680,3 +5680,65 @@ jest dziś wytuningowany na 15 — to bezpośrednia zmiana istniejącej wartośc
 nowa funkcja).
 
 Pytanie ABC do zadania w następnej turze (patrz odpowiedź na czacie).
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A.** Cytat: „najpierw obrona swojego terytorium, a potem dopiero atak obcego."
+
+Potwierdza zasadę opisaną w rozpoznaniu (linia 5162 wyżej): (1) najwyższy priorytet — zlikwidować
+wrogie siły (w tym barbarzyńców) na własnym terytorium lub w jego bezpośredniej okolicy, niezależnie
+od stanu pokoju/wojny z kimkolwiek innym; (2) jeśli w stanie wojny z konkretną cywilizacją, walczy z
+nią normalnie; (3) jeśli więcej niż jeden wróg jednocześnie, stara się atakować też pozostałych.
+
+Bez dalszych doprecyzowań — dispatch implementacji.
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — ECHO A + istotne doprecyzowanie zakresu, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A**, z rozbudowanym doprecyzowaniem (pełny cytat):
+
+„ale z zastrzeżeniem że to, że dana cywilizacja chce nawiązać sojusz z bardziej odległymi
+cywilizacjami które zna, nie zmienia faktu że musi mieć możliwość zawarcia takiego sojuszu — czyli
+tutaj wszystkie elementy balansu muszą być zachowane — natomiast wypowiada wojnę jednej cywilizacji
+która jest obok. Ale [chodzi też o to], żeby ta wojna nie trwała nie wiadomo jak długo — powinna
+trwać maksymalnie do zdobycia dwóch miast przeciwnika lub utraty dwóch miast, potem powinien być
+zawierany pokój, żeby cywilizacje się nie wycięły w pień. Potem 20 tur odpoczynku i znowu szukanie
+nowego wroga po 20 turach — może być inna cywilizacja, z którą graniczy, niekoniecznie ta sama.
+Możemy nawet wprowadzić zasadę, że AI nie będzie atakować tej samej cywilizacji przez okres [???]
+tur. Jednakże cywilizacje nie powinny przy wypowiadaniu wojen zrywać sojuszy czy paktowania.
+Agresje powinny zakończyć się zgodnie z zasadami."
+
+**Pełna specyfikacja reguły (rozbita na parametry nazwane):**
+1. Cel wojny wymuszonej = sąsiad terytorialny (nie dowolna cywilizacja) — zgodnie z wcześniejszym
+   rozpoznaniem (filtr sąsiedztwa do dobudowania, wzorem `clusterForceWarTargetId`).
+2. Zdolność zawierania sojuszy z odległymi, znanymi cywilizacjami NIE może zostać ograniczona przez
+   tę regułę — wojna wymuszona z sąsiadem współistnieje z normalną dyplomacją sojuszniczą gdzie
+   indziej, cały istniejący balans dyplomacji zostaje.
+3. **Koniec wojny wymuszonej** (nowy parametr `wojnaWymuszonaMaxMiastaZdobyteLubStracone = 2`) —
+   pokój zawierany automatycznie, gdy jedna ze stron zdobędzie 2 miasta przeciwnika LUB straci 2
+   własne miasta na rzecz przeciwnika (co pierwsze nastąpi).
+4. **Odpoczynek po wojnie** (`wojnaWymuszonaOdpoczynekTur = 20`) — po zawarciu pokoju cywilizacja
+   nie szuka nowego wymuszonego celu wojny przez 20 tur.
+5. **Nowy cel po odpoczynku** — po 20 turach szuka nowego sąsiada-celu; może to być inna
+   cywilizacja niż poprzednia, niekoniecznie ta sama.
+6. **Cooldown na powrót do tej samej cywilizacji** — Maciej zaproponował osobny limit tur, ale
+   **NIE podał liczby** (urwane zdanie: „przez okres [ ] tur"). ⚠️ Do potwierdzenia — patrz pytanie
+   niżej. Robocze założenie do dispatchu: reużyć tę samą wartość co odpoczynek ogólny
+   (`wojnaWymuszonaCooldownTaSamaCywilizacjaTur = 20`, czyli w praktyce ten sam licznik co pkt 4 —
+   jeśli to za mało/za dużo, Maciej poprawi osobnym ABC/liczbą).
+7. **Sojusze i pakty NIE są zrywane** przy wypowiadaniu wojny wymuszonej — istniejące umowy
+   (sojusze, traktaty) z INNYMI cywilizacjami niż cel wojny mają przetrwać bez zmian.
+8. Punkt zaczepienia w kodzie: `main.ts:22130`, `reconcileAllOwnerErasFromResearch()` (awans do
+   epoki Brąz = Brązownictwo).
+9. **Dopisek Macieja (kolejna wiadomość, ten sam wątek):** „jeżeli jakiejś cywilizacji została już
+   wypowiedziana wojna [przez kogoś innego], to ta cywilizacja nie ma już obowiązku wypowiadać
+   komuś innemu wojny, żeby nie prowadziła dwóch wojen jednocześnie." — reguła wymuszonej wojny przy
+   awansie do Brązu sprawdza NAJPIERW, czy cywilizacja jest już w stanie wojny z KIMKOLWIEK (jako
+   napastnik LUB jako obrońca — wojna wypowiedziana JEJ przez inną stronę też się liczy); jeśli tak,
+   pomija wymuszenie (cywilizacja nie musi dodatkowo wypowiadać własnej wojny). Zapobiega to
+   sytuacji dwóch jednoczesnych wojen wymuszonych na jedną cywilizację.
+
+**Zgodnie z regułą 6 CLAUDE.md (nie zgaduj przy niejednoznaczności) — jedno pytanie doprecyzowujące
+do WĄTKU, który już prowadzimy** (nie nowy temat): patrz wiadomość na czacie. Reszta specyfikacji
+(pkt 1-5, 7-9) jest kompletna i zostaje przekazana do dispatchu już teraz.
