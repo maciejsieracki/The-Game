@@ -30,8 +30,38 @@ export interface BorderEdge {
   v1z: number;
 }
 
+/**
+ * Naprawia asymetrię znaku przy zaokrągleniu do zera: KAŻDA liczba ujemna o
+ * module < 0.000005 daje string `"-0.00000"` (spec `toFixed` dopisuje znak
+ * gdy `x < 0`; `(-0).toFixed(5)` samo w sobie daje `"0.00000"`, bo `-0 < 0`
+ * jest fałszem — to tiny-negative typu `-4.44e-16`, nie dosłowne `-0`, jest
+ * źródłem problemu), podczas gdy odpowiadająca im wartość dodatnia/zero daje
+ * `"0.00000"` — dwa różne stringi dla tego samego punktu geometrycznego.
+ */
+function fixNegativeZeroString(v: string): string {
+  return v === '-0.00000' ? '0.00000' : v;
+}
+
+/**
+ * BUG-CYWILIZACJA-BEZ-GRANIC (2026-08-09): przy gęstym osadnictwie (wiele miast
+ * blisko siebie, np. 10 miast tej samej cywilizacji) rogi sąsiednich heksów
+ * bywają liczone z DWÓCH różnych centrów (hexCornerWorld dla różnych (q,r)) i
+ * powinny dać IDENTYCZNY punkt świata, ale drobny szum zmiennoprzecinkowy
+ * (rzędu 1e-16, z Math.sin/Math.cos) może dać np. `0` z jednej strony i
+ * `-4.44e-16` z drugiej. Obie wartości zaokrąglają się do zera w
+ * `toFixed(5)`, ale ze ZNAKIEM zachowanym w stringu ("0.00000" vs
+ * "-0.00000") — to samo wierzchołek dostaje DWA różne klucze w grafie
+ * sąsiedztwa, `traceTerritoryBoundaryLoops` widzi tam dwa wierzchołki stopnia
+ * 1 zamiast jednego stopnia 2, i przerywa pętlę obwodu w tym miejscu
+ * (rozdziela ją na kilka NIEDOMKNIĘTYCH fragmentów, z brakującymi
+ * krawędziami). Im gęstszy/bardziej symetryczny klaster miast względem
+ * początku układu współrzędnych świata, tym więcej wierzchołków ląduje
+ * dokładnie na osi zero — stąd bug ujawnia się przy gęstym osadnictwie, a nie
+ * przy pojedynczym izolowanym mieście. Zweryfikowane na żywej symulacji i
+ * pokryte regresją: gra/tools/territory-border-dense-settlement-test.cjs.
+ */
 function borderVertexKey(x: number, z: number): string {
-  return `${x.toFixed(5)},${z.toFixed(5)}`;
+  return `${fixNegativeZeroString(x.toFixed(5))},${fixNegativeZeroString(z.toFixed(5))}`;
 }
 
 function hexCornerWorld(cx: number, cz: number, cornerIndex: number): BorderLoopPoint {

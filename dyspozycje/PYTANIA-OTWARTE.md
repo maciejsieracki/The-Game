@@ -2906,7 +2906,7 @@ raportowi). 19 pakietów testów, wszystkie zielone, `tsc` czyste.
 testu — poprawiona wartość startowa (10 szt., nie 1) jest dziś niczym niechroniona przed
 przyszłą regresją.
 
-## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: nadal niezdiagnozowana**
+## BUG-CYWILIZACJA-BEZ-GRANIC + BRAK-WZROSTU-LUDNOSCI (2026-08-08, playtest Macieja) · STATUS: **CZĘŚĆ POPULACJA: ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja (`docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`) · **CZĘŚĆ GRANICE: naprawiona fragmentacja obrysu (kod, 2026-08-09) — do potwierdzenia playtestem, czy to wyczerpuje objaw**
 **Jego słowa:** *„odkryłem już, dlaczego czasem wydawało się, że cywilizacji nie jest tyle, ile
 być powinno. Dlatego, że część cywilizacji w ogóle nie dostaje granic w kolorze. I wygląda
 jakby ich nie było. Dodatkowo, te cywilizacje kompletnie się nie rozwijają po czasy. Inne mają
@@ -2993,6 +2993,55 @@ uczciwie: **pętla nie znika, tylko przesuwa się z 1↔2 na 2↔3** (świadomie
 ryzyko z `docs/decyzje/R-AI-FOUNDING-THROTTLE-Q1.md`). Jeśli po playteście problem nadal
 widoczny — do rozważenia wariant B (cooldown per-miasto) jako dopełnienie. `ai-test.cjs`
 274/8 (8 pre-istniejących, niezwiązanych), `tsc` czyste.
+
+**NAPRAWIONA FRAGMENTACJA OBRYSU — CZĘŚĆ GRANICE (2026-08-09, subagent Sonnet 5).** Hipoteza
+„pozostała, niesprawdzona" z 2026-08-08 (wyżej) o `territoryOwnerAt()` (remisy właściciela
+heksu) **odrzucona po weryfikacji na żywej symulacji** — nie miała znaczenia. Rzeczywista
+przyczyna: `borderVertexKey()` w `gra/src/map/territory-border.ts` formatowała współrzędne
+wierzchołka `toFixed(5)` bez normalizacji znaku przy zerze. Dwa sąsiednie heksy liczą WSPÓLNY
+narożnik z DWÓCH różnych centrów (`hexCornerWorld` dla różnych (q,r)) — matematycznie ten sam
+punkt, ale szum zmiennoprzecinkowy (~1e-16, z `Math.sin`/`Math.cos`) dawał z jednej strony
+dokładnie `0`, z drugiej np. `-4.44e-16`: `(0).toFixed(5)="0.00000"`,
+`(-4.44e-16).toFixed(5)="-0.00000"` — DWA różne klucze dla TEGO SAMEGO wierzchołka świata.
+Efekt: `traceTerritoryBoundaryLoops` widziała tam wierzchołek stopnia 1 zamiast 2, przerywała
+pętlę w tym miejscu i porzucała resztę obwodu (fragmentacja, gubione krawędzie). Im
+gęstszy/bardziej symetryczny klaster miast względem world (0,0), tym więcej wierzchołków ląduje
+dokładnie na osi zero — stąd bug ujawniał się przy gęstym osadnictwie (Zulusi, 10 miast, min.
+dystans 4 heksy), nie przy pojedynczym izolowanym mieście.
+
+**Fix:** `fixNegativeZeroString()` normalizuje `"-0.00000"` → `"0.00000"` przed użyciem jako
+klucz wierzchołka. Zakres wyłącznie `gra/src/map/**` (logika, bez Three.js/render) — nie
+wymagał Opus 5. Nowy test regresji `gra/tools/territory-border-dense-settlement-test.cjs`
+(15 asercji, 3 scenariusze), zweryfikowany że łapie regresję (7/15 fail na kodzie sprzed
+naprawy, 15/15 po naprawie).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES z niezależnym dowodem skuteczności**: zbudował osobny
+bundel z wersji sprzed naprawy i porównał 400 losowych, gęstych kształtów terytorium —
+**PRZED naprawą 32/400 wadliwe (141 zgubionych segmentów obwodu), PO naprawie 0/400**. Bramki
+zmierzone niezależnie: `tsc --noEmit` czyste, `territory-border-test` 9/9,
+`territory-border-dense-settlement-test` 15/15, `improvement-territory-gate-test` 6/6,
+`border-march-scan-test` 15/15, `border-march-wygasanie-test` 26/26,
+`diplomacy-border-march-test` 39/39, `fair-play-grid-test` 8/8, `logic-test` 213/213 —
+wszystkie potwierdzone ponownie w drzewie głównym po scaleniu, identyczne liczby.
+`fair-play-tier-grid-test` 9/12 (3 fail pre-istniejące — progi gór/wzgórz, C-MAPA-Q1=B,
+potwierdzone identyczne w drzewie sprzed naprawy, test importuje wyłącznie `map/gen-helpers`).
+
+**Zastrzeżenie Evaluatora ważne dla playtestu (powód złagodzenia statusu wyżej z „NAPRAWIONE"
+na „naprawiona fragmentacja obrysu"):** rozszerzona próba na 4000 gęstych kształtów sprzed
+naprawy pokazała że obrys **nigdy nie znikał w całości** (0 przypadków `loops.length === 0`)
+— był poszarpany/niepełny (od ~94% do najgorzej ~70% pokrycia obwodu). Zgłoszenie Macieja
+brzmiało „część cywilizacji w ogóle nie dostaje granic w kolorze — wygląda jakby ich nie było".
+Ten fix naprawia udowodniony, realny błąd fragmentacji, ale zebrany materiał nie dowodzi że
+wyczerpuje objaw „granicy nie ma WCALE". **Do potwierdzenia playtestem.** Jeśli objaw wróci,
+drugim podejrzanym jest ścieżka w której cywilizacja dostaje zbiór 0 heksów
+(`buildTerritoryBorderGroup` pomija takich właścicieli) — niepotwierdzone, tylko hipoteza do
+sprawdzenia.
+
+**Do rejestru pre-istniejących, niezwiązanych czerwonych testów:** `budynek-civ-bonus-u17-test`
+2 pass / 4 fail (identyczne komunikaty w drzewie sprzed i po naprawie — `kamien got 5, want 4`);
+ten sam test był już wymieniony przy `P-TEST-UPKEEP-R-STAWKI` (2026-08-09).
+
+**Poza zakresem (C-025):** populacja pozostaje nietknięta (throttle 2→3 z sekcji wyżej).
 
 ## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
 **Jego słowa:** *„w sytuacji gdy dane pole jest zajęte przez miasto to nie pokazuje się tam ile

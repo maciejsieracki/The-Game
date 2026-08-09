@@ -1392,6 +1392,22 @@ dowodami z kodu (brak gate'u odkrycia, kolor OK, promień terytorium OK nawet dl
 jedyna pozostała hipoteza (remis w `territoryOwnerAt` przy gęstym osadnictwie) wymaga
 diagnozy na żywym zapisie, nie samą lekturą kodu. Pełne kotwice w `PYTANIA-OTWARTE.md`.
 
+## BUG-CYWILIZACJA-BEZ-GRANIC — CZĘŚĆ GRANICE: naprawiona fragmentacja obrysu (2026-08-09)
+Hipoteza `territoryOwnerAt` (remisy) **odrzucona po weryfikacji na żywej symulacji** —
+rzeczywista przyczyna to `borderVertexKey()` w `territory-border.ts`: `toFixed(5)` bez
+normalizacji znaku przy zerze dawał dwa różne klucze stringowe dla tego samego wierzchołka
+geometrycznego (szum zmiennoprzecinkowy ~1e-16 przy liczeniu wspólnego narożnika z dwóch
+centrów heksów) — im gęstszy klaster miast względem world (0,0), tym częściej. Fix:
+`fixNegativeZeroString()`. Evaluator PASS-WITH-NOTES z niezależnym dowodem (400 losowych
+gęstych kształtów: przed naprawą 32/400 wadliwe, po naprawie 0/400). 9 bramek zweryfikowanych
+niezależnie, identyczne liczby po scaleniu w drzewie głównym: `tsc` czyste, `territory-border`
+9/9, `territory-border-dense-settlement` (nowy) 15/15, `improvement-territory-gate` 6/6,
+`border-march-scan` 15/15, `border-march-wygasanie` 26/26, `diplomacy-border-march` 39/39,
+`fair-play-grid` 8/8, `logic-test` 213/213. **Zastrzeżenie Evaluatora:** próba 4000 kształtów
+sprzed naprawy pokazała że obrys nigdy nie znikał CAŁKOWICIE, tylko był poszarpany (70–94%
+pokrycia) — status w `PYTANIA-OTWARTE.md` celowo złagodzony do „do potwierdzenia playtestem",
+nie „NAPRAWIONE" bez zastrzeżeń.
+
 ## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Przyczyna: render (`cityOkolicaOverlay.ts`) pomijał liczby plonów na KAŻDYM heksie z
 „ulepszeniem", w tym na centrum miasta — silnik zawsze ma tam realny plon. Fix: wyjątek dla
