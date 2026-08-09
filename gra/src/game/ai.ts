@@ -3220,6 +3220,14 @@ export interface RelacjaWejscie {
   /** Czy aktywny pakt nieagresji z partnerem (main.ts: activeDeals). */
   hasNapTreaty?: boolean;
   /**
+   * R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 2 (B3, Maciej 2026-08-09): czy aktywny sojusz
+   * (dowolny rodzaj — obronny/pełny) z partnerem (main.ts: allianceFormalKindBetween).
+   * Blokuje wypowiedzenie wymuszonej wojny Brązu TEMU partnerowi — cywilizacje nie mają
+   * przy tym mechanizmie zrywać własnych sojuszy. EN: whether an active alliance (any kind)
+   * exists with the partner — blocks a Bronze forced war being declared on THIS partner.
+   */
+  hasAllianceTreaty?: boolean;
+  /**
    * P-AI-011 / proaktywny handel: czy gracz formalnie nawiązał kontakt w audiencji.
    * Dotyczy partnerId === '0' (gracz). Bez kontaktu AI może wysłać zaproponuj_audiencje.
    */
@@ -3285,6 +3293,19 @@ export interface DiplomacjaInputs {
    * (tura >= 20 lub deadline konsolidacji) — priorytet przed normalną dyplomacją.
    */
   clusterForceWarTargetId?: number;
+  /**
+   * R-EPOKA-BRAZU-WYMUSZONA-WOJNA (2026-08-09): wymuszona wojna głównej cywilizacji AI
+   * z sąsiadem terytorialnym po awansie do epoki Brąz (lub po odpoczynku po poprzedniej
+   * wojnie wymuszonej) — priorytet przed normalną dyplomacją, wzorem clusterForceWarTargetId
+   * (patrz `game/forced-war-bronze.ts`). Silnik (main.ts) już wyklucza cele NAP/peaceLocked/
+   * przy-wojnie/sojusz (B3, runda 2) przy wyborze — tu tylko finalne domknięcie tego samego
+   * guarda.
+   * EN: Bronze-era forced war against a territorial neighbor after advancing into the Bronze
+   * age (or after resting from a previous forced war) — takes priority over normal diplomacy,
+   * same pattern as clusterForceWarTargetId. main.ts already excludes NAP/peaceLocked/at-war/
+   * alliance (B3, round 2) targets when picking; this is just the same guard closed off here.
+   */
+  bronzeForceWarTargetId?: number;
 }
 
 /**
@@ -3556,6 +3577,31 @@ export function decideAIDiplomacy(
         type:     'wypowiedz_wojne',
         targetId: forcedId,
         powod:    `AI-CS-CLUSTER-DIFF: wymuszona wojna z państwem-miastem kręgu (tura ${inp.currentTurn ?? 0})`,
+      }];
+    }
+  }
+
+  // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: wymuszona wojna głównej cywilizacji z sąsiadem
+  // terytorialnym (awans do Brązu / nowy cel po odpoczynku) — patrz forced-war-bronze.ts.
+  // B3 (runda 2, Evaluator FAIL): !forcedRel.hasAllianceTreaty domyka guard obok NAP/
+  // peaceLocked/stanWojny — cel z aktywnym sojuszem wykluczony z wymuszonej wojny.
+  // EN: Bronze-era forced war on a territorial neighbor (era advance / new target after
+  // rest). B3 (round 2): !forcedRel.hasAllianceTreaty closes the guard next to NAP/
+  // peaceLocked/at-war — a target with an active alliance is excluded.
+  if (inp.bronzeForceWarTargetId != null) {
+    const forcedId = String(inp.bronzeForceWarTargetId);
+    const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
+    if (
+      forcedRel
+      && !forcedRel.stanWojny
+      && !forcedRel.peaceLocked
+      && !forcedRel.hasNapTreaty
+      && !forcedRel.hasAllianceTreaty
+    ) {
+      return [{
+        type:     'wypowiedz_wojne',
+        targetId: forcedId,
+        powod:    `R-EPOKA-BRAZU-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura ${inp.currentTurn ?? 0})`,
       }];
     }
   }
