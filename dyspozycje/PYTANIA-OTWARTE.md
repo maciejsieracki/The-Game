@@ -4716,7 +4716,49 @@ zgubić.
 
 ---
 
-## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** przyczyna znaleziona precyzyjnie. `onSeparate` w `promptMergeIfCoLocated`
+(`gra/src/main.ts` ~8644–8677) po kliknięciu „Zostaw osobno" woła `assignBounceHexesForUnits`
+(`gra/src/game/armyMerge.ts:310-354`) z **całą listą ID jednostek armii naraz** — ta funkcja z
+założenia (potwierdzone istniejącym testem `army-merge-bounce-test.cjs`, który wprost wymaga, żeby
+DRUGA jednostka trafiła na INNY heks niż pierwsza) przydziela **każdej jednostce osobny, wolny
+heks**, traktując je jak niezależne, odrzucone byty — stąd rozpierzchnięcie całej armii. Dla
+pojedynczej jednostki błąd jest niewidoczny (nie ma z kim dzielić heksu), dlatego nie złapały go
+istniejące testy (`army-merge-dismiss-bounce-test.cjs`, 16/16 zielone).
+
+**To NIE jest regres** — funkcja działa zgodnie z własnym testem, błąd jest w MIEJSCU WYWOŁANIA
+(przekazanie całego stosu tam, gdzie oczekiwana jest lista niezależnych bytów).
+
+**Fakt projektowy potwierdzony w kodzie:** `gra/src/types/army.ts:4` — „Na jednym polu stoi
+maksymalnie 1 żeton armii danej nacji (par. 6b)". Silnik NIE MA dziś pojęcia „dwie niezależne,
+wybieralne armie na jednym heksie" (poza specjalnym przypadkiem garnizon/pole w mieście, gdzie UI i
+tak każe je scalić) — brak pola `armyId`/`stackId` w runtime. Czyli dosłowne życzenie Macieja
+(„armia i jednostka mają móc być na jednym heksie, wybieramy którą prowadzimy") to NOWA FUNKCJA,
+nie naprawa istniejącego mechanizmu — wymagałaby zmiany reguły par. 6b + modelu danych + UI wyboru
++ dostosowania AI/save-load.
+
+**[TEMAT: Zakres naprawy „Zostaw osobno"]**
+- **A — Naprawić tylko rozpraszanie, w ramach obecnej reguły „1 stos na polu":** „Zostaw osobno" ma
+  cofać CAŁĄ armię RAZEM na jeden heks (miejsce startowe albo najbliższy wolny sąsiad), zamiast
+  rozbijać ją jednostka-po-jednostce. Za: prosta, punktowa poprawka (jedna funkcja wywołania),
+  zgodna z dzisiejszą architekturą i testami. Przeciw: NIE spełnia dosłownego życzenia „armia i
+  jednostka razem na jednym heksie, wybieralne osobno" — po naprawie nadal trzeba wybrać
+  połącz/cofnij, nie będzie współistnienia.
+- **B — Nowa funkcja: dwie niezależne armie na jednym heksie, wybieralne osobno.** Za: dokładnie to
+  o co poprosił Maciej. Przeciw: duży zakres (model danych `armyId`, UI wyboru, zmiana reguły 6b,
+  AI musi to respektować, kompatybilność zapisów gry) — nieproporcjonalny do zgłoszonego objawu
+  (rozpraszania), realnie osobny temat wymagający własnego ABC.
+- **C — Naprawić rozpraszanie jak w A, ale osobno zapytać czy B ma być kolejnym tematem** (nie
+  łączyć obu decyzji w jedno pytanie).
+
+Rekomendacja: **C** — sam bug (rozpraszanie) jest tani i bezsporny do naprawienia od razu; decyzja o
+nowej funkcji „dwie armie na jednym heksie" to za duża zmiana zasad gry, żeby doczepiać ją bez
+osobnej rozmowy.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
 
 **Cytat Macieja:** „gdy armią najechałem na miejsce innej jednostki jest przycisk połącz lub zostaw
 osobno. W momencie, gdy dałem zostaw osobno, to wszystkie jednostki rozpierzchły się na wszystkie
@@ -4786,7 +4828,60 @@ turę czy nadpisuje/duplikuje istniejący; (b) sprawdzić przeliczenie numer-tur
 czy wyświetlany numer tury w HUD-zie faktycznie pochodzi z tego samego licznika co ten zapisany w
 sejwie. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
 
-## P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA (2026-08-09, pytanie z playtestu) · STATUS: **OTWARTE — czyste pytanie faktograficzne, dispatch Explore**
+## P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA — ODPOWIEDZIANE FAKTOGRAFICZNIE (2026-08-09)
+
+**Odpowiedź (Explore, potwierdzone w kodzie):** Mechanizm istnieje i **dotyczy też miast-państw** —
+nie ma dla nich osobnej, odmiennej ścieżki. Rdzeń: `applyCapitalCapturePlunder`
+(`gra/src/game/capital-capture.ts:174-231`), wołane przy każdym przejęciu miasta. Dwa warianty:
+(1) przejęcie stolicy, cywilizacja przeżywa — skarbiec 100% do zwycięzcy, pula pracy przepada
+(NIE trafia do zwycięzcy — świadomy wyjątek), nauka/techy bez zmian; (2) przejęcie OSTATNIEGO
+miasta = eliminacja — jak wyżej PLUS cała nauka pokonanego PLUS wszystkie brakujące technologie
+kopiowane do zwycięzcy. Surowce budowlane (drewno/kamień/glina/ruda itd.) trzymane są per-miasto
+(`City.surowce`) i automatycznie „wchodzą" do puli nowego właściciela, bo przejęcie miasta nigdy
+nie zeruje `city.surowce` — tylko zmienia `ownerId`.
+
+**Miasta-państwa idą dokładnie tą samą ścieżką** — nie mają osobnej struktury skarbca/puli (ten
+sam `aiSkarbiecByOwner: Map<ownerId, number>` co pełne cywilizacje, ta sama funkcja
+`runCapitalCapturePlunder`, jedyny wyjątek to frakcja rebeliancka, nie miasta-państwa). Ponieważ
+miasto-państwo ma z definicji tylko 1 miasto, jego utrata ZAWSZE kwalifikuje się jako pełna
+eliminacja (wariant 2, najszerszy transfer) — potwierdzone wprost testem
+`gra/tools/capital-capture-test.cjs:250-258` („Miasto-panstwo (jedyne miasto) → zawsze eliminacja").
+
+**Podsumowanie:** tak, mechanizm jest w kodzie i obejmuje też miasta-państwa — złoto zawsze w
+całości, surowce budowlane miasta automatycznie, nauka+techy przy pełnej eliminacji (co dla
+miast-państw jest zawsze prawdą). Jedyny świadomy wyjątek od „wszystkich surowców" to pula pracy,
+która zawsze przepada zamiast trafić do zwycięzcy — dotyczy to obu typów właścicieli jednakowo, to
+nie asymetria cywilizacja/miasto-państwo. Nie wymaga naprawy — pytanie było czysto faktograficzne.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa funkcja UI, wymaga rozpoznania przed ABC**
+
+**Cytat Macieja:** „Fajnie żeby w momencie gdy się wejdzie do dyplomacji można było sprawdzić
+wszystkie główne cywilizacje z których mamy kontakt. Żeby można było ewentualnie z nimi
+porozmawiać, one powinny być na samej górze zawsze pod państwami — nad państwami miastami. Druga
+kwestia: jeżeli naciśnie się na daną cywilizację, powinna się najpierw pojawiać plansza/pop-up z tą
+cywilizacją z najważniejszymi informacjami — także z takimi: z kim prowadzi wojny, z kim ma
+sojusze, z kim ma umowy handlowe, oraz propozycja spotkania i negocjacji. Czyli dopiero jak się tam
+kliknie, to przechodzi do panelu wizyty dyplomatycznej."
+
+**Dwa oddzielne żądania:**
+1. **Kolejność listy w panelu dyplomacji** — pełnoprawne cywilizacje, z którymi mamy kontakt, mają
+   być zawsze na samej górze listy, NAD miastami-państwami (dziś kolejność do zweryfikowania —
+   niejasne czy to zmiana istniejącego sortowania czy nowa reguła).
+2. **Pop-up podsumowania PRZED wejściem do pełnego panelu wizyty** — kliknięcie na cywilizację ma
+   najpierw pokazać skrócone podsumowanie (z kim wojny, z kim sojusze, z kim umowy handlowe, plus
+   przycisk propozycji spotkania/negocjacji), dopiero kolejne kliknięcie otwiera pełny panel wizyty
+   dyplomatycznej — dziś (do zweryfikowania) prawdopodobnie kliknięcie idzie od razu do pełnego
+   panelu.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) znaleźć dzisiejszy panel listy dyplomacji (prawdopodobnie
+`gra/src/ui/**`, szukać „dyplomacja"/diplomacy panel, listę cywilizacji/miast-państw) i ustalić
+dzisiejszą kolejność sortowania; (b) ustalić czy istnieje dziś jakikolwiek pośredni krok/podgląd
+przed otwarciem pełnego panelu wizyty, czy kliknięcie idzie wprost do niego; (c) sprawdzić czy dane
+potrzebne do podsumowania (wojny/sojusze/umowy handlowe innej cywilizacji z osobami trzecimi, nie
+tylko z graczem) są dziś w ogóle dostępne/widoczne dla gracza gdziekolwiek w kodzie, czy trzeba by
+je dopiero ujawnić. Zanim przedstawię ABC — zebrać fakty, nie zgadywać zakresu zmian.
 
 **Cytat Macieja:** „po przejęciu danej cywilizacji, także w wypadku państw miast, miało być
 przejęcie ich wszystkich surowców. Sprawdź czy to jest w kodzie i czy dotyczy to też państw miast."
