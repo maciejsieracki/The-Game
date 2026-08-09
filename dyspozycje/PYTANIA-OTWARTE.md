@@ -3605,19 +3605,52 @@ na mapce okolicy miasta.
 **Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`).
 **Model:** Sonnet 5.
 
-## P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA (2026-08-09, nota N1 Evaluatora P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — realny, widoczny błąd, niepilne tylko z braku playtestu**
+## P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA — ZAMKNIĘTE 2026-08-09
 Trzeci człon tej samej rodziny błędu (obok już naprawionych `yieldOfMapHex` i
-`foodPotentialOfMapHex`): `gra/src/ui/cityPanel.ts` — `tileYieldLabel()` (linia ~8198) i
-`appendOkolicaYieldLabel()` (linia ~8214) budują `WorkedTile` z
-`ulepszenieKey: normalizeImprovementKey(String(hex.ulepszenie ?? 'brak'))`, NIE przekazują
-`ulepszeniaKeys` — `tileYield` bez tego pola liczy tylko JEDNĄ (legacy) warstwę.
+`foodPotentialOfMapHex`): `tileYieldLabel()` i `appendOkolicaYieldLabel()` w `cityPanel.ts`
+budowały `WorkedTile` z tylko JEDNĄ (legacy) warstwą — na heksie testowym silnik liczył 5/5/5,
+panel pokazywał graczowi 2/2/2.
 
-**To NIE jest teoretyczne — Evaluator zmierzył na tym samym heksie testowym** (Równina,
-`['farma','droga']`, legacy `'droga'`): silnik (`hexToWorkedTile`) liczy Żywność=5/Praca=5/
-Handel=5 pkt/turę, panel (`cityPanel.ts:8198`) pokazuje graczowi **2/2/2** — mniej niż połowę
-realnej wartości. Widoczne w: tooltipach pól (linie ~8310, 8312, 8313, 8384, 8385) oraz w
-liczbach plonów rysowanych NA heksie w mapce okolicy miasta (linia ~8349).
+**Naprawa:** obie funkcje wołają teraz `improvementKeysForHex(hex)`, identycznie jak silnik
+(`hexToWorkedTile`) i poranna naprawa `yieldOfMapHex`. Nowy test `gra/tools/heks-panel-tooltip-warstwa-test.cjs`
+(regex na źródło, `cityPanel.ts` nie eksportuje tych funkcji) — 22/22, dowód mutacyjny (`git
+stash` fixu → 7 nowych FAIL).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: fix zweryfikowany parytetem linia-po-linii ze wzorcem,
+4 własne mutacje (w tym częściowy fix tylko jednej z dwóch funkcji) — wszystkie złapane osobno.
+C-026 potwierdzone niezależnie: dokładnie 8 wystąpień, wszystkie w `cityPanel.ts`, rodzina
+zamknięta (przejrzano wszystkich 9 wywołujących `tileYield(` w `src/`).
+Zmierzone: `heks-panel-tooltip-warstwa-test.cjs` 22/22, `heks-plony-warstwy-test.cjs` 24/24,
+`logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+
+**Dwie nowe niepilne noty Evaluatora, zarejestrowane osobno:** `P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE`
+(uzasadnienie „appendOkolicaYieldLabel wymaga DOM" jest nieprawdziwe — jsdom już jest w repo),
+`P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY` (rodzina `zloze` nieprzekazywane, 3 pozostałe miejsca).
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`tileYieldLabel`, `appendOkolicaYieldLabel`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
+
+## P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dokumentacyjne**
+Operator uzasadnił wybór testu regex-owego (zamiast E2E) tym, że `appendOkolicaYieldLabel`
+„wymaga pełnego DOM". Evaluator sprawdził: `jsdom ^29.1.1` jest zadeklarowanym devDependency
+tego repo, leży w `node_modules`, a 9 istniejących testów w `tools/*.cjs` już go używa. Zbudował
+działający test E2E (~40 linii, esbuild+jsdom, bez nowych zależności), który wywołuje obie
+prawdziwe funkcje i odtwarza ticket dokładnie (przed fixem: „2/2/2", po: „5/5/5"). Silniejsze niż
+regex — testuje zachowanie, nie tekst źródła, przeżywa refaktor. Nie blokowało scalenia
+(obecny test regex jest mutation-proof), ale komentarz w teście i uzasadnienie w commit message
+utrwalają fałszywy precedens „`cityPanel.ts` jest nietestowalny E2E" — już raz posłużył jako wzór
+(`city-panel-growth-percent-separator-test.cjs`). Warto skorygować komentarz przy najbliższej
+okazji edycji tego pliku; nie wymaga osobnego zlecenia.
+**Kotwice:** `gra/tools/heks-panel-tooltip-warstwa-test.cjs` (nagłówek/komentarz uzasadnienia).
+**Model:** Sonnet 5.
+
+## P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+Wzorzec `hexToWorkedTile`/`yieldOfMapHex` (po naprawie `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE`,
+commit `3809d4f4`) przekazuje `zloze` do `tileYield()`. Trzy pozostałe miejsca tego NIE robią:
+`cityPanel.ts:8207`, `cityPanel.ts:8225`, `hexContextTooltip.ts:252`. Zweryfikowane: zero wpływu
+widocznego dziś (`formatTileYieldShort` czyta tylko żywność/pracę/handel, `cityYieldOnly` zeruje
+rudę jawnie) — ta sama „pułapka na przyszłość" co `3809d4f4` już raz zamknął gdzie indziej.
+Rodzina NIE jest w pełni zamknięta wbrew wrażeniu poprzednich commit message.
+**Kotwice:** `gra/src/ui/cityPanel.ts:8207,8225`, `gra/src/ui/hexContextTooltip.ts:252`.
 **Model:** Sonnet 5.
 
 ## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**

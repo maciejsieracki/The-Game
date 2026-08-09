@@ -192,7 +192,7 @@ import {
 import {
   type TradeRoute,
 } from '../game/trade-routes';
-import { normalizeImprovementKey } from '../game/terrain-improvements';
+import { improvementKeysForHex } from '../game/terrain-improvements';
 import type { Hex } from '../types/hex';
 import { loadOrderParams, type OrderYieldMults } from '../game/order';
 import {
@@ -8195,12 +8195,21 @@ function formatTileYieldShort(y: { zywnosc: number; praca: number; handel: numbe
   return parts.length ? parts.join(' ') : '0';
 }
 
+/**
+ * P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA (2026-08-09): musi czytać WSZYSTKIE warstwy
+ * ulepszeń (`hex.ulepszenia`) przez `improvementKeysForHex`, tak jak silnik
+ * (`hexToWorkedTile` w turn-economy.ts) i naprawione już `yieldOfMapHex` /
+ * `foodPotentialOfMapHex` w okolica.ts — nie tylko legacy pojedyncze pole
+ * `hex.ulepszenie` (ostatnia postawiona warstwa).
+ */
 function tileYieldLabel(hex: Hex): string {
+  const ulepszeniaKeys = improvementKeysForHex(hex);
   const y = tileYield({
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
-    ulepszenieKey: normalizeImprovementKey(String(hex.ulepszenie ?? 'brak')),
+    ulepszenieKey: ulepszeniaKeys[0],
+    ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
   return formatTileYieldShort(y);
 }
@@ -8212,11 +8221,13 @@ function appendOkolicaYieldLabel(
   fontScale: number,
 ): void {
   if (!c.hex) return;
+  const ulepszeniaKeys = improvementKeysForHex(c.hex);
   const y = tileYield({
     terenBazowy: c.hex.terenBazowy,
     nakladka: c.hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(c.hex.rzeka && c.hex.rzeka.obecna),
-    ulepszenieKey: normalizeImprovementKey(String(c.hex.ulepszenie ?? 'brak')),
+    ulepszenieKey: ulepszeniaKeys[0],
+    ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
   const ytxt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
   ytxt.setAttribute('x', String(c.cx));
