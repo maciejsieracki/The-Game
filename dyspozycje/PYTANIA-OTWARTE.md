@@ -4249,3 +4249,30 @@ tematów (dotychczasowa praktyka tej sesji — kilka fal dziennie — była zbyt
 **merge `b137332a`**, wypchnięte. FALA 263 (`89176ced`) świadomie NIE wchodzi w ten merge,
 zostaje na `claude/sprawdzenie-funkcjonalnosci-ek4ra0` do testów — wejdzie do main dopiero przy
 kolejnej fali. Kanon decyzji: `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`.
+
+---
+
+## R-DYP-STOL-A-KOREKTA — traktaty ROZŁĄCZONE od wymiany surowców (2026-08-09) · STATUS: **ZAMKNIĘTE, decyzja ostateczna Macieja**
+
+**Kontekst:** playtest Pakt o nieagresji pokazał pola „MY ODDAJEMY (OPCJONALNIE)"/„ONI ODDAJĄ
+(OPCJONALNIE)" z surowcami/pieniędzmi wpięte w ten sam formularz co traktat — konsekwencja
+decyzji `R-DYP-STOL-A=C` (2026-07-27: „pełny koszyk `diplomacyTradeBasket` dla wszystkich
+traktatów"). Orkiestrator wyjaśnił mechanizm i zapytał czy to zmienić — Maciej doprecyzował
+własny pierwotny zamysł, cytat: *„Wszystkie umowy muszą być poza umową na wymianę surowców bez
+propozycji wymiany surowców. To jest dodatkowy element, czyli jeżeli nam brakuje w jakiejś umowie
+punktów, to możemy dołożyć surowców w drugiej umowie. To musi być rozłożone, rozłączone z tego
+względu że zaburza przejrzystość i gracz potem nie będzie wiedział o co chodzi."*
+
+**Decyzja (koryguje wykonanie R-DYP-STOL-A=C, nie samą decyzję B — B zostaje):** każdy typ
+traktatu (pakt o nieagresji, sojusz, wasalizacja, itd.) ma formularz **BEZ** wpiętej sekcji
+wymiany surowców/PW w tym samym oknie. Jeśli traktatowi brakuje „punktów" żeby AI zaakceptowało,
+rozwiązaniem jest **osobna, druga umowa/deal** (np. równoległy traktat handlowy albo dar), nie
+łączenie dwóch rzeczy w jednym formularzu. Efekt praktyczny: `TREATY_ONLY_FORM_IDS` w
+`gra/src/ui/diplomacyTradeBasket.ts` powinien objąć z powrotem wszystkie typy traktatów (nie
+tylko `'15'`), tak jak przed niedokumentowanym skurczeniem w commicie `9cc7c76c` (patrz
+`R-DYP-STOL-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` wyżej — ten wpis teraz się domyka tą decyzją,
+kierunek: powrót do treaty-only, nie utrzymanie rozszerzenia).
+
+**Nota procesowa (Maciej, ta sama wiadomość):** pytania ABC bywają zbyt skomplikowane/mylące,
+czasem brzmią jak podważanie już podjętych decyzji. Do przestrzegania na przyszłość: prostszy
+język, nie wracać do zamkniętych tematów bez wyraźnego powodu.
