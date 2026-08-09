@@ -2220,3 +2220,9 @@ test tekstowy regex wzorem border-march-wygasanie-test.cjs. BB2: zwrot ruchu gub
 z niska pula na hexie startowym - naprawic realnie lub udokumentowac jako ograniczenie. N4 (ABC):
 pelny zwrot po marszu wieloheksowym nie cofa efektow ubocznych trasy (darmowe skanowanie).
 Dispatch rundy 3, waski zakres. Pelna tresc w `PYTANIA-OTWARTE.md`.
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator FAIL runda 1, runda 2 w toku (2026-08-09)
+B1: ulepszenie do Spichlerz II odbiera cap 8 (builtIds traci 'spichlerz' przy upgrade, brakuje
+'spichlerz_ii' w warunku - zmierzone empirycznie). B2: test nie strzeze tej linii (mutacja
+przechodzi wszystko). B3: karta budynkow pokazuje falszywy opis capu. Wszystkie mechaniczne, bez
+ABC. Dispatch rundy 2. Pelna tresc w `PYTANIA-OTWARTE.md`.

@@ -5988,3 +5988,37 @@ bezkosztowy). To konsekwencja decyzji A („pełny zwrot ruchu"), nie błąd imp
 Dispatch runda 3, wąski zakres: TYLKO BB1 (test tekstowy wzorem `border-march-wygasanie-test.cjs`)
 i BB2 (naprawa realna, decyzja Operatora którą opcję wybrać z uzasadnieniem w raporcie). N4
 wymaga ABC — patrz wiadomość na czacie.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 — regresja: ulepszenie Spichlerza do Spichlerz II ODBIERA cap 8 i cofa miasto do 5.**
+`population-growth-v85.ts:344` liczy `maSpichlerzBuilding = builtIds.includes('spichlerz')`, ale
+`production.ts` (`applyCompletedBuildingIds`) USUWA `'spichlerz'` z `builtIds` przy ulepszeniu do
+`spichlerz_ii` (ma `upgradeFrom: "spichlerz"`) — miasto, które ulepszy budynek (ścieżka aktywnie
+punktowana przez AI), traci cap 8 i wraca do 5. Zmierzone empirycznie na realnej ścieżce silnika:
+„Spichlerz II: pop 7 → 7 (oczekiwane 8)". Kod ma już własną, ustaloną konwencję pomijaną przez
+Operatora — `turn-economy.ts:1331`: `builtIds.includes('spichlerz') || builtIds.includes('spichlerz_ii')`.
+Ta sama wada w `cityPanel.ts:1010` (chip capu).
+
+**B2 — test nie chroni jedynej linii wiring'u.** Mutacja `maSpichlerzBuilding = false` przechodzi
+WSZYSTKIE bramki (akwedukt-popcap 9/9, population-growth-v85 53/55, logic-test 213/213) bez
+żadnego wykrycia — istniejący test e2e używa `population: 8` i asercjonuje BRAK wzrostu, co jest
+prawdą w obu gałęziach (poprawnej i zepsutej, bo przy zepsutej derywacji cap spada do 4, a 8>4 też
+nie rośnie). Naprawa zweryfikowana przez Evaluatora: `population: 7` + oczekiwanie `=== 8` łapie
+mutanta.
+
+**B3 — karta „Budynki wpływające na wzrost" podaje fałsz.** `cityPanel.ts:4785` dla miasta z
+Akweduktem I Spichlerzem pokazuje „bez Akweduktu max 5" — nieprawda, bez Akweduktu to miasto ma 8.
+Wiersz Spichlerza nie wspomina wcale o nowym twardym capie 8.
+
+Wszystkie 3 mechaniczne, bez ABC. Dispatch runda 2.
+
+Niepilne (do rundy 2 albo później): N1 (nieaktualny komentarz o „buggu z diakrytykiem" —
+`loadEconParams` jest martwy z innego, prostszego powodu: po prostu nigdy niewołany, nie z powodu
+błędu klucza), N3 (kanon `docs/decyzje/B-popcap-akwedukt-audit.md` nieaktualny, nadal pisze cap 15),
+N4 (spichlerz_prog_ludnosci płaski 8/8/8 mimo że akwedukt_prog_ludnosci skaluje się z trudnością —
+zgodne z dosłownymi słowami Macieja, tylko do wiadomości), N5 (obejście capu przy buncie,
+pre-istniejące), N7 (CLAUDE.md ma nieaktualny zapis `upgrade-budynki 48/48`, realnie 48/1 fail
+pre-istniejący).
