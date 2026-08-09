@@ -131,8 +131,9 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // workedTiles (BEZ ZMIAN).
 //
 // Stawki: pole "surowiec_ilosc_tura" w terrain-improvements.json per ulepszenie.
-// Wartosci REALNE (terrain-improvements.json; korekta balansu Maciej 2026-07-29):
-//   Tartak->drewno 10 · Glinianka->glina 15 · Kamieniolom->kamien 4 ·
+// Wartosci REALNE (terrain-improvements.json; korekta balansu Maciej 2026-08-09):
+//   Tartak->drewno 4 · Glinianka->glina 4 · Kamieniolom->kamien 4 (wyrownanie do
+//   kamieniolomu, bylo Tartak 10 / Glinianka 15 przed 2026-08-09) ·
 //   Kopalnia miedzi->ruda 2 · Kopalnia (zloze zelaza)->ruda_zelaza 2.
 // Domyslny fallback (gdy pole nieobecne w JSON) = 2/ture -- czysto bezpieczenstwo,
 // nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.
