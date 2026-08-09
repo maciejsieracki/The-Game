@@ -4780,6 +4780,15 @@ Evaluator wykonał 7 własnych mutacji (nie tylko powtórzył 2 Operatora) — 3
 Naprawa N6+N7+N8 to ~8 linii w istniejącym bloku AST testu (linie 258-293), bez dotykania kodu
 produkcyjnego. Dispatch trzeciej rundy naprawy, skupionej wyłącznie na wzmocnieniu asercji AST.
 
+**N6-N8 naprawione przez Operatora (worktree `agent-aaf9af7386d8ca891`), czeka na finalnego
+Evaluatora.** Kod produkcyjny NIETKNIĘTY (identyczny jak w poprzedniej, zweryfikowanej wersji) —
+zmiana wyłącznie w teście: N6 (asercja: `buildChipDeltaStockHtml(...)` musi mieć dokładnie 2
+argumenty, drugi kończący się na `civStock`), N7 (prefiks obiektu bazowego 7. i 8. argumentu musi
+być identyczny dla każdego z 6 wywołań), N8 (7. argument musi kończyć się na `.small`). Dowód:
+wszystkie 3 mutacje z drugiej rundy Evaluatora teraz czerwienieją (były 38/38 zielono, teraz N6→2
+FAIL/40, N7→1 FAIL, N8→1 FAIL). Bramki na niezmutowanym kodzie: tsc 0, logic-test 213/213, nowy
+test 42/42 (38+4 nowe asercje), sąsiedni test 20/20 bez regresji.
+
 ## P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC (2026-08-09, uwaga Macieja przy R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY) · STATUS: **OTWARTE — niepilne, „temat na później" (cytat Macieja)**
 
 Maciej zwrócił uwagę, że trzeba ujednolicić zasady kolorów prezentacji surowców między panelem
