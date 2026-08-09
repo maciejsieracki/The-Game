@@ -6585,3 +6585,23 @@ odłożony, ta premia pozostaje sprzeczna z krokiem 1 i ma zniknąć zgodnie z p
 
 Temat R-FORT-STRAZNICA pozostaje zarejestrowany, gotowa pełna specyfikacja turnieju czeka na
 wznowienie, gdy Maciej zdecyduje się przejść do „kroku 2".
+
+---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — ECHO C, decyzja Macieja + doprecyzowanie (2026-08-09)
+
+**Decyzja Macieja: C** (A: rozbudowa ekonomiczna + B: Port jako brama produkcji morskiej dla
+jednostek `Typ: Naval`), z zastrzeżeniem: „dostęp do wody może być też dostępem do rzeki, czyli
+Port może być zarówno nad morzem, jak i przy rzece."
+
+**Zgodność z istniejącym kodem:** bramka budowy samego budynku Portu już dziś używa
+`cityHasCoastOrRiverAccess` (potwierdzone przez Sędziego turnieju) — czyli rzeka JUŻ kwalifikuje
+do postawienia Portu. Doprecyzowanie Macieja dotyczy więc NOWEJ części (B): gdy dodamy wymóg
+Portu+dostępu do wody dla jednostek `Typ: Naval`, użyć TEJ SAMEJ definicji „dostęp do wody"
+(morze LUB rzeka), nie węższej „tylko morze" — żeby jednostka morska (Galera) mogła być budowana
+w mieście rzecznym z Portem, tak samo jak w mieście nadmorskim z Portem.
+
+**Otwarty, niedopowiedziany szczegół z pytania Sędziego (nie zgadywać, dopytać):** czy istniejące
+zapisy gry z Galerami już zbudowanymi w miastach BEZ dostępu do wody mają zostać („grandfather" —
+jednostki zostają, tylko NOWA produkcja jest blokowana) czy coś ostrzejszego. Pytanie zadane w
+wiadomości na czacie.
