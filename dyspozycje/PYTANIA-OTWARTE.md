@@ -6271,3 +6271,47 @@ Dispatch runda 3, wąski zakres wg gotowej specyfikacji Evaluatora: (1) zamieni�
 dokładny warunek per miasto (wzór wyżej, poprawić fałszywy JSDoc); (2) dołożyć test korektności na
 mieście pop=12/15 z zagrożeniem 10-19 hex od centrum; (3) przerobić T3 na scenariusz dyskryminujący
 (obrońca na heksie miasta) wg wzoru Evaluatora.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — wymaga rozpoznania**
+
+**Kontekst zgłoszenia:** bezpośrednia kontynuacja tematu P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI
+— po informacji, że AI (i tak samo gracz, twardy wymóg `withinTerritory`) traci możliwość
+zakładania miast poza własnym, zwartym terytorium (w tym za morzem), Maciej zaproponował
+rozwiązanie zamiast cofania decyzji A.
+
+**Cytaty Macieja (3 wiadomości, ten sam wątek):**
+1. „masz rację. I wtedy trzeba zrobić fort w tamtym miejscu, żeby otworzyć nowe miasto."
+2. „porty i wieże strażnicze powinny być, mieć możliwość budowania poza zasięgiem miasta."
+3. „poza tym to samo ograniczenie dotyczy gracza, więc tutaj trzeba to globalnie rozwiązać zarówno
+   dla AI jak i dla gracza."
+
+**Wstępne ustalenie (bez subagenta, szybki grep) — mechanizm już istnieje W DANYCH, nieznany stan
+w kodzie:** `gra/data/terrain-improvements.json` ma już wpis `fort` z jawnym komentarzem „ABC-10
+Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 10; +100% Obrona
+obozowanie" oraz osobny wpis `decyzje_EKONOMIA` mówiący wprost: „zasieg_terytorium: posterunek=5
+(epoka 2), fort=10 (epoka 3), miasto=10 (stałe); **zakładanie kolejnego miasta wymaga Strażnica LUB
+zasięgu obecnego miasta**." Czyli DOKŁADNIE mechanizm, o który prosi Maciej, był już zaprojektowany
+(ABC-10, 2026-07-04) — pytanie do rozpoznania: czy `withinTerritory`/`canFoundCity` faktycznie
+uwzględnia dziś węzły terytorium z posterunku/fortu, czy tylko z miast (wcześniejsze rozpoznanie
+`P-AI-ZAKLADANIE-MIAST` sprawdzało tylko `cityNodesForOwner` — możliwe że fort/posterunek nigdy nie
+zostały wpięte do tej funkcji, mimo że dane/design to zakładają).
+
+**Drugi wątek do rozpoznania:** czy Posterunek/Strażnica i Port dają się dziś budować WYŁĄCZNIE w
+obrębie już posiadanego terytorium (typowe dla budynków miejskich), czy jako ulepszenie terenu
+budowane przez jednostkę (Robotnika?) w dowolnym odkrytym, dostępnym heksie — Maciej chce tego
+drugiego („poza zasięgiem miasta").
+
+**Zakres (potwierdzony explicite przez Macieja):** rozwiązanie MA dotyczyć RÓWNOCZEŚNIE gracza i AI
+(parytet, spójny z całą resztą decyzji tej sesji) — nie tylko naprawa dla AI.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) zweryfikować czy `withinTerritory`/`canFoundCity`
+(gracz i AI) uwzględnia węzły terytorium z fortu/posterunku, czy tylko z miast — dokładny plik i
+funkcja; (b) sprawdzić jak dziś buduje się Fort/Posterunek/Port — budynek miejski (w kolejce
+produkcji miasta, wymaga już posiadanego miasta) czy ulepszenie terenu (jednostka na mapie, w
+dowolnym dostępnym heksie) — jeśli to pierwsze, to sam Fort nie rozwiąże problemu (miasto musi już
+istnieć, żeby go zbudować — błędne koło); (c) sprawdzić czy AI ma dziś jakąkolwiek logikę budowy
+Fortu/Posterunku poza miastem (jednostką) — czy trzeba to dopiero dodać do AI; (d) sprawdzić czy
+mechanizm „posterunek=5, fort=10" z komentarza w danych jest w ogóle zaimplementowany gdziekolwiek
+w kodzie, czy to tylko projektowa notatka z 2026-07-04, nigdy niewdrożona.
