@@ -6495,3 +6495,26 @@ kod FALA 263, ale bundel FALA 262.
 do testów, wejdzie do `main` dopiero przy scaleniu przy okazji FALA 265. Kto chce testować
 najnowsze — pull z gałęzi roboczej, nie z `main`.
 CZEKAM-NA: nic — informacyjnie.
+
+## [00:58 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 264, md5 `04b58d64`
+
+Build z HEAD `b7656d8d` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (107 commitów od FALA 263
+/ `8fbe916e`). Bundel: `gra-robocza/Gra-ROBOCZA.html` md5 **`04b58d644690d551b1ff52ad328c3431`**,
+stempel `ROBOCZA · 1027b77d · 2026-08-09 22:53` (UTC). 6 bundli playtestowych zsynchronizowanych,
+`START.html` + manifest (10 bundli) przegenerowane.
+
+**13 tematów z playtestu:** R-DYP-STOL-A-KOREKTA (traktaty rozłączone od koszyka) ·
+P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE + P-REKRUTACJA-NAZWY-ZNIKAJA · R-KARTA-JEDNOSTKI-STRZALKI-CYKL ·
+R-WYDARZENIA-FILTR-KATEGORII · R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK · P-TRIUMF-ZJEDNOCZENIE-GRECJI
+(modal zamiast dymka) · R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY · P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO ·
+P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA · R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE ·
+R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-NA-CUDZYM-TERENIE · P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI ·
+P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (parytet gracz/AI).
+
+**Bramki na HEAD `b7656d8d`** (tsc 5.9.3): `tsc --noEmit` 0 błędów · `logic-test` **213/213** ·
+`tech-tree` 19/19 · `research` 33/33 · `unit-replace` 13/13 · `ai-founding-territory` 28/28 ·
+`vite build` 802 moduły exit 0 · `verify-robocza-bundle` **VERIFY OK** (`manifest match: OK`,
+„stamp match: WARN" normalny wg runbooku §6).
+
+Osobno tym samym ruchem: `main` doganiony o **FALA 263** → merge `b0e4a5c9` (wpis wyżej).
+CZEKAM-NA: sesja lokalna — sync `04b58d64` na dysk właściciela + potwierdzenie w kanale.
