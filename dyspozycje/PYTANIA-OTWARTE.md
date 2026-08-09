@@ -5653,3 +5653,30 @@ próg); (c) sprawdzić czy to dotyczy też innych surowców pozamiastowych, czy 
 (np. bo mają inny tor akumulacji niż Żywność/Skarbiec/Nauka, które są objęte innym, już
 sprawdzonym kodem zapasu cywilizacji z `R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO`). Zanim cokolwiek
 naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, propozycja gameplayowa Macieja) · STATUS: **OTWARTE — wymaga ABC**
+
+**Cytat Macieja:** „okej, więc cały sens Spichlerza to dodatkowe bonusy, ale myślę, że dołączyłbym
+mu jeszcze jeden bonus, mianowicie jeżeli miasto chce wzrosnąć powyżej [progu bez budynków] to musi
+mieć spichlerz. Można wtedy urosnąć do 8 ludności, a obecny Akwedukt pozwoli wzrosnąć z 8 do 12
+(z wcześniejszych 5[→15]). W późniejszych epokach wymyślimy kolejne etapy."
+
+**Stan dzisiejszy (zweryfikowany w kodzie, `gra/src/game/economy.ts:1047-1053`, parametry
+`akwedukt_prog_ludnosci`/`akwedukt_max_ludnosci`):**
+- Cap ludności miasta ma DWA poziomy: bez Akweduktu = **5**, z Akweduktem = **15**.
+- Spichlerz dziś **NIE gatekeepuje wzrostu** — daje wyłącznie bonusy (zdrowie, % wzrostu, mnożnik
+  kosztu racji, zadowolenie), pod warunkiem że ceramika (i sól dla tier II) zostały odprowadzone
+  w danej turze (`maSpichlerzPop`/`maSpichlerzIIPop`, `SPICHLERZ_DRAIN_CERAMIKA_PER_TURN = 5`).
+- Reguła bonusów Spichlerza jest już raz podjętą decyzją: **B5-SPICH (Maciej 2026-06-29)**,
+  udokumentowaną w `docs/decyzje/B5-spichlerz-wzrost-ludnosci.md` — ta propozycja ją ROZSZERZA
+  (dodaje twardy próg, nie tylko bonus), nie zastępuje.
+
+**Rozpoznanie — konflikt z istniejącą decyzją (CLAUDE.md §1a):** propozycja zmienia dwie już
+wytunowane liczby: (1) wprowadza NOWY twardy próg 5→8 wymagający Spichlerza (dziś go nie ma wcale);
+(2) obniża górny cap Akweduktu z dzisiejszych **15** do **12** (parametr `akwedukt_max_ludnosci`
+jest dziś wytuningowany na 15 — to bezpośrednia zmiana istniejącej wartości balansu, nie tylko
+nowa funkcja).
+
+Pytanie ABC do zadania w następnej turze (patrz odpowiedź na czacie).
