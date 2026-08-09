@@ -296,6 +296,110 @@ console.log('\n-- E. advanceCityEconomy: cap panstwa + reconcile per owner (grac
   assert(aiTotal > 0, 'AI zachowuje surowiec do capu (nie zeruje wszystkiego -- reconcile tylko tnie nadwyzke)');
 }
 
+// ===========================================================================
+// F. P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): symulacja
+//    kilku RÓWNOLEGŁYCH wyrębów lasu (main.ts triggerPlayerEndTurn, pętla
+//    hexClearingStates) blisko capu magazynu -- ta pętla leci PO jedynym w
+//    turze reconcileOwnerResourceCaps, więc każde jej wywołanie
+//    creditOwnerResourceStock MUSI dostawać capPerType (main.ts:~21045 po
+//    naprawie), inaczej Drewno rośnie bez ograniczenia mimo etykiety "PEŁNY".
+//
+//    UWAGA (Evaluator 2026-08-09): ta sekcja testuje wyłącznie KONTRAKT
+//    BIBLIOTEKI creditOwnerResourceStock (building-stock-cost.ts) wołanej
+//    BEZPOŚREDNIO -- nigdy nie dotyka main.ts, więc NIE łapie regresji, gdyby
+//    ktoś usunął 5. argument z KONKRETNEGO wywołania w pętli wyrębu. Ten
+//    kontrakt biblioteki był zawsze poprawny (nie tu był bug) -- dowód
+//    miejsca wystąpienia buga jest w sekcji G niżej (strażnik tekstowy na
+//    źródle main.ts).
+// ===========================================================================
+console.log('\n-- F. Wielokrotny wyrąb lasu (drewno) blisko capu -- NIE przekracza cap --');
+{
+  // Cap liczony DYNAMICZNIE z realnych econ-params.json (nie hardkodowany) -- sekcja A
+  // powyżej jest dziś czerwona (dług testowy: bazaSurowcePanstwo w danych = 1000, nie
+  // 500 jak zakładał stary test z 2026-07-24), więc ten test NIE zakłada konkretnej
+  // wartości bazy, tylko używa tego samego ownerResourceCap co main.ts po naprawie.
+  const data = { civs, econParams: econParamsRaw, societyParams, buildings, units, tech };
+  const builtByCityF = new Map([['w1', ['magazyn']]]);
+  const capProbe = M.ownerResourceCap([{ id: 'w1', ownerId: 0 }], builtByCityF, 0, data, 'normal');
+  assert(capProbe > 20, `cap panstwa (1 Magazyn, normal) = ${capProbe} -- wystarczajaco duzy na scenariusz ponizej`);
+
+  const startStock = capProbe - 10; // blisko capu, zostaje dokladnie 10 wolnego miejsca
+  const cities = makeCities([{ id: 'w1', ownerId: 0, surowce: { drewno: startStock } }]);
+
+  // 3 rownoległe wyręby, kazdy dający +25 Drewna (tak jak main.ts liczy drewnoCredit
+  // per hex w petli) -- SUMA (75) znacznie przekroczylaby cap gdyby nie byla capowana
+  // per-wywolanie, dokladnie jak w buggym main.ts PRZED naprawa (creditOwnerResourceStock
+  // bez 5. argumentu).
+  const credited = [];
+  for (let i = 0; i < 3; i++) {
+    credited.push(M.creditOwnerResourceStock(cities, 0, 'drewno', 25, capProbe));
+  }
+  const total = M.ownerResourceStock(cities, 0, 'drewno');
+  eq(total, capProbe, `po 3 rownoleglych wyrebach: suma drewna = dokladnie cap (${capProbe}), nie ${startStock + 75}`);
+  assert(total <= capProbe, `suma drewna (${total}) nigdy nie przekracza cap panstwa (${capProbe})`);
+  eq(credited[0], 10, 'wyrab #1: dodano tylko wolne miejsce do capu (10, nie pelne 25)');
+  eq(credited[1], 0, 'wyrab #2: magazyn juz pelny (na cap) -- 0 dodane');
+  eq(credited[2], 0, 'wyrab #3: magazyn juz pelny (na cap) -- 0 dodane');
+
+  // Kontrola negatywna: ten sam scenariusz BEZ capu (regres do stanu sprzed naprawy)
+  // musi przekroczyc cap -- potwierdza, ze test faktycznie lapie bug, gdyby capPerType
+  // zniknal z wywolania w main.ts.
+  const citiesUncapped = makeCities([{ id: 'w2', ownerId: 0, surowce: { drewno: startStock } }]);
+  for (let i = 0; i < 3; i++) {
+    M.creditOwnerResourceStock(citiesUncapped, 0, 'drewno', 25 /* brak capPerType -- bug */);
+  }
+  const totalUncapped = M.ownerResourceStock(citiesUncapped, 0, 'drewno');
+  eq(totalUncapped, startStock + 75, `kontrola negatywna: BEZ capPerType suma (${startStock}+75=${startStock + 75}) faktycznie przekracza cap (${capProbe}) -- test jest miarodajny`);
+  assert(totalUncapped > capProbe, 'kontrola negatywna: potwierdza, ze bug (brak capu) realnie psuje magazyn');
+}
+
+// ===========================================================================
+// G. STRAŻNIK TEKSTOWY na main.ts -- pokrywa MIEJSCE WYSTĄPIENIA buga
+//    (Evaluator 2026-08-09): sekcja F wyżej testuje tylko bibliotekę
+//    (building-stock-cost.ts), wołaną bezpośrednio -- main.ts jest zbyt
+//    ciężki, żeby bundlować (importy Vite-specific), więc pokrycie
+//    KONKRETNEGO wywołania w pętli wyrębu lasu robimy wzorcem "strażnika
+//    tekstowego" (patrz tools/border-march-wygasanie-test.cjs) -- czytamy
+//    src/main.ts jako zwykły tekst i sprawdzamy obecność 5. argumentu
+//    (cap) w wywołaniu creditOwnerResourceStock wewnątrz pętli
+//    `for (const [hexKey, st] of hexClearingStates)`.
+//
+//    Dowód mutacyjny (ręczny, opisany w raporcie): usunięcie 5. argumentu
+//    z main.ts:~21045 na kopii powoduje czerwony wynik TEJ sekcji, mimo że
+//    sekcja F wyżej zostaje zielona -- to właśnie luka, którą ta sekcja
+//    zamyka.
+// ===========================================================================
+console.log('\n-- G. main.ts (strażnik tekstowy): wyrąb lasu przekazuje cap do creditOwnerResourceStock --');
+{
+  const MAIN_TS = path.join(__dirname, '..', 'src', 'main.ts');
+  const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
+
+  // Wytnij ciało pętli wyrębu lasu (od nagłówka `for` do zamykającej klamry pętli,
+  // rozpoznanej po tym, że kolejna linia woła refreshPlayerCityEcon).
+  const loopStart = mainSrc.indexOf('for (const [hexKey, st] of hexClearingStates)');
+  assert(loopStart >= 0, 'main.ts: znaleziono pętlę wyrębu lasu (for hexClearingStates)');
+  const loopEndMarker = 'refreshPlayerCityEcon(econ.perCity);';
+  const loopEndIdx = mainSrc.indexOf(loopEndMarker, loopStart);
+  assert(loopEndIdx > loopStart, 'main.ts: znaleziono koniec pętli wyrębu lasu (przed refreshPlayerCityEcon)');
+  const loopBody = loopStart >= 0 && loopEndIdx > loopStart ? mainSrc.slice(loopStart, loopEndIdx) : '';
+
+  // Wywołanie creditOwnerResourceStock dla 'drewno' MUSI mieć 5. argument (cap) --
+  // dokładnie ten fragment, jaki Operator zostawił w kodzie po naprawie.
+  const drewnoCallMatch = loopBody.match(
+    /creditOwnerResourceStock\(cities, ownerId, 'drewno', drewnoCredit(, \w+)?\)/,
+  );
+  assert(!!drewnoCallMatch,
+    "main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit...) w pętli wyrębu");
+  assert(!!(drewnoCallMatch && drewnoCallMatch[1]),
+    'main.ts:~21045 wywołanie w pętli wyrębu PRZEKAZUJE 5. argument (cap) do creditOwnerResourceStock -- ' +
+    'bez niego Drewno rośnie bez ograniczenia mimo pełnego magazynu (regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO)');
+
+  // cap MUSI być liczony przez ownerResourceCap (ta sama funkcja co reszta ekonomii),
+  // nie hardkodowaną stałą -- kontroluje, że naprawa nie "przeszła" przez sztuczną wartość.
+  assert(/const drewnoCap = ownerResourceCap\(cities, cityBuilt, ownerId, data, _menuDifficulty\);/.test(loopBody),
+    'main.ts: drewnoCap liczony przez ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty) w pętli wyrębu');
+}
+
 // --- summary ---------------------------------------------------------------
 console.log(`\nsurow-civ-storage-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE);  } catch (e) {}
