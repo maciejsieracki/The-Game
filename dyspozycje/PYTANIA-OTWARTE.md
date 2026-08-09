@@ -7106,3 +7106,31 @@ JSON→Excel).
 Dispatch scalenia NASTĘPUJE teraz.
 
 ---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — Evaluator RUNDA 3: PASS-WITH-NOTES, CAŁY TEMAT (rundy 1-3) GOTOWY DO SCALENIA (2026-08-09/10)
+
+Wszystkie 3 noty blokujące rundy 2 (BB1/BB2/BB3) zamknięte i niezależnie zweryfikowane, BB3
+dodatkowo dowiedziona EMPIRYCZNIE (harness jsdom renderujący realny pop-up, nie tylko tekst).
+N4 zamknięte. Trzy decyzje projektowe (barbarzyńcy wykluczeni, gracz pokazywany mimo mgły wojny,
+sortowanie) stoją niezmienione.
+
+**Warunek scalenia (2 linie, wyłącznie plik testu, do dołożenia RAZEM ze scaleniem):** N1
+z rundy 3 było fałszywym twierdzeniem — asercje 6j/6k szukają literałów `'sojusz'`/`'handel'`
+GDZIEKOLWIEK w ciele funkcji, więc zamiana miejscami (sojusznicy pod „Handluje z", partnerzy
+handlowi pod „W sojuszu z") przechodzi 46/46 zielono. Kod produkcyjny jest POPRAWNY, wadliwa jest
+wyłącznie asercja. Poprawka zwalidowana przez Evaluatora:
+```js
+/const alliances = dealPartnerIdsForOwner\(\s*activeDeals\s*,\s*ownerId\s*,\s*'sojusz'/
+/const deals = dealPartnerIdsForOwner\(\s*activeDeals\s*,\s*ownerId\s*,\s*'handel'/
+```
+
+Notatki niepilne do osobnej rejestracji (nie blokują): N-2 (bramka ma zero pokrycia behawioralnego
+nowego pop-upu — 7 realistycznych regresji, w tym „przycisk audiencji przestaje działać" i XSS,
+przechodzi 46/46 zielono; Evaluator dostarczył gotowy ~120-liniowy harness jsdom do przyszłego
+dołożenia), N-3 (martwy eksport `updateDiploPairSummary`, stuby `.stubs/` niegitignorowane).
+
+Dispatch scalenia (z poprawką N-1 wklejoną razem) NASTĘPUJE — w kolejce, PO zakończeniu 2 obecnie
+działających agentów scalających w głównym drzewie (Tartak/Glinianka, Armia-rozpad runda 6), żeby
+uniknąć wyścigu na tym samym drzewie.
+
+---
