@@ -6969,3 +6969,75 @@ zmian w kodzie produkcyjnym tej rundy (wyłącznie 2 pliki testów). Dispatch Ev
 (finalnej) NASTĘPUJE teraz.
 
 ---
+
+## INCYDENT — usunięcie niescommitowanej pracy (R-BUDYNEK-PORTOWY) przy sprzątaniu dysku (2026-08-09/10)
+
+**Co się stało:** Runda 1 (+część rundy 2) R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE była w pełni
+zaimplementowana i oceniona przez Evaluatora (PASS-WITH-NOTES), ale NIGDY nie scalona do gałęzi
+(brak dispatchu agenta scalającego — luka procesowa sama w sobie, patrz niżej). Podczas sprzątania
+worktree po poleceniu „wyczyść przestrzenie dyskowe" orkiestrator uruchomił
+`git worktree remove --force` na worktree `agent-a832dc5c0cab4943e` **bez sprawdzenia `git status`
+w tym konkretnym katalogu** — złamanie zasady, którą sam stosował przy innych worktree tej samej
+sesji (zawsze commit+push przed usunięciem). Skutek: ok. 130 wywołań narzędzi Operatora + pełna
+weryfikacja Evaluatora (~90 wywołań) fizycznie usunięte z dysku.
+
+**Odzyskanie (częściowe, w toku):** `main.ts` i `trade-routes.ts` odzyskane z osieroconych obiektów
+gita (`git fsck --unreachable`, były `git add`-owane w nieznanym momencie przed usunięciem —
+przypadkowe szczęście, nie systemowe zabezpieczenie). `production.ts` i plik testu NIE mają śladu
+w gicie — odtwarzane od zera wg opisu z raportów agentów sprzed incydentu (dispatch w toku,
+`a9d473aa1495f39c6`).
+
+**Przyczyna źródłowa:** brak reguły playbooka wymuszającej scalenie (lub przynajmniej push na
+osobną gałąź `zapas/<nazwa>`, C-014 już to przewiduje ale NIE była stosowana konsekwentnie) tematu
+NATYCHMIAST po PASS-WITH-NOTES Evaluatora, zanim rozpocznie się kolejna runda na tym samym worktree
+lub sprzątanie. C-032 (sprzątaj dysk PRZED każdą partią Operatorów) nie ma odpowiednika „PRZED
+usunięciem KAŻDEGO pojedynczego worktree sprawdź czy jego praca jest scalona/zapchnięta" — luka,
+do naprawienia w playbooku (patrz sekcja niżej z propozycjami reguł).
+
+---
+
+## AUDYT HISTORYCZNY „zapomniane tematy" — wynik zbiorczy 3 równoległych agentów (2026-08-09/10)
+
+Na polecenie Macieja („ile takich zapomnianych tematów mamy w 260 falach") — trzy niezależne agenty
+przeczesały całą historię projektu: `PYTANIA-OTWARTE.md` (6954 linii), `REJESTR-PROSB-I-ZADAN.md`
+(2309 linii), `KANAL-PRACA.md` (6520 linii, 660× „CZEKAM-NA:") + `WERSJE.md` + `STAN-PRACY-HANDOFF.md`.
+
+**Wynik policzony:**
+- `PYTANIA-OTWARTE.md`: **7 potwierdzonych** zapomnianych tematów (1 już znany Maciejowi —
+  drewno/glina — + 6 nowych, WSZYSTKIE z jednej sesji generatora map 2026-08-02/FALA ~190-195) +
+  6 dwuznacznych do osądu.
+- `REJESTR-PROSB-I-ZADAN.md`: **0 zapomnianych** — 8 pozycji wyglądały podejrzanie, wszystkie
+  zweryfikowane jako faktycznie dostarczone (tylko status w pliku nieaktualny — inny, ale realny
+  problem: rejestr kłamie o stanie, mimo że praca się znalazła).
+- `KANAL-PRACA.md`/`WERSJE.md`/handoff: **1 potwierdzony** (`R-DESIGN-PANEL-MIASTA-V2-Q1` — czeka
+  na dostawę od człowieka-Designera od 2026-08-06, nikt nie przypomniał od 4+ dni) + 1 nieaktualny
+  plik-drogowskaz (`STAN-PRACY-HANDOFF.md` §5 nieaktualizowane od 2026-08-06 mimo trwającej pracy
+  do FALA 264).
+
+**RAZEM: 8 potwierdzonych zapomnianych tematów** (1 znany + 6 mapgen + 1 design-handoff), plus
+2 poważne dodatkowe znaleziska (0 utraconych zleceń w REJESTR-PROSB, ale nieaktualne statusy tam;
+STAN-PRACY-HANDOFF §5 martwy od 4 dni).
+
+### Lista 6 tematów mapgen do dispatchu (2026-08-02, sesja generatora map — WSZYSTKIE wymagają
+NAJPIERW sprawdzenia aktualności, bo generator mapy miał od tamtej pory istotne przebudowy
+[Pangea-obrys, coast-buffer, C-MAPA-Q1=B i inne] — mogły się same zdezaktualizować lub zostać
+przypadkiem naprawione przy okazji):
+
+1. **AC-RZEKI-BEZ-LIMITERA** — mandat Macieja: „nie powinno być żadnego limitera ilości rzek...
+   powinny siewić tak długo jak są w stanie, nie kończyć się po wyznaczonym czasie/długości."
+2. **AC-RZEKI-PER-MASA** — każda wyspa/masa lądu ma generować rzeki jak kontynent.
+3. **BUG-OBWARZANEK-20PCT** — pierścień morza utrzymuje się mimo 20% udziału lądu.
+4. **BUG-ZIEMIA-SCALE** — przy większych rozmiarach mapy ilość lądu zostaje „ta sama", rośnie
+   tylko woda.
+5. **PERF-SUPER-HUGE-PANGEA-80** — generacja mapy Super Huge/Pangea/80% lądu trwała ~14,6 min.
+6. **BUG-SCENA-PERF-FALA138** — budowanie sceny bardzo długo (~kilkanaście minut), powiązane z
+   `R-SCENA-PERF-FALA138` w rejestrze.
+
+Dispatch (Explore najpierw — sprawdzić aktualność, potem Operator jeśli nadal aktualne) NASTĘPUJE
+teraz, każdy osobnym agentem.
+
+### R-DESIGN-PANEL-MIASTA-V2-Q1
+Blokada zewnętrzna (czeka na człowieka-Designera, nie na kod) — nie nadaje się do dispatchu
+subagenta kodującego. Do przypomnienia Maciejowi jako wciąż otwarte, nie do cichego domknięcia.
+
+---
