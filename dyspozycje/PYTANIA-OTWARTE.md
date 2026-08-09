@@ -6335,3 +6335,50 @@ dziś nieosiągalny), N6 (asymetria UX: wejście w Listę przypina automatycznie
 decyzja produktowa nieopisana, do wspomnienia przy okazji domykania B1).
 
 **GOTOWE DO SCALENIA.** Scalam teraz.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 3: FAIL (dokumentacja nieprawdziwa), runda 4 w toku (2026-08-09)
+
+**BB1 potwierdzone ZAMKNIĘTE** — Evaluator zrobił 6 własnych mutacji (3 ze zlecenia + 3 dodatkowe),
+wszystkie złapane przez bramkę tekstową, test funkcjonalny nadal ślepy na wszystkie — dokładnie
+potwierdza sens naprawy. Znaleziono kruchość testu tekstowego (K-1 do K-5) — najpoważniejsza K-5:
+asercja liczy wystąpienia `deductStackRuchLeft(` GLOBALNIE w całym pliku (24 tys. linii), więc
+KAŻDA przyszła, niezwiązana funkcja odejmująca pulę ruchu wysadzi tę bramkę bez związku z tematem.
+
+**BB2 — powód FAIL nie jest brakiem naprawy (to byłoby akceptowalne), tylko NIEPRAWDZIWĄ
+DOKUMENTACJĄ tego faktu (CLAUDE.md §0b).** Evaluator prześledził realny łańcuch wywołań:
+`skipStackRuchSync=true` w `onSeparate` jest natychmiast unieważniane 24 linie dalej przez
+`refreshD1bHud()` → render HUD → `buildArmyStackHudStateInner()` → `syncStackRuchLeft(stack)` BEZ
+flagi — zwrot ginie w TYM SAMYM, synchronicznym wywołaniu. Komentarz w kodzie i raport Operatora
+(„częściowa mitygacja", „chroni pierwszy odczyt") są NIEPRAWDZIWE — flaga jest placebo, chroni
+zero odczytów. Dobra wiadomość: to nie wprowadza NOWEJ regresji (zachowanie identyczne jak przed
+rundą, wszystkie odczyty i tak są min-owe).
+
+**Korekta uzasadnienia ABC Operatora — Twoja intuicja o kolizji z wcześniejszą decyzją była
+NADINTERPRETACJĄ.** ECHO A („żadnego rozpraszania") odpowiadało na PYTANIE O INNĄ RZECZ: czy
+budować „dwie niezależne, wybieralne armie na jednym heksie" (pełna funkcja produktowa z UI/AI/
+save). To NIE to samo co „różne pule ruchu w obrębie jednego heksu" — par. 6b w kodzie to komentarz
+dokumentacyjny, nie egzekwowany kontrakt; silnik już dziś rutynowo trzyma 2+ niepołączone armie na
+jednym heksie (stąd w ogóle istnieje prompt merge). Realna naprawa (`stackGroupId`) WCIĄŻ wymaga
+ABC — ale jako NOWA decyzja o obserwowalnej zmianie zasad (gracz zobaczy dwie armie o różnym ruchu
+na jednym polu), nie jako coś zabronionego wcześniejszą decyzją.
+
+**Opcje Operatora niekompletne — Evaluator dołożył 2 tańsze warianty, oba bez tożsamości stosu:**
+- D — origin zajęty przez własną jednostkę o niższej puli traktować jak „brak bezpiecznego origin"
+  (ta sama gałąź co dziś przy zajętym wrogim/nieprzejezdnym origin: jednostki NIE wracają, zostają
+  z komunikatem) — zero nowych pojęć, zero refaktoru.
+- E — przy powrocie zsynchronizować pulę CAŁEGO heksu do wartości ZWRÓCONEJ armii (nie do minimum)
+  — jedna linia, spójne z „ruch się nie odbył", ale ma efekt uboczny: rezydent dostaje ruch,
+  którego nie miał (potencjalny mikro-exploit, do ujawnienia w opisie).
+- Nienazwany dotąd skutek uboczny obu opcji D/E do ujawnienia w ABC: przy powrocie na heks z własną
+  jednostką o WYŻSZEJ puli, sync OBNIŻA pulę tej postronnej jednostki do wartości wracającej armii
+  — przy starym rozpraszaniu nigdy do współlokacji nie dochodziło, więc to NOWY efekt uboczny tej
+  całej funkcji (niezależnie od wybranej opcji naprawy BB2).
+
+Dispatch runda 4, wąska: (1) USUNĄĆ `skipStackRuchSync` (placebo nie wchodzi do repo, chyba że
+ktoś udowodni testem że coś chroni), (2) zawęzić/usunąć asercję `deductCount===4` z bramki
+tekstowej (K-5, ryzyko fałszywych alarmów w przyszłości). BB2 pozostaje NIEZAIMPLEMENTOWANE,
+świadomie i uczciwie udokumentowane — pełne, poprawione pytanie ABC (5 opcji: A-nic-nie-rób-udokumentuj-uczciwie,
+B-pełny-refaktor-stackGroupId, C-propozycja-Operatora-re-prompt, D-traktuj-jak-brak-origin,
+E-sync-do-wartości-armii) idzie do Macieja po zamknięciu tej rundy.
