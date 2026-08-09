@@ -5,7 +5,6 @@
  */
 import * as THREE from 'three';
 import type { ProductionKind } from '../game/production';
-import { formatWyzwienieLabel } from '../game/population-growth-v85';
 import { loadImageInto, prepareSvgForCanvas, svgToDataUri } from './unitOwnerEmblem';
 
 /** 0 = brak tarczy · 1 = palisada (szara) · 2 = mury lub cytadela (złota). */
@@ -27,8 +26,21 @@ export interface CityMapBadgeInput {
   prodKind?: ProductionKind | null;
   /** id frontu kolejki (budynek.id lub jednostka Jednostka) — ikona kanoniczna z brandAssets. */
   prodId?: string | null;
-  /** Poziom Wyżywienia (poziomRacji) — tylko miasta gracza. */
-  growthLevel?: number | null;
+  /**
+   * R-ETYKIETA-MIASTA-WZROST-PROCENT — WZROST% miasta: procent przyrostu ludności NA TURĘ
+   * (nie poziom Wyżywienia, nie numer, nie tura do przyrostu). Wartość ma być tą samą liczbą,
+   * którą pokazuje wiersz „WZROST%" w panelu TEGO miasta, czyli sumą SZEŚCIU składników
+   * (`computeGrowthPercentV85().total`: racje + małe miasto + spichlerz + zdrowie + szczęście
+   * + cywilizacja) przeliczoną na żywo — patrz `CityRenderOptions.getCityGrowth`.
+   * `null`/brak = segment nie jest rysowany (miasto nie należy do gracza albo brak danych).
+   */
+  growthPercent?: number | null;
+  /**
+   * true = miasto nienakarmione (głód) → segment pokazuje „—" zamiast liczby, dokładnie jak
+   * wiersz „WZROST%" w panelu miasta (`fed ? `${wzrostProcent}%` : '—'`). Bez tej flagi
+   * plakietka obiecywałaby wzrost miastu, które w tej turze traci ludność z głodu.
+   */
+  growthStarving?: boolean;
   /** Ostrzeżenie surowców (hover: brak w magazynie państwa). */
   resourceWarning?: boolean;
   /** true = rozszerzona pigułka (hover na mapie). */
@@ -60,7 +72,12 @@ const CIV_SIGIL_STROKE = '#e8d88a';
 const CIV_MEDALLION_R = 16;
 const CIV_SLOT_W = 38;
 const PROD_SLOT_W = 20;
-const GROWTH_SLOT_W = 30;
+/**
+ * R-ETYKIETA-MIASTA-WZROST-PROCENT — font segmentu WZROST%. Slot NIE ma już stałej szerokości
+ * (dawne `GROWTH_SLOT_W = 30` starczało na „W5", ale nie na „−10,5%"): szerokość liczy się
+ * z `measureText` dokładnie tym fontem, więc długi zapis nie wchodzi na glif produkcji.
+ */
+const GROWTH_FONT = '700 13px Arial, Helvetica, sans-serif';
 const HOVER_ROW_H = 22;
 
 /**
@@ -597,33 +614,42 @@ function drawHoverProdRow(
 }
 
 /**
- * Kompaktowa etykieta poziomu Wyżywienia (poziomRacji) — tylko miasta gracza.
+ * R-ETYKIETA-MIASTA-WZROST-PROCENT — tekst segmentu WZROST% na plakietce miasta.
+ * Zastąpił skrót „W5" (poziom Wyżywienia), o który prosił właściciel: *„procentowy wzrost,
+ * czyli na przykład 5 i pół procent, o ile wyrośnie populacja, a nie W5"*.
  *
- * R-ETYKIETA-MIASTA-WZROST-PROCENT (NIEZREALIZOWANE — problem AKTUALNOŚCI, nie dostępu):
- * właściciel chce tu procent wzrostu ludności zamiast skrótu „W5". Wartość MUSI być ta sama,
- * którą pokazuje panel miasta (`view.wzrostProcent` = `computeGrowthPercentV85().total`,
- * `—` przy głodzie), a nie sam składnik racji `rationGrowthPercent(level)` — ten drugi jest
- * tylko jednym z sześciu składników sumy i dałby na mapie INNĄ liczbę niż w panelu.
+ * Reguły zapisu (wybór domyślny — do potwierdzenia przez właściciela):
+ * - **część ułamkowa tylko gdy istnieje**: `5` → `5%`, `5,5` → `5,5%` (nie `5,0%`), bo obie
+ *   formy padły w jego zdaniu („5 i pół procent albo 5 procent”);
+ * - **przecinek**, nie kropka — zapis polski, ta sama konwencja co `formatWyzwienieLabel`;
+ * - **1 miejsce po przecinku** (wartość zaokrąglana) — suma sześciu składników ma krok 0,5,
+ *   więc jedno miejsce wystarcza i nie gubi nic z liczby pokazywanej w panelu;
+ * - **wzrost zerowy → `0%`** (nie puste, nie `—`) — miasto stoi w miejscu, to informacja;
+ * - **wzrost ujemny → znak minus U+2212** (`−2,1%`), a nie ukryte zero: przy Wyżywieniu
+ *   poniżej 1,5 miasto realnie się kurczy i gracz ma to widzieć;
+ * - **głód (miasto nienakarmione) → `—`**, dokładnie ten sam symbol co wiersz „WZROST%”
+ *   w panelu miasta (`fed ? `${wzrostProcent}%` : '—'`). Bez tego mapa obiecywałaby wzrost
+ *   miastu, które w tej turze traci ludność.
  *
- * ⚠️ NIE podpinaj tu `getLastEmpireFoodTick(ownerId).perCityRows[]` (`.wzrostProcent`,
- * `.nakarmione`). To źródło JEST dostępne — wyeksportowane w game/empire-food.ts:339
- * i zaimportowane w main.ts:793 — ale jest to MIGAWKA Z KOŃCA TURY: `_setLastEmpireFoodTicks`
- * woła się wyłącznie z `advanceEmpireFood` (empire-food.ts:291, jedyne wywołanie main.ts:20526).
- * Gdy gracz w trakcie tury ruszy suwak Wyżywienia albo przestawi robotników, panel przeliczy
- * się na żywo, a migawka zostanie stara → mapa i panel znowu pokażą DWIE RÓŻNE liczby, czyli
- * dokładnie ten błąd, dla którego to wycofano. Żywej wartości dostarcza `computeView`
- * (ui/cityPanel.ts) — prywatny, wymaga `map` + `data`; przewód trzeba poprowadzić przez
- * `CityRenderOptions` (render/cities.ts::_buildBadgeInput) i dołożyć procent do
- * `cityMapBadgeKey`, bo zmienia się co turę i tekstura z cache inaczej zwietrzeje.
+ * `−0` nie powstaje: wartości z przedziału (−0,05; 0) zaokrąglają się do `-0`, a warunek
+ * `rounded < 0` jest dla `-0` fałszywy, więc wychodzi `0%`.
  */
+export function formatCityGrowthPercentLabel(pct: number, starving = false): string {
+  if (starving) return '—';
+  const rounded = Math.round((Number.isFinite(pct) ? pct : 0) * 10) / 10;
+  const abs = Math.abs(rounded);
+  const digits = Number.isInteger(abs) ? String(abs) : abs.toFixed(1).replace('.', ',');
+  return `${rounded < 0 ? '−' : ''}${digits}%`;
+}
+
+/** Kompaktowa etykieta WZROST% (procent przyrostu ludności / turę) — tylko miasta gracza. */
 function drawGrowthLabel(
   ctx: CanvasRenderingContext2D,
   x: number,
   cy: number,
-  level: number,
+  label: string,
 ): void {
-  const label = `W${formatWyzwienieLabel(level)}`;
-  ctx.font = '700 13px Arial, Helvetica, sans-serif';
+  ctx.font = GROWTH_FONT;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#d4c48a';
@@ -664,16 +690,25 @@ function paintCityMapBadgeOntoCanvas(
   const defenseW = hasDefense ? 22 : 0;
   const civW = CIV_SLOT_W;
   const prodW = input.prodActive ? PROD_SLOT_W : 0;
-  const growthW = input.growthLevel != null ? GROWTH_SLOT_W : 0;
   const isCapital = input.isCapital === true;
   const crownW = isCapital ? CAPITAL_CROWN_SLOT_W : 0;
   const nameFont = '700 22px Georgia, "Times New Roman", serif';
   const popFont = '700 16px Arial, Helvetica, sans-serif';
 
   const measure = document.createElement('canvas').getContext('2d')!;
+  // R-ETYKIETA-MIASTA-WZROST-PROCENT: slot WZROST% mierzony, nie stały — „−10,5%" jest
+  // ~1,5× szersze od dawnego „W5" i przy stałej szerokości wchodziłoby na glif produkcji.
+  const growthLabel = input.growthPercent != null
+    ? formatCityGrowthPercentLabel(input.growthPercent, input.growthStarving === true)
+    : null;
+  let growthW = 0;
+  if (growthLabel !== null) {
+    measure.font = GROWTH_FONT;
+    growthW = Math.ceil(measure.measureText(growthLabel).width);
+  }
   measure.font = nameFont;
   let displayName = name;
-  // Budżet nazwy: 200 px kanwy minus sloty glifu produkcji / Wyżywienia / korony stolicy.
+  // Budżet nazwy: 200 px kanwy minus sloty glifu produkcji / WZROST% / korony stolicy.
   const maxNameW = 200 - prodW - growthW - crownW;
   if (measure.measureText(name).width > maxNameW) {
     displayName = truncateName(measure, name, maxNameW, nameFont);
@@ -751,8 +786,8 @@ function paintCityMapBadgeOntoCanvas(
   ctx.fillText(displayName, nameX, cy);
 
   let afterNameX = nameX + nameW;
-  if (input.growthLevel != null) {
-    drawGrowthLabel(ctx, afterNameX + gap, cy, input.growthLevel);
+  if (growthLabel !== null) {
+    drawGrowthLabel(ctx, afterNameX + gap, cy, growthLabel);
     afterNameX += gap + growthW;
   }
   if (input.prodActive) {
@@ -820,8 +855,12 @@ export function cityMapBadgeKey(
   const prod = a.prodActive
     ? `${a.prodKind ?? 'b'}:${(a.prodId || '').trim()}`
     : '-';
-  const growth = a.growthLevel != null
-    ? `g${formatWyzwienieLabel(a.growthLevel)}`
+  // R-ETYKIETA-MIASTA-WZROST-PROCENT: do klucza idzie GOTOWA etykieta (a nie surowa liczba),
+  // więc klucz zmienia się dokładnie wtedy, gdy zmienia się narysowany tekst — i tylko wtedy.
+  // Bez tego segmentu zmiana WZROST% (suwak Wyżywienia, przydział robotników, koniec tury)
+  // trafiałaby w starą teksturę z cache i plakietka pokazywałaby liczbę sprzed zmiany.
+  const growth = a.growthPercent != null
+    ? `g${formatCityGrowthPercentLabel(a.growthPercent, a.growthStarving === true)}`
     : 'g-';
   const cs = a.isCityState ? 'cs1' : 'cs0';
   // MAP-UX-MARKER-Q1 = C — bez tego segmentu przejście stolica↔nie-stolica (przeniesienie

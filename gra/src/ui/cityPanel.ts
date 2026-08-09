@@ -1231,6 +1231,57 @@ function effectiveGrowthPctForUi(wzrostProcent: number, fed: boolean): number {
   return fed ? wzrostProcent : 0;
 }
 
+/** R-ETYKIETA-MIASTA-WZROST-PROCENT — WZROST% miasta dla plakietki na mapie świata. */
+export interface CityGrowthLive {
+  /**
+   * WZROST% — procent przyrostu ludności NA TURĘ (jednostka: % ludności / turę).
+   * Ujemny = miasto się kurczy (Wyżywienie < 1,5). Ta sama liczba, co wiersz „WZROST%”
+   * w panelu tego miasta.
+   */
+  procentNaTure: number;
+  /** false = głód (miasto nienakarmione w ostatnim ticku) — panel pokazuje wtedy „—”. */
+  nakarmione: boolean;
+}
+
+/**
+ * R-ETYKIETA-MIASTA-WZROST-PROCENT — WZROST% liczony NA ŻYWO, dla plakietki miasta na mapie
+ * (`render/cities.ts` → `CityRenderOptions.getCityGrowth`).
+ *
+ * Zwraca DOKŁADNIE tę liczbę, którą pokazuje wiersz „WZROST%” w panelu tego miasta:
+ * `computeView(...).wzrostProcent` = `computeGrowthPercentV85().total`, czyli SUMĘ SZEŚCIU
+ * składników (racje + małe miasto + spichlerz + zdrowie + szczęście + cywilizacja). Wołanie
+ * tego samego `computeView`, z którego żyje panel, jest tu celowe i nie podlega „optymalizacji”
+ * przez przepisanie wzoru: pierwsza próba naprawy tego zgłoszenia (wycofana) użyła samego
+ * składnika racji `rationGrowthPercent(level)` — 1 z 6 — i mapa pokazałaby INNĄ liczbę niż
+ * panel tego samego miasta.
+ *
+ * ⚠️ Świadomie NIE korzysta z `getLastEmpireFoodTick(ownerId).perCityRows[].wzrostProcent`:
+ * tamto jest migawką z KOŃCA tury (`_setLastEmpireFoodTicks` woła się wyłącznie z
+ * `advanceEmpireFood`), więc rozjeżdża się z panelem, gdy gracz w trakcie tury ruszy suwak
+ * Wyżywienia albo przestawi robotników.
+ *
+ * `nakarmione` to JEDYNE pole pochodzące z migawki końca tury — i tak być musi: „nakarmione”
+ * rozstrzyga centrala żywności imperium na koniec tury i panel czyta DOKŁADNIE tę samą migawkę
+ * (`resolveCityFedForUi`), więc plakietka i panel pozostają zgodne również w tym punkcie.
+ */
+export function cityGrowthLive(city: City, map: GameMap): CityGrowthLive | null {
+  // Panel jeszcze nieskonfigurowany (boot: `cityRenderer.sync` leci ZANIM main.ts wywoła
+  // `configureCityPanel`) — `computeView` policzyłoby wtedy z samych domyślnych zaślepek
+  // (brak listy miast, brak budynków, brak hooków) i plakietka pokazałaby liczbę, której
+  // panel NIE pokazuje. Lepiej nie pokazać nic: segment pojawi się przy pierwszym odświeżeniu
+  // po konfiguracji, a błędna liczba nigdy nie trafi na ekran.
+  if (!cfg.getCities) return null;
+  const data = gameData();
+  if (!data) return null;
+  const view = computeView(city, map, data);
+  if (!view) return null;
+  const tick = cfg.getEmpireFoodTick?.(city.ownerId);
+  return {
+    procentNaTure: view.wzrostProcent,
+    nakarmione: resolveCityFedForUi(city.id, cityFoodSplit(view).total, tick),
+  };
+}
+
 /** Postęp wzrostu (sloty) i ETA kolejnego obywatela — szczegóły absolutne/tempo tylko w tooltipie. */
 function buildGrowthProgressUi(
   population: number,

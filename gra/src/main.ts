@@ -528,7 +528,7 @@ import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
 import type { Hex } from './types/hex';
-import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen } from './ui/cityPanel';
+import { showCityPanel, hideCityPanel, isCityPanelOpen, refreshCityPanelIfOpen, getOpenCityPanelCityId, closeCityPanelIfOpen, cityGrowthLive } from './ui/cityPanel';
 import { syncCityOkolicaOverlay, disposeCityOkolicaOverlayGroup } from './render/cityOkolicaOverlay';
 import { syncWorkerFieldOverlay, syncWorkerFieldOverlayFog, disposeWorkerFieldOverlayGroup } from './render/workerFieldOverlay';
 import { isPointOverCityPanelUi } from './ui/cityUxFrame';
@@ -1873,6 +1873,13 @@ async function boot(): Promise<void> {
         // po ownerId, więc gracz i AI liczeni identycznie (PARYTET AI).
         getCapitalCityId: (ownerId) => capitalCityIdForOwner(ownerId),
         getCivDisplayName: (ownerId) => civDisplayNameForOwner(ownerId),
+        // R-ETYKIETA-MIASTA-WZROST-PROCENT — segment WZROST% plakietki (dawne „W5").
+        // Jedno źródło prawdy z panelem miasta: cityGrowthLive() woła ten sam computeView(),
+        // z którego żyje wiersz „WZROST%" w panelu — nie migawkę z końca tury. Renderer pyta
+        // wyłącznie o miasta gracza (render/cities.ts::_buildBadgeInput), a syncStatChips leci
+        // ze zdarzeń (ruch/hover/koniec tury), nie z pętli renderu — patrz nota wydajnościowa
+        // w cities.ts przy getCityGrowth.
+        getCityGrowth: (city) => cityGrowthLive(city, map),
       };
     };
 

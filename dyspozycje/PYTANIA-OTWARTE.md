@@ -1914,7 +1914,7 @@ wartość. Ten błąd trafił do właściciela jako fakt.
 **Uwaga na kierunek zmiany:** źródłem prawdy są JSON-y w `gra/data/` (CLAUDE.md §2); panel Excel
 dogania JSON przez `gen-panel-*.py`, NIGDY odwrotnie.
 
-## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **OTWARTE — próba naprawy wycofana świadomie, przyczyna zablokowania znaleziona**
+## R-ETYKIETA-MIASTA-WZROST-PROCENT (2026-08-07, playtest Macieja) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
 **Jego słowa:** *„tam jeszcze chciałem procentowy wzrost czyli na przykład 5 i pół procent
 o ile wyrośnie populacja a nie W5 bez litery W. na przykład 5 i pół procent albo 5 procent."*
 **Stan faktyczny:** plakietka miasta pokazuje **„ATENY · W5 · 1"** — segment `W5` to skrót,
@@ -1942,6 +1942,63 @@ na żywo w miejscu renderu plakietki (wymaga dociągnięcia `zdrowie`/`szczęśc
 plakietka może pokazywać migawkę z opóźnieniem — do rozstrzygnięcia, nie kodować na ślepo.
 **Do decyzji (ABC) pozostaje aktualne**: format zapisu + zachowanie przy głodzie/wzroście
 ujemnym, PLUS teraz też: migawka czy przeliczenie na żywo.
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5, wariant (a) — przeliczenie na żywo).** Nowy
+eksport `cityGrowthLive(city, map)` w `gra/src/ui/cityPanel.ts` woła TEN SAM `computeView()`,
+z którego żyje wiersz „WZROST%" w panelu miasta — plakietka i panel pokazują matematycznie tę
+samą liczbę (sumę 6 składników), żadnej drugiej reimplementacji wzoru. Przewód:
+`CityRenderOptions.getCityGrowth?: (city) => {procentNaTure, nakarmione} | null` (typ
+STRUKTURALNY, `render/` nadal nie importuje `ui/`), `_buildBadgeInput` pyta tylko o miasta
+gracza, etykieta wchodzi do `cityMapBadgeKey` (zmiana wartości przerysowuje teksturę, stara
+NIE jest reużywana). Boot-order guard: `cityGrowthLive` zwraca `null` przy nieskonfigurowanym
+panelu zamiast liczyć z zaślepek.
+
+**Format (zgodny z istniejącą konwencją kodu, nie arbitralny wybór — patrz uzasadnienie
+Evaluatora niżej):** całkowita `5%`, ułamkowa `5,5%` (przecinek, 1 miejsce), zero `0%`, ujemna
+`−2,1%` (U+2212, nie ukrywamy kurczenia), głód (nienakarmione) `—` (parytet z panelem).
+`-0` nie powstaje (warunek `< 0` fałszywy dla `-0`).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**, dowód mutacyjny (3 warianty, w tym mutacja usuwająca
+WZROST% z klucza cache — 30/38 fail, złapane end-to-end łącznie z nieaktualizowaniem tekstury).
+Bramki zmierzone niezależnie: `tsc` czyste, `city-badge-growth-percent-test` (nowy) 38/38,
+`city-map-badge-test` 62/62 (baza 49 + tę naprawę), `logic-test` 213/213 — wszystkie
+potwierdzone ponownie w drzewie głównym po scaleniu, identyczne liczby.
+
+**Format NIE wymaga osobnego pytania ABC** (Evaluator, uzasadnienie): rdzeń liczbowy to znak
+po znaku ten sam wzorzec co już istniejący w kodzie `formatWyzwienieLabel`
+(`population-growth-v85.ts:133-136`) ORAZ niezależnie `formatLiczbaPl` (`ui/formatPl.ts`) —
+dwa niezależne precedensy w repo, nie arbitralny wybór Operatora. „—" przy głodzie to parytet
+z panelem, nie decyzja. U+2212 ma 64 precedensy w `src/`. Treść żądania Macieja („procent, nie
+W5", „5 i pół procent albo 5 procent") jest pokryta obiema formami z jego zdania.
+
+**Cztery noty Evaluatora, żadna nie blokuje:**
+1. `cityGrowthLive` (15-liniowa delegacja) nie ma własnego testu jednostkowego — dziś poprawna
+   (zweryfikowane czytaniem), ale przyszła regresja (np. zamiana na `rationGrowthPercent`) nie
+   zostałaby złapana. Sugestia na przyszłość, niepilne.
+2. **Rozjazd separatora, poza zakresem tej naprawy — zarejestrowany osobno:**
+   `P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD` (panel „5.5%" kropka, plakietka „5,5%" przecinek).
+3. Cztery czerwone testy wzrostu ludności (`population-growth-v85-test` 45/2,
+   `population-growth-v85-bonus-test` 18/2, `population-growth-tempo-test` FAIL,
+   `growthmult-compound-test` 17/7) potwierdzone **identyczne w worktree na commicie-rodzicu
+   sprzed tej zmiany** — nie regresja tej naprawy. Przyczyna: dług testowy po świadomych
+   decyzjach balansowych R-STAWKI (×2/×4, 2026-08-03) — `got` = dokładnie 2× `want` w
+   komunikatach błędów. Zapis w CLAUDE.md („`growthmult-compound` zielony 24/24") jest
+   nieaktualny — do sprostowania przy najbliższej aktualizacji CLAUDE.md, niepilne, nie tu.
+4. `formatCityGrowthPercentLabel` duplikuje `formatLiczbaPl` (ta sama logika, jedyna różnica:
+   znak minusa U+2212 vs ASCII `-`) — duplikacja wymuszona architektonicznie (`render/` nie
+   importuje `ui/`). Rejestrowane jako dług do ewentualnego przyszłego refaktoru wspólnej
+   warstwy formaterów, niepilne, nie tu.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`cityGrowthLive`), `gra/src/render/cityMapStatChip.ts`
+(`formatCityGrowthPercentLabel`), `gra/src/render/cities.ts` (`getCityGrowth`).
+
+## P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD (2026-08-09, nota Evaluatora R-ETYKIETA-MIASTA-WZROST-PROCENT) · STATUS: **OTWARTE — niepilne, dług UI**
+Panel miasta renderuje surowo `${view.wzrostProcent}%` → „5.5%" (kropka, notacja JS), plakietka
+mapy → „5,5%" (przecinek, konwencja polska projektu — `formatLiczbaPl`, `formatWyzwienieLabel`).
+Ta sama liczba, inny separator w dwóch miejscach UI tego samego miasta. Naprawa panelu
+poruszyłaby ~10 miejsc w `cityPanel.ts` — świadomie poza zakresem naprawy plakietki. To panel
+odstaje od własnej konwencji projektu (cała gra po polsku), nie plakietka.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (wiersz „WZROST%", `${view.wzrostProcent}%`).
+**Model:** Sonnet 5.
 
 ## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C`)
 **Jego słowa:** *„jakieś niezautoryzowane niby przemarsze, których ja nie widzę, bo ja nie widzę,

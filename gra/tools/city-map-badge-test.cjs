@@ -166,15 +166,18 @@ const keyProdBld = M.cityMapBadgeKey({
 });
 assert(keyProdBld.includes('pbudynek:koszary'), 'klucz budynku zawiera id');
 
+// R-ETYKIETA-MIASTA-WZROST-PROCENT: segment „g…” to dziś WZROST% (procent przyrostu ludności
+// na turę), a nie poziom Wyżywienia „W5”. Pełne pokrycie formatu, głodu i przewodu żywej
+// wartości: tools/city-badge-growth-percent-test.cjs.
 const keyGrowth = M.cityMapBadgeKey({
   cityName: 'Ateny',
   population: 5,
   defenseTier: 0,
   civIconId: 'grecy',
   prodActive: false,
-  growthLevel: 3,
+  growthPercent: 3,
 });
-assert(keyGrowth.includes('g3'), 'klucz zawiera poziom Wyżywienia');
+assert(keyGrowth.includes('g3%'), 'klucz zawiera WZROST% (procent przyrostu ludności / turę)');
 assert(keyGrowth !== keyBase, 'growth zmienia klucz cache');
 
 // --- MAP-UX-MARKER-Q1 = C — marker stolicy w kluczu cache -------------------

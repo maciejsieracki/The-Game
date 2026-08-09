@@ -1408,6 +1408,20 @@ sprzed naprawy pokazała że obrys nigdy nie znikał CAŁKOWICIE, tylko był pos
 pokrycia) — status w `PYTANIA-OTWARTE.md` celowo złagodzony do „do potwierdzenia playtestem",
 nie „NAPRAWIONE" bez zastrzeżeń.
 
+## R-ETYKIETA-MIASTA-WZROST-PROCENT — NAPRAWIONE 2026-08-09
+Plakietka miasta na mapie pokazywała skrót „W5" (poziom Wyżywienia) zamiast realnego procentu
+przyrostu ludności na turę, o który prosił właściciel. Naprawa: `cityGrowthLive()` woła TEN SAM
+`computeView()` co panel miasta (jedno źródło prawdy, żadnej reimplementacji wzoru), przewód
+przez strukturalny typ `CityRenderOptions.getCityGrowth` (`render/` nadal nie importuje `ui/`).
+Format („5%"/„5,5%"/„0%"/„−2,1%"/„—" przy głodzie) zgodny z istniejącą konwencją kodu
+(`formatWyzwienieLabel`, `formatLiczbaPl`) — Evaluator: nie wymaga osobnego pytania ABC.
+Evaluator PASS-WITH-NOTES, `city-badge-growth-percent-test.cjs` 38/38 (nowy),
+`city-map-badge-test.cjs` 62/62, `logic-test` 213/213, `tsc` 0 błędów. Cztery niepilne noty
+Evaluatora: brak testu jednostkowego samej delegacji, rozjazd separatora panel-vs-plakietka
+(zarejestrowany osobno `P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD`), 4 czerwone testy wzrostu
+ludności potwierdzone pre-istniejące (dług testowy R-STAWKI, nie regresja), duplikacja
+formatera liczb wymuszona architektonicznie.
+
 ## R-HEKS-PLONY-UKRYTE-POD-MIASTEM (2026-08-08) — ZDEPLOYOWANE FALA 261 `ef796bbe`, czeka na playtest
 Przyczyna: render (`cityOkolicaOverlay.ts`) pomijał liczby plonów na KAŻDYM heksie z
 „ulepszeniem", w tym na centrum miasta — silnik zawsze ma tam realny plon. Fix: wyjątek dla
