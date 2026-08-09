@@ -7041,3 +7041,31 @@ Blokada zewnętrzna (czeka na człowieka-Designera, nie na kod) — nie nadaje s
 subagenta kodującego. Do przypomnienia Maciejowi jako wciąż otwarte, nie do cichego domknięcia.
 
 ---
+
+## INCYDENT #2 — usunięcie niescommitowanej pracy R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09/10)
+
+**Ten sam błąd co incydent #1 (R-BUDYNEK-PORTOWY), w TEJ SAMEJ partii sprzątania dysku.** Worktree
+`agent-abd2a1f136bf908ec` (runda 3: naprawiony plik testu, kod gry potwierdzony poprawny przez
+Evaluatora rundy 2, ALE nigdy nie scalony — Evaluator rundy 3 nigdy faktycznie nie został odpalony,
+mimo wpisu w rejestrze sugerującego że tak) został usunięty `git worktree remove --force` w tej
+samej partii co worktree Portu, bez sprawdzenia `git status`. Runda 4 (dispatch mylnie zakładający
+istnienie werdyktu Evaluatora rundy 3, którego NIGDY nie było — luka wykryta i uczciwie zgłoszona
+przez Operatora rundy 4) zdążyła odczytać **pełny, wierny** `owner-epoch.ts` przez grep zanim
+worktree zniknął, ale NIE zdążyła odzyskać `main.ts` (3 bloki integracji) ani obu plików testów —
+te zostały **zrekonstruowane od zera** (nie odzyskane), zgodnie z udokumentowanym zamysłem z
+rejestru, z pełną, niezależną kampanią mutacyjną (11/11 złapanych, 11/11 sond bezpiecznych).
+
+**Różnica względem Portu:** brak odzyskanych obiektów gita dla tego tematu (sprawdzone —
+`owner-epoch.ts` odtworzony z odczytu, nie z blobu). Test `era-cud-warunek-awansu-test.cjs` ma dziś
+**33 asercje**, oryginalny (bezpowrotnie utracony) miał 35 — Operator jawnie to przyznaje, nie
+udaje identyczności.
+
+**Traktowanie:** to jest de facto ŚWIEŻA implementacja (nie mechaniczne odtworzenie ocenionego
+kodu), wymaga PEŁNEJ, nieskróconej rundy Evaluatora — zgodnie z rekomendacją samego Operatora.
+Dispatch NASTĘPUJE teraz.
+
+**Do playbooka:** to DRUGI potwierdzony przypadek tej samej klasy błędu w jednej sesji — mocny
+dowód, że potrzebna jest twarda, mechaniczna reguła (nie tylko przypomnienie w prompcie), patrz
+sekcja z nowymi regułami AutoBot niżej w tym pliku (do przygotowania).
+
+---
