@@ -6035,3 +6035,42 @@ istniejących miast, zgodnie z pierwotną prośbą.
 w toku (Operator `a7eb4511bbdb4e3b9`, ten sam plik `empire-city-defaults.ts`/`main.ts`). B1
 dispatchowane jako OSOBNE zlecenie DOPIERO po zakończeniu i weryfikacji rundy B2/B3, żeby uniknąć
 dwóch równoległych Operatorów na tych samych plikach — kolejkowane, nie odkładane bez terminu.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 — Barbarzyńcy pojawiają się w „W stanie wojny z" w KAŻDEJ rozgrywce.** `getDiploRelation`
+wpisuje relację `wojna` barbarzyńców do tej samej mapy, którą skanuje nowy kod, bez filtra — repo
+ma już jawny precedens obrony przed dokładnie tym (`C-BARB-Q1=B`, `main.ts:25864`), pominięty tu.
+
+**B2 — wyciek mgły wojny.** Brak bramki kontaktu — pop-up pokazuje wojny/sojusze/handel z
+cywilizacjami, których gracz NIGDY nie spotkał (nazwa i sam fakt istnienia ujawnione), oraz z
+cywilizacjami WYELIMINOWANYMI. Oba istniejące, analogiczne kolektory (`collectWarsWithPlayer`,
+`collectKnownWarsBetweenOthers`) mają taką bramkę zawsze — nowy kod (`warPartnerIdsForOwner`,
+`dealPartnerIdsForOwner`) jej nie ma.
+
+**B3 — bramka nie chroni sortowania** (całe żądanie nr 1 bez ochrony). Mutacja: usunięcie
+`.sort(compareDiploListEntries)` z `render()` → 23/23 nadal PASS. Test sprawdza czysty komparator,
+nie jego realne wpięcie do renderu listy.
+
+**Ocena podejścia (nie blokuje kodu, ALE narracja do Macieja musi być uczciwa):** Evaluator ustalił,
+że to formalnie NOWY komponent UI (żyjący w pliku `diplomacyPanel.ts`, ale zero współdzielonego
+DOM/renderu z martwym panelem — tylko wspólne helpery skórki, importowalne z dowolnego miejsca).
+Ocena Evaluatora: to SŁUSZNA decyzja (martwy panel to zadokowany panel boczny, nie pop-up, którego
+prosił Maciej), ale trzeba to nazwać wprost jako nowy komponent, nie jako „rozszerzenie
+istniejącego panelu".
+
+**Punkt 4 (przycisk propozycji spotkania) — NIE jest luką**, sprawdzone bezpośrednio w cytacie
+Macieja: jego własne zdanie utożsamia „propozycję spotkania" z przyciskiem przejścia do audiencji.
+Jedyna rozbieżność to etykieta („Otwórz pełną audiencję" zamiast języka Macieja) — niepilne, N1.
+
+Niepilne: N2 (pop-up nie chowa się automatycznie przy otwarciu audiencji z innej ścieżki niż
+callback — 5 miejsc), N3 (raport do Macieja ma nazwać to nowym komponentem), N4/N5 (trzecia,
+prawie identyczna kopia klasyfikacji zamiast reużycia istniejącej), N6 (kolor proporczyka z
+niewłaściwego tieru), N7 (podwójne sortowanie, nieszkodliwe), N8 (kolejka kart pierwszego kontaktu
+nie wznawia się po zamknięciu pop-upu), N9 (czy gracz ma się pokazywać w „W stanie wojny z" —
+decyzja do zapisania przy naprawie B2), N10 (dane statyczne, akceptowalne).
+
+Dispatch runda 2 dla B1+B2+B3 (+N2 przy okazji, ta sama okolica kodu). Wszystkie mechaniczne, bez
+ABC.
