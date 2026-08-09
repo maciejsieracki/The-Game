@@ -4435,7 +4435,7 @@ klamrowany ≥0) — sygnał ostrzegawczy przetrwał na małej liczbie, degradac
 
 ---
 
-## R-WYDARZENIA-FILTR-KATEGORII — zaimplementowane, 1 pytanie otwarte (2026-08-09)
+## R-WYDARZENIA-FILTR-KATEGORII (2026-08-09) · STATUS: **OTWARTE — zaimplementowane w worktree, 2 noty blokujące + 1 pytanie przed scaleniem**
 
 Zaimplementowano: (1) etykieta „Dyplomacja" zamiast „Koniec tury" wyłącznie dla wpisów handlu
 AI↔AI (jedyny realny typ zaśmiecający panel — Operator sprawdził WSZYSTKIE typy wpisów przechodzące
@@ -4624,3 +4624,32 @@ zbudować swój cud E zanim spełni warunek technologiczny awansu. Realne ryzyko
 
 Rekomendacja: **C** — sama reguła jest prosta i zgodna z Twoim opisem, ale bez wcześniejszego
 dostrojenia AI realne ryzyko to cywilizacje AI utykające w Kamieniu/Brązie na stałe.
+
+---
+
+## R-WYDARZENIA-FILTR-KATEGORII — Evaluator PASS-WITH-NOTES, 2 noty blokujące (2026-08-09)
+
+Klasyfikacja AI↔AI i filtracja innych źródeł zdarzeń potwierdzone niezależnie (w tym jeden tor
+AI↔AI, którego Operator nie wymienił — nieszkodliwy, tylko `console.log`).
+
+**🔴 N1 (blokująca):** „Usuń wszystkie" NIE jest trwałe dla wpisów `eot-hint-*`/`era-*` — trafiają
+do `warEventLog`, który nie czyści się co turę, a `dismissedSidePanelEventIds` (miękkie ukrycie)
+**czyści się na końcu każdej tury**. Skutek: klikasz „Usuń wszystkie", panel pusty, kończysz turę
+— stare wpisy „Koniec tury"/„Dyplomacja" z tej tury **wracają**. Dokładnie to, o co prosiłeś, nie
+działa trwale dla najbardziej dokuczliwej kategorii. Naprawa jednolinijkowa (usuwać z
+`warEventLog` bezpośrednio, nie tylko oznaczać jako ukryte).
+
+**🔴 N2 (blokująca):** Operator napisał że „brak harnessu DOM dla tego typu UI w repo" — Evaluator
+to obalił: wzorzec już istnieje (`gra/tools/army-merge-dismiss-bounce-test.cjs`, jsdom + stub
+brandAssets). Konsekwencja zmierzona: dowód mutacyjny wykazał że **wyłączenie przełącznika
+filtra ORAZ usunięcie przycisku „Usuń wszystkie" (dwie funkcje, o które prosiłeś) przechodzą
+komplet bramek na zielono** — zero pokrycia regresyjnego warstwy UI.
+
+**🟡 Niepilne:** N3 (guard `blocking` pominięty przy „Usuń wszystkie", dziś nieszkodliwy, nikt
+nie ustawia `blocking:true`); N4 (wojna AI→gracz nadal tworzy DUPLIKAT wpisu z etykietą „Koniec
+tury" obok poprawnie nazwanego `war-*` — ten sam kod ma już wzorzec unikania duplikatu przy
+`border-march`, tu go nie zastosowano); N5 (kosmetyka — utracony komentarz z kotwicą decyzji,
+15-krotny redraw HUD na jedno kliknięcie „Usuń wszystkie", martwa funkcja pre-istniejąca).
+**Proces:** ten wpis miał zły format nagłówka (nie łapał go grep z CLAUDE.md §0c) — poprawiony.
+
+Dispatch domknięcia N1+N2 przed scaleniem.
