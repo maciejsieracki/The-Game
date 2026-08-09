@@ -1,5 +1,5 @@
 # PYTANIA OTWARTE — czekają na decyzję Macieja
-Aktualizacja: 2026-08-06 (ECHO paczka `ABC-PACZKA-2026-08-06-KOLEJKA` + `R-OBRONA-MIASTA-MP-Q1`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
+Aktualizacja: 2026-08-09 (FALA 263 — maraton AutoBot: isWorkable 4 rundy + akcja-6 handel tech 3 rundy + regresja tooltip naprawiona; szczegóły `dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`). Numeracja ciągła z `REJESTR-PROSB-I-ZADAN.md`.
 Zasada: każde pytanie w pełnej formie ABC (opis + min. 2 za + min. 2 przeciw + rekomendacja), zawsze z numerem.
 
 ## ⛔ Obieg (Maciej 2026-08-03)
