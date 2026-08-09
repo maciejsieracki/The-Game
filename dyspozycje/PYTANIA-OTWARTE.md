@@ -6235,3 +6235,39 @@ WSZYSTKIE wojny grupy naraz (automatyczny pokój z każdym uczestnikiem osobno, 
 tych samych plikach (`forced-war-bronze.ts`/`main.ts`). B2 dispatchowane jako OSOBNE zlecenie
 DOPIERO po zakończeniu i weryfikacji tej rundy, żeby uniknąć kolizji dwóch równoległych
 Operatorów.
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — Evaluator RUNDA 2: FAIL, runda 3 w toku (2026-08-09)
+
+**B1a (NOWY BUG wprowadzony przez naprawę wydajności) — prefilter=9 gubi realne zagrożenia dla
+miast o populacji >5.** Operator pomylił próg minimalny z maksymalnym: rzeczywisty zasięg
+wykrywania to `promień_terytorium + 2×AI_HOME_DEFENSE_VICINITY_HEX`, nie stała 9 — dla miasta
+pop=12 to 16 heksów, pop=15/20 to 19. Prefilter=9 odcina zagrożenia w pierścieniu 10-19 heksów dla
+większości miast. Dowód behawioralny: barbarzyńca 12 heksów od centrum miasta pop=12 (WEWNĄTRZ
+własnego terytorium) — z prefiltrem AI idzie na odległego wroga, bez prefiltra broni domu. To
+dosłownie odtworzone pierwotne zgłoszenie. Skala: 52% zagrożeń zgubionych na testowej mapie.
+**Gotowe rozwiązanie, zweryfikowane matematycznie przez Evaluatora na 10000 heksach:**
+`hexDistance(wróg, miasto) <= cityTerritoryRadius(miasto) + 2*AI_HOME_DEFENSE_VICINITY_HEX`
+— dokładny (nic nie gubi), liczony PER MIASTO (nie względem najbliższego), szybszy niż tępy próg 19.
+
+**B1b — bramka nie chroni przed regresem, dla którego powstała.** Mutacja usuwająca prefilter
+(pełne przywrócenie regresu rundy 1) → 14/14 nadal PASS. Benchmark porównuje dwie kopie logiki
+napisane w samym teście, nie kod produkcyjny.
+
+**B3b — kod naprawiony, ale test tego nie chroni.** Własny scenariusz dyskryminujący Evaluatora
+(cywil atakuje jedyne zagrożenie w kroku 4b, przydzielony obrońca stoi na heksie miasta) łapie
+mutację cofającą naprawę podwójnego zaangażowania; test T3 Operatora tego NIE łapie (asercja
+przypadkiem pusta, bo oba scenariusze dają ten sam heks docelowy).
+
+Wynik próby mutacyjnej: 2 zabite z 7 (M2, M4). Przeżyły: M1 (prefilter), M3 (handledThreatIds),
+M5 (sortowanie wg pilności — sama logika może być OK, tylko niepokryta), M6/M7 (stałe promienia).
+
+Niepilne: N4 (jednostka bez ruchu może zająć slot obrońcy, opóźnienie o turę), N5 (przydział 1:1
+zastąpił kworum z rundy 1 — zmiana projektowa nieudokumentowana, do świadomej decyzji lub opisu),
+N6 (test kopiuje logikę zamiast importować z ai.ts). N1 (wyścig o wioski) potwierdzone nietknięte.
+
+Dispatch runda 3, wąski zakres wg gotowej specyfikacji Evaluatora: (1) zamienić prefilter na
+dokładny warunek per miasto (wzór wyżej, poprawić fałszywy JSDoc); (2) dołożyć test korektności na
+mieście pop=12/15 z zagrożeniem 10-19 hex od centrum; (3) przerobić T3 na scenariusz dyskryminujący
+(obrońca na heksie miasta) wg wzoru Evaluatora.
