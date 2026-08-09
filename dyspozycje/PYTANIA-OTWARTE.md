@@ -2545,7 +2545,7 @@ w kodzie błędnie sugerował że odznaka na „dostaję" ujawniłaby zapasy AI 
 dziś ujawniają je bezwarunkowo dla obu stron, jedyny realny powód wyłączenia to zawężenie
 zakresu zgłoszenia, nie ujawnianie informacji.
 
-## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **W REALIZACJI — kod napisany, Evaluator FAIL (worktree stale), redispatch w toku**
+## R-PROPOZYCJA-BRAK-EDYCJI (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** „nie ma możliwości edytowania propozycji. Jest tylko możliwość usunięcia.
 Przecież miała być możliwość jeszcze edytowania."
 **Potwierdzone w kodzie:** `gra/src/ui/diplomacyTradeBasket.ts:1177` renderuje wyłącznie
@@ -2559,7 +2559,17 @@ propozycji ze zrzutu — prawdopodobnie `diplomacyAudience.ts` / `diplomacyDealD
 który dokładnie renderuje ten konkretny widok kolumnowy).
 **Model:** Sonnet 5 (poza `render/**`).
 
-## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **ZDECYDOWANE — A (2026-08-08) — redispatch w toku**
+**NAPRAWIONE (2026-08-09):** Przycisk „✎ Edytuj" obok „✕" dla edytowalnych typów pozycji koszyka
+(`zloto, praca, zywnosc, tech, surowiec_ilosc`) w `gra/src/ui/diplomacyTradeBasket.ts` — reużywa
+`buildAddForm` z nowym `editItem`, pre-wypełnia bieżącą wartość, podmienia pozycję w miejscu.
+Zagateowany członkostwem typu w `availableTypes` (wojna blokuje zloto/praca, tech poniżej progu
+Relacji na stronie receive — nie pozwala „Zapisz zmiany" po cichu zamienić typu). 3 rundy:
+runda 1 FAIL (worktree stale, konflikt niescalalny, zero testów edycji), runda 2 FAIL (bug w
+gatingu „Usuń" na karcie traktatu, opisany niżej), runda 3 PASS-WITH-NOTES po rebase na aktualny
+HEAD — Evaluator zweryfikował własnym harnessem (nie kopią testu Operatora) że edycja działa dla
+wszystkich 5 typów. Nowy test `diplomacy-basket-edit-test.cjs` 25/25. `tsc` 0 błędów.
+
+## BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**
 **Jego słowa:** „jeżeli my dajemy umowę surowców, po drugiej stronie nie musi być umowy
 wymiany surowców, jeżeli ta druga strona nic nie daje. I w takiej sytuacji jeżeli usuniemy
 u drugiej strony to nic nie daje, usuwa się też cała nasza propozycja. To w ogóle jest
@@ -2578,11 +2588,21 @@ logika usuwania powiązana z ID/parą propozycji.
 
 **ZDECYDOWANE (2026-08-08):** `R-PROPOZYCJA-KASACJA-UI-Q1=A` (`docs/decyzje/R-PROPOZYCJA-KASACJA-UI-Q1.md`)
 — ukryj przycisk „Usuń" na pustej/mirror karcie, zostaw jeden aktywny na karcie z treścią.
-Kod już napisany w rundzie 1 Operatora (worktree było wtedy stale, wybór zrobiony bez pytania —
-stąd ABC post-factum, decyzja potwierdza wybrane rozwiązanie). Redispatch: rebase na aktualny
-HEAD (konflikt w `diplomacyTradeBasket.ts` z równolegle scalonym `66ae74c8`/`82bdbd92`) +
-dopisanie brakującego pokrycia testami dla `R-PROPOZYCJA-BRAK-EDYCJI` (Evaluator: zero asercji
-dla funkcji edycji, tylko dla kasacji).
+
+**NAPRAWIONE (2026-08-09):** Nowa `negotiationTableDealSideHasContent()`
+(`gra/src/ui/diplomacyDealDisplay.ts`), wołana z `negotiationCardActionsHtml`
+(`diplomacyAudience.ts`) przez wspólny helper `dealSideTreatyInfo()` — jedno źródło prawdy dla
+render i gatingu, żeby nie rozjechały się niezależnie. Runda 2 dostała FAIL: gating dla
+traktatów bilateralnych (NAP/sojusz) wymagał dodatkowo `pw > 0`, którego render NIE MA — traktat
+z PW=0/undefined widocznie pokazywał treść, ale tracił „Usuń" (odwrotnie niż decyzja A). Runda 3:
+naprawione na `treatyFallbackLabel != null`, zgodne z render `if (treatyFallbackLabel)`;
+Evaluator rundy 3 znalazł jeszcze jedną drobną niezgodność (`!= null` vs truthy dla edge case
+`label===''`, dziś nieosiągalny) — poprawione przy scaleniu na `!!treatyFallbackLabel`, dokładnie
+zgodne z renderem. Traktaty bez koszyka zachowują „Usuń", karty z realną treścią też — kontrola
+pozytywna zweryfikowana niezależnym harnessem Evaluatora (nie kopią testu Operatora).
+Testy: `diplomacy-basket-edit-test.cjs` 25/25, `diplomacy-proposal-test.cjs` 126/126,
+`diplomacy-negotiation-table-test.cjs` 54/54, `diplomacy-test.cjs` 148/148,
+`hud-moc-warstwa-test.cjs` 28/28, `tsc` 0 błędów. STRICT-PARITY: wyłącznie UI gracza.
 **Model:** Sonnet 5 (poza `render/**`).
 
 ## R-DYPLO-CENY-SUROWCOW-PW + BUG-PAKIET-BILANS-DODATNI-BLOKADA (2026-08-08, playtest Macieja) · STATUS: **NAPRAWIONE (kod) — czeka na deploy do ROBOCZA + playtest**

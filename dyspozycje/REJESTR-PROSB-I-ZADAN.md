@@ -1472,10 +1472,14 @@ zielony). 3 noty niepilne zarejestrowane osobno w `PYTANIA-OTWARTE.md`
 i wykonanie są teraz zgodne z definicji. Evaluator PASS-WITH-NOTES, 28 plików testów dyplomacji
 zielonych. 2 noty niepilne w `PYTANIA-OTWARTE.md`.
 
-## R-PROPOZYCJA-KASACJA-UI-Q1 — ECHO A, redispatch w toku
-Maciej: `A` — zostaw rozwiązanie Operatora (ukryj „Usuń" na pustej/mirror karcie). Decyzja w
-`docs/decyzje/R-PROPOZYCJA-KASACJA-UI-Q1.md`. Redispatch Operatora: rebase na aktualny HEAD
-(konflikt z `66ae74c8`/`82bdbd92`) + dopisanie testów dla edycji.
+## R-PROPOZYCJA-BRAK-EDYCJI + BUG-PROPOZYCJA-KASACJA-PUSTEJ-STRONY-KASUJE-CALOSC — NAPRAWIONE, czeka na deploy+playtest
+3 rundy. Runda 1: worktree stale, niescalalne, zero testów edycji. Runda 2: worktree świeże,
+FAIL za gating „Usuń" na karcie traktatu niezgodny z renderem (PW-check którego render nie ma).
+Runda 3: worktree ZNOWU stale (40 commitów) — naprawione rebase'm w tym samym worktree zamiast
+pełnego redo; Evaluator PASS-WITH-NOTES z niezależnym harnessem (nie kopią testu Operatora).
+Jednolinijkowa poprawka przy scaleniu (`!= null`→truthy, zgodność z renderem co do joty).
+Edycja działa dla 5 typów koszyka, kasacja pustej/mirror karty zgodna z decyzją
+`R-PROPOZYCJA-KASACJA-UI-Q1=A`. `diplomacy-basket-edit-test.cjs` 25/25, `tsc` czyste.
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP — NAPRAWIONE, czeka na deploy+playtest
 Runda 1: FAIL (worktree stale, `maxPakiety` zamiast `maxQty`, 10× za niska wartość). Runda 2:

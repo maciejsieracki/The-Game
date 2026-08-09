@@ -183,8 +183,11 @@ export function renderNegotiationTableDealSideHtml(
  * gałęzi traktatu dwustronnego — warunek, którego render (wyżej) NIE MA. Traktat z PW=0/undefined
  * (realny przypadek — `treatyBasePn > 0 ? … : 0` w diplomacy-acceptance-points.ts) renderował się
  * WIDOCZNIE (etykieta traktatu), ale gating zwracał false → „Usuń" znikał na karcie z treścią,
- * odwrotnie niż wymaga decyzja A. Naprawa: ta sama gałąź co render — `treatyFallbackLabel != null`,
- * bez PW.
+ * odwrotnie niż wymaga decyzja A. Naprawa: ta sama gałąź co render — `!!treatyFallbackLabel`
+ * (truthy, jak `if (treatyFallbackLabel)` w renderze — nie `!= null`, żeby też `''` zgadzało się
+ * z rendera „—" zamiast etykiety; znalezisko Evaluatora rundy 3, nieosiągalne dziś bo
+ * `treatyFallbackLabel` pochodzi z katalogu akcji i nigdy nie jest pustym stringiem, ale trzymane
+ * dokładnie zgodne z komentarzem powyżej).
  */
 export function negotiationTableDealSideHasContent(
   payload: ProposalPayload,
@@ -195,7 +198,7 @@ export function negotiationTableDealSideHasContent(
   const split = splitNegotiationDealPlayerSides(payload, incoming);
   const items = split ? (focus === 'we' ? split.weOffer : split.theyOffer) : [];
   if (items.length > 0) return true;
-  return treatyFallbackLabel != null;
+  return !!treatyFallbackLabel;
 }
 
 /** Jedna kolumna stołu (bez kontekstu drugiej strony) — do linked pending split. */
