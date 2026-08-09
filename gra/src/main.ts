@@ -4009,6 +4009,9 @@ async function boot(): Promise<void> {
         workedKeys: okolicaWorkedKeySet(city),
         yieldOf: (q, rr) => yieldOfMapHex(map, q, rr),
         showYields: true,
+        // P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE: odznaka 👤 w okolicy bierze kolor z tej samej
+        // palety co ikona 👤 na mapie świata — właściciel z miasta, nie sztywne 0.
+        ownerId: city.ownerId,
       });
     }
 
@@ -4488,13 +4491,23 @@ async function boot(): Promise<void> {
       forceTerritoryBorderForCityPanel();
       exitOkolicaMapMode();
       clearPlayerUnitSelection();
-      applyCityPanelWorldView(true, city);
+      // P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE: `applyCityPanelWorldView` woła w środku
+      // `refreshWorkerFieldOverlay()` (i inne odświeżenia bramkowane `isCityPanelOpen()`),
+      // więc MUSI iść PO `showCityPanel(...)`. Wołane wcześniej widziało panel jako jeszcze
+      // zamknięty i odbudowywało warstwę 👤 mapy świata tuż przed otwarciem panelu. Warstwa
+      // zostawała widoczna od otwarcia panelu do pierwszego z: przełączenie miasta
+      // (`onSwitchCity`), ręczne przypisanie pola (`applyOkolicaTileAdjust`), koniec tury,
+      // zamknięcie panelu — te ścieżki wołają `refreshWorkerFieldOverlay()` wprost i ją
+      // czyściły. Zmiana trybu/priorytetu okolicy (`onOkolicaFocusChange`,
+      // `onOkolicaEnterManual`, `onOkolicaRestoreAuto`) NIE czyściła jej — te wołają tylko
+      // `syncOkolicaOverlay()`, który warstwy mapy świata w ogóle nie dotyka.
       showCityPanel(city, map, () => {
         hideCityPanel();
         applyCityPanelWorldView(false);
         disposeOkolicaOverlay();
         updateHud();
       });
+      applyCityPanelWorldView(true, city);
       syncOkolicaOverlay();
       updateHud();
     }
