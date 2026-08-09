@@ -5742,3 +5742,59 @@ Agresje powinny zakończyć się zgodnie z zasadami."
 **Zgodnie z regułą 6 CLAUDE.md (nie zgaduj przy niejednoznaczności) — jedno pytanie doprecyzowujące
 do WĄTKU, który już prowadzimy** (nie nowy temat): patrz wiadomość na czacie. Reszta specyfikacji
 (pkt 1-5, 7-9) jest kompletna i zostaje przekazana do dispatchu już teraz.
+
+---
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A.** Zgodnie z propozycją z rozpoznania (linia 5215 wyżej): pula nagród chatki
+ze skarbami (`villageRewards.ts`: dziś złoto 50%/tech 30%/jednostka 20%) ma WYKLUCZAĆ jednostki
+WOJSKOWE, gdy chatka leży na terytorium OBCEJ cywilizacji — żeby odkrycie chatki nie liczyło się
+jako naruszenie granicy i nie karało dyplomacji (dziś kara −5 Zaufania/turę nalicza się bez wyjątku
+dla jednostek pochodzących z eventu). Jednostki cywilne (np. Zwiadowca, era 1) zostają bez zmian —
+problem dotyczy WYŁĄCZNIE jednostek typu wojskowego (np. Włócznik od ery 2+).
+
+**Do dispatchu (szczegół implementacyjny, nie decyzja gameplayowa — domyślne rozłożenie
+prawdopodobieństwa):** gdy pula jednostki wojskowej jest wykluczona na cudzym terenie, usunięte 20%
+rozdzielić proporcjonalnie na pozostałe kategorie (złoto/tech w stosunku 50:30, czyli finalnie
+~62,5%/~37,5%) — jeśli Maciej wolałby inny rozkład, może to skorygować po zobaczeniu wyniku.
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — ECHO A + doprecyzowanie podejścia, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A**, z doprecyzowaniem podejścia: „jedynie nie robiłbym nowego panela, tylko
+wszedłbym w obecny panel dyplomacji, żeby sprawdzić co tam jest zakodowane i czy to można użyć lub
+rozszerzyć."
+
+Interpretacja (zgodna z duchem opcji A, którą Maciej wybrał — opcja A od początku zakładała
+REUŻYCIE martwego `diplomacyPanel.ts`, nie pisanie od zera): nacisk na kolejność pracy — **najpierw
+dogłębna inspekcja** martwego `diplomacyPanel.ts` (ma już gotową sekcję „Wojny znane (wywiad)") ORAZ
+żywego `diploListHud.ts`/`diplomacyAudience.ts`, ustalić dokładnie co już działa/co da się
+rozszerzyć, dopiero potem pisać nowy kod — **nie tworzyć nowego, osobnego komponentu UI, jeśli
+istniejący kod (żywy lub martwy) da się rozszerzyć zamiast zastępować**. Pozostała specyfikacja bez
+zmian: (1) sortowanie — cywilizacje nad miastami-państwami w `diploListHud.ts`; (2) krok pośredni —
+kliknięcie cywilizacji pokazuje najpierw podsumowanie (wojny/sojusze/handel/propozycja spotkania),
+dopiero potem pełny panel wizyty; ograniczenie silnika (sojusze AI↔AI tylko między „siostrami")
+zostaje ujawnione Maciejowi jako znana granica danych, nie do naprawy w tym zadaniu.
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — ECHO A (wbrew rekomendacji C), decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A** (twardy wymóg `withinTerritory` dla AI, jak u gracza) — WBREW rekomendacji
+Explore, która sugerowała C (złagodzenie scoringu). Cytat: „Ekspansja nie oznacza chaosu. Jak
+najbardziej cywilizacje mają ekspandować i szybko budować miasta wokół, ale w granicach zasięgu
+własnej cywilizacji, bo każda cywilizacja potem będzie mieć jedną zwartą grupę, a to po prostu była
+jakaś masakra."
+
+**⚠️ Świadome ograniczenie wcześniejszej decyzji (CLAUDE.md §1a) — Maciej podjął to wybierając A ze
+świadomością konfliktu, który był już nazwany wprost w treści opcji A (linia 5453-5456 wyżej):**
+opcja A koliduje z celem „pokrycie całej mapy" z **R-AI-KOLONIZACJA (Q3=B, 2026-08-03)** — AI z
+twardym `withinTerritory` będzie miało trudniej kolonizować odległe dobre tereny. Ta decyzja
+świadomie ZAWĘŻA realizację R-AI-KOLONIZACJA Q3=B: „pokrycie mapy" ma się teraz odbywać przez
+rozrost ZWARTEGO terytorium każdej cywilizacji (ekspansja blisko istniejących miast), NIE przez
+zakładanie miast w dowolnie odległych, oderwanych lokalizacjach.
+
+**Do dispatchu:** dodać AI ten sam twardy wymóg `withinTerritory` co gracz (`main.ts:7639-7659`
+wzorem) w `foundCityAt`/`canFoundCity` dla AI (`main.ts:23084`) — ORAZ usunąć/odwrócić dzisiejszą
+premię +15 pkt w heurystyce AI za zakładanie miasta POZA zasięgiem istniejących miast (`ai.ts:2694`)
+— ta premia dziś działa WPROST przeciw nowemu wymogowi (AI szukałoby lokalizacji, których i tak nie
+może użyć). MIN_CITY_DISTANCE (4 heksy) zostaje bez zmian — to już jest identyczne gracz/AI, nie
+jest przyczyną problemu.
