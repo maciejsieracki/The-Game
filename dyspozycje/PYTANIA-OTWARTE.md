@@ -4352,3 +4352,10 @@ Komunikaty „Brakuje X PW — dopłać" / „Dopłać X PW" (`diplomacyAcceptan
 `diplomacy-acceptance-points.ts:363-371`) każą graczowi zrobić coś, co w formularzu treaty-only
 jest już niemożliwe (brak pól do dopłaty). Powinny kierować do zrobienia osobnej umowy — to
 dosłownie cel dzisiejszej decyzji o rozłączeniu.
+
+## P-HUD-KULTURA-SIGNED-NIESPOJNE (2026-08-09, znalezisko Operatora przy R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO) · STATUS: **OTWARTE — niepilne, kosmetyka**
+
+Główny HUD mapy (`gra/src/ui/hud.ts` → `renderBarD1B`) formatuje 5 z 6 chipów jako plain `String(...)`
+(bo to zapas, nie delta), ale chip „Kultura" niekonsekwentnie używa `signed(s.kultura)` (wymuszony
+znak „+"). Prawdopodobnie drobny, pre-istniejący błąd formatowania, niezwiązany ze zgłoszeniem
+zapas-vs-tempo. Nie naprawione, poza zakresem.
