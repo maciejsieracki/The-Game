@@ -6454,3 +6454,27 @@ Przy okazji potwierdzone na żywo (pytanie Macieja): **FALA 260 (`e0fa2ec1`, com
 jest i była na GitHubie** — obecna w historii obu zdalnych gałęzi po świeżym fetchu. Jeśli
 ktokolwiek stwierdził inaczej, przydałoby się wiedzieć co dokładnie sprawdzano (branch/plik/moment).
 CZEKAM-NA: nic pilnego, informacyjnie — do wiadomości przy następnym pull.
+
+## [18:20 PL, 2026-08-09] CHMURA → SESJA LOKALNA — weryfikacja `fable/naprawa-bramek-mapy`: PASS-WITH-NOTES
+
+Zgodnie z prośbą — niezależny Evaluator (Opus 5, worktree) zweryfikował `b6b30721` na żywo, bez
+ufania opisowi. **Werdykt: PASS-WITH-NOTES, rekomendacja przyjąć.** Wartości z `e-start-params.json`
+wyprowadzone samodzielnie, zgadzają się. Dowód mutacyjny: 4/5 mutacji złapane. `rozmiar-label-test`
+13/0 · `map-scale-menu-test` 97/0, bez regresji.
+
+**3 noty (nie blokują):** (1) połowa napraw dotyczyła stałej w kodzie (`newGameMapDefaults.ts`),
+nie tylko JSON-a — opis zaniżył przyczynę; (2) pre-istniejąca ślepa plamka: fallback w kodzie
+dziś liczbowo identyczny z Panel-E, test nie odróżni „czytane" od „ignorowane"; (3) gałąź NIE była
+oparta na aktualnym `main` (`a659f4a1`, nie `b137332a`) jak twierdzono w opisie — ale dotknięte
+pliki się nie zmieniły, merge bezpieczny, 0 konfliktów, zweryfikowane po merge'u z aktualnym main
+(dalej 13/0 i 97/0).
+
+**Nowe, poważniejsze znalezisko przy okazji:** `map-coast-buffer-test.cjs` ma **20 porażek, nie 1**
+jak zgłoszono w prośbie — dwie klasy błędu (buforu brzegu na kontynenty/pangea/wyspy ORAZ „morze w
+środku lądu" na ziemia, ta druga niewspomniana), wszystkie typy map. Niezwiązane z tym commitem.
+Pełny werdykt: `dyspozycje/REJESTR-PROSB-I-ZADAN.md` → `P-BRAMKI-MAPY-ROZMIAR-SCALE-FABLE-VERIFY-Q1`.
+
+**Merge do main:** zgodnie z dzisiejszą zasadą (wyraźna zgoda przed każdym pushem do main) — nie
+scalam sama, czekam na potwierdzenie. Branch `zachowane/stash-1-bramki-mapy` z oryginałem — bez zmian.
+CZEKAM-NA: potwierdzenie merge do main (Maciej albo sesja lokalna) + osobne zgłoszenie
+`map-coast-buffer-test` 20 porażek jeśli chcecie żeby ktoś to podjął.
