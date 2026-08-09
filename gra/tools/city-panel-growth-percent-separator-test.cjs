@@ -31,6 +31,12 @@
  *   4. INNE MIEJSCA -- chip nie jest jedynym wystapieniem `${view.wzrostProcent}%` w pliku;
  *      test dokumentuje (bez asercji -- to swiadomie POZA zakresem tego zgloszenia) ile innych
  *      miejsc ma ten sam wzorzec, zeby przyszla naprawa miala punkt startu.
+ *   5-6. ROZSZERZENIE 2026-08-09 (P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) -- jedno z miejsc
+ *      z punktu 4 to karta szczegolow "Wyzywienie i wzrost" (buildRacjeWzrostDetailCard), sekcja
+ *      "WZROST% -- skladniki": 6 skladnikow renderowanych przez signed() (przecinek), a wiersz
+ *      "Lacznie" (suma tych samych skladnikow) surowym szablonem (kropka) -- w JEDNEJ karcie,
+ *      jednym widoku. Naprawione: suma tez przez signed(). Sekcja 5 przypina lokalizacje w
+ *      zrodle, sekcja 6 kontrakt signedPl na wartosci ulamkowej (dokladnie ten scenariusz).
  */
 
 const fs = require('fs');
@@ -144,6 +150,37 @@ console.log('   świadomie poza zakresem P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD, pa
 // Nie asercja -- to jest inwentarz dla przyszłej naprawy, nie regresja tej naprawy. Liczba
 // >0 jest OCZEKIWANA na dziś (detail-cardy nie były w zakresie tego zgłoszenia).
 assert(true, `inwentarz zapisany (${pozostale.length} pozycji) -- patrz raport operatora dla listy linii`);
+
+// --- 5. P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY -----------------------------------------------
+// Karta "Wyżywienie i wzrost — szczegóły" (buildRacjeWzrostDetailCard), sekcja "WZROST% —
+// składniki": 6 składników (racje, małe miasto, spichlerz, zdrowie, szczęście, cywilizacja)
+// renderowane przez signed() (przecinek polski) -- wiersz "Łącznie" (suma tych składników)
+// renderował surowym szablonem `${view.wzrostProcent}%` (kropka JS). Naprawa: signed() też
+// dla sumy, żeby jedna karta nie mieszała separatorów.
+console.log('\n[5] karta "Wyżywienie i wzrost — szczegóły": sekcja "WZROST% — składniki" — suma przez signed()');
+const detailCardMatch = src.match(
+  /appendDetailSection\(card, 'WZROST% — składniki'\);[\s\S]{0,1200}?gridDetailRow\(\s*g2,\s*\n?\s*'Postęp do \+1 obywatela'/,
+);
+assert(detailCardMatch !== null, 'znaleziono blok sekcji "WZROST% — składniki" w buildRacjeWzrostDetailCard');
+if (detailCardMatch) {
+  const block = detailCardMatch[0];
+  assert(
+    /gridDetailRow\(g2, 'Łącznie', fed \? `\$\{signed\(view\.wzrostProcent\)\}%` : '— \(głód\)'\)/.test(block),
+    'wiersz "Łącznie" woła `${signed(view.wzrostProcent)}%` (naprawiony separator)',
+  );
+  assert(
+    !/gridDetailRow\(g2, 'Łącznie', fed \? `\$\{view\.wzrostProcent\}%` : '— \(głód\)'\)/.test(block),
+    'stary surowy wzorzec `${view.wzrostProcent}%` (kropka) ZNIKNĄŁ z tego wiersza karty',
+  );
+  const signedRowCount = (block.match(/`\$\{signed\(/g) || []).length;
+  eq(signedRowCount, 7, '7 wierszy (6 składników + Łącznie) w sekcji woła signed() -- spójny formater w całej karcie');
+}
+
+// --- 6. Kontrakt signedPl dla sumy ułamkowej (dokładnie ten scenariusz zgłoszenia) --------------
+console.log('\n[6] kontrakt signedPl (suma WZROST%, wartość ułamkowa)');
+eq(M.signedPl(5.5), '+5,5', 'suma ułamkowa dodatnia → „+5,5” z przecinkiem (nie „5.5” z kropką)');
+eq(M.signedPl(-2.1), '−2,1', 'suma ułamkowa ujemna → „−2,1” z przecinkiem, U+2212 (P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL)');
+eq(M.signedPl(0), '0', 'suma zerowa → „0” bez znaku');
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);

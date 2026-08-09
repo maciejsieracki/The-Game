@@ -2087,12 +2087,41 @@ to złapać.
 (`formatCityGrowthPercentLabel`).
 **Model:** Sonnet 5.
 
-## P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — niepilne**
-Jedna karta szczegółów w `cityPanel.ts` (linia ~4750) renderuje składniki przez `signed()`
-(przecinek, polska konwencja) ale sumę surowym szablonem (kropka) — mieszane separatory w
-jednym widoku. Najwyższy priorytet spośród 8 pozostawionych wystąpień `wzrostProcent`, jeśli
-temat zostanie kiedyś podjęty ponownie.
-**Kotwice:** `gra/src/ui/cityPanel.ts` (linia ~4750).
+## P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY — ZAMKNIĘTE 2026-08-09
+Karta „Wyżywienie i wzrost — szczegóły" (`buildRacjeWzrostDetailCard`), sekcja „WZROST% —
+składniki": 6 składników renderowanych przez `signed()` (przecinek polski), wiersz „Łącznie"
+(suma tych samych składników) surowym szablonem `${view.wzrostProcent}%` (kropka JS) — mieszane
+separatory w jednej karcie.
+
+**Naprawa:** wiersz sumy też przez `signed()`. C-026: sąsiad „Budynki wpływające na wzrost"
+(`bd.spichlerz`) sprawdzony i wykluczony — `spichlerzGrowthBonusPercent()` to trzy literalne
+`return 2/1/0`, nieujemność gwarantowana konstrukcją, nie danymi. Rozszerzony
+`city-panel-growth-percent-separator-test.cjs` (22→29 asercji).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES z blokującą korektą domkniętą przed scaleniem**: sekcja [6]
+testu asercjonowała ASCII myślnik dla ujemnej sumy — po scaleniu równoległej naprawy
+`P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL` (`signedPl` → U+2212) ta asercja padłaby po cichu przy
+scaleniu obu (różne pliki, git scala bez konfliktu tekstowego). **Poprawione przy scaleniu**:
+asercja zmieniona na `'−2,1'` (U+2212), zweryfikowane po fakcie na zmergowanym `signedPl` —
+29/29 zielone. Fix produkcyjny sam w sobie zweryfikowany jako nietrywialny (`WYZYWIENIE_GROWTH_PCT`
+zawiera wartości ułamkowe, stary szablon realnie renderował kropkę).
+Zmierzone (po scaleniu obu zależnych napraw): `city-panel-growth-percent-separator-test.cjs`
+29/29, `logic-test.cjs` 213/213, `tsc --noEmit` 0 błędów.
+
+**Nowa nota Evaluatora, zarejestrowana osobno:** `P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY`
+— analogiczna usterka w sąsiedniej, żywej karcie (`buildTopBarZywnoscDetailCard`).
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`buildRacjeWzrostDetailCard`, linia ~4750/4753).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
+
+## P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) · STATUS: **OTWARTE — niepilne**
+`buildTopBarZywnoscDetailCard` (linia ~4800, kod żywy — wołany przez `attachTopBarStat('zywnosc')`)
+ma dokładnie tę samą usterkę: linia ~4839 renderuje `${view.wzrostProcent}%` surowo, obok
+`signed(foodSplit.total)` (linia ~4830) w TEJ SAMEJ karcie. Dodatkowo linia ~4841 renderuje
+`racje ${bd.racje}%` surowo (`bd.racje` bywa ułamkowe). Formalnie mieści się w 7 pozycjach
+świadomie odłożonych przy naprawie `P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD`, ale to najbliższy
+analogiczny przypadek do `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` — pominięty przy enumeracji
+C-026 tamtego zgłoszenia.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (`buildTopBarZywnoscDetailCard`, linie ~4839, ~4841).
 **Model:** Sonnet 5.
 
 ## P-BRAMKA-SPICHLERZ-WIDOCZNOSC-CZERWONA (2026-08-09, znalezisko Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — pre-istniejące, niezwiązane, do rejestru**
