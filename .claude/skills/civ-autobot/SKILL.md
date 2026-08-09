@@ -245,6 +245,19 @@ scalenie → zgoda właściciela przy kolizji z cudzą pracą → bramki → bui
 
 - **Po KAŻDYM powrocie Operatora z worktree** sprawdź `git status --porcelain` na drzewie głównym — stały krok zamknięcia, nie reakcja na alarm (`C-019`, recydywa).
 - Worktree usuwaj **jako ostatni** krok, po scaleniu albo odrzuceniu; niescommitowany stan wcześniej na gałąź `zapas/<nazwa>` i na origin (`C-014`).
+- **`git diff <A> <B>` do scalenia patcha jest bezpieczny WYŁĄCZNIE gdy `<A>` jest faktycznym
+  przodkiem `<B>`** (`git merge-base --is-ancestor <A> <B>`). Jeśli worktree Operatora odgałęził
+  się WCZEŚNIEJ niż `<A>` (np. `<A>` = obecny `main`, a worktree startował przed jakąś
+  późniejszą, już scaloną paczką), diff cicho zawiera „cofnięcie" zmian z `<A>`, których tip
+  worktree po prostu nigdy nie miał — merge wygląda czysto (`git apply --check` przechodzi),
+  ale wymazuje wcześniejszą, już scaloną naprawę. Bezpieczne: `git diff $(git merge-base <baza
+  worktree> <tip>) <tip>` (diff własnej pracy worktree, nie różnica względem obcego stanu), albo
+  `git cherry-pick`/`git merge`. Realny przypadek 2026-08-09: `git diff 92341250 cdb29d92`
+  (gdzie `cdb29d92` odgałęził się przed `92341250`) po cichu cofnął naprawę
+  `P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA` przy scalaniu niezwiązanej naprawy
+  `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` — złapane dopiero przez bramkę na etapie deployu,
+  nie przez Evaluatora commita scalającego. Drugi, niezależny mechanizm cichej utraty pracy w
+  tym repo obok już opisanego incydentu `b9867b3`.
 - **Kontynuacja rundy po FAIL Evaluatora** — wznawiaj `SendMessage` do agenta/worktree z
   poprzedniej rundy (zachowuje kontekst, historię commitów, świeżość względem `main`), NIE
   nowy `Agent` z izolacją od zera, chyba że worktree jest uszkodzony/usunięty. Sprawdzone

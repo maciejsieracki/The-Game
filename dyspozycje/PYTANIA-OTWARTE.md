@@ -3827,11 +3827,29 @@ na mapce okolicy miasta.
 **Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`).
 **Model:** Sonnet 5.
 
-## P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA — ZAMKNIĘTE 2026-08-09
+## P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA — ZAMKNIĘTE 2026-08-09 (+ RECYDYWA tego samego dnia, naprawiona przed deployem)
 Trzeci człon tej samej rodziny błędu (obok już naprawionych `yieldOfMapHex` i
 `foodPotentialOfMapHex`): `tileYieldLabel()` i `appendOkolicaYieldLabel()` w `cityPanel.ts`
 budowały `WorkedTile` z tylko JEDNĄ (legacy) warstwą — na heksie testowym silnik liczył 5/5/5,
 panel pokazywał graczowi 2/2/2.
+
+**RECYDYWA (2026-08-09, złapana przez agenta deploy przed wypchnięciem FALA 263):** przy scalaniu
+NIEZWIĄZANEJ naprawy `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` orkiestrator policzył patch jako
+`git diff 92341250 cdb29d92` — `cdb29d92` (tip worktree Operatora tamtej naprawy) odgałęził się
+PRZED `92341250`, więc diff po cichu zawierał cofnięcie tej właśnie naprawy. `git apply --check`
+przeszedł czysto (brak konfliktu tekstowego), Evaluator commita scalającego (`d383edec`) tego nie
+złapał (jego zakres to nowa zmiana, nie regresja gdzie indziej w tym samym pliku) — jedynym
+zabezpieczeniem, które zadziałało, była bramka `heks-panel-tooltip-warstwa-test.cjs` uruchomiona
+przez agenta deploy PRZED wypchnięciem (15/22 → czerwona). Naprawione bezpośrednio w drzewie
+głównym (przywrócone 3 fragmenty bit-for-bit identyczne z `92341250`, potwierdzone przez
+niezależny Evaluator Opus 5 pełnym diffem całego pliku + dowodem mutacyjnym). Nowa reguła
+procesowa zapisana w `civ-autobot/SKILL.md` §5: `git diff <A> <B>` do scalenia jest bezpieczny
+wyłącznie gdy `<A>` jest faktycznym przodkiem `<B>` — inaczej używać `git diff $(git merge-base
+<baza> <tip>) <tip>`. Drugi, niezależny mechanizm cichej utraty pracy w tym repo obok `b9867b3`.
+Bramki po naprawie: `heks-panel-tooltip-warstwa-test.cjs` 22/22, `city-panel-growth-percent-separator-test.cjs`
+29/29, `heks-plony-warstwy-test.cjs` 24/24, `city-badge-growth-percent-test.cjs` 38/38,
+`okolica-test.cjs` 72/72, `okolica-isworkable-silnik-test.cjs` 15/15, `logic-test.cjs` 213/213,
+`tsc --noEmit` 0 błędów.
 
 **Naprawa:** obie funkcje wołają teraz `improvementKeysForHex(hex)`, identycznie jak silnik
 (`hexToWorkedTile`) i poranna naprawa `yieldOfMapHex`. Nowy test `gra/tools/heks-panel-tooltip-warstwa-test.cjs`
