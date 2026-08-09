@@ -2181,3 +2181,9 @@ Decyzja Macieja: A (twardy withinTerritory dla AI), swiadomie zawezajac wczesnie
 R-AI-KOLONIZACJA Q3=B (pokrycie mapy ma sie teraz odbywac przez zwarte terytorium, nie odlegle
 miasta). Usunac tez premie +15 za zakladanie poza zasiegiem (ai.ts:2694), sprzeczna z nowym
 wymogiem. Dispatch implementacji. Pelna tresc w `PYTANIA-OTWARTE.md`.
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — ECHO A (2026-08-09)
+Decyzja Macieja: A (wbrew rekomendacji B). Cap ludnosci: 5 (bez zmian) -> 8 ze Spichlerzem (nowy) ->
+12 z Akweduktem (obnizka z 15). Zalozenia domyslne do potwierdzenia: istniejace miasta >12 sa
+zamrazane nie scinane; cap=8 wymaga tylko POSIADANIA Spichlerza (nie odprowadzonej ceramiki co
+ture). Dispatch implementacji. Pelna tresc w `PYTANIA-OTWARTE.md`.

@@ -5798,3 +5798,31 @@ premię +15 pkt w heurystyce AI za zakładanie miasta POZA zasięgiem istniejąc
 — ta premia dziś działa WPROST przeciw nowemu wymogowi (AI szukałoby lokalizacji, których i tak nie
 może użyć). MIN_CITY_DISTANCE (4 heksy) zostaje bez zmian — to już jest identyczne gracz/AI, nie
 jest przyczyną problemu.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A** (wbrew rekomendacji B). Dokładnie jak zaproponowano: bez budynków cap=5 (bez
+zmian) → ze Spichlerzem cap=8 (nowy stopień) → z Akweduktem cap=12 (obniżka z dzisiejszych 15).
+
+**Parametry do zmiany** (`gra/src/game/economy.ts`, `EconParams`/params JSON):
+- `akwedukt_prog_ludnosci = 5` — bez zmian (cap bez żadnego z dwóch budynków).
+- NOWY parametr, np. `spichlerz_prog_ludnosci = 8` — cap gdy miasto ma Spichlerz (ale nie Akwedukt).
+- `akwedukt_max_ludnosci`: **15 → 12** — zmiana istniejącej, wytuningowanej wartości.
+
+**Do dispatchu (kwestia techniczna, nie gameplayowa — domyślne założenie, opisz i przekaż):**
+istniejące zapisane gry mogą mieć miasta już powyżej 12 (dziś legalnie urosłe do maks. 15).
+Domyślne założenie: **zamrożenie, nie ścinanie** — miasto powyżej nowego capu NIE traci ludności
+wstecznie, po prostu przestaje rosnąć dalej, dopóki cap go nie dogoni (np. przez kolejny budynek w
+przyszłej epoce). Żadna istniejąca reguła spadku ludności (deficyt żywności) nie zostaje zmieniona
+przez to zadanie — to osobny mechanizm. Jeśli Maciej wolałby ścinanie do nowego capu, może to
+skorygować po zobaczeniu wyniku.
+
+**Warunek Spichlerza dla capu = 8:** czy wymagany jest ten sam warunek co dla bonusów Spichlerza
+(odprowadzona ceramika w danej turze, `maSpichlerzPop`), czy sam fakt POSIADANIA budynku
+(niezależnie od odprowadzenia ceramiki w tej konkretnej turze)? Robocze założenie do dispatchu: SAM
+FAKT POSIADANIA budynku wystarcza dla podniesienia twardego capu (cap to stały parametr strukturalny
+miasta, nie bonus zależny od przepływu surowca turowego) — odprowadzanie ceramiki nadal warunkuje
+TYLKO miękkie bonusy (zdrowie/%/mnożnik/zadowolenie), tak jak dziś. Jeśli Maciej chce inaczej, może
+skorygować.
