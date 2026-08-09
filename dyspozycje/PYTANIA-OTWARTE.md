@@ -6419,3 +6419,30 @@ merge bez konfliktów, zweryfikowany) + 2 nowe pliki. Bramki na scalonym stanie:
 213/213 · empire-city-defaults-test 30/30 · auto-manage-test 45/45. Temat zamknięty (B1
 `budowaPriorytetTypow` pozostaje osobnym, świadomie odłożonym zgłoszeniem — czeka na dispatch po
 uwolnieniu plików).
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator RUNDA 2: PASS-WITH-NOTES (1 BLOKUJĄCA), runda 3 w toku (2026-08-09)
+
+B1 (regresja Spichlerz II) i B3 (karta budynków) potwierdzone poprawne i zweryfikowane niezależnie
+(obie ścieżki EconParams, wszystkie 4 kombinacje UI). B2 częściowo: naprawa w silniku
+(`population-growth-v85.ts`) chroniona testem, ale `turn-economy.ts:1331` (deduplikacja, zero
+zmiany semantyki, OK) i **`cityPanel.ts:1016` NIEchronione** — mutacja cofająca helper do starego
+`built.includes('spichlerz')` przeżywa wszystkie 8 testów bundlujących ten plik, przywracając
+dokładnie oryginalny objaw B3 (miasto ze Spichlerzem II znów pokazuje „bez Akweduktu max 5") przy
+100% zielonych bramkach. To ta sama klasa problemu co w kilku innych tematach dziś (test tekstowy
+regex wzorem `hud-moc-warstwa-test.cjs`/`border-march-wygasanie-test.cjs`).
+
+Niepilne: N-A (`maSpichlerz: boolean = false` domyślne — ta sama klasa niewykrywalnego dla
+kompilatora mutanta, lepiej wymagany parametr), N-B (kanon `B-popcap-akwedukt-audit.md` nadal
+nieaktualny, z rundy 1), N-C (martwy `ownerHasSpichlerz()` sprawdzający tylko starą wartość — mina
+na przyszłość), N-D (AI nie modeluje capu w wycenie Akweduktu, pre-istniejące poza zakresem),
+N-E (zamrożenie >12 potwierdzone pozytywnie, formalnie do potwierdzenia przez Macieja), N-F (chip
+capu nie pokazuje się dla miasta ze Spichlerzem poniżej limitu — drobny UX).
+
+**Ostrzeżenie procesowe od Evaluatora:** worktree Operatora ma niescommitowane zmiany od 2 rund —
+przy błędzie narzędziowym (Evaluator omyłkowo prawie skasował pracę przez `git checkout`,
+odtworzone z patcha, zero strat) ryzyko jest realne. Do rozważenia: Operator powinien commitować
+NA WŁASNEJ GAŁĘZI worktree (nie do main) po każdej rundzie, żeby mieć punkt przywracania.
+
+Dispatch runda 3, wąski zakres: test tekstowy chroniący `cityPanel.ts:1016`.
