@@ -2735,13 +2735,37 @@ transferem, nie jest martwym kodem widocznym tylko w teście). Evaluator PASS-WI
 `gra/src/game/diplomacy-tech-trade.ts` (`techIdsWithPrereqsMetForRecipient`).
 **Model:** Sonnet 5.
 
-## P-BRAMKA-TECH-TIER-NIEPOKRYTA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne**
+## P-BRAMKA-TECH-TIER-NIEPOKRYTA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ZAMKNIĘTE 2026-08-09**
 Dowód mutacyjny Evaluatora: usunięcie SAMEGO `tierOk` (bramka tieru epoki) z `grantTechToOwner`
 zostawia `diplomacy-basket-transfer-test.cjs` w 100% zielone (17/17) — usunięcie `epochOk` jest
 złapane, usunięcie `tierOk` nie. Kod jest poprawny (weryfikacja czytaniem), brakuje jednej
 asercji. Opis commita `c8ee16f0` deklarował pokrycie „prereq/epoka/tier/parity" — deklaracja
 dla warstwy tieru była nieprawdziwa, sprostowane tutaj.
+
+**ZAMKNIĘTE (2026-08-09):** nowy scenariusz testowy (katalog `tierCatalog`: technologia bez
+formalnego prerekwizytu, ale wyższego tieru tej samej epoki niż zbadana) izoluje `tierOk` od
+`prereqsMet`/`epochOk`. Evaluator PASS-WITH-NOTES, dowód mutacyjny osobisty potwierdził izolację
+(mutacja `tierOk=true` → dokładnie 2 nowe asercje padają; mutacje `prereqsMet=false`/`epochOk=false`
+nie poruszają nowego scenariusza pozytywnego poza jego rolą zapory ogólnej). Kod produkcyjny
+nietknięty (tylko plik testowy). `diplomacy-basket-transfer-test.cjs` 20/20 (baza 17/17),
+`diplomacy-tech-trade-test.cjs` 24/24, `logic-test.cjs` 213/213, `tsc` 0 błędów.
+
+**Nowe znalezisko Evaluatora, zarejestrowane osobno:** `P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA` —
+identyczna luka istnieje w DRUGIEJ warstwie (`techIdsWithPrereqsMetForRecipient` w
+`gra/src/game/diplomacy-tech-trade.ts`, filtr na etapie budowania listy), poza kotwicami tego
+zgłoszenia (które wskazywały tylko `grantTechToOwner`).
 **Kotwice:** `gra/tools/diplomacy-basket-transfer-test.cjs`, `gra/src/game/diplomacy-basket-transfer.ts` (`grantTechToOwner`, `tierOk`).
+**Model:** Sonnet 5.
+
+## P-BRAMKA-TECH-TIER-WARSTWA2-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-TECH-TIER-NIEPOKRYTA) · STATUS: **OTWARTE — niepilne**
+Evaluator zmutował `techIdsWithPrereqsMetForRecipient` (`gra/src/game/diplomacy-tech-trade.ts:45`,
+filtr listy „dostaje" na etapie budowania koszyka, DRUGA warstwa defense-in-depth obok
+`grantTechToOwner`) wyłączając SAMĄ składową tieru (`&& true`) — `diplomacy-tech-trade-test.cjs`
+zostaje 24/24 zielone, mutacja przeżywa. Kontrola: wyłączenie CAŁEGO filtra (`return true`) daje
+22/24 — czyli filtr jako całość jest pokryty, ale składowa tieru wewnątrz niego nie. Ta sama klasa
+luki co `P-BRAMKA-TECH-TIER-NIEPOKRYTA`, jedna warstwa dalej.
+**Kotwice:** `gra/src/game/diplomacy-tech-trade.ts:45` (`techIdsWithPrereqsMetForRecipient`),
+`gra/tools/diplomacy-tech-trade-test.cjs`.
 **Model:** Sonnet 5.
 
 ## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne, pre-istniejące wzmocnione**
