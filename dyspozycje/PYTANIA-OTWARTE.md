@@ -2032,14 +2032,49 @@ czerwonych w CLAUDE.md).
 **Kotwice:** `gra/src/ui/cityPanel.ts` (wiersz „WZROST%", `renderMagazyn`).
 **Model:** Sonnet 5.
 
-## P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL (2026-08-09, nota Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — niepilne**
-`signedPl` (`gra/src/ui/formatPl.ts`) ma sprzeczność docstring vs implementacja: dokumentacja
-obiecuje znak U+2212 („−3,5"), implementacja zwraca ASCII `-` (`0x2D`). Panel miasta już dziś
-miesza glify w TEJ SAMEJ tabeli chipów: chip „Racje" ma zahardkodowany U+2212, chip „Bilans"
-(przez `signed()`→`signedPl`) ma ASCII. Naprawa właściwa: poprawić `signedPl` żeby faktycznie
-zwracał U+2212 zgodnie z własnym docstringiem, potem sprawdzić wszystkie konsumenty czy nie
-polegają (przypadkiem) na ASCII.
+## P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL — ZAMKNIĘTE 2026-08-09
+`signedPl` (`gra/src/ui/formatPl.ts`) miał sprzeczność docstring vs implementacja: dokumentacja
+obiecywała znak U+2212 („−3,5"), implementacja zwracała ASCII `-` (`0x2D`). Panel miasta mieszał
+glify w TEJ SAMEJ tabeli chipów: chip „Racje" ma zahardkodowany U+2212, chip „Bilans" (przez
+`signed()`→`signedPl`) miał ASCII.
+
+**Naprawa:** `signedPl` post-processuje ASCII minus na U+2212 po wywołaniu `formatLiczbaPl`
+(która sama zostaje nietknięta — ma własny, osobny test asercjonujący ASCII z wcześniejszej,
+niezwiązanej naprawy). Nowy test `gra/tools/format-pl-signed-minus-glif-test.cjs` (13/13) +
+2 zaktualizowane asercje w `empire-skarbiec-bilans-test.cjs` (11/11).
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**: domknięcie tranzytywne importów (29 modułów, 10 wołających
+`signedPl`, 5 testów bundlujących) policzone niezależnie — Operator wymienił tylko 2 bezpośrednich
+wołających, ale wynik i tak poprawny (żaden pominięty test nie asercjonuje tekstu). Parytet
+„Racje"/„Bilans" potwierdzony na realnym kodzie (oba U+2212). Zero konsumentów parsujących ASCII
+myślnik na wyjściu `signedPl` (sprawdzone grepem repo-wide). Kontrfaktyczne dowody symetryczne
+(nowy test × stary kod = 2 fail; stary test × nowy kod = te same 2 fail).
+Zmierzone: `format-pl-signed-minus-glif-test.cjs` 13/13, `empire-skarbiec-bilans-test.cjs` 11/11,
+`city-panel-growth-percent-separator-test.cjs` 22/22, `logic-test.cjs` 213/213, `tsc --noEmit` 0
+błędów.
+
+**Dwie nowe noty Evaluatora, zarejestrowane osobno:** `P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE`,
+`P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI`.
 **Kotwice:** `gra/src/ui/formatPl.ts` (`signedPl`).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
+
+## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne, pre-istniejące**
+`map-field-battle-test.cjs` (`TypeError: import_meta.glob is not a function` — konstrukcja Vite
+w bundlu esbuild/CJS, moduł audio `.mp3`) i `pre-battle-save-test.cjs` (`No loader configured for
+".svg" files` — `src/ui/icons/brand/menu-emblem.svg?raw`) padają identycznie z fixem i bez niego
+(zweryfikowane na baseline przed zmianą `signedPl`) — awarie harnessu testowego (brak loaderów
+w skrypcie budującym bundle testu), nie regresja silnika. CLAUDE.md nie wymienia ich w liście
+znanych czerwonych bramek — bez tego wpisu następna sesja mogłaby je wziąć za świeżą regresję.
+**Kotwice:** `gra/tools/map-field-battle-test.cjs`, `gra/tools/pre-battle-save-test.cjs`.
+**Model:** Sonnet 5.
+
+## P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne**
+`cityPanel.ts:4394` i `:4418` renderują `` `+${signed(praca.doBudynkow)}` `` — dla wartości ujemnych
+daje podwójny znak (`"+−5"`, przed naprawą glifu `"+-5"`). Pre-istniejące, nie regresja tej naprawy
+(oba warianty były błędne) — ale naprawa glifu uczyniła anomalię bardziej widoczną (`+−` rzuca się
+w oczy bardziej niż `+-`). Naprawa: usunąć zbędny `+` przed `signed()` (który już dodaje własny
+znak) albo zmienić szablon na samo `signed(...)`.
+**Kotwice:** `gra/src/ui/cityPanel.ts:4394,4418`.
 **Model:** Sonnet 5.
 
 ## P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD (2026-08-09, nota Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — bardzo niepilne, dziś nieosiągalne**
