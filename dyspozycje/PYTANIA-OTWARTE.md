@@ -6446,3 +6446,26 @@ odtworzone z patcha, zero strat) ryzyko jest realne. Do rozważenia: Operator po
 NA WŁASNEJ GAŁĘZI worktree (nie do main) po każdej rundzie, żeby mieć punkt przywracania.
 
 Dispatch runda 3, wąski zakres: test tekstowy chroniący `cityPanel.ts:1016`.
+
+---
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — Evaluator RUNDA 3: PASS-WITH-NOTES (1 nowa BLOKUJĄCA), runda 4 w toku (2026-08-09)
+
+Runda 2 (bramka main.ts) potwierdzona realnie zamknięta — 4 mutacje z rundy 2 + własne warianty
+Evaluatora złapane. NOWE, głębsze znalezisko: bramka regexowa PINUJE WPIĘCIE, ale nie łapie
+ODWRÓCENIA SEMANTYKI — 6 z 10 dodatkowych mutacji Evaluatora przechodzi 74/74 ALL GREEN mimo
+odwrócenia logiki (np. `&& isVillageRewardUnitMilitary(...)` → `&& !isVillageRewardUnitMilitary(...)`
+= dokładna odwrotność decyzji Macieja, regex nadal pasuje bo tekst funkcji nadal tam jest).
+
+**Naprawa (mała, jedno miejsce):** wyciągnąć samą decyzję do czystej funkcji
+`shouldExcludeUnitReward({hasSpawnHex, spawnHexOwnerId, playerOwnerId, rewardUnitIsMilitary})` w
+`villageRewards.ts`, przetestować PEŁNĄ TABELĄ PRAWDY (16 kombinacji) zamiast regexem — to zamyka
+odwrócenia behawioralnie, nie tekstowo. Dołożyć 3 piny na `hutQ`/`hutR`/`ownerId: 0` do sekcji 11.
+
+Niepilne: N1 (dopisać w komunikatach asercji „to pin, aktualizuj przy celowym refaktorze"),
+N2 (`ownerId: 0` zaszyte na sztywno — pre-istniejące, mina gdyby chatki objęły AI), N3 (jedno
+odwrócenie przez podwójną negację pozostaje poza zasięgiem regexu nawet po naprawie — akceptowalne,
+funkcja jest domknięciem w `boot()`, niebehawioralnie łatwo testowalna bez większego wyciągania).
+
+Dispatch runda 4, wąska, w pełni określona: wyciągnięcie `shouldExcludeUnitReward` + tabela prawdy
++ 3 piny.
