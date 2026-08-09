@@ -4398,3 +4398,37 @@ nagłówków „(opcjonalnie)"), z kontrolami negatywnymi dla akcji 9/13/14. Dow
 `TREATY_ONLY_FORM_IDS` do `['15']` → 148/184 (36 czerwonych, po 6 na każdą z 6 przywróconych akcji);
 po naprawie 184/184. Bramki: tsc 0 · logic-test 213/213 · wszystkie 31 `diplomacy*.cjs` exit 0.
 Gotowe do finalnej (krótszej, potwierdzającej) weryfikacji Evaluatora przed scaleniem.
+
+---
+
+## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO — ZWERYFIKOWANE, Evaluator PASS-WITH-NOTES (2026-08-09)
+
+Twierdzenie o Pracy (najbardziej wątpliwe w zleceniu) **potwierdzone** — `playerPracaPool` to
+jeden mutowalny licznik imperium, dowód: wszystkie ścieżki wydatku (założenie miasta, cuda, start
+projektu, auto-ulepszenia, utrzymanie) dotykają dokładnie tego samego pola. Parytet z głównym HUD
+mapy potwierdzony liczbowo dla wszystkich 6 surowców.
+
+**N1 (naprawiam od razu, techniczne, bez pytania):** mutacja przywracająca dosłownie zgłoszony
+błąd Macieja (podmiana `pracaPool`/etc. z powrotem na pola *Rate* w `cityPanel.ts`) **przechodzi
+wszystkie bramki niezauważona** — test bundluje tylko czysty `empire-hud-totals.ts`, wiring w
+`cityPanel.ts`/`main.ts` nie jest pokryty niczym. Dołożenie 3 asercji na obecność/brak konkretnych
+wywołań w źródle (wzorem `border-march-wygasanie-test.cjs`).
+**N2:** Fixture 5 ma pustą asercję (`cityOwn.zloto` już wynosi 0 przed mutacją) — do naprawy razem z N1.
+
+**⛔ N3 — WYMAGA DECYZJI MACIEJA, nowa rozbieżność stworzona przez tę naprawę:**
+Dla Pracy i Żywności mała liczba (+N, wkład tego miasta) NIE jest tym, co faktycznie dolicza się
+do dużej liczby (zapasu). Przykład ze zgłoszenia „Praca 54 +9": +9 to wkład miasta do WŁASNEJ
+kolejki budowy (`doBudynkow`), a do wspólnej puli imperium (dużej liczby 54) idzie inna, osobna
+wartość (`doPuli` — w podanym przykładzie realnie +0). Główny HUD mapy pokazałby wtedy „Praca 54
++0", nie +9 — nowa, węższa rozbieżność miasto↔mapa, tym razem w MAŁEJ liczbie. Analogicznie
+Żywność (duża = zapas armii państwa, mała = netto do zapasów miasta, inna wartość niż to co idzie
+do zapasu państwa). Operator wykonał polecenie dosłownie (zakaz ruszania małej liczby) — pytanie
+do Macieja: czy to akceptowalne (dwie uczciwie nazwane, ale różne wartości), czy mała liczba też
+ma pokazywać realny wkład do zapasu.
+
+**N4 (do rejestru, niepilne):** `EmpireHudSnap.zloto` i `HudState.bogactwo` to dwa różne pola,
+dziś zawsze równe, ale bez wspólnego źródła — ryzyko cichego rozjazdu w przyszłości.
+**N5 (do rejestru, niepilne):** chip Pracy nie zaświeci już na czerwono przy ujemnym tempie (zapas
+klamrowany ≥0) — sygnał ostrzegawczy przetrwał na małej liczbie, degradacja nie utrata.
+**N6 (do rejestru, niepilne, nieosiągalne w grze):** ścieżka fallback `resolveEmpireSnap` nie ma
+4 z 6 pól — dziś nieosiągalna (panel tylko dla gracza), ryzyko czysto latentne.
