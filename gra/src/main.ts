@@ -751,7 +751,7 @@ import {
   type TradeGoodEntry,
   type TradeGoodsCategories,
 } from './game/diplomacy-goods';
-import { tradeableTechIdsForSide } from './game/diplomacy-tech-trade';
+import { tradeableTechIdsForSide, techIdsWithPrereqsMetForRecipient } from './game/diplomacy-tech-trade';
 import {
   pickResourceTradeBetweenOwners,
   pickResourceDeficitForOwnerPair,
@@ -14375,7 +14375,11 @@ async function boot(): Promise<void> {
      */
     function getSellableTechForPlayer(responderOwnerId: number): Array<{ id: string; label: string; suggestedPrice: number }> {
       const responderKnown = ownerResearchedTechs(responderOwnerId);
-      return tradeableTechIdsForSide(player.zbadane, responderKnown)
+      // P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-09): odbiorcą tu jest responder
+      // (AI) — poza tradeableTechIdsForSide filtrujemy też do techów, których prereqy/
+      // epokę responder już ma zbadane (patrz techIdsWithPrereqsMetForRecipient).
+      const tradeable = tradeableTechIdsForSide(player.zbadane, responderKnown);
+      return techIdsWithPrereqsMetForRecipient(tradeable, responderKnown, data.tech)
         .map(slug => ({
           id: slug,
           label: techNameFromSlug(slug) ?? slug,
@@ -14389,7 +14393,11 @@ async function boot(): Promise<void> {
      */
     function getBuyableTechFromOwner(responderOwnerId: number): Array<{ id: string; label: string; suggestedPrice: number }> {
       const responderKnown = ownerResearchedTechs(responderOwnerId);
-      return tradeableTechIdsForSide(responderKnown, player.zbadane)
+      // P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-09): odbiorcą tu jest gracz —
+      // filtr lustrzany do powyższego, żeby lista „dostaję" nigdy nie zaproponowała
+      // techu, którego gracz nie mógłby dziś sam zbadać (pominięte drzewko/epoka).
+      const tradeable = tradeableTechIdsForSide(responderKnown, player.zbadane);
+      return techIdsWithPrereqsMetForRecipient(tradeable, player.zbadane, data.tech)
         .map(slug => ({
           id: slug,
           label: techNameFromSlug(slug) ?? slug,

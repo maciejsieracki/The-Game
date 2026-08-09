@@ -1084,7 +1084,11 @@ export function basketItemEditAvailable(
   return computeAvailableTypes(side, ctx, mode, actionId, tributeMode).includes(item.typ);
 }
 
-function buildAddForm(
+/**
+ * Eksport do testów (P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU) — pozwala zweryfikować
+ * placeholder pustej listy (miasto/technologia) bez renderowania całego modala.
+ */
+export function buildAddForm(
   side: 'give' | 'receive',
   ctx: NegotiationModalContext,
   mode: TradeBasketMode,
@@ -1143,16 +1147,24 @@ function buildAddForm(
   const defaultTech = (editTechId != null && techs.some(t => t.id === editTechId))
     ? editTechId
     : (techs[0]?.id ?? '');
-  const techChips = techs.map(t =>
-    buildChipBtn(
-      'cdb-chip-tech',
-      t.id,
-      prefix,
-      t.id === defaultTech,
-      typChipIconHtml('tech'),
-      t.label,
-    ),
-  ).join('');
+  // P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-09): po filtrze
+  // R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE lista bywa realnie pusta — placeholder
+  // analogiczny do „— brak miast (SILNIK) —" wyżej, żeby pusta siatka nie wyglądała
+  // jak błąd renderu. `defaultTech` zostaje wtedy '' → readItemFromForm (case 'tech')
+  // zwraca null, więc „Dodaj"/„Zapisz zmiany" bezpiecznie no-opuje (ten sam wzorzec co
+  // dla miasta: id puste = brak pozycji, nie pusty/nieprawidłowy koszyk).
+  const techChips = techs.length > 0
+    ? techs.map(t =>
+      buildChipBtn(
+        'cdb-chip-tech',
+        t.id,
+        prefix,
+        t.id === defaultTech,
+        typChipIconHtml('tech'),
+        t.label,
+      ),
+    ).join('')
+    : '<span class="cdb-sub">— brak technologii (SILNIK) —</span>';
 
   const qtyResources = side === 'give'
     ? (ctx.giveQuantityResourceOptions ?? defaultQuantityResourceOptions())
@@ -1470,7 +1482,11 @@ function summaryHtml(
   return html;
 }
 
-function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: NegotiationModalContext): BasketItem | null {
+/**
+ * Eksport do testów (P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU) — dowód, że formularz
+ * z pustą listą (id='') faktycznie no-opuje zamiast dodać pozycję-widmo do koszyka.
+ */
+export function readItemFromForm(side: 'give' | 'receive', box: Element, ctx: NegotiationModalContext): BasketItem | null {
   const prefix = side === 'give' ? 'give' : 'recv';
   const typ = (box.querySelector('.cdb-typ[data-side="' + prefix + '"]') as HTMLInputElement)?.value as WartoscPozycjaTyp;
   if (!typ) return null;

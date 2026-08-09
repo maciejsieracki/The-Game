@@ -2639,21 +2639,65 @@ komunikatu placeholder; `grantTechToOwner` bez sprawdzenia prerekwizytów/epoki 
 osiągalna po filtrze); `sellableTechCount`/akcja `'6'` może się teraz ukryć, gdy AI zna wszystko
 co gracz (świadoma, udokumentowana konsekwencja filtra, nie błąd).
 
-## P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **OTWARTE — niepilne**
+## P-HANDEL-TECH-PUSTA-LISTA-BRAK-KOMUNIKATU (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZAMKNIĘTE 2026-08-09**
 Po filtrze lista technologii do wymiany bywa realnie pusta (wcześniej nigdy nie była).
 `techChips=''`, ale chip „Technologia" nadal klikalny — pusta siatka, „Dodaj" cicho nic nie robi
 (`readItemFromForm` zwraca `null`). Miasta mają placeholder „— brak miast (SILNIK) —",
 technologie nie mają analogicznego. Do dołożenia tym samym wzorcem.
-**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts:1051-1108`.
+
+**ZAMKNIĘTE (2026-08-09):** Pusta lista dostaje placeholder „— brak technologii (SILNIK) —"
+analogiczny do miast, chip „Technologia" zostaje klikalny jak chip miasta. Evaluator
+PASS-WITH-NOTES, `diplomacy-tech-trade-test.cjs` 24/24, `tsc` 0 błędów.
+**Kotwice:** `gra/src/ui/diplomacyTradeBasket.ts` (`buildAddForm`).
 **Model:** Sonnet 5.
 
-## P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **OTWARTE — pre-istniejące, nowo osiągalne**
+## P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE (2026-08-08, nota Evaluatora R-HANDEL-TECHNOLOGIA-FILTR-WSPOLNE) · STATUS: **ZAMKNIĘTE 2026-08-09**
 `gra/src/game/diplomacy-basket-transfer.ts:68-96` (`grantTechToOwner`) sprawdza tylko „nieznana"/
 „już zbadana", NIE sprawdza prerekwizytów drzewka ani epoki. Wcześniej ścieżka „gracz dostaje
 technologię AI" była praktycznie nieosiągalna (lista `receive` pokazywała własne techy gracza,
 `granted` zawsze `false`) — po dzisiejszym filtrze gracz realnie może zdobyć technologię z
 pominięciem drzewka. Pre-istniejący dług, nowo odblokowany.
-**Kotwice:** `gra/src/game/diplomacy-basket-transfer.ts:68-96`.
+
+**ZAMKNIĘTE (2026-08-09):** Dwie warstwy (defense in depth): (1) `grantTechToOwner` sprawdza
+teraz prerekwizyty drzewka + bramkę epoki/tieru odbiorcy (`research.ts:
+prerequisitesOf/epochGateMet/epochTierGateMet`, ta sama logika co `canResearch`, bez bramki
+budynku/ulepszenia — świadomie, to inny typ wymogu); (2) lista „dostaje" filtruje się już na
+etapie budowania (`techIdsWithPrereqsMetForRecipient`, nowy `gra/src/game/diplomacy-tech-trade.ts`).
+STRICT-PARITY potwierdzone przez Evaluatora bezpośrednio w `main.ts:7353` (wywołanie przed
+jakąkolwiek gałęzią po `ownerId`) — AI→gracz podlega bramce identycznie jak gracz→AI, bramka
+realnie aktywna w produkcji (`syncBasketResearchFromEngine` zasila `techCatalog` przed
+transferem, nie jest martwym kodem widocznym tylko w teście). Evaluator PASS-WITH-NOTES,
+`diplomacy-tech-trade-test.cjs` 24/24, `diplomacy-basket-transfer-test.cjs` 17/17, `logic-test`
+213/213, `tsc` 0 błędów, 31 plików testów dyplomacji zielonych, `vite build` 799 modułów OK.
+
+**Dwa nowe znaleziska Evaluatora, zarejestrowane osobno (oba niepilne):**
+`P-BRAMKA-TECH-TIER-NIEPOKRYTA` (luka pokrycia — mutacja usuwająca `tierOk` przeżywa testy) i
+`P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA` (nowy filtr zmniejsza listę „daję", więc
+`diplomacy-locks.ts:201` blokuje całą akcję częściej dla graczy bez nic do oddania).
+**Kotwice:** `gra/src/game/diplomacy-basket-transfer.ts` (`grantTechToOwner`),
+`gra/src/game/diplomacy-tech-trade.ts` (`techIdsWithPrereqsMetForRecipient`).
+**Model:** Sonnet 5.
+
+## P-BRAMKA-TECH-TIER-NIEPOKRYTA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne**
+Dowód mutacyjny Evaluatora: usunięcie SAMEGO `tierOk` (bramka tieru epoki) z `grantTechToOwner`
+zostawia `diplomacy-basket-transfer-test.cjs` w 100% zielone (17/17) — usunięcie `epochOk` jest
+złapane, usunięcie `tierOk` nie. Kod jest poprawny (weryfikacja czytaniem), brakuje jednej
+asercji. Opis commita `c8ee16f0` deklarował pokrycie „prereq/epoka/tier/parity" — deklaracja
+dla warstwy tieru była nieprawdziwa, sprostowane tutaj.
+**Kotwice:** `gra/tools/diplomacy-basket-transfer-test.cjs`, `gra/src/game/diplomacy-basket-transfer.ts` (`grantTechToOwner`, `tierOk`).
+**Model:** Sonnet 5.
+
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — niepilne, pre-istniejące wzmocnione**
+`gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" (Szybka Umowa?) gdy
+`sellableTechCount === 0` — liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr
+(`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`) zmniejsza listę „dostaje" u odbiorcy, ale to lista
+„daję" u nadawcy decyduje o blokadzie — gracz bez własnych technologii do oddania nie może
+przez akcję „6" also *kupić* niczego, mimo że strona „dostaję" może mieć poprawne pozycje.
+Asymetria była pre-istniejąca (nie stworzona tą naprawą), dziś częściej odczuwalna bo lista
+„dostaję" jest teraz krótsza (bardziej realistyczna). Skutek uboczny: placeholder „brak
+technologii" po stronie „daję" w akcji 6 jest w praktyce trudno osiągalny; pozostaje osiągalny
+po stronie „dostaję" i w innych trybach koszyka.
+**Kotwice:** `gra/src/game/diplomacy-locks.ts:201`.
 **Model:** Sonnet 5.
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ef796bbe` FALA 261** — czeka na playtest Macieja
