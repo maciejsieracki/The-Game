@@ -1869,3 +1869,24 @@ wyłącznie 2 pliki testowe, teraz czytające wartości z `e-start-params.json` 
 sztywno. Osobne zgłoszenie przy okazji: `map-coast-buffer-test.cjs` pre-istniejąco czerwony
 (niezwiązany, zweryfikowany na czystym main). Dispatch Evaluatora (Opus 5, worktree) do
 niezależnej weryfikacji 4 punktów z prośby — bez ufania opisowi, wyprowadzić liczby samodzielnie.
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — zgłoszone z playtestu 2026-08-09, dispatch Opus 5
+Maciej zgłosił z żywej gry: po zmianie przydziału robotnika (Praca→Żywność) stary „złoty chłopek"
+został na nieaktywnym już polu, a na nowym polu pojawił się chłopek z zielonym tłem — mylące
+wrażenie że to robotnik innej cywilizacji. Zdiagnozowane w kodzie (orkiestrator, bez zgadywania):
+DWA niezsynchronizowane systemy renderowania: (1) `render/workerFieldOverlay.ts` — warstwa mapy
+świata, kolor = paleta właściciela (Ty=złoto), pełne przebudowanie grupy przy każdym
+`refreshWorkerFieldOverlay()`, ale ta funkcja **jawnie pomija odświeżenie gdy `isCityPanelOpen()`**
+(main.ts:8963) — tylko czyści i wychodzi; (2) `render/cityOkolicaOverlay.ts` (`makeLabelSprite`,
+linia ~145) — warstwa pierścienia okolicy miasta (ta widoczna na zrzutach), kolor odznaki chłopka
+**na sztywno `rgba(30,80,30,0.88)`** (ciemna zieleń) dla KAŻDEGO obrobionego pola, niezależnie od
+właściciela — nigdy nie kodowała właściciela kolorem. „Zielone tło" nigdy nie oznaczało obcej
+cywilizacji — po prostu ta warstwa nigdy nie rozróżniała właściciela. Podejrzenie „uwięzionego
+złotego chłopka": resztka warstwy (1), której odświeżenie nie nadążyło za zmianą przydziału w
+trybie podglądu okolicy (możliwe że `isCityPanelOpen()` nie pokrywa stanu „okolicapreview" —
+komentarz w pliku: „Używane przez okolicapreview; docelowo Integrator wpienie przy otwartym
+panelu miasta" sugeruje że to dwa różne stany). Dotyczy `gra/src/render/**` → **Opus 5** zgodnie
+z CLAUDE.md §4 (wyjątek stały dla renderu). Dispatch: zbadać dokładny stan `isCityPanelOpen()` vs
+tryb podglądu okolicy w momencie zmiany przydziału, ujednolicić kolor odznaki chłopka w
+`cityOkolicaOverlay.ts` z paletą właściciela z `workerFieldOverlay.ts` (Ty=złoto), naprawić lukę
+odświeżania. Pełna pętla AutoBot Operator(Opus5)→Evaluator(Opus5).
