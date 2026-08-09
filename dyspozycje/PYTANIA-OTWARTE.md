@@ -4465,3 +4465,22 @@ najgorszy przypadek dE76 = **6,4** — GORZEJ niż Zulusi przed poprawką. Pozos
 bezpieczne (≥23,4). Operator świadomie NIE ruszył Celtów — kolor tożsamościowy, wymaga tej samej
 rozmowy co Zulusi. Pytanie: chcesz żebym teraz też poprawiła kolor Celtów (ta sama metoda), czy
 najpierw zobaczysz Zulusów w grze?
+
+---
+
+## R-KARTA-JEDNOSTKI-STRZALKI-CYKL — ZWERYFIKOWANE, Evaluator PASS-WITH-NOTES (2026-08-09)
+
+Reużycie istniejącej funkcji cyklowania potwierdzone `git log -S` na czystej bazie (obie funkcje
+sprzed dzisiejszej pracy — `1c9bec98` 2026-08-08, `0c6790d5` 2026-07-27). Realna weryfikacja DOM
+(własna sonda Evaluatora, nie test Operatora): nagłówek i strzałki fizycznie nieobecne w DOM, nie
+ukryte CSS-em. 4 własne mutacje Evaluatora — wszystkie złapane, w tym kluczowa M2 (gwardia JS na
+`disabled` realnie testowana, nie tautologicznie — jsdom nie tłumi kliku na disabled sam z siebie).
+
+**Do domknięcia przy scaleniu:** martwy kod — `isArmyStack`/`headLabel: 'Armia'` (`main.ts:4363-4367`)
+liczone, ale karty jednostki już nie renderują `headLabel` (usunięty razem z nagłówkiem „Jednostka").
+Bez utraty informacji — treść karty niezależnie pokazuje „Armia · <hexLabel>" gdzie indziej.
+Rekomendacja Evaluatora: usunąć martwe linie, spójne z intencją „usunąć opis jednostka".
+**Niepilne, do rejestru:** stały podgląd deweloperski `gra/tools/.unit-panel-preview-entry.ts:90`
+ma zaszyty nieaktualny nagłówek „Jednostka" (plik śledzony w gicie, nie importuje `sidePanelHud`,
+więc się nie zepsuje, ale rozjeżdża się z grą). Centrowanie kamery przy strzałkach potwierdzone —
+spójne z dolnym paskiem i Spacją, nie nowa niekonsekwencja.
