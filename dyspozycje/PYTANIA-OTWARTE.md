@@ -5826,3 +5826,35 @@ FAKT POSIADANIA budynku wystarcza dla podniesienia twardego capu (cap to stały 
 miasta, nie bonus zależny od przepływu surowca turowego) — odprowadzanie ceramiki nadal warunkuje
 TYLKO miękkie bonusy (zdrowie/%/mnożnik/zadowolenie), tak jak dziś. Jeśli Maciej chce inaczej, może
 skorygować.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**Werdykt Evaluatora (Opus 5): FAIL.** Kierunek zgodny z decyzją, ścieżka „szczęśliwa" działa, ale
+4 notatki BLOKUJĄCE:
+- **B1 — exploit nieskończonego ruchu:** zwrot liczony na `moveCost` (zamierzony koszt), nie na
+  faktycznie odjętą pulę — reguła MIN-MOVE (`planned-march.ts:197-203`) pozwala wejść na heks
+  droższy niż budżet ruchu (np. Wzgórza+Las=3 przy `ruchLeft=1`), `deductStackRuchLeft` klampuje do
+  zera, ale zwrot dodaje pełne 3 → +2 pkt ruchu zysku netto za każdy cykl „ruch → Zostaw osobno".
+  Odtwarzalne w nieskończoność.
+- **B2 — zwrot natychmiast kasowany:** gdy na heksie startowym stoi inna własna jednostka z niższym
+  `ruchLeft`, `selectPlayerUnit` (wołane zaraz po `onSeparate`) synchronizuje CAŁY stos do minimum —
+  zwrot ruchu wyparowuje, punkt ruchu jednak jest tracony wbrew decyzji Macieja. Dodatkowo w ścieżce
+  `main.ts:8803-8806` (`openMergePanelForSelected`) odejmowanie idzie na CAŁY stos źródłowy, a zwrot
+  tylko na wybrany podzbiór — rozjazd u źródła.
+- **B3 — teleport bez sprawdzenia zajętości/przejezdności:** stary kod (`assignBounceHexesForUnits`)
+  sprawdzał `isOccupied`/`passable`; nowy kod bezwarunkowo ustawia `mu.q=fromQ, mu.r=fromR`. Na
+  ścieżce odłożonej (`deferredMergePrompts`, flush po turach AI) wróg może w międzyczasie zająć heks
+  startowy — armia gracza wtedy teleportuje się na wroga bez walki.
+- **B4 — nowy test nie chroni `main.ts`:** harness kopiuje logikę `onSeparate` do osobnego pliku
+  zamiast importować z `main.ts`; mutacja Evaluatora (usunięcie CAŁEGO zwrotu ruchu z `main.ts`)
+  dała 13/13 PASS — dowód że bramka nie wykryłaby regresji w kodzie produkcyjnym.
+
+Niepilne: N1 (jednostka świeżo wyprodukowana bez heksu startowego — „Zostaw osobno" staje się
+no-opem, wymaga OSOBNEGO pytania ABC, nie zgadywać), N2 (licznik w komunikacie), N3 (zaznaczenie po
+separacji nieoptymalne), N4 (martwy kod `assignBounceHexesForUnits`, bez ryzyka), N5 (worktree
+przestarzały, standardowa procedura scalania to naprawi).
+
+**Dispatch runda 2** z dokładną specyfikacją napraw B1-B4 od Evaluatora. N1 NIE jest w zakresie
+rundy 2 — osobne pytanie ABC do zadania po zamknięciu tego tematu.
