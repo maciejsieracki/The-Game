@@ -7136,3 +7136,22 @@ działających agentów scalających w głównym drzewie (Tartak/Glinianka, Armi
 uniknąć wyścigu na tym samym drzewie.
 
 ---
+
+## BUG-OBWARZANEK-20PCT i BUG-ZIEMIA-SCALE — WDROŻONE, status skorygowany (2026-08-09/10)
+
+Trzeci i czwarty temat z audytu „zapomnianych" (mapgen, 2026-08-02) potwierdzone jako fałszywy
+alarm co do treści (oba naprawione tego samego wieczoru, ten sam commit `6f96f08`, FALA 199-200),
+prawdziwy alarm co do procesu (status nigdy nie zaktualizowany, mimo potwierdzenia Macieja w
+korespondencji: „chyba jest sukces... najważniejsze: zniknął obwarzanek"). Weryfikacja empiryczna
+dziś: `pangea-bagel-gap-audit.cjs` + własny skrypt na 9 przebiegach (land 15/20/25%, 3 seedy każdy)
+→ `dryMasses=1` wszędzie; generacja mapy Ziemia dla wszystkich 5 rozmiarów (seed 777) →
+udział lądu rośnie 15.5%→24.9%, bufor biegunowy spada 50%→24% (Mały→Super Huge) — dokładnie
+odwrotnie niż opisywał zgłoszony błąd.
+
+**Wynik: WSZYSTKIE 4 tematy generatora map z audytu „zapomnianych" (AC-RZEKI-BEZ-LIMITERA,
+AC-RZEKI-PER-MASA, BUG-OBWARZANEK-20PCT, BUG-ZIEMIA-SCALE) — już naprawione, nie wymagają
+dispatchu.** Pozostają 2 z 6: PERF-SUPER-HUGE-PANGEA-80 i BUG-SCENA-PERF-FALA138 —
+NIEJEDNOZNACZNE, wymagają realnego pomiaru (F12 Macieja w grze), nie do rozstrzygnięcia z samego
+kodu — do zgłoszenia Maciejowi jako prośba o pomiar, nie do dispatchu subagenta kodującego.
+
+---
