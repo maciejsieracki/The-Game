@@ -20552,7 +20552,7 @@ async function boot(): Promise<void> {
 
     function persistSaveToSlot(slotId: string, label: string): boolean {
       try {
-        const ok = saveToLocal(slotId, buildSaveGameSnapshot(label));
+        const { ok } = saveToLocal(slotId, buildSaveGameSnapshot(label));
         if (ok) setLastPlayedSlotId(slotId);
         return ok;
       } catch (eSave) {
@@ -20603,14 +20603,26 @@ async function boot(): Promise<void> {
       } catch { idx = 0; }
       const slot = 'autosave-' + (idx + 1);
       try {
-        const ok = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
+        const { ok, reason } = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
         if (ok) {
           setLastPlayedSlotId(slot);
+          // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
+          // niepowodzeniu kolejna próba celuje ponownie w ten sam slot
+          // zamiast po cichu przeskoczyć dalej i zostawić go zamrożonym.
           try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
           console.log('[Autosave] rotacyjny slot=' + slot + ' tura=' + turn);
+        } else {
+          console.warn('[Autosave] rotacyjny zapis nieudany slot=' + slot + ' tura=' + turn + ' powod=' + (reason ?? 'nieznany'));
+          showHintMessage(
+            reason === 'quota'
+              ? 'Autozapis nieudany — brak miejsca w zapisie przeglądarki'
+              : 'Autozapis nieudany (blad zapisu)',
+            3000,
+          );
         }
       } catch (eRot) {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
+        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
       }
     }
 
