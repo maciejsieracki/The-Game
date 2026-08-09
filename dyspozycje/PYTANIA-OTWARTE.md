@@ -6214,3 +6214,24 @@ je bez wymogu terytorium — pre-istniejące, symetryczne z pierwszym miastem gr
 środowiskowo, niezwiązane).
 
 Dispatch runda 2, wąski zakres: TYLKO B1 (test tekstowy).
+
+---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA-B2 — ECHO B, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: B** (wbrew rekomendacji A). Wymuszona wojna Brązu odpala normalnie istniejący
+mechanizm obowiązków sojuszniczych (`applyAllianceObligationsOnWar` — sojusznicy CELU dołączają do
+wojny przeciw napastnikowi), ALE licznik „2 miasta zdobyte/stracone = koniec" ma obejmować
+WSZYSTKIE wojny w kaskadzie naraz (nie tylko parę napastnik-cel), i kończyć całą grupę wojen
+jednocześnie po osiągnięciu progu w sumie.
+
+**Implikacja architektoniczna (do dispatchu):** dzisiejszy licznik jest per-para
+(`bronzeForceWarActiveByPairKey`, klucz A-B). Trzeba wprowadzić pojęcie GRUPY WOJEN wynikającej z
+jednego triggera wymuszonej wojny (napastnik + cel + wszyscy sojusznicy celu wciągnięci kaskadą) —
+wspólny licznik zdobytych/straconych miast SUMOWANY po wszystkich parach w grupie, próg 2 kończy
+WSZYSTKIE wojny grupy naraz (automatyczny pokój z każdym uczestnikiem osobno, w tej samej turze).
+
+**Kolejność pracy:** runda 2 tego tematu (B1/B3/B4/B5/B6, mechaniczne naprawy) jest już w toku na
+tych samych plikach (`forced-war-bronze.ts`/`main.ts`). B2 dispatchowane jako OSOBNE zlecenie
+DOPIERO po zakończeniu i weryfikacji tej rundy, żeby uniknąć kolizji dwóch równoległych
+Operatorów.
