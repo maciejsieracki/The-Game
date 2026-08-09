@@ -8,20 +8,33 @@ Kanon: [`PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`](PROCEDURA-NUMER-ABC-COMMIT-DEPLO
 
 ---
 
-## ABC-PACZKA-2026-08-06-DOPREC — doprecyzowanie Autobot · STATUS: **OTWARTE** (2026-08-06)
+## ABC-PACZKA-2026-08-06-DOPREC — doprecyzowanie Autobot · STATUS: **NIEAKTUALNE — zastąpione, zamknięte bez odpowiedzi (2026-08-09)**
 
 **Kanon:** [`docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md`](../docs/decyzje/ABC-PACZKA-2026-08-06-DOPREC.md)
 
-| # | ID | Temat |
-|---|-----|--------|
-| 1 | **R-DZIALAJ-SCOPE-Q1** | `działaj` = wszystkie 6 / jeden / pierwsze 3 |
-| 2 | **R-DEPLOY-AUTOBOT-Q1** | Deploy po każdym / zbiorczo / po milestone |
-| 3 | **MAP-UX-MARKER-Q1** | Marker stolicy: obwódka / korona / oba |
-| 4 | **R-KAMIEN-FUTURE-Q1** | Prefix kopalnia* vs lista vs prefix+test |
-| 5 | **R-WIARYGODNOSC-S9-LICZBY-Q1** | Liczby §9 od razu / tabela OK / krytyczne |
-| 6 | **R-DESIGN-V2-KANAL-Q1** | Brief Design + kto pinguje |
+Audyt 2026-08-09 (na polecenie „wypchnąć wszystkie aktywne pytania i rozwiązać"): wszystkie 6
+pytań zostało w międzyczasie rozstrzygnięte lub zdezaktualizowane INNĄ drogą, nie przez wprost
+odpowiedź na tę paczkę — status po prostu nigdy nie został zaktualizowany. Sprawdzone w kodzie/
+dokumentach, nie z pamięci:
+1. **R-DZIALAJ-SCOPE-Q1** (zakres hasła „działaj") — model operacyjny „jedno `działaj` = N
+   tematów" zastąpiony przez `C-027` (każde zgłoszenie dispatchowane od razu, osobno, bez
+   czekania na zbiorcze hasło). Pytanie nieaktualne strukturalnie.
+2. **R-DEPLOY-AUTOBOT-Q1** (rytm deployu) — rozstrzygnięte inną, twardszą regułą: deploy
+   WYŁĄCZNIE na hasło `deploy` od właściciela (`CLAUDE.md` §0/§5), nie automatycznie po
+   temacie/zbiorczo.
+3. **MAP-UX-MARKER-Q1** (marker stolicy) — **wdrożone jako C** (obwódka + korona), potwierdzone
+   w kodzie: `gra/src/render/cityMapStatChip.ts` (komentarze „MAP-UX-MARKER-Q1 = C", linie 47/80/650/767).
+4. **R-KAMIEN-FUTURE-Q1** (przyszłe kopalnie) — wdrożone, `gra/src/game/relief-preserving-improvements.ts`
+   (wydzielone z `main.ts`, gdzie był `PRESERVES_HILL_RELIEF_KEYS`).
+5. **R-WIARYGODNOSC-S9-LICZBY-Q1** (liczby §9) — rozstrzygnięte jako A wcześniej
+   (`R-WIARYGODNOSC-S9-Q1=A`), tabela liczb gotowa i wdrożona (commit `2e67219`,
+   `docs/decyzje/R-WIARYGODNOSC-S9-TABELA-LICZB.md`).
+6. **R-DESIGN-V2-KANAL-Q1** (dostarczenie briefu Design v2) — rozstrzygnięte jako C, potwierdzone
+   w `dyspozycje/PROFIL-DECYZYJNY-MACIEJ.md` (wiersz 53: `R-DESIGN-PANEL-MIASTA-V2-Q1` = C) i w
+   `dyspozycje/DO-DESIGN-PANEL-MIASTA-MAPA-2026-07-25.md`.
 
-**Odpowiedź:** `A B C …` albo `ID=litera`.
+Nic z tej paczki nie wymaga dziś odpowiedzi — zamykam bez pytania, żeby nie przedstawiać
+nieaktualnych pytań jako żywych.
 
 ---
 
