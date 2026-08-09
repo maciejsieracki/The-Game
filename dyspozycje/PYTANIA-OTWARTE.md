@@ -6562,3 +6562,26 @@ nadal otwarte i słusznie poza zakresem, ta runda ich nie pogarsza).
 
 Dispatch runda 3, wąska: WYŁĄCZNIE plik testu, obowiązek powtórzenia wszystkich 9 mutacji
 merytorycznych (8/8+1 FAIL) i wszystkich 11 sond kruchości (11/11 PASS).
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — ODŁOŻONE na "krok 2", decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja:** „Na razie niech Agent tylko i wyłącznie uniemożliwi budowania miast w taki
+sposób w jaki budował do tej pory AI. Czyli zasady muszą być takie same jak dla gracza. I to jest
+pierwszy krok. A w drugim kroku wprowadzimy zasady budowania innym Agentem poprzez rozszerzenie
+własnego terytorium za pomocą Fortu lub posterunku."
+
+**Skutek:** turniej Q1/Q2/Q3 (Sędzia: rekomendacja Q1=B·Q2=B·Q3=A) NIE jest teraz rozstrzygany —
+odłożony jako „krok 2", bez ustalonej daty. **Krok 1** = `P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI=A`
+ma zostać wdrożony DOKŁADNIE jak pierwotnie zdecydowano — twardy `withinTerritory` dla AI
+identyczny jak dla gracza, BEZ żadnego złagodzenia przez fort/posterunek. To już jest w toku
+(runda 3, Operator naprawia regresję testu B2) — kontynuować bez zmian.
+
+**Odblokowanie wstrzymanej decyzji pobocznej:** usunięcie premii AI +15 pkt za zakładanie miast
+poza zasięgiem (`ai.ts:2694`) MA zostać wykonane (nie wstrzymywać) — skoro krok 2 (fort) jest
+odłożony, ta premia pozostaje sprzeczna z krokiem 1 i ma zniknąć zgodnie z pierwotnym zakresem
+`P-AI-ZAKLADANIE-MIAST=A`. To już jest częścią trwającej pracy nad tym tematem, bez zmian.
+
+Temat R-FORT-STRAZNICA pozostaje zarejestrowany, gotowa pełna specyfikacja turnieju czeka na
+wznowienie, gdy Maciej zdecyduje się przejść do „kroku 2".
