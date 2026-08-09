@@ -5149,6 +5149,36 @@ zaimplementować podmianę `showHintMessage` na ten wzorzec w `main.ts:19744-197
 wąski warunek wyzwolenia (tylko miasta-państwa TEGO SAMEGO klucza cywilizacji co gracz) faktycznie
 pasuje do sceny z gry Macieja (do potwierdzenia po naprawie widoczności, nie zgadywać teraz).
 
+---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (2026-08-09, zgłoszenie z playtestu, bug AI) · STATUS: **OTWARTE — wymaga rozpoznania przed naprawą**
+
+**Cytat Macieja:** „ewidentnie zapomniałem się jeszcze o jednym zgłoszeniu. Mianowicie napisałem,
+że cywilizacje budują sobie miasta w oddaleniu od swojej cywilizacji, a powinny budować zgodnie z
+zasadami takimi jak graczy obowiązują, czyli chyba 5 heksów od najbliższego miasta i w granicach
+własnej cywilizacji. A w tej chwili po prostu jest miszmasz, bo wszystkie cywilizacje pobudowały w
+różnych miejscach. Więc pewnie AI obowiązują inne zasady. Zobacz zresztą na mapę." Zrzut mapy
+pokazuje rozrzucone miasta wielu cywilizacji bez wyraźnego zwartego terytorium.
+
+**Kontekst z wcześniejszego pytania w tej samej sesji (`P-podboj/Egipt` — luźno powiązane, osobny
+wątek):** wcześniej Maciej pytał czy AI zakłada miasta bez połączenia z resztą swoich miast —
+odpowiedziałam wtedy faktami o innej części kodu (zasięg widzenia). To zgłoszenie jest SZERSZE:
+konkretnie o regułę MIN_CITY_DISTANCE (znana z bramek jako „4 heksy" wg CLAUDE.md — Maciej pamięta
+„chyba 5", do zweryfikowania dokładna wartość) i o to, czy AI zakłada miasta w granicach WŁASNEGO
+terytorium/kontynuum, czy gdziekolwiek.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć dokładną wartość i miejsce egzekwowania
+`MIN_CITY_DISTANCE` dla GRACZA (wspomniane w CLAUDE.md bramki jako „4 heksy", zweryfikować dokładną
+liczbę i plik); (b) znaleźć logikę AI wybierającą lokalizację nowych miast (prawdopodobnie
+`gra/src/game/ai.ts`, funkcja typu `decideAiCityFounding`/`chooseCitySite` czy podobna) i sprawdzić
+czy stosuje TĘ SAMĄ regułę minimalnej odległości co gracz, inną (mniejszą/większą) wartość, czy w
+ogóle brak takiej reguły; (c) sprawdzić czy AI ma jakiekolwiek pojęcie „buduj w granicach własnego
+istniejącego terytorium/w pobliżu swoich miast" (zwartość terytorium) czy zakłada miasta całkowicie
+niezależnie od tego gdzie już ma miasta (stąd „miszmasz" widoczny na mapie); (d) jeśli AI ma inną
+regułę niż gracz — ustalić czy to celowa decyzja projektowa (np. AI ma większą swobodę ekspansji
+dla balansu) czy niedopatrzenie/luka. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie
+zgadywać. Prawdopodobnie wymaga ABC (parytet zasad gracz/AI to zmiana balansu, nie tylko bugfix).
+
 **⛔ Doprecyzowanie Macieja (dosłowny cytat, ważne ograniczenia reguły):** „tylko żeby nie było
 tak, że wszyscy wypowiedzą wojnę graczowi. Generalnie powinno się wypowiadać wojny sąsiadowi, a
 sojusze zawierać z podleglejszymi ludami." Czyli DWA dodatkowe warunki do uwzględnienia w

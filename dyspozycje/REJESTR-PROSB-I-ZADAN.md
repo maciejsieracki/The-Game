@@ -2087,6 +2087,11 @@ Mechanizm istnieje (`triumph-city-state.ts`, main.ts:19735) ale dymek się nie p
 Maciej chce pełnoprawnego popupu zamiast 9,5s hinta. Dispatch Explore (wzorzec istniejącego modala)
 przed implementacją. Pełna treść w `PYTANIA-OTWARTE.md`.
 
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — OTWARTE, bug AI, wymaga rozpoznania (2026-08-09)
+AI zakłada miasta bez respektowania minimalnej odległości/zwartości terytorium jak gracz — mapa
+pokazuje "miszmasz" rozrzuconych miast wielu cywilizacji. Dispatch Explore przed naprawą
+(prawdopodobnie wymaga ABC — parytet zasad gracz/AI). Pełna treść w `PYTANIA-OTWARTE.md`.
+
 ## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — OTWARTE, wymaga rozpoznania (2026-08-09)
 Checkbox "Auto Wyżywienie" ma stać się przyciskiem w stylu przycisku auto-produkcji/"Auto-
 zarządzaj", tekst "Auto WYŁ — bez auto-obniżania/podnoszenia" ma iść do tooltipa. Dispatch Explore
