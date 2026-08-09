@@ -6605,3 +6605,44 @@ w mieście rzecznym z Portem, tak samo jak w mieście nadmorskim z Portem.
 zapisy gry z Galerami już zbudowanymi w miastach BEZ dostępu do wody mają zostać („grandfather" —
 jednostki zostają, tylko NOWA produkcja jest blokowana) czy coś ostrzejszego. Pytanie zadane w
 wiadomości na czacie.
+
+---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — Evaluator RUNDA 2: PASS-WITH-NOTES (1 BLOKUJĄCA), runda 3 w toku (2026-08-09)
+
+Kod poprawny — B1, B3, B4, B5 zweryfikowane niezależnie (własny grep, własny roundtrip save/load
+16/16, własna weryfikacja symetrii sojuszu), zero fałszywych twierdzeń Operatora. B2 potwierdzone
+nietknięte (poza zakresem tej rundy).
+
+**B6a (BLOKUJĄCA) — bramka złapała USUNIĘCIE haka, ale nie złapała usunięcia tego, co hak ROBI.**
+Własna kampania 16 mutacji Evaluatora: 12/16 złapanych (w tym wszystkie 5 zadeklarowanych przez
+Operatora), ale 4 przeżyły, z czego 3 to realne dziury:
+- **M19** — usunięcie SAMEGO wywołania auto-pokoju z wnętrza haka (licznik nadal liczy, wojna
+  nigdy się nie kończy) — rdzeń całej funkcji znika, wszystkie bramki zielone. Dla AI↔AI = wojna
+  wieczna, dokładnie czego temat miał uniknąć.
+- **M7** — zamiana `diploPairKey(oldOwner,newOwner)` na prostą interpolację stringów bez
+  sortowania — licznik działa tylko gdy `oldOwner<newOwner`, po cichu gubi połowę zdobyczy.
+- **M12** — usunięcie sprzątania stanu w `finalizePeaceTreatyBetween` — pokój wynegocjowany
+  NORMALNIE (nie przez próg wymuszonej wojny) zostawia martwy wpis, napastnik trwale i cicho
+  wypada z cyklu (ta sama klasa co B4 z rundy 1).
+- M16 (utrata `lockTurnsOverride`, cooldown cicho spada z 20 na 10) — mniejszy, ale realny.
+
+Naprawa mechaniczna, w pełni określona: dopisać do istniejącej bramki `forced-war-bronze-main-guard-test.cjs`
+4 asercje regex (dokładna specyfikacja od Evaluatora): (1) hak zawiera wywołanie
+`finalizePeaceTreatyBetween(...)` z argumentem cooldownu (łapie M19+M16 jedną asercją); (2) hak
+wyszukuje przez `diploPairKey(oldOwner, newOwner)`, nie interpolację (M7); (3)
+`finalizePeaceTreatyBetween` zawiera blok sprzątający stan wymuszonej wojny (M12); (4) hak wywołuje
+`shouldEndBronzeForcedWarByCityCount(...)` przed pokojem.
+
+Niepilne: N10 (gracz przypadkiem trafia do `bronzeForceWarPendingOwners`, nigdy nie konsumowany —
+śmieć bez skutku), N11 (bardzo stare zapisy bez `meta.ownerEraByOwner` mogą jednorazowo uzbroić
+wymuszoną wojnę retroaktywnie), N12 (wybór „najbliższego sąsiada" liczony od pierwszego miasta w
+tablicy, nie najbliższej pary — deterministyczne, ale czasem geograficznie przypadkowe), N13
+(bramka tekstowa z natury krucha na reformat — świadomy koszt wzorca), N14 (`tools/*.cjs` przy
+braku esbuilda cicho kończą się exit 0 zamiast błędu — dotyczy całego katalogu, nie tego tematu).
+
+**Uwaga procesowa:** worktree dostarczony bez `node_modules`, bramki bez symlinka cicho dawały
+exit 0 (fałszywy zielony) — Evaluator to wykrył i naprawił przed audytem, liczby Operatora po
+naprawieniu symlinka odtworzyły się co do jednej.
+
+Dispatch runda 3, wąska: 4 asercje regex w istniejącym pliku bramki.
