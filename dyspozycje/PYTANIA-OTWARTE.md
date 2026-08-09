@@ -4659,6 +4659,40 @@ zbudować swój cud E zanim spełni warunek technologiczny awansu. Realne ryzyko
 Rekomendacja: **C** — sama reguła jest prosta i zgodna z Twoim opisem, ale bez wcześniejszego
 dostrojenia AI realne ryzyko to cywilizacje AI utykające w Kamieniu/Brązie na stałe.
 
+## R-EPOKA-CUD-WARUNEK-AWANSU — ECHO A + istotne doprecyzowanie zakresu, decyzja Macieja (2026-08-09)
+
+**Decyzja: A**, z dwoma doprecyzowaniami wykraczającymi poza pierwotny zakres pytania (cytat
+Macieja): „ta zasada dotyczy tylko głównych cywilizacji a nie państw miast, poza tym dla każdej
+cywilizacji przejście w inną epokę powinno być dopiero wtedy kiedy dana cywilizacja odkryje
+wszystkie badania i każda cywilizacja przechodzi do nowej epoki dopiero w swoim czasie, kiedy ma
+wszystkie spełnione warunki. To nie jest tak, że jedna cywilizacja jest w brązie i na całym
+świecie już jest brąz. To jest główna charakterystyka tej gry cywilizacja, że tak właśnie nie
+jest. Że na przykład czołgi mogą walczyć z falangą."
+
+**Zakres decyzji finalnie:**
+1. Warunek cudu (E) przed awansem epoki — **wyłącznie dla głównych cywilizacji**, NIE dla miast-
+   państw.
+2. **NOWY, szerszy warunek** (poza pierwotnym zakresem ABC): awans epoki wymaga odkrycia
+   WSZYSTKICH technologii bieżącej epoki, nie tylko jednej wyróżnionej (`awansDoEpoki`). Dziś
+   mechanizm to 1 technologia na przejście (Brązownictwo K→B, Hutnictwo żelaza B→Ż) — Maciej chce
+   zaostrzenia do „wszystkich" plus cud.
+3. Progresja per cywilizacja NIEZALEŻNIE i asynchronicznie — **to już jest dzisiejsze zachowanie**
+   silnika (potwierdzone przy innym rozpoznaniu: `computeOwnerEraFromResearch`,
+   `syncOwnerEraFromResearch` per-owner) — Maciej podkreśla żeby tego NIE zepsuć, nie prosi o nową
+   funkcję w tym punkcie.
+
+**Sprawdzone bezpośrednio (bez subagenta) — zbiór technologii epoki jest dziś dobrze zdefiniowany:**
+`gra/data/tech.json` → pole `Epoka` na każdej z 32 technologii: **Kamień 12 · Brąz 12 · Żelazo 8**.
+To spójny, policzalny zbiór — warunek „wszystkie badania epoki" jest technicznie dobrze określony,
+nie wymaga dalszego rozpoznania w tym punkcie.
+
+**⛔ Ryzyko AI SIĘ ZWIĘKSZA względem pierwotnego pytania** (dwa warunki naraz: cud + komplet 12/12/8
+technologii, zamiast samej 1 technologii + cud) — pierwotna rekomendacja C (podnieść priorytet
+budowy własnego cudu w AI) staje się jeszcze ważniejsza; dodatkowo throttle badań AI powinien być
+sprawdzony pod kątem czy AI realnie zdąży ukończyć KOMPLET technologii epoki w rozsądnym czasie.
+Dispatch implementacji z tym zastrzeżeniem wprost w zleceniu — Operator ma zbadać throttle badań AI
+i zgłosić, jeśli zobaczy realne ryzyko trwałego utknięcia, zamiast zgadywać czy jest bezpiecznie.
+
 ---
 
 ## R-WYDARZENIA-FILTR-KATEGORII — SCALONE `2984b707` (2026-08-09)
