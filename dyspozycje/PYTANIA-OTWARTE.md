@@ -3609,15 +3609,45 @@ też strukturalnie lepszy kierunek na przyszłość (wspólny czysty helper budo
 **Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`).
 **Model:** Sonnet 5.
 
-## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA (2026-08-09, nota N4 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE, NIEZWERYFIKOWANA WYKONANIEM) · STATUS: **OTWARTE — hipoteza, do sprawdzenia**
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA (2026-08-09, nota N4 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **POTWIERDZONE i CZĘŚCIOWO NAPRAWIONE — Evaluator FAIL, kontynuacja w toku**
 `main.ts:3971` (`okolicaWorkedKeySet`, overlay) przekazuje `isWorkable: okolicaHexWorkable`
 (wyklucza Morze/Góry), `cityWorkedTilesForEconomy` (`turn-economy.ts:691`, silnik) NIE
-przekazuje `isWorkable` w ogóle; `okolicaTiles` (`okolica.ts:101`) filtruje tylko gdy filtr
-podano — brak domyślnego filtra terenu. Z lektury kodu wynika, że overlay i ekonomia mogą
-różnić się co do tego, KTÓRY heks jest obsadzony — nie zweryfikowane end-to-end, tylko
-hipoteza.
-**Kotwice:** `gra/src/main.ts:3971` (`okolicaWorkedKeySet`), `gra/src/game/turn-economy.ts`
-(`cityWorkedTilesForEconomy`), `gra/src/game/okolica.ts` (`okolicaTiles`).
+przekazywała `isWorkable` w ogóle; `okolicaTiles` (`okolica.ts:101`) filtruje tylko gdy filtr
+podano — brak domyślnego filtra terenu.
+
+**POTWIERDZONE żywą symulacją przez subagenta** (miasto pop=6, focus=produkcja, sąsiedztwo
+Gór): silnik przypisywał robotników na Górach (Praca=4, najwyższa wartość terenu w
+`terrain-yields.json`), których overlay nigdy by nie pokazał jako możliwe. Naprawa: nowa
+`isLandWorkableHex()` w `okolica.ts` jako wspólne źródło prawdy, wstrzyknięta w
+`cityWorkedTilesForEconomy` ORAZ `workedHexCoordsForCity` (drugi call site z identycznym
+błędem, znaleziony i naprawiony przy okazji — Evaluator ocenił to jako uzasadnione, nie
+przekroczenie zakresu). `okolicaHexWorkable` w `main.ts` deleguje do tej samej funkcji.
+
+**Evaluator werdyktem FAIL wstrzymał scalenie — naprawa jest niekompletna i tworzy NOWY,
+poważniejszy rozjazd niż naprawiła:**
+1. **Bloker gameplayowy:** fix dotknął tylko 2 z 5 miejsc zapisujących przydział pól. Ścieżki
+   trybu RĘCZNEGO (`seedReczneFromAuto`, `rebalanceWorkersAfterPopulationChange`,
+   `toggleTileWorker`/`adjustTileWorker`) nadal pozwalają przypisać robotnika na Górę/Morze bez
+   ostrzeżenia — ale silnik (po fixie) po cichu NIE liczy tej produkcji. Zmierzone na realnej
+   mapie: jedno kliknięcie „tryb ręczny" w mieście z Górami w zasięgu = spadek z 27 do 15 pkt
+   Pracy/turę, 3 z 6 obywateli bezczynnych, ZERO komunikatu dla gracza. Dodatkowo dotyczy
+   ISTNIEJĄCYCH zapisanych gier — wpisy `okolicaReczne` na Górach z przed tej naprawy tracą po
+   cichu produkcję przy wczytaniu.
+2. Rozszerzona własna symulacja (960 próbek): tryb AUTO to ograniczona korekta (0,9% miast
+   dotkniętych, liczba obsadzonych pól nigdy nie spadła, 0 zmienionych pozycji startowych) — nie
+   nerf psujący rozgrywkę. Bug szerszy niż w raporcie Operatora: dotyczy TAKŻE fokusu „podatki" z
+   Morzem (Podatek=2 &gt; Równina=1), nie tylko Gór pod fokusem „produkcja".
+3. Brak fallbacku dla miasta całkowicie otoczonego Morzem/Górami — spada do samego centrum
+   (7 pól → 1). Nieosiągalne w 960 próbkach realnego generatora, ale kod nie ma zabezpieczenia.
+4. Test regresji ma lukę: asercje dla Morza przechodzą PUSTO (fokus w teście nigdy nie faworyzuje
+   Morza) — nie złapałyby przyszłego rozwalenia wykluczenia Morza.
+5. Worktree był 6 commitów za HEAD w chwili weryfikacji, 2 z nich dotykały `okolica.ts`.
+
+**Kontynuacja dispatched** z pełną listą Evaluatora (rebase, dołożenie filtra do 3 brakujących
+ścieżek z jawnym komunikatem odmowy, uzupełnienie testu o fokus=podatki+Morze). Punkt „co zrobić
+z ISTNIEJĄCYMI zapisami z robotnikami na Górach" wymaga decyzji właściciela — zadane jako ABC.
+**Kotwice:** `gra/src/game/okolica.ts` (`isLandWorkableHex`, `seedReczneFromAuto`,
+`rebalanceWorkersAfterPopulationChange`), `gra/src/main.ts` (`toggleTileWorker`/`adjustTileWorker`).
 **Model:** Sonnet 5.
 
 ## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)

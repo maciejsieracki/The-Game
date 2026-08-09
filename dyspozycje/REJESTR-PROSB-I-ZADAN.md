@@ -1445,6 +1445,16 @@ pilność, „nie odkładać" — drugi człon tego samego wzoru rankingu ma ide
 wzorzec), `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE` (dziś nieszkodliwe), oraz niezweryfikowana
 hipoteza `P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA`.
 
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA — POTWIERDZONA, naprawa NIEKOMPLETNA (Evaluator FAIL, 2026-08-09)
+Hipoteza potwierdzona żywą symulacją: silnik ekonomii przypisywał robotników na Morze/Góry,
+których overlay nigdy by nie pokazał (Góry mają najwyższą Pracę ze wszystkich terenów). Fix
+(`isLandWorkableHex`, wspólne źródło prawdy) naprawia 2 z 5 miejsc przypisania — Evaluator
+odrzucił scalenie: tryb RĘCZNY pozostaje bez filtra, co tworzy CICHĄ utratę produkcji (zmierzone:
+27→15 Pracy/turę, 3 z 6 obywateli bezczynnych po jednym kliknięciu) i dotyka istniejących
+zapisów gry. Kontynuacja dispatched z pełną listą Evaluatora (rebase + 3 brakujące ścieżki +
+test dla fokusu podatki/Morze). Decyzja właściciela potrzebna: co z istniejącymi zapisami z
+robotnikami na Górach — zadana jako ABC.
+
 ## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE — NAPRAWIONE 2026-08-09
 `yieldOfMapHex` nie przekazywała `zloze` do `tileYield()`, silnik (`hexToWorkedTile`) tak.
 Dziś nieszkodliwe (render nie zwraca `ruda`), pułapka na przyszłość. Naprawa: dodane pole,
