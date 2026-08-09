@@ -6383,3 +6383,34 @@ tylko mniej poszarpany (Evaluator zastrzegł że to nie jest pewne, tylko mierzo
 (4) plakietka miasta pokazuje „WZROST%" zamiast „W5".
 **Sesja lokalna: pull na dysk właściciela** (`push`), potem playtest. KANON/FINALNA — bez zmian.
 CZEKAM-NA: sesja lokalna — sync `ce69cf45` na dysk właściciela + potwierdzenie w kanale.
+
+## [17:02 PL, 2026-08-09] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 263, md5 `89176ced`
+
+Zdeployowane do `gra-robocza/`: **`Gra-ROBOCZA.html` md5 = `89176ced318b7e7d03b2fd6b197df80d`**
+(stempel `ROBOCZA`, **VERIFY OK**, manifest match OK; „stamp match: WARN" normalny wg runbooku §6).
+6 bundli playtestowych zsynchronizowane, `START.html` + manifest przegenerowane. Build z HEAD
+`9899f53b`, 28 commitów od FALA 262. Weszło: naprawa robotników na Górach/Morzu (4 rundy,
+wspólny `isLandWorkableHex` w 5 ścieżkach zapisu + silnik ekonomii), pełny handel dwukierunkowy
+technologia-gotówka-technologia w akcji „6" (3 rundy, **dwa realne exploity finansowe naprawione**),
+3 człony rodziny „ostatnia warstwa vs wszystkie", 4 poprawki etykiet/separatorów, 4 bramki testowe.
+Pełny wpis: `dyspozycje/WERSJE.md` → ROBOCZA `89176ced` (FALA 263).
+
+⚠️ **To DRUGA próba tej fali.** Pierwsza została słusznie WSTRZYMANA przez agenta deployu: bramka
+`heks-panel-tooltip-warstwa-test.cjs` dała **15/22** — cicha regresja z błędnego scalenia
+(`git diff <A> <B>`, gdzie `<A>` nie był przodkiem `<B>`, cofnął już scaloną naprawę `92341250`;
+`git apply --check` przeszedł czysto). Naprawione `9899f53b`; runbook powtórzony od zera, bramki
+policzone samodzielnie na aktualnym HEAD: **`heks-panel-tooltip-warstwa` 22/22** · tsc 0 błędów
+(tsc 5.9.3 zweryfikowany) · logic-test 213/213 · `city-panel-growth-percent-separator` 29/29 ·
+tech-tree 19/19 · research 33/33 · unit-replace 13/13 · vite 799 modułów. Czerwone tylko
+pre-istniejące: `unit-power-test` 4/2 (zmierzone dziś, komunikaty identyczne). Pozostałe znane
+czerwone i `map-gen-regression` NIE uruchamiane w tej fali — status dziedziczony z FALA 262
+(`git diff --name-only 35a8b636..9899f53b -- gra/src/map/` = zero plików).
+
+⚠️ Do zapowiedzenia Maciejowi: (1) na Górach/Morzu nie postawisz nowego robotnika, ale stary
+nielegalny wpis z zapisu **da się kliknięciem zdjąć** — celowo (`R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1`,
+zero migracji zapisów); (2) w akcji „6" wymiana tech-za-tech **przed tą falą była martwa w grze**
+(„Cena poniżej minimum") — teraz działa, warto ograć wszystkie 4 kombinacje; (3)
+`P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1=B` świadomie zaparkowane do kolejnej paczki (fantomowe sloty
+po skurczeniu promienia terytorium) — nie blokuje.
+**Sesja lokalna: pull na dysk właściciela** (`push`), potem playtest. KANON/FINALNA — bez zmian.
+CZEKAM-NA: sesja lokalna — sync `89176ced` na dysk właściciela + potwierdzenie w kanale.
