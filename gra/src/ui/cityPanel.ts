@@ -138,6 +138,7 @@ import {
   type PoziomRacji,
 } from '../game/population-growth-v85';
 import {
+  cityHasSpichlerzBuilding,
   filterRuntimeActiveBuiltIds,
   paySpichlerzDrainForCity,
   resolveOwnedBuildingInactiveStatus,
@@ -953,10 +954,17 @@ interface CityView {
   wzrostProcent: number;
   growthBreakdown: GrowthPercentBreakdown;
   wzrostUlamkowy: number;
+  /** Spichlerz w DOWOLNYM tierze (I lub II) — R-SPICHLERZ-CAP-LUDNOSCI-ETAP 2026-08-09. */
   maSpichlerz: boolean; maAkwedukt: boolean;
-  /** Max ludność bez Akweduktu (parametr gry). */
+  /**
+   * Max ludność BEZ Akweduktu, uwzględniając Spichlerz tego miasta (drabinka
+   * R-SPICHLERZ-CAP-LUDNOSCI-ETAP, Maciej 2026-08-09): 5 bez żadnego budynku, 8 ze
+   * Spichlerzem — NIE sztywny parametr `akweduktProgLudnosci` (5).
+   */
   popCapBezAkweduktu: number;
-  /** Max ludność z Akweduktem (parametr gry, normal=15). */
+  /** Twardy cap ludności ze Spichlerzem, ale bez Akweduktu (parametr gry, normal=8). */
+  popCapSpichlerz: number;
+  /** Max ludność z Akweduktem (parametr gry, normal=12). */
   popCapZAkweduktem: number;
   /** Aktualny cap dla tego miasta. */
   popCapAktualny: number;
@@ -1028,7 +1036,10 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
   try {
     const params = buildEconParams(data, cfg.difficulty ?? 'normal');
     const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-    const maSpichlerz = built.includes('spichlerz');
+    // R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, runda 2, B1): dowolny tier (I lub II) —
+    // ulepszenie do Spichlerz II usuwa 'spichlerz' z built (upgradeFrom w buildings.json),
+    // więc samo `built.includes('spichlerz')` gubi cap 8 po ulepszeniu.
+    const maSpichlerz = cityHasSpichlerzBuilding(built);
     const maAkwedukt = built.includes('akwedukt');
     const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
     const healthBd = computeCityHealthBreakdown(
@@ -1131,9 +1142,13 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       civKey: cfg.getCivKey?.(city.ownerId) ?? null,
       rationParams,
     });
-    const popCapBezAkweduktu = params.akweduktProgLudnosci;
+    // B3 (R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 2): "bez Akweduktu" musi liczyć AKTUALNY
+    // cap uwzględniający Spichlerz tego miasta (5 albo 8) — NIE sztywny param 5, bo dla
+    // miasta z Akweduktem I Spichlerzem to dawało fałszywe "bez niego max 5" (realnie 8).
+    const popCapBezAkweduktu = cityPopulationCap(false, maSpichlerz, params);
+    const popCapSpichlerz = params.spichlerzProgLudnosci;
     const popCapZAkweduktem = params.akweduktMaxLudnosci;
-    const popCapAktualny = cityPopulationCap(maAkwedukt, params);
+    const popCapAktualny = cityPopulationCap(maAkwedukt, maSpichlerz, params);
     const atPopCap = city.population >= popCapAktualny;
     return {
       praca: y.praca, pieniadz: y.pieniadz, nauka: y.nauka, kultura: y.kultura,
@@ -1147,6 +1162,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       wzrostUlamkowy: city.wzrostUlamkowy ?? 0,
       maSpichlerz, maAkwedukt,
       popCapBezAkweduktu,
+      popCapSpichlerz,
       popCapZAkweduktem,
       popCapAktualny,
       atPopCap,
@@ -4795,7 +4811,7 @@ function buildRacjeWzrostDetailCard(
     appendDetailSection(card, 'Budynki wpływające na wzrost');
     const gB = appendDetailGrid(card);
     if (view.maSpichlerz) {
-      gridDetailRow(gB, 'Spichlerz', `+${bd.spichlerz}% WZROST · niższy koszt racji (Ceramika −25%, pełny II −50%)`);
+      gridDetailRow(gB, 'Spichlerz', `+${bd.spichlerz}% WZROST · limit ludności ${view.popCapSpichlerz} bez Akweduktu · niższy koszt racji (Ceramika −25%, pełny II −50%)`);
     }
     if (view.maAkwedukt) {
       gridDetailRow(gB, 'Akwedukt', `Limit ludności ${view.popCapZAkweduktem} (bez niego max ${view.popCapBezAkweduktu})`);

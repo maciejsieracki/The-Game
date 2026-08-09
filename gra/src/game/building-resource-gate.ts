@@ -345,6 +345,21 @@ export interface SpichlerzCityBonusState {
 }
 
 /**
+ * R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09): czy miasto ma Spichlerz W DOWOLNYM tierze
+ * (I lub II) — sam fakt POSIADANIA budynku, NIEZALEŻNIE od tego, czy Ceramika/Sól zostały
+ * odprowadzone w tej turze (`SpichlerzCityBonusState.maSpichlerzPop/maSpichlerzIIPop` to co
+ * innego — miękkie bonusy zależne od drain). Używane wyłącznie do twardego capu ludności
+ * (`cityPopulationCap`) — cap to stały parametr strukturalny miasta, nie bonus turowy.
+ * Ulepszenie do Spichlerz II USUWA `'spichlerz'` z `builtIds` (upgradeFrom w buildings.json),
+ * dlatego trzeba sprawdzać OBA id — jedna, współdzielona konwencja zamiast osobnych kopii w
+ * `turn-economy.ts` / `population-growth-v85.ts` / `cityPanel.ts` (patrz R-SPICHLERZ-CAP-LUDNOSCI-ETAP
+ * runda 2, B1).
+ */
+export function cityHasSpichlerzBuilding(builtIds: readonly string[]): boolean {
+  return builtIds.includes('spichlerz') || builtIds.includes('spichlerz_ii');
+}
+
+/**
  * Pobiera drain Spichlerza z puli państwa ownera (B6/B7/B8).
  * `dryRun=true` — tylko sprawdzenie zapasu (podgląd HUD), bez mutacji City.surowce.
  */

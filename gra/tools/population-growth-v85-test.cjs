@@ -62,7 +62,7 @@ const efParams = M.buildEmpireFoodParams({
     magazyn_centralny_bonus_zywnosc_na_budynek: { normal: 100 },
   },
 });
-const econParams = { akweduktProgLudnosci: 4, akweduktMaxLudnosci: 12 };
+const econParams = { akweduktProgLudnosci: 4, spichlerzProgLudnosci: 8, akweduktMaxLudnosci: 12 };
 const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJednostkaOboz: 0.5 };
 
 // --- Q1: nie nakarmione → wzrost 0 ---
@@ -168,6 +168,106 @@ const upkeep = { jednostkaUtrzymanieStd: 1, zywnoscJednostkaRuch: 1, zywnoscJedn
   });
   ok(city.wzrostUlamkowy > 0, 'fed: fractional growth accumulates (3 × 4.5% ≈ 0.135)');
   ok(city.population === 3, 'fed: no whole pop yet below 1.0 frac');
+}
+
+// --- R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, ECHO A, runda 2 B1+B2) ---
+// Drabinka: bez budynków cap=akweduktProgLudnosci(4 w tym harnessie); ze Spichlerzem
+// (I LUB II) cap=spichlerzProgLudnosci(8); z Akweduktem cap=akweduktMaxLudnosci(12).
+// Mutant do złapania: derywacja maSpichlerz sprawdzająca WYŁĄCZNIE builtIds.includes
+// ('spichlerz') (bez 'spichlerz_ii') — po ulepszeniu do Spichlerz II miasto traci cap 8
+// i cofa się do cap=4, więc population:7→8 by się NIE wydarzyło.
+{
+  // c3: Spichlerz I, population 7 -> powinno urosnąć do 8 (cap=8, nie 4).
+  const city = {
+    id: 'c3', ownerId: 0, q: 0, r: 0, name: 'SpichlerzI', population: 7,
+    poziomRacji: 4, wzrostUlamkowy: 0.7, turyBezDoplaty: 0, rationMigratedV114: true,
+  };
+  const econ = {
+    perCity: [{
+      cityId: 'c3', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 10, kosztRacji: 6, bilansLokalny: 4,
+      zdrowie: 0, ludnoscPrzed: 7, ludnoscPo: 7,
+    }],
+    growth: 0,
+    starved: 0,
+  };
+  const states = new Map([[0, M.freshEmpireFoodState()]]);
+  const ef = M.advanceEmpireFood(econ, [], states, upkeep, efParams);
+  M.applyPostCentralPopulationGrowth({
+    cities: [city],
+    econ,
+    efResult: ef,
+    map: { hexes: {} },
+    territoryNodes: [],
+    econParams,
+    rationParams,
+    builtByCity: new Map([['c3', ['spichlerz']]]),
+  });
+  ok(city.population === 8, 'Spichlerz I: pop 7 -> 8 (cap ze Spichlerzem, nie 4)');
+}
+
+{
+  // c4: WYŁĄCZNIE Spichlerz II w builtIds (bez 'spichlerz', jak po realnym ulepszeniu w
+  // production.ts/applyCompletedBuildingIds) — population 7 -> powinno urosnąć do 8 tak
+  // samo jak z Spichlerzem I. Mutant `builtIds.includes('spichlerz')` (bez 'spichlerz_ii')
+  // NIE łapie tego przypadku: cap wróciłby do 4, pop zostałoby 7.
+  const city = {
+    id: 'c4', ownerId: 0, q: 0, r: 0, name: 'SpichlerzII', population: 7,
+    poziomRacji: 4, wzrostUlamkowy: 0.7, turyBezDoplaty: 0, rationMigratedV114: true,
+  };
+  const econ = {
+    perCity: [{
+      cityId: 'c4', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 10, kosztRacji: 6, bilansLokalny: 4,
+      zdrowie: 0, ludnoscPrzed: 7, ludnoscPo: 7,
+    }],
+    growth: 0,
+    starved: 0,
+  };
+  const states = new Map([[0, M.freshEmpireFoodState()]]);
+  const ef = M.advanceEmpireFood(econ, [], states, upkeep, efParams);
+  M.applyPostCentralPopulationGrowth({
+    cities: [city],
+    econ,
+    efResult: ef,
+    map: { hexes: {} },
+    territoryNodes: [],
+    econParams,
+    rationParams,
+    builtByCity: new Map([['c4', ['spichlerz_ii']]]),
+  });
+  ok(city.population === 8, 'Spichlerz II (bez "spichlerz" w builtIds): pop 7 -> 8 (B1 regresja)');
+}
+
+{
+  // c5: Spichlerz I, population JUŻ na cap=8 -> wzrost zablokowany (cap realnie capuje,
+  // nie tylko podnosi -- łapie mutanta usuwający sprawdzenie górnej granicy).
+  const city = {
+    id: 'c5', ownerId: 0, q: 0, r: 0, name: 'AtSpichlerzCap', population: 8,
+    poziomRacji: 4, wzrostUlamkowy: 0.99, turyBezDoplaty: 0, rationMigratedV114: true,
+  };
+  const econ = {
+    perCity: [{
+      cityId: 'c5', ownerId: 0, oblegany: false,
+      zywnoscBrutto: 10, kosztRacji: 6, bilansLokalny: 4,
+      zdrowie: 0, ludnoscPrzed: 8, ludnoscPo: 8,
+    }],
+    growth: 0,
+    starved: 0,
+  };
+  const states = new Map([[0, M.freshEmpireFoodState()]]);
+  const ef = M.advanceEmpireFood(econ, [], states, upkeep, efParams);
+  M.applyPostCentralPopulationGrowth({
+    cities: [city],
+    econ,
+    efResult: ef,
+    map: { hexes: {} },
+    territoryNodes: [],
+    econParams,
+    rationParams,
+    builtByCity: new Map([['c5', ['spichlerz']]]),
+  });
+  ok(city.population === 8, 'Spichlerz I przy cap=8: brak dalszego wzrostu do 9');
 }
 
 // --- Wyżywienie: tabela wzrostu 2026-07-30 ---
