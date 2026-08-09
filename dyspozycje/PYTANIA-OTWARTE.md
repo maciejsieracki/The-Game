@@ -7193,3 +7193,37 @@ Dispatch runda 5, wąska (B1 jeden token + B2 cztery rozszerzenia regex + decyzj
 `reconcileEraForOwner`) NASTĘPUJE teraz.
 
 ---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — Evaluator pełny po odtworzeniu: PASS-WITH-NOTES, 2 BLOKUJĄCE (obie pokrycie testowe, kod poprawny), runda 3 w toku (2026-08-09/10)
+
+Rekonstrukcja NIE wprowadziła regresji ani rozjazdu z decyzją Macieja — `production.ts` odtworzony
+od zera oceniony jako poprawny (7 mutacji łapanych, w tym 2 niewidoczne dla pinów tekstowych,
+bramki minimalne i we właściwych miejscach). `main.ts` (5 miejsc ręcznie wklejonych w zdryfowany
+plik) i `trade-routes.ts` (bajt-identyczny patch) potwierdzone poprawne. Scalenie praktycznie
+przetestowane na aktualnym HEAD (`git apply -3` czysty, pełne bramki zielone tam).
+
+**B1 (BLOKUJĄCA):** część A (bonus ekonomiczny za szlaki morskie) NIE MA żadnej bramki chroniącej —
+4/4 własne mutacje Evaluatora przeżywają, w tym usunięcie samego Port-gatingu (T1: `medium!=='lad'`
+zamiast `!=='morze'` — bonus przestaje być morski I przestaje być Port-gated, wszystko zielono).
+Ta sama klasa co B6a z R-EPOKA-BRAZU — bramka łapie usunięcie haka, nie to co hak robi.
+
+**B2 (BLOKUJĄCA):** parytet AI — trzy miejsca zasilające `availableProduction` (planowanie AI,
+egzekucja AI, lista rekrutacji gracza) NIE są pinowane. 3/3 mutacje przeżywają (AI buduje Galerę
+w mieście śródlądowym, 100% zielono). Kod jest dziś poprawny, ale niechroniony.
+
+Naprawa w PEŁNI zdefiniowana przez Evaluatora (~7 asercji w `trade-routes-test.cjs` dla B1, 3 piny
+regex w `naval-water-access-gate-test.cjs` dla B2, zero zmian w kodzie produkcyjnym) — pełny tekst
+w werdykcie wyżej w tym pliku.
+
+**Notatki do osobnych pytań ABC (§1a — dotyka obszaru już rozstrzygniętego decyzją C 2026-08-09):**
+N3 (zasięg bonusu morskiego — `detectBestConnection` przy remisie wybiera ląd, więc bonus w
+praktyce nagradza niemal wyłącznie handel zamorski, węziej niż mogła być intencja „miasta
+nadmorskie"), N8 (`PORT_SEA_TRADE_BONUS_PIENIADZ=1` to stała w TS, nie parametr w
+`econ-params.json` — łamie kierunek „źródłem prawdy JSON").
+
+**Rekomendacja Evaluatora — priorytet wysoki:** scalić NATYCHMIAST po rundzie 3, nie zostawiać na
+worktree — to trzeci raz gdy ten temat wisi niescalony, dwa poprzednie skończyły się incydentem.
+
+Dispatch runda 3 (wąska, wyłącznie testy) NASTĘPUJE teraz.
+
+---
