@@ -3291,13 +3291,89 @@ commit Operatora, `2e56050c`).
 **Kotwice:** `gra/src/ui/diplomacyAcceptanceBalance.ts` (`balancePanelDataFromRows`).
 **Model:** Sonnet 5.
 
-## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08, nota Evaluatora przy R-HEKS-PLONY-UKRYTE-POD-MIASTEM) · STATUS: **OTWARTE — pre-istniejące, nie regresja tej naprawy**
-Render plonów (`gra/src/main.ts:9281`, `yieldOfMapHex`) czyta tylko OSTATNIĄ warstwę
-`hex.ulepszenie`, silnik (`hexToWorkedTile`) czyta WSZYSTKIE warstwy ulepszeń. Wcześniej
-niewidoczne (każdy ulepszony heks był całkowicie ukryty), po naprawie centrum miasta z
-wielowarstwowym ulepszeniem może pokazywać zaniżony plon (mniej niż silnik faktycznie liczy).
-Do zdiagnozowania osobno, niska pilność.
-**Kotwice:** `gra/src/main.ts:9281` (`yieldOfMapHex`), silnik `hexToWorkedTile`.
+## P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE (2026-08-08, nota Evaluatora przy R-HEKS-PLONY-UKRYTE-POD-MIASTEM) · STATUS: **NAPRAWIONE 2026-08-09 — czeka na deploy+playtest**
+Render plonów (`yieldOfMapHex`, dziś w `gra/src/game/okolica.ts` — funkcja przeniesiona z
+`main.ts` przed tą naprawą, stara kotwica `main.ts:9281` nieaktualna) czytał tylko OSTATNIĄ
+warstwę `hex.ulepszenie`, silnik (`hexToWorkedTile` → `improvementKeysForHex`) sumuje WSZYSTKIE
+warstwy z `hex.ulepszenia[]`. Wcześniej niewidoczne (każdy ulepszony heks był całkowicie
+ukryty), po naprawie `R-HEKS-PLONY-UKRYTE-POD-MIASTEM` centrum miasta z wielowarstwowym
+ulepszeniem mogło pokazywać zaniżony plon (mniej niż silnik faktycznie liczy).
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5).** `yieldOfMapHex` woła teraz
+`improvementKeysForHex(h)` — ten sam helper co silnik — i przekazuje `ulepszenieKey`+
+`ulepszeniaKeys` do `tileYield()` identycznie jak `hexToWorkedTile`. Zakres wyłącznie to
+rozliczenie warstw, `gra/src/render/**` nietknięte.
+
+Evaluator (Opus 5) **PASS-WITH-NOTES**, parytet `yieldOfMapHex` vs `hexToWorkedTile`
+potwierdzony linia po linii (identyczne budowanie kluczy, obsługa `undefined`/pustej tablicy).
+Dowód mutacyjny: cofnięcie fixu daje 12 pass/7 fail (dokładnie na przypadkach 2/3-warstwowych),
+stałe oczekiwane zweryfikowane ręcznie wobec `terrain-yields.json`/`terrain-improvements.json`.
+Własny harness Evaluatora (32/32) pokrył dodatkowe brzegi: brak ulepszeń, `null`/pusta tablica,
+duplikat warstwy (dedup przez `Set`, brak podwójnego liczenia), 21 warstw naraz (suma zgodna
+z JSON), heks poza mapą. Bramki zmierzone niezależnie w drzewie głównym po scaleniu, identyczne
+liczby: `tsc` czyste, `heks-plony-warstwy-test` (nowy) 19/19, `okolica-test` 46/46,
+`hex-plony-magazyn-test` 11/11, `plony-budynkow-test` 68/68, `tech-tree-test` 19/19,
+`research-test` 33/33, `unit-replace-test` 13/13, `logic-test` 213/213.
+
+**Cztery noty Evaluatora:**
+1. Sprostowanie C-026: opis commita mówił „1 wywołanie w `main.ts`" — Evaluator naliczył **2**
+   (`okolicaWorkedKeySet` i `yieldOf` do overlaya), suma 6 się zgadza, tylko rozbicie było
+   błędne. Sprostowane tutaj.
+2. `zloze` (złoże surowca) nie jest przekazywane do `tileYield()` w `yieldOfMapHex`, choć
+   `hexToWorkedTile` je przekazuje — dziś nieszkodliwe (render zwraca tylko z/p/h, nie `ruda`),
+   ale pułapka na przyszłość dla kogoś kto rozszerzy render o rudę. Zarejestrowane osobno:
+   `P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE`.
+3. **Ważniejsze niż „uboczne znalezisko" — to DRUGI CZŁON TEGO SAMEGO WZORU:**
+   `foodPotentialOfMapHex` w tym samym pliku (`scoreOkolicaTile` łączy `yieldOf` z
+   `potentialOf` w jedną liczbę rankingu) ma identyczny, nienaprawiony wzorzec (czyta tylko
+   `h.ulepszenie`). Po tej naprawie oba człony wzoru NIE zgadzają się co do warstw — konkretny
+   skutek: heks z wielowarstwowym ulepszeniem żywnościowym dostaje teraz poprawny (wyższy) plon
+   farmy ORAZ nadal nienależny bonus potencjału, zawyżenie w rankingu auto-przydziału jest
+   WIĘKSZE w liczbach bezwzględnych niż przed tą naprawą (nie regresja — oba człony były błędne
+   już wcześniej, ale rozjazd teraz szerszy). Evaluator: „najtańszy możliwy follow-up, nie
+   parkować bezterminowo" — ten sam jednolinijkowiec (`improvementKeysForHex(h)` zamiast
+   ręcznego `[key]`, `okolica.ts:169-170`). Zarejestrowane osobno:
+   `P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA` (podniesiona pilność względem pierwotnego
+   zapisu Operatora — Evaluator zaleca zrobić przy najbliższej okazji, nie odkładać).
+4. Hipoteza NIEZWERYFIKOWANA wykonaniem: `main.ts` (overlay) przekazuje `isWorkable`
+   (wyklucza Morze/Góry), `cityWorkedTilesForEconomy` (silnik) nie przekazuje go wcale — overlay
+   i ekonomia mogą różnić się co do tego, KTÓRY heks jest obsadzony. Zarejestrowane osobno jako
+   hipoteza do sprawdzenia: `P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA`.
+**Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`), silnik `turn-economy.ts`
+(`hexToWorkedTile`).
+
+## P-HEKS-POTENCJAL-ZYWNOSCI-WARSTWA-OSTATNIA (2026-08-09, nota N3 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — podniesiona pilność, Evaluator zaleca nie odkładać**
+`foodPotentialOfMapHex` (`gra/src/game/okolica.ts`) to drugi człon tego samego wzoru rankingu
+co `yieldOfMapHex` (`scoreOkolicaTile` łączy oba w `tileAssignScore`) i ma identyczny,
+NIEnaprawiony wzorzec: czyta tylko `h.ulepszenie` (ostatnią warstwę), nie
+`improvementKeysForHex(h)`. Po naprawie `yieldOfMapHex` oba człony przestały się zgadzać co do
+warstw — heks z wielowarstwowym ulepszeniem żywnościowym dostaje teraz poprawny (wyższy) plon
+farmy ORAZ nadal nienależny `FARMA_POTENTIAL_FOOD_BONUS`, więc zawyżenie w rankingu
+auto-przydziału pól przy `focus:'zywnosc'` jest WIĘKSZE w liczbach bezwzględnych niż przed
+naprawą (nie regresja — oba człony były błędne już wcześniej, rozjazd między nimi jest nowy).
+Naprawa to ten sam jednolinijkowiec: `improvementKeysForHex(h)` zamiast ręcznego `[key]`
+w `okolica.ts:169-170`.
+**Kotwice:** `gra/src/game/okolica.ts` (`foodPotentialOfMapHex`, linie 169-170).
+**Model:** Sonnet 5.
+
+## P-HEKS-RENDER-ZLOZE-NIEPRZEKAZYWANE (2026-08-09, nota N2 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE) · STATUS: **OTWARTE — niepilne, dziś nieszkodliwe**
+`hexToWorkedTile` (silnik) przekazuje `tile.zloze` do `tileYield()`, `yieldOfMapHex` (render,
+po dzisiejszej naprawie) go nie przekazuje. Dziś bez wpływu — `yieldOfMapHex` zwraca tylko
+`{zywnosc, praca, handel}`, `zloze` wchodzi wyłącznie do `oreYieldFromImprovements` →
+`ruda`/`ruda_zelaza`, poza kontraktem zwracanym przez tę funkcję. Pułapka na przyszłość: kto
+rozszerzy render o `ruda`, dostanie cichy rozjazd z powrotem.
+**Kotwice:** `gra/src/game/okolica.ts` (`yieldOfMapHex`).
+**Model:** Sonnet 5.
+
+## P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA (2026-08-09, nota N4 Evaluatora P-HEKS-PLONY-WARSTWA-OSTATNIA-VS-WSZYSTKIE, NIEZWERYFIKOWANA WYKONANIEM) · STATUS: **OTWARTE — hipoteza, do sprawdzenia**
+`main.ts:3971` (`okolicaWorkedKeySet`, overlay) przekazuje `isWorkable: okolicaHexWorkable`
+(wyklucza Morze/Góry), `cityWorkedTilesForEconomy` (`turn-economy.ts:691`, silnik) NIE
+przekazuje `isWorkable` w ogóle; `okolicaTiles` (`okolica.ts:101`) filtruje tylko gdy filtr
+podano — brak domyślnego filtra terenu. Z lektury kodu wynika, że overlay i ekonomia mogą
+różnić się co do tego, KTÓRY heks jest obsadzony — nie zweryfikowane end-to-end, tylko
+hipoteza.
+**Kotwice:** `gra/src/main.ts:3971` (`okolicaWorkedKeySet`), `gra/src/game/turn-economy.ts`
+(`cityWorkedTilesForEconomy`), `gra/src/game/okolica.ts` (`okolicaTiles`).
 **Model:** Sonnet 5.
 
 ## DODATEK: R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA — NAPRAWIONE (2026-08-08)
