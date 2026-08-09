@@ -4484,3 +4484,19 @@ Rekomendacja Evaluatora: usunąć martwe linie, spójne z intencją „usunąć 
 ma zaszyty nieaktualny nagłówek „Jednostka" (plik śledzony w gicie, nie importuje `sidePanelHud`,
 więc się nie zepsuje, ale rozjeżdża się z grą). Centrowanie kamery przy strzałkach potwierdzone —
 spójne z dolnym paskiem i Spacją, nie nowa niekonsekwencja.
+
+---
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — odtworzone na bezpiecznej bazie, wszystkie 4 noty domknięte (2026-08-09)
+
+Wszystkie 4 noty Evaluatora domknięte z dowodem: (1) rozmiar etykiety — ZERO wzrostu (geometria w
+px absolutnych, nie skalowana, `worldH` identyczne przed/po); (2) asercja glifu zastąpiona
+stosunkiem glif/średnica mierzonym z realnych wywołań obu warstw (próg ±0,05 od wzorca mapy świata
+0,727) — stara geometria (0,654) wypada z pasma i czerwieni test; (3) nieaktualny komentarz
+poprawiony; (4) zasięg „zamrożenia" opisany konkretnymi ścieżkami, bez przesady. Dowód mutacyjny:
+23/0 → cofnięcie kolejności 22/1 → cofnięcie koloru+geometrii 15/8 → naprawione 23/0.
+
+**Uczciwie zgłoszony efekt uboczny (nie ukryty):** przeniesienie kolejności wywołań zmienia dane
+wejściowe dla `hideStatChips`/`refreshTradeRoutesOverlay` przy otwieraniu panelu (będą teraz
+liczone jako "panel otwarty" wcześniej) — kierunek zgodny z zamierzonym projektem, ale częściowo
+nakłada się na `P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI`. Do obejrzenia w playteście.
