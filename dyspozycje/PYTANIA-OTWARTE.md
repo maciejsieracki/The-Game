@@ -6315,3 +6315,23 @@ istnieć, żeby go zbudować — błędne koło); (c) sprawdzić czy AI ma dziś
 Fortu/Posterunku poza miastem (jednostką) — czy trzeba to dopiero dodać do AI; (d) sprawdzić czy
 mechanizm „posterunek=5, fort=10" z komentarza w danych jest w ogóle zaimplementowany gdziekolwiek
 w kodzie, czy to tylko projektowa notatka z 2026-07-04, nigdy niewdrożona.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — Evaluator RUNDA 2: PASS-WITH-NOTES (bez blokujących), gotowe do scalenia (2026-08-09)
+
+B2 (4 miejsca transferu właściciela) i B3 (3 mutacje broadcast/migracja) potwierdzone niezależnie —
+Evaluator zrobił własny grep (nie tylko powtórzył Operatora) i własną próbę mutacyjną na 8
+wariantach (3 z rundy 1 + 5 dodatkowych), wszystkie złapane. B1 (`budowaPriorytetTypow`) potwierdzone
+nietknięte — zero zmian kodu, tylko komentarze odsyłające do przyszłej decyzji.
+
+Niepilne (do rejestru, nie blokują): N1 (Operator błędnie napisał że zarejestrował znalezisko
+growthmult osobno — nieprawda, ale sprawa BYŁA już wcześniej zarejestrowana przez kogoś innego,
+skutek zerowy), N2 (martwa funkcja + mylący komentarz odsyłający do nieistniejącego precedensu),
+N3 (asymetria bramek `ownerId===0` między polami — dziś nieszkodliwa, promień rażenia rośnie po tej
+zmianie), N4 (na starych zapisach całe imperium może się przypiąć po migracji, globalny suwak
+bezczynny dopóki gracz ręcznie nie odepnie — do noty playtestowej), N5 (niezapięty inwariant,
+dziś nieosiągalny), N6 (asymetria UX: wejście w Listę przypina automatycznie, wyjście nie odpina —
+decyzja produktowa nieopisana, do wspomnienia przy okazji domykania B1).
+
+**GOTOWE DO SCALENIA.** Scalam teraz.
