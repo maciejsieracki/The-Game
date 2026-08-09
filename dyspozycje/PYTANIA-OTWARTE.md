@@ -5040,7 +5040,17 @@ na pierwszym końcu tury, bez okresu karencji. Chatki mogą leżeć wewnątrz cu
 
 ---
 
-## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — kosmetyka UI, wymaga rozpoznania przed naprawą**
+## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — rozpoznanie gotowe, dispatch naprawy (2026-08-09)
+
+**Rozpoznanie (Explore):** checkbox w `cityPanel.ts:4640-4660`, wzorzec przycisku auto-produkcji
+(„Zarządca automatyczny") w `cityPanel.ts:8669` (markup `<button class="hbtn">`) +
+`cityPanel.ts:10224-10234` (stan aktywności przez klasę `.active` + `cfg.isAutoManageEnabled?.()`,
+nie przez DOM `checked`) + CSS `.hbtn`/`.hbtn.active` (linie 1782-1785, 1997). Zmiana: markup
+checkbox→button, handler `change`→`click` czytający `city.autoWyzywienie` (nie `checked`), klasa
+`active` przełączana jak w wzorcu, tekst „Auto WYŁ — bez auto-obniżania/podnoszenia"
+(`cityPanel.ts:4669-4670`) przenoszony do `title` warunkowo. Tekst podsumowania „10 [ikona]/miesz.
+· +5.5%" ZOSTAJE widoczny (Maciej prosił tylko o przeniesienie zdania o WYŁ). Dispatch naprawy (bez
+ABC — czysto techniczna zmiana UI, wzorzec 1:1 z istniejącego przycisku).
 
 **Cytat Macieja:** „popraw trochę wygląd, dodatkowa informacja: Auto-wyłącz, to jest auto-
 obniżanie, podnoszenie. Dotyczy auto-wyżywienia, powinno być to w tooltipie. Raczej to powinien być
@@ -5148,6 +5158,19 @@ odkrycie cudu, inny „duży" komunikat), żeby nie wymyślać nowego stylu od z
 zaimplementować podmianę `showHintMessage` na ten wzorzec w `main.ts:19744-19747`. Osobno: czy
 wąski warunek wyzwolenia (tylko miasta-państwa TEGO SAMEGO klucza cywilizacji co gracz) faktycznie
 pasuje do sceny z gry Macieja (do potwierdzenia po naprawie widoczności, nie zgadywać teraz).
+
+**Rozpoznanie gotowe (Explore) — wzorzec i PRAWDZIWA przyczyna przeoczenia znalezione:**
+kandydat do wzoru: `gra/src/ui/wonderCompletedNotice.ts` (~114 linii) — pełnoprawny modal
+wyśrodkowany, backdrop, złoty wariant „mine" dla własnego sukcesu, WYMAGA kliknięcia żeby zniknąć,
+już używany do jednorazowych ważnych zdarzeń (ukończenie cudu) — lżejszy i trafniejszy niż
+pełnoekranowy `victoryScreen.ts` (blokuje grę, nieadekwatny bo gra się nie kończy). **Prawdziwa
+przyczyna przeoczenia:** `showHintMessage()` (`main.ts:10126-10142`) używa JEDNEGO współdzielonego
+elementu `hintToast` z jednym timerem — komunikat ELIMINACJA (`main.ts:19731-19734`, 6000ms) jest
+wołany BEZPOŚREDNIO PRZED komunikatem TRIUMPH, więc **ELIMINACJA nigdy się nie pokazuje**
+(natychmiast nadpisana), a sam TRIUMPH to zwykły toast bez wymogu potwierdzenia. Dispatch naprawy
+(bez ABC — czysto techniczna zmiana UI z jasnym wzorcem): nowy plik `triumphCityStateNotice.ts`
+wzorowany na `wonderCompletedNotice.ts`, podmiana `showHintMessage(...)` w `main.ts:19744-19747` —
+rozwiąże oba problemy naraz (przeoczenie i konflikt nadpisania).
 
 ---
 
