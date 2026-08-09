@@ -4276,3 +4276,57 @@ kierunek: powrót do treaty-only, nie utrzymanie rozszerzenia).
 **Nota procesowa (Maciej, ta sama wiadomość):** pytania ABC bywają zbyt skomplikowane/mylące,
 czasem brzmią jak podważanie już podjętych decyzji. Do przestrzegania na przyszłość: prostszy
 język, nie wracać do zamkniętych tematów bez wyraźnego powodu.
+
+---
+
+## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (2026-08-09, znalezisko Operatora przy naprawie P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE) · STATUS: **OTWARTE — niepilne, ten sam wzorzec błędu**
+
+W `applyCityPanelWorldView()` (`gra/src/main.ts`) ten sam błąd kolejności wywołań, który powodował
+widmowego złotego chłopka (bramka `isCityPanelOpen()` widziała stan "zamknięty" tuż przed
+otwarciem panelu i budowała warstwę, która potem już nigdy się nie odświeży dopóki panel nie
+zostanie zamknięty), dotyczy też: `refreshTradeRoutesOverlay()` (łuki tras handlowych) i
+`cityRenderer.sync(..., hideStatChips: isCityPanelOpen())` (pigułki miast na mapie). Nie
+naprawione — poza zakresem zgłoszenia o chłopkach. Do potwierdzenia czy realnie objawia się w
+grze (może być niezauważalne jeśli te warstwy rzadziej się zmieniają w trakcie otwartego panelu).
+
+---
+
+## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO (2026-08-09) · STATUS: **OTWARTE — koryguje wykonanie R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08), dispatch Sonnet 5**
+
+**⛔ To pytanie/zgłoszenie PODWAŻA wcześniejszą decyzję** `R-HUD-MIASTO-STAN-CYWILIZACJI` (ECHO
+2026-08-08, commit `8663e084`, FALA 261) — zgodnie z nową zasadą CLAUDE.md §1a oznaczam to wprost,
+żeby było jasne że to nie nowy temat, tylko korekta czegoś już wdrożonego.
+
+**Zgłoszenie Macieja (playtest, dosłowny cytat):** „Zobacz rozbieżności między ilościami w
+mieście, a ilościami na mapie, jeżeli chodzi o surowce... Pierwszy składnik surowca w mieście to
+powinna być ile jest cywilizacji a plus to powinno być tyle ile dochodzi w danym mieście. Wtedy
+wiemy ile mamy w cywilizacji nawet jeżeli jesteśmy w mieście wiemy ile w tym mieście dochodzi bo
+jest plus."
+
+**Co dziś robi kod (potwierdzone, `gra/src/ui/cityPanel.ts` → `buildCityOnlyW3FlankChips`,
+`w3CityChip`):** duża liczba w chipie karty miasta = **suma TEMPA (przyrostu/turę) całej
+cywilizacji** (`civWideSixStatsFromEmpireSnap`), mała liczba (+N) = wkład TEGO miasta w to samo
+tempo. Przy imperium jednomiastowym (jak dziś na zrzutach — tylko Ateny) duża i mała liczba są
+**identyczne** (Praca +9 +9), bo jest tylko jedno źródło tempa — to wygląda jak duplikacja, ale
+technicznie nie jest, dopóki nie ma drugiego miasta.
+
+**Co pokazuje główny HUD mapy** (`gra/src/ui/hud.ts` → `renderBarD1B`, zrzut nr 2: „Skarbiec 1 0 ·
+Praca 54 +9 · Spichlerz 9 +2 · Nauka 36 +17"): `value` = **realny ZAPAS** (skarbiec/magazyn/nauka
+nagromadzona, pole `s.bogactwo`/`s.praca`/etc.), `rate` = tempo EMPIRE-WIDE na turę. To DWIE różne
+wielkości niż w karcie miasta (zapas vs suma tempa) — stąd „Skarbiec 0" w mieście (bo to tempo
+netto=0) vs „Skarbiec 1" na mapie (bo to realny zapas=1).
+
+**To czego chce Maciej:** duża liczba w karcie miasta = **realny zapas cywilizacji** (ta sama
+wielkość co na głównym HUD mapy), mała liczba (+N) = wkład TEGO miasta w tempo — czyli zamiana
+„duża liczba" z „suma tempa" na „zapas", przy zachowaniu „mała liczba = tempo tego miasta" bez
+zmian.
+
+**Zastrzeżenie do zbadania przez Operatora, nie zgadywać:** czy WSZYSTKIE sześć surowców
+(Praca/Żywność/Skarbiec/Nauka/Kultura/Religia) mają sensowny, faktycznie liczony w silniku
+odpowiednik „zapasu cywilizacji" — Skarbiec/Spichlerz/Nauka wyraźnie mają (widoczne na HUD mapy),
+ale Praca (młotki) w większości gier Civ-podobnych jest lokalna dla kolejki budowy miasta, nie
+empire-wide zapasem — sprawdzić czy `s.praca` na HUD mapy faktycznie reprezentuje sensowny
+empire-wide zapas Pracy czy coś innego (np. sumę BIEŻĄCYCH kolejek budowy wszystkich miast, co nie
+jest tym samym co "zapas"). Kultura/Religia — sprawdzić czy silnik w ogóle śledzi ich empire-wide
+zapas, czy tylko tempo. Jeśli dla któregoś surowca nie ma sensownego zapasu — zgłosić, nie
+wymuszać sztucznej liczby.
