@@ -5893,3 +5893,59 @@ limit kworum, sztywne kworum). N3 — jednostki cywilne mogą dostać rozkaz obr
 
 Dispatch runda 2 z dokładną specyfikacją B1-B3. N1 flagowane jako osobna decyzja do Macieja PO
 zamknięciu tej rundy, nie zgadywana teraz.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 (BLOKUJĄCA, wymaga ABC — nie zgadywać):** globalny „Priorytet produkcji" jest bezczynny dla
+ISTNIEJĄCYCH miast. Silnik auto-budowy czyta `budowaPriorytetTypow` (pełna lista), nie
+`budowaFocus` — broadcast Operatora kopiuje tylko `budowaFocus`/`budowaTryb`, nigdy
+`budowaPriorytetTypow`. Zweryfikowane uruchomieniem: zmiana globalnego priorytetu w mieście A NIE
+zmienia realnego priorytetu auto-budowy w mieście B. Dodatkowo opis Operatora („miasta siostrzane
+dostają jednoelementowy priorytet") jest NIEPRAWDZIWY — siostrzane zachowują pełną STARĄ listę,
+jednoelementową listę dostaje tylko NOWO zakładane miasto (i tam też gubi 2./3. pozycję). Pytanie
+ABC do zadania: czy rozszerzyć mechanizm globalny o `budowaPriorytetTypow`, czy wyjąć Priorytet
+produkcji z zakresu tego feature'u (zostawić tylko lokalny, bez globalnego domyślnego).
+
+**B2 (BLOKUJĄCA, mechaniczna):** `seedCityOwnerDefaults()` stoi w 5 miejscach ZAKŁADANIA miasta,
+ale NIE w 4 miejscach ZMIANY WŁAŚCICIELA (`post-battle-map.ts:440` zdobycie w bitwie,
+`main.ts:10492` zdobycie przez oblężenie, `main.ts:19656` wchłonięcie miasta-państwa,
+`main.ts:21827` przejście do rebeliantów). Po transferze `okolicaFocusOverride`/`budowaFocusOverride`
+zostają `false`, ale `city.okolicaFocus`/`budowaFocus`/`budowaTryb` trzymają wartości POPRZEDNIEGO
+właściciela — silnik czyta `city.*` bezpośrednio (stara wartość), UI czyta przez resolver (nowa,
+globalna wartość nowego właściciela) — panel pokazuje co innego niż robi silnik.
+
+**B3 (BLOKUJĄCA, mechaniczna):** 3 z 9 mutacji przeżyły próbę Evaluatora — `broadcastBudowaProfilToOwnerCities`
+nadpisujący miasta z `override=true` (pin 📌 złamany), oraz OBIE migracje starych zapisów
+(`migrateOkolicaFocusOnLoad`/`migrateBudowaProfilOnLoad` bez ustawienia override) — w produkcji
+oznacza to, że wczytanie STAREGO zapisu KASUJE indywidualnie ustawiony Priorytet Okolicy/produkcji
+we wszystkich miastach i zastępuje wartością pierwszego miasta w tablicy. Realna utrata danych
+gracza przy migracji.
+
+Niepilne: sticky override po jednym kliknięciu zbiorczej akcji „ustaw Listę we wszystkich
+miastach", asymetria trybu ręcznego (Okolica nie auto-pinuje, Budowa tak), `cityPanel.ts:1037`
+uśpiona niespójność wywołania.
+
+Dispatch runda 2 dla B2+B3 (mechaniczne). B1 wymaga ABC — patrz wiadomość na czacie.
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 (BLOKUJĄCA):** wykluczenie ocenia terytorium na heksie CHATKI, ale jednostka-nagroda spawnuje
+się 1-2 heksy DALEJ (`findVillageRewardSpawnHex`, bez sprawdzenia terytorium), a kara nalicza się
+od pozycji JEDNOSTKI, nie chatki. Zmierzone: dla chatek na granicznym pierścieniu obcego terytorium
+~31% nadal przecieka (jednostka spawnuje wewnątrz obcego terytorium mimo wykluczenia na chatce)
+LUB odwrotnie (fałszywe wykluczenie dla chatki formalnie „na" terytorium, ale spawn poza nim).
+Naprawa tania: liczyć `dest` z `findVillageRewardSpawnHex()` PRZED losowaniem (deterministyczny,
+niezależny od RNG) i oceniać terytorium na `dest`, nie na `(q,r)` chatki. Evaluator ocenia to jako
+mieszczące się w delegowanym „szczególe implementacyjnym" decyzji A (służy wprost jej celowi) —
+NIE wymaga nowego ABC, chyba że Maciej insystuje na dosłownym odczycie z heksu chatki.
+
+**N2 (do ABC, nie cicha naprawa):** wykluczenie nie odwzorowuje istniejących zwolnień z kary
+przemarszu (`hasAuthorizedBorderCrossing`: stan WOJNY, sojusz, prawa wasala, traktat
+PrawoWojskowePrzemarszu — w żadnej z tych 4 sytuacji kara i tak nie powstaje). Dziś gracz traci
+szansę na jednostkę wojskową z chatki nawet gdy jest W WOJNIE z właścicielem terytorium (kara nie
+grozi wcale) — czyli wykluczenie działa szerzej niż potrzeba. Pytanie ABC do zadania: czy
+uwzględnić te 4 zwolnienia w warunku wykluczenia.
+
+Dispatch runda 2 dla B1 (naprawa spawn-hex). N2 wymaga ABC — patrz wiadomość na czacie.
