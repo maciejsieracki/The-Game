@@ -2863,7 +2863,7 @@ luki co `P-BRAMKA-TECH-TIER-NIEPOKRYTA`, jedna warstwa dalej.
 `gra/tools/diplomacy-tech-trade-test.cjs`.
 **Model:** Sonnet 5.
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **OTWARTE — ABC do właściciela, próba naprawy odrzucona przez Evaluatora**
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A — w realizacji (subagent dispatched)** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
 `gra/src/game/diplomacy-locks.ts:201` blokuje całą akcję „6" gdy `sellableTechCount === 0` —
 liczy WYŁĄCZNIE stronę „daję", nie „dostaję". Nowy filtr (`P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE`)
 zmniejsza listę „dostaje" u odbiorcy, ale to lista „daję" u nadawcy decyduje o blokadzie.

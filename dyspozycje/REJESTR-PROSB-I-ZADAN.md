@@ -1661,17 +1661,15 @@ aktywna w produkcji. Evaluator PASS-WITH-NOTES, `diplomacy-tech-trade-test.cjs` 
 `P-BRAMKA-TECH-TIER-NIEPOKRYTA` (luka pokrycia bramki tieru — mutacja przeżywa testy),
 `P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA` (blokada akcji „6" liczy tylko stronę „daję", pre-istniejąca, dziś częściej odczuwalna).
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 — PRÓBA NAPRAWY ODRZUCONA PRZEZ EVALUATORA (2026-08-09), ABC do właściciela
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 — ECHO A, w realizacji (2026-08-09)
 Subagent zdiagnozował asymetrię blokady (liczy tylko „daję") jako bug zgodny z opisem akcji „6"
 w `diplomacy.json` (dwutrybowa: Sprzedaż/Wymiana) i naprawił bez pytania (commit `98cfe36c`,
 NIE scalony). Evaluator werdyktem **FAIL** obalił diagnozę: komentarz w `main.ts:15122-15125`
 (dopisany w TYM SAMYM commicie na który Operator się powoływał) dokumentuje że akcja „6" jest
 dziś zaimplementowana jednokierunkowo (gracz zawsze sprzedaje) — odblokowanie przycisku bez
-zmiany formularza/walidacji prowadzi gracza do ślepego zaułka (formularz nadal pokazuje „Brak
-technologii do sprzedaży", walidacja blokuje wysyłkę) — gorsze UX niż dzisiejsza uczciwa
-blokada. Sformułowane jako pytanie ABC do Macieja: A) dociągnąć implementację do specyfikacji
-(pełny handel dwukierunkowy), B) zostawić jednokierunkową sprzedaż, zamknąć jako „nie bug",
-C) zostawić blokadę, doprecyzować opis/komunikat UI. Pełne uzasadnienie w `PYTANIA-OTWARTE.md`.
+zmiany formularza/walidacji prowadzi gracza do ślepego zaułka. Sformułowane jako pytanie ABC.
+**Maciej: A** — dociągnąć implementację do specyfikacji (pełny handel dwukierunkowy). Decyzja:
+`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`. Subagent dispatched.
 
 ## P-BRAMKA-TECH-TIER-NIEPOKRYTA — ZAMKNIĘTE 2026-08-09
 Nowy scenariusz testowy izolujący `tierOk` od `prereqsMet`/`epochOk` w `diplomacy-basket-transfer-test.cjs`. Kod produkcyjny nietknięty (test-only). Evaluator PASS-WITH-NOTES,
