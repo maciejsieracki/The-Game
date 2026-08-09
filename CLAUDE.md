@@ -190,6 +190,9 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    Kończ wiadomość: **### Playtesty** (tylko weryfikacja w grze) **oraz** **### Następny krok** (tylko kolejne
    zmiany kod/dane/docs — **pełna lista**, bez limitu 3; `R-NASTEPNY-KROK-PELNA-LISTA`). **ZAKAZ** mieszać playtest z kodem w jednym menu.
    Reguła alwaysApply: `.cursor/rules/maciej-nastepny-krok.mdc` · kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md`.
+9. **Komentarze w kodzie (`gra/src/**`) dwujęzyczne PL+EN (Maciej 2026-08-09).** Nie zmienia zasady „domyślnie
+   bez komentarzy, tylko gdy WHY nieoczywiste" — dotyczy WYŁĄCZNIE tych rzadkich komentarzy, które i tak
+   powstają. Format: polska wersja, potem `/ EN: ...` w tej samej linii/bloku.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)
