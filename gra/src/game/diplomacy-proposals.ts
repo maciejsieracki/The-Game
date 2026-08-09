@@ -99,6 +99,23 @@ export interface ProposalPayload {
   /** Sojusz: defensywny vs pełny (Maciej 2026-07-29). */
   allianceKind?: 'defensywny' | 'pelny';
   techId?: string;
+  /**
+   * R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A (runda 2): kierunek handlu technologią (akcja
+   * '6' — patrz diplomacy-tech-trade.ts::resolveTechTradeParties). 'sell' (domyślne, brak
+   * pola = stary zapis) — proponent oddaje `techId`, respondent płaci. 'buy' — respondent
+   * oddaje `techId`, proponent płaci. Zapłata (patrz `techPaymentMode`) może być gotówkowa
+   * LUB inną technologią.
+   */
+  techDirection?: 'sell' | 'buy';
+  /**
+   * R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A (runda 2, rozszerzenie decyzji właściciela —
+   * pełny zakres dokumentu, nie tylko tryb gotówkowy): sposób zapłaty za `techId`. 'gold'
+   * (domyślne, brak pola = stary zapis) — zapłata `techPrice`/`goldOnce`. 'tech' — zapłata
+   * technologią `techOfferId` (diplomacy.json „Wymiana bezpłatna" — bez przepływu gotówki).
+   */
+  techPaymentMode?: 'gold' | 'tech';
+  /** Technologia oferowana w zamian, gdy `techPaymentMode === 'tech'` (płaci ją payer, patrz resolveTechTradeParties). */
+  techOfferId?: string;
   /** Łapówka przy namówieniu (¤) */
   bribeGold?: number;
   /** Cena tech sprzedaży */
@@ -1174,15 +1191,32 @@ export function evaluateProposal(
       if (!techZaufOk) {
         return { accepted: false, reason: `Zaufanie zbyt niskie na wymianę tech (wymagane ≥ ${p.progWymianaTechZaufanie})` };
       }
+      if (!payload.techId) {
+        return { accepted: false, reason: 'Brak technologii w ofercie' };
+      }
+      // R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A (2026-08-09): tryb 'tech' (wymiana
+      // technologia-za-technologię, diplomacy.json „Wymiana bezpłatna") płaci OFEROWANĄ
+      // TECHNOLOGIĄ zamiast gotówki — próg minimalnej ceny (`techMinPrice`) dotyczy
+      // WYŁĄCZNIE trybu gotówkowego, tu nie ma go czym mierzyć.
+      if (payload.techPaymentMode === 'tech') {
+        if (!payload.techOfferId) {
+          return { accepted: false, reason: 'Brak oferowanej technologii w zamian' };
+        }
+        if (payload.techOfferId === payload.techId) {
+          return { accepted: false, reason: 'Nie można wymienić technologii na samą siebie' };
+        }
+        return { accepted: true, reason: 'Wymiana technologia-za-technologię zaakceptowana', oneShotTrade: true };
+      }
       const minPrice = ctx.techMinPrice ?? 50;
       const price = payload.techPrice ?? 0;
       if (price < minPrice) {
         return { accepted: false, reason: `Cena poniżej minimum (${minPrice} ¤)` };
       }
-      if (!payload.techId) {
-        return { accepted: false, reason: 'Brak technologii w ofercie' };
-      }
-      return { accepted: true, reason: 'Sprzedaż technologii zaakceptowana', oneShotTrade: true };
+      return {
+        accepted: true,
+        reason: payload.techDirection === 'buy' ? 'Kupno technologii zaakceptowane' : 'Sprzedaż technologii zaakceptowana',
+        oneShotTrade: true,
+      };
     }
 
     case 'granice': {
@@ -1581,7 +1615,19 @@ export function resolvePlayerAcceptsAiPending(
       };
     }
     case 'tech': {
-      return { accepted: true, reason: 'Sprzedaż technologii zaakceptowana', oneShotTrade: true };
+      // N-B (Evaluator runda 3, nota nieblokująca): etykieta zależna od kierunku/trybu, tak
+      // samo jak evaluateProposal::case 'tech' wyżej i main.ts::negotiationSummary. Dziś
+      // NIEOSIĄGALNE z UI (AI nigdy nie tworzy propozycji actionId:'tech' — akcja '6' jest
+      // zawsze player-initiated, patrz main.ts::buildProposalFromPayload proposerOwnerId=0
+      // na sztywno) — ale gdyby to się kiedyś zmieniło (znana mina na przyszłość), etykieta
+      // ma być poprawna od razu, nie cicho myląca.
+      return {
+        accepted: true,
+        reason: payload.techPaymentMode === 'tech'
+          ? 'Wymiana technologia-za-technologię zaakceptowana'
+          : (payload.techDirection === 'buy' ? 'Kupno technologii zaakceptowane' : 'Sprzedaż technologii zaakceptowana'),
+        oneShotTrade: true,
+      };
     }
     case 'namow_wojne': {
       return { accepted: true, reason: 'Zgoda na wypowiedzenie wojny wskazanemu wrogowi' };

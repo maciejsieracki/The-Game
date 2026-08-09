@@ -3009,7 +3009,7 @@ przez `git apply --check -3` bez konfliktu.
 `gra/tools/diplomacy-tech-trade-test.cjs`.
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 (2026-08-09, nota Evaluatora P-HANDEL-TECH-BRAK-PREREQ-PO-FILTRZE) · STATUS: **ECHO A (x2) — RUNDY 1-2 Evaluator FAIL, runda 3 dispatched** (`docs/decyzje/R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1.md`)
+## P-HANDEL-TECH-BLOKADA-AKCJA6-ASYMETRIA-Q1 — ZAMKNIĘTE 2026-08-09 (ECHO A x2, 3 rundy realizacji)
 
 **Pytanie ABC o zakres B3 (2026-08-09) — MACIEJ ODPOWIEDZIAŁ: A** (via AskUserQuestion) —
 „Rozszerzyć teraz o tech-za-tech": runda 2 ma dołożyć wymianę technologia-za-technologię RAZEM
@@ -3147,12 +3147,42 @@ za uzasadniony w ramach C-026, nie scope creep.
 PRZEZ `buildProposalFromPayload`, nie obok niego — inaczej runda 3 powtórzy ten sam błąd trzeci
 raz z rzędu; (4) domknąć noty N-A (guard `techOfferId===techId` niepokryty) i N-B (etykieta
 AI-akceptacji sztywno „Sprzedaż" niezależnie od trybu, dziś nieosiągalna ale mina na przyszłość).
+**RUNDA 3 (commit `054a9ed4`, worktree `agent-a3559889ee803787b`) — Evaluator PASS-WITH-NOTES,
+SCALONE.** Oba blokery naprawione i zweryfikowane niezależnie na realnych modułach: (1)
+`techPaymentMode`/`techOfferId` dopisane do białej listy `buildProposalFromPayload`, `techPrice`
+liczony wyłącznie dla trybu gotówkowego; nowy `gra/tools/diplomacy-tech-trade-e2e-test.cjs`
+wycina PRAWDZIWY literał `uiPayload` wprost ze źródła `main.ts` (nie kopia — czyta plik przy
+każdym uruchomieniu) i przepuszcza przez CAŁY łańcuch formularz→wykonanie; (2)
+`ownerHasTech(granterId, techId)` dołożone jako warunek wstępny przed każdym grantem, w obu
+trybach zapłaty. Dowód mutacyjny Evaluatora: 6 własnych mutacji, w tym dosłowne odtworzenie
+błędu rundy 2 (białe listy bez nowych pól) — złapane przez nowy plik E2E, na które stary
+`execute-test` był całkowicie ślepy.
+
+**Jedna nota wymagała korekty przed scaleniem (N1, zaadresowana przez orkiestratora):** ostatni
+skok łańcucha w nowym pliku E2E (payload → argumenty `executeTechTradeDealCore`: `gold`,
+`direction`, `paymentMode`) był ręczną kopią trzech linii z `main.ts`, nie ekstrakcją — mutacja
+Evaluatora w tym miejscu (`paymentMode` zawsze `'gold'` w call site) przechodziła przez WSZYSTKIE
+bramki niewykryta. **Poprawione przy scaleniu**: derywacja wycinana tą samą techniką co literał
+`uiPayload` (regex na źródło `main.ts`, `new Function`) — zweryfikowane osobiście: ta sama
+mutacja teraz daje 27 pass/1 fail, przywrócone 28/28.
+
+Pozostałe noty zarejestrowane, nie wymagają dalszych rund: N3 (`diplomacy-tech-trade-execute-test.cjs`
+pokrywa 3 z 4 kombinacji trybu/kierunku dla bramki dawcy — brakuje Kupno×Technologia, kod
+poprawny, tylko brak przypadku testowego), N6 (nowy plik `diplomacy-tech-trade-e2e-test.cjs` nie
+jest wpisany do żadnej zbiorczej listy bramek w CLAUDE.md — zgodne z dotychczasową praktyką repo,
+żaden test dyplomacji tam nie figuruje).
+
+Zmierzone (po scaleniu i korekcie N1): `diplomacy-locks-test.cjs` 71/71, `diplomacy-audience-actions-test.cjs`
+20/20, `diplomacy-tech-trade-test.cjs` 26/26, `diplomacy-proposal-test.cjs` 129/129,
+`diplomacy-negotiation-table-test.cjs` 62/62, `diplomacy-tech-trade-execute-test.cjs` 52/52,
+`diplomacy-tech-trade-e2e-test.cjs` 28/28 (nowy, +1 po korekcie N1), `logic-test.cjs` 213/213,
+`tsc --noEmit` 0 błędów.
 **Kotwice:** `gra/src/main.ts` (`buildProposalFromPayload`, `executeTechTradeDeal`),
 `gra/src/game/diplomacy-tech-trade.ts` (`resolveTechTradeParties`, `canGrantTech`/`grantTech`),
 `gra/src/ui/diplomacyTradeBasket.ts` (`readTreatyStateFromDom`, `validateTreatyForm` case '6'),
 `gra/src/game/diplomacy-proposals.ts` (`case 'tech'`, `generateCounterOffer`,
 `resolvePlayerAcceptsAiPending`).
-**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x2 rundy).
+**Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator, x3 rundy) + korekta orkiestratora przy scaleniu.
 
 ## R-HANDEL-SUROWIEC-ILOSC-DOSTEPNA-CHIP (2026-08-08, playtest Macieja) · STATUS: **ZDEPLOYOWANE `ce69cf45` FALA 262** — czeka na playtest Macieja
 **Jego słowa:** „jeżeli chcemy się wymieniać surowcami pod symbolem surowca powinna być

@@ -437,6 +437,28 @@ r = evaluateProposal(prop('tech', 0, 1, { techId: 'kolba', techPrice: 80 }), ctx
 }));
 ok(!r.accepted && r.reason.includes('Zaufanie'), 'tech reject zauf 25 rel 45');
 
+// 12b Tech-za-tech (R-HANDEL-TECH-AKCJA6-DWUKIERUNKOWY-Q1=A, runda 2) — accepted, cena/próg
+// gotówkowy NIE dotyczy tego trybu (techPrice pominięty w payloadzie celowo).
+r = evaluateProposal(prop('tech', 0, 1, { techId: 'kolba', techPaymentMode: 'tech', techOfferId: 'proch' }), ctx({
+  relation: rel(75, 50),
+  techMinPrice: 50,
+}));
+ok(r.accepted, 'tech-za-tech: akceptowana bez ceny gotówkowej (próg gotówkowy nie dotyczy)');
+
+// 12c Tech-za-tech reject — brak techOfferId.
+r = evaluateProposal(prop('tech', 0, 1, { techId: 'kolba', techPaymentMode: 'tech' }), ctx({
+  relation: rel(75, 50),
+  techMinPrice: 50,
+}));
+ok(!r.accepted && r.reason.includes('oferowanej technologii'), 'tech-za-tech reject: brak techOfferId');
+
+// 12d Tech-za-tech reject — techOfferId === techId (nie można wymienić na samą siebie).
+r = evaluateProposal(prop('tech', 0, 1, { techId: 'kolba', techPaymentMode: 'tech', techOfferId: 'kolba' }), ctx({
+  relation: rel(75, 50),
+  techMinPrice: 50,
+}));
+ok(!r.accepted && r.reason.includes('samą siebie'), 'tech-za-tech reject: techOfferId === techId');
+
 // 13 Granice wojskowe — Rel >= 100 AND Zaufanie >= 45
 r = evaluateProposal(prop('granice', 0, 1, { borderMilitary: true }), ctx({
   relation: rel(50, 60),

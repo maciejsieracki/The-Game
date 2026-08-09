@@ -1804,6 +1804,16 @@ listy `buildProposalFromPayload` + naprawić wyliczenie `techPrice` dla trybu te
 `ownerHasTech` dla dawcy w obu trybach, i kluczowe — test musi przechodzić PRZEZ
 `buildProposalFromPayload`, nie obok niego (inaczej trzecia runda powtórzy ten sam błąd).
 
+**Runda 3 (commit `054a9ed4`) — Evaluator PASS-WITH-NOTES, SCALONE.** Oba blokery naprawione:
+białe listy uzupełnione, `ownerHasTech` dla dawcy dołożone w obu trybach. Nowy
+`diplomacy-tech-trade-e2e-test.cjs` wycina prawdziwy literał `uiPayload` wprost ze źródła
+main.ts (nie kopia) i przepuszcza przez cały łańcuch formularz→wykonanie — złapał dosłowne
+odtworzenie błędu rundy 2, na które stary test był ślepy. Jedna nota (N1: ostatni skok łańcucha
+w nowym E2E był ręczną kopią, nie ekstrakcją) poprawiona przy scaleniu tą samą techniką co
+literał wyżej — zweryfikowane że łapie dokładnie tę mutację, którą Evaluator zgłosił jako
+niepokrytą. Bramki po scaleniu: `diplomacy-tech-trade-e2e-test.cjs` 28/28,
+`diplomacy-tech-trade-execute-test.cjs` 52/52, `logic-test` 213/213, `tsc` 0 błędów.
+
 ## P-BRAMKA-TECH-TIER-NIEPOKRYTA — ZAMKNIĘTE 2026-08-09
 Nowy scenariusz testowy izolujący `tierOk` od `prereqsMet`/`epochOk` w `diplomacy-basket-transfer-test.cjs`. Kod produkcyjny nietknięty (test-only). Evaluator PASS-WITH-NOTES,
 dowód mutacyjny potwierdził izolację. `diplomacy-basket-transfer-test.cjs` 20/20 (baza 17/17),
