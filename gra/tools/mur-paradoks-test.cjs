@@ -55,7 +55,17 @@
  *          realna bitwa NIETKNIĘTA;
  *      (e) sumArmyMForOwnerEffective wola armyFieldPower(veteranScaledDefFor(u))
  *          (NIE combatPowerScaledDefFor/combatPowerFullDisplayDefFor) -- civ-
- *          power bez fortyfikacji/terenu/muru/trudności AI.
+ *          power bez fortyfikacji/terenu/muru/trudności AI;
+ *      (f) P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (nota N1 Evaluatora
+ *          moc-mur-revert, 2026-08-08): sekcje 1-2 wyzej licza
+ *          realDefenseWithMur WLASNA REIMPLEMENTACJA wzoru (main.ts nie da sie
+ *          zaimportowac w izolacji -- caly silnik/DOM), wiec NIE lapia dryfu
+ *          SAMEGO WZORU wewnatrz main.ts::effectiveDefenderM (dowod mutacyjny:
+ *          wyzerowanie bonusu muru w REALNEJ bitwie zostawialo caly ten plik
+ *          zielonym). Literalna asercja zrodlowa pinuje formule
+ *          `combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100`
+ *          w galezi isCity produkcyjnej effectiveDefenderM, i ze stosuje sie
+ *          ona WYLACZNIE do Obrony (terrAdjDefense), nigdy do Ataku obroncy.
  *
  * Usage (z gra/): node tools/mur-paradoks-test.cjs
  */
@@ -362,6 +372,40 @@ if (sumArmyMEffectiveMatch) {
   assert(
     !/combatPowerScaledDefFor|combatPowerFullDisplayDefFor/.test(body),
     'sumArmyMForOwnerEffective() NIE wola combatPowerScaledDefFor/combatPowerFullDisplayDefFor -- civ-power odseparowana od tabliczki',
+  );
+}
+
+// P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (nota N1 Evaluatora
+// moc-mur-revert, 2026-08-08): sekcje 1-2 wyzej licza realDefenseWithMur
+// WLASNA REIMPLEMENTACJA wzoru (main.ts uruchamia caly silnik gry/DOM, nie da
+// sie go zbundlowac w izolacji), wiec NIE lapia dryfu SAMEGO WZORU wewnatrz
+// main.ts::effectiveDefenderM -- dowod mutacyjny Evaluatora: wstrzykniecie
+// `combinedDefPct = 0 * structBonusPct + (cityTerrMult - 1) * 100` (zerowanie
+// bonusu muru w REALNEJ bitwie) zostawialo caly ten plik (i logic-test.cjs,
+// combat-test.cjs) w 100% zielone. Literalna asercja zrodlowa pinuje formule
+// w galezi isCity produkcyjnej effectiveDefenderM -- wzorem starej (usunietej
+// przy R-MOC-TABLICZKA-VS-CIVPOWER-Q1) asercji na scaleField() dla
+// tabliczkaGarnizonScaledDefFor.
+const effectiveDefenderMMatch = mainTsSrc.match(
+  /function effectiveDefenderM\(\s*defRoster: RuntimeUnit\[\],\s*terrain: string,\s*structBonusPct: number,\s*atkLeadDef: Record<string, unknown>,\s*q: number,\s*r: number,\s*\): number \{([\s\S]*?)\n {4}\}/,
+);
+assert(!!effectiveDefenderMMatch, 'effectiveDefenderM() znaleziona w main.ts (funkcja produkcyjna realnej bitwy)');
+if (effectiveDefenderMMatch) {
+  const body = effectiveDefenderMMatch[1];
+  assert(
+    /const combinedDefPct = structBonusPct \+ \(cityTerrMult - 1\) \* 100;/.test(body),
+    'effectiveDefenderM() (galaz isCity, REALNA bitwa) liczy combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100 ' +
+      '(ADDYTYWNA kombinacja struktury/terenu, C-COMBAT-Q2) -- lapie regresje/wyzerowanie bonusu muru w rozstrzygnieciu bitwy, ' +
+      'ktorej sekcje 1-2 wyzej NIE lapia (wlasna reimplementacja)',
+  );
+  assert(
+    /terrAdjDefense = split\.defense \* \(1 \+ combinedDefPct \/ 100\);/.test(body),
+    'effectiveDefenderM() stosuje combinedDefPct WYLACZNIE na czesc Obrony (terrAdjDefense = split.defense * (1 + combinedDefPct / 100))',
+  );
+  assert(
+    /terrAdjAttack = split\.attack;/.test(body),
+    'effectiveDefenderM() (galaz isCity) NIE dolicza combinedDefPct do Ataku obroncy (terrAdjAttack = split.attack, bez zmian) -- ' +
+      'mur/teren "nie chroni" skladowej ofensywnej obroncy w obronie miasta',
   );
 }
 

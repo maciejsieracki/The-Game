@@ -2285,7 +2285,7 @@ w gicie i jednocześnie nadpisywany dynamicznie przy każdym uruchomieniu (dzia�
 zgodności) — inny precedens (`unit-context-card-brandAssets-stub.ts`) wybrał `.gitignore` +
 plik nieśledzony. Rozjazd konwencji do ujednolicenia kiedyś, nie dziś.
 
-## P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (2026-08-08, nota N1 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — pre-istniejące, nie wprowadzone tą zmianą**
+## P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA (2026-08-08, nota N1 Evaluatora moc-mur-revert) · STATUS: **ZAMKNIĘTE 2026-08-09**
 Sekcja 5 `gra/tools/mur-paradoks-test.cjs` (asercja „realna Obrona > tabliczka") liczy
 `realDefenseWithMur` z REIMPLEMENTACJI wzoru w samym teście, nie z prawdziwego
 `effectiveDefenderM` w `main.ts` — dowód mutacyjny Evaluatora: wstrzyknięcie
@@ -2295,6 +2295,28 @@ zielone. `city-defense-terrain-gate-test.cjs` ma tę samą lukę (własna reimpl
 linia 227). Żadna bramka w repo nie chroni dziś linii `combinedDefPct = structBonusPct +
 (cityTerrMult - 1) * 100` w `effectiveDefenderM`. Naprawa: asercja źródłowa (regex) na
 main.ts przypinająca tę linię, wzorem starej (usuniętej dziś) asercji na `scaleField`.
+
+**ZAMKNIĘTE (2026-08-09):** Asercja źródłowa (regex na treść `main.ts`, wyodrębnia ciało
+`effectiveDefenderM` żeby jednoznacznie odróżnić od identycznej tekstowo linii w NOWEJ
+`combatPowerFullDisplayDefFor`, dzisiejsza zmiana `R-MOC-TABLICZKA-VS-CIVPOWER-Q1`) dodana do
+`mur-paradoks-test.cjs` i `city-defense-terrain-gate-test.cjs` (ten drugi wcześniej miał ZERO
+kotwicy do `main.ts` — czysta reimplementacja, luka była poważniejsza niż sądzono). Evaluator:
+PASS-WITH-NOTES, własny dowód mutacyjny (4 warianty, w tym M2 potwierdzający że regex NIE łapie
+przypadkiem `combatPowerFullDisplayDefFor`). `mur-paradoks-test.cjs` 24/24 (było 20/20),
+`city-defense-terrain-gate-test.cjs` 34/34 (było 31/31), `logic-test.cjs` 213/213,
+`combat-test.cjs` 6/6, `tsc` 0 błędów. **Nowe znalezisko Evaluatora, zarejestrowane osobno:**
+`P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA` — analogiczna, symetryczna luka w NOWEJ
+`combatPowerFullDisplayDefFor` (kod dodany wczoraj, jeszcze nigdy nie miał żadnej bramki).
+
+## P-BRAMKA-TABLICZKA-STRUKTURA-NIEPOKRYTA (2026-08-09, nota N1 Evaluatora P-BRAMKA-MUR-PARADOKS-REALNA-OBRONA-NIEPOKRYTA) · STATUS: **OTWARTE — niepilne**
+Dowód mutacyjny (M2, Evaluator): wyzerowanie bonusu struktury/muru w `combatPowerFullDisplayDefFor`
+(nowa funkcja z `R-MOC-TABLICZKA-VS-CIVPOWER-Q1`, karmi tabliczkę nad żetonem) zostawia
+`mur-paradoks-test.cjs` i `city-defense-terrain-gate-test.cjs` w 100% zielone — ta sama klasa
+luki co dziś naprawiona dla `effectiveDefenderM`, ale w kodzie dodanym dopiero wczoraj, więc
+nigdy nie miała żadnej bramki. Naprawa: analogiczna asercja źródłowa (regex) przypinająca linię
+`combinedDefPct` w ciele `combatPowerFullDisplayDefFor`, wzorem tej dla `effectiveDefenderM`.
+**Kotwice:** `gra/src/main.ts` (`combatPowerFullDisplayDefFor`), `gra/tools/mur-paradoks-test.cjs`.
+**Model:** Sonnet 5.
 
 ## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **ZASTĄPIONE — `R-MOC-TABLICZKA-VS-CIVPOWER-Q1` (2026-08-09)**
 Po częściowym cofnięciu `R-MOC-MUR-PARADOKS-Q1=A` (decyzja `R-MOC-DEFINICJA-Q1`, tabliczka
