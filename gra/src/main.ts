@@ -521,6 +521,7 @@ import {
   villageTechProgress,
   villageUnitForEra,
   findVillageRewardSpawnHex,
+  shouldExcludeUnitReward,
 } from './game/villageRewards';
 import { CityRenderer, type CityRenderOptions, type CityMapOutlineKind } from './render/cities';
 import { WonderRenderer, type PlacedWonder } from './render/wonderRenderer';
@@ -17284,6 +17285,24 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE: czy jednostka-nagroda
+     * chatki dla danej ERY gracza jest jednostką WOJSKOWĄ (nie cywilną). Derywowana z
+     * lookupUnitDef(...)['Typ'] !== 'Civilian' -- ten sam predykat co reszta silnika (nie
+     * osobna, zdublowana tabela era->wojskowość, poprawka N1 rundy 2 werdyktu Evaluatora).
+     * Brak zdefiniowanej jednostki dla danej ery (villageUnitForEra -> null) -> bezpieczny
+     * domyślny `true` (traktuj jako wojskową) -- moot dziś (jednostka i tak nie powstanie),
+     * ale strażnik na przyszłość. / EN: derives "is the era's hut-reward unit military" from
+     * the same unit-def lookup the rest of the engine uses; undefined era defaults to true
+     * (safe/conservative) rather than false.
+     */
+    function isVillageRewardUnitMilitary(era: number): boolean {
+      const typeId = villageUnitForEra(era);
+      if (!typeId) return true;
+      const def = lookupUnitDef(typeId);
+      return String(def?.['Typ'] ?? '') !== 'Civilian';
+    }
+
+    /**
      * WIOSKI neutralne (goodie huts): pierwsze wejście jednostki GRACZA na
      * heks z wioską -> nagroda losowa (pickVillageReward), potem wioska znika.
      * `hex.wioska.istnieje = false` jest ustawiane NATYCHMIAST (przed
@@ -17317,7 +17336,31 @@ async function boot(): Promise<void> {
         evKind = 'city';
       };
 
-      const kind = pickVillageReward(Math.random());
+      // R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE: policz heks spawnu
+      // jednostki-nagrody RAZ, z góry — decyzja wykluczenia ocenia terytorium na heksie
+      // SPAWNU (gdzie jednostka faktycznie stanie), NIE na heksie chatki (q, r) — bo to
+      // spawn, nie chatka, liczy się jako naruszenie granicy. Wynik reużyty niżej w gałęzi
+      // 'jednostka', żeby findVillageRewardSpawnHex nie było wołane dwa razy.
+      const rewardUnitTypeId = villageUnitForEra(player.era);
+      const rewardUnitDest = rewardUnitTypeId
+        ? findVillageRewardSpawnHex({
+            hutQ: q,
+            hutR: r,
+            ownerId: 0,
+            units,
+            cities,
+            isPassable: isHexPassableForUnit,
+            exploredHexes: explored,
+          })
+        : undefined;
+      const excludeUnit = shouldExcludeUnitReward({
+        hasSpawnHex: rewardUnitDest !== undefined,
+        spawnHexOwnerId: rewardUnitDest ? territoryOwnerAtLive(rewardUnitDest.q, rewardUnitDest.r) : null,
+        playerOwnerId: 0,
+        rewardUnitIsMilitary: isVillageRewardUnitMilitary(player.era),
+      });
+
+      const kind = pickVillageReward(Math.random(), { excludeUnit });
 
       if (kind === 'zloto') {
         grantGold('skarb');
@@ -17347,18 +17390,10 @@ async function boot(): Promise<void> {
           }
         }
       } else {
-        const typeId = villageUnitForEra(player.era);
-        const dest = typeId
-          ? findVillageRewardSpawnHex({
-              hutQ: q,
-              hutR: r,
-              ownerId: 0,
-              units,
-              cities,
-              isPassable: isHexPassableForUnit,
-              exploredHexes: explored,
-            })
-          : undefined;
+        // Reużywa rewardUnitTypeId/rewardUnitDest policzone raz wyżej (przed pickVillageReward) --
+        // NIE woła findVillageRewardSpawnHex drugi raz.
+        const typeId = rewardUnitTypeId;
+        const dest = rewardUnitDest;
         if (!typeId || !dest) {
           grantGold('brak miejsca/jednostki, w zamian');
         } else {

@@ -63,16 +63,63 @@ export const VILLAGE_UNIT_BY_ERA: Readonly<Record<number, string>> = {
 // pickVillageReward
 // ---------------------------------------------------------------------------
 
+export interface PickVillageRewardOptions {
+  /** Wyklucz kategorię "jednostka" z puli (R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE) --
+   * usunięte 20% rozdzielone proporcjonalnie na złoto/tech (50:30 -> 62,5%/37,5%), ECHO A 2026-08-09.
+   * / EN: exclude the "jednostka" category from the pool -- its share is redistributed
+   * proportionally over zloto/tech. */
+  excludeUnit?: boolean;
+}
+
 /**
  * Wybiera kategorię nagrody na podstawie `roll` (oczekiwane [0,1), np. Math.random()).
  * Czysta funkcja -- deterministyczna dla danego roll, więc testowalna bez RNG.
  * Progi w kolejności: złoto [0, GOLD) | tech [GOLD, GOLD+TECH) | jednostka [GOLD+TECH, 1).
  */
-export function pickVillageReward(roll: number): VillageRewardKind {
+export function pickVillageReward(roll: number, opts?: PickVillageRewardOptions): VillageRewardKind {
   const r = Math.min(Math.max(roll, 0), 0.999999999);
+  if (opts?.excludeUnit) {
+    const goldShare = VILLAGE_REWARD_WEIGHT_GOLD / (VILLAGE_REWARD_WEIGHT_GOLD + VILLAGE_REWARD_WEIGHT_TECH);
+    return r < goldShare ? 'zloto' : 'tech';
+  }
   if (r < VILLAGE_REWARD_WEIGHT_GOLD) return 'zloto';
   if (r < VILLAGE_REWARD_WEIGHT_GOLD + VILLAGE_REWARD_WEIGHT_TECH) return 'tech';
   return 'jednostka';
+}
+
+// ---------------------------------------------------------------------------
+// shouldExcludeUnitReward
+// ---------------------------------------------------------------------------
+
+/**
+ * R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE (ECHO A, 2026-08-09).
+ * Decyzja: chatka na CUDZYM terytorium nie ma prawa dać jednostki WOJSKOWEJ jako nagrody --
+ * bo taka jednostka spawnuje się na cudzym terenie i liczy się jak naruszenie granicy (kara
+ * -5 Zaufania/turę), mimo że gracz nie zrobił nic poza odkryciem chatki. Oceniane na heksie
+ * SPAWNU jednostki (`findVillageRewardSpawnHex`), NIE na heksie chatki -- bo to spawn, nie
+ * chatka, powoduje naruszenie. Czysta funkcja -- wyciągnięta z inline koniunkcji w main.ts
+ * (`checkVillageRewardAt`) do behawioralnej weryfikacji pełną tabelą prawdy (runda 4
+ * AutoBota, zamyka mutacje odwrócenia semantyki niewidoczne dla bramki tekstowej-regexowej).
+ * / EN: pure decision function extracted from an inline conjunction in main.ts so it can be
+ * verified by a full truth table instead of only a text-pinning regex gate.
+ *
+ * @param a.hasSpawnHex        czy w ogóle znaleziono heks spawnu jednostki-nagrody (brak =>
+ *                              nie ma czego wykluczać, jednostka i tak nie powstanie).
+ * @param a.spawnHexOwnerId    właściciel terytorium NA HEKSIE SPAWNU (null = teren niczyj/neutralny).
+ * @param a.playerOwnerId      ownerId gracza odkrywającego chatkę.
+ * @param a.rewardUnitIsMilitary czy jednostka-nagroda dla bieżącej ery jest jednostką WOJSKOWĄ
+ *                              (nie cywilną) -- cywile (np. Zwiadowca) nigdy nie są wykluczane.
+ */
+export function shouldExcludeUnitReward(a: {
+  hasSpawnHex: boolean;
+  spawnHexOwnerId: number | null;
+  playerOwnerId: number;
+  rewardUnitIsMilitary: boolean;
+}): boolean {
+  if (!a.hasSpawnHex) return false;
+  if (!a.rewardUnitIsMilitary) return false;
+  if (a.spawnHexOwnerId === null) return false;
+  return a.spawnHexOwnerId !== a.playerOwnerId;
 }
 
 // ---------------------------------------------------------------------------
