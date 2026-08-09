@@ -5020,6 +5020,22 @@ to naprawdę dzieje się tak jak opisuje Maciej); (c) sprawdzić czy silnik rozr
 „chatka na czyim terytorium" przy losowaniu nagrody, czy pula jest zawsze taka sama niezależnie od
 lokalizacji. Zanim przedstawię ABC — zebrać fakty, nie zgadywać zakresu zmian.
 
+## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (2026-08-09, pytanie z playtestu) · STATUS: **OTWARTE — pytanie faktograficzne + regresja do potwierdzenia, badam bezpośrednio**
+
+**Cytat Macieja:** „po zdobyciu ostatniego Państwa Miasta miała być jakaś informacja z
+wyskakującym oknem informująca, że zjednoczyliśmy całą Grecję. Gdzie to jest? Sprawdź w którym
+komicie to było i zobacz czy możemy to przywrócić. I dlaczego to nie zostało wprowadzone do gry."
+
+Trop: przy wcześniejszym rozpoznaniu `P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA` (dziś, ten sam
+playtest) Explore znalazł moduł `gra/src/game/triumph-city-state.ts` — opisany jako „dodatkowy
+komunikat UI/triumf pokazywany graczowi po zjednoczeniu miast-państw tej samej cywilizacji",
+wołany wewnątrz tej samej gałęzi „eliminacja" w `runCapitalCapturePlunder` (main.ts:19735-19748).
+Sprawdzam bezpośrednio (orkiestrator, bez subagenta — mam już lokalizację) czy ten mechanizm
+faktycznie istnieje w kodzie, w którym commicie powstał, czy jest realnie podłączony/wywoływany na
+żywej ścieżce gry, i czy „zjednoczenie całej Grecji" to inny/szerszy warunek niż zjednoczenie
+pojedynczych miast-państw (może dotyczyć konkretnie greckiej grupy cywilizacji, nie ogólnego
+mechanizmu).
+
 **⛔ Doprecyzowanie Macieja (dosłowny cytat, ważne ograniczenia reguły):** „tylko żeby nie było
 tak, że wszyscy wypowiedzą wojnę graczowi. Generalnie powinno się wypowiadać wojny sąsiadowi, a
 sojusze zawierać z podleglejszymi ludami." Czyli DWA dodatkowe warunki do uwzględnienia w
