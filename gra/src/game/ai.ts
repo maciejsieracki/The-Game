@@ -1889,6 +1889,77 @@ function isEnemyNearOwnTerritory(
 }
 
 // ---------------------------------------------------------------------------
+// Home defense (P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI, ECHO A, Maciej 2026-08-09)
+// „najpierw obrona swojego terytorium, a potem dopiero atak obcego" — najwyższy priorytet:
+// zlikwidować wrogie siły (w tym barbarzyńców) na własnym terytorium lub w jego bezpośredniej
+// okolicy, niezależnie od stanu pokoju/wojny z kimkolwiek innym. / EN: highest priority — clear
+// hostile forces (including barbarians) inside or near own territory, regardless of peace/war
+// state with anyone else.
+// ---------------------------------------------------------------------------
+
+/** Promień „okolicy" miasta dodawany do promienia terytorium przy szukaniu zagrożeń
+ *  wymagających obrony domu. */
+export const AI_HOME_DEFENSE_VICINITY_HEX = 2;
+
+/**
+ * Dokładny warunek PER MIASTO: czy wróg (enemyQ,enemyR) jest zagrożeniem wymagającym obrony
+ * domu dla KONKRETNEGO miasta `city`. Zasięg = promień terytorium TEGO miasta +
+ * 2×AI_HOME_DEFENSE_VICINITY_HEX — nie jedna uniwersalna stała, tylko wartość policzona osobno
+ * dla każdego miasta (miasto pop=12 → 16 heksów, pop=15+ → 19 heksów, cap promienia 15).
+ * Formuła odpowiada dokładnej geometrycznej granicy `isEnemyNearOwnTerritory(..., maxDist=
+ * AI_HOME_DEFENSE_VICINITY_HEX)` (podwójne liczenie maxDist w tamtej funkcji — promień
+ * iteracji `radius+maxDist` i sprawdzenie `<= maxDist` od brzegowego heksu — dają razem
+ * `radius + 2*maxDist` jako faktyczny zasięg wykrywania), zweryfikowana matematycznie
+ * (Evaluator, runda 3, 2026-08-09, 10000 heksów testowych — dokładna, nic nie gubi).
+ * UWAGA: dawniejsza wersja tej naprawy (runda 2) używała jednej stałej `prefilter=9` jako
+ * uniwersalnego progu dla wszystkich miast — to był błąd (pomylony próg minimalny z
+ * maksymalnym), gubiący 52% zagrożeń w pierścieniu 10-19 hex dla miast pop>5. Nie powtarzaj
+ * tego błędu — licz zawsze osobno dla każdego miasta.
+ */
+export function isHomeDefenseThreatForCity(enemyQ: number, enemyR: number, city: AICity): boolean {
+  const node = { q: city.q, r: city.r, pop: city.population, level: 1 };
+  const radius = cityTerritoryRadius(node);
+  return hexDistance(enemyQ, enemyR, city.q, city.r) <= radius + 2 * AI_HOME_DEFENSE_VICINITY_HEX;
+}
+
+/**
+ * Przydziela obrońców zagrożeniom wykrytym w pobliżu własnego terytorium — algorytm
+ * najbliższy-dostępny: zagrożenia posortowane wg pilności (rosnąco odległość do
+ * najbliższego własnego miasta — najpierw najbardziej „u progu"), każde dostaje najbliższą
+ * jeszcze nieprzydzieloną własną jednostkę wojskową (nie zwiadowcę, nie jednostkę bez ruchu).
+ * Przydział 1:1 (jedna jednostka na jedno zagrożenie) — świadome uproszczenie względem
+ * ewentualnego kworum wielu jednostek na jedno duże zagrożenie (osobna decyzja na przyszłość).
+ * Zwraca mapę unitId -> przydzielone zagrożenie, do odczytu w głównej pętli ruchu jednostek.
+ */
+export function assignHomeDefenders(
+  threats: RuntimeUnit[],
+  myUnits: RuntimeUnit[],
+  myCities: AICity[],
+): Map<string, RuntimeUnit> {
+  const assignments = new Map<string, RuntimeUnit>();
+  if (threats.length === 0 || myCities.length === 0) return assignments;
+
+  const sortedThreats = [...threats].sort((a, b) => {
+    const distA = Math.min(...myCities.map(c => hexDistance(a.q, a.r, c.q, c.r)));
+    const distB = Math.min(...myCities.map(c => hexDistance(b.q, b.r, c.q, c.r)));
+    return distA - distB;
+  });
+
+  const used = new Set<string>();
+  for (const threat of sortedThreats) {
+    const available = myUnits.filter(
+      u => u.ruchLeft > 0 && !isScoutUnit(u) && !used.has(u.id),
+    );
+    const defender = nearest(threat.q, threat.r, available, u => u.q, u => u.r);
+    if (defender !== undefined) {
+      assignments.set(defender.id, threat);
+      used.add(defender.id);
+    }
+  }
+  return assignments;
+}
+
+// ---------------------------------------------------------------------------
 // Unit helpers
 // ---------------------------------------------------------------------------
 
@@ -2100,6 +2171,19 @@ export function decideAITurn(
     ec => isEnemyNearOwnTerritory(ec.q, ec.r, myCities, map, 8),
   );
 
+  // P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI (ECHO A, Maciej 2026-08-09): zagrożenia
+  // wymagające obrony domu — warunek DOKŁADNY liczony OSOBNO dla każdego miasta (patrz
+  // isHomeDefenseThreatForCity). Przydział obrońców (najbliższy-dostępny) liczony RAZ, przed
+  // pętlą ruchu — statyczna migawka stanu na początek tury tego gracza AI.
+  const homeThreats = engageableEnemyUnits.filter(
+    eu => myCities.some(city => isHomeDefenseThreatForCity(eu.q, eu.r, city)),
+  );
+  const homeDefenderAssignments = assignHomeDefenders(homeThreats, myUnits, myCities);
+  // Zagrożenia już zaatakowane w kroku 4b W TEJ SAMEJ turze (inna jednostka, adjacentEnemy) —
+  // przeciw podwójnemu zaangażowaniu: przydzielony obrońca takiego zagrożenia NIE ma już
+  // maszerować do celu, który ktoś inny właśnie obsługuje/zabija.
+  const handledThreatIds = new Set<string>();
+
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
@@ -2124,6 +2208,7 @@ export function decideAITurn(
     if (adjacentEnemy !== undefined) {
       commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
       unitActed.add(unit.id);
+      handledThreatIds.add(adjacentEnemy.id);
       continue;
     }
 
@@ -2149,6 +2234,22 @@ export function decideAITurn(
           unitActed.add(unit.id);
           continue;
         }
+      }
+    }
+
+    // 4b2: HOME DEFENSE — jednostka przydzielona jako obrońca zagrożenia w pobliżu własnego
+    // terytorium (P-AI-NIE-BRONI-WLASNYCH-MIAST, ECHO A) — priorytet PRZED marszem na wroga
+    // (4c). Jeśli zagrożenie już obsłużone w tej turze przez inną jednostkę w kroku 4b
+    // (handledThreatIds) — obrońca NIE maszeruje do już martwego/obsługiwanego celu.
+    // Jednostka trafiająca tu nie jest już adjacentna żadnemu engageable wrogowi (inaczej
+    // zaatakowałaby wyżej w 4b) — assignedThreat, jeśli nieobsłużone, jest zawsze >1 hex.
+    const assignedThreat = homeDefenderAssignments.get(unit.id);
+    if (assignedThreat !== undefined && !handledThreatIds.has(assignedThreat.id)) {
+      const step = firstStep(unit, map, assignedThreat.q, assignedThreat.r, units);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        unitActed.add(unit.id);
+        continue;
       }
     }
 
