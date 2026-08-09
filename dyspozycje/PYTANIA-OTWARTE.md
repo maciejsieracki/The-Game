@@ -6408,3 +6408,14 @@ Kontekst dostępny do rozpoznania: w grze istnieje już jednostka morska (`Galle
 `units.json:557`) — port mógłby np. odblokowywać/przyspieszać produkcję jednostek morskich, dawać
 bonus handlowy dla miast nadmorskich, albo łączyć oba. Rozpoznanie stanu „miasto nadbrzeżne"
 (czy silnik już wykrywa sąsiedztwo wody dla miasta) do zbadania przez Proponentów.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — SCALONE `8692b61b` (2026-08-09)
+
+Scalone bezpiecznie z worktree Operatora rundy 2 do głównego drzewa. 5 plików zmienionych (2
+identyczne bezpośredni apply, 2 zdywergowane scalone chirurgicznie, `main.ts` największy — 3-way
+merge bez konfliktów, zweryfikowany) + 2 nowe pliki. Bramki na scalonym stanie: tsc 0 · logic-test
+213/213 · empire-city-defaults-test 30/30 · auto-manage-test 45/45. Temat zamknięty (B1
+`budowaPriorytetTypow` pozostaje osobnym, świadomie odłożonym zgłoszeniem — czeka na dispatch po
+uwolnieniu plików).
