@@ -259,6 +259,19 @@ scalenie → zgoda właściciela przy kolizji z cudzą pracą → bramki → bui
   `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` — złapane dopiero przez bramkę na etapie deployu,
   nie przez Evaluatora commita scalającego. Drugi, niezależny mechanizm cichej utraty pracy w
   tym repo obok już opisanego incydentu `b9867b3`.
+- **`isolation: "worktree"` NIE dziedziczy z bieżącej gałęzi sesji — startuje od `main`.**
+  Odkryte 2026-08-09 przy próbie „odtworzenia na aktualnym HEAD" naprawy `R-DYP-STOL-A-KOREKTA`:
+  polecenie w prompcie Operatora „pracuj na aktualnym HEAD swojej gałęzi" **nie ma efektu** — nowy
+  worktree i tak wystartował z tego samego, przestarzałego `main` (`b137332a`) co pierwsza,
+  odrzucona próba (zweryfikowane: 0 wystąpień `techDirection`/`techPaymentMode` w pliku
+  worktree, 29 w aktualnym HEAD sesji). To systemowa właściwość narzędzia, nie błąd
+  pojedynczego agenta — trzeci przypadek cichej utraty pracy w tym repo, obok `b9867b3` i
+  `92341250`/`cdb29d92` wyżej. **Konsekwencja: zawsze sprawdzaj `git merge-base --is-ancestor
+  <baza worktree> HEAD`, nawet po „odtworzeniu na świeżo".** Gdy baza nie jest przodkiem: dla
+  plików niezmienionych między bazą a HEAD — bezpieczny `git apply` po weryfikacji identyczności
+  kotwic tekstowych; dla plików rozjechanych — ręczne, chirurgiczne odtworzenie zmiany przez
+  orkiestratora z weryfikacją że edytowany fragment nie pokrywa się z rozjechanym obszarem, albo
+  nowe zlecenie z prośbą o wynik jako czysty tekst do transkrypcji.
 - **Kontynuacja rundy po FAIL Evaluatora** — wznawiaj `SendMessage` do agenta/worktree z
   poprzedniej rundy (zachowuje kontekst, historię commitów, świeżość względem `main`), NIE
   nowy `Agent` z izolacją od zera, chyba że worktree jest uszkodzony/usunięty. Sprawdzone

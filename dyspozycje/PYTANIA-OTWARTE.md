@@ -4500,3 +4500,44 @@ poprawiony; (4) zasięg „zamrożenia" opisany konkretnymi ścieżkami, bez prz
 wejściowe dla `hideStatChips`/`refreshTradeRoutesOverlay` przy otwieraniu panelu (będą teraz
 liczone jako "panel otwarty" wcześniej) — kierunek zgodny z zamierzonym projektem, ale częściowo
 nakłada się na `P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI`. Do obejrzenia w playteście.
+
+---
+
+## ⛔ WAŻNE ODKRYCIE PROCESOWE (2026-08-09): worktree izolacji NIE dziedziczy z bieżącej gałęzi sesji
+
+Przy próbie scalenia `R-DYP-STOL-A-KOREKTA` (odtworzonej rzekomo „na aktualnym HEAD") okazało się,
+że worktree odtwarzającego Operatora **nadal stał na `b137332a`** — dokładnie ta sama baza co
+pierwsza, odrzucona próba. Zweryfikowane: `git log -1` w tym worktree = `b137332a`, a plik
+`diplomacyTradeBasket.ts` w nim ma **zero** wystąpień `techDirection`/`techPaymentMode` (praca nad
+akcją-6 z dzisiejszej sesji), podczas gdy mój aktualny HEAD ma ich 29. **Wniosek: `isolation:
+"worktree"` w tej sesji tworzy worktree od `main`, NIE od bieżącej gałęzi roboczej sesji** —
+polecenie „pracuj na aktualnym HEAD swojej gałęzi" w promptach Operatora nie ma efektu, bo
+worktree i tak startuje z ustalonego punktu. To dotyczy WSZYSTKICH dzisiejszych agentów
+worktree-isolated, nie tylko tego jednego — wyjaśnia dlaczego każda próba merge tego dnia wymagała
+sprawdzenia bezpieczeństwa bazy.
+
+**Konsekwencja praktyczna:** scalanie diffu z worktree do drzewa głównego wymaga za każdym razem
+weryfikacji `git merge-base --is-ancestor <baza-worktree> HEAD` — bez wyjątku, nawet gdy Operator
+dostał wyraźne polecenie pracy „na aktualnym HEAD". Gdy baza nie jest przodkiem: (a) dla plików
+niezmienionych między bazą a HEAD — bezpieczny bezpośredni `git apply` po weryfikacji identyczności
+kotwic; (b) dla plików rozjechanych — albo ręczne, chirurgiczne odtworzenie zmiany przez
+orkiestratora z weryfikacją kontekstu (jak w tym przypadku — `diplomacyTradeBasket.ts` zawierał
+zarówno stary, bezpieczny obszar TREATY_ONLY_FORM_IDS jak i nowy, rozjechany obszar akcji-6 tech-
+trade w tym samym pliku), albo nowe zlecenie z prośbą o wynik jako czysty tekst do transkrypcji.
+**Do dopisania do `civ-autobot/SKILL.md` §5** jako trzeci, systemowy przypadek (po `b9867b3` i
+`92341250`/`cdb29d92`) — tym razem nie błąd pojedynczego agenta, tylko właściwość architektury
+narzędzia.
+
+## R-DYP-STOL-A-KOREKTA — SCALONE bezpośrednio przez orkiestratora (2026-08-09)
+
+Po odkryciu że worktree redo-Operatora (jak wyżej) był na tej samej niebezpiecznej bazie co
+pierwsza próba, orkiestrator zweryfikował że zmiana dotyczy DWÓCH bezpiecznych, izolowanych
+obszarów pliku (komentarz+`TREATY_ONLY_FORM_IDS` w liniach 498-506 obecnego HEAD, `case '10'` w
+linii ~727 — żaden nie pokrywa się z rozjechanym obszarem akcji-6 tech-trade w liniach 487-496) i
+zastosował zmianę chirurgicznie przez Edit na aktualnym pliku, plus bezpieczny `git apply` diffu
+testowego (czysty append, kotwice zweryfikowane identyczne przed zastosowaniem). Bramki na scalonym
+stanie: `tsc` 0 błędów · `logic-test` 213/213 · `diplomacy-proposal-test.cjs` **187/187** (184
+zweryfikowane przez Evaluatora + 3 pre-istniejące testy tech-za-tech z akcji-6, oba zestawy
+zachowane). Diff ograniczony do 2 plików, +130/−4 linii, zero przypadkowych zmian. Czeka na
+niezależną weryfikację (§0b — orkiestrator nie jest zwolniony z pętli mimo że dwukrotnie
+zweryfikowana treść).

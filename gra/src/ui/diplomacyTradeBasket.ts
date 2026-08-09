@@ -497,9 +497,21 @@ interface TreatyFormState {
 
 /**
  * Traktaty bez opcjonalnego koszyka PW (tylko warunki umowy w formularzu).
- * R-DYP-STOL-A=C: pozostałe traktaty mają sekcję warunków + opcjonalny koszyk PW.
+ * R-DYP-STOL-A-KOREKTA (2026-08-09): przywraca zestaw 7 pozycji sprzed
+ * niedokumentowanego skurczenia w commicie 9cc7c76c (2026-08-05, "NAP bezterminowy na
+ * stole audiencji") — ten commit zredukował ten Set z 7 elementów do 1 ('15') przy
+ * okazji niezwiązanej zmiany, nie na mocy żadnej decyzji (patrz
+ * R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY w PYTANIA-OTWARTE.md). Pakt (2), sojusz (3),
+ * przemarsz (4), trybut (8), pokój (10), wasalizacja (12), wchłonięcie (15) to "traktaty"
+ * sensu stricto — ich warunki są parametrami umowy (czas trwania, tryb, kwota
+ * trybutu/opłaty), NIE wymianą surowców. Cytat decyzji Macieja: "Wszystkie umowy muszą
+ * być poza umową na wymianę surowców bez propozycji wymiany surowców [...] to musi być
+ * rozłożone, rozłączone z tego względu że zaburza przejrzystość".
+ * Akcje '6' (wymiana technologii), '7' (namowa do wojny), '9' (ultimatum) ŚWIADOMIE
+ * zostają z koszykiem — ich zakres jest osobnym, otwartym pytaniem
+ * (R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY), nie domyślany tutaj.
  */
-const TREATY_ONLY_FORM_IDS = new Set<string>(['15']);
+const TREATY_ONLY_FORM_IDS = new Set<string>(['2', '3', '4', '8', '10', '12', '15']);
 
 export function isTreatyOnlyFormAction(actionId: string): boolean {
   return TREATY_ONLY_FORM_IDS.has(actionId);
@@ -725,8 +737,13 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<p class="cdb-sub">Odmowa partnera = casus belli (zaznacz ultimatum poniżej).</p>';
       break;
     case '10':
-      body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%). '
-        + 'Opcjonalnie dołóż wymianę PW poniżej.</p>';
+      // R-DYP-STOL-A-KOREKTA (2026-08-09, nota Evaluatora): akcja '10' (pokój) jest teraz
+      // w TREATY_ONLY_FORM_IDS (patrz wyżej) — formularz "tylko warunki" nie renderuje
+      // ŻADNEGO koszyka PW "poniżej" (patrz renderBasket, gałąź isTreatyOnly), więc zdanie
+      // odsyłające do koszyka byłoby martwym, mylącym tekstem. Zdanie identyczne w case '5'
+      // ZOSTAJE bez zmian — ta ścieżka jest martwa (akcja 5 nie otwiera tego modala, patrz
+      // diplomacyAudience.ts), poza zakresem tej naprawy.
+      body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).</p>';
       break;
     default:
       body = '<p class="cdb-sub">Brak dodatkowych warunków traktatu.</p>';
