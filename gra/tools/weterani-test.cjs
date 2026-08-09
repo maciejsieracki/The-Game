@@ -461,9 +461,11 @@ console.log('');
 // decyzji przekazuje combatPowerScaledDefFor(u) zamiast surowego lookupUnitDef.
 // Ten test wola PRAWDZIWA stackFieldPowerM() (nie reimplementacje) z DWOMA
 // wariantami defOf -- nominalnym (stary main.ts::defForUnit) i weteransko-
-// przeskalowanym (main.ts::combatPowerScaledDefFor dla gracza, jednostka NIE
-// ufortyfikowana -- wtedy combatPowerScaledDefFor == veteranScaledDefFor,
-// patrz main.ts fortifyFieldScaledDefFor/combatPowerScaledDefFor) -- i dowodzi,
+// przeskalowanym (main.ts::combatPowerFullDisplayDefFor dzis, dla gracza,
+// jednostka NIE ufortyfikowana/NIE w garnizonie miasta z murem -- wtedy
+// combatPowerFullDisplayDefFor == combatPowerScaledDefFor == veteranScaledDefFor,
+// patrz main.ts fortifyFieldScaledDefFor/combatPowerScaledDefFor/
+// combatPowerFullDisplayDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1) -- i dowodzi,
 // ze podmiana defOf faktycznie zmienia liczbe na tabliczce z 49 na 58.0,
 // dokladnie jak w sekcji 9 (auto-bitwa) -- ZERO ROZJAZDU miedzy tabliczka a
 // wynikiem auto-walki dla tego samego skladu.
@@ -505,30 +507,31 @@ check(
 // (Evaluator, nota N7, 2026-08-07): czyta main.ts jako tekst (wzor jak w
 // tools/plony-budynkow-test.cjs) i sprawdza literalne wstrzykniecie.
 //
-// R-MOC-DEFINICJA-Q1 (Maciej 2026-08-08): CZESCIOWE COFNIECIE
-// R-MOC-MUR-PARADOKS-Q1=A (2026-08-07, commit f94216e). Funkcja
-// tabliczkaGarnizonScaledDefFor() -- opakowanie nad combatPowerScaledDefFor(u),
-// ktore dla garnizonu w miescie z murem DODATKOWO doliczalo structBonusPct/
-// cityGatedTerrainMultiplier -- zostala USUNIETA jako martwy kod (jej jedyny
-// wywolujacy znikl). defOf tabliczki znow wola GOLY combatPowerScaledDefFor(u)
-// (weteran + fortyfikacja polowa/garnizon bez muru + trudnosc AI, BEZ muru/
-// terenu) -- dokladnie jak przed tamta decyzja. Szczegoly nowego, swiadomego
-// paradoksu tabliczki (garnizon za murem pokazuje NIZSZA Moc niz realna Obrona
-// tego miasta w bitwie) -- tools/mur-paradoks-test.cjs.
+// R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): koryguje zakres
+// R-MOC-DEFINICJA-Q1 (2026-08-08), ktore z kolei czesciowo cofnelo
+// R-MOC-MUR-PARADOKS-Q1=A (2026-08-07, commit f94216e). Tabliczka wraca do
+// pelnej Mocy (weteran + fortyfikacja polowa/garnizon + mnoznik trudnosci AI
+// + bonus struktury/terenu miasta dla garnizonu za murem) przez NOWA funkcje
+// main.ts::combatPowerFullDisplayDefFor(u) -- ta sama, juz raz zweryfikowana
+// formula co usunieta tabliczkaGarnizonScaledDefFor(), tym razem TRWALA.
+// Moc cywilizacji (main.ts::sumArmyMForOwnerEffective) jest teraz CELOWO
+// INNA liczba -- WYLACZNIE veteranScaledDefFor (sekcja "main.ts: wpiecie
+// efektywnej" w tools/moc-ranking-rozjazd-test.cjs sprawdza to osobno).
+// Szczegoly formuly tabliczki -- tools/mur-paradoks-test.cjs.
 const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
-const hasPlainDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*combatPowerScaledDefFor\(u\)/.test(mainTsSrc);
+const hasFullDisplayDefOf = /defOf:\s*\(u:\s*RuntimeUnit\)\s*=>\s*combatPowerFullDisplayDefFor\(u\)/.test(mainTsSrc);
 check(
-  'ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje goly combatPowerScaledDefFor(u) (nie surowy defForUnit/lookupUnitDef, nie tabliczkaGarnizonScaledDefFor(u) po cofnieciu R-MOC-MUR-PARADOKS-Q1=A przez R-MOC-DEFINICJA-Q1) -- lapie cofniecie zmiany #1 ORAZ przywrocenie muru/terenu na tabliczce',
-  hasPlainDefOf,
-  hasPlainDefOf ? 'OK' : 'wzorzec "defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u)" NIE znaleziony w main.ts',
+  'ZRODLO main.ts: StackVitalsDeps.defOf wstrzykuje combatPowerFullDisplayDefFor(u) (Moc PELNA -- weteran + fortyfikacja + trudnosc AI + struktura/teren miasta, R-MOC-TABLICZKA-VS-CIVPOWER-Q1) -- lapie cofniecie do golego combatPowerScaledDefFor(u) (R-MOC-DEFINICJA-Q1) lub do surowego defForUnit/lookupUnitDef',
+  hasFullDisplayDefOf,
+  hasFullDisplayDefOf ? 'OK' : 'wzorzec "defOf: (u: RuntimeUnit) => combatPowerFullDisplayDefFor(u)" NIE znaleziony w main.ts',
 );
-// tabliczkaGarnizonScaledDefFor() NIE MOZE juz istniec w main.ts -- martwy kod
-// usuniety razem z jedynym wywolujacym (R-MOC-DEFINICJA-Q1).
-const hasTabliczkaFnDefinition = /function tabliczkaGarnizonScaledDefFor\(/.test(mainTsSrc);
+// combatPowerFullDisplayDefFor() MUSI istniec w main.ts -- funkcja tabliczki
+// wg R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09).
+const hasFullDisplayFnDefinition = /function combatPowerFullDisplayDefFor\(/.test(mainTsSrc);
 check(
-  'ZRODLO main.ts: funkcja tabliczkaGarnizonScaledDefFor() NIE ISTNIEJE juz (martwy kod usuniety po R-MOC-DEFINICJA-Q1, patrz tools/mur-paradoks-test.cjs)',
-  !hasTabliczkaFnDefinition,
-  hasTabliczkaFnDefinition ? 'funkcja tabliczkaGarnizonScaledDefFor() nadal ISTNIEJE w main.ts -- powinna byc usunieta' : 'OK',
+  'ZRODLO main.ts: funkcja combatPowerFullDisplayDefFor() ISTNIEJE (tabliczka Moc PELNA, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
+  hasFullDisplayFnDefinition,
+  hasFullDisplayFnDefinition ? 'OK' : 'funkcja combatPowerFullDisplayDefFor() NIE znaleziona w main.ts -- powinna istniec',
 );
 console.log('');
 

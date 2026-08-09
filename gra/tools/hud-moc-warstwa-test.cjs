@@ -132,7 +132,7 @@ check(
   armySumNominal,
 );
 check(
-  'sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla Konnicy ★★★ (combatPowerScaledDefFor)',
+  'sumArmyMForOwnerEffective (EFEKTYWNA) == 58.0 dla Konnicy ★★★ (veteranScaledDefFor, R-MOC-TABLICZKA-VS-CIVPOWER-Q1)',
   approxEq(armySumEffectiveWeteran, expectedEffectiveWeteran, 0.05) && approxEq(armySumEffectiveWeteran, 58.0, 0.05),
   armySumEffectiveWeteran,
 );

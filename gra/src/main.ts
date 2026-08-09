@@ -1599,11 +1599,40 @@ async function boot(): Promise<void> {
     }
 
     /**
-     * R-MOC-RANKING-ROZJAZD-Q1=B (Maciej 2026-08-07): wariant EFEKTYWNY sumy Mocy
-     * armii — jedyna różnica vs sumArmyMForOwner: combatPowerScaledDefFor(u) zamiast
-     * unitDefFor(u) (ta sama def skalowana co tabliczka jednostki nad żetonem,
-     * R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B, main.ts:8062 — weteran + fortyfikacja polowa
-     * + mnożnik trudności AI). Zero nowej matematyki poza tym podstawieniem.
+     * R-MOC-RANKING-ROZJAZD-Q1=B (Maciej 2026-08-07), formuła skorygowana przez
+     * R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): wariant EFEKTYWNY sumy
+     * Mocy armii — Moc cywilizacji (panel rankingu, HUD, Empire) liczy WYŁĄCZNIE
+     * naturalne wskaźniki jednostki + premia weterana (veteranScaledDefFor(u)) —
+     * BEZ terenu, fortyfikacji (polowej i garnizonowej), muru/struktury miasta i
+     * BEZ mnożnika trudności AI (bonusWalka) — bo to wszystko zależy od TEGO,
+     * gdzie jednostka akurat stoi / jakim ownerem jest, nie od jej siły samej w
+     * sobie. TO NIE JEST ta sama liczba co tabliczka nad żetonem
+     * (combatPowerFullDisplayDefFor, main.ts wyżej) — dwie różne, jawnie
+     * rozdzielone definicje, patrz docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md.
+     *
+     * Do 2026-08-09 ta funkcja wołała combatPowerScaledDefFor(u) (weteran +
+     * fortyfikacja polowa/garnizon bez muru + mnożnik trudności AI) — ZA DUŻO
+     * względem decyzji: civ-power AI dostawał dodatkowy bonus z trudności gry,
+     * którego jednostka gracza (bez tego mnożnika) nie ma, co psuło porównanie
+     * "surowej" siły cywilizacji niezależnie od tego, gdzie akurat stoi jej armia.
+     *
+     * "bonusy z ulepszeń jednostki" (trwałe, zapisane w definicji) — SPRAWDZONE
+     * (2026-08-09): jedyny mechanizm zmieniający DEFINICJĘ jednostki na trwałe to
+     * podmiana typeId przy ulepszeniu technologicznym (unit-replace) — to już jest
+     * w pełni wliczone w unitDefFor()/lookupUnitDef() (veteranScaledDefFor bazuje
+     * na unitDefFor). ISTNIEJE też DRUGI, niezależny system trwałych bonusów --
+     * RuntimeUnit.pancerzBonusProc/parametryBonusProc (game/unit-building-bonuses.ts,
+     * zdobywane przez wizytę w mieście z budynkami kuźniczymi/szkoleniowymi,
+     * "trwałe: nie znikają po wyjściu z miasta") — te NIE są dziś wliczone w
+     * unitDefFor()/veteranScaledDefFor() ani w żadną funkcję M-mocy (są używane
+     * WYŁĄCZNIE do wyświetlania karty jednostki, unitCardCombatFor, i do
+     * bitwy OGLĄDANEJ przez osobne pole BattleUnit.pancerzBonusFrac/
+     * parametryBonusFrac -- runtimeToBattleUnit) -- OTWARTE, poza zakresem tego
+     * zadania (wymagałoby wpięcia całkiem nowej ścieżki w M-power, potencjalnie
+     * dotykającej też auto-walki mocą / effectiveDefenderM, co jest zakazane przez
+     * C-025 tego zadania) -- zgłoszone do PYTANIA-OTWARTE zamiast domyślnego
+     * doliczenia bez decyzji właściciela.
+     *
      * Karmi WYŁĄCZNIE panel Mocy imperium widoczny dla gracza (buildPowerRankingByOwner/
      * buildPowerOverlayData/buildEmpireDetailSnap — ścieżka (a)). NIE wolno jej podłączyć
      * do militaryRatioFromArmyM ani do żadnego progu decyzji dyplomatycznej AI — te
@@ -1615,7 +1644,7 @@ async function boot(): Promise<void> {
       for (const u of units) {
         if (u.ownerId !== ownerId) continue;
         if (!opcje.liczyOsadnikWArmii && u.category === 'osadnik') continue;
-        sum += armyFieldPower(combatPowerScaledDefFor(u));
+        sum += armyFieldPower(veteranScaledDefFor(u));
       }
       return sum;
     }
@@ -8267,27 +8296,33 @@ async function boot(): Promise<void> {
         // (hpMaxEffective z game/unit-card-stats.ts) — mapa i panel nie mogą
         // pokazać innego maksimum HP dla tej samej jednostki.
         maxHpOf: (u: RuntimeUnit) => unitCardCombatFor(u, defForUnit(u)).hpMaxEffective,
-        // R-MOC-TABLICZKA-CO-POKAZYWAC-Q1=B (Maciej 2026-08-07): Moc EFEKTYWNA,
-        // nie nominalna -- ta sama definicja skalowana (weteran + fortyfikacja
-        // polowa/garnizon bez muru + mnożnik trudności AI), której realnie
-        // używa rosterFieldPowerM()/resolveAutoBattleByPower() do rozstrzygania
-        // auto-bitwy (patrz combatPowerScaledDefFor niżej w tym pliku).
-        // R-MOC-DEFINICJA-Q1 (Maciej 2026-08-08): "Moc" WYŚWIETLANA graczowi
-        // (tabliczka nad żetonem, tooltip, panel rankingu, HUD, Empire) NIGDY
-        // nie liczy budynków ani terenu -- tylko własne wskaźniki jednostki +
-        // premia weterana. Częściowe cofnięcie R-MOC-MUR-PARADOKS-Q1=A
-        // (2026-08-07, commit f94216e): funkcja tabliczkaGarnizonScaledDefFor(),
-        // która dla garnizonu za murem dociągała bonus struktury/terenu na
-        // tabliczkę, została USUNIĘTA -- tabliczka znów woła gołe
-        // combatPowerScaledDefFor(u) (weteran + fortyfikacja polowa/garnizon
-        // bez muru + trudność AI, ale bez bonusu STRUKTURY muru/terenu),
-        // tak jak przed tamtą decyzją. Rzeczywiste rozstrzygnięcie bitwy
-        // (effectiveDefenderM, gałąź isCity) nadal liczy PEŁNY bonus struktury/
-        // terenu -- to jest ŚWIADOMY, udokumentowany paradoks tabliczki:
-        // tabliczka garnizonu za murem pokazuje NIŻSZĄ Moc niż realna Obrona
-        // tego miasta w bitwie (patrz mur-paradoks-test.cjs, zaktualizowany
-        // pod tę decyzję).
-        defOf: (u: RuntimeUnit) => combatPowerScaledDefFor(u),
+        // R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): tabliczka nad
+        // żetonem pokazuje REALNĄ Moc, ze WSZYSTKIMI bonusami jednostki --
+        // teren, fortyfikacja (polowa i garnizonowa), mur/struktura miasta,
+        // weteran. TO NIE JEST ta sama liczba co Moc cywilizacji (panel
+        // rankingu/HUD/Empire, sumArmyMForOwnerEffective niżej w tym pliku) --
+        // tamta liczy WYŁĄCZNIE wskaźniki własne jednostki + weteran, BEZ
+        // terenu/fortyfikacji/muru (bo to zależy od tego, gdzie jednostka
+        // akurat stoi, nie od jej siły samej w sobie). Dwie różne liczby,
+        // każda z osobną, jawną definicją -- patrz docs/decyzje/
+        // R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md.
+        //
+        // combatPowerFullDisplayDefFor(u) (niżej w tym pliku) = combatPowerScaledDefFor(u)
+        // (weteran + fortyfikacja polowa/garnizon bez muru + trudność AI) +
+        // bonus STRUKTURY/terenu miasta gdy jednostka jest w garnizonie za
+        // murem -- identycznie jak realne rozstrzygnięcie bitwy
+        // (effectiveDefenderM, gałąź isCity), ale bez efektu ubocznego na
+        // samą bitwę (osobna funkcja, wyłącznie do PODGLĄDU).
+        //
+        // KOREKTA zakresu R-MOC-DEFINICJA-Q1 (2026-08-08) -- ta decyzja
+        // błędnie zunifikowała WSZYSTKIE wyświetlenia Mocy (w tym tabliczkę)
+        // pod regułą "nigdy nie liczy budynków ani terenu", co spowodowało
+        // paradoks: tabliczka garnizonu za murem pokazywała NIŻSZĄ Moc niż
+        // bez murów. R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09) naprawia to,
+        // rozdzielając na dwie funkcje -- mur-paradoks-test.cjs sprawdza teraz
+        // WPROST, że tabliczka za murem jest WYŻSZA (lub równa), nie dokumentuje
+        // świadomego paradoksu.
+        defOf: (u: RuntimeUnit) => combatPowerFullDisplayDefFor(u),
       });
       if (anim?.movingStackIds?.length) {
         for (const sid of anim.movingStackIds) display.visibleIds.add(sid);
@@ -18633,6 +18668,90 @@ async function boot(): Promise<void> {
       // przed tą zmianą, mimo że komentarz mówi "obrona x0,5" (patrz raport).
       const embarkMult = defRoster[0]?.embarked === true ? EMBARK_DEFENSE_MULT : 1;
       return Math.round((terrAdjAttack + terrAdjDefense) * embarkMult * 10) / 10;
+    }
+
+    /**
+     * R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09): def SKALOWANA DLA
+     * WYŚWIETLANIA (tabliczka nad żetonem + tooltip jednostki na mapie) --
+     * dociąga bonus struktury obronnej miasta (mur/Palisada/Cytadela/Baszta,
+     * structureDefenseBonusFor) i bramkowany mnożnik terenu miasta
+     * (cityGatedTerrainMultiplier), DOKŁADNIE tak jak effectiveDefenderM liczy
+     * realną Obronę w bitwie (gałąź isCity) -- inaczej tabliczka garnizonu z
+     * murem POKAZUJE NIŻSZĄ Moc niż bez murów (fortifyFieldScaledDefFor nie
+     * dolicza swojego +50%, bo unitGetsFortifyDefenseBonus zwraca false gdy
+     * jest mur), mimo że realna Obrona rośnie do +400%.
+     *
+     * Reinkarnacja main.ts::tabliczkaGarnizonScaledDefFor (R-MOC-MUR-PARADOKS-Q1=A,
+     * commit f94216e9, 2026-08-07) -- ten sam, już zweryfikowany przez Evaluatora
+     * wzór (1125 porównań, zero rozbieżności), USUNIĘTY dzień później przez
+     * R-MOC-DEFINICJA-Q1 gdy ta decyzja błędnie zunifikowała WSZYSTKIE
+     * wyświetlenia Mocy pod jedną (zbyt wąską) regułą. R-MOC-TABLICZKA-VS-
+     * CIVPOWER-Q1 koryguje zakres tamtej decyzji -- tabliczka wraca do PEŁNEJ
+     * Mocy, civ-power (sumArmyMForOwnerEffective, patrz niżej w tym pliku)
+     * zostaje na czystych wskaźnikach jednostki + weteran.
+     *
+     * ⚠ CELOWO NIE PODMIENIA combatPowerScaledDefFor() -- ta funkcja karmi
+     * effectiveDefenderM (patrz sumRosterFieldMSplit wyżej w effectiveDefenderM),
+     * które SAMO dolicza structBonusPct/cityGatedTerrainMultiplier na
+     * split.defense. Gdyby bonus wszedł już do combatPowerScaledDefFor(),
+     * effectiveDefenderM policzyłby go PODWÓJNIE (raz tu, raz przez
+     * combinedDefPct) i realna bitwa (rosterFieldPowerM dla atakującego też
+     * korzysta z combatPowerScaledDefFor) zaczęłaby liczyć struct bonus nawet
+     * dla atakującego. Dlatego to OSOBNA funkcja, wyłącznie dla PODGLĄDU
+     * (tabliczka/tooltip) -- BEZ efektu ubocznego na rozstrzygnięcie bitwy
+     * (C-025, zakres tego zadania).
+     *
+     * Zastosowanie -- WYŁĄCZNIE jednostka w garnizonie (u.inGarnizon===true)
+     * miasta (cityAtUnit) na heksie, który cityWallStatusAtHex uznaje za
+     * miasto: skaluje meleeDefence/armor/health (SKŁADOWE Obrony w
+     * fieldPower(), unit-power.ts -- defense = meleeDefence+armor+health/2)
+     * o ten sam % co effectiveDefenderM liczy dla split.defense w gałęzi
+     * isCity -- combinedDefPct = structBonusPct + (cityGatedTerrainMultiplier-1)*100,
+     * ADDYTYWNIE (nie mnożone), zgodnie z C-COMBAT-Q2. Gdy miasto nie ma
+     * żadnego budynku obronnego, structBonusPct=0 i cityGatedTerrainMultiplier
+     * gate'uje się na 1.0 -- combinedDefPct=0, funkcja jest wtedy no-opem
+     * (zwraca base bez zmian).
+     *
+     * Atak jednostki (meleeAttack/weaponDamage/piercing/chargeBonus/
+     * missileAttack) NIE dostaje żadnego bonusu -- mur broni Obronę, nie
+     * wzmacnia Ataku (ta sama zasada co effectiveDefenderM).
+     *
+     * Bitwa w polu poza miastem (w tym fort/posterunek terenowe) -- teren
+     * ogólny (terrainDefenseMultiplier) w effectiveDefenderM zależy od Roli
+     * (linia) ATAKUJĄCEGO, czyli nie da się policzyć poza kontekstem realnej
+     * bitwy (nie ma atakującego dla statycznej tabliczki) -- POZA ZAKRESEM
+     * tej funkcji, zgodnie z decyzją: fortyfikacja polowa jest już objęta
+     * przez fortifyFieldScaledDefFor wewnątrz combatPowerScaledDefFor (base).
+     *
+     * Jednostka NIE w garnizonie miasta (w polu, w tym ufortyfikowana polowo,
+     * lub w mieście bez żadnego budynku obronnego) -- zwraca
+     * combatPowerScaledDefFor(u) bez zmian.
+     */
+    function combatPowerFullDisplayDefFor(u: RuntimeUnit): Record<string, unknown> {
+      const base = combatPowerScaledDefFor(u);
+      if (u.inGarnizon !== true) return base;
+      if (!cityAtUnit(u)) return base;
+      const { isCity, hasMur } = cityWallStatusAtHex(u.q, u.r);
+      if (!isCity) return base;
+      const structBonusPct = structureDefenseBonusFor(u.q, u.r);
+      const hex = map.hexes[keyOf(u.q, u.r)];
+      const terrain = hex ? (hex.terenBazowy as string) : 'Rownina';
+      const cityTerrMult = cityGatedTerrainMultiplier(
+        hasMur,
+        terrain,
+        terrainCombatData as unknown as TerrainEntry[],
+      );
+      const combinedDefPct = structBonusPct + (cityTerrMult - 1) * 100;
+      if (combinedDefPct <= 0) return base;
+      const mult = 1 + combinedDefPct / 100;
+      const scaleField = (v: unknown): unknown => (typeof v === 'number' ? v * mult : v);
+      const { fieldPower: _staleFieldPower3, ...rest } = base as Record<string, unknown>;
+      return {
+        ...rest,
+        meleeDefence: scaleField(rest.meleeDefence),
+        armor: scaleField(rest.armor),
+        health: scaleField(rest.health),
+      };
     }
 
     /** Auto-walka M v2b + wspólne skutki mapy (identyczne reguły ruchu co ręczna). */

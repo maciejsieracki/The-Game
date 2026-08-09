@@ -515,19 +515,22 @@ export function stackHpPool(
  *     NIE RYSOWAĆ pola Mocy (tak jak nie rysuje ikony Koszar przy poziomie 0),
  *     bo gołe „0” gracz odczytałby jako awarię.
  *   • `defOf(u)` NIE jest zapisane w tym pliku — to zależność wstrzykiwana
- *     przez wołającego (StackVitalsDeps, patrz niżej). DOMYŚLNIE OD
- *     R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 = B (Maciej 2026-08-07) main.ts
- *     wstrzykuje `combatPowerScaledDefFor` (main.ts, obok
- *     `veteranScaledDefFor`/`rosterFieldPowerM`) — czyli DEFINICJĘ już
- *     PRZESKALOWANĄ premią weterana (game/veteran.ts), fortyfikacją polową/
- *     garnizonem bez muru i mnożnikiem trudności AI. Liczba na tabliczce jest
- *     więc dziś MOCĄ EFEKTYWNĄ, tą samą, którą realnie rozstrzyga auto-bitwa
- *     (rosterFieldPowerM()/resolveAutoBattleByPower() w main.ts) — CEL z
- *     C-MOC-Q1 domknięty, `stackFieldPowerM` sam się nie zmienił, zmieniło
- *     się WYŁĄCZNIE `defOf` wstrzyknięte z main.ts (syncUnitsRender).
- *     Zakres decyzji R-MOC-TABLICZKA-CO-POKAZYWAC-Q1 = B jest DOSŁOWNY:
- *     dotyczy WYŁĄCZNIE tabliczki nad żetonem. Panel pre-battle
- *     (main.ts::preBattleUnitFromRuntime, battle/mapFieldBattle.ts::
+ *     przez wołającego (StackVitalsDeps, patrz niżej). OD
+ *     R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (Maciej 2026-08-09, koryguje zakres
+ *     R-MOC-DEFINICJA-Q1 z 2026-08-08) main.ts wstrzykuje
+ *     `combatPowerFullDisplayDefFor` (main.ts, obok `combatPowerScaledDefFor`/
+ *     `veteranScaledDefFor`/`rosterFieldPowerM`) — czyli DEFINICJĘ przeskalowaną
+ *     premią weterana (game/veteran.ts), fortyfikacją polową/garnizonem bez
+ *     muru, mnożnikiem trudności AI, ORAZ (dla garnizonu w mieście z murem)
+ *     bonusem struktury/terenu miasta — REALNA Moc, identyczna z tym, co
+ *     naprawdę rozstrzyga bitwa (effectiveDefenderM, main.ts), ale bez efektu
+ *     ubocznego na samo rozstrzygnięcie (osobna funkcja, wyłącznie do
+ *     PODGLĄDU). Moc cywilizacji (panel rankingu/HUD/Empire,
+ *     sumArmyMForOwnerEffective w main.ts) jest CELOWO INNĄ liczbą — WYŁĄCZNIE
+ *     `veteranScaledDefFor` (bez terenu/fortyfikacji/muru/trudności AI), patrz
+ *     docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md.
+ *     Zakres jest DOSŁOWNY: dotyczy WYŁĄCZNIE tabliczki nad żetonem. Panel
+ *     pre-battle (main.ts::preBattleUnitFromRuntime, battle/mapFieldBattle.ts::
  *     preBattleUnitFromRuntime) NIE jest tym objęty i nadal liczy „Moc"
  *     z definicji NOMINALNEJ (`armyFieldPower(def)`) — to jest osobny temat
  *     (Evaluator, 2026-08-07): jedyny faktyczny konsument pola `.moc` w
