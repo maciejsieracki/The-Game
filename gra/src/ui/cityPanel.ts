@@ -226,7 +226,9 @@ import {
 import { UI_PARAMS } from './uiParams';
 import type { EmpireFoodState, EmpireFoodTick } from '../game/empire-food';
 // Formatowanie liczb do wyświetlenia (obcięcie śmieci zmiennoprzecinkowych) — Maciej 2026-07-26.
-import { signedPl } from './formatPl';
+// formatLiczbaPl: separator polski (przecinek) — P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD 2026-08-09,
+// wiersz WZROST% w chipie „Wyżywienie i wzrost" dogania konwencję plakietki mapy (przecinek).
+import { formatLiczbaPl, signedPl } from './formatPl';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -4552,7 +4554,10 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     {
       icon: cityPanelChipIcon('chip-map', 14),
       label: 'WZROST%',
-      value: fed ? `${view.wzrostProcent}%` : '—',
+      // P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD: przecinek polski, zgodnie z plakietką mapy
+      // (formatCityGrowthPercentLabel w cityMapStatChip.ts) — ta sama liczba źródłowo
+      // (view.wzrostProcent), więc oba miejsca UI mają pokazywać ten sam separator.
+      value: fed ? `${formatLiczbaPl(view.wzrostProcent)}%` : '—',
       cls: fed && view.wzrostProcent > 0 ? 'gold' : fed ? 'muted' : 'red',
       title: fed
         ? 'Łączny procent wzrostu ludności w tej turze'

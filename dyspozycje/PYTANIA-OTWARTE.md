@@ -1991,13 +1991,80 @@ W5", „5 i pół procent albo 5 procent") jest pokryta obiema formami z jego zd
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`cityGrowthLive`), `gra/src/render/cityMapStatChip.ts`
 (`formatCityGrowthPercentLabel`), `gra/src/render/cities.ts` (`getCityGrowth`).
 
-## P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD (2026-08-09, nota Evaluatora R-ETYKIETA-MIASTA-WZROST-PROCENT) · STATUS: **OTWARTE — niepilne, dług UI**
-Panel miasta renderuje surowo `${view.wzrostProcent}%` → „5.5%" (kropka, notacja JS), plakietka
+## P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD (2026-08-09, nota Evaluatora R-ETYKIETA-MIASTA-WZROST-PROCENT) · STATUS: **NAPRAWIONE 2026-08-09 (jeden wiersz) — czeka na deploy+playtest**
+Panel miasta renderował surowo `${view.wzrostProcent}%` → „5.5%" (kropka, notacja JS), plakietka
 mapy → „5,5%" (przecinek, konwencja polska projektu — `formatLiczbaPl`, `formatWyzwienieLabel`).
-Ta sama liczba, inny separator w dwóch miejscach UI tego samego miasta. Naprawa panelu
-poruszyłaby ~10 miejsc w `cityPanel.ts` — świadomie poza zakresem naprawy plakietki. To panel
-odstaje od własnej konwencji projektu (cała gra po polsku), nie plakietka.
-**Kotwice:** `gra/src/ui/cityPanel.ts` (wiersz „WZROST%", `${view.wzrostProcent}%`).
+Ta sama liczba, inny separator w dwóch miejscach UI tego samego miasta.
+
+**NAPRAWIONE (2026-08-09, subagent Sonnet 5, jeden wiersz):** chip „WZROST%" w
+`renderMagazyn` (`gra/src/ui/cityPanel.ts`, sekcja „Wyżywienie i wzrost", zawsze widoczna, nie
+hover — funkcjonalny odpowiednik plakietki) woła teraz `formatLiczbaPl(view.wzrostProcent)`
+zamiast surowego szablonu. Evaluator PASS-WITH-NOTES: potwierdził że to WŁAŚCIWY wiersz
+(prześledził przepływ liczby od `cities.ts`/`cityPanel.ts` `computeView` do plakietki — ten sam
+`fed`, ta sama liczba źródłowa), dowód mutacyjny (cofnięcie → 20/22, obie asercje lokalizacji
+padają). `city-panel-growth-percent-separator-test.cjs` (nowy) 22/22, `city-badge-growth-percent-test.cjs`
+38/38 (bez zmian — plakietka nietknięta), `city-map-badge-test.cjs` 62/62, `logic-test.cjs`
+213/213, `tsc` 0 błędów.
+
+**C-026 potwierdzone przez Evaluatora mocniej niż deklarował Operator:** 9 wystąpień
+`wzrostProcent` w `cityPanel.ts` = 1 naprawione + 8 pozostawionych (detail-cardy na żądanie,
+tooltip); jedno z ośmiu (`renderCityHeaderCompact`, linia ~9128) to **martwy kod bez żadnego
+call-site w całym repo**. Naprawiony chip jest naprawdę jedynym zawsze widocznym wystąpieniem —
+zawężenie zakresu jest w pełni uzasadnione, nie arbitralne.
+
+**Znak minusa (świadomie NIE naprawiony, decyzja Operatora potwierdzona przez Evaluatora z
+głębszym uzasadnieniem):** panel ma teraz „5,5%" (przecinek, jak plakietka) ALE „-2,1%" (zwykły
+minus) vs plakietka „−2,1%" (U+2212). Operator uzasadnił to jako poza zakresem zlecenia (tylko
+separator). Evaluator poszedł głębiej i znalazł PRAWDZIWY powód nie ruszać tego teraz: panel
+JUŻ DZIŚ miesza glify minusa między chipami tej samej tabeli (Racje: zahardkodowane U+2212,
+Bilans: ASCII przez `signed()`/`signedPl`) — a `signedPl` w `formatPl.ts` ma sprzeczność
+dokumentacji z implementacją (docstring obiecuje U+2212, kod zwraca ASCII). Podmiana glifu w
+samym chipie WZROST% zamieniłaby jeden rozjazd na inny. Właściwa naprawa jest w `formatPl.ts`,
+nie w tym chipie — zarejestrowana osobno.
+
+**Cztery nowe niepilne noty Evaluatora, zarejestrowane osobno:** `P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL`
+(sprzeczność `signedPl` docstring vs implementacja + niespójność Racje/Bilans w tej samej
+tabeli), `P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD` (200 rozbieżnych wartości przy kroku 0,01 —
+dziś nieosiągalne, bo krok realny to 0,5), `P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY` (jedna
+karta miesza `signed()` dla składników z surowym szablonem dla sumy), `P-BRAMKA-SPICHLERZ-WIDOCZNOSC-CZERWONA`
+(pre-istniejący czerwony test, 13 pass/14 fail, niezwiązany, nie był na liście znanych
+czerwonych w CLAUDE.md).
+**Kotwice:** `gra/src/ui/cityPanel.ts` (wiersz „WZROST%", `renderMagazyn`).
+**Model:** Sonnet 5.
+
+## P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL (2026-08-09, nota Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — niepilne**
+`signedPl` (`gra/src/ui/formatPl.ts`) ma sprzeczność docstring vs implementacja: dokumentacja
+obiecuje znak U+2212 („−3,5"), implementacja zwraca ASCII `-` (`0x2D`). Panel miasta już dziś
+miesza glify w TEJ SAMEJ tabeli chipów: chip „Racje" ma zahardkodowany U+2212, chip „Bilans"
+(przez `signed()`→`signedPl`) ma ASCII. Naprawa właściwa: poprawić `signedPl` żeby faktycznie
+zwracał U+2212 zgodnie z własnym docstringiem, potem sprawdzić wszystkie konsumenty czy nie
+polegają (przypadkiem) na ASCII.
+**Kotwice:** `gra/src/ui/formatPl.ts` (`signedPl`).
+**Model:** Sonnet 5.
+
+## P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD (2026-08-09, nota Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — bardzo niepilne, dziś nieosiągalne**
+Panel zaokrągla przez `Number(x.toFixed(1))`, plakietka przez `Math.round(x*10)/10` — 200
+rozbieżnych wartości w zakresie [−20, 20] przy kroku 0,01 (np. `0.15` → panel „0,1%", plakietka
+„0,2%"). Dziś nieosiągalne — krok realny wzoru wzrostu to 0,5, przy którym 0 rozbieżności.
+Ryzyko tylko jeśli krok formuły kiedyś się zmieni; test parytetu próbkuje za mało wartości żeby
+to złapać.
+**Kotwice:** `gra/src/ui/cityPanel.ts`, `gra/src/render/cityMapStatChip.ts`
+(`formatCityGrowthPercentLabel`).
+**Model:** Sonnet 5.
+
+## P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — niepilne**
+Jedna karta szczegółów w `cityPanel.ts` (linia ~4750) renderuje składniki przez `signed()`
+(przecinek, polska konwencja) ale sumę surowym szablonem (kropka) — mieszane separatory w
+jednym widoku. Najwyższy priorytet spośród 8 pozostawionych wystąpień `wzrostProcent`, jeśli
+temat zostanie kiedyś podjęty ponownie.
+**Kotwice:** `gra/src/ui/cityPanel.ts` (linia ~4750).
+**Model:** Sonnet 5.
+
+## P-BRAMKA-SPICHLERZ-WIDOCZNOSC-CZERWONA (2026-08-09, znalezisko Evaluatora P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD) · STATUS: **OTWARTE — pre-istniejące, niezwiązane, do rejestru**
+`spichlerz-widocznosc-test.cjs` — 13 pass / 14 fail. Potwierdzone identyczne na czystym `main`
+sprzed jakichkolwiek zmian tej sesji (nie regresja). Nie był dotąd na liście znanych czerwonych
+bramek w `CLAUDE.md` — do dopisania przy najbliższej aktualizacji.
+**Kotwice:** `gra/tools/spichlerz-widocznosc-test.cjs`.
 **Model:** Sonnet 5.
 
 ## BUG-PRZEMARSZ-KOMUNIKAT-OBCY (2026-08-07, playtest Macieja) · STATUS: **ZAMKNIĘTE — SCALONE (kod)** (`BUG-PRZEMARSZ-KOMUNIKAT-OBCY-Q1=C`)
