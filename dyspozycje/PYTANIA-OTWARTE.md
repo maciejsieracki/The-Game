@@ -2263,7 +2263,7 @@ linia 227). Żadna bramka w repo nie chroni dziś linii `combinedDefPct = struct
 (cityTerrMult - 1) * 100` w `effectiveDefenderM`. Naprawa: asercja źródłowa (regex) na
 main.ts przypinająca tę linię, wzorem starej (usuniętej dziś) asercji na `scaleField`.
 
-## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **OTWARTE — do decyzji, nie blokuje**
+## R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY (2026-08-08, nota N3 Evaluatora moc-mur-revert) · STATUS: **ZASTĄPIONE — `R-MOC-TABLICZKA-VS-CIVPOWER-Q1` (2026-08-09)**
 Po częściowym cofnięciu `R-MOC-MUR-PARADOKS-Q1=A` (decyzja `R-MOC-DEFINICJA-Q1`, tabliczka
 garnizonu = `combatPowerScaledDefFor(u)` bez bonusu muru) — tabliczka mimo to NADAL zmienia
 się po wybudowaniu muru: **51,5 pkt Mocy bez muru → 49,0 pkt Mocy z murem** (dla tego
@@ -2276,6 +2276,25 @@ bitwę), ale pytanie „czy fortyfikacja polowa garnizonu też ma zniknąć z ta
 Moc była naprawdę niezależna od miejsca postoju" nie zostało zadane wprost.
 **Kotwice:** `gra/src/main.ts` (`combatPowerScaledDefFor`, `fortifyFieldScaledDefFor`,
 `unitGetsFortifyDefenseBonus`).
+
+**ZASTĄPIONE (2026-08-09):** Pytanie okazało się objawem błędu zakresu w `R-MOC-DEFINICJA-Q1` —
+zunifikowała regułę „bez budynków/terenu" dla tabliczki NA MAPIE i dla Mocy CYWILIZACJI, gdy to
+dwie różne liczby. Maciej wprost: tabliczka na mapie ma pokazywać REALNĄ Moc ze wszystkimi
+bonusami (teren, fortyfikacja, mur, weteran); Moc cywilizacji (ranking/HUD/Empire) ma być BEZ
+terenu/fortyfikacji/muru, tylko naturalne wskaźniki + ulepszenia + weteran. Pełna decyzja:
+`docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md`. Kod w dispatchu.
+
+## R-MOC-TABLICZKA-VS-CIVPOWER-Q1 (2026-08-09, korekta Macieja do R-MOC-DEFINICJA-Q1) · STATUS: **ECHO — kod w dispatchu**
+Rozdział dwóch liczb Mocy, które wcześniejsza decyzja błędnie zunifikowała: tabliczka/tooltip
+jednostki na mapie = REALNA Moc ze wszystkimi bonusami (teren/fortyfikacja/mur/weteran); Moc
+cywilizacji (panel rankingu, HUD, Empire) = tylko naturalne wskaźniki + ulepszenia + weteran,
+BEZ terenu/fortyfikacji/muru. Zamyka jednocześnie `R-MOC-MUR-PARADOKS-Q1` i
+`R-MOC-MUR-PARADOKS-Q2-KIERUNEK-ODWROTNY` (obie strony tego samego błędnego założenia „to jedna
+liczba"). Pełna decyzja i plan wdrożenia: `docs/decyzje/R-MOC-TABLICZKA-VS-CIVPOWER-Q1.md`.
+**Kotwice:** `gra/src/main.ts` (`computeStackDisplay`/`defOf` — tabliczka; `sumArmyMForOwnerEffective`
+— civ-power; `combatPowerScaledDefFor`, `veteranScaledDefFor`, `fortifyFieldScaledDefFor`,
+`effectiveDefenderM`), `gra/tools/mur-paradoks-test.cjs`.
+**Model:** Sonnet 5 (poza `render/**` — to zmiana logiki liczenia, nie renderu).
 
 ## P-DREWNO-BRAMKA-RYZYKO-STARTU (2026-08-08, nota N1 Evaluatora zwiadowca-drewno) · STATUS: **DO WIEDZY — świadome ryzyko z decyzji BUG-BRAMKA-DREWNO-BRAK=A**
 **Zmierzone:** miasta startują z pustym magazynem surowców (`cities.ts:415`); Drewno
