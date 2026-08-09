@@ -4896,6 +4896,23 @@ Rekomendacja: **C** — sam bug (rozpraszanie) jest tani i bezsporny do naprawie
 nowej funkcji „dwie armie na jednym heksie" to za duża zmiana zasad gry, żeby doczepiać ją bez
 osobnej rozmowy.
 
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — ECHO A, decyzja Macieja + doprecyzowanie (2026-08-09)
+
+**Decyzja: A** (bez funkcji B — potwierdzone, żadnego rozpraszania w ogóle). Cytat Macieja:
+„w takim wypadku nie potrzebujemy przycisku rozproszenie, tylko wtedy, jeżeli armia wraca na swoje
+miejsce do powrót. Czyli albo łączymy, albo wracamy na to samo miejsce przy powrocie, jeżeli nie
+decydujemy się na połączenie z armią, która już tam jest, nie powinien być tracony punkt ruchu."
+
+**Doprecyzowanie ponad wariant A z rozpoznania:** (1) armia cofa się na miejsce, Z KTÓREGO
+przyszła (nie na „najbliższy wolny sąsiedni heks" — ta alternatywa z opisu wariantu A odpada);
+(2) cofnięcie NIE ma kosztować punktu ruchu — ruch ma być traktowany tak, jakby się nie odbył
+(pełny zwrot kosztu ruchu tej tury), nie tylko przestawienie pozycji bez zwrotu.
+
+Dispatch implementacji: `onSeparate` w `promptMergeIfCoLocated` (`main.ts` ~8644-8677) ma przenieść
+WSZYSTKIE jednostki z `movedUnitIds` razem na `(fromQ, fromR)` (skąd faktycznie przyszły, nie przez
+`assignBounceHexesForUnits`) i cofnąć zużyty koszt ruchu tej armii za ten ruch (Operator ma znaleźć
+dokładny mechanizm licznika punktów ruchu jednostki/armii i sposób jego cofnięcia — nie zgadywać).
+
 ---
 
 ## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej

@@ -2141,3 +2141,8 @@ Modal wymagający potwierdzenia zamiast dymka, po 3 rundach AutoBot (Evaluator P
 Root cause: stary showHintMessage dzielił toast z komunikatem ELIMINACJA i go nadpisywał.
 Niepilne noty do rejestru (kapitulacja z głodu nadal gubi ELIMINACJA — poza zakresem). Pełna
 treść w `PYTANIA-OTWARTE.md`.
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — ECHO A + doprecyzowanie (2026-08-09)
+Decyzja Macieja: A. Doprecyzowanie: cofniecie CALEJ armii na miejsce startowe (nie sasiedni heks),
+BEZ utraty punktu ruchu (jakby ruch sie nie odbyl). Dispatch implementacji. Pelna tresc w
+`PYTANIA-OTWARTE.md`.
