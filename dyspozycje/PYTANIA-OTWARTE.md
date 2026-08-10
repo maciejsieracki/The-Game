@@ -9147,4 +9147,9 @@ unit-replace zielone. 2 pre-istniejące czerwone bramki (`empire-food-b5-test` 3
 
 Dispatch Evaluatora NASTĘPUJE teraz.
 
+Evaluator (`a1dea9d35dfb3cde5`, Opus 5) dispatchowany — weryfikacja liniowości
+`computeCityRationCost` (czy proporcjonalne skalowanie jest matematycznie poprawne), 7
+wywołań `cityFoodSplit` z osobna, czy Bilans↔Growth% nie tworzy nowej niespójności tego
+samego typu, znalezisko „(0)" zweryfikowane niezależnie.
+
 ---
