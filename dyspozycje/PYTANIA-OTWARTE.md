@@ -11691,3 +11691,91 @@ asercji „onEventClick" w teście jest szersze niż trzeba (grepuje cały plik,
 ta sama kolizja przesunięta o warstwę → R3 Defekt B/C naprawione, A przesunięty dalej → R4 z-index
 pod audiencją + duplikat w fazie AI → R5 (ECHO B+C Macieja) zmiana kanału na kartę Wydarzeń +
 modal, PASS.
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — runda 2 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `3759ed1d` (2026-08-10).** Format kolumnowy (structure-of-arrays) + słownik
+stringów zamiast tablicy obiektów. Zmierzone na PRAWDZIWEJ mapie `standardowy` (168×120=20160
+heksów, nie na małej mapie testowej): RAW `JSON.stringify(hexes)` 4,07 MB → COMPRESSED
+`mapSnapshot` 0,50 MB (redukcja **8,2×**, cel 5-10× osiągnięty). Pełny zapis (mapa + hojna
+syntetyczna reszta stanu: 120 jednostek, 32 miasta, pełne `explored`, dyplomacja 8 cywilizacji)
+= 0,69 MB znaków — daleko pod progiem bezpieczeństwa 2,5 MB (połowa limitu ~5MB/origin, celowy
+zapas ×2 pod rotację autozapisu). Defekt B skorygowany (kopiowanie skalarne to naturalny efekt
+formatu kolumnowego, żadna ze ścieżek await w FSA nie ma już czego zmutować). Defekt C: nagłówek
+zapisu w osobnym, małym kluczu `localStorage` — dialog „Wczytaj grę" nie parsuje już całej treści
+każdego slotu. Bramki: tsc 0, logic-test 213/213, `map-snapshot-load-test` **47/47** (w tym nowa
+sekcja 5/5b na prawdziwej mapie standardowej, ~66s generacji), `autosave-quota-fail-test` 20/20,
+`fsa-autosave-test` 55/55, `save-load-sort-test` 4/4, `planned-march-test` 18/18, `save-label-test`
+OK. Czeka na NIEZALEŻNEGO Evaluatora (dispatch w toku).**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — Evaluator FAIL: 2 defekty (edycja traktatów) (2026-08-10)
+
+**Werdykt (Opus 5) dla `ed002de2`: FAIL.** Punkty 1 (`applyOwnProposalEdit` nietknięty
+round/awaitingOwnerId/role), 4 (rozróżnienie own/incoming kompletne, jedno miejsce rozgałęzienia),
+5 (brak snapshotu payloadu sprzed edycji, AI czyta na żywo) — **czyste, potwierdzone**. Bramki
+zielone (10/10), ale ponieważ test pokrywa tylko 2 z 12 typów akcji, które nowy `canCounter`
+włącza (`actionUsesTradeBasket` = cały `TRADE_BASKET_ACTION_IDS`, nie tylko handel/podarunek).
+
+**Defekt 1 (blokujący): edycja czystych traktatów (nap, sojusz, wasal, trybut...) to cichy
+no-op.** `handleNegotiationEditOwn` waliduje przez `clampNegotiationPayloadToRealResources`, ale
+ten predykat odrzuca (`return null`) payload BEZ pozycji koszyka i bez `goldOnce>0` — a to jest
+NORMALNY kształt payloadu czystego traktatu (`nap`, `sojusz_pelny`, `wasal`, `trybut_oferta`...).
+Odtworzone empirycznie: przycisk Edytuj się pokazuje, modal się otwiera, „Zapisz zmiany" zamyka
+modal — i nic się nie zapisuje. Jedyny komunikat błędu (`showHintMessage`) ginie pod audiencją
+(z-index 320 vs 400 — ten sam wzorzec kolizji co temat eliminacji). Dodatkowo: ścieżka TWORZENIA
+własnej propozycji w ogóle nie clampuje — więc ofertę, którą wolno złożyć, nie wolno wyedytować.
+
+**Defekt 2 (blokujący): edycja bez żadnej zmiany podwaja złoto w traktacie.** Gałąź `'own'`
+syntetyzuje `giveItems` z `goldOnce` (skopiowane z gałęzi handlu, gdzie jest poprawne — tryb
+`trade` nie ma osobnego `goldOnce`). W trybie `treaty` `goldOnce` to OSOBNE pole, emitowane OBOK
+`giveItems` przez `buildTreatyPayload` — synteza dokłada drugą kopię. Odtworzone: wejście/wyjście
+z modala bez zmian dla akcji „granice" (uiActionId 4) → 20 ¤ z powietrza w `giveItems`, realnie
+przelewane przez `applyProposalOutcome` (`transferBasketItems`) PLUS wchodzi do
+`sweetenerEasePoints` (sztucznie ułatwia zgodę AI). Dotyczy akcji 4/9/15/6 (opłaty/ceny
+gotówkowe). Kontrola atrybucji: prefill gałęzi `incoming` (pre-istniejącej) tego nie robi —
+duplikat wnosi wyłącznie nowa gałąź `'own'`.
+
+**Kierunek naprawy (Evaluator, niekodowany):** zawęzić bramkę `canCounter` dla `direction==='own'`
+z całego `actionUsesTradeBasket` do WYŁĄCZNIE `getTradeBasketMode(uiActionId) === 'trade'|'gift'`
+(uiActionId 14/13) — to jednym warunkiem usuwa OBA defekty i zostaje w literze ECHO A („koszykowe").
+Edycja czystych traktatów, jeśli właściciel jej zechce, to OSOBNE pytanie ABC, nie domyślne
+rozszerzenie dzisiejszej decyzji.
+
+**STATUS: dispatch Sonnet 5 (worktree) — runda 2, naprawa wąska (zawężenie bramki do trade/gift),
+BEZ ABC (to zwężenie zakresu do litery już podjętej decyzji, nie nowa decyzja). Wzmocnić test o
+round-trip pustego traktatu i „otwórz+zapisz bez zmian" z asercją identyczności payloadu.**
+
+## R-CS-HARD-BRAK-STOSOWANIA-AI — NOWY TEMAT, rozpoznanie dostarczone (2026-08-10)
+
+**Zakres zweryfikowany jako WĄSKI: wyłącznie Państwa-Miasta (`defensiveCopy`), nie duża AI.**
+`CS_WAVE_ATTACK_MIN_STACK`/`countFriendlyMilitaryOnHex` mają dokładnie 2 call site'y, oba
+wewnątrz `decideDefensiveCopyTurn` — duża AI atakuje bezwarunkowo przy sąsiedztwie wroga, zero
+wymogu stosu.
+
+**Rewizja pierwotnej diagnozy Evaluatora (ważne):** to NIE jest fizyczna niemożność wejścia na
+własny heks — `computePath`/`occupiedExcluding` mają wyjątek: dokładnie 1 skok na heks zajęty
+(nawet przez sojusznika) JEST dozwolony, gdy to wprost podany cel ruchu. Prawdziwa przyczyna jest
+węższa: **brak logiki decyzyjnej, która celowo kieruje 2-3 jednostki PM na wspólny punkt zbiórki i
+TRZYMA je tam do osiągnięcia progu przed atakiem** — `planCityStateOffensiveMove` przelicza
+`bestAlly` OD NOWA co turę, bez pamięci międzyturowej, więc nie ma deterministycznej konwergencji.
+`assignSharedStackGroupId` (mechanizm łączenia w stos, dziś tylko dla gracza) okazał się
+NIEPOTRZEBNY do samej bramki ataku — `countFriendlyMilitaryOnHex` liczy fizyczną obecność, nie
+`stackGroupId`.
+
+**Trzy warianty naprawy (rekomendacja techniczna, NIE decyzja produktowa):**
+- Wariant 1: trwały punkt zbiórki + stan międzyturowy PM czekają do progu. Najwierniej oddaje
+  pierwotny zamysł „fali" (`R-MP-HARD-WAVE`), ale średni-wysoki koszt (nowy stan AI, dziś
+  bezstanowe między turami), średnie ryzyko kolizji z innymi ścieżkami PM (obrona domu, posiłki
+  sióstr, mają priorytet przed offensive move).
+- Wariant 2 (rekomendacja techniczna, najniższy koszt/ryzyko): zliczać sojuszników w promieniu N
+  heksów od celu zamiast wymagać jednego heksu — jedna nowa funkcja, jeden call site, zero zmian w
+  pathfindingu, bardzo niskie ryzyko regresji. Odchodzi od wizualnej „zwartej fali" na rzecz
+  koordynacji bez fizycznego stania razem.
+- Wariant 3: próg liczony po zaangażowaniu w tej samej turze (nie po współobecności na heksie) —
+  średni koszt, podobny efekt do Wariantu 2, bardziej złożony.
+
+**STATUS: NIE DO ABC TERAZ (Maciej śpi, autoryzacja pracy autonomicznej nie obejmuje decyzji
+gameplayowych/AI-behawioralnych bez jego udziału) — zarejestrowane jako osobny, świadomie
+odłożony temat do ABC po jego powrocie. NIE blokuje deployu reszty tej fali: to nowo odkryty,
+pre-istniejący problem architektoniczny (nie regresja żadnego commitu tej sesji), wymaga decyzji
+projektowej o kompromisie (wizualna fala vs koordynacja zdalna), nie technicznej korekty liczby.**
