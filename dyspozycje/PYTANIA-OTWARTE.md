@@ -8592,4 +8592,30 @@ Temat już scalony (`ac07e79e`), Evaluator wyłącznie potwierdził post-factum.
 
 ---
 
+## R-AI-UCZENIE-SIE-NA-BLEDACH (2026-08-10, pytanie eksploracyjne Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** czy da się dodać AI
+cywilizacji „uczące się na błędach", coraz trudniejsze — lepsze prowadzenie wojen,
+budowania i rozwoju we wszystkich aspektach.
+
+**Wstępna odpowiedź orkiestratora w czacie (nie decyzja, nie rozpoznanie — do zweryfikowania
+właściwym rozpoznaniem gdy temat zostanie podjęty):** prawdziwe uczenie maszynowe
+(trenowanie modelu pamiętającego doświadczenie MIĘDZY rozgrywkami) nie mieści się w
+architekturze gry — statyczny bundle HTML/JS bez backendu, bez infrastruktury treningowej.
+Dzisiejsze AI (`gra/src/game/ai.ts` + `gra/data/ai-params.json`) jest deterministyczne i
+regułowe — na tym stoi część bramek testowych (determinizm mapy itd.), więc prawdziwe ML
+łamałoby ten fundament. Tańsza, realna droga do tego samego efektu: rozbudowa istniejących
+heurystyk oceny (kalkulacja siły wojskowej przed atakiem, priorytety budowy/rozwoju,
+reakcja na zagrożenia) + skalowanie trudności parametrami, BEZ łamania determinizmu.
+Prawdziwe uczenie między rozgrywkami byłoby osobnym, znacznie większym projektem
+(zapisywanie statystyk wyników + ręczne/półautomatyczne dostrajanie parametrów na ich
+podstawie) — nie coś do wpięcia przy okazji.
+
+Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md. Do rozpoznania/ABC
+(zakres: „lepsze AI regułowe" vs „adaptacja w obrębie jednej rozgrywki" vs „uczenie
+międzysesyjne przez zapisywane statystyki" — trzy różne skale kosztu), gdy Maciej da
+sygnał do podjęcia.
+
+---
+
 ---
