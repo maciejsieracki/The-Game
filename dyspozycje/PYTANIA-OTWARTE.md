@@ -10631,8 +10631,11 @@ rekrutacji rośnie ~N×, "potrzeby" armii niekoniecznie tak szybko.
   formuły tłumika.
 - C: oba naraz — cofnij epokę 1 do 1000 ORAZ dołóż tłumik skalowania puli z liczbą miast.
 
-**STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem z decyzją 2026-08-03,
-czekam na odpowiedź Macieja.**
+**ECHO A** (2026-08-10, „Cofnij tylko epokę 1 do 1000 — dokładnie to, o co pytasz. Nie rozwiązuje
+problemu skali przy wielu miastach."). **STATUS: WDROŻONE `b11c8608`** — `epoka-ludnosc-manpower.json`
+epoka 1 `manpowerNaJednostke` 500→1000, `manpower-test.cjs` 12 asercji przeliczonych (62/62 zielone).
+Problem skalowania puli z liczbą miast NIE rozwiązany (świadomie, wg odpowiedzi Macieja) — osobny,
+niedispatchowany wątek jeśli zechce do niego wrócić.
 
 ## R-DYPLOLISTA-KOLOR-CYWILIZACJI — zgłoszenie Macieja (2026-08-10, zrzut listy Znane cywilizacje)
 
@@ -10667,7 +10670,11 @@ wyłącznie od `tone` relacji (neutralny/gold/wojna), NIE od cywilizacji — st�
 jak dziś — to zachowuje istniejącą czytelność stanu relacji (gold/wojna/neutralny) i dokłada
 odróżnienie cywilizacji przez kolor+obrys, bez konfliktu dwóch sygnałów na jednym elemencie.**
 
-**STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
+**ECHO** (2026-08-10, „pokolorować sam tekst nazwy (Twoja pierwsza preferencja)") — wybrany WARIANT
+TEKSTU (nie obrys/glow, wyłącznie `name.style.color`). **STATUS: WDROŻONE `f71869d2`** —
+`DiploListEntry.kolorHex` + przekazanie w `diploListEntryFromRelation` + render. Dodany
+`legibleCivTextColor()` (próg luminancji 0.45) — kilka kolorów w `civs.json` (np. `#5C4033`,
+`#8B1A1A`) byłoby nieczytelnych jako czysty tekst na niemal czarnym tle bez rozjaśnienia.
 
 ## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — zgłoszenie Macieja (2026-08-10)
 
@@ -10703,7 +10710,10 @@ Maciej: nie zauważył żadnego komunikatu o zdobyciu WSZYSTKICH miast cywilizac
 **Rekomendacja: A** — najmniejsza zmiana usuwająca oba konkretne zgłoszone przypadki, wykorzystuje
 istniejący modal (już niepomijalny, wymaga kliknięcia) zamiast walczyć z jego z-index/timingiem.
 
-**STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
+**ECHO A** (2026-08-10, „3a"). **STATUS: WDROŻONE `d7718ad5`** — `runCapitalCapturePlunder`/
+`applyCityCaptureToMap` zwracają etykietę wyeliminowanej cywilizacji zamiast void, `showCityCaptureNotice`
+dostał wariant ELIMINACJA! (gdy zdobywcą gracz), `annexCityStateToOwner` dostał brakujący toast
+(gdy annexerId===0). Przypadek Triumfu zjednoczenia (własny modal) celowo pominięty w tej ścieżce.
 
 ## R-WYDARZENIA-KOLOR-DIPLO-INFO — ECHO bezpośrednia specyfikacja Macieja (2026-08-10, 2 zrzuty)
 
