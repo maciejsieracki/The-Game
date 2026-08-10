@@ -9781,6 +9781,23 @@ git stash — 10/19 fail na starym kodzie). Bramki: tsc 0, logic-test 213/213,
 porażkami (`empire-food-b5`, `spichlerz-wzrost`, `food-hodowla`) potwierdzone identyczne przed zmianą
 przez git stash — niezwiązane z tym tematem. **Dispatchowany Evaluator (`aef68069325faa691`)**.
 
+**Autoryzacja Macieja (2026-08-10):** „Ok, jak zakończysz wszystkie tematy, to zrób deploy do
+roboczej oraz «domknij» porządki." (odczytane jako „domknij porządki" — literówka/autokorekta na
+„domain"; sens: dokończyć bieżące wątki i posprzątać, nie osobna, nierozpoznana instrukcja).
+**Plan wykonania po zamknięciu Spichlerza „(0)" (ostatni z 4 tematów priorytetowych):**
+1. Scalić Spichlerz „(0)" po werdykcie Evaluatora (PASS/PASS-WITH-NOTES → merge, FAIL → runda 2).
+2. Sprzątnąć osierocone worktree (`.claude/worktrees/*`) po wszystkich zamkniętych tematach.
+3. Sprawdzić `PYTANIA-OTWARTE.md` kompletność (grep `STATUS: **OTWARTE` bez kotwicy, wzorem
+   dzisiejszego audytu) — upewnić się że nic nowego nie zostało po drodze zapomniane.
+4. Rozważyć kandydata na regułę playbooka C-042 (zgłoszony wcześniej przy okazji sprostowania
+   P-DYPLO-SWEETENER: „każdy ECHO+dispatch musi dostać wpis zamykający po scaleniu, nie tylko wpis w
+   WERSJE.md") — dopisać do playbooka jeśli czas pozwoli, nie blokujące deployu.
+5. **Deploy do ROBOCZA (Opus 5)** — nowa fala, zawiera: koszt-ulepszeń-UX, Auto Wyżywienie
+   live-recalc+cache+Wzrost%, Spichlerz „(0)" scalenie. Zalogować w `WERSJE.md` +
+   `KANAL-PRACA.md` zgodnie z CLAUDE.md §5.
+Dispatch deployu nastąpi automatycznie po kroku 1, bez dodatkowego pytania — to już jest
+autoryzowane wprost powyższą wiadomością.
+
 ---
 
 ## [PL, 2026-08-10] Hasło „raport" — pełny audyt (agent `aff9b116cf957d004`) + kontrola kompletności
