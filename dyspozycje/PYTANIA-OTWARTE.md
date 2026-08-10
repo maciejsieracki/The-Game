@@ -10605,9 +10605,15 @@ niezależnie, toast nie ginie). Trzy noty do domknięcia przed uznaniem tematu z
 - **N3:** `docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md` (kanon) nadal deklaruje Q1=A jako
   aktualny stan, nie wspomina Q2 — rozjazd z komentarzem w `main.ts`.
 
-**STATUS: dispatch Sonnet 5, runda 2 — N1 (wzmocnić test), N2 (bramka dla `isSiegeMapPanelOpen`
-w miejscu wywołania, spójnie z pozostałymi wywołaniami cyklu), N3 (aktualizacja kanonu). Po
-dostarczeniu: NIEZALEŻNY Evaluator.**
+**STATUS: SCALONE `108713aa` (2026-08-10).** N1: logika cyklowania wyniesiona do nowego, czystego
+modułu `gra/src/game/army-cycle.ts` — test przepisany na behawioralny (buduje sztuczne
+`RuntimeUnit`, sprawdza wynik funkcji, nie tekst źródłowy), ręcznie zweryfikowany że łapie obie
+mutacje z werdyktu Evaluatora (no-op cyklu → 8 FAIL; usunięcie `selectPlayerUnit` → 1 FAIL). N2:
+handler `scout-explore` bramkuje `isWorldMapUnitMode()` w miejscu wywołania (symetrycznie do
+Spacji/„bębna"), zamiast polegać wyłącznie na wewnętrznej bramce funkcji cyklującej. N3:
+`docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md` zaktualizowany, Q1 oznaczony jako zastąpiony.
+Bramki: tsc 0, logic-test 213/213, `scout-auto-explore-test` 25/25,
+`scout-explore-deselect-cycle-test` 32/32. Czeka na NIEZALEŻNEGO Evaluatora (dispatch w toku).**
 
 ## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA — ECHO A (2026-08-10, drugi zrzut, pełny panel Armie)
 
@@ -11396,8 +11402,16 @@ Do tego: usunąć podwójną emisję (jedno źródło treści, nie dwa), i doło
 polaryzację warunku `skipGenericToast` (dzisiejsze 8 asercji nie łapie odwróconego `!`) oraz
 relację z-index (nie tylko istnienie kodu).
 
-**STATUS: do ABC — wybór kanału to decyzja produktowa, nie techniczna (wpływa na to, gdzie i jak
-długo gracz widzi komunikat). Pytanie zadane Maciejowi w czacie.**
+**ECHO B+C** (2026-08-10): „b+c (po naciśnięciu wydarzeń przenosi do b)" — komunikat trafia jako
+karta do dziennika Wydarzeń (kanał C, likwiduje przy okazji defekt duplikatu przy rozstrzygnięciu
+w fazie AI — jedno źródło emisji), a kliknięcie tej karty otwiera/przenosi do pełnej treści przez
+kanał banera/modala (kanał B) — hybryda: dyskretne powiadomienie od razu widoczne w panelu bocznym,
+pełne szczegóły (tech/Power) na żądanie gracza. **STATUS: dispatch Sonnet 5 (worktree) — runda 5.
+Usunąć oba dotychczasowe `showHintMessage` (annexCityStateToOwner + applyProposalOutcome), skierować
+zamiast tego do side-panel event (wzorzec `eot-event-defer.ts`/`sidePanelHud.ts`, ten sam użyty dla
+kart WYDARZENIA), klik karty otwiera baner/modal z pełną treścią (tech+Power). Dołożyć bramkę na
+brak duplikatu w ścieżce end-of-turn (AI rozstrzyga propozycję) — dokładnie to, co Evaluator złapał
+jako drugi defekt.**
 
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — Evaluator FAIL na `8458ac74` (2026-08-10)
 
@@ -11445,6 +11459,16 @@ snapshotu, stary format już działa i jest przetestowany) / przeniesienie snaps
 (brak limitu 5MB). Dodatkowo: `mapSnapshot` nie powinien wchodzić do wszystkich 10 slotów
 rotacyjnych autozapisu, tylko do 1-2 najnowszych.
 
-**STATUS: do ABC — pytanie zadane Maciejowi w czacie. Funkcja NIE nadaje się do deployu w obecnej
-postaci (deploy i tak wymaga hasła „deploy", więc nic nie trafiło do graczy, ale scalona na
-gałęzi sesji wersja jest fałszywym „gotowe").**
+**ECHO A** (2026-08-10): kompresja snapshotu. **STATUS: dispatch Sonnet 5 (worktree) — runda 2.
+Skompresować `mapSnapshot` przed zapisem (kierunek z werdyktu Evaluatora: słownik/enum typów terenu
+zamiast powtarzanych stringów per-heks, `terenBazowy`/`nakladka`/`ulepszenie` jako tablice typowane;
+cel: redukcja rzędu 5-10× względem dzisiejszych 4,1 MB dla mapy `standardowy`). Musi przejść przez
+`JSON.stringify`-owalny format (localStorage nie przyjmuje binarnych/typed array bezpośrednio —
+Base64 albo string-safe kodowanie). Zachować round-trip identyczny co dziś (test
+`map-snapshot-load-test.cjs` musi dalej przechodzić po dekompresji). Dołożyć do testu asercję na
+rozmiar wyjścia dla mapy `standardowy` (Evaluator: „zero asercji o rozmiarze wyniku" — nota E),
+próg ustawić tak by realnie mieścił się z zapasem w limicie ~5MB/origin RAZEM z resztą stanu
+zapisu (jednostki/miasta/tech), nie tylko sam snapshot. Naprawić przy okazji Defekt B (fałszywy
+komentarz-inwariant o braku mutacji podczas serializacji FSA — patrz werdykt) i Defekt C (parsowanie
+wszystkich slotów przy otwarciu dialogu — wynieść nagłówek label/tura/savedAt do osobnego, małego
+klucza obok treści, żeby nie trzeba było `JSON.parse` całego snapshotu tylko po metadane).**
