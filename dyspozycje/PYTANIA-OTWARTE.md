@@ -7590,6 +7590,34 @@ Dispatch rundy 2 (wąska, TYLKO dwa wskazane cięcia + test pokrywający M8/M9) 
 
 ---
 
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — runda 2 (naprawa) dostarczona, czeka na NIEZALEŻNEGO Evaluatora (2026-08-10)
+
+Zakres ściśle ograniczony do 2 wskazanych cięć + rozszerzenie testu (C-025, zero przy okazji —
+nie ruszono `relaxedWonderCostThreshold`, save/load `aiWonderStuckTurnsByOwner`, danych
+`petra`/`wonders.json`). `main.ts`: `wonderForcePriority` teraz koniunkcja trzech warunków
+(`wonderEraGateForced && !wonderRequiredAlreadyBuilding && wonderRequiredBuildable`),
+`wonderRequiredAlreadyBuilding` skanuje całą kolejkę miasta, nie tylko front. `ai.ts`:
+`decideAiWonderBuild` dostał nowy parametr końcowy `requiredWonderIds`, w trybie `forcePriority`
+wybiera WYŁĄCZNIE z tej listy (`ordered.find`, nie `ordered[0]`), zwraca `null` bez fallbacku gdy
+żaden wymagany cud niebudowalny — nawet gdyby `forcePriority` błędnie dostał `true`.
+
+Test rozszerzony do **46/46** (z 31/31): nowa sekcja 5-STRUKTURA czyta źródło `main.ts` (ten sam
+wzorzec co `era-cud-main-ts-integracja-test.cjs`, naprawia lukę M8/M9 z werdyktu Evaluatora rundy
+1 — poprzednia sekcja 5 re-implementowała formułę zamiast czytać źródło); nowa sekcja 6 to
+DOKŁADNA reprodukcja scenariusza Evaluatora (Fenicjanie/Petra, realne dane, symulacja 12 tur) —
+PO naprawie: kolejka nie rośnie (max długość 1 zamiast rosnącej do 12), zero `queueJump` w 12
+tur, po zbadaniu Inżynierii wymuszacz poprawnie wybiera `petra`. Wynik wklejony do raportu jako
+dowód.
+
+Bramki: tsc 0, logic-test 213/213, owner-epoch 13/13, era-cud-warunek-awansu 33/33,
+era-cud-main-ts-integracja OK (15/16/11), ai-production-priority 9/9, ai-cud-priorytet-b3
+**46/46**, ai-balans-step4 10/10, cuda-handel 26/26. `ai-balans-step3` 7/8 — ta sama porażka
+pre-istniejąca, ponownie potwierdzona.
+
+Dispatch NIEZALEŻNEGO Evaluatora rundy 2 (inny agent niż runda 1) NASTĘPUJE teraz.
+
+---
+
 ## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2, stackGroupId) — runda 3 dostarczona, czeka na Evaluatora (2026-08-10)
 
 Worktree `agent-a3f6bd057db40cbd4` — krok kopiowania z żywego checkoutu zweryfikowany (worktree
