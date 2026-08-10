@@ -10259,3 +10259,26 @@ Maciej wybierze, plus twardy dowód że sama Oś B (Wzrost%) wymaga osobnej decy
 niż sam Bilans/Spichlerz.
 
 ---
+
+## Evaluator żywy fallback — PASS-WITH-NOTES (`a9935e7d20bbedcfa`)
+
+Zweryfikowane linia po linii: równoważność bit-w-bit gałęzi „tick istnieje", drugi przebieg
+algorytmicznie tożsamy z `advanceEmpireFood`, ślepy zaułek Operatora potwierdzony jako słusznie
+odrzucony (okno w pełni synchroniczne). **`spichlerz-wzrost-test.cjs` potwierdzony NIEZALEŻNIE jako
+pre-istniejący** — osobny sparse worktree na baseline `99974173`, identyczny wynik (2 pass/7 fail) i
+identyczne komunikaty przed i po zmianie Operatora; md5 dotkniętych plików (`economy.ts`,
+`empire-food.ts`) identyczne z bazą. Przyczyny źródłowe ustalone: próg wzrostu (`economy.ts:1117`)
+zmieniony 2026-07-09, test nieaktualizowany; drugi test asercjonuje nieistniejący już podział 70/30
+rozwój/państwo. **Nie czwarty objaw** — inna rodzina długu testowego.
+**Notatki:** N1 (osobny temat, nie blokuje) — odkryty ODWROTNY rozjazd: gdy `rezerwa>0`, panel
+miasta (`resolveCityFedForUi`) patrzy tylko na znak lokalnego bilansu i błędnie pokazuje głód mimo
+że centrala by pokryła — HUD (nowy fallback) poprawnie nie ostrzega. W zgłoszonym przypadku
+(`rezerwa=0`) oba się zgadzają, więc TO zlecenie zamyka się poprawnie, ale rozjazd w drugą stronę
+wymaga osobnego zgłoszenia. N2 (ważne przy scalaniu) — baza worktree NIE jest przodkiem gałęzi
+sesji (FALA 267 vs bieżąca), scalać WYŁĄCZNIE deltę (`projectPlayerFoodProjection` + ternary w
+`buildHudState`), nie cały `git diff` worktree. N3/N4/N5 — nieblokujące (higiena symlinku, test
+częściowo reimplementacyjny ale nietautologiczny, zgubione `?? []` nieszkodliwe).
+
+**SCALAM TERAZ — wyłącznie deltę, zgodnie z N2.**
+
+---
