@@ -8783,6 +8783,50 @@ tej puli i się udaje, gdy pula > koszt; (3) czy jest realna regresja (porównan
 zachowaniem sprzed której fali — Maciej mówi że to działało wcześniej) czy gracz po prostu
 nie ma jeszcze wystarczającej puli na żadne ulepszenie (koszt > 22).
 
+**DRUGI zrzut Macieja — konkretny, sprzeczny odczyt między dwoma panelami tego samego
+miasta w tej samej chwili (tylko 1 miasto w grze):**
+- Panel „Grecy" (cywilizacja), tabela „DO PULI / DO BUDYNKÓW": Ateny → **+2 / +4**
+  (`empireDetailPanel.ts:384-386`, `cityEconMiniPraca`, pola `c.pracaPula`/`c.pracaBudynki`).
+- Panel miasta „Podział Pracy": suwak **50%/50%**, Budowa **+3**, Ulepszenia **+3**.
+- Te same 6 Pracy, DWA różne rozbicia w tym samym momencie. Cytat: „co innego pokazuje w
+  ogóle panel miasta, co innego jest cywilizacja. A mam tylko jedno miasto."
+
+**Trop orkiestratora #2 (własne śledzenie kodu, NIE potwierdzone jako pełna przyczyna,
+DO WERYFIKACJI przez rozpoznanie, nie do ślepego przyjęcia):** `pracaPula`/`pracaBudynki` w
+panelu „Grecy" (`main.ts:12057-12058`) czytane z `tk = _lastPlayerCityEcon.find(...)` —
+**migawka z KOŃCA POPRZEDNIEJ TURY**, nie przeliczenie na żywo. Panel miasta „Podział Pracy"
+najprawdopodobniej liczy na żywo z AKTUALNEGO ustawienia suwaka. Jeśli suwak/ustawienie
+zmieniło się w trakcie bieżącej tury (Maciej: „prawdopodobnie to ustalenie nastąpiło w
+momencie, gdy chciałem mieć globalne ustawienia i te globalne ustawienia w ogóle nie
+działają ani nie działają też ustawienia na miasta indywidualnie. Wszystko zostało
+zepsute.") — panel cywilizacji pokazuje STARY split, panel miasta NOWY. To może tłumaczyć
+rozjazd liczb, ale NIE tłumaczy samo w sobie, dlaczego globalne ORAZ indywidualne
+ustawienia „nie działają wcale" — to osobny, poważniejszy wątek do zbadania w tym samym
+rozpoznaniu (temat R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE, `8692b61b`, scalony wcześniej
+w tej sesji — możliwe że regresja weszła razem z nim albo po nim).
+
+**KRYTYCZNE doprecyzowanie Macieja (po mojej wzmiance o R-MIASTO-USTAWIENIA-GLOBALNE-
+VS-LOKALNE):** „tylko że nie ma panelu ustawień globalnych. Już zwracałem uwagę, że nie
+wiem gdzie to jest i czy to w ogóle jest. Jedynie co to wchodzę do miasta i zmieniam w
+danym mieście. Także tu jest mega bałagan." — czyli temat `R-MIASTO-USTAWIENIA-GLOBALNE-
+VS-LOKALNE` zarejestrowany wcześniej w tej sesji jako „SCALONE `8692b61b`" **może być
+fałszywym zamknięciem** — kod mógł zostać scalony bez realnego, widocznego dla gracza
+panelu UI, albo panel istnieje ale Maciej nie może go znaleźć (też problem — UX). To DO
+ZBADANIA W TYM SAMYM ROZPOZNANIU, priorytetowo: czy panel globalnych ustawień w ogóle
+istnieje w drzewie UI, gdzie miał się pojawić, i czy commit `8692b61b` faktycznie coś
+takiego dodał czy tylko logikę bez punktu wejścia w interfejsie.
+
+**Uczciwie do Macieja:** pętla Operator→Evaluator w tej sesji weryfikuje SCOPED zmianę
+przeciwko scenariuszom, które Operator/Evaluator sam wymyślił i przetestował dla TEGO
+zgłoszenia — nie robi wyczerpującego regresyjnego sprawdzenia całej gry pod kątem
+niezgłoszonych kombinacji (np. „zmień suwak, NIE kończ tury, otwórz panel cywilizacji").
+Ten dokładny rodzaj błędu — dwa niezależne miejsca liczące to samo z różnych źródeł danych
+(cache vs live) — jest właśnie tym, czego pojedyncze Evaluatory nie łapią, jeśli nikt nie
+zgłosił tego konkretnego scenariusza. To nie usprawiedliwienie, tylko wyjaśnienie mechanizmu
+— i konkretny powód, żeby rozpoznanie objęło też grep wszystkich miejsc czytających
+`_lastPlayerCityEcon`/odpowiedniki dla innych zasobów (Żywność, Nauka, Skarbiec), bo to
+może być systemowy wzorzec błędu, nie jednorazowy przypadek przy Pracy.
+
 ---
 
 ## BUG (zrzut Macieja) — Auto Wyżywienie NIE zapobiega ujemnemu Spichlerzowi, regresja (2026-08-10)
