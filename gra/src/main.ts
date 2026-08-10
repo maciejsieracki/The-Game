@@ -13515,6 +13515,13 @@ async function boot(): Promise<void> {
       kosztArmii: number;
       uchwalaSolAktywna: boolean;
       uchwalaSolSpichlerzIICount: number;
+      /** P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1: liczba miast gracza, których deficyt
+       *  lokalny NIE zostałby w pełni pokryty z magazynu centralnego, gdyby tura zakończyła się
+       *  teraz — do żywego fallbacku licznika HUD, gdy `_lastTicks` jest jeszcze puste (patrz
+       *  buildHudState niżej). / EN: count of the player's cities whose local deficit would NOT
+       *  be fully covered by the central stockpile if the turn ended right now — feeds the HUD
+       *  counter's live fallback for when `_lastTicks` is still empty (see buildHudState below). */
+      unfedCityCount: number;
     } {
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       // C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik terytorialny w projekcji HUD —
@@ -13579,6 +13586,13 @@ async function boot(): Promise<void> {
       let central = reserve;
       let sumSurplus = 0;
       let sumDeficit = 0;
+      // P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (Maciej 2026-08-10): potrzeby miast na
+      // deficycie w KOLEJNOŚCI preview.perCity — wejście do drugiego przebiegu (unfedCityCount
+      // niżej), który liczy pokrycie tak samo jak advanceEmpireFood (empire-food.ts:227-243).
+      // / EN: deficit-city needs in preview.perCity ITERATION ORDER — input to the second pass
+      // (unfedCityCount below), which computes coverage the same way as advanceEmpireFood
+      // (empire-food.ts:227-243).
+      const deficitNeedsForFeed: number[] = [];
       for (const tk of preview.perCity) {
         if (tk.ownerId !== 0 || tk.oblegany) continue;
         const bilans = tk.bilansLokalny ?? tk.zywnoscNetto;
@@ -13587,7 +13601,24 @@ async function boot(): Promise<void> {
           central += bilans;
         } else {
           sumDeficit += -bilans;
+          deficitNeedsForFeed.push(-bilans);
         }
+      }
+      // Drugi przebieg — identyczny algorytm jak advanceEmpireFood (empire-food.ts:235-243):
+      // magazyn centralny maleje przez kolejne miasta na deficycie w tej samej kolejności,
+      // miasto liczy się jako nakarmione TYLKO gdy pokryte W CAŁOŚCI. Start = `central` PO
+      // nadwyżkach, PRZED odjęciem sumDeficit i PRZED kosztem armii (tak samo jak w
+      // advanceEmpireFood: drugi przebieg tam też startuje z tego punktu). / EN: second pass —
+      // identical algorithm to advanceEmpireFood (empire-food.ts:235-243): the central pool
+      // depletes through deficit cities in the same order, a city only counts as fed if covered
+      // IN FULL. Starts from `central` AFTER surpluses, BEFORE subtracting sumDeficit and BEFORE
+      // the army cost (matching where advanceEmpireFood's second pass starts too).
+      let centralForFeed = central;
+      let unfedCityCount = 0;
+      for (const need of deficitNeedsForFeed) {
+        const covered = Math.min(need, Math.max(0, centralForFeed));
+        centralForFeed -= covered;
+        if (covered < need) unfedCityCount++;
       }
       if (sumDeficit > 0) {
         central -= Math.min(sumDeficit, Math.max(0, central));
@@ -13600,6 +13631,7 @@ async function boot(): Promise<void> {
         kosztArmii,
         uchwalaSolAktywna,
         uchwalaSolSpichlerzIICount,
+        unfedCityCount,
       };
     }
 
@@ -13825,8 +13857,29 @@ async function boot(): Promise<void> {
       // spójnie ten sam deficyt, nie tylko głód wojska. / EN: same unfed-city count as the empire
       // panel (buildEmpireFoodSnap → perCityRows) — the HUD "Spichlerz" chip must surface the same
       // deficit consistently, not only army hunger.
-      const zywnoscMiastNiedokarmionych = (getLastEmpireFoodTick(0)?.perCityRows ?? [])
-        .filter(r => r.nakarmione === false).length;
+      //
+      // P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (Maciej 2026-08-10, rozpoznanie
+      // a71a5e3791099fb13): `getLastEmpireFoodTick(0)` jest `undefined` dopóki nie minie
+      // PIERWSZY koniec tury (nowa gra / świeży zapis) — bez fallbacku licznik fałszywie
+      // pokazywał 0, mimo że panel miasta W TEJ SAMEJ CHWILI poprawnie pokazywał „Głód: brak
+      // dopłaty". Żywy fallback liczy niedokarmione miasta NA ŻYWO z `foodProj.unfedCityCount`
+      // (ten sam `foodProj = projectPlayerFoodProjection()` co `foodNetRate` wyżej — brak
+      // dodatkowego kosztu previewCityEconomy), identycznym algorytmem pokrywania deficytu jak
+      // advanceEmpireFood (empire-food.ts:227-243). Gdy tick JEST dostępny, zachowanie
+      // NIEZMIENIONE: liczone tak jak dotychczas z danych ostatniego końca tury. Wzorzec:
+      // resolveCityFedForUi w cityPanel.ts:1344-1353. / EN: `getLastEmpireFoodTick(0)` is
+      // `undefined` until the FIRST end of turn (new game / fresh save) — without a fallback the
+      // counter falsely showed 0 even though the city panel at the SAME moment correctly showed
+      // "Głód: brak dopłaty" (hunger, no top-up). The live fallback counts unfed cities LIVE from
+      // `foodProj.unfedCityCount` (the same `foodProj = projectPlayerFoodProjection()` as
+      // `foodNetRate` above — no extra previewCityEconomy cost), using the identical
+      // deficit-coverage algorithm as advanceEmpireFood (empire-food.ts:227-243). When a tick IS
+      // available, behavior is UNCHANGED: counted the same way as before, from the last
+      // end-of-turn data. Pattern: resolveCityFedForUi in cityPanel.ts:1344-1353.
+      const lastFoodTickForHud = getLastEmpireFoodTick(0);
+      const zywnoscMiastNiedokarmionych = lastFoodTickForHud
+        ? lastFoodTickForHud.perCityRows.filter(r => r.nakarmione === false).length
+        : foodProj.unfedCityCount;
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
