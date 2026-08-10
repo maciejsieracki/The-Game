@@ -9679,6 +9679,7 @@ niezależnie od flagi Auto) — ten sam string co runda 3 edytowała, mieści si
 skrócenie komentarza z PL+EN do samego PL (runda 3) było niepotrzebnym obejściem, limit regexu testu
 (900) był ustawiony przez samą rundę 3 i mógł być wyższy.
 
-**Dispatch rundy 4** — 2 blokady (inwalidacja + test) + N1/N2/N3 przy okazji (ten sam obszar, tanie).
+**Dispatch rundy 4 (`a9abb376c086711d8`)** — 2 blokady (inwalidacja + test) + N1/N2/N3 przy okazji
+(ten sam obszar, tanie).
 
 ---
