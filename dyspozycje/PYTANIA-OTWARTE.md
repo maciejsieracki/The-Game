@@ -7806,7 +7806,25 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
-## P-TRADEROUTES-NIEAKTUALNE-PO-WOJNIE-AI (2026-08-10, znalezisko Operatora przy naprawie P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI) · STATUS: **OTWARTE — dispatch rozpoznania**
+## P-TRADEROUTES-NIEAKTUALNE-PO-WOJNIE-AI (2026-08-10, znalezisko Operatora przy naprawie P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI) · STATUS: **ROZPOZNANE — niepilne, do backlogu**
+
+**Wynik rozpoznania:** luka realna, potwierdzona (`breakTreatiesOnWar` nie woła
+`recomputeTradeRoutesNow`, 5 miejsc wywołania w tym pętla dyplomacji AI, wszystkie PO jedynym
+przeliczeniu tras w danej turze). **Złoto jest bezpieczne** — `computeTradeRouteIncomeByCity`
+liczy dochód PRZED fazą AI (ta sama tura) i trasy są ponownie przeliczane na starcie NASTĘPNEJ
+tury, więc nie ma okna realnej wypłaty za martwą trasę (samo-naprawiające się w 1 turę). **Ale
+realny, potwierdzony bug wizualny/informacyjny** przez do jednej pełnej tury gracza: chip HUD
+„Handel", panel Handlu Imperium i łuk na mapie (już znany no-op) pokazują trasę/dochód z
+cywilizacją, z którą właśnie jest wojna. Dodatkowo `tradeRouteResourceGrants` (dostęp do
+brązu/złota z trasy, np. Mennica) podlega tej samej luce czasowej — niezbadane dogłębnie
+(możliwe że mechanizm „łaski" `PYTANIA-77-DOP=B` to maskuje).
+
+Dwa warianty naprawy zidentyfikowane (A: `recomputeTradeRoutesNow` wewnątrz
+`breakTreatiesOnWar` — ryzyko: pełny re-scan + spam komunikatów „Szlak zerwany" przy wielu
+wojnach w jednej turze AI; B: surgiczne usunięcie pary z `tradeRoutes` — mniejszy narzut, ale
+wymaga ręcznej synchronizacji pochodnych). Rozmiar: mały-średni, 5 call site'ów, brak testu
+end-to-end dziś. **Priorytet niski, brak zgłoszenia od gracza — zostaje w backlogu, nie
+dispatchować dalej bez wyraźnego polecenia.**
 
 Gdy AI wypowiada wojnę w swojej fazie, `breakTreatiesOnWar` (main.ts, wołane z pętli komend
 dyplomacji AI ~linia 22884) usuwa zerwany traktat z `activeDeals`, ale NIE dotyka `tradeRoutes`.
