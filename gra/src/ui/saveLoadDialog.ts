@@ -7,8 +7,10 @@ import {
   listSaves, loadFromLocal, deleteLocal,
   getLastPlayedSlotId,
   uniqueSlotIdFromLabel, slotSlugFromLabel,
+  FSA_SLOT_PREFIX,
   type SaveGame,
 } from '../game/save';
+import { listFsaAutosaveFiles, loadFsaAutosaveFile } from '../game/fsa-autosave';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
 
 export interface SaveSlotSummary {
@@ -158,7 +160,51 @@ export function summarizeSaveSlots(): SaveSlotSummary[] {
   return out;
 }
 
-/** Najnowszy slot (data zapisu) — fallback gdy brak lastPlayed. */
+/**
+ * BLOKER B1 (Evaluator runda 1): podsumowania zapisów z katalogu FSA (dysk).
+ * Bez tego autozapis na dysk był write-only -- gra zapisywała pliki, ale
+ * gracz nigdy nie mógł ich wybrać do wczytania. Async (w przeciwieństwie do
+ * summarizeSaveSlots()), bo odczyt plików z katalogu FSA jest z natury
+ * asynchroniczny -- showLoadGameDialog() renderuje dialog NATYCHMIAST z
+ * samych lokalnych sejwów (zero regresji, zero opóźnienia), a wpisy z dysku
+ * dokładają się do listy chwilę później, gdy ten Promise się rozwiąże.
+ * Zwraca [] gdy FSA niedostępne/niegotowe -- wtedy dialog wygląda dokładnie
+ * jak przed tą zmianą.
+ */
+export async function summarizeFsaSaveSlots(): Promise<SaveSlotSummary[]> {
+  const lastPlayed = getLastPlayedSlotId();
+  const files = await listFsaAutosaveFiles();
+  const out: SaveSlotSummary[] = [];
+  for (const { fileName } of files) {
+    const g = await loadFsaAutosaveFile(fileName);
+    if (!g) continue;
+    const meta = g.meta as Record<string, unknown> | undefined;
+    const slotId = FSA_SLOT_PREFIX + fileName;
+    const baseLabel = typeof meta?.label === 'string' && meta.label.trim() ? meta.label.trim() : fileName;
+    out.push({
+      slotId,
+      label: `${baseLabel} (dysk)`,
+      tura: g.tura,
+      savedAt: typeof meta?.savedAt === 'string' ? meta.savedAt : '',
+      context: saveContextLine(g),
+      isLastPlayed: slotId === lastPlayed,
+    });
+  }
+  out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  return out;
+}
+
+/** Łączy sejwy z przeglądarki i z dysku w jedną listę, najnowsze pierwsze. */
+function mergeSaveSlotLists(local: SaveSlotSummary[], fsa: SaveSlotSummary[]): SaveSlotSummary[] {
+  if (fsa.length === 0) return local;
+  return [...local, ...fsa].sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+}
+
+/** Najnowszy slot (data zapisu) — fallback gdy brak lastPlayed.
+ * Uwaga: skanuje WYŁĄCZNIE localStorage (zgodnie z zachowaniem sprzed
+ * R-AUTOZAPIS-QUOTA-STORAGE-Q1) -- "Kontynuuj" bez wskaźnika lastPlayed nie
+ * przeszukuje dysku FSA, tylko sejwy przeglądarki. Świadome uproszczenie tej
+ * rundy, patrz raport. */
 export function mostRecentSaveSlotId(): string | null {
   const slots = summarizeSaveSlots();
   return slots[0]?.slotId ?? null;
@@ -280,6 +326,12 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
   activeOnCancel = opts.onCancel;
 
   let slots = summarizeSaveSlots();
+  // BLOKER B1 (Evaluator runda 1): sejwy z dysku FSA -- doładowane
+  // asynchronicznie (patrz summarizeFsaSaveSlots) i scalone z listą po
+  // rozwiązaniu Promise. Dialog renderuje się NATYCHMIAST z samych lokalnych
+  // sejwów (zero regresji/opóźnienia gdy FSA niedostępne), a wpisy z dysku
+  // dokładają się chwilę później jeśli katalog jest gotowy.
+  let fsaSlotsCache: SaveSlotSummary[] = [];
   let selectedId: string | null =
     slots.find(s => s.isLastPlayed)?.slotId ?? slots[0]?.slotId ?? null;
 
@@ -300,7 +352,7 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
 
   const renderList = () => {
     list.innerHTML = '';
-    slots = summarizeSaveSlots();
+    slots = mergeSaveSlotLists(summarizeSaveSlots(), fsaSlotsCache);
     if (slots.length === 0) {
       selectedId = null;
       list.innerHTML = '<div class="civ-sl-empty">Brak zapisów na tym urządzeniu.<br>Zapisz grę w menu pauzy (Ctrl+S = szybki zapis).</div>';
@@ -310,6 +362,7 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
       selectedId = slots.find(s => s.isLastPlayed)?.slotId ?? slots[0]!.slotId;
     }
     for (const s of slots) {
+      const isFsa = s.slotId.startsWith(FSA_SLOT_PREFIX);
       const row = document.createElement('div');
       row.className = 'civ-sl-row' + (s.slotId === selectedId ? ' sel' : '');
       row.dataset.slot = s.slotId;
@@ -320,18 +373,27 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
         `<div class="civ-sl-row-title">${escapeHtml(s.label)}</div>` +
         `<div class="civ-sl-row-meta">Tura ${s.tura} · ${formatSavedAt(s.savedAt)}${lastTag}</div>` +
         `<div class="civ-sl-row-meta">${escapeHtml(s.context)}</div>`;
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'civ-sl-del';
-      del.title = 'Usuń zapis';
-      del.textContent = '✕';
-      del.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        deleteLocal(s.slotId);
-        if (selectedId === s.slotId) selectedId = null;
-        renderList();
-      });
-      row.append(main, del);
+      if (isFsa) {
+        // Sejwy z dysku (rotacja FSA) nie mają tu przycisku usuwania --
+        // deleteLocal() zna wyłącznie localStorage, więc dla "fsa:" slotId
+        // byłby cichym no-opem (przycisk "usuwa", plik zostaje). Realne
+        // usuwanie pliku z dysku nie jest zrobione w tej rundzie (poza
+        // zakresem blokerów B1/B2), świadomie odłożone.
+        row.append(main);
+      } else {
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'civ-sl-del';
+        del.title = 'Usuń zapis';
+        del.textContent = '✕';
+        del.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          deleteLocal(s.slotId);
+          if (selectedId === s.slotId) selectedId = null;
+          renderList();
+        });
+        row.append(main, del);
+      }
       row.addEventListener('click', () => {
         selectedId = s.slotId;
         renderList();
@@ -347,6 +409,15 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
 
   renderList();
   box.appendChild(list);
+
+  void summarizeFsaSaveSlots().then((fsaSlots) => {
+    if (root === null) return; // dialog zdążył się zamknąć zanim odczyt z dysku dokończył
+    if (fsaSlots.length === 0) return;
+    fsaSlotsCache = fsaSlots;
+    renderList();
+  }).catch((err) => {
+    console.warn('[SaveLoad] blad listowania zapisow z dysku (FSA):', err);
+  });
 
   const btns = document.createElement('div');
   btns.className = 'civ-sl-btns';

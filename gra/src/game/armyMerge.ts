@@ -41,14 +41,65 @@ export interface StackDisplayInfo {
   vitalsByRepId?: Map<string, StackVitals>;
 }
 
+/**
+ * Tożsamość STOSU niezależna od heksu (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO BB2,
+ * ECHO B, Maciej 2026-08-10). `RuntimeUnit.stackGroupId` jest opcjonalne —
+ * fallback poniżej odtwarza DOKŁADNIE dawne grupowanie „po heksie" (ten sam
+ * kształt klucza, jakiego `computeStackDisplay` używał PRZED refaktorem), więc
+ * jednostki bez pola (stare zapisy, jednostki które nigdy nie przeszły przez
+ * split/merge) zachowują się identycznie jak wcześniej — zero regresji.
+ *
+ * EN: Hex-independent STACK identity. `stackGroupId` is optional; the fallback
+ * below reproduces the exact old hex-based grouping key, so units without the
+ * field (old saves, units never split/merged) behave exactly as before.
+ */
+export function stackGroupIdOf(u: RuntimeUnit): string {
+  if (u.stackGroupId) return u.stackGroupId;
+  return u.inGarnizon === true
+    ? u.ownerId + '|' + u.q + ',' + u.r + '|g'
+    : u.ownerId + '|' + u.q + ',' + u.r;
+}
+
+/** Czy dwie jednostki należą do TEGO SAMEGO stosu (tożsamość, nie tylko heks). */
+export function sameStackGroup(a: RuntimeUnit, b: RuntimeUnit): boolean {
+  return stackGroupIdOf(a) === stackGroupIdOf(b);
+}
+
+let stackGroupSeq = 0;
+
+/** Świeży, globalnie unikalny stackGroupId (rozdzielenie stosów — „Zostaw osobno" / split). */
+export function freshStackGroupId(ownerId: number): string {
+  stackGroupSeq += 1;
+  return 'sg' + ownerId + '_' + Date.now().toString(36) + '_' + stackGroupSeq.toString(36);
+}
+
+/**
+ * Nadaje WSZYSTKIM jednostkom listy jeden, wspólny, nowy stackGroupId — użyj
+ * przy jawnym scaleniu (merge), żeby od tej chwili pulą ruchu były rządzone
+ * razem, niezależnie od tego, jaką tożsamość miały wcześniej (w tym różne
+ * fallbacki po heksie). No-op na pustej liście.
+ */
+export function assignSharedStackGroupId(unitsToMerge: ReadonlyArray<RuntimeUnit>): void {
+  if (unitsToMerge.length === 0) return;
+  const id = freshStackGroupId(unitsToMerge[0]!.ownerId);
+  for (const u of unitsToMerge) u.stackGroupId = id;
+}
+
 export function visibleStackOnHex(
   units: RuntimeUnit[],
   q: number,
   r: number,
   ownerId: number,
+  /**
+   * Gdy podane: dodatkowo zawęża do jednostek TEGO SAMEGO stosu (stackGroupIdOf
+   * === groupId) — pooling ruchu konkretnej armii. Gdy pominięte (domyślnie):
+   * WSZYSCY właściciela na heksie, jak przed BB2 (merge-prompt, garnizon, render).
+   */
+  groupId?: string,
 ): RuntimeUnit[] {
   return units.filter(
-    u => u.ownerId === ownerId && u.q === q && u.r === r && u.inGarnizon !== true,
+    u => u.ownerId === ownerId && u.q === q && u.r === r && u.inGarnizon !== true
+      && (groupId === undefined || stackGroupIdOf(u) === groupId),
   );
 }
 
@@ -61,12 +112,15 @@ export function coLocatedForMergePrompt(
   q: number,
   r: number,
   ownerId: number,
+  /** Jak w visibleStackOnHex — opcjonalne zawężenie do jednego stosu. */
+  groupId?: string,
 ): RuntimeUnit[] {
   return units.filter(
     u => u.ownerId === ownerId
       && u.q === q
       && u.r === r
-      && !u.oblegaCityId,
+      && !u.oblegaCityId
+      && (groupId === undefined || stackGroupIdOf(u) === groupId),
   );
 }
 
@@ -96,15 +150,23 @@ export function adjacentVisibleArmyHexes(
  * `activeUnitStack` daje "stos do działania" dla JUŻ ZAZNACZONEJ jednostki:
  * ukryta w garnizonie -> cały garnizon na heksie (garrisonUnitsOnHex);
  * w przeciwnym razie zwykły, widoczny stos na jej heksie (bez zmian).
+ *
+ * BB2 (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO B): zawężone do TEGO SAMEGO
+ * stackGroupId co `active` (stackGroupIdOf) — to jest CHOKE POINT, przez który
+ * przechodzi niemal cała pula ruchu w main.ts (playerStackAt -> activeUnitStack),
+ * więc to tu naprawia się „armia wraca na origin zajęty przez rezydenta i pule
+ * ruchu się zlewają". Dla jednostek bez jawnego stackGroupId fallback w
+ * stackGroupIdOf daje DOKŁADNIE stare zachowanie (grupa = cały heks).
  */
 export function activeUnitStack(
   units: RuntimeUnit[],
   active: RuntimeUnit,
 ): RuntimeUnit[] {
+  const groupId = stackGroupIdOf(active);
   if (active.inGarnizon === true) {
-    return garrisonUnitsOnHex(units, active.q, active.r, active.ownerId);
+    return garrisonUnitsOnHex(units, active.q, active.r, active.ownerId, groupId);
   }
-  return visibleStackOnHex(units, active.q, active.r, active.ownerId);
+  return visibleStackOnHex(units, active.q, active.r, active.ownerId, groupId);
 }
 
 /**
@@ -195,13 +257,44 @@ export function garrisonUnitsOnHex(
   q: number,
   r: number,
   ownerId: number,
+  /** Jak w visibleStackOnHex — opcjonalne zawężenie do jednego stosu (pooling ruchu). */
+  groupId?: string,
 ): RuntimeUnit[] {
   return units.filter(
     u => u.ownerId === ownerId
       && u.q === q
       && u.r === r
-      && u.inGarnizon === true,
+      && u.inGarnizon === true
+      && (groupId === undefined || stackGroupIdOf(u) === groupId),
   );
+}
+
+/**
+ * Klucz grupowania renderu STOSU na heksie (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO
+ * BB2, Evaluator runda 5 — B-R5-1, Maciej 2026-08-10): JEDYNY punkt prawdy dla
+ * „które jednostki liczą się jako TEN SAM widoczny stos". Łączy tożsamość
+ * (`stackGroupIdOf`) ORAZ pozycję (q,r) ORAZ flagę garnizonu — patrz uzasadnienie
+ * B1+B2 przy `computeStackDisplay` niżej: sama tożsamość stosu NIE wystarcza,
+ * bo dwie jednostki tej samej, jawnie scalonej grupy mogą realnie stać na
+ * RÓŻNYCH heksach (zwiadowca odjeżdżający sam z grupy przez auto-explore,
+ * cywil zostający na origin gdy reszta rosteru idzie na bitwę) albo być
+ * rozdzielone garnizon/pole na tym samym heksie.
+ *
+ * Eksportowana (zamiast trzymana tylko inline w `computeStackDisplay`), żeby
+ * main.ts mógł użyć DOKŁADNIE tego samego klucza we WSZYSTKICH miejscach, które
+ * robią własne grupowanie stosu — `cyclablePlayerArmyLeadsBase`,
+ * `armyLeadHexKey`, `buildPlayerArmyListEntries` (Evaluator runda 5: te trzy
+ * miejsca grupowały WYŁĄCZNIE po `stackGroupIdOf(u)`, bez pozycji, co dawało
+ * ten sam defekt renderer właśnie tu naprawiał — jeden lead/wpis obejmujący
+ * dwa różne heksy).
+ *
+ * EN: The single source of truth for "which units count as the same visible
+ * stack" — combines stack IDENTITY with POSITION and garrison flag. Exported
+ * so main.ts's independent stack-grouping call sites use the exact same key
+ * instead of the bare (position-blind) `stackGroupIdOf(u)`.
+ */
+export function stackRenderKey(u: RuntimeUnit): string {
+  return stackGroupIdOf(u) + '|' + u.q + ',' + u.r + (u.inGarnizon === true ? '|g' : '');
 }
 
 /** 1 token na heks — reprezentant najmocniejszy + badge ×N. */
@@ -213,14 +306,41 @@ export function computeStackDisplay(
    * CAŁEGO stosu (min ruchu / pula HP / Moc pola M) pod id reprezentanta,
    * czyli pod jedynym żetonem, który na tym heksie jest widoczny. Grupowanie
    * jest już policzone tutaj, więc rachunek nie dubluje się w warstwie renderu.
+   *
+   * BB2 (ECHO B, Maciej 2026-08-10): grupowanie po `stackGroupIdOf(u)`, NIE po
+   * gołym heksie — świadoma, obserwowalna zmiana zasad zaakceptowana w ECHO:
+   * dwie armie o różnych stackGroupId na jednym heksie renderują się teraz jako
+   * DWA osobne żetony/plakietki (każdy z własną pulą ruchu na tabliczce), zamiast
+   * zlewać się w jeden. Jednostki bez jawnego stackGroupId nadal dostają
+   * fallback-klucz z tej samej funkcji, więc stary, nieopisany przypadek
+   * (żadna z jednostek nigdy nie przeszła przez split/merge) renderuje się
+   * DOKŁADNIE jak przed refaktorem — jeden token na heks.
+   *
+   * B1+B2 (Evaluator runda 3, FAIL, 2026-08-10): `stackGroupIdOf(u)` SAMO w
+   * sobie to tożsamość STOSU, nie POZYCJI — dwie jednostki tej samej, jawnie
+   * scalonej grupy mogą realnie stać na RÓŻNYCH heksach (zwiadowca odjeżdża
+   * sam z grupy przez auto-explore — scout-auto-explore.ts; cywil zostaje na
+   * origin, gdy reszta rosteru idzie na bitwę — moveAtkRosterOntoBattleHex) i
+   * jedna z nich analogicznie może wejść/wyjść z garnizonu bez drugiej
+   * (onLeaveGarrison). Grupowanie WYŁĄCZNIE po tożsamości zlewałoby wtedy w
+   * JEDEN wpis Mapy jednostki z DWÓCH różnych heksów (żeton jednej znika,
+   * drugi pokazuje zsumowane HP/Moc z dwóch miejsc) albo maskowało realny
+   * podział garnizon/pole na tym samym heksie (kontrakt
+   * `findSplitDestHexes` — „garnizon i pole współistnieją jako dwa widoczne
+   * stosy"). Klucz MUSI więc łączyć tożsamość ORAZ pozycję ORAZ flagę
+   * garnizonu — patrz `stackRenderKey` wyżej (JEDYNY punkt prawdy, używany
+   * też przez main.ts). Dla jednostek bez jawnego stackGroupId to nic nie
+   * zmienia: fallback w stackGroupIdOf już koduje ownerId+q+r+garnizon, więc
+   * doklejenie tych samych trzech składników po raz drugi wydłuża sam STRING
+   * klucza, ale NIE zmienia, które jednostki trafiają do tej samej grupy —
+   * grupowanie (a więc i liczba/zawartość tokenów) zostaje bit-identyczne jak
+   * przed tą poprawką.
    */
   vitalsDeps?: StackVitalsDeps,
 ): StackDisplayInfo {
   const byStack = new Map<string, RuntimeUnit[]>();
   for (const u of units) {
-    const k = u.inGarnizon === true
-      ? u.ownerId + '|' + u.q + ',' + u.r + '|g'
-      : u.ownerId + '|' + u.q + ',' + u.r;
+    const k = stackRenderKey(u);
     const arr = byStack.get(k);
     if (arr) arr.push(u);
     else byStack.set(k, [u]);
@@ -390,6 +510,91 @@ function findRejectHex(
 
 export function stackKey(q: number, r: number): string {
   return keyOf(q, r);
+}
+
+/**
+ * Zwrot ruchu przy „Zostaw osobno" (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO A
+ * 2026-08-09): cofnięcie CAŁEJ armii razem na heks startowy ma być traktowane
+ * tak, jakby ruch się NIE odbył — pełny zwrot kosztu tej tury. `deductedRuch`
+ * MUSI być tym, co FAKTYCZNIE odjęto (pulaPrzed - pulaPo wokół
+ * deductStackRuchLeft), NIE zamierzonym kosztem ruchu (moveCost) — reguła
+ * MIN-MOVE (planned-march.ts) pozwala wejść na heks droższy niż budżet ruchu,
+ * `deductStackRuchLeft` klampuje pulę do zera, więc zwrot pełnego
+ * zamierzonego kosztu dawałby więcej punktów ruchu niż jednostka miała PRZED
+ * ruchem — exploit nieskończonego ruchu (Evaluator RUNDA 1, nota B1). Zwrot
+ * per-jednostka jest dodatkowo KLAMPOWANY do własnego maksimum (`u.ruch`) tej
+ * jednostki — druga, niezależna bariera przeciw temu samemu exploitowi.
+ *
+ * EN: Movement refund for "Keep separate" — retreating the WHOLE army
+ * together to the origin hex must behave as if the move never happened: a
+ * full refund of THIS turn's cost. `deductedRuch` MUST be what was ACTUALLY
+ * deducted (before-pool minus after-pool around deductStackRuchLeft), NOT the
+ * intended move cost — the MIN-MOVE rule allows entering a hex pricier than
+ * the remaining budget, and deductStackRuchLeft clamps the pool to zero, so
+ * refunding the full intended cost would hand back more points than the unit
+ * had before moving (infinite-movement exploit, Evaluator ROUND 1 note B1).
+ * Each unit's refund is ALSO clamped to its own `ruch` maximum — a second,
+ * independent guard against the same exploit.
+ */
+export function computeSeparateReturn(
+  movedUnits: ReadonlyArray<RuntimeUnit>,
+  deductedRuch: number,
+): Map<string, number> {
+  const safeDeducted = Math.max(0, deductedRuch);
+  const out = new Map<string, number>();
+  for (const u of movedUnits) {
+    out.set(u.id, Math.min(u.ruch, u.ruchLeft + safeDeducted));
+  }
+  return out;
+}
+
+/**
+ * Heks powrotu dla „Zostaw osobno" — ZAWSZE miejsce startowe (fromQ, fromR),
+ * SKĄD armia faktycznie przyszła (Maciej, doprecyzowanie 2026-08-09: „nie
+ * najbliższy wolny sąsiedni heks" z pierwotnego rozpoznania — TA alternatywa
+ * odpada). Jedyny powód, by NIE wrócić na origin: heks w międzyczasie
+ * przestał być przejezdny albo zajął go WRÓG (main.ts, ścieżka odłożonych
+ * promptów po turach AI — Evaluator RUNDA 1, nota B3: stary kod
+ * assignBounceHexesForUnits sprawdzał isOccupied/passable, nowy bezwarunkowo
+ * ustawiał mu.q/mu.r, więc wróg mógł zająć heks startowy w międzyczasie i
+ * armia gracza teleportowała się na niego BEZ WALKI). Zwraca `null` w takim
+ * wypadku — wołający MA WTEDY NIE PRZENOSIĆ jednostek wcale (bezpieczniejsze
+ * niż teleport na wroga; nota N1 z rundy 2: teleport na inny, zajęty przez
+ * wroga heks też nie jest dobrym fallbackiem, więc żadnego fallbacku —
+ * jednostki zostają tam, gdzie stały, gracz dostaje o tym komunikat).
+ *
+ * WŁASNA jednostka na origin jest w porządku (zwykłe współdzielenie heksu,
+ * par. 6b) — wykluczamy WYŁĄCZNIE wroga, nie każdą zajętość.
+ *
+ * EN: Return hex for "Keep separate" — ALWAYS the origin the army actually
+ * came from (Maciej's 2026-08-09 clarification: NOT "nearest free neighbor"
+ * from the initial recon — that alternative is off the table). The only
+ * reason to NOT return there: the hex became impassable, or an ENEMY took it
+ * in the meantime (deferred-prompt path, flushed after AI turns — Evaluator
+ * ROUND 1 note B3: the old assignBounceHexesForUnits checked isOccupied/
+ * passable, the new code unconditionally set mu.q/mu.r, so an enemy could
+ * occupy the origin hex meanwhile and the player's army would teleport onto
+ * it with no battle). Returns `null` in that case — the caller must then NOT
+ * move the units at all (safer than teleporting onto an enemy; round 2's N1:
+ * bouncing to some OTHER enemy-occupied hex isn't a good fallback either, so
+ * there is no fallback — the units stay put and the player is told why).
+ *
+ * A FRIENDLY unit on the origin is fine (ordinary hex-sharing, par. 6b) — we
+ * exclude ONLY an enemy, not every occupant.
+ */
+export function resolveSeparateReturnHex(
+  units: ReadonlyArray<RuntimeUnit>,
+  fromQ: number,
+  fromR: number,
+  ownerId: number,
+  isPassable?: (q: number, r: number) => boolean,
+): { q: number; r: number } | null {
+  if (isPassable && !isPassable(fromQ, fromR)) return null;
+  const blockedByEnemy = units.some(
+    u => u.q === fromQ && u.r === fromR && u.ownerId !== ownerId && u.inGarnizon !== true,
+  );
+  if (blockedByEnemy) return null;
+  return { q: fromQ, r: fromR };
 }
 
 /** Split/merge przyciski paska akcji jednostki (testowalne, main.ts). */

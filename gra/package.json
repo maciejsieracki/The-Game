@@ -8,7 +8,8 @@
     "prebuild": "npm run data && node tools/bundle-wiki-for-game.cjs",
     "dev": "vite",
     "build": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "serve:robocza": "python3 -m http.server 8000 --directory ../gra-robocza --bind 127.0.0.1"
   },
   "dependencies": {
     "three": "^0.169.0"

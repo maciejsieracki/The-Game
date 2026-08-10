@@ -2060,7 +2060,7 @@ błędów.
 **Kotwice:** `gra/src/ui/formatPl.ts` (`signedPl`).
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne, pre-istniejące**
+## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **SCALONE 2026-08-10 (Evaluator PASS-WITH-NOTES, orkiestrator scalił bezpośrednio — patrz niżej w pliku)**
 `map-field-battle-test.cjs` (`TypeError: import_meta.glob is not a function` — konstrukcja Vite
 w bundlu esbuild/CJS, moduł audio `.mp3`) i `pre-battle-save-test.cjs` (`No loader configured for
 ".svg" files` — `src/ui/icons/brand/menu-emblem.svg?raw`) padają identycznie z fixem i bez niego
@@ -3871,7 +3871,7 @@ Zmierzone: `heks-panel-tooltip-warstwa-test.cjs` 22/22, `heks-plony-warstwy-test
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`tileYieldLabel`, `appendOkolicaYieldLabel`).
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dokumentacyjne**
+## P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **SCALONE 2026-08-10 (Evaluator PASS-WITH-NOTES, orkiestrator scalił bezpośrednio — patrz niżej w pliku)**
 Operator uzasadnił wybór testu regex-owego (zamiast E2E) tym, że `appendOkolicaYieldLabel`
 „wymaga pełnego DOM". Evaluator sprawdził: `jsdom ^29.1.1` jest zadeklarowanym devDependency
 tego repo, leży w `node_modules`, a 9 istniejących testów w `tools/*.cjs` już go używa. Zbudował
@@ -6778,6 +6778,27 @@ teraz.
    BB2 (A/B/C) do Macieja dopiero PO werdykcie Evaluatora (czy uczciwość dokumentacji tym razem
    się broni), żeby nie zadawać pytania, które i tak wróci z Evaluatora ze zmianami.
 
+---
+**⛔ SPROSTOWANIE (Operator runda 5, 2026-08-09) — akapit „P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO runda 4"
+POWTARZA twierdzenie, że pełny refaktor `stackGroupId` „częściowo odtwarzałby odrzuconą wcześniej
+opcję B tego samego tematu (ECHO A: „bez funkcji B, żadnego rozpraszania")". To twierdzenie Evaluator
+RUNDA 3 (wpis „P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 3: FAIL (dokumentacja nieprawdziwa)")
+już WPROST OBALIŁ jako nadinterpretację, sekcja „Korekta uzasadnienia ABC Operatora": ECHO A odpowiadało
+na PYTANIE O INNĄ RZECZ — czy budować „dwie niezależne, wybieralne armie na jednym heksie" (pełna funkcja
+produktowa z UI/AI/save). To NIE to samo co „różne pule ruchu w obrębie jednego heksu" — par. 6b w
+kodzie to komentarz dokumentacyjny, nie egzekwowany kontrakt; silnik już dziś rutynowo trzyma 2+
+niepołączone armie na jednym heksie (stąd w ogóle istnieje prompt merge). Realna naprawa (`stackGroupId`)
+WCIĄŻ wymaga ABC — ale jako NOWA decyzja o obserwowalnej zmianie zasad (gracz zobaczy dwie armie o
+różnym ruchu na jednym polu), NIE jako coś zabronione wcześniejszą decyzją. Evaluator RUNDA 4 odnotował,
+że raport rundy 4 POWTÓRZYŁ ten sam błąd bez korekty mimo że werdykt rundy 3 był już w rejestrze —
+to jest drugie niezależne miejsce (obok samego `skipStackRuchSync`), gdzie ta sama runda naruszyła §0b.
+Akapit oryginalny zostaje NIETKNIĘTY (append-only, dowód historii) — to sprostowanie jest dopiskiem,
+nie edycją.**
+---
+
+Poza sprostowaniem dokumentacji: Operator runda 5 usunął `skipStackRuchSync` W CAŁOŚCI z kodu (parametr,
+komentarz, warunek, oba wywołania) — patrz raport rundy 5 do Evaluatora w tej samej turze.
+
 5. **R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA runda 2 (Operator, `af8e111e57660342d`)** — pop-up
    podsumowania pary odtworzony od zera z 3 poprawkami blokującymi rundy 1: B1 (barbarzyńcy
    wykluczeni przez `isBarbarian()`, analogicznie do precedensu C-BARB-Q1/Q2), B2 (mgła wojny —
@@ -7387,5 +7408,1335 @@ regresji. Temat w pełni zamknięty.
    OBU stron (gracz i AI), różny moment ujawnienia.
 2. Ryzyko trwałego utykania AI w budowie cudu (B3) — dotyczy 9/15 cywilizacji, doprecyzowane:
    awans 1→2 dotyczy tylko Egiptu, awans 2→3 pozostałych 8.
+
+---
+
+## Trzy decyzje ABC — ECHO Macieja (2026-08-10)
+
+**P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2) — ECHO B** (wbrew rekomendacji A): pełny refaktor —
+tożsamość stosu niezależna od heksu (`stackGroupId`). Wymaga: enumeracji WSZYSTKICH miejsc
+poolingu ruchu per-heks (C-026, ~10 funkcji w main.ts wg wcześniejszego rozpoznania: HUD, cykl
+armii, split, oblężenie, garnizon), przepięcia ich na tożsamość stosu, pełnej regresji na
+wszystkich tych systemach. Duży zakres — dispatch osobnym, starannie zaplanowanym Operatorem.
+
+**R-EPOKA-CUD-WARUNEK-AWANSU (B2-zapisy) — ECHO A**: świadomie akceptujemy degradację epoki przy
+wczytaniu starych zapisów, bez migracji. Zgodne z JUŻ scalonym zachowaniem (`player.era = next`,
+nie `Math.max`) — **brak zmian w kodzie**, temat formalnie zamknięty tą decyzją.
+
+**R-EPOKA-CUD-WARUNEK-AWANSU (B3) — ECHO A + doprecyzowanie**: rozluźnianie progu opłacalności
+cudu z czasem DLA AI, plus wyraźny wymuszacz — gdy AI ma wszystkie technologie danej epoki
+zbadane (komplet spełniony, brakuje tylko cudu), budowa WSZYSTKICH cudów tej cywilizacji staje
+się PRIORYTETEM w kolejce produkcji (nie tylko łagodniejszy próg opłacalności — twarde
+pierwszeństwo). Dispatch osobnym Operatorem (`gra/src/game/ai.ts`).
+
+Dispatch obu Operatorów (BB2-stackGroupId, B3-priorytet cudu) NASTĘPUJE teraz.
+
+---
+
+## PERF-SUPER-HUGE-PANGEA-80 i BUG-SCENA-PERF-FALA138 — ODŁOŻONE do backlogu, decyzja Macieja (2026-08-10)
+
+Oba tematy pozostają NIEROZSTRZYGNIĘTE (wymagają realnego pomiaru F12 w grze, nie do
+rozstrzygnięcia z samego kodu — patrz audyt wyżej w tym pliku). Maciej: zapisać jako rzeczy do
+zrobienia w przyszłości, NIE podejmować teraz. Status: BACKLOG, nie dispatchować subagentów do
+czasu wyraźnego polecenia po tym, jak Maciej sam zmierzy czasy w grze.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — WYJAŚNIENIE: 6 rund NIGDY nie trafiło do żadnej gałęzi (2026-08-10)
+
+**Odkrycie:** nowy Operator (dispatch stackGroupId, BB2=B) zgrepował całą historię gita na
+wszystkich gałęziach i znalazł, że `assignBounceHexesForUnits` na pełnej liście jednostek
+(oryginalny bug „armia się rozpierzcha") nadal jest jedynym kodem w `main.ts` — ŻADNA z 6 rund
+tego tematu (rozpoznanie → ECHO A → 4 rundy FAIL → runda 5 → runda 6) nigdy nie została
+scommitowana. Testy tematu nie istnieją w historii `git log --all`.
+
+**Przyczyna znaleziona:** agent rundy 6 (dispatch „Operator + scalenie" w jednym) doszedł do kroku
+przełączenia się na główne drzewo (`EnterWorktree`), narzędzie odmówiło/przerwało to wywołanie, a
+sesja agenta zakończyła się bez wysłania finalnego raportu — stąd orkiestrator nigdy nie dostał
+notyfikacji o zakończeniu i temat cicho utknął.
+
+**Praca NIE jest stracona.** Zweryfikowane bezpośrednio na dysku:
+- Worktree rundy 5 (`agent-ad689c69f19841e17`) — nietknięty, zawiera oryginalny
+  `army-merge-separate-return-test.cjs` (test funkcjonalny czystych funkcji).
+- Worktree rundy 6 (`agent-a9cfa743629052405`) — nietknięty, zawiera `armyMerge.ts`+`main.ts`
+  (identyczne z rundą 5, bez zmian — B-R5-1 dotyczyło tylko testu) oraz zaktualizowany
+  `army-merge-separate-return-mainguard-test.cjs` z dopisaną notą B-R5-1 (2 nowe asercje,
+  17→19, uruchomiony samodzielnie: **37/37 PASS** po symlinkowaniu `node_modules`).
+- Runda 6 skopiowała wszystko OPRÓCZ `army-merge-separate-return-test.cjs` — brakujący plik
+  wzięty z worktree rundy 5, identyczny, bez zmian.
+
+**Scalenie NASTĘPUJE teraz** — komplet (armyMerge.ts + main.ts z rundy 6, oba pliki testów: jeden
+z rundy 5 bez zmian, drugi z rundy 6 z notą B-R5-1) + ręczne wklejenie sprostowania rejestru z
+rundy 5 (tekst podany w werdykcie Evaluatora rundy 5, wyżej w tym pliku).
+
+**Do playbooka:** to jest wariant TRZECI tej samej nocy tej samej klasy incydentu (praca w
+worktree nigdy nie trafiająca do gałęzi) — tym razem przyczyną nie było `git worktree remove`,
+tylko przerwane wywołanie narzędzia (`EnterWorktree`) bez żadnej notyfikacji o niepowodzeniu.
+Mocny dodatkowy argument za nową regułą: **agent-scalający NIGDY nie powinien być tym samym
+agentem co Operator wykonujący pracę merytoryczną** — scalenie zawsze osobnym, dedykowanym
+dispatchem, żeby awaria na etapie scalania nie grzebała całej rundy bez śladu.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — SCALONE `a396eddc` (2026-08-10)
+
+Kompletne scalenie po odzyskaniu z dwóch nietkniętych worktree. Kluczowa weryfikacja: `grep
+assignBounceHexesForUnits gra/src/main.ts` pokazuje wyłącznie komentarze — oryginalny zgłoszony
+bug (armia rozpraszała się na osobne wolne heksy przy „zostaw osobno") jest naprawiony,
+`onSeparate` woła teraz `resolveSeparateReturnHex`+`computeSeparateReturn`, cała armia wraca razem.
+Wszystkie 12 bramek zielone (tsc 0, logic-test 213/213, oba testy tematu 16/16 i 37/37 [z notą
+B-R5-1], army-merge-bounce 4/4, army-merge-dismiss-bounce 16/16, army-stack-ruch 5/5,
+army-merge-colocated 4/4, combat-test 6/6, tech-tree 19/19, research 33/33, unit-replace 13/13).
+Zero regresji. Temat w pełni zamknięty co do bezpiecznego minimum (BB1) — BB2 (współdzielona pula
+ruchu, decyzja ECHO B = pełny refaktor stackGroupId) w toku jako osobny dispatch.
+
+---
+
+## stackGroupId runda 2 — ZATRZYMANA, potwierdzenie mechanizmu „worktree startuje od main, nie od gałęzi sesji" (2026-08-10)
+
+Operator prawidłowo zdiagnozował i zatrzymał się (zgodnie z instrukcją) zamiast zgadywać: jego
+`isolation:"worktree"` wystartował od `main` (`b0e4a5c9`, poziom FALA 263), NIE od bieżącej gałęzi
+sesji `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (obecny tip, zawiera scalone `a396eddc`
+Armia-rozpad + wszystko z tej nocy). To DOKŁADNIE mechanizm opisany w skillu `civ-autobot` §5
+(„`isolation:'worktree'` NIE dziedziczy z bieżącej gałęzi sesji — startuje od `main`") —
+potwierdzony dziś po raz kolejny, tym razem jako przyczyna fałszywego alarmu, nie utraty pracy.
+
+**To NIE jest regresja ani utrata BB1** — `a396eddc` jest bezpiecznie na
+`origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` (potwierdzone), po prostu poza zasięgiem
+świeżego worktree. `main` jest CELOWO „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) — scalenie do
+`main` następuje wyłącznie na hasło `deploy`, nie samo z siebie.
+
+**Naprawa procesowa (do playbooka):** dispatch dla Operatorów pracujących na worktree potrzebujących
+NAJNOWSZEGO stanu gałęzi sesji (nie `main`) musi WPROST instruować: skopiować potrzebne pliki
+bezpośrednio z żywego katalogu głównego (`/home/user/The-Game`, aktualny checkout gałęzi sesji),
+NIE polegać na `git diff`/`grep` wewnątrz własnego, świeżo założonego worktree jako źródle prawdy o
+tym „co już jest scalone". Runda 3 dispatchowana z tą poprawką.
+
+---
+
+## Nowe reguły AutoBot (C-033…C-038) — Evaluator rundy 1: FAIL (5 nieścisłości), poprawione i scommitowane (2026-08-10)
+
+Na dwukrotne polecenie właściciela („podsumuj sobie wszystkie właśnie błędy… przygotuj nowe
+reguły które wprowadzimy do Autobot") dopisano do `playbook.md` sześć nowych reguł (C-033
+usuwanie worktree bez sprawdzenia stanu, C-034 scalenie jako osobny natychmiastowy dispatch,
+C-035 worktree zawsze od `main`, C-036 unikalne nazwy plików w scratchpadzie, C-037 brak
+notyfikacji ≠ agent wciąż pracuje, C-038 werdykt Evaluatora tylko po realnym odebraniu raportu)
+razem z wpisami w rejestrze błędów i dzienniku wniosków, pokrywające 5 incydentów tej nocy.
+
+Zgodnie z §0b (orkiestrator nie ocenia sam siebie) zmiana przeszła przez niezależnego
+Evaluatora PRZED commitem — werdykt runda 1: **FAIL**, 5 blokujących: (B1) „godziny później"
+między dwoma usunięciami worktree — w rzeczywistości TA SAMA partia sprzątania; (B2) mechanizm
+odzysku przypisany błędnie obu incydentom jako `git fsck` — R-EPOKA-CUD w rzeczywistości nie miał
+odzyskanych obiektów gita, tylko wyścig z czasem (grep tuż przed zniknięciem worktree); (B3)
+dziennik liczył „cztery nowe zasady" przy pięciu (C-033…C-037); (B4) „odzyskane w pełni"/„zero
+trwałej utraty pracy" zaprzeczone przez własne źródło — test R-EPOKA-CUD ma dziś 33 asercje
+zamiast utraconych 35, test rundy 1 Portu został ZASTĄPIONY (nie rozszerzony) tracąc piny
+M8/M9/M10/M13; (B5) „wszystkie cztery tematy scalone" przy trzech hashach — czwarty/piąty
+incydent (worktree-na-main, kolizje scratchpad) nie są tematami kodu do scalenia; (B6)
+`playbook.json` nie zregenerowany po dopisaniu reguł (recydywa C-031 — reguła istnieje tylko w
+pliku wymagającym świadomego odczytu). Evaluator wskazał też 2 luki: brak reguły dla „rejestr
+zapisał werdykt Evaluatora, który nigdy się nie odbył" (→ nowa C-038) i brak wymogu
+„natychmiast po PASS" w C-034 (rozszerzone).
+
+Wszystkie 6 punktów poprawione: dokładność faktów wobec źródeł, dodana C-038, C-034 rozszerzone
+o „natychmiast po PASS" + twardy dowód sukcesu (`git log --all --oneline | grep <hash>` + grep
+symbolu w drzewie głównym), C-035/C-037 oznaczone jako RECYDYWA wiedzy już opisanej w
+`.claude/skills/civ-autobot/SKILL.md` (żyła tylko w pliku bez auto-ładowania — ten sam
+mechanizm co C-031), C-037 dostał próg ~45 min + fallback niezależny od `ListAgents`
+(`ls`+`git status` w worktree), `playbook.json` zregenerowany generatorem (`--write`,
+version→30), `autobot-smoke.cjs` 11/11 PASS. Numeracja ID zweryfikowana: 38 wierszy, C-001…C-038,
+zero duplikatów/luk. Scommitowane po poprawkach — zgodnie z zasadą, że orkiestrator nie
+zwalnia się z pętli AutoBot nawet dla własnych zmian dokumentacyjnych.
+
+---
+
+## AUDYT C-030 — 23 wpisy OTWARTE, 9 potwierdzonych ZAPOMNIANYCH (2026-08-10)
+
+Na polecenie Macieja („sprawdź czy każdy temat który wisi ma swojego subagenta") — pełny audyt
+zgodności z regułą C-030 dla wszystkich 23 wpisów `STATUS: **OTWARTE` w tym pliku (grep bez
+kotwicy `^## `, per C-031). Dla każdego sprawdzono niezależnie: dispatch subagenta / pytanie ABC
+zadane / udokumentowany cytat Macieja o odłożeniu (NIE samoocena „niepilne" wpisana przez agenta
+rejestrującego — to nie liczy się jako pokrycie).
+
+**Wynik: 14/23 pokryte** (9 subagent, 4 ABC+subagent/ABC samo, 2 jawnie odłożone cytatem
+Macieja — `P-KOLOR-SUROWCE-MIASTO-VS-MAPA`, `R-FORT-STRAZNICA` krok 2; 1 dodatkowy —
+`R-BUDYNEK-PORTOWY` ma nieaktualny nagłówek, ale temat w pełni scalony `fbde1880`, do poprawki
+etykiety nie brak pokrycia).
+
+**9/23 potwierdzone ZAPOMNIANE** — zero dispatchu, zero ABC, zero decyzji Macieja, jedyna
+adnotacja to samoocena „niepilne" agenta, który je rejestrował:
+1. P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (`gra/tools/map-field-battle-test.cjs`,
+   `pre-battle-save-test.cjs` — dopisanie do CLAUDE.md §BRAMKI, dokumentacja, zero kodu)
+2. P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (`cityPanel.ts:4394,4418`)
+3. P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (`cityPanel.ts` `buildTopBarZywnoscDetailCard`
+   ~4839,4841)
+4. P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (`heks-panel-tooltip-warstwa-test.cjs`,
+   korekta komentarza)
+5. P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (`cityPanel.ts:8207,8225`, `hexContextTooltip.ts:252`)
+6. P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (`okolica.ts` `adjustTileWorker`)
+7. P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (`main.ts` `refreshTradeRoutesOverlay`/
+   `cityRenderer.sync`) — POTWIERDZONE przez niezależnego Evaluatora jako realny błąd, wprost
+   odnotowane „kto podejmie tamten temat" bez odpowiedzi
+8. P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (komunikat „Brakuje X PW" po `R-DYP-STOL-A-KOREKTA`)
+9. P-HUD-KULTURA-SIGNED-NIESPOJNE (`hud.ts` `renderBarD1B`, chip Kultury)
+
+Wszystkie 9 to niskiego ryzyka poprawki kosmetyczne/dokumentacyjne, żadna nie wymaga ABC.
+Dispatch pogrupowany (5 Operatorów wg pliku/obszaru, zamiast 9 osobnych, żeby zmniejszyć koszt
+scalania przy jednym pliku dotykanym wielokrotnie) NASTĘPUJE teraz.
+
+---
+
+## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE + P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE — dostarczone, dokumentacja/komentarz (2026-08-10)
+
+Worktree `agent-abe061c068bc015ba`. Zero zmian w kodzie produkcyjnym/logice testu — wyłącznie
+tekst. (1) `CLAUDE.md` §BRAMKI: dopisana notatka o dwóch pre-istniejących czerwonych bramkach
+harnessu testowego (`map-field-battle-test.cjs`/`pre-battle-save-test.cjs` — brak loaderów
+Vite/esbuild dla `.mp3`/`.svg`, nie regresja silnika). (2) `heks-panel-tooltip-warstwa-test.cjs`:
+poprawiony nieprawdziwy komentarz uzasadniający regexowe podejście (twierdził że DOM
+niedostępny — nieprawda, `jsdom` jest deklarowaną zależnością używaną przez 9 innych testów).
+Bramki: tsc 0, logic-test 213/213, `heks-panel-tooltip-warstwa-test.cjs` 22/22 (identyczne z
+bazą — potwierdza że to czysto komentarz).
+
+Dispatch lekkiego Evaluatora (weryfikacja, że zmiana jest wyłącznie tekstowa i nie wprowadza
+nieprawdy w drugą stronę) NASTĘPUJE teraz.
+
+---
+
+## Pytanie Macieja (zrzut ekranu) — checkbox „Auto Wyżywienie" wciąż widoczny zamiast przycisku (2026-08-10)
+
+**Zrzut Macieja:** panel miasta, sekcja Wyżywienie, pokazuje `☐ Auto Wyżywienie` jako checkbox +
+osobna etykieta, oraz tekst „Auto WYŁ — bez auto-obniżania/podnoszenia" jako WIDOCZNY tekst pod
+paskiem (nie w tooltipie). Cytat: „tutaj miał być checkbox zmieniony na przycisk i opisy do
+tooltip".
+
+**Zbadane bezpośrednio, zanim cokolwiek dispatchowałem (§6/7 — nie zgaduj, nie twórz problemów
+których nie ma):** dokładnie ta zmiana JEST już w kodzie. `gra/src/ui/cityPanel.ts:4686-4702` —
+`autoBtn = document.createElement('button')`, `className = 'hbtn auto-wyzywienie-btn'`
+(pełnoszerokościowy przycisk z tekstem „Auto Wyżywienie" W ŚRODKU, styl 1:1 z istniejącego
+przycisku auto-produkcji), `aria-pressed`, tekst „Auto WYŁ — bez auto-obniżania/podnoszenia"
+przeniesiony do `autoBtn.title` (tooltip), NIE renderowany jako widoczny tekst. Commit `cf2b63cc`
+(2026-08-09 23:38 UTC, „Spichlerz: drabinka capu ludności..."). Zweryfikowane `git log
+e88e3939..HEAD -- gra/src/ui/cityPanel.ts` — ZERO commitów między HEAD builda FALA 265 a dziś —
+czyli ta zmiana jest już częścią AKTUALNEGO deployu ROBOCZA (`7e8fdfdb`, FALA 265,
+**AKTUALNA** wg `WERSJE.md`).
+
+**Wniosek:** zrzut Macieja pokazuje checkbox+widoczny tekst, co NIE pasuje do dzisiejszego kodu
+(przycisk pełnej szerokości z tekstem w środku, bez osobnej etykiety obok). To wygląda na stary,
+niezsynchronizowany bundle po stronie Macieja (lokalna sesja/dysk właściciela jeszcze nie
+„pull"-nęła FALA 265), a nie na niedokończoną pracę w kodzie. Zapytano Macieja wprost zamiast
+dispatchować subagenta do już zaimplementowanej zmiany — zero dispatchu do czasu odpowiedzi.
+
+---
+
+## P-ARMIA-ROZPAD (BB2, stackGroupId) — Evaluator runda 3: FAIL, 2 realne regresje renderu + 2 luki bramek (2026-08-10)
+
+Evaluator potwierdził rdzeń naprawy solidny: fallback bit-identyczny (fuzz 500 układów, 0
+rozbieżności), sedno zgłoszonego buga naprawione w obie strony, 3 ścieżki merge kompletne (5
+wywołań `assignSharedStackGroupId`), `onSeparate` daje fresh id (10 000 prób, 0 kolizji),
+wsteczna zgodność 4-argumentowych callerów OK, oba dodatkowe znaleziska Operatora realnie
+naprawione, C-026 (90 referencji 15 funkcji) policzone niezależnie.
+
+**BLOKUJĄCE — 2 regresje renderu (żetony znikają z mapy), 2 luki bramek:**
+- **B1:** `computeStackDisplay` grupuje po `stackGroupIdOf(u)` BEZ heksu — dwie jednostki tego
+  samego `stackGroupId` na RÓŻNYCH heksach (np. zwiadowca użył „Zwiedzaj" i odjechał sam z
+  scalonego stosu — `runScoutsAutoExplore`, `main.ts:21423`; albo cywil zostaje na origin gdy
+  reszta stosu idzie do bitwy — `moveAtkRosterOntoBattleHex`) wpada do JEDNEJ grupy renderu →
+  jeden żeton znika (`visible=false`), drugi pokazuje zsumowany `×N`/HP/Moc z dwóch heksów.
+- **B2:** ten sam klucz ignoruje flagę garnizonu — scalony garnizon z jedną jednostką wypuszczoną
+  w pole (ta sama grupa) daje 1 żeton zamiast 2, łamiąc udokumentowany kontrakt „garnizon i pole
+  na heksie miasta współistnieją jako dwa widoczne stosy".
+- **B3:** poprawka w `main.ts` (`assignSharedStackGroupId(movedUnits)`, jedyna linia naprawiająca
+  oryginalny zgłoszony bug) ma ZERO ochrony regresyjnej — usunięcie tej linii, wszystkie bramki
+  zielone.
+- **B4:** kluczowa gwarancja „fallback bit-identyczny ze starym grupowaniem" (fundament decyzji
+  ECHO B) też niezabezpieczona — usunięcie sufiksu `|g` z fallbacku, wszystkie bramki zielone
+  (własna asercja Evaluatora łapie to natychmiast, 75 rozbieżności).
+
+**Naprawa (4 warunki, jasno zdefiniowane przez Evaluatora):** (1) klucz w `computeStackDisplay`
+= tożsamość + `(q,r)` + flaga garnizonu; (2) asercje na oba scenariusze (różne heksy → 2 żetony;
+garnizon+pole → 2 żetony); (3) rozszerzyć `army-merge-separate-return-mainguard-test.cjs` o
+tekstowe przypięcie 5 wywołań `assignSharedStackGroupId` w `main.ts`; (4) asercja różnicowa
+fallbacku wobec oracle sprzed BB2 (usuwa B4).
+
+Niepilne: N1 (dwa żetony tej samej grupy renderują się w IDENTYCZNYCH współrzędnych — pełne
+nałożenie, potrzebny offset per grupa — konsekwencja wizualna zaakceptowana w ECHO B, ale nie
+dostarczona), N2 (klik w mapę zawsze trafia najmocniejszą armię, nie tę pod kursorem — poza
+zakresem BB2), N3 (`showCityUnitPick` ma tę samą klasę buga na niezawężonym `visibleStackOnHex`),
+N4 (`freshStackGroupId` używa `Date.now()` — niedeterministyczne), N5 (AI nie dostaje
+`stackGroupId` wcale — OK dla tego buga, ale opis „identycznie jak gracz" przesadzony).
+
+Dispatch rundy 4 (naprawa 4 warunków) NASTĘPUJE teraz.
+
+---
+
+## Trzy drobne poprawki (audyt C-030) dostarczone, czekają na jednego zbiorczego Evaluatora (2026-08-10)
+
+**P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA + P-HUD-KULTURA-SIGNED-NIESPOJNE** (worktree
+`agent-aa3536088e2bc01b3`): komunikat „Brakuje X PW — dopłać" → „...— zawrzyj osobną umowę" w 2
+miejscach (`diplomacy-acceptance-points.ts`, `diplomacyAcceptanceBalance.ts`), zgodnie z
+`R-DYP-STOL-A-KOREKTA` (formularze traktatu bez koszyka). Chip Kultury HUD:
+`signed(s.kultura)` → `String(Math.floor(s.kultura))` w `hud.ts` (`renderBarD1B` — zgłoszone
+miejsce — ORAZ `renderBarLegacy`, ta sama usterka znaleziona przy okazji w bliźniaczej ścieżce
+kodu). Bramki: tsc 0, logic-test 213/213, diplomacy-acceptance-points 225/225, diplomacy-ai-
+offer-balance 23/23, diplomacy-basket-edit 25/25, diplomacy-stol-pw-sum 42/42, diplomacy-trade-
+flex 8/8, hud-skarbiec 7/7, hud-moc-warstwa 28/28, hud-miasto-stan-cywilizacji 20/20.
+
+**P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA** (worktree `agent-aee3e1d4edb7744d6`): potwierdzony
+jako CZYSTY bug (nie dwuznaczność produktowa) — `adjustTileWorker(delta=+1)` na obsadzonym polu
+błędnie ZDEJMOWAŁO robotnika (skopiowana logika toggle z sąsiedniej funkcji), łamiąc własny
+kontrakt kierunkowy (`delta: 1|-1`); teraz symetrycznie odmawia (`juz_obsadzone`) jak `delta=-1`
+już robił (`brak_robotnika`). Funkcja nie ma dziś ŻADNEGO wywołania produkcyjnego (tylko
+`toggleTileWorker` jest używana w UI) — zerowe ryzyko dla działającej gry. Test zaktualizowany
+(2 asercje). Bramki: tsc 0, logic-test 213/213, okolica-test 72/72.
+
+**P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY + P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI +
+P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY** (worktree `agent-ae4f5e2fac8dc9eb3`): usunięty
+zbędny `+` przed `signed()` w 2 miejscach `cityPanel.ts` (`appendPodzialPracyInfo`); separatory
+ujednolicone w `buildTopBarZywnoscDetailCard` (`signed()` na `wzrostProcent` i `bd.racje`, wzorzec
+z zamkniętej naprawy-siostry); brakujący parametr `zloze` dodany do 3 wywołań `tileYield()`
+(`cityPanel.ts:8207,8225`, `hexContextTooltip.ts:252`) — bez wpływu na dzisiejsze zachowanie
+(potwierdzone: dzisiejsze funkcje czytające ten wynik nie patrzą na `zloze`), zamyka „pułapkę na
+przyszłość", ten sam idiom co już naprawiony `yieldOfMapHex`. Bramki: tsc 0, logic-test 213/213,
+city-badge-growth-percent 38/38, city-growth-percent-rounding-parity 16/16, city-panel-growth-
+percent-separator 29/29, heks-panel-tooltip-warstwa 22/22, heks-plony-warstwy 24/24, heks-plony-
+zloze-forward 5/5, zloze-zloto-render 7/7.
+
+**P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI** (worktree `agent-a9c69aacb2255f424`): przyczyna
+znaleziona — `refreshTradeRoutesOverlay()` wołany tylko raz WCZEŚNIE w kaskadzie końca tury
+(przed turami AI/walką/oblężeniami), podczas gdy `cityRenderer.sync` (pigułki miast) ma już
+wywołanie w finalnej „siatce bezpieczeństwa" na końcu kaskady — trasy renderowały się względem
+stanu miast SPRZED tur AI. Naprawa: dopisane (addytywnie, nic nie przestawione) wywołanie
+`refreshTradeRoutesOverlay()` w finalnym bloku bezpieczeństwa, obok istniejącego
+`refreshWorkerFieldOverlay()`. C-026: 18 miejsc `cityRenderer.sync` + 4 istniejące
+`refreshTradeRoutesOverlay` przejrzane indywidualnie, żadne inne nietknięte. Bramki: tsc 0,
+logic-test 213/213, trade-routes-test 51/51, trade-routes-income 52/53 (ta sama pre-istniejąca
+porażka H2, potwierdzona identyczna na `git stash`).
+
+Dispatch JEDNEGO zbiorczego Evaluatora dla wszystkich czterech (różne pliki/obszary, zero
+nakładania się) NASTĘPUJE teraz.
+
+---
+
+## P-BRAMKA-MAP-FIELD-BATTLE + P-BRAMKA-TOOLTIP-REGEX — Evaluator PASS-WITH-NOTES, SCALONE bezpośrednio przez orkiestratora (2026-08-10)
+
+Evaluator: obie poprawki zweryfikowane w 100% (styl zgodny, „nie regresja silnika" potwierdzone
+uruchomieniem na czystej bazie, `jsdom` faktycznie w `devDependencies`, logika testu bajt-w-bajt
+niezmieniona — jeden hunk, w całości wewnątrz JSDoc). **Nota blokująca DLA SCALAJĄCEGO (nie dla
+Operatora):** worktree Operatora ma STARY `CLAUDE.md` (sprzed §1a/§4a/§9 i jednej bramki z
+2026-08-09) — kopiowanie całego pliku skasowałoby 3 zasady właściciela. Scalenie wymaga `git
+apply`/ręcznego wklejenia wyłącznie NOWEGO fragmentu, nie kopiowania pliku.
+
+Scalone bezpośrednio przez orkiestratora (małe, wyłącznie tekstowe, PASS-WITH-NOTES bez not
+blokujących dla samej TREŚCI, tylko dla METODY scalania) — zastosowano dokładnie tę metodę:
+ręczne dopisanie nowego zdania do istniejącego akapitu `CLAUDE.md` §BRAMKI (z korektą N2 —
+dodany drugi plik `.svg` pominięty przez Operatora) oraz ręczne wklejenie nowego bloku komentarza
+do `heks-panel-tooltip-warstwa-test.cjs` (z korektą N1 — „9 innych testów" → dokładniejsze „kilkanaście
+plików, w tym 4 nazwane bramki"). Bramki po scaleniu: `heks-panel-tooltip-warstwa-test.cjs` 22/22
+(identyczne z bazą), `logic-test.cjs` 213/213. Oba statusy w rejestrze zaktualizowane (N4
+Evaluatora — Operator nie domknął statusów, wykonane teraz).
+
+---
+
+## P-ARMIA-ROZPAD (BB2, stackGroupId) — runda 4 dostarczona (naprawa B1-B4), czeka na NIEZALEŻNEGO Evaluatora (2026-08-10)
+
+Wszystkie 4 punkty blokujące z werdyktu rundy 3 naprawione, zakres ściśle ograniczony (C-025) do
+`armyMerge.ts` (`computeStackDisplay`), `army-merge-separate-return-mainguard-test.cjs`,
+`army-merge-stackgroupid-test.cjs`. B1+B2: klucz grupowania renderu = tożsamość + `(q,r)` + flaga
+garnizonu (nie sama tożsamość) — mutacyjnie potwierdzone (cofnięcie klucza → 5 FAIL dokładnie w
+nowych blokach testowych 8b/8c). B3: nowa sekcja 8 w mainguard — tekstowe przypięcie wszystkich 5
+call-site'ów `assignSharedStackGroupId`, każdy potwierdzony osobno mutacyjnie (55/55, było 37).
+B4: dwuwarstwowo — pinning dosłownego kształtu fallbacku (sekcja 9 mainguard) + niezależny oracle
+odtwarzający stare grupowanie sprzed BB2, fuzz **500 losowych układów, 3669 porównań
+jednostkowych, 0 rozbieżności wymuszone assert-em** (nie tylko zliczone) w
+`army-merge-stackgroupid-test.cjs` sekcja 11 — obie warstwy mutacyjnie potwierdzone.
+
+Wszystkie bramki tematu zielone (11045/11045 nowy test, 55/55 mainguard, reszta jak w rundzie 3).
+**Uwaga proceduralna:** Operator zgłosił 2 NOWE błędy `tsc` dot. dyplomacji
+(`RelacjaWejscie.hasAllianceTreaty`, `DiplomacjaInputs.bronzeForceWarTargetId`) na SAMYM żywym
+checkoucie, zweryfikowane jako obecne nawet bez jego zmian — **prawdopodobnie efekt uboczny
+równoległego scalenia R-EPOKA-CUD B3 (agent `a6b41a6a5ef61abce`), które w tej samej chwili
+edytowało `main.ts` na tym samym żywym drzewie** (dotyka dyplomacji/`bronzeForceWarTargetId`,
+pasuje do obszaru B2/B3). Do potwierdzenia PO zakończeniu tamtego scalenia, nie traktować jako
+osobny bug do czasu weryfikacji na ustabilizowanym drzewie.
+
+Dispatch niezależnego Evaluatora rundy 4 NASTĘPUJE teraz.
+
+---
+
+## Pytanie Macieja (zrzut ekranu) — checkbox „Własne ustawienia tego miasta" w panelu ulepszeń terenu (2026-08-10)
+
+**Zrzut Macieja:** panel „POLITYKA PAŃSTWA — AUTO ULEPSZENIA" (tryb budowania, przyciski
+Żywność/Surowce/Infra/Zrówn./Ręczny już poprawnie stylowane jako przyciski), poniżej checkbox
+`☐ Własne ustawienia tego miasta`. Cytat: „checkboxy zamień na przyciski" (liczba mnoga).
+
+**Zbadane:** `gra/src/ui/buildModeHud.ts` ma TRZY checkboxy w tym samym obszarze (panel
+ulepszeń terenu, tryb budowania) — WSZYSTKIE nadal `<input type="checkbox">`, w przeciwieństwie
+do już naprawionego wcześniej „Auto Wyżywienie" (panel miasta, inny obszar): linia 329
+„Tylko pola z obywatelami" (poziom imperium), linia 362 „Własne ustawienia tego miasta" (przełącznik
+override per miasto — ten ze zrzutu), linia 374 „Tylko pola z obywatelami" (duplikat na poziomie
+miasta, widoczny tylko gdy override włączony). Nie jest to jeszcze naprawione — w przeciwieństwie
+do poprzedniego pytania (Auto Wyżywienie), to jest REALNY, nieukończony temat.
+
+Wzorzec do zastosowania: identyczny jak przy „Auto Wyżywienie" (`cityPanel.ts:4686-4702`,
+pełnoszerokościowy `<button class="hbtn">` z tekstem w środku, stan `active`/`aria-pressed`,
+zachowanie kliknięcia = toggle, bez zmiany logiki). Zero ABC — czysto techniczna zmiana UI,
+wzorzec 1:1 z istniejącego przycisku.
+
+Dispatch NASTĘPUJE teraz.
+
+---
+
+## 3 checkboxy w buildModeHud.ts (panel Auto Ulepszenia) → przyciski, dostarczone (2026-08-10)
+
+Odkrycie: panel renderowany jako HTML string (`innerHTML`), nasłuchy podpinane bezpośrednio po
+każdym renderze (nie delegacja) — zamiana `change`→`click` prosta, ale odczyt stanu w handlerach
+wymagał korekty (zmienne `empireState`/`effState`/`cityOverride` zamykały się przed kodem
+listenerów, 3 błędy TS2304) — naprawione odczytem świeżego stanu z gettera configu w handlerze
+(ten sam wzorzec co `cfg.onCityAutoWyzywienieChange?.(city.id, !city.autoWyzywienie)`). CSS:
+`.hbtn`/`.hbtn.active` z cityPanel.ts używa zmiennych scoped pod `.civ-cs`, których ten plik nie
+ma — dodano `.civ-build-hbtn`/`.civ-build-hbtn.active` z tymi samymi kolorami jako literały,
+zero nowej zależności. C-026: grep 3 atrybutów `data-ulepszenia-*` w całym `gra/src`+`gra/tools`
+— trafienia wyłącznie w tym pliku, dokładnie w zmienionych 6 liniach.
+
+Bramki: tsc 0 (3 błędy przed poprawką odczytu stanu, 0 po), logic-test 213/213,
+auto-improvements-test 14/15 (1 porażka pre-istniejąca, potwierdzona `git stash` na czystej
+bazie), okolica-test 72/72, okolica-isworkable-silnik-test 15/15.
+
+Dispatch Evaluatora NASTĘPUJE teraz.
+
+---
+
+## P-TRADEROUTES-NIEAKTUALNE-PO-WOJNIE-AI (2026-08-10, znalezisko Operatora przy naprawie P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI) · STATUS: **ROZPOZNANE — niepilne, do backlogu**
+
+**Wynik rozpoznania:** luka realna, potwierdzona (`breakTreatiesOnWar` nie woła
+`recomputeTradeRoutesNow`, 5 miejsc wywołania w tym pętla dyplomacji AI, wszystkie PO jedynym
+przeliczeniu tras w danej turze). **Złoto jest bezpieczne** — `computeTradeRouteIncomeByCity`
+liczy dochód PRZED fazą AI (ta sama tura) i trasy są ponownie przeliczane na starcie NASTĘPNEJ
+tury, więc nie ma okna realnej wypłaty za martwą trasę (samo-naprawiające się w 1 turę). **Ale
+realny, potwierdzony bug wizualny/informacyjny** przez do jednej pełnej tury gracza: chip HUD
+„Handel", panel Handlu Imperium i łuk na mapie (już znany no-op) pokazują trasę/dochód z
+cywilizacją, z którą właśnie jest wojna. Dodatkowo `tradeRouteResourceGrants` (dostęp do
+brązu/złota z trasy, np. Mennica) podlega tej samej luce czasowej — niezbadane dogłębnie
+(możliwe że mechanizm „łaski" `PYTANIA-77-DOP=B` to maskuje).
+
+Dwa warianty naprawy zidentyfikowane (A: `recomputeTradeRoutesNow` wewnątrz
+`breakTreatiesOnWar` — ryzyko: pełny re-scan + spam komunikatów „Szlak zerwany" przy wielu
+wojnach w jednej turze AI; B: surgiczne usunięcie pary z `tradeRoutes` — mniejszy narzut, ale
+wymaga ręcznej synchronizacji pochodnych). Rozmiar: mały-średni, 5 call site'ów, brak testu
+end-to-end dziś. **Priorytet niski, brak zgłoszenia od gracza — zostaje w backlogu, nie
+dispatchować dalej bez wyraźnego polecenia.**
+
+Gdy AI wypowiada wojnę w swojej fazie, `breakTreatiesOnWar` (main.ts, wołane z pętli komend
+dyplomacji AI ~linia 22884) usuwa zerwany traktat z `activeDeals`, ale NIE dotyka `tradeRoutes`.
+Skoro `tradeRoutes` jest przeliczane WYŁĄCZNIE przez `recomputeTradeRoutesNow()` (nie w fazie AI),
+trasa handlowa może zostać w tablicy mimo że traktat handlowy, który ją uzasadniał, już nie
+istnieje — łuk na mapie i/lub dochód z trasy mogą być nieaktualne aż do następnego przeliczenia
+(traktat gracza/nowa gra). Niski priorytet — nie zgłoszone przez gracza, znalezione przy okazji
+innej naprawy. Dispatch rozpoznania (potwierdzić realny skutek — czy dochód z martwej trasy
+faktycznie się nalicza, czy tylko wizualny łuk zostaje — i zaproponować A/B/C jeśli wymaga
+decyzji) NASTĘPUJE teraz.
+
+---
+
+## R-DYP-STOL-A część C — WŁASNE ZAŁOŻENIE BYŁO NIEAKTUALNE, koszyk działa już dla 4/5 typów (2026-08-10) · STATUS: **ROZPOZNANE — komentarze scalone dziś rano wymagają korekty**
+
+**⛔ Własna pomyłka do skorygowania:** rejestrując ten temat wcześniej dziś (przy okazji
+scalenia `P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA`, `5a93f5aa`) napisałem w KODZIE komentarz twierdzący
+„część C wciąż niedokończona — koszyk dziś obejmuje tylko akcje 5 i 13" — to było wierne
+przepisanie z `docs/decyzje/R-DYP-STOL-A.md` (audyt z 2026-07-27), ale ten dokument jest
+NIEAKTUALNY od ~2026-07-29 (FALA 106) i dalej rozbudowywany do 2026-08-08 — nikt nie zameldował
+postępu jako realizacji części C, stało się to „przy okazji" innych zgłoszeń.
+
+**Stan faktyczny (rozpoznanie, zweryfikowane w kodzie):** koszyk (`diplomacyTradeBasket`,
+`TRADE_BASKET_ACTION_IDS` w `diplomacyTradeBasket.ts:2374`) działa już end-to-end (UI + silnik
+akceptacji + kontroferta AI) dla **4 z 5** wymienionych typów: sojusz, pakt, wasal, pokój.
+Naprawdę brakuje TYLKO dla **wojny** — i to nie jest luka we wdrożeniu, tylko inna kategoria:
+wypowiedzenie wojny to jednostronna akcja gracza (`showWarConsentModal`) bez negocjacji/akceptacji
+AI, `wojna` nie ma nawet wpisu w `ProposalActionId` — cały system propozycji/koszyka jej nie
+dotyczy. Koszyk „wojenny" wymagałby nowej mechaniki od zera (osobny temat produktowy).
+
+**Jedyna realna, mała luka:** AI dokłada złoto-słodzik do koszyka DOPIERO w kontrofercie
+(rundzie 2+), NIGDY w pierwszej propozycji (`AIDiplomacyCommand` nie ma pola koszyka dla
+`zaproponuj_sojusz`/`zaproponuj_pakt`/`zaproponuj_pokoj`; `zaproponuj_wasal` w ogóle nie istnieje
+— AI nigdy nie inicjuje wasalizacji). Naprawa: 1 runda Operatora, 3-4 pliki, wzorzec do
+skopiowania z istniejącej logiki kontroferty.
+
+**Dodatkowy nierozstrzygnięty wątek w tle (nie mój do decyzji):** obecne pokrycie koszyka dla
+6 typów powstało częściowo przypadkiem (`R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY`, commit
+2026-08-05 przy okazji innego zadania) — nigdy formalnie niepotwierdzone jako zamierzone.
+
+**Do zrobienia teraz (bez ABC, czysto techniczne — dokumentacja + korekta własnej pomyłki):**
+(1) poprawić 3 komentarze scalone dziś rano w `diplomacy-acceptance-points.ts`/
+`diplomacyAcceptanceBalance.ts` — usunąć nieaktualne twierdzenie „część C niedokończona,
+koszyk tylko akcje 5/13"; (2) zaktualizować `docs/decyzje/R-DYP-STOL-A.md` żeby odzwierciedlał
+stan faktyczny. Materiał do EWENTUALNEGO przyszłego ABC (nie teraz): czy dociągnąć koszyk do
+PIERWSZEGO ruchu AI (małe zadanie), i czy „wojna" w ogóle powinna dostać jakikolwiek koszyk
+(nowy temat produktowy, osobne pytanie o zakres).
+
+Dispatch poprawki komentarzy NASTĘPUJE teraz (własna pomyłka, naprawiam bezpośrednio).
+
+Decyzja Macieja z 2026-07-27 (`R-DYP-STOL-A`, B+C): koszyk `diplomacyTradeBasket` miał objąć
+WSZYSTKIE typy traktatów. Dziś obejmuje tylko akcje 5 (handel) i 13 (dar) — sojusz, pakt, wasal,
+pokój, wojna nadal bez koszyka (`docs/decyzje/R-DYP-STOL-A.md`, sekcja „Co dalej"). Dziś łatamy
+pojedyncze komunikaty „brak koszyka tutaj" (`P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA`, scalone dziś) zamiast
+dokończyć część C. Dispatch rozpoznania (ile pracy realnie zostało — ile miejsc w kodzie
+wymagałoby rozszerzenia koszyka, czy jest to małe czy duże zadanie) NASTĘPUJE teraz, ŻEBY
+przygotować materiał do pytania ABC dla Macieja (nie zadaję pytania teraz — to nowy wątek, zgodnie
+z §1a/§2 najpierw kończymy trwające, potem osobno to zaproponuję).
+
+---
+
+## Tooltip Pracy — SCALONE bezpośrednio przez orkiestratora, oba blokery naprawione (2026-08-10)
+
+Naprawiono B1 i B2 z werdyktu Evaluatora bezpośrednio na żywym drzewie (nie kopiując pliku
+Operatora — dokładnie zgodnie z rekomendacją). `EmpireHudSnap.pracaUpkeep?: number` dodane;
+`main.ts` (`getEmpireHud`) dostał brakującą linię `pracaUpkeep: hs.pracaUpkeep,` (pole `hs.pracaUpkeep`
+już istniało, tylko nieprzepuszczane). Tooltip Pracy (6. argument `w3CityChip` na ŻYWYM,
+8-argumentowym wywołaniu — nie ruszono 7./8. argumentu) rozszerzony o: „cała cywilizacja +9 /
+turę netto (wpływ do puli +12 − utrzymanie ulepszeń surowcowych 3 pkt Pracy/turę)" — BEZ
+podwójnego minusa (literalny `−` przed SUROWĄ, dodatnią wartością `empire.pracaUpkeep`, nie przez
+`signed()`) — zweryfikowane niezależnym skryptem node z tą samą funkcją `signedPl`: `12 − 3 = 9`
+✓. Fallback (gdy `empire.pracaUpkeep` niedostępne) — pusty string, brak dodatkowego zdania (N1
+Evaluatora: nie chcę fałszywego „netto" tam gdzie faktycznie nie jest netto — bezpieczniej nic
+nie dodawać niż skłamać).
+
+Bramki: tsc 0, logic-test 213/213, **hud-miasto-stock-tempo-test 71/71** (krytyczna bramka AST,
+której Operator nie miał w swoim worktree — teraz przechodzi, dowód że 7./8. argument
+nietknięte), hud-miasto-stan-cywilizacji 20/20, hud-skarbiec 7/7.
+
+---
+
+## Tooltip Pracy — Evaluator FAIL, 2 blokery (podwójny minus + patch na przestarzałej bazie) (2026-08-10)
+
+**B1:** `signed(-pracaUpkeepVal)` już zwraca liczbę ujemną (`−Y`), a Operator postawił PRZED nią
+jeszcze operator `−` — widoczne dla gracza równanie nie sumuje się (`12 − (−3) = 15 ≠ 9`
+zamiast `12 − 3 = 9`). Własny test Evaluatora (parsujący wyrenderowany string): 10/14, FAIL w
+KAŻDYM przypadku `utrzymanie > 0` — czyli w całym sensie tej poprawki. Dokładnie ta klasa błędu,
+którą zgłosił Maciej.
+
+**B2:** worktree Operatora bazował na PRZESTARZAŁYM `cityPanel.ts` (sprzed
+`R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY` — `w3CityChip` ma dziś 8 argumentów, nie 7, chip
+Pracy ma dziś inny układ: duża liczba = TO miasto, mała = cywilizacja, trzeci element = zapas).
+Operator fizycznie NIE miał w swoim worktree bramki `hud-miasto-stock-tempo-test.cjs` (pilnuje
+AST-em dokładnie 8 argumentów) — nie mógł wiedzieć że ją łamie. Kopiowanie pliku Operatora
+cofnęłoby trzeci element chipu i inne nazewnictwo.
+
+Pozytywnie potwierdzone: `hs.pracaUpkeep` realne i poprawnie liczone (ta sama czysta funkcja co
+w realnym ticku), brak rozjazdu czasowego `_lastPracaUpkeep`/`_lastPracaRate` w obu ścieżkach
+(preview + koniec tury), C-026 (jedna ścieżka, tylko gracz) potwierdzone niezależnie.
+
+Dispatch rundy 2 (napraw B1, przepnij patch na żywe drzewo ruszając WYŁĄCZNIE 6. argument
+`w3CityChip`, dodaj `hud-miasto-stock-tempo-test.cjs` jako obowiązkową bramkę) NASTĘPUJE teraz.
+
+---
+
+## Tooltip Pracy (rozbicie utrzymania) — dostarczony, czeka na Evaluatora (2026-08-10)
+
+Operator wybrał PEŁNE rozbicie z konkretną liczbą (nie skrócony tekst) — wartość
+`pracaUpkeep` (civ-wide utrzymanie ulepszeń surowcowych) okazała się już policzona w
+`HudState`/`_lastPracaUpkeep`, tylko nieprzepuszczana do `EmpireHudSnap` panelu miasta. Ten sam
+wzorzec „brutto − utrzymanie = netto" już istnieje dla głównego paska HUD (`pracaChipTitle()`,
+`hud.ts:744-752`) — domknięcie istniejącego wzorca, nie nowy przepływ. Nowy tooltip: „Cała
+cywilizacja: wpływ do puli imperium +X − utrzymanie ulepszeń surowcowych −Y = +N netto/turę · to
+miasto +Z (budynki +A · pula +B)", z bezpiecznym fallbackiem (krótki tekst bez liczby) gdy
+`pracaUpkeep` niedostępne. C-026: `w3CityChip` z etykietą Praca ma JEDNO wywołanie, tylko ścieżka
+gracza (`ownerId===0`) — panel rywala nie używa tego kodu. Bramki: tsc 0, logic-test 213/213,
+hud-miasto-stan-cywilizacji 20/20 (test nie asercjonuje treści tooltipa, nie wymagał aktualizacji).
+
+Dispatch Evaluatora NASTĘPUJE teraz (dotyka faktycznego przepływu danych, nie samego tekstu).
+
+---
+
+## 3 checkboxy w buildModeHud.ts → przyciski — SCALONE (2026-08-10)
+
+Evaluator: **PASS-WITH-NOTES, zero blokujących**. Kluczowa weryfikacja (harness esbuild+jsdom,
+klikanie realnego DOM, nie analiza statyczna): render i handler czytają DOKŁADNIE to samo źródło
+(gettery configu) — zero rozjazdu. 73 własne asercje w 2 rundach (klik realnie zmienia stan
+silnika, 60 losowych klików bez rozjazdu `aria-pressed`/klasa/stan, wielomiastowość poprawna,
+zero kolizji między trzema przyciskami, CSS realnie renderuje się jak przycisk przez
+`getComputedStyle`). `auto-improvements-test` 14/15 potwierdzone pre-istniejące (bajt-w-bajt
+identyczne z czystą bazą). Niepilne: martwa reguła CSS `.civ-build-auto-row label{}` (już żaden
+`<label>` w pliku), afordans on/off tylko kolorem nie ptaszkiem (spójne z `.hbtn` w cityPanel.ts,
+do playtestu). Scalone bezpośrednio (diff samodzielny, 71 linii, zero konfliktu z bazą — inaczej
+niż w innych scaleniach tej nocy, ten worktree NIE miał problemu z dryfem od main). Bramki: tsc
+0, logic-test 213/213, okolica-test 72/72, okolica-isworkable-silnik 15/15, auto-improvements
+14/15 (pre-istniejąca).
+
+---
+
+## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA — SCALONE (2026-08-10)
+
+Operator naprawił nieprawdziwe uzasadnienie (zmyślony ID `R-DYP-STOL-A-KOREKTA`) prawdziwym
+odniesieniem do `R-DYP-STOL-A` (B+C, część C — koszyk dla wszystkich traktatów — wciąż
+niedokończona). Naprawiono 3 miejsca: `computePlayerAcceptanceSides` (`mode==='treaty' &&
+!hasBasket`), `computePeaceAcceptanceSides` (`buildPlayerSide`/`buildPartnerSide`, teraz warunkowo
+na `hasBasket` — Evaluatora NOTE 3, ta sama sytuacja pominięta przy pierwszej naprawie),
+`renderPnBalancePanelForTreaty` w `diplomacyAcceptanceBalance.ts`. Tekst widoczny dla gracza
+(„— zawrzyj osobną umowę") bez zmian, poprawiony wyłącznie komentarz-uzasadnienie. Scalone
+bezpośrednio przez orkiestratora (worktree Operatora bazował na `main`, nie miał żadnej z tych
+zmian od zera — zrekonstruowany end-state zastosowany ręcznie do żywego drzewa). Bramki: tsc 0,
+logic-test 213/213, diplomacy-acceptance-points 225/225, diplomacy-ai-offer-balance 23/23,
+diplomacy-basket-edit 25/25, diplomacy-stol-pw-sum 42/42, diplomacy-trade-flex 8/8.
+
+**Do rejestru (materiał na przyszłe pytanie ABC, NIE zadane teraz):** `R-DYP-STOL-A` część C
+(rozszerzenie koszyka na wszystkie typy traktatów — sojusz/pakt/wasal/pokój/wojna) jest wciąż
+niedokończona. Zamiast łatać kolejne komunikaty „brak koszyka tutaj" pojedynczo, może warto
+dokończyć część C w całości.
+
+---
+
+## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI — SCALONE (2026-08-10)
+
+Operator wybrał ścieżkę B (Evaluator): zostawił wywołanie `refreshTradeRoutesOverlay()` w bloku
+D10 końca tury jako defensywny hardening, całkowicie przepisał komentarz na uczciwy (5
+niezmienników, dlaczego to dziś no-op). Przy okazji sprawdził realny trop (wojna wypowiedziana
+przez AI łamiąca traktat handlowy, `breakTreatiesOnWar`) — **znalazł prawdziwą lukę**:
+`breakTreatiesOnWar` usuwa traktat z `activeDeals`, ale NIE dotyka `tradeRoutes`, więc trasa może
+faktycznie zostać nieaktualna po wojnie w fazie AI. Nie ratuje to jednak premisy — naprawa
+wymagałaby `recomputeTradeRoutesNow()`, nie samego `refreshTradeRoutesOverlay()` (który tylko
+renderuje, nie przelicza) — **osobny temat, poza zakresem C-025, NOWY do zarejestrowania osobno
+(nie teraz, priorytet niski, brak zgłoszenia od gracza)**.
+
+Scalone bezpośrednio przez orkiestratora (dokładny hunk z worktree Operatora — worktree bazował
+na starszym `main.ts`, więc surowy `diff` całego pliku był niebezpieczny do kopiowania,
+zastosowano tylko właściwy fragment ręcznie, ten sam wzorzec co przy scaleniu R-EPOKA-CUD B3).
+Bramki: tsc 0, logic-test 213/213, trade-routes-test 61/61, trade-routes-income-test 52/53 (H2
+pre-istniejąca).
+
+---
+
+## BUG (zrzut Macieja) — Praca 9 vs 3: rozpoznanie GOTOWE, prawdopodobnie NIE jest to bug arytmetyczny (2026-08-10)
+
+`civWideSixStatsFromEmpireSnap` (sumowanie) poprawna, przetestowana (19/19). Znaleziona prawdziwa
+przyczyna: duża liczba (9) = Praca BRUTTO tylko tego miasta (`pracaSplit.total`). Mała liczba (+3)
+= `_lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview` — `pracaUpkeepPreview` to CIV-WIDE koszt
+utrzymania ulepszeń surowcowych (tartak/kamieniołom/glinianka/kopalnie miedzi-żelaza-złota/warzelnia
+soli/stadnina, każde −1 Praca/turę, NIEZALEŻNIE w którym mieście stoi) — nawet przy JEDNYM mieście
+różnica 9→3 (−6) dokładnie pasuje do ok. 6 takich ulepszeń w całym terytorium. Dodatkowo: miasta
+z WSTRZYMANĄ produkcją wnoszą 0 do puli niezależnie od bilansu.
+
+**To prawdopodobnie NIE jest bug — ale tooltip chipu tego nie tłumaczy** (mówi tylko „cała
+cywilizacja +3 / turę", sugerując sumę BRUTTO analogiczną do dużej liczby, a to NETTO po
+utrzymaniu) — łamie CLAUDE.md §3 „każda liczba musi mieć nazwany parametr". Test
+`hud-miasto-stan-cywilizacji-test.cjs` pokrywa tylko czysty agregator, NIE `refreshLiveEmpireRates`/
+`previewPracaPoolBrutto`/`computePracaUpkeepByOwner` — scenariusz niepokryty żadnym testem.
+
+**Nie da się w 100% potwierdzić bez zapisu Macieja** — poproszony o samodzielną weryfikację (ile
+ulepszeń surowcowych ma w terytorium, czy ma więcej niż 1 miasto, czy któreś ma wstrzymaną
+produkcję). Rekomendacja rozpoznania: dopisać rozbicie w tooltipie (analogicznie do już istniejącego
+„budynki/pula" dla dużej liczby) — niska decyzja, zero ABC potrzebne, dispatch naprawy tooltipa
+NASTĘPUJE teraz, RÓWNOLEGLE z pytaniem do Macieja o potwierdzenie liczby ulepszeń.
+
+---
+
+**Zrzuty:** panel „PODZIAŁ PRACY" miasta: Budynki 0% / Ulepszenia 100%, „Kolejka budowy +0 (0%)",
+„Ulepszenia +9 (100%)" — cała Praca tego miasta (9) idzie do puli Ulepszeń, kolejka budowy pusta
+(0%), więc BEZ dwuznaczności „doBudynkow czeka na pustą kolejkę" (już jest pusta). Chip HUD:
+„Praca +9 +3 (22)" — duża liczba (to miasto) = 9, mała liczba (cała cywilizacja) = **+3**, zapas
+= 22. Cytat Macieja: „praca powinna być 9 a w mieście dochodzi tylko 3".
+
+**Nie zgaduję przyczyny** (może to być: inne miasto/miasta z ujemnym bilansem Pracy zjadające
+nadwyżkę, błąd w liczeniu `civWideSixStatsFromEmpireSnap`/`empire-hud-totals.ts`, albo coś
+innego) — dispatch rozpoznania NASTĘPUJE teraz, zanim jakikolwiek kod zostanie zmieniony.
+Zastrzeżenie: kod, który akurat dziś wieczorem dotykałem kosmetycznie (usunięcie zbędnego `+`
+przed `signed()` w tym samym panelu Podział Pracy) NIE jest jeszcze zbudowany/zdeployowany —
+zrzut Macieja pokazuje AKTUALNIE działający ROBOCZA (FALA 265), sprzed tej kosmetycznej zmiany,
+więc to nie może być regresją z dzisiejszej edycji.
+
+---
+
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — rozpoznanie feasibility zakończone, doprecyzowanie zadane w czacie (2026-08-10)
+
+**Kluczowe ustalenie:** gra to CZYSTY HTML/JS (brak Electron/Tauri), a File System Access API ma
+TWARDY wymóg specyfikacji „transient user activation" przy `requestPermission()` — dotyczy
+KAŻDEGO nowego otwarcia `START.html`, nawet z zapamiętanym uchwytem katalogu (IndexedDB).
+Dodatkowo: NIE działa na `file://` (wymaga serwera `http://localhost` — zmiana sposobu
+uruchamiania gry), wsparcie WYŁĄCZNIE Chrome/Edge (Firefox/Safari — brak). „Zero interakcji,
+cichy zapis do wskazanego katalogu" w sensie dosłownym NIE jest osiągalne w przeglądarce — to
+fundamentalne zabezpieczenie, nie luka do obejścia.
+
+Trzy realne warianty do wyboru zadane jako doprecyzowujące pytanie ABC w czacie.
+
+---
+
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — ECHO C, ALE z doprecyzowaniem zmieniającym mechanizm (2026-08-10)
+
+**Odpowiedź Macieja: „c" + doprecyzowanie: „najlepiej żeby save był zapisany lokalnie tam gdzie
+robocza w katalogu gracza"** — czyli fizyczny plik na dysku, w tym samym katalogu co
+`gra-robocza`, NIE `IndexedDB` (co faktycznie oznaczała moja opcja C w pytaniu ABC).
+IndexedDB nadal jest storage PRZEGLĄDARKI (większy limit niż localStorage, ale nadal
+sandboxed w profilu przeglądarki, NIE plik w katalogu gry) — to inny mechanizm niż to, co
+Maciej opisał.
+
+**⛔ Nie zgaduję, zaznaczam wprost różnicę zamiast cicho podstawiać IndexedDB pod „C".** Gra to
+statyczny bundle HTML (`gra-robocza/*.html`), nie aplikacja Electron/desktop — zapis
+BEZPOŚREDNIO do pliku w konkretnym katalogu (obok `gra-robocza`) z poziomu zwykłej strony HTML
+ma realne ograniczenia bezpieczeństwa przeglądarki:
+- **File System Access API** (`showSaveFilePicker`/`showDirectoryPicker`) — jedyny sposób
+  zapisu do prawdziwego pliku wybranego przez użytkownika; działa dziś WYŁĄCZNIE w
+  Chrome/Edge (nie Firefox, nie Safari); zwykle wymaga interakcji użytkownika (kliknięcie) przy
+  pierwszym wyborze pliku/katalogu, chociaż uprawnienie do RAZ wybranego uchwytu pliku można
+  zachować między sesjami (`IndexedDB`-backed permission) — do zweryfikowania czy to
+  wystarczy na CICHY autozapis bez okna dialogowego co turę.
+- **Automatyczne pobieranie pliku** (`<a download>`) — uniwersalne, ale trafia do katalogu
+  Pobrane (nie do katalogu gry) i przy powtórnym zapisie tej samej nazwy przeglądarka dopisuje
+  „(1)", „(2)" zamiast nadpisywać — nie nadaje się na cichą rotację 10 slotów bez dodatkowej
+  konfiguracji przez gracza.
+
+Dispatch rozpoznania feasibility File System Access API (czy da się to zrobić CICHO, bez okna
+dialogowego przy każdym autozapisie, w tym konkretnym bundle) NASTĘPUJE teraz — zanim
+cokolwiek zaimplementuję, żeby nie zbudować czegoś, co i tak będzie proszić o zgodę co turę
+albo nie zadziała w niedominującej przeglądarce.
+
+---
+
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — pytanie ABC zadane Maciejowi (2026-08-10)
+
+Rozpoznanie zakończone wcześniej (5 wariantów A-E), skonsolidowane do 3 wariantów ABC i zadane
+w czacie. Czeka na odpowiedź `R-AUTOZAPIS-QUOTA-STORAGE-Q1 + litera`.
+
+**ECHO A (2026-08-10).** Wariant A z doprecyzowania: pełny File System Access API
+(`showDirectoryPicker`/uchwyt katalogu zapamiętany w `IndexedDB`), zapis fizycznego pliku w
+katalogu obok `gra-robocza` na dysku gracza. **Znane, jawnie przedstawione w pytaniu ograniczenia
+(Maciej wybrał ze świadomością, nie do ponownego kwestionowania):** (1) wymóg „transient user
+activation" specyfikacji — jedno kliknięcie potwierdzenia dostępu przy KAŻDYM nowym otwarciu
+`START.html` (nie da się w pełni ukryć okna zgody, tylko ograniczyć do jednego kliknięcia na
+sesję zamiast co turę); (2) wyłącznie Chrome/Edge (Firefox/Safari brak wsparcia — wymaga jasnego
+komunikatu w UI dla graczy na innej przeglądarce, fallback na dotychczasowy `localStorage`); (3)
+NIE działa na `file://` — wymaga serwowania przez `http://localhost`, czyli zmiany sposobu
+uruchamiania gry z „otwórz plik HTML" na „uruchom lokalny serwer" (do ustalenia z Maciejem jak
+dokładnie to ma wyglądać dla gracza — osobny .bat/skrypt startowy?).
+
+Dispatch Operatora (rozpoznanie + implementacja, Sonnet 5, worktree izolowany) NASTĘPUJE teraz:
+(a) potwierdzić technicznie czy uprawnienie do zapamiętanego uchwytu katalogu faktycznie
+przetrwa między sesjami z jednym kliknięciem na start (nie per-turę) — to była niepewność
+z wcześniejszego rozpoznania feasibility; (b) zaprojektować najprostszy serwujący mechanizm
+lokalny (najmniejsza zmiana sposobu uruchamiania gry); (c) zaimplementować zapis rotacyjny do
+pliku zamiast `localStorage` z fallbackiem na dotychczasowy mechanizm gdy API niedostępne;
+(d) NIE implementować w ciemno — jeśli podczas prac wyjdzie na jaw, że uprawnienie jednak NIE
+przetrwa cicho (wymaga kliknięcia PRZY KAŻDYM AUTOZAPISIE, nie tylko raz na sesję) — przerwać
+i zgłosić z powrotem jako ABC, bo to zmienia bilans kosztu/zysku wariantu A.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU B3 — SCALONE `e5ba61c2` (2026-08-10)
+
+Scalający agent poprawnie ODSTĄPIŁ od literalnej instrukcji dla `ai.ts` (miała kazać skopiować
+plik w całości jako „100% nowa praca" — nieprawda, worktree Operatora bazował na starszym
+punkcie historii, brakowało 3 niezwiązanych, już scalonych funkcji: obrona miast przed
+barbarzyńcami, wymuszona wojna Brązu, aktualna reguła kolonizacji poza terytorium). Zamiast
+ślepo kopiować (co skasowałoby te 3 funkcje), zastosował to samo podejście hunk-po-hunku co dla
+`main.ts` — dobry przykład reguły C-033/C-034 „nie ufaj instrukcji ślepo, sprawdź stan przed
+nadpisaniem". Wszystkie bramki zielone zgodnie z oczekiwaniem (46/46, 33/33, 213/213, 26/26,
+10/10, 13/13, 9/9, 7/8 pre-istniejąca). Dowód: `grep wonderForcePriority gra/src/main.ts` → 3
+trafienia, commit na `origin`. Worktree `agent-a85d78f7d0cdd8a5d` pozostawiony do usunięcia (po
+weryfikacji `git status`, C-033).
+
+---
+
+## BUG — autozapis nieudany, „brak miejsca w zapisie przeglądarki" (2026-08-10, zrzut Macieja)
+
+**Zrzut:** trzy zdublowane powiadomienia „Koniec tury / Autozapis nieudany — brak miejsca w
+zapisie przeglądarki".
+
+**Zbadane:** `doRotatingAutosave()` (`main.ts:21212-21236`) pisze do rotacyjnego slotu (10
+ostatnich, `AUTOSAVE_ROT_COUNT=10`) przez `saveToLocal()` (`game/save.ts:337-346`) —
+`localStorage.setItem()` na tym samym kluczu co poprzednio (nadpisanie, nie narastanie per slot).
+`reason==='quota'` = złapany `QuotaExceededError`/`NS_ERROR_DOM_QUOTA_REACHED`/kod 22/1014 —
+twardy limit `localStorage` przeglądarki (typowo ~5-10 MB NA CAŁĄ domenę, nie per-slot). Przy
+dużej mapie/wielu turach JSON zapisu może realnie przekroczyć ten limit, zwłaszcza x10 slotów
+rotacji + inne klucze (`AUTOSAVE_ROT_IDX_KEY`, `AUTOSAVE_FREQ_KEY`, `lastPlayedSlotId` itd.) w tej
+samej domenie. Kod NIE ma dziś żadnej strategii odzyskania miejsca przy quota (po prostu pokazuje
+komunikat i rezygnuje z tej próby, indeks rotacji NIE przesuwa się dalej — kolejna próba celuje w
+ten sam slot).
+
+**Klasyfikacja:** to NIE jest czysto techniczny jednoznaczny bug — właściwa naprawa ma realne
+kompromisy (np. czyszczenie najstarszych slotów przy quota vs kompresja zapisu vs migracja na
+IndexedDB, znacznie większy limit). Dispatch Operatora do ROZPOZNANIA (nie ślepej implementacji):
+zmierzyć realny rozmiar JSON zapisu na reprezentatywnej mapie/turze, potwierdzić czy problem to
+rozmiar pojedynczego zapisu czy suma 10 slotów, i zaproponować A/B/C zamiast zgadywać —
+zgodnie z §6 „nie zgaduj przy niejednoznaczności".
+
+Dispatch NASTĘPUJE teraz.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 2: PASS-WITH-NOTES, scalenie NATYCHMIAST (C-034) (2026-08-10)
+
+Niezależny (inny niż runda 1) Evaluator potwierdził naprawę WŁASNĄ symulacją (75 asercji, 0
+porażek) — kolejka nie rośnie, zero `queueJump` gdy wymagany cud niebudowalny, zakleszczenie
+Fenicjan/Petra jest CZASOWE nie trwałe (po zbadaniu Inżynierii petra kończy się w 6 tur),
+przypadek zamierzony (Egipt) działa. 16 rodzin mutacji adwersarialnych, wszystkie odparte —
+brak fallbacku, brak dyskryminacji po `ordered[0]`, wiele wymaganych cudów per epoka obsłużone,
+`NaN`/dzielenie przez zero bezpieczne, głęboka kolejka nieosiągalna (`wstrzymana` nigdy `true`),
+duplikat civType (osiągalny, poza zakresem B3) nie odtwarza defektu rundy 1. Skan WSZYSTKICH 19
+cudów: `petra` to JEDYNY przypadek rozjazdu w danych.
+
+**Niepilne (do rejestru, nie blokują):** N1 — pokrycie `main.ts` nowej sekcji testu nadal
+częściowo tekstowe (4 regexy), nie behawioralne — sugerowana przyszła refaktoryzacja (wyciągnąć
+`shouldForceEraWonderPriority()` jako czystą funkcję). N2 — wybór miasta w trybie force to
+pierwsze-pasujące, nie najwydajniejsze (strata ograniczona, jeden `queueJump` na cud). N3 —
+wymuszacz zapala się też w NAJWYŻSZEJ epoce (3), gdzie żaden awans nie jest bramkowany — dotyczy
+6 cywilizacji, może być pożądane ale nie to uzasadniało ECHO. N4 — `aiWonderStuckTurnsByOwner`
+nieserializowana (ta sama klasa co w rundzie 1). N5 — duplikat civType osiągalny w normalnej
+rozgrywce (zakres `13861b60`, nie B3).
+
+**Instrukcja scalania (precyzyjna, hunk-po-hunku z `main.ts` — 9 kotwic B3, resztę zostawić bo
+już jest na gałęzi sesji z `13861b60`):** patrz pełny tekst werdyktu, konieczna do wykonania
+scalenia bez duplikacji. `owner-epoch.ts` + oba testy B2 NIE ruszać (bit-w-bit identyczne).
+`ai.ts` + `ai-params.json` (+5 linii) + nowy test `ai-cud-priorytet-b3-test.cjs` brać w całości.
+
+Dispatch dedykowanego scalenia NASTĘPUJE teraz, natychmiast (C-034).
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
+
+Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
+zweryfikowaną bajt-w-bajt na bazie), potwierdził C-026 (jedyne miejsce wywołania
+`decideAiWonderBuild`, `chooseCityProduction` nietknięty) i duplikację z `13861b60` (3 pliki
+identyczne bajt-w-bajt — `owner-epoch.ts` + oba testy B2, `main.ts` MIESZANY, instrukcja scalania
+hunk-po-hunku gotowa). 7/9 własnych mutacji złapanych.
+
+**BLOKUJĄCE — nieskończona pętla na realnych danych shipowanych, nie brzeg teoretyczny:**
+tryb `forcePriority` bierze `ordered[0]` (pierwszy budowalny cud), a `main.ts` nigdzie nie
+sprawdza, czy to WŁAŚNIE wymagany cud epoki. Fenicjanie/Brąz→Żelazo: cud bramkujący (`petra`,
+`epokaWejscia=2`) wymaga technologii `Inżynieria` z epoki Żelaza — niebudowalny mimo kompletu
+technologii Brązu. Efekt (zasymulowany na realnych funkcjach+danych, 12 tur): AI co turę wstawia
+NA FRONT inny cud (`wyrocznia`), zeruje mu postęp, kolejka rośnie bez ograniczenia (+1/turę),
+`tryDeductWonderStartFood` drenuje żywność co turę — **cud nigdy się nie kończy, dokładna
+odwrotność celu B3**. Kontrolny scenariusz (Egipt/epoka 1, cel zamierzony) działa poprawnie —
+defekt ściśle ograniczony do rozjazdu „wymagany cud ≠ pierwszy budowalny". Zastrzeżenie zasięgu:
+wykryty JEDEN rozjazd w skanie 15×3, ale sonda miała pusty `civRow` (reguła
+`tech_before_civ_entry` nieaktywna) — z pełnymi danymi cywilizacji może być więcej. To DOLNA
+granica.
+
+**Naprawa zdefiniowana (2 cięcia, bez przebudowy):** (1) `main.ts` —
+`wonderForcePriority = wonderEraGateForced && !wonderRequiredAlreadyBuilding &&
+buildableForAi.some(w => wonderRequiredIds.includes(w.id))`; (2) `ai.ts` — w `forcePriority`
+wybierać cud z jawnie przekazanej listy `requiredWonderIds`, nie `ordered[0]`. Dodatkowo:
+`wonderRequiredAlreadyBuilding` dziś sprawdza wyłącznie front kolejki, nie całą kolejkę miasta.
+
+Niepilne (do rejestru, nie blokują): zerowe pokrycie testowe `main.ts` dla B3 (M8/M9
+niezłapane — komentarz nowego testu obiecuje wykrywanie dryfu `main.ts`, ale re-implementuje
+formułę zamiast czytać źródło); rozjazd danych `petra` (epokaWejscia=2 vs tech z epoki 3) to
+problem B2 nie B3, do decyzji właściciela osobno; `relaxedWonderCostThreshold` znosi próg dla
+WSZYSTKICH cudów nie tylko bramkującego (interpretacja Operatora „rozluźnianie" jako
+„zniesienie do ∞", do potwierdzenia); `aiWonderStuckTurnsByOwner` nieserializowana + czyszczona
+przy save/load (asymetria, degradacja łagodna); licznik rośnie też z powodów niezwiązanych z
+throttle/progiem (mylący komentarz w kodzie).
+
+Dispatch rundy 2 (wąska, TYLKO dwa wskazane cięcia + test pokrywający M8/M9) NASTĘPUJE teraz.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — runda 2 (naprawa) dostarczona, czeka na NIEZALEŻNEGO Evaluatora (2026-08-10)
+
+Zakres ściśle ograniczony do 2 wskazanych cięć + rozszerzenie testu (C-025, zero przy okazji —
+nie ruszono `relaxedWonderCostThreshold`, save/load `aiWonderStuckTurnsByOwner`, danych
+`petra`/`wonders.json`). `main.ts`: `wonderForcePriority` teraz koniunkcja trzech warunków
+(`wonderEraGateForced && !wonderRequiredAlreadyBuilding && wonderRequiredBuildable`),
+`wonderRequiredAlreadyBuilding` skanuje całą kolejkę miasta, nie tylko front. `ai.ts`:
+`decideAiWonderBuild` dostał nowy parametr końcowy `requiredWonderIds`, w trybie `forcePriority`
+wybiera WYŁĄCZNIE z tej listy (`ordered.find`, nie `ordered[0]`), zwraca `null` bez fallbacku gdy
+żaden wymagany cud niebudowalny — nawet gdyby `forcePriority` błędnie dostał `true`.
+
+Test rozszerzony do **46/46** (z 31/31): nowa sekcja 5-STRUKTURA czyta źródło `main.ts` (ten sam
+wzorzec co `era-cud-main-ts-integracja-test.cjs`, naprawia lukę M8/M9 z werdyktu Evaluatora rundy
+1 — poprzednia sekcja 5 re-implementowała formułę zamiast czytać źródło); nowa sekcja 6 to
+DOKŁADNA reprodukcja scenariusza Evaluatora (Fenicjanie/Petra, realne dane, symulacja 12 tur) —
+PO naprawie: kolejka nie rośnie (max długość 1 zamiast rosnącej do 12), zero `queueJump` w 12
+tur, po zbadaniu Inżynierii wymuszacz poprawnie wybiera `petra`. Wynik wklejony do raportu jako
+dowód.
+
+Bramki: tsc 0, logic-test 213/213, owner-epoch 13/13, era-cud-warunek-awansu 33/33,
+era-cud-main-ts-integracja OK (15/16/11), ai-production-priority 9/9, ai-cud-priorytet-b3
+**46/46**, ai-balans-step4 10/10, cuda-handel 26/26. `ai-balans-step3` 7/8 — ta sama porażka
+pre-istniejąca, ponownie potwierdzona.
+
+Dispatch NIEZALEŻNEGO Evaluatora rundy 2 (inny agent niż runda 1) NASTĘPUJE teraz.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2, stackGroupId) — runda 3 dostarczona, czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a3f6bd057db40cbd4` — krok kopiowania z żywego checkoutu zweryfikowany (worktree
+faktycznie startował od `main`/`b0e4a5c9`, `grep computeSeparateReturn` dawał zero trafień przed
+kopiowaniem, trafienia po). Refaktor: nowe opcjonalne pole `RuntimeUnit.stackGroupId?: string`
+(`units/setup.ts`), fallback `stackGroupIdOf()` = stare grupowanie po heksie gdy pole nieobecne
+(wsteczna kompatybilność zapisów). Choke point `activeUnitStack` (więc `playerStackAt`) filtruje
+dodatkowo po `stackGroupIdOf` — naprawia automatycznie ~50 wywołań pochodnych
+(`syncStackRuchLeft`/`deductStackRuchLeft`/`planningStackRuchLeft`/`unitWithPlanningStackRuch`)
+bez dotykania każdego z osobna. Funkcje „kto na heksie" (`visibleStackOnHex`,
+`coLocatedForMergePrompt`, `garrisonUnitsOnHex`) dostały opcjonalny 5. param `groupId` —
+merge-prompt/Prawo/bulk-akcje CELOWO zostają unscoped (fizyczna obecność, nie tożsamość armii).
+„Zostaw osobno"/split → fresh id; każda z 3 ścieżek merge → wspólny id.
+
+C-026: 15 funkcji z listy zlecenia + **2 dodatkowe znalezione przy audycie, POZA listą**
+(`buildPlayerArmyListEntries`, `cyclablePlayerArmyLeadsBase`/`armyLeadHexKey` — własne
+reimplementacje grupowania po heksie w HUD, ta sama klasa błędu w innym miejscu) — wszystkie 78
+wywołań przejrzanych indywidualnie.
+
+Bramki (tsc zweryfikowany DWA razy na spójnym drzewie, bo worktree z `main` ma niepełny
+`gra/src`): tsc 0, logic-test 213/213, army-merge-separate-return 16/16 +
+-mainguard 37/37, army-merge-bounce 4/4, army-merge-dismiss-bounce 16/16, army-stack-ruch 5/5,
+army-merge-colocated 4/4, combat 6/6, tech-tree 19/19, research 33/33, unit-replace 13/13,
+garnizon-exit 26/26, map-siege 6/6, siege-ai 17/17, siege-defenders 12/12, save-label OK,
+hud-moc-warstwa 28/28, hud-skarbiec 7/7, hud-miasto-stan-cywilizacji 20/20. Nowy test
+`army-merge-stackgroupid-test.cjs` 32/32 (mutacyjnie potwierdzony — cofnięcie fixu w
+`activeUnitStack` daje 9 FAIL w oczekiwanych miejscach). `pre-battle-save-test.cjs` FAIL
+niezwiązany (esbuild/`import.meta.glob`, plik nietknięty, poza zakresem).
+
+Zgodnie z nową regułą C-034 (scalenie zawsze osobnym, natychmiastowym dispatchem po PASS) —
+dispatch Evaluatora rundy 3 NASTĘPUJE teraz, scalenie dopiero po jego werdykcie, osobnym
+zleceniem.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — priorytet cudu, Operator runda 1 dostarczona, czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a85d78f7d0cdd8a5d` (base `main`/`b0e4a5c9`, TA SAMA klasa problemu co
+stackGroupId runda 2 — worktree nie widział `13861b60` scalonego już do gałęzi sesji; Operator
+sam to zdiagnozował i odtworzył prerequisite przez `git diff 13861b60^ 13861b60` + `git apply -3`,
+zweryfikowane czyste). **Scalający musi to uwzględnić:** diff tego worktree na `owner-epoch.ts` i
+części `main.ts` DUBLUJE zawartość `13861b60` — scalenie wymaga albo wziąć tylko hunki
+specyficzne dla B3 (po scaleniu `13861b60`, które już jest na gałęzi sesji), albo uważnie
+rozdzielić.
+
+Dwa mechanizmy w `gra/src/game/ai.ts`, wpięte w JEDYNE istniejące miejsce wywołania (`main.ts`,
+blok `CUDA-AI` ~linia 23059, przed `decideAITurn`): `decideAiWonderBuild(...,forcePriority=false)`
+— nowy opcjonalny 7. parametr (wstecznie kompatybilny, stare 6-argumentowe wywołania/testy
+nietknięte), gdy `true` pomija throttle/`hasWonderInProgress`/`queueEmpty` (pilnuje tylko
+`pracaPerTurn>0`); `relaxedWonderCostThreshold(...)` — próg opłacalności rośnie płynnie do
+`Infinity` po `stuckTurns>=cuda_stuck_relax_tur_max` (nowy parametr w `ai-params.json`, domyślnie
+30 tur). `wonderForcePriority` liczony przez ponowne użycie `allEraTechsResearched`/
+`eraOwnWonderSatisfied` z `owner-epoch.ts` (`13861b60`) — bez duplikacji logiki. C-026: jedyne
+miejsce wywołania `decideAiWonderBuild` zgrepowane i potwierdzone, `chooseCityProduction`
+(normalny scoring) nietknięty.
+
+Nowy test `ai-cud-priorytet-b3-test.cjs` 31/31. Bramki: tsc 0, logic-test 213/213, owner-epoch
+13/13, era-cud-warunek-awansu 33/33, era-cud-main-ts-integracja OK (15/16/11), ai-production-
+priority 9/9, tech-tree 19/19, research 33/33, unit-replace 13/13, wonder-availability 7/7,
+wonder-civ-tech 5/5, cuda-handel 26/26, ai-balans-step4 10/10. `ai-balans-step3-test.cjs` 7/8 —
+1 porażka PRE-ISTNIEJĄCA (potwierdzona na bazowym `b0e4a5c9` przed zmianą, test ma
+zdezaktualizowaną wartość `prog_koszt_x=70` podczas gdy JSON już ma `80` z wcześniejszego
+STEP4), niezwiązana z tą zmianą.
+
+**Znane ograniczenie, nie naprawiane (zgodne z zastrzeżeniem Macieja „jeśli dosłownie nie stać —
+priorytet nie pomoże"):** `tryDeductWonderStartFood` może po cichu pominąć zakolejkowaną decyzję
+z braku żywności; w trybie `forcePriority` licznik `stuckTurns` i tak resetuje się do 0, mimo że
+nic nie zostało faktycznie zakolejkowane — brzegowy przypadek poza zakresem tego zlecenia.
+
+Dispatch Evaluatora rundy 1 NASTĘPUJE teraz.
+
+---
+
+## R-DYP-STOL-A część C — korekta komentarzy SCALONA
+
+Agent `a12e194fad495de11` dostarczył poprawki 3 komentarzy (własna pomyłka orkiestratora,
+patrz wpis wyżej „WŁASNE ZAŁOŻENIE BYŁO NIEAKTUALNE"). Scalone bezpośrednio przez orkiestratora
+przez `git apply` (worktree było rebase'owane przez samego agenta na `origin/claude/
+sprawdzenie-funkcjonalnosci-ek4ra0`, diff czysty, zero driftu bazy).
+
+Pliki: `gra/src/game/diplomacy-acceptance-points.ts` (`computePeaceAcceptanceSides`,
+`computePlayerAcceptanceSides`), `gra/src/ui/diplomacyAcceptanceBalance.ts`
+(`renderPnBalancePanelForTreaty`). Zmiana WYŁĄCZNIE komentarzy — treść komunikatu dla gracza
+niezmieniona. Poprawiono: `hasBasket`/`!hasBasket` to własność TEJ NEGOCJACJI (czy coś dodano
+do koszyka teraz), nie własność typu traktatu — koszyk `TRADE_BASKET_ACTION_IDS` już działa dla
+sojuszu/paktu/wasala/pokoju (4 z 5 typów); jedyna realna luka to wojna (aid '11'),
+kategorialnie inny temat (jednostronna akcja gracza, poza systemem propozycji/koszyka).
+
+Bramki na żywym drzewie po scaleniu: `tsc --noEmit` 0 błędów, `logic-test.cjs` 213/213,
+`diplomacy-acceptance-points-test.cjs` 225/225 — identyczne z bazą.
+
+**STATUS: ZAMKNIĘTE.**
+
+---
+
+## P-ARMIA-ROZPAD stackGroupId (BB2) — runda 5 Evaluator przerwana, redispatch
+
+Poprzedni Evaluator rundy 5 (`a2ce8aea4b1ba62c2`) został **PRZERWANY** w trakcie pracy
+(`[Request interrupted by user]`, log `agent-a2ce8aea4b1ba62c2.jsonl`, ostatni zapis
+2026-08-10 08:37:42 UTC) i NIGDY nie dostarczył werdyktu — `ListAgents` potwierdza brak
+zasięgu. Zgodnie z C-038 (werdykt musi zostać faktycznie odebrany zanim zostanie
+zacytowany) — runda 5 traktowana jako NIEODBYTA, nie jako PASS domyślny.
+
+Przed redispatchem: naprawiłem zerwany symlink `node_modules` w worktree rundy 4
+(`agent-a3f6bd057db40cbd4/gra`) i potwierdziłem, że testy w ogóle się uruchamiają:
+`army-merge-stackgroupid-test.cjs` 11045/11045, `army-merge-separate-return-mainguard-
+test.cjs` 55/55. To NIE jest werdykt jakościowy — tylko potwierdzenie wykonywalności.
+
+Dispatch nowego, niezależnego Evaluatora rundy 5 (`a0bffa81f91d508f8`, Opus 5) NASTĘPUJE
+teraz — pełna niezależna weryfikacja B1–B4, bez zaufania do artefaktów po przerwanym
+poprzedniku.
+
+**Runda 5 werdykt: FAIL.** B1–B4 z rundy 3 potwierdzone naprawione (mutation testing:
+M1/M2/M3 wszystkie złapane, B3 5/5 call-site'ów przypiętych, B4 fuzz jakościowo
+zweryfikowany). Ale **nowe znalezisko blokujące B-R5-1**: runda 4 naprawiła klucz
+grupowania WYŁĄCZNIE w `armyMerge.ts:computeStackDisplay` (dodając `|q,r|g` do
+`stackGroupIdOf(u)`), ale zostawiła TEN SAM defekt (gołe `stackGroupIdOf(u)` bez pozycji)
+w trzech niezależnych miejscach `main.ts`, które robią własne, równoległe grupowanie po
+heksie: `cyclablePlayerArmyLeadsBase` (~4800), `armyLeadHexKey` (~4835),
+`buildPlayerArmyListEntries` (~5163). Dowód empiryczny: scout w auto-explore odchodzący
+z heksu grupy → nowy klucz daje 1 wpis obejmujący oba heksy zamiast 2 — jednostka na
+drugim heksie znika z listy armii, sumy `ruch`/`hp` liczone przez dwa heksy, HUD ◀▶ nie
+dojdzie do drugiego heksu, garnizon/pole rozjeżdża się z rendererem (2 żetony wg
+`computeStackDisplay` vs 1 wpis listy). Zero bramek to łapie dziś. Naprawa: użyć tego
+samego klucza co `armyMerge.ts:314` w tych 3 miejscach (Evaluator sugeruje wyeksportować
+jako wspólną `stackRenderKey(u)`), rozszerzyć `army-merge-separate-return-mainguard-
+test.cjs` o pinowanie kształtu klucza w tych 3 oknach. Noty N1–N4 (log bezwarunkowy w
+teście, zakres fuzza nie woła `computeStackDisplay`, `freshStackGroupId` niedeterministyczny,
+nakładanie się żetonów w rendererze/pickingu przy 2 reprezentantach na 1 heksie — świadoma
+konsekwencja ECHO B, do playtestu osobno) — nieblokujące, do uwzględnienia przy okazji.
+
+Dispatch rundy 5 (fix B-R5-1) NASTĘPUJE teraz.
+
+Operator rundy 5 (`ae476910a62d7b168`, worktree izolowany, checkout na żywą gałąź sesji
+per instrukcja) dispatchowany: eksport wspólnej `stackRenderKey(u)` z `armyMerge.ts`
+(zamiast inline'owanego wyrażenia w `computeStackDisplay`), użycie jej w 3 miejscach
+`main.ts` (`cyclablePlayerArmyLeadsBase`, `armyLeadHexKey`, `buildPlayerArmyListEntries`)
+zamiast gołego `stackGroupIdOf(u)`, korekta mylącego komentarza, rozszerzenie mainguard
+testu o pinowanie kształtu klucza w tych 3 oknach + scenariusz regresyjny odtwarzający
+dowód Evaluatora (scout auto-explore rozdziela grupę na 2 heksy → musi dać 2 wpisy).
+
+**Operator rundy 5 dostarczył — WAŻNE ODKRYCIE dodatkowe.** Cała runda 3/4 BB2 (`stackGroupId`
+w ogóle) NIGDY nie została faktycznie scalona do gałęzi sesji — istniała WYŁĄCZNIE jako
+nieskomitowana praca w worktree `agent-a3f6bd057db40cbd4`. Na gałęzi sesji nie ma ŻADNEGO
+commitu „Scalenie" dla stackGroupId, tylko wpisy „Rejestr" (dokumentacja). To wyjaśnia base-
+drift, który łapali kolejni Evaluatorzy. Operator odtworzył całość (`stackGroupIdOf`,
+`sameStackGroup`, `freshStackGroupId`, `assignSharedStackGroupId`, `stackRenderKey` nowe)
+we własnym worktree `agent-ae476910a62d7b168` — to jest teraz KOMPLETNY pakiet runda 4 + runda
+5 (fix B-R5-1), gotowy do jednego scalenia całości (dotąd NIC z BB2 nie trafiło na żywe drzewo).
+
+Własny dowód Operatora: cofnięcie `stackRenderKey`→`stackGroupIdOf` w `cyclablePlayerArmyLeadsBase`
+→ natychmiastowy FAIL nowej sekcji 10a, przywrócenie → zielono. Bramki: tsc 0, logic-test
+213/213, army-merge-stackgroupid 11045/11045, army-merge-separate-return-mainguard **72/72**
+(+17 nowych asercji sekcje 10-11), separate-return 16/16, bounce/dismiss-bounce/colocated
+4/4·16/16·4/4, army-stack-ruch 5/5, combat-test 6/6, tech-tree 19/19, research 33/33,
+unit-replace 13/13.
+
+Ponieważ to jest PIERWSZE realne scalenie całego BB2 do żywego drzewa (nie tylko fix
+B-R5-1), a poprzedni Evaluator oceniał tylko cząstkową bazę — dispatch NIEZALEŻNEGO
+Evaluatora rundy 6 (całość BB2 + fix B-R5-1 razem) NASTĘPUJE teraz, zanim jakiekolwiek
+scalenie do żywego drzewa.
+
+Evaluator rundy 6 dispatchowany (`a4bb2944cd3713284`, Opus 5, worktree
+`agent-ae476910a62d7b168`) — pełna niezależna weryfikacja B1-B4+B-R5-1 razem, kontrola
+bazy (diff wyłącznie dodaje BB2, nic nowszego nie cofnięte), mutacje na wszystkich 3
+naprawionych miejscach main.ts osobno, szerszy przegląd czy są inne niezłapane miejsca
+grupowania po heksie.
+
+**Runda 6 werdykt: PASS-WITH-NOTES.** Baza potwierdzona czysta (diff origin→worktree to
+451 wstawień/22 usunięcia, zero cofnięć nowszej pracy). B1-B4+B-R5-1 zweryfikowane
+niezależnie, wszystkie mutacje (M1/M2/M3 na 3 miejscach main.ts osobno + 5×
+assignSharedStackGroupId + fallback |g) złapane precyzyjnie. Własny dodatkowy test
+Evaluatora: 800 losowych układów na partycji `computeStackDisplay` (poza zakresem fuzza
+Operatora), 0 rozbieżności. Szersze przeszukanie repo — brak innych miejsc klasy B-R5-1.
+Bramki wszystkie zielone (18 plików testowych).
+
+**SCALONE bezpośrednio przez orkiestratora** wg instrukcji Evaluatora (gotowy patch
+`git apply -3`, czysto na wszystkie 4 pliki): `gra/src/units/setup.ts` (+pole
+`stackGroupId?`), `gra/src/game/armyMerge.ts` (`stackGroupIdOf`, `sameStackGroup`,
+`freshStackGroupId`, `assignSharedStackGroupId`, nowa `stackRenderKey` eksportowana +
+użyta w `computeStackDisplay`), `gra/src/main.ts` (import + 3 miejsca `stackRenderKey`
+= fix B-R5-1 + 5× `assignSharedStackGroupId` + gate `canSplit`), nowy plik
+`gra/tools/army-merge-stackgroupid-test.cjs` (445 linii), rozszerzony
+`army-merge-separate-return-mainguard-test.cjs` (sekcje 8-11, 72 asercje).
+
+**N-1 (jedyne naruszenie C-025, `'Połącz'` escape↔literal w `stackHudMergeSplitActions`)
+POMINIĘTE** wg rekomendacji Evaluatora — poza zakresem BB2, niespójne z konwencją reszty
+pliku. Zweryfikowane po scaleniu: `git diff` dla tych 2 linii = 0 (bit-identyczne
+z żywym drzewem sprzed BB2).
+
+Bramki na żywym drzewie po scaleniu (identyczne z Evaluatorem): `tsc --noEmit` 0,
+`logic-test` 213/213, `army-merge-stackgroupid-test` 11045/11045,
+`army-merge-separate-return-mainguard-test` 72/72, `army-merge-separate-return-test`
+16/16, bounce/dismiss-bounce/colocated 4/4·16/16·4/4, `army-stack-ruch` 5/5,
+`combat-test` 6/6.
+
+**Noty N-2 do N-6 (nieblokujące, do backlogu):** N-2 popup wyboru jednostki w mieście
+(`showCityUnitPick`) sumuje przez obie grupy stosu bez `groupId` — tylko odczyt/render;
+N-3 dwa żetony różnych grup na jednym heksie nakładają się wizualnie (świadoma
+konsekwencja ECHO B, złagodzona przez tę naprawę — lista armii i HUD ◀▶ teraz dają
+działający dostęp do drugiej grupy); N-4 komentarz „parytet AI" w `setup.ts` mylący (AI
+nie przechodzi przez ścieżki split/merge UI, pracuje na fallbacku — do poprawki
+komentarza przy okazji); N-5 `unitAtRepresentative` wybiera najmocniejszą jednostkę na
+heksie bez względu na grupę (tylko selekcja, nie mutacja); N-6 `freshStackGroupId` na
+`Date.now()`, niedeterministyczne (blokada dla przyszłej bramki replay/determinizmu).
+
+**STATUS: ZAMKNIĘTE (P-ARMIA-ROZPAD BB2 w całości scalone).**
+
+---
+
+## P-HUD-KULTURA-SIGNED-NIESPOJNE — znalezisko audytu „raport" (2026-08-10), naprawione bezpośrednio
+
+Audyt pełnego rejestru na hasło `raport` (nowa reguła CLAUDE.md pkt 10) znalazł to jako
+**realne zapomnienie**: temat był częścią grupy G1 (audyt C-030), ale G1 dostał Evaluator
+**FAIL** (`f7a0ece1`), redo (`5a93f5aa`) naprawił WYŁĄCZNIE `P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA` —
+naprawa Kultury zgubiła się po drodze. Zweryfikowane bezpośrednio w źródle przed dispatchem
+(nie ufając pamięci sesji): `gra/src/ui/hud.ts:994,1079` nadal miały `signed(s.kultura)`.
+
+Naprawione bezpośrednio przez orkiestratora (trywialna, dobrze wyspecyfikowana zmiana — zapas
+Kultury formatowany jak pozostałe 5 chipów `String(Math.floor(...))`, nie wymuszony znak „+"
+jak dla delty/tempa): `hud.ts:994` (`chip6cHtml` w `renderBarD1B`) i `hud.ts:1079`
+(`renderBarLegacy`) — `signed(s.kultura)` → `String(Math.floor(s.kultura))`, zgodnie z
+konwencją sąsiednich chipów (`nauka`: `String(Math.floor(s.nauka))`, `religia`:
+`String(Math.round(s.religionStock))`). `signed()` zostaje na `kulturaRate` (tempo/delta —
+tam znak „+" jest poprawny).
+
+Bramki: `tsc --noEmit` 0, `logic-test.cjs` 213/213, `hud-moc-warstwa-test.cjs` 28/28
+(dotyka `hud.ts`, niezmienione).
+
+Dispatch lekkiego Evaluatora (weryfikacja że to czysto formatowanie, zero zmiany logiki)
+NASTĘPUJE teraz.
+
+**Autoryzacja Macieja (2026-08-10):** „ok jak będzie skończony 2 i 3 to rób deploy do robocza
+i git push" — czyli po domknięciu R-AUTOZAPIS-QUOTA-STORAGE-Q1 (kat. 2 raportu) i tego tematu
+(kat. 3), wykonaj deploy do ROBOCZA + push BEZ dodatkowego pytania o hasło `deploy` (ta
+wiadomość JEST tym hasłem, warunkowo). Nie skracam przez to pętli Operator→Evaluator→scalenie
+dla żadnego z dwóch tematów — deploy następuje PO ich pełnym, właściwym domknięciu, nie
+zamiast niego.
+
+---
+
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — Operator dostarczył (Faza 1+2), czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a2d5e03691a4e7cbb`, branch `fsa-autosave` (baza: `origin/…ek4ra0` sprzed
+kilku dalszych commitów sesji — do weryfikacji driftu przez Evaluatora).
+
+**Faza 1 (feasibility) potwierdzona zgodnie z założeniem** (3 niezależne źródła: MDN,
+Chrome for Developers, WICG issue): `requestPermission()`/`showDirectoryPicker()` wymagają
+transient user activation, ale TYLKO przy wywołaniu tej funkcji — kolejne zapisy na już
+przyznanym uchwycie (`getFileHandle`/`createWritable`/`write`/`close`) NIE wymagają aktywacji.
+Operator wpiął `requestPermission()` w handler kliknięcia startu sesji (Nowa gra/Kontynuuj/
+Wczytaj) — jedno kliknięcie na sesję, autozapis co turę już nie prosi o nic.
+
+**Faza 2 (implementacja):** nowy `gra/src/game/fsa-autosave.ts` (detekcja środowiska,
+nazewnictwo rotacji 10 slotów, zapis, komunikaty PL) + `main.ts` (`doRotatingAutosave` →
+`async`, próba FSA → fallback na dotychczasowy `saveToLocal()` przy niepowodzeniu — zero
+regresji; `triggerFsaAutosaveBootstrap()` z jednorazowym komunikatem dla Firefox/Safari/
+`file://`) + `package.json` (`serve:robocza` przez `python3 -m http.server`, zero nowych
+zależności npm, nie triggeruje `prebuild`/`predev`) + nowy test `fsa-autosave-test.cjs`
+(40/40) + zaktualizowany `autosave-quota-fail-test.cjs` (20/20, sygnatura `async`).
+
+Bramki Operatora: tsc 0, logic-test 213/213, autosave-quota-fail 20/20, fsa-autosave-test
+40/40, tech-tree/research/unit-replace zielone. Brak testu E2E z prawdziwym
+`showDirectoryPicker()` (niemożliwe w headless) — Operator rekomenduje ręczny playtest
+Chrome/Edge przez `npm run serve:robocza` przed promocją.
+
+Dispatch NIEZALEŻNEGO Evaluatora (Opus 5) NASTĘPUJE teraz — pełna weryfikacja (drift bazy,
+poprawność async/fallback, brak regresji dotychczasowego `localStorage`, bezpieczeństwo
+zapisu plików, realność gwarancji „jedno kliknięcie na sesję").
+
+---
+
+## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** możliwość wyboru, jakie
+konkretne cywilizacje mają być przeciwnikami, w konfiguratorze na początku gry (dziś
+prawdopodobnie losowy/automatyczny dobór — do potwierdzenia rozpoznaniem, nie zgadywania).
+
+Nie dispatchowane — zapisane na wyraźne polecenie „zapisz", zgodnie z zasadą §2 CLAUDE.md
+(zakaz otwierania nowych wątków bez wyraźnej zgody Macieja na podjęcie pracy). Do
+rozpoznania (jak dziś działa dobór cywilizacji AI w konfiguratorze, gdzie w kodzie) i
+pytania ABC (np. checkbox lista vs dropdown per slot vs pula wykluczeń) gdy Maciej da
+sygnał do podjęcia.
+
+---
+
+## R-EPOKA-KAMIEN-PALEOLIT-NEOLIT (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** zmiana epoki „Kamień" na
+podział Paleolit / Neolit (dziś jedna epoka Kamień → Brąz → Żelazo, patrz CLAUDE.md nagłówek).
+Zakres nieustalony (czy to nowa 4. epoka wstawiona na starcie, czy podział istniejącej
+Kamień na dwa etapy w ramach tej samej epoki, wpływ na drzewko technologii/cuda/jednostki
+epoki Kamień) — do rozpoznania, gdy Maciej da sygnał do podjęcia.
+
+Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md.
+
+---
+
+## R-SUROWIEC-CYNA-DO-BRAZU (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** wprowadzenie cyny jako nowego
+surowca wymaganego do produkcji Brązu (dziś prawdopodobnie sam Brąz/miedź bez cyny jako
+osobnego złoża/surowca — do potwierdzenia rozpoznaniem w `gra/data/` i drzewku, nie
+zgadywania). Zakres nieustalony (nowe złoże na mapie? nowy budynek wydobywczy? wpływ na
+istniejący łańcuch Kamień→Brąz i jednostki/budynki wymagające dziś samego Brązu) — do
+rozpoznania, gdy Maciej da sygnał do podjęcia.
+
+Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md.
+
+---
+
+## P-HUD-KULTURA-SIGNED-NIESPOJNE — Evaluator: PASS-WITH-NOTES, temat ZAMKNIĘTY (2026-08-10)
+
+Niezależnie zweryfikowane (Opus 5), zero blokujących. Kluczowe potwierdzenia: `Math.floor`
+jest idempotentne (`s.kultura` już floorowane w `main.ts:13518`, ten sam wzorzec co `nauka`);
+zapas nieujemny (klampowany w `culture-religion.ts:1215`), floor bezpieczny; **poprawka
+usuwa też istniejącą sprzeczność chipu z jego własnym tooltipem** (`kulturaChipTitle` od
+zawsze liczył `Math.floor(s.kultura)` bez znaku — przed poprawką tooltip i chip się nie
+zgadzały); przegląd wszystkich 11 wystąpień `signed(.*kultura` w `src/` — pozostałe to
+poprawnie `kulturaRate`/przyrost na turę, nie kopie tej samej niekonsekwencji. Bramki:
+tsc 0, logic-test 213/213, hud-moc-warstwa-test 28/28 (jedyny test dotykający `hud.ts`).
+
+**Nota do osobnej weryfikacji (znalezisko Evaluatora, POZA zakresem tej poprawki, nie
+blokuje):** `main.ts:21845-21846` — `playerEcon.kultura` trafia jednocześnie do
+`_lastKulturaRate` I do `_lastKultura` (zapas), zanim linia 22860 nadpisuje zapas
+prawdziwą sumą skumulowaną z miast — możliwe okno w obrębie ticku, gdzie zmienna zapasu
+chwilowo trzyma wartość tempa. Nie zbadana osiągalność/skutek. Do rozpoznania osobno,
+niepilne.
+
+Temat już scalony (`ac07e79e`), Evaluator wyłącznie potwierdził post-factum.
+**STATUS: ZAMKNIĘTE.**
+
+---
+
+## R-AI-UCZENIE-SIE-NA-BLEDACH (2026-08-10, pytanie eksploracyjne Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** czy da się dodać AI
+cywilizacji „uczące się na błędach", coraz trudniejsze — lepsze prowadzenie wojen,
+budowania i rozwoju we wszystkich aspektach.
+
+**Wstępna odpowiedź orkiestratora w czacie (nie decyzja, nie rozpoznanie — do zweryfikowania
+właściwym rozpoznaniem gdy temat zostanie podjęty):** prawdziwe uczenie maszynowe
+(trenowanie modelu pamiętającego doświadczenie MIĘDZY rozgrywkami) nie mieści się w
+architekturze gry — statyczny bundle HTML/JS bez backendu, bez infrastruktury treningowej.
+Dzisiejsze AI (`gra/src/game/ai.ts` + `gra/data/ai-params.json`) jest deterministyczne i
+regułowe — na tym stoi część bramek testowych (determinizm mapy itd.), więc prawdziwe ML
+łamałoby ten fundament. Tańsza, realna droga do tego samego efektu: rozbudowa istniejących
+heurystyk oceny (kalkulacja siły wojskowej przed atakiem, priorytety budowy/rozwoju,
+reakcja na zagrożenia) + skalowanie trudności parametrami, BEZ łamania determinizmu.
+Prawdziwe uczenie między rozgrywkami byłoby osobnym, znacznie większym projektem
+(zapisywanie statystyk wyników + ręczne/półautomatyczne dostrajanie parametrów na ich
+podstawie) — nie coś do wpięcia przy okazji.
+
+Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md. Do rozpoznania/ABC
+(zakres: „lepsze AI regułowe" vs „adaptacja w obrębie jednej rozgrywki" vs „uczenie
+międzysesyjne przez zapisywane statystyki" — trzy różne skale kosztu), gdy Maciej da
+sygnał do podjęcia.
+
+---
+
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 (FSA) — Evaluator RUNDA 1: FAIL, 2 blokery save-load, runda 2 w toku (2026-08-10)
+
+Niezależnie zweryfikowane (Opus 5). Drift bazy sprawdzony — **brak kolizji** (BB2 `014b80fb`
+już w bazie worktree, Kultura HUD `ac07e79e` dotyka `hud.ts`, Operator dotykał wyłącznie
+`main.ts`/`package.json`/nowych plików — zero nachodzenia). Bramki wszystkie zielone
+(tsc 0, logic-test 213/213, fsa-autosave-test 40/40, autosave-quota-fail-test 20/20).
+C-025 czysto (4 precyzyjne hunki w `main.ts`).
+
+**BLOKER B1 — autozapis staje się WRITE-ONLY.** W grze nie istnieje ŻADNA ścieżka odczytu
+zapisu z pliku (`deserializeGame()` ma jedno wywołanie, wyłącznie z `localStorage`; brak
+`showOpenFilePicker`/`FileReader` w całym `src/`). Skutek: na Chrome/Edge z przyznanym
+katalogiem `doRotatingAutosave()` `return`uje przed `saveToLocal()` — sloty localStorage
+przestają się aktualizować, pliki na dysku są dla gry niewidoczne, gracz traci możliwość
+odzyskania gry mimo komunikatu sukcesu w konsoli. **Ścisła regresja, nie tylko brak zysku.**
+
+**BLOKER B2 — `setLastPlayedSlotId()` kłamie w gałęzi FSA** (`main.ts:21321`) — zapisuje
+klucz localStorage, którego ta gałąź nigdy nie wypełniła. „Kontynuuj" wczyta stary/cudzy
+stan gry (cicha utrata postępu) albo spadnie na `mostRecentSaveSlotId()`.
+
+**N4 (istotne, nieblokujące samo w sobie):** Faza 1 feasibility była prawdziwa ale
+niepełna — tylko opcja „Zezwól przy każdej wizycie" (Chrome 122+ persistent permissions)
+daje trwały dostęp; domyślne „Zezwól tym razem" jest one-time i **automatycznie odbierane
+gdy karta pobędzie dłużej w tle** (gracz 4X alt-tabujący trafia dokładnie w ten przypadek).
+Dziś cicha degradacja do `QuotaExceededError`, zero komunikatu dla gracza, brak furtki
+wznowienia bez restartu sesji.
+
+**N1-N8 (nieblokujące, do rundy 2):** `buildSaveGameSnapshot()` wyjęty przed `try` →
+unhandled rejection w `async`; brak `.catch()` na jedynym call site; wyścig przy zapisie
+trwającym dłużej niż tura (brak strażnika `inFlight`); `catch` pickera maskuje realne
+błędy jako `'picker-cancelled'`; `await idbGetHandle()` przed pickerem przerywa łańcuch
+transient activation; `livePermissionGranted` nigdy nie zerowane po niepowodzeniu;
+`_resetFsaStateForTests()` eksportowany z modułu produkcyjnego.
+
+Bezpieczeństwo nazwy pliku (path traversal) — **OK**, zweryfikowane wyczerpująco.
+`ensureFsaAutosaveReady()` faktycznie NIE wołane z tury/timera — **potwierdzone**,
+fundament Fazy 1 stoi.
+
+Dispatch rundy 2 (naprawa B1+B2+N1-N8 wg precyzyjnej listy Evaluatora) NASTĘPUJE teraz.
+Instrukcja scalania na później (drift bez kolizji, prosty `git apply -3` + 2 nowe pliki
+kopiowane osobno) zanotowana przez Evaluatora, do użycia po PASS rundy 2.
+
+**Deploy do ROBOCZA WSTRZYMANY** — autoryzacja Macieja („po 2 i 3") wymaga domknięcia
+tematu 2 (ten), które jeszcze nie nastąpiło.
+
+Operator rundy 2 (`a4ac79d3d82eb4fb5`, kontynuacja worktree `agent-a2d5e03691a4e7cbb`)
+dispatchowany z pełną, dosłowną listą B1+B2+N1-N8 z werdyktu Evaluatora.
+
+**Runda 2 dostarczona.** B1 naprawiony: `listFsaAutosaveFiles`/`readFsaAutosaveFile`/
+`loadFsaAutosaveFile` w `fsa-autosave.ts`, `summarizeFsaSaveSlots`/`mergeSaveSlotLists` w
+`saveLoadDialog.ts` (dokłada wpisy z dysku „(dysk)” do listy z localStorage, bez ✕ —
+usuwanie plików z dysku odłożone), `loadGameFromSlot()` rozgałęzia po prefiksie `fsa:`.
+B2 naprawiony: `FSA_SLOT_PREFIX = 'fsa:'` w `save.ts`, `getLastPlayedSlotId()` zwraca
+wskaźnik bez walidacji localStorage dla tego prefiksu, `onContinue` teraz czeka
+(`await triggerFsaAutosaveBootstrap()`) przed odczytem wskaźnika. N1-N7 naprawione
+(strażnik równoległości, `.catch()`, przeniesienie `buildSaveGameSnapshot` pod `try`,
+jednorazowy komunikat degradacji, rozróżnienie AbortError, preload IndexedDB, auto-zero
+`livePermissionGranted`). N8 udokumentowany, nie w pełni zweryfikowany (wymagałby
+`vite build`, poza dozwolonymi bramkami Operatora).
+
+**Dwie świadomie odłożone luki, jawnie zgłoszone przez Operatora (do oceny Evaluatora czy
+blokujące):** (a) `hasAnySaveSlot()` (gate przycisków „Wczytaj"/„Kontynuuj" w menu) sprawdza
+WYŁĄCZNIE localStorage — gracz z sejwami TYLKO na dysku i zerem w przeglądarce zobaczy
+wyszarzone przyciski mimo istniejących zapisów (wymagałoby zmiany kontraktu z sync na
+async w 2 modułach UI); (b) furtka „przywróć zapis na dysk" w menu pauzy (N4) nie zrobiona
+— po degradacji gracz może wznowić zapis na dysk dopiero nową sesją/restartem.
+
+Testy: `fsa-autosave-test.cjs` rozszerzony (sekcje 7-9, 55/55). Bramki: tsc 0,
+logic-test 213/213, fsa-autosave-test 55/55, autosave-quota-fail-test 20/20.
+
+Dispatch NIEZALEŻNEGO Evaluatora rundy 2 NASTĘPUJE teraz — ocena B1/B2 realnie zamknięte,
+oraz czy dwie odłożone luki (a)/(b) są akceptowalne czy blokujące dla tej rundy.
+
+Evaluator rundy 2 dispatchowany (`a08d00415b015647f`, Opus 5) — pełna niezależna
+weryfikacja B1/B2 end-to-end, ocena luk (a)/(b), N1-N7 rzeczywiście sprawdzone w kodzie,
+szukanie nowych regresji w `save.ts`/`saveLoadDialog.ts` (zmiana kontraktu sync→async).
+
+**Runda 2 werdykt: PASS-WITH-NOTES.** B1 zweryfikowane własnym round-trip testem Evaluatora
+na prawdziwym kodzie (esbuild + mock `FileSystemDirectoryHandle`) — 12/12, `explored: Set→
+tablica` przetrwał, `meta.newGameParams` przetrwał (bez tego `checkSaveIntegrity` by
+odrzucił zapis). `mergeSaveSlotLists` potwierdzone jako realnie wołane, nie martwy kod.
+B2: wszystkie 4 miejsca odczytu wskaźnika `fsa:` sprawdzone, race faktycznie usunięty (nie
+przesunięty — `ensureFsaAutosaveReady()` nigdy nie rzuca, zawsze poprawna degradacja).
+Luka (a) w praktyce prawie zneutralizowana — `LAST_PLAYED_SLOT_KEY` sam zaczyna się od
+`SAVE_PREFIX`, więc po pierwszym autozapisie na dysk `hasAnySaveSlot()` i tak zwróci
+`true`. Luka (b) — zero utraty danych, akceptowalna. N8 zweryfikowane realnym `vite build`
+(Operator błędnie sądził że to poza zakresem — CLAUDE.md §1 sankcjonuje ten build):
+`_resetFsaStateForTests`/`_setFsaStateForTests` = 0 wystąpień w bundlu, tree-shaking
+potwierdzony empirycznie.
+
+**Nowe noty Evaluatora (N9-N14), żadna blokująca:** N9 `onContinue` async IIFE bez
+`.catch()` (ta sama klasa co N2, ryzyko praktycznie zerowe); N10 „Kontynuuj" na świeżym
+profilu blokuje się na modalnym pickerze (świadoma konsekwencja B2); N11
+`summarizeFsaSaveSlots()` deserializuje wszystkie 10 plików rotacji — na dużych mapach
+możliwe zacięcie przy otwarciu „Wczytaj"; N12 strażnik `root===null` w dialogu nie łapie
+zamknij-i-otwórz-ponownie (nieszkodliwe); N13 `serve:robocza` technicznie poza B1/B2 ale
+uzasadnione (FSA nie działa na `file://`); N14 mylący komentarz o stanie bazowym N1
+(zachowanie poprawne, tekst nieścisły).
+
+**SCALONE** hunk-by-hunk wg instrukcji Evaluatora (`git apply -3`, czysto na wszystkie 5
+zmodyfikowanych plików + 2 nowe pliki skopiowane w całości): `gra/package.json`,
+`gra/src/game/save.ts`, `gra/src/main.ts`, `gra/src/ui/saveLoadDialog.ts`,
+`gra/tools/autosave-quota-fail-test.cjs`, nowy `gra/src/game/fsa-autosave.ts`, nowy
+`gra/tools/fsa-autosave-test.cjs`. Bramki na żywym drzewie identyczne z Evaluatorem:
+tsc 0, logic-test 213/213, fsa-autosave-test 55/55, autosave-quota-fail-test 20/20,
+save-label-test OK, planned-march-test 18/18.
+
+**STATUS: ZAMKNIĘTE (R-AUTOZAPIS-QUOTA-STORAGE-Q1 w całości scalone — temat 2 z
+autoryzacji Macieja domknięty).**
+
+---
+
+## DEPLOY ROBOCZA FALA 266 — dispatchowany (2026-08-10)
+
+Po domknięciu tematów 2+3 (autoryzacja Macieja „ok jak będzie skończony 2 i 3 to rób
+deploy do robocza i git push") — dispatch agenta deployu (`af3a5960e4f11e5d2`, Opus 5
+zgodnie z zasadą CLAUDE.md pkt 4). Zakres: pełny runbook §6 (build, stamp, sync, verify,
+log w `WERSJE.md`+`KANAL-PRACA.md`), commit+push gałęzi sesji, **oraz naprawa zaległości**
+— `main` stoi na FALA 263, FALA 264 (`31a2caef`) i FALA 265 (`43b75861`) nigdy nie zostały
+scalone mimo że reguła `R-MERGE-MAIN-RYTM-Q1` już to nakazywała przy poprzednim deployu.
+FALA 266 (ten deploy) świadomie NIE wchodzi do `main` — zostaje do testów.
 
 ---

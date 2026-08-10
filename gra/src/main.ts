@@ -311,6 +311,7 @@ import {
 import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch, computeMainCivEraFromResearch } from './game/owner-epoch';
+import { allEraTechsResearched, eraOwnWonderSatisfied, eraOwnWonderIds } from './game/owner-epoch';
 import {
   ERA_CHANGE_NOTIFY,
   shouldNotifyPlayerEraChange,
@@ -419,7 +420,8 @@ import {
   unitAtRepresentative,
   findAdjacentEmptyHexes,
   findSplitDestHexes,
-  assignBounceHexesForUnits,
+  computeSeparateReturn,
+  resolveSeparateReturnHex,
   pickStackRepresentative,
   stackRuchLeft,
   planningStackRuchLeft,
@@ -436,6 +438,9 @@ import {
   enterGarnizon,
   enterFieldFortify,
   exitFieldFortify,
+  assignSharedStackGroupId,
+  stackGroupIdOf,
+  stackRenderKey,
 } from './game/armyMerge';
 import {
   resolveMapUnitCursor,
@@ -910,8 +915,13 @@ import { TypCywilizacji, type Player } from './types/player';
 import {
   saveToLocal, loadFromLocal, listSaves,
   setLastPlayedSlotId, checkSaveIntegrity, AUTOSAVE_SLOT_ID,
+  FSA_SLOT_PREFIX,
   type SaveGame,
 } from './game/save';
+import {
+  ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
+  shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
+} from './game/fsa-autosave';
 import { buildDefaultSaveLabel, type SaveLabelKind } from './game/save-label';
 import {
   diagInfo, diagWarn, diagError, installGlobalDiagHooks,
@@ -958,7 +968,14 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
-import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
+import {
+  decideAiWonderBuild,
+  loadAiWonderParams,
+  relaxedWonderCostThreshold,
+  loadAiWonderStuckRelaxTurMax,
+  type AiWonderCityCandidate,
+  type AiWonderOption,
+} from './game/ai';
 import {
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
@@ -3534,6 +3551,13 @@ async function boot(): Promise<void> {
      * zasięgiem leksykalnym lokalnej stałej `econ` (zadeklarowanej w innym
      * bloku try/catch) -- stąd osobna, trwała mapa zamiast domknięcia. */
     const aiWonderPracaTickByCity = new Map<string, number>();
+    /** R-EPOKA-CUD-WARUNEK-AWANSU B3 (rozluźnianie progu, ECHO Maciej 2026-08-10): ile
+     * kolejnych tur pod rząd dana cywilizacja (ownerId) miała kandydata na cud dostępnego
+     * i nie budowała żadnego innego cudu, ale decyzja tej tury wyszła null (throttle LUB
+     * próg progKosztX) -- podawane do relaxedWonderCostThreshold, zerowane gdy cud
+     * faktycznie trafi do kolejki. Trwałe między turami z tego samego powodu co
+     * aiWonderPracaTickByCity wyżej (poza zasięgiem leksykalnym bloku decyzji). */
+    const aiWonderStuckTurnsByOwner = new Map<number, number>();
     let powerSnapshotsForTurn: PowerOwnerSnapshot[] = [];
 
     function territoryOwnerAtLive(q: number, r: number): number | null {
@@ -4788,9 +4812,16 @@ async function boot(): Promise<void> {
       const playerUnits = units.filter(
         u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || stackCanMove(u)),
       );
+      // BB2 (Evaluator runda 5, B-R5-1): grupowanie MUSI iść po stackRenderKey
+      // (tożsamość STOSU + POZYCJA + garnizon), nie po gołym stackGroupIdOf ani
+      // po gołym heksie — dwie jednostki tej samej, jawnie scalonej grupy mogą
+      // realnie stać na RÓŻNYCH heksach (np. zwiadowca odjeżdżający sam z grupy
+      // przez auto-explore), a gołe stackGroupIdOf zlewałoby je w JEDEN lead
+      // obejmujący dwa heksy naraz — Spacja/strzałki HUD ◀▶ nigdy nie dotarłyby
+      // do drugiego heksu. Ten sam klucz co armyMerge.ts:computeStackDisplay.
       const stacks = new Map<string, RuntimeUnit[]>();
       for (const u of playerUnits) {
-        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+        const key = stackRenderKey(u);
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -4821,8 +4852,11 @@ async function boot(): Promise<void> {
       return cyclablePlayerArmyLeadsBase(false);
     }
 
+    /** BB2 (Evaluator runda 5, B-R5-1): klucz dopasowania w cycleToAdjacentPlayerUnit — MUSI być
+     *  spójny z cyclablePlayerArmyLeadsBase (ten sam stackRenderKey), inaczej fallback po
+     *  zniknięciu `afterId` z listy trafiłby na niewłaściwą (np. rezydenta na innym heksie) armię. */
     function armyLeadHexKey(u: RuntimeUnit): string {
-      return u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+      return stackRenderKey(u);
     }
 
     /**
@@ -5143,7 +5177,15 @@ async function boot(): Promise<void> {
       for (const u of playerUnits) {
         // C-GARN-Q1: ufortyfikowane jednostki grupuj po heksie miasta (jak armia),
         // żeby lista armii nie rozdzielała stosu po wejściu do garnizonu.
-        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+        // BB2 (Evaluator runda 5, B-R5-1): ta lista miała WŁASNE, niezależne
+        // grupowanie „po heksie", które omijało activeUnitStack/visibleStackOnHex —
+        // dwie armie o różnym stackGroupId na wspólnym origin pokazywały się tu
+        // jako JEDEN wpis o zsumowanym/błędnym ruchu. `stackRenderKey` (tożsamość
+        // stosu + pozycja + garnizon, ten sam klucz co armyMerge.ts:
+        // computeStackDisplay) naprawia to bez zmiany zachowania dla jednostek bez
+        // jawnego stackGroupId (fallback koduje ownerId+heks+garnizon identycznie
+        // jak dawny gołoheksowy klucz).
+        const key = stackRenderKey(u);
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -5721,6 +5763,7 @@ async function boot(): Promise<void> {
           return {
             pracaPool: hs.praca,
             pracaRate: hs.pracaRate,
+            pracaUpkeep: hs.pracaUpkeep,
             zloto: hs.zloto,
             zlotoRate: hs.zlotoRate,
             nauka: hs.nauka,
@@ -6946,6 +6989,7 @@ async function boot(): Promise<void> {
       typCityCopyOwners.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
@@ -7935,6 +7979,9 @@ async function boot(): Promise<void> {
       fromQ: number;
       fromR: number;
       moveCost: number;
+      /** P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO: ruch FAKTYCZNIE odjęty (pulaPrzed -
+       *  pulaPo), nie `moveCost` zamierzony — patrz computeSeparateReturn. */
+      deductedRuch: number;
     };
     const deferredMergePrompts: DeferredMergePrompt[] = [];
 
@@ -8956,6 +9003,9 @@ async function boot(): Promise<void> {
       fromQ: number,
       fromR: number,
       moveCost: number,
+      /** Ruch FAKTYCZNIE odjęty za ten ruch (pulaPrzed - pulaPo), do pełnego
+       *  zwrotu przy „Zostaw osobno" — patrz computeSeparateReturn. */
+      deductedRuch: number,
     ): void {
       if (movedUnitIds.length === 0) return;
       const movedSet = new Set(movedUnitIds);
@@ -8972,6 +9022,7 @@ async function boot(): Promise<void> {
           fromQ,
           fromR,
           moveCost,
+          deductedRuch,
         });
         return;
       }
@@ -8999,6 +9050,10 @@ async function boot(): Promise<void> {
               if (mu && mu.inGarnizon !== true) enterGarnizon(mu);
             }
           }
+          // BB2 (ECHO B): scalenie ujednolica tożsamość stosu — od teraz WSZYSCY
+          // na `onHex` (nowoprzybyli + rezydenci, niezależnie od poprzednich
+          // stackGroupId/fallbacków) są JEDNĄ armią z jedną, wspólną pulą ruchu.
+          assignSharedStackGroupId(onHex);
           syncStackRuchLeft(onHex);
           showHintMessage(
             'Po\u0142\u0105czono: ' + onHex.length + ' jedn. na (' + rep.q + ',' + rep.r + ')',
@@ -9023,36 +9078,69 @@ async function boot(): Promise<void> {
           flushDeferredMergePrompts();
         },
         onSeparate: () => {
-          const bounces = assignBounceHexesForUnits(
-            units,
-            fromQ,
-            fromR,
-            movedUnitIds,
-            isHexPassableForUnit,
-          );
-          for (const [id, pos] of bounces) {
-            const mu = units.find(x => x.id === id);
-            if (mu) {
-              mu.q = pos.q;
-              mu.r = pos.r;
+          // P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO A (Maciej 2026-08-09): cała
+          // armia wraca RAZEM na heks startowy (fromQ,fromR) — NIE rozprasza się
+          // (stary assignBounceHexesForUnits dawał każdej jednostce osobny wolny
+          // heks, stąd rozpad; usunięty z tej ścieżki). Zwrot ruchu ma być pełny
+          // (jakby ruch się nie odbył), a teleport bezpieczny (bez wchodzenia na
+          // wroga bez walki) — patrz computeSeparateReturn/resolveSeparateReturnHex.
+          // EN: the WHOLE army returns TOGETHER to the origin (fromQ,fromR) — no
+          // more scattering (the old assignBounceHexesForUnits gave each unit its
+          // own free hex, causing the breakup; removed from this path). The
+          // movement refund is full (as if the move never happened), and the
+          // teleport is safe (never walks onto an enemy with no battle) — see
+          // computeSeparateReturn/resolveSeparateReturnHex.
+          const movedUnits = movedUnitIds
+            .map(id => units.find(x => x.id === id))
+            .filter((mu): mu is RuntimeUnit => mu != null);
+          const dest = resolveSeparateReturnHex(units, fromQ, fromR, rep.ownerId, isHexPassableForUnit);
+          if (dest) {
+            const restored = computeSeparateReturn(movedUnits, deductedRuch);
+            // BB2 (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO B, Maciej 2026-08-10):
+            // wracająca armia dostaje ŚWIEŻY, WSPÓLNY stackGroupId — RÓŻNY od
+            // każdego rezydenta na origin (nawet gdy dzielą DOKŁADNIE ten sam
+            // heks). Bez tego `activeUnitStack`/`playerStackAt` grupowały PO
+            // HEKSIE, więc pula ruchu wracającej armii i rezydenta zlewały się
+            // w jedną (przeliczenie jednej po cichu nadpisywało drugą — sedno
+            // BB2). `movedUnits` (a nie `movedUnits` + rezydent) dostają WSPÓLNY
+            // id między sobą — one nadal są jedną, spójną armią, tylko odrębną
+            // od tego, co już stało na origin.
+            assignSharedStackGroupId(movedUnits);
+            for (const mu of movedUnits) {
+              mu.q = dest.q;
+              mu.r = dest.r;
+              const r = restored.get(mu.id);
+              if (r !== undefined) mu.ruchLeft = r;
             }
           }
           syncUnitsRender();
           refreshFog();
-          const remain = visibleStackOnHex(units, rep.q, rep.r, rep.ownerId);
-          if (remain.length > 0) {
-            const selRep = pickStackRepresentative(remain, unitAttackScore);
-            selectPlayerUnit(selRep.id);
-          } else if (selectedId !== null && movedSet.has(selectedId)) {
-            const bounced = units.find(x => x.id === selectedId);
-            if (bounced) selectPlayerUnit(bounced.id);
+          if (dest) {
+            const returned = visibleStackOnHex(units, dest.q, dest.r, rep.ownerId)
+              .filter(x => movedSet.has(x.id));
+            if (returned.length > 0) {
+              const selRep = pickStackRepresentative(returned, unitAttackScore);
+              selectPlayerUnit(selRep.id);
+            } else if (selectedId !== null && movedSet.has(selectedId)) {
+              const returnedSel = units.find(x => x.id === selectedId);
+              if (returnedSel) selectPlayerUnit(returnedSel.id);
+            }
+            showHintMessage(
+              arrivingUnits.length > 1
+                ? 'Armia osobno — ' + arrivingUnits.length + ' jedn. wróciło na (' + dest.q + ',' + dest.r + '), ruch zwrócony'
+                : rep.typeId + ' — osobno, wróciła na (' + dest.q + ',' + dest.r + '), ruch zwrócony',
+              2800,
+            );
+          } else {
+            // B3 (Evaluator RUNDA 1): origin przestał być bezpieczny (wróg go zajął
+            // albo stał się nieprzejezdny) — NIE przenosimy jednostek wcale, zamiast
+            // teleportować gracza na wroga bez walki (bezpieczniejszy brak fallbacku,
+            // nota N1 rundy 2).
+            showHintMessage(
+              'Zostaw osobno: heks startowy (' + fromQ + ',' + fromR + ') jest zajęty lub nieprzejezdny — jednostki zostają na miejscu',
+              3600,
+            );
           }
-          showHintMessage(
-            arrivingUnits.length > 1
-              ? 'Armie osobno — ' + arrivingUnits.length + ' jedn. wróciło obok stosu'
-              : rep.typeId + ' — osobno, obok stosu (' + rep.q + ',' + rep.r + ')',
-            2800,
-          );
           refreshD1bHud();
           flushDeferredMergePrompts();
         },
@@ -9064,7 +9152,7 @@ async function boot(): Promise<void> {
       if (deferredMergePrompts.length === 0 || endTurnInProgress) return;
       if (isArmyMergePanelOpen()) return;
       const next = deferredMergePrompts.shift()!;
-      promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost);
+      promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost, next.deductedRuch);
     }
 
     function afterPlayerUnitSpawned(newUnitId: string): void {
@@ -9074,7 +9162,9 @@ async function boot(): Promise<void> {
       const coLocated = coLocatedForMergePrompt(units, u.q, u.r, u.ownerId)
         .filter(x => x.id !== newUnitId);
       if (coLocated.length > 0) {
-        promptMergeIfCoLocated([newUnitId], u.q, u.r, 0);
+        // Świeżo wyprodukowana jednostka nie wykonała żadnego ruchu tej tury —
+        // nie ma czego zwracać (deductedRuch=0).
+        promptMergeIfCoLocated([newUnitId], u.q, u.r, 0, 0);
         return;
       }
       selectPlayerUnit(newUnitId);
@@ -9100,7 +9190,12 @@ async function boot(): Promise<void> {
       if (selectedId === null) return;
       const active = units.find(x => x.id === selectedId);
       if (!active || active.ownerId !== 0) return;
-      const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId);
+      // BB2: rozdzielamy WYŁĄCZNIE własny stos aktywnej jednostki (stackGroupIdOf),
+      // nie każdego, kto akurat dzieli ten sam heks — dwie niezależne armie na
+      // wspólnym origin (po wcześniejszym „Zostaw osobno") nie mają się mieszać
+      // w jednym panelu rozdzielenia.
+      const activeGroupId = stackGroupIdOf(active);
+      const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId, activeGroupId);
       if (stack.length < 2) return;
       const dests = findSplitDestHexes(
         units,
@@ -9124,16 +9219,20 @@ async function boot(): Promise<void> {
           label: d.label ?? '(' + d.q + ',' + d.r + ')',
         })),
         onSplit: (ids, destQ, destR) => {
-          for (const id of ids) {
-            const u = units.find(x => x.id === id);
-            if (!u) continue;
+          const splitArrivals = ids
+            .map(id => units.find(x => x.id === id))
+            .filter((su): su is RuntimeUnit => su != null);
+          // BB2: jednostki odchodzące dostają WSPÓLNY, ŚWIEŻY stackGroupId, RÓŻNY
+          // od tych, które zostają. Konieczne zwłaszcza gdy destQ/destR === srcQ/srcR
+          // (opcja „W mieście (ten heks)" z findSplitDestHexes/allowSameHex) — bez
+          // jawnego id oba pod-stosy współdzieliłyby TEN SAM heks+garnizon i wpadłyby
+          // z powrotem w ten sam fallback-klucz, czyli dokładnie problem BB2.
+          assignSharedStackGroupId(splitArrivals);
+          for (const u of splitArrivals) {
             u.q = destQ;
             u.r = destR;
             u.ruchLeft = 0;
           }
-          const splitArrivals = ids
-            .map(id => units.find(x => x.id === id))
-            .filter((su): su is RuntimeUnit => su != null);
           if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
             refreshD1bHud();
             return;
@@ -9146,7 +9245,10 @@ async function boot(): Promise<void> {
             const rep = unitAtRepresentative(srcQ, srcR, units, unitAttackScore);
             if (rep) selectPlayerUnit(rep.id, true);
             else {
-              const remain = visibleStackOnHex(units, srcQ, srcR, 0);
+              // BB2: „ci, którzy zostali" = ta sama grupa co przed rozdzieleniem
+              // (activeGroupId, ustalone PRZED mutacją) — nie każdy właściciela na
+              // heksie, gdyby akurat dzielił go z inną, niezależną armią.
+              const remain = visibleStackOnHex(units, srcQ, srcR, 0, activeGroupId);
               if (remain.length > 1) syncStackRuchLeft(remain);
             }
           }
@@ -9207,6 +9309,7 @@ async function boot(): Promise<void> {
             const preferGarnizon = all.some(x => x.inGarnizon === true);
             for (const u of all) u.inGarnizon = preferGarnizon;
             const merged = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId);
+            assignSharedStackGroupId(merged); // BB2: jedna tożsamość po scaleniu.
             syncStackRuchLeft(merged);
             showHintMessage(
               'Po\u0142\u0105czono: ' + merged.length + ' jedn. na (' + srcQ + ',' + srcR + ')',
@@ -9250,10 +9353,12 @@ async function boot(): Promise<void> {
               mu.q = destQ;
               mu.r = destR;
             }
+            const pulaPrzed = stackRuchLeft(stack);
             deductStackRuchLeft(stack, moveCost);
+            const deductedRuch = pulaPrzed - stackRuchLeft(stack);
             syncUnitsRender();
             refreshFog();
-            promptMergeIfCoLocated(ids, srcQ, srcR, moveCost);
+            promptMergeIfCoLocated(ids, srcQ, srcR, moveCost, deductedRuch);
             refreshD1bHud();
           },
           onCancel: () => refreshD1bHud(),
@@ -9277,6 +9382,7 @@ async function boot(): Promise<void> {
         arriving: mergeUnitRow(active),
         arrivingCount: 1,
         onMerge: () => {
+          assignSharedStackGroupId(stack); // BB2: jedna tożsamość po scaleniu.
           syncStackRuchLeft(stack);
           showHintMessage(
             'Po\u0142\u0105czono stos: ' + stack.length + ' jedn. na (' + srcQ + ',' + srcR + ')',
@@ -16074,6 +16180,11 @@ async function boot(): Promise<void> {
           setMarchVolume(efekty);
         },
         onNewGame: () => {
+          // R-AUTOZAPIS-QUOTA-STORAGE-Q1 (ECHO A): musi żyć w TYM kliknięciu
+          // (transient activation, patrz fsa-autosave.ts) — jedno kliknięcie
+          // na start sesji, nie co turę. Fire-and-forget: brak FSA/zgody
+          // po prostu zostawia autosave na dotychczasowym localStorage.
+          void triggerFsaAutosaveBootstrap();
           hideMainMenu();
           showNewGameFlow({
             data,
@@ -16083,14 +16194,22 @@ async function boot(): Promise<void> {
         },
         onContinue: () => {
           hideMainMenu();
-          const slot = continueSaveSlotId();
-          if (slot) {
-            void loadGameFromSlot(slot, false);
-          } else {
-            openLoadGameDialog(false);
-          }
+          // B2 (Evaluator runda 1): CZEKAMY na triggerFsaAutosaveBootstrap()
+          // przed odczytem continueSaveSlotId() -- inaczej getLastPlayedSlotId()
+          // mógłby zwrócić wskaźnik "fsa:..." zanim katalog/uchwyt FSA zdążył
+          // się przygotować (bootstrap wołany fire-and-forget gdzie indziej),
+          // a loadGameFromSlot() dostałby pusty stan zamiast realnego pliku.
+          void (async () => {
+            await triggerFsaAutosaveBootstrap();
+            const slot = continueSaveSlotId();
+            if (slot) {
+              void loadGameFromSlot(slot, false);
+            } else {
+              openLoadGameDialog(false);
+            }
+          })();
         },
-        onLoad: () => openLoadGameDialog(false),
+        onLoad: () => { void triggerFsaAutosaveBootstrap(); openLoadGameDialog(false); },
         onAbout: () => {
           showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
         },
@@ -16619,7 +16738,11 @@ async function boot(): Promise<void> {
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
             if (!u || u.ownerId !== 0) return false;
-            const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId);
+            // BB2: musi być spójne z openSplitPanelForSelected — ten sam
+            // stackGroupId, inaczej przycisk „Rozdziel" włącza się (bo hex ma
+            // ≥2 jednostki właściciela z INNEJ armii), a panel i tak nic nie
+            // otworzy (stack.length<2 po scopingu) — martwy klik.
+            const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId, stackGroupIdOf(u));
             if (stack.length < 2) return false;
             return findSplitDestHexes(
               units,
@@ -17449,7 +17572,9 @@ async function boot(): Promise<void> {
         su.q = last.q;
         su.r = last.r;
       }
+      const pulaPrzedMarch = stackRuchLeft(stack);
       deductStackRuchLeft(stack, result.cost);
+      const deductedRuchMarch = pulaPrzedMarch - stackRuchLeft(stack);
       if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
       let hutCollected = false;
       if (result.movePath.length > 0) {
@@ -17464,7 +17589,7 @@ async function boot(): Promise<void> {
       // checkVillageRewardAt już woła refreshFog({ skipVeteranEducation }) — nie dubluj ani nie nadpisuj toastu chatki.
       if (!hutCollected) refreshFog();
       validateActiveSieges();
-      promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost);
+      promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost, deductedRuchMarch);
 
       const attackTargetId = marchAttackTargets.get(unitId);
       if (attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
@@ -21145,6 +21270,26 @@ async function boot(): Promise<void> {
     const AUTOSAVE_ROT_IDX_KEY = 'thegame.autosave.rotIdx';
     const AUTOSAVE_FREQ_KEY = 'thegame.autosave.freq';
 
+    /**
+     * N3 (Evaluator runda 1): strażnik jednego zapisu na raz. `idx` w
+     * doRotatingAutosave() jest czytany na starcie funkcji i zapisywany
+     * dopiero PO sukcesie -- jeśli zapis na dysk (createWritable/write/close)
+     * trwa dłużej niż jedna tura, kolejna tura wywołałaby drugi równoległy
+     * zapis na TEN SAM plik/slot. Ten strażnik pomija turę zamiast nakładać
+     * się; kolejna okazja (następna tura z aktywnym autozapisem) spróbuje
+     * ponownie.
+     * / EN: single-write-at-a-time guard. `idx` in doRotatingAutosave() is
+     * read at function start and only persisted AFTER success -- if the disk
+     * write (createWritable/write/close) takes longer than one turn, the
+     * next turn would fire a second, overlapping write to the SAME
+     * file/slot. This guard skips that turn instead of overlapping; the next
+     * opportunity (the following turn with autosave due) retries.
+     */
+    let autosaveInFlight = false;
+
+    /** N4: pokaż komunikat o degradacji FSA→localStorage tylko RAZ na sesję karty (nie co turę). */
+    let fsaAutosaveDegradedNotified = false;
+
     function getAutosaveFrequency(): number {
       try {
         const v = parseInt(localStorage.getItem(AUTOSAVE_FREQ_KEY) ?? '1', 10);
@@ -21155,16 +21300,119 @@ async function boot(): Promise<void> {
       try { localStorage.setItem(AUTOSAVE_FREQ_KEY, String(Math.max(1, Math.round(n)))); } catch { /* brak localStorage */ }
     }
 
-    /** Zapis do kolejnego slotu rotacji (1..10), zachowując 10 ostatnich wstecz. */
-    function doRotatingAutosave(): void {
+    /** Klucz localStorage: żeby komunikat o braku wsparcia FSA pokazać graczowi raz, nie przy każdym starcie. */
+    const FSA_HINT_SHOWN_KEY = 'thegame.autosave.fsaHintShown';
+
+    /**
+     * WOŁAJ z wnętrza handlera kliknięcia startu sesji (Rozpocznij/Kontynuuj/
+     * Wczytaj) — patrz komentarz nagłówkowy fsa-autosave.ts. Zwraca Promise:
+     * większość call site'ów woła ją fire-and-forget (`void`) -- przy braku
+     * wsparcia (Firefox/Safari, file://, brak zgody) po cichu (raz) informuje
+     * gracza i zostawia autozapis na dotychczasowym localStorage. Wyjątek:
+     * onContinue (BLOKER B2) CZEKA na ten Promise przed odczytaniem
+     * continueSaveSlotId() -- inaczej wskaźnik "ostatnio grane" mógłby
+     * wskazywać na plik FSA zanim katalog/uchwyt zdążył się przygotować.
+     * / EN: promise-returning so onContinue can await it before reading
+     * continueSaveSlotId() (BLOCKER B2 fix) -- other call sites keep firing
+     * it with `void` (fire-and-forget).
+     */
+    function triggerFsaAutosaveBootstrap(): Promise<void> {
+      return ensureFsaAutosaveReady().then(({ ok, reason }) => {
+        if (ok) return;
+        if (reason === 'permission-denied' || reason === 'picker-cancelled') return; // świadomy wybór gracza, bez komunikatu
+        let alreadyShown = false;
+        try { alreadyShown = localStorage.getItem(FSA_HINT_SHOWN_KEY) === '1'; } catch { /* brak localStorage -- pokaz i tak */ }
+        if (alreadyShown) return;
+        showHintMessage(fsaUnavailableMessage(reason), 5000);
+        try { localStorage.setItem(FSA_HINT_SHOWN_KEY, '1'); } catch { /* ignore */ }
+      });
+    }
+
+    /**
+     * Zapis do kolejnego slotu rotacji (1..10), zachowując 10 ostatnich wstecz.
+     * R-AUTOZAPIS-QUOTA-STORAGE-Q1 (ECHO A): jeśli File System Access jest
+     * gotowe (ensureFsaAutosaveReady() wywołane wcześniej z kliknięcia startu
+     * sesji — patrz mainMenu onNewGame/onContinue/onLoad), zapis idzie do
+     * PLIKU na dysku (bez limitu ~5-10 MB localStorage). W przeciwnym razie —
+     * albo gdy zapis do pliku się nie uda — fallback na dotychczasowy
+     * localStorage, bez regresji.
+     * / EN: rotating write to slot 1..10, keeping the last 10. If File System
+     * Access is ready, write goes to a file on disk; otherwise (or on FSA
+     * write failure) fall back to the pre-existing localStorage path.
+     */
+    async function doRotatingAutosave(): Promise<void> {
+      // N3: pomiń tę turę, jeśli poprzedni zapis (na dysk, potencjalnie wolny)
+      // wciąż trwa -- zamiast nakładać dwa równoległe createWritable() na ten
+      // sam plik. Patrz komentarz przy deklaracji autosaveInFlight.
+      if (autosaveInFlight) {
+        console.warn('[Autosave] pomijam ture -- poprzedni zapis wciaz trwa, tura=' + turn);
+        return;
+      }
+      autosaveInFlight = true;
+      try {
       let idx = 0;
       try {
         const prev = parseInt(localStorage.getItem(AUTOSAVE_ROT_IDX_KEY) ?? '-1', 10);
         idx = (((Number.isFinite(prev) ? prev : -1) + 1) % AUTOSAVE_ROT_COUNT + AUTOSAVE_ROT_COUNT) % AUTOSAVE_ROT_COUNT;
       } catch { idx = 0; }
       const slot = 'autosave-' + (idx + 1);
+
+      // N1: buildSaveGameSnapshot() PRZENIESIONE pod try -- wcześniej stało
+      // przed każdym try/catch tej funkcji, więc wyjątek przy budowie migawki
+      // uciekał jako unhandled rejection zamiast trafić do dotychczasowego
+      // raportowania błędów (console.error + showHintMessage) jak reszta tej
+      // funkcji.
+      // / EN: buildSaveGameSnapshot() MOVED under try -- it previously stood
+      // ahead of every try/catch in this function, so a snapshot-build
+      // exception escaped as an unhandled rejection instead of reaching the
+      // same error reporting (console.error + showHintMessage) as the rest
+      // of this function.
+      let snapshot: SaveGame;
       try {
-        const { ok, reason } = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
+        snapshot = buildSaveGameSnapshot(currentSaveLabel('autosave'));
+      } catch (eSnap) {
+        console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
+        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+        return;
+      }
+
+      if (shouldUseFsaAutosave(getFsaReadinessState())) {
+        try {
+          const { ok, reason } = await fsaRotatingAutosaveWrite(idx, snapshot);
+          if (ok) {
+            // B2 (BLOKER, Evaluator runda 1): wskaźnik "ostatnio grane" MUSI
+            // rozróżniać plik na dysku od slotu localStorage -- zapis na
+            // dysk NIC nie pisze do localStorage, więc stary kod
+            // setLastPlayedSlotId(slot) (klucz 'autosave-N') był kłamstwem:
+            // getLastPlayedSlotId() albo cicho wczytywał STARY/CUDZY zapis
+            // spod tego samego klucza localStorage (jeśli istniał), albo
+            // spadał na mostRecentSaveSlotId(). FSA_SLOT_PREFIX + nazwa
+            // pliku to jedyny prawdziwy wskaźnik na ten zapis (patrz
+            // save.ts::getLastPlayedSlotId, saveLoadDialog.ts, loadGameFromSlot).
+            // / EN: the "last played" pointer MUST distinguish a disk file
+            // from a localStorage slot -- the disk write writes NOTHING to
+            // localStorage, so the old setLastPlayedSlotId(slot) call (key
+            // 'autosave-N') was a lie: getLastPlayedSlotId() would either
+            // silently resolve a STALE/UNRELATED localStorage save under
+            // that same key, or fall through to mostRecentSaveSlotId().
+            // FSA_SLOT_PREFIX + file name is the only truthful pointer to
+            // this save (see save.ts::getLastPlayedSlotId, saveLoadDialog.ts,
+            // loadGameFromSlot).
+            setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));
+            try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
+            console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);
+            return;
+          }
+          console.warn('[Autosave] zapis na dysk nieudany (' + (reason ?? 'nieznany') + ') — fallback na localStorage, tura=' + turn);
+          notifyFsaAutosaveDegraded();
+        } catch (eFsa) {
+          console.warn('[Autosave] wyjatek zapisu na dysk — fallback na localStorage:', eFsa);
+          notifyFsaAutosaveDegraded();
+        }
+      }
+
+      try {
+        const { ok, reason } = saveToLocal(slot, snapshot);
         if (ok) {
           setLastPlayedSlotId(slot);
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
@@ -21185,6 +21433,25 @@ async function boot(): Promise<void> {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
         showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
       }
+      } finally {
+        autosaveInFlight = false;
+      }
+    }
+
+    /**
+     * N4 (Evaluator runda 1): po PIERWSZYM niepowodzeniu zapisu na dysk w tej
+     * sesji karty (np. Chrome cofnął jednorazowe "Zezwól tym razem" po
+     * dłuższym czasie karty w tle) pokazuje JEDNORAZOWY komunikat, że
+     * autozapis wrócił do przeglądarki -- fsaRotatingAutosaveWrite() już
+     * zerował livePermissionGranted (N7), więc kolejne tury idą od razu na
+     * fallback bez ponownej próby i bez powtarzania tego komunikatu.
+     * Furtka „przywróć zapis na dysk" w menu pauzy NIE jest tu zrobiona --
+     * świadomie odłożona (patrz raport rundy), do rejestru.
+     */
+    function notifyFsaAutosaveDegraded(): void {
+      if (fsaAutosaveDegradedNotified) return;
+      fsaAutosaveDegradedNotified = true;
+      showHintMessage('Zapis na dysk przerwany (uprawnienie wygasło) — autozapis wraca do zapisu w przeglądarce.', 4000);
     }
 
     // -----------------------------------------------------------------------
@@ -21392,7 +21659,17 @@ async function boot(): Promise<void> {
         dismissedSidePanelEventIds.clear();
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
-        if (turn % getAutosaveFrequency() === 0) doRotatingAutosave();
+        // void: funkcja jest async (może pisać do pliku przez FSA) — tura nie czeka na zapis.
+        // N2 (Evaluator runda 1): .catch() na tym jedynym call site -- doRotatingAutosave()
+        // już łapie wszystko wewnętrznie (try/catch/finally), ale bez tego jakikolwiek
+        // wyjątek, który mimo to by przeciekł, kończyłby się unhandled rejection zamiast
+        // trafić do tego samego raportowania błędów co reszta funkcji.
+        if (turn % getAutosaveFrequency() === 0) {
+          void doRotatingAutosave().catch((eAutosave) => {
+            console.error('[Autosave] nieobsluzony wyjatek rotacyjnego autozapisu:', eAutosave);
+            showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+          });
+        }
 
         pendingImprovementsTurn.commitTurn();
 
@@ -23740,6 +24017,23 @@ async function boot(): Promise<void> {
             // AI na koszt wg progu trudności (ai-params.json cuda_poziom{1,2,3}_*, patrz
             // decideAiWonderBuild w ai.ts -- throttle + priorytet E przed R + max 1 cud w
             // budowie na cywilizację naraz, wszystko deterministyczne).
+            //
+            // R-EPOKA-CUD-WARUNEK-AWANSU B3 (ECHO Maciej 2026-08-10, ryzyko utykania AI
+            // zidentyfikowane przez Evaluatora rundy 4): JEDYNE miejsce decyzyjne o
+            // kolejkowaniu cudu AI (C-026 -- żadna równoległa ścieżka) dostaje TERAZ dwa
+            // dodatkowe mechanizmy poza samym decideAiWonderBuild wyżej:
+            //  1. Rozluźnianie progu opłacalności z czasem -- `aiWonderStuckTurnsByOwner`
+            //     liczy kolejne tury bez budowy cudu mimo dostępnego kandydata (throttle LUB
+            //     próg odrzucił), `relaxedWonderCostThreshold` podnosi efektywny próg aż do
+            //     pełnego zniesienia po `cuda_stuck_relax_tur_max` turach.
+            //  2. Twardy wymuszacz -- gdy `allEraTechsResearched` (TA SAMA funkcja co warunek
+            //     awansu w owner-epoch.ts, nie duplikować) zwraca true dla bieżącej epoki tej
+            //     cywilizacji, a `eraOwnWonderSatisfied` false (brakuje WYŁĄCZNIE cudu do
+            //     awansu) i ten cud NIE jest już w budowie -- `forcePriority=true` do
+            //     decideAiWonderBuild: throttle/próg/kolejka-pusta przestają obowiązywać,
+            //     cud dostaje twarde pierwszeństwo (queueJump wskakuje przed już budowany
+            //     element), jedynym ograniczeniem zostaje pracaPerTurn>0 (dosłowny brak
+            //     produkcji -- martwa pętla poza zasięgiem priorytetu, zastrzeżenie zadania).
             if (!opts.defensiveCopy) {
               try {
                 const myCitiesForWonder = cities.filter(c => c.ownerId === ownerId);
@@ -23757,10 +24051,74 @@ async function boot(): Promise<void> {
                   queueEmpty: frontItem(cityProd.get(c.id) ?? { kolejka: [], postep: 0 }) === null,
                   pracaPerTurn: aiWonderPracaTickByCity.get(c.id) ?? 0,
                 }));
-                const wonderDiffParams = loadAiWonderParams(data, aiDiffLevel);
+
+                // 2. Wymuszacz: komplet technologii epoki, brakuje wyłącznie cudu, i ten
+                // cud jeszcze nie jest w budowie (inaczej priorytet zbędny -- już postępuje).
+                const wonderEraCivType = civTypeForOwner(ownerId);
+                const wonderCurrentEra = ownerEraByOwner.get(ownerId) ?? gameStartEra();
+                const wonderDoneTechs = aiResearchDone.get(ownerId) ?? new Set<string>();
+                const wonderEraGateForced = allEraTechsResearched(
+                  wonderCurrentEra,
+                  data.tech as import('./data/loader').TechDef[],
+                  wonderDoneTechs,
+                ) && !eraOwnWonderSatisfied(wonderEraCivType, wonderCurrentEra, completedWorldWonders);
+                const wonderRequiredIds = wonderEraGateForced
+                  ? eraOwnWonderIds(wonderEraCivType, wonderCurrentEra)
+                  : [];
+                // FIX (Evaluator runda 1, blokujący): sprawdzamy CAŁĄ kolejkę (nie tylko front)
+                // -- inaczej wymagany cud zakolejkowany, ale nie na czele (np. po innym już
+                // budowanym elemencie), zostałby ponownie zakolejkowany duplikatem.
+                const wonderRequiredAlreadyBuilding = wonderRequiredIds.length > 0 && myCitiesForWonder.some(c => {
+                  const kolejka = cityProd.get(c.id)?.kolejka ?? [];
+                  return kolejka.some(it => {
+                    const wid = parseWonderProdId(it.id);
+                    return wid !== null && wonderRequiredIds.includes(wid);
+                  });
+                });
+                // FIX (Evaluator runda 1, blokujący -- Fenicjanie Brąz→Żelazo): wymagany cud
+                // epoki może NIE być budowalny (np. petra wymaga tech z epoki Żelaza mimo
+                // epokaWejscia=2 -- rozjazd danych B2, osobna decyzja właściciela, NIE tu).
+                // Bez tej koniunkcji forcePriority wymuszał budowę PIERWSZEGO budowalnego cudu
+                // z listy (ordered[0] w ai.ts) zamiast cudu bramkującego awans -- AI co turę
+                // wskakiwała innym cudem na front kolejki (queueJump zeruje postęp), kolejka
+                // rosła bez ograniczenia, żywność drenowana co turę, wymagany cud NIGDY nie
+                // powstawał -- dokładna odwrotność celu B3. Bez budowalnego wymaganego cudu:
+                // brak wymuszenia (decideAiWonderBuild z forcePriority dostanie pustą listę
+                // wymaganych i sam zwróci null -- patrz ai.ts).
+                const wonderRequiredBuildable = wonderRequiredIds.some(
+                  id => buildableForAi.some(w => w.id === id),
+                );
+                const wonderForcePriority = wonderEraGateForced
+                  && !wonderRequiredAlreadyBuilding
+                  && wonderRequiredBuildable;
+
+                // 1. Rozluźnianie progu z czasem -- efektywny próg podmieniony PRZED
+                // wywołaniem decideAiWonderBuild (funkcja sama nie zna historii tur).
+                const wonderStuckTurns = aiWonderStuckTurnsByOwner.get(ownerId) ?? 0;
+                const wonderStuckRelaxMax = loadAiWonderStuckRelaxTurMax(data);
+                const wonderDiffParamsBase = loadAiWonderParams(data, aiDiffLevel);
+                const wonderDiffParams = {
+                  ...wonderDiffParamsBase,
+                  progKosztX: relaxedWonderCostThreshold(
+                    wonderDiffParamsBase.progKosztX, wonderStuckTurns, wonderStuckRelaxMax,
+                  ),
+                };
+
                 const wonderDecision = decideAiWonderBuild(
                   turn, ownerId, hasWonderInProgress, wonderCandidates, buildableForAi, wonderDiffParams,
+                  wonderForcePriority, wonderRequiredIds,
                 );
+
+                // Licznik "utykania": zerowany gdy cud realnie trafił do kolejki, rośnie gdy
+                // kandydat był dostępny i AI nie buduje już innego cudu, ale decyzja padła null.
+                if (wonderDecision) {
+                  aiWonderStuckTurnsByOwner.set(ownerId, 0);
+                } else if (buildableForAi.length > 0 && !hasWonderInProgress) {
+                  aiWonderStuckTurnsByOwner.set(ownerId, wonderStuckTurns + 1);
+                } else {
+                  aiWonderStuckTurnsByOwner.set(ownerId, 0);
+                }
+
                 if (wonderDecision) {
                   const wDef = getWonderById(wonderDecision.wonderId);
                   if (wDef) {
@@ -23771,10 +24129,25 @@ async function boot(): Promise<void> {
                       );
                     } else {
                       const wProd0 = cityProd.get(wonderDecision.cityId) ?? { kolejka: [], postep: 0 };
-                      cityProd.set(wonderDecision.cityId, enqueue(wProd0, wonderProductionItem(wDef)));
+                      const wItem = wonderProductionItem(wDef);
+                      // queueJump (B3, wymuszacz): wstaw na FRONT kolejki zamiast na koniec --
+                      // przerywa (bez zwrotu Pracy) element aktualnie budowany, spójne z
+                      // production.ts:dequeue (postep liczony tylko dla frontu, front zmienia
+                      // się -> zerujemy). Poza wymuszaczem queueJump zawsze false/undefined
+                      // (city.queueEmpty gwarantowane przez ścieżkę bez forcePriority).
+                      const wProd1 = wonderDecision.queueJump
+                        ? {
+                            kolejka: [wItem, ...wProd0.kolejka],
+                            postep: 0,
+                            wstrzymana: wProd0.wstrzymana,
+                            rekrutacja: wProd0.rekrutacja ? [...wProd0.rekrutacja] : undefined,
+                          }
+                        : enqueue(wProd0, wItem);
+                      cityProd.set(wonderDecision.cityId, wProd1);
                       const wCity = myCitiesForWonder.find(c => c.id === wonderDecision.cityId);
+                      const wForceTag = wonderForcePriority ? ' [PRIORYTET-EPOKA]' : '';
                       console.log(
-                        `[Cuda][AI] Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${scaledKoszt} Pracy)`,
+                        `[Cuda][AI]${wForceTag} Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${scaledKoszt} Pracy)`,
                       );
                     }
                   }
@@ -24514,6 +24887,42 @@ async function boot(): Promise<void> {
         updateHud();
         cityRenderer.sync(cities, _cityRenderOpts());
         refreshWorkerFieldOverlay();
+        // P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (poprawka po FAIL Evaluatora): TO JEST
+        // DZIŚ NO-OP, zostawiony wyłącznie jako zabezpieczenie na przyszłość — nie naprawia
+        // żadnego znanego, realnego buga. Zweryfikowane 5 niezmienników, które to gwarantują:
+        //  1) `tradeRoutes` jest przeliczane WYŁĄCZNIE przez recomputeTradeRoutesNow() —
+        //     wołane wcześniej w tej samej turze (odświeżenie E3, przed fazą AI) oraz przy
+        //     zawarciu/zmianie traktatu handlowego przez GRACZA. W fazie AI (w tym przy
+        //     wypowiedzeniu wojny przez AI łamiącym Umowę Handlową przez breakTreatiesOnWar
+        //     — sprawdzone, że NIE dotyka tradeRoutes) tablica `tradeRoutes` się nie zmienia.
+        //  2) `cities` nigdy się nie kurczy w trakcie tury (zero cities.splice w src/) —
+        //     miasta nie znikają, więc nie ma osieroconych łuków do usunięcia.
+        //  3) Nowe miasto AI (cities.push w fazie AI) nie tworzy nowego łuku — nie należy do
+        //     żadnej trasy w nieprzeliczonym `tradeRoutes`.
+        //  4) Zdobycie miasta (applyCityCaptureToMap) mutuje ten sam obiekt City w miejscu —
+        //     zmienia tylko ownerId, nie q/r — nakładka keyuje po q/r, które się nie zmieniają.
+        //  5) Geometria łuku (hexTopY) zależy wyłącznie od terenu, mutowanego tylko w
+        //     generatorze mapy — nigdy w trakcie tury.
+        // Skoro refreshTradeRoutesOverlay() tylko RENDERUJE bieżące `tradeRoutes`+`cities`
+        // (nie przelicza tras), a żaden z tych dwóch stanów się tu nie zmienia, wywołanie
+        // odtwarza bajt-w-bajt tę samą grupę łuków co bez niego — potwierdzone testami
+        // trade-routes-test/trade-routes-income-test/okolica-test/logic-test (identyczne
+        // wyniki z i bez zmiany). Zostaje na wypadek, gdyby KIEDYŚ recomputeTradeRoutesNow()
+        // zostało przesunięte za fazę AI — wtedy ten punkt już będzie właściwy.
+        // EN: this call is a NO-OP today, kept only as forward-looking hardening — it fixes
+        // no known real bug. `tradeRoutes` is recomputed exclusively by recomputeTradeRoutesNow()
+        // (called earlier this same turn, before the AI phase, and on player treaty actions);
+        // it is untouched during the AI phase, including when AI declares war and breaks a
+        // trade treaty (breakTreatiesOnWar only touches activeDeals, never tradeRoutes).
+        // `cities` never shrinks mid-turn, city capture mutates ownerId in place (q/r fixed),
+        // new AI cities aren't part of the unrecomputed route list, and arc geometry depends
+        // only on terrain (map-gen only). Since refreshTradeRoutesOverlay() purely renders the
+        // current tradeRoutes+cities, and neither changes here, this reproduces the identical
+        // overlay byte-for-byte — confirmed by trade-routes-test/trade-routes-income-test/
+        // okolica-test/logic-test all being identical with and without this call. Left in
+        // place so that if recomputeTradeRoutesNow() is ever moved to run after the AI phase,
+        // this call site is already correctly positioned.
+        refreshTradeRoutesOverlay();
         // Refresh fog after end-turn so new unit positions update visibility.
         refreshFog();
         // C-SENTRY-Q1 wariant A: pozycje wszystkich jednostek (gracz + AI) są już
@@ -24736,12 +25145,15 @@ async function boot(): Promise<void> {
           const stack = movedStackIds
             .map(sid => units.find(x => x.id === sid))
             .filter((su): su is RuntimeUnit => su != null);
+          let deductedRuchAnim = 0;
           if (u) {
             for (const su of stack) {
               su.q = destQ;
               su.r = destR;
             }
+            const pulaPrzedAnim = stackRuchLeft(stack);
             deductStackRuchLeft(stack, moveCost);
+            deductedRuchAnim = pulaPrzedAnim - stackRuchLeft(stack);
             // TEMAT #15: automatyczna (dez)embarkacja wg terenu docelowego
             // (woda -> embarked, ląd -> zejście na ląd) + przebudowa tokenów.
             if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
@@ -24775,7 +25187,13 @@ async function boot(): Promise<void> {
           if (!hutCollected) refreshFog();
 
           if (u) tryAutoCaptureEmptyCityAt(destQ, destR, stack);
-          promptMergeIfCoLocated(movedStackIds.length > 0 ? movedStackIds : [finishedId], fromQ, fromR, moveCost);
+          promptMergeIfCoLocated(
+            movedStackIds.length > 0 ? movedStackIds : [finishedId],
+            fromQ,
+            fromR,
+            moveCost,
+            deductedRuchAnim,
+          );
           if (selectedId === finishedId) {
             const sel = units.find(x => x.id === finishedId);
             if (sel) {
@@ -25534,6 +25952,7 @@ async function boot(): Promise<void> {
       growthMultMap.clear();
       lastCityKulturaTick.clear();
       aiWonderPracaTickByCity.clear();
+      aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
@@ -26363,7 +26782,16 @@ async function boot(): Promise<void> {
       hideSaveLoadDialog();
       diagInfo('load', `slot=${slotId} pause=${fromInGamePause}`);
       try {
-        const saved = loadFromLocal(slotId);
+        // BLOKER B1 (Evaluator runda 1): slotId z prefiksem FSA_SLOT_PREFIX
+        // ('fsa:...') wskazuje na plik na dysku (rotacja autozapisu FSA), nie
+        // na slot localStorage -- odczyt idzie przez loadFsaAutosaveFile()
+        // zamiast loadFromLocal(). Bez tego rozgałęzienia dialog Wczytaj
+        // mógłby POKAZAĆ zapis z dysku (summarizeFsaSaveSlots), ale kliknięcie
+        // go zawsze kończyło się "Nie można wczytać tego zapisu" (loadFromLocal
+        // szuka w localStorage klucza, który nigdy tam nie istniał).
+        const saved = slotId.startsWith(FSA_SLOT_PREFIX)
+          ? await loadFsaAutosaveFile(slotId.slice(FSA_SLOT_PREFIX.length))
+          : loadFromLocal(slotId);
         if (!saved) {
           diagWarn('load', `brak danych slot=${slotId}`);
           showHintMessage('Nie można wczytać tego zapisu.', 3000);
@@ -26671,6 +27099,7 @@ async function boot(): Promise<void> {
       }
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      aiWonderStuckTurnsByOwner.clear();
       restoreAiRosterFromSave(saved);
       const loadStartEra = (() => {
         const eid = (saved.meta?.newGameParams as NewGameParams | undefined)?.epochId;

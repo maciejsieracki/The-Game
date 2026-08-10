@@ -15,8 +15,14 @@
  * hex.ulepszenie='droga' -- droga nadpisuje legacy pole przy budowie): silnik (hexToWorkedTile)
  * liczy Zywnosc=5/Praca=5/Handel=5 pkt/ture, stary panel pokazywal 2/2/2 -- mniej niz polowe.
  *
- * cityPanel.ts ma >10 000 linii, `tileYieldLabel`/`appendOkolicaYieldLabel` NIE sa eksportowane
- * i druga z nich wymaga realnego DOM (SVGSVGElement). Test -- tak jak
+ * cityPanel.ts ma >10 000 linii, `tileYieldLabel`/`appendOkolicaYieldLabel` NIE sa eksportowane.
+ * UWAGA (skorygowane 2026-08-10, patrz PYTANIA-OTWARTE.md
+ * P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE): ponizszy test regex-owy NIE jest wybrany
+ * dlatego, ze appendOkolicaYieldLabel() "wymaga DOM, ktorego nie ma" -- jsdom ^29.1.1 jest
+ * zadeklarowanym devDependency tego repo i uzywa go juz kilkanascie plikow w tools/*.cjs (w tym
+ * 4 nazwane bramki), wiec test E2E wywolujacy obie funkcje na prawdziwym DOM jest technicznie
+ * mozliwy (Evaluator zbudowal dzialajacy prototyp ~40 linii). Regex zostal wybrany pragmatycznie
+ * -- tak jak
  * city-panel-growth-percent-separator-test.cjs (P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD, dzis rano) --
  * NIE odpala calego cityPanel.ts, tylko:
  *   1. PRZYPIETA LOKALIZACJA -- zrodlo cityPanel.ts w obu funkcjach faktycznie wola

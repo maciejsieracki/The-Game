@@ -620,17 +620,38 @@ export function renderPnBalancePanelForTreaty(
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
+  // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś rano
+  // 5a93f5aa był nieaktualny — patrz PYTANIA-OTWARTE.md): ta funkcja to WSPÓLNY
+  // renderer dla wszystkich typów traktatu z koszykiem (sojusz/pakt/wasal/pokój/
+  // wchłonięcie — wołana z treatySummaryHtml w diplomacyTradeBasket.ts z
+  // basketGivePn/basketReceivePn policzonymi z REALNYCH giveItems/receiveItems, które
+  // gracz właśnie edytuje w TYM SAMYM formularzu, w kolumnach „My oddajemy/Oni oddają
+  // (opcjonalnie)"). Formularz koszyk MA — to nie jest „traktat bez koszyka". Warunek
+  // `balancePn < 0` niżej po prostu znaczy: przy aktualnej treści koszyka (może być
+  // pusta, jeśli gracz jeszcze nic nie dołożył) bilans jest ujemny, więc komunikat
+  // kieruje do zawarcia osobnej umowy zamiast sugerować dopłatę „na już" w pustym
+  // koszyku. Część C R-DYP-STOL-A (koszyk dla WSZYSTKICH traktatów) jest dziś w
+  // praktyce niemal domknięta (4 z 5 typów z pierwotnego zgłoszenia); jedyna realna
+  // luka to wojna (aid '11') — kategorialnie inny temat, jednostronna akcja gracza bez
+  // negocjacji/akceptacji AI, poza tym systemem propozycji w ogóle.
+  // EN: shared renderer for every basket-enabled treaty type (alliance/pact/vassal/
+  // peace/absorption), called with the LIVE basket contents the player is editing in
+  // this exact form — the form already has a basket. `balancePn < 0` just means the
+  // current (possibly still-empty) basket doesn't close the gap, so the message
+  // points to a separate deal rather than "top up" an empty basket. R-DYP-STOL-A part
+  // C is effectively done for these types; the only real gap is war, outside this
+  // proposal system entirely.
   const hint = !relOk
     ? `Relacja ${formatLiczbaPl(relTotal)} — wym. ${formatLiczbaPl(relRequired!)}`
     : (balancePn < 0
-      ? `Brakuje ${Math.abs(balancePn)} PW — dopłać`
+      ? `Brakuje ${Math.abs(balancePn)} PW — zawrzyj osobną umowę`
       : balancePn > 0
         ? `Nadwyżka ${balancePn} PW`
         : 'Równo — spełnia');
   const verdict = !relOk
     ? `Relacja ${formatLiczbaPl(relTotal)} — wymagane ≥ ${formatLiczbaPl(relRequired!)}`
     : (balancePn < 0
-      ? `Dopłać ${Math.abs(balancePn)} PW (Twoja strona słabsza przy tej Relacji)`
+      ? `Zawrzyj osobną umowę na ${Math.abs(balancePn)} PW (Twoja strona słabsza przy tej Relacji)`
       : balancePn > 0
         ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
         : treatyMetaLabel + ': Ty ' + playerPw + ' PW · Oni ' + partnerPw + ' PW — spełnione');

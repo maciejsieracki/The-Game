@@ -127,6 +127,29 @@ export interface RuntimeUnit {
    * veteranLevel() w game/veteran.ts — nie czytać pola wprost.
    */
   battlesSurvived?: number;
+  /**
+   * P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO BB2 (ECHO B, Maciej 2026-08-10): tożsamość
+   * STOSU niezależna od heksu. Dwie różne armie (dwa różne stackGroupId) mogą
+   * dzielić jeden heks (q,r) bez zlewania się w jedną pulę ruchu — dokładnie
+   * przypadek powrotu „Zostaw osobno" na origin zajęty przez rezydenta.
+   * OPCJONALNE dla wstecznej zgodności: `undefined` = jednostka używa fallbacku
+   * grupowania po heksie (`stackGroupIdOf()` w game/armyMerge.ts) — STARE ZAPISY
+   * i jednostki, które nigdy nie przeszły przez rozdzielenie/scalenie, zachowują
+   * się DOKŁADNIE jak przed refaktorem (grupa = ownerId+heks+garnizon).
+   * Nadawane jawnie w dwóch miejscach (main.ts): (1) „Zostaw osobno" — wracająca
+   * armia dostaje FRESH id różny od rezydenta (freshStackGroupId); (2) scalenie
+   * (merge) — WSZYSCY na heksie dostają WSPÓLNY nowy id (assignSharedStackGroupId).
+   * Odczyt WYŁĄCZNIE przez stackGroupIdOf()/sameStackGroup() w armyMerge.ts —
+   * nigdy `u.stackGroupId` wprost (musi przejść przez fallback).
+   * PARYTET AI: pole i cała logika są ownerId-agnostyczne — AI korzysta z tego
+   * samego mechanizmu identycznie jak gracz (armyMerge.ts nie rozróżnia ownerId).
+   * Save/load: pole jest zwykłą właściwością RuntimeUnit, serializowane/
+   * odczytywane generycznie razem z całym obiektem jednostki (save.ts nie ma
+   * specjalnej obsługi pól opcjonalnych — patrz fortifyRuchSnapshot jako
+   * precedens) — stary zapis bez pola daje `undefined` po JSON.parse, czyli
+   * dokładnie fallback opisany wyżej, bez żadnej migracji.
+   */
+  stackGroupId?: string;
 }
 
 /** Kategorie cywilne — bez utrzymania, bez głodu wojska, bez ataku miast. */
