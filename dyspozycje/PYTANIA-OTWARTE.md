@@ -11631,3 +11631,38 @@ nowy wiersz wchodzi między 3016 a 3017 (przed blokiem Prawa). Pełny szacunek z
 złożoność każdej) w pełnym raporcie agenta `aaea622d317aa77e4`.
 
 **STATUS: dispatch Sonnet 5 (worktree) — implementacja pełnej mechaniki wg rozpoznania.**
+
+## R-CS-HARD-PASYWNE — runda 3 Evaluator PASS-WITH-NOTES, ale temat NIE ZAMKNIĘTY (2026-08-10)
+
+**Werdykt (Opus 5) dla `28c96bd8`: PASS-WITH-NOTES.** Arytmetyka progu (cap=4) potwierdzona bez
+wątpliwości — zweryfikowana niezależnie linia po linii, w tym relacja zbiorów liczników
+(`countOwnerMilitaryUnits` ⊆ `totalMilitary`, zero ryzyka w drugą stronę) i gwarancja że
+`minGuard=1` pochodzi z TEJ SAMEJ zmiennej co cap (brak ścieżki rozjazdu). Testowanie mutacyjne
+powtórzone niezależnie, wszystkie 3 mutanty złapane. **Commit `28c96bd8` zostaje scalony bez
+zmian — jest poprawny.**
+
+**⛔ Ale znaleziona SZÓSTA warstwa problemu (pre-istniejąca, POZA zakresem tego diffu, „nie jest
+regresją tego commita"):** cap=4 naprawia WYJŚCIE Z DOMU, ale bramka ATAKU (`ai.ts:2736-2746`,
+`countFriendlyMilitaryOnHex < CS_WAVE_ATTACK_MIN_STACK` → `doAttack=false`) wymaga 3 przyjaznych
+jednostek na TYM SAMYM heksie — a AI **fizycznie nie potrafi budować takich stosów**: planista
+(`occupiedExcluding`, `ai.ts:735`) traktuje każdy zajęty heks jako zablokowany, egzekutor rozkazu
+`move` (`main.ts:24997-25004`) buduje listę zajętych z WSZYSTKICH jednostek w grze, a
+`assignSharedStackGroupId` (mechanizm łączenia w stos) ma call site'y WYŁĄCZNIE w panelach gracza
+(`main.ts:9236/9288/9410/9492/9565`) — zero w egzekutorze AI. **Skutek: PM na Trudnym zrekrutuje 4
+jednostki, wyruszy z miasta, dojdzie w pobliże gracza i tam UTKNIE — nigdy nie zaatakuje** (chyba
+że własne miasto PM jest zagrożone, co omija tę bramkę inną ścieżką). **To dokładnie ten sam
+objaw, który zgłosił Maciej — PM bierne na Trudnym — nadal wystąpi na playteście mimo 3 rund
+napraw capu produkcji.**
+
+Dodatkowe drobiazgi z werdyktu: komentarz w `ai.ts:1447` nieaktualny (nadal mówi „hard max 3");
+`T8` w `ai-mp-military-cap-test.cjs` nie pokrywa granicy 3&lt;4 (tylko 2&lt;4 i 4/4); sekcja 4 nowej
+bramki wiringu NIE łapie mutanta wiringu wbrew opisowi (łapie go wyłącznie sekcja 2) — do korekty
+opisu, nie kodu; po wczytaniu starego zapisu `_menuCityStateDifficultyVsPlayer`/`_menuCitySupport`
+wracają do domyślnego `'normal'` (spójny rozjazd, nie nowa patologia, ale warto zarejestrować
+osobno).
+
+**STATUS: NOWY TEMAT wymagany — `R-CS-HARD-BRAK-STOSOWANIA-AI` (bramka ataku PM wymaga stosu,
+którego AI nie potrafi zbudować). To znacząco większy zakres niż korekta liczby (dotyka
+planowania ruchu AI i mechanizmu łączenia jednostek w stos, dziś istniejącego tylko dla gracza) —
+dispatch ROZPOZNANIA (nie od razu kodowania) Sonnet 5 przed dalszymi decyzjami. Drobiazgi (komentarz
+`ai.ts:1447`, `T8` luka 3/4) do domknięcia przy okazji tej samej rundy, niska pilność.**
