@@ -9579,4 +9579,28 @@ które już rozpocząłeś."** → aktualny stan realizacji tego polecenia:
 - **Spichlerz „(0)"** — ECHO C przyjęte. **STATUS: nadal świadomie niedispatchowane** — czeka na
   scalenie Operatora A (ten sam obszar plików), żeby uniknąć kolizji worktree.
 
+**Evaluator Operatora A (`ad73793863908be36`) — werdykt FAIL** (mechanika poprawna i zweryfikowana
+liczbowo, 3 blokady drobne, ~15 min naprawy):
+1. Regresja niezgłoszona: `city-panel-growth-percent-separator-test.cjs` 29/0→25/2 (Operator
+   przemianował pinowane zmienne `wzrostProcent`→`wzrostProcentUi`, formatowanie samo w sobie OK).
+2. C-039: diff SAM wprowadza sprzeczność wewnątrz `buildTopBarLudnoscDetailCard` — WZROST% przycięty,
+   „Bilans żywności" tuż obok nadal surowy (`view.bilansLokalny` zamiast `foodSplit.total`, 1 token).
+3. C-026: brakujące miejsce — `onCityAutoWyzywienieChange` (`main.ts:5778`), włączenie Auto w trakcie
+   tury przy `poziomRacji>maxSafe` nie przelicza natychmiast (najbardziej intuicyjne zdarzenie z całej
+   listy, gracz oczekuje korekty od razu).
+Notatki nieblokujące do zarejestrowania: (D) broadcast w `onCityRationChange`/`onPoziomRacjiOverrideToggle`
+może zostawić poziom>maxSafe w trakcie tury dla innych miast — luka przyznana komentarzem w kodzie;
+(E) **WAŻNE dla komunikatu do Macieja**: ta zmiana NIE zmienia wyniku rozliczenia końca tury (backstop
+Q3=A przycina i tak wszystko) — poprawia tylko widoczność stanu W TRAKCIE tury; jeśli po deployu
+Spichlerz nadal wyjdzie na minus, przyczyną jest utrzymanie żywnościowe ARMII (liczone osobno w
+`advanceEmpireFood`, nie w `isEmpireCityFoodSolvent`), NIE poziom racji — osobny wątek do zbadania jeśli
+się powtórzy; (G) pętla broadcast w `onOkolicaFocusChange` woła pełny `previewCityEconomy` per miasto
+gracza (N pełnych podglądów na jedno kliknięcie) — nie blokuje, ale ryzyko spowolnienia w późnej grze;
+(H) plakietka miasta na mapie nadal pokazuje Wzrost% z surowego poziomu — dla miast z Auto WYŁ rozjazd
+panel↔plakietka zostaje na stałe (świadomy, spójny z decyzją wydajnościową `e4155972`, ale ma być
+zapisany, nie przypadkowy). Zalecenie niedublokujące: scenariusz A nowego testu jest dziś tautologią
+(`<=6` zamiast `===1.5`), poprawić przy okazji.
+
+**Dispatch: runda 2 Operatora A** (ten sam worktree, dogranie 3 blokad + notatka o E dla komunikacji).
+
 ---
