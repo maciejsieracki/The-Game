@@ -7477,3 +7477,17 @@ agentem co Operator wykonujący pracę merytoryczną** — scalenie zawsze osobn
 dispatchem, żeby awaria na etapie scalania nie grzebała całej rundy bez śladu.
 
 ---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — SCALONE `a396eddc` (2026-08-10)
+
+Kompletne scalenie po odzyskaniu z dwóch nietkniętych worktree. Kluczowa weryfikacja: `grep
+assignBounceHexesForUnits gra/src/main.ts` pokazuje wyłącznie komentarze — oryginalny zgłoszony
+bug (armia rozpraszała się na osobne wolne heksy przy „zostaw osobno") jest naprawiony,
+`onSeparate` woła teraz `resolveSeparateReturnHex`+`computeSeparateReturn`, cała armia wraca razem.
+Wszystkie 12 bramek zielone (tsc 0, logic-test 213/213, oba testy tematu 16/16 i 37/37 [z notą
+B-R5-1], army-merge-bounce 4/4, army-merge-dismiss-bounce 16/16, army-stack-ruch 5/5,
+army-merge-colocated 4/4, combat-test 6/6, tech-tree 19/19, research 33/33, unit-replace 13/13).
+Zero regresji. Temat w pełni zamknięty co do bezpiecznego minimum (BB1) — BB2 (współdzielona pula
+ruchu, decyzja ECHO B = pełny refaktor stackGroupId) w toku jako osobny dispatch.
+
+---
