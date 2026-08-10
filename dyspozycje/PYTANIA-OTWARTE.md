@@ -7806,6 +7806,33 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
+## P-TRADEROUTES-NIEAKTUALNE-PO-WOJNIE-AI (2026-08-10, znalezisko Operatora przy naprawie P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI) · STATUS: **OTWARTE — dispatch rozpoznania**
+
+Gdy AI wypowiada wojnę w swojej fazie, `breakTreatiesOnWar` (main.ts, wołane z pętli komend
+dyplomacji AI ~linia 22884) usuwa zerwany traktat z `activeDeals`, ale NIE dotyka `tradeRoutes`.
+Skoro `tradeRoutes` jest przeliczane WYŁĄCZNIE przez `recomputeTradeRoutesNow()` (nie w fazie AI),
+trasa handlowa może zostać w tablicy mimo że traktat handlowy, który ją uzasadniał, już nie
+istnieje — łuk na mapie i/lub dochód z trasy mogą być nieaktualne aż do następnego przeliczenia
+(traktat gracza/nowa gra). Niski priorytet — nie zgłoszone przez gracza, znalezione przy okazji
+innej naprawy. Dispatch rozpoznania (potwierdzić realny skutek — czy dochód z martwej trasy
+faktycznie się nalicza, czy tylko wizualny łuk zostaje — i zaproponować A/B/C jeśli wymaga
+decyzji) NASTĘPUJE teraz.
+
+---
+
+## R-DYP-STOL-A część C — nadal niedokończona (2026-08-10, znalezisko Operatora przy P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA) · STATUS: **OTWARTE — materiał do przyszłego ABC**
+
+Decyzja Macieja z 2026-07-27 (`R-DYP-STOL-A`, B+C): koszyk `diplomacyTradeBasket` miał objąć
+WSZYSTKIE typy traktatów. Dziś obejmuje tylko akcje 5 (handel) i 13 (dar) — sojusz, pakt, wasal,
+pokój, wojna nadal bez koszyka (`docs/decyzje/R-DYP-STOL-A.md`, sekcja „Co dalej"). Dziś łatamy
+pojedyncze komunikaty „brak koszyka tutaj" (`P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA`, scalone dziś) zamiast
+dokończyć część C. Dispatch rozpoznania (ile pracy realnie zostało — ile miejsc w kodzie
+wymagałoby rozszerzenia koszyka, czy jest to małe czy duże zadanie) NASTĘPUJE teraz, ŻEBY
+przygotować materiał do pytania ABC dla Macieja (nie zadaję pytania teraz — to nowy wątek, zgodnie
+z §1a/§2 najpierw kończymy trwające, potem osobno to zaproponuję).
+
+---
+
 ## Tooltip Pracy — SCALONE bezpośrednio przez orkiestratora, oba blokery naprawione (2026-08-10)
 
 Naprawiono B1 i B2 z werdyktu Evaluatora bezpośrednio na żywym drzewie (nie kopiując pliku
