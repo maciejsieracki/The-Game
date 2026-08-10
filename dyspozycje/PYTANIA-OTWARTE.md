@@ -11547,3 +11547,32 @@ pozycjonowane BEZPOŚREDNIO POD sekcją/wierszem Szczęścia. Wymaga rozpoznania
 ECHO, zwłaszcza Q1 (model magazynu centralnego, nie lokalnej dostępności) i Q4 (dwa konkretne
 miejsca UI do zlokalizowania) wymagają potwierdzenia w kodzie przed napisaniem logiki silnika,
 zgodnie z CLAUDE.md §6/§7 „nie zgaduj przy niejednoznaczności".
+
+## R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 — Evaluator FAIL runda 2: regresja army-merge-mainguard (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `108713aa`: FAIL.** N1/N2/N3 naprawione solidnie (potwierdzone
+niezależnym testowaniem mutacyjnym — 14/15 mutacji złapanych), ale commit **wprowadza regresję w
+istniejącej, wcześniej zielonej bramce, która nie została uruchomiona ani zgłoszona**:
+`army-merge-separate-return-mainguard-test.cjs` — `108713aa^` (baza): 72/0 zielono;
+`108713aa`: **66 pass, 6 fail**. Przyczyna: wyniesienie logiki do `army-cycle.ts` usunęło z
+`main.ts` funkcje `cyclablePlayerArmyLeadsBase`/`armyLeadHexKey` (dosłowne markery tekstowe, o
+które pytała sekcja 10 tej bramki, strzegąca inwariantu B-R5-1 z wcześniejszej rundy: klucz
+grupowania = `stackRenderKey`, nie gołe `stackGroupIdOf`) — bramka szukała starych nazw/lokalizacji
+i nie znalazła. 2 z 8 asercji tej sekcji przechodzą wakuowo (negatywne, prawdziwe na pustym
+wycinku) — bramka nie tylko czerwienieje, częściowo daje też fałszywe zielone.
+
+**Dodatkowo, luka M7 znaleziona testowaniem mutacyjnym (15 mutacji, 14 złapanych):** usunięcie
+fallbacku po `stackRenderKey` w `resolveAdjacentPlayerUnitCycle` (gdy `afterId` wypadł z listy, ale
+inna jednostka tego samego stosu/heksu jest na liście) **nie jest złapane przez żaden test** — ani
+stary, ani nowy. To dokładnie ta gałąź, którą zepsuta bramka miała pilnować.
+
+**STATUS: dispatch Sonnet 5 (worktree) — runda 3, wąska: (1) przekierować sekcję 10
+`army-merge-separate-return-mainguard-test.cjs` na `army-cycle.ts` (nowa sygnatura
+`cyclablePlayerArmyLeadsBase(units, requireMoves, canMove)`, użycie `stackRenderKey` wewnątrz
+`resolveAdjacentPlayerUnitCycle` zamiast usuniętego `armyLeadHexKey`) — inwariant B-R5-1 musi
+zostać przypięty w NOWEJ lokalizacji, nie zniknąć; uwaga na asercje negatywne (linie 339,352 starej
+wersji) — przechodzą wakuowo, nie są dowodem; (2) zamknąć lukę M7 — asercja behawioralna w Sekcji 1
+`scout-explore-deselect-cycle-test.cjs` na fallback po `stackRenderKey`, zaostrzyć zbyt luźną
+asercję `'a' || 'c'` w linii ok. 196; (3) drobiazg: komentarz w main.ts:4879 odsyła do
+nieistniejącego `scout-army-cycle-test.cjs`, poprawić na `scout-explore-deselect-cycle-test.cjs`.
+Po dostarczeniu: NIEZALEŻNY Evaluator, runda 3.**
