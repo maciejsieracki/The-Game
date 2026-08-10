@@ -10334,6 +10334,6 @@ priorytet.
 
 **ECHO Macieja: „zgoda"** — naprawa opisana w rozpoznaniu #4 (flow-based kryterium akceptacji kroku
 w `autoRaiseRationsForGrowth`/`autoBalanceRationsToSolvency`/backstop `maxSafePoziomRacjiForCity`,
-dla gracza ownerId=0) zatwierdzona. **Dispatch Operatora NASTĘPUJE.**
+dla gracza ownerId=0) zatwierdzona. **Dispatch Operatora NASTĘPUJE (`af98bc5fafb5f2aa6`).**
 
 ---
