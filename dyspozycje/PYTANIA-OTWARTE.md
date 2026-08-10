@@ -7272,3 +7272,21 @@ bezpośrednio z tego worktree.
 Dispatch Evaluatora rundy 5 (finalnej) NASTĘPUJE teraz.
 
 ---
+
+## R-BUDYNEK-PORTOWY — runda 3 dostarczona (test-only, B1+B2+N1), czeka na finalnego Evaluatora — PRIORYTET (2026-08-10)
+
+Worktree `agent-a6fb470d3a3c88349`, odtworzony 1:1 z referencyjnego `agent-a9d473aa1495f39c6`
+(kod produkcyjny NIETKNIĘTY, bajt-identyczny). B1: +10 asercji w `trade-routes-test.cjs` (61/61).
+B2: +3 piny regex w `naval-water-access-gate-test.cjs` + N1 (39/39). Wszystkie 8 mutacji explicite
+wymienionych w zleceniu (T1-T4, M8-M10, N1) teraz złapane — dowód FAIL→PASS dla każdej. Operator
+uczciwie zastrzega: nie znalazł w rejestrze pełnej listy „23 mutacji" (P1-P7/M1-M11/T1-T4) z
+oryginalnego werdyktu — potwierdza tylko 8 explicite nazwanych w zleceniu tej rundy, reszta wg
+niego była już pokryta istniejącymi 32 asercjami. Bramki: tsc 0, logic-test 213/213,
+naval-water-access-gate 39/39, trade-routes 61/61, trade-routes-income 52/53 (pre-istniejąca),
+unit-replace 13/13, deposit-building-gate 47/47, ai-production-priority 9/9.
+
+**Priorytet wysoki** (trzeci temat z rzędu z realnym ryzykiem utraty niescalonej pracy) — dispatch
+finalnego Evaluatora (skrócony zakres: potwierdzić 8 mutacji + ewentualne resztkowe z pełnej listy
+23 + czyste scalenie) NASTĘPUJE teraz, z instrukcją natychmiastowego scalenia po PASS.
+
+---
