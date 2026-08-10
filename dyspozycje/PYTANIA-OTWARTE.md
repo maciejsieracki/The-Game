@@ -11203,3 +11203,19 @@ Po dostarczeniu: ponowny Evaluator (nie ja) przed uznaniem za zamknięte.**
    w kolejnej turze (ruch wraca wszystkim bez wyjątku, `main.ts:22115`), zachowując flagę
    `ufortyfikowanyWPolu` (bonus obronny w marszu) — `enterFieldFortify()` nie czyści `autoExplore`,
    `runScoutsAutoExplore()` nie sprawdza fortyfikacji. Dispatch (niski priorytet, rzadki przypadek).
+
+## AUDYT C-030 (2026-08-10, na żądanie Macieja: "sprawdź czy zadania... mają swojego subagenta")
+
+Grep `STATUS: dispatch` w tym pliku wykrył DWIE luki — tematy z ECHO decyzji, które nigdy nie
+dostały faktycznego dispatchu subagenta (STATUS mówił "dispatch", ale nikt nie został wysłany):
+
+1. `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2` (ECHO A, „1a") — dispatch teraz (`abbc75c9dba3fd7bf`).
+2. `P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA` (ECHO A) — dispatch teraz (`a69e9765466b7bb81`).
+
+Przyczyna: oba ECHO zostały zapisane w tej samej turze co kolejne, pilniejsze zgłoszenie Macieja
+(audyt punktu 6, potem korekta o Glinie, potem raport), które przejęło uwagę zanim dispatch zdążył
+nastąpić — dokładnie wzorzec C-030 ("stosowane punktowo, nie jako przegląd całej listy").
+**Pozostałe pozycje z `STATUS: dispatch` sprawdzone i potwierdzone jako faktycznie
+dispatchowane** (`R-CS-HARD-PASYWNE` bezpieczna większość `a9339ac9036d7d03b`, decideAIDiplomacy
+świadomie odłożone jako runda 2 — nie luka, tylko kolejność; runda 3 komunikatu eliminacji +
+Evaluator `ac2921b16d2be46dd`).
