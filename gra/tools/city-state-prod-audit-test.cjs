@@ -136,14 +136,18 @@ console.log('-- C. Po Garncarstwo: spichlerz dostępny (brak DEPOSIT gate przy b
   assert(!gate('mp1', 'garncarnia'), 'C2: garncarnia still blocked without Glina deposit/stock');
 }
 
-console.log('-- D. Cap wojska Hard=3 bez garnizonu → Wojownik (0 < cap 3, C-025/C-026 fix) --');
+console.log('-- D. Cap wojska Hard=4 bez garnizonu → Wojownik (0 < cap 4, runda 3 fix) --');
 {
   // R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B (2026-08-10): pole opts przepięte
   // z opts.menuDifficulty (stara oś gry) na opts.cityStateDifficultyVsPlayer (nowa oś
   // gracz-facing) i cap('hard') podniesiony z 0 na 3 -- inaczej PM na Trudnym nigdy nie
   // mogło zrekrutować NAWET pierwszego garnizonu (patrz cs-military-cap-wiring-test.cjs).
+  // RUNDA 3 (Evaluator FAIL na 7e753db2): 3 wciąż za mało -- bramka wyjścia z domu w ai.ts
+  // blokuje ofensywę dopóki totalMilitary < CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong']
+  // .minGuard = 3 + 1 = 4, więc cap podniesiony do 4 (patrz cs-military-cap-wiring-test.cjs
+  // sekcja 3 -- relacja, nie literał).
   const capHard = cityStateMilitaryProductionCap('hard');
-  eq(capHard, 3, 'D1: hard cap = 3 (= CS_WAVE_ATTACK_MIN_STACK w ai.ts)');
+  eq(capHard, 4, "D1: hard cap = 4 (= CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard w ai.ts)");
   const pick = chooseCityProduction(
     'mp1', [city], [], 7, gameData, mods,
     {
@@ -154,7 +158,7 @@ console.log('-- D. Cap wojska Hard=3 bez garnizonu → Wojownik (0 < cap 3, C-02
     },
     map, diff,
   );
-  eq(pick, 'Wojownik', 'D2: hard bez garnizonu — 0 military < cap 3, pierwszy garnizon przechodzi');
+  eq(pick, 'Wojownik', 'D2: hard bez garnizonu — 0 military < cap 4, pierwszy garnizon przechodzi');
 }
 
 console.log('-- E. Normal cap=1: po garnizonie wojsko wypada, budynek z bramki --');

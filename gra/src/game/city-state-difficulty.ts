@@ -15,18 +15,30 @@ export type DifficultyLevel = 'easy' | 'normal' | 'hard';
  * na commit a6076db7, 2026-08-10): 'hard' było 0 -- PM na Trudnym nigdy nie mogło
  * zrekrutować NAWET pierwszego garnizonu, mimo że ten sam commit włączył
  * cityStateOffensiveSupport=true na Trudnym (PM planuje agresję, buduje Koszary,
- * w których nic nigdy nie rekrutuje). 'hard' = CS_WAVE_ATTACK_MIN_STACK (ai.ts) = 3,
- * NIE losowa liczba: to już istniejące minimum stosu do wave-attack (R-MP-HARD-WAVE
- * Q2) -- cap musi pozwolić PM zgromadzić PRZYNAJMNIEJ tyle jednostek, inaczej ten
- * sam mechanizm ofensywy nigdy nie miałby z czego złożyć fali. Zsynchronizowane
- * bramką cs-military-cap-wiring-test.cjs (assert cap('hard') === CS_WAVE_ATTACK_MIN_STACK).
- * / EN: 'hard' raised from 0 to 3 to match the existing wave-attack min stack size --
- * otherwise the same commit's offensive mechanic could never assemble its own minimum.
+ * w których nic nigdy nie rekrutuje). 'hard' podniesione do 3 (= CS_WAVE_ATTACK_MIN_STACK
+ * w ai.ts), ale Evaluator rundy 2 (commit 7e753db2) wykazał, że to WCIĄŻ za mało:
+ * bramka wyjścia z domu (chooseCityProduction/decideAITurn w ai.ts, ok. linii 2820)
+ * blokuje ofensywę PM dopóki `totalMilitary < minFieldArmyBeforeSend + minGuardToSend`
+ * -- na Trudnym `minFieldArmyBeforeSend = CS_WAVE_ATTACK_MIN_STACK = 3` i
+ * `minGuardToSend = RESUP_TIERS['strong'].minGuard = 1`, więc realny próg wyjścia
+ * z domu to `< 4`, NIE `< 3`. Cap=3 więc nigdy nie osiągał progu -- PM rekrutowało
+ * do 3 i tam utykało, fala ofensywna nie wyruszała ANI RAZU.
+ * 'hard' = CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard (ai.ts) = 3 + 1 = 4,
+ * NIE losowa liczba ani sam CS_WAVE_ATTACK_MIN_STACK: to SUMA dwóch stałych, którymi
+ * bramka wyjścia z domu faktycznie testuje próg -- cap musi pozwolić PM zgromadzić
+ * PRZYNAJMNIEJ tę sumę, inaczej mechanizm ofensywy nigdy nie miałby z czego wyruszyć
+ * (zbierze stos do wave-attacku, ale bramka wyjścia i tak go zatrzyma w mieście).
+ * Zsynchronizowane bramką cs-military-cap-wiring-test.cjs (assert cap('hard') ===
+ * CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard).
+ * / EN: 'hard' raised from 3 to 4 -- the home-exit gate in ai.ts blocks the offensive
+ * whenever totalMilitary < minFieldArmyBeforeSend + minGuardToSend (CS_WAVE_ATTACK_MIN_STACK
+ * + RESUP_TIERS['strong'].minGuard = 3 + 1 = 4 on hard), so a cap of exactly the wave-stack
+ * size (3) could never clear that threshold -- the wave never left home.
  */
 export function cityStateMilitaryProductionCap(csDifficultyVsPlayer: DifficultyLevel): number | null {
   switch (csDifficultyVsPlayer) {
     case 'hard':
-      return 3;
+      return 4;
     case 'normal':
       return 1;
     default:
