@@ -8739,4 +8739,16 @@ log w `WERSJE.md`+`KANAL-PRACA.md`), commit+push gałęzi sesji, **oraz naprawa 
 scalone mimo że reguła `R-MERGE-MAIN-RYTM-Q1` już to nakazywała przy poprzednim deployu.
 FALA 266 (ten deploy) świadomie NIE wchodzi do `main` — zostaje do testów.
 
+**DEPLOY ZAKOŃCZONY, zweryfikowany niezależnie przez orkiestratora (nie tylko na słowo
+agenta):** bundel `gra-robocza/Gra-ROBOCZA.html` md5 `745cb88d96b145fb41a33efad566bbec`
+potwierdzony `md5sum` na żywym drzewie — zgodny z `WERSJE.md` i `KANAL-PRACA.md`. `main`
+(origin) potwierdzony na `afce9001` (FALA 265, po nadgonieniu FALA 264→`d6d2532c`,
+FALA 265→`afce9001`, oba `--no-ff`, bez `--force`). Gałąź sesji ma commit deployu
+`b9b26f74`, zsynchronizowana z `origin` (`git pull --ff-only` = already up to date).
+Agent odkrył i naprawił rozbieżność w moim własnym zleceniu — podałem tylko 4 tematy,
+faktycznie w tej fali było 10 (m.in. brakowało P-ARMIA-ROZPAD etap 1, R-EPOKA-CUD B3,
+tooltip Pracy) — wszystkie 10 poprawnie opisane w `WERSJE.md`.
+
+**STATUS: ZAMKNIĘTE (FALA 266 na ROBOCZA, main nadgoniony do FALA 265).**
+
 ---
