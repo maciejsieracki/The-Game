@@ -9801,6 +9801,11 @@ niedokarmionych" zamiast „2 miasta niedokarmione"), mimo że gotowy 3-formowy 
 już istnieje 60 linii wyżej w tym samym pliku. **Dispatch rundy 2 (`ac9ae703758da723a`)** — tylko ta
 poprawka, ~10 linii.
 
+**Runda 2 dostarczona.** Nowe helpery `miastoNiedokarmioneWordHud`/`miastoNiedokarmioneWord`
+wzorem `slowoTuraHud`/`routeCountWord` już w plikach, +sekcja 5 testu (n=1,2,3,4,5,11,12,14,22 —
+pełne pokrycie form). Bramki: tsc 0, logic-test 213/213, `spichlerz-deficyt-scalenie-test` 41/0
+(było 27), `spichlerz-widocznosc-test` 45/0. **Dispatchowany Evaluator rundy 2 (`a6464d00c21ecdc49`)**.
+
 **Autoryzacja Macieja (2026-08-10):** „Ok, jak zakończysz wszystkie tematy, to zrób deploy do
 roboczej oraz «domknij» porządki." (odczytane jako „domknij porządki" — literówka/autokorekta na
 „domain"; sens: dokończyć bieżące wątki i posprzątać, nie osobna, nierozpoznana instrukcja).
