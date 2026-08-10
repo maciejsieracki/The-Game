@@ -157,6 +157,7 @@ import { UnitRenderer, type UnitRingStance } from './render/units';
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
+import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
 import {
   shouldShowPlayerTriumphCityStateUnification,
   // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu
@@ -4870,70 +4871,28 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
-    /** Jednostka aktywna do cyklu Spacja/HUD — nie uśpiona, nie w garnizonie, nie ufortyfikowana w polu. */
-    function isUnitActiveForCycle(u: RuntimeUnit): boolean {
-      return u.sentry !== true
-        && u.autoExplore !== true
-        && u.inGarnizon !== true
-        && u.ufortyfikowanyWPolu !== true;
-    }
-
-    /**
-     * Wspólna implementacja list cyklowania armii gracza (1 wiodąca/heks; kolejność przestrzenna).
-     * `requireMoves=true` → tylko stosy z dostępnym ruchem w tej turze (Spacja, auto-cykl „bęben”).
-     * `requireMoves=false` → wszystkie aktywne stosy, niezależnie od ruchu (strzałki HUD ◀▶;
-     * decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA, 2026-08-08: strzałka = dowolna
-     * następna jednostka, Spacja = następna AKTYWNA (z ruchem) jednostka).
-     */
-    function cyclablePlayerArmyLeadsBase(requireMoves: boolean): RuntimeUnit[] {
-      const playerUnits = units.filter(
-        u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || stackCanMove(u)),
-      );
-      // BB2 (Evaluator runda 5, B-R5-1): grupowanie MUSI iść po stackRenderKey
-      // (tożsamość STOSU + POZYCJA + garnizon), nie po gołym stackGroupIdOf ani
-      // po gołym heksie — dwie jednostki tej samej, jawnie scalonej grupy mogą
-      // realnie stać na RÓŻNYCH heksach (np. zwiadowca odjeżdżający sam z grupy
-      // przez auto-explore), a gołe stackGroupIdOf zlewałoby je w JEDEN lead
-      // obejmujący dwa heksy naraz — Spacja/strzałki HUD ◀▶ nigdy nie dotarłyby
-      // do drugiego heksu. Ten sam klucz co armyMerge.ts:computeStackDisplay.
-      const stacks = new Map<string, RuntimeUnit[]>();
-      for (const u of playerUnits) {
-        const key = stackRenderKey(u);
-        const arr = stacks.get(key);
-        if (arr) arr.push(u);
-        else stacks.set(key, [u]);
-      }
-      const out: RuntimeUnit[] = [];
-      for (const group of stacks.values()) {
-        out.push(group[0]!);
-      }
-      out.sort((a, b) => {
-        const sa = a.q + a.r;
-        const sb = b.q + b.r;
-        if (sa !== sb) return sa - sb;
-        if (a.q !== b.q) return a.q - b.q;
-        return a.r - b.r;
-      });
-      return out;
-    }
+    // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 (Evaluator N1, 2026-08-10): `isUnitActiveForCycle`,
+    // `cyclablePlayerArmyLeadsBase` i rozwiązywanie następnego id (dawniej ciało
+    // `cycleToAdjacentPlayerUnit`) wyniesione do CZYSTEGO modułu game/army-cycle.ts — main.ts
+    // zostaje cienką warstwą efektów ubocznych (stan gry + selectPlayerUnit/focusCameraOnUnit/
+    // clearPlayerUnitSelection). Patrz komentarz nagłówkowy army-cycle.ts po uzasadnienie i
+    // scout-army-cycle-test.cjs po test behawioralny. / EN: `isUnitActiveForCycle`,
+    // `cyclablePlayerArmyLeadsBase` and next-id resolution (formerly `cycleToAdjacentPlayerUnit`'s
+    // body) moved to the PURE game/army-cycle.ts module — main.ts is now a thin side-effect layer
+    // (game state + selectPlayerUnit/focusCameraOnUnit/clearPlayerUnitSelection). See
+    // army-cycle.ts's header comment for rationale and scout-army-cycle-test.cjs for the
+    // behavioral test.
 
     /** Wszystkie armie gracza (1 wiodąca/heks) z DOSTĘPNYM RUCHEM — kolejność przestrzenna.
      * Używane przez Spację i auto-cykl „bęben” po wyczerpaniu ruchu. */
     function cyclablePlayerArmyLeads(): RuntimeUnit[] {
-      return cyclablePlayerArmyLeadsBase(true);
+      return cyclablePlayerArmyLeadsBase(units, true, stackCanMove);
     }
 
     /** Wszystkie armie gracza (1 wiodąca/heks), NIEZALEŻNIE od dostępnego ruchu — kolejność
      * przestrzenna. Używane przez strzałki HUD ◀▶ (decyzja właściciela 2026-08-08). */
     function cyclablePlayerArmyLeadsAll(): RuntimeUnit[] {
-      return cyclablePlayerArmyLeadsBase(false);
-    }
-
-    /** BB2 (Evaluator runda 5, B-R5-1): klucz dopasowania w cycleToAdjacentPlayerUnit — MUSI być
-     *  spójny z cyclablePlayerArmyLeadsBase (ten sam stackRenderKey), inaczej fallback po
-     *  zniknięciu `afterId` z listy trafiłby na niewłaściwą (np. rezydenta na innym heksie) armię. */
-    function armyLeadHexKey(u: RuntimeUnit): string {
-      return stackRenderKey(u);
+      return cyclablePlayerArmyLeadsBase(units, false, stackCanMove);
     }
 
     /**
@@ -4949,31 +4908,12 @@ async function boot(): Promise<void> {
     ): void {
       if (!isWorldMapUnitMode()) return;
       const list = opts?.all === true ? cyclablePlayerArmyLeadsAll() : cyclablePlayerArmyLeads();
-      if (list.length === 0) {
+      const nextId = resolveAdjacentPlayerUnitCycle(units, list, afterId, delta);
+      if (nextId === null) {
         clearPlayerUnitSelection();
         return;
       }
-      // Domyślnie (brak zaznaczenia LUB zaznaczona jednostka nie występuje już w `list` — np.
-      // bęben po ruchu, kiedy jednostka właśnie wyczerpała ruch i wypadła z listy „z ruchem"):
-      // start tuż PRZED pierwszym/PO ostatnim elemencie, żeby +delta wylądował na list[0]
-      // (w przód) albo list[list.length-1] (wstecz) — bez pomijania najbliższej możliwej
-      // jednostki w kierunku ruchu.
-      let cur = delta > 0 ? -1 : 0;
-      if (afterId !== null) {
-        const idxById = list.findIndex(u => u.id === afterId);
-        if (idxById >= 0) {
-          cur = idxById;
-        } else {
-          const selected = units.find(x => x.id === afterId);
-          if (selected) {
-            const key = armyLeadHexKey(selected);
-            const idxByHex = list.findIndex(u => armyLeadHexKey(u) === key);
-            if (idxByHex >= 0) cur = idxByHex;
-          }
-        }
-      }
-      const idx = (cur + delta + list.length) % list.length;
-      const next = list[idx]!;
+      const next = list.find(u => u.id === nextId)!;
       selectPlayerUnit(next.id);
       focusCameraOnUnit(next);
     }
@@ -16567,13 +16507,32 @@ async function boot(): Promise<void> {
           showHintMessage(u.typeId + ' zwiedza map\u0119 \u2014 ruch na koniec tury', 2800);
           refreshD1bHud();
           // Odznacz i przejdź do kolejnej jednostki gracza z dostępnym ruchem (jak Spacja);
-          // brak takiej → pełne odznaczenie. Jedno wywołanie wystarcza: `u.autoExplore = true`
-          // wyżej wyklucza TĘ jednostkę z cyclablePlayerArmyLeads() (isUnitActiveForCycle
-          // odrzuca autoExplore===true), więc cycleToAdjacentPlayerUnit nigdy nie wybierze jej
-          // z powrotem, a przy pustej liście samo wywołuje clearPlayerUnitSelection() w środku.
-          // / EN: a single call is enough — the flag just set already excludes this unit from
-          // the cycle list.
-          cycleToAdjacentPlayerUnit(u.id, 1);
+          // brak takiej → pełne odznaczenie. `u.autoExplore = true` wyżej wyklucza TĘ jednostkę
+          // z cyclablePlayerArmyLeads() (isUnitActiveForCycle odrzuca autoExplore===true), więc
+          // cycleToAdjacentPlayerUnit nigdy nie wybierze jej z powrotem, a przy pustej liście
+          // samo wywołuje clearPlayerUnitSelection() w środku.
+          // / EN: deselect and cycle to the next player unit with moves left (like Space); none
+          // available → full deselect. `u.autoExplore = true` above already excludes this unit
+          // from cyclablePlayerArmyLeads(), so cycleToAdjacentPlayerUnit never re-selects it, and
+          // it calls clearPlayerUnitSelection() itself when the list is empty.
+          //
+          // N2 (Evaluator, 2026-08-10): bramkuj W MIEJSCU WYWOŁANIA jak pozostałe call site'y
+          // cyklu (Spacja ok. L25690, „bęben” ok. L25932) — cycleToAdjacentPlayerUnit ma tę samą
+          // wczesną bramkę `isWorldMapUnitMode()` wewnątrz, ale gdy panel oblężenia (lub inny
+          // blokujący panel) jest otwarty przy włączaniu Zwiedzaj, ta wewnętrzna bramka robi cykl
+          // no-opem i stara jednostka zostaje zaznaczona Z AKTYWNYM podświetleniem ruchu —
+          // dokładnie zgłoszony bug Macieja. Gasimy zaznaczenie/podświetlenie wprost zamiast na
+          // to polegać. / EN: gate AT THE CALL SITE like the other cycle call sites (Space
+          // ~L25690, "drum" ~L25932) — cycleToAdjacentPlayerUnit has the same early
+          // `isWorldMapUnitMode()` gate inside it, but when the siege panel (or another blocking
+          // panel) is open while enabling Explore, that internal gate makes the cycle a no-op and
+          // the old unit stays selected WITH an active movement highlight — exactly the bug
+          // Maciej reported. Clear the selection/highlight directly instead of relying on that.
+          if (isWorldMapUnitMode()) {
+            cycleToAdjacentPlayerUnit(u.id, 1);
+          } else {
+            clearPlayerUnitSelection();
+          }
         } else {
           u.autoExplore = false;
           showHintMessage('Wy\u0142\u0105czono zwiedzanie', 2000);

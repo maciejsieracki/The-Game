@@ -1,17 +1,64 @@
 # R-SCOUT-ZWIEDZAJ-PODSWIETLENIE — Zwiedzaj bez złotej ramki (vs Uśpienie)
 
-**Status:** ✅ ZDEPLOYOWANE `ee0e7e04` Q1=A · 2026-08-04 — ZDEPLOYOWANE FALA 223 `ee0e7e04`  
+**Status:** ⚠️ Q1=A (2026-08-04) **ZASTĄPIONA** przez **Q2=A (2026-08-10)** — patrz sekcja
+„R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2" niżej. Zapis Q1 poniżej zostaje jako HISTORYCZNY (nie
+usunięty), zgodnie z konwencją tego katalogu — ale **NIE opisuje dzisiejszego zachowania gry**.  
 **Zgłoszenie:** Maciej (powtórne, screenshot) — Uśpienie (księżyc) ma złote podświetlenie WŁ; Zwiedzaj po kliknięciu „nic się nie dzieje”.
 
-**Powiązane:** `R-UNIT-MODE-TOGGLE-UI` · `R-SCOUT-ZWIEDZAJ-HIGHLIGHT` (FALA 221 — select nie kasuje `autoExplore`) · `R-SCOUT-ZWIEDZAJ-UX` (deselect + cykl — **nadpisane** Q1=A dla WŁ)
+**Powiązane:** `R-UNIT-MODE-TOGGLE-UI` · `R-SCOUT-ZWIEDZAJ-HIGHLIGHT` (FALA 221 — select nie kasuje `autoExplore`) · `R-SCOUT-ZWIEDZAJ-UX` (deselect + cykl — nadpisane Q1=A, **przywrócone** Q2=A)
 
-## ECHO
+## ECHO Q1 (HISTORYCZNY — zastąpiony Q2, patrz niżej)
 **R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1 = A** — *„R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1 a”* (2026-08-04).  
 Po WŁ Zwiedzaj: zostań na zwiadowcy + `refreshD1bHud` → złota ramka od razu. Bez odznaczania i bez cyklu.
 
-## Dowód
+## Dowód (Q1, historyczny)
 - `gra/src/main.ts` — handler `scout-explore` (enable): usunięte `clearPlayerUnitSelection` + `cycleToAdjacentPlayerUnit`
 - WYŁ bez zmian (zostaje zaznaczony, złoto gaśnie)
+
+---
+
+## R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 = A (2026-08-10) — COFA Q1
+
+**Status:** ✅ Q2=A, 2026-08-10. **Ta decyzja cofa Q1=A (2026-08-04) wprost** — Maciej podjął Q1,
+a Q2 zmienia dokładnie ten sam obszar (zachowanie zaznaczenia po WŁ Zwiedzaj) w przeciwnym
+kierunku.
+
+**Zgłoszenie:** Maciej — mylące podświetlenie ruchu (`reachable`) zostające na zwiadowcy po
+włączeniu Zwiedzaj prowadziło do przypadkowych kliknięć na mapę, które po cichu kasowały
+auto-eksplorację (odczytywane jako „gra sama wyłącza Zwiedzaj").
+
+**Decyzja:** po WŁ Zwiedzaj jednostka **NIE zostaje zaznaczona** — odznacza się i przechodzi
+(cykl) do kolejnej jednostki gracza z dostępnym ruchem (jak Spacja); brak takiej → pełne
+odznaczenie. To dokładnie odwraca Q1 (które celowo zostawiało zaznaczenie dla złotej ramki).
+
+**Dlaczego bezpiecznie odwrócić Q1 bez powrotu do problemu z Q1:** feedback wizualny, który Q1
+miało zapewnić złotą ramką, dziś daje **toast** (`showHintMessage`, 2800 ms) — w sierpniu (Q1)
+tego toastu jeszcze nie było, stąd Q1 sięgnęło po zaznaczenie jako jedyny dostępny kanał
+feedbacku. Dziś toast pokrywa tę potrzebę bez efektu ubocznego (mylące podświetlenie ruchu).
+
+### Runda Evaluatora (Opus 5, PASS-WITH-NOTES tego samego dnia) — 3 noty naprawione w tej samej fali
+- **N1** — nowy test regex-only był ślepy na mutacje logiki cyklu (np. usunięcie
+  `selectPlayerUnit(next.id)`, albo `if (true) return;` na wejściu funkcji cyklującej — obie
+  mutacje przechodziły 10/10 PASS). Naprawa: rdzeń logiki (`isUnitActiveForCycle`,
+  `cyclablePlayerArmyLeadsBase`, rozwiązywanie następnego id) wyniesiony do czystego modułu
+  `gra/src/game/army-cycle.ts`, testowanego behawioralnie (sztuczne `RuntimeUnit`-y, asercje na
+  wyniku) w `gra/tools/scout-explore-deselect-cycle-test.cjs`.
+- **N2** — edge case: gdy panel oblężenia (lub inny blokujący panel, `!isWorldMapUnitMode()`)
+  jest otwarty w chwili włączania Zwiedzaj, wewnętrzna wczesna bramka `cycleToAdjacentPlayerUnit`
+  robiła cykl no-opem i stara jednostka zostawała zaznaczona z aktywnym podświetleniem ruchu —
+  dokładnie zgłoszony bug, nienaprawiony w tym jednym scenariuszu. Naprawa: bramkowanie **w
+  miejscu wywołania** w handlerze `scout-explore` (symetrycznie do call site'ów Spacji i auto-cyklu
+  „bęben"): `isWorldMapUnitMode()` → cykl, w przeciwnym razie jawne `clearPlayerUnitSelection()`.
+- **N3** — ten plik zaktualizowany (byłeś tu).
+
+## Dowód (Q2)
+- `gra/src/game/army-cycle.ts` — nowy, czysty moduł: `isUnitActiveForCycle`,
+  `cyclablePlayerArmyLeadsBase`, `resolveAdjacentPlayerUnitCycle`.
+- `gra/src/main.ts` — import z `./game/army-cycle`; `cycleToAdjacentPlayerUnit` jest dziś cienką
+  warstwą efektów ubocznych nad `resolveAdjacentPlayerUnitCycle`; handler `scout-explore` (gałąź
+  `enabling`) woła `isWorldMapUnitMode() ? cycleToAdjacentPlayerUnit(u.id, 1) : clearPlayerUnitSelection()`.
+- `gra/tools/scout-explore-deselect-cycle-test.cjs` — przepisany na test behawioralny (Sekcja 1)
+  + wąska bramka strukturalna nad okablowaniem main.ts (Sekcje 2–4).
 
 ---
 
