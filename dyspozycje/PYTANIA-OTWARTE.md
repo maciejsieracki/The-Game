@@ -9938,3 +9938,55 @@ zakończysz wszystkie tematy, zrób deploy do roboczej oraz domknij porządki" �
 Sesja czeka na powrót Macieja do playtestu FALI 268.
 
 ---
+
+## BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU (2026-08-10, zgłoszenie z playtestu FALI 268,
+zrzuty ekranu — panel „Grecy" po kliknięciu chipów Praca/Skarbiec w HUD)
+
+Maciej: „nie widzę żadnego suwaka dla skarbca w ustawieniach globalnych. Tak samo nie widzę w pracy...
+brakuje suwaków dla pracy, brakuje suwaków dla skarbca, czyli ustawień globalnych dla całej
+cywilizacji." Potem wprost: „jeżeli wprowadzałeś gdzieś globalne podejście... jeżeli chodzi o skarbiec
+czy o pracę, to napisz mi gdzie to jest, bo ja tego nie widzę. Chyba, że jest w kodzie, ale nie ma w
+UX." I osobno potwierdzenie: „a najważniejsze, że praca liczy się już prawidłowo" (silnik z FALI 268
+działa poprawnie — to nie jest regres liczby, tylko brak widoczności suwaka).
+
+**ROOT CAUSE ZNALEZIONY BEZPOŚREDNIO (Sonnet 5, orkiestrator, czynność czysto odczytowa — bez
+Evaluatora per CLAUDE.md §0b, tylko fakt kodu):** suwaki ISTNIEJĄ w kodzie i SĄ podłączone —
+`renderDefaultPodzialPracySection()`/`renderDefaultHandelSplitSection()` (Praca/Skarbiec),
+`configureEmpireGlobalDefaults`/`configureEmpireHandelSplit` wpięte w `main.ts:17209-17230`. ALE
+oba wywołania są w `empireDetailPanel.ts:1093-1098` wewnątrz `if (!onlyEconId) { ... }` —
+`onlyEconId` to filtr z reguły C-PANEL=B (Maciej 2026-07-24: „klik konkretnego żetonu dochodu
+pokazuje TYLKO jego wiersz, żeby nie ciągnąć całej ekonomii"). Kliknięcie chipu HUD „Praca" albo
+„Skarbiec" (dokładnie ścieżka nawigacji z obu zrzutów Macieja) ustawia `onlyEconId='praca'`/
+`'skarbiec'`, co WYŁĄCZA renderowanie suwaka. **Wyżywienie działa inaczej i dlatego jest widoczne:**
+`renderDefaultPoziomRacjiSection()` (Wyżywienie) jest wywołane wewnątrz `renderSpichlerzCentralnySection`
+(`:692`), która NIE jest objęta filtrem `onlyEconId` — zawsze się renderuje. To nie jest regres tej
+sesji w silniku (Praca liczy się dobrze, potwierdzone przez Macieja) — to luka UX identyczna z
+zakresem C-040 (SCALONE wymaga potwierdzenia osiągalności w UI): kod istnieje, ale w tym samym
+temacie R-USTAWIENIA-GLOBALNE-LOKALNE, tylko dla dwóch z trzech grup (Praca, Skarbiec) nie
+przeniesiono go poza filtr, jak zrobiono to dla Żywności.
+
+**Dispatch naprawy** — przenieść oba wywołania (`renderDefaultHandelSplitSection`,
+`renderDefaultPodzialPracySection`) poza filtr `onlyEconId`, analogicznie do wzorca już zastosowanego
+dla Wyżywienia, tak żeby były widoczne niezależnie od tego, który chip HUD został kliknięty. Zakres
+prosty, znany root cause — bez ABC (bug naprawczy, nie decyzja projektowa).
+
+---
+
+## P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (2026-08-10, zgłoszenie z playtestu FALI 268, zrzuty
+ekranu — HUD chip Spichlerz „0", panel miasta „Bilans −1/t", „Głód: brak dopłaty")
+
+Maciej: „spichlerz dalej pokazuje zero, pomimo tego, że w mieście jest minus jeden." Zrzuty: HUD
+top-bar chip Spichlerz pokazuje „0"; panel miasta (Ludność 1, wygląda na wczesną turę) pokazuje
+Produkcja +11, Racje −12, Bilans −1/t, „Głód: brak dopłaty", Auto Wyżywienie WŁ, poziom Wyżywienia 6.
+To zgłoszenie przychodzi bezpośrednio po scaleniu P-SPICHLERZ-ZERO-MYLACE (FALA 268) — możliwa DRUGA
+przyczyna nienaprawiona pierwszą rundą (C-041: sygnał drugiego zgłoszenia podobnego objawu, szukać
+dalej, nie zamykać jedną pasującą przyczyną). **STATUS: nierozpoznane, dispatch rozpoznania
+NASTĘPUJE teraz** — hipoteza robocza (NIEPOTWIERDZONA): to wygląda na wczesną turę bez jeszcze
+wykonanego ticku końca tury — `unfedRows`/scalony komunikat w `renderSpichlerzCentralnySection` czyta
+`_lastTicks` (populowane WYŁĄCZNIE przez `advanceEmpireFood`, czyli po końcu tury), więc PRZED
+pierwszym końcem tury panel imperium poprawnie pokazuje „0" (stan realny, nic się jeszcze nie stało),
+a Bilans −1/t w panelu miasta to PROJEKCJA na nadchodzącą turę, nie już zaszły fakt — potencjalnie
+NIE bug tylko mylące zestawienie stanu-teraz vs projekcji, ale wymaga potwierdzenia liczbą tury i
+przejrzenia kodu, nie zgadywania.
+
+---
