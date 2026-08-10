@@ -8330,3 +8330,22 @@ Bramki na żywym drzewie po scaleniu: `tsc --noEmit` 0 błędów, `logic-test.cj
 **STATUS: ZAMKNIĘTE.**
 
 ---
+
+## P-ARMIA-ROZPAD stackGroupId (BB2) — runda 5 Evaluator przerwana, redispatch
+
+Poprzedni Evaluator rundy 5 (`a2ce8aea4b1ba62c2`) został **PRZERWANY** w trakcie pracy
+(`[Request interrupted by user]`, log `agent-a2ce8aea4b1ba62c2.jsonl`, ostatni zapis
+2026-08-10 08:37:42 UTC) i NIGDY nie dostarczył werdyktu — `ListAgents` potwierdza brak
+zasięgu. Zgodnie z C-038 (werdykt musi zostać faktycznie odebrany zanim zostanie
+zacytowany) — runda 5 traktowana jako NIEODBYTA, nie jako PASS domyślny.
+
+Przed redispatchem: naprawiłem zerwany symlink `node_modules` w worktree rundy 4
+(`agent-a3f6bd057db40cbd4/gra`) i potwierdziłem, że testy w ogóle się uruchamiają:
+`army-merge-stackgroupid-test.cjs` 11045/11045, `army-merge-separate-return-mainguard-
+test.cjs` 55/55. To NIE jest werdykt jakościowy — tylko potwierdzenie wykonywalności.
+
+Dispatch nowego, niezależnego Evaluatora rundy 5 (`a0bffa81f91d508f8`, Opus 5) NASTĘPUJE
+teraz — pełna niezależna weryfikacja B1–B4, bez zaufania do artefaktów po przerwanym
+poprzedniku.
+
+---
