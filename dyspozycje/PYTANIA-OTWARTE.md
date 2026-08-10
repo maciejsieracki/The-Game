@@ -8965,3 +8965,33 @@ UI (nie cache'owany/przestarzały). Nie zamykam ponownie na pierwszej pasującej
 (C-041) — jeśli znajdzie się jedna wada, szukać też drugiej niezależnej.
 
 ---
+
+## KOREKTA — znalezisko A (balans ×2) NIE dotyczy zgłoszenia Macieja, sprostowanie (2026-08-10)
+
+**Maciej sprostował własne zgłoszenie, bezpośrednio:** „jeżeli chodzi o pracę to nieporozumienie.
+Ja w ogóle nie zgłaszałem w ogóle problemu, że nie mogę nic budować, jeżeli chodzi o ulepszenie.
+Tylko mówiłem, że po prostu przyrosty są nieprawidłowo liczone. Powinno być plus sześć, a było
+plus dwa." — orkiestrator błędnie zinterpretował eskalację („nie da się rozwijać cywilizacji")
+jako dosłowną blokadę budowy. **Znalezisko A (koszt ulepszeń ×2, świadoma decyzja balansowa
+Macieja z 3-4 sierpnia) NIE jest tym, co zostało zgłoszone** — to osobna, niezwiązana sprawa,
+prawdziwa ale nietrafiona w kontekst tego zgłoszenia. Realne zgłoszenie to WYŁĄCZNIE znalezisko
+B (rozjazd przyrostu +2 pokazanego vs +6 oczekiwanego — dokładnie ten sam mechanizm co rozjazd
+panelu miasta/cywilizacji, cache `_lastPlayerCityEcon`/`empireEconDirty`).
+
+**Dodatkowa, cenna podpowiedź Macieja co do PRZYCZYNY:** „ten problem z pracą prawdopodobnie
+wyniknął w momencie gdy prosiłem Cię o zrobienie globalnych ustawień dla żywności pracy i
+pieniędzy i to zostało gdzieś popsute." — to WIĄŻE znalezisko B (cache) ze znaleziskiem C
+(brak UI globalnych ustawień, `8692b61b`) przez WSPÓLNY kod: `onPodzialPracyChange`
+(main.ts:17077-17106) i `markCityStateDirty()`/`empireEconDirty` to DOKŁADNIE ta ścieżka,
+którą dotknął temat globalnych ustawień. Prawdopodobne (do potwierdzenia, nie zgadywania):
+praca nad `8692b61b` (albo commit bezpośrednio poprzedzający/następujący) wprowadziła regresję
+w inwalidacji cache `_lastPlayerCityEcon`, nie tylko zapomniała o UI. Do uwzględnienia w
+zakresie naprawy znaleziska B — sprawdzić `git log -p` dla `onPodzialPracyChange`/
+`empireEconDirty`/`refreshLiveEmpireRates` w okolicy czasowej `8692b61b`.
+
+**Skorygowany zakres realnych bugów do naprawy (bez A, które jest osobną sprawą balansu):**
+- **B** — rozjazd cache/live (Praca, prawdopodobnie też Skarbiec/Nauka) — PRIORYTET, możliwy
+  wspólny root cause z C.
+- **C** — brak UI dla gotowego backendu globalnych ustawień — PRIORYTET, ten sam commit.
+
+---
