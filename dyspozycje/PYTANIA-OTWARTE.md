@@ -8662,4 +8662,7 @@ kopiowane osobno) zanotowana przez Evaluatora, do użycia po PASS rundy 2.
 **Deploy do ROBOCZA WSTRZYMANY** — autoryzacja Macieja („po 2 i 3") wymaga domknięcia
 tematu 2 (ten), które jeszcze nie nastąpiło.
 
+Operator rundy 2 (`a4ac79d3d82eb4fb5`, kontynuacja worktree `agent-a2d5e03691a4e7cbb`)
+dispatchowany z pełną, dosłowną listą B1+B2+N1-N8 z werdyktu Evaluatora.
+
 ---
