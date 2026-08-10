@@ -7389,3 +7389,25 @@ regresji. Temat w pełni zamknięty.
    awans 1→2 dotyczy tylko Egiptu, awans 2→3 pozostałych 8.
 
 ---
+
+## Trzy decyzje ABC — ECHO Macieja (2026-08-10)
+
+**P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2) — ECHO B** (wbrew rekomendacji A): pełny refaktor —
+tożsamość stosu niezależna od heksu (`stackGroupId`). Wymaga: enumeracji WSZYSTKICH miejsc
+poolingu ruchu per-heks (C-026, ~10 funkcji w main.ts wg wcześniejszego rozpoznania: HUD, cykl
+armii, split, oblężenie, garnizon), przepięcia ich na tożsamość stosu, pełnej regresji na
+wszystkich tych systemach. Duży zakres — dispatch osobnym, starannie zaplanowanym Operatorem.
+
+**R-EPOKA-CUD-WARUNEK-AWANSU (B2-zapisy) — ECHO A**: świadomie akceptujemy degradację epoki przy
+wczytaniu starych zapisów, bez migracji. Zgodne z JUŻ scalonym zachowaniem (`player.era = next`,
+nie `Math.max`) — **brak zmian w kodzie**, temat formalnie zamknięty tą decyzją.
+
+**R-EPOKA-CUD-WARUNEK-AWANSU (B3) — ECHO A + doprecyzowanie**: rozluźnianie progu opłacalności
+cudu z czasem DLA AI, plus wyraźny wymuszacz — gdy AI ma wszystkie technologie danej epoki
+zbadane (komplet spełniony, brakuje tylko cudu), budowa WSZYSTKICH cudów tej cywilizacji staje
+się PRIORYTETEM w kolejce produkcji (nie tylko łagodniejszy próg opłacalności — twarde
+pierwszeństwo). Dispatch osobnym Operatorem (`gra/src/game/ai.ts`).
+
+Dispatch obu Operatorów (BB2-stackGroupId, B3-priorytet cudu) NASTĘPUJE teraz.
+
+---
