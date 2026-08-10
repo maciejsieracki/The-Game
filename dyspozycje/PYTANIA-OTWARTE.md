@@ -11576,3 +11576,16 @@ wersji) — przechodzą wakuowo, nie są dowodem; (2) zamknąć lukę M7 — ase
 asercję `'a' || 'c'` w linii ok. 196; (3) drobiazg: komentarz w main.ts:4879 odsyła do
 nieistniejącego `scout-army-cycle-test.cjs`, poprawić na `scout-explore-deselect-cycle-test.cjs`.
 Po dostarczeniu: NIEZALEŻNY Evaluator, runda 3.**
+
+## R-CS-HARD-PASYWNE — runda 3 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `28c96bd8` (2026-08-10).** `cityStateMilitaryProductionCap('hard')` 3→4 (=
+`CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard`, komentarz zaktualizowany żeby
+odzwierciedlał tę relację). `cs-military-cap-wiring-test.cjs` wzmocniony: `stripLineComments`
+przed regexem (łapie zakomentowaną linię wiringu), nowa sekcja 4 wykonująca realnie
+`chooseCityProduction` z `undefined` zamiast `cityStateDifficultyVsPlayer` (dowód runtime-skutku,
+nie tylko brak stringa w źródle), sekcja 3 zamieniona z dwóch testów-na-literał na faktyczną
+relację obu stałych odczytanych z `ai.ts`. Testowanie mutacyjne potwierdzone: stara bramka NIE
+łapała mutanta „zakomentuj linię wiringu", nowa łapie. Bramki: tsc 0, logic-test 213/213,
+`ai-mp-military-cap-test` 18/18, `cs-military-cap-wiring-test` 13/13, `city-state-prod-audit-test`
+17/17. Czeka na NIEZALEŻNEGO Evaluatora, runda 3 (dispatch w toku).**
