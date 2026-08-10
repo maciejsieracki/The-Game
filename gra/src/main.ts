@@ -1070,7 +1070,7 @@ import {
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
   type ProposalEvalContext, type ProposalPayload,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
-  type PendingNegotiation, createNegotiation, applyCounterOffer, canCounterNegotiation, canPlayerCounterNegotiation,
+  type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
@@ -13055,6 +13055,45 @@ async function boot(): Promise<void> {
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
+    /**
+     * R-PROPOZYCJA-BRAK-EDYCJI (Maciej, wariant A, 2026-08-10): edycja WŁASNEJ, jeszcze
+     * nierozstrzygniętej propozycji W MIEJSCU — SILNIK: applyOwnProposalEdit
+     * (diplomacy-proposals.ts) podmienia TYLKO payload, round/awaitingOwnerId zostają BEZ
+     * ZMIAN (brak resetu kontekstu negocjacji), w odróżnieniu od handleNegotiationCounter
+     * (kontroferta AI), które zawsze +1 rundę i przełącza stronę odpowiadającą. Prefill
+     * formularza (counterInitial, buildPendingNegotiationRows, gałąź direction==='own')
+     * jest BEZ zamiany give/receive — payload własnej propozycji już jest „co MY dajemy/
+     * dostajemy", więc zapis też jest bezpośredni, bez zamiany z powrotem.
+     * / EN: in-place edit of the player's OWN, still-pending proposal — ENGINE:
+     * applyOwnProposalEdit swaps ONLY the payload, round/awaitingOwnerId stay untouched (no
+     * negotiation-context reset), unlike handleNegotiationCounter (AI counter-offer), which
+     * always bumps the round and flips the responding side. The own-proposal prefill has no
+     * give/receive swap, so saving is direct too.
+     */
+    function handleNegotiationEditOwn(negotiationId: string, payload: NegotiationPayload): void {
+      const idx = negotiationTable.findIndex(n => n.id === negotiationId);
+      if (idx < 0) return;
+      const entry = negotiationTable[idx]!;
+      // awaitingOwnerId===0 = to NIE nasza wychodząca propozycja (czekamy MY na
+      // odpowiedź) — nic do edycji tą ścieżką (kontrofertę patrz handleNegotiationCounter).
+      if (entry.awaitingOwnerId === 0 || !canPlayerCounterNegotiation(entry)) return;
+      const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      const { uiPayload } = buildProposalFromPayload(aiOwnerId, payload);
+      // Ta sama bramka realnych zasobów co przy tworzeniu/kontrowaniu propozycji
+      // (clampNegotiationPayloadToRealResources, resolveNegotiationEntryAt) — nie pozwól
+      // wyedytować oferty na wartości przekraczające realne zasoby gracza (proposerOwnerId
+      // tu zawsze 0=gracz, bo payload own jest już „co MY dajemy/dostajemy" bezpośrednio).
+      const clamped = clampNegotiationPayloadToRealResources(0, aiOwnerId, uiPayload);
+      if (!clamped) {
+        showHintMessage('Brak wystarczających zasobów na tę ofertę', 3500);
+        return;
+      }
+      negotiationTable[idx] = applyOwnProposalEdit(entry, clamped);
+      refreshD1bHud();
+      updateDiplomacyAudience();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
     /** Gracz prosi AI o odpowiedź na własną propozycję (bez auto-resolve przy wysłaniu). */
     function handleRequestAiNegotiationResponse(
       negotiationId: string,
@@ -13197,7 +13236,16 @@ async function boot(): Promise<void> {
           && (incomingNetPw == null || incomingNetPw.netPw >= 0);
         const awaitingAiResponse = direction === 'own' && entry.awaitingOwnerId !== 0;
         const dealDetails = negotiationSummary(entry);
-        const canCounter = direction === 'incoming' && canPlayerCounterNegotiation(entry);
+        // R-PROPOZYCJA-BRAK-EDYCJI (Maciej, wariant A): własna, jeszcze nierozstrzygnięta
+        // propozycja (direction='own') też kwalifikuje się do edycji — ale TYLKO gdy ma
+        // koszyk (actionUsesTradeBasket); umowa_szlakow/umowa_handlowa (uiActionId '5')
+        // CELOWO nie ma koszyka do edycji, więc ta gałąź musi zostać false dla nich
+        // (bez tego dodatkowego warunku canCounter=true otwierałby dla 'own' też
+        // showNegotiationModal w openCounterNegotiationModal, dla którego nie ma ścieżki
+        // edycji w miejscu — tylko kontroferta).
+        const canCounter = direction === 'incoming'
+          ? canPlayerCounterNegotiation(entry)
+          : canPlayerCounterNegotiation(entry) && actionUsesTradeBasket(uiActionId);
         const acceptance = computePlayerAcceptanceSides(entry.actionId, p, relTotal, incoming, {
           difficulty: _menuDifficulty,
           proposerOwnerId: entry.proposerOwnerId,
@@ -13205,7 +13253,29 @@ async function boot(): Promise<void> {
         });
         let counterInitial: import('./ui/diplomacyTradeBasket').TradeBasketInitial | undefined;
         if (canCounter && actionUsesTradeBasket(uiActionId)) {
-          if (uiActionId === '14') {
+          if (direction === 'own') {
+            // Własna propozycja: payload JUŻ jest „co MY dajemy/dostajemy" (tak samo jak
+            // renderuje karta na stole — patrz splitNegotiationDealPlayerSides z
+            // incoming=false) — BEZ zamiany stron, w odróżnieniu od kontroferty niżej.
+            counterInitial = uiActionId === '13'
+              ? { giveItems: p.giveItems?.length ? [...p.giveItems] : undefined }
+              : {
+                giveItems: p.giveItems?.length
+                  ? [...p.giveItems]
+                  : (p.goldOnce ?? 0) > 0
+                    ? [{ typ: 'zloto', id: 'zloto', ilosc: p.goldOnce! }]
+                    : undefined,
+                receiveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
+                resourceTradeMode: p.resourceTradeMode,
+                turns: p.turns,
+                allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
+                borderMilitary: p.borderMilitary,
+                goldPerTurn: p.goldPerTurn,
+                goldOnce: p.goldOnce,
+                tributeMode: entry.actionId === 'trybut_oferta' ? 'offer' : 'demand',
+                tributeTurns: uiActionId === '8' ? (p.turns ?? 0) : undefined,
+              };
+          } else if (uiActionId === '14') {
             counterInitial = {
               giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
               receiveItems: p.giveItems?.length
@@ -16217,6 +16287,8 @@ async function boot(): Promise<void> {
         onRemoveNegotiation: (negotiationId: string) => handleNegotiationRemove(negotiationId),
         onCounterNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
           handleNegotiationCounter(negotiationId, payload),
+        onEditOwnNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
+          handleNegotiationEditOwn(negotiationId, payload),
         onRequestAiNegotiationResponse: (negotiationId: string) =>
           handleRequestAiNegotiationResponse(negotiationId),
       });

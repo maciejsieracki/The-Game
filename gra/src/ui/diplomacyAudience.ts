@@ -298,6 +298,14 @@ export interface DiplomacyAudienceConfig {
   /** C-DYP-Q1=A: gracz wysyła kontrofertę (nowy formularz negocjacji) do wpisu stołu. */
   onCounterNegotiation?: (negotiationId: string, payload: NegotiationPayload) => void;
   /**
+   * R-PROPOZYCJA-BRAK-EDYCJI (wariant A): gracz edytuje WŁASNĄ, jeszcze nierozstrzygniętą
+   * propozycję (direction='own') W MIEJSCU — SILNIK podmienia payload BEZ zmiany
+   * rundy/awaitingOwnerId (w odróżnieniu od onCounterNegotiation, które zawsze liczy jako
+   * nowa runda i przełącza stronę odpowiadającą). Wołane z tego samego przycisku „Edytuj"
+   * co kontroferta, ale tylko dla wierszy direction==='own'.
+   */
+  onEditOwnNegotiation?: (negotiationId: string, payload: NegotiationPayload) => void;
+  /**
    * Gracz prosi AI o odpowiedź na własną propozycję leżącą na stole (bez natychmiastowego
    * resolve przy wysłaniu — Maciej 2026-07-29).
    */
@@ -368,16 +376,22 @@ function openCounterNegotiationModal(
     enabled: true,
   };
   if (actionUsesTradeBasket(row.uiActionId)) {
+    // R-PROPOZYCJA-BRAK-EDYCJI (wariant A): 'own' — nasza jeszcze nierozstrzygnięta
+    // propozycja — idzie do onEditOwnNegotiation (edycja W MIEJSCU, bez zmiany rundy);
+    // 'incoming' — kontroferta AI — dalej onCounterNegotiation (jak dotychczas).
+    const isOwnEdit = row.direction === 'own';
     showTradeBasketModal(
       getTradeBasketMode(row.uiActionId),
       syntheticAction,
       mergeBasketCtx(negCtx),
-      (payload) => cfg!.onCounterNegotiation?.(row.id, payload),
+      (payload) => isOwnEdit
+        ? cfg!.onEditOwnNegotiation?.(row.id, payload)
+        : cfg!.onCounterNegotiation?.(row.id, payload),
       () => { /* anulowano */ },
       row.counterInitial,
       {
-        dialogTitle: 'Edytuj propozycję na stole',
-        submitLabel: 'Wyślij kontrofertę',
+        dialogTitle: isOwnEdit ? 'Edytuj swoją propozycję' : 'Edytuj propozycję na stole',
+        submitLabel: isOwnEdit ? 'Zapisz zmiany' : 'Wyślij kontrofertę',
       },
     );
     return;
