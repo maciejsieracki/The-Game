@@ -11666,3 +11666,28 @@ którego AI nie potrafi zbudować). To znacząco większy zakres niż korekta li
 planowania ruchu AI i mechanizmu łączenia jednostek w stos, dziś istniejącego tylko dla gracza) —
 dispatch ROZPOZNANIA (nie od razu kodowania) Sonnet 5 przed dalszymi decyzjami. Drobiazgi (komentarz
 `ai.ts:1447`, `T8` luka 3/4) do domknięcia przy okazji tej samej rundy, niska pilność.**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator runda 5: PASS, TEMAT ZAMKNIĘTY (2026-08-10)
+
+**Werdykt (Opus 5) dla `37b6cb9c`: PASS.** Wszystkie punkty zweryfikowane niezależnie: jedno
+źródło emisji (grep potwierdza `recordCivElimEvent(` dokładnie 2× w całym pliku — deklaracja +
+1 wywołanie), pozostali wywołujący `annexCityStateToOwner` (pętla tury AI) poprawnie odcięci
+guardem `annexerId===0`; przeżycie `endTurnInProgress` potwierdzone (funkcja nie woła
+`showHintMessage` w ogóle, `deferredEotHints` zasilana wyłącznie przez `showHintMessage` — zero
+powiązania); widoczność niezależna od z-index (karta side-panelu persystentna, czeka aż gracz
+zamknie audiencję — inaczej niż ginący po 6s toast); dismiss trwały, zweryfikowany że
+`warEventLog.length=0` występuje tylko przy Nowej Grze, NIGDZIE w sekwencji końca tury; modal
+czysty (escapowanie obu pól, brak wycieków nasłuchiwaczy). 20 nowych asercji potwierdzone jako
+realnie sprawdzające polaryzację, nie tylko obecność stringów. Bramki: tsc 0, logic-test 213/213,
+`elimination-toast-merge-test` 54/54, `eot-event-defer-test` 5/5, `sidepanel-events-toolbar-test`
+19/19.
+
+**Uwagi nieblokujące do ewentualnego zarejestrowania osobno (nie temat, do backlogu):** okno
+asercji „onEventClick" w teście jest szersze niż trzeba (grepuje cały plik, nie ciało funkcji);
+`negative:true` daje kartę czerwoną mimo że wchłonięcie jest wydarzeniem pozytywnym dla gracza
+(kosmetyka, decyzja właściciela); karta nie przeżywa save/load (spójne z resztą dziennika).
+
+**TEMAT ZAMKNIĘTY po 5 rundach.** Historia: R1 kolizja w `annexCityStateToOwner` vs caller → R2
+ta sama kolizja przesunięta o warstwę → R3 Defekt B/C naprawione, A przesunięty dalej → R4 z-index
+pod audiencją + duplikat w fazie AI → R5 (ECHO B+C Macieja) zmiana kanału na kartę Wydarzeń +
+modal, PASS.
