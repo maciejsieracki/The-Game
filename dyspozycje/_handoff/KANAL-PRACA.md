@@ -6528,3 +6528,13 @@ Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`7e8fdfdb8c6390ecf43c570eb966b9e3`**
 Czerwone tylko 6 znanych pre-istniejących (v85 2 · growthmult 7 · spichlerz-wzrost 7 · trade-routes-income 1×H2 · surow-civ-storage 14 · grupa-b-lane 4) — liczby zmierzone dziś, zgodne. `gra/data/` niezmienione (hash przed=po).
 **Merge do `main`:** ta fala NIE — kwalifikuje się teraz **FALA 264** (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
 CZEKAM-NA: sesja lokalna — sync `7e8fdfdb` na dysk właściciela + potwierdzenie w kanale.
+
+## [13:56 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 266, md5 `745cb88d`
+
+Build z HEAD `789d52b6` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (55 commitów od FALA 265 / `43b75861`, z czego 11 rusza `gra/src`/`gra/data`).
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`745cb88d96b145fb41a33efad566bbec`**, stempel `ROBOCZA · 093e3b8c · 2026-08-10 11:56` (UTC). 6 bundli playtestowych + `START.html`/manifest (10) przegenerowane.
+**10 tematów:** autozapis **na dysk** (File System Access, koniec `QuotaExceededError`) · armia „Zostaw osobno" wraca cała + **stackGroupId** (tokeny nie znikają/nie zlewają się) · chip Kultury w HUD bez wymuszonego `+` · priorytet budowy cudu epoki dla AI (+ `ai-params.json`) · tooltip Pracy brutto−utrzymanie=netto · 3 checkboxy Auto Ulepszenia → przyciski · audyt C-030 (`okolica.ts`/`cityPanel.ts`) · 3 korekty komunikatów/komentarzy.
+**Bramki na HEAD `789d52b6`:** tsc 0 · logic **213/213** · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · ai-founding-territory 28/28 · 13 bramek tematów tej fali **wszystkie exit 0** (m.in. `fsa-autosave` 55/55, `army-merge-stackgroupid` **11045/11045**, `hud-moc-warstwa` 28/28) · vite **805 modułów** · **VERIFY OK** (`manifest match: OK`).
+⚠️ Znanych czerwonych pre-istniejących bramek **NIE mierzono w tej fali** — status dziedziczony, nie zweryfikowany dziś. `gra/data/` niezmienione przez build (hash przed=po `21f7f416…`).
+**Merge do `main`:** nadrobiona zaległość dwóch fal — `main` szedł z FALA 263 (`b0e4a5c9`) → **FALA 264** (`31a2caef`) merge `d6d2532c` → **FALA 265** (`43b75861`) merge `afce9001`, wypchnięte na `origin/main`. FALA 266 zostaje na gałęzi do testów (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
+CZEKAM-NA: sesja lokalna — pull `745cb88d` na dysk właściciela + potwierdzenie w kanale.
