@@ -8377,4 +8377,25 @@ zamiast gołego `stackGroupIdOf(u)`, korekta mylącego komentarza, rozszerzenie 
 testu o pinowanie kształtu klucza w tych 3 oknach + scenariusz regresyjny odtwarzający
 dowód Evaluatora (scout auto-explore rozdziela grupę na 2 heksy → musi dać 2 wpisy).
 
+**Operator rundy 5 dostarczył — WAŻNE ODKRYCIE dodatkowe.** Cała runda 3/4 BB2 (`stackGroupId`
+w ogóle) NIGDY nie została faktycznie scalona do gałęzi sesji — istniała WYŁĄCZNIE jako
+nieskomitowana praca w worktree `agent-a3f6bd057db40cbd4`. Na gałęzi sesji nie ma ŻADNEGO
+commitu „Scalenie" dla stackGroupId, tylko wpisy „Rejestr" (dokumentacja). To wyjaśnia base-
+drift, który łapali kolejni Evaluatorzy. Operator odtworzył całość (`stackGroupIdOf`,
+`sameStackGroup`, `freshStackGroupId`, `assignSharedStackGroupId`, `stackRenderKey` nowe)
+we własnym worktree `agent-ae476910a62d7b168` — to jest teraz KOMPLETNY pakiet runda 4 + runda
+5 (fix B-R5-1), gotowy do jednego scalenia całości (dotąd NIC z BB2 nie trafiło na żywe drzewo).
+
+Własny dowód Operatora: cofnięcie `stackRenderKey`→`stackGroupIdOf` w `cyclablePlayerArmyLeadsBase`
+→ natychmiastowy FAIL nowej sekcji 10a, przywrócenie → zielono. Bramki: tsc 0, logic-test
+213/213, army-merge-stackgroupid 11045/11045, army-merge-separate-return-mainguard **72/72**
+(+17 nowych asercji sekcje 10-11), separate-return 16/16, bounce/dismiss-bounce/colocated
+4/4·16/16·4/4, army-stack-ruch 5/5, combat-test 6/6, tech-tree 19/19, research 33/33,
+unit-replace 13/13.
+
+Ponieważ to jest PIERWSZE realne scalenie całego BB2 do żywego drzewa (nie tylko fix
+B-R5-1), a poprzedni Evaluator oceniał tylko cząstkową bazę — dispatch NIEZALEŻNEGO
+Evaluatora rundy 6 (całość BB2 + fix B-R5-1 razem) NASTĘPUJE teraz, zanim jakiekolwiek
+scalenie do żywego drzewa.
+
 ---
