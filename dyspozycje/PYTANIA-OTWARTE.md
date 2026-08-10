@@ -8618,4 +8618,48 @@ sygnał do podjęcia.
 
 ---
 
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 (FSA) — Evaluator RUNDA 1: FAIL, 2 blokery save-load, runda 2 w toku (2026-08-10)
+
+Niezależnie zweryfikowane (Opus 5). Drift bazy sprawdzony — **brak kolizji** (BB2 `014b80fb`
+już w bazie worktree, Kultura HUD `ac07e79e` dotyka `hud.ts`, Operator dotykał wyłącznie
+`main.ts`/`package.json`/nowych plików — zero nachodzenia). Bramki wszystkie zielone
+(tsc 0, logic-test 213/213, fsa-autosave-test 40/40, autosave-quota-fail-test 20/20).
+C-025 czysto (4 precyzyjne hunki w `main.ts`).
+
+**BLOKER B1 — autozapis staje się WRITE-ONLY.** W grze nie istnieje ŻADNA ścieżka odczytu
+zapisu z pliku (`deserializeGame()` ma jedno wywołanie, wyłącznie z `localStorage`; brak
+`showOpenFilePicker`/`FileReader` w całym `src/`). Skutek: na Chrome/Edge z przyznanym
+katalogiem `doRotatingAutosave()` `return`uje przed `saveToLocal()` — sloty localStorage
+przestają się aktualizować, pliki na dysku są dla gry niewidoczne, gracz traci możliwość
+odzyskania gry mimo komunikatu sukcesu w konsoli. **Ścisła regresja, nie tylko brak zysku.**
+
+**BLOKER B2 — `setLastPlayedSlotId()` kłamie w gałęzi FSA** (`main.ts:21321`) — zapisuje
+klucz localStorage, którego ta gałąź nigdy nie wypełniła. „Kontynuuj" wczyta stary/cudzy
+stan gry (cicha utrata postępu) albo spadnie na `mostRecentSaveSlotId()`.
+
+**N4 (istotne, nieblokujące samo w sobie):** Faza 1 feasibility była prawdziwa ale
+niepełna — tylko opcja „Zezwól przy każdej wizycie" (Chrome 122+ persistent permissions)
+daje trwały dostęp; domyślne „Zezwól tym razem" jest one-time i **automatycznie odbierane
+gdy karta pobędzie dłużej w tle** (gracz 4X alt-tabujący trafia dokładnie w ten przypadek).
+Dziś cicha degradacja do `QuotaExceededError`, zero komunikatu dla gracza, brak furtki
+wznowienia bez restartu sesji.
+
+**N1-N8 (nieblokujące, do rundy 2):** `buildSaveGameSnapshot()` wyjęty przed `try` →
+unhandled rejection w `async`; brak `.catch()` na jedynym call site; wyścig przy zapisie
+trwającym dłużej niż tura (brak strażnika `inFlight`); `catch` pickera maskuje realne
+błędy jako `'picker-cancelled'`; `await idbGetHandle()` przed pickerem przerywa łańcuch
+transient activation; `livePermissionGranted` nigdy nie zerowane po niepowodzeniu;
+`_resetFsaStateForTests()` eksportowany z modułu produkcyjnego.
+
+Bezpieczeństwo nazwy pliku (path traversal) — **OK**, zweryfikowane wyczerpująco.
+`ensureFsaAutosaveReady()` faktycznie NIE wołane z tury/timera — **potwierdzone**,
+fundament Fazy 1 stoi.
+
+Dispatch rundy 2 (naprawa B1+B2+N1-N8 wg precyzyjnej listy Evaluatora) NASTĘPUJE teraz.
+Instrukcja scalania na później (drift bez kolizji, prosty `git apply -3` + 2 nowe pliki
+kopiowane osobno) zanotowana przez Evaluatora, do użycia po PASS rundy 2.
+
+**Deploy do ROBOCZA WSTRZYMANY** — autoryzacja Macieja („po 2 i 3") wymaga domknięcia
+tematu 2 (ten), które jeszcze nie nastąpiło.
+
 ---
