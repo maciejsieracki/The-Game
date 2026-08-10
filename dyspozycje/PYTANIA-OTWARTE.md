@@ -8095,6 +8095,28 @@ albo nie zadziała w niedominującej przeglądarce.
 Rozpoznanie zakończone wcześniej (5 wariantów A-E), skonsolidowane do 3 wariantów ABC i zadane
 w czacie. Czeka na odpowiedź `R-AUTOZAPIS-QUOTA-STORAGE-Q1 + litera`.
 
+**ECHO A (2026-08-10).** Wariant A z doprecyzowania: pełny File System Access API
+(`showDirectoryPicker`/uchwyt katalogu zapamiętany w `IndexedDB`), zapis fizycznego pliku w
+katalogu obok `gra-robocza` na dysku gracza. **Znane, jawnie przedstawione w pytaniu ograniczenia
+(Maciej wybrał ze świadomością, nie do ponownego kwestionowania):** (1) wymóg „transient user
+activation" specyfikacji — jedno kliknięcie potwierdzenia dostępu przy KAŻDYM nowym otwarciu
+`START.html` (nie da się w pełni ukryć okna zgody, tylko ograniczyć do jednego kliknięcia na
+sesję zamiast co turę); (2) wyłącznie Chrome/Edge (Firefox/Safari brak wsparcia — wymaga jasnego
+komunikatu w UI dla graczy na innej przeglądarce, fallback na dotychczasowy `localStorage`); (3)
+NIE działa na `file://` — wymaga serwowania przez `http://localhost`, czyli zmiany sposobu
+uruchamiania gry z „otwórz plik HTML" na „uruchom lokalny serwer" (do ustalenia z Maciejem jak
+dokładnie to ma wyglądać dla gracza — osobny .bat/skrypt startowy?).
+
+Dispatch Operatora (rozpoznanie + implementacja, Sonnet 5, worktree izolowany) NASTĘPUJE teraz:
+(a) potwierdzić technicznie czy uprawnienie do zapamiętanego uchwytu katalogu faktycznie
+przetrwa między sesjami z jednym kliknięciem na start (nie per-turę) — to była niepewność
+z wcześniejszego rozpoznania feasibility; (b) zaprojektować najprostszy serwujący mechanizm
+lokalny (najmniejsza zmiana sposobu uruchamiania gry); (c) zaimplementować zapis rotacyjny do
+pliku zamiast `localStorage` z fallbackiem na dotychczasowy mechanizm gdy API niedostępne;
+(d) NIE implementować w ciemno — jeśli podczas prac wyjdzie na jaw, że uprawnienie jednak NIE
+przetrwa cicho (wymaga kliknięcia PRZY KAŻDYM AUTOZAPISIE, nie tylko raz na sesję) — przerwać
+i zgłosić z powrotem jako ABC, bo to zmienia bilans kosztu/zysku wariantu A.
+
 ---
 
 ## R-EPOKA-CUD-WARUNEK-AWANSU B3 — SCALONE `e5ba61c2` (2026-08-10)
