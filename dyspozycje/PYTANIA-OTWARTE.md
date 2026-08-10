@@ -10021,4 +10021,47 @@ rzeczy później."** — potwierdza kolejność już w toku (suwaki Praca/Skarbi
 bilans-nieujemny jako priorytet; Spichlerz 0 vs −1 pozostaje w toku jako powiązane, ale drugorzędne).
 Bez zmiany dispatchu — wszystkie 3 już uruchomione agenty są zgodne z tą priorytetyzacją.
 
+**Operator BUG-SUWAKI-PRACA-SKARBIEC dostarczył (`ad2854fc83b6f0272`).** Usunięty `if (!onlyEconId)`
+wokół dwóch wywołań (`renderDefaultHandelSplitSection`, `renderDefaultPodzialPracySection`) —
+`empireDetailPanel.ts:1063-1074`. Filtr `econRows` (C-PANEL=B) nienaruszony. C-039: grep `onlyEconId`
+potwierdza brak trzeciego podobnego przypadku ukrytego pod filtrem. Nowy test
+`empire-panel-sliders-always-visible-test.cjs` 7/7 (w tym kontrola przytomności — symulowany regres
+wykrywalny). Bramki: tsc 0, logic-test 213/213, `empire-panel-split-test` 18/18 (istniejący, tej
+samej okolicy). **Dispatchowany Evaluator (`adb2c127ea73fab04`)** [korekta ID — pierwotny wpis miał
+błędny placeholder, nigdy faktycznie niedispatchowany; naprawione tym wpisem].
+
+**Rozpoznanie Spichlerz 0 vs Bilans −1 dostarczone (`a71a5e3791099fb13`) — werdykt: NIE bug, ale
+znaleziono przy okazji REALNY bug.** Zgłoszony objaw to dwie różne, poprawnie liczone wielkości:
+HUD „Spichlerz=0" czyta żywy `_statesRef.zapasyPanstwa` (magazyn centralny, twardo ograniczony do 0
+— `Math.max(0,central)`), panel miasta „Bilans −1/t" to lokalna produkcja−racje TEGO miasta (bez
+podłogi). Przyczynowo spójne: magazyn=0 → nie ma z czego dopłacić → miasto głoduje ("Głód: brak
+dopłaty" poprawnie to opisuje). **Realny bug znaleziony przy okazji:** `zywnoscMiastNiedokarmionych`
+(`main.ts:13828-13829`, dodane w FALI 268 dla P-SPICHLERZ-ZERO-MYLACE) czyta WYŁĄCZNIE
+`getLastEmpireFoodTick(0)?.perCityRows` bez żywego fallbacku — w scenariuszu Macieja (`_lastTicks`
+puste: nowa gra/świeży save/przed 1. końcem tury) licznik=0, więc tooltip HUD NIE ostrzega i chip
+NIE zapala się na czerwono, mimo że panel miasta W TEJ SAMEJ CHWILI poprawnie krzyczy o głodzie —
+osłabia efekt naprawy P-SPICHLERZ-ZERO-MYLACE dokładnie tam, gdzie miała najbardziej pomóc (C-041
+potwierdzone, inaczej niż zakładała hipoteza robocza). Wzorzec do naśladowania: `resolveCityFedForUi`
+w `cityPanel.ts:1344-1353` MA już żywy fallback. **Dispatchowany Operator naprawy
+(`a34cb3300165d4371`)**.
+
+**Rozpoznanie R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY dostarczone (`a829efd46c1368fe9`).** Kluczowe
+ustalenie: dzisiejszy mechanizm JUŻ jest empire-wide (pula centralna przez `zapasyPanstwa`,
+`isEmpireCityFoodSolvent` sumuje bilanse WSZYSTKICH miast + rezerwę) — pytanie „globalnie czy per
+miasto" myli dwie różne osie. Realna oś to STOCK (dziś: uwzględnia skumulowaną rezerwę) vs FLOW
+(żądanie Macieja: tylko bieżąca tura), i przy FLOW osobno: czy kompensacja między miastami w ramach
+JEDNEJ tury zostaje. Scenariusz Macieja policzony liczbowo — POTWIERDZONE „zgodne z zamierzeniem":
+poziom 6 (Racje −12, `1×6×2=12`, `R_STAWKI_KOSZT_MULT=2`) to faktycznie MAX, jest zapas do cięcia do
+5,5 (dałoby bilans=0, koszt: Wzrost 7%→6%) — system świadomie tego nie robi, bo rezerwa centralna
+pokrywa. Zakres zmian: wariant A' (flow-agregat imperium, kompensacja w turze zostaje) — nowy
+prymityw + podmiana w 3 miejscach wywołania (`maxSafePoziomRacjiForCity`,
+`autoBalanceRationsToSolvency`, `autoRaiseRationsForGrowth`), złożoność mała-średnia; wariant B'
+(flow per-miasto, bez kompensacji) — przepisanie struktury pętli w 2 z 3 miejsc (dziś stepują
+wszystkie miasta razem z jednym zagregowanym warunkiem stopu), złożoność średnia, skoncentrowana.
+Rekomendacja rozpoznania: dodać trzecią opcję C — zostać przy dzisiejszym mechanizmie (stock-based),
+tylko dopisać w UI wprost że Bilans-minus jest ZAMIERZONY i pokrywany buforem (mniejsza zmiana,
+adresuje możliwie głównie komunikacyjny, nie mechaniczny charakter problemu).
+
+**Pytanie ABC zadane Maciejowi teraz** (osobno, w czacie) — na podstawie powyższych ustaleń.
+
 ---
