@@ -11503,3 +11503,10 @@ skorygować też komentarz w `city-state-difficulty.ts` żeby odzwierciedlał t�
 zakomentowaną/usuniętą linię wiringu w `main.ts` (regex musi rozróżnić realny kod od komentarza,
 albo dodać osobną asercję, że pole NIE jest `undefined` w runtime, nie tylko że string istnieje w
 źródle). Po dostarczeniu: NIEZALEŻNY Evaluator, runda 3.**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — ECHO A, edycja in-place w silniku (2026-08-10)
+
+**ECHO A** (2026-08-10, „A: edycja in-place w silniku"). Rozszerzyć `canCounter` o
+`direction==='own'`, dodać nową ścieżkę w silniku negocjacji (`diplomacy-proposals.ts`)
+aktualizującą ten sam wpis `PendingNegotiation` bez zmiany rundy/`awaitingOwnerId` — edycja w
+miejscu, nie usuń+dodaj-od-nowa. **STATUS: dispatch Sonnet 5 (worktree) w tej samej turze.**
