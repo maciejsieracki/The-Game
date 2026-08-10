@@ -10302,6 +10302,7 @@ rozpoznaniu #3 jako piszący bezpośrednio do `city.poziomRacji` z pominięciem 
 podnosi poziom dla maksymalizacji wzrostu na podstawie kryterium wypłacalności, które najwyraźniej
 daje fałszywie pozytywny wynik w tym konkretnym stanie (populacja rosnąca z 1→3 w trakcie tej samej
 sesji, produkcja rosnąca 21→26, żadna z tych zmian nie wyzwala przeliczenia na żywo — potwierdzone
-w rozpoznaniu #3 jako A3). **Dispatch rozpoznania #4, ostatnie przed decyzją o naprawie — NASTĘPUJE.**
+w rozpoznaniu #3 jako A3). **Dispatch rozpoznania #4, ostatnie przed decyzją o naprawie —
+NASTĘPUJE (`abfb4f9cf2c010253`).**
 
 ---
