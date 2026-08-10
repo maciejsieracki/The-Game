@@ -9490,4 +9490,65 @@ dropdownów, czy multi-select bez przypisanej kolejności; zachowanie przy zmian
 jakikolwiek kod zostanie napisany, bo pierwotne ECHO B nie da się bezpośrednio zaimplementować
 bez ustalenia co dokładnie znaczy „slot" w tej architekturze.
 
+**ECHO doprecyzowania (Maciej, 2026-08-10):** „c - ale pamiętaj, że ograniczenie jest też w danej
+epoce, ponieważ w różnych epokach możemy wybrać różną ilość cywilizacji i nie wszystkie cywilizacje
+mogą być wybrane w danej epoce, więc to trzeba o tym pamiętać." → **multi-select z listy, ograniczonej
+przez `EPOCH_CIV_TYPE_POOL`** (8 w Kamieniu / 14 w Brązie / 15 w Żelazie) i przez `civ_types_count`
+(ile faktycznie wejdzie do gry). **STATUS: odłożone świadomie** — Maciej poprosił o priorytet dla
+błędów (patrz niżej), techniczny rozpoznanie/dispatch implementacji NIE dispatchowany.
+
+**Cyna (R-CYNA-SUROWIEC-Q1) — rozpoznanie dostarczone (`ae53b6a93b23d6357`), ABC jeszcze nie zadane.**
+Kluczowe znalezisko: propozycja twardego wymogu mapowego dla cyny **koliduje z `DOSTEP-SUROWCE-Q1`
+(2026-07-29)**, która świadomie USUNĘŁA taki wymóg z dostępu do Brązu (dziś tylko stock>0 + budynek).
+Skala: 35/40 jednostek Brązu (87.5%) zależy od dostępu do Brązu; gating na poziomie budynku
+kaskadowałby na 6 budynków łańcucha żelazo/stal. Wzorzec do naśladowania: `zelazo-access.ts`
+(kopalnia-na-złożu W CAŁYM imperium AND odlewnia W danym mieście). 5 otwartych pytań projektowych
+(teren złoża, poziom gate'owania, `FAIR_PLAY_DEPOSIT_IDS`, pośredni surowiec `ruda_cyny` czy boolean,
+AND-z-miedzią czy zastąpienie). **STATUS: odłożone świadomie** — Maciej poprosił o priorytet dla
+błędów, ABC nie zadane.
+
+**AI-uczenie-się (R-AI-UCZENIE-SIE) — rozpoznanie A+B dostarczone (`a2e22f01e949ef408`).**
+Część A (ocena siły przed atakiem): AI dziś atakuje bez ŻADNEJ kalkulacji stosunku sił (2 miejsca:
+`decideAITurn` L.2301, `decideDefensiveCopyTurn` L.2711) — ale gotowa, przetestowana heurystyka
+`decideAIReaction`/`decideAIReinforcements` już ISTNIEJE w `ai.ts` L.2957-3157 jako martwy kod
+(nigdy niepodłączony do pętli decyzyjnej, nie regresja — tak od commitu kanonu). Rekomendacja:
+podłączyć ją, użyć `sumArmyFieldPower` (ta sama matematyka co realne starcia), NIE `powerRank`
+(to wskaźnik całego imperium, nie tej potyczki). Brak bramki symulacyjnej AI-vs-AI do pomiaru
+wpływu na balans — ryzyko: AI stanie się zauważalnie bardziej pasywne. Część B (priorytety budowy):
+`chooseCityProduction` już DZIŚ reaguje na `underThreat` (bool) — brakuje gradientu siły zagrożenia.
+Realna kolizja architektoniczna: `forcePriority` cudów epoki (`R-EPOKA-CUD-WARUNEK-AWANSU` B3,
+2026-08-10 rano) NIE sprawdza `underThreat` wcale — queue-jump cudu przerwie budowaną obronę nawet
+pod realnym atakiem; wymaga decyzji Macieja czy dodać wyjątek. Rekomendacja kolejności: zacząć od A
+(mniejsze ryzyko, jaśniejszy delta). **STATUS: odłożone świadomie** — Maciej poprosił o priorytet
+dla błędów, ABC nie zadane.
+
+---
+
+## [15:xx PL, 2026-08-10] Status 4 tematów błędowych — na żądanie Macieja („napisz mi, co z tych
+tematów się dzieje")
+
+1. **Auto Wyżywienie Bug #1 (mechanizm raz-na-turę)** — ECHO A („pełne przeliczanie na żywo")
+   otrzymane, zbundlowane z tematem 3 niżej w jednym Operatorze (worktree `fix-auto-wyzywienie-live`,
+   task `a6e6ec1ddfc517940`). **STATUS: Operator w toku** (uruchomiony, jeszcze bez dostarczonego
+   raportu — obserwowane w trakcie uruchamiania bramek `ai-founding-territory-test`/`map-gen-regression`).
+2. **Znalezisko „(0)" w Spichlerzu** — ECHO C („scal w jedno miejsce") otrzymane. **STATUS: świadomie
+   niedispatchowane** — celowo odłożone do czasu scalenia worktree z tematu 1/3, żeby nie kolidować
+   w tym samym obszarze (`empire-food.ts`/`cityPanel.ts`) równolegle z Operatorem A.
+3. **Niespójność `wzrostProcent`** — ECHO A („napraw teraz osobno") otrzymane, zbundlowane z tematem 1
+   w tym samym Operatorze (`a6e6ec1ddfc517940`). **STATUS: Operator w toku**, ten sam co temat 1.
+4. **`growthmult-compound-test` błędnie opisany w CLAUDE.md jako zielony** — **STATUS: NAPRAWIONE
+   teraz** (bez ABC, czysto dokumentacyjne). Uruchomienie potwierdza dzisiejszy realny stan:
+   **17 passed, 7 failed**, wszystkie porażki w sekcji „7.5 linear buildingUpkeep" (dług testowy,
+   `got` konsekwentnie 2× `want` — nie zweryfikowano jeszcze kiedy powstał rozjazd, osobny temat na
+   przyszłość, NIE naprawiany teraz). CLAUDE.md skorygowany, commit+push wykonane.
+
+**Dodatkowo (nie pytane wprost, ale bezpośrednio istotne dla priorytetu „błędy najpierw"):**
+Operator B (UX kosztu ulepszeń terenu ×2, `a608977d8991401db`) **dostarczył raport — 7/7 nowy test,
+tsc 0 błędów, logic-test 213/213**. Dispatchuję teraz Evaluatora (Opus 5), zgodnie z pętlą AutoBot —
+to najbliższy do scalenia temat z listy błędów.
+
+Maciej: „ale wiesz co, to są nowe tematy, zająłbym się nawet najpierw najważniejszymi błędami" —
+Konfigurator/Cyna/AI-uczenie-się (wyżej) świadomie ODŁOŻONE, zero dalszego dispatchu, dopóki błędy
+(Auto Wyżywienie, Spichlerz, wzrostProcent, koszt-ulepszeń-UX) nie zostaną zamknięte.
+
 ---
