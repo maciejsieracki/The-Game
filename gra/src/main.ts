@@ -22300,6 +22300,12 @@ async function boot(): Promise<void> {
                 rationParams: efParams.rationParams,
                 spichlerzByCity: spichlerzByCityForAuto,
                 onlyAutoManaged: ownerId === 0,
+                // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (gracz, rozpoznanie #4): cel to flow
+                // tej tury >=0, nie tylko stock-based pokrycie rezerwą — WYŁĄCZNIE gracz, AI
+                // zostaje przy dawnym zachowaniu (empire-food.ts:isRationBalanceTargetMet).
+                // EN: player-only (finding #4): target is this turn's flow >=0, not just
+                // stock-based reserve coverage — AI keeps prior behavior.
+                requireFlowBalance: ownerId === 0,
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
