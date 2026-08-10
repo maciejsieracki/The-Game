@@ -8728,3 +8728,15 @@ save-label-test OK, planned-march-test 18/18.
 autoryzacji Macieja domknięty).**
 
 ---
+
+## DEPLOY ROBOCZA FALA 266 — dispatchowany (2026-08-10)
+
+Po domknięciu tematów 2+3 (autoryzacja Macieja „ok jak będzie skończony 2 i 3 to rób
+deploy do robocza i git push") — dispatch agenta deployu (`af3a5960e4f11e5d2`, Opus 5
+zgodnie z zasadą CLAUDE.md pkt 4). Zakres: pełny runbook §6 (build, stamp, sync, verify,
+log w `WERSJE.md`+`KANAL-PRACA.md`), commit+push gałęzi sesji, **oraz naprawa zaległości**
+— `main` stoi na FALA 263, FALA 264 (`31a2caef`) i FALA 265 (`43b75861`) nigdy nie zostały
+scalone mimo że reguła `R-MERGE-MAIN-RYTM-Q1` już to nakazywała przy poprzednim deployu.
+FALA 266 (ten deploy) świadomie NIE wchodzi do `main` — zostaje do testów.
+
+---
