@@ -8851,4 +8851,9 @@ w odpowiednim miejscu cyklu tury, regresja w warunku uruchomienia, zmiana w obli
 cap [obie w tej samej FALI 265], albo coś innego) — dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE
 z rozpoznaniem Pracy wyżej (PRIORYTET tamtego wyższy — blokuje testowanie).
 
+Oba rozpoznania dispatchowane: Praca+ustawienia globalne (`a178562f1e717529f`, PRIORYTET,
+zakres A/B/C: wydawanie puli na ulepszenia, cache vs live panel miasta/cywilizacji, istnienie
+panelu globalnych ustawień) i Auto Wyżywienie (`a9bb68ce84d7d4bc9`). Żaden nie zmienia kodu —
+czyste rozpoznanie przed jakąkolwiek naprawą.
+
 ---
