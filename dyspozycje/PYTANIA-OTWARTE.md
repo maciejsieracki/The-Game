@@ -11179,7 +11179,17 @@ zwiększa rozmiar pojedynczego zapisu w `localStorage`, co interaguje z równole
 `P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT` (limit ~5-10MB/origin) — im większe zapisy, tym łatwiej
 o quota. Musi zostać zachowana WSTECZNA KOMPATYBILNOŚĆ ze starymi zapisami (bez pełnej siatki) —
 fallback na dzisiejszą regenerację z ziarna, nie odrzucenie starych zapisów.
-**STATUS: dispatch Sonnet 5 (worktree).**
+**STATUS: SCALONE `8458ac74` (2026-08-10).** `SaveGame` zyskał opcjonalny `mapSnapshot`
+(`gra/src/map/mapSnapshot.ts`, pełna siatka + pola dynamiczne `zloze`/`ulepszenia` spoza bazowego
+`Hex`); `loadMapForSave()` (`gra/src/game/load-map-source.ts`) nie woła generatora wcale, gdy
+snapshot poprawny — dowiedzione licznikiem wywołań w teście (0 dla nowego formatu, dokładnie 1 dla
+starego). Wsteczna kompatybilność: stare zapisy bez `mapSnapshot` → fallback na dzisiejszą
+regenerację z ziarna, zero zmiany zachowania. Bramki: `tsc` 0 błędów, `logic-test` 213/213, nowy
+`map-snapshot-load-test.cjs` 32/32 (w tym roundtrip prawdziwej mapy 36×28 z `generateMap()`, nie
+tylko fixture). Znalezisko przy okazji (NIE naprawione, poza zakresem C-025): wycięty w trakcie gry
+las nie jest dziś śledzony osobno od `mapSnapshot`/regeneracji — stary format nadal odrasta po
+wczytaniu (pre-istniejące, nowy format to przypadkiem naprawia bo zapisuje `hexes` po mutacji).
+Czeka na NIEZALEŻNEGO Evaluatora (Opus 5, zmiana architektoniczna, dispatch w toku).
 
 ## P-SEJWY-KOLEJNOSC-STARE-BEZ-SAVEDAT (2026-08-10, przy okazji rozpoznania sortowania listy sejwów)
 
