@@ -7806,6 +7806,23 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
+## Tooltip Pracy (rozbicie utrzymania) — dostarczony, czeka na Evaluatora (2026-08-10)
+
+Operator wybrał PEŁNE rozbicie z konkretną liczbą (nie skrócony tekst) — wartość
+`pracaUpkeep` (civ-wide utrzymanie ulepszeń surowcowych) okazała się już policzona w
+`HudState`/`_lastPracaUpkeep`, tylko nieprzepuszczana do `EmpireHudSnap` panelu miasta. Ten sam
+wzorzec „brutto − utrzymanie = netto" już istnieje dla głównego paska HUD (`pracaChipTitle()`,
+`hud.ts:744-752`) — domknięcie istniejącego wzorca, nie nowy przepływ. Nowy tooltip: „Cała
+cywilizacja: wpływ do puli imperium +X − utrzymanie ulepszeń surowcowych −Y = +N netto/turę · to
+miasto +Z (budynki +A · pula +B)", z bezpiecznym fallbackiem (krótki tekst bez liczby) gdy
+`pracaUpkeep` niedostępne. C-026: `w3CityChip` z etykietą Praca ma JEDNO wywołanie, tylko ścieżka
+gracza (`ownerId===0`) — panel rywala nie używa tego kodu. Bramki: tsc 0, logic-test 213/213,
+hud-miasto-stan-cywilizacji 20/20 (test nie asercjonuje treści tooltipa, nie wymagał aktualizacji).
+
+Dispatch Evaluatora NASTĘPUJE teraz (dotyka faktycznego przepływu danych, nie samego tekstu).
+
+---
+
 ## 3 checkboxy w buildModeHud.ts → przyciski — SCALONE (2026-08-10)
 
 Evaluator: **PASS-WITH-NOTES, zero blokujących**. Kluczowa weryfikacja (harness esbuild+jsdom,
