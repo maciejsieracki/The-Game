@@ -8369,4 +8369,12 @@ konsekwencja ECHO B, do playtestu osobno) — nieblokujące, do uwzględnienia p
 
 Dispatch rundy 5 (fix B-R5-1) NASTĘPUJE teraz.
 
+Operator rundy 5 (`ae476910a62d7b168`, worktree izolowany, checkout na żywą gałąź sesji
+per instrukcja) dispatchowany: eksport wspólnej `stackRenderKey(u)` z `armyMerge.ts`
+(zamiast inline'owanego wyrażenia w `computeStackDisplay`), użycie jej w 3 miejscach
+`main.ts` (`cyclablePlayerArmyLeadsBase`, `armyLeadHexKey`, `buildPlayerArmyListEntries`)
+zamiast gołego `stackGroupIdOf(u)`, korekta mylącego komentarza, rozszerzenie mainguard
+testu o pinowanie kształtu klucza w tych 3 oknach + scenariusz regresyjny odtwarzający
+dowód Evaluatora (scout auto-explore rozdziela grupę na 2 heksy → musi dać 2 wpisy).
+
 ---
