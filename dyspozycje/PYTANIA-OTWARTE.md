@@ -10486,3 +10486,61 @@ wynikach rozpoznania PW (`a5cd559f49253a910`, w toku). **STATUS: zarejestrowane,
 na wynik powiązanego rozpoznania PW przed decyzją czy to jeden temat czy dwa osobne.**
 
 ---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY — Operator naprawy dostarczył (`af98bc5fafb5f2aa6`)
+
+3 miejsca naprawione dokładnie jak zlecono: nowa `isRationBalanceTargetMet` (helper, `empire-food.ts:438-460`,
+flow-based gdy `requireFlowBalance`/`requireProductionSurplus` prawda, inaczej stare stock-based).
+`autoRaiseRationsForGrowth` — krok przestrzeliwujący TERAZ COFANY (nie tylko zatrzymywany), reużyto
+istniejącej flagi `requireProductionSurplus` (już dziś player-only, jedyny call site `ownerId===0`).
+`autoBalanceRationsToSolvency` — nowy opcjonalny `requireFlowBalance`, przekazywane `ownerId===0` z
+`main.ts`. `maxSafePoziomRacjiForCity` — gate wewnętrzny `ownerId===0` (bez zmiany sygnatury, wszyscy
+dzisiejsi wywołujący i tak są player-only). **Rozdzielenie gracz/AI potwierdzone**: domyślne
+`false`/`undefined` = identyczne stock-based zachowanie, zero zmiany dla AI.
+**Test `auto-wyzywienie-flow-balance-test.cjs` (nowy, 17/17) zweryfikowany MUTACYJNIE** — na kodzie
+sprzed naprawy (`git stash`) daje 3 fail/17, dokładnie reprodukując zgłoszony bug (pełznięcie poziomu
++ drenaż rezerwy) — po naprawie 17/17. Zaktualizowany istniejący test M w `ai-major-economy-test.cjs`
+(zakładał stare stock-based jako „poprawne" — wymaga weryfikacji Evaluatora czy to zasadna aktualizacja
+czy maskowanie problemu). Bramki: tsc 0, logic-test 213/213, `empire-food-b5-test` 25/3 (identyczne
+przed/po, pre-istniejące R-STAWKI), `ai-major-economy-test` 33/33, `city-state-mp-growth-test` 9/9.
+**UWAGA do weryfikacji Evaluatora:** worktree bazowany na `main`@`99974173` (NIE gałąź sesji) — Operator
+zgłasza że `auto-wyzywienie-live-recalc-test.cjs` „nie istnieje w repo" — to prawdopodobnie dlatego,
+że ten plik żyje na gałęzi SESJI (scalony tam w rundzie 5, commit `1a6f7e79`), NIE na `main` (który ma
+tylko FALĘ 267) — analogiczna sytuacja do N2 z wcześniejszego Evaluatora tej sesji („baza worktree
+NIE jest przodkiem gałęzi sesji, scalać wyłącznie deltę"). Evaluator MUSI to zweryfikować i uważać
+przy scalaniu, żeby nie zaciągnąć nieaktualnego kontekstu linii. **Dispatchowany Evaluator.**
+
+---
+
+## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA (2026-08-10, zgłoszenie Macieja + zrzut panelu Armie)
+
+Maciej: spacja czasem nie przełącza na kolejną jednostkę z pozostałym ruchem, mimo że na zrzucie
+panelu Armie widać kilka Zwiadowców z „RUCH 3/3" (pełny, niewykorzystany).
+
+**Przyczyna zlokalizowana w kodzie (`gra/src/main.ts`):**
+- `isUnitActiveForCycle()` (main.ts:4859-4864) celowo wyklucza z cyklu Spacji jednostki z
+  `autoExplore===true` — obok `sentry`/`inGarnizon`/`ufortyfikowanyWPolu`. To zamierzone: Zwiadowca
+  w auto-eksploracji porusza się sam, ręczne przełączanie na niego Spacją nie ma sensu.
+- ALE `buildPlayerArmyListEntries()` (main.ts:5236-5302), który zasila panel Armie, w ogóle nie
+  sprawdza `autoExplore` — nie ma go w `ArmyListEntry` (`armyListHud.ts:12-37`), nie ma badge'a ani
+  wpisu w `detailLine`, mimo że analogiczne stany (`inGarnizon`/`sentry`/`ufortyfikowanyWPolu`) MAJĄ
+  własny badge (`armyListHud.ts:195-210`) i własny tekst w `row.title` (linie 172-180).
+- Efekt: Zwiadowca w auto-eksploracji wygląda w panelu identycznie jak zwykła jednostka z pełnym
+  ruchem — gracz nie ma żadnej wskazówki, dlaczego Spacja go pomija. To NIE jest bug logiki cyklu
+  (działa zgodnie z projektem), tylko luka w UI panelu Armie.
+
+**Do ABC (3 opcje):**
+- A: dodać w panelu Armie badge „auto-eksploracja" dla `autoExplore===true`, wzorem istniejących
+  badge'y `inGarnizon`/`sentry`/`ufortyfikowanyWPolu` (ten sam styl `al-garnizon-badge` + tekst
+  w `row.title`). Zero zmiany zachowania Spacji — tylko czytelność. Rekomendacja: najmniejsze
+  ryzyko, spójne z istniejącym wzorcem.
+- B: rozszerzyć Spację, żeby też cyklowała po jednostkach w auto-eksploracji (jak strzałki HUD
+  ◀▶ dziś robią dla WSZYSTKICH stanów `all=true`). Zmienia zamierzone zachowanie — zabiera
+  jednostkę spod kontroli auto-eksploracji przy każdym Spacja-cyklu, wbrew R-SPACJA-KOLEJNA-
+  JEDNOSTKA-PETLA (2026-08-08), który świadomie rozdzielił Spację (tylko z ruchem I aktywne) od
+  strzałek (wszystkie).
+- C: zostawić panel bez zmian, dodać tylko wyjaśniający tekst w `detailLine` („w auto-eksploracji")
+  bez osobnego badge'a graficznego — mniejsza zmiana niż A, ale mniej widoczna dla gracza (badge
+  rzuca się w oczy bardziej niż linijka tekstu w środku karty).
+
+**STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
