@@ -6518,3 +6518,13 @@ P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (parytet gracz/AI).
 
 Osobno tym samym ruchem: `main` doganiony o **FALA 263** → merge `b0e4a5c9` (wpis wyżej).
 CZEKAM-NA: sesja lokalna — sync `04b58d64` na dysk właściciela + potwierdzenie w kanale.
+
+## [06:49 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 265, md5 `7e8fdfdb`
+
+Build z HEAD `e88e3939` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (25 commitów od FALA 264 / `b7656d8d`).
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`7e8fdfdb8c6390ecf43c570eb966b9e3`**, stempel `ROBOCZA · 12b7ff9f · 2026-08-10 06:49` (UTC). 6 bundli playtestowych + `START.html`/manifest (10) przegenerowane.
+**8 tematów:** sweetener-koszyk w traktacie · wymuszona wojna Brązu · HUD stock/tempo (3 elementy) · Spichlerz cap 5→8→12 · Tartak/Glinianka 10/15→**4/turę** · port morski (miasta nadbrzeżne) · podgląd relacji przed audiencją · **cud jako warunek awansu epoki**.
+**Bramki:** tsc 0 · logic **213/213** · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · ai-founding-territory 28/28 · 13 bramek nowych tematów **wszystkie exit 0** · vite 804 moduły · **VERIFY OK** (`manifest match: OK`).
+Czerwone tylko 6 znanych pre-istniejących (v85 2 · growthmult 7 · spichlerz-wzrost 7 · trade-routes-income 1×H2 · surow-civ-storage 14 · grupa-b-lane 4) — liczby zmierzone dziś, zgodne. `gra/data/` niezmienione (hash przed=po).
+**Merge do `main`:** ta fala NIE — kwalifikuje się teraz **FALA 264** (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
+CZEKAM-NA: sesja lokalna — sync `7e8fdfdb` na dysk właściciela + potwierdzenie w kanale.
