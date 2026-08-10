@@ -11110,11 +11110,24 @@ async function boot(): Promise<void> {
         }
         syncCityGarnizon(city);
         if (newOwner === 0) playerEverOwnedCity = true;
-        runCapitalCapturePlunder(city, oldOwner, newOwner);
-        showHintMessage(
-          city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.',
-          5500,
-        );
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 1): kapitulacja
+        // głodowa nie ma modalu (nie podbój bojowy) — dawniej wynik runCapitalCapturePlunder()
+        // był ignorowany, więc gdy TO przejęcie eliminowało ostatnie miasto ORAZ zdobywcą był
+        // gracz, etykieta ginęła po cichu. Odbieramy ją i SCALAMY z toastem kapitulacji w JEDNO
+        // wywołanie showHintMessage (ten sam wzorzec kolizji/naprawy co Defekt A — druga,
+        // bezwarunkowa treść na tym samym #hintToast nadpisywałaby pierwszą).
+        // EN: starvation surrender has no modal (not a battle conquest) — the return value of
+        // runCapitalCapturePlunder() used to be discarded, so when THIS capture eliminated the
+        // last city AND the player was the captor, the label was silently lost. We capture it
+        // and MERGE it with the capitulation toast into ONE showHintMessage call (same
+        // collision pattern/fix as Defekt A).
+        const captureOutcome = runCapitalCapturePlunder(city, oldOwner, newOwner);
+        const capitulationBaseMsg =
+          city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.';
+        const capitulationMsg = captureOutcome
+          ? `${captureOutcome.eliminatedCivLabel} — ELIMINACJA! ${capitulationBaseMsg} ${captureOutcome.eliminatedDetails}`
+          : capitulationBaseMsg;
+        showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500);
       } else {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
       }
@@ -15511,13 +15524,32 @@ async function boot(): Promise<void> {
           .reduce((sum, c) => sum + (c.population ?? 0), 0);
         const koszt = graczWchloniecieKosztZloto(pop, _diplomacyParams());
         applyOneShotGoldTransfer(proposerId, responderId, koszt, buildDiploTreasury());
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt A: policz etykietę/liczbę
+        // miast PRZED annexCityStateToOwner (po niej miasta już należą do proposerId, licznik
+        // nie do odtworzenia). annexCityStateToOwner() sama woła showHintMessage() dla
+        // annexerId===0 z eliminacją, ale WYWOŁUJĄCY (tu, kilka linii niżej w oryginale) miał
+        // DRUGIE, bezwarunkowe showHintMessage() na tym samym #hintToast — natychmiast
+        // nadpisywało pierwsze, więc komunikat ELIMINACJA nigdy nie był realnie widoczny.
+        // Naprawa: SCALAMY treść w JEDNO wywołanie tutaj (ostatnie w tym synchronicznym
+        // stosie -> to jego treść widzi gracz).
+        // EN: compute label/city count BEFORE annexCityStateToOwner (cities already
+        // reassigned after). That function fires its own showHintMessage() for
+        // annexerId===0+elimination, but the caller had a SECOND, unconditional
+        // showHintMessage() on the same shared #hintToast right after, instantly
+        // overwriting it. Fix: merge into ONE call here (last call in the sync stack wins).
+        const csLabelBeforeAnnex = civLabelForOwner(responderId);
+        const cityCountBeforeAnnex = cities.filter(c => c.ownerId === responderId).length;
         annexCityStateToOwner(responderId, proposerId);
+        const wasEliminated = proposerId === 0 && eliminatedOwners.has(responderId);
+        const wchlonieteMsg = wasEliminated
+          ? `${csLabelBeforeAnnex} — ELIMINACJA! Wszystkie miasta (${cityCountBeforeAnnex}) wchłonięte dyplomatycznie.`
+          : 'Miasto-państwo wchłonięte do imperium';
+        showHintMessage(wchlonieteMsg, wasEliminated ? 6000 : 4000);
         const wasalDeal = findWasalDeal(activeDeals, proposerId, responderId);
         if (wasalDeal) activeDeals = removeTreatiesById(activeDeals, [wasalDeal.id]);
         for (const oid of aiOwnerCivMap.keys()) {
           if (oid !== responderId) clearAiCsPairState(oid, responderId);
         }
-        showHintMessage('Miasto-państwo wchłonięte do imperium', 4000);
         refreshD1bHud();
         if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
         return;
@@ -20203,6 +20235,22 @@ async function boot(): Promise<void> {
       }, { defaultAction: 'manual' });
     }
 
+    /** R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): dane przejęcia
+     *  miasta zdobyte wewnątrz applyMapBattleOutcome, przekazywane wołającemu przez
+     *  opts.onCityCaptured — jedyny sposób, by finishSiegeStormBattle poznało
+     *  eliminatedCivLabel/eliminatedDetails z applyCityCaptureToMap, skoro siegeContext
+     *  celowo pomija tu modal/refresh (robi je afterSiegeUi w finishSiegeStormBattle).
+     *  EN: city-capture data collected inside applyMapBattleOutcome, handed to the caller via
+     *  opts.onCityCaptured — the only way finishSiegeStormBattle learns the
+     *  eliminatedCivLabel/eliminatedDetails from applyCityCaptureToMap, since siegeContext
+     *  deliberately skips the modal/refresh here (afterSiegeUi in finishSiegeStormBattle
+     *  does it). */
+    interface CityCaptureCallbackInfo {
+      cityName: string;
+      eliminatedCivLabel: string | null;
+      eliminatedDetails: string | null;
+    }
+
     function applyMapBattleOutcome(
       atkRoster: RuntimeUnit[],
       defRoster: RuntimeUnit[],
@@ -20218,6 +20266,9 @@ async function boot(): Promise<void> {
         siegeContext?: boolean;
         /** Jawny atak na miasto (potyczka o miasto / szturm) — inaczej wygrana polowa NIE przejmuje miasta. */
         allowCityCapture?: boolean;
+        /** Wołane gdy siegeContext===true i przejęcie się powiodło — patrz komentarz
+         *  CityCaptureCallbackInfo powyżej. */
+        onCityCaptured?: (info: CityCaptureCallbackInfo) => void;
       },
     ): BattleLoot | null {
       chargeCombatCredibilityPenalties(atkRoster, defRoster);
@@ -20300,7 +20351,23 @@ async function boot(): Promise<void> {
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
         const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
-        if (!opts?.siegeContext && cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner) {
+        const captureSucceeded = cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner;
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): siegeContext
+        // (szturm muru) pomija modal/refresh w gałęzi niżej — finishSiegeStormBattle.afterSiegeUi
+        // robi je osobno. Bez tego callbacku eliminatedCivLabel/eliminatedDetails z
+        // applyCityCaptureToMap ginęły tu po cichu, nawet gdy zdobywcą był gracz.
+        // EN: siegeContext (wall storm) skips the modal/refresh in the branch below —
+        // finishSiegeStormBattle.afterSiegeUi does it separately. Without this callback the
+        // eliminatedCivLabel/eliminatedDetails from applyCityCaptureToMap were silently lost
+        // here, even when the player was the captor.
+        if (opts?.siegeContext && captureSucceeded) {
+          opts.onCityCaptured?.({
+            cityName: cityOnHex.name,
+            eliminatedCivLabel: captureResult.eliminatedCivLabel,
+            eliminatedDetails: captureResult.eliminatedDetails,
+          });
+        }
+        if (!opts?.siegeContext && captureSucceeded) {
           const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
           refreshMapAfterCityCapture(lead);
           if (atkOwner === 0) {
@@ -20308,6 +20375,7 @@ async function boot(): Promise<void> {
             showCityCaptureNotice(capturedCity.name, {
               onEnterCity: () => openCityPanelForPlayer(capturedCity),
               eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
+              eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
             });
           }
         }
@@ -20832,15 +20900,32 @@ async function boot(): Promise<void> {
      * bitwy/tech w snapshotcie, gdyby liczyć go po.
      */
     /**
-     * Zwraca etykietę wyeliminowanej cywilizacji, gdy TO przejęcie eliminuje jej ostatnie
-     * miasto ORAZ zdobywcą jest gracz (newOwner===0) — wołający (main.ts, showCityCaptureNotice)
-     * dokłada wtedy nagłówek ELIMINACJA! do modalu zdobycia miasta, zamiast osobnego toastu,
-     * który by pod tym modalem zginął (R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI=A, ten sam
-     * wzorzec kolizji co P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK niżej). Zwraca `null`
-     * gdy nie było eliminacji, gdy zdobywcą jest AI (toast wystarcza, brak modalu), albo gdy
-     * to szczególny przypadek zjednoczenia (własny modal Triumfu już to obsługuje).
+     * R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt C: etykieta ORAZ szczegóły
+     * (tech skopiowane + Power zdobyte) — stary toast (przed d7718ad5) niósł oba, nowy modal
+     * ELIMINACJA! niósł tylko nazwę. `eliminatedDetails` pozwala wołającemu dołożyć tę samą
+     * treść co dostaje AI-toast niżej, zamiast ją tracić w wariancie gracza.
+     * EN: label AND details (copied techs + captured Power) — the pre-d7718ad5 toast carried
+     * both, the new ELIMINACJA! modal only the name. `eliminatedDetails` lets the caller show
+     * the same content the AI toast below gets, instead of losing it in the player variant.
      */
-    function runCapitalCapturePlunder(city: City, oldOwner: number, newOwner: number): string | null {
+    interface CapitalCapturePlunderResult {
+      eliminatedCivLabel: string;
+      eliminatedDetails: string;
+    }
+
+    /**
+     * Zwraca etykietę + szczegóły wyeliminowanej cywilizacji, gdy TO przejęcie eliminuje jej
+     * ostatnie miasto ORAZ zdobywcą jest gracz (newOwner===0) — wołający (main.ts,
+     * showCityCaptureNotice) dokłada wtedy nagłówek ELIMINACJA! do modalu zdobycia miasta,
+     * zamiast osobnego toastu, który by pod tym modalem zginął
+     * (R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI=A, ten sam wzorzec kolizji co
+     * P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK niżej). Zwraca `null` gdy nie było
+     * eliminacji, gdy zdobywcą jest AI (toast wystarcza, brak modalu), albo gdy to szczególny
+     * przypadek zjednoczenia (własny modal Triumfu już to obsługuje).
+     */
+    function runCapitalCapturePlunder(
+      city: City, oldOwner: number, newOwner: number,
+    ): CapitalCapturePlunderResult | null {
       // #25: frakcja rebeliancka (-99) nie jest realną cywilizacją — nie ma
       // skarbca/stolicy/Power. Bez tego guarda odbicie jej miasta wpadało w
       // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
@@ -20876,6 +20961,8 @@ async function boot(): Promise<void> {
         zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
       }
       const eliminatedCivLabel = civLabelForOwner(oldOwner);
+      const eliminatedDetails =
+        `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
       const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
         newOwner,
         oldOwner,
@@ -20894,13 +20981,13 @@ async function boot(): Promise<void> {
         // Zdobywcą jest AI — showCityCaptureNotice (modal) wyskakuje WYŁĄCZNIE dla gracza,
         // więc tu nie ma kolizji: toast zostaje jedynym i wystarczającym kanałem.
         showHintMessage(
-          `${eliminatedCivLabel} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`,
+          `${eliminatedCivLabel} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. ${eliminatedDetails}`,
           6000,
         );
       }
       eliminateOwner(oldOwner);
       markCityStateDirty();
-      return (newOwner === 0 && !isTriumph) ? eliminatedCivLabel : null;
+      return (newOwner === 0 && !isTriumph) ? { eliminatedCivLabel, eliminatedDetails } : null;
     }
 
     /**
@@ -20949,14 +21036,19 @@ async function boot(): Promise<void> {
     }
 
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
-    /** `eliminatedCivLabel` — patrz komentarz `runCapitalCapturePlunder`: niepuste WYŁĄCZNIE gdy
-     * to przejęcie eliminuje ostatnie miasto danej cywilizacji I zdobywcą jest gracz. */
+    /** `eliminatedCivLabel`/`eliminatedDetails` — patrz komentarz `runCapitalCapturePlunder`:
+     * niepuste WYŁĄCZNIE gdy to przejęcie eliminuje ostatnie miasto danej cywilizacji I
+     * zdobywcą jest gracz. */
     function applyCityCaptureToMap(
       city: City,
       atkRoster: RuntimeUnit[],
       atkOwner: number,
       anchor: RuntimeUnit | null = atkRoster[0] ?? null,
-    ): { lead: RuntimeUnit | null; eliminatedCivLabel: string | null } {
+    ): {
+      lead: RuntimeUnit | null;
+      eliminatedCivLabel: string | null;
+      eliminatedDetails: string | null;
+    } {
       const oldOwner = city.ownerId;
       const lead = applyCityCaptureAfterBattle(
         city,
@@ -20979,8 +21071,12 @@ async function boot(): Promise<void> {
       if (atkOwner === 0) playerEverOwnedCity = true;
       syncCityGarnizon(city);
       endMapSiege(city.id);
-      const eliminatedCivLabel = runCapitalCapturePlunder(city, oldOwner, atkOwner);
-      return { lead, eliminatedCivLabel };
+      const captureOutcome = runCapitalCapturePlunder(city, oldOwner, atkOwner);
+      return {
+        lead,
+        eliminatedCivLabel: captureOutcome?.eliminatedCivLabel ?? null,
+        eliminatedDetails: captureOutcome?.eliminatedDetails ?? null,
+      };
     }
 
     function refreshMapAfterCityCapture(lead: RuntimeUnit | null): void {
@@ -21058,6 +21154,7 @@ async function boot(): Promise<void> {
         showCityCaptureNotice(city.name, {
           onEnterCity: () => openCityPanelForPlayer(city),
           eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
+          eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
         });
       }
     }
@@ -21137,13 +21234,24 @@ async function boot(): Promise<void> {
       const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);
       const atkOwner = atkRoster[0]?.ownerId;
       const showSummary = atkOwner === 0 && opts?.summary;
+      // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): wypełnione
+      // przez opts.onCityCaptured w applyMapBattleOutcome (synchronicznie, PRZED afterSiegeUi —
+      // także w wariancie z podsumowaniem bitwy, bo applyMapBattleOutcomeWithSummary woła
+      // applyMapBattleOutcome zanim pokaże panel podsumowania). afterSiegeUi SCALA tę treść z
+      // toastem "Szturm udany" w JEDNO wywołanie, zamiast dwóch kolidujących na #hintToast.
+      let siegeCaptureInfo: CityCaptureCallbackInfo | null = null;
 
       const afterSiegeUi = (): void => {
         if (res.winner === 'atakujacy' && atkOwner !== undefined && city.ownerId === atkOwner && oldOwner !== atkOwner) {
           const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
           refreshMapAfterCityCapture(lead);
           const who = atkOwner === 0 ? 'Gracz' : ('AI ' + atkOwner);
-          showHintMessage('Szturm udany — ' + city.name + ' zdobyte przez ' + who + '!', 5000);
+          const baseSzturmMsg = 'Szturm udany — ' + city.name + ' zdobyte przez ' + who + '!';
+          const elimLabel = siegeCaptureInfo?.eliminatedCivLabel;
+          const szturmMsg = elimLabel
+            ? `${elimLabel} — ELIMINACJA! ${baseSzturmMsg} ${siegeCaptureInfo?.eliminatedDetails ?? ''}`.trim()
+            : baseSzturmMsg;
+          showHintMessage(szturmMsg, elimLabel ? 6000 : 5000);
         } else if (res.winner === 'obronca') {
           showHintMessage('Szturm odparty — oblężenie trwa.', 4500);
           syncUnitsRender();
@@ -21170,6 +21278,9 @@ async function boot(): Promise<void> {
         lossAtkPct: opts?.lossAtkPct,
         lossDefPct: opts?.lossDefPct,
         siegeContext: true as const,
+        onCityCaptured: (info: CityCaptureCallbackInfo) => {
+          siegeCaptureInfo = info;
+        },
       };
 
       if (showSummary && opts?.summary) {

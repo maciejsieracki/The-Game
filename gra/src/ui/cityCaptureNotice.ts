@@ -22,6 +22,12 @@ export interface CityCaptureNoticeOpts {
    *  ostatnie miasto tej cywilizacji — modal dostaje nagłówek ELIMINACJA! zamiast osobnego
    *  toastu, który ginąłby pod tym modalem (ten sam wzorzec kolizji co Triumf zjednoczenia). */
   eliminatedCivLabel?: string;
+  /** RUNDA 3, Defekt C: szczegóły łupu eliminacji (liczba przejętych tech + zdobyte Power) —
+   *  stary toast (przed d7718ad5) niósł tę treść, nowy modal ją tracił. Pokazywane tylko gdy
+   *  `eliminatedCivLabel` jest podane.
+   *  EN: elimination loot details (copied tech count + captured Power) — the pre-d7718ad5
+   *  toast carried this, the new modal dropped it. Shown only when `eliminatedCivLabel` is set. */
+  eliminatedDetails?: string;
 }
 
 function ensureStyles(): void {
@@ -117,6 +123,7 @@ export function showCityCaptureNotice(
   };
 
   const eliminated = opts?.eliminatedCivLabel;
+  const eliminatedDetails = opts?.eliminatedDetails;
 
   root = document.createElement('div');
   root.className = 'civ-ccn-overlay';
@@ -133,6 +140,9 @@ export function showCityCaptureNotice(
       '<div class="civ-ccn-name">' + esc(cityName) + '</div>' +
       (eliminated
         ? '<div class="civ-ccn-elim-sub">' + esc(eliminated) + ' — ostatnie miasto przejęte, cywilizacja wyeliminowana</div>'
+          + (eliminatedDetails
+            ? '<div class="civ-ccn-elim-sub">' + esc(eliminatedDetails) + '</div>'
+            : '')
         : '') +
     '</div>' +
     '<div class="civ-ccn-foot">' +
