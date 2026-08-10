@@ -10138,3 +10138,34 @@ lista opcji z pierwszego zgłoszenia (linia 8153-8158) wymieniała to jako alter
 nie zbadaną osobno.
 
 ---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY — Maciej podważa poprzednie rozpoznanie (2026-08-10, drugi
+zrzut, matematycznie ostry argument)
+
+**Odpowiedź Macieja na ABC:** „c + info — tylko pytanie, czy faktycznie jest pokrywany. Jeżeli mam
+jedno miasto i ono notorycznie jest na minusie, a spichlerz był zerowy, to niby z czego się ma
+pokrywać? To jakiś błąd. Gdyby auto wyżywienie w jednej turze zostawiało miasto na plusie a w drugiej
+na minusie to by się zgadzało, ale jeżeli cały czas jest na minusie a Spichlerz startował z zerem to
+niby z czego się pokrywa i bilansuje?" — słuszna matematycznie wątpliwość wobec wniosku poprzedniego
+rozpoznania („bufor pokrywa deficyt"): jeśli `zapasyPanstwa=0` i pozostaje zerowy, a bilans miasta
+jest trwale ujemny, kryterium `isEmpireCityFoodSolvent` (suma bilansów + zapasyPrzed ≥ 0) powinno to
+wykryć i obniżyć poziom, nie zostawić go na miejscu. **Dispatch rozpoznania #2, głębsze, ślepe na
+odpowiedź #1 — NASTĘPUJE (`a2083cf30348a7ef9`)** — ma prześledzić KONKRETNĄ ścieżkę (nowo założone
+miasto, domyślny poziom startowy, czy „założenie miasta" jest wyzwalaczem live-recalc, czy to tura 1
+bez jeszcze zadziałanego mechanizmu, czy realna luka w `autoRaiseRationsForGrowth`).
+
+**Drugi, jeszcze ostrzejszy zrzut od Macieja (ta sama tura sesji, Ludność 3, nie tura 1 — obala
+hipotezę „to tylko tura 1"):** Produkcja +21, Racje −24, Bilans −3/t, poziom Wyżywienia **4** (już
+NIE 6 — jakiś mechanizm JUŻ obniżył poziom z 6 do 4 w międzyczasie), Spichlerz nadal **0**, Wzrost%
+**8,5%** (dodatni, składnik „Wyżywienie +4,5%" naliczony w pełni). Maciej: „miasto jest -3 na minusie,
+nie ma żadnych rezerw w Spichlerzu. Jak to wpływa na ludność? Czy to nie jest trochę oszukiwanie z
+tym wzrostem, skoro wzrost jest naliczany maksymalny, chociaż miasto nie pozwala na takie racjowanie,
+bo w Spichlerzu nic nie ma?" — **NOWA, kluczowa oś pytania, inna niż pierwsza:** czy Wzrost%
+(`WYZYWIENIE_GROWTH_PCT[poziomRacji]`) liczy się z NOMINALNEGO ustawionego poziomu Racji, czy z
+FAKTYCZNIE dostarczonej/opłaconej ilości żywności — jeśli miasto notorycznie nie ma z czego pokryć
+tego poziomu (bilans ujemny, bufor zerowy), a mimo to dostaje pełny bonus wzrostu za ten poziom, to
+gra pokazuje wzrost, którego populacja realnie nie powinna dostawać. **STATUS: czekam na wynik
+rozpoznania #2 (`a2083cf30348a7ef9`) — jeśli nie pokryje w pełni tej nowej osi (nominalny vs
+faktyczny poziom w formule wzrostu), dispatch rozpoznania #3 dedykowanego tej konkretnej osi.**
+
+---
