@@ -9725,4 +9725,30 @@ Konfigurator/Cyna/AI — więc kwalifikują się pod „błędy", nie pod „inn
 - **R-DESIGN-PANEL-MIASTA-V2-Q1** — nie subagent, tylko przypomnienie Maciejowi w czacie (zrobione
   poniżej razem z raportem „raport").
 
+**Koszt-ulepszeń-UX — Evaluator PASS-WITH-NOTES, SCALONE.** Zero blokad. Notatki (niebl.): ikona
+technologii renderuje się obok komunikatu „Za mało Pracy" dla pozycji odblokowanej technologicznie
+ale za drogiej (kosmetyczne, jednoliniowa poprawka `techLocked && t.techLabel` zamiast `locked &&
+t.techLabel` — do playtestu, nie naprawiane teraz); cuda/Załóż miasto świadomie poza zakresem ECHO A
+(nie wyszarzane, niespójność zostaje); wąska kolumna `.meta` może zawijać komunikat na ~3 linie — do
+oceny na playteście. Wszystkie bramki potwierdzone samodzielnie przez Evaluatora (tsc 0, logic-test
+213/213, nowy test 7/7 zweryfikowany mutacyjnie jako realny, tech-tree/research/unit-replace/
+ai-founding-territory zielone, map-gen-regression dowiedzione niezależne przez analizę bundla —
+zmieniony kod fizycznie nie wchodzi do tej bramki). Balans `R_STAWKI_FALA2_MULT` potwierdzony
+nietknięty grepem. **Scalone do gałęzi sesji, commit `0294cdff`, wypchnięte.**
+
+**SPROSTOWANIE — P-DYPLO-SWEETENER-KOSZYK nie było zapomniane, było już GOTOWE.** Dispatchowany
+Operator (`a5c3495e1f3db0402`) potwierdził: temat w pełni zaimplementowany, przetestowany
+(`diplomacy-treaty-sweetener-edit-test.cjs` 20/20), oceniony PASS-WITH-NOTES i **wdrożony do ROBOCZA
+FALA 265** (`2b747b9b`, 2026-08-09 23:27 UTC, `WERSJE.md:42`, `KANAL-PRACA.md:6526`) — potwierdzone
+`git merge-base --is-ancestor 2b747b9b origin/main` = YES. **Poprawna nazwa tematu to
+`P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE`** (nie „W-TRAKCIE" — literówka w audycie/moim zleceniu).
+Realna luka: temat nigdy nie dostał wpisu ZAMYKAJĄCEGO w tym rejestrze po ECHO A, więc audyt
+kompletności (grep `STATUS: **OTWARTE`) słusznie złapał brak jawnego zamknięcia, ale błędnie
+zinterpretował to jako brak wykonania. **Wniosek do playbooka:** rejestr zamknięcia w
+`PYTANIA-OTWARTE.md` i faktyczny deploy/merge to DWA różne stany, które mogą się rozjechać — do
+rozważenia nowa reguła C-042 „każdy ECHO+dispatch musi dostać wpis zamykający po scaleniu, nie tylko
+wpis w `WERSJE.md`" (nie tworzę jej teraz, zgłaszam do rozważenia przy najbliższej okazji
+aktualizacji playbooka, żeby nie mieszać wątków). **STATUS: ZAMKNIĘTE (retroaktywnie, temat był
+gotowy od 2026-08-09).**
+
 ---
