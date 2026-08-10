@@ -7669,6 +7669,54 @@ Dispatch rundy 4 (naprawa 4 warunków) NASTĘPUJE teraz.
 
 ---
 
+## Trzy drobne poprawki (audyt C-030) dostarczone, czekają na jednego zbiorczego Evaluatora (2026-08-10)
+
+**P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA + P-HUD-KULTURA-SIGNED-NIESPOJNE** (worktree
+`agent-aa3536088e2bc01b3`): komunikat „Brakuje X PW — dopłać" → „...— zawrzyj osobną umowę" w 2
+miejscach (`diplomacy-acceptance-points.ts`, `diplomacyAcceptanceBalance.ts`), zgodnie z
+`R-DYP-STOL-A-KOREKTA` (formularze traktatu bez koszyka). Chip Kultury HUD:
+`signed(s.kultura)` → `String(Math.floor(s.kultura))` w `hud.ts` (`renderBarD1B` — zgłoszone
+miejsce — ORAZ `renderBarLegacy`, ta sama usterka znaleziona przy okazji w bliźniaczej ścieżce
+kodu). Bramki: tsc 0, logic-test 213/213, diplomacy-acceptance-points 225/225, diplomacy-ai-
+offer-balance 23/23, diplomacy-basket-edit 25/25, diplomacy-stol-pw-sum 42/42, diplomacy-trade-
+flex 8/8, hud-skarbiec 7/7, hud-moc-warstwa 28/28, hud-miasto-stan-cywilizacji 20/20.
+
+**P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA** (worktree `agent-aee3e1d4edb7744d6`): potwierdzony
+jako CZYSTY bug (nie dwuznaczność produktowa) — `adjustTileWorker(delta=+1)` na obsadzonym polu
+błędnie ZDEJMOWAŁO robotnika (skopiowana logika toggle z sąsiedniej funkcji), łamiąc własny
+kontrakt kierunkowy (`delta: 1|-1`); teraz symetrycznie odmawia (`juz_obsadzone`) jak `delta=-1`
+już robił (`brak_robotnika`). Funkcja nie ma dziś ŻADNEGO wywołania produkcyjnego (tylko
+`toggleTileWorker` jest używana w UI) — zerowe ryzyko dla działającej gry. Test zaktualizowany
+(2 asercje). Bramki: tsc 0, logic-test 213/213, okolica-test 72/72.
+
+**P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY + P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI +
+P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY** (worktree `agent-ae4f5e2fac8dc9eb3`): usunięty
+zbędny `+` przed `signed()` w 2 miejscach `cityPanel.ts` (`appendPodzialPracyInfo`); separatory
+ujednolicone w `buildTopBarZywnoscDetailCard` (`signed()` na `wzrostProcent` i `bd.racje`, wzorzec
+z zamkniętej naprawy-siostry); brakujący parametr `zloze` dodany do 3 wywołań `tileYield()`
+(`cityPanel.ts:8207,8225`, `hexContextTooltip.ts:252`) — bez wpływu na dzisiejsze zachowanie
+(potwierdzone: dzisiejsze funkcje czytające ten wynik nie patrzą na `zloze`), zamyka „pułapkę na
+przyszłość", ten sam idiom co już naprawiony `yieldOfMapHex`. Bramki: tsc 0, logic-test 213/213,
+city-badge-growth-percent 38/38, city-growth-percent-rounding-parity 16/16, city-panel-growth-
+percent-separator 29/29, heks-panel-tooltip-warstwa 22/22, heks-plony-warstwy 24/24, heks-plony-
+zloze-forward 5/5, zloze-zloto-render 7/7.
+
+**P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI** (worktree `agent-a9c69aacb2255f424`): przyczyna
+znaleziona — `refreshTradeRoutesOverlay()` wołany tylko raz WCZEŚNIE w kaskadzie końca tury
+(przed turami AI/walką/oblężeniami), podczas gdy `cityRenderer.sync` (pigułki miast) ma już
+wywołanie w finalnej „siatce bezpieczeństwa" na końcu kaskady — trasy renderowały się względem
+stanu miast SPRZED tur AI. Naprawa: dopisane (addytywnie, nic nie przestawione) wywołanie
+`refreshTradeRoutesOverlay()` w finalnym bloku bezpieczeństwa, obok istniejącego
+`refreshWorkerFieldOverlay()`. C-026: 18 miejsc `cityRenderer.sync` + 4 istniejące
+`refreshTradeRoutesOverlay` przejrzane indywidualnie, żadne inne nietknięte. Bramki: tsc 0,
+logic-test 213/213, trade-routes-test 51/51, trade-routes-income 52/53 (ta sama pre-istniejąca
+porażka H2, potwierdzona identyczna na `git stash`).
+
+Dispatch JEDNEGO zbiorczego Evaluatora dla wszystkich czterech (różne pliki/obszary, zero
+nakładania się) NASTĘPUJE teraz.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
 
 Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
