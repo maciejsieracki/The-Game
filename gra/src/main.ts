@@ -831,6 +831,7 @@ import {
   autoBalanceRationsToSolvency,
   autoRaiseRationsForGrowth,
   maxSafePoziomRacjiForCity,
+  isCityAutoWyzywienieEnabled,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
@@ -1895,6 +1896,21 @@ async function boot(): Promise<void> {
     function markCityStateDirty(): void {
       empireEconDirty = true;
       powerDirty = true;
+      // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD: globalne czyszczenie, jak `empireEconDirty`/`powerDirty`
+      // wyżej -- ten cache nie ma per-city invalidacji, więc każda zmiana stanu miasta czyści
+      // całość; następne wywołanie `getMaxSafePoziomRacjiForPlayerCity` (panel lub
+      // `applyLiveSafeRationForCity`) odtworzy wpis. To GŁÓWNA, ale NIE JEDYNA ścieżka
+      // inwalidacji -- `tryDeductWonderStartFood` i gałąź `zywnosc` w `transferBasketItems`
+      // zmieniają `zapasyPanstwa` mid-turn BEZ przechodzenia przez `markCityStateDirty` i mają
+      // WŁASNE, osobne wywołania `_maxSafeRationCache.clear()` (patrz te dwa miejsca).
+      // / EN: global clear, same as the flags above -- no per-city invalidation exists for this
+      // cache, so any city-state change clears it all; the next `getMaxSafePoziomRacjiForPlayerCity`
+      // call (panel or `applyLiveSafeRationForCity`) repopulates the entry. This is the MAIN, but
+      // NOT the only invalidation path -- `tryDeductWonderStartFood` and the `zywnosc` branch of
+      // `transferBasketItems` change `zapasyPanstwa` mid-turn WITHOUT going through
+      // `markCityStateDirty` and carry their OWN separate `_maxSafeRationCache.clear()` calls
+      // (see those two call sites).
+      _maxSafeRationCache.clear();
     }
     function refreshObjectivePowerCache(): void {
       if (!powerDirty && objectivePowerByOwner.size > 0) return;
@@ -2763,6 +2779,13 @@ async function boot(): Promise<void> {
       if (st.zapasyPanstwa < foodCost) return false;
       st.zapasyPanstwa -= foodCost;
       empireFoodStates.set(ownerId, st);
+      // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 2): start budowy cudu zmienia
+      // zapasyPanstwa MID-TURN, poza ścieżką markCityStateDirty -- bez tego czyszczenia
+      // cache maxSafe zostaje z NIEAKTUALNYM (nie pustym) wpisem dla tego ownera.
+      // / EN: starting a wonder changes zapasyPanstwa MID-TURN, outside the
+      // markCityStateDirty path -- without this clear the maxSafe cache keeps a STALE
+      // (not empty) entry for this owner.
+      _maxSafeRationCache.clear();
       return true;
     }
 
@@ -4321,6 +4344,9 @@ async function boot(): Promise<void> {
         city.okolicaReczne = res.reczne;
         city.okolicaTryb = 'reczny';
         markCityStateDirty(); // D10: zmiana pól roboczych → przelicz
+        // P-AUTO-WYZYWIENIE-BUG1: przydział 👤 zmienił produkcję żywności TEGO miasta
+        // NA ŻYWO (nie na koniec tury) -- przelicz i, jeśli trzeba, obniż poziom racji od razu.
+        applyLiveSafeRationForCity(cityId);
         updateHud();
         refreshCityPanelIfOpen();
         syncOkolicaOverlay();
@@ -5731,6 +5757,7 @@ async function boot(): Promise<void> {
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
         getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
         getMaxSafePoziomRacji: (cityId: string) => getMaxSafePoziomRacjiForPlayerCity(cityId),
+        getCachedMaxSafePoziomRacji: (cityId: string) => _maxSafeRationCache.get(cityId),
         onCityRationChange: (cityId: string, level: PoziomRacji) => {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
@@ -5775,6 +5802,17 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
           city.autoWyzywienie = enabled;
+          // C-026: gdy gracz WŁĄCZA Auto Wyżywienie przy poziomRacji > maxSafe, przelicz
+          // natychmiast -- przed tym przełączeniem `applyLiveSafeRationForCity` był no-opem
+          // (gate `isCityAutoWyzywienieEnabled` blokował, bo flaga była jeszcze `false`), więc
+          // żadne z pozostałych 8 wywołań z rundy 1 tego nie pokrywało.
+          // / EN: when the player TURNS ON Auto Wyżywienie while poziomRacji > maxSafe,
+          // recompute immediately -- before this toggle, applyLiveSafeRationForCity was a
+          // no-op here (gated off, flag was still `false`), so none of the other 8 round-1
+          // call sites covered it.
+          if (enabled) {
+            applyLiveSafeRationForCity(cityId);
+          }
           markCityStateDirty();
           updateHud();
         },
@@ -5897,9 +5935,19 @@ async function boot(): Promise<void> {
           // ownera bez override; z override — zmiana tylko tego miasta (jak dawniej).
           if (city.okolicaFocusOverride) {
             city.okolicaFocus = focus;
+            // P-AUTO-WYZYWIENIE-BUG1: priorytet Okolicy zmienił produkcję żywności TEGO
+            // miasta na żywo -- przelicz od razu (nie czekaj na koniec tury).
+            applyLiveSafeRationForCity(cityId);
           } else {
             ownerDefaultOkolicaFocus.set(city.ownerId, focus);
             broadcastOkolicaFocusToOwnerCities(cities, city.ownerId, focus);
+            // P-AUTO-WYZYWIENIE-BUG1: broadcast dotyka WSZYSTKICH miast tego ownera bez
+            // override (dokładnie ten sam zbiór co broadcastOkolicaFocusToOwnerCities powyżej)
+            // -- przelicz każde z osobna, NIE całe imperium na ślepo.
+            for (const c of cities) {
+              if (c.ownerId !== city.ownerId || c.okolicaFocusOverride) continue;
+              applyLiveSafeRationForCity(c.id);
+            }
           }
           const labels: Record<string, string> = {
             zywnosc: 'Żywność',
@@ -5926,6 +5974,9 @@ async function boot(): Promise<void> {
           if (!next) {
             city.okolicaFocus = ownerDefaultOkolicaFocus.get(city.ownerId) ?? DEFAULT_OKOLICA_FOCUS;
           }
+          // P-AUTO-WYZYWIENIE-BUG1: odpięcie/przypięcie może zmienić priorytet Okolicy
+          // (gałąź `!next` wyżej) -> produkcja żywności tego miasta na żywo.
+          applyLiveSafeRationForCity(cityId);
           showHintMessage(
             next
               ? `${city.name}: priorytet pól odpięty od imperium (tylko to miasto)`
@@ -5942,6 +5993,9 @@ async function boot(): Promise<void> {
           city.okolicaTryb = 'reczny';
           const hasReczne = city.okolicaReczne && Object.values(city.okolicaReczne).some(n => n > 0);
           if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map, buildAllTerritoryNodes());
+          // P-AUTO-WYZYWIENIE-BUG1: przejście auto -> ręczny może zmienić przydział pól
+          // (seedReczneFromAuto) -> produkcja żywności tego miasta na żywo.
+          applyLiveSafeRationForCity(cityId);
           showHintMessage(
             `${city.name}: tryb ręczny — klik heks = przypisz/zabierz 👤`,
             3200,
@@ -5955,6 +6009,9 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.okolicaTryb = 'auto';
           delete city.okolicaReczne;
+          // P-AUTO-WYZYWIENIE-BUG1: powrót do auto może zmienić przydział pól ->
+          // produkcja żywności tego miasta na żywo.
+          applyLiveSafeRationForCity(cityId);
           refreshCityPanelIfOpen();
           updateHud();
           syncOkolicaOverlay();
@@ -7935,6 +7992,14 @@ async function boot(): Promise<void> {
             const toSt = empireFoodStates.get(toOwnerId) ?? freshEmpireFoodState(empireFoodDefaultPct());
             toSt.zapasyPanstwa += qty;
             empireFoodStates.set(toOwnerId, toSt);
+            // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 2): transfer żywności w dealu
+            // dyplomatycznym zmienia zapasyPanstwa MID-TURN (dawca i/lub biorca), poza
+            // ścieżką markCityStateDirty -- bez tego czyszczenia cache maxSafe zostaje
+            // z NIEAKTUALNYM (nie pustym) wpisem.
+            // / EN: a food transfer in a diplomatic deal changes zapasyPanstwa MID-TURN
+            // (giver and/or receiver), outside the markCityStateDirty path -- without this
+            // clear the maxSafe cache keeps a STALE (not empty) entry.
+            _maxSafeRationCache.clear();
             break;
           }
           case 'zloze': {
@@ -8808,6 +8873,47 @@ async function boot(): Promise<void> {
       doBudynkow: number;
       nauka: number;
     }> = [];
+    /**
+     * P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (e4155972 follow-up): cache maxSafe per miasto gracza,
+     * zapisywany w JEDYNYM miejscu, gdzie maxSafe jest dziś już liczony (`getMaxSafePoziomRacjiForPlayerCity`
+     * — wołane zarówno z panelu przez `cfg.getMaxSafePoziomRacji`, jak i z `applyLiveSafeRationForCity`).
+     * Czytany przez `cityGrowthLive` (hot path mousemove) przez `cfg.getCachedMaxSafePoziomRacji`, żeby
+     * plakietka miasta na mapie mogła przycinać WZROST% tak samo jak panel -- BEZ liczenia maxSafe na
+     * gorącej ścieżce. Unieważniany globalnie (jak `empireEconDirty`/`powerDirty` obok) w
+     * `markCityStateDirty()` — brak wpisu = `cityGrowthLive` spada do surowej wartości (fallback, nie awaria).
+     * TRZY dodatkowe, OSOBNE miejsca czyszczenia poza `markCityStateDirty()`: `tryDeductWonderStartFood`,
+     * gałąź `zywnosc` w `transferBasketItems`, oraz wywołanie `advanceEmpireFood` (tick końca tury) --
+     * wszystkie trzy zmieniają `zapasyPanstwa` (żywność imperium, wejście do liczenia maxSafe) w
+     * miejscu, gdzie `markCityStateDirty()` jeszcze nie zdążył zadziałać (dla `advanceEmpireFood`:
+     * `markCityStateDirty()` leci dopiero po synchronizacji renderera miast i kilku
+     * `yieldTurnTransitionUi()` niżej w tej samej turze -- przeglądarka realnie maluje między tymi
+     * krokami); bez tych trzech dodatkowych `.clear()` cache zostawałby z NIEAKTUALNYM (nie pustym)
+     * wpisem po starcie budowy cudu, transferze żywności w dealu dyplomatycznym, albo w fazie
+     * AI/barbarzyńcy/sprawdzanie zwycięstwa po końcu tury. Pokrycie inwalidacji jest dziś KOMPLETNE
+     * (wszystkie znane bezpośrednie mutacje `zapasyPanstwa` w `src/` są objęte -- zweryfikowane
+     * grepem po `zapasyPanstwa =` / `zapasyPanstwa -=` / `zapasyPanstwa +=` w `empire-food.ts` i
+     * `main.ts`; jedyne pominięte miejsce to `freshEmpireFoodState()` w `empire-food.ts`, które
+     * tworzy NOWY stan zamiast mutować istniejący i nie wymaga inwalidacji).
+     * / EN: maxSafe-per-city cache, written at the ONE place maxSafe is already computed today
+     * (`getMaxSafePoziomRacjiForPlayerCity`). Read by `cityGrowthLive` (mousemove hot path) via
+     * `cfg.getCachedMaxSafePoziomRacji` so the map badge can clamp WZROST% the same way the panel does,
+     * without computing maxSafe on the hot path. Invalidated globally in `markCityStateDirty()`; a
+     * missing entry makes `cityGrowthLive` fall back to the raw value. THREE additional, SEPARATE
+     * clear sites exist outside `markCityStateDirty()`: `tryDeductWonderStartFood`, the `zywnosc`
+     * branch of `transferBasketItems`, and the `advanceEmpireFood` call (end-of-turn tick) -- all
+     * three change `zapasyPanstwa` (empire food, an input to maxSafe) at a point where
+     * `markCityStateDirty()` has not run yet (for `advanceEmpireFood`: it only runs after the city
+     * renderer sync and several `yieldTurnTransitionUi()` awaits later in the same turn -- the
+     * browser paints for real between those steps); without these three extra `.clear()` calls the
+     * cache would keep a STALE (not empty) entry after starting a wonder, transferring food in a
+     * diplomatic deal, or during the post-end-of-turn AI/barbarian/victory-check phase. Invalidation
+     * coverage is now COMPLETE (every known direct `zapasyPanstwa` mutation in `src/` is covered --
+     * verified by grepping `zapasyPanstwa =` / `zapasyPanstwa -=` / `zapasyPanstwa +=` across
+     * `empire-food.ts` and `main.ts`; the only site NOT covered is `freshEmpireFoodState()` in
+     * `empire-food.ts`, which creates a NEW state rather than mutating an existing one and needs
+     * no invalidation).
+     */
+    const _maxSafeRationCache = new Map<string, number>();
 
     /** A1-Q18: oczekujące propozycje dyplomatyczne AI (blocking). */
     const pendingDiplomacyInbox: Array<{
@@ -13304,15 +13410,102 @@ async function boot(): Promise<void> {
           maSpichlerzIIPop: tk.maSpichlerzII ?? false,
         });
       }
-      return maxSafePoziomRacjiForCity({
-        cityId,
-        ownerId: 0,
-        cities,
-        econ: preview,
-        zapasyPrzed: foodSt.zapasyPanstwa,
-        rationParams: efParams.rationParams,
-        spichlerzByCity,
-      });
+      // N1 (runda 4, Evaluator): wypełnij cache dla WSZYSTKICH miast gracza na raz, nie tylko
+      // dla `cityId`. `preview` (previewCityEconomy) -- krok, który realnie kosztuje -- jest
+      // już policzony wyżej dla CAŁEGO imperium gracza; pętla `maxSafePoziomRacjiForCity` per
+      // miasto poniżej jest tania (odczyt z `preview.perCity` + 13 poziomów Wyżywienia), więc
+      // koszt liczenia dla WSZYSTKICH miast jest praktycznie taki sam jak dla jednego. Usuwa
+      // niedeterminizm plakietki na mapie: bez tego cache miał świeży wpis tylko dla miasta,
+      // którego panel był ostatnio otwarty (albo które ostatnio wołało applyLiveSafeRationForCity)
+      // -- pozostałe miasta gracza pokazywały surową (nieprzyciętą) wartość aż do własnego
+      // odświeżenia.
+      // / EN: fill the cache for ALL player cities at once, not just `cityId`. `preview`
+      // (previewCityEconomy) -- the actually expensive step -- is already computed above for
+      // the player's WHOLE empire; the per-city `maxSafePoziomRacjiForCity` loop below is cheap
+      // (reads from `preview.perCity` + a 13-level Wyżywienie scan), so computing it for ALL
+      // cities costs practically the same as computing it for one. This removes the map badge's
+      // non-determinism: without this, the cache only had a fresh entry for whichever city's
+      // panel was last opened (or last triggered applyLiveSafeRationForCity) -- other player
+      // cities kept showing the raw (unclamped) value until their own refresh.
+      let maxSafe = WYZYWIENIE_MAX;
+      let foundInPlayerCities = false;
+      for (const pc of playerCities) {
+        const maxSafeForCity = maxSafePoziomRacjiForCity({
+          cityId: pc.id,
+          ownerId: 0,
+          cities,
+          econ: preview,
+          zapasyPrzed: foodSt.zapasyPanstwa,
+          rationParams: efParams.rationParams,
+          spichlerzByCity,
+        });
+        _maxSafeRationCache.set(pc.id, maxSafeForCity);
+        if (pc.id === cityId) { maxSafe = maxSafeForCity; foundInPlayerCities = true; }
+      }
+      // Blokada 2 (runda 5 Evaluatora): `cityId` gracza spoza `playerCities` -- czyli miasto
+      // OBLĘŻONE (`playerCities` filtruje `!c.oblegane`) -- nigdy nie trafia w warunek
+      // `pc.id === cityId` w pętli wyżej, więc `maxSafe` zostałby na inicjalizatorze
+      // `WYZYWIENIE_MAX` zamiast realnego wyniku. PRZED wprowadzeniem pętli (N1, runda 4) ta
+      // funkcja wołała `maxSafePoziomRacjiForCity` bezpośrednio dla KAŻDEGO miasta gracza, w tym
+      // oblężonych -- to zachowanie odtwarzamy tu jako fallback. Świadomie BEZ zapisu do cache:
+      // miasto oblężone to rzadki, specyficzny przypadek, brak wpisu w cache dla niego nie jest
+      // problemem wydajnościowym (spada do tej samej ścieżki co dziś przy każdym odczycie).
+      // / EN: a player `cityId` outside `playerCities` -- i.e. a BESIEGED city (`playerCities`
+      // filters out `!c.oblegane`) -- never hits `pc.id === cityId` in the loop above, so `maxSafe`
+      // would stay at the `WYZYWIENIE_MAX` initializer instead of the real result. BEFORE the loop
+      // was introduced (N1, round 4) this function called `maxSafePoziomRacjiForCity` directly for
+      // EVERY player city, besieged included -- we restore that behavior here as a fallback.
+      // Deliberately NOT cached: a besieged city is a rare, specific case, and no cache entry for
+      // it is not a performance problem (it falls back to this same path on every read).
+      if (!foundInPlayerCities) {
+        maxSafe = maxSafePoziomRacjiForCity({
+          cityId,
+          ownerId: 0,
+          cities,
+          econ: preview,
+          zapasyPrzed: foodSt.zapasyPanstwa,
+          rationParams: efParams.rationParams,
+          spichlerzByCity,
+        });
+      }
+      return maxSafe;
+    }
+
+    /**
+     * P-AUTO-WYZYWIENIE-BUG1 (ECHO A Macieja): przelicza i, jeśli trzeba, obniża poziom
+     * racji JEDNEGO miasta gracza do maxSafe -- NA ŻYWO, przy KAŻDEJ zmianie wpływającej na
+     * produkcję żywności TEGO miasta w trakcie tury (nie tylko na koniec tury, jak wcześniej
+     * -- `autoBalanceRationsToSolvency`/clamp Q3=A w `triggerPlayerEndTurn`). Tylko gdy Auto
+     * Wyżywienie WŁ (`isCityAutoWyzywienieEnabled`) — z Auto WYŁ suwak gracza zostaje przy
+     * ustawionej ręcznie wartości; wyświetlanie i tak przycina Bilans/WZROST% do maxSafe
+     * (P-WZROSTPROCENT-SUROWY-POZIOM, e4155972).
+     *
+     * ⚠️ Wołaj WYŁĄCZNIE z DYSKRETNYCH zdarzeń zmiany stanu gry (klik na polu okolicy,
+     * zmiana priorytetu/trybu okolicy, ukończenie budynku / rush-buy) — NIGDY z gorącej
+     * ścieżki renderu/hover/mousemove. `getMaxSafePoziomRacjiForPlayerCity` woła pełny
+     * `previewCityEconomy` (wszystkie miasta gracza) + pętlę 13 poziomów Wyżywienia —
+     * dokładnie ten sam koszt, który Evaluator kazał usunąć ze ścieżki mousemove w
+     * `e4155972` (`cityGrowthLive`). Na dyskretnym zdarzeniu (klik, ukończenie budynku)
+     * ten koszt jest jednorazowy i akceptowalny; na mousemove byłby wielokrotny na sekundę.
+     *
+     * / EN: recomputes and, if needed, lowers ONE player city's ration level to maxSafe --
+     * LIVE, on EVERY change affecting that city's food production during the turn (not just
+     * at end of turn as before). Only when Auto Wyżywienie is ON. ⚠️ Call ONLY from discrete
+     * game-state-change events (okolica tile click, okolica mode/priority change, building
+     * completion / rush-buy) — NEVER from the render/hover/mousemove hot path. Same perf
+     * trap fixed in e4155972 for `cityGrowthLive` -- acceptable as a one-off on a discrete
+     * event, not acceptable multiple times per second on mousemove.
+     */
+    function applyLiveSafeRationForCity(cityId: string): void {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || city.ownerId !== 0) return;
+      if (!isCityAutoWyzywienieEnabled(city)) return;
+      ensureCityRationDefaults(city);
+      const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
+      if (getCityRationLevel(city) > maxSafe) {
+        city.poziomRacji = maxSafe;
+        markCityStateDirty(); // D10: poziom racji zmieniony na żywo -> przelicz ekonomię/HUD
+      }
     }
 
     /** Projekcja przyrostu magazynu centralnego (PYTANIE-85). */
@@ -17192,6 +17385,10 @@ async function boot(): Promise<void> {
                 console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
               }
               cityProd.set(cityId, applied.prod);
+              // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek NATYCHMIAST (mid-turn,
+              // nie czeka na koniec tury) -- jeśli to budynek wpływający na produkcję
+              // żywności tego miasta, przelicz poziom racji od razu.
+              applyLiveSafeRationForCity(cityId);
             }
           }
           updateHud();
@@ -22103,6 +22300,20 @@ async function boot(): Promise<void> {
             lastEfTickResult = advanceEmpireFood(
               econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
             );
+            // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 1, runda 5 Evaluatora): `advanceEmpireFood`
+            // zapisuje `st.zapasyPanstwa = central` (empire-food.ts) -- to koniec-tury zmiana
+            // `zapasyPanstwa`, wejścia do liczenia maxSafe, ale `markCityStateDirty()` (który też
+            // czyści ten cache) jest wołany dopiero PO synchronizacji renderera miast i kilku
+            // `await yieldTurnTransitionUi()` niżej w tej samej funkcji -- między tym zapisem a tym
+            // czyszczeniem przeglądarka realnie maluje plakietki z przeterminowanym cache. Czyścimy
+            // od razu tutaj, bezwarunkowo (degraduje najwyżej do surowego fallbacku, nie do awarii).
+            // / EN: `advanceEmpireFood` writes `st.zapasyPanstwa = central` (empire-food.ts) -- an
+            // end-of-turn change to `zapasyPanstwa`, an input to maxSafe -- but `markCityStateDirty()`
+            // (which also clears this cache) only runs AFTER the city renderer sync and several
+            // `yieldTurnTransitionUi()` awaits further down this same function -- the browser paints
+            // for real between this write and that clear. Clear it here immediately, unconditionally
+            // (degrades at worst to the raw fallback, never a crash).
+            _maxSafeRationCache.clear();
             const efTickResult = lastEfTickResult;
 
             // NAPRAWA PARYTETU (Maciej 2026-07-26, bez pytania — luka, nie decyzja):
@@ -25706,6 +25917,9 @@ async function boot(): Promise<void> {
                   console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
                 }
                 cityProd.set(cityId, applied.prod);
+                // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek natychmiast (mid-turn) --
+                // jeśli wpływa na produkcję żywności tego miasta, przelicz poziom racji od razu.
+                applyLiveSafeRationForCity(cityId);
               }
             }
             updateHud();
