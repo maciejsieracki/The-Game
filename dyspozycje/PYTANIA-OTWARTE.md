@@ -9916,3 +9916,25 @@ aktualizacji playbooka, żeby nie mieszać wątków). **STATUS: ZAMKNIĘTE (retr
 gotowy od 2026-08-09).**
 
 ---
+
+## DEPLOY ROBOCZA FALA 268 — ZAKOŃCZONY (2026-08-10)
+
+Agent `a9bf14224ec3df83f` (Opus 5) dostarczył: md5 `3bc0236b8ef52d34aacaea1704bb010b`,
+`gra-robocza/Gra-ROBOCZA.html`, stempel `43c9d423 · 2026-08-10 17:56 UTC`. 3 tematy (koszt-ulepszeń-UX,
+Auto Wyżywienie live-recalc+cache+Wzrost%, Spichlerz „(0)"). Bramki: kanoniczne zielone (tsc 0,
+logic-test 213/213, tech-tree/research/unit-replace/ai-founding-territory) + 7 tematycznych, 239
+asercji, 0 porażek. `gra/data` zweryfikowane nietknięte (git diff puste). Zalogowane w `WERSJE.md`
+(FALA 267 → `ZASTĄPIONA`) i `KANAL-PRACA.md`. Commity `23216527`+`96db01be`, fast-forward push.
+
+**Domknięcie porządków — merge do `main` wg `R-MERGE-MAIN-RYTM-Q1`.** Powstanie FALI 268 kwalifikuje
+FALĘ 267 (`b2193a91`) do scalenia — agent deployu świadomie zostawił to poza swoim zakresem, ja
+wykonałem osobno: `git checkout main && git merge b2193a91 --no-ff` (merge `99974173`), zero
+konfliktów, bramki na `main` po scaleniu zielone (tsc 0, logic-test 213/213), fast-forward push,
+wpis w `KANAL-PRACA.md`. `main` teraz na `99974173` (było `008cf94a`/FALA 266). FALA 268 zostaje na
+gałęzi sesji do testów, zgodnie z rytmem.
+
+**WSZYSTKIE CZTERY TEMATY PRIORYTETOWE MACIEJA ZAMKNIĘTE, SCALONE I WDROŻONE. Autoryzacja „jak
+zakończysz wszystkie tematy, zrób deploy do roboczej oraz domknij porządki" — WYKONANA W CAŁOŚCI.**
+Sesja czeka na powrót Macieja do playtestu FALI 268.
+
+---

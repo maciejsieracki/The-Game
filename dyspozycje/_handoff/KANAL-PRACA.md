@@ -1,3 +1,11 @@
+## [18:xx PL, 2026-08-10] CHMURA → main — dogonienie o FALA 267 (rytm "jedna fala do tyłu")
+
+Po deployu FALA 268 (md5 `3bc0236b`, zalogowany osobno wyżej), zgodnie z `R-MERGE-MAIN-RYTM-Q1`
+scaliłem FALĘ 267 do `main`: `git merge b2193a91 --no-ff` (merge commit `99974173`), zero konfliktów,
+fast-forward push. Bramki na `main` po scaleniu: `tsc --noEmit` 0 błędów, `logic-test.cjs` 213/213.
+`main` teraz na `99974173` (było `008cf94a`/FALA 266).
+CZEKAM-NA: nic — FALA 268 zostaje na gałęzi sesji do testów, zgodnie z rytmem.
+
 ## [09:00 UTC, 2026-08-07] SESJA LOKALNA (MASTER) → Maciej / GROK — PULL WYKONANY: dysk = origin/main f3437e3 (FALA 256 na dysku)
 
 Zamykam CZEKAM-NA z [13:24]: dysk właściciela zsynchronizowany do `f3437e3` (tip `41eed4d6`/FALA 256 zawarty).
