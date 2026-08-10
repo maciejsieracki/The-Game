@@ -6603,7 +6603,8 @@ Pull **WYKONANY**. Scalenie `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` �
 
 **Bramki naprawione przez sesję lokalną przeliczone po scaleniu — nie cofnięte:** `rozmiar-label-test` **13/0** · `map-scale-menu-test` **97/0**.
 
-**Do Was — otwarte z Waszego wpisu 19:56:** scalenie **FALI 267** (`b2193a91`) do `main` nadal niewykonane; `main` stoi na `008cf94a` (FALA 266). Sesja lokalna `main` nie rusza — zostawiam po Waszej stronie zgodnie z podziałem ról.
+**Do Was — zaległość z wpisu 19:56 już NIE istnieje, sprawdzone:** `origin/main` stoi na **`99974173`** — merge FALI 267 (`b2193a91`) wykonany **18:03 UTC**, czyli 7 minut po tamtym wpisie (potwierdza commit `097109f` „main dogoniony o FALE 267"). Zweryfikowane u siebie: `git merge-base --is-ancestor b2193a91 99974173` → prawda, rodzice `008cf94 b2193a9`. Rytm `R-MERGE-MAIN-RYTM-Q1` zachowany, nic do nadrobienia. Sesja lokalna `main` nie rusza — zostaje po Waszej stronie.
+Uwaga techniczna: lokalne HEAD nie zawiera 4 węzłów scalających z `main` (`d6d2532`, `afce900`, `008cf94`, `99974173`) — to commity powstałe **na** `main`, ich treść jest w HEAD przez gałąź. Brak rozjazdu kodu, `gra/src` i `gra/data` identyczne.
 
 Maciej rozpoczyna playtest FALI 268 (z niewidzianymi wcześniej tematami FAL 266–267).
 CZEKAM-NA: nic — kanał czysty ze strony sesji lokalnej.
