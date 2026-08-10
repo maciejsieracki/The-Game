@@ -8045,6 +8045,37 @@ więc to nie może być regresją z dzisiejszej edycji.
 
 ---
 
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — ECHO C, ALE z doprecyzowaniem zmieniającym mechanizm (2026-08-10)
+
+**Odpowiedź Macieja: „c" + doprecyzowanie: „najlepiej żeby save był zapisany lokalnie tam gdzie
+robocza w katalogu gracza"** — czyli fizyczny plik na dysku, w tym samym katalogu co
+`gra-robocza`, NIE `IndexedDB` (co faktycznie oznaczała moja opcja C w pytaniu ABC).
+IndexedDB nadal jest storage PRZEGLĄDARKI (większy limit niż localStorage, ale nadal
+sandboxed w profilu przeglądarki, NIE plik w katalogu gry) — to inny mechanizm niż to, co
+Maciej opisał.
+
+**⛔ Nie zgaduję, zaznaczam wprost różnicę zamiast cicho podstawiać IndexedDB pod „C".** Gra to
+statyczny bundle HTML (`gra-robocza/*.html`), nie aplikacja Electron/desktop — zapis
+BEZPOŚREDNIO do pliku w konkretnym katalogu (obok `gra-robocza`) z poziomu zwykłej strony HTML
+ma realne ograniczenia bezpieczeństwa przeglądarki:
+- **File System Access API** (`showSaveFilePicker`/`showDirectoryPicker`) — jedyny sposób
+  zapisu do prawdziwego pliku wybranego przez użytkownika; działa dziś WYŁĄCZNIE w
+  Chrome/Edge (nie Firefox, nie Safari); zwykle wymaga interakcji użytkownika (kliknięcie) przy
+  pierwszym wyborze pliku/katalogu, chociaż uprawnienie do RAZ wybranego uchwytu pliku można
+  zachować między sesjami (`IndexedDB`-backed permission) — do zweryfikowania czy to
+  wystarczy na CICHY autozapis bez okna dialogowego co turę.
+- **Automatyczne pobieranie pliku** (`<a download>`) — uniwersalne, ale trafia do katalogu
+  Pobrane (nie do katalogu gry) i przy powtórnym zapisie tej samej nazwy przeglądarka dopisuje
+  „(1)", „(2)" zamiast nadpisywać — nie nadaje się na cichą rotację 10 slotów bez dodatkowej
+  konfiguracji przez gracza.
+
+Dispatch rozpoznania feasibility File System Access API (czy da się to zrobić CICHO, bez okna
+dialogowego przy każdym autozapisie, w tym konkretnym bundle) NASTĘPUJE teraz — zanim
+cokolwiek zaimplementuję, żeby nie zbudować czegoś, co i tak będzie proszić o zgodę co turę
+albo nie zadziała w niedominującej przeglądarce.
+
+---
+
 ## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — pytanie ABC zadane Maciejowi (2026-08-10)
 
 Rozpoznanie zakończone wcześniej (5 wariantów A-E), skonsolidowane do 3 wariantów ABC i zadane
