@@ -8568,3 +8568,28 @@ rozpoznania, gdy Maciej da sygnał do podjęcia.
 Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md.
 
 ---
+
+## P-HUD-KULTURA-SIGNED-NIESPOJNE — Evaluator: PASS-WITH-NOTES, temat ZAMKNIĘTY (2026-08-10)
+
+Niezależnie zweryfikowane (Opus 5), zero blokujących. Kluczowe potwierdzenia: `Math.floor`
+jest idempotentne (`s.kultura` już floorowane w `main.ts:13518`, ten sam wzorzec co `nauka`);
+zapas nieujemny (klampowany w `culture-religion.ts:1215`), floor bezpieczny; **poprawka
+usuwa też istniejącą sprzeczność chipu z jego własnym tooltipem** (`kulturaChipTitle` od
+zawsze liczył `Math.floor(s.kultura)` bez znaku — przed poprawką tooltip i chip się nie
+zgadzały); przegląd wszystkich 11 wystąpień `signed(.*kultura` w `src/` — pozostałe to
+poprawnie `kulturaRate`/przyrost na turę, nie kopie tej samej niekonsekwencji. Bramki:
+tsc 0, logic-test 213/213, hud-moc-warstwa-test 28/28 (jedyny test dotykający `hud.ts`).
+
+**Nota do osobnej weryfikacji (znalezisko Evaluatora, POZA zakresem tej poprawki, nie
+blokuje):** `main.ts:21845-21846` — `playerEcon.kultura` trafia jednocześnie do
+`_lastKulturaRate` I do `_lastKultura` (zapas), zanim linia 22860 nadpisuje zapas
+prawdziwą sumą skumulowaną z miast — możliwe okno w obrębie ticku, gdzie zmienna zapasu
+chwilowo trzyma wartość tempa. Nie zbadana osiągalność/skutek. Do rozpoznania osobno,
+niepilne.
+
+Temat już scalony (`ac07e79e`), Evaluator wyłącznie potwierdził post-factum.
+**STATUS: ZAMKNIĘTE.**
+
+---
+
+---
