@@ -17,6 +17,13 @@
  *      ownerId-agnostyczne (ten sam wynik dla dowolnego ownerId przy tym samym magazynie) +
  *      strukturalna kontrola main.ts -- brak gałęzi `ownerId === 0` wokół wywołania w pętli
  *      Porządku, ta sama pętla obejmuje WSZYSTKICH właścicieli.
+ *   F. Wiring main.ts -> silnik tury (naprawa N1, Evaluator PASS-WITH-NOTES na 8d6d3d54):
+ *      trzy strukturalne asercje regex (PO stripLineComments -- kod zakomentowany liczy się
+ *      jako brak, nie jako obecność) łapiące usunięcie/podmianę pól opcjonalnych w main.ts,
+ *      których `tsc --noEmit` NIE łapie (oba pola opcjonalne z fallbackiem `?? 0`) +
+ *      asercja BEHAWIORALNA wołająca applyPostCentralPopulationGrowth (population-growth-v85.ts)
+ *      RAZ z citizenGrowthPctByCityId ustawionym, RAZ bez -- dowód runtime-skutku, nie tylko
+ *      braku stringa w źródle (Evaluator, wzorem cs-military-cap-wiring-test.cjs sekcja 4).
  */
 
 const fs = require('fs');
@@ -41,7 +48,7 @@ export {
   CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING,
 } from '../src/game/citizen-resource-upkeep';
 export { computeHappinessBreakdown } from '../src/game/society-breakdown';
-export { computeGrowthPercentV85 } from '../src/game/population-growth-v85';
+export { computeGrowthPercentV85, applyPostCentralPopulationGrowth } from '../src/game/population-growth-v85';
 export { ownerResourceStockAll } from '../src/game/building-stock-cost';
 `, 'utf8');
 
@@ -64,6 +71,26 @@ try {
 
 const M = require(BUNDLE_FILE);
 const rawTable = require('../data/citizen-resource-upkeep.json');
+
+const MAIN_TS = path.join(GRA, 'src', 'main.ts');
+const mainSrcRaw = fs.readFileSync(MAIN_TS, 'utf8');
+
+/** Usuwa komentarze `// ...` (do końca linii) -- bez tego regex "widzi" kod zakomentowany
+ *  jako żywy i mutant (np. zakomentowana linia wiringu w main.ts) przeżywa bramkę bez
+ *  czerwieni. Wzorowane na cs-military-cap-wiring-test.cjs (ta sama technika, ten sam
+ *  kompromis: naiwne cięcie po pierwszym "//" w linii -- main.ts nie ma "://" w żywym kodzie
+ *  poza wnętrzem komentarzy blokowych JSDoc). / EN: same naive line-comment strip as
+ *  cs-military-cap-wiring-test.cjs -- safe here for the same reason. */
+function stripLineComments(src) {
+  return src
+    .split('\n')
+    .map((line) => {
+      const idx = line.indexOf('//');
+      return idx >= 0 ? line.slice(0, idx) : line;
+    })
+    .join('\n');
+}
+const mainSrcStripped = stripLineComments(mainSrcRaw);
 
 let passed = 0, failed = 0;
 function assert(cond, msg) { if (cond) { passed++; } else { failed++; console.error('FAIL:', msg); } }
@@ -243,17 +270,14 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
   // resolveCitizenResourceCoverage/citizenRequiredResourcesForEra nie przyjmują ownerId w ogóle
   // -- ten sam magazyn+era zawsze daje ten sam wynik niezależnie "czyj" jest ownerId (parytet
   // jest strukturalną własnością sygnatury funkcji, nie flagą do przetestowania per owner).
-  const stockA = { drewno: 5, glina: 0 };
-  const forPlayer = M.resolveCitizenResourceCoverage(1, stockA);
-  const forAi = M.resolveCitizenResourceCoverage(1, stockA); // identyczne wejście, inny "domniemany" owner
-  deepEqSet(forPlayer.available, forAi.available, 'gracz i AI: IDENTYCZNY magazyn -> IDENTYCZNY wynik (funkcja nie widzi ownerId)');
-  eq(forPlayer.happinessDelta, forAi.happinessDelta, 'parytet happinessDelta gracz/AI');
-  eq(forPlayer.growthPctDelta, forAi.growthPctDelta, 'parytet growthPctDelta gracz/AI');
+  // Uwaga (Evaluator N7, usunięte 3 tautologiczne asercje forPlayer===forAi): wywoływanie tej
+  // samej funkcji dwa razy z IDENTYCZNYM wejściem i porównywanie wyników nie dowodzi niczego --
+  // realny dowód parytetu leży niżej (kontrola strukturalna main.ts: brak gałęzi ownerId===0).
 
   // Kontrola strukturalna main.ts: pętla Porządku (evaluateOrderFromBreakdown) iteruje
   // `for (const city of cities)` bez filtra ownerId===0 wokół wywołania resolveCitizenResourceCoverage
   // -- to jest DOWÓD, że AI i Państwa-Miasta przechodzą przez TĘ SAMĄ ścieżkę co gracz.
-  const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
+  const mainSrc = mainSrcRaw;
   assert(
     mainSrc.includes("import { resolveCitizenResourceCoverage } from './game/citizen-resource-upkeep';"),
     'main.ts importuje resolveCitizenResourceCoverage z citizen-resource-upkeep.ts',
@@ -279,6 +303,134 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
   assert(
     mainSrc.includes('const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();'),
     'main.ts: magazyn centralny cache\'owany per-owner (makeOwnerEmpireStockResolver) -- jeden wspólny resolver dla wszystkich ownerów, gracza i AI',
+  );
+}
+
+// ===========================================================================
+// F. Wiring main.ts -> silnik tury (naprawa N1, Evaluator PASS-WITH-NOTES na 8d6d3d54)
+// ===========================================================================
+console.log('\n-- F. Wiring main.ts -> silnik tury (N1: happinessDelta + growthPctByCityId) --');
+{
+  // ---------------------------------------------------------------------
+  // F1. Regex strukturalny: citizenResourceHappinessDelta: citizenUpkeep.happinessDelta
+  //     WEWNĄTRZ okna wywołania `const ordPctRaw = evaluateOrderFromBreakdown(` (pierwszy
+  //     argument to happinessInput przekazywane 1:1 do computeHappinessBreakdown --
+  //     society-breakdown.ts:632 `computeHappinessBreakdown(happinessInput, society)`).
+  //     Mutant 1 (Evaluator): usunięcie tej linii z obiektu wejściowego -- wyłącza CAŁY
+  //     kanał Szczęścia po cichu (pole opcjonalne, `tsc` tego nie łapie).
+  // ---------------------------------------------------------------------
+  const ORD_ANCHOR = 'const ordPctRaw = evaluateOrderFromBreakdown(';
+  const ordIdx = mainSrcStripped.indexOf(ORD_ANCHOR);
+  assert(ordIdx > -1, 'main.ts: kotwica "const ordPctRaw = evaluateOrderFromBreakdown(" znaleziona (po stripLineComments)');
+  const ordWindow = ordIdx > -1 ? mainSrcStripped.slice(ordIdx, ordIdx + 1200) : '';
+  assert(
+    /citizenResourceHappinessDelta:\s*citizenUpkeep\.happinessDelta,/.test(ordWindow),
+    'F1 (mutant 1): "citizenResourceHappinessDelta: citizenUpkeep.happinessDelta," obecne w oknie '
+      + 'wywołania evaluateOrderFromBreakdown -- jako ŻYWY kod (nie w komentarzu)',
+  );
+
+  // ---------------------------------------------------------------------
+  // F2. Regex strukturalny: "citizenGrowthPctByCityId," WEWNĄTRZ okna wywołania
+  //     `applyPostCentralPopulationGrowth({`. Mutant 2 (Evaluator): usunięcie tej linii z opts
+  //     -- wyłącza CAŁY kanał Rozwoju po cichu (pole opcjonalne, `tsc` tego nie łapie).
+  // ---------------------------------------------------------------------
+  const APPLY_ANCHOR = 'applyPostCentralPopulationGrowth({';
+  const applyIdx = mainSrcStripped.indexOf(APPLY_ANCHOR);
+  assert(applyIdx > -1, 'main.ts: kotwica "applyPostCentralPopulationGrowth({" znaleziona (po stripLineComments)');
+  const applyWindow = applyIdx > -1 ? mainSrcStripped.slice(applyIdx, applyIdx + 900) : '';
+  assert(
+    /^\s*citizenGrowthPctByCityId,\s*$/m.test(applyWindow),
+    'F2 (mutant 2): "citizenGrowthPctByCityId," obecne w oknie opts przekazywanych do '
+      + 'applyPostCentralPopulationGrowth -- jako ŻYWY kod (nie w komentarzu, nie usunięte z opts)',
+  );
+
+  // ---------------------------------------------------------------------
+  // F3. Regex strukturalny: budowa mapy citizenGrowthPctByCityId musi CZYTAĆ
+  //     `st.citizenUpkeep?.growthPctDelta ?? 0`, NIE gołe stałe `0`. Mutant 3 (Evaluator):
+  //     podmiana `.set(cid, st.citizenUpkeep?.growthPctDelta ?? 0)` na `.set(cid, 0)` -- ten
+  //     sam efekt runtime co mutant 2 (kanał Rozwoju zawsze 0), inna lokalizacja w pliku.
+  // ---------------------------------------------------------------------
+  const MAP_ANCHOR = 'const citizenGrowthPctByCityId = new Map<string, number>();';
+  const mapIdx = mainSrcStripped.indexOf(MAP_ANCHOR);
+  assert(mapIdx > -1, 'main.ts: kotwica budowy mapy citizenGrowthPctByCityId znaleziona (po stripLineComments)');
+  const mapWindow = mapIdx > -1 ? mainSrcStripped.slice(mapIdx, mapIdx + 400) : '';
+  assert(
+    /citizenGrowthPctByCityId\.set\(cid,\s*st\.citizenUpkeep\?\.growthPctDelta\s*\?\?\s*0\)/.test(mapWindow),
+    'F3 (mutant 3): ".set(cid, st.citizenUpkeep?.growthPctDelta ?? 0)" obecne -- NIE zastąpione '
+      + 'gołym ".set(cid, 0)" (regex wymaga dokładnie tego odczytu, literał 0 by nie pasował)',
+  );
+
+  // ---------------------------------------------------------------------
+  // F4. RUNTIME (behawioralne, rekomendacja Evaluatora): applyPostCentralPopulationGrowth
+  //     faktycznie WYKONANE (przez esbuild, ta sama technika co sekcja 4 w
+  //     cs-military-cap-wiring-test.cjs) RAZ z citizenGrowthPctByCityId ustawionym na
+  //     niezerową wartość, RAZ bez (undefined) -- dowód SKUTKU RUNTIME, nie tylko braku
+  //     stringa w źródle main.ts. Łapie mutanta 2 I mutanta 3 niezależnie od dokładnej
+  //     nazwy/lokalizacji pola w przyszłości (regex może przestać pasować po refaktorze,
+  //     wywołanie realnej funkcji nie).
+  // ---------------------------------------------------------------------
+  const rationParamsF = {
+    racjeZywnosc1: 2, racjeZywnosc2: 4, racjeZywnosc3: 6,
+    racjeWzrostProc1: 3, racjeWzrostProc2: 5, racjeWzrostProc3: 7,
+  };
+  const econParamsF = { akweduktProgLudnosci: 20, spichlerzProgLudnosci: 20, akweduktMaxLudnosci: 20 };
+
+  function makeGrowthOpts(citizenGrowthPctByCityId) {
+    const city = {
+      id: 'cityF', ownerId: 0, name: 'MiastoF', population: 3,
+      poziomRacji: 4, wzrostUlamkowy: 0, turyBezDoplaty: 0, wealthState: { poziom: 1 },
+    };
+    const row = { cityId: 'cityF' };
+    return {
+      opts: {
+        cities: [city],
+        econ: { perCity: [{ cityId: 'cityF', oblegany: false, zdrowie: 0 }], growth: 0, starved: 0 },
+        efResult: {
+          perOwner: [{
+            perCityRows: [row],
+            fedByCityId: new Map([['cityF', true]]),
+          }],
+        },
+        map: {},
+        territoryNodes: [],
+        econParams: econParamsF,
+        rationParams: rationParamsF,
+        ...(citizenGrowthPctByCityId !== undefined ? { citizenGrowthPctByCityId } : {}),
+      },
+      row,
+    };
+  }
+
+  const withPenalty = makeGrowthOpts(new Map([['cityF', -5]]));
+  M.applyPostCentralPopulationGrowth(withPenalty.opts);
+  const withoutPenalty = makeGrowthOpts(undefined);
+  M.applyPostCentralPopulationGrowth(withoutPenalty.opts);
+
+  assert(
+    !!withPenalty.row.breakdown && !!withoutPenalty.row.breakdown,
+    'F4: applyPostCentralPopulationGrowth wypełniło row.breakdown w obu wywołaniach',
+  );
+  eq(
+    withPenalty.row.breakdown.zaopatrzenie, -5,
+    'F4: z citizenGrowthPctByCityId={cityF: -5}, row.breakdown.zaopatrzenie = -5 (wprost przekazane)',
+  );
+  eq(
+    withoutPenalty.row.breakdown.zaopatrzenie, 0,
+    'F4: BEZ citizenGrowthPctByCityId (undefined), row.breakdown.zaopatrzenie = 0 (fallback ?? 0, zero regresji)',
+  );
+  assert(
+    withPenalty.row.breakdown.zaopatrzenie !== withoutPenalty.row.breakdown.zaopatrzenie,
+    'F4: kluczowy dowód runtime -- zaopatrzenie RÓŻNI SIĘ między wywołaniem z karą i bez '
+      + `(got ${withPenalty.row.breakdown.zaopatrzenie} vs ${withoutPenalty.row.breakdown.zaopatrzenie})`,
+  );
+  assert(
+    withPenalty.row.breakdown.total !== withoutPenalty.row.breakdown.total,
+    'F4: total RÓŻNI SIĘ między wywołaniem z karą i bez -- kara Rozwoju realnie wchodzi w sumę '
+      + `(got ${withPenalty.row.breakdown.total} vs ${withoutPenalty.row.breakdown.total})`,
+  );
+  eq(
+    withPenalty.row.breakdown.total, withoutPenalty.row.breakdown.total - 5,
+    'F4: total_z_karą = total_bez_kary + (-5) -- delta wchodzi 1:1, addytywnie',
   );
 }
 
