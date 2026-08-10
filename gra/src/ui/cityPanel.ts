@@ -4436,7 +4436,7 @@ function appendPodzialPracyInfo(
   info.appendChild(rowTotal);
 
   const rowBud = el('div', 'psi-row');
-  let budVal = praca ? `+${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—';
+  let budVal = praca ? `${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—';
   let budSub = '';
   if (front && praca) {
     const paused = prod.wstrzymana === true;
@@ -4459,7 +4459,7 @@ function appendPodzialPracyInfo(
   const poolTip = `Zapas całej cywilizacji: ${pool} Pracy · załóż miasto, ulepszenia / projekty mapy`;
   rowPool.innerHTML =
     `<span class="psi-lbl">${psiRowLabel('tb-build', 'Ulepszenia', poolTip)}</span>` +
-    `<span class="psi-val blue">${praca ? `+${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
+    `<span class="psi-val blue">${praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
     `<div class="psi-sub">Zapas Pracy na ulepszenia pól: ${pool}${cityPanelChipIconWrap('res-work', 14)} · farma, kamieniołom, projekty mapy</div></span>`;
   info.appendChild(rowPool);
 
@@ -4876,9 +4876,9 @@ function buildTopBarZywnoscDetailCard(
   appendDetailSection(card, 'WZROST ludności');
   const g2 = appendDetailGrid(card);
   const bd = view.growthBreakdown;
-  gridDetailRow(g2, 'Łącznie', `${view.wzrostProcent}%`);
+  gridDetailRow(g2, 'Łącznie', `${signed(view.wzrostProcent)}%`);
   gridDetailRow(g2, 'Ułamek', view.wzrostUlamkowy.toFixed(2));
-  gridDetailRow(g2, 'Składniki', `racje ${bd.racje}% · małe miasto ${bd.maleMiasto}% · Spichlerz ${bd.spichlerz}%`);
+  gridDetailRow(g2, 'Składniki', `racje ${signed(bd.racje)}% · małe miasto ${signed(bd.maleMiasto)}% · Spichlerz ${signed(bd.spichlerz)}%`);
 
   if (tick) {
     appendDetailSection(card, 'Magazyn centralny (ostatnia tura)');

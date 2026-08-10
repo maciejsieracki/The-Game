@@ -158,7 +158,8 @@ eq(cityRangeForPopulation(10), 10, 'pop 10 -> 10');
 eq(cityRangeForPopulation(15), 15, 'pop 15 -> 15 (cap)');
 eq(cityRangeForPopulation(20), 15, 'pop 20 -> 15 (capped at max)');
 
-// Test 8: adjustTileWorker — przypisz / odznacz / toggle
+// Test 8: adjustTileWorker — przypisz / odznacz / kierunkowa odmowa (NIE toggle,
+// P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA naprawione)
 console.log('\n8. adjustTileWorker (reczny)');
 const cityManual = { q: 0, r: 0, population: 3, okolicaReczne: {}, okolicaTryb: 'reczny' };
 const a1 = adjustTileWorker(cityManual, map, 1, 0, 1);
@@ -166,7 +167,8 @@ assert(a1.ok && a1.reczne['1,0'] === 1, 'assign worker to 1,0');
 const a2 = adjustTileWorker({ ...cityManual, okolicaReczne: a1.reczne }, map, 1, 0, -1);
 assert(a2.ok && a2.reczne['1,0'] === undefined, 'unassign worker from 1,0');
 const a3 = adjustTileWorker({ ...cityManual, okolicaTryb: 'reczny', okolicaReczne: { '1,0': 1 } }, map, 1, 0, 1);
-assert(a3.ok && a3.reczne['1,0'] === undefined, 'toggle off via delta +1 on occupied hex');
+assert(!a3.ok && a3.reason === 'juz_obsadzone' && a3.reczne['1,0'] === 1,
+  'delta +1 on already-occupied hex refuses (no-op), does NOT remove');
 
 // Test 9: auto → reczny seed (nie reset do 1 pola)
 console.log('\n9. seedReczneFromAuto');
@@ -393,9 +395,12 @@ assert(removeMorze.reczne['2,0'] === undefined, 'toggle: klucz Morza usuniety z 
 const removeGoryAdjust = adjustTileWorker(cityStaleGory, goryMap, 1, 0, -1);
 assert(removeGoryAdjust.ok === true, 'adjust delta-1: zdjecie robotnika ze STAREGO wpisu na Gorach zwraca ok=true');
 assert(removeGoryAdjust.reczne['1,0'] === undefined, 'adjust delta-1: klucz Gor usuniety z reczne po zdjeciu');
-const removeMorzeAdjust1 = adjustTileWorker(cityStaleGory, goryMap, 2, 0, 1); // delta+1 na juz-obsadzonym = toggle off
-assert(removeMorzeAdjust1.ok === true && removeMorzeAdjust1.reczne['2,0'] === undefined,
-  'adjust delta+1 na juz-obsadzonym STARYM wpisie (Morze) rowniez zdejmuje (toggle-off), nie blokuje');
+// P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (naprawione): delta+1 na juz-obsadzonym
+// polu (nawet STARYM/nielegalnym wpisie) juz NIE zdejmuje -- to jest praca WYLACZNIE
+// delta-1 (test wyzej). +1 tylko odmawia, bez efektu ubocznego.
+const addMorzeAdjust1 = adjustTileWorker(cityStaleGory, goryMap, 2, 0, 1);
+assert(!addMorzeAdjust1.ok && addMorzeAdjust1.reason === 'juz_obsadzone' && addMorzeAdjust1.reczne['2,0'] === 1,
+  'adjust delta+1 na juz-obsadzonym STARYM wpisie (Morze) odmawia (juz_obsadzone), NIE zdejmuje');
 
 // Test 21: brak auto-migracji -- samo WYWOLANIE funkcji odczytu/zapisu (bez
 // przypisania wyniku z powrotem do city.okolicaReczne, dokladnie jak przy

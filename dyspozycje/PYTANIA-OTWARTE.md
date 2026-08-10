@@ -7786,6 +7786,24 @@ Dispatch NASTĘPUJE teraz.
 
 ---
 
+## BUG (zrzut Macieja) — Praca miasta +9 do Ulepszeń, ale w chipie/cywilizacji dochodzi tylko +3 (2026-08-10)
+
+**Zrzuty:** panel „PODZIAŁ PRACY" miasta: Budynki 0% / Ulepszenia 100%, „Kolejka budowy +0 (0%)",
+„Ulepszenia +9 (100%)" — cała Praca tego miasta (9) idzie do puli Ulepszeń, kolejka budowy pusta
+(0%), więc BEZ dwuznaczności „doBudynkow czeka na pustą kolejkę" (już jest pusta). Chip HUD:
+„Praca +9 +3 (22)" — duża liczba (to miasto) = 9, mała liczba (cała cywilizacja) = **+3**, zapas
+= 22. Cytat Macieja: „praca powinna być 9 a w mieście dochodzi tylko 3".
+
+**Nie zgaduję przyczyny** (może to być: inne miasto/miasta z ujemnym bilansem Pracy zjadające
+nadwyżkę, błąd w liczeniu `civWideSixStatsFromEmpireSnap`/`empire-hud-totals.ts`, albo coś
+innego) — dispatch rozpoznania NASTĘPUJE teraz, zanim jakikolwiek kod zostanie zmieniony.
+Zastrzeżenie: kod, który akurat dziś wieczorem dotykałem kosmetycznie (usunięcie zbędnego `+`
+przed `signed()` w tym samym panelu Podział Pracy) NIE jest jeszcze zbudowany/zdeployowany —
+zrzut Macieja pokazuje AKTUALNIE działający ROBOCZA (FALA 265), sprzed tej kosmetycznej zmiany,
+więc to nie może być regresją z dzisiejszej edycji.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU B3 — SCALONE `e5ba61c2` (2026-08-10)
 
 Scalający agent poprawnie ODSTĄPIŁ od literalnej instrukcji dla `ai.ts` (miała kazać skopiować
