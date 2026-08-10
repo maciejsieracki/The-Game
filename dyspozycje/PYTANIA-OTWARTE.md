@@ -9152,4 +9152,43 @@ Evaluator (`a1dea9d35dfb3cde5`, Opus 5) dispatchowany — weryfikacja liniowośc
 wywołań `cityFoodSplit` z osobna, czy Bilans↔Growth% nie tworzy nowej niespójności tego
 samego typu, znalezisko „(0)" zweryfikowane niezależnie.
 
+**Werdykt: PASS-WITH-NOTES, 2 BLOKUJĄCE (jednolinijkowe) przed scaleniem.**
+
+**Blokująca #1 — błąd zaokrąglenia IEEE-754** (`cityPanel.ts:1262`): `kosztRacji * (E / P)`
+— nawias wymusza dzielenie PRZED mnożeniem, a `E/P` nie zawsze jest reprezentowalne binarnie
+(np. `3,5/5=0,7` naprawdę to `0,69999...96`) → zaniża koszt o 1 w 136/46800 przypadków
+(wyczerpujący skan pop 1-200 × wszystkie pary poziomów), zawsze w kierunku zawyżenia Bilansu
+o +1 — dokładnie ta klasa błędu, którą naprawiamy. Poprawka: usunąć nawias →
+`kosztRacji * E / P` (0 rozbieżności na tym samym skanie).
+
+**Blokująca #2 — regresja wydajności na gorącej ścieżce mousemove** (`cityPanel.ts:1353`,
+`cityGrowthLive`): `maxSafe` trafia na ścieżkę renderu mapy wywoływaną przy KAŻDYM przesunięciu
+myszy nad żetonem (main.ts mousemove→`syncStatChips`→`_buildBadgeInput`→`getCityGrowth`→
+`cityGrowthLive`) — pełny `previewCityEconomy` + pętla 13 poziomów × O(miasta) BEZ
+memoizacji, przy każdym hover. Wynik niemal zawsze wyrzucany (`resolveCityFedForUi` ignoruje
+`foodSplitTotal` gdy jest już `tick` z końca tury — używane TYLKO przed pierwszym tickiem).
+Poprawka: usunąć `maxSafe` z tego wywołania (powrót do `cityFoodSplit(view).total`).
+
+**Nieblokujące:** asercja testowa #7 to licznik tekstowy (regex), nie parser — otwór na
+nowy call site z inną nazwą zmiennej `view`, nie łapie tego cicho (kierunek awarii
+bezpieczny: fałszywy alarm, nie ciche przepuszczenie); Growth% (`view.wzrostProcent`,
+`cityPanel.ts:1138`) liczony z surowego poziomu racji był NIESPÓJNY z suwakiem (przyciętym)
+już PRZED tą zmianą — naprawa Bilansu przenosi go z mniejszości do większości spójnych pól,
+NIE tworzy nowej klasy problemu, ale różnica (do 4 pp w scenariuszu Macieja) staje się
+bardziej widoczna — osobne zgłoszenie, zmienia liczby wzrostu, wymaga własnej decyzji.
+
+**Sprostowanie do znalezienia „(0)" — konkluzja Operatora trafna PRZYPADKIEM, uzasadnienie
+BŁĘDNE.** `glodWojska` (`central < 0` PO koszcie armii) to INNY warunek niż zgłoszony
+`fed=false`/`central=0` (deficyt niepokryty przy puli RÓWNEJ zero, nie ujemnej) — żadne z 3
+miejsc konsumujących `glodWojska` nic nie pokaże w tym przypadku. Realne pokrycie istnieje,
+ale gdzie indziej: `cityPanel.ts:1380/4650` i `empireDetailPanel.ts:560` („Brak wzrostu —
+miasto nie jest w pełni nakarmione"/„nie nakarmione z centrali") — per-miasto, NIE na samej
+liczbie centrali „(0)" jak pierwotnie proszono. **Punkt pozostaje OTWARTY**, nie domknięty.
+
+**Nota procesowa:** worktree bez symlinku `node_modules` dał cichy `exit 0` na bramkach
+bundlowych („esbuild not found" nie zatrzymało testu) przy pierwszym podejściu Evaluatora —
+realne ryzyko fałszywej zieleni, do dopisania w procedurze zakładania worktree.
+
+Dispatch naprawy 2 blokujących (ten sam Operator/worktree, jednolinijkowce) NASTĘPUJE teraz.
+
 ---
