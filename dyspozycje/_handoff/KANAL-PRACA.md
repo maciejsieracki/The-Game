@@ -6538,3 +6538,15 @@ Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`745cb88d96b145fb41a33efad566bbec`**
 ⚠️ Znanych czerwonych pre-istniejących bramek **NIE mierzono w tej fali** — status dziedziczony, nie zweryfikowany dziś. `gra/data/` niezmienione przez build (hash przed=po `21f7f416…`).
 **Merge do `main`:** nadrobiona zaległość dwóch fal — `main` szedł z FALA 263 (`b0e4a5c9`) → **FALA 264** (`31a2caef`) merge `d6d2532c` → **FALA 265** (`43b75861`) merge `afce9001`, wypchnięte na `origin/main`. FALA 266 zostaje na gałęzi do testów (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
 CZEKAM-NA: sesja lokalna — pull `745cb88d` na dysk właściciela + potwierdzenie w kanale.
+
+## [16:23 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 267, md5 `a6251fe2`
+
+Build z HEAD `b2193a91` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (18 commitów od FALA 266 / `b9b26f74`, z czego **dokładnie 2 ruszają `gra/src`**).
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`a6251fe214808b2eb0afa384a3248e7d`**, stempel `ROBOCZA · b8e8565c · 2026-08-10 14:23` (UTC). 6 bundli playtestowych + `START.html`/manifest (10) przegenerowane.
+🔴 **UWAGA — ta fala zmienia REALNY SILNIK EKONOMII, nie tylko UI.** Koniec tury liczy się inaczej niż w FALI 266, więc playtest nie może być tylko oględzinami interfejsu.
+**2 tematy:** (1) **naprawa silnika Pracy** — globalny suwak podziału Pracy był **całkowicie ignorowany przez `advanceCityEconomy`** (faktyczny koniec tury, nie tylko podgląd HUD); regresja commitu `8692b61b`, objaw zgłoszony przez Macieja: **+2 pkt Pracy/turę zamiast +6**. Plus pełne UI globalnych/indywidualnych ustawień dla 3 grup (Praca / Skarbiec+Nauka / Żywność): przycisk „Indywidualne" w mieście, globalne kontrolki w panelu cywilizacji na mapie świata. (2) **Bilans żywności** przycinany do bezpiecznego limitu Spichlerza — wcześniej panel pokazywał gorszą liczbę niż silnik realnie stosuje.
+🔴 **Playtest priorytetowo:** rozegrać **kilka tur** z ustawionym globalnym podziałem Pracy i sprawdzić, czy przyrost zgadza się z suwakiem; czy miasto odpięte przyciskiem „Indywidualne" **nie wraca** pod globalne przy kolejnej zmianie; czy **stary zapis** wczytuje się bez utraty ustawień miast (migracja Żywności).
+**Bramki na HEAD `b2193a91`, wszystkie exit 0:** tsc 0 · logic **213/213** · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · ai-founding-territory 28/28 · `praca-global-default-live` **7/7** · `empire-city-defaults` **45/45** · `auto-wyzywienie-bilans-clamp` **22/22** · `hud-skarbiec` 7/7 · `empire-skarbiec-bilans` 11/11 · `empire-panel-split` 18/18 · vite **805 modułów** · **VERIFY OK** (`manifest match: OK`).
+⚠️ Znanych czerwonych pre-istniejących bramek **NIE mierzono w tej fali** — status dziedziczony, nie zweryfikowany dziś. `gra/data/` niezmienione przez build (hash przed=po `21f7f416…`).
+**Merge do `main`:** **FALA 266** (`b9b26f74`) scalona merge'em **`008cf94a`**, wypchnięta na `origin/main` (był `afce9001` / FALA 265, push fast-forward). FALA 267 zostaje na gałęzi do testów (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
+CZEKAM-NA: sesja lokalna — pull `a6251fe2` na dysk właściciela + potwierdzenie w kanale.
