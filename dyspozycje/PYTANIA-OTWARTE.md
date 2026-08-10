@@ -10305,4 +10305,31 @@ sesji, produkcja rosnąca 21→26, żadna z tych zmian nie wyzwala przeliczenia 
 w rozpoznaniu #3 jako A3). **Dispatch rozpoznania #4, ostatnie przed decyzją o naprawie —
 NASTĘPUJE (`abfb4f9cf2c010253`).**
 
+**Rozpoznanie #4 dostarczone — DOKŁADNY mechanizm znaleziony, precyzyjnie zakresowana naprawa.**
+`autoRaiseRationsForGrowth` (`empire-food.ts:520-593`, defekt w liniach 552-581): pętla podnosi
+poziom o krok (0,5), **COMMITUJE go natychmiast** (`c.poziomRacji = ...`, linia 562), DOPIERO POTEM
+sprawdza akceptację — ale kryterium akceptacji (`pool<0 || !solvent`, linia 572) jest STOCK-based
+(uwzględnia skumulowaną rezerwę `zapasyPrzed`), NIE flow-based (czysty bilans TEJ tury). Sprawdzenie
+`nadwyzka<=0` (flow) istnieje (linia 580), ale działa TYLKO jako `break` zatrzymujący dalsze
+podnoszenie — NIE jako warunek cofnięcia już zaaplikowanego kroku. Skutek: funkcja **strukturalnie
+przestrzeliwuje o dokładnie jeden krok (0,5) ponad to, co dzisiejsza produkcja udźwignie**, cicho
+finansując go z rezerwy, i się zatrzymuje bez cofnięcia. **Hipoteza stopniowego pełzania
+POTWIERDZONA:** poziom trwały między turami, przy rosnącej produkcji międzyturowo (populacja 1→3)
+bramka wejściowa ponownie się uzbraja co turę, pozwalając na kolejny krok w górę — poziom pełznie
+4→4,5→5→5,5 przez kolejne tury, za każdym razem finansowany z kurczącej się rezerwy (HUD „−24" to
+stan wyczerpanej rezerwy). Kolejność `autoBalance`(obniż)→`autoRaise`(podnieś) w tej samej turze NIE
+jest przyczyną — **oba mechanizmy używają TEGO SAMEGO zbyt-łagodnego kryterium**
+(`isEmpireCityFoodSolvent`), więc `autoBalance` nie cofa przestrzelenia z poprzedniej tury, dopóki
+rezerwa nie spadnie blisko zera. **Backstop Q3=A też nie jest niezależną siatką** — używa tych
+samych funkcji z tym samym `zapasyPrzed`, więc akceptuje to samo, co `raise` już zaakceptował.
+**Minimalna naprawa (opisana, nieimplementowana):** dla gracza (ownerId=0), zmienić kryterium
+akceptacji kroku w `autoRaiseRationsForGrowth` na wymaganie `nadwyzka>=0` PO kroku (nie tylko
+`pool>=0 && solvent`) — krok utrzymuje się tylko jeśli bilansuje się sam w tej turze, nie jeśli
+tylko rezerwa go pokryje. To samo kryterium powinno objąć `autoBalanceRationsToSolvency` (inaczej
+ratchet nie zniknie) i backstop `maxSafePoziomRacjiForCity`. **To WĘŻSZA, precyzyjna poprawka niż
+pełna decyzja architektury stock/flow z rozpoznania #1** — zgodna z tym, co Maciej już wskazał jako
+priorytet.
+
+**Synteza + rekomendacja przedstawiona Maciejowi w czacie.**
+
 ---
