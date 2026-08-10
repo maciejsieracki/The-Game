@@ -221,6 +221,33 @@ function makeUnit(overrides) {
   assert(u.ufortyfikowanyWPolu === false, 'exitGarnizon nie ustawia ufortyfikowanyWPolu (stany ortogonalne)');
 }
 
+{
+  // C-025 (Maciej, znalezisko Evaluatora): ufortyfikowanyWPolu i autoExplore
+  // wykluczają się wzajemnie -- wejście w fortyfikację w polu MUSI zdjąć
+  // autoExplore (inaczej runScoutsAutoExplore przesuwa jednostkę mimo
+  // aktywnej flagi fortyfikacji -- zwiadowca "ufortyfikowany" faktycznie
+  // się rusza). Drugi kierunek (włączenie Zwiedzaj zdejmuje fortyfikację,
+  // main.ts handler 'scout-explore' -> exitFieldFortify) pokrywa istniejąca
+  // suita CZĘŚĆ A wyżej dla exitFieldFortify -- tu tylko kierunek
+  // enterFieldFortify -> autoExplore=false.
+  const scout = makeUnit({ typeId: 'Zwiadowca', autoExplore: true });
+  enterFieldFortify(scout);
+  assert(scout.ufortyfikowanyWPolu === true, 'enterFieldFortify: ustawia ufortyfikowanyWPolu=true (zwiadowca z autoExplore aktywnym)');
+  assert(scout.autoExplore === false, 'C-025: enterFieldFortify zdejmuje autoExplore -- oba stany nigdy nie współistnieją');
+
+  // Jednostka oblegająca z aktywnym autoExplore (skrajny przypadek) -- ten sam
+  // wymóg, oblegaCityId dalej nietknięte (jak reszta CZĘŚCI A wyżej).
+  const siegeScout = makeUnit({ typeId: 'Zwiadowca', autoExplore: true, oblegaCityId: 'city-42' });
+  enterFieldFortify(siegeScout);
+  assert(siegeScout.autoExplore === false, 'C-025: enterFieldFortify zdejmuje autoExplore także na jednostce oblegającej');
+  assert(siegeScout.oblegaCityId === 'city-42', 'C-025: oblegaCityId dalej nietknięte przy okazji zdjęcia autoExplore');
+
+  // Kontrola: jednostka bez autoExplore -- brak regresji (pole zostaje false/undefined -> false).
+  const plain = makeUnit({});
+  enterFieldFortify(plain);
+  assert(plain.autoExplore === false, 'C-025 kontrola: enterFieldFortify na jednostce bez autoExplore -- pole ustawione na false (brak regresji, brak wyjątku)');
+}
+
 // ===========================================================================
 // CZĘŚĆ B -- fieldFortifyDefenseBonus (game/city-defense.ts) w izolacji
 // ===========================================================================

@@ -16483,6 +16483,14 @@ async function boot(): Promise<void> {
           // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A: zostań zaznaczony → złota ramka od razu
           // (wcześniej deselect+cycle ukrywały uc-act-btn--on w momencie kliknięcia).
           clearPlannedMarch(u.id);
+          // C-025: fortyfikacja w polu i auto-eksploracja wykluczają się wzajemnie —
+          // włączenie Zwiedzaj zdejmuje fortyfikację (analogicznie do enterFieldFortify,
+          // które zdejmuje autoExplore w drugą stronę), inaczej jednostka rusza się mimo
+          // aktywnej flagi ufortyfikowanyWPolu.
+          // EN: field fortify and auto-explore are mutually exclusive — enabling Explore
+          // drops fortify (mirrors enterFieldFortify clearing autoExplore the other way),
+          // otherwise the unit would move while still flagged as fortified.
+          if (u.ufortyfikowanyWPolu === true) exitFieldFortify(u);
           u.autoExplore = true;
           showHintMessage(u.typeId + ' zwiedza map\u0119 \u2014 ruch na koniec tury', 2800);
           refreshD1bHud();
