@@ -10868,3 +10868,46 @@ rozstrzygnięcia PRZED kodowaniem:**
 rozstrzygnięcia 3 konfliktów wyżej — to nie jest zwykłe ABC z 3 opcjami, tylko fundamentalna
 sprzeczność między żądaną regułą a stanem danych gry, wymaga decyzji Macieja przed dalszym
 rozpoznaniem/projektowaniem.**
+
+## PUNKT 6 — Lista robocza "do wykonania" (2026-08-10, aktualizowana na żądanie Macieja)
+
+Skonsolidowana lista wszystkich zgłoszeń Macieja z tej sesji (po ostatniej fali), z aktualnym
+statusem każdego. Aktualizowana na bieżąco — nie osobny, statyczny dokument.
+
+### Zrobione i wypchnięte (nie wymagają już akcji)
+1. Spacja pomija auto-eksplorację bez oznaczenia → badge w panelu Armie (`65bc26d4`)
+2. Kolor nazwy cywilizacji w liście dyplo → wdrożone (`f71869d2`)
+3. Brak komunikatu eliminacji cywilizacji → wdrożone (`d7718ad5`)
+4. Manpower epoka 1: 500→1000 → wdrożone (`b11c8608`)
+5. Kolor kart WYDARZENIA (diplo=niebieski, info=złoty) → wdrożone (`2f73c530`)
+6. P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (dług techniczny, dispatch C-027) → wdrożone (`7bc2a3ed`)
+7. 16 nieaktualnych nagłówków STATUS w tym pliku → poprawione (`992ef60b`)
+8. Brak przycisku „Kontynuuj" w menu głównym → wdrożone (`539e4db0`)
+
+### Czeka na decyzję ABC Macieja (nie można kodować bez odpowiedzi)
+9. `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2` — odznaczenie po Zwiedzaj (koliduje z Q1=A z 2026-08-04)
+10. `R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04` — pasywność PM na Hard. Korekta Macieja
+    przyjęta (inwersja miała dotyczyć tylko AI, nie gracza). Plan techniczny GOTOWY (agent
+    projektowy dostarczył pełną klasyfikację + plan naprawy, w tym 2 NOWE znaleziska nieujęte w
+    pierwszym zgłoszeniu: `decideAIDiplomacy` dla relacji z graczem i `_menuCitySupport`/sojusz
+    sióstr też błędnie podpięte pod odwróconą zmienną). **Czeka na ostateczne „rób" od Macieja**
+    przed dispatchem kodowania — plan oznacza punkt 4 (rozbicie `decideAIDiplomacy`) jako
+    najbardziej ryzykowny, wymagający osobnej rundy testów.
+11. `R-ZUZYCIE-SUROWCOW-OBYWATELE` — nowa mechanika zużycia surowców przez obywateli. Lista
+    zestawiona, korekta Gliny+rzeki przyjęta (rzeka daje +2 Gliny/turę zawsze, nie tylko po
+    Gliniance). Nadal otwarte: miasta śródlądowe bez rzeki w Kamieniu (wciąż potencjalny
+    gwarantowany deficyt), Ceramika w Brązie (ten sam typ ryzyka, nierozstrzygnięty), czy AI objęte
+    tą samą zasadą, zużycie per-ludek czy per-miasto, gdzie w UI pokazać.
+
+### W trakcie rozpoznania (dopiero co zgłoszone, przyczyna jeszcze nieznana)
+12. **[PILNE — możliwa utrata danych]** Manualny zapis (nie autozapis) nie pojawia się na liście
+    „Wczytaj grę". Dispatchowany subagent, priorytet podniesiony ponad punkty 13-14 w tym samym
+    zleceniu.
+13. Lista sejwów w dialogu „Wczytaj grę" nie jest sortowana najmłodsze→najstarsze — trudno znaleźć
+    właściwy zapis. Ten sam subagent.
+14. Wczytywanie zapisu trwa tyle samo/dłużej co generowanie nowej mapy — zrzut pokazuje krok
+    „Rzeki — uzupełnianie" (7/10) podczas WCZYTYWANIA, co sugeruje możliwą regenerację mapy od
+    zera zamiast odczytu zapisanego układu. Ten sam subagent.
+
+**STATUS: lista aktualna na 2026-08-10, aktualizowana przy każdym nowym zgłoszeniu Macieja lub
+zamknięciu istniejącego punktu.**
