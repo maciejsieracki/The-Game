@@ -7806,7 +7806,29 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
-## BUG (zrzut Macieja) — Praca miasta +9 do Ulepszeń, ale w chipie/cywilizacji dochodzi tylko +3 (2026-08-10)
+## BUG (zrzut Macieja) — Praca 9 vs 3: rozpoznanie GOTOWE, prawdopodobnie NIE jest to bug arytmetyczny (2026-08-10)
+
+`civWideSixStatsFromEmpireSnap` (sumowanie) poprawna, przetestowana (19/19). Znaleziona prawdziwa
+przyczyna: duża liczba (9) = Praca BRUTTO tylko tego miasta (`pracaSplit.total`). Mała liczba (+3)
+= `_lastPracaRate = pracaPoolBrutto - pracaUpkeepPreview` — `pracaUpkeepPreview` to CIV-WIDE koszt
+utrzymania ulepszeń surowcowych (tartak/kamieniołom/glinianka/kopalnie miedzi-żelaza-złota/warzelnia
+soli/stadnina, każde −1 Praca/turę, NIEZALEŻNIE w którym mieście stoi) — nawet przy JEDNYM mieście
+różnica 9→3 (−6) dokładnie pasuje do ok. 6 takich ulepszeń w całym terytorium. Dodatkowo: miasta
+z WSTRZYMANĄ produkcją wnoszą 0 do puli niezależnie od bilansu.
+
+**To prawdopodobnie NIE jest bug — ale tooltip chipu tego nie tłumaczy** (mówi tylko „cała
+cywilizacja +3 / turę", sugerując sumę BRUTTO analogiczną do dużej liczby, a to NETTO po
+utrzymaniu) — łamie CLAUDE.md §3 „każda liczba musi mieć nazwany parametr". Test
+`hud-miasto-stan-cywilizacji-test.cjs` pokrywa tylko czysty agregator, NIE `refreshLiveEmpireRates`/
+`previewPracaPoolBrutto`/`computePracaUpkeepByOwner` — scenariusz niepokryty żadnym testem.
+
+**Nie da się w 100% potwierdzić bez zapisu Macieja** — poproszony o samodzielną weryfikację (ile
+ulepszeń surowcowych ma w terytorium, czy ma więcej niż 1 miasto, czy któreś ma wstrzymaną
+produkcję). Rekomendacja rozpoznania: dopisać rozbicie w tooltipie (analogicznie do już istniejącego
+„budynki/pula" dla dużej liczby) — niska decyzja, zero ABC potrzebne, dispatch naprawy tooltipa
+NASTĘPUJE teraz, RÓWNOLEGLE z pytaniem do Macieja o potwierdzenie liczby ulepszeń.
+
+---
 
 **Zrzuty:** panel „PODZIAŁ PRACY" miasta: Budynki 0% / Ulepszenia 100%, „Kolejka budowy +0 (0%)",
 „Ulepszenia +9 (100%)" — cała Praca tego miasta (9) idzie do puli Ulepszeń, kolejka budowy pusta
