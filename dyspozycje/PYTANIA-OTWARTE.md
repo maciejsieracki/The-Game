@@ -10974,7 +10974,12 @@ KAŻDYM wczytaniu, nie odczyt/dekompresja zapisanych heksów.
   (delta: złoża wyeksploatowane, ulepszenia gracza, zmiany terenu) zamiast całej siatki, zachowując
   regenerację bazowego terenu z ziarna jako punkt startowy. Kompromis rozmiar/złożoność.
 
-**STATUS: zarejestrowane, wymaga ABC — zadane w czacie, czekam na odpowiedź Macieja.**
+**ECHO A** (2026-08-10): „Serializować pełną siatkę heksów do zapisu." Uwaga do świadomości: to
+zwiększa rozmiar pojedynczego zapisu w `localStorage`, co interaguje z równolegle naprawianym
+`P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT` (limit ~5-10MB/origin) — im większe zapisy, tym łatwiej
+o quota. Musi zostać zachowana WSTECZNA KOMPATYBILNOŚĆ ze starymi zapisami (bez pełnej siatki) —
+fallback na dzisiejszą regenerację z ziarna, nie odrzucenie starych zapisów.
+**STATUS: dispatch Sonnet 5 (worktree).**
 
 ## P-SEJWY-KOLEJNOSC-STARE-BEZ-SAVEDAT (2026-08-10, przy okazji rozpoznania sortowania listy sejwów)
 
