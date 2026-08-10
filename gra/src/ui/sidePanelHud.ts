@@ -24,6 +24,7 @@ import {
 } from './minimapLayout';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_LEFT_PX } from './sidePanelLayout';
 import { isDiploObscuringUnitDock } from './unitCtxDockDiploGate';
+import { filterSidePanelEvents } from './sidePanelEventFilter';
 
 export type SidePanelEventKind = 'science' | 'culture' | 'city' | 'unit' | 'enemy' | 'info' | 'diplo';
 
@@ -36,6 +37,11 @@ export interface SidePanelEvent {
   blocking?: boolean;
   /** SPICH-AUTO-Q1: wymusza czerwony styl (jak wydarzenia negatywne). */
   negative?: boolean;
+  /** R-WYDARZENIA-FILTR-KATEGORII: wpis „nie-nasz" (dziś wyłącznie handel AI↔AI) —
+   * chip 🌍 „Inne cyw." (domyślnie wyłączony) go filtruje. Wszystkie inne źródła
+   * SidePanelEvent są już filtrowane w silniku do par z udziałem gracza, więc nie
+   * potrzebują tego pola. */
+  origin?: 'other-civs';
 }
 
 export type ContextPanelKind = 'hex' | 'unit';
@@ -43,8 +49,9 @@ export type ContextPanelKind = 'hex' | 'unit';
 export interface ContextPanelData {
   kind: ContextPanelKind;
   html: string;
-  /** Nadpisanie nagłówka karty (np. „Armia" zamiast „Jednostka"). */
-  headLabel?: string;
+  /** Własna jednostka gracza — karta pokazuje strzałki cyklowania ◀▶ zamiast nagłówka
+   * (R-KARTA-JEDNOSTKI-STRZALKI-CYKL, Maciej 2026-08-09). */
+  ownUnit?: boolean;
   /** Jednostka — przycisk „Więcej szczegółów” w panelu bocznym. */
   expandable?: boolean;
   /** Przycisk rozwijania jest już w html (nad paskiem akcji). */
@@ -61,8 +68,16 @@ export interface SidePanelHudConfig {
   isContextExpanded?: () => boolean;
   onContextAction?: (actionId: string) => void;
   onContextSelectUnit?: (unitId: string) => void;
+  /** Strzałki ◀▶ karty własnej jednostki — cyklowanie do sąsiedniej armii gracza. */
+  onContextCycleUnit?: (delta: -1 | 1) => void;
+  /** Czy jest >1 armia gracza do cyklowania (steruje disabled strzałek). */
+  canContextCycleUnit?: () => boolean;
   onEventClick?: (id: string) => void;
   onEventDismiss?: (id: string) => void;
+  /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" — silnik decyduje co to znaczy
+   * (patrz main.ts clearAllSidePanelEvents: iteruje NIEfiltrowaną listę, więc kasuje
+   * też wpisy ukryte chipem 🌍 „Inne cyw." — to jest zamierzone). */
+  onDismissAll?: () => void;
 }
 
 export interface SidePanelHudApi {
@@ -136,6 +151,18 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
   bottom:calc(${unitCardDockBottomCss(true)} + (var(--civ-ui-zoom, 1) - 1) * ${UNIT_CARD_ZOOM_LIFT_PER_SCALE_PX}px);}
 .civ-side-panel .sp-header{font-size:10px;color:var(--civ-text-muted);text-transform:uppercase;
   letter-spacing:.24em;text-align:right;padding-right:4px;margin-bottom:2px;}
+.civ-side-panel .sp-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:6px;
+  padding:0 4px 2px;margin-bottom:2px;}
+.civ-side-panel .sp-toolbar-chip{font:10px var(--civ-font-ui);letter-spacing:.06em;
+  color:var(--civ-text-muted);background:rgba(20,26,38,.7);border:1px solid rgba(232,216,138,.22);
+  border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s,background .15s;}
+.civ-side-panel .sp-toolbar-chip:hover{border-color:rgba(232,216,138,.4);}
+.civ-side-panel .sp-toolbar-chip.sp-toolbar-chip-active{color:var(--civ-gold-primary);
+  border-color:var(--civ-gold-primary);background:rgba(232,216,138,.14);}
+.civ-side-panel .sp-toolbar-dismiss-all{font:10px var(--civ-font-ui);letter-spacing:.06em;
+  color:var(--civ-text-muted);background:transparent;border:1px solid rgba(232,216,138,.22);
+  border-radius:999px;padding:3px 9px;cursor:pointer;transition:border-color .15s,color .15s;}
+.civ-side-panel .sp-toolbar-dismiss-all:hover{border-color:var(--tg-red);color:var(--tg-red);}
 .civ-side-panel .sp-event{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;
   cursor:pointer;transition:border-color .15s,box-shadow .15s;
   background:linear-gradient(90deg,rgba(200,64,64,.12),rgba(20,26,38,.92));
@@ -166,6 +193,13 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-ctx-dock .sp-ctx-card.sp-ctx-interactive,.civ-side-panel .sp-ctx-card.sp-ctx-interactive{pointer-events:auto;}
 .civ-side-ctx-dock .sp-ctx-head,.civ-side-panel .sp-ctx-head{font-size:10px;color:var(--civ-text-muted,#a09880);text-transform:uppercase;
   letter-spacing:.22em;margin-bottom:8px;text-align:right;}
+.civ-side-ctx-dock .sp-ctx-nav,.civ-side-panel .sp-ctx-nav{display:flex;gap:8px;margin-bottom:10px;}
+.civ-side-ctx-dock .sp-ctx-nav-arr,.civ-side-panel .sp-ctx-nav-arr{flex:1 1 0;padding:6px 10px;border-radius:6px;
+  border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
+  color:var(--civ-gold-primary,#e8d88a);font-size:13px;line-height:1;
+  cursor:pointer;font-family:inherit;text-align:center;}
+.civ-side-ctx-dock .sp-ctx-nav-arr:hover,.civ-side-panel .sp-ctx-nav-arr:hover{border-color:rgba(212,175,90,.55);background:rgba(28,34,46,.9);}
+.civ-side-ctx-dock .sp-ctx-nav-arr:disabled,.civ-side-panel .sp-ctx-nav-arr:disabled{opacity:.35;cursor:default;}
 .civ-side-ctx-dock .cp-msg,.civ-side-panel .sp-ctx-card .cp-msg{font-size:12px;color:var(--civ-text-primary,#e8e0c8);line-height:1.55;text-align:left;}
 .civ-side-ctx-dock .sp-ctx-expand,.civ-side-panel .sp-ctx-expand{display:block;width:100%;margin-top:10px;padding:6px 10px;border-radius:6px;
   border:1px solid rgba(212,175,90,.35);background:rgba(20,26,36,.75);
@@ -226,9 +260,21 @@ function contextHeadLabel(kind: ContextPanelKind): string {
   return kind === 'hex' ? 'Pole mapy — kliknięty heks' : 'Jednostka';
 }
 
-function buildContextCardHtml(ctx: ContextPanelData, expanded: boolean): string {
+function buildContextCardHtml(ctx: ContextPanelData, expanded: boolean, canCycle = false): string {
   const interactive = ctx.kind === 'unit';
-  const headHtml = `<div class="sp-ctx-head">${ctx.headLabel ?? contextHeadLabel(ctx.kind)}</div>`;
+  let headHtml = '';
+  if (ctx.kind === 'hex') {
+    headHtml = `<div class="sp-ctx-head">${contextHeadLabel(ctx.kind)}</div>`;
+  } else if (ctx.ownUnit === true) {
+    // R-KARTA-JEDNOSTKI-STRZALKI-CYKL (Maciej 2026-08-09): nagłówek „Jednostka" usunięty
+    // dla obu kart jednostki (własna/cudza); w jego miejsce, TYLKO dla własnej jednostki,
+    // strzałki cyklowania do sąsiedniej armii gracza — reużywają istniejący cykl HUD ◀▶.
+    const disabledAttr = canCycle ? '' : ' disabled';
+    headHtml = '<div class="sp-ctx-nav">'
+      + `<button type="button" class="sp-ctx-nav-arr" data-sp-cycle="-1"${disabledAttr} aria-label="Poprzednia jednostka">◀</button>`
+      + `<button type="button" class="sp-ctx-nav-arr" data-sp-cycle="1"${disabledAttr} aria-label="Następna jednostka">▶</button>`
+      + '</div>';
+  }
   let html = `<div class="sp-ctx-card${interactive ? ' sp-ctx-interactive' : ''}">`
     + headHtml
     + `<div class="cp-msg">${ctx.html}</div>`;
@@ -250,6 +296,10 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
   const ctxEl = document.createElement('div');
   ctxEl.className = 'civ-side-ctx-dock';
 
+  // R-WYDARZENIA-FILTR-KATEGORII: stan chipa 🌍 „Inne cyw." — zmienna domknięcia,
+  // przeżywa update()/tury (nie jest resetowana przy każdym render()).
+  let showOtherCivsEvents = false;
+
   function bindContextInteractions(root: HTMLElement, ctx: ContextPanelData): void {
     root.querySelector('[data-sp-expand]')?.addEventListener('click', () => {
       config.onContextExpand?.();
@@ -260,6 +310,14 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
         if ((btn as HTMLButtonElement).disabled) return;
         const id = (btn as HTMLElement).getAttribute('data-act');
         if (id) config.onContextAction?.(id);
+      });
+    });
+    root.querySelectorAll('[data-sp-cycle]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if ((btn as HTMLButtonElement).disabled) return;
+        const raw = (btn as HTMLElement).getAttribute('data-sp-cycle');
+        const delta: -1 | 1 = raw === '-1' ? -1 : 1;
+        config.onContextCycleUnit?.(delta);
       });
     });
     if (ctx.kind !== 'unit') return;
@@ -287,7 +345,8 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
     const hideUnitDock = unitCtx !== null && isDiploObscuringUnitDock();
 
     if (unitCtx !== null && !hideUnitDock) {
-      ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded);
+      const canCycle = config.canContextCycleUnit?.() ?? false;
+      ctxEl.innerHTML = buildContextCardHtml(unitCtx, expanded, canCycle);
       ctxEl.classList.add('open');
       if (expanded && unitCtx.expandable) {
         ctxEl.classList.add('sp-ctx-expanded');
@@ -308,10 +367,23 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
 
     html += '<div class="sp-header">Wydarzenia</div>';
 
-    if (events.length === 0) {
+    const visibleEvents = filterSidePanelEvents(events, showOtherCivsEvents);
+
+    if (!isPlaceholder) {
+      html += '<div class="sp-toolbar">'
+        + '<button type="button" class="sp-toolbar-chip'
+        + (showOtherCivsEvents ? ' sp-toolbar-chip-active' : '')
+        + '" data-sp-toggle-other-civs>\u{1F30D} Inne cyw.</button>'
+        + (config.onDismissAll !== undefined
+          ? '<button type="button" class="sp-toolbar-dismiss-all" data-sp-dismiss-all>Usuń wszystkie</button>'
+          : '')
+        + '</div>';
+    }
+
+    if (visibleEvents.length === 0) {
       html += '<div class="sp-placeholder">Brak wydarzeń w tej turze.</div>';
     } else {
-      for (const ev of events) {
+      for (const ev of visibleEvents) {
         const blockCls = ev.blocking ? ' sp-blocking' : '';
         const icInner = eventIconHtml(ev.kind, ev.icon);
         const icoContent = icInner.startsWith('<svg')
@@ -335,6 +407,16 @@ export function createSidePanelHud(config: SidePanelHudConfig): SidePanelHudApi 
       const card = el.querySelector('.sp-ctx-card');
       if (card) bindContextInteractions(el, hexCtx);
     }
+
+    el.querySelector('[data-sp-toggle-other-civs]')?.addEventListener('click', () => {
+      showOtherCivsEvents = !showOtherCivsEvents;
+      render();
+    });
+
+    el.querySelector('[data-sp-dismiss-all]')?.addEventListener('click', () => {
+      config.onDismissAll?.();
+      render();
+    });
 
     el.querySelectorAll('.sp-event[data-id]').forEach(chip => {
       chip.addEventListener('click', (e: Event) => {

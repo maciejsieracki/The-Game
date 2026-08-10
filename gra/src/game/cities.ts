@@ -491,7 +491,13 @@ export interface City {
   podzialHandluOverride?: boolean;
   /** Własny podział — tylko gdy podzialHandluOverride === true. */
   podzialHandlu?: CityPodzialHandlu;
-  /** Per-miasto suwak Pracy; brak = global default w toEconomyCity. */
+  /**
+   * Per-miasto override globalnego podziału Pracy imperium (analogicznie do
+   * podzialHandluOverride). R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09).
+   * false/undefined = dziedziczy ownerDefaultPodzialPracy imperium.
+   */
+  podzialPracyOverride?: boolean;
+  /** Per-miasto suwak Pracy; brak/bez override = global default w toEconomyCity. */
   podzialPracy?: CityPodzialPracy;
   /**
    * Wyżywienie: 0…6 co 0,5 (koszt żywności/miesz. = ta wartość). Decyzja 2026-07-30.
@@ -512,6 +518,13 @@ export interface City {
   procentRozwoj?: number;
   /** Profil skupienia pól okolicy (auto-assign). */
   okolicaFocus?: OkolicaFocus;
+  /**
+   * Per-miasto override globalnego Priorytetu Praca/Żywność (okolicaFocus) imperium.
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09). false/undefined =
+   * dziedziczy ownerDefaultOkolicaFocus imperium (main.ts trzyma okolicaFocus w sync
+   * broadcastem — patrz empire-city-defaults.ts).
+   */
+  okolicaFocusOverride?: boolean;
   /** auto | reczny — ręczne 👤 na heksach. */
   okolicaTryb?: OkolicaTryb;
   /** Ręczne przypisanie: "q,r" → liczba 👤 (0|1). */
@@ -520,6 +533,15 @@ export interface City {
   budowaFocus?: BudowaFocus;
   /** priorytet | reczny — ręczny wybór budynków w kolejce. */
   budowaTryb?: BudowaTryb;
+  /**
+   * Per-miasto override globalnego Priorytetu produkcji (budowaFocus+budowaTryb) imperium.
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09). false/undefined =
+   * dziedziczy ownerDefaultBudowaProfil imperium (broadcast — patrz empire-city-defaults.ts).
+   * NIE obejmuje budowaPriorytetTypow/budowaLista (per-miasto z natury, patrz komentarz
+   * nagłówkowy empire-city-defaults.ts). B1 (rozszerzenie na budowaPriorytetTypow) CELOWO
+   * POZA zakresem — czeka na osobną decyzję ABC (Evaluator RUNDA 1, 2026-08-09).
+   */
+  budowaFocusOverride?: boolean;
   /** Kolejność typów auto-budowy (wyczerp #1 zanim #2). */
   budowaPriorytetTypow?: BudowaFocus[];
   /** ID budynków w kolejności auto-budowy (tryb lista). */
@@ -647,6 +669,9 @@ export function foundCity(
     wealthImmunityRemaining: 5,
     podzialHandluOverride: false,
     podzialPracy:  podzial.podzialPracy,
+    podzialPracyOverride: false,
+    okolicaFocusOverride: false,
+    budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
   };
@@ -679,6 +704,9 @@ export function foundCityAt(
     wealthImmunityRemaining: 5,
     podzialHandluOverride: false,
     podzialPracy:  podzial.podzialPracy,
+    podzialPracyOverride: false,
+    okolicaFocusOverride: false,
+    budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
     ...(foundingCityState ? { startCityState: true as const } : {}),

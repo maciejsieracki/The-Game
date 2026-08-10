@@ -235,11 +235,16 @@ export interface HudConfig {
   isContextExpanded?: () => boolean;
   onContextAction?: (actionId: string) => void;
   onContextSelectUnit?: (unitId: string) => void;
+  /** R-KARTA-JEDNOSTKI-STRZALKI-CYKL: strzałki ◀▶ karty własnej jednostki w panelu bocznym. */
+  onContextCycleUnit?: (delta: -1 | 1) => void;
+  canContextCycleUnit?: () => boolean;
 
   /** Panel boczny (D1=C): wydarzenia z tury od silnika. */
   getEvents?: () => SidePanelEvent[];
   onEventClick?: (id: string) => void;
   onEventDismiss?: (id: string) => void;
+  /** R-WYDARZENIA-FILTR-KATEGORII: przycisk „Usuń wszystkie" w toolbarze panelu WYDARZENIA. */
+  onDismissAll?: () => void;
 
   /**
    * A1-Q5: wojny prowadzone Z GRACZEM — tylko te na pasku mapy (minimalizm).
@@ -1374,8 +1379,11 @@ function mountSidePanel(): void {
     isContextExpanded: cfg.isContextExpanded,
     onContextAction: cfg.onContextAction,
     onContextSelectUnit: cfg.onContextSelectUnit,
+    onContextCycleUnit: cfg.onContextCycleUnit,
+    canContextCycleUnit: cfg.canContextCycleUnit,
     onEventClick: cfg.onEventClick,
     onEventDismiss: cfg.onEventDismiss,
+    onDismissAll: cfg.onDismissAll,
   });
   document.body.appendChild(sidePanelApi.el);
   document.body.appendChild(sidePanelApi.ctxEl);

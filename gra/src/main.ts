@@ -158,9 +158,11 @@ import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
 import {
-  buildTriumphCityStateUnificationMessage,
   shouldShowPlayerTriumphCityStateUnification,
-  TRIUMPH_CS_HINT_MS,
+  // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu
+  // od P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (modal triumphCityStateNotice.ts
+  // ma własną treść i nie jest toastem czasowym) — nadal eksportowane z
+  // triumph-city-state.ts i pokryte przez triumph-city-state-test.cjs.
 } from './game/triumph-city-state';
 import { startRevealRadiusForDifficulty } from './map/startScoring';
 import {
@@ -171,6 +173,8 @@ import {
   DEFAULT_PODZIAL_HANDLU,
   DEFAULT_PODZIAL_PRACY,
   DEFAULT_PROCENT_ROZWOJ,
+  DEFAULT_OKOLICA_FOCUS,
+  DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
   DEFAULT_BUDOWA_PRIORYTET_TYPOW,
   sanitizeBudowaPriorytetTypow,
@@ -191,6 +195,8 @@ import {
   type BudowaTryb,
   type BudowaListaBiblioteka,
   type CityPodzialHandlu,
+  type CityPodzialPracy,
+  type OkolicaFocus,
   type UlepszeniaFocus,
   type UlepszeniaTryb,
   type UlepszeniaPerTurn,
@@ -202,6 +208,20 @@ import {
   resolveCityPodzialHandlu,
   freshOwnerDefaultPodzialHandlu,
 } from './game/empire-handel-split';
+import {
+  migratePodzialPracyOnLoad,
+  freshOwnerDefaultPodzialPracy,
+  resolveCityPodzialPracy,
+  migrateOkolicaFocusOnLoad,
+  freshOwnerDefaultOkolicaFocus,
+  broadcastOkolicaFocusToOwnerCities,
+  resolveCityOkolicaFocus,
+  migrateBudowaProfilOnLoad,
+  freshOwnerDefaultBudowaProfil,
+  broadcastBudowaProfilToOwnerCities,
+  resolveCityBudowaProfil,
+  type CityBudowaProfil,
+} from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
 import {
@@ -501,6 +521,7 @@ import {
   villageTechProgress,
   villageUnitForEra,
   findVillageRewardSpawnHex,
+  shouldExcludeUnitReward,
 } from './game/villageRewards';
 import { CityRenderer, type CityRenderOptions, type CityMapOutlineKind } from './render/cities';
 import { WonderRenderer, type PlacedWonder } from './render/wonderRenderer';
@@ -805,6 +826,7 @@ import {
 import { buildAutoRationSidePanelEvent } from './game/spich-auto-ration-notify';
 import {
   deferredHintsToSidePanelEvents,
+  dismissEotOrEraWarLogEntry,
   shouldDeferEotEvents,
   type DeferredEotHint,
 } from './game/eot-event-defer';
@@ -931,6 +953,7 @@ import {
   toggleWikiHubHud,
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
+import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
@@ -3359,6 +3382,14 @@ async function boot(): Promise<void> {
     const goldDeficitStates = new Map<number, GoldDeficitState>();
     /** DYSPOZYCJA-85-SUWAK: domyślny podział Daniny/Podatku per owner (Skarb/Nauka/Zamożność). */
     const ownerDefaultPodzialHandlu = new Map<number, CityPodzialHandlu>();
+    /**
+     * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): domyślne globalne
+     * imperium dla Podziału Pracy / Priorytetu Okolicy / Priorytetu produkcji, wzorem
+     * ownerDefaultPodzialHandlu wyżej. Miasto BEZ override dziedziczy z tej mapy.
+     */
+    const ownerDefaultPodzialPracy = new Map<number, CityPodzialPracy>();
+    const ownerDefaultOkolicaFocus = new Map<number, OkolicaFocus>();
+    const ownerDefaultBudowaProfil = new Map<number, CityBudowaProfil>();
     const ulepszeniaEmpireByOwner = new Map<number, UlepszeniaEmpirePolicy>();
     /** PYTANIE-77-DOP=B: łaska 1 tury Mennicy po utracie dostępu do złota (per owner). */
     const mennicaZlotoGraceState: MennicaZlotoGraceState = createMennicaZlotoGraceState();
@@ -3883,6 +3914,55 @@ async function boot(): Promise<void> {
       }
     }
 
+    /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: init dla trzy nowe pola, wzorem wyżej. */
+    function initOwnerDefaultCityFields(): void {
+      ownerDefaultPodzialPracy.clear();
+      ownerDefaultPodzialPracy.set(0, freshOwnerDefaultPodzialPracy());
+      ownerDefaultOkolicaFocus.clear();
+      ownerDefaultOkolicaFocus.set(0, freshOwnerDefaultOkolicaFocus());
+      ownerDefaultBudowaProfil.clear();
+      ownerDefaultBudowaProfil.set(0, freshOwnerDefaultBudowaProfil());
+      for (const ai of aiStartHexes) {
+        if (!ownerDefaultPodzialPracy.has(ai.ownerId)) {
+          ownerDefaultPodzialPracy.set(ai.ownerId, freshOwnerDefaultPodzialPracy());
+        }
+        if (!ownerDefaultOkolicaFocus.has(ai.ownerId)) {
+          ownerDefaultOkolicaFocus.set(ai.ownerId, freshOwnerDefaultOkolicaFocus());
+        }
+        if (!ownerDefaultBudowaProfil.has(ai.ownerId)) {
+          ownerDefaultBudowaProfil.set(ai.ownerId, freshOwnerDefaultBudowaProfil());
+        }
+      }
+    }
+
+    /**
+     * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: nowo zakładane LUB miasto zmieniające
+     * właściciela (zdobycie w bitwie/oblężeniu, wchłonięcie miasta-państwa, przejście do
+     * rebeliantów) dziedziczy globalny default NOWEGO właściciela — bez override — i
+     * pola city.okolicaFocus/budowaFocus/budowaTryb (cache broadcastu) są ZSYNCHRONIZOWANE
+     * z tym defaultem od razu, nie zostają przy wartościach POPRZEDNIEGO właściciela
+     * (B2, Evaluator RUNDA 1: FAIL). Wywołuj tę funkcję PO każdej zmianie city.ownerId.
+     */
+    function seedCityOwnerDefaults(c: City): void {
+      if (!ownerDefaultOkolicaFocus.has(c.ownerId)) {
+        ownerDefaultOkolicaFocus.set(c.ownerId, freshOwnerDefaultOkolicaFocus());
+      }
+      if (!ownerDefaultBudowaProfil.has(c.ownerId)) {
+        ownerDefaultBudowaProfil.set(c.ownerId, freshOwnerDefaultBudowaProfil());
+      }
+      if (!ownerDefaultPodzialPracy.has(c.ownerId)) {
+        ownerDefaultPodzialPracy.set(c.ownerId, freshOwnerDefaultPodzialPracy());
+      }
+      c.okolicaFocusOverride = false;
+      c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;
+      c.budowaFocusOverride = false;
+      const bp = ownerDefaultBudowaProfil.get(c.ownerId)!;
+      c.budowaFocus = bp.budowaFocus;
+      c.budowaTryb = bp.budowaTryb;
+      c.podzialPracyOverride = false;
+      delete c.podzialPracy;
+    }
+
     function initUlepszeniaEmpireByOwner(): void {
       ulepszeniaEmpireByOwner.clear();
       ulepszeniaEmpireByOwner.set(0, freshUlepszeniaEmpirePolicy());
@@ -3904,6 +3984,19 @@ async function boot(): Promise<void> {
 
     function effectivePodzialHandlu(city: City): CityPodzialHandlu {
       return resolveCityPodzialHandlu(city, ownerDefaultPodzialHandlu.get(city.ownerId));
+    }
+
+    /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: analogiczne readery dla trzy nowe pola. */
+    function effectivePodzialPracy(city: City): CityPodzialPracy {
+      return resolveCityPodzialPracy(city, ownerDefaultPodzialPracy.get(city.ownerId));
+    }
+
+    function effectiveOkolicaFocus(city: City): OkolicaFocus {
+      return resolveCityOkolicaFocus(city, ownerDefaultOkolicaFocus.get(city.ownerId));
+    }
+
+    function effectiveBudowaProfil(city: City): CityBudowaProfil {
+      return resolveCityBudowaProfil(city, ownerDefaultBudowaProfil.get(city.ownerId));
     }
 
     function empireFoodDefaultPct(): number {
@@ -4009,6 +4102,9 @@ async function boot(): Promise<void> {
         workedKeys: okolicaWorkedKeySet(city),
         yieldOf: (q, rr) => yieldOfMapHex(map, q, rr),
         showYields: true,
+        // P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE: odznaka 👤 w okolicy bierze kolor z tej samej
+        // palety co ikona 👤 na mapie świata — właściciel z miasta, nie sztywne 0.
+        ownerId: city.ownerId,
       });
     }
 
@@ -4340,7 +4436,7 @@ async function boot(): Promise<void> {
     function buildContextPanelData(): {
       kind: 'hex' | 'unit';
       html: string;
-      headLabel?: string;
+      ownUnit?: boolean;
       expandable?: boolean;
       expandInHtml?: boolean;
     } | null {
@@ -4359,12 +4455,10 @@ async function boot(): Promise<void> {
       }
       if (unitMsg) {
         const ownSelected = selectedId !== null && units.some(x => x.id === selectedId && x.ownerId === 0);
-        const stackState = ownSelected ? buildArmyStackHudStateInner() : null;
-        const isArmyStack = (stackState?.unitCount ?? 0) > 1;
         return {
           kind: 'unit',
           html: unitMsg,
-          headLabel: isArmyStack ? 'Armia' : undefined,
+          ownUnit: ownSelected,
           expandable: ownSelected || foreignUnitInspectId !== null,
           expandInHtml: ownSelected || foreignUnitInspectId !== null,
         };
@@ -4488,13 +4582,23 @@ async function boot(): Promise<void> {
       forceTerritoryBorderForCityPanel();
       exitOkolicaMapMode();
       clearPlayerUnitSelection();
-      applyCityPanelWorldView(true, city);
+      // P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE: `applyCityPanelWorldView` woła w środku
+      // `refreshWorkerFieldOverlay()` (i inne odświeżenia bramkowane `isCityPanelOpen()`),
+      // więc MUSI iść PO `showCityPanel(...)`. Wołane wcześniej widziało panel jako jeszcze
+      // zamknięty i odbudowywało warstwę 👤 mapy świata tuż przed otwarciem panelu. Warstwa
+      // zostawała widoczna od otwarcia panelu do pierwszego z: przełączenie miasta
+      // (`onSwitchCity`), ręczne przypisanie pola (`applyOkolicaTileAdjust`), koniec tury,
+      // zamknięcie panelu — te ścieżki wołają `refreshWorkerFieldOverlay()` wprost i ją
+      // czyściły. Zmiana trybu/priorytetu okolicy (`onOkolicaFocusChange`,
+      // `onOkolicaEnterManual`, `onOkolicaRestoreAuto`) NIE czyściła jej — te wołają tylko
+      // `syncOkolicaOverlay()`, który warstwy mapy świata w ogóle nie dotyka.
       showCityPanel(city, map, () => {
         hideCityPanel();
         applyCityPanelWorldView(false);
         disposeOkolicaOverlay();
         updateHud();
       });
+      applyCityPanelWorldView(true, city);
       syncOkolicaOverlay();
       updateHud();
     }
@@ -5498,9 +5602,17 @@ async function boot(): Promise<void> {
         onOkolicaFocusChange: (cityId: string, focus: import('./game/cities').OkolicaFocus) => {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
-          city.okolicaFocus = focus;
           city.okolicaTryb = 'auto';
           delete city.okolicaReczne;
+          // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): bez override —
+          // zmiana idzie do globalnej wartości imperium i broadcastuje się na miasta
+          // ownera bez override; z override — zmiana tylko tego miasta (jak dawniej).
+          if (city.okolicaFocusOverride) {
+            city.okolicaFocus = focus;
+          } else {
+            ownerDefaultOkolicaFocus.set(city.ownerId, focus);
+            broadcastOkolicaFocusToOwnerCities(cities, city.ownerId, focus);
+          }
           const labels: Record<string, string> = {
             zywnosc: 'Żywność',
             produkcja: 'Produkcja',
@@ -5508,8 +5620,29 @@ async function boot(): Promise<void> {
             zrownowazone: 'Zrównoważone',
           };
           showHintMessage(
-            `${city.name}: auto · priorytet ${labels[focus] ?? focus} — pola przypisane automatycznie`,
+            city.okolicaFocusOverride
+              ? `${city.name}: auto · priorytet ${labels[focus] ?? focus} (tylko to miasto)`
+              : `${city.name}: auto · priorytet ${labels[focus] ?? focus} — całe imperium`,
             3200,
+          );
+          updateHud();
+          refreshCityPanelIfOpen();
+          syncOkolicaOverlay();
+        },
+        getOkolicaFocusOverride: (cityId: string) => cities.find(c => c.id === cityId)?.okolicaFocusOverride === true,
+        onOkolicaFocusOverrideToggle: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          const next = !city.okolicaFocusOverride;
+          city.okolicaFocusOverride = next;
+          if (!next) {
+            city.okolicaFocus = ownerDefaultOkolicaFocus.get(city.ownerId) ?? DEFAULT_OKOLICA_FOCUS;
+          }
+          showHintMessage(
+            next
+              ? `${city.name}: priorytet pól odpięty od imperium (tylko to miasto)`
+              : `${city.name}: priorytet pól wraca do wartości imperium`,
+            2800,
           );
           updateHud();
           refreshCityPanelIfOpen();
@@ -5555,7 +5688,9 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city) return null;
           ensureCitySaveDefaults(city);
-          const tryb = city.budowaTryb ?? DEFAULT_BUDOWA_TRYB;
+          // effectiveBudowaProfil: belt-and-suspenders jak w getOkolicaState — miasto
+          // jest już trzymane w sync broadcastem, resolver to dodatkowa ochrona przed dryfem.
+          const tryb = effectiveBudowaProfil(city).budowaTryb;
           const priorytetTypow = sanitizeBudowaPriorytetTypow(
             city.budowaPriorytetTypow?.length
               ? city.budowaPriorytetTypow
@@ -5606,6 +5741,15 @@ async function boot(): Promise<void> {
               3200,
             );
           }
+          // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): bez override —
+          // tryb+pierwszy typ (budowaFocus) idą do globalnej wartości imperium i broadcastują
+          // się na miasta ownera bez override. budowaPriorytetTypow (pełna lista) NIE jest
+          // broadcastowana — z natury per-miasto, patrz empire-city-defaults.ts nagłówek.
+          if (!city.budowaFocusOverride) {
+            const profil: CityBudowaProfil = { budowaFocus: city.budowaFocus, budowaTryb: city.budowaTryb };
+            ownerDefaultBudowaProfil.set(city.ownerId, profil);
+            broadcastBudowaProfilToOwnerCities(cities, city.ownerId, profil);
+          }
           updateHud();
           refreshCityPanelIfOpen();
         },
@@ -5613,7 +5757,30 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city) return;
           city.budowaTryb = 'reczny';
-          showHintMessage(`${city.name}: ręczna kolejka budowy`, 2800);
+          // Tryb Ręczny jest z natury per-miasto — wejście w niego automatycznie
+          // odpina miasto od broadcastu globalnego priorytetu (jak kliknięcie ✏️).
+          city.budowaFocusOverride = true;
+          showHintMessage(`${city.name}: ręczna kolejka budowy (tylko to miasto)`, 2800);
+          refreshCityPanelIfOpen();
+        },
+        getBudowaFocusOverride: (cityId: string) => cities.find(c => c.id === cityId)?.budowaFocusOverride === true,
+        onBudowaFocusOverrideToggle: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city) return;
+          const next = !city.budowaFocusOverride;
+          city.budowaFocusOverride = next;
+          if (!next) {
+            const bp = ownerDefaultBudowaProfil.get(city.ownerId) ?? freshOwnerDefaultBudowaProfil();
+            city.budowaFocus = bp.budowaFocus;
+            city.budowaTryb = bp.budowaTryb;
+          }
+          showHintMessage(
+            next
+              ? `${city.name}: priorytet produkcji odpięty od imperium (tylko to miasto)`
+              : `${city.name}: priorytet produkcji wraca do wartości imperium`,
+            2800,
+          );
+          updateHud();
           refreshCityPanelIfOpen();
         },
         onBudowaListaChange: (cityId: string, lista: string[], tryb: 'lista') => {
@@ -5621,6 +5788,9 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.budowaLista = dedupeBudowaLista(lista);
           city.budowaTryb = tryb;
+          // Tryb Lista jest z natury per-miasto (budowaLista = konkretne budynki tego
+          // miasta) — wejście w niego automatycznie odpina od broadcastu globalnego.
+          city.budowaFocusOverride = true;
           delete city.budowaListaUkonczonaHintShown;
           const enqueued = tryAutoEnqueueBuild(cityId);
           showHintMessage(
@@ -5653,6 +5823,7 @@ async function boot(): Promise<void> {
           if (!city || !tpl) return;
           city.budowaLista = dedupeBudowaLista([...tpl.budynki]);
           city.budowaTryb = 'lista';
+          city.budowaFocusOverride = true;
           delete city.budowaListaUkonczonaHintShown;
           const enqueued = tryAutoEnqueueBuild(cityId);
           showHintMessage(
@@ -5689,6 +5860,9 @@ async function boot(): Promise<void> {
           for (const c of cities.filter(c => c.ownerId === 0)) {
             c.budowaLista = [...deduped];
             c.budowaTryb = 'lista';
+            // Tryb Lista jest z natury per-miasto — pinuje wszystkie miasta poza
+            // broadcastem globalnego priorytetu (R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A).
+            c.budowaFocusOverride = true;
             delete c.budowaListaUkonczonaHintShown;
             tryAutoEnqueueBuild(c.id);
           }
@@ -5761,6 +5935,7 @@ async function boot(): Promise<void> {
 
     initEmpireFoodStates();
     initOwnerDefaultPodzialHandlu();
+    initOwnerDefaultCityFields();
     initUlepszeniaEmpireByOwner();
 
     // -----------------------------------------------------------------------
@@ -6653,8 +6828,12 @@ async function boot(): Promise<void> {
 
       initEmpireFoodStates();
       initOwnerDefaultPodzialHandlu();
+      initOwnerDefaultCityFields();
       initUlepszeniaEmpireByOwner();
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, undefined);
+      migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, undefined);
+      migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, undefined);
+      migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, undefined);
       console.log(
         '[ClusterStart] typ=' + playerCivId +
         ' rywale=' + rywaleNaKlaster + ' (deferred)' +
@@ -6753,6 +6932,7 @@ async function boot(): Promise<void> {
           c.startCityState = true;
           cities.push(c);
           finalizeCityFounding(c, pos.q, pos.r);
+          seedCityOwnerDefaults(c);
           aiStartHexes.push({ q: pos.q, r: pos.r, ownerId });
           _rivalsFounded++;
         } else {
@@ -6821,6 +7001,7 @@ async function boot(): Promise<void> {
         if (extraCity) {
           cities.push(extraCity);
           finalizeCityFounding(extraCity, extra.q, extra.r);
+          seedCityOwnerDefaults(extraCity);
           aiStartHexes.push({ q: extra.q, r: extra.r, ownerId });
         }
       }
@@ -6859,6 +7040,7 @@ async function boot(): Promise<void> {
           if (!ownerDefaultPodzialHandlu.has(sc.ownerId)) {
             ownerDefaultPodzialHandlu.set(sc.ownerId, freshOwnerDefaultPodzialHandlu());
           }
+          seedCityOwnerDefaults(c);
           if (clusterCapitalOwnerIds.has(sc.ownerId)) {
             grantDifficultyStartBonusesForMajorCapital(sc.ownerId, c, sc.name);
           }
@@ -9598,6 +9780,7 @@ async function boot(): Promise<void> {
       cities.push(c);
       reconcileAllWorkedTiles(cities, buildAllTerritoryNodes());
       finalizeCityFounding(c, q, r);
+      seedCityOwnerDefaults(c);
       spawnPendingSameTypeRivals(q, r);
       spawnPendingForeignClusters();
       refreshFog();
@@ -10389,6 +10572,10 @@ async function boot(): Promise<void> {
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
         if (city.rebelState) city.rebelState = false;
+        // B2 (Evaluator RUNDA 1: FAIL): zdobycie przez oblężenie na mapie musi
+        // zresetować override i zsynchronizować pola z globalnym defaultem NOWEGO
+        // właściciela (nie zostać przy wartościach POPRZEDNIEGO).
+        seedCityOwnerDefaults(city);
         city.population = Math.max(1, city.population);
         for (let i = units.length - 1; i >= 0; i--) {
           const u = units[i]!;
@@ -12685,6 +12872,7 @@ async function boot(): Promise<void> {
         makeOwnerRuntimeActiveLabelsResolver(),
         makeOwnerEmpireStockResolver(),
         ownerDefaultPodzialHandlu,
+        ownerDefaultPodzialPracy,
       );
       const efParams = buildEmpireFoodParams(data.econParams, _menuDifficulty);
       const foodSt = empireFoodStates.get(0) ?? freshEmpireFoodState();
@@ -12745,6 +12933,7 @@ async function boot(): Promise<void> {
         makeOwnerRuntimeActiveLabelsResolver(),
         makeOwnerEmpireStockResolver(),
         ownerDefaultPodzialHandlu,
+        ownerDefaultPodzialPracy,
       );
       const solCityIds = new Set<string>();
       let uchwalaSolSpichlerzIICount = 0;
@@ -12845,6 +13034,7 @@ async function boot(): Promise<void> {
         makeOwnerRuntimeActiveLabelsResolver(),
         makeOwnerEmpireStockResolver(),
         ownerDefaultPodzialHandlu,
+        ownerDefaultPodzialPracy,
       );
       const playerEcon = sumEconomyForPlayerCities(preview, cities);
       _lastPieniadzRate = playerEcon.pieniadz;
@@ -15746,6 +15936,80 @@ async function boot(): Promise<void> {
       },
     });
 
+    /**
+     * Dismiss pojedynczego wpisu panelu WYDARZENIA (✕ przy karcie LUB „Usuń wszystkie" —
+     * patrz clearAllSidePanelEvents niżej, który woła to samo per id).
+     *
+     * N1 (Evaluator PASS-WITH-NOTES, R-WYDARZENIA-FILTR-KATEGORII): wpisy `eot-hint-*`
+     * (deferredHintsToSidePanelEvents — w tym „Dyplomacja" dla handlu AI↔AI) i `era-*`
+     * (notifyPlayerEraChangeIfAdvanced) trafiają do warEventLog, który NIE czyści się co
+     * turę (tylko przycina do 8 pozycji) — bez tej gałęzi dismiss spadał do miękkiego
+     * `dismissedSidePanelEventIds`, które JEST czyszczone na końcu KAŻDEJ tury (linia
+     * `dismissedSidePanelEventIds.clear()` w sekwencji EOT) → skasowany wpis wracał w
+     * kolejnej turze. Naprawa: usuń TRWALE ze źródłowego logu (findIndex+splice), tak
+     * samo jak już działało dla `war-*` niżej; fallback do miękkiego ukrycia tylko gdy
+     * wpisu nie znaleziono w warEventLog (nie powinno się zdarzyć, ale nie chcemy cichej
+     * no-op — lepiej ukryć niż zostawić widoczny martwy wpis).
+     */
+    function handleSidePanelEventDismiss(id: string): void {
+      if (id.startsWith('war-')) {
+        const idx = warEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          warEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
+      // N1 fix — logika w game/eot-event-defer.ts (dismissEotOrEraWarLogEntry), testowana
+      // niezależnie od main.ts w tools/sidepanel-events-toolbar-test.cjs.
+      if (dismissEotOrEraWarLogEntry(warEventLog, id)) {
+        refreshD1bHud();
+        return;
+      }
+      if (id.startsWith('border-march-')) {
+        // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy (borderMarchEventLog), wzorzec
+        // identyczny do 'village-' niżej — splice wystarcza, bo log i tak zeruje się
+        // przy turn++; dismiss nie musi przetrwać do następnej tury.
+        const idx = borderMarchEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          borderMarchEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
+      if (id.startsWith('village-')) {
+        const idx = villageEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          villageEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        return;
+      }
+      if (id.startsWith('prod-empty-')) {
+        const cityId = cityIdFromProdEmptyEventId(id);
+        const city = cityId ? cities.find(c => c.id === cityId) : undefined;
+        if (city) {
+          prodEmptyDismissFp.set(city.id, productionOptionsFingerprint(city));
+          refreshD1bHud();
+        }
+        return;
+      }
+      // Propozycja pokoju / negocjacje / inne dyplo — ukryj do końca tury (✕ nie
+      // usuwa propozycji z inboxu; wraca w następnej turze, jeśli nadal aktualna).
+      dismissedSidePanelEventIds.add(id);
+      refreshD1bHud();
+    }
+
+    /** R-WYDARZENIA-FILTR-KATEGORII: „Usuń wszystkie" w toolbarze panelu WYDARZENIA.
+     * Iteruje NIEfiltrowaną collectTurnEvents() (nie to, co chip 🌍 „Inne cyw." akurat
+     * pokazuje w UI) — więc kasuje też wpisy ukryte tym przełącznikiem. To jest ZAMIERZONE
+     * (Maciej/Evaluator): „Usuń wszystkie" ma czyścić WSZYSTKO, nie tylko widoczną resztę. */
+    function clearAllSidePanelEvents(): void {
+      for (const ev of collectTurnEvents()) {
+        handleSidePanelEventDismiss(ev.id);
+      }
+    }
+
     function mountD1bHud(): void {
       d1bHudActive = true;
       createCityListHud({
@@ -16198,6 +16462,10 @@ async function boot(): Promise<void> {
         },
         onContextSelectUnit: (id) => selectPlayerUnit(id, true, unitSideDetailExpanded),
         onContextAction: handleSelectedUnitHudAction,
+        // R-KARTA-JEDNOSTKI-STRZALKI-CYKL: strzałki ◀▶ karty własnej jednostki w panelu bocznym —
+        // reużywają DOKŁADNIE ten sam cykl co strzałki dolnego paska armii (linie 16041-16045 wyżej).
+        onContextCycleUnit: (delta) => cycleToAdjacentPlayerUnit(selectedId, delta, { all: true }),
+        canContextCycleUnit: () => cyclablePlayerArmyLeadsAll().length > 1,
         getContextPanelMessage: () => buildContextPanelMessage(),
         onEventClick: (id) => {
           if (id.startsWith('border-march-')) {
@@ -16239,48 +16507,8 @@ async function boot(): Promise<void> {
             openCityPanelForPlayer(city);
           }
         },
-        onEventDismiss: (id) => {
-          if (id.startsWith('war-')) {
-            const idx = warEventLog.findIndex(e => e.id === id);
-            if (idx >= 0) {
-              warEventLog.splice(idx, 1);
-              refreshD1bHud();
-            }
-            return;
-          }
-          if (id.startsWith('border-march-')) {
-            // R-PRZEMARSZ-WYGASANIE-Q1=A: log per-turowy (borderMarchEventLog), wzorzec
-            // identyczny do 'village-' niżej — splice wystarcza, bo log i tak zeruje się
-            // przy turn++; dismiss nie musi przetrwać do następnej tury.
-            const idx = borderMarchEventLog.findIndex(e => e.id === id);
-            if (idx >= 0) {
-              borderMarchEventLog.splice(idx, 1);
-              refreshD1bHud();
-            }
-            return;
-          }
-          if (id.startsWith('village-')) {
-            const idx = villageEventLog.findIndex(e => e.id === id);
-            if (idx >= 0) {
-              villageEventLog.splice(idx, 1);
-              refreshD1bHud();
-            }
-            return;
-          }
-          if (id.startsWith('prod-empty-')) {
-            const cityId = cityIdFromProdEmptyEventId(id);
-            const city = cityId ? cities.find(c => c.id === cityId) : undefined;
-            if (city) {
-              prodEmptyDismissFp.set(city.id, productionOptionsFingerprint(city));
-              refreshD1bHud();
-            }
-            return;
-          }
-          // Propozycja pokoju / negocjacje / inne dyplo — ukryj do końca tury (✕ nie
-          // usuwa propozycji z inboxu; wraca w następnej turze, jeśli nadal aktualna).
-          dismissedSidePanelEventIds.add(id);
-          refreshD1bHud();
-        },
+        onEventDismiss: handleSidePanelEventDismiss,
+        onDismissAll: clearAllSidePanelEvents,
       });
       ensurePerfReportChip();
       mountEmpireDetailPanel(() => buildEmpireDetailSnap());
@@ -16470,7 +16698,11 @@ async function boot(): Promise<void> {
         return c ? effectivePodzialHandlu(c) : null;
       },
       getOwnerDefaultPodzialHandlu: (ownerId: number) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
-      getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
+      getPodzialPracy: (cityId: string) => {
+        const c = cities.find(ct => ct.id === cityId);
+        return c ? effectivePodzialPracy(c) : null;
+      },
+      getPodzialPracyOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracyOverride === true,
       onPodzialHandluChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
         if (c && c.ownerId === 0) {
@@ -16483,10 +16715,32 @@ async function boot(): Promise<void> {
       onPodzialPracyChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
         if (c && c.ownerId === 0) {
-          c.podzialPracy = { procentBudynki: split.procentBudynki };
+          // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: bez override — suwak zmienia
+          // wartość globalną imperium (wszystkie miasta bez override); z override —
+          // zmiana tylko tego miasta.
+          if (c.podzialPracyOverride) {
+            c.podzialPracy = { procentBudynki: split.procentBudynki };
+          } else {
+            ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+          }
           markCityStateDirty(); // D10: podział pracy → przelicz
           updateHud();
         }
+      },
+      onPodzialPracyOverrideToggle: (cityId: string) => {
+        const c = cities.find(ct => ct.id === cityId);
+        if (!c || c.ownerId !== 0) return;
+        const next = !c.podzialPracyOverride;
+        if (next) {
+          // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
+          c.podzialPracy = effectivePodzialPracy(c);
+        } else {
+          delete c.podzialPracy;
+        }
+        c.podzialPracyOverride = next;
+        markCityStateDirty();
+        updateHud();
+        refreshCityPanelIfOpen();
       },
       onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
         purchaseRecruitmentUnit(cityId, itemId, koszt);
@@ -17031,6 +17285,24 @@ async function boot(): Promise<void> {
     }
 
     /**
+     * R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE: czy jednostka-nagroda
+     * chatki dla danej ERY gracza jest jednostką WOJSKOWĄ (nie cywilną). Derywowana z
+     * lookupUnitDef(...)['Typ'] !== 'Civilian' -- ten sam predykat co reszta silnika (nie
+     * osobna, zdublowana tabela era->wojskowość, poprawka N1 rundy 2 werdyktu Evaluatora).
+     * Brak zdefiniowanej jednostki dla danej ery (villageUnitForEra -> null) -> bezpieczny
+     * domyślny `true` (traktuj jako wojskową) -- moot dziś (jednostka i tak nie powstanie),
+     * ale strażnik na przyszłość. / EN: derives "is the era's hut-reward unit military" from
+     * the same unit-def lookup the rest of the engine uses; undefined era defaults to true
+     * (safe/conservative) rather than false.
+     */
+    function isVillageRewardUnitMilitary(era: number): boolean {
+      const typeId = villageUnitForEra(era);
+      if (!typeId) return true;
+      const def = lookupUnitDef(typeId);
+      return String(def?.['Typ'] ?? '') !== 'Civilian';
+    }
+
+    /**
      * WIOSKI neutralne (goodie huts): pierwsze wejście jednostki GRACZA na
      * heks z wioską -> nagroda losowa (pickVillageReward), potem wioska znika.
      * `hex.wioska.istnieje = false` jest ustawiane NATYCHMIAST (przed
@@ -17064,7 +17336,31 @@ async function boot(): Promise<void> {
         evKind = 'city';
       };
 
-      const kind = pickVillageReward(Math.random());
+      // R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE: policz heks spawnu
+      // jednostki-nagrody RAZ, z góry — decyzja wykluczenia ocenia terytorium na heksie
+      // SPAWNU (gdzie jednostka faktycznie stanie), NIE na heksie chatki (q, r) — bo to
+      // spawn, nie chatka, liczy się jako naruszenie granicy. Wynik reużyty niżej w gałęzi
+      // 'jednostka', żeby findVillageRewardSpawnHex nie było wołane dwa razy.
+      const rewardUnitTypeId = villageUnitForEra(player.era);
+      const rewardUnitDest = rewardUnitTypeId
+        ? findVillageRewardSpawnHex({
+            hutQ: q,
+            hutR: r,
+            ownerId: 0,
+            units,
+            cities,
+            isPassable: isHexPassableForUnit,
+            exploredHexes: explored,
+          })
+        : undefined;
+      const excludeUnit = shouldExcludeUnitReward({
+        hasSpawnHex: rewardUnitDest !== undefined,
+        spawnHexOwnerId: rewardUnitDest ? territoryOwnerAtLive(rewardUnitDest.q, rewardUnitDest.r) : null,
+        playerOwnerId: 0,
+        rewardUnitIsMilitary: isVillageRewardUnitMilitary(player.era),
+      });
+
+      const kind = pickVillageReward(Math.random(), { excludeUnit });
 
       if (kind === 'zloto') {
         grantGold('skarb');
@@ -17094,18 +17390,10 @@ async function boot(): Promise<void> {
           }
         }
       } else {
-        const typeId = villageUnitForEra(player.era);
-        const dest = typeId
-          ? findVillageRewardSpawnHex({
-              hutQ: q,
-              hutR: r,
-              ownerId: 0,
-              units,
-              cities,
-              isPassable: isHexPassableForUnit,
-              exploredHexes: explored,
-            })
-          : undefined;
+        // Reużywa rewardUnitTypeId/rewardUnitDest policzone raz wyżej (przed pickVillageReward) --
+        // NIE woła findVillageRewardSpawnHex drugi raz.
+        const typeId = rewardUnitTypeId;
+        const dest = rewardUnitDest;
         if (!typeId || !dest) {
           grantGold('brak miejsca/jednostki, w zamian');
         } else {
@@ -19161,8 +19449,14 @@ async function boot(): Promise<void> {
               if (battleLoot.gold > 0) {
                 setOwnerTreasury(winOid, ownerTreasury(winOid) + battleLoot.gold);
               }
+              // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): bitwy mogą się
+              // odbyć wielokrotnie w jednej turze gracza, PRZED jedynym w turze
+              // reconcileOwnerResourceCaps (advanceCityEconomy) — bez capu łup (Brąz/Żelazo
+              // i inne surowce jednostek) mógłby windować magazyn ponad limit tak samo jak
+              // wyrąb lasu (drewno).
+              const battleLootCap = ownerResourceCap(cities, cityBuilt, winOid, data, _menuDifficulty);
               for (const [key, amt] of Object.entries(battleLoot.resources)) {
-                if (amt > 0) creditOwnerResourceStock(cities, winOid, key, amt);
+                if (amt > 0) creditOwnerResourceStock(cities, winOid, key, amt, battleLootCap);
               }
             }
           }
@@ -19547,6 +19841,9 @@ async function boot(): Promise<void> {
       for (const city of csCities) {
         city.ownerId = annexerId;
         city.startCityState = false;
+        // B2 (Evaluator RUNDA 1: FAIL): dyplomatyczne wchłonięcie musi zresetować
+        // override i zsynchronizować pola z globalnym defaultem NOWEGO właściciela.
+        seedCityOwnerDefaults(city);
       }
       cityRenderer.sync(cities, _cityRenderOpts());
       syncUnitsRender();
@@ -19726,10 +20023,10 @@ async function boot(): Promise<void> {
           cities,
         })) {
           const triumphCivLabel = civDisplayNameForOwner(0) ?? civLabelForOwner(0);
-          showHintMessage(
-            buildTriumphCityStateUnificationMessage(triumphCivLabel, city.name),
-            TRIUMPH_CS_HINT_MS,
-          );
+          // P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK: modal wymagający potwierdzenia
+          // zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem
+          // ELIMINACJA wołanym linijkę wyżej i natychmiast go nadpisywał.
+          showTriumphCityStateNotice({ civLabel: triumphCivLabel, cityName: city.name });
         }
         eliminateOwner(oldOwner);
       }
@@ -19750,7 +20047,10 @@ async function boot(): Promise<void> {
         atkOwner,
         units,
         anchor?.id ?? atkRoster[0]?.id ?? '',
-        { civKeyForOwner: civKeyForOwnerId },
+        // B2 (Evaluator RUNDA 1: FAIL): zdobycie miasta w bitwie musi zresetować
+        // override i zsynchronizować okolicaFocus/budowaFocus/budowaTryb/podzialPracy
+        // z globalnym defaultem NOWEGO właściciela (nie zostać przy wartościach starego).
+        { civKeyForOwner: civKeyForOwnerId, onOwnerChanged: seedCityOwnerDefaults },
       );
       if (sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
         cityRelig.set(
@@ -20404,6 +20704,11 @@ async function boot(): Promise<void> {
           empireFoodStates: Array.from(empireFoodStates.entries()),
           goldDeficitStates: Array.from(goldDeficitStates.entries()),
           ownerDefaultPodzialHandlu: Array.from(ownerDefaultPodzialHandlu.entries()),
+          // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): serializacja
+          // globalnych domyślnych dla trzy nowe pola, wzorem ownerDefaultPodzialHandlu wyżej.
+          ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries()),
+          ownerDefaultOkolicaFocus: Array.from(ownerDefaultOkolicaFocus.entries()),
+          ownerDefaultBudowaProfil: Array.from(ownerDefaultBudowaProfil.entries()),
           ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
@@ -20493,7 +20798,7 @@ async function boot(): Promise<void> {
 
     function persistSaveToSlot(slotId: string, label: string): boolean {
       try {
-        const ok = saveToLocal(slotId, buildSaveGameSnapshot(label));
+        const { ok } = saveToLocal(slotId, buildSaveGameSnapshot(label));
         if (ok) setLastPlayedSlotId(slotId);
         return ok;
       } catch (eSave) {
@@ -20544,14 +20849,26 @@ async function boot(): Promise<void> {
       } catch { idx = 0; }
       const slot = 'autosave-' + (idx + 1);
       try {
-        const ok = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
+        const { ok, reason } = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
         if (ok) {
           setLastPlayedSlotId(slot);
+          // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
+          // niepowodzeniu kolejna próba celuje ponownie w ten sam slot
+          // zamiast po cichu przeskoczyć dalej i zostawić go zamrożonym.
           try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
           console.log('[Autosave] rotacyjny slot=' + slot + ' tura=' + turn);
+        } else {
+          console.warn('[Autosave] rotacyjny zapis nieudany slot=' + slot + ' tura=' + turn + ' powod=' + (reason ?? 'nieznany'));
+          showHintMessage(
+            reason === 'quota'
+              ? 'Autozapis nieudany — brak miejsca w zapisie przeglądarki'
+              : 'Autozapis nieudany (blad zapisu)',
+            3000,
+          );
         }
       } catch (eRot) {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
+        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
       }
     }
 
@@ -20829,7 +21146,13 @@ async function boot(): Promise<void> {
             const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes, ownerStockForTradeFlow, tradeFlowParams);
             for (const flow of tradeFlows) {
               deductBuildingStockCostAcrossCities(cities, flow.fromOwnerId, { [flow.resourceKey]: flow.amount });
-              creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount);
+              // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): audyt call-site'ów
+              // creditOwnerResourceStock bez cap — ten leci PRZED advanceCityEconomy/
+              // reconcileOwnerResourceCaps w tej samej turze, więc nadwyżka i tak zostałaby
+              // ścięta na końcu ticku; cap dołożony tu defensywnie (spójnie z resztą), żeby
+              // nie polegać na kolejności wywołań w przyszłych zmianach.
+              const tradeFlowCap = ownerResourceCap(cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty);
+              creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount, tradeFlowCap);
             }
           } catch (eTradeFlow) {
             console.error('[Handel] Blad przeplywu ilosciowego surowca przez trase:', eTradeFlow);
@@ -20880,6 +21203,7 @@ async function boot(): Promise<void> {
               })),
               getMaxHp: (typeId: string) => unitHealth(data.units.find(ud => ud.Jednostka === typeId) ?? {}),
             },
+            ownerDefaultPodzialPracy,
           );
           powerSnapshotsForTurn = buildPowerSnapshotsForTurn(econ);
           refreshObjectivePowerCache();
@@ -21112,7 +21436,13 @@ async function boot(): Promise<void> {
               const drewnoCredit = applyStolarniaDrewnoMapInflow(
                 pracaGrant, stolarniaCount, stolarniaBonus,
               );
-              creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit);
+              // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09): pętla wyrębu leci
+              // PO jedynym w turze reconcileOwnerResourceCaps (w advanceCityEconomy wyżej),
+              // więc bez capu kilka równoległych wyrębów windowało Drewno ponad limit
+              // magazynu bez ograniczenia — cap liczony identycznie jak w
+              // tickEmpireResourcePipeline / buildEmpireResourceRows (ownerResourceCap).
+              const drewnoCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
+              creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, drewnoCap);
               showHintMessage(
                 'Wyrąb: +' + drewnoCredit + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
                 2000,
@@ -21711,6 +22041,9 @@ async function boot(): Promise<void> {
                   markCityRebellionStarted(city);
                   city.rebelState = true;
                   city.ownerId = REBEL_FACTION_OWNER_ID;
+                  // B2 (Evaluator RUNDA 1: FAIL): przejście do rebeliantów musi zresetować
+                  // override i zsynchronizować pola z globalnym defaultem frakcji rebeliantów.
+                  seedCityOwnerDefaults(city);
                   console.log(`[Rebelia] Tura ${turn} ${city.name} → frakcja rebeliantów`);
                 }
               }
@@ -22288,11 +22621,16 @@ async function boot(): Promise<void> {
                     procentPieniadz: pieniadz,
                     procentLuksus:   Math.max(0, 100 - sliderDecision.procentNauka - pieniadz),
                   }));
+                  // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: AI zmienia suwak Pracy
+                  // dla CAŁEGO imperium (paritet z Daniną powyżej) — global default,
+                  // nie tylko per-city broadcast.
+                  ownerDefaultPodzialPracy.set(ownerId, { procentBudynki: sliderDecision.procentBudynki });
                   for (const c of cities) {
                     if (c.ownerId !== ownerId) continue;
                     c.poziomRacji = migrateProcentRozwojToPoziomRacji(sliderDecision.procentRozwoj);
                     c.procentRozwoj = sliderDecision.procentRozwoj;
                     c.podzialPracy = { procentBudynki: sliderDecision.procentBudynki };
+                    c.podzialPracyOverride = false;
                     c.podzialHandluOverride = false;
                     delete c.podzialHandlu;
                   }
@@ -23066,7 +23404,13 @@ async function boot(): Promise<void> {
                     ownerId,
                   );
                   if (!aff.ok) continue;
-                  const res = canFoundCity(cmd.q, cmd.r, cities, map);
+                  // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (Maciej, decyzja A, 2026-08-09):
+                  // AI dostaje ten sam twardy wymog withinTerritory co gracz (foundingTerritoryOpts)
+                  // egzekwowany TU, na poziomie wykonania rozkazu — ai.ts to tylko planista na
+                  // migawce stanu. / EN: AI gets the same hard withinTerritory requirement as the
+                  // player, enforced HERE at command execution — ai.ts is only a planner on a
+                  // state snapshot.
+                  const res = canFoundCity(cmd.q, cmd.r, cities, map, foundingTerritoryOpts(ownerId));
                   if (!res.ok) continue;
                   aiPracaPoolByOwner.set(
                     ownerId,
@@ -23090,6 +23434,7 @@ async function boot(): Promise<void> {
                     ensureCitySaveDefaults(c);
                     cities.push(c);
                     finalizeCityFounding(c, cmd.q, cmd.r);
+                    seedCityOwnerDefaults(c);
                     cityRenderer.sync(cities, _cityRenderOpts());
                     console.log(`[AI ${ownerId}] Zalozono miasto ${c.name} @ (${c.q},${c.r})`);
                   }
@@ -24345,7 +24690,11 @@ async function boot(): Promise<void> {
           return c ? effectivePodzialHandlu(c) : null;
         },
         getOwnerDefaultPodzialHandlu: (ownerId: number) => ownerDefaultPodzialHandlu.get(ownerId) ?? null,
-        getPodzialPracy: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracy ?? null,
+        getPodzialPracy: (cityId: string) => {
+          const c = cities.find(ct => ct.id === cityId);
+          return c ? effectivePodzialPracy(c) : null;
+        },
+        getPodzialPracyOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracyOverride === true,
         onPodzialHandluChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
@@ -24358,10 +24707,28 @@ async function boot(): Promise<void> {
         onPodzialPracyChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
-            c.podzialPracy = { procentBudynki: split.procentBudynki };
+            if (c.podzialPracyOverride) {
+              c.podzialPracy = { procentBudynki: split.procentBudynki };
+            } else {
+              ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+            }
             markCityStateDirty(); // D10: podział pracy → przelicz
             updateHud();
           }
+        },
+        onPodzialPracyOverrideToggle: (cityId: string) => {
+          const c = cities.find(ct => ct.id === cityId);
+          if (!c || c.ownerId !== 0) return;
+          const next = !c.podzialPracyOverride;
+          if (next) {
+            c.podzialPracy = effectivePodzialPracy(c);
+          } else {
+            delete c.podzialPracy;
+          }
+          c.podzialPracyOverride = next;
+          markCityStateDirty();
+          updateHud();
+          refreshCityPanelIfOpen();
         },
         onPurchaseUnit: (cityId: string, itemId: string, koszt: number) => {
           purchaseRecruitmentUnit(cityId, itemId, koszt);
@@ -25930,6 +26297,17 @@ async function boot(): Promise<void> {
       ownerDefaultPodzialHandlu.clear();
       const savedHandel = saved.meta?.ownerDefaultPodzialHandlu as Array<[number, CityPodzialHandlu]> | undefined;
       migrateHandelSplitOnLoad(cities, ownerDefaultPodzialHandlu, savedHandel);
+      // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): wczytanie/migracja
+      // globalnych domyślnych dla trzy nowe pola, wzorem migrateHandelSplitOnLoad wyżej.
+      ownerDefaultPodzialPracy.clear();
+      const savedPodzialPracy = saved.meta?.ownerDefaultPodzialPracy as Array<[number, CityPodzialPracy]> | undefined;
+      migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, savedPodzialPracy);
+      ownerDefaultOkolicaFocus.clear();
+      const savedOkolicaFocus = saved.meta?.ownerDefaultOkolicaFocus as Array<[number, OkolicaFocus]> | undefined;
+      migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, savedOkolicaFocus);
+      ownerDefaultBudowaProfil.clear();
+      const savedBudowaProfil = saved.meta?.ownerDefaultBudowaProfil as Array<[number, CityBudowaProfil]> | undefined;
+      migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, savedBudowaProfil);
       ulepszeniaEmpireByOwner.clear();
       const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as Array<[number, UlepszeniaEmpirePolicy]> | undefined;
       if (savedUlepszenia?.length) {

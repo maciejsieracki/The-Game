@@ -365,6 +365,13 @@ export interface CityPanelConfig {
     reczne?: Record<string, number>;
   } | null;
   onOkolicaFocusChange?: (cityId: string, focus: OkolicaFocus) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Priorytet
+   * Praca/Żywność tego miasta jest odpięty od globalnego defaultu imperium.
+   */
+  getOkolicaFocusOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Priorytetu Okolicy (global ⇄ lokalny override). */
+  onOkolicaFocusOverrideToggle?: (cityId: string) => void;
   onOkolicaEnterManual?: (cityId: string) => void;
   onOkolicaRestoreAuto?: (cityId: string) => void;
   onOkolicaTileAdjust?: (cityId: string, q: number, r: number, delta: number) => void;
@@ -378,6 +385,14 @@ export interface CityPanelConfig {
     biblioteka?: BudowaListaBiblioteka;
   } | null;
   onBudowaPriorytetChange?: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Priorytet
+   * produkcji (budowaFocus+budowaTryb) tego miasta jest odpięty od globalnego
+   * defaultu imperium. NIE obejmuje budowaPriorytetTypow (B1, poza zakresem).
+   */
+  getBudowaFocusOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Priorytetu produkcji (global ⇄ lokalny override). */
+  onBudowaFocusOverrideToggle?: (cityId: string) => void;
   onBudowaEnterManual?: (cityId: string) => void;
   onBudowaListaChange?: (cityId: string, lista: string[], tryb: 'lista') => void;
   onBudowaListaCreateTemplate?: (cityId: string, nazwa: string) => void;
@@ -431,6 +446,13 @@ export interface CityPanelConfig {
   onPodzialHandluChange?: (cityId: string, split: PodzialHandluSplit) => void;
   /** Gracz zmienil suwak Pracy (opcjonalnie). */
   onPodzialPracyChange?: (cityId: string, split: PodzialPracySplit) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Podział Pracy
+   * tego miasta jest odpięty od globalnego defaultu imperium (override lokalny).
+   */
+  getPodzialPracyOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Podziału Pracy (global ⇄ lokalny override). */
+  onPodzialPracyOverrideToggle?: (cityId: string) => void;
   /** Kup jednostke za Pieniadz ze skarbca (purchasableUnits). */
   onPurchaseUnit?: (cityId: string, itemId: string, koszt: number) => void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
@@ -1844,6 +1866,7 @@ function ensureStyles(): void {
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
+.civ-cs .auto-wyzywienie-btn{width:100%;min-width:0;}
 .civ-cs .wyzwienie-w4-hint{font-size:0.62em;color:var(--muted);text-align:center;margin-top:0.2em;}
 .civ-cs .food-bilans-row{display:flex;justify-content:space-between;align-items:center;gap:0.35em;font-size:0.76em;margin:0.28em 0 0.12em;padding:0.35em 0.45em;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,.02);}
 .civ-cs .food-bilans-row .pos{color:var(--green);}
@@ -4639,21 +4662,20 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   sliderWrap.appendChild(sliderRow);
   if (rationEditable && cfg.onCityAutoWyzywienieChange) {
     const autoRow = el('div', 'slider-row auto-wyzywienie-row');
-    const autoLabel = el('label');
-    autoLabel.style.cssText = 'display:flex;align-items:center;gap:0.35em;cursor:pointer;';
-    const autoCb = document.createElement('input');
-    autoCb.type = 'checkbox';
-    autoCb.checked = city.autoWyzywienie === true;
-    autoCb.title =
+    const autoBtn = document.createElement('button');
+    autoBtn.type = 'button';
+    autoBtn.className = 'hbtn auto-wyzywienie-btn';
+    autoBtn.textContent = 'Auto Wyżywienie';
+    const autoWyzywienieOn = city.autoWyzywienie === true;
+    if (autoWyzywienieOn) autoBtn.classList.add('active');
+    autoBtn.setAttribute('aria-pressed', String(autoWyzywienieOn));
+    autoBtn.title =
       'WŁ: automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0). ' +
-      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.';
-    autoLabel.appendChild(autoCb);
-    const autoTxt = document.createElement('span');
-    autoTxt.textContent = 'Auto Wyżywienie';
-    autoLabel.appendChild(autoTxt);
-    autoRow.appendChild(autoLabel);
-    autoCb.addEventListener('change', () => {
-      cfg.onCityAutoWyzywienieChange?.(city.id, autoCb.checked);
+      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.' +
+      (autoWyzywienieOn ? '' : ' Auto WYŁ — bez auto-obniżania/podnoszenia.');
+    autoRow.appendChild(autoBtn);
+    autoBtn.addEventListener('click', () => {
+      cfg.onCityAutoWyzywienieChange?.(city.id, !city.autoWyzywienie);
       rerender();
     });
     sliderWrap.appendChild(autoRow);
@@ -4665,9 +4687,6 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   }
   if (view.poziomRacji > maxSafe) {
     hint.textContent += ' · poziom zostanie obniżony do limitu na koniec tury';
-  }
-  if (rationEditable && city.autoWyzywienie !== true) {
-    hint.textContent += ' · Auto WYŁ — bez auto-obniżania/podnoszenia';
   }
   sliderWrap.appendChild(hint);
   mount.appendChild(sliderWrap);

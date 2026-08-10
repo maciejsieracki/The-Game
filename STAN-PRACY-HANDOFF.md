@@ -1,12 +1,15 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-06 ~13:24** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-09 ~17:10** · Projekt: Civ „The Game"
 
-> **Handoff sesji 2026-08-06 (FALA 254 + ECHO ABC):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md) — **czytaj najpierw** (ECHO 6×, kolejka Autobot, pułapki, paste dla agenta).
+> **Handoff sesji 2026-08-09 (FALA 263, maraton AutoBot isWorkable + handel akcja „6"):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md) — **czytaj najpierw** (4 rundy isWorkable, 3 rundy handel-akcja6, dwa realne exploity finansowe naprawione, cichy revert przy scaleniu złapany na etapie deployu i naprawiony, trzy nowe reguły procesowe w `civ-autobot/SKILL.md`, praca żyje na branchu `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie na `main`).
+>
+> **Handoff sesji 2026-08-06 (FALA 254 + ECHO ABC):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md).
 >
 > **Handoff wcześniejszy 2026-08-05 (FALA 225–226):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-05_FALA-225-226.md).
 
-> **FALA 256 (2026-08-06):** ROBOCZA `693a2c57` · C-MAPA-Q1=B relief mop-up po złożach. **AKTUALNA**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 263 (2026-08-09):** ROBOCZA `89176ced` (branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, NIE `main` jeszcze) · robotnicy na Górach/Morzu (4 rundy) + handel dwukierunkowy technologia-gotówka w akcji „6" (3 rundy, 2 exploity finansowe naprawione) + 7 mniejszych napraw. **AKTUALNA na tym branchu**. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+> **FALA 256 (2026-08-06):** ROBOCZA `693a2c57` · C-MAPA-Q1=B relief mop-up po złożach. Historyczna — stan `main` i relacja do FALA 257–263 (wszystkie na branchu `claude/sprawdzenie-funkcjonalnosci-ek4ra0`) nie zweryfikowane w tej sesji, sprawdź `git log` przed poleganiem na kolejności.
 > **FALA 255 (2026-08-06):** ROBOCZA `20e554dc` · ECHO ABC 6× + handoff · logika = F254. **ZASTĄPIONA** przez FALA 256.
 > **FALA 254 (2026-08-06):** ROBOCZA `232634a9` · Escape army/battle/diplo/city + recruit chip/hint + Panel-C + audyty/ABC. **ZASTĄPIONA** przez FALA 255.
 > **FALA 253 (2026-08-06):** ROBOCZA `b8704216` · Escape hub/cityList + recruit hint + AI-BALANS-STEP5. **ZASTĄPIONA** przez FALA 254.
@@ -98,7 +101,9 @@ git status --short
 - Jeśli w `gra/src` lub `gra/data` są **niezacommitowane zmiany** — ktoś jest w połowie pracy. NIE nadpisuj ich, NIE rób `git checkout`/`git stash` na tych plikach. Najpierw ustal z właścicielem, co to jest.
 - **Zawsze przed pracą uruchom bramki** (sekcja 7), żeby wiedzieć, co jest sprawne, a co było zepsute PRZED Tobą.
 
-**Stan na 2026-08-06 (NAJNOWSZY):** deploy ROBOCZA **`693a2c57`** (FALA 256) · relief mop-up C-MAPA-Q1=B. Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+**Stan na 2026-08-09 (NAJNOWSZY, branch `claude/sprawdzenie-funkcjonalnosci-ek4ra0`):** deploy ROBOCZA **`89176ced`** (FALA 263) · robotnicy na Górach/Morzu (4 rundy AutoBot) + handel dwukierunkowy technologia-gotówka w akcji „6" (3 rundy, 2 exploity finansowe naprawione) + 7 mniejszych napraw. Pełny opis: [`HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md). Wejście: `gra-robocza/START.html` · **git pull** + Ctrl+F5 + Nowa gra.
+
+**Stan na 2026-08-06 (historyczny, main):** deploy ROBOCZA **`693a2c57`** (FALA 256) · relief mop-up C-MAPA-Q1=B.
 
 **Stan FALA 254 (historyczny):** ROBOCZA `232634a9` (10:11) · Escape + recruit + Panel-C + audyty.
 
@@ -114,7 +119,7 @@ git status --short
 
 Szczegóły w `dyspozycje/REJESTR-PROSB-I-ZADAN.md`. **Żaden z powyższych commitów nie jest jeszcze w `origin/main`/ROBOCZA** — to wciąż branch roboczy.
 
-**Zaparkowane:** relief tip `9c098944` · KANON · `R-DOTYK-MVP` · playtesty R-AUTO / F226 AI. (`P-TEST-UPKEEP-R-STAWKI` ZAMKNIĘTE 2026-08-09 — wpis był nieaktualny, test już 73/73, patrz `PYTANIA-OTWARTE.md`.)
+**Zaparkowane:** relief tip `9c098944` · KANON · `R-DOTYK-MVP` · playtesty R-AUTO / F226 AI. (`P-TEST-UPKEEP-R-STAWKI` ZAMKNIĘTE 2026-08-09 — wpis był nieaktualny, test już 73/73, patrz `PYTANIA-OTWARTE.md`.) **Nowe 2026-08-09:** `P-HEKS-ISWORKABLE-FANTOM-PROMIEN-Q1=B` — decyzja podjęta, wdrożenie odłożone do następnej paczki (szczegóły w handoffie FALA 263 §2b/§7).
 
 **ZDEPLOYOWANE — wykreślone z kolejki (FALA 248–254):**
 - **R-SCENA-PERF-FALA138** — F248 `772bab7c` (+ dżungla F249)

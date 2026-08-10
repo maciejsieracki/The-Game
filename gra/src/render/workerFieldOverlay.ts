@@ -13,8 +13,13 @@ const WORKER_ICON_SCALE = 0.72;
 const WORKER_Y_OFFSET = 0.18;
 const WORKER_BASE_OPACITY = 0.9;
 
-/** Paleta właścicieli — zsynchronizowana z render/units.ts i render/cities.ts. */
-const OWNER_COLORS: number[] = [
+/**
+ * Paleta właścicieli — zsynchronizowana z render/units.ts i render/cities.ts.
+ * Eksportowana, bo TĘ SAMĄ paletę musi używać odznaka 👤 w nakładce okolicy miasta
+ * (`render/cityOkolicaOverlay.ts`) — inaczej ten sam obywatel ma dwa różne kolory
+ * zależnie od tego, czy panel miasta jest otwarty (`P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE`).
+ */
+export const WORKER_OWNER_COLORS: number[] = [
   0xffd54a, // 0 = gracz (złoto)
   0xe53935, // 1 = czerwony
   0x43a047, // 2 = zielony
@@ -25,8 +30,9 @@ const OWNER_COLORS: number[] = [
   0xf06292, // 7 = różowy
 ];
 
-function ownerColor(ownerId: number): number {
-  return OWNER_COLORS[ownerId % OWNER_COLORS.length]!;
+/** Kolor właściciela (0xRRGGBB) dla ikony 👤 — zawijany modulo długość palety. */
+export function workerOwnerColor(ownerId: number): number {
+  return WORKER_OWNER_COLORS[ownerId % WORKER_OWNER_COLORS.length]!;
 }
 
 function hexToRgba(hex: number, alpha: number): string {
@@ -34,6 +40,11 @@ function hexToRgba(hex: number, alpha: number): string {
   const g = (hex >> 8) & 255;
   const b = hex & 255;
   return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/** Kolor właściciela jako `rgba(...)` — do rysowania na kanwie (2D). */
+export function workerOwnerColorRgba(ownerId: number, alpha: number): string {
+  return hexToRgba(workerOwnerColor(ownerId), alpha);
 }
 
 function hexTopY(map: GameMap, q: number, r: number): number {
@@ -54,7 +65,7 @@ function getWorkerIconTexture(ownerId: number, playerOwnerId: number): THREE.Can
   let tex = workerSpriteCache.get(key);
   if (tex) return tex;
 
-  const color = ownerColor(ownerId);
+  const color = workerOwnerColor(ownerId);
   const isPlayer = ownerId === playerOwnerId;
   const canvas = document.createElement('canvas');
   canvas.width = 64;
