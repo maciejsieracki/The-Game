@@ -503,6 +503,14 @@ export interface City {
    * Wyżywienie: 0…6 co 0,5 (koszt żywności/miesz. = ta wartość). Decyzja 2026-07-30.
    */
   poziomRacji?: number;
+  /**
+   * Per-miasto override globalnego poziomu Wyżywienia imperium (grupa "Żywność" z
+   * R-USTAWIENIA-GLOBALNE-LOKALNE, Maciej 2026-08-10, żywa rozmowa). Wzorem
+   * okolicaFocusOverride: pole ZAWSZE konkretnie wypełnione (poziomRacji), broadcast
+   * (main.ts) trzyma je w sync dla miast BEZ override. false/undefined = dziedziczy
+   * ownerDefaultPoziomRacji imperium.
+   */
+  poziomRacjiOverride?: boolean;
   /** R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: default false/undefined=WYŁ. AI: ignorowane (zawsze auto). */
   autoWyzywienie?: boolean;
   /** Jednorazowa migracja starych racji 1|2|3 → 2|4|6. */
@@ -674,6 +682,7 @@ export function foundCity(
     budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
+    poziomRacjiOverride: false,
   };
 }
 
@@ -709,6 +718,7 @@ export function foundCityAt(
     budowaFocusOverride: false,
     procentRozwoj: DEFAULT_PROCENT_ROZWOJ_WYZYWIENIE,
     poziomRacji: DEFAULT_POZIOM_RACJI,
+    poziomRacjiOverride: false,
     ...(foundingCityState ? { startCityState: true as const } : {}),
   };
 }

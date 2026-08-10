@@ -359,6 +359,13 @@ export interface CityPanelConfig {
   onCityAutoWyzywienieChange?: (cityId: string, enabled: boolean) => void;
   /** R-AUTO-RACJE-RAISE-Q3=A — max bezpieczny poziom suwaka Wyżywienia. */
   getMaxSafePoziomRacji?: (cityId: string) => number;
+  /**
+   * R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Żywność", Maciej 2026-08-10): czy poziom
+   * Wyżywienia tego miasta jest odpięty od globalnego defaultu imperium (override).
+   */
+  getPoziomRacjiOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Wyżywienia (global ⇄ lokalny override). */
+  onPoziomRacjiOverrideToggle?: (cityId: string) => void;
   /** Okolica 4C — profile + ręczna korekta. */
   getOkolicaState?: (cityId: string) => {
     focus: OkolicaFocus;
@@ -441,6 +448,15 @@ export interface CityPanelConfig {
   getPodzialHandlu?: (cityId: string) => PodzialHandluSplit | null;
   /** Domyślny podział imperium (DYSPOZYCJA-85-SUWAK). */
   getOwnerDefaultPodzialHandlu?: (ownerId: number) => PodzialHandluSplit | null;
+  /**
+   * R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Skarbiec+Nauka", Maciej 2026-08-10): czy
+   * podział Skarb/Nauka/Zamożność tego miasta jest odpięty od globalnego defaultu
+   * imperium. JEDNA grupa (Maciej: "skarbiec... w nim też zawiera się nauka") — jeden
+   * przełącznik dla całego suwaka Handlu, nie osobny dla Skarbca i osobny dla Nauki.
+   */
+  getPodzialHandluOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Skarbiec+Nauka (global ⇄ lokalny override). */
+  onPodzialHandluOverrideToggle?: (cityId: string) => void;
   /** Biezacy podzial Pracy per miasto (opcjonalnie). */
   getPodzialPracy?: (cityId: string) => PodzialPracySplit | null;
   /** Gracz zmienil suwaki Handlu — silnik zapisuje na City i przelicza plony. */
@@ -1928,6 +1944,8 @@ function ensureStyles(): void {
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
 .civ-cs .auto-wyzywienie-btn{width:100%;min-width:0;}
+.civ-cs .indywidualne-btn{width:100%;min-width:0;}
+.civ-cs .indywidualne-row{margin-top:0.28em;}
 .civ-cs .wyzwienie-w4-hint{font-size:0.62em;color:var(--muted);text-align:center;margin-top:0.2em;}
 .civ-cs .food-bilans-row{display:flex;justify-content:space-between;align-items:center;gap:0.35em;font-size:0.76em;margin:0.28em 0 0.12em;padding:0.35em 0.45em;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,.02);}
 .civ-cs .food-bilans-row .pos{color:var(--green);}
@@ -4077,6 +4095,38 @@ function appendW4PctMetricBlock(
   mount.appendChild(block);
 }
 
+/**
+ * R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10, żywa rozmowa): przycisk "Indywidualne"
+ * — pin/odpin lokalnego override od globalnego ustawienia imperium. Wzorem istniejącego
+ * auto-wyzywienie-btn (checkbox→button, naprawa 2026-08). WŁ (active) = to miasto ma
+ * WŁASNĄ wartość, ignoruje zmiany globalnego suwaka w panelu cywilizacji na mapie świata.
+ * WYŁ = miasto dziedziczy globalne ustawienie. Współdzielone przez TRZY grupy (Żywność /
+ * Skarbiec+Nauka / Praca) — każda wywołuje to z własnym stanem/hookiem, niezależnie.
+ */
+function appendIndywidualneToggle(
+  mount: HTMLElement,
+  overrideOn: boolean,
+  onToggle: () => void,
+  rowCls: string,
+): void {
+  const row = el('div', 'slider-row ' + rowCls);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'hbtn indywidualne-btn';
+  btn.textContent = 'Indywidualne';
+  if (overrideOn) btn.classList.add('active');
+  btn.setAttribute('aria-pressed', String(overrideOn));
+  btn.title = overrideOn
+    ? 'WŁ: to miasto ma własne ustawienie — ignoruje zmiany globalne z panelu cywilizacji (mapa świata).'
+    : 'WYŁ: to miasto dziedziczy globalne ustawienie imperium (panel cywilizacji na mapie świata, np. „Grecy").';
+  row.appendChild(btn);
+  btn.addEventListener('click', () => {
+    onToggle();
+    rerender();
+  });
+  mount.appendChild(row);
+}
+
 function renderEkonomiaStrip(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   mount.appendChild(el('div', 'ptitle', `<span>Plony i ${daninaLabelForCity(city).toLowerCase()}</span>`));
@@ -4149,6 +4199,17 @@ function appendPodzialHandlu(
   makeSlider('procentPieniadz', 'Skarb', 'gold');
   makeSlider('procentNauka', 'Nauka', 'blue', 'slider-nauka');
   makeSlider('procentLuksus', HANDEL_ZAMOZNOSC_LABEL, 'happy');
+  // R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10): "Skarbiec i Nauka to JEDNA
+  // grupa" -- JEDEN przycisk Indywidualne dla całego suwaka (Skarb+Nauka+Zamożność
+  // dzielą to samo pole podzialHandlu/podzialHandluOverride), nie osobny per pasek.
+  if (editable && cfg.onPodzialHandluOverrideToggle) {
+    appendIndywidualneToggle(
+      sliders,
+      cfg.getPodzialHandluOverride?.(city.id) === true,
+      () => cfg.onPodzialHandluOverrideToggle?.(city.id),
+      'indywidualne-row-handlu',
+    );
+  }
   mount.appendChild(sliders);
 
   const sum = split.procentPieniadz + split.procentNauka + split.procentLuksus;
@@ -4566,6 +4627,14 @@ function renderPodzialPracy(
     sliderRow.appendChild(ro);
   }
   sliderWrap.appendChild(sliderRow);
+  if (player && cfg.onPodzialPracyOverrideToggle) {
+    appendIndywidualneToggle(
+      sliderWrap,
+      cfg.getPodzialPracyOverride?.(city.id) === true,
+      () => cfg.onPodzialPracyOverrideToggle?.(city.id),
+      'indywidualne-row-praca',
+    );
+  }
   mount.appendChild(sliderWrap);
 
   appendPodzialPracyInfo(mount, city, view, data);
@@ -4767,6 +4836,18 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
       rerender();
     });
     sliderWrap.appendChild(autoRow);
+  }
+  // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Żywność", Maciej 2026-08-10): niezależny od
+  // Auto Wyżywienie -- Indywidualne odpina poziom Racji od globalnego suwaka imperium
+  // (panel cywilizacji na mapie świata), Auto Wyżywienie dalej auto-dostraja WEWNĄTRZ
+  // tego, co ten przycisk aktualnie kontroluje (lokalne albo globalne).
+  if (rationEditable && cfg.onPoziomRacjiOverrideToggle) {
+    appendIndywidualneToggle(
+      sliderWrap,
+      cfg.getPoziomRacjiOverride?.(city.id) === true,
+      () => cfg.onPoziomRacjiOverrideToggle?.(city.id),
+      'indywidualne-row-zywnosc',
+    );
   }
   const hint = el('div', 'wyzwienie-w4-hint');
   hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams);

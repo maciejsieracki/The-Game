@@ -221,6 +221,10 @@ import {
   broadcastBudowaProfilToOwnerCities,
   resolveCityBudowaProfil,
   type CityBudowaProfil,
+  migratePoziomRacjiOnLoad,
+  freshOwnerDefaultPoziomRacji,
+  broadcastPoziomRacjiToOwnerCities,
+  resolveCityPoziomRacji,
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
@@ -623,6 +627,7 @@ import {
   refreshEmpireDetailPanel,
   isEmpireDetailPanelOpen,
   configureEmpireHandelSplit,
+  configureEmpireGlobalDefaults,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
 import {
@@ -3536,6 +3541,13 @@ async function boot(): Promise<void> {
     const ownerDefaultPodzialPracy = new Map<number, CityPodzialPracy>();
     const ownerDefaultOkolicaFocus = new Map<number, OkolicaFocus>();
     const ownerDefaultBudowaProfil = new Map<number, CityBudowaProfil>();
+    /**
+     * R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10, żywa rozmowa): grupa "Żywność"
+     * (poziom Wyżywienia/Racji) — wzorem ownerDefaultOkolicaFocus wyżej (broadcast, nie
+     * resolver-przy-odczycie, bo city.poziomRacji jest czytane bezpośrednio w wielu
+     * miejscach silnika przez getCityRationLevel).
+     */
+    const ownerDefaultPoziomRacji = new Map<number, PoziomRacji>();
     const ulepszeniaEmpireByOwner = new Map<number, UlepszeniaEmpirePolicy>();
     /** PYTANIE-77-DOP=B: łaska 1 tury Mennicy po utracie dostępu do złota (per owner). */
     const mennicaZlotoGraceState: MennicaZlotoGraceState = createMennicaZlotoGraceState();
@@ -4067,7 +4079,10 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: init dla trzy nowe pola, wzorem wyżej. */
+    /**
+     * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A + R-USTAWIENIA-GLOBALNE-LOKALNE
+     * (Żywność, Maciej 2026-08-10): init dla czterech pól, wzorem wyżej.
+     */
     function initOwnerDefaultCityFields(): void {
       ownerDefaultPodzialPracy.clear();
       ownerDefaultPodzialPracy.set(0, freshOwnerDefaultPodzialPracy());
@@ -4075,6 +4090,8 @@ async function boot(): Promise<void> {
       ownerDefaultOkolicaFocus.set(0, freshOwnerDefaultOkolicaFocus());
       ownerDefaultBudowaProfil.clear();
       ownerDefaultBudowaProfil.set(0, freshOwnerDefaultBudowaProfil());
+      ownerDefaultPoziomRacji.clear();
+      ownerDefaultPoziomRacji.set(0, freshOwnerDefaultPoziomRacji());
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialPracy.has(ai.ownerId)) {
           ownerDefaultPodzialPracy.set(ai.ownerId, freshOwnerDefaultPodzialPracy());
@@ -4084,6 +4101,9 @@ async function boot(): Promise<void> {
         }
         if (!ownerDefaultBudowaProfil.has(ai.ownerId)) {
           ownerDefaultBudowaProfil.set(ai.ownerId, freshOwnerDefaultBudowaProfil());
+        }
+        if (!ownerDefaultPoziomRacji.has(ai.ownerId)) {
+          ownerDefaultPoziomRacji.set(ai.ownerId, freshOwnerDefaultPoziomRacji());
         }
       }
     }
@@ -4106,6 +4126,9 @@ async function boot(): Promise<void> {
       if (!ownerDefaultPodzialPracy.has(c.ownerId)) {
         ownerDefaultPodzialPracy.set(c.ownerId, freshOwnerDefaultPodzialPracy());
       }
+      if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
+        ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
+      }
       c.okolicaFocusOverride = false;
       c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;
       c.budowaFocusOverride = false;
@@ -4114,6 +4137,11 @@ async function boot(): Promise<void> {
       c.budowaTryb = bp.budowaTryb;
       c.podzialPracyOverride = false;
       delete c.podzialPracy;
+      // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): wzorem okolicaFocus/
+      // budowaProfil wyżej -- nowe miasto/zmiana właściciela dziedziczy globalny poziom
+      // Racji NOWEGO właściciela, nie zostaje przy wartości poprzedniego.
+      c.poziomRacjiOverride = false;
+      c.poziomRacji = ownerDefaultPoziomRacji.get(c.ownerId)!;
     }
 
     function initUlepszeniaEmpireByOwner(): void {
@@ -4150,6 +4178,14 @@ async function boot(): Promise<void> {
 
     function effectiveBudowaProfil(city: City): CityBudowaProfil {
       return resolveCityBudowaProfil(city, ownerDefaultBudowaProfil.get(city.ownerId));
+    }
+
+    /** R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): belt-and-suspenders
+     * jak effectiveOkolicaFocus/effectiveBudowaProfil wyżej -- city.poziomRacji jest
+     * utrzymywane w sync przez broadcastPoziomRacjiToOwnerCities, resolver to dodatkowa
+     * ochrona przed dryfem (np. świeżo wczytany zapis przed migracją). */
+    function effectivePoziomRacji(city: City): PoziomRacji {
+      return resolveCityPoziomRacji(city, ownerDefaultPoziomRacji.get(city.ownerId));
     }
 
     function empireFoodDefaultPct(): number {
@@ -5699,9 +5735,41 @@ async function boot(): Promise<void> {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
           const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
-          city.poziomRacji = clampPoziomRacji(Math.min(level, maxSafe));
+          const clamped = clampPoziomRacji(Math.min(level, maxSafe));
+          // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): bez override —
+          // suwak zmienia wartość globalną imperium (broadcast na miasta bez override,
+          // wzorem onOkolicaFocusChange); z override — zmiana tylko tego miasta. Klamrowanie
+          // do maxSafe TEGO miasta jest tylko dla wartości pokazanej na suwaku, który go
+          // wywołał -- inne miasta bez override dostają surowy `clamped` przez broadcast i
+          // są dalej chronione istniejącym mechanizmem końca tury (auto-obniżenie do ich
+          // WŁASNEGO maxSafe, patrz hint „poziom zostanie obniżony do limitu na koniec tury").
+          if (city.poziomRacjiOverride) {
+            city.poziomRacji = clamped;
+          } else {
+            ownerDefaultPoziomRacji.set(city.ownerId, clamped);
+            broadcastPoziomRacjiToOwnerCities(cities, city.ownerId, clamped);
+          }
           markCityStateDirty();
           updateHud();
+        },
+        getPoziomRacjiOverride: (cityId: string) => cities.find(c => c.id === cityId)?.poziomRacjiOverride === true,
+        onPoziomRacjiOverrideToggle: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city || city.ownerId !== 0) return;
+          const next = !city.poziomRacjiOverride;
+          city.poziomRacjiOverride = next;
+          if (!next) {
+            city.poziomRacji = ownerDefaultPoziomRacji.get(city.ownerId) ?? freshOwnerDefaultPoziomRacji();
+          }
+          showHintMessage(
+            next
+              ? `${city.name}: Wyżywienie odpięte od imperium (tylko to miasto)`
+              : `${city.name}: Wyżywienie wraca do wartości imperium`,
+            2800,
+          );
+          markCityStateDirty();
+          updateHud();
+          refreshCityPanelIfOpen();
         },
         onCityAutoWyzywienieChange: (cityId: string, enabled: boolean) => {
           const city = cities.find(c => c.id === cityId);
@@ -7055,6 +7123,7 @@ async function boot(): Promise<void> {
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, undefined);
       migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, undefined);
       migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, undefined);
+      migratePoziomRacjiOnLoad(cities, ownerDefaultPoziomRacji, undefined);
       console.log(
         '[ClusterStart] typ=' + playerCivId +
         ' rywale=' + rywaleNaKlaster + ' (deferred)' +
@@ -13322,10 +13391,45 @@ async function boot(): Promise<void> {
       return projectPlayerFoodProjection().netRate;
     }
 
-    /** Przelicz stawki imperium na HUD z bieżącego stanu miast (bez mutacji). */
+    /**
+     * Przelicz stawki imperium na HUD z bieżącego stanu miast (bez mutacji).
+     *
+     * NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B — rozjazd panelu miasta vs
+     * panelu cywilizacji „Grecy", np. „powinno być plus sześć, a było plus dwa"): CAŁE
+     * ciało funkcji idzie przez try/catch. Bez tego jeden wyjątek gdziekolwiek między
+     * wyczyszczeniem `empireEconDirty` a zapisem do `_lastPlayerCityEcon`
+     * (`refreshPlayerCityEcon` na końcu) zamrażał cache NA ZAWSZE — flaga zostawała
+     * `false`, więc `if (!empireEconDirty) return;` na górze pomijał WSZYSTKIE kolejne
+     * triggery (zmiana suwaka Podziału Pracy, koniec tury, cokolwiek), a panel
+     * cywilizacji pokazywał ostatnią wartość sprzed wyjątku bez końca, mimo że panel
+     * miasta liczy Podział Pracy/Skarbiec/Naukę na żywo (computeView) i był poprawny.
+     * Naprawa: przy wyjątku flaga wraca na `true` (retry przy najbliższym triggerze
+     * zamiast trwałej blokady) i błąd trafia do console.error zamiast ginąć po cichu.
+     * / EN: whole function body now runs inside try/catch. Without it, any exception
+     * between clearing `empireEconDirty` and the final cache write
+     * (`refreshPlayerCityEcon`) froze the cache FOREVER — the flag stayed `false`, so
+     * every later trigger was silently skipped by the early-return guard, leaving the
+     * civ panel stuck on the pre-exception snapshot while the city panel (which computes
+     * live via `computeView`) kept showing the correct value. Fix: on exception the flag
+     * is restored to `true` (retry on next trigger instead of permanent freeze) and the
+     * error is logged instead of vanishing silently.
+     */
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
+      try {
+        refreshLiveEmpireRatesUnsafe();
+      } catch (err) {
+        empireEconDirty = true;
+        console.error(
+          '[refreshLiveEmpireRates] przeliczenie ekonomii imperium nie powiodło się — ' +
+          '_lastPlayerCityEcon NIE zaktualizowany, ponawiam przy najbliższym triggerze:',
+          err,
+        );
+      }
+    }
+
+    function refreshLiveEmpireRatesUnsafe(): void {
       const playerCities = cities.filter(c => c.ownerId === 0);
       if (playerCities.length === 0) {
         _liveFoodBrutto = 0;
@@ -16891,6 +16995,28 @@ async function boot(): Promise<void> {
           );
         },
       });
+      // R-USTAWIENIA-GLOBALNE-LOKALNE (Praca + Żywność, Maciej 2026-08-10): globalne
+      // ustawienia w panelu cywilizacji na mapie świata, wzorem configureEmpireHandelSplit
+      // wyżej. Broadcast dla Żywność bo poziomRacji jest architekturą "zawsze wypełnione +
+      // sync", NIE resolver-przy-odczycie jak Praca/Handel -- patrz empire-city-defaults.ts.
+      configureEmpireGlobalDefaults({
+        getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
+        onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
+          if (ownerId !== 0) return;
+          ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+          markCityStateDirty();
+          updateHud();
+        },
+        getOwnerDefaultPoziomRacji: (ownerId) => ownerDefaultPoziomRacji.get(ownerId) ?? null,
+        onOwnerDefaultPoziomRacjiChange: (ownerId, poziom) => {
+          if (ownerId !== 0) return;
+          const clamped = clampPoziomRacji(poziom);
+          ownerDefaultPoziomRacji.set(0, clamped);
+          broadcastPoziomRacjiToOwnerCities(cities, 0, clamped);
+          markCityStateDirty();
+          updateHud();
+        },
+      });
     }
 
     function updateHud(): void {
@@ -17065,14 +17191,43 @@ async function boot(): Promise<void> {
         return c ? effectivePodzialPracy(c) : null;
       },
       getPodzialPracyOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracyOverride === true,
+      getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
       onPodzialHandluChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
         if (c && c.ownerId === 0) {
-          c.podzialHandluOverride = true;
-          c.podzialHandlu = normalizePodzialHandlu(split);
+          // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Skarbiec+Nauka", Maciej 2026-08-10):
+          // wzorem onPodzialPracyChange niżej -- bez override suwak zmienia wartość
+          // globalną imperium (broadcast na miasta bez override); z override — tylko
+          // to miasto. PRZEDTEM zawsze ustawiał override=true (każda zmiana stawała się
+          // per-miasto) -- to NIE realizowało specyfikacji "globalne w globalnym miejscu,
+          // lokalne tylko po naciśnięciu Indywidualne".
+          const normalized = normalizePodzialHandlu(split);
+          if (c.podzialHandluOverride) {
+            c.podzialHandlu = normalized;
+          } else {
+            // Podział Handlu jest "resolver-przy-odczycie" (resolveCityPodzialHandlu),
+            // DOKŁADNIE jak Podział Pracy -- global default wystarczy, nie trzeba
+            // broadcastować na city.podzialHandlu innych miast (por. onPodzialPracyChange).
+            ownerDefaultPodzialHandlu.set(0, normalized);
+          }
           markCityStateDirty(); // D10: podział podatków/handlu → przelicz
           updateHud();
         }
+      },
+      onPodzialHandluOverrideToggle: (cityId: string) => {
+        const c = cities.find(ct => ct.id === cityId);
+        if (!c || c.ownerId !== 0) return;
+        const next = !c.podzialHandluOverride;
+        if (next) {
+          // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
+          c.podzialHandlu = effectivePodzialHandlu(c);
+        } else {
+          delete c.podzialHandlu;
+        }
+        c.podzialHandluOverride = next;
+        markCityStateDirty();
+        updateHud();
+        refreshCityPanelIfOpen();
       },
       onPodzialPracyChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
@@ -21142,6 +21297,9 @@ async function boot(): Promise<void> {
           ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries()),
           ownerDefaultOkolicaFocus: Array.from(ownerDefaultOkolicaFocus.entries()),
           ownerDefaultBudowaProfil: Array.from(ownerDefaultBudowaProfil.entries()),
+          // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): serializacja
+          // globalnego domyślnego poziomu Racji, wzorem trzy pola wyżej.
+          ownerDefaultPoziomRacji: Array.from(ownerDefaultPoziomRacji.entries()),
           ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
@@ -25546,14 +25704,35 @@ async function boot(): Promise<void> {
           return c ? effectivePodzialPracy(c) : null;
         },
         getPodzialPracyOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracyOverride === true,
+        getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
         onPodzialHandluChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
-            c.podzialHandluOverride = true;
-            c.podzialHandlu = normalizePodzialHandlu(split);
+            // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Skarbiec+Nauka", Maciej 2026-08-10) --
+            // patrz komentarz przy pierwszej kopii tego hooka (configureCityPanel wyżej).
+            const normalized = normalizePodzialHandlu(split);
+            if (c.podzialHandluOverride) {
+              c.podzialHandlu = normalized;
+            } else {
+              ownerDefaultPodzialHandlu.set(0, normalized);
+            }
             markCityStateDirty(); // D10: podział podatków/handlu → przelicz
             updateHud();
           }
+        },
+        onPodzialHandluOverrideToggle: (cityId: string) => {
+          const c = cities.find(ct => ct.id === cityId);
+          if (!c || c.ownerId !== 0) return;
+          const next = !c.podzialHandluOverride;
+          if (next) {
+            c.podzialHandlu = effectivePodzialHandlu(c);
+          } else {
+            delete c.podzialHandlu;
+          }
+          c.podzialHandluOverride = next;
+          markCityStateDirty();
+          updateHud();
+          refreshCityPanelIfOpen();
         },
         onPodzialPracyChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);
@@ -27189,6 +27368,11 @@ async function boot(): Promise<void> {
       ownerDefaultBudowaProfil.clear();
       const savedBudowaProfil = saved.meta?.ownerDefaultBudowaProfil as Array<[number, CityBudowaProfil]> | undefined;
       migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, savedBudowaProfil);
+      // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): wczytanie/migracja
+      // globalnego domyślnego poziomu Racji, wzorem trzy pola wyżej.
+      ownerDefaultPoziomRacji.clear();
+      const savedPoziomRacji = saved.meta?.ownerDefaultPoziomRacji as Array<[number, PoziomRacji]> | undefined;
+      migratePoziomRacjiOnLoad(cities, ownerDefaultPoziomRacji, savedPoziomRacji);
       ulepszeniaEmpireByOwner.clear();
       const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as Array<[number, UlepszeniaEmpirePolicy]> | undefined;
       if (savedUlepszenia?.length) {

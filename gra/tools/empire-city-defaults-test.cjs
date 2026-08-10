@@ -49,6 +49,10 @@ fs.writeFileSync(
   freshOwnerDefaultBudowaProfil,
   broadcastBudowaProfilToOwnerCities,
   budowaProfilEqual,
+  resolveCityPoziomRacji,
+  broadcastPoziomRacjiToOwnerCities,
+  migratePoziomRacjiOnLoad,
+  freshOwnerDefaultPoziomRacji,
 } from '../src/game/empire-city-defaults';
 export {
   foundCity,
@@ -58,6 +62,7 @@ export {
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
 } from '../src/game/cities';
+export { DEFAULT_POZIOM_RACJI } from '../src/game/population-growth-v85';
 `,
   'utf8',
 );
@@ -171,7 +176,7 @@ function ok(cond, msg) {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Nowo zakładane miasto startuje BEZ override na wszystkich trzech polach
+// 4. Nowo zakładane miasto startuje BEZ override na wszystkich CZTERECH polach
 //    (cel zgłoszenia: "nie trzeba ustawiać każdego nowego miasta od nowa").
 // ---------------------------------------------------------------------------
 {
@@ -184,6 +189,8 @@ function ok(cond, msg) {
     ok(c.podzialPracyOverride === false, `nowe miasto: podzialPracyOverride=false (got ${c.podzialPracyOverride})`);
     ok(c.okolicaFocusOverride === false, `nowe miasto: okolicaFocusOverride=false (got ${c.okolicaFocusOverride})`);
     ok(c.budowaFocusOverride === false, `nowe miasto: budowaFocusOverride=false (got ${c.budowaFocusOverride})`);
+    ok(c.poziomRacjiOverride === false, `nowe miasto: poziomRacjiOverride=false (got ${c.poziomRacjiOverride})`);
+    ok(c.poziomRacji === M.DEFAULT_POZIOM_RACJI, `nowe miasto: poziomRacji=DEFAULT_POZIOM_RACJI (got ${c.poziomRacji})`);
   }
 }
 
@@ -241,6 +248,65 @@ function ok(cond, msg) {
     `M8: miasto c2 ZACHOWUJE swoją starą indywidualną parę (focus,tryb), nie zostaje cichcem nadpisane (got ${legacyCities[1].budowaFocus},${legacyCities[1].budowaTryb})`);
   ok(legacyCities[0].budowaFocusOverride === false && legacyCities[2].budowaFocusOverride === false,
     'M8 kontrola: miasta == default dostają override=false (broadcast dalej nimi rządzi)');
+}
+
+// ---------------------------------------------------------------------------
+// 6. Żywność (poziom Wyżywienia/Racji) — R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej
+//    2026-08-10, żywa rozmowa: "globalne ustawienia dla żywności pracy i pieniędzy").
+//    Wzorem okolicaFocus (broadcast, NIE resolver-przy-odczycie) — patrz
+//    empire-city-defaults.ts nagłówek sekcji 4.
+// ---------------------------------------------------------------------------
+{
+  // (a) miasto bez override dostaje wartość globalną.
+  const cityNoOverride = { poziomRacji: 2, poziomRacjiOverride: false };
+  ok(M.resolveCityPoziomRacji(cityNoOverride, 5) === 5, 'poziomRacji (a) bez override → globalna 5');
+
+  // (b) miasto z override dostaje wartość lokalną, ignoruje globalną.
+  const cityOverride = { poziomRacji: 2, poziomRacjiOverride: true };
+  ok(M.resolveCityPoziomRacji(cityOverride, 5) === 2, 'poziomRacji (b) z override → lokalna 2, ignoruje globalną 5');
+
+  // brak ownerDefault → fallback na city.poziomRacji, potem DEFAULT_POZIOM_RACJI.
+  ok(M.resolveCityPoziomRacji({ poziomRacji: 3, poziomRacjiOverride: false }, undefined) === 3,
+    'poziomRacji brak ownerDefault → fallback city.poziomRacji 3');
+  ok(M.resolveCityPoziomRacji({ poziomRacjiOverride: false }, undefined) === M.DEFAULT_POZIOM_RACJI,
+    'poziomRacji brak wszystkiego → DEFAULT_POZIOM_RACJI');
+
+  // broadcastPoziomRacjiToOwnerCities: miasta BEZ override dostają nową wartość,
+  // miasto Z override (pin 📌) jest POMIJANE -- wzorem M6 dla okolicaFocus/budowaProfil.
+  const cities = [
+    { id: 'c1', ownerId: 0, poziomRacji: 4, poziomRacjiOverride: false },
+    { id: 'c2', ownerId: 0, poziomRacji: 4, poziomRacjiOverride: true },
+    { id: 'c3', ownerId: 1, poziomRacji: 4, poziomRacjiOverride: false },
+  ];
+  M.broadcastPoziomRacjiToOwnerCities(cities, 0, 1);
+  ok(cities[0].poziomRacji === 1, 'broadcastPoziomRacji: c1 (owner 0, bez override) dostaje nową wartość');
+  ok(cities[1].poziomRacji === 4, 'broadcastPoziomRacji: c2 (owner 0, override=true) NIE zmienia się (pin)');
+  ok(cities[2].poziomRacji === 4, 'broadcastPoziomRacji: c3 (inny owner) nie dotknięte');
+
+  // migratePoziomRacjiOnLoad: zakaz cichego nadpisania miasta różniącego się od defaultu
+  // wyliczonego z pierwszego miasta (wzorem M7 dla okolicaFocus).
+  const legacyCities = [
+    { id: 'c1', ownerId: 0, poziomRacji: 4 }, // pierwsze -> ustanawia default
+    { id: 'c2', ownerId: 0, poziomRacji: 2 }, // różni się -> override=true
+    { id: 'c3', ownerId: 0, poziomRacji: 4 }, // takie samo -> override=false
+  ];
+  const defaults = new Map();
+  M.migratePoziomRacjiOnLoad(legacyCities, defaults, undefined);
+  ok(defaults.get(0) === 4, `poziomRacji migracja: owner default z pierwszego miasta = 4 (got ${defaults.get(0)})`);
+  ok(legacyCities[1].poziomRacjiOverride === true,
+    `poziomRacji migracja: c2 (różni się od defaultu) dostaje override=true (got ${legacyCities[1].poziomRacjiOverride})`);
+  ok(legacyCities[1].poziomRacji === 2,
+    `poziomRacji migracja: c2 ZACHOWUJE swoją starą wartość 2, nie zostaje cichcem nadpisane (got ${legacyCities[1].poziomRacji})`);
+  ok(legacyCities[0].poziomRacjiOverride === false && legacyCities[2].poziomRacjiOverride === false,
+    'poziomRacji migracja kontrola: miasta == default dostają override=false');
+
+  // migracja z zapisanym ownerDefault (savedDefaults) -- ma pierwszeństwo.
+  const cities2 = [{ id: 'c1', ownerId: 0, poziomRacji: 1 }];
+  const defaults2 = new Map();
+  M.migratePoziomRacjiOnLoad(cities2, defaults2, [[0, 6]]);
+  ok(defaults2.get(0) === 6, `poziomRacji migracja z savedDefaults ma pierwszeństwo (got ${defaults2.get(0)})`);
+
+  ok(M.freshOwnerDefaultPoziomRacji() === M.DEFAULT_POZIOM_RACJI, 'freshOwnerDefaultPoziomRacji() === DEFAULT_POZIOM_RACJI');
 }
 
 console.log(`empire-city-defaults-test: ${pass} pass, ${fail} fail`);

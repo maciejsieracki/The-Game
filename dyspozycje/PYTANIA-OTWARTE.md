@@ -9292,4 +9292,41 @@ scalonym `e4155972` (Auto Wyżywienie, ten sam obszar `cityPanel.ts`/Racje) — 
 Operatora bazował SPRZED tego scalenia; (c) bezpieczeństwo nowego mechanizmu Żywność
 (pole na City od zera) dla save/load starych zapisów.
 
+**Werdykt: PASS-WITH-NOTES, ZERO blokujących.** Konflikt z `e4155972` sprawdzony
+EMPIRYCZNIE (próbne scalenie w osobnym worktree) — `git diff e4155972 -- cityPanel.ts | grep
+"^-"` = zero usuniętych linii, scalenie czysto addytywne, hunki sąsiadują ale nie nachodzą.
+Naprawa silnika potwierdzona własnym dowodem mutacyjnym Evaluatora (cofnięcie naprawy →
+test faktycznie PADA, `exit 1`, dokładnie oczekiwane asercje). Migracja starych zapisów
+NIEPOTRZEBNA (błąd był czysto obliczeniowy, nic błędnego nie utrwalono w save) — jedyny
+nieodwracalny skutek to historyczna strata: Praca z tur między `8692b61b` a teraz była
+naliczana wg 70/30 zamiast ustawionego suwaka, nie do naprawienia wstecz. Mechanizm
+Żywność zweryfikowany bezpieczny dla save/load — kolejność migracji (`migrateCityRationsFromSave`
+PRZED `migratePoziomRacjiOnLoad`) sprawdzona jako poprawna (odwrotna kolejność wyzerowałaby
+stare poziomy racji — realne ryzyko, którego NIE ma). `vite build` pełny (nie tylko tsc) —
+805 modułów, exit 0. ~15 dodatkowych bramek zielone, 3 pre-istniejące czerwone zweryfikowane
+identyczne na baseline (przy okazji: `growthmult-compound-test` w CLAUDE.md błędnie opisany
+jako zielony 24/24 — dziś czerwony 17/7 NIEZALEŻNIE od tej zmiany, osobny dług dokumentacji).
+
+**Noty (nieblokujące, do playtestu/backlogu):** N1 stan „Indywidualne WYŁ + Auto Wyżywienie
+WŁ" może cicho odjechać od globalnego poziomu Żywności (samo-leczący się, ale mylący UI);
+N2 suwak Żywności bez override może tylko OBNIŻYĆ globalny poziom, nie podnieść (zgodne ze
+specyfikacją, nieoczywiste); N3 potwierdzone bezpieczne (bezwarunkowy clamp końca tury
+chroni wszystkie miasta); N4 martwy kod `effectivePoziomRacji`; N5 zduplikowane literały
+zamiast stałych (wartości poprawne); N6 luka w pokryciu testu migracji (gałąź z
+`savedDefaults` bez asercji, w praktyce bezpieczna); N7 brak odświeżenia panelu przy
+zmianie globalnej (nieistotne jeśli panele się wykluczają).
+
+**SCALONE** bezpośrednio przez orkiestratora (`git apply -3`, czysto na wszystkie 7 plików +
+1 nowy). Kontrola po scaleniu: `grep -c "cityFoodSplit(view, maxSafe)"` = 6 (zgodnie z
+oczekiwaniem), `auto-wyzywienie-bilans-clamp-test` 22/22 (naprawa z `e4155972` przetrwała).
+Bramki na żywym drzewie identyczne z Evaluatorem: tsc 0, `vite build` 805 modułów exit 0,
+logic-test 213/213, praca-global-default-live-test 7/7, empire-city-defaults-test 45/45,
+hud-skarbiec-test 7/7, empire-skarbiec-bilans-test 11/11, empire-panel-split-test 18/18,
+tech-tree/research/unit-replace/ai-founding-territory zielone.
+
+**STATUS: ZAMKNIĘTE.** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (UI) w pełni domknięte —
+temat wcześniej fałszywie oznaczony „SCALONE" (`8692b61b`, backend bez UI) ma teraz
+faktyczny interfejs dla gracza wg pełnej specyfikacji. Znalezisko B (rozjazd Praca)
+naprawione u ŹRÓDŁA (silnik, nie tylko wyświetlanie).
+
 ---
