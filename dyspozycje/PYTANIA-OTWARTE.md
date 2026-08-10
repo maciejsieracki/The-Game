@@ -7717,6 +7717,35 @@ nakładania się) NASTĘPUJE teraz.
 
 ---
 
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 2: PASS-WITH-NOTES, scalenie NATYCHMIAST (C-034) (2026-08-10)
+
+Niezależny (inny niż runda 1) Evaluator potwierdził naprawę WŁASNĄ symulacją (75 asercji, 0
+porażek) — kolejka nie rośnie, zero `queueJump` gdy wymagany cud niebudowalny, zakleszczenie
+Fenicjan/Petra jest CZASOWE nie trwałe (po zbadaniu Inżynierii petra kończy się w 6 tur),
+przypadek zamierzony (Egipt) działa. 16 rodzin mutacji adwersarialnych, wszystkie odparte —
+brak fallbacku, brak dyskryminacji po `ordered[0]`, wiele wymaganych cudów per epoka obsłużone,
+`NaN`/dzielenie przez zero bezpieczne, głęboka kolejka nieosiągalna (`wstrzymana` nigdy `true`),
+duplikat civType (osiągalny, poza zakresem B3) nie odtwarza defektu rundy 1. Skan WSZYSTKICH 19
+cudów: `petra` to JEDYNY przypadek rozjazdu w danych.
+
+**Niepilne (do rejestru, nie blokują):** N1 — pokrycie `main.ts` nowej sekcji testu nadal
+częściowo tekstowe (4 regexy), nie behawioralne — sugerowana przyszła refaktoryzacja (wyciągnąć
+`shouldForceEraWonderPriority()` jako czystą funkcję). N2 — wybór miasta w trybie force to
+pierwsze-pasujące, nie najwydajniejsze (strata ograniczona, jeden `queueJump` na cud). N3 —
+wymuszacz zapala się też w NAJWYŻSZEJ epoce (3), gdzie żaden awans nie jest bramkowany — dotyczy
+6 cywilizacji, może być pożądane ale nie to uzasadniało ECHO. N4 — `aiWonderStuckTurnsByOwner`
+nieserializowana (ta sama klasa co w rundzie 1). N5 — duplikat civType osiągalny w normalnej
+rozgrywce (zakres `13861b60`, nie B3).
+
+**Instrukcja scalania (precyzyjna, hunk-po-hunku z `main.ts` — 9 kotwic B3, resztę zostawić bo
+już jest na gałęzi sesji z `13861b60`):** patrz pełny tekst werdyktu, konieczna do wykonania
+scalenia bez duplikacji. `owner-epoch.ts` + oba testy B2 NIE ruszać (bit-w-bit identyczne).
+`ai.ts` + `ai-params.json` (+5 linii) + nowy test `ai-cud-priorytet-b3-test.cjs` brać w całości.
+
+Dispatch dedykowanego scalenia NASTĘPUJE teraz, natychmiast (C-034).
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
 
 Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
