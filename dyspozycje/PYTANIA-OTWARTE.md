@@ -10416,3 +10416,27 @@ niewyjaśnione w UI, rozróżnienie). **Dispatch rozpoznania NASTĘPUJE, RÓWNOL
 Operatora później, na razie wszystkie trzy read-only).**
 
 ---
+
+## R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-10, propozycja/zgłoszenie Macieja, „Stół negocjacji")
+
+Maciej: „po wydaniu umowy handlowej wymiany surowców powinno być możliwość wydawania wielokrotności
+różnych typów umów wymiany surowców, a to wygląda tak, jakby raz można tylko wykorzystać i potem już
+nie... Umowa wymiany surowców może być wielokrotna, została potraktowana jak zwykły traktat handlowy
+lub inne, a przecież to jest umowa, która może być podzielona — dam surowce, a potem brakuje nam
+jeszcze bilansu, to w drugiej umowie na przykład dołożymy odkrycia." Zrzut (ten sam „Stół negocjacji"
+co dwa poprzednie zgłoszenia): lewa kolumna „Możliwe umowy" — „Traktat handlowy na stole — Przyjmij w
+PN" i „Umowa wymiany surowców na stole — Przyjmij w PN", **oba z ikoną kłódki**, oba zablokowane skoro
+już są „na stole" (jedna instancja każdego typu).
+
+**Propozycja gameplayowa Macieja:** „Umowa wymiany surowców" (w odróżnieniu od singletonowych typów
+jak Traktat handlowy/Sojusz/Pakt) powinna dać się dokładać WIELOKROTNIE w tej samej negocjacji — kilka
+osobnych instancji, każda z innym zestawem surowców, sumujących się do wspólnego bilansu PW zamiast
+jednej, wyczerpującej limit propozycji. **Do zbadania przed ABC (dyscyplina sesji — nie zgaduję):**
+czy blokada „już na stole" jest dziś jednolita dla WSZYSTKICH typów umów (żaden nie jest wielokrotny),
+czy to specyficzne dla tego typu; jaki byłby zakres zmiany (czy struktura danych košyka/propozycji w
+ogóle wspiera wiele instancji tego samego typu, czy to wymaga nowego modelu identyfikacji
+umów-instancji zamiast typ-jako-klucz). **Dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE z trzema
+powyższymi (ten sam moduł — worktree współdzielony niemożliwy dla ewentualnych późniejszych
+Operatorów, ale to rozpoznanie jak pozostałe jest read-only).**
+
+---
