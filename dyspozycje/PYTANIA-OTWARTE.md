@@ -9460,3 +9460,34 @@ Dispatch rozpoznania technicznego (obie heurystyki, ustalenie dokładnego stanu 
 kodu AI przed implementacją) NASTĘPUJE teraz.
 
 ---
+
+## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA — rozpoznanie zakończone, ROZJAZD z ECHO B (2026-08-10)
+
+Kompletna mapa kodu dostarczona (`a9337779f3d42259b`): kreator `newGameFlow.ts` (krok 3 wybór
+własnej cywilizacji jako wzorzec wizualny, krok 4 dziś ma tylko LICZBĘ `civ_types_count`, nie
+wybór konkretnych typów), dobór AI dziś w `civ-roster.ts` (`pickActiveCivPool`/
+`assignAiCivTypes`, losowanie deterministyczne seedem), 15 cywilizacji w `civs.json`
+(filtrowane wg epoki: 8/14/15).
+
+**KLUCZOWE ODKRYCIE — architektura silnika NIE MA dyskretnych „slotów AI"** w sensie
+klasycznego 4X. Model jest klastrowy: gracz + jego typ cywilizacji generuje klaster ~9-10
+miast TEGO SAMEGO typu; „obcy" to OSOBNE klastry innych typów, których liczbę reguluje
+`civ_types_count`, a który konkretnie typ trafia gdzie jest dziś losowe (round-robin po
+shuffle). To rozjeżdża się z moją wcześniejszą interpretacją ECHO B („pełny wybór per slot")
+— „slot" nie ma jednoznacznego odpowiednika w silniku: może znaczyć (a) jeden z
+`civTypesCount−1` TYPÓW/klastrów obcych na mapie (rekomendacja rozpoznania, spójna z
+istniejącym parametrem), albo (b) każde pojedyncze miasto/`ownerId` z osobna — przy dużej
+mapie/epoce Żelaza to może być kilkadziesiąt pozycji, czyniąc dropdown-per-slot
+niepraktycznym.
+
+**Dodatkowe niejasności zebrane przez rozpoznanie:** czy rywale wewnątrz klastra gracza
+(pole `rivals`/„Miasta-państwa", zawsze ten sam typ co gracz) wchodzą w zakres tej funkcji
+(rekomendacja: NIE); skala UI przy 14 slotach (epoka Żelaza + Ogromna mapa) — czy N
+dropdownów, czy multi-select bez przypisanej kolejności; zachowanie przy zmianie
+`civ_types_count` po ręcznym wyborze.
+
+**Nie zgaduję rozstrzygnięcia — wracam z doprecyzowującym pytaniem do Macieja**, zanim
+jakikolwiek kod zostanie napisany, bo pierwotne ECHO B nie da się bezpośrednio zaimplementować
+bez ustalenia co dokładnie znaczy „slot" w tej architekturze.
+
+---
