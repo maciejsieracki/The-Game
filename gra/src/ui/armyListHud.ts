@@ -34,6 +34,8 @@ export interface ArmyListEntry {
   ufortyfikowanyWPolu?: boolean;
   /** Jednostka w trybie czuwania (uśpiona do wykrycia wroga). */
   sentry?: boolean;
+  /** Zwiadowca w auto-eksploracji (ruch wykonywany automatycznie na koniec tury). */
+  autoExplore?: boolean;
 }
 
 export interface ArmyListHudConfig {
@@ -175,7 +177,9 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
             ? 'Zaznacz ' + a.name + ' — uśpiona; rozkaz ruchu ją obudzi'
             : a.ufortyfikowanyWPolu
               ? 'Zaznacz ' + a.name + ' — ufortyfikowana w polu; rozkaz ruchu zdejmie fortyfikację'
-              : a.unitCount > 1
+              : a.autoExplore
+                ? 'Zaznacz ' + a.name + ' — w auto-eksploracji; pomijana przez Spację, rusza się sama na koniec tury'
+                : a.unitCount > 1
             ? formatZaznaczArmieLabel(a.unitCount)
             : 'Zaznacz ' + a.name;
         const ico = document.createElement('span');
@@ -206,6 +210,11 @@ export function createArmyListHud(config: ArmyListHudConfig): ArmyListHudApi {
           const badge = document.createElement('div');
           badge.className = 'al-garnizon-badge';
           badge.textContent = 'uśpiona';
+          body.appendChild(badge);
+        } else if (a.autoExplore) {
+          const badge = document.createElement('div');
+          badge.className = 'al-garnizon-badge';
+          badge.textContent = 'auto-eksploracja';
           body.appendChild(badge);
         }
         if (typeof a.hpMax === 'number' && a.hpMax > 0) {

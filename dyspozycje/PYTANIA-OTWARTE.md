@@ -10586,3 +10586,14 @@ wywoływane `main.ts:17764`/`18325`) kasuje `autoExplore` jako efekt uboczny.
 
 **STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem z Q1=A, czekam na
 odpowiedź Macieja.**
+
+## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA — ECHO A (2026-08-10, drugi zrzut, pełny panel Armie)
+
+Maciej (nowy zrzut, przewinięty panel Armie): brakuje w tym widoku oznaczenia stanu jednostki —
+auto-eksploracja / ufortyfikowanie / uśpienie. Zrzut potwierdza dokładnie zdiagnozowaną wcześniej
+lukę: kilku Zwiadowców z pełnym „RUCH 3/3", zero wizualnego oznaczenia auto-eksploracji, podczas
+gdy `inGarnizon`/`sentry`/`ufortyfikowanyWPolu` już MAJĄ własny badge w tym samym panelu.
+Traktowane jako **ECHO opcji A** z pierwszego zgłoszenia tego tematu (badge „auto-eksploracja"
+wzorem istniejących badge'y, zero zmiany zachowania Spacji). Wdrożenie: `ArmyListEntry.autoExplore`
+(`armyListHud.ts`) + nowy badge w renderze + wpis w `buildPlayerArmyListEntries` (`main.ts`).
+**STATUS: wdrożone, do commitu (bez deployu).**

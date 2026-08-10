@@ -5258,6 +5258,7 @@ async function boot(): Promise<void> {
         const inGarnizon = group.some(u => u.inGarnizon === true);
         const ufortyfikowanyWPolu = group.some(u => u.ufortyfikowanyWPolu === true);
         const sentry = group.some(u => u.sentry === true);
+        const autoExplore = group.some(u => u.autoExplore === true);
         const types = [...new Set(group.map(u => u.typeId))];
         const name = group.length === 1
           ? lead.typeId
@@ -5295,6 +5296,7 @@ async function boot(): Promise<void> {
           inGarnizon,
           ufortyfikowanyWPolu,
           sentry,
+          autoExplore,
         });
       }
       out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
