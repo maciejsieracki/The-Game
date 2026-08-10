@@ -9286,4 +9286,10 @@ Dispatch NIEZALEŻNEGO Evaluatora (Opus 5) NASTĘPUJE teraz — pełna, rygoryst
 ze względu na skalę (7 plików produkcyjnych, w tym REALNA zmiana silnika ekonomii) i ryzyko
 (wpływ na zapisane gry/balans, nie tylko UI).
 
+Evaluator dispatchowany (`a2c06d0a63ad3669c`, Opus 5) — szczególny nacisk: (a) poprawność
+naprawy silnika ekonomii, własny dowód mutacyjny; (b) MOŻLIWY KONFLIKT z równolegle
+scalonym `e4155972` (Auto Wyżywienie, ten sam obszar `cityPanel.ts`/Racje) — worktree tego
+Operatora bazował SPRZED tego scalenia; (c) bezpieczeństwo nowego mechanizmu Żywność
+(pole na City od zera) dla save/load starych zapisów.
+
 ---
