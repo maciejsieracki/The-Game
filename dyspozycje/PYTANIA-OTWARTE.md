@@ -10439,4 +10439,50 @@ umów-instancji zamiast typ-jako-klucz). **Dispatch rozpoznania NASTĘPUJE, RÓW
 powyższymi (ten sam moduł — worktree współdzielony niemożliwy dla ewentualnych późniejszych
 Operatorów, ale to rozpoznanie jak pozostałe jest read-only).**
 
+**Rozpoznanie dostarczone (`aa0162a44928d50af`) — POTWIERDZONY, realny, NIEOBJĘTY zakresem naprawy
+08-09 przypadek. Gotowe do ABC.** `ce69cf45`/FALA 262 w pełni scalone (NIE przypadek jak
+P-DYPLO-SWEETENER — tu problem jest realny w kodzie). Widok ze zrzutu to
+`gra/src/ui/diplomacyAudience.ts`, przycisk Edytuj/Usuń renderuje wspólna
+`negotiationCardActionsHtml()` (linia 1646): `showEdit = !!r.canCounter && actionUsesTradeBasket(...)`.
+**`canCounter` jest ZAWSZE `false` dla `direction==='own'`** (`main.ts:13162`,
+`canPlayerCounterNegotiation` wołane wyłącznie dla `direction==='incoming'`) — czyli dla WŁASNYCH,
+już wysłanych propozycji czekających na AI (dokładnie karty ze zrzutu Macieja) edycja jest z definicji
+niemożliwa, niezależnie jak dobrze działa koszyk. Naprawa 08-09 (`4a116083`/`2b747b9b`) dotyczyła
+WYŁĄCZNIE kontrofert AI (`direction==='incoming'`) — tytuł commitu `2b747b9b` mówi to wprost. To NIE
+jest regresja/przeoczenie tamtej naprawy — to od początku inny, nieobjęty przypadek. Dodatkowo:
+„Traktat handlowy" (widoczny na zrzucie) to `actionId '5'`/`umowa_szlakow`, CELOWO wykluczony z
+koszyka wymiany (idzie na stół bez modala) — nawet z `canCounter=true` nie miałby edycji koszyka
+(bo nie ma koszyka); „Umowa wymiany surowców" (`actionId '14'`) JEST w koszyku, brak edycji wynika
+wyłącznie z `canCounter=false`.
+**Zakres naprawy WYMAGA decyzji projektowej (ABC), nie jest prostym powtórzeniem wzorca 08-09** —
+silnik negocjacji (`diplomacy-proposals.ts`) NIE MA dziś żadnego trybu „edytuj własną, wysłaną
+ofertę in-place" (tylko usuń+dodaj-od-nowa). Dwa warianty: (A) rozszerzyć `canCounter` o
+`direction==='own'`, dodać nową ścieżkę w silniku aktualizującą ten sam wpis `PendingNegotiation`
+bez zmiany rundy/`awaitingOwnerId` — bliższe UX (edycja w miejscu), ale wymaga nowej logiki silnika;
+(B) „Edytuj" = zamknij kartę + otwórz ponownie kreator z pre-wypełnionymi wartościami
+(`showTradeBasketModal`/`counterInitial`, już istniejący wzorzec pre-fill), usuń starą pozycję +
+utwórz nową po zapisie — prostsze technicznie, ale traci numer rundy/timing z perspektywy gracza.
+**ABC do zadania Maciejowi, w kolejce po ustabilizowaniu obecnej fali zgłoszeń.**
+
+---
+
+## P-DYPLO-PAKT-NIEAGRESJI-ZAUFANIE-MIMO-PLUS-BILANS (2026-08-10, szósty zrzut, „Stół negocjacji")
+
+Maciej: „w opcjach miałem pakt o nieagresji, ale kiedy spełniam bilans na plusie, to niestety system
+twierdzi, że brak mam zaufania do paktu. No to albo nie mam zaufania i nie ma tego w opcjach do
+wyboru, albo jest w opcjach do wyboru, kwestią jest tylko zbalansowanie innymi propozycjami." Zrzut:
+pakiet 3 umów (Pakt o nieagresji + Umowa wymiany surowców od nas, Traktat handlowy + Pakt o nieagresji
+od nich), „BILANS (NETTO) **+32**" (wyraźnie dodatni, większy niż poprzedni zrzut +6), blokujący
+komunikat: **„Nie spełnia warunków: Ekspansja przy granicy — brak zaufania do paktu"** — inny niż
+poprzedni „Brakuje N PW" (to NIE jest brak PW, to osobny, binarny gate zaufania/bliskości granic,
+którego PW nie naprawi). W lewej kolumnie „Możliwe umowy" WIDAĆ już istniejący wzorzec dla innych
+opcji: „zablokowana — wymaga Zaufania 91 (masz 83)" z ikoną kłódki, prewencyjnie wyłączający wybór —
+ale „Pakt o nieagresji" NIE był tak oznaczony (dało się go dodać do oferty), mimo że ma najwyraźniej
+podobny, twardy gate ujawniający się dopiero PRZY OCENIE, nie przy wyborze.
+**Prawdopodobnie POWIĄZANE z tym samym wzorcem co `P-DYPLO-BILANS-VS-BRAKUJE-PW-SPRZECZNE`** (gate
+nieodzwierciedlony w UI wyboru, ujawniający się dopiero jako sprzeczny z pozornie dodatnim bilansem)
+— ale inny, niepieniężny powód („Ekspansja przy granicy"), więc może wymagać osobnego zbadania po
+wynikach rozpoznania PW (`a5cd559f49253a910`, w toku). **STATUS: zarejestrowane, w kolejce — czekam
+na wynik powiązanego rozpoznania PW przed decyzją czy to jeden temat czy dwa osobne.**
+
 ---
