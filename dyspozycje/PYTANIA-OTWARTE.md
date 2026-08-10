@@ -7491,3 +7491,25 @@ Zero regresji. Temat w pełni zamknięty co do bezpiecznego minimum (BB1) — BB
 ruchu, decyzja ECHO B = pełny refaktor stackGroupId) w toku jako osobny dispatch.
 
 ---
+
+## stackGroupId runda 2 — ZATRZYMANA, potwierdzenie mechanizmu „worktree startuje od main, nie od gałęzi sesji" (2026-08-10)
+
+Operator prawidłowo zdiagnozował i zatrzymał się (zgodnie z instrukcją) zamiast zgadywać: jego
+`isolation:"worktree"` wystartował od `main` (`b0e4a5c9`, poziom FALA 263), NIE od bieżącej gałęzi
+sesji `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (obecny tip, zawiera scalone `a396eddc`
+Armia-rozpad + wszystko z tej nocy). To DOKŁADNIE mechanizm opisany w skillu `civ-autobot` §5
+(„`isolation:'worktree'` NIE dziedziczy z bieżącej gałęzi sesji — startuje od `main`") —
+potwierdzony dziś po raz kolejny, tym razem jako przyczyna fałszywego alarmu, nie utraty pracy.
+
+**To NIE jest regresja ani utrata BB1** — `a396eddc` jest bezpiecznie na
+`origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` (potwierdzone), po prostu poza zasięgiem
+świeżego worktree. `main` jest CELOWO „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) — scalenie do
+`main` następuje wyłącznie na hasło `deploy`, nie samo z siebie.
+
+**Naprawa procesowa (do playbooka):** dispatch dla Operatorów pracujących na worktree potrzebujących
+NAJNOWSZEGO stanu gałęzi sesji (nie `main`) musi WPROST instruować: skopiować potrzebne pliki
+bezpośrednio z żywego katalogu głównego (`/home/user/The-Game`, aktualny checkout gałęzi sesji),
+NIE polegać na `git diff`/`grep` wewnątrz własnego, świeżo założonego worktree jako źródle prawdy o
+tym „co już jest scalone". Runda 3 dispatchowana z tą poprawką.
+
+---
