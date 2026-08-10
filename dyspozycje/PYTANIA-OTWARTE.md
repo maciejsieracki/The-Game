@@ -11779,3 +11779,16 @@ gameplayowych/AI-behawioralnych bez jego udziału) — zarejestrowane jako osobn
 odłożony temat do ABC po jego powrocie. NIE blokuje deployu reszty tej fali: to nowo odkryty,
 pre-istniejący problem architektoniczny (nie regresja żadnego commitu tej sesji), wymaga decyzji
 projektowej o kompromisie (wizualna fala vs koordynacja zdalna), nie technicznej korekty liczby.**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — runda 2 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `7373233b` (2026-08-10).** `canCounter` dla `direction==='own'` zawężone z
+całego `actionUsesTradeBasket` (12 typów) do `actionUsesTradeBasket(...) && (getTradeBasketMode
+=== 'trade' || 'gift')` (uiActionId 14/13). Pułapka złapana podczas naprawy: `getTradeBasketMode`
+ma domyślny fallback `'trade'` dla akcji SPOZA zbioru koszykowego — sam `getTradeBasketMode`
+bez `actionUsesTradeBasket` jako pierwszej bramki błędnie otwierałby z powrotem edycję dla
+`umowa_szlakow` (uiActionId 5). Oba defekty usunięte przez brak dostępu do edycji dla czystych
+traktatów, nie przez naprawę logiki edycji tych typów. Bramki: tsc 0, logic-test 213/213,
+`diplomacy-own-proposal-edit-test` 33/33 (nowe kontrole negatywne dla `nap`/„granice" + regresja
+przypięta na pułapkę fallbacku), oraz 8 istniejących testów dyplomacji — wszystkie zielone, zero
+regresji. Czeka na NIEZALEŻNEGO Evaluatora, runda 2 (dispatch w toku).**
