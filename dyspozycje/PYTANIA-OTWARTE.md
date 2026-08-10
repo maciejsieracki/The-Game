@@ -10996,3 +10996,56 @@ jedno zlecenie Operatora, ale osobna, jasno wydzielona część zakresu — C-02
 zakresu nadal obowiązuje, Operator ma dwie odrębne, jasno opisane poprawki, nie jeden rozmyty fix).
 
 **STATUS: zarejestrowane, dispatch razem z P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT.**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator FAIL runda 2 (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `d7718ad5`: FAIL.** Zgłoszenie oznaczone jako naprawione, ale
+druga połowa problemu (wchłonięcie dyplomatyczne) NADAL nie działa — kod wygląda na poprawny, ale
+zachowanie się nie zmieniło. Bramki (tsc, testy) były zielone i nie wykryły żadnego z tych defektów
+— wymagały wyłącznie uważnego czytania kodu wokół zmiany.
+
+**Defekt A (blokujący):** nowy toast w `annexCityStateToOwner` (`main.ts:20672`, `annexerId===0`)
+jest natychmiast nadpisywany 6 linii niżej w TYM SAMYM synchronicznym stosie wywołań:
+`main.ts:15519`, `showHintMessage('Miasto-państwo wchłonięte do imperium', 4000)`.
+`showHintMessage` to jeden współdzielony `#hintToast` z jednym timerem (`main.ts:10814-10830`) —
+nowa treść nadpisuje starą, zanim zdąży się wyrenderować. Ten sam wzorzec kolizji, który commit
+deklarował jako naprawiony, odtworzony dosłownie w nowym kodzie. Gracz po wchłonięciu
+dyplomatycznym nadal widzi wyłącznie „Miasto-państwo wchłonięte do imperium" — stan sprzed
+commita.
+
+**Defekt B:** dwie ścieżki eliminacji GRACZA (nie AI) gubią zwracaną etykietę po cichu (kompilator
+tego nie łapie): `main.ts:11112` (`resolveSiegeSurrender`, kapitulacja głodowa —
+`runCapitalCapturePlunder(...)` wołane BEZ odbioru wartości zwracanej) oraz `main.ts:20283-20292`
+(szturm przez mur, `siegeContext:true` — blok z `showCityCaptureNotice` odcięty warunkiem
+`!opts?.siegeContext`). Uczciwie: w obu te ścieżki i PRZED naprawą też nie miały widocznego
+komunikatu (stary toast też tam ginął) — więc to nie regresja, ale zgłoszenie brzmiało „brak
+komunikatu o eliminacji" i po naprawie 2 z 4 ścieżek nadal go nie mają.
+
+**Defekt C (utrata treści):** stary toast niósł nazwę miasta, zdobywcę, liczbę tech i +Power ze
+zdobyczy. Nowy modal mówi tylko „X — ostatnie miasto przejęte". Gracz (jedyny odbiorca tej
+nagrody) traci informację o technologiach/Power; toast AI (main.ts:20878) nadal ją ma — asymetria.
+
+**Pokrycie testowe: zero.** `capital-capture-test.cjs` testuje czystą funkcję z `game/`, nie
+wrapper `runCapitalCapturePlunder` (żyje w domknięciu `boot()` w main.ts, dziś nietestowalny).
+
+**STATUS: dispatch Sonnet 5 (worktree) — naprawić A, B, C w jednej, jasno opisanej rundzie 3.
+Po dostarczeniu: ponowny Evaluator (nie ja) przed uznaniem za zamknięte.**
+
+## Trzy dodatkowe noty Evaluatora (nie blokujące, do dispatchu osobno)
+
+1. **Civpedia w grze kłamie o koszcie manpower epoki 1.** `gra/src/data/wikiBundle.json`
+   (wbudowany w grę, `wikiHubHud.ts`) + `docs/encyklopedia/pojecia/manpower-rekruci.md`
+   (linie 15,35,52,64) + komentarz `gra/src/game/manpower.ts:9` nadal głoszą starą wartość 500
+   („koszt włócznika = 500 → 10 włóczników przy pełnej puli") — sprzeczne z silnikiem (dziś 1000,
+   `b11c8608`). **Jedyny z ogonów widoczny dla gracza na własne oczy** (otwiera Poradnik w grze).
+   Dispatch: korekta tekstu źródłowego + regeneracja `wikiBundle.json`.
+2. **Karty „Dyplomacja" w dwóch kolorach.** `eot-event-defer.ts:67-79` — handel AI↔AI dostaje
+   `kind:'info'` (złoty) zamiast `kind:'diplo'` (niebieski) mimo tytułu „Dyplomacja" — bezpośrednio
+   przeczy celowi `R-WYDARZENIA-KOLOR-DIPLO-INFO`. Poprawka: 1 linia
+   (`kind: isAiAiTrade ? 'diplo' : 'info'`), własna bramka `eot-event-defer-test.cjs` (5/5).
+   Dispatch.
+3. **`ufortyfikowanyWPolu` + `autoExplore` nie wykluczają się.** Pre-istniejący, ujawniony (nie
+   spowodowany) przez `65bc26d4`. Ufortyfikowany zwiadowca z włączonym Zwiedzaj odejdzie z pozycji
+   w kolejnej turze (ruch wraca wszystkim bez wyjątku, `main.ts:22115`), zachowując flagę
+   `ufortyfikowanyWPolu` (bonus obronny w marszu) — `enterFieldFortify()` nie czyści `autoExplore`,
+   `runScoutsAutoExplore()` nie sprawdza fortyfikacji. Dispatch (niski priorytet, rzadki przypadek).

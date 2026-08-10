@@ -2376,3 +2376,12 @@ serializuj tylko delte) zadane w czacie. Pelna tresc w PYTANIA-OTWARTE.md.
 Sortowanie malejace po dacie juz dziala w kodzie (saveLoadDialog.ts) - waski problem: stare zapisy
 sprzed pola savedAt dostaja pusty string i sortuja sie niedeterministycznie miedzy soba. Nie
 wymaga ABC, dispatch razem z naprawa quota (ten sam obszar, osobno wydzielony zakres).
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator FAIL runda 2, runda 3 w toku (2026-08-10)
+Retroaktywny Evaluator (Opus 5) na 6 zmianach orkiestratora: FAIL na d7718ad5 - toast wchlonienia
+dyplomatycznego natychmiast nadpisywany 6 linii nizej (ten sam wzorzec kolizji ktory mial byc
+naprawiony), 2 sciezki eliminacji gracza (kapitulacja glodowa, szturm przez mur) gubia zwracana
+etykiete po cichu, utrata tresci (tech/Power) w nowym modalu. Zero pokrycia testowego. Dispatch
+Sonnet 5 runda 3 + ponowny Evaluator przed zamknieciem. Pozostale 5 zmian: PASS/PASS-WITH-NOTES,
+3 dodatkowe noty do dispatchu (Civpedia klamie o manpower, karty Dyplomacja w 2 kolorach,
+ufortyfikowany+autoExplore). Pelna tresc w PYTANIA-OTWARTE.md.
