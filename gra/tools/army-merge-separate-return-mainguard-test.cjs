@@ -215,5 +215,238 @@ ok(!/mu\.q\s*=\s*dest\.q\s*\+|mu\.r\s*=\s*dest\.r\s*\+/.test(separateLoopBody),
 ok(!/assignBounceHexesForUnits\(/.test(body),
   'onSeparate: brak realnego WYWOŁANIA assignBounceHexesForUnits( w ciele handlera (samo wystąpienie nazwy w komentarzu-wyjaśnieniu historii jest dozwolone, wywołanie ze starym rozpraszaniem — nie)');
 
+// ---------------------------------------------------------------------------
+// 8) B3 (Evaluator runda 3, FAIL, 2026-08-10) — BB2 „stackGroupId": jedyna
+//    linia naprawiająca ORYGINALNY zgłoszony bug (armia wraca na origin
+//    zajęty przez rezydenta, pule ruchu się zlewają) jest
+//    `assignSharedStackGroupId(movedUnits)` w onSeparate. Evaluator usunął tę
+//    linię i WSZYSTKIE bramki (w tym funkcyjny test stackgroupid) zostały
+//    zielone — funkcyjny test woła armyMerge.ts w izolacji, nie main.ts, więc
+//    nie chroni WPIĘCIA. Pinujemy tekstowo obecność `assignSharedStackGroupId`
+//    we WSZYSTKICH 5 realnych call-site'ach w main.ts (zweryfikowane grepem:
+//    onHex-merge, onSeparate, split, merge-z-panelu/sameHexOthers,
+//    merge-stosu) — usunięcie KTÓREGOKOLWIEK z pięciu MUSI dawać FAIL.
+// ---------------------------------------------------------------------------
+
+// 8a) onHex-merge (promptMergeIfCoLocated -> onMerge, PRZED onSeparateStart —
+//     poza zakresem `body` wyciętego wyżej, więc osobne, wąskie okno).
+{
+  const start = src.indexOf('const garnizonMode = existing.every(x => x.inGarnizon === true);');
+  ok(start >= 0, '[8a onHex-merge] znaleziono marker startowy (garnizonMode)');
+  const end = start >= 0 ? src.indexOf('syncStackRuchLeft(onHex);', start) : -1;
+  ok(end > start, '[8a onHex-merge] znaleziono marker końcowy (syncStackRuchLeft(onHex))');
+  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  ok(/assignSharedStackGroupId\(onHex\)/.test(win),
+    '[8a onHex-merge] assignSharedStackGroupId(onHex) obecne PRZED syncStackRuchLeft(onHex) — scalenie ujednolica tożsamość stosu');
+}
+
+// 8b) onSeparate — sedno BB2. Już mamy wycięty `body` z sekcji 1 powyżej.
+ok(/assignSharedStackGroupId\(movedUnits\)/.test(body),
+  '[8b onSeparate — SEDNO BB2] assignSharedStackGroupId(movedUnits) obecne w ciele onSeparate (bez tej linii wracająca armia i rezydent na origin dzielą pulę ruchu — dokładnie zgłoszony bug)');
+{
+  const assignIdx = body.indexOf('assignSharedStackGroupId(movedUnits)');
+  const loopIdx = body.indexOf('for (const mu of movedUnits) {');
+  ok(assignIdx >= 0 && loopIdx >= 0 && assignIdx < loopIdx,
+    '[8b onSeparate] assignSharedStackGroupId(movedUnits) wołane PRZED pętlą przenoszącą jednostki (kolejność: nadaj tożsamość, potem przenieś)');
+}
+
+// 8c) split (onSplit) — jednostki odchodzące dostają WSPÓLNY, ŚWIEŻY id.
+{
+  const start = src.indexOf('onSplit: (ids, destQ, destR) => {');
+  ok(start >= 0, '[8c split] znaleziono marker startowy (onSplit)');
+  const end = start >= 0 ? src.indexOf('if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals))', start) : -1;
+  ok(end > start, '[8c split] znaleziono marker końcowy (tryAutoCaptureEmptyCityAt)');
+  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  ok(/assignSharedStackGroupId\(splitArrivals\)/.test(win),
+    '[8c split] assignSharedStackGroupId(splitArrivals) obecne — konieczne zwłaszcza gdy destQ/destR === srcQ/srcR (opcja „W mieście, ten sam heks")');
+  const assignIdx = win.indexOf('assignSharedStackGroupId(splitArrivals)');
+  const loopIdx = win.indexOf('for (const u of splitArrivals) {');
+  ok(assignIdx >= 0 && loopIdx >= 0 && assignIdx < loopIdx,
+    '[8c split] assignSharedStackGroupId(splitArrivals) wołane PRZED pętlą przenoszącą odłączone jednostki');
+}
+
+// 8d) merge z panelu (openMergePanelForSelected, gałąź sameHexOthers — garnizon vs pole).
+{
+  const start = src.indexOf('const merged = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId);');
+  ok(start >= 0, '[8d merge-panel] znaleziono marker startowy (const merged = coLocatedForMergePrompt)');
+  const end = start >= 0 ? src.indexOf('syncStackRuchLeft(merged);', start) : -1;
+  ok(end > start, '[8d merge-panel] znaleziono marker końcowy (syncStackRuchLeft(merged))');
+  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  ok(/assignSharedStackGroupId\(merged\)/.test(win),
+    '[8d merge-panel] assignSharedStackGroupId(merged) obecne PRZED syncStackRuchLeft(merged)');
+}
+
+// 8e) merge stosu (ostatnia gałąź openMergePanelForSelected — "arriving" pojedyncza jednostka).
+{
+  const start = src.indexOf('arrivingCount: 1,');
+  ok(start >= 0, '[8e merge-stosu] znaleziono marker startowy (arrivingCount: 1,)');
+  const end = start >= 0 ? src.indexOf('syncStackRuchLeft(stack);', start) : -1;
+  ok(end > start, '[8e merge-stosu] znaleziono marker końcowy (syncStackRuchLeft(stack))');
+  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  ok(/assignSharedStackGroupId\(stack\)/.test(win),
+    '[8e merge-stosu] assignSharedStackGroupId(stack) obecne PRZED syncStackRuchLeft(stack)');
+}
+
+// ---------------------------------------------------------------------------
+// 9) B4 (Evaluator runda 3, FAIL) — gwarancja „fallback stackGroupIdOf jest
+//    BIT-IDENTYCZNY ze starym grupowaniem po heksie" (fundament decyzji
+//    właściciela ECHO B: jednostki bez jawnego stackGroupId muszą zachowywać
+//    się DOKŁADNIE jak przed BB2). Pinujemy dosłowny KSZTAŁT fallbacku w
+//    źródle armyMerge.ts — usunięcie sufiksu `|g` (albo zamiana `+` na coś
+//    innego) MUSI dawać FAIL. To pinning tekstowy uzupełniający fuzz
+//    różnicowy w army-merge-stackgroupid-test.cjs (assert #B4), nie zamiennik.
+// ---------------------------------------------------------------------------
+const ARMY_MERGE_TS = path.join(__dirname, '..', 'src', 'game', 'armyMerge.ts');
+const armyMergeSrc = fs.readFileSync(ARMY_MERGE_TS, 'utf8');
+const stackGroupIdOfStart = armyMergeSrc.indexOf('export function stackGroupIdOf(');
+ok(stackGroupIdOfStart >= 0, '[9 B4] znaleziono export function stackGroupIdOf( w armyMerge.ts');
+const stackGroupIdOfEnd = stackGroupIdOfStart >= 0 ? armyMergeSrc.indexOf('\n}', stackGroupIdOfStart) : -1;
+const stackGroupIdOfBody = (stackGroupIdOfStart >= 0 && stackGroupIdOfEnd > stackGroupIdOfStart)
+  ? armyMergeSrc.slice(stackGroupIdOfStart, stackGroupIdOfEnd)
+  : '';
+const stackGroupIdOfFlat = stackGroupIdOfBody.replace(/\s+/g, ' ');
+const FALLBACK_CORE = "u.ownerId + '|' + u.q + ',' + u.r";
+ok(stackGroupIdOfFlat.includes(FALLBACK_CORE + " + '|g'"),
+  '[9 B4] stackGroupIdOf: fallback dla jednostki W GARNIZONIE kończy się sufiksem `|g` (bez tego dwa różne fallbacki — garnizon i pole — zlewałyby się w main.ts, gdzie te same funkcje decydują o poolingu ruchu)');
+const coreOccurrences = stackGroupIdOfFlat.split(FALLBACK_CORE).length - 1;
+ok(coreOccurrences === 2,
+  `[9 B4] stackGroupIdOf: rdzeń fallbacku ownerId+"|"+q+","+r (identyczny kształt jak PRZED BB2) występuje DOKŁADNIE 2 razy — raz z sufiksem |g (garnizon), raz bez (pole) — znaleziono ${coreOccurrences}`);
+
+// ---------------------------------------------------------------------------
+// 10) B-R5-1 (Evaluator runda 5, FAIL, 2026-08-10) — runda 4 naprawiła klucz
+//     grupowania WYŁĄCZNIE w armyMerge.ts:computeStackDisplay (stackGroupIdOf(u)
+//     + pozycja + garnizon), ale zostawiła TEN SAM defekt (gołe
+//     stackGroupIdOf(u), BEZ pozycji) w trzech niezależnych miejscach main.ts,
+//     które robią własne, równoległe grupowanie stosu po heksie:
+//     cyclablePlayerArmyLeadsBase, armyLeadHexKey, buildPlayerArmyListEntries.
+//     Naprawa: `stackRenderKey(u)` (eksportowana z armyMerge.ts, JEDYNY punkt
+//     prawdy — ta sama funkcja, którą woła computeStackDisplay) we wszystkich
+//     trzech. Pinujemy KSZTAŁT klucza w tych trzech oknach: musi zawierać
+//     WYWOŁANIE `stackRenderKey(` (nie samą nazwę w komentarzu), i NIE może
+//     zawierać gołego `stackGroupIdOf(u)` jako całego klucza (bez pozycji).
+// ---------------------------------------------------------------------------
+
+// 10a) cyclablePlayerArmyLeadsBase.
+{
+  const start = src.indexOf('function cyclablePlayerArmyLeadsBase(requireMoves: boolean): RuntimeUnit[] {');
+  ok(start >= 0, '[10a cyclablePlayerArmyLeadsBase] znaleziono marker startowy funkcji');
+  const end = start >= 0 ? src.indexOf('\n    }\n', start) : -1;
+  ok(end > start, '[10a cyclablePlayerArmyLeadsBase] znaleziono koniec funkcji');
+  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  ok(/const key = stackRenderKey\(u\);/.test(win),
+    '[10a cyclablePlayerArmyLeadsBase] klucz grupowania = stackRenderKey(u) (tożsamość + POZYCJA + garnizon, nie gołe stackGroupIdOf)');
+  ok(!/const key = stackGroupIdOf\(u\);/.test(win),
+    '[10a cyclablePlayerArmyLeadsBase] klucz NIE jest gołym stackGroupIdOf(u) bez pozycji — B-R5-1 nie wrócił');
+}
+
+// 10b) armyLeadHexKey.
+{
+  const start = src.indexOf('function armyLeadHexKey(u: RuntimeUnit): string {');
+  ok(start >= 0, '[10b armyLeadHexKey] znaleziono marker startowy funkcji');
+  const end = start >= 0 ? src.indexOf('\n    }\n', start) : -1;
+  ok(end > start, '[10b armyLeadHexKey] znaleziono koniec funkcji');
+  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  ok(/return stackRenderKey\(u\);/.test(win),
+    '[10b armyLeadHexKey] return stackRenderKey(u) — spójne z cyclablePlayerArmyLeadsBase (10a), inaczej fallback po zniknięciu afterId trafia niewłaściwą armię');
+  ok(!/return stackGroupIdOf\(u\);/.test(win),
+    '[10b armyLeadHexKey] NIE zwraca gołego stackGroupIdOf(u) bez pozycji — B-R5-1 nie wrócił');
+}
+
+// 10c) buildPlayerArmyListEntries.
+{
+  const start = src.indexOf('// C-GARN-Q1: ufortyfikowane jednostki grupuj po heksie miasta (jak armia),');
+  ok(start >= 0, '[10c buildPlayerArmyListEntries] znaleziono marker startowy (komentarz C-GARN-Q1)');
+  const end = start >= 0 ? src.indexOf('else stacks.set(key, [u]);', start) : -1;
+  ok(end > start, '[10c buildPlayerArmyListEntries] znaleziono marker końcowy (else stacks.set(key, [u]);)');
+  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  ok(/const key = stackRenderKey\(u\);/.test(win),
+    '[10c buildPlayerArmyListEntries] klucz grupowania = stackRenderKey(u) — dwie armie o różnym stackGroupId na wspólnym origin NIE zlewają się w jeden wpis listy');
+  ok(!/const key = stackGroupIdOf\(u\);/.test(win),
+    '[10c buildPlayerArmyListEntries] klucz NIE jest gołym stackGroupIdOf(u) bez pozycji — B-R5-1 (jednostka na drugim heksie znika z listy armii) nie wrócił');
+}
+
+// ---------------------------------------------------------------------------
+// 11) B-R5-1 — SCENARIUSZ REGRESYJNY odtwarzający dowód Evaluatora rundy 5:
+//     scalona grupa 2 jednostek na WSPÓLNYM heksie (jeden stackGroupId) →
+//     jedna jednostka „ucieka" na inny heks przez bezpośrednią mutację
+//     u.q/u.r (dokładnie to, co robi advanceScoutAutoExplore w
+//     game/scout-auto-explore.ts:234-235 dla zwiadowcy, albo post-battle-map.ts
+//     dla cywila zostawionego na origin) — logika grupowania
+//     buildPlayerArmyListEntries MUSI dać DWA wpisy (2 różne heksy), nie
+//     JEDEN wpis obejmujący oba heksy naraz (co gubiłoby jedną z jednostek z
+//     listy armii i sumowało ruch/HP przez dwa miejsca).
+//
+//     Testujemy SAMĄ logikę grupowania (stackRenderKey + Map<string,
+//     RuntimeUnit[]>), nie całe UI main.ts — zgodnie z zadaniem („przetestuj
+//     samą logikę grupowania, nie całe UI").
+// ---------------------------------------------------------------------------
+{
+  const esbuild = require('esbuild');
+  const ENTRY = path.join(__dirname, '.army-merge-b-r5-1-entry.ts');
+  const BUNDLE = path.join(__dirname, '.army-merge-b-r5-1-bundle.cjs');
+  fs.writeFileSync(
+    ENTRY,
+    `import { stackRenderKey, assignSharedStackGroupId } from '../src/game/armyMerge';
+export { stackRenderKey, assignSharedStackGroupId };`,
+  );
+  esbuild.buildSync({
+    entryPoints: [ENTRY],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    outfile: BUNDLE,
+    logLevel: 'silent',
+  });
+  const { stackRenderKey, assignSharedStackGroupId } = require(BUNDLE);
+
+  function unit(over) {
+    return Object.assign({
+      id: 'u', ownerId: 0, typeId: 'Zwiadowca', category: 'zwiadowca',
+      q: 0, r: 0, ruch: 3, ruchLeft: 3,
+    }, over);
+  }
+
+  // Grupowanie IDENTYCZNE z buildPlayerArmyListEntries/cyclablePlayerArmyLeadsBase.
+  function groupByRenderKey(list) {
+    const stacks = new Map();
+    for (const u of list) {
+      const key = stackRenderKey(u);
+      const arr = stacks.get(key);
+      if (arr) arr.push(u);
+      else stacks.set(key, [u]);
+    }
+    return stacks;
+  }
+
+  // Scalona grupa 2 jednostek (Miecznik + Zwiadowca) na WSPÓLNYM heksie (5,5).
+  const soldier = unit({ id: 'soldier', typeId: 'Miecznik', category: 'piechota', q: 5, r: 5 });
+  const scout = unit({ id: 'scout', q: 5, r: 5 });
+  const roster = [soldier, scout];
+  assignSharedStackGroupId(roster); // merge realny — jeden wspólny stackGroupId.
+  ok(stackRenderKey(soldier) === stackRenderKey(scout),
+    '[11 regresja B-R5-1] PRZED ucieczką: soldier i scout mają IDENTYCZNY stackRenderKey (jedna grupa, jeden heks)');
+
+  const groupsBefore = groupByRenderKey(roster);
+  ok(groupsBefore.size === 1,
+    `[11 regresja B-R5-1] PRZED ucieczką: grupowanie daje DOKŁADNIE 1 wpis dla obu jednostek na wspólnym heksie (dostano ${groupsBefore.size})`);
+
+  // Zwiadowca „ucieka" auto-explore — dokładnie advanceScoutAutoExplore:
+  // bezpośrednia mutacja u.q/u.r, BEZ zmiany stackGroupId (ten sam roster).
+  scout.q = 9;
+  scout.r = 9;
+
+  ok(stackRenderKey(soldier) !== stackRenderKey(scout),
+    '[11 regresja B-R5-1] PO ucieczce: soldier (5,5) i scout (9,9) mają RÓŻNY stackRenderKey mimo TEGO SAMEGO stackGroupId (pozycja jest częścią klucza)');
+
+  const groupsAfter = groupByRenderKey(roster);
+  ok(groupsAfter.size === 2,
+    `[11 regresja B-R5-1 — DOWÓD] PO ucieczce zwiadowcy na inny heks: grupowanie daje DOKŁADNIE 2 wpisy (soldier i scout osobno), NIE 1 wpis obejmujący oba heksy naraz (dostano ${groupsAfter.size})`);
+  ok([...groupsAfter.values()].every(g => g.length === 1),
+    '[11 regresja B-R5-1] każdy z dwóch wpisów zawiera DOKŁADNIE 1 jednostkę (żadna nie zniknęła, żadna nie zdublowała się)');
+
+  try { fs.unlinkSync(ENTRY); } catch { /* ignore */ }
+  try { fs.unlinkSync(BUNDLE); } catch { /* ignore */ }
+}
+
 console.log(`\narmy-merge-separate-return-mainguard-test: ${pass} pass, ${fail} fail`);
 process.exit(fail === 0 ? 0 : 1);

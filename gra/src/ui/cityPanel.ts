@@ -359,6 +359,20 @@ export interface CityPanelConfig {
   onCityAutoWyzywienieChange?: (cityId: string, enabled: boolean) => void;
   /** R-AUTO-RACJE-RAISE-Q3=A — max bezpieczny poziom suwaka Wyżywienia. */
   getMaxSafePoziomRacji?: (cityId: string) => number;
+  /**
+   * P-WZROSTPROCENT-PLAKIETKA-ROZJAZD: TANI odczyt z cache maxSafe (bez `previewCityEconomy`),
+   * zapisywany przy każdym już wykonywanym wywołaniu `getMaxSafePoziomRacji`. Wyłącznie dla
+   * `cityGrowthLive` (hot path mousemove) — `undefined` gdy brak świeżego wpisu (fallback do
+   * surowej wartości).
+   */
+  getCachedMaxSafePoziomRacji?: (cityId: string) => number | undefined;
+  /**
+   * R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Żywność", Maciej 2026-08-10): czy poziom
+   * Wyżywienia tego miasta jest odpięty od globalnego defaultu imperium (override).
+   */
+  getPoziomRacjiOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Wyżywienia (global ⇄ lokalny override). */
+  onPoziomRacjiOverrideToggle?: (cityId: string) => void;
   /** Okolica 4C — profile + ręczna korekta. */
   getOkolicaState?: (cityId: string) => {
     focus: OkolicaFocus;
@@ -441,6 +455,15 @@ export interface CityPanelConfig {
   getPodzialHandlu?: (cityId: string) => PodzialHandluSplit | null;
   /** Domyślny podział imperium (DYSPOZYCJA-85-SUWAK). */
   getOwnerDefaultPodzialHandlu?: (ownerId: number) => PodzialHandluSplit | null;
+  /**
+   * R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Skarbiec+Nauka", Maciej 2026-08-10): czy
+   * podział Skarb/Nauka/Zamożność tego miasta jest odpięty od globalnego defaultu
+   * imperium. JEDNA grupa (Maciej: "skarbiec... w nim też zawiera się nauka") — jeden
+   * przełącznik dla całego suwaka Handlu, nie osobny dla Skarbca i osobny dla Nauki.
+   */
+  getPodzialHandluOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Skarbiec+Nauka (global ⇄ lokalny override). */
+  onPodzialHandluOverrideToggle?: (cityId: string) => void;
   /** Biezacy podzial Pracy per miasto (opcjonalnie). */
   getPodzialPracy?: (cityId: string) => PodzialPracySplit | null;
   /** Gracz zmienil suwaki Handlu — silnik zapisuje na City i przelicza plony. */
@@ -976,8 +999,11 @@ interface CityView {
 export interface EmpireHudSnap {
   /** Pula Pracy imperium (zapas — załóż miasto, ulepszenia / projekty mapy). */
   pracaPool?: number;
-  /** Suma Pracy / turę (wszystkie miasta). */
+  /** Suma Pracy / turę (wszystkie miasta), NETTO — już po odjęciu `pracaUpkeep`. */
   pracaRate?: number;
+  /** Civ-wide utrzymanie Pracy za ulepszenia surowcowe terenu (tartak/kamieniołom/
+   *  glinianka/kopalnie/warzelnia soli/stadnina), już wliczone (odjęte) w `pracaRate`. */
+  pracaUpkeep?: number;
   zloto?: number;
   zlotoRate?: number;
   nauka?: number;
@@ -1224,12 +1250,69 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   };
 }
 
-/** Bilans żywności miasta (PYTANIE-85: produkcja − racje). */
-function cityFoodSplit(view: CityView): { total: number; produkcja: number; racje: number } {
+/**
+ * Bilans żywności miasta (PYTANIE-85: produkcja − racje).
+ *
+ * `maxSafe` (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD, Bug #2): opcjonalny limit Spichlerza
+ * (`cfg.getMaxSafePoziomRacji`) -- TEN SAM, którego suwak Wyżywienia już używa
+ * (`Math.min(view.poziomRacji, maxSafe)`) do wyliczenia wyświetlanego poziomu.
+ * Gdy podany i `view.poziomRacji` go przekracza, koszt racji jest przeliczany
+ * do przyciętego poziomu (koszt jest LINIOWY w poziomie -- ta sama zależność co
+ * `computeCityRationCost`, więc skalowanie proporcją daje identyczny wynik bez
+ * potrzeby przekazywania tu `rationParams`/`spichlerzState`). Bez tego Bilans
+ * pokazywał gorszy wynik niż to, co silnik i tak zagwarantuje auto-korektą na
+ * koniec tury (Spichlerz >= 0) -- niespójne z suwakiem, który już liczył
+ * przycięty poziom.
+ * / EN: optional Spichlerz (granary) safety cap -- the SAME one the ration
+ * slider already uses to clamp the displayed level. When given and
+ * `view.poziomRacji` exceeds it, the ration cost is rescaled to the clamped
+ * level (cost is LINEAR in level, same relationship as `computeCityRationCost`,
+ * so a proportional scale gives an identical result without needing
+ * `rationParams`/`spichlerzState` here). Without this, the Balance row showed a
+ * worse number than what the engine guarantees via end-of-turn auto-correction
+ * (Spichlerz >= 0) -- inconsistent with the slider, which already used the
+ * clamped level.
+ */
+function cityFoodSplit(view: CityView, maxSafe?: number): { total: number; produkcja: number; racje: number; clamped: boolean } {
   const produkcja = Math.round(view.zywnoscBrutto);
-  const racje = Math.round(view.kosztRacji);
-  const total = Math.round(view.bilansLokalny);
-  return { total, produkcja, racje };
+  const effectiveLevel = maxSafe !== undefined ? Math.min(view.poziomRacji, maxSafe) : view.poziomRacji;
+  const clamped = effectiveLevel < view.poziomRacji && view.poziomRacji > 0;
+  if (!clamped) {
+    const racje = Math.round(view.kosztRacji);
+    const total = Math.round(view.bilansLokalny);
+    return { total, produkcja, racje, clamped };
+  }
+  const racje = Math.round(view.kosztRacji * effectiveLevel / view.poziomRacji);
+  const total = produkcja - racje;
+  return { total, produkcja, racje, clamped };
+}
+
+/**
+ * P-WZROSTPROCENT-SUROWY-POZIOM: WZROST% i jego rozbicie na składniki, przycięte do `maxSafe`
+ * (limit Spichlerza) — analogicznie do `cityFoodSplit` powyżej (Bug #2, e4155972). Tylko składnik
+ * „Wyżywienie" (racje) zależy od poziomu racji (`rationGrowthPercent` — czysty odczyt z tabeli,
+ * bez `rationParams`/`spichlerzState`), więc pozostałe składniki (małe miasto, Spichlerz, zdrowie,
+ * szczęście, cywilizacja) zostają bez zmian — przeliczamy tylko `racje` i `total`.
+ * ⚠️ NIE wołać z gorącej ścieżki (`cityGrowthLive`/mousemove) bez `maxSafe` już policzonego przez
+ * wywołującego — ta funkcja sama niczego nie liczy poza tanim odczytem z tabeli, ale `maxSafe`
+ * (parametr) pochodzi z `cfg.getMaxSafePoziomRacji`, które jest kosztowne (pełny
+ * `previewCityEconomy`) i celowo pomijane na tamtej ścieżce.
+ * / EN: WZROST% and its breakdown, clamped to `maxSafe` (Spichlerz/granary limit) -- analogous to
+ * `cityFoodSplit` above. Only the "Wyżywienie" (ration) component depends on the ration level
+ * (`rationGrowthPercent` -- a plain table lookup), so the remaining components (small city,
+ * Spichlerz, health, happiness, civilization) stay unchanged -- only `racje`/`total` are
+ * recomputed. Do NOT call from the hot path (`cityGrowthLive`/mousemove) without `maxSafe`
+ * already computed by the caller -- this function itself is cheap, but `maxSafe` comes from
+ * `cfg.getMaxSafePoziomRacji`, which is expensive and deliberately skipped there.
+ */
+function clampedGrowthBreakdown(view: CityView, maxSafe?: number): GrowthPercentBreakdown {
+  const bd = view.growthBreakdown;
+  if (maxSafe === undefined) return bd;
+  const effectiveLevel = Math.min(view.poziomRacji, maxSafe);
+  if (effectiveLevel >= view.poziomRacji) return bd;
+  const racje = rationGrowthPercent(effectiveLevel);
+  const total = bd.total - bd.racje + racje;
+  return { ...bd, racje, total };
 }
 
 function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {
@@ -1289,13 +1372,22 @@ export interface CityGrowthLive {
  * R-ETYKIETA-MIASTA-WZROST-PROCENT — WZROST% liczony NA ŻYWO, dla plakietki miasta na mapie
  * (`render/cities.ts` → `CityRenderOptions.getCityGrowth`).
  *
- * Zwraca DOKŁADNIE tę liczbę, którą pokazuje wiersz „WZROST%” w panelu tego miasta:
+ * Zwraca tę samą liczbę, którą pokazuje wiersz „WZROST%” w panelu tego miasta:
  * `computeView(...).wzrostProcent` = `computeGrowthPercentV85().total`, czyli SUMĘ SZEŚCIU
- * składników (racje + małe miasto + spichlerz + zdrowie + szczęście + cywilizacja). Wołanie
- * tego samego `computeView`, z którego żyje panel, jest tu celowe i nie podlega „optymalizacji”
- * przez przepisanie wzoru: pierwsza próba naprawy tego zgłoszenia (wycofana) użyła samego
- * składnika racji `rationGrowthPercent(level)` — 1 z 6 — i mapa pokazałaby INNĄ liczbę niż
+ * składników (racje + małe miasto + spichlerz + zdrowie + szczęście + cywilizacja), PRZYCIĘTĄ
+ * do `maxSafe` (limit Spichlerza) dokładnie tak samo jak panel — patrz P-WZROSTPROCENT-PLAKIETKA-ROZJAZD.
+ * Wołanie tego samego `computeView`, z którego żyje panel, jest tu celowe i nie podlega
+ * „optymalizacji” przez przepisanie wzoru: pierwsza próba naprawy tego zgłoszenia (wycofana) użyła
+ * samego składnika racji `rationGrowthPercent(level)` — 1 z 6 — i mapa pokazałaby INNĄ liczbę niż
  * panel tego samego miasta.
+ *
+ * **Przycięcie do maxSafe (P-WZROSTPROCENT-PLAKIETKA-ROZJAZD):** ta funkcja jest hot path
+ * (mousemove) i NIE WOLNO jej liczyć `maxSafe` samodzielnie (`getMaxSafePoziomRacjiForPlayerCity`
+ * to pełny `previewCityEconomy` × 13 poziomów — patrz ostrzeżenie niżej). Zamiast tego czyta TANI
+ * cache (`cfg.getCachedMaxSafePoziomRacji`), zapisywany przy każdym już wykonywanym liczeniu
+ * maxSafe (panel, `applyLiveSafeRationForCity`) i czyszczony globalnie w `markCityStateDirty()`.
+ * Brak wpisu w cache (jeszcze nic go nie zasiliło od ostatniego czyszczenia) → fallback do
+ * surowej `view.wzrostProcent`, tak jak przed tą naprawą — nigdy awaria.
  *
  * ⚠️ Świadomie NIE korzysta z `getLastEmpireFoodTick(ownerId).perCityRows[].wzrostProcent`:
  * tamto jest migawką z KOŃCA tury (`_setLastEmpireFoodTicks` woła się wyłącznie z
@@ -1318,8 +1410,25 @@ export function cityGrowthLive(city: City, map: GameMap): CityGrowthLive | null 
   const view = computeView(city, map, data);
   if (!view) return null;
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
+  // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD: NIE liczymy maxSafe tu (to gorąca ścieżka --
+  // mousemove nad żetonem miasta -> syncStatChips -> getCityGrowth; pełny
+  // previewCityEconomy x13 poziomów, bez memoizacji, byłby prawie zawsze wyrzucaną
+  // pracą). Zamiast tego czytamy TANI cache zasilany przy okazji już wykonywanych
+  // liczeń (panel, applyLiveSafeRationForCity) -- patrz cfg.getCachedMaxSafePoziomRacji.
+  // Brak wpisu (cache jeszcze pusty od ostatniego markCityStateDirty) -> fallback do
+  // surowej wartości, tak jak przed tą naprawą.
+  // / EN: we do NOT compute maxSafe here (hot path -- mousemove over a city token ->
+  // syncStatChips -> getCityGrowth; a full previewCityEconomy x13 levels, unmemoized,
+  // would almost always be thrown-away work). Instead we read a CHEAP cache populated
+  // by computations that already happen elsewhere (panel, applyLiveSafeRationForCity)
+  // -- see cfg.getCachedMaxSafePoziomRacji. No entry (cache empty since the last
+  // markCityStateDirty) -> fallback to the raw value, same as before this fix.
+  const cachedMaxSafe = cfg.getCachedMaxSafePoziomRacji?.(city.id);
+  const procentNaTure = cachedMaxSafe !== undefined
+    ? clampedGrowthBreakdown(view, cachedMaxSafe).total
+    : view.wzrostProcent;
   return {
-    procentNaTure: view.wzrostProcent,
+    procentNaTure,
     nakarmione: resolveCityFedForUi(city.id, cityFoodSplit(view).total, tick),
   };
 }
@@ -1885,6 +1994,8 @@ function ensureStyles(): void {
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
 .civ-cs .auto-wyzywienie-btn{width:100%;min-width:0;}
+.civ-cs .indywidualne-btn{width:100%;min-width:0;}
+.civ-cs .indywidualne-row{margin-top:0.28em;}
 .civ-cs .wyzwienie-w4-hint{font-size:0.62em;color:var(--muted);text-align:center;margin-top:0.2em;}
 .civ-cs .food-bilans-row{display:flex;justify-content:space-between;align-items:center;gap:0.35em;font-size:0.76em;margin:0.28em 0 0.12em;padding:0.35em 0.45em;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,.02);}
 .civ-cs .food-bilans-row .pos{color:var(--green);}
@@ -4034,6 +4145,38 @@ function appendW4PctMetricBlock(
   mount.appendChild(block);
 }
 
+/**
+ * R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10, żywa rozmowa): przycisk "Indywidualne"
+ * — pin/odpin lokalnego override od globalnego ustawienia imperium. Wzorem istniejącego
+ * auto-wyzywienie-btn (checkbox→button, naprawa 2026-08). WŁ (active) = to miasto ma
+ * WŁASNĄ wartość, ignoruje zmiany globalnego suwaka w panelu cywilizacji na mapie świata.
+ * WYŁ = miasto dziedziczy globalne ustawienie. Współdzielone przez TRZY grupy (Żywność /
+ * Skarbiec+Nauka / Praca) — każda wywołuje to z własnym stanem/hookiem, niezależnie.
+ */
+function appendIndywidualneToggle(
+  mount: HTMLElement,
+  overrideOn: boolean,
+  onToggle: () => void,
+  rowCls: string,
+): void {
+  const row = el('div', 'slider-row ' + rowCls);
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'hbtn indywidualne-btn';
+  btn.textContent = 'Indywidualne';
+  if (overrideOn) btn.classList.add('active');
+  btn.setAttribute('aria-pressed', String(overrideOn));
+  btn.title = overrideOn
+    ? 'WŁ: to miasto ma własne ustawienie — ignoruje zmiany globalne z panelu cywilizacji (mapa świata).'
+    : 'WYŁ: to miasto dziedziczy globalne ustawienie imperium (panel cywilizacji na mapie świata, np. „Grecy").';
+  row.appendChild(btn);
+  btn.addEventListener('click', () => {
+    onToggle();
+    rerender();
+  });
+  mount.appendChild(row);
+}
+
 function renderEkonomiaStrip(mount: HTMLElement, city: City, view: CityView | null, data: GameData | null): void {
   mount.innerHTML = '';
   mount.appendChild(el('div', 'ptitle', `<span>Plony i ${daninaLabelForCity(city).toLowerCase()}</span>`));
@@ -4106,6 +4249,17 @@ function appendPodzialHandlu(
   makeSlider('procentPieniadz', 'Skarb', 'gold');
   makeSlider('procentNauka', 'Nauka', 'blue', 'slider-nauka');
   makeSlider('procentLuksus', HANDEL_ZAMOZNOSC_LABEL, 'happy');
+  // R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10): "Skarbiec i Nauka to JEDNA
+  // grupa" -- JEDEN przycisk Indywidualne dla całego suwaka (Skarb+Nauka+Zamożność
+  // dzielą to samo pole podzialHandlu/podzialHandluOverride), nie osobny per pasek.
+  if (editable && cfg.onPodzialHandluOverrideToggle) {
+    appendIndywidualneToggle(
+      sliders,
+      cfg.getPodzialHandluOverride?.(city.id) === true,
+      () => cfg.onPodzialHandluOverrideToggle?.(city.id),
+      'indywidualne-row-handlu',
+    );
+  }
   mount.appendChild(sliders);
 
   const sum = split.procentPieniadz + split.procentNauka + split.procentLuksus;
@@ -4436,7 +4590,7 @@ function appendPodzialPracyInfo(
   info.appendChild(rowTotal);
 
   const rowBud = el('div', 'psi-row');
-  let budVal = praca ? `+${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—';
+  let budVal = praca ? `${signed(praca.doBudynkow)} (${praca.pctBudynki}%)` : '—';
   let budSub = '';
   if (front && praca) {
     const paused = prod.wstrzymana === true;
@@ -4459,7 +4613,7 @@ function appendPodzialPracyInfo(
   const poolTip = `Zapas całej cywilizacji: ${pool} Pracy · załóż miasto, ulepszenia / projekty mapy`;
   rowPool.innerHTML =
     `<span class="psi-lbl">${psiRowLabel('tb-build', 'Ulepszenia', poolTip)}</span>` +
-    `<span class="psi-val blue">${praca ? `+${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
+    `<span class="psi-val blue">${praca ? `${signed(praca.doUlepszen)} (${praca.pctUlepszenia}%)` : '—'}` +
     `<div class="psi-sub">Zapas Pracy na ulepszenia pól: ${pool}${cityPanelChipIconWrap('res-work', 14)} · farma, kamieniołom, projekty mapy</div></span>`;
   info.appendChild(rowPool);
 
@@ -4523,6 +4677,14 @@ function renderPodzialPracy(
     sliderRow.appendChild(ro);
   }
   sliderWrap.appendChild(sliderRow);
+  if (player && cfg.onPodzialPracyOverrideToggle) {
+    appendIndywidualneToggle(
+      sliderWrap,
+      cfg.getPodzialPracyOverride?.(city.id) === true,
+      () => cfg.onPodzialPracyOverrideToggle?.(city.id),
+      'indywidualne-row-praca',
+    );
+  }
   mount.appendChild(sliderWrap);
 
   appendPodzialPracyInfo(mount, city, view, data);
@@ -4553,14 +4715,26 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   if (!view || !data) { mount.appendChild(el('div', 'muted', '—')); return; }
 
   const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
-  const foodSplit = cityFoodSplit(view);
+  // Bug #2 (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD): maxSafe policzony TU, PRZED foodSplit,
+  // żeby wiersz Bilans użył tego samego przyciętego poziomu co suwak niżej w tej
+  // funkcji (który już wcześniej liczył `Math.min(view.poziomRacji, maxSafe)`).
+  // / EN: maxSafe computed HERE, BEFORE foodSplit, so the Balance row uses the same
+  // clamped level the slider further down this function already used.
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
   const bilansCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : 'gold';
-  const bd = view.growthBreakdown;
+  const bilansDisplayLevel = Math.min(view.poziomRacji, maxSafe);
+  // P-WZROSTPROCENT-SUROWY-POZIOM: `bd`/WZROST% przycięte do TEGO SAMEGO maxSafe co Bilans
+  // wyżej (e4155972) — wcześniej ten wiersz liczył z surowego, nieprzyciętego poziomu.
+  // / EN: `bd`/WZROST% clamped to the SAME maxSafe as the Balance above (e4155972) --
+  // previously this row was computed from the raw, unclamped level.
+  const bd = clampedGrowthBreakdown(view, maxSafe);
+  const wzrostProcentUi = bd.total;
   const atPopCap = view.atPopCap;
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const cityRow = tick?.perCityRows?.find(r => r.cityId === city.id);
   const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
-  const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
+  const growthPctUi = effectiveGrowthPctForUi(wzrostProcentUi, fed);
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const osobRazem = cityLudnoscAbsolutna(city.population, epoch);
   const osobNaObywatela = cityLudnoscAbsolutna(1, epoch);
@@ -4586,14 +4760,16 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
       label: 'Racje',
       value: `−${foodSplit.racje}/t`,
       cls: 'red',
-      title: `Koszt wyżywienia przy poziomie ${formatWyzwienieLabel(view.poziomRacji)}`,
+      title: `Koszt wyżywienia przy poziomie ${formatWyzwienieLabel(bilansDisplayLevel)}`,
     },
     {
       icon: loafIconHtml('civ-v-loaf-chip'),
       label: 'Bilans',
       value: `${signed(foodSplit.total)}/t`,
       cls: bilansCls,
-      title: 'Produkcja − racje = bilans lokalny',
+      title: foodSplit.clamped
+        ? `Produkcja − racje = bilans lokalny · już uwzględnia auto-korektę do limitu Spichlerza (Wyżywienie ${formatWyzwienieLabel(bilansDisplayLevel)} zamiast ustawionego ${formatWyzwienieLabel(view.poziomRacji)})`
+        : 'Produkcja − racje = bilans lokalny',
     },
     {
       icon: cityPanelChipIcon('chip-map', 14),
@@ -4601,8 +4777,19 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
       // P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD: przecinek polski, zgodnie z plakietką mapy
       // (formatCityGrowthPercentLabel w cityMapStatChip.ts) — ta sama liczba źródłowo
       // (view.wzrostProcent), więc oba miejsca UI mają pokazywać ten sam separator.
-      value: fed ? `${formatLiczbaPl(view.wzrostProcent)}%` : '—',
-      cls: fed && view.wzrostProcent > 0 ? 'gold' : fed ? 'muted' : 'red',
+      // P-WZROSTPROCENT-SUROWY-POZIOM: `wzrostProcentUi` (przycięty do maxSafe) zamiast
+      // surowego view.wzrostProcent -- plakietka mapy (cityGrowthLive) czyta TEN SAM
+      // maxSafe z cache (cfg.getCachedMaxSafePoziomRacji), zapisany tu przy tym liczeniu
+      // (P-WZROSTPROCENT-PLAKIETKA-ROZJAZD) -- poza świeżością cache oba miejsca się zgadzają.
+      // / EN: P-ETYKIETA-WZROST-SEPARATOR-ROZJAZD: Polish comma separator, matching the map
+      // badge (formatCityGrowthPercentLabel in cityMapStatChip.ts) -- same source number
+      // (view.wzrostProcent), so both UI spots must show the same separator.
+      // P-WZROSTPROCENT-SUROWY-POZIOM: `wzrostProcentUi` (clamped to maxSafe) instead of the
+      // raw view.wzrostProcent -- the map badge (cityGrowthLive) reads the SAME maxSafe from
+      // the cache (cfg.getCachedMaxSafePoziomRacji), written here at this very computation
+      // (P-WZROSTPROCENT-PLAKIETKA-ROZJAZD) -- outside of cache freshness both spots agree.
+      value: fed ? `${formatLiczbaPl(wzrostProcentUi)}%` : '—',
+      cls: fed && wzrostProcentUi > 0 ? 'gold' : fed ? 'muted' : 'red',
       title: fed
         ? 'Łączny procent wzrostu ludności w tej turze'
         : 'Brak wzrostu — miasto nie jest w pełni nakarmione ze Spichlerza',
@@ -4641,11 +4828,21 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   bilans.innerHTML =
     `<span>Produkcja <span class="pos">${signed(foodSplit.produkcja)}</span> − racje <span class="neg">−${foodSplit.racje}</span></span>` +
     `<span class="${bilansCls}">= ${signed(foodSplit.total)} 🍞/t</span>`;
+  // Bug #2 (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD): gdy Bilans już liczy z przyciętego
+  // poziomu (auto-korekta na koniec tury), zasygnalizuj to w tooltipie -- analogicznie
+  // do istniejącej podpowiedzi przy suwaku niżej ("poziom zostanie obniżony...").
+  // / EN: when the Balance already uses the clamped level (end-of-turn
+  // auto-correction), signal it in the tooltip -- analogous to the existing hint
+  // next to the slider below ("level will be lowered...").
+  if (foodSplit.clamped) {
+    bilans.title = `Bilans uwzględnia auto-korektę Spichlerza: liczony przy Wyżywieniu ${formatWyzwienieLabel(bilansDisplayLevel)} (ustawione ${formatWyzwienieLabel(view.poziomRacji)} zostanie obniżone na koniec tury)`;
+  }
   mount.appendChild(bilans);
 
   const player = city.ownerId === 0;
   const rationEditable = player && !!cfg.onCityRationChange;
-  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  // maxSafe już policzony wyżej (przed foodSplit) -- nie duplikuj wywołania.
+  // / EN: maxSafe already computed above (before foodSplit) -- do not duplicate the call.
   const maxSlider = maxSafe / WYZYWIENIE_STEP;
   const sliderWrap = el('div', 'wyzwienie-w4-sliders');
   const sliderRow = el('div', 'slider-row');
@@ -4690,16 +4887,47 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     const autoWyzywienieOn = city.autoWyzywienie === true;
     if (autoWyzywienieOn) autoBtn.classList.add('active');
     autoBtn.setAttribute('aria-pressed', String(autoWyzywienieOn));
+    // Bug #1 (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD) JEST naprawiony (runda 1, applyLiveSafeRationForCity):
+    // obniżenie działa NA ŻYWO, w trakcie tury, przy każdej zmianie wpływającej na produkcję
+    // żywności -- nie tylko na koniec tury. Podniesienie (autoRaiseRationsForGrowth) nadal
+    // działa WYŁĄCZNIE na koniec tury -- silnik nigdy nie podnosi racji w trakcie tury. Tooltip
+    // musi odróżniać te dwa kierunki, żeby nie sugerować, że obniżenie czeka do końca tury.
+    // N2 (runda 4): fraza „WYŁ: ... bez auto-obniżenia przy deficycie" była NIEPRAWDZIWA --
+    // clamp na koniec tury (Q3=A, main.ts triggerPlayerEndTurn) obniża poziom racji dla
+    // WSZYSTKICH miast gracza NIEZALEŻNIE od tej flagi (to siatka bezpieczeństwa silnika, nie
+    // funkcja Auto Wyżywienia). Różnica jest wyłącznie w tym, CZY obniżenie dzieje się też
+    // W TRAKCIE tury (tylko przy Auto WŁ) czy TYLKO na końcu (zawsze, niezależnie od flagi).
+    // / EN: Bug #1 IS fixed (round 1, applyLiveSafeRationForCity): lowering happens LIVE, during
+    // the turn, on every change affecting food production -- not only at end of turn. Raising
+    // (autoRaiseRationsForGrowth) still happens ONLY at end of turn -- the engine never raises
+    // rations mid-turn. The tooltip must distinguish these two directions.
+    // N2 (round 4): the phrase "WYŁ: ... bez auto-obniżenia przy deficycie" was UNTRUE -- the
+    // end-of-turn clamp (Q3=A, main.ts triggerPlayerEndTurn) lowers the ration level for ALL
+    // player cities REGARDLESS of this flag (it's an engine backstop, not an Auto Wyżywienie
+    // feature). The only real difference is whether lowering also happens DURING the turn
+    // (only when Auto is ON) or ONLY at the end (always, flag or not).
     autoBtn.title =
-      'WŁ: automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0). ' +
-      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.' +
-      (autoWyzywienieOn ? '' : ' Auto WYŁ — bez auto-obniżania/podnoszenia.');
+      'WŁ: obniża Wyżywienie NA ŻYWO w trakcie tury (przy spadku produkcji żywności), a podnosi na koniec tury (Spichlerz ≥ 0). ' +
+      'WYŁ: w trakcie tury tylko ręczny suwak (bez auto-obniżania/podnoszenia na żywo) — ale na koniec KAŻDEJ tury silnik i tak przytnie poziom do bezpiecznego, niezależnie od tej flagi (siatka bezpieczeństwa, nie funkcja Auto Wyżywienia).' +
+      (autoWyzywienieOn ? '' : ' Auto WYŁ — bez auto-obniżania/podnoszenia NA ŻYWO w trakcie tury; backstop końca tury działa zawsze.');
     autoRow.appendChild(autoBtn);
     autoBtn.addEventListener('click', () => {
       cfg.onCityAutoWyzywienieChange?.(city.id, !city.autoWyzywienie);
       rerender();
     });
     sliderWrap.appendChild(autoRow);
+  }
+  // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Żywność", Maciej 2026-08-10): niezależny od
+  // Auto Wyżywienie -- Indywidualne odpina poziom Racji od globalnego suwaka imperium
+  // (panel cywilizacji na mapie świata), Auto Wyżywienie dalej auto-dostraja WEWNĄTRZ
+  // tego, co ten przycisk aktualnie kontroluje (lokalne albo globalne).
+  if (rationEditable && cfg.onPoziomRacjiOverrideToggle) {
+    appendIndywidualneToggle(
+      sliderWrap,
+      cfg.getPoziomRacjiOverride?.(city.id) === true,
+      () => cfg.onPoziomRacjiOverrideToggle?.(city.id),
+      'indywidualne-row-zywnosc',
+    );
   }
   const hint = el('div', 'wyzwienie-w4-hint');
   hint.textContent = wyzwienieSummaryLabel(displayLevel, rationParams);
@@ -4721,7 +4949,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   const growBlock = el('div', 'growth-bd-block');
   growBlock.innerHTML =
     `<div class="growth-bd-hd">WZROST ludności</div>` +
-    `<div class="growth-bd-total">Łącznie ${fed ? view.wzrostProcent : 0}%${fed ? '' : ' <span class="muted">(brak — głód)</span>'}</div>` +
+    `<div class="growth-bd-total">Łącznie ${fed ? wzrostProcentUi : 0}%${fed ? '' : ' <span class="muted">(brak — głód)</span>'}</div>` +
     growthBreakdownRow('Wyżywienie', bd.racje, true) +
     growthBreakdownRow('Małe miasto', bd.maleMiasto) +
     growthBreakdownRow('Spichlerz', bd.spichlerz) +
@@ -4749,11 +4977,16 @@ function buildRacjeWzrostDetailCard(
   data: GameData | null,
 ): HTMLDivElement {
   const rationParams = data ? buildRationParams(data.econParams, cfg.difficulty ?? 'normal') : null;
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
+  const bilansDisplayLevel = Math.min(view.poziomRacji, maxSafe);
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
   const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
-  const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
+  // P-WZROSTPROCENT-SUROWY-POZIOM: przycięte do maxSafe (spójne z Bilansem wyżej).
+  // / EN: clamped to maxSafe (consistent with the Balance row above).
+  const bd = clampedGrowthBreakdown(view, maxSafe);
+  const growthPctUi = effectiveGrowthPctForUi(bd.total, fed);
   const card = el('div', 'detail-card');
   card.appendChild(el('div', 'dc-h', '<span>Wyżywienie i wzrost — szczegóły</span>'));
   const intro = el('div', 'dc-note');
@@ -4772,15 +5005,17 @@ function buildRacjeWzrostDetailCard(
   appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
-  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)})`);
+  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(bilansDisplayLevel)})`);
   gridDetailRow(g1, 'Bilans', `${signed(foodSplit.total)} 🍞/t`);
+  if (foodSplit.clamped) {
+    gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
+  }
   if (rationParams) {
     gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
   }
 
   appendDetailSection(card, 'WZROST% — składniki');
   const g2 = appendDetailGrid(card);
-  const bd = view.growthBreakdown;
   gridDetailRow(g2, 'Wyżywienie', `${signed(bd.racje)}%`);
   gridDetailRow(g2, 'Małe miasto', `${signed(bd.maleMiasto)}%`);
   gridDetailRow(g2, 'Spichlerz', `${signed(bd.spichlerz)}%`);
@@ -4790,7 +5025,7 @@ function buildRacjeWzrostDetailCard(
   // P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY: składniki nad tym wierszem (racje, małe miasto,
   // spichlerz, zdrowie, szczęście, cywilizacja) idą przez signed() (przecinek polski) -- suma
   // musi iść tym samym formaterem, inaczej jedna karta miesza separatory (przecinek vs kropka).
-  gridDetailRow(g2, 'Łącznie', fed ? `${signed(view.wzrostProcent)}%` : '— (głód)');
+  gridDetailRow(g2, 'Łącznie', fed ? `${signed(bd.total)}%` : '— (głód)');
   gridDetailRow(g2, 'Postęp do +1 obywatela', `${fmtDecPl(view.wzrostUlamkowy)} / 1`);
   const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
   const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
@@ -4845,8 +5080,13 @@ function buildTopBarZywnoscDetailCard(
 ): HTMLDivElement {
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const st = cfg.getEmpireFoodState?.(city.ownerId);
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
+  const bilansDisplayLevel = Math.min(view.poziomRacji, maxSafe);
   const rationParams = data ? buildRationParams(data.econParams, cfg.difficulty ?? 'normal') : null;
+  // P-WZROSTPROCENT-SUROWY-POZIOM: przycięte do maxSafe (spójne z Bilansem powyżej).
+  // / EN: clamped to maxSafe (consistent with the Balance row above).
+  const bd = clampedGrowthBreakdown(view, maxSafe);
 
   const card = el('div', 'detail-card');
   const head = el('div', 'dc-h');
@@ -4862,23 +5102,25 @@ function buildTopBarZywnoscDetailCard(
   appendDetailSection(card, 'Co widzisz na pasku miasta');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Zielony dopisek', `${signed(foodSplit.total)} — bilans lokalny (produkcja − racje)`);
-  gridDetailRow(g0, 'WZROST%', `${view.wzrostProcent}% — tempo wzrostu ludności`);
+  gridDetailRow(g0, 'WZROST%', `${bd.total}% — tempo wzrostu ludności`);
 
   appendDetailSection(card, 'Skąd bierze się żywność (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
-  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)})`);
+  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(bilansDisplayLevel)})`);
   gridDetailRow(g1, 'Bilans lokalny', `${signed(foodSplit.total)} 🍞/t`);
+  if (foodSplit.clamped) {
+    gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
+  }
   if (rationParams) {
     gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
   }
 
   appendDetailSection(card, 'WZROST ludności');
   const g2 = appendDetailGrid(card);
-  const bd = view.growthBreakdown;
-  gridDetailRow(g2, 'Łącznie', `${view.wzrostProcent}%`);
+  gridDetailRow(g2, 'Łącznie', `${signed(bd.total)}%`);
   gridDetailRow(g2, 'Ułamek', view.wzrostUlamkowy.toFixed(2));
-  gridDetailRow(g2, 'Składniki', `racje ${bd.racje}% · małe miasto ${bd.maleMiasto}% · Spichlerz ${bd.spichlerz}%`);
+  gridDetailRow(g2, 'Składniki', `racje ${signed(bd.racje)}% · małe miasto ${signed(bd.maleMiasto)}% · Spichlerz ${signed(bd.spichlerz)}%`);
 
   if (tick) {
     appendDetailSection(card, 'Magazyn centralny (ostatnia tura)');
@@ -4953,25 +5195,33 @@ function buildTopBarLudnoscDetailCard(
     'Wpływa na koszt racji, limit pól do pracy (👤) i koszty utrzymania.';
   card.appendChild(intro);
 
+  // P-WZROSTPROCENT-SUROWY-POZIOM: maxSafe/bd policzone TU (przed g0), żeby wiersz
+  // WZROST% na pasku i w sekcji „Wzrost ludności" niżej używały tego samego przyciętego
+  // poziomu co Bilans w innych kartach.
+  // / EN: maxSafe/bd computed HERE (before g0), so the WZROST% row on the bar and in the
+  // "Population growth" section below use the same clamped level as the Balance elsewhere.
+  const maxSafe = view ? cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX : WYZYWIENIE_MAX;
+  const bd = view ? clampedGrowthBreakdown(view, maxSafe) : null;
+
   appendDetailSection(card, 'Co widzisz na pasku');
   const g0 = appendDetailGrid(card);
   gridDetailRow(g0, 'Duża liczba 👥', `${city.population} — obywatele (sloty) tego miasta`);
   gridDetailRow(g0, 'Ludność absolutna', `≈ ${formatManpower(osobRazem)} osób`);
   gridDetailRow(g0, 'Epoka', String(epoch));
-  gridDetailRow(g0, 'WZROST%', view ? `${view.wzrostProcent}%` : '—');
+  gridDetailRow(g0, 'WZROST%', bd ? `${bd.total}%` : '—');
 
-  if (view) {
-    const foodSplit = cityFoodSplit(view);
+  if (view && bd) {
+    const foodSplit = cityFoodSplit(view, maxSafe);
     const tick = cfg.getEmpireFoodTick?.(city.ownerId);
     const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
     const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
-    const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
+    const growthPctUi = effectiveGrowthPctForUi(bd.total, fed);
     const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
     const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
     appendDetailSection(card, 'Wzrost ludności');
     const g1 = appendDetailGrid(card);
     gridDetailRow(g1, 'Wyżywienie', formatWyzwienieLabel(view.poziomRacji));
-    gridDetailRow(g1, 'WZROST%', fed ? `${view.wzrostProcent}%` : '— (głód)');
+    gridDetailRow(g1, 'WZROST%', fed ? `${bd.total}%` : '— (głód)');
     gridDetailRow(g1, 'Postęp do +1', `${fmtDecPl(view.wzrostUlamkowy)} / 1 obywatela`);
     gridDetailRow(
       g1,
@@ -4982,7 +5232,12 @@ function buildTopBarLudnoscDetailCard(
             : turns != null ? `za ≈ ${turns} ${pluralTur(turns)}`
               : '—',
     );
-    gridDetailRow(g1, 'Bilans żywności', `${signed(view.bilansLokalny)} 🍞/t`);
+    // C-039 / P-WZROSTPROCENT-SUROWY-POZIOM: przycięty bilans (foodSplit.total, jak WZROST%
+    // wyżej w tej samej karcie), nie surowy view.bilansLokalny — inaczej ten sam widok mieszał
+    // przycięty WZROST% z surowym Bilansem żywności obok.
+    // / EN: clamped balance (foodSplit.total, same as WZROST% above in this card), not the raw
+    // view.bilansLokalny — otherwise this view mixed a clamped WZROST% with a raw food balance.
+    gridDetailRow(g1, 'Bilans żywności', `${signed(foodSplit.total)} 🍞/t`);
     if (view.atPopCap) {
       gridDetailRow(g1, 'Limit', `max ${view.popCapAktualny} mieszkańców`);
     }
@@ -8861,7 +9116,11 @@ function buildCityOnlyW3FlankChips(
   const wealthHandel = est.zam;
   const daninaLblChip = daninaLabelForCity(city);
 
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
+  // P-WZROSTPROCENT-SUROWY-POZIOM: WZROST% w tooltipie chipu Żywność przycięty do maxSafe.
+  // / EN: WZROST% in the Food chip tooltip, clamped to maxSafe.
+  const wzrostProcentUi = clampedGrowthBreakdown(view, maxSafe).total;
 
   const relSt = cfg.getReligionState?.(city.id);
   const cityRel = Math.round(relSt?.przyrostWiernych ?? 0);
@@ -8915,7 +9174,12 @@ function buildCityOnlyW3FlankChips(
       'praca',
       `Praca TEGO miasta ${signed(chip.praca.big)} ` +
         `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}) · ` +
-        `cała cywilizacja ${signed(chip.praca.small)} / turę · zapas cywilizacji ${chip.praca.stock}`,
+        `cała cywilizacja ${signed(chip.praca.small)} / turę netto` +
+        (empire.pracaUpkeep != null
+          ? ` (wpływ do puli ${signed((chip.praca.small ?? 0) + empire.pracaUpkeep)} ` +
+            `− utrzymanie ulepszeń surowcowych ${empire.pracaUpkeep} pkt Pracy/turę)`
+          : '') +
+        ` · zapas cywilizacji ${chip.praca.stock}`,
       chip.praca.small,
       chip.praca.stock,
     ),
@@ -8926,7 +9190,7 @@ function buildCityOnlyW3FlankChips(
       foodCls,
       'zywnosc',
       `Żywność TEGO miasta: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ` +
-        `${signed(chip.zywnosc.big)} · WZROST ${view.wzrostProcent}% · cała cywilizacja ` +
+        `${signed(chip.zywnosc.big)} · WZROST ${wzrostProcentUi}% · cała cywilizacja ` +
         `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}`,
       chip.zywnosc.small,
       chip.zywnosc.stock,
@@ -9225,11 +9489,15 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;
   }
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
   const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
-  const growthPctUi = effectiveGrowthPctForUi(view.wzrostProcent, fed);
+  // P-WZROSTPROCENT-SUROWY-POZIOM: przycięte do maxSafe (spójne z Bilansem w innych kartach).
+  // / EN: clamped to maxSafe (consistent with the Balance shown in other cards).
+  const wzrostProcentUi = clampedGrowthBreakdown(view, maxSafe).total;
+  const growthPctUi = effectiveGrowthPctForUi(wzrostProcentUi, fed);
   const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
   const turns = turnsUntilNextCitizen(view.wzrostUlamkowy, gainSlots);
   const etaTxt = view.atPopCap ? 'limit'
@@ -9239,7 +9507,7 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
           : '—';
   const grow = el('div', 'civ-v-growth');
   grow.innerHTML =
-    `<div class="civ-v-growth-lbl">WZROST · ${fed ? view.wzrostProcent : '—'}% ${loafIconHtml('civ-v-loaf-chip')}</div>` +
+    `<div class="civ-v-growth-lbl">WZROST · ${fed ? wzrostProcentUi : '—'}% ${loafIconHtml('civ-v-loaf-chip')}</div>` +
     `<div class="muted" style="font-size:0.68em;margin-top:0.12em">Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} · postęp ${fmtDecPl(view.wzrostUlamkowy)}/1 · ${etaTxt}</div>`;
   mount.appendChild(grow);
 }

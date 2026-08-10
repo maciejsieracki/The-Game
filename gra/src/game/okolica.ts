@@ -459,7 +459,22 @@ export function rebalanceWorkersAfterPopulationChange(
   }
 }
 
-/** Walidowany delta 👤 na heksie (SILNIK/UI woła przy kliku). */
+/**
+ * Walidowany delta 👤 na heksie (SILNIK/UI woła przy kliku) — kierunkowy, NIE toggle:
+ *   - delta=+1: spróbuj DODAĆ 👤. Pole już obsadzone -> odmowa (`juz_obsadzone`), BEZ
+ *     efektu ubocznego zdjęcia; brak wolnych obywateli -> `limit_populacji`; teren/
+ *     terytorium -> `poza_zasiegiem`/`obce_terytorium`.
+ *   - delta=-1: spróbuj ZDJĄĆ 👤. Pole bez 👤 -> odmowa (`brak_robotnika`), BEZ efektu
+ *     ubocznego dodania.
+ * Kontrakt (P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA, naprawione): +1 i -1 muszą dawać
+ * SYMETRYCZNE odmowy na przeciwnym krańcu stanu (0 lub 1 👤 na pole) — żaden kierunek
+ * nie ma prawa wykonać operacji przeciwnej do zażądanej. Toggle (klik zmienia stan
+ * w obie strony niezależnie od kierunku) to `toggleTileWorker`, osobna funkcja niżej —
+ * to tutaj jest CELOWO inny kontrakt, więc nie kopiuj jej logiki „zdejmij gdy zajęte".
+ * EN: directional, NOT a toggle — +1 always tries to add (refuses, no side effect, if
+ * already occupied), -1 always tries to remove (refuses, no side effect, if empty).
+ * Toggle behavior lives in `toggleTileWorker` only.
+ */
 export function adjustTileWorker(
   city: Pick<City, 'population' | 'okolicaReczne' | 'okolicaTryb' | 'okolicaFocus' | 'q' | 'r' | 'ownerId'>,
   map: GameMap,
@@ -479,16 +494,21 @@ export function adjustTileWorker(
   const current = reczne[key] ?? 0;
   const assigned = Object.values(reczne).reduce((s, n) => s + (n > 0 ? 1 : 0), 0);
 
-  // B1 (runda 3): zdejmowanie juz obsadzonego pola NIGDY nie przechodzi przez filtr
-  // terenu/terytorium -- robotnik juz FIZYCZNIE stoi w danych (legalnie, albo jako
-  // stary zapis sprzed tej naprawy), a zdjecie nigdy nie tworzy nielegalnego stanu.
-  // Filtr stosuje sie WYLACZNIE do proby DODANIA nowego robotnika (nizej).
-  // Patrz R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1: mechanizm zdejmowania zostaje bez zmian
-  // funkcjonalnych, takze dla nielegalnych wpisow sprzed filtra terenu.
+  // P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (naprawione): delta=+1 na JUZ obsadzonym
+  // polu to ODMOWA (nie robi nic), NIGDY zdjecie -- zdjecie to wylacznie delta=-1
+  // (galaz nizej). Przed naprawa +1 na zajetym polu kopiowalo logike toggle z
+  // `toggleTileWorker` ("klik na zajety heks -> zabierz") i po cichu ZDEJMOWALO
+  // robotnika, czyli +1 i -1 robily DOKLADNIE to samo na zajetym polu -- kierunek
+  // przestawal miec znaczenie, co przeczy wlasnemu kontraktowi funkcji (typ
+  // `delta: 1 | -1`). Symetria z galezia -1 nizej (ktora rowniez tylko odmawia,
+  // `brak_robotnika`, gdy pole puste, bez efektu ubocznego dodania) byla juz
+  // poprawna -- teraz +1 dziala tak samo konsekwentnie.
+  // EN: +1 on an already-occupied tile now REFUSES (no-op), mirroring how -1 already
+  // refused on an empty tile. Previously +1 silently removed (toggle copy-paste from
+  // `toggleTileWorker`), making +1 and -1 behave identically once a tile was occupied.
   if (delta === 1) {
     if (current >= 1) {
-      delete reczne[key];
-      return { ok: true, reczne };
+      return { ok: false, reczne, reason: 'juz_obsadzone' };
     }
     if (assigned >= pop) return { ok: false, reczne, reason: 'limit_populacji' };
     const workFilter = terrainAndTerritoryFilter(map, territoryNodes, city.ownerId);
@@ -503,6 +523,12 @@ export function adjustTileWorker(
     return { ok: true, reczne };
   }
 
+  // delta=-1: zdejmowanie juz obsadzonego pola NIGDY nie przechodzi przez filtr
+  // terenu/terytorium -- robotnik juz FIZYCZNIE stoi w danych (legalnie, albo jako
+  // stary zapis sprzed tej naprawy), a zdjecie nigdy nie tworzy nielegalnego stanu.
+  // Filtr stosuje sie WYLACZNIE do proby DODANIA nowego robotnika (wyzej).
+  // Patrz R-HEKS-ISWORKABLE-STARE-ZAPISY-Q1: mechanizm zdejmowania zostaje bez zmian
+  // funkcjonalnych, takze dla nielegalnych wpisow sprzed filtra terenu.
   if (current <= 0) return { ok: false, reczne, reason: 'brak_robotnika' };
   delete reczne[key];
   return { ok: true, reczne };

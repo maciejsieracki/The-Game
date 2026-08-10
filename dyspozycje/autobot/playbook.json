@@ -1,6 +1,6 @@
 {
-  "version": 30,
-  "updatedAtIso": "2026-08-10T07:35:31.763Z",
+  "version": 32,
+  "updatedAtIso": "2026-08-10T13:11:19.865Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -469,6 +469,36 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-10T07:35:31.744Z"
+    },
+    {
+      "id": "rule_147",
+      "rule_text": "Gdy zlecenie dotyka wartości, którą gra pokazuje w WIĘCEJ NIŻ JEDNYM miejscu UI (np. rozbicie zasobu w panelu miasta ORAZ w panelu cywilizacji, chip HUD ORAZ tooltip) — Operator PRZED zamknięciem zlecenia wypisuje wszystkie te miejsca (grep/przegląd UI) i dla KAŻDEGO ustala jawnie: czy liczy NA ŻYWO z aktualnego stanu, czy z migawki/cache (i z którego momentu cyklu tury ta migawka pochodzi). Evaluator sprawdza, czy taka lista powstała i czy źródła danych są ZGODNE (albo czy rozbieżność jest udokumentowana i celowa) — nie wystarczy, że KAŻDE miejsce z osobna liczy poprawnie wewnętrznie. Incydent (2026-08-10, zgłoszenie Macieja): panel miasta „Podział Pracy\" liczy na żywo z aktualnego suwaka (Budowa +3/Ulepszenia +3 przy 50/50), a panel cywilizacji „ZASOBY IMPERIUM\" czyta _lastPlayerCityEcon — cache unieważniany flagą empireEconDirty, który w zgłoszonym przypadku się nie odświeżył: pokazał +2/+4, czyli dokładnie wynik DOMYŚLNEGO podziału 70/30 (round(6×0,70)=4), a nie ustawionego 50/50 (Do puli +2/Do budynków +4 dla TEGO SAMEGO miasta w TEJ SAMEJ chwili co panel miasta). Podejrzany mechanizm (hipoteza rozpoznania, NIE potwierdzona logami z sesji właściciela): refreshLiveEmpireRates() czyści flagę na początku (main.ts:13328) przed zapisem do cache (:13428), więc cichy wyjątek między tymi liniami zostawia cache trwale nieaktualny. Żaden pojedynczy Evaluator wcześniej nie sprawdzał tej konkretnej kombinacji, bo nikt jej nie zgłosił jako osobny scenariusz. Rozszerza C-026 (lista miejsc użycia współdzielonego kodu) na PRZYPADEK DANYCH: nie tylko funkcja współdzielona, ale też WARTOŚĆ wyświetlana w wielu miejscach z potencjalnie różnych źródeł, oraz nazywa konkretne symbole rodziny cache do sprawdzenia (_lastPlayerCityEcon, _lastPracaRate, empireEconDirty i analogi dla Skarbca/Nauki, które czytają ten sam cache). Kryterium akceptacji dla „ZGODNE\": ta sama wartość, ta sama definicja, ta sama chwila — celowa różnica (jak pierwsze wyjaśnienie „Praca 9 vs 3\": city gross vs civ-wide net po utrzymaniu) musi być opisana W SAMYM UI (tooltip), nie tylko w raporcie Evaluatora. [C-039]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T13:00:29.129Z"
+    },
+    {
+      "id": "rule_148",
+      "rule_text": "Status „SCALONE\" w rejestrze dla tematu dostarczającego funkcję Z INTERFEJSEM DLA GRACZA (nowy panel, przycisk, zakładka, tryb ustawień) wymaga jawnego potwierdzenia OSIĄGALNOŚCI w UI — nie tylko że kod przeszedł tsc/testy jednostkowe. Operator/Evaluator dopisuje do raportu: gdzie dokładnie w normalnej nawigacji gry (jakie kliknięcie z jakiego ekranu) gracz dociera do tego elementu — jeśli nie potrafi tego wskazać, funkcja może istnieć w kodzie bez punktu wejścia w interfejsie, co dla gracza jest nieodróżnialne od „nie istnieje wcale\". Incydent (2026-08-10): R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE oznaczony w rejestrze jako „SCALONE 8692b61b\", a właściciel zgłasza: „nie ma panelu ustawień globalnych. Już zwracałem uwagę, że nie wiem gdzie to jest i czy to w ogóle jest. Jedynie co to wchodzę do miasta i zmieniam w danym mieście.\" — **potwierdzone rozpoznaniem jako fałszywe zamknięcie, nie problem odnajdywalności**: git show 8692b61b --stat pokazuje kompletny, przetestowany backend (empire-city-defaults.ts, 278 linii + test 247 linii, wpięty w main.ts), ale w cityPanel.ts WYŁĄCZNIE +22 linie deklaracji typu interfejsu (getPodzialPracyOverride/onPodzialPracyOverrideToggle i analogi) — **zero kodu renderującego** (brak przycisku pin/odpin, brak jakiejkolwiek etykiety). Mechaniczne kryterium do wykrywania tej klasy błędu na przyszłość: nowy hook/symbol UI musi być referowany ze ŚCIEŻKI RENDERUJĄCEJ (funkcja budująca HTML/DOM), nie tylko z deklaracji interfejsu/configu — sama obecność w typie nie jest dowodem osiągalności. [C-040]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T13:00:29.129Z"
+    },
+    {
+      "id": "rule_149",
+      "rule_text": "GDY właściciel zgłasza tę samą KATEGORIĘ objawu drugi raz, albo mówi „wcześniej to działało\" — te dwie wypowiedzi są sygnałem, że pierwsze wyjaśnienie może być niepełne, NIE że właściciel się myli — więc wyjaśnienie JEDNĄ, pasującą liczbowo przyczyną nie kończy rozpoznania: trzeba aktywnie poszukać DRUGIEJ, niezależnej przyczyny, zanim temat zostanie ponownie zamknięty jako „prawdopodobnie nie bug\". **Warunek stopu** (żeby to nie było „szukaj w nieskończoność\"): odtwórz liczby zgłoszone przez właściciela DOKŁADNIE z ustalonej przyczyny (symulacja/obliczenie) — jeśli zgadzają się co do jednostki, przyczyna jest wystarczająca i można zamknąć; jeśli NIE zgadzają się dokładnie (np. przyczyna tłumaczy kierunek różnicy, ale nie konkretną wartość), to sygnał że działa coś jeszcze i trzeba szukać dalej. Nie dotyczy pierwszego zamknięcia zgłoszenia (tam wystarczy jedna solidna przyczyna) — dotyczy WYŁĄCZNIE sytuacji z sygnałem powtórnego zgłoszenia/„wcześniej działało\" opisanym wyżej. Incydent (2026-08-10): zgłoszenie „Praca 9 vs 3\" wyjaśnione jako civ-wide utrzymanie ulepszeń surowcowych (realny, potwierdzony mechanizm) i zamknięte dodaniem tooltipa — ale gdy właściciel zgłosił PODOBNY objaw drugi raz (inny zrzut, inne liczby: panel miasta +3/+3 vs panel cywilizacji +2/+4), okazało się że działa też DRUGI, niezależny mechanizm (C-039: cache vs live) — pierwsze wyjaśnienie było prawdziwe, ale niekompletne, i nikt nie szukał dalej po jego znalezieniu. Dopełnienie: dla mechanik gdzie gracz WYDAJE zgromadzony zasób (Praca na ulepszenia, złoto na jednostki) rozpoznanie/Evaluator weryfikuje PEŁNY cykl gracza (wyświetlenie zasobu → próba realnej akcji wydania → faktyczne zmniejszenie się puli i skutek akcji), nie tylko wewnętrzną spójność arytmetyki wyświetlania — to inny rodzaj sprawdzenia niż „czy liczby się sumują na ekranie\". [C-041]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T13:00:29.129Z"
     }
   ],
   "quarantine_rules": []

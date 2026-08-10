@@ -644,6 +644,11 @@
     "sekcja": "§9 Cuda AI",
     "opis": "PRÓG DO AKCEPTACJI: poziom Trudny — AI rozważa kolejkowanie cudu co 2 tury (agresywnie, częściej niż inne poziomy)."
   },
+  "cuda_stuck_relax_tur_max": {
+    "wartosc": 30,
+    "sekcja": "§9 Cuda AI",
+    "opis": "PRÓG DO AKCEPTACJI (R-EPOKA-CUD-WARUNEK-AWANSU B3): ile tur AI musi mieć dostępnego kandydata na cud, ale próg progKosztX go nie przepuszcza, zanim próg opłacalności złagodnieje do pełnego zniesienia (koszt bez znaczenia) — zapobiega trwałemu utykaniu AI przed awansem epoki."
+  },
   "ludy_morza_max_obozy": {
     "wartosc": 3,
     "sekcja": "§9 Ludy Morza",

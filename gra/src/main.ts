@@ -221,6 +221,10 @@ import {
   broadcastBudowaProfilToOwnerCities,
   resolveCityBudowaProfil,
   type CityBudowaProfil,
+  migratePoziomRacjiOnLoad,
+  freshOwnerDefaultPoziomRacji,
+  broadcastPoziomRacjiToOwnerCities,
+  resolveCityPoziomRacji,
 } from './game/empire-city-defaults';
 import { applyCityFoundingToHex, cityKeepsImprovement } from './game/city-hex-clear';
 import { canUnitOccupyCityHex, addForeignCityBlocks } from './game/city-hex-movement';
@@ -311,6 +315,7 @@ import {
 import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch, computeMainCivEraFromResearch } from './game/owner-epoch';
+import { allEraTechsResearched, eraOwnWonderSatisfied, eraOwnWonderIds } from './game/owner-epoch';
 import {
   ERA_CHANGE_NOTIFY,
   shouldNotifyPlayerEraChange,
@@ -437,6 +442,9 @@ import {
   enterGarnizon,
   enterFieldFortify,
   exitFieldFortify,
+  assignSharedStackGroupId,
+  stackGroupIdOf,
+  stackRenderKey,
 } from './game/armyMerge';
 import {
   resolveMapUnitCursor,
@@ -619,6 +627,7 @@ import {
   refreshEmpireDetailPanel,
   isEmpireDetailPanelOpen,
   configureEmpireHandelSplit,
+  configureEmpireGlobalDefaults,
 } from './ui/empireDetailPanel';
 import type { EmpireDetailSnap, EmpireFoodSnap, EmpireResourceRow } from './ui/empireDetailTypes';
 import {
@@ -822,6 +831,7 @@ import {
   autoBalanceRationsToSolvency,
   autoRaiseRationsForGrowth,
   maxSafePoziomRacjiForCity,
+  isCityAutoWyzywienieEnabled,
   type EmpireFoodState,
   type EmpireFoodTickResult,
   type AutoRationAdjustResult,
@@ -911,8 +921,13 @@ import { TypCywilizacji, type Player } from './types/player';
 import {
   saveToLocal, loadFromLocal, listSaves,
   setLastPlayedSlotId, checkSaveIntegrity, AUTOSAVE_SLOT_ID,
+  FSA_SLOT_PREFIX,
   type SaveGame,
 } from './game/save';
+import {
+  ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
+  shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
+} from './game/fsa-autosave';
 import { buildDefaultSaveLabel, type SaveLabelKind } from './game/save-label';
 import {
   diagInfo, diagWarn, diagError, installGlobalDiagHooks,
@@ -959,7 +974,14 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
-import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
+import {
+  decideAiWonderBuild,
+  loadAiWonderParams,
+  relaxedWonderCostThreshold,
+  loadAiWonderStuckRelaxTurMax,
+  type AiWonderCityCandidate,
+  type AiWonderOption,
+} from './game/ai';
 import {
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
@@ -1874,6 +1896,21 @@ async function boot(): Promise<void> {
     function markCityStateDirty(): void {
       empireEconDirty = true;
       powerDirty = true;
+      // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD: globalne czyszczenie, jak `empireEconDirty`/`powerDirty`
+      // wyżej -- ten cache nie ma per-city invalidacji, więc każda zmiana stanu miasta czyści
+      // całość; następne wywołanie `getMaxSafePoziomRacjiForPlayerCity` (panel lub
+      // `applyLiveSafeRationForCity`) odtworzy wpis. To GŁÓWNA, ale NIE JEDYNA ścieżka
+      // inwalidacji -- `tryDeductWonderStartFood` i gałąź `zywnosc` w `transferBasketItems`
+      // zmieniają `zapasyPanstwa` mid-turn BEZ przechodzenia przez `markCityStateDirty` i mają
+      // WŁASNE, osobne wywołania `_maxSafeRationCache.clear()` (patrz te dwa miejsca).
+      // / EN: global clear, same as the flags above -- no per-city invalidation exists for this
+      // cache, so any city-state change clears it all; the next `getMaxSafePoziomRacjiForPlayerCity`
+      // call (panel or `applyLiveSafeRationForCity`) repopulates the entry. This is the MAIN, but
+      // NOT the only invalidation path -- `tryDeductWonderStartFood` and the `zywnosc` branch of
+      // `transferBasketItems` change `zapasyPanstwa` mid-turn WITHOUT going through
+      // `markCityStateDirty` and carry their OWN separate `_maxSafeRationCache.clear()` calls
+      // (see those two call sites).
+      _maxSafeRationCache.clear();
     }
     function refreshObjectivePowerCache(): void {
       if (!powerDirty && objectivePowerByOwner.size > 0) return;
@@ -2742,6 +2779,13 @@ async function boot(): Promise<void> {
       if (st.zapasyPanstwa < foodCost) return false;
       st.zapasyPanstwa -= foodCost;
       empireFoodStates.set(ownerId, st);
+      // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 2): start budowy cudu zmienia
+      // zapasyPanstwa MID-TURN, poza ścieżką markCityStateDirty -- bez tego czyszczenia
+      // cache maxSafe zostaje z NIEAKTUALNYM (nie pustym) wpisem dla tego ownera.
+      // / EN: starting a wonder changes zapasyPanstwa MID-TURN, outside the
+      // markCityStateDirty path -- without this clear the maxSafe cache keeps a STALE
+      // (not empty) entry for this owner.
+      _maxSafeRationCache.clear();
       return true;
     }
 
@@ -3520,6 +3564,13 @@ async function boot(): Promise<void> {
     const ownerDefaultPodzialPracy = new Map<number, CityPodzialPracy>();
     const ownerDefaultOkolicaFocus = new Map<number, OkolicaFocus>();
     const ownerDefaultBudowaProfil = new Map<number, CityBudowaProfil>();
+    /**
+     * R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10, żywa rozmowa): grupa "Żywność"
+     * (poziom Wyżywienia/Racji) — wzorem ownerDefaultOkolicaFocus wyżej (broadcast, nie
+     * resolver-przy-odczycie, bo city.poziomRacji jest czytane bezpośrednio w wielu
+     * miejscach silnika przez getCityRationLevel).
+     */
+    const ownerDefaultPoziomRacji = new Map<number, PoziomRacji>();
     const ulepszeniaEmpireByOwner = new Map<number, UlepszeniaEmpirePolicy>();
     /** PYTANIE-77-DOP=B: łaska 1 tury Mennicy po utracie dostępu do złota (per owner). */
     const mennicaZlotoGraceState: MennicaZlotoGraceState = createMennicaZlotoGraceState();
@@ -3535,6 +3586,13 @@ async function boot(): Promise<void> {
      * zasięgiem leksykalnym lokalnej stałej `econ` (zadeklarowanej w innym
      * bloku try/catch) -- stąd osobna, trwała mapa zamiast domknięcia. */
     const aiWonderPracaTickByCity = new Map<string, number>();
+    /** R-EPOKA-CUD-WARUNEK-AWANSU B3 (rozluźnianie progu, ECHO Maciej 2026-08-10): ile
+     * kolejnych tur pod rząd dana cywilizacja (ownerId) miała kandydata na cud dostępnego
+     * i nie budowała żadnego innego cudu, ale decyzja tej tury wyszła null (throttle LUB
+     * próg progKosztX) -- podawane do relaxedWonderCostThreshold, zerowane gdy cud
+     * faktycznie trafi do kolejki. Trwałe między turami z tego samego powodu co
+     * aiWonderPracaTickByCity wyżej (poza zasięgiem leksykalnym bloku decyzji). */
+    const aiWonderStuckTurnsByOwner = new Map<number, number>();
     let powerSnapshotsForTurn: PowerOwnerSnapshot[] = [];
 
     function territoryOwnerAtLive(q: number, r: number): number | null {
@@ -4044,7 +4102,10 @@ async function boot(): Promise<void> {
       }
     }
 
-    /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: init dla trzy nowe pola, wzorem wyżej. */
+    /**
+     * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A + R-USTAWIENIA-GLOBALNE-LOKALNE
+     * (Żywność, Maciej 2026-08-10): init dla czterech pól, wzorem wyżej.
+     */
     function initOwnerDefaultCityFields(): void {
       ownerDefaultPodzialPracy.clear();
       ownerDefaultPodzialPracy.set(0, freshOwnerDefaultPodzialPracy());
@@ -4052,6 +4113,8 @@ async function boot(): Promise<void> {
       ownerDefaultOkolicaFocus.set(0, freshOwnerDefaultOkolicaFocus());
       ownerDefaultBudowaProfil.clear();
       ownerDefaultBudowaProfil.set(0, freshOwnerDefaultBudowaProfil());
+      ownerDefaultPoziomRacji.clear();
+      ownerDefaultPoziomRacji.set(0, freshOwnerDefaultPoziomRacji());
       for (const ai of aiStartHexes) {
         if (!ownerDefaultPodzialPracy.has(ai.ownerId)) {
           ownerDefaultPodzialPracy.set(ai.ownerId, freshOwnerDefaultPodzialPracy());
@@ -4061,6 +4124,9 @@ async function boot(): Promise<void> {
         }
         if (!ownerDefaultBudowaProfil.has(ai.ownerId)) {
           ownerDefaultBudowaProfil.set(ai.ownerId, freshOwnerDefaultBudowaProfil());
+        }
+        if (!ownerDefaultPoziomRacji.has(ai.ownerId)) {
+          ownerDefaultPoziomRacji.set(ai.ownerId, freshOwnerDefaultPoziomRacji());
         }
       }
     }
@@ -4083,6 +4149,9 @@ async function boot(): Promise<void> {
       if (!ownerDefaultPodzialPracy.has(c.ownerId)) {
         ownerDefaultPodzialPracy.set(c.ownerId, freshOwnerDefaultPodzialPracy());
       }
+      if (!ownerDefaultPoziomRacji.has(c.ownerId)) {
+        ownerDefaultPoziomRacji.set(c.ownerId, freshOwnerDefaultPoziomRacji());
+      }
       c.okolicaFocusOverride = false;
       c.okolicaFocus = ownerDefaultOkolicaFocus.get(c.ownerId)!;
       c.budowaFocusOverride = false;
@@ -4091,6 +4160,11 @@ async function boot(): Promise<void> {
       c.budowaTryb = bp.budowaTryb;
       c.podzialPracyOverride = false;
       delete c.podzialPracy;
+      // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): wzorem okolicaFocus/
+      // budowaProfil wyżej -- nowe miasto/zmiana właściciela dziedziczy globalny poziom
+      // Racji NOWEGO właściciela, nie zostaje przy wartości poprzedniego.
+      c.poziomRacjiOverride = false;
+      c.poziomRacji = ownerDefaultPoziomRacji.get(c.ownerId)!;
     }
 
     function initUlepszeniaEmpireByOwner(): void {
@@ -4127,6 +4201,14 @@ async function boot(): Promise<void> {
 
     function effectiveBudowaProfil(city: City): CityBudowaProfil {
       return resolveCityBudowaProfil(city, ownerDefaultBudowaProfil.get(city.ownerId));
+    }
+
+    /** R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): belt-and-suspenders
+     * jak effectiveOkolicaFocus/effectiveBudowaProfil wyżej -- city.poziomRacji jest
+     * utrzymywane w sync przez broadcastPoziomRacjiToOwnerCities, resolver to dodatkowa
+     * ochrona przed dryfem (np. świeżo wczytany zapis przed migracją). */
+    function effectivePoziomRacji(city: City): PoziomRacji {
+      return resolveCityPoziomRacji(city, ownerDefaultPoziomRacji.get(city.ownerId));
     }
 
     function empireFoodDefaultPct(): number {
@@ -4262,6 +4344,9 @@ async function boot(): Promise<void> {
         city.okolicaReczne = res.reczne;
         city.okolicaTryb = 'reczny';
         markCityStateDirty(); // D10: zmiana pól roboczych → przelicz
+        // P-AUTO-WYZYWIENIE-BUG1: przydział 👤 zmienił produkcję żywności TEGO miasta
+        // NA ŻYWO (nie na koniec tury) -- przelicz i, jeśli trzeba, obniż poziom racji od razu.
+        applyLiveSafeRationForCity(cityId);
         updateHud();
         refreshCityPanelIfOpen();
         syncOkolicaOverlay();
@@ -4789,9 +4874,16 @@ async function boot(): Promise<void> {
       const playerUnits = units.filter(
         u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || stackCanMove(u)),
       );
+      // BB2 (Evaluator runda 5, B-R5-1): grupowanie MUSI iść po stackRenderKey
+      // (tożsamość STOSU + POZYCJA + garnizon), nie po gołym stackGroupIdOf ani
+      // po gołym heksie — dwie jednostki tej samej, jawnie scalonej grupy mogą
+      // realnie stać na RÓŻNYCH heksach (np. zwiadowca odjeżdżający sam z grupy
+      // przez auto-explore), a gołe stackGroupIdOf zlewałoby je w JEDEN lead
+      // obejmujący dwa heksy naraz — Spacja/strzałki HUD ◀▶ nigdy nie dotarłyby
+      // do drugiego heksu. Ten sam klucz co armyMerge.ts:computeStackDisplay.
       const stacks = new Map<string, RuntimeUnit[]>();
       for (const u of playerUnits) {
-        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+        const key = stackRenderKey(u);
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -4822,8 +4914,11 @@ async function boot(): Promise<void> {
       return cyclablePlayerArmyLeadsBase(false);
     }
 
+    /** BB2 (Evaluator runda 5, B-R5-1): klucz dopasowania w cycleToAdjacentPlayerUnit — MUSI być
+     *  spójny z cyclablePlayerArmyLeadsBase (ten sam stackRenderKey), inaczej fallback po
+     *  zniknięciu `afterId` z listy trafiłby na niewłaściwą (np. rezydenta na innym heksie) armię. */
     function armyLeadHexKey(u: RuntimeUnit): string {
-      return u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+      return stackRenderKey(u);
     }
 
     /**
@@ -5144,7 +5239,15 @@ async function boot(): Promise<void> {
       for (const u of playerUnits) {
         // C-GARN-Q1: ufortyfikowane jednostki grupuj po heksie miasta (jak armia),
         // żeby lista armii nie rozdzielała stosu po wejściu do garnizonu.
-        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+        // BB2 (Evaluator runda 5, B-R5-1): ta lista miała WŁASNE, niezależne
+        // grupowanie „po heksie", które omijało activeUnitStack/visibleStackOnHex —
+        // dwie armie o różnym stackGroupId na wspólnym origin pokazywały się tu
+        // jako JEDEN wpis o zsumowanym/błędnym ruchu. `stackRenderKey` (tożsamość
+        // stosu + pozycja + garnizon, ten sam klucz co armyMerge.ts:
+        // computeStackDisplay) naprawia to bez zmiany zachowania dla jednostek bez
+        // jawnego stackGroupId (fallback koduje ownerId+heks+garnizon identycznie
+        // jak dawny gołoheksowy klucz).
+        const key = stackRenderKey(u);
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -5654,18 +5757,62 @@ async function boot(): Promise<void> {
         getEmpireFoodState: (oid: number) => empireFoodStates.get(oid) ?? null,
         getEmpireFoodTick: (oid: number) => getLastEmpireFoodTick(oid) ?? null,
         getMaxSafePoziomRacji: (cityId: string) => getMaxSafePoziomRacjiForPlayerCity(cityId),
+        getCachedMaxSafePoziomRacji: (cityId: string) => _maxSafeRationCache.get(cityId),
         onCityRationChange: (cityId: string, level: PoziomRacji) => {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
           const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
-          city.poziomRacji = clampPoziomRacji(Math.min(level, maxSafe));
+          const clamped = clampPoziomRacji(Math.min(level, maxSafe));
+          // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): bez override —
+          // suwak zmienia wartość globalną imperium (broadcast na miasta bez override,
+          // wzorem onOkolicaFocusChange); z override — zmiana tylko tego miasta. Klamrowanie
+          // do maxSafe TEGO miasta jest tylko dla wartości pokazanej na suwaku, który go
+          // wywołał -- inne miasta bez override dostają surowy `clamped` przez broadcast i
+          // są dalej chronione istniejącym mechanizmem końca tury (auto-obniżenie do ich
+          // WŁASNEGO maxSafe, patrz hint „poziom zostanie obniżony do limitu na koniec tury").
+          if (city.poziomRacjiOverride) {
+            city.poziomRacji = clamped;
+          } else {
+            ownerDefaultPoziomRacji.set(city.ownerId, clamped);
+            broadcastPoziomRacjiToOwnerCities(cities, city.ownerId, clamped);
+          }
           markCityStateDirty();
           updateHud();
+        },
+        getPoziomRacjiOverride: (cityId: string) => cities.find(c => c.id === cityId)?.poziomRacjiOverride === true,
+        onPoziomRacjiOverrideToggle: (cityId: string) => {
+          const city = cities.find(c => c.id === cityId);
+          if (!city || city.ownerId !== 0) return;
+          const next = !city.poziomRacjiOverride;
+          city.poziomRacjiOverride = next;
+          if (!next) {
+            city.poziomRacji = ownerDefaultPoziomRacji.get(city.ownerId) ?? freshOwnerDefaultPoziomRacji();
+          }
+          showHintMessage(
+            next
+              ? `${city.name}: Wyżywienie odpięte od imperium (tylko to miasto)`
+              : `${city.name}: Wyżywienie wraca do wartości imperium`,
+            2800,
+          );
+          markCityStateDirty();
+          updateHud();
+          refreshCityPanelIfOpen();
         },
         onCityAutoWyzywienieChange: (cityId: string, enabled: boolean) => {
           const city = cities.find(c => c.id === cityId);
           if (!city || city.ownerId !== 0) return;
           city.autoWyzywienie = enabled;
+          // C-026: gdy gracz WŁĄCZA Auto Wyżywienie przy poziomRacji > maxSafe, przelicz
+          // natychmiast -- przed tym przełączeniem `applyLiveSafeRationForCity` był no-opem
+          // (gate `isCityAutoWyzywienieEnabled` blokował, bo flaga była jeszcze `false`), więc
+          // żadne z pozostałych 8 wywołań z rundy 1 tego nie pokrywało.
+          // / EN: when the player TURNS ON Auto Wyżywienie while poziomRacji > maxSafe,
+          // recompute immediately -- before this toggle, applyLiveSafeRationForCity was a
+          // no-op here (gated off, flag was still `false`), so none of the other 8 round-1
+          // call sites covered it.
+          if (enabled) {
+            applyLiveSafeRationForCity(cityId);
+          }
           markCityStateDirty();
           updateHud();
         },
@@ -5722,6 +5869,7 @@ async function boot(): Promise<void> {
           return {
             pracaPool: hs.praca,
             pracaRate: hs.pracaRate,
+            pracaUpkeep: hs.pracaUpkeep,
             zloto: hs.zloto,
             zlotoRate: hs.zlotoRate,
             nauka: hs.nauka,
@@ -5787,9 +5935,19 @@ async function boot(): Promise<void> {
           // ownera bez override; z override — zmiana tylko tego miasta (jak dawniej).
           if (city.okolicaFocusOverride) {
             city.okolicaFocus = focus;
+            // P-AUTO-WYZYWIENIE-BUG1: priorytet Okolicy zmienił produkcję żywności TEGO
+            // miasta na żywo -- przelicz od razu (nie czekaj na koniec tury).
+            applyLiveSafeRationForCity(cityId);
           } else {
             ownerDefaultOkolicaFocus.set(city.ownerId, focus);
             broadcastOkolicaFocusToOwnerCities(cities, city.ownerId, focus);
+            // P-AUTO-WYZYWIENIE-BUG1: broadcast dotyka WSZYSTKICH miast tego ownera bez
+            // override (dokładnie ten sam zbiór co broadcastOkolicaFocusToOwnerCities powyżej)
+            // -- przelicz każde z osobna, NIE całe imperium na ślepo.
+            for (const c of cities) {
+              if (c.ownerId !== city.ownerId || c.okolicaFocusOverride) continue;
+              applyLiveSafeRationForCity(c.id);
+            }
           }
           const labels: Record<string, string> = {
             zywnosc: 'Żywność',
@@ -5816,6 +5974,9 @@ async function boot(): Promise<void> {
           if (!next) {
             city.okolicaFocus = ownerDefaultOkolicaFocus.get(city.ownerId) ?? DEFAULT_OKOLICA_FOCUS;
           }
+          // P-AUTO-WYZYWIENIE-BUG1: odpięcie/przypięcie może zmienić priorytet Okolicy
+          // (gałąź `!next` wyżej) -> produkcja żywności tego miasta na żywo.
+          applyLiveSafeRationForCity(cityId);
           showHintMessage(
             next
               ? `${city.name}: priorytet pól odpięty od imperium (tylko to miasto)`
@@ -5832,6 +5993,9 @@ async function boot(): Promise<void> {
           city.okolicaTryb = 'reczny';
           const hasReczne = city.okolicaReczne && Object.values(city.okolicaReczne).some(n => n > 0);
           if (!hasReczne) city.okolicaReczne = seedReczneFromAuto(city, map, buildAllTerritoryNodes());
+          // P-AUTO-WYZYWIENIE-BUG1: przejście auto -> ręczny może zmienić przydział pól
+          // (seedReczneFromAuto) -> produkcja żywności tego miasta na żywo.
+          applyLiveSafeRationForCity(cityId);
           showHintMessage(
             `${city.name}: tryb ręczny — klik heks = przypisz/zabierz 👤`,
             3200,
@@ -5845,6 +6009,9 @@ async function boot(): Promise<void> {
           if (!city) return;
           city.okolicaTryb = 'auto';
           delete city.okolicaReczne;
+          // P-AUTO-WYZYWIENIE-BUG1: powrót do auto może zmienić przydział pól ->
+          // produkcja żywności tego miasta na żywo.
+          applyLiveSafeRationForCity(cityId);
           refreshCityPanelIfOpen();
           updateHud();
           syncOkolicaOverlay();
@@ -6947,6 +7114,7 @@ async function boot(): Promise<void> {
       typCityCopyOwners.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
@@ -7012,6 +7180,7 @@ async function boot(): Promise<void> {
       migratePodzialPracyOnLoad(cities, ownerDefaultPodzialPracy, undefined);
       migrateOkolicaFocusOnLoad(cities, ownerDefaultOkolicaFocus, undefined);
       migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, undefined);
+      migratePoziomRacjiOnLoad(cities, ownerDefaultPoziomRacji, undefined);
       console.log(
         '[ClusterStart] typ=' + playerCivId +
         ' rywale=' + rywaleNaKlaster + ' (deferred)' +
@@ -7823,6 +7992,14 @@ async function boot(): Promise<void> {
             const toSt = empireFoodStates.get(toOwnerId) ?? freshEmpireFoodState(empireFoodDefaultPct());
             toSt.zapasyPanstwa += qty;
             empireFoodStates.set(toOwnerId, toSt);
+            // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 2): transfer żywności w dealu
+            // dyplomatycznym zmienia zapasyPanstwa MID-TURN (dawca i/lub biorca), poza
+            // ścieżką markCityStateDirty -- bez tego czyszczenia cache maxSafe zostaje
+            // z NIEAKTUALNYM (nie pustym) wpisem.
+            // / EN: a food transfer in a diplomatic deal changes zapasyPanstwa MID-TURN
+            // (giver and/or receiver), outside the markCityStateDirty path -- without this
+            // clear the maxSafe cache keeps a STALE (not empty) entry.
+            _maxSafeRationCache.clear();
             break;
           }
           case 'zloze': {
@@ -8696,6 +8873,47 @@ async function boot(): Promise<void> {
       doBudynkow: number;
       nauka: number;
     }> = [];
+    /**
+     * P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (e4155972 follow-up): cache maxSafe per miasto gracza,
+     * zapisywany w JEDYNYM miejscu, gdzie maxSafe jest dziś już liczony (`getMaxSafePoziomRacjiForPlayerCity`
+     * — wołane zarówno z panelu przez `cfg.getMaxSafePoziomRacji`, jak i z `applyLiveSafeRationForCity`).
+     * Czytany przez `cityGrowthLive` (hot path mousemove) przez `cfg.getCachedMaxSafePoziomRacji`, żeby
+     * plakietka miasta na mapie mogła przycinać WZROST% tak samo jak panel -- BEZ liczenia maxSafe na
+     * gorącej ścieżce. Unieważniany globalnie (jak `empireEconDirty`/`powerDirty` obok) w
+     * `markCityStateDirty()` — brak wpisu = `cityGrowthLive` spada do surowej wartości (fallback, nie awaria).
+     * TRZY dodatkowe, OSOBNE miejsca czyszczenia poza `markCityStateDirty()`: `tryDeductWonderStartFood`,
+     * gałąź `zywnosc` w `transferBasketItems`, oraz wywołanie `advanceEmpireFood` (tick końca tury) --
+     * wszystkie trzy zmieniają `zapasyPanstwa` (żywność imperium, wejście do liczenia maxSafe) w
+     * miejscu, gdzie `markCityStateDirty()` jeszcze nie zdążył zadziałać (dla `advanceEmpireFood`:
+     * `markCityStateDirty()` leci dopiero po synchronizacji renderera miast i kilku
+     * `yieldTurnTransitionUi()` niżej w tej samej turze -- przeglądarka realnie maluje między tymi
+     * krokami); bez tych trzech dodatkowych `.clear()` cache zostawałby z NIEAKTUALNYM (nie pustym)
+     * wpisem po starcie budowy cudu, transferze żywności w dealu dyplomatycznym, albo w fazie
+     * AI/barbarzyńcy/sprawdzanie zwycięstwa po końcu tury. Pokrycie inwalidacji jest dziś KOMPLETNE
+     * (wszystkie znane bezpośrednie mutacje `zapasyPanstwa` w `src/` są objęte -- zweryfikowane
+     * grepem po `zapasyPanstwa =` / `zapasyPanstwa -=` / `zapasyPanstwa +=` w `empire-food.ts` i
+     * `main.ts`; jedyne pominięte miejsce to `freshEmpireFoodState()` w `empire-food.ts`, które
+     * tworzy NOWY stan zamiast mutować istniejący i nie wymaga inwalidacji).
+     * / EN: maxSafe-per-city cache, written at the ONE place maxSafe is already computed today
+     * (`getMaxSafePoziomRacjiForPlayerCity`). Read by `cityGrowthLive` (mousemove hot path) via
+     * `cfg.getCachedMaxSafePoziomRacji` so the map badge can clamp WZROST% the same way the panel does,
+     * without computing maxSafe on the hot path. Invalidated globally in `markCityStateDirty()`; a
+     * missing entry makes `cityGrowthLive` fall back to the raw value. THREE additional, SEPARATE
+     * clear sites exist outside `markCityStateDirty()`: `tryDeductWonderStartFood`, the `zywnosc`
+     * branch of `transferBasketItems`, and the `advanceEmpireFood` call (end-of-turn tick) -- all
+     * three change `zapasyPanstwa` (empire food, an input to maxSafe) at a point where
+     * `markCityStateDirty()` has not run yet (for `advanceEmpireFood`: it only runs after the city
+     * renderer sync and several `yieldTurnTransitionUi()` awaits later in the same turn -- the
+     * browser paints for real between those steps); without these three extra `.clear()` calls the
+     * cache would keep a STALE (not empty) entry after starting a wonder, transferring food in a
+     * diplomatic deal, or during the post-end-of-turn AI/barbarian/victory-check phase. Invalidation
+     * coverage is now COMPLETE (every known direct `zapasyPanstwa` mutation in `src/` is covered --
+     * verified by grepping `zapasyPanstwa =` / `zapasyPanstwa -=` / `zapasyPanstwa +=` across
+     * `empire-food.ts` and `main.ts`; the only site NOT covered is `freshEmpireFoodState()` in
+     * `empire-food.ts`, which creates a NEW state rather than mutating an existing one and needs
+     * no invalidation).
+     */
+    const _maxSafeRationCache = new Map<string, number>();
 
     /** A1-Q18: oczekujące propozycje dyplomatyczne AI (blocking). */
     const pendingDiplomacyInbox: Array<{
@@ -9007,6 +9225,10 @@ async function boot(): Promise<void> {
               if (mu && mu.inGarnizon !== true) enterGarnizon(mu);
             }
           }
+          // BB2 (ECHO B): scalenie ujednolica tożsamość stosu — od teraz WSZYSCY
+          // na `onHex` (nowoprzybyli + rezydenci, niezależnie od poprzednich
+          // stackGroupId/fallbacków) są JEDNĄ armią z jedną, wspólną pulą ruchu.
+          assignSharedStackGroupId(onHex);
           syncStackRuchLeft(onHex);
           showHintMessage(
             'Po\u0142\u0105czono: ' + onHex.length + ' jedn. na (' + rep.q + ',' + rep.r + ')',
@@ -9049,6 +9271,16 @@ async function boot(): Promise<void> {
           const dest = resolveSeparateReturnHex(units, fromQ, fromR, rep.ownerId, isHexPassableForUnit);
           if (dest) {
             const restored = computeSeparateReturn(movedUnits, deductedRuch);
+            // BB2 (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO B, Maciej 2026-08-10):
+            // wracająca armia dostaje ŚWIEŻY, WSPÓLNY stackGroupId — RÓŻNY od
+            // każdego rezydenta na origin (nawet gdy dzielą DOKŁADNIE ten sam
+            // heks). Bez tego `activeUnitStack`/`playerStackAt` grupowały PO
+            // HEKSIE, więc pula ruchu wracającej armii i rezydenta zlewały się
+            // w jedną (przeliczenie jednej po cichu nadpisywało drugą — sedno
+            // BB2). `movedUnits` (a nie `movedUnits` + rezydent) dostają WSPÓLNY
+            // id między sobą — one nadal są jedną, spójną armią, tylko odrębną
+            // od tego, co już stało na origin.
+            assignSharedStackGroupId(movedUnits);
             for (const mu of movedUnits) {
               mu.q = dest.q;
               mu.r = dest.r;
@@ -9133,7 +9365,12 @@ async function boot(): Promise<void> {
       if (selectedId === null) return;
       const active = units.find(x => x.id === selectedId);
       if (!active || active.ownerId !== 0) return;
-      const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId);
+      // BB2: rozdzielamy WYŁĄCZNIE własny stos aktywnej jednostki (stackGroupIdOf),
+      // nie każdego, kto akurat dzieli ten sam heks — dwie niezależne armie na
+      // wspólnym origin (po wcześniejszym „Zostaw osobno") nie mają się mieszać
+      // w jednym panelu rozdzielenia.
+      const activeGroupId = stackGroupIdOf(active);
+      const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId, activeGroupId);
       if (stack.length < 2) return;
       const dests = findSplitDestHexes(
         units,
@@ -9157,16 +9394,20 @@ async function boot(): Promise<void> {
           label: d.label ?? '(' + d.q + ',' + d.r + ')',
         })),
         onSplit: (ids, destQ, destR) => {
-          for (const id of ids) {
-            const u = units.find(x => x.id === id);
-            if (!u) continue;
+          const splitArrivals = ids
+            .map(id => units.find(x => x.id === id))
+            .filter((su): su is RuntimeUnit => su != null);
+          // BB2: jednostki odchodzące dostają WSPÓLNY, ŚWIEŻY stackGroupId, RÓŻNY
+          // od tych, które zostają. Konieczne zwłaszcza gdy destQ/destR === srcQ/srcR
+          // (opcja „W mieście (ten heks)" z findSplitDestHexes/allowSameHex) — bez
+          // jawnego id oba pod-stosy współdzieliłyby TEN SAM heks+garnizon i wpadłyby
+          // z powrotem w ten sam fallback-klucz, czyli dokładnie problem BB2.
+          assignSharedStackGroupId(splitArrivals);
+          for (const u of splitArrivals) {
             u.q = destQ;
             u.r = destR;
             u.ruchLeft = 0;
           }
-          const splitArrivals = ids
-            .map(id => units.find(x => x.id === id))
-            .filter((su): su is RuntimeUnit => su != null);
           if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
             refreshD1bHud();
             return;
@@ -9179,7 +9420,10 @@ async function boot(): Promise<void> {
             const rep = unitAtRepresentative(srcQ, srcR, units, unitAttackScore);
             if (rep) selectPlayerUnit(rep.id, true);
             else {
-              const remain = visibleStackOnHex(units, srcQ, srcR, 0);
+              // BB2: „ci, którzy zostali" = ta sama grupa co przed rozdzieleniem
+              // (activeGroupId, ustalone PRZED mutacją) — nie każdy właściciela na
+              // heksie, gdyby akurat dzielił go z inną, niezależną armią.
+              const remain = visibleStackOnHex(units, srcQ, srcR, 0, activeGroupId);
               if (remain.length > 1) syncStackRuchLeft(remain);
             }
           }
@@ -9240,6 +9484,7 @@ async function boot(): Promise<void> {
             const preferGarnizon = all.some(x => x.inGarnizon === true);
             for (const u of all) u.inGarnizon = preferGarnizon;
             const merged = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId);
+            assignSharedStackGroupId(merged); // BB2: jedna tożsamość po scaleniu.
             syncStackRuchLeft(merged);
             showHintMessage(
               'Po\u0142\u0105czono: ' + merged.length + ' jedn. na (' + srcQ + ',' + srcR + ')',
@@ -9312,6 +9557,7 @@ async function boot(): Promise<void> {
         arriving: mergeUnitRow(active),
         arrivingCount: 1,
         onMerge: () => {
+          assignSharedStackGroupId(stack); // BB2: jedna tożsamość po scaleniu.
           syncStackRuchLeft(stack);
           showHintMessage(
             'Po\u0142\u0105czono stos: ' + stack.length + ' jedn. na (' + srcQ + ',' + srcR + ')',
@@ -10145,7 +10391,16 @@ async function boot(): Promise<void> {
         if (hexClearingStates.has(req.hexKey)) return;
         const startCost = req.kosztPraca;
         if (startCost > 0 && playerPracaPool < startCost) {
-          showHintMessage('Za mało Pracy na wycinkę (potrzeba ' + startCost + ')', 3000);
+          // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): komunikat trwalszy (4500ms) +
+          // pokazuje aktualną pulę, nie tylko wymagany koszt — panel budowy zwykle blokuje ten
+          // klik wcześniej (wyszarzenie), toast to zapasowa ścieżka na wypadek zmiany puli.
+          // / EN: longer-lived toast (4500ms) that also shows the current pool, not just the
+          // required cost — the build panel usually blocks this earlier (grayed out); this
+          // toast is a fallback path in case the pool changed in between.
+          showHintMessage(
+            'Za mało Pracy na wycinkę: potrzeba ' + startCost + ' P, masz ' + Math.floor(playerPracaPool) + ' P',
+            4500,
+          );
           return;
         }
         if (startCost > 0) {
@@ -10182,7 +10437,14 @@ async function boot(): Promise<void> {
         return;
       }
       if (playerPracaPool < req.kosztPraca) {
-        showHintMessage('Za mało Pracy (potrzeba ' + req.kosztPraca + ')', 3000);
+        // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): jw. — dłuższy, czytelniejszy
+        // komunikat jako zapasowa ścieżka; panel budowy blokuje ten klik wcześniej.
+        // / EN: as above — longer, clearer toast as a fallback path; the build panel blocks
+        // this click earlier.
+        showHintMessage(
+          'Za mało Pracy: potrzeba ' + req.kosztPraca + ' P, masz ' + Math.floor(playerPracaPool) + ' P',
+          4500,
+        );
         return;
       }
 
@@ -10214,7 +10476,14 @@ async function boot(): Promise<void> {
       if (!hex) return;
 
       if (playerPracaPool < req.kosztPraca) {
-        showHintMessage('Za mało Pracy (potrzeba ' + req.kosztPraca + ')', 3000);
+        // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): jw. — dłuższy, czytelniejszy
+        // komunikat jako zapasowa ścieżka; panel budowy blokuje ten klik wcześniej.
+        // / EN: as above — longer, clearer toast as a fallback path; the build panel blocks
+        // this click earlier.
+        showHintMessage(
+          'Za mało Pracy: potrzeba ' + req.kosztPraca + ' P, masz ' + Math.floor(playerPracaPool) + ' P',
+          4500,
+        );
         return;
       }
 
@@ -13141,15 +13410,102 @@ async function boot(): Promise<void> {
           maSpichlerzIIPop: tk.maSpichlerzII ?? false,
         });
       }
-      return maxSafePoziomRacjiForCity({
-        cityId,
-        ownerId: 0,
-        cities,
-        econ: preview,
-        zapasyPrzed: foodSt.zapasyPanstwa,
-        rationParams: efParams.rationParams,
-        spichlerzByCity,
-      });
+      // N1 (runda 4, Evaluator): wypełnij cache dla WSZYSTKICH miast gracza na raz, nie tylko
+      // dla `cityId`. `preview` (previewCityEconomy) -- krok, który realnie kosztuje -- jest
+      // już policzony wyżej dla CAŁEGO imperium gracza; pętla `maxSafePoziomRacjiForCity` per
+      // miasto poniżej jest tania (odczyt z `preview.perCity` + 13 poziomów Wyżywienia), więc
+      // koszt liczenia dla WSZYSTKICH miast jest praktycznie taki sam jak dla jednego. Usuwa
+      // niedeterminizm plakietki na mapie: bez tego cache miał świeży wpis tylko dla miasta,
+      // którego panel był ostatnio otwarty (albo które ostatnio wołało applyLiveSafeRationForCity)
+      // -- pozostałe miasta gracza pokazywały surową (nieprzyciętą) wartość aż do własnego
+      // odświeżenia.
+      // / EN: fill the cache for ALL player cities at once, not just `cityId`. `preview`
+      // (previewCityEconomy) -- the actually expensive step -- is already computed above for
+      // the player's WHOLE empire; the per-city `maxSafePoziomRacjiForCity` loop below is cheap
+      // (reads from `preview.perCity` + a 13-level Wyżywienie scan), so computing it for ALL
+      // cities costs practically the same as computing it for one. This removes the map badge's
+      // non-determinism: without this, the cache only had a fresh entry for whichever city's
+      // panel was last opened (or last triggered applyLiveSafeRationForCity) -- other player
+      // cities kept showing the raw (unclamped) value until their own refresh.
+      let maxSafe = WYZYWIENIE_MAX;
+      let foundInPlayerCities = false;
+      for (const pc of playerCities) {
+        const maxSafeForCity = maxSafePoziomRacjiForCity({
+          cityId: pc.id,
+          ownerId: 0,
+          cities,
+          econ: preview,
+          zapasyPrzed: foodSt.zapasyPanstwa,
+          rationParams: efParams.rationParams,
+          spichlerzByCity,
+        });
+        _maxSafeRationCache.set(pc.id, maxSafeForCity);
+        if (pc.id === cityId) { maxSafe = maxSafeForCity; foundInPlayerCities = true; }
+      }
+      // Blokada 2 (runda 5 Evaluatora): `cityId` gracza spoza `playerCities` -- czyli miasto
+      // OBLĘŻONE (`playerCities` filtruje `!c.oblegane`) -- nigdy nie trafia w warunek
+      // `pc.id === cityId` w pętli wyżej, więc `maxSafe` zostałby na inicjalizatorze
+      // `WYZYWIENIE_MAX` zamiast realnego wyniku. PRZED wprowadzeniem pętli (N1, runda 4) ta
+      // funkcja wołała `maxSafePoziomRacjiForCity` bezpośrednio dla KAŻDEGO miasta gracza, w tym
+      // oblężonych -- to zachowanie odtwarzamy tu jako fallback. Świadomie BEZ zapisu do cache:
+      // miasto oblężone to rzadki, specyficzny przypadek, brak wpisu w cache dla niego nie jest
+      // problemem wydajnościowym (spada do tej samej ścieżki co dziś przy każdym odczycie).
+      // / EN: a player `cityId` outside `playerCities` -- i.e. a BESIEGED city (`playerCities`
+      // filters out `!c.oblegane`) -- never hits `pc.id === cityId` in the loop above, so `maxSafe`
+      // would stay at the `WYZYWIENIE_MAX` initializer instead of the real result. BEFORE the loop
+      // was introduced (N1, round 4) this function called `maxSafePoziomRacjiForCity` directly for
+      // EVERY player city, besieged included -- we restore that behavior here as a fallback.
+      // Deliberately NOT cached: a besieged city is a rare, specific case, and no cache entry for
+      // it is not a performance problem (it falls back to this same path on every read).
+      if (!foundInPlayerCities) {
+        maxSafe = maxSafePoziomRacjiForCity({
+          cityId,
+          ownerId: 0,
+          cities,
+          econ: preview,
+          zapasyPrzed: foodSt.zapasyPanstwa,
+          rationParams: efParams.rationParams,
+          spichlerzByCity,
+        });
+      }
+      return maxSafe;
+    }
+
+    /**
+     * P-AUTO-WYZYWIENIE-BUG1 (ECHO A Macieja): przelicza i, jeśli trzeba, obniża poziom
+     * racji JEDNEGO miasta gracza do maxSafe -- NA ŻYWO, przy KAŻDEJ zmianie wpływającej na
+     * produkcję żywności TEGO miasta w trakcie tury (nie tylko na koniec tury, jak wcześniej
+     * -- `autoBalanceRationsToSolvency`/clamp Q3=A w `triggerPlayerEndTurn`). Tylko gdy Auto
+     * Wyżywienie WŁ (`isCityAutoWyzywienieEnabled`) — z Auto WYŁ suwak gracza zostaje przy
+     * ustawionej ręcznie wartości; wyświetlanie i tak przycina Bilans/WZROST% do maxSafe
+     * (P-WZROSTPROCENT-SUROWY-POZIOM, e4155972).
+     *
+     * ⚠️ Wołaj WYŁĄCZNIE z DYSKRETNYCH zdarzeń zmiany stanu gry (klik na polu okolicy,
+     * zmiana priorytetu/trybu okolicy, ukończenie budynku / rush-buy) — NIGDY z gorącej
+     * ścieżki renderu/hover/mousemove. `getMaxSafePoziomRacjiForPlayerCity` woła pełny
+     * `previewCityEconomy` (wszystkie miasta gracza) + pętlę 13 poziomów Wyżywienia —
+     * dokładnie ten sam koszt, który Evaluator kazał usunąć ze ścieżki mousemove w
+     * `e4155972` (`cityGrowthLive`). Na dyskretnym zdarzeniu (klik, ukończenie budynku)
+     * ten koszt jest jednorazowy i akceptowalny; na mousemove byłby wielokrotny na sekundę.
+     *
+     * / EN: recomputes and, if needed, lowers ONE player city's ration level to maxSafe --
+     * LIVE, on EVERY change affecting that city's food production during the turn (not just
+     * at end of turn as before). Only when Auto Wyżywienie is ON. ⚠️ Call ONLY from discrete
+     * game-state-change events (okolica tile click, okolica mode/priority change, building
+     * completion / rush-buy) — NEVER from the render/hover/mousemove hot path. Same perf
+     * trap fixed in e4155972 for `cityGrowthLive` -- acceptable as a one-off on a discrete
+     * event, not acceptable multiple times per second on mousemove.
+     */
+    function applyLiveSafeRationForCity(cityId: string): void {
+      const city = cities.find(c => c.id === cityId);
+      if (!city || city.ownerId !== 0) return;
+      if (!isCityAutoWyzywienieEnabled(city)) return;
+      ensureCityRationDefaults(city);
+      const maxSafe = getMaxSafePoziomRacjiForPlayerCity(cityId);
+      if (getCityRationLevel(city) > maxSafe) {
+        city.poziomRacji = maxSafe;
+        markCityStateDirty(); // D10: poziom racji zmieniony na żywo -> przelicz ekonomię/HUD
+      }
     }
 
     /** Projekcja przyrostu magazynu centralnego (PYTANIE-85). */
@@ -13251,10 +13607,45 @@ async function boot(): Promise<void> {
       return projectPlayerFoodProjection().netRate;
     }
 
-    /** Przelicz stawki imperium na HUD z bieżącego stanu miast (bez mutacji). */
+    /**
+     * Przelicz stawki imperium na HUD z bieżącego stanu miast (bez mutacji).
+     *
+     * NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B — rozjazd panelu miasta vs
+     * panelu cywilizacji „Grecy", np. „powinno być plus sześć, a było plus dwa"): CAŁE
+     * ciało funkcji idzie przez try/catch. Bez tego jeden wyjątek gdziekolwiek między
+     * wyczyszczeniem `empireEconDirty` a zapisem do `_lastPlayerCityEcon`
+     * (`refreshPlayerCityEcon` na końcu) zamrażał cache NA ZAWSZE — flaga zostawała
+     * `false`, więc `if (!empireEconDirty) return;` na górze pomijał WSZYSTKIE kolejne
+     * triggery (zmiana suwaka Podziału Pracy, koniec tury, cokolwiek), a panel
+     * cywilizacji pokazywał ostatnią wartość sprzed wyjątku bez końca, mimo że panel
+     * miasta liczy Podział Pracy/Skarbiec/Naukę na żywo (computeView) i był poprawny.
+     * Naprawa: przy wyjątku flaga wraca na `true` (retry przy najbliższym triggerze
+     * zamiast trwałej blokady) i błąd trafia do console.error zamiast ginąć po cichu.
+     * / EN: whole function body now runs inside try/catch. Without it, any exception
+     * between clearing `empireEconDirty` and the final cache write
+     * (`refreshPlayerCityEcon`) froze the cache FOREVER — the flag stayed `false`, so
+     * every later trigger was silently skipped by the early-return guard, leaving the
+     * civ panel stuck on the pre-exception snapshot while the city panel (which computes
+     * live via `computeView`) kept showing the correct value. Fix: on exception the flag
+     * is restored to `true` (retry on next trigger instead of permanent freeze) and the
+     * error is logged instead of vanishing silently.
+     */
     function refreshLiveEmpireRates(): void {
       if (!empireEconDirty) return;   // D10: przelicz tylko po zmianie (trigger), nie co odświeżenie
       empireEconDirty = false;
+      try {
+        refreshLiveEmpireRatesUnsafe();
+      } catch (err) {
+        empireEconDirty = true;
+        console.error(
+          '[refreshLiveEmpireRates] przeliczenie ekonomii imperium nie powiodło się — ' +
+          '_lastPlayerCityEcon NIE zaktualizowany, ponawiam przy najbliższym triggerze:',
+          err,
+        );
+      }
+    }
+
+    function refreshLiveEmpireRatesUnsafe(): void {
       const playerCities = cities.filter(c => c.ownerId === 0);
       if (playerCities.length === 0) {
         _liveFoodBrutto = 0;
@@ -13429,6 +13820,13 @@ async function boot(): Promise<void> {
         rekruciRegenPerTurn += cityManpowerSnapshot(c, player.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
       }
       const armyUnitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
+      // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): ta sama liczba miast niedokarmionych,
+      // co panel imperium (buildEmpireFoodSnap → perCityRows) — chip HUD „Spichlerz" ma pokazywać
+      // spójnie ten sam deficyt, nie tylko głód wojska. / EN: same unfed-city count as the empire
+      // panel (buildEmpireFoodSnap → perCityRows) — the HUD "Spichlerz" chip must surface the same
+      // deficit consistently, not only army hunger.
+      const zywnoscMiastNiedokarmionych = (getLastEmpireFoodTick(0)?.perCityRows ?? [])
+        .filter(r => r.nakarmione === false).length;
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
@@ -13436,6 +13834,7 @@ async function boot(): Promise<void> {
         zywnoscWplywMiast: foodProj.wplywDoZapasow,
         zywnoscKosztWojska: foodProj.kosztArmii,
         glodWojska: isArmyHungry(0),
+        zywnoscMiastNiedokarmionych,
         zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
         zloto: Math.floor(player.skarbiec),
         zlotoRate: Math.floor(_lastBogactwoRate),
@@ -16109,6 +16508,11 @@ async function boot(): Promise<void> {
           setMarchVolume(efekty);
         },
         onNewGame: () => {
+          // R-AUTOZAPIS-QUOTA-STORAGE-Q1 (ECHO A): musi żyć w TYM kliknięciu
+          // (transient activation, patrz fsa-autosave.ts) — jedno kliknięcie
+          // na start sesji, nie co turę. Fire-and-forget: brak FSA/zgody
+          // po prostu zostawia autosave na dotychczasowym localStorage.
+          void triggerFsaAutosaveBootstrap();
           hideMainMenu();
           showNewGameFlow({
             data,
@@ -16118,14 +16522,22 @@ async function boot(): Promise<void> {
         },
         onContinue: () => {
           hideMainMenu();
-          const slot = continueSaveSlotId();
-          if (slot) {
-            void loadGameFromSlot(slot, false);
-          } else {
-            openLoadGameDialog(false);
-          }
+          // B2 (Evaluator runda 1): CZEKAMY na triggerFsaAutosaveBootstrap()
+          // przed odczytem continueSaveSlotId() -- inaczej getLastPlayedSlotId()
+          // mógłby zwrócić wskaźnik "fsa:..." zanim katalog/uchwyt FSA zdążył
+          // się przygotować (bootstrap wołany fire-and-forget gdzie indziej),
+          // a loadGameFromSlot() dostałby pusty stan zamiast realnego pliku.
+          void (async () => {
+            await triggerFsaAutosaveBootstrap();
+            const slot = continueSaveSlotId();
+            if (slot) {
+              void loadGameFromSlot(slot, false);
+            } else {
+              openLoadGameDialog(false);
+            }
+          })();
         },
-        onLoad: () => openLoadGameDialog(false),
+        onLoad: () => { void triggerFsaAutosaveBootstrap(); openLoadGameDialog(false); },
         onAbout: () => {
           showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
         },
@@ -16447,6 +16859,10 @@ async function boot(): Promise<void> {
         buildMode: {
           listTypes: () => buildApi?.listTypes() ?? [],
           getActiveKey: () => activeImprovementKey,
+          // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): panel wyszarza pozycje niedostępne
+          // finansowo (kosztPraca > pula) — patrz buildModeHud.ts getPracaPool.
+          // / EN: panel grays out items the player can't afford (kosztPraca > pool).
+          getPracaPool: () => playerPracaPool,
           isFoundCityOnly: () => isAwaitingFirstPlayerCity(),
           onSelectType: (key) => {
             if (isAwaitingFirstPlayerCity()) return;
@@ -16654,7 +17070,11 @@ async function boot(): Promise<void> {
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
             if (!u || u.ownerId !== 0) return false;
-            const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId);
+            // BB2: musi być spójne z openSplitPanelForSelected — ten sam
+            // stackGroupId, inaczej przycisk „Rozdziel" włącza się (bo hex ma
+            // ≥2 jednostki właściciela z INNEJ armii), a panel i tak nic nie
+            // otworzy (stack.length<2 po scopingu) — martwy klik.
+            const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId, stackGroupIdOf(u));
             if (stack.length < 2) return false;
             return findSplitDestHexes(
               units,
@@ -16801,6 +17221,28 @@ async function boot(): Promise<void> {
             mennicaWStolicy(capId, capId ? cityBuilt.get(capId) : undefined),
             ownerZlotoAccessForMennicaEffective(0),
           );
+        },
+      });
+      // R-USTAWIENIA-GLOBALNE-LOKALNE (Praca + Żywność, Maciej 2026-08-10): globalne
+      // ustawienia w panelu cywilizacji na mapie świata, wzorem configureEmpireHandelSplit
+      // wyżej. Broadcast dla Żywność bo poziomRacji jest architekturą "zawsze wypełnione +
+      // sync", NIE resolver-przy-odczycie jak Praca/Handel -- patrz empire-city-defaults.ts.
+      configureEmpireGlobalDefaults({
+        getOwnerDefaultPodzialPracy: (ownerId) => ownerDefaultPodzialPracy.get(ownerId) ?? null,
+        onOwnerDefaultPodzialPracyChange: (ownerId, split) => {
+          if (ownerId !== 0) return;
+          ownerDefaultPodzialPracy.set(0, { procentBudynki: split.procentBudynki });
+          markCityStateDirty();
+          updateHud();
+        },
+        getOwnerDefaultPoziomRacji: (ownerId) => ownerDefaultPoziomRacji.get(ownerId) ?? null,
+        onOwnerDefaultPoziomRacjiChange: (ownerId, poziom) => {
+          if (ownerId !== 0) return;
+          const clamped = clampPoziomRacji(poziom);
+          ownerDefaultPoziomRacji.set(0, clamped);
+          broadcastPoziomRacjiToOwnerCities(cities, 0, clamped);
+          markCityStateDirty();
+          updateHud();
         },
       });
     }
@@ -16951,6 +17393,10 @@ async function boot(): Promise<void> {
                 console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
               }
               cityProd.set(cityId, applied.prod);
+              // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek NATYCHMIAST (mid-turn,
+              // nie czeka na koniec tury) -- jeśli to budynek wpływający na produkcję
+              // żywności tego miasta, przelicz poziom racji od razu.
+              applyLiveSafeRationForCity(cityId);
             }
           }
           updateHud();
@@ -16977,14 +17423,43 @@ async function boot(): Promise<void> {
         return c ? effectivePodzialPracy(c) : null;
       },
       getPodzialPracyOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracyOverride === true,
+      getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
       onPodzialHandluChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
         if (c && c.ownerId === 0) {
-          c.podzialHandluOverride = true;
-          c.podzialHandlu = normalizePodzialHandlu(split);
+          // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Skarbiec+Nauka", Maciej 2026-08-10):
+          // wzorem onPodzialPracyChange niżej -- bez override suwak zmienia wartość
+          // globalną imperium (broadcast na miasta bez override); z override — tylko
+          // to miasto. PRZEDTEM zawsze ustawiał override=true (każda zmiana stawała się
+          // per-miasto) -- to NIE realizowało specyfikacji "globalne w globalnym miejscu,
+          // lokalne tylko po naciśnięciu Indywidualne".
+          const normalized = normalizePodzialHandlu(split);
+          if (c.podzialHandluOverride) {
+            c.podzialHandlu = normalized;
+          } else {
+            // Podział Handlu jest "resolver-przy-odczycie" (resolveCityPodzialHandlu),
+            // DOKŁADNIE jak Podział Pracy -- global default wystarczy, nie trzeba
+            // broadcastować na city.podzialHandlu innych miast (por. onPodzialPracyChange).
+            ownerDefaultPodzialHandlu.set(0, normalized);
+          }
           markCityStateDirty(); // D10: podział podatków/handlu → przelicz
           updateHud();
         }
+      },
+      onPodzialHandluOverrideToggle: (cityId: string) => {
+        const c = cities.find(ct => ct.id === cityId);
+        if (!c || c.ownerId !== 0) return;
+        const next = !c.podzialHandluOverride;
+        if (next) {
+          // Zamroź bieżącą (globalną) wartość jako lokalną punkt startowy override.
+          c.podzialHandlu = effectivePodzialHandlu(c);
+        } else {
+          delete c.podzialHandlu;
+        }
+        c.podzialHandluOverride = next;
+        markCityStateDirty();
+        updateHud();
+        refreshCityPanelIfOpen();
       },
       onPodzialPracyChange: (cityId: string, split) => {
         const c = cities.find(ct => ct.id === cityId);
@@ -21054,6 +21529,9 @@ async function boot(): Promise<void> {
           ownerDefaultPodzialPracy: Array.from(ownerDefaultPodzialPracy.entries()),
           ownerDefaultOkolicaFocus: Array.from(ownerDefaultOkolicaFocus.entries()),
           ownerDefaultBudowaProfil: Array.from(ownerDefaultBudowaProfil.entries()),
+          // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): serializacja
+          // globalnego domyślnego poziomu Racji, wzorem trzy pola wyżej.
+          ownerDefaultPoziomRacji: Array.from(ownerDefaultPoziomRacji.entries()),
           ulepszeniaEmpireByOwner: Array.from(ulepszeniaEmpireByOwner.entries()),
           mennicaZlotoGrace: serializeMennicaZlotoGrace(mennicaZlotoGraceState),
           playerPracaPool,
@@ -21182,6 +21660,26 @@ async function boot(): Promise<void> {
     const AUTOSAVE_ROT_IDX_KEY = 'thegame.autosave.rotIdx';
     const AUTOSAVE_FREQ_KEY = 'thegame.autosave.freq';
 
+    /**
+     * N3 (Evaluator runda 1): strażnik jednego zapisu na raz. `idx` w
+     * doRotatingAutosave() jest czytany na starcie funkcji i zapisywany
+     * dopiero PO sukcesie -- jeśli zapis na dysk (createWritable/write/close)
+     * trwa dłużej niż jedna tura, kolejna tura wywołałaby drugi równoległy
+     * zapis na TEN SAM plik/slot. Ten strażnik pomija turę zamiast nakładać
+     * się; kolejna okazja (następna tura z aktywnym autozapisem) spróbuje
+     * ponownie.
+     * / EN: single-write-at-a-time guard. `idx` in doRotatingAutosave() is
+     * read at function start and only persisted AFTER success -- if the disk
+     * write (createWritable/write/close) takes longer than one turn, the
+     * next turn would fire a second, overlapping write to the SAME
+     * file/slot. This guard skips that turn instead of overlapping; the next
+     * opportunity (the following turn with autosave due) retries.
+     */
+    let autosaveInFlight = false;
+
+    /** N4: pokaż komunikat o degradacji FSA→localStorage tylko RAZ na sesję karty (nie co turę). */
+    let fsaAutosaveDegradedNotified = false;
+
     function getAutosaveFrequency(): number {
       try {
         const v = parseInt(localStorage.getItem(AUTOSAVE_FREQ_KEY) ?? '1', 10);
@@ -21192,16 +21690,119 @@ async function boot(): Promise<void> {
       try { localStorage.setItem(AUTOSAVE_FREQ_KEY, String(Math.max(1, Math.round(n)))); } catch { /* brak localStorage */ }
     }
 
-    /** Zapis do kolejnego slotu rotacji (1..10), zachowując 10 ostatnich wstecz. */
-    function doRotatingAutosave(): void {
+    /** Klucz localStorage: żeby komunikat o braku wsparcia FSA pokazać graczowi raz, nie przy każdym starcie. */
+    const FSA_HINT_SHOWN_KEY = 'thegame.autosave.fsaHintShown';
+
+    /**
+     * WOŁAJ z wnętrza handlera kliknięcia startu sesji (Rozpocznij/Kontynuuj/
+     * Wczytaj) — patrz komentarz nagłówkowy fsa-autosave.ts. Zwraca Promise:
+     * większość call site'ów woła ją fire-and-forget (`void`) -- przy braku
+     * wsparcia (Firefox/Safari, file://, brak zgody) po cichu (raz) informuje
+     * gracza i zostawia autozapis na dotychczasowym localStorage. Wyjątek:
+     * onContinue (BLOKER B2) CZEKA na ten Promise przed odczytaniem
+     * continueSaveSlotId() -- inaczej wskaźnik "ostatnio grane" mógłby
+     * wskazywać na plik FSA zanim katalog/uchwyt zdążył się przygotować.
+     * / EN: promise-returning so onContinue can await it before reading
+     * continueSaveSlotId() (BLOCKER B2 fix) -- other call sites keep firing
+     * it with `void` (fire-and-forget).
+     */
+    function triggerFsaAutosaveBootstrap(): Promise<void> {
+      return ensureFsaAutosaveReady().then(({ ok, reason }) => {
+        if (ok) return;
+        if (reason === 'permission-denied' || reason === 'picker-cancelled') return; // świadomy wybór gracza, bez komunikatu
+        let alreadyShown = false;
+        try { alreadyShown = localStorage.getItem(FSA_HINT_SHOWN_KEY) === '1'; } catch { /* brak localStorage -- pokaz i tak */ }
+        if (alreadyShown) return;
+        showHintMessage(fsaUnavailableMessage(reason), 5000);
+        try { localStorage.setItem(FSA_HINT_SHOWN_KEY, '1'); } catch { /* ignore */ }
+      });
+    }
+
+    /**
+     * Zapis do kolejnego slotu rotacji (1..10), zachowując 10 ostatnich wstecz.
+     * R-AUTOZAPIS-QUOTA-STORAGE-Q1 (ECHO A): jeśli File System Access jest
+     * gotowe (ensureFsaAutosaveReady() wywołane wcześniej z kliknięcia startu
+     * sesji — patrz mainMenu onNewGame/onContinue/onLoad), zapis idzie do
+     * PLIKU na dysku (bez limitu ~5-10 MB localStorage). W przeciwnym razie —
+     * albo gdy zapis do pliku się nie uda — fallback na dotychczasowy
+     * localStorage, bez regresji.
+     * / EN: rotating write to slot 1..10, keeping the last 10. If File System
+     * Access is ready, write goes to a file on disk; otherwise (or on FSA
+     * write failure) fall back to the pre-existing localStorage path.
+     */
+    async function doRotatingAutosave(): Promise<void> {
+      // N3: pomiń tę turę, jeśli poprzedni zapis (na dysk, potencjalnie wolny)
+      // wciąż trwa -- zamiast nakładać dwa równoległe createWritable() na ten
+      // sam plik. Patrz komentarz przy deklaracji autosaveInFlight.
+      if (autosaveInFlight) {
+        console.warn('[Autosave] pomijam ture -- poprzedni zapis wciaz trwa, tura=' + turn);
+        return;
+      }
+      autosaveInFlight = true;
+      try {
       let idx = 0;
       try {
         const prev = parseInt(localStorage.getItem(AUTOSAVE_ROT_IDX_KEY) ?? '-1', 10);
         idx = (((Number.isFinite(prev) ? prev : -1) + 1) % AUTOSAVE_ROT_COUNT + AUTOSAVE_ROT_COUNT) % AUTOSAVE_ROT_COUNT;
       } catch { idx = 0; }
       const slot = 'autosave-' + (idx + 1);
+
+      // N1: buildSaveGameSnapshot() PRZENIESIONE pod try -- wcześniej stało
+      // przed każdym try/catch tej funkcji, więc wyjątek przy budowie migawki
+      // uciekał jako unhandled rejection zamiast trafić do dotychczasowego
+      // raportowania błędów (console.error + showHintMessage) jak reszta tej
+      // funkcji.
+      // / EN: buildSaveGameSnapshot() MOVED under try -- it previously stood
+      // ahead of every try/catch in this function, so a snapshot-build
+      // exception escaped as an unhandled rejection instead of reaching the
+      // same error reporting (console.error + showHintMessage) as the rest
+      // of this function.
+      let snapshot: SaveGame;
       try {
-        const { ok, reason } = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
+        snapshot = buildSaveGameSnapshot(currentSaveLabel('autosave'));
+      } catch (eSnap) {
+        console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
+        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+        return;
+      }
+
+      if (shouldUseFsaAutosave(getFsaReadinessState())) {
+        try {
+          const { ok, reason } = await fsaRotatingAutosaveWrite(idx, snapshot);
+          if (ok) {
+            // B2 (BLOKER, Evaluator runda 1): wskaźnik "ostatnio grane" MUSI
+            // rozróżniać plik na dysku od slotu localStorage -- zapis na
+            // dysk NIC nie pisze do localStorage, więc stary kod
+            // setLastPlayedSlotId(slot) (klucz 'autosave-N') był kłamstwem:
+            // getLastPlayedSlotId() albo cicho wczytywał STARY/CUDZY zapis
+            // spod tego samego klucza localStorage (jeśli istniał), albo
+            // spadał na mostRecentSaveSlotId(). FSA_SLOT_PREFIX + nazwa
+            // pliku to jedyny prawdziwy wskaźnik na ten zapis (patrz
+            // save.ts::getLastPlayedSlotId, saveLoadDialog.ts, loadGameFromSlot).
+            // / EN: the "last played" pointer MUST distinguish a disk file
+            // from a localStorage slot -- the disk write writes NOTHING to
+            // localStorage, so the old setLastPlayedSlotId(slot) call (key
+            // 'autosave-N') was a lie: getLastPlayedSlotId() would either
+            // silently resolve a STALE/UNRELATED localStorage save under
+            // that same key, or fall through to mostRecentSaveSlotId().
+            // FSA_SLOT_PREFIX + file name is the only truthful pointer to
+            // this save (see save.ts::getLastPlayedSlotId, saveLoadDialog.ts,
+            // loadGameFromSlot).
+            setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));
+            try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
+            console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);
+            return;
+          }
+          console.warn('[Autosave] zapis na dysk nieudany (' + (reason ?? 'nieznany') + ') — fallback na localStorage, tura=' + turn);
+          notifyFsaAutosaveDegraded();
+        } catch (eFsa) {
+          console.warn('[Autosave] wyjatek zapisu na dysk — fallback na localStorage:', eFsa);
+          notifyFsaAutosaveDegraded();
+        }
+      }
+
+      try {
+        const { ok, reason } = saveToLocal(slot, snapshot);
         if (ok) {
           setLastPlayedSlotId(slot);
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
@@ -21222,6 +21823,25 @@ async function boot(): Promise<void> {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
         showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
       }
+      } finally {
+        autosaveInFlight = false;
+      }
+    }
+
+    /**
+     * N4 (Evaluator runda 1): po PIERWSZYM niepowodzeniu zapisu na dysk w tej
+     * sesji karty (np. Chrome cofnął jednorazowe "Zezwól tym razem" po
+     * dłuższym czasie karty w tle) pokazuje JEDNORAZOWY komunikat, że
+     * autozapis wrócił do przeglądarki -- fsaRotatingAutosaveWrite() już
+     * zerował livePermissionGranted (N7), więc kolejne tury idą od razu na
+     * fallback bez ponownej próby i bez powtarzania tego komunikatu.
+     * Furtka „przywróć zapis na dysk" w menu pauzy NIE jest tu zrobiona --
+     * świadomie odłożona (patrz raport rundy), do rejestru.
+     */
+    function notifyFsaAutosaveDegraded(): void {
+      if (fsaAutosaveDegradedNotified) return;
+      fsaAutosaveDegradedNotified = true;
+      showHintMessage('Zapis na dysk przerwany (uprawnienie wygasło) — autozapis wraca do zapisu w przeglądarce.', 4000);
     }
 
     // -----------------------------------------------------------------------
@@ -21429,7 +22049,17 @@ async function boot(): Promise<void> {
         dismissedSidePanelEventIds.clear();
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
-        if (turn % getAutosaveFrequency() === 0) doRotatingAutosave();
+        // void: funkcja jest async (może pisać do pliku przez FSA) — tura nie czeka na zapis.
+        // N2 (Evaluator runda 1): .catch() na tym jedynym call site -- doRotatingAutosave()
+        // już łapie wszystko wewnętrznie (try/catch/finally), ale bez tego jakikolwiek
+        // wyjątek, który mimo to by przeciekł, kończyłby się unhandled rejection zamiast
+        // trafić do tego samego raportowania błędów co reszta funkcji.
+        if (turn % getAutosaveFrequency() === 0) {
+          void doRotatingAutosave().catch((eAutosave) => {
+            console.error('[Autosave] nieobsluzony wyjatek rotacyjnego autozapisu:', eAutosave);
+            showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+          });
+        }
 
         pendingImprovementsTurn.commitTurn();
 
@@ -21678,6 +22308,20 @@ async function boot(): Promise<void> {
             lastEfTickResult = advanceEmpireFood(
               econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
             );
+            // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 1, runda 5 Evaluatora): `advanceEmpireFood`
+            // zapisuje `st.zapasyPanstwa = central` (empire-food.ts) -- to koniec-tury zmiana
+            // `zapasyPanstwa`, wejścia do liczenia maxSafe, ale `markCityStateDirty()` (który też
+            // czyści ten cache) jest wołany dopiero PO synchronizacji renderera miast i kilku
+            // `await yieldTurnTransitionUi()` niżej w tej samej funkcji -- między tym zapisem a tym
+            // czyszczeniem przeglądarka realnie maluje plakietki z przeterminowanym cache. Czyścimy
+            // od razu tutaj, bezwarunkowo (degraduje najwyżej do surowego fallbacku, nie do awarii).
+            // / EN: `advanceEmpireFood` writes `st.zapasyPanstwa = central` (empire-food.ts) -- an
+            // end-of-turn change to `zapasyPanstwa`, an input to maxSafe -- but `markCityStateDirty()`
+            // (which also clears this cache) only runs AFTER the city renderer sync and several
+            // `yieldTurnTransitionUi()` awaits further down this same function -- the browser paints
+            // for real between this write and that clear. Clear it here immediately, unconditionally
+            // (degrades at worst to the raw fallback, never a crash).
+            _maxSafeRationCache.clear();
             const efTickResult = lastEfTickResult;
 
             // NAPRAWA PARYTETU (Maciej 2026-07-26, bez pytania — luka, nie decyzja):
@@ -23777,6 +24421,23 @@ async function boot(): Promise<void> {
             // AI na koszt wg progu trudności (ai-params.json cuda_poziom{1,2,3}_*, patrz
             // decideAiWonderBuild w ai.ts -- throttle + priorytet E przed R + max 1 cud w
             // budowie na cywilizację naraz, wszystko deterministyczne).
+            //
+            // R-EPOKA-CUD-WARUNEK-AWANSU B3 (ECHO Maciej 2026-08-10, ryzyko utykania AI
+            // zidentyfikowane przez Evaluatora rundy 4): JEDYNE miejsce decyzyjne o
+            // kolejkowaniu cudu AI (C-026 -- żadna równoległa ścieżka) dostaje TERAZ dwa
+            // dodatkowe mechanizmy poza samym decideAiWonderBuild wyżej:
+            //  1. Rozluźnianie progu opłacalności z czasem -- `aiWonderStuckTurnsByOwner`
+            //     liczy kolejne tury bez budowy cudu mimo dostępnego kandydata (throttle LUB
+            //     próg odrzucił), `relaxedWonderCostThreshold` podnosi efektywny próg aż do
+            //     pełnego zniesienia po `cuda_stuck_relax_tur_max` turach.
+            //  2. Twardy wymuszacz -- gdy `allEraTechsResearched` (TA SAMA funkcja co warunek
+            //     awansu w owner-epoch.ts, nie duplikować) zwraca true dla bieżącej epoki tej
+            //     cywilizacji, a `eraOwnWonderSatisfied` false (brakuje WYŁĄCZNIE cudu do
+            //     awansu) i ten cud NIE jest już w budowie -- `forcePriority=true` do
+            //     decideAiWonderBuild: throttle/próg/kolejka-pusta przestają obowiązywać,
+            //     cud dostaje twarde pierwszeństwo (queueJump wskakuje przed już budowany
+            //     element), jedynym ograniczeniem zostaje pracaPerTurn>0 (dosłowny brak
+            //     produkcji -- martwa pętla poza zasięgiem priorytetu, zastrzeżenie zadania).
             if (!opts.defensiveCopy) {
               try {
                 const myCitiesForWonder = cities.filter(c => c.ownerId === ownerId);
@@ -23794,10 +24455,74 @@ async function boot(): Promise<void> {
                   queueEmpty: frontItem(cityProd.get(c.id) ?? { kolejka: [], postep: 0 }) === null,
                   pracaPerTurn: aiWonderPracaTickByCity.get(c.id) ?? 0,
                 }));
-                const wonderDiffParams = loadAiWonderParams(data, aiDiffLevel);
+
+                // 2. Wymuszacz: komplet technologii epoki, brakuje wyłącznie cudu, i ten
+                // cud jeszcze nie jest w budowie (inaczej priorytet zbędny -- już postępuje).
+                const wonderEraCivType = civTypeForOwner(ownerId);
+                const wonderCurrentEra = ownerEraByOwner.get(ownerId) ?? gameStartEra();
+                const wonderDoneTechs = aiResearchDone.get(ownerId) ?? new Set<string>();
+                const wonderEraGateForced = allEraTechsResearched(
+                  wonderCurrentEra,
+                  data.tech as import('./data/loader').TechDef[],
+                  wonderDoneTechs,
+                ) && !eraOwnWonderSatisfied(wonderEraCivType, wonderCurrentEra, completedWorldWonders);
+                const wonderRequiredIds = wonderEraGateForced
+                  ? eraOwnWonderIds(wonderEraCivType, wonderCurrentEra)
+                  : [];
+                // FIX (Evaluator runda 1, blokujący): sprawdzamy CAŁĄ kolejkę (nie tylko front)
+                // -- inaczej wymagany cud zakolejkowany, ale nie na czele (np. po innym już
+                // budowanym elemencie), zostałby ponownie zakolejkowany duplikatem.
+                const wonderRequiredAlreadyBuilding = wonderRequiredIds.length > 0 && myCitiesForWonder.some(c => {
+                  const kolejka = cityProd.get(c.id)?.kolejka ?? [];
+                  return kolejka.some(it => {
+                    const wid = parseWonderProdId(it.id);
+                    return wid !== null && wonderRequiredIds.includes(wid);
+                  });
+                });
+                // FIX (Evaluator runda 1, blokujący -- Fenicjanie Brąz→Żelazo): wymagany cud
+                // epoki może NIE być budowalny (np. petra wymaga tech z epoki Żelaza mimo
+                // epokaWejscia=2 -- rozjazd danych B2, osobna decyzja właściciela, NIE tu).
+                // Bez tej koniunkcji forcePriority wymuszał budowę PIERWSZEGO budowalnego cudu
+                // z listy (ordered[0] w ai.ts) zamiast cudu bramkującego awans -- AI co turę
+                // wskakiwała innym cudem na front kolejki (queueJump zeruje postęp), kolejka
+                // rosła bez ograniczenia, żywność drenowana co turę, wymagany cud NIGDY nie
+                // powstawał -- dokładna odwrotność celu B3. Bez budowalnego wymaganego cudu:
+                // brak wymuszenia (decideAiWonderBuild z forcePriority dostanie pustą listę
+                // wymaganych i sam zwróci null -- patrz ai.ts).
+                const wonderRequiredBuildable = wonderRequiredIds.some(
+                  id => buildableForAi.some(w => w.id === id),
+                );
+                const wonderForcePriority = wonderEraGateForced
+                  && !wonderRequiredAlreadyBuilding
+                  && wonderRequiredBuildable;
+
+                // 1. Rozluźnianie progu z czasem -- efektywny próg podmieniony PRZED
+                // wywołaniem decideAiWonderBuild (funkcja sama nie zna historii tur).
+                const wonderStuckTurns = aiWonderStuckTurnsByOwner.get(ownerId) ?? 0;
+                const wonderStuckRelaxMax = loadAiWonderStuckRelaxTurMax(data);
+                const wonderDiffParamsBase = loadAiWonderParams(data, aiDiffLevel);
+                const wonderDiffParams = {
+                  ...wonderDiffParamsBase,
+                  progKosztX: relaxedWonderCostThreshold(
+                    wonderDiffParamsBase.progKosztX, wonderStuckTurns, wonderStuckRelaxMax,
+                  ),
+                };
+
                 const wonderDecision = decideAiWonderBuild(
                   turn, ownerId, hasWonderInProgress, wonderCandidates, buildableForAi, wonderDiffParams,
+                  wonderForcePriority, wonderRequiredIds,
                 );
+
+                // Licznik "utykania": zerowany gdy cud realnie trafił do kolejki, rośnie gdy
+                // kandydat był dostępny i AI nie buduje już innego cudu, ale decyzja padła null.
+                if (wonderDecision) {
+                  aiWonderStuckTurnsByOwner.set(ownerId, 0);
+                } else if (buildableForAi.length > 0 && !hasWonderInProgress) {
+                  aiWonderStuckTurnsByOwner.set(ownerId, wonderStuckTurns + 1);
+                } else {
+                  aiWonderStuckTurnsByOwner.set(ownerId, 0);
+                }
+
                 if (wonderDecision) {
                   const wDef = getWonderById(wonderDecision.wonderId);
                   if (wDef) {
@@ -23808,10 +24533,25 @@ async function boot(): Promise<void> {
                       );
                     } else {
                       const wProd0 = cityProd.get(wonderDecision.cityId) ?? { kolejka: [], postep: 0 };
-                      cityProd.set(wonderDecision.cityId, enqueue(wProd0, wonderProductionItem(wDef)));
+                      const wItem = wonderProductionItem(wDef);
+                      // queueJump (B3, wymuszacz): wstaw na FRONT kolejki zamiast na koniec --
+                      // przerywa (bez zwrotu Pracy) element aktualnie budowany, spójne z
+                      // production.ts:dequeue (postep liczony tylko dla frontu, front zmienia
+                      // się -> zerujemy). Poza wymuszaczem queueJump zawsze false/undefined
+                      // (city.queueEmpty gwarantowane przez ścieżkę bez forcePriority).
+                      const wProd1 = wonderDecision.queueJump
+                        ? {
+                            kolejka: [wItem, ...wProd0.kolejka],
+                            postep: 0,
+                            wstrzymana: wProd0.wstrzymana,
+                            rekrutacja: wProd0.rekrutacja ? [...wProd0.rekrutacja] : undefined,
+                          }
+                        : enqueue(wProd0, wItem);
+                      cityProd.set(wonderDecision.cityId, wProd1);
                       const wCity = myCitiesForWonder.find(c => c.id === wonderDecision.cityId);
+                      const wForceTag = wonderForcePriority ? ' [PRIORYTET-EPOKA]' : '';
                       console.log(
-                        `[Cuda][AI] Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${scaledKoszt} Pracy)`,
+                        `[Cuda][AI]${wForceTag} Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${scaledKoszt} Pracy)`,
                       );
                     }
                   }
@@ -24551,6 +25291,42 @@ async function boot(): Promise<void> {
         updateHud();
         cityRenderer.sync(cities, _cityRenderOpts());
         refreshWorkerFieldOverlay();
+        // P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (poprawka po FAIL Evaluatora): TO JEST
+        // DZIŚ NO-OP, zostawiony wyłącznie jako zabezpieczenie na przyszłość — nie naprawia
+        // żadnego znanego, realnego buga. Zweryfikowane 5 niezmienników, które to gwarantują:
+        //  1) `tradeRoutes` jest przeliczane WYŁĄCZNIE przez recomputeTradeRoutesNow() —
+        //     wołane wcześniej w tej samej turze (odświeżenie E3, przed fazą AI) oraz przy
+        //     zawarciu/zmianie traktatu handlowego przez GRACZA. W fazie AI (w tym przy
+        //     wypowiedzeniu wojny przez AI łamiącym Umowę Handlową przez breakTreatiesOnWar
+        //     — sprawdzone, że NIE dotyka tradeRoutes) tablica `tradeRoutes` się nie zmienia.
+        //  2) `cities` nigdy się nie kurczy w trakcie tury (zero cities.splice w src/) —
+        //     miasta nie znikają, więc nie ma osieroconych łuków do usunięcia.
+        //  3) Nowe miasto AI (cities.push w fazie AI) nie tworzy nowego łuku — nie należy do
+        //     żadnej trasy w nieprzeliczonym `tradeRoutes`.
+        //  4) Zdobycie miasta (applyCityCaptureToMap) mutuje ten sam obiekt City w miejscu —
+        //     zmienia tylko ownerId, nie q/r — nakładka keyuje po q/r, które się nie zmieniają.
+        //  5) Geometria łuku (hexTopY) zależy wyłącznie od terenu, mutowanego tylko w
+        //     generatorze mapy — nigdy w trakcie tury.
+        // Skoro refreshTradeRoutesOverlay() tylko RENDERUJE bieżące `tradeRoutes`+`cities`
+        // (nie przelicza tras), a żaden z tych dwóch stanów się tu nie zmienia, wywołanie
+        // odtwarza bajt-w-bajt tę samą grupę łuków co bez niego — potwierdzone testami
+        // trade-routes-test/trade-routes-income-test/okolica-test/logic-test (identyczne
+        // wyniki z i bez zmiany). Zostaje na wypadek, gdyby KIEDYŚ recomputeTradeRoutesNow()
+        // zostało przesunięte za fazę AI — wtedy ten punkt już będzie właściwy.
+        // EN: this call is a NO-OP today, kept only as forward-looking hardening — it fixes
+        // no known real bug. `tradeRoutes` is recomputed exclusively by recomputeTradeRoutesNow()
+        // (called earlier this same turn, before the AI phase, and on player treaty actions);
+        // it is untouched during the AI phase, including when AI declares war and breaks a
+        // trade treaty (breakTreatiesOnWar only touches activeDeals, never tradeRoutes).
+        // `cities` never shrinks mid-turn, city capture mutates ownerId in place (q/r fixed),
+        // new AI cities aren't part of the unrecomputed route list, and arc geometry depends
+        // only on terrain (map-gen only). Since refreshTradeRoutesOverlay() purely renders the
+        // current tradeRoutes+cities, and neither changes here, this reproduces the identical
+        // overlay byte-for-byte — confirmed by trade-routes-test/trade-routes-income-test/
+        // okolica-test/logic-test all being identical with and without this call. Left in
+        // place so that if recomputeTradeRoutesNow() is ever moved to run after the AI phase,
+        // this call site is already correctly positioned.
+        refreshTradeRoutesOverlay();
         // Refresh fog after end-turn so new unit positions update visibility.
         refreshFog();
         // C-SENTRY-Q1 wariant A: pozycje wszystkich jednostek (gracz + AI) są już
@@ -25149,6 +25925,9 @@ async function boot(): Promise<void> {
                   console.warn('[Rush] Brak Manpower — zwrot zlota, jednostka w kolejce');
                 }
                 cityProd.set(cityId, applied.prod);
+                // P-AUTO-WYZYWIENIE-BUG1: rush-buy kończy budynek natychmiast (mid-turn) --
+                // jeśli wpływa na produkcję żywności tego miasta, przelicz poziom racji od razu.
+                applyLiveSafeRationForCity(cityId);
               }
             }
             updateHud();
@@ -25174,14 +25953,35 @@ async function boot(): Promise<void> {
           return c ? effectivePodzialPracy(c) : null;
         },
         getPodzialPracyOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialPracyOverride === true,
+        getPodzialHandluOverride: (cityId: string) => cities.find(c => c.id === cityId)?.podzialHandluOverride === true,
         onPodzialHandluChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);
           if (c && c.ownerId === 0) {
-            c.podzialHandluOverride = true;
-            c.podzialHandlu = normalizePodzialHandlu(split);
+            // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Skarbiec+Nauka", Maciej 2026-08-10) --
+            // patrz komentarz przy pierwszej kopii tego hooka (configureCityPanel wyżej).
+            const normalized = normalizePodzialHandlu(split);
+            if (c.podzialHandluOverride) {
+              c.podzialHandlu = normalized;
+            } else {
+              ownerDefaultPodzialHandlu.set(0, normalized);
+            }
             markCityStateDirty(); // D10: podział podatków/handlu → przelicz
             updateHud();
           }
+        },
+        onPodzialHandluOverrideToggle: (cityId: string) => {
+          const c = cities.find(ct => ct.id === cityId);
+          if (!c || c.ownerId !== 0) return;
+          const next = !c.podzialHandluOverride;
+          if (next) {
+            c.podzialHandlu = effectivePodzialHandlu(c);
+          } else {
+            delete c.podzialHandlu;
+          }
+          c.podzialHandluOverride = next;
+          markCityStateDirty();
+          updateHud();
+          refreshCityPanelIfOpen();
         },
         onPodzialPracyChange: (cityId: string, split) => {
           const c = cities.find(ct => ct.id === cityId);
@@ -25580,6 +26380,7 @@ async function boot(): Promise<void> {
       growthMultMap.clear();
       lastCityKulturaTick.clear();
       aiWonderPracaTickByCity.clear();
+      aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
@@ -26409,7 +27210,16 @@ async function boot(): Promise<void> {
       hideSaveLoadDialog();
       diagInfo('load', `slot=${slotId} pause=${fromInGamePause}`);
       try {
-        const saved = loadFromLocal(slotId);
+        // BLOKER B1 (Evaluator runda 1): slotId z prefiksem FSA_SLOT_PREFIX
+        // ('fsa:...') wskazuje na plik na dysku (rotacja autozapisu FSA), nie
+        // na slot localStorage -- odczyt idzie przez loadFsaAutosaveFile()
+        // zamiast loadFromLocal(). Bez tego rozgałęzienia dialog Wczytaj
+        // mógłby POKAZAĆ zapis z dysku (summarizeFsaSaveSlots), ale kliknięcie
+        // go zawsze kończyło się "Nie można wczytać tego zapisu" (loadFromLocal
+        // szuka w localStorage klucza, który nigdy tam nie istniał).
+        const saved = slotId.startsWith(FSA_SLOT_PREFIX)
+          ? await loadFsaAutosaveFile(slotId.slice(FSA_SLOT_PREFIX.length))
+          : loadFromLocal(slotId);
         if (!saved) {
           diagWarn('load', `brak danych slot=${slotId}`);
           showHintMessage('Nie można wczytać tego zapisu.', 3000);
@@ -26717,6 +27527,7 @@ async function boot(): Promise<void> {
       }
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      aiWonderStuckTurnsByOwner.clear();
       restoreAiRosterFromSave(saved);
       const loadStartEra = (() => {
         const eid = (saved.meta?.newGameParams as NewGameParams | undefined)?.epochId;
@@ -26806,6 +27617,11 @@ async function boot(): Promise<void> {
       ownerDefaultBudowaProfil.clear();
       const savedBudowaProfil = saved.meta?.ownerDefaultBudowaProfil as Array<[number, CityBudowaProfil]> | undefined;
       migrateBudowaProfilOnLoad(cities, ownerDefaultBudowaProfil, savedBudowaProfil);
+      // R-USTAWIENIA-GLOBALNE-LOKALNE (Żywność, Maciej 2026-08-10): wczytanie/migracja
+      // globalnego domyślnego poziomu Racji, wzorem trzy pola wyżej.
+      ownerDefaultPoziomRacji.clear();
+      const savedPoziomRacji = saved.meta?.ownerDefaultPoziomRacji as Array<[number, PoziomRacji]> | undefined;
+      migratePoziomRacjiOnLoad(cities, ownerDefaultPoziomRacji, savedPoziomRacji);
       ulepszeniaEmpireByOwner.clear();
       const savedUlepszenia = saved.meta?.ulepszeniaEmpireByOwner as Array<[number, UlepszeniaEmpirePolicy]> | undefined;
       if (savedUlepszenia?.length) {

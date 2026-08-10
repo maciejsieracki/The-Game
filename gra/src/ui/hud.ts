@@ -102,6 +102,13 @@ export interface HudState {
   zywnoscKosztWojska?: number;
   /** true → czerwony alert głodu wojska na HUD mapy. */
   glodWojska?: boolean;
+  /** P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): liczba miast gracza niedokarmionych
+   *  w ostatnim ticku (perCityRows[].nakarmione===false) — tooltip chipu „Spichlerz" scala
+   *  tę informację z samą liczbą magazynu, zamiast pokazywać gołe „0" bez kontekstu deficytu.
+   *  / EN: number of player cities left unfed in the last tick — the "Spichlerz" chip tooltip
+   *  merges this into the stock number itself, instead of showing a bare "0" with no deficit
+   *  context. */
+  zywnoscMiastNiedokarmionych?: number;
   /** C-GLOD-Q1=A (Maciej 2026-07-26): liczba tur do startu atrycji HP wojska (karencja
    *  jeszcze trwa, zapasy już ujemne); undefined = nie dotyczy (zapasy nieujemne lub
    *  atrycja już aktywna teraz — patrz glodWojska). Ostrzeżenie z wyprzedzeniem w chipie „Armia". */
@@ -718,6 +725,20 @@ function slowoTuraHud(n: number): string {
 }
 
 /**
+ * P-SPICHLERZ-ZERO-MYLACE: polska odmiana ma TRZY formy, nie dwie — 1 / 2-4
+ * (poza 12-14) / 5+ i 12-14. / EN: Polish plural has THREE forms, not two —
+ * 1 / 2-4 (except 12-14) / 5+ and 12-14.
+ */
+function miastoNiedokarmioneWordHud(n: number): string {
+  const a = Math.abs(n);
+  if (a === 1) return 'miasto niedokarmione';
+  const m10 = a % 10;
+  const m100 = a % 100;
+  if (m10 >= 2 && m10 <= 4 && !(m100 >= 12 && m100 <= 14)) return 'miasta niedokarmione';
+  return 'miast niedokarmionych';
+}
+
+/**
  * NAPRAWA HUD-SKARBIEC (Maciej 2026-07-26, zgłoszenie z playtestu, bundle
  * 2f928932): tooltip chipu „Skarbiec" rozbija liczbę „+N" na składniki, żeby
  * gracz widział skąd się bierze przyrost/spadek — wpływy (Podatek +
@@ -776,6 +797,14 @@ function spichlerzChipTitle(s: HudState): string {
     + ` · Przyrost zapasów (prognoza): ${signed(netto)} 🍞/turę`
     + ` · Nadwyżka miast → centrala: ${signed(wplyw)} 🍞/turę`
     + ` · Koszt armii: ${signed(-koszt)} 🍞/turę`;
+  // P-SPICHLERZ-ZERO-MYLACE: liczba magazynu sama w sobie nie mówi, czy zero jest zdrowe
+  // czy oznacza realny niepokryty deficyt miast — dopisujemy TU, przy tej samej liczbie.
+  // / EN: the stock number alone doesn't say whether zero is healthy or a real uncovered
+  // city deficit — appended HERE, next to that same number.
+  if ((s.zywnoscMiastNiedokarmionych ?? 0) > 0) {
+    const n = s.zywnoscMiastNiedokarmionych!;
+    title += ` · ⚠ Realny niepokryty deficyt: ${n} ${miastoNiedokarmioneWordHud(n)}`;
+  }
   if (s.glodWojska) title += ` · Głód wojska: atrycja HP trwa!`;
   else if (s.zywnoscKarencjaZaTur != null && s.zywnoscKarencjaZaTur > 0) {
     title += ` · Głód wojska za ${s.zywnoscKarencjaZaTur} ${slowoTuraHud(s.zywnoscKarencjaZaTur)} — magazyn ujemny!`;
@@ -930,7 +959,11 @@ function renderBarD1B(s: HudState): string {
       label: 'Spichlerz',
       value: formatFoodHudLabel(s),
       rate: signed(s.zywnoscRate ?? 0),
-      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0),
+      // P-SPICHLERZ-ZERO-MYLACE: chip czerwony też przy niedokarmionych miastach, nie
+      // tylko przy głodzie wojska/ujemnym tempie — sam kolor ma sygnalizować deficyt.
+      // / EN: chip turns red for unfed cities too, not only army hunger/negative rate —
+      // the color alone should signal a deficit.
+      rateWarn: !!(s.glodWojska || (s.zywnoscRate ?? 0) < 0 || (s.zywnoscMiastNiedokarmionych ?? 0) > 0),
       act: 'spichlerz',
       title: spichlerzChipTitle(s),
     }),
@@ -991,7 +1024,7 @@ function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-culture',
       label: 'Kultura',
-      value: signed(s.kultura),
+      value: String(Math.floor(s.kultura)),
       rate: signed(s.kulturaRate ?? 0),
       act: 'kultura',
       title: kulturaChipTitle(s),
@@ -1076,7 +1109,7 @@ function renderBarLegacy(s: HudState): string {
   html += '<div class="grp">' + res('\u{1FA99}', String(s.zloto), 'Złoto', signed(s.zlotoRate))
     + res('\u{1F528}', String(s.praca), 'Praca', signed(s.pracaRate), true) + '</div>';
   html += '<div class="grp">' + res(naukaHudWordHtml(), String(Math.floor(s.nauka)), 'Badania', signed(s.naukaRate ?? 0), false, 'science')
-    + res('\u{1F3BC}', signed(s.kultura), 'Kultura', signed(s.kulturaRate ?? 0)) + '</div>';
+    + res('\u{1F3BC}', String(Math.floor(s.kultura)), 'Kultura', signed(s.kulturaRate ?? 0)) + '</div>';
   html += '<div class="grp">' + res('\u{1F3D8}\uFE0F', s.osiedla + '<span class="lim">/' + s.osiedlaMax + '</span>', 'Osiedla') + '</div>';
   const pct = Math.round(Math.max(0, Math.min(1, s.epokaPostep ?? 0)) * 100);
   html += '<div class="epoch"><span class="e-l">Epoka: <b style="color:var(--gold)">' + s.epoka + '</b>'

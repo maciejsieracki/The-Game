@@ -60,6 +60,14 @@ export interface BuildModeHudConfig {
   getFoundCityLockHint?: () => string | null;
   /** R-PIERWSZE-MIASTO: tylko przycisk Załóż miasto (bez ulepszeń/cudów). */
   isFoundCityOnly?: () => boolean;
+  /**
+   * R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (Maciej, ECHO A): aktualna pula Pracy gracza —
+   * pozycje z kosztem wyższym niż pula są wyszarzane i zablokowane (jak tech-lock) zamiast
+   * dowiadywać się o braku Pracy dopiero po kliknięciu w hex.
+   * / EN: player's current Work pool — items costing more than the pool are grayed out and
+   * blocked (same as tech-lock) instead of failing only after a hex click.
+   */
+  getPracaPool?: () => number;
   /** Auto-ulepszenia terenu — polityka państwa + wyjątek per miasto (R-AUTO-V2-Q3=C). */
   listPlayerCities?: () => { id: string; name: string }[];
   getUlepszeniaCityId?: () => string | null;
@@ -170,6 +178,12 @@ function ensureStyles(): void {
 .civ-build-auto-city-wrap{margin-top:4px;}
 .civ-build-auto-eff{font-size:9px;color:#8a8060;line-height:1.35;margin:4px 0 2px;}
 .civ-build-auto-override{font-size:10px;color:#9a9070;margin:4px 0;}
+.civ-build-hbtn{background:rgba(232,216,138,.08);border:1px solid rgba(232,216,138,.22);color:#d4cba0;
+  font-size:10px;padding:4px 8px;border-radius:4px;cursor:pointer;font-family:inherit;
+  display:inline-flex;align-items:center;justify-content:center;min-height:1.75em;}
+.civ-build-hbtn:hover{background:rgba(232,216,138,.16);border-color:rgba(232,216,138,.45);}
+.civ-build-hbtn.active{background:linear-gradient(180deg,#2a5a28,#1e4020);border-color:#6bbf59;color:#dff5d8;
+  box-shadow:0 0 8px rgba(107,191,89,.45);}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -323,10 +337,11 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           'empire',
         );
         if (empireState.tryb === 'auto') {
-          const chkE = empireState.onlyWorked ? ' checked' : '';
+          const onE = empireState.onlyWorked ? ' active' : '';
           html += '<div class="civ-build-auto-row">';
-          html += `<label title="Buduj tylko na polach z obywatelami (👤)">`
-            + `<input type="checkbox" data-ulepszenia-empire-only-worked${chkE}> Tylko pola z obywatelami</label>`;
+          html += `<button type="button" class="civ-build-hbtn${onE}" data-ulepszenia-empire-only-worked`
+            + ` aria-pressed="${empireState.onlyWorked ? 'true' : 'false'}"`
+            + ` title="Buduj tylko na polach z obywatelami (👤)">Tylko pola z obywatelami</button>`;
           html += '</div>';
           html += '<div class="civ-build-auto-row civ-build-auto-speed">';
           html += '<span title="Ile ulepszeń auto stawia w mieście na turę">Na turę:</span>';
@@ -357,9 +372,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
           html += `<div class="civ-build-auto-eff">Efekt w mieście: ${effLabel}`
             + (effState.override ? ' (własne)' : ' (państwo)') + '</div>';
         }
-        const ovChk = cityOverride ? ' checked' : '';
+        const onOv = cityOverride ? ' active' : '';
         html += `<div class="civ-build-auto-override">`
-          + `<label><input type="checkbox" data-ulepszenia-city-override${ovChk}> Własne ustawienia tego miasta</label>`
+          + `<button type="button" class="civ-build-hbtn${onOv}" data-ulepszenia-city-override`
+          + ` aria-pressed="${cityOverride ? 'true' : 'false'}">Własne ustawienia tego miasta</button>`
           + '</div>';
         if (cityOverride && uCityId && effState) {
           html += '<div class="lbl">Ustawienia miasta</div>';
@@ -369,9 +385,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
             'city',
           );
           if (effState.tryb === 'auto') {
-            const chkC = effState.onlyWorked ? ' checked' : '';
+            const onC = effState.onlyWorked ? ' active' : '';
             html += '<div class="civ-build-auto-row">';
-            html += `<label><input type="checkbox" data-ulepszenia-city-only-worked${chkC}> Tylko pola z obywatelami</label>`;
+            html += `<button type="button" class="civ-build-hbtn${onC}" data-ulepszenia-city-only-worked`
+              + ` aria-pressed="${effState.onlyWorked ? 'true' : 'false'}">Tylko pola z obywatelami</button>`;
             html += '</div>';
             html += '<div class="civ-build-auto-row civ-build-auto-speed">';
             html += '<span>Na turę:</span>';
@@ -386,12 +403,23 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       }
       html += '<div class="lbl">Ulepszenia terenu</div>';
     }
+    const pracaPool = config.getPracaPool?.() ?? Infinity;
     for (const t of types) {
-      const locked = t.techUnlocked === false;
+      const techLocked = t.techUnlocked === false;
+      // Za mało Pracy: ten sam wzorzec wizualny co tech-lock (wyszarzenie + tooltip na hover +
+      // klik blokowany), żeby gracz widział brak dostępności PRZED klikiem w hex, nie po nim.
+      // / EN: not enough Work: same visual pattern as tech-lock (grayed out + hover tooltip +
+      // blocked click), so the player sees unavailability BEFORE clicking a hex, not after.
+      const insufficientPraca = !techLocked && t.kosztPraca > pracaPool;
+      const locked = techLocked || insufficientPraca;
       const sel = t.key === active ? ' sel' : '';
       const ic = impIconHtml(t.key);
       const costLabel = t.kosztPraca <= 0 ? 'FREE' : t.kosztPraca + ' P';
-      const hint = locked ? (t.lockHint ?? (t.techLabel ? 'Technologia: «' + t.techLabel + '»' : 'Zablokowane')) : '';
+      const hint = techLocked
+        ? (t.lockHint ?? (t.techLabel ? 'Technologia: «' + t.techLabel + '»' : 'Zablokowane'))
+        : insufficientPraca
+          ? `Za mało Pracy: potrzeba ${t.kosztPraca} P, masz ${Math.floor(pracaPool)} P`
+          : '';
       const techHint = locked ? ' · 🔒' : '';
       const hintTechIc = (locked && t.techLabel) ? (techIconSvg(t.techLabel, 12) ?? '') : '';
       const hintTechIcWrap = hintTechIc
@@ -477,9 +505,10 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
-    const empireOnlyWorked = el.querySelector('[data-ulepszenia-empire-only-worked]') as HTMLInputElement | null;
-    empireOnlyWorked?.addEventListener('change', () => {
-      config.onUlepszeniaEmpireOnlyWorkedChange?.(empireOnlyWorked.checked);
+    const empireOnlyWorkedBtn = el.querySelector('[data-ulepszenia-empire-only-worked]') as HTMLButtonElement | null;
+    empireOnlyWorkedBtn?.addEventListener('click', () => {
+      const current = config.getUlepszeniaEmpireState?.()?.onlyWorked ?? false;
+      config.onUlepszeniaEmpireOnlyWorkedChange?.(!current);
       render();
     });
 
@@ -506,10 +535,13 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       render();
     });
 
-    const cityOnlyWorked = el.querySelector('[data-ulepszenia-city-only-worked]') as HTMLInputElement | null;
-    cityOnlyWorked?.addEventListener('change', () => {
+    const cityOnlyWorkedBtn = el.querySelector('[data-ulepszenia-city-only-worked]') as HTMLButtonElement | null;
+    cityOnlyWorkedBtn?.addEventListener('click', () => {
       const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) config.onUlepszeniaCityOnlyWorkedChange?.(cityId, cityOnlyWorked.checked);
+      if (cityId) {
+        const current = config.getUlepszeniaEffectiveState?.(cityId)?.onlyWorked ?? false;
+        config.onUlepszeniaCityOnlyWorkedChange?.(cityId, !current);
+      }
       render();
     });
 
@@ -522,10 +554,13 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       });
     });
 
-    const overrideChk = el.querySelector('[data-ulepszenia-city-override]') as HTMLInputElement | null;
-    overrideChk?.addEventListener('change', () => {
+    const overrideBtn = el.querySelector('[data-ulepszenia-city-override]') as HTMLButtonElement | null;
+    overrideBtn?.addEventListener('click', () => {
       const cityId = config.getUlepszeniaCityId?.();
-      if (cityId) config.onUlepszeniaCityOverrideChange?.(cityId, overrideChk.checked);
+      if (cityId) {
+        const current = config.getUlepszeniaCityOverride?.(cityId) ?? false;
+        config.onUlepszeniaCityOverrideChange?.(cityId, !current);
+      }
       render();
     });
 

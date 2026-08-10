@@ -180,6 +180,31 @@ function computePeaceAcceptanceSides(
   const asymBalance = myDisplayPw - theirDisplayPw;
   const hasBasket = myBasketOffer > 0 || theirBasketOffer > 0;
 
+  // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś rano
+  // 5a93f5aa był nieaktualny — patrz PYTANIA-OTWARTE.md): `hasBasket` tutaj to NIE
+  // własność FORMULARZA pokoju („ten typ traktatu nie ma koszyka") — koszyk
+  // `diplomacyTradeBasket` dla pokoju (aid '10') działa już end-to-end: jest w
+  // `TRADE_BASKET_ACTION_IDS` i formularz traktatu renderuje kolumny „My
+  // oddajemy/Oni oddają (opcjonalnie)" w TYM SAMYM oknie negocjacji (patrz
+  // treatySummaryHtml w diplomacyTradeBasket.ts, które woła tę funkcję z realnym
+  // stanem koszyka gracza). `hasBasket=false` znaczy tylko, że w TEJ KONKRETNEJ
+  // negocjacji obie strony nic jeszcze nie dołożyły do dostępnego koszyka
+  // (myBasketOffer=0 i theirBasketOffer=0) — nie że koszyka nie ma. Stąd rozróżnienie
+  // niżej: hasBasket=true → „dopłać" (koszyk już zawiera coś, dopłata w tym formularzu
+  // sensowna); hasBasket=false → „zawrzyj osobną umowę" (koszyk pusty, nic do
+  // podbicia bez dodania pozycji od nowa).
+  // Część C R-DYP-STOL-A (koszyk dla WSZYSTKICH traktatów) jest dziś w praktyce
+  // niemal domknięta — obejmuje sojusz/pakt/wasal/pokój (4 z 5 typów z pierwotnego
+  // zgłoszenia). Jedyna realna luka to wojna (aid '11') — a to kategorialnie inny
+  // temat: wypowiedzenie wojny to jednostronna akcja gracza (showWarConsentModal)
+  // bez negocjacji/akceptacji AI, 'wojna' nie ma nawet wpisu w ProposalActionId —
+  // ten system propozycji/koszyka jej po prostu nie dotyczy.
+  // EN: `hasBasket` here is a property of THIS negotiation attempt (did either side
+  // enter a nonzero give/receive amount), NOT of the peace treaty FORM — the basket
+  // already works end-to-end for peace (and alliance/pact/vassal), rendered in the
+  // same modal. `false` only means nothing was added yet in this attempt. R-DYP-STOL-A
+  // part C is effectively done for these 4 types; the only real gap is war, which is a
+  // unilateral action outside this proposal/basket system entirely.
   const buildPlayerSide = (): AcceptanceSideBalance => ({
     offerPn: myBasketOffer,
     demandPn: myBasketDemand,
@@ -192,7 +217,9 @@ function computePeaceAcceptanceSides(
     mode,
     accepted: peaceAccepted && asymBalance >= 0,
     statusLabel: asymBalance < 0
-      ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+      ? (hasBasket
+        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        : `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`)
       : asymBalance > 0 && hasBasket
         ? `Nadwyżka +${asymBalance} PW`
         : formatBalanceLabel(surplusPn, peaceAccepted),
@@ -208,7 +235,9 @@ function computePeaceAcceptanceSides(
     mode,
     accepted: peaceAccepted && asymBalance >= 0,
     statusLabel: asymBalance < 0
-      ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+      ? (hasBasket
+        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        : `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`)
       : hasBasket && asymBalance > 0
         ? `Przewaga u Ciebie +${asymBalance} PW`
         : 'Równo — spełnia',
@@ -356,16 +385,39 @@ export function computePlayerAcceptanceSides(
     const balanceOk = asymBalance >= 0;
     my.balancePn = asymBalance;
     their.balancePn = asymBalance;
+    // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś
+    // rano 5a93f5aa był nieaktualny — patrz PYTANIA-OTWARTE.md): to jest gałąź
+    // WSPÓLNA dla wszystkich traktatów spoza pokoju, które trafiają tutaj z
+    // treatyBase>0 — dziś realnie sojusz (aid '3'), pakt (aid '2'), wasal (aid '12')
+    // i wchłonięcie (aid '15'). Wszystkie cztery MAJĄ koszyk w
+    // `TRADE_BASKET_ACTION_IDS` i renderują kolumny „My oddajemy/Oni oddają
+    // (opcjonalnie)" w tym samym formularzu (patrz treatySummaryHtml w
+    // diplomacyTradeBasket.ts, które woła computePlayerAcceptanceSides z realnym
+    // stanem koszyka gracza). `!hasBasket` NIE znaczy „ten traktat nie ma koszyka" —
+    // znaczy, że w TEJ KONKRETNEJ negocjacji obie strony nic jeszcze nie dołożyły do
+    // dostępnego koszyka (mode zostaje 'treaty' zamiast 'mixed'). Dopóki koszyk jest
+    // pusty, w tym stanie oceny nie ma z czego wyliczyć dopłaty w miejscu, więc
+    // komunikat kieruje do zawarcia osobnej umowy zamiast dopłaty tu i teraz.
+    // Część C R-DYP-STOL-A jest dziś w praktyce niemal domknięta (4 z 5 typów z
+    // pierwotnego zgłoszenia); jedyna realna luka to wojna (aid '11') — kategorialnie
+    // inny temat, jednostronna akcja (showWarConsentModal) bez negocjacji/akceptacji
+    // AI, 'wojna' nie ma nawet wpisu w ProposalActionId.
+    // EN: this is the SHARED branch for every non-peace treaty reaching here with
+    // treatyBase>0 — today alliance/pact/vassal/absorption, all four already have a
+    // basket (TRADE_BASKET_ACTION_IDS) rendered in the same form. `!hasBasket` means
+    // nothing was added to THIS negotiation's basket yet, not that the type lacks
+    // one. R-DYP-STOL-A part C is effectively done for these types; the only real gap
+    // is war, a unilateral action outside this proposal system.
     if (mode === 'treaty' && !hasBasket) {
       my.accepted = relOk && balanceOk;
       their.accepted = relOk && balanceOk;
       my.statusLabel = !balanceOk
-        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
           : 'Spełnia warunki (0 PW)';
       their.statusLabel = !balanceOk
-        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
           : 'Równo — spełnia';

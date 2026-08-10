@@ -162,8 +162,11 @@ console.log('--- 2-3. Zrodlo main.ts (doRotatingAutosave / persistSaveToSlot) --
 
 const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
+// R-AUTOZAPIS-QUOTA-STORAGE-Q1 (ECHO A): funkcja stala sie async (Promise<void>)
+// -- dokłada próbę zapisu na dysk (FSA) PRZED dotychczasową ścieżką
+// localStorage; sygnatura w regexie dopasowana do tej zmiany.
 const rotMatch = mainTsSrc.match(
-  /function doRotatingAutosave\(\): void \{([\s\S]*?)\n {4}\}\n\n {4}\/\/ -{10,}\n {4}\/\/ End turn/,
+  /async function doRotatingAutosave\(\): Promise<void> \{([\s\S]*?)\n {4}\}\n\n {4}\/\/ -{10,}\n {4}\/\/ End turn/,
 );
 assert(!!rotMatch, 'doRotatingAutosave() znaleziona w main.ts (dopasowanie do End turn markera)');
 if (rotMatch) {

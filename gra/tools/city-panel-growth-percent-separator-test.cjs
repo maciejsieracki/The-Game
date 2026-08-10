@@ -94,14 +94,16 @@ assert(
 );
 
 const chipBlockMatch = src.match(
-  /label:\s*'WZROST%',[\s\S]{0,600}?title:\s*fed\s*\n\s*\?\s*'Łączny procent wzrostu ludności w tej turze'/,
+  // N3 (runda 4): limit podniesiony 900 -> 1400 -- komentarz PL+EN (CLAUDE.md pkt 9) przy
+  // chipie WZROST% jest teraz ~1100+ znaków łącznie (dwujęzyczny), 900 było za ciasne.
+  /label:\s*'WZROST%',[\s\S]{0,1400}?title:\s*fed\s*\n\s*\?\s*'Łączny procent wzrostu ludności w tej turze'/,
 );
 assert(chipBlockMatch !== null, 'znaleziono blok chipa „WZROST%” (sekcja Wyżywienie i wzrost)');
 if (chipBlockMatch) {
   const block = chipBlockMatch[0];
   assert(
-    /value:\s*fed\s*\?\s*`\$\{formatLiczbaPl\(view\.wzrostProcent\)\}%`\s*:\s*'—'/.test(block),
-    'wiersz „value” chipa woła `${formatLiczbaPl(view.wzrostProcent)}%` (naprawiony separator)',
+    /value:\s*fed\s*\?\s*`\$\{formatLiczbaPl\(\w+\)\}%`\s*:\s*'—'/.test(block),
+    'wiersz „value” chipa woła `${formatLiczbaPl(...)}%` (naprawiony separator, przez formatLiczbaPl)',
   );
   assert(
     !/value:\s*fed\s*\?\s*`\$\{view\.wzrostProcent\}%`/.test(block),
@@ -165,8 +167,8 @@ assert(detailCardMatch !== null, 'znaleziono blok sekcji "WZROST% — składniki
 if (detailCardMatch) {
   const block = detailCardMatch[0];
   assert(
-    /gridDetailRow\(g2, 'Łącznie', fed \? `\$\{signed\(view\.wzrostProcent\)\}%` : '— \(głód\)'\)/.test(block),
-    'wiersz "Łącznie" woła `${signed(view.wzrostProcent)}%` (naprawiony separator)',
+    /gridDetailRow\(g2, 'Łącznie', fed \? `\$\{signed\(\w+(?:\.\w+)?\)\}%` : '— \(głód\)'\)/.test(block),
+    'wiersz "Łącznie" woła `${signed(...)}%` (naprawiony separator, przez signed())',
   );
   assert(
     !/gridDetailRow\(g2, 'Łącznie', fed \? `\$\{view\.wzrostProcent\}%` : '— \(głód\)'\)/.test(block),

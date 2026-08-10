@@ -18,8 +18,12 @@ import { signedPl } from './formatPl';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
-import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu } from '../game/cities';
-import type { CityPodzialHandlu } from '../game/cities';
+import { HANDEL_PCT_STEP, adjustHandelSplit, normalizePodzialHandlu, snapHandelPct } from '../game/cities';
+import type { CityPodzialHandlu, CityPodzialPracy } from '../game/cities';
+import {
+  WYZYWIENIE_MIN, WYZYWIENIE_MAX, WYZYWIENIE_STEP, formatWyzwienieLabel,
+  type PoziomRacji,
+} from '../game/population-growth-v85';
 import { formatCivBrandLine } from './civBrandDisplay';
 import {
   empirePanelBlockForSection,
@@ -88,6 +92,101 @@ function wireDefaultHandelSplitInputs(
       }
     });
   }
+}
+
+/**
+ * R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej 2026-08-10, żywa rozmowa): globalne ustawienia
+ * grup "Praca" i "Żywność" w panelu cywilizacji na mapie świata — wzorem
+ * EmpireHandelSplitUiConfig/renderDefaultHandelSplitSection wyżej (już istniejące dla
+ * grupy Skarbiec+Nauka, DYSPOZYCJA-85-SUWAK). Osobna konfiguracja/funkcja żeby NIE
+ * dotykać już przetestowanego mechanizmu Handlu (C-025 — zakres tylko tego, co nowe).
+ */
+export interface EmpireGlobalDefaultsUiConfig {
+  getOwnerDefaultPodzialPracy?: (ownerId: number) => CityPodzialPracy | null;
+  onOwnerDefaultPodzialPracyChange?: (ownerId: number, split: CityPodzialPracy) => void;
+  getOwnerDefaultPoziomRacji?: (ownerId: number) => PoziomRacji | null;
+  onOwnerDefaultPoziomRacjiChange?: (ownerId: number, poziom: PoziomRacji) => void;
+}
+
+let empireGlobalDefaultsUi: EmpireGlobalDefaultsUiConfig = {};
+
+export function configureEmpireGlobalDefaults(cfg: EmpireGlobalDefaultsUiConfig): void {
+  empireGlobalDefaultsUi = { ...empireGlobalDefaultsUi, ...cfg };
+}
+
+function renderDefaultPodzialPracySection(): string {
+  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPodzialPracy;
+  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPodzialPracyChange;
+  if (!getDef || !onChange) return '';
+  const split = getDef(0) ?? { procentBudynki: 70 };
+  const id = 'emp-praca-split';
+  const pctB = split.procentBudynki;
+  const pctU = 100 - pctB;
+  let h = `<div class="civ-emp-sect" data-section="ekonomia-praca-split" id="${id}">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNY PODZIAŁ PRACY</div>`
+    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten podział.</div>`;
+  h += `<div class="civ-emp-mini" style="margin-top:8px">`
+    + `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
+    + `<label style="font-size:12px"><span class="gold">Budynki</span> / <span class="blue">Do puli imperium</span></label>`
+    + `<span data-praca-pct><b>${pctB}% / ${pctU}%</b></span></div>`
+    + `<input type="range" min="0" max="100" step="${HANDEL_PCT_STEP}" value="${pctB}" `
+    + `data-praca-key="procentBudynki" style="width:100%;margin:0 0 6px" /></div>`
+    + `<div class="civ-emp-foot">Kroki ${HANDEL_PCT_STEP}% · w lewo → więcej do puli imperium · w prawo → szybsza kolejka budowy.</div></div>`;
+  queueMicrotask(() => wireDefaultPodzialPracyInputs(pctB, onChange));
+  return h;
+}
+
+function wireDefaultPodzialPracyInputs(
+  initialPct: number,
+  onChange: (ownerId: number, split: CityPodzialPracy) => void,
+): void {
+  const host = document.getElementById('emp-praca-split');
+  if (!host) return;
+  const inp = host.querySelector<HTMLInputElement>('input[data-praca-key="procentBudynki"]');
+  if (!inp) return;
+  inp.addEventListener('input', () => {
+    const pctB = snapHandelPct(Number(inp.value));
+    onChange(0, { procentBudynki: pctB });
+    const lbl = host.querySelector('[data-praca-pct] b');
+    if (lbl) lbl.textContent = `${pctB}% / ${100 - pctB}%`;
+  });
+}
+
+function renderDefaultPoziomRacjiSection(): string {
+  const getDef = empireGlobalDefaultsUi.getOwnerDefaultPoziomRacji;
+  const onChange = empireGlobalDefaultsUi.onOwnerDefaultPoziomRacjiChange;
+  if (!getDef || !onChange) return '';
+  const poziom = getDef(0) ?? 4;
+  const id = 'emp-zywnosc-racje';
+  const steps = poziom / WYZYWIENIE_STEP;
+  const maxSteps = WYZYWIENIE_MAX / WYZYWIENIE_STEP;
+  let h = `<div class="civ-emp-sect" data-section="ekonomia-zywnosc-racje" id="${id}">`
+    + `<div class="civ-emp-eyebrow" style="margin-bottom:6px">DOMYŚLNE WYŻYWIENIE</div>`
+    + `<div class="civ-emp-note">Nowe miasta (i te bez własnego „Indywidualne") dziedziczą ten poziom Racji.</div>`;
+  h += `<div class="civ-emp-mini" style="margin-top:8px">`
+    + `<div class="civ-emp-zrow" style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:4px 0">`
+    + `<label style="font-size:12px">Wyżywienie</label>`
+    + `<span data-racje-lbl><b>${esc(formatWyzwienieLabel(poziom))}</b></span></div>`
+    + `<input type="range" min="${WYZYWIENIE_MIN / WYZYWIENIE_STEP}" max="${maxSteps}" step="1" value="${steps}" `
+    + `data-racje-key="poziom" style="width:100%;margin:0 0 6px" /></div>`
+    + `<div class="civ-emp-foot">Miasta z lokalnym limitem Spichlerza poniżej tego poziomu i tak obniżą go automatycznie na koniec tury (bez zmiany globalnego ustawienia).</div></div>`;
+  queueMicrotask(() => wireDefaultPoziomRacjiInputs(onChange));
+  return h;
+}
+
+function wireDefaultPoziomRacjiInputs(
+  onChange: (ownerId: number, poziom: PoziomRacji) => void,
+): void {
+  const host = document.getElementById('emp-zywnosc-racje');
+  if (!host) return;
+  const inp = host.querySelector<HTMLInputElement>('input[data-racje-key="poziom"]');
+  if (!inp) return;
+  inp.addEventListener('input', () => {
+    const poziom = Number(inp.value) * WYZYWIENIE_STEP;
+    onChange(0, poziom);
+    const lbl = host.querySelector('[data-racje-lbl] b');
+    if (lbl) lbl.textContent = esc(formatWyzwienieLabel(poziom));
+  });
 }
 
 const STYLE_ID = 'civ-empire-panel-css';
@@ -529,9 +628,26 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
   if (food.maxCap > 0) {
     h += `<div class="civ-emp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
-  if (food.glodWojska) {
+  // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): scalenie w JEDNO miejsce prawdy,
+  // TUŻ PRZY liczbie magazynu — wcześniej „W magazynie: 0" nie mówiło nic o tym, czy to
+  // zero jest zdrowe czy oznacza realny niepokryty deficyt; ostrzeżenie o głodzie wojska
+  // i ⚠ przy nazwie miasta (tabela niżej) żyły osobno, rozłącznie. / EN: consolidation into
+  // ONE place of truth, RIGHT NEXT TO the stock number — previously "In storage: 0" said
+  // nothing about whether that zero is healthy or a real uncovered deficit; the army-hunger
+  // note and the per-city ⚠ mark (table below) lived separately, disconnected.
+  const unfedRows = food.perCityRows.filter(r => r.nakarmione === false);
+  if (unfedRows.length > 0 || food.glodWojska) {
+    const deficitParts: string[] = [];
+    if (unfedRows.length > 0) {
+      const names = unfedRows.map(r => esc(r.name)).join(', ');
+      const miastoWord = miastoNiedokarmioneWord(unfedRows.length);
+      deficitParts.push(`<b>${unfedRows.length}</b> ${miastoWord} (${names})`);
+    }
+    if (food.glodWojska) {
+      deficitParts.push('głód wojska — magazyn centralny na minusie po koszcie armii');
+    }
     h += `<div class="civ-emp-note" style="color:#e07a7a;margin-bottom:8px">`
-      + `<b>Głód wojska</b> — magazyn centralny na minusie po koszcie armii.</div>`;
+      + `<b>⚠ Realny niepokryty deficyt żywności</b> — ${deficitParts.join(' · ')}.</div>`;
   }
 
   const t = food.tick;
@@ -571,6 +687,9 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
 
   h += `<div class="civ-emp-foot">Magazyn centralny: nadwyżki miast trafiają do puli, niedobory są pokrywane stamtąd. `
     + `Kolejność: dopłaty do miast → wojsko → zmiana zapasów. Wzrost ludności zależy od racji i bonusów lokalnych — nie z nadwyżki centralnej.</div>`;
+  // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Żywność", Maciej 2026-08-10): globalny
+  // poziom Wyżywienia imperium — w tej samej sekcji co reszta „Żywności" (Spichlerz).
+  h += renderDefaultPoziomRacjiSection();
   h += `</div>`;
   return h;
 }
@@ -820,6 +939,19 @@ function routeCountWord(n: number): string {
   return 'tras';
 }
 
+/**
+ * P-SPICHLERZ-ZERO-MYLACE: polska odmiana ma TRZY formy, nie dwie — 1 / 2-4
+ * (poza 12-14) / 5+ i 12-14. / EN: Polish plural has THREE forms, not two —
+ * 1 / 2-4 (except 12-14) / 5+ and 12-14.
+ */
+function miastoNiedokarmioneWord(n: number): string {
+  if (n === 1) return 'miasto niedokarmione';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'miasta niedokarmione';
+  return 'miast niedokarmionych';
+}
+
 function scrollToSection(section: string | null | undefined): void {
   if (!section || bodyEl === null) return;
   const target = bodyEl.querySelector(`[data-section="${section}"]`) as HTMLElement | null;
@@ -958,7 +1090,12 @@ function render(): void {
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;
   }
-  if (!onlyEconId) zasoby += renderDefaultHandelSplitSection();
+  if (!onlyEconId) {
+    zasoby += renderDefaultHandelSplitSection();
+    // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Praca", Maciej 2026-08-10): globalny
+    // podział Pracy imperium, wzorem sekcji Handlu tuż wyżej (DYSPOZYCJA-85-SUWAK).
+    zasoby += renderDefaultPodzialPracySection();
+  }
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
