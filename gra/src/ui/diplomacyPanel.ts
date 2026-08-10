@@ -17,6 +17,7 @@ import {
   tierBadgeHtml,
   treatyChipsHtml,
 } from './diploUiSkin';
+import { pushOverlay, popOverlay } from './escapeOverlayStack';
 // Typy publiczne
 // ---------------------------------------------------------------------------
 
@@ -343,4 +344,190 @@ export function hideDiplomacyPanel(): void {
  */
 export function isDiplomacyPanelOpen(): boolean {
   return rootEl !== null && rootEl.style.display !== 'none';
+}
+
+// ---------------------------------------------------------------------------
+// Pop-up podsumowania pary dyplomatycznej — R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA
+// (Maciej 2026-08-09, ECHO A + doprecyzowanie). Krok pośredni: kliknięcie
+// cywilizacji na liście (`ui/diploListHud.ts`) pokazuje NAJPIERW ten pop-up
+// (wojny/sojusze/handel + przycisk do pełnej audiencji), dopiero potem
+// pełny panel wizyty (`ui/diplomacyAudience.ts`).
+//
+// Evaluator (runda 1): formalnie to NOWY komponent DOM — żyje w tym pliku
+// obok martwego panelu dokowanego `showDiplomacyPanel` wyłącznie po to, żeby
+// dzielić helpery skórki `diploUiSkin.ts` (pennant, tier badge, chipsy
+// traktatów); ZERO współdzielonego DOM/renderu z tamtym panelem. Maciej
+// prosił wprost o pop-up, nie o rozbudowę zadokowanego panelu bocznego.
+// ---------------------------------------------------------------------------
+
+/** Jeden partner w sekcji wojny/sojuszu/handlu pop-upu. */
+export interface DiploPairSummaryPartner {
+  ownerId: number;
+  /** Nazwa nacji (ignorowana, gdy `isPlayer` — UI pokazuje "Ty"). */
+  name: string;
+  /**
+   * B2 (Evaluator runda 1) — decyzja: gracz (ownerId===0) MOŻE się pojawić w
+   * sekcjach tego pop-upu (w odróżnieniu od `collectWarsWithPlayer`/
+   * `collectKnownWarsBetweenOthers`, które celowo go wykluczają — to inne,
+   * ogólne zestawienia). Tu pop-up dotyczy KONKRETNIE oglądanej cywilizacji
+   * i relacja z graczem jest właśnie tym, co gracza najbardziej interesuje
+   * przed decyzją o wizycie — więc pokazujemy ją, ale z jawną etykietą "Ty",
+   * żeby nie pomylić jej z inną cywilizacją.
+   */
+  isPlayer?: boolean;
+}
+
+/** Dane pop-upu dla jednej klikniętej cywilizacji — silnik dostarcza przez `getData`. */
+export interface DiploPairSummaryData {
+  ownerId: number;
+  civName: string;
+  ikonaId?: string;
+  kolorHex?: string;
+  tier: number;
+  wars: readonly DiploPairSummaryPartner[];
+  alliances: readonly DiploPairSummaryPartner[];
+  deals: readonly DiploPairSummaryPartner[];
+}
+
+export interface DiploPairSummaryConfig {
+  /** Zwraca `null`, gdy dane przestały być dostępne (np. cywilizacja wyeliminowana w międzyczasie) — pop-up się zamyka. */
+  getData: () => DiploPairSummaryData | null;
+  /** Przejście do pełnej audiencji (przycisk „Zaproponuj spotkanie i negocjacje"). */
+  onOpenAudience: (ownerId: number) => void;
+  onClose?: () => void;
+}
+
+const PAIR_SUMMARY_STYLE_ID = 'civ-diplo-pair-summary-css-1e';
+function ensurePairSummaryStyles(): void {
+  ensureDiploBrandScope();
+  if (document.getElementById(PAIR_SUMMARY_STYLE_ID)) return;
+  const css = `
+${DIPLO_1E_SHARED_CSS}
+.civ-diplo-pair-summary-backdrop{position:fixed;inset:0;z-index:330;background:rgba(5,6,10,.6);
+  display:none;align-items:center;justify-content:center;}
+.civ-diplo-pair-summary-backdrop.open{display:flex;}
+.civ-diplo-pair-summary{width:min(92vw,420px);max-height:80vh;overflow-y:auto;
+  background:linear-gradient(180deg,rgba(16,22,34,.98),rgba(6,8,14,.97));
+  color:#e8e0c8;border:2px solid rgba(232,216,138,.35);border-radius:14px;
+  padding:16px 18px;font:14px 'Segoe UI',Tahoma,sans-serif;box-shadow:0 16px 48px rgba(0,0,0,.65);}
+.civ-diplo-pair-summary .dps-head{display:flex;align-items:center;gap:0.7em;
+  border-bottom:1px solid rgba(232,216,138,.22);padding-bottom:10px;margin-bottom:10px;}
+.civ-diplo-pair-summary .dps-name{font-family:Georgia,'Times New Roman',serif;font-size:1.2em;
+  font-weight:700;color:#e8d88a;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.civ-diplo-pair-summary .dps-close{margin-left:auto;flex-shrink:0;}
+.civ-diplo-pair-summary .dps-section{margin-top:10px;}
+.civ-diplo-pair-summary .dps-section-title{font-size:0.68em;letter-spacing:.16em;
+  text-transform:uppercase;color:#8a8070;margin-bottom:5px;}
+.civ-diplo-pair-summary .dps-row{font-size:0.86em;color:#d8d0ba;padding:3px 0;
+  display:flex;align-items:center;gap:6px;}
+.civ-diplo-pair-summary .dps-row.dps-you{color:#e8d88a;font-weight:700;}
+.civ-diplo-pair-summary .dps-empty{font-size:0.8em;color:#6a6458;font-style:italic;padding:2px 0;}
+.civ-diplo-pair-summary .dps-actions{margin-top:14px;display:flex;justify-content:flex-end;}
+`;
+  const s = document.createElement('style');
+  s.id = PAIR_SUMMARY_STYLE_ID;
+  s.textContent = css;
+  document.head.appendChild(s);
+}
+
+let pairSummaryCfg: DiploPairSummaryConfig | null = null;
+let pairSummaryBackdropEl: HTMLDivElement | null = null;
+let pairSummaryOpen = false;
+
+function renderPairSummarySection(title: string, partners: readonly DiploPairSummaryPartner[]): string {
+  let html = '<div class="dps-section"><div class="dps-section-title">' + esc(title) + '</div>';
+  if (partners.length === 0) {
+    html += '<div class="dps-empty">Brak.</div>';
+  } else {
+    for (const p of partners) {
+      const rowCls = p.isPlayer ? 'dps-row dps-you' : 'dps-row';
+      html += '<div class="' + rowCls + '">' + esc(p.isPlayer ? 'Ty' : p.name) + '</div>';
+    }
+  }
+  html += '</div>';
+  return html;
+}
+
+function renderPairSummary(): void {
+  if (pairSummaryBackdropEl === null || pairSummaryCfg === null) return;
+  const data = pairSummaryCfg.getData();
+  if (data === null) {
+    hideDiploPairSummary();
+    return;
+  }
+  const pennant = data.ikonaId
+    ? civPennantHtmlById(data.ikonaId, data.kolorHex, data.tier)
+    : civPennantHtml(data.civName, data.tier);
+  let html = '<div class="civ-diplo-pair-summary">'
+    + '<div class="dps-head">' + pennant
+    + '<span class="dps-name">' + esc(data.civName) + '</span>'
+    + '<button type="button" class="dip-gold-btn dps-close" data-act="dps-close">Zamknij</button>'
+    + '</div>';
+  html += renderPairSummarySection('W stanie wojny z', data.wars);
+  html += renderPairSummarySection('W sojuszu z', data.alliances);
+  html += renderPairSummarySection('Handluje z', data.deals);
+  html += '<div class="dps-actions"><button type="button" class="dip-gold-btn" data-act="dps-audience">'
+    + 'Zaproponuj spotkanie i negocjacje</button></div>';
+  html += '</div>';
+  pairSummaryBackdropEl.innerHTML = html;
+  pairSummaryBackdropEl.querySelector('[data-act="dps-close"]')?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    hideDiploPairSummary();
+  });
+  pairSummaryBackdropEl.querySelector('[data-act="dps-audience"]')?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    const oid = data.ownerId;
+    const onOpenAudience = pairSummaryCfg?.onOpenAudience;
+    hideDiploPairSummary();
+    onOpenAudience?.(oid);
+  });
+}
+
+/** Pokaż pop-up podsumowania pary dyplomatycznej (krok pośredni przed audiencją). */
+export function showDiploPairSummary(config: DiploPairSummaryConfig): void {
+  pairSummaryCfg = config;
+  ensurePairSummaryStyles();
+  if (pairSummaryBackdropEl === null) {
+    pairSummaryBackdropEl = document.createElement('div');
+    pairSummaryBackdropEl.className = 'civ-diplo-pair-summary-backdrop';
+    pairSummaryBackdropEl.addEventListener('click', (ev) => {
+      if (ev.target === pairSummaryBackdropEl) hideDiploPairSummary();
+    });
+    document.body.appendChild(pairSummaryBackdropEl);
+  }
+  pairSummaryOpen = true;
+  renderPairSummary();
+  // BB3 (Evaluator, runda 2 FAIL): `renderPairSummary()` może już zamknąć el
+  // pop-up wewnątrz siebie, gdy `getData()===null` (cywilizacja wyeliminowana
+  // w międzyczasie) — woła `hideDiploPairSummary()`, ustawia `pairSummaryOpen
+  // = false`, ale `pushOverlay` jest wtedy no-opem (jeszcze nie było
+  // odpowiadającego `push`). Bez tej strażniczej linii poniższe dwie
+  // instrukcje i tak bezwarunkowo otwierały backdrop na PUSTYM DOM (nadpisany
+  // przez `hideDiploPairSummary` na `display:none` przez klasę, ale zaraz
+  // potem znów dodawaną) — zostawiając nieusuwalny czarny overlay + zombie
+  // wpis na stosie Escape, bo `isDiploPairSummaryOpen()` już zwracał false.
+  if (!pairSummaryOpen) return;
+  pairSummaryBackdropEl.classList.add('open');
+  pushOverlay('diplo-pair-summary', hideDiploPairSummary);
+}
+
+/** Ukryj pop-up (Esc / backdrop / przycisk Zamknij / przejście do audiencji). */
+export function hideDiploPairSummary(): void {
+  if (!pairSummaryOpen) return;
+  pairSummaryOpen = false;
+  pairSummaryBackdropEl?.classList.remove('open');
+  popOverlay('diplo-pair-summary');
+  const cfg = pairSummaryCfg;
+  pairSummaryCfg = null;
+  cfg?.onClose?.();
+}
+
+/** Czy pop-up podsumowania pary jest aktualnie widoczny. */
+export function isDiploPairSummaryOpen(): boolean {
+  return pairSummaryOpen;
+}
+
+/** Odśwież dane pop-upu (np. po zdarzeniu dyplomatycznym w tej samej turze). */
+export function updateDiploPairSummary(): void {
+  if (pairSummaryOpen) renderPairSummary();
 }

@@ -1020,8 +1020,11 @@ import { scaledWonderWorkCost, scaledWonderFoodCost } from './game/r-stawki-stro
 import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarCount, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields, veteranExperienceLine } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
+  showDiploPairSummary, hideDiploPairSummary, isDiploPairSummaryOpen,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
+  type DiploPairSummaryData, type DiploPairSummaryPartner,
 } from './ui/diplomacyPanel';
+import { warPartnerIdsForOwner, dealPartnerIdsForOwner } from './game/diplomacy-pair-summary';
 import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
   showWarConsentModal,
@@ -5188,6 +5191,43 @@ async function boot(): Promise<void> {
       return buildPlayerDiploRelations()
         .map(diploListEntryFromRelation)
         .filter((e): e is DiploListEntry => e !== null);
+    }
+
+    /**
+     * R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA (Maciej 2026-08-09) — dane pop-upu
+     * podsumowania pary dyplomatycznej dla `ownerId` (cywilizacja kliknięta na liście),
+     * pokazywanego PRZED pełną audiencją.
+     *
+     * B2 (Evaluator runda 1, mgła wojny): `isVisiblePartner` odcina partnerów wojny/
+     * sojuszu/handlu, których gracz NIGDY nie spotkał lub którzy zostali wyeliminowani —
+     * ten sam warunek widoczności co istniejące kolektory `collectWarsWithPlayer`/
+     * `collectKnownWarsBetweenOthers` (`isActiveDiploOwner` + `getDiplomaticContacts()`),
+     * z JEDNYM świadomym wyjątkiem: gracz (id===0) jest zawsze widoczny — patrz komentarz
+     * przy `DiploPairSummaryPartner.isPlayer` w `ui/diplomacyPanel.ts` (decyzja B2).
+     */
+    function buildDiploPairSummaryData(ownerId: number): DiploPairSummaryData | null {
+      if (!isActiveDiploOwner(ownerId)) return null;
+      const isVisiblePartner = (id: number): boolean =>
+        id === 0 || (isActiveDiploOwner(id) && getDiplomaticContacts().has(id));
+      const toPartner = (id: number): DiploPairSummaryPartner => ({
+        ownerId: id,
+        name: ownerDiploLabel(id),
+        isPlayer: id === 0,
+      });
+      const wars = warPartnerIdsForOwner(diplomacyRelations, ownerId, isVisiblePartner).map(toPartner);
+      const alliances = dealPartnerIdsForOwner(activeDeals, ownerId, 'sojusz', isVisiblePartner).map(toPartner);
+      const deals = dealPartnerIdsForOwner(activeDeals, ownerId, 'handel', isVisiblePartner).map(toPartner);
+      const rel = getDiploRelation(0, ownerId);
+      return {
+        ownerId,
+        civName: ownerDiploLabel(ownerId),
+        ikonaId: civTypeForOwner(ownerId),
+        kolorHex: civKolorHexFn(ownerId),
+        tier: relationTier(rel),
+        wars,
+        alliances,
+        deals,
+      };
     }
 
     function buildPlayerDiploSummary(): DiploPlayerSummary {
@@ -13415,6 +13455,10 @@ async function boot(): Promise<void> {
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
       if (isDiploListHudOpen()) hideDiploListHud();
+      // N4 (R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA, Evaluator runda 3): ta funkcja
+      // (wołana m.in. z selectPlayerUnit) zamykała audiencję/panel/listę, ale NIE nowy
+      // pop-up podsumowania pary — dodane dla parytetu z resztą UI dyplomacji.
+      if (isDiploPairSummaryOpen()) hideDiploPairSummary();
     }
 
     /** Kontakt dyplomatyczny = automatyczny przy odkryciu na mapie (Maciej 2026-07-28). */
@@ -15339,6 +15383,11 @@ async function boot(): Promise<void> {
     }
 
     function openDiplomacyAudience(ownerId: number): void {
+      // N2 (R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA, Evaluator): pop-up podsumowania
+      // pary NIE chowa się sam, gdy audiencja jest otwierana z innej ścieżki niż jego
+      // własny przycisk (5 miejsc wywołania `openDiplomacyAudience` w kodzie) — jeden
+      // strażnik tutaj pokrywa je wszystkie naraz.
+      if (isDiploPairSummaryOpen()) hideDiploPairSummary();
       if (isDiploListHudOpen()) hideDiploListHud();
       diplomacyAudienceOwnerId = ownerId;
       const playerCivName = civDisplayNameForKey(civTypeForOwner(0));
@@ -16155,8 +16204,18 @@ async function boot(): Promise<void> {
         getEntries: buildPlayerDiploListEntries,
         getPlayerSummary: buildPlayerDiploSummary,
         onSelectEntry: (ownerId) => {
+          // R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA: krok pośredni — pop-up
+          // podsumowania (wojny/sojusze/handel) PRZED pełną audiencją, nie audiencja
+          // wprost (Maciej 2026-08-09).
           hideDiploListHud();
-          openDiplomacyAudience(ownerId);
+          showDiploPairSummary({
+            getData: () => buildDiploPairSummaryData(ownerId),
+            onOpenAudience: (oid) => {
+              openDiplomacyAudience(oid);
+              refreshD1bHud();
+            },
+            onClose: () => refreshD1bHud(),
+          });
           refreshD1bHud();
         },
         onFocusCapital: handleDiploFocusCapital,
