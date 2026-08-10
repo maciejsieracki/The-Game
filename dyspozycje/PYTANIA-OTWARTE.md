@@ -9780,7 +9780,7 @@ trafienia (nagłówki), identyczne z listą już sklasyfikowaną w pełnym audyc
 (rundy Auto Wyżywienie/Spichlerz, wszystkie zamknięte lub w jawnym toku). Wszystkie 24 mają jedno z
 trzech wymaganych: dispatch w locie, pytanie ABC czekające, lub udokumentowany cytat Macieja o
 odłożeniu. **Zero nowych „zapomnianych" pozycji kategorii 4.** Wszystkie 4 tematy priorytetowe
-Macieja ZAMKNIĘTE. **DEPLOY DO ROBOCZA następuje teraz.**
+Macieja ZAMKNIĘTE. **DEPLOY DO ROBOCZA następuje teraz — agent `a9bf14224ec3df83f` (Opus 5).**
 
 **Odblokowany Spichlerz „(0)"** — czekał wyłącznie na to scalenie (ten sam obszar plików). Dispatch
 następuje teraz jako trzeci temat priorytetowy. **Operator (`ab142fc1311978907`) dispatchowany** —
