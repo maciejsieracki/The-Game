@@ -8506,6 +8506,7 @@ function tileYieldLabel(hex: Hex): string {
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
+    zloze: (hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
@@ -8524,6 +8525,7 @@ function appendOkolicaYieldLabel(
     terenBazowy: c.hex.terenBazowy,
     nakladka: c.hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(c.hex.rzeka && c.hex.rzeka.obecna),
+    zloze: (c.hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });

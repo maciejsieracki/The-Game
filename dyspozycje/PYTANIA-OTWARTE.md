@@ -10824,14 +10824,19 @@ Szczęście ORAZ -1% do Rozwoju**.
 **Rozpoznanie architektury (wzorzec: silnik Żywności, `empire-food.ts`) — 3 KRYTYCZNE konflikty do
 rozstrzygnięcia PRZED kodowaniem:**
 
-1. **⚠️ Glina ma bazową produkcję terenu = 0 WSZĘDZIE** (`economy.ts:251-252`, komentarz
-   „GLINA-Q1=A... baza terenu zawsze 0"). Jedyne źródło to ulepszenie Glinianka, wymagające tech
-   „Garncarstwo" i oznaczone `epoka: 2` (Brąz) w `terrain-improvements.json`. **Jeśli obywatele w
-   epoce KAMIEŃ mają zużywać 1 Glina/osobę, a Glina strukturalnie nie istnieje przed Brązem, to
-   KAŻDE miasto w Kamieniu miałoby od tury 1 gwarantowany deficyt Gliny** → stały -1 Szczęście i
-   -1% Rozwoju dla WSZYSTKICH miast przez całą epokę Kamień, niezależnie od gry gracza. To
-   prawdopodobnie sprzeczne z zamiarem (kara, której nie da się uniknąć, nie brzmi jak zamierzony
-   projekt).
+1. ~~⚠️ Glina ma bazową produkcję terenu = 0 WSZĘDZIE~~ **SPROSTOWANE przez Macieja (2026-08-10),
+   POTWIERDZONE w kodzie — pierwsze rozpoznanie było NIEPEŁNE.** Prawda: `TERRAIN_YIELDS` (czyste
+   typy terenu — Równina/Wzgórza/itd.) rzeczywiście nie mają kolumny Glina (stąd `base.glina`
+   zawsze 0 — TO jest to, co mówił komentarz `economy.ts:251-252`), ALE rzeka to OSOBNA warstwa
+   (`tile.maRzeke`, nie typ terenu), doliczana w oddzielnym bloku `tileYield()` (~linia 434):
+   `RIVER_MODIFIER.glina = 2` (`terrain-yields.json`, `terrain_modifiers.Rzeka.Glina: 2`,
+   „R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29"). Potwierdzone dedykowanym testem
+   (`heks-plony-warstwy-test.cjs`, „Rzeka +2 glina"). **Czyli: każdy heks NAD RZEKĄ ma +2 Gliny/turę
+   bez żadnego ulepszenia, niezależnie od epoki.** Glinianka (epoka Brąz, wymaga złoża Gliny — NIE
+   rzeki) to DRUGIE, niezależne źródło (+4/turę). Ryzyko gwarantowanego deficytu w Kamieniu istnieje
+   WYŁĄCZNIE dla miast BEZ dostępu do rzeki w promieniu pracy — nie dla wszystkich miast jak
+   pierwotnie twierdzono. Nadal wymaga rozstrzygnięcia: co z miastami śródlądowymi bez rzeki w
+   epoce Kamień (przed odblokowaniem Glinianki w Brązie)?
 2. **Ceramika wymaga konwertera (Garncarnia: Glina+Drewno→Ceramika) ORAZ osobnej tech „Dostęp do
    surowca: Ceramika"** (`tech.json:186/199`) — czyli w epoce Brąz Ceramika też nie jest dostępna
    od razu na starcie epoki, tylko po zbudowaniu Garncarni i odblokowaniu tech. Ten sam typ ryzyka
