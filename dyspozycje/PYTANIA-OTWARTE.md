@@ -9682,4 +9682,47 @@ skrócenie komentarza z PL+EN do samego PL (runda 3) było niepotrzebnym obejśc
 **Dispatch rundy 4 (`a9abb376c086711d8`)** — 2 blokady (inwalidacja + test) + N1/N2/N3 przy okazji
 (ten sam obszar, tanie).
 
+**Runda 4 — dostarczona, wszystkie 5 punktów domknięte.** Blokada 1: +48 asercji w
+`auto-wyzywienie-live-recalc-test.cjs` (statyczne dla zapisu/czyszczenia cache + asercja negatywna
+że `cityGrowthLive` przy trafieniu NIE woła kosztownej funkcji + behawioralne wykonanie prawdziwego
+`clampedGrowthBreakdown` w 3 wariantach). Blokada 2: `_maxSafeRationCache.clear()` dodane w
+`tryDeductWonderStartFood` i `transferBasketItems` case `'zywnosc'`; dodatkowo Operator sam znalazł
+grepem trzecie miejsce mutujące `zapasyPanstwa` (`empire-food.ts:258`, `advanceEmpireFood`, tick
+końca tury) i zweryfikował że NIE wymaga naprawy — ta sama tura kończy się istniejącym
+`markCityStateDirty()` więc cache i tak czyszczony. N1 zrobione (nie pominięte): jedno wypełnienie
+cache dla WSZYSTKICH miast gracza na raz, usuwa niedeterminizm plakietki. N2/N3 zrobione (tooltip
+poprawiony, PL+EN komentarz przywrócony przez podniesienie limitu regexu 900→1400). Bramki zielone:
+tsc 0, logic-test 213/213, separator-test 29/0, live-recalc-test 49/0 (było 27), bilans-clamp 22/0,
+city-badge-growth-percent 38/0, rounding-parity 16/0. **Dispatchowany Evaluator rundy 4
+(`a5c06ba3b22dd1bec`)**.
+
+---
+
+## [PL, 2026-08-10] Hasło „raport" — pełny audyt (agent `aff9b116cf957d004`) + kontrola kompletności
+
+Pełne zestawienie 5 kategorii podane Maciejowi w czacie. Audyt (grep `STATUS: **OTWARTE` bez
+kotwicy, 27 trafień → 25 realnych wpisów + szerszy przegląd historyczny) znalazł **3 pozycje
+kategorii 4 „zapomniane"**, wcześniej pominięte nawet przez poprzednie audyty:
+1. **P-DYPLO-SWEETENER-KOSZYK-W-TRAKCIE** (linia 4338/6850) — ECHO A Macieja z 2026-08-09
+   (AI zachowuje sweetener-złoto, dostaje UI podglądu/edycji/usunięcia koszyka), zapisano „Dispatch
+   NASTĘPUJE teraz" — zero śladu wykonania przez kolejne ~2900 linii. Decyzja podjęta, tylko
+   niewykonana.
+2. **BUG-PANGEA-RECT-FALA188** i **BUG-RZEKI-COAST-PARALLEL-FALA188** (linie 1565/1570, playtest
+   2026-08-02) — nie weszły na oficjalną listę „6 tematów mapgen" z audytu 08-09/10. Wymagają
+   NAJPIERW sprawdzenia aktualności (generator mapy miał od tamtej pory istotne przebudowy).
+3. **R-DESIGN-PANEL-MIASTA-V2-Q1** — blokada zewnętrzna (czeka na dostawę Designera-człowieka),
+   poprzedni audyt zapisał „do przypomnienia Maciejowi" — nigdy nie przypomniane. Nie nadaje się do
+   dispatchu subagenta (blokada nie po naszej stronie), tylko do przypomnienia w czacie.
+
+**Decyzja o sekwencji (dokumentowany powód odłożenia per C-027/0c wymóg trzeciego wyjścia):** Maciej
+w tej samej sesji dał świeżą, wprost instrukcję sekwencji: „skupmy się na razie na dopchnięciu do
+końca tych czterech tematów [bugowych]. Później zajmiemy się innymi." P-DYPLO-SWEETENER i
+Pangea/Rzeki to zarejestrowane, zdecydowane/oczekujące błędy — nie nowe tematy sporne jak
+Konfigurator/Cyna/AI — więc kwalifikują się pod „błędy", nie pod „inne". Dispatchowane RÓWNOLEGLE
+(agenty w tle, nie odciągają uwagi od 4 priorytetowych tematów, które mają własne aktywne dispatch'e):
+- **P-DYPLO-SWEETENER-KOSZYK** → Operator (`a5c3495e1f3db0402`, worktree izolowany).
+- **BUG-PANGEA-RECT / BUG-RZEKI-COAST-PARALLEL** → rozpoznanie aktualności (`a0ce08d9f22499cdf`).
+- **R-DESIGN-PANEL-MIASTA-V2-Q1** — nie subagent, tylko przypomnienie Maciejowi w czacie (zrobione
+  poniżej razem z raportem „raport").
+
 ---
