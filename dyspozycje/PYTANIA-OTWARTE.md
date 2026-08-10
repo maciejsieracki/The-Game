@@ -7628,6 +7628,47 @@ dispatchować subagenta do już zaimplementowanej zmiany — zero dispatchu do c
 
 ---
 
+## P-ARMIA-ROZPAD (BB2, stackGroupId) — Evaluator runda 3: FAIL, 2 realne regresje renderu + 2 luki bramek (2026-08-10)
+
+Evaluator potwierdził rdzeń naprawy solidny: fallback bit-identyczny (fuzz 500 układów, 0
+rozbieżności), sedno zgłoszonego buga naprawione w obie strony, 3 ścieżki merge kompletne (5
+wywołań `assignSharedStackGroupId`), `onSeparate` daje fresh id (10 000 prób, 0 kolizji),
+wsteczna zgodność 4-argumentowych callerów OK, oba dodatkowe znaleziska Operatora realnie
+naprawione, C-026 (90 referencji 15 funkcji) policzone niezależnie.
+
+**BLOKUJĄCE — 2 regresje renderu (żetony znikają z mapy), 2 luki bramek:**
+- **B1:** `computeStackDisplay` grupuje po `stackGroupIdOf(u)` BEZ heksu — dwie jednostki tego
+  samego `stackGroupId` na RÓŻNYCH heksach (np. zwiadowca użył „Zwiedzaj" i odjechał sam z
+  scalonego stosu — `runScoutsAutoExplore`, `main.ts:21423`; albo cywil zostaje na origin gdy
+  reszta stosu idzie do bitwy — `moveAtkRosterOntoBattleHex`) wpada do JEDNEJ grupy renderu →
+  jeden żeton znika (`visible=false`), drugi pokazuje zsumowany `×N`/HP/Moc z dwóch heksów.
+- **B2:** ten sam klucz ignoruje flagę garnizonu — scalony garnizon z jedną jednostką wypuszczoną
+  w pole (ta sama grupa) daje 1 żeton zamiast 2, łamiąc udokumentowany kontrakt „garnizon i pole
+  na heksie miasta współistnieją jako dwa widoczne stosy".
+- **B3:** poprawka w `main.ts` (`assignSharedStackGroupId(movedUnits)`, jedyna linia naprawiająca
+  oryginalny zgłoszony bug) ma ZERO ochrony regresyjnej — usunięcie tej linii, wszystkie bramki
+  zielone.
+- **B4:** kluczowa gwarancja „fallback bit-identyczny ze starym grupowaniem" (fundament decyzji
+  ECHO B) też niezabezpieczona — usunięcie sufiksu `|g` z fallbacku, wszystkie bramki zielone
+  (własna asercja Evaluatora łapie to natychmiast, 75 rozbieżności).
+
+**Naprawa (4 warunki, jasno zdefiniowane przez Evaluatora):** (1) klucz w `computeStackDisplay`
+= tożsamość + `(q,r)` + flaga garnizonu; (2) asercje na oba scenariusze (różne heksy → 2 żetony;
+garnizon+pole → 2 żetony); (3) rozszerzyć `army-merge-separate-return-mainguard-test.cjs` o
+tekstowe przypięcie 5 wywołań `assignSharedStackGroupId` w `main.ts`; (4) asercja różnicowa
+fallbacku wobec oracle sprzed BB2 (usuwa B4).
+
+Niepilne: N1 (dwa żetony tej samej grupy renderują się w IDENTYCZNYCH współrzędnych — pełne
+nałożenie, potrzebny offset per grupa — konsekwencja wizualna zaakceptowana w ECHO B, ale nie
+dostarczona), N2 (klik w mapę zawsze trafia najmocniejszą armię, nie tę pod kursorem — poza
+zakresem BB2), N3 (`showCityUnitPick` ma tę samą klasę buga na niezawężonym `visibleStackOnHex`),
+N4 (`freshStackGroupId` używa `Date.now()` — niedeterministyczne), N5 (AI nie dostaje
+`stackGroupId` wcale — OK dla tego buga, ale opis „identycznie jak gracz" przesadzony).
+
+Dispatch rundy 4 (naprawa 4 warunków) NASTĘPUJE teraz.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
 
 Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
