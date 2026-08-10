@@ -9725,6 +9725,19 @@ broadcast × N1 daje O(N²), zmierzyć przy 20+ miastach przed deployem), N-d (B
 **Dispatch rundy 5 (`ace2328ac487dca2d`)** — 2 blokady (~10 linii łącznie), reszta pracy potwierdzona
 gotowa i niewymagająca ponownego dotykania.
 
+**Runda 5 — dostarczona.** Blokada 1: `_maxSafeRationCache.clear()` dodane po `advanceEmpireFood`
+(`main.ts:~22232`, przed `efTickResult`); komentarz przy cache przepisany — wymienia wszystkie 3
+dodatkowe miejsca, zweryfikowany grepem `zapasyPanstwa =/-=/+=` (4 miejsca mutacji, wszystkie objęte,
+`freshEmpireFoodState()` tworzy nowy stan więc nie wymaga). Blokada 2: dodano
+`foundInPlayerCities`-fallback — dla miasta spoza `playerCities` (oblężonego) funkcja woła
+`maxSafePoziomRacjiForCity` bezpośrednio (jak przed rundą 4) zamiast zahardkodowanego 6, świadomie
+bez zapisu do cache dla tej ścieżki. +2 nowe części testu (Część 8: `.clear()` w promieniu po
+`advanceEmpireFood`; Część 9: prawdziwe wykonanie funkcji, scenariusz oblężone+niewypłacalne→0,
+kontrola oblężone+wypłacalne→6 dowodząca że nie jest zahardkodowana). Bramki zielone: tsc 0,
+logic-test 213/213, separator-test 29/0, live-recalc-test 57/0 (było 49), bilans-clamp 22/0,
+city-badge-growth-percent 38/0, rounding-parity 16/0. **Dispatchowany Evaluator rundy 5
+(`a0864bcb1b18ad69b`)** — piąta i deklarowana ostatnia runda.
+
 ---
 
 ## [PL, 2026-08-10] Hasło „raport" — pełny audyt (agent `aff9b116cf957d004`) + kontrola kompletności
