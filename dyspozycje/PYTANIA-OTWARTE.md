@@ -11916,3 +11916,53 @@ właściciela (3 kierunki zarejestrowane wcześniej), świadomie odłożone do j
 inne w tym temacie jest naprawione i potwierdzone. Czeka na NIEZALEŻNEGO Evaluatora rundy 3
 (dispatch w toku) — jeśli PASS, temat zostaje w stanie „technicznie kompletny, czeka na 1 decyzję
 produktową", nie w pełni zamknięty.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — Evaluator PASS-WITH-NOTES, 2 punkty przed zamknięciem (2026-08-10)
+
+**Werdykt (Opus 5) dla `8d6d3d54`: PASS-WITH-NOTES.** Wszystkie 4 ECHO zrealizowane zgodnie z
+literą, zweryfikowane niezależnie (Q1 magazyn centralny czysty, cache nie miesza ownerów; Q3=A
+binarność potwierdzona własnym harnessem, delta identyczna niezależnie od populacji/wielkości
+zapasu; kumulatywność tabeli potwierdzona; Q2=A parytet AI/PM potwierdzony, brak gałęzi
+`ownerId===0`; UI (a)/(b) poprawne, reużycie stanu silnika bez podwójnego liczenia). Moduł ma
+mocne pokrycie mutacyjne (7/7 mutacji złapanych). Zero regresji w 12 uruchomionych bramkach.
+
+**N1 (do naprawy, BEZ ABC, ten sam wzorzec luki co w R-CS-HARD-PASYWNE dziś rano):** nowa bramka
+NIE chroni realnego wiringu do silnika tury. 3 mutacje w `main.ts` przechodzą wszystkie bramki na
+zielono: usunięcie `citizenResourceHappinessDelta: citizenUpkeep.happinessDelta` (linia ~23459) —
+wyłącza CAŁY kanał Szczęścia po cichu; usunięcie `citizenGrowthPctByCityId` z opts
+`applyPostCentralPopulationGrowth` (~23789) — wyłącza CAŁY kanał Rozwoju; `set(cid, 0)` zamiast
+realnej wartości w budowie mapy (~23761-23764). `tsc` nie łapie, bo oba pola są opcjonalne z
+fallbackiem `?? 0` (celowo, dla wstecznej kompatybilności — ta sama opcjonalność otwiera lukę).
+Precedens z tego samego dnia (`cs-military-cap-wiring-test.cjs`, `stripLineComments` + sekcja
+wykonująca realnie funkcję) nie został zastosowany tutaj.
+
+**⛔ N2 (WYMAGA ABC właściciela, NIE decyzja techniczna) — mechanika nazwana „ZUŻYCIE" niczego
+nie zużywa.** `resolveCitizenResourceCoverage` jest funkcją CZYSTĄ — sprawdza `stock>0` i NIGDY
+nie odejmuje z magazynu. W całym commicie nie ma żadnego `deduct`/dekrementacji `City.surowce` z
+tytułu obywateli. To jest bramka OBECNOŚCI, nie konsumpcja. Zgodne z literalnym brzmieniem ECHO
+Q1 zapisanym w rejestrze („kara aktywuje się gdy magazyn jest PUSTY") — ale **słowa Macieja mówiły
+co innego**: „Całość zapotrzebowania jest ŚCIĄGANA z magazynu... wszystkie potrzebne surowce dla
+mieszkańców są ŚCIĄGANE z magazynu", plus tabela „Zużycie NA 1 OBYWATELA". **Q3=A rozstrzygnęło
+kształt KARY (binarna), NIE rozstrzygnęło czy magazyn jest drenowany — to dwie różne rzeczy, jedna
+pozostała nierozstrzygnięta.** Skutek balansowy jeśli zostanie bez drenażu: dla surowców
+terenowych (Drewno/Kamień/Glina, produkcja pasywna, cap 1000+) kara po pierwszych turach
+PRAKTYCZNIE NIGDY nie zadziała — mechanika zamieni się w stały bonus +2/+4/+5 Szczęścia per epoka
+w każdym mieście, niezależny od liczby obywateli. Kolumna „na 1 obywatela" staje się w tym modelu
+martwa. **Odpowiedź „tak, ma drenować" CZĘŚCIOWO COFA ECHO Q1 w kształcie zapisanym w rejestrze —
+Maciej musi być o tym poinformowany wprost przy zadaniu pytania (CLAUDE.md §1a).**
+
+**Noty dodatkowe (nieblokujące, do rejestru/playtestu):** trzecie, pre-istniejące miejsce UI
+(`buildZywnoscDetailCard`) pokazuje niepełne rozbicie (3 z 7 składników) — ta sama klasa co
+`P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD`, nie regresja tej zmiany; ta sama kara pokazana 2× w
+panelu Społeczeństwo (raz zbiorczo, raz rozbita) — czytelniczo myląca, do oceny playtestowej;
+panel miasta i panel Surowców mogą się chwilowo rozjechać w trakcie tury (migawka z końca
+poprzedniej tury vs przeliczenie na żywo) — liczby ostatecznie poprawne, tylko chwilowa
+niespójność prezentacji; w miastach głęboko nieszczęśliwych kanał Szczęścia może być no-opem
+przez saturację klampa (pre-istniejąca własność, nie wada tej zmiany) — realnie działa wtedy tylko
+kanał Rozwoju; 3 asercje testu w sekcji parytetu są tautologiczne (to samo wywołanie porównane z
+samym sobą) — realny dowód parytetu leży gdzie indziej i działa.
+
+**STATUS: dispatch Sonnet 5 (worktree) — N1 NATYCHMIAST, bez ABC (bramka wiringu, wzorem
+`cs-military-cap-wiring-test.cjs`). N2 — pytanie ABC do Macieja, zadane po jego powrocie
+(świadomie odłożone, jak pozostałe 2 tematy dziś w nocy). Temat NIE MOŻE zostać w pełni zamknięty
+bez N2, ale N1 nie wymaga jego udziału.**
