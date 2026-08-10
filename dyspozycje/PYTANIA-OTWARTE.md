@@ -9365,3 +9365,23 @@ nową regułę C-04X.
 **STATUS: ZAMKNIĘTE. Sesja czeka na powrót Macieja do playtestu.**
 
 ---
+
+## P-AUTO-WYZYWIENIE-BUG1-MECHANIZM-RAZ-NA-TURE — ECHO A, decyzja Macieja (2026-08-10)
+
+Pytanie ABC zadane (mechanizm raz-na-turę: A pełne przeliczanie na żywo / B zostaw jak jest
+/ C zdarzeniowe pośrednie — rekomendacja orkiestratora). **Odpowiedź Macieja: A** — usunąć
+przyczynę u źródła, przeliczać poziom racji na żywo przy każdej zmianie wpływającej na
+produkcję żywności miasta (przesunięcie robotnika, ukończenie budynku, itp.), nie tylko przy
+„Koniec tury".
+
+**Ryzyko do zaadresowania w implementacji (z tej samej nocy, ten sam obszar kodu):** Evaluator
+w tym samym temacie znalazł i kazał naprawić regresję wydajnościową dokładnie w tym miejscu —
+`getMaxSafePoziomRacjiForPlayerCity` na gorącej ścieżce `mousemove`/hover (pełny
+`previewCityEconomy` + pętla 13 poziomów × O(miasta), bez memoizacji, wynik prawie zawsze
+wyrzucany). Implementacja A MUSI wyzwalać przeliczenie na KONKRETNYCH zdarzeniach zmiany
+stanu (np. `adjustTileWorker`, ukończenie budowy, zmiana populacji) — NIE na ścieżce
+renderu/hover/mousemove, żeby nie powtórzyć tej samej klasy regresji.
+
+Dispatch Operatora NASTĘPUJE teraz.
+
+---
