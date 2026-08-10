@@ -95,22 +95,31 @@ export const AUTOSAVE_SLOT_ID = 'autosave';
 
 /**
  * Prefiks klucza META — MAŁY nagłówek zapisu (label/tura/savedAt/kontekst),
- * zapisywany OSOBNO od pełnej treści zapisu (Defekt C, runda 2). Celowo NIE
- * jest podprefiksem SAVE_PREFIX (nie `SAVE_PREFIX + slot + '.meta'`) —
- * `listSaves()` iteruje WSZYSTKIE klucze zaczynające się od SAVE_PREFIX i
- * traktuje resztę jako nazwę slotu; klucz meta pod tym samym prefiksem
- * pojawiłby się tam jako fałszywy dodatkowy "slot" (`<realSlot>.meta`).
- * Osobny prefiks eliminuje kolizję bez zmiany `listSaves()`.
+ * zapisywany OSOBNO od pełnej treści zapisu (Defekt C, runda 2). MUSI być
+ * rozłączny z SAVE_PREFIX ('thegame.save.') — `listSaves()` iteruje WSZYSTKIE
+ * klucze zaczynające się od SAVE_PREFIX i traktuje resztę jako nazwę slotu;
+ * klucz meta pod prefiksem, który sam zaczyna się od SAVE_PREFIX, pojawiłby
+ * się tam jako fałszywy dodatkowy "slot". UWAGA (runda 3, Evaluator): wcześniej
+ * ta stała brzmiała 'thegame.save.meta.' — mimo komentarza obok twierdzącego
+ * inaczej, ten string DALEJ zaczyna się od 'thegame.save.', więc BYŁ
+ * podprefiksem i `listSaves()` faktycznie zwracał fantomowy slot
+ * `meta.<realSlot>`. Prefiks poniżej ('thegame.savemeta.', bez kropki po
+ * "save") nie zaczyna się od SAVE_PREFIX — sprawdź `!SAVE_META_PREFIX.
+ * startsWith(SAVE_PREFIX)`, patrz asercja w map-snapshot-load-test.cjs.
  * / EN: META key prefix — a SMALL save header (label/tura/savedAt/context),
- * stored SEPARATELY from the full save body (Defect C, round 2).
- * Deliberately NOT a sub-prefix of SAVE_PREFIX (not
- * `SAVE_PREFIX + slot + '.meta'`) — `listSaves()` iterates ALL keys starting
- * with SAVE_PREFIX and treats the remainder as the slot name; a meta key
- * under that same prefix would show up there as a bogus extra "slot"
- * (`<realSlot>.meta`). A separate prefix avoids the collision without
- * touching `listSaves()`.
+ * stored SEPARATELY from the full save body (Defect C, round 2). MUST be
+ * disjoint from SAVE_PREFIX ('thegame.save.') — `listSaves()` iterates ALL
+ * keys starting with SAVE_PREFIX and treats the remainder as the slot name;
+ * a meta key under a prefix that itself starts with SAVE_PREFIX would show up
+ * there as a bogus extra "slot". NOTE (round 3, Evaluator): this constant used
+ * to read 'thegame.save.meta.' — despite the adjacent comment claiming
+ * otherwise, that string still starts with 'thegame.save.', so it WAS a
+ * sub-prefix and `listSaves()` really did return a phantom `meta.<realSlot>`
+ * slot. The prefix below ('thegame.savemeta.', no dot after "save") does not
+ * start with SAVE_PREFIX -- verified by `!SAVE_META_PREFIX.
+ * startsWith(SAVE_PREFIX)`, see the assertion in map-snapshot-load-test.cjs.
  */
-export const SAVE_META_PREFIX = 'thegame.save.meta.';
+export const SAVE_META_PREFIX = 'thegame.savemeta.';
 
 function saveMetaKey(slot: string): string {
   return SAVE_META_PREFIX + slot;
@@ -528,7 +537,25 @@ export function saveToLocal(slot: string, s: SaveGame): SaveToLocalResult {
     try {
       storage.setItem(saveMetaKey(slot), JSON.stringify(buildSaveSlotMeta(s)));
     } catch {
-      /* ignore -- best-effort, patrz komentarz wyżej / see comment above */
+      // Runda 3 (Evaluator): porażka zapisu NIE była nettoowana ze starym
+      // kluczem meta z poprzedniego zapisu tego samego slotu -- ten stary
+      // klucz zostawał nietknięty, więc summarizeSaveSlots() czytał
+      // NIEAKTUALNE dane (stara tura/label) zamiast fallbackować na pełne
+      // parsowanie. Usuwamy STARY klucz meta (best-effort, też w try/catch --
+      // nie chcemy rzucać z samego catch), żeby brak klucza (nie stary klucz)
+      // wymusił poprawny fallback.
+      // / EN: round 3 (Evaluator): a write failure did NOT clear the STALE
+      // meta key left over from this slot's previous save -- that stale key
+      // stayed untouched, so summarizeSaveSlots() read OUTDATED data (old
+      // turn/label) instead of falling back to full parsing. Remove the
+      // STALE meta key (best-effort, also wrapped -- we don't want to throw
+      // from inside a catch), so a MISSING key (not a stale one) drives the
+      // correct fallback.
+      try {
+        storage.removeItem(saveMetaKey(slot));
+      } catch {
+        /* ignore -- best-effort */
+      }
     }
     return { ok: true };
   } catch (err) {

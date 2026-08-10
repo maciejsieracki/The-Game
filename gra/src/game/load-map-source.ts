@@ -25,13 +25,30 @@ export interface LoadMapSourceResult<TMap extends GameMap> {
  *  - brak / niepoprawny mapSnapshot (stary zapis sprzed tej naprawy) ->
  *    dokladnie dzisiejsze zachowanie: `genFn()` regeneruje mape z
  *    `saved.seed` -- zero zmian dla starych zapisow (wsteczna kompatybilnosc).
+ *  - mapSnapshot przechodzi `isValidMapSnapshot` (ksztalt/typy OK), ale
+ *    `buildGameMapFromSnapshot` mimo to rzuca (np. uszkodzony/niespojny
+ *    indeks do `dict`, runda 3, Evaluator) -> traktujemy identycznie jak
+ *    niepoprawny snapshot: fallback na `genFn()`, `usedSnapshot: false`.
+ *    Bez tego wyjatek z budowania mapy leciałby nieobsluzony do wywolujacego
+ *    zamiast spasc na generator.
+ * / EN: same fallback contract, now also covering the case where the
+ * snapshot passes shape validation but `buildGameMapFromSnapshot` still
+ * throws (corrupted/inconsistent dict index) -- caught and treated exactly
+ * like an invalid snapshot instead of propagating unhandled.
  */
 export async function loadMapForSave<TMap extends GameMap>(
   saved: SaveGame,
   genFn: () => Promise<TMap>,
 ): Promise<LoadMapSourceResult<TMap>> {
   if (isValidMapSnapshot(saved.mapSnapshot)) {
-    return { map: buildGameMapFromSnapshot(saved.mapSnapshot) as TMap, usedSnapshot: true };
+    try {
+      return { map: buildGameMapFromSnapshot(saved.mapSnapshot) as TMap, usedSnapshot: true };
+    } catch {
+      /* uszkodzony snapshot mimo poprawnego ksztaltu -- spadamy na generator,
+         jak przy braku/niepoprawnym mapSnapshot / corrupted snapshot despite
+         valid shape -- fall through to the generator, same as a missing or
+         invalid mapSnapshot */
+    }
   }
   return { map: await genFn(), usedSnapshot: false };
 }

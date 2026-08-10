@@ -57,6 +57,16 @@ const BUNDLE = path.join(__dirname, '.map-snapshot-load-bundle.cjs');
 
 let pass = 0;
 let fail = 0;
+// Runda 3 (Evaluator, punkt 4b): licznik ODDZIELNY od `fail` -- bloker
+// architektury rotacji autozapisu (AUTOSAVE_ROT_COUNT) jest ŚWIADOMIE poza
+// zakresem tej naprawy (wymaga ABC właściciela), więc jego wykrycie MUSI być
+// WIDOCZNE w wyniku testu, ale NIE MOŻE przerywać exit code (nie blokuje
+// pozostałych napraw tej rundy). Patrz sekcja 5b.
+// / EN: round 3 (Evaluator, point 4b): counter SEPARATE from `fail` -- the
+// autosave rotation architecture blocker (AUTOSAVE_ROT_COUNT) is DELIBERATELY
+// out of scope for this fix (needs owner ABC), so detecting it must be
+// VISIBLE in the test output but must NOT flip the exit code. See section 5b.
+let knownFailures = 0;
 function assert(cond, msg) {
   if (cond) {
     pass++;
@@ -90,7 +100,7 @@ fs.writeFileSync(
   [
     "export { serializeMapForSave, buildGameMapFromSnapshot, isValidMapSnapshot } from '../src/map/mapSnapshot.ts';",
     "export { loadMapForSave } from '../src/game/load-map-source.ts';",
-    "export { serializeGame, deserializeGame, SAVE_VERSION } from '../src/game/save.ts';",
+    "export { serializeGame, deserializeGame, SAVE_VERSION, SAVE_PREFIX, SAVE_META_PREFIX } from '../src/game/save.ts';",
     "export { generateMap } from '../src/map/generator.ts';",
     '',
   ].join('\n'),
@@ -110,9 +120,20 @@ esbuild.buildSync({
 const {
   serializeMapForSave, buildGameMapFromSnapshot, isValidMapSnapshot,
   loadMapForSave, serializeGame, deserializeGame, SAVE_VERSION,
+  SAVE_PREFIX, SAVE_META_PREFIX,
   generateMap,
 } = require(BUNDLE);
 fs.unlinkSync(ENTRY);
+
+// ---------------------------------------------------------------------------
+// 0. SAVE_META_PREFIX rozłączny z SAVE_PREFIX (runda 3, Evaluator, punkt 3) --
+//    stary SAVE_META_PREFIX='thegame.save.meta.' BYŁ podprefiksem SAVE_PREFIX
+//    ='thegame.save.' mimo komentarza twierdzącego inaczej -- listSaves()
+//    zwracał fantomowy slot 'meta.<realSlot>'. Sprawdzamy to explicit.
+// ---------------------------------------------------------------------------
+console.log('--- 0. SAVE_META_PREFIX rozłączny z SAVE_PREFIX ---');
+assert(!SAVE_META_PREFIX.startsWith(SAVE_PREFIX), 'SAVE_META_PREFIX (' + SAVE_META_PREFIX + ') NIE jest podprefiksem SAVE_PREFIX (' + SAVE_PREFIX + ') -- listSaves() nie zwróci fantomowego slotu meta.<realSlot>');
+console.log('');
 
 // ---------------------------------------------------------------------------
 // Fixture: mała mapa z przykładem KAŻDEGO rodzaju mutacji rozgrywki, żeby
@@ -286,6 +307,40 @@ async function mockGenFail() {
   console.log('');
 
   // ---------------------------------------------------------------------------
+  // 3b. Snapshot z POPRAWNYM kształtem (przechodzi isValidMapSnapshot), ale
+  //     NIESPÓJNĄ WARTOŚCIĄ wewnątrz kolumny rzadkiej (hexIdx poza zakresem
+  //     hexList) -- isValidMapSnapshot celowo NIE sprawdza wartości (patrz
+  //     komentarz przy funkcji, koszt na dużych mapach), więc taki snapshot
+  //     przechodzi walidację kształtu i trafia do buildGameMapFromSnapshot,
+  //     która rzuca (Evaluator runda 3, punkt 1): `hexList[999]` jest
+  //     `undefined` (n=2), `.zloze = ...` na `undefined` -> TypeError.
+  //     Demonstruje NAPRAWĘ: loadMapForSave łapie ten wyjątek i spada na
+  //     genFn(), dokładnie jak przy mapSnapshot niepoprawnym kształtem.
+  // ---------------------------------------------------------------------------
+  console.log('--- 3b. buildGameMapFromSnapshot rzuca na niespójnym indeksie -> loadMapForSave łapie i spada na generator ---');
+
+  const brokenIndexSnap = { ...snap, zloze: { hexIdx: [999], val: [0] } };
+  assert(isValidMapSnapshot(brokenIndexSnap) === true, 'snapshot z hexIdx poza zakresem nadal przechodzi isValidMapSnapshot (sprawdza tylko kształt, nie wartości -- to jest właśnie luka, którą łata try/catch)');
+
+  let brokenThrew = false;
+  try {
+    buildGameMapFromSnapshot(brokenIndexSnap);
+  } catch (e) {
+    brokenThrew = true;
+  }
+  assert(brokenThrew === true, 'buildGameMapFromSnapshot RZUCA na hexIdx poza zakresem (demonstracja luki sprzed naprawy punktu 1)');
+
+  const brokenSave = fakeSave({ mapSnapshot: brokenIndexSnap });
+  let brokenGenCalls = 0;
+  async function mockGenForBroken() { brokenGenCalls++; return regeneratedMap; }
+  const brokenResult = await loadMapForSave(brokenSave, mockGenForBroken);
+  assert(brokenGenCalls === 1, 'loadMapForSave: mapSnapshot kształtowo poprawny, ale buildGameMapFromSnapshot rzuca -> try/catch łapie wyjątek i WOŁA genFn (naprawa punktu 1, było: wyjątek nieobsłużony)');
+  assert(brokenResult.usedSnapshot === false, 'loadMapForSave: po złapaniu wyjątku zwraca usedSnapshot=false (identycznie jak przy niepoprawnym kształcie)');
+  assert(brokenResult.map === regeneratedMap, 'loadMapForSave: po złapaniu wyjątku zwraca mapę z genFn()');
+
+  console.log('');
+
+  // ---------------------------------------------------------------------------
   // 4. Prawdziwa mapa z generatora (nie syntetyczny fixture) -- łapie ewentualne
   //    pola nie-JSON-safe (funkcje, Date, Map/Set) które syntetyczny fixture
   //    mógłby przeoczyć. Mała mapa (36x28, DEFAULT) -- szybka i deterministyczna.
@@ -377,13 +432,22 @@ async function mockGenFail() {
   //     czyste, main.ts się nie bundluje) -- budujemy CELOWO HOJNĄ syntetyczną
   //     resztę stanu (więcej jednostek/miast/budynków niż typowa gra), żeby
   //     próg miał realny margines bezpieczeństwa, nie optymistyczne zero.
-  //     PRÓG: 2,5 MB znaków (~5 MB UTF-16) = POŁOWA limitu ~5 MB/origin
-  //     Chromium dla JEDNEGO zapisu -- celowy zapas x2, bo: (a) gracz może
-  //     mieć kilka nazwanych zapisów jednocześnie w tym samym originie, (b)
-  //     autozapis rotacyjny (main.ts AUTOSAVE_ROT_COUNT=10) w fallbacku bez
-  //     FSA trzyma do 10 kopii naraz -- osobny, pre-istniejący temat
-  //     architektury rotacji, poza zakresem tej naprawy, ale zapas x2 na
-  //     POJEDYNCZY zapis łagodzi go częściowo bez zmiany kodu rotacji.
+  //
+  //     KOREKTA JEDNOSTEK (runda 3, Evaluator, punkt 4a): poprzedni próg
+  //     2,5 mln znaków był OPISANY jako "połowa limitu ~5 MB UTF-16", ale
+  //     matematycznie to CAŁY limit (string .length liczy jednostki UTF-16;
+  //     2,5 mln znaków x 2 bajty/znak UTF-16 = 5 MB), nie jego połowa.
+  //     ORIGIN_LIMIT_UTF16_CHARS niżej to CAŁY budżet originu w jednostkach
+  //     .length (2,5 mln znaków = ~5 MB UTF-16); PROG_CHARS to jego POŁOWA
+  //     (1,25 mln znaków = ~2,5 MB UTF-16) na JEDEN zapis -- zapas x2, bo:
+  //     (a) gracz może mieć kilka nazwanych zapisów jednocześnie w tym samym
+  //     originie, (b) autozapis rotacyjny (main.ts AUTOSAVE_ROT_COUNT, patrz
+  //     odczyt niżej) w fallbacku bez FSA trzyma wiele kopii naraz -- osobny,
+  //     pre-istniejący temat architektury rotacji, poza zakresem tej naprawy
+  //     (patrz asercja agregatowa 5c niżej, ŚWIADOMIE czerwona/ostrzegawcza).
+  //     Definiowanie PROG_CHARS jako przeliczenie z ORIGIN_LIMIT_UTF16_CHARS
+  //     (a nie osobna literalna stała) ma nie dopuścić do powtórki tego
+  //     samego błędu jednostek w przyszłej zmianie.
   // ---------------------------------------------------------------------------
   console.log('');
   console.log('--- 5b. Rozmiar CAŁEGO zapisu: mapSnapshot standardowy + reprezentatywna reszta stanu ---');
@@ -436,7 +500,14 @@ async function mockGenFail() {
     tradeRoutes,
   });
   const bigJson = serializeGame(bigSave);
-  const PROG_CHARS = 2.5 * 1024 * 1024;
+
+  // Limit CAŁEGO originu localStorage w Chromium (~5 MB UTF-16); .length w JS
+  // liczy jednostki UTF-16, więc w ZNAKACH (nie bajtach) to 5 MB / 2 bajty =
+  // 2,5 mln znaków. PROG_CHARS to POŁOWA tego budżetu -- patrz uzasadnienie
+  // w komentarzu sekcji wyżej.
+  const ORIGIN_LIMIT_UTF16_CHARS = 2.5 * 1024 * 1024;
+  const PROG_CHARS = ORIGIN_LIMIT_UTF16_CHARS / 2;
+
   console.log(
     '    Pelny zapis (mapa standardowy + ' + bigUnits.length + ' jednostek + ' + bigCities.length + ' miast + explored pelny): '
     + bigJson.length + ' znakow (' + (bigJson.length / 1024 / 1024).toFixed(3) + ' MB) = '
@@ -444,12 +515,55 @@ async function mockGenFail() {
   );
   assert(
     bigJson.length < PROG_CHARS,
-    'PELNY zapis (mapa standardowy + reprezentatywna reszta stanu) < ' + (PROG_CHARS / 1024 / 1024) + ' MB znakow, '
-    + 'zapas polowa limitu ~5 MB/origin Chromium dla JEDNEGO zapisu (got ' + (bigJson.length / 1024 / 1024).toFixed(3) + ' MB)',
+    'PELNY zapis (mapa standardowy + reprezentatywna reszta stanu) < ' + (PROG_CHARS / 1024 / 1024).toFixed(3) + ' mln znakow (polowa budzetu originu ~' + (ORIGIN_LIMIT_UTF16_CHARS / 1024 / 1024).toFixed(3) + ' mln znakow / ~5 MB UTF-16) dla JEDNEGO zapisu (got ' + (bigJson.length / 1024 / 1024).toFixed(3) + ' mln znakow)',
   );
 
+  // ---------------------------------------------------------------------------
+  // 5c. Budżet AGREGATOWY dla scenariusza ROTACYJNEGO (runda 3, Evaluator,
+  //     punkt 4b) -- sekcja 5b mierzy TYLKO pojedynczy zapis; realny scenariusz
+  //     ryzyka to rotacja WIELU zapisów jednocześnie w tym samym originie
+  //     (main.ts, autosave rotacyjny w fallbacku bez FSA). AUTOSAVE_ROT_COUNT
+  //     jest lokalną, nieeksportowaną stałą main.ts -- ODCZYTUJEMY jej wartość
+  //     z tekstu źródłowego (nie zmieniamy jej, zakaz tej rundy), żeby budżet
+  //     agregatowy zawsze podążał za realną liczbą slotów rotacji.
+  //     OCZEKIWANE: ta asercja jest DZIŚ CZERWONA (Evaluator zmierzył 13,80 MB
+  //     UTF-16 dla 10 slotów, ponad budżet originu ~5 MB) -- to dokumentuje
+  //     jawnie nierozwiązany bloker architektury rotacji, celowo POZA
+  //     zakresem tej naprawy (wymaga ABC właściciela). Dlatego NIE używamy
+  //     assert() (który wywaliłby exit 1) -- licznik knownFailures osobny,
+  //     WIDOCZNY w podsumowaniu, ale nie blokujący pozostałych 4 napraw.
+  // ---------------------------------------------------------------------------
   console.log('');
-  console.log('=== map-snapshot-load-test: ' + pass + ' pass, ' + fail + ' fail ===');
+  console.log('--- 5c. Budzet AGREGATOWY rotacji autozapisu (AUTOSAVE_ROT_COUNT slotow naraz) ---');
+
+  const mainTsSrc = fs.readFileSync(path.join(GRA_DIR, 'src', 'main.ts'), 'utf8');
+  const rotMatch = mainTsSrc.match(/const\s+AUTOSAVE_ROT_COUNT\s*=\s*(\d+)/);
+  assert(rotMatch !== null, 'main.ts zawiera `const AUTOSAVE_ROT_COUNT = <liczba>` (odczyt do wyliczenia budzetu agregatowego, BEZ modyfikacji stałej)');
+  const AUTOSAVE_ROT_COUNT = rotMatch ? parseInt(rotMatch[1], 10) : 10;
+
+  const aggregateChars = bigJson.length * AUTOSAVE_ROT_COUNT;
+  console.log(
+    '    Budzet agregatowy: ' + AUTOSAVE_ROT_COUNT + ' slotow x ' + bigJson.length + ' znakow/slot = '
+    + aggregateChars + ' znakow (' + (aggregateChars / 1024 / 1024).toFixed(3) + ' mln znakow) = '
+    + (aggregateChars * 2 / 1024 / 1024).toFixed(3) + ' MB w UTF-16, budzet originu ~5 MB UTF-16 (~'
+    + (ORIGIN_LIMIT_UTF16_CHARS / 1024 / 1024).toFixed(3) + ' mln znakow)',
+  );
+  if (aggregateChars < ORIGIN_LIMIT_UTF16_CHARS) {
+    assert(true, 'budzet AGREGATOWY rotacji autozapisu (' + AUTOSAVE_ROT_COUNT + ' slotow) miesci sie w budzecie originu ~5 MB UTF-16');
+  } else {
+    knownFailures++;
+    console.warn(
+      '  [KNOWN-FAIL] budzet AGREGATOWY rotacji autozapisu (' + AUTOSAVE_ROT_COUNT + ' slotow x '
+      + (bigJson.length / 1024 / 1024).toFixed(3) + ' mln znakow/slot = ' + (aggregateChars * 2 / 1024 / 1024).toFixed(3)
+      + ' MB UTF-16) PRZEKRACZA budzet originu ~5 MB UTF-16.',
+    );
+    console.warn(
+      '  // ZNANY, OTWARTY BLOKER — wymaga ABC właściciela ws. architektury rotacji autozapisu, patrz PYTANIA-OTWARTE.md',
+    );
+  }
+
+  console.log('');
+  console.log('=== map-snapshot-load-test: ' + pass + ' pass, ' + fail + ' fail, ' + knownFailures + ' known-fail (nie liczy sie do exit code) ===');
   try { fs.unlinkSync(BUNDLE); } catch (e) { /* ignore */ }
   process.exit(fail > 0 ? 1 : 0);
 })().catch((e) => {

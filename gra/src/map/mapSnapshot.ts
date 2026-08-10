@@ -158,13 +158,20 @@ export interface SerializedMapData {
  * (`getFileHandle`, `createWritable`) — w tym oknie `map.hexes` mógłby się
  * teoretycznie zmutować (tura, budowa ulepszenia), rozdzierając migawkę,
  * GDYBY ta funkcja przekazywała żywe referencje na obiekty Hex dalej.
- * Runda 2 usuwa to ryzyko z natury rzeczy: `serializeMapForSave()` czyta
- * KAŻDE pole SKALARNIE (liczby/stringi/booleany) i zapisuje je do nowych
- * tablic W TEJ FUNKCJI, SYNCHRONICZNIE, zanim `buildSaveGameSnapshot()`
- * (main.ts) odda kontrolę wywołującemu — żadna z dwóch await-owanych
- * operacji I/O w fsa-autosave.ts nie ma już czego zmutować, bo snapshot nie
- * trzyma już żywych obiektów Hex, tylko ich skopiowaną w tym momencie
- * zawartość. Rozdarcie migawki nie jest już możliwe.
+ * Runda 2 usuwa to ryzyko dla siatki heksów z natury rzeczy:
+ * `serializeMapForSave()` czyta KAŻDE pole heksu SKALARNIE (liczby/stringi/
+ * booleany) i zapisuje je do nowych tablic W TEJ FUNKCJI, SYNCHRONICZNIE,
+ * zanim `buildSaveGameSnapshot()` (main.ts) odda kontrolę wywołującemu —
+ * żadna z dwóch await-owanych operacji I/O w fsa-autosave.ts nie ma już
+ * czego zmutować dla `map.hexes`, bo ta część snapshotu nie trzyma już
+ * żywych obiektów Hex, tylko ich skopiowaną w tym momencie zawartość.
+ * ZASTRZEŻENIE (runda 3, Evaluator): to dotyczy WYŁĄCZNIE siatki heksów.
+ * `riverPaths`/`riverPathKinds` niżej SĄ kopiowane płytko (`.map(...)`) z
+ * tego samego powodu co reszta — bez tego zostawałyby żywą referencją na
+ * `map.riverPaths`/`map.riverPathKinds` i teoretyczne okno mutacji podczas
+ * await-owanego I/O w fsa-autosave.ts obejmowałoby też rzeki. Po tej
+ * poprawce rozdarcie migawki nie jest już możliwe dla ŻADNEGO pola
+ * `SerializedMapData`, nie tylko dla siatki heksów.
  * / EN: builds a snapshot from the live map for the save file — copies
  * SCALAR values into new arrays at call time (not references into
  * `map.hexes`). That is a natural side effect of the columnar format (it has
@@ -178,13 +185,21 @@ export interface SerializedMapData {
  * (`getFileHandle`, `createWritable`) — in that window `map.hexes` could in
  * principle mutate (a turn advancing, an improvement being built), tearing
  * the snapshot, IF this function passed live Hex object references onward.
- * Round 2 removes that risk by construction: `serializeMapForSave()` reads
- * EVERY field SCALARLY (numbers/strings/booleans) and writes it into new
- * arrays INSIDE THIS FUNCTION, SYNCHRONOUSLY, before `buildSaveGameSnapshot()`
- * (main.ts) returns control to its caller — neither of the two awaited I/O
- * operations in fsa-autosave.ts has anything left to mutate, because the
- * snapshot no longer holds live Hex objects, only their contents copied at
- * that instant. A torn snapshot is no longer possible.
+ * Round 2 removes that risk by construction for the hex grid:
+ * `serializeMapForSave()` reads EVERY hex field SCALARLY (numbers/strings/
+ * booleans) and writes it into new arrays INSIDE THIS FUNCTION,
+ * SYNCHRONOUSLY, before `buildSaveGameSnapshot()` (main.ts) returns control
+ * to its caller — neither of the two awaited I/O operations in
+ * fsa-autosave.ts has anything left to mutate for `map.hexes`, because that
+ * part of the snapshot no longer holds live Hex objects, only their
+ * contents copied at that instant.
+ * CAVEAT (round 3, Evaluator): this covered the hex grid ONLY.
+ * `riverPaths`/`riverPathKinds` below ARE now shallow-copied (`.map(...)`)
+ * for the same reason as everything else -- without that they stayed a live
+ * reference into `map.riverPaths`/`map.riverPathKinds`, and the theoretical
+ * mutation window during fsa-autosave.ts's awaited I/O would have included
+ * rivers too. After this fix a torn snapshot is no longer possible for ANY
+ * field of `SerializedMapData`, not just the hex grid.
  */
 export function serializeMapForSave(map: GameMap): SerializedMapData {
   const dict: string[] = [];
@@ -264,8 +279,16 @@ export function serializeMapForSave(map: GameMap): SerializedMapData {
     szerokoscQ: map.szerokoscQ,
     wysokoscR: map.wysokoscR,
     seed: map.seed,
-    riverPaths: map.riverPaths,
-    riverPathKinds: map.riverPathKinds,
+    // Kopia płytka (runda 3, Evaluator) -- bez niej to żywa referencja na
+    // map.riverPaths/map.riverPathKinds, patrz zastrzeżenie w komentarzu
+    // funkcji wyżej. Rzeki to niewielka struktura względem 20160 heksów,
+    // kopiowanie jej nie zagraża rozmiarowi ani wydajności.
+    // / EN: shallow copy (round 3, Evaluator) -- without it this is a live
+    // reference into map.riverPaths/map.riverPathKinds, see the caveat in
+    // the function comment above. Rivers are a small structure relative to
+    // 20160 hexes, copying it doesn't threaten size or performance.
+    riverPaths: map.riverPaths.map((path) => path.map((p) => ({ q: p.q, r: p.r }))),
+    riverPathKinds: map.riverPathKinds ? map.riverPathKinds.slice() : map.riverPathKinds,
     dict,
     n,
     q, r, terenIdx, nakladkaIdx, ulepszenieIdx, wlascicielIdx,
