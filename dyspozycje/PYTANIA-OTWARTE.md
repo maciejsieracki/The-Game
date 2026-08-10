@@ -7806,6 +7806,26 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
+## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI — SCALONE (2026-08-10)
+
+Operator wybrał ścieżkę B (Evaluator): zostawił wywołanie `refreshTradeRoutesOverlay()` w bloku
+D10 końca tury jako defensywny hardening, całkowicie przepisał komentarz na uczciwy (5
+niezmienników, dlaczego to dziś no-op). Przy okazji sprawdził realny trop (wojna wypowiedziana
+przez AI łamiąca traktat handlowy, `breakTreatiesOnWar`) — **znalazł prawdziwą lukę**:
+`breakTreatiesOnWar` usuwa traktat z `activeDeals`, ale NIE dotyka `tradeRoutes`, więc trasa może
+faktycznie zostać nieaktualna po wojnie w fazie AI. Nie ratuje to jednak premisy — naprawa
+wymagałaby `recomputeTradeRoutesNow()`, nie samego `refreshTradeRoutesOverlay()` (który tylko
+renderuje, nie przelicza) — **osobny temat, poza zakresem C-025, NOWY do zarejestrowania osobno
+(nie teraz, priorytet niski, brak zgłoszenia od gracza)**.
+
+Scalone bezpośrednio przez orkiestratora (dokładny hunk z worktree Operatora — worktree bazował
+na starszym `main.ts`, więc surowy `diff` całego pliku był niebezpieczny do kopiowania,
+zastosowano tylko właściwy fragment ręcznie, ten sam wzorzec co przy scaleniu R-EPOKA-CUD B3).
+Bramki: tsc 0, logic-test 213/213, trade-routes-test 61/61, trade-routes-income-test 52/53 (H2
+pre-istniejąca).
+
+---
+
 ## BUG (zrzut Macieja) — Praca 9 vs 3: rozpoznanie GOTOWE, prawdopodobnie NIE jest to bug arytmetyczny (2026-08-10)
 
 `civWideSixStatsFromEmpireSnap` (sumowanie) poprawna, przetestowana (19/19). Znaleziona prawdziwa

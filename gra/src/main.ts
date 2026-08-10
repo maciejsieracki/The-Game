@@ -24663,6 +24663,42 @@ async function boot(): Promise<void> {
         updateHud();
         cityRenderer.sync(cities, _cityRenderOpts());
         refreshWorkerFieldOverlay();
+        // P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (poprawka po FAIL Evaluatora): TO JEST
+        // DZIŚ NO-OP, zostawiony wyłącznie jako zabezpieczenie na przyszłość — nie naprawia
+        // żadnego znanego, realnego buga. Zweryfikowane 5 niezmienników, które to gwarantują:
+        //  1) `tradeRoutes` jest przeliczane WYŁĄCZNIE przez recomputeTradeRoutesNow() —
+        //     wołane wcześniej w tej samej turze (odświeżenie E3, przed fazą AI) oraz przy
+        //     zawarciu/zmianie traktatu handlowego przez GRACZA. W fazie AI (w tym przy
+        //     wypowiedzeniu wojny przez AI łamiącym Umowę Handlową przez breakTreatiesOnWar
+        //     — sprawdzone, że NIE dotyka tradeRoutes) tablica `tradeRoutes` się nie zmienia.
+        //  2) `cities` nigdy się nie kurczy w trakcie tury (zero cities.splice w src/) —
+        //     miasta nie znikają, więc nie ma osieroconych łuków do usunięcia.
+        //  3) Nowe miasto AI (cities.push w fazie AI) nie tworzy nowego łuku — nie należy do
+        //     żadnej trasy w nieprzeliczonym `tradeRoutes`.
+        //  4) Zdobycie miasta (applyCityCaptureToMap) mutuje ten sam obiekt City w miejscu —
+        //     zmienia tylko ownerId, nie q/r — nakładka keyuje po q/r, które się nie zmieniają.
+        //  5) Geometria łuku (hexTopY) zależy wyłącznie od terenu, mutowanego tylko w
+        //     generatorze mapy — nigdy w trakcie tury.
+        // Skoro refreshTradeRoutesOverlay() tylko RENDERUJE bieżące `tradeRoutes`+`cities`
+        // (nie przelicza tras), a żaden z tych dwóch stanów się tu nie zmienia, wywołanie
+        // odtwarza bajt-w-bajt tę samą grupę łuków co bez niego — potwierdzone testami
+        // trade-routes-test/trade-routes-income-test/okolica-test/logic-test (identyczne
+        // wyniki z i bez zmiany). Zostaje na wypadek, gdyby KIEDYŚ recomputeTradeRoutesNow()
+        // zostało przesunięte za fazę AI — wtedy ten punkt już będzie właściwy.
+        // EN: this call is a NO-OP today, kept only as forward-looking hardening — it fixes
+        // no known real bug. `tradeRoutes` is recomputed exclusively by recomputeTradeRoutesNow()
+        // (called earlier this same turn, before the AI phase, and on player treaty actions);
+        // it is untouched during the AI phase, including when AI declares war and breaks a
+        // trade treaty (breakTreatiesOnWar only touches activeDeals, never tradeRoutes).
+        // `cities` never shrinks mid-turn, city capture mutates ownerId in place (q/r fixed),
+        // new AI cities aren't part of the unrecomputed route list, and arc geometry depends
+        // only on terrain (map-gen only). Since refreshTradeRoutesOverlay() purely renders the
+        // current tradeRoutes+cities, and neither changes here, this reproduces the identical
+        // overlay byte-for-byte — confirmed by trade-routes-test/trade-routes-income-test/
+        // okolica-test/logic-test all being identical with and without this call. Left in
+        // place so that if recomputeTradeRoutesNow() is ever moved to run after the AI phase,
+        // this call site is already correctly positioned.
+        refreshTradeRoutesOverlay();
         // Refresh fog after end-turn so new unit positions update visibility.
         refreshFog();
         // C-SENTRY-Q1 wariant A: pozycje wszystkich jednostek (gracz + AI) są już
