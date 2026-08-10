@@ -10745,3 +10745,109 @@ Maciej nie rozróżnił tego przypadku w zgłoszeniu. Jeśli to niepożądane, o
 
 **Plik:** `gra/src/ui/sidePanelHud.ts` (2 nowe reguły CSS, linie ~177-178).
 **STATUS: wdrożone, do commitu (bez deployu). Bramki: tsc 0.**
+
+## R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04 — zgłoszenie Macieja (2026-08-10)
+
+Maciej: na najtrudniejszym poziomie państwa-miasta powinny bardziej aktywnie atakować (zbierać
+wojska i wspólnie/masowo atakować stolicę gracza), a nie tylko siedzieć w obronie; dodatkowo
+produkują mało jednostek. Pamięta moment, gdy to realnie działało.
+
+**To NIE jest regresja/bug — to skutek DWÓCH świadomych decyzji ABC Macieja, które się ze sobą
+kłócą właśnie na poziomie Trudny:**
+1. **Mechanizm zbiorowego ataku PM ISTNIEJE** (`R-MP-HARD-WAVE`, commit `89fc4112`, 2026-08-04) —
+   `planCityStateOffensiveMove` (`ai.ts:2515`), `CS_WAVE_ATTACK_MIN_STACK=3` (zakaz solo-rajdów),
+   `resolveClusterCityStateWarOnPlayer` (`city-state-difficulty.ts:72-91`, klaster sióstr PM
+   wypowiada wojnę RAZEM, 60% szans od tury 20). Aktywny WYŁĄCZNIE gdy `_menuCityStateDifficulty
+   === 'hard'`.
+2. **Trudność PM jest ODWRÓCONA względem trudności gry** (`AI-CS-CLUSTER-DIFF`, commit `e0b8afe4`,
+   2026-07-30, `city-state-difficulty.ts:24-28`): gra Łatwy → PM Trudne (agresywne); gra Trudny →
+   PM Łatwe (bierne). Na NAJTRUDNIEJSZYM poziomie gry PM domyślnie dostają NAJNIŻSZY poziom PM,
+   więc mechanizm z pkt 1 się nie uruchamia (chyba że ręczny override w Zaawansowanych).
+3. **Produkcja wojska PM jawnie zablokowana na Hard** (`MP-ARMY-Q1`/`MP-GARRISON-Q1`, commit
+   `b47a2e8f`, 2026-08-04, kilka godzin po R-MP-HARD-WAVE tego samego dnia):
+   `cityStateMilitaryProductionCap('hard') = 0` (zakaz nowej produkcji, tylko istniejący garnizon
+   zostaje) — to skala TRUDNOŚCI GRY, nie trudności PM. Cytat z `docs/decyzje/MP-GARRISON-Q1.md:15`:
+   „Hard: zostaw istniejące (garnizon na mapie), zakaz nowej produkcji wojskowej."
+
+**⚠️ Trzy decyzje z 2026-07-30/08-04 (AI-CS-CLUSTER-DIFF, R-MP-HARD-WAVE, MP-GARRISON-Q1) razem
+tworzą dokładnie ten efekt, który teraz Maciej zgłasza jako niepożądany.** `git log
+-S"cityStateOffensiveSupport"` potwierdza: nikt tego później nie osłabił kodem — to nie regresja
+techniczna, tylko efekt uboczny nakładania się tych decyzji.
+
+**Pytanie kontrolne przed ABC:** czy playtest, który Maciej pamięta (masowy atak na stolicę), był
+PRZED 2026-08-04 (przed capem produkcji=0) albo na ŁATWEJ trudności gry (gdzie PM=Trudne faktycznie
+działa)?
+
+**Do ABC:**
+- A: odłączyć `cityStateOffensiveSupport`/wave-attack od `_menuCityStateDifficulty`, przywiązać
+  wprost do `_menuDifficulty === 'hard'` — agresja PM i cap produkcji rosną RAZEM z trudnością gry
+  (zamiast być odwrócone). Cofa efektywnie inwersję z `AI-CS-CLUSTER-DIFF` dla tego konkretnego
+  mechanizmu.
+- B: zostawić inwersję trudności PM (AI-CS-CLUSTER-DIFF bez zmian), ale podnieść
+  `cityStateMilitaryProductionCap('hard')` z 0 na >0 — PM na Hard mogą się choć trochę dozbrajać
+  mimo defensywnego ustawienia trudności PM.
+- C: zostawić jak jest — Hard = elitarna, nieliczna major AI + bierne PM (świadomy balans), a
+  agresję PM traktować jako funkcję OSOBNEGO suwaka „Trudność miast-państw" w Zaawansowanych (do
+  ręcznego ustawienia przez gracza, niezależnie od trudności gry).
+
+**STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem trzech wcześniejszych
+decyzji (2026-07-30, 2× 2026-08-04), czekam na odpowiedź Macieja.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — nowa mechanika, propozycja Macieja (2026-08-10)
+
+Maciej proponuje nową mechanikę: obywatele miast zużywają surowce budowlane per epoka (analogicznie
+do zużycia Żywności przez populację). Zgłoszone w 3 wiadomościach, złożona podsumowująca lista
+poniżej:
+
+| Epoka | Zużycie na 1 obywatela (ludka) |
+|---|---|
+| Kamień | 1 Drewno + 1 Glina |
+| Brąz | 1 Drewno + 1 Glina + 1 Kamień + 1 Ceramika |
+| Żelazo | 1 Drewno + 1 Glina + 1 Kamień + 1 Ceramika + 1 Cegła |
+
+Dodatkowo (zasady skutków, podane wprost przez Macieja — NIE otwarte pytanie): każdy DOSTĘPNY
+wymagany surowiec w danej epoce = **+1 Szczęście**; każdy BRAKUJĄCY wymagany surowiec = **-1
+Szczęście ORAZ -1% do Rozwoju**.
+
+**Rozpoznanie architektury (wzorzec: silnik Żywności, `empire-food.ts`) — 3 KRYTYCZNE konflikty do
+rozstrzygnięcia PRZED kodowaniem:**
+
+1. **⚠️ Glina ma bazową produkcję terenu = 0 WSZĘDZIE** (`economy.ts:251-252`, komentarz
+   „GLINA-Q1=A... baza terenu zawsze 0"). Jedyne źródło to ulepszenie Glinianka, wymagające tech
+   „Garncarstwo" i oznaczone `epoka: 2` (Brąz) w `terrain-improvements.json`. **Jeśli obywatele w
+   epoce KAMIEŃ mają zużywać 1 Glina/osobę, a Glina strukturalnie nie istnieje przed Brązem, to
+   KAŻDE miasto w Kamieniu miałoby od tury 1 gwarantowany deficyt Gliny** → stały -1 Szczęście i
+   -1% Rozwoju dla WSZYSTKICH miast przez całą epokę Kamień, niezależnie od gry gracza. To
+   prawdopodobnie sprzeczne z zamiarem (kara, której nie da się uniknąć, nie brzmi jak zamierzony
+   projekt).
+2. **Ceramika wymaga konwertera (Garncarnia: Glina+Drewno→Ceramika) ORAZ osobnej tech „Dostęp do
+   surowca: Ceramika"** (`tech.json:186/199`) — czyli w epoce Brąz Ceramika też nie jest dostępna
+   od razu na starcie epoki, tylko po zbudowaniu Garncarni i odblokowaniu tech. Ten sam typ ryzyka
+   co pkt 1, tylko dla Brązu zamiast Kamienia.
+3. **Nie istnieje dziś ŻADNE trwałe zużycie surowców budowlanych per turę** (poza jednorazowym
+   kosztem budowy i throughput konwerterów) — to byłaby zupełnie nowa kategoria w silniku ekonomii,
+   bez istniejącego odpowiednika strukturalnego do doklejenia (w odróżnieniu od Żywności, gdzie
+   cały mechanizm bilansu/nadwyżki/magazynu już istnieje).
+
+**Otwarte pytania do ABC (nie odpowiedziane jeszcze przez Macieja):**
+- Czy AI (duża i miasta-państwa) ma być objęte tym samym zużyciem, czy wyłącznie gracz? (wzorzec
+  Żywności różnicuje flow-based dla gracza vs stock-based dla AI, ale KARA za deficyt jest identyczna
+  dla obu — to może, ale nie musi, być właściwy wzorzec też tutaj).
+- Czy zużycie liczy się PER LUDEK (jak żywność, `populacja × 1 surowiec`) — potwierdzone przez
+  „każda jednostka obywatela" — czy per MIASTO (płasko, niezależnie od populacji)? Zakładam per
+  ludek zgodnie z dosłownym brzmieniem, ale warto potwierdzić wprost, bo to duża różnica skali.
+  Czy zaliczenie kar (2) jest liczone per obywatel z osobna (można mieć np. połowę obywateli
+  zaopatrzonych, połowę nie) czy binarnie per miasto (miasto ma surowiec = wszyscy zaopatrzeni)?
+- Gdzie w UI pokazać to zużycie — analogicznie do `foodSummaryRow` w `empireDetailPanel.ts`
+  („Uprawa i hodowla" / „Wyżywienie ludności"), potrzebna nowa sekcja per surowiec (Drewno/Glina/
+  Kamień/Ceramika/Cegła), dziś nieistniejąca.
+- Konflikty (1) i (2) wymagają rozstrzygnięcia: czy zasada obowiązuje od PIERWSZEJ tury epoki
+  (gwarantowany deficyt na starcie), czy z okresem karencji / dopiero po odblokowaniu odpowiedniej
+  tech/budynku, czy może wymagana lista surowców per epoka powinna pomijać te niedostępne na
+  starcie (np. Kamień = tylko Drewno na starcie, Glina dołącza się automatycznie gdy gracz zbuduje
+  Gliniankę)?
+
+**STATUS: rozpoznanie gotowe, lista zestawiona jak poprosił Maciej, ale kodowanie WSTRZYMANE do
+rozstrzygnięcia 3 konfliktów wyżej — to nie jest zwykłe ABC z 3 opcjami, tylko fundamentalna
+sprzeczność między żądaną regułą a stanem danych gry, wymaga decyzji Macieja przed dalszym
+rozpoznaniem/projektowaniem.**
