@@ -117,6 +117,7 @@ const params = {
   progWzrostuWspolczynnik: 8,
   spichlerzZachowaniePoPrzroscie: 0.5,
   akweduktProgLudnosci: 6,
+  spichlerzProgLudnosci: 8,
   zywnoscZuzytkaPopulacja: 1,
   zdrowieModyfikatorWspolczynnik: 0.05,
   korupcjaWspolczynnikDystansu: 2,

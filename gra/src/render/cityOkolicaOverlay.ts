@@ -1,7 +1,8 @@
 /**
  * cityOkolicaOverlay.ts — nakładka okolicy miasta na mapie 3D (Civ V style).
  * Warstwa renderu: siatka zasięgu, podświetlenie obrabianych pól, ikony plonów + 👤.
- * Używane przez okolicapreview; docelowo Integrator wpienie przy otwartym panelu miasta.
+ * Jedyny wywołujący: `main.ts` → `syncOkolicaOverlay()` (przy OTWARTYM panelu miasta gracza).
+ * Odznaka 👤 dzieli paletę i geometrię z ikoną na mapie świata (`render/workerFieldOverlay.ts`).
  */
 import * as THREE from 'three';
 import type { GameMap } from '../types/map';
@@ -12,6 +13,7 @@ import { GAME_MAP_RENDER_STYLE, terrainSurfaceTopY } from './mapRenderStyle';
 import { hexKeysWithinRadius, type TileYield } from '../game/okolica';
 import { hexHasCoveringTerrainImprovement } from '../game/terrain-improvements';
 import { hexDistance } from '../units/setup';
+import { workerOwnerColorRgba } from './workerFieldOverlay';
 
 export const CITY_RANGE_OVERLAY_STYLE: RangeOverlayStyle = {
   tintColor: 0xc8a840,
@@ -49,6 +51,11 @@ export interface CityOkolicaOverlayParams {
   workedKeys: Set<string>;
   yieldOf: (q: number, r: number) => TileYield;
   showYields?: boolean;
+  /**
+   * Właściciel miasta — odznaka 👤 bierze z niego kolor z palety `WORKER_OWNER_COLORS`,
+   * tej samej co ikona 👤 na mapie świata. Domyślnie 0 (gracz).
+   */
+  ownerId?: number;
 }
 
 function hexTopY(map: GameMap, q: number, r: number, yOffset: number): number {
@@ -82,6 +89,57 @@ const YIELD_DIGIT_FONT = (px: number) =>
 /** Powiększenie cyfr (i lekko emoji) na polu produkcyjnym z 👤. */
 const YIELD_WORKED_DIGIT_SCALE = 1.28;
 const YIELD_WORKED_EMOJI_SCALE = 1.1;
+
+/**
+ * Odznaka 👤 — geometria w PIKSELACH KANWY, celowo nieskalowana przez YIELD_FONT_SCALE,
+ * bo ma trzymać parytet z ikoną 👤 na mapie świata (`workerFieldOverlay.ts`).
+ * Gęstość px→świat jest w obu warstwach praktycznie ta sama: mapa świata 0,72 świata / 64 px
+ * = 0,01125; okolica 1,404 świata / 128 px = 0,01097 — więc „piksel = piksel".
+ * Mapa świata: krążek R=11 px, glif 16 px (stosunek glif/średnica ≈ 0,73).
+ * Tu krążek 9 px przy TYM SAMYM stosunku (13/18 ≈ 0,72): cała odznaka razem z obwódką
+ * (promień zewnętrzny 9+6 = 15 px) mieści się w dotychczasowej wysokości etykiety, więc
+ * `worldH` etykiety plonów NIE rośnie (nota Evaluatora #1 do P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE).
+ */
+const WORKER_BADGE_R = 9;
+const WORKER_BADGE_CY = 16;
+const WORKER_BADGE_GLYPH_PX = 13;
+/** Obwódka w kolorze właściciela + cieńszy ciemny rant — jak na mapie świata. */
+const WORKER_BADGE_RING_DR = 4;
+const WORKER_BADGE_RING_LW = 3.5;
+const WORKER_BADGE_RIM_DR = 5.5;
+
+/**
+ * Rysuje odznakę 👤 nad etykietą plonów. Kolor krążka i obwódki = paleta właściciela
+ * (`workerOwnerColorRgba`), nie sztywna zieleń — ten sam obywatel ma mieć ten sam kolor
+ * na mapie świata i w nakładce okolicy. Obwódka rysowana zawsze, bo nakładka okolicy
+ * powstaje wyłącznie dla miasta gracza (`main.ts` → `syncOkolicaOverlay`, warunek
+ * `city.ownerId !== 0` → dispose), czyli w warunkach, w których mapa świata też ją rysuje.
+ */
+function drawWorkerBadge(ctx: CanvasRenderingContext2D, cx: number, ownerId: number): void {
+  const cy = WORKER_BADGE_CY;
+
+  ctx.strokeStyle = workerOwnerColorRgba(ownerId, 1);
+  ctx.lineWidth = WORKER_BADGE_RING_LW;
+  ctx.beginPath();
+  ctx.arc(cx, cy, WORKER_BADGE_R + WORKER_BADGE_RING_DR, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, WORKER_BADGE_R + WORKER_BADGE_RIM_DR, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = workerOwnerColorRgba(ownerId, 0.72);
+  ctx.beginPath();
+  ctx.arc(cx, cy, WORKER_BADGE_R, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = `bold ${WORKER_BADGE_GLYPH_PX}px Segoe UI, Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.fillText('👤', cx, cy + 1);
+}
 
 function drawYieldLine(
   ctx: CanvasRenderingContext2D,
@@ -121,7 +179,7 @@ function drawYieldLine(
   ctx.shadowBlur = 0;
 }
 
-function makeLabelSprite(lines: YieldLine[], worker: boolean): THREE.Sprite {
+function makeLabelSprite(lines: YieldLine[], worker: boolean, ownerId: number): THREE.Sprite {
   const s = YIELD_FONT_SCALE;
   const fontPx = Math.round(13 * s);
   const lineH = Math.round(14.5 * s);
@@ -139,19 +197,7 @@ function makeLabelSprite(lines: YieldLine[], worker: boolean): THREE.Sprite {
   const ctx = canvas.getContext('2d')!;
   ctx.clearRect(0, 0, 128, h);
 
-  if (worker) {
-    const badgeR = Math.round(11 * s);
-    const badgeY = Math.round(14 * s);
-    ctx.fillStyle = 'rgba(30,80,30,0.88)';
-    ctx.beginPath();
-    ctx.arc(64, badgeY, badgeR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.font = `bold ${Math.round(14 * s)}px Segoe UI, Arial`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#fff';
-    ctx.fillText('👤', 64, badgeY + 1);
-  }
+  if (worker) drawWorkerBadge(ctx, 64, ownerId);
 
   ctx.font = YIELD_DIGIT_FONT(fontPx);
   let rowY = startY;
@@ -247,7 +293,7 @@ export function buildCityOkolicaOverlayGroup(
       if (parts.length === 0) continue;
 
       const worker = params.workedKeys.has(key);
-      const sprite = makeLabelSprite(parts, worker);
+      const sprite = makeLabelSprite(parts, worker, params.ownerId ?? 0);
       placeYieldLabelSprite(sprite, map, q, r);
       labels.add(sprite);
     }

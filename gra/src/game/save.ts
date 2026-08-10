@@ -13,7 +13,8 @@
  *   SAVE_PREFIX          - localStorage key prefix for save slots
  *   serializeGame()      - SaveGame  -> JSON string
  *   deserializeGame()    - JSON string -> SaveGame (validates wersja)
- *   saveToLocal()        - write a SaveGame into a named localStorage slot
+ *   saveToLocal()        - write a SaveGame into a named localStorage slot,
+ *                          returns { ok, reason? } ('quota' | 'other')
  *   loadFromLocal()      - read a SaveGame back from a named slot (or null)
  *   listSaves()          - list all save slot names found in localStorage
  *   deleteLocal()        - remove a named slot (convenience; pure-safe)
@@ -295,22 +296,52 @@ export function deserializeGame(json: string): SaveGame {
 // ---------------------------------------------------------------------------
 
 /**
+ * Why a save write to localStorage failed. 'quota' means the browser's
+ * storage limit was hit (typically QuotaExceededError) -- a case callers may
+ * want to surface differently from a generic/unexpected failure ('other').
+ */
+export type SaveToLocalFailReason = 'quota' | 'other';
+
+/** Result of {@link saveToLocal}: success flag plus, on failure, why. */
+export interface SaveToLocalResult {
+  ok: boolean;
+  reason?: SaveToLocalFailReason;
+}
+
+/**
+ * True when `err` looks like a browser storage-quota-exceeded error.
+ * Covers the DOMException `.name` used by Chromium/Safari
+ * ('QuotaExceededError') and legacy `.code` values (22 per the old
+ * `DOMException` constants table, 1014 on pre-Quantum Firefox).
+ */
+function isQuotaExceededError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as { name?: unknown; code?: unknown };
+  if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') return true;
+  return e.code === 22 || e.code === 1014;
+}
+
+/**
  * Serializes a SaveGame and writes it into a named localStorage slot.
  *
- * The stored key is SAVE_PREFIX + slot.  Returns true on success, false when:
- *   - localStorage is unavailable (typeof localStorage === 'undefined' etc.),
- *   - the write throws (e.g. quota exceeded).
+ * The stored key is SAVE_PREFIX + slot.  Returns { ok: true } on success,
+ * { ok: false, reason } when:
+ *   - localStorage is unavailable (typeof localStorage === 'undefined' etc.)
+ *     -> reason 'other',
+ *   - the write throws because the browser's storage quota is exceeded
+ *     -> reason 'quota',
+ *   - the write throws for any other reason -> reason 'other'.
  *
- * Browser-safe: never throws; reports failure via the boolean return.
+ * Browser-safe: never throws; reports failure via the returned result.
  */
-export function saveToLocal(slot: string, s: SaveGame): boolean {
+export function saveToLocal(slot: string, s: SaveGame): SaveToLocalResult {
   const storage = getStorage();
-  if (storage === null) return false;
+  if (storage === null) return { ok: false, reason: 'other' };
   try {
     storage.setItem(SAVE_PREFIX + slot, serializeGame(s));
-    return true;
-  } catch {
-    return false;
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, reason: isQuotaExceededError(err) ? 'quota' : 'other' };
   }
 }
 

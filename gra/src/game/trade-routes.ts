@@ -859,6 +859,59 @@ export function computeTradeRouteCountByCity(
   return out;
 }
 
+/**
+ * R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09, decyzja C, część A —
+ * ekonomia): to samo co computeTradeRouteCountByCity, ale liczy WYŁĄCZNIE trasy
+ * `medium === 'morze'` (szlaki morskie). Trasa morska WYMAGA Portu w obu miastach
+ * (findCityConnection wyżej), więc ta liczba jest z definicji zerowa dla miast bez
+ * Portu — nie trzeba osobno sprawdzać builtByCity tutaj.
+ */
+export function computeSeaTradeRouteCountByCity(
+  routes: readonly TradeRoute[],
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const route of routes) {
+    if (route.status !== 'polaczony') continue;
+    if (route.medium !== 'morze') continue;
+    out.set(route.fromCityId, (out.get(route.fromCityId) ?? 0) + 1);
+    out.set(route.toCityId,   (out.get(route.toCityId)   ?? 0) + 1);
+  }
+  return out;
+}
+
+/**
+ * R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09, część A): bonus Pieniądza
+ * (pkt Pieniądza/turę) za KAŻDY aktywny szlak handlowy MORSKI miasta PONAD PIERWSZY.
+ *
+ * Dlaczego "ponad pierwszy": Sędzia turnieju znalazł, że ożywienie martwego pola
+ * `przyrost` Portu (buildings.json) łamałoby PYTANIE 25=B (2026-07-25) — budynek z
+ * następcą w łańcuchu (Port → Port wielki) ma wartość STAŁĄ, rośnie wyłącznie przez
+ * awans. Ten bonus jest więc mechanizmem NIEZALEŻNYM od pola `przyrost`: pierwszy
+ * szlak morski miasta jest już "opłacony" zwykłym dochodem dystansowym
+ * (computeTradeRouteIncomeByCity) i zwykłym mnożnikiem Handlu +5%/trasa
+ * (CityYieldContext.liczbaAktywnychTrasHandlowych, economy.ts) — ten dodatkowy
+ * bonus nagradza WYŁĄCZNIE rozbudowę sieci PONAD jedno połączenie.
+ *
+ * Wartość stałej (1 pkt Pieniądza/turę na trasę): rząd wielkości spójny z bazowym
+ * bonusem Portu handlowego (`baza.pieniadz` = 5 pkt Pieniądza/turę, buildings.json,
+ * epoka Brąz) — 1/5 tej wartości per DODATKOWY szlak jest zauważalne, ale nie
+ * przyćmiewa bazowego bonusu budynku ani nie skaluje się bez ograniczeń (miasto
+ * z 4 szlakami morskimi dostaje +3 Pieniądza/turę, wciąż mniej niż sam Port).
+ */
+export const PORT_SEA_TRADE_BONUS_PIENIADZ = 1;
+
+export function computeSeaTradeBonusIncomeByCity(
+  seaTradeRouteCountByCity: ReadonlyMap<string, number>,
+  bonusPerRoutePieniadz: number = PORT_SEA_TRADE_BONUS_PIENIADZ,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const [cityId, count] of seaTradeRouteCountByCity) {
+    const extraRoutes = Math.max(0, count - 1);
+    if (extraRoutes > 0) out.set(cityId, extraRoutes * bonusPerRoutePieniadz);
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // TEMAT #5: powiadomienia o powstaniu/zniknieciu trasy handlowej.
 // ---------------------------------------------------------------------------

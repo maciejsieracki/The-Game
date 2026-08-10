@@ -46,8 +46,9 @@ import type { Hex } from '../types/hex';
 import type { GameMap } from '../types/map';
 import { Nakladka, TerenBazowy } from '../types/hex';
 import type { GameData } from '../data/loader';
-import type { City, CityPodzialHandlu } from './cities';
+import type { City, CityPodzialHandlu, CityPodzialPracy } from './cities';
 import { resolveCityPodzialHandlu } from './empire-handel-split';
+import { resolveCityPodzialPracy } from './empire-city-defaults';
 import {
   cityYieldPerTurn,
   civBonusyForCivKey,
@@ -114,6 +115,7 @@ import {
 } from './production';
 import {
   builtIdsForSpichlerzYields,
+  cityHasSpichlerzBuilding,
   filterRuntimeActiveBuiltIds,
   paySpichlerzDrainForCity,
   resolveSpichlerzCityBonusState,
@@ -330,7 +332,8 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     progWzrostuWspolczynnik:        num(em, 'próg_wzrostu_wspolczynnik', 16),
     spichlerzZachowaniePoPrzroscie: num(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
     akweduktProgLudnosci:           num(em, 'akwedukt_prog_ludnosci', 5),
-    akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 15),
+    spichlerzProgLudnosci:          num(em, 'spichlerz_prog_ludnosci', 8),
+    akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 12),
     zywnoscZuzytkaPopulacja:        num(em, 'zywnosc_zuzytka_populacja', 1),
     zdrowieModyfikatorWspolczynnik: num(em, 'zdrowie_modyfikator_wspolczynnik', 0.05),
     korupcjaWspolczynnikDystansu:   num(em, 'korupcja_wspolczynnik_dystansu', 2),
@@ -961,11 +964,15 @@ export function toEconomyCity(
   zdrowie: number = 0,
   buildings: { maSpichlerz?: boolean; maSpichlerzII?: boolean; maAkwedukt?: boolean } = {},
   ownerDefaultPodzial?: CityPodzialHandlu,
+  ownerDefaultPodzialPracy?: CityPodzialPracy,
 ): EconomyCity {
   const paramsFallback: CityPodzialHandlu = {
     procentNauka:    params.suwaakHandelNaukaDefault,
     procentPieniadz: params.suwaakHandelPieniadz,
     procentLuksus:   params.suwaakHandelLuksus,
+  };
+  const pracaParamsFallback: CityPodzialPracy = {
+    procentBudynki: params.suwaakPracaBudynki,
   };
   return {
     id:              city.id,
@@ -979,9 +986,9 @@ export function toEconomyCity(
     specjalisci:     [],
     kolejkaProdukcji: [],
     podziałHandlu: resolveCityPodzialHandlu(city, ownerDefaultPodzial, paramsFallback),
-    podziałPracy: city.podzialPracy ?? {
-      procentBudynki: params.suwaakPracaBudynki,
-    },
+    // R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): global/override
+    // wzorem podziałHandlu (empire-city-defaults.ts resolveCityPodzialPracy).
+    podziałPracy: resolveCityPodzialPracy(city, ownerDefaultPodzialPracy, pracaParamsFallback),
   };
 }
 
@@ -1335,7 +1342,7 @@ function simulateCeramikaAfterSpichlerzDrains(
   for (const city of cities) {
     if (city.ownerId !== ownerId) continue;
     const builtIds = builtByCity.get(city.id) ?? [];
-    const hasSpichlerz = builtIds.includes('spichlerz') || builtIds.includes('spichlerz_ii');
+    const hasSpichlerz = cityHasSpichlerzBuilding(builtIds);
     if (hasSpichlerz && ceramika >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
       ceramika -= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
     }
@@ -1626,6 +1633,8 @@ export function previewCityEconomy(
   resolveOwnerEmpireStock?: OwnerEmpireStockResolver,
   /** DYSPOZYCJA-85-SUWAK: domyślny podział Daniny/Podatku per owner. */
   ownerDefaultPodzialHandluByOwner: ReadonlyMap<number, CityPodzialHandlu> = new Map(),
+  /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
+  ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
 ): Pick<EconomyTickResult, 'perCity'> {
   const params = buildEconParams(data, difficulty);
   const buildingCatalog = data.buildings as unknown as BuildingRecord[];
@@ -1693,10 +1702,12 @@ export function previewCityEconomy(
     const maAkwedukt = runtimeBuiltIds.includes('akwedukt');
     const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
+    const ownerDefaultPodzialPracy = ownerDefaultPodzialPracyByOwner.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
       { maSpichlerz, maSpichlerzII, maAkwedukt },
       ownerDefaultPodzial,
+      ownerDefaultPodzialPracy,
     );
 
     const ownerEra = resolveOwnerEra
@@ -1997,6 +2008,8 @@ export function advanceCityEconomy(
     units: ManpowerHealUnit[];
     getMaxHp: (typeId: string) => number;
   },
+  /** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A: domyślny podział Pracy per owner. */
+  ownerDefaultPodzialPracyByOwner: ReadonlyMap<number, CityPodzialPracy> = new Map(),
 ): EconomyTickResult {
   const gameDifficulty = difficulty as GameDifficulty;
   const params = buildEconParams(data, difficulty);
@@ -2191,10 +2204,12 @@ export function advanceCityEconomy(
     const maAkwedukt  = runtimeBuiltIds.includes('akwedukt');
     const poziomRacji = getCityRationLevel(city);
     const ownerDefaultPodzial = ownerDefaultPodzialHandluByOwner.get(city.ownerId);
+    const ownerDefaultPodzialPracy = ownerDefaultPodzialPracyByOwner.get(city.ownerId);
     const econCity = toEconomyCity(
       city, params, isCapital, zdrowie,
       { maSpichlerz, maSpichlerzII, maAkwedukt },
       ownerDefaultPodzial,
+      ownerDefaultPodzialPracy,
     );
 
     const ownerEra = resolveOwnerEra

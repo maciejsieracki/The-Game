@@ -32,6 +32,7 @@ export {
   findVillageRewardSpawnHex, VILLAGE_REWARD_SPAWN_MAX_RADIUS,
   VILLAGE_REWARD_WEIGHT_GOLD, VILLAGE_REWARD_WEIGHT_TECH, VILLAGE_REWARD_WEIGHT_UNIT,
   VILLAGE_GOLD_BASE_MIN, VILLAGE_GOLD_BASE_MAX, VILLAGE_TECH_SCIENCE_BASE,
+  shouldExcludeUnitReward,
 } from '../src/game/villageRewards';
 export { hexDistance } from '../src/units/setup';
 `;
@@ -62,6 +63,7 @@ const {
   findVillageRewardSpawnHex, VILLAGE_REWARD_SPAWN_MAX_RADIUS,
   VILLAGE_REWARD_WEIGHT_GOLD, VILLAGE_REWARD_WEIGHT_TECH, VILLAGE_REWARD_WEIGHT_UNIT,
   VILLAGE_GOLD_BASE_MIN, VILLAGE_GOLD_BASE_MAX, VILLAGE_TECH_SCIENCE_BASE,
+  shouldExcludeUnitReward,
   hexDistance,
 } = M;
 
@@ -320,6 +322,134 @@ console.log('\n9. findVillageRewardSpawnHex -- spawn poza obcym miastem');
   eq(dest3?.q + ',' + dest3?.r, '0,1', 'preferuje odkryty heks przy równej odległości');
 
   eq(VILLAGE_REWARD_SPAWN_MAX_RADIUS, 2, 'domyślny promień spawnu = 2');
+}
+
+// ===========================================================================
+// 10. shouldExcludeUnitReward -- PEŁNA TABELA PRAWDY (2^4 = 16 kombinacji)
+//     R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE, runda 4 AutoBota.
+//     Zamyka BEHAWIORALNIE (nie regexem) mutacje E1 (odwrócenie `!`), E2 (usunięcie
+//     warunku własnego terytorium), E3 (odwrócenie `!==`/`===`) z rundy 3 werdyktu --
+//     bo `shouldExcludeUnitReward` jest teraz czystą, eksportowaną funkcją, nie inline
+//     koniunkcją chronioną tylko regexem na main.ts.
+// ===========================================================================
+console.log('\n10. shouldExcludeUnitReward -- pełna tabela prawdy (16 kombinacji)');
+{
+  const PLAYER = 0;   // playerOwnerId gracza (stały w grze)
+  const OTHER  = 7;   // dowolny inny ownerId (obca cywilizacja)
+
+  // 4 zmienne boolowskie/nullable, 2^4 = 16 wierszy:
+  //   hasSpawnHex          -- czy w ogóle znaleziono heks spawnu
+  //   rewardUnitIsMilitary -- czy jednostka-nagroda jest wojskowa (nie cywilna)
+  //   ownerIsNull          -- czy spawnHexOwnerId === null (teren niczyj)
+  //   ownerEqualsPlayer    -- (tylko gdy !ownerIsNull) czy spawnHexOwnerId === playerOwnerId
+  const rows = [];
+  for (const hasSpawnHex of [false, true]) {
+    for (const rewardUnitIsMilitary of [false, true]) {
+      for (const ownerIsNull of [true, false]) {
+        for (const ownerEqualsPlayer of [true, false]) {
+          const spawnHexOwnerId = ownerIsNull ? null : (ownerEqualsPlayer ? PLAYER : OTHER);
+          // Oczekiwany wynik -- odtworzenie definicji funkcji NIEZALEŻNIE od jej kodu:
+          // wyklucz TYLKO gdy jest gdzie spawnować, nagroda jest wojskowa, i heks spawnu
+          // ma właściciela RÓŻNEGO od gracza (nie null, nie gracz).
+          const expected =
+            hasSpawnHex && rewardUnitIsMilitary && spawnHexOwnerId !== null && spawnHexOwnerId !== PLAYER;
+          rows.push({ hasSpawnHex, rewardUnitIsMilitary, ownerIsNull, ownerEqualsPlayer, spawnHexOwnerId, expected });
+        }
+      }
+    }
+  }
+  eq(rows.length, 16, 'tabela prawdy ma dokładnie 16 wierszy (2^4)');
+
+  let trueCount = 0;
+  for (const row of rows) {
+    const got = shouldExcludeUnitReward({
+      hasSpawnHex: row.hasSpawnHex,
+      spawnHexOwnerId: row.spawnHexOwnerId,
+      playerOwnerId: PLAYER,
+      rewardUnitIsMilitary: row.rewardUnitIsMilitary,
+    });
+    if (row.expected) trueCount++;
+    eq(
+      got,
+      row.expected,
+      'shouldExcludeUnitReward hasSpawnHex=' + row.hasSpawnHex +
+        ' military=' + row.rewardUnitIsMilitary +
+        ' spawnHexOwnerId=' + JSON.stringify(row.spawnHexOwnerId) +
+        ' playerOwnerId=' + PLAYER,
+    );
+  }
+  eq(trueCount, 1, 'dokładnie 1/16 kombinacji wyklucza nagrodę (spawn+wojskowa+obce terytorium jednocześnie)');
+
+  // pickVillageReward({ excludeUnit: true }) -- redystrybucja wag 50:30 -> 62,5%/37,5%,
+  // kategoria 'jednostka' nigdy nie jest zwracana.
+  eq(pickVillageReward(0, { excludeUnit: true }), 'zloto', 'excludeUnit: roll=0 -> zloto');
+  eq(pickVillageReward(0.624, { excludeUnit: true }), 'zloto', 'excludeUnit: tuż przed progiem 62,5% -> zloto');
+  eq(pickVillageReward(0.625, { excludeUnit: true }), 'tech', 'excludeUnit: roll==62,5% -> tech');
+  eq(pickVillageReward(0.999999, { excludeUnit: true }), 'tech', 'excludeUnit: roll~1 -> tech (nigdy jednostka)');
+  eq(pickVillageReward(0.999999, {}), 'jednostka', 'excludeUnit:false (pusty obiekt opcji) -> zachowanie bez wykluczenia');
+  eq(pickVillageReward(0.999999), 'jednostka', 'brak opcji (undefined) -> zachowanie bez wykluczenia (kompatybilność wsteczna)');
+}
+
+// ===========================================================================
+// 11. checkVillageRewardAt (main.ts) -- bramka tekstowa: wpięcie + wykluczenie
+//     ocenione na heksie SPAWNU, nie chatki. Wzorzec jak w hud-moc-warstwa-test.cjs /
+//     border-march-wygasanie-test.cjs -- czyta main.ts jako TEKST, wycina ciało funkcji,
+//     asercjonuje regexem, że zawiera właściwe wywołania i NIE zawiera cofniętych.
+// ===========================================================================
+console.log('\n11. checkVillageRewardAt (main.ts) -- bramka tekstowa wpięcia');
+{
+  const MAIN_TS = path.resolve(__dirname, '..', 'src', 'main.ts');
+  const src = fs.readFileSync(MAIN_TS, 'utf8');
+
+  const fnStart = src.indexOf('function checkVillageRewardAt(q: number, r: number): boolean {');
+  assert(fnStart >= 0, 'znaleziono checkVillageRewardAt w main.ts');
+  const fnEndMarker = '\n    function checkVillageRewardsAlongPath(';
+  const fnEndIdx = src.indexOf(fnEndMarker, fnStart);
+  assert(fnEndIdx > fnStart, 'znaleziono koniec checkVillageRewardAt (przed checkVillageRewardsAlongPath)');
+  const fnBody = fnStart >= 0 && fnEndIdx > fnStart ? src.slice(fnStart, fnEndIdx) : '';
+
+  // --- wpięcie (dispatch runda 2, 5 punktów) --------------------------------
+  assert(
+    /territoryOwnerAtLive\(rewardUnitDest\.q, rewardUnitDest\.r\)/.test(fnBody),
+    'ocena terytorium na heksie SPAWNU: territoryOwnerAtLive(rewardUnitDest.q, rewardUnitDest.r)',
+  );
+  assert(
+    !/territoryOwnerAtLive\(q, r\)/.test(fnBody),
+    'NIE ocenia terytorium na heksie CHATKI: brak territoryOwnerAtLive(q, r)',
+  );
+  assert(
+    /pickVillageReward\(Math\.random\(\), \{ excludeUnit \}\)/.test(fnBody),
+    'pickVillageReward wołane z opcją { excludeUnit }',
+  );
+  assert(
+    /isVillageRewardUnitMilitary\(player\.era\)/.test(fnBody),
+    'isVillageRewardUnitMilitary(player.era) obecne (predykat wojskowości nagrody)',
+  );
+  const spawnHexCallCount = (fnBody.match(/findVillageRewardSpawnHex\(/g) || []).length;
+  eq(spawnHexCallCount, 1, 'findVillageRewardSpawnHex( wołane DOKŁADNIE RAZ w ciele funkcji (nie liczone dwa razy)');
+
+  // --- wpięcie decyzji (runda 4): shouldExcludeUnitReward woła się z 4 właściwymi polami ---
+  assert(/shouldExcludeUnitReward\(\{/.test(fnBody), 'shouldExcludeUnitReward({...}) wywołane w ciele funkcji');
+  assert(
+    /hasSpawnHex: rewardUnitDest !== undefined,/.test(fnBody),
+    'hasSpawnHex wyprowadzone z rewardUnitDest !== undefined (nie zaszyte na sztywno)',
+  );
+  assert(
+    /spawnHexOwnerId: rewardUnitDest \? territoryOwnerAtLive\(rewardUnitDest\.q, rewardUnitDest\.r\) : null,/.test(fnBody),
+    'spawnHexOwnerId liczone z territoryOwnerAtLive na heksie spawnu, null gdy brak spawnu',
+  );
+  assert(/playerOwnerId: 0,/.test(fnBody), 'playerOwnerId: 0 (gracz) przekazywane do shouldExcludeUnitReward');
+  assert(
+    /rewardUnitIsMilitary: isVillageRewardUnitMilitary\(player\.era\),/.test(fnBody),
+    'rewardUnitIsMilitary NIE odwrócone podwójną negacją przy wpięciu (brak "!" przed wywołaniem)',
+  );
+
+  // --- 3 nowe piny (runda 4): hutQ/hutR/ownerId w wywołaniu findVillageRewardSpawnHex ---
+  // Zamyka E5 (zamiana ownerId na inny niż gracza) i E6 (zamiana hutQ/hutR miejscami).
+  assert(
+    /findVillageRewardSpawnHex\(\{\s*hutQ: q,\s*hutR: r,\s*ownerId: 0,/.test(fnBody),
+    'findVillageRewardSpawnHex wołane z {hutQ: q, hutR: r, ownerId: 0, ...} (piny E5/E6)',
+  );
 }
 
 // --- summary ---------------------------------------------------------------

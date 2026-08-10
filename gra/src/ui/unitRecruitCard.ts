@@ -16,9 +16,9 @@ import {
 export const UNIT_RECRUIT_CARD_CSS = `
 .civ-cs .unit-recruit-compact-row{align-items:center;flex-wrap:nowrap;gap:0.35em;min-height:calc(2.5em - 0.35em);}
 .civ-cs .unit-recruit-compact-row.is-disabled{opacity:.72;}
-.civ-cs .unit-recruit-compact-row .unit-compact-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:0.04em;line-height:1.15;}
+.civ-cs .unit-recruit-compact-row .unit-compact-text{flex:1 1 auto;min-width:4.4em;display:flex;flex-direction:column;gap:0.04em;line-height:1.15;}
 .civ-cs .unit-recruit-compact-row .unit-compact-meta{font-size:0.64em;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.civ-cs .unit-recruit-compact-row .unit-compact-cost{flex:none;font-size:0.64em;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:0.22em;flex-wrap:nowrap;}
+.civ-cs .unit-recruit-compact-row .unit-compact-cost{flex:0 1 auto;min-width:0;font-size:0.64em;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:0.22em;flex-wrap:wrap;overflow:hidden;}
 .civ-cs .unit-recruit-compact-row .unit-compact-cost .bld-infocard-chip{font-size:0.95em;padding:0.05em 0.28em;}
 `;
 

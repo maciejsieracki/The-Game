@@ -59,7 +59,7 @@ import {
 } from '../game/cities';
 import { HANDEL_PCT_STEP, normalizePodzialHandlu, snapHandelPct, adjustHandelSplit } from '../game/cities';
 import { resolveCityPodzialHandlu } from '../game/empire-handel-split';
-import { civWideSixStatsFromEmpireSnap } from '../game/empire-hud-totals';
+import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/empire-hud-totals';
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
@@ -138,6 +138,7 @@ import {
   type PoziomRacji,
 } from '../game/population-growth-v85';
 import {
+  cityHasSpichlerzBuilding,
   filterRuntimeActiveBuiltIds,
   paySpichlerzDrainForCity,
   resolveOwnedBuildingInactiveStatus,
@@ -365,6 +366,13 @@ export interface CityPanelConfig {
     reczne?: Record<string, number>;
   } | null;
   onOkolicaFocusChange?: (cityId: string, focus: OkolicaFocus) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Priorytet
+   * Praca/Żywność tego miasta jest odpięty od globalnego defaultu imperium.
+   */
+  getOkolicaFocusOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Priorytetu Okolicy (global ⇄ lokalny override). */
+  onOkolicaFocusOverrideToggle?: (cityId: string) => void;
   onOkolicaEnterManual?: (cityId: string) => void;
   onOkolicaRestoreAuto?: (cityId: string) => void;
   onOkolicaTileAdjust?: (cityId: string, q: number, r: number, delta: number) => void;
@@ -378,6 +386,14 @@ export interface CityPanelConfig {
     biblioteka?: BudowaListaBiblioteka;
   } | null;
   onBudowaPriorytetChange?: (cityId: string, priorytetTypow: BudowaFocus[], tryb: BudowaTryb) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Priorytet
+   * produkcji (budowaFocus+budowaTryb) tego miasta jest odpięty od globalnego
+   * defaultu imperium. NIE obejmuje budowaPriorytetTypow (B1, poza zakresem).
+   */
+  getBudowaFocusOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Priorytetu produkcji (global ⇄ lokalny override). */
+  onBudowaFocusOverrideToggle?: (cityId: string) => void;
   onBudowaEnterManual?: (cityId: string) => void;
   onBudowaListaChange?: (cityId: string, lista: string[], tryb: 'lista') => void;
   onBudowaListaCreateTemplate?: (cityId: string, nazwa: string) => void;
@@ -431,6 +447,13 @@ export interface CityPanelConfig {
   onPodzialHandluChange?: (cityId: string, split: PodzialHandluSplit) => void;
   /** Gracz zmienil suwak Pracy (opcjonalnie). */
   onPodzialPracyChange?: (cityId: string, split: PodzialPracySplit) => void;
+  /**
+   * R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A (Maciej 2026-08-09): czy Podział Pracy
+   * tego miasta jest odpięty od globalnego defaultu imperium (override lokalny).
+   */
+  getPodzialPracyOverride?: (cityId: string) => boolean;
+  /** Przełącznik pin/odpin Podziału Pracy (global ⇄ lokalny override). */
+  onPodzialPracyOverrideToggle?: (cityId: string) => void;
   /** Kup jednostke za Pieniadz ze skarbca (purchasableUnits). */
   onPurchaseUnit?: (cityId: string, itemId: string, koszt: number) => void;
   /** B11-A: anulowanie opłaconej pozycji w kolejce rekrutacji — pełny zwrot kosztu. */
@@ -931,10 +954,17 @@ interface CityView {
   wzrostProcent: number;
   growthBreakdown: GrowthPercentBreakdown;
   wzrostUlamkowy: number;
+  /** Spichlerz w DOWOLNYM tierze (I lub II) — R-SPICHLERZ-CAP-LUDNOSCI-ETAP 2026-08-09. */
   maSpichlerz: boolean; maAkwedukt: boolean;
-  /** Max ludność bez Akweduktu (parametr gry). */
+  /**
+   * Max ludność BEZ Akweduktu, uwzględniając Spichlerz tego miasta (drabinka
+   * R-SPICHLERZ-CAP-LUDNOSCI-ETAP, Maciej 2026-08-09): 5 bez żadnego budynku, 8 ze
+   * Spichlerzem — NIE sztywny parametr `akweduktProgLudnosci` (5).
+   */
   popCapBezAkweduktu: number;
-  /** Max ludność z Akweduktem (parametr gry, normal=15). */
+  /** Twardy cap ludności ze Spichlerzem, ale bez Akweduktu (parametr gry, normal=8). */
+  popCapSpichlerz: number;
+  /** Max ludność z Akweduktem (parametr gry, normal=12). */
   popCapZAkweduktem: number;
   /** Aktualny cap dla tego miasta. */
   popCapAktualny: number;
@@ -955,6 +985,8 @@ export interface EmpireHudSnap {
   zywnoscReserve?: number;
   zywnoscRate?: number;
   kulturaRate?: number;
+  /** Kultura nagromadzona całej cywilizacji (ZAPAS, nie tempo — jak na HUD mapy). */
+  kultura?: number;
   /** Suma wiernych religii państwa (imperium). */
   religionStock?: number;
   /** Suma szerzenia wiernych / turę (wszystkie miasta). */
@@ -1004,7 +1036,10 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
   try {
     const params = buildEconParams(data, cfg.difficulty ?? 'normal');
     const built = cfg.getBuiltBuildingIds?.(city.id) ?? [];
-    const maSpichlerz = built.includes('spichlerz');
+    // R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, runda 2, B1): dowolny tier (I lub II) —
+    // ulepszenie do Spichlerz II usuwa 'spichlerz' z built (upgradeFrom w buildings.json),
+    // więc samo `built.includes('spichlerz')` gubi cap 8 po ulepszeniu.
+    const maSpichlerz = cityHasSpichlerzBuilding(built);
     const maAkwedukt = built.includes('akwedukt');
     const worked = cityWorkedTilesForEconomy(city, map, territoryNodesForPanel());
     const healthBd = computeCityHealthBreakdown(
@@ -1107,9 +1142,13 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       civKey: cfg.getCivKey?.(city.ownerId) ?? null,
       rationParams,
     });
-    const popCapBezAkweduktu = params.akweduktProgLudnosci;
+    // B3 (R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 2): "bez Akweduktu" musi liczyć AKTUALNY
+    // cap uwzględniający Spichlerz tego miasta (5 albo 8) — NIE sztywny param 5, bo dla
+    // miasta z Akweduktem I Spichlerzem to dawało fałszywe "bez niego max 5" (realnie 8).
+    const popCapBezAkweduktu = cityPopulationCap(false, maSpichlerz, params);
+    const popCapSpichlerz = params.spichlerzProgLudnosci;
     const popCapZAkweduktem = params.akweduktMaxLudnosci;
-    const popCapAktualny = cityPopulationCap(maAkwedukt, params);
+    const popCapAktualny = cityPopulationCap(maAkwedukt, maSpichlerz, params);
     const atPopCap = city.population >= popCapAktualny;
     return {
       praca: y.praca, pieniadz: y.pieniadz, nauka: y.nauka, kultura: y.kultura,
@@ -1123,6 +1162,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       wzrostUlamkowy: city.wzrostUlamkowy ?? 0,
       maSpichlerz, maAkwedukt,
       popCapBezAkweduktu,
+      popCapSpichlerz,
       popCapZAkweduktem,
       popCapAktualny,
       atPopCap,
@@ -1844,6 +1884,7 @@ function ensureStyles(): void {
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#c8e8a8,#4a7a1f);border:1px solid #3a5a12;cursor:pointer;}
 .civ-cs .wyzwienie-w4-sliders .slider-row label{font-size:0.74em;margin-bottom:0.08em;}
+.civ-cs .auto-wyzywienie-btn{width:100%;min-width:0;}
 .civ-cs .wyzwienie-w4-hint{font-size:0.62em;color:var(--muted);text-align:center;margin-top:0.2em;}
 .civ-cs .food-bilans-row{display:flex;justify-content:space-between;align-items:center;gap:0.35em;font-size:0.76em;margin:0.28em 0 0.12em;padding:0.35em 0.45em;border:1px solid var(--border);border-radius:5px;background:rgba(255,255,255,.02);}
 .civ-cs .food-bilans-row .pos{color:var(--green);}
@@ -2180,6 +2221,9 @@ function ensureStyles(): void {
 .civ-v-w3-chip-delta{font-size:0.62em;font-weight:700;margin-left:0.18em;line-height:1;}
 .civ-v-w3-chip-delta.green{color:var(--green);}
 .civ-v-w3-chip-delta.red{color:var(--red);}
+/* R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY: trzeci element — realny ZAPAS całej
+   cywilizacji, w nawiasie, ZŁOTY (odrębny kolor od tempa), pod małą liczbą. */
+.civ-v-w3-chip-stock{font-size:0.62em;font-weight:700;margin-left:0.18em;line-height:1;color:#e8b84a;}
 .civ-v-w3-chip-sep{width:1px;height:1.45em;background:rgba(232,216,138,0.2);flex-shrink:0;}
 .civ-v-w3-top-actions{display:flex;align-items:center;gap:0.75rem;flex-shrink:0;margin-left:0.35rem;}
 .civ-v-exit-map-btn{display:inline-flex;align-items:center;gap:0.38em;padding:0.38em 0.85em 0.38em 0.65em;
@@ -4639,21 +4683,20 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   sliderWrap.appendChild(sliderRow);
   if (rationEditable && cfg.onCityAutoWyzywienieChange) {
     const autoRow = el('div', 'slider-row auto-wyzywienie-row');
-    const autoLabel = el('label');
-    autoLabel.style.cssText = 'display:flex;align-items:center;gap:0.35em;cursor:pointer;';
-    const autoCb = document.createElement('input');
-    autoCb.type = 'checkbox';
-    autoCb.checked = city.autoWyzywienie === true;
-    autoCb.title =
+    const autoBtn = document.createElement('button');
+    autoBtn.type = 'button';
+    autoBtn.className = 'hbtn auto-wyzywienie-btn';
+    autoBtn.textContent = 'Auto Wyżywienie';
+    const autoWyzywienieOn = city.autoWyzywienie === true;
+    if (autoWyzywienieOn) autoBtn.classList.add('active');
+    autoBtn.setAttribute('aria-pressed', String(autoWyzywienieOn));
+    autoBtn.title =
       'WŁ: automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0). ' +
-      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.';
-    autoLabel.appendChild(autoCb);
-    const autoTxt = document.createElement('span');
-    autoTxt.textContent = 'Auto Wyżywienie';
-    autoLabel.appendChild(autoTxt);
-    autoRow.appendChild(autoLabel);
-    autoCb.addEventListener('change', () => {
-      cfg.onCityAutoWyzywienieChange?.(city.id, autoCb.checked);
+      'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.' +
+      (autoWyzywienieOn ? '' : ' Auto WYŁ — bez auto-obniżania/podnoszenia.');
+    autoRow.appendChild(autoBtn);
+    autoBtn.addEventListener('click', () => {
+      cfg.onCityAutoWyzywienieChange?.(city.id, !city.autoWyzywienie);
       rerender();
     });
     sliderWrap.appendChild(autoRow);
@@ -4665,9 +4708,6 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   }
   if (view.poziomRacji > maxSafe) {
     hint.textContent += ' · poziom zostanie obniżony do limitu na koniec tury';
-  }
-  if (rationEditable && city.autoWyzywienie !== true) {
-    hint.textContent += ' · Auto WYŁ — bez auto-obniżania/podnoszenia';
   }
   sliderWrap.appendChild(hint);
   mount.appendChild(sliderWrap);
@@ -4771,7 +4811,7 @@ function buildRacjeWzrostDetailCard(
     appendDetailSection(card, 'Budynki wpływające na wzrost');
     const gB = appendDetailGrid(card);
     if (view.maSpichlerz) {
-      gridDetailRow(gB, 'Spichlerz', `+${bd.spichlerz}% WZROST · niższy koszt racji (Ceramika −25%, pełny II −50%)`);
+      gridDetailRow(gB, 'Spichlerz', `+${bd.spichlerz}% WZROST · limit ludności ${view.popCapSpichlerz} bez Akweduktu · niższy koszt racji (Ceramika −25%, pełny II −50%)`);
     }
     if (view.maAkwedukt) {
       gridDetailRow(gB, 'Akwedukt', `Limit ludności ${view.popCapZAkweduktem} (bez niego max ${view.popCapBezAkweduktu})`);
@@ -8779,25 +8819,33 @@ function w3CityChip(
   cls: string,
   statId: string,
   hint: string,
-  /** R-HUD-MIASTO-STAN-CYWILIZACJI: wkład TEGO miasta — mała liczba obok dużej
-   *  (`val`, suma całej cywilizacji). Ten sam field co `val` przed zsumowaniem. */
-  cityDelta?: number,
+  /** R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY: mała liczba (+N) = tempo CAŁEJ
+   *  cywilizacji (suma wszystkich miast). Duża liczba (`val`) = tempo TEGO miasta.
+   *  / EN: small number = civ-wide rate; big number (`val`) = this city's rate. */
+  civRate?: number,
+  /** Trzeci element `(N)`, złoty: realny ZAPAS całej cywilizacji (ta sama wielkość
+   *  co duża liczba na głównym HUD mapy). / EN: gold civ-wide stock. */
+  civStock?: number,
 ): string {
-  const d = cityDelta !== undefined ? fmtResDelta(Math.round(cityDelta)) : { html: '', cls: '' };
   return `<button type="button" class="civ-v-w3-chip civ-v-res-interactive" data-res-stat="${statId}" ` +
     `title="${hint.replace(/"/g, '&quot;')}" aria-label="${hint.replace(/"/g, '&quot;')}">` +
     `<span class="civ-v-w3-chip-icon">${icon}</span>` +
     `<span class="civ-v-w3-chip-lbl">${label}</span>` +
     `<span class="civ-v-w3-chip-val ${cls}">${val}</span>` +
-    (d.html ? `<span class="civ-v-w3-chip-delta ${d.cls}">${d.html}</span>` : '') +
+    buildChipDeltaStockHtml(civRate, civStock) +
     `</button>`;
 }
 
 /**
  * Górny pasek widoku miasta — chipy po bokach nazwy miasta (lewo: ekonomia, prawo: kultura/nauka).
- * R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08): duża liczba w każdym chipie = suma całej
- * cywilizacji (z `resolveEmpireSnap`, ten sam source-of-truth co reszta panelu i głównego
- * HUD mapy); mała liczba (`+N`/`−N`) = wkład/ubytek TEGO miasta — jak `resGlobalLocal` niżej.
+ * R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zastępuje układ z R-HUD-MIASTO-STAN-CYWILIZACJI
+ * 2026-08-08): każdy chip pokazuje TRZY elementy —
+ *   1. duża liczba  = tempo TEGO miasta (przyrost/turę wkładu tego miasta);
+ *   2. mała liczba (`+N`/`−N`) = tempo CAŁEJ cywilizacji (suma wszystkich miast,
+ *      `civWideSixStatsFromEmpireSnap`);
+ *   3. `(N)` złote = realny ZAPAS całej cywilizacji (`resolveEmpireSnap`, ta sama
+ *      wielkość co duża liczba na głównym HUD mapy: skarbiec / magazyn / nauka nagromadzona).
+ * / EN: three chip elements — this city's rate, civ-wide rate, gold civ-wide stock.
  */
 function buildCityOnlyW3FlankChips(
   city: City,
@@ -8827,43 +8875,73 @@ function buildCityOnlyW3FlankChips(
     kultura: view.kultura,
     religia: cityRel,
   });
-  const pracaCls = civ.praca > 0 ? 'green' : civ.praca < 0 ? 'red' : '';
-  const foodCls = civ.zywnosc > 0 ? 'green' : civ.zywnosc < 0 ? 'red' : '';
-  const goldCls = civ.zloto > 0 ? 'green' : civ.zloto < 0 ? 'red' : '';
-  const naukaCls = civ.nauka > 0 ? 'blue' : civ.nauka < 0 ? 'red' : 'blue';
-  const kultCls = civ.kultura > 0 ? 'gold' : civ.kultura < 0 ? 'red' : '';
-  const relCls = civ.religia > 0 ? 'gold' : civ.religia < 0 ? 'red' : '';
+  /**
+   * Trzy elementy każdego chipu, zebrane per surowiec, żeby 7. i 8. argument
+   * `w3CityChip(...)` NIGDY nie rozjechały się na różne surowce.
+   * `big`   — tempo TEGO miasta (duża liczba);
+   * `small` — tempo CAŁEJ cywilizacji (mała liczba `+N`);
+   * `stock` — realny ZAPAS całej cywilizacji (trzeci element, złoty, w nawiasie).
+   * / EN: per-resource triple (this-city rate, civ-wide rate, civ-wide stock).
+   *
+   * ⚠ Zastrzeżenie (N3 z R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, przeniesione 1:1):
+   * dla Pracy i Żywności `big` (tempo tego miasta) NIE jest w całości tym, co
+   * dolicza się do `stock` — Praca dzieli się na `doBudynkow` (kolejka budowy
+   * tego miasta) i `doUlepszen` (pula imperium); `doBudynkow` NIE trafia do puli,
+   * DOPÓKI kolejka budowy nie jest pusta (`game/production.ts`, przelew reszty
+   * do puli przy pustej kolejce). Analogicznie Żywność: `big` to netto miasta,
+   * `stock` to zapasy państwa. Obie liczby są uczciwie nazwane w podpowiedzi.
+   */
+  const chip = {
+    praca:   { big: pracaSplit.total, small: civ.praca,   stock: empire.pracaPool ?? 0 },
+    zywnosc: { big: foodSplit.total,  small: civ.zywnosc, stock: empire.zywnoscReserve ?? 0 },
+    zloto:   { big: view.pieniadz,    small: civ.zloto,   stock: empire.zloto ?? 0 },
+    nauka:   { big: view.nauka,       small: civ.nauka,   stock: empire.nauka ?? 0 },
+    kultura: { big: view.kultura,     small: civ.kultura, stock: empire.kultura ?? 0 },
+    religia: { big: cityRel,          small: civ.religia, stock: empire.religionStock ?? 0 },
+  };
+  const pracaCls = chip.praca.big > 0 ? 'green' : chip.praca.big < 0 ? 'red' : '';
+  const foodCls = chip.zywnosc.big > 0 ? 'green' : chip.zywnosc.big < 0 ? 'red' : '';
+  const goldCls = chip.zloto.big > 0 ? 'green' : chip.zloto.big < 0 ? 'red' : '';
+  const naukaCls = chip.nauka.big > 0 ? 'blue' : chip.nauka.big < 0 ? 'red' : 'blue';
+  const kultCls = chip.kultura.big > 0 ? 'gold' : chip.kultura.big < 0 ? 'red' : '';
+  const relCls = chip.religia.big > 0 ? 'gold' : chip.religia.big < 0 ? 'red' : '';
 
   const economyRow = [
     w3CityChip(
       cityPanelChipIcon('res-work', 20),
       'Praca',
-      signed(civ.praca),
+      signed(chip.praca.big),
       pracaCls,
       'praca',
-      `Praca całej cywilizacji ${signed(civ.praca)} · to miasto ${signed(pracaSplit.total)} ` +
-        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)})`,
-      pracaSplit.total,
+      `Praca TEGO miasta ${signed(chip.praca.big)} ` +
+        `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}) · ` +
+        `cała cywilizacja ${signed(chip.praca.small)} / turę · zapas cywilizacji ${chip.praca.stock}`,
+      chip.praca.small,
+      chip.praca.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-food', 20),
       'Żywność',
-      signed(civ.zywnosc),
+      signed(chip.zywnosc.big),
       foodCls,
       'zywnosc',
-      `Bilans żywności całej cywilizacji ${signed(civ.zywnosc)} · to miasto: produkcja ${signed(foodSplit.produkcja)} ` +
-        `− racje ${foodSplit.racje} = ${signed(foodSplit.total)} · WZROST ${view.wzrostProcent}%`,
-      foodSplit.total,
+      `Żywność TEGO miasta: produkcja ${signed(foodSplit.produkcja)} − racje ${foodSplit.racje} = ` +
+        `${signed(chip.zywnosc.big)} · WZROST ${view.wzrostProcent}% · cała cywilizacja ` +
+        `${signed(chip.zywnosc.small)} / turę · zapas cywilizacji ${chip.zywnosc.stock}`,
+      chip.zywnosc.small,
+      chip.zywnosc.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-treasury', 20),
       'Skarbiec',
-      signed(civ.zloto),
+      signed(chip.zloto.big),
       goldCls,
       'zloto',
-      `Netto pieniędzy całej cywilizacji ${signed(civ.zloto)} → skarbiec · to miasto ${signed(view.pieniadz)} · ` +
-        `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)}`,
-      view.pieniadz,
+      `Netto pieniędzy TEGO miasta ${signed(chip.zloto.big)} → skarbiec · ` +
+        `${daninaLblChip.toLowerCase()} → skarb ${signed(skarbHandel)} · zamożność ${signed(wealthHandel)} · ` +
+        `cała cywilizacja ${signed(chip.zloto.small)} / turę · zapas skarbca ${chip.zloto.stock}`,
+      chip.zloto.small,
+      chip.zloto.stock,
     ),
   ].join('');
 
@@ -8871,29 +8949,35 @@ function buildCityOnlyW3FlankChips(
     w3CityChip(
       cityPanelChipIcon('res-science', 20),
       'Nauka',
-      signed(civ.nauka),
+      signed(chip.nauka.big),
       naukaCls,
       'nauka',
-      `Nauka generowana przez całą cywilizację ${signed(civ.nauka)} · to miasto ${signed(view.nauka)}`,
-      view.nauka,
+      `Nauka TEGO miasta ${signed(chip.nauka.big)} / turę · cała cywilizacja ` +
+        `${signed(chip.nauka.small)} / turę · nauka nagromadzona cywilizacji ${chip.nauka.stock}`,
+      chip.nauka.small,
+      chip.nauka.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-culture', 20),
       'Kultura',
-      signed(civ.kultura),
+      signed(chip.kultura.big),
       kultCls,
       'kultura',
-      `Kultura generowana przez całą cywilizację ${signed(civ.kultura)} · to miasto ${signed(view.kultura)}`,
-      view.kultura,
+      `Kultura TEGO miasta ${signed(chip.kultura.big)} / turę · cała cywilizacja ` +
+        `${signed(chip.kultura.small)} / turę · kultura nagromadzona cywilizacji ${chip.kultura.stock}`,
+      chip.kultura.small,
+      chip.kultura.stock,
     ),
     w3CityChip(
       cityPanelChipIcon('res-religion', 20),
       'Religia',
-      signed(civ.religia),
+      signed(chip.religia.big),
       relCls,
       'religia',
-      `Przyrost wiernych całej cywilizacji ${signed(civ.religia)} · to miasto ${signed(cityRel)}`,
-      cityRel,
+      `Przyrost wiernych TEGO miasta ${signed(chip.religia.big)} / turę · cała cywilizacja ` +
+        `${signed(chip.religia.small)} / turę · wierni religii państwa ${chip.religia.stock}`,
+      chip.religia.small,
+      chip.religia.stock,
     ),
   ].join('');
 

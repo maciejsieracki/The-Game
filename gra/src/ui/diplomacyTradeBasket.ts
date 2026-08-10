@@ -497,9 +497,21 @@ interface TreatyFormState {
 
 /**
  * Traktaty bez opcjonalnego koszyka PW (tylko warunki umowy w formularzu).
- * R-DYP-STOL-A=C: pozostałe traktaty mają sekcję warunków + opcjonalny koszyk PW.
+ * R-DYP-STOL-A-KOREKTA (2026-08-09): przywraca zestaw 7 pozycji sprzed
+ * niedokumentowanego skurczenia w commicie 9cc7c76c (2026-08-05, "NAP bezterminowy na
+ * stole audiencji") — ten commit zredukował ten Set z 7 elementów do 1 ('15') przy
+ * okazji niezwiązanej zmiany, nie na mocy żadnej decyzji (patrz
+ * R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY w PYTANIA-OTWARTE.md). Pakt (2), sojusz (3),
+ * przemarsz (4), trybut (8), pokój (10), wasalizacja (12), wchłonięcie (15) to "traktaty"
+ * sensu stricto — ich warunki są parametrami umowy (czas trwania, tryb, kwota
+ * trybutu/opłaty), NIE wymianą surowców. Cytat decyzji Macieja: "Wszystkie umowy muszą
+ * być poza umową na wymianę surowców bez propozycji wymiany surowców [...] to musi być
+ * rozłożone, rozłączone z tego względu że zaburza przejrzystość".
+ * Akcje '6' (wymiana technologii), '7' (namowa do wojny), '9' (ultimatum) ŚWIADOMIE
+ * zostają z koszykiem — ich zakres jest osobnym, otwartym pytaniem
+ * (R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY), nie domyślany tutaj.
  */
-const TREATY_ONLY_FORM_IDS = new Set<string>(['15']);
+const TREATY_ONLY_FORM_IDS = new Set<string>(['2', '3', '4', '8', '10', '12', '15']);
 
 export function isTreatyOnlyFormAction(actionId: string): boolean {
   return TREATY_ONLY_FORM_IDS.has(actionId);
@@ -725,8 +737,13 @@ function treatySectionHtml(actionId: string, ctx: NegotiationModalContext, state
         + '<p class="cdb-sub">Odmowa partnera = casus belli (zaznacz ultimatum poniżej).</p>';
       break;
     case '10':
-      body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%). '
-        + 'Opcjonalnie dołóż wymianę PW poniżej.</p>';
+      // R-DYP-STOL-A-KOREKTA (2026-08-09, nota Evaluatora): akcja '10' (pokój) jest teraz
+      // w TREATY_ONLY_FORM_IDS (patrz wyżej) — formularz "tylko warunki" nie renderuje
+      // ŻADNEGO koszyka PW "poniżej" (patrz renderBasket, gałąź isTreatyOnly), więc zdanie
+      // odsyłające do koszyka byłoby martwym, mylącym tekstem. Zdanie identyczne w case '5'
+      // ZOSTAJE bez zmian — ta ścieżka jest martwa (akcja 5 nie otwiera tego modala, patrz
+      // diplomacyAudience.ts), poza zakresem tej naprawy.
+      body = '<p class="cdb-sub">Zakończenie wojny. Wymagane PW traktatu zależą od Relacji (baza ~500 PW, modyfikator ±90%).</p>';
       break;
     default:
       body = '<p class="cdb-sub">Brak dodatkowych warunków traktatu.</p>';
@@ -884,6 +901,49 @@ function validateTreatyForm(actionId: string, state: TreatyFormState, ctx?: Nego
   return { valid: true };
 }
 
+/**
+ * P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09): kiedy kontrofertę AI do traktatu
+ * "tylko formularz" (isTreatyOnlyFormAction) silnik dołożył słodzikiem — złotem, patrz
+ * withExtraSweetenerGold w diplomacy-proposals.ts — gracz musi te pozycje ZOBACZYĆ,
+ * ZMIENIĆ (ilość) i USUNĄĆ. Reużywa DOKŁADNIE tych samych klas co zwykły koszyk wymiany
+ * (.cdb-row-qty / .cdb-rm), więc generyczne event listenery w bindEvents() (querySelectorAll
+ * po klasie, patrz showTradeBasketModal) obsługują te wiersze BEZ dodatkowego wiązania —
+ * usunięcie/zmiana ilości mutuje te same tablice giveItems/receiveItems, które
+ * buildTreatyPayload() wysyła dalej w payload.giveItems/receiveItems. Świadomie BEZ
+ * przycisku „dodaj" — decyzja Macieja (ECHO A): symetria informacyjna, nie funkcjonalna,
+ * gracz nie dostaje własnego narzędzia dokładania koszyka do traktatu.
+ */
+function treatySweetenerEditableRowsHtml(
+  giveItems: BasketItem[],
+  receiveItems: BasketItem[],
+  ctx: NegotiationModalContext,
+  resourceTradeMode: 'once' | 'per_turn',
+  dealTurns: number,
+): string {
+  const fmtCtx: BasketItemFormatCtx = { perTurn: resourceTradeMode === 'per_turn', turns: dealTurns };
+  const rowsHtml = (items: BasketItem[], side: 'give' | 'receive'): string =>
+    items.map((item, idx) => {
+      const qtyHtml = basketItemQtyEditable(item) ? basketRowQtyStepperHtml(item, side, idx, ctx) : '';
+      return (
+        '<div class="cdb-deal-row" data-side="' + side + '" data-idx="' + idx + '">'
+        + '<div class="da-deal-item">' + renderBasketItemValueHtml(item, fmtCtx) + '</div>'
+        + qtyHtml
+        + '<button type="button" class="cdb-rm" data-side="' + side + '" data-idx="' + idx + '" title="Usuń pozycję">×</button>'
+        + '</div>'
+      );
+    }).join('');
+  let html = '';
+  if (giveItems.length > 0) {
+    html += '<div class="da-deal-col-head" style="margin-top:8px">My oddajemy</div>'
+      + '<div class="da-deal-col-body" data-list="give">' + rowsHtml(giveItems, 'give') + '</div>';
+  }
+  if (receiveItems.length > 0) {
+    html += '<div class="da-deal-col-head" style="margin-top:8px">Oni oddają</div>'
+      + '<div class="da-deal-col-body" data-list="receive">' + rowsHtml(receiveItems, 'receive') + '</div>';
+  }
+  return html;
+}
+
 function treatySummaryHtml(
   action: AudienceAction,
   treatyState: TreatyFormState,
@@ -892,6 +952,12 @@ function treatySummaryHtml(
   ctx: NegotiationModalContext,
   dealTurns: number,
   resourceTradeMode: 'once' | 'per_turn',
+  /**
+   * true w kontekście isTreatyOnlyFormAction (renderBasket) — tam koszyk NIE ma osobnych
+   * kolumn "My oddajemy/Oni oddają" (patrz gałąź isTreatyOnly), więc jedyne miejsce na
+   * podgląd pozycji to ten summary block; musi być edytowalny, nie tylko tekst.
+   */
+  editable = false,
 ): string {
   const payload = buildTreatyPayload(
     action.id, treatyState, ctx, giveItems, receiveItems, dealTurns, resourceTradeMode,
@@ -933,6 +999,9 @@ function treatySummaryHtml(
   html += '</div>';
   if (net > 0) {
     html += '<div>Słodzik netto: <b>' + net + ' PW</b> — zwiększa szansę akceptacji</div>';
+  }
+  if (editable) {
+    html += treatySweetenerEditableRowsHtml(giveItems, receiveItems, ctx, resourceTradeMode, dealTurns);
   }
   html += '</div>';
   return html;
@@ -1814,7 +1883,9 @@ function renderBasket(
   if (isTreatyOnly) {
     const summaryBlock = blocked
       ? ''
-      : treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode);
+      // editable=true: dołożony słodzik AI (giveItems/receiveItems) musi mieć UI
+      // podglądu/edycji/usunięcia — patrz treatySweetenerEditableRowsHtml wyżej.
+      : treatySummaryHtml(action, treatyState, giveItems, receiveItems, ctx, dealTurns, resourceTradeMode, true);
     const treatyOnlyFooter = (blocked ? '' : warThreatBlockHtml(warThreat, true))
       + invalidHtml
       + '<div class="cdb-btns cdb-btns-center">'

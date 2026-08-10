@@ -55,3 +55,45 @@ export function civWideSixStatsFromEmpireSnap(
     religia: Math.round(empire.religionRate ?? cityOwn.religia),
   };
 }
+
+/** Podzbiór `EmpireHudSnap` z ZAPASAMI (nie tempem) — te same pola, które główny
+ *  HUD mapy pokazuje jako dużą liczbę (skarbiec / magazyn / nauka nagromadzona).
+ *  / EN: stock (not rate) subset of `EmpireHudSnap`, mirroring the world-map HUD. */
+export interface EmpireStockSnapshotForChips {
+  pracaPool?: number;
+  zywnoscReserve?: number;
+  zloto?: number;
+  nauka?: number;
+  kultura?: number;
+  religionStock?: number;
+}
+
+/** Formatowanie małej liczby (tempo cywilizacji) — kopia konwencji `fmtResDelta`
+ *  z `ui/cityPanel.ts`, powtórzona tutaj, żeby plik został DOM-free i testowalny.
+ *  / EN: local copy of cityPanel's `fmtResDelta` to keep this module DOM-free. */
+function fmtChipRate(n: number): { html: string; cls: string } {
+  if (n === 0) return { html: '', cls: '' };
+  const cls = n > 0 ? 'green' : 'red';
+  const html = n > 0 ? `+${n}` : String(n);
+  return { html, cls };
+}
+
+/**
+ * R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, playtest Macieja):
+ * dwa OSTATNIE z trzech elementów chipu karty miasta, jako gotowy HTML:
+ *   • mała liczba `+N` = tempo CAŁEJ cywilizacji (`civRate`, suma wszystkich miast);
+ *   • trzeci element `(N)` w kolorze złotym = realny ZAPAS całej cywilizacji
+ *     (`civStock`, ta sama wielkość co duża liczba na głównym HUD mapy).
+ * Duża liczba (tempo TEGO miasta) jest renderowana przez wywołującego.
+ * / EN: renders the 2nd (civ-wide rate) and 3rd (gold civ-wide stock) chip elements.
+ */
+export function buildChipDeltaStockHtml(civRate?: number, civStock?: number): string {
+  const d = civRate !== undefined ? fmtChipRate(Math.round(civRate)) : { html: '', cls: '' };
+  const deltaHtml = d.html
+    ? `<span class="civ-v-w3-chip-delta ${d.cls}">${d.html}</span>`
+    : '';
+  const stockHtml = civStock !== undefined
+    ? `<span class="civ-v-w3-chip-stock">(${Math.round(civStock)})</span>`
+    : '';
+  return deltaHtml + stockHtml;
+}

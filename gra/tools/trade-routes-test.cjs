@@ -23,6 +23,8 @@ fs.writeFileSync(ENTRY_FILE, `
 export {
   findCityConnection, DEFAULT_TRADE_ROUTE_PARAMS, createTradeRoute, tradeRouteId,
   loadTradeRouteParams, diffTradeRoutes,
+  computeSeaTradeRouteCountByCity, computeSeaTradeBonusIncomeByCity,
+  PORT_SEA_TRADE_BONUS_PIENIADZ,
 } from '../src/game/trade-routes';
 `, 'utf8');
 
@@ -181,6 +183,51 @@ eq(diffEmpty.removed.length, 0, 'diff j: puste wejscie -> removed puste');
 const diffAgain = TR.diffTradeRoutes([rA, rB], [rA, rC]);
 eq(JSON.stringify(diffAgain.added.map(r => r.id)), JSON.stringify(diffBoth.added.map(r => r.id)), 'diff k: determinizm - added identyczne');
 eq(JSON.stringify(diffAgain.removed.map(r => r.id)), JSON.stringify(diffBoth.removed.map(r => r.id)), 'diff k: determinizm - removed identyczne');
+
+// --- R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (runda 3, B1): computeSeaTradeRouteCountByCity /
+// computeSeaTradeBonusIncomeByCity / PORT_SEA_TRADE_BONUS_PIENIADZ, testowane bezposrednio
+// (bez detekcji geometrycznej -- proste fixture'y TradeRoute-ksztaltne). ---
+
+function seaRoute(id, from, to, status) {
+  return { id, fromCityId: from, toCityId: to, ownerId: 0, toOwnerId: 1, medium: 'morze', dystans: 3, status: status ?? 'polaczony' };
+}
+function ladRoute(id, from, to) {
+  return { id, fromCityId: from, toCityId: to, ownerId: 0, toOwnerId: 1, medium: 'lad', dystans: 3, status: 'polaczony' };
+}
+
+// l1: dwie trasy medium='morze' status='polaczony' na to samo miasto ('a') -> count=2
+const seaTwo = [seaRoute('a->b:morze', 'a', 'b'), seaRoute('a->c:morze', 'a', 'c')];
+const countTwo = TR.computeSeaTradeRouteCountByCity(seaTwo);
+eq(countTwo.get('a'), 2, 'l1: dwie polaczone trasy morskie na to samo miasto -> count=2');
+
+// l2: trasa medium='lad' NIE wchodzi do licznika
+const mixedWithLad = [...seaTwo, ladRoute('a->d:lad', 'a', 'd')];
+const countWithLad = TR.computeSeaTradeRouteCountByCity(mixedWithLad);
+eq(countWithLad.get('a'), 2, 'l2: dolozenie trasy ladowej NIE zmienia licznika morskiego miasta a');
+assert(!countWithLad.has('d'), 'l2: partner trasy ladowej (d) nie dostaje wpisu w mapie tras morskich');
+
+// l3: trasa o statusie innym niz 'polaczony' NIE wchodzi do licznika
+const mixedWithBroken = [...seaTwo, seaRoute('a->e:morze', 'a', 'e', 'brak_polaczenia')];
+const countWithBroken = TR.computeSeaTradeRouteCountByCity(mixedWithBroken);
+eq(countWithBroken.get('a'), 2, "l3: trasa morska ze statusem != 'polaczony' NIE dolicza sie do count miasta a");
+assert(!countWithBroken.has('e'), "l3: partner niepolaczonej trasy (e) nie dostaje wpisu w mapie");
+
+// l4: count=1 -> bonus NIEOBECNY w mapie wyniku (klucz w ogole nie istnieje)
+const bonusSolo = TR.computeSeaTradeBonusIncomeByCity(new Map([['solo', 1]]));
+assert(!bonusSolo.has('solo'), 'l4: count=1 (tylko pierwsza trasa "juz oplacona") -> brak klucza w mapie bonusu');
+
+// l5: count=3 -> bonus = 2 x PORT_SEA_TRADE_BONUS_PIENIADZ (2 trasy PONAD pierwsza)
+const bonusThree = TR.computeSeaTradeBonusIncomeByCity(new Map([['trzy', 3]]));
+eq(bonusThree.get('trzy'), 2 * TR.PORT_SEA_TRADE_BONUS_PIENIADZ, 'l5: count=3 -> bonus = 2 x PORT_SEA_TRADE_BONUS_PIENIADZ');
+
+// l6: PORT_SEA_TRADE_BONUS_PIENIADZ przypiete wprost jako stala = 1
+eq(TR.PORT_SEA_TRADE_BONUS_PIENIADZ, 1, 'l6: PORT_SEA_TRADE_BONUS_PIENIADZ === 1 (stala, pkt Pieniadza/ture na trase ponad pierwsza)');
+
+// l7: obie strony trasy (fromCityId i toCityId) dostaja wpis w mapie wyniku computeSeaTradeRouteCountByCity
+const singleSea = [seaRoute('x->y:morze', 'x', 'y')];
+const countSingle = TR.computeSeaTradeRouteCountByCity(singleSea);
+eq(countSingle.get('x'), 1, 'l7: fromCityId (x) dostaje wpis w mapie wyniku');
+eq(countSingle.get('y'), 1, 'l7: toCityId (y) dostaje wpis w mapie wyniku');
 
 console.log(`\ntrade-routes-test: ${passed} passed, ${failed} failed`);
 try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}

@@ -75,6 +75,7 @@ export { getEffectiveDiplomacyParams } from '../src/game/diplomacy.ts';
 export { diplomacyFairGivePn } from '../src/game/diplomacy-value-catalog.ts';
 export {
   actionUsesTradeBasket, getTradeBasketMode, isTreatyOnlyFormAction, TRADE_BASKET_ACTION_IDS,
+  showTradeBasketModal, hideTradeBasketModal,
 } from '../src/ui/diplomacyTradeBasket.ts';
 `);
 
@@ -109,6 +110,7 @@ const {
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
   evaluatePendingFromAI, diplomacyFairGivePn,
   actionUsesTradeBasket, getTradeBasketMode, isTreatyOnlyFormAction, TRADE_BASKET_ACTION_IDS,
+  showTradeBasketModal, hideTradeBasketModal,
 } = require(BUNDLE);
 
 let pass = 0;
@@ -1018,6 +1020,113 @@ ok(
   actionUsesTradeBasket('14') === true && actionUsesTradeBasket('13') === true,
   'UI: kontrola pozytywna — akcje 13 (dar) i 14 (umowa wymiany) nadal używają koszyka',
 );
+
+// ---------------------------------------------------------------------------
+// 21 R-DYP-STOL-A-KOREKTA (2026-08-09, nota Evaluatora — asercja na REALNY markup,
+// nie tylko na flagę isTreatyOnlyFormAction). Poprzednia wersja tego testu
+// asercjonowała wyłącznie isTreatyOnlyFormAction(id) === true — mutacyjnie dowiedzione
+// (przez Evaluatora), że to NIE łapie regresji renderu: gdyby ktoś cofnął gałąź
+// isTreatyOnly w renderBasket() (ui/diplomacyTradeBasket.ts), flaga nadal zwracałaby
+// true, ale UI i tak pokazywałoby pełny koszyk wymiany. Ten blok wywołuje REALNĄ
+// funkcję renderującą (showTradeBasketModal, dokładnie tak jak diplomacyAudience.ts:
+// showTradeBasketModal(getTradeBasketMode(actionId), action, ctx, ...)) na jsdom DOM
+// i sprawdza wynikowy markup wprost.
+// ---------------------------------------------------------------------------
+{
+  console.log('markup traktatów bez koszyka — realny render (R-DYP-STOL-A-KOREKTA)');
+
+  let JSDOM;
+  try { ({ JSDOM } = require('jsdom')); }
+  catch (e) {
+    console.error('jsdom missing — npm i -D jsdom');
+    process.exit(1);
+  }
+
+  const dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+  global.document = dom.window.document;
+  global.window = dom.window;
+  global.HTMLElement = dom.window.HTMLElement;
+  global.Element = dom.window.Element;
+  global.HTMLInputElement = dom.window.HTMLInputElement;
+  global.HTMLSelectElement = dom.window.HTMLSelectElement;
+
+  function baseTreatyCtx(over) {
+    return Object.assign({
+      civName: 'Testonia',
+      relacjaTotal: 200,
+      progHandelRelacja: 0,
+      progDarRelacja: 0,
+      wchloniecieGoldRequired: 200,
+      borderFeeCivil: 20,
+      borderFeeMilitary: 40,
+      techOptions: [{ id: 'kolo', label: 'Koło', suggestedPrice: 50 }],
+      rivalOptions: [{ ownerId: 2, label: 'Wróg' }],
+    }, over || {});
+  }
+
+  /** Renderuje dokładnie tak jak diplomacyAudience.ts, zwraca innerHTML + className boxa. */
+  function renderRealModalHtml(actionId, ctxOver) {
+    const action = { id: actionId, label: 'Test akcji ' + actionId, enabled: true };
+    const mode = getTradeBasketMode(actionId);
+    showTradeBasketModal(mode, action, baseTreatyCtx(ctxOver), () => {}, () => {});
+    const box = document.querySelector('.civ-diplo-basket');
+    const html = box ? box.innerHTML : '';
+    const cls = box ? box.className : '';
+    hideTradeBasketModal();
+    return { html, cls, mode };
+  }
+
+  // R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY: dokładnie te 7 akcji przywrócone tą
+  // naprawą (patrz TREATY_ONLY_FORM_IDS w diplomacyTradeBasket.ts).
+  const RESTORED_TREATY_ONLY = ['2', '3', '4', '8', '10', '12', '15'];
+
+  for (const actionId of RESTORED_TREATY_ONLY) {
+    const { html, cls, mode } = renderRealModalHtml(actionId);
+    ok(mode === 'treaty', `akcja ${actionId}: getTradeBasketMode → 'treaty' (warunek wejścia w gałąź isTreatyOnly)`);
+    ok(cls.includes('cdb-treaty-only-mode'), `akcja ${actionId}: box.className zawiera cdb-treaty-only-mode`);
+    ok(!html.includes('cdb-add'), `akcja ${actionId}: markup BEZ klasy "cdb-add" (formularz dodawania pozycji koszyka)`);
+    ok(!html.includes('cdb-chip-typ'), `akcja ${actionId}: markup BEZ klasy "cdb-chip-typ" (chip wyboru typu pozycji)`);
+    ok(!html.includes('cdb-add-section'), `akcja ${actionId}: markup BEZ klasy "cdb-add-section"`);
+    // UWAGA: bare "My oddajemy"/"Oni oddają" (bez sufiksu) NIE nadaje się na asercję —
+    // te same słowa są legalną etykietą panelu bilansu PW (da-pn-bal-lbl, renderowanego
+    // też w trybie treaty-only, patrz diplomacyAcceptanceBalance.ts), więc bare-string
+    // check dawał fałszywe FAIL na WSZYSTKICH 7 akcjach mimo poprawnego markupu (odkryte
+    // przy pierwszym uruchomieniu tego testu). Jedyny jednoznaczny wariant to nagłówek
+    // kolumny koszyka z sufiksem "(opcjonalnie)" (cdb-col-title, renderBasket ok. L1707/1713)
+    // — TEN wariant istnieje wyłącznie w gałęzi koszyka give/receive, nigdy w panelu bilansu.
+    ok(!html.includes('My oddajemy (opcjonalnie)'), `akcja ${actionId}: markup BEZ nagłówka koszyka "My oddajemy (opcjonalnie)"`);
+    ok(!html.includes('Oni oddają (opcjonalnie)'), `akcja ${actionId}: markup BEZ nagłówka koszyka "Oni oddają (opcjonalnie)"`);
+  }
+
+  // Kontrola negatywna: akcja '14' (umowa wymiany, POZOSTAJE w koszyku) MUSI nadal
+  // pokazywać pola dodawania — inaczej powyższe asercje byłyby fałszywie zielone przy
+  // zepsuciu całego mechanizmu na odwrót (np. renderBasket przestał w ogóle wywoływać
+  // buildAddForm dla kogokolwiek).
+  {
+    const { html, cls, mode } = renderRealModalHtml('14');
+    ok(mode === 'trade', "akcja 14: getTradeBasketMode → 'trade'");
+    ok(!cls.includes('cdb-treaty-only-mode'), 'akcja 14 (kontrola negatywna): box.className BEZ cdb-treaty-only-mode');
+    ok(html.includes('cdb-add'), 'akcja 14 (kontrola negatywna): markup NADAL zawiera "cdb-add" (koszyk aktywny)');
+    ok(html.includes('cdb-chip-typ'), 'akcja 14 (kontrola negatywna): markup NADAL zawiera "cdb-chip-typ"');
+  }
+  // Druga kontrola negatywna: akcja '13' (dar) — mode='gift', ta sama logika koszyka.
+  {
+    const { html, cls } = renderRealModalHtml('13');
+    ok(!cls.includes('cdb-treaty-only-mode'), 'akcja 13 (kontrola negatywna, dar): box.className BEZ cdb-treaty-only-mode');
+    ok(html.includes('cdb-add'), 'akcja 13 (kontrola negatywna, dar): markup NADAL zawiera "cdb-add"');
+  }
+  // Trzecia kontrola negatywna: akcja '9' (ultimatum) — mode='treaty' ale NIE
+  // treaty-only (świadomie poza zakresem R-DYP-STOL-A-KOREKTA, patrz
+  // R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY) — MUSI nadal pokazywać nagłówki koszyka
+  // z sufiksem "(opcjonalnie)"; dowodzi, że test #21 wyżej łapie realnie stan "gałąź
+  // treaty-only się wyłączyła", nie każdy mode==='treaty'.
+  {
+    const { html, cls, mode } = renderRealModalHtml('9');
+    ok(mode === 'treaty', "akcja 9 (kontrola negatywna, poza zakresem naprawy): getTradeBasketMode → 'treaty'");
+    ok(!cls.includes('cdb-treaty-only-mode'), 'akcja 9 (kontrola negatywna): box.className BEZ cdb-treaty-only-mode (poza zakresem tej naprawy)');
+    ok(html.includes('My oddajemy (opcjonalnie)'), 'akcja 9 (kontrola negatywna): markup NADAL zawiera nagłówek koszyka "My oddajemy (opcjonalnie)"');
+  }
+}
 
 console.log(`\n${pass}/${pass + fail} PASS`);
 process.exit(fail ? 1 : 0);

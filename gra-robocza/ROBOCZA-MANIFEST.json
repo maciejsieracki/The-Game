@@ -4,22 +4,22 @@
   "note": "Grywalna ROBOCZA FALA 221. Plik: gra-robocza/Gra-ROBOCZA.html",
   "publishedAt": "2026-08-04T23:04:00",
   "sourceBuild": "dist",
-  "md5": "89176ced318b7e7d03b2fd6b197df80d",
-  "hubGeneratedAt": "2026-08-09T15:01:15",
+  "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+  "hubGeneratedAt": "2026-08-10T06:49:17",
   "bundles": [
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html?skipMenuRedirect=1",
       "label": "Pełna gra ROBOCZA",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     },
     {
       "file": "Gra-ROBOCZA.html",
       "href": "Gra-ROBOCZA.html",
       "label": "Pełna gra (z menu)",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-BITWA-DUZA.html",
@@ -39,43 +39,43 @@
       "file": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MAPA.html",
       "label": "Playtest: mapa świat",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "href": "Gra-ROBOCZA-PLAYTEST-MIASTO.html",
       "label": "Playtest: miasto / ekonomia",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "href": "Gra-ROBOCZA-PLAYTEST-WALKA.html",
       "label": "Playtest: walka na mapie",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK.html",
       "label": "Playtest: odskok 3v3",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "href": "Gra-ROBOCZA-PLAYTEST-ODSKOK-OBLEZENIE.html",
       "label": "Playtest: odskok + oblężenie",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     },
     {
       "file": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "href": "Gra-ROBOCZA-PLAYTEST-OBLEZENIE-3v3.html",
       "label": "Playtest: oblężenie 3v3",
-      "md5": "89176ced318b7e7d03b2fd6b197df80d",
-      "sizeBytes": 36977409
+      "md5": "7e8fdfdb8c6390ecf43c570eb966b9e3",
+      "sizeBytes": 37005672
     }
   ],
   "startHub": "START.html"

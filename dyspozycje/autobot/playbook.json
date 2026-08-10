@@ -1,6 +1,6 @@
 {
-  "version": 28,
-  "updatedAtIso": "2026-08-08T22:58:49.467Z",
+  "version": 30,
+  "updatedAtIso": "2026-08-10T07:35:31.763Z",
   "min_confidence_threshold": 0.6,
   "thresholds": {
     "promoteMinWinRate": 0.6,
@@ -399,6 +399,76 @@
       "fail_count": 0,
       "win_rate": 0,
       "lastUpdatedIso": "2026-08-08T21:58:12.254Z"
+    },
+    {
+      "id": "rule_140",
+      "rule_text": "RECYDYWA C-014/C-015 (2026-08-09): reguła „worktree usuwaj jako ostatni krok zamknięcia zlecenia\" istniała już w playbooku, ale stosowana była WYŁĄCZNIE punktowo (dla zlecenia właśnie zamykanego), nie jako okresowy audyt CAŁEGO .claude/worktrees/. Skutek: w wielogodzinnej sesji z dziesiątkami zleceń 26 martwych worktree (dawno scalona lub porzucona praca, ~770-830 MB każdy, razem ~24 GB) uśpiło się bez sprzątania, aż dysk doszedł do 99% (485 MB wolnego) i 4 z 6 równolegle wysłanych Operatorów padło natychmiast z No space left on device, zanim w ogóle zaczęli pracę. **Poprawka mechaniczna:** PRZED wysłaniem KAŻDEJ nowej partii Operatorów (nie tylko po zamknięciu jednego zlecenia) — git worktree list + du -sh .claude/worktrees/*; usuń KAŻDY worktree bez blokady (locked), który nie jest przypisany do aktualnie działającego (running) agenta — kod scalonej pracy jest bezpieczny w historii gita/GitHubie, lokalna kopia robocza po commicie+pushu ma zerową wartość i jest czystym marnotrawstwem miejsca. Zasada właściciela wprost (2026-08-09): „zawsze po zdeployowaniu danych zagadnień powinieneś czyścić drzewa i dysk\" oraz „kiedy zrobisz commit, zabezpieczasz go na GitHubie. Nie ma potrzeby już chyba trzymania tych danych\" — potwierdzone jako reguła stała, nie jednorazowa uwaga [C-032]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-09T20:53:23.327Z"
+    },
+    {
+      "id": "rule_141",
+      "rule_text": "RECYDYWA C-014 (2× w JEDNEJ partii, noc 2026-08-09/10): orkiestrator wykonał git worktree remove --force na worktree R-BUDYNEK-PORTOWY i w TEJ SAMEJ partii zbiorczego sprzątania dysku (odpowiedź na C-032) na worktree R-EPOKA-CUD — BEZ sprawdzenia git status/git diff w żadnym z nich PRZED usunięciem. Skasowane: ok. 130 wywołań narzędzi Operatora + pełna weryfikacja Evaluatora (~90 wywołań) dla Portu; analogiczna skala dla Epoki-cud. Port częściowo odzyskany dzięki git fsck --unreachable (main.ts/trade-routes.ts przeżyły jako dangling blob, bo były git add-owane w nieznanym momencie przed usunięciem — przypadkowe szczęście, nie zabezpieczenie); Epoka-cud NIE miała tego szczęścia (zero odzyskanych obiektów gita) — owner-epoch.ts ocalał wyłącznie dlatego, że runda 4 zdążyła go zgrepować TUŻ PRZED zniknięciem worktree (wyścig z czasem, nie mechanizm), reszta (main.ts, oba testy) zrekonstruowana od zera; test tematu ma dziś 33 asercje, oryginalny bezpowrotnie utracony miał 35 — praca i pokrycie testowe NIE wróciły 1:1, tylko funkcjonalność. Obie rekonstrukcje przeszły dodatkową, pełną rundę Evaluatora zanim uznano je za bezpieczne do scalenia. **Poprawka mechaniczna:** git worktree remove (zwłaszcza --force, który pomija własne ostrzeżenie gita o niescommitowanych zmianach) MUSI być poprzedzone git -C <worktree> status --porcelain jako osobnym, jawnym krokiem — pusty wynik = bezpiecznie usuwać, niepusty = najpierw zabezpieczyć (commit na gałąź zapas/<nazwa> + push, zgodnie z C-014) i dopiero potem usuwać. Dotyczy to RÓWNIEŻ usuwania zbiorczego/wsadowego (C-032) — sam fakt „ten temat wygląda na dawno zamknięty\" nie zwalnia z tego sprawdzenia, bo to właśnie założenie zawiodło w obu incydentach. [C-033]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T07:35:31.744Z"
+    },
+    {
+      "id": "rule_142",
+      "rule_text": "Scalenie (merge) pracy Operatora z worktree do drzewa głównego jest OSOBNYM zleceniem, wykonanym NATYCHMIAST po werdykcie PASS/PASS-WITH-NOTES Evaluatora — nigdy nie łącz go z merytoryczną pracą tego samego Operatora w jednym dispatchu, i nigdy nie zostawiaj „do zrobienia później\" (dokładnie ta zwłoka jest przyczyną źródłową incydentu R-BUDYNEK-PORTOWY z C-033 — praca leżała scalona-ocenioną, ale niedospatchowaną do scalenia, gdy sprzątanie dysku ją skasowało). Incydent (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, 2026-08-10): agent dostał zlecenie „dopisz test B-R5-1 I scal do głównego drzewa\"; po dopisaniu testu jego wywołanie EnterWorktree (przełączenie na drzewo główne) zostało odrzucone/przerwane, sesja agenta zakończyła się bez wysłania JAKIEJKOLWIEK notyfikacji — orkiestrator nie dostał ani raportu sukcesu, ani błędu. Temat (6 rund pracy) cicho utknął, wyglądając z zewnątrz jak nigdy niezaczęty, dopóki kolejny Operator — przy okazji innego zlecenia (BB2/stackGroupId), nie w wyniku celowego audytu tego tematu — nie zauważył braku śladu w git log --all. Praca ocalała wyłącznie dlatego, że oba źródłowe worktree pozostały fizycznie nietknięte na dysku (nie zdążyły zostać posprzątane przez C-032) — gdyby audyt dysku zdążył je usunąć najpierw, byłaby to trwała utrata. **Poprawka mechaniczna:** zlecenie Operatora kończy się na „gotowe do scalenia, worktree nietknięty\" — scalenie zawsze dostaje własny, dedykowany dispatch, ODPALONY OD RAZU po PASS/PASS-WITH-NOTES, z TWARDYM dowodem sukcesu jako ostatnim krokiem: git log --all --oneline [C-034]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T07:35:31.744Z"
+    },
+    {
+      "id": "rule_143",
+      "rule_text": "RECYDYWA nieprzestrzeganej wiedzy (2026-08-10) — mechanizm był już opisany w .claude/skills/civ-autobot/SKILL.md §5 razem z lekarstwem, ale żyje wyłącznie w pliku wymagającym świadomego Read (ta sama patologia co C-031), więc i tak doszło do dwóch zmarnowanych rund tej samej nocy: isolation:\"worktree\" (parametr narzędzia Agent) ZAWSZE zakłada nowy worktree od main, NIGDY od bieżącej gałęzi sesji — nawet gdy gałąź sesji jest znacząco do przodu (tu: main celowo „jedną falą do tyłu\" wg R-MERGE-MAIN-RYTM-Q1). Dwa NIEZALEŻNE wystąpienia: (1) stackGroupId runda 2 — Operator poprawnie zdiagnozował i zatrzymał się zamiast zgadywać, gdy nie znalazł w swoim worktree właśnie scalonej pracy (a396eddc) z gałęzi sesji; (2) R-EPOKA-CUD B3 („AI priorytet cudu\", agent a85d78f7d0cdd8a5d) — Operator napotkał brak prerequisite'u (13861b60, scalone do gałęzi sesji, nie do main) i musiał go ręcznie odtworzyć przez git apply -3 zanim mógł w ogóle zacząć — fałszywy alarm/dodatkowa praca, nie utrata kodu, ale zmarnowany czas obu rund. **Poprawka mechaniczna, dwuwarstwowa:** (a) WYKRYCIE — Operator na starcie uruchamia git merge-base --is-ancestor <hash bazy swojego worktree> HEAD (w żywym drzewie głównym) — niezerowy kod wyjścia = worktree jest w tyle za gałęzią sesji, traktować jako sygnał, nie kontynuować w ciemno; (b) NAPRAWA — gdy zlecenie wymaga NAJNOWSZEGO stanu gałęzi sesji, prompt MUSI wprost instruować, jako pierwszy krok PRZED jakąkolwiek analizą: skopiować potrzebne pliki bezpośrednio z żywego katalogu głównego (ścieżka bieżącego checkoutu gałęzi sesji, np. /home/user/The-Game), nie polegać na git diff/git log/grep wewnątrz własnego, świeżo założonego worktree jako źródle prawdy o tym „co już jest scalone\". [C-035]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T07:35:31.744Z"
+    },
+    {
+      "id": "rule_144",
+      "rule_text": "Każdy plik roboczy w scratchpad/ (skrypt mutacyjny, log bramki, patch, kopia zapasowa) MUSI mieć w nazwie prefiks unikalny per zlecenie/agent (np. ID tematu albo ID agenta) — NIGDY nazwę generyczną (mut.py, mut2.py, main.ts.bak, patch.diff, log.txt); mocniejszy wariant do rozważenia: własny podkatalog scratchpad/<agent-id>/ zamiast samego prefiksu, bo wtedy kolizja staje się strukturalnie niemożliwa, nie tylko mało prawdopodobna. Dwa udokumentowane przypadki tej samej nocy (2026-08-10) — R-BUDYNEK-PORTOWY (log Evaluatora nadpisany przez inną sesję) i R-HUD-MIASTO-STOCK-TEMPO (mut.py/mut2.py nadpisane cudzym harnessem, wykryte tylko dlatego że format wyjścia przestał się zgadzać — mogło przejść niezauważone, gdyby przypadkiem pasował) — plus odwołanie do analogicznego zdarzenia przy R-EPOKA-CUD wspomniane w notatce Evaluatora HUD, bez własnego, w pełni udokumentowanego wpisu. [C-036]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T07:35:31.744Z"
+    },
+    {
+      "id": "rule_145",
+      "rule_text": "Brak notyfikacji o zakończeniu subagenta w tle NIE oznacza, że wciąż pracuje — sesja mogła się cicho zakończyć bez raportu (patrz C-034: przerwane wywołanie narzędzia = zero notyfikacji, nie komunikat błędu). **Próg:** po ok. 45 minutach ciszy dla dispatchowanego agenta, od którego spodziewano się raportu wcześniej — sprawdzić ListAgents, JEŚLI dostępne w danej sesji (narzędzie orkiestratora; subagent/Evaluator go zwykle NIE ma). **Zawsze dostępny fallback, niezależny od narzędzia** (spójny z C-005 — status z plików, nie z etykiety): ls -la --time-style=full-iso .claude/worktrees/<id> + git -C .claude/worktrees/<id> status — jeśli worktree istnieje, od dłuższego czasu nietknięty, bez commitu i bez aktywnego procesu, potraktować jako potencjalnie ukończone-ale-niezaraportowane i zbadać ręcznie, zamiast zakładać, że praca wciąż trwa. [C-037]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T07:35:31.744Z"
+    },
+    {
+      "id": "rule_146",
+      "rule_text": "Wpis w rejestrze twierdzący, że runda Evaluatora „się odbyła\"/wydała werdykt, wolno zapisać WYŁĄCZNIE po faktycznym odebraniu jego raportu — nigdy jako założenie przy planowaniu kolejnej rundy. Incydent (R-EPOKA-CUD-WARUNEK-AWANSU, 2026-08-10): wpis rejestru sugerował, że Evaluator rundy 3 wydał werdykt, choć **nigdy faktycznie nie został odpalony**; runda 4 została zdispatchowana z założeniem istnienia tego werdyktu — na szczęście Operator rundy 4 sam wykrył i uczciwie zgłosił lukę, zamiast budować dalej na fałszywym założeniu. Dopełnia C-016 (twierdzenia o stanie kodu wymagają świeżego sprawdzenia) o przypadek, gdy fałszywe jest twierdzenie o STANIE PROCESU (czy dana runda w ogóle się odbyła), nie o stanie kodu. **Poprawka mechaniczna:** dispatch rundy N+1 musi zacytować KONKRETNY werdykt rundy N (nagłówek/fragment wpisu w PYTANIA-OTWARTE.md z werdyktem PASS/FAIL) w prompcie zlecenia — jeśli orkiestrator nie potrafi znaleźć takiego wpisu przy formułowaniu zlecenia, nie wolno zakładać że runda się odbyła, trzeba ją najpierw odpalić albo jawnie zapytać. [C-038]",
+      "status": "ACTIVE",
+      "protected": false,
+      "win_count": 0,
+      "fail_count": 0,
+      "win_rate": 0,
+      "lastUpdatedIso": "2026-08-10T07:35:31.744Z"
     }
   ],
   "quarantine_rules": []

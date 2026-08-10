@@ -212,6 +212,25 @@ mieć swoją mechaniczną komendę zduplikowaną w pliku zawsze ładowanym do ko
 playbooku/regułach `.cursor`. Jego słowa: *„przygotuj rozwiązanie żeby o takich rzeczach nie
 zapominać, gdzie to powinno być zapisane, procedura żeby to się już nie powtarzało."*
 
+## C-032 — sprzątaj dysk PRZED każdą nową partią Operatorów, nie tylko po zamknięciu zlecenia (Maciej 2026-08-09)
+
+RECYDYWA C-014/C-015 (worktree usuwaj jako ostatni krok zamknięcia zlecenia; zakładaj przez
+sparse-checkout). Reguła istniała, ale stosowana była punktowo — dla zlecenia właśnie zamykanego,
+nie jako okresowy audyt całego `.claude/worktrees/`. W wielogodzinnej sesji z dziesiątkami zleceń
+26 martwych worktree (dawno scalona/porzucona praca, ~770-830 MB każdy, razem ~24 GB) uśpiło się
+bez sprzątania, aż dysk doszedł do 99% (485 MB wolnego) — 4 z 6 równolegle wysłanych Operatorów
+padło natychmiast z `No space left on device`, zanim zaczęli pracę.
+
+**Poprawka mechaniczna:** PRZED wysłaniem KAŻDEJ nowej partii Operatorów (nie tylko po zamknięciu
+jednego zlecenia) — `git worktree list` + `du -sh .claude/worktrees/*`; usuń KAŻDY worktree bez
+blokady (`locked`), który nie jest przypisany do aktualnie działającego (`running`) agenta. Kod
+scalonej pracy jest bezpieczny w historii gita/GitHubie po `commit`+`push` — lokalna kopia robocza
+ma wtedy zerową wartość i jest czystym marnotrawstwem miejsca.
+
+Jego słowa (2026-08-09): *„zawsze po zdeployowaniu danych zagadnień powinieneś czyścić drzewa i
+dysk"* oraz *„kiedy zrobisz commit, zabezpieczasz go na GitHubie. Nie ma potrzeby już chyba
+trzymania tych danych"* — potwierdzone jako reguła stała, nie jednorazowa uwaga.
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.

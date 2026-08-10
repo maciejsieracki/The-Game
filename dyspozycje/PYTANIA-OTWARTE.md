@@ -1620,11 +1620,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Cytat:** zasady obowiązujące dla kontynentu mają obowiązywać **dla każdej wyspy** — nie generować masy lądu bez rzek.
 **Powiązanie z audytem obwarzanka:** przy 20–60% Pangea zostają **2 masy suchego lądu** rozdzielone korytarzem **Wybrzeża** (nie Morza); rzeki gęste przy brzegu (0–5), interior/„wyspa wewnętrzna” sucha. Kod ma `landMassHasMainRiver` / topUp per masa, ale filtr `m.length >= 8` + ścieżka Pangea coast-only + ensure ślepy na Wybrzeże → luki.
 **Wdrożyć razem z fixem obwarzanka (po wyborze A/B/C mostu przez Wybrzeże).** Nie osobny wątek ABC.
+**STATUS SKORYGOWANY 2026-08-10: WDROŻONE, patrz wpis „AC-RZEKI-BEZ-LIMITERA i AC-RZEKI-PER-MASA — WDROŻONE, status skorygowany" bliżej końca pliku.**
 
 ## AC-RZEKI-BEZ-LIMITERA — brak cap liczby / czasu siewu · STATUS: **ZEBRANE** (Maciej 2026-08-02 ~22:28)
 **Cytat:** „nie powinno być żadnego limitera ilości rzek. Po prostu powinny się generować zgodnie z zasadami bez limitu. Powinny tak długo siewić jak są w stanie siewić, a nie kończyć się np. po jakimś wyznaczonym czasie lub długości."
 **Implikacja:** usunąć/wyłączyć twarde capy typu `pangeaBootstrapRiverTarget` (~32), `maxCellsToProcess`, quota `capRiverQuotas` / `mapGenMaxRivers*`, early-stop po budżecie czasu; siew aż reguły (źródło, sep, ujście, masa) nie dadzą kolejnej poprawnej rzeki. `maxLen` trasy = ograniczenie techniczne A* jednej ścieżki — rozróżnić od limitu **liczby** rzek (ten drugi = zakazany).
 **Wdrożyć w paczce rzek z AC-RZEKI-PER-MASA + fix obwarzanka.** Uwaga: bez limitu na Super Huge wall-clock mocno urośnie — perf osobno, nie przez cięcie pokrycia.
+**STATUS SKORYGOWANY 2026-08-10: WDROŻONE, patrz wpis „AC-RZEKI-BEZ-LIMITERA i AC-RZEKI-PER-MASA — WDROŻONE, status skorygowany" bliżej końca pliku.**
 
 ## BUG-INKOWIE-MP-BRAK — Inkowie bez miast-państw · STATUS: **WDROŻONE ROBOCZA** (FALA 201 `48646cd6`, 2026-08-02)
 
@@ -4177,3 +4179,3681 @@ bramki ruchu/armii zielone.
 **Nota (niska pilność):** logika cyklowania nie ma dedykowanego testu regresji (żyje jako
 domknięcie wewnątrz `boot()` w `main.ts`, ekstrakcja byłaby refaktorem poza zakresem tej
 naprawy) — do rozważenia przy następnym dotknięciu tego kodu.
+
+---
+
+## R-MERGE-MAIN-RYTM-Q1 (2026-08-09, pytanie Macieja „kiedy dany commit powinien trafić do main") · STATUS: **OTWARTE — ABC, czeka na literę**
+
+**Sytuacja:** CLAUDE.md §3 deklaruje projekt jako trunk-based na `main` („brak feature-branchy"),
+ale harness tej sesji (Claude Code Remote) twardo przypina rozwój i `push` wyłącznie do gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`, zakazując pushowania na `main` bez wyraźnej, osobnej
+zgody właściciela. W praktyce od ostatniego scalenia (2026-08-08, `a659f4a1`, 21 commitów) main
+stoi w miejscu, a na gałęzi narosło **85 commitów** — nie tylko dzisiejszy maraton AutoBot (FALA
+263, 28 commitów), ale też starsze prace sprzed dzisiejszej sesji. Main nie ma nic swojego czego
+nie ma gałąź (`git log HEAD..origin/main` = puste) — to nie konflikt, tylko zaległość. Nie ma
+dziś ustalonej reguły KIEDY scalać — dotąd działo się to ad hoc, na pojedyncze polecenie Macieja.
+
+**Cel pytania:** ustalić stały rytm scalania gałęzi do `main`, żeby nie trzeba było pytać od nowa
+za każdym razem i żeby main nie odjeżdżał w nieskończoność od rzeczywistego stanu prac.
+
+**Dlaczego teraz:** Maciej sam o to spytał, mamy świeży, konkretny przykład (85 niescalonych
+commitów) ilustrujący skalę problemu.
+
+- **A — Scalaj po każdym pojedynczym temacie AutoBot zamkniętym PASS/PASS-WITH-NOTES** (praktycznie
+  codziennie, czasem kilka razy dziennie), ze stałą zgodą Macieja „zawsze scalaj po zamknięciu
+  tematu, informuj w kanale, bez osobnego pytania za każdym razem".
+  Za: main zawsze blisko rzeczywistości, zgodne z deklarowaną zasadą trunk-based z CLAUDE.md §3;
+  małe diffy łatwe do audytu pojedynczo.
+  Przeciw: częstsze operacje na `main` (szum w historii); wymaga zaufania, że sam werdykt
+  Evaluatora PASS/PASS-WITH-NOTES wystarcza jako bramka jakości bez dodatkowego spojrzenia na
+  poziomie „co idzie na trunk".
+
+- **B — Scalaj po zamkniętej większej paczce pracy / na koniec sesji** (tak jak dotąd, ad hoc na
+  pojedyncze polecenie „scal do main"), bez ustalonego stałego rytmu.
+  Za: pełna kontrola Macieja, zero ryzyka scalenia w złym momencie (np. w trakcie kolejnej rundy
+  pracy nad tym samym plikiem, zanim temat faktycznie się domknie).
+  Przeciw: łatwo odłożyć/zapomnieć — dokładnie to się stało (main w tyle o 85 commitów, 2 dni);
+  im dłużej gałąź żyje, tym większe ryzyko konfliktu przy w końcu wykonanym scaleniu.
+
+- **C — Scalaj automatycznie jako część runbooku deployu do ROBOCZA** (merge do `main` dzieje się
+  razem z każdym „deploy", nie jako osobny krok).
+  Za: jeden mniej krok do pamiętania, main zawsze odzwierciedla to co jest w ROBOCZA.
+  Przeciw: deploy (publikacja bundla) i merge (zmiana trunk-a) to dwa różne ryzyka o różnej wadze
+  — łączenie ich w jeden automatyzm zaciera rozróżnienie i utrudnia cofnięcie jednego bez drugiego.
+
+**Rekomendacja:** A — scalaj po każdym zamkniętym temacie AutoBot (PASS/PASS-WITH-NOTES), z
+krótkim wpisem w kanale zamiast osobnego pytania za każdym razem. Trzyma main blisko rzeczywistości
+zgodnie z własną deklaracją projektu (CLAUDE.md §3), a AutoBot już dziś pełni rolę bramki jakości
+przed wejściem na gałąź — dodatkowe opóźnienie do main niczego nie zabezpiecza, tylko generuje dług.
+
+**ECHO Maciej 2026-08-09 — DECYZJA WŁASNA (wariant D, nie A/B/C z propozycji), ZAMKNIĘTE:**
+„Myślę, że zawsze można scalać poprzednią falę, a nową zostawiamy do testów. Jeżeli robisz kolejną
+falę, to znowu możesz robić scalenie. Czyli zawsze będzie scalenie o jedną falę do tyłu. Da to nam
+możliwość cofnięcia się i łatwiejszego zarządzania błędami." + doprecyzowanie (AskUserQuestion):
+nowa fala ROBOCZA powstaje **wyłącznie na wyraźne słowo „deploy"** od właściciela — zero
+autonomicznego tworzenia kolejnych fal w trakcie sesji, nawet jeśli nazbiera się dużo zamkniętych
+tematów (dotychczasowa praktyka tej sesji — kilka fal dziennie — była zbyt częsta).
+
+**Reguła kanoniczna (dwie części):**
+1. **Rytm scalania do main = zawsze jedna fala ROBOCZA do tyłu.** Gdy powstaje fala N (deploy do
+   ROBOCZA na wyraźne „deploy"), fala N−1 (jeśli jeszcze nie scalona) kwalifikuje się do scalenia
+   do `main`. Fala N zostaje na gałęzi roboczej wyłącznie do testów, NIE jest scalana, dopóki nie
+   powstanie fala N+1 (wtedy fala N staje się „poprzednią" i można ją scalić). Daje to stały bufor
+   jednej fali do cofnięcia się w razie błędu wykrytego dopiero na main.
+2. **Nowa fala ROBOCZA tworzona wyłącznie na wyraźne słowo „deploy"** — nie automatycznie po
+   zamknięciu tematu ani po nagromadzeniu progu tematów. To zaostrzenie/doprecyzowanie już
+   istniejącej reguły CLAUDE.md §5 („Publikacja/deploy tylko na hasło deploy"), reagujące na
+   praktykę tej sesji (kilka fal dziennie, w tym FALA 261 nigdy niescommitowana bo gałąź odjechała
+   w trakcie oczekiwania na bramkę).
+
+**Wykonane od razu (2026-08-09, ta sama tura):** pierwsze scalenie wg nowej reguły —
+`main` (`a659f4a1`) doganie o FALA 262 (`ce69cf45`, commit deployu `75b14e86`) →
+**merge `b137332a`**, wypchnięte. FALA 263 (`89176ced`) świadomie NIE wchodzi w ten merge,
+zostaje na `claude/sprawdzenie-funkcjonalnosci-ek4ra0` do testów — wejdzie do main dopiero przy
+kolejnej fali. Kanon decyzji: `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`.
+
+---
+
+## R-DYP-STOL-A-KOREKTA — traktaty ROZŁĄCZONE od wymiany surowców (2026-08-09) · STATUS: **ZAMKNIĘTE, decyzja ostateczna Macieja**
+
+**Kontekst:** playtest Pakt o nieagresji pokazał pola „MY ODDAJEMY (OPCJONALNIE)"/„ONI ODDAJĄ
+(OPCJONALNIE)" z surowcami/pieniędzmi wpięte w ten sam formularz co traktat — konsekwencja
+decyzji `R-DYP-STOL-A=C` (2026-07-27: „pełny koszyk `diplomacyTradeBasket` dla wszystkich
+traktatów"). Orkiestrator wyjaśnił mechanizm i zapytał czy to zmienić — Maciej doprecyzował
+własny pierwotny zamysł, cytat: *„Wszystkie umowy muszą być poza umową na wymianę surowców bez
+propozycji wymiany surowców. To jest dodatkowy element, czyli jeżeli nam brakuje w jakiejś umowie
+punktów, to możemy dołożyć surowców w drugiej umowie. To musi być rozłożone, rozłączone z tego
+względu że zaburza przejrzystość i gracz potem nie będzie wiedział o co chodzi."*
+
+**Decyzja (koryguje wykonanie R-DYP-STOL-A=C, nie samą decyzję B — B zostaje):** każdy typ
+traktatu (pakt o nieagresji, sojusz, wasalizacja, itd.) ma formularz **BEZ** wpiętej sekcji
+wymiany surowców/PW w tym samym oknie. Jeśli traktatowi brakuje „punktów" żeby AI zaakceptowało,
+rozwiązaniem jest **osobna, druga umowa/deal** (np. równoległy traktat handlowy albo dar), nie
+łączenie dwóch rzeczy w jednym formularzu. Efekt praktyczny: `TREATY_ONLY_FORM_IDS` w
+`gra/src/ui/diplomacyTradeBasket.ts` powinien objąć z powrotem wszystkie typy traktatów (nie
+tylko `'15'`), tak jak przed niedokumentowanym skurczeniem w commicie `9cc7c76c` (patrz
+`R-DYP-STOL-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY` wyżej — ten wpis teraz się domyka tą decyzją,
+kierunek: powrót do treaty-only, nie utrzymanie rozszerzenia).
+
+**Nota procesowa (Maciej, ta sama wiadomość):** pytania ABC bywają zbyt skomplikowane/mylące,
+czasem brzmią jak podważanie już podjętych decyzji. Do przestrzegania na przyszłość: prostszy
+język, nie wracać do zamkniętych tematów bez wyraźnego powodu.
+
+---
+
+## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (2026-08-09, znalezisko Operatora przy naprawie P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE) · STATUS: **OTWARTE — niepilne, ten sam wzorzec błędu**
+
+W `applyCityPanelWorldView()` (`gra/src/main.ts`) ten sam błąd kolejności wywołań, który powodował
+widmowego złotego chłopka (bramka `isCityPanelOpen()` widziała stan "zamknięty" tuż przed
+otwarciem panelu i budowała warstwę, która potem już nigdy się nie odświeży dopóki panel nie
+zostanie zamknięty), dotyczy też: `refreshTradeRoutesOverlay()` (łuki tras handlowych) i
+`cityRenderer.sync(..., hideStatChips: isCityPanelOpen())` (pigułki miast na mapie). Nie
+naprawione — poza zakresem zgłoszenia o chłopkach. Do potwierdzenia czy realnie objawia się w
+grze (może być niezauważalne jeśli te warstwy rzadziej się zmieniają w trakcie otwartego panelu).
+
+---
+
+## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO (2026-08-09) · STATUS: **OTWARTE — koryguje wykonanie R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08), dispatch Sonnet 5**
+
+**⛔ To pytanie/zgłoszenie PODWAŻA wcześniejszą decyzję** `R-HUD-MIASTO-STAN-CYWILIZACJI` (ECHO
+2026-08-08, commit `8663e084`, FALA 261) — zgodnie z nową zasadą CLAUDE.md §1a oznaczam to wprost,
+żeby było jasne że to nie nowy temat, tylko korekta czegoś już wdrożonego.
+
+**Zgłoszenie Macieja (playtest, dosłowny cytat):** „Zobacz rozbieżności między ilościami w
+mieście, a ilościami na mapie, jeżeli chodzi o surowce... Pierwszy składnik surowca w mieście to
+powinna być ile jest cywilizacji a plus to powinno być tyle ile dochodzi w danym mieście. Wtedy
+wiemy ile mamy w cywilizacji nawet jeżeli jesteśmy w mieście wiemy ile w tym mieście dochodzi bo
+jest plus."
+
+**Co dziś robi kod (potwierdzone, `gra/src/ui/cityPanel.ts` → `buildCityOnlyW3FlankChips`,
+`w3CityChip`):** duża liczba w chipie karty miasta = **suma TEMPA (przyrostu/turę) całej
+cywilizacji** (`civWideSixStatsFromEmpireSnap`), mała liczba (+N) = wkład TEGO miasta w to samo
+tempo. Przy imperium jednomiastowym (jak dziś na zrzutach — tylko Ateny) duża i mała liczba są
+**identyczne** (Praca +9 +9), bo jest tylko jedno źródło tempa — to wygląda jak duplikacja, ale
+technicznie nie jest, dopóki nie ma drugiego miasta.
+
+**Co pokazuje główny HUD mapy** (`gra/src/ui/hud.ts` → `renderBarD1B`, zrzut nr 2: „Skarbiec 1 0 ·
+Praca 54 +9 · Spichlerz 9 +2 · Nauka 36 +17"): `value` = **realny ZAPAS** (skarbiec/magazyn/nauka
+nagromadzona, pole `s.bogactwo`/`s.praca`/etc.), `rate` = tempo EMPIRE-WIDE na turę. To DWIE różne
+wielkości niż w karcie miasta (zapas vs suma tempa) — stąd „Skarbiec 0" w mieście (bo to tempo
+netto=0) vs „Skarbiec 1" na mapie (bo to realny zapas=1).
+
+**To czego chce Maciej:** duża liczba w karcie miasta = **realny zapas cywilizacji** (ta sama
+wielkość co na głównym HUD mapy), mała liczba (+N) = wkład TEGO miasta w tempo — czyli zamiana
+„duża liczba" z „suma tempa" na „zapas", przy zachowaniu „mała liczba = tempo tego miasta" bez
+zmian.
+
+**Zastrzeżenie do zbadania przez Operatora, nie zgadywać:** czy WSZYSTKIE sześć surowców
+(Praca/Żywność/Skarbiec/Nauka/Kultura/Religia) mają sensowny, faktycznie liczony w silniku
+odpowiednik „zapasu cywilizacji" — Skarbiec/Spichlerz/Nauka wyraźnie mają (widoczne na HUD mapy),
+ale Praca (młotki) w większości gier Civ-podobnych jest lokalna dla kolejki budowy miasta, nie
+empire-wide zapasem — sprawdzić czy `s.praca` na HUD mapy faktycznie reprezentuje sensowny
+empire-wide zapas Pracy czy coś innego (np. sumę BIEŻĄCYCH kolejek budowy wszystkich miast, co nie
+jest tym samym co "zapas"). Kultura/Religia — sprawdzić czy silnik w ogóle śledzi ich empire-wide
+zapas, czy tylko tempo. Jeśli dla któregoś surowca nie ma sensownego zapasu — zgłosić, nie
+wymuszać sztucznej liczby.
+
+---
+
+## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09, nota D1 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — realna luka, do decyzji**
+
+Evaluator (Opus 5) przy weryfikacji naprawy `R-DYP-STOL-A-KOREKTA` znalazł osiągalną w grze
+nieszczelność: `SWEETENER_COUNTER_ELIGIBLE` (`gra/src/game/diplomacy-proposals.ts:1936`) obejmuje
+dokładnie przywrócony zestaw treaty-only (nap/sojusz/granice/wasal/pokój) — gdy AI kontruje
+ofertę, `withExtraSweetenerGold` **samo wstrzykuje złoto do koszyka** tej kontroferty. Dalej
+„Edytuj propozycję na stole" otwiera formularz treaty-only **z pozycjami koszyka już w środku**
+(zweryfikowane na żywym renderze: blok „Dołóż do umowy (koszyk PW)" się pojawia), bez UI do
+podejrzenia/edycji/usunięcia tych pozycji — payload i tak leci z `receiveItems`. Traktat
+inicjowany przez GRACZA jest czysty (0 pól), ale kontroferta AI może wprowadzić koszyk tylnymi
+drzwiami. Pytanie do rozstrzygnięcia: czy AI ma w ogóle dokładać złoto-słodzik do traktatów objętych
+rozłączeniem, skoro cel decyzji to właśnie ich rozdzielenie od wymiany.
+
+## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (2026-08-09, nota D2 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — niepilne, kosmetyka komunikatu**
+
+Komunikaty „Brakuje X PW — dopłać" / „Dopłać X PW" (`diplomacyAcceptanceBalance.ts:625,631`,
+`diplomacy-acceptance-points.ts:363-371`) każą graczowi zrobić coś, co w formularzu treaty-only
+jest już niemożliwe (brak pól do dopłaty). Powinny kierować do zrobienia osobnej umowy — to
+dosłownie cel dzisiejszej decyzji o rozłączeniu.
+
+## P-HUD-KULTURA-SIGNED-NIESPOJNE (2026-08-09, znalezisko Operatora przy R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO) · STATUS: **OTWARTE — niepilne, kosmetyka**
+
+Główny HUD mapy (`gra/src/ui/hud.ts` → `renderBarD1B`) formatuje 5 z 6 chipów jako plain `String(...)`
+(bo to zapas, nie delta), ale chip „Kultura" niekonsekwentnie używa `signed(s.kultura)` (wymuszony
+znak „+"). Prawdopodobnie drobny, pre-istniejący błąd formatowania, niezwiązany ze zgłoszeniem
+zapas-vs-tempo. Nie naprawione, poza zakresem.
+
+---
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — ZWERYFIKOWANE, Evaluator PASS-WITH-NOTES (2026-08-09)
+
+Niezależny Evaluator (Opus 5) potwierdził naprawę na żywo (dowód mutacyjny własny, nie ufając
+Operatorowi): kod SPRZED naprawy daje 15/9 (dokładnie jak zgłoszono), cofnięcie kolejności wywołań
+23/1, przywrócenie sztywnej zieleni 20/4, **ale** przywrócenie oryginalnej geometrii glifu 24/0 —
+asercja „glif mieści się w krążku" jest niedyskryminująca (i stary, i nowy kod ją spełniają, mimo
+różnicy w czytelności). Realny wniosek Evaluatora o czytelności: to **złoty krążek + obwódka**
+naprawiają problem, nie zmniejszenie glifu — parytet pikselowy z odznaką mapy świata (znaną jako
+czytelną-złotą) jest mocniejszym argumentem niż teoria o kolorze emoji.
+
+**4 noty do domknięcia przy scaleniu (nie blokują merytorycznie):**
+1. Etykieta plonów urosła ~11,5% w świecie 3D (`worldH` 0,856→0,954) — efekt uboczny większej
+   odznaki, Operator tego nie zgłosił. Do obejrzenia w grze pod kątem nachodzenia sąsiednich pól.
+2. Asercja glifu do wzmocnienia (próg na stosunek glif/średnica) albo usunięcia — dziś nic nie chroni.
+3. Komentarz „Używane przez okolicapreview" w `cityOkolicaOverlay.ts` nieaktualny — brak takiego wywołującego.
+4. Diagnoza „zamrożone na zawsze" nieścisła — realnie ginie na ścieżkach `onOkolicaSetFocus`/
+   `onOkolicaEnterManual`/`onOkolicaRestoreAuto`/`onSwitchCity`/wzrost populacji, nie wszędzie.
+
+**Potwierdzone jako realne (nie naprawione, osobna sprawa):** `P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI`
+(trasy handlowe + pigułki miast, ten sam wzorzec błędu) — Evaluator niezależnie potwierdził.
+Wszystkie bramki Operatora potwierdzone co do liczby: tsc 0 · logic-test 213/213 · nowy test 24/0
+· okolica 46/46 · city-map-badge 62/0 · camera-zoom-block 4/0.
+
+---
+
+## R-DYP-STOL-A-KOREKTA — odtworzone na bezpiecznej bazie, obie noty Evaluatora domknięte (2026-08-09)
+
+Pierwsza próba (worktree na przestarzałej bazie) odrzucona ze względów bezpieczeństwa scalania, nie
+merytorycznych — Evaluator dał PASS-WITH-NOTES na treść. Odtworzone od nowa na aktualnym HEAD +
+domknięte obie noty: (1) martwy tekst „Opcjonalnie dołóż wymianę PW poniżej." usunięty z `case '10'`;
+(2) test wzmocniony — zamiast tautologicznej flagi `isTreatyOnlyFormAction()`, nowa sekcja 21 woła
+**realny** `showTradeBasketModal()` i sprawdza wynikowy markup (brak `cdb-add`/`cdb-chip-typ`, brak
+nagłówków „(opcjonalnie)"), z kontrolami negatywnymi dla akcji 9/13/14. Dowód mutacyjny: cofnięcie
+`TREATY_ONLY_FORM_IDS` do `['15']` → 148/184 (36 czerwonych, po 6 na każdą z 6 przywróconych akcji);
+po naprawie 184/184. Bramki: tsc 0 · logic-test 213/213 · wszystkie 31 `diplomacy*.cjs` exit 0.
+Gotowe do finalnej (krótszej, potwierdzającej) weryfikacji Evaluatora przed scaleniem.
+
+---
+
+## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO — ZWERYFIKOWANE, Evaluator PASS-WITH-NOTES (2026-08-09)
+
+Twierdzenie o Pracy (najbardziej wątpliwe w zleceniu) **potwierdzone** — `playerPracaPool` to
+jeden mutowalny licznik imperium, dowód: wszystkie ścieżki wydatku (założenie miasta, cuda, start
+projektu, auto-ulepszenia, utrzymanie) dotykają dokładnie tego samego pola. Parytet z głównym HUD
+mapy potwierdzony liczbowo dla wszystkich 6 surowców.
+
+**N1 (naprawiam od razu, techniczne, bez pytania):** mutacja przywracająca dosłownie zgłoszony
+błąd Macieja (podmiana `pracaPool`/etc. z powrotem na pola *Rate* w `cityPanel.ts`) **przechodzi
+wszystkie bramki niezauważona** — test bundluje tylko czysty `empire-hud-totals.ts`, wiring w
+`cityPanel.ts`/`main.ts` nie jest pokryty niczym. Dołożenie 3 asercji na obecność/brak konkretnych
+wywołań w źródle (wzorem `border-march-wygasanie-test.cjs`).
+**N2:** Fixture 5 ma pustą asercję (`cityOwn.zloto` już wynosi 0 przed mutacją) — do naprawy razem z N1.
+
+**⛔ N3 — WYMAGA DECYZJI MACIEJA, nowa rozbieżność stworzona przez tę naprawę:**
+Dla Pracy i Żywności mała liczba (+N, wkład tego miasta) NIE jest tym, co faktycznie dolicza się
+do dużej liczby (zapasu). Przykład ze zgłoszenia „Praca 54 +9": +9 to wkład miasta do WŁASNEJ
+kolejki budowy (`doBudynkow`), a do wspólnej puli imperium (dużej liczby 54) idzie inna, osobna
+wartość (`doPuli` — w podanym przykładzie realnie +0). Główny HUD mapy pokazałby wtedy „Praca 54
++0", nie +9 — nowa, węższa rozbieżność miasto↔mapa, tym razem w MAŁEJ liczbie. Analogicznie
+Żywność (duża = zapas armii państwa, mała = netto do zapasów miasta, inna wartość niż to co idzie
+do zapasu państwa). Operator wykonał polecenie dosłownie (zakaz ruszania małej liczby) — pytanie
+do Macieja: czy to akceptowalne (dwie uczciwie nazwane, ale różne wartości), czy mała liczba też
+ma pokazywać realny wkład do zapasu.
+
+**N4 (do rejestru, niepilne):** `EmpireHudSnap.zloto` i `HudState.bogactwo` to dwa różne pola,
+dziś zawsze równe, ale bez wspólnego źródła — ryzyko cichego rozjazdu w przyszłości.
+**N5 (do rejestru, niepilne):** chip Pracy nie zaświeci już na czerwono przy ujemnym tempie (zapas
+klamrowany ≥0) — sygnał ostrzegawczy przetrwał na małej liczbie, degradacja nie utrata.
+**N6 (do rejestru, niepilne, nieosiągalne w grze):** ścieżka fallback `resolveEmpireSnap` nie ma
+4 z 6 pól — dziś nieosiągalna (panel tylko dla gracza), ryzyko czysto latentne.
+
+---
+
+## R-WYDARZENIA-FILTR-KATEGORII (2026-08-09) · STATUS: **OTWARTE — zaimplementowane w worktree, 2 noty blokujące + 1 pytanie przed scaleniem**
+
+Zaimplementowano: (1) etykieta „Dyplomacja" zamiast „Koniec tury" wyłącznie dla wpisów handlu
+AI↔AI (jedyny realny typ zaśmiecający panel — Operator sprawdził WSZYSTKIE typy wpisów przechodzące
+przez `eot-event-defer.ts`, to mieszanka: badania gracza, wzrost/głód, deficyt złota,
+auto-ulepszenia, zwycięstwo — tylko handel AI↔AI jest „nie-nasze"); (2) przełącznik `🌍 Inne cyw.`
+u góry panelu, domyślnie **WYŁĄCZONY** (chowa spam handlu AI↔AI) — decyzja Operatora, uzasadniona;
+(3) przycisk „Usuń wszystkie".
+
+**⛔ Pytanie otwarte:** żądanie Macieja wymieniało TRZY kategorie (własna cywilizacja / pozostałe
+umowy innych cywilizacji / wojny-pokoje-najważniejsze innych cywilizacji), ale silnik dziś **nie
+generuje w ogóle** trzeciej kategorii (wojny/pokoje między dwoma AI, nie dotyczące gracza) jako
+wpisu w panelu — takie zdarzenia lecą tylko do `console.log`, nigdy do `showHintMessage`. Operator
+przygotował pole `origin` generycznie (jedna linia doda tę kategorię później), ale NIE zbudował
+przełącznika bez danych za nim (zgodnie z zakazem martwego UI, CLAUDE.md). Pytanie: czy chcesz
+żebym teraz dodała tę trzecią kategorię (wymaga nowego typu zdarzenia w silniku dla wojen/pokoi
+AI↔AI), czy zostaje odłożone.
+
+## R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY — zaimplementowane w worktree, jeszcze NIE scalone do gałęzi (2026-08-09)
+
+**⛔ KOREKTA LICZB (2026-08-09, niezależna weryfikacja Evaluatora Opus 5 — pierwotny meldunek
+Operatora zawierał błędy):** Kolor Zulusów zmieniony `#2E7D32` (ciemna zieleń) → `#C8E838`
+(limonka/chartreuse), kontrast liczony metryką CIE-Lab dE76 względem odcieni terenu: najgorszy
+przypadek dla Zulusów 4,6→23,5 (5,1× lepiej). **Poprawka framingu:** próg dE76≥20 użyty w teście
+regresyjnym jest **dobrany empirycznie**, nie „zmierzony naukowo" — próg JND (granica ledwo
+zauważalnej różnicy) to ok. 2,3 dE76, próg 20 to świadomy zapas bezpieczeństwa, nie standard
+naukowy. **Poprawka zakresu:** „pozostałe 13 cywilizacji bezpieczne (≥23,4)" dotyczy tylko
+**podzbioru odcieni zieleni** użytych w teście — na pełnej palecie terenu (pustynia/piasek/góry/
+biegun/morze/mury) Babilonia/Germanie/Asyria spadają do 16,5–18,6, czyli poniżej progu 20. Fix
+Zulusów samych w sobie stoi, ale test nie sprawdza pełnego terenu dla WSZYSTKICH cywilizacji.
+Fix i test siedzą dziś wyłącznie w worktree `agent-ae0ba1d148fe9acf8` (baza `b137332a`) —
+**nie scalone** do bieżącej gałęzi roboczej; wymaga standardowej procedury bezpiecznego scalenia
+(`git merge-base --is-ancestor`) przed commitem na aktualnej gałęzi.
+
+**⛔ Znalezisko przy okazji, ten sam problem u innej cywilizacji:** Celtowie `#3D6B35` mają
+najgorszy przypadek dE76 = **~3,3** (poprawiona liczba — pierwotny meldunek Operatora podawał
+błędnie 6,4, obalone niezależną implementacją Lab przez Evaluatora ORAZ uruchomieniem kodu
+Operatora na kolorze Celtów) — mimo korekty liczby, wniosek pozostaje ten sam: to GORZEJ niż
+Zulusi przed poprawką i poniżej progu JND. Operator świadomie NIE ruszył Celtów — kolor
+tożsamościowy, wymaga tej samej rozmowy co Zulusi. Pytanie: chcesz żebym teraz też poprawiła kolor
+Celtów (ta sama metoda), czy najpierw zobaczysz Zulusów w grze?
+
+---
+
+## R-KARTA-JEDNOSTKI-STRZALKI-CYKL — ZWERYFIKOWANE, Evaluator PASS-WITH-NOTES (2026-08-09)
+
+Reużycie istniejącej funkcji cyklowania potwierdzone `git log -S` na czystej bazie (obie funkcje
+sprzed dzisiejszej pracy — `1c9bec98` 2026-08-08, `0c6790d5` 2026-07-27). Realna weryfikacja DOM
+(własna sonda Evaluatora, nie test Operatora): nagłówek i strzałki fizycznie nieobecne w DOM, nie
+ukryte CSS-em. 4 własne mutacje Evaluatora — wszystkie złapane, w tym kluczowa M2 (gwardia JS na
+`disabled` realnie testowana, nie tautologicznie — jsdom nie tłumi kliku na disabled sam z siebie).
+
+**Do domknięcia przy scaleniu:** martwy kod — `isArmyStack`/`headLabel: 'Armia'` (`main.ts:4363-4367`)
+liczone, ale karty jednostki już nie renderują `headLabel` (usunięty razem z nagłówkiem „Jednostka").
+Bez utraty informacji — treść karty niezależnie pokazuje „Armia · <hexLabel>" gdzie indziej.
+Rekomendacja Evaluatora: usunąć martwe linie, spójne z intencją „usunąć opis jednostka".
+**Niepilne, do rejestru:** stały podgląd deweloperski `gra/tools/.unit-panel-preview-entry.ts:90`
+ma zaszyty nieaktualny nagłówek „Jednostka" (plik śledzony w gicie, nie importuje `sidePanelHud`,
+więc się nie zepsuje, ale rozjeżdża się z grą). Centrowanie kamery przy strzałkach potwierdzone —
+spójne z dolnym paskiem i Spacją, nie nowa niekonsekwencja.
+
+---
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — odtworzone na bezpiecznej bazie, wszystkie 4 noty domknięte (2026-08-09)
+
+Wszystkie 4 noty Evaluatora domknięte z dowodem: (1) rozmiar etykiety — ZERO wzrostu (geometria w
+px absolutnych, nie skalowana, `worldH` identyczne przed/po); (2) asercja glifu zastąpiona
+stosunkiem glif/średnica mierzonym z realnych wywołań obu warstw (próg ±0,05 od wzorca mapy świata
+0,727) — stara geometria (0,654) wypada z pasma i czerwieni test; (3) nieaktualny komentarz
+poprawiony; (4) zasięg „zamrożenia" opisany konkretnymi ścieżkami, bez przesady. Dowód mutacyjny:
+23/0 → cofnięcie kolejności 22/1 → cofnięcie koloru+geometrii 15/8 → naprawione 23/0.
+
+**Uczciwie zgłoszony efekt uboczny (nie ukryty):** przeniesienie kolejności wywołań zmienia dane
+wejściowe dla `hideStatChips`/`refreshTradeRoutesOverlay` przy otwieraniu panelu (będą teraz
+liczone jako "panel otwarty" wcześniej) — kierunek zgodny z zamierzonym projektem, ale częściowo
+nakłada się na `P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI`. Do obejrzenia w playteście.
+
+---
+
+## ⛔ WAŻNE ODKRYCIE PROCESOWE (2026-08-09): worktree izolacji NIE dziedziczy z bieżącej gałęzi sesji
+
+Przy próbie scalenia `R-DYP-STOL-A-KOREKTA` (odtworzonej rzekomo „na aktualnym HEAD") okazało się,
+że worktree odtwarzającego Operatora **nadal stał na `b137332a`** — dokładnie ta sama baza co
+pierwsza, odrzucona próba. Zweryfikowane: `git log -1` w tym worktree = `b137332a`, a plik
+`diplomacyTradeBasket.ts` w nim ma **zero** wystąpień `techDirection`/`techPaymentMode` (praca nad
+akcją-6 z dzisiejszej sesji), podczas gdy mój aktualny HEAD ma ich 29. **Wniosek: `isolation:
+"worktree"` w tej sesji tworzy worktree od `main`, NIE od bieżącej gałęzi roboczej sesji** —
+polecenie „pracuj na aktualnym HEAD swojej gałęzi" w promptach Operatora nie ma efektu, bo
+worktree i tak startuje z ustalonego punktu. To dotyczy WSZYSTKICH dzisiejszych agentów
+worktree-isolated, nie tylko tego jednego — wyjaśnia dlaczego każda próba merge tego dnia wymagała
+sprawdzenia bezpieczeństwa bazy.
+
+**Konsekwencja praktyczna:** scalanie diffu z worktree do drzewa głównego wymaga za każdym razem
+weryfikacji `git merge-base --is-ancestor <baza-worktree> HEAD` — bez wyjątku, nawet gdy Operator
+dostał wyraźne polecenie pracy „na aktualnym HEAD". Gdy baza nie jest przodkiem: (a) dla plików
+niezmienionych między bazą a HEAD — bezpieczny bezpośredni `git apply` po weryfikacji identyczności
+kotwic; (b) dla plików rozjechanych — albo ręczne, chirurgiczne odtworzenie zmiany przez
+orkiestratora z weryfikacją kontekstu (jak w tym przypadku — `diplomacyTradeBasket.ts` zawierał
+zarówno stary, bezpieczny obszar TREATY_ONLY_FORM_IDS jak i nowy, rozjechany obszar akcji-6 tech-
+trade w tym samym pliku), albo nowe zlecenie z prośbą o wynik jako czysty tekst do transkrypcji.
+**Do dopisania do `civ-autobot/SKILL.md` §5** jako trzeci, systemowy przypadek (po `b9867b3` i
+`92341250`/`cdb29d92`) — tym razem nie błąd pojedynczego agenta, tylko właściwość architektury
+narzędzia.
+
+## R-DYP-STOL-A-KOREKTA — SCALONE bezpośrednio przez orkiestratora (2026-08-09)
+
+Po odkryciu że worktree redo-Operatora (jak wyżej) był na tej samej niebezpiecznej bazie co
+pierwsza próba, orkiestrator zweryfikował że zmiana dotyczy DWÓCH bezpiecznych, izolowanych
+obszarów pliku (komentarz+`TREATY_ONLY_FORM_IDS` w liniach 498-506 obecnego HEAD, `case '10'` w
+linii ~727 — żaden nie pokrywa się z rozjechanym obszarem akcji-6 tech-trade w liniach 487-496) i
+zastosował zmianę chirurgicznie przez Edit na aktualnym pliku, plus bezpieczny `git apply` diffu
+testowego (czysty append, kotwice zweryfikowane identyczne przed zastosowaniem). Bramki na scalonym
+stanie: `tsc` 0 błędów · `logic-test` 213/213 · `diplomacy-proposal-test.cjs` **187/187** (184
+zweryfikowane przez Evaluatora + 3 pre-istniejące testy tech-za-tech z akcji-6, oba zestawy
+zachowane). Diff ograniczony do 2 plików, +130/−4 linii, zero przypadkowych zmian. **SCALONE**
+`872c1e0d` po własnej weryfikacji orkiestratora (druga runda Evaluatora dała PASS wcześniej na tej
+samej treści, przed odkryciem procesowym).
+
+---
+
+## P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE — SCALONE `872c1e0d` (2026-08-09)
+
+Evaluator potwierdzający dał PASS-WITH-NOTES (nota #4 = tylko literówka w komentarzu, poprawiona
+przy scaleniu). Ustalenie dodatkowe Evaluatora: przeniesienie kolejności **częściowo naprawia**
+`P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI` (ścieżka otwierania panelu) — kto podejmie tamten
+temat, zastanie objaw już nieobecny na tej ścieżce.
+
+## P-REKRUTACJA-NAZWY-ZNIKAJA — SCALONE `872c1e0d` (2026-08-09)
+
+Potwierdzone: NIE regresja z dzisiejszej sesji (zero zmian w dotkniętych plikach między
+zdeployowanym buildem `35a8b636` a HEAD sprzed naprawy). Przyczyna: defekt CSS flex-layout
+(kolumna kosztu `flex:none` wypychała kolumnę nazwy do zera przy szerszych chipach), obecny od
+2026-08-06. Naprawa: 2 linie CSS. Nowy test regresyjny 17/17.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — wymaga rozpoznania przed decyzją**
+
+**Cytat Macieja:** „powinien być [w] panelu miasta tryb ustawienia globalnego dla skarbu, dla
+jedzenia i dla produkcji. Po naciśnięciu przycisku tylko dla tego miasta powinien właśnie się
+robić wyjątek dla tego miasta, ale przy normalnym przesuwaniu wszystkie przyciski czy wskaźniki
+powinny zmieniać się dla całego państwa [...] dlatego że przy zakładaniu kolejnych miast potem to
+jest żmudne ustalanie za każdym razem nowego, domyślnego ustawienia dla całej cywilizacji."
+Druga, alternatywna propozycja tego samego mechanizmu: chipy Skarbiec/Praca/Spichlerz(/Nauka) na
+głównym HUD mapy (zrzut: „Skarbiec 316 +14 · Praca 12 +62 · Spichlerz 164 +29 · Nauka 87 +76") jako
+miejsce ustawiania wartości GLOBALNEJ, z osobnym przyciskiem „lokalnie" do nadpisania per miasto,
+bez wpływu globalnych na już-lokalnie-nadpisane miasta. Ma obejmować też Naukę.
+
+**Nie inicjuję jeszcze implementacji ani ABC** — nie wiem dokładnie, do jakiego DZISIEJSZEGO
+mechanizmu w grze się to odnosi (priorytet Praca/Żywność per miasto? coś związanego z „Auto-
+zarządzaj"? inny suwak?). Dispatchuję czyste rozpoznanie (Explore/Sonnet 5, bez kodowania) —
+dopiero po zebraniu faktów przedstawię ewentualne warianty do decyzji.
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — ECHO A, decyzja Macieja (2026-08-09)
+
+**Rozpoznanie:** mechanizm „globalne domyślne + lokalne nadpisanie" istnieje już DWA razy w
+kodzie w innym kontekście (Danina/Handel — `Map<ownerId, CityPodzialHandlu>` +
+`City.podzialHandluOverride` + `resolveCityPodzialHandlu()`; auto-ulepszenia terenu —
+`City.ulepszeniaOverride`), ale NIE dla Praca/Żywność (`okolicaFocus`), podziału Praca budynki/
+skarbiec (`podzialPracy`) ani priorytetu produkcji (`budowaFocus`/`budowaTryb`) — te trzy pola
+dziś zawsze startują od tej samej wartości domyślnej dla każdego nowego miasta.
+
+**[TEMAT: Globalne vs lokalne ustawienia miasta]**
+- **A — Wdrożyć wzorem Danina/Handel** (Mapa<ownerId, wartość domyślna> + `override: boolean` per
+  miasto). Za: gotowy, sprawdzony wzorzec w kodzie; spójny z istniejącym UI. Przeciw: interfejs
+  Danina/Handel jest w innym miejscu ekranu niż suwaki Praca/Żywność/Produkcja — trzeba
+  zaprojektować nowe umiejscowienie przycisku „lokalnie".
+- **B — Wdrożyć wzorem auto-ulepszeń terenu** (`City.override` boolean + resolver). Za: prostszy
+  model danych. Przeciw: auto-ulepszenia to jednorazowa decyzja, nie stały suwak — może nie pasować.
+- **C — Nowy, wspólny mechanizm dla wszystkich trzech pól naraz**, zaprojektowany od zera. Za:
+  najlepiej dopasowany. Przeciw: najwięcej nowego kodu.
+
+Rekomendacja Sonnet 5 była B. **Decyzja Macieja: A** (dosłownie „ID: R-MIASTO-USTAWIENIA-GLOBALNE-
+VS-LOKALNE a"). ECHO potwierdzone w czacie. Dispatch implementacji wzorem Danina/Handel — bez
+deployu, zgodnie z procedurą NUMER→ABC→COMMIT→DEPLOY.
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga ABC**
+
+**Cytat Macieja:** „Cywilizacja nie może przejść do następnego etapu, jeżeli nie stworzy cudu,
+który jest jej przypisany w danej epoce. Czyli żeby przejść na przykład do brązu, musi wybudować
+cud, który odpowiada [...] cywilizacji w kamieniu. Jeżeli w jakiejś epoce nie ma swojego cudu, to
+nie ma tego warunku." Nowa reguła: awans do kolejnej epoki wymaga zbudowania cywilizacyjnego cudu
+przypisanego do BIEŻĄCEJ epoki (jeśli taki cud istnieje dla danej cywilizacji w tej epoce — jeśli
+nie istnieje, warunek nie obowiązuje). To realna zmiana zasad gry (twardy gate na awans epoki),
+nie naprawa błędu — wymaga pełnej formy ABC przed kodowaniem (wpływ na balans, AI musi też to
+respektować — parytet gracz/AI). Do zrobienia: rozpoznanie ile cywilizacji ma dziś przypisane
+cuda per epoka (czy każda ma dokładnie jeden, czy są luki), jak dziś działa mechanizm awansu epoki,
+zanim przedstawię ABC.
+
+## R-KARTA-JEDNOSTKI-STRZALKI-CYKL — SCALONE `02a5e095` (2026-08-09)
+
+Dwukrotnie zweryfikowane, martwy kod `isArmyStack`/`headLabel:'Armia'` domknięty. Bramki: tsc 0 ·
+logic-test 213/213 · nowy test 20/20 · unit-context-card-test 29/29 bez regresji.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — rozpoznanie gotowe, pytanie ABC (2026-08-09)
+
+**Fakty:** awans epoki dziś = wyłącznie 1 konkretna technologia (Brązownictwo K→B, Hutnictwo
+żelaza B→Ż), zero powiązania z cudami. Gra ma dziś 3 epoki (Kamień/Brąz/Żelazo), epoki 4+ to
+nieaktywny placeholder. Każda z 15 cywilizacji ma dokładnie **1 cud wyłączny (E)**, ale tylko w
+**1 z 3 epok** (Egipt→Kamień, 8 cywilizacji→Brąz, 6→Żelazo) — czyli **30 z 45 par civ×epoka nie
+ma przypisanego cudu**, więc wg Twojej własnej zasady „jeśli epoka nie ma cudu, nie ma warunku"
+reguła realnie dotyczyłaby TYLKO jednego z 2 przejść na cywilizację, nie obu. Osobno istnieją cuda
+wyścigowe (R) — dostępne dla wszystkich 15, ale max 1 na całym świecie — to NIE jest cud
+„przypisany" jednej cywilizacji, więc nie powinien liczyć się do tego warunku.
+**Ryzyko:** AI ma świadomą logikę budowy cudów (priorytet własny E), ale throttlowaną (co 2-8 tur
+zależnie od trudności) i progową (musi mieć nadwyżkę Pracy) — nie ma dziś gwarancji, że AI zdąży
+zbudować swój cud E zanim spełni warunek technologiczny awansu. Realne ryzyko: AI utyka w epoce.
+
+**[TEMAT: Cud jako warunek awansu epoki]**
+- **A — Wdrożyć wprost:** brak cudu E w danej epoce = brak warunku (zgodnie z Twoim opisem).
+  Za: dokładnie to o co prosiłeś. Przeciw: dotyczy tylko 1/3 przejść na cywilizację (bo tylko tam
+  ma przypisany cud), więc efekt gameplayowy będzie węższy niż mogłoby się wydawać z opisu; ryzyko
+  usidlenia AI wymaga wcześniej dostrojenia progu/throttle budowy cudów.
+- **B — Nie wdrażać teraz** — zbyt wąski efekt (1/3 przejść) i realne ryzyko blokady AI bez
+  wcześniejszego dostrojenia jego logiki budowy cudów.
+- **C — Wdrożyć, ale najpierw podnieść priorytet/częstotliwość budowy WŁASNEGO cudu E w AI**
+  (zmniejszyć throttle, obniżyć próg opłacalności) tak, żeby AI realnie zdążyło, zanim zablokuje
+  się gate.
+
+Rekomendacja: **C** — sama reguła jest prosta i zgodna z Twoim opisem, ale bez wcześniejszego
+dostrojenia AI realne ryzyko to cywilizacje AI utykające w Kamieniu/Brązie na stałe.
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — ECHO A + istotne doprecyzowanie zakresu, decyzja Macieja (2026-08-09)
+
+**Decyzja: A**, z dwoma doprecyzowaniami wykraczającymi poza pierwotny zakres pytania (cytat
+Macieja): „ta zasada dotyczy tylko głównych cywilizacji a nie państw miast, poza tym dla każdej
+cywilizacji przejście w inną epokę powinno być dopiero wtedy kiedy dana cywilizacja odkryje
+wszystkie badania i każda cywilizacja przechodzi do nowej epoki dopiero w swoim czasie, kiedy ma
+wszystkie spełnione warunki. To nie jest tak, że jedna cywilizacja jest w brązie i na całym
+świecie już jest brąz. To jest główna charakterystyka tej gry cywilizacja, że tak właśnie nie
+jest. Że na przykład czołgi mogą walczyć z falangą."
+
+**Zakres decyzji finalnie:**
+1. Warunek cudu (E) przed awansem epoki — **wyłącznie dla głównych cywilizacji**, NIE dla miast-
+   państw.
+2. **NOWY, szerszy warunek** (poza pierwotnym zakresem ABC): awans epoki wymaga odkrycia
+   WSZYSTKICH technologii bieżącej epoki, nie tylko jednej wyróżnionej (`awansDoEpoki`). Dziś
+   mechanizm to 1 technologia na przejście (Brązownictwo K→B, Hutnictwo żelaza B→Ż) — Maciej chce
+   zaostrzenia do „wszystkich" plus cud.
+3. Progresja per cywilizacja NIEZALEŻNIE i asynchronicznie — **to już jest dzisiejsze zachowanie**
+   silnika (potwierdzone przy innym rozpoznaniu: `computeOwnerEraFromResearch`,
+   `syncOwnerEraFromResearch` per-owner) — Maciej podkreśla żeby tego NIE zepsuć, nie prosi o nową
+   funkcję w tym punkcie.
+
+**Sprawdzone bezpośrednio (bez subagenta) — zbiór technologii epoki jest dziś dobrze zdefiniowany:**
+`gra/data/tech.json` → pole `Epoka` na każdej z 32 technologii: **Kamień 12 · Brąz 12 · Żelazo 8**.
+To spójny, policzalny zbiór — warunek „wszystkie badania epoki" jest technicznie dobrze określony,
+nie wymaga dalszego rozpoznania w tym punkcie.
+
+**⛔ Ryzyko AI SIĘ ZWIĘKSZA względem pierwotnego pytania** (dwa warunki naraz: cud + komplet 12/12/8
+technologii, zamiast samej 1 technologii + cud) — pierwotna rekomendacja C (podnieść priorytet
+budowy własnego cudu w AI) staje się jeszcze ważniejsza; dodatkowo throttle badań AI powinien być
+sprawdzony pod kątem czy AI realnie zdąży ukończyć KOMPLET technologii epoki w rozsądnym czasie.
+Dispatch implementacji z tym zastrzeżeniem wprost w zleceniu — Operator ma zbadać throttle badań AI
+i zgłosić, jeśli zobaczy realne ryzyko trwałego utknięcia, zamiast zgadywać czy jest bezpiecznie.
+
+---
+
+## R-WYDARZENIA-FILTR-KATEGORII — SCALONE `2984b707` (2026-08-09)
+
+Odtworzone od zera (redo-Operator), N1+N2 domknięte, druga runda Evaluatora dała PASS-WITH-NOTES
+bez żadnej noty blokującej (5 własnych mutacji Evaluatora, wszystkie złapane; 44/44 bramek w
+przekroju zielone). Scalone bezpośrednio przez orkiestratora — 3 z 4 zmienionych plików (`main.ts`,
+`sidePanelHud.ts`, `hud.ts`) miały zdywergowaną bazę worktree (zawsze `main`), zweryfikowane
+per-hunk (kotwice tekstowe unikalne i niezmienione w HEAD) i zastosowane chirurgicznie przez Edit;
+`eot-event-defer.ts` identyczny base=HEAD, bezpieczny `git apply`. Nowy plik `sidePanelEventFilter.ts`
++ test + stub skopiowane bezpośrednio (bez ryzyka dywergencji). Bramki na scalonym stanie: tsc 0 ·
+logic-test 213/213 · eot-event-defer-test 5/5 · sidepanel-events-toolbar-test 19/19.
+
+**Niepilne noty z drugiej rundy Evaluatora, do rejestru (nie blokowały scalenia):** N3 — okablowanie
+`main.ts→hud.ts→sidePanelHud.ts` (przekazanie `onDismissAll`) nadal bez pokrycia testem (dowód
+mutacyjny: usunięcie jednej linii w `hud.ts` nie czerwieni żadnej bramki) — zamykalne dodaniem
+drugiego esbuild-stuba (`scienceOwlIcon.ts`), ale żadna istniejąca bramka tego dziś nie robi. N4 —
+`AI_AI_TRADE_MARKER` w `eot-event-defer.ts` duplikuje literał komunikatu z `main.ts:13629` zamiast
+dzielić wspólną stałą — rozjazd treści po cichu zepsułby i etykietę, i filtr. N5 — artefakt bramki
+`.sidepanel-events-toolbar-bundle.css` nieobjęty `.gitignore` (wzorzec łapie tylko `.cjs`). N6 —
+toolbar renderuje się nawet przy 0 wydarzeniach (kosmetyka). N7 — `clearAllSidePanelEvents` omija
+flagę `blocking:true` (dziś nieużywaną nigdzie w kodzie — uśpione ryzyko). **N8 — do potwierdzenia
+u Macieja:** przełącznik „Inne cyw." jest ADDYTYWNY (wyłączony = tylko nasze, włączony = nasze+obce),
+nie rozłączny — nie da się zobaczyć WYŁĄCZNIE cudzych wydarzeń. Może to być lepsze UX niż dosłowne
+żądanie, ale to interpretacja, nie 1:1 spełnienie.
+
+---
+
+## R-WYDARZENIA-FILTR-KATEGORII — Evaluator PASS-WITH-NOTES, 2 noty blokujące (2026-08-09)
+
+Klasyfikacja AI↔AI i filtracja innych źródeł zdarzeń potwierdzone niezależnie (w tym jeden tor
+AI↔AI, którego Operator nie wymienił — nieszkodliwy, tylko `console.log`).
+
+**🔴 N1 (blokująca):** „Usuń wszystkie" NIE jest trwałe dla wpisów `eot-hint-*`/`era-*` — trafiają
+do `warEventLog`, który nie czyści się co turę, a `dismissedSidePanelEventIds` (miękkie ukrycie)
+**czyści się na końcu każdej tury**. Skutek: klikasz „Usuń wszystkie", panel pusty, kończysz turę
+— stare wpisy „Koniec tury"/„Dyplomacja" z tej tury **wracają**. Dokładnie to, o co prosiłeś, nie
+działa trwale dla najbardziej dokuczliwej kategorii. Naprawa jednolinijkowa (usuwać z
+`warEventLog` bezpośrednio, nie tylko oznaczać jako ukryte).
+
+**🔴 N2 (blokująca):** Operator napisał że „brak harnessu DOM dla tego typu UI w repo" — Evaluator
+to obalił: wzorzec już istnieje (`gra/tools/army-merge-dismiss-bounce-test.cjs`, jsdom + stub
+brandAssets). Konsekwencja zmierzona: dowód mutacyjny wykazał że **wyłączenie przełącznika
+filtra ORAZ usunięcie przycisku „Usuń wszystkie" (dwie funkcje, o które prosiłeś) przechodzą
+komplet bramek na zielono** — zero pokrycia regresyjnego warstwy UI.
+
+**🟡 Niepilne:** N3 (guard `blocking` pominięty przy „Usuń wszystkie", dziś nieszkodliwy, nikt
+nie ustawia `blocking:true`); N4 (wojna AI→gracz nadal tworzy DUPLIKAT wpisu z etykietą „Koniec
+tury" obok poprawnie nazwanego `war-*` — ten sam kod ma już wzorzec unikania duplikatu przy
+`border-march`, tu go nie zastosowano); N5 (kosmetyka — utracony komentarz z kotwicą decyzji,
+15-krotny redraw HUD na jedno kliknięcie „Usuń wszystkie", martwa funkcja pre-istniejąca).
+**Proces:** ten wpis miał zły format nagłówka (nie łapał go grep z CLAUDE.md §0c) — poprawiony.
+
+Dispatch domknięcia N1+N2 przed scaleniem.
+
+---
+
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — koryguje dopiero co zatwierdzoną R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, dispatch Sonnet 5**
+
+**⛔ To zgłoszenie PODWAŻA decyzję zatwierdzoną chwilę wcześniej dziś** (`R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO`, Evaluator PASS-WITH-NOTES powyżej, jeszcze NIE scalona do gałęzi) — zgodnie z CLAUDE.md §1a
+oznaczam to wprost. Agent `a35d817d715b1b210`, który dokańczał N1/N2 tamtej naprawy, został
+zatrzymany w trakcie — zdążył tylko zameldować, jakie pola danych w silniku są do ponownego użycia
+(patrz niżej), nic więcej z jego pracy się nie liczy.
+
+**Cytat Macieja (dosłowny, koryguje własną wcześniejszą prośbę z tego samego dnia):** „duża liczba
+to powinno być ile dochodzi w tym mieście, a mała liczba ile w całej cywilizacji [...] z jednej
+strony jest to ok, może tak zostać, ale nadal brakuje informacji o całej cywilizacji — ile
+zeskładowanej sumy surowców [jest w całej cywilizacji] dałbym w nawiasie poniżej małej liczby,
+poniżej tego plusa [...] inny kolor, na przykład złoty."
+
+**Nowy, docelowy układ trzech elementów w chipie karty miasta (zastępuje układ z poprzedniej
+decyzji, NIE dodaje się do niego):**
+1. **Duża liczba** = tempo TEGO miasta (przyrost/turę wkładu tego konkretnego miasta) — to jest
+   dokładnie to, co dziś liczy `w3CityChip` jako „mała liczba (+N)" w aktualnym (niescalonym) kodzie.
+2. **Mała liczba (+N)** = tempo CAŁEJ cywilizacji (suma wszystkich miast) — to jest dokładnie to,
+   co dziś liczy `w3CityChip` jako „dużą liczbę" (`civWideSixStatsFromEmpireSnap`) — czyli #1 i #2
+   to w istocie ZAMIANA MIEJSC wielkości dużej i małej liczby względem tego, co jest dziś w kodzie
+   (i względem tego, co właśnie miała zrobić `R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO` — ta praca się
+   nie liczy, patrz wyżej).
+3. **NOWY, trzeci element** — w nawiasie, w osobnym kolorze (propozycja: złoty), pod małą liczbą:
+   realny ZAPAS całej cywilizacji (ta sama wielkość co dziś na głównym HUD mapy — skarbiec/magazyn/
+   nauka nagromadzona), czyli dokładnie to co próbowała pokazać jako „dużą liczbę"
+   `R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO` (ale tam bez wyróżnienia kolorem i bez nawiasu).
+
+**Zastrzeżenie N3 z poprzedniej naprawy (Praca/Żywność: mała liczba miasta ≠ realny wkład do puli
+imperium) NADAL obowiązuje** i przenosi się na nowy układ 1:1 — dotyczy teraz elementu #1 (duża
+liczba, dawniej małej). Nie zgadywać, przenieść ostrzeżenie do implementacji.
+
+**Źródła danych już potwierdzone (przez zatrzymanego agenta `a35d817d715b1b210`, do ponownego
+użycia, nie trzeba odkrywać na nowo):** zapas cywilizacji (element #3) — `EmpireHudSnap.pracaPool` /
+`zywnoscReserve` / `zloto` / `nauka` / `kultura` / `religionStock`; tempo (elementy #1 i #2) —
+istniejące pola `*Rate`.
+
+**Odłożone na później, tylko zarejestrowane (P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC niżej) —
+NIE robić teraz.**
+
+**Evaluator (Opus 5): PASS-WITH-NOTES, dowód mutacyjny (6 mutacji, 2 nie złapane).** Duża/mała/zapas
+potwierdzone merytorycznie (nie tylko nazwy zmiennych), trzeci element = ta sama wielkość co główny
+HUD mapy dla WSZYSTKICH 6 surowców gracza (tabela zgodności w pełnym raporcie). **3 noty do naprawy
+przed scaleniem:**
+- **N1 (najważniejsza):** test NIE strzeże głównego deliverable — usunięcie renderu trzeciego
+  elementu ORAZ odcięcie wiring caller→`w3CityChip` (2 niezależne mutacje) przechodzą 29/29 zielono.
+  Test sprawdza tylko obecność tekstu w martwym kodzie, nie faktyczny render.
+- **N2:** fallback `stock: empire.pracaPool ?? empire.pracaRate ?? 0` dla PANELU MIASTA RYWALA
+  (ownerId≠0, brak `pracaPool` na tej ścieżce) pokazuje TEMPO zamiast zapasu, mimo że tooltip nazywa
+  to „zapas" — jedyny z 6 surowców z tym problemem, poprawka jednotokenowa (usunąć `?? pracaRate`).
+- **N3:** komentarz-kanon w kodzie (`cityPanel.ts:8807`) twierdzi że `doBudynkow` „nigdy" nie trafia
+  do puli imperium — OBALONE przez `production.ts:1389-1394` (trafia, gdy kolejka budowy jest
+  pusta). Kierunek zastrzeżenia słuszny, słowo „nigdy" fałszywe — trafiło do repo jako fakt wbrew
+  CLAUDE.md §0b, do przeredagowania.
+Niepilne: N4 (przestarzały docstring sąsiedniego testu), N5 (chip miasta rywala pokazuje mylące
+„(0)" zamiast pomijać element gdy brak danych zapasu).
+
+**N1-N3 naprawione przez Operatora (worktree `agent-a67d5e9f736e1d984`), czeka na Evaluatora.**
+N1: logika renderu trzeciego elementu wydzielona do nowej, eksportowanej, DOM-free funkcji
+`buildChipDeltaStockHtml()` w `empire-hud-totals.ts` — test przepisany, teraz woła tę funkcję
+naprawdę + AST-owa kontrola (przez `typescript` compiler API) że wszystkie 6 wywołań `w3CityChip(`
+mają 8 argumentów kończących się na `.stock`. Dowód: obie wcześniej-nieuchwycone mutacje teraz
+czerwienieją (35/38 i 36/38). N2: usunięty `?? empire.pracaRate` z fallbacku. N3: komentarz
+przeredagowany na „NIE trafia do puli, DOPÓKI kolejka budowy nie jest pusta". N4 też naprawione.
+N5 świadomie pominięte (wymaga decyzji produktowej). Bramki Operatora: tsc 0, logic-test 213/213,
+nowy test 38/38, sąsiedni test 20/20 bez regresji.
+
+**Evaluator (druga runda): PASS-WITH-NOTES, ⛔ N6 BLOKUJĄCA — N1 nadal nie domknięte, szew
+przesunięty o jeden poziom.** N2, N3, N4 potwierdzone POPRAWNE (własna weryfikacja, nie na słowo).
+Evaluator wykonał 7 własnych mutacji (nie tylko powtórzył 2 Operatora) — 3 nowe uciekły:
+- **N6 (blokująca):** mutacja `buildChipDeltaStockHtml(civRate, civStock)` → `buildChipDeltaStockHtml(civRate)`
+  (usunięcie DRUGIEGO argumentu w miejscu WYWOŁANIA wewnątrz `w3CityChip()`) kasuje trzeci element
+  ze WSZYSTKICH 6 chipów, a bateria bramek zostaje w pełni zielona (38/38, tsc 0). AST-owa kontrola
+  sprawdza tylko że wywołanie istnieje i trafia do `return` — NIGDY nie sprawdza jego argumentów.
+  Ta sama klasa błędu co oryginalna N1, tylko przesunięta o jeden poziom (z callera `w3CityChip`
+  na wnętrze `w3CityChip` wołające `buildChipDeltaStockHtml`).
+- **N7 (niepilna):** AST nie sprawdza że 8. argument (`.stock`) odnosi się do TEGO SAMEGO surowca
+  co 7. argument — podmiana na zapas złego surowca (np. chip Nauki pokazujący zapas Pracy)
+  przechodzi niezauważona.
+- **N8 (niepilna):** 7. argument (mała liczba, tempo cywilizacji) w ogóle niestrzeżony przez AST —
+  podmiana na zapas zamiast tempa przechodzi niezauważona.
+- **N9 (niepilna, do rejestru osobno):** `main.ts:21004` przejściowo ustawia `_lastKultura` na
+  wartość TEMPA przed nadpisaniem realnym zapasem w linii 22006 — jeśli faza „MIASTO" rzuci
+  wyjątkiem między tymi liniami, trzeci element Kultury pokaże tempo zamiast zapasu. Pre-istniejące,
+  tylko ścieżka błędu, semantyka Operatora poza tym poprawna.
+Naprawa N6+N7+N8 to ~8 linii w istniejącym bloku AST testu (linie 258-293), bez dotykania kodu
+produkcyjnego. Dispatch trzeciej rundy naprawy, skupionej wyłącznie na wzmocnieniu asercji AST.
+
+**N6-N8 naprawione przez Operatora (worktree `agent-aaf9af7386d8ca891`), czeka na finalnego
+Evaluatora.** Kod produkcyjny NIETKNIĘTY (identyczny jak w poprzedniej, zweryfikowanej wersji) —
+zmiana wyłącznie w teście: N6 (asercja: `buildChipDeltaStockHtml(...)` musi mieć dokładnie 2
+argumenty, drugi kończący się na `civStock`), N7 (prefiks obiektu bazowego 7. i 8. argumentu musi
+być identyczny dla każdego z 6 wywołań), N8 (7. argument musi kończyć się na `.small`). Dowód:
+wszystkie 3 mutacje z drugiej rundy Evaluatora teraz czerwienieją (były 38/38 zielono, teraz N6→2
+FAIL/40, N7→1 FAIL, N8→1 FAIL). Bramki na niezmutowanym kodzie: tsc 0, logic-test 213/213, nowy
+test 42/42 (38+4 nowe asercje), sąsiedni test 20/20 bez regresji.
+
+## P-KOLOR-SUROWCE-MIASTO-VS-MAPA-UJEDNOLICIC (2026-08-09, uwaga Macieja przy R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY) · STATUS: **OTWARTE — niepilne, „temat na później" (cytat Macieja)**
+
+Maciej zwrócił uwagę, że trzeba ujednolicić zasady kolorów prezentacji surowców między panelem
+miasta a głównym HUD-em mapy świata — dziś różne miejsca używają różnych konwencji kolorystycznych
+dla tych samych sześciu surowców (Praca/Żywność/Skarbiec/Nauka/Kultura/Religia). Jego słowa: „to
+jest temat na później" — świadomie nie inicjuję ABC ani implementacji, tylko rejestruję, żeby nie
+zgubić.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** przyczyna znaleziona precyzyjnie. `onSeparate` w `promptMergeIfCoLocated`
+(`gra/src/main.ts` ~8644–8677) po kliknięciu „Zostaw osobno" woła `assignBounceHexesForUnits`
+(`gra/src/game/armyMerge.ts:310-354`) z **całą listą ID jednostek armii naraz** — ta funkcja z
+założenia (potwierdzone istniejącym testem `army-merge-bounce-test.cjs`, który wprost wymaga, żeby
+DRUGA jednostka trafiła na INNY heks niż pierwsza) przydziela **każdej jednostce osobny, wolny
+heks**, traktując je jak niezależne, odrzucone byty — stąd rozpierzchnięcie całej armii. Dla
+pojedynczej jednostki błąd jest niewidoczny (nie ma z kim dzielić heksu), dlatego nie złapały go
+istniejące testy (`army-merge-dismiss-bounce-test.cjs`, 16/16 zielone).
+
+**To NIE jest regres** — funkcja działa zgodnie z własnym testem, błąd jest w MIEJSCU WYWOŁANIA
+(przekazanie całego stosu tam, gdzie oczekiwana jest lista niezależnych bytów).
+
+**Fakt projektowy potwierdzony w kodzie:** `gra/src/types/army.ts:4` — „Na jednym polu stoi
+maksymalnie 1 żeton armii danej nacji (par. 6b)". Silnik NIE MA dziś pojęcia „dwie niezależne,
+wybieralne armie na jednym heksie" (poza specjalnym przypadkiem garnizon/pole w mieście, gdzie UI i
+tak każe je scalić) — brak pola `armyId`/`stackId` w runtime. Czyli dosłowne życzenie Macieja
+(„armia i jednostka mają móc być na jednym heksie, wybieramy którą prowadzimy") to NOWA FUNKCJA,
+nie naprawa istniejącego mechanizmu — wymagałaby zmiany reguły par. 6b + modelu danych + UI wyboru
++ dostosowania AI/save-load.
+
+**[TEMAT: Zakres naprawy „Zostaw osobno"]**
+- **A — Naprawić tylko rozpraszanie, w ramach obecnej reguły „1 stos na polu":** „Zostaw osobno" ma
+  cofać CAŁĄ armię RAZEM na jeden heks (miejsce startowe albo najbliższy wolny sąsiad), zamiast
+  rozbijać ją jednostka-po-jednostce. Za: prosta, punktowa poprawka (jedna funkcja wywołania),
+  zgodna z dzisiejszą architekturą i testami. Przeciw: NIE spełnia dosłownego życzenia „armia i
+  jednostka razem na jednym heksie, wybieralne osobno" — po naprawie nadal trzeba wybrać
+  połącz/cofnij, nie będzie współistnienia.
+- **B — Nowa funkcja: dwie niezależne armie na jednym heksie, wybieralne osobno.** Za: dokładnie to
+  o co poprosił Maciej. Przeciw: duży zakres (model danych `armyId`, UI wyboru, zmiana reguły 6b,
+  AI musi to respektować, kompatybilność zapisów gry) — nieproporcjonalny do zgłoszonego objawu
+  (rozpraszania), realnie osobny temat wymagający własnego ABC.
+- **C — Naprawić rozpraszanie jak w A, ale osobno zapytać czy B ma być kolejnym tematem** (nie
+  łączyć obu decyzji w jedno pytanie).
+
+Rekomendacja: **C** — sam bug (rozpraszanie) jest tani i bezsporny do naprawienia od razu; decyzja o
+nowej funkcji „dwie armie na jednym heksie" to za duża zmiana zasad gry, żeby doczepiać ją bez
+osobnej rozmowy.
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — ECHO A, decyzja Macieja + doprecyzowanie (2026-08-09)
+
+**Decyzja: A** (bez funkcji B — potwierdzone, żadnego rozpraszania w ogóle). Cytat Macieja:
+„w takim wypadku nie potrzebujemy przycisku rozproszenie, tylko wtedy, jeżeli armia wraca na swoje
+miejsce do powrót. Czyli albo łączymy, albo wracamy na to samo miejsce przy powrocie, jeżeli nie
+decydujemy się na połączenie z armią, która już tam jest, nie powinien być tracony punkt ruchu."
+
+**Doprecyzowanie ponad wariant A z rozpoznania:** (1) armia cofa się na miejsce, Z KTÓREGO
+przyszła (nie na „najbliższy wolny sąsiedni heks" — ta alternatywa z opisu wariantu A odpada);
+(2) cofnięcie NIE ma kosztować punktu ruchu — ruch ma być traktowany tak, jakby się nie odbył
+(pełny zwrot kosztu ruchu tej tury), nie tylko przestawienie pozycji bez zwrotu.
+
+Dispatch implementacji: `onSeparate` w `promptMergeIfCoLocated` (`main.ts` ~8644-8677) ma przenieść
+WSZYSTKIE jednostki z `movedUnitIds` razem na `(fromQ, fromR)` (skąd faktycznie przyszły, nie przez
+`assignBounceHexesForUnits`) i cofnąć zużyty koszt ruchu tej armii za ten ruch (Operator ma znaleźć
+dokładny mechanizm licznika punktów ruchu jednostki/armii i sposób jego cofnięcia — nie zgadywać).
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
+
+**Cytat Macieja:** „gdy armią najechałem na miejsce innej jednostki jest przycisk połącz lub zostaw
+osobno. W momencie, gdy dałem zostaw osobno, to wszystkie jednostki rozpierzchły się na wszystkie
+strony i cała armia się rozsypała. A to powinno mówić o tym, że wtedy jest armia oraz dana jednostka
+w tym samym hexie. Po prostu można wybrać, którą chce się funkcjonować [użyć] i kierować i powinny
+mieć możliwość bycia na jednym hexie."
+
+**Oczekiwane zachowanie:** wybór „zostaw osobno" powinien pozwolić, żeby armia (stack) ORAZ
+pojedyncza jednostka współistniały na tym samym heksie jako dwa odrębne, wybieralne cele — gracz
+przełącza się między nimi, żadna nie jest wypychana. **Obserwowane zachowanie:** cała armia (wiele
+jednostek w stacku) rozpada się i rozprasza na sąsiednie heksy, zamiast zostać na miejscu obok
+pojedynczej jednostki. Dispatch Explore (bez kodowania) — znaleźć logikę obsługi przycisku „zostaw
+osobno" (prawdopodobnie okolice army-merge / stack-split w `gra/src/game/**` lub `gra/src/ui/**`,
+por. istniejący wzorzec `army-merge-dismiss-bounce-test.cjs`) i ustalić czy to founded bug w logice
+rozstawienia po odrzuceniu połączenia, zanim przedstawię ABC/naprawę.
+
+## P-PANSTWO-MIASTO-ZNIKA-PO-NAJEZDZIE-BEZ-BITWY (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: **OTWARTE — WSTRZYMANE na prośbę Macieja, nie podejmować pracy**
+
+**⛔ Maciej wycofał zgłoszenie do czasu potwierdzenia (dosłowny cytat):** „Co do tego znikającego
+miasta? Na razie nic z tym nie rób. Możliwe że to była chatka ze skarbami i omyłkowo pomyślałem że
+to było miasto które znikło. Jak to [ponownie] się pojawi, to wtedy to zgłoszę do sprawdzenia
+ponownie." **Nie dispatchować Explore ani żadnej pracy na ten temat** — zostaje w rejestrze wyłącznie
+jako ślad, żeby nie zgubić kontekstu, gdyby wrócił z potwierdzeniem.
+
+**Cytat Macieja:** „będąc pod murami miasta oszczepnikiem jednostka państwa miasta zaatakowała albo
+chciała zaatakować tego oszczepnika. Ale zamiast Ataku po prostu wjechała na miejsce mojego
+oszczepnika i nie doszło do bitwy, ale z jakiegoś przyczyny znikło w ogóle miasto tego państwa
+miasta. Nie wiadomo dlaczego."
+
+**Obserwowana sekwencja:** (1) jednostka gracza (oszczepnik) stoi pod murami miasta-państwa; (2)
+jednostka miasta-państwa próbuje zaatakować, ale zamiast walki wchodzi na hex jednostki gracza
+(brak bitwy — sugeruje błąd w rozstrzyganiu kolizji ruch-kontra-atak, możliwe że silnik potraktował
+to jako ruch, nie atak, mimo zajętego heksa); (3) samo miasto-państwo **znika z mapy** bez
+wyjaśnienia. To jest poważniejsze niż kosmetyka — utrata bytu w świecie gry bez śladu przyczyny.
+Dispatch Explore (bez kodowania), priorytet wysoki: (a) sprawdzić logikę AI/silnika rozstrzygania
+ruch-vs-atak na zajęty heks pod murami miasta (czy jednostka miasta-państwa mogła „wejść" zamiast
+zaatakować — błąd walidacji kolizji); (b) sprawdzić czy istnieje ścieżka kodu, która usuwa miasto
+miasta-państwa jako efekt uboczny nieudanego/błędnego ataku (np. traktowanie ruchu na zajęty hex
+jako zdobycia miasta z jakimś warunkiem brzegowym, albo czyszczenie encji przy błędzie stanu).
+**WSTRZYMANE — patrz wycofanie zgłoszenia w nagłówku wyżej, nie dispatchować.**
+
+## P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA — PRZYCZYNA ZNALEZIONA, dispatch naprawy (2026-08-09)
+
+**Rozpoznanie (Explore):** dwa zgłoszone objawy mają WSPÓLNĄ przyczynę, druga część zgłoszenia
+(przelicznik tura→rok) okazała się NIE być błędem.
+
+1. **Rzeczywista przyczyna (potwierdzony bug):** `doRotatingAutosave()` (`gra/src/main.ts:20554-
+   20571`) przy niepowodzeniu `saveToLocal()` (np. przekroczenie limitu quota `localStorage`, ok.
+   5-10 MB/origin) **milczy całkowicie** — brak `console.warn`, brak komunikatu dla gracza (w
+   przeciwieństwie do `doQuickSave()`, który przy błędzie POKAZUJE komunikat), i co gorsza NIE
+   przesuwa indeksu rotacji (`AUTOSAVE_ROT_IDX_KEY` aktualizowany tylko przy sukcesie). Skutek:
+   gdy raz zabraknie miejsca, WSZYSTKIE kolejne próby rotacyjnego autozapisu celują w ten sam,
+   już-nieudany slot i cicho zawodzą — reszta puli 10 slotów zamraża się na starej treści, dokładnie
+   jak na zrzucie (różne godziny zapisu, ta sama wczesna tura). Prawdopodobna przyczyna
+   przepełnienia: pełny snapshot rośnie z każdą turą (m.in. `explored` heksy), zapisywany w 10
+   rotacyjnych slotach + slot szybkiego zapisu + WSZYSTKIE ręczne zapisy (nigdy automatycznie nie
+   czyszczone, `uniqueSlotIdFromLabel` tworzy nowy unikalny klucz za każdym razem). Pula rotacyjna
+   jest też globalna między różnymi rozgrywkami (`AUTOSAVE_ROT_IDX_KEY` nie resetuje się przy nowej
+   grze).
+2. **Przelicznik tura→rok jest POPRAWNY** — `4000 − (tura−1)×50`, tura 37 → dokładnie 2200 p.n.e.
+   (zgodne z tym co zgłosił Maciej), potwierdzone w dwóch miejscach kodu (zduplikowana logika,
+   `main.ts:15835` i `save-label.ts:34-38`, dziś zgodne). Objaw „TURA 2? · 2200 P.N.E." na ekranie
+   to najprawdopodobniej efekt objawu #1 (wczytanie zamrożonego autozapisu) albo błędny odczyt
+   drobnego napisu (Maciej sam zaznaczył znakiem zapytania) — nie osobny błąd konwersji.
+
+**Dispatch naprawy (bez ABC — czysto techniczny bug, nie decyzja projektowa):** (1) ujawnić
+niepowodzenie rotacyjnego autozapisu graczowi (komunikat + log, wzorem `doQuickSave()`); (2)
+rozróżnić `QuotaExceededError` od innych błędów w `saveToLocal()`. **Odłożone do osobnej decyzji
+(niepilne, wpływa na zachowanie, nie tylko widoczność błędu):** limit/sprzątanie ręcznych zapisów,
+reset rotacji per nowa gra, scalenie zdublowanej formuły tura→rok.
+
+**Naprawione przez Operatora, Evaluator: PASS-WITH-NOTES (worktree `agent-aa90d7889e70190cc`,
+czeka na scalenie).** Rozróżnienie quota potwierdzone Evaluatorem na REALNYM `DOMException` (nie
+tylko mocku Operatora) — solidne. Wszystkie 2 wywołania `saveToLocal()` w repo zweryfikowane
+niezależnie, oba dostosowane, `doQuickSave()` nietknięty. 5/5 własnych mutacji Evaluatora złapanych.
+
+**⛔ N1 — WAŻNE, ten wpis NIE zamyka tematu:** naprawa dotyczy WYŁĄCZNIE widoczności błędu (gracz
+teraz dostaje informację zamiast ciszy) — **NIE przywraca rotacji ani realnej możliwości cofnięcia
+się do niedawnej tury**. 10 slotów nadal zamrozi się przy przepełnieniu, gracz dostanie tylko o tym
+wiadomość. To było zgodne z zakresem dispatchu (naprawa widoczności, sprzątanie/reset odłożone
+świadomie), ale ORYGINALNE zgłoszenie Macieja dotyczyło utraty możliwości cofnięcia się — ta
+połowa problemu WCIĄŻ WYMAGA osobnej decyzji (limit/sprzątanie ręcznych zapisów, reset rotacji per
+nowa gra) zanim temat można uznać za w pełni zamknięty.
+
+**N2 (do domknięcia przy scaleniu, nieblokujące):** komunikat o niepowodzeniu NIE pojawia się jako
+osobny dymek — `doRotatingAutosave()` jest wołane w trakcie `endTurnInProgress`, więc
+`showHintMessage()` odkłada go do panelu WYDARZENIA jako zwykły wpis „Koniec tury" (ikona ℹ️),
+nieodróżnialny od rutynowych komunikatów. Słabsze ostrzeżenie niż zamierzone. Do rozważenia: osobny
+tytuł/rodzaj wpisu „ostrzeżenie" zamiast zlewać się z resztą.
+
+**N3 — poprawka do wcześniejszego opisu w tym wpisie:** fraza „i co gorsza NIE przesuwa indeksu
+rotacji" (wyżej w tym wpisie) była MYLĄCA — Evaluator ocenił merytorycznie, że **kod ma rację, nie
+opis**: nieprzsuwanie indeksu po nieudanym zapisie jest PRAWIDŁOWYM zachowaniem (wszystkie tryby
+awarii są globalne, nie specyficzne dla slotu — przesuwanie wskaźnika tylko przepalałoby pozycje
+pierścienia bez realnego zapisu). To NIE jest osobny bug do naprawienia, tylko część tego samego,
+świadomie zachowanego zachowania. Niepilne N4-N7 (literówka bez polskich znaków, `doQuickSave`
+mylący komunikat przy quota, komentarze niedwujęzyczne wbrew CLAUDE.md §9, krucha kotwica testu) —
+do rejestru, nie blokują.
+
+---
+
+## P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
+
+**Cytat Macieja:** „coś też jest z zapisywaniem tur, mianowicie automatycznie miało się np.
+zapisywać 10 ostatnich tur, a widzę, że nie zapisują się, zapisuje się tylko i wyłącznie ostatnia.
+Co więcej widać po datach, że one nie następują po sobie, bo mamy 37. turę a dopiero 2200 rok przed
+naszą erą."
+
+**Dwa osobne objawy na zrzucie „Wczytaj grę":**
+1. **Rotacja autozapisu nie działa jak zaprojektowano** — lista pokazuje wiele wpisów „Autozapis",
+   ale wszystkie (poza jednym z „tura 3") mają identyczną „tura 2 · rok 3950 p.n.e." mimo różnych
+   znaczników czasu zapisu (13:56, 10:45, 09:54, 08:13, 08:13...) — wygląda jakby silnik zapisywał
+   wielokrotnie ten sam wczesny stan gry zamiast 10 KOLEJNYCH tur, albo jakby numer tury/rok w
+   zapisanym stanie nie aktualizował się poprawnie przy kolejnych autozapisach.
+2. **Niespójność tura↔rok** — na drugim zrzucie (ekran „Zakończ turę") widać „TURA 2? · 2200 P.N.E."
+   w grze, którą Maciej opisuje jako będącą na 37 turze — czyli albo licznik tury wyświetlany w HUD
+   nie zgadza się z rzeczywistym stanem, albo przeliczenie tura→rok kalendarzowy jest zepsute
+   (37 tur powinno dawać znacznie mniej ujemny rok niż 2200 p.n.e., zależnie od kalibracji, ale na
+   pewno nie identyczny z zapisami z „tury 2").
+
+**Ryzyko:** jeśli autozapis realnie nie rotuje 10 ostatnich tur (tylko duplikuje/nadpisuje wczesny
+stan), gracz w praktyce NIE MA możliwości cofnięcia się do niedawnej tury po błędzie/regresie w
+grze — to podważa samą funkcję autozapisu. Dispatch Explore (bez kodowania), priorytet wysoki: (a)
+znaleźć mechanizm autozapisu (prawdopodobnie `gra/src/game/**` lub `gra/src/ui/**`, zapis do
+localStorage/IndexedDB, rotacja/limit 10 slotów) i sprawdzić czy faktycznie tworzy nowy slot co
+turę czy nadpisuje/duplikuje istniejący; (b) sprawdzić przeliczenie numer-tury→rok-kalendarzowy i
+czy wyświetlany numer tury w HUD-zie faktycznie pochodzi z tego samego licznika co ten zapisany w
+sejwie. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
+
+## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE (2026-08-09, żądanie danych od Macieja przy P-MAGAZYN-PRZEKROCZENIE-LIMITU) · STATUS: **OTWARTE — czyste zestawienie danych, decyzja o zmianie balansu odłożona do odpowiedzi Macieja**
+
+**Cytat Macieja:** „to oznacza że powinniśmy zmniejszyć produkcję drewna i gliny. Ale to trzeba do
+tego podejść kompleksowo. Napisz mi ile produkuje się w danych ulepszeniach drewna gliny kamienia,
+zdecyduję czy coś zmieniamy." Zestawienie do przygotowania i pokazania Maciejowi (nie decyzja o
+zmianie balansu — to on zdecyduje po zobaczeniu liczb). Każda liczba z nazwanym parametrem/
+jednostką/kontekstem (epoka/poziom), zgodnie z CLAUDE.md pkt 3.
+
+## P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA — ODPOWIEDZIANE FAKTOGRAFICZNIE (2026-08-09)
+
+**Odpowiedź (Explore, potwierdzone w kodzie):** Mechanizm istnieje i **dotyczy też miast-państw** —
+nie ma dla nich osobnej, odmiennej ścieżki. Rdzeń: `applyCapitalCapturePlunder`
+(`gra/src/game/capital-capture.ts:174-231`), wołane przy każdym przejęciu miasta. Dwa warianty:
+(1) przejęcie stolicy, cywilizacja przeżywa — skarbiec 100% do zwycięzcy, pula pracy przepada
+(NIE trafia do zwycięzcy — świadomy wyjątek), nauka/techy bez zmian; (2) przejęcie OSTATNIEGO
+miasta = eliminacja — jak wyżej PLUS cała nauka pokonanego PLUS wszystkie brakujące technologie
+kopiowane do zwycięzcy. Surowce budowlane (drewno/kamień/glina/ruda itd.) trzymane są per-miasto
+(`City.surowce`) i automatycznie „wchodzą" do puli nowego właściciela, bo przejęcie miasta nigdy
+nie zeruje `city.surowce` — tylko zmienia `ownerId`.
+
+**Miasta-państwa idą dokładnie tą samą ścieżką** — nie mają osobnej struktury skarbca/puli (ten
+sam `aiSkarbiecByOwner: Map<ownerId, number>` co pełne cywilizacje, ta sama funkcja
+`runCapitalCapturePlunder`, jedyny wyjątek to frakcja rebeliancka, nie miasta-państwa). Ponieważ
+miasto-państwo ma z definicji tylko 1 miasto, jego utrata ZAWSZE kwalifikuje się jako pełna
+eliminacja (wariant 2, najszerszy transfer) — potwierdzone wprost testem
+`gra/tools/capital-capture-test.cjs:250-258` („Miasto-panstwo (jedyne miasto) → zawsze eliminacja").
+
+**Podsumowanie:** tak, mechanizm jest w kodzie i obejmuje też miasta-państwa — złoto zawsze w
+całości, surowce budowlane miasta automatycznie, nauka+techy przy pełnej eliminacji (co dla
+miast-państw jest zawsze prawdą). Jedyny świadomy wyjątek od „wszystkich surowców" to pula pracy,
+która zawsze przepada zamiast trafić do zwycięzcy — dotyczy to obu typów właścicieli jednakowo, to
+nie asymetria cywilizacja/miasto-państwo. Nie wymaga naprawy — pytanie było czysto faktograficzne.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore), znalezisko wstępne — martwy kod prawie gotowy do wykorzystania:** w repo
+istnieją DWA komponenty wyglądające jak panel listy dyplomacji: `gra/src/ui/diploListHud.ts`
+(żywy, realnie otwierany z toolbara) oraz `gra/src/ui/diplomacyPanel.ts` — **całkowicie martwy
+kod**, zaimportowany w `main.ts:986`, ale NIGDY faktycznie wywoływany. Ten martwy panel ma już
+GOTOWĄ sekcję „Wojny znane (wywiad)" pokazującą wojny MIĘDZY INNYMI cywilizacjami
+(`diplomacyPanel.ts:281-289`, korzysta z `getKnownWarsBetweenOthers`) — dokładnie część tego, o co
+prosi Maciej.
+
+**Fakt 1 (sortowanie):** dziś WYŁĄCZNIE alfabetyczne (`main.ts:5023`), bez rozróżnienia typu —
+miasta-państwa i pełne cywilizacje są przemieszane. Flaga `isCityState` jest liczona
+(`isOwnerClusterCityState`, `display-names.ts:50-59`) ale NIE jest przenoszona do struktury, którą
+renderuje żywy panel (`DiploListEntry`, `diploListHud.ts:23-33`) — trzeba dodać pole i posortować.
+
+**Fakt 2 (brak kroku pośredniego):** kliknięcie wiersza dziś idzie WPROST do pełnego panelu
+audiencji (`main.ts:15789-15799` → `openDiplomacyAudience` → `diplomacyAudience.ts`, 2106 linii) —
+zamykając listę. Żadnego pop-upu podsumowania nie ma.
+
+**Fakt 3 (dane do podsumowania — częściowo gotowe, częściowo z ograniczeniem silnika):** surowe
+dane o wojnach dowolnej pary (`diplomacyRelations`) i sojuszach/handlu dowolnej pary
+(`activeDeals.strony` + funkcja `dealInvolvesOwners`) już istnieją w silniku — trzeba by je dopiero
+zagregować w nowym/martwym UI. **Ograniczenie silnika do ujawnienia Maciejowi:** sojusze AI↔AI są
+dziś generowane WYŁĄCZNIE między „siostrami" tego samego klastra cywilizacyjnego (komentarz w
+kodzie wprost: „dyplomacja AI↔AI dziś NIE ISTNIEJE poza gracz↔AI... siostry nigdy by się nie
+sprzymierzyły same" — `main.ts:13426`) — czyli podsumowanie „z kim ma sojusze" pokaże realnie tylko
+sojusze siostrzane, nie pełny obraz dyplomacji AI-AI, bo silnik szerszych sojuszy AI-AI po prostu
+nie tworzy. Handel AI↔AI jest szerszy (nie tylko siostry).
+
+**[TEMAT: Zakres wdrożenia listy + podglądu dyplomacji]**
+- **A — Wdrożyć oba żądania od razu, wykorzystując martwy `diplomacyPanel.ts` jako bazę nowego
+  pop-upu** (ma już sekcję wojen osób trzecich — dopisać sojusze/handel + przycisk propozycji
+  spotkania) + naprawić sortowanie w `diploListHud.ts`. Za: reużycie istniejącego, częściowo
+  gotowego kodu zamiast pisania od zera; spełnia oba żądania naraz. Przeciw: największy zakres z
+  trzech opcji, wymaga zrozumienia i ewentualnie naprawy martwego kodu (nieznana jakość/aktualność
+  po tym jak nigdy nie był używany na żywo).
+- **B — Tylko sortowanie teraz** (cywilizacje nad miastami-państwami, tani i niskiego ryzyka), pop-up
+  podsumowania jako osobny temat później. Za: szybkie, punktowe, bez ryzyka. Przeciw: nie spełnia
+  drugiej, prawdopodobnie ważniejszej dla Macieja części życzenia.
+- **C — Oba żądania, ale zbudować pop-up jako NOWY, mniejszy komponent zamiast reanimować martwy
+  `diplomacyPanel.ts`** (użyć tylko jego pomysłu/wzorca zapytań o dane, nie jego kodu UI). Za:
+  unika ryzyka ukrytych błędów w nigdy-nietestowanym-na-żywo kodzie. Przeciw: więcej pracy niż A,
+  bo nie reużywa gotowego UI.
+
+Rekomendacja: **A** — martwy kod ma dokładnie pasujący kształt (sekcja wojen trzecich stron), a
+skoro nigdy nie był wywołany, i tak wymaga przeglądu/testu zanim trafi na żywo — lepiej to zrobić
+raz, przy okazji tego zadania, niż pisać odpowiednik od zera.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA (2026-08-09, zgłoszenie z playtestu) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — przyczyna znaleziona, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** potwierdzone — mechanizm „zagrożenie lokalne ma priorytet" **NIE
+istnieje** dla ruchu wojsk AI, tylko dla decyzji produkcyjnych (miasto pod zagrożeniem buduje
+jednostki obronne, ale nie przekierowuje już istniejącej armii). Wybór celu marszu armii
+(`gra/src/game/ai.ts:2155-2217`, `citiesForMarch`/scoring) rozważa WYŁĄCZNIE miasta wrogich
+cywilizacji (gdziekolwiek na mapie) — barbarzyńcy nigdy nie trafiają do tej puli (nie są `City`),
+i nie ma żadnego malusa/bonusu za to, że własne miasto jest właśnie oblegane. Skutek dokładnie jak
+zgłoszono: jeśli AI jest w wojnie z KIMKOLWIEK (choćby daleko), krok „marsz na wrogie miasto" zawsze
+znajdzie cel i cała armia rusza tam, ignorując barbarzyńców pod własnym miastem.
+
+**To realna zmiana logiki AI (priorytetyzacja celów), nie prosta poprawka — wymaga ABC** zanim
+ktokolwiek zacznie kodować (może wpłynąć na balans/trudność, wymaga decyzji jak dokładnie ważyć
+priorytet obrony względem trwającej wojny).
+
+**Cytat Macieja:** „barbarzyńcy oblegają jedno z miast innej cywilizacji, a ta cywilizacja zamiast
+iść wojskiem i najpierw zwalczyć zagrożenie, to siedzi, nie wiadomo co, idzie w przeciwnym
+kierunku. Generalnie głównym celem armii danej cywilizacji powinno być zlikwidowanie wrogich wojsk
+na własnym terenie lub w okolicach tego terenu. Jeżeli jest stan pokoju [z resztą] — [priorytet to
+zagrożenie]. Jeżeli jest stan wojny, no to oczywiście walczy z tym [wrogiem wojny] i z tyłu
+[zagrożeniem lokalnym] walczy, ale [jeśli] ktoś inny jest też wrogiem, to też stara się go
+atakować. Widzę, że AI ma z tym trochę problem." Zrzuty: barbarzyńcy (czerwone ikony) wokół miasta
+Kwabulaw... (cywilizacja Zulusów, epoka Brąz sądząc po symbolach), miasto oblężone, ale jednostki
+tej cywilizacji nie idą na odsiecz.
+
+**Zasada, jaką Maciej chce widzieć w priorytecie celów AI:** (1) zawsze najwyższy priorytet —
+zlikwidować wrogie siły (w tym barbarzyńców) na własnym terytorium lub w jego bezpośredniej
+okolicy, niezależnie od stanu pokoju/wojny z kimkolwiek innym; (2) jeśli jest w stanie wojny z
+konkretną cywilizacją, walczy z nią NORMALNIE (nie tylko defensywnie); (3) jeśli ma więcej niż
+jednego wroga jednocześnie, stara się atakować też pozostałych, nie tylko jednego.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć logikę AI odpowiedzialną za priorytetyzację
+celów armii (prawdopodobnie `gra/src/game/ai.ts` lub podobny, szukać obsługi zagrożeń/oblężenia/
+barbarzyńców, funkcje typu `decideAiMilitary`/`threatResponse`/podobne); (b) ustalić czy AI w ogóle
+ma dziś pojęcie „zagrożenie na własnym terytorium ma priorytet nad wszystkim innym" — czy istnieje
+gdzieś taka reguła, czy jest po prostu nieobecna/przegrywana przez inne priorytety (ekspansja,
+budowa, inny cel wojenny); (c) sprawdzić konkretnie dlaczego w tym przypadku (oblężone miasto
+Zulusów) armia poszła w przeciwnym kierunku — czy to celowy inny priorytet (np. realizacja innego
+zlecenia AI), błąd w ocenie zagrożenia (nie widzi barbarzyńców jako zagrożenia?), czy błąd w logice
+pathfinding/celu. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać. To może być
+duża zmiana w logice AI (priorytetyzacja) — po rozpoznaniu prawdopodobnie wymaga ABC, nie tylko
+prostej naprawy.
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** mechanizm wypowiadania wojen AI→AI i AI→gracz istnieje
+(`decideAIDiplomacy`, `ai.ts`), ale jest rzadki (wymaga przewagi siły ≥60%, wysokiej agresji,
+relacji <30 pkt). Sąsiedztwo terytorialne NIE jest dziś używane do wyboru celu wojny (tylko do
+wyboru celów bojowych już W TRAKCIE wojny) — trzeba by dobudować taki filtr. Ranking Mocy istnieje,
+ale kierunek preferencji sojuszy jest dziś ODWROTNY do życzenia Macieja: silniejsza cywilizacja ma
+dziś MNIEJSZĄ (nie większą) chęć sojuszu z podległym/słabszym — trzeba by dodać osobny bonus.
+Istnieje dobry precedens architektoniczny do wzorowania się (`clusterForceWarTargetId`) i jasny
+punkt zaczepienia w kodzie epoki (`main.ts:22130`, `reconcileAllOwnerErasFromResearch()`).
+Dodatkowa hipoteza (do zweryfikowania razem z `P-AI-NIE-BRONI-WLASNYCH-MIAST`): AI ma dziś
+mechanizm SZYBKIEJ kapitulacji/oferty pokoju gdy zaczyna przegrywać (`ai.ts:3504-3527`) — może to
+współtłumaczyć „statyczność mapy" niezależnie od rzadkości wypowiadania wojen.
+
+**To realna, wieloczęściowa zmiana logiki AI (nowa reguła wymuszonej wojny + filtr sąsiedztwa +
+odwrócenie kierunku preferencji sojuszy) — wymaga ABC**, prawdopodobnie do rozbicia na osobne
+decyzje (reguła wojny osobno, kierunek sojuszy osobno).
+
+**Cytat Macieja:** „wydaje mi się, że w momencie gdy nastąpi epoka brązu, to każda cywilizacja,
+która wejdzie w epokę brązu, powinna wypowiedzieć wojnę przynajmniej jednej innej cywilizacji, tak
+żeby coś na tej mapie się działo."
+
+Nowa reguła projektowa: przy awansie do epoki Brąz, cywilizacja (AI) automatycznie wypowiada wojnę
+co najmniej jednej innej cywilizacji, jeśli jeszcze nie jest w stanie wojny z nikim. Cel: ożywić
+mapę, dziś (sugeruje kontekst zgłoszenia obok) zbyt statyczną/pokojową rozgrywkę AI-AI.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) sprawdzić czy istnieje dziś jakikolwiek mechanizm
+wymuszający/zachęcający AI do wypowiadania wojen (poza reaktywnymi, np. w odpowiedzi na
+zagrożenie) — jaka jest dziś częstotliwość/prawdopodobieństwo wojen AI-AI w ogóle; (b) sprawdzić
+czy to zgłoszenie łączy się z powyższym `P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI` — czy
+przyczyną „statycznej mapy" jest brak wojen AI-AI, czy raczej że AI wchodzi w wojny ale się słabo
+broni; (c) ustalić czy dziś istnieje pojęcie „epoka Brąz" jako punkt zaczepienia w kodzie awansu
+epoki (tak, potwierdzone przy innym zgłoszeniu `R-EPOKA-CUD-WARUNEK-AWANSU` — Brązownictwo K→B).
+Zanim przedstawię ABC — zebrać fakty o dzisiejszym zachowaniu AI w kwestii wojen.
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — hipoteza POTWIERDZONA, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** hipoteza Macieja potwierdzona jednoznacznie. Pula nagród chatki
+(`villageRewards.ts`: złoto 50%/tech 30%/jednostka 20%) NIE rozróżnia czyje jest terytorium chatki
+— era 1 daje Zwiadowcę (typ „Civilian", zwolniony z kary), era 2+ daje **Włócznika** (typ
+„Spearman", jednostka wojskowa, BRAK zwolnienia). Kara za intruzję terytorialną
+(`border-march-scan.ts`/`diplomacy-border-march.ts`, −5 Zaufania/turę) skanuje WSZYSTKIE jednostki
+na cudzym terenie bez wyjątku dla „pochodzenia" (spawn z eventu vs ruch gracza) — nalicza się już
+na pierwszym końcu tury, bez okresu karencji. Chatki mogą leżeć wewnątrz cudzego terytorium
+(dystans min. 3 heksy od miasta, promień terytorium rośnie z populacją, może przekroczyć 3).
+
+---
+
+## R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK — Evaluator PASS-WITH-NOTES, gotowe do scalenia (2026-08-09)
+
+**Operator wykonał** (`cityPanel.ts` ~4636-4663): checkbox→`<button class="hbtn auto-wyzywienie-btn">`,
+stan z `city.autoWyzywienie` (nie DOM), handler `click`, tekst „Auto WYŁ..." przeniesiony do `title`,
+podsumowanie zostało widoczne.
+
+**Evaluator (Opus 5): PASS-WITH-NOTES.** Wszystkie 4 punkty weryfikacji (stan żywy nie martwy,
+handler czyta stan nie DOM — potwierdzona ta sama referencja obiektu przez `rerender()`, `title`
+warunkowy poprawny, podsumowanie nietknięte) potwierdzone samodzielnie. Brak testu regresyjnego
+uznany za AKCEPTOWALNY (zero logiki biznesowej, zero edge case'ów) — ale uzasadnienie Operatora
+(„niemożliwe do zbundlowania") skorygowane: bariera jest tylko tranzytywna (brandAssets/
+scienceOwlIcon), repo ma już gotowy wzorzec obejścia (esbuild stub, 3 precedensy w `gra/tools/*`),
+więc technicznie możliwe, tylko kosztowne — decyzja słuszna, nie z tego powodu co podano.
+
+**Noty do domknięcia (niepilne, nie blokują scalenia):** N1 — brak `aria-pressed` (dostępność,
+precedens `gamePauseMenu.ts:84-108`, fix jednolinijkowy); N2 — `title` przy stanie WŁ nie ma
+jawnego markera „WŁĄCZONY" jak wzorzec `#cs-manager`; N3 — **higiena scalania:** symlink
+`node_modules` w worktree NIE jest łapany przez `.gitignore` (wzorzec `node_modules/` z ukośnikiem
+nie dopasowuje symlinka) — pilnować przy `git add`, nie używać `git add -A`; N4 kosmetyka OK.
+**Ryzyko layoutu (do potwierdzenia w playteście, nie z kodu):** font 0,74em→0,8em, wyższy rząd —
+może przesunąć elementy pod spodem, ale też ubył jeden fragment tekstu w hincie, efekt netto
+niepewny bez wizualnego testu.
+
+**SCALONE bezpośrednio przez orkiestratora** (małe, jednoplikowe, PASS-WITH-NOTES bez blokujących
+not) — patrz commit poniżej w kanale.
+
+**Rozpoznanie (Explore):** checkbox w `cityPanel.ts:4640-4660`, wzorzec przycisku auto-produkcji
+(„Zarządca automatyczny") w `cityPanel.ts:8669` (markup `<button class="hbtn">`) +
+`cityPanel.ts:10224-10234` (stan aktywności przez klasę `.active` + `cfg.isAutoManageEnabled?.()`,
+nie przez DOM `checked`) + CSS `.hbtn`/`.hbtn.active` (linie 1782-1785, 1997). Zmiana: markup
+checkbox→button, handler `change`→`click` czytający `city.autoWyzywienie` (nie `checked`), klasa
+`active` przełączana jak w wzorcu, tekst „Auto WYŁ — bez auto-obniżania/podnoszenia"
+(`cityPanel.ts:4669-4670`) przenoszony do `title` warunkowo. Tekst podsumowania „10 [ikona]/miesz.
+· +5.5%" ZOSTAJE widoczny (Maciej prosił tylko o przeniesienie zdania o WYŁ). Dispatch naprawy (bez
+ABC — czysto techniczna zmiana UI, wzorzec 1:1 z istniejącego przycisku).
+
+**Cytat Macieja:** „popraw trochę wygląd, dodatkowa informacja: Auto-wyłącz, to jest auto-
+obniżanie, podnoszenie. Dotyczy auto-wyżywienia, powinno być to w tooltipie. Raczej to powinien być
+przycisk, coś podobnego jak przy produkcji. Gdzie mamy auto-produkcję, ten przycisk powinien
+wyglądać tak samo, a nie checkbox."
+
+Dwa żądania: (1) checkbox „Auto Wyżywienie" w panelu miasta ma stać się PRZYCISKIEM w tym samym
+stylu co istniejący przycisk auto-produkcji/„Auto-zarządzaj" (dziś to zwykły `<input type=
+"checkbox">` + etykieta, zrzut potwierdza); (2) tekst „Auto WYŁ — bez auto-obniżania/podnoszenia"
+(dziś widoczny jako inline tekst pod przełącznikiem, patrz zrzut stanu wyłączonego) ma trafić do
+TOOLTIPA zamiast/obok stałego tekstu.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć dokładny render checkboxa „Auto
+Wyżywienie" w `gra/src/ui/cityPanel.ts` (pole `city.autoWyzywienie`, logika w
+`gra/src/game/empire-food.ts:355-358` `isCityAutoWyzywienieEnabled`); (b) znaleźć istniejący
+przycisk auto-produkcji/„Auto-zarządzaj" (`gra/src/game/auto-manage.ts` i jego render w UI) jako
+wzorzec stylu do skopiowania; (c) ustalić czy zamiana na przycisk wymaga zmiany zachowania (dziś
+checkbox, zwykłe kliknięcie = toggle — przycisk pewnie ma być tak samo, tylko inny wygląd) czy
+tylko CSS/markup.
+
+**ODPOWIEDŹ na pytanie Macieja „czym było Auto-Wyżywienie" (zbadane bezpośrednio):** to istniejący
+mechanizm — gdy WŁĄCZONY, silnik automatycznie podnosi/obniża suwak Wyżywienia co turę, żeby
+zbilansować produkcję żywności miasta (najpierw obniża do zera przed cięciem budżetu na wojsko,
+podnosi przy trwałej nadwyżce). Gdy WYŁĄCZONY, suwak zostaje dokładnie tam, gdzie gracz go ustawił
+ręcznie — brak automatycznej zmiany. Kod: `gra/src/game/empire-food.ts:352-368`
+(`isCityAutoWyzywienieEnabled`, komentarze `SPICH-AUTO-Q1`, `R-AUTO-RACJE-RAISE-Q5=A`).
+
+## P-DOPRECYZOWANIE-GLOBALNE-USTAWIENIA-NIE-ISTNIEJA (2026-08-09, pytanie Macieja) · STATUS: **ODPOWIEDZIANE — wyjaśnienie nieporozumienia**
+
+**Cytat Macieja:** „nie wiem, w którym miejscu są globalne ustawienia dla żywności, pieniędzy i
+produkcji, o których mówisz."
+
+**Wyjaśnienie:** to nieporozumienie — „globalne ustawienia" NIE ISTNIEJĄ dziś w grze. To jest
+DOKŁADNIE to, o co Maciej poprosił jako NOWĄ funkcję w `R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE`
+(zarejestrowane wcześniej w tej sesji, wciąż czeka na odpowiedź ABC, rekomendacja B). Rozpoznanie
+Explore ustaliło, że wzorzec „globalne ustawienie + nadpisanie lokalne per miasto" jest już
+zaimplementowany DWA RAZY w innym kontekście (Danina/Handel — Skarb/Nauka/Zamożność; auto-
+ulepszenia terenu), ale NIE dla priorytetu Praca/Żywność (`okolicaFocus`) ani podziału Praca
+budynki/skarbiec (`podzialPracy`) ani priorytetu produkcji (`budowaFocus`/`budowaTryb`) — te trzy
+pola dziś zawsze startują od tej samej wartości domyślnej dla każdego nowego miasta, bez żadnego
+globalnego przełącznika. Jeśli Maciej chce tej funkcji, potrzebna jest odpowiedź na ABC z
+`R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE` (wciąż otwarte, poniżej w tym pliku).
+
+**Cytat Macieja:** „jeżeli nasz zwiadowca na terenie innej cywilizacji znajdzie chatkę, a w tej
+chatce zostanie odkryta jednostka wojskowa, to narusza się wtedy granicę i cierpi nasze statystyki
+w dyplomacji. Więc powinna być taka zasada, że w chatkach ze skarbami na terenie innej cywilizacji
+nie znajdujemy jednostek wojskowych, tylko inne skarby."
+
+Zgłoszony problem: odkrycie jednostki wojskowej z chatki ze skarbami na TERYTORIUM innej
+cywilizacji powoduje, że ta nowo powstała jednostka (przypisana graczowi) fizycznie stoi na cudzym
+terenie, co jest traktowane jak naruszenie granicy i karze relacje dyplomatyczne — mimo że gracz
+nie zrobił nic poza odkryciem chatki zwiadowcą. Proponowana reguła: pula możliwych „skarbów" z
+chatek ma być inna (bez jednostek wojskowych) gdy chatka leży na cudzym terytorium, niż gdy leży na
+neutralnym/własnym.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) znaleźć logikę chatek ze skarbami (prawdopodobnie
+`gra/src/game/**`, szukać „chatka"/„skarb"/„hut"/„goodie" itp.) i pulę możliwych nagród, w tym czy
+jednostki wojskowe są dziś jedną z opcji; (b) potwierdzić że odkrycie jednostki na cudzym terytorium
+faktycznie liczy się jako naruszenie granicy w mechanice kar dyplomatycznych (żeby nie zgadywać czy
+to naprawdę dzieje się tak jak opisuje Maciej); (c) sprawdzić czy silnik rozróżnia dziś kontekst
+„chatka na czyim terytorium" przy losowaniu nagrody, czy pula jest zawsze taka sama niezależnie od
+lokalizacji. Zanim przedstawię ABC — zebrać fakty, nie zgadywać zakresu zmian.
+
+## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (2026-08-09, pytanie z playtestu) · STATUS: **OTWARTE — pytanie faktograficzne + regresja do potwierdzenia, badam bezpośrednio**
+
+**Cytat Macieja:** „po zdobyciu ostatniego Państwa Miasta miała być jakaś informacja z
+wyskakującym oknem informująca, że zjednoczyliśmy całą Grecję. Gdzie to jest? Sprawdź w którym
+komicie to było i zobacz czy możemy to przywrócić. I dlaczego to nie zostało wprowadzone do gry."
+
+Trop: przy wcześniejszym rozpoznaniu `P-PODBOJ-PRZEJECIE-SUROWCOW-PANSTWA-MIASTA` (dziś, ten sam
+playtest) Explore znalazł moduł `gra/src/game/triumph-city-state.ts` — opisany jako „dodatkowy
+komunikat UI/triumf pokazywany graczowi po zjednoczeniu miast-państw tej samej cywilizacji",
+wołany wewnątrz tej samej gałęzi „eliminacja" w `runCapitalCapturePlunder` (main.ts:19735-19748).
+Sprawdzam bezpośrednio (orkiestrator, bez subagenta — mam już lokalizację) czy ten mechanizm
+faktycznie istnieje w kodzie, w którym commicie powstał, czy jest realnie podłączony/wywoływany na
+żywej ścieżce gry, i czy „zjednoczenie całej Grecji" to inny/szerszy warunek niż zjednoczenie
+pojedynczych miast-państw (może dotyczyć konkretnie greckiej grupy cywilizacji, nie ogólnego
+mechanizmu).
+
+**ODPOWIEDŹ (zbadane bezpośrednio, bez subagenta):** mechanizm ISTNIEJE i JEST podłączony na żywej
+ścieżce. Plik `gra/src/game/triumph-city-state.ts`, wprowadzony commitem `906155a0` (2026-08-03,
+„Feat: Zwiedzaj EOT-only (Q2=B) + triumf ostatniego MP cywu (Q1=B)"), jest na bieżącej gałęzi
+(potwierdzone `git merge-base --is-ancestor`). Wołany z `main.ts:19735-19748` wewnątrz gałęzi
+eliminacji miasta-państwa. **Prawdopodobna przyczyna, dlaczego Maciej go nie zauważył:** (1)
+komunikat pokazuje się przez `showHintMessage(...)` (dymek/hint na 9,5 sekundy) — **NIE jest to
+osobne wyskakujące okno/modal**, którego Maciej mógł się spodziewać po opisie „plansza z
+informacją"; (2) warunek wyzwolenia jest węższy niż „zjednoczenie całej Grecji" w sensie ogólnym —
+wymaga, żeby eliminowane miasto-państwo było tego SAMEGO klucza cywilizacji co gracz
+(`playerCivKey === oldCiv`) I żeby to było OSTATNIE pozostałe miasto-państwo tego klucza — jeśli
+Maciej grał inną cywilizacją niż grecka, albo „ostatnie Państwo Miasto" w jego opisie nie było
+akurat tym konkretnym warunkiem (np. zdobył miasto-państwo NIE swojego klucza cywilizacji, albo
+zostały jeszcze inne miasta-państwa tego samego klucza gdzie indziej na mapie), komunikat świadomie
+się nie pokazał — to nie byłby błąd, tylko spełniony warunek „nie". Do potwierdzenia z Maciejem: czy
+widział krótki dymek (mógł przeoczyć) czy oczekuje pełnoprawnego modala, i czy scenariusz z jego
+gry faktycznie spełniał wąski warunek funkcji.
+
+**⛔ Odpowiedź Macieja — POTWIERDZA że dymek się nie pojawił, żąda bardziej wyrazistego komunikatu
+(dosłowny cytat):** „to ten dymek się nie pojawił, chyba że nie wiem, w którym miejscu on był.
+Powinno coś być bardziej wyrazistego." Czyli STATUS zmienia się z „odpowiedziane" na OTWARTE
+zgłoszenie: potrzebny bardziej wyrazisty komunikat triumfu (pełnoprawny popup/modal zamiast
+9,5-sekundowego dymka `showHintMessage`, który łatwo przeoczyć) — TREŚĆ HINT MESSAGE zgodna z
+`buildTriumphCityStateUnificationMessage()`. Do zbadania przed implementacją (Explore, bez
+kodowania): jaki wzorzec modala/popupu już istnieje w grze do naśladowania (np. ekran zwycięstwa,
+odkrycie cudu, inny „duży" komunikat), żeby nie wymyślać nowego stylu od zera — dopiero potem
+zaimplementować podmianę `showHintMessage` na ten wzorzec w `main.ts:19744-19747`. Osobno: czy
+wąski warunek wyzwolenia (tylko miasta-państwa TEGO SAMEGO klucza cywilizacji co gracz) faktycznie
+pasuje do sceny z gry Macieja (do potwierdzenia po naprawie widoczności, nie zgadywać teraz).
+
+**Rozpoznanie gotowe (Explore) — wzorzec i PRAWDZIWA przyczyna przeoczenia znalezione:**
+kandydat do wzoru: `gra/src/ui/wonderCompletedNotice.ts` (~114 linii) — pełnoprawny modal
+wyśrodkowany, backdrop, złoty wariant „mine" dla własnego sukcesu, WYMAGA kliknięcia żeby zniknąć,
+już używany do jednorazowych ważnych zdarzeń (ukończenie cudu) — lżejszy i trafniejszy niż
+pełnoekranowy `victoryScreen.ts` (blokuje grę, nieadekwatny bo gra się nie kończy). **Prawdziwa
+przyczyna przeoczenia:** `showHintMessage()` (`main.ts:10126-10142`) używa JEDNEGO współdzielonego
+elementu `hintToast` z jednym timerem — komunikat ELIMINACJA (`main.ts:19731-19734`, 6000ms) jest
+wołany BEZPOŚREDNIO PRZED komunikatem TRIUMPH, więc **ELIMINACJA nigdy się nie pokazuje**
+(natychmiast nadpisana), a sam TRIUMPH to zwykły toast bez wymogu potwierdzenia. Dispatch naprawy
+(bez ABC — czysto techniczna zmiana UI z jasnym wzorcem): nowy plik `triumphCityStateNotice.ts`
+wzorowany na `wonderCompletedNotice.ts`, podmiana `showHintMessage(...)` w `main.ts:19744-19747` —
+rozwiąże oba problemy naraz (przeoczenie i konflikt nadpisania).
+
+**Zaimplementowane w worktree, czeka na Evaluatora:** nowy `triumphCityStateNotice.ts` (108 linii,
+wzorowany na `wonderCompletedNotice.ts`), podmiana w `main.ts`, nowy test 13/13. **Potwierdzony
+pozytywny efekt uboczny:** komunikat ELIMINACJA (6000ms) teraz faktycznie zdąży się pokazać, bo
+TRIUMPH już nie dzieli z nim elementu `hintToast`. Bramki: tsc 0, logic-test 213/213, nowy test
+13/13, istniejący `triumph-city-state-test.cjs` bez regresji 10/10.
+
+**Evaluator (Opus 5): PASS-WITH-NOTES z 3 warunkami do PODNIESIENIA DO PASS (dowód mutacyjny — 2 z 3
+mutacji uciekły):**
+- **M1 uciekła:** test w pełni synchroniczny, nie łapie próby dodania auto-hide (`setTimeout`) —
+  główne wymaganie zgłoszenia („modal wymaga kliknięcia, nie znika sam") nie ma ŻADNEJ asercji.
+- **M2 uciekła:** asercja treści cityName jest pusta z definicji (`includes('miasto')` przechodzi
+  nawet przy `cityName === undefined`, bo karta zawsze zawiera słowo „miasto" w opisie stałym).
+- **M3 uciekła:** brak strażnika że `showTriumphCityStateNotice(` faktycznie jest wołane z
+  `main.ts` (istnieje precedens w repo: `border-march-wygasanie-test.cjs` czyta main.ts jako tekst).
+**Dodatkowe znalezisko (częściowo obala twierdzenie Operatora o ELIMINACJI):** ścieżka kapitulacji
+z głodu (`resolveSiegeSurrender`) NADAL gubi komunikat ELIMINACJA — inny `showHintMessage` na tej
+samej linii co `runCapitalCapturePlunder` dzieli TEN SAM toast. Twierdzenie prawdziwe tylko dla
+ścieżki bitewnej, nie dla kapitulacji głodowej (pre-istniejące, nie z tej pracy). Zauważona też
+utrata trwałego śladu w panelu WYDARZENIA — poprzednio triumf w EOT trafiał do `warEventLog`,
+teraz modal pokazuje się od razu i nic nie zostawia po zamknięciu.
+**Martwy kod (niepilne):** `TRIUMPH_CS_HINT_MS`/`buildTriumphCityStateUnificationMessage` używane
+już tylko przez własny test — treść komunikatu istnieje teraz w DWÓCH miejscach (stary string +
+nowy modal), mogą się rozjechać bez wykrycia. Dispatch redo naprawiającego 3 warunki PASS.
+
+**Wszystkie 3 warunki naprawione przez Operatora (worktree `agent-a8af239534cbb3d38`), czeka na
+finalną weryfikację Evaluatora:** asercja 4 (unikalny `cityName: 'Testopolis'` zamiast generycznego
+„miasto"), asercja 14 (czyta źródło modułu, sprawdza brak `setTimeout`), asercje 15-16 (strażnik
+tekstowy wywołania w `main.ts`, wzorem `border-march-wygasanie-test.cjs`). Dowód: wszystkie 3
+odtworzone mutacje z pierwszej rundy Evaluatora teraz czerwienieją (15/16 każda), po przywróceniu
+16/16. Bramki: tsc 0, logic-test 213/213, nowy test 16/16, istniejący `triumph-city-state-test.cjs`
+bez regresji 10/10. Kapitulacja z głodu świadomie nieruszona (poza zakresem).
+
+**Evaluator (trzecia, finalna runda): PASS.** Wszystkie 3 mutacje odtworzone SAMODZIELNIE, każda
+czerwieni dokładnie jedną, właściwą asercję. **SCALONE `b057d248`** — orkiestrator zweryfikował
+dywergencję `main.ts` (3 kotwice tekstowe niezmienione mimo 338-liniowej dywergencji pliku od
+wielu innych scaleń tej sesji), zastosował chirurgicznie. Bramki na scalonym stanie: tsc 0,
+logic-test 213/213, nowy test 16/16, `triumph-city-state-test.cjs` 10/10.
+
+**Niepilne, do rejestru (nie blokowały scalenia, znalezione przez Evaluatora):** (a) asercja 14
+łapie tylko `setTimeout` dosłownie w źródle — `setInterval`/zewnętrzny timer w `main.ts` mogłyby
+ominąć (potwierdzone eksperymentalnie); (b) okno 800 znaków asercji 15-16 jest szersze niż
+potrzeba (realny dystans 561 znaków) — teoretycznie mogłoby złapać wywołanie POZA gałęzią `if`,
+nie tylko wewnątrz niej; (c) **kapitulacja z głodu (`resolveSiegeSurrender`) nadal gubi komunikat
+ELIMINACJA** przez inny, współdzielony `showHintMessage` na tej samej linii — pre-istniejące, POZA
+zakresem tej naprawy (dotyczyła tylko ścieżki bitewnej). Żadne z trzech nie wymaga natychmiastowej
+akcji.
+
+---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — rozpoznanie gotowe, wymaga ABC (2026-08-09)
+
+**Rozpoznanie (Explore):** reguła min. odległości (4 heksy) jest DZIŚ IDENTYCZNA liczbowo dla
+gracza i AI (dwa osobne, ale zsynchronizowane parametry JSON, zgodnie z decyzją R-AI-KOLONIZACJA
+2026-08-03) — to NIE jest przyczyną „miszmaszu". **Prawdziwa przyczyna:** gracz ma DRUGI, twardy
+wymóg — `withinTerritory` (nowe miasto musi leżeć w promieniu terytorium JEDNEGO z już
+posiadanych miast gracza, `main.ts:7639-7659`). **AI NIE MA tego wymogu w ogóle** — egzekucja
+`foundCityAt` dla AI (`main.ts:23084`) woła `canFoundCity` BEZ `withinTerritory`. Co więcej, AI
+dostaje systemową PREMIĘ +15 pkt w heurystyce wyboru heksu za zakładanie miasta POZA zasięgiem
+jakiegokolwiek istniejącego miasta (`ai.ts:2694`) — czyli lokalizacje daleko od własnego terytorium
+są dziś faworyzowane, nie karane. Jedyny miękki (nie twardy) czynnik ciągnący w stronę własnego
+regionu to bonus +50×skala za bliskość klastra startowego — łatwo przebity innymi składnikami
+scoringu. Explore ocenia to jako niedopatrzenie/lukę, nie świadomą decyzję — dokument
+R-AI-KOLONIZACJA mówi o „pokryciu całej mapy" jako celu ekspansji AI w kolejnych fazach, ale nie
+adresuje w ogóle kwestii zwartości terytorium tej samej cywilizacji AI. Osobny czynnik
+współprzyczyniający: `findCityFoundingHex` skanuje CAŁĄ mapę bez ograniczenia do lądu połączonego
+z istniejącymi miastami AI — na mapach z wieloma wyspami/kontynentami to dodatkowo pogłębia efekt.
+
+**[TEMAT: Czy AI ma dostać wymóg `withinTerritory` jak gracz]**
+- **A — Dodać AI ten sam twardy wymóg co gracz** (`withinTerritory` względem WŁASNYCH miast AI).
+  Za: pełny parytet zasad gracz/AI, zgodny z życzeniem Macieja. Przeciw: może ograniczyć realizację
+  celu „pokrycie całej mapy" z R-AI-KOLONIZACJA (Q3=B) — AI miałoby trudniej kolonizować odległe,
+  dobre tereny; wymaga przemyślenia razem z premią +15 za bycie poza zasięgiem (dziś w bezpośredniej
+  sprzeczności z proponowaną zmianą).
+- **B — Nie zmieniać** — zostawić dzisiejsze zachowanie (świadoma szeroka ekspansja AI po całej
+  mapie), tylko wyjaśnić Maciejowi że to jest celowe (cel „pokrycie mapy" z wcześniejszej decyzji).
+- **C — Złagodzić, nie usunąć:** zamiast twardego `withinTerritory`, dodać miękką karę punktową za
+  odległość od najbliższego WŁASNEGO miasta (analogicznie do istniejącego bonusu klastra
+  startowego, ale silniejszą i bez wygasania po epoce 3), usuwając jednocześnie premię +15 za bycie
+  poza zasięgiem. AI nadal mogłoby zakładać miasta daleko, ale rzadziej niż dziś, z preferencją dla
+  ciągłości terytorium.
+
+Rekomendacja: **C** — pełny twardy zakaz (A) realnie koliduje z już podjętą decyzją o pokryciu
+całej mapy przez AI; złagodzenie scoringu daje kompromis bez cofania wcześniejszej decyzji.
+
+**Cytat Macieja:** „ewidentnie zapomniałem się jeszcze o jednym zgłoszeniu. Mianowicie napisałem,
+że cywilizacje budują sobie miasta w oddaleniu od swojej cywilizacji, a powinny budować zgodnie z
+zasadami takimi jak graczy obowiązują, czyli chyba 5 heksów od najbliższego miasta i w granicach
+własnej cywilizacji. A w tej chwili po prostu jest miszmasz, bo wszystkie cywilizacje pobudowały w
+różnych miejscach. Więc pewnie AI obowiązują inne zasady. Zobacz zresztą na mapę." Zrzut mapy
+pokazuje rozrzucone miasta wielu cywilizacji bez wyraźnego zwartego terytorium.
+
+**Kontekst z wcześniejszego pytania w tej samej sesji (`P-podboj/Egipt` — luźno powiązane, osobny
+wątek):** wcześniej Maciej pytał czy AI zakłada miasta bez połączenia z resztą swoich miast —
+odpowiedziałam wtedy faktami o innej części kodu (zasięg widzenia). To zgłoszenie jest SZERSZE:
+konkretnie o regułę MIN_CITY_DISTANCE (znana z bramek jako „4 heksy" wg CLAUDE.md — Maciej pamięta
+„chyba 5", do zweryfikowania dokładna wartość) i o to, czy AI zakłada miasta w granicach WŁASNEGO
+terytorium/kontynuum, czy gdziekolwiek.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć dokładną wartość i miejsce egzekwowania
+`MIN_CITY_DISTANCE` dla GRACZA (wspomniane w CLAUDE.md bramki jako „4 heksy", zweryfikować dokładną
+liczbę i plik); (b) znaleźć logikę AI wybierającą lokalizację nowych miast (prawdopodobnie
+`gra/src/game/ai.ts`, funkcja typu `decideAiCityFounding`/`chooseCitySite` czy podobna) i sprawdzić
+czy stosuje TĘ SAMĄ regułę minimalnej odległości co gracz, inną (mniejszą/większą) wartość, czy w
+ogóle brak takiej reguły; (c) sprawdzić czy AI ma jakiekolwiek pojęcie „buduj w granicach własnego
+istniejącego terytorium/w pobliżu swoich miast" (zwartość terytorium) czy zakłada miasta całkowicie
+niezależnie od tego gdzie już ma miasta (stąd „miszmasz" widoczny na mapie); (d) jeśli AI ma inną
+regułę niż gracz — ustalić czy to celowa decyzja projektowa (np. AI ma większą swobodę ekspansji
+dla balansu) czy niedopatrzenie/luka. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie
+zgadywać. Prawdopodobnie wymaga ABC (parytet zasad gracz/AI to zmiana balansu, nie tylko bugfix).
+
+**⛔ Doprecyzowanie Macieja (dosłowny cytat, ważne ograniczenia reguły):** „tylko żeby nie było
+tak, że wszyscy wypowiedzą wojnę graczowi. Generalnie powinno się wypowiadać wojny sąsiadowi, a
+sojusze zawierać z podleglejszymi ludami." Czyli DWA dodatkowe warunki do uwzględnienia w
+rozpoznaniu/ABC: (1) cel wypowiedzenia wojny przy awansie do Brązu ma być preferencyjnie SĄSIAD
+(geograficznie przyległa cywilizacja), NIE zawsze/domyślnie gracz — trzeba sprawdzić czy dzisiejsza
+logika AI w ogóle ma pojęcie „sąsiedztwa terytorialnego" do wyboru celu; (2) przy tej samej okazji
+(lub ogólnie) AI powinno preferować zawieranie SOJUSZY z cywilizacjami słabszymi/podległymi
+(„podleglejsze ludy") — do zbadania czy istnieje dziś jakaś miara siły/rankingu do takiego wyboru
+(np. `R-RANKING-MOC` z wcześniejszych zadań).
+
+**Cytat Macieja:** „Fajnie żeby w momencie gdy się wejdzie do dyplomacji można było sprawdzić
+wszystkie główne cywilizacje z których mamy kontakt. Żeby można było ewentualnie z nimi
+porozmawiać, one powinny być na samej górze zawsze pod państwami — nad państwami miastami. Druga
+kwestia: jeżeli naciśnie się na daną cywilizację, powinna się najpierw pojawiać plansza/pop-up z tą
+cywilizacją z najważniejszymi informacjami — także z takimi: z kim prowadzi wojny, z kim ma
+sojusze, z kim ma umowy handlowe, oraz propozycja spotkania i negocjacji. Czyli dopiero jak się tam
+kliknie, to przechodzi do panelu wizyty dyplomatycznej."
+
+**Dwa oddzielne żądania:**
+1. **Kolejność listy w panelu dyplomacji** — pełnoprawne cywilizacje, z którymi mamy kontakt, mają
+   być zawsze na samej górze listy, NAD miastami-państwami (dziś kolejność do zweryfikowania —
+   niejasne czy to zmiana istniejącego sortowania czy nowa reguła).
+2. **Pop-up podsumowania PRZED wejściem do pełnego panelu wizyty** — kliknięcie na cywilizację ma
+   najpierw pokazać skrócone podsumowanie (z kim wojny, z kim sojusze, z kim umowy handlowe, plus
+   przycisk propozycji spotkania/negocjacji), dopiero kolejne kliknięcie otwiera pełny panel wizyty
+   dyplomatycznej — dziś (do zweryfikowania) prawdopodobnie kliknięcie idzie od razu do pełnego
+   panelu.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) znaleźć dzisiejszy panel listy dyplomacji (prawdopodobnie
+`gra/src/ui/**`, szukać „dyplomacja"/diplomacy panel, listę cywilizacji/miast-państw) i ustalić
+dzisiejszą kolejność sortowania; (b) ustalić czy istnieje dziś jakikolwiek pośredni krok/podgląd
+przed otwarciem pełnego panelu wizyty, czy kliknięcie idzie wprost do niego; (c) sprawdzić czy dane
+potrzebne do podsumowania (wojny/sojusze/umowy handlowe innej cywilizacji z osobami trzecimi, nie
+tylko z graczem) są dziś w ogóle dostępne/widoczne dla gracza gdziekolwiek w kodzie, czy trzeba by
+je dopiero ujawnić. Zanim przedstawię ABC — zebrać fakty, nie zgadywać zakresu zmian.
+
+**Cytat Macieja:** „po przejęciu danej cywilizacji, także w wypadku państw miast, miało być
+przejęcie ich wszystkich surowców. Sprawdź czy to jest w kodzie i czy dotyczy to też państw miast."
+
+To pytanie o istniejący/zamierzony mechanizm, nie zgłoszenie błędu — Maciej chce faktu, nie
+naprawy na razie. Dispatch Explore (bez kodowania): (a) znaleźć logikę przejęcia
+cywilizacji/eliminacji (prawdopodobnie `gra/src/game/**`, zdobycie ostatniego miasta / poddanie
+się) i sprawdzić czy przenosi surowce (skarbiec/zapasy) zwycięzcy; (b) sprawdzić czy ta sama
+ścieżka (albo osobna) obejmuje podbój/zniszczenie miast-państw — czy miasta-państwa w ogóle mają
+własną pulę surowców do przejęcia, czy to inny model niż pełne cywilizacje. Odpowiedzieć faktami
+z kodu, bez zgadywania.
+
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO — PRZYCZYNA DREWNA ZNALEZIONA, dispatch naprawy (2026-08-09)
+
+**Rozpoznanie (Explore):** to jest osobny system niż zbadany wcześniej przy `R-HUD-MIASTO-KOREKTA-
+ZAPAS-VS-TEMPO` (surowce cywilizacyjne Praca/Żywność/Skarbiec/Nauka mają inny magazyn niż surowce
+budowlane Drewno/Glina/Kamień/Ruda/etc. — te drugie żyją w `City.surowce`, sumowane civ-wide,
+capping przez `OWNER_CAPPED_RESOURCE_KEYS` w `gra/src/game/economy-upkeep.ts`).
+
+**DREWNO — bug potwierdzony jednoznacznie:** w `gra/src/main.ts:21130`, pętla obsługująca
+wieloturowy „wyrąb lasu" (hex clearing) woła `creditOwnerResourceStock(cities, ownerId, 'drewno',
+drewnoCredit)` **BEZ piątego argumentu `capPerType`** — w przeciwieństwie do normalnej produkcji
+terenowej, która capuje poprawnie. Ta pętla wykonuje się PO jedynym w turze wywołaniu
+`reconcileOwnerResourceCaps()` (siatka bezpieczeństwa ścinająca nadwyżkę), więc przy kilku
+równoległych wyrębach lasu drewno rośnie bez ograniczenia aż do końca tury — dokładnie tłumaczy
+zgłoszony objaw (+114/turę, wartość ponad cap).
+
+**GLINA — przyczyny NIE znaleziono jednoznacznie.** Wszystkie znalezione ścieżki produkcji gliny są
+poprawnie capowane; żaden konwerter jej nie produkuje (tylko zużywa); nie jest objęta handlem
+ilościowym. Explore rekomenduje diagnostykę zamiast zgadywanej poprawki: tymczasowy `console.warn`
+w `creditOwnerResourceStock` gdy `capPerType === undefined && amount > 0`, złapany na żywo w
+kolejnej sesji playtestu Macieja, zamiast naprawiać na ślepo.
+
+**NAPRAWIONE przez Operatora (w worktree, czeka na Evaluatora):** `main.ts:21045` (drewno) — dodany
+`capPerType`; audyt 3 call-site'ów: `main.ts:2950` (zwrot) świadomie zostawiony bez capu — komentarz
+w kodzie to dokumentuje; `main.ts:19083` (łup z bitwy) — naprawiony, ten sam wzorzec ryzyka co
+drewno (może odbyć się wielokrotnie w turze przed reconcile); `main.ts:20756` (przepływ handlowy) —
+naprawiony defensywnie, choć leci PRZED reconcile więc mniej pilne. Diagnostyka `console.warn`
+dodana w `building-stock-cost.ts`.
+
+**⛔ GLINA — NOWY, silny trop znaleziony przy audycie (NIE naprawiony, wymaga decyzji):**
+`gra/src/game/diplomacy-basket-transfer.ts:274` (`transferSurowiecIlosc`, wołane z `main.ts:7403`
+przy jednorazowej dostawie koszyka dyplomatycznego i `main.ts:14127` przy handlu cyklicznym) mutuje
+`city.surowce` **BEZPOŚREDNIO, z pominięciem `creditOwnerResourceStock` całkowicie** — żaden cap,
+diagnostyka `console.warn` tego NIE złapie. Dostawa jednorazowa (`main.ts:7403`) trafia do stolicy
+biorcy natychmiast po zamknięciu umowy dyplomatycznej, niezależnie od końca tury — bardzo
+prawdopodobny kandydat na zgłoszony objaw „Glina 1086/1000 PEŁNY". Handel cykliczny leci przed
+reconcile więc mniej ryzykowny. Operator świadomie NIE naprawił (poza zleconym zakresem) —
+zgłaszam do decyzji: czy naprawić teraz (wygląda na ten sam typ bugu co drewno, ale w innym module)
+czy potwierdzić najpierw diagnostyką na żywo.
+
+**Bramki Operatora:** tsc 0 błędów, logic-test 213/213, nowy test (sekcja F, +8 asercji) zielony,
+33 sąsiednie testy — zero regresji względem `main` (zweryfikowane `git stash` porównaniem, w tym
+liczne PRE-ISTNIEJĄCE czerwone testy niezwiązane ze zmianą, niezmienione przed/po).
+
+**Evaluator: PASS-WITH-NOTES — sama naprawa POPRAWNA, ale 2 realne problemy do naprawy przed
+scaleniem/deployem (nie tylko kosmetyka):**
+1. **⛔ Sekcja F NIE chroni naprawy (dowód mutacyjny negatywny) — blokujące dla treści rejestru.**
+   Evaluator cofnął naprawę w `main.ts:21045` i sekcja F **nadal dawała 38/38 zielono** — bo test
+   woła `creditOwnerResourceStock(...)` BEZPOŚREDNIO, nigdy nie dotyka kodu w `main.ts`, gdzie był
+   bug. „Kontrola negatywna" jest tautologiczna (sprawdza że funkcja bez opcjonalnego argumentu nie
+   capuje — prawda z definicji sygnatury). Naprawa jest dobra, ale dziś NIEUCHRONIONA przed
+   regresją w miejscu, gdzie faktycznie wystąpiła.
+2. **⛔ `console.warn` w `building-stock-cost.ts:232` jest szkodliwy i ślepy na cel — blokujące dla
+   deployu.** Odpala się też na ścieżkach CELOWO bez capu, których audyt nie uwzględnił
+   (`refundBuildingStockCostAcrossCities`, `assignOwnerResourceStockFromPool` — ta druga wołana co
+   turę × każdy owner × każdy surowiec z `tickEmpireResourcePipeline`). Empirycznie: 9 ostrzeżeń w
+   jednym przebiegu testu, 6 fałszywych alarmów. **Paradoksalnie ślepy na cel, w którym go dodano**
+   — `diplomacy-basket-transfer.ts:274` (trop Gliny) omija `creditOwnerResourceStock` CAŁKOWICIE,
+   więc nigdy nie dojdzie do tego warna.
+3. Niezależnie potwierdzone „zero regresji" na WSZYSTKICH 274 testach (nie tylko próbce 33) —
+   liczby Operatora dokładne, zbiór 14 porażek `surow-civ-storage-test` identyczny przed/po.
+4. **Trop Gliny potwierdzony, ale przeszacowany:** oba call-site'y (`main.ts:7403` jednorazowa
+   dostawa, `main.ts:14127` handel cykliczny) lecą PRZED reconcile w tej samej turze — mogą dać
+   przekroczenie WIDOCZNE W TRAKCIE tury (pasuje do zgłoszenia), ale nie TRWAŁE jak drewno.
+Dispatch naprawy: (a) usunąć/zawęzić `console.warn` do ścieżek gdzie faktycznie ma sens; (b)
+przenieść/dodać asercję sekcji F na poziomie faktycznie pokrywającym `main.ts:21045` (nie tylko
+bibliotekę); (c) uzupełnić audyt o 2 pominięte call-site'y; (d) skorygować opis tropu Gliny na
+„przejściowe w obrębie tury", nie „trwałe".
+
+**Wszystkie 4 punkty domknięte przez Operatora (worktree `agent-a2955e5564faaff41`), czeka na
+scalenie:** nowa sekcja G w `surow-civ-storage-test.cjs` — strażnik tekstowy wzorem
+`border-march-wygasanie-test.cjs`, dowód mutacyjny na żywym `main.ts:21045` potwierdza że G
+czerwienieje tam, gdzie F zostaje zielone. `console.warn` NIE dodany (opcja: usunąć całkowicie —
+diagnostyka już spełniła rolę, root cause drewna znaleziony i naprawiony). Audyt potwierdza 2
+dodatkowe call-site'y celowo bez capu (`building-stock-cost.ts:171,279`). Opis tropu Gliny
+skorygowany na „widoczne w trakcie tury, nie trwałe". Bramki: tsc 0, logic-test 213/213,
+`surow-civ-storage-test.cjs` 43 passed/14 failed (te same 14 pre-istniejące, +5 nowych w passed).
+
+**Dispatch naprawy (BYŁO, wykonane przez Operatora — historyczna treść zlecenia):** (1) dodać `capPerType`
+do wywołania w `main.ts:21130` (wzorem `tickEmpireResourcePipeline`); (2) przy okazji sprawdzić
+pozostałe 3 miejsca `creditOwnerResourceStock(...)` bez `capPerType` (`main.ts:2950` — zwrot,
+prawdopodobnie celowo; `main.ts:19180` — łup z bitwy, ryzykowne dla Brąz/Żelazo; `main.ts:20847` —
+przepływ handlowy, wykonuje się przed reconcile, więc mniej ryzykowne, ale zweryfikować); (3) dodać
+diagnostyczny `console.warn` (jak wyżej) żeby złapać ewentualny analogiczny bug gliny na żywo,
+zamiast zgadywać teraz.
+
+---
+
+## P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO (2026-08-09, zgłoszenie z playtestu, bug) · STATUS: ARCHIWALNE — zastąpione wpisem powyżej
+
+**⛔ Dopisek Macieja po kolejnej turze (obserwacja, nie nowe zgłoszenie):** „widzę, że wyrównuję
+stan surowców do liczby 1000" — kolejny zrzut pokazuje Drewno **975/1000** (+123, NIE przekracza) i
+Glina **1000/1000 PEŁNY** (+84, dokładnie na granicy, nie ponad nią). Czyli objaw NIE jest stały —
+czasem wartość zostaje sprowadzona z powrotem do 1000 (lub poniżej), a czasem (jak w pierwszym
+zrzucie: 1298/1000, 1086/1000) widocznie go przekracza. Sugeruje to, że klamrowanie do capu
+DZIEJE SIĘ w jakimś momencie (np. na starcie kolejnej tury), ale w MIĘDZYCZASIE (w trakcie tej samej
+tury, po doliczeniu przychodu z budynków) wartość może chwilowo przekroczyć limit zanim zostanie
+przycięta — do potwierdzenia przez Explore, nie zgadywać którego dokładnie momentu to dotyczy.
+
+**Cytat Macieja:** „odkłada mi się więcej gliny i drewna niż mam magazyn." Zrzut panelu
+„MAGAZYNOWANE": Drewno **1298/1000** (+114/turę) oznaczone „PEŁNY", Glina **1086/1000** (+76/turę)
+też oznaczone „PEŁNY" — obie wartości PRZEKRACZAJĄ deklarowany limit magazynu (1000), mimo że pasek
+postępu i etykieta „PEŁNY" sugerują, że limit jest respektowany. Ruda żelaza na tym samym zrzucie
+poprawnie pokazuje 0/1000.
+
+Dispatch Explore (bez kodowania) przed naprawą: (a) znaleźć logikę limitu/capu magazynu surowców
+(prawdopodobnie `gra/src/game/**`, szukać „magazyn"/„spichlerz"/cap/limit powiązanego z
+Drewno/Glina — może być inny mechanizm niż dla Żywności/Skarbca, skoro te dwa konkretne surowce
+mają problem a Ruda nie); (b) ustalić czy klamrowanie (`Math.min(x, cap)`) jest w ogóle stosowane
+dla Drewna/Gliny przy dopisywaniu przychodu z budynków/eksploatacji złóż, czy dolicza się produkcję
+bez sprawdzania capu i tylko WYŚWIETLANY pasek/etykieta „PEŁNY" jest liczony osobno (stąd
+rozjazd — realna wartość rośnie bez ograniczeń, tylko UI mylnie pokazuje "PEŁNY" gdy przekroczy
+próg); (c) sprawdzić czy to dotyczy też innych surowców pozamiastowych, czy wyłącznie Drewna/Gliny
+(np. bo mają inny tor akumulacji niż Żywność/Skarbiec/Nauka, które są objęte innym, już
+sprawdzonym kodem zapasu cywilizacji z `R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO`). Zanim cokolwiek
+naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, propozycja gameplayowa Macieja) · STATUS: **OTWARTE — wymaga ABC**
+
+**Cytat Macieja:** „okej, więc cały sens Spichlerza to dodatkowe bonusy, ale myślę, że dołączyłbym
+mu jeszcze jeden bonus, mianowicie jeżeli miasto chce wzrosnąć powyżej [progu bez budynków] to musi
+mieć spichlerz. Można wtedy urosnąć do 8 ludności, a obecny Akwedukt pozwoli wzrosnąć z 8 do 12
+(z wcześniejszych 5[→15]). W późniejszych epokach wymyślimy kolejne etapy."
+
+**Stan dzisiejszy (zweryfikowany w kodzie, `gra/src/game/economy.ts:1047-1053`, parametry
+`akwedukt_prog_ludnosci`/`akwedukt_max_ludnosci`):**
+- Cap ludności miasta ma DWA poziomy: bez Akweduktu = **5**, z Akweduktem = **15**.
+- Spichlerz dziś **NIE gatekeepuje wzrostu** — daje wyłącznie bonusy (zdrowie, % wzrostu, mnożnik
+  kosztu racji, zadowolenie), pod warunkiem że ceramika (i sól dla tier II) zostały odprowadzone
+  w danej turze (`maSpichlerzPop`/`maSpichlerzIIPop`, `SPICHLERZ_DRAIN_CERAMIKA_PER_TURN = 5`).
+- Reguła bonusów Spichlerza jest już raz podjętą decyzją: **B5-SPICH (Maciej 2026-06-29)**,
+  udokumentowaną w `docs/decyzje/B5-spichlerz-wzrost-ludnosci.md` — ta propozycja ją ROZSZERZA
+  (dodaje twardy próg, nie tylko bonus), nie zastępuje.
+
+**Rozpoznanie — konflikt z istniejącą decyzją (CLAUDE.md §1a):** propozycja zmienia dwie już
+wytunowane liczby: (1) wprowadza NOWY twardy próg 5→8 wymagający Spichlerza (dziś go nie ma wcale);
+(2) obniża górny cap Akweduktu z dzisiejszych **15** do **12** (parametr `akwedukt_max_ludnosci`
+jest dziś wytuningowany na 15 — to bezpośrednia zmiana istniejącej wartości balansu, nie tylko
+nowa funkcja).
+
+Pytanie ABC do zadania w następnej turze (patrz odpowiedź na czacie).
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A.** Cytat: „najpierw obrona swojego terytorium, a potem dopiero atak obcego."
+
+Potwierdza zasadę opisaną w rozpoznaniu (linia 5162 wyżej): (1) najwyższy priorytet — zlikwidować
+wrogie siły (w tym barbarzyńców) na własnym terytorium lub w jego bezpośredniej okolicy, niezależnie
+od stanu pokoju/wojny z kimkolwiek innym; (2) jeśli w stanie wojny z konkretną cywilizacją, walczy z
+nią normalnie; (3) jeśli więcej niż jeden wróg jednocześnie, stara się atakować też pozostałych.
+
+Bez dalszych doprecyzowań — dispatch implementacji.
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — ECHO A + istotne doprecyzowanie zakresu, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A**, z rozbudowanym doprecyzowaniem (pełny cytat):
+
+„ale z zastrzeżeniem że to, że dana cywilizacja chce nawiązać sojusz z bardziej odległymi
+cywilizacjami które zna, nie zmienia faktu że musi mieć możliwość zawarcia takiego sojuszu — czyli
+tutaj wszystkie elementy balansu muszą być zachowane — natomiast wypowiada wojnę jednej cywilizacji
+która jest obok. Ale [chodzi też o to], żeby ta wojna nie trwała nie wiadomo jak długo — powinna
+trwać maksymalnie do zdobycia dwóch miast przeciwnika lub utraty dwóch miast, potem powinien być
+zawierany pokój, żeby cywilizacje się nie wycięły w pień. Potem 20 tur odpoczynku i znowu szukanie
+nowego wroga po 20 turach — może być inna cywilizacja, z którą graniczy, niekoniecznie ta sama.
+Możemy nawet wprowadzić zasadę, że AI nie będzie atakować tej samej cywilizacji przez okres [???]
+tur. Jednakże cywilizacje nie powinny przy wypowiadaniu wojen zrywać sojuszy czy paktowania.
+Agresje powinny zakończyć się zgodnie z zasadami."
+
+**Pełna specyfikacja reguły (rozbita na parametry nazwane):**
+1. Cel wojny wymuszonej = sąsiad terytorialny (nie dowolna cywilizacja) — zgodnie z wcześniejszym
+   rozpoznaniem (filtr sąsiedztwa do dobudowania, wzorem `clusterForceWarTargetId`).
+2. Zdolność zawierania sojuszy z odległymi, znanymi cywilizacjami NIE może zostać ograniczona przez
+   tę regułę — wojna wymuszona z sąsiadem współistnieje z normalną dyplomacją sojuszniczą gdzie
+   indziej, cały istniejący balans dyplomacji zostaje.
+3. **Koniec wojny wymuszonej** (nowy parametr `wojnaWymuszonaMaxMiastaZdobyteLubStracone = 2`) —
+   pokój zawierany automatycznie, gdy jedna ze stron zdobędzie 2 miasta przeciwnika LUB straci 2
+   własne miasta na rzecz przeciwnika (co pierwsze nastąpi).
+4. **Odpoczynek po wojnie** (`wojnaWymuszonaOdpoczynekTur = 20`) — po zawarciu pokoju cywilizacja
+   nie szuka nowego wymuszonego celu wojny przez 20 tur.
+5. **Nowy cel po odpoczynku** — po 20 turach szuka nowego sąsiada-celu; może to być inna
+   cywilizacja niż poprzednia, niekoniecznie ta sama.
+6. **Cooldown na powrót do tej samej cywilizacji** — Maciej zaproponował osobny limit tur, ale
+   **NIE podał liczby** (urwane zdanie: „przez okres [ ] tur"). ⚠️ Do potwierdzenia — patrz pytanie
+   niżej. Robocze założenie do dispatchu: reużyć tę samą wartość co odpoczynek ogólny
+   (`wojnaWymuszonaCooldownTaSamaCywilizacjaTur = 20`, czyli w praktyce ten sam licznik co pkt 4 —
+   jeśli to za mało/za dużo, Maciej poprawi osobnym ABC/liczbą).
+7. **Sojusze i pakty NIE są zrywane** przy wypowiadaniu wojny wymuszonej — istniejące umowy
+   (sojusze, traktaty) z INNYMI cywilizacjami niż cel wojny mają przetrwać bez zmian.
+8. Punkt zaczepienia w kodzie: `main.ts:22130`, `reconcileAllOwnerErasFromResearch()` (awans do
+   epoki Brąz = Brązownictwo).
+9. **Dopisek Macieja (kolejna wiadomość, ten sam wątek):** „jeżeli jakiejś cywilizacji została już
+   wypowiedziana wojna [przez kogoś innego], to ta cywilizacja nie ma już obowiązku wypowiadać
+   komuś innemu wojny, żeby nie prowadziła dwóch wojen jednocześnie." — reguła wymuszonej wojny przy
+   awansie do Brązu sprawdza NAJPIERW, czy cywilizacja jest już w stanie wojny z KIMKOLWIEK (jako
+   napastnik LUB jako obrońca — wojna wypowiedziana JEJ przez inną stronę też się liczy); jeśli tak,
+   pomija wymuszenie (cywilizacja nie musi dodatkowo wypowiadać własnej wojny). Zapobiega to
+   sytuacji dwóch jednoczesnych wojen wymuszonych na jedną cywilizację.
+
+**Zgodnie z regułą 6 CLAUDE.md (nie zgaduj przy niejednoznaczności) — jedno pytanie doprecyzowujące
+do WĄTKU, który już prowadzimy** (nie nowy temat): patrz wiadomość na czacie. Reszta specyfikacji
+(pkt 1-5, 7-9) jest kompletna i zostaje przekazana do dispatchu już teraz.
+
+---
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A.** Zgodnie z propozycją z rozpoznania (linia 5215 wyżej): pula nagród chatki
+ze skarbami (`villageRewards.ts`: dziś złoto 50%/tech 30%/jednostka 20%) ma WYKLUCZAĆ jednostki
+WOJSKOWE, gdy chatka leży na terytorium OBCEJ cywilizacji — żeby odkrycie chatki nie liczyło się
+jako naruszenie granicy i nie karało dyplomacji (dziś kara −5 Zaufania/turę nalicza się bez wyjątku
+dla jednostek pochodzących z eventu). Jednostki cywilne (np. Zwiadowca, era 1) zostają bez zmian —
+problem dotyczy WYŁĄCZNIE jednostek typu wojskowego (np. Włócznik od ery 2+).
+
+**Do dispatchu (szczegół implementacyjny, nie decyzja gameplayowa — domyślne rozłożenie
+prawdopodobieństwa):** gdy pula jednostki wojskowej jest wykluczona na cudzym terenie, usunięte 20%
+rozdzielić proporcjonalnie na pozostałe kategorie (złoto/tech w stosunku 50:30, czyli finalnie
+~62,5%/~37,5%) — jeśli Maciej wolałby inny rozkład, może to skorygować po zobaczeniu wyniku.
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — ECHO A + doprecyzowanie podejścia, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A**, z doprecyzowaniem podejścia: „jedynie nie robiłbym nowego panela, tylko
+wszedłbym w obecny panel dyplomacji, żeby sprawdzić co tam jest zakodowane i czy to można użyć lub
+rozszerzyć."
+
+Interpretacja (zgodna z duchem opcji A, którą Maciej wybrał — opcja A od początku zakładała
+REUŻYCIE martwego `diplomacyPanel.ts`, nie pisanie od zera): nacisk na kolejność pracy — **najpierw
+dogłębna inspekcja** martwego `diplomacyPanel.ts` (ma już gotową sekcję „Wojny znane (wywiad)") ORAZ
+żywego `diploListHud.ts`/`diplomacyAudience.ts`, ustalić dokładnie co już działa/co da się
+rozszerzyć, dopiero potem pisać nowy kod — **nie tworzyć nowego, osobnego komponentu UI, jeśli
+istniejący kod (żywy lub martwy) da się rozszerzyć zamiast zastępować**. Pozostała specyfikacja bez
+zmian: (1) sortowanie — cywilizacje nad miastami-państwami w `diploListHud.ts`; (2) krok pośredni —
+kliknięcie cywilizacji pokazuje najpierw podsumowanie (wojny/sojusze/handel/propozycja spotkania),
+dopiero potem pełny panel wizyty; ograniczenie silnika (sojusze AI↔AI tylko między „siostrami")
+zostaje ujawnione Maciejowi jako znana granica danych, nie do naprawy w tym zadaniu.
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — ECHO A (wbrew rekomendacji C), decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A** (twardy wymóg `withinTerritory` dla AI, jak u gracza) — WBREW rekomendacji
+Explore, która sugerowała C (złagodzenie scoringu). Cytat: „Ekspansja nie oznacza chaosu. Jak
+najbardziej cywilizacje mają ekspandować i szybko budować miasta wokół, ale w granicach zasięgu
+własnej cywilizacji, bo każda cywilizacja potem będzie mieć jedną zwartą grupę, a to po prostu była
+jakaś masakra."
+
+**⚠️ Świadome ograniczenie wcześniejszej decyzji (CLAUDE.md §1a) — Maciej podjął to wybierając A ze
+świadomością konfliktu, który był już nazwany wprost w treści opcji A (linia 5453-5456 wyżej):**
+opcja A koliduje z celem „pokrycie całej mapy" z **R-AI-KOLONIZACJA (Q3=B, 2026-08-03)** — AI z
+twardym `withinTerritory` będzie miało trudniej kolonizować odległe dobre tereny. Ta decyzja
+świadomie ZAWĘŻA realizację R-AI-KOLONIZACJA Q3=B: „pokrycie mapy" ma się teraz odbywać przez
+rozrost ZWARTEGO terytorium każdej cywilizacji (ekspansja blisko istniejących miast), NIE przez
+zakładanie miast w dowolnie odległych, oderwanych lokalizacjach.
+
+**Do dispatchu:** dodać AI ten sam twardy wymóg `withinTerritory` co gracz (`main.ts:7639-7659`
+wzorem) w `foundCityAt`/`canFoundCity` dla AI (`main.ts:23084`) — ORAZ usunąć/odwrócić dzisiejszą
+premię +15 pkt w heurystyce AI za zakładanie miasta POZA zasięgiem istniejących miast (`ai.ts:2694`)
+— ta premia dziś działa WPROST przeciw nowemu wymogowi (AI szukałoby lokalizacji, których i tak nie
+może użyć). MIN_CITY_DISTANCE (4 heksy) zostaje bez zmian — to już jest identyczne gracz/AI, nie
+jest przyczyną problemu.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A** (wbrew rekomendacji B). Dokładnie jak zaproponowano: bez budynków cap=5 (bez
+zmian) → ze Spichlerzem cap=8 (nowy stopień) → z Akweduktem cap=12 (obniżka z dzisiejszych 15).
+
+**Parametry do zmiany** (`gra/src/game/economy.ts`, `EconParams`/params JSON):
+- `akwedukt_prog_ludnosci = 5` — bez zmian (cap bez żadnego z dwóch budynków).
+- NOWY parametr, np. `spichlerz_prog_ludnosci = 8` — cap gdy miasto ma Spichlerz (ale nie Akwedukt).
+- `akwedukt_max_ludnosci`: **15 → 12** — zmiana istniejącej, wytuningowanej wartości.
+
+**Do dispatchu (kwestia techniczna, nie gameplayowa — domyślne założenie, opisz i przekaż):**
+istniejące zapisane gry mogą mieć miasta już powyżej 12 (dziś legalnie urosłe do maks. 15).
+Domyślne założenie: **zamrożenie, nie ścinanie** — miasto powyżej nowego capu NIE traci ludności
+wstecznie, po prostu przestaje rosnąć dalej, dopóki cap go nie dogoni (np. przez kolejny budynek w
+przyszłej epoce). Żadna istniejąca reguła spadku ludności (deficyt żywności) nie zostaje zmieniona
+przez to zadanie — to osobny mechanizm. Jeśli Maciej wolałby ścinanie do nowego capu, może to
+skorygować po zobaczeniu wyniku.
+
+**Warunek Spichlerza dla capu = 8:** czy wymagany jest ten sam warunek co dla bonusów Spichlerza
+(odprowadzona ceramika w danej turze, `maSpichlerzPop`), czy sam fakt POSIADANIA budynku
+(niezależnie od odprowadzenia ceramiki w tej konkretnej turze)? Robocze założenie do dispatchu: SAM
+FAKT POSIADANIA budynku wystarcza dla podniesienia twardego capu (cap to stały parametr strukturalny
+miasta, nie bonus zależny od przepływu surowca turowego) — odprowadzanie ceramiki nadal warunkuje
+TYLKO miękkie bonusy (zdrowie/%/mnożnik/zadowolenie), tak jak dziś. Jeśli Maciej chce inaczej, może
+skorygować.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**Werdykt Evaluatora (Opus 5): FAIL.** Kierunek zgodny z decyzją, ścieżka „szczęśliwa" działa, ale
+4 notatki BLOKUJĄCE:
+- **B1 — exploit nieskończonego ruchu:** zwrot liczony na `moveCost` (zamierzony koszt), nie na
+  faktycznie odjętą pulę — reguła MIN-MOVE (`planned-march.ts:197-203`) pozwala wejść na heks
+  droższy niż budżet ruchu (np. Wzgórza+Las=3 przy `ruchLeft=1`), `deductStackRuchLeft` klampuje do
+  zera, ale zwrot dodaje pełne 3 → +2 pkt ruchu zysku netto za każdy cykl „ruch → Zostaw osobno".
+  Odtwarzalne w nieskończoność.
+- **B2 — zwrot natychmiast kasowany:** gdy na heksie startowym stoi inna własna jednostka z niższym
+  `ruchLeft`, `selectPlayerUnit` (wołane zaraz po `onSeparate`) synchronizuje CAŁY stos do minimum —
+  zwrot ruchu wyparowuje, punkt ruchu jednak jest tracony wbrew decyzji Macieja. Dodatkowo w ścieżce
+  `main.ts:8803-8806` (`openMergePanelForSelected`) odejmowanie idzie na CAŁY stos źródłowy, a zwrot
+  tylko na wybrany podzbiór — rozjazd u źródła.
+- **B3 — teleport bez sprawdzenia zajętości/przejezdności:** stary kod (`assignBounceHexesForUnits`)
+  sprawdzał `isOccupied`/`passable`; nowy kod bezwarunkowo ustawia `mu.q=fromQ, mu.r=fromR`. Na
+  ścieżce odłożonej (`deferredMergePrompts`, flush po turach AI) wróg może w międzyczasie zająć heks
+  startowy — armia gracza wtedy teleportuje się na wroga bez walki.
+- **B4 — nowy test nie chroni `main.ts`:** harness kopiuje logikę `onSeparate` do osobnego pliku
+  zamiast importować z `main.ts`; mutacja Evaluatora (usunięcie CAŁEGO zwrotu ruchu z `main.ts`)
+  dała 13/13 PASS — dowód że bramka nie wykryłaby regresji w kodzie produkcyjnym.
+
+Niepilne: N1 (jednostka świeżo wyprodukowana bez heksu startowego — „Zostaw osobno" staje się
+no-opem, wymaga OSOBNEGO pytania ABC, nie zgadywać), N2 (licznik w komunikacie), N3 (zaznaczenie po
+separacji nieoptymalne), N4 (martwy kod `assignBounceHexesForUnits`, bez ryzyka), N5 (worktree
+przestarzały, standardowa procedura scalania to naprawi).
+
+**Dispatch runda 2** z dokładną specyfikacją napraw B1-B4 od Evaluatora. N1 NIE jest w zakresie
+rundy 2 — osobne pytanie ABC do zadania po zamknięciu tego tematu.
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — Evaluator RUNDA 1: PASS-WITH-NOTES (3 BLOKUJĄCE), runda 2 w toku (2026-08-09)
+
+Zgłoszony scenariusz jest realnie naprawiony, ale 3 noty BLOKUJĄCE (Evaluator jednolinijkowo je
+tak oznaczył mimo etykiety „PASS-WITH-NOTES" — traktowane jak FAIL, wymagają poprawki przed
+scaleniem, zgodnie ze STRICT z kanonu AutoBot):
+
+- **B1 — regres wydajności +80% czasu tury AI**, zmierzone: 640-877ms → 1050-1318ms na
+  `decideAITurn` (mapa 100×100, 10 miast, 100 wrogich jednostek). Przyczyna: `isEnemyNearOwnTerritory`
+  wołana teraz per JEDNOSTKA (setki) zamiast per MIASTO (kilkanaście), pełny skan promienia dla
+  każdej dalekiej jednostki. Poprawka jednolinijkowa: wstępny filtr `hexDistance ≤ 9` przed
+  wywołaniem drogiej funkcji (zmierzone: przywraca czas do 649ms, test nadal 9/9).
+- **B2 — nieprawdziwa liczba w komentarzu kodu.** JSDoc mówi „promień 2 heksy poza granicą", ale
+  `isEnemyNearOwnTerritory` liczy `maxDist` DWUKROTNIE (promień iteracji + sprawdzenie) — faktyczny
+  zasięg wykrywania to 9-19 heksów OD CENTRUM miasta (4 heksy za granicą, nie 2), zależnie od
+  populacji. Błąd pre-istniejący w helperze (nie do naprawy tu), ale nowy komentarz nie może
+  powielać nieprawdy jako faktu.
+- **B3 — obrońca wybierany kolejnością w tablicy jednostek, nie odległością do zagrożenia.**
+  Potwierdzone empirycznie: jednostka stojąca pod wrogim miastem (40 heksów od zagrożenia) bywa
+  zawracana do domu, podczas gdy jednostka 2 heksy od zagrożenia kontynuuje marsz — bo kolejność w
+  `sortedUnits` (tworzenia jednostek, `super` na początku) decyduje, kto dostaje slot obrońcy, nie
+  odległość. Dodatkowo: jednostki, które już zaatakowały zagrożenie w kroku 4b, NIE są liczone do
+  kworum — powoduje podwójne zaangażowanie (druga jednostka zawracana do już obsłużonego
+  zagrożenia).
+
+**Niepilne (N1-N3, do rundy 2 albo później):** N1 — faza wyścigu o wioski (`myCities.length < 3`)
+ma pierwszeństwo PRZED obroną domu, co łamie „zawsze najwyższy priorytet" z decyzji A w early-game
+— wymaga świadomej decyzji (poprawić kolejność vs udokumentować jako celowe odstępstwo), nie
+przemilczenia. N2 — luki testu (3 zmutowane parametry przeżyły próbę mutacyjną: promień, górny
+limit kworum, sztywne kworum). N3 — jednostki cywilne mogą dostać rozkaz obrony (zajmują slot).
+
+Dispatch runda 2 z dokładną specyfikacją B1-B3. N1 flagowane jako osobna decyzja do Macieja PO
+zamknięciu tej rundy, nie zgadywana teraz.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 (BLOKUJĄCA, wymaga ABC — nie zgadywać):** globalny „Priorytet produkcji" jest bezczynny dla
+ISTNIEJĄCYCH miast. Silnik auto-budowy czyta `budowaPriorytetTypow` (pełna lista), nie
+`budowaFocus` — broadcast Operatora kopiuje tylko `budowaFocus`/`budowaTryb`, nigdy
+`budowaPriorytetTypow`. Zweryfikowane uruchomieniem: zmiana globalnego priorytetu w mieście A NIE
+zmienia realnego priorytetu auto-budowy w mieście B. Dodatkowo opis Operatora („miasta siostrzane
+dostają jednoelementowy priorytet") jest NIEPRAWDZIWY — siostrzane zachowują pełną STARĄ listę,
+jednoelementową listę dostaje tylko NOWO zakładane miasto (i tam też gubi 2./3. pozycję). Pytanie
+ABC do zadania: czy rozszerzyć mechanizm globalny o `budowaPriorytetTypow`, czy wyjąć Priorytet
+produkcji z zakresu tego feature'u (zostawić tylko lokalny, bez globalnego domyślnego).
+
+**B2 (BLOKUJĄCA, mechaniczna):** `seedCityOwnerDefaults()` stoi w 5 miejscach ZAKŁADANIA miasta,
+ale NIE w 4 miejscach ZMIANY WŁAŚCICIELA (`post-battle-map.ts:440` zdobycie w bitwie,
+`main.ts:10492` zdobycie przez oblężenie, `main.ts:19656` wchłonięcie miasta-państwa,
+`main.ts:21827` przejście do rebeliantów). Po transferze `okolicaFocusOverride`/`budowaFocusOverride`
+zostają `false`, ale `city.okolicaFocus`/`budowaFocus`/`budowaTryb` trzymają wartości POPRZEDNIEGO
+właściciela — silnik czyta `city.*` bezpośrednio (stara wartość), UI czyta przez resolver (nowa,
+globalna wartość nowego właściciela) — panel pokazuje co innego niż robi silnik.
+
+**B3 (BLOKUJĄCA, mechaniczna):** 3 z 9 mutacji przeżyły próbę Evaluatora — `broadcastBudowaProfilToOwnerCities`
+nadpisujący miasta z `override=true` (pin 📌 złamany), oraz OBIE migracje starych zapisów
+(`migrateOkolicaFocusOnLoad`/`migrateBudowaProfilOnLoad` bez ustawienia override) — w produkcji
+oznacza to, że wczytanie STAREGO zapisu KASUJE indywidualnie ustawiony Priorytet Okolicy/produkcji
+we wszystkich miastach i zastępuje wartością pierwszego miasta w tablicy. Realna utrata danych
+gracza przy migracji.
+
+Niepilne: sticky override po jednym kliknięciu zbiorczej akcji „ustaw Listę we wszystkich
+miastach", asymetria trybu ręcznego (Okolica nie auto-pinuje, Budowa tak), `cityPanel.ts:1037`
+uśpiona niespójność wywołania.
+
+Dispatch runda 2 dla B2+B3 (mechaniczne). B1 wymaga ABC — patrz wiadomość na czacie.
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 (BLOKUJĄCA):** wykluczenie ocenia terytorium na heksie CHATKI, ale jednostka-nagroda spawnuje
+się 1-2 heksy DALEJ (`findVillageRewardSpawnHex`, bez sprawdzenia terytorium), a kara nalicza się
+od pozycji JEDNOSTKI, nie chatki. Zmierzone: dla chatek na granicznym pierścieniu obcego terytorium
+~31% nadal przecieka (jednostka spawnuje wewnątrz obcego terytorium mimo wykluczenia na chatce)
+LUB odwrotnie (fałszywe wykluczenie dla chatki formalnie „na" terytorium, ale spawn poza nim).
+Naprawa tania: liczyć `dest` z `findVillageRewardSpawnHex()` PRZED losowaniem (deterministyczny,
+niezależny od RNG) i oceniać terytorium na `dest`, nie na `(q,r)` chatki. Evaluator ocenia to jako
+mieszczące się w delegowanym „szczególe implementacyjnym" decyzji A (służy wprost jej celowi) —
+NIE wymaga nowego ABC, chyba że Maciej insystuje na dosłownym odczycie z heksu chatki.
+
+**N2 (do ABC, nie cicha naprawa):** wykluczenie nie odwzorowuje istniejących zwolnień z kary
+przemarszu (`hasAuthorizedBorderCrossing`: stan WOJNY, sojusz, prawa wasala, traktat
+PrawoWojskowePrzemarszu — w żadnej z tych 4 sytuacji kara i tak nie powstaje). Dziś gracz traci
+szansę na jednostkę wojskową z chatki nawet gdy jest W WOJNIE z właścicielem terytorium (kara nie
+grozi wcale) — czyli wykluczenie działa szerzej niż potrzeba. Pytanie ABC do zadania: czy
+uwzględnić te 4 zwolnienia w warunku wykluczenia.
+
+Dispatch runda 2 dla B1 (naprawa spawn-hex). N2 wymaga ABC — patrz wiadomość na czacie.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 2: FAIL, runda 3 w toku (2026-08-09)
+
+Postęp realny (B1 arytmetyka i B3 funkcja są dobre, złapane własnymi mutacjami M1/M2 Evaluatora),
+ale 2 noty nadal BLOKUJĄCE:
+
+- **BB1 — B4 wciąż nie chroni main.ts.** Trzy niezależne mutacje WPROST w `main.ts` (przywrócenie
+  exploita B1 przez zmianę argumentu na `moveCost`; usunięcie całego zwrotu ruchu — dokładnie ta
+  sama mutacja co w rundzie 1; przywrócenie teleportu bez sprawdzenia z B3) — wszystkie dają
+  16/16 PASS. Bramka chroni czyste funkcje w `armyMerge.ts`, ale NIE ich wpięcie w `main.ts`.
+  **Rozwiązanie wskazane przez Evaluatora:** repo ma już wzorzec na dokładnie ten problem — 7
+  istniejących testów (`border-march-wygasanie-test.cjs` jako kanoniczny wzorzec) czyta
+  `src/main.ts` jako TEKST i asercjonuje regexem na wyciętym ciele funkcji, że zawiera właściwe
+  wywołania i NIE zawiera cofniętych. Dokładna specyfikacja do wdrożenia podana przez Evaluatora
+  (wytnij ciało `onSeparate`, sprawdź obecność `computeSeparateReturn(movedUnits, deductedRuch)` +
+  `resolveSeparateReturnHex(...)`, brak `computeSeparateReturn(movedUnits, moveCost)` i `const dest
+  = { q: fromQ, r: fromR }`; osobno sprawdzić że wszystkie 3 wywołania `promptMergeIfCoLocated`
+  mają 5. argument `deductedRuch`).
+- **BB2 — B2 naprawione tylko częściowo.** `skipStackRuchSync=true` pomija sync w jednym
+  wywołaniu, ale zostawia stos w stanie nieznormalizowanym — w scenariuszu z heksem startowym
+  zajętym przez inną własną jednostkę o NIŻSZEJ puli (rzadki, ale dokładnie ten opisany w nocie
+  B2 z rundy 1): zwrot jest bezużyteczny natychmiast (podświetlenie/`stackCanMove` liczy minimum
+  całego heksu) i znika przy pierwszym kolejnym kliknięciu. Do wyboru: naprawić realnie albo
+  udokumentować jako świadome ograniczenie (systemowa reguła „pula stosu = minimum") i zapytać
+  Macieja ABC — nie zamykać po cichu jako naprawione.
+
+Niepilne: N1 (ostateczny fallback teleportuje na origin mimo blokady, gdy WSZYSCY sąsiedzi zajęci —
+bezpieczniejszy fallback: nie ruszać wcale), N2 (pre-istniejące, armia lądowa może odbić na wodę),
+N3 (stare testy bounce certyfikują martwy kod, nie dowodzą braku regresji w onSeparate). **N4
+wymaga ABC (nie wina Operatora):** pełny zwrot puli po marszu WIELOHEKSOWYM nie cofa efektów
+ubocznych trasy (odsłonięta mgła, chatki, bonusy z odwiedzin miast, auto-capture pustego miasta) —
+pozwala w jednej turze skanować kolejne trasy tym samym stosem za darmo („marsz → Zostaw osobno"
+bezkosztowy). To konsekwencja decyzji A („pełny zwrot ruchu"), nie błąd implementacji.
+
+Dispatch runda 3, wąski zakres: TYLKO BB1 (test tekstowy wzorem `border-march-wygasanie-test.cjs`)
+i BB2 (naprawa realna, decyzja Operatora którą opcję wybrać z uzasadnieniem w raporcie). N4
+wymaga ABC — patrz wiadomość na czacie.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 — regresja: ulepszenie Spichlerza do Spichlerz II ODBIERA cap 8 i cofa miasto do 5.**
+`population-growth-v85.ts:344` liczy `maSpichlerzBuilding = builtIds.includes('spichlerz')`, ale
+`production.ts` (`applyCompletedBuildingIds`) USUWA `'spichlerz'` z `builtIds` przy ulepszeniu do
+`spichlerz_ii` (ma `upgradeFrom: "spichlerz"`) — miasto, które ulepszy budynek (ścieżka aktywnie
+punktowana przez AI), traci cap 8 i wraca do 5. Zmierzone empirycznie na realnej ścieżce silnika:
+„Spichlerz II: pop 7 → 7 (oczekiwane 8)". Kod ma już własną, ustaloną konwencję pomijaną przez
+Operatora — `turn-economy.ts:1331`: `builtIds.includes('spichlerz') || builtIds.includes('spichlerz_ii')`.
+Ta sama wada w `cityPanel.ts:1010` (chip capu).
+
+**B2 — test nie chroni jedynej linii wiring'u.** Mutacja `maSpichlerzBuilding = false` przechodzi
+WSZYSTKIE bramki (akwedukt-popcap 9/9, population-growth-v85 53/55, logic-test 213/213) bez
+żadnego wykrycia — istniejący test e2e używa `population: 8` i asercjonuje BRAK wzrostu, co jest
+prawdą w obu gałęziach (poprawnej i zepsutej, bo przy zepsutej derywacji cap spada do 4, a 8>4 też
+nie rośnie). Naprawa zweryfikowana przez Evaluatora: `population: 7` + oczekiwanie `=== 8` łapie
+mutanta.
+
+**B3 — karta „Budynki wpływające na wzrost" podaje fałsz.** `cityPanel.ts:4785` dla miasta z
+Akweduktem I Spichlerzem pokazuje „bez Akweduktu max 5" — nieprawda, bez Akweduktu to miasto ma 8.
+Wiersz Spichlerza nie wspomina wcale o nowym twardym capie 8.
+
+Wszystkie 3 mechaniczne, bez ABC. Dispatch runda 2.
+
+Niepilne (do rundy 2 albo później): N1 (nieaktualny komentarz o „buggu z diakrytykiem" —
+`loadEconParams` jest martwy z innego, prostszego powodu: po prostu nigdy niewołany, nie z powodu
+błędu klucza), N3 (kanon `docs/decyzje/B-popcap-akwedukt-audit.md` nieaktualny, nadal pisze cap 15),
+N4 (spichlerz_prog_ludnosci płaski 8/8/8 mimo że akwedukt_prog_ludnosci skaluje się z trudnością —
+zgodne z dosłownymi słowami Macieja, tylko do wiadomości), N5 (obejście capu przy buncie,
+pre-istniejące), N7 (CLAUDE.md ma nieaktualny zapis `upgrade-budynki 48/48`, realnie 48/1 fail
+pre-istniejący).
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE-B1 — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A.** Rozszerzyć globalny mechanizm o `budowaPriorytetTypow` (pełną listę
+priorytetów, nie tylko `budowaFocus`), żeby globalny „Priorytet produkcji" faktycznie działał dla
+istniejących miast, zgodnie z pierwotną prośbą.
+
+**Kolejność pracy:** B2/B3 (runda 2, mechaniczne naprawy transferu właściciela + migracji) są już
+w toku (Operator `a7eb4511bbdb4e3b9`, ten sam plik `empire-city-defaults.ts`/`main.ts`). B1
+dispatchowane jako OSOBNE zlecenie DOPIERO po zakończeniu i weryfikacji rundy B2/B3, żeby uniknąć
+dwóch równoległych Operatorów na tych samych plikach — kolejkowane, nie odkładane bez terminu.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — Evaluator RUNDA 1: FAIL, runda 2 w toku (2026-08-09)
+
+**B1 — Barbarzyńcy pojawiają się w „W stanie wojny z" w KAŻDEJ rozgrywce.** `getDiploRelation`
+wpisuje relację `wojna` barbarzyńców do tej samej mapy, którą skanuje nowy kod, bez filtra — repo
+ma już jawny precedens obrony przed dokładnie tym (`C-BARB-Q1=B`, `main.ts:25864`), pominięty tu.
+
+**B2 — wyciek mgły wojny.** Brak bramki kontaktu — pop-up pokazuje wojny/sojusze/handel z
+cywilizacjami, których gracz NIGDY nie spotkał (nazwa i sam fakt istnienia ujawnione), oraz z
+cywilizacjami WYELIMINOWANYMI. Oba istniejące, analogiczne kolektory (`collectWarsWithPlayer`,
+`collectKnownWarsBetweenOthers`) mają taką bramkę zawsze — nowy kod (`warPartnerIdsForOwner`,
+`dealPartnerIdsForOwner`) jej nie ma.
+
+**B3 — bramka nie chroni sortowania** (całe żądanie nr 1 bez ochrony). Mutacja: usunięcie
+`.sort(compareDiploListEntries)` z `render()` → 23/23 nadal PASS. Test sprawdza czysty komparator,
+nie jego realne wpięcie do renderu listy.
+
+**Ocena podejścia (nie blokuje kodu, ALE narracja do Macieja musi być uczciwa):** Evaluator ustalił,
+że to formalnie NOWY komponent UI (żyjący w pliku `diplomacyPanel.ts`, ale zero współdzielonego
+DOM/renderu z martwym panelem — tylko wspólne helpery skórki, importowalne z dowolnego miejsca).
+Ocena Evaluatora: to SŁUSZNA decyzja (martwy panel to zadokowany panel boczny, nie pop-up, którego
+prosił Maciej), ale trzeba to nazwać wprost jako nowy komponent, nie jako „rozszerzenie
+istniejącego panelu".
+
+**Punkt 4 (przycisk propozycji spotkania) — NIE jest luką**, sprawdzone bezpośrednio w cytacie
+Macieja: jego własne zdanie utożsamia „propozycję spotkania" z przyciskiem przejścia do audiencji.
+Jedyna rozbieżność to etykieta („Otwórz pełną audiencję" zamiast języka Macieja) — niepilne, N1.
+
+Niepilne: N2 (pop-up nie chowa się automatycznie przy otwarciu audiencji z innej ścieżki niż
+callback — 5 miejsc), N3 (raport do Macieja ma nazwać to nowym komponentem), N4/N5 (trzecia,
+prawie identyczna kopia klasyfikacji zamiast reużycia istniejącej), N6 (kolor proporczyka z
+niewłaściwego tieru), N7 (podwójne sortowanie, nieszkodliwe), N8 (kolejka kart pierwszego kontaktu
+nie wznawia się po zamknięciu pop-upu), N9 (czy gracz ma się pokazywać w „W stanie wojny z" —
+decyzja do zapisania przy naprawie B2), N10 (dane statyczne, akceptowalne).
+
+Dispatch runda 2 dla B1+B2+B3 (+N2 przy okazji, ta sama okolica kodu). Wszystkie mechaniczne, bez
+ABC.
+
+---
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — Evaluator RUNDA 2: FAIL, runda 3 w toku (2026-08-09)
+
+Merytoryka naprawy B1 (spawn-hex zamiast hut-hex) jest POPRAWNA i potwierdzona niezależnie
+(czystość funkcji, brak podwójnego wywołania, matematyka scenariusza, mapowanie era→wojskowość —
+wszystko sprawdzone i zielone). Ale **bramka nadal nie chroni main.ts** — ta sama klasa problemu co
+w rundzie 1 (i jak w P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO): 3 niezależne mutacje w `main.ts`
+(przywrócenie oceny na heksie chatki zamiast spawnu; wyłączenie całej funkcji wykluczenia;
+odwrócenie bezpiecznika `?? true`→`?? false`) dają 73/73 PASS. Sekcja 11 testu w ogóle nie czyta
+`main.ts` — reimplementuje logikę inline w pliku testu, certyfikuje więc TEZĘ, nie WPIĘCIE.
+
+**Naprawa (dokładna specyfikacja Evaluatora):** wzorzec `hud-moc-warstwa-test.cjs` (czyta
+`main.ts` jako tekst, wycina ciało funkcji, asercjonuje regexem) zastosowany do `checkVillageRewardAt`:
+(1) obecność `territoryOwnerAtLive(rewardUnitDest.q, rewardUnitDest.r)` I brak
+`territoryOwnerAtLive(q, r)`; (2) obecność `pickVillageReward(Math.random(), { excludeUnit })`;
+(3) obecność `isVillageRewardUnitMilitary(player.era)`; (4) DOKŁADNIE JEDNO wystąpienie
+`findVillageRewardSpawnHex(` w tym ciele (dowód że liczone raz, nie dwa); (5) do sekcji 10 dołożyć
+`isVillageRewardUnitMilitary(3)===true` i `(99)===true` (łapie odwrócony bezpiecznik).
+
+Niepilne do zrobienia przy okazji (ten sam plik, jednolinijkowe): N1 (zdublowane źródło prawdy —
+`VILLAGE_UNIT_IS_MILITARY_BY_ERA` powiela `units.json`'s `Typ`, lepiej wyprowadzić z
+`lookupUnitDef(...)['Typ'] !== 'Civilian'`, ten sam predykat co silnik kary), N2 (komentarz sugeruje
+nieistniejącą ogólną regułę „cywile zwolnieni z kary" — poprawić na odwołanie do konkretnego
+prefiltra `main.ts:3697`).
+
+Dispatch runda 3, wąski zakres: test tekstowy (główne) + N1/N2 przy okazji.
+
+---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — Evaluator RUNDA 1: FAIL (6 BLOKUJĄCYCH), runda 2 w toku (2026-08-09)
+
+Architektura dobra (czysty moduł, reużycie kanału DOW), ale 6 not BLOKUJĄCYCH:
+
+- **B1** — `applyCityCaptureToMap` NIE jest jedynym funnelem (twierdzenie Operatora nieprawdziwe):
+  `resolveSiegeSurrender()` (kapitulacja głodowa) zmienia właściciela BEZ wywołania haka licznika.
+  Konsekwencja cięższa niż wygląda: dla pary AI↔AI nie ma ŻADNEJ innej ścieżki pokoju (negocjacje
+  pokojowe dziś działają tylko z graczem) — zgubiony licznik = wojna wieczna, dokładnie czego
+  Maciej chciał uniknąć.
+- **B2 (wymaga ABC)** — kaskada sojusznicza celu nieobsłużona: wymuszona wojna odpala
+  `applyAllianceObligationsOnWar`, więc sojusznicy CELU też wchodzą w wojnę z napastnikiem, ale te
+  wojny poboczne nie są objęte licznikiem pary — auto-pokój po 2 miastach kończy tylko parę A-B,
+  a A zostaje w wieczystej wojnie z sojusznikami B (AI↔AI nie ma wyjścia, patrz B1). Pytanie do
+  Macieja: czy wymuszona wojna ma w ogóle odpalać casus foederis, a jeśli tak — czy auto-pokój ma
+  kończyć też wojny kaskadowe.
+- **B3** — sojusz z CELEM nie blokuje wyboru (sprzeczne z Twoim „nie powinny zrywać sojuszy") —
+  dziś blokowany jest tylko pakt nieagresji, sojusz NIE, i zostaje zerwany przy wypowiedzeniu.
+- **B4** — mechanizm może wyłączyć się TRWALE i po cichu: `pending` konsumowane niezależnie od
+  wyniku, zapis do cyklu tylko po SUKCESIE — cywilizacja, która w chwili awansu jest w
+  jakiejkolwiek wojnie (częste, bo mechanizm klastrowy wymusza wojny od tury ≥20, dokładnie w oknie
+  K→B) nigdy więcej nie dostanie szansy w całej partii.
+- **B5** — brak zapisu do save/load: żadna z 4 nowych struktur stanu nie trafia do snapshotu ani
+  nie jest odtwarzana — po wczytaniu zapisu w trakcie wymuszonej wojny stan wyparowuje (wojna
+  wieczna + wypadnięcie z cyklu na stałe). Kanon AutoBot: twardy FAIL (STRICT-SAVE).
+- **B6** — bramka nie chroni main.ts (ta sama klasa problemu co inne tematy dziś): usunięcie
+  sprawdzenia eligibility LUB usunięcie wywołania haka licznika przy przejęciu miasta — oba dają
+  27/27 ALL GREEN.
+
+Niepilne: N1 (gracz nigdy nie jest celem — cicha decyzja zakresowa, nie w specyfikacji), N2
+(„sąsiad" liczony bardzo zgrubnie, bez maks. promienia), N3 (kandydat już w wojnie z kimś innym nie
+wykluczany), N4 (odpoczynek uzbrajany tylko dla napastnika), N5 (koniec przez eliminację nie daje
+odpoczynku), N6 (cooldown 20 tur tylko na ścieżce progowej, inna ścieżka pokoju daje 10),
+N7 (wojna z MP powinna czy nie liczyć się jako „już w wojnie" — do rozstrzygnięcia), N8 (stałe w
+TS nie w JSON, Maciej nie dostroi z panelu), N9 (map-gen nieukończona, ryzyko zerowe).
+
+Dispatch runda 2 dla B1, B3, B4, B5, B6 (mechaniczne). B2 wymaga ABC — patrz wiadomość na czacie.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 1: PASS-WITH-NOTES (3 BLOKUJĄCE), runda 2 w toku (2026-08-09)
+
+Rdzeń logiki poprawny (12/12/8 tech potwierdzone, Petra = jedyny cud cross-epoch, brak 5. miejsca
+mutującego player.era w normalnej ścieżce awansu, isMajorAiOwner pre-istniejące i poprawne, brak
+cofania epoki, miasta-państwa nie kradną cudu). Korekta na korzyść Operatora: ryzyko Fenicjan
+przeszacowane — Inżynieria to najniższy tier Żelaza, realny koszt to JEDNA technologia ponad
+komplet Brązu, nie „kilkadziesiąt tur".
+
+**B1 (BLOKUJĄCA) — cała integracja main.ts bez pokrycia.** Ta sama klasa problemu jak w kilku
+innych tematach dziś: mutacja usuwająca gałąź `isMajorAiOwner` w `syncOwnerEraFromResearch` +
+usunięcie wywołania `reconcileEraForOwner()` po ukończeniu cudu → wszystkie bramki zielone.
+
+**B2 (BLOKUJĄCA, wymaga ABC) — nowe złamanie zgodności sejwów + parytetu.** On-load przeliczanie
+epoki AI (`main.ts:25870`) NADPISUJE zapisaną epokę nową, ostrzejszą regułą — ale gracz NIE jest
+przeliczany przy wczytaniu. Skutek: na KAŻDYM istniejącym zapisie, AI które było w Brązie na starej
+regule zostaje po cichu zdegradowane do Kamienia, a gracz zachowuje starą epokę — cały świat AI
+cofa się, gracz nie. Wymaga decyzji: migracja starych zapisów / `Math.max` z zapisaną epoką /
+świadome zaakceptowanie że stare zapisy się nie wczytają poprawnie.
+
+**B3 (BLOKUJĄCA, wymaga ABC) — ryzyko utknięcia AI niezmierzone mimo wyraźnego polecenia.**
+Zmierzone przez Evaluatora: reguła cudu jest MARTWA dla 6 z 15 cywilizacji (celtowie, chińczycy,
+germanie, grecy, rzymianie, słowianie — ich cud E leży w Żelazie, ostatniej epoce, pętla capuje się
+na maxDefinedEra=3, warunek epoki 3 nigdy nie jest ewaluowany) — efekt gameplayowy węższy niż
+zapowiadane 1/3 przejść. Realne ryzyko trwałego zablokowania AI dla pozostałych 9 cywilizacji:
+zbudowanie cudu wymaga JEDNOCZEŚNIE throttle trafienia + pustej kolejki produkcji + progu
+opłacalności + rezerwy żywności, bez żadnego fallbacku/rozluźnienia z czasem — trwałe niespełnienie
+= cywilizacja nigdy nie opuszcza epoki.
+
+Niepilne: N1 (zdobycie stolicy łupi technologie i może po cichu przesunąć epokę bez powiadomienia —
+samoleczące się w ≤1 turę, ale ciche), N2 (kolejność inicjalizacji przy starcie — dziś nieszkodliwe,
+cicha pułapka na przyszłość), N3 (`owner-epoch-test.cjs` przeterminowany, testuje już nieaktualną
+ścieżkę), N4 (round-robin civType — uzasadnienie w kodzie błędne, realny powód inny, do poprawy
+komentarza), N5 (ważne ostrzeżenie: pole `wymagaTerenu` cudów zadeklarowane w danych, ale NIGDZIE
+nieegzekwowane w kodzie — jeśli ktoś to kiedyś "dokończy", bramka epoki stanie się nieusuwalną
+blokadą dla cywilizacji bez odpowiedniego terenu, np. Egipt bez pustyni-rzeki), N6 (interakcja
+epokaWejscia×techUnlock niezaasercjonowana).
+
+Dispatch runda 2 dla B1 (mechaniczne). B2 i B3 wymagają ABC — zostaną przedstawione po domknięciu
+aktualnie otwartego wątku (kolejka pytań, max 3 na turę).
+
+---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — Evaluator RUNDA 1: PASS-WITH-NOTES (1 BLOKUJĄCA), runda 2 w toku (2026-08-09)
+
+Implementacja merytorycznie poprawna, zweryfikowana niezależnie punkt po punkcie (matematyka
+early-game 4/5 potwierdzona ze źródeł, `foundingTerritoryOpts` generyczna, spójność 3 sprawdzeń
+terytorium potwierdzona matematycznie, usunięcie `requireOutsideTerritory` nie było scope creepem,
+wydajność zmierzona niezależnie: −27%, stary kod realnie wybierał róg mapy 20 heksów od miasta —
+bezpośrednia reprodukcja zgłoszonego „miszmaszu"). Zero fałszywych twierdzeń w raporcie Operatora.
+
+**B1 (BLOKUJĄCA) — bramka nie chroni main.ts.** Ten sam wzorzec problemu co kilka innych tematów
+dziś: test nigdy nie ładuje `main.ts`, cofnięcie JEDYNEJ linii realizującej parytet gracz-AI na
+poziomie egzekucji (`canFoundCity(..., foundingTerritoryOpts(ownerId))` → goły `canFoundCity(...)`
+bez opcji) daje 15/15 PASS. To ma znaczenie merytoryczne: filtr w `ai.ts` to tylko planista na
+migawce stanu, bramka w `main.ts` to jedyne miejsce, gdzie wymóg jest EGZEKWOWANY.
+
+**Ważna informacja dla Ciebie (N2, nie blokuje, ale zasługuje na świadomość PRZED playtestem):**
+konsekwencja decyzji A jest silniejsza niż opisana w pierwotnym ABC. AI zakłada miasta wyłącznie
+przez panel budowy (bez osadnika) — więc żadna cywilizacja AI nie założy już miasta na INNYM
+LĄDZIE/WYSPIE, chyba że jej miasto urośnie populacyjnie na tyle, że promień terytorium (max 15) tam
+sięgnie. Ekspansja zamorska AI de facto znika — obce kontynenty AI może zdobywać już tylko
+podbojem. Zgodne z literą Twojej decyzji („zwarta grupa"), ale warto wiedzieć wprost, zanim
+zobaczysz to w grze.
+
+Niepilne: N1 (re-walidacja w `planCityFounding` nieprotestowana), N3 (AI bez żadnego miasta zakłada
+je bez wymogu terytorium — pre-istniejące, symetryczne z pierwszym miastem gracza), N4 (ciche
+`continue` przy odrzuceniu — pre-istniejące), N5 (map-gen/cluster-start nierozstrzygnięte
+środowiskowo, niezwiązane).
+
+Dispatch runda 2, wąski zakres: TYLKO B1 (test tekstowy).
+
+---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA-B2 — ECHO B, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: B** (wbrew rekomendacji A). Wymuszona wojna Brązu odpala normalnie istniejący
+mechanizm obowiązków sojuszniczych (`applyAllianceObligationsOnWar` — sojusznicy CELU dołączają do
+wojny przeciw napastnikowi), ALE licznik „2 miasta zdobyte/stracone = koniec" ma obejmować
+WSZYSTKIE wojny w kaskadzie naraz (nie tylko parę napastnik-cel), i kończyć całą grupę wojen
+jednocześnie po osiągnięciu progu w sumie.
+
+**Implikacja architektoniczna (do dispatchu):** dzisiejszy licznik jest per-para
+(`bronzeForceWarActiveByPairKey`, klucz A-B). Trzeba wprowadzić pojęcie GRUPY WOJEN wynikającej z
+jednego triggera wymuszonej wojny (napastnik + cel + wszyscy sojusznicy celu wciągnięci kaskadą) —
+wspólny licznik zdobytych/straconych miast SUMOWANY po wszystkich parach w grupie, próg 2 kończy
+WSZYSTKIE wojny grupy naraz (automatyczny pokój z każdym uczestnikiem osobno, w tej samej turze).
+
+**Kolejność pracy:** runda 2 tego tematu (B1/B3/B4/B5/B6, mechaniczne naprawy) jest już w toku na
+tych samych plikach (`forced-war-bronze.ts`/`main.ts`). B2 dispatchowane jako OSOBNE zlecenie
+DOPIERO po zakończeniu i weryfikacji tej rundy, żeby uniknąć kolizji dwóch równoległych
+Operatorów.
+
+---
+
+## P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI — Evaluator RUNDA 2: FAIL, runda 3 w toku (2026-08-09)
+
+**B1a (NOWY BUG wprowadzony przez naprawę wydajności) — prefilter=9 gubi realne zagrożenia dla
+miast o populacji >5.** Operator pomylił próg minimalny z maksymalnym: rzeczywisty zasięg
+wykrywania to `promień_terytorium + 2×AI_HOME_DEFENSE_VICINITY_HEX`, nie stała 9 — dla miasta
+pop=12 to 16 heksów, pop=15/20 to 19. Prefilter=9 odcina zagrożenia w pierścieniu 10-19 heksów dla
+większości miast. Dowód behawioralny: barbarzyńca 12 heksów od centrum miasta pop=12 (WEWNĄTRZ
+własnego terytorium) — z prefiltrem AI idzie na odległego wroga, bez prefiltra broni domu. To
+dosłownie odtworzone pierwotne zgłoszenie. Skala: 52% zagrożeń zgubionych na testowej mapie.
+**Gotowe rozwiązanie, zweryfikowane matematycznie przez Evaluatora na 10000 heksach:**
+`hexDistance(wróg, miasto) <= cityTerritoryRadius(miasto) + 2*AI_HOME_DEFENSE_VICINITY_HEX`
+— dokładny (nic nie gubi), liczony PER MIASTO (nie względem najbliższego), szybszy niż tępy próg 19.
+
+**B1b — bramka nie chroni przed regresem, dla którego powstała.** Mutacja usuwająca prefilter
+(pełne przywrócenie regresu rundy 1) → 14/14 nadal PASS. Benchmark porównuje dwie kopie logiki
+napisane w samym teście, nie kod produkcyjny.
+
+**B3b — kod naprawiony, ale test tego nie chroni.** Własny scenariusz dyskryminujący Evaluatora
+(cywil atakuje jedyne zagrożenie w kroku 4b, przydzielony obrońca stoi na heksie miasta) łapie
+mutację cofającą naprawę podwójnego zaangażowania; test T3 Operatora tego NIE łapie (asercja
+przypadkiem pusta, bo oba scenariusze dają ten sam heks docelowy).
+
+Wynik próby mutacyjnej: 2 zabite z 7 (M2, M4). Przeżyły: M1 (prefilter), M3 (handledThreatIds),
+M5 (sortowanie wg pilności — sama logika może być OK, tylko niepokryta), M6/M7 (stałe promienia).
+
+Niepilne: N4 (jednostka bez ruchu może zająć slot obrońcy, opóźnienie o turę), N5 (przydział 1:1
+zastąpił kworum z rundy 1 — zmiana projektowa nieudokumentowana, do świadomej decyzji lub opisu),
+N6 (test kopiuje logikę zamiast importować z ai.ts). N1 (wyścig o wioski) potwierdzone nietknięte.
+
+Dispatch runda 3, wąski zakres wg gotowej specyfikacji Evaluatora: (1) zamienić prefilter na
+dokładny warunek per miasto (wzór wyżej, poprawić fałszywy JSDoc); (2) dołożyć test korektności na
+mieście pop=12/15 z zagrożeniem 10-19 hex od centrum; (3) przerobić T3 na scenariusz dyskryminujący
+(obrońca na heksie miasta) wg wzoru Evaluatora.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — wymaga rozpoznania**
+
+**Kontekst zgłoszenia:** bezpośrednia kontynuacja tematu P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI
+— po informacji, że AI (i tak samo gracz, twardy wymóg `withinTerritory`) traci możliwość
+zakładania miast poza własnym, zwartym terytorium (w tym za morzem), Maciej zaproponował
+rozwiązanie zamiast cofania decyzji A.
+
+**Cytaty Macieja (3 wiadomości, ten sam wątek):**
+1. „masz rację. I wtedy trzeba zrobić fort w tamtym miejscu, żeby otworzyć nowe miasto."
+2. „porty i wieże strażnicze powinny być, mieć możliwość budowania poza zasięgiem miasta."
+3. „poza tym to samo ograniczenie dotyczy gracza, więc tutaj trzeba to globalnie rozwiązać zarówno
+   dla AI jak i dla gracza."
+
+**Wstępne ustalenie (bez subagenta, szybki grep) — mechanizm już istnieje W DANYCH, nieznany stan
+w kodzie:** `gra/data/terrain-improvements.json` ma już wpis `fort` z jawnym komentarzem „ABC-10
+Maciej 2026-07-04: Fort (mapa) ≠ Cytadela (miasto). Żelazo ep.3; zasięg 10; +100% Obrona
+obozowanie" oraz osobny wpis `decyzje_EKONOMIA` mówiący wprost: „zasieg_terytorium: posterunek=5
+(epoka 2), fort=10 (epoka 3), miasto=10 (stałe); **zakładanie kolejnego miasta wymaga Strażnica LUB
+zasięgu obecnego miasta**." Czyli DOKŁADNIE mechanizm, o który prosi Maciej, był już zaprojektowany
+(ABC-10, 2026-07-04) — pytanie do rozpoznania: czy `withinTerritory`/`canFoundCity` faktycznie
+uwzględnia dziś węzły terytorium z posterunku/fortu, czy tylko z miast (wcześniejsze rozpoznanie
+`P-AI-ZAKLADANIE-MIAST` sprawdzało tylko `cityNodesForOwner` — możliwe że fort/posterunek nigdy nie
+zostały wpięte do tej funkcji, mimo że dane/design to zakładają).
+
+**Drugi wątek do rozpoznania:** czy Posterunek/Strażnica i Port dają się dziś budować WYŁĄCZNIE w
+obrębie już posiadanego terytorium (typowe dla budynków miejskich), czy jako ulepszenie terenu
+budowane przez jednostkę (Robotnika?) w dowolnym odkrytym, dostępnym heksie — Maciej chce tego
+drugiego („poza zasięgiem miasta").
+
+**Zakres (potwierdzony explicite przez Macieja):** rozwiązanie MA dotyczyć RÓWNOCZEŚNIE gracza i AI
+(parytet, spójny z całą resztą decyzji tej sesji) — nie tylko naprawa dla AI.
+
+Dispatch Explore (bez kodowania) przed ABC: (a) zweryfikować czy `withinTerritory`/`canFoundCity`
+(gracz i AI) uwzględnia węzły terytorium z fortu/posterunku, czy tylko z miast — dokładny plik i
+funkcja; (b) sprawdzić jak dziś buduje się Fort/Posterunek/Port — budynek miejski (w kolejce
+produkcji miasta, wymaga już posiadanego miasta) czy ulepszenie terenu (jednostka na mapie, w
+dowolnym dostępnym heksie) — jeśli to pierwsze, to sam Fort nie rozwiąże problemu (miasto musi już
+istnieć, żeby go zbudować — błędne koło); (c) sprawdzić czy AI ma dziś jakąkolwiek logikę budowy
+Fortu/Posterunku poza miastem (jednostką) — czy trzeba to dopiero dodać do AI; (d) sprawdzić czy
+mechanizm „posterunek=5, fort=10" z komentarza w danych jest w ogóle zaimplementowany gdziekolwiek
+w kodzie, czy to tylko projektowa notatka z 2026-07-04, nigdy niewdrożona.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — Evaluator RUNDA 2: PASS-WITH-NOTES (bez blokujących), gotowe do scalenia (2026-08-09)
+
+B2 (4 miejsca transferu właściciela) i B3 (3 mutacje broadcast/migracja) potwierdzone niezależnie —
+Evaluator zrobił własny grep (nie tylko powtórzył Operatora) i własną próbę mutacyjną na 8
+wariantach (3 z rundy 1 + 5 dodatkowych), wszystkie złapane. B1 (`budowaPriorytetTypow`) potwierdzone
+nietknięte — zero zmian kodu, tylko komentarze odsyłające do przyszłej decyzji.
+
+Niepilne (do rejestru, nie blokują): N1 (Operator błędnie napisał że zarejestrował znalezisko
+growthmult osobno — nieprawda, ale sprawa BYŁA już wcześniej zarejestrowana przez kogoś innego,
+skutek zerowy), N2 (martwa funkcja + mylący komentarz odsyłający do nieistniejącego precedensu),
+N3 (asymetria bramek `ownerId===0` między polami — dziś nieszkodliwa, promień rażenia rośnie po tej
+zmianie), N4 (na starych zapisach całe imperium może się przypiąć po migracji, globalny suwak
+bezczynny dopóki gracz ręcznie nie odepnie — do noty playtestowej), N5 (niezapięty inwariant,
+dziś nieosiągalny), N6 (asymetria UX: wejście w Listę przypina automatycznie, wyjście nie odpina —
+decyzja produktowa nieopisana, do wspomnienia przy okazji domykania B1).
+
+**GOTOWE DO SCALENIA.** Scalam teraz.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 3: FAIL (dokumentacja nieprawdziwa), runda 4 w toku (2026-08-09)
+
+**BB1 potwierdzone ZAMKNIĘTE** — Evaluator zrobił 6 własnych mutacji (3 ze zlecenia + 3 dodatkowe),
+wszystkie złapane przez bramkę tekstową, test funkcjonalny nadal ślepy na wszystkie — dokładnie
+potwierdza sens naprawy. Znaleziono kruchość testu tekstowego (K-1 do K-5) — najpoważniejsza K-5:
+asercja liczy wystąpienia `deductStackRuchLeft(` GLOBALNIE w całym pliku (24 tys. linii), więc
+KAŻDA przyszła, niezwiązana funkcja odejmująca pulę ruchu wysadzi tę bramkę bez związku z tematem.
+
+**BB2 — powód FAIL nie jest brakiem naprawy (to byłoby akceptowalne), tylko NIEPRAWDZIWĄ
+DOKUMENTACJĄ tego faktu (CLAUDE.md §0b).** Evaluator prześledził realny łańcuch wywołań:
+`skipStackRuchSync=true` w `onSeparate` jest natychmiast unieważniane 24 linie dalej przez
+`refreshD1bHud()` → render HUD → `buildArmyStackHudStateInner()` → `syncStackRuchLeft(stack)` BEZ
+flagi — zwrot ginie w TYM SAMYM, synchronicznym wywołaniu. Komentarz w kodzie i raport Operatora
+(„częściowa mitygacja", „chroni pierwszy odczyt") są NIEPRAWDZIWE — flaga jest placebo, chroni
+zero odczytów. Dobra wiadomość: to nie wprowadza NOWEJ regresji (zachowanie identyczne jak przed
+rundą, wszystkie odczyty i tak są min-owe).
+
+**Korekta uzasadnienia ABC Operatora — Twoja intuicja o kolizji z wcześniejszą decyzją była
+NADINTERPRETACJĄ.** ECHO A („żadnego rozpraszania") odpowiadało na PYTANIE O INNĄ RZECZ: czy
+budować „dwie niezależne, wybieralne armie na jednym heksie" (pełna funkcja produktowa z UI/AI/
+save). To NIE to samo co „różne pule ruchu w obrębie jednego heksu" — par. 6b w kodzie to komentarz
+dokumentacyjny, nie egzekwowany kontrakt; silnik już dziś rutynowo trzyma 2+ niepołączone armie na
+jednym heksie (stąd w ogóle istnieje prompt merge). Realna naprawa (`stackGroupId`) WCIĄŻ wymaga
+ABC — ale jako NOWA decyzja o obserwowalnej zmianie zasad (gracz zobaczy dwie armie o różnym ruchu
+na jednym polu), nie jako coś zabronionego wcześniejszą decyzją.
+
+**Opcje Operatora niekompletne — Evaluator dołożył 2 tańsze warianty, oba bez tożsamości stosu:**
+- D — origin zajęty przez własną jednostkę o niższej puli traktować jak „brak bezpiecznego origin"
+  (ta sama gałąź co dziś przy zajętym wrogim/nieprzejezdnym origin: jednostki NIE wracają, zostają
+  z komunikatem) — zero nowych pojęć, zero refaktoru.
+- E — przy powrocie zsynchronizować pulę CAŁEGO heksu do wartości ZWRÓCONEJ armii (nie do minimum)
+  — jedna linia, spójne z „ruch się nie odbył", ale ma efekt uboczny: rezydent dostaje ruch,
+  którego nie miał (potencjalny mikro-exploit, do ujawnienia w opisie).
+- Nienazwany dotąd skutek uboczny obu opcji D/E do ujawnienia w ABC: przy powrocie na heks z własną
+  jednostką o WYŻSZEJ puli, sync OBNIŻA pulę tej postronnej jednostki do wartości wracającej armii
+  — przy starym rozpraszaniu nigdy do współlokacji nie dochodziło, więc to NOWY efekt uboczny tej
+  całej funkcji (niezależnie od wybranej opcji naprawy BB2).
+
+Dispatch runda 4, wąska: (1) USUNĄĆ `skipStackRuchSync` (placebo nie wchodzi do repo, chyba że
+ktoś udowodni testem że coś chroni), (2) zawęzić/usunąć asercję `deductCount===4` z bramki
+tekstowej (K-5, ryzyko fałszywych alarmów w przyszłości). BB2 pozostaje NIEZAIMPLEMENTOWANE,
+świadomie i uczciwie udokumentowane — pełne, poprawione pytanie ABC (5 opcji: A-nic-nie-rób-udokumentuj-uczciwie,
+B-pełny-refaktor-stackGroupId, C-propozycja-Operatora-re-prompt, D-traktuj-jak-brak-origin,
+E-sync-do-wartości-armii) idzie do Macieja po zamknięciu tej rundy.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — korekta zakresu Macieja (2026-08-09)
+
+**Korekta:** „Port to jakaś pomyłka. Nie mamy portu w grze. Ale dobry pomysł. Pomyślę o tym, że
+możemy to jakoś użyć w przyszłości." Temat R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA dotyczy
+WYŁĄCZNIE Fortu i Strażnicy/Posterunku — Port usunięty z tego tematu, przeniesiony do osobnego
+zgłoszenia (patrz niżej), NIE pilny, świadomie odłożony do przyszłości.
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — przyszła funkcja, niepilne**
+
+**Cytat Macieja:** „w ogóle też można wprowadzić jakieś budynki portowe dla miast nadbrzeżnych."
+Świadomie odłożone przez samego Macieja („pomyślę o tym") — NIE wymaga dispatchu teraz, ale
+zarejestrowane żeby nie zginęło (C-027/C-030).
+
+**Instrukcja Macieja (ta sama tura):** „zaproponuj jakieś rozwiązania z tymi dwoma wątkami i zrób
+turnament na najlepszą propozycję" — dotyczy OBU tematów (Fort/Strażnica-zasięg-zakładania ORAZ
+budynek portowy). Uruchamiam pełny turniej ABC (2 niezależnych Proponentów + Sędzia, `C-018`) dla
+obu, mimo że temat portowy jest jawnie oznaczony jako niepilny — turniej produkuje GOTOWĄ propozycję
+do rozważenia, nie wymusza natychmiastowego wdrożenia.
+
+Kontekst dostępny do rozpoznania: w grze istnieje już jednostka morska (`Galley`, `Typ: Naval`,
+`units.json:557`) — port mógłby np. odblokowywać/przyspieszać produkcję jednostek morskich, dawać
+bonus handlowy dla miast nadmorskich, albo łączyć oba. Rozpoznanie stanu „miasto nadbrzeżne"
+(czy silnik już wykrywa sąsiedztwo wody dla miasta) do zbadania przez Proponentów.
+
+---
+
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE — SCALONE `8692b61b` (2026-08-09)
+
+Scalone bezpiecznie z worktree Operatora rundy 2 do głównego drzewa. 5 plików zmienionych (2
+identyczne bezpośredni apply, 2 zdywergowane scalone chirurgicznie, `main.ts` największy — 3-way
+merge bez konfliktów, zweryfikowany) + 2 nowe pliki. Bramki na scalonym stanie: tsc 0 · logic-test
+213/213 · empire-city-defaults-test 30/30 · auto-manage-test 45/45. Temat zamknięty (B1
+`budowaPriorytetTypow` pozostaje osobnym, świadomie odłożonym zgłoszeniem — czeka na dispatch po
+uwolnieniu plików).
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator RUNDA 2: PASS-WITH-NOTES (1 BLOKUJĄCA), runda 3 w toku (2026-08-09)
+
+B1 (regresja Spichlerz II) i B3 (karta budynków) potwierdzone poprawne i zweryfikowane niezależnie
+(obie ścieżki EconParams, wszystkie 4 kombinacje UI). B2 częściowo: naprawa w silniku
+(`population-growth-v85.ts`) chroniona testem, ale `turn-economy.ts:1331` (deduplikacja, zero
+zmiany semantyki, OK) i **`cityPanel.ts:1016` NIEchronione** — mutacja cofająca helper do starego
+`built.includes('spichlerz')` przeżywa wszystkie 8 testów bundlujących ten plik, przywracając
+dokładnie oryginalny objaw B3 (miasto ze Spichlerzem II znów pokazuje „bez Akweduktu max 5") przy
+100% zielonych bramkach. To ta sama klasa problemu co w kilku innych tematach dziś (test tekstowy
+regex wzorem `hud-moc-warstwa-test.cjs`/`border-march-wygasanie-test.cjs`).
+
+Niepilne: N-A (`maSpichlerz: boolean = false` domyślne — ta sama klasa niewykrywalnego dla
+kompilatora mutanta, lepiej wymagany parametr), N-B (kanon `B-popcap-akwedukt-audit.md` nadal
+nieaktualny, z rundy 1), N-C (martwy `ownerHasSpichlerz()` sprawdzający tylko starą wartość — mina
+na przyszłość), N-D (AI nie modeluje capu w wycenie Akweduktu, pre-istniejące poza zakresem),
+N-E (zamrożenie >12 potwierdzone pozytywnie, formalnie do potwierdzenia przez Macieja), N-F (chip
+capu nie pokazuje się dla miasta ze Spichlerzem poniżej limitu — drobny UX).
+
+**Ostrzeżenie procesowe od Evaluatora:** worktree Operatora ma niescommitowane zmiany od 2 rund —
+przy błędzie narzędziowym (Evaluator omyłkowo prawie skasował pracę przez `git checkout`,
+odtworzone z patcha, zero strat) ryzyko jest realne. Do rozważenia: Operator powinien commitować
+NA WŁASNEJ GAŁĘZI worktree (nie do main) po każdej rundzie, żeby mieć punkt przywracania.
+
+Dispatch runda 3, wąski zakres: test tekstowy chroniący `cityPanel.ts:1016`.
+
+---
+
+## R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-WOJSKOWYCH-NA-CUDZYM-TERENIE — Evaluator RUNDA 3: PASS-WITH-NOTES (1 nowa BLOKUJĄCA), runda 4 w toku (2026-08-09)
+
+Runda 2 (bramka main.ts) potwierdzona realnie zamknięta — 4 mutacje z rundy 2 + własne warianty
+Evaluatora złapane. NOWE, głębsze znalezisko: bramka regexowa PINUJE WPIĘCIE, ale nie łapie
+ODWRÓCENIA SEMANTYKI — 6 z 10 dodatkowych mutacji Evaluatora przechodzi 74/74 ALL GREEN mimo
+odwrócenia logiki (np. `&& isVillageRewardUnitMilitary(...)` → `&& !isVillageRewardUnitMilitary(...)`
+= dokładna odwrotność decyzji Macieja, regex nadal pasuje bo tekst funkcji nadal tam jest).
+
+**Naprawa (mała, jedno miejsce):** wyciągnąć samą decyzję do czystej funkcji
+`shouldExcludeUnitReward({hasSpawnHex, spawnHexOwnerId, playerOwnerId, rewardUnitIsMilitary})` w
+`villageRewards.ts`, przetestować PEŁNĄ TABELĄ PRAWDY (16 kombinacji) zamiast regexem — to zamyka
+odwrócenia behawioralnie, nie tekstowo. Dołożyć 3 piny na `hutQ`/`hutR`/`ownerId: 0` do sekcji 11.
+
+Niepilne: N1 (dopisać w komunikatach asercji „to pin, aktualizuj przy celowym refaktorze"),
+N2 (`ownerId: 0` zaszyte na sztywno — pre-istniejące, mina gdyby chatki objęły AI), N3 (jedno
+odwrócenie przez podwójną negację pozostaje poza zasięgiem regexu nawet po naprawie — akceptowalne,
+funkcja jest domknięciem w `boot()`, niebehawioralnie łatwo testowalna bez większego wyciągania).
+
+Dispatch runda 4, wąska, w pełni określona: wyciągnięcie `shouldExcludeUnitReward` + tabela prawdy
++ 3 piny.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — rozbudowana mechanika kontestowana (Maciej, 2026-08-09)
+
+**Cytat pełny:** „to wymagałoby zmiany że port i strażnice można budować w dowolnym miejscu pod
+warunkiem że to nie jest już teren innej cywilizacji. W drugą stronę to tak nie powinno działać.
+fort czy strażnica nie blokuje terenu i inne cywilizacje mogą tam coś wybudować — to tylko
+zabezpiecza dla nas miejsce że możemy tam wybudować miasto, ale jeżeli inna cywilizacja wcześniej
+postawi swój fort albo po prostu będzie w zasięgu innych miast możliwość budowania tam miasta, to
+będzie w stanie to wybudować, a nasz fort będzie bezużyteczny. A nawet więcej — po wybudowaniu
+miasta przez inną cywilizację wokół tego fortu przejmuje na swoją użyteczność cały fort. Chyba że
+są tam jakieś nasze jednostki, to nasze jednostki wtedy z tego fortu muszą być usunięte. Sprawdź,
+czy to jest logiczne i czy możemy coś takiego wprowadzić."
+
+**Rozbicie na reguły (do oceny przez turniej ABC, "Port" w tym kontekście = literówka/uproszczenie,
+temat dotyczy Fortu/Strażnicy — Port jako osobny budynek jest już w grze, patrz osobny wątek):**
+1. Budowa dozwolona WSZĘDZIE poza terenem należącym już do INNEJ cywilizacji (odwrócenie dzisiejszego
+   `inPlayerTerritory` na coś bliższego `!terytoriumObcego`).
+2. Fort/Strażnica NIE blokuje terenu dla innych — to "miękka rezerwacja", nie wyłączność.
+3. Kontestacja: jeśli inna cywilizacja skolonizuje/rozszerzy terytorium (przez własne miasto LUB
+   własny fort) na ten sam heks WCZEŚNIEJ/skuteczniej, nasz fort staje się bezużyteczny dla nas.
+4. Przejęcie: gdy obca cywilizacja założy miasto, które swoim zasięgiem obejmuje nasz fort, PRZEJMUJE
+   go na swoją użyteczność (nie niszczy, nie neutralizuje — realnie zmienia "właściciela" efektu).
+5. Ewakuacja: jeśli w forcie stacjonowały nasze jednostki w momencie przejęcia, muszą zostać z niego
+   usunięte (analogia do istniejącej logiki wymuszonego wycofania - patrz P-ARMIA-ROZPAD tej sesji).
+
+Moja wstępna ocena logiczności (do zweryfikowania przez turniej): reguły 1-3 są spójne i tworzą
+sensowną mechanikę "wyścigu o pogranicze" (fort jako słaba, tymczasowa opcja, prawdziwe miasto jako
+mocna, trwała) — dobrze komponuje się z resztą decyzji tej sesji (parytet gracz/AI, "zwarta grupa").
+Reguła 4 (przejęcie NA WŁASNOŚĆ obcej cywilizacji, nie zniszczenie) wymaga precyzyjnej definicji:
+co dokładnie "przejęcie" oznacza technicznie (czy fort dosłownie zmienia ownerId i dalej działa,
+tylko teraz dla przejmującego? czy tylko przestaje działać dla nas, a przejmujący dostaje NOWY,
+własny węzeł terytorium niezależnie od tego, czy "nasz" fort tam nadal fizycznie stoi?). Reguła 5
+(ewakuacja) jest spójna z istniejącym mechanizmem kary za obcą jednostkę na cudzym terenie
+(border-march), więc naturalna.
+
+Dispatch turnieju ABC (2 niezależnych Proponentów + Sędzia, `C-018`) w toku dla całego tematu,
+uwzględniając tę rozbudowaną mechanikę.
+
+---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — Evaluator RUNDA 2: PASS-WITH-NOTES (1 nowa BLOKUJĄCA), runda 3 w toku (2026-08-09)
+
+B1 (bramka main.ts) potwierdzone ZAMKNIĘTE. **B2 (nowa) — runda 2 zgubiła pokrycie strony `ai.ts`
+z rundy 1.** Operator przepisał test od zera i utracił scenariusze T1/T2/T4/T5 z rundy 1. Mutacja
+usuwająca twardy filtr w `findCityFoundingHex` (zostawiając tylko re-walidację w
+`planCityFounding`) daje 16/16 PASS, ale ma REALNY skutek gameplayowy: AI z legalnym, dostępnym
+heksem w zasięgu nagle nie zakłada NICZEGO (paraliż ekspansji) — potwierdzone na konkretnym
+scenariuszu przez Evaluatora. Test rundy 1 (wciąż istnieje w niescalonym worktree) TĘ mutację
+łapie (15/15 → 3 FAIL). Naprawa praktycznie darmowa: złożyć plik z sekcji A rundy 1 (T1-T5,
+przechodzą 15/15 na kodzie rundy 2 BEZ ŻADNEJ zmiany w src) + sekcji B rundy 2 (strażnik main.ts).
+
+Niepilne: N2 (regex strażnika main.ts wrażliwy na reformat wieloliniowy z przecinkiem końcowym —
+odporniejsza forma podana przez Evaluatora), N3 (jeden z pinów, `B1e`, ma leniwy regex który
+przeskakuje przez instrukcje i nie łapie dopisania cichego zwolnienia AI z wymogu — do zawężenia),
+N4 (ważne dla NASTĘPNEGO tematu w kolejce: R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA będzie
+modyfikował dokładnie `foundingTerritoryOpts`, funkcję pilnowaną dziś tylko tekstowo — pamiętać o
+N3 przy tamtym dispatchu), N5 (AI traci ekspansję zamorską — potwierdzone, nietknięte, do
+świadomości przed playtestem), N6 (worktree rundy 1 ma równoległą, niescaloną kopię tych samych
+zmian w src — scalać wolno TYLKO jedną wersję, inaczej konflikt/podwójny plik testu).
+
+Dispatch runda 3, wąska: scal test T1/T2/T4/T5 z rundy 1 (kopiuj z niescalonego worktree
+`a58e4934721d28f29`) + sekcja B rundy 2 (z poprawkami N2/N3) w jeden plik.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 2: PASS-WITH-NOTES (1 BLOKUJĄCA, tylko test), runda 3 w toku (2026-08-09)
+
+**Kod gry jest poprawny i gotowy do scalenia** — Evaluator zrobił 9 własnych mutacji (2 ze
+zlecenia + 7 dodatkowych: obie ścieżki cudu, handel tech, chatka, koniec tury, delegacja gracz/AI,
+zamiana gałęzi ternary), wszystkie złapane. Potwierdzone: `tsc` NIE łapie tej klasy regresji (kod
+kompiluje się czysto nawet zmutowany) — bramka tekstowa jest uzasadniona merytorycznie.
+
+**E1 (BLOKUJĄCA, dotyczy WYŁĄCZNIE pliku testu, zero zmian w kodzie gry) — kruchość kotwic
+regexowych.** 8 z 11 sond na NIESZKODLIWE zmiany (zmiana nazwy zmiennej, usunięcie/zmiana
+komentarza, reformat wieloliniowy, cudzysłów zamiast apostrofu) fałszywie czerwieni bramkę.
+Najpoważniejsze: kotwiczenie na TREŚCI KOMENTARZA — a zasada #9 CLAUDE.md nakazuje komentarze
+dwujęzyczne PL+EN, czyli ta bramka pęknie przy realizowaniu INNEJ reguły projektu, jeśli ktoś
+kiedyś przetłumaczy te konkretne komentarze. Naprawa mechaniczna, dokładnie wskazana przez
+Evaluatora: przenieść kotwice z treści komentarzy/nazw zmiennych na strukturalne wzorce kodu
+(`researchStep\(\s*player\b` zamiast dosłownego literału, `case\s*['"]tech['"]\s*:` zamiast
+wymuszonych apostrofów, poszerzyć okna wycinania ciała funkcji z 500/600 znaków na ~2000 lub
+lepiej: zliczanie klamer zamiast okna bajtowego).
+
+Niepilne: N1 (komentarz w kodzie przesadza — „jedyne źródło prawdy" nieprawdziwe dla ścieżek
+inicjalizacyjnych, doprecyzować), N2 (asercja pilnuje ISTNIEJĄCYCH miejsc, nie „każdego przyszłego
+wywołania researchStep(player" — do rozważenia inwersji asercji), N3 (nowy test nie jest
+zarejestrowany w żadnym runnerze/liście bramek — dopisać przy scalaniu), N4 (B2/B3 potwierdzone
+nadal otwarte i słusznie poza zakresem, ta runda ich nie pogarsza).
+
+Dispatch runda 3, wąska: WYŁĄCZNIE plik testu, obowiązek powtórzenia wszystkich 9 mutacji
+merytorycznych (8/8+1 FAIL) i wszystkich 11 sond kruchości (11/11 PASS).
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — ODŁOŻONE na "krok 2", decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja:** „Na razie niech Agent tylko i wyłącznie uniemożliwi budowania miast w taki
+sposób w jaki budował do tej pory AI. Czyli zasady muszą być takie same jak dla gracza. I to jest
+pierwszy krok. A w drugim kroku wprowadzimy zasady budowania innym Agentem poprzez rozszerzenie
+własnego terytorium za pomocą Fortu lub posterunku."
+
+**Skutek:** turniej Q1/Q2/Q3 (Sędzia: rekomendacja Q1=B·Q2=B·Q3=A) NIE jest teraz rozstrzygany —
+odłożony jako „krok 2", bez ustalonej daty. **Krok 1** = `P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI=A`
+ma zostać wdrożony DOKŁADNIE jak pierwotnie zdecydowano — twardy `withinTerritory` dla AI
+identyczny jak dla gracza, BEZ żadnego złagodzenia przez fort/posterunek. To już jest w toku
+(runda 3, Operator naprawia regresję testu B2) — kontynuować bez zmian.
+
+**Odblokowanie wstrzymanej decyzji pobocznej:** usunięcie premii AI +15 pkt za zakładanie miast
+poza zasięgiem (`ai.ts:2694`) MA zostać wykonane (nie wstrzymywać) — skoro krok 2 (fort) jest
+odłożony, ta premia pozostaje sprzeczna z krokiem 1 i ma zniknąć zgodnie z pierwotnym zakresem
+`P-AI-ZAKLADANIE-MIAST=A`. To już jest częścią trwającej pracy nad tym tematem, bez zmian.
+
+Temat R-FORT-STRAZNICA pozostaje zarejestrowany, gotowa pełna specyfikacja turnieju czeka na
+wznowienie, gdy Maciej zdecyduje się przejść do „kroku 2".
+
+---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — ECHO C, decyzja Macieja + doprecyzowanie (2026-08-09)
+
+**Decyzja Macieja: C** (A: rozbudowa ekonomiczna + B: Port jako brama produkcji morskiej dla
+jednostek `Typ: Naval`), z zastrzeżeniem: „dostęp do wody może być też dostępem do rzeki, czyli
+Port może być zarówno nad morzem, jak i przy rzece."
+
+**Zgodność z istniejącym kodem:** bramka budowy samego budynku Portu już dziś używa
+`cityHasCoastOrRiverAccess` (potwierdzone przez Sędziego turnieju) — czyli rzeka JUŻ kwalifikuje
+do postawienia Portu. Doprecyzowanie Macieja dotyczy więc NOWEJ części (B): gdy dodamy wymóg
+Portu+dostępu do wody dla jednostek `Typ: Naval`, użyć TEJ SAMEJ definicji „dostęp do wody"
+(morze LUB rzeka), nie węższej „tylko morze" — żeby jednostka morska (Galera) mogła być budowana
+w mieście rzecznym z Portem, tak samo jak w mieście nadmorskim z Portem.
+
+**Otwarty, niedopowiedziany szczegół z pytania Sędziego (nie zgadywać, dopytać):** czy istniejące
+zapisy gry z Galerami już zbudowanymi w miastach BEZ dostępu do wody mają zostać („grandfather" —
+jednostki zostają, tylko NOWA produkcja jest blokowana) czy coś ostrzejszego. Pytanie zadane w
+wiadomości na czacie.
+
+---
+
+## R-EPOKA-BRAZU-WYMUSZONA-WOJNA — Evaluator RUNDA 2: PASS-WITH-NOTES (1 BLOKUJĄCA), runda 3 w toku (2026-08-09)
+
+Kod poprawny — B1, B3, B4, B5 zweryfikowane niezależnie (własny grep, własny roundtrip save/load
+16/16, własna weryfikacja symetrii sojuszu), zero fałszywych twierdzeń Operatora. B2 potwierdzone
+nietknięte (poza zakresem tej rundy).
+
+**B6a (BLOKUJĄCA) — bramka złapała USUNIĘCIE haka, ale nie złapała usunięcia tego, co hak ROBI.**
+Własna kampania 16 mutacji Evaluatora: 12/16 złapanych (w tym wszystkie 5 zadeklarowanych przez
+Operatora), ale 4 przeżyły, z czego 3 to realne dziury:
+- **M19** — usunięcie SAMEGO wywołania auto-pokoju z wnętrza haka (licznik nadal liczy, wojna
+  nigdy się nie kończy) — rdzeń całej funkcji znika, wszystkie bramki zielone. Dla AI↔AI = wojna
+  wieczna, dokładnie czego temat miał uniknąć.
+- **M7** — zamiana `diploPairKey(oldOwner,newOwner)` na prostą interpolację stringów bez
+  sortowania — licznik działa tylko gdy `oldOwner<newOwner`, po cichu gubi połowę zdobyczy.
+- **M12** — usunięcie sprzątania stanu w `finalizePeaceTreatyBetween` — pokój wynegocjowany
+  NORMALNIE (nie przez próg wymuszonej wojny) zostawia martwy wpis, napastnik trwale i cicho
+  wypada z cyklu (ta sama klasa co B4 z rundy 1).
+- M16 (utrata `lockTurnsOverride`, cooldown cicho spada z 20 na 10) — mniejszy, ale realny.
+
+Naprawa mechaniczna, w pełni określona: dopisać do istniejącej bramki `forced-war-bronze-main-guard-test.cjs`
+4 asercje regex (dokładna specyfikacja od Evaluatora): (1) hak zawiera wywołanie
+`finalizePeaceTreatyBetween(...)` z argumentem cooldownu (łapie M19+M16 jedną asercją); (2) hak
+wyszukuje przez `diploPairKey(oldOwner, newOwner)`, nie interpolację (M7); (3)
+`finalizePeaceTreatyBetween` zawiera blok sprzątający stan wymuszonej wojny (M12); (4) hak wywołuje
+`shouldEndBronzeForcedWarByCityCount(...)` przed pokojem.
+
+Niepilne: N10 (gracz przypadkiem trafia do `bronzeForceWarPendingOwners`, nigdy nie konsumowany —
+śmieć bez skutku), N11 (bardzo stare zapisy bez `meta.ownerEraByOwner` mogą jednorazowo uzbroić
+wymuszoną wojnę retroaktywnie), N12 (wybór „najbliższego sąsiada" liczony od pierwszego miasta w
+tablicy, nie najbliższej pary — deterministyczne, ale czasem geograficznie przypadkowe), N13
+(bramka tekstowa z natury krucha na reformat — świadomy koszt wzorca), N14 (`tools/*.cjs` przy
+braku esbuilda cicho kończą się exit 0 zamiast błędu — dotyczy całego katalogu, nie tego tematu).
+
+**Uwaga procesowa:** worktree dostarczony bez `node_modules`, bramki bez symlinka cicho dawały
+exit 0 (fałszywy zielony) — Evaluator to wykrył i naprawił przed audytem, liczby Operatora po
+naprawieniu symlinka odtworzyły się co do jednej.
+
+Dispatch runda 3, wąska: 4 asercje regex w istniejącym pliku bramki.
+
+---
+
+## R-FORT-STRAZNICA-ROZSZERZA-ZASIEG-ZAKLADANIA — ECHO Q1=B, Q2=B, Q3=A + doprecyzowanie, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: Q1=B, Q2=B, Q3=A** — dokładnie rekomendacja Sędziego turnieju, z doprecyzowaniami:
+
+**Q1=B doprecyzowanie:** „to nie może być teren, który jest ukryty w fog of war. Musi tam być
+jakaś jednostka nasza. I dopiero wtedy możemy budować fort. A po wybudowaniu fortu możemy już w
+dowolnym miejscu budować miasto w zasięgu fortu." — potwierdza wymóg własnej jednostki fizycznie
+obecnej na heksie w chwili budowy (Q1=B) + dodaje wymóg WIDOCZNOŚCI (heks nie może być w fog of
+war — de facto spełnione automatycznie, bo własna jednostka tam stojąca odsłania fog) + potwierdza
+że po zbudowaniu fortu miasto można założyć W DOWOLNYM miejscu w zasięgu fortu (promień 10), nie
+tylko na samym heksie fortu — zgodne z pierwotnym zamysłem (fort jako węzeł terytorium o promieniu,
+nie punktowe zezwolenie).
+
+**Q2=B potwierdzone bez zmian:** fort daje WYŁĄCZNIE prawo do założenia miasta w promieniu, nic
+więcej — granice się nie przesuwają, pola nie stają się nasze, obcy chodzą bez kary, mogą tam
+budować.
+
+**Q3=A doprecyzowanie:** „jednostki automatycznie są przeniesione na poza granice miasta innej
+cywilizacji, która przejęła fort." — odpowiada na otwarty szczegół z pytania Sędziego (dokąd
+wracają ewakuowane jednostki): NIE do najbliższego własnego miasta, NIE giną — automatycznie
+przenoszone na najbliższy heks POZA granicami miasta przejmującej cywilizacji (czyli tuż za
+krawędź jej nowego terytorium).
+
+**Status wdrożenia:** to jest treść „kroku 2" — zgodnie z wcześniejszą decyzją Macieja tego samego
+dnia, krok 2 NIE jest dispatchowany teraz, czeka na krok 1 (`P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI=A`,
+w trakcie rundy 3 Evaluatora). Decyzja Q1/Q2/Q3 jest w pełni zapisana i gotowa do dispatchu, gdy
+Maciej da sygnał do przejścia do kroku 2.
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — ECHO B (grandfather), decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: B** — reguła dotyczy wyłącznie startu NOWEJ produkcji, istniejące jednostki
+morskie w miastach bez dostępu do wody pozostają nietknięte (efektywnie tożsame z A, bez
+nazywania tego osobnym wyjątkiem — potwierdzone jako właściwe podejście).
+
+**Doprecyzowanie zasady B (brama produkcji morskiej):** „jedynie zasada taka, że galerię możemy
+budować tylko w tych miastach, w których możemy wybudować port, czyli trzeba mieć dostęp do rzeki
+lub morza." — WAŻNE uproszczenie względem pierwotnej opcji B z turnieju: warunek to WYŁĄCZNIE
+dostęp do wody (morze LUB rzeka), TAKI SAM jak wymóg budowy samego Portu — Galera NIE wymaga, żeby
+Port faktycznie był już zbudowany w tym mieście, wystarczy że miasto KWALIFIKUJE SIĘ do budowy
+Portu (ma dostęp do wody). To węższy, tańszy zakres niż „Port zbudowany + dostęp do wody" z
+pierwotnej opcji B Sędziego — dokładnie ta sama bramka terenowa (`cityHasCoastOrRiverAccess`),
+bez dodatkowego wymogu posiadania budynku.
+
+**Status:** wszystkie elementy R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (=C: ekonomia+brama produkcji
+morskiej WEDŁUG DOSTĘPU DO WODY [nie wymaga zbudowanego Portu], dostęp do wody = morze LUB rzeka,
+grandfather=B) są teraz w pełni zdecydowane. Maciej polecił (2026-08-09, ta sama tura): „wszystkie
+nowe tematy i decyzje ABC odpalaj nowych subagentów do działania" — dispatch NASTĘPUJE teraz.
+
+---
+
+## AUDYT KOMPLETNOŚCI + odczyt zaległych wyników (2026-08-09, po C-032 sprzątaniu dysku)
+
+C-032: przed nowym batchem sprawdzony `git worktree list` + `du -sh` — 18 worktree, ~14GB, dysk na
+9,8GB wolnego. Zidentyfikowano i usunięte 9 nieaktualnych/zastąpionych worktree (starsze rundy tych
+samych tematów, których finalna runda już istnieje osobno) — odzyskane ~7GB, teraz 17GB wolnego.
+
+**Luka #1 — R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 3** zarejestrowana jako „w toku" (wpis wyżej), ale
+subagent NIGDY realnie nie wystartował. Dispatch NASTĘPUJE teraz (patrz niżej).
+
+**Luka #2 — R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 3** (wąski test tekstowy dla `cityPanel.ts:1016`,
+zarejestrowana jako „w toku" wyżej) — subagent NIGDY realnie nie wystartował. Dispatch NASTĘPUJE
+teraz.
+
+**Odczytane zaległe wyniki (subagenci wykonali pracę, wynik nieprzetworzony do tej pory):**
+
+1. **R-EPOKA-CUD-WARUNEK-AWANSU runda 3 (Operator, `abd2a1f136bf908ec`)** — naprawiony WYŁĄCZNIE
+   plik testu (`era-cud-main-ts-integracja-test.cjs`), kod gry 1:1 odtworzony z potwierdzonej rundy
+   2/3 (zero zmian). Nowe kotwice: zliczanie klamer zamiast okna bajtowego, wzorzec strukturalny
+   `researchStep\(\s*player\b` zamiast literału, `case\s*['"]tech['"]` zamiast sztywnego
+   cudzysłowu. Weryfikacja własna Operatora: 9/9 mutacji szkodliwych złapane, 11/11 sond
+   niegroźnych (rename, reformat, usunięcie komentarzy, cudzysłów, niepowiązany kod) przechodzi.
+   Bramki: tsc 0, logic-test 213/213, era-cud-warunek-awansu-test 35/35, owner-epoch-test 13/13,
+   era-cud-main-ts-integracja-test 11/11. **Dispatch Evaluatora rundy 3 NASTĘPUJE teraz.**
+
+2. **P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI runda 3 — Evaluator (`aba5f772818d82056`):
+   WERDYKT PASS-WITH-NOTES, 0 blokujących.** Własny dowód tożsamości formuły
+   `isHomeDefenseThreatForCity` (1,32 mln porównań heks-po-heksie, 0 rozbieżności ze starym
+   helperem na 11 pozycjach miasta × 12 populacji × cała mapa). Wydajność: nowa formuła 2,3× szybsza
+   niż stary helper, +37% całkowitego czasu to efekt WEWNĘTRZNY decyzji ECHO A (AI maszeruje dalej
+   po przeadresowaniu jednostek), nie narzut detekcji. Próba mutacyjna 17/17: 12 zabitych, 5
+   przeżyło jako notatki niepilne do rejestru (M9 wybór „pierwszy w tablicy" zamiast „najbliższy"
+   nieochroniony, M11 brak ochrony `ruchLeft>0`, M12 brak ochrony `!isScoutUnit`, M15 wykrywanie
+   wielomiastowe nieochronione, M16 podwójna komenda dla jednostki nieochroniona). Bramki: tsc 0,
+   logic-test 213/213, ai-home-defense-vs-barbarians-test 38/38, ai-war-gate-test 24/24,
+   combat-test 6/6, ai-test 274/282 (8 awarii bajtowo identycznych z bazą, pre-istniejące).
+   Scalenie bezpieczne potwierdzone (`ai.ts` niezmieniony na `main` od bazy worktree).
+   Notatka N-A (dla Macieja, niepilne): brak limitu odległości obrońcy — garstka barbarzyńców 50
+   heksów od ofensywy potrafi ściągnąć całą jednostkę z powrotem (konsekwencja ECHO A + przydziału
+   1:1, do świadomości, nie blokuje). **TEMAT GOTOWY DO SCALENIA — dispatch merge NASTĘPUJE teraz**
+   (razem z R-CHATKA, patrz wyżej — już zlecone).
+
+3. **P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI runda 3 — Evaluator (`ae0138a167afaadce`):
+   WERDYKT PASS-WITH-NOTES, 1 BLOKUJĄCA (B3).** Kod gry (`ai.ts`+`main.ts`) potwierdzony poprawny
+   i gotowy — 3. runda nic w nim nie zmieniła, wszystkie mutacje kodu łapane (M1/M2/M4/N3 z
+   poprzedniej rundy własnoręcznie odtworzone i złapane). Scalenie sekcji testu A+B bez konfliktów,
+   27/27 potwierdzone. **B3 — scalenie zgubiło scenariusz parytetu „AI bez własnych miast zakłada
+   pierwsze miasto bez restrykcji terytorium"** (był w rundzie 1 jako T3, w rundzie 2 jako A4, zniknął
+   przy scalaniu do rundy 3 bo dispatch mówił dosłownie „T1/T2/T4/T5"). Mutacja E13 (usunięcie
+   warunku ucieczki dla AI bez miast) daje 27/27+13/13+213/213 wszystko zielone mimo całkowitego
+   paraliżu zakładania pierwszego miasta — realny brak pokrycia. Evaluator dostarczył gotowy,
+   dwustronnie zwalidowany patch (8 linii, dosłowna kopia z niescalonej rundy 1) do wklejenia przed
+   blokiem T4. Dodatkowo notatki niepilne: N2 (bramka `guardedCallRe` zbyt luźna na E1/E2/E3/E6,
+   Evaluator dał gotowe 2 linie naprawy, zalecenie: doklejyć przy temacie Fort/Strażnica, bo ten
+   dotknie `foundingTerytoryOpts`), N7 (E7 obce-terytorium niezłapane, do osobnego scenariusza),
+   N9 (test niezarejestrowany w liście bramek CLAUDE.md — dopisać przy scalaniu), N10 (usunąć po
+   scaleniu 2 nieaktualne worktree rundy 1/2 — WYKONANE w ramach C-032 sprzątania wyżej).
+   **Dispatch rundy 4 (wąski, mechaniczny: wklejenie gotowego patcha T3) NASTĘPUJE teraz.**
+
+4. **P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO runda 4 (Operator, `ac2a4b9cdd827f97e`)** — BB1 (bramka
+   main.ts dla `onSeparate`) naprawiona i potwierdzona mutacyjnie (3 warianty, wszystkie złapane),
+   17/17. **BB2 (utrata puli ruchu przy współdzieleniu heksu) — Operator TYM RAZEM uczciwie
+   udokumentował, że pełnej naprawy NIE zrobił**, zamiast fałszywie twierdzić o częściowej ochronie
+   (czego dotyczył FAIL rundy 3). Zaimplementował wąską, bezpieczną łatkę (`skipStackRuchSync`
+   chroniący JEDNO bezpośrednio następujące wywołanie) i wprost nazwał że pełna naprawa wymaga
+   nowej tożsamości stosu niezależnej od heksu (`stackGroupId`) — duży refaktor ~10 funkcji w
+   wielu miejscach `main.ts`, który częściowo odtwarzałby odrzuconą wcześniej opcję B tego samego
+   tematu (ECHO A: „bez funkcji B, żadnego rozpraszania"). Operator zgłasza to jako NOWE pytanie
+   ABC (A=zostać jak jest, B=pełny refaktor stackGroupId, C=wąska naprawa tylko dla powrotu na
+   zajęty origin) zamiast decydować sam — poprawne zachowanie zgodne z §0b. Bramki: tsc 0,
+   logic-test 213/213, army-merge-separate-return-test 16/16, army-merge-bounce-test 4/4,
+   army-merge-dismiss-bounce-test 16/16, army-stack-ruch-test 5/5,
+   army-merge-separate-return-mainguard-test (BB1) 17/17, plus bez regresji: combat-test 6/6,
+   tech-tree-test 19/19, research-test 33/33, unit-replace-test 13/13,
+   army-merge-colocated-test 4/4. **Dispatch Evaluatora rundy 4 NASTĘPUJE teraz** — pytanie ABC o
+   BB2 (A/B/C) do Macieja dopiero PO werdykcie Evaluatora (czy uczciwość dokumentacji tym razem
+   się broni), żeby nie zadawać pytania, które i tak wróci z Evaluatora ze zmianami.
+
+---
+**⛔ SPROSTOWANIE (Operator runda 5, 2026-08-09) — akapit „P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO runda 4"
+POWTARZA twierdzenie, że pełny refaktor `stackGroupId` „częściowo odtwarzałby odrzuconą wcześniej
+opcję B tego samego tematu (ECHO A: „bez funkcji B, żadnego rozpraszania")". To twierdzenie Evaluator
+RUNDA 3 (wpis „P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 3: FAIL (dokumentacja nieprawdziwa)")
+już WPROST OBALIŁ jako nadinterpretację, sekcja „Korekta uzasadnienia ABC Operatora": ECHO A odpowiadało
+na PYTANIE O INNĄ RZECZ — czy budować „dwie niezależne, wybieralne armie na jednym heksie" (pełna funkcja
+produktowa z UI/AI/save). To NIE to samo co „różne pule ruchu w obrębie jednego heksu" — par. 6b w
+kodzie to komentarz dokumentacyjny, nie egzekwowany kontrakt; silnik już dziś rutynowo trzyma 2+
+niepołączone armie na jednym heksie (stąd w ogóle istnieje prompt merge). Realna naprawa (`stackGroupId`)
+WCIĄŻ wymaga ABC — ale jako NOWA decyzja o obserwowalnej zmianie zasad (gracz zobaczy dwie armie o
+różnym ruchu na jednym polu), NIE jako coś zabronione wcześniejszą decyzją. Evaluator RUNDA 4 odnotował,
+że raport rundy 4 POWTÓRZYŁ ten sam błąd bez korekty mimo że werdykt rundy 3 był już w rejestrze —
+to jest drugie niezależne miejsce (obok samego `skipStackRuchSync`), gdzie ta sama runda naruszyła §0b.
+Akapit oryginalny zostaje NIETKNIĘTY (append-only, dowód historii) — to sprostowanie jest dopiskiem,
+nie edycją.**
+---
+
+Poza sprostowaniem dokumentacji: Operator runda 5 usunął `skipStackRuchSync` W CAŁOŚCI z kodu (parametr,
+komentarz, warunek, oba wywołania) — patrz raport rundy 5 do Evaluatora w tej samej turze.
+
+5. **R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA runda 2 (Operator, `af8e111e57660342d`)** — pop-up
+   podsumowania pary odtworzony od zera z 3 poprawkami blokującymi rundy 1: B1 (barbarzyńcy
+   wykluczeni przez `isBarbarian()`, analogicznie do precedensu C-BARB-Q1/Q2), B2 (mgła wojny —
+   `isVisiblePartner` jako parametr testowalny, gracz [id=0] pokazywany z etykietą „Ty" bo pop-up
+   dotyczy konkretnie oglądanej cywilizacji), B3 (sortowanie chronione jsdom-owym testem
+   renderującym prawdziwy DOM, dowód mutacyjny: usunięcie sortu → 19/1 fail). N2 (zamykanie
+   pop-upu przy otwarciu audiencji) też zrobione. Bramki: tsc 0, logic-test 213/213,
+   diplomacy-lista-podglad-przed-wizyta-test 29/29, diplomacy-treaties-test 17/17,
+   diplomacy-display-test 35/35. **Dispatch Evaluatora rundy 2 NASTĘPUJE teraz.**
+
+---
+
+## KONTROLA KOMPLETNOŚCI wg CLAUDE.md §0c — audyt „STATUS: OTWARTE" (2026-08-09, na żądanie Macieja)
+
+`grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` → 24 trafienia. Plik jest append-only:
+nagłówek zachowuje status z MOMENTU zgłoszenia, prawdziwy aktualny stan trzeba sprawdzić po dalszych
+wpisach pod tym samym tytułem. Zweryfikowane każde z 24: 19 ma udokumentowany powód odłożenia
+(niepilne/pre-istniejące/WSTRZYMANE na prośbę Macieja/czeka na odpowiedź) LUB jest już faktycznie
+zamknięte dalej w pliku (nagłówek po prostu nieaktualny — np. R-WYDARZENIA-FILTR-KATEGORII SCALONE
+`2984b707`, R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE SCALONE `8692b61b`, P-TRIUMF-ZJEDNOCZENIE-GRECJI
+SCALONE `b057d248`, R-MERGE-MAIN-RYTM-Q1 odpowiedziane i wdrożone jako CLAUDE.md §4a). **2 realne
+luki znalezione:**
+
+**Luka #3 — R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY.** Trzy rundy Operator→Evaluator już przeszły
+(worktree `agent-a67d5e9f736e1d984` runda 1-2, `agent-aaf9af7386d8ca891` runda 3: naprawa N6/N7/N8 —
+asercje AST wymuszające dokładnie 2 argumenty `buildChipDeltaStockHtml(civRate, civStock)`, spójny
+prefiks obiektu bazowego 7./8. argumentu, 7. argument kończący się na `.small`; dowód mutacyjny:
+wszystkie 3 mutacje drugiej rundy Evaluatora czerwienieją, 42/42 na czystym kodzie). Ostatni wpis:
+„czeka na finalną weryfikację Evaluatora" — nikt jej nie zrobił, żaden worktree już nie istnieje na
+dysku (posprzątany wcześniej, transkrypt agenta zachowany). Dispatch: świeży Evaluator odtwarza kod
+1:1 wg opisu w rejestrze (jak przy R-EPOKA-CUD rundzie 3) i wydaje finalny werdykt.
+
+**Luka #4 — P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE.** Realna, osiągalna w grze nieszczelność znaleziona
+przez Evaluatora przy okazji `R-DYP-STOL-A-KOREKTA`: kontroferta AI może wstrzyknąć złoto-słodzik do
+koszyka traktatów objętych rozłączeniem (nap/sojusz/granice/wasal/pokój) tylnymi drzwiami — gracz
+inicjujący ma czysty formularz (0 pól), ale „Edytuj propozycję na stole" dla kontroferty AI otwiera
+formularz z już wypełnionym koszykiem, bez UI do podglądu/edycji/usunięcia tych pozycji. Nigdy nie
+przedstawione Maciejowi jako pytanie ABC.
+
+Dispatch Luki #3 następuje teraz. Luka #4 wymaga decyzji Macieja — pytanie ABC do zadania w tej
+samej turze.
+
+Dodatkowo: **P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI runda 4 (Operator)** dostarczona —
+wklejony gotowy patch T3 Evaluatora, 28/28, dowód mutacyjny potwierdzony. Dispatch finalnego
+Evaluatora rundy 4 następuje teraz.
+
+---
+
+## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE — ECHO A, decyzja Macieja (2026-08-09)
+
+**Decyzja Macieja: A** — sweetener AI zostaje (AI zachowuje narzędzie negocjacyjne złota-słodzika
+w kontrofertach traktatowych), ale dodajemy UI do podglądu/edycji/usunięcia pozycji koszyka w
+formularzu „Edytuj propozycję na stole" dla kontroferty AI — symetria informacyjna zamiast
+symetrii funkcjonalnej. Dispatch NASTĘPUJE teraz.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — runda 3 dostarczona (Operator), czeka na Evaluatora (2026-08-09)
+
+Worktree `/tmp/wt-spichlerz-r3` (poza standardowym `.claude/worktrees/`, świeży detached checkout
+z HEAD `b0825d5e`). Nowy test `spichlerz-cap-citypanel-wiring-test.cjs` chroni `cityPanel.ts:1040`
+(`maSpichlerz = cityHasSpichlerzBuilding(built)`), 8/8, dowód mutacyjny potwierdzony (cofnięcie do
+`built.includes('spichlerz')` daje 6/8 FAIL, przywrócenie 8/8 PASS). Bramki: tsc 0, logic-test
+213/213, akwedukt-popcap-test 5/5, population-growth-v85-test 48/50 (2 pre-istniejące porażki
+potwierdzone identyczne na czystym main bez patcha), growthmult-compound-test 17/24 (7 pre-istniejących
+porażek potwierdzone identyczne na czystym main). Dispatch Evaluatora rundy 3 NASTĘPUJE teraz.
+
+---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — Operator dostarczył (2026-08-09), czeka na Evaluatora
+
+Worktree `agent-a832dc5c0cab4943e`. Część B (brama produkcji morskiej, jednostki `Typ='Naval'`):
+gate w `production.ts` (`availableProduction` + `availableReplacementsFor`), naprawiona przy okazji
+luka (`replaceAvailabilityCtxForCity`/`EmpireWide` w `main.ts` w ogóle nie przekazywały
+`cityHasCoastOrRiver` do kontekstu „Zastąp"), osobny gate w `purchaseRecruitmentUnit` (zakup za
+złoto — ścieżka NIEOBJĘTA wspólnym mechanizmem, Operator sam to znalazł i domknął). Parytet AI
+potwierdzony strukturalnie (AI woła tę samą `availableProduction`, wpięcie `cityHasCoastOrRiver`
+istniało od TEMAT 8 Q2). Grandfather (decyzja B) potwierdzony strukturalnie — `production.ts` jest
+pure-logic, fizycznie nie może usuwać/przenosić jednostek. Część A (ekonomia): nowy
+`computeSeaTradeRouteCountByCity`/`PORT_SEA_TRADE_BONUS_PIENIADZ=1`/turę za KAŻDY aktywny szlak
+morski ponad pierwszy, Port-gated naturalnie przez wymóg Portu w obu miastach dla trasy morskiej.
+Test `naval-water-access-gate-test.cjs` 27/27. Bramki: tsc 0, logic-test 213/213, unit-replace
+13/13, deposit-building-gate 47/47, ai-production-priority 9/9, trade-routes 51/51,
+trade-routes-income 52/53 (1 pre-istniejąca porażka potwierdzona identyczna na czystym `main`,
+niezwiązana ze zmianą — test używa wyłącznie `medium:'lad'`). `map-gen-regression-test` był w
+trakcie (~15+ min, wolna bramka) w momencie zamknięcia raportu — strukturalnie niezależny (dotyka
+tylko `src/map/**`/`src/types/hex`, zero wspólnych plików ze zmianą), zerowe ryzyko regresji.
+
+Dispatch Evaluatora NASTĘPUJE teraz.
+
+---
+
+## P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI — Evaluator RUNDA 4 (finalna): PASS-WITH-NOTES, 0 blokujących, GOTOWE DO SCALENIA (2026-08-09)
+
+T3 zweryfikowany niezależnie (dowód mutacyjny powtórzony + 3 własne mutacje: usunięcie całego
+filtru terytorium T3 poprawnie PASS/nie nadgorliwy, `myCities`→`allCities` przeżywa i potwierdza
+znane N7, usunięcie `foundingTerritoryOpts(ownerId)` na SCALONYM main.ts nadal łapane). Scalenie
+praktycznie przetestowane (jednorazowy worktree na aktualnym HEAD `91ea0d4a`, pełne bramki zielone
+tam). 28/28, logic-test 213/213, tsc 0, ai-colonization-pop-test 13/13. Do doklejenia przy scaleniu
+(kosmetyka, 2 linie): N-DOC (nagłówek testu fałszywie twierdzi że T3 pominięto), N9 (rejestracja
+bramki w liście CLAUDE.md). Dispatch scalenia NASTĘPUJE teraz.
+
+---
+
+## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE — decyzja Macieja bez zestawienia, dispatch (2026-08-09)
+
+**⛔ Luka procesowa (do rejestru, uczciwie):** ten temat był zarejestrowany jako „czeka na
+odpowiedź Macieja" po dostarczeniu zestawienia — ale zestawienie NIGDY nie zostało przygotowane
+ani pokazane. Błędna klasyfikacja przy audycie §0c (potraktowany jak „odłożony, czeka na niego",
+podczas gdy czekał na PRACĘ orkiestratora). Maciej podał decyzję bezpośrednio, znając już liczby
+z gry, więc zestawienie stało się zbędne — ale luka w procesie zostaje odnotowana.
+
+**Decyzja Macieja:** `tartak.surowiec_ilosc_tura` (Tartak, drewno) 10 → **4**/turę;
+`glinianka.surowiec_ilosc_tura` (Glinianka, glina) 15 → **4**/turę. Wyrównanie do stawki
+`kamieniolom.surowiec_ilosc_tura` = 4/turę (bez zmian). Plik: `gra/data/terrain-improvements.json`.
+
+Dispatch NASTĘPUJE teraz.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — Evaluator RUNDA 2: FAIL, 2 blokujące (2026-08-09)
+
+Merytoryka poprawna (B1/B2/B3/N2 rundy 1 potwierdzone niezależnie mutacyjnie), ale bramka nadal
+nie chroni **istnienia samego pop-upu** (BB1 — cofnięcie wpięcia `onSelectEntry` do starego
+`openDiplomacyAudience` daje 29/29 zielono, dokładnie bug zgłoszony przez Macieja) ani **dopływu
+flagi `isCityState`** z silnika (BB2 — usunięcie `isCityState: rel.isCityState,` w
+`diploListEntryFromRelation` daje 29/29 zielono, sortowanie degeneruje się do alfabetycznego).
+Dodatkowo **BB3** (nowe, nieblokujące dla wymogu ABC ale realne): `getData()===null` zostawia
+nieusuwalny czarny overlay + zombie-wpis na stosie Escape (1-liniowa naprawa). Trzy świadome
+decyzje projektowe Operatora (barbarzyńcy/gracz-w-mgle/sortowanie) potwierdzone jako logicznie
+uzasadnione, NIE obejścia. Bramki: tsc 0, logic-test 213/213, diplomacy-lista-podglad 29/29,
+diplomacy-treaties 17/17, diplomacy-display 35/35. Scalenie czyste (`git apply --check -3` OK na
+3 plikach). Dispatch runda 3, wąska: BB1+BB2 (asercje bramki, bez zmian kodu) + BB3 (1 linia +
+asercja) + przy okazji N1/N4 (tanie).
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 4: FAIL (drugie naruszenie §0b z rzędu), 2026-08-09
+
+**⛔ Powtórzone naruszenie uczciwości dokumentacji.** `skipStackRuchSync` nie zostało usunięte
+(zgodnie z jednoznacznym warunkiem rundy 3: „placebo nie wchodzi do repo, chyba że ktoś udowodni
+testem że coś chroni") — zostało PRZENIESIONE z niezmienioną, fałszywą etykietą „chroni TYLKO ten
+jeden, natychmiastowy odczyt". Evaluator prześledził PEŁNY, bezwarunkowy łańcuch wywołań
+(`refreshD1bHud()→...→syncStackRuchLeft(stack)` bezwarunkowe, 24 linii dalej w TEJ SAMEJ funkcji)
+i dowiódł mutacyjnie (E10): flaga chroni ZERO odczytów, nie jeden. Dodatkowo raport POWTÓRZYŁ
+fałszywe twierdzenie o kolizji z ECHO A, które Evaluator rundy 3 już wprost obalił na piśmie —
+nie skorygowane mimo że orkiestrator miał ten werdykt w rejestrze.
+
+**BB1 (2 nowe blokujące, bramka main.ts):** E5 — 5. argument `isHexPassableForUnit` opcjonalny,
+regex bramki dopasowuje przy 4 argumentach → połowa naprawy B3 (teleport na nieprzejezdny origin)
+NIECHRONIONA. E7 — `deductedRuchAnim = moveCost` w miejscu OBLICZENIA (zamiast `pulaPrzed−pulaPo`)
+przywraca DOKŁADNIE exploit B1 z rundy 1 przy 17/17 zielono. K-5 (asercja `deductCount===4`)
+potwierdzona jako fałszywie krucha — dowolna niezwiązana funkcja odejmująca ruch gdziekolwiek w
+main.ts wysadza bramkę.
+
+**Ocena propozycji ABC (niekompletna):** zgubione opcje D/E, które Evaluator rundy 3 dostarczył
+na piśmie (D = origin z niższą pulą rezydenta traktować jak „brak bezpiecznego origin"; E = sync
+heksu do wartości ZWRÓCONEJ armii). C źle scharakteryzowane (tożsame ze status quo A). B ma
+sfalsyfikowany „Przeciw" (kolizja z ECHO A nieprawdziwa). Brak ujawnienia skutku ubocznego: powrót
+armii o WYŻSZEJ puli na heks z rezydentem OBNIŻA pulę tej postronnej jednostki — nowy efekt
+niezależny od wybranej opcji.
+
+Bramki (Evaluator, niezależnie): tsc 0, logic-test 213/213, separate-return 16/16, bounce 4/4,
+dismiss-bounce 16/16, stack-ruch 5/5, mainguard 17/17, combat OK, colocated 4/4. Scalenie czyste
+(`git apply --check -3` OK, `armyMerge.ts` bez zmian od bazy).
+
+**Dispatch runda 5, wąska, mechaniczna (BEZ ABC w tej rundzie — kod najpierw, pytanie osobno):**
+(1) usunąć `skipStackRuchSync` W CAŁOŚCI (parametr, komentarz main.ts:4506-4531, warunek w 4542,
+argument w obu wywołaniach `onSeparate`); (2) wykreślić z raportu/rejestru fałszywe twierdzenie o
+kolizji z ECHO A; (3) domknąć bramkę E5 (asercja 5-argumentowego wywołania z
+`isHexPassableForUnit`) i E7 (asercja że `deductedRuch*` liczone jako `pulaPrzed−stackRuchLeft`,
+nie `moveCost`/literał); (4) zastąpić `deductCount===4` asercją ograniczoną do wyciętych ciał
+funkcji (K-5). Pytanie ABC (5 opcji A-E + ujawniony skutek uboczny) do Macieja NASTĘPUJE OSOBNO,
+po tej rundzie — decyzja architektoniczna nie powinna czekać na mechaniczną naprawę bramki.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — runda 4 dostarczona (Operator), czeka na Evaluatora (2026-08-09)
+
+Worktree `/tmp/wt-spichlerz-r3` (runda 4 dopisana do istniejącego worktree rund 1-3). Domknięcie
+noty blokującej B4 (Evaluator runda 3): dodane 2 asercje (Wymóg 4/5) wymuszające dokładne wywołania
+`cityPopulationCap(maAkwedukt, maSpichlerz, params)` (popCapAktualny) i
+`cityPopulationCap(false, maSpichlerz, params)` (popCapBezAkweduktu) w `computeView` (`cityPanel.ts`).
+Dowód mutacyjny: E (maSpichlerz→false) FAIL, F (powrót do martwego `params.akweduktProgLudnosci`)
+FAIL, G (zamiana argumentów) FAIL — wszystkie 3 mutacje z werdyktu Evaluatora złapane, 12/12 po
+przywróceniu. Przy okazji (tanie, N-1 rundy 3): `akwedukt-popcap-test.cjs` dostał
+`spichlerzProgLudnosci` w params + 2 przypadki `maSpichlerz: true` — 7/7. Bramki: tsc 0, logic-test
+213/213, spichlerz-cap-citypanel-wiring-test 12/12, population-growth-v85-test 48/50 (2
+pre-istniejące potwierdzone), growthmult-compound-test 17/24 (7 pre-istniejące potwierdzone). ZERO
+zmian w kodzie produkcyjnym tej rundy (wyłącznie 2 pliki testów). Dispatch Evaluatora rundy 4
+(finalnej) NASTĘPUJE teraz.
+
+---
+
+## INCYDENT — usunięcie niescommitowanej pracy (R-BUDYNEK-PORTOWY) przy sprzątaniu dysku (2026-08-09/10)
+
+**Co się stało:** Runda 1 (+część rundy 2) R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE była w pełni
+zaimplementowana i oceniona przez Evaluatora (PASS-WITH-NOTES), ale NIGDY nie scalona do gałęzi
+(brak dispatchu agenta scalającego — luka procesowa sama w sobie, patrz niżej). Podczas sprzątania
+worktree po poleceniu „wyczyść przestrzenie dyskowe" orkiestrator uruchomił
+`git worktree remove --force` na worktree `agent-a832dc5c0cab4943e` **bez sprawdzenia `git status`
+w tym konkretnym katalogu** — złamanie zasady, którą sam stosował przy innych worktree tej samej
+sesji (zawsze commit+push przed usunięciem). Skutek: ok. 130 wywołań narzędzi Operatora + pełna
+weryfikacja Evaluatora (~90 wywołań) fizycznie usunięte z dysku.
+
+**Odzyskanie (częściowe, w toku):** `main.ts` i `trade-routes.ts` odzyskane z osieroconych obiektów
+gita (`git fsck --unreachable`, były `git add`-owane w nieznanym momencie przed usunięciem —
+przypadkowe szczęście, nie systemowe zabezpieczenie). `production.ts` i plik testu NIE mają śladu
+w gicie — odtwarzane od zera wg opisu z raportów agentów sprzed incydentu (dispatch w toku,
+`a9d473aa1495f39c6`).
+
+**Przyczyna źródłowa:** brak reguły playbooka wymuszającej scalenie (lub przynajmniej push na
+osobną gałąź `zapas/<nazwa>`, C-014 już to przewiduje ale NIE była stosowana konsekwentnie) tematu
+NATYCHMIAST po PASS-WITH-NOTES Evaluatora, zanim rozpocznie się kolejna runda na tym samym worktree
+lub sprzątanie. C-032 (sprzątaj dysk PRZED każdą partią Operatorów) nie ma odpowiednika „PRZED
+usunięciem KAŻDEGO pojedynczego worktree sprawdź czy jego praca jest scalona/zapchnięta" — luka,
+do naprawienia w playbooku (patrz sekcja niżej z propozycjami reguł).
+
+---
+
+## AUDYT HISTORYCZNY „zapomniane tematy" — wynik zbiorczy 3 równoległych agentów (2026-08-09/10)
+
+Na polecenie Macieja („ile takich zapomnianych tematów mamy w 260 falach") — trzy niezależne agenty
+przeczesały całą historię projektu: `PYTANIA-OTWARTE.md` (6954 linii), `REJESTR-PROSB-I-ZADAN.md`
+(2309 linii), `KANAL-PRACA.md` (6520 linii, 660× „CZEKAM-NA:") + `WERSJE.md` + `STAN-PRACY-HANDOFF.md`.
+
+**Wynik policzony:**
+- `PYTANIA-OTWARTE.md`: **7 potwierdzonych** zapomnianych tematów (1 już znany Maciejowi —
+  drewno/glina — + 6 nowych, WSZYSTKIE z jednej sesji generatora map 2026-08-02/FALA ~190-195) +
+  6 dwuznacznych do osądu.
+- `REJESTR-PROSB-I-ZADAN.md`: **0 zapomnianych** — 8 pozycji wyglądały podejrzanie, wszystkie
+  zweryfikowane jako faktycznie dostarczone (tylko status w pliku nieaktualny — inny, ale realny
+  problem: rejestr kłamie o stanie, mimo że praca się znalazła).
+- `KANAL-PRACA.md`/`WERSJE.md`/handoff: **1 potwierdzony** (`R-DESIGN-PANEL-MIASTA-V2-Q1` — czeka
+  na dostawę od człowieka-Designera od 2026-08-06, nikt nie przypomniał od 4+ dni) + 1 nieaktualny
+  plik-drogowskaz (`STAN-PRACY-HANDOFF.md` §5 nieaktualizowane od 2026-08-06 mimo trwającej pracy
+  do FALA 264).
+
+**RAZEM: 8 potwierdzonych zapomnianych tematów** (1 znany + 6 mapgen + 1 design-handoff), plus
+2 poważne dodatkowe znaleziska (0 utraconych zleceń w REJESTR-PROSB, ale nieaktualne statusy tam;
+STAN-PRACY-HANDOFF §5 martwy od 4 dni).
+
+### Lista 6 tematów mapgen do dispatchu (2026-08-02, sesja generatora map — WSZYSTKIE wymagają
+NAJPIERW sprawdzenia aktualności, bo generator mapy miał od tamtej pory istotne przebudowy
+[Pangea-obrys, coast-buffer, C-MAPA-Q1=B i inne] — mogły się same zdezaktualizować lub zostać
+przypadkiem naprawione przy okazji):
+
+1. **AC-RZEKI-BEZ-LIMITERA** — mandat Macieja: „nie powinno być żadnego limitera ilości rzek...
+   powinny siewić tak długo jak są w stanie, nie kończyć się po wyznaczonym czasie/długości."
+2. **AC-RZEKI-PER-MASA** — każda wyspa/masa lądu ma generować rzeki jak kontynent.
+3. **BUG-OBWARZANEK-20PCT** — pierścień morza utrzymuje się mimo 20% udziału lądu.
+4. **BUG-ZIEMIA-SCALE** — przy większych rozmiarach mapy ilość lądu zostaje „ta sama", rośnie
+   tylko woda.
+5. **PERF-SUPER-HUGE-PANGEA-80** — generacja mapy Super Huge/Pangea/80% lądu trwała ~14,6 min.
+6. **BUG-SCENA-PERF-FALA138** — budowanie sceny bardzo długo (~kilkanaście minut), powiązane z
+   `R-SCENA-PERF-FALA138` w rejestrze.
+
+Dispatch (Explore najpierw — sprawdzić aktualność, potem Operator jeśli nadal aktualne) NASTĘPUJE
+teraz, każdy osobnym agentem.
+
+### R-DESIGN-PANEL-MIASTA-V2-Q1
+Blokada zewnętrzna (czeka na człowieka-Designera, nie na kod) — nie nadaje się do dispatchu
+subagenta kodującego. Do przypomnienia Maciejowi jako wciąż otwarte, nie do cichego domknięcia.
+
+---
+
+## INCYDENT #2 — usunięcie niescommitowanej pracy R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09/10)
+
+**Ten sam błąd co incydent #1 (R-BUDYNEK-PORTOWY), w TEJ SAMEJ partii sprzątania dysku.** Worktree
+`agent-abd2a1f136bf908ec` (runda 3: naprawiony plik testu, kod gry potwierdzony poprawny przez
+Evaluatora rundy 2, ALE nigdy nie scalony — Evaluator rundy 3 nigdy faktycznie nie został odpalony,
+mimo wpisu w rejestrze sugerującego że tak) został usunięty `git worktree remove --force` w tej
+samej partii co worktree Portu, bez sprawdzenia `git status`. Runda 4 (dispatch mylnie zakładający
+istnienie werdyktu Evaluatora rundy 3, którego NIGDY nie było — luka wykryta i uczciwie zgłoszona
+przez Operatora rundy 4) zdążyła odczytać **pełny, wierny** `owner-epoch.ts` przez grep zanim
+worktree zniknął, ale NIE zdążyła odzyskać `main.ts` (3 bloki integracji) ani obu plików testów —
+te zostały **zrekonstruowane od zera** (nie odzyskane), zgodnie z udokumentowanym zamysłem z
+rejestru, z pełną, niezależną kampanią mutacyjną (11/11 złapanych, 11/11 sond bezpiecznych).
+
+**Różnica względem Portu:** brak odzyskanych obiektów gita dla tego tematu (sprawdzone —
+`owner-epoch.ts` odtworzony z odczytu, nie z blobu). Test `era-cud-warunek-awansu-test.cjs` ma dziś
+**33 asercje**, oryginalny (bezpowrotnie utracony) miał 35 — Operator jawnie to przyznaje, nie
+udaje identyczności.
+
+**Traktowanie:** to jest de facto ŚWIEŻA implementacja (nie mechaniczne odtworzenie ocenionego
+kodu), wymaga PEŁNEJ, nieskróconej rundy Evaluatora — zgodnie z rekomendacją samego Operatora.
+Dispatch NASTĘPUJE teraz.
+
+**Do playbooka:** to DRUGI potwierdzony przypadek tej samej klasy błędu w jednej sesji — mocny
+dowód, że potrzebna jest twarda, mechaniczna reguła (nie tylko przypomnienie w prompcie), patrz
+sekcja z nowymi regułami AutoBot niżej w tym pliku (do przygotowania).
+
+---
+
+## AC-RZEKI-BEZ-LIMITERA i AC-RZEKI-PER-MASA — WDROŻONE, status skorygowany (2026-08-09/10)
+
+Oba tematy z audytu „zapomnianych" okazały się **fałszywym alarmem co do treści** (kod naprawiony
+tego samego wieczoru, 2026-08-02, commit `6f96f08`, FALA 199-200, ROBOCZA `26b05753`), prawdziwym
+alarmem co do **procesu** (status w tym pliku nigdy nie przełączony na WDROŻONE mimo jednoznacznej
+dokumentacji w `WERSJE.md`/`docs/MACIEJ-GOTOWE.md`). Potwierdzone dwoma niezależnymi Explore
+(analiza statyczna + uruchomienie `pangea-river-interior-test.cjs`, 5/5 seedów PASS, interiorShare
+19-35%). Dispatch napraw NIE jest potrzebny — status koryguję na WDROŻONE.
+
+Dwa drobne follow-upy (dług techniczny, NIE nowe ACs, niepilne): (1) `feederPasses`/`topUpPasses`
+dla dopływów/short rivers mają twardy sufit rund, mocniej przycięty na dużych mapach/Pangei —
+teoretycznie mogłyby zatrzymać dosiewanie zanim wyczerpią się kandydatury; (2) brak testu
+regresyjnego pokrycia rzek dla małych wysp 5-79 hex (istniejące testy filtrują `mass.length>=80`).
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator RUNDA 4 (finalna): PASS-WITH-NOTES, 0 blokujących, GOTOWE DO SCALENIA (2026-08-09/10)
+
+Wszystkie mutacje E/F/G złapane niezależnie + 10/14 własnych dodatkowych mutacji Evaluatora
+złapanych (4 przeżyły — T/V/W/X, wszystkie POZA computeView, dotyczą literału zwracanego obiektu i
+tekstu renderu chipu/karty — nota N1 do rejestru, niepilne, kod merytorycznie poprawny). Własny
+dowód behawioralny drabinki 5/8/12 (16/16, w tym zamrożenie zamiast ścinania przy przekroczeniu
+capu). Bramki na SCALONYM drzewie (aktualny HEAD): tsc 0, logic-test 213/213, akwedukt-popcap 7/7,
+population-growth-v85 48/50 (2 pre-istniejące potwierdzone bajtowo), growthmult-compound 17/24 (7
+pre-istniejące potwierdzone), spichlerz-cap-citypanel-wiring 12/12. Parytet gracz/AI potwierdzony
+strukturalnie (ten sam kanał `builtIds` co już sprawdzony `maAkwedukt`). Scalenie praktycznie
+przetestowane (zero dryfu 10 plików między bazą a HEAD).
+
+Notatki niepilne do rejestru (nie blokują): N1 (chip/karta renderu tekstu nie ma pokrycia bramki —
+3 tanie asercje do dołożenia kiedyś), N3 (kanon `B-popcap-akwedukt-audit.md` aktywnie zaprzecza
+dzisiejszemu capowi 12 zamiast 15), N4 (martwy `ownerHasSpichlerz()`), N8 (panel Excel niedogoniony
+JSON→Excel).
+
+Dispatch scalenia NASTĘPUJE teraz.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — Evaluator RUNDA 3: PASS-WITH-NOTES, CAŁY TEMAT (rundy 1-3) GOTOWY DO SCALENIA (2026-08-09/10)
+
+Wszystkie 3 noty blokujące rundy 2 (BB1/BB2/BB3) zamknięte i niezależnie zweryfikowane, BB3
+dodatkowo dowiedziona EMPIRYCZNIE (harness jsdom renderujący realny pop-up, nie tylko tekst).
+N4 zamknięte. Trzy decyzje projektowe (barbarzyńcy wykluczeni, gracz pokazywany mimo mgły wojny,
+sortowanie) stoją niezmienione.
+
+**Warunek scalenia (2 linie, wyłącznie plik testu, do dołożenia RAZEM ze scaleniem):** N1
+z rundy 3 było fałszywym twierdzeniem — asercje 6j/6k szukają literałów `'sojusz'`/`'handel'`
+GDZIEKOLWIEK w ciele funkcji, więc zamiana miejscami (sojusznicy pod „Handluje z", partnerzy
+handlowi pod „W sojuszu z") przechodzi 46/46 zielono. Kod produkcyjny jest POPRAWNY, wadliwa jest
+wyłącznie asercja. Poprawka zwalidowana przez Evaluatora:
+```js
+/const alliances = dealPartnerIdsForOwner\(\s*activeDeals\s*,\s*ownerId\s*,\s*'sojusz'/
+/const deals = dealPartnerIdsForOwner\(\s*activeDeals\s*,\s*ownerId\s*,\s*'handel'/
+```
+
+Notatki niepilne do osobnej rejestracji (nie blokują): N-2 (bramka ma zero pokrycia behawioralnego
+nowego pop-upu — 7 realistycznych regresji, w tym „przycisk audiencji przestaje działać" i XSS,
+przechodzi 46/46 zielono; Evaluator dostarczył gotowy ~120-liniowy harness jsdom do przyszłego
+dołożenia), N-3 (martwy eksport `updateDiploPairSummary`, stuby `.stubs/` niegitignorowane).
+
+Dispatch scalenia (z poprawką N-1 wklejoną razem) NASTĘPUJE — w kolejce, PO zakończeniu 2 obecnie
+działających agentów scalających w głównym drzewie (Tartak/Glinianka, Armia-rozpad runda 6), żeby
+uniknąć wyścigu na tym samym drzewie.
+
+---
+
+## BUG-OBWARZANEK-20PCT i BUG-ZIEMIA-SCALE — WDROŻONE, status skorygowany (2026-08-09/10)
+
+Trzeci i czwarty temat z audytu „zapomnianych" (mapgen, 2026-08-02) potwierdzone jako fałszywy
+alarm co do treści (oba naprawione tego samego wieczoru, ten sam commit `6f96f08`, FALA 199-200),
+prawdziwy alarm co do procesu (status nigdy nie zaktualizowany, mimo potwierdzenia Macieja w
+korespondencji: „chyba jest sukces... najważniejsze: zniknął obwarzanek"). Weryfikacja empiryczna
+dziś: `pangea-bagel-gap-audit.cjs` + własny skrypt na 9 przebiegach (land 15/20/25%, 3 seedy każdy)
+→ `dryMasses=1` wszędzie; generacja mapy Ziemia dla wszystkich 5 rozmiarów (seed 777) →
+udział lądu rośnie 15.5%→24.9%, bufor biegunowy spada 50%→24% (Mały→Super Huge) — dokładnie
+odwrotnie niż opisywał zgłoszony błąd.
+
+**Wynik: WSZYSTKIE 4 tematy generatora map z audytu „zapomnianych" (AC-RZEKI-BEZ-LIMITERA,
+AC-RZEKI-PER-MASA, BUG-OBWARZANEK-20PCT, BUG-ZIEMIA-SCALE) — już naprawione, nie wymagają
+dispatchu.** Pozostają 2 z 6: PERF-SUPER-HUGE-PANGEA-80 i BUG-SCENA-PERF-FALA138 —
+NIEJEDNOZNACZNE, wymagają realnego pomiaru (F12 Macieja w grze), nie do rozstrzygnięcia z samego
+kodu — do zgłoszenia Maciejowi jako prośba o pomiar, nie do dispatchu subagenta kodującego.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 4 (świeża implementacja): PASS-WITH-NOTES, 2 BLOKUJĄCE, runda 5 w toku (2026-08-09/10)
+
+Rdzeń logiki potwierdzony poprawny i zgodny z decyzją Macieja (zweryfikowane niezależnie: 16/16
+cudów E epok przechodzi bramkę dostępności bez zakleszczenia, zasięg reguły policzony na danych —
+9 cywilizacji objętych, 6 z martwą regułą bo cud w epoce 3).
+
+**B1 (BLOKUJĄCA, realny bug w kodzie gry):** blok chatki skarbów (`main.ts:17163`) używa STAREGO
+warunku `if (step.completed.some(d => d.awansEpoki))` do odświeżenia nakładek złóż/`setEra()`
+zamiast nowego `eraAdvanced` — przy awansie epoki BEZ starej flagi `awansEpoki` (realny, częsty
+przypadek: gracz zbadał Brązownictwo wcześniej, chatka domyka resztę Kamienia) epoka realnie
+awansuje ale wizualia/muzyka NIE odświeżają się. Naprawa: jeden token,
+`if (step.completed.some(d => d.awansEpoki))` → `if (eraAdvanced)`.
+
+**B2 (BLOKUJĄCA, bramka):** własna kampania 15 mutacji Evaluatora — 9/15 złapanych, **6/15
+przeżyło**, w tym 4 łamiące wprost sedno zlecenia (parytet gracz/AI, per-cywilizacyjność): E3
+(gracz na sztywno `'grecy'` zamiast `civTypeForOwner(0)`), E4 (gracz dostaje `[]` zamiast
+`completedWorldWonders` — trwałe zakleszczenie), E5 (AI dostaje civType gracza — cała
+per-cywilizacyjność ginie), E15 (wynik przeliczenia AI wyrzucany do kosza — cała strona AI
+martwa). Przyczyna: kotwice regexowe sprawdzają nazwę wołanej funkcji, ale NIE jej argumenty ani
+zapis wyniku. Naprawa zdefiniowana precyzyjnie (4 punkty, patrz pełny werdykt wyżej).
+
+**Dodatkowe znalezisko:** `reconcileEraForOwner()` — funkcja opisana w zleceniu jako „dyspozytor
+gracz/AI wpięty w 4 miejsca" jest w rzeczywistości MARTWYM KODEM, nigdzie nie wołana (wszystkie 4
+wpięcia wołają bezpośrednio `reconcilePlayerEraFromResearch`/`syncOwnerEraFromResearch`). Bramka
+asercjonuje istnienie martwej funkcji. Do rozstrzygnięcia przy scaleniu: użyć dyspozytora
+faktycznie, albo usunąć razem z asercją.
+
+**B2 z rejestru (zgodność sejwów) zaostrzona:** poprzedni opis („AI zdegradowane, gracz zachowuje
+starą epokę") jest niepełny — degradacja dotyczy OBU stron: AI natychmiast przy wczytaniu, gracz
+przy pierwszym końcu tury/badaniu/chatce/handlu tech (bo `reconcilePlayerEraFromResearch` robi
+`player.era = next`, nie `Math.max`). Każdy zapis sprzed tej zmiany cofa CAŁY świat o 1-2 epoki.
+Nadal wymaga ABC, z poprawioną diagnozą.
+
+Dispatch runda 5, wąska (B1 jeden token + B2 cztery rozszerzenia regex + decyzja o
+`reconcileEraForOwner`) NASTĘPUJE teraz.
+
+---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — Evaluator pełny po odtworzeniu: PASS-WITH-NOTES, 2 BLOKUJĄCE (obie pokrycie testowe, kod poprawny), runda 3 w toku (2026-08-09/10)
+
+Rekonstrukcja NIE wprowadziła regresji ani rozjazdu z decyzją Macieja — `production.ts` odtworzony
+od zera oceniony jako poprawny (7 mutacji łapanych, w tym 2 niewidoczne dla pinów tekstowych,
+bramki minimalne i we właściwych miejscach). `main.ts` (5 miejsc ręcznie wklejonych w zdryfowany
+plik) i `trade-routes.ts` (bajt-identyczny patch) potwierdzone poprawne. Scalenie praktycznie
+przetestowane na aktualnym HEAD (`git apply -3` czysty, pełne bramki zielone tam).
+
+**B1 (BLOKUJĄCA):** część A (bonus ekonomiczny za szlaki morskie) NIE MA żadnej bramki chroniącej —
+4/4 własne mutacje Evaluatora przeżywają, w tym usunięcie samego Port-gatingu (T1: `medium!=='lad'`
+zamiast `!=='morze'` — bonus przestaje być morski I przestaje być Port-gated, wszystko zielono).
+Ta sama klasa co B6a z R-EPOKA-BRAZU — bramka łapie usunięcie haka, nie to co hak robi.
+
+**B2 (BLOKUJĄCA):** parytet AI — trzy miejsca zasilające `availableProduction` (planowanie AI,
+egzekucja AI, lista rekrutacji gracza) NIE są pinowane. 3/3 mutacje przeżywają (AI buduje Galerę
+w mieście śródlądowym, 100% zielono). Kod jest dziś poprawny, ale niechroniony.
+
+Naprawa w PEŁNI zdefiniowana przez Evaluatora (~7 asercji w `trade-routes-test.cjs` dla B1, 3 piny
+regex w `naval-water-access-gate-test.cjs` dla B2, zero zmian w kodzie produkcyjnym) — pełny tekst
+w werdykcie wyżej w tym pliku.
+
+**Notatki do osobnych pytań ABC (§1a — dotyka obszaru już rozstrzygniętego decyzją C 2026-08-09):**
+N3 (zasięg bonusu morskiego — `detectBestConnection` przy remisie wybiera ląd, więc bonus w
+praktyce nagradza niemal wyłącznie handel zamorski, węziej niż mogła być intencja „miasta
+nadmorskie"), N8 (`PORT_SEA_TRADE_BONUS_PIENIADZ=1` to stała w TS, nie parametr w
+`econ-params.json` — łamie kierunek „źródłem prawdy JSON").
+
+**Rekomendacja Evaluatora — priorytet wysoki:** scalić NATYCHMIAST po rundzie 3, nie zostawiać na
+worktree — to trzeci raz gdy ten temat wisi niescalony, dwa poprzednie skończyły się incydentem.
+
+Dispatch runda 3 (wąska, wyłącznie testy) NASTĘPUJE teraz.
+
+---
+
+## R-BUDYNEK-PORTOWY — konsolidacja: druga niezależna ocena potwierdza te same luki (2026-08-09/10)
+
+Agent oryginalnego Evaluatora rundy 1 (`a315e180c5d1bbbfd`) zameldował się powtórnie z dodatkową
+analizą: porównał zgubiony test rundy 1 (286 linii, nigdy niescommitowany, bezpowrotnie stracony
+w incydencie) z testem rundy 2 (358 linii, ocalony) i wykrył że runda 2 **zamieniła** pokrycie
+zamiast je rozszerzyć — zyskała piny M4/M5/M11/M17 (ctx „Zastąp", wpięcie bonusu), ale **zgubiła**
+M13 (parytet AI w `isBuildAllowed` — DOKŁADNIE to samo co B2 z pełnej re-weryfikacji Evaluatora
+`aac04a79b95efcd21`) i M8/M9/M10 (bonus liczony od 1. trasy, brak filtra `medium`/`status` —
+DOKŁADNIE ten sam obszar co B1 tamtej oceny). Dwie niezależne ścieżki oceny zbiegają się w tych
+samych lukach — mocny sygnał że runda 3 (już w dispatchu, `a6fb470d3a3c88349`) obejmuje właściwy
+zakres.
+
+Agent dodatkowo przygotował gotowy, zweryfikowany pakiet odzyskujący (`scratchpad/wt-recover`,
+patch `naval.patch`, 32/32 na aktualnym HEAD) jako rezerwową ścieżkę, gdyby runda 3 nie
+wystarczyła — do wykorzystania tylko w razie potrzeby, priorytet ma dokończenie rundy 3 w toku.
+
+Uwaga procesowa (do playbooka): agresywne środowisko współdzielone — inny agent nadpisał ścieżkę
+logu tego Evaluatora, worktree Operatora zniknął w trakcie oceny. Rekomendacja: unikalne nazwy
+plików logów per zlecenie w scratchpadzie (ten sam wniosek co z incydentu R-EPOKA-CUD wcześniej
+tej nocy — trzecie niezależne potwierdzenie tego samego problemu).
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — runda 5 dostarczona (Operator), czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a3b258ae5b08c64f5`. B1: `main.ts` blok chatki skarbów, jeden token
+`if (step.completed.some(d => d.awansEpoki))` → `if (eraAdvanced)` — odświeżenie nakładek/`setEra()`
+teraz wykonuje się przy KAŻDYM realnym awansie epoki. B2: 4 kotwice w
+`era-cud-main-ts-integracja-test.cjs` wzmocnione o wymóg `civTypeForOwner`+`completedWorldWonders`
+w wywołaniu oraz nowa asercja zapisu wyniku AI (`ownerEraByOwner.set(ownerId, next)`) i startEra
+gracza (`gameStartEra()` nie na sztywno) — wszystkie 4 mutacje E3/E4/E5/E15 z werdyktu rundy 4
+teraz złapane (dowód FAIL→PASS), 11/11 sond kruchości nadal bezpieczne. `reconcileEraForOwner()`
+(martwy kod, żył w `main.ts` nie `owner-epoch.ts` jak błędnie opisano w zleceniu) usunięty razem
+z powiązaną asercją. Bramki: tsc 0, logic-test 213/213, owner-epoch 13/13, era-cud-warunek-awansu
+33/33, era-cud-main-ts-integracja OK (16/16 mutacji, 11/11 sond), diplomacy-tech-trade-e2e 28/28,
+research 33/33, tech-tree 19/19.
+
+**Uwaga proceduralna:** Operator nie mógł wykonać żadnej komendy git w cudzym worktree (izolacja
+narzędzia) — zmiany leżą niescommitowane na dysku, do przejęcia przez Evaluatora/scalającego
+bezpośrednio z tego worktree.
+
+Dispatch Evaluatora rundy 5 (finalnej) NASTĘPUJE teraz.
+
+---
+
+## R-BUDYNEK-PORTOWY — runda 3 dostarczona (test-only, B1+B2+N1), czeka na finalnego Evaluatora — PRIORYTET (2026-08-10)
+
+Worktree `agent-a6fb470d3a3c88349`, odtworzony 1:1 z referencyjnego `agent-a9d473aa1495f39c6`
+(kod produkcyjny NIETKNIĘTY, bajt-identyczny). B1: +10 asercji w `trade-routes-test.cjs` (61/61).
+B2: +3 piny regex w `naval-water-access-gate-test.cjs` + N1 (39/39). Wszystkie 8 mutacji explicite
+wymienionych w zleceniu (T1-T4, M8-M10, N1) teraz złapane — dowód FAIL→PASS dla każdej. Operator
+uczciwie zastrzega: nie znalazł w rejestrze pełnej listy „23 mutacji" (P1-P7/M1-M11/T1-T4) z
+oryginalnego werdyktu — potwierdza tylko 8 explicite nazwanych w zleceniu tej rundy, reszta wg
+niego była już pokryta istniejącymi 32 asercjami. Bramki: tsc 0, logic-test 213/213,
+naval-water-access-gate 39/39, trade-routes 61/61, trade-routes-income 52/53 (pre-istniejąca),
+unit-replace 13/13, deposit-building-gate 47/47, ai-production-priority 9/9.
+
+**Priorytet wysoki** (trzeci temat z rzędu z realnym ryzykiem utraty niescalonej pracy) — dispatch
+finalnego Evaluatora (skrócony zakres: potwierdzić 8 mutacji + ewentualne resztkowe z pełnej listy
+23 + czyste scalenie) NASTĘPUJE teraz, z instrukcją natychmiastowego scalenia po PASS.
+
+---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — SCALONE `fbde1880` (2026-08-10)
+
+Werdykt finalny: PASS, 17/17 własnych mutacji Evaluatora złapanych (8 explicite z rundy 3 + 9
+własna próbka), zero przeżywających. Scalenie zweryfikowane bajt-po-bajcie (36 linii Portu w
+main.ts identyczne przed i po scaleniu mimo 744 linii dryfu). Bramki na scalonym drzewie: tsc 0,
+logic-test 213/213, naval-water-access-gate 39/39, trade-routes 61/61, unit-replace 13/13,
+deposit-building-gate 47/47, ai-production-priority 9/9, trade-routes-income 52/53 (pre-istniejąca,
+potwierdzona bajtowo identyczna bez zmiany Portu). Temat w PEŁNI zamknięty po 3 rundach + incydencie
+utraty i odzyskania pracy.
+
+Notatki do osobnych pytań ABC (§1a — dotykają obszaru rozstrzygniętego decyzją C 2026-08-09), do
+zadania Maciejowi rano: N3 (`detectBestConnection` przy remisie wybiera ląd — bonus morski w
+praktyce nagradza niemal wyłącznie handel zamorski, węziej niż mogła być intencja „miasta
+nadmorskie"), N8 (`PORT_SEA_TRADE_BONUS_PIENIADZ=1` to stała w TS, nie parametr w
+`econ-params.json` — łamie kierunek „źródłem prawdy JSON").
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — SCALONE `15325a1c` (2026-08-10)
+
+Poprawka N-1 zastosowana i zweryfikowana mutacyjnie (zamiana `'sojusz'`/`'handel'` w kodzie
+produkcyjnym → 44/46 FAIL na `6j`/`6k`, przywrócenie → 46/46). Bramki: tsc 0, logic-test 213/213,
+diplomacy-lista-podglad-przed-wizyta 46/46, diplomacy-treaties 17/17, diplomacy-display 35/35.
+Brak konfliktu z równoległą pracą nad main.ts (Armia-rozpad). Temat w pełni zamknięty (rundy 1-3).
+
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY — potwierdzenie post-scalenia + N11 (2026-08-10)
+
+Evaluator wykrył że temat już był scalony (commit `f4d427e8`) w trakcie własnej pracy — zweryfikował
+scalony kod od nowa: PASS, kod identyczny z odtworzeniem, 21 własnych mutacji na scalonym drzewie
+(15 destrukcyjnych złapanych w tym wszystkie warianty N10, 5 sond niegroźnych bezpiecznych). Temat
+w pełni potwierdzony, bez działania.
+
+**N11 (nowe, niepilne, do rejestru):** strona SILNIKA (nie panelu) niestrzeżona — usunięcie
+`kultura: hs.kultura ?? 0` z `getEmpireHud` w `main.ts` daje tsc 0 i test 71/71 zielono, a chip
+Kultury pokazywałby „(0)" na zawsze. Ta sama klasa co N1/N6/N10, tylko szew jest w górę
+(silnik→panel) zamiast w dół. Dotyczy wszystkich 6 pól zapasu.
+
+## OSTRZEŻENIE PROCESOWE — TRZECIE potwierdzenie kolizji ścieżek w scratchpadzie (2026-08-10)
+
+Trzeci niezależny przypadek tej samej nocy (po R-EPOKA-CUD i R-BUDYNEK-PORTOWY): agenci
+równoległych sesji nadpisują sobie nawzajem generyczne nazwy plików we współdzielonym
+`scratchpad/` (`mut.py`, `main.ts.bak`, log-i bramek). Tym razem Evaluator HUD-stock-tempo
+wykrył że jego `mut.py`/`mut2.py` zostały nadpisane cudzym harnessem (R-BUDYNEK-PORTOWY) w
+trakcie pracy — złapane tylko dlatego że format wyjścia się nie zgadzał. **Mocny sygnał do
+nowej, twardej reguły playbooka: każdy plik roboczy w scratchpadzie MUSI mieć prefiks
+unikatowy dla zlecenia/agenta, nigdy generyczną nazwę.** Materiał do przygotowywanych reguł
+AutoBot (patrz niżej w tym pliku, do zebrania rano).
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 5 (finalna): PASS-WITH-NOTES, 1 BLOKUJĄCA (2 linie, przy scalaniu), GOTOWE DO SCALENIA (2026-08-10)
+
+B1 potwierdzona poprawna na danych (epoka Kamień 12 technologii, jedyny kamień milowy
+Brązownictwo). B2 potwierdzona niezależnym harnessem (17/18 własnych mutacji złapanych, w tym
+test koniunkcji: oba wymogi kotwicy pilnowane NIEZALEŻNIE, nie „jeden przypadkiem"). 11/11 sond
+kruchości bezpieczne i faktycznie nietrywialne. `reconcileEraForOwner()` — usunięcie bezpieczne,
+potwierdzone że nic nie zginęło (9 punktów wpięcia identyczne przed/po, tylko rozwinięte z
+dyspozytora w jawne gałęzie).
+
+**Blokująca (naprawa PRZY SCALANIU, nie runda 6):** scalenie z aktualnym czubkiem gałęzi
+(`fbde1880`, 780+/84- w main.ts od R-EPOKA-BRAZU) psuje JEDNĄ mutację testu (M12) — dosłowny
+ciąg który mutacja podmienia przestał istnieć po wstawieniu bloku `bronzeForceWarPendingOwners`.
+Naprawa zwalidowana na obu stanach:
+```js
+src.replace(
+  /ownerEraByOwner\.set\(ownerId, next\);/,
+  'ownerEraByOwner.set(ownerId, prev);',
+)
+```
+**Rekomendowana (razem, domyka jedyną przeżywającą własną mutację X9 — cofnięcie B1):**
+```js
+const RE_3A_CHATKA_ERAADVANCED = /const (\w+) = shouldNotifyPlayerEraChange\((\w+), player\.era\);\s*\n\s*villageEraAdvanced = \1;\s*\n\s*if \(\1\) \{\s*\n\s*overlayDepositEra = player\.era;\s*\n\s*rebuildResourceOverlays\(\);\s*\n\s*setEra\(player\.era\);/;
+```
+(dodać `assert(...)` i wpisać do tablicy `checks`).
+
+Zasięg reguły doprecyzowany (N2): bramkę 1→2 ma TYLKO Egipt, bramkę 2→3 ma 8 cywilizacji.
+Konsekwencja dla B3-ABC: `bronzeForceWarPendingOwners` (R-EPOKA-BRAZU) na awansie 1→2 dotyczy
+WYŁĄCZNIE Egiptu, nie 9 cywilizacji.
+
+Dispatch scalenia (z obiema poprawkami wklejonymi) NASTĘPUJE teraz.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — SCALONE `13861b60` (2026-08-10)
+
+5 rund, incydent utraty pracy w trakcie, pełne odzyskanie/rekonstrukcja, w pełni zamknięte. Obie
+poprawki testu z rundy 5 (M12 regex zamiast literału, nowa kotwica RE_3A_CHATKA_ERAADVANCED)
+zastosowane przy scalaniu, `era-cud-main-ts-integracja-test.cjs` w pełni zielony (15/15 asercji,
+16/16 mutacji, 11/11 sond). Wszystkie bramki + bramki gałęzi docelowej (forced-war-bronze) bez
+regresji. Temat w pełni zamknięty.
+
+**Pozostają 2 osobne pytania ABC dla Macieja rano** (nie formułowane jeszcze, materiał gotowy):
+1. Zgodność sejwów (B2-zapisy) — każdy zapis sprzed tej zmiany cofa świat o 1-2 epoki, dotyczy
+   OBU stron (gracz i AI), różny moment ujawnienia.
+2. Ryzyko trwałego utykania AI w budowie cudu (B3) — dotyczy 9/15 cywilizacji, doprecyzowane:
+   awans 1→2 dotyczy tylko Egiptu, awans 2→3 pozostałych 8.
+
+---
+
+## Trzy decyzje ABC — ECHO Macieja (2026-08-10)
+
+**P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2) — ECHO B** (wbrew rekomendacji A): pełny refaktor —
+tożsamość stosu niezależna od heksu (`stackGroupId`). Wymaga: enumeracji WSZYSTKICH miejsc
+poolingu ruchu per-heks (C-026, ~10 funkcji w main.ts wg wcześniejszego rozpoznania: HUD, cykl
+armii, split, oblężenie, garnizon), przepięcia ich na tożsamość stosu, pełnej regresji na
+wszystkich tych systemach. Duży zakres — dispatch osobnym, starannie zaplanowanym Operatorem.
+
+**R-EPOKA-CUD-WARUNEK-AWANSU (B2-zapisy) — ECHO A**: świadomie akceptujemy degradację epoki przy
+wczytaniu starych zapisów, bez migracji. Zgodne z JUŻ scalonym zachowaniem (`player.era = next`,
+nie `Math.max`) — **brak zmian w kodzie**, temat formalnie zamknięty tą decyzją.
+
+**R-EPOKA-CUD-WARUNEK-AWANSU (B3) — ECHO A + doprecyzowanie**: rozluźnianie progu opłacalności
+cudu z czasem DLA AI, plus wyraźny wymuszacz — gdy AI ma wszystkie technologie danej epoki
+zbadane (komplet spełniony, brakuje tylko cudu), budowa WSZYSTKICH cudów tej cywilizacji staje
+się PRIORYTETEM w kolejce produkcji (nie tylko łagodniejszy próg opłacalności — twarde
+pierwszeństwo). Dispatch osobnym Operatorem (`gra/src/game/ai.ts`).
+
+Dispatch obu Operatorów (BB2-stackGroupId, B3-priorytet cudu) NASTĘPUJE teraz.
+
+---
+
+## PERF-SUPER-HUGE-PANGEA-80 i BUG-SCENA-PERF-FALA138 — ODŁOŻONE do backlogu, decyzja Macieja (2026-08-10)
+
+Oba tematy pozostają NIEROZSTRZYGNIĘTE (wymagają realnego pomiaru F12 w grze, nie do
+rozstrzygnięcia z samego kodu — patrz audyt wyżej w tym pliku). Maciej: zapisać jako rzeczy do
+zrobienia w przyszłości, NIE podejmować teraz. Status: BACKLOG, nie dispatchować subagentów do
+czasu wyraźnego polecenia po tym, jak Maciej sam zmierzy czasy w grze.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — WYJAŚNIENIE: 6 rund NIGDY nie trafiło do żadnej gałęzi (2026-08-10)
+
+**Odkrycie:** nowy Operator (dispatch stackGroupId, BB2=B) zgrepował całą historię gita na
+wszystkich gałęziach i znalazł, że `assignBounceHexesForUnits` na pełnej liście jednostek
+(oryginalny bug „armia się rozpierzcha") nadal jest jedynym kodem w `main.ts` — ŻADNA z 6 rund
+tego tematu (rozpoznanie → ECHO A → 4 rundy FAIL → runda 5 → runda 6) nigdy nie została
+scommitowana. Testy tematu nie istnieją w historii `git log --all`.
+
+**Przyczyna znaleziona:** agent rundy 6 (dispatch „Operator + scalenie" w jednym) doszedł do kroku
+przełączenia się na główne drzewo (`EnterWorktree`), narzędzie odmówiło/przerwało to wywołanie, a
+sesja agenta zakończyła się bez wysłania finalnego raportu — stąd orkiestrator nigdy nie dostał
+notyfikacji o zakończeniu i temat cicho utknął.
+
+**Praca NIE jest stracona.** Zweryfikowane bezpośrednio na dysku:
+- Worktree rundy 5 (`agent-ad689c69f19841e17`) — nietknięty, zawiera oryginalny
+  `army-merge-separate-return-test.cjs` (test funkcjonalny czystych funkcji).
+- Worktree rundy 6 (`agent-a9cfa743629052405`) — nietknięty, zawiera `armyMerge.ts`+`main.ts`
+  (identyczne z rundą 5, bez zmian — B-R5-1 dotyczyło tylko testu) oraz zaktualizowany
+  `army-merge-separate-return-mainguard-test.cjs` z dopisaną notą B-R5-1 (2 nowe asercje,
+  17→19, uruchomiony samodzielnie: **37/37 PASS** po symlinkowaniu `node_modules`).
+- Runda 6 skopiowała wszystko OPRÓCZ `army-merge-separate-return-test.cjs` — brakujący plik
+  wzięty z worktree rundy 5, identyczny, bez zmian.
+
+**Scalenie NASTĘPUJE teraz** — komplet (armyMerge.ts + main.ts z rundy 6, oba pliki testów: jeden
+z rundy 5 bez zmian, drugi z rundy 6 z notą B-R5-1) + ręczne wklejenie sprostowania rejestru z
+rundy 5 (tekst podany w werdykcie Evaluatora rundy 5, wyżej w tym pliku).
+
+**Do playbooka:** to jest wariant TRZECI tej samej nocy tej samej klasy incydentu (praca w
+worktree nigdy nie trafiająca do gałęzi) — tym razem przyczyną nie było `git worktree remove`,
+tylko przerwane wywołanie narzędzia (`EnterWorktree`) bez żadnej notyfikacji o niepowodzeniu.
+Mocny dodatkowy argument za nową regułą: **agent-scalający NIGDY nie powinien być tym samym
+agentem co Operator wykonujący pracę merytoryczną** — scalenie zawsze osobnym, dedykowanym
+dispatchem, żeby awaria na etapie scalania nie grzebała całej rundy bez śladu.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — SCALONE `a396eddc` (2026-08-10)
+
+Kompletne scalenie po odzyskaniu z dwóch nietkniętych worktree. Kluczowa weryfikacja: `grep
+assignBounceHexesForUnits gra/src/main.ts` pokazuje wyłącznie komentarze — oryginalny zgłoszony
+bug (armia rozpraszała się na osobne wolne heksy przy „zostaw osobno") jest naprawiony,
+`onSeparate` woła teraz `resolveSeparateReturnHex`+`computeSeparateReturn`, cała armia wraca razem.
+Wszystkie 12 bramek zielone (tsc 0, logic-test 213/213, oba testy tematu 16/16 i 37/37 [z notą
+B-R5-1], army-merge-bounce 4/4, army-merge-dismiss-bounce 16/16, army-stack-ruch 5/5,
+army-merge-colocated 4/4, combat-test 6/6, tech-tree 19/19, research 33/33, unit-replace 13/13).
+Zero regresji. Temat w pełni zamknięty co do bezpiecznego minimum (BB1) — BB2 (współdzielona pula
+ruchu, decyzja ECHO B = pełny refaktor stackGroupId) w toku jako osobny dispatch.
+
+---
+
+## stackGroupId runda 2 — ZATRZYMANA, potwierdzenie mechanizmu „worktree startuje od main, nie od gałęzi sesji" (2026-08-10)
+
+Operator prawidłowo zdiagnozował i zatrzymał się (zgodnie z instrukcją) zamiast zgadywać: jego
+`isolation:"worktree"` wystartował od `main` (`b0e4a5c9`, poziom FALA 263), NIE od bieżącej gałęzi
+sesji `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (obecny tip, zawiera scalone `a396eddc`
+Armia-rozpad + wszystko z tej nocy). To DOKŁADNIE mechanizm opisany w skillu `civ-autobot` §5
+(„`isolation:'worktree'` NIE dziedziczy z bieżącej gałęzi sesji — startuje od `main`") —
+potwierdzony dziś po raz kolejny, tym razem jako przyczyna fałszywego alarmu, nie utraty pracy.
+
+**To NIE jest regresja ani utrata BB1** — `a396eddc` jest bezpiecznie na
+`origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` (potwierdzone), po prostu poza zasięgiem
+świeżego worktree. `main` jest CELOWO „jedną falą do tyłu" (`R-MERGE-MAIN-RYTM-Q1`) — scalenie do
+`main` następuje wyłącznie na hasło `deploy`, nie samo z siebie.
+
+**Naprawa procesowa (do playbooka):** dispatch dla Operatorów pracujących na worktree potrzebujących
+NAJNOWSZEGO stanu gałęzi sesji (nie `main`) musi WPROST instruować: skopiować potrzebne pliki
+bezpośrednio z żywego katalogu głównego (`/home/user/The-Game`, aktualny checkout gałęzi sesji),
+NIE polegać na `git diff`/`grep` wewnątrz własnego, świeżo założonego worktree jako źródle prawdy o
+tym „co już jest scalone". Runda 3 dispatchowana z tą poprawką.
+
+---
+
+## Nowe reguły AutoBot (C-033…C-038) — Evaluator rundy 1: FAIL (5 nieścisłości), poprawione i scommitowane (2026-08-10)
+
+Na dwukrotne polecenie właściciela („podsumuj sobie wszystkie właśnie błędy… przygotuj nowe
+reguły które wprowadzimy do Autobot") dopisano do `playbook.md` sześć nowych reguł (C-033
+usuwanie worktree bez sprawdzenia stanu, C-034 scalenie jako osobny natychmiastowy dispatch,
+C-035 worktree zawsze od `main`, C-036 unikalne nazwy plików w scratchpadzie, C-037 brak
+notyfikacji ≠ agent wciąż pracuje, C-038 werdykt Evaluatora tylko po realnym odebraniu raportu)
+razem z wpisami w rejestrze błędów i dzienniku wniosków, pokrywające 5 incydentów tej nocy.
+
+Zgodnie z §0b (orkiestrator nie ocenia sam siebie) zmiana przeszła przez niezależnego
+Evaluatora PRZED commitem — werdykt runda 1: **FAIL**, 5 blokujących: (B1) „godziny później"
+między dwoma usunięciami worktree — w rzeczywistości TA SAMA partia sprzątania; (B2) mechanizm
+odzysku przypisany błędnie obu incydentom jako `git fsck` — R-EPOKA-CUD w rzeczywistości nie miał
+odzyskanych obiektów gita, tylko wyścig z czasem (grep tuż przed zniknięciem worktree); (B3)
+dziennik liczył „cztery nowe zasady" przy pięciu (C-033…C-037); (B4) „odzyskane w pełni"/„zero
+trwałej utraty pracy" zaprzeczone przez własne źródło — test R-EPOKA-CUD ma dziś 33 asercje
+zamiast utraconych 35, test rundy 1 Portu został ZASTĄPIONY (nie rozszerzony) tracąc piny
+M8/M9/M10/M13; (B5) „wszystkie cztery tematy scalone" przy trzech hashach — czwarty/piąty
+incydent (worktree-na-main, kolizje scratchpad) nie są tematami kodu do scalenia; (B6)
+`playbook.json` nie zregenerowany po dopisaniu reguł (recydywa C-031 — reguła istnieje tylko w
+pliku wymagającym świadomego odczytu). Evaluator wskazał też 2 luki: brak reguły dla „rejestr
+zapisał werdykt Evaluatora, który nigdy się nie odbył" (→ nowa C-038) i brak wymogu
+„natychmiast po PASS" w C-034 (rozszerzone).
+
+Wszystkie 6 punktów poprawione: dokładność faktów wobec źródeł, dodana C-038, C-034 rozszerzone
+o „natychmiast po PASS" + twardy dowód sukcesu (`git log --all --oneline | grep <hash>` + grep
+symbolu w drzewie głównym), C-035/C-037 oznaczone jako RECYDYWA wiedzy już opisanej w
+`.claude/skills/civ-autobot/SKILL.md` (żyła tylko w pliku bez auto-ładowania — ten sam
+mechanizm co C-031), C-037 dostał próg ~45 min + fallback niezależny od `ListAgents`
+(`ls`+`git status` w worktree), `playbook.json` zregenerowany generatorem (`--write`,
+version→30), `autobot-smoke.cjs` 11/11 PASS. Numeracja ID zweryfikowana: 38 wierszy, C-001…C-038,
+zero duplikatów/luk. Scommitowane po poprawkach — zgodnie z zasadą, że orkiestrator nie
+zwalnia się z pętli AutoBot nawet dla własnych zmian dokumentacyjnych.
+
+---
+
+## AUDYT C-030 — 23 wpisy OTWARTE, 9 potwierdzonych ZAPOMNIANYCH (2026-08-10)
+
+Na polecenie Macieja („sprawdź czy każdy temat który wisi ma swojego subagenta") — pełny audyt
+zgodności z regułą C-030 dla wszystkich 23 wpisów `STATUS: **OTWARTE` w tym pliku (grep bez
+kotwicy `^## `, per C-031). Dla każdego sprawdzono niezależnie: dispatch subagenta / pytanie ABC
+zadane / udokumentowany cytat Macieja o odłożeniu (NIE samoocena „niepilne" wpisana przez agenta
+rejestrującego — to nie liczy się jako pokrycie).
+
+**Wynik: 14/23 pokryte** (9 subagent, 4 ABC+subagent/ABC samo, 2 jawnie odłożone cytatem
+Macieja — `P-KOLOR-SUROWCE-MIASTO-VS-MAPA`, `R-FORT-STRAZNICA` krok 2; 1 dodatkowy —
+`R-BUDYNEK-PORTOWY` ma nieaktualny nagłówek, ale temat w pełni scalony `fbde1880`, do poprawki
+etykiety nie brak pokrycia).
+
+**9/23 potwierdzone ZAPOMNIANE** — zero dispatchu, zero ABC, zero decyzji Macieja, jedyna
+adnotacja to samoocena „niepilne" agenta, który je rejestrował:
+1. P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (`gra/tools/map-field-battle-test.cjs`,
+   `pre-battle-save-test.cjs` — dopisanie do CLAUDE.md §BRAMKI, dokumentacja, zero kodu)
+2. P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (`cityPanel.ts:4394,4418`)
+3. P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (`cityPanel.ts` `buildTopBarZywnoscDetailCard`
+   ~4839,4841)
+4. P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (`heks-panel-tooltip-warstwa-test.cjs`,
+   korekta komentarza)
+5. P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (`cityPanel.ts:8207,8225`, `hexContextTooltip.ts:252`)
+6. P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (`okolica.ts` `adjustTileWorker`)
+7. P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (`main.ts` `refreshTradeRoutesOverlay`/
+   `cityRenderer.sync`) — POTWIERDZONE przez niezależnego Evaluatora jako realny błąd, wprost
+   odnotowane „kto podejmie tamten temat" bez odpowiedzi
+8. P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (komunikat „Brakuje X PW" po `R-DYP-STOL-A-KOREKTA`)
+9. P-HUD-KULTURA-SIGNED-NIESPOJNE (`hud.ts` `renderBarD1B`, chip Kultury)
+
+Wszystkie 9 to niskiego ryzyka poprawki kosmetyczne/dokumentacyjne, żadna nie wymaga ABC.
+Dispatch pogrupowany (5 Operatorów wg pliku/obszaru, zamiast 9 osobnych, żeby zmniejszyć koszt
+scalania przy jednym pliku dotykanym wielokrotnie) NASTĘPUJE teraz.
+
+---
+
+## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE + P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE — dostarczone, dokumentacja/komentarz (2026-08-10)
+
+Worktree `agent-abe061c068bc015ba`. Zero zmian w kodzie produkcyjnym/logice testu — wyłącznie
+tekst. (1) `CLAUDE.md` §BRAMKI: dopisana notatka o dwóch pre-istniejących czerwonych bramkach
+harnessu testowego (`map-field-battle-test.cjs`/`pre-battle-save-test.cjs` — brak loaderów
+Vite/esbuild dla `.mp3`/`.svg`, nie regresja silnika). (2) `heks-panel-tooltip-warstwa-test.cjs`:
+poprawiony nieprawdziwy komentarz uzasadniający regexowe podejście (twierdził że DOM
+niedostępny — nieprawda, `jsdom` jest deklarowaną zależnością używaną przez 9 innych testów).
+Bramki: tsc 0, logic-test 213/213, `heks-panel-tooltip-warstwa-test.cjs` 22/22 (identyczne z
+bazą — potwierdza że to czysto komentarz).
+
+Dispatch lekkiego Evaluatora (weryfikacja, że zmiana jest wyłącznie tekstowa i nie wprowadza
+nieprawdy w drugą stronę) NASTĘPUJE teraz.
+
+---
+
+## Pytanie Macieja (zrzut ekranu) — checkbox „Auto Wyżywienie" wciąż widoczny zamiast przycisku (2026-08-10)
+
+**Zrzut Macieja:** panel miasta, sekcja Wyżywienie, pokazuje `☐ Auto Wyżywienie` jako checkbox +
+osobna etykieta, oraz tekst „Auto WYŁ — bez auto-obniżania/podnoszenia" jako WIDOCZNY tekst pod
+paskiem (nie w tooltipie). Cytat: „tutaj miał być checkbox zmieniony na przycisk i opisy do
+tooltip".
+
+**Zbadane bezpośrednio, zanim cokolwiek dispatchowałem (§6/7 — nie zgaduj, nie twórz problemów
+których nie ma):** dokładnie ta zmiana JEST już w kodzie. `gra/src/ui/cityPanel.ts:4686-4702` —
+`autoBtn = document.createElement('button')`, `className = 'hbtn auto-wyzywienie-btn'`
+(pełnoszerokościowy przycisk z tekstem „Auto Wyżywienie" W ŚRODKU, styl 1:1 z istniejącego
+przycisku auto-produkcji), `aria-pressed`, tekst „Auto WYŁ — bez auto-obniżania/podnoszenia"
+przeniesiony do `autoBtn.title` (tooltip), NIE renderowany jako widoczny tekst. Commit `cf2b63cc`
+(2026-08-09 23:38 UTC, „Spichlerz: drabinka capu ludności..."). Zweryfikowane `git log
+e88e3939..HEAD -- gra/src/ui/cityPanel.ts` — ZERO commitów między HEAD builda FALA 265 a dziś —
+czyli ta zmiana jest już częścią AKTUALNEGO deployu ROBOCZA (`7e8fdfdb`, FALA 265,
+**AKTUALNA** wg `WERSJE.md`).
+
+**Wniosek:** zrzut Macieja pokazuje checkbox+widoczny tekst, co NIE pasuje do dzisiejszego kodu
+(przycisk pełnej szerokości z tekstem w środku, bez osobnej etykiety obok). To wygląda na stary,
+niezsynchronizowany bundle po stronie Macieja (lokalna sesja/dysk właściciela jeszcze nie
+„pull"-nęła FALA 265), a nie na niedokończoną pracę w kodzie. Zapytano Macieja wprost zamiast
+dispatchować subagenta do już zaimplementowanej zmiany — zero dispatchu do czasu odpowiedzi.
+
+---
+
+## P-ARMIA-ROZPAD (BB2, stackGroupId) — Evaluator runda 3: FAIL, 2 realne regresje renderu + 2 luki bramek (2026-08-10)
+
+Evaluator potwierdził rdzeń naprawy solidny: fallback bit-identyczny (fuzz 500 układów, 0
+rozbieżności), sedno zgłoszonego buga naprawione w obie strony, 3 ścieżki merge kompletne (5
+wywołań `assignSharedStackGroupId`), `onSeparate` daje fresh id (10 000 prób, 0 kolizji),
+wsteczna zgodność 4-argumentowych callerów OK, oba dodatkowe znaleziska Operatora realnie
+naprawione, C-026 (90 referencji 15 funkcji) policzone niezależnie.
+
+**BLOKUJĄCE — 2 regresje renderu (żetony znikają z mapy), 2 luki bramek:**
+- **B1:** `computeStackDisplay` grupuje po `stackGroupIdOf(u)` BEZ heksu — dwie jednostki tego
+  samego `stackGroupId` na RÓŻNYCH heksach (np. zwiadowca użył „Zwiedzaj" i odjechał sam z
+  scalonego stosu — `runScoutsAutoExplore`, `main.ts:21423`; albo cywil zostaje na origin gdy
+  reszta stosu idzie do bitwy — `moveAtkRosterOntoBattleHex`) wpada do JEDNEJ grupy renderu →
+  jeden żeton znika (`visible=false`), drugi pokazuje zsumowany `×N`/HP/Moc z dwóch heksów.
+- **B2:** ten sam klucz ignoruje flagę garnizonu — scalony garnizon z jedną jednostką wypuszczoną
+  w pole (ta sama grupa) daje 1 żeton zamiast 2, łamiąc udokumentowany kontrakt „garnizon i pole
+  na heksie miasta współistnieją jako dwa widoczne stosy".
+- **B3:** poprawka w `main.ts` (`assignSharedStackGroupId(movedUnits)`, jedyna linia naprawiająca
+  oryginalny zgłoszony bug) ma ZERO ochrony regresyjnej — usunięcie tej linii, wszystkie bramki
+  zielone.
+- **B4:** kluczowa gwarancja „fallback bit-identyczny ze starym grupowaniem" (fundament decyzji
+  ECHO B) też niezabezpieczona — usunięcie sufiksu `|g` z fallbacku, wszystkie bramki zielone
+  (własna asercja Evaluatora łapie to natychmiast, 75 rozbieżności).
+
+**Naprawa (4 warunki, jasno zdefiniowane przez Evaluatora):** (1) klucz w `computeStackDisplay`
+= tożsamość + `(q,r)` + flaga garnizonu; (2) asercje na oba scenariusze (różne heksy → 2 żetony;
+garnizon+pole → 2 żetony); (3) rozszerzyć `army-merge-separate-return-mainguard-test.cjs` o
+tekstowe przypięcie 5 wywołań `assignSharedStackGroupId` w `main.ts`; (4) asercja różnicowa
+fallbacku wobec oracle sprzed BB2 (usuwa B4).
+
+Niepilne: N1 (dwa żetony tej samej grupy renderują się w IDENTYCZNYCH współrzędnych — pełne
+nałożenie, potrzebny offset per grupa — konsekwencja wizualna zaakceptowana w ECHO B, ale nie
+dostarczona), N2 (klik w mapę zawsze trafia najmocniejszą armię, nie tę pod kursorem — poza
+zakresem BB2), N3 (`showCityUnitPick` ma tę samą klasę buga na niezawężonym `visibleStackOnHex`),
+N4 (`freshStackGroupId` używa `Date.now()` — niedeterministyczne), N5 (AI nie dostaje
+`stackGroupId` wcale — OK dla tego buga, ale opis „identycznie jak gracz" przesadzony).
+
+Dispatch rundy 4 (naprawa 4 warunków) NASTĘPUJE teraz.
+
+---
+
+## Trzy drobne poprawki (audyt C-030) dostarczone, czekają na jednego zbiorczego Evaluatora (2026-08-10)
+
+**P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA + P-HUD-KULTURA-SIGNED-NIESPOJNE** (worktree
+`agent-aa3536088e2bc01b3`): komunikat „Brakuje X PW — dopłać" → „...— zawrzyj osobną umowę" w 2
+miejscach (`diplomacy-acceptance-points.ts`, `diplomacyAcceptanceBalance.ts`), zgodnie z
+`R-DYP-STOL-A-KOREKTA` (formularze traktatu bez koszyka). Chip Kultury HUD:
+`signed(s.kultura)` → `String(Math.floor(s.kultura))` w `hud.ts` (`renderBarD1B` — zgłoszone
+miejsce — ORAZ `renderBarLegacy`, ta sama usterka znaleziona przy okazji w bliźniaczej ścieżce
+kodu). Bramki: tsc 0, logic-test 213/213, diplomacy-acceptance-points 225/225, diplomacy-ai-
+offer-balance 23/23, diplomacy-basket-edit 25/25, diplomacy-stol-pw-sum 42/42, diplomacy-trade-
+flex 8/8, hud-skarbiec 7/7, hud-moc-warstwa 28/28, hud-miasto-stan-cywilizacji 20/20.
+
+**P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA** (worktree `agent-aee3e1d4edb7744d6`): potwierdzony
+jako CZYSTY bug (nie dwuznaczność produktowa) — `adjustTileWorker(delta=+1)` na obsadzonym polu
+błędnie ZDEJMOWAŁO robotnika (skopiowana logika toggle z sąsiedniej funkcji), łamiąc własny
+kontrakt kierunkowy (`delta: 1|-1`); teraz symetrycznie odmawia (`juz_obsadzone`) jak `delta=-1`
+już robił (`brak_robotnika`). Funkcja nie ma dziś ŻADNEGO wywołania produkcyjnego (tylko
+`toggleTileWorker` jest używana w UI) — zerowe ryzyko dla działającej gry. Test zaktualizowany
+(2 asercje). Bramki: tsc 0, logic-test 213/213, okolica-test 72/72.
+
+**P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY + P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI +
+P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY** (worktree `agent-ae4f5e2fac8dc9eb3`): usunięty
+zbędny `+` przed `signed()` w 2 miejscach `cityPanel.ts` (`appendPodzialPracyInfo`); separatory
+ujednolicone w `buildTopBarZywnoscDetailCard` (`signed()` na `wzrostProcent` i `bd.racje`, wzorzec
+z zamkniętej naprawy-siostry); brakujący parametr `zloze` dodany do 3 wywołań `tileYield()`
+(`cityPanel.ts:8207,8225`, `hexContextTooltip.ts:252`) — bez wpływu na dzisiejsze zachowanie
+(potwierdzone: dzisiejsze funkcje czytające ten wynik nie patrzą na `zloze`), zamyka „pułapkę na
+przyszłość", ten sam idiom co już naprawiony `yieldOfMapHex`. Bramki: tsc 0, logic-test 213/213,
+city-badge-growth-percent 38/38, city-growth-percent-rounding-parity 16/16, city-panel-growth-
+percent-separator 29/29, heks-panel-tooltip-warstwa 22/22, heks-plony-warstwy 24/24, heks-plony-
+zloze-forward 5/5, zloze-zloto-render 7/7.
+
+**P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI** (worktree `agent-a9c69aacb2255f424`): przyczyna
+znaleziona — `refreshTradeRoutesOverlay()` wołany tylko raz WCZEŚNIE w kaskadzie końca tury
+(przed turami AI/walką/oblężeniami), podczas gdy `cityRenderer.sync` (pigułki miast) ma już
+wywołanie w finalnej „siatce bezpieczeństwa" na końcu kaskady — trasy renderowały się względem
+stanu miast SPRZED tur AI. Naprawa: dopisane (addytywnie, nic nie przestawione) wywołanie
+`refreshTradeRoutesOverlay()` w finalnym bloku bezpieczeństwa, obok istniejącego
+`refreshWorkerFieldOverlay()`. C-026: 18 miejsc `cityRenderer.sync` + 4 istniejące
+`refreshTradeRoutesOverlay` przejrzane indywidualnie, żadne inne nietknięte. Bramki: tsc 0,
+logic-test 213/213, trade-routes-test 51/51, trade-routes-income 52/53 (ta sama pre-istniejąca
+porażka H2, potwierdzona identyczna na `git stash`).
+
+Dispatch JEDNEGO zbiorczego Evaluatora dla wszystkich czterech (różne pliki/obszary, zero
+nakładania się) NASTĘPUJE teraz.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
+
+Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
+zweryfikowaną bajt-w-bajt na bazie), potwierdził C-026 (jedyne miejsce wywołania
+`decideAiWonderBuild`, `chooseCityProduction` nietknięty) i duplikację z `13861b60` (3 pliki
+identyczne bajt-w-bajt — `owner-epoch.ts` + oba testy B2, `main.ts` MIESZANY, instrukcja scalania
+hunk-po-hunku gotowa). 7/9 własnych mutacji złapanych.
+
+**BLOKUJĄCE — nieskończona pętla na realnych danych shipowanych, nie brzeg teoretyczny:**
+tryb `forcePriority` bierze `ordered[0]` (pierwszy budowalny cud), a `main.ts` nigdzie nie
+sprawdza, czy to WŁAŚNIE wymagany cud epoki. Fenicjanie/Brąz→Żelazo: cud bramkujący (`petra`,
+`epokaWejscia=2`) wymaga technologii `Inżynieria` z epoki Żelaza — niebudowalny mimo kompletu
+technologii Brązu. Efekt (zasymulowany na realnych funkcjach+danych, 12 tur): AI co turę wstawia
+NA FRONT inny cud (`wyrocznia`), zeruje mu postęp, kolejka rośnie bez ograniczenia (+1/turę),
+`tryDeductWonderStartFood` drenuje żywność co turę — **cud nigdy się nie kończy, dokładna
+odwrotność celu B3**. Kontrolny scenariusz (Egipt/epoka 1, cel zamierzony) działa poprawnie —
+defekt ściśle ograniczony do rozjazdu „wymagany cud ≠ pierwszy budowalny". Zastrzeżenie zasięgu:
+wykryty JEDEN rozjazd w skanie 15×3, ale sonda miała pusty `civRow` (reguła
+`tech_before_civ_entry` nieaktywna) — z pełnymi danymi cywilizacji może być więcej. To DOLNA
+granica.
+
+**Naprawa zdefiniowana (2 cięcia, bez przebudowy):** (1) `main.ts` —
+`wonderForcePriority = wonderEraGateForced && !wonderRequiredAlreadyBuilding &&
+buildableForAi.some(w => wonderRequiredIds.includes(w.id))`; (2) `ai.ts` — w `forcePriority`
+wybierać cud z jawnie przekazanej listy `requiredWonderIds`, nie `ordered[0]`. Dodatkowo:
+`wonderRequiredAlreadyBuilding` dziś sprawdza wyłącznie front kolejki, nie całą kolejkę miasta.
+
+Niepilne (do rejestru, nie blokują): zerowe pokrycie testowe `main.ts` dla B3 (M8/M9
+niezłapane — komentarz nowego testu obiecuje wykrywanie dryfu `main.ts`, ale re-implementuje
+formułę zamiast czytać źródło); rozjazd danych `petra` (epokaWejscia=2 vs tech z epoki 3) to
+problem B2 nie B3, do decyzji właściciela osobno; `relaxedWonderCostThreshold` znosi próg dla
+WSZYSTKICH cudów nie tylko bramkującego (interpretacja Operatora „rozluźnianie" jako
+„zniesienie do ∞", do potwierdzenia); `aiWonderStuckTurnsByOwner` nieserializowana + czyszczona
+przy save/load (asymetria, degradacja łagodna); licznik rośnie też z powodów niezwiązanych z
+throttle/progiem (mylący komentarz w kodzie).
+
+Dispatch rundy 2 (wąska, TYLKO dwa wskazane cięcia + test pokrywający M8/M9) NASTĘPUJE teraz.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — runda 2 (naprawa) dostarczona, czeka na NIEZALEŻNEGO Evaluatora (2026-08-10)
+
+Zakres ściśle ograniczony do 2 wskazanych cięć + rozszerzenie testu (C-025, zero przy okazji —
+nie ruszono `relaxedWonderCostThreshold`, save/load `aiWonderStuckTurnsByOwner`, danych
+`petra`/`wonders.json`). `main.ts`: `wonderForcePriority` teraz koniunkcja trzech warunków
+(`wonderEraGateForced && !wonderRequiredAlreadyBuilding && wonderRequiredBuildable`),
+`wonderRequiredAlreadyBuilding` skanuje całą kolejkę miasta, nie tylko front. `ai.ts`:
+`decideAiWonderBuild` dostał nowy parametr końcowy `requiredWonderIds`, w trybie `forcePriority`
+wybiera WYŁĄCZNIE z tej listy (`ordered.find`, nie `ordered[0]`), zwraca `null` bez fallbacku gdy
+żaden wymagany cud niebudowalny — nawet gdyby `forcePriority` błędnie dostał `true`.
+
+Test rozszerzony do **46/46** (z 31/31): nowa sekcja 5-STRUKTURA czyta źródło `main.ts` (ten sam
+wzorzec co `era-cud-main-ts-integracja-test.cjs`, naprawia lukę M8/M9 z werdyktu Evaluatora rundy
+1 — poprzednia sekcja 5 re-implementowała formułę zamiast czytać źródło); nowa sekcja 6 to
+DOKŁADNA reprodukcja scenariusza Evaluatora (Fenicjanie/Petra, realne dane, symulacja 12 tur) —
+PO naprawie: kolejka nie rośnie (max długość 1 zamiast rosnącej do 12), zero `queueJump` w 12
+tur, po zbadaniu Inżynierii wymuszacz poprawnie wybiera `petra`. Wynik wklejony do raportu jako
+dowód.
+
+Bramki: tsc 0, logic-test 213/213, owner-epoch 13/13, era-cud-warunek-awansu 33/33,
+era-cud-main-ts-integracja OK (15/16/11), ai-production-priority 9/9, ai-cud-priorytet-b3
+**46/46**, ai-balans-step4 10/10, cuda-handel 26/26. `ai-balans-step3` 7/8 — ta sama porażka
+pre-istniejąca, ponownie potwierdzona.
+
+Dispatch NIEZALEŻNEGO Evaluatora rundy 2 (inny agent niż runda 1) NASTĘPUJE teraz.
+
+---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2, stackGroupId) — runda 3 dostarczona, czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a3f6bd057db40cbd4` — krok kopiowania z żywego checkoutu zweryfikowany (worktree
+faktycznie startował od `main`/`b0e4a5c9`, `grep computeSeparateReturn` dawał zero trafień przed
+kopiowaniem, trafienia po). Refaktor: nowe opcjonalne pole `RuntimeUnit.stackGroupId?: string`
+(`units/setup.ts`), fallback `stackGroupIdOf()` = stare grupowanie po heksie gdy pole nieobecne
+(wsteczna kompatybilność zapisów). Choke point `activeUnitStack` (więc `playerStackAt`) filtruje
+dodatkowo po `stackGroupIdOf` — naprawia automatycznie ~50 wywołań pochodnych
+(`syncStackRuchLeft`/`deductStackRuchLeft`/`planningStackRuchLeft`/`unitWithPlanningStackRuch`)
+bez dotykania każdego z osobna. Funkcje „kto na heksie" (`visibleStackOnHex`,
+`coLocatedForMergePrompt`, `garrisonUnitsOnHex`) dostały opcjonalny 5. param `groupId` —
+merge-prompt/Prawo/bulk-akcje CELOWO zostają unscoped (fizyczna obecność, nie tożsamość armii).
+„Zostaw osobno"/split → fresh id; każda z 3 ścieżek merge → wspólny id.
+
+C-026: 15 funkcji z listy zlecenia + **2 dodatkowe znalezione przy audycie, POZA listą**
+(`buildPlayerArmyListEntries`, `cyclablePlayerArmyLeadsBase`/`armyLeadHexKey` — własne
+reimplementacje grupowania po heksie w HUD, ta sama klasa błędu w innym miejscu) — wszystkie 78
+wywołań przejrzanych indywidualnie.
+
+Bramki (tsc zweryfikowany DWA razy na spójnym drzewie, bo worktree z `main` ma niepełny
+`gra/src`): tsc 0, logic-test 213/213, army-merge-separate-return 16/16 +
+-mainguard 37/37, army-merge-bounce 4/4, army-merge-dismiss-bounce 16/16, army-stack-ruch 5/5,
+army-merge-colocated 4/4, combat 6/6, tech-tree 19/19, research 33/33, unit-replace 13/13,
+garnizon-exit 26/26, map-siege 6/6, siege-ai 17/17, siege-defenders 12/12, save-label OK,
+hud-moc-warstwa 28/28, hud-skarbiec 7/7, hud-miasto-stan-cywilizacji 20/20. Nowy test
+`army-merge-stackgroupid-test.cjs` 32/32 (mutacyjnie potwierdzony — cofnięcie fixu w
+`activeUnitStack` daje 9 FAIL w oczekiwanych miejscach). `pre-battle-save-test.cjs` FAIL
+niezwiązany (esbuild/`import.meta.glob`, plik nietknięty, poza zakresem).
+
+Zgodnie z nową regułą C-034 (scalenie zawsze osobnym, natychmiastowym dispatchem po PASS) —
+dispatch Evaluatora rundy 3 NASTĘPUJE teraz, scalenie dopiero po jego werdykcie, osobnym
+zleceniem.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — priorytet cudu, Operator runda 1 dostarczona, czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a85d78f7d0cdd8a5d` (base `main`/`b0e4a5c9`, TA SAMA klasa problemu co
+stackGroupId runda 2 — worktree nie widział `13861b60` scalonego już do gałęzi sesji; Operator
+sam to zdiagnozował i odtworzył prerequisite przez `git diff 13861b60^ 13861b60` + `git apply -3`,
+zweryfikowane czyste). **Scalający musi to uwzględnić:** diff tego worktree na `owner-epoch.ts` i
+części `main.ts` DUBLUJE zawartość `13861b60` — scalenie wymaga albo wziąć tylko hunki
+specyficzne dla B3 (po scaleniu `13861b60`, które już jest na gałęzi sesji), albo uważnie
+rozdzielić.
+
+Dwa mechanizmy w `gra/src/game/ai.ts`, wpięte w JEDYNE istniejące miejsce wywołania (`main.ts`,
+blok `CUDA-AI` ~linia 23059, przed `decideAITurn`): `decideAiWonderBuild(...,forcePriority=false)`
+— nowy opcjonalny 7. parametr (wstecznie kompatybilny, stare 6-argumentowe wywołania/testy
+nietknięte), gdy `true` pomija throttle/`hasWonderInProgress`/`queueEmpty` (pilnuje tylko
+`pracaPerTurn>0`); `relaxedWonderCostThreshold(...)` — próg opłacalności rośnie płynnie do
+`Infinity` po `stuckTurns>=cuda_stuck_relax_tur_max` (nowy parametr w `ai-params.json`, domyślnie
+30 tur). `wonderForcePriority` liczony przez ponowne użycie `allEraTechsResearched`/
+`eraOwnWonderSatisfied` z `owner-epoch.ts` (`13861b60`) — bez duplikacji logiki. C-026: jedyne
+miejsce wywołania `decideAiWonderBuild` zgrepowane i potwierdzone, `chooseCityProduction`
+(normalny scoring) nietknięty.
+
+Nowy test `ai-cud-priorytet-b3-test.cjs` 31/31. Bramki: tsc 0, logic-test 213/213, owner-epoch
+13/13, era-cud-warunek-awansu 33/33, era-cud-main-ts-integracja OK (15/16/11), ai-production-
+priority 9/9, tech-tree 19/19, research 33/33, unit-replace 13/13, wonder-availability 7/7,
+wonder-civ-tech 5/5, cuda-handel 26/26, ai-balans-step4 10/10. `ai-balans-step3-test.cjs` 7/8 —
+1 porażka PRE-ISTNIEJĄCA (potwierdzona na bazowym `b0e4a5c9` przed zmianą, test ma
+zdezaktualizowaną wartość `prog_koszt_x=70` podczas gdy JSON już ma `80` z wcześniejszego
+STEP4), niezwiązana z tą zmianą.
+
+**Znane ograniczenie, nie naprawiane (zgodne z zastrzeżeniem Macieja „jeśli dosłownie nie stać —
+priorytet nie pomoże"):** `tryDeductWonderStartFood` może po cichu pominąć zakolejkowaną decyzję
+z braku żywności; w trybie `forcePriority` licznik `stuckTurns` i tak resetuje się do 0, mimo że
+nic nie zostało faktycznie zakolejkowane — brzegowy przypadek poza zakresem tego zlecenia.
+
+Dispatch Evaluatora rundy 1 NASTĘPUJE teraz.
+
+---

@@ -788,7 +788,6 @@ export function hasColonizationSource(
 }
 /** Epoki pełnej agresji kolonizacyjnej (Kamień → Żelazo). */
 const AI_COLONIZATION_AGGRESSIVE_ERA_MAX = 3;
-const AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS = 15;
 const AI_COLONIZATION_SURGE_MAX_PER_TURN = 2;
 
 /** Liczba wolnych niezależnych miast-państw (bez wasala). */
@@ -1848,8 +1847,14 @@ export function planCityFounding(
   if (!aff.ok) return null;
 
   const enemyCities = cities.filter(c => c.ownerId !== playerId);
-  const era = opts.civEra ?? 1;
-  const requireOutsideTerritory = era > AI_COLONIZATION_AGGRESSIVE_ERA_MAX;
+  // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (Maciej, decyzja A, 2026-08-09): AI dostaje
+  // ten sam twardy wymog withinTerritory co gracz (main.ts:withinTerritory) — nowe miasto
+  // musi leżeć w zasięgu terytorium JEDNEGO z już posiadanych miast TEJ SAMEJ cywilizacji.
+  // Brak własnych miast (pierwsze miasto AI) -> brak restrykcji, parytet z
+  // isAwaitingFirstPlayerCity gracza.
+  // EN: AI now gets the same hard withinTerritory requirement as the player — a new city
+  // must lie within reach of one of the AI's OWN existing cities. No own cities yet (first
+  // city) -> no restriction, matching the player's isAwaitingFirstPlayerCity parity.
   const targetHex = findCityFoundingHex(
     map,
     cities,
@@ -1857,7 +1862,7 @@ export function planCityFounding(
     data,
     minCityDist,
     opts,
-    { excludeHexes, requireOutsideTerritory, applyMinScore: myCities.length > 0 },
+    { excludeHexes, myCities, applyMinScore: myCities.length > 0 },
   );
   if (targetHex === null) return null;
 
@@ -1886,6 +1891,77 @@ function isEnemyNearOwnTerritory(
     }
   }
   return myCities.some(c => hexDistance(enemyQ, enemyR, c.q, c.r) <= maxDist);
+}
+
+// ---------------------------------------------------------------------------
+// Home defense (P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI, ECHO A, Maciej 2026-08-09)
+// „najpierw obrona swojego terytorium, a potem dopiero atak obcego" — najwyższy priorytet:
+// zlikwidować wrogie siły (w tym barbarzyńców) na własnym terytorium lub w jego bezpośredniej
+// okolicy, niezależnie od stanu pokoju/wojny z kimkolwiek innym. / EN: highest priority — clear
+// hostile forces (including barbarians) inside or near own territory, regardless of peace/war
+// state with anyone else.
+// ---------------------------------------------------------------------------
+
+/** Promień „okolicy" miasta dodawany do promienia terytorium przy szukaniu zagrożeń
+ *  wymagających obrony domu. */
+export const AI_HOME_DEFENSE_VICINITY_HEX = 2;
+
+/**
+ * Dokładny warunek PER MIASTO: czy wróg (enemyQ,enemyR) jest zagrożeniem wymagającym obrony
+ * domu dla KONKRETNEGO miasta `city`. Zasięg = promień terytorium TEGO miasta +
+ * 2×AI_HOME_DEFENSE_VICINITY_HEX — nie jedna uniwersalna stała, tylko wartość policzona osobno
+ * dla każdego miasta (miasto pop=12 → 16 heksów, pop=15+ → 19 heksów, cap promienia 15).
+ * Formuła odpowiada dokładnej geometrycznej granicy `isEnemyNearOwnTerritory(..., maxDist=
+ * AI_HOME_DEFENSE_VICINITY_HEX)` (podwójne liczenie maxDist w tamtej funkcji — promień
+ * iteracji `radius+maxDist` i sprawdzenie `<= maxDist` od brzegowego heksu — dają razem
+ * `radius + 2*maxDist` jako faktyczny zasięg wykrywania), zweryfikowana matematycznie
+ * (Evaluator, runda 3, 2026-08-09, 10000 heksów testowych — dokładna, nic nie gubi).
+ * UWAGA: dawniejsza wersja tej naprawy (runda 2) używała jednej stałej `prefilter=9` jako
+ * uniwersalnego progu dla wszystkich miast — to był błąd (pomylony próg minimalny z
+ * maksymalnym), gubiący 52% zagrożeń w pierścieniu 10-19 hex dla miast pop>5. Nie powtarzaj
+ * tego błędu — licz zawsze osobno dla każdego miasta.
+ */
+export function isHomeDefenseThreatForCity(enemyQ: number, enemyR: number, city: AICity): boolean {
+  const node = { q: city.q, r: city.r, pop: city.population, level: 1 };
+  const radius = cityTerritoryRadius(node);
+  return hexDistance(enemyQ, enemyR, city.q, city.r) <= radius + 2 * AI_HOME_DEFENSE_VICINITY_HEX;
+}
+
+/**
+ * Przydziela obrońców zagrożeniom wykrytym w pobliżu własnego terytorium — algorytm
+ * najbliższy-dostępny: zagrożenia posortowane wg pilności (rosnąco odległość do
+ * najbliższego własnego miasta — najpierw najbardziej „u progu"), każde dostaje najbliższą
+ * jeszcze nieprzydzieloną własną jednostkę wojskową (nie zwiadowcę, nie jednostkę bez ruchu).
+ * Przydział 1:1 (jedna jednostka na jedno zagrożenie) — świadome uproszczenie względem
+ * ewentualnego kworum wielu jednostek na jedno duże zagrożenie (osobna decyzja na przyszłość).
+ * Zwraca mapę unitId -> przydzielone zagrożenie, do odczytu w głównej pętli ruchu jednostek.
+ */
+export function assignHomeDefenders(
+  threats: RuntimeUnit[],
+  myUnits: RuntimeUnit[],
+  myCities: AICity[],
+): Map<string, RuntimeUnit> {
+  const assignments = new Map<string, RuntimeUnit>();
+  if (threats.length === 0 || myCities.length === 0) return assignments;
+
+  const sortedThreats = [...threats].sort((a, b) => {
+    const distA = Math.min(...myCities.map(c => hexDistance(a.q, a.r, c.q, c.r)));
+    const distB = Math.min(...myCities.map(c => hexDistance(b.q, b.r, c.q, c.r)));
+    return distA - distB;
+  });
+
+  const used = new Set<string>();
+  for (const threat of sortedThreats) {
+    const available = myUnits.filter(
+      u => u.ruchLeft > 0 && !isScoutUnit(u) && !used.has(u.id),
+    );
+    const defender = nearest(threat.q, threat.r, available, u => u.q, u => u.r);
+    if (defender !== undefined) {
+      assignments.set(defender.id, threat);
+      used.add(defender.id);
+    }
+  }
+  return assignments;
 }
 
 // ---------------------------------------------------------------------------
@@ -2100,6 +2176,19 @@ export function decideAITurn(
     ec => isEnemyNearOwnTerritory(ec.q, ec.r, myCities, map, 8),
   );
 
+  // P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI (ECHO A, Maciej 2026-08-09): zagrożenia
+  // wymagające obrony domu — warunek DOKŁADNY liczony OSOBNO dla każdego miasta (patrz
+  // isHomeDefenseThreatForCity). Przydział obrońców (najbliższy-dostępny) liczony RAZ, przed
+  // pętlą ruchu — statyczna migawka stanu na początek tury tego gracza AI.
+  const homeThreats = engageableEnemyUnits.filter(
+    eu => myCities.some(city => isHomeDefenseThreatForCity(eu.q, eu.r, city)),
+  );
+  const homeDefenderAssignments = assignHomeDefenders(homeThreats, myUnits, myCities);
+  // Zagrożenia już zaatakowane w kroku 4b W TEJ SAMEJ turze (inna jednostka, adjacentEnemy) —
+  // przeciw podwójnemu zaangażowaniu: przydzielony obrońca takiego zagrożenia NIE ma już
+  // maszerować do celu, który ktoś inny właśnie obsługuje/zabija.
+  const handledThreatIds = new Set<string>();
+
   for (const unit of sortedUnits) {
     const cmdsBefore = commands.length;
 
@@ -2124,6 +2213,7 @@ export function decideAITurn(
     if (adjacentEnemy !== undefined) {
       commands.push({ type: 'attack', unitId: unit.id, targetUnitId: adjacentEnemy.id });
       unitActed.add(unit.id);
+      handledThreatIds.add(adjacentEnemy.id);
       continue;
     }
 
@@ -2149,6 +2239,22 @@ export function decideAITurn(
           unitActed.add(unit.id);
           continue;
         }
+      }
+    }
+
+    // 4b2: HOME DEFENSE — jednostka przydzielona jako obrońca zagrożenia w pobliżu własnego
+    // terytorium (P-AI-NIE-BRONI-WLASNYCH-MIAST, ECHO A) — priorytet PRZED marszem na wroga
+    // (4c). Jeśli zagrożenie już obsłużone w tej turze przez inną jednostkę w kroku 4b
+    // (handledThreatIds) — obrońca NIE maszeruje do już martwego/obsługiwanego celu.
+    // Jednostka trafiająca tu nie jest już adjacentna żadnemu engageable wrogowi (inaczej
+    // zaatakowałaby wyżej w 4b) — assignedThreat, jeśli nieobsłużone, jest zawsze >1 hex.
+    const assignedThreat = homeDefenderAssignments.get(unit.id);
+    if (assignedThreat !== undefined && !handledThreatIds.has(assignedThreat.id)) {
+      const step = firstStep(unit, map, assignedThreat.q, assignedThreat.r, units);
+      if (step !== null) {
+        commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
+        unitActed.add(unit.id);
+        continue;
       }
     }
 
@@ -2653,7 +2759,8 @@ function findCityFoundingHex(
   opts: AITurnOpts = {},
   hexOpts: {
     excludeHexes?: readonly { q: number; r: number }[];
-    requireOutsideTerritory?: boolean;
+    /** Wlasne miasta AI (ownerId===playerId) — twardy wymog withinTerritory wzgledem NICH. */
+    myCities?: readonly AICity[];
     applyMinScore?: boolean;
   } = {},
 ): { q: number; r: number } | null {
@@ -2686,12 +2793,16 @@ function findCityFoundingHex(
     const tooClose = allCities.some(c => hexDistance(q, r, c.q, c.r) < minCityDist);
     if (tooClose) continue;
 
-    const withinReach = isHexWithinAnyCityReach(q, r, allCities);
-    if (hexOpts.requireOutsideTerritory && withinReach) continue;
+    // P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI: twardy wymog withinTerritory wzgledem
+    // WLASNYCH miast AI (nie dowolnej cywilizacji) — brak wlasnych miast = brak restrykcji
+    // (pierwsze miasto, parytet z isAwaitingFirstPlayerCity gracza).
+    // EN: hard withinTerritory requirement against the AI's OWN cities (not any civ's) — no
+    // own cities yet (first city) means no restriction, matching the player's parity rule.
+    if (hexOpts.myCities !== undefined && hexOpts.myCities.length > 0
+      && !isHexWithinAnyCityReach(q, r, hexOpts.myCities)) continue;
 
     let score = hexCityScore(hex, q, r, data, enemyCities, opts) * ekspansjaScale;
     if (powerGoalBoost) score += 25;
-    if (!withinReach) score += AI_COLONIZATION_OUTSIDE_TERRITORY_BONUS;
 
     // pkt3: cluster bias — prefer hexes inside clusterCenter+clusterRadius
     // Faza 2: po konsolidacji klastra — nadal preferuj wnętrze regionu.
@@ -3109,6 +3220,14 @@ export interface RelacjaWejscie {
   /** Czy aktywny pakt nieagresji z partnerem (main.ts: activeDeals). */
   hasNapTreaty?: boolean;
   /**
+   * R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 2 (B3, Maciej 2026-08-09): czy aktywny sojusz
+   * (dowolny rodzaj — obronny/pełny) z partnerem (main.ts: allianceFormalKindBetween).
+   * Blokuje wypowiedzenie wymuszonej wojny Brązu TEMU partnerowi — cywilizacje nie mają
+   * przy tym mechanizmie zrywać własnych sojuszy. EN: whether an active alliance (any kind)
+   * exists with the partner — blocks a Bronze forced war being declared on THIS partner.
+   */
+  hasAllianceTreaty?: boolean;
+  /**
    * P-AI-011 / proaktywny handel: czy gracz formalnie nawiązał kontakt w audiencji.
    * Dotyczy partnerId === '0' (gracz). Bez kontaktu AI może wysłać zaproponuj_audiencje.
    */
@@ -3174,6 +3293,19 @@ export interface DiplomacjaInputs {
    * (tura >= 20 lub deadline konsolidacji) — priorytet przed normalną dyplomacją.
    */
   clusterForceWarTargetId?: number;
+  /**
+   * R-EPOKA-BRAZU-WYMUSZONA-WOJNA (2026-08-09): wymuszona wojna głównej cywilizacji AI
+   * z sąsiadem terytorialnym po awansie do epoki Brąz (lub po odpoczynku po poprzedniej
+   * wojnie wymuszonej) — priorytet przed normalną dyplomacją, wzorem clusterForceWarTargetId
+   * (patrz `game/forced-war-bronze.ts`). Silnik (main.ts) już wyklucza cele NAP/peaceLocked/
+   * przy-wojnie/sojusz (B3, runda 2) przy wyborze — tu tylko finalne domknięcie tego samego
+   * guarda.
+   * EN: Bronze-era forced war against a territorial neighbor after advancing into the Bronze
+   * age (or after resting from a previous forced war) — takes priority over normal diplomacy,
+   * same pattern as clusterForceWarTargetId. main.ts already excludes NAP/peaceLocked/at-war/
+   * alliance (B3, round 2) targets when picking; this is just the same guard closed off here.
+   */
+  bronzeForceWarTargetId?: number;
 }
 
 /**
@@ -3445,6 +3577,31 @@ export function decideAIDiplomacy(
         type:     'wypowiedz_wojne',
         targetId: forcedId,
         powod:    `AI-CS-CLUSTER-DIFF: wymuszona wojna z państwem-miastem kręgu (tura ${inp.currentTurn ?? 0})`,
+      }];
+    }
+  }
+
+  // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: wymuszona wojna głównej cywilizacji z sąsiadem
+  // terytorialnym (awans do Brązu / nowy cel po odpoczynku) — patrz forced-war-bronze.ts.
+  // B3 (runda 2, Evaluator FAIL): !forcedRel.hasAllianceTreaty domyka guard obok NAP/
+  // peaceLocked/stanWojny — cel z aktywnym sojuszem wykluczony z wymuszonej wojny.
+  // EN: Bronze-era forced war on a territorial neighbor (era advance / new target after
+  // rest). B3 (round 2): !forcedRel.hasAllianceTreaty closes the guard next to NAP/
+  // peaceLocked/at-war — a target with an active alliance is excluded.
+  if (inp.bronzeForceWarTargetId != null) {
+    const forcedId = String(inp.bronzeForceWarTargetId);
+    const forcedRel = inp.relacje.find(r => r.partnerId === forcedId);
+    if (
+      forcedRel
+      && !forcedRel.stanWojny
+      && !forcedRel.peaceLocked
+      && !forcedRel.hasNapTreaty
+      && !forcedRel.hasAllianceTreaty
+    ) {
+      return [{
+        type:     'wypowiedz_wojne',
+        targetId: forcedId,
+        powod:    `R-EPOKA-BRAZU-WYMUSZONA-WOJNA: wymuszona wojna z sąsiadem terytorialnym (tura ${inp.currentTurn ?? 0})`,
       }];
     }
   }

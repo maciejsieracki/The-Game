@@ -85,6 +85,16 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
    - **FINALNA** (`Gra-FINALNA.html` w korzeniu) — wersja pewna; promowana z **KANONU** (nie z roboczej) przez osobny `gra/tools/publish-finalna-snapshot.ps1`.
 
    **FINALNA promowana WYŁĄCZNIE na wyraźne polecenie właściciela, osobnym skryptem, NIGDY „przy okazji" promocji kanonu.** Rzadko i po dłuższym ograniu bieżącego kanonu.
+
+4a. **RYTM SCALANIA GAŁĘZI ROBOCZEJ DO `main` = ZAWSZE JEDNA FALA DO TYŁU (Maciej 2026-08-09).**
+   Jego słowa: „zawsze można scalać poprzednią falę, a nową zostawiamy do testów... zawsze będzie
+   scalenie o jedną falę do tyłu. Da to nam możliwość cofnięcia się i łatwiejszego zarządzania
+   błędami." Gdy powstaje fala N (deploy do ROBOCZA), fala N−1 kwalifikuje się do scalenia do
+   `main` (scalenie do konkretnego commitu deployu, nie do czubka gałęzi); fala N zostaje na
+   gałęzi wyłącznie do testów, nie jest scalana dopóki nie powstanie fala N+1. **Nowa fala ROBOCZA
+   powstaje wyłącznie na wyraźne słowo `deploy`** — zaostrzenie reguły §5 niżej, zero
+   autonomicznego tworzenia kolejnych fal po prostu przez nagromadzenie zamkniętych tematów.
+   Kanon: `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`.
 5. **KAŻDY deploy MUSI zostać zalogowany — natychmiast, w dwóch miejscach:**
    (a) **`dyspozycje/WERSJE.md`** — jedyny rejestr wersji: md5 + stempel + co weszło + status (poprzednią pozycję oznacz `ZASTĄPIONA`);
    (b) **`dyspozycje/_handoff/KANAL-PRACA.md`** — meldunek dla drugiego integratora (format `## [HH:MM] OD → DO — temat`, na końcu `CZEKAM-NA:`).
@@ -121,6 +131,7 @@ To jest projekt **Civ**, **NIE Planify**. Jeśli widzisz odniesienia do „Fazy 
 Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — odpowiadaj po polsku**. Podejmuje decyzje produktowe/gameplayowe; od Ciebie oczekuje architektury, analizy i wykonania. Woli **ustrukturyzowany, analityczny wywód** (tabele, numerowane sekcje) niż ściany tekstu.
 
 1. **KAŻDA decyzja gameplayowa/produktowa/architektoniczna → PEŁNA FORMA ABC** + **numer ID w rejestrze** (procedura 2026-08-03). Struktura pytania: nagłówek `[TEMAT: …]` + **ID** · **Sytuacja** · **Cel pytania** · **Dlaczego teraz** · **A / B / C** (Za≥2, Przeciw≥2) · **Rekomendacja**. **Max 3 pytania na turę**. Po odpowiedzi Macieja w formie **`ID + litera`**: **ECHO** → zapis plikowy → **kod + commit** (bez deployu). Deploy tylko na **`deploy`**. Hasło **`format`** / **`ABC`** = przepisz pytanie. Szczegóły: `dyspozycje/PAMIEC-ROBOCZA-CIV.md` · `PROCEDURA-NUMER-ABC-COMMIT-DEPLOY.md`.
+1a. **⛔ OZNACZ WPROST, GDY PYTANIE PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (Maciej, 2026-08-09).** Jego słowa: „powinno być wyraźnie zapisane, że jeżeli pytanie ABC podważa wcześniejsze moje decyzje, to powinno być to wyraźnie wskazane, że to podważa jakąś inną moją decyzję, żebym miał świadomość, że mogę cofnąć pewne inne swoje ustalenia." Jeśli sytuacja/rekomendacja w pytaniu ABC dotyka obszaru objętego już podjętą decyzją (ID + litera + data w rejestrze) — **nazwij wprost, którą decyzję i z jakiego ID/daty to koliduje**, zamiast zostawiać to domyślne albo ukryte w opisie sytuacji. Cel: właściciel ma widzieć na pierwszy rzut oka, że odpowiadając literą, może cofać coś, co już wcześniej ustalił — nie ma się tego domyślać z kontekstu.
 2. **⛔ ZAKAZ OTWIERANIA NOWYCH WĄTKÓW PYTANIAMI (Maciej, 2026-07-25).** Wolno zadawać **wyłącznie pytania
  doprecyzowujące do wątku, który AKTUALNIE prowadzimy**. Pytań otwierających nowy temat **NIE ZADAJESZ**,
  dopóki Maciej sam nie powie, że można. Znalezione przy okazji problemy **zapisujesz cicho** do
@@ -179,6 +190,9 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
    Kończ wiadomość: **### Playtesty** (tylko weryfikacja w grze) **oraz** **### Następny krok** (tylko kolejne
    zmiany kod/dane/docs — **pełna lista**, bez limitu 3; `R-NASTEPNY-KROK-PELNA-LISTA`). **ZAKAZ** mieszać playtest z kodem w jednym menu.
    Reguła alwaysApply: `.cursor/rules/maciej-nastepny-krok.mdc` · kanon: `docs/decyzje/R-NASTEPNY-KROK-SPLIT.md`.
+9. **Komentarze w kodzie (`gra/src/**`) dwujęzyczne PL+EN (Maciej 2026-08-09).** Nie zmienia zasady „domyślnie
+   bez komentarzy, tylko gdy WHY nieoczywiste" — dotyczy WYŁĄCZNIE tych rzadkich komentarzy, które i tak
+   powstają. Format: polska wersja, potem `/ EN: ...` w tej samej linii/bloku.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)
@@ -187,7 +201,7 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 - `dyspozycje` — notatki/plany robocze · **`STAN-PRACY-HANDOFF.md`** — żywy stan pracy
 
 ## BRAMKI (uruchamiaj z `gra/`)
-`npx tsc --noEmit` (0 błędów) · `node tools/tech-tree-test.cjs` · `node tools/research-test.cjs` · `node tools/unit-replace-test.cjs` · `node tools/map-gen-regression-test.cjs` (determinizm A=B + 0 rzek bez ujścia).
+`npx tsc --noEmit` (0 błędów) · `node tools/tech-tree-test.cjs` · `node tools/research-test.cjs` · `node tools/unit-replace-test.cjs` · `node tools/map-gen-regression-test.cjs` (determinizm A=B + 0 rzek bez ujścia) · `node tools/ai-founding-territory-test.cjs` (AI zakłada miasta wg tego samego wymogu withinTerritory co gracz).
 
 **Znane PRE-ISTNIEJĄCE porażki (NIE regresja, nie „naprawiaj przy okazji") — stan 2026-07-26:** `logic-test.cjs` — porażka `mapgen: deposits obey terrain rules` NAPRAWIONA (generator, nie test; `R-MAPGEN-GLINA`). **AKTUALIZACJA 2026-08-07 (`R-BRAMKA-MINDIST-Q1 = A`): punkt odniesienia `logic-test.cjs` to `213/213` zaliczonych asercji, exit 0** (było 208/208, potem 209/209). Wynik **209 oznacza cofnięcie tej decyzji, nie normę** — commit `7136241` dołożył 4 asercje: przypięcie `MIN_CITY_DISTANCE = 4 heksy` (+1) i kontrakt `readCityFoodBuffer()` (+3). **`combat-test.cjs` jest NAPRAWIONY i zielony (6/6)** — harness `counterTyp` naprawiono commitem `496dd53`; stary zapis o „~21 porażkach" i „rzuca wyjątkiem" był nieaktualny. **KOREKTA 2026-07-26 (audyt weryfikacyjny):** `akwedukt-popcap-test.cjs`, `auto-manage-test.cjs`, `growthmult-compound-test.cjs`, `upgrade-budynki-test.cjs`, `deposit-building-gate-test.cjs` były błędnie wpisane tu jako czerwone — **weryfikacja przez uruchomienie potwierdza, że wszystkie są dziś ZIELONE**: upgrade-budynki 48/48, deposit-building-gate 34/34, akwedukt-popcap 5/5, auto-manage 29/29, growthmult-compound 24/24. Realne czerwone testy dziś: `relief-grid-coverage-test.cjs` (2 pass/4 fail) i `fair-play-grid-test.cjs` (3 pass/5 fail) — **W NAPRAWIE na mocy decyzji C-MAPA-Q1=B** (drugi agent dostraja generator w `gra/src/map/**`), punkt odniesienia dziś: 56 gór w komórce przy progu 25, 95 wzgórz przy progu 37; `map-deposits-era-test.cjs` był przestarzały (asercjonował miedź na Górach) — **NAPRAWIONY** 2026-07-26, dziś 16/16. Szczegóły: **handoff §7**. **AKTUALIZACJA 2026-08-07 (`P-BRAMKA-UNIT-POWER-CZERWONA`):** `unit-power-test.cjs` — **4 pass, 2 fail**, exit 1: `FAIL: Hastati M_pole=50 (got 57.5)` i `FAIL: sumArmyFieldPower 3 units (got 167.5)`. Pre-istniejące, niezwiązane z pracami `R-MOC-*` tej sesji (zweryfikowane niezależnie identycznymi komunikatami na czystej bazie przed zmianami). Przyczyna: zdezaktualizowane wartości oczekiwane w teście po zmianie danych Hastati w `units.json` — dług testowy, nie regresja silnika.
 

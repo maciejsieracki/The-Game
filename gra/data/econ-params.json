@@ -26,14 +26,21 @@
       "normal": 5,
       "hard": 4,
       "jednostka": "ludność",
-      "opis": "Max populacja bez Akweduktu (Maciej: normal=5). Wzrost zablokowany przy cap — nadwyżka żywności idzie do armii lub przepada (B5). [PT]"
+      "opis": "Max populacja bez ŻADNEGO z dwóch budynków (Spichlerz/Akwedukt) — dolny stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, normal=5, bez zmian). Wzrost zablokowany przy cap — nadwyżka żywności idzie do armii lub przepada (B5). [PT]"
+    },
+    "spichlerz_prog_ludnosci": {
+      "easy": 8,
+      "normal": 8,
+      "hard": 8,
+      "jednostka": "ludność",
+      "opis": "Twardy cap populacji ze Spichlerzem (I lub II), ale BEZ Akweduktu — środkowy stopień drabinki R-SPICHLERZ-CAP-LUDNOSCI-ETAP (Maciej 2026-08-09, ECHO A: normal=8). Płaski 8/8/8 na wszystkich trudnościach — zgodne z dosłownymi słowami Macieja z propozycji, do wiadomości (nie skaluje się z trudnością tak jak akwedukt_prog_ludnosci)."
     },
     "akwedukt_max_ludnosci": {
-      "easy": 15,
-      "normal": 15,
-      "hard": 15,
+      "easy": 12,
+      "normal": 12,
+      "hard": 12,
       "jednostka": "ludność",
-      "opis": "Twardy cap populacji Z Akweduktem (Maciej 2026-07-07: normal=15). Epoka 4+ — osobny unlock (do decyzji ABC)."
+      "opis": "Twardy cap populacji Z Akweduktem — górny stopień drabinki (Maciej 2026-08-09, R-SPICHLERZ-CAP-LUDNOSCI-ETAP ECHO A: obniżka z dawnych 15 → normal=12). Epoka 4+ — osobny unlock (do decyzji ABC)."
     },
     "zywnosc_zuzytka_populacja": {
       "easy": 1,

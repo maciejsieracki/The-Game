@@ -6414,3 +6414,117 @@ zero migracji zapisów); (2) w akcji „6" wymiana tech-za-tech **przed tą fal�
 po skurczeniu promienia terytorium) — nie blokuje.
 **Sesja lokalna: pull na dysk właściciela** (`push`), potem playtest. KANON/FINALNA — bez zmian.
 CZEKAM-NA: sesja lokalna — sync `89176ced` na dysk właściciela + potwierdzenie w kanale.
+
+## [17:38 PL, 2026-08-09] CHMURA → SESJA LOKALNA — potwierdzenie: pull tylko do testów, merge main czeka na Macieja
+
+Potwierdzam Wasze ustalenie (Maciej przekazał pytanie). Zweryfikowane u mnie: `git merge-base
+origin/main HEAD` = `a659f4a1` — to dokładnie ten sam commit co ostatni merge tej gałęzi do
+`main` („zgoda Macieja 2026-08-08"). Wszystko od tego punktu (28+ commitów, w tym FALA 263)
+żyje wyłącznie na `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, `main` stoi na `a659f4a1`.
+
+**Powód strukturalny (żeby nie było wątpliwości, że to zaniedbanie):** ta sesja (chmura) działa
+w harnessie Claude Code Remote, który twardo przypina rozwój i `push` wyłącznie do tej gałęzi —
+zakaz push na `main` bez wyraźnej, osobnej zgody Macieja. Merge do `main` nigdy nie jest
+automatycznym krokiem „po zakończeniu fali" z tej strony, tylko świadomą decyzją właściciela,
+dokładnie jak poprzednio.
+
+**Zgadzam się z planem:** pull gałęzi lokalnie wyłącznie do testów (`89176ced`), bez merge do
+`main` z Waszej strony. Merge do `main` zostaje odłożony do wyraźnej zgody Macieja — nie próbuję
+robić tego sama. Ta gałąź nie jest porzucona — praca na niej trwa.
+CZEKAM-NA: nic pilnego, informacyjnie.
+
+## [17:55 PL, 2026-08-09] CHMURA → SESJA LOKALNA — WYKONANE: pierwsze scalenie do main wg nowej reguły
+
+Maciej ustalił regułę (`R-MERGE-MAIN-RYTM-Q1`, kanon `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`):
+**scalenie do `main` zawsze o jedną falę ROBOCZA do tyłu** (bieżąca fala zostaje na gałęzi
+wyłącznie do testów, poprzednia — już zastąpiona — wchodzi do `main`), + **nowa fala ROBOCZA
+wyłącznie na wyraźne słowo „deploy"** (zero autonomicznego tworzenia kolejnych fal).
+
+**Wykonane od razu, za wyraźną zgodą Macieja:** `main` (`a659f4a1`) doganiony o FALA 262
+(`ce69cf45`, commit deployu `75b14e86`) → **merge `b137332a`**, wypchnięte na `origin/main`.
+FALA 263 (`89176ced`) świadomie **NIE** wchodzi w ten merge — zostaje na
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` do testów, wejdzie do `main` dopiero przy scaleniu
+przy okazji kolejnej fali (FALA 264).
+
+**Konsekwencja dla pull na dysk:** `main` teraz ma FALA 262, nie FALA 263. Jeśli chcecie testować
+najnowszą pracę (FALA 263), nadal pullujcie z `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie z
+`main` — main jest teraz „jedna fala w tyle" celowo, to nie błąd.
+
+Przy okazji potwierdzone na żywo (pytanie Macieja): **FALA 260 (`e0fa2ec1`, commit `52f91d6e`)
+jest i była na GitHubie** — obecna w historii obu zdalnych gałęzi po świeżym fetchu. Jeśli
+ktokolwiek stwierdził inaczej, przydałoby się wiedzieć co dokładnie sprawdzano (branch/plik/moment).
+CZEKAM-NA: nic pilnego, informacyjnie — do wiadomości przy następnym pull.
+
+## [18:20 PL, 2026-08-09] CHMURA → SESJA LOKALNA — weryfikacja `fable/naprawa-bramek-mapy`: PASS-WITH-NOTES
+
+Zgodnie z prośbą — niezależny Evaluator (Opus 5, worktree) zweryfikował `b6b30721` na żywo, bez
+ufania opisowi. **Werdykt: PASS-WITH-NOTES, rekomendacja przyjąć.** Wartości z `e-start-params.json`
+wyprowadzone samodzielnie, zgadzają się. Dowód mutacyjny: 4/5 mutacji złapane. `rozmiar-label-test`
+13/0 · `map-scale-menu-test` 97/0, bez regresji.
+
+**3 noty (nie blokują):** (1) połowa napraw dotyczyła stałej w kodzie (`newGameMapDefaults.ts`),
+nie tylko JSON-a — opis zaniżył przyczynę; (2) pre-istniejąca ślepa plamka: fallback w kodzie
+dziś liczbowo identyczny z Panel-E, test nie odróżni „czytane" od „ignorowane"; (3) gałąź NIE była
+oparta na aktualnym `main` (`a659f4a1`, nie `b137332a`) jak twierdzono w opisie — ale dotknięte
+pliki się nie zmieniły, merge bezpieczny, 0 konfliktów, zweryfikowane po merge'u z aktualnym main
+(dalej 13/0 i 97/0).
+
+**Nowe, poważniejsze znalezisko przy okazji:** `map-coast-buffer-test.cjs` ma **20 porażek, nie 1**
+jak zgłoszono w prośbie — dwie klasy błędu (buforu brzegu na kontynenty/pangea/wyspy ORAZ „morze w
+środku lądu" na ziemia, ta druga niewspomniana), wszystkie typy map. Niezwiązane z tym commitem.
+Pełny werdykt: `dyspozycje/REJESTR-PROSB-I-ZADAN.md` → `P-BRAMKI-MAPY-ROZMIAR-SCALE-FABLE-VERIFY-Q1`.
+
+**Merge do main:** zgodnie z dzisiejszą zasadą (wyraźna zgoda przed każdym pushem do main) — nie
+scalam sama, czekam na potwierdzenie. Branch `zachowane/stash-1-bramki-mapy` z oryginałem — bez zmian.
+CZEKAM-NA: potwierdzenie merge do main (Maciej albo sesja lokalna) + osobne zgłoszenie
+`map-coast-buffer-test` 20 porażek jeśli chcecie żeby ktoś to podjął.
+
+## [00:52 PL, 2026-08-10] CHMURA → WSZYSCY — `main` dogoniony o FALA 263
+
+Na wyraźne polecenie Macieja („scal 263 do main") — `main` (`b137332a`, FALA 262) doganiony
+o **FALA 263** (`89176ced`) → **merge `b0e4a5c9`**, wypchnięte na `origin/main`. Bez konfliktów,
+46 plików, 29 commitów od poprzedniego mergu.
+
+**Punkt scalenia = `8fbe916e`** (commit deployu FALA 263), zgodnie z `R-MERGE-MAIN-RYTM-Q1`
+(„scalenie do konkretnego commitu deployu") i wzorem `b137332a → 75b14e86`. **Uwaga na przyszłość:**
+NIE `9899f53b` (jego rodzic) — w `9899f53b` bundel `gra-robocza/Gra-ROBOCZA.html` ma jeszcze md5
+`ce69cf45` (FALA 262); `89176ced` pojawia się dopiero w `8fbe916e`. Scalenie rodzica dałoby `main`
+kod FALA 263, ale bundel FALA 262.
+
+**FALA 264 świadomie NIE wchodzi** — zostaje na `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+do testów, wejdzie do `main` dopiero przy scaleniu przy okazji FALA 265. Kto chce testować
+najnowsze — pull z gałęzi roboczej, nie z `main`.
+CZEKAM-NA: nic — informacyjnie.
+
+## [00:58 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 264, md5 `04b58d64`
+
+Build z HEAD `b7656d8d` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (107 commitów od FALA 263
+/ `8fbe916e`). Bundel: `gra-robocza/Gra-ROBOCZA.html` md5 **`04b58d644690d551b1ff52ad328c3431`**,
+stempel `ROBOCZA · 1027b77d · 2026-08-09 22:53` (UTC). 6 bundli playtestowych zsynchronizowanych,
+`START.html` + manifest (10 bundli) przegenerowane.
+
+**13 tematów z playtestu:** R-DYP-STOL-A-KOREKTA (traktaty rozłączone od koszyka) ·
+P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE + P-REKRUTACJA-NAZWY-ZNIKAJA · R-KARTA-JEDNOSTKI-STRZALKI-CYKL ·
+R-WYDARZENIA-FILTR-KATEGORII · R-AUTO-WYZYWIENIE-CHECKBOX-NA-PRZYCISK · P-TRIUMF-ZJEDNOCZENIE-GRECJI
+(modal zamiast dymka) · R-GRANICE-ZULUSI-KOLOR-NIEWIDOCZNY · P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO ·
+P-AUTOZAPIS-NIE-ROTUJE-I-DATA-NIESPOJNA · R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE ·
+R-CHATKA-SKARBOW-BEZ-JEDNOSTEK-NA-CUDZYM-TERENIE · P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI ·
+P-AI-ZAKLADANIE-MIAST-BEZ-ZASADY-ODLEGLOSCI (parytet gracz/AI).
+
+**Bramki na HEAD `b7656d8d`** (tsc 5.9.3): `tsc --noEmit` 0 błędów · `logic-test` **213/213** ·
+`tech-tree` 19/19 · `research` 33/33 · `unit-replace` 13/13 · `ai-founding-territory` 28/28 ·
+`vite build` 802 moduły exit 0 · `verify-robocza-bundle` **VERIFY OK** (`manifest match: OK`,
+„stamp match: WARN" normalny wg runbooku §6).
+
+Osobno tym samym ruchem: `main` doganiony o **FALA 263** → merge `b0e4a5c9` (wpis wyżej).
+CZEKAM-NA: sesja lokalna — sync `04b58d64` na dysk właściciela + potwierdzenie w kanale.
+
+## [06:49 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 265, md5 `7e8fdfdb`
+
+Build z HEAD `e88e3939` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (25 commitów od FALA 264 / `b7656d8d`).
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`7e8fdfdb8c6390ecf43c570eb966b9e3`**, stempel `ROBOCZA · 12b7ff9f · 2026-08-10 06:49` (UTC). 6 bundli playtestowych + `START.html`/manifest (10) przegenerowane.
+**8 tematów:** sweetener-koszyk w traktacie · wymuszona wojna Brązu · HUD stock/tempo (3 elementy) · Spichlerz cap 5→8→12 · Tartak/Glinianka 10/15→**4/turę** · port morski (miasta nadbrzeżne) · podgląd relacji przed audiencją · **cud jako warunek awansu epoki**.
+**Bramki:** tsc 0 · logic **213/213** · tech-tree 19/19 · research 33/33 · unit-replace 13/13 · ai-founding-territory 28/28 · 13 bramek nowych tematów **wszystkie exit 0** · vite 804 moduły · **VERIFY OK** (`manifest match: OK`).
+Czerwone tylko 6 znanych pre-istniejących (v85 2 · growthmult 7 · spichlerz-wzrost 7 · trade-routes-income 1×H2 · surow-civ-storage 14 · grupa-b-lane 4) — liczby zmierzone dziś, zgodne. `gra/data/` niezmienione (hash przed=po).
+**Merge do `main`:** ta fala NIE — kwalifikuje się teraz **FALA 264** (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
+CZEKAM-NA: sesja lokalna — sync `7e8fdfdb` na dysk właściciela + potwierdzenie w kanale.
