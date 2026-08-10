@@ -11336,7 +11336,11 @@ górę", nie zniknęła:
   wchłonięcia dyplomatyczne nie mają ŻADNEJ komunikacji do gracza — ta sama rodzina błędu, poza
   zakresem tej rundy.
 
-**STATUS: dispatch Sonnet 5 (worktree) — runda 4, wyłącznie Defekt A (B/C już zamknięte). Wzmocnić
-`elimination-toast-merge-test.cjs` o asercję na poziomie `resolveNegotiationEntryAt`, nie tylko
-wewnątrz `wchloniecie`. Po dostarczeniu: NIEZALEŻNY Evaluator (4. runda) przed uznaniem za
-zamknięte.**
+**STATUS: SCALONE `e0e0d186` (2026-08-10).** `resolveNegotiationEntryAt` pomija swój generyczny
+`showHintMessage` wyłącznie gdy `entry.actionId==='wchloniecie' && outcome.kind==='accepted'`
+(bo `applyProposalOutcome` już pokazał kompletną treść); odrzucone wchłonięcie nadal dostaje
+toast. Test wzmocniony o 8 nowych asercji (indentacja strukturalna dowodzi, że toast jest
+zagnieżdżony w guardzie, nie bare statement) — potwierdzone czerwono→zielono: 28/30 PASS na
+`4eb1cc88` (2 FAIL złapane), 30/30 po naprawie. Bramki: tsc 0, logic-test 213/213,
+`elimination-toast-merge-test` 30/30, `capital-capture-test` 58/58. Czeka na NIEZALEŻNEGO
+Evaluatora (4. runda, dispatch w toku).**
