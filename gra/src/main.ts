@@ -10285,7 +10285,16 @@ async function boot(): Promise<void> {
         if (hexClearingStates.has(req.hexKey)) return;
         const startCost = req.kosztPraca;
         if (startCost > 0 && playerPracaPool < startCost) {
-          showHintMessage('Za mało Pracy na wycinkę (potrzeba ' + startCost + ')', 3000);
+          // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): komunikat trwalszy (4500ms) +
+          // pokazuje aktualną pulę, nie tylko wymagany koszt — panel budowy zwykle blokuje ten
+          // klik wcześniej (wyszarzenie), toast to zapasowa ścieżka na wypadek zmiany puli.
+          // / EN: longer-lived toast (4500ms) that also shows the current pool, not just the
+          // required cost — the build panel usually blocks this earlier (grayed out); this
+          // toast is a fallback path in case the pool changed in between.
+          showHintMessage(
+            'Za mało Pracy na wycinkę: potrzeba ' + startCost + ' P, masz ' + Math.floor(playerPracaPool) + ' P',
+            4500,
+          );
           return;
         }
         if (startCost > 0) {
@@ -10322,7 +10331,14 @@ async function boot(): Promise<void> {
         return;
       }
       if (playerPracaPool < req.kosztPraca) {
-        showHintMessage('Za mało Pracy (potrzeba ' + req.kosztPraca + ')', 3000);
+        // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): jw. — dłuższy, czytelniejszy
+        // komunikat jako zapasowa ścieżka; panel budowy blokuje ten klik wcześniej.
+        // / EN: as above — longer, clearer toast as a fallback path; the build panel blocks
+        // this click earlier.
+        showHintMessage(
+          'Za mało Pracy: potrzeba ' + req.kosztPraca + ' P, masz ' + Math.floor(playerPracaPool) + ' P',
+          4500,
+        );
         return;
       }
 
@@ -10354,7 +10370,14 @@ async function boot(): Promise<void> {
       if (!hex) return;
 
       if (playerPracaPool < req.kosztPraca) {
-        showHintMessage('Za mało Pracy (potrzeba ' + req.kosztPraca + ')', 3000);
+        // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): jw. — dłuższy, czytelniejszy
+        // komunikat jako zapasowa ścieżka; panel budowy blokuje ten klik wcześniej.
+        // / EN: as above — longer, clearer toast as a fallback path; the build panel blocks
+        // this click earlier.
+        showHintMessage(
+          'Za mało Pracy: potrzeba ' + req.kosztPraca + ' P, masz ' + Math.floor(playerPracaPool) + ' P',
+          4500,
+        );
         return;
       }
 
@@ -16635,6 +16658,10 @@ async function boot(): Promise<void> {
         buildMode: {
           listTypes: () => buildApi?.listTypes() ?? [],
           getActiveKey: () => activeImprovementKey,
+          // R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (ECHO A): panel wyszarza pozycje niedostępne
+          // finansowo (kosztPraca > pula) — patrz buildModeHud.ts getPracaPool.
+          // / EN: panel grays out items the player can't afford (kosztPraca > pool).
+          getPracaPool: () => playerPracaPool,
           isFoundCityOnly: () => isAwaitingFirstPlayerCity(),
           onSelectType: (key) => {
             if (isAwaitingFirstPlayerCity()) return;

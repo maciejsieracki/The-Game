@@ -60,6 +60,14 @@ export interface BuildModeHudConfig {
   getFoundCityLockHint?: () => string | null;
   /** R-PIERWSZE-MIASTO: tylko przycisk Załóż miasto (bez ulepszeń/cudów). */
   isFoundCityOnly?: () => boolean;
+  /**
+   * R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC (Maciej, ECHO A): aktualna pula Pracy gracza —
+   * pozycje z kosztem wyższym niż pula są wyszarzane i zablokowane (jak tech-lock) zamiast
+   * dowiadywać się o braku Pracy dopiero po kliknięciu w hex.
+   * / EN: player's current Work pool — items costing more than the pool are grayed out and
+   * blocked (same as tech-lock) instead of failing only after a hex click.
+   */
+  getPracaPool?: () => number;
   /** Auto-ulepszenia terenu — polityka państwa + wyjątek per miasto (R-AUTO-V2-Q3=C). */
   listPlayerCities?: () => { id: string; name: string }[];
   getUlepszeniaCityId?: () => string | null;
@@ -395,12 +403,23 @@ export function createBuildModeHud(config: BuildModeHudConfig): BuildModeHudApi 
       }
       html += '<div class="lbl">Ulepszenia terenu</div>';
     }
+    const pracaPool = config.getPracaPool?.() ?? Infinity;
     for (const t of types) {
-      const locked = t.techUnlocked === false;
+      const techLocked = t.techUnlocked === false;
+      // Za mało Pracy: ten sam wzorzec wizualny co tech-lock (wyszarzenie + tooltip na hover +
+      // klik blokowany), żeby gracz widział brak dostępności PRZED klikiem w hex, nie po nim.
+      // / EN: not enough Work: same visual pattern as tech-lock (grayed out + hover tooltip +
+      // blocked click), so the player sees unavailability BEFORE clicking a hex, not after.
+      const insufficientPraca = !techLocked && t.kosztPraca > pracaPool;
+      const locked = techLocked || insufficientPraca;
       const sel = t.key === active ? ' sel' : '';
       const ic = impIconHtml(t.key);
       const costLabel = t.kosztPraca <= 0 ? 'FREE' : t.kosztPraca + ' P';
-      const hint = locked ? (t.lockHint ?? (t.techLabel ? 'Technologia: «' + t.techLabel + '»' : 'Zablokowane')) : '';
+      const hint = techLocked
+        ? (t.lockHint ?? (t.techLabel ? 'Technologia: «' + t.techLabel + '»' : 'Zablokowane'))
+        : insufficientPraca
+          ? `Za mało Pracy: potrzeba ${t.kosztPraca} P, masz ${Math.floor(pracaPool)} P`
+          : '';
       const techHint = locked ? ' · 🔒' : '';
       const hintTechIc = (locked && t.techLabel) ? (techIconSvg(t.techLabel, 12) ?? '') : '';
       const hintTechIcWrap = hintTechIc
