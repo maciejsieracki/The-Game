@@ -13820,6 +13820,13 @@ async function boot(): Promise<void> {
         rekruciRegenPerTurn += cityManpowerSnapshot(c, player.era, mpMults.regenMult, mpMults.maxMult).regenPerTurn;
       }
       const armyUnitsOnMap = units.filter(u => u.ownerId === 0 && u.category !== 'osadnik').length;
+      // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): ta sama liczba miast niedokarmionych,
+      // co panel imperium (buildEmpireFoodSnap → perCityRows) — chip HUD „Spichlerz" ma pokazywać
+      // spójnie ten sam deficyt, nie tylko głód wojska. / EN: same unfed-city count as the empire
+      // panel (buildEmpireFoodSnap → perCityRows) — the HUD "Spichlerz" chip must surface the same
+      // deficit consistently, not only army hunger.
+      const zywnoscMiastNiedokarmionych = (getLastEmpireFoodTick(0)?.perCityRows ?? [])
+        .filter(r => r.nakarmione === false).length;
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
@@ -13827,6 +13834,7 @@ async function boot(): Promise<void> {
         zywnoscWplywMiast: foodProj.wplywDoZapasow,
         zywnoscKosztWojska: foodProj.kosztArmii,
         glodWojska: isArmyHungry(0),
+        zywnoscMiastNiedokarmionych,
         zywnoscKarencjaZaTur: foodStarvationCountdown ?? undefined,
         zloto: Math.floor(player.skarbiec),
         zlotoRate: Math.floor(_lastBogactwoRate),
