@@ -8045,6 +8045,20 @@ więc to nie może być regresją z dzisiejszej edycji.
 
 ---
 
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — rozpoznanie feasibility zakończone, doprecyzowanie zadane w czacie (2026-08-10)
+
+**Kluczowe ustalenie:** gra to CZYSTY HTML/JS (brak Electron/Tauri), a File System Access API ma
+TWARDY wymóg specyfikacji „transient user activation" przy `requestPermission()` — dotyczy
+KAŻDEGO nowego otwarcia `START.html`, nawet z zapamiętanym uchwytem katalogu (IndexedDB).
+Dodatkowo: NIE działa na `file://` (wymaga serwera `http://localhost` — zmiana sposobu
+uruchamiania gry), wsparcie WYŁĄCZNIE Chrome/Edge (Firefox/Safari — brak). „Zero interakcji,
+cichy zapis do wskazanego katalogu" w sensie dosłownym NIE jest osiągalne w przeglądarce — to
+fundamentalne zabezpieczenie, nie luka do obejścia.
+
+Trzy realne warianty do wyboru zadane jako doprecyzowujące pytanie ABC w czacie.
+
+---
+
 ## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — ECHO C, ALE z doprecyzowaniem zmieniającym mechanizm (2026-08-10)
 
 **Odpowiedź Macieja: „c" + doprecyzowanie: „najlepiej żeby save był zapisany lokalnie tam gdzie
