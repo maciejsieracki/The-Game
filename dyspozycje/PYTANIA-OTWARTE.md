@@ -7550,6 +7550,42 @@ zwalnia się z pętli AutoBot nawet dla własnych zmian dokumentacyjnych.
 
 ---
 
+## AUDYT C-030 — 23 wpisy OTWARTE, 9 potwierdzonych ZAPOMNIANYCH (2026-08-10)
+
+Na polecenie Macieja („sprawdź czy każdy temat który wisi ma swojego subagenta") — pełny audyt
+zgodności z regułą C-030 dla wszystkich 23 wpisów `STATUS: **OTWARTE` w tym pliku (grep bez
+kotwicy `^## `, per C-031). Dla każdego sprawdzono niezależnie: dispatch subagenta / pytanie ABC
+zadane / udokumentowany cytat Macieja o odłożeniu (NIE samoocena „niepilne" wpisana przez agenta
+rejestrującego — to nie liczy się jako pokrycie).
+
+**Wynik: 14/23 pokryte** (9 subagent, 4 ABC+subagent/ABC samo, 2 jawnie odłożone cytatem
+Macieja — `P-KOLOR-SUROWCE-MIASTO-VS-MAPA`, `R-FORT-STRAZNICA` krok 2; 1 dodatkowy —
+`R-BUDYNEK-PORTOWY` ma nieaktualny nagłówek, ale temat w pełni scalony `fbde1880`, do poprawki
+etykiety nie brak pokrycia).
+
+**9/23 potwierdzone ZAPOMNIANE** — zero dispatchu, zero ABC, zero decyzji Macieja, jedyna
+adnotacja to samoocena „niepilne" agenta, który je rejestrował:
+1. P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (`gra/tools/map-field-battle-test.cjs`,
+   `pre-battle-save-test.cjs` — dopisanie do CLAUDE.md §BRAMKI, dokumentacja, zero kodu)
+2. P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (`cityPanel.ts:4394,4418`)
+3. P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (`cityPanel.ts` `buildTopBarZywnoscDetailCard`
+   ~4839,4841)
+4. P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (`heks-panel-tooltip-warstwa-test.cjs`,
+   korekta komentarza)
+5. P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (`cityPanel.ts:8207,8225`, `hexContextTooltip.ts:252`)
+6. P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (`okolica.ts` `adjustTileWorker`)
+7. P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (`main.ts` `refreshTradeRoutesOverlay`/
+   `cityRenderer.sync`) — POTWIERDZONE przez niezależnego Evaluatora jako realny błąd, wprost
+   odnotowane „kto podejmie tamten temat" bez odpowiedzi
+8. P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (komunikat „Brakuje X PW" po `R-DYP-STOL-A-KOREKTA`)
+9. P-HUD-KULTURA-SIGNED-NIESPOJNE (`hud.ts` `renderBarD1B`, chip Kultury)
+
+Wszystkie 9 to niskiego ryzyka poprawki kosmetyczne/dokumentacyjne, żadna nie wymaga ABC.
+Dispatch pogrupowany (5 Operatorów wg pliku/obszaru, zamiast 9 osobnych, żeby zmniejszyć koszt
+scalania przy jednym pliku dotykanym wielokrotnie) NASTĘPUJE teraz.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
 
 Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
