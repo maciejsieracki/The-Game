@@ -10065,3 +10065,30 @@ adresuje możliwie głównie komunikacyjny, nie mechaniczny charakter problemu).
 **Pytanie ABC zadane Maciejowi teraz** (osobno, w czacie) — na podstawie powyższych ustaleń.
 
 ---
+
+## SPROSTOWANIE — R-AUTOZAPIS-QUOTA-STORAGE-Q1 był już w pełni zaimplementowany i scalony, Maciej
+nadal widzi ten sam objaw (2026-08-10, zrzut playtestu FALI 268)
+
+Maciej: „ten problem z zapisywaniem końca tury też chyba nie został zrobiony" (zrzut: 4×
+„Koniec tury / Autozapis nieudany — brak miejsca w zapisie przeglądarki", identyczny komunikat
+jak zgłoszenie sprzed FALI 266).
+
+**Sprawdzenie rejestru pokazuje, że temat FAKTYCZNIE ZOSTAŁ zrobiony — linia 8137→8727 tego pliku:**
+migracja autozapisu na File System Access API (`gra/src/game/fsa-autosave.ts`, nowy plik), 2 rundy
+Evaluatora (PASS-WITH-NOTES oba razy), **SCALONE w całości** (5 plików zmodyfikowanych + 2 nowe),
+bramki zielone (fsa-autosave-test 55/55, autosave-quota-fail-test 20/20), zadeployowane w **FALI
+266** — czyli PRZED tą sesją nocną, dawno przed FALĄ 268 którą Maciej teraz testuje. Kod powinien
+być w bundlu, który ma przed sobą.
+
+**Rozbieżność wymaga wyjaśnienia — dispatch rozpoznania NASTĘPUJE teraz.** Hipotezy do sprawdzenia
+(NIEPOTWIERDZONE): (a) File System Access API wymaga zgody użytkownika na katalog przy pierwszym
+użyciu (`showDirectoryPicker`) — jeśli Maciej nigdy tej zgody nie udzielił w tej sesji przeglądarki,
+kod może cicho degradować z powrotem do starego `localStorage`-owego `saveToLocal()`, który ma
+dokładnie ten sam limit quota co przed naprawą; (b) FSA może nie działać w kontekście, w którym
+uruchamiane jest `Gra-ROBOCZA.html` (np. otwarcie pliku lokalnie `file://` zamiast przez serwer —
+zarejestrowana wcześniej nota N13 Evaluatora: „`serve:robocza` uzasadnione, bo FSA nie działa na
+`file://`" — jeśli Maciej otwiera bundel bezpośrednio z dysku, może to być dokładnie ta ścieżka);
+(c) realny, nieznaleziony wcześniej bug w degradacji/fallbacku. Zero zgadywania — dispatch
+zweryfikuje który to przypadek.
+
+---
