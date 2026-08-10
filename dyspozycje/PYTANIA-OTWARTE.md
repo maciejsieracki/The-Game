@@ -10544,3 +10544,45 @@ panelu Armie widać kilka Zwiadowców z „RUCH 3/3" (pełny, niewykorzystany).
   rzuca się w oczy bardziej niż linijka tekstu w środku karty).
 
 **STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
+
+## R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 — zgłoszenie Macieja, PODWAŻA Q1=A (2026-08-10, zrzut panelu Zwiadowcy)
+
+Maciej: po naciśnięciu Zwiedzaj jednostka powinna się wygaszać (odznaczać), a nie zostawiać podgląd
+ruchu — bo gracz nie wie, czy ma kliknąć, czy zostawić jednostkę. Realny bug: czasem lewy klik na
+mapie (na podświetlony heks ruchu) wykonuje rozkaz marszu ZAMIAST kliknięcia gdzie indziej i przy
+okazji odznacza (wyłącza) autozwiedzanie. Żądane zachowanie: po WŁ Zwiedzaj — odznacz jednostkę;
+jeśli jest kolejna jednostka z dostępnym ruchem, przejdź do niej (cykl); jeśli nie ma — pełne
+odznaczenie, brak wybranej jednostki.
+
+**⚠️ TO WPROST PODWAŻA `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A` (2026-08-04, `docs/decyzje/
+R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md`)** — tamta decyzja świadomie WYŁĄCZYŁA deselect+cykl (ówczesne
+zachowanie `R-SCOUT-ZWIEDZAJ-UX`) na rzecz „zostań zaznaczony + złota ramka od razu", bo brak
+odznaczenia+cyklu dawał złotą ramkę widoczną natychmiast po kliknięciu (opcja B ówczesnego ABC —
+„odznacz bez cyklu" — była odrzucona właśnie za brak natychmiastowego feedbacku). Dzisiejsze
+zgłoszenie Macieja opisuje dokładnie odwrotny problem: zostanie zaznaczonym z aktywnym podglądem
+ruchu jest MYLĄCE i prowadzi do przypadkowych kliknięć kasujących zwiedzanie.
+
+**Zlokalizowane w kodzie (`gra/src/main.ts:16476-16491`, handler `scout-explore`):** WŁ dziś robi
+`clearPlannedMarch(u.id); u.autoExplore = true; showHintMessage(...); refreshD1bHud();` — BEZ
+`clearPlayerUnitSelection()`/cyklu (zgodnie z Q1=A), ale też BEZ czyszczenia `reachable`
+(podświetlenie osiągalnych heksów z wcześniejszego zaznaczenia zostaje aktywne) — stąd realny,
+klikalny „podgląd ruchu" na mapie, opisany przez Macieja. Klik w podświetlony heks idzie przez
+zwykłą ścieżkę rozkazu marszu → `clearScoutAutoExplore(u)` (`scout-auto-explore.ts:28-33`,
+wywoływane `main.ts:17764`/`18325`) kasuje `autoExplore` jako efekt uboczny.
+
+**Do ABC (zaadresowane wprost do konfliktu z Q1=A):**
+- A: pełny powrót do deselect+cykl, dokładnie jak opisał Maciej — po WŁ: odznacz, jeśli jest kolejna
+  jednostka z ruchem to przejdź do niej (`cycleToAdjacentPlayerUnit`), inaczej pełne odznaczenie.
+  Cofa `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A` do stanu sprzed tamtej decyzji. Feedback natychmiastowy
+  (dziś już jest `showHintMessage` „zwiedza mapę — ruch na koniec tury", czego zabrakło w 2026-08-04
+  gdy podejmowano Q1 — to może rozwiązywać oryginalny powód Q1=A bez trzymania zaznaczenia).
+- B: zostaw zaznaczenie + złotą ramkę (Q1=A bez zmian), ale wyczyść `reachable`/podświetlenie
+  ruchu przy WŁ Zwiedzaj — usuwa możliwość przypadkowego kliknięcia w heks ruchu (czyli usuwa
+  KONKRETNY zgłoszony bug), zachowuje natychmiastowy feedback wizualny z Q1=A. Mniejsza zmiana,
+  NIE cofa Q1=A.
+- C: hybryda — jak B (bez podglądu ruchu), ale dodatkowo jeśli gracz mimo to kliknie mapę podczas
+  gdy zaznaczony zwiadowca jest w autoExplore, pokaż potwierdzenie/ostrzeżenie zamiast cichego
+  anulowania zwiedzania.
+
+**STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem z Q1=A, czekam na
+odpowiedź Macieja.**
