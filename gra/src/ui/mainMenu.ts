@@ -422,6 +422,15 @@ function build(): void {
 
   const buttons = shell.querySelector('#cm-buttons') as HTMLElement;
   buttons.appendChild(btn('<span style="color:#8a6418;">▶</span> Rozpocznij grę', '', true, true, () => cfg.onNewGame?.(), 'primary', 'menu-play'));
+  buttons.appendChild(btn(
+    'Kontynuuj',
+    hasSave ? '' : 'brak zapisów',
+    false,
+    hasSave,
+    () => cfg.onContinue?.(),
+    '',
+    'menu-load',
+  ));
   buttons.appendChild(soonBtn('Kampania', 'Kampania — wkrótce', 'menu-campaign'));
   buttons.appendChild(soonBtn('Multiplayer', 'Multiplayer — wkrótce', 'menu-multiplayer'));
   buttons.appendChild(btn('Ustawienia', '', false, true, showSettings, '', 'menu-settings'));
@@ -447,15 +456,6 @@ function build(): void {
   }, '', 'menu-exit'));
 
   morePanelEl = shell.querySelector('#cm-more') as HTMLElement;
-  morePanelEl.appendChild(btn(
-    'Kontynuuj',
-    hasSave ? '' : 'brak zapisów',
-    false,
-    hasSave,
-    () => { closeMore(); cfg.onContinue?.(); },
-    '',
-    'menu-load',
-  ));
   morePanelEl.appendChild(btn(
     'Wczytaj grę',
     hasSave ? '' : 'brak zapisów',
