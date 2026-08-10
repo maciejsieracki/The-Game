@@ -8665,4 +8665,29 @@ tematu 2 (ten), które jeszcze nie nastąpiło.
 Operator rundy 2 (`a4ac79d3d82eb4fb5`, kontynuacja worktree `agent-a2d5e03691a4e7cbb`)
 dispatchowany z pełną, dosłowną listą B1+B2+N1-N8 z werdyktu Evaluatora.
 
+**Runda 2 dostarczona.** B1 naprawiony: `listFsaAutosaveFiles`/`readFsaAutosaveFile`/
+`loadFsaAutosaveFile` w `fsa-autosave.ts`, `summarizeFsaSaveSlots`/`mergeSaveSlotLists` w
+`saveLoadDialog.ts` (dokłada wpisy z dysku „(dysk)” do listy z localStorage, bez ✕ —
+usuwanie plików z dysku odłożone), `loadGameFromSlot()` rozgałęzia po prefiksie `fsa:`.
+B2 naprawiony: `FSA_SLOT_PREFIX = 'fsa:'` w `save.ts`, `getLastPlayedSlotId()` zwraca
+wskaźnik bez walidacji localStorage dla tego prefiksu, `onContinue` teraz czeka
+(`await triggerFsaAutosaveBootstrap()`) przed odczytem wskaźnika. N1-N7 naprawione
+(strażnik równoległości, `.catch()`, przeniesienie `buildSaveGameSnapshot` pod `try`,
+jednorazowy komunikat degradacji, rozróżnienie AbortError, preload IndexedDB, auto-zero
+`livePermissionGranted`). N8 udokumentowany, nie w pełni zweryfikowany (wymagałby
+`vite build`, poza dozwolonymi bramkami Operatora).
+
+**Dwie świadomie odłożone luki, jawnie zgłoszone przez Operatora (do oceny Evaluatora czy
+blokujące):** (a) `hasAnySaveSlot()` (gate przycisków „Wczytaj"/„Kontynuuj" w menu) sprawdza
+WYŁĄCZNIE localStorage — gracz z sejwami TYLKO na dysku i zerem w przeglądarce zobaczy
+wyszarzone przyciski mimo istniejących zapisów (wymagałoby zmiany kontraktu z sync na
+async w 2 modułach UI); (b) furtka „przywróć zapis na dysk" w menu pauzy (N4) nie zrobiona
+— po degradacji gracz może wznowić zapis na dysk dopiero nową sesją/restartem.
+
+Testy: `fsa-autosave-test.cjs` rozszerzony (sekcje 7-9, 55/55). Bramki: tsc 0,
+logic-test 213/213, fsa-autosave-test 55/55, autosave-quota-fail-test 20/20.
+
+Dispatch NIEZALEŻNEGO Evaluatora rundy 2 NASTĘPUJE teraz — ocena B1/B2 realnie zamknięte,
+oraz czy dwie odłożone luki (a)/(b) są akceptowalne czy blokujące dla tej rundy.
+
 ---
