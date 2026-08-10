@@ -10359,6 +10359,60 @@ renderuje się dla typów `traktat_handlowy`/`umowa_surowcowa` na poziomie CAŁE
 pozycji WEWNĄTRZ traktatu, nie samego traktatu jako całości); (3) czy to w ogóle inny plik/komponent
 niż `diplomacyTradeBasket.ts` (wskazówki w starym wpisie: `diplomacyAudience.ts`/
 `diplomacyDealDisplay.ts`/`diplomacyNegotiationModal.ts` jako kandydaci nieprzweryfikowani). **Dispatch
-rozpoznania NASTĘPUJE.**
+rozpoznania NASTĘPUJE (`aa0162a44928d50af`).**
+
+---
+
+## P-DYPLO-ZYWNOSC-WYBOR-MIASTA-ZAMIAST-PULI (2026-08-10, zaskoczenie Macieja przy dodawaniu Żywności
+do oferty handlowej)
+
+Maciej: „ten temat w ogóle mnie zaskoczył, bo to tak naprawdę powinno być tylko i wyłącznie wskazanie
+jakie ilości żywności oczekujemy lub chcemy przekazać, a tu po prostu jest jakieś z miast, a przecież
+oferujemy wszystko to, co mamy w magazynach lub w spichlerzu głównym." Zrzut: kreator „CO DODAJESZ" →
+wybrana kategoria „Żywność" → pod spodem sekcja „Miasto (spichlerz)" z siatką WSZYSTKICH miast
+(Ateny, Sparta, Argos, Mykeny, Milet, Rodos, Syrakuzy, Delfy, Olimpia, Efez, Pergamon, Halikarnas...)
+do wyboru — sugeruje że UI chce, żeby gracz wybrał KONKRETNE miasto, którego spichlerz ma dostarczyć
+żywność do oferty.
+
+**Napięcie architektoniczne wprost — cała dzisiejsza sesja (Auto Wyżywienie, Spichlerz) ustaliła że
+żywność jest scentralizowana** (`zapasyPanstwa`, pojedynczy Spichlerz imperium, nie osobne zapasy per
+miasto) — UI proszący o wybór „którego miasta spichlerz" wygląda na relikt starszego, per-miastowego
+modelu żywności sprzed centralizacji (albo dubluje logikę, której już nie ma sensu mieć osobno).
+**Do zbadania, nie zgaduję:** czy ten wybór miasta faktycznie coś realnie zmienia w wyniku transakcji
+(np. różne miasta mają różne dostępne ilości mimo wspólnej puli — możliwe że to legacy UI nad
+zunifikowanym silnikiem), czy to martwy/mylący krok, który powinien zniknąć na rzecz prostego pola
+„ile żywności z centralnej puli". **Dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE z powyższym (inny
+obszar, ryzyko kolizji niskie — oba read-only).**
+
+---
+
+## P-DYPLO-BILANS-VS-BRAKUJE-PW-SPRZECZNE (2026-08-10, zaskoczenie/frustracja Macieja, „Stół negocjacji")
+
+Maciej: „pomimo tego że bilans jest na plusie, to system twierdzi że brakuje czterech PW, nie
+spełnia warunków... gracze tego nie zrozumieją — albo jest plus na bilansie i powinno być przyjęcie,
+albo nie. A tu jest jeszcze jakaś informacja o brakujących PW. Bilans powinien być ostateczną kwotą
+po zbilansowaniu wszystkiego." Zrzut: panel „PUNKTY WYMIANY PW" — „MY ODDAJEMY 86 PW (baza 80,
+Relacja −17% siła)", **„BILANS (NETTO) +6"** (zielone, wygląda pozytywnie), „ONI ODDAJĄ 80 PW". Pod
+spodem: „WPŁYW RELACJI NA DEAL −17%... Traktat: Ty: baza 80 → 66 · Oni: 80 PW (baza) @ Rel 83", i
+osobny czerwony/żółty box: **„Nie spełnia warunków: Brakuje 4 PW do uczciwej oferty traktatu
+handlowego @ Relacji (baza 80 PW, licząc pakiet na stole) — oferta nieuczciwa dla partnera"** —
+przycisk „Przyjmij" zablokowany.
+
+**Wstępna hipoteza (do potwierdzenia, nie zakładam):** to mogą być DWIE różne, legalnie różne
+miary — „Bilans (netto)" to surowa różnica wartości wymiany (86 vs 80 = +6, korzystne dla gracza),
+a „Brakuje 4 PW" to osobny próg „uczciwości dla partnera" (czy AI UZNA ofertę za wystarczająco
+uczciwą, żeby ją przyjąć — inny próg niż zwykły dodatni bilans, korygowany o Relację). Jeśli tak,
+problem NIE jest logiczny/bug, tylko **czysto komunikacyjny** — dwie liczby prezentowane bez
+wyjaśnienia że mierzą co innego, myląco sprzeczne dla gracza. Do sprawdzenia: czy liczby są w ogóle
+spójne matematycznie (czy 66 baza-po-Relacji + reszta pakietu faktycznie daje niedobór 4 PW względem
+progu 80, mimo że surowy bilans całego pakietu to +6), i czy nazwa/miejsce komunikatu da się scalić
+w jeden, spójny wskaźnik (zgodnie z sugestią Macieja: „Bilans powinien być ostateczną kwotą po
+zbilansowaniu wszystkiego") bez utraty informacji o tym, dlaczego AI by odrzuciło. **Powiązane z
+wcześniejszą, już wdrożoną naprawą** (linia 1060 tego pliku: „bilans netto my−their, bez «Brakuje»
+gdy gracz oddaje więcej" — TA naprawa dotyczyła PRZYCHODZĄCEJ propozycji od AI, nie WYCHODZĄCEJ
+propozycji gracza z osobnym progiem uczciwości-dla-partnera; możliwe że to zamierzone, ale
+niewyjaśnione w UI, rozróżnienie). **Dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE z dwoma powyższymi
+(trzeci, inny obszar tego samego modułu — do weryfikacji ryzyka kolizji przy ewentualnym dispatchu
+Operatora później, na razie wszystkie trzy read-only).**
 
 ---
