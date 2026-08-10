@@ -9656,4 +9656,29 @@ liczone głębokością klamer). Bramki zielone: tsc 0, logic-test 213/213, sepa
 live-recalc-test 27/0 (było 25), bilans-clamp 22/0, city-badge-growth-percent 38/0,
 rounding-parity 16/0. **Dispatchowany Evaluator rundy 3 (`a0e3d0cf2d6adad59`)**.
 
+**Evaluator rundy 3 — werdykt FAIL (trzeci raz).** Mechanizm cache sam w sobie potwierdzony poprawny
+(jeden zapis pokrywa oba call-site'y, hot path bezpieczny, brak TDZ, zero scope creep). 2 nowe blokady:
+- **Blokada 1:** zero celowanego testu dla mechanizmu rundy 3 — 0 wystąpień `_maxSafeRationCache`/
+  `getCachedMaxSafePoziomRacji`/`clampedGrowthBreakdown` w `gra/tools/`. Gdyby ktoś jutro skasował
+  odczyt cache z `cityGrowthLive`, wszystkie 7 bramek dalej byłoby zielonych — blokada z rundy 2
+  wróciłaby niezauważona.
+- **Blokada 2 (poważniejsza — NOWA klasa błędu wprowadzona przez rundę 3):** inwalidacja przez
+  `markCityStateDirty` NIE pokrywa dwóch ścieżek mid-turn zmieniających `zapasyPanstwa`:
+  `tryDeductWonderStartFood` (start budowy cudu, `main.ts:2768`) i `transferBasketItems` case
+  `'zywnosc'` (transfer żywności w dealu dyplomatycznym, `main.ts:~7973`) — żadna nie woła
+  `markCityStateDirty`. Skutek: cache zostaje z NIEAKTUALNYM wpisem (nie pustym) → plakietka może
+  pokazać TRZECIĄ liczbę, ani surową ani zgodną z panelem — gorzej niż stan przed rundą 3. Komentarze
+  przy cache/`markCityStateDirty` twierdzą o pełnym pokryciu, co jest nieprawdą.
+Notatki nieblokujące, zalecane do domknięcia przy okazji rundy 4 (tanie, ten sam obszar): N1 —
+niedeterminizm plakietki (cache wypełnia się tylko z panelu/`applyLiveSafeRationForCity`, część
+handlerów ma kolejność „policz→wyczyść", więc plakietka miga między surową a przyciętą zależnie od
+niewidocznego stanu cache; lekarstwo tanie — jedno wypełnienie cache dla WSZYSTKICH miast gracza przy
+okazji już istniejącego jednego `previewCityEconomy`); N2 — druga połowa tooltipa „WYŁ: bez
+auto-obniżenia" nadal nieprawdziwa (clamp Q3=A obniża WSZYSTKIE miasta gracza na koniec tury,
+niezależnie od flagi Auto) — ten sam string co runda 3 edytowała, mieści się w zakresie; N3 —
+skrócenie komentarza z PL+EN do samego PL (runda 3) było niepotrzebnym obejściem, limit regexu testu
+(900) był ustawiony przez samą rundę 3 i mógł być wyższy.
+
+**Dispatch rundy 4** — 2 blokady (inwalidacja + test) + N1/N2/N3 przy okazji (ten sam obszar, tanie).
+
 ---
