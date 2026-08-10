@@ -7290,3 +7290,21 @@ finalnego Evaluatora (skrócony zakres: potwierdzić 8 mutacji + ewentualne resz
 23 + czyste scalenie) NASTĘPUJE teraz, z instrukcją natychmiastowego scalenia po PASS.
 
 ---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — SCALONE `fbde1880` (2026-08-10)
+
+Werdykt finalny: PASS, 17/17 własnych mutacji Evaluatora złapanych (8 explicite z rundy 3 + 9
+własna próbka), zero przeżywających. Scalenie zweryfikowane bajt-po-bajcie (36 linii Portu w
+main.ts identyczne przed i po scaleniu mimo 744 linii dryfu). Bramki na scalonym drzewie: tsc 0,
+logic-test 213/213, naval-water-access-gate 39/39, trade-routes 61/61, unit-replace 13/13,
+deposit-building-gate 47/47, ai-production-priority 9/9, trade-routes-income 52/53 (pre-istniejąca,
+potwierdzona bajtowo identyczna bez zmiany Portu). Temat w PEŁNI zamknięty po 3 rundach + incydencie
+utraty i odzyskania pracy.
+
+Notatki do osobnych pytań ABC (§1a — dotykają obszaru rozstrzygniętego decyzją C 2026-08-09), do
+zadania Maciejowi rano: N3 (`detectBestConnection` przy remisie wybiera ląd — bonus morski w
+praktyce nagradza niemal wyłącznie handel zamorski, węziej niż mogła być intencja „miasta
+nadmorskie"), N8 (`PORT_SEA_TRADE_BONUS_PIENIADZ=1` to stała w TS, nie parametr w
+`econ-params.json` — łamie kierunek „źródłem prawdy JSON").
+
+---
