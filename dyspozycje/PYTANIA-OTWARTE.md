@@ -8543,3 +8543,28 @@ pytania ABC (np. checkbox lista vs dropdown per slot vs pula wykluczeń) gdy Mac
 sygnał do podjęcia.
 
 ---
+
+## R-EPOKA-KAMIEN-PALEOLIT-NEOLIT (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** zmiana epoki „Kamień" na
+podział Paleolit / Neolit (dziś jedna epoka Kamień → Brąz → Żelazo, patrz CLAUDE.md nagłówek).
+Zakres nieustalony (czy to nowa 4. epoka wstawiona na starcie, czy podział istniejącej
+Kamień na dwa etapy w ramach tej samej epoki, wpływ na drzewko technologii/cuda/jednostki
+epoki Kamień) — do rozpoznania, gdy Maciej da sygnał do podjęcia.
+
+Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md.
+
+---
+
+## R-SUROWIEC-CYNA-DO-BRAZU (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** wprowadzenie cyny jako nowego
+surowca wymaganego do produkcji Brązu (dziś prawdopodobnie sam Brąz/miedź bez cyny jako
+osobnego złoża/surowca — do potwierdzenia rozpoznaniem w `gra/data/` i drzewku, nie
+zgadywania). Zakres nieustalony (nowe złoże na mapie? nowy budynek wydobywczy? wpływ na
+istniejący łańcuch Kamień→Brąz i jednostki/budynki wymagające dziś samego Brązu) — do
+rozpoznania, gdy Maciej da sygnał do podjęcia.
+
+Nie dispatchowane, wyłącznie zarejestrowane per §2 CLAUDE.md.
+
+---
