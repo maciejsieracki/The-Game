@@ -8398,4 +8398,10 @@ B-R5-1), a poprzedni Evaluator oceniał tylko cząstkową bazę — dispatch NIE
 Evaluatora rundy 6 (całość BB2 + fix B-R5-1 razem) NASTĘPUJE teraz, zanim jakiekolwiek
 scalenie do żywego drzewa.
 
+Evaluator rundy 6 dispatchowany (`a4bb2944cd3713284`, Opus 5, worktree
+`agent-ae476910a62d7b168`) — pełna niezależna weryfikacja B1-B4+B-R5-1 razem, kontrola
+bazy (diff wyłącznie dodaje BB2, nic nowszego nie cofnięte), mutacje na wszystkich 3
+naprawionych miejscach main.ts osobno, szerszy przegląd czy są inne niezłapane miejsca
+grupowania po heksie.
+
 ---
