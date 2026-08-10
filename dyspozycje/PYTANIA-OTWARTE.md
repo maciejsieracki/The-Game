@@ -9551,4 +9551,32 @@ Maciej: „ale wiesz co, to są nowe tematy, zająłbym się nawet najpierw najw
 Konfigurator/Cyna/AI-uczenie-się (wyżej) świadomie ODŁOŻONE, zero dalszego dispatchu, dopóki błędy
 (Auto Wyżywienie, Spichlerz, wzrostProcent, koszt-ulepszeń-UX) nie zostaną zamknięte.
 
+**Maciej (kolejna wiadomość): „okej, w takim razie skupmy się na razie na dopchnięciu do końca
+tych czterech tematów. Później zajmiemy się innymi. Oprócz tego skończmy też te wcześniejsze,
+które już rozpocząłeś."** → aktualny stan realizacji tego polecenia:
+
+- **Evaluator playbook.md C-039/040/041 (`a3758872d5148a971`)** — sprawdzony: werdykt **PASS-WITH-
+  NOTES** (1 uwaga BLOKUJĄCA: C-039 twierdził jako fakt „migawka z końca poprzedniej tury", kod tego
+  nie potwierdzał) już przyszedł i został **w pełni wdrożony i scalony PRZED tym poleceniem**
+  (commit `6fc20878`) — bramki `playbook-md-to-json` dry-run (41/41 OK, 0 różnic) i `autobot-smoke`
+  (11/11 PASS) zweryfikowane ponownie teraz, zielone. **STATUS: ZAMKNIĘTE.**
+- **Operator A (Auto Wyżywienie live-recalc + wzrostProcent, `a6e6ec1ddfc517940`)** — dostarczył
+  raport: `applyLiveSafeRationForCity` podpięte w 8 miejscach (w tym obie definicje
+  `configureCityPanel`), `clampedGrowthBreakdown` naprawia 7 miejsc liczących Wzrost% z surowego
+  poziomu, backstop końca tury nietknięty, `cityGrowthLive` (hot path) świadomie nietknięty. Bramki
+  zielone (tsc 0, logic-test 213/213, nowy test 24/24, auto-wyzywienie-bilans-clamp 22/22,
+  ai-major-economy 32/32, city-state-mp-growth 9/9). Operator sam zgłosił świadome pominięcie:
+  wiersz „Bilans żywności" w `buildTopBarLudnoscDetailCard` nadal liczy z surowego `bilansLokalny`
+  (uznał to za odrębny temat, Bug #2 `e4155972`, nie wzrostProcent). **Dispatchowany Evaluator
+  (`ad73793863908be36`)** — ma zweryfikować m.in. czy drugie `configureCityPanel` faktycznie
+  dostało wywołanie (wzorzec błędu `replace_all` z wcześniejszego incydentu tej sesji) i czy
+  pominięcie „Bilansu żywności" jest zasadnie osobnym tematem czy powinno wejść w zakres (C-039).
+  **STATUS: Evaluator w toku.**
+- **Operator B (koszt-ulepszeń-UX, `a608977d8991401db`)** — dostarczył raport (7/7 nowy test, tsc 0,
+  logic-test 213/213). **Dispatchowany Evaluator (`aca3d42e94b69fce7`)** — w toku, ma dokończyć
+  `map-gen-regression-test`/`ai-founding-territory-test` (Operator nie zdążył) i zweryfikować scope
+  (czy balans `R_STAWKI_FALA2_MULT` faktycznie nietknięty). **STATUS: Evaluator w toku.**
+- **Spichlerz „(0)"** — ECHO C przyjęte. **STATUS: nadal świadomie niedispatchowane** — czeka na
+  scalenie Operatora A (ten sam obszar plików), żeby uniknąć kolizji worktree.
+
 ---
