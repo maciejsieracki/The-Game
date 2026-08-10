@@ -10092,3 +10092,49 @@ zarejestrowana wcześniej nota N13 Evaluatora: „`serve:robocza` uzasadnione, b
 zweryfikuje który to przypadek. **Dispatchowany agent rozpoznania (`a5d937dc60e9195cb`)**.
 
 ---
+
+## BUG-SUWAKI-PRACA-SKARBIEC — Evaluator: PASS-WITH-NOTES, SCALONE
+
+Zero blokujących. Nota A (do decyzji, NIE blokuje, cicho zarejestrowana per CLAUDE.md §2 — nie
+przerywam wątku żywności żeby o to zapytać): naprawa jest szersza niż zgłoszenie — bezwarunkowe
+wywołania sprawiają że oba suwaki pokazują się przy KAŻDYM chipie mapowanym na blok „ekonomia"
+(Nauka, Religia, Miasta/Ludność, Rekruci), nie tylko Praca/Skarbiec — dotyka wcześniejszej decyzji
+C-PANEL=B (Maciej 2026-07-24, „klik Nauka nie ma ciągnąć praca/żywność/skarbiec"). Evaluator dał
+gotowy wariant precyzyjny (2 linie, warunek per-chip) jeśli chcemy zawęzić. Dodatkowe ustalenie
+wzmacniające zasadność naprawy: PRZED nią oba suwaki były całkowicie NIEOSIĄGALNE w normalnej
+nawigacji (żaden chip HUD nie emituje `section='ekonomia'`/undefined) — pokrywa się dokładnie ze
+zgłoszeniem Macieja. Nota B (nieblokująca): test source-text nie łapie semantycznie identycznej
+mutacji (`if(onlyEconId===null)`), do wzmocnienia później. Nota C: symlink `node_modules` w
+worktree, pominąć przy scalaniu. **SCALAM TERAZ** (bug faktycznie naprawiony, zero regresji
+danych/logiki, decyzja o zawężeniu zakresu odłożona do zamknięcia bieżącego wątku żywności).
+
+---
+
+## Rozpoznanie FSA autosave dostarczone (`a5d937dc60e9195cb`) — werdykt: (a) znany, udokumentowany
+limit implementacji, NIE nowy bug
+
+Kod FSA istnieje i działa poprawnie zgodnie ze specyfikacją File System Access API —
+`detectFsaAvailability()` sprawdza `protocol==='file:'` PRZED wszystkim innym i celowo zwraca
+`available:false`, więc FSA nigdy nie jest nawet próbowane pod `file://`. **`STAN-PRACY-HANDOFF.md`
+potwierdza, że rutyna Macieja to `gra-robocza/START.html` otwierany bezpośrednio z dysku (`file://`)**
+— naprawa FSA z FALI 266 nie daje mu ŻADNEJ korzyści w jego realnym sposobie odpalania gry. To był
+przewidziany scenariusz (`WERSJE.md:69`, checklist FALI 266: „sprawdzić czy na `file://` gra po cichu
+wraca do starego mechanizmu bez błędu" — zaakceptowany wynik, nie błąd do naprawy).
+
+**Realna, mała luka UX znaleziona przy okazji:** wyjaśniający toast („zapis na dysk wymaga
+`http://localhost`") pokazuje się WYŁĄCZNIE raz na cały profil przeglądarki, na zawsze (bramkowane
+kluczem w `localStorage`) — skoro Maciej widział już FALĘ 266 z tym samym kodem, wyjaśnienie
+najpewniej pokazało się wtedy i już nigdy więcej się nie pojawi, podczas gdy cykliczny komunikat
+„brak miejsca" (bez wyjaśnienia) powtarza się bez ograniczeń przy każdej nieudanej turze — stąd 4
+powtórzenia na zrzucie, zero kontekstu.
+
+**Do decyzji Macieja (przedstawię po zamknięciu wątku żywności, żeby nie mieszać wątków):**
+(1) najmniejsza poprawka — dopisać wyjaśnienie `file://` do CYKLICZNEGO komunikatu (3-5 linii,
+`main.ts:21813-21819`), bez zmiany mechaniki; (2) zmiana rutyny testowej na `npm run serve:robocza`
+(`http://localhost`) — realnie aktywowałoby FSA, większy limit, ale wymaga uruchomionego serwera przy
+każdym teście; (3) NIEZBADANE jeszcze — czy warto dodatkowo rozważyć IndexedDB jako magazyn
+działający TAKŻE pod `file://` (większy limit niż `localStorage`, nie wymaga serwera) — oryginalna
+lista opcji z pierwszego zgłoszenia (linia 8153-8158) wymieniała to jako alternatywę do FSA, nigdy
+nie zbadaną osobno.
+
+---
