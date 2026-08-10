@@ -9447,3 +9447,16 @@ wcześniejszej tury), rozpoznanie Konfigurator (`a9337779f3d42259b`), rozpoznani
 (`ae53b6a93b23d6357`). Wszystkie trzy w różnych obszarach kodu, bezpieczne równolegle.
 
 ---
+
+## R-AI-UCZENIE-SIE — doprecyzowanie zakresu, ECHO A+B (2026-08-10)
+
+Doprecyzowujące pytanie: która heurystyka AI ma zostać rozbudowana jako pierwsza. **Odpowiedź
+Macieja: A+B razem** — (A) ocena siły przed atakiem (AI ma kalkulować szanse starcia i
+podejmować mądrzejsze decyzje atak/odwrót, dziś może atakować przy niekorzystnym stosunku
+sił), (B) priorytety budowy/rozwoju reagujące na sytuację (dobudowa obrony pod realnym
+zagrożeniem, inwestycja w gospodarkę gdy bezpieczne, zamiast sztywnej kolejności).
+
+Dispatch rozpoznania technicznego (obie heurystyki, ustalenie dokładnego stanu dzisiejszego
+kodu AI przed implementacją) NASTĘPUJE teraz.
+
+---
