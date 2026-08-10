@@ -10584,8 +10584,8 @@ wywoływane `main.ts:17764`/`18325`) kasuje `autoExplore` jako efekt uboczny.
   gdy zaznaczony zwiadowca jest w autoExplore, pokaż potwierdzenie/ostrzeżenie zamiast cichego
   anulowania zwiedzania.
 
-**STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem z Q1=A, czekam na
-odpowiedź Macieja.**
+**ECHO A** (2026-08-10, „1a"). Cofa `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A` do stanu sprzed
+2026-08-04 — pełny powrót do deselect+cykl. **STATUS: dispatch Sonnet 5 (worktree).**
 
 ## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA — ECHO A (2026-08-10, drugi zrzut, pełny panel Armie)
 
@@ -10790,20 +10790,50 @@ działa)?
   agresję PM traktować jako funkcję OSOBNEGO suwaka „Trudność miast-państw" w Zaawansowanych (do
   ręcznego ustawienia przez gracza, niezależnie od trudności gry).
 
-**STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem trzech wcześniejszych
-decyzji (2026-07-30, 2× 2026-08-04), czekam na odpowiedź Macieja.**
-
 **KOREKTA Macieja (2026-08-10):** inwersja `AI-CS-CLUSTER-DIFF` (pkt 2) miała dotyczyć WYŁĄCZNIE
 tego, jak łatwo INNE CYWILIZACJE AI przejmują państwa-miasta — potwierdzone dosłownym cytatem z
 `docs/decyzje/AI-CS-CLUSTER-DIFF-2026-07-30.md` pkt 1: „Trudność państw-miast WZGLĘDEM AI
 CYWILIZACJI". Agresja PM SKIEROWANA NA GRACZA (pkt 4 tej samej decyzji + cały `R-MP-HARD-WAVE`)
-NIE powinna być odwrócona — ma iść WPROST z trudności gry wybranej przez gracza (Trudny=trudno,
-Łatwy=łatwo), tak jak wszystko inne. To był błąd wdrożenia z 2026-07-30/08-04 (jedna zmienna
-`_menuCityStateDifficulty` obsługiwała dwie różne sprawy naraz), nie świadomy kompromis do
-zaakceptowania — **opcja A z ABC wyżej jest właściwym kierunkiem**, potwierdzona przez Macieja.
-Dispatchowany agent projektowy do precyzyjnego rozdzielenia (AI) vs (GRACZ) po wszystkich
-konsumentach `_menuCityStateDifficulty`, żeby nie zepsuć poprawnie działającej części (AI).
-**Kodowanie NADAL wstrzymane** do dostarczenia planu i ostatecznego potwierdzenia zakresu zmiany.
+koncepcyjnie NIE powinna być odwrócona. Plan techniczny (agent projektowy) rozdzielił dokładnie
+(AI) vs (GRACZ) po wszystkich konsumentach `_menuCityStateDifficulty`, w tym 2 dodatkowe miejsca
+błędnie podpięte pod odwróconą zmienną (`decideAIDiplomacy` dla relacji z graczem,
+`_menuCitySupport`/sojusz sióstr).
+
+**KOREKTA 2 Macieja (2026-08-10):** „2b" cofnięte — Maciej: efekt, jakiego potrzebuje, był już
+jasno opisany (agresja PM wobec gracza = wprost trudność gry, bez odwracania); zadanie
+orkiestratora to wywnioskować z tego właściwą naprawę, nie proponować warianty, które ten efekt
+porzucają. Plan techniczny (agent projektowy) już rozdzielił dokładnie WSZYSTKIE konsumenty
+`_menuCityStateDifficulty` na (AI) [zostaje odwrócone, zgodne z pierwotną intencją] i (GRACZ)
+[ma iść wprost z trudności gry] — **wdrażane wprost, bez dalszego ABC, poza JEDNYM elementem
+poniżej, gdzie plan sam wskazał realne ryzyko wymagające decyzji o zakresie/czasie.**
+
+**Wdrażane teraz bez ABC (bezpieczna większość planu, C-027 pkt 3):**
+- `applyCityStateDifficultyTrust()` (`main.ts:7272`, zaufanie startowe PM↔gracz) → z odwróconej
+  `_menuCityStateDifficulty` na trudność gry wprost.
+- `cityStateOffensiveSupport`/wave-attack + produkcja wojska (`main.ts:23803-23805` → `ai.ts:1293,
+  2512,2690`) → jw.
+- Sync DOW klastra (`main.ts:23579-23629`, `resolveClusterCityStateWarOnPlayer`/
+  `isCityStateEligibleForPlayerWar`) → jw.
+- `_menuCitySupport`/próg sojuszu sióstr/posiłki (`main.ts:1249,14329-14368,23801,25892-25902` +
+  `ai-cs-absorption.ts`) → jw.
+- Nowa zmienna `_menuCityStateDifficultyVsPlayer` = `csOverrideRaw ?? _menuDifficulty` (bez
+  wywołania `cityStateDifficultyFromGameDifficulty`), podmieniona we wszystkich miejscach wyżej.
+- Suwak Zaawansowane (`cityStateDifficultyOverride`) steruje OBOMA aspektami naraz (zgodnie z
+  rekomendacją planu — hint UI już dziś opisuje suwak jako gracz-facing).
+
+**KOREKTA 3 Macieja (2026-08-10) — „podstawowa zasada":** „trudno dla mnie to łatwo dla AI, dla
+mnie łatwo to trudno dla AI." Zastosowana do obu osi: (AI-vs-PM, podbój) gra Trudna → PM łatwe do
+podboju przez AI — już poprawnie zaimplementowane, ZOSTAJE bez zmian. (PM-vs-gracz, agresja) gra
+Trudna → PM silne/agresywne wobec gracza — to jest jednoznaczny, wymagany efekt, nie punkt do
+głosowania. Maciej wprost: nie powinienem pytać, czy to zrobić w pełni — powinienem to
+wywnioskować i wykonać. **Pytanie `R-CS-HARD-PASYWNE-Q2` (A/B/C czy robić rozbicie
+`decideAIDiplomacy`) WYCOFANE** — opcja C (nie robić w ogóle) łamała wprost podstawową zasadę, nie
+była legalnym wyborem. **Decyzja orkiestratora (inżynierska, nie ABC):** rozbicie
+`decideAIDiplomacy` WYKONANE — w osobnej, izolowanej rundzie z własnymi testami parytetu (nie w
+tej samej paczce co bezpieczna większość), zgodnie ze sprawdzonym dziś wzorcem sesji (Evaluator
+konsekwentnie rekomenduje izolację ryzykownych zmian logiki pętli od bezpiecznych poprawek — nie
+dlatego że CZY robić jest sporne, tylko żeby ewentualny defekt dało się precyzyjnie zlokalizować).
+**STATUS: dispatch Sonnet 5, runda 2 (po bezpiecznej większości).**
 
 ## R-ZUZYCIE-SUROWCOW-OBYWATELE — nowa mechanika, propozycja Macieja (2026-08-10)
 
@@ -10846,28 +10876,152 @@ rozstrzygnięcia PRZED kodowaniem:**
    bez istniejącego odpowiednika strukturalnego do doklejenia (w odróżnieniu od Żywności, gdzie
    cały mechanizm bilansu/nadwyżki/magazynu już istnieje).
 
-**Otwarte pytania do ABC (nie odpowiedziane jeszcze przez Macieja):**
-- Czy AI (duża i miasta-państwa) ma być objęte tym samym zużyciem, czy wyłącznie gracz? (wzorzec
-  Żywności różnicuje flow-based dla gracza vs stock-based dla AI, ale KARA za deficyt jest identyczna
-  dla obu — to może, ale nie musi, być właściwy wzorzec też tutaj).
-- Czy zużycie liczy się PER LUDEK (jak żywność, `populacja × 1 surowiec`) — potwierdzone przez
-  „każda jednostka obywatela" — czy per MIASTO (płasko, niezależnie od populacji)? Zakładam per
-  ludek zgodnie z dosłownym brzmieniem, ale warto potwierdzić wprost, bo to duża różnica skali.
-  Czy zaliczenie kar (2) jest liczone per obywatel z osobna (można mieć np. połowę obywateli
-  zaopatrzonych, połowę nie) czy binarnie per miasto (miasto ma surowiec = wszyscy zaopatrzeni)?
-- Gdzie w UI pokazać to zużycie — analogicznie do `foodSummaryRow` w `empireDetailPanel.ts`
-  („Uprawa i hodowla" / „Wyżywienie ludności"), potrzebna nowa sekcja per surowiec (Drewno/Glina/
-  Kamień/Ceramika/Cegła), dziś nieistniejąca.
-- Konflikty (1) i (2) wymagają rozstrzygnięcia: czy zasada obowiązuje od PIERWSZEJ tury epoki
-  (gwarantowany deficyt na starcie), czy z okresem karencji / dopiero po odblokowaniu odpowiedniej
-  tech/budynku, czy może wymagana lista surowców per epoka powinna pomijać te niedostępne na
-  starcie (np. Kamień = tylko Drewno na starcie, Glina dołącza się automatycznie gdy gracz zbuduje
-  Gliniankę)?
+**[LISTA ABC — 4 pytania] Zużycie surowców przez obywateli — parametry wdrożenia**
 
-**STATUS: rozpoznanie gotowe, lista zestawiona jak poprosił Maciej, ale kodowanie WSTRZYMANE do
-rozstrzygnięcia 3 konfliktów wyżej — to nie jest zwykłe ABC z 3 opcjami, tylko fundamentalna
-sprzeczność między żądaną regułą a stanem danych gry, wymaga decyzji Macieja przed dalszym
-rozpoznaniem/projektowaniem.**
+---
+
+**[TEMAT: Od kiedy obowiązuje kara za brakujący surowiec w nowej epoce] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q1 [1/4]**
+
+**Sytuacja:** Dwa wymagane surowce nie są dostępne od pierwszej tury epoki, w której mają być
+wymagane: Glina w Kamieniu — tylko na heksach nad rzeką (+2/turę bez ulepszenia), Glinianka (drugie
+źródło, +4/turę) wymaga tech Garncarstwo z epoki Brąz; Ceramika w Brązie wymaga zbudowania
+Garncarni ORAZ osobnej technologii „Dostęp do surowca: Ceramika". Miasto śródlądowe bez rzeki w
+Kamieniu, albo dowolne miasto w pierwszych turach Brązu przed zbudowaniem Garncarni, dostałoby
+gwarantowaną karę (-1 Szczęście, -1% Rozwoju) zanim gracz zdąży cokolwiek zrobić.
+
+**Cel pytania:** ustalić moment, od którego zasada zaczyna realnie obowiązywać dla danego surowca
+w danym mieście, żeby kara nie była niemożliwa do uniknięcia.
+
+**Dlaczego teraz:** to jest fundamentalny parametr silnika tej mechaniki — bez niego nie da się
+zacząć projektować logiki bilansu.
+
+**A — zasada obowiązuje od 1. tury każdej epoki, bez wyjątku, niezależnie od dostępności budynku/tech.**
+Za: najprostsza reguła, spójna z resztą projektu (kara zawsze aktywna od progu epoki). Za:
+motywuje gracza do szybkiego zbudowania potrzebnej infrastruktury (Glinianka, Garncarnia).
+Przeciw: miasta bez rzeki w Kamieniu i praktycznie wszystkie miasta na starcie Brązu dostają
+gwarantowaną, niemożliwą do uniknięcia karę. Przeciw: może być odbierane jako niesprawiedliwe —
+kara zależna od losowego położenia miasta względem rzeki, nie od decyzji gracza.
+
+**B — zasada zaczyna obowiązywać dla danego surowca w danym mieście dopiero po odblokowaniu
+odpowiedniego budynku/technologii (Glinianka dla Gliny w Kamieniu, Garncarnia+tech dla Ceramiki w
+Brązie); do tego czasu ten surowiec jest pomijany z wymaganej listy tego miasta.**
+Za: unika gwarantowanej, niemożliwej do uniknięcia kary na starcie epoki. Za: nagradza gracza,
+który buduje infrastrukturę, zamiast karać go z góry za coś, na co nie miał jeszcze wpływu.
+Przeciw: wymaga dodatkowej logiki śledzącej „czy dany surowiec jest już częścią systemu
+ekonomicznego tego miasta" per miasto i per epoka. Przeciw: mniej przewidywalne dla gracza —
+moment wejścia kary w życie zależy od jego własnego tempa budowy, nie jest stały.
+
+**C — zasada zaczyna obowiązywać po stałym okresie karencji (np. N tur) od wejścia w nową epokę,
+niezależnie od budynku/tech.**
+Za: prostsza reguła niż B (jeden globalny licznik, nie stan per miasto). Za: łagodniejsza niż A —
+daje graczowi czas na reakcję. Przeciw: karencja czasowa może i tak minąć zanim gracz zdąży
+zbudować odpowiedni budynek, zwłaszcza w dalszych/nowo założonych miastach. Przeciw: kolejny,
+arbitralny parametr liczbowy do zbalansowania (ile dokładnie tur karencji).
+
+**Rekomendacja: B** — jedyna opcja, która nie generuje kary niemożliwej do uniknięcia; koszt
+(dodatkowa logika stanu per miasto) jest proporcjonalny do problemu, który rozwiązuje.
+
+---
+
+**[TEMAT: Czy AI podlega tej samej zasadzie zużycia surowców] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q2 [2/4]**
+
+**Sytuacja:** silnik Żywności (wzorzec dla tej mechaniki) różnicuje gracza i AI — dla gracza
+bilans jest flow-based, dla AI stock-based — ale KARA za deficyt (osłabienie/atrycja wojska
+głodowego) jest dziś identyczna dla obu. Nowa mechanika zużycia surowców budowlanych nie ma
+jeszcze ustalonego, czy dotyczy tylko gracza, czy też dużej AI i miast-państw.
+
+**Cel pytania:** ustalić zakres podmiotowy nowej mechaniki przed jej zaprojektowaniem.
+
+**Dlaczego teraz:** to decyduje, czy silnik potrzebuje osobnej ścieżki `ownerId===0` (jak część
+mechanizmów Żywności) czy jednego, wspólnego kodu dla wszystkich właścicieli.
+
+**A — tak, AI (duża i miasta-państwa) objęte tą samą zasadą, identycznie jak gracz.**
+Za: spójność zasad — AI nie ma nieuzasadnionej przewagi ekonomicznej względem gracza. Za:
+prostsza implementacja — jeden wzorzec logiki dla wszystkich właścicieli, bez rozgałęzień.
+Przeciw: AI może nie mieć dziś dobrze zaprojektowanej logiki reagowania na deficyt surowca (ryzyko,
+że AI notorycznie obrywa karą i wygląda na „gorszą" bez wyraźnego, czytelnego dla gracza powodu).
+Przeciw: dodatkowe ryzyko balansu — może wymagać strojenia zachowania AI, żeby budowała
+infrastrukturę (Glinianki/Garncarnie) w rozsądnym tempie.
+
+**B — nie, wyłącznie gracz; AI pozostaje bez tej mechaniki, wzorem uproszczonych (stock-based)
+reguł Żywności dla AI.**
+Za: mniejsze ryzyko regresji w zachowaniu/ekonomii AI, które nie było projektowane pod kątem tej
+nowej presji. Za: łatwiej dostroić balans wyłącznie dla gracza, bez wpływu na rozgrywkę AI.
+Przeciw: asymetria gracz/AI może być odbierana jako niesprawiedliwa lub niespójna z resztą reguł.
+Przeciw: wymaga osobnej ścieżki kodu (`ownerId===0` gating) — więcej złożoności niż jeden wspólny
+mechanizm.
+
+**Rekomendacja: A** — spójne z tym, jak w tej sesji potraktowano karę za deficyt Żywności
+(identyczna dla gracza i AI, mimo różnego sposobu liczenia bilansu).
+
+---
+
+**[TEMAT: Zużycie per obywatel czy binarnie per miasto] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q3 [3/4]**
+
+**Sytuacja:** Twoje sformułowanie „każdy DOSTĘPNY/BRAKUJĄCY wymagany surowiec" nie precyzuje, czy
+ocena dostępności surowca jest jedna na całe miasto, czy liczona proporcjonalnie do tego, ilu
+konkretnie obywateli ma pokrycie zapotrzebowania (analogicznie do silnika Żywności, gdzie bilans
+jest ciągły, nie progowy).
+
+**Cel pytania:** ustalić, czy kara (+1/-1 Szczęście, -1% Rozwoju) jest jedna na miasto, czy
+skalowana z wielkością niedoboru.
+
+**Dlaczego teraz:** to determinuje kształt wzoru bilansu i sposób pokazania go w UI.
+
+**A — binarnie per miasto: miasto ALBO ma pełne pokrycie zapotrzebowania na dany surowiec, ALBO
+nie — kara jednolita dla całego miasta niezależnie od wielkości niedoboru.**
+Za: prostsza logika i prostszy komunikat dla gracza („to miasto ma/nie ma dostępu do Gliny"). Za:
+łatwiejsze do zbalansowania — jeden próg per surowiec per miasto, nie funkcja proporcjonalna.
+Przeciw: nie oddaje częściowego niedoboru — miasto produkujące 90% potrzebnej Gliny jest karane
+tak samo jak miasto produkujące 0%. Przeciw: mniej precyzyjne niż istniejący mechanizm Żywności.
+
+**B — proporcjonalnie per obywatel, analogicznie do Żywności: część populacji jest zaopatrzona,
+część nie, kara skaluje się z wielkością niedoboru.**
+Za: spójne z już istniejącym wzorcem silnika Żywności (ten sam typ mechanizmu bilansu). Za:
+bardziej realistyczne, płynne skalowanie zamiast nagłego progu wszystko-albo-nic.
+Przeciw: bardziej złożona logika i UI — trzeba pokazać częściowy niedobór, nie tylko tak/nie.
+Przeciw: trudniej dobrze zbalansować kary +1/-1 Szczęście i -1% Rozwoju, gdy są proporcjonalne, a
+nie binarne — potrzebny dodatkowy wzór skalowania.
+
+**Rekomendacja: A** — Twoje pierwotne sformułowanie („każdy dostępny/brakujący surowiec") brzmi
+jak ocena binarna per surowiec, nie jak ciągła proporcja; prostsza reguła też łatwiej się
+komunikuje graczowi w UI.
+
+---
+
+**[TEMAT: Gdzie w UI pokazać bilans zużycia surowców] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q4 [4/4]**
+
+**Sytuacja:** dziś nie istnieje żaden panel pokazujący bilans netto surowców budowlanych
+(Drewno/Glina/Kamień/Ceramika/Cegła) — istnieje wyłącznie stan magazynowy i bramki dostępu do
+budowy. Analogiczny, już istniejący wzorzec dla Żywności to `foodSummaryRow` w
+`empireDetailPanel.ts` („Uprawa i hodowla" / „Wyżywienie ludności").
+
+**Cel pytania:** ustalić, gdzie gracz zobaczy nową informację o zużyciu surowców przez obywateli.
+
+**Dlaczego teraz:** to decyduje o zakresie pracy UI, osobnym od samej logiki silnika.
+
+**A — nowa sekcja w panelu szczegółów imperium (`empireDetailPanel.ts`), wzorem istniejącej
+sekcji „Wyżywienie ludności" — osobny wiersz per surowiec.**
+Za: spójne z istniejącym wzorcem UI — gracz już wie, gdzie szukać tego typu informacji. Za: nie
+zajmuje dodatkowego miejsca w głównym HUD, który już jest gęsty.
+Przeciw: panel szczegółów imperium nie jest widoczny „na pierwszy rzut oka" podczas normalnej gry
+— gracz musi go świadomie otworzyć.
+
+**B — wskaźnik w głównym pasku HUD (obok Kultury/Pracy/Prawa/Pieniądza/Zadowolenia), pokazujący
+zbiorczy status typu „zaopatrzenie: X/Y surowców dostępnych".**
+Za: zawsze widoczny, natychmiastowa informacja bez otwierania paneli. Za: chroni gracza przed
+przeoczeniem narastającego problemu.
+Przeciw: główny HUD już ma dużo elementów — ryzyko przeładowania interfejsu. Przeciw: wymaga
+nowej ikony/wskaźnika — dodatkowa praca projektowa (Design), nie tylko silnika.
+
+**Rekomendacja: A** — mniejsza, bezpieczniejsza zmiana, spójna z istniejącym miejscem dla
+podobnych bilansów; jeśli po playteście okaże się niewystarczająco widoczna, przejście do B jest
+łatwe do zrobienia później.
+
+---
+
+**STATUS: pełna lista 4 pytań zadana w czacie, czekam na odpowiedzi Macieja (litery per numer,
+np. „1a/2b/3a/4a"). Kodowanie wstrzymane do odpowiedzi na WSZYSTKIE cztery.**
 
 ## PUNKT 6 — Lista robocza "do wykonania" (2026-08-10, aktualizowana na żądanie Macieja)
 
