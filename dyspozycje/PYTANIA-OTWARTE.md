@@ -10281,4 +10281,27 @@ częściowo reimplementacyjny ale nietautologiczny, zgubione `?? []` nieszkodliw
 
 **SCALAM TERAZ — wyłącznie deltę, zgodnie z N2.**
 
+**SCALONE — commit `6201d7b4`, wypchnięte.** Zastosowane precyzyjnymi edycjami (nie `git diff`/`apply`,
+per N2 — baza worktree niebędąca przodkiem gałęzi sesji) w dwóch miejscach: `projectPlayerFoodProjection`
+(drugi przebieg + `unfedCityCount`) i `buildHudState` (ternary). Bramki w drzewie głównym potwierdzone
+ponownie: tsc 0, logic-test 213/213, `spichlerz-deficyt-scalenie-test` 50/50, `spichlerz-widocznosc-test`
+45/45. Worktree do posprzątania.
+
+---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY — TRZECI zrzut Macieja, sytuacja się POGŁĘBIA (2026-08-10)
+
+Maciej: „to już w ogóle nie działa." Ta sama tabela cywilizacji (Ludność 3), teraz: Produkcja **+26**
+(było +21), Racje **−33** (koszt=3×5,5×2=33, poziom **5,5** — WZROSŁO z 4, nie spadło), Bilans **−7/t**
+(było −3, teraz gorzej), Wzrost% nadal dodatni (9%), HUD chip Spichlerz „0 **−24**" (mocno ujemny
+rate). **Policzone: przy dzisiejszej produkcji 26, bezpieczny poziom (bilans=0) to ok. 4,33
+(26/6=4,33̄) — mechanizm PODNIÓSŁ poziom do 5,5, znacznie POWYŻEJ bezpiecznego progu, zamiast go
+ściąć.** To nie jest już „brak reakcji" (poprzednie 2 zrzuty) — to mechanizm aktywnie działający w
+złą stronę, prawdopodobnie `autoRaiseRationsForGrowth` (`empire-food.ts:501-593`, zidentyfikowany w
+rozpoznaniu #3 jako piszący bezpośrednio do `city.poziomRacji` z pominięciem nowej mapy globalnej) —
+podnosi poziom dla maksymalizacji wzrostu na podstawie kryterium wypłacalności, które najwyraźniej
+daje fałszywie pozytywny wynik w tym konkretnym stanie (populacja rosnąca z 1→3 w trakcie tej samej
+sesji, produkcja rosnąca 21→26, żadna z tych zmian nie wyzwala przeliczenia na żywo — potwierdzone
+w rozpoznaniu #3 jako A3). **Dispatch rozpoznania #4, ostatnie przed decyzją o naprawie — NASTĘPUJE.**
+
 ---
