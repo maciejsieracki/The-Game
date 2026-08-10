@@ -1,6 +1,6 @@
 'use strict';
 /**
- * elimination-toast-merge-test.cjs — R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI, RUNDA 3.
+ * elimination-toast-merge-test.cjs — R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI, RUNDA 3 + 4.
  *
  * runCapitalCapturePlunder()/annexCityStateToOwner() i ich wywołujący żyją w main.ts, wewnątrz
  * jednego wielkiego domknięcia (nie eksportowane, nie da się ich zbundlować osobno bez ciężkich
@@ -12,8 +12,13 @@
  * cofnięta w przyszłej edycji.
  *
  * Pokrywa:
- *  - Defekt A: applyProposalOutcome/'wchloniecie' — JEDNO showHintMessage (nie dwa kolidujące
- *    na #hintToast) między annexCityStateToOwner(...) a końcem bloku.
+ *  - Defekt A (Runda 3): applyProposalOutcome/'wchloniecie' — JEDNO showHintMessage (nie dwa
+ *    kolidujące na #hintToast) między annexCityStateToOwner(...) a końcem bloku.
+ *  - Defekt A (Runda 4): resolveNegotiationEntryAt (WYWOŁUJĄCY applyProposalOutcome) NIE woła
+ *    już bezwarunkowo swojego WŁASNEGO showHintMessage na tym samym #hintToast zaraz po
+ *    powrocie z applyProposalOutcome — Runda 3 naprawiła kolizję WEWNĄTRZ applyProposalOutcome,
+ *    ale wywołujący i tak nadpisywał scalony toast eliminacji drugim, generycznym wywołaniem
+ *    jedną ramkę stosu wyżej (dokładnie to złapał Evaluator w rundzie 3).
  *  - Defekt B ścieżka 1: resolveSiegeSurrender — runCapitalCapturePlunder(...) ma odebraną
  *    wartość zwracaną (nie bare-statement) i toast kapitulacji jest SCALONY (jedno
  *    showHintMessage, nie dwa).
@@ -110,6 +115,84 @@ function stripLineComments(src) {
   ok(block.includes('eliminatedOwners.has(responderId)'),
     'Defekt A: treść toastu jest warunkowana realnym stanem eliminacji (eliminatedOwners), '
     + 'nie zgadywana z samego annexerId');
+}
+
+// ---------------------------------------------------------------------------
+// Defekt A (Runda 4) — resolveNegotiationEntryAt: WYWOŁUJĄCY applyProposalOutcome. Runda 3
+// naprawiła kolizję WEWNĄTRZ applyProposalOutcome (blok wyżej), ale wywołujący i tak
+// bezwarunkowo wołał WŁASNY, generyczny showHintMessage na tym samym #hintToast zaraz po
+// powrocie — dokładnie ten sam wzorzec kolizji, jedną ramkę stosu wyżej (to złapał
+// Evaluator w rundzie 3). Okno: od `applyProposalOutcome(entry.proposerOwnerId, ...)` do
+// końca funkcji resolveNegotiationEntryAt (następna funkcja
+// resolvePendingNegotiationsForOwner).
+// ---------------------------------------------------------------------------
+{
+  const fnStartMarker = 'function resolveNegotiationEntryAt(';
+  const fnStart = mainSrc.indexOf(fnStartMarker);
+  ok(fnStart >= 0, 'Defekt A (Runda 4): znaleziono function resolveNegotiationEntryAt');
+
+  const fnEndMarker = '\n    function resolvePendingNegotiationsForOwner(';
+  const fnEnd = fnStart >= 0 ? mainSrc.indexOf(fnEndMarker, fnStart) : -1;
+  ok(fnEnd > fnStart,
+    'Defekt A (Runda 4): znaleziono koniec resolveNegotiationEntryAt (kolejna funkcja '
+    + 'resolvePendingNegotiationsForOwner)');
+
+  const fnBody = fnStart >= 0 && fnEnd > fnStart ? mainSrc.slice(fnStart, fnEnd) : '';
+  const fnBodyCode = stripLineComments(fnBody);
+
+  const callMarker =
+    'applyProposalOutcome(entry.proposerOwnerId, entry.responderOwnerId, result, entry.payload, entry.actionId);';
+  const callIdx = fnBodyCode.indexOf(callMarker);
+  ok(callIdx >= 0,
+    'Defekt A (Runda 4): znaleziono wywołanie applyProposalOutcome(...) w resolveNegotiationEntryAt');
+
+  // Segment OD wywołania applyProposalOutcome DO końca funkcji — to tu żyło bezwarunkowe
+  // drugie showHintMessage, które nadpisywało scalony toast eliminacji Rundy 3.
+  const afterCall = callIdx >= 0 ? fnBodyCode.slice(callIdx + callMarker.length) : '';
+
+  // Wskaźnik strukturalny odróżniający "bezwarunkowy bare statement na poziomie funkcji" od
+  // "zagnieżdżone wewnątrz if-guarda": indentacja linii `applyProposalOutcome(...)` (poziom
+  // bazowy ciała gałęzi "else") kontra indentacja linii `showHintMessage(` która buduje
+  // treść z ownerDiploLabel(awaitingId). Na RAW (nie odkomentowanym) ciele funkcji, żeby
+  // liczba spacji się zgadzała 1:1 z prawdziwym plikiem.
+  const baselineIndentMatch = fnBody.match(/\n( *)applyProposalOutcome\(entry\.proposerOwnerId/);
+  ok(!!baselineIndentMatch,
+    'Defekt A (Runda 4): zmierzono bazową indentację wywołania applyProposalOutcome(...)');
+  const baselineIndentLen = baselineIndentMatch ? baselineIndentMatch[1].length : -1;
+
+  const rawCallIdx = fnBody.indexOf(callMarker);
+  const rawAfterCall = rawCallIdx >= 0 ? fnBody.slice(rawCallIdx + callMarker.length) : '';
+  const toastIndentMatch = rawAfterCall.match(/\n( *)showHintMessage\(\s*\n\s*ownerDiploLabel\(awaitingId\)/);
+
+  ok(!!toastIndentMatch,
+    'Defekt A (Runda 4): znaleziono showHintMessage(ownerDiploLabel(awaitingId)...) PO '
+    + 'applyProposalOutcome (generyczny toast musi nadal istnieć w kodzie, tylko warunkowo)');
+
+  const toastIndentLen = toastIndentMatch ? toastIndentMatch[1].length : -1;
+  ok(baselineIndentLen >= 0 && toastIndentLen > baselineIndentLen,
+    `Defekt A (Runda 4): showHintMessage(ownerDiploLabel(awaitingId)...) PO applyProposalOutcome `
+    + `NIE jest już bezwarunkowym bare statement na poziomie funkcji (indent bazowy `
+    + `${baselineIndentLen}, indent toastu ${toastIndentLen} — musi być GŁĘBIEJ, czyli `
+    + 'zagnieżdżony wewnątrz if-guarda, nie na tym samym poziomie co applyProposalOutcome) — '
+    + 'to dokładnie wzorzec kolizji z rundy 3 (applyProposalOutcome scala toast eliminacji, a '
+    + 'wywołujący i tak go nadpisuje drugim, bezwarunkowym wywołaniem na tym samym poziomie)');
+
+  ok(/entry\.actionId === 'wchloniecie'/.test(afterCall),
+    "Defekt A (Runda 4): resolveNegotiationEntryAt sprawdza entry.actionId === 'wchloniecie' "
+    + 'PO applyProposalOutcome, żeby nie nadpisać już pokazanego, scalonego toastu eliminacji');
+
+  ok(/outcome\.kind === 'accepted'/.test(afterCall),
+    'Defekt A (Runda 4): guard rozróżnia outcome.kind === \'accepted\' — odrzucone '
+    + 'wchłonięcie MUSI nadal dostawać generyczny toast "odrzuca propozycję" '
+    + '(applyProposalOutcome nic nie pokazuje sam, gdy !result.accepted)');
+
+  // Guard nie może wyciszyć toastu dla PRZYPADKÓW INNYCH NIŻ wchłonięcie — showHintMessage
+  // musi nadal być realnie wołane w tej funkcji (nie usunięte w całości).
+  const showHintStillCalled = countOf(afterCall, 'showHintMessage(') >= 1;
+  ok(showHintStillCalled,
+    'Defekt A (Runda 4): showHintMessage( nadal jest wołane w resolveNegotiationEntryAt po '
+    + 'applyProposalOutcome (dla wszystkich przypadków poza accepted+wchloniecie) — zero-'
+    + 'informacji dla gracza też jest błędem');
 }
 
 // ---------------------------------------------------------------------------

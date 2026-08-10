@@ -12827,12 +12827,32 @@ async function boot(): Promise<void> {
             ownerDeclareWarOn(entry.proposerOwnerId, 0);
           }
         }
-        const summary = negotiationSummary(entry);
-        showHintMessage(
-          ownerDiploLabel(awaitingId)
-            + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary),
-          4000,
-        );
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 4, Defekt A: dla przyjętego
+        // 'wchloniecie' applyProposalOutcome() WYŻEJ już pokazał kompletny, scalony toast
+        // (zwykły ALBO eliminacyjny — patrz komentarz Runda 3 w applyProposalOutcome) na
+        // #hintToast. Wołanie tu, bezwarunkowo, DRUGIEGO showHintMessage na tym samym
+        // #hintToast natychmiast by go nadpisało — dokładnie ten sam wzorzec kolizji co
+        // Defekt A w rundach 1-3, tylko o jedną ramkę stosu wyżej (to właśnie złapał
+        // Evaluator w rundzie 3). Pomijamy generyczny toast WYŁĄCZNIE w tym jednym
+        // przypadku: odrzucone wchłonięcie nadal potrzebuje toastu "odrzuca propozycję" —
+        // applyProposalOutcome nic nie pokazuje sam, gdy !result.accepted.
+        // EN: for an accepted 'wchloniecie', applyProposalOutcome() above already showed a
+        // complete, merged toast (plain OR elimination — see the Round 3 comment inside
+        // applyProposalOutcome) on the shared #hintToast. Unconditionally firing a SECOND
+        // showHintMessage on the same #hintToast here would instantly overwrite it — the
+        // same collision pattern as Defect A in rounds 1-3, one stack frame up (exactly
+        // what the Round 3 Evaluator caught). We skip the generic toast ONLY in this one
+        // case: a rejected wchłonięcie still needs the "rejects proposal" toast —
+        // applyProposalOutcome shows nothing on its own when !result.accepted.
+        const skipGenericToast = entry.actionId === 'wchloniecie' && outcome.kind === 'accepted';
+        if (!skipGenericToast) {
+          const summary = negotiationSummary(entry);
+          showHintMessage(
+            ownerDiploLabel(awaitingId)
+              + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary),
+            4000,
+          );
+        }
       }
     }
 
