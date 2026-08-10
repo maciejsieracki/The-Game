@@ -2070,7 +2070,7 @@ znanych czerwonych bramek — bez tego wpisu następna sesja mogłaby je wziąć
 **Kotwice:** `gra/tools/map-field-battle-test.cjs`, `gra/tools/pre-battle-save-test.cjs`.
 **Model:** Sonnet 5.
 
-## P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne**
+## P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **ZAMKNIĘTE — naprawione i scalone `f7a0ece1` (grupa G3, Evaluator PASS-WITH-NOTES, 2026-08-10)**
 `cityPanel.ts:4394` i `:4418` renderują `` `+${signed(praca.doBudynkow)}` `` — dla wartości ujemnych
 daje podwójny znak (`"+−5"`, przed naprawą glifu `"+-5"`). Pre-istniejące, nie regresja tej naprawy
 (oba warianty były błędne) — ale naprawa glifu uczyniła anomalię bardziej widoczną (`+−` rzuca się
@@ -2139,7 +2139,7 @@ Zmierzone (po scaleniu obu zależnych napraw): `city-panel-growth-percent-separa
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`buildRacjeWzrostDetailCard`, linia ~4750/4753).
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
 
-## P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) · STATUS: **OTWARTE — niepilne**
+## P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) · STATUS: **ZAMKNIĘTE — naprawione i scalone `f7a0ece1` (grupa G3, Evaluator PASS-WITH-NOTES, 2026-08-10)**
 `buildTopBarZywnoscDetailCard` (linia ~4800, kod żywy — wołany przez `attachTopBarStat('zywnosc')`)
 ma dokładnie tę samą usterkę: linia ~4839 renderuje `${view.wzrostProcent}%` surowo, obok
 `signed(foodSplit.total)` (linia ~4830) w TEJ SAMEJ karcie. Dodatkowo linia ~4841 renderuje
@@ -4158,7 +4158,7 @@ martwych slotów bez wyraźnego sygnału dla gracza.
 `gra/src/ui/cityPanel.ts` (`okolicaPreviewRadius`, `cap=Rwork`).
 **Model:** Opus 5 (Evaluator, znalezisko).
 
-## P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (2026-08-09, nota N3 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **OTWARTE — pre-istniejące, poza zakresem**
+## P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (2026-08-09, nota N3 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **ZAMKNIĘTE — naprawione i scalone `f7a0ece1` (grupa G2, Evaluator PASS-WITH-NOTES, 2026-08-10)**
 `adjustTileWorker(delta=+1)` na polu JUŻ obsadzonym robotnikiem zdejmuje go (semantyka toggle),
 zamiast np. być no-opem albo błędem „pole już zajęte". Zachowanie istnieje verbatim od dawna
 (potwierdzone w `43afa474`, przed jakąkolwiek z 4 rund tego zgłoszenia), nietknięte przez całą
@@ -4182,7 +4182,7 @@ naprawy) — do rozważenia przy następnym dotknięciu tego kodu.
 
 ---
 
-## R-MERGE-MAIN-RYTM-Q1 (2026-08-09, pytanie Macieja „kiedy dany commit powinien trafić do main") · STATUS: **OTWARTE — ABC, czeka na literę**
+## R-MERGE-MAIN-RYTM-Q1 (2026-08-09, pytanie Macieja „kiedy dany commit powinien trafić do main") · STATUS: **ZAMKNIĘTE — ECHO decyzja własna D Macieja, wdrożone jako CLAUDE.md §4a, kanon `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`**
 
 **Sytuacja:** CLAUDE.md §3 deklaruje projekt jako trunk-based na `main` („brak feature-branchy"),
 ale harness tej sesji (Claude Code Remote) twardo przypina rozwój i `push` wyłącznie do gałęzi
@@ -4281,7 +4281,7 @@ język, nie wracać do zamkniętych tematów bez wyraźnego powodu.
 
 ---
 
-## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (2026-08-09, znalezisko Operatora przy naprawie P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE) · STATUS: **OTWARTE — niepilne, ten sam wzorzec błędu**
+## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (2026-08-09, znalezisko Operatora przy naprawie P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE) · STATUS: **ZAMKNIĘTE — SCALONE (2026-08-10, patrz niżej w pliku)**
 
 W `applyCityPanelWorldView()` (`gra/src/main.ts`) ten sam błąd kolejności wywołań, który powodował
 widmowego złotego chłopka (bramka `isCityPanelOpen()` widziała stan "zamknięty" tuż przed
@@ -4293,7 +4293,7 @@ grze (może być niezauważalne jeśli te warstwy rzadziej się zmieniają w tra
 
 ---
 
-## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO (2026-08-09) · STATUS: **OTWARTE — koryguje wykonanie R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08), dispatch Sonnet 5**
+## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO (2026-08-09) · STATUS: **NIEAKTUALNE — zastąpione przez R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (praca się nie liczy, patrz niżej w pliku)**
 
 **⛔ To pytanie/zgłoszenie PODWAŻA wcześniejszą decyzję** `R-HUD-MIASTO-STAN-CYWILIZACJI` (ECHO
 2026-08-08, commit `8663e084`, FALA 261) — zgodnie z nową zasadą CLAUDE.md §1a oznaczam to wprost,
@@ -4335,7 +4335,7 @@ wymuszać sztucznej liczby.
 
 ---
 
-## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09, nota D1 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — realna luka, do decyzji**
+## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09, nota D1 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **ZAMKNIĘTE — ECHO A wdrożone i wdeployowane do ROBOCZA FALA 265 (`2b747b9b`, 2026-08-09), potwierdzone retroaktywnie 2026-08-10**
 
 Evaluator (Opus 5) przy weryfikacji naprawy `R-DYP-STOL-A-KOREKTA` znalazł osiągalną w grze
 nieszczelność: `SWEETENER_COUNTER_ELIGIBLE` (`gra/src/game/diplomacy-proposals.ts:1936`) obejmuje
@@ -4348,14 +4348,14 @@ inicjowany przez GRACZA jest czysty (0 pól), ale kontroferta AI może wprowadzi
 drzwiami. Pytanie do rozstrzygnięcia: czy AI ma w ogóle dokładać złoto-słodzik do traktatów objętych
 rozłączeniem, skoro cel decyzji to właśnie ich rozdzielenie od wymiany.
 
-## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (2026-08-09, nota D2 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — niepilne, kosmetyka komunikatu**
+## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (2026-08-09, nota D2 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **ZAMKNIĘTE — SCALONE `5a93f5aa` (2026-08-10)**
 
 Komunikaty „Brakuje X PW — dopłać" / „Dopłać X PW" (`diplomacyAcceptanceBalance.ts:625,631`,
 `diplomacy-acceptance-points.ts:363-371`) każą graczowi zrobić coś, co w formularzu treaty-only
 jest już niemożliwe (brak pól do dopłaty). Powinny kierować do zrobienia osobnej umowy — to
 dosłownie cel dzisiejszej decyzji o rozłączeniu.
 
-## P-HUD-KULTURA-SIGNED-NIESPOJNE (2026-08-09, znalezisko Operatora przy R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO) · STATUS: **OTWARTE — niepilne, kosmetyka**
+## P-HUD-KULTURA-SIGNED-NIESPOJNE (2026-08-09, znalezisko Operatora przy R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO) · STATUS: **ZAMKNIĘTE — naprawione bezpośrednio, Evaluator PASS-WITH-NOTES, temat ZAMKNIĘTY (2026-08-10)**
 
 Główny HUD mapy (`gra/src/ui/hud.ts` → `renderBarD1B`) formatuje 5 z 6 chipów jako plain `String(...)`
 (bo to zapas, nie delta), ale chip „Kultura" niekonsekwentnie używa `signed(s.kultura)` (wymuszony
@@ -4437,7 +4437,7 @@ klamrowany ≥0) — sygnał ostrzegawczy przetrwał na małej liczbie, degradac
 
 ---
 
-## R-WYDARZENIA-FILTR-KATEGORII (2026-08-09) · STATUS: **OTWARTE — zaimplementowane w worktree, 2 noty blokujące + 1 pytanie przed scaleniem**
+## R-WYDARZENIA-FILTR-KATEGORII (2026-08-09) · STATUS: **ZAMKNIĘTE — SCALONE `2984b707` (2026-08-09)**
 
 Zaimplementowano: (1) etykieta „Dyplomacja" zamiast „Koniec tury" wyłącznie dla wpisów handlu
 AI↔AI (jedyny realny typ zaśmiecający panel — Operator sprawdził WSZYSTKIE typy wpisów przechodzące
@@ -4573,7 +4573,7 @@ zdeployowanym buildem `35a8b636` a HEAD sprzed naprawy). Przyczyna: defekt CSS f
 
 ---
 
-## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — wymaga rozpoznania przed decyzją**
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (2026-08-09, zgłoszenie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `8692b61b` (2026-08-09)**
 
 **Cytat Macieja:** „powinien być [w] panelu miasta tryb ustawienia globalnego dla skarbu, dla
 jedzenia i dla produkcji. Po naciśnięciu przycisku tylko dla tego miasta powinien właśnie się
@@ -4613,7 +4613,7 @@ Rekomendacja Sonnet 5 była B. **Decyzja Macieja: A** (dosłownie „ID: R-MIAST
 VS-LOKALNE a"). ECHO potwierdzone w czacie. Dispatch implementacji wzorem Danina/Handel — bez
 deployu, zgodnie z procedurą NUMER→ABC→COMMIT→DEPLOY.
 
-## R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga ABC**
+## R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09, zgłoszenie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `13861b60` (2026-08-10), podtematy B2/B3 też domknięte (patrz niżej w pliku)**
 
 **Cytat Macieja:** „Cywilizacja nie może przejść do następnego etapu, jeżeli nie stworzy cudu,
 który jest jej przypisany w danej epoce. Czyli żeby przejść na przykład do brązu, musi wybudować
@@ -4752,7 +4752,7 @@ Dispatch domknięcia N1+N2 przed scaleniem.
 
 ---
 
-## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — koryguje dopiero co zatwierdzoną R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, dispatch Sonnet 5**
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zgłoszenie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `f4d427e8`, potwierdzone post-scalenia przez Evaluatora (2026-08-10)**
 
 **⛔ To zgłoszenie PODWAŻA decyzję zatwierdzoną chwilę wcześniej dziś** (`R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO`, Evaluator PASS-WITH-NOTES powyżej, jeszcze NIE scalona do gałęzi) — zgodnie z CLAUDE.md §1a
 oznaczam to wprost. Agent `a35d817d715b1b210`, który dokańczał N1/N2 tamtej naprawy, został
@@ -5047,7 +5047,7 @@ turę czy nadpisuje/duplikuje istniejący; (b) sprawdzić przeliczenie numer-tur
 czy wyświetlany numer tury w HUD-zie faktycznie pochodzi z tego samego licznika co ten zapisany w
 sejwie. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
 
-## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE (2026-08-09, żądanie danych od Macieja przy P-MAGAZYN-PRZEKROCZENIE-LIMITU) · STATUS: **OTWARTE — czyste zestawienie danych, decyzja o zmianie balansu odłożona do odpowiedzi Macieja**
+## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE (2026-08-09, żądanie danych od Macieja przy P-MAGAZYN-PRZEKROCZENIE-LIMITU) · STATUS: **ZAMKNIĘTE — decyzja Macieja wdrożona bezpośrednio (bez zestawienia), SCALONE `036173f7`**
 
 **Cytat Macieja:** „to oznacza że powinniśmy zmniejszyć produkcję drewna i gliny. Ale to trzeba do
 tego podejść kompleksowo. Napisz mi ile produkuje się w danych ulepszeniach drewna gliny kamienia,
@@ -5325,7 +5325,7 @@ to naprawdę dzieje się tak jak opisuje Maciej); (c) sprawdzić czy silnik rozr
 „chatka na czyim terytorium" przy losowaniu nagrody, czy pula jest zawsze taka sama niezależnie od
 lokalizacji. Zanim przedstawię ABC — zebrać fakty, nie zgadywać zakresu zmian.
 
-## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (2026-08-09, pytanie z playtestu) · STATUS: **OTWARTE — pytanie faktograficzne + regresja do potwierdzenia, badam bezpośrednio**
+## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (2026-08-09, pytanie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `b057d248` (2026-08-09), Evaluator PASS finalny**
 
 **Cytat Macieja:** „po zdobyciu ostatniego Państwa Miasta miała być jakaś informacja z
 wyskakującym oknem informująca, że zjednoczyliśmy całą Grecję. Gdzie to jest? Sprawdź w którym
@@ -5658,7 +5658,7 @@ naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
 
 ---
 
-## R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, propozycja gameplayowa Macieja) · STATUS: **OTWARTE — wymaga ABC**
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, propozycja gameplayowa Macieja) · STATUS: **ZAMKNIĘTE — SCALONE `cf2b63cc`, Evaluator RUNDA 4 (finalna) PASS-WITH-NOTES, 0 blokujących**
 
 **Cytat Macieja:** „okej, więc cały sens Spichlerza to dodatkowe bonusy, ale myślę, że dołączyłbym
 mu jeszcze jeden bonus, mianowicie jeżeli miasto chce wzrosnąć powyżej [progu bez budynków] to musi
@@ -6394,7 +6394,7 @@ możemy to jakoś użyć w przyszłości." Temat R-FORT-STRAZNICA-ROZSZERZA-ZASI
 WYŁĄCZNIE Fortu i Strażnicy/Posterunku — Port usunięty z tego tematu, przeniesiony do osobnego
 zgłoszenia (patrz niżej), NIE pilny, świadomie odłożony do przyszłości.
 
-## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — przyszła funkcja, niepilne**
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (2026-08-09, propozycja Macieja) · STATUS: **ZAMKNIĘTE — SCALONE `fbde1880` (2026-08-10)**
 
 **Cytat Macieja:** „w ogóle też można wprowadzić jakieś budynki portowe dla miast nadbrzeżnych."
 Świadomie odłożone przez samego Macieja („pomyślę o tym") — NIE wymaga dispatchu teraz, ale
