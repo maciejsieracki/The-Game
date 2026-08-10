@@ -8529,3 +8529,17 @@ poprawność async/fallback, brak regresji dotychczasowego `localStorage`, bezpi
 zapisu plików, realność gwarancji „jedno kliknięcie na sesję").
 
 ---
+
+## R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA (2026-08-10, propozycja Macieja) · STATUS: **OTWARTE — nowa funkcja, do rozpoznania/ABC przed implementacją**
+
+**Zgłoszenie Macieja (do zapisania, nie do podjęcia teraz):** możliwość wyboru, jakie
+konkretne cywilizacje mają być przeciwnikami, w konfiguratorze na początku gry (dziś
+prawdopodobnie losowy/automatyczny dobór — do potwierdzenia rozpoznaniem, nie zgadywania).
+
+Nie dispatchowane — zapisane na wyraźne polecenie „zapisz", zgodnie z zasadą §2 CLAUDE.md
+(zakaz otwierania nowych wątków bez wyraźnej zgody Macieja na podjęcie pracy). Do
+rozpoznania (jak dziś działa dobór cywilizacji AI w konfiguratorze, gdzie w kodzie) i
+pytania ABC (np. checkbox lista vs dropdown per slot vs pula wykluczeń) gdy Maciej da
+sygnał do podjęcia.
+
+---
