@@ -7513,3 +7513,77 @@ NIE polegać na `git diff`/`grep` wewnątrz własnego, świeżo założonego wor
 tym „co już jest scalone". Runda 3 dispatchowana z tą poprawką.
 
 ---
+
+## Nowe reguły AutoBot (C-033…C-038) — Evaluator rundy 1: FAIL (5 nieścisłości), poprawione i scommitowane (2026-08-10)
+
+Na dwukrotne polecenie właściciela („podsumuj sobie wszystkie właśnie błędy… przygotuj nowe
+reguły które wprowadzimy do Autobot") dopisano do `playbook.md` sześć nowych reguł (C-033
+usuwanie worktree bez sprawdzenia stanu, C-034 scalenie jako osobny natychmiastowy dispatch,
+C-035 worktree zawsze od `main`, C-036 unikalne nazwy plików w scratchpadzie, C-037 brak
+notyfikacji ≠ agent wciąż pracuje, C-038 werdykt Evaluatora tylko po realnym odebraniu raportu)
+razem z wpisami w rejestrze błędów i dzienniku wniosków, pokrywające 5 incydentów tej nocy.
+
+Zgodnie z §0b (orkiestrator nie ocenia sam siebie) zmiana przeszła przez niezależnego
+Evaluatora PRZED commitem — werdykt runda 1: **FAIL**, 5 blokujących: (B1) „godziny później"
+między dwoma usunięciami worktree — w rzeczywistości TA SAMA partia sprzątania; (B2) mechanizm
+odzysku przypisany błędnie obu incydentom jako `git fsck` — R-EPOKA-CUD w rzeczywistości nie miał
+odzyskanych obiektów gita, tylko wyścig z czasem (grep tuż przed zniknięciem worktree); (B3)
+dziennik liczył „cztery nowe zasady" przy pięciu (C-033…C-037); (B4) „odzyskane w pełni"/„zero
+trwałej utraty pracy" zaprzeczone przez własne źródło — test R-EPOKA-CUD ma dziś 33 asercje
+zamiast utraconych 35, test rundy 1 Portu został ZASTĄPIONY (nie rozszerzony) tracąc piny
+M8/M9/M10/M13; (B5) „wszystkie cztery tematy scalone" przy trzech hashach — czwarty/piąty
+incydent (worktree-na-main, kolizje scratchpad) nie są tematami kodu do scalenia; (B6)
+`playbook.json` nie zregenerowany po dopisaniu reguł (recydywa C-031 — reguła istnieje tylko w
+pliku wymagającym świadomego odczytu). Evaluator wskazał też 2 luki: brak reguły dla „rejestr
+zapisał werdykt Evaluatora, który nigdy się nie odbył" (→ nowa C-038) i brak wymogu
+„natychmiast po PASS" w C-034 (rozszerzone).
+
+Wszystkie 6 punktów poprawione: dokładność faktów wobec źródeł, dodana C-038, C-034 rozszerzone
+o „natychmiast po PASS" + twardy dowód sukcesu (`git log --all --oneline | grep <hash>` + grep
+symbolu w drzewie głównym), C-035/C-037 oznaczone jako RECYDYWA wiedzy już opisanej w
+`.claude/skills/civ-autobot/SKILL.md` (żyła tylko w pliku bez auto-ładowania — ten sam
+mechanizm co C-031), C-037 dostał próg ~45 min + fallback niezależny od `ListAgents`
+(`ls`+`git status` w worktree), `playbook.json` zregenerowany generatorem (`--write`,
+version→30), `autobot-smoke.cjs` 11/11 PASS. Numeracja ID zweryfikowana: 38 wierszy, C-001…C-038,
+zero duplikatów/luk. Scommitowane po poprawkach — zgodnie z zasadą, że orkiestrator nie
+zwalnia się z pętli AutoBot nawet dla własnych zmian dokumentacyjnych.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — priorytet cudu, Operator runda 1 dostarczona, czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a85d78f7d0cdd8a5d` (base `main`/`b0e4a5c9`, TA SAMA klasa problemu co
+stackGroupId runda 2 — worktree nie widział `13861b60` scalonego już do gałęzi sesji; Operator
+sam to zdiagnozował i odtworzył prerequisite przez `git diff 13861b60^ 13861b60` + `git apply -3`,
+zweryfikowane czyste). **Scalający musi to uwzględnić:** diff tego worktree na `owner-epoch.ts` i
+części `main.ts` DUBLUJE zawartość `13861b60` — scalenie wymaga albo wziąć tylko hunki
+specyficzne dla B3 (po scaleniu `13861b60`, które już jest na gałęzi sesji), albo uważnie
+rozdzielić.
+
+Dwa mechanizmy w `gra/src/game/ai.ts`, wpięte w JEDYNE istniejące miejsce wywołania (`main.ts`,
+blok `CUDA-AI` ~linia 23059, przed `decideAITurn`): `decideAiWonderBuild(...,forcePriority=false)`
+— nowy opcjonalny 7. parametr (wstecznie kompatybilny, stare 6-argumentowe wywołania/testy
+nietknięte), gdy `true` pomija throttle/`hasWonderInProgress`/`queueEmpty` (pilnuje tylko
+`pracaPerTurn>0`); `relaxedWonderCostThreshold(...)` — próg opłacalności rośnie płynnie do
+`Infinity` po `stuckTurns>=cuda_stuck_relax_tur_max` (nowy parametr w `ai-params.json`, domyślnie
+30 tur). `wonderForcePriority` liczony przez ponowne użycie `allEraTechsResearched`/
+`eraOwnWonderSatisfied` z `owner-epoch.ts` (`13861b60`) — bez duplikacji logiki. C-026: jedyne
+miejsce wywołania `decideAiWonderBuild` zgrepowane i potwierdzone, `chooseCityProduction`
+(normalny scoring) nietknięty.
+
+Nowy test `ai-cud-priorytet-b3-test.cjs` 31/31. Bramki: tsc 0, logic-test 213/213, owner-epoch
+13/13, era-cud-warunek-awansu 33/33, era-cud-main-ts-integracja OK (15/16/11), ai-production-
+priority 9/9, tech-tree 19/19, research 33/33, unit-replace 13/13, wonder-availability 7/7,
+wonder-civ-tech 5/5, cuda-handel 26/26, ai-balans-step4 10/10. `ai-balans-step3-test.cjs` 7/8 —
+1 porażka PRE-ISTNIEJĄCA (potwierdzona na bazowym `b0e4a5c9` przed zmianą, test ma
+zdezaktualizowaną wartość `prog_koszt_x=70` podczas gdy JSON już ma `80` z wcześniejszego
+STEP4), niezwiązana z tą zmianą.
+
+**Znane ograniczenie, nie naprawiane (zgodne z zastrzeżeniem Macieja „jeśli dosłownie nie stać —
+priorytet nie pomoże"):** `tryDeductWonderStartFood` może po cichu pominąć zakolejkowaną decyzję
+z braku żywności; w trybie `forcePriority` licznik `stuckTurns` i tak resetuje się do 0, mimo że
+nic nie zostało faktycznie zakolejkowane — brzegowy przypadek poza zakresem tego zlecenia.
+
+Dispatch Evaluatora rundy 1 NASTĘPUJE teraz.
+
+---
