@@ -16525,8 +16525,13 @@ async function boot(): Promise<void> {
         if (!isScoutUnit(u)) return;
         const enabling = u.autoExplore !== true;
         if (enabling) {
-          // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A: zostań zaznaczony → złota ramka od razu
-          // (wcześniej deselect+cycle ukrywały uc-act-btn--on w momencie kliknięcia).
+          // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2=A (2026-08-10, cofa Q1 z 2026-08-04): po włączeniu
+          // Zwiedzaj jednostka NIE zostaje zaznaczona — mylące podświetlenie ruchu prowadziło
+          // do przypadkowych kliknięć, które kasowały auto-eksplorację. Feedback wizualny
+          // (który Q1 dawało złotą ramką) dziś zapewnia showHintMessage() niżej (toastu
+          // brakowało w sierpniu, stąd Q1). / EN: after enabling auto-explore the unit no longer
+          // stays selected — the misleading movement highlight caused accidental clicks that
+          // silently cancelled auto-explore. Visual feedback is now covered by the toast below.
           clearPlannedMarch(u.id);
           // C-025: fortyfikacja w polu i auto-eksploracja wykluczają się wzajemnie —
           // włączenie Zwiedzaj zdejmuje fortyfikację (analogicznie do enterFieldFortify,
@@ -16539,6 +16544,14 @@ async function boot(): Promise<void> {
           u.autoExplore = true;
           showHintMessage(u.typeId + ' zwiedza map\u0119 \u2014 ruch na koniec tury', 2800);
           refreshD1bHud();
+          // Odznacz i przejdź do kolejnej jednostki gracza z dostępnym ruchem (jak Spacja);
+          // brak takiej → pełne odznaczenie. Jedno wywołanie wystarcza: `u.autoExplore = true`
+          // wyżej wyklucza TĘ jednostkę z cyclablePlayerArmyLeads() (isUnitActiveForCycle
+          // odrzuca autoExplore===true), więc cycleToAdjacentPlayerUnit nigdy nie wybierze jej
+          // z powrotem, a przy pustej liście samo wywołuje clearPlayerUnitSelection() w środku.
+          // / EN: a single call is enough — the flag just set already excludes this unit from
+          // the cycle list.
+          cycleToAdjacentPlayerUnit(u.id, 1);
         } else {
           u.autoExplore = false;
           showHintMessage('Wy\u0142\u0105czono zwiedzanie', 2000);
