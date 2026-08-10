@@ -915,8 +915,13 @@ import { TypCywilizacji, type Player } from './types/player';
 import {
   saveToLocal, loadFromLocal, listSaves,
   setLastPlayedSlotId, checkSaveIntegrity, AUTOSAVE_SLOT_ID,
+  FSA_SLOT_PREFIX,
   type SaveGame,
 } from './game/save';
+import {
+  ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
+  shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
+} from './game/fsa-autosave';
 import { buildDefaultSaveLabel, type SaveLabelKind } from './game/save-label';
 import {
   diagInfo, diagWarn, diagError, installGlobalDiagHooks,
@@ -16175,6 +16180,11 @@ async function boot(): Promise<void> {
           setMarchVolume(efekty);
         },
         onNewGame: () => {
+          // R-AUTOZAPIS-QUOTA-STORAGE-Q1 (ECHO A): musi żyć w TYM kliknięciu
+          // (transient activation, patrz fsa-autosave.ts) — jedno kliknięcie
+          // na start sesji, nie co turę. Fire-and-forget: brak FSA/zgody
+          // po prostu zostawia autosave na dotychczasowym localStorage.
+          void triggerFsaAutosaveBootstrap();
           hideMainMenu();
           showNewGameFlow({
             data,
@@ -16184,14 +16194,22 @@ async function boot(): Promise<void> {
         },
         onContinue: () => {
           hideMainMenu();
-          const slot = continueSaveSlotId();
-          if (slot) {
-            void loadGameFromSlot(slot, false);
-          } else {
-            openLoadGameDialog(false);
-          }
+          // B2 (Evaluator runda 1): CZEKAMY na triggerFsaAutosaveBootstrap()
+          // przed odczytem continueSaveSlotId() -- inaczej getLastPlayedSlotId()
+          // mógłby zwrócić wskaźnik "fsa:..." zanim katalog/uchwyt FSA zdążył
+          // się przygotować (bootstrap wołany fire-and-forget gdzie indziej),
+          // a loadGameFromSlot() dostałby pusty stan zamiast realnego pliku.
+          void (async () => {
+            await triggerFsaAutosaveBootstrap();
+            const slot = continueSaveSlotId();
+            if (slot) {
+              void loadGameFromSlot(slot, false);
+            } else {
+              openLoadGameDialog(false);
+            }
+          })();
         },
-        onLoad: () => openLoadGameDialog(false),
+        onLoad: () => { void triggerFsaAutosaveBootstrap(); openLoadGameDialog(false); },
         onAbout: () => {
           showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
         },
@@ -21252,6 +21270,26 @@ async function boot(): Promise<void> {
     const AUTOSAVE_ROT_IDX_KEY = 'thegame.autosave.rotIdx';
     const AUTOSAVE_FREQ_KEY = 'thegame.autosave.freq';
 
+    /**
+     * N3 (Evaluator runda 1): strażnik jednego zapisu na raz. `idx` w
+     * doRotatingAutosave() jest czytany na starcie funkcji i zapisywany
+     * dopiero PO sukcesie -- jeśli zapis na dysk (createWritable/write/close)
+     * trwa dłużej niż jedna tura, kolejna tura wywołałaby drugi równoległy
+     * zapis na TEN SAM plik/slot. Ten strażnik pomija turę zamiast nakładać
+     * się; kolejna okazja (następna tura z aktywnym autozapisem) spróbuje
+     * ponownie.
+     * / EN: single-write-at-a-time guard. `idx` in doRotatingAutosave() is
+     * read at function start and only persisted AFTER success -- if the disk
+     * write (createWritable/write/close) takes longer than one turn, the
+     * next turn would fire a second, overlapping write to the SAME
+     * file/slot. This guard skips that turn instead of overlapping; the next
+     * opportunity (the following turn with autosave due) retries.
+     */
+    let autosaveInFlight = false;
+
+    /** N4: pokaż komunikat o degradacji FSA→localStorage tylko RAZ na sesję karty (nie co turę). */
+    let fsaAutosaveDegradedNotified = false;
+
     function getAutosaveFrequency(): number {
       try {
         const v = parseInt(localStorage.getItem(AUTOSAVE_FREQ_KEY) ?? '1', 10);
@@ -21262,16 +21300,119 @@ async function boot(): Promise<void> {
       try { localStorage.setItem(AUTOSAVE_FREQ_KEY, String(Math.max(1, Math.round(n)))); } catch { /* brak localStorage */ }
     }
 
-    /** Zapis do kolejnego slotu rotacji (1..10), zachowując 10 ostatnich wstecz. */
-    function doRotatingAutosave(): void {
+    /** Klucz localStorage: żeby komunikat o braku wsparcia FSA pokazać graczowi raz, nie przy każdym starcie. */
+    const FSA_HINT_SHOWN_KEY = 'thegame.autosave.fsaHintShown';
+
+    /**
+     * WOŁAJ z wnętrza handlera kliknięcia startu sesji (Rozpocznij/Kontynuuj/
+     * Wczytaj) — patrz komentarz nagłówkowy fsa-autosave.ts. Zwraca Promise:
+     * większość call site'ów woła ją fire-and-forget (`void`) -- przy braku
+     * wsparcia (Firefox/Safari, file://, brak zgody) po cichu (raz) informuje
+     * gracza i zostawia autozapis na dotychczasowym localStorage. Wyjątek:
+     * onContinue (BLOKER B2) CZEKA na ten Promise przed odczytaniem
+     * continueSaveSlotId() -- inaczej wskaźnik "ostatnio grane" mógłby
+     * wskazywać na plik FSA zanim katalog/uchwyt zdążył się przygotować.
+     * / EN: promise-returning so onContinue can await it before reading
+     * continueSaveSlotId() (BLOCKER B2 fix) -- other call sites keep firing
+     * it with `void` (fire-and-forget).
+     */
+    function triggerFsaAutosaveBootstrap(): Promise<void> {
+      return ensureFsaAutosaveReady().then(({ ok, reason }) => {
+        if (ok) return;
+        if (reason === 'permission-denied' || reason === 'picker-cancelled') return; // świadomy wybór gracza, bez komunikatu
+        let alreadyShown = false;
+        try { alreadyShown = localStorage.getItem(FSA_HINT_SHOWN_KEY) === '1'; } catch { /* brak localStorage -- pokaz i tak */ }
+        if (alreadyShown) return;
+        showHintMessage(fsaUnavailableMessage(reason), 5000);
+        try { localStorage.setItem(FSA_HINT_SHOWN_KEY, '1'); } catch { /* ignore */ }
+      });
+    }
+
+    /**
+     * Zapis do kolejnego slotu rotacji (1..10), zachowując 10 ostatnich wstecz.
+     * R-AUTOZAPIS-QUOTA-STORAGE-Q1 (ECHO A): jeśli File System Access jest
+     * gotowe (ensureFsaAutosaveReady() wywołane wcześniej z kliknięcia startu
+     * sesji — patrz mainMenu onNewGame/onContinue/onLoad), zapis idzie do
+     * PLIKU na dysku (bez limitu ~5-10 MB localStorage). W przeciwnym razie —
+     * albo gdy zapis do pliku się nie uda — fallback na dotychczasowy
+     * localStorage, bez regresji.
+     * / EN: rotating write to slot 1..10, keeping the last 10. If File System
+     * Access is ready, write goes to a file on disk; otherwise (or on FSA
+     * write failure) fall back to the pre-existing localStorage path.
+     */
+    async function doRotatingAutosave(): Promise<void> {
+      // N3: pomiń tę turę, jeśli poprzedni zapis (na dysk, potencjalnie wolny)
+      // wciąż trwa -- zamiast nakładać dwa równoległe createWritable() na ten
+      // sam plik. Patrz komentarz przy deklaracji autosaveInFlight.
+      if (autosaveInFlight) {
+        console.warn('[Autosave] pomijam ture -- poprzedni zapis wciaz trwa, tura=' + turn);
+        return;
+      }
+      autosaveInFlight = true;
+      try {
       let idx = 0;
       try {
         const prev = parseInt(localStorage.getItem(AUTOSAVE_ROT_IDX_KEY) ?? '-1', 10);
         idx = (((Number.isFinite(prev) ? prev : -1) + 1) % AUTOSAVE_ROT_COUNT + AUTOSAVE_ROT_COUNT) % AUTOSAVE_ROT_COUNT;
       } catch { idx = 0; }
       const slot = 'autosave-' + (idx + 1);
+
+      // N1: buildSaveGameSnapshot() PRZENIESIONE pod try -- wcześniej stało
+      // przed każdym try/catch tej funkcji, więc wyjątek przy budowie migawki
+      // uciekał jako unhandled rejection zamiast trafić do dotychczasowego
+      // raportowania błędów (console.error + showHintMessage) jak reszta tej
+      // funkcji.
+      // / EN: buildSaveGameSnapshot() MOVED under try -- it previously stood
+      // ahead of every try/catch in this function, so a snapshot-build
+      // exception escaped as an unhandled rejection instead of reaching the
+      // same error reporting (console.error + showHintMessage) as the rest
+      // of this function.
+      let snapshot: SaveGame;
       try {
-        const { ok, reason } = saveToLocal(slot, buildSaveGameSnapshot(currentSaveLabel('autosave')));
+        snapshot = buildSaveGameSnapshot(currentSaveLabel('autosave'));
+      } catch (eSnap) {
+        console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
+        showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+        return;
+      }
+
+      if (shouldUseFsaAutosave(getFsaReadinessState())) {
+        try {
+          const { ok, reason } = await fsaRotatingAutosaveWrite(idx, snapshot);
+          if (ok) {
+            // B2 (BLOKER, Evaluator runda 1): wskaźnik "ostatnio grane" MUSI
+            // rozróżniać plik na dysku od slotu localStorage -- zapis na
+            // dysk NIC nie pisze do localStorage, więc stary kod
+            // setLastPlayedSlotId(slot) (klucz 'autosave-N') był kłamstwem:
+            // getLastPlayedSlotId() albo cicho wczytywał STARY/CUDZY zapis
+            // spod tego samego klucza localStorage (jeśli istniał), albo
+            // spadał na mostRecentSaveSlotId(). FSA_SLOT_PREFIX + nazwa
+            // pliku to jedyny prawdziwy wskaźnik na ten zapis (patrz
+            // save.ts::getLastPlayedSlotId, saveLoadDialog.ts, loadGameFromSlot).
+            // / EN: the "last played" pointer MUST distinguish a disk file
+            // from a localStorage slot -- the disk write writes NOTHING to
+            // localStorage, so the old setLastPlayedSlotId(slot) call (key
+            // 'autosave-N') was a lie: getLastPlayedSlotId() would either
+            // silently resolve a STALE/UNRELATED localStorage save under
+            // that same key, or fall through to mostRecentSaveSlotId().
+            // FSA_SLOT_PREFIX + file name is the only truthful pointer to
+            // this save (see save.ts::getLastPlayedSlotId, saveLoadDialog.ts,
+            // loadGameFromSlot).
+            setLastPlayedSlotId(FSA_SLOT_PREFIX + autosaveFileName(idx));
+            try { localStorage.setItem(AUTOSAVE_ROT_IDX_KEY, String(idx)); } catch { /* ignore */ }
+            console.log('[Autosave] rotacyjny (dysk) slot=' + (idx + 1) + ' tura=' + turn);
+            return;
+          }
+          console.warn('[Autosave] zapis na dysk nieudany (' + (reason ?? 'nieznany') + ') — fallback na localStorage, tura=' + turn);
+          notifyFsaAutosaveDegraded();
+        } catch (eFsa) {
+          console.warn('[Autosave] wyjatek zapisu na dysk — fallback na localStorage:', eFsa);
+          notifyFsaAutosaveDegraded();
+        }
+      }
+
+      try {
+        const { ok, reason } = saveToLocal(slot, snapshot);
         if (ok) {
           setLastPlayedSlotId(slot);
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
@@ -21292,6 +21433,25 @@ async function boot(): Promise<void> {
         console.error('[Autosave] blad rotacyjnego zapisu:', eRot);
         showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
       }
+      } finally {
+        autosaveInFlight = false;
+      }
+    }
+
+    /**
+     * N4 (Evaluator runda 1): po PIERWSZYM niepowodzeniu zapisu na dysk w tej
+     * sesji karty (np. Chrome cofnął jednorazowe "Zezwól tym razem" po
+     * dłuższym czasie karty w tle) pokazuje JEDNORAZOWY komunikat, że
+     * autozapis wrócił do przeglądarki -- fsaRotatingAutosaveWrite() już
+     * zerował livePermissionGranted (N7), więc kolejne tury idą od razu na
+     * fallback bez ponownej próby i bez powtarzania tego komunikatu.
+     * Furtka „przywróć zapis na dysk" w menu pauzy NIE jest tu zrobiona --
+     * świadomie odłożona (patrz raport rundy), do rejestru.
+     */
+    function notifyFsaAutosaveDegraded(): void {
+      if (fsaAutosaveDegradedNotified) return;
+      fsaAutosaveDegradedNotified = true;
+      showHintMessage('Zapis na dysk przerwany (uprawnienie wygasło) — autozapis wraca do zapisu w przeglądarce.', 4000);
     }
 
     // -----------------------------------------------------------------------
@@ -21499,7 +21659,17 @@ async function boot(): Promise<void> {
         dismissedSidePanelEventIds.clear();
 
         // M: rotacyjny autozapis co N tur (domyślnie co turę) — 10 ostatnich wstecz.
-        if (turn % getAutosaveFrequency() === 0) doRotatingAutosave();
+        // void: funkcja jest async (może pisać do pliku przez FSA) — tura nie czeka na zapis.
+        // N2 (Evaluator runda 1): .catch() na tym jedynym call site -- doRotatingAutosave()
+        // już łapie wszystko wewnętrznie (try/catch/finally), ale bez tego jakikolwiek
+        // wyjątek, który mimo to by przeciekł, kończyłby się unhandled rejection zamiast
+        // trafić do tego samego raportowania błędów co reszta funkcji.
+        if (turn % getAutosaveFrequency() === 0) {
+          void doRotatingAutosave().catch((eAutosave) => {
+            console.error('[Autosave] nieobsluzony wyjatek rotacyjnego autozapisu:', eAutosave);
+            showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
+          });
+        }
 
         pendingImprovementsTurn.commitTurn();
 
@@ -26612,7 +26782,16 @@ async function boot(): Promise<void> {
       hideSaveLoadDialog();
       diagInfo('load', `slot=${slotId} pause=${fromInGamePause}`);
       try {
-        const saved = loadFromLocal(slotId);
+        // BLOKER B1 (Evaluator runda 1): slotId z prefiksem FSA_SLOT_PREFIX
+        // ('fsa:...') wskazuje na plik na dysku (rotacja autozapisu FSA), nie
+        // na slot localStorage -- odczyt idzie przez loadFsaAutosaveFile()
+        // zamiast loadFromLocal(). Bez tego rozgałęzienia dialog Wczytaj
+        // mógłby POKAZAĆ zapis z dysku (summarizeFsaSaveSlots), ale kliknięcie
+        // go zawsze kończyło się "Nie można wczytać tego zapisu" (loadFromLocal
+        // szuka w localStorage klucza, który nigdy tam nie istniał).
+        const saved = slotId.startsWith(FSA_SLOT_PREFIX)
+          ? await loadFsaAutosaveFile(slotId.slice(FSA_SLOT_PREFIX.length))
+          : loadFromLocal(slotId);
         if (!saved) {
           diagWarn('load', `brak danych slot=${slotId}`);
           showHintMessage('Nie można wczytać tego zapisu.', 3000);

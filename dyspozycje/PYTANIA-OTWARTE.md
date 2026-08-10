@@ -8694,4 +8694,37 @@ Evaluator rundy 2 dispatchowany (`a08d00415b015647f`, Opus 5) — pełna niezale
 weryfikacja B1/B2 end-to-end, ocena luk (a)/(b), N1-N7 rzeczywiście sprawdzone w kodzie,
 szukanie nowych regresji w `save.ts`/`saveLoadDialog.ts` (zmiana kontraktu sync→async).
 
+**Runda 2 werdykt: PASS-WITH-NOTES.** B1 zweryfikowane własnym round-trip testem Evaluatora
+na prawdziwym kodzie (esbuild + mock `FileSystemDirectoryHandle`) — 12/12, `explored: Set→
+tablica` przetrwał, `meta.newGameParams` przetrwał (bez tego `checkSaveIntegrity` by
+odrzucił zapis). `mergeSaveSlotLists` potwierdzone jako realnie wołane, nie martwy kod.
+B2: wszystkie 4 miejsca odczytu wskaźnika `fsa:` sprawdzone, race faktycznie usunięty (nie
+przesunięty — `ensureFsaAutosaveReady()` nigdy nie rzuca, zawsze poprawna degradacja).
+Luka (a) w praktyce prawie zneutralizowana — `LAST_PLAYED_SLOT_KEY` sam zaczyna się od
+`SAVE_PREFIX`, więc po pierwszym autozapisie na dysk `hasAnySaveSlot()` i tak zwróci
+`true`. Luka (b) — zero utraty danych, akceptowalna. N8 zweryfikowane realnym `vite build`
+(Operator błędnie sądził że to poza zakresem — CLAUDE.md §1 sankcjonuje ten build):
+`_resetFsaStateForTests`/`_setFsaStateForTests` = 0 wystąpień w bundlu, tree-shaking
+potwierdzony empirycznie.
+
+**Nowe noty Evaluatora (N9-N14), żadna blokująca:** N9 `onContinue` async IIFE bez
+`.catch()` (ta sama klasa co N2, ryzyko praktycznie zerowe); N10 „Kontynuuj" na świeżym
+profilu blokuje się na modalnym pickerze (świadoma konsekwencja B2); N11
+`summarizeFsaSaveSlots()` deserializuje wszystkie 10 plików rotacji — na dużych mapach
+możliwe zacięcie przy otwarciu „Wczytaj"; N12 strażnik `root===null` w dialogu nie łapie
+zamknij-i-otwórz-ponownie (nieszkodliwe); N13 `serve:robocza` technicznie poza B1/B2 ale
+uzasadnione (FSA nie działa na `file://`); N14 mylący komentarz o stanie bazowym N1
+(zachowanie poprawne, tekst nieścisły).
+
+**SCALONE** hunk-by-hunk wg instrukcji Evaluatora (`git apply -3`, czysto na wszystkie 5
+zmodyfikowanych plików + 2 nowe pliki skopiowane w całości): `gra/package.json`,
+`gra/src/game/save.ts`, `gra/src/main.ts`, `gra/src/ui/saveLoadDialog.ts`,
+`gra/tools/autosave-quota-fail-test.cjs`, nowy `gra/src/game/fsa-autosave.ts`, nowy
+`gra/tools/fsa-autosave-test.cjs`. Bramki na żywym drzewie identyczne z Evaluatorem:
+tsc 0, logic-test 213/213, fsa-autosave-test 55/55, autosave-quota-fail-test 20/20,
+save-label-test OK, planned-march-test 18/18.
+
+**STATUS: ZAMKNIĘTE (R-AUTOZAPIS-QUOTA-STORAGE-Q1 w całości scalone — temat 2 z
+autoryzacji Macieja domknięty).**
+
 ---

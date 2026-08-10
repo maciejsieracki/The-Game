@@ -58,6 +58,28 @@ export const SAVE_PREFIX = 'thegame.save.';
 /** Meta-klucz: ostatnio wczytany / zapisany slot (Kontynuuj). */
 export const LAST_PLAYED_SLOT_KEY = 'thegame.save._lastPlayed';
 
+/**
+ * Prefiks odróżniający wskaźnik „ostatnio grane" wskazujący na plik File
+ * System Access (dysk) od zwykłego slotu localStorage. R-AUTOZAPIS-QUOTA-
+ * STORAGE-Q1 (Evaluator runda 1, BLOKER B2): przed tą zmianą autozapis na
+ * dysk wołał setLastPlayedSlotId(slot) z kluczem localStorage-'owym mimo że
+ * NIC nie zapisał do localStorage -- getLastPlayedSlotId() albo cicho
+ * wczytywał STARY/CUDZY zapis spod tego samego klucza w localStorage, albo
+ * (gdy klucza brak) spadał na mostRecentSaveSlotId(). Wartość zapisana pod
+ * LAST_PLAYED_SLOT_KEY z tym prefiksem NIE jest slotem localStorage -- to
+ * "fsa:" + nazwa pliku (patrz fsa-autosave.ts::autosaveFileName()).
+ * / EN: prefix distinguishing a "last played" pointer that targets a File
+ * System Access (disk) file from an ordinary localStorage slot. Before this
+ * fix, the disk-autosave branch called setLastPlayedSlotId(slot) with a
+ * localStorage-shaped key despite writing nothing to localStorage --
+ * getLastPlayedSlotId() would either silently resolve a STALE/UNRELATED
+ * localStorage save under that same key, or (when absent) fall through to
+ * mostRecentSaveSlotId(). A value stored under LAST_PLAYED_SLOT_KEY with
+ * this prefix is NOT a localStorage slot -- it is "fsa:" + file name (see
+ * fsa-autosave.ts::autosaveFileName()).
+ */
+export const FSA_SLOT_PREFIX = 'fsa:';
+
 /** Slot szybkiego zapisu (Ctrl+S) — zawsze ten sam klucz, osobno od nazwanych sejwów. */
 export const AUTOSAVE_SLOT_ID = 'autosave';
 
@@ -440,6 +462,16 @@ export function getLastPlayedSlotId(): string | null {
   try {
     const raw = storage.getItem(LAST_PLAYED_SLOT_KEY);
     if (!raw || !raw.trim()) return null;
+    // Wskaźnik na plik FSA (dysk) -- walidacja wymagałaby odczytu async z
+    // katalogu na dysku, którego ta czysto-synchroniczna funkcja nie może
+    // wykonać. Zwracamy wskaźnik bez walidacji; wołający (loadGameFromSlot
+    // w main.ts) i tak obsługuje brak/niewczytywalność pliku łagodnie.
+    // / EN: pointer to an FSA (disk) file -- validating it would need an
+    // async read from the disk directory, which this purely-synchronous
+    // function cannot perform. Return the pointer unvalidated; the caller
+    // (main.ts::loadGameFromSlot) already degrades gracefully when the file
+    // is missing or fails to load.
+    if (raw.startsWith(FSA_SLOT_PREFIX)) return raw;
     return loadFromLocal(raw) ? raw : null;
   } catch {
     return null;
