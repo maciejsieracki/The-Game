@@ -10217,6 +10217,6 @@ NIE ma takiego potwierdzenia w tym rejestrze — biorąc pod uwagę że rozpozna
 znalazły/badają realny bug DOKŁADNIE w tym obszarze (poziom Racji, Wzrost%, Spichlerz), Evaluator MA
 zweryfikować to twierdzenie niezależnie (np. `git stash`/porównanie z merge-base), nie przyjąć na
 słowo — może to być czwarty objaw tego samego łańcucha przyczynowego, nie coincydencja.
-**Dispatchowany Evaluator NASTĘPUJE.**
+**Dispatchowany Evaluator (`a9935e7d20bbedcfa`).**
 
 ---
