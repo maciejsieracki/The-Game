@@ -10016,4 +10016,9 @@ potencjał wzrostu). **STATUS: dispatch rozpoznania NASTĘPUJE teraz (`a829efd46
 zgodnie z dyscypliną tej sesji (rozpoznanie przed ABC dla niejasnego zakresu technicznego, CLAUDE.md
 §6/§7).
 
+**Maciej (priorytetyzacja): „na razie to są dwa najważniejsze błędy, które musimy naprawić. Pozostałe
+rzeczy później."** — potwierdza kolejność już w toku (suwaki Praca/Skarbiec + Auto Wyżywienie cel
+bilans-nieujemny jako priorytet; Spichlerz 0 vs −1 pozostaje w toku jako powiązane, ale drugorzędne).
+Bez zmiany dispatchu — wszystkie 3 już uruchomione agenty są zgodne z tą priorytetyzacją.
+
 ---
