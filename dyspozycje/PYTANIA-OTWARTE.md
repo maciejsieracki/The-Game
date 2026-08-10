@@ -8856,4 +8856,83 @@ zakres A/B/C: wydawanie puli na ulepszenia, cache vs live panel miasta/cywilizac
 panelu globalnych ustawień) i Auto Wyżywienie (`a9bb68ce84d7d4bc9`). Żaden nie zmienia kodu —
 czyste rozpoznanie przed jakąkolwiek naprawą.
 
+**Rozpoznanie Auto Wyżywienie ZAKOŃCZONE — NIE regresja.** Mechanizm (`empire-food.ts`)
+niezmieniony od `88c08755` (2026-08-05), FALA 265/266 w ogóle go nie dotknęła. Kontrakt jest
+EMPIRE-WIDE (Spichlerz ≥ 0 po dopłatach ze WSZYSTKICH miast), nie per-miasto — potwierdzone
+komentarzami w kodzie, własnym tooltipem przycisku „Auto Wyżywienie" w UI, i testem
+`ai-major-economy-test.cjs` scenariusz „L. Q5" **32/32 PASS** reprodukującym dokładnie ten
+przypadek (miasto bez flagi zostaje z lokalnym deficytem nietknięte, celowo). Ujemny lokalny
+„Bilans" pojedynczego miasta pokrywany z centrali to ZAMIERZONE zachowanie, nie bug. Realny
+problem: UI nie tłumaczy tego rozróżnienia graczowi (goły czerwony „−1" bez adnotacji „pokryte
+z centrali"). Dodatkowo znaleziona osobna, udokumentowana jako świadoma (SPICH-AUTO-Q1,
+`998fe2b6`, 2026-08-04) granica zakresu: auto-Wyżywienie NIE liczy kosztu wojska przy decyzji
+o poziomie racji, a UI ma twardy `Math.max(0, central)` — Spichlerz nigdy nie pokazuje się jako
+ujemny nawet przy realnym głodzie (widocznym tylko przez osobną flagę `glodWojska`).
+
+**Do decyzji Macieja (ABC, nie do zgadywania):** (A) dopisać w panelu miasta adnotację przy
+ujemnym lokalnym bilansie pokrytym z centrali; (B) rozszerzyć kontrakt auto-Wyżywienia o koszt
+wojska — realna zmiana zasięgu mechanizmu; (C) zostawić jak jest, dopisać wyjaśnienie do
+dokumentacji/FAQ w grze. Osobno: `empire-food-b5-test.cjs` ma 3 pre-istniejące porażki
+(dług R-STAWKI ×2 kosztu wojska, niezwiązane z tym tematem) — do dopisania w CLAUDE.md §BRAMKI
+jako znana czerwona bramka, żeby nie mylić z tym tematem przy przyszłych audytach.
+
+**STATUS Auto Wyżywienie: ZAMKNIĘTE jako „nie bug", czeka na ABC Macieja co do UX.**
+
+---
+
+## Rozpoznanie Praca ZAKOŃCZONE — TRZY niezależne przyczyny, nie jedna (2026-08-10)
+
+**A) „Praca nie dociera do ulepszeń" — NIE bug silnika.** `playerPracaPool` i tooltip HUD to
+JEDNA, poprawnie zsynchronizowana zmienna (20 miejsc przypisania, każde aktualizuje oba naraz).
+Ścieżka UI→silnik stawiania ulepszenia (`improvement-build.ts`→`applyBuildRequest`/
+`commitBuildRequest`, main.ts:10200-10322) jest kompletna i poprawna — sprawdza pulę, odejmuje,
+albo pokazuje „Za mało Pracy". **Rzeczywista przyczyna:** koszt Pracy WSZYSTKICH ulepszeń
+terenu jest dziś ×2 względem `gra/data/terrain-improvements.json`, przez `scaleImprovementWorkCost`
+(`r-stawki-strojenie.ts`, `R_STAWKI_FALA2_MULT=2`) — świadoma decyzja Macieja z commitów
+`24acb69c`/`f940f618` (2026-08-03/04, współautor Maciej, udokumentowane w
+`docs/decyzje/R-STAWKI-STROJENIE.md`/`R-NADMIAR-POOLS.md`, cytat: „podwoiłbym koszt... Zobaczę
+potem w Playtestie"). Realne koszty dziś: droga 30, farma/kamieniołom/kopalnie 40-44, tartak/fort
+50, stadnina 56, posterunek 60 — przy puli 22-26 (jak w zrzutach) **nic nie jest przystępne**.
+To jest DOKŁADNIE ten playtest, o którym mówił cytat z 3 sierpnia — efekt uboczny (niedostępność
+wczesnej gry) najwyraźniej nie był wcześniej zaobserwowany. Pogłębia to słaby UX: panel budowy
+(`buildModeHud.ts`) NIE wyszarza pozycji nieprzystępnych, komunikat „Za mało Pracy" to cichy
+3-sekundowy toast po kliknięciu, nie stały wskaźnik.
+
+**B) Rozjazd panel miasta (+3/+3) vs panel cywilizacji (+2/+4) — POTWIERDZONY realny bug,
+silny dowód liczbowy.** Oba panele używają tej samej formuły (`resolveCityPodzialPracy`),
+więc to NIE rozjazd wzoru. Policzone: `round(6×0,70)=4, doPuli=2` — panel cywilizacji
+pokazywał DOKŁADNIE wynik DOMYŚLNEGO podziału 70/30 (`DEFAULT_PODZIAL_PRACY`), nie aktualnie
+ustawionego 50/50. Silna poszlaka, że `_lastPlayerCityEcon` (cache czytany przez panel
+cywilizacji, main.ts:12050/12057-12058) nie zdążył się odświeżyć mimo że mechanizm
+inwalidacji (`empireEconDirty`) wygląda na papierze poprawnie. Podejrzany mechanizm (NIE
+potwierdzony logami z sesji Macieja, tylko hipoteza z czytania kodu): `refreshLiveEmpireRates()`
+czyści flagę `empireEconDirty` NA POCZĄTKU funkcji (main.ts:13328), PRZED właściwym
+przeliczeniem i zapisem do cache (main.ts:13428) — bez `try/catch` między tymi liniami, cichy
+wyjątek zostawiłby flagę wyczyszczoną, a cache nigdy nieodświeżony. **Wzorzec systemowy, nie
+jednorazowy przypadek przy Pracy** — Skarbiec i Nauka w tym samym panelu „Grecy" czytają ten
+sam cache, to samo ryzyko.
+
+**C) Brak panelu globalnych ustawień — POTWIERDZONE jako fałszywe zamknięcie
+`R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE`.** `git show 8692b61b --stat`: kompletny, przetestowany
+backend (`empire-city-defaults.ts`, 278 linii + test 247 linii, wpięty w `main.ts`) — ale w
+`cityPanel.ts` WYŁĄCZNIE deklaracje typu interfejsu (+22 linii), **zero kodu renderującego
+UI** (brak przycisku pin/odpin, brak jakiejkolwiek etykiety). Mechanizm faktycznie działa —
+suwak w panelu KAŻDEGO miasta bez lokalnego pinu JEST globalnym ustawieniem
+(`onPodzialPracyChange` main.ts:17077-17091 pisze wprost do `ownerDefaultPodzialPracy`) — ale
+gracz nie ma ŻADNEGO sposobu to zobaczyć/kontrolować. Cytat Macieja („nie ma panelu ustawień
+globalnych... jedynie co to wchodzę do miasta i zmieniam w danym mieście") jest **dosłownie
+prawdziwy i dosłownie zgodny z tym co kod dziś robi**.
+
+**Rekomendacja rozpoznania — trzy osobne, wąsko scoped naprawy, PRIORYTET wg łatwości/wpływu:**
+1. **C (UI dla gotowego backendu)** — najwęższy zakres, backend gotowy i przetestowany,
+   brakuje tylko warstwy `cityPanel.ts` (3 miejsca: Okolica/Budowa/Podział Pracy, hooki już
+   czekają w configu) — przycisk pin/odpin + etykieta globalne/lokalne.
+2. **B (cache/live)** — wymaga najpierw potwierdzenia hipotezy (czy `refreshLiveEmpireRates()`
+   faktycznie rzuca cichy wyjątek) zanim naprawa, potem dodanie `try/catch` + test regresyjny.
+3. **A (balans ×2)** — to NIE jest kod do naprawienia, to decyzja Macieja do potwierdzenia/
+   skorygowania (zostawić balans + poprawić UX przystępności, czy zmniejszyć mnożnik dla
+   ulepszeń terenu konkretnie).
+
+**STATUS: ZAMKNIĘTE rozpoznanie, czeka na decyzje/dispatch napraw Macieja.**
+
 ---
