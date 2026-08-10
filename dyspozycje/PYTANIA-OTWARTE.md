@@ -9613,4 +9613,31 @@ logic-test 213/213, separator-test 29/0, live-recalc-test 24/0, bilans-clamp 22/
 32/0, city-state-mp-growth 9/0). **Dispatchowany Evaluator rundy 2 (`a8861c5cee7191298`)** —
 weryfikacja werdyktu FAIL rundy 1 → PASS/FAIL rundy 2.
 
+**Evaluator rundy 2 — werdykt FAIL (drugi raz).** Wszystkie 3 blokady rundy 1 potwierdzone jako
+realnie naprawione (nie osłabione testy, zweryfikowane samodzielnie). ALE runda 2 zostawia NOWĄ
+blokadę + 1 must-fix:
+- **Blokada (C-039 eskalowana z notatki H rundy 1):** plakietka miasta na mapie (`cityGrowthLive`)
+  nadal pokazuje SUROWY Wzrost%, panel — przycięty. Uzasadnienie rundy 1 „różnica znika po naprawie
+  Zadania 1" jest **nieprawdziwe dla konfiguracji domyślnej** — Auto Wyżywienie jest domyślnie WYŁ
+  dla każdego miasta gracza (zapisywane wyłącznie kliknięciem gracza), więc rozjazd dotyczy stanu
+  DOMYŚLNEGO, nie skrajnego przypadku. Skala: przy domyślnym poziomie racji 4 i maxSafe=1,5 różnica
+  to 4,5 pkt.proc./turę na TYM SAMYM mieście w TEJ SAMEJ chwili; przy poziomie 6/maxSafe=0 — 17
+  pkt.proc./turę i ODWRÓCONY znak (plakietka +7, panel −10). Dodatkowo: komentarz-kontrakt przy
+  `cityGrowthLive` (cityPanel.ts:1364-1380) mówi wprost „zwraca DOKŁADNIE tę liczbę co panel" — diff
+  to łamie, zostawiając FAŁSZYWY komentarz w kodzie. Evaluator proponuje 2 wyjścia: (a) mały cache
+  `maxSafe` per miasto czytany przez `cityGrowthLive`, unieważniany istniejącym `markCityStateDirty`
+  — zero kosztu na hot path, nie łamie werdyktu wydajnościowego z `e4155972`; (b) świadoma akceptacja
+  rozjazdu + poprawa fałszywych komentarzy.
+- **Must-fix (niezależny od blokady):** tooltip przycisku „Auto Wyżywienie" (cityPanel.ts:4861-4869)
+  wprost TWIERDZI „nie na żywo w trakcie tury" — ten sam diff właśnie wprowadza działanie na żywo.
+  Gra kłamie graczowi o własnej mechanice.
+- Notatki D/E/G z rundy 1 ocenione jako zaadresowane/nieblokujące (E doprecyzowana: zmiana zwiększa
+  częstość pre-istniejącej asymetrii lockstep, nie tworzy nowego mechanizmu — warte wzmianki, nie
+  blokady). Luka pokrycia testowego: brak asercji dla `onCityAutoWyzywienieChange` w nowym teście.
+
+**Decyzja techniczna (nie produktowa — wybieram opcję (a) rekomendowaną przez Evaluatora, zero kosztu
+na hot path, spójna z wcześniejszym werdyktem `e4155972`, nie wymaga ABC właściciela):** dispatch
+rundy 3 — cache `maxSafe` + poprawa must-fix tooltipa + fałszywych komentarzy + dołożenie 2 asercji
+dla `onCityAutoWyzywienieChange`.
+
 ---
