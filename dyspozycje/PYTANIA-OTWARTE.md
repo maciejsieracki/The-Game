@@ -10089,6 +10089,6 @@ uruchamiane jest `Gra-ROBOCZA.html` (np. otwarcie pliku lokalnie `file://` zamia
 zarejestrowana wcześniej nota N13 Evaluatora: „`serve:robocza` uzasadnione, bo FSA nie działa na
 `file://`" — jeśli Maciej otwiera bundel bezpośrednio z dysku, może to być dokładnie ta ścieżka);
 (c) realny, nieznaleziony wcześniej bug w degradacji/fallbacku. Zero zgadywania — dispatch
-zweryfikuje który to przypadek.
+zweryfikuje który to przypadek. **Dispatchowany agent rozpoznania (`a5d937dc60e9195cb`)**.
 
 ---
