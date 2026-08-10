@@ -991,7 +991,7 @@ function renderBarD1B(s: HudState): string {
     chip6cHtml({
       iconId: 'res-culture',
       label: 'Kultura',
-      value: signed(s.kultura),
+      value: String(Math.floor(s.kultura)),
       rate: signed(s.kulturaRate ?? 0),
       act: 'kultura',
       title: kulturaChipTitle(s),
@@ -1076,7 +1076,7 @@ function renderBarLegacy(s: HudState): string {
   html += '<div class="grp">' + res('\u{1FA99}', String(s.zloto), 'Złoto', signed(s.zlotoRate))
     + res('\u{1F528}', String(s.praca), 'Praca', signed(s.pracaRate), true) + '</div>';
   html += '<div class="grp">' + res(naukaHudWordHtml(), String(Math.floor(s.nauka)), 'Badania', signed(s.naukaRate ?? 0), false, 'science')
-    + res('\u{1F3BC}', signed(s.kultura), 'Kultura', signed(s.kulturaRate ?? 0)) + '</div>';
+    + res('\u{1F3BC}', String(Math.floor(s.kultura)), 'Kultura', signed(s.kulturaRate ?? 0)) + '</div>';
   html += '<div class="grp">' + res('\u{1F3D8}\uFE0F', s.osiedla + '<span class="lim">/' + s.osiedlaMax + '</span>', 'Osiedla') + '</div>';
   const pct = Math.round(Math.max(0, Math.min(1, s.epokaPostep ?? 0)) * 100);
   html += '<div class="epoch"><span class="e-l">Epoka: <b style="color:var(--gold)">' + s.epoka + '</b>'

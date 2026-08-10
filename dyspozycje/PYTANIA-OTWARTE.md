@@ -8467,3 +8467,27 @@ heksie bez względu na grupę (tylko selekcja, nie mutacja); N-6 `freshStackGrou
 **STATUS: ZAMKNIĘTE (P-ARMIA-ROZPAD BB2 w całości scalone).**
 
 ---
+
+## P-HUD-KULTURA-SIGNED-NIESPOJNE — znalezisko audytu „raport" (2026-08-10), naprawione bezpośrednio
+
+Audyt pełnego rejestru na hasło `raport` (nowa reguła CLAUDE.md pkt 10) znalazł to jako
+**realne zapomnienie**: temat był częścią grupy G1 (audyt C-030), ale G1 dostał Evaluator
+**FAIL** (`f7a0ece1`), redo (`5a93f5aa`) naprawił WYŁĄCZNIE `P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA` —
+naprawa Kultury zgubiła się po drodze. Zweryfikowane bezpośrednio w źródle przed dispatchem
+(nie ufając pamięci sesji): `gra/src/ui/hud.ts:994,1079` nadal miały `signed(s.kultura)`.
+
+Naprawione bezpośrednio przez orkiestratora (trywialna, dobrze wyspecyfikowana zmiana — zapas
+Kultury formatowany jak pozostałe 5 chipów `String(Math.floor(...))`, nie wymuszony znak „+"
+jak dla delty/tempa): `hud.ts:994` (`chip6cHtml` w `renderBarD1B`) i `hud.ts:1079`
+(`renderBarLegacy`) — `signed(s.kultura)` → `String(Math.floor(s.kultura))`, zgodnie z
+konwencją sąsiednich chipów (`nauka`: `String(Math.floor(s.nauka))`, `religia`:
+`String(Math.round(s.religionStock))`). `signed()` zostaje na `kulturaRate` (tempo/delta —
+tam znak „+" jest poprawny).
+
+Bramki: `tsc --noEmit` 0, `logic-test.cjs` 213/213, `hud-moc-warstwa-test.cjs` 28/28
+(dotyka `hud.ts`, niezmienione).
+
+Dispatch lekkiego Evaluatora (weryfikacja że to czysto formatowanie, zero zmiany logiki)
+NASTĘPUJE teraz.
+
+---
