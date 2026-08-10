@@ -1227,12 +1227,41 @@ function cityPracaSplit(city: City, view: CityView, data: GameData | null): {
   };
 }
 
-/** Bilans żywności miasta (PYTANIE-85: produkcja − racje). */
-function cityFoodSplit(view: CityView): { total: number; produkcja: number; racje: number } {
+/**
+ * Bilans żywności miasta (PYTANIE-85: produkcja − racje).
+ *
+ * `maxSafe` (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD, Bug #2): opcjonalny limit Spichlerza
+ * (`cfg.getMaxSafePoziomRacji`) -- TEN SAM, którego suwak Wyżywienia już używa
+ * (`Math.min(view.poziomRacji, maxSafe)`) do wyliczenia wyświetlanego poziomu.
+ * Gdy podany i `view.poziomRacji` go przekracza, koszt racji jest przeliczany
+ * do przyciętego poziomu (koszt jest LINIOWY w poziomie -- ta sama zależność co
+ * `computeCityRationCost`, więc skalowanie proporcją daje identyczny wynik bez
+ * potrzeby przekazywania tu `rationParams`/`spichlerzState`). Bez tego Bilans
+ * pokazywał gorszy wynik niż to, co silnik i tak zagwarantuje auto-korektą na
+ * koniec tury (Spichlerz >= 0) -- niespójne z suwakiem, który już liczył
+ * przycięty poziom.
+ * / EN: optional Spichlerz (granary) safety cap -- the SAME one the ration
+ * slider already uses to clamp the displayed level. When given and
+ * `view.poziomRacji` exceeds it, the ration cost is rescaled to the clamped
+ * level (cost is LINEAR in level, same relationship as `computeCityRationCost`,
+ * so a proportional scale gives an identical result without needing
+ * `rationParams`/`spichlerzState` here). Without this, the Balance row showed a
+ * worse number than what the engine guarantees via end-of-turn auto-correction
+ * (Spichlerz >= 0) -- inconsistent with the slider, which already used the
+ * clamped level.
+ */
+function cityFoodSplit(view: CityView, maxSafe?: number): { total: number; produkcja: number; racje: number; clamped: boolean } {
   const produkcja = Math.round(view.zywnoscBrutto);
-  const racje = Math.round(view.kosztRacji);
-  const total = Math.round(view.bilansLokalny);
-  return { total, produkcja, racje };
+  const effectiveLevel = maxSafe !== undefined ? Math.min(view.poziomRacji, maxSafe) : view.poziomRacji;
+  const clamped = effectiveLevel < view.poziomRacji && view.poziomRacji > 0;
+  if (!clamped) {
+    const racje = Math.round(view.kosztRacji);
+    const total = Math.round(view.bilansLokalny);
+    return { total, produkcja, racje, clamped };
+  }
+  const racje = Math.round(view.kosztRacji * effectiveLevel / view.poziomRacji);
+  const total = produkcja - racje;
+  return { total, produkcja, racje, clamped };
 }
 
 function wyzwienieSummaryLabel(level: PoziomRacji, params: ReturnType<typeof buildRationParams>): string {
@@ -1321,6 +1350,17 @@ export function cityGrowthLive(city: City, map: GameMap): CityGrowthLive | null 
   const view = computeView(city, map, data);
   if (!view) return null;
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
+  // Bez maxSafe: to gorąca ścieżka (mousemove nad żetonem miasta -> syncStatChips ->
+  // getCityGrowth), a resolveCityFedForUi i tak ignoruje foodSplitTotal gdy jest już
+  // tick z końca tury -- liczenie maxSafe (pełny previewCityEconomy x13 poziomów, bez
+  // memoizacji) byłoby prawie zawsze wyrzucaną pracą. Bilans z przyciętym poziomem
+  // liczą inne miejsca (renderMagazyn, karty szczegółów), nie ta ścieżka podglądu.
+  // / EN: no maxSafe here: this is a hot path (mousemove over a city token ->
+  // syncStatChips -> getCityGrowth), and resolveCityFedForUi ignores foodSplitTotal
+  // anyway once an end-of-turn tick exists -- computing maxSafe (full
+  // previewCityEconomy x13 levels, unmemoized) would almost always be thrown-away
+  // work. The clamped-level balance is computed elsewhere (renderMagazyn, detail
+  // cards), not on this preview path.
   return {
     procentNaTure: view.wzrostProcent,
     nakarmione: resolveCityFedForUi(city.id, cityFoodSplit(view).total, tick),
@@ -4556,8 +4596,15 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   if (!view || !data) { mount.appendChild(el('div', 'muted', '—')); return; }
 
   const rationParams = buildRationParams(data.econParams, cfg.difficulty ?? 'normal');
-  const foodSplit = cityFoodSplit(view);
+  // Bug #2 (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD): maxSafe policzony TU, PRZED foodSplit,
+  // żeby wiersz Bilans użył tego samego przyciętego poziomu co suwak niżej w tej
+  // funkcji (który już wcześniej liczył `Math.min(view.poziomRacji, maxSafe)`).
+  // / EN: maxSafe computed HERE, BEFORE foodSplit, so the Balance row uses the same
+  // clamped level the slider further down this function already used.
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
   const bilansCls = foodSplit.total > 0 ? 'green' : foodSplit.total < 0 ? 'red' : 'gold';
+  const bilansDisplayLevel = Math.min(view.poziomRacji, maxSafe);
   const bd = view.growthBreakdown;
   const atPopCap = view.atPopCap;
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
@@ -4589,14 +4636,16 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
       label: 'Racje',
       value: `−${foodSplit.racje}/t`,
       cls: 'red',
-      title: `Koszt wyżywienia przy poziomie ${formatWyzwienieLabel(view.poziomRacji)}`,
+      title: `Koszt wyżywienia przy poziomie ${formatWyzwienieLabel(bilansDisplayLevel)}`,
     },
     {
       icon: loafIconHtml('civ-v-loaf-chip'),
       label: 'Bilans',
       value: `${signed(foodSplit.total)}/t`,
       cls: bilansCls,
-      title: 'Produkcja − racje = bilans lokalny',
+      title: foodSplit.clamped
+        ? `Produkcja − racje = bilans lokalny · już uwzględnia auto-korektę do limitu Spichlerza (Wyżywienie ${formatWyzwienieLabel(bilansDisplayLevel)} zamiast ustawionego ${formatWyzwienieLabel(view.poziomRacji)})`
+        : 'Produkcja − racje = bilans lokalny',
     },
     {
       icon: cityPanelChipIcon('chip-map', 14),
@@ -4644,11 +4693,21 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
   bilans.innerHTML =
     `<span>Produkcja <span class="pos">${signed(foodSplit.produkcja)}</span> − racje <span class="neg">−${foodSplit.racje}</span></span>` +
     `<span class="${bilansCls}">= ${signed(foodSplit.total)} 🍞/t</span>`;
+  // Bug #2 (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD): gdy Bilans już liczy z przyciętego
+  // poziomu (auto-korekta na koniec tury), zasygnalizuj to w tooltipie -- analogicznie
+  // do istniejącej podpowiedzi przy suwaku niżej ("poziom zostanie obniżony...").
+  // / EN: when the Balance already uses the clamped level (end-of-turn
+  // auto-correction), signal it in the tooltip -- analogous to the existing hint
+  // next to the slider below ("level will be lowered...").
+  if (foodSplit.clamped) {
+    bilans.title = `Bilans uwzględnia auto-korektę Spichlerza: liczony przy Wyżywieniu ${formatWyzwienieLabel(bilansDisplayLevel)} (ustawione ${formatWyzwienieLabel(view.poziomRacji)} zostanie obniżone na koniec tury)`;
+  }
   mount.appendChild(bilans);
 
   const player = city.ownerId === 0;
   const rationEditable = player && !!cfg.onCityRationChange;
-  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  // maxSafe już policzony wyżej (przed foodSplit) -- nie duplikuj wywołania.
+  // / EN: maxSafe already computed above (before foodSplit) -- do not duplicate the call.
   const maxSlider = maxSafe / WYZYWIENIE_STEP;
   const sliderWrap = el('div', 'wyzwienie-w4-sliders');
   const sliderRow = el('div', 'slider-row');
@@ -4693,8 +4752,13 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     const autoWyzywienieOn = city.autoWyzywienie === true;
     if (autoWyzywienieOn) autoBtn.classList.add('active');
     autoBtn.setAttribute('aria-pressed', String(autoWyzywienieOn));
+    // Bug #1 (P-AUTO-WYZYWIENIE-PODWOJNY-BLAD, świadomie NIE naprawiany w tej rundzie --
+    // mechanizm koryguje raz na turę, nie na żywo): dopisek "na koniec tury", żeby
+    // tooltip nie sugerował ciągłej, natychmiastowej gwarancji Spichlerza >= 0.
+    // / EN: cosmetic-only clarification -- the mechanism corrects once per turn, not
+    // live, so the tooltip must not imply a continuous, instant guarantee.
     autoBtn.title =
-      'WŁ: automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0). ' +
+      'WŁ: na koniec KAŻDEJ tury automatycznie obniża i podnosi Wyżywienie (Spichlerz ≥ 0) — nie na żywo w trakcie tury. ' +
       'WYŁ: tylko ręczny suwak — bez auto-obniżenia przy deficycie.' +
       (autoWyzywienieOn ? '' : ' Auto WYŁ — bez auto-obniżania/podnoszenia.');
     autoRow.appendChild(autoBtn);
@@ -4752,7 +4816,9 @@ function buildRacjeWzrostDetailCard(
   data: GameData | null,
 ): HTMLDivElement {
   const rationParams = data ? buildRationParams(data.econParams, cfg.difficulty ?? 'normal') : null;
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
+  const bilansDisplayLevel = Math.min(view.poziomRacji, maxSafe);
   const epoch = cfg.getEpoch?.(city.ownerId) ?? 1;
   const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
   const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
@@ -4775,8 +4841,11 @@ function buildRacjeWzrostDetailCard(
   appendDetailSection(card, 'Bilans lokalny (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
-  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)})`);
+  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(bilansDisplayLevel)})`);
   gridDetailRow(g1, 'Bilans', `${signed(foodSplit.total)} 🍞/t`);
+  if (foodSplit.clamped) {
+    gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
+  }
   if (rationParams) {
     gridDetailRow(g1, 'Wyżywienie', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
   }
@@ -4848,7 +4917,9 @@ function buildTopBarZywnoscDetailCard(
 ): HTMLDivElement {
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const st = cfg.getEmpireFoodState?.(city.ownerId);
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
+  const bilansDisplayLevel = Math.min(view.poziomRacji, maxSafe);
   const rationParams = data ? buildRationParams(data.econParams, cfg.difficulty ?? 'normal') : null;
 
   const card = el('div', 'detail-card');
@@ -4870,8 +4941,11 @@ function buildTopBarZywnoscDetailCard(
   appendDetailSection(card, 'Skąd bierze się żywność (to miasto)');
   const g1 = appendDetailGrid(card);
   gridDetailRow(g1, 'Produkcja brutto', `${signed(foodSplit.produkcja)} 🍞/t`);
-  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)})`);
+  gridDetailRow(g1, 'Koszt wyżywienia', `−${foodSplit.racje} 🍞/t (Wyżywienie ${formatWyzwienieLabel(bilansDisplayLevel)})`);
   gridDetailRow(g1, 'Bilans lokalny', `${signed(foodSplit.total)} 🍞/t`);
+  if (foodSplit.clamped) {
+    gridDetailRow(g1, 'Auto-korekta', `ustawione Wyżywienie ${formatWyzwienieLabel(view.poziomRacji)} przekracza limit Spichlerza — Bilans liczony przy ${formatWyzwienieLabel(bilansDisplayLevel)}, poziom zostanie obniżony na koniec tury`);
+  }
   if (rationParams) {
     gridDetailRow(g1, 'Wyżywienie aktywne', wyzwienieSummaryLabel(view.poziomRacji, rationParams));
   }
@@ -4964,7 +5038,8 @@ function buildTopBarLudnoscDetailCard(
   gridDetailRow(g0, 'WZROST%', view ? `${view.wzrostProcent}%` : '—');
 
   if (view) {
-    const foodSplit = cityFoodSplit(view);
+    const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+    const foodSplit = cityFoodSplit(view, maxSafe);
     const tick = cfg.getEmpireFoodTick?.(city.ownerId);
     const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
     const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);
@@ -8864,7 +8939,8 @@ function buildCityOnlyW3FlankChips(
   const wealthHandel = est.zam;
   const daninaLblChip = daninaLabelForCity(city);
 
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
 
   const relSt = cfg.getReligionState?.(city.id);
   const cityRel = Math.round(relSt?.przyrostWiernych ?? 0);
@@ -9233,7 +9309,8 @@ function renderCityHeaderCompact(mount: HTMLElement, city: City, view: CityView 
     mount.appendChild(el('div', 'muted', 'Brak danych ekonomii'));
     return;
   }
-  const foodSplit = cityFoodSplit(view);
+  const maxSafe = cfg.getMaxSafePoziomRacji?.(city.id) ?? WYZYWIENIE_MAX;
+  const foodSplit = cityFoodSplit(view, maxSafe);
   const tick = cfg.getEmpireFoodTick?.(city.ownerId);
   const tickRow = tick?.perCityRows?.find(r => r.cityId === city.id);
   const fed = resolveCityFedForUi(city.id, foodSplit.total, tick);

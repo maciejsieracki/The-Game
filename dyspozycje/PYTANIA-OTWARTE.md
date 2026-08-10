@@ -9195,4 +9195,21 @@ Dispatchowany `a3534c36a92683a22` — usunięcie nawiasu (linia 1262), usunięci
 `cityGrowthLive` (linia 1353), aktualizacja asercji testu (7→6 wywołań, + nowa asercja
 IEEE-754 na `view(5,60,45)`/`maxSafe=3,5`→racje=32).
 
+**Obie poprawki dostarczone i zweryfikowane** — nawias usunięty (linia 1262), `maxSafe`
+usunięty CAŁKOWICIE z `cityGrowthLive` (nie tylko z argumentu — sam koszt liczenia
+`getMaxSafePoziomRacjiForPlayerCity` zostałby, gdyby zostawić samo wywołanie). Test
+rozszerzony do 22 asercji (6 wywołań z `maxSafe` + 1 świadomy goły `cityFoodSplit(view)` w
+`cityGrowthLive` + nowa asercja IEEE-754).
+
+**SCALONE** bezpośrednio przez orkiestratora (`git apply -3`, czysto): `cityPanel.ts` (94
+wstawień/17 usunięć) + nowy `auto-wyzywienie-bilans-clamp-test.cjs`. Bramki na żywym drzewie
+identyczne z Operatorem: tsc 0, logic-test 213/213, nowy test 22/22,
+spichlerz-cap-citypanel-wiring 12/12, ai-major-economy 32/32, army-hunger-combat 13/13,
+city-state-mp-growth 9/9.
+
+**STATUS: ZAMKNIĘTE (Bug #2 naprawiony w całości). Otwarte pozostają:** Bug #1 (mechanizm
+raz-na-turę, świadomie odłożony), znalezisko „(0)" (sprostowane uzasadnienie, wciąż bez
+rozwiązania na poziomie liczby centrali), niespójność `wzrostProcent` z surowym poziomem
+racji (nowe, osobne zgłoszenie z Evaluatora) — wszystkie do backlogu, niepilne.
+
 ---
