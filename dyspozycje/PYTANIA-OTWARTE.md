@@ -7411,3 +7411,12 @@ pierwszeństwo). Dispatch osobnym Operatorem (`gra/src/game/ai.ts`).
 Dispatch obu Operatorów (BB2-stackGroupId, B3-priorytet cudu) NASTĘPUJE teraz.
 
 ---
+
+## PERF-SUPER-HUGE-PANGEA-80 i BUG-SCENA-PERF-FALA138 — ODŁOŻONE do backlogu, decyzja Macieja (2026-08-10)
+
+Oba tematy pozostają NIEROZSTRZYGNIĘTE (wymagają realnego pomiaru F12 w grze, nie do
+rozstrzygnięcia z samego kodu — patrz audyt wyżej w tym pliku). Maciej: zapisać jako rzeczy do
+zrobienia w przyszłości, NIE podejmować teraz. Status: BACKLOG, nie dispatchować subagentów do
+czasu wyraźnego polecenia po tym, jak Maciej sam zmierzy czasy w grze.
+
+---
