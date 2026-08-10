@@ -7250,3 +7250,25 @@ plików logów per zlecenie w scratchpadzie (ten sam wniosek co z incydentu R-EP
 tej nocy — trzecie niezależne potwierdzenie tego samego problemu).
 
 ---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — runda 5 dostarczona (Operator), czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a3b258ae5b08c64f5`. B1: `main.ts` blok chatki skarbów, jeden token
+`if (step.completed.some(d => d.awansEpoki))` → `if (eraAdvanced)` — odświeżenie nakładek/`setEra()`
+teraz wykonuje się przy KAŻDYM realnym awansie epoki. B2: 4 kotwice w
+`era-cud-main-ts-integracja-test.cjs` wzmocnione o wymóg `civTypeForOwner`+`completedWorldWonders`
+w wywołaniu oraz nowa asercja zapisu wyniku AI (`ownerEraByOwner.set(ownerId, next)`) i startEra
+gracza (`gameStartEra()` nie na sztywno) — wszystkie 4 mutacje E3/E4/E5/E15 z werdyktu rundy 4
+teraz złapane (dowód FAIL→PASS), 11/11 sond kruchości nadal bezpieczne. `reconcileEraForOwner()`
+(martwy kod, żył w `main.ts` nie `owner-epoch.ts` jak błędnie opisano w zleceniu) usunięty razem
+z powiązaną asercją. Bramki: tsc 0, logic-test 213/213, owner-epoch 13/13, era-cud-warunek-awansu
+33/33, era-cud-main-ts-integracja OK (16/16 mutacji, 11/11 sond), diplomacy-tech-trade-e2e 28/28,
+research 33/33, tech-tree 19/19.
+
+**Uwaga proceduralna:** Operator nie mógł wykonać żadnej komendy git w cudzym worktree (izolacja
+narzędzia) — zmiany leżą niescommitowane na dysku, do przejęcia przez Evaluatora/scalającego
+bezpośrednio z tego worktree.
+
+Dispatch Evaluatora rundy 5 (finalnej) NASTĘPUJE teraz.
+
+---
