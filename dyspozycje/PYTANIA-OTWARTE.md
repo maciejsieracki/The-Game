@@ -9385,3 +9385,35 @@ renderu/hover/mousemove, żeby nie powtórzyć tej samej klasy regresji.
 Dispatch Operatora NASTĘPUJE teraz.
 
 ---
+
+## Trzy kolejne ECHO Macieja — Spichlerz „(0)", Wzrost%, koszt ulepszeń (2026-08-10)
+
+Pytania ABC zadane i odpowiedziane w jednej turze:
+
+**P-SPICHLERZ-ZERO-MYLACE — ECHO C.** Scalić dwa istniejące komunikaty (osobne ostrzeżenie
+„miasto nie nakarmione" w `cityPanel.ts`/`empireDetailPanel.ts` + gołą liczbę „(0)") w jedno
+miejsce prawdy przy samej liczbie Spichlerza — większy zakres niż moja rekomendacja B, świadomy
+wybór właściciela.
+
+**P-WZROSTPROCENT-SUROWY-POZIOM — ECHO A.** Naprawić TERAZ, osobno od Bug #1 (nie czekać na
+przeliczanie na żywo) — `wzrostProcent`/`growthBreakdown.racje` (`cityPanel.ts:1138`) ma używać
+przyciętego poziomu racji, analogicznie do już naprawionego dziś Bilansu.
+
+**R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC — ECHO A.** Zostawić balans ×2 bez zmian, poprawić
+wyłącznie UX: wyszarzyć w `buildModeHud.ts` pozycje, na które gracza nie stać, zamienić
+3-sekundowy toast „Za mało Pracy" na trwały, czytelny komunikat.
+
+**Kolejność dispatchu — świadoma, żeby uniknąć kolizji wielu równoległych worktree na tym
+samym obszarze kodu (Żywność: `empire-food.ts`/`cityPanel.ts`/`main.ts`):**
+1. Operator A (worktree, teraz): Bug #1 (przeliczanie na żywo) + Wzrost% RAZEM w jednym
+   dispatchu/worktree — oba dotykają tego samego pliku/obszaru, mniejsze ryzyko przy scalaniu
+   niż dwa osobne worktree.
+2. Operator B (worktree, teraz, RÓWNOLEGLE): koszt ulepszeń UX — `buildModeHud.ts`, zupełnie
+   inny obszar (panel budowy pól, nie Żywność) — bezpieczny do równoległej pracy.
+3. Spichlerz „(0)" (scalenie komunikatów) — dispatch DOPIERO PO scaleniu Operatora A, żeby
+   nie pracować na tym samym obszarze `empire-food.ts`/`cityPanel.ts` w trzecim równoległym
+   worktree naraz.
+
+Dispatch Operatora A i B NASTĘPUJE teraz.
+
+---
