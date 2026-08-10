@@ -9050,3 +9050,55 @@ rejestru pod kątem innych zapomnianych, jednoznacznych bugów; (4) deploy do RO
 zamknięciu wszystkiego możliwego bez ABC.
 
 ---
+
+## Auto Wyżywienie — rozpoznanie #2 ZAKOŃCZONE, POTWIERDZONY „podwójny błąd" Macieja (2026-08-10)
+
+**Maciej miał rację, poprzednie zamknięcie było błędne.** Symulacja (esbuild harness, dokładne
+liczby ze zrzutu: populacja 6, produkcja 11, poziomRacji=1→koszt 12→bilans −1, zapas 0)
+potwierdza że sam mechanizm auto-korekty, uruchomiony PRZECIWKO AKTUALNEJ produkcji, poprawnie
+zbiega do bezpiecznego poziomu (0,5, bilans +5) — więc to NIE jest błąd formuły. Realna
+przyczyna to DWA niezależne bugi:
+
+**Bug #1 — auto-korekta liczy się WYŁĄCZNIE raz na turę.** Cała sekwencja
+(`autoBalanceRationsToSolvency`→`autoRaiseRationsForGrowth`→klamra `maxSafePoziomRacjiForCity`)
+żyje wewnątrz `triggerPlayerEndTurn` (`main.ts:21550+`) — uruchamia się TYLKO przy „Koniec
+tury". Panel miasta liczy Bilans NA ŻYWO z bieżącej produkcji. Jeśli produkcja spadnie w
+trakcie tury (przesunięcie robotnika, budynek, malus) PO ostatnim końcu tury, `poziomRacji`
+zostaje przy poziomie bezpiecznym dla STAREJ, wyższej produkcji — aż do następnego końca tury.
+„Auto Wyżywienie WŁ" nie jest ciągłym strażnikiem, mimo że tooltip to sugeruje.
+
+**Bug #2 — wewnątrz JEDNEGO renderu panelu miasta, Bilans i suwak czytają DWIE różne wartości
+poziomu racji.** `cityPanel.ts:1130-1135` (`cityFoodSplit`/`bilansLokalny`) liczy z surowego,
+nieprzyciętego `city.poziomRacji`. `cityPanel.ts:4651-4656` (suwak/etykieta wzrostu) liczy z
+`displayLevel = Math.min(view.poziomRacji, maxSafe)` — PRZYCIĘTEGO. Kod ma nawet gotową
+podpowiedź na ten stan (`cityPanel.ts:4712-4714`: „poziom zostanie obniżony do limitu na
+koniec tury"), co dowodzi że deweloperzy WIEDZIELI o tym stanie przejściowym, ale Bilans mimo
+to pokazuje niższą, nieskorygowaną liczbę.
+
+**Dodatkowy, realny skutek gameplayowy (odpowiedź na wcześniejsze pytanie o „(0)"):**
+`empire-food.ts:254-255` — `central` może być realnie ujemny wewnątrz funkcji (`glodWojska`),
+ale ZAPISYWANA wartość jest zawsze przycięta `Math.max(0, central)`. Przy jednym mieście i
+`zapasyPrzed=0`, deficyt NIE zostaje pokryty (`fed=false`) — miasto realnie głoduje (kara:
+ubytek ludności), mimo że licznik pokazuje neutralne „(0)", nie ujemną liczbę. „(0)" nie
+znaczy „wszystko OK", tylko „zero bufora, miasto właśnie głoduje" — mylące dla gracza.
+
+**Cache/live (jak w temacie Praca) — NIE potwierdzone dla Bilansu Żywności.** Oba źródła
+(Bilans i maxSafe) liczą na żywo, po prostu z DWÓCH niezależnych implementacji tej samej
+wielkości (`cityYieldPerTurn` w panelu vs `previewCityEconomy` w silniku) — inny mechanizm
+błędu niż w Pracy, choć podobny SKUTEK (dwie „prawdy" naraz).
+
+**Zakres naprawy (jednoznaczne bugi, w ramach autoryzacji „popraw wszystkie błędy"):**
+- Naprawa Bug #2 (tania, bezpośrednio adresuje zrzut Macieja): Bilans w panelu miasta ma
+  używać `displayLevel` (przyciętego poziomu), nie surowego `poziomRacji` — Bilans nigdy nie
+  pokazuje gorzej niż to, co silnik faktycznie zagwarantuje na koniec tury.
+- Naprawa Bug #1 (głębsza, wymaga namysłu nad kosztem wydajnościowym częstszego przeliczania)
+  — do rozważenia razem z fixem #2, ale jeśli zbyt ryzykowna na tę turę, zostawić do decyzji
+  po powrocie Macieja i naprawić na razie tylko UI (#2) + doprecyzować tooltip (nie obiecywać
+  ciągłej gwarancji).
+- Naprawa „(0)" — jaśniejszy komunikat przy `fed=false`/`central=0` (odróżnić „0 z nadwyżką"
+  od „0 bo deficyt niepokryty") — nieblokujące, do tej samej rundy jeśli czas pozwoli.
+
+Dispatch Operatora NASTĘPUJE teraz, osobno od tematu Praca+globalne ustawienia (worktree
+`agent-a824f4b28633fbcdd`) — różne obszary kodu, minimalne ryzyko kolizji przy scalaniu.
+
+---
