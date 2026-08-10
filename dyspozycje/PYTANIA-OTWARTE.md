@@ -11472,3 +11472,34 @@ zapisu (jednostki/miasta/tech), nie tylko sam snapshot. Naprawić przy okazji De
 komentarz-inwariant o braku mutacji podczas serializacji FSA — patrz werdykt) i Defekt C (parsowanie
 wszystkich slotów przy otwarciu dialogu — wynieść nagłówek label/tura/savedAt do osobnego, małego
 klucza obok treści, żeby nie trzeba było `JSON.parse` całego snapshotu tylko po metadane).**
+
+## R-CS-HARD-PASYWNE — Evaluator FAIL runda 2: cap('hard')=3 wciąż za niski (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `7e753db2`: FAIL.** Wiring poprawny (jedno źródło opts, oba call
+site'y `chooseCityProduction` dostają to samo pole) — problem to sama WARTOŚĆ. Bramka wyjścia z
+domu (`ai.ts`, wołana z linii ~2820) blokuje ofensywę gdy `totalMilitary < minFieldArmyBeforeSend
++ minGuardToSend` I `fieldArmy < minFieldArmyBeforeSend`. Na Trudnym: `minFieldArmyBeforeSend =
+CS_WAVE_ATTACK_MIN_STACK = 3`, `minGuardToSend = RESUP_TIERS['strong'].minGuard = 1` → próg
+blokady to `totalMilitary < 4`. Cap ustawiony na `3` oznacza `totalMilitary ≤ 3 < 4` ZAWSZE —
+**żadna jednostka PM nie wyruszy z domu na ofensywę na Trudnym**, mechanizm
+`cityStateOffensiveSupport` nadal nie startuje. Poprawny próg to `CS_WAVE_ATTACK_MIN_STACK +
+minGuard('strong')` = **4** (dla starych zapisów bez `citySupportLevel`, fallback `'normal'`,
+próg to 5). Uczciwie: zgłoszony bug „Koszary bez rekrutacji" JEST naprawiony (0→3 to realna
+poprawa) — FAIL dotyczy wyłącznie tego, że wybrana wartość nie przekracza progu, dla którego
+została dobrana.
+
+**Dodatkowo, testowanie mutacyjne (5 mutantów) złapało lukę w bramce:** zakomentowanie linii
+`cityStateDifficultyVsPlayer: _menuCityStateDifficultyVsPlayer,` w `main.ts` **przeżywa
+wszystkie bramki** (tsc, `cs-military-cap-wiring-test` 10/10, `ai-mp-military-cap-test` 18/18) —
+`cs-military-cap-wiring-test.cjs` czyta surowe źródło bez usuwania komentarzy, pole jest
+opcjonalne więc `tsc` też nie widzi problemu. Runtime skutek: `opts.cityStateDifficultyVsPlayer
+=== undefined` wyłącza CAŁY blok capu — PM traci limit wojska na WSZYSTKICH poziomach trudności,
+nie tylko Hard.
+
+**STATUS: dispatch Sonnet 5 (worktree) — runda 3, wąska naprawa: (1) `cap('hard')` 3→4 (wartość
+wyprowadzona z `CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard`, nie liczba losowa —
+skorygować też komentarz w `city-state-difficulty.ts` żeby odzwierciedlał tę relację, nie sam
+`CS_WAVE_ATTACK_MIN_STACK`); (2) wzmocnić `cs-military-cap-wiring-test.cjs` o odporność na
+zakomentowaną/usuniętą linię wiringu w `main.ts` (regex musi rozróżnić realny kod od komentarza,
+albo dodać osobną asercję, że pole NIE jest `undefined` w runtime, nie tylko że string istnieje w
+źródle). Po dostarczeniu: NIEZALEŻNY Evaluator, runda 3.**
