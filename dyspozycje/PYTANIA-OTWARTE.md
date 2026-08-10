@@ -9417,3 +9417,29 @@ samym obszarze kodu (Żywność: `empire-food.ts`/`cityPanel.ts`/`main.ts`):**
 Dispatch Operatora A i B NASTĘPUJE teraz.
 
 ---
+
+## Cztery ECHO Macieja — zakres nowych funkcji (2026-08-10)
+
+Pytania ABC zakresowe (nie techniczne — to nowe funkcje, nie błędy, więc pytanie o zakres
+przed rozpoznaniem, nie o przyczynę) zadane i odpowiedziane:
+
+**R-KONFIGURATOR-WYBOR-CYWILIZACJI-PRZECIWNIKA — ECHO B.** Pełny wybór per slot — dla
+każdego miejsca AI gracz wybiera konkretną cywilizację (nie lista wykluczeń, nie pula
+preferowanych).
+
+**R-EPOKA-KAMIEN-PALEOLIT-NEOLIT — „na razie zostaw".** Temat pozostaje ODŁOŻONY, żadna z
+3 opcji nie wybrana, bez podejmowania pracy.
+
+**R-SUROWIEC-CYNA-DO-BRAZU — ECHO A.** Nowe złoże na mapie (jak miedź/żelazo) + twardy
+wymóg posiadania go do produkcji Brązu.
+
+**R-AI-UCZENIE-SIE-NA-BLEDACH — ECHO A.** Rozbudowa istniejących heurystyk regułowych (lepsza
+ocena siły przed atakiem, priorytety budowy) — **kierunek ogólny, NIE konkretny, actionable
+zakres**. Wymaga dalszego doprecyzowania (która konkretnie heurystyka/mechanika AI ma zostać
+rozbudowana jako pierwsza) zanim można zlecić pracę — nie dispatchuję na ślepo z tak ogólnym
+kierunkiem, żeby nie zgadywać zakresu za właściciela.
+
+Dispatch rozpoznania technicznego (nie implementacji — ustalenie dokładnego podejścia w
+kodzie/danych przed pisaniem kodu) dla Konfiguratora (B) i Cyny (A) NASTĘPUJE teraz.
+
+---
