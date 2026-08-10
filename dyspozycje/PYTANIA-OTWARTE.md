@@ -8995,3 +8995,58 @@ zakresie naprawy znaleziska B — sprawdzić `git log -p` dla `onPodzialPracyCha
 - **C** — brak UI dla gotowego backendu globalnych ustawień — PRIORYTET, ten sam commit.
 
 ---
+
+## R-USTAWIENIA-GLOBALNE-LOKALNE — pełna specyfikacja UX od Macieja (2026-08-10)
+
+**Żywa rozmowa z właścicielem, kompletna specyfikacja — nie wymaga ABC, bezpośrednie ustalenie
+(CLAUDE.md pkt 1: „bezpośrednich ustaleń wypracowanych żywą rozmową z właścicielem" jest
+wyjątkiem od turnieju ABC).** Cytaty złożone w spójną specyfikację:
+
+1. **Globalne ustawienia przenoszą się na mapę świata**, do panelu cywilizacji („Grecy") —
+   tam gdzie dziś jest podgląd Skarbiec/Praca/Spichlerz/Nauka (chipy HUD + panel „ZASOBY
+   IMPERIUM" po kliknięciu). Tam dochodzą kontrolki globalnych ustawień dla całej cywilizacji.
+2. **W panelu miasta (po wejściu do miasta)** — dla TRZECH grup: Żywność, Pieniądze (Skarbiec),
+   Praca — każda ma własny przycisk/baton „Indywidualne". Naciśnięcie go WŁĄCZA możliwość
+   ustawienia tego miasta inaczej niż globalnie (lokalny override). Bez naciśnięcia — miasto
+   dziedziczy globalne ustawienie.
+3. **Każda z trzech grup traktowana OSOBNO** — miasto może mieć np. Pracę indywidualną, a
+   Żywność i Skarbiec nadal globalne. Zmiana globalnego ustawienia NIE dotyka miast z
+   naciśniętym „Indywidualne" dla TEJ konkretnej grupy.
+4. **Skarbiec i Nauka to JEDNA grupa, nie dwie** — cytat: „jeżeli chodzi o skarbiec, no to
+   wiadomo, w nim też zawiera się nauka. Więc poziom różnicowania środków na pieniądze, a na
+   naukę lub rozwój powinny być takie same w obu miejscach, zarówno w skarbcu jak i w nauce,
+   bo to w sumie to samo." — jeden wspólny suwak/ustawienie (prawdopodobnie istniejący „Skarb
+   %" z `cityEconMiniSkarbiec`) sterujący podziałem złoto↔nauka, spójnie widoczny/edytowalny
+   z obu miejsc (panelu Skarbca i panelu Nauki), nie dwa niezależne ustawienia.
+5. **Podsumowanie właściciela:** „wtedy będziemy mieć jasność: globalne ustawienia w globalnym
+   miejscu na mapie świata, a w mieście tylko indywidualne, jeżeli naciśniemy przycisk
+   indywidualny."
+
+**Powiązanie z resztą tematu:** backend dla mechanizmu global/local już istnieje
+(`empire-city-defaults.ts`, commit `8692b61b`) — brakuje WYŁĄCZNIE warstwy UI opisanej wyżej
+(3 przyciski w panelu miasta + nowa sekcja w panelu cywilizacji na mapie). Możliwe że ten sam
+obszar kodu (inwalidacja `empireEconDirty` przy `onPodzialPracyChange`) jest też źródłem
+znaleziska B (cache Pracy) — do zbadania łącznie, nie osobno.
+
+---
+
+## AUTORYZACJA MACIEJA — praca autonomiczna, deploy po zakończeniu (2026-08-10)
+
+Cytat: „Działaj z wszystkimi tematami, niezależnymi subagentami. Popraw wszystkie błędy, które
+możesz poprawić. Jak skończysz zrób deploy do roboczej, potem to przetestuję. Teraz przez
+najbliższy czas mnie nie będzie."
+
+**Zakres autoryzacji:** wszystkie ZNANE, jednoznaczne bugi (nie wymagające ABC/decyzji
+balansowej) — dispatch, napraw przez pełną pętlę Operator→Evaluator, scal, deploy do ROBOCZA
+na końcu, bez dalszych pytań. Rzeczy WYMAGAJĄCE decyzji (np. Auto Wyżywienie UX ABC A/B/C z
+wcześniejszego wpisu, balans ×2 kosztu ulepszeń) — zarejestrować, NIE zgadywać, zostawić do
+odpowiedzi po powrocie Macieja, nie blokować nimi reszty pracy ani deployu.
+
+Plan wykonania: (1) B+C razem (rozjazd cache Pracy + pełne UI global/local wg specyfikacji
+wyżej) — jeden skoordynowany temat, bo dotykają tego samego kodu; (2) dokończenie rozpoznania
+Auto Wyżywienie (scenariusz 1 miasta, w toku — `ab484b1390f9bc096`), naprawa jeśli to
+jednoznaczny bug silnika, rejestracja ABC jeśli wymaga decyzji; (3) szybki audyt C-030 całego
+rejestru pod kątem innych zapomnianych, jednoznacznych bugów; (4) deploy do ROBOCZA po
+zamknięciu wszystkiego możliwego bez ABC.
+
+---
