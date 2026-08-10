@@ -12010,3 +12010,33 @@ zarejestrowane) ORAZ wybór zachowania przy uszkodzonym snapshocie (cicha regene
 komunikatem). Dispatch Sonnet 5 (worktree) — 3 drobne poprawki techniczne BEZ ABC (console.warn w
 catch niezależnie od wyboru wariantu, `?? []`, etykiety jednostek). Oba pytania ABC świadomie
 odłożone do powrotu Macieja, razem z resztą tematów tej nocy.**
+
+## Domknięcia techniczne — mapSnapshot 3 poprawki + N1 zużycia surowców (2026-08-10)
+
+**P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA: SCALONE `cee6b3e1`.** 3 drobne poprawki bez ABC:
+`console.warn` w `catch` przy uszkodzonym snapshocie (diagnostyka, bez zmiany zachowania — decyzja
+N1 o komunikacie dla gracza pozostaje pytaniem ABC); `riverPaths ?? []` (asymetria null-guard);
+etykiety „mln znaków" w testach poprawione na `/1000000` (były `/1024/1024`, myliły M z Mi,
+zaniżenie ~4,86%). Bramki: tsc 0, logic-test 213/213, `map-snapshot-load-test` 54/0/1-known-fail
+(exit 0). **Temat pozostaje otwarty na 2 pytania ABC** (architektura rotacji + zachowanie przy
+uszkodzonym snapshocie) — nie dispatchuję kolejnego Evaluatora dla tych 3 kosmetycznych zmian
+(zero zmiany logiki, już pokryte pełnym przebiegiem testu włącznie z generacją prawdziwej mapy
+168×120).
+
+**R-ZUZYCIE-SUROWCOW-OBYWATELE: SCALONE `15379247` — naprawa N1.** Nowa sekcja F w
+`citizen-resource-upkeep-test.cjs`: 3 asercje strukturalne (po `stripLineComments`, wzorem
+`cs-military-cap-wiring-test.cjs`) + 1 behawioralna (realne wywołanie
+`applyPostCentralPopulationGrowth` z karą i bez, dowód że `zaopatrzenie`/`total` faktycznie się
+różnią). Wszystkie 3 mutacje z werdyktu Evaluatora zweryfikowane czerwono→zielono. Usunięte 3
+tautologiczne asercje parytetu (N7). Bramki: tsc 0, logic-test 213/213,
+`citizen-resource-upkeep-test` 59/59. **Temat pozostaje otwarty na 1 pytanie ABC (N2 — czy
+mechanika ma faktycznie drenować magazyn)**, ale N1 (jedyna czysto techniczna luka) jest teraz
+zamknięta.
+
+**Podsumowanie stanu na tę chwilę: WSZYSTKIE tematy tej nocy albo w pełni zamknięte (Evaluator
+PASS), albo scalone i technicznie kompletne, czekające WYŁĄCZNIE na decyzje ABC właściciela — nie
+ma już żadnej czysto technicznej pracy do zrobienia bez jego udziału. Otwarte pytania ABC (do
+zadania po jego powrocie): (1) R-CS-HARD-BRAK-STOSOWANIA-AI — wariant naprawy stosowania jednostek
+PM; (2) architektura rotacji autozapisu bez FSA; (3) zachowanie przy uszkodzonym snapshocie mapy
+(cicha regeneracja vs abort z komunikatem); (4) czy zużycie surowców obywateli ma drenować
+magazyn.**
