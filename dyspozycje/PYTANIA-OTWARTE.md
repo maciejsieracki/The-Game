@@ -7550,6 +7550,46 @@ zwalnia się z pętli AutoBot nawet dla własnych zmian dokumentacyjnych.
 
 ---
 
+## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
+
+Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
+zweryfikowaną bajt-w-bajt na bazie), potwierdził C-026 (jedyne miejsce wywołania
+`decideAiWonderBuild`, `chooseCityProduction` nietknięty) i duplikację z `13861b60` (3 pliki
+identyczne bajt-w-bajt — `owner-epoch.ts` + oba testy B2, `main.ts` MIESZANY, instrukcja scalania
+hunk-po-hunku gotowa). 7/9 własnych mutacji złapanych.
+
+**BLOKUJĄCE — nieskończona pętla na realnych danych shipowanych, nie brzeg teoretyczny:**
+tryb `forcePriority` bierze `ordered[0]` (pierwszy budowalny cud), a `main.ts` nigdzie nie
+sprawdza, czy to WŁAŚNIE wymagany cud epoki. Fenicjanie/Brąz→Żelazo: cud bramkujący (`petra`,
+`epokaWejscia=2`) wymaga technologii `Inżynieria` z epoki Żelaza — niebudowalny mimo kompletu
+technologii Brązu. Efekt (zasymulowany na realnych funkcjach+danych, 12 tur): AI co turę wstawia
+NA FRONT inny cud (`wyrocznia`), zeruje mu postęp, kolejka rośnie bez ograniczenia (+1/turę),
+`tryDeductWonderStartFood` drenuje żywność co turę — **cud nigdy się nie kończy, dokładna
+odwrotność celu B3**. Kontrolny scenariusz (Egipt/epoka 1, cel zamierzony) działa poprawnie —
+defekt ściśle ograniczony do rozjazdu „wymagany cud ≠ pierwszy budowalny". Zastrzeżenie zasięgu:
+wykryty JEDEN rozjazd w skanie 15×3, ale sonda miała pusty `civRow` (reguła
+`tech_before_civ_entry` nieaktywna) — z pełnymi danymi cywilizacji może być więcej. To DOLNA
+granica.
+
+**Naprawa zdefiniowana (2 cięcia, bez przebudowy):** (1) `main.ts` —
+`wonderForcePriority = wonderEraGateForced && !wonderRequiredAlreadyBuilding &&
+buildableForAi.some(w => wonderRequiredIds.includes(w.id))`; (2) `ai.ts` — w `forcePriority`
+wybierać cud z jawnie przekazanej listy `requiredWonderIds`, nie `ordered[0]`. Dodatkowo:
+`wonderRequiredAlreadyBuilding` dziś sprawdza wyłącznie front kolejki, nie całą kolejkę miasta.
+
+Niepilne (do rejestru, nie blokują): zerowe pokrycie testowe `main.ts` dla B3 (M8/M9
+niezłapane — komentarz nowego testu obiecuje wykrywanie dryfu `main.ts`, ale re-implementuje
+formułę zamiast czytać źródło); rozjazd danych `petra` (epokaWejscia=2 vs tech z epoki 3) to
+problem B2 nie B3, do decyzji właściciela osobno; `relaxedWonderCostThreshold` znosi próg dla
+WSZYSTKICH cudów nie tylko bramkującego (interpretacja Operatora „rozluźnianie" jako
+„zniesienie do ∞", do potwierdzenia); `aiWonderStuckTurnsByOwner` nieserializowana + czyszczona
+przy save/load (asymetria, degradacja łagodna); licznik rośnie też z powodów niezwiązanych z
+throttle/progiem (mylący komentarz w kodzie).
+
+Dispatch rundy 2 (wąska, TYLKO dwa wskazane cięcia + test pokrywający M8/M9) NASTĘPUJE teraz.
+
+---
+
 ## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2, stackGroupId) — runda 3 dostarczona, czeka na Evaluatora (2026-08-10)
 
 Worktree `agent-a3f6bd057db40cbd4` — krok kopiowania z żywego checkoutu zweryfikowany (worktree
