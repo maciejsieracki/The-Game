@@ -8752,3 +8752,59 @@ tooltip Pracy) — wszystkie 10 poprawnie opisane w `WERSJE.md`.
 **STATUS: ZAMKNIĘTE (FALA 266 na ROBOCZA, main nadgoniony do FALA 265).**
 
 ---
+
+## BUG (zrzut Macieja) — Praca NIE dociera do ulepszeń, BLOKUJE dalszy rozwój — PRIORYTET (2026-08-10)
+
+**To NIE jest ta sama sprawa co „Praca 9 vs 3" wyżej** (tamto = wyjaśnione, city gross vs
+civ-wide net po utrzymaniu, tooltip naprawiony w FALA 266). Maciej zgłasza inny, poważniejszy
+problem: przy ustawieniu 100% do puli cywilizacji (0% do budynków) i BRAKU jakiejkolwiek
+budowy w kolejce, pula rośnie (pokazana 22 w nowym tooltipie „Praca — co to znaczy"), ale
+**Praca „nie idzie do ulepszeń" i nie da się rozwijać cywilizacji** — testowanie zablokowane
+do czasu naprawy. Cytat: „nie wiem gdzie to dwa znika... jeżeli nie budowany jest żaden
+budynek, to powinno wracać do puli... żadnego budynku nie buduję... ustawienie jest takie,
+że ma wszystko iść do puli cywilizacji, a nie na budynki. To jest drugi raz, kiedy ten błąd
+zgłaszam i nie jest to naprawione." Eskalacja: „dopóki to nie zostanie naprawione, to nie ma
+sensu dalej robić testów".
+
+**Wstępny trop orkiestratora (NIE potwierdzony, do rozpoznania):** mechanizm wydawania puli
+Pracy na ulepszenia terenu/projekty mapy to zmienna `playerPracaPool` w `main.ts` (linie
+~10080, 10165-10173 zwrot przy cofnięciu, 10217-10321 budowa/koszt `req.kosztPraca`,
+23002-23010 auto-ulepszenia z rezerwą `AUTO_ULEPSZENIA_PRACA_RESERVE`) — osobna od
+`_lastPracaRate`/tooltipu HUD (main.ts:13414-13418, `previewPracaPoolBrutto`). Możliwe, że
+`playerPracaPool` (faktycznie wydawalna pula) nie jest tym samym co liczba „22" pokazana w
+tooltipie, albo nie synchronizuje się poprawnie turę po turze — DO ZWERYFIKOWANIA W KODZIE,
+nie zgadywania.
+
+**PRIORYTET — dispatch rozpoznania NASTĘPUJE natychmiast**, zanim jakikolwiek kod zostanie
+zmieniony. Zakres rozpoznania: (1) czy `playerPracaPool` faktycznie akumuluje się turę po
+turze zgodnie z tym co pokazuje tooltip (22), czy jest gdzieś zerowana/nie synchronizowana;
+(2) czy próba postawienia ulepszenia terenu (np. farma/kamieniołom) faktycznie odejmuje z
+tej puli i się udaje, gdy pula > koszt; (3) czy jest realna regresja (porównanie z
+zachowaniem sprzed której fali — Maciej mówi że to działało wcześniej) czy gracz po prostu
+nie ma jeszcze wystarczającej puli na żadne ulepszenie (koszt > 22).
+
+---
+
+## BUG (zrzut Macieja) — Auto Wyżywienie NIE zapobiega ujemnemu Spichlerzowi, regresja (2026-08-10)
+
+**Zrzut:** panel Ateny, Żywność `−1 (0)`, „Produkcja +11/t − Racje −12/t = Bilans −1/t",
+przycisk „Auto Wyżywienie" WŁĄCZONY (zielony, aktywny stan). Mimo to bilans ujemny.
+
+**Cytat Macieja:** „tak samo jak nie naprawiony temat auto wyżywienia były ustalone zasady,
+którymi się kieruje auto wyżywienie, tak żeby nie prowadzić do ujemnego spichlerza, a ja
+widzę, że to nie działa. ale wcześniej z tym nie było problemów, więc to są jakieś regresy."
+
+**Ustalone reguły w kodzie (do zweryfikowania czy faktycznie działają, nie zgadywania):**
+`gra/src/game/empire-food.ts` — `isCityAutoWyzywienieEnabled` (linia 355, komentarz
+„R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: tylko gdy flaga WŁ.
+AI: zawsze"), `autoBalanceRationsToSolvency` (455), `autoRaiseRationsForGrowth` (520),
+`maxSafePoziomRacjiForCity` (596, komentarz „R-AUTO-RACJE-RAISE-Q3=A: najwyższy poziom
+Wyżywienia przy którym Spichlerz ≥ 0 po dopłatach miastom").
+
+**Nie zgaduję przyczyny** (może to być: `autoBalanceRationsToSolvency` nie jest wywoływana
+w odpowiednim miejscu cyklu tury, regresja w warunku uruchomienia, zmiana w oblicznieiu
+`maxSafePoziomRacjiForCity` po niedawnych zmianach balansu Tartak/Glinianka lub Spichlerz
+cap [obie w tej samej FALI 265], albo coś innego) — dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE
+z rozpoznaniem Pracy wyżej (PRIORYTET tamtego wyższy — blokuje testowanie).
+
+---
