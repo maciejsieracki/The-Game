@@ -9722,8 +9722,8 @@ strażnika przed przyszłym nowym miejscem zapisu do `zapasyPanstwa` bez `.clear
 broadcast × N1 daje O(N²), zmierzyć przy 20+ miastach przed deployem), N-d (Bilans żywności w
 `buildTopBarLudnoscDetailCard` zmienił WARTOŚĆ, nie tylko WZROST% — do noty scalenia).
 
-**Dispatch rundy 5** — 2 blokady (~10 linii łącznie), reszta pracy potwierdzona gotowa i niewymagająca
-ponownego dotykania.
+**Dispatch rundy 5 (`ace2328ac487dca2d`)** — 2 blokady (~10 linii łącznie), reszta pracy potwierdzona
+gotowa i niewymagająca ponownego dotykania.
 
 ---
 
