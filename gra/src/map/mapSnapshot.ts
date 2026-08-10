@@ -287,7 +287,7 @@ export function serializeMapForSave(map: GameMap): SerializedMapData {
     // reference into map.riverPaths/map.riverPathKinds, see the caveat in
     // the function comment above. Rivers are a small structure relative to
     // 20160 hexes, copying it doesn't threaten size or performance.
-    riverPaths: map.riverPaths.map((path) => path.map((p) => ({ q: p.q, r: p.r }))),
+    riverPaths: (map.riverPaths ?? []).map((path) => path.map((p) => ({ q: p.q, r: p.r }))),
     riverPathKinds: map.riverPathKinds ? map.riverPathKinds.slice() : map.riverPathKinds,
     dict,
     n,

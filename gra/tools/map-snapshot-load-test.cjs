@@ -515,7 +515,7 @@ async function mockGenFail() {
   );
   assert(
     bigJson.length < PROG_CHARS,
-    'PELNY zapis (mapa standardowy + reprezentatywna reszta stanu) < ' + (PROG_CHARS / 1024 / 1024).toFixed(3) + ' mln znakow (polowa budzetu originu ~' + (ORIGIN_LIMIT_UTF16_CHARS / 1024 / 1024).toFixed(3) + ' mln znakow / ~5 MB UTF-16) dla JEDNEGO zapisu (got ' + (bigJson.length / 1024 / 1024).toFixed(3) + ' mln znakow)',
+    'PELNY zapis (mapa standardowy + reprezentatywna reszta stanu) < ' + (PROG_CHARS / 1000000).toFixed(3) + ' mln znakow (polowa budzetu originu ~' + (ORIGIN_LIMIT_UTF16_CHARS / 1000000).toFixed(3) + ' mln znakow / ~5 MB UTF-16) dla JEDNEGO zapisu (got ' + (bigJson.length / 1000000).toFixed(3) + ' mln znakow)',
   );
 
   // ---------------------------------------------------------------------------
@@ -544,9 +544,9 @@ async function mockGenFail() {
   const aggregateChars = bigJson.length * AUTOSAVE_ROT_COUNT;
   console.log(
     '    Budzet agregatowy: ' + AUTOSAVE_ROT_COUNT + ' slotow x ' + bigJson.length + ' znakow/slot = '
-    + aggregateChars + ' znakow (' + (aggregateChars / 1024 / 1024).toFixed(3) + ' mln znakow) = '
+    + aggregateChars + ' znakow (' + (aggregateChars / 1000000).toFixed(3) + ' mln znakow) = '
     + (aggregateChars * 2 / 1024 / 1024).toFixed(3) + ' MB w UTF-16, budzet originu ~5 MB UTF-16 (~'
-    + (ORIGIN_LIMIT_UTF16_CHARS / 1024 / 1024).toFixed(3) + ' mln znakow)',
+    + (ORIGIN_LIMIT_UTF16_CHARS / 1000000).toFixed(3) + ' mln znakow)',
   );
   if (aggregateChars < ORIGIN_LIMIT_UTF16_CHARS) {
     assert(true, 'budzet AGREGATOWY rotacji autozapisu (' + AUTOSAVE_ROT_COUNT + ' slotow) miesci sie w budzecie originu ~5 MB UTF-16');
@@ -554,7 +554,7 @@ async function mockGenFail() {
     knownFailures++;
     console.warn(
       '  [KNOWN-FAIL] budzet AGREGATOWY rotacji autozapisu (' + AUTOSAVE_ROT_COUNT + ' slotow x '
-      + (bigJson.length / 1024 / 1024).toFixed(3) + ' mln znakow/slot = ' + (aggregateChars * 2 / 1024 / 1024).toFixed(3)
+      + (bigJson.length / 1000000).toFixed(3) + ' mln znakow/slot = ' + (aggregateChars * 2 / 1024 / 1024).toFixed(3)
       + ' MB UTF-16) PRZEKRACZA budzet originu ~5 MB UTF-16.',
     );
     console.warn(

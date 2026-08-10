@@ -43,11 +43,16 @@ export async function loadMapForSave<TMap extends GameMap>(
   if (isValidMapSnapshot(saved.mapSnapshot)) {
     try {
       return { map: buildGameMapFromSnapshot(saved.mapSnapshot) as TMap, usedSnapshot: true };
-    } catch {
+    } catch (err) {
       /* uszkodzony snapshot mimo poprawnego ksztaltu -- spadamy na generator,
          jak przy braku/niepoprawnym mapSnapshot / corrupted snapshot despite
          valid shape -- fall through to the generator, same as a missing or
-         invalid mapSnapshot */
+         invalid mapSnapshot. Diagnostyka w konsoli deweloperskiej (bez zmiany
+         zachowania -- dla gracza nadal cicho reguje inna mape; decyzja N1 o
+         czytelnym komunikacie UI jest poza zakresem) / dev-console diagnostics
+         only (no behavior change -- still silently regenerates for the
+         player; the UI-facing decision N1 is out of scope here). */
+      console.warn('[mapSnapshot] uszkodzony snapshot, fallback na generator:', err);
     }
   }
   return { map: await genFn(), usedSnapshot: false };
