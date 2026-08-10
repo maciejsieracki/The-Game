@@ -1062,7 +1062,7 @@ import {
 import { civLeaderMedallionHtmlById } from './ui/diploUiSkin';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
-import { actionUsesTradeBasket } from './ui/diplomacyTradeBasket';
+import { actionUsesTradeBasket, getTradeBasketMode } from './ui/diplomacyTradeBasket';
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
@@ -13236,16 +13236,47 @@ async function boot(): Promise<void> {
           && (incomingNetPw == null || incomingNetPw.netPw >= 0);
         const awaitingAiResponse = direction === 'own' && entry.awaitingOwnerId !== 0;
         const dealDetails = negotiationSummary(entry);
-        // R-PROPOZYCJA-BRAK-EDYCJI (Maciej, wariant A): własna, jeszcze nierozstrzygnięta
-        // propozycja (direction='own') też kwalifikuje się do edycji — ale TYLKO gdy ma
-        // koszyk (actionUsesTradeBasket); umowa_szlakow/umowa_handlowa (uiActionId '5')
-        // CELOWO nie ma koszyka do edycji, więc ta gałąź musi zostać false dla nich
-        // (bez tego dodatkowego warunku canCounter=true otwierałby dla 'own' też
+        // R-PROPOZYCJA-BRAK-EDYCJI runda 2 (Maciej, wariant A, doprecyzowanie 2026-08-10):
+        // własna, jeszcze nierozstrzygnięta propozycja (direction='own') kwalifikuje się do
+        // edycji TYLKO gdy uiActionId ma tryb koszyka 'trade' ('14') lub 'gift' ('13') —
+        // NIE cały actionUsesTradeBasket (12 typów, w tym czyste traktaty jak nap/sojusz/
+        // wasal/trybut). Runda 1 użyła actionUsesTradeBasket dla 'own' i wprowadziła 2
+        // defekty: (1) edycja czystych traktatów to cichy no-op — ich payload nie ma
+        // koszyka ani goldOnce>0, więc clampNegotiationPayloadToRealResources odrzuca go w
+        // handleNegotiationEditOwn; (2) synteza giveItems z goldOnce niżej (gałąź
+        // direction==='own') dubluje złoto dla akcji z osobnym polem goldOnce OBOK
+        // giveItems (np. 'granice'/opłata) — dla 'trade'/'gift' ta synteza jest poprawna
+        // (jedyny nośnik treści, brak osobnego goldOnce), dla reszty koszykowych typów nie.
+        // (bez tego dodatkowego zawężenia canCounter=true nadal otwierałby dla 'own' też
         // showNegotiationModal w openCounterNegotiationModal, dla którego nie ma ścieżki
         // edycji w miejscu — tylko kontroferta).
+        // / EN: own, still-unresolved proposal (direction='own') qualifies for edit ONLY
+        // when uiActionId's basket mode is 'trade' ('14') or 'gift' ('13') — NOT the full
+        // actionUsesTradeBasket set (12 action types, including pure treaties like nap/
+        // alliance/vassal/tribute). Round 1 used actionUsesTradeBasket for 'own' and
+        // introduced 2 defects: (1) editing pure treaties was a silent no-op — their
+        // payload has no basket and no goldOnce>0, so
+        // clampNegotiationPayloadToRealResources rejects it in handleNegotiationEditOwn;
+        // (2) the giveItems-from-goldOnce synthesis below (direction==='own' branch)
+        // duplicates gold for actions with a separate goldOnce field alongside giveItems
+        // (e.g. 'granice'/fee) — for 'trade'/'gift' that synthesis is correct (the only
+        // content carrier, no separate goldOnce), for the other basket types it is not.
+        // UWAGA: getTradeBasketMode ma fallback 'trade' dla KAŻDEGO uiActionId spoza
+        // TRADE_BASKET_ACTION_IDS (patrz diplomacyTradeBasket.ts — ostatnie `return 'trade'`),
+        // więc samo sprawdzenie trybu przepuściłoby też np. uiActionId '5' (umowa_szlakow,
+        // CELOWO bez koszyka — nie jest w TRADE_BASKET_ACTION_IDS). Dlatego
+        // actionUsesTradeBasket(uiActionId) zostaje jako pierwszy, obowiązkowy warunek — mody
+        // 'trade'/'gift' tylko zawężają WEWNĄTRZ tego zbioru do '14'/'13'.
+        // / EN: getTradeBasketMode falls back to 'trade' for ANY uiActionId outside
+        // TRADE_BASKET_ACTION_IDS, so checking the mode alone would also let through e.g.
+        // uiActionId '5' (umowa_szlakow, deliberately basket-less — not in the set). Hence
+        // actionUsesTradeBasket(uiActionId) stays as the mandatory first gate; the
+        // 'trade'/'gift' modes only narrow WITHIN that set down to '14'/'13'.
+        const ownEditableBasketMode = actionUsesTradeBasket(uiActionId)
+          && (getTradeBasketMode(uiActionId) === 'trade' || getTradeBasketMode(uiActionId) === 'gift');
         const canCounter = direction === 'incoming'
           ? canPlayerCounterNegotiation(entry)
-          : canPlayerCounterNegotiation(entry) && actionUsesTradeBasket(uiActionId);
+          : canPlayerCounterNegotiation(entry) && ownEditableBasketMode;
         const acceptance = computePlayerAcceptanceSides(entry.actionId, p, relTotal, incoming, {
           difficulty: _menuDifficulty,
           proposerOwnerId: entry.proposerOwnerId,
