@@ -23965,6 +23965,12 @@ async function boot(): Promise<void> {
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
               menuDifficulty: _menuDifficulty,
+              // C-025/C-026 (2026-08-10) / R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B:
+              // oś PM-vs-GRACZ (nie stara _menuDifficulty) zasila cap wojska MP
+              // (cityStateMilitaryProductionCap w ai.ts) -- analogicznie do
+              // cityStateOffensiveSupport/_menuCitySupport niżej. Przekazywane zawsze
+              // (jak _menuCitySupport), zużywane tylko gdy defensiveCopy === true.
+              cityStateDifficultyVsPlayer: _menuCityStateDifficultyVsPlayer,
               defensiveCopy: typCityCopyOwners.has(ownerId),
               canEngageOwner: (targetOwnerId: number) => {
                 if (isBarbarian(targetOwnerId)) return true;

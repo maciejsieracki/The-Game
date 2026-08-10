@@ -6,13 +6,27 @@ export type DifficultyLevel = 'easy' | 'normal' | 'hard';
 
 /**
  * Max łączna liczba jednostek bojowych MP (owner na całej mapie).
- * Skala = trudność gry gracza (_menuDifficulty), nie suwak MP.
+ * Skala = oś PM-vs-GRACZ (_menuCityStateDifficultyVsPlayer, C-025/C-026 2026-08-10),
+ * NIE stara trudność gry (_menuDifficulty) i NIE suwak MP (_menuCityStateDifficulty,
+ * odwrócony AI-facing). / EN: scale is the player-facing CS axis, not game/AI-facing.
  * null = brak limitu (easy — jak major AI).
+ *
+ * R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B (naprawa regresji Evaluatora
+ * na commit a6076db7, 2026-08-10): 'hard' było 0 -- PM na Trudnym nigdy nie mogło
+ * zrekrutować NAWET pierwszego garnizonu, mimo że ten sam commit włączył
+ * cityStateOffensiveSupport=true na Trudnym (PM planuje agresję, buduje Koszary,
+ * w których nic nigdy nie rekrutuje). 'hard' = CS_WAVE_ATTACK_MIN_STACK (ai.ts) = 3,
+ * NIE losowa liczba: to już istniejące minimum stosu do wave-attack (R-MP-HARD-WAVE
+ * Q2) -- cap musi pozwolić PM zgromadzić PRZYNAJMNIEJ tyle jednostek, inaczej ten
+ * sam mechanizm ofensywy nigdy nie miałby z czego złożyć fali. Zsynchronizowane
+ * bramką cs-military-cap-wiring-test.cjs (assert cap('hard') === CS_WAVE_ATTACK_MIN_STACK).
+ * / EN: 'hard' raised from 0 to 3 to match the existing wave-attack min stack size --
+ * otherwise the same commit's offensive mechanic could never assemble its own minimum.
  */
-export function cityStateMilitaryProductionCap(gameDifficulty: DifficultyLevel): number | null {
-  switch (gameDifficulty) {
+export function cityStateMilitaryProductionCap(csDifficultyVsPlayer: DifficultyLevel): number | null {
+  switch (csDifficultyVsPlayer) {
     case 'hard':
-      return 0;
+      return 3;
     case 'normal':
       return 1;
     default:

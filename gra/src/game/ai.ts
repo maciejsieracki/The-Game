@@ -222,10 +222,23 @@ export interface AITurnOpts {
    */
   startoweMiasta?: number;
   /**
-   * Trudność gry gracza (_menuDifficulty) — cap wojska MP i absorpcja CS.
-   * NIE suwak trudności MP (_menuCityStateDifficulty).
+   * Trudność gry gracza (_menuDifficulty). NIE suwak trudności MP
+   * (_menuCityStateDifficulty) i NIE oś PM-vs-GRACZ (_menuCityStateDifficultyVsPlayer
+   * — patrz cityStateDifficultyVsPlayer niżej). C-025/C-026 (2026-08-10): dawniej to
+   * pole zasilało też cap wojska MP (cityStateMilitaryProductionCap) — przepięte na
+   * cityStateDifficultyVsPlayer (R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B,
+   * naprawa regresji Evaluatora na a6076db7). Obecnie bez aktywnego konsumenta w ai.ts.
    */
   menuDifficulty?: DifficultyLevel;
+  /**
+   * Oś PM-vs-GRACZ (_menuCityStateDifficultyVsPlayer, C-025/C-026 2026-08-10) — jak
+   * agresywne/silne są PM WOBEC GRACZA, wprost z trudności gry (Trudna gra → PM
+   * silne/agresywne wobec gracza). NIE _menuDifficulty (trudność gry AI ogólnie) i NIE
+   * _menuCityStateDifficulty (odwrócona oś AI-vs-PM, cityStateDifficultyFromGameDifficulty).
+   * Jedyny konsument dziś: cap wojska MP (cityStateMilitaryProductionCap) niżej.
+   * / EN: player-facing CS axis -- feeds the MP military production cap.
+   */
+  cityStateDifficultyVsPlayer?: DifficultyLevel;
   /**
    * Budget gate (pkt5): called by the engine with (cityId, buildingId).
    * When provided, only candidates for which canAfford returns true are considered.
@@ -1431,9 +1444,15 @@ export function chooseCityProduction(
     }
   }
 
-  // MP (defensiveCopy): cap wojska wg trudności GRY gracza — easy bez limitu, normal max 1, hard 0.
-  if (opts.defensiveCopy && opts.menuDifficulty !== undefined) {
-    const milCap = cityStateMilitaryProductionCap(opts.menuDifficulty);
+  // MP (defensiveCopy): cap wojska wg osi PM-vs-GRACZ (C-025/C-026) — easy bez limitu,
+  // normal max 1, hard max 3 (= CS_WAVE_ATTACK_MIN_STACK, żeby PM ofensywne na Trudnym
+  // (cityStateOffensiveSupport) mogło w ogóle złożyć minimalną falę ataku).
+  // R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B: dawniej opts.menuDifficulty
+  // (stara oś gry) -- przepięte na opts.cityStateDifficultyVsPlayer (nowa oś gracz-facing),
+  // analogicznie do applyCityStateDifficultyTrust/cityStateOffensiveSupport/
+  // resolveClusterCityStateWarOnPlayer/_menuCitySupport w main.ts.
+  if (opts.defensiveCopy && opts.cityStateDifficultyVsPlayer !== undefined) {
+    const milCap = cityStateMilitaryProductionCap(opts.cityStateDifficultyVsPlayer);
     if (milCap !== null) {
       const militaryOwned = countOwnerMilitaryUnits(allUnits, playerId);
       if (militaryOwned >= milCap) {

@@ -136,21 +136,25 @@ console.log('-- C. Po Garncarstwo: spichlerz dostępny (brak DEPOSIT gate przy b
   assert(!gate('mp1', 'garncarnia'), 'C2: garncarnia still blocked without Glina deposit/stock');
 }
 
-console.log('-- D. Cap wojska Hard=0 bez garnizonu → null (brak wojska i brak infraBootstrap) --');
+console.log('-- D. Cap wojska Hard=3 bez garnizonu → Wojownik (0 < cap 3, C-025/C-026 fix) --');
 {
+  // R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B (2026-08-10): pole opts przepięte
+  // z opts.menuDifficulty (stara oś gry) na opts.cityStateDifficultyVsPlayer (nowa oś
+  // gracz-facing) i cap('hard') podniesiony z 0 na 3 -- inaczej PM na Trudnym nigdy nie
+  // mogło zrekrutować NAWET pierwszego garnizonu (patrz cs-military-cap-wiring-test.cjs).
   const capHard = cityStateMilitaryProductionCap('hard');
-  eq(capHard, 0, 'D1: hard cap = 0');
+  eq(capHard, 3, 'D1: hard cap = 3 (= CS_WAVE_ATTACK_MIN_STACK w ai.ts)');
   const pick = chooseCityProduction(
     'mp1', [city], [], 7, gameData, mods,
     {
       defensiveCopy: true,
-      menuDifficulty: 'hard',
+      cityStateDifficultyVsPlayer: 'hard',
       cityBuildings: { mp1: [] },
       isProductionAllowed: isProductionAllowedFactory(city, startTechs, []),
     },
     map, diff,
   );
-  eq(pick, null, 'D2: hard bez garnizonu — Wojownik odfiltrowany, infraBootstrap wymaga guard>=1');
+  eq(pick, 'Wojownik', 'D2: hard bez garnizonu — 0 military < cap 3, pierwszy garnizon przechodzi');
 }
 
 console.log('-- E. Normal cap=1: po garnizonie wojsko wypada, budynek z bramki --');
@@ -159,7 +163,7 @@ console.log('-- E. Normal cap=1: po garnizonie wojsko wypada, budynek z bramki -
     'mp1', [city], [guard], 7, gameData, mods,
     {
       defensiveCopy: true,
-      menuDifficulty: 'normal',
+      cityStateDifficultyVsPlayer: 'normal',
       cityBuildings: { mp1: [] },
       isProductionAllowed: isProductionAllowedFactory(city, startTechs, []),
     },
@@ -179,7 +183,7 @@ console.log('-- F. R-AI-MIASTA-BUDOWY-FIX-Q1: bramka Kamień — nie studnia/gar
     'mp1', [city], [guard], 7, gameData, mods,
     {
       defensiveCopy: true,
-      menuDifficulty: 'normal',
+      cityStateDifficultyVsPlayer: 'normal',
       cityBuildings: { mp1: [] },
       isProductionAllowed: gate,
     },
