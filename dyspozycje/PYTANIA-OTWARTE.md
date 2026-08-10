@@ -7806,6 +7806,30 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
+## Tooltip Pracy — Evaluator FAIL, 2 blokery (podwójny minus + patch na przestarzałej bazie) (2026-08-10)
+
+**B1:** `signed(-pracaUpkeepVal)` już zwraca liczbę ujemną (`−Y`), a Operator postawił PRZED nią
+jeszcze operator `−` — widoczne dla gracza równanie nie sumuje się (`12 − (−3) = 15 ≠ 9`
+zamiast `12 − 3 = 9`). Własny test Evaluatora (parsujący wyrenderowany string): 10/14, FAIL w
+KAŻDYM przypadku `utrzymanie > 0` — czyli w całym sensie tej poprawki. Dokładnie ta klasa błędu,
+którą zgłosił Maciej.
+
+**B2:** worktree Operatora bazował na PRZESTARZAŁYM `cityPanel.ts` (sprzed
+`R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY` — `w3CityChip` ma dziś 8 argumentów, nie 7, chip
+Pracy ma dziś inny układ: duża liczba = TO miasto, mała = cywilizacja, trzeci element = zapas).
+Operator fizycznie NIE miał w swoim worktree bramki `hud-miasto-stock-tempo-test.cjs` (pilnuje
+AST-em dokładnie 8 argumentów) — nie mógł wiedzieć że ją łamie. Kopiowanie pliku Operatora
+cofnęłoby trzeci element chipu i inne nazewnictwo.
+
+Pozytywnie potwierdzone: `hs.pracaUpkeep` realne i poprawnie liczone (ta sama czysta funkcja co
+w realnym ticku), brak rozjazdu czasowego `_lastPracaUpkeep`/`_lastPracaRate` w obu ścieżkach
+(preview + koniec tury), C-026 (jedna ścieżka, tylko gracz) potwierdzone niezależnie.
+
+Dispatch rundy 2 (napraw B1, przepnij patch na żywe drzewo ruszając WYŁĄCZNIE 6. argument
+`w3CityChip`, dodaj `hud-miasto-stock-tempo-test.cjs` jako obowiązkową bramkę) NASTĘPUJE teraz.
+
+---
+
 ## Tooltip Pracy (rozbicie utrzymania) — dostarczony, czeka na Evaluatora (2026-08-10)
 
 Operator wybrał PEŁNE rozbicie z konkretną liczbą (nie skrócony tekst) — wartość
