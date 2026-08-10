@@ -10012,7 +10012,7 @@ istniejącej funkcji, czy wymaga nowej logiki; jaki jest koszt gameplayowy każd
 dla całej cywilizacji: miasta mogą się kompensować, ale pojedyncze miasto z lokalnym niedoborem może
 nadal tracić wzrost mimo dodatniego imperium; B — per-miasto: każde miasto zawsze nieujemne lokalnie,
 ale może wymuszać zbyt ostrożne (niższe) racje nawet gdy bufor by pozwolił na więcej, marnując
-potencjał wzrostu). **STATUS: dispatch rozpoznania NASTĘPUJE teraz, ABC dopiero po wynikach** —
+potencjał wzrostu). **STATUS: dispatch rozpoznania NASTĘPUJE teraz (`a829efd46c1368fe9`), ABC dopiero po wynikach** —
 zgodnie z dyscypliną tej sesji (rozpoznanie przed ABC dla niejasnego zakresu technicznego, CLAUDE.md
 §6/§7).
 
