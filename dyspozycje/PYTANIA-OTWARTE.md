@@ -9696,6 +9696,35 @@ tsc 0, logic-test 213/213, separator-test 29/0, live-recalc-test 49/0 (było 27)
 city-badge-growth-percent 38/0, rounding-parity 16/0. **Dispatchowany Evaluator rundy 4
 (`a5c06ba3b22dd1bec`)**.
 
+**Evaluator rundy 4 — werdykt FAIL (czwarty raz).** Obie blokady zweryfikowane wykonaniem/
+prześledzeniem realnego porządku kodu, obie do naprawy w ~10 liniach:
+- **Blokada 1:** decyzja Operatora rundy 4 (nienaprawianie `empire-food.ts:258` w `advanceEmpireFood`)
+  jest BŁĘDNA — Evaluator prześledził realny porządek wykonania: między zapisem do `zapasyPanstwa`
+  (`main.ts:22232`) a `markCityStateDirty()` (`main.ts:25200`) jest bezwarunkowy `cityRenderer.sync`
+  (22414) i CO NAJMNIEJ 4 `await yieldTurnTransitionUi()` (rAF+setTimeout — przeglądarka REALNIE
+  maluje między nimi, overlay przejścia tury nie zasłania mapy) — plakietki miast gracza pokazują
+  przeterminowany limit przez CAŁĄ fazę AI+barbarzyńcy+sprawdzanie zwycięstwa, nie jedną klatkę.
+  Dodatkowo komentarz w kodzie (`main.ts:8888-8889`/`8898-8899`) twierdzi wprost "pokrycie jest
+  KOMPLETNE" — nieprawda, i Operator o tym wiedział (sam znalazł to miejsce i świadomie pominął).
+- **Blokada 2 (poważniejsza — NOWA regresja gameplayowa wprowadzona dopiero rundą 4, przez N1):**
+  `playerCities` (main.ts:13337) WYKLUCZA miasta oblężone (`!c.oblegane`). Pętla N1 inicjalizuje
+  `maxSafe = WYZYWIENIE_MAX(6)` i nadpisuje tylko gdy `pc.id===cityId` — dla miasta oblężonego ten
+  warunek nigdy nie zachodzi, więc funkcja zwraca zahardkodowane 6 zamiast realnego 0 przy
+  niewypłacalności imperium (PRZED rundą 4 zwracała poprawnie 0). Efekt: oblężone miasto przy
+  deficycie żywności (rutynowa sytuacja wojenna) przestaje być klamrowane — dokładnie wzorzec
+  „jedno naprawiasz, drugie psujesz" z playbooka. C-026 (8 miejsc wywołania funkcji współdzielonej)
+  nie zostało w pełni zastosowane po zmianie N1.
+Ocenione jako DOBRE, nie ruszać: Część 6 testu (realna weryfikacja, nie fasada), Część 5 (asercja
+negatywna faktycznie złapałaby regresję), N1 hot-path-bezpieczny (poza blokadą 2), brak TDZ,
+rozluźnienie regexów separatora poprawne. Notatki nieblokujące: N-a (`render/cities.ts:376-387`
+komentarz o "świadomym braku cache" jest teraz nieaktualny — cache jest w cityPanel.ts), N-b (brak
+strażnika przed przyszłym nowym miejscem zapisu do `zapasyPanstwa` bez `.clear()`), N-c (perf —
+broadcast × N1 daje O(N²), zmierzyć przy 20+ miastach przed deployem), N-d (Bilans żywności w
+`buildTopBarLudnoscDetailCard` zmienił WARTOŚĆ, nie tylko WZROST% — do noty scalenia).
+
+**Dispatch rundy 5** — 2 blokady (~10 linii łącznie), reszta pracy potwierdzona gotowa i niewymagająca
+ponownego dotykania.
+
 ---
 
 ## [PL, 2026-08-10] Hasło „raport" — pełny audyt (agent `aff9b116cf957d004`) + kontrola kompletności
