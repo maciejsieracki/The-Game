@@ -6,6 +6,7 @@ import type { City } from './cities';
 import { cityPopulationCap } from './economy';
 import type { EconParams, CivEconomyBonus } from './economy';
 import {
+  cityHasSpichlerzBuilding,
   spichlerzGrowthBonusPercent,
   spichlerzRationFoodCostMultiplier,
   type SpichlerzCityBonusState,
@@ -206,13 +207,17 @@ export interface FractionalGrowthResult {
 /**
  * Ułamkowy wzrost/spadek: ludność × WZROST% / 100 kumuluje się na wzrostUlamkowy.
  * Tylko gdy miasto nakarmione w tej turze (fed=true).
+ *
+ * `maSpichlerz` = R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09): sam fakt posiadania Spichlerza
+ * (I lub II), niezależnie od Akweduktu — środkowy stopień drabinki capu (cap=8 zamiast 5).
  */
 export function applyFractionalGrowthV85(
   city: Pick<City, 'population' | 'wzrostUlamkowy'>,
   growthPct: number,
   fed: boolean,
   maAkwedukt: boolean,
-  econParams: Pick<EconParams, 'akweduktProgLudnosci' | 'akweduktMaxLudnosci'>,
+  econParams: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>,
+  maSpichlerz: boolean = false,
 ): FractionalGrowthResult {
   let pop = city.population;
   let frac = city.wzrostUlamkowy ?? 0;
@@ -220,7 +225,7 @@ export function applyFractionalGrowthV85(
   let ubytek = false;
 
   if (fed && growthPct !== 0 && pop > 0) {
-    const popCap = cityPopulationCap(maAkwedukt, econParams);
+    const popCap = cityPopulationCap(maAkwedukt, maSpichlerz, econParams);
     if (growthPct > 0 && pop < popCap) {
       frac += pop * growthPct / 100;
       while (frac >= 1 && pop < popCap) {
@@ -320,7 +325,7 @@ export interface PostCentralGrowthOpts {
   efResult: CentralFoodFedSnapshot;
   map: GameMap;
   territoryNodes: readonly TerritoryNode[];
-  econParams: Pick<EconParams, 'akweduktProgLudnosci' | 'akweduktMaxLudnosci'>;
+  econParams: Pick<EconParams, 'akweduktProgLudnosci' | 'spichlerzProgLudnosci' | 'akweduktMaxLudnosci'>;
   rationParams: RationParams;
   ownerCivByOwnerId?: ReadonlyMap<number, string>;
   spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
@@ -355,6 +360,11 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
       };
       const builtIds = builtByCity?.get(city.id) ?? [];
       const maAkwedukt = builtIds.includes('akwedukt');
+      // R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, runda 2, B1): sam fakt posiadania
+      // Spichlerza w DOWOLNYM tierze (I lub II) — NIE `spichlerz.maSpichlerzPop`, bo to
+      // flaga zależna od drainu Ceramiki w tej turze (inny mechanizm), a Spichlerz II
+      // usuwa 'spichlerz' z builtIds przy ulepszeniu (upgradeFrom w buildings.json).
+      const maSpichlerzBuilding = cityHasSpichlerzBuilding(builtIds);
       const happiness = happinessByCityId?.get(row.cityId) ?? 0;
       const breakdown = computeGrowthPercentV85({
         population: city.population,
@@ -381,6 +391,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         fed,
         maAkwedukt,
         econParams,
+        maSpichlerzBuilding,
       );
       city.population = growth.nowaLudnosc;
       city.wzrostUlamkowy = growth.wzrostUlamkowy;

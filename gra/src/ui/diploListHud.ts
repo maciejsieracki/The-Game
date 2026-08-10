@@ -30,6 +30,23 @@ export interface DiploListEntry {
   perspectiveLine?: string;
   /** Aktywne traktaty z silnika (etykiety PL). */
   treatyLabels?: readonly string[];
+  /** Miasto-państwo klastra — R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA: cywilizacje
+   *  sortowane NAD miastami-państwami (patrz `compareDiploListEntries`). */
+  isCityState?: boolean;
+}
+
+/**
+ * Porządek listy dyplomacji: pełnoprawne cywilizacje NAD miastami-państwami
+ * (Maciej 2026-08-09, ECHO A), w obrębie grupy alfabetycznie (pl).
+ * Eksportowana i wołana WPROST w `render()` (nie ukryta w domknięciu) — bramka
+ * mutacyjna (Evaluator, B3 rundy 1) wymaga, żeby usunięcie wywołania `.sort(...)`
+ * w renderze dało się wykryć osobno od poprawności samego komparatora.
+ */
+export function compareDiploListEntries(a: DiploListEntry, b: DiploListEntry): number {
+  const aCityState = a.isCityState ? 1 : 0;
+  const bCityState = b.isCityState ? 1 : 0;
+  if (aCityState !== bCityState) return aCityState - bCityState;
+  return a.name.localeCompare(b.name, 'pl');
 }
 
 /** Podsumowanie państwa gracza na liście dyplomacji. */
@@ -170,9 +187,10 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
 
   function render(): void {
     const allEntries = config.getEntries();
-    const entries = listFilter === 'war'
+    const entries = (listFilter === 'war'
       ? allEntries.filter(e => e.tier === 0)
-      : allEntries;
+      : allEntries
+    ).slice().sort(compareDiploListEntries);
     const scroll = document.createElement('div');
     scroll.className = 'dl-scroll';
 
@@ -432,6 +450,7 @@ export function diploListEntryFromRelation(rel: {
   population?: number;
   armyCount?: number;
   activeTreaties?: readonly string[];
+  isCityState?: boolean;
 }): DiploListEntry | null {
   if (rel.ownerId === undefined) return null;
   const lines = formatDiploCivListLines({
@@ -452,5 +471,6 @@ export function diploListEntryFromRelation(rel: {
     detailLine: lines.detailLine,
     perspectiveLine: lines.perspectiveLine || undefined,
     treatyLabels: rel.activeTreaties?.length ? rel.activeTreaties : undefined,
+    isCityState: rel.isCityState,
   };
 }

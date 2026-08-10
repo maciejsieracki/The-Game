@@ -37,6 +37,7 @@ const params = {
   zdrowieModyfikatorWspolczynnik: 0,
   spichlerzZachowaniePoPrzroscie: 0.5,
   akweduktProgLudnosci: 5,
+  spichlerzProgLudnosci: 8,
   akweduktMaxLudnosci: 15,
 };
 
@@ -68,6 +69,18 @@ assert(!r4.wzrost && r4.nowaLudnosc === 15, 'pop 15 z akweduktem — brak wzrost
 const belowAq = { ...atCapAq, ludnosc: 14, magazynZywnosci: 130 };
 const r5 = populationGrowth(belowAq, 10, params);
 assert(r5.wzrost && r5.nowaLudnosc === 15, 'pop 14 z akweduktem i buforem — wzrost do 15');
+
+// Środkowy szczebel drabinki (R-SPICHLERZ-CAP-LUDNOSCI-ETAP): maSpichlerz=true, bez
+// Akweduktu — cap = spichlerzProgLudnosci (8), NIE akweduktProgLudnosci (5). Bez tych
+// dwóch przypadków test przechodził nawet gdyby cityPopulationCap gubił Spichlerz
+// całkowicie (bo maSpichlerz nigdy nie było ustawione na true nigdzie w tym pliku).
+const atCapSp = { ludnosc: 8, zdrowie: 0, maSpichlerz: true, maAkwedukt: false, magazynZywnosci: 200 };
+const r6 = populationGrowth(atCapSp, 50, params);
+assert(!r6.wzrost && r6.nowaLudnosc === 8, 'pop 8 ze Spichlerzem bez Akweduktu — brak wzrostu do 9');
+
+const belowSp = { ...atCapSp, ludnosc: 7, magazynZywnosci: 70 };
+const r7 = populationGrowth(belowSp, 10, params);
+assert(r7.wzrost && r7.nowaLudnosc === 8, 'pop 7 ze Spichlerzem i buforem — wzrost do 8');
 
 console.log('akwedukt-popcap-test: ' + pass + ' pass, ' + fail + ' fail');
 process.exit(fail > 0 ? 1 : 0);

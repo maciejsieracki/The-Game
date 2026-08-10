@@ -1620,11 +1620,13 @@ Stare save z uniwersalną `kopalnia` na `zloze=wegiel` nie mają docelowego ulep
 **Cytat:** zasady obowiązujące dla kontynentu mają obowiązywać **dla każdej wyspy** — nie generować masy lądu bez rzek.
 **Powiązanie z audytem obwarzanka:** przy 20–60% Pangea zostają **2 masy suchego lądu** rozdzielone korytarzem **Wybrzeża** (nie Morza); rzeki gęste przy brzegu (0–5), interior/„wyspa wewnętrzna” sucha. Kod ma `landMassHasMainRiver` / topUp per masa, ale filtr `m.length >= 8` + ścieżka Pangea coast-only + ensure ślepy na Wybrzeże → luki.
 **Wdrożyć razem z fixem obwarzanka (po wyborze A/B/C mostu przez Wybrzeże).** Nie osobny wątek ABC.
+**STATUS SKORYGOWANY 2026-08-10: WDROŻONE, patrz wpis „AC-RZEKI-BEZ-LIMITERA i AC-RZEKI-PER-MASA — WDROŻONE, status skorygowany" bliżej końca pliku.**
 
 ## AC-RZEKI-BEZ-LIMITERA — brak cap liczby / czasu siewu · STATUS: **ZEBRANE** (Maciej 2026-08-02 ~22:28)
 **Cytat:** „nie powinno być żadnego limitera ilości rzek. Po prostu powinny się generować zgodnie z zasadami bez limitu. Powinny tak długo siewić jak są w stanie siewić, a nie kończyć się np. po jakimś wyznaczonym czasie lub długości."
 **Implikacja:** usunąć/wyłączyć twarde capy typu `pangeaBootstrapRiverTarget` (~32), `maxCellsToProcess`, quota `capRiverQuotas` / `mapGenMaxRivers*`, early-stop po budżecie czasu; siew aż reguły (źródło, sep, ujście, masa) nie dadzą kolejnej poprawnej rzeki. `maxLen` trasy = ograniczenie techniczne A* jednej ścieżki — rozróżnić od limitu **liczby** rzek (ten drugi = zakazany).
 **Wdrożyć w paczce rzek z AC-RZEKI-PER-MASA + fix obwarzanka.** Uwaga: bez limitu na Super Huge wall-clock mocno urośnie — perf osobno, nie przez cięcie pokrycia.
+**STATUS SKORYGOWANY 2026-08-10: WDROŻONE, patrz wpis „AC-RZEKI-BEZ-LIMITERA i AC-RZEKI-PER-MASA — WDROŻONE, status skorygowany" bliżej końca pliku.**
 
 ## BUG-INKOWIE-MP-BRAK — Inkowie bez miast-państw · STATUS: **WDROŻONE ROBOCZA** (FALA 201 `48646cd6`, 2026-08-02)
 
@@ -6950,5 +6952,440 @@ kolizji z ECHO A; (3) domknąć bramkę E5 (asercja 5-argumentowego wywołania z
 nie `moveCost`/literał); (4) zastąpić `deductCount===4` asercją ograniczoną do wyciętych ciał
 funkcji (K-5). Pytanie ABC (5 opcji A-E + ujawniony skutek uboczny) do Macieja NASTĘPUJE OSOBNO,
 po tej rundzie — decyzja architektoniczna nie powinna czekać na mechaniczną naprawę bramki.
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — runda 4 dostarczona (Operator), czeka na Evaluatora (2026-08-09)
+
+Worktree `/tmp/wt-spichlerz-r3` (runda 4 dopisana do istniejącego worktree rund 1-3). Domknięcie
+noty blokującej B4 (Evaluator runda 3): dodane 2 asercje (Wymóg 4/5) wymuszające dokładne wywołania
+`cityPopulationCap(maAkwedukt, maSpichlerz, params)` (popCapAktualny) i
+`cityPopulationCap(false, maSpichlerz, params)` (popCapBezAkweduktu) w `computeView` (`cityPanel.ts`).
+Dowód mutacyjny: E (maSpichlerz→false) FAIL, F (powrót do martwego `params.akweduktProgLudnosci`)
+FAIL, G (zamiana argumentów) FAIL — wszystkie 3 mutacje z werdyktu Evaluatora złapane, 12/12 po
+przywróceniu. Przy okazji (tanie, N-1 rundy 3): `akwedukt-popcap-test.cjs` dostał
+`spichlerzProgLudnosci` w params + 2 przypadki `maSpichlerz: true` — 7/7. Bramki: tsc 0, logic-test
+213/213, spichlerz-cap-citypanel-wiring-test 12/12, population-growth-v85-test 48/50 (2
+pre-istniejące potwierdzone), growthmult-compound-test 17/24 (7 pre-istniejące potwierdzone). ZERO
+zmian w kodzie produkcyjnym tej rundy (wyłącznie 2 pliki testów). Dispatch Evaluatora rundy 4
+(finalnej) NASTĘPUJE teraz.
+
+---
+
+## INCYDENT — usunięcie niescommitowanej pracy (R-BUDYNEK-PORTOWY) przy sprzątaniu dysku (2026-08-09/10)
+
+**Co się stało:** Runda 1 (+część rundy 2) R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE była w pełni
+zaimplementowana i oceniona przez Evaluatora (PASS-WITH-NOTES), ale NIGDY nie scalona do gałęzi
+(brak dispatchu agenta scalającego — luka procesowa sama w sobie, patrz niżej). Podczas sprzątania
+worktree po poleceniu „wyczyść przestrzenie dyskowe" orkiestrator uruchomił
+`git worktree remove --force` na worktree `agent-a832dc5c0cab4943e` **bez sprawdzenia `git status`
+w tym konkretnym katalogu** — złamanie zasady, którą sam stosował przy innych worktree tej samej
+sesji (zawsze commit+push przed usunięciem). Skutek: ok. 130 wywołań narzędzi Operatora + pełna
+weryfikacja Evaluatora (~90 wywołań) fizycznie usunięte z dysku.
+
+**Odzyskanie (częściowe, w toku):** `main.ts` i `trade-routes.ts` odzyskane z osieroconych obiektów
+gita (`git fsck --unreachable`, były `git add`-owane w nieznanym momencie przed usunięciem —
+przypadkowe szczęście, nie systemowe zabezpieczenie). `production.ts` i plik testu NIE mają śladu
+w gicie — odtwarzane od zera wg opisu z raportów agentów sprzed incydentu (dispatch w toku,
+`a9d473aa1495f39c6`).
+
+**Przyczyna źródłowa:** brak reguły playbooka wymuszającej scalenie (lub przynajmniej push na
+osobną gałąź `zapas/<nazwa>`, C-014 już to przewiduje ale NIE była stosowana konsekwentnie) tematu
+NATYCHMIAST po PASS-WITH-NOTES Evaluatora, zanim rozpocznie się kolejna runda na tym samym worktree
+lub sprzątanie. C-032 (sprzątaj dysk PRZED każdą partią Operatorów) nie ma odpowiednika „PRZED
+usunięciem KAŻDEGO pojedynczego worktree sprawdź czy jego praca jest scalona/zapchnięta" — luka,
+do naprawienia w playbooku (patrz sekcja niżej z propozycjami reguł).
+
+---
+
+## AUDYT HISTORYCZNY „zapomniane tematy" — wynik zbiorczy 3 równoległych agentów (2026-08-09/10)
+
+Na polecenie Macieja („ile takich zapomnianych tematów mamy w 260 falach") — trzy niezależne agenty
+przeczesały całą historię projektu: `PYTANIA-OTWARTE.md` (6954 linii), `REJESTR-PROSB-I-ZADAN.md`
+(2309 linii), `KANAL-PRACA.md` (6520 linii, 660× „CZEKAM-NA:") + `WERSJE.md` + `STAN-PRACY-HANDOFF.md`.
+
+**Wynik policzony:**
+- `PYTANIA-OTWARTE.md`: **7 potwierdzonych** zapomnianych tematów (1 już znany Maciejowi —
+  drewno/glina — + 6 nowych, WSZYSTKIE z jednej sesji generatora map 2026-08-02/FALA ~190-195) +
+  6 dwuznacznych do osądu.
+- `REJESTR-PROSB-I-ZADAN.md`: **0 zapomnianych** — 8 pozycji wyglądały podejrzanie, wszystkie
+  zweryfikowane jako faktycznie dostarczone (tylko status w pliku nieaktualny — inny, ale realny
+  problem: rejestr kłamie o stanie, mimo że praca się znalazła).
+- `KANAL-PRACA.md`/`WERSJE.md`/handoff: **1 potwierdzony** (`R-DESIGN-PANEL-MIASTA-V2-Q1` — czeka
+  na dostawę od człowieka-Designera od 2026-08-06, nikt nie przypomniał od 4+ dni) + 1 nieaktualny
+  plik-drogowskaz (`STAN-PRACY-HANDOFF.md` §5 nieaktualizowane od 2026-08-06 mimo trwającej pracy
+  do FALA 264).
+
+**RAZEM: 8 potwierdzonych zapomnianych tematów** (1 znany + 6 mapgen + 1 design-handoff), plus
+2 poważne dodatkowe znaleziska (0 utraconych zleceń w REJESTR-PROSB, ale nieaktualne statusy tam;
+STAN-PRACY-HANDOFF §5 martwy od 4 dni).
+
+### Lista 6 tematów mapgen do dispatchu (2026-08-02, sesja generatora map — WSZYSTKIE wymagają
+NAJPIERW sprawdzenia aktualności, bo generator mapy miał od tamtej pory istotne przebudowy
+[Pangea-obrys, coast-buffer, C-MAPA-Q1=B i inne] — mogły się same zdezaktualizować lub zostać
+przypadkiem naprawione przy okazji):
+
+1. **AC-RZEKI-BEZ-LIMITERA** — mandat Macieja: „nie powinno być żadnego limitera ilości rzek...
+   powinny siewić tak długo jak są w stanie, nie kończyć się po wyznaczonym czasie/długości."
+2. **AC-RZEKI-PER-MASA** — każda wyspa/masa lądu ma generować rzeki jak kontynent.
+3. **BUG-OBWARZANEK-20PCT** — pierścień morza utrzymuje się mimo 20% udziału lądu.
+4. **BUG-ZIEMIA-SCALE** — przy większych rozmiarach mapy ilość lądu zostaje „ta sama", rośnie
+   tylko woda.
+5. **PERF-SUPER-HUGE-PANGEA-80** — generacja mapy Super Huge/Pangea/80% lądu trwała ~14,6 min.
+6. **BUG-SCENA-PERF-FALA138** — budowanie sceny bardzo długo (~kilkanaście minut), powiązane z
+   `R-SCENA-PERF-FALA138` w rejestrze.
+
+Dispatch (Explore najpierw — sprawdzić aktualność, potem Operator jeśli nadal aktualne) NASTĘPUJE
+teraz, każdy osobnym agentem.
+
+### R-DESIGN-PANEL-MIASTA-V2-Q1
+Blokada zewnętrzna (czeka na człowieka-Designera, nie na kod) — nie nadaje się do dispatchu
+subagenta kodującego. Do przypomnienia Maciejowi jako wciąż otwarte, nie do cichego domknięcia.
+
+---
+
+## INCYDENT #2 — usunięcie niescommitowanej pracy R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09/10)
+
+**Ten sam błąd co incydent #1 (R-BUDYNEK-PORTOWY), w TEJ SAMEJ partii sprzątania dysku.** Worktree
+`agent-abd2a1f136bf908ec` (runda 3: naprawiony plik testu, kod gry potwierdzony poprawny przez
+Evaluatora rundy 2, ALE nigdy nie scalony — Evaluator rundy 3 nigdy faktycznie nie został odpalony,
+mimo wpisu w rejestrze sugerującego że tak) został usunięty `git worktree remove --force` w tej
+samej partii co worktree Portu, bez sprawdzenia `git status`. Runda 4 (dispatch mylnie zakładający
+istnienie werdyktu Evaluatora rundy 3, którego NIGDY nie było — luka wykryta i uczciwie zgłoszona
+przez Operatora rundy 4) zdążyła odczytać **pełny, wierny** `owner-epoch.ts` przez grep zanim
+worktree zniknął, ale NIE zdążyła odzyskać `main.ts` (3 bloki integracji) ani obu plików testów —
+te zostały **zrekonstruowane od zera** (nie odzyskane), zgodnie z udokumentowanym zamysłem z
+rejestru, z pełną, niezależną kampanią mutacyjną (11/11 złapanych, 11/11 sond bezpiecznych).
+
+**Różnica względem Portu:** brak odzyskanych obiektów gita dla tego tematu (sprawdzone —
+`owner-epoch.ts` odtworzony z odczytu, nie z blobu). Test `era-cud-warunek-awansu-test.cjs` ma dziś
+**33 asercje**, oryginalny (bezpowrotnie utracony) miał 35 — Operator jawnie to przyznaje, nie
+udaje identyczności.
+
+**Traktowanie:** to jest de facto ŚWIEŻA implementacja (nie mechaniczne odtworzenie ocenionego
+kodu), wymaga PEŁNEJ, nieskróconej rundy Evaluatora — zgodnie z rekomendacją samego Operatora.
+Dispatch NASTĘPUJE teraz.
+
+**Do playbooka:** to DRUGI potwierdzony przypadek tej samej klasy błędu w jednej sesji — mocny
+dowód, że potrzebna jest twarda, mechaniczna reguła (nie tylko przypomnienie w prompcie), patrz
+sekcja z nowymi regułami AutoBot niżej w tym pliku (do przygotowania).
+
+---
+
+## AC-RZEKI-BEZ-LIMITERA i AC-RZEKI-PER-MASA — WDROŻONE, status skorygowany (2026-08-09/10)
+
+Oba tematy z audytu „zapomnianych" okazały się **fałszywym alarmem co do treści** (kod naprawiony
+tego samego wieczoru, 2026-08-02, commit `6f96f08`, FALA 199-200, ROBOCZA `26b05753`), prawdziwym
+alarmem co do **procesu** (status w tym pliku nigdy nie przełączony na WDROŻONE mimo jednoznacznej
+dokumentacji w `WERSJE.md`/`docs/MACIEJ-GOTOWE.md`). Potwierdzone dwoma niezależnymi Explore
+(analiza statyczna + uruchomienie `pangea-river-interior-test.cjs`, 5/5 seedów PASS, interiorShare
+19-35%). Dispatch napraw NIE jest potrzebny — status koryguję na WDROŻONE.
+
+Dwa drobne follow-upy (dług techniczny, NIE nowe ACs, niepilne): (1) `feederPasses`/`topUpPasses`
+dla dopływów/short rivers mają twardy sufit rund, mocniej przycięty na dużych mapach/Pangei —
+teoretycznie mogłyby zatrzymać dosiewanie zanim wyczerpią się kandydatury; (2) brak testu
+regresyjnego pokrycia rzek dla małych wysp 5-79 hex (istniejące testy filtrują `mass.length>=80`).
+
+---
+
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP — Evaluator RUNDA 4 (finalna): PASS-WITH-NOTES, 0 blokujących, GOTOWE DO SCALENIA (2026-08-09/10)
+
+Wszystkie mutacje E/F/G złapane niezależnie + 10/14 własnych dodatkowych mutacji Evaluatora
+złapanych (4 przeżyły — T/V/W/X, wszystkie POZA computeView, dotyczą literału zwracanego obiektu i
+tekstu renderu chipu/karty — nota N1 do rejestru, niepilne, kod merytorycznie poprawny). Własny
+dowód behawioralny drabinki 5/8/12 (16/16, w tym zamrożenie zamiast ścinania przy przekroczeniu
+capu). Bramki na SCALONYM drzewie (aktualny HEAD): tsc 0, logic-test 213/213, akwedukt-popcap 7/7,
+population-growth-v85 48/50 (2 pre-istniejące potwierdzone bajtowo), growthmult-compound 17/24 (7
+pre-istniejące potwierdzone), spichlerz-cap-citypanel-wiring 12/12. Parytet gracz/AI potwierdzony
+strukturalnie (ten sam kanał `builtIds` co już sprawdzony `maAkwedukt`). Scalenie praktycznie
+przetestowane (zero dryfu 10 plików między bazą a HEAD).
+
+Notatki niepilne do rejestru (nie blokują): N1 (chip/karta renderu tekstu nie ma pokrycia bramki —
+3 tanie asercje do dołożenia kiedyś), N3 (kanon `B-popcap-akwedukt-audit.md` aktywnie zaprzecza
+dzisiejszemu capowi 12 zamiast 15), N4 (martwy `ownerHasSpichlerz()`), N8 (panel Excel niedogoniony
+JSON→Excel).
+
+Dispatch scalenia NASTĘPUJE teraz.
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — Evaluator RUNDA 3: PASS-WITH-NOTES, CAŁY TEMAT (rundy 1-3) GOTOWY DO SCALENIA (2026-08-09/10)
+
+Wszystkie 3 noty blokujące rundy 2 (BB1/BB2/BB3) zamknięte i niezależnie zweryfikowane, BB3
+dodatkowo dowiedziona EMPIRYCZNIE (harness jsdom renderujący realny pop-up, nie tylko tekst).
+N4 zamknięte. Trzy decyzje projektowe (barbarzyńcy wykluczeni, gracz pokazywany mimo mgły wojny,
+sortowanie) stoją niezmienione.
+
+**Warunek scalenia (2 linie, wyłącznie plik testu, do dołożenia RAZEM ze scaleniem):** N1
+z rundy 3 było fałszywym twierdzeniem — asercje 6j/6k szukają literałów `'sojusz'`/`'handel'`
+GDZIEKOLWIEK w ciele funkcji, więc zamiana miejscami (sojusznicy pod „Handluje z", partnerzy
+handlowi pod „W sojuszu z") przechodzi 46/46 zielono. Kod produkcyjny jest POPRAWNY, wadliwa jest
+wyłącznie asercja. Poprawka zwalidowana przez Evaluatora:
+```js
+/const alliances = dealPartnerIdsForOwner\(\s*activeDeals\s*,\s*ownerId\s*,\s*'sojusz'/
+/const deals = dealPartnerIdsForOwner\(\s*activeDeals\s*,\s*ownerId\s*,\s*'handel'/
+```
+
+Notatki niepilne do osobnej rejestracji (nie blokują): N-2 (bramka ma zero pokrycia behawioralnego
+nowego pop-upu — 7 realistycznych regresji, w tym „przycisk audiencji przestaje działać" i XSS,
+przechodzi 46/46 zielono; Evaluator dostarczył gotowy ~120-liniowy harness jsdom do przyszłego
+dołożenia), N-3 (martwy eksport `updateDiploPairSummary`, stuby `.stubs/` niegitignorowane).
+
+Dispatch scalenia (z poprawką N-1 wklejoną razem) NASTĘPUJE — w kolejce, PO zakończeniu 2 obecnie
+działających agentów scalających w głównym drzewie (Tartak/Glinianka, Armia-rozpad runda 6), żeby
+uniknąć wyścigu na tym samym drzewie.
+
+---
+
+## BUG-OBWARZANEK-20PCT i BUG-ZIEMIA-SCALE — WDROŻONE, status skorygowany (2026-08-09/10)
+
+Trzeci i czwarty temat z audytu „zapomnianych" (mapgen, 2026-08-02) potwierdzone jako fałszywy
+alarm co do treści (oba naprawione tego samego wieczoru, ten sam commit `6f96f08`, FALA 199-200),
+prawdziwy alarm co do procesu (status nigdy nie zaktualizowany, mimo potwierdzenia Macieja w
+korespondencji: „chyba jest sukces... najważniejsze: zniknął obwarzanek"). Weryfikacja empiryczna
+dziś: `pangea-bagel-gap-audit.cjs` + własny skrypt na 9 przebiegach (land 15/20/25%, 3 seedy każdy)
+→ `dryMasses=1` wszędzie; generacja mapy Ziemia dla wszystkich 5 rozmiarów (seed 777) →
+udział lądu rośnie 15.5%→24.9%, bufor biegunowy spada 50%→24% (Mały→Super Huge) — dokładnie
+odwrotnie niż opisywał zgłoszony błąd.
+
+**Wynik: WSZYSTKIE 4 tematy generatora map z audytu „zapomnianych" (AC-RZEKI-BEZ-LIMITERA,
+AC-RZEKI-PER-MASA, BUG-OBWARZANEK-20PCT, BUG-ZIEMIA-SCALE) — już naprawione, nie wymagają
+dispatchu.** Pozostają 2 z 6: PERF-SUPER-HUGE-PANGEA-80 i BUG-SCENA-PERF-FALA138 —
+NIEJEDNOZNACZNE, wymagają realnego pomiaru (F12 Macieja w grze), nie do rozstrzygnięcia z samego
+kodu — do zgłoszenia Maciejowi jako prośba o pomiar, nie do dispatchu subagenta kodującego.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 4 (świeża implementacja): PASS-WITH-NOTES, 2 BLOKUJĄCE, runda 5 w toku (2026-08-09/10)
+
+Rdzeń logiki potwierdzony poprawny i zgodny z decyzją Macieja (zweryfikowane niezależnie: 16/16
+cudów E epok przechodzi bramkę dostępności bez zakleszczenia, zasięg reguły policzony na danych —
+9 cywilizacji objętych, 6 z martwą regułą bo cud w epoce 3).
+
+**B1 (BLOKUJĄCA, realny bug w kodzie gry):** blok chatki skarbów (`main.ts:17163`) używa STAREGO
+warunku `if (step.completed.some(d => d.awansEpoki))` do odświeżenia nakładek złóż/`setEra()`
+zamiast nowego `eraAdvanced` — przy awansie epoki BEZ starej flagi `awansEpoki` (realny, częsty
+przypadek: gracz zbadał Brązownictwo wcześniej, chatka domyka resztę Kamienia) epoka realnie
+awansuje ale wizualia/muzyka NIE odświeżają się. Naprawa: jeden token,
+`if (step.completed.some(d => d.awansEpoki))` → `if (eraAdvanced)`.
+
+**B2 (BLOKUJĄCA, bramka):** własna kampania 15 mutacji Evaluatora — 9/15 złapanych, **6/15
+przeżyło**, w tym 4 łamiące wprost sedno zlecenia (parytet gracz/AI, per-cywilizacyjność): E3
+(gracz na sztywno `'grecy'` zamiast `civTypeForOwner(0)`), E4 (gracz dostaje `[]` zamiast
+`completedWorldWonders` — trwałe zakleszczenie), E5 (AI dostaje civType gracza — cała
+per-cywilizacyjność ginie), E15 (wynik przeliczenia AI wyrzucany do kosza — cała strona AI
+martwa). Przyczyna: kotwice regexowe sprawdzają nazwę wołanej funkcji, ale NIE jej argumenty ani
+zapis wyniku. Naprawa zdefiniowana precyzyjnie (4 punkty, patrz pełny werdykt wyżej).
+
+**Dodatkowe znalezisko:** `reconcileEraForOwner()` — funkcja opisana w zleceniu jako „dyspozytor
+gracz/AI wpięty w 4 miejsca" jest w rzeczywistości MARTWYM KODEM, nigdzie nie wołana (wszystkie 4
+wpięcia wołają bezpośrednio `reconcilePlayerEraFromResearch`/`syncOwnerEraFromResearch`). Bramka
+asercjonuje istnienie martwej funkcji. Do rozstrzygnięcia przy scaleniu: użyć dyspozytora
+faktycznie, albo usunąć razem z asercją.
+
+**B2 z rejestru (zgodność sejwów) zaostrzona:** poprzedni opis („AI zdegradowane, gracz zachowuje
+starą epokę") jest niepełny — degradacja dotyczy OBU stron: AI natychmiast przy wczytaniu, gracz
+przy pierwszym końcu tury/badaniu/chatce/handlu tech (bo `reconcilePlayerEraFromResearch` robi
+`player.era = next`, nie `Math.max`). Każdy zapis sprzed tej zmiany cofa CAŁY świat o 1-2 epoki.
+Nadal wymaga ABC, z poprawioną diagnozą.
+
+Dispatch runda 5, wąska (B1 jeden token + B2 cztery rozszerzenia regex + decyzja o
+`reconcileEraForOwner`) NASTĘPUJE teraz.
+
+---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — Evaluator pełny po odtworzeniu: PASS-WITH-NOTES, 2 BLOKUJĄCE (obie pokrycie testowe, kod poprawny), runda 3 w toku (2026-08-09/10)
+
+Rekonstrukcja NIE wprowadziła regresji ani rozjazdu z decyzją Macieja — `production.ts` odtworzony
+od zera oceniony jako poprawny (7 mutacji łapanych, w tym 2 niewidoczne dla pinów tekstowych,
+bramki minimalne i we właściwych miejscach). `main.ts` (5 miejsc ręcznie wklejonych w zdryfowany
+plik) i `trade-routes.ts` (bajt-identyczny patch) potwierdzone poprawne. Scalenie praktycznie
+przetestowane na aktualnym HEAD (`git apply -3` czysty, pełne bramki zielone tam).
+
+**B1 (BLOKUJĄCA):** część A (bonus ekonomiczny za szlaki morskie) NIE MA żadnej bramki chroniącej —
+4/4 własne mutacje Evaluatora przeżywają, w tym usunięcie samego Port-gatingu (T1: `medium!=='lad'`
+zamiast `!=='morze'` — bonus przestaje być morski I przestaje być Port-gated, wszystko zielono).
+Ta sama klasa co B6a z R-EPOKA-BRAZU — bramka łapie usunięcie haka, nie to co hak robi.
+
+**B2 (BLOKUJĄCA):** parytet AI — trzy miejsca zasilające `availableProduction` (planowanie AI,
+egzekucja AI, lista rekrutacji gracza) NIE są pinowane. 3/3 mutacje przeżywają (AI buduje Galerę
+w mieście śródlądowym, 100% zielono). Kod jest dziś poprawny, ale niechroniony.
+
+Naprawa w PEŁNI zdefiniowana przez Evaluatora (~7 asercji w `trade-routes-test.cjs` dla B1, 3 piny
+regex w `naval-water-access-gate-test.cjs` dla B2, zero zmian w kodzie produkcyjnym) — pełny tekst
+w werdykcie wyżej w tym pliku.
+
+**Notatki do osobnych pytań ABC (§1a — dotyka obszaru już rozstrzygniętego decyzją C 2026-08-09):**
+N3 (zasięg bonusu morskiego — `detectBestConnection` przy remisie wybiera ląd, więc bonus w
+praktyce nagradza niemal wyłącznie handel zamorski, węziej niż mogła być intencja „miasta
+nadmorskie"), N8 (`PORT_SEA_TRADE_BONUS_PIENIADZ=1` to stała w TS, nie parametr w
+`econ-params.json` — łamie kierunek „źródłem prawdy JSON").
+
+**Rekomendacja Evaluatora — priorytet wysoki:** scalić NATYCHMIAST po rundzie 3, nie zostawiać na
+worktree — to trzeci raz gdy ten temat wisi niescalony, dwa poprzednie skończyły się incydentem.
+
+Dispatch runda 3 (wąska, wyłącznie testy) NASTĘPUJE teraz.
+
+---
+
+## R-BUDYNEK-PORTOWY — konsolidacja: druga niezależna ocena potwierdza te same luki (2026-08-09/10)
+
+Agent oryginalnego Evaluatora rundy 1 (`a315e180c5d1bbbfd`) zameldował się powtórnie z dodatkową
+analizą: porównał zgubiony test rundy 1 (286 linii, nigdy niescommitowany, bezpowrotnie stracony
+w incydencie) z testem rundy 2 (358 linii, ocalony) i wykrył że runda 2 **zamieniła** pokrycie
+zamiast je rozszerzyć — zyskała piny M4/M5/M11/M17 (ctx „Zastąp", wpięcie bonusu), ale **zgubiła**
+M13 (parytet AI w `isBuildAllowed` — DOKŁADNIE to samo co B2 z pełnej re-weryfikacji Evaluatora
+`aac04a79b95efcd21`) i M8/M9/M10 (bonus liczony od 1. trasy, brak filtra `medium`/`status` —
+DOKŁADNIE ten sam obszar co B1 tamtej oceny). Dwie niezależne ścieżki oceny zbiegają się w tych
+samych lukach — mocny sygnał że runda 3 (już w dispatchu, `a6fb470d3a3c88349`) obejmuje właściwy
+zakres.
+
+Agent dodatkowo przygotował gotowy, zweryfikowany pakiet odzyskujący (`scratchpad/wt-recover`,
+patch `naval.patch`, 32/32 na aktualnym HEAD) jako rezerwową ścieżkę, gdyby runda 3 nie
+wystarczyła — do wykorzystania tylko w razie potrzeby, priorytet ma dokończenie rundy 3 w toku.
+
+Uwaga procesowa (do playbooka): agresywne środowisko współdzielone — inny agent nadpisał ścieżkę
+logu tego Evaluatora, worktree Operatora zniknął w trakcie oceny. Rekomendacja: unikalne nazwy
+plików logów per zlecenie w scratchpadzie (ten sam wniosek co z incydentu R-EPOKA-CUD wcześniej
+tej nocy — trzecie niezależne potwierdzenie tego samego problemu).
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — runda 5 dostarczona (Operator), czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a3b258ae5b08c64f5`. B1: `main.ts` blok chatki skarbów, jeden token
+`if (step.completed.some(d => d.awansEpoki))` → `if (eraAdvanced)` — odświeżenie nakładek/`setEra()`
+teraz wykonuje się przy KAŻDYM realnym awansie epoki. B2: 4 kotwice w
+`era-cud-main-ts-integracja-test.cjs` wzmocnione o wymóg `civTypeForOwner`+`completedWorldWonders`
+w wywołaniu oraz nowa asercja zapisu wyniku AI (`ownerEraByOwner.set(ownerId, next)`) i startEra
+gracza (`gameStartEra()` nie na sztywno) — wszystkie 4 mutacje E3/E4/E5/E15 z werdyktu rundy 4
+teraz złapane (dowód FAIL→PASS), 11/11 sond kruchości nadal bezpieczne. `reconcileEraForOwner()`
+(martwy kod, żył w `main.ts` nie `owner-epoch.ts` jak błędnie opisano w zleceniu) usunięty razem
+z powiązaną asercją. Bramki: tsc 0, logic-test 213/213, owner-epoch 13/13, era-cud-warunek-awansu
+33/33, era-cud-main-ts-integracja OK (16/16 mutacji, 11/11 sond), diplomacy-tech-trade-e2e 28/28,
+research 33/33, tech-tree 19/19.
+
+**Uwaga proceduralna:** Operator nie mógł wykonać żadnej komendy git w cudzym worktree (izolacja
+narzędzia) — zmiany leżą niescommitowane na dysku, do przejęcia przez Evaluatora/scalającego
+bezpośrednio z tego worktree.
+
+Dispatch Evaluatora rundy 5 (finalnej) NASTĘPUJE teraz.
+
+---
+
+## R-BUDYNEK-PORTOWY — runda 3 dostarczona (test-only, B1+B2+N1), czeka na finalnego Evaluatora — PRIORYTET (2026-08-10)
+
+Worktree `agent-a6fb470d3a3c88349`, odtworzony 1:1 z referencyjnego `agent-a9d473aa1495f39c6`
+(kod produkcyjny NIETKNIĘTY, bajt-identyczny). B1: +10 asercji w `trade-routes-test.cjs` (61/61).
+B2: +3 piny regex w `naval-water-access-gate-test.cjs` + N1 (39/39). Wszystkie 8 mutacji explicite
+wymienionych w zleceniu (T1-T4, M8-M10, N1) teraz złapane — dowód FAIL→PASS dla każdej. Operator
+uczciwie zastrzega: nie znalazł w rejestrze pełnej listy „23 mutacji" (P1-P7/M1-M11/T1-T4) z
+oryginalnego werdyktu — potwierdza tylko 8 explicite nazwanych w zleceniu tej rundy, reszta wg
+niego była już pokryta istniejącymi 32 asercjami. Bramki: tsc 0, logic-test 213/213,
+naval-water-access-gate 39/39, trade-routes 61/61, trade-routes-income 52/53 (pre-istniejąca),
+unit-replace 13/13, deposit-building-gate 47/47, ai-production-priority 9/9.
+
+**Priorytet wysoki** (trzeci temat z rzędu z realnym ryzykiem utraty niescalonej pracy) — dispatch
+finalnego Evaluatora (skrócony zakres: potwierdzić 8 mutacji + ewentualne resztkowe z pełnej listy
+23 + czyste scalenie) NASTĘPUJE teraz, z instrukcją natychmiastowego scalenia po PASS.
+
+---
+
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE — SCALONE `fbde1880` (2026-08-10)
+
+Werdykt finalny: PASS, 17/17 własnych mutacji Evaluatora złapanych (8 explicite z rundy 3 + 9
+własna próbka), zero przeżywających. Scalenie zweryfikowane bajt-po-bajcie (36 linii Portu w
+main.ts identyczne przed i po scaleniu mimo 744 linii dryfu). Bramki na scalonym drzewie: tsc 0,
+logic-test 213/213, naval-water-access-gate 39/39, trade-routes 61/61, unit-replace 13/13,
+deposit-building-gate 47/47, ai-production-priority 9/9, trade-routes-income 52/53 (pre-istniejąca,
+potwierdzona bajtowo identyczna bez zmiany Portu). Temat w PEŁNI zamknięty po 3 rundach + incydencie
+utraty i odzyskania pracy.
+
+Notatki do osobnych pytań ABC (§1a — dotykają obszaru rozstrzygniętego decyzją C 2026-08-09), do
+zadania Maciejowi rano: N3 (`detectBestConnection` przy remisie wybiera ląd — bonus morski w
+praktyce nagradza niemal wyłącznie handel zamorski, węziej niż mogła być intencja „miasta
+nadmorskie"), N8 (`PORT_SEA_TRADE_BONUS_PIENIADZ=1` to stała w TS, nie parametr w
+`econ-params.json` — łamie kierunek „źródłem prawdy JSON").
+
+---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — SCALONE `15325a1c` (2026-08-10)
+
+Poprawka N-1 zastosowana i zweryfikowana mutacyjnie (zamiana `'sojusz'`/`'handel'` w kodzie
+produkcyjnym → 44/46 FAIL na `6j`/`6k`, przywrócenie → 46/46). Bramki: tsc 0, logic-test 213/213,
+diplomacy-lista-podglad-przed-wizyta 46/46, diplomacy-treaties 17/17, diplomacy-display 35/35.
+Brak konfliktu z równoległą pracą nad main.ts (Armia-rozpad). Temat w pełni zamknięty (rundy 1-3).
+
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY — potwierdzenie post-scalenia + N11 (2026-08-10)
+
+Evaluator wykrył że temat już był scalony (commit `f4d427e8`) w trakcie własnej pracy — zweryfikował
+scalony kod od nowa: PASS, kod identyczny z odtworzeniem, 21 własnych mutacji na scalonym drzewie
+(15 destrukcyjnych złapanych w tym wszystkie warianty N10, 5 sond niegroźnych bezpiecznych). Temat
+w pełni potwierdzony, bez działania.
+
+**N11 (nowe, niepilne, do rejestru):** strona SILNIKA (nie panelu) niestrzeżona — usunięcie
+`kultura: hs.kultura ?? 0` z `getEmpireHud` w `main.ts` daje tsc 0 i test 71/71 zielono, a chip
+Kultury pokazywałby „(0)" na zawsze. Ta sama klasa co N1/N6/N10, tylko szew jest w górę
+(silnik→panel) zamiast w dół. Dotyczy wszystkich 6 pól zapasu.
+
+## OSTRZEŻENIE PROCESOWE — TRZECIE potwierdzenie kolizji ścieżek w scratchpadzie (2026-08-10)
+
+Trzeci niezależny przypadek tej samej nocy (po R-EPOKA-CUD i R-BUDYNEK-PORTOWY): agenci
+równoległych sesji nadpisują sobie nawzajem generyczne nazwy plików we współdzielonym
+`scratchpad/` (`mut.py`, `main.ts.bak`, log-i bramek). Tym razem Evaluator HUD-stock-tempo
+wykrył że jego `mut.py`/`mut2.py` zostały nadpisane cudzym harnessem (R-BUDYNEK-PORTOWY) w
+trakcie pracy — złapane tylko dlatego że format wyjścia się nie zgadzał. **Mocny sygnał do
+nowej, twardej reguły playbooka: każdy plik roboczy w scratchpadzie MUSI mieć prefiks
+unikatowy dla zlecenia/agenta, nigdy generyczną nazwę.** Materiał do przygotowywanych reguł
+AutoBot (patrz niżej w tym pliku, do zebrania rano).
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 5 (finalna): PASS-WITH-NOTES, 1 BLOKUJĄCA (2 linie, przy scalaniu), GOTOWE DO SCALENIA (2026-08-10)
+
+B1 potwierdzona poprawna na danych (epoka Kamień 12 technologii, jedyny kamień milowy
+Brązownictwo). B2 potwierdzona niezależnym harnessem (17/18 własnych mutacji złapanych, w tym
+test koniunkcji: oba wymogi kotwicy pilnowane NIEZALEŻNIE, nie „jeden przypadkiem"). 11/11 sond
+kruchości bezpieczne i faktycznie nietrywialne. `reconcileEraForOwner()` — usunięcie bezpieczne,
+potwierdzone że nic nie zginęło (9 punktów wpięcia identyczne przed/po, tylko rozwinięte z
+dyspozytora w jawne gałęzie).
+
+**Blokująca (naprawa PRZY SCALANIU, nie runda 6):** scalenie z aktualnym czubkiem gałęzi
+(`fbde1880`, 780+/84- w main.ts od R-EPOKA-BRAZU) psuje JEDNĄ mutację testu (M12) — dosłowny
+ciąg który mutacja podmienia przestał istnieć po wstawieniu bloku `bronzeForceWarPendingOwners`.
+Naprawa zwalidowana na obu stanach:
+```js
+src.replace(
+  /ownerEraByOwner\.set\(ownerId, next\);/,
+  'ownerEraByOwner.set(ownerId, prev);',
+)
+```
+**Rekomendowana (razem, domyka jedyną przeżywającą własną mutację X9 — cofnięcie B1):**
+```js
+const RE_3A_CHATKA_ERAADVANCED = /const (\w+) = shouldNotifyPlayerEraChange\((\w+), player\.era\);\s*\n\s*villageEraAdvanced = \1;\s*\n\s*if \(\1\) \{\s*\n\s*overlayDepositEra = player\.era;\s*\n\s*rebuildResourceOverlays\(\);\s*\n\s*setEra\(player\.era\);/;
+```
+(dodać `assert(...)` i wpisać do tablicy `checks`).
+
+Zasięg reguły doprecyzowany (N2): bramkę 1→2 ma TYLKO Egipt, bramkę 2→3 ma 8 cywilizacji.
+Konsekwencja dla B3-ABC: `bronzeForceWarPendingOwners` (R-EPOKA-BRAZU) na awansie 1→2 dotyczy
+WYŁĄCZNIE Egiptu, nie 9 cywilizacji.
+
+Dispatch scalenia (z obiema poprawkami wklejonymi) NASTĘPUJE teraz.
+
+---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — SCALONE `13861b60` (2026-08-10)
+
+5 rund, incydent utraty pracy w trakcie, pełne odzyskanie/rekonstrukcja, w pełni zamknięte. Obie
+poprawki testu z rundy 5 (M12 regex zamiast literału, nowa kotwica RE_3A_CHATKA_ERAADVANCED)
+zastosowane przy scalaniu, `era-cud-main-ts-integracja-test.cjs` w pełni zielony (15/15 asercji,
+16/16 mutacji, 11/11 sond). Wszystkie bramki + bramki gałęzi docelowej (forced-war-bronze) bez
+regresji. Temat w pełni zamknięty.
+
+**Pozostają 2 osobne pytania ABC dla Macieja rano** (nie formułowane jeszcze, materiał gotowy):
+1. Zgodność sejwów (B2-zapisy) — każdy zapis sprzed tej zmiany cofa świat o 1-2 epoki, dotyczy
+   OBU stron (gracz i AI), różny moment ujawnienia.
+2. Ryzyko trwałego utykania AI w budowie cudu (B3) — dotyczy 9/15 cywilizacji, doprecyzowane:
+   awans 1→2 dotyczy tylko Egiptu, awans 2→3 pozostałych 8.
 
 ---

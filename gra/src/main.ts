@@ -310,7 +310,7 @@ import {
 } from './game/diplomacy-layers';
 import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
-import { computeOwnerEraFromResearch } from './game/owner-epoch';
+import { computeOwnerEraFromResearch, computeMainCivEraFromResearch } from './game/owner-epoch';
 import {
   ERA_CHANGE_NOTIFY,
   shouldNotifyPlayerEraChange,
@@ -481,6 +481,8 @@ import {
   diagnoseMissingTradeRouteForPartner,
   computeTradeRouteResourceFlow,
   loadTradeRouteResourceFlowParams,
+  computeSeaTradeRouteCountByCity,
+  computeSeaTradeBonusIncomeByCity,
   type TradeRoute,
   type TradeRouteCityRef,
   type TradeRouteParams,
@@ -957,6 +959,17 @@ import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
+import {
+  WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
+  WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+  isEligibleForBronzeForcedWar,
+  pickBronzeForcedWarTargetId,
+  shouldEndBronzeForcedWarByCityCount,
+  isRestingFromBronzeForcedWar,
+  serializeBronzeForcedWarState,
+  restoreBronzeForcedWarState,
+  type BronzeForcedWarPairState,
+} from './game/forced-war-bronze';
 import { checkVictory, techIdsInGameScope, allTechInScopeResearched, OSTATNIA_EPOKA_GRY_V1, powerShare } from './game/victory';
 import type { VictoryPlayer, VictoryInput } from './game/victory';
 import {
@@ -1007,8 +1020,11 @@ import { scaledWonderWorkCost, scaledWonderFoodCost } from './game/r-stawki-stro
 import { veteranCombatBonusFrac, veteranLevel, veteranBadgeLabel, applyVeteranFracToCombatUnit, veteranHasVisibleBadge, veteranStarCount, veteranStarsTooltipText, veteranFirstEncounterHintHtml, veteranFirstEncounterJournalSubtitle, veteranUnitEducationFields, veteranExperienceLine } from './game/veteran';
 import {
   showDiplomacyPanel, hideDiplomacyPanel, isDiplomacyPanelOpen, updateDiplomacyPanel,
+  showDiploPairSummary, hideDiploPairSummary, isDiploPairSummaryOpen,
   type DiploRelation, type KnownWarBetweenCivs, type DiplomacyPanelConfig,
+  type DiploPairSummaryData, type DiploPairSummaryPartner,
 } from './ui/diplomacyPanel';
+import { warPartnerIdsForOwner, dealPartnerIdsForOwner } from './game/diplomacy-pair-summary';
 import {
   showDiplomacyAudience, hideDiplomacyAudience, updateDiplomacyAudience, isDiplomacyAudienceOpen,
   showWarConsentModal,
@@ -1438,6 +1454,26 @@ async function boot(): Promise<void> {
      *  load/nowej grze, wiec stan zlupienia trzeba trzymac osobno i reaplikowac po
      *  wczytaniu (patrz checkVillageRewardAt/buildSaveGameSnapshot/restoreGameFromSave). */
     const lootedVillageHexKeys = new Set<string>();
+    /**
+     * R-EPOKA-BRAZU-WYMUSZONA-WOJNA (2026-08-09, `forced-war-bronze.ts`): ownerId głównych
+     * cywilizacji AI, które WŁAŚNIE przekroczyły próg epoki Brąz w tej turze (wykryte w
+     * `syncOwnerEraFromResearch`) — jednorazowy check w pętli dyplomacji AI. RUNDA 2 (B4,
+     * Evaluator FAIL): NIE jest już kasowany bezwarunkowo — konsumowany (usuwany) TYLKO po
+     * faktycznym udanym wypowiedzeniu wojny (patrz pętla `dipCmds` niżej); jeśli owner jest
+     * już w wojnie / brak dostępnego celu, wpis zostaje i próba ponawia się co turę.
+     * EN: ownerIds of major AI civs that JUST crossed into the Bronze era this turn
+     * (detected in `syncOwnerEraFromResearch`) — a one-shot check per era-advance. ROUND 2
+     * (B4): no longer unconditionally deleted — consumed ONLY on an actually successful war
+     * declaration; if still at war / no target available, the entry stays and is retried
+     * every subsequent turn.
+     */
+    const bronzeForceWarPendingOwners = new Set<number>();
+    /** OwnerId zapisane do PERPETUAL cyklu „wojna wymuszona → pokój → odpoczynek → nowy cel" (raz zapisany, zostaje na stałe do eliminacji). / EN: owners enrolled in the perpetual "forced war → peace → rest → new target" cycle (permanent once enrolled, until elimination). */
+    const bronzeForceWarCycleOwners = new Set<number>();
+    /** Tura, do której (wyłącznie) owner NIE szuka nowego celu wojny wymuszonej po pokoju (`WOJNA_WYMUSZONA_ODPOCZYNEK_TUR`). / EN: turn until which (exclusive) the owner does NOT search for a new forced-war target after peace. */
+    const bronzeForceWarRestUntilByOwner = new Map<number, number>();
+    /** Aktywne wojny wymuszone Brązu, klucz = diploPairKey(attackerId, targetId) — liczniki miast do auto-pokoju. / EN: active Bronze forced wars, keyed by diploPairKey — city counters driving auto-peace. */
+    const bronzeForceWarActiveByPairKey = new Map<string, BronzeForcedWarPairState>();
 
     const ERA_ID_TO_NUM: Record<string, number> = { kamien: 1, braz: 2, zelazo: 3 };
 
@@ -1468,13 +1504,41 @@ async function boot(): Promise<void> {
       ownerStartEraByOwner.set(ownerId, e);
     }
 
+    /**
+     * R-EPOKA-CUD-WARUNEK-AWANSU (Maciej 2026-08-09): cywilizacje GŁÓWNE (major AI,
+     * nie miasta-państwo/barbarzyńcy) mają ostrzejszą bramkę awansu epoki —
+     * `computeMainCivEraFromResearch`. Miasta-państwa i barbarzyńcy zostają na
+     * dotychczasowej ścieżce (`computeOwnerEraFromResearch` — jedna tech kamień milowy),
+     * bo nie budują cudów ani nie prowadzą pełnego drzewka badań. / EN: main AI
+     * civilizations get the stricter era-cud gate; city-states/barbarians keep the
+     * legacy single-tech-advance path (they never build wonders or run a full tree).
+     */
     function syncOwnerEraFromResearch(ownerId: number): boolean {
       if (ownerId === 0) return false;
       const startEra = ownerStartEraByOwner.get(ownerId) ?? ownerEraByOwner.get(ownerId) ?? gameStartEra();
       const done = aiResearchDone.get(ownerId) ?? new Set<string>();
       const prev = ownerEraByOwner.get(ownerId) ?? startEra;
-      const next = computeOwnerEraFromResearch(startEra, done, data.tech as import('./data/loader').TechDef[]);
+      const next = (!isBarbarian(ownerId) && !isCityStateOwner(ownerId))
+        ? computeMainCivEraFromResearch(
+            startEra,
+            done,
+            data.tech as import('./data/loader').TechDef[],
+            civTypeForOwner(ownerId),
+            completedWorldWonders,
+          )
+        : computeOwnerEraFromResearch(startEra, done, data.tech as import('./data/loader').TechDef[]);
       ownerEraByOwner.set(ownerId, next);
+      // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: awans Kamień(1)→Brąz(2), TYLKO główne cywilizacje
+      // (miasta-państwa/kopie wykluczone — isOwnerClusterCityState) — jednorazowy check
+      // skonsumowany w pętli dyplomacji AI (main.ts, obok clusterForceWarTargetId).
+      // EN: Stone(1)→Bronze(2) advance, MAJOR civs only (city-states/copies excluded) — a
+      // one-shot flag consumed in the AI diplomacy loop (next to clusterForceWarTargetId).
+      if (
+        prev === 1 && next === 2
+        && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+      ) {
+        bronzeForceWarPendingOwners.add(ownerId);
+      }
       return prev !== next;
     }
 
@@ -1490,6 +1554,28 @@ async function boot(): Promise<void> {
         anyChanged = syncOwnerEraFromResearch(oid) || anyChanged;
       }
       refreshCityRenderIfEraChanged(anyChanged);
+    }
+
+    /**
+     * R-EPOKA-CUD-WARUNEK-AWANSU: odpowiednik `syncOwnerEraFromResearch` dla gracza
+     * (ownerId===0 zawsze cywilizacja GŁÓWNA — nigdy miasto-państwo/barbarzyńca, więc
+     * bez rozgałęzienia). Zwraca `true` gdy epoka realnie się zmieniła (analogicznie do
+     * `syncOwnerEraFromResearch`) — wywołujący decyduje o notyfikacji/rerenderze.
+     * / EN: player-side counterpart of `syncOwnerEraFromResearch` — the player is
+     * always a main civ, so no city-state branch is needed.
+     */
+    function reconcilePlayerEraFromResearch(): boolean {
+      const startEra = gameStartEra();
+      const prev = player.era;
+      const next = computeMainCivEraFromResearch(
+        startEra,
+        player.zbadane,
+        data.tech as import('./data/loader').TechDef[],
+        civTypeForOwner(0),
+        completedWorldWonders,
+      );
+      player.era = next;
+      return prev !== next;
     }
 
     function allAiOwnerIdsOnMap(): number[] {
@@ -2781,6 +2867,19 @@ async function boot(): Promise<void> {
       if (!hex) {
         completedWorldWonders.push(wonderId);
         console.warn(`[Cuda] Brak wolnego heksa w terytorium ${city.name} — cud bez modelu mapy`);
+        // R-EPOKA-CUD-WARUNEK-AWANSU: cud liczy się do bramki awansu epoki nawet bez
+        // modelu na mapie (brak heksa nie unieważnia ukończenia cudu w silniku).
+        if (city.ownerId === 0) {
+          const prevPlayerEra = player.era;
+          if (reconcilePlayerEraFromResearch()) {
+            overlayDepositEra = player.era;
+            rebuildResourceOverlays();
+            setEra(player.era);
+            notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+          }
+        } else {
+          refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(city.ownerId));
+        }
         return;
       }
       completeWonderOnHex({
@@ -2899,6 +2998,21 @@ async function boot(): Promise<void> {
       if (ownerTreasury(ownerId) < koszt) return false;
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== ownerId) return false;
+      // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): siatka bezpieczeństwa —
+      // itemId dociera tu zwykle już przefiltrowany przez purchasableUnits()/availableProduction
+      // (UI pokazuje tylko dostępne pozycje), ale ta funkcja jest wołana bezpośrednio (onPurchaseUnit,
+      // AI rush-buy) bez ponownej weryfikacji terenu, więc dopisujemy tu jawną bramkę: jednostka
+      // Typ='Naval' (Galera) NIE może zostać opłacona w mieście bez dostępu do wody (morze LUB
+      // rzeka) — inaczej gracz/AI obszedłby regułę płacąc mimo że przycisk nie powinien być
+      // widoczny / EN: defense-in-depth — reject a Naval-type purchase for a city without water
+      // access even if it somehow reaches this function outside the normal UI-filtered path.
+      const unitDefForGate = data.units.find(u => u.Jednostka === itemId);
+      if ((unitDefForGate?.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
+        if (ownerId === 0) {
+          showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
+        }
+        return false;
+      }
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
       if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId)) {
@@ -3070,6 +3184,21 @@ async function boot(): Promise<void> {
       wonderBuildSites = wonderBuildSites.filter(s => s !== site);
       hideDecorAtHex(keyOf(site.q, site.r));
       syncWonderRender();
+
+      // R-EPOKA-CUD-WARUNEK-AWANSU: cud własny (E) ukończony może właśnie odblokować
+      // awans epoki (komplet tech epoki + cud) — przeliczyć natychmiast, nie czekać
+      // do końca tury/następnego badania.
+      if (site.ownerId === 0) {
+        const prevPlayerEra = player.era;
+        if (reconcilePlayerEraFromResearch()) {
+          overlayDepositEra = player.era;
+          rebuildResourceOverlays();
+          setEra(player.era);
+          notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+        }
+      } else {
+        refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(site.ownerId));
+      }
 
       const w = getWonderById(wonderId);
       const label = w?.nazwa ?? wonderId;
@@ -4844,6 +4973,9 @@ async function boot(): Promise<void> {
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
         difficulty: _menuDifficulty,
+        // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval dla
+        // "Zastąp" w garnizonie — per TO miasto (tak jak koszary/braz-access wyżej).
+        cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
       });
     }
 
@@ -4875,6 +5007,11 @@ async function boot(): Promise<void> {
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: 0,
         difficulty: _menuDifficulty,
+        // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval "OR po
+        // wszystkich miastach gracza" — jednostka w polu (bez konkretnego garnizonu) może
+        // zastąpić się jednostką morską, gdy KTÓREKOLWIEK miasto gracza ma dostęp do wody
+        // (ten sam wzorzec unii co builtBuildingIds wyżej).
+        cityHasCoastOrRiver: cities.some(c => c.ownerId === 0 && cityHasCoastOrRiverAccess(c)),
       });
     }
 
@@ -5121,6 +5258,43 @@ async function boot(): Promise<void> {
       return buildPlayerDiploRelations()
         .map(diploListEntryFromRelation)
         .filter((e): e is DiploListEntry => e !== null);
+    }
+
+    /**
+     * R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA (Maciej 2026-08-09) — dane pop-upu
+     * podsumowania pary dyplomatycznej dla `ownerId` (cywilizacja kliknięta na liście),
+     * pokazywanego PRZED pełną audiencją.
+     *
+     * B2 (Evaluator runda 1, mgła wojny): `isVisiblePartner` odcina partnerów wojny/
+     * sojuszu/handlu, których gracz NIGDY nie spotkał lub którzy zostali wyeliminowani —
+     * ten sam warunek widoczności co istniejące kolektory `collectWarsWithPlayer`/
+     * `collectKnownWarsBetweenOthers` (`isActiveDiploOwner` + `getDiplomaticContacts()`),
+     * z JEDNYM świadomym wyjątkiem: gracz (id===0) jest zawsze widoczny — patrz komentarz
+     * przy `DiploPairSummaryPartner.isPlayer` w `ui/diplomacyPanel.ts` (decyzja B2).
+     */
+    function buildDiploPairSummaryData(ownerId: number): DiploPairSummaryData | null {
+      if (!isActiveDiploOwner(ownerId)) return null;
+      const isVisiblePartner = (id: number): boolean =>
+        id === 0 || (isActiveDiploOwner(id) && getDiplomaticContacts().has(id));
+      const toPartner = (id: number): DiploPairSummaryPartner => ({
+        ownerId: id,
+        name: ownerDiploLabel(id),
+        isPlayer: id === 0,
+      });
+      const wars = warPartnerIdsForOwner(diplomacyRelations, ownerId, isVisiblePartner).map(toPartner);
+      const alliances = dealPartnerIdsForOwner(activeDeals, ownerId, 'sojusz', isVisiblePartner).map(toPartner);
+      const deals = dealPartnerIdsForOwner(activeDeals, ownerId, 'handel', isVisiblePartner).map(toPartner);
+      const rel = getDiploRelation(0, ownerId);
+      return {
+        ownerId,
+        civName: ownerDiploLabel(ownerId),
+        ikonaId: civTypeForOwner(ownerId),
+        kolorHex: civKolorHexFn(ownerId),
+        tier: relationTier(rel),
+        wars,
+        alliances,
+        deals,
+      };
     }
 
     function buildPlayerDiploSummary(): DiploPlayerSummary {
@@ -5554,6 +5728,9 @@ async function boot(): Promise<void> {
             zywnoscReserve: parseInt(hs.zywnoscLabel, 10) || 0,
             zywnoscRate: hs.zywnoscRate ?? 0,
             kulturaRate: hs.kulturaRate ?? 0,
+            // R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY: ZAPAS Kultury (nagromadzona),
+            // ta sama liczba co duża wartość na głównym HUD mapy.
+            kultura: hs.kultura ?? 0,
             religionStock: relAgg.stateAdherents,
             religionRate: relAgg.spreadRateTotal,
             stateReligion: stateRel,
@@ -7090,8 +7267,23 @@ async function boot(): Promise<void> {
       return isPeaceTreatyLocked(getDiploPairMeta(a, b), turn);
     }
 
-    /** Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur. */
-    function finalizePeaceTreatyBetween(proposerId: number, responderId: number): void {
+    /**
+     * Zawarcie pokoju + blokada DOW na PEACE_TREATY_LOCK_TURNS tur (lub `lockTurnsOverride`,
+     * jeśli podane).
+     * `lockTurnsOverride` — R-EPOKA-BRAZU-WYMUSZONA-WOJNA: auto-pokój wojny wymuszonej
+     * używa `WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR` zamiast domyślnego
+     * `PEACE_TREATY_LOCK_TURNS` — reużywa TEN SAM mechanizm blokady DOW
+     * (isPeaceLockedBetween/DiploPairMeta.peaceUntilTurn), tylko z inną liczbą tur dla tej
+     * pary. Brak parametru = zachowanie bez zmian (domyślne PEACE_TREATY_LOCK_TURNS).
+     * EN: `lockTurnsOverride` — forced-war auto-peace uses a custom cooldown for this ONE
+     * pair instead of the default lock length; same underlying DOW-block mechanism either
+     * way. Omitted = unchanged behavior (default PEACE_TREATY_LOCK_TURNS).
+     */
+    function finalizePeaceTreatyBetween(
+      proposerId: number,
+      responderId: number,
+      lockTurnsOverride?: number,
+    ): void {
       const cur = getDiploRelation(proposerId, responderId);
       setDiploRelation(
         proposerId,
@@ -7101,8 +7293,25 @@ async function boot(): Promise<void> {
       setDiploPairMeta(
         proposerId,
         responderId,
-        startPeaceTreatyLock(getDiploPairMeta(proposerId, responderId), turn),
+        startPeaceTreatyLock(
+          getDiploPairMeta(proposerId, responderId),
+          turn,
+          lockTurnsOverride,
+        ),
       );
+      // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: pokój między tą parą (jakkolwiek zawarty — auto-pokój
+      // po progu miast LUB zwykła negocjacja AI/gracza) kończy ewentualną aktywną wojnę
+      // wymuszoną — sprzątamy stan i uzbrajamy odpoczynek napastnika PRZED szukaniem
+      // kolejnego celu. Pary bez wojny wymuszonej: no-op (bez zmiany istniejącego zachowania).
+      // EN: peace between this pair (however reached — city-threshold auto-peace or a normal
+      // AI/player negotiation) ends any active forced war — clean up state and arm the
+      // attacker's rest timer. Pairs without a forced war: no-op, unchanged behavior.
+      const bronzePairKey = diploPairKey(proposerId, responderId);
+      const bronzeSt = bronzeForceWarActiveByPairKey.get(bronzePairKey);
+      if (bronzeSt) {
+        bronzeForceWarActiveByPairKey.delete(bronzePairKey);
+        bronzeForceWarRestUntilByOwner.set(bronzeSt.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
+      }
     }
 
     // -------------------------------------------------------------------------
@@ -7504,14 +7713,15 @@ async function boot(): Promise<void> {
         for (const t of basketTransferCtx.researchedByOwner.get(0) ?? []) {
           player.zbadane.add(t);
         }
-        // #66: tech-kamień milowy z dyplomacji ma awansować epokę gracza tą samą ścieżką
-        // co własne badanie (playerState.researchStep) — inaczej zbadane/era się rozjeżdżają
-        // (Ludy Morza itp. gatują po era).
+        // #66 + R-EPOKA-CUD-WARUNEK-AWANSU: awans liczony wyłącznie przez
+        // reconcilePlayerEraFromResearch (komplet tech epoki + cud E), nie przez
+        // pojedynczy eraAdvanceTarget — ta sama ścieżka co własne badanie
+        // (playerState.researchStep) i handel technologiami przez akcję 6, inaczej
+        // zbadane/era się rozjeżdżają (Ludy Morza itp. gatują po era).
         const grantedDef = data.tech.find(t => t.Technologia === techId);
         if (grantedDef) {
           const prevPlayerEra = player.era;
-          const awansTarget = eraAdvanceTarget(grantedDef);
-          if (awansTarget !== null) player.era = Math.max(player.era, awansTarget);
+          reconcilePlayerEraFromResearch();
           if (shouldNotifyPlayerEraChange(prevPlayerEra, player.era)) {
             overlayDepositEra = player.era;
             rebuildResourceOverlays();
@@ -10571,6 +10781,16 @@ async function boot(): Promise<void> {
         const oldOwner = city.ownerId;
         applyPostCaptureLawOnCapture(city, newOwner, oldOwner);
         city.ownerId = newOwner;
+        // B1 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): kapitulacja głodowa
+        // to DRUGIE (obok applyCityCaptureToMap) miejsce, gdzie city.ownerId się zmienia w
+        // wyniku wojny — dla par AI↔AI to dziś JEDYNA droga zakończenia wojny poza tym
+        // licznikiem (negocjacje pokojowe obsługują wyłącznie targetId===0), więc pominięcie
+        // tego haka tutaj = wojna wymuszona AI↔AI, która nigdy się nie kończy.
+        // EN: starvation surrender is the SECOND place (besides applyCityCaptureToMap)
+        // where city.ownerId changes due to war — for AI↔AI pairs this is TODAY the only
+        // path to end a forced war outside this counter (peace negotiations only handle
+        // targetId===0), so skipping this hook here means an AI↔AI forced war that never ends.
+        maybeResolveBronzeForcedWarOnCityCapture(oldOwner, newOwner);
         if (city.rebelState) city.rebelState = false;
         // B2 (Evaluator RUNDA 1: FAIL): zdobycie przez oblężenie na mapie musi
         // zresetować override i zsynchronizować pola z globalnym defaultem NOWEGO
@@ -13303,6 +13523,10 @@ async function boot(): Promise<void> {
       }
       if (isDiplomacyPanelOpen()) hideDiplomacyPanel();
       if (isDiploListHudOpen()) hideDiploListHud();
+      // N4 (R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA, Evaluator runda 3): ta funkcja
+      // (wołana m.in. z selectPlayerUnit) zamykała audiencję/panel/listę, ale NIE nowy
+      // pop-up podsumowania pary — dodane dla parytetu z resztą UI dyplomacji.
+      if (isDiploPairSummaryOpen()) hideDiploPairSummary();
     }
 
     /** Kontakt dyplomatyczny = automatyczny przy odkryciu na mapie (Maciej 2026-07-28). */
@@ -15227,6 +15451,11 @@ async function boot(): Promise<void> {
     }
 
     function openDiplomacyAudience(ownerId: number): void {
+      // N2 (R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA, Evaluator): pop-up podsumowania
+      // pary NIE chowa się sam, gdy audiencja jest otwierana z innej ścieżki niż jego
+      // własny przycisk (5 miejsc wywołania `openDiplomacyAudience` w kodzie) — jeden
+      // strażnik tutaj pokrywa je wszystkie naraz.
+      if (isDiploPairSummaryOpen()) hideDiploPairSummary();
       if (isDiploListHudOpen()) hideDiploListHud();
       diplomacyAudienceOwnerId = ownerId;
       const playerCivName = civDisplayNameForKey(civTypeForOwner(0));
@@ -16043,8 +16272,18 @@ async function boot(): Promise<void> {
         getEntries: buildPlayerDiploListEntries,
         getPlayerSummary: buildPlayerDiploSummary,
         onSelectEntry: (ownerId) => {
+          // R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA: krok pośredni — pop-up
+          // podsumowania (wojny/sojusze/handel) PRZED pełną audiencją, nie audiencja
+          // wprost (Maciej 2026-08-09).
           hideDiploListHud();
-          openDiplomacyAudience(ownerId);
+          showDiploPairSummary({
+            getData: () => buildDiploPairSummaryData(ownerId),
+            onOpenAudience: (oid) => {
+              openDiplomacyAudience(oid);
+              refreshD1bHud();
+            },
+            onClose: () => refreshD1bHud(),
+          });
           refreshD1bHud();
         },
         onFocusCapital: handleDiploFocusCapital,
@@ -17375,12 +17614,16 @@ async function boot(): Promise<void> {
           evKind = 'science';
           const prevPlayerEra = player.era;
           const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+          // R-EPOKA-CUD-WARUNEK-AWANSU: era gracza przeliczana pełną bramką PO researchStep
+          // (komplet tech epoki + cud E), nie przez surowy awansDoEpoki ustawiony wewnątrz
+          // researchStep — ta sama ścieżka co koniec tury i handel technologiami.
+          reconcilePlayerEraFromResearch();
           for (const done of step.completed) {
             summary += ' \xb7 zbadano ' + done.id;
           }
           const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
           villageEraAdvanced = eraAdvanced;
-          if (step.completed.some(d => d.awansEpoki)) {
+          if (eraAdvanced) {
             overlayDepositEra = player.era;
             rebuildResourceOverlays();
             setEra(player.era);
@@ -19915,6 +20158,17 @@ async function boot(): Promise<void> {
       // (PRZED tym wywołaniem — snapshot musi być liczony zanim tu wyzerujemy stan).
       capitalCityIdByOwner.delete(ownerId);
       zdobyczePowerByOwner.delete(ownerId);
+      // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: cywilizacja skasowana — usuń ją ze WSZYSTKICH
+      // struktur stanu mechanizmu (pending/cycle/rest jako owner, aktywne pary jako którakolwiek
+      // ze stron), żeby po eliminacji nie próbował dalej wypowiadać/kończyć wojen w jej imieniu.
+      bronzeForceWarPendingOwners.delete(ownerId);
+      bronzeForceWarCycleOwners.delete(ownerId);
+      bronzeForceWarRestUntilByOwner.delete(ownerId);
+      for (const [key, st] of Array.from(bronzeForceWarActiveByPairKey.entries())) {
+        if (st.attackerId === ownerId || st.targetId === ownerId) {
+          bronzeForceWarActiveByPairKey.delete(key);
+        }
+      }
 
       for (const key of Array.from(diplomacyRelations.keys())) {
         if (diploPairKeyHasOwner(key, ownerId)) diplomacyRelations.delete(key);
@@ -20033,6 +20287,51 @@ async function boot(): Promise<void> {
       markCityStateDirty();
     }
 
+    /**
+     * R-EPOKA-BRAZU-WYMUSZONA-WOJNA: licznik miast zdobytych/straconych dla WOJNY WYMUSZONEJ
+     * między tą konkretną parą (jeśli aktywna) — przy progu `WOJNA_WYMUSZONA_MAX_MIASTA_
+     * ZDOBYTE_LUB_STRACONE` w dowolną stronę zawiera automatyczny pokój (reużywa
+     * finalizePeaceTreatyBetween z niestandardowym cooldownem tej pary) i uzbraja odpoczynek
+     * napastnika (`bronzeForceWarRestUntilByOwner`) przed szukaniem kolejnego celu. Wojny
+     * NIEwymuszone (para spoza bronzeForceWarActiveByPairKey) — no-op, bez zmiany zachowania.
+     * B1 (Evaluator FAIL runda 1): jedyny WSPÓLNY punkt liczenia — wołany z OBU miejsc, które
+     * mutują city.ownerId w wyniku wojny (applyCityCaptureToMap I resolveSiegeSurrender), żeby
+     * kapitulacja głodowa AI↔AI nie gubiła licznika (bez tego wojna wymuszona AI↔AI nigdy się
+     * nie kończy — negocjacje pokojowe obsługują wyłącznie targetId===0).
+     * EN: city capture/loss counter for THIS specific forced-war pair (if active) — hitting
+     * the threshold either way auto-concludes peace (custom per-pair cooldown) and arms the
+     * attacker's rest timer. Non-forced wars (pair absent from the map): no-op. B1: the single
+     * SHARED point — called from BOTH places that mutate city.ownerId due to war
+     * (applyCityCaptureToMap AND resolveSiegeSurrender), so starvation surrender between two
+     * AI civs doesn't lose the counter (peace negotiations only handle targetId===0).
+     */
+    function maybeResolveBronzeForcedWarOnCityCapture(oldOwner: number, newOwner: number): void {
+      if (oldOwner === newOwner) return;
+      const pairKey = diploPairKey(oldOwner, newOwner);
+      const st = bronzeForceWarActiveByPairKey.get(pairKey);
+      if (!st) return;
+      if (newOwner === st.attackerId) st.capturedByAttacker++;
+      else if (newOwner === st.targetId) st.capturedByDefender++;
+      else return;
+      if (!shouldEndBronzeForcedWarByCityCount(st.capturedByAttacker, st.capturedByDefender)) return;
+      if (getDiploRelation(st.attackerId, st.targetId).status !== 'wojna') {
+        // Relacja już nie 'wojna' (np. rozstrzygnięta inaczej wcześniej w tej samej turze)
+        // — finalizePeaceTreatyBetween nie ma czego kończyć, sprzątamy stan bezpośrednio.
+        bronzeForceWarActiveByPairKey.delete(pairKey);
+        bronzeForceWarRestUntilByOwner.set(st.attackerId, turn + WOJNA_WYMUSZONA_ODPOCZYNEK_TUR);
+        return;
+      }
+      console.log(
+        `[Dyplomacja] R-EPOKA-BRAZU-WYMUSZONA-WOJNA: auto-pokój AI${st.attackerId}↔AI${st.targetId} `
+        + `(zdobyte ${st.capturedByAttacker}/stracone ${st.capturedByDefender})`,
+      );
+      // finalizePeaceTreatyBetween sprząta bronzeForceWarActiveByPairKey + uzbraja
+      // bronzeForceWarRestUntilByOwner centralnie (patrz definicja funkcji wyżej).
+      finalizePeaceTreatyBetween(
+        st.attackerId, st.targetId, WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
+      );
+    }
+
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
     function applyCityCaptureToMap(
       city: City,
@@ -20052,6 +20351,7 @@ async function boot(): Promise<void> {
         // z globalnym defaultem NOWEGO właściciela (nie zostać przy wartościach starego).
         { civKeyForOwner: civKeyForOwnerId, onOwnerChanged: seedCityOwnerDefaults },
       );
+      maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
       if (sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
         cityRelig.set(
           city.id,
@@ -20664,6 +20964,14 @@ async function boot(): Promise<void> {
       for (const [key, rel] of diplomacyRelations.entries()) diploSave[key] = rel;
       const savedAt = new Date().toISOString();
       const marchSave = plannedMarchesToSave(plannedMarches);
+      // B5 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): serializacja CZYSTA
+      // (forced-war-bronze.ts) — patrz forced-war-bronze-test.cjs dla dowodu roundtrip.
+      const bronzeForceWarSave = serializeBronzeForcedWarState(
+        bronzeForceWarPendingOwners,
+        bronzeForceWarCycleOwners,
+        bronzeForceWarRestUntilByOwner,
+        bronzeForceWarActiveByPairKey,
+      );
       return {
         wersja: 2,
         tura: turn,
@@ -20763,6 +21071,13 @@ async function boot(): Promise<void> {
           aiNaukaPoolByOwner: Array.from(aiNaukaPoolByOwner.entries()),
           aiBadanaByOwner: Array.from(aiBadanaByOwner.entries()),
           zdobyczePowerByOwner: Array.from(zdobyczePowerByOwner.entries()),
+          // B5 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): 4 struktury stanu
+          // wojny wymuszonej Brązu — bez tego wpisu/odtworzenia licznik miast, cykl i
+          // odpoczynek zerują się po każdym save/load (patrz restoreGameFromSave niżej).
+          bronzeForceWarPendingOwners: bronzeForceWarSave.pendingOwners,
+          bronzeForceWarCycleOwners: bronzeForceWarSave.cycleOwners,
+          bronzeForceWarRestUntilByOwner: bronzeForceWarSave.restUntilByOwner,
+          bronzeForceWarActiveByPairKey: bronzeForceWarSave.activeByPairKey,
           lootedVillageHexKeys: Array.from(lootedVillageHexKeys),
           eliminatedOwners: Array.from(eliminatedOwners),
           ownerEraByOwner: Array.from(ownerEraByOwner.entries()),
@@ -21166,6 +21481,17 @@ async function boot(): Promise<void> {
           const tradeIncomeByCity = computeTradeRouteIncomeByCity(
             tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner,
           );
+          // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09, część A): dopisz bonus
+          // Pieniądza za KAŻDY aktywny szlak morski miasta ponad pierwszy (patrz komentarz
+          // przy PORT_SEA_TRADE_BONUS_PIENIADZ, trade-routes.ts) do TEGO SAMEGO wiadra co
+          // dochód dystansowy z tras — pieniadzZTras w turn-economy.ts sumuje oba bez zmian
+          // w sygnaturach advanceCityEconomy.
+          const seaTradeBonusIncomeByCity = computeSeaTradeBonusIncomeByCity(
+            computeSeaTradeRouteCountByCity(tradeRoutes),
+          );
+          for (const [cityIdSea, bonusSea] of seaTradeBonusIncomeByCity) {
+            tradeIncomeByCity.set(cityIdSea, (tradeIncomeByCity.get(cityIdSea) ?? 0) + bonusSea);
+          }
 
           const mapOwnerIds = ownerIdsOnMap();
           const zlotoAccessForMennicaTick = prepareMennicaZlotoGraceForTick(
@@ -21648,6 +21974,9 @@ async function boot(): Promise<void> {
             // Auto-research: spend banked science on the cheapest available tech.
             const prevPlayerEra = player.era;
             const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+            // R-EPOKA-CUD-WARUNEK-AWANSU: bramka pełna (komplet tech epoki + cud E) —
+            // przeliczana PO researchStep, przed decyzją o notyfikacji awansu.
+            reconcilePlayerEraFromResearch();
             const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
             for (const done of step.completed) {
               const doneIcon = techIconSvg(done.id, 16);
@@ -22967,6 +23296,10 @@ async function boot(): Promise<void> {
                   hasNapTreaty: hasTreaty(
                     activeDeals, ownerId, otherId, RodzajTraktatu.PaktNieagresji,
                   ),
+                  // B3 (R-EPOKA-BRAZU-WYMUSZONA-WOJNA runda 2, Evaluator FAIL): sojusz z tym
+                  // partnerem blokuje wymuszoną wojnę Brązu (main.ts bronzeBlockedOwnerIds +
+                  // ai.ts guard) — cywilizacje nie mają zrywać własnych sojuszy tym mechanizmem.
+                  hasAllianceTreaty: allianceFormalKindBetween(activeDeals, ownerId, otherId) !== null,
                   resourceTradeOffer: resTradeAi
                     ? {
                         surowiecKey: resTradeAi.surowiecKey,
@@ -23179,6 +23512,84 @@ async function boot(): Promise<void> {
                     }
                   }
                 }
+                // R-EPOKA-BRAZU-WYMUSZONA-WOJNA (2026-08-09): wymuszona wojna głównej
+                // cywilizacji z sąsiadem terytorialnym — (a) jednorazowo przy awansie do
+                // Brązu (bronzeForceWarPendingOwners, ustawione w syncOwnerEraFromResearch),
+                // (b) cyklicznie po odpoczynku od poprzedniej wojny wymuszonej (owner już
+                // zapisany do bronzeForceWarCycleOwners). Miasta-państwa/kopie i barbarzyńcy
+                // wykluczeni; cel = najbliższa główna cywilizacja niezablokowana NAP/
+                // peaceLocked/sojuszem (B3, runda 2) (patrz `game/forced-war-bronze.ts`).
+                // B4 (runda 2, Evaluator FAIL): `wasPending` jest TYLKO ODCZYTEM — pending
+                // NIE jest tu kasowany. Jeśli ta próba nie zakończy się faktycznym udanym
+                // wypowiedzeniem wojny (bo owner już jest w wojnie z innego powodu, albo
+                // wszyscy kandydaci zablokowani), wpis zostaje w mapie i próba ponawia się
+                // w kolejnej turze — konsumpcja (delete) następuje WYŁĄCZNIE w bloku
+                // wypowiedz_wojne niżej, przy faktycznym sukcesie.
+                // EN: Bronze-era forced war on a territorial neighbor — (a) one-shot on Bronze
+                // advance, (b) cyclic after resting from a previous forced war. City-states/
+                // copies/barbarians excluded; target = nearest major civ not NAP/peaceLocked/
+                // allied (B3, round 2). B4 (round 2): `wasPending` is READ-ONLY here — pending
+                // is NOT deleted at this point; it is only consumed on an actual successful war
+                // declaration in the wypowiedz_wojne block below, so a civ that happens to
+                // already be at war (or has every candidate blocked) is retried next turn
+                // instead of permanently losing its one shot.
+                let bronzeForceWarTargetId: number | undefined;
+                if (
+                  ownerId > 0
+                  && !typCityCopyOwners.has(ownerId)
+                  && !isBarbarian(ownerId)
+                  && !eliminatedOwners.has(ownerId)
+                  && !isOwnerClusterCityState(ownerId, ownerCityStateOpts())
+                ) {
+                  const wasPending = bronzeForceWarPendingOwners.has(ownerId);
+                  const alreadyAtWarAnyRole = countActiveWarsForOwner(ownerId) > 0;
+                  const hasActiveForcedWarAsAttacker = [...bronzeForceWarActiveByPairKey.values()]
+                    .some(st => st.attackerId === ownerId);
+                  const searchingAfterRest = !wasPending
+                    && bronzeForceWarCycleOwners.has(ownerId)
+                    && !hasActiveForcedWarAsAttacker
+                    && !alreadyAtWarAnyRole
+                    && !isRestingFromBronzeForcedWar(turn, bronzeForceWarRestUntilByOwner.get(ownerId));
+                  const shouldSearch = wasPending
+                    ? isEligibleForBronzeForcedWar({ isMainAiCiv: true, isAlreadyAtWarAnyRole: alreadyAtWarAnyRole })
+                    : searchingAfterRest;
+                  if (shouldSearch) {
+                    const refCity = cities.find(c => c.ownerId === ownerId);
+                    const bronzeCandidates = aiOwnerList
+                      .filter(oid =>
+                        oid !== ownerId
+                        && oid > 0
+                        && !typCityCopyOwners.has(oid)
+                        && !isBarbarian(oid)
+                        && !eliminatedOwners.has(oid)
+                        && !isOwnerClusterCityState(oid, ownerCityStateOpts()),
+                      )
+                      .map(oid => {
+                        const c = cities.find(cc => cc.ownerId === oid);
+                        return c ? { ownerId: oid, q: c.q, r: c.r } : null;
+                      })
+                      .filter((c): c is { ownerId: number; q: number; r: number } => c !== null);
+                    // B3 (runda 2, Evaluator FAIL): sojusz z kandydatem blokuje wybór — obok
+                    // istniejącego NAP/peaceLocked, tym samym allianceFormalKindBetween co
+                    // zasila hasAllianceTreaty w relacjeDip AI↔AI wyżej.
+                    const bronzeBlockedOwnerIds = new Set(
+                      bronzeCandidates
+                        .filter(c =>
+                          hasTreaty(activeDeals, ownerId, c.ownerId, RodzajTraktatu.PaktNieagresji)
+                          || isPeaceLockedBetween(ownerId, c.ownerId)
+                          || allianceFormalKindBetween(activeDeals, ownerId, c.ownerId) !== null,
+                        )
+                        .map(c => c.ownerId),
+                    );
+                    const bronzePicked = pickBronzeForcedWarTargetId(
+                      bronzeCandidates,
+                      refCity ? { q: refCity.q, r: refCity.r } : undefined,
+                      hexDistance,
+                      { blockedOwnerIds: bronzeBlockedOwnerIds },
+                    );
+                    if (bronzePicked != null) bronzeForceWarTargetId = bronzePicked;
+                  }
+                }
                 const diploInp: DiplomacjaInputs = {
                   myPlayerId: String(ownerId),
                   relacje: relacjeDip,
@@ -23194,6 +23605,7 @@ async function boot(): Promise<void> {
                   fullDiplomacyLayer: dipLayer === 'full',
                   isMinorCivSelf: isOwnerClusterCityState(ownerId, ownerCityStateOpts()),
                   clusterForceWarTargetId,
+                  bronzeForceWarTargetId,
                 };
                 const dipCmdsRaw = decideAIDiplomacy(
                   diploInp, undefined, diffParamsDip.agresjaMnoznik, diffParamsDip.dyplomacjaAktywnosc,
@@ -23237,6 +23649,27 @@ async function boot(): Promise<void> {
                         ownerId, targetId, getDiploRelation(ownerId, targetId), 'wojna_wypowiedziana',
                       );
                       setDiploRelation(ownerId, targetId, newRel);
+                      // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: ta konkretna wojna wypowiedziana =
+                      // wymuszona (targetId dokładnie ten, który wybrał pickBronzeForcedWarTargetId
+                      // dla ownerId w tej turze) — zapisz stan do liczników auto-pokoju i zapisz
+                      // ownerId na stałe do cyklu (kolejne wojny po odpoczynku, patrz wyżej).
+                      // B4 (runda 2, Evaluator FAIL): TU, i TYLKO TU (faktyczny sukces), pending
+                      // zostaje skonsumowany — nie przy samej próbie wyżej.
+                      // EN: this specific war declaration = the forced one (targetId matches
+                      // what pickBronzeForcedWarTargetId chose for ownerId this turn) — record
+                      // auto-peace counters and enroll ownerId in the cycle permanently. B4
+                      // (round 2): pending is consumed HERE, and ONLY here (actual success) —
+                      // not on the mere attempt above.
+                      if (bronzeForceWarTargetId != null && targetId === bronzeForceWarTargetId) {
+                        bronzeForceWarActiveByPairKey.set(diploPairKey(ownerId, targetId), {
+                          attackerId: ownerId, targetId, capturedByAttacker: 0, capturedByDefender: 0,
+                        });
+                        bronzeForceWarCycleOwners.add(ownerId);
+                        bronzeForceWarPendingOwners.delete(ownerId);
+                        console.log(
+                          `[Dyplomacja] R-EPOKA-BRAZU-WYMUSZONA-WOJNA: AI${ownerId} wypowiada wymuszoną wojnę sąsiadowi AI${targetId}`,
+                        );
+                      }
                       if (targetId === 0 || ownerId === 0) {
                         pruneTributeNegotiationsBetween(ownerId, targetId);
                         recordWarDeclarationEvent(ownerId, targetId);
@@ -26185,6 +26618,25 @@ async function boot(): Promise<void> {
       if (savedZdobycze?.length) {
         for (const [oid, n] of savedZdobycze) zdobyczePowerByOwner.set(oid, n);
       }
+      // B5 (Evaluator FAIL runda 1, R-EPOKA-BRAZU-WYMUSZONA-WOJNA): odtworzenie CZYSTĄ
+      // funkcją (forced-war-bronze.ts) — brak `saved.meta?.bronzeForceWar*` (stary zapis
+      // sprzed tej naprawy) daje bezpieczny pusty stan (mechanizm po prostu nieaktywny dla
+      // tej gry), nie wyjątek. Patrz forced-war-bronze-test.cjs dla dowodu roundtrip.
+      const bronzeForceWarRestored = restoreBronzeForcedWarState({
+        pendingOwners: saved.meta?.bronzeForceWarPendingOwners as number[] | undefined,
+        cycleOwners: saved.meta?.bronzeForceWarCycleOwners as number[] | undefined,
+        restUntilByOwner: saved.meta?.bronzeForceWarRestUntilByOwner as Array<[number, number]> | undefined,
+        activeByPairKey: saved.meta?.bronzeForceWarActiveByPairKey as
+          Array<[string, BronzeForcedWarPairState]> | undefined,
+      });
+      bronzeForceWarPendingOwners.clear();
+      for (const oid of bronzeForceWarRestored.pendingOwners) bronzeForceWarPendingOwners.add(oid);
+      bronzeForceWarCycleOwners.clear();
+      for (const oid of bronzeForceWarRestored.cycleOwners) bronzeForceWarCycleOwners.add(oid);
+      bronzeForceWarRestUntilByOwner.clear();
+      for (const [oid, t] of bronzeForceWarRestored.restUntilByOwner) bronzeForceWarRestUntilByOwner.set(oid, t);
+      bronzeForceWarActiveByPairKey.clear();
+      for (const [key, st] of bronzeForceWarRestored.activeByPairKey) bronzeForceWarActiveByPairKey.set(key, st);
       // Audyt #13: reaplikuj zlupienie wiosek na (ewentualnie świeżo zregenerowanej
       // z seeda) mapie -- generator/placeVillages zawsze stawia je jako istnieje=true.
       lootedVillageHexKeys.clear();

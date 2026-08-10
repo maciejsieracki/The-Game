@@ -115,6 +115,7 @@ import {
 } from './production';
 import {
   builtIdsForSpichlerzYields,
+  cityHasSpichlerzBuilding,
   filterRuntimeActiveBuiltIds,
   paySpichlerzDrainForCity,
   resolveSpichlerzCityBonusState,
@@ -331,7 +332,8 @@ export function buildEconParams(data: GameData, difficulty: Difficulty = 'normal
     progWzrostuWspolczynnik:        num(em, 'próg_wzrostu_wspolczynnik', 16),
     spichlerzZachowaniePoPrzroscie: num(em, 'spichlerz_zachowanie_po_wzroscie', 0.5),
     akweduktProgLudnosci:           num(em, 'akwedukt_prog_ludnosci', 5),
-    akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 15),
+    spichlerzProgLudnosci:          num(em, 'spichlerz_prog_ludnosci', 8),
+    akweduktMaxLudnosci:            num(em, 'akwedukt_max_ludnosci', 12),
     zywnoscZuzytkaPopulacja:        num(em, 'zywnosc_zuzytka_populacja', 1),
     zdrowieModyfikatorWspolczynnik: num(em, 'zdrowie_modyfikator_wspolczynnik', 0.05),
     korupcjaWspolczynnikDystansu:   num(em, 'korupcja_wspolczynnik_dystansu', 2),
@@ -1340,7 +1342,7 @@ function simulateCeramikaAfterSpichlerzDrains(
   for (const city of cities) {
     if (city.ownerId !== ownerId) continue;
     const builtIds = builtByCity.get(city.id) ?? [];
-    const hasSpichlerz = builtIds.includes('spichlerz') || builtIds.includes('spichlerz_ii');
+    const hasSpichlerz = cityHasSpichlerzBuilding(builtIds);
     if (hasSpichlerz && ceramika >= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN) {
       ceramika -= SPICHLERZ_DRAIN_CERAMIKA_PER_TURN;
     }

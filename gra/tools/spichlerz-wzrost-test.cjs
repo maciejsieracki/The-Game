@@ -54,6 +54,7 @@ const params = {
   progWzrostuWspolczynnik: 8,
   spichlerzZachowaniePoPrzroscie: 0.5,
   akweduktProgLudnosci: 6,
+  spichlerzProgLudnosci: 8,
   zdrowieModyfikatorWspolczynnik: 0.05,
 };
 

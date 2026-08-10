@@ -421,6 +421,13 @@ export interface AvailabilityContext {
    * Portu/Portu wielkiego (`WATER_ACCESS_BUILDING_IDS`, building-resource-gate.ts). Per-miasto
    * (nie imperium — lokalizacja portu jest stała), WYLICZONE przez wołającego (main.ts zna
    * mapę, ten moduł jest pure-logic) — patrz main.ts `cityHasCoastOrRiverAccess`.
+   *
+   * DRUGIE ZASTOSOWANIE (R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE, Maciej 2026-08-09): to samo pole
+   * bramkuje też jednostki `Typ='Naval'` (np. Galera) w `availableProduction()` i
+   * `availableReplacementsFor()`/`passesAvailabilityGates()` — miasto bez dostępu do wody nie
+   * może budować/rekrutować/zastępować jednostkami morskimi. Rzeka liczy się tak samo jak morze
+   * (decyzja Macieja) — jedna, wspólna flaga dla obu bramek (budynki wodne + jednostki Naval),
+   * nie osobne pole.
    */
   cityHasCoastOrRiver?: boolean;
   /**
@@ -850,6 +857,12 @@ export function availableProduction(
     // zelazo-access.ts dla odlewni), inaczej ulepszenie odbiera miastu Braz.
     if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) continue;
+    // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): jednostki morskie (Typ='Naval',
+    // np. Galera) wymagają, żeby TO miasto miało dostęp do wody (morze LUB rzeka) — ten sam
+    // wzorzec co Koszary gate wyżej, ale bramkuje Typ jednostki, nie epokę. `ctx.cityHasCoastOrRiver`
+    // liczone przez wołającego (main.ts `cityHasCoastOrRiverAccess`), patrz doc-komentarz w
+    // AvailabilityContext.
+    if ((u.Typ ?? '').toString().trim() === 'Naval' && !ctx.cityHasCoastOrRiver) continue;
     // R-JEDN-DOSTEP-BUG (fix 2026-07-24): units.json Surowiec = 'Brąz'/'Żelazo' (z diakrytykami);
     // porównania niżej są ASCII ('braz'/'zelazo'). Samo .toLowerCase() dawało 'brąz' !== 'braz'
     // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
@@ -942,7 +955,9 @@ export function availableReplacementsFor(
   const ownerId = ctx.ownerId ?? 0;
   const difficulty = ctx.difficulty ?? 'normal';
 
-  /** Bramki wspólne dla A) i B): epoka/nacja/tech/koszary/braz-access. Nie sprawdza Typ. */
+  /** Bramki wspólne dla A) i B): epoka/nacja/tech/koszary/braz-access. Sprawdza Typ TYLKO
+   *  dla bramki wody Naval (R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE) — poza tym nie rozstrzyga
+   *  po Typ (to robi wołający, np. `utyp !== currentTyp` w pętli A) niżej). */
   function passesAvailabilityGates(u: UnitDef): boolean {
     if (epochNumber(u.Epoka) > epoch) return false;
     const nacja = (u.Nacja ?? '').toString().trim();
@@ -954,6 +969,9 @@ export function availableReplacementsFor(
     // Ulepszenie do Akademii wojskowej tez sie liczy (fix #32) — patrz uwaga w availableProduction.
     if (epochNumber(u.Epoka) === 2 && !built.has('koszary')
       && !isBuildingSupersededByUpgrade('koszary', builtList, data.buildings)) return false;
+    // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): identyczna bramka jak w
+    // availableProduction — jednostka morska (Typ='Naval') wymaga dostępu do wody w TYM mieście.
+    if ((u.Typ ?? '').toString().trim() === 'Naval' && !ctx.cityHasCoastOrRiver) return false;
     // R-JEDN-DOSTEP-BUG (fix 2026-07-24): units.json Surowiec = 'Brąz'/'Żelazo' (z diakrytykami);
     // porównania niżej są ASCII ('braz'/'zelazo'). Samo .toLowerCase() dawało 'brąz' !== 'braz'
     // -> bramka dostępu była MARTWA (jednostki brązowe/żelazne budowały się bez dostępu do surowca).
