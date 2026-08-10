@@ -9213,3 +9213,77 @@ rozwiązania na poziomie liczby centrali), niespójność `wzrostProcent` z suro
 racji (nowe, osobne zgłoszenie z Evaluatora) — wszystkie do backlogu, niepilne.
 
 ---
+
+## R-USTAWIENIA-GLOBALNE-LOKALNE + znalezisko B — Operator dostarczył (2026-08-10), DUŻA ZMIANA, czeka na Evaluatora
+
+Worktree `agent-a824f4b28633fbcdd`, branch `fix-praca-global-local`. **304 wywołania narzędzi,
+453k tokenów — potraktować z pełną powagą przy weryfikacji.**
+
+**Znalezisko B — przyczyna INNA niż hipoteza z dispatchu (cichy wyjątek w
+`refreshLiveEmpireRates`) — NIE potwierdzona, Operator jej nie wykluczył w 100% (brak
+środowiska przeglądarki), ale znalazł coś poważniejszego:**
+
+**REALNY BUG SILNIKA, nie tylko cache/HUD.** `turn-economy.ts` — zarówno `previewCityEconomy`
+(podgląd) JAK I `advanceCityEconomy` (**realny silnik końca tury**) liczyły split Pracy z
+`city.podzialPracy?.procentBudynki ?? params.suwakPracaBudynki` — pole `city.podzialPracy`
+istnieje TYLKO gdy miasto ma aktywny lokalny override; bez override cicho spadało na
+STATYCZNY domyślny procent z JSON (70%), **całkowicie ignorując globalny suwak Pracy**. 20
+linii wyżej `toEconomyCity()`/`resolveCityPodzialPracy` już poprawnie rozwiązywał wartość do
+`econCity.podziałPracy`, ale NIKT tego pola nie czytał do arytmetyki. Dokładnie tłumaczy zrzut
+Macieja: `round(6×0,70)=4→doPuli=2`. **To była regresja komitu `8692b61b`** (wpięto resolver
+do `toEconomyCity`, zapomniano przepiąć arytmetykę w DWÓCH miejscach) — i dotyczyła REALNEGO
+SILNIKA, nie tylko wyświetlania — po End Turn liczyłoby się tak samo źle, nie tylko podgląd.
+
+**Naprawa:** w obu miejscach użyto `econCity.podziałPracy.procentBudynki` (rozwiązanego pola)
+zamiast surowego `city.podzialPracy?.procentBudynki ?? default`. Wszyscy callerzy
+`previewCityEconomy`/`advanceCityEconomy` sprawdzeni (C-026).
+
+**Skarbiec/Nauka: bugu formuły NIE MA** (czytały poprawne rozwiązane pole od zawsze) — ale
+Operator znalazł OSOBNY bug: `onPodzialHandluChange` zawsze wymuszał `override=true` przy
+KAŻDEJ zmianie (uniemożliwiając realnie działający globalny suwak) — naprawiony jako część
+budowy UI (warunkowo global/local, jak przy Pracy).
+
+**Defensywne wzmocnienie** (nie potwierdzona przyczyna, realne ryzyko architektoniczne):
+`refreshLiveEmpireRates()` owinięte w `try/catch` — przy wyjątku flaga wraca na `true` (retry)
+zamiast trwale zamrażać cache, błąd do `console.error`. Dotyczy jednym mechanizmem Pracy,
+Skarbca i Nauki (wspólny cache).
+
+**Test regresyjny** `praca-global-default-live-test.cjs` — reprodukuje dokładny scenariusz
+przez `previewCityEconomy` I `advanceCityEconomy`, zweryfikowany że PADA na starym kodzie z
+dokładnie tymi liczbami z raportu, PRZECHODZI po naprawie, plus sprawdza parytet preview/silnik
+i że lokalny override nadal działa.
+
+**UI globalne/indywidualne — mapowanie 3 grup Macieja:**
+- **Praca** — backend już istniał (hooki wpięte), dobudowany przycisk „Indywidualne" w
+  panelu miasta + sekcja „DOMYŚLNY PODZIAŁ PRACY" w panelu „Grecy".
+- **Skarbiec+Nauka** — starszy mechanizm (`empire-handel-split.ts`), globalny suwak na mapie
+  JUŻ ISTNIAŁ, resolver poprawny; naprawiony `onPodzialHandluChange` + nowe hooki override +
+  JEDEN przycisk „Indywidualne" dla całej grupy (zgodnie ze specyfikacją „to jedna grupa").
+- **Żywność** — backend NIE ISTNIAŁ WCALE, zbudowany od zera wzorem architektury Okolicy:
+  nowe pole `City.poziomRacjiOverride`, `resolveCityPoziomRacji`/
+  `broadcastPoziomRacjiToOwnerCities`/`migratePoziomRacjiOnLoad`, `ownerDefaultPoziomRacji`
+  Map + init/save/load, przepisany `onCityRationChange`, przycisk „Indywidualne" (niezależny
+  od istniejącego „Auto Wyżywienie") + sekcja „DOMYŚLNE WYŻYWIENIE" w panelu „Grecy".
+
+**Bramki (wszystkie zielone/identyczne z pre-istniejącym stanem, zweryfikowane `git stash`
+gdzie trzeba):** tsc 0, logic-test 213/213, tech-tree/research/unit-replace/ai-founding
+zielone, `empire-city-defaults-test` (rozszerzony) 45/45, nowy `praca-global-default-live-
+test` 7/7, plus **~20 dalszych bramek** (hud-skarbiec, empire-skarbiec-bilans, hud-miasto-
+stan-cywilizacji, empire-panel-split, stolarnia, tartak-glinianka, oblezenie, waluta-mennica,
+mennica-uspienie, mennica-magazyn, plony-budynkow, owner-economy, cuda-handel, wonder-yields,
+ai-colonization-pop, found-from-village, mp-spawn-ration, camera-zoom-block, ai-war-gate) —
+wszystkie zielone. 7 pre-istniejących czerwonych zweryfikowanych `git stash` jako identyczne.
+
+**Świadomie pominięte/uproszczone (jawnie zgłoszone):** globalny suwak Żywności nie klamruje
+per-city do `maxSafe` przy broadcaście (polega na mechanizmie końca tury); brak testu e2e DOM
+dla nowych przycisków (brak infrastruktury w repo dla analogicznych elementów); nie
+testowano interaktywnie w przeglądarce (brak środowiska graficznego) — **rekomendowany
+playtest wzrokowy po scaleniu**; `effectivePoziomRacji` dodana jako „belt-and-suspenders" wzorem
+istniejącego `effectiveOkolicaFocus" (ten sam wzorzec co przed zmianą, dziś nigdzie realnie
+niewywoływana).
+
+Dispatch NIEZALEŻNEGO Evaluatora (Opus 5) NASTĘPUJE teraz — pełna, rygorystyczna weryfikacja
+ze względu na skalę (7 plików produkcyjnych, w tym REALNA zmiana silnika ekonomii) i ryzyko
+(wpływ na zapisane gry/balans, nie tylko UI).
+
+---
