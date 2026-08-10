@@ -481,6 +481,8 @@ import {
   diagnoseMissingTradeRouteForPartner,
   computeTradeRouteResourceFlow,
   loadTradeRouteResourceFlowParams,
+  computeSeaTradeRouteCountByCity,
+  computeSeaTradeBonusIncomeByCity,
   type TradeRoute,
   type TradeRouteCityRef,
   type TradeRouteParams,
@@ -2941,6 +2943,21 @@ async function boot(): Promise<void> {
       if (ownerTreasury(ownerId) < koszt) return false;
       const city = cities.find(ct => ct.id === cityId);
       if (!city || city.ownerId !== ownerId) return false;
+      // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): siatka bezpieczeństwa —
+      // itemId dociera tu zwykle już przefiltrowany przez purchasableUnits()/availableProduction
+      // (UI pokazuje tylko dostępne pozycje), ale ta funkcja jest wołana bezpośrednio (onPurchaseUnit,
+      // AI rush-buy) bez ponownej weryfikacji terenu, więc dopisujemy tu jawną bramkę: jednostka
+      // Typ='Naval' (Galera) NIE może zostać opłacona w mieście bez dostępu do wody (morze LUB
+      // rzeka) — inaczej gracz/AI obszedłby regułę płacąc mimo że przycisk nie powinien być
+      // widoczny / EN: defense-in-depth — reject a Naval-type purchase for a city without water
+      // access even if it somehow reaches this function outside the normal UI-filtered path.
+      const unitDefForGate = data.units.find(u => u.Jednostka === itemId);
+      if ((unitDefForGate?.Typ ?? '').toString().trim() === 'Naval' && !cityHasCoastOrRiverAccess(city)) {
+        if (ownerId === 0) {
+          showHintMessage('Jednostka morska wymaga dostępu do wody (morze lub rzeka)', 2800);
+        }
+        return false;
+      }
       const ep = empireEpochForOwner(ownerId);
       const mpMults = civManpowerMultsForOwner(ownerId);
       if (!canAffordUnitManpowerEmpire(cities, ownerId, city, ep, UNIT_POPULATION_COST, mpMults.maxMult, itemId)) {
@@ -4886,6 +4903,9 @@ async function boot(): Promise<void> {
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: city.ownerId,
         difficulty: _menuDifficulty,
+        // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval dla
+        // "Zastąp" w garnizonie — per TO miasto (tak jak koszary/braz-access wyżej).
+        cityHasCoastOrRiver: cityHasCoastOrRiverAccess(city),
       });
     }
 
@@ -4917,6 +4937,11 @@ async function boot(): Promise<void> {
         kosztJednostekPace: player.kosztJednostekPace ?? 'niski',
         ownerId: 0,
         difficulty: _menuDifficulty,
+        // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09): bramka Naval "OR po
+        // wszystkich miastach gracza" — jednostka w polu (bez konkretnego garnizonu) może
+        // zastąpić się jednostką morską, gdy KTÓREKOLWIEK miasto gracza ma dostęp do wody
+        // (ten sam wzorzec unii co builtBuildingIds wyżej).
+        cityHasCoastOrRiver: cities.some(c => c.ownerId === 0 && cityHasCoastOrRiverAccess(c)),
       });
     }
 
@@ -21325,6 +21350,17 @@ async function boot(): Promise<void> {
           const tradeIncomeByCity = computeTradeRouteIncomeByCity(
             tradeRoutes, tradeIncomeParams, wonderTradeRouteBonusForOwner,
           );
+          // R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (Maciej 2026-08-09, część A): dopisz bonus
+          // Pieniądza za KAŻDY aktywny szlak morski miasta ponad pierwszy (patrz komentarz
+          // przy PORT_SEA_TRADE_BONUS_PIENIADZ, trade-routes.ts) do TEGO SAMEGO wiadra co
+          // dochód dystansowy z tras — pieniadzZTras w turn-economy.ts sumuje oba bez zmian
+          // w sygnaturach advanceCityEconomy.
+          const seaTradeBonusIncomeByCity = computeSeaTradeBonusIncomeByCity(
+            computeSeaTradeRouteCountByCity(tradeRoutes),
+          );
+          for (const [cityIdSea, bonusSea] of seaTradeBonusIncomeByCity) {
+            tradeIncomeByCity.set(cityIdSea, (tradeIncomeByCity.get(cityIdSea) ?? 0) + bonusSea);
+          }
 
           const mapOwnerIds = ownerIdsOnMap();
           const zlotoAccessForMennicaTick = prepareMennicaZlotoGraceForTick(
