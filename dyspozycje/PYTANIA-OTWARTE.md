@@ -11510,3 +11510,40 @@ albo dodać osobną asercję, że pole NIE jest `undefined` w runtime, nie tylko
 `direction==='own'`, dodać nową ścieżkę w silniku negocjacji (`diplomacy-proposals.ts`)
 aktualizującą ten sam wpis `PendingNegotiation` bez zmiany rundy/`awaitingOwnerId` — edycja w
 miejscu, nie usuń+dodaj-od-nowa. **STATUS: dispatch Sonnet 5 (worktree) w tej samej turze.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — ECHO na 4 pytania (2026-08-10, przed snem Macieja)
+
+**Q1 — ECHO A, ALE z istotnym doprecyzowaniem zmieniającym mechanizm:** „a + Całość
+zapotrzebowania jest ściągana z magazynu, więc dany miasto nie musi mieć dostępu. Wszystkie
+potrzebne surowce dla mieszkańców są ściągane z magazynu." **To NIE jest proste ECHO litery A**
+(„kara od 1. tury epoki bez wyjątku") — to przesuwa całą mechanikę na model analogiczny do
+`zapasyPanstwa` (centralny magazyn imperium, ten sam wzorzec co scentralizowana Żywność), NIE na
+lokalną dostępność per miasto względem terenu/budynku. Innymi słowy: miasto nie potrzebuje własnej
+Glinianki ani rzeki — wystarczy, że IMPERIUM ma surowiec w magazynie centralnym, tak jak dziś
+Żywność jest ściągana z `zapasyPanstwa`, nie liczona per-miasto. **Kara (zgodnie z pierwotnym
+uzasadnieniem A) więc obowiązuje od 1. tury epoki, ale nie generuje niemożliwej-do-uniknięcia
+kary za położenie miasta** — bo dostępność to stan magazynu całego imperium, nie lokalnej
+produkcji tego miasta. Wymaga potwierdzenia przy implementacji: czy magazyn scentralizowany
+(surowce budowlane: Drewno/Kamień/Glina/Ruda/Ceramika/Cegła) już dziś istnieje jako jeden pula
+(sprawdzić `gra/src/game/economy.ts`/`turn-economy.ts` — z wcześniejszego tematu
+P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO w tym samym pliku wynika że TAK, magazyn państwa już
+istnieje dla tych surowców z regułą B: „produkcja z zapasu skarbca, zasypia po wyczerpaniu").
+**Kara aktywuje się dopiero gdy magazyn centralny danego surowca jest PUSTY (0), nie gdy miasto
+nie ma lokalnego dostępu** — analogicznie do dzisiejszej logiki Żywności/Głodu.
+
+**Q2 — ECHO A.** AI (duża + Państwa-Miasta) objęte tą samą zasadą co gracz, identycznie liczone.
+
+**Q3 — ECHO A.** Binarnie per miasto: miasto albo ma pełne pokrycie (magazyn centralny > 0 danego
+surowca), albo nie — kara jednolita, nie proporcjonalna do wielkości niedoboru.
+
+**Q4 — doprecyzowanie, nie czyste A/B:** „widok w panelu surowce + widok w mieście w porzadek pod
+szczęście" — DWA miejsca: (1) panel Surowców (nie `empireDetailPanel.ts` „Wyżywienie ludności" jak
+sugerowała opcja A — osobny, już istniejący panel Surowców, do zlokalizowania), (2) panel miasta,
+pozycjonowane BEZPOŚREDNIO POD sekcją/wierszem Szczęścia. Wymaga rozpoznania: gdzie dokładnie żyje
+„panel surowce" (osobny komponent czy zakładka), i gdzie w panelu miasta jest dziś sekcja Szczęście
+(żeby wstawić nowy wiersz zaraz pod nią, nie gdziekolwiek indziej).
+
+**STATUS: dispatch rozpoznania Sonnet 5 PRZED kodowaniem (worktree)** — zakres większy niż proste
+ECHO, zwłaszcza Q1 (model magazynu centralnego, nie lokalnej dostępności) i Q4 (dwa konkretne
+miejsca UI do zlokalizowania) wymagają potwierdzenia w kodzie przed napisaniem logiki silnika,
+zgodnie z CLAUDE.md §6/§7 „nie zgaduj przy niejednoznaczności".
