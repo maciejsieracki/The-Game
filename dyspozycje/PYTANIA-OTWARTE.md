@@ -9766,6 +9766,21 @@ następuje teraz jako trzeci temat priorytetowy. **Operator (`ab142fc1311978907`
 worktree izolowany, bazowany na świeżo scalonym `1a6f7e79` (może użyć `_maxSafeRationCache`/
 `clampedGrowthBreakdown`, nie budować równoległych mechanizmów).
 
+**Operator dostarczył.** Zakres ustalony przez dochodzenie (temat nie miał wcześniej wpisu w
+rejestrze) — kluczowe ustalenie: `central` (magazyn państwa) jest twardo clampowany do 0
+(`empire-food.ts:255`) niezależnie czy zero jest zdrowe czy oznacza realny deficyt. Scalił w
+`empireDetailPanel.ts` (`renderSpichlerzCentralnySection`) osobny warunek „głód wojska" + rozrzucone
+znaki ⚠ per-miasto w JEDEN komunikat „⚠ Realny niepokryty deficyt żywności" tuż przy liczbie magazynu
+(znak ⚠ w tabeli per-miasto zachowany jako uzupełniający szczegół, nie duplikat). C-039 cross-surface:
+rozszerzył też tooltip chipu HUD „Spichlerz" (`hud.ts`) o ten sam komunikat, zasilany z TEGO SAMEGO
+ticku co panel (`main.ts:buildHudState`) — HUD i panel nie mogą się rozjechać. Świadomie poza zakresem:
+tooltip chipu „Armia" pokazuje tę samą liczbę magazynu ale w kontekście wojskowym, nietknięty,
+udokumentowane. Nowy test `spichlerz-deficyt-scalenie-test.cjs` (19/19, zweryfikowany mutacyjnie przez
+git stash — 10/19 fail na starym kodzie). Bramki: tsc 0, logic-test 213/213,
+`spichlerz-widocznosc-test` 45/45, `spichlerz-cap-citypanel-wiring-test` 12/12; 3 testy z pre-istniejącymi
+porażkami (`empire-food-b5`, `spichlerz-wzrost`, `food-hodowla`) potwierdzone identyczne przed zmianą
+przez git stash — niezwiązane z tym tematem. **Dispatchowany Evaluator (`aef68069325faa691`)**.
+
 ---
 
 ## [PL, 2026-08-10] Hasło „raport" — pełny audyt (agent `aff9b116cf957d004`) + kontrola kompletności
