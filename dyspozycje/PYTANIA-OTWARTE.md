@@ -7420,3 +7420,39 @@ zrobienia w przyszłości, NIE podejmować teraz. Status: BACKLOG, nie dispatcho
 czasu wyraźnego polecenia po tym, jak Maciej sam zmierzy czasy w grze.
 
 ---
+
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — WYJAŚNIENIE: 6 rund NIGDY nie trafiło do żadnej gałęzi (2026-08-10)
+
+**Odkrycie:** nowy Operator (dispatch stackGroupId, BB2=B) zgrepował całą historię gita na
+wszystkich gałęziach i znalazł, że `assignBounceHexesForUnits` na pełnej liście jednostek
+(oryginalny bug „armia się rozpierzcha") nadal jest jedynym kodem w `main.ts` — ŻADNA z 6 rund
+tego tematu (rozpoznanie → ECHO A → 4 rundy FAIL → runda 5 → runda 6) nigdy nie została
+scommitowana. Testy tematu nie istnieją w historii `git log --all`.
+
+**Przyczyna znaleziona:** agent rundy 6 (dispatch „Operator + scalenie" w jednym) doszedł do kroku
+przełączenia się na główne drzewo (`EnterWorktree`), narzędzie odmówiło/przerwało to wywołanie, a
+sesja agenta zakończyła się bez wysłania finalnego raportu — stąd orkiestrator nigdy nie dostał
+notyfikacji o zakończeniu i temat cicho utknął.
+
+**Praca NIE jest stracona.** Zweryfikowane bezpośrednio na dysku:
+- Worktree rundy 5 (`agent-ad689c69f19841e17`) — nietknięty, zawiera oryginalny
+  `army-merge-separate-return-test.cjs` (test funkcjonalny czystych funkcji).
+- Worktree rundy 6 (`agent-a9cfa743629052405`) — nietknięty, zawiera `armyMerge.ts`+`main.ts`
+  (identyczne z rundą 5, bez zmian — B-R5-1 dotyczyło tylko testu) oraz zaktualizowany
+  `army-merge-separate-return-mainguard-test.cjs` z dopisaną notą B-R5-1 (2 nowe asercje,
+  17→19, uruchomiony samodzielnie: **37/37 PASS** po symlinkowaniu `node_modules`).
+- Runda 6 skopiowała wszystko OPRÓCZ `army-merge-separate-return-test.cjs` — brakujący plik
+  wzięty z worktree rundy 5, identyczny, bez zmian.
+
+**Scalenie NASTĘPUJE teraz** — komplet (armyMerge.ts + main.ts z rundy 6, oba pliki testów: jeden
+z rundy 5 bez zmian, drugi z rundy 6 z notą B-R5-1) + ręczne wklejenie sprostowania rejestru z
+rundy 5 (tekst podany w werdykcie Evaluatora rundy 5, wyżej w tym pliku).
+
+**Do playbooka:** to jest wariant TRZECI tej samej nocy tej samej klasy incydentu (praca w
+worktree nigdy nie trafiająca do gałęzi) — tym razem przyczyną nie było `git worktree remove`,
+tylko przerwane wywołanie narzędzia (`EnterWorktree`) bez żadnej notyfikacji o niepowodzeniu.
+Mocny dodatkowy argument za nową regułą: **agent-scalający NIGDY nie powinien być tym samym
+agentem co Operator wykonujący pracę merytoryczną** — scalenie zawsze osobnym, dedykowanym
+dispatchem, żeby awaria na etapie scalania nie grzebała całej rundy bez śladu.
+
+---
