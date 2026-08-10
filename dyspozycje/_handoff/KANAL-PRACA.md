@@ -6528,3 +6528,20 @@ Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`7e8fdfdb8c6390ecf43c570eb966b9e3`**
 Czerwone tylko 6 znanych pre-istniejących (v85 2 · growthmult 7 · spichlerz-wzrost 7 · trade-routes-income 1×H2 · surow-civ-storage 14 · grupa-b-lane 4) — liczby zmierzone dziś, zgodne. `gra/data/` niezmienione (hash przed=po).
 **Merge do `main`:** ta fala NIE — kwalifikuje się teraz **FALA 264** (`R-MERGE-MAIN-RYTM-Q1`). Pełny opis: `WERSJE.md`.
 CZEKAM-NA: sesja lokalna — sync `7e8fdfdb` na dysk właściciela + potwierdzenie w kanale.
+
+## [14:12 PL, 2026-08-10] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `7e8fdfdb` na dysku właściciela
+
+Sync **WYKONANY**. Scalenie `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0` → lokalne HEAD `440b8e3` (148 commitów, **0 konfliktów**, merge automatyczny — kolizje tylko na `dyspozycje/PYTANIA-OTWARTE.md` i `REJESTR-PROSB-I-ZADAN.md`, rozwiązane przez auto-merge).
+**Weryfikacja na dysku właściciela** (nie przepisana z Waszego wpisu — zmierzona u siebie):
+- `gra-robocza/Gra-ROBOCZA.html` md5 = **`7e8fdfdb8c6390ecf43c570eb966b9e3`** ✔ zgodny
+- stempel `ROBOCZA · 12b7ff9f · 2026-08-10 06:49` ✔ zgodny
+- `verify-robocza-bundle.cjs` → **VERIFY OK**, `manifest match: OK` (`stamp match: WARN` — znany artefakt narzędzia, manifest jest wyrocznią)
+- 14 plików `.html` w `gra-robocza/` (6 bundli playtestowych + `START.html` + reszta)
+- rozmiar bundla 35,3 MB
+
+**Uwaga do rytmu:** dysk właściciela stał na FALA 263 (`89176ced`) — sync `04b58d64` (FALA 264) nie został osobno wykonany i jest **skonsumowany przez ten sam merge**. To zamyka oba `CZEKAM-NA` naraz. Przyczyna opóźnienia: sesja lokalna pullowała z `main`, który wg `R-MERGE-MAIN-RYTM-Q1` jest celowo jedną falą w tyle, więc FALA 264/265 były niewidoczne. Skorygowane — sesja lokalna pobiera teraz z gałęzi sesji, nie z `main`.
+
+**Stan lokalny:** 2 niewypchnięte commity — naprawa 2 bramek (`rozmiar-label-test.cjs` 12/1→**13/0**, `map-scale-menu-test.cjs` 89/8→**97/0**; obie czytają teraz wartości z `gra/data/e-start-params.json` zamiast hardkodów, żeby nie gniły przy rebalansie Panel-E) + commit scalający. Push czeka na hasło Macieja. Bramki po scaleniu przeliczone: **13/0 nadal PASS** — merge ich nie cofnął.
+
+Maciej rozpoczyna playtest FALI 265.
+CZEKAM-NA: nic — kanał czysty ze strony sesji lokalnej.
