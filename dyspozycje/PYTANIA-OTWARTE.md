@@ -10585,7 +10585,12 @@ wywoływane `main.ts:17764`/`18325`) kasuje `autoExplore` jako efekt uboczny.
   anulowania zwiedzania.
 
 **ECHO A** (2026-08-10, „1a"). Cofa `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A` do stanu sprzed
-2026-08-04 — pełny powrót do deselect+cykl. **STATUS: dispatch Sonnet 5 (worktree).**
+2026-08-04 — pełny powrót do deselect+cykl. **STATUS: SCALONE `98dd736e` (2026-08-10) — jedno
+wywołanie `cycleToAdjacentPlayerUnit(u.id, 1)` (bez osobnego `clearPlayerUnitSelection()`, bo
+`isUnitActiveForCycle` już wyklucza jednostkę z `autoExplore===true`; `cycleToAdjacentPlayerUnit`
+sam woła `clearPlayerUnitSelection()` gdy lista pusta). Bramki: `tsc` 0 błędów, `logic-test`
+213/213, `scout-auto-explore-test` 25/25, nowy `scout-explore-deselect-cycle-test.cjs` 10/10.
+Czeka na NIEZALEŻNEGO Evaluatora (dispatch w toku).**
 
 ## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA — ECHO A (2026-08-10, drugi zrzut, pełny panel Armie)
 
@@ -11219,3 +11224,33 @@ nastąpić — dokładnie wzorzec C-030 ("stosowane punktowo, nie jako przegląd
 dispatchowane** (`R-CS-HARD-PASYWNE` bezpieczna większość `a9339ac9036d7d03b`, decideAIDiplomacy
 świadomie odłożone jako runda 2 — nie luka, tylko kolejność; runda 3 komunikatu eliminacji +
 Evaluator `ac2921b16d2be46dd`).
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator FAIL runda 3 (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `21255078`: FAIL.** Defekt B i C z rundy 2 potwierdzone NAPRAWIONE
+(PASS). **Defekt A NADAL złamany** — kolizja toastów tylko „przesunęła się o jedną ramkę stosu w
+górę", nie zniknęła:
+
+- `applyProposalOutcome` (main.ts, ok. 15547) dziś POPRAWNIE scala własny toast z treścią eliminacji.
+- Ale jego wywołujący, `resolveNegotiationEntryAt` (main.ts:12815-12820), i tak BEZWARUNKOWO woła
+  `showHintMessage(ownerDiploLabel(awaitingId) + ' przyjmuje propozycję: ' + summary, 4000)` PO
+  powrocie z `applyProposalOutcome` — trzecie z rzędu nadpisanie tego samego `#hintToast`.
+- **Dokładny repro:** wasalne państwo-miasto → akcja „Wchłonięcie" zaakceptowana za punkty handlowe
+  → widoczny toast to generyczny „X przyjmuje propozycję: ...", treść ELIMINACJA nigdy się nie
+  pokazuje.
+- **Kierunek naprawy (Evaluator, niekodowany):** treść musi być emitowana jako OSTATNIA w stosie —
+  albo `applyProposalOutcome` zwraca informację „ten wpis już pokazał własny komunikat / oto tekst
+  do doklejenia", a `resolveNegotiationEntryAt` scala go ze swoim `summary`, albo
+  `resolveNegotiationEntryAt` pomija generyczny toast dla `actionId === 'wchloniecie'`.
+- **Test `elimination-toast-merge-test.cjs` (21/21 zielony) nie łapie tego defektu** — okno asercji
+  sprawdza wyłącznie wnętrze bloku `if (cywAction === 'wchloniecie')`, nie sięga do
+  `resolveNegotiationEntryAt`, gdzie żyje realne nadpisanie. Test koduje ten sam niepełny model
+  błędu, jaki miał Operator — zielony mimo wciąż złamanego zachowania.
+- Nota dodatkowa (nieblokująca, do osobnej rejestracji jeśli będzie kontynuacja): AI→PM i AI→AI
+  wchłonięcia dyplomatyczne nie mają ŻADNEJ komunikacji do gracza — ta sama rodzina błędu, poza
+  zakresem tej rundy.
+
+**STATUS: dispatch Sonnet 5 (worktree) — runda 4, wyłącznie Defekt A (B/C już zamknięte). Wzmocnić
+`elimination-toast-merge-test.cjs` o asercję na poziomie `resolveNegotiationEntryAt`, nie tylko
+wewnątrz `wchloniecie`. Po dostarczeniu: NIEZALEŻNY Evaluator (4. runda) przed uznaniem za
+zamknięte.**
