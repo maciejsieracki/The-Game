@@ -7308,3 +7308,35 @@ nadmorskie"), N8 (`PORT_SEA_TRADE_BONUS_PIENIADZ=1` to stała w TS, nie parametr
 `econ-params.json` — łamie kierunek „źródłem prawdy JSON").
 
 ---
+
+## R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA — SCALONE `15325a1c` (2026-08-10)
+
+Poprawka N-1 zastosowana i zweryfikowana mutacyjnie (zamiana `'sojusz'`/`'handel'` w kodzie
+produkcyjnym → 44/46 FAIL na `6j`/`6k`, przywrócenie → 46/46). Bramki: tsc 0, logic-test 213/213,
+diplomacy-lista-podglad-przed-wizyta 46/46, diplomacy-treaties 17/17, diplomacy-display 35/35.
+Brak konfliktu z równoległą pracą nad main.ts (Armia-rozpad). Temat w pełni zamknięty (rundy 1-3).
+
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY — potwierdzenie post-scalenia + N11 (2026-08-10)
+
+Evaluator wykrył że temat już był scalony (commit `f4d427e8`) w trakcie własnej pracy — zweryfikował
+scalony kod od nowa: PASS, kod identyczny z odtworzeniem, 21 własnych mutacji na scalonym drzewie
+(15 destrukcyjnych złapanych w tym wszystkie warianty N10, 5 sond niegroźnych bezpiecznych). Temat
+w pełni potwierdzony, bez działania.
+
+**N11 (nowe, niepilne, do rejestru):** strona SILNIKA (nie panelu) niestrzeżona — usunięcie
+`kultura: hs.kultura ?? 0` z `getEmpireHud` w `main.ts` daje tsc 0 i test 71/71 zielono, a chip
+Kultury pokazywałby „(0)" na zawsze. Ta sama klasa co N1/N6/N10, tylko szew jest w górę
+(silnik→panel) zamiast w dół. Dotyczy wszystkich 6 pól zapasu.
+
+## OSTRZEŻENIE PROCESOWE — TRZECIE potwierdzenie kolizji ścieżek w scratchpadzie (2026-08-10)
+
+Trzeci niezależny przypadek tej samej nocy (po R-EPOKA-CUD i R-BUDYNEK-PORTOWY): agenci
+równoległych sesji nadpisują sobie nawzajem generyczne nazwy plików we współdzielonym
+`scratchpad/` (`mut.py`, `main.ts.bak`, log-i bramek). Tym razem Evaluator HUD-stock-tempo
+wykrył że jego `mut.py`/`mut2.py` zostały nadpisane cudzym harnessem (R-BUDYNEK-PORTOWY) w
+trakcie pracy — złapane tylko dlatego że format wyjścia się nie zgadzał. **Mocny sygnał do
+nowej, twardej reguły playbooka: każdy plik roboczy w scratchpadzie MUSI mieć prefiks
+unikatowy dla zlecenia/agenta, nigdy generyczną nazwę.** Materiał do przygotowywanych reguł
+AutoBot (patrz niżej w tym pliku, do zebrania rano).
+
+---
