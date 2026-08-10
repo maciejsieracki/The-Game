@@ -9191,4 +9191,8 @@ realne ryzyko fałszywej zieleni, do dopisania w procedurze zakładania worktree
 
 Dispatch naprawy 2 blokujących (ten sam Operator/worktree, jednolinijkowce) NASTĘPUJE teraz.
 
+Dispatchowany `a3534c36a92683a22` — usunięcie nawiasu (linia 1262), usunięcie `maxSafe` z
+`cityGrowthLive` (linia 1353), aktualizacja asercji testu (7→6 wywołań, + nowa asercja
+IEEE-754 na `view(5,60,45)`/`maxSafe=3,5`→racje=32).
+
 ---
