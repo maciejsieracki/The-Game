@@ -923,6 +923,7 @@ import {
   setLastPlayedSlotId, checkSaveIntegrity, AUTOSAVE_SLOT_ID,
   FSA_SLOT_PREFIX,
   type SaveGame,
+  type SaveToLocalResult,
 } from './game/save';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
@@ -16502,7 +16503,7 @@ async function boot(): Promise<void> {
         defaultLabel: currentSaveLabel('manual'),
         turn,
         onSave: (slotId, label) => {
-          const ok = persistSaveToSlot(slotId, label);
+          const { ok, reason } = persistSaveToSlot(slotId, label);
           if (ok) {
             showHintMessage(`Gra zapisana: «${label}» (tura ${turn})`, 3500);
             console.log('[Save] slot=' + slotId + ' label=' + label + ' tura=' + turn);
@@ -16510,7 +16511,17 @@ async function boot(): Promise<void> {
             // „Wczytaj grę" bez czekania na pełne zamknięcie/otwarcie menu.
             refreshGamePauseMenuLoadState();
           } else {
-            showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+            // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT: przy 'quota' pokaż
+            // prawdziwą przyczynę (brak MIEJSCA, nie brak API) -- ten sam ton
+            // co już istniejący komunikat rotacyjnego autozapisu.
+            // / EN: on 'quota' show the real cause (no SPACE, not missing
+            // API) -- same tone as the existing rotating-autosave message.
+            showHintMessage(
+              reason === 'quota'
+                ? 'Zapis nieudany — brak miejsca w zapisie przeglądarki. Usuń stare zapisy.'
+                : 'Zapis nieudany (brak localStorage?)',
+              3000,
+            );
           }
         },
       });
@@ -21714,14 +21725,20 @@ async function boot(): Promise<void> {
       };
     }
 
-    function persistSaveToSlot(slotId: string, label: string): boolean {
+    // Zwraca pełny wynik zapisu (ok + reason), nie goły boolean -- wołający musi
+    // znać powód niepowodzenia (np. 'quota'), żeby pokazać trafny komunikat
+    // zamiast mylącego ogólnika (P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT).
+    // / EN: returns the full save result (ok + reason), not a bare boolean --
+    // callers need the failure reason (e.g. 'quota') to show an accurate
+    // message instead of a misleading generic one.
+    function persistSaveToSlot(slotId: string, label: string): SaveToLocalResult {
       try {
-        const { ok } = saveToLocal(slotId, buildSaveGameSnapshot(label));
-        if (ok) setLastPlayedSlotId(slotId);
-        return ok;
+        const result = saveToLocal(slotId, buildSaveGameSnapshot(label));
+        if (result.ok) setLastPlayedSlotId(slotId);
+        return result;
       } catch (eSave) {
         console.error('[Save] Blad:', eSave);
-        return false;
+        return { ok: false, reason: 'other' };
       }
     }
 
@@ -21729,12 +21746,17 @@ async function boot(): Promise<void> {
      * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
      */
     function doQuickSave(showHintOnSuccess = true): boolean {
-      const ok = persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
+      const { ok, reason } = persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
       if (ok) {
         if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);
         console.log('[Save] autosave tura=' + turn);
       } else if (showHintOnSuccess) {
-        showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+        showHintMessage(
+          reason === 'quota'
+            ? 'Zapis nieudany — brak miejsca w zapisie przeglądarki. Usuń stare zapisy.'
+            : 'Zapis nieudany (brak localStorage?)',
+          3000,
+        );
       }
       return ok;
     }

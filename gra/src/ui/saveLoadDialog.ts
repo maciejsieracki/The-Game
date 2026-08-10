@@ -138,6 +138,33 @@ function formatSavedAt(iso: string): string {
   }
 }
 
+/**
+ * Porównanie dwóch slotów do sortowania malejąco (najnowsze pierwsze).
+ * Klucz główny: `savedAt` (ISO, malejąco) -- bez zmian względem
+ * dotychczasowego zachowania dla zapisów, które mają tę datę wypełnioną.
+ * Klucz drugorzędny (WYŁĄCZNIE gdy `savedAt` puste u OBU porównywanych
+ * slotów -- stare zapisy sprzed wprowadzenia `meta.savedAt`): numer tury
+ * (`tura`, malejąco). Wybrany zamiast parsowania znacznika czasu z ID slotu,
+ * bo format ID nie jest jednolity -- bywa stałą ('autosave'), rotacją bez
+ * czasu ('autosave-N') albo 'slug-znacznikCzasuBase36' -- podczas gdy `tura`
+ * jest zawsze liczbą (deserializeGame w save.ts domyślnie ustawia 1, patrz
+ * `gra/src/game/save.ts:295`), więc jest bezpiecznym substytutem chronologii.
+ * / EN: Comparator for descending sort (newest first). Primary key:
+ * `savedAt` (ISO, descending) -- unchanged from prior behavior for saves
+ * that have this date filled in. Secondary key (ONLY when `savedAt` is
+ * empty on BOTH compared slots -- old saves predating `meta.savedAt`): turn
+ * number (`tura`, descending). Chosen over parsing a timestamp out of the
+ * slot ID, because the ID format isn't uniform -- it can be a constant
+ * ('autosave'), a timestamp-less rotation ('autosave-N'), or
+ * 'slug-base36Timestamp' -- whereas `tura` is always a number
+ * (deserializeGame in save.ts defaults it to 1, see
+ * `gra/src/game/save.ts:295`), making it a safe chronology substitute.
+ */
+export function compareSaveSlotsDesc(a: SaveSlotSummary, b: SaveSlotSummary): number {
+  if (!a.savedAt && !b.savedAt) return b.tura - a.tura;
+  return b.savedAt.localeCompare(a.savedAt);
+}
+
 /** Podsumowania wszystkich slotów (najnowsze pierwsze). */
 export function summarizeSaveSlots(): SaveSlotSummary[] {
   const lastPlayed = getLastPlayedSlotId();
@@ -156,7 +183,7 @@ export function summarizeSaveSlots(): SaveSlotSummary[] {
       isLastPlayed: slotId === lastPlayed,
     });
   }
-  out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  out.sort(compareSaveSlotsDesc);
   return out;
 }
 
@@ -190,14 +217,14 @@ export async function summarizeFsaSaveSlots(): Promise<SaveSlotSummary[]> {
       isLastPlayed: slotId === lastPlayed,
     });
   }
-  out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  out.sort(compareSaveSlotsDesc);
   return out;
 }
 
 /** Łączy sejwy z przeglądarki i z dysku w jedną listę, najnowsze pierwsze. */
 function mergeSaveSlotLists(local: SaveSlotSummary[], fsa: SaveSlotSummary[]): SaveSlotSummary[] {
   if (fsa.length === 0) return local;
-  return [...local, ...fsa].sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  return [...local, ...fsa].sort(compareSaveSlotsDesc);
 }
 
 /** Najnowszy slot (data zapisu) — fallback gdy brak lastPlayed.
@@ -284,8 +311,19 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
     } else {
       slotId = uniqueSlotIdFromLabel(label);
     }
-    closeDialog();
+    // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT: onSave() woła zapis do
+    // localStorage synchronicznie (persistSaveToSlot -> saveToLocal ->
+    // localStorage.setItem, bez Promise) i sam pokazuje hint z wynikiem --
+    // zamykamy dialog PO nim, nie przed, żeby ewentualny błędny hint nie
+    // renderował się pod jeszcze otwartym dialogiem (oba wywołania w tym
+    // samym tick-u JS, więc przeglądarka i tak maluje dopiero stan koncowy).
+    // / EN: onSave() writes to localStorage synchronously (persistSaveToSlot
+    // -> saveToLocal -> localStorage.setItem, no Promise) and shows its own
+    // result hint -- close the dialog AFTER it, not before, so a failure
+    // hint never paints underneath a still-open dialog (both calls run in
+    // the same JS tick, so the browser only paints the final state anyway).
     opts.onSave(slotId, label);
+    closeDialog();
   };
 
   function existingAtCommit(): SaveSlotSummary | undefined {

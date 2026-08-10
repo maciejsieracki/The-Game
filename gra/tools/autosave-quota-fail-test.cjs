@@ -32,7 +32,11 @@
  *          (if (ok) { ... }) -- w galezi else go NIE MA, wiec kolejna proba
  *          rotacji nie "przeskakuje" cicho na kolejny slot.
  *   3. main.ts zrodlo -- persistSaveToSlot() (uzywana przez doQuickSave i
- *      reczny zapis) tez destrukturyzuje { ok } z nowego ksztaltu zwracanego
+ *      reczny zapis) zwraca PELNY wynik { ok, reason } z saveToLocal (nie
+ *      goly boolean) -- P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT (2026-08-10):
+ *      wolajacy (doQuickSave, openSaveGameDialog onSave) musieli znac reason
+ *      zeby przy 'quota' pokazac prawdziwy komunikat "brak miejsca w zapisie
+ *      przegladarki" zamiast mylacego ogolnika "brak localStorage?"
  *      (regresja sygnatury zlapana na tsc, ale pinujemy tu explicite).
  *
  * Usage (z gra/): node tools/autosave-quota-fail-test.cjs
@@ -220,16 +224,17 @@ if (rotMatch) {
   }
 }
 
-// 3. persistSaveToSlot() destrukturyzuje { ok } z saveToLocal.
+// 3. persistSaveToSlot() zwraca PELNY wynik { ok, reason } z saveToLocal
+//    (nie goly boolean) -- P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT.
 const persistMatch = mainTsSrc.match(
-  /function persistSaveToSlot\(slotId: string, label: string\): boolean \{([\s\S]*?)\n {4}\}/,
+  /function persistSaveToSlot\(slotId: string, label: string\): SaveToLocalResult \{([\s\S]*?)\n {4}\}/,
 );
-assert(!!persistMatch, 'persistSaveToSlot() znaleziona w main.ts');
+assert(!!persistMatch, 'persistSaveToSlot() znaleziona w main.ts (zwraca SaveToLocalResult, nie goly boolean)');
 if (persistMatch) {
   const body = persistMatch[1];
   assert(
-    /const \{ ok \} = saveToLocal\(/.test(body),
-    'persistSaveToSlot() destrukturyzuje { ok } z saveToLocal (dostosowane do nowej sygnatury {ok, reason})',
+    /const result = saveToLocal\(/.test(body) && /return result;/.test(body),
+    'persistSaveToSlot() zwraca caly wynik saveToLocal ({ ok, reason }), nie tylko ok',
   );
 }
 
