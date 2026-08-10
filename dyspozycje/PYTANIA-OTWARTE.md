@@ -9762,7 +9762,9 @@ scaleniu: tsc 0, logic-test 213/213, separator-test 29/0, live-recalc-test 57/0,
 posprzątany.
 
 **Odblokowany Spichlerz „(0)"** — czekał wyłącznie na to scalenie (ten sam obszar plików). Dispatch
-następuje teraz jako trzeci temat priorytetowy.
+następuje teraz jako trzeci temat priorytetowy. **Operator (`ab142fc1311978907`) dispatchowany** —
+worktree izolowany, bazowany na świeżo scalonym `1a6f7e79` (może użyć `_maxSafeRationCache`/
+`clampedGrowthBreakdown`, nie budować równoległych mechanizmów).
 
 ---
 
