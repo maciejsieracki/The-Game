@@ -10192,7 +10192,7 @@ miasta.
 globalny default 6, więc COŚ już zadziałało — a mimo to Bilans −3, Spichlerz 0). Policzone: przy
 poziomie 3,5 koszt=3×3,5×2=21, bilans=0 — jest jeszcze zapas do cięcia, mechanizm zatrzymał się na 4
 zamiast 3,5. Może to być dokładnie ta druga usterka (SPICH-AUTO-Q1 vs nowa mapa globalna) albo coś
-innego. **Dispatch rozpoznania #3 NASTĘPUJE** — scenariusz 2 (Ludność 3, dlaczego 4 a nie 3,5) + oś
+innego. **Dispatch rozpoznania #3 NASTĘPUJE (`aaf1b942afbfe8911`)** — scenariusz 2 (Ludność 3, dlaczego 4 a nie 3,5) + oś
 Macieja z drugiego zrzutu (czy Wzrost% liczy się z nominalnego czy faktycznie pokrytego poziomu).
 
 ---
