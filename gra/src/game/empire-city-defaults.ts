@@ -49,6 +49,7 @@ import {
   DEFAULT_BUDOWA_FOCUS,
   DEFAULT_BUDOWA_TRYB,
 } from './cities';
+import { DEFAULT_POZIOM_RACJI, type PoziomRacji } from './population-growth-v85';
 
 // ---------------------------------------------------------------------------
 // 1. Podział Pracy (budynki / skarbiec) — resolver-przy-odczycie, wzorem Handlu.
@@ -275,4 +276,76 @@ export function migrateBudowaProfilOnLoad(
 
 export function freshOwnerDefaultBudowaProfil(): CityBudowaProfil {
   return { budowaFocus: DEFAULT_BUDOWA_FOCUS, budowaTryb: DEFAULT_BUDOWA_TRYB };
+}
+
+// ---------------------------------------------------------------------------
+// 4. Żywność (poziom Wyżywienia/Racji) — R-USTAWIENIA-GLOBALNE-LOKALNE (Maciej
+//    2026-08-10, żywa rozmowa: "globalne ustawienia dla żywności pracy i pieniędzy").
+//    Wzorem okolicaFocus/budowaFocus (NIE Podziału Pracy): pole City.poziomRacji jest
+//    ZAWSZE konkretnie wypełnione (istniało długo przed tym mechanizmem, czytane
+//    bezpośrednio w kilkunastu miejscach silnika przez getCityRationLevel) — global
+//    Map jest źródłem prawdy, City.poziomRacji zsynchronizowany broadcastem dla miast
+//    BEZ override (main.ts broadcastPoziomRacjiToOwnerCities po zmianie globalnej).
+// ---------------------------------------------------------------------------
+
+/** Efektywny poziomRacji (do UI/diagnostyki — main.ts trzyma city.poziomRacji w sync). */
+export function resolveCityPoziomRacji(
+  city: Pick<City, 'poziomRacji' | 'poziomRacjiOverride'>,
+  ownerDefault: PoziomRacji | undefined,
+): PoziomRacji {
+  if (city.poziomRacjiOverride && city.poziomRacji != null) {
+    return city.poziomRacji;
+  }
+  return ownerDefault ?? city.poziomRacji ?? DEFAULT_POZIOM_RACJI;
+}
+
+/**
+ * Nadpisuje poziomRacji wszystkich miast ownera BEZ override (broadcast globalnej
+ * zmiany). Miasta z poziomRacjiOverride===true SĄ POMIJANE (pin 📌) — wzorem
+ * broadcastOkolicaFocusToOwnerCities/broadcastBudowaProfilToOwnerCities wyżej.
+ */
+export function broadcastPoziomRacjiToOwnerCities(
+  cities: ReadonlyArray<City>,
+  ownerId: number,
+  poziom: PoziomRacji,
+): void {
+  for (const c of cities) {
+    if (c.ownerId !== ownerId || c.poziomRacjiOverride) continue;
+    c.poziomRacji = poziom;
+  }
+}
+
+/** Migracja starych zapisów (poziomRacji zawsze per-miasto) → global + flagi override. */
+export function migratePoziomRacjiOnLoad(
+  cities: ReadonlyArray<City>,
+  ownerDefaults: Map<number, PoziomRacji>,
+  savedDefaults: ReadonlyArray<[number, PoziomRacji]> | undefined,
+): void {
+  if (savedDefaults?.length) {
+    for (const [oid, poziom] of savedDefaults) ownerDefaults.set(oid, poziom);
+  } else {
+    // Default = wartość PIERWSZEGO miasta danego ownera napotkanego w tablicy
+    // (heurystyka, wzorem migrateOkolicaFocusOnLoad wyżej).
+    for (const city of cities) {
+      if (!ownerDefaults.has(city.ownerId)) {
+        ownerDefaults.set(city.ownerId, city.poziomRacji ?? DEFAULT_POZIOM_RACJI);
+      }
+    }
+    // KAŻDE miasto różniące się od tak wyliczonego defaultu dostaje override=true
+    // i ZACHOWUJE swoją starą wartość (zakaz cichego nadpisania, wzorem M7/M8).
+    for (const city of cities) {
+      if (city.poziomRacjiOverride !== undefined) continue;
+      const def = ownerDefaults.get(city.ownerId) ?? DEFAULT_POZIOM_RACJI;
+      const differs = city.poziomRacji != null && city.poziomRacji !== def;
+      city.poziomRacjiOverride = differs;
+      if (!differs) city.poziomRacji = def;
+    }
+  }
+  for (const city of cities) {
+    if (!ownerDefaults.has(city.ownerId)) ownerDefaults.set(city.ownerId, DEFAULT_POZIOM_RACJI);
+  }
+}
+
+export function freshOwnerDefaultPoziomRacji(): PoziomRacji {
+  return DEFAULT_POZIOM_RACJI;
 }

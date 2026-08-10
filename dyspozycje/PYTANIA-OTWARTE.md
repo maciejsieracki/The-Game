@@ -8739,4 +8739,594 @@ log w `WERSJE.md`+`KANAL-PRACA.md`), commit+push gałęzi sesji, **oraz naprawa 
 scalone mimo że reguła `R-MERGE-MAIN-RYTM-Q1` już to nakazywała przy poprzednim deployu.
 FALA 266 (ten deploy) świadomie NIE wchodzi do `main` — zostaje do testów.
 
+**DEPLOY ZAKOŃCZONY, zweryfikowany niezależnie przez orkiestratora (nie tylko na słowo
+agenta):** bundel `gra-robocza/Gra-ROBOCZA.html` md5 `745cb88d96b145fb41a33efad566bbec`
+potwierdzony `md5sum` na żywym drzewie — zgodny z `WERSJE.md` i `KANAL-PRACA.md`. `main`
+(origin) potwierdzony na `afce9001` (FALA 265, po nadgonieniu FALA 264→`d6d2532c`,
+FALA 265→`afce9001`, oba `--no-ff`, bez `--force`). Gałąź sesji ma commit deployu
+`b9b26f74`, zsynchronizowana z `origin` (`git pull --ff-only` = already up to date).
+Agent odkrył i naprawił rozbieżność w moim własnym zleceniu — podałem tylko 4 tematy,
+faktycznie w tej fali było 10 (m.in. brakowało P-ARMIA-ROZPAD etap 1, R-EPOKA-CUD B3,
+tooltip Pracy) — wszystkie 10 poprawnie opisane w `WERSJE.md`.
+
+**STATUS: ZAMKNIĘTE (FALA 266 na ROBOCZA, main nadgoniony do FALA 265).**
+
+---
+
+## BUG (zrzut Macieja) — Praca NIE dociera do ulepszeń, BLOKUJE dalszy rozwój — PRIORYTET (2026-08-10)
+
+**To NIE jest ta sama sprawa co „Praca 9 vs 3" wyżej** (tamto = wyjaśnione, city gross vs
+civ-wide net po utrzymaniu, tooltip naprawiony w FALA 266). Maciej zgłasza inny, poważniejszy
+problem: przy ustawieniu 100% do puli cywilizacji (0% do budynków) i BRAKU jakiejkolwiek
+budowy w kolejce, pula rośnie (pokazana 22 w nowym tooltipie „Praca — co to znaczy"), ale
+**Praca „nie idzie do ulepszeń" i nie da się rozwijać cywilizacji** — testowanie zablokowane
+do czasu naprawy. Cytat: „nie wiem gdzie to dwa znika... jeżeli nie budowany jest żaden
+budynek, to powinno wracać do puli... żadnego budynku nie buduję... ustawienie jest takie,
+że ma wszystko iść do puli cywilizacji, a nie na budynki. To jest drugi raz, kiedy ten błąd
+zgłaszam i nie jest to naprawione." Eskalacja: „dopóki to nie zostanie naprawione, to nie ma
+sensu dalej robić testów".
+
+**Wstępny trop orkiestratora (NIE potwierdzony, do rozpoznania):** mechanizm wydawania puli
+Pracy na ulepszenia terenu/projekty mapy to zmienna `playerPracaPool` w `main.ts` (linie
+~10080, 10165-10173 zwrot przy cofnięciu, 10217-10321 budowa/koszt `req.kosztPraca`,
+23002-23010 auto-ulepszenia z rezerwą `AUTO_ULEPSZENIA_PRACA_RESERVE`) — osobna od
+`_lastPracaRate`/tooltipu HUD (main.ts:13414-13418, `previewPracaPoolBrutto`). Możliwe, że
+`playerPracaPool` (faktycznie wydawalna pula) nie jest tym samym co liczba „22" pokazana w
+tooltipie, albo nie synchronizuje się poprawnie turę po turze — DO ZWERYFIKOWANIA W KODZIE,
+nie zgadywania.
+
+**PRIORYTET — dispatch rozpoznania NASTĘPUJE natychmiast**, zanim jakikolwiek kod zostanie
+zmieniony. Zakres rozpoznania: (1) czy `playerPracaPool` faktycznie akumuluje się turę po
+turze zgodnie z tym co pokazuje tooltip (22), czy jest gdzieś zerowana/nie synchronizowana;
+(2) czy próba postawienia ulepszenia terenu (np. farma/kamieniołom) faktycznie odejmuje z
+tej puli i się udaje, gdy pula > koszt; (3) czy jest realna regresja (porównanie z
+zachowaniem sprzed której fali — Maciej mówi że to działało wcześniej) czy gracz po prostu
+nie ma jeszcze wystarczającej puli na żadne ulepszenie (koszt > 22).
+
+**DRUGI zrzut Macieja — konkretny, sprzeczny odczyt między dwoma panelami tego samego
+miasta w tej samej chwili (tylko 1 miasto w grze):**
+- Panel „Grecy" (cywilizacja), tabela „DO PULI / DO BUDYNKÓW": Ateny → **+2 / +4**
+  (`empireDetailPanel.ts:384-386`, `cityEconMiniPraca`, pola `c.pracaPula`/`c.pracaBudynki`).
+- Panel miasta „Podział Pracy": suwak **50%/50%**, Budowa **+3**, Ulepszenia **+3**.
+- Te same 6 Pracy, DWA różne rozbicia w tym samym momencie. Cytat: „co innego pokazuje w
+  ogóle panel miasta, co innego jest cywilizacja. A mam tylko jedno miasto."
+
+**Trop orkiestratora #2 (własne śledzenie kodu, NIE potwierdzone jako pełna przyczyna,
+DO WERYFIKACJI przez rozpoznanie, nie do ślepego przyjęcia):** `pracaPula`/`pracaBudynki` w
+panelu „Grecy" (`main.ts:12057-12058`) czytane z `tk = _lastPlayerCityEcon.find(...)` —
+**migawka z KOŃCA POPRZEDNIEJ TURY**, nie przeliczenie na żywo. Panel miasta „Podział Pracy"
+najprawdopodobniej liczy na żywo z AKTUALNEGO ustawienia suwaka. Jeśli suwak/ustawienie
+zmieniło się w trakcie bieżącej tury (Maciej: „prawdopodobnie to ustalenie nastąpiło w
+momencie, gdy chciałem mieć globalne ustawienia i te globalne ustawienia w ogóle nie
+działają ani nie działają też ustawienia na miasta indywidualnie. Wszystko zostało
+zepsute.") — panel cywilizacji pokazuje STARY split, panel miasta NOWY. To może tłumaczyć
+rozjazd liczb, ale NIE tłumaczy samo w sobie, dlaczego globalne ORAZ indywidualne
+ustawienia „nie działają wcale" — to osobny, poważniejszy wątek do zbadania w tym samym
+rozpoznaniu (temat R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE, `8692b61b`, scalony wcześniej
+w tej sesji — możliwe że regresja weszła razem z nim albo po nim).
+
+**KRYTYCZNE doprecyzowanie Macieja (po mojej wzmiance o R-MIASTO-USTAWIENIA-GLOBALNE-
+VS-LOKALNE):** „tylko że nie ma panelu ustawień globalnych. Już zwracałem uwagę, że nie
+wiem gdzie to jest i czy to w ogóle jest. Jedynie co to wchodzę do miasta i zmieniam w
+danym mieście. Także tu jest mega bałagan." — czyli temat `R-MIASTO-USTAWIENIA-GLOBALNE-
+VS-LOKALNE` zarejestrowany wcześniej w tej sesji jako „SCALONE `8692b61b`" **może być
+fałszywym zamknięciem** — kod mógł zostać scalony bez realnego, widocznego dla gracza
+panelu UI, albo panel istnieje ale Maciej nie może go znaleźć (też problem — UX). To DO
+ZBADANIA W TYM SAMYM ROZPOZNANIU, priorytetowo: czy panel globalnych ustawień w ogóle
+istnieje w drzewie UI, gdzie miał się pojawić, i czy commit `8692b61b` faktycznie coś
+takiego dodał czy tylko logikę bez punktu wejścia w interfejsie.
+
+**Uczciwie do Macieja:** pętla Operator→Evaluator w tej sesji weryfikuje SCOPED zmianę
+przeciwko scenariuszom, które Operator/Evaluator sam wymyślił i przetestował dla TEGO
+zgłoszenia — nie robi wyczerpującego regresyjnego sprawdzenia całej gry pod kątem
+niezgłoszonych kombinacji (np. „zmień suwak, NIE kończ tury, otwórz panel cywilizacji").
+Ten dokładny rodzaj błędu — dwa niezależne miejsca liczące to samo z różnych źródeł danych
+(cache vs live) — jest właśnie tym, czego pojedyncze Evaluatory nie łapią, jeśli nikt nie
+zgłosił tego konkretnego scenariusza. To nie usprawiedliwienie, tylko wyjaśnienie mechanizmu
+— i konkretny powód, żeby rozpoznanie objęło też grep wszystkich miejsc czytających
+`_lastPlayerCityEcon`/odpowiedniki dla innych zasobów (Żywność, Nauka, Skarbiec), bo to
+może być systemowy wzorzec błędu, nie jednorazowy przypadek przy Pracy.
+
+---
+
+## BUG (zrzut Macieja) — Auto Wyżywienie NIE zapobiega ujemnemu Spichlerzowi, regresja (2026-08-10)
+
+**Zrzut:** panel Ateny, Żywność `−1 (0)`, „Produkcja +11/t − Racje −12/t = Bilans −1/t",
+przycisk „Auto Wyżywienie" WŁĄCZONY (zielony, aktywny stan). Mimo to bilans ujemny.
+
+**Cytat Macieja:** „tak samo jak nie naprawiony temat auto wyżywienia były ustalone zasady,
+którymi się kieruje auto wyżywienie, tak żeby nie prowadzić do ujemnego spichlerza, a ja
+widzę, że to nie działa. ale wcześniej z tym nie było problemów, więc to są jakieś regresy."
+
+**Ustalone reguły w kodzie (do zweryfikowania czy faktycznie działają, nie zgadywania):**
+`gra/src/game/empire-food.ts` — `isCityAutoWyzywienieEnabled` (linia 355, komentarz
+„R-AUTO-RACJE-RAISE-Q5=A: auto obniżanie+podnoszenie Wyżywienia. Gracz: tylko gdy flaga WŁ.
+AI: zawsze"), `autoBalanceRationsToSolvency` (455), `autoRaiseRationsForGrowth` (520),
+`maxSafePoziomRacjiForCity` (596, komentarz „R-AUTO-RACJE-RAISE-Q3=A: najwyższy poziom
+Wyżywienia przy którym Spichlerz ≥ 0 po dopłatach miastom").
+
+**Nie zgaduję przyczyny** (może to być: `autoBalanceRationsToSolvency` nie jest wywoływana
+w odpowiednim miejscu cyklu tury, regresja w warunku uruchomienia, zmiana w oblicznieiu
+`maxSafePoziomRacjiForCity` po niedawnych zmianach balansu Tartak/Glinianka lub Spichlerz
+cap [obie w tej samej FALI 265], albo coś innego) — dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE
+z rozpoznaniem Pracy wyżej (PRIORYTET tamtego wyższy — blokuje testowanie).
+
+Oba rozpoznania dispatchowane: Praca+ustawienia globalne (`a178562f1e717529f`, PRIORYTET,
+zakres A/B/C: wydawanie puli na ulepszenia, cache vs live panel miasta/cywilizacji, istnienie
+panelu globalnych ustawień) i Auto Wyżywienie (`a9bb68ce84d7d4bc9`). Żaden nie zmienia kodu —
+czyste rozpoznanie przed jakąkolwiek naprawą.
+
+**Rozpoznanie Auto Wyżywienie ZAKOŃCZONE — NIE regresja.** Mechanizm (`empire-food.ts`)
+niezmieniony od `88c08755` (2026-08-05), FALA 265/266 w ogóle go nie dotknęła. Kontrakt jest
+EMPIRE-WIDE (Spichlerz ≥ 0 po dopłatach ze WSZYSTKICH miast), nie per-miasto — potwierdzone
+komentarzami w kodzie, własnym tooltipem przycisku „Auto Wyżywienie" w UI, i testem
+`ai-major-economy-test.cjs` scenariusz „L. Q5" **32/32 PASS** reprodukującym dokładnie ten
+przypadek (miasto bez flagi zostaje z lokalnym deficytem nietknięte, celowo). Ujemny lokalny
+„Bilans" pojedynczego miasta pokrywany z centrali to ZAMIERZONE zachowanie, nie bug. Realny
+problem: UI nie tłumaczy tego rozróżnienia graczowi (goły czerwony „−1" bez adnotacji „pokryte
+z centrali"). Dodatkowo znaleziona osobna, udokumentowana jako świadoma (SPICH-AUTO-Q1,
+`998fe2b6`, 2026-08-04) granica zakresu: auto-Wyżywienie NIE liczy kosztu wojska przy decyzji
+o poziomie racji, a UI ma twardy `Math.max(0, central)` — Spichlerz nigdy nie pokazuje się jako
+ujemny nawet przy realnym głodzie (widocznym tylko przez osobną flagę `glodWojska`).
+
+**Do decyzji Macieja (ABC, nie do zgadywania):** (A) dopisać w panelu miasta adnotację przy
+ujemnym lokalnym bilansie pokrytym z centrali; (B) rozszerzyć kontrakt auto-Wyżywienia o koszt
+wojska — realna zmiana zasięgu mechanizmu; (C) zostawić jak jest, dopisać wyjaśnienie do
+dokumentacji/FAQ w grze. Osobno: `empire-food-b5-test.cjs` ma 3 pre-istniejące porażki
+(dług R-STAWKI ×2 kosztu wojska, niezwiązane z tym tematem) — do dopisania w CLAUDE.md §BRAMKI
+jako znana czerwona bramka, żeby nie mylić z tym tematem przy przyszłych audytach.
+
+**STATUS Auto Wyżywienie: ZAMKNIĘTE jako „nie bug", czeka na ABC Macieja co do UX.**
+
+---
+
+## Rozpoznanie Praca ZAKOŃCZONE — TRZY niezależne przyczyny, nie jedna (2026-08-10)
+
+**A) „Praca nie dociera do ulepszeń" — NIE bug silnika.** `playerPracaPool` i tooltip HUD to
+JEDNA, poprawnie zsynchronizowana zmienna (20 miejsc przypisania, każde aktualizuje oba naraz).
+Ścieżka UI→silnik stawiania ulepszenia (`improvement-build.ts`→`applyBuildRequest`/
+`commitBuildRequest`, main.ts:10200-10322) jest kompletna i poprawna — sprawdza pulę, odejmuje,
+albo pokazuje „Za mało Pracy". **Rzeczywista przyczyna:** koszt Pracy WSZYSTKICH ulepszeń
+terenu jest dziś ×2 względem `gra/data/terrain-improvements.json`, przez `scaleImprovementWorkCost`
+(`r-stawki-strojenie.ts`, `R_STAWKI_FALA2_MULT=2`) — świadoma decyzja Macieja z commitów
+`24acb69c`/`f940f618` (2026-08-03/04, współautor Maciej, udokumentowane w
+`docs/decyzje/R-STAWKI-STROJENIE.md`/`R-NADMIAR-POOLS.md`, cytat: „podwoiłbym koszt... Zobaczę
+potem w Playtestie"). Realne koszty dziś: droga 30, farma/kamieniołom/kopalnie 40-44, tartak/fort
+50, stadnina 56, posterunek 60 — przy puli 22-26 (jak w zrzutach) **nic nie jest przystępne**.
+To jest DOKŁADNIE ten playtest, o którym mówił cytat z 3 sierpnia — efekt uboczny (niedostępność
+wczesnej gry) najwyraźniej nie był wcześniej zaobserwowany. Pogłębia to słaby UX: panel budowy
+(`buildModeHud.ts`) NIE wyszarza pozycji nieprzystępnych, komunikat „Za mało Pracy" to cichy
+3-sekundowy toast po kliknięciu, nie stały wskaźnik.
+
+**B) Rozjazd panel miasta (+3/+3) vs panel cywilizacji (+2/+4) — POTWIERDZONY realny bug,
+silny dowód liczbowy.** Oba panele używają tej samej formuły (`resolveCityPodzialPracy`),
+więc to NIE rozjazd wzoru. Policzone: `round(6×0,70)=4, doPuli=2` — panel cywilizacji
+pokazywał DOKŁADNIE wynik DOMYŚLNEGO podziału 70/30 (`DEFAULT_PODZIAL_PRACY`), nie aktualnie
+ustawionego 50/50. Silna poszlaka, że `_lastPlayerCityEcon` (cache czytany przez panel
+cywilizacji, main.ts:12050/12057-12058) nie zdążył się odświeżyć mimo że mechanizm
+inwalidacji (`empireEconDirty`) wygląda na papierze poprawnie. Podejrzany mechanizm (NIE
+potwierdzony logami z sesji Macieja, tylko hipoteza z czytania kodu): `refreshLiveEmpireRates()`
+czyści flagę `empireEconDirty` NA POCZĄTKU funkcji (main.ts:13328), PRZED właściwym
+przeliczeniem i zapisem do cache (main.ts:13428) — bez `try/catch` między tymi liniami, cichy
+wyjątek zostawiłby flagę wyczyszczoną, a cache nigdy nieodświeżony. **Wzorzec systemowy, nie
+jednorazowy przypadek przy Pracy** — Skarbiec i Nauka w tym samym panelu „Grecy" czytają ten
+sam cache, to samo ryzyko.
+
+**C) Brak panelu globalnych ustawień — POTWIERDZONE jako fałszywe zamknięcie
+`R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE`.** `git show 8692b61b --stat`: kompletny, przetestowany
+backend (`empire-city-defaults.ts`, 278 linii + test 247 linii, wpięty w `main.ts`) — ale w
+`cityPanel.ts` WYŁĄCZNIE deklaracje typu interfejsu (+22 linii), **zero kodu renderującego
+UI** (brak przycisku pin/odpin, brak jakiejkolwiek etykiety). Mechanizm faktycznie działa —
+suwak w panelu KAŻDEGO miasta bez lokalnego pinu JEST globalnym ustawieniem
+(`onPodzialPracyChange` main.ts:17077-17091 pisze wprost do `ownerDefaultPodzialPracy`) — ale
+gracz nie ma ŻADNEGO sposobu to zobaczyć/kontrolować. Cytat Macieja („nie ma panelu ustawień
+globalnych... jedynie co to wchodzę do miasta i zmieniam w danym mieście") jest **dosłownie
+prawdziwy i dosłownie zgodny z tym co kod dziś robi**.
+
+**Rekomendacja rozpoznania — trzy osobne, wąsko scoped naprawy, PRIORYTET wg łatwości/wpływu:**
+1. **C (UI dla gotowego backendu)** — najwęższy zakres, backend gotowy i przetestowany,
+   brakuje tylko warstwy `cityPanel.ts` (3 miejsca: Okolica/Budowa/Podział Pracy, hooki już
+   czekają w configu) — przycisk pin/odpin + etykieta globalne/lokalne.
+2. **B (cache/live)** — wymaga najpierw potwierdzenia hipotezy (czy `refreshLiveEmpireRates()`
+   faktycznie rzuca cichy wyjątek) zanim naprawa, potem dodanie `try/catch` + test regresyjny.
+3. **A (balans ×2)** — to NIE jest kod do naprawienia, to decyzja Macieja do potwierdzenia/
+   skorygowania (zostawić balans + poprawić UX przystępności, czy zmniejszyć mnożnik dla
+   ulepszeń terenu konkretnie).
+
+**STATUS: ZAMKNIĘTE rozpoznanie, czeka na decyzje/dispatch napraw Macieja.**
+
+---
+
+## PONOWNE OTWARCIE — Auto Wyżywienie „nie bug" OBALONE przez Macieja dla przypadku 1 miasta (2026-08-10)
+
+**Wcześniejszy wniosek rozpoznania (`a9bb68ce84d7d4bc9`) był NIEPEŁNY.** Cytat Macieja, celny
+kontrargument: „to mogłoby mieć rację bytu, gdyby cywilizacji było więcej niż jedno miasto,
+gdzie jedno miasto dokłada do spichlerza, a drugie odejmuje, ale tu mamy tylko jedno miasto,
+więc jeżeli w danym mieście jest minus, to w cywilizacji też powinien być minus i to jest duża
+niespójność, więc tam jest pewnie podwójny błąd."
+
+**Matematycznie bezsporne:** przy DOKŁADNIE jednym mieście, bilans lokalny tego miasta i delta
+Spichlerza cywilizacji to TA SAMA liczba — nie ma żadnego drugiego miasta, które mogłoby
+„dokładać" i maskować lokalny minus. Dowód testem `ai-major-economy-test.cjs` (32/32,
+scenariusz „L. Q5") z poprzedniego rozpoznania jest NIEADEKWATNY do zrzutu Macieja — test
+używa DWÓCH miast (jedno z flagą, jedno bez), więc nie reprodukuje przypadku 1-miastowego,
+w którym „pokrycie z centrali przez inne miasto" jest fizycznie niemożliwe. Jeśli mechanizm
+faktycznie celuje w „Spichlerz ≥ 0" (cytat kodu: `maxSafePoziomRacjiForCity`, „najwyższy poziom
+Wyżywienia przy którym Spichlerz ≥ 0 po dopłatach miastom"), to przy 1 mieście pokazanie −1
+oznacza że albo (a) auto-mechanizm dobrał zły poziom racji dla TEJ populacji, albo (b) to ten
+sam rodzaj błędu co potwierdzony w temacie Praca (B: rozjazd cache/live) — wyświetlana wartość
+nie odzwierciedla faktycznie zastosowanego przez silnik poziomu racji.
+
+**Dispatch NOWEGO, dokładniejszego rozpoznania NASTĘPUJE teraz** — scenariusz specyficzny dla
+1 miasta: symulacja/test z JEDNYM miastem, sprawdzenie krok po kroku czy
+`autoBalanceRationsToSolvency`/`maxSafePoziomRacjiForCity` faktycznie wybiera poziom dający
+lokalny bilans ≥0 gdy jest tylko jedno miasto, i czy wybrany poziom faktycznie trafia do
+UI (nie cache'owany/przestarzały). Nie zamykam ponownie na pierwszej pasującej przyczynie
+(C-041) — jeśli znajdzie się jedna wada, szukać też drugiej niezależnej.
+
+---
+
+## KOREKTA — znalezisko A (balans ×2) NIE dotyczy zgłoszenia Macieja, sprostowanie (2026-08-10)
+
+**Maciej sprostował własne zgłoszenie, bezpośrednio:** „jeżeli chodzi o pracę to nieporozumienie.
+Ja w ogóle nie zgłaszałem w ogóle problemu, że nie mogę nic budować, jeżeli chodzi o ulepszenie.
+Tylko mówiłem, że po prostu przyrosty są nieprawidłowo liczone. Powinno być plus sześć, a było
+plus dwa." — orkiestrator błędnie zinterpretował eskalację („nie da się rozwijać cywilizacji")
+jako dosłowną blokadę budowy. **Znalezisko A (koszt ulepszeń ×2, świadoma decyzja balansowa
+Macieja z 3-4 sierpnia) NIE jest tym, co zostało zgłoszone** — to osobna, niezwiązana sprawa,
+prawdziwa ale nietrafiona w kontekst tego zgłoszenia. Realne zgłoszenie to WYŁĄCZNIE znalezisko
+B (rozjazd przyrostu +2 pokazanego vs +6 oczekiwanego — dokładnie ten sam mechanizm co rozjazd
+panelu miasta/cywilizacji, cache `_lastPlayerCityEcon`/`empireEconDirty`).
+
+**Dodatkowa, cenna podpowiedź Macieja co do PRZYCZYNY:** „ten problem z pracą prawdopodobnie
+wyniknął w momencie gdy prosiłem Cię o zrobienie globalnych ustawień dla żywności pracy i
+pieniędzy i to zostało gdzieś popsute." — to WIĄŻE znalezisko B (cache) ze znaleziskiem C
+(brak UI globalnych ustawień, `8692b61b`) przez WSPÓLNY kod: `onPodzialPracyChange`
+(main.ts:17077-17106) i `markCityStateDirty()`/`empireEconDirty` to DOKŁADNIE ta ścieżka,
+którą dotknął temat globalnych ustawień. Prawdopodobne (do potwierdzenia, nie zgadywania):
+praca nad `8692b61b` (albo commit bezpośrednio poprzedzający/następujący) wprowadziła regresję
+w inwalidacji cache `_lastPlayerCityEcon`, nie tylko zapomniała o UI. Do uwzględnienia w
+zakresie naprawy znaleziska B — sprawdzić `git log -p` dla `onPodzialPracyChange`/
+`empireEconDirty`/`refreshLiveEmpireRates` w okolicy czasowej `8692b61b`.
+
+**Skorygowany zakres realnych bugów do naprawy (bez A, które jest osobną sprawą balansu):**
+- **B** — rozjazd cache/live (Praca, prawdopodobnie też Skarbiec/Nauka) — PRIORYTET, możliwy
+  wspólny root cause z C.
+- **C** — brak UI dla gotowego backendu globalnych ustawień — PRIORYTET, ten sam commit.
+
+---
+
+## R-USTAWIENIA-GLOBALNE-LOKALNE — pełna specyfikacja UX od Macieja (2026-08-10)
+
+**Żywa rozmowa z właścicielem, kompletna specyfikacja — nie wymaga ABC, bezpośrednie ustalenie
+(CLAUDE.md pkt 1: „bezpośrednich ustaleń wypracowanych żywą rozmową z właścicielem" jest
+wyjątkiem od turnieju ABC).** Cytaty złożone w spójną specyfikację:
+
+1. **Globalne ustawienia przenoszą się na mapę świata**, do panelu cywilizacji („Grecy") —
+   tam gdzie dziś jest podgląd Skarbiec/Praca/Spichlerz/Nauka (chipy HUD + panel „ZASOBY
+   IMPERIUM" po kliknięciu). Tam dochodzą kontrolki globalnych ustawień dla całej cywilizacji.
+2. **W panelu miasta (po wejściu do miasta)** — dla TRZECH grup: Żywność, Pieniądze (Skarbiec),
+   Praca — każda ma własny przycisk/baton „Indywidualne". Naciśnięcie go WŁĄCZA możliwość
+   ustawienia tego miasta inaczej niż globalnie (lokalny override). Bez naciśnięcia — miasto
+   dziedziczy globalne ustawienie.
+3. **Każda z trzech grup traktowana OSOBNO** — miasto może mieć np. Pracę indywidualną, a
+   Żywność i Skarbiec nadal globalne. Zmiana globalnego ustawienia NIE dotyka miast z
+   naciśniętym „Indywidualne" dla TEJ konkretnej grupy.
+4. **Skarbiec i Nauka to JEDNA grupa, nie dwie** — cytat: „jeżeli chodzi o skarbiec, no to
+   wiadomo, w nim też zawiera się nauka. Więc poziom różnicowania środków na pieniądze, a na
+   naukę lub rozwój powinny być takie same w obu miejscach, zarówno w skarbcu jak i w nauce,
+   bo to w sumie to samo." — jeden wspólny suwak/ustawienie (prawdopodobnie istniejący „Skarb
+   %" z `cityEconMiniSkarbiec`) sterujący podziałem złoto↔nauka, spójnie widoczny/edytowalny
+   z obu miejsc (panelu Skarbca i panelu Nauki), nie dwa niezależne ustawienia.
+5. **Podsumowanie właściciela:** „wtedy będziemy mieć jasność: globalne ustawienia w globalnym
+   miejscu na mapie świata, a w mieście tylko indywidualne, jeżeli naciśniemy przycisk
+   indywidualny."
+
+**Powiązanie z resztą tematu:** backend dla mechanizmu global/local już istnieje
+(`empire-city-defaults.ts`, commit `8692b61b`) — brakuje WYŁĄCZNIE warstwy UI opisanej wyżej
+(3 przyciski w panelu miasta + nowa sekcja w panelu cywilizacji na mapie). Możliwe że ten sam
+obszar kodu (inwalidacja `empireEconDirty` przy `onPodzialPracyChange`) jest też źródłem
+znaleziska B (cache Pracy) — do zbadania łącznie, nie osobno.
+
+---
+
+## AUTORYZACJA MACIEJA — praca autonomiczna, deploy po zakończeniu (2026-08-10)
+
+Cytat: „Działaj z wszystkimi tematami, niezależnymi subagentami. Popraw wszystkie błędy, które
+możesz poprawić. Jak skończysz zrób deploy do roboczej, potem to przetestuję. Teraz przez
+najbliższy czas mnie nie będzie."
+
+**Zakres autoryzacji:** wszystkie ZNANE, jednoznaczne bugi (nie wymagające ABC/decyzji
+balansowej) — dispatch, napraw przez pełną pętlę Operator→Evaluator, scal, deploy do ROBOCZA
+na końcu, bez dalszych pytań. Rzeczy WYMAGAJĄCE decyzji (np. Auto Wyżywienie UX ABC A/B/C z
+wcześniejszego wpisu, balans ×2 kosztu ulepszeń) — zarejestrować, NIE zgadywać, zostawić do
+odpowiedzi po powrocie Macieja, nie blokować nimi reszty pracy ani deployu.
+
+Plan wykonania: (1) B+C razem (rozjazd cache Pracy + pełne UI global/local wg specyfikacji
+wyżej) — jeden skoordynowany temat, bo dotykają tego samego kodu; (2) dokończenie rozpoznania
+Auto Wyżywienie (scenariusz 1 miasta, w toku — `ab484b1390f9bc096`), naprawa jeśli to
+jednoznaczny bug silnika, rejestracja ABC jeśli wymaga decyzji; (3) szybki audyt C-030 całego
+rejestru pod kątem innych zapomnianych, jednoznacznych bugów; (4) deploy do ROBOCZA po
+zamknięciu wszystkiego możliwego bez ABC.
+
+---
+
+## Auto Wyżywienie — rozpoznanie #2 ZAKOŃCZONE, POTWIERDZONY „podwójny błąd" Macieja (2026-08-10)
+
+**Maciej miał rację, poprzednie zamknięcie było błędne.** Symulacja (esbuild harness, dokładne
+liczby ze zrzutu: populacja 6, produkcja 11, poziomRacji=1→koszt 12→bilans −1, zapas 0)
+potwierdza że sam mechanizm auto-korekty, uruchomiony PRZECIWKO AKTUALNEJ produkcji, poprawnie
+zbiega do bezpiecznego poziomu (0,5, bilans +5) — więc to NIE jest błąd formuły. Realna
+przyczyna to DWA niezależne bugi:
+
+**Bug #1 — auto-korekta liczy się WYŁĄCZNIE raz na turę.** Cała sekwencja
+(`autoBalanceRationsToSolvency`→`autoRaiseRationsForGrowth`→klamra `maxSafePoziomRacjiForCity`)
+żyje wewnątrz `triggerPlayerEndTurn` (`main.ts:21550+`) — uruchamia się TYLKO przy „Koniec
+tury". Panel miasta liczy Bilans NA ŻYWO z bieżącej produkcji. Jeśli produkcja spadnie w
+trakcie tury (przesunięcie robotnika, budynek, malus) PO ostatnim końcu tury, `poziomRacji`
+zostaje przy poziomie bezpiecznym dla STAREJ, wyższej produkcji — aż do następnego końca tury.
+„Auto Wyżywienie WŁ" nie jest ciągłym strażnikiem, mimo że tooltip to sugeruje.
+
+**Bug #2 — wewnątrz JEDNEGO renderu panelu miasta, Bilans i suwak czytają DWIE różne wartości
+poziomu racji.** `cityPanel.ts:1130-1135` (`cityFoodSplit`/`bilansLokalny`) liczy z surowego,
+nieprzyciętego `city.poziomRacji`. `cityPanel.ts:4651-4656` (suwak/etykieta wzrostu) liczy z
+`displayLevel = Math.min(view.poziomRacji, maxSafe)` — PRZYCIĘTEGO. Kod ma nawet gotową
+podpowiedź na ten stan (`cityPanel.ts:4712-4714`: „poziom zostanie obniżony do limitu na
+koniec tury"), co dowodzi że deweloperzy WIEDZIELI o tym stanie przejściowym, ale Bilans mimo
+to pokazuje niższą, nieskorygowaną liczbę.
+
+**Dodatkowy, realny skutek gameplayowy (odpowiedź na wcześniejsze pytanie o „(0)"):**
+`empire-food.ts:254-255` — `central` może być realnie ujemny wewnątrz funkcji (`glodWojska`),
+ale ZAPISYWANA wartość jest zawsze przycięta `Math.max(0, central)`. Przy jednym mieście i
+`zapasyPrzed=0`, deficyt NIE zostaje pokryty (`fed=false`) — miasto realnie głoduje (kara:
+ubytek ludności), mimo że licznik pokazuje neutralne „(0)", nie ujemną liczbę. „(0)" nie
+znaczy „wszystko OK", tylko „zero bufora, miasto właśnie głoduje" — mylące dla gracza.
+
+**Cache/live (jak w temacie Praca) — NIE potwierdzone dla Bilansu Żywności.** Oba źródła
+(Bilans i maxSafe) liczą na żywo, po prostu z DWÓCH niezależnych implementacji tej samej
+wielkości (`cityYieldPerTurn` w panelu vs `previewCityEconomy` w silniku) — inny mechanizm
+błędu niż w Pracy, choć podobny SKUTEK (dwie „prawdy" naraz).
+
+**Zakres naprawy (jednoznaczne bugi, w ramach autoryzacji „popraw wszystkie błędy"):**
+- Naprawa Bug #2 (tania, bezpośrednio adresuje zrzut Macieja): Bilans w panelu miasta ma
+  używać `displayLevel` (przyciętego poziomu), nie surowego `poziomRacji` — Bilans nigdy nie
+  pokazuje gorzej niż to, co silnik faktycznie zagwarantuje na koniec tury.
+- Naprawa Bug #1 (głębsza, wymaga namysłu nad kosztem wydajnościowym częstszego przeliczania)
+  — do rozważenia razem z fixem #2, ale jeśli zbyt ryzykowna na tę turę, zostawić do decyzji
+  po powrocie Macieja i naprawić na razie tylko UI (#2) + doprecyzować tooltip (nie obiecywać
+  ciągłej gwarancji).
+- Naprawa „(0)" — jaśniejszy komunikat przy `fed=false`/`central=0` (odróżnić „0 z nadwyżką"
+  od „0 bo deficyt niepokryty") — nieblokujące, do tej samej rundy jeśli czas pozwoli.
+
+Dispatch Operatora NASTĘPUJE teraz, osobno od tematu Praca+globalne ustawienia (worktree
+`agent-a824f4b28633fbcdd`) — różne obszary kodu, minimalne ryzyko kolizji przy scalaniu.
+
+---
+
+## Audyt C-030 (2026-08-10, w ramach autoryzacji autonomicznej) — LISTA PUSTA
+
+Sprawdzone wszystkie wpisy `STATUS: **OTWARTE` z datami 08-09/08-10 (26 trafień) — każdy ma
+jedno z trzech pokryć (dispatch/ABC/jawna decyzja Macieja o odłożeniu). Rejestr w tym zakresie
+już dwukrotnie przeaudytowany (§0c 08-09, C-030 08-10) — nic nowego nie znalezione. Dwa aktywne
+Operatorzy (Praca+UI globalne, Auto Wyżywienie) w toku.
+
+---
+
+## Auto Wyżywienie — Operator dostarczył (Bug #2 naprawiony), czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-ae8e77caf806ec3df`, branch `fix-auto-wyzywienie`. **Bug #2 naprawiony:**
+`cityFoodSplit(view, maxSafe?)` w `cityPanel.ts` — nowy opcjonalny parametr, Bilans liczony z
+przyciętego poziomu racji (proporcjonalne skalowanie kosztu, bez potrzeby dodatkowych
+parametrów), zwraca `clamped: boolean`. Wszystkie 7 wywołań w pliku zaktualizowane (C-026,
+każde sprawdzone z osobna), etykiety kosztu ujednolicone z przyciętym poziomem, tooltip przy
+Bilansie dopisuje info o auto-korekcie gdy `clamped=true`. Growth% świadomie NIETKNIĘTY
+(pokazuje ustawiony, nieskorygowany poziom — poza zakresem tej naprawy).
+
+**Znalezisko „(0)" — zweryfikowane jako JUŻ POKRYTE, nie dotknięte:** `glodWojska` (flaga z
+`empire-food.ts:254`) konsumowana w 3 niezależnych miejscach UI (HUD chip ostrzeżenie+tooltip,
+czerwony komunikat w panelu cywilizacji obok „W magazynie: 0", czaszka głodu na kartach
+jednostek) — realny deficyt jest już sygnalizowany osobno, „(0)" samo w sobie nie jest mylące
+w praktyce.
+
+**Bug #1 (mechanizm raz-na-turę) — świadomie NIETKNIĘTY** zgodnie z instrukcją (wymaga namysłu
+nad kosztem wydajnościowym). Wyłącznie kosmetyka: tooltip przycisku „Auto Wyżywienie" dopisuje
+„na koniec KAŻDEJ tury... nie na żywo w trakcie tury".
+
+**Test regresyjny** `auto-wyzywienie-bilans-clamp-test.cjs` (19/19) — wycina i REALNIE
+wykonuje aktualne ciało `cityFoodSplit` przez `new Function` (nie kopię-reimplementację),
+zweryfikowany mutacyjnie że łapie stary błąd (stary kod dawał `total=-1`, nowy `total=5` dla
+dokładnego scenariusza Macieja: populacja 6, produkcja 11, poziomRacji=1→koszt 12, maxSafe=0,5).
+
+Bramki: tsc 0, logic-test 213/213, nowy test 19/19, spichlerz-cap-citypanel-wiring 12/12,
+ai-major-economy 32/32, army-hunger-combat 13/13, city-state-mp-growth 9/9, tech-tree/research/
+unit-replace zielone. 2 pre-istniejące czerwone bramki (`empire-food-b5-test` 3 fail,
+`population-growth-v85-test` 2 fail) zweryfikowane `git stash` jako identyczne bez zmiany.
+
+⚠️ Operator zgłosił: gałąź sesji odjechała o 1 commit (wyłącznie wpis rejestru, nie kod) —
+`git pull --ff-only` przed scaleniem.
+
+Dispatch Evaluatora NASTĘPUJE teraz.
+
+Evaluator (`a1dea9d35dfb3cde5`, Opus 5) dispatchowany — weryfikacja liniowości
+`computeCityRationCost` (czy proporcjonalne skalowanie jest matematycznie poprawne), 7
+wywołań `cityFoodSplit` z osobna, czy Bilans↔Growth% nie tworzy nowej niespójności tego
+samego typu, znalezisko „(0)" zweryfikowane niezależnie.
+
+**Werdykt: PASS-WITH-NOTES, 2 BLOKUJĄCE (jednolinijkowe) przed scaleniem.**
+
+**Blokująca #1 — błąd zaokrąglenia IEEE-754** (`cityPanel.ts:1262`): `kosztRacji * (E / P)`
+— nawias wymusza dzielenie PRZED mnożeniem, a `E/P` nie zawsze jest reprezentowalne binarnie
+(np. `3,5/5=0,7` naprawdę to `0,69999...96`) → zaniża koszt o 1 w 136/46800 przypadków
+(wyczerpujący skan pop 1-200 × wszystkie pary poziomów), zawsze w kierunku zawyżenia Bilansu
+o +1 — dokładnie ta klasa błędu, którą naprawiamy. Poprawka: usunąć nawias →
+`kosztRacji * E / P` (0 rozbieżności na tym samym skanie).
+
+**Blokująca #2 — regresja wydajności na gorącej ścieżce mousemove** (`cityPanel.ts:1353`,
+`cityGrowthLive`): `maxSafe` trafia na ścieżkę renderu mapy wywoływaną przy KAŻDYM przesunięciu
+myszy nad żetonem (main.ts mousemove→`syncStatChips`→`_buildBadgeInput`→`getCityGrowth`→
+`cityGrowthLive`) — pełny `previewCityEconomy` + pętla 13 poziomów × O(miasta) BEZ
+memoizacji, przy każdym hover. Wynik niemal zawsze wyrzucany (`resolveCityFedForUi` ignoruje
+`foodSplitTotal` gdy jest już `tick` z końca tury — używane TYLKO przed pierwszym tickiem).
+Poprawka: usunąć `maxSafe` z tego wywołania (powrót do `cityFoodSplit(view).total`).
+
+**Nieblokujące:** asercja testowa #7 to licznik tekstowy (regex), nie parser — otwór na
+nowy call site z inną nazwą zmiennej `view`, nie łapie tego cicho (kierunek awarii
+bezpieczny: fałszywy alarm, nie ciche przepuszczenie); Growth% (`view.wzrostProcent`,
+`cityPanel.ts:1138`) liczony z surowego poziomu racji był NIESPÓJNY z suwakiem (przyciętym)
+już PRZED tą zmianą — naprawa Bilansu przenosi go z mniejszości do większości spójnych pól,
+NIE tworzy nowej klasy problemu, ale różnica (do 4 pp w scenariuszu Macieja) staje się
+bardziej widoczna — osobne zgłoszenie, zmienia liczby wzrostu, wymaga własnej decyzji.
+
+**Sprostowanie do znalezienia „(0)" — konkluzja Operatora trafna PRZYPADKIEM, uzasadnienie
+BŁĘDNE.** `glodWojska` (`central < 0` PO koszcie armii) to INNY warunek niż zgłoszony
+`fed=false`/`central=0` (deficyt niepokryty przy puli RÓWNEJ zero, nie ujemnej) — żadne z 3
+miejsc konsumujących `glodWojska` nic nie pokaże w tym przypadku. Realne pokrycie istnieje,
+ale gdzie indziej: `cityPanel.ts:1380/4650` i `empireDetailPanel.ts:560` („Brak wzrostu —
+miasto nie jest w pełni nakarmione"/„nie nakarmione z centrali") — per-miasto, NIE na samej
+liczbie centrali „(0)" jak pierwotnie proszono. **Punkt pozostaje OTWARTY**, nie domknięty.
+
+**Nota procesowa:** worktree bez symlinku `node_modules` dał cichy `exit 0` na bramkach
+bundlowych („esbuild not found" nie zatrzymało testu) przy pierwszym podejściu Evaluatora —
+realne ryzyko fałszywej zieleni, do dopisania w procedurze zakładania worktree.
+
+Dispatch naprawy 2 blokujących (ten sam Operator/worktree, jednolinijkowce) NASTĘPUJE teraz.
+
+Dispatchowany `a3534c36a92683a22` — usunięcie nawiasu (linia 1262), usunięcie `maxSafe` z
+`cityGrowthLive` (linia 1353), aktualizacja asercji testu (7→6 wywołań, + nowa asercja
+IEEE-754 na `view(5,60,45)`/`maxSafe=3,5`→racje=32).
+
+**Obie poprawki dostarczone i zweryfikowane** — nawias usunięty (linia 1262), `maxSafe`
+usunięty CAŁKOWICIE z `cityGrowthLive` (nie tylko z argumentu — sam koszt liczenia
+`getMaxSafePoziomRacjiForPlayerCity` zostałby, gdyby zostawić samo wywołanie). Test
+rozszerzony do 22 asercji (6 wywołań z `maxSafe` + 1 świadomy goły `cityFoodSplit(view)` w
+`cityGrowthLive` + nowa asercja IEEE-754).
+
+**SCALONE** bezpośrednio przez orkiestratora (`git apply -3`, czysto): `cityPanel.ts` (94
+wstawień/17 usunięć) + nowy `auto-wyzywienie-bilans-clamp-test.cjs`. Bramki na żywym drzewie
+identyczne z Operatorem: tsc 0, logic-test 213/213, nowy test 22/22,
+spichlerz-cap-citypanel-wiring 12/12, ai-major-economy 32/32, army-hunger-combat 13/13,
+city-state-mp-growth 9/9.
+
+**STATUS: ZAMKNIĘTE (Bug #2 naprawiony w całości). Otwarte pozostają:** Bug #1 (mechanizm
+raz-na-turę, świadomie odłożony), znalezisko „(0)" (sprostowane uzasadnienie, wciąż bez
+rozwiązania na poziomie liczby centrali), niespójność `wzrostProcent` z surowym poziomem
+racji (nowe, osobne zgłoszenie z Evaluatora) — wszystkie do backlogu, niepilne.
+
+---
+
+## R-USTAWIENIA-GLOBALNE-LOKALNE + znalezisko B — Operator dostarczył (2026-08-10), DUŻA ZMIANA, czeka na Evaluatora
+
+Worktree `agent-a824f4b28633fbcdd`, branch `fix-praca-global-local`. **304 wywołania narzędzi,
+453k tokenów — potraktować z pełną powagą przy weryfikacji.**
+
+**Znalezisko B — przyczyna INNA niż hipoteza z dispatchu (cichy wyjątek w
+`refreshLiveEmpireRates`) — NIE potwierdzona, Operator jej nie wykluczył w 100% (brak
+środowiska przeglądarki), ale znalazł coś poważniejszego:**
+
+**REALNY BUG SILNIKA, nie tylko cache/HUD.** `turn-economy.ts` — zarówno `previewCityEconomy`
+(podgląd) JAK I `advanceCityEconomy` (**realny silnik końca tury**) liczyły split Pracy z
+`city.podzialPracy?.procentBudynki ?? params.suwakPracaBudynki` — pole `city.podzialPracy`
+istnieje TYLKO gdy miasto ma aktywny lokalny override; bez override cicho spadało na
+STATYCZNY domyślny procent z JSON (70%), **całkowicie ignorując globalny suwak Pracy**. 20
+linii wyżej `toEconomyCity()`/`resolveCityPodzialPracy` już poprawnie rozwiązywał wartość do
+`econCity.podziałPracy`, ale NIKT tego pola nie czytał do arytmetyki. Dokładnie tłumaczy zrzut
+Macieja: `round(6×0,70)=4→doPuli=2`. **To była regresja komitu `8692b61b`** (wpięto resolver
+do `toEconomyCity`, zapomniano przepiąć arytmetykę w DWÓCH miejscach) — i dotyczyła REALNEGO
+SILNIKA, nie tylko wyświetlania — po End Turn liczyłoby się tak samo źle, nie tylko podgląd.
+
+**Naprawa:** w obu miejscach użyto `econCity.podziałPracy.procentBudynki` (rozwiązanego pola)
+zamiast surowego `city.podzialPracy?.procentBudynki ?? default`. Wszyscy callerzy
+`previewCityEconomy`/`advanceCityEconomy` sprawdzeni (C-026).
+
+**Skarbiec/Nauka: bugu formuły NIE MA** (czytały poprawne rozwiązane pole od zawsze) — ale
+Operator znalazł OSOBNY bug: `onPodzialHandluChange` zawsze wymuszał `override=true` przy
+KAŻDEJ zmianie (uniemożliwiając realnie działający globalny suwak) — naprawiony jako część
+budowy UI (warunkowo global/local, jak przy Pracy).
+
+**Defensywne wzmocnienie** (nie potwierdzona przyczyna, realne ryzyko architektoniczne):
+`refreshLiveEmpireRates()` owinięte w `try/catch` — przy wyjątku flaga wraca na `true` (retry)
+zamiast trwale zamrażać cache, błąd do `console.error`. Dotyczy jednym mechanizmem Pracy,
+Skarbca i Nauki (wspólny cache).
+
+**Test regresyjny** `praca-global-default-live-test.cjs` — reprodukuje dokładny scenariusz
+przez `previewCityEconomy` I `advanceCityEconomy`, zweryfikowany że PADA na starym kodzie z
+dokładnie tymi liczbami z raportu, PRZECHODZI po naprawie, plus sprawdza parytet preview/silnik
+i że lokalny override nadal działa.
+
+**UI globalne/indywidualne — mapowanie 3 grup Macieja:**
+- **Praca** — backend już istniał (hooki wpięte), dobudowany przycisk „Indywidualne" w
+  panelu miasta + sekcja „DOMYŚLNY PODZIAŁ PRACY" w panelu „Grecy".
+- **Skarbiec+Nauka** — starszy mechanizm (`empire-handel-split.ts`), globalny suwak na mapie
+  JUŻ ISTNIAŁ, resolver poprawny; naprawiony `onPodzialHandluChange` + nowe hooki override +
+  JEDEN przycisk „Indywidualne" dla całej grupy (zgodnie ze specyfikacją „to jedna grupa").
+- **Żywność** — backend NIE ISTNIAŁ WCALE, zbudowany od zera wzorem architektury Okolicy:
+  nowe pole `City.poziomRacjiOverride`, `resolveCityPoziomRacji`/
+  `broadcastPoziomRacjiToOwnerCities`/`migratePoziomRacjiOnLoad`, `ownerDefaultPoziomRacji`
+  Map + init/save/load, przepisany `onCityRationChange`, przycisk „Indywidualne" (niezależny
+  od istniejącego „Auto Wyżywienie") + sekcja „DOMYŚLNE WYŻYWIENIE" w panelu „Grecy".
+
+**Bramki (wszystkie zielone/identyczne z pre-istniejącym stanem, zweryfikowane `git stash`
+gdzie trzeba):** tsc 0, logic-test 213/213, tech-tree/research/unit-replace/ai-founding
+zielone, `empire-city-defaults-test` (rozszerzony) 45/45, nowy `praca-global-default-live-
+test` 7/7, plus **~20 dalszych bramek** (hud-skarbiec, empire-skarbiec-bilans, hud-miasto-
+stan-cywilizacji, empire-panel-split, stolarnia, tartak-glinianka, oblezenie, waluta-mennica,
+mennica-uspienie, mennica-magazyn, plony-budynkow, owner-economy, cuda-handel, wonder-yields,
+ai-colonization-pop, found-from-village, mp-spawn-ration, camera-zoom-block, ai-war-gate) —
+wszystkie zielone. 7 pre-istniejących czerwonych zweryfikowanych `git stash` jako identyczne.
+
+**Świadomie pominięte/uproszczone (jawnie zgłoszone):** globalny suwak Żywności nie klamruje
+per-city do `maxSafe` przy broadcaście (polega na mechanizmie końca tury); brak testu e2e DOM
+dla nowych przycisków (brak infrastruktury w repo dla analogicznych elementów); nie
+testowano interaktywnie w przeglądarce (brak środowiska graficznego) — **rekomendowany
+playtest wzrokowy po scaleniu**; `effectivePoziomRacji` dodana jako „belt-and-suspenders" wzorem
+istniejącego `effectiveOkolicaFocus" (ten sam wzorzec co przed zmianą, dziś nigdzie realnie
+niewywoływana).
+
+Dispatch NIEZALEŻNEGO Evaluatora (Opus 5) NASTĘPUJE teraz — pełna, rygorystyczna weryfikacja
+ze względu na skalę (7 plików produkcyjnych, w tym REALNA zmiana silnika ekonomii) i ryzyko
+(wpływ na zapisane gry/balans, nie tylko UI).
+
+Evaluator dispatchowany (`a2c06d0a63ad3669c`, Opus 5) — szczególny nacisk: (a) poprawność
+naprawy silnika ekonomii, własny dowód mutacyjny; (b) MOŻLIWY KONFLIKT z równolegle
+scalonym `e4155972` (Auto Wyżywienie, ten sam obszar `cityPanel.ts`/Racje) — worktree tego
+Operatora bazował SPRZED tego scalenia; (c) bezpieczeństwo nowego mechanizmu Żywność
+(pole na City od zera) dla save/load starych zapisów.
+
+**Werdykt: PASS-WITH-NOTES, ZERO blokujących.** Konflikt z `e4155972` sprawdzony
+EMPIRYCZNIE (próbne scalenie w osobnym worktree) — `git diff e4155972 -- cityPanel.ts | grep
+"^-"` = zero usuniętych linii, scalenie czysto addytywne, hunki sąsiadują ale nie nachodzą.
+Naprawa silnika potwierdzona własnym dowodem mutacyjnym Evaluatora (cofnięcie naprawy →
+test faktycznie PADA, `exit 1`, dokładnie oczekiwane asercje). Migracja starych zapisów
+NIEPOTRZEBNA (błąd był czysto obliczeniowy, nic błędnego nie utrwalono w save) — jedyny
+nieodwracalny skutek to historyczna strata: Praca z tur między `8692b61b` a teraz była
+naliczana wg 70/30 zamiast ustawionego suwaka, nie do naprawienia wstecz. Mechanizm
+Żywność zweryfikowany bezpieczny dla save/load — kolejność migracji (`migrateCityRationsFromSave`
+PRZED `migratePoziomRacjiOnLoad`) sprawdzona jako poprawna (odwrotna kolejność wyzerowałaby
+stare poziomy racji — realne ryzyko, którego NIE ma). `vite build` pełny (nie tylko tsc) —
+805 modułów, exit 0. ~15 dodatkowych bramek zielone, 3 pre-istniejące czerwone zweryfikowane
+identyczne na baseline (przy okazji: `growthmult-compound-test` w CLAUDE.md błędnie opisany
+jako zielony 24/24 — dziś czerwony 17/7 NIEZALEŻNIE od tej zmiany, osobny dług dokumentacji).
+
+**Noty (nieblokujące, do playtestu/backlogu):** N1 stan „Indywidualne WYŁ + Auto Wyżywienie
+WŁ" może cicho odjechać od globalnego poziomu Żywności (samo-leczący się, ale mylący UI);
+N2 suwak Żywności bez override może tylko OBNIŻYĆ globalny poziom, nie podnieść (zgodne ze
+specyfikacją, nieoczywiste); N3 potwierdzone bezpieczne (bezwarunkowy clamp końca tury
+chroni wszystkie miasta); N4 martwy kod `effectivePoziomRacji`; N5 zduplikowane literały
+zamiast stałych (wartości poprawne); N6 luka w pokryciu testu migracji (gałąź z
+`savedDefaults` bez asercji, w praktyce bezpieczna); N7 brak odświeżenia panelu przy
+zmianie globalnej (nieistotne jeśli panele się wykluczają).
+
+**SCALONE** bezpośrednio przez orkiestratora (`git apply -3`, czysto na wszystkie 7 plików +
+1 nowy). Kontrola po scaleniu: `grep -c "cityFoodSplit(view, maxSafe)"` = 6 (zgodnie z
+oczekiwaniem), `auto-wyzywienie-bilans-clamp-test` 22/22 (naprawa z `e4155972` przetrwała).
+Bramki na żywym drzewie identyczne z Evaluatorem: tsc 0, `vite build` 805 modułów exit 0,
+logic-test 213/213, praca-global-default-live-test 7/7, empire-city-defaults-test 45/45,
+hud-skarbiec-test 7/7, empire-skarbiec-bilans-test 11/11, empire-panel-split-test 18/18,
+tech-tree/research/unit-replace/ai-founding-territory zielone.
+
+**STATUS: ZAMKNIĘTE.** R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (UI) w pełni domknięte —
+temat wcześniej fałszywie oznaczony „SCALONE" (`8692b61b`, backend bez UI) ma teraz
+faktyczny interfejs dla gracza wg pełnej specyfikacji. Znalezisko B (rozjazd Praca)
+naprawione u ŹRÓDŁA (silnik, nie tylko wyświetlanie).
+
 ---

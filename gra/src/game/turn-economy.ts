@@ -1814,7 +1814,24 @@ export function previewCityEconomy(
     // Wealth (nie jest mnozony przez niego).
     const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
 
-    const udzialBudynki = (city.podzialPracy?.procentBudynki ?? params.suwaakPracaBudynki) / 100;
+    // NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B): PRZEDTEM czytano `city.podzialPracy`
+    // wprost -- pole wypełnione WYŁĄCZNIE gdy miasto ma aktywny lokalny override
+    // (podzialPracyOverride=true). Bez override to pole jest `undefined`
+    // (seedCityOwnerDefaults/onPodzialPracyOverrideToggle je usuwają), więc split cicho spadał
+    // do statycznego `params.suwaakPracaBudynki` z JSON-a -- IGNORUJĄC globalny suwak Pracy
+    // gracza (ownerDefaultPodzialPracy), mimo że `econCity.podziałPracy` dwadzieścia linii
+    // wyżej (toEconomyCity → resolveCityPodzialPracy) już poprawnie go rozwiązuje. Efekt: panel
+    // miasta (cityPanel, effectivePodzialPracy → ten sam resolveCityPodzialPracy) pokazywał
+    // ustawioną wartość (np. 50/50 → +6/+6), a silnik/HUD cywilizacji liczył zawsze na
+    // domyślnych 70/30 (round(6×0,70)=4 → doPuli=2) — DOKŁADNIE zgłoszony rozjazd „plus sześć
+    // vs plus dwa". `econCity.podziałPracy` już niesie poprawną wartość — czytamy z niego.
+    // / EN: previously read `city.podzialPracy` directly -- only populated when the city has an
+    // active local override; without override it is `undefined`, so the split silently fell
+    // back to the static JSON default, ignoring the player's global Praca slider
+    // (ownerDefaultPodzialPracy) even though `econCity.podziałPracy` above already resolves it
+    // correctly. This was the actual root cause of the reported mismatch, not merely a cache
+    // staleness issue.
+    const udzialBudynki = econCity.podziałPracy.procentBudynki / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
 
     const isOblegane = city.oblegane === true;
@@ -2327,7 +2344,15 @@ export function advanceCityEconomy(
     const pieniadzZTras = tradeIncomeByCity.get(city.id) ?? 0;
 
     // WIRE 2: splitPraca
-    const udzialBudynki = (city.podzialPracy?.procentBudynki ?? params.suwaakPracaBudynki) / 100;
+    // NAPRAWA CACHE/LIVE (Maciej 2026-08-10, znalezisko B) -- ten sam błąd co w
+    // previewCityEconomy (patrz komentarz tam): `city.podzialPracy` jest `undefined` bez
+    // lokalnego override, więc realny tick końca tury liczył split ZAWSZE na statycznym
+    // `params.suwaakPracaBudynki`, ignorując globalny suwak Pracy gracza. `econCity.podziałPracy`
+    // (toEconomyCity → resolveCityPodzialPracy, wyżej) już rozwiązuje override/global poprawnie.
+    // / EN: same bug as previewCityEconomy above -- the real end-of-turn tick ignored the
+    // global Praca slider for cities without a local override; `econCity.podziałPracy` already
+    // resolves it correctly.
+    const udzialBudynki = econCity.podziałPracy.procentBudynki / 100;
     const { doBudynkow, doPuli } = splitPraca(yld.praca, udzialBudynki);
     if (ctx.maTargowisko && walutaOdkryta) {
       const pieniadzZPracyPoSplit = Math.floor(doPuli * params.targowiskoPracaMnoznik);
