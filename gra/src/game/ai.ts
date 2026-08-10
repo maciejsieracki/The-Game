@@ -1533,6 +1533,17 @@ export interface AiWonderOption {
 export interface AiWonderDecision {
   cityId: string;
   wonderId: string;
+  /**
+   * R-EPOKA-CUD-WARUNEK-AWANSU B3 (wymuszacz): true gdy trzeba wskoczyć PRZED już
+   * budowany element (kolejka miasta NIE była pusta) -- main.ts wstawia cud na
+   * front kolejki zamiast dopisywać na koniec (`enqueue`), tracąc postęp
+   * przerwanego elementu (spójne z `production.ts:dequeue` -- postep liczony
+   * tylko dla frontu). Puste/nieobecne przy zwykłej ścieżce (queueEmpty zawsze
+   * true tam, gdzie decyzja zapada). / EN: true when the wonder must jump ahead
+   * of an item already mid-build (queue not empty) -- main.ts unshifts instead
+   * of appending, discarding the interrupted item's front-progress.
+   */
+  queueJump?: boolean;
 }
 
 /**
@@ -1559,12 +1570,79 @@ export function loadAiWonderParams(data: GameData, poziom: 1 | 2 | 3 = 2): AiWon
 }
 
 /**
+ * R-EPOKA-CUD-WARUNEK-AWANSU B3 (ECHO Maciej 2026-08-10, doprecyzowanie ryzyka
+ * utykania AI zidentyfikowanego przez Evaluatora rundy 4): ile tur trzeba czekać
+ * (bez budowy cudu mimo dostępnego kandydata) zanim próg opłacalności złagodnieje
+ * do PEŁNEGO zniesienia (koszt bez znaczenia -- patrz relaxedWonderCostThreshold).
+ * PRÓG DO AKCEPTACJI WŁAŚCICIELA -- placeholder w ai-params.json (cuda_stuck_relax_tur_max),
+ * wzorzec jak cuda_poziom{1,2,3}_*.
+ */
+export function loadAiWonderStuckRelaxTurMax(data: GameData): number {
+  return getAiParam(data, 'cuda_stuck_relax_tur_max', 30);
+}
+
+/**
+ * R-EPOKA-CUD-WARUNEK-AWANSU B3 (rozluźnianie progu z czasem): im dłużej (w turach,
+ * `stuckTurns`) AI ma kandydata na cud dostępnego i nie buduje żadnego innego, ale
+ * `baseProgKosztX` go nie przepuszcza, tym mniej wymagający efektywny próg -- rośnie
+ * płynnie od `baseProgKosztX` (stuckTurns<=0) do BEZ OGRANICZEŃ (Infinity, koszt
+ * przestaje mieć znaczenie) w chwili osiągnięcia `stuckRelaxTurMax`. Czysta funkcja,
+ * deterministyczna -- main.ts liczy `stuckTurns` (aiWonderStuckTurnsByOwner) i
+ * podaje gotowy próg do `decideAiWonderBuild` (parametr `difficulty.progKosztX`
+ * podmieniony na wynik tej funkcji, ŻADNA inna zmiana wywołania). / EN: base
+ * threshold grows smoothly to "cost no longer matters" once stuckTurns reaches
+ * stuckRelaxTurMax -- guarantees the AI eventually queues the wonder instead of
+ * staying permanently blocked by the cost gate.
+ */
+export function relaxedWonderCostThreshold(
+  baseProgKosztX: number,
+  stuckTurns: number,
+  stuckRelaxTurMax: number,
+): number {
+  const base = Math.max(0, baseProgKosztX);
+  if (stuckRelaxTurMax <= 0 || stuckTurns <= 0) return base;
+  if (stuckTurns >= stuckRelaxTurMax) return Number.POSITIVE_INFINITY;
+  // Liniowo bazowy -> nieskończoność: mianownik (1 - t/max) maleje do 0 dokładnie
+  // przy t=max, gdzie gałąź wyżej już zwróciła Infinity wprost (bez dzielenia przez 0).
+  const remainingFrac = 1 - stuckTurns / stuckRelaxTurMax;
+  return base / remainingFrac;
+}
+
+/**
  * Decyduje czy i w którym mieście AI (ownerId) powinno zakolejkować cud tej
  * tury. Priorytety (zadanie): (1) cuda E (wyłączne) własnej cywilizacji przed
  * R (wyścig); (2) max 1 cud w budowie na cywilizację naraz (hasWonderInProgress);
  * (3) throttle -- nie każda tura; (4) miasto musi mieć wolną kolejkę I stać je
  * na cud wg progu trudności. Pierwsze pasujące miasto/cud (w kolejności wejścia)
  * wygrywa -- deterministyczne.
+ *
+ * `forcePriority` (R-EPOKA-CUD-WARUNEK-AWANSU B3, ECHO Maciej 2026-08-10): main.ts
+ * podaje `true` WYŁĄCZNIE gdy ta cywilizacja ma komplet technologii bieżącej epoki
+ * (`allEraTechsResearched`, ta sama funkcja co warunek awansu w owner-epoch.ts) a
+ * brakuje jej WYŁĄCZNIE cudu do awansu (`!eraOwnWonderSatisfied`) -- I ten cud NIE
+ * jest już w budowie (main.ts sprawdza to PRZED wywołaniem; gdyby był, priorytet
+ * byłby zbędny, AI i tak postępuje). W tym trybie throttle, `hasWonderInProgress`,
+ * `city.queueEmpty` i `difficulty.progKosztX` przestają obowiązywać -- JEDYNYM
+ * warunkiem zostaje `pracaPerTurn>0` (dosłowny brak produkcji = martwa pętla poza
+ * zasięgiem priorytetu, zastrzeżenie zadania: "jeśli DOSŁOWNIE nie stać jej na nic,
+ * priorytet nie pomoże"). Gdy trzeba wskoczyć przed już budowany element, decyzja
+ * niesie `queueJump: true` -- main.ts wstawia cud na front kolejki zamiast na
+ * koniec, przed budynkami/jednostkami/innymi projektami (zadanie: "twarde
+ * pierwszeństwo", nie tylko łagodniejszy próg). JEDNO wywołanie, JEDNA funkcja --
+ * brak równoległej ścieżki decyzyjnej (C-026).
+ *
+ * `requiredWonderIds` (FIX Evaluator runda 1, blokujący): w trybie `forcePriority`
+ * WYŁĄCZNIE cud, którego id jest na tej liście, może zostać wybrany -- NIE
+ * `ordered[0]` (pierwszy budowalny). Bez tego AI potrafiła wymusić budowę
+ * DOWOLNEGO innego budowalnego cudu, gdy cud faktycznie bramkujący awans epoki
+ * nie był (jeszcze) budowalny (np. wymaga technologii spoza bieżącej epoki mimo
+ * `epokaWejscia` wcześniejszej -- Fenicjanie/Petra, dane B2, poza zakresem tej
+ * naprawy) -- co skutkowało co-turowym queueJump na inny cud, zerowaniem postępu
+ * (`postep:0` przy każdym skoku) i kolejką rosnącą bez ograniczenia, a wymagany
+ * cud NIGDY się nie kończył. Jeśli ŻADEN wymagany cud nie jest budowalny (lista
+ * pusta lub brak przecięcia z `buildableWonders`) -- `null`, BEZ fallbacku na inny
+ * cud (main.ts i tak nie powinien wtedy wołać z `forcePriority=true`, ale funkcja
+ * jest bezpieczna sama w sobie -- obrona w głąb).
  */
 export function decideAiWonderBuild(
   turn: number,
@@ -1573,12 +1651,10 @@ export function decideAiWonderBuild(
   cityCandidates: readonly AiWonderCityCandidate[],
   buildableWonders: readonly AiWonderOption[],
   difficulty: AiWonderDifficultyParams,
+  forcePriority = false,
+  requiredWonderIds: readonly string[] = [],
 ): AiWonderDecision | null {
-  if (hasWonderInProgress) return null;
   if (buildableWonders.length === 0) return null;
-  if (difficulty.throttleTur <= 0) return null;
-  // Throttle -- nie każda tura; +ownerId rozprasza AI na różne tury (deterministyczne).
-  if ((turn + ownerId) % difficulty.throttleTur !== 0) return null;
 
   // E (wyłączne) przed R (wyścig) -- sort stabilny zachowuje kolejność wejściową
   // (main.ts podaje wg `kolejnosc` z indeksu państwa, patrz getWondersForCiv).
@@ -1587,6 +1663,22 @@ export function decideAiWonderBuild(
     const eb = b.dostep === 'E' ? 0 : 1;
     return ea - eb;
   });
+
+  if (forcePriority) {
+    // WYŁĄCZNIE cud bramkujący awans -- patrz docstring `requiredWonderIds` wyżej.
+    const w = ordered.find(o => requiredWonderIds.includes(o.id));
+    if (!w) return null;
+    for (const city of cityCandidates) {
+      if (city.pracaPerTurn <= 0) continue;
+      return { cityId: city.cityId, wonderId: w.id, queueJump: !city.queueEmpty };
+    }
+    return null;
+  }
+
+  if (hasWonderInProgress) return null;
+  if (difficulty.throttleTur <= 0) return null;
+  // Throttle -- nie każda tura; +ownerId rozprasza AI na różne tury (deterministyczne).
+  if ((turn + ownerId) % difficulty.throttleTur !== 0) return null;
 
   for (const city of cityCandidates) {
     if (!city.queueEmpty) continue;

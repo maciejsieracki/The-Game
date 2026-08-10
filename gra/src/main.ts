@@ -311,6 +311,7 @@ import {
 import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch, computeMainCivEraFromResearch } from './game/owner-epoch';
+import { allEraTechsResearched, eraOwnWonderSatisfied, eraOwnWonderIds } from './game/owner-epoch';
 import {
   ERA_CHANGE_NOTIFY,
   shouldNotifyPlayerEraChange,
@@ -959,7 +960,14 @@ import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
-import { decideAiWonderBuild, loadAiWonderParams, type AiWonderCityCandidate, type AiWonderOption } from './game/ai';
+import {
+  decideAiWonderBuild,
+  loadAiWonderParams,
+  relaxedWonderCostThreshold,
+  loadAiWonderStuckRelaxTurMax,
+  type AiWonderCityCandidate,
+  type AiWonderOption,
+} from './game/ai';
 import {
   WOJNA_WYMUSZONA_ODPOCZYNEK_TUR,
   WOJNA_WYMUSZONA_COOLDOWN_TA_SAMA_CYWILIZACJA_TUR,
@@ -3535,6 +3543,13 @@ async function boot(): Promise<void> {
      * zasięgiem leksykalnym lokalnej stałej `econ` (zadeklarowanej w innym
      * bloku try/catch) -- stąd osobna, trwała mapa zamiast domknięcia. */
     const aiWonderPracaTickByCity = new Map<string, number>();
+    /** R-EPOKA-CUD-WARUNEK-AWANSU B3 (rozluźnianie progu, ECHO Maciej 2026-08-10): ile
+     * kolejnych tur pod rząd dana cywilizacja (ownerId) miała kandydata na cud dostępnego
+     * i nie budowała żadnego innego cudu, ale decyzja tej tury wyszła null (throttle LUB
+     * próg progKosztX) -- podawane do relaxedWonderCostThreshold, zerowane gdy cud
+     * faktycznie trafi do kolejki. Trwałe między turami z tego samego powodu co
+     * aiWonderPracaTickByCity wyżej (poza zasięgiem leksykalnym bloku decyzji). */
+    const aiWonderStuckTurnsByOwner = new Map<number, number>();
     let powerSnapshotsForTurn: PowerOwnerSnapshot[] = [];
 
     function territoryOwnerAtLive(q: number, r: number): number | null {
@@ -6947,6 +6962,7 @@ async function boot(): Promise<void> {
       typCityCopyOwners.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       eliminatedOwners.clear();
       capitalCityIdByOwner.clear();
@@ -23777,6 +23793,23 @@ async function boot(): Promise<void> {
             // AI na koszt wg progu trudności (ai-params.json cuda_poziom{1,2,3}_*, patrz
             // decideAiWonderBuild w ai.ts -- throttle + priorytet E przed R + max 1 cud w
             // budowie na cywilizację naraz, wszystko deterministyczne).
+            //
+            // R-EPOKA-CUD-WARUNEK-AWANSU B3 (ECHO Maciej 2026-08-10, ryzyko utykania AI
+            // zidentyfikowane przez Evaluatora rundy 4): JEDYNE miejsce decyzyjne o
+            // kolejkowaniu cudu AI (C-026 -- żadna równoległa ścieżka) dostaje TERAZ dwa
+            // dodatkowe mechanizmy poza samym decideAiWonderBuild wyżej:
+            //  1. Rozluźnianie progu opłacalności z czasem -- `aiWonderStuckTurnsByOwner`
+            //     liczy kolejne tury bez budowy cudu mimo dostępnego kandydata (throttle LUB
+            //     próg odrzucił), `relaxedWonderCostThreshold` podnosi efektywny próg aż do
+            //     pełnego zniesienia po `cuda_stuck_relax_tur_max` turach.
+            //  2. Twardy wymuszacz -- gdy `allEraTechsResearched` (TA SAMA funkcja co warunek
+            //     awansu w owner-epoch.ts, nie duplikować) zwraca true dla bieżącej epoki tej
+            //     cywilizacji, a `eraOwnWonderSatisfied` false (brakuje WYŁĄCZNIE cudu do
+            //     awansu) i ten cud NIE jest już w budowie -- `forcePriority=true` do
+            //     decideAiWonderBuild: throttle/próg/kolejka-pusta przestają obowiązywać,
+            //     cud dostaje twarde pierwszeństwo (queueJump wskakuje przed już budowany
+            //     element), jedynym ograniczeniem zostaje pracaPerTurn>0 (dosłowny brak
+            //     produkcji -- martwa pętla poza zasięgiem priorytetu, zastrzeżenie zadania).
             if (!opts.defensiveCopy) {
               try {
                 const myCitiesForWonder = cities.filter(c => c.ownerId === ownerId);
@@ -23794,10 +23827,74 @@ async function boot(): Promise<void> {
                   queueEmpty: frontItem(cityProd.get(c.id) ?? { kolejka: [], postep: 0 }) === null,
                   pracaPerTurn: aiWonderPracaTickByCity.get(c.id) ?? 0,
                 }));
-                const wonderDiffParams = loadAiWonderParams(data, aiDiffLevel);
+
+                // 2. Wymuszacz: komplet technologii epoki, brakuje wyłącznie cudu, i ten
+                // cud jeszcze nie jest w budowie (inaczej priorytet zbędny -- już postępuje).
+                const wonderEraCivType = civTypeForOwner(ownerId);
+                const wonderCurrentEra = ownerEraByOwner.get(ownerId) ?? gameStartEra();
+                const wonderDoneTechs = aiResearchDone.get(ownerId) ?? new Set<string>();
+                const wonderEraGateForced = allEraTechsResearched(
+                  wonderCurrentEra,
+                  data.tech as import('./data/loader').TechDef[],
+                  wonderDoneTechs,
+                ) && !eraOwnWonderSatisfied(wonderEraCivType, wonderCurrentEra, completedWorldWonders);
+                const wonderRequiredIds = wonderEraGateForced
+                  ? eraOwnWonderIds(wonderEraCivType, wonderCurrentEra)
+                  : [];
+                // FIX (Evaluator runda 1, blokujący): sprawdzamy CAŁĄ kolejkę (nie tylko front)
+                // -- inaczej wymagany cud zakolejkowany, ale nie na czele (np. po innym już
+                // budowanym elemencie), zostałby ponownie zakolejkowany duplikatem.
+                const wonderRequiredAlreadyBuilding = wonderRequiredIds.length > 0 && myCitiesForWonder.some(c => {
+                  const kolejka = cityProd.get(c.id)?.kolejka ?? [];
+                  return kolejka.some(it => {
+                    const wid = parseWonderProdId(it.id);
+                    return wid !== null && wonderRequiredIds.includes(wid);
+                  });
+                });
+                // FIX (Evaluator runda 1, blokujący -- Fenicjanie Brąz→Żelazo): wymagany cud
+                // epoki może NIE być budowalny (np. petra wymaga tech z epoki Żelaza mimo
+                // epokaWejscia=2 -- rozjazd danych B2, osobna decyzja właściciela, NIE tu).
+                // Bez tej koniunkcji forcePriority wymuszał budowę PIERWSZEGO budowalnego cudu
+                // z listy (ordered[0] w ai.ts) zamiast cudu bramkującego awans -- AI co turę
+                // wskakiwała innym cudem na front kolejki (queueJump zeruje postęp), kolejka
+                // rosła bez ograniczenia, żywność drenowana co turę, wymagany cud NIGDY nie
+                // powstawał -- dokładna odwrotność celu B3. Bez budowalnego wymaganego cudu:
+                // brak wymuszenia (decideAiWonderBuild z forcePriority dostanie pustą listę
+                // wymaganych i sam zwróci null -- patrz ai.ts).
+                const wonderRequiredBuildable = wonderRequiredIds.some(
+                  id => buildableForAi.some(w => w.id === id),
+                );
+                const wonderForcePriority = wonderEraGateForced
+                  && !wonderRequiredAlreadyBuilding
+                  && wonderRequiredBuildable;
+
+                // 1. Rozluźnianie progu z czasem -- efektywny próg podmieniony PRZED
+                // wywołaniem decideAiWonderBuild (funkcja sama nie zna historii tur).
+                const wonderStuckTurns = aiWonderStuckTurnsByOwner.get(ownerId) ?? 0;
+                const wonderStuckRelaxMax = loadAiWonderStuckRelaxTurMax(data);
+                const wonderDiffParamsBase = loadAiWonderParams(data, aiDiffLevel);
+                const wonderDiffParams = {
+                  ...wonderDiffParamsBase,
+                  progKosztX: relaxedWonderCostThreshold(
+                    wonderDiffParamsBase.progKosztX, wonderStuckTurns, wonderStuckRelaxMax,
+                  ),
+                };
+
                 const wonderDecision = decideAiWonderBuild(
                   turn, ownerId, hasWonderInProgress, wonderCandidates, buildableForAi, wonderDiffParams,
+                  wonderForcePriority, wonderRequiredIds,
                 );
+
+                // Licznik "utykania": zerowany gdy cud realnie trafił do kolejki, rośnie gdy
+                // kandydat był dostępny i AI nie buduje już innego cudu, ale decyzja padła null.
+                if (wonderDecision) {
+                  aiWonderStuckTurnsByOwner.set(ownerId, 0);
+                } else if (buildableForAi.length > 0 && !hasWonderInProgress) {
+                  aiWonderStuckTurnsByOwner.set(ownerId, wonderStuckTurns + 1);
+                } else {
+                  aiWonderStuckTurnsByOwner.set(ownerId, 0);
+                }
+
                 if (wonderDecision) {
                   const wDef = getWonderById(wonderDecision.wonderId);
                   if (wDef) {
@@ -23808,10 +23905,25 @@ async function boot(): Promise<void> {
                       );
                     } else {
                       const wProd0 = cityProd.get(wonderDecision.cityId) ?? { kolejka: [], postep: 0 };
-                      cityProd.set(wonderDecision.cityId, enqueue(wProd0, wonderProductionItem(wDef)));
+                      const wItem = wonderProductionItem(wDef);
+                      // queueJump (B3, wymuszacz): wstaw na FRONT kolejki zamiast na koniec --
+                      // przerywa (bez zwrotu Pracy) element aktualnie budowany, spójne z
+                      // production.ts:dequeue (postep liczony tylko dla frontu, front zmienia
+                      // się -> zerujemy). Poza wymuszaczem queueJump zawsze false/undefined
+                      // (city.queueEmpty gwarantowane przez ścieżkę bez forcePriority).
+                      const wProd1 = wonderDecision.queueJump
+                        ? {
+                            kolejka: [wItem, ...wProd0.kolejka],
+                            postep: 0,
+                            wstrzymana: wProd0.wstrzymana,
+                            rekrutacja: wProd0.rekrutacja ? [...wProd0.rekrutacja] : undefined,
+                          }
+                        : enqueue(wProd0, wItem);
+                      cityProd.set(wonderDecision.cityId, wProd1);
                       const wCity = myCitiesForWonder.find(c => c.id === wonderDecision.cityId);
+                      const wForceTag = wonderForcePriority ? ' [PRIORYTET-EPOKA]' : '';
                       console.log(
-                        `[Cuda][AI] Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${scaledKoszt} Pracy)`,
+                        `[Cuda][AI]${wForceTag} Tura ${turn} ${wCity?.name ?? wonderDecision.cityId} (owner ${ownerId}): kolejka ${wDef.nazwa} (${scaledKoszt} Pracy)`,
                       );
                     }
                   }
@@ -25580,6 +25692,7 @@ async function boot(): Promise<void> {
       growthMultMap.clear();
       lastCityKulturaTick.clear();
       aiWonderPracaTickByCity.clear();
+      aiWonderStuckTurnsByOwner.clear();
       aiResearchDone.clear();
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
@@ -26717,6 +26830,7 @@ async function boot(): Promise<void> {
       }
       ownerEraByOwner.clear();
       ownerStartEraByOwner.clear();
+      aiWonderStuckTurnsByOwner.clear();
       restoreAiRosterFromSave(saved);
       const loadStartEra = (() => {
         const eid = (saved.meta?.newGameParams as NewGameParams | undefined)?.epochId;
