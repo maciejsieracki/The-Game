@@ -10840,6 +10840,47 @@ konsekwentnie rekomenduje izolację ryzykownych zmian logiki pętli od bezpieczn
 dlatego że CZY robić jest sporne, tylko żeby ewentualny defekt dało się precyzyjnie zlokalizować).
 **STATUS: dispatch Sonnet 5, runda 2 (po bezpiecznej większości).**
 
+## R-CS-HARD-PASYWNE — Evaluator (retro-batch 4 commitów): `a6076db7` FAIL, pozostałe 3 PASS (2026-08-10)
+
+**Batch retroaktywny (4 commity bez wcześniejszej oceny) — werdykt Opus 5:**
+- `2da2b0a6` (save/load quota+sortowanie) — **PASS**.
+- `29885068` (Civpedia manpower + fortyfikacja/autoExplore) — **PASS-WITH-NOTES** (nota: `fortify`
+  działa na cały stos, zdjęcie fortyfikacji przy Zwiedzaj tylko na jednostkę — asymetria
+  nieudokumentowana, niska pilność).
+- `5130a037` (karty Dyplomacja AI-AI → `kind:'diplo'`) — **PASS**.
+- **`a6076db7` (rozbicie trudności PM na oś AI/GRACZ, bezpieczna większość) — FAIL, pilne.**
+
+**⛔ Defekt blokujący:** `cityStateMilitaryProductionCap(opts.menuDifficulty)`
+(`gra/src/game/city-state-difficulty.ts:12-22`) NIE został przełączony na nową zmienną
+`_menuCityStateDifficultyVsPlayer` — nadal czyta `_menuDifficulty` (oś gry) wprost, bez inwersji,
+i dla `'hard'` zwraca `0`. Skutek: na Trudnym `cityStateOffensiveSupport=true` (poprawnie
+podniesione przez ten sam commit) każe PM planować rekrutację wojska (priorytet Koszar 400,
+osłabiona supresja), ale `chooseCityProduction` (`ai.ts:1435-1445`) i tak odfiltrowuje WSZYSTKIE
+kandydatury wojskowe, bo `militaryOwned(0) >= milCap(0)` jest zawsze prawdą. **Efekt: na Trudnym PM
+nigdy nie rekrutuje ani jednej jednostki, mimo że commit miał to właśnie odblokować — to nie tylko
+niekompletność, to nowa regresja** (przed commitem `hardOffensive` było fałszywe na Trudnym, więc
+PM nie przepalały produkcji na bezużyteczne Koszary; teraz przepalają).
+
+Zakres był jawnie ustalony w tym samym wpisie rejestru („Wdrażane teraz bez ABC" wyżej, pozycja
+`cityStateOffensiveSupport`/wave-attack **+ produkcja wojska**), ale referencje ograniczyły się do
+`ai.ts:1293,2512,2690` — pominięto `ai.ts:1436` i `city-state-difficulty.ts:12`. Bramka
+`ai-mp-military-cap-test.cjs` była zielona (16/16), ale jej asercje T3/T6 aktywnie **przypinają**
+stare (błędne w nowym kontekście) zachowanie „hard → 0 produkcji wojska PM" — zielone bramki nie
+były dowodem poprawności, tylko dowodem, że nikt nie zauważył sprzeczności.
+
+**Kierunek naprawy (Evaluator, niekodowany):** przepiąć `cityStateMilitaryProductionCap` na oś
+gracza (`_menuCityStateDifficultyVsPlayer`) albo podnieść próg dla `'hard'` — to był wprost wariant
+**B** pierwotnego ABC (`PYTANIA-OTWARTE.md:10791-10793`). Dodać bramkę, która realnie sprawdza
+wiring w `main.ts` (nie tylko funkcję czystą w izolacji). `ai-mp-military-cap-test.cjs` T3/T6
+świadomie zaktualizować pod nowe zamierzone zachowanie — naprawa MUSI je zapalić na czerwono przed
+poprawką testu, inaczej nie ma dowodu że coś się realnie zmieniło.
+
+**Trzy pozostałe commity (`2da2b0a6`, `29885068`, `5130a037`) zostają bez zmian — PASS potwierdzony
+niezależnie.**
+
+**STATUS: dispatch Sonnet 5 (worktree) — naprawa wąska, w już ustalonym zakresie „bez ABC". Po
+dostarczeniu: NIEZALEŻNY Evaluator przed uznaniem za zamknięte.**
+
 ## R-ZUZYCIE-SUROWCOW-OBYWATELE — nowa mechanika, propozycja Macieja (2026-08-10)
 
 Maciej proponuje nową mechanikę: obywatele miast zużywają surowce budowlane per epoka (analogicznie
