@@ -8690,4 +8690,8 @@ logic-test 213/213, fsa-autosave-test 55/55, autosave-quota-fail-test 20/20.
 Dispatch NIEZALEŻNEGO Evaluatora rundy 2 NASTĘPUJE teraz — ocena B1/B2 realnie zamknięte,
 oraz czy dwie odłożone luki (a)/(b) są akceptowalne czy blokujące dla tej rundy.
 
+Evaluator rundy 2 dispatchowany (`a08d00415b015647f`, Opus 5) — pełna niezależna
+weryfikacja B1/B2 end-to-end, ocena luk (a)/(b), N1-N7 rzeczywiście sprawdzone w kodzie,
+szukanie nowych regresji w `save.ts`/`saveLoadDialog.ts` (zmiana kontraktu sync→async).
+
 ---
