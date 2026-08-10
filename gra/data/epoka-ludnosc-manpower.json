@@ -1,12 +1,12 @@
 {
-  "_opis": "Skala ludności i Manpower per epoka imperium (wiersze 1–10). 1 ludek = ludność absolutna na slot population (1–10). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domyślnie = manpowerNaLudka; epoka 1 = połowa — Maciej 2026-08-03: większa armia w Kamieniu).",
+  "_opis": "Skala ludności i Manpower per epoka imperium (wiersze 1–10). 1 ludek = ludność absolutna na slot population (1–10). manpowerNaLudka = 10% ludekNaLudka. manpowerNaJednostke = koszt rekrutacji 1 jednostki (domyślnie = manpowerNaLudka; epoka 1 test 500 z 2026-08-03 COFNIĘTY 2026-08-10 R-MANPOWER-EPOKA1-500-VS-1000=A — przy większej liczbie miast pula rosła zbyt gigantycznie, koszt jednostki wraca do pełnego manpowerNaLudka jak w pozostałych epokach).",
   "_formuly": {
     "ludnoscAbsolutna": "population × ludekNaLudka[epoka]",
     "manpowerMax": "population × manpowerNaLudka[epoka]",
-    "kosztRekrutacji": "manpowerNaJednostke[epoka] per jednostka (ep1: 500 → 2 jednostki / ludek przy pełnej puli)"
+    "kosztRekrutacji": "manpowerNaJednostke[epoka] per jednostka"
   },
   "epoki": [
-    { "epoka": 1, "ludekNaLudka": 10000, "manpowerNaLudka": 1000, "manpowerNaJednostke": 500 },
+    { "epoka": 1, "ludekNaLudka": 10000, "manpowerNaLudka": 1000, "manpowerNaJednostke": 1000 },
     { "epoka": 2, "ludekNaLudka": 20000, "manpowerNaLudka": 2000, "manpowerNaJednostke": 2000 },
     { "epoka": 3, "ludekNaLudka": 40000, "manpowerNaLudka": 4000, "manpowerNaJednostke": 4000 },
     { "epoka": 4, "ludekNaLudka": 80000, "manpowerNaLudka": 8000, "manpowerNaJednostke": 8000 },
