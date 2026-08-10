@@ -9603,4 +9603,14 @@ zapisany, nie przypadkowy). Zalecenie niedublokujące: scenariusz A nowego testu
 
 **Dispatch: runda 2 Operatora A** (ten sam worktree, dogranie 3 blokad + notatka o E dla komunikacji).
 
+**Runda 2 Operatora A (`ad3a22c4398817ad1`) — dostarczona.** Wszystkie 3 blokady naprawione: (1)
+`city-panel-growth-percent-separator-test.cjs` zaktualizowany do nowych nazw zmiennych, wrócił do
+29/0 exit 0 (był 25/2); (2) `buildTopBarLudnoscDetailCard` — „Bilans żywności" teraz czyta
+`foodSplit.total` (przycięty), spójnie z WZROST% w tej samej karcie; (3) `onCityAutoWyzywienieChange`
+dostał `applyLiveSafeRationForCity` w gałęzi włączania. Dodatkowo zalecana poprawka jakości testu
+(scenariusz A: `===1.5`+`dirtyCalls===1` zamiast tautologii). Wszystkie bramki zielone (tsc 0,
+logic-test 213/213, separator-test 29/0, live-recalc-test 24/0, bilans-clamp 22/0, ai-major-economy
+32/0, city-state-mp-growth 9/0). **Dispatchowany Evaluator rundy 2 (`a8861c5cee7191298`)** —
+weryfikacja werdyktu FAIL rundy 1 → PASS/FAIL rundy 2.
+
 ---
