@@ -202,6 +202,12 @@ import {
   POR_BAND_LABELS,
 } from '../game/society-breakdown';
 import {
+  resolveCitizenResourceCoverage,
+  CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
+  CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+  type CitizenUpkeepCoverage,
+} from '../game/citizen-resource-upkeep';
+import {
   applyPostCaptureLawOverride,
   isPostCaptureLawActive,
   postCaptureLawBannerLabel,
@@ -993,6 +999,11 @@ interface CityView {
   popCapAktualny: number;
   /** Wzrost zablokowany — ludność ≥ aktualny cap. */
   atPopCap: boolean;
+  /**
+   * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): pokrycie zużycia surowców budowlanych
+   * obywateli tego miasta w bieżącej epoce — magazyn centralny imperium.
+   */
+  citizenUpkeep: CitizenUpkeepCoverage;
 }
 
 /** Snapshot imperium do paska zasobów w widoku miasta (spójny z HudState). */
@@ -1158,6 +1169,11 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const bilansLokalny = zywnoscBrutto - kosztRacji;
     const { state: ordState } = resolveOrderState(city, data);
     const ws = city.wealthState ?? freshWealthState();
+    // R-ZUZYCIE-SUROWCOW-OBYWATELE: TA SAMA rozstrzygnięta wartość co blok Szczęścia
+    // (resolveOrderState → citizenUpkeep) — brak podwójnego, potencjalnie rozjeżdżającego
+    // się liczenia; fallback tylko na wypadek gdyby stan silnika jeszcze nie był ustawiony.
+    const citizenUpkeep = ordState.citizenUpkeep
+      ?? resolveCitizenResourceCoverage(era, ownerResourceStockAll(allCities, city.ownerId));
     const growthBreakdown = computeGrowthPercentV85({
       population: city.population,
       poziomRacji,
@@ -1167,6 +1183,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       spichlerzState,
       civKey: cfg.getCivKey?.(city.ownerId) ?? null,
       rationParams,
+      citizenResourceGrowthPct: citizenUpkeep.growthPctDelta,
     });
     // B3 (R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 2): "bez Akweduktu" musi liczyć AKTUALNY
     // cap uwzględniający Spichlerz tego miasta (5 albo 8) — NIE sztywny param 5, bo dla
@@ -1192,6 +1209,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       popCapZAkweduktem,
       popCapAktualny,
       atPopCap,
+      citizenUpkeep,
     };
   } catch { return null; }
 }
@@ -2891,6 +2909,11 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const stolicaBonus = stolicaEasyBonusActive(
     difficulty, gameTurn, city, allCities, 10, cfg.getCapitalCityId?.(city.ownerId) ?? null,
   );
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): magazyn CENTRALNY imperium (ECHO Q1),
+  // ownerId-agnostyczne (ECHO Q2=A) — ten sam wzorzec w main.ts (silnik) i tu (UI preview).
+  const citizenUpkeep = resolveCitizenResourceCoverage(
+    era, ownerResourceStockAll(allCities, city.ownerId),
+  );
 
   const ordPctRaw = evaluateOrderFromBreakdown(
     {
@@ -2906,6 +2929,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       hasSwiatynia: builtIds.includes('swiatynia'),
       hasAmfiteatr: cityHasAmfiteatrLine(builtIds),
       stolicaEasyBonus: stolicaBonus,
+      citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,
     },
     {
       difficulty,
@@ -2948,6 +2972,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       revoltWarning: revoltWarning || undefined,
       rebelState: city.rebelState,
       postCaptureLawTurnsRemaining: city.postCaptureLawTurnsRemaining,
+      citizenUpkeep,
     },
     fromEngine: false,
   };
@@ -3014,6 +3039,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     state.szLines,
     'Brak składników wpływających na szczęście.',
   );
+  appendCitizenUpkeepBlock(mount, state.citizenUpkeep);
   appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('tb-army', 'Prawo'),
@@ -4108,6 +4134,35 @@ function formatW4InlineBreakdown(lines: BreakdownLine[] | undefined, emptyHint: 
   }).join(' · ');
 }
 
+/**
+ * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10, ECHO Q4): wiersz zaraz POD Szczęściem —
+ * lista surowców budowlanych wymaganych przez obywateli TEJ epoki, pokrytych/brakujących wg
+ * magazynu CENTRALNEGO imperium (`citizen-resource-upkeep.ts`; nie lokalny magazyn tego
+ * miasta — ECHO Q1). Brak wymaganych surowców w tej epoce (np. dane niekompletne) → blok się
+ * nie renderuje.
+ */
+function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined): void {
+  if (!upkeep || upkeep.required.length === 0) return;
+  const lines: BreakdownLine[] = [
+    ...upkeep.available.map(k => ({
+      label: stockResourceLabel(k),
+      value: CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
+    })),
+    ...upkeep.missing.map(k => ({
+      label: stockResourceLabel(k),
+      value: CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+    })),
+  ];
+  appendW4PctMetricBlock(
+    mount,
+    pctSubheadHtml('chip-crate', 'Zaopatrzenie obywateli'),
+    undefined,
+    'linear-gradient(90deg,#3a8a5a,#7ad0a0)',
+    lines,
+    'Brak surowców wymaganych przez obywateli w tej epoce.',
+  );
+}
+
 /** Pasek procentowy W4 v2 (Szczęście / Prawo / Porządek) — mockup 1E. */
 function appendW4PctMetricBlock(
   mount: HTMLElement,
@@ -4956,6 +5011,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     growthBreakdownRow('Zdrowie', bd.zdrowie) +
     growthBreakdownRow('Szczęście', bd.szczescie) +
     growthBreakdownRow('Cywilizacja', bd.cywilizacja) +
+    growthBreakdownRow('Zaopatrzenie obywateli', bd.zaopatrzenie) +
     `<div class="growth-progress-block">${growthUi.progressHtml}${growthUi.etaHtml}</div>`;
   mount.appendChild(growBlock);
   const progressBlock = growBlock.querySelector('.growth-progress-block') as HTMLElement | null;
@@ -5022,9 +5078,14 @@ function buildRacjeWzrostDetailCard(
   gridDetailRow(g2, 'Zdrowie', `${signed(bd.zdrowie)}%`);
   gridDetailRow(g2, 'Szczęście', `${signed(bd.szczescie)}%`);
   gridDetailRow(g2, 'Cywilizacja', `${signed(bd.cywilizacja)}%`);
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): 7. składnik WZROST% — kara za surowce
+  // budowlane obywateli brakujące w magazynie centralnym (-1%/surowiec, ECHO Q3=A). Musi być
+  // wypisany tu, inaczej „Łącznie” niżej zsumowałaby coś, czego karta nie pokazuje.
+  gridDetailRow(g2, 'Zaopatrzenie obywateli', `${signed(bd.zaopatrzenie)}%`);
   // P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY: składniki nad tym wierszem (racje, małe miasto,
-  // spichlerz, zdrowie, szczęście, cywilizacja) idą przez signed() (przecinek polski) -- suma
-  // musi iść tym samym formaterem, inaczej jedna karta miesza separatory (przecinek vs kropka).
+  // spichlerz, zdrowie, szczęście, cywilizacja, zaopatrzenie obywateli) idą przez signed()
+  // (przecinek polski) -- suma musi iść tym samym formaterem, inaczej jedna karta miesza
+  // separatory (przecinek vs kropka).
   gridDetailRow(g2, 'Łącznie', fed ? `${signed(bd.total)}%` : '— (głód)');
   gridDetailRow(g2, 'Postęp do +1 obywatela', `${fmtDecPl(view.wzrostUlamkowy)} / 1`);
   const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);

@@ -1,0 +1,289 @@
+'use strict';
+/**
+ * citizen-resource-upkeep-test.cjs -- R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10).
+ *
+ * Run from gra/:  node tools/citizen-resource-upkeep-test.cjs
+ *
+ * Pokrywa:
+ *   A. Tabela zużycia per epoka (data/citizen-resource-upkeep.json) -- kumulatywna lista
+ *      Kamień -> Brąz -> Żelazo, dokładnie jak w specyfikacji (PYTANIA-OTWARTE.md).
+ *   B. Bramka binarna (ECHO Q3=A): magazyn centralny pusty (0/brak) -> surowiec "missing";
+ *      magazyn centralny > 0 -> surowiec "available". NIE skaluje się z wielkością zapasu.
+ *   C. Sumowanie kar Szczęścia/Rozwoju dla wielu brakujących surowców naraz (binarne per
+ *      surowiec, zsumowane po całej wymaganej liście tej epoki).
+ *   D. Wiring: computeHappinessBreakdown (society-breakdown.ts) i computeGrowthPercentV85
+ *      (population-growth-v85.ts) poprawnie przyjmują i sumują nowe pola wejściowe.
+ *   E. AI/Państwa-Miasta parytet (ECHO Q2=A): resolveCitizenResourceCoverage jest
+ *      ownerId-agnostyczne (ten sam wynik dla dowolnego ownerId przy tym samym magazynie) +
+ *      strukturalna kontrola main.ts -- brak gałęzi `ownerId === 0` wokół wywołania w pętli
+ *      Porządku, ta sama pętla obejmuje WSZYSTKICH właścicieli.
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const esbuild = (() => {
+  const apiPath = path.resolve(__dirname, '..', 'node_modules', 'esbuild');
+  try { return require(apiPath); }
+  catch (e) { console.error('[citizen-resource-upkeep-test] esbuild not found. Run: npm install (from gra/)'); process.exit(1); }
+})();
+
+const GRA = path.resolve(__dirname, '..');
+const ENTRY_FILE = path.resolve(__dirname, '.citizen-resource-upkeep-entry.ts');
+const BUNDLE_FILE = path.resolve(__dirname, '.citizen-resource-upkeep-bundle.cjs');
+
+fs.writeFileSync(ENTRY_FILE, `
+export {
+  citizenRequiredResourcesForEra,
+  resolveCitizenResourceCoverage,
+  CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
+  CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+  CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING,
+} from '../src/game/citizen-resource-upkeep';
+export { computeHappinessBreakdown } from '../src/game/society-breakdown';
+export { computeGrowthPercentV85 } from '../src/game/population-growth-v85';
+export { ownerResourceStockAll } from '../src/game/building-stock-cost';
+`, 'utf8');
+
+try {
+  esbuild.buildSync({
+    entryPoints: [ENTRY_FILE],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    target: 'node18',
+    loader: { '.ts': 'ts', '.json': 'json' },
+    outfile: BUNDLE_FILE,
+    absWorkingDir: GRA,
+    logLevel: 'silent',
+  });
+} catch (e) {
+  console.error('[citizen-resource-upkeep-test] esbuild bundling failed:\n', e.message || e);
+  process.exit(1);
+}
+
+const M = require(BUNDLE_FILE);
+const rawTable = require('../data/citizen-resource-upkeep.json');
+
+let passed = 0, failed = 0;
+function assert(cond, msg) { if (cond) { passed++; } else { failed++; console.error('FAIL:', msg); } }
+function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
+function deepEqSet(a, b, msg) {
+  const sa = [...a].sort();
+  const sb = [...b].sort();
+  assert(JSON.stringify(sa) === JSON.stringify(sb), `${msg} (got ${JSON.stringify(sa)}, want ${JSON.stringify(sb)})`);
+}
+
+// ===========================================================================
+// A. Tabela zużycia per epoka -- kumulatywna, zgodna ze specyfikacją Macieja
+// ===========================================================================
+console.log('\n-- A. Tabela zużycia per epoka (kumulatywna, data-driven) --');
+{
+  deepEqSet(M.citizenRequiredResourcesForEra(1), ['drewno', 'glina'], 'Epoka 1 (Kamień): Drewno + Glina');
+  deepEqSet(
+    M.citizenRequiredResourcesForEra(2),
+    ['drewno', 'glina', 'kamien', 'ceramika'],
+    'Epoka 2 (Brąz): Drewno + Glina + Kamień + Ceramika',
+  );
+  deepEqSet(
+    M.citizenRequiredResourcesForEra(3),
+    ['drewno', 'glina', 'kamien', 'ceramika', 'cegla'],
+    'Epoka 3 (Żelazo): Drewno + Glina + Kamień + Ceramika + Cegła',
+  );
+  // Kumulatywność: każda kolejna epoka to nadzbiór poprzedniej.
+  const e1 = new Set(M.citizenRequiredResourcesForEra(1));
+  const e2 = new Set(M.citizenRequiredResourcesForEra(2));
+  const e3 = new Set(M.citizenRequiredResourcesForEra(3));
+  assert([...e1].every(k => e2.has(k)), 'Epoka 2 zawiera CAŁĄ listę Epoki 1 (kumulatywne)');
+  assert([...e2].every(k => e3.has(k)), 'Epoka 3 zawiera CAŁĄ listę Epoki 2 (kumulatywne)');
+
+  // Odporność na epoki poza tabelą (fallback: najbliższa <= era, albo pierwsza dostępna).
+  deepEqSet(M.citizenRequiredResourcesForEra(0), e1_arr(), 'era=0 -> fallback do epoki 1 (clamp min 1)');
+  deepEqSet(M.citizenRequiredResourcesForEra(-5), e1_arr(), 'era ujemna -> fallback do epoki 1');
+  deepEqSet(M.citizenRequiredResourcesForEra(99), [...e3], 'era poza tabelą (99) -> najbliższa zdefiniowana <= era (3)');
+  function e1_arr() { return [...e1]; }
+
+  // Fixtura sanity: JSON ma dokładnie 3 wpisy epok (Kamień/Brąz/Żelazo, v0.1 scope gry).
+  eq(rawTable.epoki.length, 3, 'data/citizen-resource-upkeep.json: dokładnie 3 wiersze epok');
+}
+
+// ===========================================================================
+// B. Bramka binarna: magazyn centralny pusty -> missing, magazyn > 0 -> available
+// ===========================================================================
+console.log('\n-- B. Bramka binarna (ECHO Q3=A) -- magazyn CENTRALNY, nie proporcjonalna --');
+{
+  // Epoka 1: wymaga drewno + glina.
+  const full = M.resolveCitizenResourceCoverage(1, { drewno: 50, glina: 1 });
+  deepEqSet(full.available, ['drewno', 'glina'], 'oba surowce w magazynie (>0) -> oba available');
+  deepEqSet(full.missing, [], 'oba surowce w magazynie -> brak missing');
+  eq(full.happinessDelta, 2 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 'happinessDelta = 2 × bonus dostępności');
+  eq(full.growthPctDelta, 0, 'growthPctDelta = 0 gdy brak braków');
+
+  const empty = M.resolveCitizenResourceCoverage(1, { drewno: 0, glina: 0 });
+  deepEqSet(empty.missing, ['drewno', 'glina'], 'magazyn=0 dla obu -> oba missing');
+  eq(empty.happinessDelta, 2 * M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, 'happinessDelta = 2 × kara braku');
+  eq(empty.growthPctDelta, 2 * M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'growthPctDelta = 2 × kara Rozwoju za brak');
+
+  const noEntry = M.resolveCitizenResourceCoverage(1, {});
+  deepEqSet(noEntry.missing, ['drewno', 'glina'], 'brak wpisu w magazynie (undefined) = tak samo jak 0 -> missing');
+
+  const negative = M.resolveCitizenResourceCoverage(1, { drewno: -3, glina: 5 });
+  deepEqSet(negative.missing, ['drewno'], 'magazyn ujemny (dane śmieciowe) traktowany jak brak (missing), nie jak dostępność');
+  deepEqSet(negative.available, ['glina'], 'glina > 0 -> available mimo że drewno w tym samym wywołaniu jest missing');
+
+  // Binarność: NIE skaluje się z WIELKOŚCIĄ zapasu -- 1 sztuka i 10000 sztuk dają IDENTYCZNY wynik.
+  const tiny = M.resolveCitizenResourceCoverage(1, { drewno: 1, glina: 1 });
+  const huge = M.resolveCitizenResourceCoverage(1, { drewno: 10000, glina: 10000 });
+  eq(tiny.happinessDelta, huge.happinessDelta, 'ECHO Q3=A: 1 sztuka i 10000 sztuk w magazynie dają IDENTYCZNĄ karę/bonus (binarne, nie proporcjonalne)');
+  eq(tiny.growthPctDelta, huge.growthPctDelta, 'to samo dla kanału Rozwoju -- binarne, nie proporcjonalne do wielkości zapasu');
+
+  // Magazyn CENTRALNY (empire-wide), nie lokalny per miasto (ECHO Q1) -- to jest odpowiedzialność
+  // wołającego (main.ts przekazuje ownerResourceStockAll(cities, ownerId)), ale sama funkcja
+  // resolveCitizenResourceCoverage jest ślepa na to, skąd wartość pochodzi -- weryfikacja przez
+  // ownerResourceStockAll (integracja z building-stock-cost.ts).
+  const cities = [
+    { id: 'c1', ownerId: 0, surowce: { drewno: 3 } },
+    { id: 'c2', ownerId: 0, surowce: { drewno: 0, glina: 2 } },
+  ];
+  const pool = M.ownerResourceStockAll(cities, 0);
+  const viaPool = M.resolveCitizenResourceCoverage(1, pool);
+  deepEqSet(
+    viaPool.available, ['drewno', 'glina'],
+    'ECHO Q1: miasto c2 BEZ własnego drewna nadal ma "drewno" available -- pochodzi z magazynu CENTRALNEGO (c1+c2), nie lokalnego',
+  );
+}
+
+// ===========================================================================
+// C. Sumowanie kar dla wielu brakujących surowców naraz
+// ===========================================================================
+console.log('\n-- C. Sumowanie kar -- wiele brakujących surowców naraz (epoka 3, 5 surowców) --');
+{
+  // Epoka 3: drewno, glina, kamien, ceramika, cegla (5 surowców).
+  const allMissing = M.resolveCitizenResourceCoverage(3, {});
+  eq(allMissing.missing.length, 5, 'epoka 3, magazyn pusty -> 5 surowców missing');
+  eq(allMissing.happinessDelta, 5 * M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, 'suma Szczęścia = 5 × kara/surowiec');
+  eq(allMissing.growthPctDelta, 5 * M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'suma Rozwoju = 5 × kara/surowiec');
+
+  // Częściowy niedobór: 2 dostępne + 3 brakujące -> suma netto (nie tylko licznik braków).
+  const mixed = M.resolveCitizenResourceCoverage(3, { drewno: 5, glina: 5, kamien: 0, ceramika: 0, cegla: 0 });
+  eq(mixed.available.length, 2, 'mixed: 2 surowce dostępne');
+  eq(mixed.missing.length, 3, 'mixed: 3 surowce brakujące');
+  eq(
+    mixed.happinessDelta,
+    2 * M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE + 3 * M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+    'happinessDelta = suma netto (2×dostępny + 3×brakujący), nie tylko licznik jednego typu',
+  );
+  eq(mixed.growthPctDelta, 3 * M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, 'growthPctDelta liczy WYŁĄCZNIE braki (dostępne nie dają bonusu Rozwoju)');
+
+  // Kanon wartości specyfikacji (Maciej 2026-08-10): +1 Sz/dostępny, -1 Sz i -1% Rozwój/brakujący.
+  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE, 1, 'kanon: +1 Szczęście za dostępny surowiec');
+  eq(M.CITIZEN_UPKEEP_HAPPINESS_PER_MISSING, -1, 'kanon: -1 Szczęście za brakujący surowiec');
+  eq(M.CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING, -1, 'kanon: -1% Rozwój za brakujący surowiec');
+}
+
+// ===========================================================================
+// D. Wiring do computeHappinessBreakdown / computeGrowthPercentV85
+// ===========================================================================
+console.log('\n-- D. Wiring: computeHappinessBreakdown + computeGrowthPercentV85 --');
+{
+  const cov = M.resolveCitizenResourceCoverage(2, { drewno: 5, glina: 0, kamien: 0, ceramika: 5 });
+  // Brąz: drewno(avail) + glina(missing) + kamien(missing) + ceramika(avail) = +1-1-1+1 = 0.
+  eq(cov.happinessDelta, 0, 'sanity fixtura: 2 dostępne + 2 brakujące -> netto 0');
+  eq(cov.growthPctDelta, -2, 'sanity fixtura: 2 brakujące -> -2% Rozwój');
+
+  const szBase = M.computeHappinessBreakdown({ population: 4, buildingZadowolenie: 0 });
+  const szBrak = M.computeHappinessBreakdown({
+    population: 4,
+    buildingZadowolenie: 0,
+    citizenResourceHappinessDelta: -3,
+  });
+  const lineBrak = szBrak.lines.find(l => l.id === 'zaopatrzenie_obywateli');
+  assert(!!lineBrak, 'computeHappinessBreakdown: linia "zaopatrzenie_obywateli" obecna gdy delta != 0');
+  eq(lineBrak && lineBrak.value, -3, 'linia niesie dokładnie przekazaną wartość (-3)');
+  // Porównanie różnicowe (nie wartość bezwzględna) -- inne domyślne składniki (np. bonus
+  // osiedla dla małych miast, siatka Zamożności) mogą też być aktywne przy fallbackach bez
+  // society params; test sprawdza, że DOKŁADANA delta wchodzi 1:1 do netto, nie że jest
+  // jedynym składnikiem.
+  eq(szBrak.netto, szBase.netto - 3, 'netto Szczęścia = netto_bez_kary + (-3) -- delta wchodzi 1:1, addytywnie do reszty składników');
+
+  const szZero = M.computeHappinessBreakdown({
+    population: 4,
+    buildingZadowolenie: 0,
+    citizenResourceHappinessDelta: 0,
+  });
+  const lineZero = szZero.lines.find(l => l.id === 'zaopatrzenie_obywateli');
+  assert(!lineZero, 'computeHappinessBreakdown: BRAK linii gdy delta=0 (wzorem innych opcjonalnych składników -- lines.push tylko gdy != 0)');
+
+  const szBrak2 = M.computeHappinessBreakdown({ population: 4, buildingZadowolenie: 0 });
+  assert(!szBrak2.lines.find(l => l.id === 'zaopatrzenie_obywateli'), 'brak pola (undefined) -> zero regresji, żadnej nowej linii');
+
+  const rationParams = {
+    racjeZywnosc1: 2, racjeZywnosc2: 4, racjeZywnosc3: 6,
+    racjeWzrostProc1: 3, racjeWzrostProc2: 5, racjeWzrostProc3: 7,
+  };
+  const spichlerzState = { ceramikaActive: false, solActive: false, maSpichlerzPop: false, maSpichlerzIIPop: false };
+  const gd = M.computeGrowthPercentV85({
+    population: 5, poziomRacji: 4, zdrowie: 0, szczescieNetto: 0, wealthPoziom: 0,
+    spichlerzState, rationParams, citizenResourceGrowthPct: -3,
+  });
+  eq(gd.zaopatrzenie, -3, 'GrowthPercentBreakdown.zaopatrzenie niesie przekazaną wartość');
+  const gdNoUpkeep = M.computeGrowthPercentV85({
+    population: 5, poziomRacji: 4, zdrowie: 0, szczescieNetto: 0, wealthPoziom: 0,
+    spichlerzState, rationParams,
+  });
+  eq(gd.total, gdNoUpkeep.total - 3, 'total = total_bez_kary + (-3) -- kara Rozwoju WPROST w sumie, nie skalowana przez /10 jak szczęście');
+  eq(gdNoUpkeep.zaopatrzenie, 0, 'brak pola (undefined) -> zaopatrzenie=0, zero regresji na total');
+}
+
+// ===========================================================================
+// E. Parytet AI/Państwa-Miasta (ECHO Q2=A) -- ownerId-agnostyczne
+// ===========================================================================
+console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
+{
+  // resolveCitizenResourceCoverage/citizenRequiredResourcesForEra nie przyjmują ownerId w ogóle
+  // -- ten sam magazyn+era zawsze daje ten sam wynik niezależnie "czyj" jest ownerId (parytet
+  // jest strukturalną własnością sygnatury funkcji, nie flagą do przetestowania per owner).
+  const stockA = { drewno: 5, glina: 0 };
+  const forPlayer = M.resolveCitizenResourceCoverage(1, stockA);
+  const forAi = M.resolveCitizenResourceCoverage(1, stockA); // identyczne wejście, inny "domniemany" owner
+  deepEqSet(forPlayer.available, forAi.available, 'gracz i AI: IDENTYCZNY magazyn -> IDENTYCZNY wynik (funkcja nie widzi ownerId)');
+  eq(forPlayer.happinessDelta, forAi.happinessDelta, 'parytet happinessDelta gracz/AI');
+  eq(forPlayer.growthPctDelta, forAi.growthPctDelta, 'parytet growthPctDelta gracz/AI');
+
+  // Kontrola strukturalna main.ts: pętla Porządku (evaluateOrderFromBreakdown) iteruje
+  // `for (const city of cities)` bez filtra ownerId===0 wokół wywołania resolveCitizenResourceCoverage
+  // -- to jest DOWÓD, że AI i Państwa-Miasta przechodzą przez TĘ SAMĄ ścieżkę co gracz.
+  const mainSrc = fs.readFileSync(path.join(GRA, 'src', 'main.ts'), 'utf8');
+  assert(
+    mainSrc.includes("import { resolveCitizenResourceCoverage } from './game/citizen-resource-upkeep';"),
+    'main.ts importuje resolveCitizenResourceCoverage z citizen-resource-upkeep.ts',
+  );
+  // Uwaga: `citizenUpkeep` jako nazwa zmiennej występuje TAKŻE w buildEmpireResourceRows (UI
+  // panelu Surowców) -- szukamy specyficznie wywołania z resolverem `citizenUpkeepEmpireStock`
+  // (cache per-owner tej tury), które istnieje WYŁĄCZNIE w pętli Porządku.
+  const citizenCallIdx = mainSrc.indexOf('citizenUpkeepEmpireStock(city.ownerId)');
+  assert(citizenCallIdx > -1, 'main.ts woła resolveCitizenResourceCoverage(..., citizenUpkeepEmpireStock(city.ownerId)) w pętli Porządku');
+  if (citizenCallIdx > -1) {
+    // Najbliższa otwierająca pętla `for (const city of cities)` PRZED wywołaniem (w tym samym bloku
+    // try) i BRAK `if (city.ownerId === 0` między nią a wywołaniem -- czyli nic nie wycina AI.
+    const forIdx = mainSrc.lastIndexOf('for (const city of cities) {', citizenCallIdx);
+    assert(forIdx > -1 && forIdx < citizenCallIdx, 'wywołanie leży wewnątrz `for (const city of cities)` (bez ownerId-filtra na wejściu pętli)');
+    const between = mainSrc.slice(forIdx, citizenCallIdx);
+    assert(
+      !/if\s*\(\s*city\.ownerId\s*===\s*0/.test(between),
+      'BRAK gałęzi `if (city.ownerId === 0 ...)` między pętlą a wywołaniem -- AI/Państwa-Miasta NIE są wycinane (ECHO Q2=A)',
+    );
+  }
+  // citizenUpkeepEmpireStock (cache magazynu per owner tej tury) budowany RAZ przed pętlą, nie
+  // warunkowany ownerId -- ten sam resolver serwuje gracza i AI.
+  assert(
+    mainSrc.includes('const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();'),
+    'main.ts: magazyn centralny cache\'owany per-owner (makeOwnerEmpireStockResolver) -- jeden wspólny resolver dla wszystkich ownerów, gracza i AI',
+  );
+}
+
+// --- summary ---------------------------------------------------------------
+console.log(`\ncitizen-resource-upkeep-test: ${passed} passed, ${failed} failed`);
+try { fs.unlinkSync(ENTRY_FILE); } catch (e) {}
+try { fs.unlinkSync(BUNDLE_FILE); } catch (e) {}
+process.exit(failed ? 1 : 0);

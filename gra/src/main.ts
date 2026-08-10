@@ -333,6 +333,7 @@ import {
   isOsiedleRevoltImmune,
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
+import { resolveCitizenResourceCoverage } from './game/citizen-resource-upkeep';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -2639,6 +2640,12 @@ async function boot(): Promise<void> {
      */
     function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
       const warehouse = citySurowceSumForOwner(ownerId);
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): jaki surowiec jest wymagany przez
+      // obywateli w tej epoce + czy magazyn (warehouse, TA SAMA suma civ-wide) go pokrywa —
+      // panel Surowców (UI a).
+      const citizenUpkeep = resolveCitizenResourceCoverage(empireEpochForOwner(ownerId), warehouse);
+      const citizenRequiredSet = new Set(citizenUpkeep.required);
+      const citizenAvailableSet = new Set(citizenUpkeep.available);
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
@@ -2713,12 +2720,16 @@ async function boot(): Promise<void> {
         const cap = empireCap;
         const capBase = storageParams.bazaSurowcePanstwo;
         const capBonusPerMagazyn = storageParams.bonusSurowceNaBudynek;
+        const citizenRequired = citizenRequiredSet.has(c.id);
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
           rateProductionPerTurn: production,
           ...(diploOut > 0 ? { rateDiploOutPerTurn: diploOut } : {}),
           ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),
           cap, capBase, capBonusPerMagazyn, zrodlo,
+          ...(citizenRequired
+            ? { citizenRequired: true, citizenCovered: citizenAvailableSet.has(c.id) }
+            : {}),
         });
       }
       return rows;
@@ -23243,6 +23254,10 @@ async function boot(): Promise<void> {
             const rng = makeRng(turn);
             lastReligionSpreadByCity.clear();
             let religionSpreadThisTurn = 0;
+            // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): magazyn centralny per owner,
+            // liczony RAZ i cache'owany dla WSZYSTKICH miast tej tury (nie per miasto) —
+            // ownerId-agnostyczne, dotyczy gracza, dużej AI i Państw-Miast jednakowo (ECHO Q2=A).
+            const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();
 
             for (const city of cities) {
               const cid = city.id;
@@ -23415,11 +23430,18 @@ async function boot(): Promise<void> {
               const ownerAtWar = isOwnerAtWar(city.ownerId);
               const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(0));
               const revoltParams = loadRevoltParams(data.societyParams, difficulty);
+              const ownerEraForUpkeep = empireEpochForOwner(city.ownerId);
+              // R-ZUZYCIE-SUROWCOW-OBYWATELE: ownerId-agnostyczne — dotyczy gracza, dużej AI
+              // i Państw-Miast jednakowo (ECHO Q2=A), magazyn CENTRALNY, nie lokalny (ECHO Q1).
+              const citizenUpkeep = resolveCitizenResourceCoverage(
+                ownerEraForUpkeep,
+                citizenUpkeepEmpireStock(city.ownerId),
+              );
 
               const ordPctRaw = evaluateOrderFromBreakdown(
                 {
                   difficulty,
-                  era: empireEpochForOwner(city.ownerId),
+                  era: ownerEraForUpkeep,
                   population: city.population,
                   buildingZadowolenie: haBuildings + (econTick?.garncarniaSurplusZadowolenie ?? 0),
                   haKult,
@@ -23434,6 +23456,7 @@ async function boot(): Promise<void> {
                   foreignReligionDominant,
                   conquestUnstablePenalty: conquestUnstablePen,
                   stolicaEasyBonus: stolicaBonus,
+                  citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,
                 },
                 {
                   difficulty,
@@ -23539,6 +23562,7 @@ async function boot(): Promise<void> {
                 revoltWarning: graceUpd.revoltWarning,
                 rebelState: city.rebelState,
                 postCaptureLawTurnsRemaining: city.postCaptureLawTurnsRemaining,
+                citizenUpkeep,
               });
 
               if (postCaptureLawActive) {
@@ -23733,6 +23757,13 @@ async function boot(): Promise<void> {
             if (lastEfTickResult) {
               const happinessByCityId = new Map<string, number>();
               for (const [cid, st] of cityOrderState) happinessByCityId.set(cid, st.szczescie);
+              // R-ZUZYCIE-SUROWCOW-OBYWATELE: kara Rozwoju (%) per miasto — czytana z tego
+              // samego cityOrderState (już policzona w pętli Porządku wyżej, ten sam magazyn
+              // centralny cache'owany per owner tej tury — citizenUpkeepEmpireStock).
+              const citizenGrowthPctByCityId = new Map<string, number>();
+              for (const [cid, st] of cityOrderState) {
+                citizenGrowthPctByCityId.set(cid, st.citizenUpkeep?.growthPctDelta ?? 0);
+              }
               const spichlerzByCity = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
               for (const city of cities) {
                 const tick = econ.perCity.find(t => t.cityId === city.id);
@@ -23755,6 +23786,7 @@ async function boot(): Promise<void> {
                 ownerCivByOwnerId: ownerCivMap,
                 spichlerzByCity,
                 happinessByCityId,
+                citizenGrowthPctByCityId,
                 builtByCity: cityBuilt,
                 ownerEraByOwner: new Map(
                   [...new Set(cities.map(c => c.ownerId))].map(oid => [oid, empireEpochForOwner(oid)]),

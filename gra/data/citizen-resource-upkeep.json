@@ -1,0 +1,14 @@
+{
+  "_opis": "R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): zużycie surowców budowlanych przez obywateli, per epoka. Lista jest KUMULATYWNA epoka do epoki (Brąz = lista Kamienia + nowe pozycje, Żelazo = lista Brązu + nowe pozycje). Surowce ściągane z MAGAZYNU CENTRALNEGO imperium (suma City.surowce po wszystkich miastach ownera — ownerResourceStockAll, building-stock-cost.ts), NIE z lokalnej produkcji/dostępności tego miasta (ECHO Q1, PYTANIA-OTWARTE.md 2026-08-10). Kara binarna PER MIASTO (ECHO Q3=A): magazyn centralny > 0 danego surowca = pełne pokrycie tego surowca dla KAŻDEGO miasta ownera, magazyn = 0 = brak dla KAŻDEGO miasta ownera — nie skaluje się z wielkością niedoboru ani z liczbą obywateli tego miasta. AI (duża + Państwa-Miasta) objęte identycznie jak gracz (ECHO Q2=A).",
+  "_kara": {
+    "_opis": "Modyfikatory per SUROWIEC (nie per obywatel) — zsumowane po wszystkich wymaganych surowcach danej epoki.",
+    "szczescieZaDostepny": 1,
+    "szczescieZaBrakujacy": -1,
+    "rozwojPctZaBrakujacy": -1
+  },
+  "epoki": [
+    { "epoka": 1, "nazwa": "Kamień", "surowce": ["drewno", "glina"] },
+    { "epoka": 2, "nazwa": "Brąz", "surowce": ["drewno", "glina", "kamien", "ceramika"] },
+    { "epoka": 3, "nazwa": "Żelazo", "surowce": ["drewno", "glina", "kamien", "ceramika", "cegla"] }
+  ]
+}

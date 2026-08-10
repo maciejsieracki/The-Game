@@ -738,6 +738,13 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   } else {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): magazyn centralny > 0 -> pokrycie
+  // obywateli tej epoki; magazyn = 0 -> aktywna kara (Szczęście −1, Rozwój −1% KAŻDE miasto).
+  if (r.citizenRequired) {
+    parts.push(r.citizenCovered
+      ? 'Obywatele: zapotrzebowanie pokryte (+1 Szczęście każde miasto)'
+      : 'Obywatele: BRAK w magazynie — kara −1 Szczęście, −1% Rozwój w KAŻDYM mieście');
+  }
   return esc(parts.join(' · '));
 }
 
@@ -762,6 +769,24 @@ function resRateHtml(r: EmpireResourceRow, state: 'bad' | 'warn' | 'good'): stri
   return html;
 }
 
+/**
+ * Badge „Obywatele" (R-ZUZYCIE-SUROWCOW-OBYWATELE, Maciej 2026-08-10) — tylko dla surowców
+ * wymaganych w bieżącej epoce (`r.citizenRequired`); pokrycie/brak z magazynu centralnego.
+ * Inline style: `civ-emp-res-card`/`resCardHtml` nie mają dedykowanej klasy CSS w repo dla
+ * nowych badge'y (kolory kart idą przez `${state}` na kontenerze) — bezpieczniej nie zgadywać
+ * nieistniejącej klasy niż dodać martwy selektor.
+ */
+function resCitizenBadgeHtml(r: EmpireResourceRow): string {
+  if (!r.citizenRequired) return '';
+  const covered = r.citizenCovered === true;
+  const bg = covered ? 'rgba(122,208,160,0.18)' : 'rgba(224,90,90,0.18)';
+  const fg = covered ? '#7ad0a0' : '#e05a5a';
+  const txt = covered ? 'Obywatele: OK' : 'Obywatele: BRAK';
+  return `<span class="civ-emp-res-citizen-badge" `
+    + `style="display:inline-block;margin-top:4px;padding:1px 6px;border-radius:4px;`
+    + `font-size:11px;background:${bg};color:${fg}">${esc(txt)}</span>`;
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
 function resCardHtml(r: EmpireResourceRow): string {
   const cap = r.cap ?? 0;
@@ -776,6 +801,7 @@ function resCardHtml(r: EmpireResourceRow): string {
     + (flag ? `<span class="flag ${state}">${esc(flag)}</span>` : '')
     + `</div>`
     + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
+    + resCitizenBadgeHtml(r)
     + `</div>`;
 }
 

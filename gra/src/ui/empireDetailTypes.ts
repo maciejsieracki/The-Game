@@ -88,6 +88,17 @@ export interface EmpireResourceRow {
    * `undefined` gdy `dostep` jest false (nie ma czego pokazać).
    */
   zrodlo?: string;
+  /**
+   * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): czy ten surowiec jest wymagany przez
+   * obywateli imperium w bieżącej epoce (`citizen-resource-upkeep.ts`). `undefined`/`false` =
+   * surowiec nie jest na liście tej epoki (badge nie jest rysowany).
+   */
+  citizenRequired?: boolean;
+  /**
+   * Gdy `citizenRequired` — czy magazyn centralny akurat TERAZ ma > 0 tego surowca (pokrycie)
+   * czy 0 (kara aktywna — Szczęście −1, Rozwój −1% w każdym mieście imperium).
+   */
+  citizenCovered?: boolean;
 }
 
 export interface EmpireKulturaSnap {
