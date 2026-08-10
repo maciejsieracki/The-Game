@@ -180,6 +180,18 @@ function computePeaceAcceptanceSides(
   const asymBalance = myDisplayPw - theirDisplayPw;
   const hasBasket = myBasketOffer > 0 || theirBasketOffer > 0;
 
+  // R-DYP-STOL-A (2026-07-27, decyzja B+C): gdy ta negocjacja pokoju NIE ma koszyka
+  // (hasBasket=false), część C tej decyzji (koszyk `diplomacyTradeBasket` dla
+  // WSZYSTKICH traktatów) jest wciąż NIEDOKOŃCZONA dla tego typu — dziś koszyk
+  // obejmuje tylko akcje 5 (handel) i 13 (dar), patrz docs/decyzje/R-DYP-STOL-A.md,
+  // sekcja "Co dalej". Bez koszyka w tym formularzu nie ma pól do dopłaty, więc
+  // komunikat kieruje do zawarcia osobnej umowy. Gdy hasBasket=true (mieszany pokój
+  // z koszykiem), dopłata w tym samym formularzu jest faktycznie możliwa — zostaje
+  // „dopłać".
+  // EN: when this peace negotiation has no basket, part C of R-DYP-STOL-A (extending
+  // the basket to all treaty types) is still unfinished for this case — there's no
+  // field to pay extra in this form, so the message points to a separate deal.
+  // With a basket (mixed peace), paying extra in-form is possible — keep "dopłać".
   const buildPlayerSide = (): AcceptanceSideBalance => ({
     offerPn: myBasketOffer,
     demandPn: myBasketDemand,
@@ -192,7 +204,9 @@ function computePeaceAcceptanceSides(
     mode,
     accepted: peaceAccepted && asymBalance >= 0,
     statusLabel: asymBalance < 0
-      ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+      ? (hasBasket
+        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        : `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`)
       : asymBalance > 0 && hasBasket
         ? `Nadwyżka +${asymBalance} PW`
         : formatBalanceLabel(surplusPn, peaceAccepted),
@@ -208,7 +222,9 @@ function computePeaceAcceptanceSides(
     mode,
     accepted: peaceAccepted && asymBalance >= 0,
     statusLabel: asymBalance < 0
-      ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+      ? (hasBasket
+        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        : `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`)
       : hasBasket && asymBalance > 0
         ? `Przewaga u Ciebie +${asymBalance} PW`
         : 'Równo — spełnia',
@@ -356,16 +372,25 @@ export function computePlayerAcceptanceSides(
     const balanceOk = asymBalance >= 0;
     my.balancePn = asymBalance;
     their.balancePn = asymBalance;
+    // R-DYP-STOL-A (2026-07-27, decyzja B+C): ten traktat nie ma koszyka, bo część C
+    // tej decyzji (koszyk `diplomacyTradeBasket` dla WSZYSTKICH traktatów) jest wciąż
+    // NIEDOKOŃCZONA — dziś koszyk obejmuje tylko akcje 5 (handel) i 13 (dar), patrz
+    // docs/decyzje/R-DYP-STOL-A.md, sekcja "Co dalej". Dopóki to się nie zmieni, w tym
+    // formularzu nie ma pól do dopłaty, więc komunikat kieruje do zawarcia osobnej
+    // umowy zamiast dopłaty w tym samym formularzu.
+    // EN: this treaty has no basket because part C of R-DYP-STOL-A (extending the
+    // basket to ALL treaty types) is still unfinished — there's no field to pay
+    // extra in this form, so the message points to a separate deal instead.
     if (mode === 'treaty' && !hasBasket) {
       my.accepted = relOk && balanceOk;
       their.accepted = relOk && balanceOk;
       my.statusLabel = !balanceOk
-        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
           : 'Spełnia warunki (0 PW)';
       their.statusLabel = !balanceOk
-        ? `Brakuje ${Math.abs(asymBalance)} PW — dopłać`
+        ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
           : 'Równo — spełnia';

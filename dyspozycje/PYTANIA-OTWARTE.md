@@ -7806,6 +7806,27 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
+## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA — SCALONE (2026-08-10)
+
+Operator naprawił nieprawdziwe uzasadnienie (zmyślony ID `R-DYP-STOL-A-KOREKTA`) prawdziwym
+odniesieniem do `R-DYP-STOL-A` (B+C, część C — koszyk dla wszystkich traktatów — wciąż
+niedokończona). Naprawiono 3 miejsca: `computePlayerAcceptanceSides` (`mode==='treaty' &&
+!hasBasket`), `computePeaceAcceptanceSides` (`buildPlayerSide`/`buildPartnerSide`, teraz warunkowo
+na `hasBasket` — Evaluatora NOTE 3, ta sama sytuacja pominięta przy pierwszej naprawie),
+`renderPnBalancePanelForTreaty` w `diplomacyAcceptanceBalance.ts`. Tekst widoczny dla gracza
+(„— zawrzyj osobną umowę") bez zmian, poprawiony wyłącznie komentarz-uzasadnienie. Scalone
+bezpośrednio przez orkiestratora (worktree Operatora bazował na `main`, nie miał żadnej z tych
+zmian od zera — zrekonstruowany end-state zastosowany ręcznie do żywego drzewa). Bramki: tsc 0,
+logic-test 213/213, diplomacy-acceptance-points 225/225, diplomacy-ai-offer-balance 23/23,
+diplomacy-basket-edit 25/25, diplomacy-stol-pw-sum 42/42, diplomacy-trade-flex 8/8.
+
+**Do rejestru (materiał na przyszłe pytanie ABC, NIE zadane teraz):** `R-DYP-STOL-A` część C
+(rozszerzenie koszyka na wszystkie typy traktatów — sojusz/pakt/wasal/pokój/wojna) jest wciąż
+niedokończona. Zamiast łatać kolejne komunikaty „brak koszyka tutaj" pojedynczo, może warto
+dokończyć część C w całości.
+
+---
+
 ## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI — SCALONE (2026-08-10)
 
 Operator wybrał ścieżkę B (Evaluator): zostawił wywołanie `refreshTradeRoutesOverlay()` w bloku

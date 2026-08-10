@@ -620,17 +620,25 @@ export function renderPnBalancePanelForTreaty(
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
+  // R-DYP-STOL-A (2026-07-27, decyzja B+C): ten formularz traktatu nie ma koszyka, bo
+  // część C tej decyzji (koszyk `diplomacyTradeBasket` dla WSZYSTKICH traktatów) jest
+  // wciąż NIEDOKOŃCZONA — dziś koszyk obejmuje tylko akcje 5 (handel) i 13 (dar), patrz
+  // docs/decyzje/R-DYP-STOL-A.md, sekcja "Co dalej". Dopóki to się nie zmieni, w tym
+  // formularzu nie ma pól do dopłaty, więc komunikat kieruje do zawarcia osobnej umowy.
+  // EN: this treaty form has no basket because part C of R-DYP-STOL-A (extending the
+  // basket to ALL treaty types) is still unfinished — no field to pay extra here, so
+  // the message points to a separate deal instead.
   const hint = !relOk
     ? `Relacja ${formatLiczbaPl(relTotal)} — wym. ${formatLiczbaPl(relRequired!)}`
     : (balancePn < 0
-      ? `Brakuje ${Math.abs(balancePn)} PW — dopłać`
+      ? `Brakuje ${Math.abs(balancePn)} PW — zawrzyj osobną umowę`
       : balancePn > 0
         ? `Nadwyżka ${balancePn} PW`
         : 'Równo — spełnia');
   const verdict = !relOk
     ? `Relacja ${formatLiczbaPl(relTotal)} — wymagane ≥ ${formatLiczbaPl(relRequired!)}`
     : (balancePn < 0
-      ? `Dopłać ${Math.abs(balancePn)} PW (Twoja strona słabsza przy tej Relacji)`
+      ? `Zawrzyj osobną umowę na ${Math.abs(balancePn)} PW (Twoja strona słabsza przy tej Relacji)`
       : balancePn > 0
         ? 'Partner prawdopodobnie przyjmie — nadwyżka ' + balancePn + ' PW'
         : treatyMetaLabel + ': Ty ' + playerPw + ' PW · Oni ' + partnerPw + ' PW — spełnione');
