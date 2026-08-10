@@ -11356,3 +11356,95 @@ zagnieżdżony w guardzie, nie bare statement) — potwierdzone czerwono→zielo
 `4eb1cc88` (2 FAIL złapane), 30/30 po naprawie. Bramki: tsc 0, logic-test 213/213,
 `elimination-toast-merge-test` 30/30, `capital-capture-test` 58/58. Czeka na NIEZALEŻNEGO
 Evaluatora (4. runda, dispatch w toku).**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator FAIL runda 4 (2026-08-10, PIĄTA warstwa)
+
+**Werdykt Ewaluatora (Opus 5) dla `e0e0d186`: FAIL.** Runda 4 naprawiła DOKŁADNIE to, co
+deklarowała — zero kolizji nadpisania treści na żadnej warstwie wywołań (potwierdzone niezależnie:
+sekwencja end-to-end ma dokładnie JEDNO finalne wywołanie `showHintMessage`). **Ale to inny rodzaj
+defektu: kolizja WARSTW MALOWANIA (z-index), nie kolejności wywołań.**
+
+- Scalony toast eliminacji (`#civ-hint-toast`, `z-index:320`) jest renderowany **pod** otwartym
+  ekranem audiencji dyplomatycznej (`.civ-diplo-aud`, `z-index:400`, `background:rgba(...,.88)`) —
+  przy domyślnym zoomie UI (`<body>` bez `transform`, oba elementy w tym samym kontekście
+  układania) `400 > 320` wygrywa: **gracz nadal nie widzi komunikatu**, mimo że treść jest
+  poprawna i wygenerowana tylko raz.
+- **Dlaczego umykało 4 rundy:** przy zoomie UI ≠ 1 `<body>` dostaje `transform:scale()`, co
+  tworzy własny kontekst układania i przypadkiem czyni toast widocznym — widoczność zależy od
+  ustawienia zoomu gracza, nie jest deterministyczna.
+- **Ten sam wzorzec już raz opisany w tym pliku** dla ścieżki bojowej (`.civ-ccn-overlay
+  z-index:660` przykrywał toast `z-index:320`) — dla ścieżki dyplomatycznej wybrano wtedy toast z
+  uzasadnieniem „tam nie ma modalu", ale audiencja dyplomatyczna JEST pełnoekranową nakładką.
+- **Drugi, niezależny defekt:** gdy gracz kończy turę zamiast klikać „Przyjmij" ręcznie,
+  `resolvePendingNegotiationsForOwner` rozstrzyga propozycję w fazie AI — `showHintMessage` przy
+  `endTurnInProgress` NIE nadpisuje, tylko KOLEJKUJE (`deferredEotHints` → karty „Wydarzenia").
+  Założenie rundy 3 („ostatnie wywołanie wygrywa") nie obowiązuje w tej gałęzi: kroki
+  `annexCityStateToOwner` i `applyProposalOutcome` trafiają do kolejki jako **dwie identyczne
+  karty „ELIMINACJA!"** zamiast jednej.
+
+**Kierunek naprawy (Evaluator, niekodowany) — wymaga decyzji o kanale, do ABC:**
+- A: podnieść z-index `#civ-hint-toast` ponad nakładki dyplomacji (analogicznie do już istniejącego
+  wyjątku dla `isPreBattleOpen()` → `9950`) — toast ma `pointer-events:none`, podniesienie niczego
+  nie blokuje. Najmniejsza zmiana.
+- B: użyć kanału już renderowanego NAD audiencją — baner propozycji (`z-index:850`,
+  `showDiplomacyProposalBanner`) albo dedykowany modal, analogicznie do wariantu wybranego wcześniej
+  dla ścieżki bojowej (modal ELIMINACJA! w `cityCaptureNotice.ts`).
+- C: skierować komunikat eliminacji wyłącznie do trwałego dziennika „Wydarzenia" (karta w
+  side-panelu) zamiast toastu — przy okazji domyka drugi defekt (duplikat karty), bo jedno źródło
+  emisji zamiast dwóch.
+Do tego: usunąć podwójną emisję (jedno źródło treści, nie dwa), i dołożyć bramkę sprawdzającą
+polaryzację warunku `skipGenericToast` (dzisiejsze 8 asercji nie łapie odwróconego `!`) oraz
+relację z-index (nie tylko istnienie kodu).
+
+**STATUS: do ABC — wybór kanału to decyzja produktowa, nie techniczna (wpływa na to, gdzie i jak
+długo gracz widzi komunikat). Pytanie zadane Maciejowi w czacie.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — Evaluator FAIL na `8458ac74` (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5): FAIL — jeden bloker + 3 defekty + 4 noty.** Rdzeń zmiany (generator
+NIE wołany gdy snapshot poprawny; wsteczna kompatybilność; kompletność pól heksu w tym dynamicznych
+`zloze`/`ulepszenia`; reszta `regenerateWorldForLoad` wspólna dla obu ścieżek) **potwierdzony jako
+poprawny, niezależnie zweryfikowany w kodzie, nie tylko z raportu Operatora.** Zmierzony realny
+zysk: mapa `standardowy` (domyślna, 168×120=20160 heksów) — generator **116 177 ms**, odczyt
+snapshotu **24 ms** (~4800×). Problem zgłoszony przez Macieja jest realny i ta zmiana go faktycznie
+rozwiązuje.
+
+**⛔ BLOKER: rozmiar zapisu przekracza limit `localStorage` przy DOMYŚLNYM rozmiarze mapy.**
+Zmierzone realnie (prawdziwy generator + serializacja): mapa `standardowy` (domyślna w menu) →
+sam `mapSnapshot` to **4,10 MB znaków** ≈ **8,6 MB w UTF-16** (jak liczy Chromium limit ~5 MB/origin)
+→ `QuotaExceededError` na **pierwszym zapisie**, przy domyślnych ustawieniach, bez zmiany
+czegokolwiek przez gracza. `AUTOSAVE_ROT_COUNT=10` pogarsza to dodatkowo — nawet najmniejsza mapa
+(`malenki`, 0,81 MB) × 10 slotów rotacyjnych = 8,1 MB, też nie mieści się. Brak jakiejkolwiek
+degradacji: `saveToLocal` zwraca `{ok:false,reason:'quota'}` i kończy — zapis ręczny przestaje
+działać CAŁKOWICIE, FSA (dysk) ratuje tylko autozapis i tylko po zgodzie użytkownika. **To wprost
+koliduje z JUŻ otwartym, potwierdzonym zgłoszeniem Macieja o znikającym ręcznym zapisie**
+(`P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT`, ten sam plik) — quota była napięta PRZED tą zmianą,
+doklejenie 4,3 MB do każdego zapisu nie zwiększa ryzyka, ono ten scenariusz GWARANTUJE.
+
+**Defekt B:** komentarz-inwariant w `mapSnapshot.ts` („bezpieczne bo `SaveGame` jest natychmiast
+serializowany zanim cokolwiek zdąży zmutować `map`") jest NIEPRAWDZIWY dla ścieżki FSA — autozapis
+na dysk robi `serializeGame(s)` PO dwóch `await` na I/O, więc `mapSnapshot.hexes` (żywa referencja,
+nie kopia) może się zmutować w międzyczasie (rozdarcie migawki). Ryzyko praktyczne małe, ale
+udokumentowany fałszywy inwariant jest niebezpieczny dla przyszłych zmian.
+
+**Defekt C:** otwarcie dialogu „Wczytaj grę" parsuje WSZYSTKIE sloty w całości (`JSON.parse` każdego
+dla samego `label`/`tura`) — po tej zmianie to ~43 MB JSON parsowanego synchronicznie na wątku
+głównym przy każdym otwarciu listy zapisów (~240ms zawieszenia UI). Ironia: temat dotyczył
+szybkości, zmiana dokłada zauważalny koszt gdzie indziej.
+
+**Noty (nieblokujące, do domknięcia przy okazji):** D — `as TMap` w `load-map-source.ts` cicho gubi
+`startPositions`/`mapGenTimings` (bez szkody funkcjonalnej dziś, ale przyszłe pola przejdą przez
+`tsc` bez ostrzeżenia); E — test nie dotyka realnego rozmiaru mapy (36×28=1008 heksów, mniej niż
+najmniejsza mapa w grze); F — ścieżka „wczytaj z pauzy" ignoruje snapshot (pre-istniejące, nie
+regresja, ale zmiana daje dane do naprawy i ich nie wykorzystuje); G — opisy rozmiarów map w
+`ui-params.json` są ~4× zaniżone względem realnych wymiarów (niezwiązane z tym commitem).
+
+**Kierunek naprawy (Evaluator, niekodowany) — wymaga decyzji ABC, bo to kompromis produktowy:**
+kompresja snapshotu przed zapisem / degradacja z twardym budżetem (ponad próg — zapisz BEZ
+snapshotu, stary format już działa i jest przetestowany) / przeniesienie snapshotu do IndexedDB
+(brak limitu 5MB). Dodatkowo: `mapSnapshot` nie powinien wchodzić do wszystkich 10 slotów
+rotacyjnych autozapisu, tylko do 1-2 najnowszych.
+
+**STATUS: do ABC — pytanie zadane Maciejowi w czacie. Funkcja NIE nadaje się do deployu w obecnej
+postaci (deploy i tak wymaga hasła „deploy", więc nic nie trafiło do graczy, ale scalona na
+gałęzi sesji wersja jest fałszywym „gotowe").**
