@@ -9756,6 +9756,14 @@ nie wymienia 3 pre-istniejąco czerwonych testów, dopisać).
 
 **MERGE do gałęzi sesji następuje teraz.**
 
+**SCALONE — commit `1a6f7e79`, wypchnięte.** Bramki w drzewie głównym potwierdzone ponownie po
+scaleniu: tsc 0, logic-test 213/213, separator-test 29/0, live-recalc-test 57/0, bilans-clamp 22/0.
+**To zamyka DRUGI z czterech tematów priorytetowych Macieja** (po koszcie-ulepszeń-UX). Worktree
+posprzątany.
+
+**Odblokowany Spichlerz „(0)"** — czekał wyłącznie na to scalenie (ten sam obszar plików). Dispatch
+następuje teraz jako trzeci temat priorytetowy.
+
 ---
 
 ## [PL, 2026-08-10] Hasło „raport" — pełny audyt (agent `aff9b116cf957d004`) + kontrola kompletności
