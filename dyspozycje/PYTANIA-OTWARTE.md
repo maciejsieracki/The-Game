@@ -9640,4 +9640,20 @@ na hot path, spójna z wcześniejszym werdyktem `e4155972`, nie wymaga ABC wła�
 rundy 3 — cache `maxSafe` + poprawa must-fix tooltipa + fałszywych komentarzy + dołożenie 2 asercji
 dla `onCityAutoWyzywienieChange`.
 
+**Runda 3 (`a7b8697cdc33b4704`) — dostarczona.** Cache `_maxSafeRationCache` (Map cityId→maxSafe) w
+`main.ts:8834`, zapisywany w JEDYNYM choke-poincie silnika liczącym maxSafe
+(`getMaxSafePoziomRacjiForPlayerCity`, `:13315`) — więc jeden zapis pokrywa i panel, i
+`applyLiveSafeRationForCity`, bez dodawania nowego liczenia. Unieważnianie przez istniejący
+`markCityStateDirty` (globalne czyszczenie, zgodnie z wzorcem `empireEconDirty`/`powerDirty` w tej
+samej funkcji — brak invalidacji per-city w tym mechanizmie, więc dopasowano się do istniejącego
+stylu zamiast wymyślać nowy). `cityGrowthLive` czyta cache, przy trafieniu przycina tanią
+`clampedGrowthBreakdown` (bez `previewCityEconomy`), przy braku wpisu spada do surowej wartości
+(fallback). Poprawione oba fałszywe komentarze (kontrakt `cityGrowthLive`, uzasadnienie przy chipie
+WZROST% — musiało zostać skrócone bez PL+EN, bo test regexowy ma limit 900 znaków między polami
+obiektu). Tooltip „Auto Wyżywienie" poprawiony (na żywo obniża w trakcie tury / podnosi na koniec).
++2 asercje w teście dla `onCityAutoWyzywienieChange` (wywołanie obecne + WYŁĄCZNIE w gałęzi `enabled`,
+liczone głębokością klamer). Bramki zielone: tsc 0, logic-test 213/213, separator-test 29/0,
+live-recalc-test 27/0 (było 25), bilans-clamp 22/0, city-badge-growth-percent 38/0,
+rounding-parity 16/0. **Dispatchowany Evaluator rundy 3 (`a0e3d0cf2d6adad59`)**.
+
 ---
