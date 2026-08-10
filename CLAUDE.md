@@ -193,6 +193,23 @@ Właściciel: **Maciej**, product owner w NASTER S.A. Rozmawia **po polsku — o
 9. **Komentarze w kodzie (`gra/src/**`) dwujęzyczne PL+EN (Maciej 2026-08-09).** Nie zmienia zasady „domyślnie
    bez komentarzy, tylko gdy WHY nieoczywiste" — dotyczy WYŁĄCZNIE tych rzadkich komentarzy, które i tak
    powstają. Format: polska wersja, potem `/ EN: ...` w tej samej linii/bloku.
+10. **HASŁO „raport" — status pracy w 5 kategoriach (Maciej, 2026-08-10).** Na słowo `raport` (w dowolnym
+    momencie, niezależnie od wątku) dostarcz zestawienie w DOKŁADNIE tych 5 kategoriach, w tej kolejności:
+    1. **Gotowe do deploy do ROBOCZA i czekające** (scalone na gałąź sesji, bramki zielone, deploy jeszcze
+       nie wykonany).
+    2. **W trakcie — Operator pracuje** (dispatchowany, jeszcze bez dostarczonego raportu).
+    3. **W trakcie — Evaluator pracuje** (Operator dostarczył, czeka na werdykt).
+    4. **Zapomniane — do dispatchu subagenta** (zarejestrowane w `PYTANIA-OTWARTE.md`, bez żadnego
+       aktywnego wykonawcy ANI jawnej decyzji odłożenia właściciela — patrz procedura audytu C-030/C-031 w
+       `dyspozycje/autobot/playbook.md`: grep `STATUS: \*\*OTWARTE` BEZ kotwicy `^## `, dla każdego trafienia
+       sprawdź czy jest dispatch/ABC/cytat właściciela o odłożeniu).
+    5. **Odłożone świadomie** (z udokumentowanym w tym samym pliku powodem — cytat właściciela, „do
+       backlogu", „pre-istniejące nie blokuje" itp., NIE samoocena „niepilne" agenta rejestrującego —
+       to nie liczy się jako świadome odłożenie).
+    Źródło danych zawsze `dyspozycje/PYTANIA-OTWARTE.md` (pełny przegląd nagłówków `## `, nie próbka z
+    pamięci sesji) + stan aktywnie dispatchowanych agentów. Format odpowiedzi: krótko, per temat ID/nazwa +
+    1 zdanie stanu — bez wklejania pełnych raportów Operatora/Evaluatora. Jeśli plik rejestru jest duży,
+    dispatchuj subagenta (Explore/general-purpose) do systematycznego audytu zamiast zgadywać z pamięci.
 
 ## STRUKTURA
 - `gra/src` — kod TS (`game/`, `map/`, `render/`, `ui/`) · `gra/data` — JSON (kanon danych gry)
