@@ -7806,6 +7806,26 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
+## Tooltip Pracy — SCALONE bezpośrednio przez orkiestratora, oba blokery naprawione (2026-08-10)
+
+Naprawiono B1 i B2 z werdyktu Evaluatora bezpośrednio na żywym drzewie (nie kopiując pliku
+Operatora — dokładnie zgodnie z rekomendacją). `EmpireHudSnap.pracaUpkeep?: number` dodane;
+`main.ts` (`getEmpireHud`) dostał brakującą linię `pracaUpkeep: hs.pracaUpkeep,` (pole `hs.pracaUpkeep`
+już istniało, tylko nieprzepuszczane). Tooltip Pracy (6. argument `w3CityChip` na ŻYWYM,
+8-argumentowym wywołaniu — nie ruszono 7./8. argumentu) rozszerzony o: „cała cywilizacja +9 /
+turę netto (wpływ do puli +12 − utrzymanie ulepszeń surowcowych 3 pkt Pracy/turę)" — BEZ
+podwójnego minusa (literalny `−` przed SUROWĄ, dodatnią wartością `empire.pracaUpkeep`, nie przez
+`signed()`) — zweryfikowane niezależnym skryptem node z tą samą funkcją `signedPl`: `12 − 3 = 9`
+✓. Fallback (gdy `empire.pracaUpkeep` niedostępne) — pusty string, brak dodatkowego zdania (N1
+Evaluatora: nie chcę fałszywego „netto" tam gdzie faktycznie nie jest netto — bezpieczniej nic
+nie dodawać niż skłamać).
+
+Bramki: tsc 0, logic-test 213/213, **hud-miasto-stock-tempo-test 71/71** (krytyczna bramka AST,
+której Operator nie miał w swoim worktree — teraz przechodzi, dowód że 7./8. argument
+nietknięte), hud-miasto-stan-cywilizacji 20/20, hud-skarbiec 7/7.
+
+---
+
 ## Tooltip Pracy — Evaluator FAIL, 2 blokery (podwójny minus + patch na przestarzałej bazie) (2026-08-10)
 
 **B1:** `signed(-pracaUpkeepVal)` już zwraca liczbę ujemną (`−Y`), a Operator postawił PRZED nią

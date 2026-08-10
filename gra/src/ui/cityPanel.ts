@@ -976,8 +976,11 @@ interface CityView {
 export interface EmpireHudSnap {
   /** Pula Pracy imperium (zapas — załóż miasto, ulepszenia / projekty mapy). */
   pracaPool?: number;
-  /** Suma Pracy / turę (wszystkie miasta). */
+  /** Suma Pracy / turę (wszystkie miasta), NETTO — już po odjęciu `pracaUpkeep`. */
   pracaRate?: number;
+  /** Civ-wide utrzymanie Pracy za ulepszenia surowcowe terenu (tartak/kamieniołom/
+   *  glinianka/kopalnie/warzelnia soli/stadnina), już wliczone (odjęte) w `pracaRate`. */
+  pracaUpkeep?: number;
   zloto?: number;
   zlotoRate?: number;
   nauka?: number;
@@ -8915,7 +8918,12 @@ function buildCityOnlyW3FlankChips(
       'praca',
       `Praca TEGO miasta ${signed(chip.praca.big)} ` +
         `(budynki ${signed(pracaSplit.doBudynkow)} · pula ${signed(pracaSplit.doUlepszen)}) · ` +
-        `cała cywilizacja ${signed(chip.praca.small)} / turę · zapas cywilizacji ${chip.praca.stock}`,
+        `cała cywilizacja ${signed(chip.praca.small)} / turę netto` +
+        (empire.pracaUpkeep != null
+          ? ` (wpływ do puli ${signed((chip.praca.small ?? 0) + empire.pracaUpkeep)} ` +
+            `− utrzymanie ulepszeń surowcowych ${empire.pracaUpkeep} pkt Pracy/turę)`
+          : '') +
+        ` · zapas cywilizacji ${chip.praca.stock}`,
       chip.praca.small,
       chip.praca.stock,
     ),

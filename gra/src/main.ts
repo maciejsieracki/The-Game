@@ -5737,6 +5737,7 @@ async function boot(): Promise<void> {
           return {
             pracaPool: hs.praca,
             pracaRate: hs.pracaRate,
+            pracaUpkeep: hs.pracaUpkeep,
             zloto: hs.zloto,
             zlotoRate: hs.zlotoRate,
             nauka: hs.nauka,
