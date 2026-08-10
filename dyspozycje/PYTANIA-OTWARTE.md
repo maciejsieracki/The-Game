@@ -10704,3 +10704,34 @@ Maciej: nie zauważył żadnego komunikatu o zdobyciu WSZYSTKICH miast cywilizac
 istniejący modal (już niepomijalny, wymaga kliknięcia) zamiast walczyć z jego z-index/timingiem.
 
 **STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
+
+## R-WYDARZENIA-KOLOR-DIPLO-INFO — ECHO bezpośrednia specyfikacja Macieja (2026-08-10, 2 zrzuty)
+
+Maciej (dwa kolejne zrzuty panelu WYDARZENIA): (1) karty propozycji dyplomatycznych ("Dyplomacja: X")
+nie powinny mieć czerwonej obwódki, tylko niebieską — czerwień zarezerwowana dla gróźb/wypowiedzenia
+wojny. (2) Komunikaty dotyczące naszej cywilizacji ("Koniec tury" — skarb, autozapis, itp.) powinny
+mieć złotą obwódkę i delikatnie czarne tło.
+
+**Przyczyna zlokalizowana:** `.civ-side-panel .sp-event` (`sidePanelHud.ts:166-169`) ma DOMYŚLNY
+`border-left:3px solid var(--tg-red)` — czerwień jest fallbackiem dla KAŻDEJ karty, nadpisywanym
+tylko dla kind ze zdefiniowaną regułą (`sp-science`/`sp-culture`/`sp-city`/`sp-unit`/`sp-enemy`).
+`kind:'diplo'` (main.ts:11863-11885, propozycje) i `kind:'info'` (eot-event-defer.ts:71, "Koniec
+tury" — nasze własne zdarzenia końca tury) nie miały WŁASNEJ reguły, więc spadały na czerwony
+fallback — to nie było zamierzone sygnalizowanie zagrożenia, tylko brakujący styl.
+
+**Wdrożone (traktowane jako bezpośrednia, jednoznaczna specyfikacja, nie ABC z wariantami —
+Maciej podał dokładny wynik dla obu kategorii):**
+- `.sp-diplo` → `border-left-color:#6a9fd4` (niebieski) — reużyty istniejący token `--diplo`
+  już ustalony w konwencji kodu (`cityForeignPick.ts`/`unitForeignPick.ts`).
+- `.sp-info` → `border-left-color:#c9a84c` (złoty) + tło z czarnym tinem (`rgba(0,0,0,.35)` →
+  ciemne tło panelu) — reużyty istniejący token `--info` z tej samej konwencji.
+- `.sp-enemy`/`.sp-blocking` (groźby/wojna/zdarzenia negatywne) BEZ ZMIAN — pozostają czerwone,
+  zgodnie z zasadą Macieja "czerwień tylko dla zagrożeń".
+
+**Uwaga do wiadomości (nie blokuje wdrożenia):** `kind:'info'` obejmuje też rzadki przypadek handlu
+AI↔AI (`title:'Dyplomacja'` bez nazwy cywilizacji, `origin:'other-civs'`, filtrowany chipem 🌍 „Inne
+cyw.") — to NIE dotyczy naszej cywilizacji, ale dostanie ten sam złoty styl co reszta `info`, bo
+Maciej nie rozróżnił tego przypadku w zgłoszeniu. Jeśli to niepożądane, osobne zgłoszenie.
+
+**Plik:** `gra/src/ui/sidePanelHud.ts` (2 nowe reguły CSS, linie ~177-178).
+**STATUS: wdrożone, do commitu (bez deployu). Bramki: tsc 0.**
