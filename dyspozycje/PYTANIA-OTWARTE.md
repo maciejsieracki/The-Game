@@ -7786,6 +7786,48 @@ Dispatch NASTĘPUJE teraz.
 
 ---
 
+## R-EPOKA-CUD-WARUNEK-AWANSU B3 — SCALONE `e5ba61c2` (2026-08-10)
+
+Scalający agent poprawnie ODSTĄPIŁ od literalnej instrukcji dla `ai.ts` (miała kazać skopiować
+plik w całości jako „100% nowa praca" — nieprawda, worktree Operatora bazował na starszym
+punkcie historii, brakowało 3 niezwiązanych, już scalonych funkcji: obrona miast przed
+barbarzyńcami, wymuszona wojna Brązu, aktualna reguła kolonizacji poza terytorium). Zamiast
+ślepo kopiować (co skasowałoby te 3 funkcje), zastosował to samo podejście hunk-po-hunku co dla
+`main.ts` — dobry przykład reguły C-033/C-034 „nie ufaj instrukcji ślepo, sprawdź stan przed
+nadpisaniem". Wszystkie bramki zielone zgodnie z oczekiwaniem (46/46, 33/33, 213/213, 26/26,
+10/10, 13/13, 9/9, 7/8 pre-istniejąca). Dowód: `grep wonderForcePriority gra/src/main.ts` → 3
+trafienia, commit na `origin`. Worktree `agent-a85d78f7d0cdd8a5d` pozostawiony do usunięcia (po
+weryfikacji `git status`, C-033).
+
+---
+
+## BUG — autozapis nieudany, „brak miejsca w zapisie przeglądarki" (2026-08-10, zrzut Macieja)
+
+**Zrzut:** trzy zdublowane powiadomienia „Koniec tury / Autozapis nieudany — brak miejsca w
+zapisie przeglądarki".
+
+**Zbadane:** `doRotatingAutosave()` (`main.ts:21212-21236`) pisze do rotacyjnego slotu (10
+ostatnich, `AUTOSAVE_ROT_COUNT=10`) przez `saveToLocal()` (`game/save.ts:337-346`) —
+`localStorage.setItem()` na tym samym kluczu co poprzednio (nadpisanie, nie narastanie per slot).
+`reason==='quota'` = złapany `QuotaExceededError`/`NS_ERROR_DOM_QUOTA_REACHED`/kod 22/1014 —
+twardy limit `localStorage` przeglądarki (typowo ~5-10 MB NA CAŁĄ domenę, nie per-slot). Przy
+dużej mapie/wielu turach JSON zapisu może realnie przekroczyć ten limit, zwłaszcza x10 slotów
+rotacji + inne klucze (`AUTOSAVE_ROT_IDX_KEY`, `AUTOSAVE_FREQ_KEY`, `lastPlayedSlotId` itd.) w tej
+samej domenie. Kod NIE ma dziś żadnej strategii odzyskania miejsca przy quota (po prostu pokazuje
+komunikat i rezygnuje z tej próby, indeks rotacji NIE przesuwa się dalej — kolejna próba celuje w
+ten sam slot).
+
+**Klasyfikacja:** to NIE jest czysto techniczny jednoznaczny bug — właściwa naprawa ma realne
+kompromisy (np. czyszczenie najstarszych slotów przy quota vs kompresja zapisu vs migracja na
+IndexedDB, znacznie większy limit). Dispatch Operatora do ROZPOZNANIA (nie ślepej implementacji):
+zmierzyć realny rozmiar JSON zapisu na reprezentatywnej mapie/turze, potwierdzić czy problem to
+rozmiar pojedynczego zapisu czy suma 10 slotów, i zaproponować A/B/C zamiast zgadywać —
+zgodnie z §6 „nie zgaduj przy niejednoznaczności".
+
+Dispatch NASTĘPUJE teraz.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 2: PASS-WITH-NOTES, scalenie NATYCHMIAST (C-034) (2026-08-10)
 
 Niezależny (inny niż runda 1) Evaluator potwierdził naprawę WŁASNĄ symulacją (75 asercji, 0
