@@ -419,7 +419,8 @@ import {
   unitAtRepresentative,
   findAdjacentEmptyHexes,
   findSplitDestHexes,
-  assignBounceHexesForUnits,
+  computeSeparateReturn,
+  resolveSeparateReturnHex,
   pickStackRepresentative,
   stackRuchLeft,
   planningStackRuchLeft,
@@ -7935,6 +7936,9 @@ async function boot(): Promise<void> {
       fromQ: number;
       fromR: number;
       moveCost: number;
+      /** P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO: ruch FAKTYCZNIE odjęty (pulaPrzed -
+       *  pulaPo), nie `moveCost` zamierzony — patrz computeSeparateReturn. */
+      deductedRuch: number;
     };
     const deferredMergePrompts: DeferredMergePrompt[] = [];
 
@@ -8956,6 +8960,9 @@ async function boot(): Promise<void> {
       fromQ: number,
       fromR: number,
       moveCost: number,
+      /** Ruch FAKTYCZNIE odjęty za ten ruch (pulaPrzed - pulaPo), do pełnego
+       *  zwrotu przy „Zostaw osobno" — patrz computeSeparateReturn. */
+      deductedRuch: number,
     ): void {
       if (movedUnitIds.length === 0) return;
       const movedSet = new Set(movedUnitIds);
@@ -8972,6 +8979,7 @@ async function boot(): Promise<void> {
           fromQ,
           fromR,
           moveCost,
+          deductedRuch,
         });
         return;
       }
@@ -9023,36 +9031,59 @@ async function boot(): Promise<void> {
           flushDeferredMergePrompts();
         },
         onSeparate: () => {
-          const bounces = assignBounceHexesForUnits(
-            units,
-            fromQ,
-            fromR,
-            movedUnitIds,
-            isHexPassableForUnit,
-          );
-          for (const [id, pos] of bounces) {
-            const mu = units.find(x => x.id === id);
-            if (mu) {
-              mu.q = pos.q;
-              mu.r = pos.r;
+          // P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO A (Maciej 2026-08-09): cała
+          // armia wraca RAZEM na heks startowy (fromQ,fromR) — NIE rozprasza się
+          // (stary assignBounceHexesForUnits dawał każdej jednostce osobny wolny
+          // heks, stąd rozpad; usunięty z tej ścieżki). Zwrot ruchu ma być pełny
+          // (jakby ruch się nie odbył), a teleport bezpieczny (bez wchodzenia na
+          // wroga bez walki) — patrz computeSeparateReturn/resolveSeparateReturnHex.
+          // EN: the WHOLE army returns TOGETHER to the origin (fromQ,fromR) — no
+          // more scattering (the old assignBounceHexesForUnits gave each unit its
+          // own free hex, causing the breakup; removed from this path). The
+          // movement refund is full (as if the move never happened), and the
+          // teleport is safe (never walks onto an enemy with no battle) — see
+          // computeSeparateReturn/resolveSeparateReturnHex.
+          const movedUnits = movedUnitIds
+            .map(id => units.find(x => x.id === id))
+            .filter((mu): mu is RuntimeUnit => mu != null);
+          const dest = resolveSeparateReturnHex(units, fromQ, fromR, rep.ownerId, isHexPassableForUnit);
+          if (dest) {
+            const restored = computeSeparateReturn(movedUnits, deductedRuch);
+            for (const mu of movedUnits) {
+              mu.q = dest.q;
+              mu.r = dest.r;
+              const r = restored.get(mu.id);
+              if (r !== undefined) mu.ruchLeft = r;
             }
           }
           syncUnitsRender();
           refreshFog();
-          const remain = visibleStackOnHex(units, rep.q, rep.r, rep.ownerId);
-          if (remain.length > 0) {
-            const selRep = pickStackRepresentative(remain, unitAttackScore);
-            selectPlayerUnit(selRep.id);
-          } else if (selectedId !== null && movedSet.has(selectedId)) {
-            const bounced = units.find(x => x.id === selectedId);
-            if (bounced) selectPlayerUnit(bounced.id);
+          if (dest) {
+            const returned = visibleStackOnHex(units, dest.q, dest.r, rep.ownerId)
+              .filter(x => movedSet.has(x.id));
+            if (returned.length > 0) {
+              const selRep = pickStackRepresentative(returned, unitAttackScore);
+              selectPlayerUnit(selRep.id);
+            } else if (selectedId !== null && movedSet.has(selectedId)) {
+              const returnedSel = units.find(x => x.id === selectedId);
+              if (returnedSel) selectPlayerUnit(returnedSel.id);
+            }
+            showHintMessage(
+              arrivingUnits.length > 1
+                ? 'Armia osobno — ' + arrivingUnits.length + ' jedn. wróciło na (' + dest.q + ',' + dest.r + '), ruch zwrócony'
+                : rep.typeId + ' — osobno, wróciła na (' + dest.q + ',' + dest.r + '), ruch zwrócony',
+              2800,
+            );
+          } else {
+            // B3 (Evaluator RUNDA 1): origin przestał być bezpieczny (wróg go zajął
+            // albo stał się nieprzejezdny) — NIE przenosimy jednostek wcale, zamiast
+            // teleportować gracza na wroga bez walki (bezpieczniejszy brak fallbacku,
+            // nota N1 rundy 2).
+            showHintMessage(
+              'Zostaw osobno: heks startowy (' + fromQ + ',' + fromR + ') jest zajęty lub nieprzejezdny — jednostki zostają na miejscu',
+              3600,
+            );
           }
-          showHintMessage(
-            arrivingUnits.length > 1
-              ? 'Armie osobno — ' + arrivingUnits.length + ' jedn. wróciło obok stosu'
-              : rep.typeId + ' — osobno, obok stosu (' + rep.q + ',' + rep.r + ')',
-            2800,
-          );
           refreshD1bHud();
           flushDeferredMergePrompts();
         },
@@ -9064,7 +9095,7 @@ async function boot(): Promise<void> {
       if (deferredMergePrompts.length === 0 || endTurnInProgress) return;
       if (isArmyMergePanelOpen()) return;
       const next = deferredMergePrompts.shift()!;
-      promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost);
+      promptMergeIfCoLocated(next.movedUnitIds, next.fromQ, next.fromR, next.moveCost, next.deductedRuch);
     }
 
     function afterPlayerUnitSpawned(newUnitId: string): void {
@@ -9074,7 +9105,9 @@ async function boot(): Promise<void> {
       const coLocated = coLocatedForMergePrompt(units, u.q, u.r, u.ownerId)
         .filter(x => x.id !== newUnitId);
       if (coLocated.length > 0) {
-        promptMergeIfCoLocated([newUnitId], u.q, u.r, 0);
+        // Świeżo wyprodukowana jednostka nie wykonała żadnego ruchu tej tury —
+        // nie ma czego zwracać (deductedRuch=0).
+        promptMergeIfCoLocated([newUnitId], u.q, u.r, 0, 0);
         return;
       }
       selectPlayerUnit(newUnitId);
@@ -9250,10 +9283,12 @@ async function boot(): Promise<void> {
               mu.q = destQ;
               mu.r = destR;
             }
+            const pulaPrzed = stackRuchLeft(stack);
             deductStackRuchLeft(stack, moveCost);
+            const deductedRuch = pulaPrzed - stackRuchLeft(stack);
             syncUnitsRender();
             refreshFog();
-            promptMergeIfCoLocated(ids, srcQ, srcR, moveCost);
+            promptMergeIfCoLocated(ids, srcQ, srcR, moveCost, deductedRuch);
             refreshD1bHud();
           },
           onCancel: () => refreshD1bHud(),
@@ -17449,7 +17484,9 @@ async function boot(): Promise<void> {
         su.q = last.q;
         su.r = last.r;
       }
+      const pulaPrzedMarch = stackRuchLeft(stack);
       deductStackRuchLeft(stack, result.cost);
+      const deductedRuchMarch = pulaPrzedMarch - stackRuchLeft(stack);
       if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
       let hutCollected = false;
       if (result.movePath.length > 0) {
@@ -17464,7 +17501,7 @@ async function boot(): Promise<void> {
       // checkVillageRewardAt już woła refreshFog({ skipVeteranEducation }) — nie dubluj ani nie nadpisuj toastu chatki.
       if (!hutCollected) refreshFog();
       validateActiveSieges();
-      promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost);
+      promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost, deductedRuchMarch);
 
       const attackTargetId = marchAttackTargets.get(unitId);
       if (attackTargetId && tryLaunchMarchAttack(u, attackTargetId)) {
@@ -24736,12 +24773,15 @@ async function boot(): Promise<void> {
           const stack = movedStackIds
             .map(sid => units.find(x => x.id === sid))
             .filter((su): su is RuntimeUnit => su != null);
+          let deductedRuchAnim = 0;
           if (u) {
             for (const su of stack) {
               su.q = destQ;
               su.r = destR;
             }
+            const pulaPrzedAnim = stackRuchLeft(stack);
             deductStackRuchLeft(stack, moveCost);
+            deductedRuchAnim = pulaPrzedAnim - stackRuchLeft(stack);
             // TEMAT #15: automatyczna (dez)embarkacja wg terenu docelowego
             // (woda -> embarked, ląd -> zejście na ląd) + przebudowa tokenów.
             if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
@@ -24775,7 +24815,13 @@ async function boot(): Promise<void> {
           if (!hutCollected) refreshFog();
 
           if (u) tryAutoCaptureEmptyCityAt(destQ, destR, stack);
-          promptMergeIfCoLocated(movedStackIds.length > 0 ? movedStackIds : [finishedId], fromQ, fromR, moveCost);
+          promptMergeIfCoLocated(
+            movedStackIds.length > 0 ? movedStackIds : [finishedId],
+            fromQ,
+            fromR,
+            moveCost,
+            deductedRuchAnim,
+          );
           if (selectedId === finishedId) {
             const sel = units.find(x => x.id === finishedId);
             if (sel) {

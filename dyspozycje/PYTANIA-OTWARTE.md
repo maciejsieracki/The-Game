@@ -6778,6 +6778,27 @@ teraz.
    BB2 (A/B/C) do Macieja dopiero PO werdykcie Evaluatora (czy uczciwość dokumentacji tym razem
    się broni), żeby nie zadawać pytania, które i tak wróci z Evaluatora ze zmianami.
 
+---
+**⛔ SPROSTOWANIE (Operator runda 5, 2026-08-09) — akapit „P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO runda 4"
+POWTARZA twierdzenie, że pełny refaktor `stackGroupId` „częściowo odtwarzałby odrzuconą wcześniej
+opcję B tego samego tematu (ECHO A: „bez funkcji B, żadnego rozpraszania")". To twierdzenie Evaluator
+RUNDA 3 (wpis „P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO — Evaluator RUNDA 3: FAIL (dokumentacja nieprawdziwa)")
+już WPROST OBALIŁ jako nadinterpretację, sekcja „Korekta uzasadnienia ABC Operatora": ECHO A odpowiadało
+na PYTANIE O INNĄ RZECZ — czy budować „dwie niezależne, wybieralne armie na jednym heksie" (pełna funkcja
+produktowa z UI/AI/save). To NIE to samo co „różne pule ruchu w obrębie jednego heksu" — par. 6b w
+kodzie to komentarz dokumentacyjny, nie egzekwowany kontrakt; silnik już dziś rutynowo trzyma 2+
+niepołączone armie na jednym heksie (stąd w ogóle istnieje prompt merge). Realna naprawa (`stackGroupId`)
+WCIĄŻ wymaga ABC — ale jako NOWA decyzja o obserwowalnej zmianie zasad (gracz zobaczy dwie armie o
+różnym ruchu na jednym polu), NIE jako coś zabronione wcześniejszą decyzją. Evaluator RUNDA 4 odnotował,
+że raport rundy 4 POWTÓRZYŁ ten sam błąd bez korekty mimo że werdykt rundy 3 był już w rejestrze —
+to jest drugie niezależne miejsce (obok samego `skipStackRuchSync`), gdzie ta sama runda naruszyła §0b.
+Akapit oryginalny zostaje NIETKNIĘTY (append-only, dowód historii) — to sprostowanie jest dopiskiem,
+nie edycją.**
+---
+
+Poza sprostowaniem dokumentacji: Operator runda 5 usunął `skipStackRuchSync` W CAŁOŚCI z kodu (parametr,
+komentarz, warunek, oba wywołania) — patrz raport rundy 5 do Evaluatora w tej samej turze.
+
 5. **R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA runda 2 (Operator, `af8e111e57660342d`)** — pop-up
    podsumowania pary odtworzony od zera z 3 poprawkami blokującymi rundy 1: B1 (barbarzyńcy
    wykluczeni przez `isBarbarian()`, analogicznie do precedensu C-BARB-Q1/Q2), B2 (mgła wojny —

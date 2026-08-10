@@ -392,6 +392,91 @@ export function stackKey(q: number, r: number): string {
   return keyOf(q, r);
 }
 
+/**
+ * Zwrot ruchu przy „Zostaw osobno" (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO A
+ * 2026-08-09): cofnięcie CAŁEJ armii razem na heks startowy ma być traktowane
+ * tak, jakby ruch się NIE odbył — pełny zwrot kosztu tej tury. `deductedRuch`
+ * MUSI być tym, co FAKTYCZNIE odjęto (pulaPrzed - pulaPo wokół
+ * deductStackRuchLeft), NIE zamierzonym kosztem ruchu (moveCost) — reguła
+ * MIN-MOVE (planned-march.ts) pozwala wejść na heks droższy niż budżet ruchu,
+ * `deductStackRuchLeft` klampuje pulę do zera, więc zwrot pełnego
+ * zamierzonego kosztu dawałby więcej punktów ruchu niż jednostka miała PRZED
+ * ruchem — exploit nieskończonego ruchu (Evaluator RUNDA 1, nota B1). Zwrot
+ * per-jednostka jest dodatkowo KLAMPOWANY do własnego maksimum (`u.ruch`) tej
+ * jednostki — druga, niezależna bariera przeciw temu samemu exploitowi.
+ *
+ * EN: Movement refund for "Keep separate" — retreating the WHOLE army
+ * together to the origin hex must behave as if the move never happened: a
+ * full refund of THIS turn's cost. `deductedRuch` MUST be what was ACTUALLY
+ * deducted (before-pool minus after-pool around deductStackRuchLeft), NOT the
+ * intended move cost — the MIN-MOVE rule allows entering a hex pricier than
+ * the remaining budget, and deductStackRuchLeft clamps the pool to zero, so
+ * refunding the full intended cost would hand back more points than the unit
+ * had before moving (infinite-movement exploit, Evaluator ROUND 1 note B1).
+ * Each unit's refund is ALSO clamped to its own `ruch` maximum — a second,
+ * independent guard against the same exploit.
+ */
+export function computeSeparateReturn(
+  movedUnits: ReadonlyArray<RuntimeUnit>,
+  deductedRuch: number,
+): Map<string, number> {
+  const safeDeducted = Math.max(0, deductedRuch);
+  const out = new Map<string, number>();
+  for (const u of movedUnits) {
+    out.set(u.id, Math.min(u.ruch, u.ruchLeft + safeDeducted));
+  }
+  return out;
+}
+
+/**
+ * Heks powrotu dla „Zostaw osobno" — ZAWSZE miejsce startowe (fromQ, fromR),
+ * SKĄD armia faktycznie przyszła (Maciej, doprecyzowanie 2026-08-09: „nie
+ * najbliższy wolny sąsiedni heks" z pierwotnego rozpoznania — TA alternatywa
+ * odpada). Jedyny powód, by NIE wrócić na origin: heks w międzyczasie
+ * przestał być przejezdny albo zajął go WRÓG (main.ts, ścieżka odłożonych
+ * promptów po turach AI — Evaluator RUNDA 1, nota B3: stary kod
+ * assignBounceHexesForUnits sprawdzał isOccupied/passable, nowy bezwarunkowo
+ * ustawiał mu.q/mu.r, więc wróg mógł zająć heks startowy w międzyczasie i
+ * armia gracza teleportowała się na niego BEZ WALKI). Zwraca `null` w takim
+ * wypadku — wołający MA WTEDY NIE PRZENOSIĆ jednostek wcale (bezpieczniejsze
+ * niż teleport na wroga; nota N1 z rundy 2: teleport na inny, zajęty przez
+ * wroga heks też nie jest dobrym fallbackiem, więc żadnego fallbacku —
+ * jednostki zostają tam, gdzie stały, gracz dostaje o tym komunikat).
+ *
+ * WŁASNA jednostka na origin jest w porządku (zwykłe współdzielenie heksu,
+ * par. 6b) — wykluczamy WYŁĄCZNIE wroga, nie każdą zajętość.
+ *
+ * EN: Return hex for "Keep separate" — ALWAYS the origin the army actually
+ * came from (Maciej's 2026-08-09 clarification: NOT "nearest free neighbor"
+ * from the initial recon — that alternative is off the table). The only
+ * reason to NOT return there: the hex became impassable, or an ENEMY took it
+ * in the meantime (deferred-prompt path, flushed after AI turns — Evaluator
+ * ROUND 1 note B3: the old assignBounceHexesForUnits checked isOccupied/
+ * passable, the new code unconditionally set mu.q/mu.r, so an enemy could
+ * occupy the origin hex meanwhile and the player's army would teleport onto
+ * it with no battle). Returns `null` in that case — the caller must then NOT
+ * move the units at all (safer than teleporting onto an enemy; round 2's N1:
+ * bouncing to some OTHER enemy-occupied hex isn't a good fallback either, so
+ * there is no fallback — the units stay put and the player is told why).
+ *
+ * A FRIENDLY unit on the origin is fine (ordinary hex-sharing, par. 6b) — we
+ * exclude ONLY an enemy, not every occupant.
+ */
+export function resolveSeparateReturnHex(
+  units: ReadonlyArray<RuntimeUnit>,
+  fromQ: number,
+  fromR: number,
+  ownerId: number,
+  isPassable?: (q: number, r: number) => boolean,
+): { q: number; r: number } | null {
+  if (isPassable && !isPassable(fromQ, fromR)) return null;
+  const blockedByEnemy = units.some(
+    u => u.q === fromQ && u.r === fromR && u.ownerId !== ownerId && u.inGarnizon !== true,
+  );
+  if (blockedByEnemy) return null;
+  return { q: fromQ, r: fromR };
+}
+
 /** Split/merge przyciski paska akcji jednostki (testowalne, main.ts). */
 export function stackHudMergeSplitActions(
   stackLength: number,
