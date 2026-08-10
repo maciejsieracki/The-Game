@@ -7602,6 +7602,32 @@ nieprawdy w drugą stronę) NASTĘPUJE teraz.
 
 ---
 
+## Pytanie Macieja (zrzut ekranu) — checkbox „Auto Wyżywienie" wciąż widoczny zamiast przycisku (2026-08-10)
+
+**Zrzut Macieja:** panel miasta, sekcja Wyżywienie, pokazuje `☐ Auto Wyżywienie` jako checkbox +
+osobna etykieta, oraz tekst „Auto WYŁ — bez auto-obniżania/podnoszenia" jako WIDOCZNY tekst pod
+paskiem (nie w tooltipie). Cytat: „tutaj miał być checkbox zmieniony na przycisk i opisy do
+tooltip".
+
+**Zbadane bezpośrednio, zanim cokolwiek dispatchowałem (§6/7 — nie zgaduj, nie twórz problemów
+których nie ma):** dokładnie ta zmiana JEST już w kodzie. `gra/src/ui/cityPanel.ts:4686-4702` —
+`autoBtn = document.createElement('button')`, `className = 'hbtn auto-wyzywienie-btn'`
+(pełnoszerokościowy przycisk z tekstem „Auto Wyżywienie" W ŚRODKU, styl 1:1 z istniejącego
+przycisku auto-produkcji), `aria-pressed`, tekst „Auto WYŁ — bez auto-obniżania/podnoszenia"
+przeniesiony do `autoBtn.title` (tooltip), NIE renderowany jako widoczny tekst. Commit `cf2b63cc`
+(2026-08-09 23:38 UTC, „Spichlerz: drabinka capu ludności..."). Zweryfikowane `git log
+e88e3939..HEAD -- gra/src/ui/cityPanel.ts` — ZERO commitów między HEAD builda FALA 265 a dziś —
+czyli ta zmiana jest już częścią AKTUALNEGO deployu ROBOCZA (`7e8fdfdb`, FALA 265,
+**AKTUALNA** wg `WERSJE.md`).
+
+**Wniosek:** zrzut Macieja pokazuje checkbox+widoczny tekst, co NIE pasuje do dzisiejszego kodu
+(przycisk pełnej szerokości z tekstem w środku, bez osobnej etykiety obok). To wygląda na stary,
+niezsynchronizowany bundle po stronie Macieja (lokalna sesja/dysk właściciela jeszcze nie
+„pull"-nęła FALA 265), a nie na niedokończoną pracę w kodzie. Zapytano Macieja wprost zamiast
+dispatchować subagenta do już zaimplementowanej zmiany — zero dispatchu do czasu odpowiedzi.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
 
 Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
