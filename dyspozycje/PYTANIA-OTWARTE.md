@@ -9781,6 +9781,26 @@ git stash — 10/19 fail na starym kodzie). Bramki: tsc 0, logic-test 213/213,
 porażkami (`empire-food-b5`, `spichlerz-wzrost`, `food-hodowla`) potwierdzone identyczne przed zmianą
 przez git stash — niezwiązane z tym tematem. **Dispatchowany Evaluator (`aef68069325faa691`)**.
 
+**Werdykt: PASS-WITH-NOTES.** Zero blokad. Kluczowe potwierdzone: informacja nie zgubiona (miasta
+po imieniu + treść starej notki oba w scalonym bloku); C-039 „ten sam tick" potwierdzone strukturalnie
+niemożliwym rozjazdem (jeden zapis do `_lastTicks`, cztery powierzchnie czytają ten sam obiekt) —
+ALE Evaluator znalazł i wykluczył empirycznie realne okno fałszywego alarmu (`perCityRows[].nakarmione`
+jest `false` dla WSZYSTKICH miast między `advanceEmpireFood` a `applyPostCentralPopulationGrowth`,
+okno w pełni synchroniczne więc nie materializuje się — ale niezadokumentowane, ryzyko dla przyszłych
+zmian wstawiających `await` w to okno). Test zweryfikowany mutacyjnie samodzielnie (git stash: 10
+fail→19/19 po pop), ale ma 2 słabe asercje (jedna martwa, jedna tautologia testująca samą siebie) —
+nieblokujące. Tooltip „Armia" poza zakresem zasadny (sekcje wzajemnie wykluczające się), ale
+enumeracja C-039 niepełna — pominięte 2 z 4 nietkniętych powierzchni (`empireDetailPanel.ts:1002-1004`
+sekcja ARMIA tego samego panelu, `cityPanel.ts:4831/4889` — te dwie nadal pokazują gołą liczbę bez
+kontekstu, dokładnie zgłoszony objaw na innym ekranie). Interpretacja ECHO C trafna co do litery,
+niepełna co do objawu — gdy magazyn=0 a imperium zdrowe, nadal brak pozytywnego potwierdzenia „to
+zero jest zdrowe" (do rozważenia jako osobny temat, nie defekt tej rundy).
+**Do naprawy PRZED scaleniem (wymagane):** polska liczba mnoga — `empireDetailPanel.ts:544` i
+`hud.ts:792` mają tylko 2 formy zamiast 3 (dla 2-4 miast gra napisałaby błędnie „2 miast
+niedokarmionych" zamiast „2 miasta niedokarmione"), mimo że gotowy 3-formowy wzorzec (`slowoTuraHud`)
+już istnieje 60 linii wyżej w tym samym pliku. **Dispatch rundy 2 (`ac9ae703758da723a`)** — tylko ta
+poprawka, ~10 linii.
+
 **Autoryzacja Macieja (2026-08-10):** „Ok, jak zakończysz wszystkie tematy, to zrób deploy do
 roboczej oraz «domknij» porządki." (odczytane jako „domknij porządki" — literówka/autokorekta na
 „domain"; sens: dokończyć bieżące wątki i posprzątać, nie osobna, nierozpoznana instrukcja).
