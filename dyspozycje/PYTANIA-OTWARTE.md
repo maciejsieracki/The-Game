@@ -11589,3 +11589,45 @@ relację obu stałych odczytanych z `ai.ts`. Testowanie mutacyjne potwierdzone: 
 łapała mutanta „zakomentuj linię wiringu", nowa łapie. Bramki: tsc 0, logic-test 213/213,
 `ai-mp-military-cap-test` 18/18, `cs-military-cap-wiring-test` 13/13, `city-state-prod-audit-test`
 17/17. Czeka na NIEZALEŻNEGO Evaluatora, runda 3 (dispatch w toku).**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — runda 5 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `37b6cb9c` (2026-08-10).** Toast usunięty całkowicie dla przypadku eliminacji
+przez wchłonięcie — jedyny kanał to teraz persystentna karta w dzienniku Wydarzeń
+(`recordCivElimEvent`, omija `deferredEotHints`, przeżywa `endTurnInProgress`), kliknięcie otwiera
+nowy modal `civElimNotice.ts` z pełną treścią. Zwykły (nie-eliminacyjny) toast wchłonięcia
+nietknięty. Nowy plik `gra/src/ui/civElimNotice.ts`. Test rozszerzony o sekcję RUNDA 5 (20 asercji,
+w tym jawne sprawdzenie polaryzacji `!`/`&&` — bezpośrednia odpowiedź na krytykę Evaluatora rundy
+4). Bramki: tsc 0, logic-test 213/213, `elimination-toast-merge-test` 54/54,
+`eot-event-defer-test` 5/5, `sidepanel-events-toolbar-test` 19/19. Czeka na NIEZALEŻNEGO
+Evaluatora, runda 5 (dispatch w toku).**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — SCALONE (2026-08-10)
+
+**STATUS: SCALONE `ed002de2` (2026-08-10).** `canCounter` rozszerzone o `direction==='own'` dla
+typów koszykowych; nowa `applyOwnProposalEdit()` (`diplomacy-proposals.ts`) podmienia payload
+in-place bez zmiany rundy/`awaitingOwnerId`/ról (w odróżnieniu od `applyCounterOffer`, która
+zawsze podbija rundę). `umowa_szlakow` (bez koszyka) pozostaje bez edycji — kontrola negatywna w
+teście potwierdza brak regresji. Bramki: tsc 0, logic-test 213/213, nowy
+`diplomacy-own-proposal-edit-test.cjs` 18/18, oraz 8 istniejących testów dyplomacji (basket-edit,
+fairness-gate, negotiation-table, proposal, tech-trade, trade-flex, treaty-sweetener-edit,
+hud-moc-warstwa) — wszystkie zielone, zero regresji. Czeka na NIEZALEŻNEGO Evaluatora (dispatch
+w toku).**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — rozpoznanie dostarczone (2026-08-10)
+
+**Kluczowe ustalenie: magazyn centralny surowców budowlanych JUŻ ISTNIEJE**, choć w innym
+kształcie niż `zapasyPanstwa` Żywności — to suma `City.surowce` po wszystkich miastach ownera,
+liczona on-demand przez `ownerResourceStockAll`/`ownerResourceStock`
+(`gra/src/game/building-stock-cost.ts`). `EMPIRE_STOCK_RESOURCE_KEYS` już zawiera wszystkie 5
+potrzebnych kluczy (drewno/kamień/glina/ceramika/cegła) — **nic nie brakuje do dodania**. Gotowy
+wzorzec bramki binarnej per surowiec (dokładnie to, czego wymaga Q1+Q3 ECHO): `zloto-access.ts`
+(`ownerCanFeedMennica()`/`resolveOwnerZlotoFromStock()`, sprawdza wyłącznie `empireStock[key]>0`).
+Oba kanały kary (Szczęście: `computeHappinessBreakdown()` w `society-breakdown.ts:316-405`; Rozwój:
+`computeGrowthPercentV85()` w `population-growth-v85.ts:186-198`) gotowe do reużycia wzorem
+istniejących składników (`lines.push(...)`). UI: panel Surowców = `renderSurowceSection()`
+(`empireDetailPanel.ts:806-848`); panel miasta, sekcja Szczęście kończy się `cityPanel.ts:3016`,
+nowy wiersz wchodzi między 3016 a 3017 (przed blokiem Prawa). Pełny szacunek zakresu (5 części,
+złożoność każdej) w pełnym raporcie agenta `aaea622d317aa77e4`.
+
+**STATUS: dispatch Sonnet 5 (worktree) — implementacja pełnej mechaniki wg rozpoznania.**
