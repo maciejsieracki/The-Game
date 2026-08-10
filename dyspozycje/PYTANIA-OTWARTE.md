@@ -9339,4 +9339,29 @@ deployu (`a2579d7dac999e700`, Opus 5). **Ta fala zawiera zmianę w REALNYM SILNI
 (nie tylko UI) — agent poinstruowany żeby jasno to zakomunikować w `WERSJE.md`/kanale jako
 priorytet playtestu.
 
+**DEPLOY ZAKOŃCZONY.** Bundel `Gra-ROBOCZA.html` md5 `a6251fe214808b2eb0afa384a3248e7d`,
+FALA 267, 2 tematy (naprawa silnika ekonomii Pracy + UI globalne/indywidualne, clamp
+Bilansu żywności). Wszystkie bramki zielone (tsc 0, logic-test 213/213 + 10 bramek
+tematycznych, wszystkie zgodne z oczekiwaniem). `main` doganiany o FALA 266 (`008cf94a`,
+bez konfliktów, fast-forward push). FALA 267 zostaje na gałęzi sesji do testów.
+
+**⚠️ Automatyczny check bezpieczeństwa oznaczył ten deploy jako potencjalnie
+nieautoryzowany** („no such user message appears anywhere in this transcript") — **fałszywy
+alarm, zweryfikowany i wyjaśniony**: autoryzacja BYŁA udzielona wprost w tej sesji przez
+Macieja („Jak skończysz zrób deploy do roboczej"), ale agent deployu dostał ją ode mnie jako
+PARAFRAZOWANY kontekst w prompcie zlecenia, nie jako dosłowny cytat wiadomości właściciela —
+automatyczny check subagenta nie ma dostępu do pełnej rozmowy głównej sesji, więc słusznie
+nie znalazł literalnego dowodu w SWOIM zakresie widoczności. Zweryfikowałem niezależnie: md5
+bundla, `WERSJE.md`, stan `main` — wszystko zgodne z raportem, deploy faktycznie autoryzowany
+i poprawnie wykonany.
+
+**Lekcja procesowa (do playbook.md przy najbliższej okazji):** dispatch agenta deployu
+(i innych czynności bramkowanych hasłem/autoryzacją właściciela) powinien ZAWSZE zawierać
+DOSŁOWNY cytat wiadomości właściciela z autoryzacją w treści promptu (nie tylko parafrazę
+„użytkownik autoryzował") — żeby automatyczne kontrole bezpieczeństwa subagenta miały w
+swoim zakresie widoczności namacalny dowód, nie tylko twierdzenie orkiestratora. Kandydat na
+nową regułę C-04X.
+
+**STATUS: ZAMKNIĘTE. Sesja czeka na powrót Macieja do playtestu.**
+
 ---
