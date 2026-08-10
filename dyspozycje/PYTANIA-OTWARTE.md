@@ -11792,3 +11792,58 @@ traktatów, nie przez naprawę logiki edycji tych typów. Bramki: tsc 0, logic-t
 `diplomacy-own-proposal-edit-test` 33/33 (nowe kontrole negatywne dla `nap`/„granice" + regresja
 przypięta na pułapkę fallbacku), oraz 8 istniejących testów dyplomacji — wszystkie zielone, zero
 regresji. Czeka na NIEZALEŻNEGO Evaluatora, runda 2 (dispatch w toku).**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — Evaluator FAIL runda 2: bloker PRZESUNIĘTY, nie zamknięty (2026-08-10)
+
+**Werdykt (Opus 5) dla `3759ed1d`: FAIL.** Kompresja sama w sobie potwierdzona niezależnie jako
+poprawna (roundtrip kompletny, 8,2× redukcja zweryfikowana). Ale bloker rundy 1 („zapis nie mieści
+się w localStorage") **nie zniknął — przesunął się na inną ścieżkę.**
+
+**⛔ BLOKER 1 (poważniejszy niż runda 1): `AUTOSAVE_ROT_COUNT=10` × nowy, większy pełny zapis
+przepełnia budżet ~4× szybciej niż przed tą zmianą, i to jest REGRESJA TEJ ZMIANY, nie temat
+pre-istniejący.** Arytmetyka w tej samej jednostce (UTF-16), którą uzasadniono bloker rundy 1:
+PRZED zmianą pełny zapis × 10 slotów = 3,87 MB (77% budżetu 5MB, mieściło się); PO zmianie = 13,80
+MB (276% budżetu). Per-zapis urósł 3,57×. Kwota pada ok. **4. rotacyjnego autozapisu (~tura 4)**.
+Furtka FSA (zapis na dysk) NIE ratuje: `file://` (dokładnie tak otwiera się bundle playtestowy z
+dysku) i przeglądarki bez API dostają `available:false` — dla nich obietnica z komentarza kodu
+„zero regresji bez tej funkcji" jest złamana przez tę zmianę.
+
+**BLOKER 2: bramka rozmiaru (sekcja 5b testu), która miała to pilnować, ma błąd jednostek.**
+`PROG_CHARS = 2.5 * 1024 * 1024` opisany jako „połowa limitu ~5MB UTF-16" — ale 2,5 MB ZNAKÓW to
+~5 MB UTF-16, czyli CAŁY limit, nie połowa. Dodatkowo bramka mierzy pojedynczy zapis, podczas gdy
+kod pisze 10 naraz naraz — mierzy inną wielkość niż tę, która realnie decyduje o quota. Fixture
+5b też zaniża `meta` względem prawdziwego `buildSaveGameSnapshot` (~30 dodatkowych tablic, część
+skalująca się z mapą/długością gry).
+
+**Defekt B NIE jest naprawiony (drugi fałszywy inwariant tej samej klasy):** `riverPaths`/
+`riverPathKinds` w `serializeMapForSave`/`buildGameMapFromSnapshot` to nadal ŻYWE referencje na
+obiekt mapy (zweryfikowane wykonaniem: mutacja żywej mapy PO serializacji widoczna w snapshocie).
+Nowy komentarz kategorycznie twierdzi „rozdarcie migawki nie jest już możliwe" — nieprawda jak
+napisane (ryzyko praktyczne małe, ale twierdzenie fałszywe).
+
+**`isValidMapSnapshot` niewystarczająca, dokładnie tak jak jej własny komentarz zaprzecza:**
+zweryfikowane wykonaniem 3 przypadków uszkodzenia — jeden daje cichą złą mapę (`q=[0,"a"]` →
+klucz heksa `"a,0"`), jeden cichy `undefined` (indeks poza `dict`), jeden nieobsłużony wyjątek bez
+fallbacku na generator (`load-map-source.ts` woła `buildGameMapFromSnapshot` bez `try/catch`).
+
+**Defekt C częściowo:** (a) porażka zapisu meta jest połykana, ale STARY meta zostaje (nie
+usuwany) — `summarizeSaveSlots` nie wykrywa nieaktualności, fallback się nie uruchamia, „Kontynuuj"
+może wskazać zły slot; (b) prefiks `thegame.save.meta.` MIMO komentarza JEST podprefiksem
+`thegame.save.` (`'thegame.save.meta.'.startsWith('thegame.save.')===true`) — zweryfikowane
+wykonaniem, `listSaves()` faktycznie zwraca fantomowy wpis `meta.autosave-1`; dziś nieszkodliwe
+przez przypadek (brak pola `wersja`), ale też fałszywie zawyża `listSaves().length>0` gating
+przycisku „Wczytaj".
+
+**STATUS runda 3 — DWIE ścieżki, różny tryb:**
+1. **Bez ABC, dispatch NATYCHMIAST:** poprawki 3-5 z werdyktu — `try/catch` w `loadMapForSave`
+   (fallback na generator zamiast wyjątku), `removeItem(saveMetaKey)` w catch zapisu meta,
+   rozłączny prefiks meta (np. `thegame.savemeta.`), korekta błędu jednostek w progu testu 5b
+   (~1,25 MB znaków = faktyczna połowa limitu, licząc AGREGATOWO ×10 slotów nie pojedynczy zapis),
+   korekta obu fałszywych komentarzy (`riverPaths`, prefiks) — zero decyzji produktowej, czysto
+   techniczne.
+2. **WYMAGA ABC właściciela, NIE decyduje Operator (cytat Evaluatora: „to jest pytanie ABC do
+   właściciela, nie decyzja Operatora"):** architektura rotacji autozapisu bez FSA — 3 kierunki z
+   werdyktu (mapSnapshot tylko w zapisach nazwanych/quicksave, rotacyjne bez mapy; `AUTOSAVE_ROT_COUNT`
+   zależny od obecności FSA; mapSnapshot współdzielony jednym kluczem dla całej sesji zamiast per-slot).
+   **Temat NIE MOŻE zostać w pełni zamknięty bez tej decyzji — Maciej śpi, odłożone do jego
+   powrotu, świadomie, udokumentowany powód.**
