@@ -9111,3 +9111,40 @@ już dwukrotnie przeaudytowany (§0c 08-09, C-030 08-10) — nic nowego nie znal
 Operatorzy (Praca+UI globalne, Auto Wyżywienie) w toku.
 
 ---
+
+## Auto Wyżywienie — Operator dostarczył (Bug #2 naprawiony), czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-ae8e77caf806ec3df`, branch `fix-auto-wyzywienie`. **Bug #2 naprawiony:**
+`cityFoodSplit(view, maxSafe?)` w `cityPanel.ts` — nowy opcjonalny parametr, Bilans liczony z
+przyciętego poziomu racji (proporcjonalne skalowanie kosztu, bez potrzeby dodatkowych
+parametrów), zwraca `clamped: boolean`. Wszystkie 7 wywołań w pliku zaktualizowane (C-026,
+każde sprawdzone z osobna), etykiety kosztu ujednolicone z przyciętym poziomem, tooltip przy
+Bilansie dopisuje info o auto-korekcie gdy `clamped=true`. Growth% świadomie NIETKNIĘTY
+(pokazuje ustawiony, nieskorygowany poziom — poza zakresem tej naprawy).
+
+**Znalezisko „(0)" — zweryfikowane jako JUŻ POKRYTE, nie dotknięte:** `glodWojska` (flaga z
+`empire-food.ts:254`) konsumowana w 3 niezależnych miejscach UI (HUD chip ostrzeżenie+tooltip,
+czerwony komunikat w panelu cywilizacji obok „W magazynie: 0", czaszka głodu na kartach
+jednostek) — realny deficyt jest już sygnalizowany osobno, „(0)" samo w sobie nie jest mylące
+w praktyce.
+
+**Bug #1 (mechanizm raz-na-turę) — świadomie NIETKNIĘTY** zgodnie z instrukcją (wymaga namysłu
+nad kosztem wydajnościowym). Wyłącznie kosmetyka: tooltip przycisku „Auto Wyżywienie" dopisuje
+„na koniec KAŻDEJ tury... nie na żywo w trakcie tury".
+
+**Test regresyjny** `auto-wyzywienie-bilans-clamp-test.cjs` (19/19) — wycina i REALNIE
+wykonuje aktualne ciało `cityFoodSplit` przez `new Function` (nie kopię-reimplementację),
+zweryfikowany mutacyjnie że łapie stary błąd (stary kod dawał `total=-1`, nowy `total=5` dla
+dokładnego scenariusza Macieja: populacja 6, produkcja 11, poziomRacji=1→koszt 12, maxSafe=0,5).
+
+Bramki: tsc 0, logic-test 213/213, nowy test 19/19, spichlerz-cap-citypanel-wiring 12/12,
+ai-major-economy 32/32, army-hunger-combat 13/13, city-state-mp-growth 9/9, tech-tree/research/
+unit-replace zielone. 2 pre-istniejące czerwone bramki (`empire-food-b5-test` 3 fail,
+`population-growth-v85-test` 2 fail) zweryfikowane `git stash` jako identyczne bez zmiany.
+
+⚠️ Operator zgłosił: gałąź sesji odjechała o 1 commit (wyłącznie wpis rejestru, nie kod) —
+`git pull --ff-only` przed scaleniem.
+
+Dispatch Evaluatora NASTĘPUJE teraz.
+
+---
