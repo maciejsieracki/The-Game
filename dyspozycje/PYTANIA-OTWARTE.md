@@ -8936,3 +8936,32 @@ prawdziwy i dosłownie zgodny z tym co kod dziś robi**.
 **STATUS: ZAMKNIĘTE rozpoznanie, czeka na decyzje/dispatch napraw Macieja.**
 
 ---
+
+## PONOWNE OTWARCIE — Auto Wyżywienie „nie bug" OBALONE przez Macieja dla przypadku 1 miasta (2026-08-10)
+
+**Wcześniejszy wniosek rozpoznania (`a9bb68ce84d7d4bc9`) był NIEPEŁNY.** Cytat Macieja, celny
+kontrargument: „to mogłoby mieć rację bytu, gdyby cywilizacji było więcej niż jedno miasto,
+gdzie jedno miasto dokłada do spichlerza, a drugie odejmuje, ale tu mamy tylko jedno miasto,
+więc jeżeli w danym mieście jest minus, to w cywilizacji też powinien być minus i to jest duża
+niespójność, więc tam jest pewnie podwójny błąd."
+
+**Matematycznie bezsporne:** przy DOKŁADNIE jednym mieście, bilans lokalny tego miasta i delta
+Spichlerza cywilizacji to TA SAMA liczba — nie ma żadnego drugiego miasta, które mogłoby
+„dokładać" i maskować lokalny minus. Dowód testem `ai-major-economy-test.cjs` (32/32,
+scenariusz „L. Q5") z poprzedniego rozpoznania jest NIEADEKWATNY do zrzutu Macieja — test
+używa DWÓCH miast (jedno z flagą, jedno bez), więc nie reprodukuje przypadku 1-miastowego,
+w którym „pokrycie z centrali przez inne miasto" jest fizycznie niemożliwe. Jeśli mechanizm
+faktycznie celuje w „Spichlerz ≥ 0" (cytat kodu: `maxSafePoziomRacjiForCity`, „najwyższy poziom
+Wyżywienia przy którym Spichlerz ≥ 0 po dopłatach miastom"), to przy 1 mieście pokazanie −1
+oznacza że albo (a) auto-mechanizm dobrał zły poziom racji dla TEJ populacji, albo (b) to ten
+sam rodzaj błędu co potwierdzony w temacie Praca (B: rozjazd cache/live) — wyświetlana wartość
+nie odzwierciedla faktycznie zastosowanego przez silnik poziomu racji.
+
+**Dispatch NOWEGO, dokładniejszego rozpoznania NASTĘPUJE teraz** — scenariusz specyficzny dla
+1 miasta: symulacja/test z JEDNYM miastem, sprawdzenie krok po kroku czy
+`autoBalanceRationsToSolvency`/`maxSafePoziomRacjiForCity` faktycznie wybiera poziom dający
+lokalny bilans ≥0 gdy jest tylko jedno miasto, i czy wybrany poziom faktycznie trafia do
+UI (nie cache'owany/przestarzały). Nie zamykam ponownie na pierwszej pasującej przyczynie
+(C-041) — jeśli znajdzie się jedna wada, szukać też drugiej niezależnej.
+
+---
