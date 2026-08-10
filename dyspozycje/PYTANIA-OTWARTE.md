@@ -9738,6 +9738,24 @@ logic-test 213/213, separator-test 29/0, live-recalc-test 57/0 (było 49), bilan
 city-badge-growth-percent 38/0, rounding-parity 16/0. **Dispatchowany Evaluator rundy 5
 (`a0864bcb1b18ad69b`)** — piąta i deklarowana ostatnia runda.
 
+**Evaluator rundy 5 — WERDYKT: PASS-WITH-NOTES. Gotowe do scalenia.** Obie blokady rundy 4
+zweryfikowane jako realnie naprawione (nie na papierze): `.clear()` po `advanceEmpireFood` bez
+niczego pomiędzy; grep „4 miejsca mutacji" zrobiony samodzielnie i potwierdzony prawdziwy; fallback
+dla miast oblężonych ma sygnaturę znak-w-znak identyczną ze stanem sprzed rundy 4. Część 9 testu
+zweryfikowana mutacyjnie (usunięcie każdej z dwóch napraw → test faktycznie pada z właściwym
+komunikatem). Wszystkie 7 zgłoszonych bramek + 7 dodatkowych sąsiednich sprawdzonych samodzielnie —
+3 czerwone (`empire-food-b5`, `population-growth-v85`, `-bonus`) potwierdzone jako PRE-ISTNIEJĄCE
+(identyczne na merge-base `aa24fd23`, dług testowy „×2 R-STAWKI", niezwiązane z tą pracą). Scope przez
+wszystkie 5 rund czysty. Notatki nieblokujące do handoffu: N-1 (cache nie czyszczony przy wczytaniu
+zapisu/nowej grze — odziedziczona dziura architektoniczna, ten sam brak ma dziś `empireEconDirty`,
+samoleczy się przy pierwszym `markCityStateDirty`, nie nowa klasa defektu); N-2 (komentarz „pokrycie
+KOMPLETNE" nieco za mocny wobec N-1, do złagodzenia); N-3 (Bilans żywności w
+`buildTopBarLudnoscDetailCard` zmienił wartość, nie tylko WZROST%, żadna bramka tego nie
+asercjonuje); N-4 (broadcast Okolicy O(N²), sprawdzić na playteście przy 20+ miastach); N-5 (CLAUDE.md
+nie wymienia 3 pre-istniejąco czerwonych testów, dopisać).
+
+**MERGE do gałęzi sesji następuje teraz.**
+
 ---
 
 ## [PL, 2026-08-10] Hasło „raport" — pełny audyt (agent `aff9b116cf957d004`) + kontrola kompletności
