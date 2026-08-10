@@ -11870,3 +11870,27 @@ gdyby w przyszłości `'14'` zostało przekierowane przez `mode='treaty'`, Defek
 nieosiągalne).
 
 **TEMAT ZAMKNIĘTY po 2 rundach.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — SCALONE (2026-08-10)
+
+**STATUS: SCALONE `8d6d3d54` (2026-08-10).** Pełna implementacja wg 4 ECHO: tabela zużycia
+kumulatywna per epoka (`gra/data/citizen-resource-upkeep.json`), nowy moduł
+`citizen-resource-upkeep.ts` (wzorzec `zloto-access.ts`, magazyn CENTRALNY imperium, bramka
+binarna per surowiec), podłączony do `computeHappinessBreakdown` (+1/-1 Szczęście) i
+`computeGrowthPercentV85` (nowy, 7. składnik `zaopatrzenie`, -1%/surowiec brakujący). AI i
+Państwa-Miasta objęte identycznie jak gracz (pętla Porządku uniwersalna, brak gałęzi
+`ownerId===0`). UI: badge w panelu Surowców (tooltip + kolor karty), nowy wiersz w panelu miasta
+zaraz pod Szczęściem. Operator sam znalazł i naprawił konsekwencję poza wyliczonym zakresem: 2
+PRE-ISTNIEJĄCE miejsca UI sumujące WZROST% (`renderMagazyn`, `buildRacjeWzrostDetailCard`) musiały
+dostać nowy 7. składnik wypisany explicit, inaczej suma „Łącznie" zawierałaby coś niewidocznego na
+liście — dokładnie klasa błędu, przed którą chroni `P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD`.
+Zaktualizowano 1 istniejący test, którego założenie „6 składników" ta zmiana legalnie unieważniła.
+Bramki: tsc 0, logic-test 213/213, nowy `citizen-resource-upkeep-test` 50/50, oraz 14 istniejących
+testów (society-breakdown, empire-panel-split, surowce-dostep, empire-panel-sliders,
+spichlerz-cap-citypanel-wiring, auto-wyzywienie-live-recalc, city-badge-growth-percent,
+city-growth-percent-rounding-parity, city-state-mp-growth, war-happiness-parity, post-capture-law,
+tech-tree, research, city-panel-growth-percent-separator) — wszystkie zielone, zero regresji.
+`population-growth-v85-test`/pochodne (48/2, 2 pre-istniejące porażki potwierdzone przez `git
+stash` na czystej bazie — army-cost R-STAWKI i próg wzrostu na Hard, bez związku z tą zmianą).
+Czeka na NIEZALEŻNEGO Evaluatora (duża zmiana, dotyka silnika tury + 2 kanały UI — dispatch w
+toku).**
