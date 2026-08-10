@@ -7763,6 +7763,29 @@ Dispatch niezależnego Evaluatora rundy 4 NASTĘPUJE teraz.
 
 ---
 
+## Pytanie Macieja (zrzut ekranu) — checkbox „Własne ustawienia tego miasta" w panelu ulepszeń terenu (2026-08-10)
+
+**Zrzut Macieja:** panel „POLITYKA PAŃSTWA — AUTO ULEPSZENIA" (tryb budowania, przyciski
+Żywność/Surowce/Infra/Zrówn./Ręczny już poprawnie stylowane jako przyciski), poniżej checkbox
+`☐ Własne ustawienia tego miasta`. Cytat: „checkboxy zamień na przyciski" (liczba mnoga).
+
+**Zbadane:** `gra/src/ui/buildModeHud.ts` ma TRZY checkboxy w tym samym obszarze (panel
+ulepszeń terenu, tryb budowania) — WSZYSTKIE nadal `<input type="checkbox">`, w przeciwieństwie
+do już naprawionego wcześniej „Auto Wyżywienie" (panel miasta, inny obszar): linia 329
+„Tylko pola z obywatelami" (poziom imperium), linia 362 „Własne ustawienia tego miasta" (przełącznik
+override per miasto — ten ze zrzutu), linia 374 „Tylko pola z obywatelami" (duplikat na poziomie
+miasta, widoczny tylko gdy override włączony). Nie jest to jeszcze naprawione — w przeciwieństwie
+do poprzedniego pytania (Auto Wyżywienie), to jest REALNY, nieukończony temat.
+
+Wzorzec do zastosowania: identyczny jak przy „Auto Wyżywienie" (`cityPanel.ts:4686-4702`,
+pełnoszerokościowy `<button class="hbtn">` z tekstem w środku, stan `active`/`aria-pressed`,
+zachowanie kliknięcia = toggle, bez zmiany logiki). Zero ABC — czysto techniczna zmiana UI,
+wzorzec 1:1 z istniejącego przycisku.
+
+Dispatch NASTĘPUJE teraz.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 2: PASS-WITH-NOTES, scalenie NATYCHMIAST (C-034) (2026-08-10)
 
 Niezależny (inny niż runda 1) Evaluator potwierdził naprawę WŁASNĄ symulacją (75 asercji, 0
