@@ -10911,3 +10911,83 @@ statusem każdego. Aktualizowana na bieżąco — nie osobny, statyczny dokument
 
 **STATUS: lista aktualna na 2026-08-10, aktualizowana przy każdym nowym zgłoszeniu Macieja lub
 zamknięciu istniejącego punktu.**
+
+## P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT (2026-08-10, zgłoszenie Macieja: manualny zapis znika)
+
+Maciej: zapisał grę własnym, ręcznym zapisem (nie autozapisem) i tego zapisu nie ma na liście do
+wgrania — potencjalna utrata dostępu do zapisanej gry.
+
+**Rozpoznanie (dispatchowany agent, `a56cc03a4c29bdef8`):** manualny zapis i `listSaves()` czytają
+DOKŁADNIE ten sam magazyn (`localStorage`) i prefiks (`SAVE_PREFIX`) — to NIE jest rozjazd dwóch
+różnych backendów (FSA dotyczy wyłącznie rotacyjnego autozapisu, nie zapisu ręcznego z dialogu).
+**Najbardziej prawdopodobna przyczyna:** cichy/źle zgłoszony błąd zapisu przy przepełnionym
+localStorage (limit ~5-10MB/origin):
+1. `persistSaveToSlot` (`main.ts:21717-21726`) zwraca goły `boolean`, ODRZUCAJĄC pole `reason` z
+   `saveToLocal` (`save.ts:359-368`) — przy `QuotaExceededError` gracz widzi ten sam ogólny
+   komunikat co przy każdym innym błędzie: `'Zapis nieudany (brak localStorage?)'`
+   (`main.ts:16513`, identycznie `doQuickSave` `main.ts:21737`) — mylące, sugeruje brak API, nie
+   brak MIEJSCA. Dla porównania: rotacyjny autozapis (`main.ts:21892-21909`) POPRAWNIE rozróżnia
+   `reason==='quota'` i pokazuje „brak miejsca w zapisie przeglądarki" — manualny zapis i Ctrl+S
+   tego nie robią. Gotowy wzorzec do skopiowania.
+2. Dialog zapisu zamyka się NATYCHMIAST po kliknięciu „Zapisz" (`saveLoadDialog.ts`, `commit()`),
+   ZANIM wynik zapisu jest znany — wygląda na potwierdzony zapis, nawet gdy w tle się nie udał.
+3. Nazwa/prefix NIE różnią się (obalona hipoteza literówki).
+
+**Jak Maciej może dziś sprawdzić ręcznie:** DevTools (F12) → Application/Storage → Local Storage →
+domena gry → szukać kluczy `thegame.save.*` (bez `_lastPlayed`, to wskaźnik). Brak klucza = zapis
+faktycznie nie trafił do storage. Warto sprawdzić konsolę pod `[Save] Blad:` (`main.ts:21723`).
+
+**Nie wymaga ABC — jasno opisane oczekiwane zachowanie, gotowy wzorzec do naśladowania (C-027 pkt 3):
+dispatch subagenta od razu.** Naprawa: `persistSaveToSlot`/`doQuickSave` mają przekazywać `reason`
+zamiast gołego `boolean`, UI (`openSaveGameDialog`, Ctrl+S) ma pokazywać jawny komunikat o pełnym
+storage z podpowiedzią „usuń stare zapisy" (wzorem już istniejącej obsługi w autozapisie), dialog
+nie powinien zamykać się przed potwierdzeniem wyniku.
+
+**STATUS: zarejestrowane, dispatch Sonnet 5 w tej samej turze.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (2026-08-10, zgłoszenie Macieja: wolne wczytywanie)
+
+Maciej: wczytywanie zapisu trwa tyle samo/dłużej co generowanie nowej mapy.
+
+**Rozpoznanie — POTWIERDZONE, poważne architektonicznie:** `SaveGame` (`save.ts:98+`) NIE zawiera
+siatki heksów w ogóle — tylko `seed` (`checkSaveIntegrity` wymaga `g.seed`, `save.ts:525-527`).
+Mapa jest ZAWSZE odtwarzana proceduralnie z ziarna, nigdy deserializowana wprost z zapisu.
+Pipeline: `loadGameFromSlot` → `loadNeedsMapRebuild()` (`main.ts:6540-6554`, zwraca `true`
+natychmiast gdy `!fromInGamePause` — czyli w PRAKTYCZNIE KAŻDYM „Wczytaj grę" z menu głównego) →
+`regenerateWorldForLoad()` (`main.ts:26226`) → `generujSwiatAsync(seed, ...)` — **DOKŁADNIE ta sama
+funkcja co przy Nowej Grze** (`main.ts:26346`, `doStartGame`), ten sam callback progresu, ta sama
+lista 10 faz `MAP_GEN_PHASE_LABELS` (`mapGenProgress.ts:16-27`, w tym `riversFill: 'Rzeki —
+uzupełnianie'`, krok 7/10 — dokładnie to widoczne na zrzucie Macieja). Load i New Game dosłownie
+dzielą ten sam kod generatora i pipeline — architektonicznie to pełna regeneracja mapy od zera przy
+KAŻDYM wczytaniu, nie odczyt/dekompresja zapisanych heksów.
+
+**To WYMAGA ABC (C-027 pkt 2) — realny wybór kompromisu, nie prosta naprawa:**
+- A: serializować pełną siatkę heksów do zapisu (większy plik zapisu, ale natychmiastowe
+  wczytanie, brak zależności od determinizmu generatora — bezpieczne nawet gdyby generator się
+  kiedyś zmienił). Największa zmiana architektoniczna, ale najbardziej fundamentalne rozwiązanie.
+- B: zostawić regenerację z ziarna (deterministyczny generator z tym samym seedem MUSI dać
+  identyczny wynik), ale zoptymalizować/przyspieszyć sam generator, albo pominąć zbędne kroki przy
+  wczytywaniu (np. kroki UI/animacji, które i tak nie muszą się dziać przy load). Mniejsza zmiana,
+  ale nie eliminuje fundamentalnej kruchości (zmiana generatora w przyszłości cicho zepsułaby
+  stare zapisy).
+- C: hybryda — serializować TYLKO to, co się realnie zmieniło względem świeżo wygenerowanej mapy
+  (delta: złoża wyeksploatowane, ulepszenia gracza, zmiany terenu) zamiast całej siatki, zachowując
+  regenerację bazowego terenu z ziarna jako punkt startowy. Kompromis rozmiar/złożoność.
+
+**STATUS: zarejestrowane, wymaga ABC — zadane w czacie, czekam na odpowiedź Macieja.**
+
+## P-SEJWY-KOLEJNOSC-STARE-BEZ-SAVEDAT (2026-08-10, przy okazji rozpoznania sortowania listy sejwów)
+
+Rozpoznanie sortowania listy „Wczytaj grę" (`saveLoadDialog.ts:159/193`,
+`out.sort((a,b)=>b.savedAt.localeCompare(a.savedAt))`) pokazało, że sortowanie malejące po dacie
+JUŻ DZIAŁA poprawnie w obecnym kodzie — Maciej prawdopodobnie widział albo starszy build (przed
+commitami wprowadzającymi to sortowanie), albo realny, węższy problem: STARE zapisy sprzed
+wprowadzenia pola `meta.savedAt` dostają `savedAt: ''` (puste) i lądują na końcu listy w
+NIEDETERMINISTYCZNEJ kolejności względem siebie (pusty string sortuje się tak samo jak inny pusty
+string — kolejność między nimi zależy od stabilności sortowania, nie chronologii).
+**Nie wymaga ABC — jasno opisane, wąskie zachowanie brzegowe (C-027 pkt 3): dispatch razem z
+naprawą P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT** (ten sam obszar kodu, sensowne połączyć w
+jedno zlecenie Operatora, ale osobna, jasno wydzielona część zakresu — C-025 zakaz mieszania
+zakresu nadal obowiązuje, Operator ma dwie odrębne, jasno opisane poprawki, nie jeden rozmyty fix).
+
+**STATUS: zarejestrowane, dispatch razem z P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT.**

@@ -2359,3 +2359,20 @@ ujawnilo 2 krytyczne konflikty: Glina ma baze terenu=0 wszedzie (dostepna dopier
 epoki 2), Ceramika wymaga konwertera+tech - obie wymagane od poczatku odpowiedniej epoki bylyby
 gwarantowanym deficytem od tury 1. Kodowanie wstrzymane do rozstrzygniecia przez Macieja. Pelna
 tresc w PYTANIA-OTWARTE.md.
+
+## P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT — dispatch Sonnet 5 (2026-08-10)
+Manualny zapis znikal z listy - rozpoznanie: nie rozjazd backendow (ten sam localStorage/prefix co
+listSaves()), tylko cichy blad quota z mylacym komunikatem ("brak localStorage?" zamiast "brak
+miejsca") + dialog zamykajacy sie przed potwierdzeniem wyniku. Gotowy wzorzec do skopiowania z
+autozapisu (juz poprawnie obsluguje reason==='quota'). Nie wymaga ABC, dispatch od razu.
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — ABC zadane (2026-08-10)
+Zapis nie zawiera siatki hexow, tylko seed - kazde wczytanie z menu regeneruje cala mape
+proceduralnie (dokladnie ten sam pipeline 10 faz co Nowa Gra), stad rownie dlugie jak generowanie
+nowej mapy. ABC (A: serializuj pelna siatke / B: przyspiesz generator, zostaw regeneracje / C:
+serializuj tylko delte) zadane w czacie. Pelna tresc w PYTANIA-OTWARTE.md.
+
+## P-SEJWY-KOLEJNOSC-STARE-BEZ-SAVEDAT — dispatch razem z quota (2026-08-10)
+Sortowanie malejace po dacie juz dziala w kodzie (saveLoadDialog.ts) - waski problem: stare zapisy
+sprzed pola savedAt dostaja pusty string i sortuja sie niedeterministycznie miedzy soba. Nie
+wymaga ABC, dispatch razem z naprawa quota (ten sam obszar, osobno wydzielony zakres).
