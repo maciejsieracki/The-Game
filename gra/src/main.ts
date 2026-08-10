@@ -925,6 +925,8 @@ import {
   type SaveGame,
   type SaveToLocalResult,
 } from './game/save';
+import { serializeMapForSave } from './map/mapSnapshot';
+import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
   shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
@@ -21867,6 +21869,14 @@ async function boot(): Promise<void> {
         mapQuality: _currentRenderOptions.renderQuality,
         renderQuality: _currentRenderOptions.renderQuality,
         mapDetailQuality: _currentRenderOptions.mapDetailQuality,
+        // P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, ECHO A): pełna siatka
+        // heksów PO wszystkich mutacjach rozgrywki (wycięty las, postawione
+        // ulepszenia, splądrowane wioski) -- pozwala wczytać grę BEZ ponownego
+        // wołania generatora (main.ts::regenerateWorldForLoad przez
+        // game/load-map-source.ts::loadMapForSave).
+        // / EN: full hex grid AFTER all gameplay mutations -- lets load skip
+        // the generator entirely.
+        mapSnapshot: serializeMapForSave(map),
       };
     }
 
@@ -26402,10 +26412,18 @@ async function boot(): Promise<void> {
       territoryBorderGroup = null;
     }
 
-    /** Regeneruje mapę + scenę 3D (bez resetu stanu gry — do wczytywania sejwu). */
+    /**
+     * Regeneruje/odtwarza mapę + scenę 3D (bez resetu stanu gry — do
+     * wczytywania sejwu). P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, ECHO
+     * A): gdy `saved.mapSnapshot` jest poprawny, mapa jest budowana WPROST z
+     * niego (loadMapForSave) — generator (generujSwiatAsync) NIE jest wołany.
+     * Stary zapis bez mapSnapshot -> dokładnie dzisiejsza ścieżka (regeneracja
+     * z `seed`), zero zmian.
+     */
     async function regenerateWorldForLoad(
       params: NewGameParams,
       seed: number,
+      saved: SaveGame,
       saveLabel?: string,
     ): Promise<boolean> {
       applyMenuParams({ ...params, seed });
@@ -26422,7 +26440,7 @@ async function boot(): Promise<void> {
       const typLabel = params.worldType || _menuTypSwiata;
       try {
         const mapGenWallT0 = performance.now();
-        map = await generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
+        const { map: loadedMap, usedSnapshot } = await loadMapForSave(saved, () => generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
           worldDensity: _menuWorldDensity,
           mapSizeMenuLabel: _menuMapSize,
           landFraction: (params.landFractionPercent ?? 30) / 100,
@@ -26431,7 +26449,12 @@ async function boot(): Promise<void> {
           cityStatesCount: _menuCityStates,
         }, (faza, pct, phaseNum, phaseTotal) => {
           loading.setProgress(faza, pct, phaseNum, phaseTotal);
-        });
+        }));
+        map = loadedMap;
+        if (usedSnapshot) {
+          // Brak fazowego postępu generatora (pominięty) — jeden skok do 100%.
+          loading.setProgress('Wczytywanie zapisanej mapy', 100, 1, 1);
+        }
         const mapGenHandoffMs = Math.max(0, Math.round(performance.now() - mapGenWallT0) - (map.mapGenTimings?.total ?? 0));
         ensureDepositEraMeta(map.hexes);
         disposeOkolicaOverlay();
@@ -27532,7 +27555,7 @@ async function boot(): Promise<void> {
           canvas.style.visibility = 'hidden';
           let ok = false;
           try {
-            ok = await regenerateWorldForLoad(loadParams, loadSeed, saveLabel);
+            ok = await regenerateWorldForLoad(loadParams, loadSeed, saved, saveLabel);
           } finally {
             canvas.style.visibility = '';
           }

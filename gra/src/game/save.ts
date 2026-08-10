@@ -33,14 +33,24 @@
  *                    keeps one as a discrete object (today economy is computed
  *                    per turn via advanceCityEconomy(); leave undefined if so).
  *     - meta      <- OPTIONAL free-form metadata (timestamp, label, map size).
- *   The map itself is NOT stored here: it is regenerated deterministically from
- *   `seed` on load (generateMap(width, height, seed)).  Persist map width/height
- *   in `meta` if they are not fixed constants on the loading side.
+ *     - mapSnapshot <- OPTIONAL (P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA, Maciej
+ *                    ECHO A): map/mapSnapshot.ts::serializeMapForSave(map) --
+ *                    the full hex grid, captured AFTER any gameplay mutations
+ *                    (forest cleared, improvements built, villages looted).
+ *                    When present, load builds GameMap directly from it
+ *                    (game/load-map-source.ts::loadMapForSave) WITHOUT calling
+ *                    the generator. Saves written before this field existed
+ *                    lack it -- load falls back to regenerating deterministically
+ *                    from `seed` (generateMap(width, height, seed)), exactly as
+ *                    before this field was introduced (backward compatible).
+ *                    Persist map width/height in `meta` if they are not fixed
+ *                    constants on the loading side.
  */
 
 import type { RuntimeUnit } from '../units/setup';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
+import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -175,6 +185,20 @@ export interface SaveGame {
   renderQuality?: 'low' | 'medium' | 'high';
   /** Szczegółowość dekoracji mapy 3D (denormalizacja z mapQuality; legacy save). */
   mapDetailQuality?: 'low' | 'medium' | 'high';
+
+  /**
+   * P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, ECHO A): pełna siatka
+   * heksów w chwili zapisu (map/mapSnapshot.ts::serializeMapForSave). Gdy
+   * obecne, wczytanie buduje mapę wprost stąd — BEZ wołania generatora
+   * (game/load-map-source.ts::loadMapForSave). Opcjonalne wyłącznie dla
+   * wstecznej zgodności: stare zapisy (przed tą zmianą) go nie mają i
+   * wczytują się dokładnie jak dziś — regeneracją z `seed`.
+   * / EN: full hex grid at save time. When present, load builds the map
+   * straight from it -- WITHOUT calling the generator. Optional solely for
+   * backward compatibility: saves written before this field existed lack it
+   * and load exactly as before -- regenerated from `seed`.
+   */
+  mapSnapshot?: SerializedMapData;
 }
 
 // ---------------------------------------------------------------------------
@@ -309,6 +333,12 @@ export function deserializeGame(json: string): SaveGame {
     mapQuality: obj2.mapQuality,
     renderQuality: obj2.renderQuality,
     mapDetailQuality: obj2.mapDetailQuality,
+    // Stary zapis (sprzed tej naprawy) nie ma tego pola -- undefined tutaj
+    // jest SYGNAŁEM dla loadMapForSave, żeby wrócić do regeneracji z seed
+    // (wsteczna kompatybilność). Malformowany snapshot traktujemy tak samo
+    // jak brak -- isValidMapSnapshot go odrzuca zamiast wywalać się dalej
+    // na czytaniu np. hexes.
+    mapSnapshot: isValidMapSnapshot(obj2.mapSnapshot) ? obj2.mapSnapshot : undefined,
   };
   return save;
 }
