@@ -9761,6 +9761,27 @@ scaleniu: tsc 0, logic-test 213/213, separator-test 29/0, live-recalc-test 57/0,
 **To zamyka DRUGI z czterech tematów priorytetowych Macieja** (po koszcie-ulepszeń-UX). Worktree
 posprzątany.
 
+**PORZĄDKI — worktree, świadome ograniczenie zakresu.** `.claude/worktrees/` zawierało 18 osieroconych
+katalogów `agent-*` z gałęzi `worktree-agent-*`, bazowanych na `b0e4a5c9` (2026-08-09 22:50, sprzed
+tej sesji). Usunięte tylko te, dla których zweryfikowano bezpośrednio że ich nowe pliki JUŻ ISTNIEJĄ
+identycznie w HEAD (potwierdzone scalenie, np. `era-cud-warunek-awansu-test.cjs` z commitów
+`e5ba61c2`/`13861b60`): `agent-a6af8c2f71e87af74`, `agent-af0f9184a0a9c540c` + pruning martwych
+gitdir po worktree już usuniętych wcześniej w tej sesji. **Pozostałe 16 NIE usunięte** — ich pliki
+śledzone (nie tylko nowe) różnią się od HEAD, a różnica względem bazy sprzed prawie doby jest za duża,
+żeby bezpiecznie ocenić „już scalone" bez analizy per-plik (ryzyko utraty realnej, niescalonej pracy —
+CLAUDE.md zasada bezpieczeństwa: nie zgaduj przy niejednoznaczności, `git status` przed jakąkolwiek
+operacją niszczącą). **Do zrobienia jako osobny temat, nie blokuje deployu**: audyt każdego z 16
+worktree (diff plik-po-pliku względem HEAD, czy treść zmiany już weszła gdzie indziej) i albo usunięcie,
+albo dispatch domknięcia jeśli reprezentują realnie porzuconą pracę.
+
+**Kontrolny audyt kompletności przed deployem (grep `STATUS: **OTWARTE` bez kotwicy).** 24 realne
+trafienia (nagłówki), identyczne z listą już sklasyfikowaną w pełnym audycie tej sesji
+(`aff9b116cf957d004`) — żadnych nowych wpisów od tamtej pory poza już śledzonymi w tej samej sekcji
+(rundy Auto Wyżywienie/Spichlerz, wszystkie zamknięte lub w jawnym toku). Wszystkie 24 mają jedno z
+trzech wymaganych: dispatch w locie, pytanie ABC czekające, lub udokumentowany cytat Macieja o
+odłożeniu. **Zero nowych „zapomnianych" pozycji kategorii 4.** Wszystkie 4 tematy priorytetowe
+Macieja ZAMKNIĘTE. **DEPLOY DO ROBOCZA następuje teraz.**
+
 **Odblokowany Spichlerz „(0)"** — czekał wyłącznie na to scalenie (ten sam obszar plików). Dispatch
 następuje teraz jako trzeci temat priorytetowy. **Operator (`ab142fc1311978907`) dispatchowany** —
 worktree izolowany, bazowany na świeżo scalonym `1a6f7e79` (może użyć `_maxSafeRationCache`/
