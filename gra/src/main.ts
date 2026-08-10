@@ -310,7 +310,7 @@ import {
 } from './game/diplomacy-layers';
 import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
-import { computeOwnerEraFromResearch } from './game/owner-epoch';
+import { computeOwnerEraFromResearch, computeMainCivEraFromResearch } from './game/owner-epoch';
 import {
   ERA_CHANGE_NOTIFY,
   shouldNotifyPlayerEraChange,
@@ -1504,12 +1504,29 @@ async function boot(): Promise<void> {
       ownerStartEraByOwner.set(ownerId, e);
     }
 
+    /**
+     * R-EPOKA-CUD-WARUNEK-AWANSU (Maciej 2026-08-09): cywilizacje GŁÓWNE (major AI,
+     * nie miasta-państwo/barbarzyńcy) mają ostrzejszą bramkę awansu epoki —
+     * `computeMainCivEraFromResearch`. Miasta-państwa i barbarzyńcy zostają na
+     * dotychczasowej ścieżce (`computeOwnerEraFromResearch` — jedna tech kamień milowy),
+     * bo nie budują cudów ani nie prowadzą pełnego drzewka badań. / EN: main AI
+     * civilizations get the stricter era-cud gate; city-states/barbarians keep the
+     * legacy single-tech-advance path (they never build wonders or run a full tree).
+     */
     function syncOwnerEraFromResearch(ownerId: number): boolean {
       if (ownerId === 0) return false;
       const startEra = ownerStartEraByOwner.get(ownerId) ?? ownerEraByOwner.get(ownerId) ?? gameStartEra();
       const done = aiResearchDone.get(ownerId) ?? new Set<string>();
       const prev = ownerEraByOwner.get(ownerId) ?? startEra;
-      const next = computeOwnerEraFromResearch(startEra, done, data.tech as import('./data/loader').TechDef[]);
+      const next = (!isBarbarian(ownerId) && !isCityStateOwner(ownerId))
+        ? computeMainCivEraFromResearch(
+            startEra,
+            done,
+            data.tech as import('./data/loader').TechDef[],
+            civTypeForOwner(ownerId),
+            completedWorldWonders,
+          )
+        : computeOwnerEraFromResearch(startEra, done, data.tech as import('./data/loader').TechDef[]);
       ownerEraByOwner.set(ownerId, next);
       // R-EPOKA-BRAZU-WYMUSZONA-WOJNA: awans Kamień(1)→Brąz(2), TYLKO główne cywilizacje
       // (miasta-państwa/kopie wykluczone — isOwnerClusterCityState) — jednorazowy check
@@ -1537,6 +1554,28 @@ async function boot(): Promise<void> {
         anyChanged = syncOwnerEraFromResearch(oid) || anyChanged;
       }
       refreshCityRenderIfEraChanged(anyChanged);
+    }
+
+    /**
+     * R-EPOKA-CUD-WARUNEK-AWANSU: odpowiednik `syncOwnerEraFromResearch` dla gracza
+     * (ownerId===0 zawsze cywilizacja GŁÓWNA — nigdy miasto-państwo/barbarzyńca, więc
+     * bez rozgałęzienia). Zwraca `true` gdy epoka realnie się zmieniła (analogicznie do
+     * `syncOwnerEraFromResearch`) — wywołujący decyduje o notyfikacji/rerenderze.
+     * / EN: player-side counterpart of `syncOwnerEraFromResearch` — the player is
+     * always a main civ, so no city-state branch is needed.
+     */
+    function reconcilePlayerEraFromResearch(): boolean {
+      const startEra = gameStartEra();
+      const prev = player.era;
+      const next = computeMainCivEraFromResearch(
+        startEra,
+        player.zbadane,
+        data.tech as import('./data/loader').TechDef[],
+        civTypeForOwner(0),
+        completedWorldWonders,
+      );
+      player.era = next;
+      return prev !== next;
     }
 
     function allAiOwnerIdsOnMap(): number[] {
@@ -2828,6 +2867,19 @@ async function boot(): Promise<void> {
       if (!hex) {
         completedWorldWonders.push(wonderId);
         console.warn(`[Cuda] Brak wolnego heksa w terytorium ${city.name} — cud bez modelu mapy`);
+        // R-EPOKA-CUD-WARUNEK-AWANSU: cud liczy się do bramki awansu epoki nawet bez
+        // modelu na mapie (brak heksa nie unieważnia ukończenia cudu w silniku).
+        if (city.ownerId === 0) {
+          const prevPlayerEra = player.era;
+          if (reconcilePlayerEraFromResearch()) {
+            overlayDepositEra = player.era;
+            rebuildResourceOverlays();
+            setEra(player.era);
+            notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+          }
+        } else {
+          refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(city.ownerId));
+        }
         return;
       }
       completeWonderOnHex({
@@ -3132,6 +3184,21 @@ async function boot(): Promise<void> {
       wonderBuildSites = wonderBuildSites.filter(s => s !== site);
       hideDecorAtHex(keyOf(site.q, site.r));
       syncWonderRender();
+
+      // R-EPOKA-CUD-WARUNEK-AWANSU: cud własny (E) ukończony może właśnie odblokować
+      // awans epoki (komplet tech epoki + cud) — przeliczyć natychmiast, nie czekać
+      // do końca tury/następnego badania.
+      if (site.ownerId === 0) {
+        const prevPlayerEra = player.era;
+        if (reconcilePlayerEraFromResearch()) {
+          overlayDepositEra = player.era;
+          rebuildResourceOverlays();
+          setEra(player.era);
+          notifyPlayerEraChangeIfAdvanced(prevPlayerEra);
+        }
+      } else {
+        refreshCityRenderIfEraChanged(syncOwnerEraFromResearch(site.ownerId));
+      }
 
       const w = getWonderById(wonderId);
       const label = w?.nazwa ?? wonderId;
@@ -7646,14 +7713,15 @@ async function boot(): Promise<void> {
         for (const t of basketTransferCtx.researchedByOwner.get(0) ?? []) {
           player.zbadane.add(t);
         }
-        // #66: tech-kamień milowy z dyplomacji ma awansować epokę gracza tą samą ścieżką
-        // co własne badanie (playerState.researchStep) — inaczej zbadane/era się rozjeżdżają
-        // (Ludy Morza itp. gatują po era).
+        // #66 + R-EPOKA-CUD-WARUNEK-AWANSU: awans liczony wyłącznie przez
+        // reconcilePlayerEraFromResearch (komplet tech epoki + cud E), nie przez
+        // pojedynczy eraAdvanceTarget — ta sama ścieżka co własne badanie
+        // (playerState.researchStep) i handel technologiami przez akcję 6, inaczej
+        // zbadane/era się rozjeżdżają (Ludy Morza itp. gatują po era).
         const grantedDef = data.tech.find(t => t.Technologia === techId);
         if (grantedDef) {
           const prevPlayerEra = player.era;
-          const awansTarget = eraAdvanceTarget(grantedDef);
-          if (awansTarget !== null) player.era = Math.max(player.era, awansTarget);
+          reconcilePlayerEraFromResearch();
           if (shouldNotifyPlayerEraChange(prevPlayerEra, player.era)) {
             overlayDepositEra = player.era;
             rebuildResourceOverlays();
@@ -17546,12 +17614,16 @@ async function boot(): Promise<void> {
           evKind = 'science';
           const prevPlayerEra = player.era;
           const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+          // R-EPOKA-CUD-WARUNEK-AWANSU: era gracza przeliczana pełną bramką PO researchStep
+          // (komplet tech epoki + cud E), nie przez surowy awansDoEpoki ustawiony wewnątrz
+          // researchStep — ta sama ścieżka co koniec tury i handel technologiami.
+          reconcilePlayerEraFromResearch();
           for (const done of step.completed) {
             summary += ' \xb7 zbadano ' + done.id;
           }
           const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
           villageEraAdvanced = eraAdvanced;
-          if (step.completed.some(d => d.awansEpoki)) {
+          if (eraAdvanced) {
             overlayDepositEra = player.era;
             rebuildResourceOverlays();
             setEra(player.era);
@@ -21902,6 +21974,9 @@ async function boot(): Promise<void> {
             // Auto-research: spend banked science on the cheapest available tech.
             const prevPlayerEra = player.era;
             const step = researchStep(player, data.tech, researchGateForOwner(0), _menuDifficulty);
+            // R-EPOKA-CUD-WARUNEK-AWANSU: bramka pełna (komplet tech epoki + cud E) —
+            // przeliczana PO researchStep, przed decyzją o notyfikacji awansu.
+            reconcilePlayerEraFromResearch();
             const eraAdvanced = shouldNotifyPlayerEraChange(prevPlayerEra, player.era);
             for (const done of step.completed) {
               const doneIcon = techIconSvg(done.id, 16);
