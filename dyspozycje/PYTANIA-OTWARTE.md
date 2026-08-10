@@ -10590,7 +10590,24 @@ wywołanie `cycleToAdjacentPlayerUnit(u.id, 1)` (bez osobnego `clearPlayerUnitSe
 `isUnitActiveForCycle` już wyklucza jednostkę z `autoExplore===true`; `cycleToAdjacentPlayerUnit`
 sam woła `clearPlayerUnitSelection()` gdy lista pusta). Bramki: `tsc` 0 błędów, `logic-test`
 213/213, `scout-auto-explore-test` 25/25, nowy `scout-explore-deselect-cycle-test.cjs` 10/10.
-Czeka na NIEZALEŻNEGO Evaluatora (dispatch w toku).**
+Evaluator (Opus 5): **PASS-WITH-NOTES.** Kod poprawny (odznaczenie+cykl+fallback zweryfikowane
+niezależnie, toast nie ginie). Trzy noty do domknięcia przed uznaniem tematu za w pełni zamknięty:
+- **N1 (do naprawy):** nowy test `scout-explore-deselect-cycle-test.cjs` jest ślepy na testowaniu
+  mutacyjnym — usunięcie `selectPlayerUnit(next.id)` z cyklu albo zamiana cyklu w no-op DAJE
+  10/10 PASS mimo złamanego zachowania (kosmetyczna edycja komentarza z kolei fałszywie czerwieni
+  6 asercji). Kierunek: wynieść `isUnitActiveForCycle`/`cyclablePlayerArmyLeadsBase` do modułu
+  czystego nad tablicą `units`, dać prawdziwy test behawioralny na sztucznych danych.
+- **N2 (realny, nieprzeanalizowany przypadek):** `cycleToAdjacentPlayerUnit` ma wczesny
+  `if (!isWorldMapUnitMode()) return;` — gdy panel oblężenia (`isSiegeMapPanelOpen()`, OSIĄGALNY,
+  nie blokuje panelu bocznego) jest otwarty, cykl jest całkowitym no-op i stara jednostka zostaje
+  zaznaczona Z AKTYWNYM `reachable` — dokładnie zgłoszony przez Macieja bug, w tym jednym
+  scenariuszu nadal nienaprawiony. Nie regresja (identyczne z cofniętym Q1), ale niekompletność.
+- **N3:** `docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md` (kanon) nadal deklaruje Q1=A jako
+  aktualny stan, nie wspomina Q2 — rozjazd z komentarzem w `main.ts`.
+
+**STATUS: dispatch Sonnet 5, runda 2 — N1 (wzmocnić test), N2 (bramka dla `isSiegeMapPanelOpen`
+w miejscu wywołania, spójnie z pozostałymi wywołaniami cyklu), N3 (aktualizacja kanonu). Po
+dostarczeniu: NIEZALEŻNY Evaluator.**
 
 ## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA — ECHO A (2026-08-10, drugi zrzut, pełny panel Armie)
 
@@ -11077,7 +11094,11 @@ statusem każdego. Aktualizowana na bieżąco — nie osobny, statyczny dokument
 ### Zrobione i wypchnięte (nie wymagają już akcji)
 1. Spacja pomija auto-eksplorację bez oznaczenia → badge w panelu Armie (`65bc26d4`)
 2. Kolor nazwy cywilizacji w liście dyplo → wdrożone (`f71869d2`)
-3. Brak komunikatu eliminacji cywilizacji → wdrożone (`d7718ad5`)
+3. ~~Brak komunikatu eliminacji cywilizacji → wdrożone (`d7718ad5`)~~ **KOREKTA: NIE zamknięte —
+   Evaluator FAIL runda 2 i runda 3, Defekt A (kolizja toastów przy wchłonięciu dyplomatycznym)
+   nadal złamany. Runda 4 dostarczona przez Operatora, czeka na scalenie w głównej sesji (patrz
+   sekcja `R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI` niżej w pliku).** Przeniesione do sekcji
+   „W trakcie" poniżej.
 4. Manpower epoka 1: 500→1000 → wdrożone (`b11c8608`)
 5. Kolor kart WYDARZENIA (diplo=niebieski, info=złoty) → wdrożone (`2f73c530`)
 6. P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (dług techniczny, dispatch C-027) → wdrożone (`7bc2a3ed`)
@@ -11099,18 +11120,32 @@ statusem każdego. Aktualizowana na bieżąco — nie osobny, statyczny dokument
     gwarantowany deficyt), Ceramika w Brązie (ten sam typ ryzyka, nierozstrzygnięty), czy AI objęte
     tą samą zasadą, zużycie per-ludek czy per-miasto, gdzie w UI pokazać.
 
-### W trakcie rozpoznania (dopiero co zgłoszone, przyczyna jeszcze nieznana)
-12. **[PILNE — możliwa utrata danych]** Manualny zapis (nie autozapis) nie pojawia się na liście
-    „Wczytaj grę". Dispatchowany subagent, priorytet podniesiony ponad punkty 13-14 w tym samym
-    zleceniu.
-13. Lista sejwów w dialogu „Wczytaj grę" nie jest sortowana najmłodsze→najstarsze — trudno znaleźć
-    właściwy zapis. Ten sam subagent.
-14. Wczytywanie zapisu trwa tyle samo/dłużej co generowanie nowej mapy — zrzut pokazuje krok
-    „Rzeki — uzupełnianie" (7/10) podczas WCZYTYWANIA, co sugeruje możliwą regenerację mapy od
-    zera zamiast odczytu zapisanego układu. Ten sam subagent.
+### W trakcie (naprawa dostarczona LUB dispatchowana, czeka na scalenie/Evaluatora)
+12. Manualny zapis nie pojawiał się na liście „Wczytaj grę" → przyczyna znaleziona (quota
+    localStorage, komunikat mylący) → **SCALONE (`2da2b0a6`)**, Evaluator PASS.
+13. Lista sejwów nie sortowana najmłodsze→najstarsze → **SCALONE (`2da2b0a6`)**, Evaluator PASS.
+14. Wczytywanie regenerowało mapę od zera zamiast odczytać zapis → ECHO A (pełna serializacja
+    siatki) → **SCALONE (`8458ac74`)**, czeka na Evaluatora (dispatch w toku).
+15. Brak komunikatu eliminacji cywilizacji (patrz punkt 3 wyżej — KOREKTA) → runda 4 dostarczona,
+    czeka na scalenie w głównej sesji + Evaluator.
+16. R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 → **SCALONE (`98dd736e`)**, Evaluator PASS-WITH-NOTES →
+    runda 2 dispatchowana (N1 test ślepy na mutacje, N2 realny edge-case z panelem oblężenia, N3
+    kanon nieaktualny).
+17. R-CS-HARD-PASYWNE (bezpieczna większość) → **SCALONE (`a6076db7`)**, Evaluator FAIL (cap
+    produkcji wojska PM na Hard nadal 0, mimo że commit miał to odblokować) → naprawa
+    dispatchowana, czeka na dostarczenie.
+18. **LUKA ZNALEZIONA teraz (audyt na żądanie Macieja):** `R-PROPOZYCJA-BRAK-EDYCJI` — rozpoznanie
+    potwierdziło realny, nieobjęty wcześniejszą naprawą przypadek (własne wysłane propozycje w
+    „Stole negocjacji" nie mają edycji, bo `canCounter` jest zawsze `false` dla
+    `direction==='own'`) i przygotowało pełne ABC (warianty A/B), ale pytanie **NIGDY nie zostało
+    faktycznie zadane Maciejowi** — zostało tylko odłożone „w kolejce" i zgubione przy przejściu do
+    kolejnych zgłoszeń. Naprawiane teraz — pytanie ABC zadane w tej samej turze co ta poprawka
+    rejestru.
 
 **STATUS: lista aktualna na 2026-08-10, aktualizowana przy każdym nowym zgłoszeniu Macieja lub
-zamknięciu istniejącego punktu.**
+zamknięciu istniejącego punktu. Punkt 3 był błędnie oznaczony jako zamknięty mimo 2 rund
+Evaluator-FAIL — skorygowane po audycie na żądanie Macieja („sprawdź czy każde z 11 zgłoszeń jest
+w trakcie naprawy albo naprawione").**
 
 ## P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT (2026-08-10, zgłoszenie Macieja: manualny zapis znika)
 
