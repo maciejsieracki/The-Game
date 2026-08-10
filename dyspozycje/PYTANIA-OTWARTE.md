@@ -8010,6 +8010,13 @@ więc to nie może być regresją z dzisiejszej edycji.
 
 ---
 
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — pytanie ABC zadane Maciejowi (2026-08-10)
+
+Rozpoznanie zakończone wcześniej (5 wariantów A-E), skonsolidowane do 3 wariantów ABC i zadane
+w czacie. Czeka na odpowiedź `R-AUTOZAPIS-QUOTA-STORAGE-Q1 + litera`.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU B3 — SCALONE `e5ba61c2` (2026-08-10)
 
 Scalający agent poprawnie ODSTĄPIŁ od literalnej instrukcji dla `ai.ts` (miała kazać skopiować
