@@ -10196,3 +10196,27 @@ innego. **Dispatch rozpoznania #3 NASTĘPUJE (`aaf1b942afbfe8911`)** — scenari
 Macieja z drugiego zrzutu (czy Wzrost% liczy się z nominalnego czy faktycznie pokrytego poziomu).
 
 ---
+
+## Operator „żywy fallback niedokarmionych" dostarczył (`a34cb3300165d4371`)
+
+Worktree startował sprzed FALI 268, więc Operator sam dociągnął materiał diffem (nie merge/checkout)
+— realne zmiany TYLKO w `main.ts` (`projectPlayerFoodProjection` +drugi przebieg sekwencyjnego
+wyczerpywania centrali, `unfedCityCount`; `buildHudState` ternary tick-dostępny/fallback-żywy) i w
+`spichlerz-deficyt-scalenie-test.cjs` (41→50/50). Ślepy zaułek zbadany i odrzucony: podejrzewany bug
+w `advanceEmpireFood` (nie flaguje `nakarmione:true` dla miast na plusie) okazał się fałszywym
+alarmem — `applyPostCentralPopulationGrowth` mutuje te same obiekty i poprawnie ustawia `fed`;
+Operator to sprawdził zanim zgłosił, nie zgadywał. Bramki: tsc 0, logic-test 213/213,
+spichlerz-deficyt-scalenie-test 50/50, spichlerz-widocznosc-test 45/45.
+
+**Uwaga wymagająca weryfikacji Evaluatora (NIE przyjmuję na słowo, biorąc pod uwagę bieżące
+dochodzenie w tym samym obszarze):** Operator zgłasza `empire-food-b5-test.cjs` (3 fail/28) i
+`spichlerz-wzrost-test.cjs` (7 fail/9) jako pre-istniejące/out-of-scope. `empire-food-b5-test.cjs`
+ma potwierdzoną wcześniej niezależnie historię pre-istniejącej porażki (Evaluator rundy 5
+auto-wyzywienie-live, merge-base `aa24fd23`, dług testowy ×2 R-STAWKI). `spichlerz-wzrost-test.cjs`
+NIE ma takiego potwierdzenia w tym rejestrze — biorąc pod uwagę że rozpoznania #2/#3 właśnie
+znalazły/badają realny bug DOKŁADNIE w tym obszarze (poziom Racji, Wzrost%, Spichlerz), Evaluator MA
+zweryfikować to twierdzenie niezależnie (np. `git stash`/porównanie z merge-base), nie przyjąć na
+słowo — może to być czwarty objaw tego samego łańcucha przyczynowego, nie coincydencja.
+**Dispatchowany Evaluator NASTĘPUJE.**
+
+---
