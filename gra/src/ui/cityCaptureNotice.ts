@@ -18,6 +18,10 @@ export interface CityCaptureNoticeOpts {
   onEnterCity?: () => void;
   /** Zostań na mapie (przycisk „Wróć na mapę"). */
   onStayOnMap?: () => void;
+  /** R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI=A: gdy podane, to przejęcie wyeliminowało
+   *  ostatnie miasto tej cywilizacji — modal dostaje nagłówek ELIMINACJA! zamiast osobnego
+   *  toastu, który ginąłby pod tym modalem (ten sam wzorzec kolizji co Triumf zjednoczenia). */
+  eliminatedCivLabel?: string;
 }
 
 function ensureStyles(): void {
@@ -47,6 +51,8 @@ function ensureStyles(): void {
   font:700 12px/1.2 Georgia,serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);
 }
 .civ-ccn-name{font-size:20px;font-weight:700;color:#f0e8b8;margin:10px 0 0;}
+.civ-ccn.civ-ccn-elim .civ-ccn-title{color:var(--gold);font-size:14px;}
+.civ-ccn-elim-sub{font-size:12px;color:var(--gold-dim);margin:8px 0 0;line-height:1.4;}
 .civ-ccn-foot{padding:0 22px 22px;}
 .civ-ccn-actions{display:flex;flex-direction:column;gap:8px;}
 .civ-ccn-btn{
@@ -110,6 +116,8 @@ export function showCityCaptureNotice(
     opts?.onStayOnMap?.();
   };
 
+  const eliminated = opts?.eliminatedCivLabel;
+
   root = document.createElement('div');
   root.className = 'civ-ccn-overlay';
   root.addEventListener('click', (e) => {
@@ -117,12 +125,15 @@ export function showCityCaptureNotice(
   });
 
   const box = document.createElement('div');
-  box.className = 'civ-ccn';
+  box.className = 'civ-ccn' + (eliminated ? ' civ-ccn-elim' : '');
   box.innerHTML =
     '<div class="civ-ccn-hdr">' +
       '<div class="civ-ccn-ic">' + modalIcon('cp-buildings', 24) + '</div>' +
-      '<div class="civ-ccn-title">Miasto zdobyte</div>' +
+      '<div class="civ-ccn-title">' + (eliminated ? 'ELIMINACJA!' : 'Miasto zdobyte') + '</div>' +
       '<div class="civ-ccn-name">' + esc(cityName) + '</div>' +
+      (eliminated
+        ? '<div class="civ-ccn-elim-sub">' + esc(eliminated) + ' — ostatnie miasto przejęte, cywilizacja wyeliminowana</div>'
+        : '') +
     '</div>' +
     '<div class="civ-ccn-foot">' +
       '<div class="civ-ccn-actions">' +

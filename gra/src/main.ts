@@ -20280,7 +20280,7 @@ async function boot(): Promise<void> {
         && cityOnHex.ownerId !== atkRoster[0]?.ownerId
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
-        applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
+        const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
         if (!opts?.siegeContext && cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner) {
           const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
           refreshMapAfterCityCapture(lead);
@@ -20288,6 +20288,7 @@ async function boot(): Promise<void> {
             const capturedCity = cityOnHex;
             showCityCaptureNotice(capturedCity.name, {
               onEnterCity: () => openCityPanelForPlayer(capturedCity),
+              eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
             });
           }
         }
@@ -20648,6 +20649,12 @@ async function boot(): Promise<void> {
       const csCities = cities.filter(c => c.ownerId === csOwnerId);
       if (csCities.length === 0) return;
 
+      // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI=A: wchłonięcie dyplomatyczne (annexerId===0)
+      // nie miało ŻADNEGO komunikatu (w odróżnieniu od podboju bojowego, gdzie modal/toast
+      // ELIMINACJA już istniały) — etykieta i licznik miast liczone PRZED eliminateOwner().
+      const csLabel = civLabelForOwner(csOwnerId);
+      const cityCount = csCities.length;
+
       for (const city of csCities) {
         city.ownerId = annexerId;
         city.startCityState = false;
@@ -20660,6 +20667,12 @@ async function boot(): Promise<void> {
       refreshFog();
       markCityStateDirty();
       eliminateOwner(csOwnerId);
+      if (annexerId === 0) {
+        showHintMessage(
+          `${csLabel} — ELIMINACJA! Wszystkie miasta (${cityCount}) wchłonięte dyplomatycznie.`,
+          6000,
+        );
+      }
       console.log(
         `[Dyplomacja] AI${annexerId} wchłania miasto-państwo ownerId=${csOwnerId} (dyplomatyczne)`,
       );
@@ -20799,17 +20812,26 @@ async function boot(): Promise<void> {
      * battlePowerPtsByOwner/aiResearchDone dla oldOwner, co ucięłoby składniki
      * bitwy/tech w snapshotcie, gdyby liczyć go po.
      */
-    function runCapitalCapturePlunder(city: City, oldOwner: number, newOwner: number): void {
+    /**
+     * Zwraca etykietę wyeliminowanej cywilizacji, gdy TO przejęcie eliminuje jej ostatnie
+     * miasto ORAZ zdobywcą jest gracz (newOwner===0) — wołający (main.ts, showCityCaptureNotice)
+     * dokłada wtedy nagłówek ELIMINACJA! do modalu zdobycia miasta, zamiast osobnego toastu,
+     * który by pod tym modalem zginął (R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI=A, ten sam
+     * wzorzec kolizji co P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK niżej). Zwraca `null`
+     * gdy nie było eliminacji, gdy zdobywcą jest AI (toast wystarcza, brak modalu), albo gdy
+     * to szczególny przypadek zjednoczenia (własny modal Triumfu już to obsługuje).
+     */
+    function runCapitalCapturePlunder(city: City, oldOwner: number, newOwner: number): string | null {
       // #25: frakcja rebeliancka (-99) nie jest realną cywilizacją — nie ma
       // skarbca/stolicy/Power. Bez tego guarda odbicie jej miasta wpadało w
       // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
       // i eliminateOwner(-99) zaśmiecały eliminatedOwners/sejw wpisem -99.
-      if (oldOwner === REBEL_FACTION_OWNER_ID) return;
+      if (oldOwner === REBEL_FACTION_OWNER_ID) return null;
       const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
       const outcome = applyCapitalCapturePlunder(
         city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId,
       );
-      if (!outcome) return;
+      if (!outcome) return null;
 
       if (outcome.event === 'przejecie_stolicy') {
         // SUKCESJA: nowa stolica oldOwner = najstarsze z pozostałych miast (lub brak wpisu).
@@ -20822,36 +20844,44 @@ async function boot(): Promise<void> {
           `${city.name}: stolica ${civLabelForOwner(oldOwner)} przejęta przez ${civLabelForOwner(newOwner)} — skarbiec i pula pracy przepadły.`,
           5000,
         );
-      } else {
-        // Power-zdobycze: CAŁE Power pokonanego (armia/miasta[już 0]/techy/bitwy/
-        // ew. jego WCZEŚNIEJSZE zdobycze z poprzednich eliminacji — rekurencyjnie
-        // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
-        // eliminateOwner (patrz komentarz funkcji).
-        const lostPower = buildObjectivePowerForOwner(oldOwner).power;
-        if (lostPower > 0) {
-          zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
-        }
+        markCityStateDirty();
+        return null;
+      }
+
+      // Power-zdobycze: CAŁE Power pokonanego (armia/miasta[już 0]/techy/bitwy/
+      // ew. jego WCZEŚNIEJSZE zdobycze z poprzednich eliminacji — rekurencyjnie
+      // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
+      // eliminateOwner (patrz komentarz funkcji).
+      const lostPower = buildObjectivePowerForOwner(oldOwner).power;
+      if (lostPower > 0) {
+        zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
+      }
+      const eliminatedCivLabel = civLabelForOwner(oldOwner);
+      const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
+        newOwner,
+        oldOwner,
+        playerCivKey: civKeyForOwnerId(0),
+        typCityCopyOwners,
+        aiOwnerCivMap,
+        cities,
+      });
+      if (isTriumph) {
+        const triumphCivLabel = civDisplayNameForOwner(0) ?? civLabelForOwner(0);
+        // P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK: modal wymagający potwierdzenia
+        // zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem
+        // ELIMINACJA wołanym niżej i natychmiast go nadpisywał.
+        showTriumphCityStateNotice({ civLabel: triumphCivLabel, cityName: city.name });
+      } else if (newOwner !== 0) {
+        // Zdobywcą jest AI — showCityCaptureNotice (modal) wyskakuje WYŁĄCZNIE dla gracza,
+        // więc tu nie ma kolizji: toast zostaje jedynym i wystarczającym kanałem.
         showHintMessage(
-          `${civLabelForOwner(oldOwner)} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`,
+          `${eliminatedCivLabel} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`,
           6000,
         );
-        if (shouldShowPlayerTriumphCityStateUnification({
-          newOwner,
-          oldOwner,
-          playerCivKey: civKeyForOwnerId(0),
-          typCityCopyOwners,
-          aiOwnerCivMap,
-          cities,
-        })) {
-          const triumphCivLabel = civDisplayNameForOwner(0) ?? civLabelForOwner(0);
-          // P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK: modal wymagający potwierdzenia
-          // zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem
-          // ELIMINACJA wołanym linijkę wyżej i natychmiast go nadpisywał.
-          showTriumphCityStateNotice({ civLabel: triumphCivLabel, cityName: city.name });
-        }
-        eliminateOwner(oldOwner);
       }
+      eliminateOwner(oldOwner);
       markCityStateDirty();
+      return (newOwner === 0 && !isTriumph) ? eliminatedCivLabel : null;
     }
 
     /**
@@ -20900,12 +20930,14 @@ async function boot(): Promise<void> {
     }
 
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
+    /** `eliminatedCivLabel` — patrz komentarz `runCapitalCapturePlunder`: niepuste WYŁĄCZNIE gdy
+     * to przejęcie eliminuje ostatnie miasto danej cywilizacji I zdobywcą jest gracz. */
     function applyCityCaptureToMap(
       city: City,
       atkRoster: RuntimeUnit[],
       atkOwner: number,
       anchor: RuntimeUnit | null = atkRoster[0] ?? null,
-    ): RuntimeUnit | null {
+    ): { lead: RuntimeUnit | null; eliminatedCivLabel: string | null } {
       const oldOwner = city.ownerId;
       const lead = applyCityCaptureAfterBattle(
         city,
@@ -20928,8 +20960,8 @@ async function boot(): Promise<void> {
       if (atkOwner === 0) playerEverOwnedCity = true;
       syncCityGarnizon(city);
       endMapSiege(city.id);
-      runCapitalCapturePlunder(city, oldOwner, atkOwner);
-      return lead;
+      const eliminatedCivLabel = runCapitalCapturePlunder(city, oldOwner, atkOwner);
+      return { lead, eliminatedCivLabel };
     }
 
     function refreshMapAfterCityCapture(lead: RuntimeUnit | null): void {
@@ -21000,12 +21032,13 @@ async function boot(): Promise<void> {
       hideCityAttackChoice();
 
       const atkOwner = anchor.ownerId;
-      const lead = applyCityCaptureToMap(city, atkRoster, atkOwner, anchor);
-      refreshMapAfterCityCapture(lead ?? anchor);
+      const captureResult = applyCityCaptureToMap(city, atkRoster, atkOwner, anchor);
+      refreshMapAfterCityCapture(captureResult.lead ?? anchor);
 
       if (atkOwner === 0) {
         showCityCaptureNotice(city.name, {
           onEnterCity: () => openCityPanelForPlayer(city),
+          eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
         });
       }
     }
