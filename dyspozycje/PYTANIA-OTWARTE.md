@@ -8490,4 +8490,42 @@ Bramki: `tsc --noEmit` 0, `logic-test.cjs` 213/213, `hud-moc-warstwa-test.cjs` 2
 Dispatch lekkiego Evaluatora (weryfikacja że to czysto formatowanie, zero zmiany logiki)
 NASTĘPUJE teraz.
 
+**Autoryzacja Macieja (2026-08-10):** „ok jak będzie skończony 2 i 3 to rób deploy do robocza
+i git push" — czyli po domknięciu R-AUTOZAPIS-QUOTA-STORAGE-Q1 (kat. 2 raportu) i tego tematu
+(kat. 3), wykonaj deploy do ROBOCZA + push BEZ dodatkowego pytania o hasło `deploy` (ta
+wiadomość JEST tym hasłem, warunkowo). Nie skracam przez to pętli Operator→Evaluator→scalenie
+dla żadnego z dwóch tematów — deploy następuje PO ich pełnym, właściwym domknięciu, nie
+zamiast niego.
+
+---
+
+## R-AUTOZAPIS-QUOTA-STORAGE-Q1 — Operator dostarczył (Faza 1+2), czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a2d5e03691a4e7cbb`, branch `fsa-autosave` (baza: `origin/…ek4ra0` sprzed
+kilku dalszych commitów sesji — do weryfikacji driftu przez Evaluatora).
+
+**Faza 1 (feasibility) potwierdzona zgodnie z założeniem** (3 niezależne źródła: MDN,
+Chrome for Developers, WICG issue): `requestPermission()`/`showDirectoryPicker()` wymagają
+transient user activation, ale TYLKO przy wywołaniu tej funkcji — kolejne zapisy na już
+przyznanym uchwycie (`getFileHandle`/`createWritable`/`write`/`close`) NIE wymagają aktywacji.
+Operator wpiął `requestPermission()` w handler kliknięcia startu sesji (Nowa gra/Kontynuuj/
+Wczytaj) — jedno kliknięcie na sesję, autozapis co turę już nie prosi o nic.
+
+**Faza 2 (implementacja):** nowy `gra/src/game/fsa-autosave.ts` (detekcja środowiska,
+nazewnictwo rotacji 10 slotów, zapis, komunikaty PL) + `main.ts` (`doRotatingAutosave` →
+`async`, próba FSA → fallback na dotychczasowy `saveToLocal()` przy niepowodzeniu — zero
+regresji; `triggerFsaAutosaveBootstrap()` z jednorazowym komunikatem dla Firefox/Safari/
+`file://`) + `package.json` (`serve:robocza` przez `python3 -m http.server`, zero nowych
+zależności npm, nie triggeruje `prebuild`/`predev`) + nowy test `fsa-autosave-test.cjs`
+(40/40) + zaktualizowany `autosave-quota-fail-test.cjs` (20/20, sygnatura `async`).
+
+Bramki Operatora: tsc 0, logic-test 213/213, autosave-quota-fail 20/20, fsa-autosave-test
+40/40, tech-tree/research/unit-replace zielone. Brak testu E2E z prawdziwym
+`showDirectoryPicker()` (niemożliwe w headless) — Operator rekomenduje ręczny playtest
+Chrome/Edge przez `npm run serve:robocza` przed promocją.
+
+Dispatch NIEZALEŻNEGO Evaluatora (Opus 5) NASTĘPUJE teraz — pełna weryfikacja (drift bazy,
+poprawność async/fallback, brak regresji dotychczasowego `localStorage`, bezpieczeństwo
+zapisu plików, realność gwarancji „jedno kliknięcie na sesję").
+
 ---
