@@ -9990,3 +9990,30 @@ NIE bug tylko mylące zestawienie stanu-teraz vs projekcji, ale wymaga potwierdz
 przejrzenia kodu, nie zgadywania.
 
 ---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (2026-08-10, propozycja gameplayowa Macieja, playtest FALI 268)
+
+Maciej: „pomimo włączonego auto wyżywienia system utrzymuje często żywność na niedoborze. powinien
+zawsze sterować tak, żeby był na minimalnym plusie w całej cywilizacji. Albo na minimalnym plusie w
+danym mieście, pytanie co będzie lepsze." Zrzut: Ateny, Żywność −1 (HUD), panel miasta Bilans −1/t,
+Wyżywienie poziom 6, Auto Wyżywienie WŁ (przycisk zielony/aktywny), Wzrost% 13% (dodatni mimo
+ujemnego bilansu żywności — kompensowane bonusami „Małe miasto"+„Szczęście").
+
+**Rozpoznanie techniczne konieczne przed ABC (nie zgaduję):** dzisiejszy mechanizm Auto Wyżywienia
+(`maxSafePoziomRacjiForCity`/`getMaxSafePoziomRacjiForPlayerCity`, cała robota tej sesji —
+`applyLiveSafeRationForCity`/`_maxSafeRationCache`) celuje w **„zapas (Spichlerz) nie spada poniżej
+zera"** (stock-based), NIE w „bilans per-turę jest nieujemny" (flow-based) — to DWA różne kryteria.
+Ujemny Bilans −1/t przy dodatnim zapasie w buforze jest DZIŚ zgodny z zamierzonym działaniem (dopóki
+bufor starcza, system pozwala go zjadać). Propozycja Macieja zmienia CEL na flow-based. **Wymaga
+zbadania przed ABC:** czy dzisiejszy `maxSafePoziomRacjiForCity` liczy per-miasto czy uwzględnia pulę
+centralną (redystrybucja nadwyżek/niedoborów między miastami przez `isEmpireCityFoodSolvent`/
+`simulateCityFoodCentralPool`); czy zmiana celu na „zawsze min. plus" jest prostą podmianą progu w
+istniejącej funkcji, czy wymaga nowej logiki; jaki jest koszt gameplayowy każdej opcji (A — globalnie
+dla całej cywilizacji: miasta mogą się kompensować, ale pojedyncze miasto z lokalnym niedoborem może
+nadal tracić wzrost mimo dodatniego imperium; B — per-miasto: każde miasto zawsze nieujemne lokalnie,
+ale może wymuszać zbyt ostrożne (niższe) racje nawet gdy bufor by pozwolił na więcej, marnując
+potencjał wzrostu). **STATUS: dispatch rozpoznania NASTĘPUJE teraz, ABC dopiero po wynikach** —
+zgodnie z dyscypliną tej sesji (rozpoznanie przed ABC dla niejasnego zakresu technicznego, CLAUDE.md
+§6/§7).
+
+---
