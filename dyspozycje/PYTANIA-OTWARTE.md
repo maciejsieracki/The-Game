@@ -10895,8 +10895,20 @@ poprawką testu, inaczej nie ma dowodu że coś się realnie zmieniło.
 **Trzy pozostałe commity (`2da2b0a6`, `29885068`, `5130a037`) zostają bez zmian — PASS potwierdzony
 niezależnie.**
 
-**STATUS: dispatch Sonnet 5 (worktree) — naprawa wąska, w już ustalonym zakresie „bez ABC". Po
-dostarczeniu: NIEZALEŻNY Evaluator przed uznaniem za zamknięte.**
+**STATUS: SCALONE `7e753db2` (2026-08-10).** Nowe pole `AITurnOpts.cityStateDifficultyVsPlayer`
+przekazywane z `_menuCityStateDifficultyVsPlayer` (main.ts); `cityStateMilitaryProductionCap`
+wołane z tego pola zamiast starej osi gry. `cap('hard')` podniesiony `0→3` (=
+`CS_WAVE_ATTACK_MIN_STACK`, nie liczba losowa — PM na Trudnym może faktycznie zebrać własne
+minimum stosu do fali ataku, spójnie z `cityStateOffensiveSupport`). T3/T6 dotychczas
+przypinające stare zachowanie zaktualizowane, dowiedzione czerwono→zielono (16/16 na starym kodzie
+zawierało 2 zielone-fałszywie-uspokajające asercje T3a/T6b, po naprawie 18/18 z nowymi, poprawnymi
+oczekiwaniami). Nowa bramka wiringu `cs-military-cap-wiring-test.cjs` 10/10. Bramki: tsc 0,
+logic-test 213/213, `ai-mp-military-cap-test` 18/18, `city-state-prod-audit-test` 17/17,
+`ai-cs-absorption-test` 29/29, `city-state-alliance-test` 67/67, `city-state-cluster-diff-test`
+31/31, `city-state-mp-growth-test` 9/9. `ai-test.cjs` 274/282 — 8 porażek zweryfikowane
+niezależnie jako pre-istniejące (identyczne na `git stash` baseline bez tej zmiany, dotyczą
+scoringu budynków ekonomicznych i `zaproponuj_handel`, zero związku z MP/cap/hard). Czeka na
+NIEZALEŻNEGO Evaluatora (dispatch w toku).**
 
 ## R-ZUZYCIE-SUROWCOW-OBYWATELE — nowa mechanika, propozycja Macieja (2026-08-10)
 
