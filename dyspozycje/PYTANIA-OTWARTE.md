@@ -10220,3 +10220,42 @@ słowo — może to być czwarty objaw tego samego łańcucha przyczynowego, nie
 **Dispatchowany Evaluator (`a9935e7d20bbedcfa`).**
 
 ---
+
+## Rozpoznanie #3 dostarczone (`aaf1b942afbfe8911`) — pełny obraz, gotowe do syntezy dla Macieja
+
+**Zadanie A (dlaczego poziom utknął na 4):** NIE jeden bug, zbieg TRZECH współdziałających
+mechanizmów: (A1) WSZYSTKIE mechanizmy auto-korekty (`isEmpireCityFoodSolvent`,
+`maxSafePoziomRacjiForCity`) liczą wypłacalność EMPIRE-WIDE (agregat wszystkich miast+rezerwa), nigdy
+lokalnie per-miasto — to jest ta sama architektura z rozpoznania #1, teraz z twardym dowodem że
+pozwala na TRWALE ujemny lokalny bilans jednego miasta, jeśli inne miasta/rezerwa pokrywają w
+agregacie. (A2) potwierdzony bezpośredni zapis do `city.poziomRacji` z pominięciem
+`ownerDefaultPoziomRacji`/`poziomRacjiOverride` w 4 miejscach (SPICH-AUTO-Q1 ×3 +
+`broadcastPoziomRacjiToOwnerCities`, `empire-city-defaults.ts:307-316`, wywoływana z każdej zmiany
+suwaka Wyżywienia dowolnego miasta bez override — nadpisuje WSZYSTKIE miasta ownera bez klamrowania
+per-miasto i bez `applyLiveSafeRationForCity`, świadomie akceptowane w komentarzu kodu jako poleganie
+na agregatowym backstopie). (A3) wzrost populacji NIE jest wyzwalaczem live-recalc — wyczerpujące
+przeszukanie potwierdza `applyPostCentralPopulationGrowth` (jedyna ścieżka przyrostu) nie woła
+`applyLiveSafeRationForCity` — więc poziom racji nie jest przeliczany po każdym wzroście ludności,
+mimo że koszt skaluje się z populacją.
+
+**Zadanie B (czy Wzrost% liczy nominalny czy faktyczny poziom) — POTWIERDZONE, Maciej miał rację
+nazywając to „oszukiwaniem":** składnik „Wyżywienie" we Wzroście% w OBU miejscach (UI `cityPanel.ts`
+I silnik `population-growth-v85.ts`) zawsze bierze NOMINALNY `city.poziomRacji`
+(`getCityRationLevel`), nigdy faktycznie pokrytą ilość. Istnieje bramka `fed`, ALE jest binarna
+(cały wzrost albo zero) i sama oparta o AGREGATOWĄ wypłacalność imperium (`covered >= need` z puli
+centralnej wszystkich miast), nie o lokalny bilans TEGO miasta — miasto z głęboko ujemnym lokalnym
+bilansem MOŻE dostać `fed=true` i pełny nominalny bonus wzrostu wyłącznie dlatego, że inne
+miasto/rezerwa pokryły w tej samej turze. **Ważne zastrzeżenie łagodzące:** silnik NIE jest ślepy —
+gdy miasto naprawdę nie jest pokryte NAWET agregatowo, `applyHungerPenaltyV85` natychmiast odejmuje
+ludność i zeruje wzrost, bez okresu karencji. Dodatkowo: panel UI czyta `fed` ze STAREJ migawki
+końca poprzedniej tury (`getLastEmpireFoodTick`), nie live — rozjazd po automatycznym wzroście
+populacji w trakcie bieżącej tury (nieudokumentowany dotąd jako źródło tego konkretnego rozjazdu,
+inny niż znany rozjazd po ruchu suwaka).
+
+**Synteza dla Macieja następuje teraz w czacie** — to poszerza (nie zastępuje) wcześniejszą oś ABC z
+rozpoznania #1 o dwa NIEZALEŻNE, jasno zakresowane bugi (A2 broadcast-bypass, A3 brak triggera
+wzrostu populacji) możliwe do naprawy NIEZALEŻNIE od tego, którą opcję architektury (stock vs flow)
+Maciej wybierze, plus twardy dowód że sama Oś B (Wzrost%) wymaga osobnej decyzji, bo to inny problem
+niż sam Bilans/Spichlerz.
+
+---
