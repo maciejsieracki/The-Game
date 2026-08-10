@@ -11966,3 +11966,47 @@ samym sobą) — realny dowód parytetu leży gdzie indziej i działa.
 `cs-military-cap-wiring-test.cjs`). N2 — pytanie ABC do Macieja, zadane po jego powrocie
 (świadomie odłożone, jak pozostałe 2 tematy dziś w nocy). Temat NIE MOŻE zostać w pełni zamknięty
 bez N2, ale N1 nie wymaga jego udziału.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — Evaluator runda 3: PASS-WITH-NOTES, DRUGIE pytanie ABC znalezione (2026-08-10)
+
+**Werdykt (Opus 5) dla `2e0678e8`: PASS-WITH-NOTES.** Wszystkie 5 napraw zweryfikowane WYKONANIEM
+na niezależnym harnessie (nie lekturą) — działają poprawnie: try/catch łapie 3 niezależne warianty
+uszkodzenia i woła generator dokładnie raz; czyszczenie starego klucza meta i rozłączność prefiksu
+potwierdzone; arytmetyka progu 5b/5c poprawna (1 310 720 znaków = faktyczna połowa limitu),
+KNOWN-FAIL w sekcji 5c potwierdzone jako niewpływające na exit code (=0); `riverPaths` faktycznie
+odporne na mutację (odwrotny wynik niż runda 2 — kopia jest głęboka, nie tylko top-level).
+
+**⛔ Odpowiedź wprost na pytanie „czy temat może przejść do stanu czeka wyłącznie na ABC": NIE.**
+Rejestr mylił się twierdząc „technicznie kompletny, czeka na 1 decyzję" — **jest DRUGIE pytanie
+decyzyjne (N1 werdyktu):**
+
+**N1 — uzasadnienie naprawy #1 (try/catch) jest materialnie mylące, a zmiana zachowania NIE jest
+czysto-bezpieczeństwowa.** PRZED naprawą: uszkodzony snapshot dawał **czysty, diagnozowalny abort**
+wczytywania (istniejący `try/catch` w `main.ts` wokół `loadMapForSave` łapie wyjątek,
+`diagError('load', ...)`, powrót do menu głównego) — NIE crash, wbrew opisowi „nieobsłużony
+wyjątek". PO naprawie: **CICHE** zregenerowanie INNEJ mapy z ziarna (bez ulepszeń/właścicieli/
+wiosek/widoczności zbudowanych w trakcie gry), na którą nakładane są jednostki/miasta z zapisu —
+**zero logu, zero ostrzeżenia dla gracza**, `catch {}` nawet bez `console.warn`. To dokładnie
+„cicha zła mapa", której miała unikać. **Wybór między „cicha regeneracja innej mapy" a „abort z
+czytelnym komunikatem" to decyzja produktowa, nie techniczna naprawa** — Evaluator: „runda 3
+podjęła tę decyzję w kodzie, opisując ją jako naprawę wyjątku, którego w praktyce nie było".
+
+**3 drobne poprawki czysto techniczne (BEZ ABC), do domknięcia przy okazji naprawy N1:**
+`console.warn`/diagnostyka w `catch` (minimum, niezależnie od wyboru wariantu N1); `(map.riverPaths
+?? [])` — asymetria null-guard (`riverPathKinds` ma strażnika, `riverPaths` nie, choć typ deklaruje
+pole jako wymagane — reszta bazy kodu temu polu jednak nie ufa, 5 miejsc broni się `?? []`);
+etykiety „mln znaków" w komunikatach sekcji 5b/5c mylą M z Mi (zaniżenie ~4,86% w liczbach
+pokazywanych właścicielowi, wynik testu bez zmian). Plus lustro po stronie odczytu: `snap.riverPaths`
+nadal żywa referencja w `buildGameMapFromSnapshot` (niska waga, `saved` porzucany po wczytaniu).
+
+**Nota nieblokująca do osobnego zgłoszenia (pre-istniejące, NIE regresja):** `listSaves()` nadal
+zwraca fantomowy wpis (`LAST_PLAYED_SLOT_KEY = 'thegame.save._lastPlayed'` jest podprefiksem
+`SAVE_PREFIX`, ta sama wada klasy co naprawiona dla meta, 56 linii wyżej w tym samym pliku) —
+`hasAnySaveSlot()` nie filtruje `_`-prefiksu jak `summarizeSaveSlots`, więc po skasowaniu
+wszystkich zapisów przycisk Wczytaj/Kontynuuj może zostać błędnie aktywny.
+
+**STATUS: temat ma TERAZ 2 pytania ABC (nie 1) — architektura rotacji autozapisu (wcześniej
+zarejestrowane) ORAZ wybór zachowania przy uszkodzonym snapshocie (cicha regeneracja vs abort z
+komunikatem). Dispatch Sonnet 5 (worktree) — 3 drobne poprawki techniczne BEZ ABC (console.warn w
+catch niezależnie od wyboru wariantu, `?? []`, etykiety jednostek). Oba pytania ABC świadomie
+odłożone do powrotu Macieja, razem z resztą tematów tej nocy.**
