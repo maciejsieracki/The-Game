@@ -9751,6 +9751,22 @@ Konfigurator/Cyna/AI — więc kwalifikują się pod „błędy", nie pod „inn
 (agenty w tle, nie odciągają uwagi od 4 priorytetowych tematów, które mają własne aktywne dispatch'e):
 - **P-DYPLO-SWEETENER-KOSZYK** → Operator (`a5c3495e1f3db0402`, worktree izolowany).
 - **BUG-PANGEA-RECT / BUG-RZEKI-COAST-PARALLEL** → rozpoznanie aktualności (`a0ce08d9f22499cdf`).
+
+**Rozpoznanie dostarczone — oba NIEAKTUALNE, naprawione 8 dni temu, tylko status w rejestrze nigdy
+nie zaktualizowany.** Oba zgłoszenia z playtestu FALA 188 (2026-08-02) naprawione tego samego
+wieczoru serią deployów (FALA 188→189→199-200, commit `6f96f082`, ROBOCZA `26b05753`) — NIE przy
+okazji 6 tematów z audytu 08-09/10, dlatego audyt kompletności ich nie znalazł na tamtej liście.
+Dowody: `pangea-land-shape-test.cjs` 10/10 PASS dziś (aspect 1.16-1.19, nie prostokąt);
+`pangea-river-interior-test.cjs` 5/5 PASS (interiorShare 19-35%, rzeki dochodzą do wnętrza lądu, nie
+tylko pas przybrzeżny — usunięty limiter/quota był głównym mechanizmem zgłoszonego objawu).
+**Zastrzeżenie:** starsza wersja tej samej bramki (`map-gen-regression-test.cjs`, próg `coastRatio>3.8`)
+jest surowsza niż nowsza (`pangea-land-shape-test.cjs`, próg `>3.70`) — przy dzisiejszych wartościach
+(3.778-3.827) 4/5 seedów wypadłoby poniżej starszego progu. Metryka nieregularności obrysu jest
+wyraźnie lepsza niż „prostokąt", ale niejednoznacznie mocna liczbowo — jeśli Maciej chce 100% pewności
+wizualnej, jeden zrzut ekranu z aktualnej ROBOCZA rozstrzygnąłby to ostatecznie (nie zrobione teraz,
+niski priorytet, temat i tak jest odłożony za 4 tematami bugowymi). **STATUS: przełączone z
+„W TRAKCIE" na „NIEAKTUALNE/WDROŻONE 2026-08-02, potwierdzone rozpoznaniem 2026-08-10" — bez dispatchu
+Operatora.**
 - **R-DESIGN-PANEL-MIASTA-V2-Q1** — nie subagent, tylko przypomnienie Maciejowi w czacie (zrobione
   poniżej razem z raportem „raport").
 
