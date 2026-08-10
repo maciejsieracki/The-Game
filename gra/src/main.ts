@@ -4877,11 +4877,11 @@ async function boot(): Promise<void> {
     // `cycleToAdjacentPlayerUnit`) wyniesione do CZYSTEGO modułu game/army-cycle.ts — main.ts
     // zostaje cienką warstwą efektów ubocznych (stan gry + selectPlayerUnit/focusCameraOnUnit/
     // clearPlayerUnitSelection). Patrz komentarz nagłówkowy army-cycle.ts po uzasadnienie i
-    // scout-army-cycle-test.cjs po test behawioralny. / EN: `isUnitActiveForCycle`,
+    // scout-explore-deselect-cycle-test.cjs po test behawioralny. / EN: `isUnitActiveForCycle`,
     // `cyclablePlayerArmyLeadsBase` and next-id resolution (formerly `cycleToAdjacentPlayerUnit`'s
     // body) moved to the PURE game/army-cycle.ts module — main.ts is now a thin side-effect layer
     // (game state + selectPlayerUnit/focusCameraOnUnit/clearPlayerUnitSelection). See
-    // army-cycle.ts's header comment for rationale and scout-army-cycle-test.cjs for the
+    // army-cycle.ts's header comment for rationale and scout-explore-deselect-cycle-test.cjs for the
     // behavioral test.
 
     /** Wszystkie armie gracza (1 wiodąca/heks) z DOSTĘPNYM RUCHEM — kolejność przestrzenna.

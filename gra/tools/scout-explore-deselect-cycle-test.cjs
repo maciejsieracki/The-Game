@@ -184,18 +184,56 @@ check(
 
   // Scenariusz Q2 doslownie: jednostka WLASNIE wlaczajaca Zwiedzaj (afterId=jej id) NIE
   // wystepuje juz w `list` (autoExplore=true ja wyklucza), ale nadal jest w pelnej tablicy
-  // `units` na tym samym heksie co przed chwila -- fallback po stackRenderKey(hex) musi
-  // wybrac sasiada z listy, NIE zwrocic afterId ani spanikowac.
+  // `units` na tym samym heksie co przed chwila -- BEZ zadnego innego stack-mate na tym
+  // heksie (scout jest jedyna jednostka na (1,0)), wiec idxByHex fallback NIE trafia (brak
+  // dopasowania stackRenderKey), cur zostaje domyslne -1 (delta>0) -> wynik jest
+  // DETERMINISTYCZNY: zawsze pierwszy element listy w kierunku ruchu ('a'), NIGDY 'c' ani
+  // afterId ani null. (Scenariusz z fallbackiem PRZEZ stack-mate -- luka M7 -- jest ponizej,
+  // osobno, bo wymaga INNEJ jednostki dzielacej stackRenderKey z afterId.)
   const scout = u({ id: 'scout', q: 1, r: 0, autoExplore: true });
   const allUnits = [u({ id: 'a', q: 0, r: 0 }), u({ id: 'c', q: 2, r: 0 }), scout];
   const listAfterEnable = cyclablePlayerArmyLeadsBase(allUnits, true, () => true); // ['a','c']
   const nextAfterScoutEnable = resolveAdjacentPlayerUnitCycle(allUnits, listAfterEnable, 'scout', 1);
   check(
-    '1c. Scenariusz Q2: po wlaczeniu Zwiedzaj (jednostka wykluczona z list, ale nadal w units) '
-      + 'cykl wybiera nastepna jednostke z listy, NIE zwraca "scout" ani null',
-    nextAfterScoutEnable === 'a' || nextAfterScoutEnable === 'c',
+    '1c. Scenariusz Q2: po wlaczeniu Zwiedzaj (jednostka wykluczona z list, ale nadal w units, BEZ '
+      + 'stack-mate na jej heksie) cykl daje DOKLADNIE "a" (pierwszy element listy w kierunku ruchu) '
+      + '-- nie luzna alternatywa "a" lub "c", ktora przechodzilaby wakuowo nawet po mutacji psujacej '
+      + 'wybor kierunku',
+    nextAfterScoutEnable === 'a',
     'dostano: ' + nextAfterScoutEnable,
   );
+
+  // --- M7 (Evaluator, testowanie mutacyjne runda 3 R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2): usuniecie
+  // fallbacku "po stackRenderKey" w resolveAdjacentPlayerUnitCycle nie bylo dotad zlapane przez
+  // ZADEN test, bo jedyny wczesniejszy scenariusz (wyzej) mial afterId BEZ zadnego stack-mate w
+  // liscie -- idxByHex i tak nie trafial, wiec usuniecie calego bloku fallbacku dawaloby TEN SAM
+  // wynik ('a'). Tu afterId ('afterId') wypada z listy kandydatow (sentry=true), ale INNA
+  // jednostka ('stackmate') na TYM SAMYM heksie/stosie (5,5) nadal jest aktywna i w liscie --
+  // cykl MUSI ruszyc od INDEKSU stackmate w liscie (fallback dziala), nie od poczatku listy
+  // (cur=-1 -> co dalaby usunieta gałąź fallbacku).
+  {
+    const x0 = u({ id: 'x0', q: 0, r: 0 });
+    const stackmate = u({ id: 'stackmate', q: 5, r: 5 });
+    const afterIdUnit = u({ id: 'afterId', q: 5, r: 5, sentry: true }); // wypada z list, ten sam heks co stackmate
+    const x2 = u({ id: 'x2', q: 9, r: 9 });
+    const m7Units = [x0, stackmate, afterIdUnit, x2];
+    const m7List = cyclablePlayerArmyLeadsBase(m7Units, true, () => true);
+    check(
+      'M7 setup: lista kandydatow wyklucza afterId (sentry=true) i zawiera x0,stackmate,x2 w '
+        + 'kolejnosci przestrzennej',
+      m7List.map(x => x.id).join(',') === 'x0,stackmate,x2',
+      'dostano: ' + m7List.map(x => x.id).join(','),
+    );
+    const m7Next = resolveAdjacentPlayerUnitCycle(m7Units, m7List, 'afterId', 1);
+    check(
+      'M7: afterId wypadl z listy, ale stack-mate (ten sam heks/stos) nadal na liscie -- cykl '
+        + 'startuje od INDEKSU stack-mate (1) i idzie dalej -> "x2" (indeks 2), NIE od poczatku '
+        + 'listy "x0" (co dostalibysmy, gdyby fallback po stackRenderKey zostal usuniety i cur '
+        + 'zostalo domyslne -1)',
+      m7Next === 'x2',
+      'dostano: ' + m7Next,
+    );
+  }
 
   // Scenariusz Q2 -- brak innych jednostek: jedyna jednostka gracza wlacza Zwiedzaj -> lista
   // pusta -> resolveAdjacentPlayerUnitCycle zwraca null -> main.ts ma to zinterpretowac jako
