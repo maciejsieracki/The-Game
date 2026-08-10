@@ -1090,12 +1090,18 @@ function render(): void {
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;
   }
-  if (!onlyEconId) {
-    zasoby += renderDefaultHandelSplitSection();
-    // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Praca", Maciej 2026-08-10): globalny
-    // podział Pracy imperium, wzorem sekcji Handlu tuż wyżej (DYSPOZYCJA-85-SUWAK).
-    zasoby += renderDefaultPodzialPracySection();
-  }
+  // BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU (Maciej 2026-08-10): suwaki globalne
+  // Skarbca i Pracy muszą być widoczne ZAWSZE, niezależnie od onlyEconId — analogicznie do
+  // Wyżywienia (renderDefaultPoziomRacjiSection wewnątrz renderSpichlerzCentralnySection, poza
+  // filtrem). C-PANEL=B (filtr wierszy stanu/przyrostu ekonomii) zostaje nienaruszony —
+  // wyjęte spod `if` są WYŁĄCZNIE te dwa wywołania suwaków, nie cała pętla econRows wyżej.
+  // EN: global Treasury/Labor sliders must always be visible regardless of onlyEconId — same
+  // pattern as Food (rendered outside the filter). C-PANEL=B (econ row filter) stays intact —
+  // only these two slider calls are pulled out of the `if`, not the econRows loop above.
+  zasoby += renderDefaultHandelSplitSection();
+  // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Praca", Maciej 2026-08-10): globalny
+  // podział Pracy imperium, wzorem sekcji Handlu tuż wyżej (DYSPOZYCJA-85-SUWAK).
+  zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
