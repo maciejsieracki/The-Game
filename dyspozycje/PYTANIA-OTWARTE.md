@@ -11847,3 +11847,26 @@ przycisku „Wczytaj".
    zależny od obecności FSA; mapSnapshot współdzielony jednym kluczem dla całej sesji zamiast per-slot).
    **Temat NIE MOŻE zostać w pełni zamknięty bez tej decyzji — Maciej śpi, odłożone do jego
    powrotu, świadomie, udokumentowany powód.**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — Evaluator runda 2: PASS, TEMAT ZAMKNIĘTY (2026-08-10)
+
+**Werdykt (Opus 5) dla `7373233b`: PASS.** Warunek wymaga obu bramek (`actionUsesTradeBasket` +
+`getTradeBasketMode` trade/gift) — potwierdzone w kodzie. Pułapka fallbacku sprawdzona
+niezależnie i okazała się SZERSZA niż podejrzewano (`getTradeBasketMode` fallbackuje na `'trade'`
+dla KAŻDEGO id spoza `TRADE_BASKET_ACTION_IDS`, nie tylko `'5'`) — pierwsza bramka jest więc
+obowiązkowa, nie kosmetyczna. Wszystkie typy dawniej dotknięte Defektem 1/2 prześledzone ręcznie
+(nap/sojusz/granice/trybut/ultimatum/wasal/wchłonięcie) — wszystkie `canCounter=false`. `'14'`/`'13'`
+potwierdzone wolne od duplikacji złota, mocniejszym argumentem niż w commicie (gwarancja leży w
+TRYBIE modala, nie tylko kształcie payloadu). Render zweryfikowany na 3 niezależnych bramkach UI —
+przycisk realnie znika. Bramki: tsc 0, logic-test 213/213, `diplomacy-own-proposal-edit-test`
+33/33 + 8 istniejących testów dyplomacji, zero regresji.
+
+**Notatki nieblokujące (do wiedzy, nie żądają poprawki):** `'13'` (dar) jest w praktyce
+nieosiągalny w `buildPendingNegotiationRows` — realny dar zawsze mapuje na `uiActionId='14'`, więc
+gałąź `gift` w warunku jest dziś martwa/defensywna (nieszkodliwe); edytowany dar nadal poprawnie
+oceniany jako dar mimo przejścia przez tryb `trade` (`evaluateProposal` wyprowadza `isGift`
+obronnie); gwarancja braku duplikacji dla `'14'` zależy od TRYBU modala, nie kształtu danych —
+gdyby w przyszłości `'14'` zostało przekierowane przez `mode='treaty'`, Defekt 2 by wrócił (dziś
+nieosiągalne).
+
+**TEMAT ZAMKNIĘTY po 2 rundach.**
