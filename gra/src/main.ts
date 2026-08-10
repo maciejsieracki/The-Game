@@ -976,6 +976,7 @@ import {
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
+import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
@@ -6947,6 +6948,51 @@ async function boot(): Promise<void> {
      */
     const borderMarchEventTargets = new Map<string, { q: number; r: number } | null>();
 
+    /**
+     * R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5: pełna treść (etykieta cywilizacji +
+     * szczegóły) dla wpisu WYDARZENIA `elim-cs-*` (klucz = SidePanelEvent.id) — karta w panelu
+     * bocznym niesie tylko treść skróconą, kliknięcie otwiera civElimNotice.ts z tym, co tu
+     * zapisane (patrz recordCivElimEvent/onEventClick).
+     * EN: full content (civ label + details) for the `elim-cs-*` Events entry (key =
+     * SidePanelEvent.id) — the side-panel card only carries the short blurb, clicking it opens
+     * civElimNotice.ts with what's stored here (see recordCivElimEvent/onEventClick).
+     */
+    const civElimEventDetails = new Map<string, { civLabel: string; details: string }>();
+
+    /**
+     * R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5 (Maciej, ECHO B+C): JEDYNY punkt emisji
+     * dla eliminacji przez wchłonięcie dyplomatyczne — karta w dzienniku Wydarzeń (warEventLog),
+     * NIE toast. Wpis jest zapisywany bezpośrednio do warEventLog (jak recordWarDeclarationEvent
+     * powyżej / notifyPlayerEraChangeIfAdvanced), NIE przez kolejkę deferredEotHints — dzięki
+     * temu przeżywa endTurnInProgress bez konwersji na generyczny wpis „Koniec tury"
+     * (deferredHintsToSidePanelEvents nadałby mu cudzą etykietę/kind zamiast własnej treści) i
+     * po prostu pojawia się w panelu, gdy collectTurnEvents przestanie maskować warEventLog
+     * (koniec fazy AI). Pełna treść trafia do civElimEventDetails pod tym samym id — kliknięcie
+     * karty (onEventClick, prefiks 'elim-cs-') otwiera civElimNotice.ts.
+     * EN: the ONLY emission point for elimination via diplomatic annexation — an Events log
+     * card (warEventLog), NOT a toast. Written directly to warEventLog (like
+     * recordWarDeclarationEvent above / notifyPlayerEraChangeIfAdvanced), NOT through the
+     * deferredEotHints queue — so it survives endTurnInProgress without being converted into a
+     * generic "End of turn" entry (deferredHintsToSidePanelEvents would give it someone else's
+     * label/kind instead of its own) and simply shows up once collectTurnEvents stops masking
+     * warEventLog (AI phase over). Full content goes into civElimEventDetails under the same id
+     * — clicking the card (onEventClick, 'elim-cs-' prefix) opens civElimNotice.ts.
+     */
+    function recordCivElimEvent(csOwnerId: number, civLabel: string, details: string): void {
+      const evId = `elim-cs-${turn}-${csOwnerId}`;
+      civElimEventDetails.set(evId, { civLabel, details });
+      warEventLog.unshift({
+        id: evId,
+        icon: '\u{1F3F4}',
+        title: 'ELIMINACJA: ' + civLabel,
+        subtitle: 'Wchłonięta dyplomatycznie — kliknij po szczegóły',
+        kind: 'diplo',
+        negative: true,
+      });
+      if (warEventLog.length > 8) warEventLog.length = 8;
+      refreshD1bHud();
+    }
+
     function recordWarDeclarationEvent(declarerId: number, targetId: number): void {
       if (declarerId !== 0 && targetId !== 0) return;
       if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
@@ -7092,6 +7138,7 @@ async function boot(): Promise<void> {
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
+      civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
       activeDeals = [];
       negotiationTable.length = 0;
       negotiationSeq = 0;
@@ -15499,27 +15546,30 @@ async function boot(): Promise<void> {
           .reduce((sum, c) => sum + (c.population ?? 0), 0);
         const koszt = graczWchloniecieKosztZloto(pop, _diplomacyParams());
         applyOneShotGoldTransfer(proposerId, responderId, koszt, buildDiploTreasury());
-        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt A: policz etykietę/liczbę
-        // miast PRZED annexCityStateToOwner (po niej miasta już należą do proposerId, licznik
-        // nie do odtworzenia). annexCityStateToOwner() sama woła showHintMessage() dla
-        // annexerId===0 z eliminacją, ale WYWOŁUJĄCY (tu, kilka linii niżej w oryginale) miał
-        // DRUGIE, bezwarunkowe showHintMessage() na tym samym #hintToast — natychmiast
-        // nadpisywało pierwsze, więc komunikat ELIMINACJA nigdy nie był realnie widoczny.
-        // Naprawa: SCALAMY treść w JEDNO wywołanie tutaj (ostatnie w tym synchronicznym
-        // stosie -> to jego treść widzi gracz).
-        // EN: compute label/city count BEFORE annexCityStateToOwner (cities already
-        // reassigned after). That function fires its own showHintMessage() for
-        // annexerId===0+elimination, but the caller had a SECOND, unconditional
-        // showHintMessage() on the same shared #hintToast right after, instantly
-        // overwriting it. Fix: merge into ONE call here (last call in the sync stack wins).
-        const csLabelBeforeAnnex = civLabelForOwner(responderId);
-        const cityCountBeforeAnnex = cities.filter(c => c.ownerId === responderId).length;
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5 (Maciej, ECHO B+C): eliminacja przez
+        // wchłonięcie dyplomatyczne NIE jest już komunikowana przez showHintMessage/#hintToast
+        // w ogóle — annexCityStateToOwner() (wołana niżej) emituje JEDNO zdarzenie side-panelu
+        // „Wydarzenia" (recordCivElimEvent), którego kliknięcie otwiera modal ELIMINACJA! z pełną
+        // treścią (civElimNotice.ts). Powód: toast ginął pod otwartym panelem audiencji
+        // dyplomatycznej (z-index 400 nad #hintToast 320, Evaluator Runda 4) i dublował się w
+        // dzienniku Wydarzeń, gdy propozycja rozstrzygała się w fazie AI (endTurnInProgress) —
+        // side-panel event nie ma żadnej z tych dwóch wad (persystentna karta w warEventLog,
+        // niezależna od z-index toastu). Zwykły, NIE-eliminacyjny toast wchłonięcia (miasto-
+        // państwo istnieje dalej) zostaje bez zmian — ten przypadek toast nadal obsługuje.
+        // EN: elimination via diplomatic annexation is no longer communicated through
+        // showHintMessage/#hintToast at all — annexCityStateToOwner() (called below) fires ONE
+        // side-panel "Events" entry (recordCivElimEvent) whose click opens the ELIMINACJA! modal
+        // with full content (civElimNotice.ts). Reason: the toast was hidden under the open
+        // diplomatic-audience panel (z-index 400 over #hintToast's 320, Round 4 Evaluator) and
+        // duplicated in the Events log when the proposal resolved during the AI phase
+        // (endTurnInProgress) — a side-panel event has neither flaw (a persistent card in
+        // warEventLog, independent of toast z-index). The plain, non-elimination annex toast
+        // (city-state still exists) is unchanged — that case still gets the toast.
         annexCityStateToOwner(responderId, proposerId);
         const wasEliminated = proposerId === 0 && eliminatedOwners.has(responderId);
-        const wchlonieteMsg = wasEliminated
-          ? `${csLabelBeforeAnnex} — ELIMINACJA! Wszystkie miasta (${cityCountBeforeAnnex}) wchłonięte dyplomatycznie.`
-          : 'Miasto-państwo wchłonięte do imperium';
-        showHintMessage(wchlonieteMsg, wasEliminated ? 6000 : 4000);
+        if (!wasEliminated) {
+          showHintMessage('Miasto-państwo wchłonięte do imperium', 4000);
+        }
         const wasalDeal = findWasalDeal(activeDeals, proposerId, responderId);
         if (wasalDeal) activeDeals = removeTreatiesById(activeDeals, [wasalDeal.id]);
         for (const oid of aiOwnerCivMap.keys()) {
@@ -16749,6 +16799,19 @@ async function boot(): Promise<void> {
         }
         return;
       }
+      if (id.startsWith('elim-cs-')) {
+        // RUNDA 5: wpis jest zapisany BEZPOŚREDNIO w warEventLog (recordCivElimEvent), nie
+        // regeneruje się co turę jak 'revolt-'/'prod-empty-' — musi być usunięty TRWALE
+        // (splice), tak samo jak 'war-' wyżej. Miękki dismiss (dismissedSidePanelEventIds,
+        // czyszczony co turę) sprawiałby, że karta wracałaby w kolejnej turze mimo kliknięcia ✕.
+        const idx = warEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          warEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        civElimEventDetails.delete(id);
+        return;
+      }
       // N1 fix — logika w game/eot-event-defer.ts (dismissEotOrEraWarLogEntry), testowana
       // niezależnie od main.ts w tools/sidepanel-events-toolbar-test.cjs.
       if (dismissEotOrEraWarLogEntry(warEventLog, id)) {
@@ -17297,6 +17360,14 @@ async function boot(): Promise<void> {
           }
           if (id.startsWith('negot-')) {
             openDiplomacyAudienceForNegotiation(id);
+            return;
+          }
+          if (id.startsWith('elim-cs-')) {
+            // RUNDA 5: karta side-panelu niesie tylko treść skróconą (recordCivElimEvent) —
+            // kliknięcie otwiera modal z pełną treścią zapisaną pod tym samym id
+            // (civElimEventDetails), zamiast dawnego, kolidującego toastu #hintToast.
+            const info = civElimEventDetails.get(id);
+            if (info) showCivElimNotice({ civLabel: info.civLabel, details: info.details });
             return;
           }
           const prodCityId = cityIdFromProdEmptyEventId(id);
@@ -20761,10 +20832,23 @@ async function boot(): Promise<void> {
       refreshFog();
       markCityStateDirty();
       eliminateOwner(csOwnerId);
+      // RUNDA 5 (Maciej, ECHO B+C): JEDYNE miejsce, które emituje sygnał o eliminacji przez
+      // wchłonięcie — karta side-panelu „Wydarzenia" (persystentna w warEventLog, przeżywa
+      // endTurnInProgress bez kolejki deferredEotHints, patrz recordCivElimEvent), NIE toast.
+      // Drugie dawne źródło (applyProposalOutcome, gałąź 'wchloniecie') już nie emituje nic dla
+      // tego przypadku — patrz komentarz tam. Kliknięcie karty otwiera civElimNotice.ts z pełną
+      // treścią (csLabel + liczba miast).
+      // EN: the ONLY place that fires the diplomatic-annex elimination signal — a persistent
+      // side-panel "Events" card (warEventLog, survives endTurnInProgress without the
+      // deferredEotHints queue, see recordCivElimEvent), NOT a toast. The other former source
+      // (applyProposalOutcome, 'wchloniecie' branch) no longer emits anything for this case —
+      // see comment there. Clicking the card opens civElimNotice.ts with the full content
+      // (csLabel + city count).
       if (annexerId === 0) {
-        showHintMessage(
-          `${csLabel} — ELIMINACJA! Wszystkie miasta (${cityCount}) wchłonięte dyplomatycznie.`,
-          6000,
+        recordCivElimEvent(
+          csOwnerId,
+          csLabel,
+          `Wszystkie miasta (${cityCount}) wchłonięte dyplomatycznie.`,
         );
       }
       console.log(
@@ -26635,6 +26719,7 @@ async function boot(): Promise<void> {
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
+      civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
       turn = 1;
       playerPracaPool = 0;
       budowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];

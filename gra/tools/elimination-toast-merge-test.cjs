@@ -1,6 +1,14 @@
 'use strict';
 /**
- * elimination-toast-merge-test.cjs — R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI, RUNDA 3 + 4.
+ * elimination-toast-merge-test.cjs — R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI, RUNDA 3 + 4 + 5.
+ *
+ * Nazwa pliku zostaje (historyczna — bramka jest wpisana pod tą nazwą w CLAUDE.md/handoffie),
+ * ale od RUNDY 5 nie chodzi już wyłącznie o "toast" — dla przypadku eliminacji przez wchłonięcie
+ * dyplomatyczne toast (#hintToast) został CAŁKOWICIE zastąpiony zdarzeniem side-panelu
+ * „Wydarzenia" (warEventLog, recordCivElimEvent) + modalem otwieranym kliknięciem karty
+ * (civElimNotice.ts, showCivElimNotice). Sekcje Runda 3/4 (poniżej) opisują historię defektu
+ * zanim ECHO Macieja (B+C) zmieniło kanał komunikacji; sekcja RUNDA 5 na końcu pliku sprawdza
+ * nowy kanał.
  *
  * runCapitalCapturePlunder()/annexCityStateToOwner() i ich wywołujący żyją w main.ts, wewnątrz
  * jednego wielkiego domknięcia (nie eksportowane, nie da się ich zbundlować osobno bez ciężkich
@@ -8,12 +16,13 @@
  * border-march-wygasanie-test.cjs, sekcja 7/15/16 w triumph-city-state-notice-test.cjs),
  * main.ts jest czytany jako TEKST i sprawdzany regexem/oknem znaków zamiast uruchamiany.
  * To NIE zastępuje testu jednostkowego semantyki — potwierdza wyłącznie, że struktura kodu
- * (jedno scalone wywołanie showHintMessage, odebrana wartość zwracana) nie zostanie po cichu
- * cofnięta w przyszłej edycji.
+ * (jedno miejsce emisji, odebrana wartość zwracana, warunki NIE odwrócone) nie zostanie po
+ * cichu cofnięta w przyszłej edycji.
  *
  * Pokrywa:
- *  - Defekt A (Runda 3): applyProposalOutcome/'wchloniecie' — JEDNO showHintMessage (nie dwa
- *    kolidujące na #hintToast) między annexCityStateToOwner(...) a końcem bloku.
+ *  - Defekt A (Runda 3, historyczny — dziś zastąpiony innym mechanizmem, patrz RUNDA 5):
+ *    applyProposalOutcome/'wchloniecie' miał JEDNO showHintMessage (nie dwa kolidujące na
+ *    #hintToast) między annexCityStateToOwner(...) a końcem bloku.
  *  - Defekt A (Runda 4): resolveNegotiationEntryAt (WYWOŁUJĄCY applyProposalOutcome) NIE woła
  *    już bezwarunkowo swojego WŁASNEGO showHintMessage na tym samym #hintToast zaraz po
  *    powrocie z applyProposalOutcome — Runda 3 naprawiła kolizję WEWNĄTRZ applyProposalOutcome,
@@ -27,6 +36,15 @@
  *    ginie po cichu na ścieżce siegeContext).
  *  - Defekt C: CityCaptureNoticeOpts/showCityCaptureNotice mają pole eliminatedDetails i oba
  *    call site'y w main.ts je przekazują.
+ *  - RUNDA 5 (piąty defekt, Evaluator Runda 4 — kolizja z-index toastu pod audiencją
+ *    dyplomatyczną ORAZ duplikat karty przy rozstrzygnięciu w fazie AI): dla wchłonięcia
+ *    dyplomatycznego z eliminacją (a) ŻADNE z dwóch dawnych miejsc nie woła już
+ *    showHintMessage z treścią ELIMINACJA, (b) side-panel event (recordCivElimEvent) jest
+ *    emitowany DOKŁADNIE raz, w JEDNYM miejscu (annexCityStateToOwner), (c) pełna treść
+ *    (etykieta + szczegóły) trafia do civElimEventDetails i modalu civElimNotice.ts, (d) oba
+ *    warunkujące guardy (annexerId === 0 dla emisji, !wasEliminated dla zwykłego toastu,
+ *    proposerId === 0 && eliminatedOwners.has(...) dla wasEliminated) są sprawdzone WPROST —
+ *    nie tylko obecność stringów — żeby złapać odwrócone !/|| podstawione za &&/===.
  *
  * Usage (z gra/): node tools/elimination-toast-merge-test.cjs
  */
@@ -36,9 +54,11 @@ const path = require('path');
 const GRA = path.resolve(__dirname, '..');
 const MAIN_TS = path.resolve(GRA, 'src', 'main.ts');
 const NOTICE_TS = path.resolve(GRA, 'src', 'ui', 'cityCaptureNotice.ts');
+const ELIM_NOTICE_TS = path.resolve(GRA, 'src', 'ui', 'civElimNotice.ts');
 
 const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
 const noticeSrc = fs.readFileSync(NOTICE_TS, 'utf8');
+const elimNoticeSrc = fs.readFileSync(ELIM_NOTICE_TS, 'utf8');
 
 let pass = 0;
 let fail = 0;
@@ -79,10 +99,13 @@ function stripLineComments(src) {
 }
 
 // ---------------------------------------------------------------------------
-// Defekt A — applyProposalOutcome, gałąź cywAction === 'wchloniecie'.
+// Defekt A (dziś: RUNDA 5) — applyProposalOutcome, gałąź cywAction === 'wchloniecie'.
 // Okno: od 'wchloniecie'  do następnego "if (result.deal) {" (sąsiedni blok
-// sibling w tej samej funkcji, patrz main.ts).
+// sibling w tej samej funkcji, patrz main.ts). Zmienna `wchlonieciaBlock`/`wchlonieciaBlockCode`
+// są reużyte niżej w sekcji RUNDA 5.
 // ---------------------------------------------------------------------------
+let wchlonieciaBlock = '';
+let wchlonieciaBlockCode = '';
 {
   const startMarker = "if (cywAction === 'wchloniecie') {";
   const startIdx = mainSrc.indexOf(startMarker);
@@ -94,27 +117,25 @@ function stripLineComments(src) {
 
   const block = startIdx >= 0 && endIdx > startIdx ? mainSrc.slice(startIdx, endIdx) : '';
   const blockCode = stripLineComments(block);
+  wchlonieciaBlock = block;
+  wchlonieciaBlockCode = blockCode;
 
   ok(block.includes('annexCityStateToOwner(responderId, proposerId);'),
     'Defekt A: blok nadal woła annexCityStateToOwner(responderId, proposerId)');
 
+  // RUNDA 5: dla przypadku ELIMINACJI toast (#hintToast) zniknął całkowicie z tego bloku —
+  // zostaje TYLKO jedno showHintMessage, i to dla przypadku ODWROTNEGO (plain, NIE-eliminacyjny
+  // toast wchłonięcia — patrz sekcja RUNDA 5 niżej dla asercji polaryzacji guarda).
   const showHintCount = countOf(blockCode, 'showHintMessage(');
   ok(showHintCount === 1,
     `Defekt A: DOKŁADNIE jedno showHintMessage( w bloku wchłonięcia (znaleziono ${showHintCount}) `
-    + '— dwa kolejne wywołania na #hintToast to dokładnie bug z Defektu A (druga treść '
-    + 'natychmiast nadpisuje pierwszą)');
-
-  // Pilnujemy, że treść "Miasto-państwo wchłonięte do imperium" nie stała się osobnym,
-  // NIESCALONYM wywołaniem (musi żyć wewnątrz wyrażenia budującego wchlonieteMsg).
-  const bareSecondCallPattern =
-    /annexCityStateToOwner\(responderId, proposerId\);[\s\S]*?showHintMessage\('Miasto-państwo wchłonięte do imperium', 4000\);/;
-  ok(!bareSecondCallPattern.test(block),
-    'Defekt A: NIE ma osobnego, bezwarunkowego showHintMessage(\'Miasto-państwo wchłonięte...\') '
-    + 'zaraz po annexCityStateToOwner (regresja dokładnie tego wzorca kolizji)');
+    + '— to jest wyłącznie zwykły toast wchłonięcia (bez eliminacji); toast ELIMINACJA w tym '
+    + 'bloku został RUNDĄ 5 usunięty na rzecz side-panel eventu (recordCivElimEvent w '
+    + 'annexCityStateToOwner)');
 
   ok(block.includes('eliminatedOwners.has(responderId)'),
-    'Defekt A: treść toastu jest warunkowana realnym stanem eliminacji (eliminatedOwners), '
-    + 'nie zgadywana z samego annexerId');
+    'Defekt A: wasEliminated jest liczone z realnego stanu eliminacji (eliminatedOwners), '
+    + 'nie zgadywane z samego annexerId');
 }
 
 // ---------------------------------------------------------------------------
@@ -267,6 +288,129 @@ function stripLineComments(src) {
     'Defekt C: CityCaptureNoticeOpts (cityCaptureNotice.ts) deklaruje eliminatedDetails');
   ok(noticeSrc.includes('esc(eliminatedDetails)'),
     'Defekt C: modal ELIMINACJA! renderuje eliminatedDetails (nie tylko nazwę cywilizacji)');
+}
+
+// ---------------------------------------------------------------------------
+// RUNDA 5 (Maciej, ECHO B+C) — eliminacja przez wchłonięcie dyplomatyczne komunikowana przez
+// JEDNO zdarzenie side-panelu „Wydarzenia" (recordCivElimEvent w annexCityStateToOwner) +
+// modal civElimNotice.ts otwierany kliknięciem karty, NIE przez showHintMessage/#hintToast.
+// ---------------------------------------------------------------------------
+{
+  // (a) ŻADNE z dwóch dawnych miejsc emisji nie zawiera już tekstu ELIMINACJA w KODZIE
+  // (showHintMessage) — applyProposalOutcome (blok wchłonięcia, wchlonieciaBlockCode z sekcji
+  // "Defekt A" wyżej, komentarze usunięte) i annexCityStateToOwner. Sprawdzamy wersję BEZ
+  // komentarzy — komentarz Rundy 5 w main.ts opisuje słownie modal "ELIMINACJA!", co fałszywie
+  // zaliczyłoby się jako "tekst w kodzie", gdyby sprawdzać surowy blok.
+  ok(!wchlonieciaBlockCode.includes('ELIMINACJA'),
+    "RUNDA 5 (a): blok cywAction === 'wchloniecie' w applyProposalOutcome NIE zawiera już "
+    + 'tekstu ELIMINACJA w KODZIE (poza komentarzami) — przeniesiony do side-panel event + modal');
+
+  const annexFnStartMarker = 'function annexCityStateToOwner(csOwnerId: number, annexerId: number): void {';
+  const annexFnStart = mainSrc.indexOf(annexFnStartMarker);
+  ok(annexFnStart >= 0, 'RUNDA 5: znaleziono function annexCityStateToOwner');
+
+  const annexFnEndMarker = '\n    function eliminateOwner(';
+  const annexFnEnd = annexFnStart >= 0 ? mainSrc.indexOf(annexFnEndMarker, annexFnStart) : -1;
+  ok(annexFnEnd > annexFnStart,
+    'RUNDA 5: znaleziono koniec annexCityStateToOwner (kolejna funkcja eliminateOwner)');
+
+  const annexBody = annexFnStart >= 0 && annexFnEnd > annexFnStart
+    ? mainSrc.slice(annexFnStart, annexFnEnd) : '';
+  const annexBodyCode = stripLineComments(annexBody);
+
+  ok(!annexBodyCode.includes('showHintMessage('),
+    'RUNDA 5 (a): annexCityStateToOwner NIE woła już showHintMessage w ogóle (dawny toast '
+    + 'ELIMINACJA usunięty, zastąpiony recordCivElimEvent)');
+
+  // (b) side-panel event emitowany DOKŁADNIE raz: annexCityStateToOwner woła
+  // recordCivElimEvent dokładnie 1x, a blok wchłonięcia w applyProposalOutcome NIE woła go
+  // wcale (żeby nie dublować emisji z dwóch miejsc — to dokładnie defekt 2. z Rundy 4).
+  const recordCallsInAnnex = countOf(annexBodyCode, 'recordCivElimEvent(');
+  ok(recordCallsInAnnex === 1,
+    `RUNDA 5 (b): annexCityStateToOwner woła recordCivElimEvent( DOKŁADNIE raz `
+    + `(znaleziono ${recordCallsInAnnex})`);
+
+  ok(!wchlonieciaBlockCode.includes('recordCivElimEvent('),
+    'RUNDA 5 (b): blok wchłonięcia w applyProposalOutcome NIE woła recordCivElimEvent — '
+    + 'jedyne miejsce emisji zostaje annexCityStateToOwner (bez tego dublowałby się dokładnie '
+    + 'tak jak dawny podwójny showHintMessage z Defektu A/Rundy 4)');
+
+  const totalRecordCivElimOccurrences = countOf(mainSrc, 'recordCivElimEvent(');
+  ok(totalRecordCivElimOccurrences === 2,
+    `RUNDA 5 (b): 'recordCivElimEvent(' występuje w main.ts DOKŁADNIE 2 razy w całym pliku `
+    + `(1 deklaracja funkcji + 1 wywołanie) — znaleziono ${totalRecordCivElimOccurrences}`);
+
+  // (d) polaryzacja: recordCivElimEvent musi żyć WEWNĄTRZ if (annexerId === 0) { ... },
+  // nie odwrócone (!==, brak guarda, inny operator) — inwersja emitowałaby kartę ELIMINACJA
+  // dla wchłonięć AI↔AI/AI↔miasto-państwo, których gracz nigdy nie widzi w swoim dzienniku.
+  ok(/if \(annexerId === 0\) \{\s*\n\s*recordCivElimEvent\(/.test(annexBody),
+    'RUNDA 5 (d): recordCivElimEvent jest wywoływane wewnątrz if (annexerId === 0) { ... } '
+    + '— guard NIE jest odwrócony i NIE brakuje go');
+  ok(!/if \(annexerId !== 0\) \{\s*\n\s*recordCivElimEvent\(/.test(annexBody),
+    'RUNDA 5 (d): brak odwróconego warunku annexerId !== 0 wokół recordCivElimEvent');
+
+  // (d) polaryzacja odwrotna strona: zwykły toast wchłonięcia w applyProposalOutcome musi być
+  // wewnątrz if (!wasEliminated) { ... } — NIE if (wasEliminated) (co pokazywałoby zwykły
+  // toast TYLKO przy eliminacji — odwrotnie niż zamierzone) ani bez guarda w ogóle.
+  ok(/if \(!wasEliminated\) \{\s*\n\s*showHintMessage\('Miasto-państwo wchłonięte do imperium', 4000\);/
+    .test(wchlonieciaBlock),
+    'RUNDA 5 (d): showHintMessage(\'Miasto-państwo wchłonięte...\') jest wewnątrz '
+    + 'if (!wasEliminated) { ... } — guard NIE jest odwrócony');
+  ok(!/if \(wasEliminated\) \{\s*\n\s*showHintMessage\('Miasto-państwo wchłonięte do imperium', 4000\);/
+    .test(wchlonieciaBlock),
+    'RUNDA 5 (d): brak odwróconego warunku (wasEliminated bez negacji) wokół zwykłego toastu');
+
+  // (d) wasEliminated musi zostać złożone z && (proposerId gracza ORAZ realna eliminacja
+  // responderId), nie z || (co ustawiłoby wasEliminated=true przy KAŻDYM wchłonięciu przez
+  // gracza, nawet gdy miasto-państwo nadal istnieje, lub przy eliminacji przez inny podmiot).
+  ok(wchlonieciaBlock.includes('proposerId === 0 && eliminatedOwners.has(responderId)'),
+    'RUNDA 5 (d): wasEliminated = proposerId === 0 && eliminatedOwners.has(responderId) — '
+    + 'złożenie przez && (koniunkcja), nie ||');
+  ok(!wchlonieciaBlock.includes('proposerId === 0 || eliminatedOwners.has(responderId)'),
+    'RUNDA 5 (d): brak odwróconej wersji z || zamiast && w wasEliminated');
+
+  // (c) pełna treść (etykieta + szczegóły) trafia do civElimEventDetails pod evId, i modal
+  // (onEventClick, prefiks elim-cs-) czyta ją stamtąd i przekazuje do showCivElimNotice.
+  ok(mainSrc.includes(
+    'function recordCivElimEvent(csOwnerId: number, civLabel: string, details: string): void {'),
+    'RUNDA 5 (c): recordCivElimEvent przyjmuje civLabel ORAZ details (pełna treść dla modalu, '
+    + 'nie tylko nazwę)');
+  ok(mainSrc.includes('civElimEventDetails.set(evId, { civLabel, details });'),
+    'RUNDA 5 (c): recordCivElimEvent zapisuje { civLabel, details } pod evId do '
+    + 'civElimEventDetails, do późniejszego odczytu przez modal');
+  ok(mainSrc.includes("id.startsWith('elim-cs-')"),
+    'RUNDA 5 (c): onEventClick rozpoznaje prefiks karty elim-cs-');
+  ok(/civElimEventDetails\.get\(id\)/.test(mainSrc),
+    'RUNDA 5 (c): onEventClick czyta civElimEventDetails po id karty');
+  ok(/showCivElimNotice\(\{ civLabel: info\.civLabel, details: info\.details \}\)/.test(mainSrc),
+    'RUNDA 5 (c): kliknięcie karty otwiera showCivElimNotice z pełną treścią '
+    + '(civLabel + details)');
+
+  ok(elimNoticeSrc.includes('civLabel: string;') && elimNoticeSrc.includes('details: string;'),
+    'RUNDA 5 (c): CivElimNoticeOpts (civElimNotice.ts) deklaruje civLabel oraz details');
+  ok(elimNoticeSrc.includes('esc(civ)') && elimNoticeSrc.includes('esc(details)'),
+    'RUNDA 5 (c): modal civElimNotice.ts faktycznie renderuje civLabel (esc(civ)) i details '
+    + '(esc(details)), nie tylko przyjmuje je jako opcje');
+
+  // Dismiss karty musi usuwać ją TRWALE z warEventLog (nie tylko miękko na bieżącą turę) —
+  // inaczej po kliknięciu ✕ karta wracałaby w następnej turze mimo że gracz ją zamknął
+  // (dismissedSidePanelEventIds.clear() dzieje się na końcu KAŻDEJ tury).
+  const dismissFnStartMarker = 'function handleSidePanelEventDismiss(id: string): void {';
+  const dismissFnStart = mainSrc.indexOf(dismissFnStartMarker);
+  ok(dismissFnStart >= 0, 'RUNDA 5: znaleziono function handleSidePanelEventDismiss');
+  const dismissFnEndMarker = '\n    function clearAllSidePanelEvents(';
+  const dismissFnEnd = dismissFnStart >= 0 ? mainSrc.indexOf(dismissFnEndMarker, dismissFnStart) : -1;
+  ok(dismissFnEnd > dismissFnStart,
+    'RUNDA 5: znaleziono koniec handleSidePanelEventDismiss (kolejna funkcja clearAllSidePanelEvents)');
+  const dismissBody = dismissFnStart >= 0 && dismissFnEnd > dismissFnStart
+    ? mainSrc.slice(dismissFnStart, dismissFnEnd) : '';
+  ok(dismissBody.includes("id.startsWith('elim-cs-')"),
+    'RUNDA 5: handleSidePanelEventDismiss rozpoznaje prefiks elim-cs-');
+  ok(/elim-cs-[\s\S]{0,600}?warEventLog\.splice\(idx, 1\);/.test(dismissBody),
+    'RUNDA 5: dismiss karty elim-cs- usuwa ją TRWALE ze warEventLog (splice), nie tylko '
+    + 'miękko na bieżącą turę — inaczej wracałaby w kolejnej turze mimo kliknięcia ✕');
+  ok(dismissBody.includes('civElimEventDetails.delete(id)'),
+    'RUNDA 5: dismiss karty elim-cs- sprząta też jej wpis w civElimEventDetails');
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
