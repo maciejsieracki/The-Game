@@ -10168,4 +10168,31 @@ gra pokazuje wzrost, którego populacja realnie nie powinna dostawać. **STATUS:
 rozpoznania #2 (`a2083cf30348a7ef9`) — jeśli nie pokryje w pełni tej nowej osi (nominalny vs
 faktyczny poziom w formule wzrostu), dispatch rozpoznania #3 dedykowanego tej konkretnej osi.**
 
+**Rozpoznanie #2 dostarczone (`a2083cf30348a7ef9`) — MACIEJ MIAŁ RACJĘ, potwierdzony REALNY BUG.**
+Nowo założone miasto NIE dziedziczy `DEFAULT_POZIOM_RACJI=4` — `seedCityOwnerDefaults()`
+(`main.ts:4142-4168`, mechanizm R-USTAWIENIA-GLOBALNE-LOKALNE wprowadzony DZISIAJ) nadpisuje poziom
+racji nowego miasta GLOBALNYM domyślnym poziomem imperium (mogącym być 6, jeśli gracz go tam
+wcześniej podniósł dla innego, zamożniejszego miasta) — **bez żadnej weryfikacji czy nowe miasto
+(Ludność 1, zero budynków) je udźwignie**. Znaleziono i zweryfikowano grepem: **żadne z 7 miejsc
+wywołania `seedCityOwnerDefaults`** (founding gracza, AI, miasta-państwa, kapitulacja głodowa,
+wchłonięcie dyplomatyczne, zmiany właściciela) **nie wywołuje `applyLiveSafeRationForCity`** — luka
+w liście 9 wyzwalaczy live-recalc z tej samej sesji (Auto Wyżywienie Bug#1); założenie miasta jest
+zdarzeniem SILNIEJ wpływającym na profil żywnościowy niż zmiana priorytetu Okolicy, a nie jest objęte
+ochroną. Backstop końca tury (Q3=A) DZIAŁA i bezwarunkowo klamruje — więc po PIERWSZYM końcu tury od
+założenia poziom powinien spaść. **Minimalna naprawa:** dodać `applyLiveSafeRationForCity(c.id)` w
+`seedCityOwnerDefaults` dla miast gracza — 10. wyzwalacz live-recalc, spójny z istniejącym wzorcem.
+
+**Druga usterka architektoniczna znaleziona przy okazji:** stary mechanizm SPICH-AUTO-Q1
+(`autoRaiseRationsForGrowth`/`autoBalanceRationsToSolvency`) pisze bezpośrednio do `city.poziomRacji`,
+**całkowicie omijając** nową mapę `ownerDefaultPoziomRacji`/flagę `poziomRacjiOverride` z dzisiejszej
+sesji — dwa systemy niezsynchronizowane, globalny default może się rozjeżdżać z faktyczną wartością
+miasta.
+
+**NIE w pełni wyjaśnia drugi, ostrzejszy zrzut Macieja** (Ludność 3, poziom JUŻ obniżony do 4 — nie
+globalny default 6, więc COŚ już zadziałało — a mimo to Bilans −3, Spichlerz 0). Policzone: przy
+poziomie 3,5 koszt=3×3,5×2=21, bilans=0 — jest jeszcze zapas do cięcia, mechanizm zatrzymał się na 4
+zamiast 3,5. Może to być dokładnie ta druga usterka (SPICH-AUTO-Q1 vs nowa mapa globalna) albo coś
+innego. **Dispatch rozpoznania #3 NASTĘPUJE** — scenariusz 2 (Ludność 3, dlaczego 4 a nie 3,5) + oś
+Macieja z drugiego zrzutu (czy Wzrost% liczy się z nominalnego czy faktycznie pokrytego poziomu).
+
 ---
