@@ -7340,3 +7340,36 @@ unikatowy dla zlecenia/agenta, nigdy generyczną nazwę.** Materiał do przygoto
 AutoBot (patrz niżej w tym pliku, do zebrania rano).
 
 ---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — Evaluator RUNDA 5 (finalna): PASS-WITH-NOTES, 1 BLOKUJĄCA (2 linie, przy scalaniu), GOTOWE DO SCALENIA (2026-08-10)
+
+B1 potwierdzona poprawna na danych (epoka Kamień 12 technologii, jedyny kamień milowy
+Brązownictwo). B2 potwierdzona niezależnym harnessem (17/18 własnych mutacji złapanych, w tym
+test koniunkcji: oba wymogi kotwicy pilnowane NIEZALEŻNIE, nie „jeden przypadkiem"). 11/11 sond
+kruchości bezpieczne i faktycznie nietrywialne. `reconcileEraForOwner()` — usunięcie bezpieczne,
+potwierdzone że nic nie zginęło (9 punktów wpięcia identyczne przed/po, tylko rozwinięte z
+dyspozytora w jawne gałęzie).
+
+**Blokująca (naprawa PRZY SCALANIU, nie runda 6):** scalenie z aktualnym czubkiem gałęzi
+(`fbde1880`, 780+/84- w main.ts od R-EPOKA-BRAZU) psuje JEDNĄ mutację testu (M12) — dosłowny
+ciąg który mutacja podmienia przestał istnieć po wstawieniu bloku `bronzeForceWarPendingOwners`.
+Naprawa zwalidowana na obu stanach:
+```js
+src.replace(
+  /ownerEraByOwner\.set\(ownerId, next\);/,
+  'ownerEraByOwner.set(ownerId, prev);',
+)
+```
+**Rekomendowana (razem, domyka jedyną przeżywającą własną mutację X9 — cofnięcie B1):**
+```js
+const RE_3A_CHATKA_ERAADVANCED = /const (\w+) = shouldNotifyPlayerEraChange\((\w+), player\.era\);\s*\n\s*villageEraAdvanced = \1;\s*\n\s*if \(\1\) \{\s*\n\s*overlayDepositEra = player\.era;\s*\n\s*rebuildResourceOverlays\(\);\s*\n\s*setEra\(player\.era\);/;
+```
+(dodać `assert(...)` i wpisać do tablicy `checks`).
+
+Zasięg reguły doprecyzowany (N2): bramkę 1→2 ma TYLKO Egipt, bramkę 2→3 ma 8 cywilizacji.
+Konsekwencja dla B3-ABC: `bronzeForceWarPendingOwners` (R-EPOKA-BRAZU) na awansie 1→2 dotyczy
+WYŁĄCZNIE Egiptu, nie 9 cywilizacji.
+
+Dispatch scalenia (z obiema poprawkami wklejonymi) NASTĘPUJE teraz.
+
+---
