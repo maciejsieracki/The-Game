@@ -11894,3 +11894,25 @@ tech-tree, research, city-panel-growth-percent-separator) — wszystkie zielone,
 stash` na czystej bazie — army-cost R-STAWKI i próg wzrostu na Hard, bez związku z tą zmianą).
 Czeka na NIEZALEŻNEGO Evaluatora (duża zmiana, dotyka silnika tury + 2 kanały UI — dispatch w
 toku).**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — runda 3 SCALONE, 4/5 poprawek + jawny KNOWN-FAIL (2026-08-10)
+
+**STATUS: SCALONE `2e0678e8` (2026-08-10).** 5 wąskich napraw technicznych, bez dotykania
+`AUTOSAVE_ROT_COUNT`/logiki rotacji: (1) `try/catch` w `loadMapForSave` — uszkodzony snapshot
+spada na generator zamiast rzucać nieobsłużony wyjątek, zademonstrowane nowym testem 3b
+(hexIdx poza zakresem → wyjątek → złapany → `genFn` wołane); (2) porażka zapisu meta usuwa STARY
+klucz zamiast go zostawiać; (3) `SAVE_META_PREFIX` zmieniony na `thegame.savemeta.` — faktycznie
+rozłączny z `SAVE_PREFIX` (był podprefiksem mimo przeciwnego komentarza, `listSaves()` zwracał
+fantomowy wpis); (4) korekta błędu jednostek w progu testu 5b (2,5 mln znaków to CAŁY limit
+UTF-16, nie połowa) + **nowa sekcja 5c: budżet AGREGATOWY rotacji (10 slotów) jawnie oznaczony
+jako `KNOWN-FAIL`, widoczny w wyniku testu, nie ukryty** — 13,80 MB UTF-16 > budżet ~5MB,
+dokumentuje otwarty bloker bez blokowania exit code (54 pass, 0 fail, 1 known-fail, exit 0); (5)
+`riverPaths`/`riverPathKinds` kopiowane płytko zamiast żywej referencji — naprawia drugi
+fałszywy inwariant. Bramki: tsc 0, logic-test 213/213, `map-snapshot-load-test` 54/0/1-known-fail
+(exit 0), `autosave-quota-fail-test` 20/20, `fsa-autosave-test` 55/55, `save-load-sort-test` 4/4.
+
+**Temat pozostaje OTWARTY na jeden punkt: architektura rotacji autozapisu bez FSA — wymaga ABC
+właściciela (3 kierunki zarejestrowane wcześniej), świadomie odłożone do jego powrotu. Wszystko
+inne w tym temacie jest naprawione i potwierdzone. Czeka na NIEZALEŻNEGO Evaluatora rundy 3
+(dispatch w toku) — jeśli PASS, temat zostaje w stanie „technicznie kompletny, czeka na 1 decyzję
+produktową", nie w pełni zamknięty.**
