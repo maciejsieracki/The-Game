@@ -438,6 +438,9 @@ import {
   enterGarnizon,
   enterFieldFortify,
   exitFieldFortify,
+  assignSharedStackGroupId,
+  stackGroupIdOf,
+  stackRenderKey,
 } from './game/armyMerge';
 import {
   resolveMapUnitCursor,
@@ -4804,9 +4807,16 @@ async function boot(): Promise<void> {
       const playerUnits = units.filter(
         u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || stackCanMove(u)),
       );
+      // BB2 (Evaluator runda 5, B-R5-1): grupowanie MUSI iść po stackRenderKey
+      // (tożsamość STOSU + POZYCJA + garnizon), nie po gołym stackGroupIdOf ani
+      // po gołym heksie — dwie jednostki tej samej, jawnie scalonej grupy mogą
+      // realnie stać na RÓŻNYCH heksach (np. zwiadowca odjeżdżający sam z grupy
+      // przez auto-explore), a gołe stackGroupIdOf zlewałoby je w JEDEN lead
+      // obejmujący dwa heksy naraz — Spacja/strzałki HUD ◀▶ nigdy nie dotarłyby
+      // do drugiego heksu. Ten sam klucz co armyMerge.ts:computeStackDisplay.
       const stacks = new Map<string, RuntimeUnit[]>();
       for (const u of playerUnits) {
-        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+        const key = stackRenderKey(u);
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -4837,8 +4847,11 @@ async function boot(): Promise<void> {
       return cyclablePlayerArmyLeadsBase(false);
     }
 
+    /** BB2 (Evaluator runda 5, B-R5-1): klucz dopasowania w cycleToAdjacentPlayerUnit — MUSI być
+     *  spójny z cyclablePlayerArmyLeadsBase (ten sam stackRenderKey), inaczej fallback po
+     *  zniknięciu `afterId` z listy trafiłby na niewłaściwą (np. rezydenta na innym heksie) armię. */
     function armyLeadHexKey(u: RuntimeUnit): string {
-      return u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+      return stackRenderKey(u);
     }
 
     /**
@@ -5159,7 +5172,15 @@ async function boot(): Promise<void> {
       for (const u of playerUnits) {
         // C-GARN-Q1: ufortyfikowane jednostki grupuj po heksie miasta (jak armia),
         // żeby lista armii nie rozdzielała stosu po wejściu do garnizonu.
-        const key = u.inGarnizon === true ? `g:${u.q},${u.r}` : `${u.q},${u.r}`;
+        // BB2 (Evaluator runda 5, B-R5-1): ta lista miała WŁASNE, niezależne
+        // grupowanie „po heksie", które omijało activeUnitStack/visibleStackOnHex —
+        // dwie armie o różnym stackGroupId na wspólnym origin pokazywały się tu
+        // jako JEDEN wpis o zsumowanym/błędnym ruchu. `stackRenderKey` (tożsamość
+        // stosu + pozycja + garnizon, ten sam klucz co armyMerge.ts:
+        // computeStackDisplay) naprawia to bez zmiany zachowania dla jednostek bez
+        // jawnego stackGroupId (fallback koduje ownerId+heks+garnizon identycznie
+        // jak dawny gołoheksowy klucz).
+        const key = stackRenderKey(u);
         const arr = stacks.get(key);
         if (arr) arr.push(u);
         else stacks.set(key, [u]);
@@ -9024,6 +9045,10 @@ async function boot(): Promise<void> {
               if (mu && mu.inGarnizon !== true) enterGarnizon(mu);
             }
           }
+          // BB2 (ECHO B): scalenie ujednolica tożsamość stosu — od teraz WSZYSCY
+          // na `onHex` (nowoprzybyli + rezydenci, niezależnie od poprzednich
+          // stackGroupId/fallbacków) są JEDNĄ armią z jedną, wspólną pulą ruchu.
+          assignSharedStackGroupId(onHex);
           syncStackRuchLeft(onHex);
           showHintMessage(
             'Po\u0142\u0105czono: ' + onHex.length + ' jedn. na (' + rep.q + ',' + rep.r + ')',
@@ -9066,6 +9091,16 @@ async function boot(): Promise<void> {
           const dest = resolveSeparateReturnHex(units, fromQ, fromR, rep.ownerId, isHexPassableForUnit);
           if (dest) {
             const restored = computeSeparateReturn(movedUnits, deductedRuch);
+            // BB2 (P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO, ECHO B, Maciej 2026-08-10):
+            // wracająca armia dostaje ŚWIEŻY, WSPÓLNY stackGroupId — RÓŻNY od
+            // każdego rezydenta na origin (nawet gdy dzielą DOKŁADNIE ten sam
+            // heks). Bez tego `activeUnitStack`/`playerStackAt` grupowały PO
+            // HEKSIE, więc pula ruchu wracającej armii i rezydenta zlewały się
+            // w jedną (przeliczenie jednej po cichu nadpisywało drugą — sedno
+            // BB2). `movedUnits` (a nie `movedUnits` + rezydent) dostają WSPÓLNY
+            // id między sobą — one nadal są jedną, spójną armią, tylko odrębną
+            // od tego, co już stało na origin.
+            assignSharedStackGroupId(movedUnits);
             for (const mu of movedUnits) {
               mu.q = dest.q;
               mu.r = dest.r;
@@ -9150,7 +9185,12 @@ async function boot(): Promise<void> {
       if (selectedId === null) return;
       const active = units.find(x => x.id === selectedId);
       if (!active || active.ownerId !== 0) return;
-      const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId);
+      // BB2: rozdzielamy WYŁĄCZNIE własny stos aktywnej jednostki (stackGroupIdOf),
+      // nie każdego, kto akurat dzieli ten sam heks — dwie niezależne armie na
+      // wspólnym origin (po wcześniejszym „Zostaw osobno") nie mają się mieszać
+      // w jednym panelu rozdzielenia.
+      const activeGroupId = stackGroupIdOf(active);
+      const stack = visibleStackOnHex(units, active.q, active.r, active.ownerId, activeGroupId);
       if (stack.length < 2) return;
       const dests = findSplitDestHexes(
         units,
@@ -9174,16 +9214,20 @@ async function boot(): Promise<void> {
           label: d.label ?? '(' + d.q + ',' + d.r + ')',
         })),
         onSplit: (ids, destQ, destR) => {
-          for (const id of ids) {
-            const u = units.find(x => x.id === id);
-            if (!u) continue;
+          const splitArrivals = ids
+            .map(id => units.find(x => x.id === id))
+            .filter((su): su is RuntimeUnit => su != null);
+          // BB2: jednostki odchodzące dostają WSPÓLNY, ŚWIEŻY stackGroupId, RÓŻNY
+          // od tych, które zostają. Konieczne zwłaszcza gdy destQ/destR === srcQ/srcR
+          // (opcja „W mieście (ten heks)" z findSplitDestHexes/allowSameHex) — bez
+          // jawnego id oba pod-stosy współdzieliłyby TEN SAM heks+garnizon i wpadłyby
+          // z powrotem w ten sam fallback-klucz, czyli dokładnie problem BB2.
+          assignSharedStackGroupId(splitArrivals);
+          for (const u of splitArrivals) {
             u.q = destQ;
             u.r = destR;
             u.ruchLeft = 0;
           }
-          const splitArrivals = ids
-            .map(id => units.find(x => x.id === id))
-            .filter((su): su is RuntimeUnit => su != null);
           if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
             refreshD1bHud();
             return;
@@ -9196,7 +9240,10 @@ async function boot(): Promise<void> {
             const rep = unitAtRepresentative(srcQ, srcR, units, unitAttackScore);
             if (rep) selectPlayerUnit(rep.id, true);
             else {
-              const remain = visibleStackOnHex(units, srcQ, srcR, 0);
+              // BB2: „ci, którzy zostali" = ta sama grupa co przed rozdzieleniem
+              // (activeGroupId, ustalone PRZED mutacją) — nie każdy właściciela na
+              // heksie, gdyby akurat dzielił go z inną, niezależną armią.
+              const remain = visibleStackOnHex(units, srcQ, srcR, 0, activeGroupId);
               if (remain.length > 1) syncStackRuchLeft(remain);
             }
           }
@@ -9257,6 +9304,7 @@ async function boot(): Promise<void> {
             const preferGarnizon = all.some(x => x.inGarnizon === true);
             for (const u of all) u.inGarnizon = preferGarnizon;
             const merged = coLocatedForMergePrompt(units, srcQ, srcR, active.ownerId);
+            assignSharedStackGroupId(merged); // BB2: jedna tożsamość po scaleniu.
             syncStackRuchLeft(merged);
             showHintMessage(
               'Po\u0142\u0105czono: ' + merged.length + ' jedn. na (' + srcQ + ',' + srcR + ')',
@@ -9329,6 +9377,7 @@ async function boot(): Promise<void> {
         arriving: mergeUnitRow(active),
         arrivingCount: 1,
         onMerge: () => {
+          assignSharedStackGroupId(stack); // BB2: jedna tożsamość po scaleniu.
           syncStackRuchLeft(stack);
           showHintMessage(
             'Po\u0142\u0105czono stos: ' + stack.length + ' jedn. na (' + srcQ + ',' + srcR + ')',
@@ -16671,7 +16720,11 @@ async function boot(): Promise<void> {
             if (selectedId === null) return false;
             const u = units.find(x => x.id === selectedId);
             if (!u || u.ownerId !== 0) return false;
-            const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId);
+            // BB2: musi być spójne z openSplitPanelForSelected — ten sam
+            // stackGroupId, inaczej przycisk „Rozdziel" włącza się (bo hex ma
+            // ≥2 jednostki właściciela z INNEJ armii), a panel i tak nic nie
+            // otworzy (stack.length<2 po scopingu) — martwy klik.
+            const stack = visibleStackOnHex(units, u.q, u.r, u.ownerId, stackGroupIdOf(u));
             if (stack.length < 2) return false;
             return findSplitDestHexes(
               units,

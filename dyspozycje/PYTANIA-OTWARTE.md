@@ -8404,4 +8404,44 @@ bazy (diff wyłącznie dodaje BB2, nic nowszego nie cofnięte), mutacje na wszys
 naprawionych miejscach main.ts osobno, szerszy przegląd czy są inne niezłapane miejsca
 grupowania po heksie.
 
+**Runda 6 werdykt: PASS-WITH-NOTES.** Baza potwierdzona czysta (diff origin→worktree to
+451 wstawień/22 usunięcia, zero cofnięć nowszej pracy). B1-B4+B-R5-1 zweryfikowane
+niezależnie, wszystkie mutacje (M1/M2/M3 na 3 miejscach main.ts osobno + 5×
+assignSharedStackGroupId + fallback |g) złapane precyzyjnie. Własny dodatkowy test
+Evaluatora: 800 losowych układów na partycji `computeStackDisplay` (poza zakresem fuzza
+Operatora), 0 rozbieżności. Szersze przeszukanie repo — brak innych miejsc klasy B-R5-1.
+Bramki wszystkie zielone (18 plików testowych).
+
+**SCALONE bezpośrednio przez orkiestratora** wg instrukcji Evaluatora (gotowy patch
+`git apply -3`, czysto na wszystkie 4 pliki): `gra/src/units/setup.ts` (+pole
+`stackGroupId?`), `gra/src/game/armyMerge.ts` (`stackGroupIdOf`, `sameStackGroup`,
+`freshStackGroupId`, `assignSharedStackGroupId`, nowa `stackRenderKey` eksportowana +
+użyta w `computeStackDisplay`), `gra/src/main.ts` (import + 3 miejsca `stackRenderKey`
+= fix B-R5-1 + 5× `assignSharedStackGroupId` + gate `canSplit`), nowy plik
+`gra/tools/army-merge-stackgroupid-test.cjs` (445 linii), rozszerzony
+`army-merge-separate-return-mainguard-test.cjs` (sekcje 8-11, 72 asercje).
+
+**N-1 (jedyne naruszenie C-025, `'Połącz'` escape↔literal w `stackHudMergeSplitActions`)
+POMINIĘTE** wg rekomendacji Evaluatora — poza zakresem BB2, niespójne z konwencją reszty
+pliku. Zweryfikowane po scaleniu: `git diff` dla tych 2 linii = 0 (bit-identyczne
+z żywym drzewem sprzed BB2).
+
+Bramki na żywym drzewie po scaleniu (identyczne z Evaluatorem): `tsc --noEmit` 0,
+`logic-test` 213/213, `army-merge-stackgroupid-test` 11045/11045,
+`army-merge-separate-return-mainguard-test` 72/72, `army-merge-separate-return-test`
+16/16, bounce/dismiss-bounce/colocated 4/4·16/16·4/4, `army-stack-ruch` 5/5,
+`combat-test` 6/6.
+
+**Noty N-2 do N-6 (nieblokujące, do backlogu):** N-2 popup wyboru jednostki w mieście
+(`showCityUnitPick`) sumuje przez obie grupy stosu bez `groupId` — tylko odczyt/render;
+N-3 dwa żetony różnych grup na jednym heksie nakładają się wizualnie (świadoma
+konsekwencja ECHO B, złagodzona przez tę naprawę — lista armii i HUD ◀▶ teraz dają
+działający dostęp do drugiej grupy); N-4 komentarz „parytet AI" w `setup.ts` mylący (AI
+nie przechodzi przez ścieżki split/merge UI, pracuje na fallbacku — do poprawki
+komentarza przy okazji); N-5 `unitAtRepresentative` wybiera najmocniejszą jednostkę na
+heksie bez względu na grupę (tylko selekcja, nie mutacja); N-6 `freshStackGroupId` na
+`Date.now()`, niedeterministyczne (blokada dla przyszłej bramki replay/determinizmu).
+
+**STATUS: ZAMKNIĘTE (P-ARMIA-ROZPAD BB2 w całości scalone).**
+
 ---
