@@ -1250,9 +1250,21 @@ async function boot(): Promise<void> {
     let _menuCitySupport: 'low' | 'normal' | 'strong' = 'normal';
     /** R-TRUDNOSC-1 (Maciej 2026-07-24, AI-CS-CLUSTER-DIFF 2026-07-30): trudność miast-państw.
      *  OSOBNY suwak kreatora lub odwrotność głównej trudności gry (easy→hard, hard→easy).
-     *  Steruje AI miast-państw (kopie obronne): zaufanie, posiłki, DifficultyParams.
-     *  Override w Zaawansowanych (cityStateDifficultyOverride) ma pierwszeństwo. */
+     *  Steruje AI miast-państw (kopie obronne) jako CELEM PODBOJU przez AI: zaufanie do
+     *  innych AI, DifficultyParams ekonomiczne/bojowe. UWAGA: NIE steruje agresją
+     *  miast-państw wobec GRACZA — do tego służy `_menuCityStateDifficultyVsPlayer` niżej.
+     *  Override w Zaawansowanych (cityStateDifficultyOverride) ma pierwszeństwo.
+     *  / EN: city-state difficulty vs AI conquerors — do not confuse with the
+     *  player-facing axis below. */
     let _menuCityStateDifficulty: 'easy' | 'normal' | 'hard' = 'normal';
+    /** C-025/C-026 (2026-08-10): trudność/agresja miast-państw SKIEROWANA NA GRACZA.
+     *  „Trudno dla gracza = łatwo dla AI, i odwrotnie" — ta oś idzie WPROST z trudności
+     *  gry (`_menuDifficulty`), BEZ odwrócenia przez `cityStateDifficultyFromGameDifficulty`
+     *  (patrz applyMenuParams). Override w Zaawansowanych (cityStateDifficultyOverride),
+     *  jeśli ustawiony, steruje tą zmienną tak samo jak `_menuCityStateDifficulty`.
+     *  / EN: city-state aggression/difficulty vs the PLAYER — derives straight from game
+     *  difficulty, not inverted. */
+    let _menuCityStateDifficultyVsPlayer: 'easy' | 'normal' | 'hard' = 'normal';
     let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
     let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
@@ -7270,7 +7282,8 @@ async function boot(): Promise<void> {
           applyWiarygodnoscD4ToRelation(
             applyCityStateDifficultyTrust(
               startRelationForPlayerSameCivCityState(),
-              _menuCityStateDifficulty,
+              // C-025/C-026: zaufanie PM↔GRACZ na starcie — oś PM-vs-gracz, wprost z trudności gry.
+              _menuCityStateDifficultyVsPlayer,
             ),
             getWiarygodnosc(0),
             getWiarygodnosc(ownerId),
@@ -23717,7 +23730,8 @@ async function boot(): Promise<void> {
             })();
 
             // R-MP-HARD-WAVE Q3: jeden rzut wojny na klaster siostrzanych PM / turę (nie per-owner).
-            if (startOi === 0 && _menuCityStateDifficulty === 'hard') {
+            // C-025/C-026: DOW klastra PM NA GRACZA — oś PM-vs-gracz, wprost z trudności gry.
+            if (startOi === 0 && _menuCityStateDifficultyVsPlayer === 'hard') {
               const clusterWarMembers: ClusterWarRollMember[] = [];
               for (const csOwnerId of aiOwnerList) {
                 if (eliminatedOwners.has(csOwnerId)) continue;
@@ -23744,7 +23758,7 @@ async function boot(): Promise<void> {
                 });
               }
               const clusterDowOwners = resolveClusterCityStateWarOnPlayer(
-                _menuCityStateDifficulty,
+                _menuCityStateDifficultyVsPlayer,
                 turn,
                 clusterWarMembers,
                 Math.random,
@@ -23941,9 +23955,10 @@ async function boot(): Promise<void> {
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
               // Trudny MP: aktywne wsparcie ofensywne (Normal/Easy = legacy defend-only).
+              // C-025/C-026: wsparcie ofensywne PM wymierzone w gracza — oś PM-vs-gracz.
               cityStateOffensiveSupport: typCityCopyOwners.has(ownerId)
                 && isOwnerPlayerSameCivType(ownerId)
-                && _menuCityStateDifficulty === 'hard',
+                && _menuCityStateDifficultyVsPlayer === 'hard',
               warAllyOwnerIds: typCityCopyOwners.has(ownerId)
                 && isOwnerPlayerSameCivType(ownerId)
                 ? aiOwnerList.filter(oid =>
@@ -26030,17 +26045,28 @@ async function boot(): Promise<void> {
           ? csOverrideRaw
           : cityStateDifficultyFromGameDifficulty(diff);
 
+      // C-025/C-026 (2026-08-10): oś PM-vs-GRACZ idzie WPROST z trudności gry, BEZ
+      // odwrócenia cityStateDifficultyFromGameDifficulty() — „trudno dla gracza” ma
+      // znaczyć twardsze/agresywniejsze PM wobec gracza, nie łatwiejsze. Suwak
+      // Zaawansowane (jeśli ustawiony) steruje OBIEMA zmiennymi tą samą wartością.
+      // / EN: player-facing axis mirrors game difficulty directly, no inversion.
+      _menuCityStateDifficultyVsPlayer =
+        csOverrideRaw === 'easy' || csOverrideRaw === 'normal' || csOverrideRaw === 'hard'
+          ? csOverrideRaw
+          : diff;
+
       // D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1, R-TRUDNOSC-1 2026-07-24
-      // odpięcie od globalnej): „Wsparcie miast-państw" wynika z TRUDNOŚCI MIAST-PAŃSTW
-      // (_menuCityStateDifficulty), NIE z głównej trudności gry (wyższa trudność miast-państw
-      // = twardsze miasta-państwa = łatwiej sojusz + mocniejsze posiłki). Fallback 'normal'
-      // gdyby _menuCityStateDifficulty miało nieoczekiwaną wartość (nie powinno się zdarzyć).
+      // odpięcie od globalnej, C-025/C-026 2026-08-10 przepięcie na oś gracza): „Wsparcie
+      // miast-państw" (posiłki obronne, próg sojuszu sióstr) jest agresją/wsparciem PM
+      // SKIEROWANYM NA GRACZA, więc wynika z `_menuCityStateDifficultyVsPlayer` (wprost
+      // z trudności gry), NIE z `_menuCityStateDifficulty` (oś AI-vs-PM, odwrócona).
+      // Fallback 'normal' gdyby wartość była nieoczekiwana (nie powinno się zdarzyć).
       const citySupportByDifficulty: Record<'easy' | 'normal' | 'hard', 'low' | 'normal' | 'strong'> = {
         easy:   'low',
         normal: 'normal',
         hard:   'strong',
       };
-      _menuCitySupport = citySupportByDifficulty[_menuCityStateDifficulty] ?? 'normal';
+      _menuCitySupport = citySupportByDifficulty[_menuCityStateDifficultyVsPlayer] ?? 'normal';
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);

@@ -359,9 +359,10 @@ export interface AITurnOpts {
    */
   citySupportLevel?: 'low' | 'normal' | 'strong';
   /**
-   * Trudność miast-państw = Hard: aktywne wsparcie ofensywne (marsz na wroga wojny,
-   * łączenie z armią sojusznika/siostry). Normal/Easy = false (legacy defend-only).
-   * Silnik: main.ts `_menuCityStateDifficulty === 'hard'`.
+   * Trudność miast-państw WOBEC GRACZA = Hard: aktywne wsparcie ofensywne (marsz na
+   * wroga wojny, łączenie z armią sojusznika/siostry). Normal/Easy = false (legacy
+   * defend-only). Silnik: main.ts `_menuCityStateDifficultyVsPlayer === 'hard'`
+   * (C-025/C-026 2026-08-10, dawniej odwrócone `_menuCityStateDifficulty`).
    */
   cityStateOffensiveSupport?: boolean;
   /**
