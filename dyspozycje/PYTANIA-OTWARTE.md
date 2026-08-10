@@ -7786,6 +7786,26 @@ Dispatch NASTĘPUJE teraz.
 
 ---
 
+## 3 checkboxy w buildModeHud.ts (panel Auto Ulepszenia) → przyciski, dostarczone (2026-08-10)
+
+Odkrycie: panel renderowany jako HTML string (`innerHTML`), nasłuchy podpinane bezpośrednio po
+każdym renderze (nie delegacja) — zamiana `change`→`click` prosta, ale odczyt stanu w handlerach
+wymagał korekty (zmienne `empireState`/`effState`/`cityOverride` zamykały się przed kodem
+listenerów, 3 błędy TS2304) — naprawione odczytem świeżego stanu z gettera configu w handlerze
+(ten sam wzorzec co `cfg.onCityAutoWyzywienieChange?.(city.id, !city.autoWyzywienie)`). CSS:
+`.hbtn`/`.hbtn.active` z cityPanel.ts używa zmiennych scoped pod `.civ-cs`, których ten plik nie
+ma — dodano `.civ-build-hbtn`/`.civ-build-hbtn.active` z tymi samymi kolorami jako literały,
+zero nowej zależności. C-026: grep 3 atrybutów `data-ulepszenia-*` w całym `gra/src`+`gra/tools`
+— trafienia wyłącznie w tym pliku, dokładnie w zmienionych 6 liniach.
+
+Bramki: tsc 0 (3 błędy przed poprawką odczytu stanu, 0 po), logic-test 213/213,
+auto-improvements-test 14/15 (1 porażka pre-istniejąca, potwierdzona `git stash` na czystej
+bazie), okolica-test 72/72, okolica-isworkable-silnik-test 15/15.
+
+Dispatch Evaluatora NASTĘPUJE teraz.
+
+---
+
 ## BUG (zrzut Macieja) — Praca miasta +9 do Ulepszeń, ale w chipie/cywilizacji dochodzi tylko +3 (2026-08-10)
 
 **Zrzuty:** panel „PODZIAŁ PRACY" miasta: Budynki 0% / Ulepszenia 100%, „Kolejka budowy +0 (0%)",
