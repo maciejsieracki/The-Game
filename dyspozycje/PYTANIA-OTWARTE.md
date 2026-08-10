@@ -2060,7 +2060,7 @@ błędów.
 **Kotwice:** `gra/src/ui/formatPl.ts` (`signedPl`).
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne, pre-istniejące**
+## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **SCALONE 2026-08-10 (Evaluator PASS-WITH-NOTES, orkiestrator scalił bezpośrednio — patrz niżej w pliku)**
 `map-field-battle-test.cjs` (`TypeError: import_meta.glob is not a function` — konstrukcja Vite
 w bundlu esbuild/CJS, moduł audio `.mp3`) i `pre-battle-save-test.cjs` (`No loader configured for
 ".svg" files` — `src/ui/icons/brand/menu-emblem.svg?raw`) padają identycznie z fixem i bez niego
@@ -3871,7 +3871,7 @@ Zmierzone: `heks-panel-tooltip-warstwa-test.cjs` 22/22, `heks-plony-warstwy-test
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`tileYieldLabel`, `appendOkolicaYieldLabel`).
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator).
 
-## P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **OTWARTE — niepilne, dokumentacyjne**
+## P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE (2026-08-09, nota Evaluatora P-HEKS-PANEL-TOOLTIP-WARSTWA-OSTATNIA) · STATUS: **SCALONE 2026-08-10 (Evaluator PASS-WITH-NOTES, orkiestrator scalił bezpośrednio — patrz niżej w pliku)**
 Operator uzasadnił wybór testu regex-owego (zamiast E2E) tym, że `appendOkolicaYieldLabel`
 „wymaga pełnego DOM". Evaluator sprawdził: `jsdom ^29.1.1` jest zadeklarowanym devDependency
 tego repo, leży w `node_modules`, a 9 istniejących testów w `tools/*.cjs` już go używa. Zbudował
@@ -7714,6 +7714,52 @@ porażka H2, potwierdzona identyczna na `git stash`).
 
 Dispatch JEDNEGO zbiorczego Evaluatora dla wszystkich czterech (różne pliki/obszary, zero
 nakładania się) NASTĘPUJE teraz.
+
+---
+
+## P-BRAMKA-MAP-FIELD-BATTLE + P-BRAMKA-TOOLTIP-REGEX — Evaluator PASS-WITH-NOTES, SCALONE bezpośrednio przez orkiestratora (2026-08-10)
+
+Evaluator: obie poprawki zweryfikowane w 100% (styl zgodny, „nie regresja silnika" potwierdzone
+uruchomieniem na czystej bazie, `jsdom` faktycznie w `devDependencies`, logika testu bajt-w-bajt
+niezmieniona — jeden hunk, w całości wewnątrz JSDoc). **Nota blokująca DLA SCALAJĄCEGO (nie dla
+Operatora):** worktree Operatora ma STARY `CLAUDE.md` (sprzed §1a/§4a/§9 i jednej bramki z
+2026-08-09) — kopiowanie całego pliku skasowałoby 3 zasady właściciela. Scalenie wymaga `git
+apply`/ręcznego wklejenia wyłącznie NOWEGO fragmentu, nie kopiowania pliku.
+
+Scalone bezpośrednio przez orkiestratora (małe, wyłącznie tekstowe, PASS-WITH-NOTES bez not
+blokujących dla samej TREŚCI, tylko dla METODY scalania) — zastosowano dokładnie tę metodę:
+ręczne dopisanie nowego zdania do istniejącego akapitu `CLAUDE.md` §BRAMKI (z korektą N2 —
+dodany drugi plik `.svg` pominięty przez Operatora) oraz ręczne wklejenie nowego bloku komentarza
+do `heks-panel-tooltip-warstwa-test.cjs` (z korektą N1 — „9 innych testów" → dokładniejsze „kilkanaście
+plików, w tym 4 nazwane bramki"). Bramki po scaleniu: `heks-panel-tooltip-warstwa-test.cjs` 22/22
+(identyczne z bazą), `logic-test.cjs` 213/213. Oba statusy w rejestrze zaktualizowane (N4
+Evaluatora — Operator nie domknął statusów, wykonane teraz).
+
+---
+
+## P-ARMIA-ROZPAD (BB2, stackGroupId) — runda 4 dostarczona (naprawa B1-B4), czeka na NIEZALEŻNEGO Evaluatora (2026-08-10)
+
+Wszystkie 4 punkty blokujące z werdyktu rundy 3 naprawione, zakres ściśle ograniczony (C-025) do
+`armyMerge.ts` (`computeStackDisplay`), `army-merge-separate-return-mainguard-test.cjs`,
+`army-merge-stackgroupid-test.cjs`. B1+B2: klucz grupowania renderu = tożsamość + `(q,r)` + flaga
+garnizonu (nie sama tożsamość) — mutacyjnie potwierdzone (cofnięcie klucza → 5 FAIL dokładnie w
+nowych blokach testowych 8b/8c). B3: nowa sekcja 8 w mainguard — tekstowe przypięcie wszystkich 5
+call-site'ów `assignSharedStackGroupId`, każdy potwierdzony osobno mutacyjnie (55/55, było 37).
+B4: dwuwarstwowo — pinning dosłownego kształtu fallbacku (sekcja 9 mainguard) + niezależny oracle
+odtwarzający stare grupowanie sprzed BB2, fuzz **500 losowych układów, 3669 porównań
+jednostkowych, 0 rozbieżności wymuszone assert-em** (nie tylko zliczone) w
+`army-merge-stackgroupid-test.cjs` sekcja 11 — obie warstwy mutacyjnie potwierdzone.
+
+Wszystkie bramki tematu zielone (11045/11045 nowy test, 55/55 mainguard, reszta jak w rundzie 3).
+**Uwaga proceduralna:** Operator zgłosił 2 NOWE błędy `tsc` dot. dyplomacji
+(`RelacjaWejscie.hasAllianceTreaty`, `DiplomacjaInputs.bronzeForceWarTargetId`) na SAMYM żywym
+checkoucie, zweryfikowane jako obecne nawet bez jego zmian — **prawdopodobnie efekt uboczny
+równoległego scalenia R-EPOKA-CUD B3 (agent `a6b41a6a5ef61abce`), które w tej samej chwili
+edytowało `main.ts` na tym samym żywym drzewie** (dotyka dyplomacji/`bronzeForceWarTargetId`,
+pasuje do obszaru B2/B3). Do potwierdzenia PO zakończeniu tamtego scalenia, nie traktować jako
+osobny bug do czasu weryfikacji na ustabilizowanym drzewie.
+
+Dispatch niezależnego Evaluatora rundy 4 NASTĘPUJE teraz.
 
 ---
 
