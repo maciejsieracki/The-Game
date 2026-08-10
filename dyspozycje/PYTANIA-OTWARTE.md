@@ -8348,4 +8348,25 @@ Dispatch nowego, niezależnego Evaluatora rundy 5 (`a0bffa81f91d508f8`, Opus 5) 
 teraz — pełna niezależna weryfikacja B1–B4, bez zaufania do artefaktów po przerwanym
 poprzedniku.
 
+**Runda 5 werdykt: FAIL.** B1–B4 z rundy 3 potwierdzone naprawione (mutation testing:
+M1/M2/M3 wszystkie złapane, B3 5/5 call-site'ów przypiętych, B4 fuzz jakościowo
+zweryfikowany). Ale **nowe znalezisko blokujące B-R5-1**: runda 4 naprawiła klucz
+grupowania WYŁĄCZNIE w `armyMerge.ts:computeStackDisplay` (dodając `|q,r|g` do
+`stackGroupIdOf(u)`), ale zostawiła TEN SAM defekt (gołe `stackGroupIdOf(u)` bez pozycji)
+w trzech niezależnych miejscach `main.ts`, które robią własne, równoległe grupowanie po
+heksie: `cyclablePlayerArmyLeadsBase` (~4800), `armyLeadHexKey` (~4835),
+`buildPlayerArmyListEntries` (~5163). Dowód empiryczny: scout w auto-explore odchodzący
+z heksu grupy → nowy klucz daje 1 wpis obejmujący oba heksy zamiast 2 — jednostka na
+drugim heksie znika z listy armii, sumy `ruch`/`hp` liczone przez dwa heksy, HUD ◀▶ nie
+dojdzie do drugiego heksu, garnizon/pole rozjeżdża się z rendererem (2 żetony wg
+`computeStackDisplay` vs 1 wpis listy). Zero bramek to łapie dziś. Naprawa: użyć tego
+samego klucza co `armyMerge.ts:314` w tych 3 miejscach (Evaluator sugeruje wyeksportować
+jako wspólną `stackRenderKey(u)`), rozszerzyć `army-merge-separate-return-mainguard-
+test.cjs` o pinowanie kształtu klucza w tych 3 oknach. Noty N1–N4 (log bezwarunkowy w
+teście, zakres fuzza nie woła `computeStackDisplay`, `freshStackGroupId` niedeterministyczny,
+nakładanie się żetonów w rendererze/pickingu przy 2 reprezentantach na 1 heksie — świadoma
+konsekwencja ECHO B, do playtestu osobno) — nieblokujące, do uwzględnienia przy okazji.
+
+Dispatch rundy 5 (fix B-R5-1) NASTĘPUJE teraz.
+
 ---
