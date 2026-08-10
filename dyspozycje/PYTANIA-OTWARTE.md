@@ -7838,7 +7838,42 @@ decyzji) NASTĘPUJE teraz.
 
 ---
 
-## R-DYP-STOL-A część C — nadal niedokończona (2026-08-10, znalezisko Operatora przy P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA) · STATUS: **OTWARTE — materiał do przyszłego ABC**
+## R-DYP-STOL-A część C — WŁASNE ZAŁOŻENIE BYŁO NIEAKTUALNE, koszyk działa już dla 4/5 typów (2026-08-10) · STATUS: **ROZPOZNANE — komentarze scalone dziś rano wymagają korekty**
+
+**⛔ Własna pomyłka do skorygowania:** rejestrując ten temat wcześniej dziś (przy okazji
+scalenia `P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA`, `5a93f5aa`) napisałem w KODZIE komentarz twierdzący
+„część C wciąż niedokończona — koszyk dziś obejmuje tylko akcje 5 i 13" — to było wierne
+przepisanie z `docs/decyzje/R-DYP-STOL-A.md` (audyt z 2026-07-27), ale ten dokument jest
+NIEAKTUALNY od ~2026-07-29 (FALA 106) i dalej rozbudowywany do 2026-08-08 — nikt nie zameldował
+postępu jako realizacji części C, stało się to „przy okazji" innych zgłoszeń.
+
+**Stan faktyczny (rozpoznanie, zweryfikowane w kodzie):** koszyk (`diplomacyTradeBasket`,
+`TRADE_BASKET_ACTION_IDS` w `diplomacyTradeBasket.ts:2374`) działa już end-to-end (UI + silnik
+akceptacji + kontroferta AI) dla **4 z 5** wymienionych typów: sojusz, pakt, wasal, pokój.
+Naprawdę brakuje TYLKO dla **wojny** — i to nie jest luka we wdrożeniu, tylko inna kategoria:
+wypowiedzenie wojny to jednostronna akcja gracza (`showWarConsentModal`) bez negocjacji/akceptacji
+AI, `wojna` nie ma nawet wpisu w `ProposalActionId` — cały system propozycji/koszyka jej nie
+dotyczy. Koszyk „wojenny" wymagałby nowej mechaniki od zera (osobny temat produktowy).
+
+**Jedyna realna, mała luka:** AI dokłada złoto-słodzik do koszyka DOPIERO w kontrofercie
+(rundzie 2+), NIGDY w pierwszej propozycji (`AIDiplomacyCommand` nie ma pola koszyka dla
+`zaproponuj_sojusz`/`zaproponuj_pakt`/`zaproponuj_pokoj`; `zaproponuj_wasal` w ogóle nie istnieje
+— AI nigdy nie inicjuje wasalizacji). Naprawa: 1 runda Operatora, 3-4 pliki, wzorzec do
+skopiowania z istniejącej logiki kontroferty.
+
+**Dodatkowy nierozstrzygnięty wątek w tle (nie mój do decyzji):** obecne pokrycie koszyka dla
+6 typów powstało częściowo przypadkiem (`R-DYPLO-9CC7C76C-ZAKRES-NIEUDOKUMENTOWANY`, commit
+2026-08-05 przy okazji innego zadania) — nigdy formalnie niepotwierdzone jako zamierzone.
+
+**Do zrobienia teraz (bez ABC, czysto techniczne — dokumentacja + korekta własnej pomyłki):**
+(1) poprawić 3 komentarze scalone dziś rano w `diplomacy-acceptance-points.ts`/
+`diplomacyAcceptanceBalance.ts` — usunąć nieaktualne twierdzenie „część C niedokończona,
+koszyk tylko akcje 5/13"; (2) zaktualizować `docs/decyzje/R-DYP-STOL-A.md` żeby odzwierciedlał
+stan faktyczny. Materiał do EWENTUALNEGO przyszłego ABC (nie teraz): czy dociągnąć koszyk do
+PIERWSZEGO ruchu AI (małe zadanie), i czy „wojna" w ogóle powinna dostać jakikolwiek koszyk
+(nowy temat produktowy, osobne pytanie o zakres).
+
+Dispatch poprawki komentarzy NASTĘPUJE teraz (własna pomyłka, naprawiam bezpośrednio).
 
 Decyzja Macieja z 2026-07-27 (`R-DYP-STOL-A`, B+C): koszyk `diplomacyTradeBasket` miał objąć
 WSZYSTKIE typy traktatów. Dziś obejmuje tylko akcje 5 (handel) i 13 (dar) — sojusz, pakt, wasal,
