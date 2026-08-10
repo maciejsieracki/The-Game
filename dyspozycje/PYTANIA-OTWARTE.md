@@ -7806,6 +7806,23 @@ Dispatch Evaluatora NASTĘPUJE teraz.
 
 ---
 
+## 3 checkboxy w buildModeHud.ts → przyciski — SCALONE (2026-08-10)
+
+Evaluator: **PASS-WITH-NOTES, zero blokujących**. Kluczowa weryfikacja (harness esbuild+jsdom,
+klikanie realnego DOM, nie analiza statyczna): render i handler czytają DOKŁADNIE to samo źródło
+(gettery configu) — zero rozjazdu. 73 własne asercje w 2 rundach (klik realnie zmienia stan
+silnika, 60 losowych klików bez rozjazdu `aria-pressed`/klasa/stan, wielomiastowość poprawna,
+zero kolizji między trzema przyciskami, CSS realnie renderuje się jak przycisk przez
+`getComputedStyle`). `auto-improvements-test` 14/15 potwierdzone pre-istniejące (bajt-w-bajt
+identyczne z czystą bazą). Niepilne: martwa reguła CSS `.civ-build-auto-row label{}` (już żaden
+`<label>` w pliku), afordans on/off tylko kolorem nie ptaszkiem (spójne z `.hbtn` w cityPanel.ts,
+do playtestu). Scalone bezpośrednio (diff samodzielny, 71 linii, zero konfliktu z bazą — inaczej
+niż w innych scaleniach tej nocy, ten worktree NIE miał problemu z dryfem od main). Bramki: tsc
+0, logic-test 213/213, okolica-test 72/72, okolica-isworkable-silnik 15/15, auto-improvements
+14/15 (pre-istniejąca).
+
+---
+
 ## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA — SCALONE (2026-08-10)
 
 Operator naprawił nieprawdziwe uzasadnienie (zmyślony ID `R-DYP-STOL-A-KOREKTA`) prawdziwym
