@@ -8,7 +8,8 @@ import {
   getLastPlayedSlotId,
   uniqueSlotIdFromLabel, slotSlugFromLabel,
   FSA_SLOT_PREFIX,
-  type SaveGame,
+  loadSaveSlotMeta, extractSaveContextFields,
+  type SaveGame, type SaveSlotMeta,
 } from '../game/save';
 import { listFsaAutosaveFiles, loadFsaAutosaveFile } from '../game/fsa-autosave';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
@@ -31,27 +32,24 @@ const TYP_SWIATA_LABEL: Record<string, string> = {
   ziemia: 'Ziemia',
 };
 
+/**
+ * Formatuje linię kontekstu z pola już wyciągniętych (współdzielone przez
+ * saveContextLine — pełny SaveGame -- i podsumowania z osobnego klucza meta
+ * -- Defekt C, runda 2, patrz save.ts::SaveSlotMeta).
+ */
+function formatSaveContext(f: {
+  mapSize: string; worldType: string; civId: string;
+  unitsCount: number; citiesCount: number; seed: number; saveOrigin: string;
+}): string {
+  const world = TYP_SWIATA_LABEL[f.worldType] ?? (f.worldType || '—');
+  const origin = f.saveOrigin === 'playtest' ? ' · PLAYTEST' : '';
+  const seedPart = f.seed > 0 ? ` · seed ${f.seed}` : '';
+  return `${f.mapSize} · ${world} · ${f.civId} · ${f.unitsCount} j. / ${f.citiesCount} miast${seedPart}${origin}`;
+}
+
 /** Jedna linia kontekstu: rozmiar · typ · cywilizacja · jednostki/miasta · seed. */
 export function saveContextLine(g: SaveGame): string {
-  const meta = g.meta as Record<string, unknown> | undefined;
-  const ngp = meta?.newGameParams as {
-    mapSize?: string;
-    worldType?: string;
-    typSwiata?: string;
-    civId?: string;
-  } | undefined;
-  const mapSize = String(ngp?.mapSize ?? meta?.loadMapSize ?? '—');
-  const worldRaw = ngp?.worldType ?? ngp?.typSwiata ?? meta?.loadTypSwiata ?? '';
-  const world = typeof worldRaw === 'string'
-    ? (TYP_SWIATA_LABEL[worldRaw] ?? (worldRaw || '—'))
-    : '—';
-  const civ = String(ngp?.civId ?? meta?.loadCivId ?? '—');
-  const units = Array.isArray(g.units) ? g.units.length : 0;
-  const cities = Array.isArray(g.cities) ? g.cities.length : 0;
-  const seed = typeof g.seed === 'number' ? g.seed : 0;
-  const origin = meta?.saveOrigin === 'playtest' ? ' · PLAYTEST' : '';
-  const seedPart = seed > 0 ? ` · seed ${seed}` : '';
-  return `${mapSize} · ${world} · ${civ} · ${units} j. / ${cities} miast${seedPart}${origin}`;
+  return formatSaveContext(extractSaveContextFields(g));
 }
 
 const STYLE_ID = 'civ-save-load-css';
@@ -165,20 +163,49 @@ export function compareSaveSlotsDesc(a: SaveSlotSummary, b: SaveSlotSummary): nu
   return b.savedAt.localeCompare(a.savedAt);
 }
 
-/** Podsumowania wszystkich slotów (najnowsze pierwsze). */
+/** Podsumowanie jednego slotu z SaveSlotMeta (klucz osobny, Defekt C) — bez pełnego parsowania zapisu. */
+function summaryFromMeta(slotId: string, meta: SaveSlotMeta, lastPlayed: string | null): SaveSlotSummary {
+  return {
+    slotId,
+    label: meta.label || slotId,
+    tura: meta.tura,
+    savedAt: meta.savedAt,
+    context: formatSaveContext(meta),
+    isLastPlayed: slotId === lastPlayed,
+  };
+}
+
+/**
+ * Podsumowania wszystkich slotów (najnowsze pierwsze).
+ *
+ * Defekt C (runda 2, Evaluator): wcześniej KAŻDE otwarcie tego dialogu robiło
+ * pełny `loadFromLocal` (JSON.parse całego zapisu, mapSnapshot włącznie) dla
+ * WSZYSTKICH slotów tylko po to, żeby pokazać label/turę/datę — kosztowne
+ * przy wielu zapisach. Teraz: najpierw MAŁY klucz meta
+ * (save.ts::loadSaveSlotMeta, patrz SaveSlotMeta) — gdy obecny, ZERO pełnego
+ * parsowania. Fallback na pełne `loadFromLocal` WYŁĄCZNIE dla zapisów sprzed
+ * tej naprawy (brak osobnego klucza meta) — wsteczna kompatybilność, stare
+ * zapisy nie znikają z listy.
+ */
 export function summarizeSaveSlots(): SaveSlotSummary[] {
   const lastPlayed = getLastPlayedSlotId();
   const out: SaveSlotSummary[] = [];
   for (const slotId of listSaves()) {
     if (slotId.startsWith('_')) continue;
+    const meta = loadSaveSlotMeta(slotId);
+    if (meta) {
+      out.push(summaryFromMeta(slotId, meta, lastPlayed));
+      continue;
+    }
+    // Fallback: stary zapis bez osobnego klucza meta -- pełne parsowanie (wolniejsze, ale kompatybilne wstecz).
     const g = loadFromLocal(slotId);
     if (!g) continue;
-    const meta = g.meta as Record<string, unknown> | undefined;
+    const gmeta = g.meta as Record<string, unknown> | undefined;
     out.push({
       slotId,
-      label: typeof meta?.label === 'string' && meta.label.trim() ? meta.label.trim() : slotId,
+      label: typeof gmeta?.label === 'string' && gmeta.label.trim() ? gmeta.label.trim() : slotId,
       tura: g.tura,
-      savedAt: typeof meta?.savedAt === 'string' ? meta.savedAt : '',
+      savedAt: typeof gmeta?.savedAt === 'string' ? gmeta.savedAt : '',
       context: saveContextLine(g),
       isLastPlayed: slotId === lastPlayed,
     });

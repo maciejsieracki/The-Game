@@ -93,6 +93,127 @@ export const FSA_SLOT_PREFIX = 'fsa:';
 /** Slot szybkiego zapisu (Ctrl+S) — zawsze ten sam klucz, osobno od nazwanych sejwów. */
 export const AUTOSAVE_SLOT_ID = 'autosave';
 
+/**
+ * Prefiks klucza META — MAŁY nagłówek zapisu (label/tura/savedAt/kontekst),
+ * zapisywany OSOBNO od pełnej treści zapisu (Defekt C, runda 2). Celowo NIE
+ * jest podprefiksem SAVE_PREFIX (nie `SAVE_PREFIX + slot + '.meta'`) —
+ * `listSaves()` iteruje WSZYSTKIE klucze zaczynające się od SAVE_PREFIX i
+ * traktuje resztę jako nazwę slotu; klucz meta pod tym samym prefiksem
+ * pojawiłby się tam jako fałszywy dodatkowy "slot" (`<realSlot>.meta`).
+ * Osobny prefiks eliminuje kolizję bez zmiany `listSaves()`.
+ * / EN: META key prefix — a SMALL save header (label/tura/savedAt/context),
+ * stored SEPARATELY from the full save body (Defect C, round 2).
+ * Deliberately NOT a sub-prefix of SAVE_PREFIX (not
+ * `SAVE_PREFIX + slot + '.meta'`) — `listSaves()` iterates ALL keys starting
+ * with SAVE_PREFIX and treats the remainder as the slot name; a meta key
+ * under that same prefix would show up there as a bogus extra "slot"
+ * (`<realSlot>.meta`). A separate prefix avoids the collision without
+ * touching `listSaves()`.
+ */
+export const SAVE_META_PREFIX = 'thegame.save.meta.';
+
+function saveMetaKey(slot: string): string {
+  return SAVE_META_PREFIX + slot;
+}
+
+/**
+ * Nagłówek zapisu (Defekt C, runda 2) — dokładnie te pola, których potrzebuje
+ * dialog „Wczytaj grę" (saveLoadDialog.ts::summarizeSaveSlots) do wyrenderowania
+ * listy slotów, BEZ pełnego `JSON.parse` całej treści zapisu (który przy
+ * mapSnapshot potrafi ważyć setki KB nawet po kompresji rundy 2 — zbędny
+ * koszt tylko po to, żeby pokazać etykietę i turę). Pola dobrane 1:1 z tego,
+ * co dziś czyta `saveContextLine()`.
+ * / EN: save header (Defect C, round 2) — exactly the fields the "Load game"
+ * dialog (saveLoadDialog.ts::summarizeSaveSlots) needs to render the slot
+ * list, WITHOUT a full `JSON.parse` of the entire save body (which, even
+ * compressed post-round-2, can still be hundreds of KB with a mapSnapshot —
+ * a needless cost just to show a label and turn number). Fields chosen 1:1
+ * from what `saveContextLine()` reads today.
+ */
+export interface SaveSlotMeta {
+  label: string;
+  tura: number;
+  savedAt: string;
+  mapSize: string;
+  /** Surowy klucz typu świata (np. 'kontynenty') — etykieta PL rozwiązywana przy renderze (UI concern). */
+  worldType: string;
+  civId: string;
+  unitsCount: number;
+  citiesCount: number;
+  seed: number;
+  /** 'playtest' albo '' (brak specjalnego pochodzenia). */
+  saveOrigin: string;
+}
+
+/** Wyciąga pola kontekstu zapisu (współdzielone przez SaveSlotMeta i saveContextLine). */
+export function extractSaveContextFields(g: SaveGame): Omit<SaveSlotMeta, 'label' | 'tura' | 'savedAt'> {
+  const meta = g.meta as Record<string, unknown> | undefined;
+  const ngp = meta?.newGameParams as {
+    mapSize?: string;
+    worldType?: string;
+    typSwiata?: string;
+    civId?: string;
+  } | undefined;
+  return {
+    mapSize: String(ngp?.mapSize ?? meta?.loadMapSize ?? '—'),
+    worldType: String(ngp?.worldType ?? ngp?.typSwiata ?? meta?.loadTypSwiata ?? ''),
+    civId: String(ngp?.civId ?? meta?.loadCivId ?? '—'),
+    unitsCount: Array.isArray(g.units) ? g.units.length : 0,
+    citiesCount: Array.isArray(g.cities) ? g.cities.length : 0,
+    seed: typeof g.seed === 'number' ? g.seed : 0,
+    saveOrigin: meta?.saveOrigin === 'playtest' ? 'playtest' : '',
+  };
+}
+
+/** Buduje nagłówek zapisu (SaveSlotMeta) z pełnego SaveGame — wołane przy KAŻDYM saveToLocal. */
+export function buildSaveSlotMeta(s: SaveGame): SaveSlotMeta {
+  const meta = s.meta as Record<string, unknown> | undefined;
+  return {
+    label: typeof meta?.label === 'string' ? meta.label.trim() : '',
+    tura: s.tura,
+    savedAt: typeof meta?.savedAt === 'string' ? meta.savedAt : '',
+    ...extractSaveContextFields(s),
+  };
+}
+
+/**
+ * Czyta nagłówek zapisu z osobnego klucza meta (Defekt C) — MAŁY JSON.parse
+ * zamiast pełnego zapisu. Zwraca null, gdy klucz nie istnieje (stary zapis
+ * sprzed tej naprawy — wołający ma fallbackować na pełne `loadFromLocal` +
+ * `saveContextLine`, patrz saveLoadDialog.ts) albo jest uszkodzony.
+ */
+export function loadSaveSlotMeta(slot: string): SaveSlotMeta | null {
+  const storage = getStorage();
+  if (storage === null) return null;
+  let raw: string | null;
+  try {
+    raw = storage.getItem(saveMetaKey(slot));
+  } catch {
+    return null;
+  }
+  if (raw === null) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const p = parsed as Partial<SaveSlotMeta>;
+    if (typeof p.tura !== 'number') return null;
+    return {
+      label: typeof p.label === 'string' ? p.label : '',
+      tura: p.tura,
+      savedAt: typeof p.savedAt === 'string' ? p.savedAt : '',
+      mapSize: typeof p.mapSize === 'string' ? p.mapSize : '—',
+      worldType: typeof p.worldType === 'string' ? p.worldType : '',
+      civId: typeof p.civId === 'string' ? p.civId : '—',
+      unitsCount: typeof p.unitsCount === 'number' ? p.unitsCount : 0,
+      citiesCount: typeof p.citiesCount === 'number' ? p.citiesCount : 0,
+      seed: typeof p.seed === 'number' ? p.seed : 0,
+      saveOrigin: typeof p.saveOrigin === 'string' ? p.saveOrigin : '',
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // SaveGame -- the serializable snapshot
 // ---------------------------------------------------------------------------
@@ -391,6 +512,24 @@ export function saveToLocal(slot: string, s: SaveGame): SaveToLocalResult {
   if (storage === null) return { ok: false, reason: 'other' };
   try {
     storage.setItem(SAVE_PREFIX + slot, serializeGame(s));
+    // Defekt C: nagłówek OSOBNO, żeby dialog "Wczytaj grę" nie musiał
+    // parsować pełnego zapisu tylko po label/tura/savedAt. Best-effort —
+    // niepowodzenie zapisu meta (np. quota w tym samym oddechu, mało
+    // prawdopodobne przy jego rozmiarze) NIE cofa głównego zapisu, który
+    // już się powiódł; wołający dostaje ok:true, a summarizeSaveSlots()
+    // fallbackuje na pełne parsowanie, gdy klucz meta brakuje.
+    // / EN: Defect C: header stored SEPARATELY so the "Load game" dialog
+    // doesn't need to parse the full save just for label/turn/savedAt.
+    // Best-effort — a meta-write failure (e.g. quota in the same breath,
+    // unlikely given its size) does NOT roll back the main save, which
+    // already succeeded; the caller still gets ok:true, and
+    // summarizeSaveSlots() falls back to full parsing when the meta key is
+    // missing.
+    try {
+      storage.setItem(saveMetaKey(slot), JSON.stringify(buildSaveSlotMeta(s)));
+    } catch {
+      /* ignore -- best-effort, patrz komentarz wyżej / see comment above */
+    }
     return { ok: true };
   } catch (err) {
     return { ok: false, reason: isQuotaExceededError(err) ? 'quota' : 'other' };
@@ -476,6 +615,7 @@ export function deleteLocal(slot: string): boolean {
   if (storage === null) return false;
   try {
     storage.removeItem(SAVE_PREFIX + slot);
+    try { storage.removeItem(saveMetaKey(slot)); } catch { /* ignore -- best-effort */ }
     return true;
   } catch {
     return false;
