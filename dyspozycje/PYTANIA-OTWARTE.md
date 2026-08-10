@@ -10337,3 +10337,28 @@ w `autoRaiseRationsForGrowth`/`autoBalanceRationsToSolvency`/backstop `maxSafePo
 dla gracza ownerId=0) zatwierdzona. **Dispatch Operatora NASTĘPUJE (`af98bc5fafb5f2aa6`).**
 
 ---
+
+## R-PROPOZYCJA-BRAK-EDYCJI — Maciej zgłasza ponownie, możliwa luka w zakresie naprawy z 08-09
+(2026-08-10, zrzut playtestu, „Stół negocjacji")
+
+Maciej: „nadal nie można edytować wcześniej zaproponowanej oferty, może tylko ją usunąć. Pamiętam, że
+był ten temat rozkminiany i myślałem, że już jest załatwiony." Zrzut: widok „Stół negocjacji", kolumny
+„My oferujemy"/„Oni oferują", karty CAŁYCH traktatów/umów („Traktat handlowy · 66 PW (baza 80)",
+„Umowa wymiany surowców · 10 🔱 jednorazowo") — każda ma tylko przycisk „Usuń", brak „Edytuj".
+
+**Ustalone w rejestrze (linia 3221-3243):** temat JUŻ ZGŁOSZONY 2026-08-08, NAPRAWIONY 2026-08-09
+(przycisk „✎ Edytuj" w `diplomacyTradeBasket.ts`, 3 rundy, Evaluator PASS-WITH-NOTES), zadeployowany
+FALA 262 (`ce69cf45`), status „czeka na playtest Macieja". **ALE naprawa była zagatowana do 5
+KONKRETNYCH typów pozycji koszyka** (`zloto, praca, zywnosc, tech, surowiec_ilosc`) — **to, co Maciej
+teraz pokazuje, to CAŁE karty traktatów w innym widoku** („Stół negocjacji", nie „koszyk") —
+prawdopodobnie inny, wyższego poziomu element UI, którego naprawa z 08-09 mogła nie objąć. **Do
+zbadania, nie zgaduję:** (1) czy `ce69cf45`/FALA 262 jest w ogóle w historii aktualnej gałęzi sesji
+(czy to nie jest kolejny przypadek „zrobione ale nigdy niescalone dalej" jak wcześniej ten wieczór z
+P-DYPLO-SWEETENER); (2) czy przycisk „Edytuj" istnieje w kodzie „Stołu negocjacji" a po prostu nie
+renderuje się dla typów `traktat_handlowy`/`umowa_surowcowa` na poziomie CAŁEJ karty (bo dotyczy tylko
+pozycji WEWNĄTRZ traktatu, nie samego traktatu jako całości); (3) czy to w ogóle inny plik/komponent
+niż `diplomacyTradeBasket.ts` (wskazówki w starym wpisie: `diplomacyAudience.ts`/
+`diplomacyDealDisplay.ts`/`diplomacyNegotiationModal.ts` jako kandydaci nieprzweryfikowani). **Dispatch
+rozpoznania NASTĘPUJE.**
+
+---
