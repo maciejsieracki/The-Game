@@ -7373,3 +7373,19 @@ WYŁĄCZNIE Egiptu, nie 9 cywilizacji.
 Dispatch scalenia (z obiema poprawkami wklejonymi) NASTĘPUJE teraz.
 
 ---
+
+## R-EPOKA-CUD-WARUNEK-AWANSU — SCALONE `13861b60` (2026-08-10)
+
+5 rund, incydent utraty pracy w trakcie, pełne odzyskanie/rekonstrukcja, w pełni zamknięte. Obie
+poprawki testu z rundy 5 (M12 regex zamiast literału, nowa kotwica RE_3A_CHATKA_ERAADVANCED)
+zastosowane przy scalaniu, `era-cud-main-ts-integracja-test.cjs` w pełni zielony (15/15 asercji,
+16/16 mutacji, 11/11 sond). Wszystkie bramki + bramki gałęzi docelowej (forced-war-bronze) bez
+regresji. Temat w pełni zamknięty.
+
+**Pozostają 2 osobne pytania ABC dla Macieja rano** (nie formułowane jeszcze, materiał gotowy):
+1. Zgodność sejwów (B2-zapisy) — każdy zapis sprzed tej zmiany cofa świat o 1-2 epoki, dotyczy
+   OBU stron (gracz i AI), różny moment ujawnienia.
+2. Ryzyko trwałego utykania AI w budowie cudu (B3) — dotyczy 9/15 cywilizacji, doprecyzowane:
+   awans 1→2 dotyczy tylko Egiptu, awans 2→3 pozostałych 8.
+
+---
