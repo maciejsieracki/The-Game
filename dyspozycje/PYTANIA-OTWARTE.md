@@ -10597,3 +10597,110 @@ Traktowane jako **ECHO opcji A** z pierwszego zgłoszenia tego tematu (badge „
 wzorem istniejących badge'y, zero zmiany zachowania Spacji). Wdrożenie: `ArmyListEntry.autoExplore`
 (`armyListHud.ts`) + nowy badge w renderze + wpis w `buildPlayerArmyListEntries` (`main.ts`).
 **STATUS: wdrożone, do commitu (bez deployu).**
+
+## R-MANPOWER-EPOKA1-500-VS-1000 — zgłoszenie Macieja, PODWAŻA własną decyzję z 2026-08-03
+
+Maciej: rozważa przywrócenie kosztu rekrutacji jednej jednostki z 500 na 1000 — przy większej
+liczbie miast skala rekrutacji jest gigantyczna, znacząco przekracza potrzeby.
+
+**⚠️ Odwrócenie własnej decyzji: commit `b518e3e7` (2026-08-03), „Epoka kamienia: koszt manpower
+jednostki 1000 → 500", uzasadnienie w danych (`gra/data/epoka-ludnosc-manpower.json`, pole `_opis`):
+„większa armia w Kamieniu — przy pełnej puli 1 ludek = 2 jednostki zamiast 1".** Zmiana dotyczyła
+WYŁĄCZNIE epoki 1 (Kamień) — epoki 2-10 mają pełny `manpowerNaLudka` bez zmian (2000, 4000, ...,
+480000). Pula max manpower/ludka w epoce 1 (1000) NIE zmieniła się — zmienił się tylko koszt
+JEDNOSTKI (`manpowerNaJednostke`), stąd 2× więcej jednostek z tej samej puli.
+
+**Rozpoznanie skalowania puli (potwierdza intuicję Macieja):** `cityManpowerMax()`
+(`gra/src/game/manpower.ts:371-374`) = `populacja × manpowerNaLudka[epoka] × maxMult`, suma po
+wszystkich miastach BEZ żadnego tłumika/malejącej krańcowości — pula rośnie LINIOWO z liczbą miast,
+podczas gdy koszt jednej jednostki jest stały (zależny tylko od epoki). Przy N miastach limit
+rekrutacji rośnie ~N×, "potrzeby" armii niekoniecznie tak szybko.
+
+**Testy zależne od 500 (do aktualizacji przy powrocie do 1000):** `gra/tools/manpower-test.cjs`,
+~12 asercji w liniach 211, 219, 241, 253, 263, 339, 345, 368, 395, 396, 439, 445.
+
+**Do ABC:**
+- A: cofnij TYLKO epokę 1 z powrotem do 1000 (proste odwrócenie decyzji z 2026-08-03). Za: dokładnie
+  to, o co pyta Maciej; minimalna zmiana (1 liczba w JSON + aktualizacja testu). Przeciw: NIE
+  rozwiązuje opisanego przez niego problemu skali przy większej liczbie miast — to osobny mechanizm
+  (koszt jednostki vs. wielkość puli).
+- B: zostaw epokę 1 na 500 (utrzymaj decyzję z 2026-08-03), ale wprowadź tłumik nieliniowy na
+  CAŁKOWITĄ pulę Manpower rosnącą z liczbą miast (np. malejąca krańcowość powyżej progu miast).
+  Za: adresuje realny opisany problem („przy większej ilości miast skala jest gigantyczna"), nie
+  cofa poprzedniej decyzji. Przeciw: większa zmiana architektoniczna, wymaga osobnego zaprojektowania
+  formuły tłumika.
+- C: oba naraz — cofnij epokę 1 do 1000 ORAZ dołóż tłumik skalowania puli z liczbą miast.
+
+**STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem z decyzją 2026-08-03,
+czekam na odpowiedź Macieja.**
+
+## R-DYPLOLISTA-KOLOR-CYWILIZACJI — zgłoszenie Macieja (2026-08-10, zrzut listy Znane cywilizacje)
+
+Maciej: karty cywilizacji w liście "ZNANE CYWILIZACJE" (`diploListHud.ts`) wyglądają identycznie —
+brak odróżnienia. Prośba: nazwa cywilizacji w kolorze tej cywilizacji, a jeśli nie da się nazwy, to
+przynajmniej tło pod ikoną-sygnetem w kolorze cywilizacji.
+
+**Rozpoznanie: kolor JUŻ ISTNIEJE w danych i jest reużywany gdzie indziej, ale ginie w tej
+konkretnej liście.** `civs.json` ma pole `kolorHex` per cywilizacja; `civColorCssForOwner()`
+(`gra/src/game/civ-visual.ts:73`) już go zwraca i jest używany na minimapie (`main.ts:17186/17194`)
+i w audiencji dyplomacji (`main.ts:5398/5421`, `DiploRelation.kolorHex`). `civPennantHtmlById()` i
+`civLeaderMedallionHtmlById()` (`diploUiSkin.ts:56-72/92-112`) JUŻ przyjmują parametr `kolorHex` i
+stosują go jako obrys/glow karty gracza ("Twoje państwo", `diploListHud.ts:224-229`).
+**Przyczyna:** `diploListEntryFromRelation()` (`diploListHud.ts:441-476`) mapuje `DiploRelation` na
+`DiploListEntry`, ale NIE przepisuje `kolorHex` — interfejs `DiploListEntry` (linie 23-36) w ogóle
+go nie ma. Render karty (linia 298) woła `civPennantHtml(e.name, e.tier)` bez koloru → zawsze
+`kolorHex=undefined`. Tło kółka (`.dip-pennant-inner`, `diploUiSkin.ts:183-186`) zależy dziś
+wyłącznie od `tone` relacji (neutralny/gold/wojna), NIE od cywilizacji — stąd identyczne białe koła.
+
+**Do ABC:**
+- A: dociągnąć istniejący `kolorHex` do `DiploListEntry` (przepisać w `diploListEntryFromRelation`)
+  i użyć go jak już jest użyty na karcie gracza — obrys/glow karty w kolorze cywilizacji (wzorzec
+  już istnieje, zero nowego kodu wizualnego, tylko przekazanie brakującego parametru). Nazwa
+  zostaje białym tekstem.
+- B: jak A, plus pokolorować SAM TEKST nazwy cywilizacji (`e.name`) w `kolorHex` zamiast/obok obrysu
+  — dokładnie pierwsza preferencja Macieja ("nazwa w kolorze"). Wymaga sprawdzenia kontrastu/
+  czytelności na ciemnym tle dla jasnych kolorów cywilizacji (może wymagać jasnościowego clampu).
+- C: jak A, ale kolorować TŁO kółka (`.dip-pennant-inner`) zamiast obrysu — mocniejszy efekt
+  wizualny niż sama ramka, ale koliduje dziś z systemem `tone` (neutralny/gold/wojna) który już
+  steruje tym tłem — wymagałoby zdecydowania priorytetu (kolor cywilizacji vs. kolor relacji).
+**Rekomendacja: A+B razem (obrys + tekst), zostawiając tło kółka pod sterowaniem `tone` relacji
+jak dziś — to zachowuje istniejącą czytelność stanu relacji (gold/wojna/neutralny) i dokłada
+odróżnienie cywilizacji przez kolor+obrys, bez konfliktu dwóch sygnałów na jednym elemencie.**
+
+**STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — zgłoszenie Macieja (2026-08-10)
+
+Maciej: nie zauważył żadnego komunikatu o zdobyciu WSZYSTKICH miast cywilizacji/państwa-miasta.
+
+**Rozpoznanie — dwa osobne, konkretne defekty (nie jedna luka):**
+1. **Podbój bojowy (ostatnie miasto w walce/kapitulacji z głodu):** komunikat ISTNIEJE —
+   `main.ts:20831-20834`, `showHintMessage(civLabelForOwner(oldOwner) + ' — ELIMINACJA! ...', 6000)`
+   w `runCapitalCapturePlunder()`. Ale zaraz PO nim, w tej samej ścieżce dla gracza, otwiera się
+   pełnoekranowy modal `showCityCaptureNotice()` (`main.ts:20289`/`21009`,
+   `gra/src/ui/cityCaptureNotice.ts:97-148`, `.civ-ccn-overlay` `z-index:660` przykrywa cały ekran
+   łącznie z toastem `z-index:320`). Modal wymaga kliknięcia, treść to generyczne „Miasto zdobyte" —
+   BEZ wzmianki o eliminacji. Zanim gracz zamknie modal, toast ELIMINACJA (timeout 6s) zwykle już
+   zniknął w tle, niezauważony. To już RAZ naprawiany wzorzec dla innego komunikatu (komentarz
+   `main.ts:20846-20850`, `P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK`) — tu w nowej odmianie.
+2. **Przejęcie dyplomatyczne ostatniego miasta (`annexCityStateToOwner`, `main.ts:20647-20666`,
+   wchłonięcie MP):** ŻADNEGO komunikatu — ani toastu, ani modalu. To prawdziwa, pełna luka bez
+   obejścia (nie kolizja UI jak w pkt 1).
+
+**Do ABC:**
+- A: przenieść informację o eliminacji DO modalu `showCityCaptureNotice` (dodać wariant treści/
+  nagłówek „ELIMINACJA!" gdy zdobyte miasto jest ostatnim danego ownera) zamiast osobnego toastu,
+  który i tak ginie pod tym modalem — jedno spójne, niepomijalne miejsce dla ścieżki bojowej.
+  Osobno dodać analogiczny komunikat (toast, bo tam nie ma modalu) dla ścieżki dyplomatycznej
+  (`annexCityStateToOwner`), która dziś nie ma nic.
+- B: zostaw toast jak jest, ale skolejkuj komunikaty — pokazuj toast ELIMINACJA PO zamknięciu
+  modalu `showCityCaptureNotice` (nie jednocześnie) i/lub wydłuż jego timeout. Mniejsza zmiana,
+  nie dotyka modalu.
+- C: wprowadzić trwalszy dziennik zdarzeń/log powiadomień (kolejka, nie jednorazowy toast z
+  timeoutem) dla ważnych zdarzeń typu eliminacja — większa zmiana architektoniczna, rozwiązuje
+  też przyszłe podobne kolizje (jak `P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK` pokazuje, że to
+  się powtarza).
+**Rekomendacja: A** — najmniejsza zmiana usuwająca oba konkretne zgłoszone przypadki, wykorzystuje
+istniejący modal (już niepomijalny, wymaga kliknięcia) zamiast walczyć z jego z-index/timingiem.
+
+**STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
