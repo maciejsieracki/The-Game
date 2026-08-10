@@ -10793,6 +10793,18 @@ działa)?
 **STATUS: zarejestrowane, ABC zadane w czacie z wprost oznaczonym konfliktem trzech wcześniejszych
 decyzji (2026-07-30, 2× 2026-08-04), czekam na odpowiedź Macieja.**
 
+**KOREKTA Macieja (2026-08-10):** inwersja `AI-CS-CLUSTER-DIFF` (pkt 2) miała dotyczyć WYŁĄCZNIE
+tego, jak łatwo INNE CYWILIZACJE AI przejmują państwa-miasta — potwierdzone dosłownym cytatem z
+`docs/decyzje/AI-CS-CLUSTER-DIFF-2026-07-30.md` pkt 1: „Trudność państw-miast WZGLĘDEM AI
+CYWILIZACJI". Agresja PM SKIEROWANA NA GRACZA (pkt 4 tej samej decyzji + cały `R-MP-HARD-WAVE`)
+NIE powinna być odwrócona — ma iść WPROST z trudności gry wybranej przez gracza (Trudny=trudno,
+Łatwy=łatwo), tak jak wszystko inne. To był błąd wdrożenia z 2026-07-30/08-04 (jedna zmienna
+`_menuCityStateDifficulty` obsługiwała dwie różne sprawy naraz), nie świadomy kompromis do
+zaakceptowania — **opcja A z ABC wyżej jest właściwym kierunkiem**, potwierdzona przez Macieja.
+Dispatchowany agent projektowy do precyzyjnego rozdzielenia (AI) vs (GRACZ) po wszystkich
+konsumentach `_menuCityStateDifficulty`, żeby nie zepsuć poprawnie działającej części (AI).
+**Kodowanie NADAL wstrzymane** do dostarczenia planu i ostatecznego potwierdzenia zakresu zmiany.
+
 ## R-ZUZYCIE-SUROWCOW-OBYWATELE — nowa mechanika, propozycja Macieja (2026-08-10)
 
 Maciej proponuje nową mechanikę: obywatele miast zużywają surowce budowlane per epoka (analogicznie
