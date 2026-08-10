@@ -8308,3 +8308,25 @@ nic nie zostało faktycznie zakolejkowane — brzegowy przypadek poza zakresem t
 Dispatch Evaluatora rundy 1 NASTĘPUJE teraz.
 
 ---
+
+## R-DYP-STOL-A część C — korekta komentarzy SCALONA
+
+Agent `a12e194fad495de11` dostarczył poprawki 3 komentarzy (własna pomyłka orkiestratora,
+patrz wpis wyżej „WŁASNE ZAŁOŻENIE BYŁO NIEAKTUALNE"). Scalone bezpośrednio przez orkiestratora
+przez `git apply` (worktree było rebase'owane przez samego agenta na `origin/claude/
+sprawdzenie-funkcjonalnosci-ek4ra0`, diff czysty, zero driftu bazy).
+
+Pliki: `gra/src/game/diplomacy-acceptance-points.ts` (`computePeaceAcceptanceSides`,
+`computePlayerAcceptanceSides`), `gra/src/ui/diplomacyAcceptanceBalance.ts`
+(`renderPnBalancePanelForTreaty`). Zmiana WYŁĄCZNIE komentarzy — treść komunikatu dla gracza
+niezmieniona. Poprawiono: `hasBasket`/`!hasBasket` to własność TEJ NEGOCJACJI (czy coś dodano
+do koszyka teraz), nie własność typu traktatu — koszyk `TRADE_BASKET_ACTION_IDS` już działa dla
+sojuszu/paktu/wasala/pokoju (4 z 5 typów); jedyna realna luka to wojna (aid '11'),
+kategorialnie inny temat (jednostronna akcja gracza, poza systemem propozycji/koszyka).
+
+Bramki na żywym drzewie po scaleniu: `tsc --noEmit` 0 błędów, `logic-test.cjs` 213/213,
+`diplomacy-acceptance-points-test.cjs` 225/225 — identyczne z bazą.
+
+**STATUS: ZAMKNIĘTE.**
+
+---

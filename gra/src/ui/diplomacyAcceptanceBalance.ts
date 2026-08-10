@@ -620,14 +620,27 @@ export function renderPnBalancePanelForTreaty(
   const balCls = accepted ? 'ok' : 'no';
   const delta = formatBalanceDelta(balancePn, accepted);
   const deltaCls = balancePn >= 0 ? 'pos' : 'neg';
-  // R-DYP-STOL-A (2026-07-27, decyzja B+C): ten formularz traktatu nie ma koszyka, bo
-  // część C tej decyzji (koszyk `diplomacyTradeBasket` dla WSZYSTKICH traktatów) jest
-  // wciąż NIEDOKOŃCZONA — dziś koszyk obejmuje tylko akcje 5 (handel) i 13 (dar), patrz
-  // docs/decyzje/R-DYP-STOL-A.md, sekcja "Co dalej". Dopóki to się nie zmieni, w tym
-  // formularzu nie ma pól do dopłaty, więc komunikat kieruje do zawarcia osobnej umowy.
-  // EN: this treaty form has no basket because part C of R-DYP-STOL-A (extending the
-  // basket to ALL treaty types) is still unfinished — no field to pay extra here, so
-  // the message points to a separate deal instead.
+  // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś rano
+  // 5a93f5aa był nieaktualny — patrz PYTANIA-OTWARTE.md): ta funkcja to WSPÓLNY
+  // renderer dla wszystkich typów traktatu z koszykiem (sojusz/pakt/wasal/pokój/
+  // wchłonięcie — wołana z treatySummaryHtml w diplomacyTradeBasket.ts z
+  // basketGivePn/basketReceivePn policzonymi z REALNYCH giveItems/receiveItems, które
+  // gracz właśnie edytuje w TYM SAMYM formularzu, w kolumnach „My oddajemy/Oni oddają
+  // (opcjonalnie)"). Formularz koszyk MA — to nie jest „traktat bez koszyka". Warunek
+  // `balancePn < 0` niżej po prostu znaczy: przy aktualnej treści koszyka (może być
+  // pusta, jeśli gracz jeszcze nic nie dołożył) bilans jest ujemny, więc komunikat
+  // kieruje do zawarcia osobnej umowy zamiast sugerować dopłatę „na już" w pustym
+  // koszyku. Część C R-DYP-STOL-A (koszyk dla WSZYSTKICH traktatów) jest dziś w
+  // praktyce niemal domknięta (4 z 5 typów z pierwotnego zgłoszenia); jedyna realna
+  // luka to wojna (aid '11') — kategorialnie inny temat, jednostronna akcja gracza bez
+  // negocjacji/akceptacji AI, poza tym systemem propozycji w ogóle.
+  // EN: shared renderer for every basket-enabled treaty type (alliance/pact/vassal/
+  // peace/absorption), called with the LIVE basket contents the player is editing in
+  // this exact form — the form already has a basket. `balancePn < 0` just means the
+  // current (possibly still-empty) basket doesn't close the gap, so the message
+  // points to a separate deal rather than "top up" an empty basket. R-DYP-STOL-A part
+  // C is effectively done for these types; the only real gap is war, outside this
+  // proposal system entirely.
   const hint = !relOk
     ? `Relacja ${formatLiczbaPl(relTotal)} — wym. ${formatLiczbaPl(relRequired!)}`
     : (balancePn < 0

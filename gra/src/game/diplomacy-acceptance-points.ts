@@ -180,18 +180,31 @@ function computePeaceAcceptanceSides(
   const asymBalance = myDisplayPw - theirDisplayPw;
   const hasBasket = myBasketOffer > 0 || theirBasketOffer > 0;
 
-  // R-DYP-STOL-A (2026-07-27, decyzja B+C): gdy ta negocjacja pokoju NIE ma koszyka
-  // (hasBasket=false), część C tej decyzji (koszyk `diplomacyTradeBasket` dla
-  // WSZYSTKICH traktatów) jest wciąż NIEDOKOŃCZONA dla tego typu — dziś koszyk
-  // obejmuje tylko akcje 5 (handel) i 13 (dar), patrz docs/decyzje/R-DYP-STOL-A.md,
-  // sekcja "Co dalej". Bez koszyka w tym formularzu nie ma pól do dopłaty, więc
-  // komunikat kieruje do zawarcia osobnej umowy. Gdy hasBasket=true (mieszany pokój
-  // z koszykiem), dopłata w tym samym formularzu jest faktycznie możliwa — zostaje
-  // „dopłać".
-  // EN: when this peace negotiation has no basket, part C of R-DYP-STOL-A (extending
-  // the basket to all treaty types) is still unfinished for this case — there's no
-  // field to pay extra in this form, so the message points to a separate deal.
-  // With a basket (mixed peace), paying extra in-form is possible — keep "dopłać".
+  // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś rano
+  // 5a93f5aa był nieaktualny — patrz PYTANIA-OTWARTE.md): `hasBasket` tutaj to NIE
+  // własność FORMULARZA pokoju („ten typ traktatu nie ma koszyka") — koszyk
+  // `diplomacyTradeBasket` dla pokoju (aid '10') działa już end-to-end: jest w
+  // `TRADE_BASKET_ACTION_IDS` i formularz traktatu renderuje kolumny „My
+  // oddajemy/Oni oddają (opcjonalnie)" w TYM SAMYM oknie negocjacji (patrz
+  // treatySummaryHtml w diplomacyTradeBasket.ts, które woła tę funkcję z realnym
+  // stanem koszyka gracza). `hasBasket=false` znaczy tylko, że w TEJ KONKRETNEJ
+  // negocjacji obie strony nic jeszcze nie dołożyły do dostępnego koszyka
+  // (myBasketOffer=0 i theirBasketOffer=0) — nie że koszyka nie ma. Stąd rozróżnienie
+  // niżej: hasBasket=true → „dopłać" (koszyk już zawiera coś, dopłata w tym formularzu
+  // sensowna); hasBasket=false → „zawrzyj osobną umowę" (koszyk pusty, nic do
+  // podbicia bez dodania pozycji od nowa).
+  // Część C R-DYP-STOL-A (koszyk dla WSZYSTKICH traktatów) jest dziś w praktyce
+  // niemal domknięta — obejmuje sojusz/pakt/wasal/pokój (4 z 5 typów z pierwotnego
+  // zgłoszenia). Jedyna realna luka to wojna (aid '11') — a to kategorialnie inny
+  // temat: wypowiedzenie wojny to jednostronna akcja gracza (showWarConsentModal)
+  // bez negocjacji/akceptacji AI, 'wojna' nie ma nawet wpisu w ProposalActionId —
+  // ten system propozycji/koszyka jej po prostu nie dotyczy.
+  // EN: `hasBasket` here is a property of THIS negotiation attempt (did either side
+  // enter a nonzero give/receive amount), NOT of the peace treaty FORM — the basket
+  // already works end-to-end for peace (and alliance/pact/vassal), rendered in the
+  // same modal. `false` only means nothing was added yet in this attempt. R-DYP-STOL-A
+  // part C is effectively done for these 4 types; the only real gap is war, which is a
+  // unilateral action outside this proposal/basket system entirely.
   const buildPlayerSide = (): AcceptanceSideBalance => ({
     offerPn: myBasketOffer,
     demandPn: myBasketDemand,
@@ -372,15 +385,29 @@ export function computePlayerAcceptanceSides(
     const balanceOk = asymBalance >= 0;
     my.balancePn = asymBalance;
     their.balancePn = asymBalance;
-    // R-DYP-STOL-A (2026-07-27, decyzja B+C): ten traktat nie ma koszyka, bo część C
-    // tej decyzji (koszyk `diplomacyTradeBasket` dla WSZYSTKICH traktatów) jest wciąż
-    // NIEDOKOŃCZONA — dziś koszyk obejmuje tylko akcje 5 (handel) i 13 (dar), patrz
-    // docs/decyzje/R-DYP-STOL-A.md, sekcja "Co dalej". Dopóki to się nie zmieni, w tym
-    // formularzu nie ma pól do dopłaty, więc komunikat kieruje do zawarcia osobnej
-    // umowy zamiast dopłaty w tym samym formularzu.
-    // EN: this treaty has no basket because part C of R-DYP-STOL-A (extending the
-    // basket to ALL treaty types) is still unfinished — there's no field to pay
-    // extra in this form, so the message points to a separate deal instead.
+    // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś
+    // rano 5a93f5aa był nieaktualny — patrz PYTANIA-OTWARTE.md): to jest gałąź
+    // WSPÓLNA dla wszystkich traktatów spoza pokoju, które trafiają tutaj z
+    // treatyBase>0 — dziś realnie sojusz (aid '3'), pakt (aid '2'), wasal (aid '12')
+    // i wchłonięcie (aid '15'). Wszystkie cztery MAJĄ koszyk w
+    // `TRADE_BASKET_ACTION_IDS` i renderują kolumny „My oddajemy/Oni oddają
+    // (opcjonalnie)" w tym samym formularzu (patrz treatySummaryHtml w
+    // diplomacyTradeBasket.ts, które woła computePlayerAcceptanceSides z realnym
+    // stanem koszyka gracza). `!hasBasket` NIE znaczy „ten traktat nie ma koszyka" —
+    // znaczy, że w TEJ KONKRETNEJ negocjacji obie strony nic jeszcze nie dołożyły do
+    // dostępnego koszyka (mode zostaje 'treaty' zamiast 'mixed'). Dopóki koszyk jest
+    // pusty, w tym stanie oceny nie ma z czego wyliczyć dopłaty w miejscu, więc
+    // komunikat kieruje do zawarcia osobnej umowy zamiast dopłaty tu i teraz.
+    // Część C R-DYP-STOL-A jest dziś w praktyce niemal domknięta (4 z 5 typów z
+    // pierwotnego zgłoszenia); jedyna realna luka to wojna (aid '11') — kategorialnie
+    // inny temat, jednostronna akcja (showWarConsentModal) bez negocjacji/akceptacji
+    // AI, 'wojna' nie ma nawet wpisu w ProposalActionId.
+    // EN: this is the SHARED branch for every non-peace treaty reaching here with
+    // treatyBase>0 — today alliance/pact/vassal/absorption, all four already have a
+    // basket (TRADE_BASKET_ACTION_IDS) rendered in the same form. `!hasBasket` means
+    // nothing was added to THIS negotiation's basket yet, not that the type lacks
+    // one. R-DYP-STOL-A part C is effectively done for these types; the only real gap
+    // is war, a unilateral action outside this proposal system.
     if (mode === 'treaty' && !hasBasket) {
       my.accepted = relOk && balanceOk;
       their.accepted = relOk && balanceOk;
