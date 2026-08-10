@@ -9330,3 +9330,13 @@ faktyczny interfejs dla gracza wg pełnej specyfikacji. Znalezisko B (rozjazd Pr
 naprawione u ŹRÓDŁA (silnik, nie tylko wyświetlanie).
 
 ---
+
+## DEPLOY ROBOCZA FALA 267 — dispatchowany (2026-08-10)
+
+Wszystkie znane, jednoznaczne bugi zamknięte (Auto Wyżywienie, Praca+ustawienia globalne).
+Zgodnie z autoryzacją Macieja („jak skończysz zrób deploy do roboczej") — dispatch agenta
+deployu (`a2579d7dac999e700`, Opus 5). **Ta fala zawiera zmianę w REALNYM SILNIKU EKONOMII**
+(nie tylko UI) — agent poinstruowany żeby jasno to zakomunikować w `WERSJE.md`/kanale jako
+priorytet playtestu.
+
+---
