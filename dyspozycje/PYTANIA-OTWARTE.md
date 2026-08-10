@@ -7550,6 +7550,41 @@ zwalnia się z pętli AutoBot nawet dla własnych zmian dokumentacyjnych.
 
 ---
 
+## P-ARMIA-ROZPAD-PRZY-ZOSTAW-OSOBNO (BB2, stackGroupId) — runda 3 dostarczona, czeka na Evaluatora (2026-08-10)
+
+Worktree `agent-a3f6bd057db40cbd4` — krok kopiowania z żywego checkoutu zweryfikowany (worktree
+faktycznie startował od `main`/`b0e4a5c9`, `grep computeSeparateReturn` dawał zero trafień przed
+kopiowaniem, trafienia po). Refaktor: nowe opcjonalne pole `RuntimeUnit.stackGroupId?: string`
+(`units/setup.ts`), fallback `stackGroupIdOf()` = stare grupowanie po heksie gdy pole nieobecne
+(wsteczna kompatybilność zapisów). Choke point `activeUnitStack` (więc `playerStackAt`) filtruje
+dodatkowo po `stackGroupIdOf` — naprawia automatycznie ~50 wywołań pochodnych
+(`syncStackRuchLeft`/`deductStackRuchLeft`/`planningStackRuchLeft`/`unitWithPlanningStackRuch`)
+bez dotykania każdego z osobna. Funkcje „kto na heksie" (`visibleStackOnHex`,
+`coLocatedForMergePrompt`, `garrisonUnitsOnHex`) dostały opcjonalny 5. param `groupId` —
+merge-prompt/Prawo/bulk-akcje CELOWO zostają unscoped (fizyczna obecność, nie tożsamość armii).
+„Zostaw osobno"/split → fresh id; każda z 3 ścieżek merge → wspólny id.
+
+C-026: 15 funkcji z listy zlecenia + **2 dodatkowe znalezione przy audycie, POZA listą**
+(`buildPlayerArmyListEntries`, `cyclablePlayerArmyLeadsBase`/`armyLeadHexKey` — własne
+reimplementacje grupowania po heksie w HUD, ta sama klasa błędu w innym miejscu) — wszystkie 78
+wywołań przejrzanych indywidualnie.
+
+Bramki (tsc zweryfikowany DWA razy na spójnym drzewie, bo worktree z `main` ma niepełny
+`gra/src`): tsc 0, logic-test 213/213, army-merge-separate-return 16/16 +
+-mainguard 37/37, army-merge-bounce 4/4, army-merge-dismiss-bounce 16/16, army-stack-ruch 5/5,
+army-merge-colocated 4/4, combat 6/6, tech-tree 19/19, research 33/33, unit-replace 13/13,
+garnizon-exit 26/26, map-siege 6/6, siege-ai 17/17, siege-defenders 12/12, save-label OK,
+hud-moc-warstwa 28/28, hud-skarbiec 7/7, hud-miasto-stan-cywilizacji 20/20. Nowy test
+`army-merge-stackgroupid-test.cjs` 32/32 (mutacyjnie potwierdzony — cofnięcie fixu w
+`activeUnitStack` daje 9 FAIL w oczekiwanych miejscach). `pre-battle-save-test.cjs` FAIL
+niezwiązany (esbuild/`import.meta.glob`, plik nietknięty, poza zakresem).
+
+Zgodnie z nową regułą C-034 (scalenie zawsze osobnym, natychmiastowym dispatchem po PASS) —
+dispatch Evaluatora rundy 3 NASTĘPUJE teraz, scalenie dopiero po jego werdykcie, osobnym
+zleceniem.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — priorytet cudu, Operator runda 1 dostarczona, czeka na Evaluatora (2026-08-10)
 
 Worktree `agent-a85d78f7d0cdd8a5d` (base `main`/`b0e4a5c9`, TA SAMA klasa problemu co
