@@ -7586,6 +7586,22 @@ scalania przy jednym pliku dotykanym wielokrotnie) NASTĘPUJE teraz.
 
 ---
 
+## P-BRAMKA-MAP-FIELD-BATTLE-PRE-BATTLE-SAVE-CZERWONE + P-BRAMKA-TOOLTIP-REGEX-UZASADNIENIE-NIEPRAWDZIWE — dostarczone, dokumentacja/komentarz (2026-08-10)
+
+Worktree `agent-abe061c068bc015ba`. Zero zmian w kodzie produkcyjnym/logice testu — wyłącznie
+tekst. (1) `CLAUDE.md` §BRAMKI: dopisana notatka o dwóch pre-istniejących czerwonych bramkach
+harnessu testowego (`map-field-battle-test.cjs`/`pre-battle-save-test.cjs` — brak loaderów
+Vite/esbuild dla `.mp3`/`.svg`, nie regresja silnika). (2) `heks-panel-tooltip-warstwa-test.cjs`:
+poprawiony nieprawdziwy komentarz uzasadniający regexowe podejście (twierdził że DOM
+niedostępny — nieprawda, `jsdom` jest deklarowaną zależnością używaną przez 9 innych testów).
+Bramki: tsc 0, logic-test 213/213, `heks-panel-tooltip-warstwa-test.cjs` 22/22 (identyczne z
+bazą — potwierdza że to czysto komentarz).
+
+Dispatch lekkiego Evaluatora (weryfikacja, że zmiana jest wyłącznie tekstowa i nie wprowadza
+nieprawdy w drugą stronę) NASTĘPUJE teraz.
+
+---
+
 ## R-EPOKA-CUD-WARUNEK-AWANSU (B3) — Evaluator runda 1: FAIL blokujące, realny defekt na danych shipowanych (2026-08-10)
 
 Evaluator potwierdził wszystkie bramki Operatora (w tym pre-istniejącą porażkę `ai-balans-step3`
