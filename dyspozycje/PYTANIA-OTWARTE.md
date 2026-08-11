@@ -12295,6 +12295,40 @@ podbojem a następnym tickiem pętli Porządku (nie przeciek z cudzego miasta �
 Bramki: tsc 0, logic-test 213/213, `citizen-resource-upkeep-test` 100/100 (mutacje N1/N2
 zweryfikowane czerwono→zielono). **STATUS: dispatch Opus 5 Evaluator, runda 4.**
 
+**Evaluator runda 4: FAIL — czwarta szczelina tej samej klasy + luka po stronie zapisu.**
+Struktura per-owner potwierdzona jako POPRAWNA (deklaracja, `.set` raz per owner per turę, brak
+`cities.find`, wszystkie 4 miejsca `.clear()` sparowane, parytet gracz/Państwa-Miasta, N5 martwy
+fallback faktycznie martwy — wszystko zweryfikowane niezależnie). Ale: **⛔ N1 (blokujące) —
+`citizenUpkeepByOwner` NIE jest czyszczona w `restoreGameFromSave` (wczytanie zapisu).**
+Wszystkie 4 `.clear()` leżą wyłącznie w funkcjach STARTU nowej gry; wczytanie zapisu podmienia
+`cities`/erę/turę bez czyszczenia mapy — klucz `ownerId=0` istnieje niemal zawsze (z poprzedniej
+gry tej samej sesji przeglądarki), `??` nigdy nie zaskakuje, panel po Ctrl+L/„Wczytaj" pokazuje
+werdykt Z INNEJ GRY (cudza epoka/populacja/pokrycie). **To POGORSZENIE względem rundy 3** — runda
+3 chybiała `cities.find()` tylko CZASEM (zależnie od ID miast), runda 4 usunęła ten przypadkowy
+„zawór bezpieczeństwa" i trafia w nieświeży wpis ZAWSZE. Zademonstrowane wykonaniem (scenariusz
+wczytania zapisu z inną epoką/populacją niż bieżąca gra). **⛔ N2 (blokujące) — strona ZAPISU do
+mapy ma zero pokrycia testowego.** Usunięcie samej linii `citizenUpkeepByOwner.set(ownerId, v)`
+przechodzi 100/100 bez wykrycia — to dosłownie regresja rundy 2 (mapa nigdy niewypełniona → panel
+zawsze na żywym zdrenowanym magazynie), niebroniona przez żaden test. Pkt 6 (nieodświeżony
+`cfg.getOrderState` dla TEGO SAMEGO miasta między podbojem a tickiem) — Evaluator ZGADZA SIĘ na
+odłożenie jako odrębne, samo-lecząco się po 1 turze; przy okazji zauważył PRE-ISTNIEJĄCY,
+szerszy wariant: `cityOrderState` też nieczyszczone w `restoreGameFromSave` (osobny temat, panel
+miasta, do zarejestrowania oddzielnie, NIE blokuje N1). **STATUS: dispatch Sonnet 5 (worktree),
+runda 5, zakres ZAMKNIĘTY (bez „przy okazji"): (1) `citizenUpkeepByOwner.clear()` w
+`restoreGameFromSave`; (2) asercja na publikację `.set` w `citizenUpkeepDrainForOwner`; (3)
+asercja pilnująca PARYTETU miejsc czyszczenia (liczba `citizenUpkeepByOwner.clear()` ≥ liczba
+`cityOrderState.clear()` ORAZ obecność w oknie `restoreGameFromSave`) — żeby piąte miejsce resetu
+nie zostało pominięte po cichu w przyszłości.**
+
+## NOWY BACKLOG (odnotowane przez Evaluatora rundy 4, NIE blokuje R-ZUZYCIE-SUROWCOW N1) —
+## `cityOrderState` nieczyszczone w `restoreGameFromSave`
+
+Pre-istniejące (sprzed tego tematu). Panel miasta (`cityPanel.ts`, `resolveOrderState`) po
+wczytaniu zapisu może pokazać `OrderState` (szczescie/porzadek/szPct/bandLabel/...) z POPRZEDNIEJ
+gry tej samej sesji przeglądarki, dopóki pętla Porządku nie przeliczy od nowa (1 tura). Do
+osobnej oceny/dispatchu — świadomie odłożone, nie w zakresie żadnego z 4 tematów dzisiejszej
+nocy.
+
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N-ZINDEX-TOAST SCALONE `0f7745c4` (2026-08-11)
 
 Runda 2 naprawy N1 (Evaluator FAIL: toast niewidoczny pod `.civ-menu`). `showHintMessage`
