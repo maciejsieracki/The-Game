@@ -12320,6 +12320,35 @@ asercja pilnująca PARYTETU miejsc czyszczenia (liczba `citizenUpkeepByOwner.cle
 `cityOrderState.clear()` ORAZ obecność w oknie `restoreGameFromSave`) — żeby piąte miejsce resetu
 nie zostało pominięte po cichu w przyszłości.**
 
+**Runda 5 (CZĘŚCIOWA `13f62b0b`, 2026-08-11, koniec sesji — limit zużycia zgłoszony przez
+Macieja w trakcie pracy):** naprawiony TYLKO punkt (1) z zalecenia Evaluatora —
+`citizenUpkeepByOwner.clear()` w `restoreGameFromSave` (najdotkliwszy, gwarantowany-do-wywołania
+scenariusz: panel po wczytaniu zapisu pokazujący werdykt z poprzedniej gry). Bramki: tsc 0,
+logic-test 213/213, `citizen-resource-upkeep-test` 100/100 (bez regresji — te testy jeszcze NIE
+chronią tej konkretnej naprawy, patrz niżej). **BEZ pełnej rundy Operator→Evaluator** — czysto
+techniczna, jednoliniowa poprawka zastosowana bezpośrednio przez orkiestratora z powodu
+kończącego się limitu sesji, świadome odstępstwo od §0b za zgodą właściciela („spróbuj zrobić
+deploy tego co masz, resztę kontynuujemy jutro").
+**NADAL DO ZROBIENIA w kolejnej sesji (punkty 2-3 zalecenia Evaluatora, wciąż otwarte):**
+(2) asercja testowa broniąca publikacji `citizenUpkeepByOwner.set(ownerId, v)` w
+`citizenUpkeepDrainForOwner` — dziś usunięcie tej jednej linii przechodzi 100/100 bez wykrycia
+(cichy powrót regresji rundy 2: panel na żywym zdrenowanym magazynie zamiast werdyktu silnika);
+(3) asercja pilnująca PARYTETU liczby `citizenUpkeepByOwner.clear()` vs `cityOrderState.clear()`
++ obecności w oknie `restoreGameFromSave`, żeby przyszłe piąte miejsce resetu nie zostało
+pominięte po cichu. **Temat NIE jest formalnie zamknięty (brak PASS Evaluatora) — priorytet na
+starcie następnej sesji, PRZED jakąkolwiek nową pracą.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA ECHO 3 (IndexedDB) — scalone, przegląd PRZERWANY (limit)
+
+Migracja scalona i zweryfikowana bramkami (`798f3c17`: tsc 0, logic-test 213/213,
+`idb-storage-migration-test` 25/25, `autosave-quota-fail-test` 20/20, `fsa-autosave-test` 55/55,
+`map-snapshot-load-test` 54/0/1-known-fail). Dispatchowany był workflow z 3 niezależnymi
+perspektywami przeglądu (async-kompletność, bezpieczeństwo danych/wsteczna kompatybilność,
+architektura) + adwersarialna weryfikacja znalezisk — **PRZERWANY na polecenie Macieja przed
+dostarczeniem werdyktu** (limit zużycia sesji, `TaskStop wg2thj404`). **Migracja NIE MA
+niezależnej oceny Evaluatora/workflow — priorytet na starcie następnej sesji, PRZED jakąkolwiek
+nową pracą, RAZEM z domknięciem R-ZUZYCIE-SUROWCOW N1 rundy 5.**
+
 ## NOWY BACKLOG (odnotowane przez Evaluatora rundy 4, NIE blokuje R-ZUZYCIE-SUROWCOW N1) —
 ## `cityOrderState` nieczyszczone w `restoreGameFromSave`
 
