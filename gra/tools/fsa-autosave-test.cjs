@@ -268,10 +268,12 @@ console.log('--- 5. Brak window (plain Node) -- bezpieczna degradacja ---');
   // -------------------------------------------------------------------------
   console.log('--- 7. BLOKER B2: galaz FSA nie klamie w setLastPlayedSlotId ---');
 
+  // MIGRACJA IDB: saveToLocal() jest teraz async (IndexedDB) -- wywolanie w
+  // doRotatingAutosave() poprzedzone `await`, regex dopasowany do tej zmiany.
   const fsaBranchMatch = mainTsSrc.match(
-    /shouldUseFsaAutosave\(getFsaReadinessState\(\)\)\) \{([\s\S]*?)const \{ ok, reason \} = saveToLocal\(slot, snapshot\);/,
+    /shouldUseFsaAutosave\(getFsaReadinessState\(\)\)\) \{([\s\S]*?)const \{ ok, reason \} = await saveToLocal\(slot, snapshot\);/,
   );
-  assert(!!fsaBranchMatch, 'galaz FSA w doRotatingAutosave znaleziona (miedzy shouldUseFsaAutosave(...) a saveToLocal(slot, snapshot))');
+  assert(!!fsaBranchMatch, 'galaz FSA w doRotatingAutosave znaleziona (miedzy shouldUseFsaAutosave(...) a await saveToLocal(slot, snapshot))');
   if (fsaBranchMatch) {
     const fsaBody = fsaBranchMatch[1];
     // Komentarze (PL+EN, wymóg CLAUDE.md §9) w tej gałęzi CELOWO opisują

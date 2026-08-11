@@ -1,23 +1,48 @@
 /**
  * save.ts
  * SAVE / LOAD (task F1) -- serialize the live game state to a JSON string and
- * back, plus optional localStorage slot helpers.
+ * back, plus save-slot helpers backed by IndexedDB.
+ *
+ * MIGRACJA IDB (Maciej, decyzja właściciela): magazyn zapisów (w tym
+ * mapSnapshot -- pełna siatka heksów) przeniesiony z localStorage na
+ * IndexedDB -- 10 rotacyjnych slotów autozapisu z pełną mapą w KAŻDYM
+ * przekracza budżet localStorage (~5-10 MB/domenę) ~4x szybciej niż przed
+ * kompresją kolumnową rundy 2 (8,2x redukcji), a IndexedDB nie ma tego
+ * niskiego, twardego limitu. Zapis backendu: src/game/idb-storage.ts (cienki
+ * Promise-based wrapper). NOWE zapisy idą WYŁĄCZNIE do IndexedDB; ODCZYT
+ * sprawdza IndexedDB, a gdy klucza tam brak -- spada na localStorage pod tym
+ * samym kluczem (stare zapisy graczy sprzed tej migracji, wsteczna
+ * zgodność bez aktywnej migracji danych -- świadomie NIE kopiujemy starych
+ * zapisów do IDB, patrz raport). Skutek: saveToLocal/loadFromLocal/
+ * listSaves/deleteLocal/loadSaveSlotMeta są teraz ASYNC (Promise) -- były
+ * synchroniczne pod localStorage.
+ * / EN: IDB MIGRATION (Maciej, owner decision): save storage (including
+ * mapSnapshot -- the full hex grid) moved from localStorage to IndexedDB --
+ * 10 rotating autosave slots with a full map in EACH blow the localStorage
+ * budget (~5-10 MB/origin) ~4x faster than before round-2's columnar
+ * compression (8.2x reduction), and IndexedDB has no such low, hard limit.
+ * Backend: src/game/idb-storage.ts (thin Promise-based wrapper). NEW saves
+ * go EXCLUSIVELY to IndexedDB; READS check IndexedDB first, falling back to
+ * localStorage under the same key when absent (pre-migration player saves --
+ * backward compatible without an active data migration, see report for why).
+ * Result: saveToLocal/loadFromLocal/listSaves/deleteLocal/loadSaveSlotMeta
+ * are now ASYNC (Promise) -- they used to be synchronous under localStorage.
  *
  * Pure / browser-safe logic: no DOM, no THREE, no side effects beyond the
- * explicitly localStorage-backed helpers (which are guarded so they degrade
- * gracefully when localStorage is unavailable, e.g. under Node or file://).
+ * explicitly storage-backed helpers (which are guarded so they degrade
+ * gracefully when storage is unavailable, e.g. under Node or file://).
  *
  * Exports:
  *   SaveGame             - serializable snapshot of one game in progress
  *   SAVE_VERSION         - current on-disk save format version
- *   SAVE_PREFIX          - localStorage key prefix for save slots
+ *   SAVE_PREFIX          - storage key prefix for save slots (IDB + legacy localStorage)
  *   serializeGame()      - SaveGame  -> JSON string
  *   deserializeGame()    - JSON string -> SaveGame (validates wersja)
- *   saveToLocal()        - write a SaveGame into a named localStorage slot,
+ *   saveToLocal()        - async: write a SaveGame into a named IDB slot,
  *                          returns { ok, reason? } ('quota' | 'other')
- *   loadFromLocal()      - read a SaveGame back from a named slot (or null)
- *   listSaves()          - list all save slot names found in localStorage
- *   deleteLocal()        - remove a named slot (convenience; pure-safe)
+ *   loadFromLocal()      - async: read a SaveGame back from a named slot (or null)
+ *   listSaves()          - async: list all save slot names (IDB ∪ legacy localStorage)
+ *   deleteLocal()        - async: remove a named slot from both backends (pure-safe)
  *
  * INTEGRATOR NOTE (what main.ts must gather to fill a SaveGame):
  *   The live runtime state currently lives as locals inside main.ts.  To build
@@ -51,6 +76,7 @@ import type { RuntimeUnit } from '../units/setup';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
 import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
+import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys } from './idb-storage';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -190,15 +216,21 @@ export function buildSaveSlotMeta(s: SaveGame): SaveSlotMeta {
  * zamiast pełnego zapisu. Zwraca null, gdy klucz nie istnieje (stary zapis
  * sprzed tej naprawy — wołający ma fallbackować na pełne `loadFromLocal` +
  * `saveContextLine`, patrz saveLoadDialog.ts) albo jest uszkodzony.
+ *
+ * MIGRACJA IDB: async -- sprawdza IndexedDB jako pierwsze (nowe zapisy),
+ * gdy klucza tam brak spada na localStorage (stare zapisy sprzed migracji).
  */
-export function loadSaveSlotMeta(slot: string): SaveSlotMeta | null {
-  const storage = getStorage();
-  if (storage === null) return null;
-  let raw: string | null;
-  try {
-    raw = storage.getItem(saveMetaKey(slot));
-  } catch {
-    return null;
+export async function loadSaveSlotMeta(slot: string): Promise<SaveSlotMeta | null> {
+  let raw = await idbGetItem(saveMetaKey(slot));
+  if (raw === null) {
+    const storage = getStorage();
+    if (storage !== null) {
+      try {
+        raw = storage.getItem(saveMetaKey(slot));
+      } catch {
+        raw = null;
+      }
+    }
   }
   if (raw === null) return null;
   try {
@@ -504,63 +536,60 @@ function isQuotaExceededError(err: unknown): boolean {
 }
 
 /**
- * Serializes a SaveGame and writes it into a named localStorage slot.
+ * Serializes a SaveGame and writes it into a named IndexedDB slot.
  *
  * The stored key is SAVE_PREFIX + slot.  Returns { ok: true } on success,
  * { ok: false, reason } when:
- *   - localStorage is unavailable (typeof localStorage === 'undefined' etc.)
- *     -> reason 'other',
- *   - the write throws because the browser's storage quota is exceeded
+ *   - IndexedDB is unavailable -> reason 'other',
+ *   - the write rejects because the browser's storage quota is exceeded
  *     -> reason 'quota',
- *   - the write throws for any other reason -> reason 'other'.
+ *   - the write rejects for any other reason -> reason 'other'.
+ *
+ * MIGRACJA IDB: NOWE zapisy idą WYŁĄCZNIE do IndexedDB (nie do localStorage
+ * -- to właśnie ten podwójny zapis, gdyby istniał, odtworzyłby problem
+ * budżetu, który ta migracja rozwiązuje). Async -- była synchroniczna pod
+ * localStorage.
  *
  * Browser-safe: never throws; reports failure via the returned result.
  */
-export function saveToLocal(slot: string, s: SaveGame): SaveToLocalResult {
-  const storage = getStorage();
-  if (storage === null) return { ok: false, reason: 'other' };
+export async function saveToLocal(slot: string, s: SaveGame): Promise<SaveToLocalResult> {
   try {
-    storage.setItem(SAVE_PREFIX + slot, serializeGame(s));
-    // Defekt C: nagłówek OSOBNO, żeby dialog "Wczytaj grę" nie musiał
-    // parsować pełnego zapisu tylko po label/tura/savedAt. Best-effort —
-    // niepowodzenie zapisu meta (np. quota w tym samym oddechu, mało
-    // prawdopodobne przy jego rozmiarze) NIE cofa głównego zapisu, który
-    // już się powiódł; wołający dostaje ok:true, a summarizeSaveSlots()
-    // fallbackuje na pełne parsowanie, gdy klucz meta brakuje.
-    // / EN: Defect C: header stored SEPARATELY so the "Load game" dialog
-    // doesn't need to parse the full save just for label/turn/savedAt.
-    // Best-effort — a meta-write failure (e.g. quota in the same breath,
-    // unlikely given its size) does NOT roll back the main save, which
-    // already succeeded; the caller still gets ok:true, and
-    // summarizeSaveSlots() falls back to full parsing when the meta key is
-    // missing.
-    try {
-      storage.setItem(saveMetaKey(slot), JSON.stringify(buildSaveSlotMeta(s)));
-    } catch {
-      // Runda 3 (Evaluator): porażka zapisu NIE była nettoowana ze starym
-      // kluczem meta z poprzedniego zapisu tego samego slotu -- ten stary
-      // klucz zostawał nietknięty, więc summarizeSaveSlots() czytał
-      // NIEAKTUALNE dane (stara tura/label) zamiast fallbackować na pełne
-      // parsowanie. Usuwamy STARY klucz meta (best-effort, też w try/catch --
-      // nie chcemy rzucać z samego catch), żeby brak klucza (nie stary klucz)
-      // wymusił poprawny fallback.
-      // / EN: round 3 (Evaluator): a write failure did NOT clear the STALE
-      // meta key left over from this slot's previous save -- that stale key
-      // stayed untouched, so summarizeSaveSlots() read OUTDATED data (old
-      // turn/label) instead of falling back to full parsing. Remove the
-      // STALE meta key (best-effort, also wrapped -- we don't want to throw
-      // from inside a catch), so a MISSING key (not a stale one) drives the
-      // correct fallback.
-      try {
-        storage.removeItem(saveMetaKey(slot));
-      } catch {
-        /* ignore -- best-effort */
-      }
-    }
-    return { ok: true };
+    await idbSetItem(SAVE_PREFIX + slot, serializeGame(s));
   } catch (err) {
     return { ok: false, reason: isQuotaExceededError(err) ? 'quota' : 'other' };
   }
+  // Defekt C: nagłówek OSOBNO, żeby dialog "Wczytaj grę" nie musiał
+  // parsować pełnego zapisu tylko po label/tura/savedAt. Best-effort —
+  // niepowodzenie zapisu meta (np. quota w tym samym oddechu, mało
+  // prawdopodobne przy jego rozmiarze) NIE cofa głównego zapisu, który
+  // już się powiódł; wołający dostaje ok:true, a summarizeSaveSlots()
+  // fallbackuje na pełne parsowanie, gdy klucz meta brakuje.
+  // / EN: Defect C: header stored SEPARATELY so the "Load game" dialog
+  // doesn't need to parse the full save just for label/turn/savedAt.
+  // Best-effort — a meta-write failure (e.g. quota in the same breath,
+  // unlikely given its size) does NOT roll back the main save, which
+  // already succeeded; the caller still gets ok:true, and
+  // summarizeSaveSlots() falls back to full parsing when the meta key is
+  // missing.
+  try {
+    await idbSetItem(saveMetaKey(slot), JSON.stringify(buildSaveSlotMeta(s)));
+  } catch {
+    // Runda 3 (Evaluator): porażka zapisu NIE była nettoowana ze starym
+    // kluczem meta z poprzedniego zapisu tego samego slotu -- ten stary
+    // klucz zostawał nietknięty, więc summarizeSaveSlots() czytał
+    // NIEAKTUALNE dane (stara tura/label) zamiast fallbackować na pełne
+    // parsowanie. Usuwamy STARY klucz meta (best-effort -- idbRemoveItem
+    // nigdy nie rzuca), żeby brak klucza (nie stary klucz) wymusił poprawny
+    // fallback.
+    // / EN: round 3 (Evaluator): a write failure did NOT clear the STALE
+    // meta key left over from this slot's previous save -- that stale key
+    // stayed untouched, so summarizeSaveSlots() read OUTDATED data (old
+    // turn/label) instead of falling back to full parsing. Remove the
+    // STALE meta key (best-effort -- idbRemoveItem never rejects), so a
+    // MISSING key (not a stale one) drives the correct fallback.
+    await idbRemoveItem(saveMetaKey(slot));
+  }
+  return { ok: true };
 }
 
 // ---------------------------------------------------------------------------
@@ -568,23 +597,29 @@ export function saveToLocal(slot: string, s: SaveGame): SaveToLocalResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Reads a SaveGame back from a named localStorage slot.
+ * Reads a SaveGame back from a named save slot.
+ *
+ * MIGRACJA IDB: sprawdza IndexedDB jako pierwsze (nowe zapisy); gdy klucza
+ * tam brak, spada na localStorage pod tym samym kluczem (wsteczna zgodność
+ * dla zapisów sprzed migracji -- świadomie bez aktywnego kopiowania do IDB).
  *
  * Returns the parsed SaveGame, or null when:
- *   - localStorage is unavailable,
- *   - the slot does not exist,
+ *   - neither backend has the slot,
  *   - the stored JSON is invalid or fails version validation.
  *
  * Browser-safe: never throws; any deserialize error collapses to null.
  */
-export function loadFromLocal(slot: string): SaveGame | null {
-  const storage = getStorage();
-  if (storage === null) return null;
-  let raw: string | null;
-  try {
-    raw = storage.getItem(SAVE_PREFIX + slot);
-  } catch {
-    return null;
+export async function loadFromLocal(slot: string): Promise<SaveGame | null> {
+  let raw = await idbGetItem(SAVE_PREFIX + slot);
+  if (raw === null) {
+    const storage = getStorage();
+    if (storage !== null) {
+      try {
+        raw = storage.getItem(SAVE_PREFIX + slot);
+      } catch {
+        raw = null;
+      }
+    }
   }
   if (raw === null) return null;
   try {
@@ -599,31 +634,39 @@ export function loadFromLocal(slot: string): SaveGame | null {
 // ---------------------------------------------------------------------------
 
 /**
- * Lists the slot names of all saves currently stored in localStorage.
+ * Lists the slot names of all saves currently stored.
  *
- * Scans every key, keeps those starting with SAVE_PREFIX, and strips the prefix
- * so callers get bare slot names (the same strings passed to saveToLocal).
- * Results are sorted for stable display.
+ * MIGRACJA IDB: unia kluczy z IndexedDB (nowe zapisy) i localStorage (stare
+ * zapisy sprzed migracji) -- gracz nie traci widoczności starych sejwów.
+ * Scans every matching key, keeps those starting with SAVE_PREFIX, and
+ * strips the prefix so callers get bare slot names (the same strings passed
+ * to saveToLocal). Results are sorted for stable display, de-duplicated
+ * (a slot resaved after the migration exists in IDB only, but a slot never
+ * touched since stays in localStorage only -- either way it appears once).
  *
- * Returns [] when localStorage is unavailable or holds no saves.
+ * Returns [] when both backends are unavailable or hold no saves.
  * Browser-safe: never throws.
  */
-export function listSaves(): string[] {
-  const storage = getStorage();
-  if (storage === null) return [];
-  const slots: string[] = [];
-  try {
-    for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i);
-      if (key !== null && key.startsWith(SAVE_PREFIX)) {
-        slots.push(key.slice(SAVE_PREFIX.length));
-      }
-    }
-  } catch {
-    return [];
+export async function listSaves(): Promise<string[]> {
+  const slots = new Set<string>();
+  const idbKeys = await idbListKeys();
+  for (const key of idbKeys) {
+    if (key.startsWith(SAVE_PREFIX)) slots.add(key.slice(SAVE_PREFIX.length));
   }
-  slots.sort();
-  return slots;
+  const storage = getStorage();
+  if (storage !== null) {
+    try {
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key !== null && key.startsWith(SAVE_PREFIX)) {
+          slots.add(key.slice(SAVE_PREFIX.length));
+        }
+      }
+    } catch {
+      /* ignore -- IDB results (if any) still stand */
+    }
+  }
+  return Array.from(slots).sort();
 }
 
 // ---------------------------------------------------------------------------
@@ -631,29 +674,54 @@ export function listSaves(): string[] {
 // ---------------------------------------------------------------------------
 
 /**
- * Removes a named save slot from localStorage.
+ * Removes a named save slot from BOTH backends (IndexedDB and legacy
+ * localStorage) -- a slot may exist in either depending on when it was last
+ * written (MIGRACJA IDB), so a full delete must clear both to actually make
+ * the slot disappear from listSaves()/loadFromLocal().
  *
- * Returns true when the removal call completed (whether or not the slot
- * existed), false when localStorage is unavailable or the call throws.
+ * Returns true when at least one backend's removal call completed (whether
+ * or not the slot existed there), false when both are unavailable or throw.
  * Convenience companion to saveToLocal; browser-safe, never throws.
  */
-export function deleteLocal(slot: string): boolean {
-  const storage = getStorage();
-  if (storage === null) return false;
+export async function deleteLocal(slot: string): Promise<boolean> {
+  let ok = false;
   try {
-    storage.removeItem(SAVE_PREFIX + slot);
-    try { storage.removeItem(saveMetaKey(slot)); } catch { /* ignore -- best-effort */ }
-    return true;
+    await idbRemoveItem(SAVE_PREFIX + slot);
+    await idbRemoveItem(saveMetaKey(slot));
+    ok = true;
   } catch {
-    return false;
+    /* idbRemoveItem is designed to never reject -- defensive only */
   }
+  const storage = getStorage();
+  if (storage !== null) {
+    try {
+      storage.removeItem(SAVE_PREFIX + slot);
+      try { storage.removeItem(saveMetaKey(slot)); } catch { /* ignore -- best-effort */ }
+      ok = true;
+    } catch {
+      /* localStorage unavailable/throws -- the IDB removal above still stands */
+    }
+  }
+  return ok;
 }
 
 // ---------------------------------------------------------------------------
 // Last played slot (Kontynuuj)
 // ---------------------------------------------------------------------------
 
-export function getLastPlayedSlotId(): string | null {
+/**
+ * MIGRACJA IDB: wskaźnik "ostatnio grane" SAM ZOSTAJE w localStorage
+ * (świadoma decyzja zakresu -- to mały string, kilkadziesiąt bajtów, nie
+ * przyczynia się do budżetu quota, który ta migracja rozwiązuje). Funkcja
+ * jednak MUSI stać się async, bo waliduje wskaźnik przez `loadFromLocal()`
+ * (teraz async -- sprawdza IndexedDB).
+ * / EN: the "last played" pointer itself STAYS in localStorage (a deliberate
+ * scoping decision -- it's a tiny string, a few dozen bytes, not a
+ * contributor to the quota budget this migration solves). The function must
+ * still become async because it validates the pointer via `loadFromLocal()`
+ * (now async -- checks IndexedDB).
+ */
+export async function getLastPlayedSlotId(): Promise<string | null> {
   const storage = getStorage();
   if (storage === null) return null;
   try {
@@ -669,7 +737,7 @@ export function getLastPlayedSlotId(): string | null {
     // (main.ts::loadGameFromSlot) already degrades gracefully when the file
     // is missing or fails to load.
     if (raw.startsWith(FSA_SLOT_PREFIX)) return raw;
-    return loadFromLocal(raw) ? raw : null;
+    return (await loadFromLocal(raw)) ? raw : null;
   } catch {
     return null;
   }

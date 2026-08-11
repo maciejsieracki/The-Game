@@ -16735,21 +16735,41 @@ async function boot(): Promise<void> {
       }
     }
 
+    // MIGRACJA IDB: listSaves() jest teraz async (IndexedDB), ale hasSave()
+    // w mainMenu.ts/gamePauseMenu.ts jest wołane SYNCHRONICZNIE przy
+    // renderze przycisku "Wczytaj grę" -- ich API celowo NIE jest tu
+    // przerabiane na async (poza zakresem tego zadania, patrz main.ts
+    // niepowiązany kod). Rozwiązanie: cache stale-while-revalidate --
+    // hasAnySaveSlot() zwraca NATYCHMIAST to, co wie teraz, i przy okazji
+    // odpala odświeżenie w tle na NASTĘPNE wywołanie. Cache jest też
+    // odświeżany na starcie gry (boot) i po każdym udanym zapisie (patrz
+    // wywołania niżej), więc w praktyce jest aktualny w momencie, gdy gracz
+    // faktycznie otwiera menu.
+    let cachedHasAnySaveSlot = false;
+    async function refreshHasAnySaveSlotCache(): Promise<void> {
+      try {
+        cachedHasAnySaveSlot = (await listSaves()).length > 0;
+      } catch {
+        cachedHasAnySaveSlot = false;
+      }
+    }
     function hasAnySaveSlot(): boolean {
-      try { return listSaves().length > 0; } catch { return false; }
+      void refreshHasAnySaveSlotCache();
+      return cachedHasAnySaveSlot;
     }
 
     function openSaveGameDialog(): void {
-      showSaveGameDialog({
+      void showSaveGameDialog({
         defaultLabel: currentSaveLabel('manual'),
         turn,
-        onSave: (slotId, label) => {
-          const { ok, reason } = persistSaveToSlot(slotId, label);
+        onSave: async (slotId, label) => {
+          const { ok, reason } = await persistSaveToSlot(slotId, label);
           if (ok) {
             showHintMessage(`Gra zapisana: «${label}» (tura ${turn})`, 3500);
             console.log('[Save] slot=' + slotId + ' label=' + label + ' tura=' + turn);
             // #69: menu pauzy zostaje otwarte pod dialogiem zapisu — odblokuj
             // „Wczytaj grę" bez czekania na pełne zamknięcie/otwarcie menu.
+            await refreshHasAnySaveSlotCache();
             refreshGamePauseMenuLoadState();
           } else {
             // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT: przy 'quota' pokaż
@@ -16768,8 +16788,18 @@ async function boot(): Promise<void> {
       });
     }
 
-    function openLoadGameDialog(fromInGamePause = false): void {
-      if (!hasAnySaveSlot()) {
+    // MIGRACJA IDB: async -- odczytuje listSaves()/showLoadGameDialog()
+    // (Promise-based, IndexedDB) zamiast cache'owanego hasAnySaveSlot(),
+    // żeby ta konkretna decyzja (pokazać dialog czy hint "brak zapisów")
+    // była tak świeża, jak to możliwe.
+    async function openLoadGameDialog(fromInGamePause = false): Promise<void> {
+      let any: boolean;
+      try {
+        any = (await listSaves()).length > 0;
+      } catch {
+        any = false;
+      }
+      if (!any) {
         showHintMessage(
           fromInGamePause
             ? 'Brak zapisów na tym urządzeniu.'
@@ -16780,7 +16810,7 @@ async function boot(): Promise<void> {
         return;
       }
       if (!fromInGamePause) hideMainMenu();
-      showLoadGameDialog({
+      await showLoadGameDialog({
         onLoad: (slotId) => { void loadGameFromSlot(slotId, fromInGamePause); },
         onCancel: () => {
           if (!fromInGamePause) openStartupMainMenu();
@@ -16836,15 +16866,15 @@ async function boot(): Promise<void> {
           // a loadGameFromSlot() dostałby pusty stan zamiast realnego pliku.
           void (async () => {
             await triggerFsaAutosaveBootstrap();
-            const slot = continueSaveSlotId();
+            const slot = await continueSaveSlotId();
             if (slot) {
               void loadGameFromSlot(slot, false);
             } else {
-              openLoadGameDialog(false);
+              void openLoadGameDialog(false);
             }
           })();
         },
-        onLoad: () => { void triggerFsaAutosaveBootstrap(); openLoadGameDialog(false); },
+        onLoad: () => { void triggerFsaAutosaveBootstrap(); void openLoadGameDialog(false); },
         onAbout: () => {
           showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
         },
@@ -16857,7 +16887,7 @@ async function boot(): Promise<void> {
       hasSave: hasAnySaveSlot,
       onResume: () => { /* gra już widoczna pod overlayem */ },
       onSave: () => { openSaveGameDialog(); },
-      onLoad: () => { openLoadGameDialog(true); },
+      onLoad: () => { void openLoadGameDialog(true); },
       onNewGame: () => {
         showNewGameFlow({
           data,
@@ -22093,9 +22123,10 @@ async function boot(): Promise<void> {
     // / EN: returns the full save result (ok + reason), not a bare boolean --
     // callers need the failure reason (e.g. 'quota') to show an accurate
     // message instead of a misleading generic one.
-    function persistSaveToSlot(slotId: string, label: string): SaveToLocalResult {
+    // MIGRACJA IDB: async -- saveToLocal() zapisuje teraz do IndexedDB (Promise).
+    async function persistSaveToSlot(slotId: string, label: string): Promise<SaveToLocalResult> {
       try {
-        const result = saveToLocal(slotId, buildSaveGameSnapshot(label));
+        const result = await saveToLocal(slotId, buildSaveGameSnapshot(label));
         if (result.ok) setLastPlayedSlotId(slotId);
         return result;
       } catch (eSave) {
@@ -22106,9 +22137,10 @@ async function boot(): Promise<void> {
 
     /**
      * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
+     * MIGRACJA IDB: async (persistSaveToSlot -> saveToLocal -> IndexedDB).
      */
-    function doQuickSave(showHintOnSuccess = true): boolean {
-      const { ok, reason } = persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
+    async function doQuickSave(showHintOnSuccess = true): Promise<boolean> {
+      const { ok, reason } = await persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
       if (ok) {
         if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);
         console.log('[Save] autosave tura=' + turn);
@@ -22274,7 +22306,7 @@ async function boot(): Promise<void> {
       }
 
       try {
-        const { ok, reason } = saveToLocal(slot, snapshot);
+        const { ok, reason } = await saveToLocal(slot, snapshot);
         if (ok) {
           setLastPlayedSlotId(slot);
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
@@ -26006,14 +26038,14 @@ async function boot(): Promise<void> {
       // --- Ctrl+S: Save game (step K) ---
       if ((e.key.toLowerCase() === 's') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        doQuickSave(true);
+        void doQuickSave(true);
         return;
       }
 
       // --- Ctrl+L: Load game — wybór slotu ---
       if ((e.key.toLowerCase() === 'l') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        openLoadGameDialog(true);
+        void openLoadGameDialog(true);
         return;
       }
 
@@ -27781,7 +27813,7 @@ async function boot(): Promise<void> {
         // szuka w localStorage klucza, który nigdy tam nie istniał).
         const saved = slotId.startsWith(FSA_SLOT_PREFIX)
           ? await loadFsaAutosaveFile(slotId.slice(FSA_SLOT_PREFIX.length))
-          : loadFromLocal(slotId);
+          : await loadFromLocal(slotId);
         if (!saved) {
           diagWarn('load', `brak danych slot=${slotId}`);
           showHintMessage('Nie można wczytać tego zapisu.', 3000);
@@ -27934,7 +27966,7 @@ async function boot(): Promise<void> {
 
     /** @deprecated alias — użyj loadGameFromSlot / openLoadGameDialog */
     function doLoadGame(fromInGamePause = false): void {
-      openLoadGameDialog(fromInGamePause);
+      void openLoadGameDialog(fromInGamePause);
     }
 
     /** Wspólna ścieżka wczytywania zapisu — Ctrl+L i doLoadGame (Grupa F: migracja podziału). */
@@ -28475,6 +28507,23 @@ async function boot(): Promise<void> {
       new URLSearchParams(location.search).get('demo') === 'ulepszenia' ||
       /DEMO-ULEPSZENIA/i.test(location.pathname || '')
     );
+    // MIGRACJA IDB: best-effort, jednorazowo na starcie gry -- prosi przeglądarkę
+    // o "persistent storage" (Chrome/Firefox: origin z trwałymi danymi jest
+    // mniej podatny na automatyczne czyszczenie pod presją miejsca na dysku).
+    // Fire-and-forget: brak wsparcia/odmowa nie blokuje niczego, zapisy nadal
+    // działają -- to wyłącznie prośba o priorytet, nie wymóg funkcjonalny.
+    // / EN: best-effort, once at game start -- asks the browser for
+    // "persistent storage" (origin data is less likely to be evicted under
+    // disk pressure). Fire-and-forget: no support/denial doesn't block
+    // anything, saves still work -- this is a priority request, not a
+    // functional requirement.
+    try { void navigator.storage?.persist?.(); } catch { /* ignore -- best-effort */ }
+    // MIGRACJA IDB: pierwsze wypełnienie cache'a hasAnySaveSlot() (patrz
+    // definicja wyżej) -- odpalone tu, żeby był gotowy zanim gracz zdąży
+    // otworzyć menu główne/pauzy (stale-while-revalidate poniżej i tak by go
+    // ostatecznie uzupełnił, ale to dodatkowo skraca okno "jeszcze nie wiem").
+    void refreshHasAnySaveSlotCache();
+
     if (demoUlepszeniaUrl) {
       void (async () => { await doStartPlaytestMapaSwiata(); seedDemoUlepszenia(); })();
     } else if (playtestBitwaDuzaAny || playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
