@@ -12118,6 +12118,22 @@ worktree Operatora, który raportował fałszywe pre-istniejące porażki w `ai-
 gałęzią, NIE regresja; na czystym drzewie oba testy 18/18 i 17/17 zielone): tsc 0, logic-test
 213/213, `cs-wave-attack-radius-test` 22/22. **STATUS: dispatch Opus 5 Evaluator, runda 2.**
 
+**Evaluator runda 2: PASS-WITH-NOTES `ef75b7f3` (po N3).** Zweryfikował N1 wykonaniem
+(powtórzył IDENTYCZNĄ mutację rundy 1 na czystym drzewie: teraz 17/3 fail zamiast ślepych 21/21),
+`fnBody.length` niezależnie policzony = 6894 (nie 40207), M7 nietknięte, N2 domknięte (grep
+potwierdza zero call sites `countFriendlyMilitaryOnHex` w produkcji), wszystkie bramki zielone NA
+CZYSTYM drzewie głównym (rzekome pre-istniejące porażki poprzedniego Operatora potwierdzone jako
+artefakt jego worktree, nie regresja). Nieblokujące N3: separator `/\nfunction /` nie rozpoznawał
+`export function` — mogłoby ciszej rozszerzyć okno przy przyszłym refaktorze eksportującym sąsiednią
+funkcję (zweryfikowane in-memory: 6894→9216→17253 przy kolejnych `export`, asercja sanity by tego
+nie złapała). **N3 naprawione od razu** (`/\n(export )?function /`, commit `ef75b7f3`), potwierdzone
+6894 niezależnie od export. Uwaga procesowa Evaluatora: równoległy commit innej sesji (`82157e09`,
+main.ts wiring drenażu) trafił do wspólnego drzewa w trakcie jego celowej mutacji testowej —
+zweryfikował brak wycieku, bez konsekwencji, ale potwierdza wagę izolacji worktree (§4a).
+
+**TEMAT ZAMKNIĘTY.** Wszystkie 3 punkty (implementacja, N1 test, N3 fragility) rozwiązane i
+zweryfikowane niezależnie. Brak dalszych otwartych pytań ABC dla tego tematu.
+
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N1 (twardy błąd) SCALONE `b7f06f08` (2026-08-11)
 
 ECHO 2. Cofnięty cichy fallback rundy 3 w `load-map-source.ts::loadMapForSave` — uszkodzony
