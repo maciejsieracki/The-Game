@@ -12405,3 +12405,12 @@ tworzy `git worktree add <ścieżka> -b <branch> HEAD` (HEAD = aktualna gałąź
 tej ręcznie przygotowanej ścieżce + obowiązkową weryfikacją bazy na starcie (`grep
 SAVE_META_PREFIX gra/src/game/save.ts`).** Zadziałało za każdym razem od wdrożenia. Do
 zgłoszenia jako możliwy błąd/ograniczenie środowiska poza tą sesją.
+
+## P-MAPGEN-PANGEA-COASTRATIO-PROG — znaleziony przy deployu, status nieustalony (2026-08-11)
+
+`map-gen-regression-test.cjs`, sekcja „Pangea nieregularna" (5 seedów): 4/5 seedów (42/123/777/
+2026) nie przechodzą `coastRatio > 3.8` (wartości 3.778-3.799, tuż pod progiem; `dominantRatio`/
+`bboxFill` w normie). Nieobecne na liście znanych pre-istniejących czerwonych bramek w
+`CLAUDE.md`/runbooku. Status nieustalony: świeże czy stare, próg czy generator. **STATUS:
+OTWARTE — do zbadania na starcie następnej sesji, PRZED deployem (patrz `KANAL-PRACA.md`, wpis
+2026-08-11 09:5x, pełne dane).**
