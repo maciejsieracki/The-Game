@@ -12145,3 +12145,35 @@ zmieniła sens (asercjonuje przeciwnie niż w rundzie 3) — 54 pass, 0 fail, 1 
 liczbowo, ten sam bloker rotacji budżetu co wcześniej, niezwiązany z tą naprawą). Bramki: tsc 0,
 logic-test 213/213. **Temat ma jeszcze 1 otwarty punkt (architektura rotacji, ECHO 3, IndexedDB —
 osobny dispatch w toku równolegle). STATUS: dispatch Opus 5 Evaluator dla N1.**
+
+**Evaluator N1: FAIL.** Mechanika twardego błędu POPRAWNA (1a/1b/1c/2/3/5 zweryfikowane, w tym
+niezależną symulacją poza test harnessem) — ale komunikat dla gracza (`showHintMessage`) jest
+NIEWIDOCZNY w dominującej ścieżce: `.civ-menu` (z-index 500, nieprzezroczyste tło) montowane
+zaraz po `openStartupMainMenu()` całkowicie zamalowuje toast (z-index 320) w tym samym stacking
+context (`body` bez `transform` przy domyślnym zoomie UI = 100%, więc oba elementy konkurują w
+root). Ta sama KLASA błędu co 5 rund kolizji toastów przy elimination-notice wcześniej w tej
+sesji — inny mechanizm (z-index vs ówczesna kolejność wywołań), ten sam rodzaj: overlay
+zamalowuje komunikat. Wzorzec repo na to istnieje: `isPreBattleOpen() ? '9950' : '320'` (trzeba
+odwrócić kolejność wywołań — menu jeszcze nie jest otwarte w chwili `showHintMessage`). N3
+nieblokujące: komentarz „najczęstsza przyczyna" bez pokrycia (ok===false ma też inne przyczyny).
+**STATUS: dispatch Sonnet 5 (worktree), runda 2 — podnieść z-index toastu w tej ścieżce ponad
+.civ-menu (500), zweryfikować REALNIE (nie tylko liczbowo) że toast renderuje się NAD menu po
+`openStartupMainMenu()`, złagodzić komentarz N3.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — ECHO 3 (IndexedDB): ODRZUCONE, worktree na złej bazie
+
+Operator dostarczył migrację na IndexedDB (~30 miejsc w main.ts + save.ts + saveLoadDialog.ts +
+preBattle.ts + mapFieldBattle.ts), ale jego worktree był oparty na commicie `99974173` ("merge:
+dogonienie main o FALA 267"), który NIE JEST przodkiem obecnej gałęzi (`git merge-base
+--is-ancestor` = NIE) — to rozbieżny punkt, prawdopodobnie main sprzed integracji tej sesji.
+Operator sam zgłosił (w dobrej wierze, nieświadomie): „`map-snapshot-load-test.cjs` nie istnieje
+w tym repo" i „`loadSaveSlotMeta`/`buildSaveSlotMeta`/`SAVE_META_PREFIX` nie istnieją nigdzie w
+kodzie" — obie te rzeczy ISTNIEJĄ na obecnej gałęzi (zweryfikowane bezpośrednio: `grep
+SAVE_META_PREFIX gra/src/game/save.ts` trafia, `map-snapshot-load-test.cjs` uruchamiany
+wielokrotnie w tej sesji, 54/0/1-known-fail). Jego reconstrukcja `save.ts` pominęła więc całą
+infrastrukturę meta-klucza (Defekt C) i naprawę rozłączności prefiksów (runda 3 wcześniej dziś) —
+scalenie tej pracy nadpisałoby/cofnęło już działającą funkcjonalność. Skala zmiany (30+ miejsc w
+`main.ts`) czyni ręczne scalenie zbyt ryzykownym. **Praca ODRZUCONA w całości, worktree usunięty.
+STATUS: dispatch Sonnet 5 (nowy worktree), z OBOWIĄZKOWĄ weryfikacją bazy na starcie (`grep
+SAVE_META_PREFIX gra/src/game/save.ts` musi trafić PRZED jakąkolwiek pracą — jeśli nie trafi,
+STOP i raport, nie rekonstrukcja na ślepo).**
