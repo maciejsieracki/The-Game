@@ -12212,3 +12212,51 @@ ten sam magazyn, do wiadomości Macieja, nie defekt.
 **STATUS: dispatch Sonnet 5 (worktree) — N1 (przełączyć badge/tooltip panelu Surowców na
 semantykę drenażu, `empireDetailPanel.ts:738-790`) + N2 (naprawić sekcję H testu: kolejność, nie
 tylko obecność) + N3 (komentarz). Bez ABC — czysto techniczne.**
+
+**Runda 2: SCALONE `0f7745c4` (ręczny worktree, poprawna baza po incydencie złej bazy
+automatycznych worktree — patrz niżej).** N1: `buildEmpireResourceRows` liczy teraz
+`computeCitizenResourceDrain` z sumą populacji ownera identyczną jak silnik, `deductions`
+świadomie ignorowane (panel to podgląd, nie mutacja). Tooltip/badge: „POKRYTE"/„NIEDOBÓR". N2:
+sekcja H testu przepisana na okna `indexOf` (kolejność, nie tylko obecność) — zweryfikowane że
+M4 (pobór warunkowany `ownerId===0`) i M5 (drenaż powtórzony per miasto) są TERAZ łapane
+czerwono. N3: komentarz zaktualizowany. Bramki: tsc 0, logic-test 213/213,
+`citizen-resource-upkeep-test` 83/83. Nieoceniona jeszcze przez Evaluatora nota z rundy 1:
+`cityPanel.ts` (2 miejsca) nadal używa starej `resolveCitizenResourceCoverage` — ale linia
+~1175-1176 preferuje `ordState.citizenUpkeep` (już poprawny, z silnika) z fallbackiem TYLKO gdy
+stan silnika jeszcze nie istnieje; linia ~2914 to jawnie `fromEngine: false` ścieżka
+sandbox/playtest (nie żywa rozgrywka) — świadomie NIE naprawiane w tej rundzie, niski priorytet,
+nie blokuje. **STATUS: dispatch Opus 5 Evaluator, runda 2.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N-ZINDEX-TOAST SCALONE `0f7745c4` (2026-08-11)
+
+Runda 2 naprawy N1 (Evaluator FAIL: toast niewidoczny pod `.civ-menu`). `showHintMessage`
+podnosi z-index do 600 gdy `isMainMenuOpen()` (zweryfikowane grepem: bije `.civ-menu`=500,
+`.civ-pause`=480, `.cm-toast`=560; najbliższe overlaye pełnoekranowe 650+, poza zasięgiem tej
+kolizji). Kolejność w gałęzi `if (!ok)` odwrócona: `openStartupMainMenu()` PRZED
+`showHintMessage()`. Ścieżka `fromInGamePause===true` sprawdzona — `hideGamePauseMenu()`/
+`hideSaveLoadDialog()` już wywołane wcześniej w tej samej funkcji, żaden overlay nie koliduje,
+320 wystarcza. N3 (komentarz „najczęstsza przyczyna" bez pokrycia) złagodzony na „jedną z
+przyczyn". Nowy test `load-fail-toast-zindex-test.cjs` (15/15, strukturalny: formuła z-index,
+kolejność wywołań przez `indexOf`, wartości CSS). Bramki: tsc 0, logic-test 213/213,
+`map-snapshot-load-test` 54/0/1-known-fail (bez regresji). **STATUS: dispatch Opus 5 Evaluator,
+runda 2.**
+
+## Incydent — worktree automatyczne (isolation:"worktree") systematycznie bazują na `main`,
+## nie na bieżącej gałęzi (2026-08-11)
+
+Zaobserwowano wielokrotnie w tej sesji (agenty PM promień, hard-error snapshot, drenaż
+obywateli, IndexedDB, z-index toastu): każdy automatyczny worktree utworzony przez `isolation:
+"worktree"` bazuje na commicie `99974173` (`main`/`origin/main`, „merge: dogonienie main o FALA
+267"), NIE na aktualnym szczycie gałęzi roboczej `claude/sprawdzenie-funkcjonalnosci-ek4ra0` —
+mimo że orkiestrator cały czas pracuje na tej drugiej. Dla drobnych, punktowych zmian (PM
+promień, hard-error revert) to nieszkodliwe — `git diff`/`git apply -3` scala poprawnie mimo
+rozbieżnej bazy (prawdziwy 3-way merge przez wspólne obiekty gita). Dla większych zmian
+dotykających świeżo dobudowanej infrastruktury (IndexedDB dotykające `save.ts` z całym
+mechanizmem `SAVE_META_PREFIX`/Defekt C, którego NIE MA na `main`) to niebezpieczne — agent
+nieświadomie „nie widzi" tej infrastruktury i próbuje ją odtworzyć/ominąć, co groziłoby cofnięciem
+już działającej funkcjonalności. **Obejście zastosowane od tego incydentu: orkiestrator ręcznie
+tworzy `git worktree add <ścieżka> -b <branch> HEAD` (HEAD = aktualna gałąź robocza), symlinkuje
+`node_modules`, i dispatchuje agenta BEZ parametru `isolation`, z instrukcją pracy wyłącznie w
+tej ręcznie przygotowanej ścieżce + obowiązkową weryfikacją bazy na starcie (`grep
+SAVE_META_PREFIX gra/src/game/save.ts`).** Zadziałało za każdym razem od wdrożenia. Do
+zgłoszenia jako możliwy błąd/ograniczenie środowiska poza tą sesją.
