@@ -333,7 +333,7 @@ import {
   isOsiedleRevoltImmune,
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
-import { resolveCitizenResourceCoverage } from './game/citizen-resource-upkeep';
+import { resolveCitizenResourceCoverage, computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -23258,6 +23258,32 @@ async function boot(): Promise<void> {
             // liczony RAZ i cache'owany dla WSZYSTKICH miast tej tury (nie per miasto) —
             // ownerId-agnostyczne, dotyczy gracza, dużej AI i Państw-Miast jednakowo (ECHO Q2=A).
             const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();
+            // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): realny drenaż magazynu,
+            // 1 szt. surowca na 1 obywatela na turę. Liczony RAZ per owner per turę (suma
+            // populacji WSZYSTKICH miast tego ownera -- computeCitizenResourceDrain wymaga
+            // tego, inaczej kilka miast tego samego ownera wydrenowałoby ten sam magazyn
+            // wielokrotnie), potem cache'owany i zastosowany identycznie do każdego miasta
+            // tego ownera (ten sam wzorzec cache'owania co citizenUpkeepEmpireStock powyżej).
+            const citizenUpkeepDrainCache = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();
+            const citizenUpkeepDrainForOwner = (ownerId: number): ReturnType<typeof computeCitizenResourceDrain> => {
+              let v = citizenUpkeepDrainCache.get(ownerId);
+              if (v === undefined) {
+                const ownerPopulation = cities.reduce(
+                  (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
+                  0,
+                );
+                v = computeCitizenResourceDrain(
+                  empireEpochForOwner(ownerId),
+                  ownerPopulation,
+                  citizenUpkeepEmpireStock(ownerId),
+                );
+                if (Object.keys(v.deductions).length > 0) {
+                  deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                }
+                citizenUpkeepDrainCache.set(ownerId, v);
+              }
+              return v;
+            };
 
             for (const city of cities) {
               const cid = city.id;
@@ -23433,10 +23459,9 @@ async function boot(): Promise<void> {
               const ownerEraForUpkeep = empireEpochForOwner(city.ownerId);
               // R-ZUZYCIE-SUROWCOW-OBYWATELE: ownerId-agnostyczne — dotyczy gracza, dużej AI
               // i Państw-Miast jednakowo (ECHO Q2=A), magazyn CENTRALNY, nie lokalny (ECHO Q1).
-              const citizenUpkeep = resolveCitizenResourceCoverage(
-                ownerEraForUpkeep,
-                citizenUpkeepEmpireStock(city.ownerId),
-              );
+              // N2 (2026-08-11): realny drenaż (1 szt./obywatel), nie tylko podgląd obecności —
+              // citizenUpkeepDrainForOwner cache'uje i mutuje magazyn RAZ per owner per turę.
+              const citizenUpkeep = citizenUpkeepDrainForOwner(city.ownerId);
 
               const ordPctRaw = evaluateOrderFromBreakdown(
                 {

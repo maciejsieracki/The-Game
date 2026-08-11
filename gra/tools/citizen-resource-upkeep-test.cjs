@@ -43,6 +43,7 @@ fs.writeFileSync(ENTRY_FILE, `
 export {
   citizenRequiredResourcesForEra,
   resolveCitizenResourceCoverage,
+  computeCitizenResourceDrain,
   CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
   CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
   CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING,
@@ -279,14 +280,14 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
   // -- to jest DOWÓD, że AI i Państwa-Miasta przechodzą przez TĘ SAMĄ ścieżkę co gracz.
   const mainSrc = mainSrcRaw;
   assert(
-    mainSrc.includes("import { resolveCitizenResourceCoverage } from './game/citizen-resource-upkeep';"),
-    'main.ts importuje resolveCitizenResourceCoverage z citizen-resource-upkeep.ts',
+    mainSrc.includes("import { resolveCitizenResourceCoverage, computeCitizenResourceDrain } from './game/citizen-resource-upkeep';"),
+    'main.ts importuje resolveCitizenResourceCoverage + computeCitizenResourceDrain z citizen-resource-upkeep.ts',
   );
-  // Uwaga: `citizenUpkeep` jako nazwa zmiennej występuje TAKŻE w buildEmpireResourceRows (UI
-  // panelu Surowców) -- szukamy specyficznie wywołania z resolverem `citizenUpkeepEmpireStock`
-  // (cache per-owner tej tury), które istnieje WYŁĄCZNIE w pętli Porządku.
-  const citizenCallIdx = mainSrc.indexOf('citizenUpkeepEmpireStock(city.ownerId)');
-  assert(citizenCallIdx > -1, 'main.ts woła resolveCitizenResourceCoverage(..., citizenUpkeepEmpireStock(city.ownerId)) w pętli Porządku');
+  // N2 (2026-08-11): pętla Porządku woła TERAZ citizenUpkeepDrainForOwner(city.ownerId)
+  // (realny drenaż), NIE resolveCitizenResourceCoverage bezpośrednio -- ten drugi zostaje
+  // jako podgląd używany gdzie indziej (buildEmpireResourceRows, UI panelu Surowców).
+  const citizenCallIdx = mainSrc.indexOf('citizenUpkeepDrainForOwner(city.ownerId)');
+  assert(citizenCallIdx > -1, 'main.ts woła citizenUpkeepDrainForOwner(city.ownerId) w pętli Porządku (realny drenaż, N2)');
   if (citizenCallIdx > -1) {
     // Najbliższa otwierająca pętla `for (const city of cities)` PRZED wywołaniem (w tym samym bloku
     // try) i BRAK `if (city.ownerId === 0` między nią a wywołaniem -- czyli nic nie wycina AI.
@@ -304,6 +305,100 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
     mainSrc.includes('const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();'),
     'main.ts: magazyn centralny cache\'owany per-owner (makeOwnerEmpireStockResolver) -- jeden wspólny resolver dla wszystkich ownerów, gracza i AI',
   );
+  // citizenUpkeepDrainForOwner -- ten sam wzorzec cache'owania (Map per ownerId), nie
+  // warunkowany ownerId -- gracz i AI drenowani IDENTYCZNĄ ścieżką.
+  assert(
+    mainSrc.includes('const citizenUpkeepDrainCache = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();'),
+    'main.ts: drenaż cache\'owany per-owner (citizenUpkeepDrainCache) -- jeden wspólny resolver dla wszystkich ownerów',
+  );
+}
+
+// ===========================================================================
+// G. computeCitizenResourceDrain -- realny drenaż 1:1 (N2, Maciej 2026-08-11)
+// ===========================================================================
+console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1 szt./obywatel --');
+{
+  // Stawka 1:1: 10 obywateli, magazyn 50 drewna/50 gliny (epoka 1) -> required=10 każdy,
+  // drained=10 każdy (magazyn wystarcza), oba "available" (pełne pokrycie).
+  const full = M.computeCitizenResourceDrain(1, 10, { drewno: 50, glina: 50 });
+  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na 10 obywateli (>=10 każdego) -> oba available');
+  eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (1 szt./obywatel × 10 obywateli)');
+  eq(full.deductions.glina, 10, 'deductions.glina = 10 (1 szt./obywatel × 10 obywateli)');
+
+  // Niedobór: magazyn MNIEJSZY niż required -> drained = min(required, stock), NIGDY < 0,
+  // surowiec liczy się jako "missing" (pokrycie częściowe, nie pełne -- kara nadal binarna).
+  const partial = M.computeCitizenResourceDrain(1, 10, { drewno: 3, glina: 0 });
+  deepEqSet(partial.missing, ['drewno', 'glina'], '10 obywateli, magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
+  eq(partial.deductions.drewno, 3, 'deductions.drewno = min(10, 3) = 3 -- drenuje ile jest, magazyn NIE schodzi poniżej zera');
+  assert(!('glina' in partial.deductions), 'deductions.glina nieobecne (0 do odjęcia) -- magazyn=0, nic nie drenować');
+
+  // Zero obywateli -> zero zapotrzebowania -> zawsze "available" (brak kary na dane brzegowe).
+  const zeroPop = M.computeCitizenResourceDrain(1, 0, { drewno: 0, glina: 0 });
+  deepEqSet(zeroPop.available, ['drewno', 'glina'], '0 obywateli -> required=0 -> zawsze pełne pokrycie, nawet z pustym magazynem');
+  eq(Object.keys(zeroPop.deductions).length, 0, '0 obywateli -> brak zapotrzebowania -> brak odjęcia (deductions puste)');
+
+  // Populacja ujemna/niefinitna (dane śmieciowe) -> traktowana jak 0, zero regresji/crashu.
+  const negPop = M.computeCitizenResourceDrain(1, -5, { drewno: 0 });
+  eq(Object.keys(negPop.deductions).length, 0, 'populacja ujemna traktowana jak 0 -- brak odjęcia, brak crasha');
+  const nanPop = M.computeCitizenResourceDrain(1, NaN, { drewno: 0 });
+  eq(Object.keys(nanPop.deductions).length, 0, 'populacja NaN traktowana jak 0 -- brak odjęcia, brak crasha');
+
+  // Kara nadal BINARNA (ECHO Q3=A niezmienione): pokrycie W PEŁNI (nie licznik/rozmiar
+  // niedoboru) -- 1 sztuka brakująca do pełnego pokrycia daje TAKĄ SAMĄ karę jak 1000 sztuk
+  // brakujących (obie "missing"), happinessDelta/growthPctDelta liczą TYLKO available.length/missing.length.
+  const barelyMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 9, glina: 50 });
+  const wayMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 0, glina: 50 });
+  eq(barelyMissing.happinessDelta, wayMissing.happinessDelta, 'ECHO Q3=A zachowane: brak 1 sztuki do pełnego pokrycia = ta sama kara co brak całości (binarne, nie proporcjonalne)');
+}
+
+// ===========================================================================
+// H. Agregacja RAZ per owner per turę (N2 -- pułapka wielu miast tego samego ownera)
+// ===========================================================================
+console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (nie per miasto) --');
+{
+  // Strukturalna weryfikacja main.ts: populacja sumowana po WSZYSTKICH miastach ownera
+  // (cities.reduce), NIE brana z pojedynczego city.population -- inaczej 3 miasta tego samego
+  // ownera każde "widziałoby" ten sam pełny magazyn i razem wydrenowałyby 3× za dużo.
+  const REDUCE_ANCHOR = 'const ownerPopulation = cities.reduce(';
+  const reduceIdx = mainSrcStripped.indexOf(REDUCE_ANCHOR);
+  assert(reduceIdx > -1, 'main.ts: kotwica sumowania populacji ownera (cities.reduce) znaleziona');
+  const reduceWindow = reduceIdx > -1 ? mainSrcStripped.slice(reduceIdx, reduceIdx + 200) : '';
+  assert(
+    /c\.ownerId === ownerId \? sum \+ c\.population : sum/.test(reduceWindow),
+    'H1: sumowanie filtruje po c.ownerId === ownerId i dodaje c.population -- suma WSZYSTKICH miast tego ownera, nie jednego miasta',
+  );
+
+  // Deduction realnie stosowany przez deductBuildingStockCostAcrossCities WEWNĄTRZ resolvera,
+  // pod warunkiem że deductions nie jest puste -- to jest miejsce realnej mutacji magazynu.
+  assert(
+    mainSrcStripped.includes('deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);'),
+    'H2: main.ts woła deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions) -- realne odjęcie z magazynu, nie tylko podgląd',
+  );
+
+  // Cache: wynik zapisany w citizenUpkeepDrainCache PRZED return -- drugie/trzecie miasto
+  // tego samego ownera w tej samej turze dostaje ten sam (już zmutowany raz) wynik, nie liczy
+  // drenażu ponownie.
+  assert(
+    mainSrcStripped.includes('citizenUpkeepDrainCache.set(ownerId, v);'),
+    'H3: wynik drenażu cache\'owany per ownerId -- drugie miasto tego samego ownera w tej turze NIE drenuje magazynu ponownie',
+  );
+
+  // Behawioralny dowód end-to-end: computeCitizenResourceDrain wywołane RAZ z sumą populacji
+  // 2 miast (5+5=10) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
+  // populacji 10 -- a NIE 2× wywołanie po 5 (co dałoby 2×5=10 też przypadkiem przy tej stawce,
+  // więc test dobiera asymetryczne populacje 3+7, żeby odróżnić "suma najpierw" od "podwójne
+  // liczenie": drenaż z osobna dla pop=3 i pop=7 na TYM SAMYM (niezmutowanym) magazynie 8 drewna
+  // dałby OBA "available" (3<=8 i 7<=8) -- błędnie, bo razem potrzeba 10 > 8. Suma-najpierw
+  // (RAZ per owner) poprawnie daje deductions.drewno = min(10, 8) = 8, missing.
+  const wrongPerCity3 = M.computeCitizenResourceDrain(1, 3, { drewno: 8 });
+  const wrongPerCity7 = M.computeCitizenResourceDrain(1, 7, { drewno: 8 });
+  assert(
+    wrongPerCity3.available.includes('drewno') && wrongPerCity7.available.includes('drewno'),
+    'sanity: liczone OSOBNO (błędny wzorzec) obie "widzą" magazyn=8 jako wystarczający -- to właśnie ta pułapka, którą H1-H3 mają wykluczyć w main.ts',
+  );
+  const correctSummedFirst = M.computeCitizenResourceDrain(1, 3 + 7, { drewno: 8, glina: 50 });
+  eq(correctSummedFirst.deductions.drewno, 8, 'poprawny wzorzec (suma populacji NAJPIERW, RAZ per owner): deductions.drewno = min(10, 8) = 8, nie 2×8=16');
+  deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 10 obywateli > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
 }
 
 // ===========================================================================
