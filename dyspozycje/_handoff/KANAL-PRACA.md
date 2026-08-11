@@ -6595,3 +6595,32 @@ domknij 2 tematy pozostawione w stanie nie-PASS: `R-ZUZYCIE-SUROWCOW-OBYWATELE N
 częściowa, `13f62b0b` — brakuje jeszcze 2 asercji testowych, patrz `PYTANIA-OTWARTE.md`) i
 przegląd migracji IndexedDB (`798f3c17`, workflow przerwany bez werdyktu, `PYTANIA-OTWARTE.md`).
 CZEKAM-NA: kolejna sesja chmurowa (ten sam wątek pracy, po odnowieniu limitu).
+
+## [09:5x PL, 2026-08-11] KOREKTA własnego wpisu wyżej — map-gen-regression-test NIE jest czystym PASS
+
+Wynik dotarł już po zakończeniu poprzedniej tury (proces w tle, PID 31523, dokończył się
+naturalnie). **Mój wcześniejszy wpis błędnie sugerował "uruchom od zera, jeśli PASS to
+deployuj"** — mam już wynik i NIE jest to czyste PASS, więc następna sesja NIE powinna ślepo
+polegać na samym exit code (dokładnie pułapka z CLAUDE.md §0b pkt (b): odczytałem najpierw exit
+code POTOKU `| tail -50`, nie samego skryptu — to była pomyłka, poprawiona przez przeczytanie
+treści i logiki `allOk`/`process.exit` w źródle testu).
+
+**Realny wynik:** `allOk = stdOk && duzyOk && ... && fail === 0 && villageOk` — więc skrypt
+faktycznie kończy się `exit 1`. Dwa źródła:
+1. **AC czasowe** (`standard <7s: FAIL 129.21s`, `duża <15s: FAIL 1158.30s`) — zgodnie z
+   istniejącą notatką w runbooku (`STAN-PRACY-HANDOFF.md §6`) to **znany, akceptowany** rodzaj
+   FAIL na wolniejszej maszynie, pomiar wydajności nie regresja. NIE blokuje.
+2. **⚠️ „Pangea nieregularna: 1 masa + nieregularny obrys: FAIL (4 fail)"** — 4 z 5 seedów
+   (42/123/777/2026) nie przechodzą progu `coastRatio > 3.8` (funkcja `pangeaShapeMetrics`,
+   `gra/tools/map-gen-regression-test.cjs:206-221`), WSZYSTKIE tuż PONIŻEJ progu (3.778-3.799,
+   próg 3.8 — różnica ~0.5%, nie drastyczne odchylenie). `dominantRatio`/`bboxFill` w normie.
+   **TEGO ELEMENTU NIE MA na liście znanych pre-istniejących czerwonych bramek w `CLAUDE.md`
+   (BRAMKI) ani w runbooku** — status nieznany: czy to świeża regresja z dzisiejszej nocy (mało
+   prawdopodobne, żaden z tematów nie dotykał generatora map), czy stary, nigdy niezauważony
+   dług testowy (kalibracja progu), czy coś pomiędzy.
+**PIERWSZA CZYNNOŚĆ następnej sesji (poprawiona wersja poprzedniego wpisu):** ZBADAJ Pangea FAIL
+PRZED deployem — sprawdź `git log -p -- gra/tools/map-gen-regression-test.cjs` (kiedy próg 3.8
+powstał i jaka była wtedy rzeczywista wartość) oraz czy ten sam FAIL występuje na czystym `main`
+(bramka niezwiązana z dzisiejszą pracą = można potraktować jak inne pre-istniejące czerwone i
+zadeployować z jawną notatką w `WERSJE.md`; związana = realna regresja do znalezienia). Reszta
+poprzedniego wpisu (artefakty gotowe, md5 `799827ad`, gałąź `d6817434`) bez zmian.
