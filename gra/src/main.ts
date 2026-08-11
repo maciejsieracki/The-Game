@@ -28017,6 +28017,14 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 5 (Evaluator 2026-08-11): bez tego czyszczenia
+      // panel Surowców po wczytaniu zapisu pokazywał werdykt Z POPRZEDNIEJ GRY tej samej sesji
+      // przeglądarki (klucz ownerId=0 niemal zawsze już istniał w mapie) -- cudza epoka/
+      // populacja/pokrycie aż do pierwszego przeliczenia pętli Porządku. citizenUpkeepByOwner
+      // jest lokalna dla `boot()` (deklarowana obok cityOrderState), więc czyszczenie tutaj
+      // wystarcza -- fallback computeCitizenResourceDrain przejmie na wczytanym stanie do
+      // czasu pierwszego ticku silnika.
+      citizenUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);
       plannedMarches.clear();
