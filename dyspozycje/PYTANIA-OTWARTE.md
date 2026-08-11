@@ -12257,6 +12257,27 @@ Operator zweryfikował scenariusz Evaluatora (P≤stan<2P) bezpośrednio: silnik
 IDENTYCZNY werdykt dla tych samych danych. Bramki: tsc 0, logic-test 213/213,
 `citizen-resource-upkeep-test` 87/87. **STATUS: dispatch Opus 5 Evaluator, runda 3.**
 
+**Evaluator runda 3: FAIL.** Naprawa rundy 2 (rozjazd P≤stan<2P) potwierdzona POPRAWNA
+(reprodukcja na realnym tekście `main.ts` przez `new Function`, 7/7). Ale runda 3 wprowadza NOWĄ
+rozbieżność tej samej klasy: **N1 (blokujące)** — `cities.find(c => c.ownerId === ownerId)` w
+`buildEmpireResourceRows` czyta wpis `cityOrderState` PO KLUCZU MIASTA, nie ownera; zdobycie
+miasta (oblężenie/aneksja) zmienia `city.ownerId` w trakcie tury i NIE czyści starego wpisu —
+`find()` może trafić na miasto z werdyktem POPRZEDNIEGO właściciela. Zademonstrowane na realnym
+kodzie: panel gracza w epoce Kamienia pokazuje wymagania epoki Brązu (werdykt cudzej AI) po
+przejęciu jej miasta. Wąskie (wymaga specyficznej kolejności w `cities[]`), ale deterministyczne
+i tej samej klasy co rundy 1-2. **N2 (blokujące)** — naprawa `cityPanel.ts` ma ZERO pokrycia
+testowego: pełny revert do starej reguły przechodzi wszystkie 18 sprawdzonych bramek w repo.
+**N3 (blokujące)** — sekcja I broni KSZTAŁTU tekstu, nie semantyki: zmiana `===` na `!==` w
+predykacie ownera (czytanie werdyktu OBCEGO ownera) przechodzi 87/87 bez wykrycia. N4-N6
+nieblokujące (opóźnienie epoki o turę — nieodłączny koszt „czytaj werdykt silnika", martwy
+fallback w `cityPanel.ts` do usunięcia, nieświadowione pliki zaobserwowane w trakcie audytu —
+zniknęły, drzewo dziś czyste). **Konkretna naprawa N1 podana przez Evaluatora:** osobna mapa
+`citizenUpkeepByOwner: Map<number, ...>` wypełniana BEZPOŚREDNIO w `citizenUpkeepDrainForOwner`
+(nie odczyt przez `cities.find`), czyszczona przy każdym `cityOrderState.clear()`. **STATUS:
+dispatch Sonnet 5 (worktree), runda 4 — N1 (mapa per-owner, nie per-miasto), N2 (asercja
+broniąca cityPanel.ts), N3 (sekcja I behawioralna nie tekstowa, łapiąca mutant obcego ownera), N5
+(usunąć martwy fallback).**
+
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N-ZINDEX-TOAST SCALONE `0f7745c4` (2026-08-11)
 
 Runda 2 naprawy N1 (Evaluator FAIL: toast niewidoczny pod `.civ-menu`). `showHintMessage`
