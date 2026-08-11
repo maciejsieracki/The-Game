@@ -12227,6 +12227,25 @@ stan silnika jeszcze nie istnieje; linia ~2914 to jawnie `fromEngine: false` śc
 sandbox/playtest (nie żywa rozgrywka) — świadomie NIE naprawiane w tej rundzie, niski priorytet,
 nie blokuje. **STATUS: dispatch Opus 5 Evaluator, runda 2.**
 
+**Evaluator runda 2: FAIL.** Reguła w panelu jest poprawna, ale wprowadza NOWY rozjazd
+panel↔silnik w innym paśmie — panel przelicza na ŻYWYM (już zdrenowanym w tej turze) magazynie,
+podczas gdy silnik naliczał werdykt PRZED drenażem. Dla magazynu w paśmie `P ≤ stan < 2P`
+(P = populacja imperium; realny stan po 1-2 turach bufora) silnik nalicza „POKRYTE" (+1
+Szczęście), a panel po turze pokazuje „NIEDOBÓR" — zweryfikowane wykonaniem na 5-punktowym
+skanie (P=15, glina 14→0→15). Poprawne źródło było w zasięgu: `cityOrderState.get(cid)
+?.citizenUpkeep` (już preferowane w `cityPanel.ts:1175`), Operator zamiast tego przeliczał od
+nowa. **N2 (blokujące):** sekcja H nie chroni NAPRAWY N1 — mutant M6 (przywrócenie starej reguły
+„magazyn > 0" inline w panelu) przechodzi 83/83. **Punkt 6 z rundy 1 („cityPanel.ts:2914 to
+sandbox, nie żywa rozgrywka") był NIEPRAWDZIWY** — `computeOrderStateLocal` wykonuje się przy
+KAŻDYM wywołaniu, także w żywej grze, i w gałęzi `fromEngine:true` jego `porPct`/`bandLabel`
+CELOWO nadpisują wartości silnika starą regułą — dowód wykonaniem: dla tych samych danych panel
+pokazuje pasmo „Niepokój", silnik faktycznie liczy „Bunt". **STATUS: dispatch Sonnet 5
+(worktree) — runda 3: (1) `buildEmpireResourceRows` ma czytać werdykt silnika
+(`cityOrderState`), nie przeliczać na żywo; (2) `cityPanel.ts:2914` przenieść na
+`computeCitizenResourceDrain` z sumą populacji ownera; (3) asercja pozytywna broniąca naprawy N1
+w teście; (4) rozszerzyć regex H5 poza `=== 0`/`!== 0`; (5) poprawić nieaktualny komentarz w
+teście o starej roli `resolveCitizenResourceCoverage`.**
+
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N-ZINDEX-TOAST SCALONE `0f7745c4` (2026-08-11)
 
 Runda 2 naprawy N1 (Evaluator FAIL: toast niewidoczny pod `.civ-menu`). `showHintMessage`
@@ -12240,6 +12259,20 @@ przyczyn". Nowy test `load-fail-toast-zindex-test.cjs` (15/15, strukturalny: for
 kolejność wywołań przez `indexOf`, wartości CSS). Bramki: tsc 0, logic-test 213/213,
 `map-snapshot-load-test` 54/0/1-known-fail (bez regresji). **STATUS: dispatch Opus 5 Evaluator,
 runda 2.**
+
+**Evaluator runda 2: PASS-WITH-NOTES `199d47d7` (po N-A).** Zweryfikowane wykonaniem do końca:
+kolejność wywołań w finalnym źródle, wszystkie z-index w paśmie 500-600 sprawdzone samodzielnie
+(nie z cudzego grepu), DWA ciche potencjalne zabójcy sprawdzone i czyste (overlay ładowania mapy
+z-index 3000000 — nie przecieka w ścieżce błędu; `showSceneTimingReport` z `hideAfterMs:0` — nic
+nie montuje), `isMainMenuOpen()` dowiedzione jako w pełni synchroniczne (zero
+requestAnimationFrame/setTimeout/Promise), stacking context zweryfikowany przy zoom=1 i zoom≠1,
+ścieżka `fromInGamePause===true` sprawdzona dla OBU wołających (nie jednego, jak twierdził
+nieaktualny komentarz — to była N-A), 4 mutacje testu (kolejność, formuła, wartości z-index)
+wszystkie złapane czerwono. Bramki: tsc 0, logic-test 213/213, map-snapshot-load-test
+54/0/1-known-fail. N-A naprawione (komentarz skorygowany, `199d47d7`). N-B/N-C/N-D/N-E
+nieblokujące, do wiadomości (hardening try/catch opcjonalny, F10 pre-istniejąca drobna kolizja
+nie regresja, dług testowy literalnych wartości, pozostałe showHintMessage w tej samej funkcji
+bezpieczne z innego powodu). **TEMAT ZAMKNIĘTY.**
 
 ## Incydent — worktree automatyczne (isolation:"worktree") systematycznie bazują na `main`,
 ## nie na bieżącej gałęzi (2026-08-11)
