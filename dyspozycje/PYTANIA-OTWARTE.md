@@ -12096,3 +12096,26 @@ esbuild, realne wykonanie + strukturalna asercja pozytywna/negatywna wzorem RUND
 tymczasowo i potwierdzając czerwone 3 asercje, potem przywrócił). Bramki: tsc 0, logic-test
 213/213, `ai-mp-military-cap-test` 18/18 (bez zmian), `city-state-prod-audit-test` 17/17 (bez
 zmian). **STATUS: dispatch Opus 5 Evaluator, runda 1.**
+
+**Evaluator runda 1 (Opus 5): FAIL, N1 blokujące (błąd w NOWYM teście, nie w `ai.ts`).**
+Sekcja C `cs-wave-attack-radius-test.cjs` robi `stripLineComments()` PRZED szukaniem separatora
+`// ---`, po strippingu separator nigdy nie istnieje więc `fnBody` = cały plik (40207 zn. zamiast
+6894) — Evaluator zweryfikował wykonaniem: usunięcie bramki ataku i wklejenie identycznego bloku
+gdzie indziej w pliku nadal przechodzi 21/21. N2 nieblokujące: `countFriendlyMilitaryOnHex`
+wyeksportowana bez call site w produkcji, nieoznaczona jako martwa referencja testowa. Logika w
+`ai.ts` sama w sobie potwierdzona POPRAWNA (filtr, próg, jedyny call site, atak nadal tylko z
+sąsiedztwa, `planCityStateOffensiveMove` świadomie i słusznie bez zmian). **Dispatch runda 2:
+naprawa separatora (gotowa poprawka od Evaluatora: `afterFn.search(/\nfunction /)`), komentarz
+przy martwej funkcji.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N1 (twardy błąd) SCALONE `b7f06f08` (2026-08-11)
+
+ECHO 2. Cofnięty cichy fallback rundy 3 w `load-map-source.ts::loadMapForSave` — uszkodzony
+(kształtowo poprawny) snapshot teraz PROPAGUJE wyjątek do `main.ts` (istniejący `diagError('load',
+...)` + `showHintMessage` nowy, widoczny dla gracza komunikat + powrót do menu), zamiast cicho
+regenerować inną mapę. Ścieżka niepoprawnego KSZTAŁTU (brak pola/zła struktura) bez zmian — nadal
+fallback na generator, to była i jest poprawna ścieżka. Test `map-snapshot-load-test.cjs` sekcja 3b
+zmieniła sens (asercjonuje przeciwnie niż w rundzie 3) — 54 pass, 0 fail, 1 known-fail (bez zmian
+liczbowo, ten sam bloker rotacji budżetu co wcześniej, niezwiązany z tą naprawą). Bramki: tsc 0,
+logic-test 213/213. **Temat ma jeszcze 1 otwarty punkt (architektura rotacji, ECHO 3, IndexedDB —
+osobny dispatch w toku równolegle). STATUS: dispatch Opus 5 Evaluator dla N1.**
