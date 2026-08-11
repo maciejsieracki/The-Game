@@ -314,13 +314,21 @@ async function mockGenFail() {
   //     przechodzi walidację kształtu i trafia do buildGameMapFromSnapshot,
   //     która rzuca (Evaluator runda 3, punkt 1): `hexList[999]` jest
   //     `undefined` (n=2), `.zloze = ...` na `undefined` -> TypeError.
-  //     Demonstruje NAPRAWĘ: loadMapForSave łapie ten wyjątek i spada na
-  //     genFn(), dokładnie jak przy mapSnapshot niepoprawnym kształtem.
+  //
+  //     DECYZJA WŁAŚCICIELA N1 (Maciej, 2026-08-11): cichy fallback na inny,
+  //     regenerowany świat (wprowadzony rundą 3) jest COFNIĘTY -- taki
+  //     przypadek (kształt OK, budowa rzuca) ma teraz dawać TWARDY BŁĄD:
+  //     loadMapForSave NIE łapie już wyjątku, propaguje go NIEZMIENIONY do
+  //     wywołującego (main.ts::regenerateWorldForLoad -> diagError('load',
+  //     ...), przerwanie wczytywania + powrót do menu). Sekcja asercjonuje
+  //     PRZECIWNIE niż w rundzie 3: genFn NIE jest wołany (zero fallbacku) i
+  //     loadMapForSave rzuca dokładnie ten sam wyjątek, co
+  //     buildGameMapFromSnapshot.
   // ---------------------------------------------------------------------------
-  console.log('--- 3b. buildGameMapFromSnapshot rzuca na niespójnym indeksie -> loadMapForSave łapie i spada na generator ---');
+  console.log('--- 3b. buildGameMapFromSnapshot rzuca na niespójnym indeksie -> loadMapForSave PROPAGUJE wyjątek (twardy błąd, bez fallbacku) ---');
 
   const brokenIndexSnap = { ...snap, zloze: { hexIdx: [999], val: [0] } };
-  assert(isValidMapSnapshot(brokenIndexSnap) === true, 'snapshot z hexIdx poza zakresem nadal przechodzi isValidMapSnapshot (sprawdza tylko kształt, nie wartości -- to jest właśnie luka, którą łata try/catch)');
+  assert(isValidMapSnapshot(brokenIndexSnap) === true, 'snapshot z hexIdx poza zakresem nadal przechodzi isValidMapSnapshot (sprawdza tylko kształt, nie wartości)');
 
   let brokenThrew = false;
   try {
@@ -333,10 +341,17 @@ async function mockGenFail() {
   const brokenSave = fakeSave({ mapSnapshot: brokenIndexSnap });
   let brokenGenCalls = 0;
   async function mockGenForBroken() { brokenGenCalls++; return regeneratedMap; }
-  const brokenResult = await loadMapForSave(brokenSave, mockGenForBroken);
-  assert(brokenGenCalls === 1, 'loadMapForSave: mapSnapshot kształtowo poprawny, ale buildGameMapFromSnapshot rzuca -> try/catch łapie wyjątek i WOŁA genFn (naprawa punktu 1, było: wyjątek nieobsłużony)');
-  assert(brokenResult.usedSnapshot === false, 'loadMapForSave: po złapaniu wyjątku zwraca usedSnapshot=false (identycznie jak przy niepoprawnym kształcie)');
-  assert(brokenResult.map === regeneratedMap, 'loadMapForSave: po złapaniu wyjątku zwraca mapę z genFn()');
+  let loadMapForSaveThrew = false;
+  let loadMapForSaveThrownErr = null;
+  try {
+    await loadMapForSave(brokenSave, mockGenForBroken);
+  } catch (e) {
+    loadMapForSaveThrew = true;
+    loadMapForSaveThrownErr = e;
+  }
+  assert(loadMapForSaveThrew === true, 'loadMapForSave: mapSnapshot kształtowo poprawny, ale buildGameMapFromSnapshot rzuca -> wyjątek PROPAGUJE się do wywołującego (decyzja N1, twardy błąd zamiast cichego fallbacku)');
+  assert(brokenGenCalls === 0, 'loadMapForSave: genFn NIE jest wołany, gdy budowa ze snapshotu rzuca (zero cichego fallbacku na inną mapę)');
+  assert(!!loadMapForSaveThrownErr, 'loadMapForSave propaguje realny obiekt wyjątku (nie undefined/cichą porażkę)');
 
   console.log('');
 

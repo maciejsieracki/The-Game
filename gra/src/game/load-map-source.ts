@@ -22,38 +22,36 @@ export interface LoadMapSourceResult<TMap extends GameMap> {
  * Zwraca mape do wczytania zapisu.
  *  - saved.mapSnapshot poprawny (nowy format, SAVE z pelna siatka) -> buduje
  *    mape wprost ze snapshotu; `genFn` (generujSwiatAsync) NIE jest wolane.
- *  - brak / niepoprawny mapSnapshot (stary zapis sprzed tej naprawy) ->
+ *  - brak / niepoprawny KSZTALT mapSnapshot (stary zapis sprzed tej naprawy,
+ *    brakujace pole, zla struktura -- `isValidMapSnapshot` zwraca false) ->
  *    dokladnie dzisiejsze zachowanie: `genFn()` regeneruje mape z
  *    `saved.seed` -- zero zmian dla starych zapisow (wsteczna kompatybilnosc).
+ *    Ta sciezka NIE ulega zmianie ponizsza decyzja.
  *  - mapSnapshot przechodzi `isValidMapSnapshot` (ksztalt/typy OK), ale
  *    `buildGameMapFromSnapshot` mimo to rzuca (np. uszkodzony/niespojny
- *    indeks do `dict`, runda 3, Evaluator) -> traktujemy identycznie jak
- *    niepoprawny snapshot: fallback na `genFn()`, `usedSnapshot: false`.
- *    Bez tego wyjatek z budowania mapy leciałby nieobsluzony do wywolujacego
- *    zamiast spasc na generator.
- * / EN: same fallback contract, now also covering the case where the
- * snapshot passes shape validation but `buildGameMapFromSnapshot` still
- * throws (corrupted/inconsistent dict index) -- caught and treated exactly
- * like an invalid snapshot instead of propagating unhandled.
+ *    indeks do `dict`) -> TWARDY BLAD: wyjatek propaguje sie NIEZLAPANY do
+ *    wywolujacego (main.ts::regenerateWorldForLoad, ktory go lapie i woła
+ *    `diagError('load', ...)`, przerywajac wczytywanie z czytelnym
+ *    komunikatem i wracajac do menu). Brak fallbacku na generator w tym
+ *    przypadku -- decyzja wlasciciela (Maciej, 2026-08-11, N1), przywraca
+ *    zachowanie sprzed rundy 3: cichy fallback na inna mape (bez ulepszen/
+ *    wlascicieli/wiosek/widocznosci zbudowanych w trakcie gry, zero
+ *    komunikatu dla gracza) uznano za gorsze niz twardy blad.
+ * / EN: shape-invalid/missing snapshot still falls back to the generator
+ * (unchanged, backward compatible). A shape-VALID snapshot whose build still
+ * throws is now a hard error -- the exception propagates unhandled to the
+ * caller (main.ts::regenerateWorldForLoad, which catches it and calls
+ * diagError('load', ...), aborting the load with a readable message and
+ * returning to the main menu) instead of silently falling back to a
+ * regenerated, different map. Owner decision (Maciej, 2026-08-11, N1):
+ * restores pre-round-3 behavior.
  */
 export async function loadMapForSave<TMap extends GameMap>(
   saved: SaveGame,
   genFn: () => Promise<TMap>,
 ): Promise<LoadMapSourceResult<TMap>> {
   if (isValidMapSnapshot(saved.mapSnapshot)) {
-    try {
-      return { map: buildGameMapFromSnapshot(saved.mapSnapshot) as TMap, usedSnapshot: true };
-    } catch (err) {
-      /* uszkodzony snapshot mimo poprawnego ksztaltu -- spadamy na generator,
-         jak przy braku/niepoprawnym mapSnapshot / corrupted snapshot despite
-         valid shape -- fall through to the generator, same as a missing or
-         invalid mapSnapshot. Diagnostyka w konsoli deweloperskiej (bez zmiany
-         zachowania -- dla gracza nadal cicho reguje inna mape; decyzja N1 o
-         czytelnym komunikacie UI jest poza zakresem) / dev-console diagnostics
-         only (no behavior change -- still silently regenerates for the
-         player; the UI-facing decision N1 is out of scope here). */
-      console.warn('[mapSnapshot] uszkodzony snapshot, fallback na generator:', err);
-    }
+    return { map: buildGameMapFromSnapshot(saved.mapSnapshot) as TMap, usedSnapshot: true };
   }
   return { map: await genFn(), usedSnapshot: false };
 }

@@ -27765,7 +27765,25 @@ async function boot(): Promise<void> {
             canvas.style.visibility = '';
           }
           if (!ok) {
+            // P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, decyzja N1, 2026-08-11):
+            // najczęstsza przyczyna tego `ok===false` to teraz TWARDY BŁĄD z
+            // load-map-source.ts::loadMapForSave (mapSnapshot kształtowo poprawny,
+            // ale buildGameMapFromSnapshot rzuca -- uszkodzony/niespójny zapis mapy)
+            // -- wcześniej ta gałąź nie pokazywała GRACZOWI żadnego komunikatu
+            // (tylko diagError do panelu F10), co dla tego konkretnego, teraz
+            // częstszego przypadku było mylące (ekran po prostu wracał do menu
+            // bez wyjaśnienia). Ten sam mechanizm diagError zostaje -- dokładamy
+            // tylko widoczny dla gracza showHintMessage.
+            // / EN: `ok===false` here now most often comes from a hard error in
+            // loadMapForSave (shape-valid but corrupted mapSnapshot) -- this
+            // branch previously showed the player NOTHING (only diagError to the
+            // F10 panel), which was misleading now that this path fires more
+            // often. Same diagError mechanism, just adds a visible hint.
             diagError('load', 'regenerateWorldForLoad failed');
+            showHintMessage(
+              'Błąd wczytywania mapy zapisu — zapis może być uszkodzony. Wracam do menu. F10 = raport diagnostyczny.',
+              5000,
+            );
             if (!fromInGamePause) openStartupMainMenu();
             return;
           }
