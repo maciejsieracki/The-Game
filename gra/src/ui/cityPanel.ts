@@ -202,7 +202,6 @@ import {
   POR_BAND_LABELS,
 } from '../game/society-breakdown';
 import {
-  resolveCitizenResourceCoverage,
   computeCitizenResourceDrain,
   CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
   CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
@@ -1170,11 +1169,20 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const bilansLokalny = zywnoscBrutto - kosztRacji;
     const { state: ordState } = resolveOrderState(city, data);
     const ws = city.wealthState ?? freshWealthState();
-    // R-ZUZYCIE-SUROWCOW-OBYWATELE: TA SAMA rozstrzygnięta wartość co blok Szczęścia
-    // (resolveOrderState → citizenUpkeep) — brak podwójnego, potencjalnie rozjeżdżającego
-    // się liczenia; fallback tylko na wypadek gdyby stan silnika jeszcze nie był ustawiony.
-    const citizenUpkeep = ordState.citizenUpkeep
-      ?? resolveCitizenResourceCoverage(era, ownerResourceStockAll(allCities, city.ownerId));
+    // R-ZUZYCIE-SUROWCOW-OBYWATELE N5 runda 4 (Maciej 2026-08-11, Evaluator): TA SAMA
+    // rozstrzygnięta wartość co blok Szczęścia (resolveOrderState → citizenUpkeep) — brak
+    // podwójnego, potencjalnie rozjeżdżającego się liczenia. BEZ fallbacku — `resolveOrderState`
+    // ma dokładnie DWIE ścieżki powrotu (gałąź `fromEngine: true`, spread `...live`, oraz
+    // `computed` z `computeOrderStateLocal`) i OBIE zawsze wypełniają `citizenUpkeep` (silnik w
+    // `main.ts` ustawia je bezwarunkowo w `cityOrderState.set(...)`, `computeOrderStateLocal`
+    // ma własny fallback `?? computeCitizenResourceDrain(...)` — patrz linia ok. 2938 niżej), więc
+    // martwy tu fallback `resolveCitizenResourceCoverage(...)` (stara binarna reguła magazyn>0)
+    // NIGDY się nie wykonywał — usunięty; `!` bo pole jest opcjonalne tylko w TYPIE `OrderState`
+    // (kompat wstecz), nie w praktyce tego wywołania.
+    // EN: dead fallback removed — `resolveOrderState` always populates `citizenUpkeep` on both
+    // return paths, so `resolveCitizenResourceCoverage(...)` here never actually ran; `!` because
+    // the field is optional only in the `OrderState` TYPE (back-compat), not in practice here.
+    const citizenUpkeep = ordState.citizenUpkeep!;
     const growthBreakdown = computeGrowthPercentV85({
       population: city.population,
       poziomRacji,

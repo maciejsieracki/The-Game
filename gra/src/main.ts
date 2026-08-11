@@ -2640,39 +2640,36 @@ async function boot(): Promise<void> {
      */
     function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
       const warehouse = citySurowceSumForOwner(ownerId);
-      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 3 (Maciej 2026-08-11, Evaluator FAIL runda 2
-      // powód 1): panel Surowców MUSI czytać WERDYKT SILNIKA z `cityOrderState`
-      // (`citizenUpkeep`, policzone RAZ per owner w pętli Porządku —
-      // `citizenUpkeepDrainForOwner`), a NIE przeliczać na żywo. Przeliczanie na żywo czytało
-      // `warehouse` PO turze — czyli PO tym, jak drenaż silnika już odjął surowce z magazynu tej
-      // tury — więc dla magazynu w paśmie `P ≤ stan < 2P` (P = populacja imperium ownera, czyli
-      // typowy „bufor na 1-2 tury") silnik naliczył w tej turze „POKRYTE" (liczone PRZED
-      // odjęciem), a panel po turze widział już zdrenowany magazyn i pokazywał „NIEDOBÓR" —
-      // rozjazd panel↔silnik. Ten sam wzorzec co `cityPanel.ts` (`ordState.citizenUpkeep ??
-      // resolveCitizenResourceCoverage(...)`, linie ~1175-1176), tu z `computeCitizenResourceDrain`
-      // jako fallback (nie starą binarną `resolveCitizenResourceCoverage`, bo ten panel pokazuje
-      // realny drenaż 1:1/obywatela, nie samą bramkę magazyn > 0). FALLBACK używany WYŁĄCZNIE
-      // gdy `cityOrderState` jest jeszcze puste (np. pierwszy render UI przed 1. turą) — poza tym
-      // czyta zawsze z silnika, nigdy nie przelicza równolegle. buildEmpireResourceRows służy
-      // WYŁĄCZNIE do podglądu UI (renderowanie), więc celowo używamy tylko required/available z
-      // wyniku — NIE stosujemy `deductions` (żadnej mutacji City.surowce z poziomu renderowania
-      // panelu, to by było podwójne odjęcie / efekt uboczny podglądu).
-      // EN: the Resources panel MUST read the engine's VERDICT from `cityOrderState`
-      // (`citizenUpkeep`, computed once per owner in the Order loop), never recompute live.
-      // Live recomputation read `warehouse` AFTER the turn's engine drain already subtracted
-      // stock, so for a stockpile in the `P ≤ stock < 2P` band the engine recorded "COVERED"
-      // this turn (computed BEFORE the deduction) while the panel showed "SHORTFALL" (post-
-      // deduction) — a panel/engine mismatch. Same pattern as `cityPanel.ts` lines ~1175-1176.
-      // Fallback (`computeCitizenResourceDrain`) applies ONLY when `cityOrderState` is still
-      // empty (first UI render before turn 1); we deliberately ignore `deductions` here (no
-      // City.surowce mutation from a rendering path).
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 4 (Maciej 2026-08-11, Evaluator FAIL runda 3):
+      // panel Surowców MUSI czytać WERDYKT SILNIKA z `citizenUpkeepByOwner` — mapa kluczowana
+      // BEZPOŚREDNIO OWNEREM (nie przez ID miasta), a NIE przeliczać na żywo. Runda 3 czytała
+      // przez `cities.find(c => c.ownerId === ownerId)` + `cityOrderState.get(thatCity.id)` —
+      // zdobycie miasta (oblężenie/aneksja) zmienia `city.ownerId` W TRAKCIE tury i NIE czyści
+      // starego wpisu w `cityOrderState`, więc `find()` mógł trafić na PRZEJĘTE miasto, którego
+      // wpis niósł jeszcze werdykt POPRZEDNIEGO właściciela (np. panel gracza w epoce Kamienia
+      // pokazujący wymagania epoki Brązu, werdykt cudzej AI, tuż po przejęciu jej miasta).
+      // Odczyt WPROST po ownerId eliminuje to pośrednictwo strukturalnie — nie ma już żadnego
+      // predykatu `ownerId` do trafienia w cudze miasto. FALLBACK (`computeCitizenResourceDrain`)
+      // używany WYŁĄCZNIE gdy `citizenUpkeepByOwner` nie ma jeszcze wpisu dla tego ownera (np.
+      // pierwszy render UI przed 1. turą) — poza tym czyta zawsze z silnika, nigdy nie przelicza
+      // równolegle. buildEmpireResourceRows służy WYŁĄCZNIE do podglądu UI (renderowanie), więc
+      // celowo używamy tylko required/available z wyniku — NIE stosujemy `deductions` (żadnej
+      // mutacji City.surowce z poziomu renderowania panelu, to by było podwójne odjęcie / efekt
+      // uboczny podglądu).
+      // EN: the Resources panel MUST read the engine's VERDICT from `citizenUpkeepByOwner` — a
+      // map keyed DIRECTLY by owner (not via city id), never recompute live. Round 3 read via
+      // `cities.find(c => c.ownerId === ownerId)` + `cityOrderState.get(thatCity.id)` — capturing
+      // a city mid-turn changes `city.ownerId` without clearing the old `cityOrderState` entry,
+      // so `find()` could land on the captured city and surface the PREVIOUS owner's verdict.
+      // Reading directly by ownerId removes that indirection structurally. Fallback
+      // (`computeCitizenResourceDrain`) applies ONLY when `citizenUpkeepByOwner` has no entry yet
+      // for this owner (first UI render before turn 1); we deliberately ignore `deductions` here
+      // (no City.surowce mutation from a rendering path).
       const citizenUpkeepOwnerPopulation = cities.reduce(
         (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
         0,
       );
-      const citizenUpkeepEngineCity = cities.find(c => c.ownerId === ownerId);
-      const citizenUpkeep =
-        (citizenUpkeepEngineCity && cityOrderState.get(citizenUpkeepEngineCity.id)?.citizenUpkeep)
+      const citizenUpkeep = citizenUpkeepByOwner.get(ownerId)
         ?? computeCitizenResourceDrain(
           empireEpochForOwner(ownerId), citizenUpkeepOwnerPopulation, warehouse,
         );
@@ -3609,6 +3606,25 @@ async function boot(): Promise<void> {
     const orderValueMap = new Map<string, number>();
     /** Per-city order state (szczescie/porzadek) — updated each turn for city panel B2 hooks. */
     const cityOrderState = new Map<string, OrderState>();
+    /**
+     * R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 4 (Maciej 2026-08-11, Evaluator FAIL runda 3):
+     * werdykt drenażu obywateli KLUCZOWANY BEZPOŚREDNIO OWNEREM, nie miastem. Zdobycie miasta
+     * (oblężenie/aneksja) zmienia `city.ownerId` W TRAKCIE tury i NIE czyści starego wpisu w
+     * `cityOrderState` — odczyt przez `cities.find(c => c.ownerId === ownerId)` (poprzednia
+     * wersja `buildEmpireResourceRows`) mógł trafić na PRZEJĘTE miasto, którego wpis w
+     * `cityOrderState` niósł jeszcze werdykt POPRZEDNIEGO właściciela (np. panel gracza w
+     * epoce Kamienia pokazujący wymagania epoki Brązu, werdykt cudzej AI). Ta mapa jest
+     * wypełniana RÓWNOLEGLE do `citizenUpkeepDrainCache` (lokalny cache resolvera per turę,
+     * patrz `citizenUpkeepDrainForOwner` niżej), ale PRZETRWA między turami jak `cityOrderState`
+     * — czytana WPROST po ownerId, bez żadnego pośrednictwa przez ID miasta.
+     * EN: citizen-upkeep verdict keyed DIRECTLY by owner, not by city. Capturing a city mid-turn
+     * changes `city.ownerId` without clearing the old `cityOrderState` entry — reading via
+     * `cities.find(c => c.ownerId === ownerId)` could land on the captured city and surface the
+     * PREVIOUS owner's verdict. Populated alongside `citizenUpkeepDrainCache` (per-turn resolver
+     * cache below) but persists across turns like `cityOrderState` — read directly by ownerId,
+     * with no city-id indirection.
+     */
+    const citizenUpkeepByOwner = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();
     /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
     const militiaDefOverrides = new Map<string, Record<string, unknown>>();
     const empireFoodStates = new Map<number, EmpireFoodState>();
@@ -23356,6 +23372,12 @@ async function boot(): Promise<void> {
                   deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
                 }
                 citizenUpkeepDrainCache.set(ownerId, v);
+                // N1 runda 4: publikuj RÓWNOLEGLE do mapy kluczowanej OWNEREM (przetrwa
+                // między turami), nie tylko do lokalnego cache'a resolvera powyżej (ten
+                // ostatni jest tworzony od nowa co turę i ginie po jej zakończeniu).
+                // EN: publish IN PARALLEL to the owner-keyed map (survives across turns),
+                // not just the local per-turn resolver cache above (recreated each turn).
+                citizenUpkeepByOwner.set(ownerId, v);
               }
               return v;
             };
@@ -26982,6 +27004,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27250,6 +27273,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27495,6 +27519,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27718,6 +27743,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();

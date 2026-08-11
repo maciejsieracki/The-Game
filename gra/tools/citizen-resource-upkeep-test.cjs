@@ -328,22 +328,25 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
 }
 
 // ===========================================================================
-// I. buildEmpireResourceRows (panel Surowców) czyta WERDYKT SILNIKA z cityOrderState,
-//    NIE przelicza na żywo (N1 runda 3, Evaluator FAIL runda 2 powód 1, Maciej 2026-08-11)
+// I. buildEmpireResourceRows (panel Surowców) czyta WERDYKT SILNIKA z citizenUpkeepByOwner
+//    (mapa kluczowana BEZPOŚREDNIO OWNEREM), NIE przelicza na żywo, NIE przechodzi przez ID
+//    miasta (N1 runda 4, Evaluator FAIL runda 3, Maciej 2026-08-11)
 // ===========================================================================
-console.log('\n-- I. buildEmpireResourceRows czyta cityOrderState (regresja rundy 2: przeliczanie na żywo) --');
+console.log('\n-- I. buildEmpireResourceRows czyta citizenUpkeepByOwner (regresja rundy 3: owner-leak przez cities.find) --');
 {
-  // Rozjazd rundy 2: buildEmpireResourceRows liczył pokrycie NA ŻYWO z magazynu PO turze
-  // (czyli PO tym, jak drenaż silnika już odjął surowce) -- dla magazynu w paśmie
-  // P <= stan < 2P (P = populacja imperium ownera) silnik w tej turze naliczył "POKRYTE"
-  // (liczone PRZED odjęciem), a panel po turze widział zdrenowany magazyn i pokazywał
-  // "NIEDOBÓR". Naprawa: czytać `cityOrderState.get(...)?.citizenUpkeep` (werdykt faktycznie
-  // zastosowany przez silnik tej tury), fallback na computeCitizenResourceDrain TYLKO gdy
-  // cityOrderState jeszcze puste. Ta asercja broni naprawy -- mutant "przywróć przeliczanie na
-  // żywo inline" (usunięcie odczytu cityOrderState.get(...) z ciała funkcji) MUSI dać FAIL.
+  // Rozjazd rundy 3: buildEmpireResourceRows czytało werdykt przez
+  // `cities.find(c => c.ownerId === ownerId)` + `cityOrderState.get(thatCity.id)?.citizenUpkeep`.
+  // Zdobycie miasta (oblężenie/aneksja) zmienia `city.ownerId` W TRAKCIE tury i NIE czyści
+  // starego wpisu w `cityOrderState` -- `find()` mógł trafić na PRZEJĘTE miasto, którego wpis
+  // niósł jeszcze werdykt POPRZEDNIEGO właściciela (Evaluator: panel gracza w epoce Kamienia
+  // pokazywał wymagania epoki Brązu, werdykt cudzej AI, tuż po przejęciu jej miasta). Naprawa:
+  // odczyt WPROST `citizenUpkeepByOwner.get(ownerId)` -- mapa kluczowana bezpośrednio ownerem,
+  // bez żadnego pośrednictwa przez ID miasta, przetrwałą między turami (nie tylko lokalny
+  // resolver-cache per turę). Fallback na computeCitizenResourceDrain TYLKO gdy
+  // citizenUpkeepByOwner jeszcze nie ma wpisu dla tego ownera.
   // Wzorem sekcji H: okno indexOf na treść funkcji (kotwica definicji do kolejnej znanej linii
   // ciała), zamiast gołego .includes() na całym pliku (żeby nie złapać przypadkiem innego,
-  // niepowiązanego cityOrderState.get(...) gdzie indziej w main.ts).
+  // niepowiązanego citizenUpkeepByOwner.get(...) gdzie indziej w main.ts).
   const FN_ANCHOR = 'function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {';
   const fnIdx = mainSrcStripped.indexOf(FN_ANCHOR);
   assert(fnIdx > -1, 'main.ts: kotwica "function buildEmpireResourceRows(...)" znaleziona (po stripLineComments)');
@@ -352,17 +355,118 @@ console.log('\n-- I. buildEmpireResourceRows czyta cityOrderState (regresja rund
   assert(endIdx > fnIdx, 'main.ts: kotwica "const citizenRequiredSet" znaleziona PO początku buildEmpireResourceRows -- okno ciała funkcji dobrze uformowane');
   const fnHeadWindow = (fnIdx > -1 && endIdx > fnIdx) ? mainSrcStripped.slice(fnIdx, endIdx) : '';
   assert(
-    fnHeadWindow.includes('cityOrderState.get('),
-    'I1 (zabija regresję rundy 2 -- przeliczanie na żywo inline): buildEmpireResourceRows czyta '
-      + 'werdykt silnika przez cityOrderState.get(...) PRZED przypisaniem do `citizenUpkeep`, nie '
-      + 'goły computeCitizenResourceDrain(...) jako jedyne źródło',
+    fnHeadWindow.includes('citizenUpkeepByOwner.get(ownerId)'),
+    'I1 (zabija regresję rundy 3 -- owner-leak przez cities.find): buildEmpireResourceRows czyta '
+      + 'werdykt silnika przez citizenUpkeepByOwner.get(ownerId) -- odczyt WPROST po ownerId, '
+      + 'dokładnie ten klucz, bez pośrednictwa przez żaden identyfikator miasta',
   );
   assert(
-    /citizenUpkeep\s*=\s*\([\s\S]*?cityOrderState\.get\([\s\S]*?\?\?[\s\S]*?computeCitizenResourceDrain\(/.test(fnHeadWindow),
-    'I2 (zabija mutant "usuń fallback, zostaw tylko cityOrderState.get"): przypisanie '
-      + '`citizenUpkeep` ma kształt "silnik ?? fallback computeCitizenResourceDrain(...)" -- '
-      + 'werdykt silnika ZAWSZE preferowany, computeCitizenResourceDrain tylko gdy cityOrderState '
-      + 'puste (np. pierwszy render UI przed 1. turą), nie odwrotnie',
+    /citizenUpkeep\s*=\s*citizenUpkeepByOwner\.get\(ownerId\)\s*\?\?[\s\S]*?computeCitizenResourceDrain\(/.test(fnHeadWindow),
+    'I2 (zabija mutant "usuń fallback, zostaw tylko citizenUpkeepByOwner.get"): przypisanie '
+      + '`citizenUpkeep` ma kształt "citizenUpkeepByOwner.get(ownerId) ?? fallback '
+      + 'computeCitizenResourceDrain(...)" -- werdykt silnika ZAWSZE preferowany, '
+      + 'computeCitizenResourceDrain tylko gdy citizenUpkeepByOwner nie ma jeszcze wpisu dla '
+      + 'tego ownera (np. pierwszy render UI przed 1. turą), nie odwrotnie',
+  );
+  // I3 (N3, Maciej 2026-08-11 -- zabija regresję rundy 3 STRUKTURALNIE, nie tylko kształtem
+  // przypisania): mutant "zmień === na !== w predykacie ownera" (czytanie werdyktu OBCEGO
+  // ownera) z rundy 2/3 żył wewnątrz `cities.find(c => c.ownerId === ownerId)` -- po naprawie
+  // N1 runda 4 ten wektor mutacji znika STRUKTURALNIE: nie ma już PREDYKATU ownerId do
+  // zmutowania w tym miejscu, jest bezpośredni `.get(ownerId)`. Asercja dowodzi, że
+  // `cities.find` NIE występuje już nigdzie w ciele buildEmpireResourceRows (żaden predykat
+  // ownerId do złapania mutantem) -- regres rundy 3 nie może się już zdarzyć w tym kształcie.
+  assert(
+    !fnHeadWindow.includes('cities.find('),
+    'I3 (zabija regresję rundy 3 strukturalnie): buildEmpireResourceRows NIE zawiera już '
+      + '`cities.find(...)` -- wektor mutacji "zmień predykat ownerId" (cities.find(c => '
+      + 'c.ownerId === ownerId)) jest strukturalnie usunięty, nie tylko naprawiony kształtem',
+  );
+  // I4 (N3, dowód BEHAWIORALNY): syntetyczna mapa "citizenUpkeepByOwner-podobna" z RÓŻNYMI
+  // wpisami dla 2 ownerów -- odczyt dla ownera A zwraca DOKŁADNIE wpis A, nigdy wpis B, mimo
+  // że oba mają byłego wspólnego pochodzenia (np. B pochodzi z miasta, które A właśnie
+  // podbiło). Nie dowodzi to samo w sobie poprawności main.ts (Map.get jest wbudowanym,
+  // zawsze poprawnym operatorem JS) -- w połączeniu z I1 (dowód, że main.ts DOKŁADNIE tej
+  // metody/klucza używa) i I3 (dowód, że NIE MA już alternatywnej, dziurawej ścieżki
+  // cities.find obok) stanowi kompletny dowód: main.ts woła TĘ operację, a TA operacja nie
+  // miesza kluczy między ownerami.
+  const syntheticByOwner = new Map();
+  syntheticByOwner.set(7 /* AI, epoka Brąz */, { required: ['drewno', 'kamien'], available: [], missing: ['drewno', 'kamien'], happinessDelta: -2, growthPctDelta: -2 });
+  syntheticByOwner.set(0 /* gracz, epoka Kamień, PO podboju miasta ownera 7 */, { required: ['drewno', 'glina'], available: ['drewno', 'glina'], missing: [], happinessDelta: 2, growthPctDelta: 0 });
+  const readForPlayer = syntheticByOwner.get(0);
+  const readForAi = syntheticByOwner.get(7);
+  assert(
+    readForPlayer !== readForAi,
+    'I4: odczyt dla ownera=0 (gracz) i ownera=7 (AI) zwraca DWA RÓŻNE obiekty -- brak przemieszania',
+  );
+  deepEqSet(readForPlayer.required, ['drewno', 'glina'], 'I4: ownerId=0 (gracz, Kamień) dostaje SWOJĄ listę wymagań, nie epoki Brązu ownera 7');
+  eq(readForPlayer.missing.length, 0, 'I4: ownerId=0 nie dziedziczy "missing" ownera 7 mimo że ten ostatni ma te same klucze required (drewno)');
+  deepEqSet(readForAi.required, ['drewno', 'kamien'], 'I4: ownerId=7 (AI, Brąz) dostaje SWOJĄ listę wymagań, nie epoki Kamień ownera 0');
+}
+
+// ===========================================================================
+// J. cityPanel.ts: computeOrderStateLocal preferuje werdykt silnika
+//    (cfg.getOrderState?.(city.id)?.citizenUpkeep) nad przeliczaniem inline (N2, Maciej
+//    2026-08-11 -- luka testowa po naprawie rundy 3, ZERO pokrycia do tej pory)
+// ===========================================================================
+console.log('\n-- J. cityPanel.ts computeOrderStateLocal -- werdykt silnika przed fallbackiem inline --');
+{
+  // cityPanel.ts NIE bundluje się praktycznie samodzielnie przez esbuild (moduł >10 000 linii,
+  // singleton `cfg` wypełniany przez configureCityPanel(), zależności DOM/canvas/dziesiątki
+  // opcjonalnych callbackow) -- ustalona konwencja w tym repo dla tego pliku to strukturalne
+  // asercje regex/indexOf na źródle jako tekst, NIE pełne wykonanie (patrz
+  // spichlerz-cap-citypanel-wiring-test.cjs, city-panel-growth-percent-separator-test.cjs --
+  // ten sam wzorzec, ta sama uzasadniona przyczyna). computeOrderStateLocal i resolveOrderState
+  // nie są nawet eksportowane (funkcje modułowe prywatne), więc bezpośredni import jest
+  // niemożliwy bez refaktoru wykraczającego poza zakres tego zgłoszenia.
+  const CITY_PANEL_TS = path.join(GRA, 'src', 'ui', 'cityPanel.ts');
+  const cityPanelSrcRaw = fs.readFileSync(CITY_PANEL_TS, 'utf8');
+  const cityPanelSrcStripped = stripLineComments(cityPanelSrcRaw);
+
+  const FN_ANCHOR = 'function computeOrderStateLocal(city: City, data: GameData): { state: OrderState; fromEngine: boolean } {';
+  const fnIdx = cityPanelSrcStripped.indexOf(FN_ANCHOR);
+  assert(fnIdx > -1, 'cityPanel.ts: kotwica "function computeOrderStateLocal(...)" znaleziona (po stripLineComments)');
+  const endIdx = fnIdx > -1 ? cityPanelSrcStripped.indexOf('const ordPctRaw', fnIdx) : -1;
+  assert(endIdx > fnIdx, 'cityPanel.ts: kotwica "const ordPctRaw" znaleziona PO początku computeOrderStateLocal -- okno ciała funkcji dobrze uformowane');
+  const fnWindow = (fnIdx > -1 && endIdx > fnIdx) ? cityPanelSrcStripped.slice(fnIdx, endIdx) : '';
+
+  // J1: cfg.getOrderState?.(city.id)?.citizenUpkeep obecne w ciele funkcji (werdykt silnika).
+  const engineReadIdx = fnWindow.indexOf('cfg.getOrderState?.(city.id)?.citizenUpkeep');
+  assert(engineReadIdx > -1, 'J1: computeOrderStateLocal czyta cfg.getOrderState?.(city.id)?.citizenUpkeep (werdykt silnika, ten sam hak co `live` w resolveOrderState)');
+
+  // J2: computeCitizenResourceDrain(...) (fallback inline) obecne, ale PO odczycie silnika --
+  // mutant "przywróć starą regułę" (usunięcie odczytu silnika, zostawienie tylko fallbacku
+  // inline jako jedynego źródła) MUSI dać FAIL na J1 (indexOf zwróci -1) i/lub J3 (kolejność).
+  const fallbackIdx = fnWindow.indexOf('computeCitizenResourceDrain(era, ownerPopulationAll, ownerResourceStockAll(allCities, city.ownerId))');
+  assert(fallbackIdx > -1, 'J2: computeOrderStateLocal ma fallback computeCitizenResourceDrain(era, ownerPopulationAll, ...) w ciele funkcji');
+
+  // J3: KOLEJNOŚĆ -- odczyt silnika PRZED fallbackiem inline (kształt "silnik ?? fallback",
+  // nie "fallback ?? silnik" ani dwie niepowiązane gałęzie). Zabija mutant zamiany kolejności
+  // operandów `??`, który dałby fallback pierwszeństwo przed werdyktem silnika.
+  assert(
+    engineReadIdx > -1 && fallbackIdx > -1 && engineReadIdx < fallbackIdx,
+    'J3: odczyt cfg.getOrderState?.(city.id)?.citizenUpkeep leży PRZED computeCitizenResourceDrain(...) w tekście -- werdykt silnika ma pierwszeństwo, fallback inline jest DRUGI operand `??`, nie pierwszy',
+  );
+  // J3b: strukturalnie w kształcie "silnik ?? fallback" (ten sam operator `??` łączący oba,
+  // nie dwa niezależne przypisania w różnych gałęziach if/else, które mogłyby się rozjechać).
+  assert(
+    /cfg\.getOrderState\?\.\(city\.id\)\?\.citizenUpkeep\s*\n?\s*\?\?\s*\n?\s*computeCitizenResourceDrain\(/.test(fnWindow),
+    'J3b: kształt DOKŁADNIE "cfg.getOrderState?.(city.id)?.citizenUpkeep ?? computeCitizenResourceDrain(...)" -- jeden operator `??`, nie rozgałęzienie if/else',
+  );
+
+  // J4 (N2, wymóg jawny zgłoszenia): W CIELE FUNKCJI NIE MA gołego wywołania
+  // resolveCitizenResourceCoverage(...) jako głównej ścieżki. Po naprawie N5 (ta sama runda)
+  // import resolveCitizenResourceCoverage jest CAŁKOWICIE usunięty z cityPanel.ts (był martwym
+  // fallbackiem WYŁĄCZNIE w computeView, innej funkcji niż computeOrderStateLocal) -- więc ta
+  // asercja jest dziś silniejsza niż wymagane minimum: sprawdza CAŁY plik, nie tylko to okno.
+  assert(
+    !cityPanelSrcStripped.includes('resolveCitizenResourceCoverage('),
+    'J4: cityPanel.ts NIE zawiera już żadnego wywołania resolveCitizenResourceCoverage(...) -- '
+      + 'usunięta jako martwy fallback (N5, ta sama runda); computeOrderStateLocal NIGDY nie '
+      + 'używała jej jako głównej ścieżki, teraz nie istnieje nawet jako import',
+  );
+  assert(
+    !cityPanelSrcRaw.includes("resolveCitizenResourceCoverage,\n") && !/import\s*\{[^}]*\bresolveCitizenResourceCoverage\b/.test(cityPanelSrcRaw),
+    'J5 (N5): cityPanel.ts nie importuje już resolveCitizenResourceCoverage z game/citizen-resource-upkeep (martwy import usunięty)',
   );
 }
 
