@@ -12082,3 +12082,17 @@ inżynierski, nie decyzja produktowa, Operator ma to udokumentować jawnie w kod
 **STATUS: dispatch 4× Sonnet 5 (worktree), równolegle, Operator→Evaluator (Opus 5) dla każdego
 niezależnie. Po PASS wszystkich 4 → deploy ROBOCZA (instrukcja Macieja: „nie rób deploy, póki
 wszystkiego nie wykonasz").**
+
+## R-CS-HARD-BRAK-STOSOWANIA-AI — SCALONE `90013391` (2026-08-11)
+
+Promień 3 heksy (ECHO 1). `countFriendlyMilitaryInRadius` (nowa, eksportowana) zastępuje
+`countFriendlyMilitaryOnHex` w jedynym call site bramki ataku (`decideDefensiveCopyTurn`, `ai.ts`
+~2758) — sam próg `CS_WAVE_ATTACK_MIN_STACK + RESUP strong.minGuard` bez zmian, zmienia się TYLKO
+sposób zliczania. `planCityStateOffensiveMove`/`minFieldArmyBeforeSend` sprawdzone i ŚWIADOMIE
+zostawione bez zmian — bramuje wysyłkę z domu wg wielkości pola armii (`countOwnerFieldArmy`), nie
+współobecności na heksie, to inny mechanizm. Nowy test `cs-wave-attack-radius-test.cjs` (21/21,
+esbuild, realne wykonanie + strukturalna asercja pozytywna/negatywna wzorem RUNDA 5 z
+`elimination-toast-merge-test.cjs` — Operator sam zweryfikował negatywną asercję cofając fix
+tymczasowo i potwierdzając czerwone 3 asercje, potem przywrócił). Bramki: tsc 0, logic-test
+213/213, `ai-mp-military-cap-test` 18/18 (bez zmian), `city-state-prod-audit-test` 17/17 (bez
+zmian). **STATUS: dispatch Opus 5 Evaluator, runda 1.**
