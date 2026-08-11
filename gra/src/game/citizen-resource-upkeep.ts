@@ -1,5 +1,6 @@
 /**
- * citizen-resource-upkeep.ts — R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10).
+ * citizen-resource-upkeep.ts — R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10, drenaż
+ * realny doprecyzowany 2026-08-11).
  *
  * Obywatele miast zużywają surowce budowlane per epoka (tabela: `data/citizen-resource-upkeep.json`),
  * ściągane z magazynu CENTRALNEGO imperium (suma City.surowce po wszystkich miastach ownera —
@@ -10,9 +11,25 @@
  * epoki (ECHO Q1), ale ponieważ dostępność jest civ-wide, a nie lokalna, nie generuje kary
  * niemożliwej-do-uniknięcia z powodu położenia jednego miasta.
  *
- * Kara binarna PER MIASTO (ECHO Q3=A): magazyn centralny > 0 danego surowca = pełne pokrycie
- * (dla KAŻDEGO miasta ownera równocześnie), magazyn = 0 = brak (dla KAŻDEGO miasta ownera
- * równocześnie) — NIE skaluje się z wielkością niedoboru ani z liczbą obywateli tego miasta.
+ * ⚠️ DWIE FUNKCJE, DWA RÓŻNE KONTRAKTY — nie mylić:
+ *   • `resolveCitizenResourceCoverage()` — CZYSTY PODGLĄD, bez efektów ubocznych. Bramka binarna
+ *     „magazyn > 0 → dostępny" (NIE liczy realnego zapotrzebowania 1:1 per obywatel, NIE
+ *     odejmuje). Używana tam, gdzie liczy się tylko podgląd (np. UI podglądu miasta przed turą) —
+ *     zostaje jako jest, celowo NIE zamieniona.
+ *   • `computeCitizenResourceDrain()` — REALNY DRENAŻ (Maciej 2026-08-11): stawka **1 sztuka
+ *     surowca na 1 obywatela na turę**, per wymagany surowiec epoki. `required = population × 1`,
+ *     `drained = min(required, stock[key] ?? 0)` — magazyn NIGDY nie schodzi poniżej zera, przy
+ *     niedoborze drenuje się ile jest, NIE blokuje się całkowicie. Zwraca też `deductions` —
+ *     mapę do realnego odjęcia z magazynu przez wołającego. Kara nadal BINARNA (ECHO Q3=A,
+ *     niezmieniona semantyka): „dostępny" = zapotrzebowanie pokryte W PEŁNI (`drained >= required`),
+ *     „brakujący" = pokryte częściowo lub wcale — NIE skaluje się z wielkością niedoboru.
+ *     ⚠️ PUŁAPKA WIELU MIAST TEGO SAMEGO OWNERA: wołający MUSI zsumować `population` WSZYSTKICH
+ *     miast ownera i wywołać tę funkcję RAZ per owner per turę (potem zastosować IDENTYCZNY
+ *     wynik do każdego miasta tego ownera) — wywołanie per miasto z osobna, każde z tym samym
+ *     `empireStock` (sprzed odjęcia), wydrenowałoby ten sam magazyn wielokrotnie i pozwoliłoby
+ *     kilku miastom razem zużyć więcej surowca, niż faktycznie jest w magazynie. Wzorzec
+ *     poprawnego wywołania: `main.ts` `citizenUpkeepDrainForOwner()` (memoizacja per owner per
+ *     turę, tak jak `makeOwnerEmpireStockResolver()`).
  *
  * AI (duża + Państwa-Miasta) objęte identycznie jak gracz (ECHO Q2=A) — funkcje tu są
  * ownerId-agnostyczne, ten sam wzorzec co `building-stock-cost.ts` (SUROW-CIV-01).
@@ -20,13 +37,26 @@
  * / EN: citizens consume construction resources per era (table in
  * `data/citizen-resource-upkeep.json`), drawn from the empire-wide central stockpile (sum of
  * City.surowce across all of the owner's cities), never from this particular city's local
- * production or access. The penalty is binary PER CITY: full coverage if the central stockpile
- * has any (>0) of the resource — applied identically to every city of that owner — none
- * otherwise. It does not scale with the size of the shortfall or with city population. AI
- * (both the large AI and City-States) are covered by the exact same rule as the player — every
+ * production or access.
+ *
+ * TWO FUNCTIONS, TWO DIFFERENT CONTRACTS: `resolveCitizenResourceCoverage()` is a PURE PREVIEW
+ * (no side effects, binary "stock > 0 → available" gate, no real per-capita demand, no
+ * deduction) — kept as-is for UI preview use elsewhere. `computeCitizenResourceDrain()` is the
+ * REAL drain (rate: 1 unit of resource per citizen per turn), `required = population × 1`,
+ * `drained = min(required, stock)`, never goes below zero, and returns a `deductions` map for
+ * the caller to actually mutate the stockpile. The binary penalty is unchanged (ECHO Q3=A):
+ * "available" means demand was FULLY covered, "missing" otherwise — still not scaled by the
+ * size of the shortfall. CALLERS MUST sum `population` across ALL of an owner's cities and call
+ * this function ONCE per owner per turn (then apply the identical result to every city of that
+ * owner) — calling it once per city against the same pre-deduction stock would let several
+ * cities of the same owner jointly over-drain the shared stockpile.
+ *
+ * AI (both the large AI and City-States) are covered by the exact same rule as the player — every
  * function here is ownerId-agnostic, mirroring `building-stock-cost.ts` (SUROW-CIV-01).
  *
  * Wzorzec bramki binarnej: `zloto-access.ts` (`ownerCanFeedMennica`/`resolveOwnerZlotoFromStock`).
+ * Wzorzec realnego drenażu rozłożonego po miastach ownera: `building-stock-cost.ts`
+ * (`deductBuildingStockCostAcrossCities` — bierze NAJPIERW z miast o największym zapasie).
  * Kanały kary: Szczęście → `HappinessBreakdownInput.citizenResourceHappinessDelta`
  * (`society-breakdown.ts`); Rozwój → `GrowthPercentInput.citizenResourceGrowthPct`
  * (`population-growth-v85.ts`).
@@ -94,6 +124,9 @@ export interface CitizenUpkeepCoverage {
  * magazyn dla każdego miasta danego ownera; wołający powinien liczyć go RAZ per owner per turę
  * (np. `makeOwnerEmpireStockResolver()` w `main.ts`), nie per miasto.
  *
+ * ⚠️ To PODGLĄD (patrz JSDoc modułu) — bramka binarna „magazyn > 0", NIE realny drenaż 1:1
+ * per obywatel. Do realnego zużycia magazynu użyj `computeCitizenResourceDrain()`.
+ *
  * Pure — bez mutacji wejść, bez DOM.
  */
 export function resolveCitizenResourceCoverage(
@@ -117,4 +150,60 @@ export function resolveCitizenResourceCoverage(
     + missing.length * CITIZEN_UPKEEP_HAPPINESS_PER_MISSING;
   const growthPctDelta = missing.length * CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING;
   return { required, available, missing, happinessDelta, growthPctDelta };
+}
+
+/** Wynik `computeCitizenResourceDrain()` — pokrycie (jak `CitizenUpkeepCoverage`) + mapa do realnego odjęcia. */
+export interface CitizenResourceDrainResult extends CitizenUpkeepCoverage {
+  /**
+   * Ile realnie odjąć z magazynu centralnego, per surowiec (tylko klucze > 0). Wołający
+   * (main.ts) mutuje faktyczny stan `City.surowce` tym `deductions`, np. przez
+   * `deductBuildingStockCostAcrossCities(cities, ownerId, deductions)`
+   * (`building-stock-cost.ts`) — ta funkcja sama rozkłada odjęcie po miastach ownera.
+   */
+  deductions: Record<string, number>;
+}
+
+/**
+ * Realny drenaż magazynu centralnego imperium przez obywateli (Maciej 2026-08-11): stawka
+ * **1 sztuka surowca na 1 obywatela na turę**, per wymagany surowiec danej epoki.
+ *
+ * `population` MUSI być sumą populacji WSZYSTKICH miast ownera (nie populacją jednego miasta z
+ * osobna) — patrz ostrzeżenie w JSDoc modułu o wielu miastach tego samego ownera. `required =
+ * population × 1`, `drained = min(required, stock[key] ?? 0)` (nigdy poniżej zera). Kara nadal
+ * binarna (ECHO Q3=A): „dostępny" = `drained >= required` (pełne pokrycie), „brakujący" w
+ * przeciwnym razie — identyczna semantyka kar co `resolveCitizenResourceCoverage`
+ * (`CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE/MISSING`, `CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING`).
+ *
+ * Pure — NIE mutuje `empireStock` ani niczego innego; zwraca `deductions` do zastosowania przez
+ * wołającego. Ujemna/niefinitna `population` traktowana jak 0 (brak zapotrzebowania — zawsze
+ * "dostępny", zero-regresja na dane śmieciowe).
+ */
+export function computeCitizenResourceDrain(
+  era: number,
+  population: number,
+  empireStock: Readonly<Record<string, number>> | null | undefined,
+): CitizenResourceDrainResult {
+  const required = citizenRequiredResourcesForEra(era);
+  const stock = empireStock ?? {};
+  const pop = Number.isFinite(population) && population > 0 ? Math.floor(population) : 0;
+  const available: string[] = [];
+  const missing: string[] = [];
+  const deductions: Record<string, number> = {};
+  for (const key of required) {
+    const need = pop;
+    const haveRaw = stock[key];
+    const have = typeof haveRaw === 'number' && Number.isFinite(haveRaw) && haveRaw > 0 ? haveRaw : 0;
+    const drained = Math.min(need, have);
+    if (drained > 0) deductions[key] = drained;
+    if (drained >= need) {
+      available.push(key);
+    } else {
+      missing.push(key);
+    }
+  }
+  const happinessDelta =
+    available.length * CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE
+    + missing.length * CITIZEN_UPKEEP_HAPPINESS_PER_MISSING;
+  const growthPctDelta = missing.length * CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING;
+  return { required, available, missing, happinessDelta, growthPctDelta, deductions };
 }
