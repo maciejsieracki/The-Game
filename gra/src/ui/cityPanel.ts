@@ -203,6 +203,7 @@ import {
 } from '../game/society-breakdown';
 import {
   resolveCitizenResourceCoverage,
+  computeCitizenResourceDrain,
   CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
   CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
   type CitizenUpkeepCoverage,
@@ -2909,11 +2910,33 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const stolicaBonus = stolicaEasyBonusActive(
     difficulty, gameTurn, city, allCities, 10, cfg.getCapitalCityId?.(city.ownerId) ?? null,
   );
-  // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): magazyn CENTRALNY imperium (ECHO Q1),
-  // ownerId-agnostyczne (ECHO Q2=A) — ten sam wzorzec w main.ts (silnik) i tu (UI preview).
-  const citizenUpkeep = resolveCitizenResourceCoverage(
-    era, ownerResourceStockAll(allCities, city.ownerId),
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 3 (Maciej 2026-08-11, Evaluator FAIL runda 2 powód 2):
+  // `computeOrderStateLocal` wykonuje się TAKŻE w żywej rozgrywce (nie tylko sandbox/playtest) —
+  // gałąź `fromEngine: true` w `resolveOrderState` celowo nadpisuje `porPct`/`bandLabel`/
+  // `porzadek` wartościami stąd (bo Prawo/Porządek liczy się na żywo z bieżącego garnizonu,
+  // `getUnitsAt`, nie tylko ze stanu z końca tury) — więc to przeliczenie MUSI używać TEJ SAMEJ
+  // reguły pokrycia co silnik (realny drenaż 1:1/obywatela), inaczej panel miasta pokazuje inne
+  // pasmo buntu niż to, co faktycznie liczy silnik. PREFERUJ odczyt z silnika
+  // (`cfg.getOrderState` — ten sam hak co `live` w `resolveOrderState`), fallback na realny
+  // drenaż tylko gdy silnik jeszcze nie policzył (populacja = suma allCities tego ownera,
+  // identycznie jak `main.ts` `citizenUpkeepDrainForOwner`/`buildEmpireResourceRows`) — NIE
+  // starą binarną `resolveCitizenResourceCoverage` (magazyn > 0), która tu była wcześniej.
+  // EN: `computeOrderStateLocal` also runs during live play (not sandbox-only) — the
+  // `fromEngine: true` branch deliberately overrides `porPct`/`bandLabel`/`porzadek` with the
+  // values computed here (Law/Order is recomputed live from the current garrison, not just the
+  // end-of-turn snapshot), so this recompute must use the SAME coverage rule as the engine
+  // (real per-capita drain), otherwise the city panel can show a different unrest band than the
+  // engine actually enforces. Prefer the engine's verdict (`cfg.getOrderState`, the same hook
+  // `resolveOrderState` reads as `live`), fall back to the real drain only when the engine
+  // hasn't computed yet (population = sum across all of the owner's cities, same as
+  // `main.ts`'s `citizenUpkeepDrainForOwner`/`buildEmpireResourceRows`) — not the old binary
+  // `resolveCitizenResourceCoverage` (stock > 0) that used to live here.
+  const ownerPopulationAll = allCities.reduce(
+    (sum, c) => c.ownerId === city.ownerId ? sum + c.population : sum,
+    0,
   );
+  const citizenUpkeep = cfg.getOrderState?.(city.id)?.citizenUpkeep
+    ?? computeCitizenResourceDrain(era, ownerPopulationAll, ownerResourceStockAll(allCities, city.ownerId));
 
   const ordPctRaw = evaluateOrderFromBreakdown(
     {

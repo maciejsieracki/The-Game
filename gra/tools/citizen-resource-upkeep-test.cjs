@@ -289,8 +289,17 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
     'main.ts importuje computeCitizenResourceDrain z citizen-resource-upkeep.ts (resolveCitizenResourceCoverage NIE jest już importowane w main.ts od N1 panelu Surowców)',
   );
   // N2 (2026-08-11): pętla Porządku woła TERAZ citizenUpkeepDrainForOwner(city.ownerId)
-  // (realny drenaż), NIE resolveCitizenResourceCoverage bezpośrednio -- ten drugi zostaje
-  // jako podgląd używany gdzie indziej (buildEmpireResourceRows, UI panelu Surowców).
+  // (realny drenaż), NIE resolveCitizenResourceCoverage bezpośrednio. AKTUALIZACJA runda 3
+  // (Evaluator FAIL runda 2, powody 1+2): resolveCitizenResourceCoverage NIE jest już wołana
+  // wprost ani przez buildEmpireResourceRows (podgląd panelu Surowców, main.ts), ani przez
+  // computeOrderStateLocal (cityPanel.ts) -- oba miejsca TERAZ preferują odczyt WERDYKTU
+  // SILNIKA (cityOrderState.get(...)?.citizenUpkeep / cfg.getOrderState?.(...)?.citizenUpkeep)
+  // i fallbackują na computeCitizenResourceDrain (realny drenaż) tylko gdy silnik jeszcze nie
+  // policzył tej tury (np. pierwszy render UI przed 1. turą) -- patrz sekcja I niżej.
+  // resolveCitizenResourceCoverage (stara binarna reguła magazyn>0) zostaje w kodzie jako
+  // eksport wyłącznie jako fallback wewnątrz computeView (cityPanel.ts, inna funkcja niż
+  // computeOrderStateLocal) -- w praktyce nieosiągalny, bo ordState.citizenUpkeep jest tam
+  // zawsze ustawione (dead code, poza zakresem tej naprawy).
   const citizenCallIdx = mainSrc.indexOf('citizenUpkeepDrainForOwner(city.ownerId)');
   assert(citizenCallIdx > -1, 'main.ts woła citizenUpkeepDrainForOwner(city.ownerId) w pętli Porządku (realny drenaż, N2)');
   if (citizenCallIdx > -1) {
@@ -315,6 +324,45 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
   assert(
     mainSrc.includes('const citizenUpkeepDrainCache = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();'),
     'main.ts: drenaż cache\'owany per-owner (citizenUpkeepDrainCache) -- jeden wspólny resolver dla wszystkich ownerów',
+  );
+}
+
+// ===========================================================================
+// I. buildEmpireResourceRows (panel Surowców) czyta WERDYKT SILNIKA z cityOrderState,
+//    NIE przelicza na żywo (N1 runda 3, Evaluator FAIL runda 2 powód 1, Maciej 2026-08-11)
+// ===========================================================================
+console.log('\n-- I. buildEmpireResourceRows czyta cityOrderState (regresja rundy 2: przeliczanie na żywo) --');
+{
+  // Rozjazd rundy 2: buildEmpireResourceRows liczył pokrycie NA ŻYWO z magazynu PO turze
+  // (czyli PO tym, jak drenaż silnika już odjął surowce) -- dla magazynu w paśmie
+  // P <= stan < 2P (P = populacja imperium ownera) silnik w tej turze naliczył "POKRYTE"
+  // (liczone PRZED odjęciem), a panel po turze widział zdrenowany magazyn i pokazywał
+  // "NIEDOBÓR". Naprawa: czytać `cityOrderState.get(...)?.citizenUpkeep` (werdykt faktycznie
+  // zastosowany przez silnik tej tury), fallback na computeCitizenResourceDrain TYLKO gdy
+  // cityOrderState jeszcze puste. Ta asercja broni naprawy -- mutant "przywróć przeliczanie na
+  // żywo inline" (usunięcie odczytu cityOrderState.get(...) z ciała funkcji) MUSI dać FAIL.
+  // Wzorem sekcji H: okno indexOf na treść funkcji (kotwica definicji do kolejnej znanej linii
+  // ciała), zamiast gołego .includes() na całym pliku (żeby nie złapać przypadkiem innego,
+  // niepowiązanego cityOrderState.get(...) gdzie indziej w main.ts).
+  const FN_ANCHOR = 'function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {';
+  const fnIdx = mainSrcStripped.indexOf(FN_ANCHOR);
+  assert(fnIdx > -1, 'main.ts: kotwica "function buildEmpireResourceRows(...)" znaleziona (po stripLineComments)');
+  const CITIZEN_UPKEEP_END_ANCHOR = 'const citizenRequiredSet';
+  const endIdx = fnIdx > -1 ? mainSrcStripped.indexOf(CITIZEN_UPKEEP_END_ANCHOR, fnIdx) : -1;
+  assert(endIdx > fnIdx, 'main.ts: kotwica "const citizenRequiredSet" znaleziona PO początku buildEmpireResourceRows -- okno ciała funkcji dobrze uformowane');
+  const fnHeadWindow = (fnIdx > -1 && endIdx > fnIdx) ? mainSrcStripped.slice(fnIdx, endIdx) : '';
+  assert(
+    fnHeadWindow.includes('cityOrderState.get('),
+    'I1 (zabija regresję rundy 2 -- przeliczanie na żywo inline): buildEmpireResourceRows czyta '
+      + 'werdykt silnika przez cityOrderState.get(...) PRZED przypisaniem do `citizenUpkeep`, nie '
+      + 'goły computeCitizenResourceDrain(...) jako jedyne źródło',
+  );
+  assert(
+    /citizenUpkeep\s*=\s*\([\s\S]*?cityOrderState\.get\([\s\S]*?\?\?[\s\S]*?computeCitizenResourceDrain\(/.test(fnHeadWindow),
+    'I2 (zabija mutant "usuń fallback, zostaw tylko cityOrderState.get"): przypisanie '
+      + '`citizenUpkeep` ma kształt "silnik ?? fallback computeCitizenResourceDrain(...)" -- '
+      + 'werdykt silnika ZAWSZE preferowany, computeCitizenResourceDrain tylko gdy cityOrderState '
+      + 'puste (np. pierwszy render UI przed 1. turą), nie odwrotnie',
   );
 }
 
@@ -438,11 +486,17 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
       + 'a "citizenUpkeepDrainCache.set(ownerId, v);" -- czyli drenaż realnie liczony i mutowany '
       + 'TYLKO gdy cache jest pusty (RAZ per owner per turę), nie przy każdym wejściu do resolvera',
   );
+  // N2b (Maciej 2026-08-11, drobna naprawa zgłoszona przy okazji N1 rundy 3): regex łapał
+  // WYŁĄCZNIE warianty `===`/`!== 0` -- mutant M4 zapisany jako `if (ownerId > 0 ...)` albo
+  // `if (ownerId < 1 ...)`-owy odpowiednik z porównaniem `> 0`/`< 0` przechodziłby bez
+  // wykrycia. Rozszerzone o `[=!<>]=?` (obejmuje ===/!==/==/!=/>/</>=/<=), wciąż wymaga
+  // literalnego `0` PO operatorze, więc `c.ownerId === ownerId` (H1, legalne porównanie
+  // wewnątrz tego samego okna) nadal NIE jest łapane -- brak fałszywego trafienia.
   assert(
-    !/ownerId\s*[=!]==\s*0/.test(resolverBlockWindow),
-    'H5 (zabija mutanta M4 -- "if (ownerId === 0 && ...)" wokół deduct, AI nigdy realnie nie '
-      + 'płaci): treść resolvera (if(v===undefined) .. .set(ownerId, v)) NIE zawiera żadnego '
-      + 'filtra "ownerId === 0" ani "ownerId !== 0" -- drenaż i deduct stosowane identycznie dla '
+    !/ownerId\s*[=!<>]=?\s*0/.test(resolverBlockWindow),
+    'H5 (zabija mutanta M4 -- "if (ownerId === 0 && ...)" / ">"/"<" wokół deduct, AI nigdy '
+      + 'realnie nie płaci): treść resolvera (if(v===undefined) .. .set(ownerId, v)) NIE zawiera '
+      + 'żadnego filtra "ownerId {=,!,>,<}= 0" -- drenaż i deduct stosowane identycznie dla '
       + 'gracza i AI/Państw-Miast (parytet ECHO Q2=A), bez rozgałęzienia po ownerId',
   );
 

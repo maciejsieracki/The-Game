@@ -2640,29 +2640,42 @@ async function boot(): Promise<void> {
      */
     function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
       const warehouse = citySurowceSumForOwner(ownerId);
-      // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): panel Surowców musi pokazywać
-      // TĘ SAMĄ regułę pokrycia, którą silnik tury faktycznie nalicza w pętli Porządku
-      // (`citizenUpkeepDrainForOwner`, computeCitizenResourceDrain — magazyn ≥ CAŁA populacja
-      // imperium tego ownera), NIE starą binarną bramkę „magazyn > 0" z
-      // resolveCitizenResourceCoverage (ta zostaje jako podgląd gdzie indziej, patrz JSDoc
-      // modułu citizen-resource-upkeep.ts — tu była rozbieżność panelu z silnikiem: panel
-      // pokazywał zielone „OK", podczas gdy silnik naliczał karę). buildEmpireResourceRows
-      // służy WYŁĄCZNIE do podglądu UI (renderowanie), więc celowo używamy tylko
-      // required/available z wyniku — NIE stosujemy `deductions` (żadnej mutacji City.surowce
-      // z poziomu renderowania panelu, to by było podwójne odjęcie / efekt uboczny podglądu).
-      // Populacja liczona identycznie jak w main pętli Porządku (suma population wszystkich
-      // miast tego ownera).
-      // EN: the Resources panel must reflect the SAME coverage rule the turn engine actually
-      // enforces (stock ≥ owner's WHOLE empire population), not the old "stock > 0" binary
-      // gate — this function is preview-only, so we read required/available and deliberately
-      // ignore `deductions` (no City.surowce mutation from a rendering path).
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 3 (Maciej 2026-08-11, Evaluator FAIL runda 2
+      // powód 1): panel Surowców MUSI czytać WERDYKT SILNIKA z `cityOrderState`
+      // (`citizenUpkeep`, policzone RAZ per owner w pętli Porządku —
+      // `citizenUpkeepDrainForOwner`), a NIE przeliczać na żywo. Przeliczanie na żywo czytało
+      // `warehouse` PO turze — czyli PO tym, jak drenaż silnika już odjął surowce z magazynu tej
+      // tury — więc dla magazynu w paśmie `P ≤ stan < 2P` (P = populacja imperium ownera, czyli
+      // typowy „bufor na 1-2 tury") silnik naliczył w tej turze „POKRYTE" (liczone PRZED
+      // odjęciem), a panel po turze widział już zdrenowany magazyn i pokazywał „NIEDOBÓR" —
+      // rozjazd panel↔silnik. Ten sam wzorzec co `cityPanel.ts` (`ordState.citizenUpkeep ??
+      // resolveCitizenResourceCoverage(...)`, linie ~1175-1176), tu z `computeCitizenResourceDrain`
+      // jako fallback (nie starą binarną `resolveCitizenResourceCoverage`, bo ten panel pokazuje
+      // realny drenaż 1:1/obywatela, nie samą bramkę magazyn > 0). FALLBACK używany WYŁĄCZNIE
+      // gdy `cityOrderState` jest jeszcze puste (np. pierwszy render UI przed 1. turą) — poza tym
+      // czyta zawsze z silnika, nigdy nie przelicza równolegle. buildEmpireResourceRows służy
+      // WYŁĄCZNIE do podglądu UI (renderowanie), więc celowo używamy tylko required/available z
+      // wyniku — NIE stosujemy `deductions` (żadnej mutacji City.surowce z poziomu renderowania
+      // panelu, to by było podwójne odjęcie / efekt uboczny podglądu).
+      // EN: the Resources panel MUST read the engine's VERDICT from `cityOrderState`
+      // (`citizenUpkeep`, computed once per owner in the Order loop), never recompute live.
+      // Live recomputation read `warehouse` AFTER the turn's engine drain already subtracted
+      // stock, so for a stockpile in the `P ≤ stock < 2P` band the engine recorded "COVERED"
+      // this turn (computed BEFORE the deduction) while the panel showed "SHORTFALL" (post-
+      // deduction) — a panel/engine mismatch. Same pattern as `cityPanel.ts` lines ~1175-1176.
+      // Fallback (`computeCitizenResourceDrain`) applies ONLY when `cityOrderState` is still
+      // empty (first UI render before turn 1); we deliberately ignore `deductions` here (no
+      // City.surowce mutation from a rendering path).
       const citizenUpkeepOwnerPopulation = cities.reduce(
         (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
         0,
       );
-      const citizenUpkeep = computeCitizenResourceDrain(
-        empireEpochForOwner(ownerId), citizenUpkeepOwnerPopulation, warehouse,
-      );
+      const citizenUpkeepEngineCity = cities.find(c => c.ownerId === ownerId);
+      const citizenUpkeep =
+        (citizenUpkeepEngineCity && cityOrderState.get(citizenUpkeepEngineCity.id)?.citizenUpkeep)
+        ?? computeCitizenResourceDrain(
+          empireEpochForOwner(ownerId), citizenUpkeepOwnerPopulation, warehouse,
+        );
       const citizenRequiredSet = new Set(citizenUpkeep.required);
       const citizenAvailableSet = new Set(citizenUpkeep.available);
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
