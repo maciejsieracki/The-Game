@@ -279,9 +279,14 @@ console.log('\n-- E. Parytet AI/Państwa-Miasta (ECHO Q2=A) --');
   // `for (const city of cities)` bez filtra ownerId===0 wokół wywołania resolveCitizenResourceCoverage
   // -- to jest DOWÓD, że AI i Państwa-Miasta przechodzą przez TĘ SAMĄ ścieżkę co gracz.
   const mainSrc = mainSrcRaw;
+  // N1 (panel Surowców, Maciej 2026-08-11): main.ts przestał importować
+  // resolveCitizenResourceCoverage -- buildEmpireResourceRows (podgląd panelu) teraz TAKŻE
+  // liczy przez computeCitizenResourceDrain (ta sama reguła co silnik tury), więc stary
+  // podgląd nie jest już nigdzie w main.ts potrzebny (zostaje jako eksport tylko dla
+  // cityPanel.ts / population-growth-v85.ts / society-breakdown.ts).
   assert(
-    mainSrc.includes("import { resolveCitizenResourceCoverage, computeCitizenResourceDrain } from './game/citizen-resource-upkeep';"),
-    'main.ts importuje resolveCitizenResourceCoverage + computeCitizenResourceDrain z citizen-resource-upkeep.ts',
+    mainSrc.includes("import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';"),
+    'main.ts importuje computeCitizenResourceDrain z citizen-resource-upkeep.ts (resolveCitizenResourceCoverage NIE jest już importowane w main.ts od N1 panelu Surowców)',
   );
   // N2 (2026-08-11): pętla Porządku woła TERAZ citizenUpkeepDrainForOwner(city.ownerId)
   // (realny drenaż), NIE resolveCitizenResourceCoverage bezpośrednio -- ten drugi zostaje
@@ -381,6 +386,64 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
   assert(
     mainSrcStripped.includes('citizenUpkeepDrainCache.set(ownerId, v);'),
     'H3: wynik drenażu cache\'owany per ownerId -- drugie miasto tego samego ownera w tej turze NIE drenuje magazynu ponownie',
+  );
+
+  // ---------------------------------------------------------------------
+  // H4/H5 (N2, Maciej 2026-08-11 -- naprawa luki testowej po Evaluatorze): H1-H3 wyżej
+  // sprawdzają OBECNOŚĆ trzech stringów gdziekolwiek w mainSrcStripped, ale NIE ich WZAJEMNĄ
+  // KOLEJNOŚĆ/ZAGNIEŻDŻENIE -- dwa realne mutanty tej klasy przechodziły 78/78 bez wykrycia:
+  //
+  //   M4 -- `if (ownerId === 0 && ...) { deductBuildingStockCostAcrossCities(...); }`: AI/
+  //         Państwa-Miasta nigdy realnie nie płacą (drenaż liczony, ale magazyn nigdy nie
+  //         mutowany dla ownerId !== 0) -- łamie parytet gracz/AI (ECHO Q2=A) po cichu, bo H2
+  //         nadal widzi string deductBuildingStockCostAcrossCities(...) GDZIEŚ w pliku.
+  //   M5 -- `deductBuildingStockCostAcrossCities(...)` PRZENIESIONE POZA blok
+  //         `if (v === undefined) { ... }` (np. wywoływane bezwarunkowo PO nim, przy każdym
+  //         wejściu do resolvera): drenaż powtarzany dla KAŻDEGO miasta tego samego ownera
+  //         zamiast RAZ na turę -- dokładnie pułapka, przed którą H3/cache miał chronić, ale
+  //         H3 sprawdza tylko że `.set(ownerId, v)` istnieje w pliku, nie że deduct leży
+  //         WEWNĄTRZ tej samej gałęzi `if (v === undefined)`.
+  //
+  // Wzorzec naprawy: sekcja E wyżej już używa okien tekstowych (indexOf + slice) zamiast
+  // gołego .includes() na całym pliku -- ta sama technika: wytnij dokładnie treść resolvera
+  // (od `if (v === undefined) {` do `citizenUpkeepDrainCache.set(ownerId, v);`, zakotwiczone
+  // wewnątrz definicji citizenUpkeepDrainForOwner, żeby nie złapać innego, niepowiązanego
+  // `if (v === undefined) {` gdzie indziej w main.ts) i sprawdź WEWNĄTRZ tego okna:
+  //   H4 (zabija M5): wywołanie deduct leży MIĘDZY `if (v === undefined) {` a `.set(...)` --
+  //       gdyby M5 przeniosło je poza blok, nie znalazłoby się w oknie -> FAIL.
+  //   H5 (zabija M4): W TREŚCI resolvera NIE MA żadnego filtra po ownerId (`ownerId === 0`
+  //       ani `ownerId !== 0`) -- gdyby M4 dodało taki warunek wokół deduct, regex by go
+  //       złapał -> FAIL. Parytet gracz/AI = brak jakiegokolwiek rozgałęzienia po ownerId
+  //       w tym bloku, nie tylko obecność samego wywołania deduct.
+  // ---------------------------------------------------------------------
+  const RESOLVER_DEF_ANCHOR = 'const citizenUpkeepDrainForOwner = (ownerId: number)';
+  const resolverDefIdx = mainSrcStripped.indexOf(RESOLVER_DEF_ANCHOR);
+  assert(resolverDefIdx > -1, 'main.ts: kotwica definicji citizenUpkeepDrainForOwner znaleziona');
+  const idxOfIfUndefined = resolverDefIdx > -1
+    ? mainSrcStripped.indexOf('if (v === undefined) {', resolverDefIdx)
+    : -1;
+  assert(idxOfIfUndefined > -1, 'main.ts: "if (v === undefined) {" znalezione WEWNĄTRZ definicji citizenUpkeepDrainForOwner (nie gdzie indziej w pliku)');
+  const idxOfCacheSet = idxOfIfUndefined > -1
+    ? mainSrcStripped.indexOf('citizenUpkeepDrainCache.set(ownerId, v);', idxOfIfUndefined)
+    : -1;
+  assert(idxOfCacheSet > idxOfIfUndefined, 'main.ts: "citizenUpkeepDrainCache.set(ownerId, v);" znalezione PO "if (v === undefined) {" -- okno resolvera dobrze uformowane');
+  const resolverBlockWindow = (idxOfIfUndefined > -1 && idxOfCacheSet > idxOfIfUndefined)
+    ? mainSrcStripped.slice(idxOfIfUndefined, idxOfCacheSet)
+    : '';
+
+  assert(
+    resolverBlockWindow.includes('deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);'),
+    'H4 (zabija mutanta M5 -- deduct przeniesiony POZA blok if(v===undefined)): wywołanie '
+      + 'deductBuildingStockCostAcrossCities leży WEWNĄTRZ okna między "if (v === undefined) {" '
+      + 'a "citizenUpkeepDrainCache.set(ownerId, v);" -- czyli drenaż realnie liczony i mutowany '
+      + 'TYLKO gdy cache jest pusty (RAZ per owner per turę), nie przy każdym wejściu do resolvera',
+  );
+  assert(
+    !/ownerId\s*[=!]==\s*0/.test(resolverBlockWindow),
+    'H5 (zabija mutanta M4 -- "if (ownerId === 0 && ...)" wokół deduct, AI nigdy realnie nie '
+      + 'płaci): treść resolvera (if(v===undefined) .. .set(ownerId, v)) NIE zawiera żadnego '
+      + 'filtra "ownerId === 0" ani "ownerId !== 0" -- drenaż i deduct stosowane identycznie dla '
+      + 'gracza i AI/Państw-Miast (parytet ECHO Q2=A), bez rozgałęzienia po ownerId',
   );
 
   // Behawioralny dowód end-to-end: computeCitizenResourceDrain wywołane RAZ z sumą populacji

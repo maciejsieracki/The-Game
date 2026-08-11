@@ -333,7 +333,7 @@ import {
   isOsiedleRevoltImmune,
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
-import { resolveCitizenResourceCoverage, computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
+import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -2640,10 +2640,29 @@ async function boot(): Promise<void> {
      */
     function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
       const warehouse = citySurowceSumForOwner(ownerId);
-      // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): jaki surowiec jest wymagany przez
-      // obywateli w tej epoce + czy magazyn (warehouse, TA SAMA suma civ-wide) go pokrywa —
-      // panel Surowców (UI a).
-      const citizenUpkeep = resolveCitizenResourceCoverage(empireEpochForOwner(ownerId), warehouse);
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): panel Surowców musi pokazywać
+      // TĘ SAMĄ regułę pokrycia, którą silnik tury faktycznie nalicza w pętli Porządku
+      // (`citizenUpkeepDrainForOwner`, computeCitizenResourceDrain — magazyn ≥ CAŁA populacja
+      // imperium tego ownera), NIE starą binarną bramkę „magazyn > 0" z
+      // resolveCitizenResourceCoverage (ta zostaje jako podgląd gdzie indziej, patrz JSDoc
+      // modułu citizen-resource-upkeep.ts — tu była rozbieżność panelu z silnikiem: panel
+      // pokazywał zielone „OK", podczas gdy silnik naliczał karę). buildEmpireResourceRows
+      // służy WYŁĄCZNIE do podglądu UI (renderowanie), więc celowo używamy tylko
+      // required/available z wyniku — NIE stosujemy `deductions` (żadnej mutacji City.surowce
+      // z poziomu renderowania panelu, to by było podwójne odjęcie / efekt uboczny podglądu).
+      // Populacja liczona identycznie jak w main pętli Porządku (suma population wszystkich
+      // miast tego ownera).
+      // EN: the Resources panel must reflect the SAME coverage rule the turn engine actually
+      // enforces (stock ≥ owner's WHOLE empire population), not the old "stock > 0" binary
+      // gate — this function is preview-only, so we read required/available and deliberately
+      // ignore `deductions` (no City.surowce mutation from a rendering path).
+      const citizenUpkeepOwnerPopulation = cities.reduce(
+        (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
+        0,
+      );
+      const citizenUpkeep = computeCitizenResourceDrain(
+        empireEpochForOwner(ownerId), citizenUpkeepOwnerPopulation, warehouse,
+      );
       const citizenRequiredSet = new Set(citizenUpkeep.required);
       const citizenAvailableSet = new Set(citizenUpkeep.available);
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
@@ -10836,7 +10855,18 @@ async function boot(): Promise<void> {
       }
       hintToast.innerHTML = msg;
       hintToast.style.display = 'block';
-      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : '320';
+      // Gdy menu startowe jest zamontowane (.civ-menu, z-index 500, .cm-toast
+      // wewnątrz 560), domyślne 320 jest pod nim niewidoczne w root stacking
+      // context (P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA, N-ZINDEX-TOAST).
+      // 600 bije .civ-menu(500)/.civ-pause(480)/.cm-toast(560) -- zweryfikowane
+      // grepem po wszystkich z-index w src/ (najbliższe overlaye pełnoekranowe
+      // powyżej to 650+, poza zasięgiem tego konkretnego kolizji).
+      // / EN: while the startup menu is mounted (.civ-menu z-index 500, its
+      // .cm-toast 560), the default 320 sits underneath it in the root
+      // stacking context. 600 clears .civ-menu/.civ-pause/.cm-toast -- checked
+      // against every z-index in src/ (nearest fullscreen overlays above sit
+      // at 650+, outside this particular collision).
+      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320');
       hintOverrideTimer = setTimeout(() => {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
@@ -23782,9 +23812,14 @@ async function boot(): Promise<void> {
             if (lastEfTickResult) {
               const happinessByCityId = new Map<string, number>();
               for (const [cid, st] of cityOrderState) happinessByCityId.set(cid, st.szczescie);
-              // R-ZUZYCIE-SUROWCOW-OBYWATELE: kara Rozwoju (%) per miasto — czytana z tego
-              // samego cityOrderState (już policzona w pętli Porządku wyżej, ten sam magazyn
-              // centralny cache'owany per owner tej tury — citizenUpkeepEmpireStock).
+              // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): kara Rozwoju (%) per
+              // miasto — czytana z tego samego cityOrderState (już policzona w pętli Porządku
+              // wyżej). `st.citizenUpkeep` to TERAZ wynik REALNEGO drenażu magazynu
+              // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain, 1 szt.
+              // surowca/obywatela/turę, cache'owany RAZ per owner per turę), nie sam podgląd
+              // obecności surowca w magazynie jak przed N2.
+              // EN: `st.citizenUpkeep` now comes from the REAL drain
+              // (citizenUpkeepDrainForOwner), not the old presence-only preview.
               const citizenGrowthPctByCityId = new Map<string, number>();
               for (const [cid, st] of cityOrderState) {
                 citizenGrowthPctByCityId.set(cid, st.citizenUpkeep?.growthPctDelta ?? 0);
@@ -27791,25 +27826,50 @@ async function boot(): Promise<void> {
           }
           if (!ok) {
             // P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, decyzja N1, 2026-08-11):
-            // najczęstsza przyczyna tego `ok===false` to teraz TWARDY BŁĄD z
+            // jedną z przyczyn tego `ok===false` jest TWARDY BŁĄD z
             // load-map-source.ts::loadMapForSave (mapSnapshot kształtowo poprawny,
             // ale buildGameMapFromSnapshot rzuca -- uszkodzony/niespójny zapis mapy)
             // -- wcześniej ta gałąź nie pokazywała GRACZOWI żadnego komunikatu
-            // (tylko diagError do panelu F10), co dla tego konkretnego, teraz
-            // częstszego przypadku było mylące (ekran po prostu wracał do menu
-            // bez wyjaśnienia). Ten sam mechanizm diagError zostaje -- dokładamy
-            // tylko widoczny dla gracza showHintMessage.
-            // / EN: `ok===false` here now most often comes from a hard error in
+            // (tylko diagError do panelu F10), co dla tego przypadku było mylące
+            // (ekran po prostu wracał do menu bez wyjaśnienia). Ten sam mechanizm
+            // diagError zostaje -- dokładamy tylko widoczny dla gracza showHintMessage.
+            // / EN: one of the causes of `ok===false` here is a hard error in
             // loadMapForSave (shape-valid but corrupted mapSnapshot) -- this
             // branch previously showed the player NOTHING (only diagError to the
-            // F10 panel), which was misleading now that this path fires more
-            // often. Same diagError mechanism, just adds a visible hint.
+            // F10 panel), which was misleading. Same diagError mechanism, just
+            // adds a visible hint.
             diagError('load', 'regenerateWorldForLoad failed');
+            // N-ZINDEX-TOAST (Maciej, 2026-08-11): openStartupMainMenu() MUSI
+            // wywołać się PRZED showHintMessage() -- dopiero po zamontowaniu
+            // .civ-menu (z-index 500) isMainMenuOpen() zwraca true, co
+            // showHintMessage() czyta, żeby podnieść toast na z-index 600
+            // (patrz komentarz przy `hintToast.style.zIndex` wyżej). Odwrotna
+            // kolejność renderowała toast na 320 -- POD menu, niewidoczny.
+            // Ścieżka fromInGamePause===true (Ctrl+L / "Wczytaj" w menu pauzy)
+            // NIE wchodzi w ten if -- openStartupMainMenu() się wtedy nie woła.
+            // To bezpieczne: hideGamePauseMenu() i hideSaveLoadDialog() zostały
+            // już wywołane wcześniej w tej funkcji (patrz góra loadGameFromSlot),
+            // więc w chwili ok===false żaden pełnoekranowy overlay nie konkuruje
+            // z toastem -- domyślne 320 wystarcza (zweryfikowane: jedyny wołający
+            // z fromInGamePause=true to configureGamePauseMenu onLoad, brak innej
+            // ścieżki).
+            // / EN: openStartupMainMenu() MUST run BEFORE showHintMessage() --
+            // only after .civ-menu (z-index 500) is mounted does isMainMenuOpen()
+            // return true, which showHintMessage() reads to lift the toast to
+            // z-index 600. The reverse order rendered the toast at 320 -- BELOW
+            // the menu, invisible. The fromInGamePause===true path (Ctrl+L /
+            // pause-menu "Load") never enters this branch's menu call --
+            // openStartupMainMenu() isn't invoked there. That's safe: this
+            // function already called hideGamePauseMenu() and
+            // hideSaveLoadDialog() earlier, so when ok===false fires no
+            // fullscreen overlay competes with the toast -- the default 320 is
+            // enough (verified: the only fromInGamePause=true caller is
+            // configureGamePauseMenu's onLoad, no other path).
+            if (!fromInGamePause) openStartupMainMenu();
             showHintMessage(
               'Błąd wczytywania mapy zapisu — zapis może być uszkodzony. Wracam do menu. F10 = raport diagnostyczny.',
               5000,
             );
-            if (!fromInGamePause) openStartupMainMenu();
             return;
           }
         }

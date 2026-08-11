@@ -738,12 +738,14 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   } else {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
-  // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): magazyn centralny > 0 -> pokrycie
-  // obywateli tej epoki; magazyn = 0 -> aktywna kara (Szczęście −1, Rozwój −1% KAŻDE miasto).
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
+  // ZASPOKAJA CAŁĄ populację imperium tego ownera (1 szt. surowca/obywatela/turę), NIE
+  // starsza binarna „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy
+  // silnik tury (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
   if (r.citizenRequired) {
     parts.push(r.citizenCovered
-      ? 'Obywatele: zapotrzebowanie pokryte (+1 Szczęście każde miasto)'
-      : 'Obywatele: BRAK w magazynie — kara −1 Szczęście, −1% Rozwój w KAŻDYM mieście');
+      ? 'Obywatele: zapotrzebowanie POKRYTE (magazyn ≥ zapotrzebowanie całego imperium; +1 Szczęście każde miasto)'
+      : 'Obywatele: NIEDOBÓR w magazynie (poniżej zapotrzebowania całego imperium) — kara −1 Szczęście, −1% Rozwój w KAŻDYM mieście');
   }
   return esc(parts.join(' · '));
 }
@@ -770,18 +772,19 @@ function resRateHtml(r: EmpireResourceRow, state: 'bad' | 'warn' | 'good'): stri
 }
 
 /**
- * Badge „Obywatele" (R-ZUZYCIE-SUROWCOW-OBYWATELE, Maciej 2026-08-10) — tylko dla surowców
- * wymaganych w bieżącej epoce (`r.citizenRequired`); pokrycie/brak z magazynu centralnego.
- * Inline style: `civ-emp-res-card`/`resCardHtml` nie mają dedykowanej klasy CSS w repo dla
- * nowych badge'y (kolory kart idą przez `${state}` na kontenerze) — bezpieczniej nie zgadywać
- * nieistniejącej klasy niż dodać martwy selektor.
+ * Badge „Obywatele" (R-ZUZYCIE-SUROWCOW-OBYWATELE N2, Maciej 2026-08-11) — tylko dla surowców
+ * wymaganych w bieżącej epoce (`r.citizenRequired`); pokrycie = magazyn centralny ZASPOKAJA
+ * CAŁĄ populację imperium tego ownera (ten sam wynik co silnik tury liczy realnie, nie
+ * starsza binarna „magazyn > 0"). Inline style: `civ-emp-res-card`/`resCardHtml` nie mają
+ * dedykowanej klasy CSS w repo dla nowych badge'y (kolory kart idą przez `${state}` na
+ * kontenerze) — bezpieczniej nie zgadywać nieistniejącej klasy niż dodać martwy selektor.
  */
 function resCitizenBadgeHtml(r: EmpireResourceRow): string {
   if (!r.citizenRequired) return '';
   const covered = r.citizenCovered === true;
   const bg = covered ? 'rgba(122,208,160,0.18)' : 'rgba(224,90,90,0.18)';
   const fg = covered ? '#7ad0a0' : '#e05a5a';
-  const txt = covered ? 'Obywatele: OK' : 'Obywatele: BRAK';
+  const txt = covered ? 'Obywatele: POKRYTE' : 'Obywatele: NIEDOBÓR';
   return `<span class="civ-emp-res-citizen-badge" `
     + `style="display:inline-block;margin-top:4px;padding:1px 6px;border-radius:4px;`
     + `font-size:11px;background:${bg};color:${fg}">${esc(txt)}</span>`;
