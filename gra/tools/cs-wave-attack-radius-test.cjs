@@ -177,11 +177,27 @@ const src = stripLineComments(rawSrc);
 const fnStart = src.indexOf('function decideDefensiveCopyTurn');
 assert(fnStart !== -1, 'funkcja decideDefensiveCopyTurn znaleziona w ai.ts');
 
-// Znajdź koniec funkcji: kolejne wystąpienie "\n// ---" (separator sekcji) po fnStart,
-// albo kolejna deklaracja top-level "function " po pierwszej linii funkcji.
+// Znajdź koniec funkcji: `src` jest JUŻ po stripLineComments, więc separator "// ---"
+// (komentarz linii) nigdy tam nie występuje — szukanie go zawsze dawało -1 i fnBody
+// obejmowało CAŁĄ resztę pliku (~40000 znaków) zamiast tylko ciała funkcji (~6900 znaków),
+// co czyniło poniższe asercje ślepe na regresję gdziekolwiek indziej w pliku. Zamiast tego
+// szukamy granicy po KOLEJNEJ deklaracji top-level "function " za pierwszą linią funkcji —
+// to poprawnie ogranicza fnBody do samego ciała decideDefensiveCopyTurn (weryfikacja:
+// fnBody.length ≈ 6894 znaków, nie 40207).
+// / EN: `src` is ALREADY stripped of comments here, so the "// ---" separator (a line
+// comment) never occurs in it — searching for it always returned -1 and fnBody covered
+// the ENTIRE rest of the file (~40000 chars) instead of just the function body (~6900
+// chars), making the assertions below blind to a regression placed anywhere else in the
+// file. Instead we find the boundary at the NEXT top-level "function " declaration after
+// the function's first line — this correctly bounds fnBody to decideDefensiveCopyTurn's
+// own body (verified: fnBody.length ≈ 6894 chars, not 40207).
 const afterFn = src.slice(fnStart + 1);
-const nextSeparator = afterFn.indexOf('\n// ---');
-const fnBody = nextSeparator !== -1 ? afterFn.slice(0, nextSeparator) : afterFn;
+const nextFnDecl = afterFn.search(/\nfunction /);
+const fnBody = nextFnDecl !== -1 ? afterFn.slice(0, nextFnDecl) : afterFn;
+assert(
+  fnBody.length > 1000 && fnBody.length < 20000,
+  `fnBody.length w rozsądnym zakresie ciała jednej funkcji, nie całego pliku (got ${fnBody.length})`,
+);
 
 // POZYTYWNA: call site attack-gate używa nowej funkcji + nowej stałej promienia.
 assert(

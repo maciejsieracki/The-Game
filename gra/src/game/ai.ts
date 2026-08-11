@@ -2517,6 +2517,16 @@ export const CS_WAVE_ATTACK_MIN_STACK = 3;
  */
 export const CS_WAVE_ATTACK_RADIUS = 3;
 
+/**
+ * Utrzymywana wyłącznie jako referencja parytetu dla testu
+ * (`cs-wave-attack-radius-test.cjs`, sekcja B) — brak call sites w produkcyjnym kodzie
+ * od 2026-08-11 (R-CS-HARD-BRAK-STOSOWANIA-AI, jedyny call site zastąpiony przez
+ * countFriendlyMilitaryInRadius). NIE usuwać — test jej używa.
+ * / EN: kept only as a parity reference for the test (`cs-wave-attack-radius-test.cjs`,
+ * section B) — no production call sites since 2026-08-11 (R-CS-HARD-BRAK-STOSOWANIA-AI,
+ * its one call site was replaced by countFriendlyMilitaryInRadius). Do NOT remove — the
+ * test uses it.
+ */
 export function countFriendlyMilitaryOnHex(
   q: number,
   r: number,
