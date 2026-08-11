@@ -12246,6 +12246,17 @@ pokazuje pasmo „Niepokój", silnik faktycznie liczy „Bunt". **STATUS: dispat
 w teście; (4) rozszerzyć regex H5 poza `=== 0`/`!== 0`; (5) poprawić nieaktualny komentarz w
 teście o starej roli `resolveCitizenResourceCoverage`.**
 
+**Runda 3: SCALONE `ad2ed28b`.** `buildEmpireResourceRows` czyta teraz
+`cityOrderState.get(anyCityOfOwner.id)?.citizenUpkeep` (rzeczywisty werdykt silnika tej tury),
+fallback na `computeCitizenResourceDrain` tylko gdy `cityOrderState` jeszcze puste (pierwszy
+render przed turą 1). `cityPanel.ts:2914` (`computeOrderStateLocal`) — ten sam fix, ta sama
+kolejność preferencji; zweryfikowane że wykonuje się TAKŻE w żywej rozgrywce (rundy 1 ustalenie
+"sandbox-only" było błędne). Nowa sekcja I testu broni naprawy behawioralnie (mutant "przywróć
+regułę inline" łapany czerwono, 85/2 zamiast 87/0), H5 regex rozszerzony, komentarz poprawiony.
+Operator zweryfikował scenariusz Evaluatora (P≤stan<2P) bezpośrednio: silnik i panel dają teraz
+IDENTYCZNY werdykt dla tych samych danych. Bramki: tsc 0, logic-test 213/213,
+`citizen-resource-upkeep-test` 87/87. **STATUS: dispatch Opus 5 Evaluator, runda 3.**
+
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N-ZINDEX-TOAST SCALONE `0f7745c4` (2026-08-11)
 
 Runda 2 naprawy N1 (Evaluator FAIL: toast niewidoczny pod `.civ-menu`). `showHintMessage`
