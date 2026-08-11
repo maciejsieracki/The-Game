@@ -192,7 +192,7 @@ assert(fnStart !== -1, 'funkcja decideDefensiveCopyTurn znaleziona w ai.ts');
 // the function's first line — this correctly bounds fnBody to decideDefensiveCopyTurn's
 // own body (verified: fnBody.length ≈ 6894 chars, not 40207).
 const afterFn = src.slice(fnStart + 1);
-const nextFnDecl = afterFn.search(/\nfunction /);
+const nextFnDecl = afterFn.search(/\n(export )?function /);
 const fnBody = nextFnDecl !== -1 ? afterFn.slice(0, nextFnDecl) : afterFn;
 assert(
   fnBody.length > 1000 && fnBody.length < 20000,
