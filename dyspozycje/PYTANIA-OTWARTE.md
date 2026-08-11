@@ -12040,3 +12040,45 @@ zadania po jego powrocie): (1) R-CS-HARD-BRAK-STOSOWANIA-AI — wariant naprawy 
 PM; (2) architektura rotacji autozapisu bez FSA; (3) zachowanie przy uszkodzonym snapshocie mapy
 (cicha regeneracja vs abort z komunikatem); (4) czy zużycie surowców obywateli ma drenować
 magazyn.**
+
+## ECHO — 4 tematy odpowiedziane przez Macieja + 2 dopytania parametrów (2026-08-11)
+
+Maciej odpowiedział na wszystkie 4 pytania ABC (drugie zadanie pytań, po tym jak pierwsze
+`AskUserQuestion` zwróciło „user did not answer" wskutek przycięcia kontekstu), plus 2 dopytania
+pomocnicze doprecyzowujące parametry wdrożenia (na jego wyraźne polecenie: „zadaj pytania
+pomocnicze… zadaj wszystkie pytania, bo mnie nie będzie").
+
+**ECHO 1 — R-CS-HARD-BRAK-STOSOWANIA-AI = Wariant 2 (licz w promieniu), promień = 3 heksy.**
+Zliczać sojuszników PM w promieniu 3 heksów od celu zamiast wymagać fizycznej współobecności na
+jednym heksie. Próg pozostaje `CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard` (dziś
+= 4) — zmienia się TYLKO sposób zliczania (promień zamiast heksu), nie sama liczba progu.
+
+**ECHO 2 — P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA, pytanie „zachowanie przy uszkodzonym
+snapshocie" = Wariant C (przywrócić twardy błąd).** Cofnąć zachowanie rundy 3
+(`load-map-source.ts`, cichy fallback na `genFn()` w `catch`) do stanu SPRZED tej zmiany: abort
+wczytywania z czytelnym błędem (`diagError`), powrót do menu głównego — BEZ cichej regeneracji
+innej mapy z ziarna.
+
+**ECHO 3 — P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA, pytanie „architektura rotacji autozapisu" =
+migracja na IndexedDB + `navigator.storage.persist()`.** Maciej odpowiedział dosłownie „zwiększ
+dziesięciokrotnie pojemność przeglądarki" (nie jedna z zaproponowanych opcji A/B/C) — zadano
+dopytanie wyjaśniające (localStorage nie ma API do ręcznego zwiększenia limitu; jedyna uczciwa
+droga to zmiana silnika na IndexedDB, limit zwykle liczony w GB) i Maciej potwierdził **Wariant A:
+pełna migracja zapisów (w tym mapSnapshot) z localStorage na IndexedDB + `persist()`**. Architektura
+rotacji (10 slotów, pełna mapa w każdym) zostaje BEZ ZMIAN — rozwiązujemy budżet przez większą
+pojemność silnika, nie przez okrojenie rotacji. Stare zapisy w localStorage muszą nadal się
+wczytywać (backward-compat read); FSA (dysk) bez zmian, ten kanał nie ma problemu z budżetem.
+
+**ECHO 4 — R-ZUZYCIE-SUROWCOW-OBYWATELE N2 = Wariant A (drenować proporcjonalnie), stawka =
+1 sztuka surowca na 1 obywatela na turę.** Zadano dopytanie o stawkę (tabela JSON ma dziś tylko
+listę surowców, bez liczby na obywatela) — Maciej odpowiedział własną wartością, WYŻSZĄ niż obie
+rekomendowane opcje (1/5 i 1/10): **1:1, per wymagany surowiec danej epoki, per miasto** (nie per
+imperium — magazyn jest wspólny/centralny, ale ilość drenowana liczona jest od populacji TEGO
+miasta, bo to jego obywatele generują zapotrzebowanie; suma po wszystkich miastach ownera ściągana
+z jednego wspólnego magazynu centralnego, zgodnie z ECHO Q1 z 2026-08-10). Przy niewystarczającym
+magazynie: drenaż = `min(dostępne, wymagane)` (nie blokuje się on całkowicie) — to szczegół
+inżynierski, nie decyzja produktowa, Operator ma to udokumentować jawnie w kodzie/komentarzu.
+
+**STATUS: dispatch 4× Sonnet 5 (worktree), równolegle, Operator→Evaluator (Opus 5) dla każdego
+niezależnie. Po PASS wszystkich 4 → deploy ROBOCZA (instrukcja Macieja: „nie rób deploy, póki
+wszystkiego nie wykonasz").**
