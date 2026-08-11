@@ -12108,6 +12108,16 @@ sąsiedztwa, `planCityStateOffensiveMove` świadomie i słusznie bez zmian). **D
 naprawa separatora (gotowa poprawka od Evaluatora: `afterFn.search(/\nfunction /)`), komentarz
 przy martwej funkcji.**
 
+**Runda 2: SCALONE `75e4f1fd`.** Separator naprawiony (`afterFn.search(/\nfunction /)` zamiast
+nieistniejącego już `// ---`), `fnBody.length` teraz ≈6894 zn. (było ślepo całym plikiem, 40207
+zn.), + asercja sanity na długość. Operator zweryfikował mutacją identyczną jak Evaluator (usunięcie
+bramki + wklejenie bloku gdzie indziej) — teraz łapane czerwono (17/3 fail). `countFriendlyMilitaryOnHex`
+oznaczona komentarzem jako martwa referencja parytetu testu. Bramki na CZYSTYM drzewie (nie w
+worktree Operatora, który raportował fałszywe pre-istniejące porażki w `ai-mp-military-cap-test`/
+`city-state-prod-audit-test` — zweryfikowane jako artefakt worktree bazowanego 134 commity za
+gałęzią, NIE regresja; na czystym drzewie oba testy 18/18 i 17/17 zielone): tsc 0, logic-test
+213/213, `cs-wave-attack-radius-test` 22/22. **STATUS: dispatch Opus 5 Evaluator, runda 2.**
+
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N1 (twardy błąd) SCALONE `b7f06f08` (2026-08-11)
 
 ECHO 2. Cofnięty cichy fallback rundy 3 w `load-map-source.ts::loadMapForSave` — uszkodzony
