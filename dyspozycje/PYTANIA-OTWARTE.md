@@ -12177,3 +12177,38 @@ scalenie tej pracy nadpisałoby/cofnęło już działającą funkcjonalność. S
 STATUS: dispatch Sonnet 5 (nowy worktree), z OBOWIĄZKOWĄ weryfikacją bazy na starcie (`grep
 SAVE_META_PREFIX gra/src/game/save.ts` musi trafić PRZED jakąkolwiek pracą — jeśli nie trafi,
 STOP i raport, nie rekonstrukcja na ślepo).**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE N2 — Evaluator PASS-WITH-NOTES (82157e09/29fda2c8), 2026-08-11
+
+**Werdykt (Opus 5): PASS-WITH-NOTES.** Wszystko zweryfikowane WYKONANIEM (nie lekturą): stawka
+1:1, `min(required,stock)`, nigdy < 0, kara binarna, suma populacji RAZ per owner PRZED
+wywołaniem, drenaż RAZ per owner per turę (cache), odczyt magazynu PRZED mutacją, i **realna
+mutacja `City.surowce` potwierdzona własnym harnessem esbuild** (drewno 8→0, glina 200→190,
+dokładnie zgodnie z oczekiwaniem). Bramki: tsc 0, logic-test 213/213, `citizen-resource-upkeep-test`
+78/78.
+
+**⛔ N1 (BLOKUJĄCE przed deployem) — panel Surowców pokazuje graczowi FAŁSZYWY zielony badge
+„Obywatele: OK".** Panel (`buildEmpireResourceRows`, `main.ts:2646`) dalej używa starej
+`resolveCitizenResourceCoverage` (semantyka „magazyn > 0"), a silnik tury (`main.ts:23464`) już
+liczy `computeCitizenResourceDrain` (semantyka „magazyn ≥ CAŁA populacja imperium"). Przy stawce
+1:1 to NIE jest przypadek brzegowy — magazyn rzadko będzie ≥ sumie populacji, więc panel będzie
+RUTYNOWO kłamał: zielony badge + tekst „zapotrzebowanie pokryte" podczas gdy silnik nalicza karę
+w każdym mieście. Gracz nie ma jak zobaczyć aktywnej kary.
+
+**N2 (do naprawy) — luka testowa: 2 mutanty tej SAMEJ klasy błędu, przed którą wzorzec miał
+chronić, przechodzą wszystkie bramki.** M4 (pobór warunkowany `ownerId===0` — złamanie parytetu
+gracz/AI) i M5 (`deductBuildingStockCostAcrossCities` przeniesione POZA `if (v===undefined)` —
+drenaż powtarzany per miasto zamiast raz per owner, zweryfikowane behawioralnie: 2 miasta tracą
+20 gliny zamiast 10) — OBA 78/78, zero regresji w bramkach. Przyczyna: sekcja H sprawdza
+OBECNOŚĆ stringów, nie ich WZAJEMNĄ KOLEJNOŚĆ. Naprawa tania: `indexOf` okna między `if (v ===
+undefined) {` a `citizenUpkeepDrainCache.set(...)`, plus negatywna asercja braku
+`ownerId === 0`/`!== 0` w ciele resolvera.
+
+N3/N4/N5 nieblokujące: komentarz przy `citizenGrowthPctByCityId` nieaktualny (opisuje stary
+podgląd, nie drenaż); `citizenUpkeepEmpireStock` trzyma sumy SPRZED drenażu do końca bloku (dziś
+nieszkodliwe, jedyny konsument to sam drenaż); sprzężenie z kosztami/utrzymaniem budynków —
+ten sam magazyn, do wiadomości Macieja, nie defekt.
+
+**STATUS: dispatch Sonnet 5 (worktree) — N1 (przełączyć badge/tooltip panelu Surowców na
+semantykę drenażu, `empireDetailPanel.ts:738-790`) + N2 (naprawić sekcję H testu: kolejność, nie
+tylko obecność) + N3 (komentarz). Bez ABC — czysto techniczne.**
