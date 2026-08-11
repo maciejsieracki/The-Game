@@ -6570,3 +6570,28 @@ Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`3bc0236b8ef52d34aacaea1704bb010b`**
 ⚠️ Znanych czerwonych pre-istniejących bramek **NIE mierzono w tej fali** — status dziedziczony, nie zweryfikowany dziś. `gra/data/` niezmienione przez build (`git status` pusty przed i po; `git diff b2193a91..HEAD -- gra/data` bez plików).
 ⚠️ **Merge do `main` NIE wykonany.** `main` stoi na `008cf94a` (= FALA 266). Powstanie FALI 268 kwalifikuje **FALĘ 267** (`b2193a91`) do scalenia wg `R-MERGE-MAIN-RYTM-Q1` — agent deployu miał zakres ograniczony do gałęzi sesji i świadomie nie ruszał `main`. **Scalenie FALI 267 zostaje do wykonania jako osobny krok** (pilnujmy, żeby nie powtórzyć zaległości z FAL 264/265). Pełny opis: `WERSJE.md`.
 CZEKAM-NA: sesja lokalna — pull `3bc0236b` na dysk właściciela + potwierdzenie w kanale.
+
+## [09:2x PL, 2026-08-11] CHMURA → CHMURA (następna sesja) — deploy PRZERWANY limitem zużycia, build gotowy nie zalogowany
+
+Build ROBOCZA wykonany z HEAD `845fa3cf` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+(sesja nocna 2026-08-10/11, wiele tematów, szczegóły `PYTANIA-OTWARTE.md`). Bundel
+`gra-robocza/Gra-ROBOCZA.html` md5 **`799827adc83b1a57ebb1576e2d876a95`**, stemplowany
+(`inject-build-stamp.cjs ROBOCZA`), `sync-playtest-bundles.cjs` + `generate-start-hub.cjs`
+wykonane, **`verify-robocza-bundle.cjs` → VERIFY OK** (manifest match OK). Bramki szybkie
+zielone: tsc 0 · logic-test 213/213 · tech-tree 19/19 · research 33/33 · unit-replace 13/13 ·
+ai-founding-territory 28/28 · `citizen-resource-upkeep-test` 100/100.
+⛔ **`map-gen-regression-test.cjs` (ostatnia wymagana bramka) NIE ZDĄŻYŁA SIĘ ZAKOŃCZYĆ** —
+Maciej zgłosił koniec limitu zużycia sesji w trakcie oczekiwania. Proces działał realnie (PID
+31523, >10 min CPU, nie zawieszony) ale wynik nie został potwierdzony przed końcem sesji.
+**Artefakty builda LEŻĄ NIESCOMMITOWANE** w `gra-robocza/` (`git status` w chmurze pokaże 8
+zmienionych plików: `Gra-ROBOCZA.html`, `START.html`, `ROBOCZA-MANIFEST.json`, 6× playtest) —
+NIE usuwać, to gotowy bundel, tylko commit+push+wpis `WERSJE.md` czeka.
+**PIERWSZA CZYNNOŚĆ następnej sesji:** (1) uruchom `node gra/tools/map-gen-regression-test.cjs`
+ponownie od zera (poprzedni proces stracony razem z kontenerem sesji); jeśli PASS (determinizm
+A=B, 0 rzek bez ujścia) → dokończ runbook: commit `gra-robocza/*` + wpis `WERSJE.md` (md5
+`799827ad`) + wpis tu w kanale + `git push origin claude/sprawdzenie-funkcjonalnosci-ek4ra0:main`
+po sprawdzeniu FF; jeśli FAIL → NIE deployuj, zdiagnozuj. (2) **PRZED jakąkolwiek nową pracą**
+domknij 2 tematy pozostawione w stanie nie-PASS: `R-ZUZYCIE-SUROWCOW-OBYWATELE N1` (runda 5
+częściowa, `13f62b0b` — brakuje jeszcze 2 asercji testowych, patrz `PYTANIA-OTWARTE.md`) i
+przegląd migracji IndexedDB (`798f3c17`, workflow przerwany bez werdyktu, `PYTANIA-OTWARTE.md`).
+CZEKAM-NA: kolejna sesja chmurowa (ten sam wątek pracy, po odnowieniu limitu).
