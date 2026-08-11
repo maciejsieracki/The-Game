@@ -12278,6 +12278,23 @@ dispatch Sonnet 5 (worktree), runda 4 — N1 (mapa per-owner, nie per-miasto), N
 broniąca cityPanel.ts), N3 (sekcja I behawioralna nie tekstowa, łapiąca mutant obcego ownera), N5
 (usunąć martwy fallback).**
 
+**Runda 4: SCALONE `42bfc628`.** Nowa `citizenUpkeepByOwner: Map<number,...>` publikowana
+BEZPOŚREDNIO przez `citizenUpkeepDrainForOwner` (kluczowana ownerem), `buildEmpireResourceRows`
+czyta z niej wprost — `cities.find` po mieście całkowicie usunięty, wektor mutacji rundy 3
+strukturalnie zniknął. Czyszczona przy wszystkich 4 miejscach `cityOrderState.clear()`.
+`cityPanel.ts` dostał sekcję J testu (zero pokrycia od rundy 3, teraz 5 asercji, zweryfikowane
+mutacją: pełny revert łapany czerwono). Sekcja I przepisana pod nowy kod + dowód behawioralny
+(dwa różne ownerId w syntetycznej mapie, odczyt nie miesza kluczy). Martwy fallback w
+`cityPanel.ts::computeView` usunięty. Operator odtworzył DOKŁADNIE scenariusz Evaluatora
+(przejęte miasto przed własnym w kolejności `cities[]`, stary werdykt AI w `cityOrderState` dla
+tego miasta) — stara ścieżka: era=2 (Brąz, werdykt AI, błąd); nowa: era=1 (Kamień, werdykt
+gracza, poprawnie), parytet gracz/AI nienaruszony. Zidentyfikowane, świadomie NIE naprawione w
+tej rundzie (węższe, odrębne ryzyko, do osobnej oceny): `cfg.getOrderState?.(city.id)` w
+`cityPanel.ts` może chwilowo pokazać nieodświeżony werdykt DLA TEGO SAMEGO miasta między
+podbojem a następnym tickiem pętli Porządku (nie przeciek z cudzego miasta — inna klasa niż N1).
+Bramki: tsc 0, logic-test 213/213, `citizen-resource-upkeep-test` 100/100 (mutacje N1/N2
+zweryfikowane czerwono→zielono). **STATUS: dispatch Opus 5 Evaluator, runda 4.**
+
 ## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N-ZINDEX-TOAST SCALONE `0f7745c4` (2026-08-11)
 
 Runda 2 naprawy N1 (Evaluator FAIL: toast niewidoczny pod `.civ-menu`). `showHintMessage`
