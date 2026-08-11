@@ -27882,9 +27882,10 @@ async function boot(): Promise<void> {
             // To bezpieczne: hideGamePauseMenu() i hideSaveLoadDialog() zostały
             // już wywołane wcześniej w tej funkcji (patrz góra loadGameFromSlot),
             // więc w chwili ok===false żaden pełnoekranowy overlay nie konkuruje
-            // z toastem -- domyślne 320 wystarcza (zweryfikowane: jedyny wołający
-            // z fromInGamePause=true to configureGamePauseMenu onLoad, brak innej
-            // ścieżki).
+            // z toastem -- domyślne 320 wystarcza (zweryfikowane: OBAJ wołający
+            // z fromInGamePause=true -- onLoad menu pauzy (main.ts ok. 16890) i
+            // handler Ctrl+L (main.ts ok. 26048) -- przechodzą przez
+            // hideGamePauseMenu()/hideSaveLoadDialog() na górze loadGameFromSlot).
             // / EN: openStartupMainMenu() MUST run BEFORE showHintMessage() --
             // only after .civ-menu (z-index 500) is mounted does isMainMenuOpen()
             // return true, which showHintMessage() reads to lift the toast to
@@ -27895,8 +27896,9 @@ async function boot(): Promise<void> {
             // function already called hideGamePauseMenu() and
             // hideSaveLoadDialog() earlier, so when ok===false fires no
             // fullscreen overlay competes with the toast -- the default 320 is
-            // enough (verified: the only fromInGamePause=true caller is
-            // configureGamePauseMenu's onLoad, no other path).
+            // enough (verified: BOTH fromInGamePause=true callers -- pause-menu
+            // onLoad, Ctrl+L handler -- go through that same unconditional
+            // cleanup).
             if (!fromInGamePause) openStartupMainMenu();
             showHintMessage(
               'Błąd wczytywania mapy zapisu — zapis może być uszkodzony. Wracam do menu. F10 = raport diagnostyczny.',
