@@ -2504,7 +2504,20 @@ const CS_OFFENSIVE_CAMPAIGN_RADIUS = 12;
 /** R-MP-HARD-WAVE Q2: minimalny stos przy ataku na gracza (solo zakazany bez zagrożenia domu). */
 export const CS_WAVE_ATTACK_MIN_STACK = 3;
 
-function countFriendlyMilitaryOnHex(
+/**
+ * R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): promień zamiast wymogu fizycznej
+ * współobecności na JEDNYM heksie. AI PM (Trudny) nie ma logiki celowo gromadzącej
+ * jednostki punkt-w-punkt na jednym heksie przed atakiem — bramka wymagająca stosu
+ * na tym samym heksie praktycznie nigdy się nie spełniała i PM nie atakowały gracza.
+ * Zamiast tego liczymy sojuszników PM w promieniu N heksów od atakującej jednostki.
+ * / EN: Radius instead of requiring physical co-presence on a SINGLE hex. Hard-difficulty
+ * city-state AI has no logic that deliberately masses units on one exact hex before
+ * attacking — the same-hex stack gate almost never triggered, so city-states practically
+ * never attacked the player. Count allied city-state units within a radius instead.
+ */
+export const CS_WAVE_ATTACK_RADIUS = 3;
+
+export function countFriendlyMilitaryOnHex(
   q: number,
   r: number,
   ownerIds: ReadonlySet<number>,
@@ -2512,6 +2525,24 @@ function countFriendlyMilitaryOnHex(
 ): number {
   return allUnits.filter(
     u => u.q === q && u.r === r && ownerIds.has(u.ownerId) && !isScoutUnit(u),
+  ).length;
+}
+
+/**
+ * R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): odpowiednik countFriendlyMilitaryOnHex,
+ * ale liczy jednostki w promieniu `radius` heksów od (q, r), nie tylko na tym samym heksie.
+ * / EN: Equivalent of countFriendlyMilitaryOnHex, but counts units within `radius` hexes
+ * of (q, r) instead of only on the exact same hex.
+ */
+export function countFriendlyMilitaryInRadius(
+  q: number,
+  r: number,
+  radius: number,
+  ownerIds: ReadonlySet<number>,
+  allUnits: RuntimeUnit[],
+): number {
+  return allUnits.filter(
+    u => hexDistance(u.q, u.r, q, r) <= radius && ownerIds.has(u.ownerId) && !isScoutUnit(u),
   ).length;
 }
 
@@ -2542,7 +2573,18 @@ function planCityStateOffensiveMove(
   friendlyOwnerIds: ReadonlySet<number>,
   homeGuardCount: ReadonlyMap<string, number>,
   minGuardToSend: number,
-  /** R-MP-HARD-WAVE Q1: wymagaj min. armii polowej przed wysłaniem z domu. */
+  /**
+   * R-MP-HARD-WAVE Q1: wymagaj min. armii polowej przed wysłaniem z domu.
+   * R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): ta funkcja NIE dostała analogicznej
+   * zmiany na promień — nie liczy współobecności na heksie, tylko globalny rozmiar armii
+   * polowej właściciela (countOwnerFieldArmy, brak filtra przestrzennego q/r). Jej rola to
+   * decyzja "czy w ogóle wysłać jednostkę z domu", nie bramka ataku na heksie — bramka
+   * ataku (adjacentEnemy) jest osobnym blokiem w decideDefensiveCopyTurn, tam jest zmiana.
+   * / EN: this function did NOT get an analogous radius change — it doesn't count
+   * co-presence on a hex, only the owner's overall field-army size (no spatial q/r filter).
+   * Its role is "whether to send a unit from home at all", not the attack gate on a hex —
+   * the attack gate (adjacentEnemy) is a separate block in decideDefensiveCopyTurn, changed there.
+   */
   minFieldArmyBeforeSend = 0,
 ): { q: number; r: number } | null {
   if (isScoutUnit(unit)) return null;
@@ -2736,8 +2778,13 @@ function decideDefensiveCopyTurn(
       // R-MP-HARD-WAVE Q2: solo atak na gracza zakazany — tylko fala (stos ≥3) lub obrona domu.
       if (offensiveSupport && aiCanEngageOwner(opts, adjacentEnemy.ownerId)) {
         if (!isOwnCityThreatened()) {
-          const stackSize = countFriendlyMilitaryOnHex(
-            unit.q, unit.r, waveStackOwnerIds, units,
+          // R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): promień zamiast heksu —
+          // patrz komentarz przy CS_WAVE_ATTACK_RADIUS. Próg CS_WAVE_ATTACK_MIN_STACK
+          // (liczba jednostek) się NIE zmienia, zmienia się tylko sposób zliczania.
+          // / EN: radius instead of single hex — see comment at CS_WAVE_ATTACK_RADIUS.
+          // The CS_WAVE_ATTACK_MIN_STACK threshold is unchanged, only the counting method.
+          const stackSize = countFriendlyMilitaryInRadius(
+            unit.q, unit.r, CS_WAVE_ATTACK_RADIUS, waveStackOwnerIds, units,
           );
           if (stackSize < CS_WAVE_ATTACK_MIN_STACK) {
             doAttack = false;
