@@ -16419,3 +16419,16 @@ samodzielna, autoryzacja standing na kontynuację pipeline'u AutoBot i nowych te
 czekania na odpowiedzi.** Otwarte pytania ABC (`P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1`
 czeka na doprecyzowanie mojego pytania zwrotnego) zostają zablokowane do jego powrotu — nie
 zgaduję, kontynuuję inne dostępne wątki.
+
+## R-CIVPEDIA-OPISY-AUDYT-Q1 — dispatch workflow rozpoznawczo-recenzyjny (2026-08-13)
+
+Skala korpusu: 22 rozdziały Poradnika (~400K znaków), 136 haseł Encyklopedii (9 kategorii),
+3+ panele "ściąga" wbudowane w UI (Zamożność/Podział pracy/Okolica w cityPanel.ts, plus
+dodatkowe odkrywane przez agenta rozpoznawczego). Dispatchowany workflow wieloagentowy: (1)
+rozpoznanie wszystkich paneli ściąga w kodzie UI, (2) recenzja Poradnika w 8 wsadach (potrzebność/
+jasność/przejrzystość/AKTUALNOŚĆ wobec żywego kodu — priorytet na rozjazdy liczb, zwłaszcza
+biorąc pod uwagę równolegle trwającą zmianę `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`), (3) recenzja
+Encyklopedii w 6 wsadach wg kategorii, krzyżowo z `gra/data/`, (4) recenzja paneli ściąga pod
+kątem zgodności wzorów z silnikiem, (5) synteza w jeden raport. Raport zapisze się jako
+`dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`. **ETAP 1 wyłącznie — bez
+zmian w kodzie/danych**, zgodnie z poleceniem właściciela.
