@@ -317,6 +317,10 @@ import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch, computeMainCivEraFromResearch } from './game/owner-epoch';
 import { allEraTechsResearched, eraOwnWonderSatisfied, eraOwnWonderIds } from './game/owner-epoch';
+// R-EPOKA-CUD-ZAKRES-Q1=B: UI "co brakuje do awansu epoki" — czysta logika złożona z
+// odczytów owner-epoch.ts wyżej, bramka sama NIE JEST tu zmieniana. / EN: UI-facing
+// "what's missing to advance" info, composed from owner-epoch.ts reads — gate untouched.
+import { computeEraGateInfo, formatEraGateSummary, type EraGateInfo } from './game/era-gate-ui';
 import {
   ERA_CHANGE_NOTIFY,
   shouldNotifyPlayerEraChange,
@@ -2927,6 +2931,39 @@ async function boot(): Promise<void> {
 
     function parseWonderProdId(id: string): string | null {
       return id.startsWith(WONDER_PROD_PREFIX) ? id.slice(WONDER_PROD_PREFIX.length) : null;
+    }
+
+    /**
+     * R-EPOKA-CUD-ZAKRES-Q1=B: cuda gracza aktualnie zakolejkowane (dowolna pozycja w
+     * kolejce, nie tylko front — jak wonderRequiredAlreadyBuilding w AI-forcingu niżej)
+     * w KTÓRYMKOLWIEK z jego miast, jeszcze nieukończone. Do panelu "co brakuje do
+     * awansu epoki" (era-gate-ui.ts), status "w budowie" vs "jeszcze nie zakolejkowany".
+     * / EN: player wonders currently queued (any queue position, any city), not yet
+     * completed — feeds the era-gate UI panel's "in progress" vs "not queued" status.
+     */
+    function playerWonderInProgressIds(): string[] {
+      const ids: string[] = [];
+      for (const c of cities) {
+        if (c.ownerId !== 0) continue;
+        const kolejka = cityProd.get(c.id)?.kolejka ?? [];
+        for (const it of kolejka) {
+          const wid = parseWonderProdId(it.id);
+          if (wid !== null) ids.push(wid);
+        }
+      }
+      return ids;
+    }
+
+    /** R-EPOKA-CUD-ZAKRES-Q1=B: stan bramki awansu epoki gracza dla UI (Science Hub + HUD tooltip). */
+    function buildPlayerEraGateInfo(): EraGateInfo {
+      return computeEraGateInfo({
+        era: player.era,
+        techRows: data.tech as import('./data/loader').TechDef[],
+        done: player.zbadane,
+        civType: civTypeForOwner(0),
+        completedWonderIds: completedWorldWonders,
+        inProgressWonderIds: playerWonderInProgressIds(),
+      });
     }
 
     function wonderScaledWorkCost(wonderId: string): number {
@@ -14368,6 +14405,9 @@ async function boot(): Promise<void> {
         tura: turn,
         epoka: gameEpochHudLabel(player.era),
         epokaPostep,
+        // R-EPOKA-CUD-ZAKRES-Q1=B: tooltip HUD "co brakuje do awansu" — `null`/undefined
+        // gdy nic nie blokuje (max epoka LUB oba warunki spełnione), patrz era-gate-ui.ts.
+        eraGateSummary: formatEraGateSummary(buildPlayerEraGateInfo()) ?? undefined,
         researchProgress: epokaPostep,
         badana: player.badana,
         sojusze: chips.sojusze,
@@ -17371,6 +17411,7 @@ async function boot(): Promise<void> {
         onEnqueue: (techId) => enqueueOrSetPlayerResearchSlug(techId),
         onDequeue: (techId) => dequeuePlayerResearchSlug(techId),
         onReorder: (fromIdx, toIdx) => reorderPlayerResearchQueue(fromIdx, toIdx),
+        getEraGateInfo: () => buildPlayerEraGateInfo(),
       });
       createWikiHubHud({
         onClose: () => refreshD1bHud(),

@@ -165,6 +165,10 @@ export interface HudState {
   tura: number;
   epoka: string;
   epokaPostep?: number;
+  /** R-EPOKA-CUD-ZAKRES-Q1=B: tooltip „co brakuje do awansu" na `.p-epoch` (panel Moc) —
+   *  `undefined`/brak gdy nic nie blokuje (silnik: era-gate-ui.ts, formatEraGateSummary).
+   *  / EN: ".p-epoch" tooltip explaining what's blocking era advance; unset when nothing is. */
+  eraGateSummary?: string;
   /** Postęp aktywnej technologii [0..1] — nauka skumulowana / koszt badanej tech. */
   researchProgress?: number;
   badana?: string | null;
@@ -652,6 +656,8 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 .civ-hud .power-center:hover{filter:brightness(1.06);}
 .civ-hud .power-center .p-epoch{text-align:center;font-family:var(--civ-font-title);font-size:13px;
   color:var(--civ-gold-primary);letter-spacing:.08em;line-height:1.2;margin:0 0 8px;white-space:nowrap;}
+.civ-hud .power-center .p-epoch-gated{border-bottom:1px dotted rgba(224,122,95,.75);
+  padding-bottom:1px;cursor:help;}
 .civ-hud .power-center .p-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;width:100%;}
 .civ-hud .power-center .p-side-left{justify-self:start;display:inline-flex;align-items:flex-start;
   cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px;}
@@ -1110,8 +1116,10 @@ function renderBarD1B(s: HudState): string {
   let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell"><div class="hud-chip-row">'
     + leftChipsHtml + '</div></div></div>';
 
+  const eraGateTitle = s.eraGateSummary ? ' title="' + escHtml(s.eraGateSummary) + '"' : '';
+  const eraGateCls = s.eraGateSummary ? ' p-epoch-gated' : '';
   html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
-    + '<div class="p-epoch">' + escHtml(s.epoka) + '</div>'
+    + '<div class="p-epoch' + eraGateCls + '"' + eraGateTitle + '>' + escHtml(s.epoka) + '</div>'
     + '<div class="p-row">'
     + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci — pula rekrutacji (Manpower) · Liczba: aktualna pula werbu do szkolenia wojsk · Kliknij po szczegóły.">`
     + '<span class="p-stack">'
