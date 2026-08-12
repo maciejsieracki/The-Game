@@ -328,6 +328,160 @@ console.log('\n-- C-H. cityPanel.ts (tekst): format blokowy + wiring populacji/%
     eq(renderText({ label: 'Drewno', value: 5, neg: false }), 'Drewno: +5', 'I11: value=5, neg=false (zwykły dodatni) -> tekst "Drewno: +5" (bez regresji)');
     eq(renderText({ label: 'Glina', value: -5, neg: true }), 'Glina: -5', 'I12: value=-5, neg=true (zwykły ujemny) -> tekst "Glina: -5" (bez regresji)');
   }
+
+  // -------------------------------------------------------------------------
+  // J. appendBreakdownLines -- WYKONANIE na REALNYM kodzie ze shim-em DOM
+  // (Evaluator M2, 2026-08-12): sekcja D wyżej pinuje TYLKO WOŁAJĄCEGO
+  // (appendW4PctMetricBlock faktycznie woła appendBreakdownLines), a sekcja I
+  // wyżej pinuje TYLKO klasyfikację/tekst POJEDYNCZEJ linii (isNeg,
+  // showAsZero) -- ale NIC nie pinowało samego ROZBICIA BLOKOWEGO: czy
+  // składniki lądują w OSOBNYCH elementach DOM, czy sklejone w JEDEN div
+  // przez ' · '. Dowód Evaluatora: mutacja "cofnij rozbicie blokowe, sklej
+  // wszystkie składniki w JEDEN div (np. box.textContent =
+  // lines.map(...).join(' · ') zamiast pętli z box.appendChild(row))"
+  // przechodziła 67/67 bez żadnej czerwonej asercji.
+  //
+  // Metoda: WYCINAMY realne źródło appendBreakdownLines z cityPanel.ts (ten
+  // sam `abl.body`, którego już używa sekcja I) -- NIE kopiujemy założonej
+  // wersji z pamięci. cityPanel.ts NIE bundluje się samodzielnie (patrz JSDoc
+  // modułu na górze tego pliku), więc zamiast pełnego modułu transpilujemy
+  // WYCIĘTY fragment przez esbuild (loader 'ts', ten sam pakiet, którego cały
+  // ten plik używa do budowy bundla A/B) i wykonujemy go przez `new Function`
+  // z minimalnym shim-em DOM (odpowiednik `el()` z cityPanel.ts:
+  // className/appendChild/textContent) -- ten sam wzorzec ekstrakcji +
+  // wykonania co sekcja I (tam bez shimu DOM, bo klasyfikacja jest
+  // bezstanowa; tu appendBreakdownLines realnie buduje drzewo DOM, więc shim
+  // MUSI je odwzorować).
+  // EN: cuts the REAL source of appendBreakdownLines out of cityPanel.ts (the
+  // same abl.body section I already uses), transpiles it with esbuild (TS ->
+  // JS) since cityPanel.ts does not bundle standalone, and executes it via
+  // `new Function` against a minimal DOM shim -- proving the block-per-item
+  // DOM structure on today's actual implementation, not an assumed copy.
+  // -------------------------------------------------------------------------
+  function makeShimEl(tag, cls) {
+    return {
+      tagName: tag,
+      className: cls,
+      children: [],
+      _text: '',
+      appendChild(child) { this.children.push(child); },
+      set textContent(v) { this._text = v; },
+      get textContent() { return this._text; },
+    };
+  }
+
+  let appendBreakdownLinesReal = null;
+  try {
+    const transpiled = esbuild.transformSync(abl.body, { loader: 'ts' }).code;
+    const factory = new Function('el', `${transpiled}\nreturn appendBreakdownLines;`);
+    appendBreakdownLinesReal = factory(makeShimEl);
+  } catch (e) {
+    assert(false, `J0: ekstrakcja + transpilacja + instancjacja appendBreakdownLines z cityPanel.ts nie powiodła się (${e && e.message ? e.message : e})`);
+  }
+
+  if (appendBreakdownLinesReal) {
+    const mount = makeShimEl('div', 'mount-stub');
+    const lines3 = [
+      { label: 'Budynki', value: 5 },
+      { label: 'Kultura', value: -3 },
+      { label: 'Religia', value: 2 },
+    ];
+    appendBreakdownLinesReal(mount, lines3, 'brak');
+
+    eq(mount.children.length, 1, 'J1: appendBreakdownLines dołącza DOKŁADNIE JEDEN kontener (.or-lines) do mount');
+    const box = mount.children[0];
+    if (box) {
+      eq(
+        box.children.length,
+        lines3.length,
+        `J2 (zabija regresję do sklejenia, dowód wykonaniem realnego kodu): kontener wynikowy ma ${lines3.length} elementy-dzieci -- RÓWNO liczbie składników (3), NIE 1 sklejony div (mutacja "cofnij rozbicie blokowe" daje tu box.children.length=0, bo box.textContent zamiast box.appendChild(row) na linię)`,
+      );
+      for (let i = 0; i < box.children.length; i++) {
+        const childText = box.children[i].textContent || '';
+        assert(!childText.includes('·'), `J3.${i}: pojedynczy element-dziecko "${childText}" NIE zawiera znaku '·' łączącego wiele składników w jednym tekście`);
+      }
+      const texts = box.children.map((c) => c.textContent);
+      deepEq(texts, ['Budynki: +5', 'Kultura: -3', 'Religia: +2'], 'J4: każdy składnik trafił do WŁASNEGO elementu z poprawnym tekstem, w kolejności wejściowej (dowód wykonaniem, nie tylko obecności wzorca w źródle)');
+    }
+
+    // J5: liczba elementów SKALUJE SIĘ z liczbą składników (5 wejść -> 5 elementów),
+    // nie jest to przypadek "akurat 3 = 3".
+    const mount5 = makeShimEl('div', 'mount-stub-5');
+    const lines5 = [
+      { label: 'A', value: 1 }, { label: 'B', value: 2 }, { label: 'C', value: 3 },
+      { label: 'D', value: 4 }, { label: 'E', value: 5 },
+    ];
+    appendBreakdownLinesReal(mount5, lines5, 'brak');
+    eq(mount5.children[0].children.length, 5, 'J5: 5 składników wejściowych -> 5 elementów-dzieci (skalowanie z wejściem, nie stała liczba)');
+  }
+}
+
+// ===========================================================================
+// K. orderContributionPct -- prawWkladPct PINOWANY jako dopełnienie, nie
+// osobna formuła (Evaluator M8, 2026-08-12)
+// ===========================================================================
+// Sekcja B wyżej sprawdza WIELOKROTNIE "szWkladPct + prawWkladPct === 100" --
+// ale skoro implementacja liczy `prawWkladPct = 100 - szWkladPct`, KAŻDA taka
+// asercja jest TOŻSAMOŚCIOWO prawdziwa niezależnie od poprawności obliczeń
+// (dopełnienie do 100 zawsze sumuje się do 100, nawet gdyby szWkladPct był
+// policzony źle) -- nie testuje NICZEGO. Dowód Evaluatora: mutacja "policz
+// oba wkłady OSOBNO z zaokrągleniem" (np. Math.round(sz) i Math.round(100-sz)
+// zamienione na dwa NIEZALEŻNE Math.round z osobnych formuł) przechodziła
+// 67/67, mimo że dla niektórych par wejściowych daje sumę != 100 (np.
+// 42+57=99, przykład Evaluatora).
+//
+// Dwie NIEZALEŻNE linie obrony:
+//   K0-K2: PIN ŹRÓDŁOWY -- ciało funkcji orderContributionPct (society-
+//     breakdown.ts) zawiera DOSŁOWNIE `prawWkladPct: 100 - szWkladPct` w OBU
+//     gałęziach (total>0 i fallback total<=0), NIE osobną formułę z
+//     Math.round zastosowanym do weightedPraw/wPrawSafe.
+//   K3-K6: DOWÓD WYKONANIEM na KONKRETNEJ parze wejściowej, gdzie granica
+//     zaokrąglenia .5 rozjeżdża naiwną (niezależną) implementację od
+//     dzisiejszej: sz=3, praw=5, wagaSz=wagaPraw=0.5 -> wartość ważona przed
+//     zaokrągleniem to 37,5%/62,5% (weightedSz=1.5, weightedPraw=2.5,
+//     total=4.0). Dzisiejsza (zależna) implementacja: szWkladPct=
+//     Math.round(37.5)=38, prawWkladPct=100-38=62 (suma=100, zweryfikowane
+//     numerycznie poza tym plikiem). NAIWNA niezależna dałaby tu
+//     prawWkladPct=Math.round(62.5)=63 (suma=101) -- ta konkretna para
+//     RÓŻNICUJE obie implementacje (w przeciwieństwie do kombinacji w
+//     sekcji B, gdzie żadna nie trafia w granicę .5 i naiwna wersja też
+//     przechodzi przez przypadek).
+// ===========================================================================
+console.log('\n-- K. orderContributionPct -- prawWkladPct PINOWANY jako dopełnienie (nie osobna formuła) --');
+{
+  const SOC_BREAKDOWN_TS = path.join(GRA, 'src', 'game', 'society-breakdown.ts');
+  const socSrc = fs.readFileSync(SOC_BREAKDOWN_TS, 'utf8');
+
+  function windowBetweenSrc(text, startMarker, endMarker, fromIdx = 0) {
+    const s = text.indexOf(startMarker, fromIdx);
+    if (s < 0) return { start: -1, end: -1, body: '' };
+    const e = text.indexOf(endMarker, s + startMarker.length);
+    if (e < 0) return { start: s, end: -1, body: '' };
+    return { start: s, end: e, body: text.slice(s, e) };
+  }
+
+  const ocp = windowBetweenSrc(socSrc, 'export function orderContributionPct(', '\nexport function ');
+  assert(ocp.start > -1, 'K0: znaleziono function orderContributionPct(...) w society-breakdown.ts');
+
+  const dependentOccurrences = (ocp.body.match(/prawWkladPct:\s*100\s*-\s*szWkladPct/g) || []).length;
+  eq(dependentOccurrences, 2, 'K1: `prawWkladPct: 100 - szWkladPct` występuje w OBU gałęziach (total>0 i fallback total<=0) -- zawsze dopełnienie, nigdy osobna formuła');
+  assert(
+    !/prawWkladPct:\s*Math\.round/.test(ocp.body),
+    'K2 (zabija regresję do niezależnego zaokrąglenia): ciało funkcji NIE przypisuje prawWkladPct z WŁASNEGO Math.round -- musi być dopełnieniem szWkladPct',
+  );
+
+  // K3-K6: dowód wykonaniem na realnej, zbundlowanej funkcji (M z sekcji A/B
+  // wyżej), na granicy zaokrąglenia .5 (sz=3, praw=5, wagi 0.5/0.5).
+  const edge = M.orderContributionPct(3, 5, 0.5, 0.5);
+  eq(edge.szWkladPct, 38, 'K3: sz=3,praw=5,wagi=0.5/0.5 -> ważona wartość przed zaokrągleniem 37,5% -> Math.round(37.5)=38');
+  eq(edge.prawWkladPct, 62, 'K4: DZISIEJSZA implementacja daje prawWkladPct=62 (dopełnienie 100-38), NIE Math.round(62.5)=63 (dowód że to dopełnienie, nie osobna formuła)');
+  eq(edge.szWkladPct + edge.prawWkladPct, 100, 'K5: suma = 100 na granicy zaokrąglenia .5 -- dzięki dopełnieniu, nie przypadkiem');
+
+  const naiveIndependentPraw = Math.round(62.5);
+  assert(
+    naiveIndependentPraw !== edge.prawWkladPct,
+    `K6 (dowód że ta para RÓŻNICUJE mutację): naiwne NIEZALEŻNE zaokrąglenie Math.round(62.5)=${naiveIndependentPraw} != dzisiejsze prawWkladPct=${edge.prawWkladPct} -- mutacja "policz osobno" zmieniłaby wynik na tym wejściu, więc K3/K4 realnie łapią regresję`,
+  );
 }
 
 console.log(`\nporzadek-panel-czytelnosc-test: ${passed} passed, ${failed} failed`);
