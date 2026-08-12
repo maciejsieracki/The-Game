@@ -16055,3 +16055,32 @@ udokumentowany rozjazd panel/silnik `Σfloor≤floor(Σ)`, świadomie odłożony
 **STATUS: dispatch naprawy testu (M2+M8) w toku** — dopisać asercję wykonaniem dla
 `appendBreakdownLines` (wzorzec z istniejącej sekcji I) + asercję na wejściu łamiącym tautologię
 sumy % wkładu.
+
+## ✅ Klaster miast barbarzyńców — naprawa M7.1/M10.3/2h ZWERYFIKOWANA, TEMAT ZAMKNIĘTY
+
+Druga, niezależna runda recenzji (weryfikacja naprawy `6df223f1`) — **PASS-WITH-NOTES**. Obie
+zlecone ucieczki (M7.1 bramka trudności, M10.3 pathCost) potwierdzone ZŁAPANE przez odtworzenie
+dokładnych mutacji (92/94 i 90/94). **Neutralność refaktoru UDOWODNIONA WYKONANIEM** — różnicowy
+harness porównujący stare formuły inline z `93db72e8` vs nowe czyste funkcje: 18/18 identycznych
+(temat 7) i 12/12 identycznych (temat 10), zero rozjazdów.
+
+**2h-behavioral zweryfikowane jako uczciwie udokumentowany dług, nie ukryta wada** — sonda
+(usunięcie resetu `cityProd`) potwierdza że pada WYŁĄCZNIE `2h-static`, `2h-behavioral` milczy,
+bo dowodzi KONSEKWENCJI (reset ma skutek w `advanceProduction`) a nie OKABLOWANIA (że `main.ts`
+faktycznie woła reset — to nadal chronione tylko tekstowo). Kluczowe: komentarze w pliku
+testowym WPROST i szczegółowo deklarują to ograniczenie — Operator nie przeszacował własnej
+pracy, opisał dokładnie tę dziurę.
+
+**3 ucieczki mutacyjne własne Evaluatora (nieblokujące, zarejestrowane do przyszłej rundy):**
+E6/E7 — potwierdzone jako PRE-ISTNIEJĄCE (nie regresja tego refaktoru, `93db72e8` miało tę samą
+lukę): `splitCampMoveCost`'s `moveCostFn` nigdy testowane z realną wartością inną niż `undefined`
+(zamiana na `undefined` w miejscu wywołania przechodzi 94/94, dowiedziona łapalność jedną
+asercją: koszt 2 z `embarkMoveCost` vs 5 bez); fallback `: 1` dla pustej ścieżki nietestowany.
+E10 — wymaga mutacji SABOTAŻOWEJ (zagnieżdżony strażnik nigdy-prawdziwy zachowujący dopasowywany
+tekst), nie przypadkowej regresji — wszystkie realistyczne mutacje (usunięcie, negacja, zmiana
+wartości, zachowanie kolejki) są łapane.
+
+`ai-params.json` potwierdzony poprawny i realnie czytany (nie martwa konfiguracja). **TEMAT
+ZAMKNIĘTY** — klaster miast barbarzyńców (tematy 7-10, `93db72e8` + naprawa `6df223f1`) przeszedł
+łącznie 4 rundy niezależnej recenzji (3x pierwotna + ta weryfikacja) bez otwartego FAIL. 3
+rekomendacje (E6/E7/E10 wzmocnienie testu) do backlogu, nie blokują.
