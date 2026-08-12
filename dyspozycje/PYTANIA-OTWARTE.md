@@ -16633,3 +16633,77 @@ Bramki na głównym drzewie: `tsc` 0, `promote-to-front-test.cjs` **77/77** (by�
 kodem (nie czytaniem raportu), potwierdzić że `insertAtFront` faktycznie jest używany we
 wszystkich 3 miejscach wywołania `applyProductionCompleted`, sprawdzić czy centralizacja nie
 wprowadziła nowej asymetrii, i - jeśli to trzecia czysta runda - domknąć temat.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — Evaluator dokładny: FAIL (B1+B2, kanał plonów terenowych pominięty), runda 2 dispatch (2026-08-13)
+
+**Korekta zakresu oceny (Evaluator):** `db124b4b` dotknął WYŁĄCZNIE rejestru (0 kodu) — cały realny
+kod jest w `e401c1c2`. Ocena poniżej dotyczy realnej zmiany kodu/danych.
+
+**Własna inwentaryzacja (nie raport Operatora):** skrypt porównujący KAŻDĄ liczbę w
+`buildings.json`/`units.json`/`terrain-improvements.json`/`econ-params.json` między `ec55c055` a
+HEAD — 255 zmienionych liczb, WSZYSTKIE dokładnie ×5,0000 (buildings 70, units 148,
+terrain-improvements 7, econ-params 30). Zero ×4/×25/podwójnego zastosowania, zero pól
+Złoto/Pieniądz ruszonych. Punkty 1,3,4,5,6,7,8 decyzji **potwierdzone POPRAWNE** (szczegóły w
+pełnym raporcie agenta `aa897c17f1a338ed0`).
+
+**BLOKUJĄCE (2):**
+
+**B1 — `gra/data/terrain-yields.json` (plony surowcowe z pól OBRABIANYCH, kanon
+R-HEX-PLONY-MAGAZYN, Maciej 2026-07-29=B) — kanał ŻYWY, NIE przeskalowany.** Sumowany w TEJ SAMEJ
+linii co wartości już ×5 (`turn-economy.ts:1544`, `advanceCityEconomy` →
+`computeWorkedMagazynYieldsByCity` → `tickEmpireResourcePipeline` → `creditOwnerResourceStock`).
+6 wpisów zostaje ×1: `terrain_types` Łąka/Równina/Wzgórza/Góry (Drewno/Kamień/Glina), `terrain_
+modifiers` Las (nakładka, Drewno=3), Rzeka (Glina=2). Plus `terrain-improvements.json`:
+`glinianka.bonus.glina=2`, `kamieniolom.bonus.kamien=1` — ten sam kanał, też ×1. **Efekt: waga
+„obrabiaj pola" vs „buduj ulepszenia" przesunięta ~5× — wprost łamie „proporcje zostają
+identyczne względem siebie" z tekstu decyzji.** Martwy duplikat do udokumentowania przy okazji:
+`econ-params.json teren_mapa.teren_las_drewno=3` (nieużywany, tylko w wygenerowanych bundlach).
+
+**B2 — Wyrąb lasu, `terrain-improvements.json wyrab.wycinka.praca_per_tura=5`** (pole nazwane
+myląco „praca", realnie przyznaje Drewno). Ścieżka: `improvement-tech.ts:176 tickHexClearing` →
+`main.ts:23588 applyStolarniaDrewnoMapInflow` → `main.ts:23604 creditOwnerResourceStock`. JSON
+sam potwierdza semantykę: „plon +5 Drewna". Oczekiwane wg pkt 2: 25. Dotyczy też AI
+(`auto-improvements.ts:214`).
+
+**Dlaczego blokujące:** oba to żywe, aktywnie używane kanały produkcji DOKŁADNIE tych samych
+surowców fizycznych które decyzja miała przeskalować — pominięcie ich nie jest różne jakościowo
+od pominięcia budynku czy jednostki, tylko trudniejsze do zauważenia bo dane leżą w innym pliku
+niż `buildings.json`/`units.json`.
+
+**Bramki (wszystkie 11, uruchomione niezależnie przez Evaluatora):** tsc 0, logic-test 213/213,
+i 10 testów ekonomicznych — WSZYSTKIE zielone (co samo w sobie NIE wykryło B1/B2 — żaden test nie
+pokrywa tych ścieżek). Mutacja własna (7 wariantów): `units.json`/`buildings.json` zmiany NIE są
+łapane przez żadną bramkę — 218/255 zmienionych liczb bez pokrycia regresyjnego (dziś poprawne,
+ale nic ich nie broni przed cichym cofnięciem).
+
+**Odpowiedzi na pytania z dispatchu:** Sól — POTWIERDZONE poprawnie przeskalowana (wymuszone przez
+`SPICHLERZ_DRAIN_SOL_PER_TURN` 5→25, nie dedukcja). Cuda świata — 0/19 ma koszt surowcowy,
+słusznie nietknięte. Ulepszenia jednostek — mechanizm kosztu surowcowego NIE ISTNIEJE w kodzie,
+nie ma czego skalować. Łup z bitwy — skaluje się automatycznie przez `unitStockCost`.
+
+**Notatki niepilne (do rejestru, NIE blokują):**
+1. **⛔ NOWE PYTANIE ABC (nie blokuje rundy 2, do odpowiedzi właściciela osobno)** — cennik PN/szt.
+   w dyplomacji (`econ-params.json handel_surowce.cena_*`) NIETKNIĘTY, a magazyny surowców urosły
+   5×. Siła przetargowa z surowców w handlu z AI wzrosła ~5× względem PN. Czy cena też ×5 (dla
+   spójności), czy świadomie zostaje (bo PN/waluta wyłączone z zakresu decyzji, analogicznie do
+   Złota/Pieniądza)? Do rozstrzygnięcia przez właściciela, poza blokującym zakresem.
+2. `handel_surowce.pakiet_wielkosc=10` — próg heurystyki AI deficytu, praktycznie martwy przy
+   magazynach rzędu dziesiątek tysięcy (był słaby już wcześniej).
+3. **5 miejsc nieaktualnego JSDoc w `citizen-resource-upkeep.ts`** (linie ~24-26, ~40-48, ~71-72,
+   ~217-218) — nadal opisują starą stawkę 0,2 i „problem floor-do-zera" jako stan bieżący, mimo że
+   stała ma już 1,0. Ryzyko: kolejna sesja czytająca ten plik wyciągnie odwrotny wniosek.
+4. Cap Złota poszedł ×5 (wspólna formuła) mimo że produkcja Złota=×1 — niespójność formalna,
+   praktycznie bez znaczenia (1/turę vs cap 50000).
+5. Zwietrzały komunikat w teście `tartak-glinianka-rate-Q1-test.cjs` („10/turę" zamiast 50).
+6. Martwe klucze `econ-params.json` (`teren_mapa.teren_las_drewno`,
+   `teren_mapa.ulepszenie_kopalnia_kamien`) nieudokumentowane jako martwe (w odróżnieniu od
+   wzorowo udokumentowanych kluczy Spichlerza).
+7. `ORE_YIELD_PER_MINE=2` — potwierdzone niezależnie jako martwy kod, świadome pominięcie
+   zasadne.
+
+**STATUS: dispatch rundy 2 w toku** — zakres: B1 (terrain-yields.json ×5, terrain-improvements
+bonus glinianka/kamieniolom ×5) + B2 (wyrąb ×5) + notatka 3 (sprostowanie JSDoc) + bramka-
+inwariant na units.json/buildings.json (luka pokrycia 218/255). Notatka 1 (cennik dyplomacji)
+ZAREJESTROWANA jako osobne pytanie ABC, POZA zakresem tej rundy — nie zgadywać.
