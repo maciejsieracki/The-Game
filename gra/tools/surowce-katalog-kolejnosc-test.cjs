@@ -222,5 +222,48 @@ if (escStart > -1 && phStart > -1) {
   ok(/wkr.tce/i.test(html), 'HTML karty zawiera "wkrótce" (sygnał nieaktywności)');
 }
 
+// ===========================================================================
+// E. chip HUD "Surowce" -- placeholder NIE wchodzi do sumy/alertu (Evaluator FAIL, 2026-08-12)
+// ===========================================================================
+console.log('\n-- E. chip HUD "Surowce" -- wiersz placeholder wyłączony z surowceTotal/resourceAlertCount --');
+{
+  const FILTER_ANCHOR = 'const storedResourceRows = resourceRows.filter(';
+  const filterStart = mainSrc.indexOf(FILTER_ANCHOR);
+  ok(filterStart > -1, 'main.ts: kotwica "const storedResourceRows = resourceRows.filter(" znaleziona');
+  if (filterStart > -1) {
+    const lineEnd = mainSrc.indexOf('\n', filterStart);
+    const filterLine = mainSrc.slice(filterStart, lineEnd);
+    ok(filterLine.includes('!r.placeholder'),
+      'REGRESJA-EVALUATORA: filtr storedResourceRows wyklucza r.placeholder (bez tego placeholder z cap=0/stock=0 wpada jako "surowiec na limicie")');
+
+    // Wycinamy PRAWDZIWY predykat filtra z main.ts (nie przepisujemy ręcznie) i uruchamiamy
+    // na fixture: 13 zdrowych wierszy (cap=1000, stock=10, rate=+1 -- wszystkie OK) + 1
+    // wiersz placeholder (cap=0, stock=0, ratePerTurn=0, placeholder=true).
+    const predicateSrc = filterLine.slice(
+      FILTER_ANCHOR.length,
+      filterLine.lastIndexOf(')'),
+    );
+    // predicateSrc to JUŻ pełne wyrażenie strzałkowe "r => ...", więc ewaluujemy je jako
+    // wyrażenie (bez owijania w dodatkowy parametr 'r' -- to dawało funkcję zwracającą
+    // funkcję zamiast boola, przez co .filter() przepuszczał WSZYSTKO jako "prawdziwe").
+    const filterFn = new Function(`return (${predicateSrc});`)();
+
+    const healthyRows = Array.from({ length: 13 }, (_, i) => ({
+      id: `res${i}`, cap: 1000, stock: 10, ratePerTurn: 1, placeholder: false,
+    }));
+    const placeholderRow = { id: 'ruda_cyny', cap: 0, stock: 0, ratePerTurn: 0, placeholder: true };
+    const resourceRows = [...healthyRows, placeholderRow];
+
+    const storedResourceRows = resourceRows.filter(filterFn);
+    const resourceAlertCount = storedResourceRows.filter(
+      r => r.ratePerTurn < 0 || r.stock >= (r.cap ?? Infinity),
+    ).length;
+    const surowceTotal = storedResourceRows.length;
+
+    eq(surowceTotal, 13, 'surowceTotal == 13 (placeholder NIE liczy się do mianownika chipu, mimo cap!=null)');
+    eq(resourceAlertCount, 0, 'resourceAlertCount == 0 (placeholder stock(0)>=cap(0) NIE wywołuje już fałszywego alertu)');
+  }
+}
+
 console.log(`\nsurowce-katalog-kolejnosc: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);

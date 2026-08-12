@@ -14193,8 +14193,11 @@ async function boot(): Promise<void> {
       // SUROW-HUD-01 (Maciej 2026-07-24): chip „Surowce" w HUD — podsumowanie stanu
       // magazynów imperium (wiersze magazynowane, cap != null). „OK/total": OK =
       // surowce ani w niedoborze (ratePerTurn<0), ani na capie (stock>=cap).
+      // P-SUROWCE-KOLEJNOSC-KART, znalezisko Evaluatora (2026-08-12): wiersz placeholder
+      // (np. "Ruda cyny — wkrótce", cap=0) ma cap!=null i stock(0)>=cap(0), więc bez
+      // !r.placeholder wpadał do sumy jako "surowiec na limicie" -- fałszywy alarm na stałe.
       const resourceRows = buildEmpireResourceRows(0);
-      const storedResourceRows = resourceRows.filter(r => r.cap != null);
+      const storedResourceRows = resourceRows.filter(r => r.cap != null && !r.placeholder);
       const resourceAlertCount = storedResourceRows.filter(
         r => r.ratePerTurn < 0 || r.stock >= (r.cap ?? Infinity),
       ).length;
