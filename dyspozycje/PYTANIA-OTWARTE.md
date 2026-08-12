@@ -16004,3 +16004,54 @@ scalona-ale-jeszcze-recenzowana naprawa klastra miast barbarzyńców i runda 6 b
 Runbook: build (NIE npm run build) → stamp → sync → generate-hub → verify-robocza-bundle (musi
 VERIFY OK) → log WERSJE.md+KANAL-PRACA.md → commit+push na gałąź sesji (NIE main — scalenie do
 main to osobna, oddzielnie autoryzowana czynność per R-MERGE-MAIN-RYTM-Q1).
+
+## ✅ Miasta barbarzyńców — RUNDA 7 SCALONA, mechanizm `clearedCityIds` W PEŁNI ZAMKNIĘTY (7 rund)
+
+Runda 7 (wyłącznie dokumentacja+testy, zero zmian logiki, potwierdzone: `git diff` przefiltrowany
+przez linie-nie-komentarze zwrócił 0 wyników): sprostowane fałszywe zdanie F1 (dokładne liczby:
+2 niebronione→okres 22/min.14 heksów, 3 niebronione→okres 44/min.19 heksów, 300 tur), doprecyzowane
+przeuogólnienie F3 (osierocone jednostki NIE mają "zero komend na zawsze" — `orphanedActive`
+wygasa), udokumentowany nowy edge case (bronione miasto nieosiągalne → trwałe zamrożenie zamiast
+livelocka, świadomie nienaprawione, poszerzenie już znanego poza-zakresowego defektu), 2 nowe
+testy regresyjne (M2b: etykietowanie terenu ostrzejsze niż runtime; M3: fallback dla
+`unitComp===undefined`). `barb-city-behavior-test` 164→178/178, `tsc` 0 błędów, pozostałe bramki
+barbarzyńskie zielone (`barbarians-test` 167/167, `barb-camp-destruction` 82/82, `capital-capture`
+86/86), `logic-test` 213/213. **SCALONE** (commit `957a5f58`).
+
+**Mechanizm `clearedCityIds` (patrol barbarzyńców po nieobronionych miastach) jest TERAZ W PEŁNI
+ZAMKNIĘTY po 7 rundach** (1-3 wcześniejsze sesje, 4-7 ta sesja) — pierwszy raz od początku tematu
+bez żadnego otwartego FAIL ani nieudokumentowanego zachowania. Pozostałe znane ograniczenia
+(krążenie między ≥2 niebronionymi bez dotarcia do bronionego na normal/easy — czeka na ABC
+`P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`; zamrożenie przy nieosiągalnym bronionym mieście;
+pre-istniejący `if(raidReady) continue`) są świadomie udokumentowane w kodzie, nie ukryte.
+
+## Rozbicie panelu Szczęście/Prawo (3dc9d650) — Evaluator: PASS-WITH-NOTES, naprawa testu dispatchowana
+
+**Sprostowanie własnego błędu dispatchu:** Evaluator ustalił że teza "nigdy nie doczekał się
+recenzji" była NIEPRAWDZIWA — commit `3b851610` to już jest fix po wcześniejszym FAIL Evaluatora
+("-0 renderował się jako dostępny"), a `044aa26d` dopisuje JSDoc podpisany "Evaluator, przegląd
+1208eb6c". Rejestr miał nieaktualny nagłówek "czeka na Evaluatora". Oceniony AKTUALNY stan kodu
+(3 commity nowsze niż 3dc9d650).
+
+Wszystkie 3 deklarowane zachowania potwierdzone poprawne wykonaniem na realnym kodzie (nie
+kopiach): rozbicie blokowe (5 składników → 5 elementów DOM, zero " · "), łączne zużycie
+(`floor(pop×0,2)`, parytet z silnikiem potwierdzony `computeCitizenResourceDrain`), % wkładu
+(suma=100 dla 10 przypadków, `clampPct` gwarantuje nieujemność). Scalanie ze stawką 0,2 CZYSTE —
+jedna stała `CITIZEN_UPKEEP_RATE_PER_CITIZEN`, zero duplikacji.
+
+**2 realne ucieczki mutacyjne (luka oracle'a testowego, NIE błąd kodu):** M2 — SEDNO zgłoszenia
+(rozbicie blokowe) nie ma ŻADNEGO pokrycia behawioralnego; test pina tylko WOŁAJĄCEGO, nie
+WOŁANEGO (`appendBreakdownLines`) — mutacja cofająca całe rozbicie do `join(' · ')` przechodzi
+67/67. M8 — sekcja testu % wkładu jest tautologiczna (implementacja liczy `100-szWkladPct`, więc
+suma zawsze wychodzi 100 niezależnie od poprawności) — naiwna implementacja z osobnym
+zaokrągleniem obu wartości (dająca sumę≠100 dla 12 legalnych par) też przechodzi 67/67.
+
+Noty nieblokujące: N4 (odziedziczona niespójność `live.szPct` vs `computed.szPct` w
+`resolveOrderState` — pasek Szczęścia i wypisany % wkładu mogą się rozjechać, pre-istniejące, nie
+wprowadzone tym commitem, ale teraz po raz pierwszy widoczne jako weryfikowalna liczba); N5
+(zbędny `Math.round`); N6 (martwa klasa CSS); N7 (potwierdzony jako czysto kosmetyczny,
+udokumentowany rozjazd panel/silnik `Σfloor≤floor(Σ)`, świadomie odłożony do decyzji właściciela).
+
+**STATUS: dispatch naprawy testu (M2+M8) w toku** — dopisać asercję wykonaniem dla
+`appendBreakdownLines` (wzorzec z istniejącej sekcji I) + asercję na wejściu łamiącym tautologię
+sumy % wkładu.
