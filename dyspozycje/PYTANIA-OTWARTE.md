@@ -13715,3 +13715,102 @@ obok). **Dispatch implementacji w toku — patrz niżej.**
 Bramki: `tsc` 0, `logic-test` 213/213, `porzadek-panel-czytelnosc-test` **67/67** (było 63/63),
 `surow-civ-storage-test` **43/14** (identyczne jak punkt odniesienia, sekcja G — dotknięta zmianą —
 bez FAIL). **Scalone przez orkiestratora, czeka na Evaluatora.**
+
+## e702d982 runda 2 (`6a7f49f9`) — Evaluator: **PASS-WITH-NOTES**
+
+Wszystkie 3 przyczyny FAIL rundy 1 zamknięte, potwierdzone własnymi mutacjami Evaluatora (nie
+lekturą). D4 (nowa asercja Operatora) słusznie łata realną, samodzielnie odkrytą lukę — zdanie
+komunikatu commita nazywające D6 „kluczową" to nadinterpretacja (D6 przeżywa wszystkie mutacje;
+realne wykrywanie robią D4/D5), skorygowane w rejestrze. 2 uwagi:
+1. **Do zrobienia (wymagane przed zamknięciem tematu)**: `styledOverlays`/`scene.ts:2713` —
+   JEDYNE pozostałe niezwolnione miejsce `collapseToMergedMesh` w całym `src/` — nie ma
+   WŁASNEGO wpisu w rejestrze (tylko wzmianki w cudzych akapitach) → wpadnie w kategorię 4
+   „zapomniane" audytu §0c. **REJESTROWANE TERAZ, patrz niżej.**
+2. Nieblokujące: brak strażnika tekstowego na 4 nowe call site w `main.ts` (mutacja Evaluatora
+   usuwająca jeden z nich przechodzi wszystkie bramki — kierunek błędu bezpieczny, to tylko
+   niewykryty wyciek, nie double-free); §4a — commit znów zgarnął 5 niepowiązanych tematów do
+   tego samego pliku rejestru (druga runda z rzędu tego wzorca, nota procesowa, nie blokująca).
+
+## P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK — NOWY, do Operatora Opus 5 (render/**)
+
+`scene.ts::dispose()` (linie 3013-3055) zwalnia instancje/rzeki/ocean/ramkę, ale ANI JEDNEJ
+zmergowanej grupy overlayów (`scene.ts:2713` `collapseToMergedMesh(group)`, potencjalnie
+tysiące — las/dżungla/szczyty/plaże/wydmy/oazy). `disposeScene()` woła się w 5 miejscach (nowa
+gra, load, regeneracja) — każde takie przejście w tej samej sesji przegląarki leakuje cały ten
+pool. Prawdopodobnie WIĘKSZY wyciek niż ten naprawiony w `e702d982`/`6a7f49f9`. Zgodnie ze stałą
+zgodą właściciela (2026-07-25/08-06): CAŁA praca w `gra/src/render/**` na Opus 5.
+**STATUS: OTWARTE, dispatch Opus 5 (worktree) — priorytet, prawdopodobnie największy pozostały
+wyciek GPU w grze.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 2 (`6fccb568`) — 3 Evaluatorzy adwersaryjni, 2/3 = **FAIL**
+
+**Evaluator B: FAIL.** Rdzeń poprawny (jednostki strukturalnie nietykalne, bramki zielone), ale:
+- **Asymetria gracz/AI (blokująca)**: `main.ts:25557` ruch AI sprawdza WYŁĄCZNIE heks końcowy
+  ścieżki (`checkBarbCampDestroyedAt`), nie całą trasę — gracz w tej samej sytuacji niszczy obóz
+  mijany po drodze (`checkBarbCampDestructionAlongPath`), AI nie. Naprawa: 1 linia.
+- **Sprzeczność ze specyfikacją (blokująca)**: gdy obóz jednostki zostaje zniszczony, jednostka
+  traci `raidReady` → `chaseRadius` spada z nieograniczonego do zwykłego zasięgu → jednostki
+  osierocone PRZESTAJĄ atakować/ścigać, zamiast (cytat właściciela) „nadal atakować". Evaluator B
+  rekomenduje to jako ODRĘBNE pytanie ABC (zmienia globalną agresję barbarzyńców) — POTWIERDZONE
+  wykonaniem własnym harnessem (2 komendy move przy żywym obozie w d=15 → 0 komend po zniszczeniu).
+- Test ma asercję próżną (3b „units array unchanged" nigdy nie przekazuje `units` do
+  `destroyCampAt` — tautologia) + mutacja B (AI nigdy nie niszczy obozu) przechodzi 39/39.
+
+**Evaluator C: FAIL.** Niezależnie znalazł DODATKOWE luki:
+- **`main.ts:9587` `onSplit` (rozdzielenie armii) — blokująca, osiągalna w normalnej rozgrywce.**
+  `isHexPassableForUnit` sprawdza wyłącznie teren — gracz może rozdzielić armię TAK, żeby
+  pod-stos wylądował na heksie żywego obozu; obóz przeżywa i dalej spawnuje.
+- **Wczytanie zapisu (`main.ts:28572`) — blokująca, luka save/load.** `barbCamps` odtwarzane
+  1:1 bez rekoncyliacji z pozycjami jednostek — zapis sprzed tego commitu (albo z luki onSplit)
+  może mieć jednostkę cywilizacji STOJĄCĄ na obozie; po wczytaniu obóz żyje wiecznie.
+- Ta sama asymetria AI co Evaluator B (niezależne potwierdzenie).
+- 2 własne mutacje przechodzą wszystko: usunięcie haka po walce CAŁKOWICIE, degradacja
+  `checkBarbCampDestructionAlongPath` do sprawdzania tylko ostatniego heksu — zero pokrycia na
+  „niszczenie w środku ścieżki", mimo że to jest właśnie deklarowana nowość tego commitu.
+- 2 mniejsze, nieblokujące luki: `evictForeignUnitsFromCityHexes` i `placeFanOutGroup`
+  (odwrót/rozbicie po walce) mogą wypchnąć jednostkę na heks obozu bez haka.
+- Potwierdza (jak runda 1): barbarzyńcy nie mogą zniszczyć WŁASNEGO obozu (poprawne z
+  konstrukcji — ich pętla ruchu w ogóle nie ma haka).
+
+**Evaluator A: w toku.** Werdykt większościowy już przesądzony (2/3 FAIL) niezależnie od jego
+wyniku — czekam na jego głos, bo może wskazać dodatkowe poprawki do tej samej rundy 3, żeby nie
+robić rundy 4 za coś, co dało się złapać teraz.
+
+**Evaluator A: FAIL (jednomyślne 3/3, nie tylko większość).** Niezależnie potwierdza OBA bloker
+znalezione przez B/C wykonaniem WŁASNEGO harnessu (realny `computePath` z silnika, ten sam obóz
+w połowie trasy: hak gracza niszczy, hak AI nie), plus szczegółowy dowód na osierocone jednostki
+(3 scenariusze: żywy obóz→naciera; zniszczony obóz+inny obóz w pobliżu→**ucieka w stronę obcego
+obozu, od celu**; zniszczony obóz+brak innych obozów→**zero rozkazu, jednostka zamiera na
+stałe**). Dodatkowo mutacją dowodzi, że próg testu `>=5` przepuszcza usunięcie AŻ 2 wpięć naraz
+(hak bitewny CAŁY + animacja końca tury) — 39/39 bez zmian. Scenariusz „obóz broniony"
+(rozumowanie Operatora o zbędności dodatkowego kodu) — zweryfikowany krok po kroku,
+**potwierdzony bez zastrzeżeń przez wszystkich 3 Evaluatorów niezależnie**.
+
+**Rekomendacja co do punktu „osierocone jednostki" — NIE nowe ABC.** Trzej Evaluatorzy (A/B
+wprost, C pośrednio) zgodni: obecny stan („stoi w miejscu"/"ucieka") jest WPROST sprzeczny z
+cytatem właściciela „nadal atakują" — to nie nowa decyzja projektowa, tylko niedokończone
+wdrożenie już podjętej. Najprostsze poprawne odczytanie: `homeCamp===undefined` →
+`raidReady=true` (chaseRadius nieograniczony, jak żywy raid-ready obóz) + pominięcie kroku 4
+(drift do domu — jednostka bez domu nie ma dokąd wracać). Dispatch wprost, bez kolejnego pytania.
+
+**STATUS: RUNDA 3 W TOKU. Zakres (zebrany ze wszystkich 3 głosów, priorytety wg konsensusu):**
+1. **[bloker, parytet]** `main.ts:25557` — AI ma używać `checkBarbCampDestructionAlongPath(path)`
+   zamiast `checkBarbCampDestroyedAt(last.q, last.r)` (`path` już policzone w tej samej funkcji).
+2. **[bloker, spec „nadal atakują"]** `barbarians.ts` ok. linii 1041 — `homeCamp===undefined` →
+   `raidReady=true`, pominąć krok 4 (drift do domu) dla jednostek bez żywego obozu macierzystego.
+3. **[bloker, osiągalne w rozgrywce]** `main.ts:9587` `onSplit` — dopisać
+   `checkBarbCampDestroyedAt(destQ, destR)` po rozdzieleniu armii na docelowy heks.
+4. **[bloker, save/load]** `main.ts:28572` wczytanie zapisu — po odtworzeniu `barbCamps`
+   przelecieć jednostki `!isBarbarian` i wywołać `checkBarbCampDestroyedAt(u.q, u.r)` dla każdej
+   (zamyka zapisy sprzed tego commitu / z luki onSplit, gdzie jednostka mogła legalnie stać na
+   heksie żywego obozu).
+5. **[wymagane, moc testu]** Zastąpić próg `callSites.length >= 5` JAWNĄ listą wszystkich
+   realnych wpięć (8, każde przypięte osobno charakterystycznym fragmentem kontekstu), wykluczyć
+   z liczenia definicje funkcji. Dołożyć asercję wykonaniową: `decideBarbarianMoves` po
+   zniszczeniu obozu WCIĄŻ wydaje rozkaz ataku/marszu (nie `[]`). Kryterium przyjęcia: wszystkie
+   mutacje z tej rundy (usunięcie dowolnego pojedynczego wpięcia, usunięcie 2 naraz, degradacja
+   `…AlongPath` do sprawdzania tylko ostatniego heksu) muszą dawać czerwono.
+6. **[nieblokujące, przy okazji jeśli tanio]** `evictForeignUnitsFromCityHexes` i
+   `placeFanOutGroup` (odwrót/rozbicie po walce) — brak haka przy wypchnięciu jednostki na heks
+   obozu; `refreshFog()` bez `skipVeteranEducation` (może nadpisać toast chatki, gdy ścieżka mija
+   i wioskę, i obóz).
