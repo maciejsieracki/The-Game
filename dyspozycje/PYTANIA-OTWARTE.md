@@ -12622,3 +12622,43 @@ P-MOC-BALANS-Q1 (nie osobno, zgodnie z limitem 3 pytań/turę CLAUDE.md §1):**
   Zwiadowcą, świadoma decyzja z 2026-08-08 pozostaje w mocy)
 - B: dodać próg startowy Drewna/Brązu w magazynie miasta przy założeniu
 - C: darmowy "Tartak startowy"/jednorazowy zapas surowca przy założeniu miasta
+
+## P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA — ROZSZERZONY ZAKRES (Maciej, doprecyzowanie 2026-08-12)
+
+Doprecyzowanie punktu 9 z batcha playtestu — właściciel opisał DOKŁADNĄ specyfikację, szerszą niż
+pierwotny dispatch (który dotyczył wyłącznie panelu Surowców). Docelowo TRZY miejsca, każde z
+innym efektem/zakresem:
+
+1. **Panel Surowców (empire-wide)** — ile surowców zużywane NA RZECZ OBYWATELI (to już
+   dispatchowane, w toku).
+2. **Tabela "Miasta (osiedla imperium)"** (zakładka Miasta/econ-miasta, dziś kolumny: Obyw.,
+   Ludność, Wzrost, Praca, Pieniądz, Żywność) — robi się za dużo kolumn. Potrzebne:
+   (a) możliwość ZAZNACZENIA u góry tabeli, które kolumny pokazać/ukryć (checkboxy) — układ
+   pionowych linii/kolumn zostaje jak jest dziś, tylko z opcją filtrowania widoczności;
+   (b) NOWA kolumna/zakładka "Surowce" po prawej stronie tej samej tabeli — per miasto,
+   dokładnie jakiego typu surowce są zużywane w TYM KONKRETNYM mieście;
+   (c) na samym końcu tabeli — WIERSZ PODSUMOWANIA agregujący każdą kolumnę dla całej
+   cywilizacji: suma obywateli, suma ludności, ŚREDNI wzrost (nie suma), suma wszystkich
+   surowców, suma pieniędzy itd. — żeby zobaczyć zagregowany stan całego imperium jednym
+   spojrzeniem.
+
+**STATUS: dispatch osobnego Sonnet 5 (worktree) na punkty 2(a)/(b)/(c) — po zakończeniu punktu 1
+(już w toku), jako kolejny, świadomie rozszerzony temat (nie duplikować pracy już dispatchowanej
+dla punktu 1).**
+
+## P-SKARBIEC-PODZIAL-PRACY-NIE-NALEZY (Maciej, zrzut ekranu, 2026-08-12)
+
+W panelu Skarbca (Empire Detail, sekcja skarbu/podatków) obok "DOMYŚLNY PODZIAŁ PODATEK"
+(Skarb/Nauka/Zamożność) jest też sekcja "DOMYŚLNY PODZIAŁ PRACY" (Budynki/Do puli imperium
+70%/30%) — właściciel zgłasza że TA DRUGA sekcja nie powinna być w Skarbcu (to inny zasób/
+koncept — Praca, nie Pieniądz/Skarb). W Skarbcu ma zostać WYŁĄCZNIE podział podatków.
+
+ZADANIE dla dispatchu: znaleźć komponent renderujący ten panel (prawdopodobnie
+`empireDetailPanel.ts`, sekcja skarbu — grep "DOMYŚLNY PODZIAŁ PRACY"/"Budynki / Do puli
+imperium"), USUNĄĆ sekcję "Domyślny podział Pracy" z WIDOKU SKARBCA konkretnie (nie usuwać samej
+funkcjonalności/suwaka z gry — sprawdzić czy jest już gdzie indziej dostępny, np. w panelu
+Produkcji/Pracy, czy trzeba go tam PRZENIEŚĆ żeby gracz nadal miał do niego dostęp — nie zgadywać,
+jeśli nie ma dziś żadnego innego miejsca z tym suwakiem, zostawić PYTANIE ABC zamiast usuwać
+funkcję bez zastępczego miejsca).
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
