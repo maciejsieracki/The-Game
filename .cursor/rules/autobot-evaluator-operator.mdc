@@ -231,6 +231,107 @@ Jego słowa (2026-08-09): *„zawsze po zdeployowaniu danych zagadnień powinien
 dysk"* oraz *„kiedy zrobisz commit, zabezpieczasz go na GitHubie. Nie ma potrzeby już chyba
 trzymania tych danych"* — potwierdzone jako reguła stała, nie jednorazowa uwaga.
 
+## Integracja z Ultracode/Workflow (Maciej 2026-08-12)
+
+Polecenie Macieja: *„przeczytaj jeszcze raz całe zasady autobots i dostosuj je do pracy
+ultracode tak żeby się uzupełniały i razem usprawniały pracę oraz generowało jak najmniej
+błędów."*
+
+**Zasada nadrzędna tej sekcji:** Workflow (Ultracode) to **NARZĘDZIE wykonawcze** — skrypt
+orkiestrujący subagentów z wbudowaną współbieżnością, izolacją i wzorcami weryfikacji.
+AutoBot (ta reguła + cały kanon powyżej) to **REGUŁY procesu** — kto co robi, w jakiej
+kolejności, jakie warunki muszą być spełnione przed „gotowe"/`deploy`. Workflow ma
+**automatyzować i egzekwować** istniejące reguły AutoBota — **NIE zastępuje** ani Operatora,
+ani Evaluatora, ani żadnego z zakazów wyżej. Skrypt Workflow, który pomija Evaluatora albo
+commituje/deployuje sam, łamie tę regułę dokładnie tak samo jak ręczny dispatch, który to robi.
+
+### Kiedy Workflow zamiast ręcznego dispatchu (Agent tool)
+
+Używaj Workflow, gdy: **≥3 niezależne tematy naraz** (Workflow ma wbudowany limit
+współbieżności ~10–16 agentów i kolejkuje resztę — adresuje realny incydent tej sesji:
+ręczne odpalanie kilkunastu subagentów naraz przez orkiestratora prowadziło do chaosu i
+wyczerpania zasobów) **LUB** użytkownik/tryb ultracode tego wprost wymaga. Dla 1–2 tematów
+ręczny dispatch (`Task`/`Agent` z `isolation:"worktree"`) pozostaje w pełni poprawny —
+Workflow nie jest obowiązkowe dla każdej pojedynczej paczki.
+
+### Mapowanie ról AutoBot → Workflow
+
+| Rola AutoBot | Krok Workflow | Model |
+|---|---|---|
+| **Operator** | `phase('Operator')` → `agent(prompt, opts)` | domyślny model sesji (Sonnet 5, per CLAUDE.md §4) |
+| **Evaluator** | `phase('Evaluator')` → `agent(prompt, {model:'opus', effort:'high'})` | Opus 5 (per CLAUDE.md §4) |
+
+**WYMÓG TWARDY:** obie fazy żyją w **JEDNYM skrypcie Workflow**, Operator → Evaluator jako
+dwa kroki sekwencyjne tego samego przebiegu — **NIGDY jako dwa osobne, niezależnie
+zlecane uruchomienia**. Powód wprost: incydent tej sesji, w którym orkiestrator scalił i
+skomitował serię ~11 zmian Operatora **bezpośrednio, bez pośredniego Evaluatora**, łamiąc
+regułę 0a/0b — wykryte dopiero na wyraźne pytanie właściciela. Faza Evaluate zaszyta w tym
+samym skrypcie co faza Operatora strukturalnie utrudnia to pominięcie (nie eliminuje —
+patrz „Co zostaje poza Workflow" niżej, scalanie ręczne wymaga tego samego reżimu mimo że
+nie idzie przez Workflow).
+
+### `pipeline()` zamiast ręcznego sekwencjonowania
+
+`pipeline(items, stageOperator, stageEvaluator)` przepuszcza KAŻDY temat przez obie fazy
+**niezależnie** — temat A może być już u Evaluatora, gdy temat B jeszcze pracuje u
+Operatora, bez ręcznego zarządzania kolejnością przez orkiestratora. To zastępuje dzisiejsze
+ręczne „poczekaj na Operatora → scal → dopiero teraz zleć Evaluatora" jednym wywołaniem,
+bez utraty gwarancji, że KAŻDY temat przeszedł przez obie warstwy przed „gotowe".
+
+### KROK 0 — weryfikacja bazy worktree (obowiązkowy pierwszy akapit KAŻDEGO promptu `agent()` z `isolation:'worktree'`)
+
+Recydywa tej sesji (dziesiątki wystąpień): worktree zakładany przez `isolation:'worktree'`
+(czy to `Agent` tool, czy Workflow) czasem opiera się na starym/złym commicie (np. `main`
+sprzed setek commitów zamiast czubka gałęzi roboczej) — subagent widzi kod „sprzed" jakiejś
+funkcji i błędnie raportuje, że „funkcja nie istnieje" (patrz też C-035 w `playbook.md`,
+identyczny mechanizm). Wklej dosłownie jako pierwszy akapit KAŻDEGO promptu `agent()` z
+`isolation:'worktree'`, w Workflow i poza nim jednakowo:
+
+```
+KROK 0 — WERYFIKACJA BAZY WORKTREE (wykonaj PRZED jakąkolwiek analizą):
+Uruchom: grep -rn "<SYMBOL_KTÓRY_MUSI_ISTNIEĆ>" <ścieżka/do/pliku>
+(podstaw za <SYMBOL_KTÓRY_MUSI_ISTNIEĆ> nazwę funkcji/typu/stałej dodanej NAJPÓŹNIEJ na
+gałęzi roboczej — musi być widoczna, jeśli worktree stoi na właściwej bazie).
+Jeśli grep NIE znajdzie trafienia: ZATRZYMAJ SIĘ. NIE próbuj ręcznie odtwarzać brakującego
+kodu, NIE zgaduj że „pewnie jeszcze nie scalone". Zgłoś dokładnie: jakiego symbolu
+szukałeś, w jakim pliku, i że baza worktree wygląda na nieaktualną — czekaj na decyzję
+orkiestratora. Dopiero po potwierdzeniu obecności symbolu przechodź do właściwego zadania.
+```
+
+Gdy się zdarzy: orkiestrator ręcznie zakłada poprawny worktree
+(`git worktree add ... origin/<branch>` albo bieżąca gałąź sesji) i redispatchuje —
+nie próbuje naprawiać tego wewnątrz złego worktree.
+
+### Adversarialna weryfikacja (N niezależnych Evaluatorów) — kiedy 1, kiedy 3
+
+Domyślnie **1 Evaluator wystarcza** (Opus 5, `effort:'high'`, adwokat diabła jak w reszcie
+tej reguły). **3 niezależnych Evaluatorów głosujących (większość musi się zgodzić, żeby
+werdykt PASS przetrwał)** dla zmian wysokiego ryzyka — dotykających:
+- silnika bitwy (`gra/src/**/combat*`, `battle*`, moc jednostek, wynik starcia),
+- zapisu/wczytania gry (save/load, snapshot/restore, migracja formatu zapisu),
+- migracji/zmiany struktury danych kanonicznych (`gra/data/**`, format pól przetrwałych
+  między turami).
+
+Ten wzorzec to dokładnie to, co Evaluator AutoBota dziś robi ręcznie w roli „adwokata
+diabła" (Warstwa 2 potrójnej warstwy) — Workflow go automatyzuje jako wbudowany wzorzec
+(„adversarial verify"/„judge panel"), nie wprowadza nowej reguły procesu.
+
+### Co ZOSTAJE poza Workflow — zawsze ręczne, zawsze orkiestrator
+
+Workflow kończy robotę na **„kod zatwierdzony przez Evaluatora"** — nigdy nie commituje ani
+nie deployuje samo. Zawsze poza Workflow, zawsze ręką orkiestratora:
+- `git commit` / `git push`,
+- wpisy do `dyspozycje/PYTANIA-OTWARTE.md` / `dyspozycje/WERSJE.md` /
+  `dyspozycje/REJESTR-PROSB-I-ZADAN.md` / `dyspozycje/_handoff/KANAL-PRACA.md`,
+- CAŁY deploy (hasło `deploy`, wyłącznie Opus 5, per CLAUDE.md §4).
+
+**Reguła 0b obowiązuje TAKŻE przy ręcznym scalaniu konfliktów.** Gdy orkiestrator sam
+rozwiązuje konflikt scalenia (`git apply -3` z konfliktem, ręczny merge trójstronny), to
+**TEŻ jest zmiana zapisana do repozytorium** — idzie do kolejki Evaluatora jak każda inna,
+„to tylko scalanie" nie jest zwolnieniem. Dokładnie to zostało przeoczone realnie w tej
+sesji (reguła 0b istniała, a mimo to konflikt rozwiązany ręcznie przeszedł bez Evaluatora) —
+traktować jako pełnoprawny incydent klasy C-0xx, nie wyjątek proceduralny.
+
 ## Logging
 
 Każda domknięta paczka → wpis postmortem w `dyspozycje/autobot/logs/` (run_id, metric_before/after, delta%, postmortem_reasoning, action_taken), gdy scaffold na to pozwala; minimum: raport Evaluator w czacie + KANAL.

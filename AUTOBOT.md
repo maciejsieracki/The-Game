@@ -297,4 +297,37 @@ więcej niż pięćdziesiąt ogólników.**
 
 ---
 
+## 11. Integracja z narzędziem Workflow/Ultracode — TYLKO projekt Civ „The Game" (Maciej 2026-08-12)
+
+> Ten protokół (sekcje 0–10 wyżej) jest z założenia **przenośny** — nie odwołuje się do
+> żadnego konkretnego projektu ani narzędzia wykonawczego. Sekcja 11 jest **wyjątkiem**:
+> dotyczy WYŁĄCZNIE tego repozytorium (Civ „The Game"), gdzie oprócz tego protokołu działa
+> narzędzie Workflow (Ultracode, Claude Agent SDK). W innych projektach tę sekcję pomiń.
+
+Polecenie: *„przeczytaj jeszcze raz całe zasady autobots i dostosuj je do pracy ultracode
+tak żeby się uzupełniały i razem usprawniały pracę oraz generowało jak najmniej błędów."*
+
+Workflow to **narzędzie**, ten protokół to **reguły**. Workflow (skrypt z `agent()`,
+`pipeline()`, `parallel()`, `phase()`) ma automatyzować pętlę WYKONAJ→ZMIERZ→WYCIĄGNIJ
+WNIOSEK→ZAPISZ z sekcji 0, nie omijać jej. W szczególności: „kontrolę jakości zlecaj innemu
+agentowi w trybie adwokata diabła" (sekcja 4 i 8 pkt 8) realizuje się w Workflow jako
+DRUGA, osobna faza w tym samym skrypcie (`phase('Evaluator')`, model mocniejszy niż faza
+implementacji) — nigdy jako opcjonalny, osobno zlecany krok, bo to dokładnie ten krok bywa
+pomijany w praktyce (zob. incydent w `playbook.md`, gdzie seria zmian trafiła do repo bez
+pośredniego adwokata diabła).
+
+Bariery bezpieczeństwa z sekcji 7 (nigdy: transakcje finansowe, kasowanie
+oryginałów/danych źródłowych, masowa korespondencja, publikacja pod cudzym nazwiskiem;
+zawsze do zatwierdzenia: mail/oferta/dokument/zmiana cen) obowiązują identycznie, czy pracę
+wykonuje pojedynczy agent, czy skrypt Workflow z wieloma agentami naraz — narzędzie
+wykonawcze nie jest wyjątkiem od bariery „Ty przygotowujesz — człowiek zatwierdza".
+
+Pełny, projektowy szczegół integracji (mapowanie ról na modele, dokładny szablon KROK 0 do
+wklejania w prompty `agent()` z `isolation:'worktree'`, próg 1 vs 3 Evaluatorów, lista tego
+co zawsze zostaje ręczne) żyje w `.cursor/rules/autobot-evaluator-operator.mdc`
+§„Integracja z Ultracode/Workflow" i w `playbook.md` — ten plik (protokół ogólny) celowo nie
+duplikuje ścieżek/komend specyficznych dla jednego repo.
+
+---
+
 *Koniec protokołu. Potwierdź wczytanie zgodnie z sekcją 1 i czekaj na pierwsze zadanie.*
