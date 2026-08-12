@@ -14151,4 +14151,40 @@ faktycznie przeżywa przejęcie przez barbarzyńców, ale `isRebellionReconquest
 `prevOwner===-99`, a przy odbiciu OD BARBARZYŃCÓW `prevOwner=-1` — łańcuch buntu jest przerwany
 przez pośredniego właściciela, gracz dostaje zwykłe 5 tur nie 10, identycznie jak bez guarda.
 Zachowane pole nigdy nie jest użyte.
-**Czeka na głosy A/C.**
+**Czeka na głos A (2/3 FAIL już przesądzone przez B+C, większość ustalona).**
+
+**Evaluator C: FAIL — potwierdza niezależnie.** Punkty ABC nietknięte (zweryfikowane licznikowo,
+diff nie rusza `defenderCanRetreat`/`canSplit`/`healthFrac`). Impact-check współdzielonego
+`barbarians.ts`: naprawa #2 rundy 3 obozów (`orphaned = ...`) bit-identyczna, przesunięta tylko
+o linie — scalenia się NIE pogryzły. Krytyka mocy testu: **16 własnych mutacji, 11/11 dla
+punktów 2/3/5 złapane (sekcja 5 realnie zamyka dziurę rundy 1)**, ale **5/5 dla punktów 1 i 4
+PRZEŻYWA wszystkie bramki** — pełne cofnięcie WSZYSTKICH 4 pod-guardów punktu 1
+(`runCapitalCapturePlunder`: eliminacja barbarzyńców przy odbiciu, dziedziczenie
+skarbca/nauki/techów/Power, fałszowanie kultury/religii) I punktu 4
+(`applyPostCaptureLawOnCapture`) **jest niewidzialne dla wszystkich 6 bramek jednocześnie**.
+„Najcięższy defekt rundy 1 (wyczyszczenie całej frakcji barbarzyńców + trwały fałszywy wpis w
+sejwie) jest naprawiony w miejscu, którego żaden test nie wykonuje" (cytat Evaluatora C).
+Niezależnie od B potwierdza oscylację (livelock) przy ≥2 niebronionych miastach — inna
+geometria testowa, ten sam wniosek: zerowy postęp netto, nieskończone drganie.
+
+## RUNDA 3 (miasta barbarzyńców) — zakres zebrany z B+C, dispatch w toku
+
+1. **[bloker, zero pokrycia]** Wyciągnąć decyzje z punktu 1 (`runCapitalCapturePlunder`) do
+   czystych, testowalnych funkcji — main.ts nie jest bundlowalny, więc bez tego naprawa
+   pozostanie niewidzialna dla każdej przyszłej bramki. Kryterium: cofnięcie KAŻDEGO z 4
+   pod-guardów osobno musi dawać czerwono.
+2. **[bloker, zero pokrycia]** Dodać asercje wykonawcze dla punktu 4 — `rebelPreviousOwnerId`
+   przeżywa capture barbarzyński, Prawo po podboju nadal działa dla capture gracz/AI. Cofnięcie
+   guardu musi dawać czerwono.
+3. **[bloker, livelock potwierdzony 2x niezależnie]** Przeprojektować pamięć „kolejnego miasta"
+   żeby dawała POSTĘP przy ≥2 niebronionych miastach, nie oscylację o okresie 2. Kierunki od
+   Evaluatora B (nie przesądzone): zbiór/lista odwiedzonych zamiast jednego slotu; TRWAŁY cel
+   (`currentTargetCityId`) zamiast przeliczania najbliższego co turę; zapis pamięci dopiero przy
+   `hexDistance<=1` od miasta (usuwa też „oczyszczanie z 25 heksów" i zatruwanie podczas
+   pościgu). Kryterium: test musi symulować ≥6 kolejnych decyzji z aktualizacją pozycji i
+   asercjonować MONOTONICZNY spadek dystansu, w wariancie z drugim miastem bronionym I
+   niebronionym.
+4. Korekta kanonu (nie kod): komentarz przy punkcie 4 błędnie twierdzi że guard chroni „bonus
+   odbicie po buncie" — nie chroni (łańcuch `-99→gracz` przerwany przez pośredniego właściciela
+   `-1`). Sprostować albo osobno zapytać właściciela czy 10-turowy bonus ma faktycznie
+   przysługiwać po odbiciu OD barbarzyńców (nowe ABC, nie zakładać).
