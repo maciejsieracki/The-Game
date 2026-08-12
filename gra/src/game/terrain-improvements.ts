@@ -183,7 +183,12 @@ export function territoryResourceYieldForImprovement(
     case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_zelaza': return { resourceKey: 'ruda_zelaza', amount: territoryYieldAmountForKey(norm) };
     case 'warzelnia_soli':  return { resourceKey: 'sol',    amount: territoryYieldAmountForKey(norm) };
-    case 'stadnina':        return { resourceKey: 'kon',    amount: 1 }; // PYTANIE-84-B3
+    // R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 (Maciej 2026-08-12): stawka teraz czytana z JSON
+    // (surowiec_ilosc_tura), tak jak pozostale ulepszenia produkcyjne — wczesniej byla
+    // zahardkodowana na 1 i ignorowala korekty balansu w danych.
+    // EN: rate now read from JSON (surowiec_ilosc_tura), like the other production
+    // improvements — previously hardcoded to 1 and ignoring data balance corrections.
+    case 'stadnina':        return { resourceKey: 'kon',    amount: territoryYieldAmountForKey(norm) }; // PYTANIE-84-B3
     case 'kopalnia_zlota':  return { resourceKey: 'zloto',  amount: 1 }; // PYTANIE-84-B4
     default: return null;
   }

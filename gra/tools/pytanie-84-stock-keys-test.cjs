@@ -47,8 +47,8 @@ ok(solYield?.resourceKey === 'sol' && solYield.amount === 10,
   `warzelnia_soli → sol 10/t (ma: ${JSON.stringify(solYield)})`);
 
 const konYield = M.territoryResourceYieldForImprovement('stadnina');
-ok(konYield?.resourceKey === 'kon' && konYield.amount === 1,
-  `stadnina → kon 1/t (ma: ${JSON.stringify(konYield)})`);
+ok(konYield?.resourceKey === 'kon' && konYield.amount === 5,
+  `stadnina → kon 5/t (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta 2026-08-12; ma: ${JSON.stringify(konYield)})`);
 
 const zlotoYield = M.territoryResourceYieldForImprovement('kopalnia_zlota');
 ok(zlotoYield?.resourceKey === 'zloto' && zlotoYield.amount === 1,
