@@ -15722,3 +15722,9 @@ temat). `tsc` 0 błędów, `idb-storage-migration` 25/25, `idb-b1b2b3` 20/20, `l
 **ZAMKNIĘTE** (commit `2b84da16`). Temat `P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE` (810d5917) w pełni
 domknięty — F1/F2 (Evaluator PASS-WITH-NOTES) + F-1 fantom (ta naprawa); F-2/F-3 pozostają
 świadomie nieodebrane, niepilne noty UX.
+
+## Uzupełnienie puli do 8: dispatch Evaluatora dla 7b02eb2d
+
+Kolejny slot uzupełniony Evaluatorem dla `7b02eb2d` (nagłówek "Dyplomacja" dla notatek EOT
+gracz↔AI). Trzeci z 5 pozostałych merge'owanych, nigdy-nie-ewaluowanych commitów audytu #3
+(7b02eb2d, fc17538f, 3dc9d650, ecbddda8, 89c16ec1).
