@@ -15945,3 +15945,25 @@ rozwiązania (main.ts:4190, przemarsz graniczny — świadomie brak drugiego wpi
 call site'ów (propozycja przychodząca), nie dotyczy "wygasła propozycja" (wpis usuwany z tablicy).
 
 **STATUS: dispatch naprawy N1+N2+N3 w toku** (drobny zakres, ten sam plik).
+
+## Dispatch tury: 8 równoległych zleceń (3 drobne naprawy + weryfikacja + 4 nowe ewaluacje)
+
+Wszystkie poprzednie zlecenia zamknięte, worktree zwolnione (23GB dostępne). Nowa pula 8:
+1. **fix-techprereq-testquality** — łatka N2 (dowód rekurencji) + rozszerzenie sekcji [5] o 7
+   budynków pośrednich (N1), temat 26b684af.
+2. **fix-eot-diplo-n1n2n3** — eksport `DIPLOMACY_MSG_PREFIX` + użycie w 4 miejscach main.ts (N1),
+   test negatywny na `includes` (N2), komentarz o teoretycznej kolizji (N3), temat 7b02eb2d.
+3. **fix-barb-round7-docs** — sprostowanie 2 fałszywych/przeuogólnionych zdań w komentarzach,
+   rejestracja nowego łagodnego edge case'u (bronione miasto nieosiągalne), 2 nowe testy
+   regresyjne (M2b/M3), uzupełnienie tabeli 12 reżimów — WYŁĄCZNIE dokumentacja+testy, zero zmian
+   logiki, runda 6 barb-city.
+4. **eval-cluster-fix-verify** — druga runda recenzji naprawy M7.1/M10.3/2h klastra miast
+   (weryfikacja czy refaktor do czystych funkcji faktycznie zamyka ucieczki, nie tylko przenosi
+   problem).
+5-8. **eval-fc17538f / eval-3dc9d650 / eval-ecbddda8 / eval-89c16ec1** — pierwsza realna recenzja
+   4 ostatnich nigdy-nie-ewaluowanych commitów z audytu #3 (duplikat w koszyku PW, rozbicie panelu
+   Szczęście/Prawo, produkcja terenowa+fix stadniny, tabela Miast filtr+SUROWCE+podsumowanie).
+
+Po tej turze WSZYSTKIE 11 commitów z audytu #3 (3a3b11da, 26b684af, 7b02eb2d, fc17538f, 3dc9d650,
+ecbddda8, 89c16ec1 + wcześniej 0651d65e, ad4b1e8d, fcd31209, 810d5917) będą miały pierwszą
+niezależną recenzję.
