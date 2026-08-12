@@ -2750,24 +2750,6 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-build-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-build-main > .panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-build-main .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;}
-.civ-v-build-owned-bar{flex:1 1 auto;padding-top:0.28em;border-top:1px solid rgba(212,175,90,0.28);min-height:10em;max-height:68%;display:flex;flex-direction:column;}
-.civ-v-build-owned-bar > .panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:0.32em 0.36em 0.28em!important;}
-.civ-v-build-owned-bar .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:18em;overflow-y:auto;}
-.civ-v-build-owned-bar .ptitle{font-size:0.82em;margin-bottom:0.22em;letter-spacing:.06em;padding:0;}
-.civ-v-build-owned-bar .muted{font-size:0.82em;min-height:4.5em;padding:0.55em 0.12em;line-height:1.45;}
-.civ-v-build-owned-bar .bld-owned-title-upkeep{font-weight:600;color:#c8a878;margin-left:0.2em;font-size:0.95em;}
-.civ-v-build-owned-bar .bld-owned-summary{margin:0 0 0.28em;padding:0.28em 0.36em;font-size:0.78em;}
-.civ-v-build-owned-bar .bld-group{margin-bottom:0.18em;}
-.civ-v-build-owned-bar .bld-group-h{font-size:0.8em;padding:0.12em 0.28em;margin-bottom:0.1em;line-height:1.35;}
-.civ-v-build-owned-bar .bld-group>.bld-owned-row{margin-left:0.12em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-row--tight{padding:0.18em 0.32em;margin-bottom:0.1em;border-radius:4px;gap:0.18em 0.36em;min-height:2.7em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-hd{gap:0.28em;max-width:46%;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-hd .bi{width:1.25em;height:1.25em;font-size:1em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-name{font-size:0.82em;max-width:9em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-tail{font-size:0.76em;gap:0.28em 0.36em;line-height:1.25;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-chip{gap:0.1em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-sep{opacity:.4;font-size:0.95em;margin:0 0.1em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-row .bld-upg{font-size:0.76em;padding:0.06em 0.28em;}
 .bld-owned-compact-mount .bld-owned-row--tight{padding:0.1em 0.22em;margin-bottom:0.06em;border-radius:4px;gap:0.12em 0.28em;min-height:1.35em;}
 .bld-owned-compact-mount .bld-owned-hd{gap:0.18em;max-width:46%;}
 .bld-owned-compact-mount .bld-owned-hd .bi{width:1em;height:1em;font-size:0.85em;}
@@ -8315,6 +8297,17 @@ function renderOwnedBuildingsBar(mount: HTMLElement, city: City, data: GameData 
   mount.appendChild(bar);
 }
 
+/**
+ * Panel „Dostępne do budowy" (lewa kolumna, zakładka Budowa) — CAŁĄ wysokość
+ * lewej kolumny, bez dolnego paska „Budynki". Sekcja wybudowanych budynków
+ * przeniesiona do `renderBuildingsOwnedRightPanel` (prawa kolumna) —
+ * P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA (Maciej 2026-08-12, rekomendacja
+ * B): obie listy dostają pełną niezależną wysokość zamiast dzielić jedną wąską
+ * kolumnę (dawniej pasek „Budynki" miał max-height 68% i wymagał mocnego
+ * przewijania). / EN: "Available to build" now fills the whole left column —
+ * the built-buildings section moved to the right column so both lists get
+ * full independent height instead of splitting one narrow column.
+ */
 function renderBuildSplitPanel(
   mount: HTMLElement,
   city: City,
@@ -8332,10 +8325,40 @@ function renderBuildSplitPanel(
     { scrollFill: true },
   );
   pane.appendChild(mainCol);
-  const barCol = el('div', 'civ-v-build-owned-bar');
-  renderBuildingsOwned(appendPanel(barCol, 'cs-owned'), city, data, { scrollFill: true, compact: true });
-  pane.appendChild(barCol);
   mount.appendChild(pane);
+}
+
+/**
+ * Sekcja „Budynki w mieście (N)" w PRAWEJ kolumnie panelu miasta — widoczna
+ * gdy aktywna zakładka to Budowa (produkcja budynków). Prawa kolumna
+ * (`.civ-ux-right`) jest tym samym slotem co pozostałe zakładki miasta
+ * (Spichlerz/Handel/Praca/Porządek/Zdrowie/Kultura/Religia) — dziś pusta
+ * (ukryta) przy zakładce Budowa, więc nie ma tu kolizji z żadnym innym
+ * panelem: reużywamy istniejący, już zarezerwowany slot, nie tworzymy nowej
+ * kolumny. Tryb PEŁNY (compact:false) — bogatszy niż dawny pasek kompaktowy
+ * (odznaka poziomu budynku widoczna też przy L1, gdy budynek ma wyższe
+ * poziomy; podsumowanie łącznego utrzymania). / EN: "Buildings in city"
+ * section in the RIGHT column, shown while the Budowa tab is active — reuses
+ * the existing right-column slot (already empty/hidden for this tab), so no
+ * new column and no collision with other city-panel tabs. Full (non-compact)
+ * mode is a superset of the old compact bar's info.
+ */
+function renderBuildingsOwnedRightPanel(
+  mount: HTMLElement,
+  city: City,
+  data: GameData | null,
+): void {
+  mount.innerHTML = '';
+  withW4TabCard(mount, 'cs-owned-right', city, body => {
+    // Bez scrollFill/visibleRows celowo — `target` w renderBuildingsOwned staje
+    // się wtedy `mount` (bez wewnętrznego list-scroll o ograniczonej wysokości),
+    // więc JEDYNY scroll to ten z `.civ-w4-tab-body--scroll` (cała karta), a nie
+    // podwójny/zagnieżdżony pasek. / EN: intentionally no scrollFill/visibleRows
+    // — this makes renderBuildingsOwned append groups straight into `mount`
+    // (no capped-height inner list-scroll), so the card's own body scrollbar is
+    // the single scroll region instead of a nested one.
+    renderBuildingsOwned(body, city, data);
+  }, { scrollable: true });
 }
 
 function appendGarrisonUnitChip(parent: HTMLElement, u: GarrisonUnit): void {
@@ -10641,7 +10664,16 @@ export function paintCityPanelSections(
   const mainEl = el('div', 'civ-v-right-main');
   mainEl.id = 'cs-right-main';
   rightScope.appendChild(mainEl);
-  if (isProductionPanelTab(activeCityPanelTab)) {
+  if (activeCityPanelTab === 'budowa') {
+    // P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA (Maciej 2026-08-12): zakładka
+    // Budowa reużywa prawą kolumnę (dziś pustą przy tej zakładce) pod listę
+    // wybudowanych budynków, żeby lewa kolumna mogła oddać "Dostępne do budowy"
+    // pełną wysokość. / EN: Budowa tab reuses the right column (empty today for
+    // this tab) for the built-buildings list, freeing full height on the left.
+    mainEl.style.display = '';
+    mainEl.style.flex = '1 1 auto';
+    renderBuildingsOwnedRightPanel(mainEl, city, data);
+  } else if (isProductionPanelTab(activeCityPanelTab)) {
     mainEl.style.display = 'none';
     mainEl.innerHTML = '';
   } else {
