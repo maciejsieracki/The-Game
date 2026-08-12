@@ -14549,3 +14549,25 @@ wypisane, wylistowane od ostatniej fali." — czyli DOKŁADNIE definicja jaką k
 ZAWIESZONA (nie usunięta z pamięci projektu) do czasu aż właściciel znajdzie dla niej inne
 zastosowanie.** CLAUDE.md §10 zaktualizowane — hasło `raport` wraca do 5 kategorii. Zero zmian w
 kodzie gry, czysto proceduralne.
+
+## ⛔ BŁĄD WŁASNY: P-ARMIA-CHIP-PELNE-JEDNOSTKI zarejestrowany jako "ZAMKNIĘTY" bez scalenia diffu
+
+Właściciel poprosił o sprawdzenie czy kategorie 1-5 wymagają działania — przy tej okazji własna
+weryfikacja wykryła: w batchu kategorii 4 (`0d320e6c`) zarejestrowałem P-ARMIA-CHIP-PELNE-JEDNOSTKI
+jako "TEMAT ZAMKNIĘTY, Evaluator: PASS-WITH-NOTES", opisując że Operator dopisał do
+`gra/tools/hud-armia-chip-jednostki-test.cjs` sekcję F (+87 linii, +8 asercji, dowód mutacyjny
+spójności 4 miejsc) i że Evaluator to zweryfikował — ale **ten commit (`0d320e6c`) zawiera
+WYŁĄCZNIE zmianę rejestru, zero kodu**. Worktree `eval-pool-3` z faktyczną sekcją F został
+usunięty PRZED scaleniem diffu do głównego drzewa — pomyłka wynikła z potraktowania tego tematu
+identycznie jak równoległy P-MOC-BALANS-WAGI (gdzie Operator FAKTYCZNIE nic nie zmienił, bo
+wszystko już było zaimplementowane) — dla armia-chip było DO scalenia, a nie zostało. Weryfikacja:
+`gra/tools/hud-armia-chip-jednostki-test.cjs` w drzewie dziś ma 353 linie, zero wystąpień "Sekcja
+F" — potwierdzone bezpośrednio. Dowód mutacyjny, który Evaluator faktycznie recenzował i za który
+dał PASS-WITH-NOTES, dziś fizycznie nie istnieje w repo. **Ten sam typ błędu co C-042
+("rejestr zamknięcia i faktyczny deploy/merge to dwa różne stany"), tym razem w drugą stronę —
+rejestr twierdzi że coś jest zamknięte, kod tego nie potwierdza.**
+
+**STATUS: dispatch odtworzenia sekcji F (Operator+Evaluator od nowa, oryginalny diff nie do
+odzyskania — worktree usunięty) w toku, razem z naprawą UX-defektu scroll-reset znalezionego przez
+Evaluatora P-MOC-BALANS-WAGI (kliknięcie przełącznika trybu widoku Rankingu Mocy przewija panel na
+początek — `empireDetailPanel.ts`, `bodyEl.innerHTML=body` bez zachowania `scrollTop`).
