@@ -141,10 +141,30 @@ export function collapseToMergedMesh<T extends THREE.Object3D>(group: T): T {
  * (collapse failed / empty group) this deliberately does nothing — children
  * may be shared singleton geometries (see file header comment); disposing
  * them would break every other place still using them.
+ *
+ * ZAKRES TWIERDZENIA: sam wyciek jest architektonicznie pewny (bez dispose()
+ * gl.deleteBuffer nigdy nie leci, a GC JS buforów GPU nie zwalnia). Natomiast
+ * to, że TŁUMACZY zgłoszone spowolnienie po ~60 turach, jest HIPOTEZĄ —
+ * niezweryfikowaną pomiarem; do potwierdzenia licznikami `?perfDebug=1`.
+ * / EN: SCOPE OF THE CLAIM: the leak itself is architecturally certain (without
+ * dispose() gl.deleteBuffer never runs and JS GC does not free GPU buffers).
+ * That it EXPLAINS the reported slowdown after ~60 turns is a HYPOTHESIS —
+ * not verified by measurement; to be confirmed via the `?perfDebug=1` counters.
  */
 export function disposeMergedDecor(group: THREE.Object3D): void {
   if (group.userData?.[MERGED_DECOR_FLAG] !== true) return;
   for (const child of group.children) {
+    // Dysponuj WYŁĄCZNIE mesh wyprodukowany przez collapseToMergedMesh — on jako
+    // jedyny nosi własną flagę (ustawianą w tej samej funkcji tuż przed group.add).
+    // Dziecko dołożone do grupy PO collapse może być współdzielonym singletonem,
+    // więc je pomijamy. Dziś żadna ścieżka produkcyjna nic po collapse nie dodaje —
+    // to zabezpieczenie pod przyszłe zmiany, bez wpływu na dzisiejsze zachowanie.
+    // / EN: dispose ONLY the mesh produced by collapseToMergedMesh — it is the sole
+    // carrier of its own flag (set in that same function right before group.add).
+    // A child appended to the group AFTER the collapse may be a shared singleton,
+    // so it is skipped. No production path adds anything post-collapse today — this
+    // guards future changes and does not alter current behaviour.
+    if (child.userData?.[MERGED_DECOR_FLAG] !== true) continue;
     const mesh = child as THREE.Mesh;
     if (!mesh.isMesh) continue;
     mesh.geometry?.dispose();

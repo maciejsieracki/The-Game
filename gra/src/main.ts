@@ -2359,7 +2359,15 @@ async function boot(): Promise<void> {
         wanted.add(hexKey);
         const existing = villageMeshes.get(hexKey);
         if (existing && existing.parent === scene) continue;
-        if (existing) existing.parent?.remove(existing); // stara scena — odbuduj w bieżącej
+        // Porzucana grupa (stara scena — odbuduj w bieżącej): zwolnij jej zmergowaną
+        // geometrię/materiał, bo villageMeshes.set niżej nadpisze do niej referencję.
+        // Bezpieczne z tego samego powodu co w clearResourceOverlays — grupa przeszła
+        // collapseToMergedMesh, więc dispose dotyka wyłącznie wyniku scalenia.
+        // / EN: discarded group (old scene — rebuild in the current one): free its merged
+        // geometry/material, since villageMeshes.set below overwrites the reference to it.
+        // Safe for the same reason as in clearResourceOverlays — the group went through
+        // collapseToMergedMesh, so dispose touches the merge result only.
+        if (existing) { existing.parent?.remove(existing); disposeMergedDecor(existing); }
         const g = buildWioska();
         collapseToMergedMesh(g); // FPS lewar 1: ~20 boxów → 1 mesh
         const wp = axialToWorld(q, r, HEX_R);
@@ -2373,6 +2381,7 @@ async function boot(): Promise<void> {
       for (const [hexKey, g] of villageMeshes) {
         if (wanted.has(hexKey)) continue;
         g.parent?.remove(g);
+        disposeMergedDecor(g); // wioska zniknęła z mapy — grupa nigdzie już nie wraca
         villageMeshes.delete(hexKey);
         changed = true;
       }
@@ -2386,7 +2395,7 @@ async function boot(): Promise<void> {
         wanted.add(camp.id);
         const existing = campMeshes.get(camp.id);
         if (existing && existing.parent === scene) continue;
-        if (existing) existing.parent?.remove(existing);
+        if (existing) { existing.parent?.remove(existing); disposeMergedDecor(existing); } // jw. syncVillageMeshes / EN: as in syncVillageMeshes
         const g = buildObozBarbarzyncow(); // default BARB_FACTION_COLOR = 0xff4444 (decyzja B)
         collapseToMergedMesh(g);
         const wp = axialToWorld(camp.q, camp.r, HEX_R);
@@ -2400,6 +2409,7 @@ async function boot(): Promise<void> {
       for (const [id, g] of campMeshes) {
         if (wanted.has(id)) continue;
         g.parent?.remove(g);
+        disposeMergedDecor(g); // obóz zlikwidowany — grupa nigdzie już nie wraca
         campMeshes.delete(id);
         changed = true;
       }

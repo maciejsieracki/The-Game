@@ -13522,3 +13522,102 @@ Registrowane zbiorczo, żeby nie plodzic 5 osobnych naglowkow dla tego samego zd
   POZA zakresem tej rundy — do osobnego zgloszenia.
 
 **STATUS: wszystkie 5 W TOKU (dispatch tej samej tury).**
+
+**Evaluator `a2f4d535` (eval-pool-3) ZAKOŃCZONY: PASS-WITH-NOTES.** Obie szczeliny (5+6)
+potwierdzone domknięte WŁASNĄ, niezależną mutacją Evaluatora (nie tylko wewnętrzną mutacją
+testu) — MUT-A (usunięcie obu guardów) łapane czerwono (3 fail), MUT-C (błąd wprowadzony od
+strony `econSliderVisibilityForOnlyEconId`) też łapany (20+ fail), stary test też łapie ten sam
+regres (6/8 fail). Nota „Zamożność nie jest zakładką" potwierdzona strukturalnie (brak ścieżki
+dającej `onlyEconId==='zamoznosc'`). 3 NIEBLOKUJĄCE uwagi: (1) asercje kruche składniowo —
+przeformatowanie semantycznie identycznego kodu daje fałszywe czerwone (kierunek bezpieczny, ale
+przyszły agent może rozluźnić regex zamiast poprawić kotwicę — do rozważenia dopisanie ostrzeżenia
+w nagłówku testu); (2) mutacja testu pisze bezpośrednio do `empireDetailPanel.ts` z przywróceniem
+w `finally` — nieodporne na SIGINT/równoległe bramki na tym samym pliku; (3) `mutantFailed` łapie
+KAŻDY niezerowy exit subprocesu, nie tylko właściwą przyczynę. Żadna nie blokuje — commit
+przyjęty bez dalszych zmian, uwagi udokumentowane na przyszłość.
+
+**Evaluator `4e62c4f6` (eval-pool-1) ZAKOŃCZONY: PASS-WITH-NOTES.** Naprawa potwierdzona
+wykonaniem (jsdom-dowód: prawa kolumna→'right', lewa→'left', odpięty mount→fallback 'left',
+brak false-positive na `.civ-ux-right-icon-rail`). Mutacja niezależna (usunięcie `detailSide`
+z sygnatury) złapana przez `tsc` (2 błędy) I nowy test. Uwagi nieblokujące: (1) rozwiązanie
+szersze niż potrzeba — samo skasowanie 3 literałów by wystarczyło, zamiast tego doszedł
+parametr+duplikat logiki (w pliku już są `resolveDetailSideHint`/`resolveDockSide` robiące to
+samo); (2) pre-istniejąca, POZA zasięgiem luka: call site ~7061 (karta szczegółów) nadal ma
+zahardkodowane 'left' dla zagnieżdżonych podkart — ta sama klasa błędu, inny zasięg. Przyjęty
+bez zmian.
+
+**Evaluator `26707dcf` (eval-pool-4) ZAKOŃCZONY: PASS-WITH-NOTES — 2 elementy do domknięcia
+przed deployem.** Matematyka i spójność HUD↔silnik zweryfikowane wykonaniem (własny skrypt,
+~60 asercji, BAD=0), 3 czerwone testy potwierdzone identyczne na commicie rodzica (nie
+regresja), interpretacja addytywna „+10%/epokę" NIE wymaga ABC (różnica = 0 po `Math.floor`
+przy dzisiejszych 3 epokach, rozjazd zacząłby się dopiero od epoki 6).
+- **(a) Realny defekt, DO OPERATORA (nie ABC)**: 3 wywołania `ownerResourceCap(...)` w
+  `main.ts` (battle-loot ~L20851, trade-flow ~L22932, drewno-wyrąb ~L23257) bez `era` →
+  przy era≥2 i zapasie >10000 danego typu: łup z bitwy PRZEPADA W CAŁOŚCI, trade-flow
+  NISZCZY surowiec nadawcy bez dostarczenia odbiorcy, wyrąb lasu nie daje nic. To NIE jest
+  „konserwatywne niedoszacowanie" (jak napisał Operator) — to cicha utrata zasobów gracza.
+  Naprawa zweryfikowana jako trywialna (dopisanie `empireEpochForOwner(...)` jako 6. arg,
+  `tsc` zielony) + poprawka regexu w `surow-civ-storage-test.cjs:399` (literalne 5-arg
+  wywołanie).
+- **(b) DO ABC, i to z jawnym flagowaniem podważenia wcześniejszej decyzji (§1a)**:
+  spłaszczenie różnicowania trudności w `econ-params.json` usunęło `normal=3` dla Cegielni
+  (jawna decyzja **`C-SUROW-CEGLA=A`, Maciej 2026-07-24**) oraz zmieniło `hard=0` (Odlewnia
+  brązu/żelaza/wielka — produkcja NIEMOŻLIWA na hard) na `hard=5` dla wszystkich 3 odlewni —
+  to zniesienie istniejącego mechanizmu trudności, nie efekt uboczny podania jednej liczby.
+  Właściciel podał jedną liczbę/budynek bez różnicowania trudności — Operator ustawił flat
+  na wszystkich trudnościach zamiast pytać. **NIE deployować tego elementu bez ABC.**
+- (c) `magazyn_bonus_surowce_na_budynek` pozostał na 100 (interpretacja "100 i 150" =
+  SPICHLERZ_EMPIRE_CAP_I/II, zweryfikowana niezależnie przez Evaluatora jako poprawna) —
+  dokleić jednym zdaniem do ABC z (b), nie osobny wątek.
+
+## ABC OCZEKUJĄCE (zarejestrowane po znalezieniu przy pracy nad innym wątkiem, §2 —
+## NIE zadawane w czacie, dopóki właściciel nie da sygnału do zmiany tematu)
+
+### R-KONWERTERY-TRUDNOSC-SPLASZCZONA-Q1
+**Sytuacja**: `P-KONWERTERY-PRZEPUSTOWOSC-Q1` (26707dcf) ustawiło Cegielnia/Garncarnia/3×
+Odlewnia na WARTOŚĆ PŁASKĄ (identyczną easy/normal/hard), kasując wcześniejsze różnicowanie —
+w tym `normal=3` dla Cegielni, będące jawną decyzją `C-SUROW-CEGLA=A` (Maciej 2026-07-24), oraz
+`hard=0` dla wszystkich 3 Odlewni (dziś: produkcja Brązu/Żelaza/Stali NIEMOŻLIWA na hard — po
+zmianie: możliwa, 5/turę, tak samo jak easy/normal).
+**Cel pytania**: potwierdzić czy spłaszczenie było zamierzone, czy właściciel chce zachować
+różnicowanie trudności wokół nowych, wyższych baz.
+**Dlaczego teraz**: temat gotowy do zamknięcia poza tym jednym punktem — element (a) (era-param)
+naprawiany równolegle, cała reszta PASS-WITH-NOTES.
+**A.** Zachować płaskie wartości (10/10/10, 5/5/5) — najprostsze, zgodne z dosłownym brzmieniem
+   cytatu właściciela (jedna liczba/budynek). Przeciw: cofa `C-SUROW-CEGLA=A` i usuwa mechanizm
+   trudności dla 3 Odlewni bez wyraźnej decyzji o tym.
+**B.** Odtworzyć proporcjonalny spread wokół nowych baz (np. Cegielnia 12/10/8 zamiast 4/3/2;
+   Odlewnie 6/5/4 zamiast 2/1/0) — zachowuje mechanizm trudności. Przeciw: właściciel może
+   rzeczywiście chcieć płasko (brak wzmianki o trudności w jego cytacie).
+**C.** Zachować `hard=0` dla Odlewni (przywrócić „na hard produkcja niemożliwa"), ale spłaszczyć
+   pozostałe. Przeciw: niespójne, arbitralne.
+**Rekomendacja**: B — nie zgaduj przy niejednoznaczności (§6), a to bezpośrednio podważa
+udokumentowaną decyzję.
+**STATUS: OTWARTE, NIE ZADAWANE w czacie — poza aktywnym wątkiem (barbarzyńcy). Nie deployować
+`26707dcf`/econ-params.json części Cegielnia/Garncarnia/Odlewnie do ROBOCZA, dopóki nieodpowiedziane
+(reszta commitu — magazyn/Spichlerz część — nie jest tym dotknięta i może iść).**
+
+## Batch dispatch 2026-08-12 (kontynuacja): naprawa era-param (26707dcf pkt a) + domknięcie
+## priorytetu 1 z Evaluatora 3b851610 (tekst "+0" w czerwonym wierszu)
+
+- **Operator (worktree ręczny, Sonnet 5)**: (1) dopisać `empireEpochForOwner(...)` jako 6. arg
+  do 3 wywołań `ownerResourceCap` w `main.ts` (battle-loot/trade-flow/drewno-wyrąb) + poprawić
+  regex w `surow-civ-storage-test.cjs:399`; (2) `cityPanel.ts` ok. linii 4059 — sprząc znak
+  („+"/brak) z `isNeg` zamiast z surowym `l.value >= 0`, żeby czerwony wiersz przy `-0` nie
+  pokazywał mylącego „+0".
+**STATUS: DISPATCHED.**
+
+## e702d982 runda 2 — SCALONA (GPU dispose, Opus 5, worktree fix-gpu-dispose-v2)
+
+Wykonane dokładnie wg rekomendacji Evaluatora rundy 1 (`fail-e702d982.txt`): (1)
+`merge-decor-no-regress-test.cjs` rozszerzony o `disposeMergedDecor` — 12 nowych asercji (D1-D6),
+D6 na realnym `buildZlozeKonie` (zero dispose na `geoNH*`); (2) 4 brakujące podpięcia w
+`syncVillageMeshes`/`syncCampMeshes` (`main.ts`, linie przesunięte +12 vs raport — zweryfikowane
+zewem); (3) zamknięta luka T5 (`if (child.userData?.[MERGED_DECOR_FLAG] !== true) continue;`).
+Operator odkrył, że T5 czyni część starych asercji redundantną (obie warstwy chronią ten sam
+niezmiennik) — dołożył D4 celującą dokładnie w różnicę (merged mesh przepięty do obcej grupy).
+Dowód mutacyjny x2: usunięcie strażnika grupy → czerwono (19/1), usunięcie strażnika T5 → czerwono
+(19/1, inny komunikat). `styledOverlays` w `scene.ts` świadomie NIETKNIĘTY (poza zakresem, osobny
+temat dla przyszłego Operatora Opus 5).
+Bramki: `tsc` 0, `logic-test` 213/213, `merge-decor-no-regress-test` **20/20** (było 8/8).
+**Scalone przez orkiestratora, czeka na Evaluatora.**
