@@ -15378,3 +15378,44 @@ kontaminacji plików własnego zakresu każdego evaluatora), ale wymaga czujnoś
 dispatch'e powinny jawnie weryfikować `pwd` zgadza się z oczekiwaną ścieżką, nie tylko `git log`.
 Posprzątane (`.eval-stubs/` usunięte z `eval-audit3-8`).
 
+
+## Domyślny tryb pól miasta (8a3a3d29) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: domyślny tryb "Żywność" potwierdzony na własnym harnessie (37 asercji, ścieżka
+zakładania miasta odtworzona identycznie jak `main.ts`), parytet gracz/AI realny (jedna funkcja
+bez rozgałęzienia po ownerId, sprawdzone dla gracza/AI-preseed/AI-nie-preseed). Stare zapisy
+bezpieczne (obie gałęzie migracji sprawdzone). 7/7 mutacji złapanych. **ZAMKNIĘTE.**
+
+Noty nieblokujące, zarejestrowane cicho: (N1) nowy domyślny działa tylko w NOWEJ grze — miasto
+założone we WCZYTANEJ istniejącej rozgrywce dziedziczy zapisaną globalną, nie "Żywność" (poprawna
+konsekwencja wcześniejszej decyzji R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A, ale komunikat
+commita brzmi bezwarunkowo); (N2) twierdzenie commita "jedyne miejsce, wszystkie odczyty to
+fallback na stałą" jest nieprawdziwe — 2 miejsca (`auto-manage.ts:319`, `cityPanel.ts:8975`) mają
+wpisany literał `'zrownowazone'` zamiast stałej; dziś nieosiągalne (wszystkie 9 miejsc tworzenia
+miasta ustawiają pole), ale to mina na przyszłość.
+
+## ⛔ ESKALACJA: kolizja worktree eval-audit3-8 — potwierdzona przez 3 NIEZALEŻNE raporty
+
+Trzeci z rzędu Evaluator (po `5448eb51` i teraz `8a3a3d29`) zgłasza że pracował w `eval-audit3-8`
+mimo jawnego polecenia `cd` do INNEGO, przypisanego mu katalogu (`eval-audit2-4`). Ten evaluator
+widział ślad JESZCZE JEDNEGO procesu w tym samym katalogu — skrypt robiący
+`git checkout -- gra/src/game/diplomacy-acceptance-points.ts`, czyli plik z zakresu tematu
+`76514613` (przypisanego do `eval-audit2-1`). **To oznacza że co najmniej 4 z 8 dispatchowanych
+Evaluatorów (a79bae29, ad4b1e8d, 5448eb51, 8a3a3d29) oraz prawdopodobnie piąty (76514613) — mimo
+jawnych, różnych ścieżek `cd` w każdym prompcie — zbiegły się w JEDNYM współdzielonym katalogu
+`eval-audit3-8`**, zamiast pracować w osobnych kopiach (złamanie zasady §4a).
+
+**Zweryfikowany skutek faktyczny: dotychczas NIESZKODLIWY.** Każdy z 3 evaluatorów, którzy to
+zgłosili, samodzielnie potwierdził że pliki jego WŁASNEGO zakresu pozostały czyste na koniec
+(żaden nie mutował tych samych plików co inny w tym samym momencie — różne tematy, różne pliki
+źródłowe), a finalne bramki uruchomili ponownie na zweryfikowanym, nietkniętym stanie. Dlatego
+werdykty (`a79bae29=FAIL`, `ad4b1e8d`/`5448eb51`/`8a3a3d29`=PASS-WITH-NOTES) pozostają zaufane.
+
+**Przyczyna nieustalona.** Nie potwierdzono czy to błąd modelu przy wykonywaniu jawnie podanego
+`cd` w KROK 0, czy inny mechanizm. Do rozpoznania w przyszłości (np. wymagać w prompcie jawnej
+weryfikacji `pwd` PRZED jakąkolwiek pracą, nie tylko `git log`, i przerwać jeśli się nie zgadza).
+
+**Działanie:** pozostałe 3 wciąż aktywne dispatch'e z tej samej ósemki (`1208eb6c`, `0651d65e`,
+`810d5917`) oraz nowo dispatchowany `fcd31209` będą zweryfikowane pod tym kątem przy odbiorze —
+jeśli zgłoszą tę samą kolizję, traktować jako potwierdzenie wzorca systemowego, nie przypadku.
+
