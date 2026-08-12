@@ -87,7 +87,7 @@ import {
   DJUNGLA_MATERIAL, LICZBA_WARIANTOW_DJUNGLI,
 } from './djungla-modele';
 import { setImprovementDetailQuality } from './robloxImprovements';
-import { collapseToMergedMesh, isAlreadyMergedDecor } from './mergeDecor';
+import { collapseToMergedMesh, disposeMergedDecor, isAlreadyMergedDecor } from './mergeDecor';
 import {
   dekorLakaGeometria, dekorRowninaGeometria, dekorDlaHeksa, rotacjaDekoru,
   DEKOR_MATERIAL, DEKOR_LICZBA_WARIANTOW,
@@ -3049,6 +3049,23 @@ export async function buildScene(
     oceanGeo.dispose(); oceanMat.dispose();
     for (const g of frameGeos) g.dispose();
     frameMat.dispose();
+    // P-PERF-SPOWOLNIENIE-PO-60-TURACH: zmergowane grupy styledOverlays (las, dżungla,
+    // szczyty, plaże, wydmy, oazy — potencjalnie tysiące grup na mapę). Każda ciężka grupa
+    // dostała w pętli merge WŁASNĄ, zbudowaną od zera BufferGeometry + MeshLambertMaterial
+    // (buildMergedMesh), których nic poza nią nie używa — bez dispose() gl.deleteBuffer nigdy
+    // nie leci, a GC JS buforów GPU nie zwalnia, więc każde disposeScene() w tej samej sesji
+    // przeglądarki (nowa gra / wczytanie / regeneracja) zostawiał cały ten pool na karcie.
+    // Grupy lekkie (bez collapse) są bezpieczne: disposeMergedDecor bez MERGED_DECOR_FLAG to
+    // NO-OP, więc współdzielone singletony geometrii nie zostaną tknięte.
+    // / EN: merged styledOverlays groups (forest, jungle, peaks, beaches, dunes, oases —
+    // potentially thousands per map). Every heavy group got its OWN from-scratch
+    // BufferGeometry + MeshLambertMaterial in the merge pass (buildMergedMesh), used by
+    // nothing else — without dispose() gl.deleteBuffer never runs and JS GC does not free GPU
+    // buffers, so each disposeScene() in the same browser session (new game / load / regen)
+    // left that whole pool on the card. Light (non-collapsed) groups are safe:
+    // disposeMergedDecor without MERGED_DECOR_FLAG is a NO-OP, so shared singleton
+    // geometries are never touched.
+    for (const { group } of styledOverlays) disposeMergedDecor(group);
     if (ownRenderer) {
       renderer.dispose();
     }

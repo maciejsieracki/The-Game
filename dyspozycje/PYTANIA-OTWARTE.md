@@ -12459,6 +12459,22 @@ W epoce Brąz lista rekrutacji pokazuje WYŁĄCZNIE Zwiadowcę — reszta jednos
 wcześniejszej zasady projektu rekrutacja powinna obejmować też jednostki epoki niższej (Kamień)
 dostępne równolegle z Brązem. Możliwa regresja — do zbadania.
 
+**ROZSTRZYGNIĘTE 2026-08-12 (Explore + Evaluator, PASS-WITH-NOTES) — NIE regresja.** Filtr epoki
+(`production.ts:829`) jest poprawny i sumuje kaskadowo (Kamień+Brąz razem w epoce Brąz,
+zweryfikowane wykonaniem: 5 jednostek Kamienia + 9 Brązu = 14 razem). Zgłoszony objaw to
+złożenie DWÓCH niezwiązanych z epoką bramek: świeże miasto ma pusty magazyn państwa
+(`empireStockHas` wymaga >0 sztuk Drewna/Brązu) i brak Koszar — Zwiadowca to jedyna jednostka
+bez wymogu surowca, stąd jedyna widoczna. **To ten sam temat co
+`P-DREWNO-BRAMKA-RYZYKO-STARTU` (linia ~12606), z gotowym pytaniem ABC czekającym na literę
+właściciela** (A: zostaw jak jest / B: próg startowy Drewna-Brązu / C: darmowy „Tartak
+startowy") — **z flagą §1a: odpowiedź B lub C podważa wcześniejszą decyzję
+`BUG-BRAMKA-DREWNO-BRAK=A` (Maciej 2026-08-08)**. Nowy test regresyjny
+`gra/tools/epoka-merge-recruit-test.cjs` (7 asercji, zweryfikowany mutacyjnie 3x — filtr epoki
+zamieniony na „zastępuje" zamiast „sumuje", przeciek epoki w dół, wyłączona bramka drewna —
+wszystkie złapane czerwono) SCALONY. Zero zmian w kodzie produkcyjnym (naprawa objawu = wybór
+litery ABC, nie do zgadywania). **STATUS: zamknięte jako „nie regresja", czeka na tę samą
+literę co P-DREWNO-BRAMKA-RYZYKO-STARTU.**
+
 ### 8. P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU
 Po zaatakowaniu/zdobyciu obozu/chaty barbarzyńców węzeł NIE znika z mapy i dalej PRODUKUJE
 kolejnych barbarzyńców — nielogiczne, powinien zostać usunięty/wyłączony po zdobyciu.
@@ -14188,3 +14204,84 @@ geometria testowa, ten sam wniosek: zerowy postęp netto, nieskończone drganie.
    odbicie po buncie" — nie chroni (łańcuch `-99→gracz` przerwany przez pośredniego właściciela
    `-1`). Sprostować albo osobno zapytać właściciela czy 10-turowy bonus ma faktycznie
    przysługiwać po odbiciu OD barbarzyńców (nowe ABC, nie zakładać).
+
+**Evaluator A (3/3 jednomyślne): FAIL — potwierdza.** Punkty 1/2/4/5 zamknięte i NIE wymagają
+ponownej weryfikacji w rundzie 3 (pod warunkiem że runda 3 ich nie dotknie). **Kluczowe:
+własnym harnessem A/B względem commitu-rodzica POTWIERDZIŁ że wspólna naprawa freeze (punkt 2)
+realnie działa** — 0/10→10/10 komend na normal/hard w wielu konfiguracjach, w tym dokładnie tej
+z tematu obozów (3 miasta bez obrońców) — **NIE cofać tej naprawy w rundzie 3**. Ale punkt 3
+(„kolejne miasto") to NIE naprawiony freeze zastąpiony STABILNYM 2-CYKLEM (livelock) —
+niezależnie od geometrii testowej B: pamięć nadpisywana co turę bezwarunkowo → wykluczenie A
+odsłania B → wykluczenie B odsłania A → naprzemiennie w nieskończoność, **nawet na statycznej
+planszy bez udziału gracza** (D2: jedno niebronione miasto + JAKIEKOLWIEK inne miasto na mapie
+= wieczna oscylacja). Test Operatora (asercja 2b) przechodzi tylko dlatego, że woła funkcję
+2x na NIEZMIENIONEJ pozycji jednostki — trzecie wywołanie z zastosowanym ruchem odwraca kierunek.
+**Dodatkowa luka**: naprawa freeze (punkt 2) nie ma WŁASNEJ asercji blokującej w
+`barb-camp-destruction-test.cjs` — temat obozów może po cichu cofnąć fallback przy zielonych
+bramkach obozowych, mimo że to naprawa deklarowana jako wspólna.
+
+## RUNDA 3 (miasta barbarzyńców) — finalny zakres (A+B+C zgodne), dispatch w toku
+
+1. **[bloker, NIE cofać]** Naprawa freeze (punkt 2, fallback do pełnej listy) POTWIERDZONA przez
+   wszystkich 3 Evaluatorów jako działająca i wspólna z tematem obozów — zostawić nietkniętą.
+2. **[bloker]** Przeprojektować pamięć „kolejnego miasta" (punkt 3) żeby dawała POSTĘP, nie
+   2-cykl. Nie nadpisywać/kasować `recentlyClearedCityId` bezwarunkowo co turę — zapisywać
+   dopiero gdy jednostka realnie DOTRZE do miasta (`hexDistance<=1`, uzgadnia nazwę pola z
+   semantyką) ALBO trzymać zbiór odwiedzonych zamiast jednego slotu. Test: ≥6 kolejnych decyzji
+   z REALNIE stosowanym ruchem (nie 2 wywołania na zamrożonej pozycji), asercja na malejący
+   dystans / brak powtarzającej się pozycji, dla wariantu z drugim miastem BRONIONYM i
+   NIEBRONIONYM.
+3. **[bloker, zero pokrycia]** Wyciągnąć punkt 1 (`runCapitalCapturePlunder`) do czystych
+   funkcji — cofnięcie KAŻDEGO z 4 pod-guardów osobno musi dawać czerwono.
+4. **[bloker, zero pokrycia]** Asercje wykonawcze dla punktu 4 — `rebelPreviousOwnerId`
+   przeżywa capture barbarzyński, Prawo po podboju nadal działa dla gracz/AI.
+5. **[dodatkowe, z A]** Dołożyć asercję fallbacku (cofnięcie punktu 2) do
+   `barb-camp-destruction-test.cjs` — naprawa wspólna, temat obozów potrzebuje własnej blokady.
+6. Korekta komentarza przy punkcie 4 (nieprawdziwa korzyść `rebelPreviousOwnerId`).
+
+## Batch kategorii 4 (Workflow) — 4 tematy zamknięte
+
+**P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK — SCALONE, Evaluator: PASS-WITH-NOTES.** `scene.ts::dispose()`
+dostał pętlę `disposeMergedDecor(group)` po `styledOverlays` (1 linia + import) — jedyne
+pozostałe niezwolnione miejsce `collapseToMergedMesh` w całym `src/` jest teraz domknięte.
+Evaluator zweryfikował własnymi mutacjami (6, w tym 2 „legalny refaktor" wykrywające fałszywą
+czerwień na strażniku S3 — kierunek bezpieczny, kosmetyka do ew. rozluźnienia) + potwierdził
+lekturą kodu że merged geometria/materiał nigdy nie są współdzielone z singletonami (buduje się
+od zera per grupa) i że `setFog` nie podmienia materiału. **Nowe, potwierdzone (nie naprawiane
+teraz) odkrycie**: `buildScene` nie ma `try/finally` — wyjątek po fazie merge (main.ts
+`runBuildSceneWithOverlay`) porzuca częściowo zbudowaną scenę bez dispose. Osobny temat, render/**,
+Opus 5. Bramki: `tsc` 0, `logic-test` 213/213, `merge-decor-no-regress-test` **30/30** (było 20).
+
+**R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 5 pkt 2-3 — JUŻ ZAMKNIĘTE wcześniej (`df4085d4`+`13568179`),
+dyspozycja była nieaktualna.** Zero do scalenia. Evaluator znalazł 2 nowe, nieblokujące luki do
+osobnej rejestracji (nie teraz): (1) asercja H6 łapie BRAK wywołania `citizenUpkeepByOwner.set`,
+ale NIE łapie publikacji ZŁEJ wartości (mutacja podmieniająca werdykt na `pop=0` przechodzi
+wszystkie 106 asercji) — wymagałoby harnessu wykonującego tick silnika, nietrywialne; (2)
+komentarz przy asercji K2 opisuje mechanizm nieprawdziwie (ochronę faktycznie daje K1 nie K2 przy
+5 vs 5) — kosmetyka dokumentacji testu.
+
+**P-MAPGEN-PANGEA-COASTRATIO-PROG — POTWIERDZONE jako stary dług kalibracji (NIE regresja),
+NOWE ABC do właściciela.** Test czerwony od DNIA wprowadzenia progu (`6f96f082`, 2026-08-02,
+„Pangea bez obwarzanka") — zweryfikowane 2x niezależnie (Operator + Evaluator, checkout
+historyczny, wartości bit-identyczne). Rozkład na 17+17 (34 łącznie, dwie niezależne próbki
+seedów) potwierdza: próg 3.8 odrzuca 70-82% normalnych generacji. **Ale rekomendacja Operatora
+(obniżyć próg do 3.70-3.72) jest ZDYSKWALIFIKOWANA przez Evaluatora** — własna mutacja
+(morfologiczne domknięcie zatok, symulacja realnej degeneracji kształtu) pokazuje że przy progu
+3.70 PRZECHODZI nawet skrajna degeneracja; próg zamieniłby czerwoną-ale-fałszywą bramkę w
+zieloną-ale-ślepą. Dodatkowo: `bboxFill` (nie `coastRatio`) to metryka z realną siłą wykrywania
+(łapie domknięcie k≥4), wbrew opisowi Operatora „w normie z dużym zapasem" (zapas to tylko 1,6%).
+
+**NOWE ABC: R-MAPGEN-PANGEA-PROG-Q1** — sytuacja jw., 3 opcje: **A.** próg→3.72 (bramka zielona
+natychmiast, ale praktycznie pusta — ochronę kształtu przejmuje wyłącznie `bboxFill`). **B.**
+usunąć `coastRatio` z asercji, zostawić `bboxFill<0.87` jako jedyny, uczciwy strażnik kształtu.
+**C.** zachować 3.8 jako spec docelowy i zmienić GENERATOR żeby dawał bardziej postrzępione
+wybrzeże (realna praca — przesunięcie mediany o ~2,5 odchylenia standardowego). **Odblokowanie
+tymczasowe zaproponowane przez Evaluatora** (jeśli orkiestrator potrzebuje zielonej bramki przed
+odpowiedzią): zdjąć `fail++` z sekcji Pangea, zamienić na nieblokujące ostrzeżenie — reszta
+`map-gen-regression` (czasy, rzeki, determinizm) odzyskuje użyteczność. **§1a: warianty A i B
+COFAJĄ poprzeczkę jakości kształtu Pangei ustanowioną w `6f96f082` — właściciel musi to
+wiedzieć wybierając literę.** Rekomendacja: **odblokowanie tymczasowe teraz** (nieblokujące,
+nie wymaga ABC — samo zdjęcie `fail++` nie zmienia progu ani nie cofa niczyjej decyzji, tylko
+przestaje fałszywie czerwienić całą bramkę za jedną wadliwie skalibrowaną sekcję) + pełne ABC
+do właściciela po powrocie.
+**STATUS: dispatch odblokowania tymczasowego (zdjęcie fail++ z sekcji Pangea) w toku.**

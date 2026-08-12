@@ -180,6 +180,129 @@ ok(
   'dispose: drugie zloze koni zachowalo komplet atrybutow pozycji',
 );
 
+// D7: mieszany pool jak styledOverlays w scene.ts — grupy CIEZKIE (przeszly collapse)
+// obok LEKKICH (brzeg 1-6 boxow, collapse pominiety, dzieci to wspoldzielone singletony).
+// Petla dispose w scene.ts leci po CALEJ tablicy, wiec musi byc bezpieczna dla obu rodzajow:
+// ciezkie zwalniane dokladnie 1x, lekkie nietkniete.
+const SHARED_LIGHT_GEO = new THREE.BoxGeometry(0.5, 0.5, 0.5);   // udaje singleton brzegu
+const SHARED_LIGHT_MAT = new THREE.MeshLambertMaterial({ color: 0x445566 });
+const poolLikeScene = [];
+for (let i = 0; i < 5; i++) {
+  const heavy = new THREE.Group();
+  for (let k = 0; k < 8; k++) {
+    heavy.add(new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshLambertMaterial()));
+  }
+  M.collapseToMergedMesh(heavy);                                  // ciezka -> merged
+  poolLikeScene.push({ group: heavy, hexKey: `h${i}`, meshCount: 8 });
+  const light = new THREE.Group();
+  for (let k = 0; k < 3; k++) light.add(new THREE.Mesh(SHARED_LIGHT_GEO, SHARED_LIGHT_MAT));
+  poolLikeScene.push({ group: light, hexKey: `l${i}`, meshCount: 3 }); // lekka -> BEZ collapse
+}
+const heavyRes = [];
+for (const { group } of poolLikeScene) {
+  if (group.userData[M.MERGED_DECOR_FLAG] !== true) continue;
+  heavyRes.push(group.children[0].geometry, group.children[0].material);
+}
+const wPool = watchDisposes(heavyRes);
+const wPoolLight = watchDisposes([SHARED_LIGHT_GEO, SHARED_LIGHT_MAT]);
+for (const { group } of poolLikeScene) M.disposeMergedDecor(group); // petla 1:1 jak w dispose()
+ok(heavyRes.length === 10, 'dispose pool: 5 grup ciezkich dalo 10 zasobow GPU do zwolnienia');
+ok(
+  heavyRes.every((r) => wPool.get(r) === 1),
+  'dispose pool: KAZDY zasob grupy ciezkiej zwolniony dokladnie 1x',
+);
+ok(sumDisposes(wPoolLight) === 0, 'dispose pool: grupy lekkie (bez collapse) nietkniete');
+
+// ---------------------------------------------------------------------------
+// SEKCJA S — straznik tekstowy scene.ts::dispose(). Sekcja D testuje sam
+// disposeMergedDecor; nic natomiast nie chroni jego WYWOLANIA po stronie sceny,
+// a to tam byl wyciek: dispose() zwalnial instancje/rzeki/ocean/ramke i ANI JEDNEJ
+// zmergowanej grupy styledOverlays (tysiace grup, 5 call site disposeScene()).
+// Bramka nie moze uruchomic buildScene w node (WebGL), wiec kontrola idzie po tresci
+// pliku — wzorzec jak straznik tekstowy w ai-founding-territory-test.cjs.
+// ---------------------------------------------------------------------------
+const SCENE_SRC = fs.readFileSync(path.join(ROOT, 'src/render/scene.ts'), 'utf8');
+
+/** Wycina cialo funkcji `header` (dopasowanie klamr). Zwraca null gdy nie znaleziono. */
+function extractFnBody(src, header) {
+  const at = src.indexOf(header);
+  if (at < 0) return null;
+  const open = src.indexOf('{', at);
+  if (open < 0) return null;
+  let depth = 0;
+  for (let j = open; j < src.length; j++) {
+    if (src[j] === '{') depth++;
+    else if (src[j] === '}' && --depth === 0) return src.slice(open + 1, j);
+  }
+  return null;
+}
+
+// S1: import disposeMergedDecor w scene.ts (bez niego nie ma czym zwalniac).
+ok(
+  /import\s*\{[^}]*\bdisposeMergedDecor\b[^}]*\}\s*from\s*'\.\/mergeDecor'/.test(SCENE_SRC),
+  'scene.ts: disposeMergedDecor zaimportowany z ./mergeDecor',
+);
+
+const disposeBody = extractFnBody(SCENE_SRC, 'function dispose()');
+ok(disposeBody != null, 'scene.ts: znaleziono cialo function dispose()');
+// S2: kotwica poprawnosci wyciecia — bez niej kolejne asercje moglyby badac nie ten fragment.
+ok(
+  disposeBody != null && /renderer\.dispose\(\)/.test(disposeBody) && /oceanGeo\.dispose\(\)/.test(disposeBody),
+  'scene.ts: wyciete cialo to faktycznie dispose() (zawiera renderer.dispose + oceanGeo.dispose)',
+);
+
+// S3: w dispose() istnieje petla po CALEJ tablicy styledOverlays wolajaca disposeMergedDecor.
+// Cofniecie tej jednej linii = powrot wycieku; ta asercja jest jedynym jego straznikiem.
+const overlayLoop = /for\s*\(\s*const\s+(?:\{[^}]*\bgroup\b[^}]*\}|\w+)\s+of\s+styledOverlays\s*\)\s*\{?\s*disposeMergedDecor\s*\(/;
+ok(
+  disposeBody != null && overlayLoop.test(disposeBody),
+  'scene.ts dispose(): petla `for (const { group } of styledOverlays) disposeMergedDecor(group)`',
+);
+
+// S4: petla nie moze pomijac zadnego wpisu — zaden filtr/limit/skrot na tablicy ani
+// warunek w ciele. (Wyciek jest proporcjonalny do liczby POMINIETYCH grup, wiec
+// „prawie wszystkie" nie wystarczy.) Wycinamy CALA instrukcje petli — dziala tak samo
+// dla formy jednolinijkowej jak i blokowej, wiec legalny refaktor nie da falszywej czerwieni.
+/** Naglowek + cialo petli `for (... of styledOverlays)` — blok {…} albo jedna instrukcja do `;`. */
+function extractOverlayLoop(body) {
+  const m = /for\s*\([^)]*\bof\b[^)]*styledOverlays[^)]*\)/.exec(body || '');
+  if (!m) return null;
+  const header = m[0];
+  let i = m.index + header.length;
+  while (i < body.length && /\s/.test(body[i])) i++;
+  if (body[i] === '{') {
+    let depth = 0;
+    for (let j = i; j < body.length; j++) {
+      if (body[j] === '{') depth++;
+      else if (body[j] === '}' && --depth === 0) return { header, stmt: body.slice(i + 1, j) };
+    }
+    return null;
+  }
+  const end = body.indexOf(';', i);
+  return end < 0 ? null : { header, stmt: body.slice(i, end) };
+}
+const overlayLoopParts = extractOverlayLoop(disposeBody);
+ok(
+  overlayLoopParts != null
+    && /disposeMergedDecor\s*\(/.test(overlayLoopParts.stmt)
+    && !/\.(slice|filter|splice)\s*\(/.test(overlayLoopParts.header)
+    && !/\bcontinue\b|\bbreak\b|\bif\s*\(|\?\s*disposeMergedDecor/.test(overlayLoopParts.stmt),
+  'scene.ts dispose(): petla leci po pelnej tablicy (bez filter/slice/if/continue/break w ciele)',
+);
+
+// S5: styledOverlays to JEDYNY zbiornik zmergowanych grup w scene.ts. Drugie miejsce
+// wolajace collapseToMergedMesh oznaczaloby pool nieobjety petla z S3 — wtedy ta asercja
+// ma zaswiecic na czerwono i wymusic podpiecie nowego miejsca do dispose().
+const collapseCalls = (SCENE_SRC.match(/collapseToMergedMesh\s*\(/g) || []).length;
+ok(
+  collapseCalls === 1,
+  `scene.ts: dokladnie 1 call site collapseToMergedMesh (jest ${collapseCalls}) — inaczej istnieje pool poza styledOverlays`,
+);
+ok(
+  /const\s+entry\s*=\s*styledOverlays\[oi\]/.test(SCENE_SRC),
+  'scene.ts: jedyny collapse dziala na wpisie styledOverlays (zrodlo poola = ta sama tablica co w dispose)',
+);
+
 // --- offline overlay count (roblox pangea standard) ---
 const DENSITY = { rivers: 'medium', forest: 'medium', desert: 'medium', relief: 'medium' };
 const map = M.generujSwiat(42, 'standardowy', 'pangea', { worldDensity: DENSITY });
