@@ -12646,19 +12646,30 @@ innym efektem/zakresem:
 (już w toku), jako kolejny, świadomie rozszerzony temat (nie duplikować pracy już dispatchowanej
 dla punktu 1).**
 
-## P-SKARBIEC-PODZIAL-PRACY-NIE-NALEZY (Maciej, zrzut ekranu, 2026-08-12)
+## P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE-NA-WSZYSTKICH-ZAKLADKACH (Maciej, 3 zrzuty ekranu, 2026-08-12)
 
-W panelu Skarbca (Empire Detail, sekcja skarbu/podatków) obok "DOMYŚLNY PODZIAŁ PODATEK"
-(Skarb/Nauka/Zamożność) jest też sekcja "DOMYŚLNY PODZIAŁ PRACY" (Budynki/Do puli imperium
-70%/30%) — właściciel zgłasza że TA DRUGA sekcja nie powinna być w Skarbcu (to inny zasób/
-koncept — Praca, nie Pieniądz/Skarb). W Skarbcu ma zostać WYŁĄCZNIE podział podatków.
+Pełny obraz po 3 kolejnych zgłoszeniach właściciela (Skarbiec → Praca → Nauka — za każdym razem
+ten sam komentarz o "niewłaściwej" sekcji, ale WSKAZUJĄCY NA RÓŻNĄ z dwóch sekcji w zależności od
+zakładki): w panelu szczegółów imperium (Empire Detail), sekcje **"DOMYŚLNY PODZIAŁ PODATEK"**
+(Skarb/Nauka/Zamożność) I **"DOMYŚLNY PODZIAŁ PRACY"** (Budynki/Do puli imperium 70%/30%)
+pokazują się RAZEM, IDENTYCZNIE, na WSZYSTKICH zakładkach zasobów (Skarbiec, Praca, Nauka —
+prawdopodobnie też Zamożność i inne, nie tylko te 3 zrzucone) — zamiast każda zakładka
+pokazywała WYŁĄCZNIE suwak tematycznie powiązany z tym zasobem:
+- **Skarbiec** → tylko "Domyślny podział podatek" (Skarb/Nauka/Zamożność to PODZIAŁ PODATKU,
+  bezpośrednio dotyczy Skarbca).
+- **Praca** → tylko "Domyślny podział pracy" (Budynki/Do puli imperium).
+- **Nauka** → tylko "Domyślny podział podatek" (Nauka finansowana jest przez % podatku "Nauka"
+  z tego samego suwaka co Skarb/Zamożność — NIE przez podział Pracy).
+- (nie zweryfikowane, ale prawdopodobnie ten sam błąd na pozostałych zakładkach — Zamożność
+  itd. — dispatch ma to sprawdzić systematycznie, nie tylko 3 zgłoszone).
 
-ZADANIE dla dispatchu: znaleźć komponent renderujący ten panel (prawdopodobnie
-`empireDetailPanel.ts`, sekcja skarbu — grep "DOMYŚLNY PODZIAŁ PRACY"/"Budynki / Do puli
-imperium"), USUNĄĆ sekcję "Domyślny podział Pracy" z WIDOKU SKARBCA konkretnie (nie usuwać samej
-funkcjonalności/suwaka z gry — sprawdzić czy jest już gdzie indziej dostępny, np. w panelu
-Produkcji/Pracy, czy trzeba go tam PRZENIEŚĆ żeby gracz nadal miał do niego dostęp — nie zgadywać,
-jeśli nie ma dziś żadnego innego miejsca z tym suwakiem, zostawić PYTANIE ABC zamiast usuwać
-funkcję bez zastępczego miejsca).
+ZADANIE dla dispatchu: znaleźć komponent renderujący te dwie sekcje w panelu Empire Detail
+(prawdopodobnie `empireDetailPanel.ts`, grep "DOMYŚLNY PODZIAŁ PODATEK"/"DOMYŚLNY PODZIAŁ
+PRACY") — ustalić, czy dziś renderowanie tych bloków jest WARUNKOWANE aktywną zakładką w ogóle,
+czy to wspólna stopka/sekcja doklejona bezwarunkowo do KAŻDEJ zakładki zasobów. Naprawić: każda
+zakładka pokazuje WYŁĄCZNIE swój tematycznie powiązany suwak (Skarbiec/Nauka/Zamożność →
+podział podatku; Praca → podział pracy), pozostałe zakładki (Surowce, Miasta itd.) — żadnego z
+dwóch, chyba że dziś już go tam nie ma (sprawdzić). Nie usuwać funkcjonalności suwaków — tylko
+ograniczyć WIDOCZNOŚĆ do właściwej zakładki.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
