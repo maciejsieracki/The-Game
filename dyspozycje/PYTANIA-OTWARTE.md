@@ -16483,3 +16483,24 @@ Stan agentów w tle: `fix-ekonomia-skala-5x` (R-EKONOMIA-SUROWCE-SKALA-5X-Q1) i
 `fix-promote-front-progress-r2` (runda 2 B1) — oba jeszcze pracują. Workflow audytu
 CivPedia/Poradnik/ściąg (`wf_600b5a93-598`) — w toku. Żadnych nowych zgłoszeń do zarejestrowania
 od czasu ostatniego wpisu.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 2 (B1) SCALONA, Evaluator w toku (2026-08-13)
+
+Operator naprawił B1: wspólna `dropFrontItem(kolejka, remainder)` używana w `advanceProduction`,
+`rushProduction`, `dequeue` — każde zdjęcie frontu (nie tylko ręczna promocja) odczytuje i czyści
+zbankowany `postep` nowego frontu. `dequeue(0)` świadomie zachowuje kontrakt „anulowany traci
+WŁASNY postęp", ale teraz też przywraca zbankowany postęp kolejnego elementu (wcześniej zostawał
+martwy). `promoteToFront` przez spread zamiast pól-po-polu. Tooltip ⇈ przeredagowany. Test 55→65,
+sekcja 9 przepisana (nie pinuje już B1), nowe sekcje 12-13 (niezmiennik front-nigdy-zbankowany
+w rushProduction/dequeue). Nie-jałowość zweryfikowana przez Operatora: cofnięcie fixu → 4 asercje
+padają w sekcjach 9/12 z dokładnymi komunikatami.
+
+Bramki na głównym drzewie (zweryfikowane niezależnie przeze mnie po scaleniu): `tsc --noEmit` 0
+błędów, `promote-to-front-test.cjs` 65/65, `logic-test.cjs` 213/213. Commit `3539a6cf`, push OK.
+
+**Dispatch świeżego Evaluatora (Opus 5, agent `ae032de464c4af66c`, worktree
+`eval-promote-front-r2` z commitu `3539a6cf`) NASTĘPUJE teraz** — ma odtworzyć scenariusz B1
+własnym kodem (nie czytaniem raportu), zweryfikować `rushProduction`/`dequeue`, spróbować złamać
+niezmiennik anty-exploit własną mutacją, sprawdzić nie-tautologiczność sekcji 9/12/13.
