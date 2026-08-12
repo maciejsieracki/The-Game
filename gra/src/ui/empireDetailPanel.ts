@@ -10,9 +10,16 @@ import {
   type EmpireResourceRow,
   type EmpireUchwalaRow,
 } from './empireDetailTypes';
-import { formatObywateleLabel } from '../game/manpower';
+import { formatObywateleLabel, formatManpower } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
+import {
+  MIASTA_TABLE_COLUMNS,
+  visibleMiastaColumns,
+  miastaColumnGridTemplate,
+  computeMiastaSummaryRow,
+  type MiastaColDef,
+} from './empireMiastaTable';
 import { mocLabel, mocWithValue } from './power-labels';
 import {
   powerRankingValueForMode, sortPowerRankingForMode, type PowerRankingViewMode,
@@ -310,6 +317,7 @@ function ensureStyles(): void {
 .civ-emp-zrow .val .d.z{color:#6f7889;}
 .civ-emp-mini{border:1px solid #232b38;border-radius:7px;overflow:hidden;margin:2px 0 8px;
   scroll-margin-top:8px;}
+.civ-emp-mini-scroll{overflow-x:auto;}
 .civ-emp-mini-h,.civ-emp-mini-r{display:grid;padding:7px 10px;column-gap:6px;}
 .civ-emp-mini-h{font-size:10px;letter-spacing:0.35px;color:#7d8798;font-weight:600;background:#1a2230;}
 .civ-emp-mini-h-cell{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;}
@@ -319,6 +327,15 @@ function ensureStyles(): void {
 .civ-emp-mini-r{font-size:12px;color:#cfd5de;}
 .civ-emp-mini-r>div{min-width:0;}
 .civ-emp-mini-r+.civ-emp-mini-r{border-top:1px solid #1f2733;}
+/* — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12) — filtr kolumn + wiersz
+   podsumowania tabeli „Miasta" — */
+.civ-emp-colfilter{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px;padding:8px 10px;
+  border:1px solid #232b38;border-radius:7px;background:#171e2a;}
+.civ-emp-colchk{display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;
+  cursor:pointer;user-select:none;}
+.civ-emp-colchk input{accent-color:#d9a441;cursor:pointer;margin:0;}
+.civ-emp-mini-summary{background:#1a2230;font-weight:700;color:#d9a441;
+  border-top:1px solid #3a4657;}
 .civ-emp-bar{height:10px;border-radius:6px;background:#1f2733;overflow:hidden;margin:2px 0 10px;}
 .civ-emp-bar .fill{height:100%;background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-bar .fill.warn{background:linear-gradient(90deg,#6a4010,#d9a441);}
@@ -528,6 +545,60 @@ function cityEconMiniNauka(rows: EmpireDetailSnap['cityEcon']): string {
   return h;
 }
 
+/**
+ * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12) — kolumny UKRYTE przez
+ * checkboxy filtra nad tabelą „Miasta". Trwa między renderami (nie reset przy każdym
+ * odświeżeniu), bo to czysto stan wyświetlania — analogicznie do `activeSection` wyżej.
+ * MIASTO (id, `toggle:false` w MIASTA_TABLE_COLUMNS) nigdy tu nie trafia — checkbox dla niej
+ * się nie renderuje (zobacz `cityMiastaColFilterHtml`).
+ */
+const miastaHiddenCols = new Set<string>();
+
+/** Checkboxy widoczności kolumn — punkt (a) zadania. Kolejność kolumn (`grid-template-columns`)
+ *  zostaje jak dziś; checkbox WYŁĄCZNIE pokazuje/ukrywa, nie zmienia kolejności. */
+function cityMiastaColFilterHtml(): string {
+  const chips = MIASTA_TABLE_COLUMNS.filter(c => c.toggle).map(c => {
+    const checked = miastaHiddenCols.has(c.id) ? '' : ' checked';
+    return `<label class="civ-emp-colchk"><input type="checkbox" data-miasta-col="${esc(c.id)}"${checked}> ${esc(c.label)}</label>`;
+  }).join('');
+  return `<div class="civ-emp-colfilter" id="civ-emp-miasta-colfilter">${chips}</div>`;
+}
+
+function wireMiastaColFilter(): void {
+  const host = document.getElementById('civ-emp-miasta-colfilter');
+  if (!host) return;
+  for (const inp of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-miasta-col]'))) {
+    inp.addEventListener('change', () => {
+      const id = inp.dataset.miastaCol;
+      if (!id) return;
+      if (inp.checked) miastaHiddenCols.delete(id); else miastaHiddenCols.add(id);
+      render();
+    });
+  }
+}
+
+/** Komórka jednego wiersza miasta dla danej kolumny (`colId` = `MiastaColDef.id`). */
+function miastaCellFor(r: {
+  name: string; obyw: number; ludnoscLabel: string; wzrost: number | null;
+  praca: number; pieniadz: number; zywnosc: number | null;
+  surowce: Record<string, number> | undefined;
+}, colId: string): string {
+  switch (colId) {
+    case 'miasto': return esc(r.name);
+    case 'obyw': return String(r.obyw);
+    case 'ludnosc': return esc(r.ludnoscLabel);
+    case 'wzrost': return r.wzrost != null ? `${Math.round(r.wzrost)}%` : '—';
+    case 'praca': return signedTxt(r.praca);
+    case 'pieniadz': return signedTxt(r.pieniadz);
+    case 'zywnosc': return r.zywnosc != null ? signedIntTxt(r.zywnosc) : '—';
+    // Punkt (b): utrzymanie surowcowe budynków W TYM mieście — patrz JSDoc
+    // EmpireCityEconRow.utrzymanieSurowcowBudynkow (empireDetailTypes.ts) skąd DOKŁADNIE
+    // pochodzi ta liczba (buildingResourceUpkeepForCityId w main.ts, per-miasto z definicji).
+    case 'surowce': return formatResourceUpkeepEmpireLine(r.surowce);
+    default: return '—';
+  }
+}
+
 function cityMiastaMiniDetail(
   ce: EmpireDetailSnap['cityEcon'],
   cp: EmpireDetailSnap['cityPobor'],
@@ -538,43 +609,77 @@ function cityMiastaMiniDetail(
     return '<div class="civ-emp-empty">Brak miast — załóż osiedle na mapie.</div>';
   }
   const foodByName = new Map(food.perCityRows.map(r => [r.name, r]));
-  const grid = '1.05fr 0.45fr 0.75fr 0.55fr 0.55fr 0.6fr 0.6fr';
-  let h = `<div class="civ-emp-note">Miasta imperium: <b>${e.osiedla}</b>`
-    + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obyw./turę</div>`;
-  h += `<div class="civ-emp-mini">${miniHeader(
-    [
-      'MIASTO',
-      { label: 'OBYW.', iconId: 'res-population' },
-      'LUDNOŚĆ',
-      'WZROST',
-      { label: 'PRACA', iconId: 'res-work' },
-      { label: 'PIENIĄDZ', iconId: 'res-treasury' },
-      { label: 'ŻYWNOŚĆ', iconId: 'res-food' },
-    ],
-    grid,
-  )}`;
-  for (const pob of cp) {
+  // Dane per miasto liczone RAZ — użyte zarówno do wierszy, jak i do wiersza podsumowania
+  // (punkt c), żeby suma/średnia w stopce dokładnie odpowiadały temu, co widać w wierszach
+  // powyżej (nie osobne, mogące się rozjechać przeliczenie).
+  const rows = cp.map(pob => {
     const econ = ce.find(c => c.name === pob.name);
     const fd = foodByName.get(pob.name);
-    const praca = (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0);
-    const wzrost = fd != null ? `${Math.round(fd.wzrostProcent)}%` : '—';
-    const zywnosc = fd != null ? signedIntTxt(fd.bilans) : '—';
-    h += miniRow([
-      esc(pob.name),
-      String(pob.ludki),
-      esc(pob.ludnoscAbsLabel),
-      wzrost,
-      signedTxt(praca),
-      signedTxt(econ?.pieniadz ?? 0),
-      zywnosc,
-    ], grid);
+    return {
+      name: pob.name,
+      obyw: pob.ludki,
+      ludnoscLabel: pob.ludnoscAbsLabel,
+      ludnoscAbsolutna: pob.ludnoscAbsolutna,
+      wzrost: fd != null ? fd.wzrostProcent : null,
+      praca: (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0),
+      pieniadz: econ?.pieniadz ?? 0,
+      zywnosc: fd != null ? fd.bilans : null,
+      surowce: econ?.utrzymanieSurowcowBudynkow,
+    };
+  });
+
+  const cols: MiastaColDef[] = visibleMiastaColumns(miastaHiddenCols);
+  const grid = miastaColumnGridTemplate(cols);
+
+  let h = `<div class="civ-emp-note">Miasta imperium: <b>${e.osiedla}</b>`
+    + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obyw./turę</div>`;
+  // Punkt (a): checkboxy widoczności kolumn nad tabelą.
+  h += cityMiastaColFilterHtml();
+  h += `<div class="civ-emp-mini-scroll"><div class="civ-emp-mini">`;
+  h += miniHeader(cols.map(c => (c.iconId ? { label: c.label, iconId: c.iconId } : c.label)), grid);
+  for (const r of rows) {
+    h += miniRow(cols.map(c => miastaCellFor(r, c.id)), grid);
   }
-  h += '</div>';
+  // Punkt (c): wiersz podsumowania — suma każdej kolumny, poza WZROST gdzie to ŚREDNIA
+  // (computeMiastaSummaryRow, empireMiastaTable.ts — czysta agregacja liczb z wierszy powyżej,
+  // zero nowego przeliczenia ekonomii).
+  const summary = computeMiastaSummaryRow(rows.map(r => ({
+    obyw: r.obyw,
+    ludnoscAbsolutna: r.ludnoscAbsolutna,
+    wzrostProcent: r.wzrost,
+    praca: r.praca,
+    pieniadz: r.pieniadz,
+    zywnosc: r.zywnosc ?? 0,
+    surowce: r.surowce,
+  })));
+  const summaryCellFor = (colId: string): string => {
+    switch (colId) {
+      case 'miasto': return 'SUMA / ŚREDNIA';
+      case 'obyw': return String(summary.obywTotal);
+      case 'ludnosc': return esc(formatManpower(summary.ludnoscAbsolutnaTotal));
+      case 'wzrost': return summary.wzrostProcentAvg != null ? `${summary.wzrostProcentAvg}%` : '—';
+      case 'praca': return signedTxt(summary.pracaTotal);
+      case 'pieniadz': return signedTxt(summary.pieniadzTotal);
+      case 'zywnosc': return signedIntTxt(summary.zywnoscTotal);
+      case 'surowce': return formatResourceUpkeepEmpireLine(summary.surowceTotal);
+      default: return '';
+    }
+  };
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + cols.map(c => `<div>${summaryCellFor(c.id)}</div>`).join('') + `</div>`;
+  h += '</div></div>';
   h += '<div class="civ-emp-foot">'
     + 'PRACA = suma do puli imperium i do budynków w mieście / turę · '
     + 'PIENIĄDZ = wpływ netto do skarbca po suwakach · '
     + 'ŻYWNOŚĆ = bilans lokalny miasta (produkcja − racje) · '
-    + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta).</div>';
+    + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta) · '
+    + 'SUROWCE = utrzymanie surowcowe budynków wybudowanych W TYM mieście / turę — obywatele '
+    + '(magazyn centralny) i wojsko (porusza się po mapie) są civ-wide, bez podziału na miasta; '
+    + 'pełne rozbicie budynki/obywatele/wojsko per surowiec: sekcja SUROWCE → karta surowca → '
+    + '„Zobacz szczegóły zużycia".</div>'
+    + '<div class="civ-emp-foot">Wiersz „SUMA / ŚREDNIA" na dole — suma dla każdej kolumny, poza '
+    + 'WZROST (tam średnia z miast, dla których wzrost jest znany).</div>';
+  queueMicrotask(wireMiastaColFilter);
   return h;
 }
 

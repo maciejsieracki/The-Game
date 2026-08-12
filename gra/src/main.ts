@@ -12466,6 +12466,11 @@ async function boot(): Promise<void> {
           pieniadzBrutto: tk?.pieniadzBrutto,
           handelZeSzlakow: tk?.pieniadzZTras,
           utrzymanieBudynkow: tk?.utrzymanieBudynkow,
+          // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12): już liczone w
+          // `_lastPlayerCityEcon` (populateLastPlayerCityEcon → buildingResourceUpkeepForCityId),
+          // dotąd nie przekazywane dalej — tylko doczepienie istniejącej liczby do snapa panelu,
+          // zero nowego przeliczenia.
+          utrzymanieSurowcowBudynkow: tk?.utrzymanieSurowcowBudynkow,
           pracaPula: tk?.doPuli ?? 0,
           pracaBudynki: tk?.doBudynkow ?? 0,
           nauka: tk?.nauka ?? 0,
@@ -12477,6 +12482,9 @@ async function boot(): Promise<void> {
           name: c.name,
           ludki: mp.ludki,
           ludnoscAbsLabel: formatManpower(mp.ludnoscAbsolutna),
+          // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2: wartość surowa obok etykiety — patrz
+          // JSDoc EmpireCityPoborRow.ludnoscAbsolutna (empireDetailTypes.ts).
+          ludnoscAbsolutna: mp.ludnoscAbsolutna,
           rekruci: mp.manpowerBiezacy,
           rekruciMax: mp.manpowerMax,
           regenPerTurn: mp.regenPerTurn,

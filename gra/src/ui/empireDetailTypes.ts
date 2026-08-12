@@ -179,6 +179,26 @@ export interface EmpireCityEconRow {
   handelZeSzlakow?: number;
   /** Utrzymanie budynków w tym mieście / turę (schodzi ze skarbca imperium). */
   utrzymanieBudynkow?: number;
+  /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12): utrzymanie surowcowe
+   * BUDYNKÓW WYBUDOWANYCH W TYM KONKRETNYM mieście / turę (klucz surowca → ilość, 1 szt./typ
+   * obecny w koszt_surowce budynku — patrz `buildingResourceUpkeep` w `economy-upkeep.ts`).
+   * Źródło: `main.ts` `buildingResourceUpkeepForCityId(cityId, 0)` — TA SAMA funkcja i ten sam
+   * wywołanie, którym `_lastPlayerCityEcon.utrzymanieSurowcowBudynkow` jest już liczone (patrz
+   * `populateLastPlayerCityEcon`), tylko dotąd nie było przekazane do `cityEcon` w
+   * `buildEmpireDetailSnap()`. Budynki NALEŻĄ do jednego miasta, więc to jest PRAWDZIWY per-miasto
+   * rozkład (nie przybliżenie) — w przeciwieństwie do zużycia obywateli (magazyn centralny
+   * imperium, civ-wide z definicji — ECHO Q1 `citizen-resource-upkeep.ts`) i wojska (jednostki
+   * poruszają się po mapie, nie należą do miasta), które NIE mają analogicznego rozbicia
+   * per-miasto i celowo NIE są tu wliczone — pełne rozbicie budynki/obywatele/wojsko per
+   * surowiec jest w sekcji SUROWCE (karta surowca → „Zobacz szczegóły zużycia",
+   * `resource-usage-breakdown.ts`). `undefined` = brak wpisu tick jeszcze (przed 1. turą).
+   * / EN: resource upkeep of buildings BUILT IN THIS SPECIFIC city / turn — buildings belong to
+   * exactly one city, so this is a genuine per-city split (unlike citizens' central-warehouse
+   * drain or roaming units' upkeep, neither of which has a per-city breakdown; both stay
+   * empire-wide, shown in the SUROWCE section's "Zobacz szczegóły zużycia" instead).
+   */
+  utrzymanieSurowcowBudynkow?: Record<string, number>;
   pracaPula: number;
   pracaBudynki: number;
   nauka: number;
@@ -189,6 +209,14 @@ export interface EmpireCityPoborRow {
   name: string;
   ludki: number;
   ludnoscAbsLabel: string;
+  /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12): wartość SUROWA (przed
+   * `formatManpower`) tożsama z tą, z której liczy się `ludnoscAbsLabel` — potrzebna do
+   * zsumowania kolumny LUDNOŚĆ w wierszu podsumowania tabeli „Miasta" (suma liczb, nie sklejanie
+   * sformatowanych etykiet tekstowych). / EN: raw value backing `ludnoscAbsLabel`, needed to sum
+   * the LUDNOŚĆ column in the city table's summary row (numeric sum, not label concatenation).
+   */
+  ludnoscAbsolutna: number;
   rekruci: number;
   rekruciMax: number;
   regenPerTurn: number;
