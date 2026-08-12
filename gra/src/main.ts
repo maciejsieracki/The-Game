@@ -12195,16 +12195,46 @@ async function boot(): Promise<void> {
         discoveredOwners: getDiplomaticContacts(),
         showAllCivs: !fogOn,
       });
-      const rows = eligible.map(oid => ({
-        civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
+      const rows = eligible.map(oid => {
         // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy (widoczny dla gracza) liczy Moc
         // EFEKTYWNIE — patrz sumArmyMForOwnerEffective. Progi decyzji AI (militaryRatioFromArmyM,
         // computeRespekt w ścieżkach AI) zostają na objectivePowerForOwner nominalnej.
-        power: objectivePowerForOwnerEffective(oid),
-        isPlayer: oid === 0,
-        rank: 0,
-        wiarygodnosc: getWiarygodnosc(oid),
-      }));
+        // Literalne wywołanie `objectivePowerForOwnerEffective(oid)` zostaje NIETKNIĘTE (kanarek
+        // źródłowy moc-ranking-rozjazd-test.cjs pilnuje TEGO dokładnego wpięcia) — breakdown
+        // components (dla podziału gospodarcza/militarna, P-MOC-PODZIAL-WIDOK) doliczony osobnym
+        // wywołaniem buildObjectivePowerForOwnerEffective (ta sama funkcja bazowa, `.power` obu
+        // ścieżek jest identyczne — panel budowany na żądanie, nie co klatkę, więc podwójne
+        // wywołanie jest tanie, patrz komentarz przy buildObjectivePowerForOwnerEffective).
+        // / EN: the literal `objectivePowerForOwnerEffective(oid)` call stays UNTOUCHED (the
+        // moc-ranking-rozjazd-test.cjs source canary guards THIS exact wiring) — the component
+        // breakdown (for the economic/military split, P-MOC-PODZIAL-WIDOK) is fetched via a
+        // separate call to buildObjectivePowerForOwnerEffective (same underlying function, both
+        // paths' `.power` are identical — this panel is built on demand, not per frame, so the
+        // extra call is cheap, see the comment on buildObjectivePowerForOwnerEffective).
+        const obj = buildObjectivePowerForOwnerEffective(oid);
+        // P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): filtrowanie TEJ SAMEJ listy components po
+        // fladze `military` (JSON `wojskowy`) — bez osobnego silnika liczenia. Militarna = Armia
+        // + Rekruci; gospodarcza = wszystko pozostałe (w tym Wygrane bitwy/Zdobycze — nie są
+        // otagowane wojskowe).
+        // / EN: filtering the SAME components list by the `military` flag (JSON `wojskowy`) — no
+        // separate calc engine. Military = Army + Recruits; economic = everything else
+        // (including Battles won/Conquests — not tagged military).
+        let powerMilitary = 0;
+        let powerEconomic = 0;
+        for (const c of obj.components) {
+          if (c.military) powerMilitary += c.points;
+          else powerEconomic += c.points;
+        }
+        return {
+          civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
+          power: objectivePowerForOwnerEffective(oid),
+          powerMilitary: Math.round(powerMilitary),
+          powerEconomic: Math.round(powerEconomic),
+          isPlayer: oid === 0,
+          rank: 0,
+          wiarygodnosc: getWiarygodnosc(oid),
+        };
+      });
       rows.sort((a, b) => b.power - a.power);
       return rows.map((row, i) => ({ ...row, rank: i + 1 }));
     }

@@ -14,6 +14,9 @@ import { formatObywateleLabel } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
 import { mocLabel, mocWithValue } from './power-labels';
+import {
+  powerRankingValueForMode, sortPowerRankingForMode, type PowerRankingViewMode,
+} from './powerOverlayHud';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { formatLiczbaPl, signedPl } from './formatPl';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
@@ -201,6 +204,9 @@ let pendingScrollSection: string | null = null;
  *  (żeby klik „Surowce" pokazywał magazyn, a nie całą ekonomię z Nauką). Trzymane między
  *  renderami (refresh nie resetuje widoku). null = pełny panel (wszystkie bloki). */
 let activeSection: string | null = null;
+/** P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): tryb widoku Rankingu Mocy — trzymany między
+ *  renderami (refresh nie resetuje wyboru), tak jak `activeSection` wyżej. */
+let mocViewMode: PowerRankingViewMode = 'total';
 
 function blockForSection(section: string | null): EmpirePanelBlock {
   return empirePanelBlockForSection(section);
@@ -283,6 +289,11 @@ function ensureStyles(): void {
 .civ-emp-foot{font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px;}
 .civ-emp-rank{font-size:13px;color:#cfd5de;line-height:1.9;}
 .civ-emp-rank .you{display:flex;align-items:center;gap:6px;color:#d9a441;font-weight:700;margin-top:2px;}
+.civ-emp-mocview{display:flex;gap:6px;margin-top:8px;}
+.civ-emp-mocview-btn{flex:1;padding:6px 4px;border-radius:6px;border:1px solid #2b3543;
+  background:#171e2a;color:#9aa4b2;font-size:11px;font-weight:600;cursor:pointer;text-align:center;}
+.civ-emp-mocview-btn:hover{border-color:#3a4657;color:#cfd5de;}
+.civ-emp-mocview-btn.active{background:rgba(217,164,65,0.16);border-color:#d9a441;color:#d9a441;}
 .civ-emp-resp{margin:12px 0 4px;padding:11px 14px;border-radius:8px;background:#1c2431;
   border:1px solid #2b3543;font-size:12.5px;color:#cfd5de;}
 .civ-emp-resp b{color:#e8ebf0;}
@@ -1103,6 +1114,26 @@ function renderUchwalyHtml(uchwaly: EmpireUchwalaRow[]): string {
   return h;
 }
 
+/**
+ * P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): wiąże klik zakładek Całkowita/Gospodarcza/Militarna
+ * nad Rankingiem Mocy — ten sam wzorzec co inne wiring-funkcje w tym pliku (queueMicrotask po
+ * ustawieniu innerHTML). No-op gdy przyciski nie są w bieżącym bloku (np. widok pojedynczej
+ * sekcji spoza „moc" — patrz C-PANEL=B). / EN: wires the Total/Economic/Military tab clicks
+ * above the Power Ranking — same pattern as the other wiring functions in this file. No-op
+ * when the buttons aren't in the current block (e.g. a single-section view other than "moc").
+ */
+function wireMocViewButtons(): void {
+  if (bodyEl === null) return;
+  for (const btn of Array.from(bodyEl.querySelectorAll<HTMLButtonElement>('[data-moc-view]'))) {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mocView as PowerRankingViewMode | undefined;
+      if (!mode || mode === mocViewMode) return;
+      mocViewMode = mode;
+      render();
+    });
+  }
+}
+
 function render(): void {
   if (root === null || bodyEl === null || getSnap === null) return;
   const snap = getSnap();
@@ -1154,13 +1185,30 @@ function render(): void {
   moc += `</div>`;
   moc += `<div class="civ-emp-foot">Respekt w dyplomacji = stosunek Twojej Mocy do Mocy rozmówcy (nie to samo co % udziału w tabeli).</div>`;
   if (p.ranking.length > 0) {
+    // P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): przełącznik widoku Rankingu — Całkowita
+    // (dzisiejsza suma, domyślna) / Gospodarcza (wszystko OPRÓCZ Armii+Rekrutów) / Militarna
+    // (WYŁĄCZNIE Armia+Rekruci). Ranking przelicza się CAŁY wg wybranego trybu (sortPowerRankingForMode)
+    // — nie tylko wartość gracza. / EN: Ranking view toggle — Total (today's default sum) /
+    // Economic (everything EXCEPT Army+Recruits) / Military (ONLY Army+Recruits). The WHOLE
+    // ranking is re-sorted for the chosen mode (sortPowerRankingForMode), not just the player's row.
+    const mocViewLabel: Record<PowerRankingViewMode, string> = {
+      total: 'Całkowita', economic: 'Gospodarcza', military: 'Militarna',
+    };
     moc += `<div class="civ-emp-title" style="margin-top:12px">Ranking ${esc(mocLabel())}</div>`;
+    moc += `<div class="civ-emp-mocview">`;
+    for (const m of ['total', 'economic', 'military'] as PowerRankingViewMode[]) {
+      const cls = m === mocViewMode ? 'civ-emp-mocview-btn active' : 'civ-emp-mocview-btn';
+      moc += `<button type="button" class="${cls}" data-moc-view="${m}">${esc(mocViewLabel[m])}</button>`;
+    }
+    moc += `</div>`;
+    const rankingForView = sortPowerRankingForMode(p.ranking, mocViewMode);
     moc += `<div class="civ-emp-rank">`;
-    for (const r of p.ranking) {
+    for (const r of rankingForView) {
+      const val = Math.round(powerRankingValueForMode(r, mocViewMode));
       if (r.isPlayer) {
-        moc += `<div class="you">▸ #${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(r.power))}</div>`;
+        moc += `<div class="you">▸ #${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(val))}</div>`;
       } else {
-        moc += `#${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(r.power))}<br>`;
+        moc += `#${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(val))}<br>`;
       }
     }
     moc += `</div>`;
@@ -1295,6 +1343,7 @@ function render(): void {
   if (block === 'all' || block === 'surowce') body += sur;
   if (block === 'all' || block === 'handel') body += handel;
   bodyEl.innerHTML = body;
+  wireMocViewButtons();
 
   // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
   const scrollTarget = block === 'all' ? pendingScrollSection : null;

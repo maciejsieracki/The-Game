@@ -345,9 +345,11 @@ console.log('10. computeObjectivePower -- skladowa "zdobycze" (Power-zdobycze)')
 
   const withZdobycze = computeObjectivePower({ ...baseInput, zdobyczePower: 1234 });
   const zdobyczeRow = withZdobycze.components.find(c => c.key === 'zdobycze');
-  eq(zdobyczeRow.coefficient, 1, 'coeff "zdobycze" zawsze 1 (wartosc to juz pkt, nie surowy licznik)');
-  eq(zdobyczeRow.points, 1234, 'pkt "zdobycze" = zdobyczePower 1:1');
-  eq(withZdobycze.power, 1234, 'Power calkowity = zdobycze (jedyna niezerowa skladowa w tym teście)');
+  // P-MOC-BALANS-WAGI (Maciej 2026-08-12): coeff "zdobycze" 1 -> 2 (×2). Wciaz stale (nie z
+  // JSON) -- wartosc wejsciowa to juz gotowe punkty Power, nie surowy licznik.
+  eq(zdobyczeRow.coefficient, 2, 'coeff "zdobycze" 2 od P-MOC-BALANS-WAGI (bylo 1)');
+  eq(zdobyczeRow.points, 2468, 'pkt "zdobycze" = zdobyczePower x2 (1234 x2 = 2468)');
+  eq(withZdobycze.power, 2468, 'Power calkowity = zdobycze x2 (jedyna niezerowa skladowa w tym teście)');
 }
 
 // ===========================================================================

@@ -16,11 +16,42 @@ export interface PowerComponentRow {
 
 export interface PowerRankingRow {
   civ: string;
+  /** Moc całkowita (suma wszystkich składników) — wartość i sortowanie domyślne. */
   power: number;
+  /**
+   * P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): Moc militarna = WYŁĄCZNIE Armia + Rekruci
+   * (ekw. jedn.) — suma składników oznaczonych `military: true`.
+   */
+  powerMilitary: number;
+  /**
+   * P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): Moc gospodarcza = wszystkie składniki OPRÓCZ
+   * Armii i Rekrutów (Obywatele, Miasta, Terytorium, Infrastruktura, Odkrycia/tech,
+   * Ulepszenia terenu, Kultura, Jedność religii, Wygrane bitwy, Zdobycze/eliminacje).
+   */
+  powerEconomic: number;
   rank: number;
   isPlayer?: boolean;
   /** Globalna Wiarygodność (−100…+100) — WIAR §7 UI. */
   wiarygodnosc?: number;
+}
+
+/** P-MOC-PODZIAL-WIDOK: tryb widoku Rankingu Mocy — Całkowita/Gospodarcza/Militarna. */
+export type PowerRankingViewMode = 'total' | 'economic' | 'military';
+
+/** Wartość rankingowa danego wiersza dla wybranego trybu widoku. */
+export function powerRankingValueForMode(row: PowerRankingRow, mode: PowerRankingViewMode): number {
+  if (mode === 'economic') return row.powerEconomic;
+  if (mode === 'military') return row.powerMilitary;
+  return row.power;
+}
+
+/** Ranking Mocy re-posortowany i re-ponumerowany wg wybranego trybu widoku (cała lista, nie tylko gracz). */
+export function sortPowerRankingForMode(
+  rows: readonly PowerRankingRow[],
+  mode: PowerRankingViewMode,
+): PowerRankingRow[] {
+  const sorted = [...rows].sort((a, b) => powerRankingValueForMode(b, mode) - powerRankingValueForMode(a, mode));
+  return sorted.map((r, i) => ({ ...r, rank: i + 1 }));
 }
 
 export interface AiMocDiagRow {

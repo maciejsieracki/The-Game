@@ -143,7 +143,17 @@ export interface EmpirePowerSnap {
   power: number;
   powerBase: number;
   components: EmpirePowerComponentRow[];
-  ranking: Array<{ civ: string; power: number; rank: number; isPlayer?: boolean }>;
+  ranking: Array<{
+    civ: string;
+    power: number;
+    /** P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): WYŁĄCZNIE Armia + Rekruci (ekw. jedn.). */
+    powerMilitary: number;
+    /** P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): wszystko OPRÓCZ Armii i Rekrutów. */
+    powerEconomic: number;
+    rank: number;
+    isPlayer?: boolean;
+    wiarygodnosc?: number;
+  }>;
   respektExample?: { civ: string; respekt: number; playerPower: number; theirPower: number };
   /** R-RANKING-MOC: pozycja absolutna wśród WSZYSTKICH cywilizacji (także nieodkrytych). */
   absoluteRank?: { rank: number; total: number };
