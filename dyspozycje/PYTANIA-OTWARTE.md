@@ -12733,3 +12733,173 @@ Naprawione + 15 nowych asercji (240/240 `diplomacy-acceptance-points-test.cjs`),
 pre-istniejący, niezwiązany). Commit `76514613`, wypchnięty na branch.
 
 **STATUS: ZAMKNIĘTE (bug #3 z batcha playtestu).**
+
+## P-PERF-SPOWOLNIENIE-PO-60-TURACH — SCALONE (e702d982)
+
+Operator (a919eaf81009a7024) znalazł realny wyciek pamięci GPU: `collapseToMergedMesh()`
+(render/mergeDecor.ts) tworzy przy każdym wywołaniu nową, unikalną geometrię+material scalającą
+dekoracje heksu, a `spawnImprovementMesh`/`clearResourceOverlays`/`syncResourceOverlayAtHex`
+usuwały stary mesh ze sceny (`scene.remove`) ale NIGDY nie zwalniały buforów GPU (`.dispose()`)
+— wołane co turę, dla gracza i każdej cywilizacji AI. Naprawione: `disposeMergedDecor()` (bezpieczny,
+tylko na wyniku `collapseToMergedMesh`, nie dotyka współdzielonych singletonów) podpięty w 8
+miejscach. Dodatkowo instrumentacja diagnostyczna za `?perfDebug=1` (zero wpływu na normalną grę)
+do weryfikacji w rundzie 2, gdyby spowolnienie się utrzymało. `tsc` 0 błędów, `logic-test` 213/213,
+tech-tree/research/unit-replace/ai-founding-territory zielone. Commit `e702d982`.
+
+**Drugorzędne, nienaprawione teraz** (mały wolumen, do rundy 2 jeśli potrzeba): ten sam brak
+`dispose()` przy `okolicaOverlayGroup`, `tradeRoutesOverlayGroup`, `workerFieldOverlayGroup`,
+`cultureRangeGroup`/`religionRangeGroup`, `territoryBorderGroup`, ghost-preview budynku,
+przebudowa `villageMeshes`/`campMeshes`/`clearingMeshes`. Osobno: `rebuildResourceOverlays()`
+ma udokumentowany komentarz „~100+ s synchronicznie" na Standard — odpala się tylko przy
+awansie epoki (rzadko), może tłumaczyć pojedyncze drastyczne zamrożenie, nie ciągłe spowolnienie.
+
+**STATUS: NAPRAWIONE (przyczyna główna). Playtest z `?perfDebug=1` do tury 60+ zweryfikuje czy
+coś jeszcze zostaje — jeśli tak, runda 2 dokończy drugorzędne miejsca.**
+
+## P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (punkt 1: panel Surowców) — SCALONE (a79bae29)
+
+Operator (a8047f1f0f76fc818) zrobił KOMPLET (budynki + obywatele + wojsko), nie tylko minimum —
+`turn-economy.ts` już liczył utrzymanie budynków i jednostek jako dwa osobne wywołania przed
+scaleniem, więc rozdzielenie kosztowało tylko przechwycenie PRZED merge. Nowy moduł
+`resource-usage-breakdown.ts`, przycisk „Zobacz szczegóły zużycia" w panelu Surowców
+(`empireDetailPanel.ts`, `<details>/<summary>`). Ważne dla właściciela: „+X/turę" na karcie
+surowca = produkcja − dyplomacja (NIE zawiera zużycia obywateli/budynków/wojska — osobny
+mechanizm, dopisane wprost w UI, żeby nie wyglądało jak rozjazd). `tsc` 0 błędów, `logic-test`
+213/213, nowy test 60/60, `citizen-resource-upkeep-test` 105/105. Commit `a79bae29`.
+
+**STATUS: PUNKT 1 ZAMKNIĘTY. Punkty 2 (kolumny tabeli Miasta) i 3 (podsumowanie) — patrz sekcja
+rozszerzonego zakresu wyżej, osobny dispatch.**
+
+## P-SUROWCE-KOLEJNOSC-KART (Maciej, 2026-08-12, zrzut panelu Surowców)
+
+Właściciel podał docelową kolejność kart surowców w panelu Surowców (dziś kolejność wygląda na
+przypadkową — Drewno/Kamień, Glina/Ruda miedzi, Ruda żelaza/Cegła, Ceramika/Brąz, Żelazo/Stal,
+Sól/Koń, Złoto — nie odzwierciedla żadnej logicznej pary surowiec-bazowy→przetworzony):
+
+1. Drewno (lewa kolumna, pierwsza para)
+2. Kamień (prawa kolumna, pierwsza para)
+3. Glina / Cegła (para 2)
+4. Sól / Ceramika (para 3)
+5. Ruda miedzi / Brąz (para 4)
+6. Ruda żelaza / Ruda cyny (para 5 — **Ruda cyny NIE ISTNIEJE jeszcze w grze, właściciel chce
+   miejsce już teraz zarezerwowane** pod przyszłe dodanie surowca)
+7. Żelazo / Stal (para 6)
+8. Złoto (na samym końcu, osobno)
+
+ZADANIE dla dispatchu: znaleźć listę/kolejność kart w panelu Surowców (prawdopodobnie
+`empireDetailPanel.ts`, ta sama sekcja co punkt 1 `P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA` właśnie
+scalona w `a79bae29`) i przeukładać wg powyższej sekwencji. Dla "Ruda cyny" (surowiec, którego
+nie ma w `gra/data/`) — zarezerwować pozycję w layout (np. karta wyszarzona/pusta z etykietą
+"Ruda cyny — wkrótce" LUB po prostu odstęp w gridzie, do ustalenia przez Operatora wg tego co
+najmniej inwazyjne) BEZ dodawania realnego surowca do danych gry (to osobna decyzja produktowa).
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej, 2026-08-12, zrzut górnego chipu Armia + panelu rekrutacji)
+
+Górny chip "Armia" w HUD dziś pokazuje `Armia 25 +20400` — plusik pokazuje SUROWĄ liczbę
+rekrutów w puli, nie ile PEŁNYCH jednostek można z niej wystawić. Właściciel chce:
+
+1. **Górny chip Armia**: "+" ma pokazywać ile PEŁNYCH jednostek można aktualnie zrekrutować z
+   puli rekrutów (nie samą liczbę rekrutów).
+2. **Panel "Rekruci (pula werbu)" (informacje ogólne, imperium)**: oprócz dzisiejszej liczby
+   rekrutów, dopisać (a) ile rekrutów potrzeba na JEDNĄ jednostkę w BIEŻĄCEJ epoce (dziś panel
+   już pokazuje "koszt 4000 rekr./szt." w opisie — upewnić się że to samo źródło), (b) ile
+   ŁĄCZNIE pełnych jednostek można wystawić z całej puli imperium.
+3. **Tabela per-miasto** (kolumny Miasto/Rekruci/Max/Odnowa): dopisać kolumnę z liczbą
+   POTENCJALNYCH pełnych jednostek do wystawienia z rekrutów TEGO miasta, z DOKŁADNOŚCIĄ DO
+   JEDNEGO MIEJSCA PO PRZECINKU (np. "2,6") — nie zaokrąglać w górę/dół, bo miasto realnie nie
+   rekrutuje samo z siebie, tylko z puli ogólnej (to wartość informacyjna/wkład miasta do puli).
+4. **Na końcu tabeli** — wiersz podsumowania: suma pełnych jednostek możliwych do wystawienia
+   z całej puli (ten sam wynik co punkt 2b, dla spójności).
+
+ZADANIE dla dispatchu: znaleźć chip "Armia" w HUD (`gra/src/ui/hud.ts`, wzorzec z niedawno
+dodanego chipu "Obywatele" — `P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD`) oraz panel
+"Rekruci (pula werbu)" z tabelą per-miasto (grep "Rekruci (pula werbu)"/"koszt 4000 rekr" w
+`gra/src/ui/`). Koszt rekrutów/jednostkę w bieżącej epoce — sprawdzić czy istnieje już gotowa
+stała/funkcja (grep "rekr./szt"/"kosztRekrutow"/podobne w `gra/src/game/`) zanim się przelicza
+od nowa. Zachować SPÓJNOŚĆ źródła między górnym chipem, panelem ogólnym i tabelą per-miasto —
+wszystkie trzy miejsca muszą liczyć z tego samego kosztu/jednostkę, żeby liczby się zgadzały.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK (Maciej, 2026-08-12, decyzja + nowa funkcja, dot. P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1)
+
+**Część A — konkretne wagi (odpowiedź właściciela na wcześniej zarejestrowane pytanie ABC
+`P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1`, ale zamiast litery A/B/C — własne liczby, więc
+traktować jako decyzję nadrzędną wobec tamtych wariantów)**. Wagi żyją w
+`gra/data/power-params.json::skladniki.<klucz>.pkt` (fallback `power-objective.ts:97-109`).
+Zmiany wag (mnożnik względem DZISIEJSZEJ wagi, nie względem punktów):
+1. **Armia** (`M_pole`, dziś wsp. 25) → **podzielić przez 10** (właściciel: "10-krotnie
+   zmniejszyć moc jednostek w sensie w jaki sposób są wliczane do power, bo stanowią zbyt dużą
+   część mocy i zaburzają prawdziwy obraz").
+2. **Rekruci (ekw. jedn.)** (dziś wsp. 5) → **razy dwa**.
+3. **Wygrane bitwy** (dziś wsp. 1) → **razy dwa**.
+4. **Zdobycze (eliminacje)** (dziś wsp. 1) → **razy dwa**.
+5. **Odkrycia/tech** (dziś wsp. 20) → **razy cztery**.
+
+⚠️ **NIEJEDNOZNACZNOŚĆ DO WYJAŚNIENIA (rule 6 — nie zgadywać)**: zdanie właściciela "Zdobyczę
+eliminację, pól liczba punktów też razy dwa" wygląda na dyktowanie głosowe z literówką — mogło
+oznaczać PRAWDOPODOBNIE jeden komponent (Zdobycze/eliminacje ×2, ujęte wyżej) ALBO dwa
+(Zdobycze/eliminacje ×2 ORAZ Terytorium-heksy ×2, "pól" = kolokwialnie heksy/pola mapy). Do
+potwierdzenia przez właściciela zanim Operator dotknie wagi Terytorium — **NIE zgadywać, zapytać
+wprost w czacie zanim się zamknie temat wag** (zrobione — patrz odpowiedź w tej samej turze).
+
+**Część B — nowa funkcja: podział widoku Mocy w Rankingu (koniec porównania cywilizacji)**.
+Dziś "Ranking Moc" pokazuje tylko jedną, łączną liczbę Mocy per cywilizacja. Właściciel chce
+możliwość PRZEŁĄCZENIA widoku rankingu między trzema trybami:
+1. **Moc całkowita** (dzisiejsza suma wszystkich składników, bez zmian).
+2. **Moc gospodarcza** — WSZYSTKIE składniki OPRÓCZ Armii i Rekrutów (Obywatele, Miasta,
+   Terytorium, Infrastruktura, Odkrycia/tech, Ulepszenia terenu, Kultura, Jedność religii,
+   Zdobycze/eliminacje — do potwierdzenia dokładnej listy z Operatorem, ale zasada: wszystko co
+   NIE jest wojskowe).
+3. **Moc militarna** — WYŁĄCZNIE Armia + Rekruci (ekw. jedn.) — "tylko ilość rekrutów i armia
+   posiadana".
+Cel (słowa właściciela): "żeby można było bardziej sprawdzić jak nasza cywilizacja w rankingu
+odnosi się do kwestii gospodarczych, jak do kwestii militarnych i jak w całości."
+
+ZADANIE dla dispatchu: `gra/data/power-params.json` (zmiana wag część A, z wyjątkiem
+Terytorium/"pól" do czasu odpowiedzi), `gra/src/game/power-objective.ts` (fallback musi być
+spójny z JSON, jak zawsze w tym pliku), Ranking Moc UI (grep "Ranking Moc" w `gra/src/ui/`) —
+dodać przełącznik trybu widoku licząc sumę tylko z wybranego podzbioru `skladniki` (nie osobny
+silnik liczenia — filtrowanie tej samej listy komponentów wg tagu wojskowy/niewojskowy). Sprawdzić
+czy jest test canonu wag power-params (grep w `gra/tools/`) i zaktualizować oczekiwane wartości.
+
+**STATUS: OTWARTE. Część A (bez Terytorium) + Część B → dispatch Sonnet 5 (worktree) po
+potwierdzeniu "pól" w czacie.**
+
+## P-MOC-BALANS-WAGI — DOPRECYZOWANIE "PÓL" (Maciej, ECHO 2026-08-12)
+
+Potwierdzone pytaniem doprecyzowującym: **"pól" = TAKŻE Terytorium (heksy) ×2**, nie tylko
+Zdobycze/eliminacje. Pełna lista wag część A (patrz sekcja `P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK`
+wyżej) — dopisać punkt 6:
+6. **Terytorium (heksy)** (dziś wsp. 0.5) → **razy dwa** (→ 1.0).
+
+Dispatch obejmuje TERAZ pełną listę 6 wag (Armia ÷10, Rekruci ×2, Wygrane bitwy ×2, Zdobycze
+×2, Odkrycia/tech ×4, Terytorium ×2) + Część B (przełącznik widoku Moc całkowita/gospodarcza/
+militarna). Nic już nie czeka na doprecyzowanie w tym temacie.
+
+**STATUS: OTWARTE, gotowe do dispatchu Sonnet 5 (worktree) — pełny zakres A+B.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — DECYZJA: STAWKA 1→0,2 + LEKKI WZROST PRODUKCJI (Maciej, ECHO 2026-08-12)
+
+Właściciel zdecydował dwutorowo, w reakcji na zgłoszenie "bardzo ciężko zaspokoić te potrzeby"
+(zob. rozpiska stawek w tej samej turze — 1 szt./obywatela/turę, do 5 surowców w epoce Żelaza):
+
+1. **Stawka zużycia obywateli: z 1,0 na 0,2 sztuki surowca / obywatela / turę** (5× mniej) —
+   konkretna, gotowa do wdrożenia liczba. Zmiana w `computeCitizenResourceDrain()`
+   (`gra/src/game/citizen-resource-upkeep.ts`), dziś `const need = pop;` (czyli `pop × 1`) →
+   `pop × 0.2`. Sprawdzić czy `deductions`/testy zakładają liczby całkowite (obecny kod NIE
+   floruje `need`, tylko `pop` przy starcie — do zweryfikowania czy 0,2 wymaga zaokrąglenia
+   przy małych populacjach, np. pop=1 → need=0,2, żeby uniknąć drenażu poniżej sensownej
+   granulacji magazynu).
+2. **"Troszeczkę zwiększymy liczbę produkcji surowców w terenie"** — kierunek zaakceptowany,
+   ALE **BEZ KONKRETNEJ LICZBY/DŹWIGNI** (które budynki/tereny, o ile %). Zgodnie z zasadą
+   "każda liczba musi mieć nazwany parametr" — **NIE zgadywać konkretnej wartości**. Do
+   dispatchu: punkt 1 (stawka 0,2) jest gotowy do wdrożenia od razu; punkt 2 wymaga osobnego
+   pytania ABC z konkretną propozycją (np. "+X% wydajności budynków surowcowych bazowych:
+   Tartak/Kamieniołom/Glinianka" — Operator może PRZYGOTOWAĆ wariant liczbowy do ABC, ale nie
+   wdrażać go bez odpowiedzi właściciela).
+
+**STATUS: Punkt 1 → dispatch Sonnet 5 (worktree), gotowe. Punkt 2 → dispatch przygotuje
+propozycję ABC (nie koduje), do zadania w kolejnej turze.**
