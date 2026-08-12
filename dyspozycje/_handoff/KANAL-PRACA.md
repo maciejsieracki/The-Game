@@ -1,3 +1,11 @@
+## [18:xx PL, 2026-08-10] CHMURA → main — dogonienie o FALA 267 (rytm "jedna fala do tyłu")
+
+Po deployu FALA 268 (md5 `3bc0236b`, zalogowany osobno wyżej), zgodnie z `R-MERGE-MAIN-RYTM-Q1`
+scaliłem FALĘ 267 do `main`: `git merge b2193a91 --no-ff` (merge commit `99974173`), zero konfliktów,
+fast-forward push. Bramki na `main` po scaleniu: `tsc --noEmit` 0 błędów, `logic-test.cjs` 213/213.
+`main` teraz na `99974173` (było `008cf94a`/FALA 266).
+CZEKAM-NA: nic — FALA 268 zostaje na gałęzi sesji do testów, zgodnie z rytmem.
+
 ## [09:00 UTC, 2026-08-07] SESJA LOKALNA (MASTER) → Maciej / GROK — PULL WYKONANY: dysk = origin/main f3437e3 (FALA 256 na dysku)
 
 Zamykam CZEKAM-NA z [13:24]: dysk właściciela zsynchronizowany do `f3437e3` (tip `41eed4d6`/FALA 256 zawarty).
@@ -6553,7 +6561,7 @@ CZEKAM-NA: sesja lokalna — pull `a6251fe2` na dysk właściciela + potwierdzen
 
 ## [19:56 PL, 2026-08-10] CHMURA → SESJA LOKALNA — deploy ROBOCZA FALA 268, md5 `3bc0236b`
 
-Build z HEAD `225c8342` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (38 commitów od FALA 267 / `b2193a91`, z czego **dokładnie 3 ruszają `gra/src`**; `gra/data` nietknięte).
+Build z HEAD `225c8342` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (38 commitów od FALA 267 / `b2193a91`, z czego **dokładnie 3 ruszają `gra/src`**; `gra/data` nietknięte). W trakcie deployu doszedł na gałęzi commit `eb8f47ba` (wpis rejestru, 1 linia, **zero zmian w `gra/src`/`gra/data`**) — bundel jest z drzewa `225c8342`, kod tożsamy; commit deployu leży na `eb8f47ba`, push fast-forward bez rozjazdu.
 Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`3bc0236b8ef52d34aacaea1704bb010b`**, stempel `ROBOCZA · 43c9d423 · 2026-08-10 17:56` (UTC). 6 bundli playtestowych + `START.html`/manifest (10) przegenerowane.
 🔴 **UWAGA — ta fala zmienia moment decyzji o racjach, nie tylko wygląd.** Auto Wyżywienie przelicza poziom racji **na żywo w trakcie tury**, a nie dopiero na jej końcu.
 **3 tematy:** (1) **Auto Wyżywienie live-recalc** — racje przeliczane na bieżąco + naprawiona niespójność `Wzrost%` liczonego z **surowego** zamiast **przyciętego** poziomu racji (rozjazd w **7 miejscach UI**) + cache `_maxSafeRationCache` zrównujący plakietkę miasta na mapie z panelem miasta; 5 rund Evaluatora. (2) **R-STAWKI-KOSZT-ULEPSZEN-X2-PRZYSTEPNOSC** — wyszarzenie ulepszeń, na które nie stać w pkt Pracy (mnożnik ×2 kosztu **nietknięty**, to zmiana czytelności, nie balansu). (3) **P-SPICHLERZ-ZERO-MYLACE** — dwa rozrzucone komunikaty o niepokrytym deficycie żywności scalone w jedno miejsce przy liczbie Spichlerza + tooltip HUD.
@@ -6562,3 +6570,67 @@ Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`3bc0236b8ef52d34aacaea1704bb010b`**
 ⚠️ Znanych czerwonych pre-istniejących bramek **NIE mierzono w tej fali** — status dziedziczony, nie zweryfikowany dziś. `gra/data/` niezmienione przez build (`git status` pusty przed i po; `git diff b2193a91..HEAD -- gra/data` bez plików).
 ⚠️ **Merge do `main` NIE wykonany.** `main` stoi na `008cf94a` (= FALA 266). Powstanie FALI 268 kwalifikuje **FALĘ 267** (`b2193a91`) do scalenia wg `R-MERGE-MAIN-RYTM-Q1` — agent deployu miał zakres ograniczony do gałęzi sesji i świadomie nie ruszał `main`. **Scalenie FALI 267 zostaje do wykonania jako osobny krok** (pilnujmy, żeby nie powtórzyć zaległości z FAL 264/265). Pełny opis: `WERSJE.md`.
 CZEKAM-NA: sesja lokalna — pull `3bc0236b` na dysk właściciela + potwierdzenie w kanale.
+
+## [09:2x PL, 2026-08-11] CHMURA → CHMURA (następna sesja) — deploy PRZERWANY limitem zużycia, build gotowy nie zalogowany
+
+Build ROBOCZA wykonany z HEAD `845fa3cf` gałęzi `claude/sprawdzenie-funkcjonalnosci-ek4ra0`
+(sesja nocna 2026-08-10/11, wiele tematów, szczegóły `PYTANIA-OTWARTE.md`). Bundel
+`gra-robocza/Gra-ROBOCZA.html` md5 **`799827adc83b1a57ebb1576e2d876a95`**, stemplowany
+(`inject-build-stamp.cjs ROBOCZA`), `sync-playtest-bundles.cjs` + `generate-start-hub.cjs`
+wykonane, **`verify-robocza-bundle.cjs` → VERIFY OK** (manifest match OK). Bramki szybkie
+zielone: tsc 0 · logic-test 213/213 · tech-tree 19/19 · research 33/33 · unit-replace 13/13 ·
+ai-founding-territory 28/28 · `citizen-resource-upkeep-test` 100/100.
+⛔ **`map-gen-regression-test.cjs` (ostatnia wymagana bramka) NIE ZDĄŻYŁA SIĘ ZAKOŃCZYĆ** —
+Maciej zgłosił koniec limitu zużycia sesji w trakcie oczekiwania. Proces działał realnie (PID
+31523, >10 min CPU, nie zawieszony) ale wynik nie został potwierdzony przed końcem sesji.
+**Artefakty builda LEŻĄ NIESCOMMITOWANE** w `gra-robocza/` (`git status` w chmurze pokaże 8
+zmienionych plików: `Gra-ROBOCZA.html`, `START.html`, `ROBOCZA-MANIFEST.json`, 6× playtest) —
+NIE usuwać, to gotowy bundel, tylko commit+push+wpis `WERSJE.md` czeka.
+**PIERWSZA CZYNNOŚĆ następnej sesji:** (1) uruchom `node gra/tools/map-gen-regression-test.cjs`
+ponownie od zera (poprzedni proces stracony razem z kontenerem sesji); jeśli PASS (determinizm
+A=B, 0 rzek bez ujścia) → dokończ runbook: commit `gra-robocza/*` + wpis `WERSJE.md` (md5
+`799827ad`) + wpis tu w kanale + `git push origin claude/sprawdzenie-funkcjonalnosci-ek4ra0:main`
+po sprawdzeniu FF; jeśli FAIL → NIE deployuj, zdiagnozuj. (2) **PRZED jakąkolwiek nową pracą**
+domknij 2 tematy pozostawione w stanie nie-PASS: `R-ZUZYCIE-SUROWCOW-OBYWATELE N1` (runda 5
+częściowa, `13f62b0b` — brakuje jeszcze 2 asercji testowych, patrz `PYTANIA-OTWARTE.md`) i
+przegląd migracji IndexedDB (`798f3c17`, workflow przerwany bez werdyktu, `PYTANIA-OTWARTE.md`).
+CZEKAM-NA: kolejna sesja chmurowa (ten sam wątek pracy, po odnowieniu limitu).
+
+## [09:5x PL, 2026-08-11] KOREKTA własnego wpisu wyżej — map-gen-regression-test NIE jest czystym PASS
+
+Wynik dotarł już po zakończeniu poprzedniej tury (proces w tle, PID 31523, dokończył się
+naturalnie). **Mój wcześniejszy wpis błędnie sugerował "uruchom od zera, jeśli PASS to
+deployuj"** — mam już wynik i NIE jest to czyste PASS, więc następna sesja NIE powinna ślepo
+polegać na samym exit code (dokładnie pułapka z CLAUDE.md §0b pkt (b): odczytałem najpierw exit
+code POTOKU `| tail -50`, nie samego skryptu — to była pomyłka, poprawiona przez przeczytanie
+treści i logiki `allOk`/`process.exit` w źródle testu).
+
+**Realny wynik:** `allOk = stdOk && duzyOk && ... && fail === 0 && villageOk` — więc skrypt
+faktycznie kończy się `exit 1`. Dwa źródła:
+1. **AC czasowe** (`standard <7s: FAIL 129.21s`, `duża <15s: FAIL 1158.30s`) — zgodnie z
+   istniejącą notatką w runbooku (`STAN-PRACY-HANDOFF.md §6`) to **znany, akceptowany** rodzaj
+   FAIL na wolniejszej maszynie, pomiar wydajności nie regresja. NIE blokuje.
+2. **⚠️ „Pangea nieregularna: 1 masa + nieregularny obrys: FAIL (4 fail)"** — 4 z 5 seedów
+   (42/123/777/2026) nie przechodzą progu `coastRatio > 3.8` (funkcja `pangeaShapeMetrics`,
+   `gra/tools/map-gen-regression-test.cjs:206-221`), WSZYSTKIE tuż PONIŻEJ progu (3.778-3.799,
+   próg 3.8 — różnica ~0.5%, nie drastyczne odchylenie). `dominantRatio`/`bboxFill` w normie.
+   **TEGO ELEMENTU NIE MA na liście znanych pre-istniejących czerwonych bramek w `CLAUDE.md`
+   (BRAMKI) ani w runbooku** — status nieznany: czy to świeża regresja z dzisiejszej nocy (mało
+   prawdopodobne, żaden z tematów nie dotykał generatora map), czy stary, nigdy niezauważony
+   dług testowy (kalibracja progu), czy coś pomiędzy.
+**PIERWSZA CZYNNOŚĆ następnej sesji (poprawiona wersja poprzedniego wpisu):** ZBADAJ Pangea FAIL
+PRZED deployem — sprawdź `git log -p -- gra/tools/map-gen-regression-test.cjs` (kiedy próg 3.8
+powstał i jaka była wtedy rzeczywista wartość) oraz czy ten sam FAIL występuje na czystym `main`
+(bramka niezwiązana z dzisiejszą pracą = można potraktować jak inne pre-istniejące czerwone i
+zadeployować z jawną notatką w `WERSJE.md`; związana = realna regresja do znalezienia). Reszta
+poprzedniego wpisu (artefakty gotowe, md5 `799827ad`, gałąź `d6817434`) bez zmian.
+
+## [10:1x PL, 2026-08-11] CHMURA → CHMURA (następna sesja) — deploy ROBOCZA FALA 269 ZALOGOWANY, md5 `799827ad`
+
+Deploy dokończony na wyraźne polecenie Macieja ("zrób deploy do roboczej tego co masz, wszystkiego
+co jest bezpieczne"). `map-gen-regression-test` przeanalizowany: 2 znane AC czasowe FAIL (akceptowalne)
++ nowy `P-MAPGEN-PANGEA-COASTRATIO-PROG` (4/5 seedów, próg coastRatio nietrafiony o ~0,5%) —
+zweryfikowany jako NIEZWIĄZANY z tą falą (żaden commit tej sesji nie dotyka generatora map),
+zarejestrowany w `PYTANIA-OTWARTE.md`, nie blokuje. Pełny opis fali: `WERSJE.md`.
+**Push na `main` NIE wykonany jeszcze w tej wiadomości** — patrz kolejny wpis niżej.
+CZEKAM-NA: nic — deploy do ROBOCZA kompletny.

@@ -324,32 +324,51 @@ ok(coreOccurrences === 2,
 //     trzech. Pinujemy KSZTAŁT klucza w tych trzech oknach: musi zawierać
 //     WYWOŁANIE `stackRenderKey(` (nie samą nazwę w komentarzu), i NIE może
 //     zawierać gołego `stackGroupIdOf(u)` jako całego klucza (bez pozycji).
+//
+//     AKTUALIZACJA (runda 2 R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2, commit 108713aa,
+//     Evaluator FAIL): `cyclablePlayerArmyLeadsBase` i `armyLeadHexKey` zostały
+//     wyniesione z main.ts do CZYSTEGO modułu `game/army-cycle.ts`.
+//     `cyclablePlayerArmyLeadsBase` zmieniła sygnaturę (dziś przyjmuje `units`
+//     i `canMove` jako argumenty, nie sięga po zmienne domknięcia). Osobna
+//     funkcja `armyLeadHexKey` PRZESTAŁA istnieć — jej rolę (fallback po
+//     zniknięciu `afterId` z listy kandydatów) przejęło bezpośrednie użycie
+//     `stackRenderKey(...)` WEWNĄTRZ `resolveAdjacentPlayerUnitCycle`
+//     (zamiast osobnej nazwanej funkcji zwracającej klucz heksu). 10a i 10b
+//     sprawdzają dziś TREŚĆ army-cycle.ts, nie main.ts. 10c
+//     (buildPlayerArmyListEntries) zostaje bez zmian w main.ts.
 // ---------------------------------------------------------------------------
 
-// 10a) cyclablePlayerArmyLeadsBase.
+const ARMY_CYCLE_TS = path.join(__dirname, '..', 'src', 'game', 'army-cycle.ts');
+const armyCycleSrc = fs.readFileSync(ARMY_CYCLE_TS, 'utf8');
+
+// 10a) cyclablePlayerArmyLeadsBase (dziś w game/army-cycle.ts).
 {
-  const start = src.indexOf('function cyclablePlayerArmyLeadsBase(requireMoves: boolean): RuntimeUnit[] {');
-  ok(start >= 0, '[10a cyclablePlayerArmyLeadsBase] znaleziono marker startowy funkcji');
-  const end = start >= 0 ? src.indexOf('\n    }\n', start) : -1;
-  ok(end > start, '[10a cyclablePlayerArmyLeadsBase] znaleziono koniec funkcji');
-  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
+  const start = armyCycleSrc.indexOf('export function cyclablePlayerArmyLeadsBase(');
+  ok(start >= 0, '[10a cyclablePlayerArmyLeadsBase] znaleziono marker startowy funkcji w army-cycle.ts');
+  const end = start >= 0 ? armyCycleSrc.indexOf('\n  return out;\n}', start) : -1;
+  ok(end > start, '[10a cyclablePlayerArmyLeadsBase] znaleziono koniec funkcji (return out;)');
+  const win = (start >= 0 && end > start) ? armyCycleSrc.slice(start, end) : '';
   ok(/const key = stackRenderKey\(u\);/.test(win),
     '[10a cyclablePlayerArmyLeadsBase] klucz grupowania = stackRenderKey(u) (tożsamość + POZYCJA + garnizon, nie gołe stackGroupIdOf)');
   ok(!/const key = stackGroupIdOf\(u\);/.test(win),
     '[10a cyclablePlayerArmyLeadsBase] klucz NIE jest gołym stackGroupIdOf(u) bez pozycji — B-R5-1 nie wrócił');
 }
 
-// 10b) armyLeadHexKey.
+// 10b) resolveAdjacentPlayerUnitCycle — fallback po zniknięciu afterId z listy
+//      (dawniej osobna funkcja armyLeadHexKey; dziś stackRenderKey użyty wprost
+//      w miejscu wyliczania fallbacku wewnątrz resolveAdjacentPlayerUnitCycle).
 {
-  const start = src.indexOf('function armyLeadHexKey(u: RuntimeUnit): string {');
-  ok(start >= 0, '[10b armyLeadHexKey] znaleziono marker startowy funkcji');
-  const end = start >= 0 ? src.indexOf('\n    }\n', start) : -1;
-  ok(end > start, '[10b armyLeadHexKey] znaleziono koniec funkcji');
-  const win = (start >= 0 && end > start) ? src.slice(start, end) : '';
-  ok(/return stackRenderKey\(u\);/.test(win),
-    '[10b armyLeadHexKey] return stackRenderKey(u) — spójne z cyclablePlayerArmyLeadsBase (10a), inaczej fallback po zniknięciu afterId trafia niewłaściwą armię');
-  ok(!/return stackGroupIdOf\(u\);/.test(win),
-    '[10b armyLeadHexKey] NIE zwraca gołego stackGroupIdOf(u) bez pozycji — B-R5-1 nie wrócił');
+  const start = armyCycleSrc.indexOf('export function resolveAdjacentPlayerUnitCycle(');
+  ok(start >= 0, '[10b resolveAdjacentPlayerUnitCycle] znaleziono marker startowy funkcji w army-cycle.ts');
+  const end = start >= 0 ? armyCycleSrc.indexOf('\n  return list[idx]!.id;\n}', start) : -1;
+  ok(end > start, '[10b resolveAdjacentPlayerUnitCycle] znaleziono koniec funkcji (return list[idx]!.id;)');
+  const win = (start >= 0 && end > start) ? armyCycleSrc.slice(start, end) : '';
+  ok(/const key = stackRenderKey\(selected\);/.test(win),
+    '[10b resolveAdjacentPlayerUnitCycle] fallback: klucz wyliczany przez stackRenderKey(selected) — spójne z 10a, inaczej fallback po zniknięciu afterId trafia niewłaściwą armię');
+  ok(/const idxByHex = list\.findIndex\(u => stackRenderKey\(u\) === key\);/.test(win),
+    '[10b resolveAdjacentPlayerUnitCycle] fallback: dopasowanie kandydatów przez stackRenderKey(u) === key (nie stackGroupIdOf(u) === key ani inna gołoheksowa alternatywa)');
+  ok(!/stackGroupIdOf\(/.test(win),
+    '[10b resolveAdjacentPlayerUnitCycle] funkcja NIE odwołuje się nigdzie do gołego stackGroupIdOf — B-R5-1 nie wrócił');
 }
 
 // 10c) buildPlayerArmyListEntries.

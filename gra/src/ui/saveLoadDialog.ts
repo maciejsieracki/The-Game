@@ -8,7 +8,8 @@ import {
   getLastPlayedSlotId,
   uniqueSlotIdFromLabel, slotSlugFromLabel,
   FSA_SLOT_PREFIX,
-  type SaveGame,
+  loadSaveSlotMeta, extractSaveContextFields,
+  type SaveGame, type SaveSlotMeta,
 } from '../game/save';
 import { listFsaAutosaveFiles, loadFsaAutosaveFile } from '../game/fsa-autosave';
 import { pushOverlay, popOverlay } from './escapeOverlayStack';
@@ -31,27 +32,24 @@ const TYP_SWIATA_LABEL: Record<string, string> = {
   ziemia: 'Ziemia',
 };
 
+/**
+ * Formatuje linię kontekstu z pola już wyciągniętych (współdzielone przez
+ * saveContextLine — pełny SaveGame -- i podsumowania z osobnego klucza meta
+ * -- Defekt C, runda 2, patrz save.ts::SaveSlotMeta).
+ */
+function formatSaveContext(f: {
+  mapSize: string; worldType: string; civId: string;
+  unitsCount: number; citiesCount: number; seed: number; saveOrigin: string;
+}): string {
+  const world = TYP_SWIATA_LABEL[f.worldType] ?? (f.worldType || '—');
+  const origin = f.saveOrigin === 'playtest' ? ' · PLAYTEST' : '';
+  const seedPart = f.seed > 0 ? ` · seed ${f.seed}` : '';
+  return `${f.mapSize} · ${world} · ${f.civId} · ${f.unitsCount} j. / ${f.citiesCount} miast${seedPart}${origin}`;
+}
+
 /** Jedna linia kontekstu: rozmiar · typ · cywilizacja · jednostki/miasta · seed. */
 export function saveContextLine(g: SaveGame): string {
-  const meta = g.meta as Record<string, unknown> | undefined;
-  const ngp = meta?.newGameParams as {
-    mapSize?: string;
-    worldType?: string;
-    typSwiata?: string;
-    civId?: string;
-  } | undefined;
-  const mapSize = String(ngp?.mapSize ?? meta?.loadMapSize ?? '—');
-  const worldRaw = ngp?.worldType ?? ngp?.typSwiata ?? meta?.loadTypSwiata ?? '';
-  const world = typeof worldRaw === 'string'
-    ? (TYP_SWIATA_LABEL[worldRaw] ?? (worldRaw || '—'))
-    : '—';
-  const civ = String(ngp?.civId ?? meta?.loadCivId ?? '—');
-  const units = Array.isArray(g.units) ? g.units.length : 0;
-  const cities = Array.isArray(g.cities) ? g.cities.length : 0;
-  const seed = typeof g.seed === 'number' ? g.seed : 0;
-  const origin = meta?.saveOrigin === 'playtest' ? ' · PLAYTEST' : '';
-  const seedPart = seed > 0 ? ` · seed ${seed}` : '';
-  return `${mapSize} · ${world} · ${civ} · ${units} j. / ${cities} miast${seedPart}${origin}`;
+  return formatSaveContext(extractSaveContextFields(g));
 }
 
 const STYLE_ID = 'civ-save-load-css';
@@ -138,41 +136,101 @@ function formatSavedAt(iso: string): string {
   }
 }
 
-/** Podsumowania wszystkich slotów (najnowsze pierwsze). */
-export function summarizeSaveSlots(): SaveSlotSummary[] {
-  const lastPlayed = getLastPlayedSlotId();
+/**
+ * Porównanie dwóch slotów do sortowania malejąco (najnowsze pierwsze).
+ * Klucz główny: `savedAt` (ISO, malejąco) -- bez zmian względem
+ * dotychczasowego zachowania dla zapisów, które mają tę datę wypełnioną.
+ * Klucz drugorzędny (WYŁĄCZNIE gdy `savedAt` puste u OBU porównywanych
+ * slotów -- stare zapisy sprzed wprowadzenia `meta.savedAt`): numer tury
+ * (`tura`, malejąco). Wybrany zamiast parsowania znacznika czasu z ID slotu,
+ * bo format ID nie jest jednolity -- bywa stałą ('autosave'), rotacją bez
+ * czasu ('autosave-N') albo 'slug-znacznikCzasuBase36' -- podczas gdy `tura`
+ * jest zawsze liczbą (deserializeGame w save.ts domyślnie ustawia 1, patrz
+ * `gra/src/game/save.ts:295`), więc jest bezpiecznym substytutem chronologii.
+ * / EN: Comparator for descending sort (newest first). Primary key:
+ * `savedAt` (ISO, descending) -- unchanged from prior behavior for saves
+ * that have this date filled in. Secondary key (ONLY when `savedAt` is
+ * empty on BOTH compared slots -- old saves predating `meta.savedAt`): turn
+ * number (`tura`, descending). Chosen over parsing a timestamp out of the
+ * slot ID, because the ID format isn't uniform -- it can be a constant
+ * ('autosave'), a timestamp-less rotation ('autosave-N'), or
+ * 'slug-base36Timestamp' -- whereas `tura` is always a number
+ * (deserializeGame in save.ts defaults it to 1, see
+ * `gra/src/game/save.ts:295`), making it a safe chronology substitute.
+ */
+export function compareSaveSlotsDesc(a: SaveSlotSummary, b: SaveSlotSummary): number {
+  if (!a.savedAt && !b.savedAt) return b.tura - a.tura;
+  return b.savedAt.localeCompare(a.savedAt);
+}
+
+/** Podsumowanie jednego slotu z SaveSlotMeta (klucz osobny, Defekt C) — bez pełnego parsowania zapisu. */
+function summaryFromMeta(slotId: string, meta: SaveSlotMeta, lastPlayed: string | null): SaveSlotSummary {
+  return {
+    slotId,
+    label: meta.label || slotId,
+    tura: meta.tura,
+    savedAt: meta.savedAt,
+    context: formatSaveContext(meta),
+    isLastPlayed: slotId === lastPlayed,
+  };
+}
+
+/**
+ * Podsumowania wszystkich slotów (najnowsze pierwsze).
+ *
+ * Defekt C (runda 2, Evaluator): wcześniej KAŻDE otwarcie tego dialogu robiło
+ * pełny `loadFromLocal` (JSON.parse całego zapisu, mapSnapshot włącznie) dla
+ * WSZYSTKICH slotów tylko po to, żeby pokazać label/turę/datę — kosztowne
+ * przy wielu zapisach. Teraz: najpierw MAŁY klucz meta
+ * (save.ts::loadSaveSlotMeta, patrz SaveSlotMeta) — gdy obecny, ZERO pełnego
+ * parsowania. Fallback na pełne `loadFromLocal` WYŁĄCZNIE dla zapisów sprzed
+ * tej naprawy (brak osobnego klucza meta) — wsteczna kompatybilność, stare
+ * zapisy nie znikają z listy.
+ *
+ * MIGRACJA IDB: async -- listSaves/loadSaveSlotMeta/loadFromLocal/
+ * getLastPlayedSlotId są teraz Promise-based (IndexedDB).
+ */
+export async function summarizeSaveSlots(): Promise<SaveSlotSummary[]> {
+  const lastPlayed = await getLastPlayedSlotId();
   const out: SaveSlotSummary[] = [];
-  for (const slotId of listSaves()) {
+  for (const slotId of await listSaves()) {
     if (slotId.startsWith('_')) continue;
-    const g = loadFromLocal(slotId);
+    const meta = await loadSaveSlotMeta(slotId);
+    if (meta) {
+      out.push(summaryFromMeta(slotId, meta, lastPlayed));
+      continue;
+    }
+    // Fallback: stary zapis bez osobnego klucza meta -- pełne parsowanie (wolniejsze, ale kompatybilne wstecz).
+    const g = await loadFromLocal(slotId);
     if (!g) continue;
-    const meta = g.meta as Record<string, unknown> | undefined;
+    const gmeta = g.meta as Record<string, unknown> | undefined;
     out.push({
       slotId,
-      label: typeof meta?.label === 'string' && meta.label.trim() ? meta.label.trim() : slotId,
+      label: typeof gmeta?.label === 'string' && gmeta.label.trim() ? gmeta.label.trim() : slotId,
       tura: g.tura,
-      savedAt: typeof meta?.savedAt === 'string' ? meta.savedAt : '',
+      savedAt: typeof gmeta?.savedAt === 'string' ? gmeta.savedAt : '',
       context: saveContextLine(g),
       isLastPlayed: slotId === lastPlayed,
     });
   }
-  out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  out.sort(compareSaveSlotsDesc);
   return out;
 }
 
 /**
  * BLOKER B1 (Evaluator runda 1): podsumowania zapisów z katalogu FSA (dysk).
  * Bez tego autozapis na dysk był write-only -- gra zapisywała pliki, ale
- * gracz nigdy nie mógł ich wybrać do wczytania. Async (w przeciwieństwie do
- * summarizeSaveSlots()), bo odczyt plików z katalogu FSA jest z natury
- * asynchroniczny -- showLoadGameDialog() renderuje dialog NATYCHMIAST z
- * samych lokalnych sejwów (zero regresji, zero opóźnienia), a wpisy z dysku
- * dokładają się do listy chwilę później, gdy ten Promise się rozwiąże.
+ * gracz nigdy nie mógł ich wybrać do wczytania. Odczyt plików z katalogu FSA
+ * jest z natury asynchroniczny -- showLoadGameDialog() doładowuje wpisy z
+ * dysku do listy chwilę PO wstępnym renderze, gdy ten Promise się rozwiąże
+ * (MIGRACJA IDB: summarizeSaveSlots() jest dziś RÓWNIEŻ async, ale to osobny
+ * powód -- IndexedDB, nie katalog FSA -- ten komentarz opisuje wyłącznie
+ * powód asynchroniczności TEJ funkcji).
  * Zwraca [] gdy FSA niedostępne/niegotowe -- wtedy dialog wygląda dokładnie
  * jak przed tą zmianą.
  */
 export async function summarizeFsaSaveSlots(): Promise<SaveSlotSummary[]> {
-  const lastPlayed = getLastPlayedSlotId();
+  const lastPlayed = await getLastPlayedSlotId();
   const files = await listFsaAutosaveFiles();
   const out: SaveSlotSummary[] = [];
   for (const { fileName } of files) {
@@ -190,43 +248,47 @@ export async function summarizeFsaSaveSlots(): Promise<SaveSlotSummary[]> {
       isLastPlayed: slotId === lastPlayed,
     });
   }
-  out.sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  out.sort(compareSaveSlotsDesc);
   return out;
 }
 
 /** Łączy sejwy z przeglądarki i z dysku w jedną listę, najnowsze pierwsze. */
 function mergeSaveSlotLists(local: SaveSlotSummary[], fsa: SaveSlotSummary[]): SaveSlotSummary[] {
   if (fsa.length === 0) return local;
-  return [...local, ...fsa].sort((a, b) => b.savedAt.localeCompare(a.savedAt));
+  return [...local, ...fsa].sort(compareSaveSlotsDesc);
 }
 
 /** Najnowszy slot (data zapisu) — fallback gdy brak lastPlayed.
- * Uwaga: skanuje WYŁĄCZNIE localStorage (zgodnie z zachowaniem sprzed
- * R-AUTOZAPIS-QUOTA-STORAGE-Q1) -- "Kontynuuj" bez wskaźnika lastPlayed nie
- * przeszukuje dysku FSA, tylko sejwy przeglądarki. Świadome uproszczenie tej
- * rundy, patrz raport. */
-export function mostRecentSaveSlotId(): string | null {
-  const slots = summarizeSaveSlots();
+ * Uwaga: skanuje WYŁĄCZNIE zapisy lokalne (IndexedDB + legacy localStorage,
+ * zgodnie z zachowaniem sprzed R-AUTOZAPIS-QUOTA-STORAGE-Q1) -- "Kontynuuj"
+ * bez wskaźnika lastPlayed nie przeszukuje dysku FSA, tylko sejwy
+ * przeglądarki. Świadome uproszczenie tej rundy, patrz raport.
+ * MIGRACJA IDB: async (summarizeSaveSlots teraz Promise-based). */
+export async function mostRecentSaveSlotId(): Promise<string | null> {
+  const slots = await summarizeSaveSlots();
   return slots[0]?.slotId ?? null;
 }
 
-/** Slot do „Kontynuuj": ostatnio grany, inaczej najnowszy zapis. */
-export function continueSaveSlotId(): string | null {
-  return getLastPlayedSlotId() ?? mostRecentSaveSlotId();
+/** Slot do „Kontynuuj": ostatnio grany, inaczej najnowszy zapis.
+ * MIGRACJA IDB: async (getLastPlayedSlotId/mostRecentSaveSlotId Promise-based). */
+export async function continueSaveSlotId(): Promise<string | null> {
+  return (await getLastPlayedSlotId()) ?? (await mostRecentSaveSlotId());
 }
 
 export interface SaveDialogOptions {
   defaultLabel: string;
   turn: number;
-  onSave: (slotId: string, label: string) => void;
+  /** MIGRACJA IDB: może zwrócić Promise -- caller (main.ts) czeka na nią przed zamknięciem dialogu. */
+  onSave: (slotId: string, label: string) => void | Promise<void>;
   onCancel?: () => void;
 }
 
-export function showSaveGameDialog(opts: SaveDialogOptions): void {
+/** MIGRACJA IDB: async -- summarizeSaveSlots() jest teraz Promise-based (IndexedDB). */
+export async function showSaveGameDialog(opts: SaveDialogOptions): Promise<void> {
   closeDialog();
   ensureStyles();
   activeOnCancel = opts.onCancel;
-  const existing = summarizeSaveSlots();
+  const existing = await summarizeSaveSlots();
 
   root = document.createElement('div');
   root.className = 'civ-sl';
@@ -271,9 +333,9 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
   saveBtn.className = 'civ-sl-primary';
   saveBtn.textContent = 'Zapisz';
 
-  const commit = () => {
+  const commit = async () => {
     const label = input.value.trim() || opts.defaultLabel;
-    const existing = existingAtCommit();
+    const existing = await existingAtCommit();
     let slotId: string;
     if (existing) {
       const ok = window.confirm(
@@ -284,22 +346,33 @@ export function showSaveGameDialog(opts: SaveDialogOptions): void {
     } else {
       slotId = uniqueSlotIdFromLabel(label);
     }
+    // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT + MIGRACJA IDB: onSave()
+    // zapisuje teraz do IndexedDB (persistSaveToSlot -> saveToLocal ->
+    // idbSetItem, Promise-based) i sam pokazuje hint z wynikiem -- CZEKAMY na
+    // nią przed zamknięciem dialogu, żeby ewentualny błędny hint nie
+    // renderował się pod jeszcze otwartym dialogiem (kolejność zachowana,
+    // tylko teraz przez await zamiast "ten sam tick JS" sprzed migracji).
+    // / EN: onSave() now writes to IndexedDB (persistSaveToSlot -> saveToLocal
+    // -> idbSetItem, Promise-based) and shows its own result hint -- we AWAIT
+    // it before closing the dialog, so a failure hint never paints underneath
+    // a still-open dialog (same ordering as before, now via await instead of
+    // "same JS tick").
+    await opts.onSave(slotId, label);
     closeDialog();
-    opts.onSave(slotId, label);
   };
 
-  function existingAtCommit(): SaveSlotSummary | undefined {
+  async function existingAtCommit(): Promise<SaveSlotSummary | undefined> {
     const label = input.value.trim();
     if (!label) return undefined;
-    return summarizeSaveSlots().find(s => s.label.trim() === label);
+    return (await summarizeSaveSlots()).find(s => s.label.trim() === label);
   }
 
   cancelBtn.addEventListener('click', () => {
     dismissSaveLoadViaEscape();
   });
-  saveBtn.addEventListener('click', commit);
+  saveBtn.addEventListener('click', () => { void commit(); });
   input.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
+    if (ev.key === 'Enter') { ev.preventDefault(); void commit(); }
   });
 
   btns.append(cancelBtn, saveBtn);
@@ -320,20 +393,27 @@ export interface LoadDialogOptions {
   onCancel?: () => void;
 }
 
-export function showLoadGameDialog(opts: LoadDialogOptions): void {
+/**
+ * MIGRACJA IDB: async -- summarizeSaveSlots() jest teraz Promise-based
+ * (IndexedDB), więc pierwszy render dialogu czeka na JEDEN odczyt IDB
+ * (rzędu pojedynczych ms, w praktyce niezauważalne) zamiast rysować się w
+ * pełni synchronicznie jak pod localStorage.
+ */
+export async function showLoadGameDialog(opts: LoadDialogOptions): Promise<void> {
   closeDialog();
   ensureStyles();
   activeOnCancel = opts.onCancel;
 
-  let slots = summarizeSaveSlots();
+  let slots: SaveSlotSummary[] = [];
   // BLOKER B1 (Evaluator runda 1): sejwy z dysku FSA -- doładowane
-  // asynchronicznie (patrz summarizeFsaSaveSlots) i scalone z listą po
-  // rozwiązaniu Promise. Dialog renderuje się NATYCHMIAST z samych lokalnych
-  // sejwów (zero regresji/opóźnienia gdy FSA niedostępne), a wpisy z dysku
-  // dokładają się chwilę później jeśli katalog jest gotowy.
+  // asynchronicznie (patrz summarizeFsaSaveSlots) i scalone z listą PO
+  // pierwszym renderze (poniżej), gdy ten drugi, wolniejszy Promise (odczyt
+  // katalogu na dysku) się rozwiąże.
   let fsaSlotsCache: SaveSlotSummary[] = [];
-  let selectedId: string | null =
-    slots.find(s => s.isLastPlayed)?.slotId ?? slots[0]?.slotId ?? null;
+  // MIGRACJA IDB: ustawiany w pierwszym renderList() (poniżej) -- jeden
+  // odczyt IndexedDB zamiast dwóch (przed migracją: raz tu dla wartości
+  // startowej, raz wewnątrz renderList()).
+  let selectedId: string | null = null;
 
   root = document.createElement('div');
   root.className = 'civ-sl';
@@ -350,9 +430,9 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
   const list = document.createElement('div');
   list.className = 'civ-sl-list';
 
-  const renderList = () => {
+  const renderList = async (): Promise<void> => {
     list.innerHTML = '';
-    slots = mergeSaveSlotLists(summarizeSaveSlots(), fsaSlotsCache);
+    slots = mergeSaveSlotLists(await summarizeSaveSlots(), fsaSlotsCache);
     if (slots.length === 0) {
       selectedId = null;
       list.innerHTML = '<div class="civ-sl-empty">Brak zapisów na tym urządzeniu.<br>Zapisz grę w menu pauzy (Ctrl+S = szybki zapis).</div>';
@@ -375,10 +455,11 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
         `<div class="civ-sl-row-meta">${escapeHtml(s.context)}</div>`;
       if (isFsa) {
         // Sejwy z dysku (rotacja FSA) nie mają tu przycisku usuwania --
-        // deleteLocal() zna wyłącznie localStorage, więc dla "fsa:" slotId
-        // byłby cichym no-opem (przycisk "usuwa", plik zostaje). Realne
-        // usuwanie pliku z dysku nie jest zrobione w tej rundzie (poza
-        // zakresem blokerów B1/B2), świadomie odłożone.
+        // deleteLocal() zna wyłącznie zapisy lokalne (IndexedDB + legacy
+        // localStorage), więc dla "fsa:" slotId byłby cichym no-opem
+        // (przycisk "usuwa", plik zostaje). Realne usuwanie pliku z dysku
+        // nie jest zrobione w tej rundzie (poza zakresem blokerów B1/B2),
+        // świadomie odłożone.
         row.append(main);
       } else {
         const del = document.createElement('button');
@@ -388,15 +469,17 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
         del.textContent = '✕';
         del.addEventListener('click', (ev) => {
           ev.stopPropagation();
-          deleteLocal(s.slotId);
-          if (selectedId === s.slotId) selectedId = null;
-          renderList();
+          void (async () => {
+            await deleteLocal(s.slotId);
+            if (selectedId === s.slotId) selectedId = null;
+            await renderList();
+          })();
         });
         row.append(main, del);
       }
       row.addEventListener('click', () => {
         selectedId = s.slotId;
-        renderList();
+        void renderList();
       });
       row.addEventListener('dblclick', () => {
         selectedId = s.slotId;
@@ -407,14 +490,14 @@ export function showLoadGameDialog(opts: LoadDialogOptions): void {
     }
   };
 
-  renderList();
+  await renderList();
   box.appendChild(list);
 
-  void summarizeFsaSaveSlots().then((fsaSlots) => {
+  void summarizeFsaSaveSlots().then(async (fsaSlots) => {
     if (root === null) return; // dialog zdążył się zamknąć zanim odczyt z dysku dokończył
     if (fsaSlots.length === 0) return;
     fsaSlotsCache = fsaSlots;
-    renderList();
+    await renderList();
   }).catch((err) => {
     console.warn('[SaveLoad] blad listowania zapisow z dysku (FSA):', err);
   });

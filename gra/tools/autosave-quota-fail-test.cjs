@@ -32,7 +32,11 @@
  *          (if (ok) { ... }) -- w galezi else go NIE MA, wiec kolejna proba
  *          rotacji nie "przeskakuje" cicho na kolejny slot.
  *   3. main.ts zrodlo -- persistSaveToSlot() (uzywana przez doQuickSave i
- *      reczny zapis) tez destrukturyzuje { ok } z nowego ksztaltu zwracanego
+ *      reczny zapis) zwraca PELNY wynik { ok, reason } z saveToLocal (nie
+ *      goly boolean) -- P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT (2026-08-10):
+ *      wolajacy (doQuickSave, openSaveGameDialog onSave) musieli znac reason
+ *      zeby przy 'quota' pokazac prawdziwy komunikat "brak miejsca w zapisie
+ *      przegladarki" zamiast mylacego ogolnika "brak localStorage?"
  *      (regresja sygnatury zlapana na tsc, ale pinujemy tu explicite).
  *
  * Usage (z gra/): node tools/autosave-quota-fail-test.cjs
@@ -78,8 +82,31 @@ esbuild.buildSync({
   absWorkingDir: GRA_DIR,
   logLevel: 'silent',
 });
-const { saveToLocal } = require(BUNDLE);
 fs.unlinkSync(ENTRY);
+
+/**
+ * MIGRACJA IDB: idb-storage.ts memoizuje jej połączenie do bazy w module-
+ * scoped `dbPromise` (celowo -- unika wielokrotnego indexedDB.open() w
+ * prawdziwej grze). W tym harnessie to oznacza, że require(BUNDLE) RAZ i
+ * używanie tego samego saveToLocal we WSZYSTKICH podtestach 1a-1d
+ * zamroziłoby pierwszy fake indexedDB na stałe -- kolejne bloki
+ * withMockIndexedDB z INNYM putErrorFactory byłyby cicho ignorowane (druga,
+ * trzecia... podmiana global.indexedDB nigdy by nie doszła do głosu).
+ * Czyścimy require.cache przed KAŻDYM podtestem, żeby moduł (i jego
+ * `dbPromise`) ożył od zera i zobaczył AKTUALNY global.indexedDB.
+ * / EN: idb-storage.ts memoizes its DB connection in a module-scoped
+ * `dbPromise` (deliberately -- avoids repeated indexedDB.open() in the real
+ * game). In this harness that means require(BUNDLE) once and reusing the
+ * same saveToLocal across all 1a-1d sub-tests would freeze the first fake
+ * indexedDB forever -- later withMockIndexedDB blocks with a DIFFERENT
+ * putErrorFactory would be silently ignored. Clear require.cache before
+ * EACH sub-test so the module (and its `dbPromise`) starts fresh and picks
+ * up the CURRENT global.indexedDB.
+ */
+function freshSaveToLocal() {
+  delete require.cache[require.resolve(BUNDLE)];
+  return require(BUNDLE).saveToLocal;
+}
 
 /** Minimalny SaveGame legalny dla serializeGame -- pola poza `wersja`/`tura`
  * nie sa uzywane przez ten test (serializeGame robi JSON.stringify calosci). */
@@ -95,65 +122,140 @@ function fakeSave() {
   };
 }
 
-function withMockStorage(setItemImpl, fn) {
-  const store = {};
-  global.localStorage = {
-    getItem: (k) => (k in store ? store[k] : null),
-    setItem: setItemImpl || ((k, v) => { store[k] = v; }),
-    removeItem: (k) => { delete store[k]; },
-    key: (i) => Object.keys(store)[i] ?? null,
-    get length() { return Object.keys(store).length; },
+// ---------------------------------------------------------------------------
+// MIGRACJA IDB: saveToLocal() zapisuje dziś do IndexedDB (idb-storage.ts),
+// nie do localStorage -- fake musi imitowac minimalny indexedDB.open/
+// transaction/objectStore.put, ktorego uzywa idbSetItem(). `fake-indexeddb`
+// NIE jest w package.json (sprawdzone) -- zamiast dodawac zaleznosc npm,
+// piszemy reczny, minimalny fake pokrywajacy WYLACZNIE to, czego realnie
+// uzywa idb-storage.ts (brak kursorow/indeksow -- YAGNI, patrz idb-storage-
+// migration-test.cjs po ten sam wzorzec z pelniejszym komentarzem).
+// / EN: saveToLocal() now writes to IndexedDB (idb-storage.ts), not
+// localStorage -- the fake must mimic the minimal indexedDB.open/
+// transaction/objectStore.put surface idbSetItem() actually uses.
+// `fake-indexeddb` is NOT in package.json (checked) -- instead of adding an
+// npm dependency, we write a manual, minimal fake covering ONLY what
+// idb-storage.ts actually uses (no cursors/indexes -- YAGNI, see
+// idb-storage-migration-test.cjs for the same pattern with a fuller comment).
+// ---------------------------------------------------------------------------
+function makeFakeIndexedDB(putErrorFactory) {
+  const store = new Map();
+  const fakeReq = (getResult) => {
+    const req = { onsuccess: null, onerror: null, result: undefined };
+    queueMicrotask(() => {
+      req.result = getResult();
+      if (req.onsuccess) req.onsuccess();
+    });
+    return req;
   };
+  const objectStore = {
+    put(value, key) {
+      const err = putErrorFactory ? putErrorFactory() : null;
+      if (err) {
+        // Zaplanuj blad transakcji (patrz tx.put nizej) -- realne IndexedDB
+        // odrzuca calą transakcję na blad zapisu, nie pojedynczy request.
+        objectStore._pendingError = err;
+        return fakeReq(() => undefined);
+      }
+      store.set(key, value);
+      return fakeReq(() => undefined);
+    },
+    get(key) { return fakeReq(() => store.get(key)); },
+    delete(key) { store.delete(key); return fakeReq(() => undefined); },
+    getAllKeys() { return fakeReq(() => Array.from(store.keys())); },
+  };
+  const transaction = {
+    objectStore: () => objectStore,
+    oncomplete: null, onerror: null, onabort: null, error: null,
+  };
+  const db = {
+    objectStoreNames: { contains: () => true },
+    transaction: (_name, _mode) => {
+      queueMicrotask(() => {
+        if (objectStore._pendingError) {
+          const err = objectStore._pendingError;
+          objectStore._pendingError = null;
+          transaction.error = err;
+          if (transaction.onabort) transaction.onabort();
+        } else if (transaction.oncomplete) {
+          transaction.oncomplete();
+        }
+      });
+      return transaction;
+    },
+  };
+  return {
+    open() {
+      const req = { onsuccess: null, onerror: null, onupgradeneeded: null, onblocked: null, result: db };
+      queueMicrotask(() => {
+        if (req.onupgradeneeded) req.onupgradeneeded();
+        if (req.onsuccess) req.onsuccess();
+      });
+      return req;
+    },
+  };
+}
+
+async function withMockIndexedDB(putErrorFactory, fn) {
+  global.indexedDB = makeFakeIndexedDB(putErrorFactory);
   try {
-    return fn(store);
+    // Świeży require -- patrz komentarz przy freshSaveToLocal() powyżej.
+    return await fn(freshSaveToLocal());
   } finally {
-    delete global.localStorage;
+    delete global.indexedDB;
   }
 }
 
-// 1a. sukces
-withMockStorage(undefined, () => {
-  const res = saveToLocal('autosave-1', fakeSave());
-  assert(res.ok === true, '1a. sukces -> { ok: true } (got ' + JSON.stringify(res) + ')');
-  assert(res.reason === undefined, '1a. sukces -> bez reason');
-});
-
-// 1b. QuotaExceededError (DOMException-like -- name)
-withMockStorage(() => {
-  const e = new Error('quota');
-  e.name = 'QuotaExceededError';
-  throw e;
-}, () => {
-  const res = saveToLocal('autosave-1', fakeSave());
-  assert(res.ok === false, '1b. QuotaExceededError -> ok:false (got ' + JSON.stringify(res) + ')');
-  assert(res.reason === 'quota', "1b. QuotaExceededError -> reason:'quota' (got " + JSON.stringify(res) + ')');
-});
-
-// 1c. Inny blad (nie quota)
-withMockStorage(() => {
-  throw new TypeError('boom, unrelated failure');
-}, () => {
-  const res = saveToLocal('autosave-1', fakeSave());
-  assert(res.ok === false, '1c. inny blad -> ok:false (got ' + JSON.stringify(res) + ')');
-  assert(res.reason === 'other', "1c. inny blad -> reason:'other' (nie 'quota') (got " + JSON.stringify(res) + ')');
-});
-
-// 1d. Legacy code=22 / code=1014
-for (const code of [22, 1014]) {
-  withMockStorage(() => {
-    const e = new Error('legacy quota code=' + code);
-    e.code = code;
-    throw e;
-  }, () => {
-    const res = saveToLocal('autosave-1', fakeSave());
-    assert(
-      res.ok === false && res.reason === 'quota',
-      '1d. legacy DOMException code=' + code + " -> reason:'quota' (got " + JSON.stringify(res) + ')',
-    );
+(async () => {
+  // 1a. sukces
+  await withMockIndexedDB(null, async (saveToLocal) => {
+    const res = await saveToLocal('autosave-1', fakeSave());
+    assert(res.ok === true, '1a. sukces -> { ok: true } (got ' + JSON.stringify(res) + ')');
+    assert(res.reason === undefined, '1a. sukces -> bez reason');
   });
-}
 
-console.log('');
+  // 1b. QuotaExceededError (DOMException-like -- name)
+  await withMockIndexedDB(() => {
+    const e = new Error('quota');
+    e.name = 'QuotaExceededError';
+    return e;
+  }, async (saveToLocal) => {
+    const res = await saveToLocal('autosave-1', fakeSave());
+    assert(res.ok === false, '1b. QuotaExceededError -> ok:false (got ' + JSON.stringify(res) + ')');
+    assert(res.reason === 'quota', "1b. QuotaExceededError -> reason:'quota' (got " + JSON.stringify(res) + ')');
+  });
+
+  // 1c. Inny blad (nie quota)
+  await withMockIndexedDB(() => new TypeError('boom, unrelated failure'), async (saveToLocal) => {
+    const res = await saveToLocal('autosave-1', fakeSave());
+    assert(res.ok === false, '1c. inny blad -> ok:false (got ' + JSON.stringify(res) + ')');
+    assert(res.reason === 'other', "1c. inny blad -> reason:'other' (nie 'quota') (got " + JSON.stringify(res) + ')');
+  });
+
+  // 1d. Legacy code=22 / code=1014
+  for (const code of [22, 1014]) {
+    await withMockIndexedDB(() => {
+      const e = new Error('legacy quota code=' + code);
+      e.code = code;
+      return e;
+    }, async (saveToLocal) => {
+      const res = await saveToLocal('autosave-1', fakeSave());
+      assert(
+        res.ok === false && res.reason === 'quota',
+        '1d. legacy DOMException code=' + code + " -> reason:'quota' (got " + JSON.stringify(res) + ')',
+      );
+    });
+  }
+
+  console.log('');
+  runSourceAssertions();
+})().catch((e) => {
+  console.error('UNCAUGHT:', e);
+  try { fs.unlinkSync(BUNDLE); } catch (e2) { /* ignore */ }
+  process.exit(1);
+});
+
+function runSourceAssertions() {
 
 // ---------------------------------------------------------------------------
 // 2-3. main.ts zrodlo -- literalne asercje tekstowe.
@@ -172,10 +274,11 @@ assert(!!rotMatch, 'doRotatingAutosave() znaleziona w main.ts (dopasowanie do En
 if (rotMatch) {
   const body = rotMatch[1];
 
-  // 2a. destrukturyzacja { ok, reason }
+  // 2a. destrukturyzacja { ok, reason } -- MIGRACJA IDB: saveToLocal() jest
+  // teraz async, wywolanie poprzedzone `await`.
   assert(
-    /const \{ ok, reason \} = saveToLocal\(/.test(body),
-    'doRotatingAutosave() destrukturyzuje { ok, reason } z saveToLocal (nie samo bool)',
+    /const \{ ok, reason \} = await saveToLocal\(/.test(body),
+    'doRotatingAutosave() destrukturyzuje { ok, reason } z await saveToLocal (nie samo bool)',
   );
 
   // Wydziel galaz else (niepowodzenie) do osobnych asercji, zeby nie zlapac
@@ -220,16 +323,19 @@ if (rotMatch) {
   }
 }
 
-// 3. persistSaveToSlot() destrukturyzuje { ok } z saveToLocal.
+// 3. persistSaveToSlot() zwraca PELNY wynik { ok, reason } z saveToLocal
+//    (nie goly boolean) -- P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT.
+//    MIGRACJA IDB: funkcja jest teraz async (Promise<SaveToLocalResult>) --
+//    saveToLocal() (IndexedDB) wolane z await.
 const persistMatch = mainTsSrc.match(
-  /function persistSaveToSlot\(slotId: string, label: string\): boolean \{([\s\S]*?)\n {4}\}/,
+  /async function persistSaveToSlot\(slotId: string, label: string\): Promise<SaveToLocalResult> \{([\s\S]*?)\n {4}\}/,
 );
-assert(!!persistMatch, 'persistSaveToSlot() znaleziona w main.ts');
+assert(!!persistMatch, 'persistSaveToSlot() znaleziona w main.ts (async, zwraca Promise<SaveToLocalResult>, nie goly boolean)');
 if (persistMatch) {
   const body = persistMatch[1];
   assert(
-    /const \{ ok \} = saveToLocal\(/.test(body),
-    'persistSaveToSlot() destrukturyzuje { ok } z saveToLocal (dostosowane do nowej sygnatury {ok, reason})',
+    /const result = await saveToLocal\(/.test(body) && /return result;/.test(body),
+    'persistSaveToSlot() zwraca caly wynik await saveToLocal ({ ok, reason }), nie tylko ok',
   );
 }
 
@@ -237,3 +343,4 @@ console.log('');
 console.log('=== autosave-quota-fail-test: ' + pass + ' pass, ' + fail + ' fail ===');
 try { fs.unlinkSync(BUNDLE); } catch (e) { /* ignore */ }
 process.exit(fail > 0 ? 1 : 0);
+}

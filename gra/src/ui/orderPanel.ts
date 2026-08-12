@@ -9,6 +9,7 @@
  */
 
 import type { SocietyLine } from '../game/society-breakdown';
+import type { CitizenUpkeepCoverage } from '../game/citizen-resource-upkeep';
 import { brandIconSvg } from './icons/brandAssets';
 
 export interface OrderState {
@@ -39,6 +40,12 @@ export interface OrderState {
   rebelState?: boolean;
   /** B-LAW-Q1: pozostałe tury bonusu Prawa 100% po podboju. */
   postCaptureLawTurnsRemaining?: number;
+  /**
+   * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): pokrycie zużycia surowców budowlanych
+   * obywateli tego miasta w bieżącej epoce (magazyn centralny imperium) — panel miasta pokazuje
+   * listę pokrytych/brakujących zaraz pod Szczęściem (`citizen-resource-upkeep.ts`).
+   */
+  citizenUpkeep?: CitizenUpkeepCoverage;
 }
 
 export interface OrderPanelConfig {

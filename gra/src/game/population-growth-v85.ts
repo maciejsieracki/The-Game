@@ -170,6 +170,8 @@ export interface GrowthPercentBreakdown {
   zdrowie: number;
   szczescie: number;
   cywilizacja: number;
+  /** R-ZUZYCIE-SUROWCOW-OBYWATELE: suma kary Rozwoju za brakujące surowce budowlane obywateli. */
+  zaopatrzenie: number;
 }
 
 export interface GrowthPercentInput {
@@ -181,6 +183,16 @@ export interface GrowthPercentInput {
   spichlerzState: SpichlerzCityBonusState;
   civKey?: string | null;
   rationParams: RationParams;
+  /**
+   * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): suma kary Rozwoju (%) za surowce
+   * budowlane obywateli brakujące w magazynie centralnym imperium (-1%/surowiec brakujący,
+   * binarne per surowiec, ECHO Q3=A) — niezależna od kanału Szczęścia, dodawana WPROST do
+   * sumy sześciu (teraz siedmiu) składników, nie skalowana przez `/10` jak `szczescie`.
+   * Wołający dostarcza już zsumowaną wartość —
+   * `resolveCitizenResourceCoverage(era, empireStock).growthPctDelta`
+   * (`citizen-resource-upkeep.ts`). Brak (undefined) = 0, bez zmiany zachowania.
+   */
+  citizenResourceGrowthPct?: number;
 }
 
 /** WZROST% — suma składników (PYTANIE-85, brak capa Q8). */
@@ -193,8 +205,9 @@ export function computeGrowthPercentV85(input: GrowthPercentInput): GrowthPercen
   const szczescie = Math.floor(happinessPool / 10);
   const civRaw = input.civKey ? civMatrixParam(input.civKey, 'lud_wzrost_proc') : 0;
   const cywilizacja = Math.round(civRaw * 100);
-  const total = racje + maleMiasto + spichlerz + zdrowie + szczescie + cywilizacja;
-  return { total, racje, maleMiasto, spichlerz, zdrowie, szczescie, cywilizacja };
+  const zaopatrzenie = input.citizenResourceGrowthPct ?? 0;
+  const total = racje + maleMiasto + spichlerz + zdrowie + szczescie + cywilizacja + zaopatrzenie;
+  return { total, racje, maleMiasto, spichlerz, zdrowie, szczescie, cywilizacja, zaopatrzenie };
 }
 
 export interface FractionalGrowthResult {
@@ -333,6 +346,14 @@ export interface PostCentralGrowthOpts {
   builtByCity?: ReadonlyMap<string, readonly string[]>;
   ownerEraByOwner?: ReadonlyMap<number, number>;
   civBonusyByOwner?: ReadonlyMap<number, readonly CivEconomyBonus[]>;
+  /**
+   * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): kara Rozwoju (%) per miasto za surowce
+   * budowlane obywateli brakujące w magazynie centralnym imperium — `citizen-resource-upkeep.ts`
+   * `resolveCitizenResourceCoverage(...).growthPctDelta`, wyliczona RAZ per miasto per turę przez
+   * wołającego (main.ts, ten sam magazyn dla każdego miasta jednego ownera). Brak hooka → 0 (bez
+   * zmiany zachowania, wsteczna kompatybilność).
+   */
+  citizenGrowthPctByCityId?: ReadonlyMap<string, number>;
 }
 
 /** Wzrost ułamkowy + głód — po centrali (nakarmione z fedByCityId). */
@@ -340,7 +361,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
   const {
     cities, econ, efResult, map, territoryNodes, econParams, rationParams,
     ownerCivByOwnerId, spichlerzByCity, happinessByCityId, builtByCity,
-    ownerEraByOwner, civBonusyByOwner,
+    ownerEraByOwner, civBonusyByOwner, citizenGrowthPctByCityId,
   } = opts;
 
   for (const ownerTick of efResult.perOwner) {
@@ -366,6 +387,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
       // usuwa 'spichlerz' z builtIds przy ulepszeniu (upgradeFrom w buildings.json).
       const maSpichlerzBuilding = cityHasSpichlerzBuilding(builtIds);
       const happiness = happinessByCityId?.get(row.cityId) ?? 0;
+      const citizenGrowthPct = citizenGrowthPctByCityId?.get(row.cityId) ?? 0;
       const breakdown = computeGrowthPercentV85({
         population: city.population,
         poziomRacji: getCityRationLevel(city),
@@ -375,6 +397,7 @@ export function applyPostCentralPopulationGrowth(opts: PostCentralGrowthOpts): v
         spichlerzState: spichlerz,
         civKey: ownerCivByOwnerId?.get(city.ownerId) ?? null,
         rationParams,
+        citizenResourceGrowthPct: citizenGrowthPct,
       });
       row.wzrostProcent = breakdown.total;
       row.breakdown = breakdown;

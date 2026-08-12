@@ -174,6 +174,8 @@ html.civ-ui-zoom-active .civ-side-ctx-dock{left:${SIDE_PANEL_LEFT};
 .civ-side-panel .sp-event.sp-city{border-left-color:var(--tg-green);}
 .civ-side-panel .sp-event.sp-unit{border-left-color:var(--civ-gold-primary);}
 .civ-side-panel .sp-event.sp-enemy,.civ-side-panel .sp-event.sp-blocking{border-left-color:var(--tg-red);}
+.civ-side-panel .sp-event.sp-diplo{border-left-color:#6a9fd4;background:linear-gradient(90deg,rgba(106,159,212,.10),rgba(20,26,38,.92));}
+.civ-side-panel .sp-event.sp-info{border-left-color:#c9a84c;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(20,26,38,.92));}
 .civ-side-panel .sp-event.sp-blocking{cursor:default;}
 .civ-side-panel .sp-ico{width:32px;height:32px;flex:none;border-radius:50%;
   background:var(--tg-medallion-bg);border:1.5px solid var(--tg-gold-dim);

@@ -1,5 +1,6 @@
 # Poradnik gracza — tracker postępu
 
+> **Rev. H** (2026-08-10) — `R-MANPOWER-EPOKA1-500-VS-1000=A`: cofnięcie testu Manpower ep1=500 z rev. G, epoka 1 wraca do pełnej wartości 1000 (jak epoki 2+).  
 > **Rev. G2** (2026-08-04) — Civpedia: obrona % (Mury/Cytadela/Baszta), ścieżki A/B kuźni i koszar, Targowisko=¤, Wielka Kuźnia parkowana.  
 > **Rev. G** (2026-08-04) — przejście po FALA 206–208: brak osadnika (Załóż miasto), min. 4 hex, Manpower ep1=500, Wiarygodność dyplomacji, hub badań + numery planu, pigułka miasta v1, porażka = zero miast.  
 > Poprzednio **Rev. F** (2026-07-23) — 12 rozdziałów po sesji tech/Cudów/HUD/dyplomacji/rekrutacji.  

@@ -104,8 +104,9 @@ export interface PreBattleCallbacks {
   onAuto: () => void;
   onBattlefield: () => void;
   onCancel: () => void;
-  /** Zwraca true gdy zapis się powiódł (toast na overlay). */
-  onSave?: () => boolean;
+  /** Zwraca true gdy zapis się powiódł (toast na overlay).
+   * MIGRACJA IDB: Promise -- doQuickSave (main.ts) zapisuje teraz do IndexedDB. */
+  onSave?: () => Promise<boolean>;
 }
 
 export interface PreBattleOptions {
@@ -703,9 +704,11 @@ function buildOverlay(info: PreBattleInfo, cb: PreBattleCallbacks, opts?: PreBat
   overlay.querySelector('[data-act="deploy"]')?.addEventListener('click', () => { cb.onBattlefield(); dismiss(); });
   overlay.querySelector('[data-act="save"]')?.addEventListener('click', () => {
     if (!cb.onSave) return;
-    const ok = cb.onSave();
-    const tur = info.tura !== undefined ? String(info.tura) : '?';
-    showPreBattleSaveToast(overlay, ok ? 'Zapisano · tura ' + tur : 'Zapis nieudany (brak localStorage?)', ok);
+    void (async () => {
+      const ok = await cb.onSave!();
+      const tur = info.tura !== undefined ? String(info.tura) : '?';
+      showPreBattleSaveToast(overlay, ok ? 'Zapisano · tura ' + tur : 'Zapis nieudany (brak localStorage?)', ok);
+    })();
   });
 
   return overlay;

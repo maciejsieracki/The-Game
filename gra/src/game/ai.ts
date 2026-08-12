@@ -222,10 +222,23 @@ export interface AITurnOpts {
    */
   startoweMiasta?: number;
   /**
-   * Trudność gry gracza (_menuDifficulty) — cap wojska MP i absorpcja CS.
-   * NIE suwak trudności MP (_menuCityStateDifficulty).
+   * Trudność gry gracza (_menuDifficulty). NIE suwak trudności MP
+   * (_menuCityStateDifficulty) i NIE oś PM-vs-GRACZ (_menuCityStateDifficultyVsPlayer
+   * — patrz cityStateDifficultyVsPlayer niżej). C-025/C-026 (2026-08-10): dawniej to
+   * pole zasilało też cap wojska MP (cityStateMilitaryProductionCap) — przepięte na
+   * cityStateDifficultyVsPlayer (R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B,
+   * naprawa regresji Evaluatora na a6076db7). Obecnie bez aktywnego konsumenta w ai.ts.
    */
   menuDifficulty?: DifficultyLevel;
+  /**
+   * Oś PM-vs-GRACZ (_menuCityStateDifficultyVsPlayer, C-025/C-026 2026-08-10) — jak
+   * agresywne/silne są PM WOBEC GRACZA, wprost z trudności gry (Trudna gra → PM
+   * silne/agresywne wobec gracza). NIE _menuDifficulty (trudność gry AI ogólnie) i NIE
+   * _menuCityStateDifficulty (odwrócona oś AI-vs-PM, cityStateDifficultyFromGameDifficulty).
+   * Jedyny konsument dziś: cap wojska MP (cityStateMilitaryProductionCap) niżej.
+   * / EN: player-facing CS axis -- feeds the MP military production cap.
+   */
+  cityStateDifficultyVsPlayer?: DifficultyLevel;
   /**
    * Budget gate (pkt5): called by the engine with (cityId, buildingId).
    * When provided, only candidates for which canAfford returns true are considered.
@@ -359,9 +372,10 @@ export interface AITurnOpts {
    */
   citySupportLevel?: 'low' | 'normal' | 'strong';
   /**
-   * Trudność miast-państw = Hard: aktywne wsparcie ofensywne (marsz na wroga wojny,
-   * łączenie z armią sojusznika/siostry). Normal/Easy = false (legacy defend-only).
-   * Silnik: main.ts `_menuCityStateDifficulty === 'hard'`.
+   * Trudność miast-państw WOBEC GRACZA = Hard: aktywne wsparcie ofensywne (marsz na
+   * wroga wojny, łączenie z armią sojusznika/siostry). Normal/Easy = false (legacy
+   * defend-only). Silnik: main.ts `_menuCityStateDifficultyVsPlayer === 'hard'`
+   * (C-025/C-026 2026-08-10, dawniej odwrócone `_menuCityStateDifficulty`).
    */
   cityStateOffensiveSupport?: boolean;
   /**
@@ -1430,9 +1444,15 @@ export function chooseCityProduction(
     }
   }
 
-  // MP (defensiveCopy): cap wojska wg trudności GRY gracza — easy bez limitu, normal max 1, hard 0.
-  if (opts.defensiveCopy && opts.menuDifficulty !== undefined) {
-    const milCap = cityStateMilitaryProductionCap(opts.menuDifficulty);
+  // MP (defensiveCopy): cap wojska wg osi PM-vs-GRACZ (C-025/C-026) — easy bez limitu,
+  // normal max 1, hard max 3 (= CS_WAVE_ATTACK_MIN_STACK, żeby PM ofensywne na Trudnym
+  // (cityStateOffensiveSupport) mogło w ogóle złożyć minimalną falę ataku).
+  // R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B: dawniej opts.menuDifficulty
+  // (stara oś gry) -- przepięte na opts.cityStateDifficultyVsPlayer (nowa oś gracz-facing),
+  // analogicznie do applyCityStateDifficultyTrust/cityStateOffensiveSupport/
+  // resolveClusterCityStateWarOnPlayer/_menuCitySupport w main.ts.
+  if (opts.defensiveCopy && opts.cityStateDifficultyVsPlayer !== undefined) {
+    const milCap = cityStateMilitaryProductionCap(opts.cityStateDifficultyVsPlayer);
     if (milCap !== null) {
       const militaryOwned = countOwnerMilitaryUnits(allUnits, playerId);
       if (militaryOwned >= milCap) {
@@ -2484,7 +2504,30 @@ const CS_OFFENSIVE_CAMPAIGN_RADIUS = 12;
 /** R-MP-HARD-WAVE Q2: minimalny stos przy ataku na gracza (solo zakazany bez zagrożenia domu). */
 export const CS_WAVE_ATTACK_MIN_STACK = 3;
 
-function countFriendlyMilitaryOnHex(
+/**
+ * R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): promień zamiast wymogu fizycznej
+ * współobecności na JEDNYM heksie. AI PM (Trudny) nie ma logiki celowo gromadzącej
+ * jednostki punkt-w-punkt na jednym heksie przed atakiem — bramka wymagająca stosu
+ * na tym samym heksie praktycznie nigdy się nie spełniała i PM nie atakowały gracza.
+ * Zamiast tego liczymy sojuszników PM w promieniu N heksów od atakującej jednostki.
+ * / EN: Radius instead of requiring physical co-presence on a SINGLE hex. Hard-difficulty
+ * city-state AI has no logic that deliberately masses units on one exact hex before
+ * attacking — the same-hex stack gate almost never triggered, so city-states practically
+ * never attacked the player. Count allied city-state units within a radius instead.
+ */
+export const CS_WAVE_ATTACK_RADIUS = 3;
+
+/**
+ * Utrzymywana wyłącznie jako referencja parytetu dla testu
+ * (`cs-wave-attack-radius-test.cjs`, sekcja B) — brak call sites w produkcyjnym kodzie
+ * od 2026-08-11 (R-CS-HARD-BRAK-STOSOWANIA-AI, jedyny call site zastąpiony przez
+ * countFriendlyMilitaryInRadius). NIE usuwać — test jej używa.
+ * / EN: kept only as a parity reference for the test (`cs-wave-attack-radius-test.cjs`,
+ * section B) — no production call sites since 2026-08-11 (R-CS-HARD-BRAK-STOSOWANIA-AI,
+ * its one call site was replaced by countFriendlyMilitaryInRadius). Do NOT remove — the
+ * test uses it.
+ */
+export function countFriendlyMilitaryOnHex(
   q: number,
   r: number,
   ownerIds: ReadonlySet<number>,
@@ -2492,6 +2535,24 @@ function countFriendlyMilitaryOnHex(
 ): number {
   return allUnits.filter(
     u => u.q === q && u.r === r && ownerIds.has(u.ownerId) && !isScoutUnit(u),
+  ).length;
+}
+
+/**
+ * R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): odpowiednik countFriendlyMilitaryOnHex,
+ * ale liczy jednostki w promieniu `radius` heksów od (q, r), nie tylko na tym samym heksie.
+ * / EN: Equivalent of countFriendlyMilitaryOnHex, but counts units within `radius` hexes
+ * of (q, r) instead of only on the exact same hex.
+ */
+export function countFriendlyMilitaryInRadius(
+  q: number,
+  r: number,
+  radius: number,
+  ownerIds: ReadonlySet<number>,
+  allUnits: RuntimeUnit[],
+): number {
+  return allUnits.filter(
+    u => hexDistance(u.q, u.r, q, r) <= radius && ownerIds.has(u.ownerId) && !isScoutUnit(u),
   ).length;
 }
 
@@ -2522,7 +2583,18 @@ function planCityStateOffensiveMove(
   friendlyOwnerIds: ReadonlySet<number>,
   homeGuardCount: ReadonlyMap<string, number>,
   minGuardToSend: number,
-  /** R-MP-HARD-WAVE Q1: wymagaj min. armii polowej przed wysłaniem z domu. */
+  /**
+   * R-MP-HARD-WAVE Q1: wymagaj min. armii polowej przed wysłaniem z domu.
+   * R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): ta funkcja NIE dostała analogicznej
+   * zmiany na promień — nie liczy współobecności na heksie, tylko globalny rozmiar armii
+   * polowej właściciela (countOwnerFieldArmy, brak filtra przestrzennego q/r). Jej rola to
+   * decyzja "czy w ogóle wysłać jednostkę z domu", nie bramka ataku na heksie — bramka
+   * ataku (adjacentEnemy) jest osobnym blokiem w decideDefensiveCopyTurn, tam jest zmiana.
+   * / EN: this function did NOT get an analogous radius change — it doesn't count
+   * co-presence on a hex, only the owner's overall field-army size (no spatial q/r filter).
+   * Its role is "whether to send a unit from home at all", not the attack gate on a hex —
+   * the attack gate (adjacentEnemy) is a separate block in decideDefensiveCopyTurn, changed there.
+   */
   minFieldArmyBeforeSend = 0,
 ): { q: number; r: number } | null {
   if (isScoutUnit(unit)) return null;
@@ -2716,8 +2788,13 @@ function decideDefensiveCopyTurn(
       // R-MP-HARD-WAVE Q2: solo atak na gracza zakazany — tylko fala (stos ≥3) lub obrona domu.
       if (offensiveSupport && aiCanEngageOwner(opts, adjacentEnemy.ownerId)) {
         if (!isOwnCityThreatened()) {
-          const stackSize = countFriendlyMilitaryOnHex(
-            unit.q, unit.r, waveStackOwnerIds, units,
+          // R-CS-HARD-BRAK-STOSOWANIA-AI (Maciej 2026-08-11): promień zamiast heksu —
+          // patrz komentarz przy CS_WAVE_ATTACK_RADIUS. Próg CS_WAVE_ATTACK_MIN_STACK
+          // (liczba jednostek) się NIE zmienia, zmienia się tylko sposób zliczania.
+          // / EN: radius instead of single hex — see comment at CS_WAVE_ATTACK_RADIUS.
+          // The CS_WAVE_ATTACK_MIN_STACK threshold is unchanged, only the counting method.
+          const stackSize = countFriendlyMilitaryInRadius(
+            unit.q, unit.r, CS_WAVE_ATTACK_RADIUS, waveStackOwnerIds, units,
           );
           if (stackSize < CS_WAVE_ATTACK_MIN_STACK) {
             doAttack = false;

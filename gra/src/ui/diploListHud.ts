@@ -33,6 +33,9 @@ export interface DiploListEntry {
   /** Miasto-państwo klastra — R-DYPLOMACJA-LISTA-I-PODGLAD-PRZED-WIZYTA: cywilizacje
    *  sortowane NAD miastami-państwami (patrz `compareDiploListEntries`). */
   isCityState?: boolean;
+  /** Kolor cywilizacji (civs.json kolorHex) — R-DYPLOLISTA-KOLOR-CYWILIZACJI: nazwa na
+   *  liście koloruje się tym kolorem zamiast jednolitej bieli, żeby karty się odróżniały. */
+  kolorHex?: string;
 }
 
 /**
@@ -61,6 +64,26 @@ export interface DiploPlayerSummary {
   personalityTags?: readonly string[];
   detailLine: string;
   metaLine?: string;
+}
+
+/** Rozjaśnia zbyt ciemne kolory cywilizacji (civs.json kolorHex), żeby nazwa jako
+ *  KOLOR TEKSTU (nie tło) była czytelna na prawie czarnym tle panelu — sam obrys/tło
+ *  mogą znieść ciemny kolor bez utraty czytelności, tekst nie. */
+function legibleCivTextColor(hex: string): string {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!m) return hex;
+  const num = parseInt(m[1]!, 16);
+  let r = (num >> 16) & 255;
+  let g = (num >> 8) & 255;
+  let b = num & 255;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  if (luminance < 0.45) {
+    const mix = (c: number) => Math.round(c + (255 - c) * 0.45);
+    r = mix(r);
+    g = mix(g);
+    b = mix(b);
+  }
+  return '#' + [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
 }
 
 export type DiploListFilter = 'all' | 'war';
@@ -302,6 +325,7 @@ export function createDiploListHud(config: DiploListHudConfig): DiploListHudApi 
         const name = document.createElement('div');
         name.className = 'dl-name';
         name.textContent = e.name;
+        if (e.kolorHex) name.style.color = legibleCivTextColor(e.kolorHex);
         body.appendChild(name);
         if (e.metaLine) {
           const meta = document.createElement('div');
@@ -451,6 +475,7 @@ export function diploListEntryFromRelation(rel: {
   armyCount?: number;
   activeTreaties?: readonly string[];
   isCityState?: boolean;
+  kolorHex?: string;
 }): DiploListEntry | null {
   if (rel.ownerId === undefined) return null;
   const lines = formatDiploCivListLines({
@@ -472,5 +497,6 @@ export function diploListEntryFromRelation(rel: {
     perspectiveLine: lines.perspectiveLine || undefined,
     treatyLabels: rel.activeTreaties?.length ? rel.activeTreaties : undefined,
     isCityState: rel.isCityState,
+    kolorHex: rel.kolorHex,
   };
 }

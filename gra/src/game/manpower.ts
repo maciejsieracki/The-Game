@@ -6,7 +6,8 @@
  *   - epoka imperium (1–10) → mnożniki z epoka-ludnosc-manpower.json.
  *   - ludnoscAbs = ludki × ludekNaLudka[epoka]
  *   - manpowerMax = ludki × manpowerNaLudka[epoka]  (= 10% ludnoscAbs)
- *   - koszt 1 jednostki = manpowerNaJednostke[epoka] (ep1: 500 = 2 jednostki / ludek; ep2+: zwykle = manpowerNaLudka)
+ *   - koszt 1 jednostki = manpowerNaJednostke[epoka] (ep1: pełny manpowerNaLudka = 1000, tak jak ep2+;
+ *     test z 2026-08-03 „połowa" 500 COFNIĘTY 2026-08-10 — R-MANPOWER-EPOKA1-500-VS-1000=A)
  *
  * Faza 2: odejmowanie przy rekrutacji z puli imperium (tryDeductUnitSpawnCostsEmpire).
  * Faza 2b: odnowa co turę (tickManpowerRegen) — parametry w miasto-params.json.

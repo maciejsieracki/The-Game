@@ -137,12 +137,42 @@ const buildHudStateFn = extractFunctionBody(
   'buildHudState w main.ts',
 );
 ok(
-  /getLastEmpireFoodTick\(0\)\?\.perCityRows.*\)\s*\n?\s*\.filter\(r => r\.nakarmione === false\)\.length/.test(buildHudStateFn),
-  'buildHudState liczy zywnoscMiastNiedokarmionych z getLastEmpireFoodTick(0).perCityRows — SAM tick co buildEmpireFoodSnap (panel imperium), zero rozjazdu cross-surface',
+  /const lastFoodTickForHud = getLastEmpireFoodTick\(0\);/.test(buildHudStateFn),
+  'buildHudState czyta getLastEmpireFoodTick(0) — SAM tick co buildEmpireFoodSnap (panel imperium), zero rozjazdu cross-surface',
 );
 ok(
   /zywnoscMiastNiedokarmionych,/.test(buildHudStateFn),
   'buildHudState zwraca pole zywnoscMiastNiedokarmionych w HudState',
+);
+
+// ---------------------------------------------------------------------------
+// 3b) P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (Maciej 2026-08-10): żywy fallback, gdy
+//     `_lastTicks` jest jeszcze puste (nowa gra/świeży zapis/przed 1. końcem tury) — bez tego
+//     licznik fałszywie zwracał 0, mimo że panel miasta W TEJ SAMEJ CHWILI poprawnie pokazywał
+//     deficyt. Fallback musi liczyć NA ŻYWO z foodProj.unfedCityCount, NIE zastępować danych
+//     ticku, gdy tick JEST dostępny (rozpoznanie a71a5e3791099fb13, dispatch a34cb3300165d4371).
+// ---------------------------------------------------------------------------
+ok(
+  /lastFoodTickForHud\s*\n?\s*\?\s*lastFoodTickForHud\.perCityRows\.filter\(r => r\.nakarmione === false\)\.length\s*\n?\s*:\s*foodProj\.unfedCityCount;/.test(buildHudStateFn),
+  'zywnoscMiastNiedokarmionych: gdy tick DOSTĘPNY liczy dokładnie jak dotychczas (nakarmione===false z ticku, zero zmiany zachowania); gdy tick PUSTY/undefined — żywy fallback z foodProj.unfedCityCount (nie fałszywe 0)',
+);
+
+const projectFn = extractFunctionBody(
+  mainSrc,
+  'function projectPlayerFoodProjection(): {',
+  'projectPlayerFoodProjection w main.ts',
+);
+ok(
+  /unfedCityCount: number;/.test(projectFn),
+  'projectPlayerFoodProjection deklaruje unfedCityCount w typie zwracanym',
+);
+ok(
+  /unfedCityCount,\s*\n\s*\};/.test(projectFn),
+  'projectPlayerFoodProjection zwraca unfedCityCount (wejście żywego fallbacku buildHudState)',
+);
+ok(
+  /for \(const need of deficitNeedsForFeed\) \{\s*\n\s*const covered = Math\.min\(need, Math\.max\(0, centralForFeed\)\);\s*\n\s*centralForFeed -= covered;\s*\n\s*if \(covered < need\) unfedCityCount\+\+;\s*\n\s*\}/.test(projectFn),
+  'unfedCityCount liczony DRUGIM przebiegiem identycznym z advanceEmpireFood (empire-food.ts:235-243): centrala maleje sekwencyjnie przez miasta na deficycie, miasto liczy się jako niepokryte tylko gdy pokrycie < potrzeby',
 );
 
 // ---------------------------------------------------------------------------
@@ -167,7 +197,58 @@ const unfed = unfedRowsOf(deficitRows);
 ok(unfed.length === 1 && unfed[0].name === 'Sparta', 'deficyt: dokładnie 1 miasto niedokarmione, nazwane po imieniu (Sparta)');
 
 // ---------------------------------------------------------------------------
-// 5) P-SPICHLERZ-ZERO-MYLACE (poprawka po Evaluatorze runda 1): polska liczba mnoga ma TRZY
+// 5) P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (Maciej 2026-08-10): scenariusz zgłoszenia —
+//    tick PUSTY (nowa gra/świeży zapis/przed 1. końcem tury) + miasto z lokalnym deficytem w
+//    preview.perCity ("Bilans −1/t") → licznik i tooltip MUSZĄ pokazać niedokarmione miasto na
+//    żywo, NIE 0. Replikujemy TU dokładnie ten sam dwuprzebiegowy algorytm co
+//    projectPlayerFoodProjection/advanceEmpireFood (nie uproszczenie) — sekcja 3b wyżej
+//    weryfikuje osobno, że dokładnie TA implementacja żyje naprawdę w main.ts (regex na
+//    źródło), więc te dwa sprawdzenia razem pilnują i kodu, i jego zachowania.
+// ---------------------------------------------------------------------------
+function liveUnfedCityCount(reserve, perCityBilans) {
+  let central = reserve;
+  const deficitNeedsForFeed = [];
+  for (const bilans of perCityBilans) {
+    if (bilans >= 0) central += bilans;
+    else deficitNeedsForFeed.push(-bilans);
+  }
+  let centralForFeed = central;
+  let unfedCityCount = 0;
+  for (const need of deficitNeedsForFeed) {
+    const covered = Math.min(need, Math.max(0, centralForFeed));
+    centralForFeed -= covered;
+    if (covered < need) unfedCityCount++;
+  }
+  return unfedCityCount;
+}
+
+// Zgłoszenie Macieja dosłownie: nowa gra (reserve=0, tick jeszcze nie istnieje), jedno miasto
+// Produkcja +11, Racje −12 -> Bilans −1/t.
+ok(
+  liveUnfedCityCount(0, [-1]) === 1,
+  'scenariusz zgłoszenia (reserve=0, jedno miasto Bilans −1/t): żywy fallback liczy 1 niedokarmione miasto, NIE 0',
+);
+// Kontrola przytomności: rezerwa w pełni pokrywa deficyt -> 0 niedokarmionych (test musi
+// wykrywać regresję w OBIE strony, nie tylko "zawsze > 0").
+ok(
+  liveUnfedCityCount(5, [-1]) === 0,
+  'kontrola przytomności: rezerwa 5 w pełni pokrywa deficyt −1 -> 0 niedokarmionych miast',
+);
+// Miasta na plusie NIGDY nie liczą się jako niedokarmione, niezależnie od stanu centrali.
+ok(
+  liveUnfedCityCount(0, [3, 1]) === 0,
+  'same miasta na plusie (bilans>=0): 0 niedokarmionych niezależnie od stanu centrali',
+);
+// Wiele miast na deficycie, rezerwa starcza tylko na część -> sekwencyjne wyczerpywanie
+// centrali w KOLEJNOŚCI miast (tak jak advanceEmpireFood, empire-food.ts:235-243), nie równy
+// podział ani sortowanie po potrzebie.
+ok(
+  liveUnfedCityCount(3, [-2, -2]) === 1,
+  'rezerwa 3: PIERWSZE miasto (need=2) pokryte w całości, DRUGIE tylko częściowo (1 z 2) -> 1 niedokarmione',
+);
+
+// ---------------------------------------------------------------------------
+// 6) P-SPICHLERZ-ZERO-MYLACE (poprawka po Evaluatorze runda 1): polska liczba mnoga ma TRZY
 //    formy (1 / 2-4 poza 12-14 / 5+ i 12-14), nie dwie. Wycinamy realny helper z każdego pliku
 //    (nie reimplementację) i wywołujemy go naprawdę — wzorem "extractFunctionBody" wyżej, tylko
 //    tu dodatkowo ewaluujemy wycięty kod (po zdjęciu adnotacji typów TS), żeby sprawdzić

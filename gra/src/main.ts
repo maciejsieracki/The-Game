@@ -157,6 +157,7 @@ import { UnitRenderer, type UnitRingStance } from './render/units';
 import { pixelToHex, unitAt, keyOf, worldToClientPx } from './input/picker';
 import { computeVisible, addExplored, allHexKeys, allRevealLandKeys, exploredSetForRender, DEFAULT_SIGHT, computeVisibleAt, buildUnitSightResolver, unitsVisibleOnMap } from './game/visibility';
 import { clearScoutAutoExplore, isScoutUnit, runScoutsAutoExplore } from './game/scout-auto-explore';
+import { cyclablePlayerArmyLeadsBase, resolveAdjacentPlayerUnitCycle } from './game/army-cycle';
 import {
   shouldShowPlayerTriumphCityStateUnification,
   // buildTriumphCityStateUnificationMessage / TRIUMPH_CS_HINT_MS: nie używane tu
@@ -332,6 +333,7 @@ import {
   isOsiedleRevoltImmune,
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
+import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -923,7 +925,10 @@ import {
   setLastPlayedSlotId, checkSaveIntegrity, AUTOSAVE_SLOT_ID,
   FSA_SLOT_PREFIX,
   type SaveGame,
+  type SaveToLocalResult,
 } from './game/save';
+import { serializeMapForSave } from './map/mapSnapshot';
+import { loadMapForSave } from './game/load-map-source';
 import {
   ensureFsaAutosaveReady, fsaRotatingAutosaveWrite, getFsaReadinessState,
   shouldUseFsaAutosave, fsaUnavailableMessage, autosaveFileName, loadFsaAutosaveFile,
@@ -972,6 +977,7 @@ import {
 } from './ui/wikiHubHud';
 import { showWonderCompletedNotice } from './ui/wonderCompletedNotice';
 import { showTriumphCityStateNotice } from './ui/triumphCityStateNotice';
+import { showCivElimNotice } from './ui/civElimNotice';
 import { decideAITurn, chooseAIResearch, decideAIDiplomacy, loadDifficultyParams, RESUP_TIERS, shouldAIRushBuyUnit, loadAiRushParams, decideAIEconomySliders, loadAiSliderParams, aiHonorsAllianceWarObligation, resolveDiplomacyCivBias, computeMajorAiEarlyGame, pickExecutableCandidate, buildCandidateIds, type AICommand, type AiSliderSettings, type AllianceWarObligationCtx, type ExecutableCandidateChecks } from './game/ai';
 import type { AITurnOpts, RelacjaWejscie, DiplomacjaInputs, AIDiplomacyCommand } from './game/ai';
 import {
@@ -1057,7 +1063,7 @@ import {
 import { civLeaderMedallionHtmlById } from './ui/diploUiSkin';
 import { showDiplomacyProposalBanner } from './ui/diplomacyProposalBanner';
 import { proposalActionIdFromPayload, actionNeedsNegotiation } from './ui/diplomacyNegotiationModal';
-import { actionUsesTradeBasket } from './ui/diplomacyTradeBasket';
+import { actionUsesTradeBasket, getTradeBasketMode } from './ui/diplomacyTradeBasket';
 import {
   evaluateProposal, applyAcceptedProposal, aiCommandToPendingProposal,
   evaluatePendingFromAI, resolvePlayerAcceptsAiPending, formatAiDiplomacyPlayerMessage,
@@ -1065,7 +1071,7 @@ import {
   findWasalDeal, wasalAgeTurns, graczWchloniecieKosztZloto,
   type ProposalEvalContext, type ProposalPayload,
   // C-DYP-Q1=A (2026-07-26): STÓŁ NEGOCJACYJNY — propozycja/kontroferta/odpowiedź.
-  type PendingNegotiation, createNegotiation, applyCounterOffer, canCounterNegotiation, canPlayerCounterNegotiation,
+  type PendingNegotiation, createNegotiation, applyCounterOffer, applyOwnProposalEdit, canCounterNegotiation, canPlayerCounterNegotiation,
   negotiationStillValid, resolveNegotiationAsResponder, negotiationToLegacyPending,
   negotiationAsProposal, proposalHasResourceAccess,
   hasPendingNegotiationForPair, findOwnOutgoingNegotiation,
@@ -1249,9 +1255,21 @@ async function boot(): Promise<void> {
     let _menuCitySupport: 'low' | 'normal' | 'strong' = 'normal';
     /** R-TRUDNOSC-1 (Maciej 2026-07-24, AI-CS-CLUSTER-DIFF 2026-07-30): trudność miast-państw.
      *  OSOBNY suwak kreatora lub odwrotność głównej trudności gry (easy→hard, hard→easy).
-     *  Steruje AI miast-państw (kopie obronne): zaufanie, posiłki, DifficultyParams.
-     *  Override w Zaawansowanych (cityStateDifficultyOverride) ma pierwszeństwo. */
+     *  Steruje AI miast-państw (kopie obronne) jako CELEM PODBOJU przez AI: zaufanie do
+     *  innych AI, DifficultyParams ekonomiczne/bojowe. UWAGA: NIE steruje agresją
+     *  miast-państw wobec GRACZA — do tego służy `_menuCityStateDifficultyVsPlayer` niżej.
+     *  Override w Zaawansowanych (cityStateDifficultyOverride) ma pierwszeństwo.
+     *  / EN: city-state difficulty vs AI conquerors — do not confuse with the
+     *  player-facing axis below. */
     let _menuCityStateDifficulty: 'easy' | 'normal' | 'hard' = 'normal';
+    /** C-025/C-026 (2026-08-10): trudność/agresja miast-państw SKIEROWANA NA GRACZA.
+     *  „Trudno dla gracza = łatwo dla AI, i odwrotnie" — ta oś idzie WPROST z trudności
+     *  gry (`_menuDifficulty`), BEZ odwrócenia przez `cityStateDifficultyFromGameDifficulty`
+     *  (patrz applyMenuParams). Override w Zaawansowanych (cityStateDifficultyOverride),
+     *  jeśli ustawiony, steruje tą zmienną tak samo jak `_menuCityStateDifficulty`.
+     *  / EN: city-state aggression/difficulty vs the PLAYER — derives straight from game
+     *  difficulty, not inverted. */
+    let _menuCityStateDifficultyVsPlayer: 'easy' | 'normal' | 'hard' = 'normal';
     let _menuCivId: string = 'rzymianie'; // E1 default: Rzymianie
     let _menuMapSize: string = 'Standardowy'; // E1 default map size
     let _menuRivals: number = 6; // default rival count (skalowane w kreatorze)
@@ -2622,6 +2640,41 @@ async function boot(): Promise<void> {
      */
     function buildEmpireResourceRows(ownerId: number): EmpireResourceRow[] {
       const warehouse = citySurowceSumForOwner(ownerId);
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 4 (Maciej 2026-08-11, Evaluator FAIL runda 3):
+      // panel Surowców MUSI czytać WERDYKT SILNIKA z `citizenUpkeepByOwner` — mapa kluczowana
+      // BEZPOŚREDNIO OWNEREM (nie przez ID miasta), a NIE przeliczać na żywo. Runda 3 czytała
+      // przez `cities.find(c => c.ownerId === ownerId)` + `cityOrderState.get(thatCity.id)` —
+      // zdobycie miasta (oblężenie/aneksja) zmienia `city.ownerId` W TRAKCIE tury i NIE czyści
+      // starego wpisu w `cityOrderState`, więc `find()` mógł trafić na PRZEJĘTE miasto, którego
+      // wpis niósł jeszcze werdykt POPRZEDNIEGO właściciela (np. panel gracza w epoce Kamienia
+      // pokazujący wymagania epoki Brązu, werdykt cudzej AI, tuż po przejęciu jej miasta).
+      // Odczyt WPROST po ownerId eliminuje to pośrednictwo strukturalnie — nie ma już żadnego
+      // predykatu `ownerId` do trafienia w cudze miasto. FALLBACK (`computeCitizenResourceDrain`)
+      // używany WYŁĄCZNIE gdy `citizenUpkeepByOwner` nie ma jeszcze wpisu dla tego ownera (np.
+      // pierwszy render UI przed 1. turą) — poza tym czyta zawsze z silnika, nigdy nie przelicza
+      // równolegle. buildEmpireResourceRows służy WYŁĄCZNIE do podglądu UI (renderowanie), więc
+      // celowo używamy tylko required/available z wyniku — NIE stosujemy `deductions` (żadnej
+      // mutacji City.surowce z poziomu renderowania panelu, to by było podwójne odjęcie / efekt
+      // uboczny podglądu).
+      // EN: the Resources panel MUST read the engine's VERDICT from `citizenUpkeepByOwner` — a
+      // map keyed DIRECTLY by owner (not via city id), never recompute live. Round 3 read via
+      // `cities.find(c => c.ownerId === ownerId)` + `cityOrderState.get(thatCity.id)` — capturing
+      // a city mid-turn changes `city.ownerId` without clearing the old `cityOrderState` entry,
+      // so `find()` could land on the captured city and surface the PREVIOUS owner's verdict.
+      // Reading directly by ownerId removes that indirection structurally. Fallback
+      // (`computeCitizenResourceDrain`) applies ONLY when `citizenUpkeepByOwner` has no entry yet
+      // for this owner (first UI render before turn 1); we deliberately ignore `deductions` here
+      // (no City.surowce mutation from a rendering path).
+      const citizenUpkeepOwnerPopulation = cities.reduce(
+        (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
+        0,
+      );
+      const citizenUpkeep = citizenUpkeepByOwner.get(ownerId)
+        ?? computeCitizenResourceDrain(
+          empireEpochForOwner(ownerId), citizenUpkeepOwnerPopulation, warehouse,
+        );
+      const citizenRequiredSet = new Set(citizenUpkeep.required);
+      const citizenAvailableSet = new Set(citizenUpkeep.available);
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
@@ -2696,12 +2749,16 @@ async function boot(): Promise<void> {
         const cap = empireCap;
         const capBase = storageParams.bazaSurowcePanstwo;
         const capBonusPerMagazyn = storageParams.bonusSurowceNaBudynek;
+        const citizenRequired = citizenRequiredSet.has(c.id);
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
           rateProductionPerTurn: production,
           ...(diploOut > 0 ? { rateDiploOutPerTurn: diploOut } : {}),
           ...(diploIn > 0 ? { rateDiploInPerTurn: diploIn } : {}),
           cap, capBase, capBonusPerMagazyn, zrodlo,
+          ...(citizenRequired
+            ? { citizenRequired: true, citizenCovered: citizenAvailableSet.has(c.id) }
+            : {}),
         });
       }
       return rows;
@@ -3549,6 +3606,25 @@ async function boot(): Promise<void> {
     const orderValueMap = new Map<string, number>();
     /** Per-city order state (szczescie/porzadek) — updated each turn for city panel B2 hooks. */
     const cityOrderState = new Map<string, OrderState>();
+    /**
+     * R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 4 (Maciej 2026-08-11, Evaluator FAIL runda 3):
+     * werdykt drenażu obywateli KLUCZOWANY BEZPOŚREDNIO OWNEREM, nie miastem. Zdobycie miasta
+     * (oblężenie/aneksja) zmienia `city.ownerId` W TRAKCIE tury i NIE czyści starego wpisu w
+     * `cityOrderState` — odczyt przez `cities.find(c => c.ownerId === ownerId)` (poprzednia
+     * wersja `buildEmpireResourceRows`) mógł trafić na PRZEJĘTE miasto, którego wpis w
+     * `cityOrderState` niósł jeszcze werdykt POPRZEDNIEGO właściciela (np. panel gracza w
+     * epoce Kamienia pokazujący wymagania epoki Brązu, werdykt cudzej AI). Ta mapa jest
+     * wypełniana RÓWNOLEGLE do `citizenUpkeepDrainCache` (lokalny cache resolvera per turę,
+     * patrz `citizenUpkeepDrainForOwner` niżej), ale PRZETRWA między turami jak `cityOrderState`
+     * — czytana WPROST po ownerId, bez żadnego pośrednictwa przez ID miasta.
+     * EN: citizen-upkeep verdict keyed DIRECTLY by owner, not by city. Capturing a city mid-turn
+     * changes `city.ownerId` without clearing the old `cityOrderState` entry — reading via
+     * `cities.find(c => c.ownerId === ownerId)` could land on the captured city and surface the
+     * PREVIOUS owner's verdict. Populated alongside `citizenUpkeepDrainCache` (per-turn resolver
+     * cache below) but persists across turns like `cityOrderState` — read directly by ownerId,
+     * with no city-id indirection.
+     */
+    const citizenUpkeepByOwner = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();
     /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
     const militiaDefOverrides = new Map<string, Record<string, unknown>>();
     const empireFoodStates = new Map<number, EmpireFoodState>();
@@ -4855,70 +4931,28 @@ async function boot(): Promise<void> {
       refreshD1bHud();
     }
 
-    /** Jednostka aktywna do cyklu Spacja/HUD — nie uśpiona, nie w garnizonie, nie ufortyfikowana w polu. */
-    function isUnitActiveForCycle(u: RuntimeUnit): boolean {
-      return u.sentry !== true
-        && u.autoExplore !== true
-        && u.inGarnizon !== true
-        && u.ufortyfikowanyWPolu !== true;
-    }
-
-    /**
-     * Wspólna implementacja list cyklowania armii gracza (1 wiodąca/heks; kolejność przestrzenna).
-     * `requireMoves=true` → tylko stosy z dostępnym ruchem w tej turze (Spacja, auto-cykl „bęben”).
-     * `requireMoves=false` → wszystkie aktywne stosy, niezależnie od ruchu (strzałki HUD ◀▶;
-     * decyzja właściciela R-SPACJA-KOLEJNA-JEDNOSTKA-PETLA, 2026-08-08: strzałka = dowolna
-     * następna jednostka, Spacja = następna AKTYWNA (z ruchem) jednostka).
-     */
-    function cyclablePlayerArmyLeadsBase(requireMoves: boolean): RuntimeUnit[] {
-      const playerUnits = units.filter(
-        u => u.ownerId === 0 && isUnitActiveForCycle(u) && (!requireMoves || stackCanMove(u)),
-      );
-      // BB2 (Evaluator runda 5, B-R5-1): grupowanie MUSI iść po stackRenderKey
-      // (tożsamość STOSU + POZYCJA + garnizon), nie po gołym stackGroupIdOf ani
-      // po gołym heksie — dwie jednostki tej samej, jawnie scalonej grupy mogą
-      // realnie stać na RÓŻNYCH heksach (np. zwiadowca odjeżdżający sam z grupy
-      // przez auto-explore), a gołe stackGroupIdOf zlewałoby je w JEDEN lead
-      // obejmujący dwa heksy naraz — Spacja/strzałki HUD ◀▶ nigdy nie dotarłyby
-      // do drugiego heksu. Ten sam klucz co armyMerge.ts:computeStackDisplay.
-      const stacks = new Map<string, RuntimeUnit[]>();
-      for (const u of playerUnits) {
-        const key = stackRenderKey(u);
-        const arr = stacks.get(key);
-        if (arr) arr.push(u);
-        else stacks.set(key, [u]);
-      }
-      const out: RuntimeUnit[] = [];
-      for (const group of stacks.values()) {
-        out.push(group[0]!);
-      }
-      out.sort((a, b) => {
-        const sa = a.q + a.r;
-        const sb = b.q + b.r;
-        if (sa !== sb) return sa - sb;
-        if (a.q !== b.q) return a.q - b.q;
-        return a.r - b.r;
-      });
-      return out;
-    }
+    // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 (Evaluator N1, 2026-08-10): `isUnitActiveForCycle`,
+    // `cyclablePlayerArmyLeadsBase` i rozwiązywanie następnego id (dawniej ciało
+    // `cycleToAdjacentPlayerUnit`) wyniesione do CZYSTEGO modułu game/army-cycle.ts — main.ts
+    // zostaje cienką warstwą efektów ubocznych (stan gry + selectPlayerUnit/focusCameraOnUnit/
+    // clearPlayerUnitSelection). Patrz komentarz nagłówkowy army-cycle.ts po uzasadnienie i
+    // scout-explore-deselect-cycle-test.cjs po test behawioralny. / EN: `isUnitActiveForCycle`,
+    // `cyclablePlayerArmyLeadsBase` and next-id resolution (formerly `cycleToAdjacentPlayerUnit`'s
+    // body) moved to the PURE game/army-cycle.ts module — main.ts is now a thin side-effect layer
+    // (game state + selectPlayerUnit/focusCameraOnUnit/clearPlayerUnitSelection). See
+    // army-cycle.ts's header comment for rationale and scout-explore-deselect-cycle-test.cjs for the
+    // behavioral test.
 
     /** Wszystkie armie gracza (1 wiodąca/heks) z DOSTĘPNYM RUCHEM — kolejność przestrzenna.
      * Używane przez Spację i auto-cykl „bęben” po wyczerpaniu ruchu. */
     function cyclablePlayerArmyLeads(): RuntimeUnit[] {
-      return cyclablePlayerArmyLeadsBase(true);
+      return cyclablePlayerArmyLeadsBase(units, true, stackCanMove);
     }
 
     /** Wszystkie armie gracza (1 wiodąca/heks), NIEZALEŻNIE od dostępnego ruchu — kolejność
      * przestrzenna. Używane przez strzałki HUD ◀▶ (decyzja właściciela 2026-08-08). */
     function cyclablePlayerArmyLeadsAll(): RuntimeUnit[] {
-      return cyclablePlayerArmyLeadsBase(false);
-    }
-
-    /** BB2 (Evaluator runda 5, B-R5-1): klucz dopasowania w cycleToAdjacentPlayerUnit — MUSI być
-     *  spójny z cyclablePlayerArmyLeadsBase (ten sam stackRenderKey), inaczej fallback po
-     *  zniknięciu `afterId` z listy trafiłby na niewłaściwą (np. rezydenta na innym heksie) armię. */
-    function armyLeadHexKey(u: RuntimeUnit): string {
-      return stackRenderKey(u);
+      return cyclablePlayerArmyLeadsBase(units, false, stackCanMove);
     }
 
     /**
@@ -4934,31 +4968,12 @@ async function boot(): Promise<void> {
     ): void {
       if (!isWorldMapUnitMode()) return;
       const list = opts?.all === true ? cyclablePlayerArmyLeadsAll() : cyclablePlayerArmyLeads();
-      if (list.length === 0) {
+      const nextId = resolveAdjacentPlayerUnitCycle(units, list, afterId, delta);
+      if (nextId === null) {
         clearPlayerUnitSelection();
         return;
       }
-      // Domyślnie (brak zaznaczenia LUB zaznaczona jednostka nie występuje już w `list` — np.
-      // bęben po ruchu, kiedy jednostka właśnie wyczerpała ruch i wypadła z listy „z ruchem"):
-      // start tuż PRZED pierwszym/PO ostatnim elemencie, żeby +delta wylądował na list[0]
-      // (w przód) albo list[list.length-1] (wstecz) — bez pomijania najbliższej możliwej
-      // jednostki w kierunku ruchu.
-      let cur = delta > 0 ? -1 : 0;
-      if (afterId !== null) {
-        const idxById = list.findIndex(u => u.id === afterId);
-        if (idxById >= 0) {
-          cur = idxById;
-        } else {
-          const selected = units.find(x => x.id === afterId);
-          if (selected) {
-            const key = armyLeadHexKey(selected);
-            const idxByHex = list.findIndex(u => armyLeadHexKey(u) === key);
-            if (idxByHex >= 0) cur = idxByHex;
-          }
-        }
-      }
-      const idx = (cur + delta + list.length) % list.length;
-      const next = list[idx]!;
+      const next = list.find(u => u.id === nextId)!;
       selectPlayerUnit(next.id);
       focusCameraOnUnit(next);
     }
@@ -5258,6 +5273,7 @@ async function boot(): Promise<void> {
         const inGarnizon = group.some(u => u.inGarnizon === true);
         const ufortyfikowanyWPolu = group.some(u => u.ufortyfikowanyWPolu === true);
         const sentry = group.some(u => u.sentry === true);
+        const autoExplore = group.some(u => u.autoExplore === true);
         const types = [...new Set(group.map(u => u.typeId))];
         const name = group.length === 1
           ? lead.typeId
@@ -5295,6 +5311,7 @@ async function boot(): Promise<void> {
           inGarnizon,
           ufortyfikowanyWPolu,
           sentry,
+          autoExplore,
         });
       }
       out.sort((a, b) => a.name.localeCompare(b.name, 'pl'));
@@ -6990,6 +7007,51 @@ async function boot(): Promise<void> {
      */
     const borderMarchEventTargets = new Map<string, { q: number; r: number } | null>();
 
+    /**
+     * R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5: pełna treść (etykieta cywilizacji +
+     * szczegóły) dla wpisu WYDARZENIA `elim-cs-*` (klucz = SidePanelEvent.id) — karta w panelu
+     * bocznym niesie tylko treść skróconą, kliknięcie otwiera civElimNotice.ts z tym, co tu
+     * zapisane (patrz recordCivElimEvent/onEventClick).
+     * EN: full content (civ label + details) for the `elim-cs-*` Events entry (key =
+     * SidePanelEvent.id) — the side-panel card only carries the short blurb, clicking it opens
+     * civElimNotice.ts with what's stored here (see recordCivElimEvent/onEventClick).
+     */
+    const civElimEventDetails = new Map<string, { civLabel: string; details: string }>();
+
+    /**
+     * R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5 (Maciej, ECHO B+C): JEDYNY punkt emisji
+     * dla eliminacji przez wchłonięcie dyplomatyczne — karta w dzienniku Wydarzeń (warEventLog),
+     * NIE toast. Wpis jest zapisywany bezpośrednio do warEventLog (jak recordWarDeclarationEvent
+     * powyżej / notifyPlayerEraChangeIfAdvanced), NIE przez kolejkę deferredEotHints — dzięki
+     * temu przeżywa endTurnInProgress bez konwersji na generyczny wpis „Koniec tury"
+     * (deferredHintsToSidePanelEvents nadałby mu cudzą etykietę/kind zamiast własnej treści) i
+     * po prostu pojawia się w panelu, gdy collectTurnEvents przestanie maskować warEventLog
+     * (koniec fazy AI). Pełna treść trafia do civElimEventDetails pod tym samym id — kliknięcie
+     * karty (onEventClick, prefiks 'elim-cs-') otwiera civElimNotice.ts.
+     * EN: the ONLY emission point for elimination via diplomatic annexation — an Events log
+     * card (warEventLog), NOT a toast. Written directly to warEventLog (like
+     * recordWarDeclarationEvent above / notifyPlayerEraChangeIfAdvanced), NOT through the
+     * deferredEotHints queue — so it survives endTurnInProgress without being converted into a
+     * generic "End of turn" entry (deferredHintsToSidePanelEvents would give it someone else's
+     * label/kind instead of its own) and simply shows up once collectTurnEvents stops masking
+     * warEventLog (AI phase over). Full content goes into civElimEventDetails under the same id
+     * — clicking the card (onEventClick, 'elim-cs-' prefix) opens civElimNotice.ts.
+     */
+    function recordCivElimEvent(csOwnerId: number, civLabel: string, details: string): void {
+      const evId = `elim-cs-${turn}-${csOwnerId}`;
+      civElimEventDetails.set(evId, { civLabel, details });
+      warEventLog.unshift({
+        id: evId,
+        icon: '\u{1F3F4}',
+        title: 'ELIMINACJA: ' + civLabel,
+        subtitle: 'Wchłonięta dyplomatycznie — kliknij po szczegóły',
+        kind: 'diplo',
+        negative: true,
+      });
+      if (warEventLog.length > 8) warEventLog.length = 8;
+      refreshD1bHud();
+    }
+
     function recordWarDeclarationEvent(declarerId: number, targetId: number): void {
       if (declarerId !== 0 && targetId !== 0) return;
       if (isBarbarian(declarerId) || isBarbarian(targetId)) return;
@@ -7135,6 +7197,7 @@ async function boot(): Promise<void> {
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
+      civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
       activeDeals = [];
       negotiationTable.length = 0;
       negotiationSeq = 0;
@@ -7267,7 +7330,8 @@ async function boot(): Promise<void> {
           applyWiarygodnoscD4ToRelation(
             applyCityStateDifficultyTrust(
               startRelationForPlayerSameCivCityState(),
-              _menuCityStateDifficulty,
+              // C-025/C-026: zaufanie PM↔GRACZ na starcie — oś PM-vs-gracz, wprost z trudności gry.
+              _menuCityStateDifficultyVsPlayer,
             ),
             getWiarygodnosc(0),
             getWiarygodnosc(ownerId),
@@ -10820,7 +10884,18 @@ async function boot(): Promise<void> {
       }
       hintToast.innerHTML = msg;
       hintToast.style.display = 'block';
-      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : '320';
+      // Gdy menu startowe jest zamontowane (.civ-menu, z-index 500, .cm-toast
+      // wewnątrz 560), domyślne 320 jest pod nim niewidoczne w root stacking
+      // context (P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA, N-ZINDEX-TOAST).
+      // 600 bije .civ-menu(500)/.civ-pause(480)/.cm-toast(560) -- zweryfikowane
+      // grepem po wszystkich z-index w src/ (najbliższe overlaye pełnoekranowe
+      // powyżej to 650+, poza zasięgiem tego konkretnego kolizji).
+      // / EN: while the startup menu is mounted (.civ-menu z-index 500, its
+      // .cm-toast 560), the default 320 sits underneath it in the root
+      // stacking context. 600 clears .civ-menu/.civ-pause/.cm-toast -- checked
+      // against every z-index in src/ (nearest fullscreen overlays above sit
+      // at 650+, outside this particular collision).
+      hintToast.style.zIndex = isPreBattleOpen() ? '9950' : (isMainMenuOpen() ? '600' : '320');
       hintOverrideTimer = setTimeout(() => {
         hintToast.style.display = 'none';
         hintOverrideTimer = null;
@@ -11107,11 +11182,24 @@ async function boot(): Promise<void> {
         }
         syncCityGarnizon(city);
         if (newOwner === 0) playerEverOwnedCity = true;
-        runCapitalCapturePlunder(city, oldOwner, newOwner);
-        showHintMessage(
-          city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.',
-          5500,
-        );
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 1): kapitulacja
+        // głodowa nie ma modalu (nie podbój bojowy) — dawniej wynik runCapitalCapturePlunder()
+        // był ignorowany, więc gdy TO przejęcie eliminowało ostatnie miasto ORAZ zdobywcą był
+        // gracz, etykieta ginęła po cichu. Odbieramy ją i SCALAMY z toastem kapitulacji w JEDNO
+        // wywołanie showHintMessage (ten sam wzorzec kolizji/naprawy co Defekt A — druga,
+        // bezwarunkowa treść na tym samym #hintToast nadpisywałaby pierwszą).
+        // EN: starvation surrender has no modal (not a battle conquest) — the return value of
+        // runCapitalCapturePlunder() used to be discarded, so when THIS capture eliminated the
+        // last city AND the player was the captor, the label was silently lost. We capture it
+        // and MERGE it with the capitulation toast into ONE showHintMessage call (same
+        // collision pattern/fix as Defekt A).
+        const captureOutcome = runCapitalCapturePlunder(city, oldOwner, newOwner);
+        const capitulationBaseMsg =
+          city.name + ' — kapitulacja z głodu! Miasto przejęte przez ' + civLabelForOwner(newOwner) + '.';
+        const capitulationMsg = captureOutcome
+          ? `${captureOutcome.eliminatedCivLabel} — ELIMINACJA! ${capitulationBaseMsg} ${captureOutcome.eliminatedDetails}`
+          : capitulationBaseMsg;
+        showHintMessage(capitulationMsg, captureOutcome ? 6000 : 5500);
       } else {
         showHintMessage(city.name + ': głód — oblężenie zakończone bez przejęcia.', 4500);
       }
@@ -12796,12 +12884,32 @@ async function boot(): Promise<void> {
             ownerDeclareWarOn(entry.proposerOwnerId, 0);
           }
         }
-        const summary = negotiationSummary(entry);
-        showHintMessage(
-          ownerDiploLabel(awaitingId)
-            + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary),
-          4000,
-        );
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 4, Defekt A: dla przyjętego
+        // 'wchloniecie' applyProposalOutcome() WYŻEJ już pokazał kompletny, scalony toast
+        // (zwykły ALBO eliminacyjny — patrz komentarz Runda 3 w applyProposalOutcome) na
+        // #hintToast. Wołanie tu, bezwarunkowo, DRUGIEGO showHintMessage na tym samym
+        // #hintToast natychmiast by go nadpisało — dokładnie ten sam wzorzec kolizji co
+        // Defekt A w rundach 1-3, tylko o jedną ramkę stosu wyżej (to właśnie złapał
+        // Evaluator w rundzie 3). Pomijamy generyczny toast WYŁĄCZNIE w tym jednym
+        // przypadku: odrzucone wchłonięcie nadal potrzebuje toastu "odrzuca propozycję" —
+        // applyProposalOutcome nic nie pokazuje sam, gdy !result.accepted.
+        // EN: for an accepted 'wchloniecie', applyProposalOutcome() above already showed a
+        // complete, merged toast (plain OR elimination — see the Round 3 comment inside
+        // applyProposalOutcome) on the shared #hintToast. Unconditionally firing a SECOND
+        // showHintMessage on the same #hintToast here would instantly overwrite it — the
+        // same collision pattern as Defect A in rounds 1-3, one stack frame up (exactly
+        // what the Round 3 Evaluator caught). We skip the generic toast ONLY in this one
+        // case: a rejected wchłonięcie still needs the "rejects proposal" toast —
+        // applyProposalOutcome shows nothing on its own when !result.accepted.
+        const skipGenericToast = entry.actionId === 'wchloniecie' && outcome.kind === 'accepted';
+        if (!skipGenericToast) {
+          const summary = negotiationSummary(entry);
+          showHintMessage(
+            ownerDiploLabel(awaitingId)
+              + (outcome.kind === 'accepted' ? ' przyjmuje propozycję: ' + summary : ' odrzuca propozycję: ' + summary),
+            4000,
+          );
+        }
       }
     }
 
@@ -13017,6 +13125,45 @@ async function boot(): Promise<void> {
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
+    /**
+     * R-PROPOZYCJA-BRAK-EDYCJI (Maciej, wariant A, 2026-08-10): edycja WŁASNEJ, jeszcze
+     * nierozstrzygniętej propozycji W MIEJSCU — SILNIK: applyOwnProposalEdit
+     * (diplomacy-proposals.ts) podmienia TYLKO payload, round/awaitingOwnerId zostają BEZ
+     * ZMIAN (brak resetu kontekstu negocjacji), w odróżnieniu od handleNegotiationCounter
+     * (kontroferta AI), które zawsze +1 rundę i przełącza stronę odpowiadającą. Prefill
+     * formularza (counterInitial, buildPendingNegotiationRows, gałąź direction==='own')
+     * jest BEZ zamiany give/receive — payload własnej propozycji już jest „co MY dajemy/
+     * dostajemy", więc zapis też jest bezpośredni, bez zamiany z powrotem.
+     * / EN: in-place edit of the player's OWN, still-pending proposal — ENGINE:
+     * applyOwnProposalEdit swaps ONLY the payload, round/awaitingOwnerId stay untouched (no
+     * negotiation-context reset), unlike handleNegotiationCounter (AI counter-offer), which
+     * always bumps the round and flips the responding side. The own-proposal prefill has no
+     * give/receive swap, so saving is direct too.
+     */
+    function handleNegotiationEditOwn(negotiationId: string, payload: NegotiationPayload): void {
+      const idx = negotiationTable.findIndex(n => n.id === negotiationId);
+      if (idx < 0) return;
+      const entry = negotiationTable[idx]!;
+      // awaitingOwnerId===0 = to NIE nasza wychodząca propozycja (czekamy MY na
+      // odpowiedź) — nic do edycji tą ścieżką (kontrofertę patrz handleNegotiationCounter).
+      if (entry.awaitingOwnerId === 0 || !canPlayerCounterNegotiation(entry)) return;
+      const aiOwnerId = entry.proposerOwnerId === 0 ? entry.responderOwnerId : entry.proposerOwnerId;
+      const { uiPayload } = buildProposalFromPayload(aiOwnerId, payload);
+      // Ta sama bramka realnych zasobów co przy tworzeniu/kontrowaniu propozycji
+      // (clampNegotiationPayloadToRealResources, resolveNegotiationEntryAt) — nie pozwól
+      // wyedytować oferty na wartości przekraczające realne zasoby gracza (proposerOwnerId
+      // tu zawsze 0=gracz, bo payload own jest już „co MY dajemy/dostajemy" bezpośrednio).
+      const clamped = clampNegotiationPayloadToRealResources(0, aiOwnerId, uiPayload);
+      if (!clamped) {
+        showHintMessage('Brak wystarczających zasobów na tę ofertę', 3500);
+        return;
+      }
+      negotiationTable[idx] = applyOwnProposalEdit(entry, clamped);
+      refreshD1bHud();
+      updateDiplomacyAudience();
+      if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
+    }
+
     /** Gracz prosi AI o odpowiedź na własną propozycję (bez auto-resolve przy wysłaniu). */
     function handleRequestAiNegotiationResponse(
       negotiationId: string,
@@ -13159,7 +13306,47 @@ async function boot(): Promise<void> {
           && (incomingNetPw == null || incomingNetPw.netPw >= 0);
         const awaitingAiResponse = direction === 'own' && entry.awaitingOwnerId !== 0;
         const dealDetails = negotiationSummary(entry);
-        const canCounter = direction === 'incoming' && canPlayerCounterNegotiation(entry);
+        // R-PROPOZYCJA-BRAK-EDYCJI runda 2 (Maciej, wariant A, doprecyzowanie 2026-08-10):
+        // własna, jeszcze nierozstrzygnięta propozycja (direction='own') kwalifikuje się do
+        // edycji TYLKO gdy uiActionId ma tryb koszyka 'trade' ('14') lub 'gift' ('13') —
+        // NIE cały actionUsesTradeBasket (12 typów, w tym czyste traktaty jak nap/sojusz/
+        // wasal/trybut). Runda 1 użyła actionUsesTradeBasket dla 'own' i wprowadziła 2
+        // defekty: (1) edycja czystych traktatów to cichy no-op — ich payload nie ma
+        // koszyka ani goldOnce>0, więc clampNegotiationPayloadToRealResources odrzuca go w
+        // handleNegotiationEditOwn; (2) synteza giveItems z goldOnce niżej (gałąź
+        // direction==='own') dubluje złoto dla akcji z osobnym polem goldOnce OBOK
+        // giveItems (np. 'granice'/opłata) — dla 'trade'/'gift' ta synteza jest poprawna
+        // (jedyny nośnik treści, brak osobnego goldOnce), dla reszty koszykowych typów nie.
+        // (bez tego dodatkowego zawężenia canCounter=true nadal otwierałby dla 'own' też
+        // showNegotiationModal w openCounterNegotiationModal, dla którego nie ma ścieżki
+        // edycji w miejscu — tylko kontroferta).
+        // / EN: own, still-unresolved proposal (direction='own') qualifies for edit ONLY
+        // when uiActionId's basket mode is 'trade' ('14') or 'gift' ('13') — NOT the full
+        // actionUsesTradeBasket set (12 action types, including pure treaties like nap/
+        // alliance/vassal/tribute). Round 1 used actionUsesTradeBasket for 'own' and
+        // introduced 2 defects: (1) editing pure treaties was a silent no-op — their
+        // payload has no basket and no goldOnce>0, so
+        // clampNegotiationPayloadToRealResources rejects it in handleNegotiationEditOwn;
+        // (2) the giveItems-from-goldOnce synthesis below (direction==='own' branch)
+        // duplicates gold for actions with a separate goldOnce field alongside giveItems
+        // (e.g. 'granice'/fee) — for 'trade'/'gift' that synthesis is correct (the only
+        // content carrier, no separate goldOnce), for the other basket types it is not.
+        // UWAGA: getTradeBasketMode ma fallback 'trade' dla KAŻDEGO uiActionId spoza
+        // TRADE_BASKET_ACTION_IDS (patrz diplomacyTradeBasket.ts — ostatnie `return 'trade'`),
+        // więc samo sprawdzenie trybu przepuściłoby też np. uiActionId '5' (umowa_szlakow,
+        // CELOWO bez koszyka — nie jest w TRADE_BASKET_ACTION_IDS). Dlatego
+        // actionUsesTradeBasket(uiActionId) zostaje jako pierwszy, obowiązkowy warunek — mody
+        // 'trade'/'gift' tylko zawężają WEWNĄTRZ tego zbioru do '14'/'13'.
+        // / EN: getTradeBasketMode falls back to 'trade' for ANY uiActionId outside
+        // TRADE_BASKET_ACTION_IDS, so checking the mode alone would also let through e.g.
+        // uiActionId '5' (umowa_szlakow, deliberately basket-less — not in the set). Hence
+        // actionUsesTradeBasket(uiActionId) stays as the mandatory first gate; the
+        // 'trade'/'gift' modes only narrow WITHIN that set down to '14'/'13'.
+        const ownEditableBasketMode = actionUsesTradeBasket(uiActionId)
+          && (getTradeBasketMode(uiActionId) === 'trade' || getTradeBasketMode(uiActionId) === 'gift');
+        const canCounter = direction === 'incoming'
+          ? canPlayerCounterNegotiation(entry)
+          : canPlayerCounterNegotiation(entry) && ownEditableBasketMode;
         const acceptance = computePlayerAcceptanceSides(entry.actionId, p, relTotal, incoming, {
           difficulty: _menuDifficulty,
           proposerOwnerId: entry.proposerOwnerId,
@@ -13167,7 +13354,29 @@ async function boot(): Promise<void> {
         });
         let counterInitial: import('./ui/diplomacyTradeBasket').TradeBasketInitial | undefined;
         if (canCounter && actionUsesTradeBasket(uiActionId)) {
-          if (uiActionId === '14') {
+          if (direction === 'own') {
+            // Własna propozycja: payload JUŻ jest „co MY dajemy/dostajemy" (tak samo jak
+            // renderuje karta na stole — patrz splitNegotiationDealPlayerSides z
+            // incoming=false) — BEZ zamiany stron, w odróżnieniu od kontroferty niżej.
+            counterInitial = uiActionId === '13'
+              ? { giveItems: p.giveItems?.length ? [...p.giveItems] : undefined }
+              : {
+                giveItems: p.giveItems?.length
+                  ? [...p.giveItems]
+                  : (p.goldOnce ?? 0) > 0
+                    ? [{ typ: 'zloto', id: 'zloto', ilosc: p.goldOnce! }]
+                    : undefined,
+                receiveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
+                resourceTradeMode: p.resourceTradeMode,
+                turns: p.turns,
+                allianceKind: entry.actionId === 'sojusz_defensywny' ? 'defensywny' : 'pelny',
+                borderMilitary: p.borderMilitary,
+                goldPerTurn: p.goldPerTurn,
+                goldOnce: p.goldOnce,
+                tributeMode: entry.actionId === 'trybut_oferta' ? 'offer' : 'demand',
+                tributeTurns: uiActionId === '8' ? (p.turns ?? 0) : undefined,
+              };
+          } else if (uiActionId === '14') {
             counterInitial = {
               giveItems: p.receiveItems?.length ? [...p.receiveItems] : undefined,
               receiveItems: p.giveItems?.length
@@ -13515,6 +13724,13 @@ async function boot(): Promise<void> {
       kosztArmii: number;
       uchwalaSolAktywna: boolean;
       uchwalaSolSpichlerzIICount: number;
+      /** P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1: liczba miast gracza, których deficyt
+       *  lokalny NIE zostałby w pełni pokryty z magazynu centralnego, gdyby tura zakończyła się
+       *  teraz — do żywego fallbacku licznika HUD, gdy `_lastTicks` jest jeszcze puste (patrz
+       *  buildHudState niżej). / EN: count of the player's cities whose local deficit would NOT
+       *  be fully covered by the central stockpile if the turn ended right now — feeds the HUD
+       *  counter's live fallback for when `_lastTicks` is still empty (see buildHudState below). */
+      unfedCityCount: number;
     } {
       const upkeepParams = loadUpkeepParams(data.econParams, _menuDifficulty);
       // C-GLOD-Q2=B (Maciej 2026-07-26): mnożnik terytorialny w projekcji HUD —
@@ -13579,6 +13795,13 @@ async function boot(): Promise<void> {
       let central = reserve;
       let sumSurplus = 0;
       let sumDeficit = 0;
+      // P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (Maciej 2026-08-10): potrzeby miast na
+      // deficycie w KOLEJNOŚCI preview.perCity — wejście do drugiego przebiegu (unfedCityCount
+      // niżej), który liczy pokrycie tak samo jak advanceEmpireFood (empire-food.ts:227-243).
+      // / EN: deficit-city needs in preview.perCity ITERATION ORDER — input to the second pass
+      // (unfedCityCount below), which computes coverage the same way as advanceEmpireFood
+      // (empire-food.ts:227-243).
+      const deficitNeedsForFeed: number[] = [];
       for (const tk of preview.perCity) {
         if (tk.ownerId !== 0 || tk.oblegany) continue;
         const bilans = tk.bilansLokalny ?? tk.zywnoscNetto;
@@ -13587,7 +13810,24 @@ async function boot(): Promise<void> {
           central += bilans;
         } else {
           sumDeficit += -bilans;
+          deficitNeedsForFeed.push(-bilans);
         }
+      }
+      // Drugi przebieg — identyczny algorytm jak advanceEmpireFood (empire-food.ts:235-243):
+      // magazyn centralny maleje przez kolejne miasta na deficycie w tej samej kolejności,
+      // miasto liczy się jako nakarmione TYLKO gdy pokryte W CAŁOŚCI. Start = `central` PO
+      // nadwyżkach, PRZED odjęciem sumDeficit i PRZED kosztem armii (tak samo jak w
+      // advanceEmpireFood: drugi przebieg tam też startuje z tego punktu). / EN: second pass —
+      // identical algorithm to advanceEmpireFood (empire-food.ts:235-243): the central pool
+      // depletes through deficit cities in the same order, a city only counts as fed if covered
+      // IN FULL. Starts from `central` AFTER surpluses, BEFORE subtracting sumDeficit and BEFORE
+      // the army cost (matching where advanceEmpireFood's second pass starts too).
+      let centralForFeed = central;
+      let unfedCityCount = 0;
+      for (const need of deficitNeedsForFeed) {
+        const covered = Math.min(need, Math.max(0, centralForFeed));
+        centralForFeed -= covered;
+        if (covered < need) unfedCityCount++;
       }
       if (sumDeficit > 0) {
         central -= Math.min(sumDeficit, Math.max(0, central));
@@ -13600,6 +13840,7 @@ async function boot(): Promise<void> {
         kosztArmii,
         uchwalaSolAktywna,
         uchwalaSolSpichlerzIICount,
+        unfedCityCount,
       };
     }
 
@@ -13825,8 +14066,29 @@ async function boot(): Promise<void> {
       // spójnie ten sam deficyt, nie tylko głód wojska. / EN: same unfed-city count as the empire
       // panel (buildEmpireFoodSnap → perCityRows) — the HUD "Spichlerz" chip must surface the same
       // deficit consistently, not only army hunger.
-      const zywnoscMiastNiedokarmionych = (getLastEmpireFoodTick(0)?.perCityRows ?? [])
-        .filter(r => r.nakarmione === false).length;
+      //
+      // P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (Maciej 2026-08-10, rozpoznanie
+      // a71a5e3791099fb13): `getLastEmpireFoodTick(0)` jest `undefined` dopóki nie minie
+      // PIERWSZY koniec tury (nowa gra / świeży zapis) — bez fallbacku licznik fałszywie
+      // pokazywał 0, mimo że panel miasta W TEJ SAMEJ CHWILI poprawnie pokazywał „Głód: brak
+      // dopłaty". Żywy fallback liczy niedokarmione miasta NA ŻYWO z `foodProj.unfedCityCount`
+      // (ten sam `foodProj = projectPlayerFoodProjection()` co `foodNetRate` wyżej — brak
+      // dodatkowego kosztu previewCityEconomy), identycznym algorytmem pokrywania deficytu jak
+      // advanceEmpireFood (empire-food.ts:227-243). Gdy tick JEST dostępny, zachowanie
+      // NIEZMIENIONE: liczone tak jak dotychczas z danych ostatniego końca tury. Wzorzec:
+      // resolveCityFedForUi w cityPanel.ts:1344-1353. / EN: `getLastEmpireFoodTick(0)` is
+      // `undefined` until the FIRST end of turn (new game / fresh save) — without a fallback the
+      // counter falsely showed 0 even though the city panel at the SAME moment correctly showed
+      // "Głód: brak dopłaty" (hunger, no top-up). The live fallback counts unfed cities LIVE from
+      // `foodProj.unfedCityCount` (the same `foodProj = projectPlayerFoodProjection()` as
+      // `foodNetRate` above — no extra previewCityEconomy cost), using the identical
+      // deficit-coverage algorithm as advanceEmpireFood (empire-food.ts:227-243). When a tick IS
+      // available, behavior is UNCHANGED: counted the same way as before, from the last
+      // end-of-turn data. Pattern: resolveCityFedForUi in cityPanel.ts:1344-1353.
+      const lastFoodTickForHud = getLastEmpireFoodTick(0);
+      const zywnoscMiastNiedokarmionych = lastFoodTickForHud
+        ? lastFoodTickForHud.perCityRows.filter(r => r.nakarmione === false).length
+        : foodProj.unfedCityCount;
       return {
         zywnoscLabel: String(foodReserve),
         zywnoscMax: foodMaxCap,
@@ -15455,13 +15717,35 @@ async function boot(): Promise<void> {
           .reduce((sum, c) => sum + (c.population ?? 0), 0);
         const koszt = graczWchloniecieKosztZloto(pop, _diplomacyParams());
         applyOneShotGoldTransfer(proposerId, responderId, koszt, buildDiploTreasury());
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 5 (Maciej, ECHO B+C): eliminacja przez
+        // wchłonięcie dyplomatyczne NIE jest już komunikowana przez showHintMessage/#hintToast
+        // w ogóle — annexCityStateToOwner() (wołana niżej) emituje JEDNO zdarzenie side-panelu
+        // „Wydarzenia" (recordCivElimEvent), którego kliknięcie otwiera modal ELIMINACJA! z pełną
+        // treścią (civElimNotice.ts). Powód: toast ginął pod otwartym panelem audiencji
+        // dyplomatycznej (z-index 400 nad #hintToast 320, Evaluator Runda 4) i dublował się w
+        // dzienniku Wydarzeń, gdy propozycja rozstrzygała się w fazie AI (endTurnInProgress) —
+        // side-panel event nie ma żadnej z tych dwóch wad (persystentna karta w warEventLog,
+        // niezależna od z-index toastu). Zwykły, NIE-eliminacyjny toast wchłonięcia (miasto-
+        // państwo istnieje dalej) zostaje bez zmian — ten przypadek toast nadal obsługuje.
+        // EN: elimination via diplomatic annexation is no longer communicated through
+        // showHintMessage/#hintToast at all — annexCityStateToOwner() (called below) fires ONE
+        // side-panel "Events" entry (recordCivElimEvent) whose click opens the ELIMINACJA! modal
+        // with full content (civElimNotice.ts). Reason: the toast was hidden under the open
+        // diplomatic-audience panel (z-index 400 over #hintToast's 320, Round 4 Evaluator) and
+        // duplicated in the Events log when the proposal resolved during the AI phase
+        // (endTurnInProgress) — a side-panel event has neither flaw (a persistent card in
+        // warEventLog, independent of toast z-index). The plain, non-elimination annex toast
+        // (city-state still exists) is unchanged — that case still gets the toast.
         annexCityStateToOwner(responderId, proposerId);
+        const wasEliminated = proposerId === 0 && eliminatedOwners.has(responderId);
+        if (!wasEliminated) {
+          showHintMessage('Miasto-państwo wchłonięte do imperium', 4000);
+        }
         const wasalDeal = findWasalDeal(activeDeals, proposerId, responderId);
         if (wasalDeal) activeDeals = removeTreatiesById(activeDeals, [wasalDeal.id]);
         for (const oid of aiOwnerCivMap.keys()) {
           if (oid !== responderId) clearAiCsPairState(oid, responderId);
         }
-        showHintMessage('Miasto-państwo wchłonięte do imperium', 4000);
         refreshD1bHud();
         if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
         return;
@@ -16104,6 +16388,8 @@ async function boot(): Promise<void> {
         onRemoveNegotiation: (negotiationId: string) => handleNegotiationRemove(negotiationId),
         onCounterNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
           handleNegotiationCounter(negotiationId, payload),
+        onEditOwnNegotiation: (negotiationId: string, payload: NegotiationPayload) =>
+          handleNegotiationEditOwn(negotiationId, payload),
         onRequestAiNegotiationResponse: (negotiationId: string) =>
           handleRequestAiNegotiationResponse(negotiationId),
       });
@@ -16424,12 +16710,52 @@ async function boot(): Promise<void> {
         if (!isScoutUnit(u)) return;
         const enabling = u.autoExplore !== true;
         if (enabling) {
-          // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A: zostań zaznaczony → złota ramka od razu
-          // (wcześniej deselect+cycle ukrywały uc-act-btn--on w momencie kliknięcia).
+          // R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2=A (2026-08-10, cofa Q1 z 2026-08-04): po włączeniu
+          // Zwiedzaj jednostka NIE zostaje zaznaczona — mylące podświetlenie ruchu prowadziło
+          // do przypadkowych kliknięć, które kasowały auto-eksplorację. Feedback wizualny
+          // (który Q1 dawało złotą ramką) dziś zapewnia showHintMessage() niżej (toastu
+          // brakowało w sierpniu, stąd Q1). / EN: after enabling auto-explore the unit no longer
+          // stays selected — the misleading movement highlight caused accidental clicks that
+          // silently cancelled auto-explore. Visual feedback is now covered by the toast below.
           clearPlannedMarch(u.id);
+          // C-025: fortyfikacja w polu i auto-eksploracja wykluczają się wzajemnie —
+          // włączenie Zwiedzaj zdejmuje fortyfikację (analogicznie do enterFieldFortify,
+          // które zdejmuje autoExplore w drugą stronę), inaczej jednostka rusza się mimo
+          // aktywnej flagi ufortyfikowanyWPolu.
+          // EN: field fortify and auto-explore are mutually exclusive — enabling Explore
+          // drops fortify (mirrors enterFieldFortify clearing autoExplore the other way),
+          // otherwise the unit would move while still flagged as fortified.
+          if (u.ufortyfikowanyWPolu === true) exitFieldFortify(u);
           u.autoExplore = true;
           showHintMessage(u.typeId + ' zwiedza map\u0119 \u2014 ruch na koniec tury', 2800);
           refreshD1bHud();
+          // Odznacz i przejdź do kolejnej jednostki gracza z dostępnym ruchem (jak Spacja);
+          // brak takiej → pełne odznaczenie. `u.autoExplore = true` wyżej wyklucza TĘ jednostkę
+          // z cyclablePlayerArmyLeads() (isUnitActiveForCycle odrzuca autoExplore===true), więc
+          // cycleToAdjacentPlayerUnit nigdy nie wybierze jej z powrotem, a przy pustej liście
+          // samo wywołuje clearPlayerUnitSelection() w środku.
+          // / EN: deselect and cycle to the next player unit with moves left (like Space); none
+          // available → full deselect. `u.autoExplore = true` above already excludes this unit
+          // from cyclablePlayerArmyLeads(), so cycleToAdjacentPlayerUnit never re-selects it, and
+          // it calls clearPlayerUnitSelection() itself when the list is empty.
+          //
+          // N2 (Evaluator, 2026-08-10): bramkuj W MIEJSCU WYWOŁANIA jak pozostałe call site'y
+          // cyklu (Spacja ok. L25690, „bęben” ok. L25932) — cycleToAdjacentPlayerUnit ma tę samą
+          // wczesną bramkę `isWorldMapUnitMode()` wewnątrz, ale gdy panel oblężenia (lub inny
+          // blokujący panel) jest otwarty przy włączaniu Zwiedzaj, ta wewnętrzna bramka robi cykl
+          // no-opem i stara jednostka zostaje zaznaczona Z AKTYWNYM podświetleniem ruchu —
+          // dokładnie zgłoszony bug Macieja. Gasimy zaznaczenie/podświetlenie wprost zamiast na
+          // to polegać. / EN: gate AT THE CALL SITE like the other cycle call sites (Space
+          // ~L25690, "drum" ~L25932) — cycleToAdjacentPlayerUnit has the same early
+          // `isWorldMapUnitMode()` gate inside it, but when the siege panel (or another blocking
+          // panel) is open while enabling Explore, that internal gate makes the cycle a no-op and
+          // the old unit stays selected WITH an active movement highlight — exactly the bug
+          // Maciej reported. Clear the selection/highlight directly instead of relying on that.
+          if (isWorldMapUnitMode()) {
+            cycleToAdjacentPlayerUnit(u.id, 1);
+          } else {
+            clearPlayerUnitSelection();
+          }
         } else {
           u.autoExplore = false;
           showHintMessage('Wy\u0142\u0105czono zwiedzanie', 2000);
@@ -16438,31 +16764,71 @@ async function boot(): Promise<void> {
       }
     }
 
+    // MIGRACJA IDB: listSaves() jest teraz async (IndexedDB), ale hasSave()
+    // w mainMenu.ts/gamePauseMenu.ts jest wołane SYNCHRONICZNIE przy
+    // renderze przycisku "Wczytaj grę" -- ich API celowo NIE jest tu
+    // przerabiane na async (poza zakresem tego zadania, patrz main.ts
+    // niepowiązany kod). Rozwiązanie: cache stale-while-revalidate --
+    // hasAnySaveSlot() zwraca NATYCHMIAST to, co wie teraz, i przy okazji
+    // odpala odświeżenie w tle na NASTĘPNE wywołanie. Cache jest też
+    // odświeżany na starcie gry (boot) i po każdym udanym zapisie (patrz
+    // wywołania niżej), więc w praktyce jest aktualny w momencie, gdy gracz
+    // faktycznie otwiera menu.
+    let cachedHasAnySaveSlot = false;
+    async function refreshHasAnySaveSlotCache(): Promise<void> {
+      try {
+        cachedHasAnySaveSlot = (await listSaves()).length > 0;
+      } catch {
+        cachedHasAnySaveSlot = false;
+      }
+    }
     function hasAnySaveSlot(): boolean {
-      try { return listSaves().length > 0; } catch { return false; }
+      void refreshHasAnySaveSlotCache();
+      return cachedHasAnySaveSlot;
     }
 
     function openSaveGameDialog(): void {
-      showSaveGameDialog({
+      void showSaveGameDialog({
         defaultLabel: currentSaveLabel('manual'),
         turn,
-        onSave: (slotId, label) => {
-          const ok = persistSaveToSlot(slotId, label);
+        onSave: async (slotId, label) => {
+          const { ok, reason } = await persistSaveToSlot(slotId, label);
           if (ok) {
             showHintMessage(`Gra zapisana: «${label}» (tura ${turn})`, 3500);
             console.log('[Save] slot=' + slotId + ' label=' + label + ' tura=' + turn);
             // #69: menu pauzy zostaje otwarte pod dialogiem zapisu — odblokuj
             // „Wczytaj grę" bez czekania na pełne zamknięcie/otwarcie menu.
+            await refreshHasAnySaveSlotCache();
             refreshGamePauseMenuLoadState();
           } else {
-            showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+            // P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT: przy 'quota' pokaż
+            // prawdziwą przyczynę (brak MIEJSCA, nie brak API) -- ten sam ton
+            // co już istniejący komunikat rotacyjnego autozapisu.
+            // / EN: on 'quota' show the real cause (no SPACE, not missing
+            // API) -- same tone as the existing rotating-autosave message.
+            showHintMessage(
+              reason === 'quota'
+                ? 'Zapis nieudany — brak miejsca w zapisie przeglądarki. Usuń stare zapisy.'
+                : 'Zapis nieudany (brak localStorage?)',
+              3000,
+            );
           }
         },
       });
     }
 
-    function openLoadGameDialog(fromInGamePause = false): void {
-      if (!hasAnySaveSlot()) {
+    // MIGRACJA IDB: async -- odczytuje listSaves()/showLoadGameDialog()
+    // (Promise-based, IndexedDB) zamiast cache'owanego hasAnySaveSlot(),
+    // żeby ta konkretna decyzja (pokazać dialog czy hint "brak zapisów")
+    // była tak świeża, jak to możliwe.
+    async function openLoadGameDialog(fromInGamePause = false): Promise<void> {
+      let any: boolean;
+      try {
+        any = (await listSaves()).length > 0;
+      } catch {
+        any = false;
+      }
+      if (!any) {
         showHintMessage(
           fromInGamePause
             ? 'Brak zapisów na tym urządzeniu.'
@@ -16473,7 +16839,7 @@ async function boot(): Promise<void> {
         return;
       }
       if (!fromInGamePause) hideMainMenu();
-      showLoadGameDialog({
+      await showLoadGameDialog({
         onLoad: (slotId) => { void loadGameFromSlot(slotId, fromInGamePause); },
         onCancel: () => {
           if (!fromInGamePause) openStartupMainMenu();
@@ -16529,15 +16895,15 @@ async function boot(): Promise<void> {
           // a loadGameFromSlot() dostałby pusty stan zamiast realnego pliku.
           void (async () => {
             await triggerFsaAutosaveBootstrap();
-            const slot = continueSaveSlotId();
+            const slot = await continueSaveSlotId();
             if (slot) {
               void loadGameFromSlot(slot, false);
             } else {
-              openLoadGameDialog(false);
+              void openLoadGameDialog(false);
             }
           })();
         },
-        onLoad: () => { void triggerFsaAutosaveBootstrap(); openLoadGameDialog(false); },
+        onLoad: () => { void triggerFsaAutosaveBootstrap(); void openLoadGameDialog(false); },
         onAbout: () => {
           showWikiHubHud({ tab: 'poradnik', layout: 'overlay' });
         },
@@ -16550,7 +16916,7 @@ async function boot(): Promise<void> {
       hasSave: hasAnySaveSlot,
       onResume: () => { /* gra już widoczna pod overlayem */ },
       onSave: () => { openSaveGameDialog(); },
-      onLoad: () => { openLoadGameDialog(true); },
+      onLoad: () => { void openLoadGameDialog(true); },
       onNewGame: () => {
         showNewGameFlow({
           data,
@@ -16634,6 +17000,19 @@ async function boot(): Promise<void> {
           warEventLog.splice(idx, 1);
           refreshD1bHud();
         }
+        return;
+      }
+      if (id.startsWith('elim-cs-')) {
+        // RUNDA 5: wpis jest zapisany BEZPOŚREDNIO w warEventLog (recordCivElimEvent), nie
+        // regeneruje się co turę jak 'revolt-'/'prod-empty-' — musi być usunięty TRWALE
+        // (splice), tak samo jak 'war-' wyżej. Miękki dismiss (dismissedSidePanelEventIds,
+        // czyszczony co turę) sprawiałby, że karta wracałaby w kolejnej turze mimo kliknięcia ✕.
+        const idx = warEventLog.findIndex(e => e.id === id);
+        if (idx >= 0) {
+          warEventLog.splice(idx, 1);
+          refreshD1bHud();
+        }
+        civElimEventDetails.delete(id);
         return;
       }
       // N1 fix — logika w game/eot-event-defer.ts (dismissEotOrEraWarLogEntry), testowana
@@ -17184,6 +17563,14 @@ async function boot(): Promise<void> {
           }
           if (id.startsWith('negot-')) {
             openDiplomacyAudienceForNegotiation(id);
+            return;
+          }
+          if (id.startsWith('elim-cs-')) {
+            // RUNDA 5: karta side-panelu niesie tylko treść skróconą (recordCivElimEvent) —
+            // kliknięcie otwiera modal z pełną treścią zapisaną pod tym samym id
+            // (civElimEventDetails), zamiast dawnego, kolidującego toastu #hintToast.
+            const info = civElimEventDetails.get(id);
+            if (info) showCivElimNotice({ civLabel: info.civLabel, details: info.details });
             return;
           }
           const prodCityId = cityIdFromProdEmptyEventId(id);
@@ -20129,6 +20516,22 @@ async function boot(): Promise<void> {
       }, { defaultAction: 'manual' });
     }
 
+    /** R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): dane przejęcia
+     *  miasta zdobyte wewnątrz applyMapBattleOutcome, przekazywane wołającemu przez
+     *  opts.onCityCaptured — jedyny sposób, by finishSiegeStormBattle poznało
+     *  eliminatedCivLabel/eliminatedDetails z applyCityCaptureToMap, skoro siegeContext
+     *  celowo pomija tu modal/refresh (robi je afterSiegeUi w finishSiegeStormBattle).
+     *  EN: city-capture data collected inside applyMapBattleOutcome, handed to the caller via
+     *  opts.onCityCaptured — the only way finishSiegeStormBattle learns the
+     *  eliminatedCivLabel/eliminatedDetails from applyCityCaptureToMap, since siegeContext
+     *  deliberately skips the modal/refresh here (afterSiegeUi in finishSiegeStormBattle
+     *  does it). */
+    interface CityCaptureCallbackInfo {
+      cityName: string;
+      eliminatedCivLabel: string | null;
+      eliminatedDetails: string | null;
+    }
+
     function applyMapBattleOutcome(
       atkRoster: RuntimeUnit[],
       defRoster: RuntimeUnit[],
@@ -20144,6 +20547,9 @@ async function boot(): Promise<void> {
         siegeContext?: boolean;
         /** Jawny atak na miasto (potyczka o miasto / szturm) — inaczej wygrana polowa NIE przejmuje miasta. */
         allowCityCapture?: boolean;
+        /** Wołane gdy siegeContext===true i przejęcie się powiodło — patrz komentarz
+         *  CityCaptureCallbackInfo powyżej. */
+        onCityCaptured?: (info: CityCaptureCallbackInfo) => void;
       },
     ): BattleLoot | null {
       chargeCombatCredibilityPenalties(atkRoster, defRoster);
@@ -20225,14 +20631,32 @@ async function boot(): Promise<void> {
         && cityOnHex.ownerId !== atkRoster[0]?.ownerId
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
-        applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
-        if (!opts?.siegeContext && cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner) {
+        const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
+        const captureSucceeded = cityOwnerBefore !== undefined && cityOnHex.ownerId === atkOwner;
+        // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): siegeContext
+        // (szturm muru) pomija modal/refresh w gałęzi niżej — finishSiegeStormBattle.afterSiegeUi
+        // robi je osobno. Bez tego callbacku eliminatedCivLabel/eliminatedDetails z
+        // applyCityCaptureToMap ginęły tu po cichu, nawet gdy zdobywcą był gracz.
+        // EN: siegeContext (wall storm) skips the modal/refresh in the branch below —
+        // finishSiegeStormBattle.afterSiegeUi does it separately. Without this callback the
+        // eliminatedCivLabel/eliminatedDetails from applyCityCaptureToMap were silently lost
+        // here, even when the player was the captor.
+        if (opts?.siegeContext && captureSucceeded) {
+          opts.onCityCaptured?.({
+            cityName: cityOnHex.name,
+            eliminatedCivLabel: captureResult.eliminatedCivLabel,
+            eliminatedDetails: captureResult.eliminatedDetails,
+          });
+        }
+        if (!opts?.siegeContext && captureSucceeded) {
           const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
           refreshMapAfterCityCapture(lead);
           if (atkOwner === 0) {
             const capturedCity = cityOnHex;
             showCityCaptureNotice(capturedCity.name, {
               onEnterCity: () => openCityPanelForPlayer(capturedCity),
+              eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
+              eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
             });
           }
         }
@@ -20593,6 +21017,12 @@ async function boot(): Promise<void> {
       const csCities = cities.filter(c => c.ownerId === csOwnerId);
       if (csCities.length === 0) return;
 
+      // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI=A: wchłonięcie dyplomatyczne (annexerId===0)
+      // nie miało ŻADNEGO komunikatu (w odróżnieniu od podboju bojowego, gdzie modal/toast
+      // ELIMINACJA już istniały) — etykieta i licznik miast liczone PRZED eliminateOwner().
+      const csLabel = civLabelForOwner(csOwnerId);
+      const cityCount = csCities.length;
+
       for (const city of csCities) {
         city.ownerId = annexerId;
         city.startCityState = false;
@@ -20605,6 +21035,25 @@ async function boot(): Promise<void> {
       refreshFog();
       markCityStateDirty();
       eliminateOwner(csOwnerId);
+      // RUNDA 5 (Maciej, ECHO B+C): JEDYNE miejsce, które emituje sygnał o eliminacji przez
+      // wchłonięcie — karta side-panelu „Wydarzenia" (persystentna w warEventLog, przeżywa
+      // endTurnInProgress bez kolejki deferredEotHints, patrz recordCivElimEvent), NIE toast.
+      // Drugie dawne źródło (applyProposalOutcome, gałąź 'wchloniecie') już nie emituje nic dla
+      // tego przypadku — patrz komentarz tam. Kliknięcie karty otwiera civElimNotice.ts z pełną
+      // treścią (csLabel + liczba miast).
+      // EN: the ONLY place that fires the diplomatic-annex elimination signal — a persistent
+      // side-panel "Events" card (warEventLog, survives endTurnInProgress without the
+      // deferredEotHints queue, see recordCivElimEvent), NOT a toast. The other former source
+      // (applyProposalOutcome, 'wchloniecie' branch) no longer emits anything for this case —
+      // see comment there. Clicking the card opens civElimNotice.ts with the full content
+      // (csLabel + city count).
+      if (annexerId === 0) {
+        recordCivElimEvent(
+          csOwnerId,
+          csLabel,
+          `Wszystkie miasta (${cityCount}) wchłonięte dyplomatycznie.`,
+        );
+      }
       console.log(
         `[Dyplomacja] AI${annexerId} wchłania miasto-państwo ownerId=${csOwnerId} (dyplomatyczne)`,
       );
@@ -20744,17 +21193,43 @@ async function boot(): Promise<void> {
      * battlePowerPtsByOwner/aiResearchDone dla oldOwner, co ucięłoby składniki
      * bitwy/tech w snapshotcie, gdyby liczyć go po.
      */
-    function runCapitalCapturePlunder(city: City, oldOwner: number, newOwner: number): void {
+    /**
+     * R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt C: etykieta ORAZ szczegóły
+     * (tech skopiowane + Power zdobyte) — stary toast (przed d7718ad5) niósł oba, nowy modal
+     * ELIMINACJA! niósł tylko nazwę. `eliminatedDetails` pozwala wołającemu dołożyć tę samą
+     * treść co dostaje AI-toast niżej, zamiast ją tracić w wariancie gracza.
+     * EN: label AND details (copied techs + captured Power) — the pre-d7718ad5 toast carried
+     * both, the new ELIMINACJA! modal only the name. `eliminatedDetails` lets the caller show
+     * the same content the AI toast below gets, instead of losing it in the player variant.
+     */
+    interface CapitalCapturePlunderResult {
+      eliminatedCivLabel: string;
+      eliminatedDetails: string;
+    }
+
+    /**
+     * Zwraca etykietę + szczegóły wyeliminowanej cywilizacji, gdy TO przejęcie eliminuje jej
+     * ostatnie miasto ORAZ zdobywcą jest gracz (newOwner===0) — wołający (main.ts,
+     * showCityCaptureNotice) dokłada wtedy nagłówek ELIMINACJA! do modalu zdobycia miasta,
+     * zamiast osobnego toastu, który by pod tym modalem zginął
+     * (R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI=A, ten sam wzorzec kolizji co
+     * P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK niżej). Zwraca `null` gdy nie było
+     * eliminacji, gdy zdobywcą jest AI (toast wystarcza, brak modalu), albo gdy to szczególny
+     * przypadek zjednoczenia (własny modal Triumfu już to obsługuje).
+     */
+    function runCapitalCapturePlunder(
+      city: City, oldOwner: number, newOwner: number,
+    ): CapitalCapturePlunderResult | null {
       // #25: frakcja rebeliancka (-99) nie jest realną cywilizacją — nie ma
       // skarbca/stolicy/Power. Bez tego guarda odbicie jej miasta wpadało w
       // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
       // i eliminateOwner(-99) zaśmiecały eliminatedOwners/sejw wpisem -99.
-      if (oldOwner === REBEL_FACTION_OWNER_ID) return;
+      if (oldOwner === REBEL_FACTION_OWNER_ID) return null;
       const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
       const outcome = applyCapitalCapturePlunder(
         city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId,
       );
-      if (!outcome) return;
+      if (!outcome) return null;
 
       if (outcome.event === 'przejecie_stolicy') {
         // SUKCESJA: nowa stolica oldOwner = najstarsze z pozostałych miast (lub brak wpisu).
@@ -20767,36 +21242,46 @@ async function boot(): Promise<void> {
           `${city.name}: stolica ${civLabelForOwner(oldOwner)} przejęta przez ${civLabelForOwner(newOwner)} — skarbiec i pula pracy przepadły.`,
           5000,
         );
-      } else {
-        // Power-zdobycze: CAŁE Power pokonanego (armia/miasta[już 0]/techy/bitwy/
-        // ew. jego WCZEŚNIEJSZE zdobycze z poprzednich eliminacji — rekurencyjnie
-        // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
-        // eliminateOwner (patrz komentarz funkcji).
-        const lostPower = buildObjectivePowerForOwner(oldOwner).power;
-        if (lostPower > 0) {
-          zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
-        }
+        markCityStateDirty();
+        return null;
+      }
+
+      // Power-zdobycze: CAŁE Power pokonanego (armia/miasta[już 0]/techy/bitwy/
+      // ew. jego WCZEŚNIEJSZE zdobycze z poprzednich eliminacji — rekurencyjnie
+      // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
+      // eliminateOwner (patrz komentarz funkcji).
+      const lostPower = buildObjectivePowerForOwner(oldOwner).power;
+      if (lostPower > 0) {
+        zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
+      }
+      const eliminatedCivLabel = civLabelForOwner(oldOwner);
+      const eliminatedDetails =
+        `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
+      const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
+        newOwner,
+        oldOwner,
+        playerCivKey: civKeyForOwnerId(0),
+        typCityCopyOwners,
+        aiOwnerCivMap,
+        cities,
+      });
+      if (isTriumph) {
+        const triumphCivLabel = civDisplayNameForOwner(0) ?? civLabelForOwner(0);
+        // P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK: modal wymagający potwierdzenia
+        // zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem
+        // ELIMINACJA wołanym niżej i natychmiast go nadpisywał.
+        showTriumphCityStateNotice({ civLabel: triumphCivLabel, cityName: city.name });
+      } else if (newOwner !== 0) {
+        // Zdobywcą jest AI — showCityCaptureNotice (modal) wyskakuje WYŁĄCZNIE dla gracza,
+        // więc tu nie ma kolizji: toast zostaje jedynym i wystarczającym kanałem.
         showHintMessage(
-          `${civLabelForOwner(oldOwner)} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`,
+          `${eliminatedCivLabel} — ELIMINACJA! Ostatnie miasto (${city.name}) przejęte przez ${civLabelForOwner(newOwner)}. ${eliminatedDetails}`,
           6000,
         );
-        if (shouldShowPlayerTriumphCityStateUnification({
-          newOwner,
-          oldOwner,
-          playerCivKey: civKeyForOwnerId(0),
-          typCityCopyOwners,
-          aiOwnerCivMap,
-          cities,
-        })) {
-          const triumphCivLabel = civDisplayNameForOwner(0) ?? civLabelForOwner(0);
-          // P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK: modal wymagający potwierdzenia
-          // zamiast showHintMessage() — dzielił jeden #hintToast/timer z komunikatem
-          // ELIMINACJA wołanym linijkę wyżej i natychmiast go nadpisywał.
-          showTriumphCityStateNotice({ civLabel: triumphCivLabel, cityName: city.name });
-        }
-        eliminateOwner(oldOwner);
       }
+      eliminateOwner(oldOwner);
       markCityStateDirty();
+      return (newOwner === 0 && !isTriumph) ? { eliminatedCivLabel, eliminatedDetails } : null;
     }
 
     /**
@@ -20845,12 +21330,19 @@ async function boot(): Promise<void> {
     }
 
     /** ST-2/ST-3: przejęcie miasta — tylko obrońca na centrum (B); pierścień zostaje. */
+    /** `eliminatedCivLabel`/`eliminatedDetails` — patrz komentarz `runCapitalCapturePlunder`:
+     * niepuste WYŁĄCZNIE gdy to przejęcie eliminuje ostatnie miasto danej cywilizacji I
+     * zdobywcą jest gracz. */
     function applyCityCaptureToMap(
       city: City,
       atkRoster: RuntimeUnit[],
       atkOwner: number,
       anchor: RuntimeUnit | null = atkRoster[0] ?? null,
-    ): RuntimeUnit | null {
+    ): {
+      lead: RuntimeUnit | null;
+      eliminatedCivLabel: string | null;
+      eliminatedDetails: string | null;
+    } {
       const oldOwner = city.ownerId;
       const lead = applyCityCaptureAfterBattle(
         city,
@@ -20873,8 +21365,12 @@ async function boot(): Promise<void> {
       if (atkOwner === 0) playerEverOwnedCity = true;
       syncCityGarnizon(city);
       endMapSiege(city.id);
-      runCapitalCapturePlunder(city, oldOwner, atkOwner);
-      return lead;
+      const captureOutcome = runCapitalCapturePlunder(city, oldOwner, atkOwner);
+      return {
+        lead,
+        eliminatedCivLabel: captureOutcome?.eliminatedCivLabel ?? null,
+        eliminatedDetails: captureOutcome?.eliminatedDetails ?? null,
+      };
     }
 
     function refreshMapAfterCityCapture(lead: RuntimeUnit | null): void {
@@ -20945,12 +21441,14 @@ async function boot(): Promise<void> {
       hideCityAttackChoice();
 
       const atkOwner = anchor.ownerId;
-      const lead = applyCityCaptureToMap(city, atkRoster, atkOwner, anchor);
-      refreshMapAfterCityCapture(lead ?? anchor);
+      const captureResult = applyCityCaptureToMap(city, atkRoster, atkOwner, anchor);
+      refreshMapAfterCityCapture(captureResult.lead ?? anchor);
 
       if (atkOwner === 0) {
         showCityCaptureNotice(city.name, {
           onEnterCity: () => openCityPanelForPlayer(city),
+          eliminatedCivLabel: captureResult.eliminatedCivLabel ?? undefined,
+          eliminatedDetails: captureResult.eliminatedDetails ?? undefined,
         });
       }
     }
@@ -21030,13 +21528,24 @@ async function boot(): Promise<void> {
       const atkStart = opts?.atkStart ?? snapshotRosterPositions(atkRoster);
       const atkOwner = atkRoster[0]?.ownerId;
       const showSummary = atkOwner === 0 && opts?.summary;
+      // R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI RUNDA 3, Defekt B (ścieżka 2): wypełnione
+      // przez opts.onCityCaptured w applyMapBattleOutcome (synchronicznie, PRZED afterSiegeUi —
+      // także w wariancie z podsumowaniem bitwy, bo applyMapBattleOutcomeWithSummary woła
+      // applyMapBattleOutcome zanim pokaże panel podsumowania). afterSiegeUi SCALA tę treść z
+      // toastem "Szturm udany" w JEDNO wywołanie, zamiast dwóch kolidujących na #hintToast.
+      let siegeCaptureInfo: CityCaptureCallbackInfo | null = null;
 
       const afterSiegeUi = (): void => {
         if (res.winner === 'atakujacy' && atkOwner !== undefined && city.ownerId === atkOwner && oldOwner !== atkOwner) {
           const lead = units.find(u => u.id === atkRoster[0]?.id) ?? null;
           refreshMapAfterCityCapture(lead);
           const who = atkOwner === 0 ? 'Gracz' : ('AI ' + atkOwner);
-          showHintMessage('Szturm udany — ' + city.name + ' zdobyte przez ' + who + '!', 5000);
+          const baseSzturmMsg = 'Szturm udany — ' + city.name + ' zdobyte przez ' + who + '!';
+          const elimLabel = siegeCaptureInfo?.eliminatedCivLabel;
+          const szturmMsg = elimLabel
+            ? `${elimLabel} — ELIMINACJA! ${baseSzturmMsg} ${siegeCaptureInfo?.eliminatedDetails ?? ''}`.trim()
+            : baseSzturmMsg;
+          showHintMessage(szturmMsg, elimLabel ? 6000 : 5000);
         } else if (res.winner === 'obronca') {
           showHintMessage('Szturm odparty — oblężenie trwa.', 4500);
           syncUnitsRender();
@@ -21063,6 +21572,9 @@ async function boot(): Promise<void> {
         lossAtkPct: opts?.lossAtkPct,
         lossDefPct: opts?.lossDefPct,
         siegeContext: true as const,
+        onCityCaptured: (info: CityCaptureCallbackInfo) => {
+          siegeCaptureInfo = info;
+        },
       };
 
       if (showSummary && opts?.summary) {
@@ -21623,30 +22135,51 @@ async function boot(): Promise<void> {
         mapQuality: _currentRenderOptions.renderQuality,
         renderQuality: _currentRenderOptions.renderQuality,
         mapDetailQuality: _currentRenderOptions.mapDetailQuality,
+        // P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, ECHO A): pełna siatka
+        // heksów PO wszystkich mutacjach rozgrywki (wycięty las, postawione
+        // ulepszenia, splądrowane wioski) -- pozwala wczytać grę BEZ ponownego
+        // wołania generatora (main.ts::regenerateWorldForLoad przez
+        // game/load-map-source.ts::loadMapForSave).
+        // / EN: full hex grid AFTER all gameplay mutations -- lets load skip
+        // the generator entirely.
+        mapSnapshot: serializeMapForSave(map),
       };
     }
 
-    function persistSaveToSlot(slotId: string, label: string): boolean {
+    // Zwraca pełny wynik zapisu (ok + reason), nie goły boolean -- wołający musi
+    // znać powód niepowodzenia (np. 'quota'), żeby pokazać trafny komunikat
+    // zamiast mylącego ogólnika (P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT).
+    // / EN: returns the full save result (ok + reason), not a bare boolean --
+    // callers need the failure reason (e.g. 'quota') to show an accurate
+    // message instead of a misleading generic one.
+    // MIGRACJA IDB: async -- saveToLocal() zapisuje teraz do IndexedDB (Promise).
+    async function persistSaveToSlot(slotId: string, label: string): Promise<SaveToLocalResult> {
       try {
-        const { ok } = saveToLocal(slotId, buildSaveGameSnapshot(label));
-        if (ok) setLastPlayedSlotId(slotId);
-        return ok;
+        const result = await saveToLocal(slotId, buildSaveGameSnapshot(label));
+        if (result.ok) setLastPlayedSlotId(slotId);
+        return result;
       } catch (eSave) {
         console.error('[Save] Blad:', eSave);
-        return false;
+        return { ok: false, reason: 'other' };
       }
     }
 
     /**
      * Szybki zapis (Ctrl+S, przed bitwą) — slot autosave bez okna dialogowego.
+     * MIGRACJA IDB: async (persistSaveToSlot -> saveToLocal -> IndexedDB).
      */
-    function doQuickSave(showHintOnSuccess = true): boolean {
-      const ok = persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
+    async function doQuickSave(showHintOnSuccess = true): Promise<boolean> {
+      const { ok, reason } = await persistSaveToSlot(AUTOSAVE_SLOT_ID, currentSaveLabel('quick'));
       if (ok) {
         if (showHintOnSuccess) showHintMessage('Szybki zapis (tura ' + turn + ')', 3000);
         console.log('[Save] autosave tura=' + turn);
       } else if (showHintOnSuccess) {
-        showHintMessage('Zapis nieudany (brak localStorage?)', 3000);
+        showHintMessage(
+          reason === 'quota'
+            ? 'Zapis nieudany — brak miejsca w zapisie przeglądarki. Usuń stare zapisy.'
+            : 'Zapis nieudany (brak localStorage?)',
+          3000,
+        );
       }
       return ok;
     }
@@ -21802,7 +22335,7 @@ async function boot(): Promise<void> {
       }
 
       try {
-        const { ok, reason } = saveToLocal(slot, snapshot);
+        const { ok, reason } = await saveToLocal(slot, snapshot);
         if (ok) {
           setLastPlayedSlotId(slot);
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
@@ -22247,6 +22780,12 @@ async function boot(): Promise<void> {
                 rationParams: efParams.rationParams,
                 spichlerzByCity: spichlerzByCityForAuto,
                 onlyAutoManaged: ownerId === 0,
+                // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (gracz, rozpoznanie #4): cel to flow
+                // tej tury >=0, nie tylko stock-based pokrycie rezerwą — WYŁĄCZNIE gracz, AI
+                // zostaje przy dawnym zachowaniu (empire-food.ts:isRationBalanceTargetMet).
+                // EN: player-only (finding #4): target is this turn's flow >=0, not just
+                // stock-based reserve coverage — AI keeps prior behavior.
+                requireFlowBalance: ownerId === 0,
               });
               if (autoRationResult.adjusted) {
                 autoRationAnyAdjusted = true;
@@ -22806,6 +23345,42 @@ async function boot(): Promise<void> {
             const rng = makeRng(turn);
             lastReligionSpreadByCity.clear();
             let religionSpreadThisTurn = 0;
+            // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): magazyn centralny per owner,
+            // liczony RAZ i cache'owany dla WSZYSTKICH miast tej tury (nie per miasto) —
+            // ownerId-agnostyczne, dotyczy gracza, dużej AI i Państw-Miast jednakowo (ECHO Q2=A).
+            const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();
+            // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): realny drenaż magazynu,
+            // 1 szt. surowca na 1 obywatela na turę. Liczony RAZ per owner per turę (suma
+            // populacji WSZYSTKICH miast tego ownera -- computeCitizenResourceDrain wymaga
+            // tego, inaczej kilka miast tego samego ownera wydrenowałoby ten sam magazyn
+            // wielokrotnie), potem cache'owany i zastosowany identycznie do każdego miasta
+            // tego ownera (ten sam wzorzec cache'owania co citizenUpkeepEmpireStock powyżej).
+            const citizenUpkeepDrainCache = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();
+            const citizenUpkeepDrainForOwner = (ownerId: number): ReturnType<typeof computeCitizenResourceDrain> => {
+              let v = citizenUpkeepDrainCache.get(ownerId);
+              if (v === undefined) {
+                const ownerPopulation = cities.reduce(
+                  (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
+                  0,
+                );
+                v = computeCitizenResourceDrain(
+                  empireEpochForOwner(ownerId),
+                  ownerPopulation,
+                  citizenUpkeepEmpireStock(ownerId),
+                );
+                if (Object.keys(v.deductions).length > 0) {
+                  deductBuildingStockCostAcrossCities(cities, ownerId, v.deductions);
+                }
+                citizenUpkeepDrainCache.set(ownerId, v);
+                // N1 runda 4: publikuj RÓWNOLEGLE do mapy kluczowanej OWNEREM (przetrwa
+                // między turami), nie tylko do lokalnego cache'a resolvera powyżej (ten
+                // ostatni jest tworzony od nowa co turę i ginie po jej zakończeniu).
+                // EN: publish IN PARALLEL to the owner-keyed map (survives across turns),
+                // not just the local per-turn resolver cache above (recreated each turn).
+                citizenUpkeepByOwner.set(ownerId, v);
+              }
+              return v;
+            };
 
             for (const city of cities) {
               const cid = city.id;
@@ -22978,11 +23553,17 @@ async function boot(): Promise<void> {
               const ownerAtWar = isOwnerAtWar(city.ownerId);
               const stolicaBonus = stolicaEasyBonusActive(difficulty, turn, city, cities, 10, capitalCityIdForOwner(0));
               const revoltParams = loadRevoltParams(data.societyParams, difficulty);
+              const ownerEraForUpkeep = empireEpochForOwner(city.ownerId);
+              // R-ZUZYCIE-SUROWCOW-OBYWATELE: ownerId-agnostyczne — dotyczy gracza, dużej AI
+              // i Państw-Miast jednakowo (ECHO Q2=A), magazyn CENTRALNY, nie lokalny (ECHO Q1).
+              // N2 (2026-08-11): realny drenaż (1 szt./obywatel), nie tylko podgląd obecności —
+              // citizenUpkeepDrainForOwner cache'uje i mutuje magazyn RAZ per owner per turę.
+              const citizenUpkeep = citizenUpkeepDrainForOwner(city.ownerId);
 
               const ordPctRaw = evaluateOrderFromBreakdown(
                 {
                   difficulty,
-                  era: empireEpochForOwner(city.ownerId),
+                  era: ownerEraForUpkeep,
                   population: city.population,
                   buildingZadowolenie: haBuildings + (econTick?.garncarniaSurplusZadowolenie ?? 0),
                   haKult,
@@ -22997,6 +23578,7 @@ async function boot(): Promise<void> {
                   foreignReligionDominant,
                   conquestUnstablePenalty: conquestUnstablePen,
                   stolicaEasyBonus: stolicaBonus,
+                  citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,
                 },
                 {
                   difficulty,
@@ -23102,6 +23684,7 @@ async function boot(): Promise<void> {
                 revoltWarning: graceUpd.revoltWarning,
                 rebelState: city.rebelState,
                 postCaptureLawTurnsRemaining: city.postCaptureLawTurnsRemaining,
+                citizenUpkeep,
               });
 
               if (postCaptureLawActive) {
@@ -23296,6 +23879,18 @@ async function boot(): Promise<void> {
             if (lastEfTickResult) {
               const happinessByCityId = new Map<string, number>();
               for (const [cid, st] of cityOrderState) happinessByCityId.set(cid, st.szczescie);
+              // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): kara Rozwoju (%) per
+              // miasto — czytana z tego samego cityOrderState (już policzona w pętli Porządku
+              // wyżej). `st.citizenUpkeep` to TERAZ wynik REALNEGO drenażu magazynu
+              // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain, 1 szt.
+              // surowca/obywatela/turę, cache'owany RAZ per owner per turę), nie sam podgląd
+              // obecności surowca w magazynie jak przed N2.
+              // EN: `st.citizenUpkeep` now comes from the REAL drain
+              // (citizenUpkeepDrainForOwner), not the old presence-only preview.
+              const citizenGrowthPctByCityId = new Map<string, number>();
+              for (const [cid, st] of cityOrderState) {
+                citizenGrowthPctByCityId.set(cid, st.citizenUpkeep?.growthPctDelta ?? 0);
+              }
               const spichlerzByCity = new Map<string, import('./game/building-resource-gate').SpichlerzCityBonusState>();
               for (const city of cities) {
                 const tick = econ.perCity.find(t => t.cityId === city.id);
@@ -23318,6 +23913,7 @@ async function boot(): Promise<void> {
                 ownerCivByOwnerId: ownerCivMap,
                 spichlerzByCity,
                 happinessByCityId,
+                citizenGrowthPctByCityId,
                 builtByCity: cityBuilt,
                 ownerEraByOwner: new Map(
                   [...new Set(cities.map(c => c.ownerId))].map(oid => [oid, empireEpochForOwner(oid)]),
@@ -23482,7 +24078,8 @@ async function boot(): Promise<void> {
             })();
 
             // R-MP-HARD-WAVE Q3: jeden rzut wojny na klaster siostrzanych PM / turę (nie per-owner).
-            if (startOi === 0 && _menuCityStateDifficulty === 'hard') {
+            // C-025/C-026: DOW klastra PM NA GRACZA — oś PM-vs-gracz, wprost z trudności gry.
+            if (startOi === 0 && _menuCityStateDifficultyVsPlayer === 'hard') {
               const clusterWarMembers: ClusterWarRollMember[] = [];
               for (const csOwnerId of aiOwnerList) {
                 if (eliminatedOwners.has(csOwnerId)) continue;
@@ -23509,7 +24106,7 @@ async function boot(): Promise<void> {
                 });
               }
               const clusterDowOwners = resolveClusterCityStateWarOnPlayer(
-                _menuCityStateDifficulty,
+                _menuCityStateDifficultyVsPlayer,
                 turn,
                 clusterWarMembers,
                 Math.random,
@@ -23673,6 +24270,12 @@ async function boot(): Promise<void> {
               civType: aiOwnerCivMap.get(ownerId), // nacja AI z rostera civs.json
               poziomTrudnosci: aiDiffLevel,
               menuDifficulty: _menuDifficulty,
+              // C-025/C-026 (2026-08-10) / R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B:
+              // oś PM-vs-GRACZ (nie stara _menuDifficulty) zasila cap wojska MP
+              // (cityStateMilitaryProductionCap w ai.ts) -- analogicznie do
+              // cityStateOffensiveSupport/_menuCitySupport niżej. Przekazywane zawsze
+              // (jak _menuCitySupport), zużywane tylko gdy defensiveCopy === true.
+              cityStateDifficultyVsPlayer: _menuCityStateDifficultyVsPlayer,
               defensiveCopy: typCityCopyOwners.has(ownerId),
               canEngageOwner: (targetOwnerId: number) => {
                 if (isBarbarian(targetOwnerId)) return true;
@@ -23706,9 +24309,10 @@ async function boot(): Promise<void> {
               // D-START posiłki v2: setup „Wsparcie miast-państw" -> RESUP_TIERS (ai.ts).
               citySupportLevel: _menuCitySupport,
               // Trudny MP: aktywne wsparcie ofensywne (Normal/Easy = legacy defend-only).
+              // C-025/C-026: wsparcie ofensywne PM wymierzone w gracza — oś PM-vs-gracz.
               cityStateOffensiveSupport: typCityCopyOwners.has(ownerId)
                 && isOwnerPlayerSameCivType(ownerId)
-                && _menuCityStateDifficulty === 'hard',
+                && _menuCityStateDifficultyVsPlayer === 'hard',
               warAllyOwnerIds: typCityCopyOwners.has(ownerId)
                 && isOwnerPlayerSameCivType(ownerId)
                 ? aiOwnerList.filter(oid =>
@@ -25469,14 +26073,14 @@ async function boot(): Promise<void> {
       // --- Ctrl+S: Save game (step K) ---
       if ((e.key.toLowerCase() === 's') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        doQuickSave(true);
+        void doQuickSave(true);
         return;
       }
 
       // --- Ctrl+L: Load game — wybór slotu ---
       if ((e.key.toLowerCase() === 'l') && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        openLoadGameDialog(true);
+        void openLoadGameDialog(true);
         return;
       }
 
@@ -25795,17 +26399,28 @@ async function boot(): Promise<void> {
           ? csOverrideRaw
           : cityStateDifficultyFromGameDifficulty(diff);
 
+      // C-025/C-026 (2026-08-10): oś PM-vs-GRACZ idzie WPROST z trudności gry, BEZ
+      // odwrócenia cityStateDifficultyFromGameDifficulty() — „trudno dla gracza” ma
+      // znaczyć twardsze/agresywniejsze PM wobec gracza, nie łatwiejsze. Suwak
+      // Zaawansowane (jeśli ustawiony) steruje OBIEMA zmiennymi tą samą wartością.
+      // / EN: player-facing axis mirrors game difficulty directly, no inversion.
+      _menuCityStateDifficultyVsPlayer =
+        csOverrideRaw === 'easy' || csOverrideRaw === 'normal' || csOverrideRaw === 'hard'
+          ? csOverrideRaw
+          : diff;
+
       // D-START posiłki v2 (Maciej 2026-07-21 przeróbka ZMIANA 1, R-TRUDNOSC-1 2026-07-24
-      // odpięcie od globalnej): „Wsparcie miast-państw" wynika z TRUDNOŚCI MIAST-PAŃSTW
-      // (_menuCityStateDifficulty), NIE z głównej trudności gry (wyższa trudność miast-państw
-      // = twardsze miasta-państwa = łatwiej sojusz + mocniejsze posiłki). Fallback 'normal'
-      // gdyby _menuCityStateDifficulty miało nieoczekiwaną wartość (nie powinno się zdarzyć).
+      // odpięcie od globalnej, C-025/C-026 2026-08-10 przepięcie na oś gracza): „Wsparcie
+      // miast-państw" (posiłki obronne, próg sojuszu sióstr) jest agresją/wsparciem PM
+      // SKIEROWANYM NA GRACZA, więc wynika z `_menuCityStateDifficultyVsPlayer` (wprost
+      // z trudności gry), NIE z `_menuCityStateDifficulty` (oś AI-vs-PM, odwrócona).
+      // Fallback 'normal' gdyby wartość była nieoczekiwana (nie powinno się zdarzyć).
       const citySupportByDifficulty: Record<'easy' | 'normal' | 'hard', 'low' | 'normal' | 'strong'> = {
         easy:   'low',
         normal: 'normal',
         hard:   'strong',
       };
-      _menuCitySupport = citySupportByDifficulty[_menuCityStateDifficulty] ?? 'normal';
+      _menuCitySupport = citySupportByDifficulty[_menuCityStateDifficultyVsPlayer] ?? 'normal';
       _menuCivId = params.civId || 'rzymianie';
       _menuMapSize = params.mapSize || 'Standardowy';
       _menuCivTypesCount = params.civTypesCount || defaultCivTypesFromMapLabel(_menuMapSize);
@@ -26128,10 +26743,18 @@ async function boot(): Promise<void> {
       territoryBorderGroup = null;
     }
 
-    /** Regeneruje mapę + scenę 3D (bez resetu stanu gry — do wczytywania sejwu). */
+    /**
+     * Regeneruje/odtwarza mapę + scenę 3D (bez resetu stanu gry — do
+     * wczytywania sejwu). P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, ECHO
+     * A): gdy `saved.mapSnapshot` jest poprawny, mapa jest budowana WPROST z
+     * niego (loadMapForSave) — generator (generujSwiatAsync) NIE jest wołany.
+     * Stary zapis bez mapSnapshot -> dokładnie dzisiejsza ścieżka (regeneracja
+     * z `seed`), zero zmian.
+     */
     async function regenerateWorldForLoad(
       params: NewGameParams,
       seed: number,
+      saved: SaveGame,
       saveLabel?: string,
     ): Promise<boolean> {
       applyMenuParams({ ...params, seed });
@@ -26148,7 +26771,7 @@ async function boot(): Promise<void> {
       const typLabel = params.worldType || _menuTypSwiata;
       try {
         const mapGenWallT0 = performance.now();
-        map = await generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
+        const { map: loadedMap, usedSnapshot } = await loadMapForSave(saved, () => generujSwiatAsync(seed, rozmiar, _menuTypSwiata, {
           worldDensity: _menuWorldDensity,
           mapSizeMenuLabel: _menuMapSize,
           landFraction: (params.landFractionPercent ?? 30) / 100,
@@ -26157,7 +26780,12 @@ async function boot(): Promise<void> {
           cityStatesCount: _menuCityStates,
         }, (faza, pct, phaseNum, phaseTotal) => {
           loading.setProgress(faza, pct, phaseNum, phaseTotal);
-        });
+        }));
+        map = loadedMap;
+        if (usedSnapshot) {
+          // Brak fazowego postępu generatora (pominięty) — jeden skok do 100%.
+          loading.setProgress('Wczytywanie zapisanej mapy', 100, 1, 1);
+        }
         const mapGenHandoffMs = Math.max(0, Math.round(performance.now() - mapGenWallT0) - (map.mapGenTimings?.total ?? 0));
         ensureDepositEraMeta(map.hexes);
         disposeOkolicaOverlay();
@@ -26353,6 +26981,7 @@ async function boot(): Promise<void> {
       veteranEnemyEducationShown = false;
       warEventLog.length = 0;
       borderMarchEventTargets.clear(); // N6: mapa celow kamery rowniez zerowana przy resecie
+      civElimEventDetails.clear(); // RUNDA 5: para z warEventLog.length=0 wyzej, ten sam reset
       turn = 1;
       playerPracaPool = 0;
       budowaListaBiblioteka = [...EMPTY_BUDOWA_LISTA_BIBLIOTEKA];
@@ -26375,6 +27004,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -26643,6 +27273,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -26888,6 +27519,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27111,6 +27743,7 @@ async function boot(): Promise<void> {
       placedWorldWonders = [];
       wonderBuildSites = [];
       cityOrderState.clear();
+      citizenUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27219,7 +27852,7 @@ async function boot(): Promise<void> {
         // szuka w localStorage klucza, który nigdy tam nie istniał).
         const saved = slotId.startsWith(FSA_SLOT_PREFIX)
           ? await loadFsaAutosaveFile(slotId.slice(FSA_SLOT_PREFIX.length))
-          : loadFromLocal(slotId);
+          : await loadFromLocal(slotId);
         if (!saved) {
           diagWarn('load', `brak danych slot=${slotId}`);
           showHintMessage('Nie można wczytać tego zapisu.', 3000);
@@ -27258,13 +27891,58 @@ async function boot(): Promise<void> {
           canvas.style.visibility = 'hidden';
           let ok = false;
           try {
-            ok = await regenerateWorldForLoad(loadParams, loadSeed, saveLabel);
+            ok = await regenerateWorldForLoad(loadParams, loadSeed, saved, saveLabel);
           } finally {
             canvas.style.visibility = '';
           }
           if (!ok) {
+            // P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (Maciej, decyzja N1, 2026-08-11):
+            // jedną z przyczyn tego `ok===false` jest TWARDY BŁĄD z
+            // load-map-source.ts::loadMapForSave (mapSnapshot kształtowo poprawny,
+            // ale buildGameMapFromSnapshot rzuca -- uszkodzony/niespójny zapis mapy)
+            // -- wcześniej ta gałąź nie pokazywała GRACZOWI żadnego komunikatu
+            // (tylko diagError do panelu F10), co dla tego przypadku było mylące
+            // (ekran po prostu wracał do menu bez wyjaśnienia). Ten sam mechanizm
+            // diagError zostaje -- dokładamy tylko widoczny dla gracza showHintMessage.
+            // / EN: one of the causes of `ok===false` here is a hard error in
+            // loadMapForSave (shape-valid but corrupted mapSnapshot) -- this
+            // branch previously showed the player NOTHING (only diagError to the
+            // F10 panel), which was misleading. Same diagError mechanism, just
+            // adds a visible hint.
             diagError('load', 'regenerateWorldForLoad failed');
+            // N-ZINDEX-TOAST (Maciej, 2026-08-11): openStartupMainMenu() MUSI
+            // wywołać się PRZED showHintMessage() -- dopiero po zamontowaniu
+            // .civ-menu (z-index 500) isMainMenuOpen() zwraca true, co
+            // showHintMessage() czyta, żeby podnieść toast na z-index 600
+            // (patrz komentarz przy `hintToast.style.zIndex` wyżej). Odwrotna
+            // kolejność renderowała toast na 320 -- POD menu, niewidoczny.
+            // Ścieżka fromInGamePause===true (Ctrl+L / "Wczytaj" w menu pauzy)
+            // NIE wchodzi w ten if -- openStartupMainMenu() się wtedy nie woła.
+            // To bezpieczne: hideGamePauseMenu() i hideSaveLoadDialog() zostały
+            // już wywołane wcześniej w tej funkcji (patrz góra loadGameFromSlot),
+            // więc w chwili ok===false żaden pełnoekranowy overlay nie konkuruje
+            // z toastem -- domyślne 320 wystarcza (zweryfikowane: OBAJ wołający
+            // z fromInGamePause=true -- onLoad menu pauzy (main.ts ok. 16890) i
+            // handler Ctrl+L (main.ts ok. 26048) -- przechodzą przez
+            // hideGamePauseMenu()/hideSaveLoadDialog() na górze loadGameFromSlot).
+            // / EN: openStartupMainMenu() MUST run BEFORE showHintMessage() --
+            // only after .civ-menu (z-index 500) is mounted does isMainMenuOpen()
+            // return true, which showHintMessage() reads to lift the toast to
+            // z-index 600. The reverse order rendered the toast at 320 -- BELOW
+            // the menu, invisible. The fromInGamePause===true path (Ctrl+L /
+            // pause-menu "Load") never enters this branch's menu call --
+            // openStartupMainMenu() isn't invoked there. That's safe: this
+            // function already called hideGamePauseMenu() and
+            // hideSaveLoadDialog() earlier, so when ok===false fires no
+            // fullscreen overlay competes with the toast -- the default 320 is
+            // enough (verified: BOTH fromInGamePause=true callers -- pause-menu
+            // onLoad, Ctrl+L handler -- go through that same unconditional
+            // cleanup).
             if (!fromInGamePause) openStartupMainMenu();
+            showHintMessage(
+              'Błąd wczytywania mapy zapisu — zapis może być uszkodzony. Wracam do menu. F10 = raport diagnostyczny.',
+              5000,
+            );
             return;
           }
         }
@@ -27329,7 +28007,7 @@ async function boot(): Promise<void> {
 
     /** @deprecated alias — użyj loadGameFromSlot / openLoadGameDialog */
     function doLoadGame(fromInGamePause = false): void {
-      openLoadGameDialog(fromInGamePause);
+      void openLoadGameDialog(fromInGamePause);
     }
 
     /** Wspólna ścieżka wczytywania zapisu — Ctrl+L i doLoadGame (Grupa F: migracja podziału). */
@@ -27339,6 +28017,14 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 5 (Evaluator 2026-08-11): bez tego czyszczenia
+      // panel Surowców po wczytaniu zapisu pokazywał werdykt Z POPRZEDNIEJ GRY tej samej sesji
+      // przeglądarki (klucz ownerId=0 niemal zawsze już istniał w mapie) -- cudza epoka/
+      // populacja/pokrycie aż do pierwszego przeliczenia pętli Porządku. citizenUpkeepByOwner
+      // jest lokalna dla `boot()` (deklarowana obok cityOrderState), więc czyszczenie tutaj
+      // wystarcza -- fallback computeCitizenResourceDrain przejmie na wczytanym stanie do
+      // czasu pierwszego ticku silnika.
+      citizenUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);
       plannedMarches.clear();
@@ -27870,6 +28556,23 @@ async function boot(): Promise<void> {
       new URLSearchParams(location.search).get('demo') === 'ulepszenia' ||
       /DEMO-ULEPSZENIA/i.test(location.pathname || '')
     );
+    // MIGRACJA IDB: best-effort, jednorazowo na starcie gry -- prosi przeglądarkę
+    // o "persistent storage" (Chrome/Firefox: origin z trwałymi danymi jest
+    // mniej podatny na automatyczne czyszczenie pod presją miejsca na dysku).
+    // Fire-and-forget: brak wsparcia/odmowa nie blokuje niczego, zapisy nadal
+    // działają -- to wyłącznie prośba o priorytet, nie wymóg funkcjonalny.
+    // / EN: best-effort, once at game start -- asks the browser for
+    // "persistent storage" (origin data is less likely to be evicted under
+    // disk pressure). Fire-and-forget: no support/denial doesn't block
+    // anything, saves still work -- this is a priority request, not a
+    // functional requirement.
+    try { void navigator.storage?.persist?.(); } catch { /* ignore -- best-effort */ }
+    // MIGRACJA IDB: pierwsze wypełnienie cache'a hasAnySaveSlot() (patrz
+    // definicja wyżej) -- odpalone tu, żeby był gotowy zanim gracz zdąży
+    // otworzyć menu główne/pauzy (stale-while-revalidate poniżej i tak by go
+    // ostatecznie uzupełnił, ale to dodatkowo skraca okno "jeszcze nie wiem").
+    void refreshHasAnySaveSlotCache();
+
     if (demoUlepszeniaUrl) {
       void (async () => { await doStartPlaytestMapaSwiata(); seedDemoUlepszenia(); })();
     } else if (playtestBitwaDuzaAny || playtestOdskokOblUrl || playtestOdskokUrl || playtestWalkaUrl) {
