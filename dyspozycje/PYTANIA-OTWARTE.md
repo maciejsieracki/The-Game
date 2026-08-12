@@ -15003,3 +15003,71 @@ pre-istniejący znany limit `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`) nie ukończony,
 dotknięta zmianą zweryfikowana w pełni niezależnie dwa razy. Worktree `fix-mapgen-prog-372`
 usunięty, Evaluator dispatchowany.
 
+
+## ⛔ ZALEGŁOŚĆ PROCESOWA: `main` jest DWIE fale w tyle — FALE 268 i 269 nigdy nie scalone (2026-08-12, znalezione przez agenta deployu FALI 270) · STATUS: **OTWARTE — czeka na wyraźną zgodę właściciela na scalenie do `main`**
+
+**Znalezisko (rejestruję zanim naprawię, zgodnie z §0b — uczciwe przyznanie, nie ukrywanie).**
+Przy deployu FALI 270 sprawdziłem stan `main`: stoi na `99974173` („merge: dogonienie main
+o FALA 267"). Zgodnie z rytmem `R-MERGE-MAIN-RYTM-Q1` („zawsze jedna fala do tyłu") powstanie
+FALI 269 kwalifikowało FALĘ 268 do scalenia, a powstanie FALI 270 kwalifikuje FALĘ 269 —
+**żadne z tych dwóch scaleń nie zostało wykonane.**
+
+**Jak do tego doszło (łańcuch dwóch przeoczeń, oba udokumentowane w repo):**
+1. **FALA 268** — `WERSJE.md` (linia 44) i `KANAL-PRACA.md` (linia 6571) jawnie odnotowały:
+   „agent deployu miał zakres ograniczony do gałęzi sesji i świadomie nie ruszał `main`,
+   scalenie FALI 267 zostaje do wykonania jako osobny krok". FALA 267 została scalona
+   (`99974173`), ale samej FALI 268 już nikt nie scalił przy okazji FALI 269.
+2. **FALA 269** — wpis w `KANAL-PRACA.md` (linia 6635) kończy się dosłownie: **„Push na `main`
+   NIE wykonany jeszcze w tej wiadomości — patrz kolejny wpis niżej"**. ⛔ **Ten kolejny wpis
+   NIGDY NIE POWSTAŁ** — plik kończy się na tej linii. Zapowiedź bez wykonania, niewyłapana
+   przez nikogo przez ~33 godziny.
+
+**Ustalone dokładne commity scalenia (zweryfikowane md5 bundla, nie z pamięci):**
+| Fala | md5 bundla | commit deployu | weryfikacja |
+|---|---|---|---|
+| 268 | `3bc0236b` | **`23216527`** | `git show 23216527:gra-robocza/Gra-ROBOCZA.html \| md5sum` = `3bc0236b8ef52d34aacaea1704bb010b` ✔ |
+| 269 | `799827ad` | **`0c1f7c37`** | `git show 0c1f7c37:gra-robocza/Gra-ROBOCZA.html \| md5sum` = `799827adc83b1a57ebb1576e2d876a95` ✔ |
+
+Uwaga do wyboru commitu FALI 269: bundel wszedł commitem `d6817434` opisanym jako „WIP …
+**NIE zalogowany**, ostatnia bramka niepotwierdzona" — właściwym commitem deployu jest
+**`0c1f7c37`** („Deploy ROBOCZA FALA 269"), bo to on niesie wpis w `WERSJE.md`, a
+`R-MERGE-MAIN-RYTM-Q1` definiuje punkt scalenia jako „commit deployu **w `WERSJE.md`**".
+`23216527` jest potwierdzonym przodkiem `0c1f7c37`, a `0c1f7c37` przodkiem `HEAD`
+(`git merge-base --is-ancestor`) — kolejność scalania 268 → 269 jest bezpieczna.
+
+**⛔ DLACZEGO NIE NAPRAWIŁEM TEGO OD RĘKI (świadome zatrzymanie, nie przeoczenie):**
+1. **`R-MERGE-MAIN-RYTM-Q1` §„Kto wykonuje merge do main"** mówi wprost: *„Kolejne scalenia
+   wymagają analogicznej, jednorazowej zgody (lub wyraźnego stwierdzenia przez Macieja, że zgoda
+   jest już stała/domyślna dla tego wzorca)."* Przeszukałem repo — **zgody stałej nigdzie nie
+   ma**. Każde dotychczasowe scalenie ma w kanale ślad osobnej zgody: „Wykonane od razu, **za
+   wyraźną zgodą Macieja**" (FALA 262), „**Na wyraźne polecenie Macieja** («scal 263 do main»)"
+   (FALA 263).
+2. **`git-merge-main` jest w `alwaysForbidden`** w `dyspozycje/autobot/src/guardrails.ts` —
+   twardy blok **bez żadnej furtki**, w odróżnieniu od `deploy-*`, które mają bramkę ratunkową
+   `humanApproved && deployPasswordGiven`.
+3. Hasło, które padło (**`deploy`** + „wypchniesz na git"), pokrywa **deploy do ROBOCZA i push
+   gałęzi sesji** — to zostało wykonane w całości. Dotychczasowy wzorzec zgody na `main` to
+   osobne, jawne zdanie nazywające `main` („scal 263 do main"), a nie „wypchnij na git".
+   Przy tej niejednoznaczności obowiązuje `CLAUDE.md` §7: **pytaj, nie zgaduj**.
+
+**GOTOWE DO WYKONANIA NA JEDNO SŁOWO** (np. „scal 268 i 269 do main") — komendy poniżej,
+sprawdzone pod kątem FF i przodków, do wykonania dokładnie w tej kolejności:
+```bash
+git checkout main && git pull --ff-only origin main
+git merge --no-ff 23216527 -m 'merge: dogonienie main o FALA 268 (rytm "jedna fala do tyłu")'
+git push origin main
+git merge --no-ff 0c1f7c37 -m 'merge: dogonienie main o FALA 269 (rytm "jedna fala do tyłu")'
+git push origin main
+git checkout claude/sprawdzenie-funkcjonalnosci-ek4ra0
+```
+**FALA 270 (`13a04632`, commit deployu tej fali) świadomie NIE wchodzi** — zostaje na gałęzi
+roboczej wyłącznie do testów, wejdzie do `main` dopiero przy okazji FALI 271
+(`R-MERGE-MAIN-RYTM-Q1`).
+
+**Do rozważenia przy okazji (nie blokuje):** dwie reguły są dziś w sprzeczności — kanon
+`R-MERGE-MAIN-RYTM-Q1` przewiduje regularne scalanie do `main` jako rytm, a `guardrails.ts`
+trzyma `git-merge-main` na twardej liście zakazanej bez furtki. Albo guardrail powinien dostać
+bramkę analogiczną do `deploy-*` (`humanApproved`), albo kanon powinien wprost powiedzieć, że
+scalenie wykonuje wyłącznie człowiek/sesja lokalna. Dziś każdy agent trafiający na ten rytm
+musi rozstrzygać tę sprzeczność sam — a to jest dokładnie ten rodzaj luki, przez który
+zaległość dwóch fal przeleżała niezauważona.

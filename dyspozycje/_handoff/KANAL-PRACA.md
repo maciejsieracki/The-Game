@@ -6634,3 +6634,34 @@ zweryfikowany jako NIEZWIĄZANY z tą falą (żaden commit tej sesji nie dotyka 
 zarejestrowany w `PYTANIA-OTWARTE.md`, nie blokuje. Pełny opis fali: `WERSJE.md`.
 **Push na `main` NIE wykonany jeszcze w tej wiadomości** — patrz kolejny wpis niżej.
 CZEKAM-NA: nic — deploy do ROBOCZA kompletny.
+
+## [21:23 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 270**, md5 `13a04632` + ⛔ ujawniona zaległość scalenia `main`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`13a0463294c0e686cf6e46c37d2e8ea6`**, stempel
+`ROBOCZA · a602fa6b · 2026-08-12 19:14` (UTC). Build z HEAD **`fa52023a`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**102 commity** od FALI 269, 37 plików w
+`gra/src`+`gra/data`). **Commit deployu: `028ff459`**, wypchnięty na gałąź sesji.
+Bramki: `tsc` **0** (TS 5.9.3) · `logic-test` **213/213** · `combat-test` **6/6** ·
+`vite build` **815 modułów** · `verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html`
+przegenerowane. **`map-gen-regression-test` uruchomiony, nie ukończony przed wpisem** (znany limit
+sandboksu `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`, 2h+); sekcja Pangei zweryfikowana wcześniej
+niezależnie 2× (5/5 seedów PASS na progu 3.72).
+**Tematy:** kaskada rekrutacji „epoka + 1 wstecz" (+Zwiadowca zawsze) · UI „czego brakuje do
+awansu epoki" (panel Nauki + tooltip HUD) · blokada wycofania obrońcy w garnizonie · próg
+`coastRatio` Pangei 3.8→**3.72** (`R-MAPGEN-PANGEA-PROG-Q1=A`) · scroll-reset panelu Imperium
+runda 2 · + barbarzyńcy (4 rundy), wyciek GPU, drenaż surowców 1,0→**0,2**/obywatela, konwertery,
+panele Surowców/Mocy, dyplomacja, krytyczna naprawa martwego „Kontynuuj" po IndexedDB.
+⚠️ **Dwa tematy NIE w 100% domknięte** (opisane w `WERSJE.md`): kaskada rekrutacji — Evaluator
+PASS-WITH-NOTES, furtka przez „Zastąp" (N3, do ABC); garnizon — PASS-WITH-NOTES + **runda 2 w
+toku** + otwarte ABC `P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1` podważające wcześniejszą
+decyzję właściciela.
+⛔ **ZALEGŁOŚĆ: `main` jest DWIE fale w tyle** — stoi na `99974173` (= FALA 267). **FALA 268
+(`23216527`) i FALA 269 (`0c1f7c37`) nigdy nie zostały scalone**; wpis FALI 269 zapowiadał push
+„w kolejnym wpisie niżej", **ten wpis nigdy nie powstał**. Scalenie **przygotowane, ale NIE
+wykonane** — `R-MERGE-MAIN-RYTM-Q1` wymaga wyraźnej zgody właściciela na każde scalenie do `main`,
+a `git-merge-main` jest twardo zablokowany w `guardrails.ts` (bez furtki). Hasło `deploy`
++ „wypchniesz na git" pokrywa ROBOCZA i push gałęzi — **nie `main`**. Gotowe komendy i dowody
+(md5 obu commitów zweryfikowane) w `PYTANIA-OTWARTE.md`, do wykonania na jedno słowo.
+**FALA 270 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu" — wejdzie przy FALI 271).
+CZEKAM-NA: sesja lokalna: pull na dysk właściciela (testuj `13a04632`) · Maciej: zgoda na
+scalenie FAL 268+269 do `main`.
