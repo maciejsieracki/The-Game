@@ -371,5 +371,70 @@ console.log('-- 15. RUNDA 3, naprawa B2: repro dosłowne z rejestru Evaluatora -
   eq(cudAfterFail.postep, 500, 'B2 NAPRAWIONY: Cud zachowuje zbankowane 500 Pracy mimo że Wojownik wrócił na front -- NIE ginie (przed naprawą: pole nadal 0/undefined, bo prodAfterAdvance.postep był ślepo nadpisywany)');
 }
 
+console.log('-- 16. RUNDA 4, naprawa B3: repro dosłowne z rejestru Evaluatora -- AI queueJump (cud wymuszony) BANKUJE front zamiast go zerować --');
+{
+  // Repro Evaluatora rundy 4 (main.ts ~25780, gałąź AI queueJump): kolejka [Koszary,
+  // Cud-A(zbankowane 500)], aktywny postęp scalar=180 na Koszarach. AI wymusza Cud-B
+  // (decideAiWonderBuild zwraca queueJump:true, TYLKO gdy kolejka niepusta -- ai.ts:1693
+  // `!city.queueEmpty` -- więc wProd0.postep jest z definicji >0 w tej gałęzi). PRZED naprawą
+  // main.ts ręcznie zerowało scalar (`postep: 0`) bez bankowania na Koszarach -- 180 Pracy
+  // znikało bezpowrotnie za każdym razem, gdy AI wymuszała cud. Naprawa: main.ts woła teraz
+  // `insertAtFront(wProd0, wItem, 0)` -- ta sama funkcja, ten sam kontrakt jak dla
+  // applyProductionCompleted (runda 3). Ten test odtwarza dokładnie to wywołanie.
+  // / EN: the Evaluator's round-4 repro (main.ts ~25780, AI queueJump branch): queue
+  // [Barracks, Wonder-A(banked 500)], active scalar postep=180 on Barracks. AI forces
+  // Wonder-B (decideAiWonderBuild returns queueJump:true, ONLY when the queue is non-empty --
+  // ai.ts:1693 `!city.queueEmpty` -- so wProd0.postep is by definition >0 on this branch).
+  // BEFORE the fix, main.ts manually zeroed the scalar (`postep: 0`) without banking it onto
+  // Barracks -- 180 Praca vanished for good every time the AI force-queued a Wonder. Fix:
+  // main.ts now calls `insertAtFront(wProd0, wItem, 0)` -- the same function/contract already
+  // used for applyProductionCompleted (round 3). This test replays that exact call.
+  const wProd0 = { kolejka: [item('Koszary', 200), item('Cud-A', 1000)], postep: 180 };
+  wProd0.kolejka[1].postep = 500; // Cud-A niesie wcześniej zbankowane 500 (był kiedyś zdjęty z frontu)
+  const wItem = item('Cud-B', 50);
+
+  const wProd1 = M.insertAtFront(wProd0, wItem, 0);
+  eq(ids(wProd1.kolejka), 'Cud-B,Koszary,Cud-A', 'kolejka: Cud-B wskakuje na front, Koszary i Cud-A zostają za nim w tym samym porządku');
+  eq(M.frontItem(wProd1).id, 'Cud-B', 'Cud-B (wymuszony przez AI) jest nowym frontem');
+  eq(wProd1.postep, 0, 'Cud-B startuje z aktywnym postępem 0 (jak dotychczas -- to się NIE zmienia)');
+  const koszaryBanked = wProd1.kolejka.find(it => it.id === 'Koszary');
+  eq(koszaryBanked.postep, 180, 'B3 NAPRAWIONY: Koszary bankują swoje 180 Pracy schodząc z frontu -- NIE zerowane jak przed naprawą');
+  const cudABanked = wProd1.kolejka.find(it => it.id === 'Cud-A');
+  eq(cudABanked.postep, 500, 'Cud-A (już wcześniej w kolejce, nie na froncie) nietknięty -- wciąż niesie swoje zbankowane 500');
+
+  // Cud-B (albo cokolwiek na froncie) kończy się NATURALNIE -- Koszary wracają na front,
+  // odzyskując dokładnie swój zbankowany postęp (180), nie 0.
+  const { prod: afterAdv, completed } = M.advanceProduction(wProd1, 50); // 50 Pracy = dokładnie koszt Cud-B
+  eq(completed && completed.id, 'Cud-B', 'Cud-B kończy się naturalnie (50 Pracy = jego koszt)');
+  eq(M.frontItem(afterAdv).id, 'Koszary', 'Koszary stają się nowym frontem po naturalnym dokończeniu Cud-B');
+  eq(afterAdv.postep, 180, 'B3 NAPRAWIONY: Koszary ODZYSKUJĄ dokładnie swoje zbankowane 180 Pracy -- NIE 0, mimo że schodziły z frontu przez wymuszacz AI, nie przez promoteToFront gracza');
+  eq(M.frontItem(afterAdv).postep, undefined, 'niezmiennik: front (Koszary) po zdjęciu poprzednika nie niesie już własnego pola postep');
+}
+
+console.log('-- 17. RUNDA 4 (luka pokrycia Evaluatora): guard insertAtFront -- postep=0/undefined/NaN/-5 na froncie NIE bankuje pustego/nonsensownego pola --');
+{
+  // Evaluator rundy 4: usunięcie CAŁEGO guardu `Number.isFinite(prod.postep) && prod.postep > 0`
+  // w insertAtFront przechodziło wszystkie 77 asercji rund 1-3 bez wykrycia -- żaden test nie
+  // wywoływał insertAtFront z frontem, który NIE ma sensownego postępu do zbankowania. Ta
+  // sekcja domyka lukę bezpośrednio na granicy funkcji, nie przez main.ts.
+  // / EN: the Evaluator (round 4): deleting the ENTIRE guard
+  // `Number.isFinite(prod.postep) && prod.postep > 0` in insertAtFront passed all 77
+  // round 1-3 assertions undetected -- no test called insertAtFront with a front that has no
+  // sensible progress to bank. This section closes the gap directly at the function boundary.
+  const cases = [
+    ['postep=0', 0],
+    ['postep=undefined', undefined],
+    ['postep=NaN', NaN],
+    ['postep=-5', -5],
+  ];
+  for (const [label, postepVal] of cases) {
+    const prod = { kolejka: [item('X', 10)], postep: postepVal };
+    const next = M.insertAtFront(prod, item('Y', 20), 0);
+    eq(ids(next.kolejka), 'Y,X', `${label}: Y wstawiony na front, X zostaje za nim`);
+    eq(next.kolejka[1].postep, undefined, `${label}: X (schodzący z frontu bez sensownego postępu) NIE dostaje pola postep -- nie ma nic do zbankowania`);
+    eq(next.postep, 0, `${label}: aktywny postęp Y (wchodzącego) = przekazany activePostep (0), niezależnie od wejściowego prod.postep`);
+  }
+}
+
 console.log(`\npromote-to-front-test: ${passed} passed, ${failed} failed`);
 process.exit(failed > 0 ? 1 : 0);
