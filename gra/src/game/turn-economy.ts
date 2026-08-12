@@ -1123,6 +1123,22 @@ export interface EconomyTickResult {
   /** Per-owner building resource upkeep (1/turę per koszt_surowce type). Keyed by ownerId. */
   resourceUpkeepByOwner: Map<number, Record<string, number>>;
   /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): rozbicie `resourceUpkeepByOwner`
+   * na dwa źródła, TĘ SAMĄ wartość, zanim zostaną scalone `addResourceCosts` — panel Surowców
+   * (empireDetailPanel.ts „Zobacz szczegóły") czyta te dwie mapy zamiast przeliczać osobno.
+   * Dla każdego ownera i surowca: `resourceUpkeepBuildingsByOwner[o][k] +
+   * resourceUpkeepUnitsByOwner[o][k] === resourceUpkeepByOwner[o][k]` (dokładnie — to jest
+   * ten sam wynik `totalBuildingResourceUpkeep`/`totalUnitResourceUpkeep` niżej, tylko
+   * przechwycony PRZED `addResourceCosts`, nie osobne, mogące się rozjechać przeliczenie).
+   * / EN: split of `resourceUpkeepByOwner` into its two source computations, captured BEFORE
+   * they are merged via `addResourceCosts` — buildings[o][k] + units[o][k] === total[o][k]
+   * exactly, by construction (same totalBuildingResourceUpkeep/totalUnitResourceUpkeep calls
+   * below, not a second independent calculation).
+   */
+  resourceUpkeepBuildingsByOwner: Map<number, Record<string, number>>;
+  /** Analogiczne do `resourceUpkeepBuildingsByOwner`, tylko utrzymanie surowcowe jednostek. */
+  resourceUpkeepUnitsByOwner: Map<number, Record<string, number>>;
+  /**
    * ZADANIE 1 (Maciej 2026-07-23): Praca/turę do odjęcia z globalnej puli
    * produkcji cywilizacji (civ-wide -- playerPracaPool/aiPracaPoolByOwner w
    * main.ts) za utrzymanie ulepszeń surowcowych. Keyed by ownerId; brak wpisu = 0.
@@ -2162,6 +2178,8 @@ export function advanceCityEconomy(
     starved:        0,
     upkeepByOwner:  new Map(),
     resourceUpkeepByOwner: new Map(),
+    resourceUpkeepBuildingsByOwner: new Map(),
+    resourceUpkeepUnitsByOwner: new Map(),
     pracaUpkeepByOwner,
   };
 
@@ -2561,16 +2579,21 @@ export function advanceCityEconomy(
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
-    const resUpkeep: Record<string, number> = totalBuildingResourceUpkeep(
+    // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: liczone OSOBNO (buildingsResUpkeep / unitsResUpkeep),
+    // publikowane OSOBNO do result.resourceUpkeepBuildingsByOwner/UnitsByOwner PONIŻEJ, potem
+    // scalone (addResourceCosts) w jeden resUpkeep — panel Surowców czyta oba źródła wprost,
+    // nie przelicza od nowa (patrz JSDoc pól wyżej).
+    const buildingsResUpkeep: Record<string, number> = totalBuildingResourceUpkeep(
       buildingsByOwner.get(oid) ?? [],
     );
-    addResourceCosts(
-      resUpkeep,
-      totalUnitResourceUpkeep(ounits, typeId =>
-        data.units.find(u => u.Jednostka === typeId),
-      ),
+    const unitsResUpkeep: Record<string, number> = totalUnitResourceUpkeep(ounits, typeId =>
+      data.units.find(u => u.Jednostka === typeId),
     );
+    const resUpkeep: Record<string, number> = { ...buildingsResUpkeep };
+    addResourceCosts(resUpkeep, unitsResUpkeep);
     result.resourceUpkeepByOwner.set(oid, resUpkeep);
+    result.resourceUpkeepBuildingsByOwner.set(oid, buildingsResUpkeep);
+    result.resourceUpkeepUnitsByOwner.set(oid, unitsResUpkeep);
   }
 
   if (manpowerHeal) {

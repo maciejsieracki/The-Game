@@ -12,6 +12,7 @@ import {
 } from './empireDetailTypes';
 import { formatObywateleLabel } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
+import { resourceUsageTotal } from '../game/resource-usage-breakdown';
 import { mocLabel, mocWithValue } from './power-labels';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
 import { signedPl } from './formatPl';
@@ -363,6 +364,23 @@ function ensureStyles(): void {
 .civ-emp-res-bar.good>span{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-res-bar.warn>span{background:linear-gradient(90deg,#6a4010,#d9a441);}
 .civ-emp-res-bar.bad>span{background:linear-gradient(90deg,#5a2020,#e07a7a);}
+/* — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12) — rozwinięcie „Zobacz szczegóły" — */
+.civ-emp-res-usage{margin-top:2px;}
+.civ-emp-res-usage>summary{list-style:none;cursor:pointer;font-size:10.5px;color:#8ec5ff;
+  font-weight:600;user-select:none;}
+.civ-emp-res-usage>summary::-webkit-details-marker{display:none;}
+.civ-emp-res-usage>summary::before{content:'▸ ';}
+.civ-emp-res-usage[open]>summary::before{content:'▾ ';}
+.civ-emp-res-usage-body{margin-top:6px;padding:8px 9px;border-radius:6px;background:rgba(15,20,28,.55);
+  display:flex;flex-direction:column;gap:3px;}
+.civ-emp-res-usage-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;
+  font-variant-numeric:tabular-nums;color:#b8c4d8;}
+.civ-emp-res-usage-row .v{color:#e07a7a;font-weight:600;}
+.civ-emp-res-usage-row.total{margin-top:2px;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);
+  font-weight:700;color:#cfd5de;}
+.civ-emp-res-usage-row.total .v{color:#e07a7a;}
+.civ-emp-res-usage-note{margin-top:5px;font-size:10px;line-height:1.4;color:#7d8798;}
+.civ-emp-res-usage-note b{color:#78c95a;}
 .civ-emp-res-foodnote{margin:14px 0 4px;padding:10px 12px;border-radius:8px;border:1px dashed #2b3543;
   background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;display:flex;gap:9px;
   align-items:flex-start;}
@@ -790,6 +808,36 @@ function resCitizenBadgeHtml(r: EmpireResourceRow): string {
     + `font-size:11px;background:${bg};color:${fg}">${esc(txt)}</span>`;
 }
 
+/**
+ * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): rozwinięcie „Zobacz szczegóły" —
+ * rozbicie zużycia TEGO surowca ostatniej przeliczonej tury na budynki/obywateli/wojsko.
+ * Czyta WYŁĄCZNIE `r.usage` (`resource-usage-breakdown.ts`, WPROST z tego co silnik faktycznie
+ * odjął z magazynu — nie licz nic tutaj). Natywny `<details>/<summary>` — ten sam wzorzec co
+ * grupy budynków w cityPanel.ts (GRUPY-BUDYNKOW), zero nowego okablowania JS/zdarzeń.
+ * Zwraca '' gdy brak zużycia (żadnej kategorii) — karta wtedy nie pokazuje przycisku wcale.
+ */
+function resUsageDetailsHtml(r: EmpireResourceRow): string {
+  if (!r.usage) return '';
+  const u = r.usage;
+  const total = resourceUsageTotal(u);
+  if (total <= 0) return '';
+  const row = (label: string, val: number): string => val > 0
+    ? `<div class="civ-emp-res-usage-row"><span class="k">${esc(label)}</span><span class="v">−${val}</span></div>`
+    : '';
+  const prod = r.rateProductionPerTurn ?? r.ratePerTurn;
+  return `<details class="civ-emp-res-usage">`
+    + `<summary>Zobacz szczegóły zużycia</summary>`
+    + `<div class="civ-emp-res-usage-body">`
+    + row('Budynki (utrzymanie)', u.buildings)
+    + row('Obywatele (drenaż)', u.citizens)
+    + row('Wojsko (utrzymanie)', u.units)
+    + `<div class="civ-emp-res-usage-row total"><span class="k">Zużycie razem tej tury</span><span class="v">−${total}</span></div>`
+    + `<div class="civ-emp-res-usage-note">Produkcja: <b>${esc(signedTxt(prod))}</b> / turę — liczona OSOBNO od `
+    + `zużycia powyżej (zużycie jest odjęte z magazynu przy przetwarzaniu tury; „${esc(signedTxt(r.ratePerTurn))}/turę” `
+    + `widoczne na karcie to produkcja ± dyplomacja, BEZ zużycia).</div>`
+    + `</div></details>`;
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
 function resCardHtml(r: EmpireResourceRow): string {
   const cap = r.cap ?? 0;
@@ -805,6 +853,7 @@ function resCardHtml(r: EmpireResourceRow): string {
     + `</div>`
     + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
     + resCitizenBadgeHtml(r)
+    + resUsageDetailsHtml(r)
     + `</div>`;
 }
 

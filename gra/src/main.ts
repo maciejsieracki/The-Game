@@ -334,6 +334,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
+import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -2680,9 +2681,12 @@ async function boot(): Promise<void> {
       // używany WYŁĄCZNIE gdy `citizenUpkeepByOwner` nie ma jeszcze wpisu dla tego ownera (np.
       // pierwszy render UI przed 1. turą) — poza tym czyta zawsze z silnika, nigdy nie przelicza
       // równolegle. buildEmpireResourceRows służy WYŁĄCZNIE do podglądu UI (renderowanie), więc
-      // celowo używamy tylko required/available z wyniku — NIE stosujemy `deductions` (żadnej
-      // mutacji City.surowce z poziomu renderowania panelu, to by było podwójne odjęcie / efekt
-      // uboczny podglądu).
+      // celowo używamy tylko required/available z wyniku dla bramki POKRYTE/NIEDOBÓR — NIE
+      // stosujemy (nie mutujemy) `deductions` tutaj (żadnej mutacji City.surowce z poziomu
+      // renderowania panelu, to by było podwójne odjęcie / efekt uboczny podglądu). Od
+      // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (2026-08-12) CZYTAMY `deductions` DALEJ NIŻEJ —
+      // wyłącznie READ-ONLY, do wyświetlenia w „Zobacz szczegóły" (per surowiec, ile realnie
+      // odjął silnik obywatelom), bez żadnej mutacji — to nie jest to samo co "stosowanie".
       // EN: the Resources panel MUST read the engine's VERDICT from `citizenUpkeepByOwner` — a
       // map keyed DIRECTLY by owner (not via city id), never recompute live. Round 3 read via
       // `cities.find(c => c.ownerId === ownerId)` + `cityOrderState.get(thatCity.id)` — capturing
@@ -2690,8 +2694,8 @@ async function boot(): Promise<void> {
       // so `find()` could land on the captured city and surface the PREVIOUS owner's verdict.
       // Reading directly by ownerId removes that indirection structurally. Fallback
       // (`computeCitizenResourceDrain`) applies ONLY when `citizenUpkeepByOwner` has no entry yet
-      // for this owner (first UI render before turn 1); we deliberately ignore `deductions` here
-      // (no City.surowce mutation from a rendering path).
+      // for this owner (first UI render before turn 1); `deductions` below is read-only display,
+      // never mutates City.surowce.
       const citizenUpkeepOwnerPopulation = cities.reduce(
         (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
         0,
@@ -2702,6 +2706,11 @@ async function boot(): Promise<void> {
         );
       const citizenRequiredSet = new Set(citizenUpkeep.required);
       const citizenAvailableSet = new Set(citizenUpkeep.available);
+      // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: budynki/wojsko z ostatniej przeliczonej tury —
+      // WPROST z mapy publikowanej w bloku „Bank treasury" (main.ts), NIE przeliczane tutaj.
+      // Brak wpisu (np. przed 1. turą) = obiekt pusty, resourceUsageBreakdownFor() zwraca 0.
+      const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId);
+      const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId);
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
@@ -2777,6 +2786,12 @@ async function boot(): Promise<void> {
         const capBase = storageParams.bazaSurowcePanstwo;
         const capBonusPerMagazyn = storageParams.bonusSurowceNaBudynek;
         const citizenRequired = citizenRequiredSet.has(c.id);
+        // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: rozbicie zużycia tego surowca z trzech gotowych
+        // rekordów silnika (obywatele/budynki/wojsko) — resourceUsageBreakdownFor() NIE liczy
+        // nic od nowa, tylko czyta te same mapy co reszta panelu.
+        const usage = resourceUsageBreakdownFor(
+          c.id, citizenUpkeep.deductions, ownerBuildingResUpkeep, ownerUnitResUpkeep,
+        );
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
           rateProductionPerTurn: production,
@@ -2786,6 +2801,7 @@ async function boot(): Promise<void> {
           ...(citizenRequired
             ? { citizenRequired: true, citizenCovered: citizenAvailableSet.has(c.id) }
             : {}),
+          ...(resourceUsageHasAny(usage) ? { usage } : {}),
         });
       }
       return rows;
@@ -3652,6 +3668,19 @@ async function boot(): Promise<void> {
      * with no city-id indirection.
      */
     const citizenUpkeepByOwner = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();
+    /**
+     * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): utrzymanie surowcowe budynków /
+     * jednostek OSTATNIEJ przeliczonej tury, per owner — publikowane w bloku „Bank treasury"
+     * WPROST z `econ.resourceUpkeepBuildingsByOwner`/`resourceUpkeepUnitsByOwner`
+     * (turn-economy.ts), dokładnie tymi wartościami, z których scala się
+     * `econ.resourceUpkeepByOwner` faktycznie odjęte przez `deductBuildingStockCostAcrossCities`.
+     * Ten sam wzorzec trwałości co `citizenUpkeepByOwner` wyżej (przetrwa między turami, czytane
+     * WPROST po ownerId przez `buildEmpireResourceRows`, panel Surowców „Zobacz szczegóły").
+     * / EN: last-tick building/unit resource upkeep per owner, published straight from
+     * `econ.resourceUpkeepBuildingsByOwner`/`UnitsByOwner` — never recomputed here.
+     */
+    const buildingResourceUpkeepByOwner = new Map<number, Record<string, number>>();
+    const unitResourceUpkeepByOwner = new Map<number, Record<string, number>>();
     /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
     const militiaDefOverrides = new Map<string, Record<string, unknown>>();
     const empireFoodStates = new Map<number, EmpireFoodState>();
@@ -23247,6 +23276,11 @@ async function boot(): Promise<void> {
             _lastBogactwoUtrzymanieJednostek = playerBalance?.utrzymanieJednostki ?? 0;
             _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(0) ?? {}) };
             _lastBogactwoRate = pieniadzGracza - (playerBalance?.utrzymanieRazem ?? 0);
+            // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: publikuj rozbicie budynki/wojsko WPROST z
+            // silnika (panel Surowców „Zobacz szczegóły") — ta sama tura, te same rekordy co
+            // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
+            buildingResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepBuildingsByOwner.get(0) ?? {}) });
+            unitResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepUnitsByOwner.get(0) ?? {}) });
 
             // Bank skarbca AI — per owner (nie econ.total*)
             const aiOwnerIds = new Set<number>();
@@ -23264,6 +23298,10 @@ async function boot(): Promise<void> {
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
                 deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
               }
+              // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
+              // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
+              buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });
+              unitResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepUnitsByOwner.get(oid) ?? {}) });
               // R-DEFICYT-ZLOTA-KARA-Q1 (PARYTET AI): NIE podłogować do 0 tutaj —
               // gracz (player.skarbiec -= utrzymanieRazem, wyżej) też może zejść
               // poniżej zera w tym samym bankowaniu tury; ownerTreasury(oid)<0 jest
@@ -27103,6 +27141,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27372,6 +27412,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27618,6 +27660,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27842,6 +27886,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -28123,6 +28169,8 @@ async function boot(): Promise<void> {
       // wystarcza -- fallback computeCitizenResourceDrain przejmie na wczytanym stanie do
       // czasu pierwszego ticku silnika.
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);
       plannedMarches.clear();

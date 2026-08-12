@@ -2,6 +2,7 @@
  * empireDetailTypes.ts — snapshot panelu imperium (HUD mapy).
  */
 import type { HudState } from './hud';
+import type { ResourceUsageBreakdown } from '../game/resource-usage-breakdown';
 
 /** PYTANIE-84-U23A — uchwała imperium (perk widoczny, gdy ≥1 Spichlerz II płaci Sól). */
 export const UCHWALA_SOL_SPICHLERZ_II_ID = 'uchwala-sol-spichlerz-ii';
@@ -99,6 +100,14 @@ export interface EmpireResourceRow {
    * czy 0 (kara aktywna — Szczęście −1, Rozwój −1% w każdym mieście imperium).
    */
   citizenCovered?: boolean;
+  /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): rozbicie zużycia tego surowca w
+   * OSTATNIEJ przeliczonej turze na budynki/obywateli/wojsko — czytane WPROST z tego, co
+   * silnik faktycznie odjął z magazynu (`resource-usage-breakdown.ts`), NIE przeliczane
+   * osobno. `undefined` = brak zużycia żadnej kategorii tego surowca tej tury (przycisk
+   * „Zobacz szczegóły" niepotrzebny — patrz `resourceUsageHasAny`).
+   */
+  usage?: ResourceUsageBreakdown;
 }
 
 export interface EmpireKulturaSnap {
