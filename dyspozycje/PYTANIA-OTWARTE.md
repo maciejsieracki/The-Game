@@ -14974,3 +14974,32 @@ też być zablokowane analogicznie do garnizonu? Osobne pytanie do rozstrzygnię
 **STATUS: dispatch rundy 2 (napraw 1+2, kod/test) w toku. Punkt 3 (pytanie ABC) czeka na turę
 właściciela — nie blokuje merge'a, kod już scalony i bezpieczny (nadzbiór, nie luka).**
 
+
+## ⛔ BŁĄD WŁASNY: naprawa mapgen-prog-372 wjechała do cudzego commitu (b83e6141)
+
+Zauważone przy próbie osobnego commitu — `git status` pokazał "nothing to commit" mimo
+niescalonej jeszcze zmiany progu coastRatio. Dochodzenie: plik `gra/tools/map-gen-regression-
+test.cjs` (patch z worktree `fix-mapgen-prog-372`, zaaplikowany `git apply -3` wcześniej w tej
+turze) pozostał niewyjaśnienie ZASTAGOWANY w indeksie i został zmieciony przez kolejny
+`git add dyspozycje/PYTANIA-OTWARTE.md && git commit` (commit `b83e6141`, którego treść wiadomości
+mówi wyłącznie o retreat-garnizon, NIE wspomina mapgen). Mechanizm dokładnej przyczyny
+niepotwierdzony (możliwe że `git apply -3` w tej wersji gita zostawia hunk w indeksie mimo braku
+konfliktu) — do zapamiętania na przyszłość: sprawdzać `git diff --cached` przed każdym `git add
+<konkretny-plik>`, nie ufać że nic poza wymienionym plikiem nie jest już stage'owane.
+
+**Skutek faktyczny: NIESZKODLIWY.** Sama zmiana kodu jest poprawna i w pełni zweryfikowana
+(patrz niżej) — problem jest wyłącznie w czytelności historii commitów (wiadomość `b83e6141` nie
+opisuje zmiany progu mapgen). Nie cofam/nie przepisuję historii (już zapushowane) — rejestruję
+transparentnie zgodnie z §0b.
+
+## Próg coastRatio Pangei 3.72 (wjechał w b83e6141, patrz błąd wyżej) — SCALONE
+
+Operator zmierzył próg empirycznie na 5 SEEDS z pliku (rozrzut 3.7778-3.8272), zmienił sekcję z
+nieblokującego WARN na zwykłą blokującą asercję. **Niezależnie zweryfikowane przez orkiestratora**
+osobnym skryptem ładującym ten sam generator (`src/map/generator.ts`) — wszystkie 5 seedów
+osobno: **ALL PASS (0/5 fail)**, wartości coastRatio identyczne co do 4 miejsca po przecinku z
+pomiarem Operatora. `tsc --noEmit` 0 błędów. Pełny bieg całego pliku (2+h w tym sandboksie,
+pre-istniejący znany limit `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`) nie ukończony, ale sekcja
+dotknięta zmianą zweryfikowana w pełni niezależnie dwa razy. Worktree `fix-mapgen-prog-372`
+usunięty, Evaluator dispatchowany.
+
