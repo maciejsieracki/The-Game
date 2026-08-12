@@ -16762,3 +16762,24 @@ na przyszłość.
 ręcznego zerowania w `main.ts:25780-25786`) + 2-3 asercje na sekwencję queueJump w teście + asercje
 domykające lukę guardu (mutacje M1/M5 z raportu Evaluatora). Sanitize (drugie znalezisko) POZA
 zakresem, do osobnej rejestracji z ID i pytaniem ABC.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 4 (B3) SCALONA, Evaluator w toku (2026-08-13)
+
+Operator naprawił B3: `main.ts` AI `queueJump` (wymuszanie cudu epoki) teraz woła
+`insertAtFront(wProd0, wItem, 0)` zamiast ręcznego `postep: 0`. Stary komentarz cytujący
+nieaktualny niezmiennik (`dequeue`-style) zastąpiony odniesieniem do Q1=B/rundy 4. Dodano sekcję
+16 (repro dosłowne z rejestru) i 17 (luka pokrycia guardu z rundy 3: `postep`=0/undefined/NaN/-5
+na froncie nie bankuje śmieciowego pola). Własny grep Operatora po wzorcach manipulacji frontem
+(`kolejka[0] =`, `kolejka: [...`, `.slice(1)`) w `main.ts` — potwierdza że poza już znanymi 5
+miejscami (promoteToFront, dropFrontItem×3, insertAtFront×3 call site, queueJump, sanitize) nie
+ma żadnego innego.
+
+Bramki: `tsc` 0, `promote-to-front-test.cjs` **98/98** (było 77), `logic-test` 213/213. Commit
+`1c484f5e`, push OK.
+
+**Dispatch rundy 4 Evaluatora (Opus 5) NASTĘPUJE teraz** — po TRZECH kolejnych FAIL (B1→B2→B3,
+wszystkie tej samej klasy: kolejne przeoczone miejsce manipulujące frontem), ma zrobić PEŁNY,
+wyczerpujący przegląd repo (nie tylko dotknięte linie) pod kątem JAKIEGOKOLWIEK piątego miejsca,
+zanim temat zostanie uznany za zamknięty.
