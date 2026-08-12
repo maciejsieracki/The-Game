@@ -15708,3 +15708,17 @@ Kolejny slot uzupełniony Evaluatorem dla `26b684af` (techPrereqChain AND-prereq
 17 technologii + 19 budynków dotkniętych). Drugi z 6 pozostałych merge'owanych,
 nigdy-nie-ewaluowanych commitów audytu #3 (26b684af, 7b02eb2d, fc17538f, 3dc9d650, ecbddda8,
 89c16ec1).
+
+## Naprawa F-1: fantomowy slot _lastPlayed (fix-idb-phantom-lastplayed) — ZAMKNIĘTE
+
+`listSaves()` w `save.ts` teraz odrzuca nazwy slotów zaczynające się od `_` po odcięciu
+`SAVE_PREFIX` (ten sam wzorzec co już chroniący `summarizeSaveSlots()`), w obu backendach
+(IndexedDB i legacy localStorage). Dowód przed/po: przed naprawą po skasowaniu WSZYSTKICH
+realnych zapisów `listSaves()` zwracał `["_lastPlayed"]` → przycisk "Kontynuuj" fałszywie
+aktywny; po naprawie zwraca `[]` → poprawnie nieaktywny. Rozszerzona asercja strażnicza w
+`map-snapshot-load-test.cjs` (nowe sekcje 0b/0c, 54→58/58 + 1 znany pre-istniejący fail
+nieliczący się do exit, niezwiązany — budżet agregatowy rotacji autozapisu, osobny otwarty
+temat). `tsc` 0 błędów, `idb-storage-migration` 25/25, `idb-b1b2b3` 20/20, `logic-test` 213/213.
+**ZAMKNIĘTE** (commit `2b84da16`). Temat `P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE` (810d5917) w pełni
+domknięty — F1/F2 (Evaluator PASS-WITH-NOTES) + F-1 fantom (ta naprawa); F-2/F-3 pozostają
+świadomie nieodebrane, niepilne noty UX.
