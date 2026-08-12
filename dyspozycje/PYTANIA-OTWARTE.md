@@ -13179,3 +13179,53 @@ skuteczności przez całą sesję.
 **Redispatch w toku**: 14 commitów bez Evaluatora + 2 nowe (tabela Miast, fix wycieku
 placeholdera) + 2 tematy deweloperskie (przepustowość konwerterów, skalowanie magazynu per
 epoka) — wszystkie na ręcznie utworzonych worktree.
+
+## P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU — EVALUATOR FAIL: realna regresja, ABC wymagane
+
+Evaluator znalazł i potwierdził WYKONANIEM realną asymetrię w `pruneEmptyCampsAfterCombat`
+(`barbarians.ts`): wyznaczenie "podejrzanego" obozu robi TOŻSAMOŚCIOWO (`homeCampForUnit`,
+`campId` wygrywa nad odległością), a decyzja o USUNIĘCIU robi POZYCYJNIE (`countCampGarrison`,
+czysta odległość, bez `campId`, bez filtra `seaRaider`). Skutek:
+
+- **Fałszywy pozytyw**: rajder z `campId='c1'` ginie 30 heksów od obozu, mimo że drugi żywy
+  wojownik TEGO SAMEGO obozu wciąż stoi w polu — `c1` i tak zostaje usunięty. Osiągalne w
+  normalnej rozgrywce (pościg w zasięgu 6 heksów, `Infinity` przy raid-ready, rutynowo wyprowadza
+  jednostki poza promień 3 kontrolny obozu).
+- **Fałszywy negatyw** (oryginalny zgłoszony bug WRACA): garnizon lądowy wybity, ale dowolny
+  barbarzyński cywil/rajder morski stoi w promieniu — obóz NIE znika.
+- Mutacja M2 (przełączenie identyfikacji podejrzanych na czysto pozycyjną) daje **184/184
+  zielono** — dowód, że +17 asercji rundy Operatora w ogóle nie pinuje osi, na której leży wada.
+
+**To jest decyzja o REGULE GRY, nie cicha poprawka Operatora** (Evaluator to nazwał wprost —
+wymaga ABC wg §0/§1, nie milczącej decyzji).
+
+**[TEMAT: Kiedy dokładnie obóz barbarzyński ma zniknąć po walce] P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1**
+
+Sytuacja: opisana wyżej — dziś dwa niespójne kryteria (tożsamość vs pozycja), dające zarówno
+fałszywe usunięcia (obcy/odległy obóz znika) jak i fałszywe nie-usunięcia (oryginalny bug wraca
+w innych scenariuszach).
+
+A) **Tożsamościowa** — obóz ginie, gdy zginie jego OSTATNI członek (po `campId`), niezależnie
+   od pozycji na mapie w momencie śmierci. Za: dokładnie to, co deklaruje dzisiejszy docblock
+   commitu; prostsza koncepcyjnie ("wybiłeś załogę = obóz koniec"). Przeciw: obóz może zniknąć
+   "zdalnie" — gracz zabija rajdera daleko od jego bazy i baza mimo braku ataku na nią znika,
+   co może być mylące wizualnie (mesh znika bez powiązanej z nim akcji na mapie).
+B) **Pozycyjna** (najbliższa dosłownej treści zgłoszenia "po zaatakowaniu/zdobyciu obozu") —
+   podejrzane są WYŁĄCZNIE obozy w promieniu `campControlRadius` od heksu, na którym zginęła
+   jednostka; nic nie znika zdalnie. Za: zgodna z intuicją "zdobyłem to miejsce, więc no more
+   spawns tutaj"; eliminuje mylące zdalne znikanie. Przeciw: wymaga też ujednolicenia filtra w
+   `countCampGarrison` (dodać wykluczenie `seaRaider`/`embarked`, spójne z `isCampRaidReady`) —
+   trochę więcej pracy niż A.
+
+Rekomendacja: **B** — bliżej dosłownej treści zgłoszenia i unika mylącego "zdalnego" znikania
+obozu bez żadnej akcji przy nim. Dodatkowo poza tym pytaniem: Evaluator zauważył że "zdobycie"
+bez walki (wejście na opuszczony heks obozu) nie jest w ogóle obsłużone — brak parytetu z
+wioskami neutralnymi (które znikają przez samo wejście). To osobny, mniejszy temat do
+ewentualnego rozszerzenia później, nie blokuje tej decyzji.
+
+**STATUS: ABC OTWARTE, czeka na odpowiedź. Kod cofnięty do stanu przed commitem `1c41c113` w
+sensie regresji NIE jest wymagany — obecny stan to "częściowa naprawa z nową, inną wadą", nie
+regresja względem stanu przed commitem (przed commitem obóz nigdy nie znikał, teraz znika w
+złych przypadkach ORAZ czasem nie znika w dobrych) — bezpieczne pozostawić scalone do czasu
+odpowiedzi, temat nie jest krytyczny (brak realnego uszczerbku poza kosmetycznym mylącym
+zniknięciem obozu).**
