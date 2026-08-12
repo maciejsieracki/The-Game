@@ -53,7 +53,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.promote-to-front-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.promote-to-front-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { promoteToFront, frontItem, advanceProduction, enqueue } from '../src/game/production';
+export { promoteToFront, frontItem, advanceProduction, enqueue, dequeue, rushProduction } from '../src/game/production';
 `, 'utf8');
 
 try {
@@ -208,22 +208,39 @@ console.log('-- 8. scenariusz z dyspozycji, krok 1: Cud (koszt 1000) na froncie,
   eq(cudBanked.postep, 500, 'Cud zachowuje zbankowane 500 Pracy, teraz na pozycji w kolejce (nie na froncie)');
 }
 
-console.log('-- 9. scenariusz z dyspozycji, krok 2: dokończ tani element normalnie, Cud dalej ma zbankowane 500 --');
+console.log('-- 9. RUNDA 2 (naprawa B1): Cud odzyskuje zbankowany postęp przy NATURALNYM dokończeniu poprzedzającego elementu, nie tylko przy ręcznej promocji --');
 {
-  // Kontynuacja testu 8: TaniElement (koszt 10) jest frontem z postępem 0, Cud (koszt 1000)
-  // zbankowany na indeksie 1 z postep:500. advanceProduction() z 10 Pracy/turę kończy
-  // TaniElement w JEDNEJ turze (0+10 >= 10) -- naturalne dokończenie, bez promocji.
-  const prod = { kolejka: [item('TaniElement', 10), item('Cud', 1000, 'budynek')], postep: 0 };
-  prod.kolejka[1].postep = 500; // Cud niesie zbankowane 500 z poprzedniej promocji (test 8)
+  // Scenariusz z dyspozycji rundy 2: Cud (koszt 1000) na froncie z 500/1000 Pracy zebranej.
+  // Promujemy Wojownika (koszt 10, nigdy wcześniej nie był frontem) -- Cud schodzi z frontu i
+  // bankuje swoje 500 (promoteToFront, patrz test 8). Wojownik kończy się NATURALNIE (bez
+  // kolejnej ręcznej promocji) w jednej turze advanceProduction -- to DOMINUJĄCA ścieżka
+  // powrotu itemu na front, którą Evaluator w rundzie 1 wskazał jako martwą: advanceProduction
+  // zdejmował front gołym `kolejka.slice(1)` + `postep: remainder`, NIE czytając zbankowanego
+  // ProductionItem.postep nowego frontu -- zbankowana wartość Cudu ginęła bezpowrotnie, nadpisana
+  // przy następnej promocji. Ten test PRZED naprawą rundy 2 przypinał to zachowanie jako
+  // "zamierzone" (fałszywy komentarz "advanceProduction NIE zna per-item postep") -- teraz
+  // asercjonuje naprawę: Cud wraca z 500, NIE z 0.
+  // / EN: round-2 work-order scenario: a Wonder (cost 1000) on the front with 500/1000 Praca
+  // banked. Promote a Warrior (cost 10, never on the front before) -- the Wonder leaves the
+  // front and banks its 500 (promoteToFront, see test 8). The Warrior finishes NATURALLY
+  // (no further manual promotion) in one advanceProduction turn -- the DOMINANT path back to
+  // the front, which the Evaluator flagged as dead in round 1: advanceProduction used to drop
+  // the front with a bare `kolejka.slice(1)` + `postep: remainder`, never reading the new
+  // front's banked ProductionItem.postep -- the Wonder's banked value was lost for good, silently
+  // overwritten by the next promotion. This test used to pin that as "intended" (a false comment
+  // claiming "advanceProduction doesn't know per-item postep") -- it now asserts the fix instead:
+  // the Wonder comes back with 500, NOT 0.
+  let prod = { kolejka: [item('Cud', 1000), item('Wojownik', 10, 'jednostka')], postep: 500 };
+  prod = M.promoteToFront(prod, 1);
+  eq(M.frontItem(prod).id, 'Wojownik', 'Wojownik staje się frontem po promocji');
+  eq(prod.postep, 0, 'Wojownik nigdy wcześniej nie był frontem -- startuje z zbankowanym 0');
+  eq(prod.kolejka.find(it => it.id === 'Cud').postep, 500, 'Cud bankuje swoje 500 Pracy schodząc z frontu');
+
   const { prod: afterAdv, completed } = M.advanceProduction(prod, 10);
-  eq(completed && completed.id, 'TaniElement', 'TaniElement kończy się w tej turze (10 Pracy = dokładnie jego koszt)');
-  eq(M.frontItem(afterAdv).id, 'Cud', 'Cud staje się nowym frontem po naturalnym dokończeniu TaniElement');
-  // advanceProduction NIE zna per-item postep -- to kontrakt CityProduction.postep, nietknięty
-  // (patrz doc CityProduction wyżej); zbankowana wartość na samym Cud (kolejka[0].postep=500)
-  // jest nadal tam, ale AKTYWNY licznik (afterAdv.postep) to remainder z advanceProduction (0,
-  // bo 10 Pracy dokładnie pokryło koszt TaniElement -- brak nadwyżki).
-  eq(afterAdv.postep, 0, 'aktywny postęp po naturalnym ukończeniu = remainder (0, brak nadwyżki Pracy)');
-  eq(M.frontItem(afterAdv).postep, 500, 'zbankowane 500 Pracy Cudu WCIĄŻ widoczne na nim -- naturalne dokończenie innego itemu go nie rusza');
+  eq(completed && completed.id, 'Wojownik', 'Wojownik kończy się naturalnie (10 Pracy = dokładnie jego koszt)');
+  eq(M.frontItem(afterAdv).id, 'Cud', 'Cud staje się nowym frontem po naturalnym dokończeniu Wojownika');
+  eq(afterAdv.postep, 500, 'B1 NAPRAWIONY: Cud ODZYSKUJE zbankowane 500 Pracy przy naturalnym dokończeniu poprzednika -- NIE 0');
+  eq(M.frontItem(afterAdv).postep, undefined, 'niezmiennik: front (Cud) po zdjęciu poprzednika nie niesie już własnego pola postep -- żyje wyłącznie w afterAdv.postep');
 }
 
 console.log('-- 10. scenariusz z dyspozycji, krok 3: promuj Cud z powrotem na front -- odzyskuje dokładnie 500 --');
@@ -248,6 +265,43 @@ console.log('-- 11. regresja: naturalne dokończenie BEZ promocji nadal przenosi
   eq(completed && completed.id, 'A', 'A kończy się (7+8=15 Pracy >= koszt 10)');
   eq(M.frontItem(afterAdv).id, 'B', 'B staje się nowym frontem po naturalnym dokończeniu A');
   eq(afterAdv.postep, 5, 'nadwyżka Pracy (15-10=5) przechodzi jako startowy postęp B -- bez zmian vs dotychczasowa logika');
+}
+
+console.log('-- 12. RUNDA 2 (naprawa B1): niezmiennik postep -- rushProduction też odzyskuje zbankowany postęp nowego frontu, i czyści jego pole --');
+{
+  // Cud (koszt 1000, 500/1000 Pracy) na froncie; promuj Wojownika (koszt 10) -- Cud bankuje 500.
+  // Wykup (rushProduction) kończy Wojownika NATYCHMIAST, niezależnie od Pracy -- to druga
+  // linia z bloku Evaluatora (~1507), ta sama klasa martwego pola co advanceProduction w teście 9.
+  // / EN: same class of dead-field bug as advanceProduction (test 9), but via the rush-buy path
+  // (~line 1507 in the Evaluator's report) instead of natural completion.
+  let prod = { kolejka: [item('Cud', 1000), item('Wojownik', 10, 'jednostka')], postep: 500 };
+  prod = M.promoteToFront(prod, 1); // Wojownik front (postep 0), Cud zbankowany (postep 500)
+  const { prod: afterRush, completed } = M.rushProduction(prod);
+  eq(completed && completed.id, 'Wojownik', 'rushProduction kończy front (Wojownik) natychmiast, niezależnie od zebranej Pracy');
+  eq(M.frontItem(afterRush).id, 'Cud', 'Cud staje się nowym frontem po wykupie Wojownika');
+  eq(afterRush.postep, 500, 'B1 NAPRAWIONY: rushProduction też odzyskuje zbankowane 500 Pracy Cudu -- NIE 0');
+  eq(M.frontItem(afterRush).postep, undefined, 'niezmiennik: front (Cud) po rushProduction nie niesie już własnego pola postep');
+}
+
+console.log('-- 13. RUNDA 2: niezmiennik postep -- dequeue(0) też odzyskuje zbankowany postęp NOWEGO frontu; anulowany item traci TYLKO swój własny postęp --');
+{
+  // Decyzja techniczna Operatora (runda 2, Zadanie 1): dequeue(index=0) to świadome anulowanie
+  // -- item schodzący z frontu traci SWOJĄ aktywną Pracę (remainder=0 przekazany do
+  // dropFrontItem, bez zmian vs dotychczasowy kontrakt "reset do 0"). Ale nowy front NIE MOŻE
+  // po cichu tracić WŁASNEGO zbankowanego postępu -- to byłaby dokładnie ta sama klasa wycieku,
+  // którą naprawia B1, tylko przez trzecią ścieżkę (dequeue zamiast advanceProduction/rush).
+  // / EN: Operator's technical call (round 2, Task 1): dequeue(index=0) is a deliberate
+  // cancellation -- the item leaving the front forfeits ITS OWN active Praca (remainder=0 into
+  // dropFrontItem, unchanged vs. the existing "reset to 0" contract). But the new front must NOT
+  // silently lose ITS OWN banked progress -- that would be the exact same class of leak B1 fixes,
+  // just via a third path (dequeue instead of advanceProduction/rush).
+  let prod = { kolejka: [item('Cud', 1000), item('Wojownik', 10, 'jednostka')], postep: 500 };
+  prod = M.promoteToFront(prod, 1); // Wojownik front (postep 0), Cud zbankowany (postep 500)
+  prod = { ...prod, postep: 7 }; // symulacja: kilka Pracy zebranej na Wojowniku przed anulowaniem
+  const afterDequeue = M.dequeue(prod, 0); // gracz anuluje Wojownika (traci jego własne 7 Pracy)
+  eq(M.frontItem(afterDequeue).id, 'Cud', 'Cud staje się nowym frontem po anulowaniu Wojownika');
+  eq(afterDequeue.postep, 500, 'Cud odzyskuje SWOJE zbankowane 500 Pracy -- anulowanie Wojownika nie kasuje cudzego postępu (7 Pracy Wojownika przepada, zgodnie z kontraktem dequeue)');
+  eq(M.frontItem(afterDequeue).postep, undefined, 'niezmiennik: front (Cud) po dequeue nie niesie już własnego pola postep');
 }
 
 console.log(`\npromote-to-front-test: ${passed} passed, ${failed} failed`);
