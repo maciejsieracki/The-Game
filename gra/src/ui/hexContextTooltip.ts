@@ -254,6 +254,7 @@ function fullTileYield(hex: Hex): TileYield {
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
+    zloze: (hex as { zloze?: string }).zloze,
     ulepszeniaKeys: improvementKeysForHex(hex),
   });
 }

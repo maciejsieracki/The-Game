@@ -82,6 +82,15 @@ export interface HappinessBreakdownInput {
   conquestUnstablePenalty?: number;
   /** D18-4: pierwsze miasto gracza na easy (T1–T10). */
   stolicaEasyBonus?: boolean;
+  /**
+   * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): suma kar/bonusów Szczęścia za pokrycie
+   * zużycia surowców budowlanych obywateli tego miasta (+1/surowiec dostępny w magazynie
+   * centralnym imperium, -1/surowiec brakujący — binarne per surowiec, ECHO Q3=A). Wołający
+   * dostarcza już zsumowaną wartość — `resolveCitizenResourceCoverage(era, empireStock)
+   * .happinessDelta` (`citizen-resource-upkeep.ts`). AI i Państwa-Miasta objęte identycznie
+   * jak gracz (ECHO Q2=A) — brak specjalnej ścieżki `ownerId===0`.
+   */
+  citizenResourceHappinessDelta?: number;
 }
 
 export interface LawBreakdownInput {
@@ -390,6 +399,13 @@ export function computeHappinessBreakdown(
   if (input.stolicaEasyBonus) {
     const v = pickSociety(szBlock, 'szczescie_bonus_stolica_easy', diff, 1);
     if (v) lines.push({ id: 'stolica_easy', label: 'Stolica imperium (easy)', value: v });
+  }
+  if (input.citizenResourceHappinessDelta) {
+    lines.push({
+      id: 'zaopatrzenie_obywateli',
+      label: 'Zaopatrzenie obywateli (surowce)',
+      value: input.citizenResourceHappinessDelta,
+    });
   }
 
   // Stary mechanizm "wysokie podatki" (próg DEFAULT_PODZIAL_HANDLU.procentLuksus, kara co

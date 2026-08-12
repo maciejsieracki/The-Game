@@ -296,7 +296,7 @@ Rekrutacja jednostek **bojowych** (nie zwiadowcy — patrz niżej) zużywa **Man
 | Element | Wartość |
 |---------|---------|
 | **Pula maksymalna** | Skaluje się z ludnością miasta i epoką (`epoka-ludnosc-manpower.json`) |
-| **Koszt 1 jednostki** | Pełny „slot" Manpower epoki — w **Epoka 1 (Kamień)** koszt = **500** (~**2 jednostki** na slot populacji przy pełnej puli); od **Epoki 2 (Brąz)** zwykle = `manpowerNaLudka` (1 jednostka / slot) |
+| **Koszt 1 jednostki** | Pełny „slot" Manpower epoki (`manpowerNaLudka`) — **1 jednostka** na slot populacji przy pełnej puli, tak samo w **Epoka 1 (Kamień)** (koszt = **1000**) jak i od **Epoki 2 (Brąz)** wzwyż. *(Test z 2026-08-03 z połowicznym kosztem ep1 = 500, ~2 jednostki/slot, cofnięty 2026-08-10 — `R-MANPOWER-EPOKA1-500-VS-1000=A`.)* |
 | **Regeneracja** | **2% puli maksymalnej na turę** (od pustej do pełnej ≈ 50 tur) |
 | **Blokada regeneracji** | Miasto **oblężone** — Manpower **nie** odnawia się w tej turze |
 | **Zwiadowca** | Koszt Manpower = **0** — rekrutuj bez ograniczenia puli |
@@ -405,4 +405,4 @@ Czytaj **rozpiskę plusów i minusów** w panelu — naprawiaj największy minus
 
 ---
 
-*Poradnik‑L · Część VII · rev. G · 2026-08-04 (§47.2b: Manpower ep1=500, ~2 jed./slot; brak osadnika; rekrutacja bez kosztu ludności) · rev. G 2026-07-24 (§47.2a: rekrutacja jednostek Brązu/Żelaza naprawdę odejmuje Surowiec z magazynu państwa) · pierwotnie rev. F 2026-07-23 · dane: `buildings.json`, `units.json`, `epoka-ludnosc-manpower.json`, `manpower.ts`*
+*Poradnik‑L · Część VII · rev. H · 2026-08-10 (§47.2b: `R-MANPOWER-EPOKA1-500-VS-1000=A` — cofnięcie testu z rev. G, Manpower ep1 wraca do 1000, jak epoki 2+) · rev. G · 2026-08-04 (§47.2b: Manpower ep1=500, ~2 jed./slot; brak osadnika; rekrutacja bez kosztu ludności) · rev. G 2026-07-24 (§47.2a: rekrutacja jednostek Brązu/Żelaza naprawdę odejmuje Surowiec z magazynu państwa) · pierwotnie rev. F 2026-07-23 · dane: `buildings.json`, `units.json`, `epoka-ludnosc-manpower.json`, `manpower.ts`*

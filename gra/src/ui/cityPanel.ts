@@ -202,6 +202,12 @@ import {
   POR_BAND_LABELS,
 } from '../game/society-breakdown';
 import {
+  computeCitizenResourceDrain,
+  CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
+  CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+  type CitizenUpkeepCoverage,
+} from '../game/citizen-resource-upkeep';
+import {
   applyPostCaptureLawOverride,
   isPostCaptureLawActive,
   postCaptureLawBannerLabel,
@@ -993,6 +999,11 @@ interface CityView {
   popCapAktualny: number;
   /** Wzrost zablokowany — ludność ≥ aktualny cap. */
   atPopCap: boolean;
+  /**
+   * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): pokrycie zużycia surowców budowlanych
+   * obywateli tego miasta w bieżącej epoce — magazyn centralny imperium.
+   */
+  citizenUpkeep: CitizenUpkeepCoverage;
 }
 
 /** Snapshot imperium do paska zasobów w widoku miasta (spójny z HudState). */
@@ -1158,6 +1169,20 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
     const bilansLokalny = zywnoscBrutto - kosztRacji;
     const { state: ordState } = resolveOrderState(city, data);
     const ws = city.wealthState ?? freshWealthState();
+    // R-ZUZYCIE-SUROWCOW-OBYWATELE N5 runda 4 (Maciej 2026-08-11, Evaluator): TA SAMA
+    // rozstrzygnięta wartość co blok Szczęścia (resolveOrderState → citizenUpkeep) — brak
+    // podwójnego, potencjalnie rozjeżdżającego się liczenia. BEZ fallbacku — `resolveOrderState`
+    // ma dokładnie DWIE ścieżki powrotu (gałąź `fromEngine: true`, spread `...live`, oraz
+    // `computed` z `computeOrderStateLocal`) i OBIE zawsze wypełniają `citizenUpkeep` (silnik w
+    // `main.ts` ustawia je bezwarunkowo w `cityOrderState.set(...)`, `computeOrderStateLocal`
+    // ma własny fallback `?? computeCitizenResourceDrain(...)` — patrz linia ok. 2938 niżej), więc
+    // martwy tu fallback `resolveCitizenResourceCoverage(...)` (stara binarna reguła magazyn>0)
+    // NIGDY się nie wykonywał — usunięty; `!` bo pole jest opcjonalne tylko w TYPIE `OrderState`
+    // (kompat wstecz), nie w praktyce tego wywołania.
+    // EN: dead fallback removed — `resolveOrderState` always populates `citizenUpkeep` on both
+    // return paths, so `resolveCitizenResourceCoverage(...)` here never actually ran; `!` because
+    // the field is optional only in the `OrderState` TYPE (back-compat), not in practice here.
+    const citizenUpkeep = ordState.citizenUpkeep!;
     const growthBreakdown = computeGrowthPercentV85({
       population: city.population,
       poziomRacji,
@@ -1167,6 +1192,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       spichlerzState,
       civKey: cfg.getCivKey?.(city.ownerId) ?? null,
       rationParams,
+      citizenResourceGrowthPct: citizenUpkeep.growthPctDelta,
     });
     // B3 (R-SPICHLERZ-CAP-LUDNOSCI-ETAP runda 2): "bez Akweduktu" musi liczyć AKTUALNY
     // cap uwzględniający Spichlerz tego miasta (5 albo 8) — NIE sztywny param 5, bo dla
@@ -1192,6 +1218,7 @@ function computeView(city: City, map: GameMap, data: GameData): CityView | null 
       popCapZAkweduktem,
       popCapAktualny,
       atPopCap,
+      citizenUpkeep,
     };
   } catch { return null; }
 }
@@ -2891,6 +2918,33 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
   const stolicaBonus = stolicaEasyBonusActive(
     difficulty, gameTurn, city, allCities, 10, cfg.getCapitalCityId?.(city.ownerId) ?? null,
   );
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 3 (Maciej 2026-08-11, Evaluator FAIL runda 2 powód 2):
+  // `computeOrderStateLocal` wykonuje się TAKŻE w żywej rozgrywce (nie tylko sandbox/playtest) —
+  // gałąź `fromEngine: true` w `resolveOrderState` celowo nadpisuje `porPct`/`bandLabel`/
+  // `porzadek` wartościami stąd (bo Prawo/Porządek liczy się na żywo z bieżącego garnizonu,
+  // `getUnitsAt`, nie tylko ze stanu z końca tury) — więc to przeliczenie MUSI używać TEJ SAMEJ
+  // reguły pokrycia co silnik (realny drenaż 1:1/obywatela), inaczej panel miasta pokazuje inne
+  // pasmo buntu niż to, co faktycznie liczy silnik. PREFERUJ odczyt z silnika
+  // (`cfg.getOrderState` — ten sam hak co `live` w `resolveOrderState`), fallback na realny
+  // drenaż tylko gdy silnik jeszcze nie policzył (populacja = suma allCities tego ownera,
+  // identycznie jak `main.ts` `citizenUpkeepDrainForOwner`/`buildEmpireResourceRows`) — NIE
+  // starą binarną `resolveCitizenResourceCoverage` (magazyn > 0), która tu była wcześniej.
+  // EN: `computeOrderStateLocal` also runs during live play (not sandbox-only) — the
+  // `fromEngine: true` branch deliberately overrides `porPct`/`bandLabel`/`porzadek` with the
+  // values computed here (Law/Order is recomputed live from the current garrison, not just the
+  // end-of-turn snapshot), so this recompute must use the SAME coverage rule as the engine
+  // (real per-capita drain), otherwise the city panel can show a different unrest band than the
+  // engine actually enforces. Prefer the engine's verdict (`cfg.getOrderState`, the same hook
+  // `resolveOrderState` reads as `live`), fall back to the real drain only when the engine
+  // hasn't computed yet (population = sum across all of the owner's cities, same as
+  // `main.ts`'s `citizenUpkeepDrainForOwner`/`buildEmpireResourceRows`) — not the old binary
+  // `resolveCitizenResourceCoverage` (stock > 0) that used to live here.
+  const ownerPopulationAll = allCities.reduce(
+    (sum, c) => c.ownerId === city.ownerId ? sum + c.population : sum,
+    0,
+  );
+  const citizenUpkeep = cfg.getOrderState?.(city.id)?.citizenUpkeep
+    ?? computeCitizenResourceDrain(era, ownerPopulationAll, ownerResourceStockAll(allCities, city.ownerId));
 
   const ordPctRaw = evaluateOrderFromBreakdown(
     {
@@ -2906,6 +2960,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       hasSwiatynia: builtIds.includes('swiatynia'),
       hasAmfiteatr: cityHasAmfiteatrLine(builtIds),
       stolicaEasyBonus: stolicaBonus,
+      citizenResourceHappinessDelta: citizenUpkeep.happinessDelta,
     },
     {
       difficulty,
@@ -2948,6 +3003,7 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       revoltWarning: revoltWarning || undefined,
       rebelState: city.rebelState,
       postCaptureLawTurnsRemaining: city.postCaptureLawTurnsRemaining,
+      citizenUpkeep,
     },
     fromEngine: false,
   };
@@ -3014,6 +3070,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     state.szLines,
     'Brak składników wpływających na szczęście.',
   );
+  appendCitizenUpkeepBlock(mount, state.citizenUpkeep);
   appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('tb-army', 'Prawo'),
@@ -4108,6 +4165,35 @@ function formatW4InlineBreakdown(lines: BreakdownLine[] | undefined, emptyHint: 
   }).join(' · ');
 }
 
+/**
+ * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10, ECHO Q4): wiersz zaraz POD Szczęściem —
+ * lista surowców budowlanych wymaganych przez obywateli TEJ epoki, pokrytych/brakujących wg
+ * magazynu CENTRALNEGO imperium (`citizen-resource-upkeep.ts`; nie lokalny magazyn tego
+ * miasta — ECHO Q1). Brak wymaganych surowców w tej epoce (np. dane niekompletne) → blok się
+ * nie renderuje.
+ */
+function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined): void {
+  if (!upkeep || upkeep.required.length === 0) return;
+  const lines: BreakdownLine[] = [
+    ...upkeep.available.map(k => ({
+      label: stockResourceLabel(k),
+      value: CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
+    })),
+    ...upkeep.missing.map(k => ({
+      label: stockResourceLabel(k),
+      value: CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+    })),
+  ];
+  appendW4PctMetricBlock(
+    mount,
+    pctSubheadHtml('chip-crate', 'Zaopatrzenie obywateli'),
+    undefined,
+    'linear-gradient(90deg,#3a8a5a,#7ad0a0)',
+    lines,
+    'Brak surowców wymaganych przez obywateli w tej epoce.',
+  );
+}
+
 /** Pasek procentowy W4 v2 (Szczęście / Prawo / Porządek) — mockup 1E. */
 function appendW4PctMetricBlock(
   mount: HTMLElement,
@@ -4956,6 +5042,7 @@ function renderMagazyn(mount: HTMLElement, city: City, view: CityView | null): v
     growthBreakdownRow('Zdrowie', bd.zdrowie) +
     growthBreakdownRow('Szczęście', bd.szczescie) +
     growthBreakdownRow('Cywilizacja', bd.cywilizacja) +
+    growthBreakdownRow('Zaopatrzenie obywateli', bd.zaopatrzenie) +
     `<div class="growth-progress-block">${growthUi.progressHtml}${growthUi.etaHtml}</div>`;
   mount.appendChild(growBlock);
   const progressBlock = growBlock.querySelector('.growth-progress-block') as HTMLElement | null;
@@ -5022,9 +5109,14 @@ function buildRacjeWzrostDetailCard(
   gridDetailRow(g2, 'Zdrowie', `${signed(bd.zdrowie)}%`);
   gridDetailRow(g2, 'Szczęście', `${signed(bd.szczescie)}%`);
   gridDetailRow(g2, 'Cywilizacja', `${signed(bd.cywilizacja)}%`);
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10): 7. składnik WZROST% — kara za surowce
+  // budowlane obywateli brakujące w magazynie centralnym (-1%/surowiec, ECHO Q3=A). Musi być
+  // wypisany tu, inaczej „Łącznie” niżej zsumowałaby coś, czego karta nie pokazuje.
+  gridDetailRow(g2, 'Zaopatrzenie obywateli', `${signed(bd.zaopatrzenie)}%`);
   // P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY: składniki nad tym wierszem (racje, małe miasto,
-  // spichlerz, zdrowie, szczęście, cywilizacja) idą przez signed() (przecinek polski) -- suma
-  // musi iść tym samym formaterem, inaczej jedna karta miesza separatory (przecinek vs kropka).
+  // spichlerz, zdrowie, szczęście, cywilizacja, zaopatrzenie obywateli) idą przez signed()
+  // (przecinek polski) -- suma musi iść tym samym formaterem, inaczej jedna karta miesza
+  // separatory (przecinek vs kropka).
   gridDetailRow(g2, 'Łącznie', fed ? `${signed(bd.total)}%` : '— (głód)');
   gridDetailRow(g2, 'Postęp do +1 obywatela', `${fmtDecPl(view.wzrostUlamkowy)} / 1`);
   const gainSlots = growthGainPerTurnSlots(city.population, growthPctUi, fed, view.atPopCap);
@@ -8506,6 +8598,7 @@ function tileYieldLabel(hex: Hex): string {
     terenBazowy: hex.terenBazowy,
     nakladka: hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(hex.rzeka && hex.rzeka.obecna),
+    zloze: (hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });
@@ -8524,6 +8617,7 @@ function appendOkolicaYieldLabel(
     terenBazowy: c.hex.terenBazowy,
     nakladka: c.hex.nakladka ?? Nakladka.Brak,
     maRzeke: !!(c.hex.rzeka && c.hex.rzeka.obecna),
+    zloze: (c.hex as { zloze?: string }).zloze,
     ulepszenieKey: ulepszeniaKeys[0],
     ulepszeniaKeys: ulepszeniaKeys.length ? ulepszeniaKeys : undefined,
   });

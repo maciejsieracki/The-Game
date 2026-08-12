@@ -33,7 +33,8 @@
  *      miejsc ma ten sam wzorzec, zeby przyszla naprawa miala punkt startu.
  *   5-6. ROZSZERZENIE 2026-08-09 (P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) -- jedno z miejsc
  *      z punktu 4 to karta szczegolow "Wyzywienie i wzrost" (buildRacjeWzrostDetailCard), sekcja
- *      "WZROST% -- skladniki": 6 skladnikow renderowanych przez signed() (przecinek), a wiersz
+ *      "WZROST% -- skladniki": 7 skladnikow (od 2026-08-10: + zaopatrzenie obywateli,
+ *      R-ZUZYCIE-SUROWCOW-OBYWATELE) renderowanych przez signed() (przecinek), a wiersz
  *      "Lacznie" (suma tych samych skladnikow) surowym szablonem (kropka) -- w JEDNEJ karcie,
  *      jednym widoku. Naprawione: suma tez przez signed(). Sekcja 5 przypina lokalizacje w
  *      zrodle, sekcja 6 kontrakt signedPl na wartosci ulamkowej (dokladnie ten scenariusz).
@@ -155,10 +156,11 @@ assert(true, `inwentarz zapisany (${pozostale.length} pozycji) -- patrz raport o
 
 // --- 5. P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY -----------------------------------------------
 // Karta "Wyżywienie i wzrost — szczegóły" (buildRacjeWzrostDetailCard), sekcja "WZROST% —
-// składniki": 6 składników (racje, małe miasto, spichlerz, zdrowie, szczęście, cywilizacja)
-// renderowane przez signed() (przecinek polski) -- wiersz "Łącznie" (suma tych składników)
-// renderował surowym szablonem `${view.wzrostProcent}%` (kropka JS). Naprawa: signed() też
-// dla sumy, żeby jedna karta nie mieszała separatorów.
+// składniki": 7 składników (racje, małe miasto, spichlerz, zdrowie, szczęście, cywilizacja,
+// zaopatrzenie obywateli -- R-ZUZYCIE-SUROWCOW-OBYWATELE 2026-08-10, 7. składnik dołożony do
+// GrowthPercentBreakdown) renderowane przez signed() (przecinek polski) -- wiersz "Łącznie"
+// (suma tych składników) renderował surowym szablonem `${view.wzrostProcent}%` (kropka JS).
+// Naprawa: signed() też dla sumy, żeby jedna karta nie mieszała separatorów.
 console.log('\n[5] karta "Wyżywienie i wzrost — szczegóły": sekcja "WZROST% — składniki" — suma przez signed()');
 const detailCardMatch = src.match(
   /appendDetailSection\(card, 'WZROST% — składniki'\);[\s\S]{0,1200}?gridDetailRow\(\s*g2,\s*\n?\s*'Postęp do \+1 obywatela'/,
@@ -175,7 +177,7 @@ if (detailCardMatch) {
     'stary surowy wzorzec `${view.wzrostProcent}%` (kropka) ZNIKNĄŁ z tego wiersza karty',
   );
   const signedRowCount = (block.match(/`\$\{signed\(/g) || []).length;
-  eq(signedRowCount, 7, '7 wierszy (6 składników + Łącznie) w sekcji woła signed() -- spójny formater w całej karcie');
+  eq(signedRowCount, 8, '8 wierszy (7 składników + Łącznie) w sekcji woła signed() -- spójny formater w całej karcie');
 }
 
 // --- 6. Kontrakt signedPl dla sumy ułamkowej (dokładnie ten scenariusz zgłoszenia) --------------

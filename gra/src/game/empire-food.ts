@@ -437,6 +437,33 @@ export function isEmpireCityFoodSolvent(
   return computeEmpireCityFoodNadwyzka(perCity, ownerId) + zapasyPrzed >= 0;
 }
 
+/**
+ * R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (rozpoznanie #4, Maciej 2026-08-10, ECHO „zgoda"):
+ * kryterium docelowe dla auto-korekty poziomu Racji. Domyślnie (`requireFlowBalance` fałsz/
+ * pominięte) — STOCK-based: `isEmpireCityFoodSolvent` (skumulowana rezerwa `zapasyPrzed` może
+ * pokryć chwilowy lokalny deficyt) — dzisiejsze zachowanie dla AI/miast-państw, bez zmian.
+ * Gdy `requireFlowBalance` prawda (WYŁĄCZNIE gracz, ownerId===0) — FLOW-based: sama bieżąca
+ * tura musi się bilansować (`computeEmpireCityFoodNadwyzka >= 0`), rezerwa nie liczy się jako
+ * pokrycie — inaczej auto-podnoszenie/backstop cicho drenuje Spichlerz z tury na turę.
+ * EN: target criterion for ration-level auto-adjustment. Default (requireFlowBalance false/
+ * omitted) — STOCK-based: isEmpireCityFoodSolvent (accumulated reserve zapasyPrzed may cover a
+ * transient local deficit) — today's AI/city-state behavior, unchanged. When requireFlowBalance
+ * is true (player ONLY, ownerId===0) — FLOW-based: this turn alone must balance
+ * (computeEmpireCityFoodNadwyzka >= 0), reserve does not count as coverage — otherwise
+ * auto-raise/backstop silently drains the granary turn after turn.
+ */
+function isRationBalanceTargetMet(
+  zapasyPrzed: number,
+  perCity: ReadonlyArray<CityFoodTickLike>,
+  ownerId: number,
+  requireFlowBalance?: boolean,
+): boolean {
+  if (requireFlowBalance) {
+    return computeEmpireCityFoodNadwyzka(perCity, ownerId) >= 0;
+  }
+  return isEmpireCityFoodSolvent(zapasyPrzed, perCity, ownerId);
+}
+
 export interface AutoBalanceRationsOpts {
   ownerId: number;
   cities: City[];
@@ -446,6 +473,15 @@ export interface AutoBalanceRationsOpts {
   spichlerzByCity?: ReadonlyMap<string, SpichlerzCityBonusState>;
   /** Gracz Q5=A: tylko miasta z autoWyzywienie === true. */
   onlyAutoManaged?: boolean;
+  /** R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY: gracz (ownerId===0) — cel obniżania to flow tej
+   * tury >=0 (`isRationBalanceTargetMet`), nie tylko stock-based pokrycie rezerwą — inaczej
+   * ratchet nie znika, dopóki rezerwa nie spadnie blisko zera. WYŁĄCZNIE dla gracza; AI/miasta-
+   * -państwa zostają przy dzisiejszym stock-based (pomiń/fałsz).
+   * EN: player (ownerId===0) — lowering target is this turn's flow >=0
+   * (isRationBalanceTargetMet), not just stock-based reserve coverage — otherwise the ratchet
+   * does not disappear until the reserve nears zero. Player ONLY; AI/city-states stay
+   * stock-based (omit/false). */
+  requireFlowBalance?: boolean;
 }
 
 /**
@@ -453,13 +489,16 @@ export interface AutoBalanceRationsOpts {
  * aż pula po dopłatach miastom (przed wojskiem) nie spadnie poniżej zera.
  */
 export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): AutoRationAdjustResult {
-  const { ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, onlyAutoManaged } = opts;
+  const {
+    ownerId, cities, econ, zapasyPrzed, rationParams, spichlerzByCity, onlyAutoManaged,
+    requireFlowBalance,
+  } = opts;
   const ownerCities = ownerCitiesForAutoAdjust(cities, ownerId, onlyAutoManaged);
   if (ownerCities.length === 0) {
     return { adjusted: false, changes: [] };
   }
 
-  if (isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) {
+  if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance)) {
     return { adjusted: false, changes: [] };
   }
 
@@ -471,7 +510,7 @@ export function autoBalanceRationsToSolvency(opts: AutoBalanceRationsOpts): Auto
 
   const maxSteps = Math.round((WYZYWIENIE_MAX - WYZYWIENIE_MIN) / WYZYWIENIE_STEP) + 2;
   for (let step = 0; step < maxSteps; step++) {
-    if (isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId)) break;
+    if (isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance)) break;
 
     let lowered = false;
     for (const c of ownerCities) {
@@ -568,8 +607,20 @@ export function autoRaiseRationsForGrowth(opts: AutoRaiseRationsOpts): AutoRatio
     recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
 
     const pool = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
-    const solvent = isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId);
-    if (pool < 0 || !solvent) {
+    // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (rozpoznanie #4): dla gracza (requireProductionSurplus)
+    // krok akceptujemy TYLKO jeśli PO nim flow tej tury jest nieujemny — nie wystarczy, że
+    // skumulowana rezerwa (stock) go pokryje. Dawniej `nadwyzka<=0` po kroku był tylko `break`
+    // BEZ cofnięcia — funkcja strukturalnie przestrzeliwała o jeden krok (WYZYWIENIE_STEP) ponad
+    // to, co bieżąca produkcja udźwignie, cicho finansując go z rezerwy. AI (requireProductionSurplus
+    // fałsz) zostaje przy dawnym stock-based kryterium (isRationBalanceTargetMet bez flagi).
+    // EN: for the player (requireProductionSurplus) a step is accepted ONLY if this turn's flow
+    // is non-negative after it — reserve coverage (stock) is not enough. Previously a
+    // post-step nadwyzka<=0 was merely a `break` WITHOUT rollback — the function structurally
+    // overshot by one step (WYZYWIENIE_STEP) beyond what current production can sustain, silently
+    // financed from the reserve. AI (requireProductionSurplus false) keeps the old stock-based
+    // criterion (isRationBalanceTargetMet without the flag).
+    const targetMet = isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireProductionSurplus);
+    if (pool < 0 || !targetMet) {
       for (const c of ownerCities) {
         c.poziomRacji = levelsBeforeRaise.get(c.id)!;
       }
@@ -610,12 +661,27 @@ export function maxSafePoziomRacjiForCity(opts: {
   const originalLevel = getCityRationLevel(city);
   let maxSafe = WYZYWIENIE_MIN;
 
+  // R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (rozpoznanie #4): backstop gracza (ownerId===0) używał
+  // tych samych funkcji stock-based (simulateCityFoodCentralPool/isEmpireCityFoodSolvent) z tym
+  // samym zapasyPrzed co autoRaiseRationsForGrowth — akceptował więc DOKŁADNIE to samo
+  // przestrzelenie, które raise już zaaplikował, więc nie chronił przed nim wcale. Dla gracza
+  // maxSafe musi być najwyższym poziomem, przy którym flow TEJ tury (nadwyzka) jest nieujemny.
+  // Wszyscy dzisiejsi wywołujący tę funkcję w main.ts przekazują wyłącznie ownerId=0 (grep
+  // potwierdzony w raporcie Operatora) — gate jawny na wypadek przyszłego wywołania dla AI.
+  // EN: player (ownerId===0) backstop used the same stock-based helpers
+  // (simulateCityFoodCentralPool/isEmpireCityFoodSolvent) with the same zapasyPrzed as
+  // autoRaiseRationsForGrowth — so it accepted the EXACT overshoot raise had already applied,
+  // giving no real protection. For the player maxSafe must be the highest level at which THIS
+  // turn's flow (nadwyzka) is non-negative. Every current caller in main.ts passes ownerId=0 only
+  // (grep-confirmed in the Operator report) — the gate is explicit for any future AI caller.
+  const requireFlowBalance = ownerId === 0;
+
   for (const level of WYZYWIENIE_LEVELS) {
     city.poziomRacji = level;
     recomputeCityFoodBalancesInEcon(econ.perCity, cities, rationParams, spichlerzByCity);
     const pool = simulateCityFoodCentralPool(zapasyPrzed, econ.perCity, ownerId);
-    const solvent = isEmpireCityFoodSolvent(zapasyPrzed, econ.perCity, ownerId);
-    if (pool >= 0 && solvent) {
+    const targetMet = isRationBalanceTargetMet(zapasyPrzed, econ.perCity, ownerId, requireFlowBalance);
+    if (pool >= 0 && targetMet) {
       maxSafe = level;
     }
   }

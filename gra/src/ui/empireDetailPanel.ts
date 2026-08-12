@@ -738,6 +738,15 @@ function resTooltipHtml(r: EmpireResourceRow): string {
   } else {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
+  // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
+  // ZASPOKAJA CAŁĄ populację imperium tego ownera (1 szt. surowca/obywatela/turę), NIE
+  // starsza binarna „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy
+  // silnik tury (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
+  if (r.citizenRequired) {
+    parts.push(r.citizenCovered
+      ? 'Obywatele: zapotrzebowanie POKRYTE (magazyn ≥ zapotrzebowanie całego imperium; +1 Szczęście każde miasto)'
+      : 'Obywatele: NIEDOBÓR w magazynie (poniżej zapotrzebowania całego imperium) — kara −1 Szczęście, −1% Rozwój w KAŻDYM mieście');
+  }
   return esc(parts.join(' · '));
 }
 
@@ -762,6 +771,25 @@ function resRateHtml(r: EmpireResourceRow, state: 'bad' | 'warn' | 'good'): stri
   return html;
 }
 
+/**
+ * Badge „Obywatele" (R-ZUZYCIE-SUROWCOW-OBYWATELE N2, Maciej 2026-08-11) — tylko dla surowców
+ * wymaganych w bieżącej epoce (`r.citizenRequired`); pokrycie = magazyn centralny ZASPOKAJA
+ * CAŁĄ populację imperium tego ownera (ten sam wynik co silnik tury liczy realnie, nie
+ * starsza binarna „magazyn > 0"). Inline style: `civ-emp-res-card`/`resCardHtml` nie mają
+ * dedykowanej klasy CSS w repo dla nowych badge'y (kolory kart idą przez `${state}` na
+ * kontenerze) — bezpieczniej nie zgadywać nieistniejącej klasy niż dodać martwy selektor.
+ */
+function resCitizenBadgeHtml(r: EmpireResourceRow): string {
+  if (!r.citizenRequired) return '';
+  const covered = r.citizenCovered === true;
+  const bg = covered ? 'rgba(122,208,160,0.18)' : 'rgba(224,90,90,0.18)';
+  const fg = covered ? '#7ad0a0' : '#e05a5a';
+  const txt = covered ? 'Obywatele: POKRYTE' : 'Obywatele: NIEDOBÓR';
+  return `<span class="civ-emp-res-citizen-badge" `
+    + `style="display:inline-block;margin-top:4px;padding:1px 6px;border-radius:4px;`
+    + `font-size:11px;background:${bg};color:${fg}">${esc(txt)}</span>`;
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
 function resCardHtml(r: EmpireResourceRow): string {
   const cap = r.cap ?? 0;
@@ -776,6 +804,7 @@ function resCardHtml(r: EmpireResourceRow): string {
     + (flag ? `<span class="flag ${state}">${esc(flag)}</span>` : '')
     + `</div>`
     + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
+    + resCitizenBadgeHtml(r)
     + `</div>`;
 }
 
@@ -1090,12 +1119,18 @@ function render(): void {
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;
   }
-  if (!onlyEconId) {
-    zasoby += renderDefaultHandelSplitSection();
-    // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Praca", Maciej 2026-08-10): globalny
-    // podział Pracy imperium, wzorem sekcji Handlu tuż wyżej (DYSPOZYCJA-85-SUWAK).
-    zasoby += renderDefaultPodzialPracySection();
-  }
+  // BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU (Maciej 2026-08-10): suwaki globalne
+  // Skarbca i Pracy muszą być widoczne ZAWSZE, niezależnie od onlyEconId — analogicznie do
+  // Wyżywienia (renderDefaultPoziomRacjiSection wewnątrz renderSpichlerzCentralnySection, poza
+  // filtrem). C-PANEL=B (filtr wierszy stanu/przyrostu ekonomii) zostaje nienaruszony —
+  // wyjęte spod `if` są WYŁĄCZNIE te dwa wywołania suwaków, nie cała pętla econRows wyżej.
+  // EN: global Treasury/Labor sliders must always be visible regardless of onlyEconId — same
+  // pattern as Food (rendered outside the filter). C-PANEL=B (econ row filter) stays intact —
+  // only these two slider calls are pulled out of the `if`, not the econRows loop above.
+  zasoby += renderDefaultHandelSplitSection();
+  // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Praca", Maciej 2026-08-10): globalny
+  // podział Pracy imperium, wzorem sekcji Handlu tuż wyżej (DYSPOZYCJA-85-SUWAK).
+  zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.

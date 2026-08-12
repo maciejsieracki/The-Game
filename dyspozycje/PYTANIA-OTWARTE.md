@@ -2070,7 +2070,7 @@ znanych czerwonych bramek — bez tego wpisu następna sesja mogłaby je wziąć
 **Kotwice:** `gra/tools/map-field-battle-test.cjs`, `gra/tools/pre-battle-save-test.cjs`.
 **Model:** Sonnet 5.
 
-## P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **OTWARTE — niepilne**
+## P-ETYKIETA-PODWOJNY-ZNAK-PRACA-BUDYNKI (2026-08-09, nota Evaluatora P-ETYKIETA-MINUS-GLIF-ROZJAZD-FORMATPL) · STATUS: **ZAMKNIĘTE — naprawione i scalone `f7a0ece1` (grupa G3, Evaluator PASS-WITH-NOTES, 2026-08-10)**
 `cityPanel.ts:4394` i `:4418` renderują `` `+${signed(praca.doBudynkow)}` `` — dla wartości ujemnych
 daje podwójny znak (`"+−5"`, przed naprawą glifu `"+-5"`). Pre-istniejące, nie regresja tej naprawy
 (oba warianty były błędne) — ale naprawa glifu uczyniła anomalię bardziej widoczną (`+−` rzuca się
@@ -2139,7 +2139,7 @@ Zmierzone (po scaleniu obu zależnych napraw): `city-panel-growth-percent-separa
 **Kotwice:** `gra/src/ui/cityPanel.ts` (`buildRacjeWzrostDetailCard`, linia ~4750/4753).
 **Model:** Sonnet 5 (Operator) + Opus 5 (Evaluator) + korekta orkiestratora przy scaleniu.
 
-## P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) · STATUS: **OTWARTE — niepilne**
+## P-ETYKIETA-KARTA-ZYWNOSC-4800-MIESZANE-SEPARATORY (2026-08-09, nota Evaluatora P-ETYKIETA-KARTA-4750-MIESZANE-SEPARATORY) · STATUS: **ZAMKNIĘTE — naprawione i scalone `f7a0ece1` (grupa G3, Evaluator PASS-WITH-NOTES, 2026-08-10)**
 `buildTopBarZywnoscDetailCard` (linia ~4800, kod żywy — wołany przez `attachTopBarStat('zywnosc')`)
 ma dokładnie tę samą usterkę: linia ~4839 renderuje `${view.wzrostProcent}%` surowo, obok
 `signed(foodSplit.total)` (linia ~4830) w TEJ SAMEJ karcie. Dodatkowo linia ~4841 renderuje
@@ -4158,7 +4158,7 @@ martwych slotów bez wyraźnego sygnału dla gracza.
 `gra/src/ui/cityPanel.ts` (`okolicaPreviewRadius`, `cap=Rwork`).
 **Model:** Opus 5 (Evaluator, znalezisko).
 
-## P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (2026-08-09, nota N3 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **OTWARTE — pre-istniejące, poza zakresem**
+## P-OKOLICA-ADJUST-PLUS1-TOGGLE-SEMANTYKA (2026-08-09, nota N3 Evaluatora rundy 4 P-HEKS-ISWORKABLE-OVERLAY-VS-SILNIK-HIPOTEZA) · STATUS: **ZAMKNIĘTE — naprawione i scalone `f7a0ece1` (grupa G2, Evaluator PASS-WITH-NOTES, 2026-08-10)**
 `adjustTileWorker(delta=+1)` na polu JUŻ obsadzonym robotnikiem zdejmuje go (semantyka toggle),
 zamiast np. być no-opem albo błędem „pole już zajęte". Zachowanie istnieje verbatim od dawna
 (potwierdzone w `43afa474`, przed jakąkolwiek z 4 rund tego zgłoszenia), nietknięte przez całą
@@ -4182,7 +4182,7 @@ naprawy) — do rozważenia przy następnym dotknięciu tego kodu.
 
 ---
 
-## R-MERGE-MAIN-RYTM-Q1 (2026-08-09, pytanie Macieja „kiedy dany commit powinien trafić do main") · STATUS: **OTWARTE — ABC, czeka na literę**
+## R-MERGE-MAIN-RYTM-Q1 (2026-08-09, pytanie Macieja „kiedy dany commit powinien trafić do main") · STATUS: **ZAMKNIĘTE — ECHO decyzja własna D Macieja, wdrożone jako CLAUDE.md §4a, kanon `docs/decyzje/R-MERGE-MAIN-RYTM-Q1.md`**
 
 **Sytuacja:** CLAUDE.md §3 deklaruje projekt jako trunk-based na `main` („brak feature-branchy"),
 ale harness tej sesji (Claude Code Remote) twardo przypina rozwój i `push` wyłącznie do gałęzi
@@ -4281,7 +4281,7 @@ język, nie wracać do zamkniętych tematów bez wyraźnego powodu.
 
 ---
 
-## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (2026-08-09, znalezisko Operatora przy naprawie P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE) · STATUS: **OTWARTE — niepilne, ten sam wzorzec błędu**
+## P-OVERLAY-KOLEJNOSC-WYWOLAN-TRASY-PIGULKI (2026-08-09, znalezisko Operatora przy naprawie P-CHLOPEK-DWA-SYSTEMY-KOLOR-NIESPOJNE) · STATUS: **ZAMKNIĘTE — SCALONE (2026-08-10, patrz niżej w pliku)**
 
 W `applyCityPanelWorldView()` (`gra/src/main.ts`) ten sam błąd kolejności wywołań, który powodował
 widmowego złotego chłopka (bramka `isCityPanelOpen()` widziała stan "zamknięty" tuż przed
@@ -4293,7 +4293,7 @@ grze (może być niezauważalne jeśli te warstwy rzadziej się zmieniają w tra
 
 ---
 
-## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO (2026-08-09) · STATUS: **OTWARTE — koryguje wykonanie R-HUD-MIASTO-STAN-CYWILIZACJI (2026-08-08), dispatch Sonnet 5**
+## R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO (2026-08-09) · STATUS: **NIEAKTUALNE — zastąpione przez R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (praca się nie liczy, patrz niżej w pliku)**
 
 **⛔ To pytanie/zgłoszenie PODWAŻA wcześniejszą decyzję** `R-HUD-MIASTO-STAN-CYWILIZACJI` (ECHO
 2026-08-08, commit `8663e084`, FALA 261) — zgodnie z nową zasadą CLAUDE.md §1a oznaczam to wprost,
@@ -4335,7 +4335,7 @@ wymuszać sztucznej liczby.
 
 ---
 
-## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09, nota D1 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — realna luka, do decyzji**
+## P-DYPLO-SWEETENER-KOSZYK-W-TRAKTACIE (2026-08-09, nota D1 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **ZAMKNIĘTE — ECHO A wdrożone i wdeployowane do ROBOCZA FALA 265 (`2b747b9b`, 2026-08-09), potwierdzone retroaktywnie 2026-08-10**
 
 Evaluator (Opus 5) przy weryfikacji naprawy `R-DYP-STOL-A-KOREKTA` znalazł osiągalną w grze
 nieszczelność: `SWEETENER_COUNTER_ELIGIBLE` (`gra/src/game/diplomacy-proposals.ts:1936`) obejmuje
@@ -4348,14 +4348,14 @@ inicjowany przez GRACZA jest czysty (0 pól), ale kontroferta AI może wprowadzi
 drzwiami. Pytanie do rozstrzygnięcia: czy AI ma w ogóle dokładać złoto-słodzik do traktatów objętych
 rozłączeniem, skoro cel decyzji to właśnie ich rozdzielenie od wymiany.
 
-## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (2026-08-09, nota D2 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **OTWARTE — niepilne, kosmetyka komunikatu**
+## P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA (2026-08-09, nota D2 Evaluatora R-DYP-STOL-A-KOREKTA) · STATUS: **ZAMKNIĘTE — SCALONE `5a93f5aa` (2026-08-10)**
 
 Komunikaty „Brakuje X PW — dopłać" / „Dopłać X PW" (`diplomacyAcceptanceBalance.ts:625,631`,
 `diplomacy-acceptance-points.ts:363-371`) każą graczowi zrobić coś, co w formularzu treaty-only
 jest już niemożliwe (brak pól do dopłaty). Powinny kierować do zrobienia osobnej umowy — to
 dosłownie cel dzisiejszej decyzji o rozłączeniu.
 
-## P-HUD-KULTURA-SIGNED-NIESPOJNE (2026-08-09, znalezisko Operatora przy R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO) · STATUS: **OTWARTE — niepilne, kosmetyka**
+## P-HUD-KULTURA-SIGNED-NIESPOJNE (2026-08-09, znalezisko Operatora przy R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO) · STATUS: **ZAMKNIĘTE — naprawione bezpośrednio, Evaluator PASS-WITH-NOTES, temat ZAMKNIĘTY (2026-08-10)**
 
 Główny HUD mapy (`gra/src/ui/hud.ts` → `renderBarD1B`) formatuje 5 z 6 chipów jako plain `String(...)`
 (bo to zapas, nie delta), ale chip „Kultura" niekonsekwentnie używa `signed(s.kultura)` (wymuszony
@@ -4437,7 +4437,7 @@ klamrowany ≥0) — sygnał ostrzegawczy przetrwał na małej liczbie, degradac
 
 ---
 
-## R-WYDARZENIA-FILTR-KATEGORII (2026-08-09) · STATUS: **OTWARTE — zaimplementowane w worktree, 2 noty blokujące + 1 pytanie przed scaleniem**
+## R-WYDARZENIA-FILTR-KATEGORII (2026-08-09) · STATUS: **ZAMKNIĘTE — SCALONE `2984b707` (2026-08-09)**
 
 Zaimplementowano: (1) etykieta „Dyplomacja" zamiast „Koniec tury" wyłącznie dla wpisów handlu
 AI↔AI (jedyny realny typ zaśmiecający panel — Operator sprawdził WSZYSTKIE typy wpisów przechodzące
@@ -4573,7 +4573,7 @@ zdeployowanym buildem `35a8b636` a HEAD sprzed naprawy). Przyczyna: defekt CSS f
 
 ---
 
-## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — wymaga rozpoznania przed decyzją**
+## R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE (2026-08-09, zgłoszenie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `8692b61b` (2026-08-09)**
 
 **Cytat Macieja:** „powinien być [w] panelu miasta tryb ustawienia globalnego dla skarbu, dla
 jedzenia i dla produkcji. Po naciśnięciu przycisku tylko dla tego miasta powinien właśnie się
@@ -4613,7 +4613,7 @@ Rekomendacja Sonnet 5 była B. **Decyzja Macieja: A** (dosłownie „ID: R-MIAST
 VS-LOKALNE a"). ECHO potwierdzone w czacie. Dispatch implementacji wzorem Danina/Handel — bez
 deployu, zgodnie z procedurą NUMER→ABC→COMMIT→DEPLOY.
 
-## R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — nowa reguła gry, wymaga ABC**
+## R-EPOKA-CUD-WARUNEK-AWANSU (2026-08-09, zgłoszenie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `13861b60` (2026-08-10), podtematy B2/B3 też domknięte (patrz niżej w pliku)**
 
 **Cytat Macieja:** „Cywilizacja nie może przejść do następnego etapu, jeżeli nie stworzy cudu,
 który jest jej przypisany w danej epoce. Czyli żeby przejść na przykład do brązu, musi wybudować
@@ -4752,7 +4752,7 @@ Dispatch domknięcia N1+N2 przed scaleniem.
 
 ---
 
-## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zgłoszenie z playtestu) · STATUS: **OTWARTE — koryguje dopiero co zatwierdzoną R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO, dispatch Sonnet 5**
+## R-HUD-MIASTO-STOCK-TEMPO-TRZY-ELEMENTY (2026-08-09, zgłoszenie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `f4d427e8`, potwierdzone post-scalenia przez Evaluatora (2026-08-10)**
 
 **⛔ To zgłoszenie PODWAŻA decyzję zatwierdzoną chwilę wcześniej dziś** (`R-HUD-MIASTO-KOREKTA-ZAPAS-VS-TEMPO`, Evaluator PASS-WITH-NOTES powyżej, jeszcze NIE scalona do gałęzi) — zgodnie z CLAUDE.md §1a
 oznaczam to wprost. Agent `a35d817d715b1b210`, który dokańczał N1/N2 tamtej naprawy, został
@@ -5047,7 +5047,7 @@ turę czy nadpisuje/duplikuje istniejący; (b) sprawdzić przeliczenie numer-tur
 czy wyświetlany numer tury w HUD-zie faktycznie pochodzi z tego samego licznika co ten zapisany w
 sejwie. Zanim cokolwiek naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
 
-## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE (2026-08-09, żądanie danych od Macieja przy P-MAGAZYN-PRZEKROCZENIE-LIMITU) · STATUS: **OTWARTE — czyste zestawienie danych, decyzja o zmianie balansu odłożona do odpowiedzi Macieja**
+## P-PRODUKCJA-DREWNO-GLINA-KAMIEN-ZESTAWIENIE (2026-08-09, żądanie danych od Macieja przy P-MAGAZYN-PRZEKROCZENIE-LIMITU) · STATUS: **ZAMKNIĘTE — decyzja Macieja wdrożona bezpośrednio (bez zestawienia), SCALONE `036173f7`**
 
 **Cytat Macieja:** „to oznacza że powinniśmy zmniejszyć produkcję drewna i gliny. Ale to trzeba do
 tego podejść kompleksowo. Napisz mi ile produkuje się w danych ulepszeniach drewna gliny kamienia,
@@ -5325,7 +5325,7 @@ to naprawdę dzieje się tak jak opisuje Maciej); (c) sprawdzić czy silnik rozr
 „chatka na czyim terytorium" przy losowaniu nagrody, czy pula jest zawsze taka sama niezależnie od
 lokalizacji. Zanim przedstawię ABC — zebrać fakty, nie zgadywać zakresu zmian.
 
-## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (2026-08-09, pytanie z playtestu) · STATUS: **OTWARTE — pytanie faktograficzne + regresja do potwierdzenia, badam bezpośrednio**
+## P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK (2026-08-09, pytanie z playtestu) · STATUS: **ZAMKNIĘTE — SCALONE `b057d248` (2026-08-09), Evaluator PASS finalny**
 
 **Cytat Macieja:** „po zdobyciu ostatniego Państwa Miasta miała być jakaś informacja z
 wyskakującym oknem informująca, że zjednoczyliśmy całą Grecję. Gdzie to jest? Sprawdź w którym
@@ -5658,7 +5658,7 @@ naprawię — ustalić DOKŁADNY mechanizm, nie zgadywać.
 
 ---
 
-## R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, propozycja gameplayowa Macieja) · STATUS: **OTWARTE — wymaga ABC**
+## R-SPICHLERZ-CAP-LUDNOSCI-ETAP (2026-08-09, propozycja gameplayowa Macieja) · STATUS: **ZAMKNIĘTE — SCALONE `cf2b63cc`, Evaluator RUNDA 4 (finalna) PASS-WITH-NOTES, 0 blokujących**
 
 **Cytat Macieja:** „okej, więc cały sens Spichlerza to dodatkowe bonusy, ale myślę, że dołączyłbym
 mu jeszcze jeden bonus, mianowicie jeżeli miasto chce wzrosnąć powyżej [progu bez budynków] to musi
@@ -6394,7 +6394,7 @@ możemy to jakoś użyć w przyszłości." Temat R-FORT-STRAZNICA-ROZSZERZA-ZASI
 WYŁĄCZNIE Fortu i Strażnicy/Posterunku — Port usunięty z tego tematu, przeniesiony do osobnego
 zgłoszenia (patrz niżej), NIE pilny, świadomie odłożony do przyszłości.
 
-## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (2026-08-09, propozycja Macieja) · STATUS: **OTWARTE — przyszła funkcja, niepilne**
+## R-BUDYNEK-PORTOWY-MIASTA-NADBRZEZNE (2026-08-09, propozycja Macieja) · STATUS: **ZAMKNIĘTE — SCALONE `fbde1880` (2026-08-10)**
 
 **Cytat Macieja:** „w ogóle też można wprowadzić jakieś budynki portowe dla miast nadbrzeżnych."
 Świadomie odłożone przez samego Macieja („pomyślę o tym") — NIE wymaga dispatchu teraz, ale
@@ -9938,3 +9938,2470 @@ zakończysz wszystkie tematy, zrób deploy do roboczej oraz domknij porządki" �
 Sesja czeka na powrót Macieja do playtestu FALI 268.
 
 ---
+
+## BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU (2026-08-10, zgłoszenie z playtestu FALI 268,
+zrzuty ekranu — panel „Grecy" po kliknięciu chipów Praca/Skarbiec w HUD)
+
+Maciej: „nie widzę żadnego suwaka dla skarbca w ustawieniach globalnych. Tak samo nie widzę w pracy...
+brakuje suwaków dla pracy, brakuje suwaków dla skarbca, czyli ustawień globalnych dla całej
+cywilizacji." Potem wprost: „jeżeli wprowadzałeś gdzieś globalne podejście... jeżeli chodzi o skarbiec
+czy o pracę, to napisz mi gdzie to jest, bo ja tego nie widzę. Chyba, że jest w kodzie, ale nie ma w
+UX." I osobno potwierdzenie: „a najważniejsze, że praca liczy się już prawidłowo" (silnik z FALI 268
+działa poprawnie — to nie jest regres liczby, tylko brak widoczności suwaka).
+
+**ROOT CAUSE ZNALEZIONY BEZPOŚREDNIO (Sonnet 5, orkiestrator, czynność czysto odczytowa — bez
+Evaluatora per CLAUDE.md §0b, tylko fakt kodu):** suwaki ISTNIEJĄ w kodzie i SĄ podłączone —
+`renderDefaultPodzialPracySection()`/`renderDefaultHandelSplitSection()` (Praca/Skarbiec),
+`configureEmpireGlobalDefaults`/`configureEmpireHandelSplit` wpięte w `main.ts:17209-17230`. ALE
+oba wywołania są w `empireDetailPanel.ts:1093-1098` wewnątrz `if (!onlyEconId) { ... }` —
+`onlyEconId` to filtr z reguły C-PANEL=B (Maciej 2026-07-24: „klik konkretnego żetonu dochodu
+pokazuje TYLKO jego wiersz, żeby nie ciągnąć całej ekonomii"). Kliknięcie chipu HUD „Praca" albo
+„Skarbiec" (dokładnie ścieżka nawigacji z obu zrzutów Macieja) ustawia `onlyEconId='praca'`/
+`'skarbiec'`, co WYŁĄCZA renderowanie suwaka. **Wyżywienie działa inaczej i dlatego jest widoczne:**
+`renderDefaultPoziomRacjiSection()` (Wyżywienie) jest wywołane wewnątrz `renderSpichlerzCentralnySection`
+(`:692`), która NIE jest objęta filtrem `onlyEconId` — zawsze się renderuje. To nie jest regres tej
+sesji w silniku (Praca liczy się dobrze, potwierdzone przez Macieja) — to luka UX identyczna z
+zakresem C-040 (SCALONE wymaga potwierdzenia osiągalności w UI): kod istnieje, ale w tym samym
+temacie R-USTAWIENIA-GLOBALNE-LOKALNE, tylko dla dwóch z trzech grup (Praca, Skarbiec) nie
+przeniesiono go poza filtr, jak zrobiono to dla Żywności.
+
+**Dispatch naprawy** — przenieść oba wywołania (`renderDefaultHandelSplitSection`,
+`renderDefaultPodzialPracySection`) poza filtr `onlyEconId`, analogicznie do wzorca już zastosowanego
+dla Wyżywienia, tak żeby były widoczne niezależnie od tego, który chip HUD został kliknięty. Zakres
+prosty, znany root cause — bez ABC (bug naprawczy, nie decyzja projektowa).
+
+---
+
+## P-SPICHLERZ-CENTRALNY-0-VS-CITY-BILANS-MINUS1 (2026-08-10, zgłoszenie z playtestu FALI 268, zrzuty
+ekranu — HUD chip Spichlerz „0", panel miasta „Bilans −1/t", „Głód: brak dopłaty")
+
+Maciej: „spichlerz dalej pokazuje zero, pomimo tego, że w mieście jest minus jeden." Zrzuty: HUD
+top-bar chip Spichlerz pokazuje „0"; panel miasta (Ludność 1, wygląda na wczesną turę) pokazuje
+Produkcja +11, Racje −12, Bilans −1/t, „Głód: brak dopłaty", Auto Wyżywienie WŁ, poziom Wyżywienia 6.
+To zgłoszenie przychodzi bezpośrednio po scaleniu P-SPICHLERZ-ZERO-MYLACE (FALA 268) — możliwa DRUGA
+przyczyna nienaprawiona pierwszą rundą (C-041: sygnał drugiego zgłoszenia podobnego objawu, szukać
+dalej, nie zamykać jedną pasującą przyczyną). **STATUS: nierozpoznane, dispatch rozpoznania
+NASTĘPUJE teraz** — hipoteza robocza (NIEPOTWIERDZONA): to wygląda na wczesną turę bez jeszcze
+wykonanego ticku końca tury — `unfedRows`/scalony komunikat w `renderSpichlerzCentralnySection` czyta
+`_lastTicks` (populowane WYŁĄCZNIE przez `advanceEmpireFood`, czyli po końcu tury), więc PRZED
+pierwszym końcem tury panel imperium poprawnie pokazuje „0" (stan realny, nic się jeszcze nie stało),
+a Bilans −1/t w panelu miasta to PROJEKCJA na nadchodzącą turę, nie już zaszły fakt — potencjalnie
+NIE bug tylko mylące zestawienie stanu-teraz vs projekcji, ale wymaga potwierdzenia liczbą tury i
+przejrzenia kodu, nie zgadywania.
+
+---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY (2026-08-10, propozycja gameplayowa Macieja, playtest FALI 268)
+
+Maciej: „pomimo włączonego auto wyżywienia system utrzymuje często żywność na niedoborze. powinien
+zawsze sterować tak, żeby był na minimalnym plusie w całej cywilizacji. Albo na minimalnym plusie w
+danym mieście, pytanie co będzie lepsze." Zrzut: Ateny, Żywność −1 (HUD), panel miasta Bilans −1/t,
+Wyżywienie poziom 6, Auto Wyżywienie WŁ (przycisk zielony/aktywny), Wzrost% 13% (dodatni mimo
+ujemnego bilansu żywności — kompensowane bonusami „Małe miasto"+„Szczęście").
+
+**Rozpoznanie techniczne konieczne przed ABC (nie zgaduję):** dzisiejszy mechanizm Auto Wyżywienia
+(`maxSafePoziomRacjiForCity`/`getMaxSafePoziomRacjiForPlayerCity`, cała robota tej sesji —
+`applyLiveSafeRationForCity`/`_maxSafeRationCache`) celuje w **„zapas (Spichlerz) nie spada poniżej
+zera"** (stock-based), NIE w „bilans per-turę jest nieujemny" (flow-based) — to DWA różne kryteria.
+Ujemny Bilans −1/t przy dodatnim zapasie w buforze jest DZIŚ zgodny z zamierzonym działaniem (dopóki
+bufor starcza, system pozwala go zjadać). Propozycja Macieja zmienia CEL na flow-based. **Wymaga
+zbadania przed ABC:** czy dzisiejszy `maxSafePoziomRacjiForCity` liczy per-miasto czy uwzględnia pulę
+centralną (redystrybucja nadwyżek/niedoborów między miastami przez `isEmpireCityFoodSolvent`/
+`simulateCityFoodCentralPool`); czy zmiana celu na „zawsze min. plus" jest prostą podmianą progu w
+istniejącej funkcji, czy wymaga nowej logiki; jaki jest koszt gameplayowy każdej opcji (A — globalnie
+dla całej cywilizacji: miasta mogą się kompensować, ale pojedyncze miasto z lokalnym niedoborem może
+nadal tracić wzrost mimo dodatniego imperium; B — per-miasto: każde miasto zawsze nieujemne lokalnie,
+ale może wymuszać zbyt ostrożne (niższe) racje nawet gdy bufor by pozwolił na więcej, marnując
+potencjał wzrostu). **STATUS: dispatch rozpoznania NASTĘPUJE teraz (`a829efd46c1368fe9`), ABC dopiero po wynikach** —
+zgodnie z dyscypliną tej sesji (rozpoznanie przed ABC dla niejasnego zakresu technicznego, CLAUDE.md
+§6/§7).
+
+**Maciej (priorytetyzacja): „na razie to są dwa najważniejsze błędy, które musimy naprawić. Pozostałe
+rzeczy później."** — potwierdza kolejność już w toku (suwaki Praca/Skarbiec + Auto Wyżywienie cel
+bilans-nieujemny jako priorytet; Spichlerz 0 vs −1 pozostaje w toku jako powiązane, ale drugorzędne).
+Bez zmiany dispatchu — wszystkie 3 już uruchomione agenty są zgodne z tą priorytetyzacją.
+
+**Operator BUG-SUWAKI-PRACA-SKARBIEC dostarczył (`ad2854fc83b6f0272`).** Usunięty `if (!onlyEconId)`
+wokół dwóch wywołań (`renderDefaultHandelSplitSection`, `renderDefaultPodzialPracySection`) —
+`empireDetailPanel.ts:1063-1074`. Filtr `econRows` (C-PANEL=B) nienaruszony. C-039: grep `onlyEconId`
+potwierdza brak trzeciego podobnego przypadku ukrytego pod filtrem. Nowy test
+`empire-panel-sliders-always-visible-test.cjs` 7/7 (w tym kontrola przytomności — symulowany regres
+wykrywalny). Bramki: tsc 0, logic-test 213/213, `empire-panel-split-test` 18/18 (istniejący, tej
+samej okolicy). **Dispatchowany Evaluator (`adb2c127ea73fab04`)** [korekta ID — pierwotny wpis miał
+błędny placeholder, nigdy faktycznie niedispatchowany; naprawione tym wpisem].
+
+**Rozpoznanie Spichlerz 0 vs Bilans −1 dostarczone (`a71a5e3791099fb13`) — werdykt: NIE bug, ale
+znaleziono przy okazji REALNY bug.** Zgłoszony objaw to dwie różne, poprawnie liczone wielkości:
+HUD „Spichlerz=0" czyta żywy `_statesRef.zapasyPanstwa` (magazyn centralny, twardo ograniczony do 0
+— `Math.max(0,central)`), panel miasta „Bilans −1/t" to lokalna produkcja−racje TEGO miasta (bez
+podłogi). Przyczynowo spójne: magazyn=0 → nie ma z czego dopłacić → miasto głoduje ("Głód: brak
+dopłaty" poprawnie to opisuje). **Realny bug znaleziony przy okazji:** `zywnoscMiastNiedokarmionych`
+(`main.ts:13828-13829`, dodane w FALI 268 dla P-SPICHLERZ-ZERO-MYLACE) czyta WYŁĄCZNIE
+`getLastEmpireFoodTick(0)?.perCityRows` bez żywego fallbacku — w scenariuszu Macieja (`_lastTicks`
+puste: nowa gra/świeży save/przed 1. końcem tury) licznik=0, więc tooltip HUD NIE ostrzega i chip
+NIE zapala się na czerwono, mimo że panel miasta W TEJ SAMEJ CHWILI poprawnie krzyczy o głodzie —
+osłabia efekt naprawy P-SPICHLERZ-ZERO-MYLACE dokładnie tam, gdzie miała najbardziej pomóc (C-041
+potwierdzone, inaczej niż zakładała hipoteza robocza). Wzorzec do naśladowania: `resolveCityFedForUi`
+w `cityPanel.ts:1344-1353` MA już żywy fallback. **Dispatchowany Operator naprawy
+(`a34cb3300165d4371`)**.
+
+**Rozpoznanie R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY dostarczone (`a829efd46c1368fe9`).** Kluczowe
+ustalenie: dzisiejszy mechanizm JUŻ jest empire-wide (pula centralna przez `zapasyPanstwa`,
+`isEmpireCityFoodSolvent` sumuje bilanse WSZYSTKICH miast + rezerwę) — pytanie „globalnie czy per
+miasto" myli dwie różne osie. Realna oś to STOCK (dziś: uwzględnia skumulowaną rezerwę) vs FLOW
+(żądanie Macieja: tylko bieżąca tura), i przy FLOW osobno: czy kompensacja między miastami w ramach
+JEDNEJ tury zostaje. Scenariusz Macieja policzony liczbowo — POTWIERDZONE „zgodne z zamierzeniem":
+poziom 6 (Racje −12, `1×6×2=12`, `R_STAWKI_KOSZT_MULT=2`) to faktycznie MAX, jest zapas do cięcia do
+5,5 (dałoby bilans=0, koszt: Wzrost 7%→6%) — system świadomie tego nie robi, bo rezerwa centralna
+pokrywa. Zakres zmian: wariant A' (flow-agregat imperium, kompensacja w turze zostaje) — nowy
+prymityw + podmiana w 3 miejscach wywołania (`maxSafePoziomRacjiForCity`,
+`autoBalanceRationsToSolvency`, `autoRaiseRationsForGrowth`), złożoność mała-średnia; wariant B'
+(flow per-miasto, bez kompensacji) — przepisanie struktury pętli w 2 z 3 miejsc (dziś stepują
+wszystkie miasta razem z jednym zagregowanym warunkiem stopu), złożoność średnia, skoncentrowana.
+Rekomendacja rozpoznania: dodać trzecią opcję C — zostać przy dzisiejszym mechanizmie (stock-based),
+tylko dopisać w UI wprost że Bilans-minus jest ZAMIERZONY i pokrywany buforem (mniejsza zmiana,
+adresuje możliwie głównie komunikacyjny, nie mechaniczny charakter problemu).
+
+**Pytanie ABC zadane Maciejowi teraz** (osobno, w czacie) — na podstawie powyższych ustaleń.
+
+---
+
+## SPROSTOWANIE — R-AUTOZAPIS-QUOTA-STORAGE-Q1 był już w pełni zaimplementowany i scalony, Maciej
+nadal widzi ten sam objaw (2026-08-10, zrzut playtestu FALI 268)
+
+Maciej: „ten problem z zapisywaniem końca tury też chyba nie został zrobiony" (zrzut: 4×
+„Koniec tury / Autozapis nieudany — brak miejsca w zapisie przeglądarki", identyczny komunikat
+jak zgłoszenie sprzed FALI 266).
+
+**Sprawdzenie rejestru pokazuje, że temat FAKTYCZNIE ZOSTAŁ zrobiony — linia 8137→8727 tego pliku:**
+migracja autozapisu na File System Access API (`gra/src/game/fsa-autosave.ts`, nowy plik), 2 rundy
+Evaluatora (PASS-WITH-NOTES oba razy), **SCALONE w całości** (5 plików zmodyfikowanych + 2 nowe),
+bramki zielone (fsa-autosave-test 55/55, autosave-quota-fail-test 20/20), zadeployowane w **FALI
+266** — czyli PRZED tą sesją nocną, dawno przed FALĄ 268 którą Maciej teraz testuje. Kod powinien
+być w bundlu, który ma przed sobą.
+
+**Rozbieżność wymaga wyjaśnienia — dispatch rozpoznania NASTĘPUJE teraz.** Hipotezy do sprawdzenia
+(NIEPOTWIERDZONE): (a) File System Access API wymaga zgody użytkownika na katalog przy pierwszym
+użyciu (`showDirectoryPicker`) — jeśli Maciej nigdy tej zgody nie udzielił w tej sesji przeglądarki,
+kod może cicho degradować z powrotem do starego `localStorage`-owego `saveToLocal()`, który ma
+dokładnie ten sam limit quota co przed naprawą; (b) FSA może nie działać w kontekście, w którym
+uruchamiane jest `Gra-ROBOCZA.html` (np. otwarcie pliku lokalnie `file://` zamiast przez serwer —
+zarejestrowana wcześniej nota N13 Evaluatora: „`serve:robocza` uzasadnione, bo FSA nie działa na
+`file://`" — jeśli Maciej otwiera bundel bezpośrednio z dysku, może to być dokładnie ta ścieżka);
+(c) realny, nieznaleziony wcześniej bug w degradacji/fallbacku. Zero zgadywania — dispatch
+zweryfikuje który to przypadek. **Dispatchowany agent rozpoznania (`a5d937dc60e9195cb`)**.
+
+---
+
+## BUG-SUWAKI-PRACA-SKARBIEC — Evaluator: PASS-WITH-NOTES, SCALONE
+
+Zero blokujących. Nota A (do decyzji, NIE blokuje, cicho zarejestrowana per CLAUDE.md §2 — nie
+przerywam wątku żywności żeby o to zapytać): naprawa jest szersza niż zgłoszenie — bezwarunkowe
+wywołania sprawiają że oba suwaki pokazują się przy KAŻDYM chipie mapowanym na blok „ekonomia"
+(Nauka, Religia, Miasta/Ludność, Rekruci), nie tylko Praca/Skarbiec — dotyka wcześniejszej decyzji
+C-PANEL=B (Maciej 2026-07-24, „klik Nauka nie ma ciągnąć praca/żywność/skarbiec"). Evaluator dał
+gotowy wariant precyzyjny (2 linie, warunek per-chip) jeśli chcemy zawęzić. Dodatkowe ustalenie
+wzmacniające zasadność naprawy: PRZED nią oba suwaki były całkowicie NIEOSIĄGALNE w normalnej
+nawigacji (żaden chip HUD nie emituje `section='ekonomia'`/undefined) — pokrywa się dokładnie ze
+zgłoszeniem Macieja. Nota B (nieblokująca): test source-text nie łapie semantycznie identycznej
+mutacji (`if(onlyEconId===null)`), do wzmocnienia później. Nota C: symlink `node_modules` w
+worktree, pominąć przy scalaniu. **SCALAM TERAZ** (bug faktycznie naprawiony, zero regresji
+danych/logiki, decyzja o zawężeniu zakresu odłożona do zamknięcia bieżącego wątku żywności).
+
+---
+
+## Rozpoznanie FSA autosave dostarczone (`a5d937dc60e9195cb`) — werdykt: (a) znany, udokumentowany
+limit implementacji, NIE nowy bug
+
+Kod FSA istnieje i działa poprawnie zgodnie ze specyfikacją File System Access API —
+`detectFsaAvailability()` sprawdza `protocol==='file:'` PRZED wszystkim innym i celowo zwraca
+`available:false`, więc FSA nigdy nie jest nawet próbowane pod `file://`. **`STAN-PRACY-HANDOFF.md`
+potwierdza, że rutyna Macieja to `gra-robocza/START.html` otwierany bezpośrednio z dysku (`file://`)**
+— naprawa FSA z FALI 266 nie daje mu ŻADNEJ korzyści w jego realnym sposobie odpalania gry. To był
+przewidziany scenariusz (`WERSJE.md:69`, checklist FALI 266: „sprawdzić czy na `file://` gra po cichu
+wraca do starego mechanizmu bez błędu" — zaakceptowany wynik, nie błąd do naprawy).
+
+**Realna, mała luka UX znaleziona przy okazji:** wyjaśniający toast („zapis na dysk wymaga
+`http://localhost`") pokazuje się WYŁĄCZNIE raz na cały profil przeglądarki, na zawsze (bramkowane
+kluczem w `localStorage`) — skoro Maciej widział już FALĘ 266 z tym samym kodem, wyjaśnienie
+najpewniej pokazało się wtedy i już nigdy więcej się nie pojawi, podczas gdy cykliczny komunikat
+„brak miejsca" (bez wyjaśnienia) powtarza się bez ograniczeń przy każdej nieudanej turze — stąd 4
+powtórzenia na zrzucie, zero kontekstu.
+
+**Do decyzji Macieja (przedstawię po zamknięciu wątku żywności, żeby nie mieszać wątków):**
+(1) najmniejsza poprawka — dopisać wyjaśnienie `file://` do CYKLICZNEGO komunikatu (3-5 linii,
+`main.ts:21813-21819`), bez zmiany mechaniki; (2) zmiana rutyny testowej na `npm run serve:robocza`
+(`http://localhost`) — realnie aktywowałoby FSA, większy limit, ale wymaga uruchomionego serwera przy
+każdym teście; (3) NIEZBADANE jeszcze — czy warto dodatkowo rozważyć IndexedDB jako magazyn
+działający TAKŻE pod `file://` (większy limit niż `localStorage`, nie wymaga serwera) — oryginalna
+lista opcji z pierwszego zgłoszenia (linia 8153-8158) wymieniała to jako alternatywę do FSA, nigdy
+nie zbadaną osobno.
+
+---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY — Maciej podważa poprzednie rozpoznanie (2026-08-10, drugi
+zrzut, matematycznie ostry argument)
+
+**Odpowiedź Macieja na ABC:** „c + info — tylko pytanie, czy faktycznie jest pokrywany. Jeżeli mam
+jedno miasto i ono notorycznie jest na minusie, a spichlerz był zerowy, to niby z czego się ma
+pokrywać? To jakiś błąd. Gdyby auto wyżywienie w jednej turze zostawiało miasto na plusie a w drugiej
+na minusie to by się zgadzało, ale jeżeli cały czas jest na minusie a Spichlerz startował z zerem to
+niby z czego się pokrywa i bilansuje?" — słuszna matematycznie wątpliwość wobec wniosku poprzedniego
+rozpoznania („bufor pokrywa deficyt"): jeśli `zapasyPanstwa=0` i pozostaje zerowy, a bilans miasta
+jest trwale ujemny, kryterium `isEmpireCityFoodSolvent` (suma bilansów + zapasyPrzed ≥ 0) powinno to
+wykryć i obniżyć poziom, nie zostawić go na miejscu. **Dispatch rozpoznania #2, głębsze, ślepe na
+odpowiedź #1 — NASTĘPUJE (`a2083cf30348a7ef9`)** — ma prześledzić KONKRETNĄ ścieżkę (nowo założone
+miasto, domyślny poziom startowy, czy „założenie miasta" jest wyzwalaczem live-recalc, czy to tura 1
+bez jeszcze zadziałanego mechanizmu, czy realna luka w `autoRaiseRationsForGrowth`).
+
+**Drugi, jeszcze ostrzejszy zrzut od Macieja (ta sama tura sesji, Ludność 3, nie tura 1 — obala
+hipotezę „to tylko tura 1"):** Produkcja +21, Racje −24, Bilans −3/t, poziom Wyżywienia **4** (już
+NIE 6 — jakiś mechanizm JUŻ obniżył poziom z 6 do 4 w międzyczasie), Spichlerz nadal **0**, Wzrost%
+**8,5%** (dodatni, składnik „Wyżywienie +4,5%" naliczony w pełni). Maciej: „miasto jest -3 na minusie,
+nie ma żadnych rezerw w Spichlerzu. Jak to wpływa na ludność? Czy to nie jest trochę oszukiwanie z
+tym wzrostem, skoro wzrost jest naliczany maksymalny, chociaż miasto nie pozwala na takie racjowanie,
+bo w Spichlerzu nic nie ma?" — **NOWA, kluczowa oś pytania, inna niż pierwsza:** czy Wzrost%
+(`WYZYWIENIE_GROWTH_PCT[poziomRacji]`) liczy się z NOMINALNEGO ustawionego poziomu Racji, czy z
+FAKTYCZNIE dostarczonej/opłaconej ilości żywności — jeśli miasto notorycznie nie ma z czego pokryć
+tego poziomu (bilans ujemny, bufor zerowy), a mimo to dostaje pełny bonus wzrostu za ten poziom, to
+gra pokazuje wzrost, którego populacja realnie nie powinna dostawać. **STATUS: czekam na wynik
+rozpoznania #2 (`a2083cf30348a7ef9`) — jeśli nie pokryje w pełni tej nowej osi (nominalny vs
+faktyczny poziom w formule wzrostu), dispatch rozpoznania #3 dedykowanego tej konkretnej osi.**
+
+**Rozpoznanie #2 dostarczone (`a2083cf30348a7ef9`) — MACIEJ MIAŁ RACJĘ, potwierdzony REALNY BUG.**
+Nowo założone miasto NIE dziedziczy `DEFAULT_POZIOM_RACJI=4` — `seedCityOwnerDefaults()`
+(`main.ts:4142-4168`, mechanizm R-USTAWIENIA-GLOBALNE-LOKALNE wprowadzony DZISIAJ) nadpisuje poziom
+racji nowego miasta GLOBALNYM domyślnym poziomem imperium (mogącym być 6, jeśli gracz go tam
+wcześniej podniósł dla innego, zamożniejszego miasta) — **bez żadnej weryfikacji czy nowe miasto
+(Ludność 1, zero budynków) je udźwignie**. Znaleziono i zweryfikowano grepem: **żadne z 7 miejsc
+wywołania `seedCityOwnerDefaults`** (founding gracza, AI, miasta-państwa, kapitulacja głodowa,
+wchłonięcie dyplomatyczne, zmiany właściciela) **nie wywołuje `applyLiveSafeRationForCity`** — luka
+w liście 9 wyzwalaczy live-recalc z tej samej sesji (Auto Wyżywienie Bug#1); założenie miasta jest
+zdarzeniem SILNIEJ wpływającym na profil żywnościowy niż zmiana priorytetu Okolicy, a nie jest objęte
+ochroną. Backstop końca tury (Q3=A) DZIAŁA i bezwarunkowo klamruje — więc po PIERWSZYM końcu tury od
+założenia poziom powinien spaść. **Minimalna naprawa:** dodać `applyLiveSafeRationForCity(c.id)` w
+`seedCityOwnerDefaults` dla miast gracza — 10. wyzwalacz live-recalc, spójny z istniejącym wzorcem.
+
+**Druga usterka architektoniczna znaleziona przy okazji:** stary mechanizm SPICH-AUTO-Q1
+(`autoRaiseRationsForGrowth`/`autoBalanceRationsToSolvency`) pisze bezpośrednio do `city.poziomRacji`,
+**całkowicie omijając** nową mapę `ownerDefaultPoziomRacji`/flagę `poziomRacjiOverride` z dzisiejszej
+sesji — dwa systemy niezsynchronizowane, globalny default może się rozjeżdżać z faktyczną wartością
+miasta.
+
+**NIE w pełni wyjaśnia drugi, ostrzejszy zrzut Macieja** (Ludność 3, poziom JUŻ obniżony do 4 — nie
+globalny default 6, więc COŚ już zadziałało — a mimo to Bilans −3, Spichlerz 0). Policzone: przy
+poziomie 3,5 koszt=3×3,5×2=21, bilans=0 — jest jeszcze zapas do cięcia, mechanizm zatrzymał się na 4
+zamiast 3,5. Może to być dokładnie ta druga usterka (SPICH-AUTO-Q1 vs nowa mapa globalna) albo coś
+innego. **Dispatch rozpoznania #3 NASTĘPUJE (`aaf1b942afbfe8911`)** — scenariusz 2 (Ludność 3, dlaczego 4 a nie 3,5) + oś
+Macieja z drugiego zrzutu (czy Wzrost% liczy się z nominalnego czy faktycznie pokrytego poziomu).
+
+---
+
+## Operator „żywy fallback niedokarmionych" dostarczył (`a34cb3300165d4371`)
+
+Worktree startował sprzed FALI 268, więc Operator sam dociągnął materiał diffem (nie merge/checkout)
+— realne zmiany TYLKO w `main.ts` (`projectPlayerFoodProjection` +drugi przebieg sekwencyjnego
+wyczerpywania centrali, `unfedCityCount`; `buildHudState` ternary tick-dostępny/fallback-żywy) i w
+`spichlerz-deficyt-scalenie-test.cjs` (41→50/50). Ślepy zaułek zbadany i odrzucony: podejrzewany bug
+w `advanceEmpireFood` (nie flaguje `nakarmione:true` dla miast na plusie) okazał się fałszywym
+alarmem — `applyPostCentralPopulationGrowth` mutuje te same obiekty i poprawnie ustawia `fed`;
+Operator to sprawdził zanim zgłosił, nie zgadywał. Bramki: tsc 0, logic-test 213/213,
+spichlerz-deficyt-scalenie-test 50/50, spichlerz-widocznosc-test 45/45.
+
+**Uwaga wymagająca weryfikacji Evaluatora (NIE przyjmuję na słowo, biorąc pod uwagę bieżące
+dochodzenie w tym samym obszarze):** Operator zgłasza `empire-food-b5-test.cjs` (3 fail/28) i
+`spichlerz-wzrost-test.cjs` (7 fail/9) jako pre-istniejące/out-of-scope. `empire-food-b5-test.cjs`
+ma potwierdzoną wcześniej niezależnie historię pre-istniejącej porażki (Evaluator rundy 5
+auto-wyzywienie-live, merge-base `aa24fd23`, dług testowy ×2 R-STAWKI). `spichlerz-wzrost-test.cjs`
+NIE ma takiego potwierdzenia w tym rejestrze — biorąc pod uwagę że rozpoznania #2/#3 właśnie
+znalazły/badają realny bug DOKŁADNIE w tym obszarze (poziom Racji, Wzrost%, Spichlerz), Evaluator MA
+zweryfikować to twierdzenie niezależnie (np. `git stash`/porównanie z merge-base), nie przyjąć na
+słowo — może to być czwarty objaw tego samego łańcucha przyczynowego, nie coincydencja.
+**Dispatchowany Evaluator (`a9935e7d20bbedcfa`).**
+
+---
+
+## Rozpoznanie #3 dostarczone (`aaf1b942afbfe8911`) — pełny obraz, gotowe do syntezy dla Macieja
+
+**Zadanie A (dlaczego poziom utknął na 4):** NIE jeden bug, zbieg TRZECH współdziałających
+mechanizmów: (A1) WSZYSTKIE mechanizmy auto-korekty (`isEmpireCityFoodSolvent`,
+`maxSafePoziomRacjiForCity`) liczą wypłacalność EMPIRE-WIDE (agregat wszystkich miast+rezerwa), nigdy
+lokalnie per-miasto — to jest ta sama architektura z rozpoznania #1, teraz z twardym dowodem że
+pozwala na TRWALE ujemny lokalny bilans jednego miasta, jeśli inne miasta/rezerwa pokrywają w
+agregacie. (A2) potwierdzony bezpośredni zapis do `city.poziomRacji` z pominięciem
+`ownerDefaultPoziomRacji`/`poziomRacjiOverride` w 4 miejscach (SPICH-AUTO-Q1 ×3 +
+`broadcastPoziomRacjiToOwnerCities`, `empire-city-defaults.ts:307-316`, wywoływana z każdej zmiany
+suwaka Wyżywienia dowolnego miasta bez override — nadpisuje WSZYSTKIE miasta ownera bez klamrowania
+per-miasto i bez `applyLiveSafeRationForCity`, świadomie akceptowane w komentarzu kodu jako poleganie
+na agregatowym backstopie). (A3) wzrost populacji NIE jest wyzwalaczem live-recalc — wyczerpujące
+przeszukanie potwierdza `applyPostCentralPopulationGrowth` (jedyna ścieżka przyrostu) nie woła
+`applyLiveSafeRationForCity` — więc poziom racji nie jest przeliczany po każdym wzroście ludności,
+mimo że koszt skaluje się z populacją.
+
+**Zadanie B (czy Wzrost% liczy nominalny czy faktyczny poziom) — POTWIERDZONE, Maciej miał rację
+nazywając to „oszukiwaniem":** składnik „Wyżywienie" we Wzroście% w OBU miejscach (UI `cityPanel.ts`
+I silnik `population-growth-v85.ts`) zawsze bierze NOMINALNY `city.poziomRacji`
+(`getCityRationLevel`), nigdy faktycznie pokrytą ilość. Istnieje bramka `fed`, ALE jest binarna
+(cały wzrost albo zero) i sama oparta o AGREGATOWĄ wypłacalność imperium (`covered >= need` z puli
+centralnej wszystkich miast), nie o lokalny bilans TEGO miasta — miasto z głęboko ujemnym lokalnym
+bilansem MOŻE dostać `fed=true` i pełny nominalny bonus wzrostu wyłącznie dlatego, że inne
+miasto/rezerwa pokryły w tej samej turze. **Ważne zastrzeżenie łagodzące:** silnik NIE jest ślepy —
+gdy miasto naprawdę nie jest pokryte NAWET agregatowo, `applyHungerPenaltyV85` natychmiast odejmuje
+ludność i zeruje wzrost, bez okresu karencji. Dodatkowo: panel UI czyta `fed` ze STAREJ migawki
+końca poprzedniej tury (`getLastEmpireFoodTick`), nie live — rozjazd po automatycznym wzroście
+populacji w trakcie bieżącej tury (nieudokumentowany dotąd jako źródło tego konkretnego rozjazdu,
+inny niż znany rozjazd po ruchu suwaka).
+
+**Synteza dla Macieja następuje teraz w czacie** — to poszerza (nie zastępuje) wcześniejszą oś ABC z
+rozpoznania #1 o dwa NIEZALEŻNE, jasno zakresowane bugi (A2 broadcast-bypass, A3 brak triggera
+wzrostu populacji) możliwe do naprawy NIEZALEŻNIE od tego, którą opcję architektury (stock vs flow)
+Maciej wybierze, plus twardy dowód że sama Oś B (Wzrost%) wymaga osobnej decyzji, bo to inny problem
+niż sam Bilans/Spichlerz.
+
+---
+
+## Evaluator żywy fallback — PASS-WITH-NOTES (`a9935e7d20bbedcfa`)
+
+Zweryfikowane linia po linii: równoważność bit-w-bit gałęzi „tick istnieje", drugi przebieg
+algorytmicznie tożsamy z `advanceEmpireFood`, ślepy zaułek Operatora potwierdzony jako słusznie
+odrzucony (okno w pełni synchroniczne). **`spichlerz-wzrost-test.cjs` potwierdzony NIEZALEŻNIE jako
+pre-istniejący** — osobny sparse worktree na baseline `99974173`, identyczny wynik (2 pass/7 fail) i
+identyczne komunikaty przed i po zmianie Operatora; md5 dotkniętych plików (`economy.ts`,
+`empire-food.ts`) identyczne z bazą. Przyczyny źródłowe ustalone: próg wzrostu (`economy.ts:1117`)
+zmieniony 2026-07-09, test nieaktualizowany; drugi test asercjonuje nieistniejący już podział 70/30
+rozwój/państwo. **Nie czwarty objaw** — inna rodzina długu testowego.
+**Notatki:** N1 (osobny temat, nie blokuje) — odkryty ODWROTNY rozjazd: gdy `rezerwa>0`, panel
+miasta (`resolveCityFedForUi`) patrzy tylko na znak lokalnego bilansu i błędnie pokazuje głód mimo
+że centrala by pokryła — HUD (nowy fallback) poprawnie nie ostrzega. W zgłoszonym przypadku
+(`rezerwa=0`) oba się zgadzają, więc TO zlecenie zamyka się poprawnie, ale rozjazd w drugą stronę
+wymaga osobnego zgłoszenia. N2 (ważne przy scalaniu) — baza worktree NIE jest przodkiem gałęzi
+sesji (FALA 267 vs bieżąca), scalać WYŁĄCZNIE deltę (`projectPlayerFoodProjection` + ternary w
+`buildHudState`), nie cały `git diff` worktree. N3/N4/N5 — nieblokujące (higiena symlinku, test
+częściowo reimplementacyjny ale nietautologiczny, zgubione `?? []` nieszkodliwe).
+
+**SCALAM TERAZ — wyłącznie deltę, zgodnie z N2.**
+
+**SCALONE — commit `6201d7b4`, wypchnięte.** Zastosowane precyzyjnymi edycjami (nie `git diff`/`apply`,
+per N2 — baza worktree niebędąca przodkiem gałęzi sesji) w dwóch miejscach: `projectPlayerFoodProjection`
+(drugi przebieg + `unfedCityCount`) i `buildHudState` (ternary). Bramki w drzewie głównym potwierdzone
+ponownie: tsc 0, logic-test 213/213, `spichlerz-deficyt-scalenie-test` 50/50, `spichlerz-widocznosc-test`
+45/45. Worktree do posprzątania.
+
+---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY — TRZECI zrzut Macieja, sytuacja się POGŁĘBIA (2026-08-10)
+
+Maciej: „to już w ogóle nie działa." Ta sama tabela cywilizacji (Ludność 3), teraz: Produkcja **+26**
+(było +21), Racje **−33** (koszt=3×5,5×2=33, poziom **5,5** — WZROSŁO z 4, nie spadło), Bilans **−7/t**
+(było −3, teraz gorzej), Wzrost% nadal dodatni (9%), HUD chip Spichlerz „0 **−24**" (mocno ujemny
+rate). **Policzone: przy dzisiejszej produkcji 26, bezpieczny poziom (bilans=0) to ok. 4,33
+(26/6=4,33̄) — mechanizm PODNIÓSŁ poziom do 5,5, znacznie POWYŻEJ bezpiecznego progu, zamiast go
+ściąć.** To nie jest już „brak reakcji" (poprzednie 2 zrzuty) — to mechanizm aktywnie działający w
+złą stronę, prawdopodobnie `autoRaiseRationsForGrowth` (`empire-food.ts:501-593`, zidentyfikowany w
+rozpoznaniu #3 jako piszący bezpośrednio do `city.poziomRacji` z pominięciem nowej mapy globalnej) —
+podnosi poziom dla maksymalizacji wzrostu na podstawie kryterium wypłacalności, które najwyraźniej
+daje fałszywie pozytywny wynik w tym konkretnym stanie (populacja rosnąca z 1→3 w trakcie tej samej
+sesji, produkcja rosnąca 21→26, żadna z tych zmian nie wyzwala przeliczenia na żywo — potwierdzone
+w rozpoznaniu #3 jako A3). **Dispatch rozpoznania #4, ostatnie przed decyzją o naprawie —
+NASTĘPUJE (`abfb4f9cf2c010253`).**
+
+**Rozpoznanie #4 dostarczone — DOKŁADNY mechanizm znaleziony, precyzyjnie zakresowana naprawa.**
+`autoRaiseRationsForGrowth` (`empire-food.ts:520-593`, defekt w liniach 552-581): pętla podnosi
+poziom o krok (0,5), **COMMITUJE go natychmiast** (`c.poziomRacji = ...`, linia 562), DOPIERO POTEM
+sprawdza akceptację — ale kryterium akceptacji (`pool<0 || !solvent`, linia 572) jest STOCK-based
+(uwzględnia skumulowaną rezerwę `zapasyPrzed`), NIE flow-based (czysty bilans TEJ tury). Sprawdzenie
+`nadwyzka<=0` (flow) istnieje (linia 580), ale działa TYLKO jako `break` zatrzymujący dalsze
+podnoszenie — NIE jako warunek cofnięcia już zaaplikowanego kroku. Skutek: funkcja **strukturalnie
+przestrzeliwuje o dokładnie jeden krok (0,5) ponad to, co dzisiejsza produkcja udźwignie**, cicho
+finansując go z rezerwy, i się zatrzymuje bez cofnięcia. **Hipoteza stopniowego pełzania
+POTWIERDZONA:** poziom trwały między turami, przy rosnącej produkcji międzyturowo (populacja 1→3)
+bramka wejściowa ponownie się uzbraja co turę, pozwalając na kolejny krok w górę — poziom pełznie
+4→4,5→5→5,5 przez kolejne tury, za każdym razem finansowany z kurczącej się rezerwy (HUD „−24" to
+stan wyczerpanej rezerwy). Kolejność `autoBalance`(obniż)→`autoRaise`(podnieś) w tej samej turze NIE
+jest przyczyną — **oba mechanizmy używają TEGO SAMEGO zbyt-łagodnego kryterium**
+(`isEmpireCityFoodSolvent`), więc `autoBalance` nie cofa przestrzelenia z poprzedniej tury, dopóki
+rezerwa nie spadnie blisko zera. **Backstop Q3=A też nie jest niezależną siatką** — używa tych
+samych funkcji z tym samym `zapasyPrzed`, więc akceptuje to samo, co `raise` już zaakceptował.
+**Minimalna naprawa (opisana, nieimplementowana):** dla gracza (ownerId=0), zmienić kryterium
+akceptacji kroku w `autoRaiseRationsForGrowth` na wymaganie `nadwyzka>=0` PO kroku (nie tylko
+`pool>=0 && solvent`) — krok utrzymuje się tylko jeśli bilansuje się sam w tej turze, nie jeśli
+tylko rezerwa go pokryje. To samo kryterium powinno objąć `autoBalanceRationsToSolvency` (inaczej
+ratchet nie zniknie) i backstop `maxSafePoziomRacjiForCity`. **To WĘŻSZA, precyzyjna poprawka niż
+pełna decyzja architektury stock/flow z rozpoznania #1** — zgodna z tym, co Maciej już wskazał jako
+priorytet.
+
+**Synteza + rekomendacja przedstawiona Maciejowi w czacie.**
+
+**ECHO Macieja: „zgoda"** — naprawa opisana w rozpoznaniu #4 (flow-based kryterium akceptacji kroku
+w `autoRaiseRationsForGrowth`/`autoBalanceRationsToSolvency`/backstop `maxSafePoziomRacjiForCity`,
+dla gracza ownerId=0) zatwierdzona. **Dispatch Operatora NASTĘPUJE (`af98bc5fafb5f2aa6`).**
+
+---
+
+## R-PROPOZYCJA-BRAK-EDYCJI — Maciej zgłasza ponownie, możliwa luka w zakresie naprawy z 08-09
+(2026-08-10, zrzut playtestu, „Stół negocjacji")
+
+Maciej: „nadal nie można edytować wcześniej zaproponowanej oferty, może tylko ją usunąć. Pamiętam, że
+był ten temat rozkminiany i myślałem, że już jest załatwiony." Zrzut: widok „Stół negocjacji", kolumny
+„My oferujemy"/„Oni oferują", karty CAŁYCH traktatów/umów („Traktat handlowy · 66 PW (baza 80)",
+„Umowa wymiany surowców · 10 🔱 jednorazowo") — każda ma tylko przycisk „Usuń", brak „Edytuj".
+
+**Ustalone w rejestrze (linia 3221-3243):** temat JUŻ ZGŁOSZONY 2026-08-08, NAPRAWIONY 2026-08-09
+(przycisk „✎ Edytuj" w `diplomacyTradeBasket.ts`, 3 rundy, Evaluator PASS-WITH-NOTES), zadeployowany
+FALA 262 (`ce69cf45`), status „czeka na playtest Macieja". **ALE naprawa była zagatowana do 5
+KONKRETNYCH typów pozycji koszyka** (`zloto, praca, zywnosc, tech, surowiec_ilosc`) — **to, co Maciej
+teraz pokazuje, to CAŁE karty traktatów w innym widoku** („Stół negocjacji", nie „koszyk") —
+prawdopodobnie inny, wyższego poziomu element UI, którego naprawa z 08-09 mogła nie objąć. **Do
+zbadania, nie zgaduję:** (1) czy `ce69cf45`/FALA 262 jest w ogóle w historii aktualnej gałęzi sesji
+(czy to nie jest kolejny przypadek „zrobione ale nigdy niescalone dalej" jak wcześniej ten wieczór z
+P-DYPLO-SWEETENER); (2) czy przycisk „Edytuj" istnieje w kodzie „Stołu negocjacji" a po prostu nie
+renderuje się dla typów `traktat_handlowy`/`umowa_surowcowa` na poziomie CAŁEJ karty (bo dotyczy tylko
+pozycji WEWNĄTRZ traktatu, nie samego traktatu jako całości); (3) czy to w ogóle inny plik/komponent
+niż `diplomacyTradeBasket.ts` (wskazówki w starym wpisie: `diplomacyAudience.ts`/
+`diplomacyDealDisplay.ts`/`diplomacyNegotiationModal.ts` jako kandydaci nieprzweryfikowani). **Dispatch
+rozpoznania NASTĘPUJE (`aa0162a44928d50af`).**
+
+---
+
+## P-DYPLO-ZYWNOSC-WYBOR-MIASTA-ZAMIAST-PULI (2026-08-10, zaskoczenie Macieja przy dodawaniu Żywności
+do oferty handlowej)
+
+Maciej: „ten temat w ogóle mnie zaskoczył, bo to tak naprawdę powinno być tylko i wyłącznie wskazanie
+jakie ilości żywności oczekujemy lub chcemy przekazać, a tu po prostu jest jakieś z miast, a przecież
+oferujemy wszystko to, co mamy w magazynach lub w spichlerzu głównym." Zrzut: kreator „CO DODAJESZ" →
+wybrana kategoria „Żywność" → pod spodem sekcja „Miasto (spichlerz)" z siatką WSZYSTKICH miast
+(Ateny, Sparta, Argos, Mykeny, Milet, Rodos, Syrakuzy, Delfy, Olimpia, Efez, Pergamon, Halikarnas...)
+do wyboru — sugeruje że UI chce, żeby gracz wybrał KONKRETNE miasto, którego spichlerz ma dostarczyć
+żywność do oferty.
+
+**Napięcie architektoniczne wprost — cała dzisiejsza sesja (Auto Wyżywienie, Spichlerz) ustaliła że
+żywność jest scentralizowana** (`zapasyPanstwa`, pojedynczy Spichlerz imperium, nie osobne zapasy per
+miasto) — UI proszący o wybór „którego miasta spichlerz" wygląda na relikt starszego, per-miastowego
+modelu żywności sprzed centralizacji (albo dubluje logikę, której już nie ma sensu mieć osobno).
+**Do zbadania, nie zgaduję:** czy ten wybór miasta faktycznie coś realnie zmienia w wyniku transakcji
+(np. różne miasta mają różne dostępne ilości mimo wspólnej puli — możliwe że to legacy UI nad
+zunifikowanym silnikiem), czy to martwy/mylący krok, który powinien zniknąć na rzecz prostego pola
+„ile żywności z centralnej puli". **Dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE z powyższym (inny
+obszar, ryzyko kolizji niskie — oba read-only).**
+
+---
+
+## P-DYPLO-BILANS-VS-BRAKUJE-PW-SPRZECZNE (2026-08-10, zaskoczenie/frustracja Macieja, „Stół negocjacji")
+
+Maciej: „pomimo tego że bilans jest na plusie, to system twierdzi że brakuje czterech PW, nie
+spełnia warunków... gracze tego nie zrozumieją — albo jest plus na bilansie i powinno być przyjęcie,
+albo nie. A tu jest jeszcze jakaś informacja o brakujących PW. Bilans powinien być ostateczną kwotą
+po zbilansowaniu wszystkiego." Zrzut: panel „PUNKTY WYMIANY PW" — „MY ODDAJEMY 86 PW (baza 80,
+Relacja −17% siła)", **„BILANS (NETTO) +6"** (zielone, wygląda pozytywnie), „ONI ODDAJĄ 80 PW". Pod
+spodem: „WPŁYW RELACJI NA DEAL −17%... Traktat: Ty: baza 80 → 66 · Oni: 80 PW (baza) @ Rel 83", i
+osobny czerwony/żółty box: **„Nie spełnia warunków: Brakuje 4 PW do uczciwej oferty traktatu
+handlowego @ Relacji (baza 80 PW, licząc pakiet na stole) — oferta nieuczciwa dla partnera"** —
+przycisk „Przyjmij" zablokowany.
+
+**Wstępna hipoteza (do potwierdzenia, nie zakładam):** to mogą być DWIE różne, legalnie różne
+miary — „Bilans (netto)" to surowa różnica wartości wymiany (86 vs 80 = +6, korzystne dla gracza),
+a „Brakuje 4 PW" to osobny próg „uczciwości dla partnera" (czy AI UZNA ofertę za wystarczająco
+uczciwą, żeby ją przyjąć — inny próg niż zwykły dodatni bilans, korygowany o Relację). Jeśli tak,
+problem NIE jest logiczny/bug, tylko **czysto komunikacyjny** — dwie liczby prezentowane bez
+wyjaśnienia że mierzą co innego, myląco sprzeczne dla gracza. Do sprawdzenia: czy liczby są w ogóle
+spójne matematycznie (czy 66 baza-po-Relacji + reszta pakietu faktycznie daje niedobór 4 PW względem
+progu 80, mimo że surowy bilans całego pakietu to +6), i czy nazwa/miejsce komunikatu da się scalić
+w jeden, spójny wskaźnik (zgodnie z sugestią Macieja: „Bilans powinien być ostateczną kwotą po
+zbilansowaniu wszystkiego") bez utraty informacji o tym, dlaczego AI by odrzuciło. **Powiązane z
+wcześniejszą, już wdrożoną naprawą** (linia 1060 tego pliku: „bilans netto my−their, bez «Brakuje»
+gdy gracz oddaje więcej" — TA naprawa dotyczyła PRZYCHODZĄCEJ propozycji od AI, nie WYCHODZĄCEJ
+propozycji gracza z osobnym progiem uczciwości-dla-partnera; możliwe że to zamierzone, ale
+niewyjaśnione w UI, rozróżnienie). **Dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE z dwoma powyższymi
+(trzeci, inny obszar tego samego modułu — do weryfikacji ryzyka kolizji przy ewentualnym dispatchu
+Operatora później, na razie wszystkie trzy read-only).**
+
+---
+
+## R-DYPLO-UMOWA-SUROWCOW-WIELOKROTNA (2026-08-10, propozycja/zgłoszenie Macieja, „Stół negocjacji")
+
+Maciej: „po wydaniu umowy handlowej wymiany surowców powinno być możliwość wydawania wielokrotności
+różnych typów umów wymiany surowców, a to wygląda tak, jakby raz można tylko wykorzystać i potem już
+nie... Umowa wymiany surowców może być wielokrotna, została potraktowana jak zwykły traktat handlowy
+lub inne, a przecież to jest umowa, która może być podzielona — dam surowce, a potem brakuje nam
+jeszcze bilansu, to w drugiej umowie na przykład dołożymy odkrycia." Zrzut (ten sam „Stół negocjacji"
+co dwa poprzednie zgłoszenia): lewa kolumna „Możliwe umowy" — „Traktat handlowy na stole — Przyjmij w
+PN" i „Umowa wymiany surowców na stole — Przyjmij w PN", **oba z ikoną kłódki**, oba zablokowane skoro
+już są „na stole" (jedna instancja każdego typu).
+
+**Propozycja gameplayowa Macieja:** „Umowa wymiany surowców" (w odróżnieniu od singletonowych typów
+jak Traktat handlowy/Sojusz/Pakt) powinna dać się dokładać WIELOKROTNIE w tej samej negocjacji — kilka
+osobnych instancji, każda z innym zestawem surowców, sumujących się do wspólnego bilansu PW zamiast
+jednej, wyczerpującej limit propozycji. **Do zbadania przed ABC (dyscyplina sesji — nie zgaduję):**
+czy blokada „już na stole" jest dziś jednolita dla WSZYSTKICH typów umów (żaden nie jest wielokrotny),
+czy to specyficzne dla tego typu; jaki byłby zakres zmiany (czy struktura danych košyka/propozycji w
+ogóle wspiera wiele instancji tego samego typu, czy to wymaga nowego modelu identyfikacji
+umów-instancji zamiast typ-jako-klucz). **Dispatch rozpoznania NASTĘPUJE, RÓWNOLEGLE z trzema
+powyższymi (ten sam moduł — worktree współdzielony niemożliwy dla ewentualnych późniejszych
+Operatorów, ale to rozpoznanie jak pozostałe jest read-only).**
+
+**Rozpoznanie dostarczone (`aa0162a44928d50af`) — POTWIERDZONY, realny, NIEOBJĘTY zakresem naprawy
+08-09 przypadek. Gotowe do ABC.** `ce69cf45`/FALA 262 w pełni scalone (NIE przypadek jak
+P-DYPLO-SWEETENER — tu problem jest realny w kodzie). Widok ze zrzutu to
+`gra/src/ui/diplomacyAudience.ts`, przycisk Edytuj/Usuń renderuje wspólna
+`negotiationCardActionsHtml()` (linia 1646): `showEdit = !!r.canCounter && actionUsesTradeBasket(...)`.
+**`canCounter` jest ZAWSZE `false` dla `direction==='own'`** (`main.ts:13162`,
+`canPlayerCounterNegotiation` wołane wyłącznie dla `direction==='incoming'`) — czyli dla WŁASNYCH,
+już wysłanych propozycji czekających na AI (dokładnie karty ze zrzutu Macieja) edycja jest z definicji
+niemożliwa, niezależnie jak dobrze działa koszyk. Naprawa 08-09 (`4a116083`/`2b747b9b`) dotyczyła
+WYŁĄCZNIE kontrofert AI (`direction==='incoming'`) — tytuł commitu `2b747b9b` mówi to wprost. To NIE
+jest regresja/przeoczenie tamtej naprawy — to od początku inny, nieobjęty przypadek. Dodatkowo:
+„Traktat handlowy" (widoczny na zrzucie) to `actionId '5'`/`umowa_szlakow`, CELOWO wykluczony z
+koszyka wymiany (idzie na stół bez modala) — nawet z `canCounter=true` nie miałby edycji koszyka
+(bo nie ma koszyka); „Umowa wymiany surowców" (`actionId '14'`) JEST w koszyku, brak edycji wynika
+wyłącznie z `canCounter=false`.
+**Zakres naprawy WYMAGA decyzji projektowej (ABC), nie jest prostym powtórzeniem wzorca 08-09** —
+silnik negocjacji (`diplomacy-proposals.ts`) NIE MA dziś żadnego trybu „edytuj własną, wysłaną
+ofertę in-place" (tylko usuń+dodaj-od-nowa). Dwa warianty: (A) rozszerzyć `canCounter` o
+`direction==='own'`, dodać nową ścieżkę w silniku aktualizującą ten sam wpis `PendingNegotiation`
+bez zmiany rundy/`awaitingOwnerId` — bliższe UX (edycja w miejscu), ale wymaga nowej logiki silnika;
+(B) „Edytuj" = zamknij kartę + otwórz ponownie kreator z pre-wypełnionymi wartościami
+(`showTradeBasketModal`/`counterInitial`, już istniejący wzorzec pre-fill), usuń starą pozycję +
+utwórz nową po zapisie — prostsze technicznie, ale traci numer rundy/timing z perspektywy gracza.
+**ABC do zadania Maciejowi, w kolejce po ustabilizowaniu obecnej fali zgłoszeń.**
+
+---
+
+## P-DYPLO-PAKT-NIEAGRESJI-ZAUFANIE-MIMO-PLUS-BILANS (2026-08-10, szósty zrzut, „Stół negocjacji")
+
+Maciej: „w opcjach miałem pakt o nieagresji, ale kiedy spełniam bilans na plusie, to niestety system
+twierdzi, że brak mam zaufania do paktu. No to albo nie mam zaufania i nie ma tego w opcjach do
+wyboru, albo jest w opcjach do wyboru, kwestią jest tylko zbalansowanie innymi propozycjami." Zrzut:
+pakiet 3 umów (Pakt o nieagresji + Umowa wymiany surowców od nas, Traktat handlowy + Pakt o nieagresji
+od nich), „BILANS (NETTO) **+32**" (wyraźnie dodatni, większy niż poprzedni zrzut +6), blokujący
+komunikat: **„Nie spełnia warunków: Ekspansja przy granicy — brak zaufania do paktu"** — inny niż
+poprzedni „Brakuje N PW" (to NIE jest brak PW, to osobny, binarny gate zaufania/bliskości granic,
+którego PW nie naprawi). W lewej kolumnie „Możliwe umowy" WIDAĆ już istniejący wzorzec dla innych
+opcji: „zablokowana — wymaga Zaufania 91 (masz 83)" z ikoną kłódki, prewencyjnie wyłączający wybór —
+ale „Pakt o nieagresji" NIE był tak oznaczony (dało się go dodać do oferty), mimo że ma najwyraźniej
+podobny, twardy gate ujawniający się dopiero PRZY OCENIE, nie przy wyborze.
+**Prawdopodobnie POWIĄZANE z tym samym wzorcem co `P-DYPLO-BILANS-VS-BRAKUJE-PW-SPRZECZNE`** (gate
+nieodzwierciedlony w UI wyboru, ujawniający się dopiero jako sprzeczny z pozornie dodatnim bilansem)
+— ale inny, niepieniężny powód („Ekspansja przy granicy"), więc może wymagać osobnego zbadania po
+wynikach rozpoznania PW (`a5cd559f49253a910`, w toku). **STATUS: zarejestrowane, w kolejce — czekam
+na wynik powiązanego rozpoznania PW przed decyzją czy to jeden temat czy dwa osobne.**
+
+---
+
+## R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY — Operator naprawy dostarczył (`af98bc5fafb5f2aa6`)
+
+3 miejsca naprawione dokładnie jak zlecono: nowa `isRationBalanceTargetMet` (helper, `empire-food.ts:438-460`,
+flow-based gdy `requireFlowBalance`/`requireProductionSurplus` prawda, inaczej stare stock-based).
+`autoRaiseRationsForGrowth` — krok przestrzeliwujący TERAZ COFANY (nie tylko zatrzymywany), reużyto
+istniejącej flagi `requireProductionSurplus` (już dziś player-only, jedyny call site `ownerId===0`).
+`autoBalanceRationsToSolvency` — nowy opcjonalny `requireFlowBalance`, przekazywane `ownerId===0` z
+`main.ts`. `maxSafePoziomRacjiForCity` — gate wewnętrzny `ownerId===0` (bez zmiany sygnatury, wszyscy
+dzisiejsi wywołujący i tak są player-only). **Rozdzielenie gracz/AI potwierdzone**: domyślne
+`false`/`undefined` = identyczne stock-based zachowanie, zero zmiany dla AI.
+**Test `auto-wyzywienie-flow-balance-test.cjs` (nowy, 17/17) zweryfikowany MUTACYJNIE** — na kodzie
+sprzed naprawy (`git stash`) daje 3 fail/17, dokładnie reprodukując zgłoszony bug (pełznięcie poziomu
++ drenaż rezerwy) — po naprawie 17/17. Zaktualizowany istniejący test M w `ai-major-economy-test.cjs`
+(zakładał stare stock-based jako „poprawne" — wymaga weryfikacji Evaluatora czy to zasadna aktualizacja
+czy maskowanie problemu). Bramki: tsc 0, logic-test 213/213, `empire-food-b5-test` 25/3 (identyczne
+przed/po, pre-istniejące R-STAWKI), `ai-major-economy-test` 33/33, `city-state-mp-growth-test` 9/9.
+**UWAGA do weryfikacji Evaluatora:** worktree bazowany na `main`@`99974173` (NIE gałąź sesji) — Operator
+zgłasza że `auto-wyzywienie-live-recalc-test.cjs` „nie istnieje w repo" — to prawdopodobnie dlatego,
+że ten plik żyje na gałęzi SESJI (scalony tam w rundzie 5, commit `1a6f7e79`), NIE na `main` (który ma
+tylko FALĘ 267) — analogiczna sytuacja do N2 z wcześniejszego Evaluatora tej sesji („baza worktree
+NIE jest przodkiem gałęzi sesji, scalać wyłącznie deltę"). Evaluator MUSI to zweryfikować i uważać
+przy scalaniu, żeby nie zaciągnąć nieaktualnego kontekstu linii. **Dispatchowany Evaluator.**
+
+---
+
+## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA (2026-08-10, zgłoszenie Macieja + zrzut panelu Armie)
+
+Maciej: spacja czasem nie przełącza na kolejną jednostkę z pozostałym ruchem, mimo że na zrzucie
+panelu Armie widać kilka Zwiadowców z „RUCH 3/3" (pełny, niewykorzystany).
+
+**Przyczyna zlokalizowana w kodzie (`gra/src/main.ts`):**
+- `isUnitActiveForCycle()` (main.ts:4859-4864) celowo wyklucza z cyklu Spacji jednostki z
+  `autoExplore===true` — obok `sentry`/`inGarnizon`/`ufortyfikowanyWPolu`. To zamierzone: Zwiadowca
+  w auto-eksploracji porusza się sam, ręczne przełączanie na niego Spacją nie ma sensu.
+- ALE `buildPlayerArmyListEntries()` (main.ts:5236-5302), który zasila panel Armie, w ogóle nie
+  sprawdza `autoExplore` — nie ma go w `ArmyListEntry` (`armyListHud.ts:12-37`), nie ma badge'a ani
+  wpisu w `detailLine`, mimo że analogiczne stany (`inGarnizon`/`sentry`/`ufortyfikowanyWPolu`) MAJĄ
+  własny badge (`armyListHud.ts:195-210`) i własny tekst w `row.title` (linie 172-180).
+- Efekt: Zwiadowca w auto-eksploracji wygląda w panelu identycznie jak zwykła jednostka z pełnym
+  ruchem — gracz nie ma żadnej wskazówki, dlaczego Spacja go pomija. To NIE jest bug logiki cyklu
+  (działa zgodnie z projektem), tylko luka w UI panelu Armie.
+
+**Do ABC (3 opcje):**
+- A: dodać w panelu Armie badge „auto-eksploracja" dla `autoExplore===true`, wzorem istniejących
+  badge'y `inGarnizon`/`sentry`/`ufortyfikowanyWPolu` (ten sam styl `al-garnizon-badge` + tekst
+  w `row.title`). Zero zmiany zachowania Spacji — tylko czytelność. Rekomendacja: najmniejsze
+  ryzyko, spójne z istniejącym wzorcem.
+- B: rozszerzyć Spację, żeby też cyklowała po jednostkach w auto-eksploracji (jak strzałki HUD
+  ◀▶ dziś robią dla WSZYSTKICH stanów `all=true`). Zmienia zamierzone zachowanie — zabiera
+  jednostkę spod kontroli auto-eksploracji przy każdym Spacja-cyklu, wbrew R-SPACJA-KOLEJNA-
+  JEDNOSTKA-PETLA (2026-08-08), który świadomie rozdzielił Spację (tylko z ruchem I aktywne) od
+  strzałek (wszystkie).
+- C: zostawić panel bez zmian, dodać tylko wyjaśniający tekst w `detailLine` („w auto-eksploracji")
+  bez osobnego badge'a graficznego — mniejsza zmiana niż A, ale mniej widoczna dla gracza (badge
+  rzuca się w oczy bardziej niż linijka tekstu w środku karty).
+
+**STATUS: zarejestrowane, ABC zadane w czacie, czekam na odpowiedź Macieja.**
+
+## R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 — zgłoszenie Macieja, PODWAŻA Q1=A (2026-08-10, zrzut panelu Zwiadowcy)
+
+Maciej: po naciśnięciu Zwiedzaj jednostka powinna się wygaszać (odznaczać), a nie zostawiać podgląd
+ruchu — bo gracz nie wie, czy ma kliknąć, czy zostawić jednostkę. Realny bug: czasem lewy klik na
+mapie (na podświetlony heks ruchu) wykonuje rozkaz marszu ZAMIAST kliknięcia gdzie indziej i przy
+okazji odznacza (wyłącza) autozwiedzanie. Żądane zachowanie: po WŁ Zwiedzaj — odznacz jednostkę;
+jeśli jest kolejna jednostka z dostępnym ruchem, przejdź do niej (cykl); jeśli nie ma — pełne
+odznaczenie, brak wybranej jednostki.
+
+**⚠️ TO WPROST PODWAŻA `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A` (2026-08-04, `docs/decyzje/
+R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md`)** — tamta decyzja świadomie WYŁĄCZYŁA deselect+cykl (ówczesne
+zachowanie `R-SCOUT-ZWIEDZAJ-UX`) na rzecz „zostań zaznaczony + złota ramka od razu", bo brak
+odznaczenia+cyklu dawał złotą ramkę widoczną natychmiast po kliknięciu (opcja B ówczesnego ABC —
+„odznacz bez cyklu" — była odrzucona właśnie za brak natychmiastowego feedbacku). Dzisiejsze
+zgłoszenie Macieja opisuje dokładnie odwrotny problem: zostanie zaznaczonym z aktywnym podglądem
+ruchu jest MYLĄCE i prowadzi do przypadkowych kliknięć kasujących zwiedzanie.
+
+**Zlokalizowane w kodzie (`gra/src/main.ts:16476-16491`, handler `scout-explore`):** WŁ dziś robi
+`clearPlannedMarch(u.id); u.autoExplore = true; showHintMessage(...); refreshD1bHud();` — BEZ
+`clearPlayerUnitSelection()`/cyklu (zgodnie z Q1=A), ale też BEZ czyszczenia `reachable`
+(podświetlenie osiągalnych heksów z wcześniejszego zaznaczenia zostaje aktywne) — stąd realny,
+klikalny „podgląd ruchu" na mapie, opisany przez Macieja. Klik w podświetlony heks idzie przez
+zwykłą ścieżkę rozkazu marszu → `clearScoutAutoExplore(u)` (`scout-auto-explore.ts:28-33`,
+wywoływane `main.ts:17764`/`18325`) kasuje `autoExplore` jako efekt uboczny.
+
+**Do ABC (zaadresowane wprost do konfliktu z Q1=A):**
+- A: pełny powrót do deselect+cykl, dokładnie jak opisał Maciej — po WŁ: odznacz, jeśli jest kolejna
+  jednostka z ruchem to przejdź do niej (`cycleToAdjacentPlayerUnit`), inaczej pełne odznaczenie.
+  Cofa `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A` do stanu sprzed tamtej decyzji. Feedback natychmiastowy
+  (dziś już jest `showHintMessage` „zwiedza mapę — ruch na koniec tury", czego zabrakło w 2026-08-04
+  gdy podejmowano Q1 — to może rozwiązywać oryginalny powód Q1=A bez trzymania zaznaczenia).
+- B: zostaw zaznaczenie + złotą ramkę (Q1=A bez zmian), ale wyczyść `reachable`/podświetlenie
+  ruchu przy WŁ Zwiedzaj — usuwa możliwość przypadkowego kliknięcia w heks ruchu (czyli usuwa
+  KONKRETNY zgłoszony bug), zachowuje natychmiastowy feedback wizualny z Q1=A. Mniejsza zmiana,
+  NIE cofa Q1=A.
+- C: hybryda — jak B (bez podglądu ruchu), ale dodatkowo jeśli gracz mimo to kliknie mapę podczas
+  gdy zaznaczony zwiadowca jest w autoExplore, pokaż potwierdzenie/ostrzeżenie zamiast cichego
+  anulowania zwiedzania.
+
+**ECHO A** (2026-08-10, „1a"). Cofa `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q1=A` do stanu sprzed
+2026-08-04 — pełny powrót do deselect+cykl. **STATUS: SCALONE `98dd736e` (2026-08-10) — jedno
+wywołanie `cycleToAdjacentPlayerUnit(u.id, 1)` (bez osobnego `clearPlayerUnitSelection()`, bo
+`isUnitActiveForCycle` już wyklucza jednostkę z `autoExplore===true`; `cycleToAdjacentPlayerUnit`
+sam woła `clearPlayerUnitSelection()` gdy lista pusta). Bramki: `tsc` 0 błędów, `logic-test`
+213/213, `scout-auto-explore-test` 25/25, nowy `scout-explore-deselect-cycle-test.cjs` 10/10.
+Evaluator (Opus 5): **PASS-WITH-NOTES.** Kod poprawny (odznaczenie+cykl+fallback zweryfikowane
+niezależnie, toast nie ginie). Trzy noty do domknięcia przed uznaniem tematu za w pełni zamknięty:
+- **N1 (do naprawy):** nowy test `scout-explore-deselect-cycle-test.cjs` jest ślepy na testowaniu
+  mutacyjnym — usunięcie `selectPlayerUnit(next.id)` z cyklu albo zamiana cyklu w no-op DAJE
+  10/10 PASS mimo złamanego zachowania (kosmetyczna edycja komentarza z kolei fałszywie czerwieni
+  6 asercji). Kierunek: wynieść `isUnitActiveForCycle`/`cyclablePlayerArmyLeadsBase` do modułu
+  czystego nad tablicą `units`, dać prawdziwy test behawioralny na sztucznych danych.
+- **N2 (realny, nieprzeanalizowany przypadek):** `cycleToAdjacentPlayerUnit` ma wczesny
+  `if (!isWorldMapUnitMode()) return;` — gdy panel oblężenia (`isSiegeMapPanelOpen()`, OSIĄGALNY,
+  nie blokuje panelu bocznego) jest otwarty, cykl jest całkowitym no-op i stara jednostka zostaje
+  zaznaczona Z AKTYWNYM `reachable` — dokładnie zgłoszony przez Macieja bug, w tym jednym
+  scenariuszu nadal nienaprawiony. Nie regresja (identyczne z cofniętym Q1), ale niekompletność.
+- **N3:** `docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md` (kanon) nadal deklaruje Q1=A jako
+  aktualny stan, nie wspomina Q2 — rozjazd z komentarzem w `main.ts`.
+
+**STATUS: SCALONE `108713aa` (2026-08-10).** N1: logika cyklowania wyniesiona do nowego, czystego
+modułu `gra/src/game/army-cycle.ts` — test przepisany na behawioralny (buduje sztuczne
+`RuntimeUnit`, sprawdza wynik funkcji, nie tekst źródłowy), ręcznie zweryfikowany że łapie obie
+mutacje z werdyktu Evaluatora (no-op cyklu → 8 FAIL; usunięcie `selectPlayerUnit` → 1 FAIL). N2:
+handler `scout-explore` bramkuje `isWorldMapUnitMode()` w miejscu wywołania (symetrycznie do
+Spacji/„bębna"), zamiast polegać wyłącznie na wewnętrznej bramce funkcji cyklującej. N3:
+`docs/decyzje/R-SCOUT-ZWIEDZAJ-PODSWIETLENIE.md` zaktualizowany, Q1 oznaczony jako zastąpiony.
+Bramki: tsc 0, logic-test 213/213, `scout-auto-explore-test` 25/25,
+`scout-explore-deselect-cycle-test` 32/32. Czeka na NIEZALEŻNEGO Evaluatora (dispatch w toku).**
+
+## P-SPACJA-POMIJA-AUTOEKSPLORACJE-BEZ-OZNACZENIA — ECHO A (2026-08-10, drugi zrzut, pełny panel Armie)
+
+Maciej (nowy zrzut, przewinięty panel Armie): brakuje w tym widoku oznaczenia stanu jednostki —
+auto-eksploracja / ufortyfikowanie / uśpienie. Zrzut potwierdza dokładnie zdiagnozowaną wcześniej
+lukę: kilku Zwiadowców z pełnym „RUCH 3/3", zero wizualnego oznaczenia auto-eksploracji, podczas
+gdy `inGarnizon`/`sentry`/`ufortyfikowanyWPolu` już MAJĄ własny badge w tym samym panelu.
+Traktowane jako **ECHO opcji A** z pierwszego zgłoszenia tego tematu (badge „auto-eksploracja"
+wzorem istniejących badge'y, zero zmiany zachowania Spacji). Wdrożenie: `ArmyListEntry.autoExplore`
+(`armyListHud.ts`) + nowy badge w renderze + wpis w `buildPlayerArmyListEntries` (`main.ts`).
+**STATUS: wdrożone, do commitu (bez deployu).**
+
+## R-MANPOWER-EPOKA1-500-VS-1000 — zgłoszenie Macieja, PODWAŻA własną decyzję z 2026-08-03
+
+Maciej: rozważa przywrócenie kosztu rekrutacji jednej jednostki z 500 na 1000 — przy większej
+liczbie miast skala rekrutacji jest gigantyczna, znacząco przekracza potrzeby.
+
+**⚠️ Odwrócenie własnej decyzji: commit `b518e3e7` (2026-08-03), „Epoka kamienia: koszt manpower
+jednostki 1000 → 500", uzasadnienie w danych (`gra/data/epoka-ludnosc-manpower.json`, pole `_opis`):
+„większa armia w Kamieniu — przy pełnej puli 1 ludek = 2 jednostki zamiast 1".** Zmiana dotyczyła
+WYŁĄCZNIE epoki 1 (Kamień) — epoki 2-10 mają pełny `manpowerNaLudka` bez zmian (2000, 4000, ...,
+480000). Pula max manpower/ludka w epoce 1 (1000) NIE zmieniła się — zmienił się tylko koszt
+JEDNOSTKI (`manpowerNaJednostke`), stąd 2× więcej jednostek z tej samej puli.
+
+**Rozpoznanie skalowania puli (potwierdza intuicję Macieja):** `cityManpowerMax()`
+(`gra/src/game/manpower.ts:371-374`) = `populacja × manpowerNaLudka[epoka] × maxMult`, suma po
+wszystkich miastach BEZ żadnego tłumika/malejącej krańcowości — pula rośnie LINIOWO z liczbą miast,
+podczas gdy koszt jednej jednostki jest stały (zależny tylko od epoki). Przy N miastach limit
+rekrutacji rośnie ~N×, "potrzeby" armii niekoniecznie tak szybko.
+
+**Testy zależne od 500 (do aktualizacji przy powrocie do 1000):** `gra/tools/manpower-test.cjs`,
+~12 asercji w liniach 211, 219, 241, 253, 263, 339, 345, 368, 395, 396, 439, 445.
+
+**Do ABC:**
+- A: cofnij TYLKO epokę 1 z powrotem do 1000 (proste odwrócenie decyzji z 2026-08-03). Za: dokładnie
+  to, o co pyta Maciej; minimalna zmiana (1 liczba w JSON + aktualizacja testu). Przeciw: NIE
+  rozwiązuje opisanego przez niego problemu skali przy większej liczbie miast — to osobny mechanizm
+  (koszt jednostki vs. wielkość puli).
+- B: zostaw epokę 1 na 500 (utrzymaj decyzję z 2026-08-03), ale wprowadź tłumik nieliniowy na
+  CAŁKOWITĄ pulę Manpower rosnącą z liczbą miast (np. malejąca krańcowość powyżej progu miast).
+  Za: adresuje realny opisany problem („przy większej ilości miast skala jest gigantyczna"), nie
+  cofa poprzedniej decyzji. Przeciw: większa zmiana architektoniczna, wymaga osobnego zaprojektowania
+  formuły tłumika.
+- C: oba naraz — cofnij epokę 1 do 1000 ORAZ dołóż tłumik skalowania puli z liczbą miast.
+
+**ECHO A** (2026-08-10, „Cofnij tylko epokę 1 do 1000 — dokładnie to, o co pytasz. Nie rozwiązuje
+problemu skali przy wielu miastach."). **STATUS: WDROŻONE `b11c8608`** — `epoka-ludnosc-manpower.json`
+epoka 1 `manpowerNaJednostke` 500→1000, `manpower-test.cjs` 12 asercji przeliczonych (62/62 zielone).
+Problem skalowania puli z liczbą miast NIE rozwiązany (świadomie, wg odpowiedzi Macieja) — osobny,
+niedispatchowany wątek jeśli zechce do niego wrócić.
+
+## R-DYPLOLISTA-KOLOR-CYWILIZACJI — zgłoszenie Macieja (2026-08-10, zrzut listy Znane cywilizacje)
+
+Maciej: karty cywilizacji w liście "ZNANE CYWILIZACJE" (`diploListHud.ts`) wyglądają identycznie —
+brak odróżnienia. Prośba: nazwa cywilizacji w kolorze tej cywilizacji, a jeśli nie da się nazwy, to
+przynajmniej tło pod ikoną-sygnetem w kolorze cywilizacji.
+
+**Rozpoznanie: kolor JUŻ ISTNIEJE w danych i jest reużywany gdzie indziej, ale ginie w tej
+konkretnej liście.** `civs.json` ma pole `kolorHex` per cywilizacja; `civColorCssForOwner()`
+(`gra/src/game/civ-visual.ts:73`) już go zwraca i jest używany na minimapie (`main.ts:17186/17194`)
+i w audiencji dyplomacji (`main.ts:5398/5421`, `DiploRelation.kolorHex`). `civPennantHtmlById()` i
+`civLeaderMedallionHtmlById()` (`diploUiSkin.ts:56-72/92-112`) JUŻ przyjmują parametr `kolorHex` i
+stosują go jako obrys/glow karty gracza ("Twoje państwo", `diploListHud.ts:224-229`).
+**Przyczyna:** `diploListEntryFromRelation()` (`diploListHud.ts:441-476`) mapuje `DiploRelation` na
+`DiploListEntry`, ale NIE przepisuje `kolorHex` — interfejs `DiploListEntry` (linie 23-36) w ogóle
+go nie ma. Render karty (linia 298) woła `civPennantHtml(e.name, e.tier)` bez koloru → zawsze
+`kolorHex=undefined`. Tło kółka (`.dip-pennant-inner`, `diploUiSkin.ts:183-186`) zależy dziś
+wyłącznie od `tone` relacji (neutralny/gold/wojna), NIE od cywilizacji — stąd identyczne białe koła.
+
+**Do ABC:**
+- A: dociągnąć istniejący `kolorHex` do `DiploListEntry` (przepisać w `diploListEntryFromRelation`)
+  i użyć go jak już jest użyty na karcie gracza — obrys/glow karty w kolorze cywilizacji (wzorzec
+  już istnieje, zero nowego kodu wizualnego, tylko przekazanie brakującego parametru). Nazwa
+  zostaje białym tekstem.
+- B: jak A, plus pokolorować SAM TEKST nazwy cywilizacji (`e.name`) w `kolorHex` zamiast/obok obrysu
+  — dokładnie pierwsza preferencja Macieja ("nazwa w kolorze"). Wymaga sprawdzenia kontrastu/
+  czytelności na ciemnym tle dla jasnych kolorów cywilizacji (może wymagać jasnościowego clampu).
+- C: jak A, ale kolorować TŁO kółka (`.dip-pennant-inner`) zamiast obrysu — mocniejszy efekt
+  wizualny niż sama ramka, ale koliduje dziś z systemem `tone` (neutralny/gold/wojna) który już
+  steruje tym tłem — wymagałoby zdecydowania priorytetu (kolor cywilizacji vs. kolor relacji).
+**Rekomendacja: A+B razem (obrys + tekst), zostawiając tło kółka pod sterowaniem `tone` relacji
+jak dziś — to zachowuje istniejącą czytelność stanu relacji (gold/wojna/neutralny) i dokłada
+odróżnienie cywilizacji przez kolor+obrys, bez konfliktu dwóch sygnałów na jednym elemencie.**
+
+**ECHO** (2026-08-10, „pokolorować sam tekst nazwy (Twoja pierwsza preferencja)") — wybrany WARIANT
+TEKSTU (nie obrys/glow, wyłącznie `name.style.color`). **STATUS: WDROŻONE `f71869d2`** —
+`DiploListEntry.kolorHex` + przekazanie w `diploListEntryFromRelation` + render. Dodany
+`legibleCivTextColor()` (próg luminancji 0.45) — kilka kolorów w `civs.json` (np. `#5C4033`,
+`#8B1A1A`) byłoby nieczytelnych jako czysty tekst na niemal czarnym tle bez rozjaśnienia.
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — zgłoszenie Macieja (2026-08-10)
+
+Maciej: nie zauważył żadnego komunikatu o zdobyciu WSZYSTKICH miast cywilizacji/państwa-miasta.
+
+**Rozpoznanie — dwa osobne, konkretne defekty (nie jedna luka):**
+1. **Podbój bojowy (ostatnie miasto w walce/kapitulacji z głodu):** komunikat ISTNIEJE —
+   `main.ts:20831-20834`, `showHintMessage(civLabelForOwner(oldOwner) + ' — ELIMINACJA! ...', 6000)`
+   w `runCapitalCapturePlunder()`. Ale zaraz PO nim, w tej samej ścieżce dla gracza, otwiera się
+   pełnoekranowy modal `showCityCaptureNotice()` (`main.ts:20289`/`21009`,
+   `gra/src/ui/cityCaptureNotice.ts:97-148`, `.civ-ccn-overlay` `z-index:660` przykrywa cały ekran
+   łącznie z toastem `z-index:320`). Modal wymaga kliknięcia, treść to generyczne „Miasto zdobyte" —
+   BEZ wzmianki o eliminacji. Zanim gracz zamknie modal, toast ELIMINACJA (timeout 6s) zwykle już
+   zniknął w tle, niezauważony. To już RAZ naprawiany wzorzec dla innego komunikatu (komentarz
+   `main.ts:20846-20850`, `P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK`) — tu w nowej odmianie.
+2. **Przejęcie dyplomatyczne ostatniego miasta (`annexCityStateToOwner`, `main.ts:20647-20666`,
+   wchłonięcie MP):** ŻADNEGO komunikatu — ani toastu, ani modalu. To prawdziwa, pełna luka bez
+   obejścia (nie kolizja UI jak w pkt 1).
+
+**Do ABC:**
+- A: przenieść informację o eliminacji DO modalu `showCityCaptureNotice` (dodać wariant treści/
+  nagłówek „ELIMINACJA!" gdy zdobyte miasto jest ostatnim danego ownera) zamiast osobnego toastu,
+  który i tak ginie pod tym modalem — jedno spójne, niepomijalne miejsce dla ścieżki bojowej.
+  Osobno dodać analogiczny komunikat (toast, bo tam nie ma modalu) dla ścieżki dyplomatycznej
+  (`annexCityStateToOwner`), która dziś nie ma nic.
+- B: zostaw toast jak jest, ale skolejkuj komunikaty — pokazuj toast ELIMINACJA PO zamknięciu
+  modalu `showCityCaptureNotice` (nie jednocześnie) i/lub wydłuż jego timeout. Mniejsza zmiana,
+  nie dotyka modalu.
+- C: wprowadzić trwalszy dziennik zdarzeń/log powiadomień (kolejka, nie jednorazowy toast z
+  timeoutem) dla ważnych zdarzeń typu eliminacja — większa zmiana architektoniczna, rozwiązuje
+  też przyszłe podobne kolizje (jak `P-TRIUMF-ZJEDNOCZENIE-GRECJI-KOMUNIKAT-BRAK` pokazuje, że to
+  się powtarza).
+**Rekomendacja: A** — najmniejsza zmiana usuwająca oba konkretne zgłoszone przypadki, wykorzystuje
+istniejący modal (już niepomijalny, wymaga kliknięcia) zamiast walczyć z jego z-index/timingiem.
+
+**ECHO A** (2026-08-10, „3a"). **STATUS: WDROŻONE `d7718ad5`** — `runCapitalCapturePlunder`/
+`applyCityCaptureToMap` zwracają etykietę wyeliminowanej cywilizacji zamiast void, `showCityCaptureNotice`
+dostał wariant ELIMINACJA! (gdy zdobywcą gracz), `annexCityStateToOwner` dostał brakujący toast
+(gdy annexerId===0). Przypadek Triumfu zjednoczenia (własny modal) celowo pominięty w tej ścieżce.
+
+## R-WYDARZENIA-KOLOR-DIPLO-INFO — ECHO bezpośrednia specyfikacja Macieja (2026-08-10, 2 zrzuty)
+
+Maciej (dwa kolejne zrzuty panelu WYDARZENIA): (1) karty propozycji dyplomatycznych ("Dyplomacja: X")
+nie powinny mieć czerwonej obwódki, tylko niebieską — czerwień zarezerwowana dla gróźb/wypowiedzenia
+wojny. (2) Komunikaty dotyczące naszej cywilizacji ("Koniec tury" — skarb, autozapis, itp.) powinny
+mieć złotą obwódkę i delikatnie czarne tło.
+
+**Przyczyna zlokalizowana:** `.civ-side-panel .sp-event` (`sidePanelHud.ts:166-169`) ma DOMYŚLNY
+`border-left:3px solid var(--tg-red)` — czerwień jest fallbackiem dla KAŻDEJ karty, nadpisywanym
+tylko dla kind ze zdefiniowaną regułą (`sp-science`/`sp-culture`/`sp-city`/`sp-unit`/`sp-enemy`).
+`kind:'diplo'` (main.ts:11863-11885, propozycje) i `kind:'info'` (eot-event-defer.ts:71, "Koniec
+tury" — nasze własne zdarzenia końca tury) nie miały WŁASNEJ reguły, więc spadały na czerwony
+fallback — to nie było zamierzone sygnalizowanie zagrożenia, tylko brakujący styl.
+
+**Wdrożone (traktowane jako bezpośrednia, jednoznaczna specyfikacja, nie ABC z wariantami —
+Maciej podał dokładny wynik dla obu kategorii):**
+- `.sp-diplo` → `border-left-color:#6a9fd4` (niebieski) — reużyty istniejący token `--diplo`
+  już ustalony w konwencji kodu (`cityForeignPick.ts`/`unitForeignPick.ts`).
+- `.sp-info` → `border-left-color:#c9a84c` (złoty) + tło z czarnym tinem (`rgba(0,0,0,.35)` →
+  ciemne tło panelu) — reużyty istniejący token `--info` z tej samej konwencji.
+- `.sp-enemy`/`.sp-blocking` (groźby/wojna/zdarzenia negatywne) BEZ ZMIAN — pozostają czerwone,
+  zgodnie z zasadą Macieja "czerwień tylko dla zagrożeń".
+
+**Uwaga do wiadomości (nie blokuje wdrożenia):** `kind:'info'` obejmuje też rzadki przypadek handlu
+AI↔AI (`title:'Dyplomacja'` bez nazwy cywilizacji, `origin:'other-civs'`, filtrowany chipem 🌍 „Inne
+cyw.") — to NIE dotyczy naszej cywilizacji, ale dostanie ten sam złoty styl co reszta `info`, bo
+Maciej nie rozróżnił tego przypadku w zgłoszeniu. Jeśli to niepożądane, osobne zgłoszenie.
+
+**Plik:** `gra/src/ui/sidePanelHud.ts` (2 nowe reguły CSS, linie ~177-178).
+**STATUS: wdrożone, do commitu (bez deployu). Bramki: tsc 0.**
+
+## R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04 — zgłoszenie Macieja (2026-08-10)
+
+Maciej: na najtrudniejszym poziomie państwa-miasta powinny bardziej aktywnie atakować (zbierać
+wojska i wspólnie/masowo atakować stolicę gracza), a nie tylko siedzieć w obronie; dodatkowo
+produkują mało jednostek. Pamięta moment, gdy to realnie działało.
+
+**To NIE jest regresja/bug — to skutek DWÓCH świadomych decyzji ABC Macieja, które się ze sobą
+kłócą właśnie na poziomie Trudny:**
+1. **Mechanizm zbiorowego ataku PM ISTNIEJE** (`R-MP-HARD-WAVE`, commit `89fc4112`, 2026-08-04) —
+   `planCityStateOffensiveMove` (`ai.ts:2515`), `CS_WAVE_ATTACK_MIN_STACK=3` (zakaz solo-rajdów),
+   `resolveClusterCityStateWarOnPlayer` (`city-state-difficulty.ts:72-91`, klaster sióstr PM
+   wypowiada wojnę RAZEM, 60% szans od tury 20). Aktywny WYŁĄCZNIE gdy `_menuCityStateDifficulty
+   === 'hard'`.
+2. **Trudność PM jest ODWRÓCONA względem trudności gry** (`AI-CS-CLUSTER-DIFF`, commit `e0b8afe4`,
+   2026-07-30, `city-state-difficulty.ts:24-28`): gra Łatwy → PM Trudne (agresywne); gra Trudny →
+   PM Łatwe (bierne). Na NAJTRUDNIEJSZYM poziomie gry PM domyślnie dostają NAJNIŻSZY poziom PM,
+   więc mechanizm z pkt 1 się nie uruchamia (chyba że ręczny override w Zaawansowanych).
+3. **Produkcja wojska PM jawnie zablokowana na Hard** (`MP-ARMY-Q1`/`MP-GARRISON-Q1`, commit
+   `b47a2e8f`, 2026-08-04, kilka godzin po R-MP-HARD-WAVE tego samego dnia):
+   `cityStateMilitaryProductionCap('hard') = 0` (zakaz nowej produkcji, tylko istniejący garnizon
+   zostaje) — to skala TRUDNOŚCI GRY, nie trudności PM. Cytat z `docs/decyzje/MP-GARRISON-Q1.md:15`:
+   „Hard: zostaw istniejące (garnizon na mapie), zakaz nowej produkcji wojskowej."
+
+**⚠️ Trzy decyzje z 2026-07-30/08-04 (AI-CS-CLUSTER-DIFF, R-MP-HARD-WAVE, MP-GARRISON-Q1) razem
+tworzą dokładnie ten efekt, który teraz Maciej zgłasza jako niepożądany.** `git log
+-S"cityStateOffensiveSupport"` potwierdza: nikt tego później nie osłabił kodem — to nie regresja
+techniczna, tylko efekt uboczny nakładania się tych decyzji.
+
+**Pytanie kontrolne przed ABC:** czy playtest, który Maciej pamięta (masowy atak na stolicę), był
+PRZED 2026-08-04 (przed capem produkcji=0) albo na ŁATWEJ trudności gry (gdzie PM=Trudne faktycznie
+działa)?
+
+**Do ABC:**
+- A: odłączyć `cityStateOffensiveSupport`/wave-attack od `_menuCityStateDifficulty`, przywiązać
+  wprost do `_menuDifficulty === 'hard'` — agresja PM i cap produkcji rosną RAZEM z trudnością gry
+  (zamiast być odwrócone). Cofa efektywnie inwersję z `AI-CS-CLUSTER-DIFF` dla tego konkretnego
+  mechanizmu.
+- B: zostawić inwersję trudności PM (AI-CS-CLUSTER-DIFF bez zmian), ale podnieść
+  `cityStateMilitaryProductionCap('hard')` z 0 na >0 — PM na Hard mogą się choć trochę dozbrajać
+  mimo defensywnego ustawienia trudności PM.
+- C: zostawić jak jest — Hard = elitarna, nieliczna major AI + bierne PM (świadomy balans), a
+  agresję PM traktować jako funkcję OSOBNEGO suwaka „Trudność miast-państw" w Zaawansowanych (do
+  ręcznego ustawienia przez gracza, niezależnie od trudności gry).
+
+**KOREKTA Macieja (2026-08-10):** inwersja `AI-CS-CLUSTER-DIFF` (pkt 2) miała dotyczyć WYŁĄCZNIE
+tego, jak łatwo INNE CYWILIZACJE AI przejmują państwa-miasta — potwierdzone dosłownym cytatem z
+`docs/decyzje/AI-CS-CLUSTER-DIFF-2026-07-30.md` pkt 1: „Trudność państw-miast WZGLĘDEM AI
+CYWILIZACJI". Agresja PM SKIEROWANA NA GRACZA (pkt 4 tej samej decyzji + cały `R-MP-HARD-WAVE`)
+koncepcyjnie NIE powinna być odwrócona. Plan techniczny (agent projektowy) rozdzielił dokładnie
+(AI) vs (GRACZ) po wszystkich konsumentach `_menuCityStateDifficulty`, w tym 2 dodatkowe miejsca
+błędnie podpięte pod odwróconą zmienną (`decideAIDiplomacy` dla relacji z graczem,
+`_menuCitySupport`/sojusz sióstr).
+
+**KOREKTA 2 Macieja (2026-08-10):** „2b" cofnięte — Maciej: efekt, jakiego potrzebuje, był już
+jasno opisany (agresja PM wobec gracza = wprost trudność gry, bez odwracania); zadanie
+orkiestratora to wywnioskować z tego właściwą naprawę, nie proponować warianty, które ten efekt
+porzucają. Plan techniczny (agent projektowy) już rozdzielił dokładnie WSZYSTKIE konsumenty
+`_menuCityStateDifficulty` na (AI) [zostaje odwrócone, zgodne z pierwotną intencją] i (GRACZ)
+[ma iść wprost z trudności gry] — **wdrażane wprost, bez dalszego ABC, poza JEDNYM elementem
+poniżej, gdzie plan sam wskazał realne ryzyko wymagające decyzji o zakresie/czasie.**
+
+**Wdrażane teraz bez ABC (bezpieczna większość planu, C-027 pkt 3):**
+- `applyCityStateDifficultyTrust()` (`main.ts:7272`, zaufanie startowe PM↔gracz) → z odwróconej
+  `_menuCityStateDifficulty` na trudność gry wprost.
+- `cityStateOffensiveSupport`/wave-attack + produkcja wojska (`main.ts:23803-23805` → `ai.ts:1293,
+  2512,2690`) → jw.
+- Sync DOW klastra (`main.ts:23579-23629`, `resolveClusterCityStateWarOnPlayer`/
+  `isCityStateEligibleForPlayerWar`) → jw.
+- `_menuCitySupport`/próg sojuszu sióstr/posiłki (`main.ts:1249,14329-14368,23801,25892-25902` +
+  `ai-cs-absorption.ts`) → jw.
+- Nowa zmienna `_menuCityStateDifficultyVsPlayer` = `csOverrideRaw ?? _menuDifficulty` (bez
+  wywołania `cityStateDifficultyFromGameDifficulty`), podmieniona we wszystkich miejscach wyżej.
+- Suwak Zaawansowane (`cityStateDifficultyOverride`) steruje OBOMA aspektami naraz (zgodnie z
+  rekomendacją planu — hint UI już dziś opisuje suwak jako gracz-facing).
+
+**KOREKTA 3 Macieja (2026-08-10) — „podstawowa zasada":** „trudno dla mnie to łatwo dla AI, dla
+mnie łatwo to trudno dla AI." Zastosowana do obu osi: (AI-vs-PM, podbój) gra Trudna → PM łatwe do
+podboju przez AI — już poprawnie zaimplementowane, ZOSTAJE bez zmian. (PM-vs-gracz, agresja) gra
+Trudna → PM silne/agresywne wobec gracza — to jest jednoznaczny, wymagany efekt, nie punkt do
+głosowania. Maciej wprost: nie powinienem pytać, czy to zrobić w pełni — powinienem to
+wywnioskować i wykonać. **Pytanie `R-CS-HARD-PASYWNE-Q2` (A/B/C czy robić rozbicie
+`decideAIDiplomacy`) WYCOFANE** — opcja C (nie robić w ogóle) łamała wprost podstawową zasadę, nie
+była legalnym wyborem. **Decyzja orkiestratora (inżynierska, nie ABC):** rozbicie
+`decideAIDiplomacy` WYKONANE — w osobnej, izolowanej rundzie z własnymi testami parytetu (nie w
+tej samej paczce co bezpieczna większość), zgodnie ze sprawdzonym dziś wzorcem sesji (Evaluator
+konsekwentnie rekomenduje izolację ryzykownych zmian logiki pętli od bezpiecznych poprawek — nie
+dlatego że CZY robić jest sporne, tylko żeby ewentualny defekt dało się precyzyjnie zlokalizować).
+**STATUS: dispatch Sonnet 5, runda 2 (po bezpiecznej większości).**
+
+## R-CS-HARD-PASYWNE — Evaluator (retro-batch 4 commitów): `a6076db7` FAIL, pozostałe 3 PASS (2026-08-10)
+
+**Batch retroaktywny (4 commity bez wcześniejszej oceny) — werdykt Opus 5:**
+- `2da2b0a6` (save/load quota+sortowanie) — **PASS**.
+- `29885068` (Civpedia manpower + fortyfikacja/autoExplore) — **PASS-WITH-NOTES** (nota: `fortify`
+  działa na cały stos, zdjęcie fortyfikacji przy Zwiedzaj tylko na jednostkę — asymetria
+  nieudokumentowana, niska pilność).
+- `5130a037` (karty Dyplomacja AI-AI → `kind:'diplo'`) — **PASS**.
+- **`a6076db7` (rozbicie trudności PM na oś AI/GRACZ, bezpieczna większość) — FAIL, pilne.**
+
+**⛔ Defekt blokujący:** `cityStateMilitaryProductionCap(opts.menuDifficulty)`
+(`gra/src/game/city-state-difficulty.ts:12-22`) NIE został przełączony na nową zmienną
+`_menuCityStateDifficultyVsPlayer` — nadal czyta `_menuDifficulty` (oś gry) wprost, bez inwersji,
+i dla `'hard'` zwraca `0`. Skutek: na Trudnym `cityStateOffensiveSupport=true` (poprawnie
+podniesione przez ten sam commit) każe PM planować rekrutację wojska (priorytet Koszar 400,
+osłabiona supresja), ale `chooseCityProduction` (`ai.ts:1435-1445`) i tak odfiltrowuje WSZYSTKIE
+kandydatury wojskowe, bo `militaryOwned(0) >= milCap(0)` jest zawsze prawdą. **Efekt: na Trudnym PM
+nigdy nie rekrutuje ani jednej jednostki, mimo że commit miał to właśnie odblokować — to nie tylko
+niekompletność, to nowa regresja** (przed commitem `hardOffensive` było fałszywe na Trudnym, więc
+PM nie przepalały produkcji na bezużyteczne Koszary; teraz przepalają).
+
+Zakres był jawnie ustalony w tym samym wpisie rejestru („Wdrażane teraz bez ABC" wyżej, pozycja
+`cityStateOffensiveSupport`/wave-attack **+ produkcja wojska**), ale referencje ograniczyły się do
+`ai.ts:1293,2512,2690` — pominięto `ai.ts:1436` i `city-state-difficulty.ts:12`. Bramka
+`ai-mp-military-cap-test.cjs` była zielona (16/16), ale jej asercje T3/T6 aktywnie **przypinają**
+stare (błędne w nowym kontekście) zachowanie „hard → 0 produkcji wojska PM" — zielone bramki nie
+były dowodem poprawności, tylko dowodem, że nikt nie zauważył sprzeczności.
+
+**Kierunek naprawy (Evaluator, niekodowany):** przepiąć `cityStateMilitaryProductionCap` na oś
+gracza (`_menuCityStateDifficultyVsPlayer`) albo podnieść próg dla `'hard'` — to był wprost wariant
+**B** pierwotnego ABC (`PYTANIA-OTWARTE.md:10791-10793`). Dodać bramkę, która realnie sprawdza
+wiring w `main.ts` (nie tylko funkcję czystą w izolacji). `ai-mp-military-cap-test.cjs` T3/T6
+świadomie zaktualizować pod nowe zamierzone zachowanie — naprawa MUSI je zapalić na czerwono przed
+poprawką testu, inaczej nie ma dowodu że coś się realnie zmieniło.
+
+**Trzy pozostałe commity (`2da2b0a6`, `29885068`, `5130a037`) zostają bez zmian — PASS potwierdzony
+niezależnie.**
+
+**STATUS: SCALONE `7e753db2` (2026-08-10).** Nowe pole `AITurnOpts.cityStateDifficultyVsPlayer`
+przekazywane z `_menuCityStateDifficultyVsPlayer` (main.ts); `cityStateMilitaryProductionCap`
+wołane z tego pola zamiast starej osi gry. `cap('hard')` podniesiony `0→3` (=
+`CS_WAVE_ATTACK_MIN_STACK`, nie liczba losowa — PM na Trudnym może faktycznie zebrać własne
+minimum stosu do fali ataku, spójnie z `cityStateOffensiveSupport`). T3/T6 dotychczas
+przypinające stare zachowanie zaktualizowane, dowiedzione czerwono→zielono (16/16 na starym kodzie
+zawierało 2 zielone-fałszywie-uspokajające asercje T3a/T6b, po naprawie 18/18 z nowymi, poprawnymi
+oczekiwaniami). Nowa bramka wiringu `cs-military-cap-wiring-test.cjs` 10/10. Bramki: tsc 0,
+logic-test 213/213, `ai-mp-military-cap-test` 18/18, `city-state-prod-audit-test` 17/17,
+`ai-cs-absorption-test` 29/29, `city-state-alliance-test` 67/67, `city-state-cluster-diff-test`
+31/31, `city-state-mp-growth-test` 9/9. `ai-test.cjs` 274/282 — 8 porażek zweryfikowane
+niezależnie jako pre-istniejące (identyczne na `git stash` baseline bez tej zmiany, dotyczą
+scoringu budynków ekonomicznych i `zaproponuj_handel`, zero związku z MP/cap/hard). Czeka na
+NIEZALEŻNEGO Evaluatora (dispatch w toku).**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — nowa mechanika, propozycja Macieja (2026-08-10)
+
+Maciej proponuje nową mechanikę: obywatele miast zużywają surowce budowlane per epoka (analogicznie
+do zużycia Żywności przez populację). Zgłoszone w 3 wiadomościach, złożona podsumowująca lista
+poniżej:
+
+| Epoka | Zużycie na 1 obywatela (ludka) |
+|---|---|
+| Kamień | 1 Drewno + 1 Glina |
+| Brąz | 1 Drewno + 1 Glina + 1 Kamień + 1 Ceramika |
+| Żelazo | 1 Drewno + 1 Glina + 1 Kamień + 1 Ceramika + 1 Cegła |
+
+Dodatkowo (zasady skutków, podane wprost przez Macieja — NIE otwarte pytanie): każdy DOSTĘPNY
+wymagany surowiec w danej epoce = **+1 Szczęście**; każdy BRAKUJĄCY wymagany surowiec = **-1
+Szczęście ORAZ -1% do Rozwoju**.
+
+**Rozpoznanie architektury (wzorzec: silnik Żywności, `empire-food.ts`) — 3 KRYTYCZNE konflikty do
+rozstrzygnięcia PRZED kodowaniem:**
+
+1. ~~⚠️ Glina ma bazową produkcję terenu = 0 WSZĘDZIE~~ **SPROSTOWANE przez Macieja (2026-08-10),
+   POTWIERDZONE w kodzie — pierwsze rozpoznanie było NIEPEŁNE.** Prawda: `TERRAIN_YIELDS` (czyste
+   typy terenu — Równina/Wzgórza/itd.) rzeczywiście nie mają kolumny Glina (stąd `base.glina`
+   zawsze 0 — TO jest to, co mówił komentarz `economy.ts:251-252`), ALE rzeka to OSOBNA warstwa
+   (`tile.maRzeke`, nie typ terenu), doliczana w oddzielnym bloku `tileYield()` (~linia 434):
+   `RIVER_MODIFIER.glina = 2` (`terrain-yields.json`, `terrain_modifiers.Rzeka.Glina: 2`,
+   „R-HEX-PLONY-MAGAZYN B, Maciej 2026-07-29"). Potwierdzone dedykowanym testem
+   (`heks-plony-warstwy-test.cjs`, „Rzeka +2 glina"). **Czyli: każdy heks NAD RZEKĄ ma +2 Gliny/turę
+   bez żadnego ulepszenia, niezależnie od epoki.** Glinianka (epoka Brąz, wymaga złoża Gliny — NIE
+   rzeki) to DRUGIE, niezależne źródło (+4/turę). Ryzyko gwarantowanego deficytu w Kamieniu istnieje
+   WYŁĄCZNIE dla miast BEZ dostępu do rzeki w promieniu pracy — nie dla wszystkich miast jak
+   pierwotnie twierdzono. Nadal wymaga rozstrzygnięcia: co z miastami śródlądowymi bez rzeki w
+   epoce Kamień (przed odblokowaniem Glinianki w Brązie)?
+2. **Ceramika wymaga konwertera (Garncarnia: Glina+Drewno→Ceramika) ORAZ osobnej tech „Dostęp do
+   surowca: Ceramika"** (`tech.json:186/199`) — czyli w epoce Brąz Ceramika też nie jest dostępna
+   od razu na starcie epoki, tylko po zbudowaniu Garncarni i odblokowaniu tech. Ten sam typ ryzyka
+   co pkt 1, tylko dla Brązu zamiast Kamienia.
+3. **Nie istnieje dziś ŻADNE trwałe zużycie surowców budowlanych per turę** (poza jednorazowym
+   kosztem budowy i throughput konwerterów) — to byłaby zupełnie nowa kategoria w silniku ekonomii,
+   bez istniejącego odpowiednika strukturalnego do doklejenia (w odróżnieniu od Żywności, gdzie
+   cały mechanizm bilansu/nadwyżki/magazynu już istnieje).
+
+**[LISTA ABC — 4 pytania] Zużycie surowców przez obywateli — parametry wdrożenia**
+
+---
+
+**[TEMAT: Od kiedy obowiązuje kara za brakujący surowiec w nowej epoce] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q1 [1/4]**
+
+**Sytuacja:** Dwa wymagane surowce nie są dostępne od pierwszej tury epoki, w której mają być
+wymagane: Glina w Kamieniu — tylko na heksach nad rzeką (+2/turę bez ulepszenia), Glinianka (drugie
+źródło, +4/turę) wymaga tech Garncarstwo z epoki Brąz; Ceramika w Brązie wymaga zbudowania
+Garncarni ORAZ osobnej technologii „Dostęp do surowca: Ceramika". Miasto śródlądowe bez rzeki w
+Kamieniu, albo dowolne miasto w pierwszych turach Brązu przed zbudowaniem Garncarni, dostałoby
+gwarantowaną karę (-1 Szczęście, -1% Rozwoju) zanim gracz zdąży cokolwiek zrobić.
+
+**Cel pytania:** ustalić moment, od którego zasada zaczyna realnie obowiązywać dla danego surowca
+w danym mieście, żeby kara nie była niemożliwa do uniknięcia.
+
+**Dlaczego teraz:** to jest fundamentalny parametr silnika tej mechaniki — bez niego nie da się
+zacząć projektować logiki bilansu.
+
+**A — zasada obowiązuje od 1. tury każdej epoki, bez wyjątku, niezależnie od dostępności budynku/tech.**
+Za: najprostsza reguła, spójna z resztą projektu (kara zawsze aktywna od progu epoki). Za:
+motywuje gracza do szybkiego zbudowania potrzebnej infrastruktury (Glinianka, Garncarnia).
+Przeciw: miasta bez rzeki w Kamieniu i praktycznie wszystkie miasta na starcie Brązu dostają
+gwarantowaną, niemożliwą do uniknięcia karę. Przeciw: może być odbierane jako niesprawiedliwe —
+kara zależna od losowego położenia miasta względem rzeki, nie od decyzji gracza.
+
+**B — zasada zaczyna obowiązywać dla danego surowca w danym mieście dopiero po odblokowaniu
+odpowiedniego budynku/technologii (Glinianka dla Gliny w Kamieniu, Garncarnia+tech dla Ceramiki w
+Brązie); do tego czasu ten surowiec jest pomijany z wymaganej listy tego miasta.**
+Za: unika gwarantowanej, niemożliwej do uniknięcia kary na starcie epoki. Za: nagradza gracza,
+który buduje infrastrukturę, zamiast karać go z góry za coś, na co nie miał jeszcze wpływu.
+Przeciw: wymaga dodatkowej logiki śledzącej „czy dany surowiec jest już częścią systemu
+ekonomicznego tego miasta" per miasto i per epoka. Przeciw: mniej przewidywalne dla gracza —
+moment wejścia kary w życie zależy od jego własnego tempa budowy, nie jest stały.
+
+**C — zasada zaczyna obowiązywać po stałym okresie karencji (np. N tur) od wejścia w nową epokę,
+niezależnie od budynku/tech.**
+Za: prostsza reguła niż B (jeden globalny licznik, nie stan per miasto). Za: łagodniejsza niż A —
+daje graczowi czas na reakcję. Przeciw: karencja czasowa może i tak minąć zanim gracz zdąży
+zbudować odpowiedni budynek, zwłaszcza w dalszych/nowo założonych miastach. Przeciw: kolejny,
+arbitralny parametr liczbowy do zbalansowania (ile dokładnie tur karencji).
+
+**Rekomendacja: B** — jedyna opcja, która nie generuje kary niemożliwej do uniknięcia; koszt
+(dodatkowa logika stanu per miasto) jest proporcjonalny do problemu, który rozwiązuje.
+
+---
+
+**[TEMAT: Czy AI podlega tej samej zasadzie zużycia surowców] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q2 [2/4]**
+
+**Sytuacja:** silnik Żywności (wzorzec dla tej mechaniki) różnicuje gracza i AI — dla gracza
+bilans jest flow-based, dla AI stock-based — ale KARA za deficyt (osłabienie/atrycja wojska
+głodowego) jest dziś identyczna dla obu. Nowa mechanika zużycia surowców budowlanych nie ma
+jeszcze ustalonego, czy dotyczy tylko gracza, czy też dużej AI i miast-państw.
+
+**Cel pytania:** ustalić zakres podmiotowy nowej mechaniki przed jej zaprojektowaniem.
+
+**Dlaczego teraz:** to decyduje, czy silnik potrzebuje osobnej ścieżki `ownerId===0` (jak część
+mechanizmów Żywności) czy jednego, wspólnego kodu dla wszystkich właścicieli.
+
+**A — tak, AI (duża i miasta-państwa) objęte tą samą zasadą, identycznie jak gracz.**
+Za: spójność zasad — AI nie ma nieuzasadnionej przewagi ekonomicznej względem gracza. Za:
+prostsza implementacja — jeden wzorzec logiki dla wszystkich właścicieli, bez rozgałęzień.
+Przeciw: AI może nie mieć dziś dobrze zaprojektowanej logiki reagowania na deficyt surowca (ryzyko,
+że AI notorycznie obrywa karą i wygląda na „gorszą" bez wyraźnego, czytelnego dla gracza powodu).
+Przeciw: dodatkowe ryzyko balansu — może wymagać strojenia zachowania AI, żeby budowała
+infrastrukturę (Glinianki/Garncarnie) w rozsądnym tempie.
+
+**B — nie, wyłącznie gracz; AI pozostaje bez tej mechaniki, wzorem uproszczonych (stock-based)
+reguł Żywności dla AI.**
+Za: mniejsze ryzyko regresji w zachowaniu/ekonomii AI, które nie było projektowane pod kątem tej
+nowej presji. Za: łatwiej dostroić balans wyłącznie dla gracza, bez wpływu na rozgrywkę AI.
+Przeciw: asymetria gracz/AI może być odbierana jako niesprawiedliwa lub niespójna z resztą reguł.
+Przeciw: wymaga osobnej ścieżki kodu (`ownerId===0` gating) — więcej złożoności niż jeden wspólny
+mechanizm.
+
+**Rekomendacja: A** — spójne z tym, jak w tej sesji potraktowano karę za deficyt Żywności
+(identyczna dla gracza i AI, mimo różnego sposobu liczenia bilansu).
+
+---
+
+**[TEMAT: Zużycie per obywatel czy binarnie per miasto] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q3 [3/4]**
+
+**Sytuacja:** Twoje sformułowanie „każdy DOSTĘPNY/BRAKUJĄCY wymagany surowiec" nie precyzuje, czy
+ocena dostępności surowca jest jedna na całe miasto, czy liczona proporcjonalnie do tego, ilu
+konkretnie obywateli ma pokrycie zapotrzebowania (analogicznie do silnika Żywności, gdzie bilans
+jest ciągły, nie progowy).
+
+**Cel pytania:** ustalić, czy kara (+1/-1 Szczęście, -1% Rozwoju) jest jedna na miasto, czy
+skalowana z wielkością niedoboru.
+
+**Dlaczego teraz:** to determinuje kształt wzoru bilansu i sposób pokazania go w UI.
+
+**A — binarnie per miasto: miasto ALBO ma pełne pokrycie zapotrzebowania na dany surowiec, ALBO
+nie — kara jednolita dla całego miasta niezależnie od wielkości niedoboru.**
+Za: prostsza logika i prostszy komunikat dla gracza („to miasto ma/nie ma dostępu do Gliny"). Za:
+łatwiejsze do zbalansowania — jeden próg per surowiec per miasto, nie funkcja proporcjonalna.
+Przeciw: nie oddaje częściowego niedoboru — miasto produkujące 90% potrzebnej Gliny jest karane
+tak samo jak miasto produkujące 0%. Przeciw: mniej precyzyjne niż istniejący mechanizm Żywności.
+
+**B — proporcjonalnie per obywatel, analogicznie do Żywności: część populacji jest zaopatrzona,
+część nie, kara skaluje się z wielkością niedoboru.**
+Za: spójne z już istniejącym wzorcem silnika Żywności (ten sam typ mechanizmu bilansu). Za:
+bardziej realistyczne, płynne skalowanie zamiast nagłego progu wszystko-albo-nic.
+Przeciw: bardziej złożona logika i UI — trzeba pokazać częściowy niedobór, nie tylko tak/nie.
+Przeciw: trudniej dobrze zbalansować kary +1/-1 Szczęście i -1% Rozwoju, gdy są proporcjonalne, a
+nie binarne — potrzebny dodatkowy wzór skalowania.
+
+**Rekomendacja: A** — Twoje pierwotne sformułowanie („każdy dostępny/brakujący surowiec") brzmi
+jak ocena binarna per surowiec, nie jak ciągła proporcja; prostsza reguła też łatwiej się
+komunikuje graczowi w UI.
+
+---
+
+**[TEMAT: Gdzie w UI pokazać bilans zużycia surowców] R-ZUZYCIE-SUROWCOW-OBYWATELE-Q4 [4/4]**
+
+**Sytuacja:** dziś nie istnieje żaden panel pokazujący bilans netto surowców budowlanych
+(Drewno/Glina/Kamień/Ceramika/Cegła) — istnieje wyłącznie stan magazynowy i bramki dostępu do
+budowy. Analogiczny, już istniejący wzorzec dla Żywności to `foodSummaryRow` w
+`empireDetailPanel.ts` („Uprawa i hodowla" / „Wyżywienie ludności").
+
+**Cel pytania:** ustalić, gdzie gracz zobaczy nową informację o zużyciu surowców przez obywateli.
+
+**Dlaczego teraz:** to decyduje o zakresie pracy UI, osobnym od samej logiki silnika.
+
+**A — nowa sekcja w panelu szczegółów imperium (`empireDetailPanel.ts`), wzorem istniejącej
+sekcji „Wyżywienie ludności" — osobny wiersz per surowiec.**
+Za: spójne z istniejącym wzorcem UI — gracz już wie, gdzie szukać tego typu informacji. Za: nie
+zajmuje dodatkowego miejsca w głównym HUD, który już jest gęsty.
+Przeciw: panel szczegółów imperium nie jest widoczny „na pierwszy rzut oka" podczas normalnej gry
+— gracz musi go świadomie otworzyć.
+
+**B — wskaźnik w głównym pasku HUD (obok Kultury/Pracy/Prawa/Pieniądza/Zadowolenia), pokazujący
+zbiorczy status typu „zaopatrzenie: X/Y surowców dostępnych".**
+Za: zawsze widoczny, natychmiastowa informacja bez otwierania paneli. Za: chroni gracza przed
+przeoczeniem narastającego problemu.
+Przeciw: główny HUD już ma dużo elementów — ryzyko przeładowania interfejsu. Przeciw: wymaga
+nowej ikony/wskaźnika — dodatkowa praca projektowa (Design), nie tylko silnika.
+
+**Rekomendacja: A** — mniejsza, bezpieczniejsza zmiana, spójna z istniejącym miejscem dla
+podobnych bilansów; jeśli po playteście okaże się niewystarczająco widoczna, przejście do B jest
+łatwe do zrobienia później.
+
+---
+
+**STATUS: pełna lista 4 pytań zadana w czacie, czekam na odpowiedzi Macieja (litery per numer,
+np. „1a/2b/3a/4a"). Kodowanie wstrzymane do odpowiedzi na WSZYSTKIE cztery.**
+
+## PUNKT 6 — Lista robocza "do wykonania" (2026-08-10, aktualizowana na żądanie Macieja)
+
+Skonsolidowana lista wszystkich zgłoszeń Macieja z tej sesji (po ostatniej fali), z aktualnym
+statusem każdego. Aktualizowana na bieżąco — nie osobny, statyczny dokument.
+
+### Zrobione i wypchnięte (nie wymagają już akcji)
+1. Spacja pomija auto-eksplorację bez oznaczenia → badge w panelu Armie (`65bc26d4`)
+2. Kolor nazwy cywilizacji w liście dyplo → wdrożone (`f71869d2`)
+3. ~~Brak komunikatu eliminacji cywilizacji → wdrożone (`d7718ad5`)~~ **KOREKTA: NIE zamknięte —
+   Evaluator FAIL runda 2 i runda 3, Defekt A (kolizja toastów przy wchłonięciu dyplomatycznym)
+   nadal złamany. Runda 4 dostarczona przez Operatora, czeka na scalenie w głównej sesji (patrz
+   sekcja `R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI` niżej w pliku).** Przeniesione do sekcji
+   „W trakcie" poniżej.
+4. Manpower epoka 1: 500→1000 → wdrożone (`b11c8608`)
+5. Kolor kart WYDARZENIA (diplo=niebieski, info=złoty) → wdrożone (`2f73c530`)
+6. P-HEKS-ZLOZE-PARYTET-NIEDOMKNIETY (dług techniczny, dispatch C-027) → wdrożone (`7bc2a3ed`)
+7. 16 nieaktualnych nagłówków STATUS w tym pliku → poprawione (`992ef60b`)
+8. Brak przycisku „Kontynuuj" w menu głównym → wdrożone (`539e4db0`)
+
+### Czeka na decyzję ABC Macieja (nie można kodować bez odpowiedzi)
+9. `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2` — odznaczenie po Zwiedzaj (koliduje z Q1=A z 2026-08-04)
+10. `R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04` — pasywność PM na Hard. Korekta Macieja
+    przyjęta (inwersja miała dotyczyć tylko AI, nie gracza). Plan techniczny GOTOWY (agent
+    projektowy dostarczył pełną klasyfikację + plan naprawy, w tym 2 NOWE znaleziska nieujęte w
+    pierwszym zgłoszeniu: `decideAIDiplomacy` dla relacji z graczem i `_menuCitySupport`/sojusz
+    sióstr też błędnie podpięte pod odwróconą zmienną). **Czeka na ostateczne „rób" od Macieja**
+    przed dispatchem kodowania — plan oznacza punkt 4 (rozbicie `decideAIDiplomacy`) jako
+    najbardziej ryzykowny, wymagający osobnej rundy testów.
+11. `R-ZUZYCIE-SUROWCOW-OBYWATELE` — nowa mechanika zużycia surowców przez obywateli. Lista
+    zestawiona, korekta Gliny+rzeki przyjęta (rzeka daje +2 Gliny/turę zawsze, nie tylko po
+    Gliniance). Nadal otwarte: miasta śródlądowe bez rzeki w Kamieniu (wciąż potencjalny
+    gwarantowany deficyt), Ceramika w Brązie (ten sam typ ryzyka, nierozstrzygnięty), czy AI objęte
+    tą samą zasadą, zużycie per-ludek czy per-miasto, gdzie w UI pokazać.
+
+### W trakcie (naprawa dostarczona LUB dispatchowana, czeka na scalenie/Evaluatora)
+12. Manualny zapis nie pojawiał się na liście „Wczytaj grę" → przyczyna znaleziona (quota
+    localStorage, komunikat mylący) → **SCALONE (`2da2b0a6`)**, Evaluator PASS.
+13. Lista sejwów nie sortowana najmłodsze→najstarsze → **SCALONE (`2da2b0a6`)**, Evaluator PASS.
+14. Wczytywanie regenerowało mapę od zera zamiast odczytać zapis → ECHO A (pełna serializacja
+    siatki) → **SCALONE (`8458ac74`)**, czeka na Evaluatora (dispatch w toku).
+15. Brak komunikatu eliminacji cywilizacji (patrz punkt 3 wyżej — KOREKTA) → runda 4 dostarczona,
+    czeka na scalenie w głównej sesji + Evaluator.
+16. R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 → **SCALONE (`98dd736e`)**, Evaluator PASS-WITH-NOTES →
+    runda 2 dispatchowana (N1 test ślepy na mutacje, N2 realny edge-case z panelem oblężenia, N3
+    kanon nieaktualny).
+17. R-CS-HARD-PASYWNE (bezpieczna większość) → **SCALONE (`a6076db7`)**, Evaluator FAIL (cap
+    produkcji wojska PM na Hard nadal 0, mimo że commit miał to odblokować) → naprawa
+    dispatchowana, czeka na dostarczenie.
+18. **LUKA ZNALEZIONA teraz (audyt na żądanie Macieja):** `R-PROPOZYCJA-BRAK-EDYCJI` — rozpoznanie
+    potwierdziło realny, nieobjęty wcześniejszą naprawą przypadek (własne wysłane propozycje w
+    „Stole negocjacji" nie mają edycji, bo `canCounter` jest zawsze `false` dla
+    `direction==='own'`) i przygotowało pełne ABC (warianty A/B), ale pytanie **NIGDY nie zostało
+    faktycznie zadane Maciejowi** — zostało tylko odłożone „w kolejce" i zgubione przy przejściu do
+    kolejnych zgłoszeń. Naprawiane teraz — pytanie ABC zadane w tej samej turze co ta poprawka
+    rejestru.
+
+**STATUS: lista aktualna na 2026-08-10, aktualizowana przy każdym nowym zgłoszeniu Macieja lub
+zamknięciu istniejącego punktu. Punkt 3 był błędnie oznaczony jako zamknięty mimo 2 rund
+Evaluator-FAIL — skorygowane po audycie na żądanie Macieja („sprawdź czy każde z 11 zgłoszeń jest
+w trakcie naprawy albo naprawione").**
+
+## P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT (2026-08-10, zgłoszenie Macieja: manualny zapis znika)
+
+Maciej: zapisał grę własnym, ręcznym zapisem (nie autozapisem) i tego zapisu nie ma na liście do
+wgrania — potencjalna utrata dostępu do zapisanej gry.
+
+**Rozpoznanie (dispatchowany agent, `a56cc03a4c29bdef8`):** manualny zapis i `listSaves()` czytają
+DOKŁADNIE ten sam magazyn (`localStorage`) i prefiks (`SAVE_PREFIX`) — to NIE jest rozjazd dwóch
+różnych backendów (FSA dotyczy wyłącznie rotacyjnego autozapisu, nie zapisu ręcznego z dialogu).
+**Najbardziej prawdopodobna przyczyna:** cichy/źle zgłoszony błąd zapisu przy przepełnionym
+localStorage (limit ~5-10MB/origin):
+1. `persistSaveToSlot` (`main.ts:21717-21726`) zwraca goły `boolean`, ODRZUCAJĄC pole `reason` z
+   `saveToLocal` (`save.ts:359-368`) — przy `QuotaExceededError` gracz widzi ten sam ogólny
+   komunikat co przy każdym innym błędzie: `'Zapis nieudany (brak localStorage?)'`
+   (`main.ts:16513`, identycznie `doQuickSave` `main.ts:21737`) — mylące, sugeruje brak API, nie
+   brak MIEJSCA. Dla porównania: rotacyjny autozapis (`main.ts:21892-21909`) POPRAWNIE rozróżnia
+   `reason==='quota'` i pokazuje „brak miejsca w zapisie przeglądarki" — manualny zapis i Ctrl+S
+   tego nie robią. Gotowy wzorzec do skopiowania.
+2. Dialog zapisu zamyka się NATYCHMIAST po kliknięciu „Zapisz" (`saveLoadDialog.ts`, `commit()`),
+   ZANIM wynik zapisu jest znany — wygląda na potwierdzony zapis, nawet gdy w tle się nie udał.
+3. Nazwa/prefix NIE różnią się (obalona hipoteza literówki).
+
+**Jak Maciej może dziś sprawdzić ręcznie:** DevTools (F12) → Application/Storage → Local Storage →
+domena gry → szukać kluczy `thegame.save.*` (bez `_lastPlayed`, to wskaźnik). Brak klucza = zapis
+faktycznie nie trafił do storage. Warto sprawdzić konsolę pod `[Save] Blad:` (`main.ts:21723`).
+
+**Nie wymaga ABC — jasno opisane oczekiwane zachowanie, gotowy wzorzec do naśladowania (C-027 pkt 3):
+dispatch subagenta od razu.** Naprawa: `persistSaveToSlot`/`doQuickSave` mają przekazywać `reason`
+zamiast gołego `boolean`, UI (`openSaveGameDialog`, Ctrl+S) ma pokazywać jawny komunikat o pełnym
+storage z podpowiedzią „usuń stare zapisy" (wzorem już istniejącej obsługi w autozapisie), dialog
+nie powinien zamykać się przed potwierdzeniem wyniku.
+
+**STATUS: zarejestrowane, dispatch Sonnet 5 w tej samej turze.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA (2026-08-10, zgłoszenie Macieja: wolne wczytywanie)
+
+Maciej: wczytywanie zapisu trwa tyle samo/dłużej co generowanie nowej mapy.
+
+**Rozpoznanie — POTWIERDZONE, poważne architektonicznie:** `SaveGame` (`save.ts:98+`) NIE zawiera
+siatki heksów w ogóle — tylko `seed` (`checkSaveIntegrity` wymaga `g.seed`, `save.ts:525-527`).
+Mapa jest ZAWSZE odtwarzana proceduralnie z ziarna, nigdy deserializowana wprost z zapisu.
+Pipeline: `loadGameFromSlot` → `loadNeedsMapRebuild()` (`main.ts:6540-6554`, zwraca `true`
+natychmiast gdy `!fromInGamePause` — czyli w PRAKTYCZNIE KAŻDYM „Wczytaj grę" z menu głównego) →
+`regenerateWorldForLoad()` (`main.ts:26226`) → `generujSwiatAsync(seed, ...)` — **DOKŁADNIE ta sama
+funkcja co przy Nowej Grze** (`main.ts:26346`, `doStartGame`), ten sam callback progresu, ta sama
+lista 10 faz `MAP_GEN_PHASE_LABELS` (`mapGenProgress.ts:16-27`, w tym `riversFill: 'Rzeki —
+uzupełnianie'`, krok 7/10 — dokładnie to widoczne na zrzucie Macieja). Load i New Game dosłownie
+dzielą ten sam kod generatora i pipeline — architektonicznie to pełna regeneracja mapy od zera przy
+KAŻDYM wczytaniu, nie odczyt/dekompresja zapisanych heksów.
+
+**To WYMAGA ABC (C-027 pkt 2) — realny wybór kompromisu, nie prosta naprawa:**
+- A: serializować pełną siatkę heksów do zapisu (większy plik zapisu, ale natychmiastowe
+  wczytanie, brak zależności od determinizmu generatora — bezpieczne nawet gdyby generator się
+  kiedyś zmienił). Największa zmiana architektoniczna, ale najbardziej fundamentalne rozwiązanie.
+- B: zostawić regenerację z ziarna (deterministyczny generator z tym samym seedem MUSI dać
+  identyczny wynik), ale zoptymalizować/przyspieszyć sam generator, albo pominąć zbędne kroki przy
+  wczytywaniu (np. kroki UI/animacji, które i tak nie muszą się dziać przy load). Mniejsza zmiana,
+  ale nie eliminuje fundamentalnej kruchości (zmiana generatora w przyszłości cicho zepsułaby
+  stare zapisy).
+- C: hybryda — serializować TYLKO to, co się realnie zmieniło względem świeżo wygenerowanej mapy
+  (delta: złoża wyeksploatowane, ulepszenia gracza, zmiany terenu) zamiast całej siatki, zachowując
+  regenerację bazowego terenu z ziarna jako punkt startowy. Kompromis rozmiar/złożoność.
+
+**ECHO A** (2026-08-10): „Serializować pełną siatkę heksów do zapisu." Uwaga do świadomości: to
+zwiększa rozmiar pojedynczego zapisu w `localStorage`, co interaguje z równolegle naprawianym
+`P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT` (limit ~5-10MB/origin) — im większe zapisy, tym łatwiej
+o quota. Musi zostać zachowana WSTECZNA KOMPATYBILNOŚĆ ze starymi zapisami (bez pełnej siatki) —
+fallback na dzisiejszą regenerację z ziarna, nie odrzucenie starych zapisów.
+**STATUS: SCALONE `8458ac74` (2026-08-10).** `SaveGame` zyskał opcjonalny `mapSnapshot`
+(`gra/src/map/mapSnapshot.ts`, pełna siatka + pola dynamiczne `zloze`/`ulepszenia` spoza bazowego
+`Hex`); `loadMapForSave()` (`gra/src/game/load-map-source.ts`) nie woła generatora wcale, gdy
+snapshot poprawny — dowiedzione licznikiem wywołań w teście (0 dla nowego formatu, dokładnie 1 dla
+starego). Wsteczna kompatybilność: stare zapisy bez `mapSnapshot` → fallback na dzisiejszą
+regenerację z ziarna, zero zmiany zachowania. Bramki: `tsc` 0 błędów, `logic-test` 213/213, nowy
+`map-snapshot-load-test.cjs` 32/32 (w tym roundtrip prawdziwej mapy 36×28 z `generateMap()`, nie
+tylko fixture). Znalezisko przy okazji (NIE naprawione, poza zakresem C-025): wycięty w trakcie gry
+las nie jest dziś śledzony osobno od `mapSnapshot`/regeneracji — stary format nadal odrasta po
+wczytaniu (pre-istniejące, nowy format to przypadkiem naprawia bo zapisuje `hexes` po mutacji).
+Czeka na NIEZALEŻNEGO Evaluatora (Opus 5, zmiana architektoniczna, dispatch w toku).
+
+## P-SEJWY-KOLEJNOSC-STARE-BEZ-SAVEDAT (2026-08-10, przy okazji rozpoznania sortowania listy sejwów)
+
+Rozpoznanie sortowania listy „Wczytaj grę" (`saveLoadDialog.ts:159/193`,
+`out.sort((a,b)=>b.savedAt.localeCompare(a.savedAt))`) pokazało, że sortowanie malejące po dacie
+JUŻ DZIAŁA poprawnie w obecnym kodzie — Maciej prawdopodobnie widział albo starszy build (przed
+commitami wprowadzającymi to sortowanie), albo realny, węższy problem: STARE zapisy sprzed
+wprowadzenia pola `meta.savedAt` dostają `savedAt: ''` (puste) i lądują na końcu listy w
+NIEDETERMINISTYCZNEJ kolejności względem siebie (pusty string sortuje się tak samo jak inny pusty
+string — kolejność między nimi zależy od stabilności sortowania, nie chronologii).
+**Nie wymaga ABC — jasno opisane, wąskie zachowanie brzegowe (C-027 pkt 3): dispatch razem z
+naprawą P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT** (ten sam obszar kodu, sensowne połączyć w
+jedno zlecenie Operatora, ale osobna, jasno wydzielona część zakresu — C-025 zakaz mieszania
+zakresu nadal obowiązuje, Operator ma dwie odrębne, jasno opisane poprawki, nie jeden rozmyty fix).
+
+**STATUS: zarejestrowane, dispatch razem z P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT.**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator FAIL runda 2 (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `d7718ad5`: FAIL.** Zgłoszenie oznaczone jako naprawione, ale
+druga połowa problemu (wchłonięcie dyplomatyczne) NADAL nie działa — kod wygląda na poprawny, ale
+zachowanie się nie zmieniło. Bramki (tsc, testy) były zielone i nie wykryły żadnego z tych defektów
+— wymagały wyłącznie uważnego czytania kodu wokół zmiany.
+
+**Defekt A (blokujący):** nowy toast w `annexCityStateToOwner` (`main.ts:20672`, `annexerId===0`)
+jest natychmiast nadpisywany 6 linii niżej w TYM SAMYM synchronicznym stosie wywołań:
+`main.ts:15519`, `showHintMessage('Miasto-państwo wchłonięte do imperium', 4000)`.
+`showHintMessage` to jeden współdzielony `#hintToast` z jednym timerem (`main.ts:10814-10830`) —
+nowa treść nadpisuje starą, zanim zdąży się wyrenderować. Ten sam wzorzec kolizji, który commit
+deklarował jako naprawiony, odtworzony dosłownie w nowym kodzie. Gracz po wchłonięciu
+dyplomatycznym nadal widzi wyłącznie „Miasto-państwo wchłonięte do imperium" — stan sprzed
+commita.
+
+**Defekt B:** dwie ścieżki eliminacji GRACZA (nie AI) gubią zwracaną etykietę po cichu (kompilator
+tego nie łapie): `main.ts:11112` (`resolveSiegeSurrender`, kapitulacja głodowa —
+`runCapitalCapturePlunder(...)` wołane BEZ odbioru wartości zwracanej) oraz `main.ts:20283-20292`
+(szturm przez mur, `siegeContext:true` — blok z `showCityCaptureNotice` odcięty warunkiem
+`!opts?.siegeContext`). Uczciwie: w obu te ścieżki i PRZED naprawą też nie miały widocznego
+komunikatu (stary toast też tam ginął) — więc to nie regresja, ale zgłoszenie brzmiało „brak
+komunikatu o eliminacji" i po naprawie 2 z 4 ścieżek nadal go nie mają.
+
+**Defekt C (utrata treści):** stary toast niósł nazwę miasta, zdobywcę, liczbę tech i +Power ze
+zdobyczy. Nowy modal mówi tylko „X — ostatnie miasto przejęte". Gracz (jedyny odbiorca tej
+nagrody) traci informację o technologiach/Power; toast AI (main.ts:20878) nadal ją ma — asymetria.
+
+**Pokrycie testowe: zero.** `capital-capture-test.cjs` testuje czystą funkcję z `game/`, nie
+wrapper `runCapitalCapturePlunder` (żyje w domknięciu `boot()` w main.ts, dziś nietestowalny).
+
+**STATUS: dispatch Sonnet 5 (worktree) — naprawić A, B, C w jednej, jasno opisanej rundzie 3.
+Po dostarczeniu: ponowny Evaluator (nie ja) przed uznaniem za zamknięte.**
+
+## Trzy dodatkowe noty Evaluatora (nie blokujące, do dispatchu osobno)
+
+1. **Civpedia w grze kłamie o koszcie manpower epoki 1.** `gra/src/data/wikiBundle.json`
+   (wbudowany w grę, `wikiHubHud.ts`) + `docs/encyklopedia/pojecia/manpower-rekruci.md`
+   (linie 15,35,52,64) + komentarz `gra/src/game/manpower.ts:9` nadal głoszą starą wartość 500
+   („koszt włócznika = 500 → 10 włóczników przy pełnej puli") — sprzeczne z silnikiem (dziś 1000,
+   `b11c8608`). **Jedyny z ogonów widoczny dla gracza na własne oczy** (otwiera Poradnik w grze).
+   Dispatch: korekta tekstu źródłowego + regeneracja `wikiBundle.json`.
+2. **Karty „Dyplomacja" w dwóch kolorach.** `eot-event-defer.ts:67-79` — handel AI↔AI dostaje
+   `kind:'info'` (złoty) zamiast `kind:'diplo'` (niebieski) mimo tytułu „Dyplomacja" — bezpośrednio
+   przeczy celowi `R-WYDARZENIA-KOLOR-DIPLO-INFO`. Poprawka: 1 linia
+   (`kind: isAiAiTrade ? 'diplo' : 'info'`), własna bramka `eot-event-defer-test.cjs` (5/5).
+   Dispatch.
+3. **`ufortyfikowanyWPolu` + `autoExplore` nie wykluczają się.** Pre-istniejący, ujawniony (nie
+   spowodowany) przez `65bc26d4`. Ufortyfikowany zwiadowca z włączonym Zwiedzaj odejdzie z pozycji
+   w kolejnej turze (ruch wraca wszystkim bez wyjątku, `main.ts:22115`), zachowując flagę
+   `ufortyfikowanyWPolu` (bonus obronny w marszu) — `enterFieldFortify()` nie czyści `autoExplore`,
+   `runScoutsAutoExplore()` nie sprawdza fortyfikacji. Dispatch (niski priorytet, rzadki przypadek).
+
+## AUDYT C-030 (2026-08-10, na żądanie Macieja: "sprawdź czy zadania... mają swojego subagenta")
+
+Grep `STATUS: dispatch` w tym pliku wykrył DWIE luki — tematy z ECHO decyzji, które nigdy nie
+dostały faktycznego dispatchu subagenta (STATUS mówił "dispatch", ale nikt nie został wysłany):
+
+1. `R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2` (ECHO A, „1a") — dispatch teraz (`abbc75c9dba3fd7bf`).
+2. `P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA` (ECHO A) — dispatch teraz (`a69e9765466b7bb81`).
+
+Przyczyna: oba ECHO zostały zapisane w tej samej turze co kolejne, pilniejsze zgłoszenie Macieja
+(audyt punktu 6, potem korekta o Glinie, potem raport), które przejęło uwagę zanim dispatch zdążył
+nastąpić — dokładnie wzorzec C-030 ("stosowane punktowo, nie jako przegląd całej listy").
+**Pozostałe pozycje z `STATUS: dispatch` sprawdzone i potwierdzone jako faktycznie
+dispatchowane** (`R-CS-HARD-PASYWNE` bezpieczna większość `a9339ac9036d7d03b`, decideAIDiplomacy
+świadomie odłożone jako runda 2 — nie luka, tylko kolejność; runda 3 komunikatu eliminacji +
+Evaluator `ac2921b16d2be46dd`).
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator FAIL runda 3 (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `21255078`: FAIL.** Defekt B i C z rundy 2 potwierdzone NAPRAWIONE
+(PASS). **Defekt A NADAL złamany** — kolizja toastów tylko „przesunęła się o jedną ramkę stosu w
+górę", nie zniknęła:
+
+- `applyProposalOutcome` (main.ts, ok. 15547) dziś POPRAWNIE scala własny toast z treścią eliminacji.
+- Ale jego wywołujący, `resolveNegotiationEntryAt` (main.ts:12815-12820), i tak BEZWARUNKOWO woła
+  `showHintMessage(ownerDiploLabel(awaitingId) + ' przyjmuje propozycję: ' + summary, 4000)` PO
+  powrocie z `applyProposalOutcome` — trzecie z rzędu nadpisanie tego samego `#hintToast`.
+- **Dokładny repro:** wasalne państwo-miasto → akcja „Wchłonięcie" zaakceptowana za punkty handlowe
+  → widoczny toast to generyczny „X przyjmuje propozycję: ...", treść ELIMINACJA nigdy się nie
+  pokazuje.
+- **Kierunek naprawy (Evaluator, niekodowany):** treść musi być emitowana jako OSTATNIA w stosie —
+  albo `applyProposalOutcome` zwraca informację „ten wpis już pokazał własny komunikat / oto tekst
+  do doklejenia", a `resolveNegotiationEntryAt` scala go ze swoim `summary`, albo
+  `resolveNegotiationEntryAt` pomija generyczny toast dla `actionId === 'wchloniecie'`.
+- **Test `elimination-toast-merge-test.cjs` (21/21 zielony) nie łapie tego defektu** — okno asercji
+  sprawdza wyłącznie wnętrze bloku `if (cywAction === 'wchloniecie')`, nie sięga do
+  `resolveNegotiationEntryAt`, gdzie żyje realne nadpisanie. Test koduje ten sam niepełny model
+  błędu, jaki miał Operator — zielony mimo wciąż złamanego zachowania.
+- Nota dodatkowa (nieblokująca, do osobnej rejestracji jeśli będzie kontynuacja): AI→PM i AI→AI
+  wchłonięcia dyplomatyczne nie mają ŻADNEJ komunikacji do gracza — ta sama rodzina błędu, poza
+  zakresem tej rundy.
+
+**STATUS: SCALONE `e0e0d186` (2026-08-10).** `resolveNegotiationEntryAt` pomija swój generyczny
+`showHintMessage` wyłącznie gdy `entry.actionId==='wchloniecie' && outcome.kind==='accepted'`
+(bo `applyProposalOutcome` już pokazał kompletną treść); odrzucone wchłonięcie nadal dostaje
+toast. Test wzmocniony o 8 nowych asercji (indentacja strukturalna dowodzi, że toast jest
+zagnieżdżony w guardzie, nie bare statement) — potwierdzone czerwono→zielono: 28/30 PASS na
+`4eb1cc88` (2 FAIL złapane), 30/30 po naprawie. Bramki: tsc 0, logic-test 213/213,
+`elimination-toast-merge-test` 30/30, `capital-capture-test` 58/58. Czeka na NIEZALEŻNEGO
+Evaluatora (4. runda, dispatch w toku).**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator FAIL runda 4 (2026-08-10, PIĄTA warstwa)
+
+**Werdykt Ewaluatora (Opus 5) dla `e0e0d186`: FAIL.** Runda 4 naprawiła DOKŁADNIE to, co
+deklarowała — zero kolizji nadpisania treści na żadnej warstwie wywołań (potwierdzone niezależnie:
+sekwencja end-to-end ma dokładnie JEDNO finalne wywołanie `showHintMessage`). **Ale to inny rodzaj
+defektu: kolizja WARSTW MALOWANIA (z-index), nie kolejności wywołań.**
+
+- Scalony toast eliminacji (`#civ-hint-toast`, `z-index:320`) jest renderowany **pod** otwartym
+  ekranem audiencji dyplomatycznej (`.civ-diplo-aud`, `z-index:400`, `background:rgba(...,.88)`) —
+  przy domyślnym zoomie UI (`<body>` bez `transform`, oba elementy w tym samym kontekście
+  układania) `400 > 320` wygrywa: **gracz nadal nie widzi komunikatu**, mimo że treść jest
+  poprawna i wygenerowana tylko raz.
+- **Dlaczego umykało 4 rundy:** przy zoomie UI ≠ 1 `<body>` dostaje `transform:scale()`, co
+  tworzy własny kontekst układania i przypadkiem czyni toast widocznym — widoczność zależy od
+  ustawienia zoomu gracza, nie jest deterministyczna.
+- **Ten sam wzorzec już raz opisany w tym pliku** dla ścieżki bojowej (`.civ-ccn-overlay
+  z-index:660` przykrywał toast `z-index:320`) — dla ścieżki dyplomatycznej wybrano wtedy toast z
+  uzasadnieniem „tam nie ma modalu", ale audiencja dyplomatyczna JEST pełnoekranową nakładką.
+- **Drugi, niezależny defekt:** gdy gracz kończy turę zamiast klikać „Przyjmij" ręcznie,
+  `resolvePendingNegotiationsForOwner` rozstrzyga propozycję w fazie AI — `showHintMessage` przy
+  `endTurnInProgress` NIE nadpisuje, tylko KOLEJKUJE (`deferredEotHints` → karty „Wydarzenia").
+  Założenie rundy 3 („ostatnie wywołanie wygrywa") nie obowiązuje w tej gałęzi: kroki
+  `annexCityStateToOwner` i `applyProposalOutcome` trafiają do kolejki jako **dwie identyczne
+  karty „ELIMINACJA!"** zamiast jednej.
+
+**Kierunek naprawy (Evaluator, niekodowany) — wymaga decyzji o kanale, do ABC:**
+- A: podnieść z-index `#civ-hint-toast` ponad nakładki dyplomacji (analogicznie do już istniejącego
+  wyjątku dla `isPreBattleOpen()` → `9950`) — toast ma `pointer-events:none`, podniesienie niczego
+  nie blokuje. Najmniejsza zmiana.
+- B: użyć kanału już renderowanego NAD audiencją — baner propozycji (`z-index:850`,
+  `showDiplomacyProposalBanner`) albo dedykowany modal, analogicznie do wariantu wybranego wcześniej
+  dla ścieżki bojowej (modal ELIMINACJA! w `cityCaptureNotice.ts`).
+- C: skierować komunikat eliminacji wyłącznie do trwałego dziennika „Wydarzenia" (karta w
+  side-panelu) zamiast toastu — przy okazji domyka drugi defekt (duplikat karty), bo jedno źródło
+  emisji zamiast dwóch.
+Do tego: usunąć podwójną emisję (jedno źródło treści, nie dwa), i dołożyć bramkę sprawdzającą
+polaryzację warunku `skipGenericToast` (dzisiejsze 8 asercji nie łapie odwróconego `!`) oraz
+relację z-index (nie tylko istnienie kodu).
+
+**ECHO B+C** (2026-08-10): „b+c (po naciśnięciu wydarzeń przenosi do b)" — komunikat trafia jako
+karta do dziennika Wydarzeń (kanał C, likwiduje przy okazji defekt duplikatu przy rozstrzygnięciu
+w fazie AI — jedno źródło emisji), a kliknięcie tej karty otwiera/przenosi do pełnej treści przez
+kanał banera/modala (kanał B) — hybryda: dyskretne powiadomienie od razu widoczne w panelu bocznym,
+pełne szczegóły (tech/Power) na żądanie gracza. **STATUS: dispatch Sonnet 5 (worktree) — runda 5.
+Usunąć oba dotychczasowe `showHintMessage` (annexCityStateToOwner + applyProposalOutcome), skierować
+zamiast tego do side-panel event (wzorzec `eot-event-defer.ts`/`sidePanelHud.ts`, ten sam użyty dla
+kart WYDARZENIA), klik karty otwiera baner/modal z pełną treścią (tech+Power). Dołożyć bramkę na
+brak duplikatu w ścieżce end-of-turn (AI rozstrzyga propozycję) — dokładnie to, co Evaluator złapał
+jako drugi defekt.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — Evaluator FAIL na `8458ac74` (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5): FAIL — jeden bloker + 3 defekty + 4 noty.** Rdzeń zmiany (generator
+NIE wołany gdy snapshot poprawny; wsteczna kompatybilność; kompletność pól heksu w tym dynamicznych
+`zloze`/`ulepszenia`; reszta `regenerateWorldForLoad` wspólna dla obu ścieżek) **potwierdzony jako
+poprawny, niezależnie zweryfikowany w kodzie, nie tylko z raportu Operatora.** Zmierzony realny
+zysk: mapa `standardowy` (domyślna, 168×120=20160 heksów) — generator **116 177 ms**, odczyt
+snapshotu **24 ms** (~4800×). Problem zgłoszony przez Macieja jest realny i ta zmiana go faktycznie
+rozwiązuje.
+
+**⛔ BLOKER: rozmiar zapisu przekracza limit `localStorage` przy DOMYŚLNYM rozmiarze mapy.**
+Zmierzone realnie (prawdziwy generator + serializacja): mapa `standardowy` (domyślna w menu) →
+sam `mapSnapshot` to **4,10 MB znaków** ≈ **8,6 MB w UTF-16** (jak liczy Chromium limit ~5 MB/origin)
+→ `QuotaExceededError` na **pierwszym zapisie**, przy domyślnych ustawieniach, bez zmiany
+czegokolwiek przez gracza. `AUTOSAVE_ROT_COUNT=10` pogarsza to dodatkowo — nawet najmniejsza mapa
+(`malenki`, 0,81 MB) × 10 slotów rotacyjnych = 8,1 MB, też nie mieści się. Brak jakiejkolwiek
+degradacji: `saveToLocal` zwraca `{ok:false,reason:'quota'}` i kończy — zapis ręczny przestaje
+działać CAŁKOWICIE, FSA (dysk) ratuje tylko autozapis i tylko po zgodzie użytkownika. **To wprost
+koliduje z JUŻ otwartym, potwierdzonym zgłoszeniem Macieja o znikającym ręcznym zapisie**
+(`P-ZAPIS-CICHY-BLAD-QUOTA-MYLACY-KOMUNIKAT`, ten sam plik) — quota była napięta PRZED tą zmianą,
+doklejenie 4,3 MB do każdego zapisu nie zwiększa ryzyka, ono ten scenariusz GWARANTUJE.
+
+**Defekt B:** komentarz-inwariant w `mapSnapshot.ts` („bezpieczne bo `SaveGame` jest natychmiast
+serializowany zanim cokolwiek zdąży zmutować `map`") jest NIEPRAWDZIWY dla ścieżki FSA — autozapis
+na dysk robi `serializeGame(s)` PO dwóch `await` na I/O, więc `mapSnapshot.hexes` (żywa referencja,
+nie kopia) może się zmutować w międzyczasie (rozdarcie migawki). Ryzyko praktyczne małe, ale
+udokumentowany fałszywy inwariant jest niebezpieczny dla przyszłych zmian.
+
+**Defekt C:** otwarcie dialogu „Wczytaj grę" parsuje WSZYSTKIE sloty w całości (`JSON.parse` każdego
+dla samego `label`/`tura`) — po tej zmianie to ~43 MB JSON parsowanego synchronicznie na wątku
+głównym przy każdym otwarciu listy zapisów (~240ms zawieszenia UI). Ironia: temat dotyczył
+szybkości, zmiana dokłada zauważalny koszt gdzie indziej.
+
+**Noty (nieblokujące, do domknięcia przy okazji):** D — `as TMap` w `load-map-source.ts` cicho gubi
+`startPositions`/`mapGenTimings` (bez szkody funkcjonalnej dziś, ale przyszłe pola przejdą przez
+`tsc` bez ostrzeżenia); E — test nie dotyka realnego rozmiaru mapy (36×28=1008 heksów, mniej niż
+najmniejsza mapa w grze); F — ścieżka „wczytaj z pauzy" ignoruje snapshot (pre-istniejące, nie
+regresja, ale zmiana daje dane do naprawy i ich nie wykorzystuje); G — opisy rozmiarów map w
+`ui-params.json` są ~4× zaniżone względem realnych wymiarów (niezwiązane z tym commitem).
+
+**Kierunek naprawy (Evaluator, niekodowany) — wymaga decyzji ABC, bo to kompromis produktowy:**
+kompresja snapshotu przed zapisem / degradacja z twardym budżetem (ponad próg — zapisz BEZ
+snapshotu, stary format już działa i jest przetestowany) / przeniesienie snapshotu do IndexedDB
+(brak limitu 5MB). Dodatkowo: `mapSnapshot` nie powinien wchodzić do wszystkich 10 slotów
+rotacyjnych autozapisu, tylko do 1-2 najnowszych.
+
+**ECHO A** (2026-08-10): kompresja snapshotu. **STATUS: dispatch Sonnet 5 (worktree) — runda 2.
+Skompresować `mapSnapshot` przed zapisem (kierunek z werdyktu Evaluatora: słownik/enum typów terenu
+zamiast powtarzanych stringów per-heks, `terenBazowy`/`nakladka`/`ulepszenie` jako tablice typowane;
+cel: redukcja rzędu 5-10× względem dzisiejszych 4,1 MB dla mapy `standardowy`). Musi przejść przez
+`JSON.stringify`-owalny format (localStorage nie przyjmuje binarnych/typed array bezpośrednio —
+Base64 albo string-safe kodowanie). Zachować round-trip identyczny co dziś (test
+`map-snapshot-load-test.cjs` musi dalej przechodzić po dekompresji). Dołożyć do testu asercję na
+rozmiar wyjścia dla mapy `standardowy` (Evaluator: „zero asercji o rozmiarze wyniku" — nota E),
+próg ustawić tak by realnie mieścił się z zapasem w limicie ~5MB/origin RAZEM z resztą stanu
+zapisu (jednostki/miasta/tech), nie tylko sam snapshot. Naprawić przy okazji Defekt B (fałszywy
+komentarz-inwariant o braku mutacji podczas serializacji FSA — patrz werdykt) i Defekt C (parsowanie
+wszystkich slotów przy otwarciu dialogu — wynieść nagłówek label/tura/savedAt do osobnego, małego
+klucza obok treści, żeby nie trzeba było `JSON.parse` całego snapshotu tylko po metadane).**
+
+## R-CS-HARD-PASYWNE — Evaluator FAIL runda 2: cap('hard')=3 wciąż za niski (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `7e753db2`: FAIL.** Wiring poprawny (jedno źródło opts, oba call
+site'y `chooseCityProduction` dostają to samo pole) — problem to sama WARTOŚĆ. Bramka wyjścia z
+domu (`ai.ts`, wołana z linii ~2820) blokuje ofensywę gdy `totalMilitary < minFieldArmyBeforeSend
++ minGuardToSend` I `fieldArmy < minFieldArmyBeforeSend`. Na Trudnym: `minFieldArmyBeforeSend =
+CS_WAVE_ATTACK_MIN_STACK = 3`, `minGuardToSend = RESUP_TIERS['strong'].minGuard = 1` → próg
+blokady to `totalMilitary < 4`. Cap ustawiony na `3` oznacza `totalMilitary ≤ 3 < 4` ZAWSZE —
+**żadna jednostka PM nie wyruszy z domu na ofensywę na Trudnym**, mechanizm
+`cityStateOffensiveSupport` nadal nie startuje. Poprawny próg to `CS_WAVE_ATTACK_MIN_STACK +
+minGuard('strong')` = **4** (dla starych zapisów bez `citySupportLevel`, fallback `'normal'`,
+próg to 5). Uczciwie: zgłoszony bug „Koszary bez rekrutacji" JEST naprawiony (0→3 to realna
+poprawa) — FAIL dotyczy wyłącznie tego, że wybrana wartość nie przekracza progu, dla którego
+została dobrana.
+
+**Dodatkowo, testowanie mutacyjne (5 mutantów) złapało lukę w bramce:** zakomentowanie linii
+`cityStateDifficultyVsPlayer: _menuCityStateDifficultyVsPlayer,` w `main.ts` **przeżywa
+wszystkie bramki** (tsc, `cs-military-cap-wiring-test` 10/10, `ai-mp-military-cap-test` 18/18) —
+`cs-military-cap-wiring-test.cjs` czyta surowe źródło bez usuwania komentarzy, pole jest
+opcjonalne więc `tsc` też nie widzi problemu. Runtime skutek: `opts.cityStateDifficultyVsPlayer
+=== undefined` wyłącza CAŁY blok capu — PM traci limit wojska na WSZYSTKICH poziomach trudności,
+nie tylko Hard.
+
+**STATUS: dispatch Sonnet 5 (worktree) — runda 3, wąska naprawa: (1) `cap('hard')` 3→4 (wartość
+wyprowadzona z `CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard`, nie liczba losowa —
+skorygować też komentarz w `city-state-difficulty.ts` żeby odzwierciedlał tę relację, nie sam
+`CS_WAVE_ATTACK_MIN_STACK`); (2) wzmocnić `cs-military-cap-wiring-test.cjs` o odporność na
+zakomentowaną/usuniętą linię wiringu w `main.ts` (regex musi rozróżnić realny kod od komentarza,
+albo dodać osobną asercję, że pole NIE jest `undefined` w runtime, nie tylko że string istnieje w
+źródle). Po dostarczeniu: NIEZALEŻNY Evaluator, runda 3.**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — ECHO A, edycja in-place w silniku (2026-08-10)
+
+**ECHO A** (2026-08-10, „A: edycja in-place w silniku"). Rozszerzyć `canCounter` o
+`direction==='own'`, dodać nową ścieżkę w silniku negocjacji (`diplomacy-proposals.ts`)
+aktualizującą ten sam wpis `PendingNegotiation` bez zmiany rundy/`awaitingOwnerId` — edycja w
+miejscu, nie usuń+dodaj-od-nowa. **STATUS: dispatch Sonnet 5 (worktree) w tej samej turze.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — ECHO na 4 pytania (2026-08-10, przed snem Macieja)
+
+**Q1 — ECHO A, ALE z istotnym doprecyzowaniem zmieniającym mechanizm:** „a + Całość
+zapotrzebowania jest ściągana z magazynu, więc dany miasto nie musi mieć dostępu. Wszystkie
+potrzebne surowce dla mieszkańców są ściągane z magazynu." **To NIE jest proste ECHO litery A**
+(„kara od 1. tury epoki bez wyjątku") — to przesuwa całą mechanikę na model analogiczny do
+`zapasyPanstwa` (centralny magazyn imperium, ten sam wzorzec co scentralizowana Żywność), NIE na
+lokalną dostępność per miasto względem terenu/budynku. Innymi słowy: miasto nie potrzebuje własnej
+Glinianki ani rzeki — wystarczy, że IMPERIUM ma surowiec w magazynie centralnym, tak jak dziś
+Żywność jest ściągana z `zapasyPanstwa`, nie liczona per-miasto. **Kara (zgodnie z pierwotnym
+uzasadnieniem A) więc obowiązuje od 1. tury epoki, ale nie generuje niemożliwej-do-uniknięcia
+kary za położenie miasta** — bo dostępność to stan magazynu całego imperium, nie lokalnej
+produkcji tego miasta. Wymaga potwierdzenia przy implementacji: czy magazyn scentralizowany
+(surowce budowlane: Drewno/Kamień/Glina/Ruda/Ceramika/Cegła) już dziś istnieje jako jeden pula
+(sprawdzić `gra/src/game/economy.ts`/`turn-economy.ts` — z wcześniejszego tematu
+P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO w tym samym pliku wynika że TAK, magazyn państwa już
+istnieje dla tych surowców z regułą B: „produkcja z zapasu skarbca, zasypia po wyczerpaniu").
+**Kara aktywuje się dopiero gdy magazyn centralny danego surowca jest PUSTY (0), nie gdy miasto
+nie ma lokalnego dostępu** — analogicznie do dzisiejszej logiki Żywności/Głodu.
+
+**Q2 — ECHO A.** AI (duża + Państwa-Miasta) objęte tą samą zasadą co gracz, identycznie liczone.
+
+**Q3 — ECHO A.** Binarnie per miasto: miasto albo ma pełne pokrycie (magazyn centralny > 0 danego
+surowca), albo nie — kara jednolita, nie proporcjonalna do wielkości niedoboru.
+
+**Q4 — doprecyzowanie, nie czyste A/B:** „widok w panelu surowce + widok w mieście w porzadek pod
+szczęście" — DWA miejsca: (1) panel Surowców (nie `empireDetailPanel.ts` „Wyżywienie ludności" jak
+sugerowała opcja A — osobny, już istniejący panel Surowców, do zlokalizowania), (2) panel miasta,
+pozycjonowane BEZPOŚREDNIO POD sekcją/wierszem Szczęścia. Wymaga rozpoznania: gdzie dokładnie żyje
+„panel surowce" (osobny komponent czy zakładka), i gdzie w panelu miasta jest dziś sekcja Szczęście
+(żeby wstawić nowy wiersz zaraz pod nią, nie gdziekolwiek indziej).
+
+**STATUS: dispatch rozpoznania Sonnet 5 PRZED kodowaniem (worktree)** — zakres większy niż proste
+ECHO, zwłaszcza Q1 (model magazynu centralnego, nie lokalnej dostępności) i Q4 (dwa konkretne
+miejsca UI do zlokalizowania) wymagają potwierdzenia w kodzie przed napisaniem logiki silnika,
+zgodnie z CLAUDE.md §6/§7 „nie zgaduj przy niejednoznaczności".
+
+## R-SCOUT-ZWIEDZAJ-PODSWIETLENIE-Q2 — Evaluator FAIL runda 2: regresja army-merge-mainguard (2026-08-10)
+
+**Werdykt Ewaluatora (Opus 5) dla `108713aa`: FAIL.** N1/N2/N3 naprawione solidnie (potwierdzone
+niezależnym testowaniem mutacyjnym — 14/15 mutacji złapanych), ale commit **wprowadza regresję w
+istniejącej, wcześniej zielonej bramce, która nie została uruchomiona ani zgłoszona**:
+`army-merge-separate-return-mainguard-test.cjs` — `108713aa^` (baza): 72/0 zielono;
+`108713aa`: **66 pass, 6 fail**. Przyczyna: wyniesienie logiki do `army-cycle.ts` usunęło z
+`main.ts` funkcje `cyclablePlayerArmyLeadsBase`/`armyLeadHexKey` (dosłowne markery tekstowe, o
+które pytała sekcja 10 tej bramki, strzegąca inwariantu B-R5-1 z wcześniejszej rundy: klucz
+grupowania = `stackRenderKey`, nie gołe `stackGroupIdOf`) — bramka szukała starych nazw/lokalizacji
+i nie znalazła. 2 z 8 asercji tej sekcji przechodzą wakuowo (negatywne, prawdziwe na pustym
+wycinku) — bramka nie tylko czerwienieje, częściowo daje też fałszywe zielone.
+
+**Dodatkowo, luka M7 znaleziona testowaniem mutacyjnym (15 mutacji, 14 złapanych):** usunięcie
+fallbacku po `stackRenderKey` w `resolveAdjacentPlayerUnitCycle` (gdy `afterId` wypadł z listy, ale
+inna jednostka tego samego stosu/heksu jest na liście) **nie jest złapane przez żaden test** — ani
+stary, ani nowy. To dokładnie ta gałąź, którą zepsuta bramka miała pilnować.
+
+**STATUS: dispatch Sonnet 5 (worktree) — runda 3, wąska: (1) przekierować sekcję 10
+`army-merge-separate-return-mainguard-test.cjs` na `army-cycle.ts` (nowa sygnatura
+`cyclablePlayerArmyLeadsBase(units, requireMoves, canMove)`, użycie `stackRenderKey` wewnątrz
+`resolveAdjacentPlayerUnitCycle` zamiast usuniętego `armyLeadHexKey`) — inwariant B-R5-1 musi
+zostać przypięty w NOWEJ lokalizacji, nie zniknąć; uwaga na asercje negatywne (linie 339,352 starej
+wersji) — przechodzą wakuowo, nie są dowodem; (2) zamknąć lukę M7 — asercja behawioralna w Sekcji 1
+`scout-explore-deselect-cycle-test.cjs` na fallback po `stackRenderKey`, zaostrzyć zbyt luźną
+asercję `'a' || 'c'` w linii ok. 196; (3) drobiazg: komentarz w main.ts:4879 odsyła do
+nieistniejącego `scout-army-cycle-test.cjs`, poprawić na `scout-explore-deselect-cycle-test.cjs`.
+Po dostarczeniu: NIEZALEŻNY Evaluator, runda 3.**
+
+## R-CS-HARD-PASYWNE — runda 3 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `28c96bd8` (2026-08-10).** `cityStateMilitaryProductionCap('hard')` 3→4 (=
+`CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard`, komentarz zaktualizowany żeby
+odzwierciedlał tę relację). `cs-military-cap-wiring-test.cjs` wzmocniony: `stripLineComments`
+przed regexem (łapie zakomentowaną linię wiringu), nowa sekcja 4 wykonująca realnie
+`chooseCityProduction` z `undefined` zamiast `cityStateDifficultyVsPlayer` (dowód runtime-skutku,
+nie tylko brak stringa w źródle), sekcja 3 zamieniona z dwóch testów-na-literał na faktyczną
+relację obu stałych odczytanych z `ai.ts`. Testowanie mutacyjne potwierdzone: stara bramka NIE
+łapała mutanta „zakomentuj linię wiringu", nowa łapie. Bramki: tsc 0, logic-test 213/213,
+`ai-mp-military-cap-test` 18/18, `cs-military-cap-wiring-test` 13/13, `city-state-prod-audit-test`
+17/17. Czeka na NIEZALEŻNEGO Evaluatora, runda 3 (dispatch w toku).**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — runda 5 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `37b6cb9c` (2026-08-10).** Toast usunięty całkowicie dla przypadku eliminacji
+przez wchłonięcie — jedyny kanał to teraz persystentna karta w dzienniku Wydarzeń
+(`recordCivElimEvent`, omija `deferredEotHints`, przeżywa `endTurnInProgress`), kliknięcie otwiera
+nowy modal `civElimNotice.ts` z pełną treścią. Zwykły (nie-eliminacyjny) toast wchłonięcia
+nietknięty. Nowy plik `gra/src/ui/civElimNotice.ts`. Test rozszerzony o sekcję RUNDA 5 (20 asercji,
+w tym jawne sprawdzenie polaryzacji `!`/`&&` — bezpośrednia odpowiedź na krytykę Evaluatora rundy
+4). Bramki: tsc 0, logic-test 213/213, `elimination-toast-merge-test` 54/54,
+`eot-event-defer-test` 5/5, `sidepanel-events-toolbar-test` 19/19. Czeka na NIEZALEŻNEGO
+Evaluatora, runda 5 (dispatch w toku).**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — SCALONE (2026-08-10)
+
+**STATUS: SCALONE `ed002de2` (2026-08-10).** `canCounter` rozszerzone o `direction==='own'` dla
+typów koszykowych; nowa `applyOwnProposalEdit()` (`diplomacy-proposals.ts`) podmienia payload
+in-place bez zmiany rundy/`awaitingOwnerId`/ról (w odróżnieniu od `applyCounterOffer`, która
+zawsze podbija rundę). `umowa_szlakow` (bez koszyka) pozostaje bez edycji — kontrola negatywna w
+teście potwierdza brak regresji. Bramki: tsc 0, logic-test 213/213, nowy
+`diplomacy-own-proposal-edit-test.cjs` 18/18, oraz 8 istniejących testów dyplomacji (basket-edit,
+fairness-gate, negotiation-table, proposal, tech-trade, trade-flex, treaty-sweetener-edit,
+hud-moc-warstwa) — wszystkie zielone, zero regresji. Czeka na NIEZALEŻNEGO Evaluatora (dispatch
+w toku).**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — rozpoznanie dostarczone (2026-08-10)
+
+**Kluczowe ustalenie: magazyn centralny surowców budowlanych JUŻ ISTNIEJE**, choć w innym
+kształcie niż `zapasyPanstwa` Żywności — to suma `City.surowce` po wszystkich miastach ownera,
+liczona on-demand przez `ownerResourceStockAll`/`ownerResourceStock`
+(`gra/src/game/building-stock-cost.ts`). `EMPIRE_STOCK_RESOURCE_KEYS` już zawiera wszystkie 5
+potrzebnych kluczy (drewno/kamień/glina/ceramika/cegła) — **nic nie brakuje do dodania**. Gotowy
+wzorzec bramki binarnej per surowiec (dokładnie to, czego wymaga Q1+Q3 ECHO): `zloto-access.ts`
+(`ownerCanFeedMennica()`/`resolveOwnerZlotoFromStock()`, sprawdza wyłącznie `empireStock[key]>0`).
+Oba kanały kary (Szczęście: `computeHappinessBreakdown()` w `society-breakdown.ts:316-405`; Rozwój:
+`computeGrowthPercentV85()` w `population-growth-v85.ts:186-198`) gotowe do reużycia wzorem
+istniejących składników (`lines.push(...)`). UI: panel Surowców = `renderSurowceSection()`
+(`empireDetailPanel.ts:806-848`); panel miasta, sekcja Szczęście kończy się `cityPanel.ts:3016`,
+nowy wiersz wchodzi między 3016 a 3017 (przed blokiem Prawa). Pełny szacunek zakresu (5 części,
+złożoność każdej) w pełnym raporcie agenta `aaea622d317aa77e4`.
+
+**STATUS: dispatch Sonnet 5 (worktree) — implementacja pełnej mechaniki wg rozpoznania.**
+
+## R-CS-HARD-PASYWNE — runda 3 Evaluator PASS-WITH-NOTES, ale temat NIE ZAMKNIĘTY (2026-08-10)
+
+**Werdykt (Opus 5) dla `28c96bd8`: PASS-WITH-NOTES.** Arytmetyka progu (cap=4) potwierdzona bez
+wątpliwości — zweryfikowana niezależnie linia po linii, w tym relacja zbiorów liczników
+(`countOwnerMilitaryUnits` ⊆ `totalMilitary`, zero ryzyka w drugą stronę) i gwarancja że
+`minGuard=1` pochodzi z TEJ SAMEJ zmiennej co cap (brak ścieżki rozjazdu). Testowanie mutacyjne
+powtórzone niezależnie, wszystkie 3 mutanty złapane. **Commit `28c96bd8` zostaje scalony bez
+zmian — jest poprawny.**
+
+**⛔ Ale znaleziona SZÓSTA warstwa problemu (pre-istniejąca, POZA zakresem tego diffu, „nie jest
+regresją tego commita"):** cap=4 naprawia WYJŚCIE Z DOMU, ale bramka ATAKU (`ai.ts:2736-2746`,
+`countFriendlyMilitaryOnHex < CS_WAVE_ATTACK_MIN_STACK` → `doAttack=false`) wymaga 3 przyjaznych
+jednostek na TYM SAMYM heksie — a AI **fizycznie nie potrafi budować takich stosów**: planista
+(`occupiedExcluding`, `ai.ts:735`) traktuje każdy zajęty heks jako zablokowany, egzekutor rozkazu
+`move` (`main.ts:24997-25004`) buduje listę zajętych z WSZYSTKICH jednostek w grze, a
+`assignSharedStackGroupId` (mechanizm łączenia w stos) ma call site'y WYŁĄCZNIE w panelach gracza
+(`main.ts:9236/9288/9410/9492/9565`) — zero w egzekutorze AI. **Skutek: PM na Trudnym zrekrutuje 4
+jednostki, wyruszy z miasta, dojdzie w pobliże gracza i tam UTKNIE — nigdy nie zaatakuje** (chyba
+że własne miasto PM jest zagrożone, co omija tę bramkę inną ścieżką). **To dokładnie ten sam
+objaw, który zgłosił Maciej — PM bierne na Trudnym — nadal wystąpi na playteście mimo 3 rund
+napraw capu produkcji.**
+
+Dodatkowe drobiazgi z werdyktu: komentarz w `ai.ts:1447` nieaktualny (nadal mówi „hard max 3");
+`T8` w `ai-mp-military-cap-test.cjs` nie pokrywa granicy 3&lt;4 (tylko 2&lt;4 i 4/4); sekcja 4 nowej
+bramki wiringu NIE łapie mutanta wiringu wbrew opisowi (łapie go wyłącznie sekcja 2) — do korekty
+opisu, nie kodu; po wczytaniu starego zapisu `_menuCityStateDifficultyVsPlayer`/`_menuCitySupport`
+wracają do domyślnego `'normal'` (spójny rozjazd, nie nowa patologia, ale warto zarejestrować
+osobno).
+
+**STATUS: NOWY TEMAT wymagany — `R-CS-HARD-BRAK-STOSOWANIA-AI` (bramka ataku PM wymaga stosu,
+którego AI nie potrafi zbudować). To znacząco większy zakres niż korekta liczby (dotyka
+planowania ruchu AI i mechanizmu łączenia jednostek w stos, dziś istniejącego tylko dla gracza) —
+dispatch ROZPOZNANIA (nie od razu kodowania) Sonnet 5 przed dalszymi decyzjami. Drobiazgi (komentarz
+`ai.ts:1447`, `T8` luka 3/4) do domknięcia przy okazji tej samej rundy, niska pilność.**
+
+## R-BRAK-KOMUNIKATU-ELIMINACJA-CYWILIZACJI — Evaluator runda 5: PASS, TEMAT ZAMKNIĘTY (2026-08-10)
+
+**Werdykt (Opus 5) dla `37b6cb9c`: PASS.** Wszystkie punkty zweryfikowane niezależnie: jedno
+źródło emisji (grep potwierdza `recordCivElimEvent(` dokładnie 2× w całym pliku — deklaracja +
+1 wywołanie), pozostali wywołujący `annexCityStateToOwner` (pętla tury AI) poprawnie odcięci
+guardem `annexerId===0`; przeżycie `endTurnInProgress` potwierdzone (funkcja nie woła
+`showHintMessage` w ogóle, `deferredEotHints` zasilana wyłącznie przez `showHintMessage` — zero
+powiązania); widoczność niezależna od z-index (karta side-panelu persystentna, czeka aż gracz
+zamknie audiencję — inaczej niż ginący po 6s toast); dismiss trwały, zweryfikowany że
+`warEventLog.length=0` występuje tylko przy Nowej Grze, NIGDZIE w sekwencji końca tury; modal
+czysty (escapowanie obu pól, brak wycieków nasłuchiwaczy). 20 nowych asercji potwierdzone jako
+realnie sprawdzające polaryzację, nie tylko obecność stringów. Bramki: tsc 0, logic-test 213/213,
+`elimination-toast-merge-test` 54/54, `eot-event-defer-test` 5/5, `sidepanel-events-toolbar-test`
+19/19.
+
+**Uwagi nieblokujące do ewentualnego zarejestrowania osobno (nie temat, do backlogu):** okno
+asercji „onEventClick" w teście jest szersze niż trzeba (grepuje cały plik, nie ciało funkcji);
+`negative:true` daje kartę czerwoną mimo że wchłonięcie jest wydarzeniem pozytywnym dla gracza
+(kosmetyka, decyzja właściciela); karta nie przeżywa save/load (spójne z resztą dziennika).
+
+**TEMAT ZAMKNIĘTY po 5 rundach.** Historia: R1 kolizja w `annexCityStateToOwner` vs caller → R2
+ta sama kolizja przesunięta o warstwę → R3 Defekt B/C naprawione, A przesunięty dalej → R4 z-index
+pod audiencją + duplikat w fazie AI → R5 (ECHO B+C Macieja) zmiana kanału na kartę Wydarzeń +
+modal, PASS.
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — runda 2 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `3759ed1d` (2026-08-10).** Format kolumnowy (structure-of-arrays) + słownik
+stringów zamiast tablicy obiektów. Zmierzone na PRAWDZIWEJ mapie `standardowy` (168×120=20160
+heksów, nie na małej mapie testowej): RAW `JSON.stringify(hexes)` 4,07 MB → COMPRESSED
+`mapSnapshot` 0,50 MB (redukcja **8,2×**, cel 5-10× osiągnięty). Pełny zapis (mapa + hojna
+syntetyczna reszta stanu: 120 jednostek, 32 miasta, pełne `explored`, dyplomacja 8 cywilizacji)
+= 0,69 MB znaków — daleko pod progiem bezpieczeństwa 2,5 MB (połowa limitu ~5MB/origin, celowy
+zapas ×2 pod rotację autozapisu). Defekt B skorygowany (kopiowanie skalarne to naturalny efekt
+formatu kolumnowego, żadna ze ścieżek await w FSA nie ma już czego zmutować). Defekt C: nagłówek
+zapisu w osobnym, małym kluczu `localStorage` — dialog „Wczytaj grę" nie parsuje już całej treści
+każdego slotu. Bramki: tsc 0, logic-test 213/213, `map-snapshot-load-test` **47/47** (w tym nowa
+sekcja 5/5b na prawdziwej mapie standardowej, ~66s generacji), `autosave-quota-fail-test` 20/20,
+`fsa-autosave-test` 55/55, `save-load-sort-test` 4/4, `planned-march-test` 18/18, `save-label-test`
+OK. Czeka na NIEZALEŻNEGO Evaluatora (dispatch w toku).**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — Evaluator FAIL: 2 defekty (edycja traktatów) (2026-08-10)
+
+**Werdykt (Opus 5) dla `ed002de2`: FAIL.** Punkty 1 (`applyOwnProposalEdit` nietknięty
+round/awaitingOwnerId/role), 4 (rozróżnienie own/incoming kompletne, jedno miejsce rozgałęzienia),
+5 (brak snapshotu payloadu sprzed edycji, AI czyta na żywo) — **czyste, potwierdzone**. Bramki
+zielone (10/10), ale ponieważ test pokrywa tylko 2 z 12 typów akcji, które nowy `canCounter`
+włącza (`actionUsesTradeBasket` = cały `TRADE_BASKET_ACTION_IDS`, nie tylko handel/podarunek).
+
+**Defekt 1 (blokujący): edycja czystych traktatów (nap, sojusz, wasal, trybut...) to cichy
+no-op.** `handleNegotiationEditOwn` waliduje przez `clampNegotiationPayloadToRealResources`, ale
+ten predykat odrzuca (`return null`) payload BEZ pozycji koszyka i bez `goldOnce>0` — a to jest
+NORMALNY kształt payloadu czystego traktatu (`nap`, `sojusz_pelny`, `wasal`, `trybut_oferta`...).
+Odtworzone empirycznie: przycisk Edytuj się pokazuje, modal się otwiera, „Zapisz zmiany" zamyka
+modal — i nic się nie zapisuje. Jedyny komunikat błędu (`showHintMessage`) ginie pod audiencją
+(z-index 320 vs 400 — ten sam wzorzec kolizji co temat eliminacji). Dodatkowo: ścieżka TWORZENIA
+własnej propozycji w ogóle nie clampuje — więc ofertę, którą wolno złożyć, nie wolno wyedytować.
+
+**Defekt 2 (blokujący): edycja bez żadnej zmiany podwaja złoto w traktacie.** Gałąź `'own'`
+syntetyzuje `giveItems` z `goldOnce` (skopiowane z gałęzi handlu, gdzie jest poprawne — tryb
+`trade` nie ma osobnego `goldOnce`). W trybie `treaty` `goldOnce` to OSOBNE pole, emitowane OBOK
+`giveItems` przez `buildTreatyPayload` — synteza dokłada drugą kopię. Odtworzone: wejście/wyjście
+z modala bez zmian dla akcji „granice" (uiActionId 4) → 20 ¤ z powietrza w `giveItems`, realnie
+przelewane przez `applyProposalOutcome` (`transferBasketItems`) PLUS wchodzi do
+`sweetenerEasePoints` (sztucznie ułatwia zgodę AI). Dotyczy akcji 4/9/15/6 (opłaty/ceny
+gotówkowe). Kontrola atrybucji: prefill gałęzi `incoming` (pre-istniejącej) tego nie robi —
+duplikat wnosi wyłącznie nowa gałąź `'own'`.
+
+**Kierunek naprawy (Evaluator, niekodowany):** zawęzić bramkę `canCounter` dla `direction==='own'`
+z całego `actionUsesTradeBasket` do WYŁĄCZNIE `getTradeBasketMode(uiActionId) === 'trade'|'gift'`
+(uiActionId 14/13) — to jednym warunkiem usuwa OBA defekty i zostaje w literze ECHO A („koszykowe").
+Edycja czystych traktatów, jeśli właściciel jej zechce, to OSOBNE pytanie ABC, nie domyślne
+rozszerzenie dzisiejszej decyzji.
+
+**STATUS: dispatch Sonnet 5 (worktree) — runda 2, naprawa wąska (zawężenie bramki do trade/gift),
+BEZ ABC (to zwężenie zakresu do litery już podjętej decyzji, nie nowa decyzja). Wzmocnić test o
+round-trip pustego traktatu i „otwórz+zapisz bez zmian" z asercją identyczności payloadu.**
+
+## R-CS-HARD-BRAK-STOSOWANIA-AI — NOWY TEMAT, rozpoznanie dostarczone (2026-08-10)
+
+**Zakres zweryfikowany jako WĄSKI: wyłącznie Państwa-Miasta (`defensiveCopy`), nie duża AI.**
+`CS_WAVE_ATTACK_MIN_STACK`/`countFriendlyMilitaryOnHex` mają dokładnie 2 call site'y, oba
+wewnątrz `decideDefensiveCopyTurn` — duża AI atakuje bezwarunkowo przy sąsiedztwie wroga, zero
+wymogu stosu.
+
+**Rewizja pierwotnej diagnozy Evaluatora (ważne):** to NIE jest fizyczna niemożność wejścia na
+własny heks — `computePath`/`occupiedExcluding` mają wyjątek: dokładnie 1 skok na heks zajęty
+(nawet przez sojusznika) JEST dozwolony, gdy to wprost podany cel ruchu. Prawdziwa przyczyna jest
+węższa: **brak logiki decyzyjnej, która celowo kieruje 2-3 jednostki PM na wspólny punkt zbiórki i
+TRZYMA je tam do osiągnięcia progu przed atakiem** — `planCityStateOffensiveMove` przelicza
+`bestAlly` OD NOWA co turę, bez pamięci międzyturowej, więc nie ma deterministycznej konwergencji.
+`assignSharedStackGroupId` (mechanizm łączenia w stos, dziś tylko dla gracza) okazał się
+NIEPOTRZEBNY do samej bramki ataku — `countFriendlyMilitaryOnHex` liczy fizyczną obecność, nie
+`stackGroupId`.
+
+**Trzy warianty naprawy (rekomendacja techniczna, NIE decyzja produktowa):**
+- Wariant 1: trwały punkt zbiórki + stan międzyturowy PM czekają do progu. Najwierniej oddaje
+  pierwotny zamysł „fali" (`R-MP-HARD-WAVE`), ale średni-wysoki koszt (nowy stan AI, dziś
+  bezstanowe między turami), średnie ryzyko kolizji z innymi ścieżkami PM (obrona domu, posiłki
+  sióstr, mają priorytet przed offensive move).
+- Wariant 2 (rekomendacja techniczna, najniższy koszt/ryzyko): zliczać sojuszników w promieniu N
+  heksów od celu zamiast wymagać jednego heksu — jedna nowa funkcja, jeden call site, zero zmian w
+  pathfindingu, bardzo niskie ryzyko regresji. Odchodzi od wizualnej „zwartej fali" na rzecz
+  koordynacji bez fizycznego stania razem.
+- Wariant 3: próg liczony po zaangażowaniu w tej samej turze (nie po współobecności na heksie) —
+  średni koszt, podobny efekt do Wariantu 2, bardziej złożony.
+
+**STATUS: NIE DO ABC TERAZ (Maciej śpi, autoryzacja pracy autonomicznej nie obejmuje decyzji
+gameplayowych/AI-behawioralnych bez jego udziału) — zarejestrowane jako osobny, świadomie
+odłożony temat do ABC po jego powrocie. NIE blokuje deployu reszty tej fali: to nowo odkryty,
+pre-istniejący problem architektoniczny (nie regresja żadnego commitu tej sesji), wymaga decyzji
+projektowej o kompromisie (wizualna fala vs koordynacja zdalna), nie technicznej korekty liczby.**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — runda 2 SCALONE (2026-08-10)
+
+**STATUS: SCALONE `7373233b` (2026-08-10).** `canCounter` dla `direction==='own'` zawężone z
+całego `actionUsesTradeBasket` (12 typów) do `actionUsesTradeBasket(...) && (getTradeBasketMode
+=== 'trade' || 'gift')` (uiActionId 14/13). Pułapka złapana podczas naprawy: `getTradeBasketMode`
+ma domyślny fallback `'trade'` dla akcji SPOZA zbioru koszykowego — sam `getTradeBasketMode`
+bez `actionUsesTradeBasket` jako pierwszej bramki błędnie otwierałby z powrotem edycję dla
+`umowa_szlakow` (uiActionId 5). Oba defekty usunięte przez brak dostępu do edycji dla czystych
+traktatów, nie przez naprawę logiki edycji tych typów. Bramki: tsc 0, logic-test 213/213,
+`diplomacy-own-proposal-edit-test` 33/33 (nowe kontrole negatywne dla `nap`/„granice" + regresja
+przypięta na pułapkę fallbacku), oraz 8 istniejących testów dyplomacji — wszystkie zielone, zero
+regresji. Czeka na NIEZALEŻNEGO Evaluatora, runda 2 (dispatch w toku).**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — Evaluator FAIL runda 2: bloker PRZESUNIĘTY, nie zamknięty (2026-08-10)
+
+**Werdykt (Opus 5) dla `3759ed1d`: FAIL.** Kompresja sama w sobie potwierdzona niezależnie jako
+poprawna (roundtrip kompletny, 8,2× redukcja zweryfikowana). Ale bloker rundy 1 („zapis nie mieści
+się w localStorage") **nie zniknął — przesunął się na inną ścieżkę.**
+
+**⛔ BLOKER 1 (poważniejszy niż runda 1): `AUTOSAVE_ROT_COUNT=10` × nowy, większy pełny zapis
+przepełnia budżet ~4× szybciej niż przed tą zmianą, i to jest REGRESJA TEJ ZMIANY, nie temat
+pre-istniejący.** Arytmetyka w tej samej jednostce (UTF-16), którą uzasadniono bloker rundy 1:
+PRZED zmianą pełny zapis × 10 slotów = 3,87 MB (77% budżetu 5MB, mieściło się); PO zmianie = 13,80
+MB (276% budżetu). Per-zapis urósł 3,57×. Kwota pada ok. **4. rotacyjnego autozapisu (~tura 4)**.
+Furtka FSA (zapis na dysk) NIE ratuje: `file://` (dokładnie tak otwiera się bundle playtestowy z
+dysku) i przeglądarki bez API dostają `available:false` — dla nich obietnica z komentarza kodu
+„zero regresji bez tej funkcji" jest złamana przez tę zmianę.
+
+**BLOKER 2: bramka rozmiaru (sekcja 5b testu), która miała to pilnować, ma błąd jednostek.**
+`PROG_CHARS = 2.5 * 1024 * 1024` opisany jako „połowa limitu ~5MB UTF-16" — ale 2,5 MB ZNAKÓW to
+~5 MB UTF-16, czyli CAŁY limit, nie połowa. Dodatkowo bramka mierzy pojedynczy zapis, podczas gdy
+kod pisze 10 naraz naraz — mierzy inną wielkość niż tę, która realnie decyduje o quota. Fixture
+5b też zaniża `meta` względem prawdziwego `buildSaveGameSnapshot` (~30 dodatkowych tablic, część
+skalująca się z mapą/długością gry).
+
+**Defekt B NIE jest naprawiony (drugi fałszywy inwariant tej samej klasy):** `riverPaths`/
+`riverPathKinds` w `serializeMapForSave`/`buildGameMapFromSnapshot` to nadal ŻYWE referencje na
+obiekt mapy (zweryfikowane wykonaniem: mutacja żywej mapy PO serializacji widoczna w snapshocie).
+Nowy komentarz kategorycznie twierdzi „rozdarcie migawki nie jest już możliwe" — nieprawda jak
+napisane (ryzyko praktyczne małe, ale twierdzenie fałszywe).
+
+**`isValidMapSnapshot` niewystarczająca, dokładnie tak jak jej własny komentarz zaprzecza:**
+zweryfikowane wykonaniem 3 przypadków uszkodzenia — jeden daje cichą złą mapę (`q=[0,"a"]` →
+klucz heksa `"a,0"`), jeden cichy `undefined` (indeks poza `dict`), jeden nieobsłużony wyjątek bez
+fallbacku na generator (`load-map-source.ts` woła `buildGameMapFromSnapshot` bez `try/catch`).
+
+**Defekt C częściowo:** (a) porażka zapisu meta jest połykana, ale STARY meta zostaje (nie
+usuwany) — `summarizeSaveSlots` nie wykrywa nieaktualności, fallback się nie uruchamia, „Kontynuuj"
+może wskazać zły slot; (b) prefiks `thegame.save.meta.` MIMO komentarza JEST podprefiksem
+`thegame.save.` (`'thegame.save.meta.'.startsWith('thegame.save.')===true`) — zweryfikowane
+wykonaniem, `listSaves()` faktycznie zwraca fantomowy wpis `meta.autosave-1`; dziś nieszkodliwe
+przez przypadek (brak pola `wersja`), ale też fałszywie zawyża `listSaves().length>0` gating
+przycisku „Wczytaj".
+
+**STATUS runda 3 — DWIE ścieżki, różny tryb:**
+1. **Bez ABC, dispatch NATYCHMIAST:** poprawki 3-5 z werdyktu — `try/catch` w `loadMapForSave`
+   (fallback na generator zamiast wyjątku), `removeItem(saveMetaKey)` w catch zapisu meta,
+   rozłączny prefiks meta (np. `thegame.savemeta.`), korekta błędu jednostek w progu testu 5b
+   (~1,25 MB znaków = faktyczna połowa limitu, licząc AGREGATOWO ×10 slotów nie pojedynczy zapis),
+   korekta obu fałszywych komentarzy (`riverPaths`, prefiks) — zero decyzji produktowej, czysto
+   techniczne.
+2. **WYMAGA ABC właściciela, NIE decyduje Operator (cytat Evaluatora: „to jest pytanie ABC do
+   właściciela, nie decyzja Operatora"):** architektura rotacji autozapisu bez FSA — 3 kierunki z
+   werdyktu (mapSnapshot tylko w zapisach nazwanych/quicksave, rotacyjne bez mapy; `AUTOSAVE_ROT_COUNT`
+   zależny od obecności FSA; mapSnapshot współdzielony jednym kluczem dla całej sesji zamiast per-slot).
+   **Temat NIE MOŻE zostać w pełni zamknięty bez tej decyzji — Maciej śpi, odłożone do jego
+   powrotu, świadomie, udokumentowany powód.**
+
+## R-PROPOZYCJA-BRAK-EDYCJI — Evaluator runda 2: PASS, TEMAT ZAMKNIĘTY (2026-08-10)
+
+**Werdykt (Opus 5) dla `7373233b`: PASS.** Warunek wymaga obu bramek (`actionUsesTradeBasket` +
+`getTradeBasketMode` trade/gift) — potwierdzone w kodzie. Pułapka fallbacku sprawdzona
+niezależnie i okazała się SZERSZA niż podejrzewano (`getTradeBasketMode` fallbackuje na `'trade'`
+dla KAŻDEGO id spoza `TRADE_BASKET_ACTION_IDS`, nie tylko `'5'`) — pierwsza bramka jest więc
+obowiązkowa, nie kosmetyczna. Wszystkie typy dawniej dotknięte Defektem 1/2 prześledzone ręcznie
+(nap/sojusz/granice/trybut/ultimatum/wasal/wchłonięcie) — wszystkie `canCounter=false`. `'14'`/`'13'`
+potwierdzone wolne od duplikacji złota, mocniejszym argumentem niż w commicie (gwarancja leży w
+TRYBIE modala, nie tylko kształcie payloadu). Render zweryfikowany na 3 niezależnych bramkach UI —
+przycisk realnie znika. Bramki: tsc 0, logic-test 213/213, `diplomacy-own-proposal-edit-test`
+33/33 + 8 istniejących testów dyplomacji, zero regresji.
+
+**Notatki nieblokujące (do wiedzy, nie żądają poprawki):** `'13'` (dar) jest w praktyce
+nieosiągalny w `buildPendingNegotiationRows` — realny dar zawsze mapuje na `uiActionId='14'`, więc
+gałąź `gift` w warunku jest dziś martwa/defensywna (nieszkodliwe); edytowany dar nadal poprawnie
+oceniany jako dar mimo przejścia przez tryb `trade` (`evaluateProposal` wyprowadza `isGift`
+obronnie); gwarancja braku duplikacji dla `'14'` zależy od TRYBU modala, nie kształtu danych —
+gdyby w przyszłości `'14'` zostało przekierowane przez `mode='treaty'`, Defekt 2 by wrócił (dziś
+nieosiągalne).
+
+**TEMAT ZAMKNIĘTY po 2 rundach.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — SCALONE (2026-08-10)
+
+**STATUS: SCALONE `8d6d3d54` (2026-08-10).** Pełna implementacja wg 4 ECHO: tabela zużycia
+kumulatywna per epoka (`gra/data/citizen-resource-upkeep.json`), nowy moduł
+`citizen-resource-upkeep.ts` (wzorzec `zloto-access.ts`, magazyn CENTRALNY imperium, bramka
+binarna per surowiec), podłączony do `computeHappinessBreakdown` (+1/-1 Szczęście) i
+`computeGrowthPercentV85` (nowy, 7. składnik `zaopatrzenie`, -1%/surowiec brakujący). AI i
+Państwa-Miasta objęte identycznie jak gracz (pętla Porządku uniwersalna, brak gałęzi
+`ownerId===0`). UI: badge w panelu Surowców (tooltip + kolor karty), nowy wiersz w panelu miasta
+zaraz pod Szczęściem. Operator sam znalazł i naprawił konsekwencję poza wyliczonym zakresem: 2
+PRE-ISTNIEJĄCE miejsca UI sumujące WZROST% (`renderMagazyn`, `buildRacjeWzrostDetailCard`) musiały
+dostać nowy 7. składnik wypisany explicit, inaczej suma „Łącznie" zawierałaby coś niewidocznego na
+liście — dokładnie klasa błędu, przed którą chroni `P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD`.
+Zaktualizowano 1 istniejący test, którego założenie „6 składników" ta zmiana legalnie unieważniła.
+Bramki: tsc 0, logic-test 213/213, nowy `citizen-resource-upkeep-test` 50/50, oraz 14 istniejących
+testów (society-breakdown, empire-panel-split, surowce-dostep, empire-panel-sliders,
+spichlerz-cap-citypanel-wiring, auto-wyzywienie-live-recalc, city-badge-growth-percent,
+city-growth-percent-rounding-parity, city-state-mp-growth, war-happiness-parity, post-capture-law,
+tech-tree, research, city-panel-growth-percent-separator) — wszystkie zielone, zero regresji.
+`population-growth-v85-test`/pochodne (48/2, 2 pre-istniejące porażki potwierdzone przez `git
+stash` na czystej bazie — army-cost R-STAWKI i próg wzrostu na Hard, bez związku z tą zmianą).
+Czeka na NIEZALEŻNEGO Evaluatora (duża zmiana, dotyka silnika tury + 2 kanały UI — dispatch w
+toku).**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — runda 3 SCALONE, 4/5 poprawek + jawny KNOWN-FAIL (2026-08-10)
+
+**STATUS: SCALONE `2e0678e8` (2026-08-10).** 5 wąskich napraw technicznych, bez dotykania
+`AUTOSAVE_ROT_COUNT`/logiki rotacji: (1) `try/catch` w `loadMapForSave` — uszkodzony snapshot
+spada na generator zamiast rzucać nieobsłużony wyjątek, zademonstrowane nowym testem 3b
+(hexIdx poza zakresem → wyjątek → złapany → `genFn` wołane); (2) porażka zapisu meta usuwa STARY
+klucz zamiast go zostawiać; (3) `SAVE_META_PREFIX` zmieniony na `thegame.savemeta.` — faktycznie
+rozłączny z `SAVE_PREFIX` (był podprefiksem mimo przeciwnego komentarza, `listSaves()` zwracał
+fantomowy wpis); (4) korekta błędu jednostek w progu testu 5b (2,5 mln znaków to CAŁY limit
+UTF-16, nie połowa) + **nowa sekcja 5c: budżet AGREGATOWY rotacji (10 slotów) jawnie oznaczony
+jako `KNOWN-FAIL`, widoczny w wyniku testu, nie ukryty** — 13,80 MB UTF-16 > budżet ~5MB,
+dokumentuje otwarty bloker bez blokowania exit code (54 pass, 0 fail, 1 known-fail, exit 0); (5)
+`riverPaths`/`riverPathKinds` kopiowane płytko zamiast żywej referencji — naprawia drugi
+fałszywy inwariant. Bramki: tsc 0, logic-test 213/213, `map-snapshot-load-test` 54/0/1-known-fail
+(exit 0), `autosave-quota-fail-test` 20/20, `fsa-autosave-test` 55/55, `save-load-sort-test` 4/4.
+
+**Temat pozostaje OTWARTY na jeden punkt: architektura rotacji autozapisu bez FSA — wymaga ABC
+właściciela (3 kierunki zarejestrowane wcześniej), świadomie odłożone do jego powrotu. Wszystko
+inne w tym temacie jest naprawione i potwierdzone. Czeka na NIEZALEŻNEGO Evaluatora rundy 3
+(dispatch w toku) — jeśli PASS, temat zostaje w stanie „technicznie kompletny, czeka na 1 decyzję
+produktową", nie w pełni zamknięty.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — Evaluator PASS-WITH-NOTES, 2 punkty przed zamknięciem (2026-08-10)
+
+**Werdykt (Opus 5) dla `8d6d3d54`: PASS-WITH-NOTES.** Wszystkie 4 ECHO zrealizowane zgodnie z
+literą, zweryfikowane niezależnie (Q1 magazyn centralny czysty, cache nie miesza ownerów; Q3=A
+binarność potwierdzona własnym harnessem, delta identyczna niezależnie od populacji/wielkości
+zapasu; kumulatywność tabeli potwierdzona; Q2=A parytet AI/PM potwierdzony, brak gałęzi
+`ownerId===0`; UI (a)/(b) poprawne, reużycie stanu silnika bez podwójnego liczenia). Moduł ma
+mocne pokrycie mutacyjne (7/7 mutacji złapanych). Zero regresji w 12 uruchomionych bramkach.
+
+**N1 (do naprawy, BEZ ABC, ten sam wzorzec luki co w R-CS-HARD-PASYWNE dziś rano):** nowa bramka
+NIE chroni realnego wiringu do silnika tury. 3 mutacje w `main.ts` przechodzą wszystkie bramki na
+zielono: usunięcie `citizenResourceHappinessDelta: citizenUpkeep.happinessDelta` (linia ~23459) —
+wyłącza CAŁY kanał Szczęścia po cichu; usunięcie `citizenGrowthPctByCityId` z opts
+`applyPostCentralPopulationGrowth` (~23789) — wyłącza CAŁY kanał Rozwoju; `set(cid, 0)` zamiast
+realnej wartości w budowie mapy (~23761-23764). `tsc` nie łapie, bo oba pola są opcjonalne z
+fallbackiem `?? 0` (celowo, dla wstecznej kompatybilności — ta sama opcjonalność otwiera lukę).
+Precedens z tego samego dnia (`cs-military-cap-wiring-test.cjs`, `stripLineComments` + sekcja
+wykonująca realnie funkcję) nie został zastosowany tutaj.
+
+**⛔ N2 (WYMAGA ABC właściciela, NIE decyzja techniczna) — mechanika nazwana „ZUŻYCIE" niczego
+nie zużywa.** `resolveCitizenResourceCoverage` jest funkcją CZYSTĄ — sprawdza `stock>0` i NIGDY
+nie odejmuje z magazynu. W całym commicie nie ma żadnego `deduct`/dekrementacji `City.surowce` z
+tytułu obywateli. To jest bramka OBECNOŚCI, nie konsumpcja. Zgodne z literalnym brzmieniem ECHO
+Q1 zapisanym w rejestrze („kara aktywuje się gdy magazyn jest PUSTY") — ale **słowa Macieja mówiły
+co innego**: „Całość zapotrzebowania jest ŚCIĄGANA z magazynu... wszystkie potrzebne surowce dla
+mieszkańców są ŚCIĄGANE z magazynu", plus tabela „Zużycie NA 1 OBYWATELA". **Q3=A rozstrzygnęło
+kształt KARY (binarna), NIE rozstrzygnęło czy magazyn jest drenowany — to dwie różne rzeczy, jedna
+pozostała nierozstrzygnięta.** Skutek balansowy jeśli zostanie bez drenażu: dla surowców
+terenowych (Drewno/Kamień/Glina, produkcja pasywna, cap 1000+) kara po pierwszych turach
+PRAKTYCZNIE NIGDY nie zadziała — mechanika zamieni się w stały bonus +2/+4/+5 Szczęścia per epoka
+w każdym mieście, niezależny od liczby obywateli. Kolumna „na 1 obywatela" staje się w tym modelu
+martwa. **Odpowiedź „tak, ma drenować" CZĘŚCIOWO COFA ECHO Q1 w kształcie zapisanym w rejestrze —
+Maciej musi być o tym poinformowany wprost przy zadaniu pytania (CLAUDE.md §1a).**
+
+**Noty dodatkowe (nieblokujące, do rejestru/playtestu):** trzecie, pre-istniejące miejsce UI
+(`buildZywnoscDetailCard`) pokazuje niepełne rozbicie (3 z 7 składników) — ta sama klasa co
+`P-ETYKIETA-WZROST-ZAOKRAGLENIE-ROZJAZD`, nie regresja tej zmiany; ta sama kara pokazana 2× w
+panelu Społeczeństwo (raz zbiorczo, raz rozbita) — czytelniczo myląca, do oceny playtestowej;
+panel miasta i panel Surowców mogą się chwilowo rozjechać w trakcie tury (migawka z końca
+poprzedniej tury vs przeliczenie na żywo) — liczby ostatecznie poprawne, tylko chwilowa
+niespójność prezentacji; w miastach głęboko nieszczęśliwych kanał Szczęścia może być no-opem
+przez saturację klampa (pre-istniejąca własność, nie wada tej zmiany) — realnie działa wtedy tylko
+kanał Rozwoju; 3 asercje testu w sekcji parytetu są tautologiczne (to samo wywołanie porównane z
+samym sobą) — realny dowód parytetu leży gdzie indziej i działa.
+
+**STATUS: dispatch Sonnet 5 (worktree) — N1 NATYCHMIAST, bez ABC (bramka wiringu, wzorem
+`cs-military-cap-wiring-test.cjs`). N2 — pytanie ABC do Macieja, zadane po jego powrocie
+(świadomie odłożone, jak pozostałe 2 tematy dziś w nocy). Temat NIE MOŻE zostać w pełni zamknięty
+bez N2, ale N1 nie wymaga jego udziału.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — Evaluator runda 3: PASS-WITH-NOTES, DRUGIE pytanie ABC znalezione (2026-08-10)
+
+**Werdykt (Opus 5) dla `2e0678e8`: PASS-WITH-NOTES.** Wszystkie 5 napraw zweryfikowane WYKONANIEM
+na niezależnym harnessie (nie lekturą) — działają poprawnie: try/catch łapie 3 niezależne warianty
+uszkodzenia i woła generator dokładnie raz; czyszczenie starego klucza meta i rozłączność prefiksu
+potwierdzone; arytmetyka progu 5b/5c poprawna (1 310 720 znaków = faktyczna połowa limitu),
+KNOWN-FAIL w sekcji 5c potwierdzone jako niewpływające na exit code (=0); `riverPaths` faktycznie
+odporne na mutację (odwrotny wynik niż runda 2 — kopia jest głęboka, nie tylko top-level).
+
+**⛔ Odpowiedź wprost na pytanie „czy temat może przejść do stanu czeka wyłącznie na ABC": NIE.**
+Rejestr mylił się twierdząc „technicznie kompletny, czeka na 1 decyzję" — **jest DRUGIE pytanie
+decyzyjne (N1 werdyktu):**
+
+**N1 — uzasadnienie naprawy #1 (try/catch) jest materialnie mylące, a zmiana zachowania NIE jest
+czysto-bezpieczeństwowa.** PRZED naprawą: uszkodzony snapshot dawał **czysty, diagnozowalny abort**
+wczytywania (istniejący `try/catch` w `main.ts` wokół `loadMapForSave` łapie wyjątek,
+`diagError('load', ...)`, powrót do menu głównego) — NIE crash, wbrew opisowi „nieobsłużony
+wyjątek". PO naprawie: **CICHE** zregenerowanie INNEJ mapy z ziarna (bez ulepszeń/właścicieli/
+wiosek/widoczności zbudowanych w trakcie gry), na którą nakładane są jednostki/miasta z zapisu —
+**zero logu, zero ostrzeżenia dla gracza**, `catch {}` nawet bez `console.warn`. To dokładnie
+„cicha zła mapa", której miała unikać. **Wybór między „cicha regeneracja innej mapy" a „abort z
+czytelnym komunikatem" to decyzja produktowa, nie techniczna naprawa** — Evaluator: „runda 3
+podjęła tę decyzję w kodzie, opisując ją jako naprawę wyjątku, którego w praktyce nie było".
+
+**3 drobne poprawki czysto techniczne (BEZ ABC), do domknięcia przy okazji naprawy N1:**
+`console.warn`/diagnostyka w `catch` (minimum, niezależnie od wyboru wariantu N1); `(map.riverPaths
+?? [])` — asymetria null-guard (`riverPathKinds` ma strażnika, `riverPaths` nie, choć typ deklaruje
+pole jako wymagane — reszta bazy kodu temu polu jednak nie ufa, 5 miejsc broni się `?? []`);
+etykiety „mln znaków" w komunikatach sekcji 5b/5c mylą M z Mi (zaniżenie ~4,86% w liczbach
+pokazywanych właścicielowi, wynik testu bez zmian). Plus lustro po stronie odczytu: `snap.riverPaths`
+nadal żywa referencja w `buildGameMapFromSnapshot` (niska waga, `saved` porzucany po wczytaniu).
+
+**Nota nieblokująca do osobnego zgłoszenia (pre-istniejące, NIE regresja):** `listSaves()` nadal
+zwraca fantomowy wpis (`LAST_PLAYED_SLOT_KEY = 'thegame.save._lastPlayed'` jest podprefiksem
+`SAVE_PREFIX`, ta sama wada klasy co naprawiona dla meta, 56 linii wyżej w tym samym pliku) —
+`hasAnySaveSlot()` nie filtruje `_`-prefiksu jak `summarizeSaveSlots`, więc po skasowaniu
+wszystkich zapisów przycisk Wczytaj/Kontynuuj może zostać błędnie aktywny.
+
+**STATUS: temat ma TERAZ 2 pytania ABC (nie 1) — architektura rotacji autozapisu (wcześniej
+zarejestrowane) ORAZ wybór zachowania przy uszkodzonym snapshocie (cicha regeneracja vs abort z
+komunikatem). Dispatch Sonnet 5 (worktree) — 3 drobne poprawki techniczne BEZ ABC (console.warn w
+catch niezależnie od wyboru wariantu, `?? []`, etykiety jednostek). Oba pytania ABC świadomie
+odłożone do powrotu Macieja, razem z resztą tematów tej nocy.**
+
+## Domknięcia techniczne — mapSnapshot 3 poprawki + N1 zużycia surowców (2026-08-10)
+
+**P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA: SCALONE `cee6b3e1`.** 3 drobne poprawki bez ABC:
+`console.warn` w `catch` przy uszkodzonym snapshocie (diagnostyka, bez zmiany zachowania — decyzja
+N1 o komunikacie dla gracza pozostaje pytaniem ABC); `riverPaths ?? []` (asymetria null-guard);
+etykiety „mln znaków" w testach poprawione na `/1000000` (były `/1024/1024`, myliły M z Mi,
+zaniżenie ~4,86%). Bramki: tsc 0, logic-test 213/213, `map-snapshot-load-test` 54/0/1-known-fail
+(exit 0). **Temat pozostaje otwarty na 2 pytania ABC** (architektura rotacji + zachowanie przy
+uszkodzonym snapshocie) — nie dispatchuję kolejnego Evaluatora dla tych 3 kosmetycznych zmian
+(zero zmiany logiki, już pokryte pełnym przebiegiem testu włącznie z generacją prawdziwej mapy
+168×120).
+
+**R-ZUZYCIE-SUROWCOW-OBYWATELE: SCALONE `15379247` — naprawa N1.** Nowa sekcja F w
+`citizen-resource-upkeep-test.cjs`: 3 asercje strukturalne (po `stripLineComments`, wzorem
+`cs-military-cap-wiring-test.cjs`) + 1 behawioralna (realne wywołanie
+`applyPostCentralPopulationGrowth` z karą i bez, dowód że `zaopatrzenie`/`total` faktycznie się
+różnią). Wszystkie 3 mutacje z werdyktu Evaluatora zweryfikowane czerwono→zielono. Usunięte 3
+tautologiczne asercje parytetu (N7). Bramki: tsc 0, logic-test 213/213,
+`citizen-resource-upkeep-test` 59/59. **Temat pozostaje otwarty na 1 pytanie ABC (N2 — czy
+mechanika ma faktycznie drenować magazyn)**, ale N1 (jedyna czysto techniczna luka) jest teraz
+zamknięta.
+
+**Podsumowanie stanu na tę chwilę: WSZYSTKIE tematy tej nocy albo w pełni zamknięte (Evaluator
+PASS), albo scalone i technicznie kompletne, czekające WYŁĄCZNIE na decyzje ABC właściciela — nie
+ma już żadnej czysto technicznej pracy do zrobienia bez jego udziału. Otwarte pytania ABC (do
+zadania po jego powrocie): (1) R-CS-HARD-BRAK-STOSOWANIA-AI — wariant naprawy stosowania jednostek
+PM; (2) architektura rotacji autozapisu bez FSA; (3) zachowanie przy uszkodzonym snapshocie mapy
+(cicha regeneracja vs abort z komunikatem); (4) czy zużycie surowców obywateli ma drenować
+magazyn.**
+
+## ECHO — 4 tematy odpowiedziane przez Macieja + 2 dopytania parametrów (2026-08-11)
+
+Maciej odpowiedział na wszystkie 4 pytania ABC (drugie zadanie pytań, po tym jak pierwsze
+`AskUserQuestion` zwróciło „user did not answer" wskutek przycięcia kontekstu), plus 2 dopytania
+pomocnicze doprecyzowujące parametry wdrożenia (na jego wyraźne polecenie: „zadaj pytania
+pomocnicze… zadaj wszystkie pytania, bo mnie nie będzie").
+
+**ECHO 1 — R-CS-HARD-BRAK-STOSOWANIA-AI = Wariant 2 (licz w promieniu), promień = 3 heksy.**
+Zliczać sojuszników PM w promieniu 3 heksów od celu zamiast wymagać fizycznej współobecności na
+jednym heksie. Próg pozostaje `CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong'].minGuard` (dziś
+= 4) — zmienia się TYLKO sposób zliczania (promień zamiast heksu), nie sama liczba progu.
+
+**ECHO 2 — P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA, pytanie „zachowanie przy uszkodzonym
+snapshocie" = Wariant C (przywrócić twardy błąd).** Cofnąć zachowanie rundy 3
+(`load-map-source.ts`, cichy fallback na `genFn()` w `catch`) do stanu SPRZED tej zmiany: abort
+wczytywania z czytelnym błędem (`diagError`), powrót do menu głównego — BEZ cichej regeneracji
+innej mapy z ziarna.
+
+**ECHO 3 — P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA, pytanie „architektura rotacji autozapisu" =
+migracja na IndexedDB + `navigator.storage.persist()`.** Maciej odpowiedział dosłownie „zwiększ
+dziesięciokrotnie pojemność przeglądarki" (nie jedna z zaproponowanych opcji A/B/C) — zadano
+dopytanie wyjaśniające (localStorage nie ma API do ręcznego zwiększenia limitu; jedyna uczciwa
+droga to zmiana silnika na IndexedDB, limit zwykle liczony w GB) i Maciej potwierdził **Wariant A:
+pełna migracja zapisów (w tym mapSnapshot) z localStorage na IndexedDB + `persist()`**. Architektura
+rotacji (10 slotów, pełna mapa w każdym) zostaje BEZ ZMIAN — rozwiązujemy budżet przez większą
+pojemność silnika, nie przez okrojenie rotacji. Stare zapisy w localStorage muszą nadal się
+wczytywać (backward-compat read); FSA (dysk) bez zmian, ten kanał nie ma problemu z budżetem.
+
+**ECHO 4 — R-ZUZYCIE-SUROWCOW-OBYWATELE N2 = Wariant A (drenować proporcjonalnie), stawka =
+1 sztuka surowca na 1 obywatela na turę.** Zadano dopytanie o stawkę (tabela JSON ma dziś tylko
+listę surowców, bez liczby na obywatela) — Maciej odpowiedział własną wartością, WYŻSZĄ niż obie
+rekomendowane opcje (1/5 i 1/10): **1:1, per wymagany surowiec danej epoki, per miasto** (nie per
+imperium — magazyn jest wspólny/centralny, ale ilość drenowana liczona jest od populacji TEGO
+miasta, bo to jego obywatele generują zapotrzebowanie; suma po wszystkich miastach ownera ściągana
+z jednego wspólnego magazynu centralnego, zgodnie z ECHO Q1 z 2026-08-10). Przy niewystarczającym
+magazynie: drenaż = `min(dostępne, wymagane)` (nie blokuje się on całkowicie) — to szczegół
+inżynierski, nie decyzja produktowa, Operator ma to udokumentować jawnie w kodzie/komentarzu.
+
+**STATUS: dispatch 4× Sonnet 5 (worktree), równolegle, Operator→Evaluator (Opus 5) dla każdego
+niezależnie. Po PASS wszystkich 4 → deploy ROBOCZA (instrukcja Macieja: „nie rób deploy, póki
+wszystkiego nie wykonasz").**
+
+## R-CS-HARD-BRAK-STOSOWANIA-AI — SCALONE `90013391` (2026-08-11)
+
+Promień 3 heksy (ECHO 1). `countFriendlyMilitaryInRadius` (nowa, eksportowana) zastępuje
+`countFriendlyMilitaryOnHex` w jedynym call site bramki ataku (`decideDefensiveCopyTurn`, `ai.ts`
+~2758) — sam próg `CS_WAVE_ATTACK_MIN_STACK + RESUP strong.minGuard` bez zmian, zmienia się TYLKO
+sposób zliczania. `planCityStateOffensiveMove`/`minFieldArmyBeforeSend` sprawdzone i ŚWIADOMIE
+zostawione bez zmian — bramuje wysyłkę z domu wg wielkości pola armii (`countOwnerFieldArmy`), nie
+współobecności na heksie, to inny mechanizm. Nowy test `cs-wave-attack-radius-test.cjs` (21/21,
+esbuild, realne wykonanie + strukturalna asercja pozytywna/negatywna wzorem RUNDA 5 z
+`elimination-toast-merge-test.cjs` — Operator sam zweryfikował negatywną asercję cofając fix
+tymczasowo i potwierdzając czerwone 3 asercje, potem przywrócił). Bramki: tsc 0, logic-test
+213/213, `ai-mp-military-cap-test` 18/18 (bez zmian), `city-state-prod-audit-test` 17/17 (bez
+zmian). **STATUS: dispatch Opus 5 Evaluator, runda 1.**
+
+**Evaluator runda 1 (Opus 5): FAIL, N1 blokujące (błąd w NOWYM teście, nie w `ai.ts`).**
+Sekcja C `cs-wave-attack-radius-test.cjs` robi `stripLineComments()` PRZED szukaniem separatora
+`// ---`, po strippingu separator nigdy nie istnieje więc `fnBody` = cały plik (40207 zn. zamiast
+6894) — Evaluator zweryfikował wykonaniem: usunięcie bramki ataku i wklejenie identycznego bloku
+gdzie indziej w pliku nadal przechodzi 21/21. N2 nieblokujące: `countFriendlyMilitaryOnHex`
+wyeksportowana bez call site w produkcji, nieoznaczona jako martwa referencja testowa. Logika w
+`ai.ts` sama w sobie potwierdzona POPRAWNA (filtr, próg, jedyny call site, atak nadal tylko z
+sąsiedztwa, `planCityStateOffensiveMove` świadomie i słusznie bez zmian). **Dispatch runda 2:
+naprawa separatora (gotowa poprawka od Evaluatora: `afterFn.search(/\nfunction /)`), komentarz
+przy martwej funkcji.**
+
+**Runda 2: SCALONE `75e4f1fd`.** Separator naprawiony (`afterFn.search(/\nfunction /)` zamiast
+nieistniejącego już `// ---`), `fnBody.length` teraz ≈6894 zn. (było ślepo całym plikiem, 40207
+zn.), + asercja sanity na długość. Operator zweryfikował mutacją identyczną jak Evaluator (usunięcie
+bramki + wklejenie bloku gdzie indziej) — teraz łapane czerwono (17/3 fail). `countFriendlyMilitaryOnHex`
+oznaczona komentarzem jako martwa referencja parytetu testu. Bramki na CZYSTYM drzewie (nie w
+worktree Operatora, który raportował fałszywe pre-istniejące porażki w `ai-mp-military-cap-test`/
+`city-state-prod-audit-test` — zweryfikowane jako artefakt worktree bazowanego 134 commity za
+gałęzią, NIE regresja; na czystym drzewie oba testy 18/18 i 17/17 zielone): tsc 0, logic-test
+213/213, `cs-wave-attack-radius-test` 22/22. **STATUS: dispatch Opus 5 Evaluator, runda 2.**
+
+**Evaluator runda 2: PASS-WITH-NOTES `ef75b7f3` (po N3).** Zweryfikował N1 wykonaniem
+(powtórzył IDENTYCZNĄ mutację rundy 1 na czystym drzewie: teraz 17/3 fail zamiast ślepych 21/21),
+`fnBody.length` niezależnie policzony = 6894 (nie 40207), M7 nietknięte, N2 domknięte (grep
+potwierdza zero call sites `countFriendlyMilitaryOnHex` w produkcji), wszystkie bramki zielone NA
+CZYSTYM drzewie głównym (rzekome pre-istniejące porażki poprzedniego Operatora potwierdzone jako
+artefakt jego worktree, nie regresja). Nieblokujące N3: separator `/\nfunction /` nie rozpoznawał
+`export function` — mogłoby ciszej rozszerzyć okno przy przyszłym refaktorze eksportującym sąsiednią
+funkcję (zweryfikowane in-memory: 6894→9216→17253 przy kolejnych `export`, asercja sanity by tego
+nie złapała). **N3 naprawione od razu** (`/\n(export )?function /`, commit `ef75b7f3`), potwierdzone
+6894 niezależnie od export. Uwaga procesowa Evaluatora: równoległy commit innej sesji (`82157e09`,
+main.ts wiring drenażu) trafił do wspólnego drzewa w trakcie jego celowej mutacji testowej —
+zweryfikował brak wycieku, bez konsekwencji, ale potwierdza wagę izolacji worktree (§4a).
+
+**TEMAT ZAMKNIĘTY.** Wszystkie 3 punkty (implementacja, N1 test, N3 fragility) rozwiązane i
+zweryfikowane niezależnie. Brak dalszych otwartych pytań ABC dla tego tematu.
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N1 (twardy błąd) SCALONE `b7f06f08` (2026-08-11)
+
+ECHO 2. Cofnięty cichy fallback rundy 3 w `load-map-source.ts::loadMapForSave` — uszkodzony
+(kształtowo poprawny) snapshot teraz PROPAGUJE wyjątek do `main.ts` (istniejący `diagError('load',
+...)` + `showHintMessage` nowy, widoczny dla gracza komunikat + powrót do menu), zamiast cicho
+regenerować inną mapę. Ścieżka niepoprawnego KSZTAŁTU (brak pola/zła struktura) bez zmian — nadal
+fallback na generator, to była i jest poprawna ścieżka. Test `map-snapshot-load-test.cjs` sekcja 3b
+zmieniła sens (asercjonuje przeciwnie niż w rundzie 3) — 54 pass, 0 fail, 1 known-fail (bez zmian
+liczbowo, ten sam bloker rotacji budżetu co wcześniej, niezwiązany z tą naprawą). Bramki: tsc 0,
+logic-test 213/213. **Temat ma jeszcze 1 otwarty punkt (architektura rotacji, ECHO 3, IndexedDB —
+osobny dispatch w toku równolegle). STATUS: dispatch Opus 5 Evaluator dla N1.**
+
+**Evaluator N1: FAIL.** Mechanika twardego błędu POPRAWNA (1a/1b/1c/2/3/5 zweryfikowane, w tym
+niezależną symulacją poza test harnessem) — ale komunikat dla gracza (`showHintMessage`) jest
+NIEWIDOCZNY w dominującej ścieżce: `.civ-menu` (z-index 500, nieprzezroczyste tło) montowane
+zaraz po `openStartupMainMenu()` całkowicie zamalowuje toast (z-index 320) w tym samym stacking
+context (`body` bez `transform` przy domyślnym zoomie UI = 100%, więc oba elementy konkurują w
+root). Ta sama KLASA błędu co 5 rund kolizji toastów przy elimination-notice wcześniej w tej
+sesji — inny mechanizm (z-index vs ówczesna kolejność wywołań), ten sam rodzaj: overlay
+zamalowuje komunikat. Wzorzec repo na to istnieje: `isPreBattleOpen() ? '9950' : '320'` (trzeba
+odwrócić kolejność wywołań — menu jeszcze nie jest otwarte w chwili `showHintMessage`). N3
+nieblokujące: komentarz „najczęstsza przyczyna" bez pokrycia (ok===false ma też inne przyczyny).
+**STATUS: dispatch Sonnet 5 (worktree), runda 2 — podnieść z-index toastu w tej ścieżce ponad
+.civ-menu (500), zweryfikować REALNIE (nie tylko liczbowo) że toast renderuje się NAD menu po
+`openStartupMainMenu()`, złagodzić komentarz N3.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — ECHO 3 (IndexedDB): ODRZUCONE, worktree na złej bazie
+
+Operator dostarczył migrację na IndexedDB (~30 miejsc w main.ts + save.ts + saveLoadDialog.ts +
+preBattle.ts + mapFieldBattle.ts), ale jego worktree był oparty na commicie `99974173` ("merge:
+dogonienie main o FALA 267"), który NIE JEST przodkiem obecnej gałęzi (`git merge-base
+--is-ancestor` = NIE) — to rozbieżny punkt, prawdopodobnie main sprzed integracji tej sesji.
+Operator sam zgłosił (w dobrej wierze, nieświadomie): „`map-snapshot-load-test.cjs` nie istnieje
+w tym repo" i „`loadSaveSlotMeta`/`buildSaveSlotMeta`/`SAVE_META_PREFIX` nie istnieją nigdzie w
+kodzie" — obie te rzeczy ISTNIEJĄ na obecnej gałęzi (zweryfikowane bezpośrednio: `grep
+SAVE_META_PREFIX gra/src/game/save.ts` trafia, `map-snapshot-load-test.cjs` uruchamiany
+wielokrotnie w tej sesji, 54/0/1-known-fail). Jego reconstrukcja `save.ts` pominęła więc całą
+infrastrukturę meta-klucza (Defekt C) i naprawę rozłączności prefiksów (runda 3 wcześniej dziś) —
+scalenie tej pracy nadpisałoby/cofnęło już działającą funkcjonalność. Skala zmiany (30+ miejsc w
+`main.ts`) czyni ręczne scalenie zbyt ryzykownym. **Praca ODRZUCONA w całości, worktree usunięty.
+STATUS: dispatch Sonnet 5 (nowy worktree), z OBOWIĄZKOWĄ weryfikacją bazy na starcie (`grep
+SAVE_META_PREFIX gra/src/game/save.ts` musi trafić PRZED jakąkolwiek pracą — jeśli nie trafi,
+STOP i raport, nie rekonstrukcja na ślepo).**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE N2 — Evaluator PASS-WITH-NOTES (82157e09/29fda2c8), 2026-08-11
+
+**Werdykt (Opus 5): PASS-WITH-NOTES.** Wszystko zweryfikowane WYKONANIEM (nie lekturą): stawka
+1:1, `min(required,stock)`, nigdy < 0, kara binarna, suma populacji RAZ per owner PRZED
+wywołaniem, drenaż RAZ per owner per turę (cache), odczyt magazynu PRZED mutacją, i **realna
+mutacja `City.surowce` potwierdzona własnym harnessem esbuild** (drewno 8→0, glina 200→190,
+dokładnie zgodnie z oczekiwaniem). Bramki: tsc 0, logic-test 213/213, `citizen-resource-upkeep-test`
+78/78.
+
+**⛔ N1 (BLOKUJĄCE przed deployem) — panel Surowców pokazuje graczowi FAŁSZYWY zielony badge
+„Obywatele: OK".** Panel (`buildEmpireResourceRows`, `main.ts:2646`) dalej używa starej
+`resolveCitizenResourceCoverage` (semantyka „magazyn > 0"), a silnik tury (`main.ts:23464`) już
+liczy `computeCitizenResourceDrain` (semantyka „magazyn ≥ CAŁA populacja imperium"). Przy stawce
+1:1 to NIE jest przypadek brzegowy — magazyn rzadko będzie ≥ sumie populacji, więc panel będzie
+RUTYNOWO kłamał: zielony badge + tekst „zapotrzebowanie pokryte" podczas gdy silnik nalicza karę
+w każdym mieście. Gracz nie ma jak zobaczyć aktywnej kary.
+
+**N2 (do naprawy) — luka testowa: 2 mutanty tej SAMEJ klasy błędu, przed którą wzorzec miał
+chronić, przechodzą wszystkie bramki.** M4 (pobór warunkowany `ownerId===0` — złamanie parytetu
+gracz/AI) i M5 (`deductBuildingStockCostAcrossCities` przeniesione POZA `if (v===undefined)` —
+drenaż powtarzany per miasto zamiast raz per owner, zweryfikowane behawioralnie: 2 miasta tracą
+20 gliny zamiast 10) — OBA 78/78, zero regresji w bramkach. Przyczyna: sekcja H sprawdza
+OBECNOŚĆ stringów, nie ich WZAJEMNĄ KOLEJNOŚĆ. Naprawa tania: `indexOf` okna między `if (v ===
+undefined) {` a `citizenUpkeepDrainCache.set(...)`, plus negatywna asercja braku
+`ownerId === 0`/`!== 0` w ciele resolvera.
+
+N3/N4/N5 nieblokujące: komentarz przy `citizenGrowthPctByCityId` nieaktualny (opisuje stary
+podgląd, nie drenaż); `citizenUpkeepEmpireStock` trzyma sumy SPRZED drenażu do końca bloku (dziś
+nieszkodliwe, jedyny konsument to sam drenaż); sprzężenie z kosztami/utrzymaniem budynków —
+ten sam magazyn, do wiadomości Macieja, nie defekt.
+
+**STATUS: dispatch Sonnet 5 (worktree) — N1 (przełączyć badge/tooltip panelu Surowców na
+semantykę drenażu, `empireDetailPanel.ts:738-790`) + N2 (naprawić sekcję H testu: kolejność, nie
+tylko obecność) + N3 (komentarz). Bez ABC — czysto techniczne.**
+
+**Runda 2: SCALONE `0f7745c4` (ręczny worktree, poprawna baza po incydencie złej bazy
+automatycznych worktree — patrz niżej).** N1: `buildEmpireResourceRows` liczy teraz
+`computeCitizenResourceDrain` z sumą populacji ownera identyczną jak silnik, `deductions`
+świadomie ignorowane (panel to podgląd, nie mutacja). Tooltip/badge: „POKRYTE"/„NIEDOBÓR". N2:
+sekcja H testu przepisana na okna `indexOf` (kolejność, nie tylko obecność) — zweryfikowane że
+M4 (pobór warunkowany `ownerId===0`) i M5 (drenaż powtórzony per miasto) są TERAZ łapane
+czerwono. N3: komentarz zaktualizowany. Bramki: tsc 0, logic-test 213/213,
+`citizen-resource-upkeep-test` 83/83. Nieoceniona jeszcze przez Evaluatora nota z rundy 1:
+`cityPanel.ts` (2 miejsca) nadal używa starej `resolveCitizenResourceCoverage` — ale linia
+~1175-1176 preferuje `ordState.citizenUpkeep` (już poprawny, z silnika) z fallbackiem TYLKO gdy
+stan silnika jeszcze nie istnieje; linia ~2914 to jawnie `fromEngine: false` ścieżka
+sandbox/playtest (nie żywa rozgrywka) — świadomie NIE naprawiane w tej rundzie, niski priorytet,
+nie blokuje. **STATUS: dispatch Opus 5 Evaluator, runda 2.**
+
+**Evaluator runda 2: FAIL.** Reguła w panelu jest poprawna, ale wprowadza NOWY rozjazd
+panel↔silnik w innym paśmie — panel przelicza na ŻYWYM (już zdrenowanym w tej turze) magazynie,
+podczas gdy silnik naliczał werdykt PRZED drenażem. Dla magazynu w paśmie `P ≤ stan < 2P`
+(P = populacja imperium; realny stan po 1-2 turach bufora) silnik nalicza „POKRYTE" (+1
+Szczęście), a panel po turze pokazuje „NIEDOBÓR" — zweryfikowane wykonaniem na 5-punktowym
+skanie (P=15, glina 14→0→15). Poprawne źródło było w zasięgu: `cityOrderState.get(cid)
+?.citizenUpkeep` (już preferowane w `cityPanel.ts:1175`), Operator zamiast tego przeliczał od
+nowa. **N2 (blokujące):** sekcja H nie chroni NAPRAWY N1 — mutant M6 (przywrócenie starej reguły
+„magazyn > 0" inline w panelu) przechodzi 83/83. **Punkt 6 z rundy 1 („cityPanel.ts:2914 to
+sandbox, nie żywa rozgrywka") był NIEPRAWDZIWY** — `computeOrderStateLocal` wykonuje się przy
+KAŻDYM wywołaniu, także w żywej grze, i w gałęzi `fromEngine:true` jego `porPct`/`bandLabel`
+CELOWO nadpisują wartości silnika starą regułą — dowód wykonaniem: dla tych samych danych panel
+pokazuje pasmo „Niepokój", silnik faktycznie liczy „Bunt". **STATUS: dispatch Sonnet 5
+(worktree) — runda 3: (1) `buildEmpireResourceRows` ma czytać werdykt silnika
+(`cityOrderState`), nie przeliczać na żywo; (2) `cityPanel.ts:2914` przenieść na
+`computeCitizenResourceDrain` z sumą populacji ownera; (3) asercja pozytywna broniąca naprawy N1
+w teście; (4) rozszerzyć regex H5 poza `=== 0`/`!== 0`; (5) poprawić nieaktualny komentarz w
+teście o starej roli `resolveCitizenResourceCoverage`.**
+
+**Runda 3: SCALONE `ad2ed28b`.** `buildEmpireResourceRows` czyta teraz
+`cityOrderState.get(anyCityOfOwner.id)?.citizenUpkeep` (rzeczywisty werdykt silnika tej tury),
+fallback na `computeCitizenResourceDrain` tylko gdy `cityOrderState` jeszcze puste (pierwszy
+render przed turą 1). `cityPanel.ts:2914` (`computeOrderStateLocal`) — ten sam fix, ta sama
+kolejność preferencji; zweryfikowane że wykonuje się TAKŻE w żywej rozgrywce (rundy 1 ustalenie
+"sandbox-only" było błędne). Nowa sekcja I testu broni naprawy behawioralnie (mutant "przywróć
+regułę inline" łapany czerwono, 85/2 zamiast 87/0), H5 regex rozszerzony, komentarz poprawiony.
+Operator zweryfikował scenariusz Evaluatora (P≤stan<2P) bezpośrednio: silnik i panel dają teraz
+IDENTYCZNY werdykt dla tych samych danych. Bramki: tsc 0, logic-test 213/213,
+`citizen-resource-upkeep-test` 87/87. **STATUS: dispatch Opus 5 Evaluator, runda 3.**
+
+**Evaluator runda 3: FAIL.** Naprawa rundy 2 (rozjazd P≤stan<2P) potwierdzona POPRAWNA
+(reprodukcja na realnym tekście `main.ts` przez `new Function`, 7/7). Ale runda 3 wprowadza NOWĄ
+rozbieżność tej samej klasy: **N1 (blokujące)** — `cities.find(c => c.ownerId === ownerId)` w
+`buildEmpireResourceRows` czyta wpis `cityOrderState` PO KLUCZU MIASTA, nie ownera; zdobycie
+miasta (oblężenie/aneksja) zmienia `city.ownerId` w trakcie tury i NIE czyści starego wpisu —
+`find()` może trafić na miasto z werdyktem POPRZEDNIEGO właściciela. Zademonstrowane na realnym
+kodzie: panel gracza w epoce Kamienia pokazuje wymagania epoki Brązu (werdykt cudzej AI) po
+przejęciu jej miasta. Wąskie (wymaga specyficznej kolejności w `cities[]`), ale deterministyczne
+i tej samej klasy co rundy 1-2. **N2 (blokujące)** — naprawa `cityPanel.ts` ma ZERO pokrycia
+testowego: pełny revert do starej reguły przechodzi wszystkie 18 sprawdzonych bramek w repo.
+**N3 (blokujące)** — sekcja I broni KSZTAŁTU tekstu, nie semantyki: zmiana `===` na `!==` w
+predykacie ownera (czytanie werdyktu OBCEGO ownera) przechodzi 87/87 bez wykrycia. N4-N6
+nieblokujące (opóźnienie epoki o turę — nieodłączny koszt „czytaj werdykt silnika", martwy
+fallback w `cityPanel.ts` do usunięcia, nieświadowione pliki zaobserwowane w trakcie audytu —
+zniknęły, drzewo dziś czyste). **Konkretna naprawa N1 podana przez Evaluatora:** osobna mapa
+`citizenUpkeepByOwner: Map<number, ...>` wypełniana BEZPOŚREDNIO w `citizenUpkeepDrainForOwner`
+(nie odczyt przez `cities.find`), czyszczona przy każdym `cityOrderState.clear()`. **STATUS:
+dispatch Sonnet 5 (worktree), runda 4 — N1 (mapa per-owner, nie per-miasto), N2 (asercja
+broniąca cityPanel.ts), N3 (sekcja I behawioralna nie tekstowa, łapiąca mutant obcego ownera), N5
+(usunąć martwy fallback).**
+
+**Runda 4: SCALONE `42bfc628`.** Nowa `citizenUpkeepByOwner: Map<number,...>` publikowana
+BEZPOŚREDNIO przez `citizenUpkeepDrainForOwner` (kluczowana ownerem), `buildEmpireResourceRows`
+czyta z niej wprost — `cities.find` po mieście całkowicie usunięty, wektor mutacji rundy 3
+strukturalnie zniknął. Czyszczona przy wszystkich 4 miejscach `cityOrderState.clear()`.
+`cityPanel.ts` dostał sekcję J testu (zero pokrycia od rundy 3, teraz 5 asercji, zweryfikowane
+mutacją: pełny revert łapany czerwono). Sekcja I przepisana pod nowy kod + dowód behawioralny
+(dwa różne ownerId w syntetycznej mapie, odczyt nie miesza kluczy). Martwy fallback w
+`cityPanel.ts::computeView` usunięty. Operator odtworzył DOKŁADNIE scenariusz Evaluatora
+(przejęte miasto przed własnym w kolejności `cities[]`, stary werdykt AI w `cityOrderState` dla
+tego miasta) — stara ścieżka: era=2 (Brąz, werdykt AI, błąd); nowa: era=1 (Kamień, werdykt
+gracza, poprawnie), parytet gracz/AI nienaruszony. Zidentyfikowane, świadomie NIE naprawione w
+tej rundzie (węższe, odrębne ryzyko, do osobnej oceny): `cfg.getOrderState?.(city.id)` w
+`cityPanel.ts` może chwilowo pokazać nieodświeżony werdykt DLA TEGO SAMEGO miasta między
+podbojem a następnym tickiem pętli Porządku (nie przeciek z cudzego miasta — inna klasa niż N1).
+Bramki: tsc 0, logic-test 213/213, `citizen-resource-upkeep-test` 100/100 (mutacje N1/N2
+zweryfikowane czerwono→zielono). **STATUS: dispatch Opus 5 Evaluator, runda 4.**
+
+**Evaluator runda 4: FAIL — czwarta szczelina tej samej klasy + luka po stronie zapisu.**
+Struktura per-owner potwierdzona jako POPRAWNA (deklaracja, `.set` raz per owner per turę, brak
+`cities.find`, wszystkie 4 miejsca `.clear()` sparowane, parytet gracz/Państwa-Miasta, N5 martwy
+fallback faktycznie martwy — wszystko zweryfikowane niezależnie). Ale: **⛔ N1 (blokujące) —
+`citizenUpkeepByOwner` NIE jest czyszczona w `restoreGameFromSave` (wczytanie zapisu).**
+Wszystkie 4 `.clear()` leżą wyłącznie w funkcjach STARTU nowej gry; wczytanie zapisu podmienia
+`cities`/erę/turę bez czyszczenia mapy — klucz `ownerId=0` istnieje niemal zawsze (z poprzedniej
+gry tej samej sesji przeglądarki), `??` nigdy nie zaskakuje, panel po Ctrl+L/„Wczytaj" pokazuje
+werdykt Z INNEJ GRY (cudza epoka/populacja/pokrycie). **To POGORSZENIE względem rundy 3** — runda
+3 chybiała `cities.find()` tylko CZASEM (zależnie od ID miast), runda 4 usunęła ten przypadkowy
+„zawór bezpieczeństwa" i trafia w nieświeży wpis ZAWSZE. Zademonstrowane wykonaniem (scenariusz
+wczytania zapisu z inną epoką/populacją niż bieżąca gra). **⛔ N2 (blokujące) — strona ZAPISU do
+mapy ma zero pokrycia testowego.** Usunięcie samej linii `citizenUpkeepByOwner.set(ownerId, v)`
+przechodzi 100/100 bez wykrycia — to dosłownie regresja rundy 2 (mapa nigdy niewypełniona → panel
+zawsze na żywym zdrenowanym magazynie), niebroniona przez żaden test. Pkt 6 (nieodświeżony
+`cfg.getOrderState` dla TEGO SAMEGO miasta między podbojem a tickiem) — Evaluator ZGADZA SIĘ na
+odłożenie jako odrębne, samo-lecząco się po 1 turze; przy okazji zauważył PRE-ISTNIEJĄCY,
+szerszy wariant: `cityOrderState` też nieczyszczone w `restoreGameFromSave` (osobny temat, panel
+miasta, do zarejestrowania oddzielnie, NIE blokuje N1). **STATUS: dispatch Sonnet 5 (worktree),
+runda 5, zakres ZAMKNIĘTY (bez „przy okazji"): (1) `citizenUpkeepByOwner.clear()` w
+`restoreGameFromSave`; (2) asercja na publikację `.set` w `citizenUpkeepDrainForOwner`; (3)
+asercja pilnująca PARYTETU miejsc czyszczenia (liczba `citizenUpkeepByOwner.clear()` ≥ liczba
+`cityOrderState.clear()` ORAZ obecność w oknie `restoreGameFromSave`) — żeby piąte miejsce resetu
+nie zostało pominięte po cichu w przyszłości.**
+
+**Runda 5 (CZĘŚCIOWA `13f62b0b`, 2026-08-11, koniec sesji — limit zużycia zgłoszony przez
+Macieja w trakcie pracy):** naprawiony TYLKO punkt (1) z zalecenia Evaluatora —
+`citizenUpkeepByOwner.clear()` w `restoreGameFromSave` (najdotkliwszy, gwarantowany-do-wywołania
+scenariusz: panel po wczytaniu zapisu pokazujący werdykt z poprzedniej gry). Bramki: tsc 0,
+logic-test 213/213, `citizen-resource-upkeep-test` 100/100 (bez regresji — te testy jeszcze NIE
+chronią tej konkretnej naprawy, patrz niżej). **BEZ pełnej rundy Operator→Evaluator** — czysto
+techniczna, jednoliniowa poprawka zastosowana bezpośrednio przez orkiestratora z powodu
+kończącego się limitu sesji, świadome odstępstwo od §0b za zgodą właściciela („spróbuj zrobić
+deploy tego co masz, resztę kontynuujemy jutro").
+**NADAL DO ZROBIENIA w kolejnej sesji (punkty 2-3 zalecenia Evaluatora, wciąż otwarte):**
+(2) asercja testowa broniąca publikacji `citizenUpkeepByOwner.set(ownerId, v)` w
+`citizenUpkeepDrainForOwner` — dziś usunięcie tej jednej linii przechodzi 100/100 bez wykrycia
+(cichy powrót regresji rundy 2: panel na żywym zdrenowanym magazynie zamiast werdyktu silnika);
+(3) asercja pilnująca PARYTETU liczby `citizenUpkeepByOwner.clear()` vs `cityOrderState.clear()`
++ obecności w oknie `restoreGameFromSave`, żeby przyszłe piąte miejsce resetu nie zostało
+pominięte po cichu. **Temat NIE jest formalnie zamknięty (brak PASS Evaluatora) — priorytet na
+starcie następnej sesji, PRZED jakąkolwiek nową pracą.**
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA ECHO 3 (IndexedDB) — scalone, przegląd PRZERWANY (limit)
+
+Migracja scalona i zweryfikowana bramkami (`798f3c17`: tsc 0, logic-test 213/213,
+`idb-storage-migration-test` 25/25, `autosave-quota-fail-test` 20/20, `fsa-autosave-test` 55/55,
+`map-snapshot-load-test` 54/0/1-known-fail). Dispatchowany był workflow z 3 niezależnymi
+perspektywami przeglądu (async-kompletność, bezpieczeństwo danych/wsteczna kompatybilność,
+architektura) + adwersarialna weryfikacja znalezisk — **PRZERWANY na polecenie Macieja przed
+dostarczeniem werdyktu** (limit zużycia sesji, `TaskStop wg2thj404`). **Migracja NIE MA
+niezależnej oceny Evaluatora/workflow — priorytet na starcie następnej sesji, PRZED jakąkolwiek
+nową pracą, RAZEM z domknięciem R-ZUZYCIE-SUROWCOW N1 rundy 5.**
+
+## NOWY BACKLOG (odnotowane przez Evaluatora rundy 4, NIE blokuje R-ZUZYCIE-SUROWCOW N1) —
+## `cityOrderState` nieczyszczone w `restoreGameFromSave`
+
+Pre-istniejące (sprzed tego tematu). Panel miasta (`cityPanel.ts`, `resolveOrderState`) po
+wczytaniu zapisu może pokazać `OrderState` (szczescie/porzadek/szPct/bandLabel/...) z POPRZEDNIEJ
+gry tej samej sesji przeglądarki, dopóki pętla Porządku nie przeliczy od nowa (1 tura). Do
+osobnej oceny/dispatchu — świadomie odłożone, nie w zakresie żadnego z 4 tematów dzisiejszej
+nocy.
+
+## P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA — N-ZINDEX-TOAST SCALONE `0f7745c4` (2026-08-11)
+
+Runda 2 naprawy N1 (Evaluator FAIL: toast niewidoczny pod `.civ-menu`). `showHintMessage`
+podnosi z-index do 600 gdy `isMainMenuOpen()` (zweryfikowane grepem: bije `.civ-menu`=500,
+`.civ-pause`=480, `.cm-toast`=560; najbliższe overlaye pełnoekranowe 650+, poza zasięgiem tej
+kolizji). Kolejność w gałęzi `if (!ok)` odwrócona: `openStartupMainMenu()` PRZED
+`showHintMessage()`. Ścieżka `fromInGamePause===true` sprawdzona — `hideGamePauseMenu()`/
+`hideSaveLoadDialog()` już wywołane wcześniej w tej samej funkcji, żaden overlay nie koliduje,
+320 wystarcza. N3 (komentarz „najczęstsza przyczyna" bez pokrycia) złagodzony na „jedną z
+przyczyn". Nowy test `load-fail-toast-zindex-test.cjs` (15/15, strukturalny: formuła z-index,
+kolejność wywołań przez `indexOf`, wartości CSS). Bramki: tsc 0, logic-test 213/213,
+`map-snapshot-load-test` 54/0/1-known-fail (bez regresji). **STATUS: dispatch Opus 5 Evaluator,
+runda 2.**
+
+**Evaluator runda 2: PASS-WITH-NOTES `199d47d7` (po N-A).** Zweryfikowane wykonaniem do końca:
+kolejność wywołań w finalnym źródle, wszystkie z-index w paśmie 500-600 sprawdzone samodzielnie
+(nie z cudzego grepu), DWA ciche potencjalne zabójcy sprawdzone i czyste (overlay ładowania mapy
+z-index 3000000 — nie przecieka w ścieżce błędu; `showSceneTimingReport` z `hideAfterMs:0` — nic
+nie montuje), `isMainMenuOpen()` dowiedzione jako w pełni synchroniczne (zero
+requestAnimationFrame/setTimeout/Promise), stacking context zweryfikowany przy zoom=1 i zoom≠1,
+ścieżka `fromInGamePause===true` sprawdzona dla OBU wołających (nie jednego, jak twierdził
+nieaktualny komentarz — to była N-A), 4 mutacje testu (kolejność, formuła, wartości z-index)
+wszystkie złapane czerwono. Bramki: tsc 0, logic-test 213/213, map-snapshot-load-test
+54/0/1-known-fail. N-A naprawione (komentarz skorygowany, `199d47d7`). N-B/N-C/N-D/N-E
+nieblokujące, do wiadomości (hardening try/catch opcjonalny, F10 pre-istniejąca drobna kolizja
+nie regresja, dług testowy literalnych wartości, pozostałe showHintMessage w tej samej funkcji
+bezpieczne z innego powodu). **TEMAT ZAMKNIĘTY.**
+
+## Incydent — worktree automatyczne (isolation:"worktree") systematycznie bazują na `main`,
+## nie na bieżącej gałęzi (2026-08-11)
+
+Zaobserwowano wielokrotnie w tej sesji (agenty PM promień, hard-error snapshot, drenaż
+obywateli, IndexedDB, z-index toastu): każdy automatyczny worktree utworzony przez `isolation:
+"worktree"` bazuje na commicie `99974173` (`main`/`origin/main`, „merge: dogonienie main o FALA
+267"), NIE na aktualnym szczycie gałęzi roboczej `claude/sprawdzenie-funkcjonalnosci-ek4ra0` —
+mimo że orkiestrator cały czas pracuje na tej drugiej. Dla drobnych, punktowych zmian (PM
+promień, hard-error revert) to nieszkodliwe — `git diff`/`git apply -3` scala poprawnie mimo
+rozbieżnej bazy (prawdziwy 3-way merge przez wspólne obiekty gita). Dla większych zmian
+dotykających świeżo dobudowanej infrastruktury (IndexedDB dotykające `save.ts` z całym
+mechanizmem `SAVE_META_PREFIX`/Defekt C, którego NIE MA na `main`) to niebezpieczne — agent
+nieświadomie „nie widzi" tej infrastruktury i próbuje ją odtworzyć/ominąć, co groziłoby cofnięciem
+już działającej funkcjonalności. **Obejście zastosowane od tego incydentu: orkiestrator ręcznie
+tworzy `git worktree add <ścieżka> -b <branch> HEAD` (HEAD = aktualna gałąź robocza), symlinkuje
+`node_modules`, i dispatchuje agenta BEZ parametru `isolation`, z instrukcją pracy wyłącznie w
+tej ręcznie przygotowanej ścieżce + obowiązkową weryfikacją bazy na starcie (`grep
+SAVE_META_PREFIX gra/src/game/save.ts`).** Zadziałało za każdym razem od wdrożenia. Do
+zgłoszenia jako możliwy błąd/ograniczenie środowiska poza tą sesją.

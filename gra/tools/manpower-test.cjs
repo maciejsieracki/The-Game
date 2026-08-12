@@ -208,7 +208,7 @@ ok(mp.cityLudnoscAbsolutna(10, 1) === 100_000, 'ep1 ludnosc 100k');
 
 ok(mp.cityManpowerMax(10, 1) === 10_000, 'ep1 manpower max 10k');
 
-ok(mp.unitManpowerCost(1) === 500, 'ep1 koszt jednostki 500 (Maciej 2026-08-03)');
+ok(mp.unitManpowerCost(1) === 1000, 'ep1 koszt jednostki 1000 (R-MANPOWER-EPOKA1-500-VS-1000=A, cofniecie testu z 2026-08-03)');
 
 
 
@@ -216,7 +216,7 @@ const s1 = mp.cityManpowerSnapshot(city10, 1);
 
 ok(s1.ludnoscAbsolutna === 100_000 && s1.manpowerMax === 10_000, 'snapshot ep1');
 
-ok(s1.werbMaxPrzyPelnejPuli === 20, '20 jednostek przy pelnej puli ep1 (koszt 500 → 2 jednostki / ludek)');
+ok(s1.werbMaxPrzyPelnejPuli === 10, '10 jednostek przy pelnej puli ep1 (koszt 1000 = 1 jednostka / ludek)');
 
 
 
@@ -228,7 +228,7 @@ ok(mp.unitManpowerCost(10) === 480_000, 'ep10 koszt jednostki 480k');
 
 
 
-// Koszt jednostki: epoki 2+ = pełny slot manpower; epoka 1 = połowa (Maciej 2026-08-03)
+// Koszt jednostki: wszystkie epoki = pełny slot manpower (R-MANPOWER-EPOKA1-500-VS-1000=A)
 
 ok(mp.unitManpowerCost(3) === 4000, 'ep3 jednostka 4000 (= manpowerNaLudka)');
 
@@ -238,7 +238,7 @@ ok(mp.unitManpowerCost(3) === 4000, 'ep3 jednostka 4000 (= manpowerNaLudka)');
 
 const after = mp.spendManpower({ population: 10, manpower: 10_000 }, 1);
 
-ok(after === 9_500, 'spend 500 z 10k');
+ok(after === 9_000, 'spend 1000 z 10k');
 
 
 
@@ -250,7 +250,7 @@ ok(!block.ok && block.reason === 'brak_manpower', 'blokada przy 50 MP');
 
 const okDed = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1, 1);
 
-ok(okDed.ok && okDed.manpower === 9_500 && okDed.population === 9, 'deduct pop+mp gdy popCost=1');
+ok(okDed.ok && okDed.manpower === 9_000 && okDed.population === 9, 'deduct pop+mp gdy popCost=1');
 
 
 
@@ -260,7 +260,7 @@ ok(okDed.ok && okDed.manpower === 9_500 && okDed.population === 9, 'deduct pop+m
 
 const okDed0 = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1, 0);
 
-ok(okDed0.ok && okDed0.manpower === 9_500 && okDed0.population === 10, 'popCost=0: populacja bez zmian, manpower -500');
+ok(okDed0.ok && okDed0.manpower === 9_000 && okDed0.population === 10, 'popCost=0: populacja bez zmian, manpower -1000');
 
 
 
@@ -290,7 +290,7 @@ ok(mp.civManpowerMaxMult([{ typ: 'mnoznik_manpower_max', wartosc: 2.0 }]) === 2,
 
 ok(mp.cityManpowerMax(10, 1, 2) === 20_000, 'ep1 roman max 20k');
 
-ok(mp.unitManpowerCost(1, 2) === 1000, 'ep1 roman koszt jednostki 1000 (500×2)');
+ok(mp.unitManpowerCost(1, 2) === 2000, 'ep1 roman koszt jednostki 2000 (1000×2)');
 
 const romanBonusy = [
 
@@ -312,7 +312,7 @@ ok(greekRegen === 200, 'grecy regen 200/ture');
 
 const romanSnap = mp.cityManpowerSnapshot(city10, 1, romanMults.regenMult, romanMults.maxMult);
 
-ok(romanSnap.manpowerMax === 20_000 && romanSnap.kosztJednostki === 1000 && romanSnap.regenPerTurn === 800, 'roman snapshot ep1 10 ludkow');
+ok(romanSnap.manpowerMax === 20_000 && romanSnap.kosztJednostki === 2000 && romanSnap.regenPerTurn === 800, 'roman snapshot ep1 10 ludkow');
 
 
 
@@ -336,13 +336,13 @@ ok(emp.poborRaw === 162_000, 'pobor raw sum');
 
 const cityRecruit = { population: 10, manpower: 10_000 };
 
-ok(mp.spendManpower(cityRecruit, 1) === 9_500, 'enqueue rekrutacji: spendManpower od razu (ep1 koszt 500)');
+ok(mp.spendManpower(cityRecruit, 1) === 9_000, 'enqueue rekrutacji: spendManpower od razu (ep1 koszt 1000)');
 
 // Zwiadowca (Scout): 0 MP przy rekrutacji
 ok(mp.isScoutTypeId('Zwiadowca'), 'scout typeId rozpoznany');
 ok(mp.unitManpowerCostForType('Zwiadowca', 1) === 0, 'zwiadowca koszt MP 0 ep1');
 ok(mp.unitManpowerCostForType('Zwiadowca', 1, 2) === 0, 'zwiadowca koszt MP 0 ep1 roman');
-ok(mp.unitManpowerCostForType('Wojownik', 1) === 500, 'wojownik koszt MP ep1 = 500');
+ok(mp.unitManpowerCostForType('Wojownik', 1) === 1000, 'wojownik koszt MP ep1 = 1000');
 const scoutDed = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 50 }, 1, 0, 1, 'Zwiadowca');
 ok(scoutDed.ok && scoutDed.kosztManpower === 0 && scoutDed.manpower === 50, 'zwiadowca: brak MP nawet przy pustej puli');
 const scoutDed2 = mp.tryDeductUnitSpawnCosts({ population: 10, manpower: 10_000 }, 1, 0, 1, 'Zwiadowca');
@@ -365,10 +365,10 @@ ok(
   'per-city afford: Ateny same nie starcza',
 );
 const empDed = mp.tryDeductUnitSpawnCostsEmpire(empCities, 'a', 0, 1, 0, 1, 'Wojownik');
-ok(empDed.ok && empDed.kosztManpower === 500, 'empire deduct ok (ep1 koszt 500)');
+ok(empDed.ok && empDed.kosztManpower === 1000, 'empire deduct ok (ep1 koszt 1000)');
 ok(athens.population === 5 && sparta.population === 5, 'werb: ludnosc miast bez zmian');
-ok(athens.manpower === 200 && sparta.manpower === 700, 'empire deduct: z puli cywilizacji (najpierw wieksza pula)');
-ok(mp.empireManpowerCurrent(empCities, 0, 1) === 900, 'empire po werbie: 900 MP');
+ok(athens.manpower === 200 && sparta.manpower === 200, 'empire deduct: z puli cywilizacji (najpierw wieksza pula, 1200-1000)');
+ok(mp.empireManpowerCurrent(empCities, 0, 1) === 400, 'empire po werbie: 400 MP');
 const beforeRefund = mp.empireManpowerCurrent(empCities, 0, 1);
 mp.refundManpowerToEmpire(empCities, 0, 1, 500, 1);
 ok(mp.empireManpowerCurrent(empCities, 0, 1) === beforeRefund + 500, 'zwrot MP do puli imperium');
@@ -392,8 +392,8 @@ const healRes = mp.tickManpowerUnitReplenishment(
   () => 100,
 );
 ok(healRes.healedCount === 1 && healUnit.hp === 30, 'normal: +20 HP (20% z 100)');
-ok(healRes.totalMpSpent === 100, 'normal: koszt 100 MP (20% × 500)');
-ok(healCities[0].manpower === 4900, 'normal: pula -100 MP');
+ok(healRes.totalMpSpent === 200, 'normal: koszt 200 MP (20% × 1000)');
+ok(healCities[0].manpower === 4800, 'normal: pula -200 MP');
 
 const lowMpCities = [{ id: 'h2', ownerId: 0, population: 10, manpower: 50, q: 0, r: 0, oblegane: false }];
 const lowMpUnit = { id: 'u2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 4, r: 4 };
@@ -405,7 +405,7 @@ const lowMpRes = mp.tickManpowerUnitReplenishment(
   () => [],
   () => 100,
 );
-ok(lowMpRes.healedCount === 1 && lowMpUnit.hp === 20, 'czesciowe leczenie przy malo MP (+10 HP)');
+ok(lowMpRes.healedCount === 1 && lowMpUnit.hp === 15, 'czesciowe leczenie przy malo MP (+5 HP)');
 ok(lowMpRes.totalMpSpent === 50, 'czesciowe: wydano cala dostepna pule 50 MP');
 
 const multiTurnUnit = { id: 'u3', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 1, hpMax: 100, q: 6, r: 6 };
@@ -436,12 +436,12 @@ const fieldOk = { id: 'fo', ownerId: 0, typeId: 'Wojownik', category: 'miecznik'
 const mixRes = mp.tickManpowerUnitReplenishment(mixCities, [fieldOk], 'normal', () => 1, () => [], () => 100);
 ok(mixRes.healedCount === 1 && fieldOk.hp === 30, 'pole poza oblezeniem: +20 HP');
 
-// Garnizon pierwszy przy ograniczonej puli MP (100 MP = 1× pełne leczenie 20% przy koszcie 500)
+// Garnizon pierwszy przy ograniczonej puli MP (100 MP = połowa pełnego leczenia 20% przy koszcie 1000)
 const orderCities = [{ id: 'oc', ownerId: 0, population: 10, manpower: 100, q: 1, r: 1, oblegane: false }];
 const garUnit = { id: 'g1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 1, r: 1, inGarnizon: true };
 const fldUnit = { id: 'f1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', hp: 10, hpMax: 100, q: 8, r: 8 };
 mp.tickManpowerUnitReplenishment(orderCities, [fldUnit, garUnit], 'normal', () => 1, () => [], () => 100);
-ok(garUnit.hp === 30 && fldUnit.hp === 10, 'garnizon leczony przed jednostka w polu przy malo MP');
+ok(garUnit.hp === 20 && fldUnit.hp === 10, 'garnizon leczony przed jednostka w polu przy malo MP');
 ok(orderCities[0].manpower === 0, 'garnizon: wydano cala pule 100 MP');
 
 // Zwiadowca pomijany (koszt MP = 0)

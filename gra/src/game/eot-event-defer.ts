@@ -55,10 +55,16 @@ export function mergeDeferredEotSideEvents(
  * typ wpisu „nie-nasz” przechodzący przez tę kolejkę (R-WYDARZENIA-FILTR-KATEGORII). */
 const AI_AI_TRADE_MARKER = ' handluje z ';
 
-/** Zamień odłożone hinty na wpisy panelu Wydarzenia (info).
+/** Zamień odłożone hinty na wpisy panelu Wydarzenia.
  * Handel AI↔AI (jedyny „nie-nasz” typ hintu odłożonego tą ścieżką) dostaje etykietę
- * „Dyplomacja” + `origin:'other-civs'`, żeby chip 🌍 „Inne cyw.” mógł go filtrować;
- * wszystkie pozostałe hinty EOT zachowują dotychczasową etykietę „Koniec tury”. */
+ * „Dyplomacja” + `kind:'diplo'` (niebieska obwódka, spójnie z innymi kartami dyplomacji
+ * z main.ts) + `origin:'other-civs'`, żeby chip 🌍 „Inne cyw.” mógł go filtrować;
+ * wszystkie pozostałe hinty EOT zachowują dotychczasową etykietę „Koniec tury” i `kind:'info'`
+ * (złota obwódka, R-WYDARZENIA-KOLOR-DIPLO-INFO).
+ * EN: AI↔AI trade (the only "not-ours" hint type deferred via this path) gets the label
+ * "Dyplomacja" + `kind:'diplo'` (blue outline, consistent with other diplomacy cards from
+ * main.ts) + `origin:'other-civs'`, so the 🌍 "Other civs" chip can filter it; all remaining
+ * EOT hints keep the existing "Koniec tury" label and `kind:'info'` (gold outline). */
 export function deferredHintsToSidePanelEvents(
   hints: readonly DeferredEotHint[],
   turn: number,
@@ -70,7 +76,7 @@ export function deferredHintsToSidePanelEvents(
       icon: '\u2139\ufe0f',
       title: isAiAiTrade ? 'Dyplomacja' : 'Koniec tury',
       subtitle: h.msg.replace(/<[^>]+>/g, ''),
-      kind: 'info' as const,
+      kind: isAiAiTrade ? ('diplo' as const) : ('info' as const),
       ...(isAiAiTrade ? { origin: 'other-civs' as const } : {}),
     };
   });

@@ -1,6 +1,21 @@
 'use strict';
 /**
- * ai-mp-military-cap-test.cjs — cap wojska MP wg _menuDifficulty
+ * ai-mp-military-cap-test.cjs — cap wojska MP wg osi PM-vs-GRACZ
+ * (_menuCityStateDifficultyVsPlayer, opts.cityStateDifficultyVsPlayer).
+ *
+ * C-025/C-026 (2026-08-10) / R-CS-HARD-PASYWNE-KOLIDUJE-Z-DWIEMA-DECYZJAMI-08-04=B:
+ * przed tą aktualizacją T3/T6 przypinały STARĄ oś (opts.menuDifficulty, trudność gry
+ * AI-facing) i STARY cap('hard')=0 -- PM na Trudnym nigdy nie mogło zrekrutować nawet
+ * pierwszego garnizonu. Dziś oś to opts.cityStateDifficultyVsPlayer (gracz-facing,
+ * wprost z trudności gry).
+ *
+ * RUNDA 3 (2026-08-10, Evaluator FAIL na commit 7e753db2): cap('hard') podniesiony z 3
+ * (= CS_WAVE_ATTACK_MIN_STACK) na 4 (= CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS['strong']
+ * .minGuard) -- cap=3 nigdy nie osiągał realny próg bramki wyjścia z domu w ai.ts
+ * (totalMilitary < minFieldArmyBeforeSend + minGuardToSend = 3 + 1 = 4), więc PM
+ * rekrutowało do 3 i tam utykało w mieście, fala ofensywna nigdy nie wyruszała.
+ * Trudna gra → PM MOŻE dokupywać wojsko, do 4 jednostek na mapie.
+ *
  * Run from gra/: node tools/ai-mp-military-cap-test.cjs
  */
 
@@ -97,56 +112,67 @@ const diff = loadDifficultyParams(data, 2);
 console.log('--- T1: cityStateMilitaryProductionCap ---');
 eq(cityStateMilitaryProductionCap('easy'), null, 'T1a: easy = no cap');
 eq(cityStateMilitaryProductionCap('normal'), 1, 'T1b: normal = 1');
-eq(cityStateMilitaryProductionCap('hard'), 0, 'T1c: hard = 0');
+eq(cityStateMilitaryProductionCap('hard'), 4,
+  'T1c: hard = 4 (= CS_WAVE_ATTACK_MIN_STACK + RESUP_TIERS[\'strong\'].minGuard = 3 + 1, '
+    + 'runda 3 fix -- cap=3 nigdy nie osiągał próg bramki wyjścia z domu, patrz '
+    + 'cs-military-cap-wiring-test.cjs sekcja 3)');
 
-console.log('\n--- T2: hard MP bez garnizonu → nie Wojownik ---');
+console.log('\n--- T2: hard MP bez garnizonu → MOŻE Wojownik (pierwszy garnizon, 0 < cap 4) ---');
 {
   const city = makeCity('cs_h', 4, 3, 3);
   const pick = chooseCityProduction(
     'cs_h', [city], [], 4, data, ZERO,
-    { defensiveCopy: true, menuDifficulty: 'hard', cityBuildings: { cs_h: [] } },
+    { defensiveCopy: true, cityStateDifficultyVsPlayer: 'hard', cityBuildings: { cs_h: [] } },
     map, diff,
   );
-  assert(pick !== 'Wojownik' && pick !== 'Łucznik', `T2a: hard no military pick (got ${pick})`);
+  // Regresja naprawiona: cap('hard')=0 (stare) blokowało NAWET pierwszy garnizon --
+  // PM startowałoby bez obrony na Trudnym. Z cap=4 pierwszy Wojownik (0 < 4) przechodzi.
+  eq(pick, 'Wojownik', `T2a: hard 0 military → może pierwszy garnizon (got ${pick})`);
 }
 
-console.log('\n--- T3: hard MP z garnizonem → nie dokup wojska ---');
+console.log('\n--- T3: hard MP z 1 jednostką → MOŻE dokupić do capu 4 ---');
 {
   const city = makeCity('cs_h2', 4, 3, 3);
   const guard = makeUnit('g1', 4, 3, 3, 'Wojownik');
   const pick = chooseCityProduction(
     'cs_h2', [city], [guard], 4, data, ZERO,
-    { defensiveCopy: true, menuDifficulty: 'hard', cityBuildings: { cs_h2: ['mury'] } },
+    { defensiveCopy: true, cityStateDifficultyVsPlayer: 'hard', cityBuildings: { cs_h2: ['mury'] } },
     map, diff,
   );
-  assert(pick !== 'Wojownik' && pick !== 'Łucznik', `T3a: hard with guard no more military (got ${pick})`);
+  // 1 jednostka < cap 4 -- filtr capu NIE odcina kandydatów wojskowych (różnica vs stare
+  // cap('hard')=0, gdzie filtr ucinał WSZYSTKO niezależnie od stanu garnizonu). Pick
+  // faktycznie wypada na 'studnia' -- bootstrap infrastruktury (cityGuardCount>=1,
+  // built.length<6) score'uje wyżej niż stłumiony (hardOffensive=false) kandydat
+  // wojskowy -- ale to scoring ekonomii, NIE cap; dowód capu = T8 niżej (przy 4 cap
+  // FAKTYCZNIE odcina wojsko).
+  eq(pick, 'studnia', `T3a: hard 1/4 military -- bootstrap infra wygrywa scoring, nie cap (got ${pick})`);
   eq(countOwnerMilitaryUnits([guard], 4), 1, 'T3b: guard counts as military');
 }
 
-console.log('\n--- T4: normal MP max 1 wojskowa ---');
+console.log('\n--- T4: normal MP max 1 wojskowa (bez zmian -- normal cap wciąż 1) ---');
 {
   const city = makeCity('cs_n', 4, 3, 3);
   const guard = makeUnit('g2', 4, 3, 3, 'Wojownik');
   const pick = chooseCityProduction(
     'cs_n', [city], [guard], 4, data, ZERO,
-    { defensiveCopy: true, menuDifficulty: 'normal', cityBuildings: { cs_n: [] } },
+    { defensiveCopy: true, cityStateDifficultyVsPlayer: 'normal', cityBuildings: { cs_n: [] } },
     map, diff,
   );
   assert(pick !== 'Wojownik' && pick !== 'Łucznik', `T4a: normal at cap no military (got ${pick})`);
 }
 
-console.log('\n--- T5: normal MP bez wojska → może Wojownik ---');
+console.log('\n--- T5: normal MP bez wojska → może Wojownik (bez zmian) ---');
 {
   const city = makeCity('cs_n2', 4, 3, 3);
   const pick = chooseCityProduction(
     'cs_n2', [city], [], 4, data, ZERO,
-    { defensiveCopy: true, menuDifficulty: 'normal', cityBuildings: { cs_n2: [] } },
+    { defensiveCopy: true, cityStateDifficultyVsPlayer: 'normal', cityBuildings: { cs_n2: [] } },
     map, diff,
   );
   eq(pick, 'Wojownik', 'T5a: normal 0 military → Wojownik');
 }
 
-console.log('\n--- T6: easy vs hard pod zagrożeniem (easy może wojsko, hard nie) ---');
+console.log('\n--- T6: easy vs hard pod zagrożeniem (OBA mogą wojsko -- hard capem 4, 2 < 4) ---');
 {
   const city = makeCity('cs_e', 4, 5, 5);
   const enemy = makeUnit('en', 0, 6, 5, 'Wojownik');
@@ -156,18 +182,40 @@ console.log('\n--- T6: easy vs hard pod zagrożeniem (easy może wojsko, hard ni
   const units = [enemy, u1, u2];
   const pickEasy = chooseCityProduction(
     'cs_e', [city], units, 4, data, ZERO,
-    { defensiveCopy: true, menuDifficulty: 'easy', cityBuildings: { cs_e: built } },
+    { defensiveCopy: true, cityStateDifficultyVsPlayer: 'easy', cityBuildings: { cs_e: built } },
     map, diff,
   );
   const pickHard = chooseCityProduction(
     'cs_e', [city], units, 4, data, ZERO,
-    { defensiveCopy: true, menuDifficulty: 'hard', cityBuildings: { cs_e: built } },
+    { defensiveCopy: true, cityStateDifficultyVsPlayer: 'hard', cityBuildings: { cs_e: built } },
     map, diff,
   );
   const easyMil = pickEasy === 'Wojownik' || pickEasy === 'Łucznik';
+  const hardMil = pickHard === 'Wojownik' || pickHard === 'Łucznik';
   assert(easyMil, `T6a: easy under threat may queue military (got ${pickEasy})`);
-  assert(pickHard !== 'Wojownik' && pickHard !== 'Łucznik',
-    `T6b: hard under threat still no military (got ${pickHard})`);
+  // C-025/C-026: Trudna gra → PM MOŻE dokupywać wojsko wobec gracza (dawniej blokowane
+  // przez cap('hard')=0 -- regresja naprawiona). Tu 2 jednostki własne < cap 4, więc
+  // filtr capu NIE odcina wojska; pod zagrożeniem (underThreat) hard też może budować.
+  assert(hardMil, `T6b: hard under threat MOŻE teraz budować wojsko, do capu 4 (got ${pickHard})`);
+}
+
+console.log('\n--- T8: hard MP przy capie (4 jednostki) → nie dokup 5. ---');
+{
+  const city = makeCity('cs_h3', 4, 3, 3);
+  const units = [
+    makeUnit('h1', 4, 3, 3, 'Wojownik'),
+    makeUnit('h2', 4, 2, 3, 'Wojownik'),
+    makeUnit('h3', 4, 2, 2, 'Wojownik'),
+    makeUnit('h4', 4, 3, 2, 'Wojownik'),
+  ];
+  const pick = chooseCityProduction(
+    'cs_h3', [city], units, 4, data, ZERO,
+    { defensiveCopy: true, cityStateDifficultyVsPlayer: 'hard', cityBuildings: { cs_h3: ['mury'] } },
+    map, diff,
+  );
+  eq(countOwnerMilitaryUnits(units, 4), 4, 'T8a: 4 units counted as military');
+  assert(pick !== 'Wojownik' && pick !== 'Łucznik',
+    `T8b: hard at cap (4) no more military (got ${pick})`);
 }
 
 console.log('\n--- T7: absorption params easy/normal/hard ---');

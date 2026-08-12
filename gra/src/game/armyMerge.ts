@@ -219,6 +219,13 @@ export function exitGarnizon(u: RuntimeUnit): boolean {
 export function enterFieldFortify(u: RuntimeUnit): void {
   u.fortifyRuchSnapshot = u.ruchLeft;
   u.ufortyfikowanyWPolu = true;
+  // C-025: fortyfikacja i auto-eksploracja wykluczają się wzajemnie (jedna to
+  // "stój w miejscu", druga "ruszaj się co turę") -- wejście w fortyfikację
+  // zawsze czyści autoExplore, niezależnie od kolejności włączania.
+  // EN: fortify and auto-explore are mutually exclusive (one means "stay put",
+  // the other "move every turn") -- entering fortify always clears autoExplore,
+  // regardless of the order the player toggled them in.
+  u.autoExplore = false;
   u.ruchLeft = 0;
 }
 

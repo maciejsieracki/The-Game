@@ -40,6 +40,7 @@ export {
   isEmpireCityFoodSolvent,
   simulateCityFoodCentralPool,
   isCityAutoWyzywienieEnabled,
+  computeEmpireCityFoodNadwyzka,
 } from '../src/game/empire-food';
 export { recomputeCityFoodBalancesInEcon } from '../src/game/turn-economy';
 `, 'utf8');
@@ -78,6 +79,7 @@ const {
   isEmpireCityFoodSolvent,
   simulateCityFoodCentralPool,
   isCityAutoWyzywienieEnabled,
+  computeEmpireCityFoodNadwyzka,
 } = M;
 
 let passed = 0;
@@ -420,8 +422,17 @@ console.log('\n-- L. Q5: onlyAutoManaged — tylko miasta z flagą --');
   ok(isCityAutoWyzywienieEnabled({ id: 'x', ownerId: 1, name: 'AI', population: 1, q: 0, r: 0 }), 'AI zawsze auto');
 }
 
-console.log('\n-- M. Q3: maxSafePoziomRacjiForCity ≤ max i solvent --');
+console.log('\n-- M. Q3: maxSafePoziomRacjiForCity ≤ max i solvent (gracz: FLOW-based, R-AUTO-WYZYWIENIE-CEL-BILANS-NIEUJEMNY) --');
 {
+  // AKTUALIZACJA (rozpoznanie #4, ECHO Macieja "zgoda"): backstop gracza (ownerId===0) jest
+  // dziś FLOW-based (nadwyzka tej tury >=0), nie tylko stock-based isEmpireCityFoodSolvent
+  // (rezerwa zapasyPrzed mogła pokryć deficyt). Ten test miał wcześniej TYLKO asercję
+  // stock-based na "poziom powyżej maxSafe" (linia niżej: `poolOver<0 || !isEmpireCityFoodSolvent`)
+  // -- to jest DOKŁADNIE stare, naprawiane kryterium: z zapasyPrzed=5 rezerwa pokrywała
+  // dokładnie 0,5 kroku deficytu tuż powyżej NOWEGO (niższego) maxSafe, więc stary stock-based
+  // check bywał "solvent=true" w miejscu, gdzie flow tej tury jest już ujemny -- to jest sam
+  // mechanizm przestrzelenia z rozpoznania #4. Dodano asercje flow-based (computeEmpireCityFoodNadwyzka)
+  // -- stock-based asercje NA maxSafe (nie POWYŻEJ) zostają, bo tam oba kryteria się zgadzają.
   const cities = [{
     id: 'c1', ownerId: 0, name: 'P', population: 5, poziomRacji: 2, q: 0, r: 0,
   }];
@@ -445,12 +456,13 @@ console.log('\n-- M. Q3: maxSafePoziomRacjiForCity ≤ max i solvent --');
   const pool = simulateCityFoodCentralPool(5, econ.perCity, 0);
   ok(pool >= 0, `maxSafe=${maxSafe}: pool ≥ 0`);
   ok(isEmpireCityFoodSolvent(5, econ.perCity, 0), `maxSafe=${maxSafe}: solvent`);
+  ok(computeEmpireCityFoodNadwyzka(econ.perCity, 0) >= 0,
+    `maxSafe=${maxSafe}: nadwyzka (flow TEJ tury) ≥ 0 bez pomocy rezerwy (gracz jest flow-based)`);
   cities[0].poziomRacji = maxSafe + 0.5;
   if (maxSafe < 6) {
     M.recomputeCityFoodBalancesInEcon(econ.perCity, cities, RATION_PARAMS);
-    const poolOver = simulateCityFoodCentralPool(5, econ.perCity, 0);
-    ok(poolOver < 0 || !isEmpireCityFoodSolvent(5, econ.perCity, 0),
-      'poziom powyżej maxSafe nie jest solvent');
+    ok(computeEmpireCityFoodNadwyzka(econ.perCity, 0) < 0,
+      'poziom powyżej maxSafe (gracz, FLOW-based): nadwyzka TEJ tury < 0 (rezerwa nie liczy się jako pokrycie)');
   }
 }
 

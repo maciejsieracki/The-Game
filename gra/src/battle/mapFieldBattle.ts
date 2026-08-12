@@ -117,7 +117,8 @@ export interface MapFieldBattleLaunchDeps {
   /** P-AI-MOC-BONUS=A: mnożnik walki major AI z bonusWalka (manual battlefield). */
   difficultyBattleOpts?: (atkOwnerId: number, defOwnerId: number) => Pick<BattleOpts, 'attackerDifficultyCombatMult' | 'defenderDifficultyCombatMult'>;
   registerMilitiaDef?: (id: string, def: Record<string, unknown>) => void;
-  onQuickSave?: () => boolean;
+  /** MIGRACJA IDB: Promise -- doQuickSave (main.ts) zapisuje teraz do IndexedDB. */
+  onQuickSave?: () => Promise<boolean>;
 }
 
 function normFieldVal(v: unknown, fallback: number): number {

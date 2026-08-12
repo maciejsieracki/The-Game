@@ -1911,6 +1911,26 @@ export function applyCounterOffer(
   };
 }
 
+/**
+ * R-PROPOZYCJA-BRAK-EDYCJI (Maciej, wariant A, 2026-08-10): edycja WŁASNEJ, jeszcze
+ * nierozstrzygniętej propozycji (direction='own' w UI, czyli `entry.awaitingOwnerId !== 0`)
+ * W MIEJSCU — podmienia WYŁĄCZNIE `payload` (nowa treść oferty z formularza koszyka),
+ * `round`/`awaitingOwnerId`/`authorOwnerId` zostają BEZ ZMIAN. To jest ISTOTA wariantu A:
+ * brak resetu kontekstu negocjacji — w odróżnieniu od `applyCounterOffer` (kontroferta),
+ * które zawsze +1 rundę i przełącza stronę odpowiadającą.
+ * / EN: in-place edit of the player's OWN, still-pending proposal (UI direction='own', i.e.
+ * `entry.awaitingOwnerId !== 0`) — swaps ONLY `payload` (new offer content from the basket
+ * form); `round`/`awaitingOwnerId`/`authorOwnerId` stay untouched. This is the essence of
+ * variant A: no negotiation-context reset — unlike `applyCounterOffer` (counter-offer),
+ * which always bumps the round and flips the responding side.
+ */
+export function applyOwnProposalEdit(
+  entry: PendingNegotiation,
+  newPayload: ProposalPayload,
+): PendingNegotiation {
+  return { ...entry, payload: newPayload };
+}
+
 export interface NegotiationWorldCtx {
   turn: number;
   isAtWar: boolean;
