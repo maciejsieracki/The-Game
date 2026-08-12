@@ -14934,3 +14934,43 @@ komentarz) — nieblokujące, bez dalszego działania.
 
 **ZAMKNIĘTE jako PASS-WITH-NOTES.**
 
+
+## Blokada wycofania w garnizonie (787210e1) — Evaluator: PASS-WITH-NOTES, RUNDA 2 WYMAGANA
+
+Werdykt agenta `aa77297798dc1e166`: **wdrożone zachowanie jest poprawne** (blokuje nadzbiór tego
+o co prosił właściciel — bezpieczne, zero ryzyka rozgrywkowego), ALE znalazł 3 realne usterki do
+naprawy przed zamknięciem tematu:
+
+1. **Centralne twierdzenie Operatora w kodzie jest FAŁSZYWE, obalone wykonaniem.** Doc-comment w
+   `armyMerge.ts` i sekcja 3 testu twierdzą że koniunkcja `inGarnizon && ufortyfikowanyWPolu` jest
+   „strukturalnie nieosiągalna" — Evaluator URUCHOMIŁ realne funkcje (`enterFieldFortify` +
+   `enterGarnizon` na tej samej jednostce, plus ścieżki `main.ts:9727` i `main.ts:16944`) i
+   uzyskał OBA pola `true` jednocześnie. Sekcja 3 testu jest rozumowaniem kołowym (re-implementuje
+   rozgałęzienie zamiast wołać realne funkcje) — "certyfikuje nieprawdę". Implementacja i tak jest
+   OK (bo `inGarnizon` samo to nadzbiór koniunkcji), ale uzasadnienie w kodzie/teście musi zostać
+   poprawione na prawdziwe.
+2. **Zero ochrony regresyjnej dla realnego okablowania w `main.ts`.** Mutacje M1/M2 (usunięcie
+   `!defenderLockedByGarnizon` z `defenderCanRetreat` ORAZ z `onCancel` w `main.ts`) — bramka
+   zostaje **zielona (18/18)**. Test przypina tylko czysty predykat, nie jego integrację. Do
+   dodania: strażnik tekstowy na `main.ts` (wzorem `ai-founding-territory-test.cjs`).
+3. **Defekt procesowy — commit `787210e1` nie dotknął `PYTANIA-OTWARTE.md`.** ECHO
+   `P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1` (linie 14784-14792) nadal mówi dosłownie o koniunkcji,
+   kod robi inaczej, nic tego nie odnotowuje — audyt właściciela (`grep STATUS: **OTWARTE`, §0c)
+   by tego nie złapał.
+
+**⛔ NOWE PYTANIE, PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (zasada §1a) — STATUS: OTWARTE**
+
+`P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1`: zaimplementowana reguła (blokada na samym
+`inGarnizon===true`, bez wymogu `ufortyfikowanyWPolu===true` jednocześnie) **podważa dosłowny
+zapis ECHO `P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1`** (który mówił o koniunkcji obu pól). Tekstowo
+uzasadnione ("ufortyfikowana W MIEŚCIE" = `inGarnizon`, `ufortyfikowanyWPolu` to z definicji
+POZA miastem), ale wymaga wprost potwierdzenia właściciela.
+
+Dodatkowo, przy okazji: **jednostka ufortyfikowana W POLU (`ufortyfikowanyWPolu`, bez
+`inGarnizon`) dostaje +50% Obrony (`fortify_obrona_proc`, `city-defense.ts:151`) I ZACHOWUJE
+darmową ucieczkę** (dzisiejsza implementacja jej nie blokuje) — czy to zamierzone, czy powinno
+też być zablokowane analogicznie do garnizonu? Osobne pytanie do rozstrzygnięcia razem.
+
+**STATUS: dispatch rundy 2 (napraw 1+2, kod/test) w toku. Punkt 3 (pytanie ABC) czeka na turę
+właściciela — nie blokuje merge'a, kod już scalony i bezpieczny (nadzbiór, nie luka).**
+

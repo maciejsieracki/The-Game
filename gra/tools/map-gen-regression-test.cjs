@@ -203,33 +203,38 @@ function pangeaShapeMetrics(map) {
     coastRatio: coast / Math.sqrt(landCount),
   };
 }
-// P-MAPGEN-PANGEA-COASTRATIO-PROG / R-MAPGEN-PANGEA-PROG-Q1 (2026-08-12): próg coastRatio>3.8 jest
-// stary, źle skalibrowany dług (czerwony od 6f96f082, 2026-08-02, odrzuca 70-82% normalnych
-// generacji) — czeka na ABC właściciela (opcje A/B/C w PYTANIA-OTWARTE.md). Do czasu decyzji ta
-// sekcja NIE inkrementuje globalnego `fail` (nie blokuje bramki), ale porażka zostaje WYRAŹNIE
-// zaraportowana jako ostrzeżenie, żeby nikt nie pomyślał że temat jest zamknięty.
-// EN: coastRatio>3.8 threshold is old, mis-calibrated debt (red since day of introduction) —
-// waiting on owner's ABC decision. Until then this section does NOT increment global `fail`
-// (does not block the gate), but a failure is still reported loudly as a warning so nobody
-// mistakes this for a closed topic.
+// R-MAPGEN-PANGEA-PROG-Q1 = A (Maciej, 2026-08-12, ECHO w PYTANIA-OTWARTE.md, commit 1d9691b0):
+// próg coastRatio obniżony z 3.8 do 3.72. Zmierzone empirycznie na TYCH samych 5 SEEDS (standardowy,
+// pangea, DENSITY medium): rozrzut coast/√A = 3.7778 (seed 777) .. 3.8272 (seed 7), avg 3.7944 —
+// próg 3.8 odrzucał 4/5 (zgodne z wcześniejszym pomiarem w rejestrze: 70-82% na szerszych próbkach).
+// 3.72 zostaje z marginesem ~0.058 pod zmierzonym minimum. Świadomy kompromis właściciela: Evaluator
+// dowiódł że przy progu ~3.70 przechodzi nawet skrajna degeneracja kształtu (domknięcie zatok) —
+// realną ochronę kształtu Pangei daje `bboxFill<0.87`, nie `coastRatio`, ale właściciel wybrał
+// prostotę/zieloną bramkę nad ostrością tej konkretnej asercji. Sekcja jest teraz ZWYKŁĄ blokującą
+// asercją (jak reszta pliku) — ABC już rozstrzygnięte, nie ma powodu trzymać wyjątku nieblokującego.
+// EN: coastRatio threshold lowered from 3.8 to 3.72 per owner's ABC decision. Measured empirically
+// on this file's 5 SEEDS: coast/√A spread = 3.7778..3.8272, avg 3.7944 — 3.8 rejected 4/5. 3.72
+// keeps a ~0.058 margin below the measured minimum. Deliberate compromise: Evaluator proved ~3.70
+// lets extreme shape degeneration through too (bboxFill<0.87 is the real shape guard), but the
+// owner chose gate simplicity over this assertion's sharpness. Section is now a normal blocking
+// assertion like the rest of the file — the ABC is resolved, no reason to keep the exemption.
 let pangeaShapeFail = 0;
 for (const seed of SEEDS) {
   const pmap = M.generujSwiat(seed, 'standardowy', 'pangea', { worldDensity: DENSITY });
   const pm = pangeaShapeMetrics(pmap);
   const ok = pm.massCount === 1 && pm.dominantRatio >= 0.97
-    && pm.bboxFill < 0.87 && pm.coastRatio > 3.8;
+    && pm.bboxFill < 0.87 && pm.coastRatio > 3.72;
   if (!ok) {
     pangeaShapeFail++;
-    console.warn(
-      `OSTRZEŻENIE (nieblokujące, czeka na R-MAPGEN-PANGEA-PROG-Q1) seed=${seed}: `
-      + `masy=${pm.massCount} dom=${pm.dominantRatio.toFixed(3)} `
+    fail++;
+    console.error(
+      `FAIL seed=${seed}: masy=${pm.massCount} dom=${pm.dominantRatio.toFixed(3)} `
       + `bboxFill=${pm.bboxFill.toFixed(3)} coast/√A=${pm.coastRatio.toFixed(3)}`,
     );
   }
 }
 console.log(
-  `  1 masa + nieregularny obrys: ${pangeaShapeFail === 0 ? 'PASS' : 'WARN (nieblokujące, R-MAPGEN-PANGEA-PROG-Q1)'} `
-  + `(${pangeaShapeFail} fail)`,
+  `  1 masa + nieregularny obrys: ${pangeaShapeFail === 0 ? 'PASS' : 'FAIL'} (${pangeaShapeFail} fail)`,
 );
 
 console.log('\n=== Chat ze skarbami (miasta x trudnosc) ===');
