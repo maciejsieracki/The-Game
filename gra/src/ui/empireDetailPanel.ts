@@ -1447,6 +1447,15 @@ function render(): void {
   if (block === 'all' || block === 'kultura') body += kult;
   if (block === 'all' || block === 'surowce') body += sur;
   if (block === 'all' || block === 'handel') body += handel;
+  // P-MOC-BALANS-WAGI/scroll (Maciej, zgłoszenie Evaluatora): innerHTML podmienia CAŁĄ treść
+  // .civ-emp-body, co samo z siebie zeruje scrollTop — zapamiętujemy pozycję PRZED podmianą i
+  // przywracamy PO niej, żeby np. klik zakładki Rankingu Mocy (wireMocViewButtons) czy filtr
+  // kolumn (wireMiastaColFilter) nie przewijał panelu z powrotem na sam początek. / EN: innerHTML
+  // replaces the ENTIRE .civ-emp-body content, which by itself zeroes scrollTop — we save the
+  // position BEFORE the swap and restore it AFTER, so e.g. clicking a Power Ranking view tab
+  // (wireMocViewButtons) or a column filter (wireMiastaColFilter) doesn't scroll the panel back
+  // to the very top.
+  const prevScrollTop = bodyEl.scrollTop;
   bodyEl.innerHTML = body;
   wireMocViewButtons();
 
@@ -1455,6 +1464,8 @@ function render(): void {
   pendingScrollSection = null;
   if (scrollTarget) {
     requestAnimationFrame(() => scrollToSection(scrollTarget));
+  } else {
+    bodyEl.scrollTop = prevScrollTop;
   }
 }
 

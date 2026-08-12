@@ -32,6 +32,19 @@
  *      potwierdź: floor(sum niezaokrąglonych wartości per-miasto z kolumny JEDN.) ==
  *      rekrutEkw chipu/panelu -- czyli wszystkie 4 miejsca UI, mimo że renderowane w 3 różnych
  *      plikach, są matematycznie tym samym liczeniem jednego kosztu/jednostkę.
+ *   F. DOWÓD MUTACYJNY — sekcja E pokazuje spójność na JEDNYM, nieruchomym stanie; sekcja F
+ *      dowodzi, że ta spójność jest niezmiennikiem POD MUTACJĄ: dwa stany tych samych miast,
+ *      różniące się WYŁĄCZNIE `maxMult` (parametr, który skaluje `unitManpowerCost()`),
+ *      potwierdzają że koszt/jednostkę faktycznie się zmienia i #1/#2/#4 (rekrutEkw) oraz
+ *      #3 (KAŻDY wiersz kolumny JEDN.) poruszają się w lockstep w OBU stanach naraz. Do tego
+ *      F2: dwie tymczasowe mutacje REGRESYJNE prawdziwego `manpower.ts` (nie kopii) — rebuild
+ *      bundla esbuildem, dowód że inwariant F pęka na czerwono, przywrócenie pliku (try/finally).
+ *      UCZCIWY ZAKRES (poprawka po recenzji Evaluatora zaginionej wersji): sekcja F dowodzi
+ *      wewnętrznej spójności ARYTMETYKI manpower.ts pod mutacją kosztu — NIE dowodzi sama, że
+ *      main.ts/hud.ts/empireDetailPanel.ts faktycznie WOŁAJĄ te funkcje zamiast mieć własną,
+ *      konkurencyjną kopię logiki (np. twardy koszt zahardkodowany w panelu). To wiązanie
+ *      UI → źródło pilnują sekcje B/C/D (regex na prawdziwych plikach main.ts/hud.ts/
+ *      empireDetailPanel.ts), działające RAZEM z F, nie F samodzielnie.
  */
 
 const fs = require('fs');
@@ -43,6 +56,7 @@ const MAIN_TS = path.join(GRA_DIR, 'src/main.ts');
 const HUD_TS = path.join(GRA_DIR, 'src/ui/hud.ts');
 const PANEL_TS = path.join(GRA_DIR, 'src/ui/empireDetailPanel.ts');
 const TYPES_TS = path.join(GRA_DIR, 'src/ui/empireDetailTypes.ts');
+const MANPOWER_TS = path.join(GRA_DIR, 'src/game/manpower.ts');
 
 const ENTRY = path.join(__dirname, '.armia-chip-jednostki-entry.ts');
 const BUNDLE = path.join(__dirname, '.armia-chip-jednostki-bundle.cjs');
@@ -335,6 +349,188 @@ check(
   mp.formatLiczbaPl(0, 1) === '0',
   mp.formatLiczbaPl(0, 1),
 );
+console.log('');
+
+// ---------------------------------------------------------------------------
+// F. DOWOD MUTACYJNY -- mutacja kosztu-jednostki w JEDNYM miejscu (maxMult) porusza
+//    WSZYSTKIE 4 miejsca (chip/notatka/kolumna JEDN./RAZEM) jednoczesnie, bo wszystkie
+//    licza z jednego zrodla (manpower.ts). Dwa stany tych samych miast, roznice
+//    WYLACZNIE parametrem maxMult -- ktory skaluje unitManpowerCost() (kosztJednostki)
+//    I cityManpowerMax() (limit puli), ale fixture dobrany tak, ze city.manpower < max
+//    W OBU stanach (clamp nigdy nie wchodzi w gre) -- jedyna rzecz, ktora sie realnie
+//    zmienia miedzy stanami, to koszt jednostki, nie surowa pula.
+//
+//    UCZCIWY ZAKRES: sekcja F dowodzi, ze ARYTMETYKA manpower.ts jest wewnetrznie spojna
+//    pod mutacja kosztu (te same 4 wyniki poruszaja sie razem, w obu stanach maxMult).
+//    NIE dowodzi sama, ze main.ts/hud.ts/empireDetailPanel.ts faktycznie WOLAJA te
+//    funkcje (a nie maja wlasnej, konkurencyjnej kopii logiki -- np. twardy koszt
+//    zahardkodowany w panelu) -- to wiazanie UI -> zrodlo pilnuja sekcje B/C/D (regex na
+//    main.ts/hud.ts/empireDetailPanel.ts), dzialajace RAZEM z F, nie F samodzielnie.
+// ---------------------------------------------------------------------------
+console.log('F. Dowod mutacyjny: zmiana kosztu (maxMult) porusza 4 miejsca w lockstep');
+
+const epokaF = 4; // manpowerNaJednostke[4] = 8000 (epoka-ludnosc-manpower.json)
+// Manpower dobrany duzo wiekszy niz w fixture sekcji E celowo -- zeby MUT-F1 (nizej,
+// F2) mial czym wykryc rozjazd: przy malych liczbach floor(pool/8000) i floor(pool/16000)
+// moga przypadkiem wyjsc rowne (falszywy negatyw), przy tych wartosciach nie wychodza.
+const fixtureCitiesF = [
+  { id: 'c0', ownerId: 0, population: 8, manpower: 42600 },
+  { id: 'c1', ownerId: 0, population: 5, manpower: 26000 },
+  { id: 'c2', ownerId: 0, population: 3, manpower: 10000 },
+  { id: 'foreign', ownerId: 1, population: 20, manpower: 99999 }, // obca cyw. -- wykluczona
+];
+const playerCitiesF = fixtureCitiesF.filter((c) => c.ownerId === 0);
+
+// Stan liczony przy danym maxMult -- ta sama sciezka co main.ts w OBU miejscach (chip + panel).
+function stanPrzyMaxMult(mod, maxMult) {
+  const kosztJednostki = mod.unitManpowerCost(epokaF, maxMult);
+  const pobor = mod.empirePoborTotals(fixtureCitiesF, 0, epokaF, maxMult);
+  const rekrutEkw = mod.rekrutUnitEquivalents(pobor.rekruci, epokaF, maxMult); // = #1 chip / #2 notatka / #4 RAZEM
+  let sumEkwMiasto = 0;
+  const perCity = [];
+  for (const c of playerCitiesF) {
+    const cRekruci = mod.cityManpowerCurrent(c, epokaF, maxMult);
+    const ekwMiasto = kosztJednostki > 0 ? cRekruci / kosztJednostki : 0; // #3 kolumna JEDN.
+    sumEkwMiasto += ekwMiasto;
+    perCity.push({ id: c.id, cRekruci, ekwMiasto });
+  }
+  return { kosztJednostki, pobor, rekrutEkw, sumEkwMiasto, perCity };
+}
+
+const stanA = stanPrzyMaxMult(mp, 1); // maxMult=1
+const stanB = stanPrzyMaxMult(mp, 2); // maxMult=2 -- WYLACZNIE ten jeden parametr rozny od stanu A
+
+check(
+  'Krok 0 -- fixture ma sens: manpower KAZDEGO miasta gracza NIEZMIENIONY miedzy stanami (dowod, ze clamp cityManpowerMax nie zadzialal -- jedyna zmienna to koszt, nie pula)',
+  stanA.perCity.every((cA, i) => cA.cRekruci === stanB.perCity[i].cRekruci),
+  { A: stanA.perCity.map((c) => c.cRekruci), B: stanB.perCity.map((c) => c.cRekruci) },
+);
+check(
+  'Krok 1 -- koszt jednostki faktycznie sie zmienil miedzy stanami (maxMult 1 -> 2 podwaja koszt: unitManpowerCost)',
+  stanB.kosztJednostki === stanA.kosztJednostki * 2 && stanB.kosztJednostki !== stanA.kosztJednostki,
+  { A: stanA.kosztJednostki, B: stanB.kosztJednostki },
+);
+check(
+  'Krok 2 -- #1/#2/#4 rekrutEkw (chip "Armia" / notatka "mozna werbowac" / wiersz RAZEM) zmienia sie W LOCKSTEP z kosztem (floor(pula/koszt) w obu stanach, B < A bo koszt 2x)',
+  stanA.rekrutEkw === Math.floor(stanA.pobor.rekruci / stanA.kosztJednostki)
+    && stanB.rekrutEkw === Math.floor(stanB.pobor.rekruci / stanB.kosztJednostki)
+    && stanB.rekrutEkw < stanA.rekrutEkw,
+  { rekrutEkwA: stanA.rekrutEkw, rekrutEkwB: stanB.rekrutEkw },
+);
+check(
+  'Krok 3 -- #3 KAZDY wiersz kolumny JEDN. per-miasto zmienia sie proporcjonalnie (ekwMiasto_B == ekwMiasto_A / 2, dla kazdego miasta gracza, bez wyjatku)',
+  stanA.perCity.every((cA, i) => Math.abs(stanB.perCity[i].ekwMiasto - cA.ekwMiasto / 2) < 1e-9),
+  { A: stanA.perCity.map((c) => c.ekwMiasto), B: stanB.perCity.map((c) => c.ekwMiasto) },
+);
+check(
+  'Krok 4 -- floor(suma JEDN. per-miasto) === rekrutEkw chipu/RAZEM trzyma sie POD OBOMA stanami naraz (sekcja E to sprawdzala tylko na jednym, nieruchomym stanie)',
+  Math.floor(stanA.sumEkwMiasto) === stanA.rekrutEkw && Math.floor(stanB.sumEkwMiasto) === stanB.rekrutEkw,
+  { sumA: stanA.sumEkwMiasto, rekrutEkwA: stanA.rekrutEkw, sumB: stanB.sumEkwMiasto, rekrutEkwB: stanB.rekrutEkw },
+);
+console.log('');
+
+// ---------------------------------------------------------------------------
+// F2. WERYFIKACJA NEGATYWNA -- dowod, ze sekcja F realnie cos lapie (nie jest tautologia).
+//    Dwie tymczasowe mutacje REGRESYJNE PRAWDZIWEGO manpower.ts (nie kopii/reimplementacji),
+//    rebuild bundla esbuildem, ponowne przeliczenie inwariantu F (Krok 2+4 dla obu stanow) na
+//    zmutowanym module -- oczekujemy CZERWONO. Plik jest PRZYWRACANY zawsze (try/finally),
+//    nawet gdyby ktoras asercja nizej zawiodla.
+// ---------------------------------------------------------------------------
+console.log('F2. Weryfikacja negatywna -- mutacje production code lapane przez inwariant sekcji F');
+
+const manpowerSrcBackup = fs.readFileSync(MANPOWER_TS, 'utf8');
+const MUTANT_ENTRY = path.join(__dirname, '.armia-chip-jednostki-mutant-entry.ts');
+const MUTANT_BUNDLE = path.join(__dirname, '.armia-chip-jednostki-mutant-bundle.cjs');
+
+function buildMutantManpowerBundle() {
+  fs.writeFileSync(MUTANT_ENTRY, `
+import {
+  unitManpowerCost,
+  rekrutUnitEquivalents,
+  empirePoborTotals,
+  cityManpowerCurrent,
+} from '../src/game/manpower';
+module.exports = { unitManpowerCost, rekrutUnitEquivalents, empirePoborTotals, cityManpowerCurrent };
+`, 'utf8');
+  esbuild.buildSync({
+    entryPoints: [MUTANT_ENTRY],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    outfile: MUTANT_BUNDLE,
+    logLevel: 'silent',
+  });
+  delete require.cache[require.resolve(MUTANT_BUNDLE)];
+  return require(MUTANT_BUNDLE);
+}
+
+/** Powtorka Krokow 2+4 sekcji F (inwariant "rekrutEkw == floor(suma JEDN.)" w OBU stanach
+ *  maxMult) na (ewentualnie zmutowanym) module. Zwraca true gdy inwariant sie trzyma. */
+function inwariantFTrzymaSie(mod) {
+  const a = stanPrzyMaxMult(mod, 1);
+  const b = stanPrzyMaxMult(mod, 2);
+  return Math.floor(a.sumEkwMiasto) === a.rekrutEkw && Math.floor(b.sumEkwMiasto) === b.rekrutEkw;
+}
+
+/** Uruchamia jedna mutacje: podmienia MANPOWER_TS, rebuilduje bundle, liczy inwariant,
+ *  ZAWSZE przywraca oryginal (finally). Zwraca { podmianaOk, bladBuduj, inwariantPoMutacji }. */
+function uruchomMutacje(anchor, replacement) {
+  const podmianaOk = manpowerSrcBackup.includes(anchor);
+  const mutated = podmianaOk ? manpowerSrcBackup.replace(anchor, replacement) : manpowerSrcBackup;
+  let inwariantPoMutacji = true;
+  let bladBuduj = null;
+  try {
+    fs.writeFileSync(MANPOWER_TS, mutated, 'utf8');
+    const mutMod = buildMutantManpowerBundle();
+    inwariantPoMutacji = inwariantFTrzymaSie(mutMod);
+  } catch (e) {
+    bladBuduj = e;
+  } finally {
+    fs.writeFileSync(MANPOWER_TS, manpowerSrcBackup, 'utf8');
+  }
+  return { podmianaOk, zmianaFaktyczna: mutated !== manpowerSrcBackup, bladBuduj, inwariantPoMutacji };
+}
+
+// MUT-F1: rekrutUnitEquivalents (chip "Armia" / notatka / RAZEM) przestaje przekazywac
+// maxMult do unitManpowerCost -- symuluje regresje "chip liczy koszt OSOBNO/inaczej niz
+// kolumna per-miasto" (np. ktos w przyszlosci doda parametr i zapomni go przekazac w
+// jednym z 4 miejsc). Przy maxMult=1 (stan A) mutacja jest niewidoczna (1 to wartosc
+// domyslna) -- lapie ja dopiero stan B (maxMult=2), co jest OK: inwariant F sprawdza OBA
+// stany naraz (Krok 4), wiec wystarczy ze jeden z nich pęka.
+{
+  const anchor = 'const cost = unitManpowerCost(epoka, maxMult);';
+  const replacement = 'const cost = unitManpowerCost(epoka, 1); // MUTANT-F1 (regresyjny, przywrocony ponizej): ignoruje maxMult';
+  const wynik = uruchomMutacje(anchor, replacement);
+  check('MUT-F1: kotwica podmiany istnieje w manpower.ts (rekrutUnitEquivalents)', wynik.podmianaOk);
+  check('MUT-F1: podmiana faktycznie zmienila zrodlo', wynik.zmianaFaktyczna);
+  check('MUT-F1: zbudowana bez bledu esbuild (mutacja jest syntaktycznie poprawnym TS)', wynik.bladBuduj === null, wynik.bladBuduj && (wynik.bladBuduj.message || String(wynik.bladBuduj)));
+  check(
+    'MUT-F1 ("chip ignoruje maxMult, liczy koszt osobno") lapana CZERWONO przez inwariant sekcji F',
+    wynik.inwariantPoMutacji === false,
+  );
+  check('manpower.ts przywrocony do oryginalu po MUT-F1', fs.readFileSync(MANPOWER_TS, 'utf8') === manpowerSrcBackup);
+}
+
+// MUT-F2: empirePoborTotals przestaje filtrowac miasta po ownerId -- pula "przecieka" z
+// obcej cywilizacji do puli gracza (regresja: dokladnie ten blad, ktoremu ma zapobiegac
+// miasto "foreign" w fixture E/F). Lapana w OBU stanach (maxMult nie ma tu znaczenia --
+// przeciek jest w sumowaniu, nie w koszcie).
+{
+  const anchor = '  for (const c of cities) {\n    if (c.ownerId !== ownerId) continue;\n    sumaLudkow += clampLudki(c.population);';
+  const replacement = '  for (const c of cities) {\n    // MUTANT-F2 (regresyjny, przywrocony ponizej): filtr ownerId usuniety -- pula przecieka miedzy cywilizacjami\n    sumaLudkow += clampLudki(c.population);';
+  const wynik = uruchomMutacje(anchor, replacement);
+  check('MUT-F2: kotwica podmiany istnieje w manpower.ts (empirePoborTotals)', wynik.podmianaOk);
+  check('MUT-F2: podmiana faktycznie zmienila zrodlo', wynik.zmianaFaktyczna);
+  check('MUT-F2: zbudowana bez bledu esbuild', wynik.bladBuduj === null, wynik.bladBuduj && (wynik.bladBuduj.message || String(wynik.bladBuduj)));
+  check(
+    'MUT-F2 ("pula przecieka z obcej cywilizacji, foreign 99999 wlicza sie do rekrutEkw") lapana CZERWONO przez inwariant sekcji F',
+    wynik.inwariantPoMutacji === false,
+  );
+  check('manpower.ts przywrocony do oryginalu po MUT-F2', fs.readFileSync(MANPOWER_TS, 'utf8') === manpowerSrcBackup);
+}
+
+try { fs.unlinkSync(MUTANT_ENTRY); } catch (_e) { /* brak pliku -- ok */ }
+try { fs.unlinkSync(MUTANT_BUNDLE); } catch (_e) { /* brak pliku -- ok */ }
 console.log('');
 
 // ---------------------------------------------------------------------------
