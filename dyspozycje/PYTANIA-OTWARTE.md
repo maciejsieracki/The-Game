@@ -13077,3 +13077,16 @@ Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), wszelkie test
 tych wartości (przeliczone, zielone).
 
 **STATUS: OTWARTE, gotowe do dispatchu Sonnet 5 (worktree) — czysta zmiana danych + testy.**
+
+## P-CUDA-NIE-BLOKUJA-PRZEJSCIA-EPOKI — RECON ZAKOŃCZONY, ABC ZADANE (2026-08-12)
+
+Mechanizm z `R-EPOKA-CUD-WARUNEK-AWANSU` (ECHO A, 2026-08-09) JEST wdrożony i wpięty
+(`owner-epoch.ts::computeMainCivEraFromResearch`/`eraOwnWonderSatisfied`), scalony `13861b60`+
+`e5ba61c2`, na ROBOCZA od FALA 266 (2026-08-10) — DWA DNI przed zgłoszeniem. To NIE regresja.
+Przyczyna zgłoszenia: reguła ma wąski zakres z definicji (blokuje tylko gdy cywilizacja ma
+przypisany cud E w OPUSZCZANEJ epoce) — dziś w praktyce: Kamień→Brąz zablokowane tylko dla
+Egiptu (1/15 cywilizacji), Brąz→Żelazo dla 8/15, a 6/15 cywilizacji (cud w Żelazie = ostatniej
+aktywnej epoce) nie ma reguły aktywnej na ŻADNYM z 2 dostępnych przejść. Pytanie ABC
+`R-EPOKA-CUD-ZAKRES-Q1` zadane w czacie tej samej turze — czeka na odpowiedź.
+
+**STATUS: ABC ZADANE, czeka na `R-EPOKA-CUD-ZAKRES-Q1 + litera`.**
