@@ -14733,3 +14733,91 @@ failować (bramka i tak czerwona, ale `runReal(...)` wart owinięcia w try/catch
 
 **STATUS: dispatch rundy 2 WYŁĄCZNIE dla Zadania 2 (scroll-reset) w toku — Zadanie 1 (sekcja F)
 zostaje bez zmian, PASS.**
+
+## ECHO — odpowiedzi na 10 pozostałych pytań ABC (Maciej, 2026-08-12, batch)
+
+**2a — P-SUROWCE-KOLEJNOSC-KON-Q1 = A.** Koń+Złoto zostają w jednym wierszu (już wdrożone).
+Zero kodu — **ZAMKNIĘTE**.
+
+**3a — R-KONWERTERY-TRUDNOSC-SPLASZCZONA-Q1 = A**, z uzasadnieniem właściciela: „nigdy nie
+planowaliśmy ograniczenia produkcji surowców na różnych poziomach trudności". **To ŚWIADOMIE
+COFA wcześniejszą decyzję `C-SUROW-CEGLA=A` (Maciej 2026-07-24)** — właściciel jawnie
+potwierdził że tamta decyzja nie odzwierciedlała faktycznego zamiaru. Płaskie wartości
+(10/10/10 Cegielnia, 5/5/5 Odlewnie) zostają. Zero kodu do zmiany (`26707dcf` już ma płaskie
+wartości) — **ZAMKNIĘTE, zdejmuję blokadę deployu tej części `26707dcf`**.
+
+**4a — R-MAPGEN-PANGEA-PROG-Q1 = A.** Próg `coastRatio` obniżony z 3.8 do ~3.72. Świadomie
+przyjęty kompromis mimo że Evaluator dowiódł że to czyni sekcję niemal ślepą (przy 3.70 skrajna
+degeneracja kształtu przechodzi) — właściciel wybrał prostotę/zieloną bramkę nad ostrością
+testu. Kod do zmiany.
+
+**5a — P-DREWNO-BRAMKA-RYZYKO-STARTU = A** (bramka surowcowa dla widoczności w rekrutacji
+zostaje bez zmian — świadome ryzyko z 2026-08-08 pozostaje w mocy) — **ZAMKNIĘTE, zero kodu**.
+
+**⛔ ALE — istotna korekta przy okazji, PODWAŻAJĄCA wcześniejsze ustalenie (rule §1a).**
+Właściciel doprecyzował ZAKRES KASKADY epok w rekrutacji, w sposób SPRZECZNY z tym co
+zarejestrowałem jako „NIE regresja" w tej samej turze co punkt 5 (`epoka-merge-recruit-test.cjs`,
+scalone w `0caaec93`, asercja „epoch=3: jednostki Kamienia WCIĄŻ dostępne — kaskada 3 epok, NIE
+tylko bieżąca" — **ta asercja jest TERAZ NIEPRAWDZIWA wg słów właściciela poniżej**):
+
+> „Zawsze umożliwialiśmy produkcję jednostek z poprzedniej epoki, czyli w brązie powinny być
+> możliwe do rekrutacji od razu, od początku, wszystkie jednostki z kamienia. Z kolei w żelazie
+> powinna być możliwość rekrutacji wszystkich jednostek z brązu, ale z kamienia już nie.
+> Oczywiście wyjątek dotyczy zwiadowcy. Tak że surowce nie są tu problemem. To jest naturalna
+> kolej rzeczy, że trzeba postawić odpowiednie ulepszenia, żeby te surowce pozyskać."
+
+**Nowa reguła kaskady**: epoka bieżąca + WYŁĄCZNIE jedna epoka bezpośrednio poprzedzająca (nie
+WSZYSTKIE niższe epoki jak dziś) — WYJĄTEK: Zwiadowca (`Epoka: Kamień` w `units.json`, jedyna
+jednostka bez wymogu surowca) ma pozostać dostępny we WSZYSTKICH epokach niezależnie od reguły.
+Skutek w praktyce: Brąz (epoka 2) nie zmienia się (Kamień=epoka1 ⩾ epoka-1=1, kaskada 1 epoki w
+dół daje ten sam wynik co dziś) — rozjazd ujawnia się DOPIERO w Żelazie (epoka 3): dziś pokazuje
+Kamień+Brąz+Żelazo (wszystkie 3), docelowo ma pokazywać Brąz+Żelazo (2), Kamień znika (poza
+Zwiadowcą). Kod: `gra/src/game/production.ts:829` (`if (epochNumber(u.Epoka) > epoch) continue;`
+— dodać dolną granicę). Test `epoka-merge-recruit-test.cjs` wymaga PRZEPISANIA (obecna asercja
+sekcji 3 zakłada dokładnie odwrotne zachowanie).
+
+**STATUS: dispatch Sonnet 5 (worktree) dla punktu 4 (próg mapgen) + korekty kaskady epok
+(punkt 5) w toku — dwa niezależne, równoległe zadania.**
+
+---
+
+**6 — P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1 — odpowiedź WŁASNA właściciela (nie litera ABC),
+zastępuje pierwotne opcje.** „Jeżeli jakaś jednostka jest ufortyfikowana w mieście i jest w
+garnizonie, to nie może się wycofać. Ani AI, ani gracz, ani nikt." Nowa reguła, symetryczna: dla
+KAŻDEGO obrońcy (gracz/AI/barbarzyńca) — jeśli WSZYSTKIE jednostki w obronie mają jednocześnie
+`inGarnizon===true` I `ufortyfikowanyWPolu===true`, `canRetreat` musi być `false` niezależnie od
+ownera. Dziś `canRetreat: true/false` ustawiane przy konstrukcji `preBattleSideFromRoster`
+(main.ts, kilka miejsc — grep `canRetreat:` znajduje ~3 literalne miejsca zapisu). Do sprawdzenia:
+czy dzisiejsze `true`/`false` już koreluje z `inGarnizon`/`ufortyfikowanyWPolu`, czy to osobny,
+niezwiązany warunek — jeśli osobny, podłączyć.
+
+**7b — P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1 = B.** Dodać mechanikę „wejście na pusty heks
+miasta (bez obrońców) = przejęcie", aktywną WYŁĄCZNIE na `hard` (`shouldAllowBarbCityCapture`).
+**To ODBLOKOWUJE pełne domknięcie tematu P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1** — bez stanu
+terminalnego żadna naprawa pamięci (rundy 2-4) nie mogła dać realnego zakończenia, tylko patrol.
+
+**8a — P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1 = A**, z istotnym doprecyzowaniem nowej
+mechaniki (efekt uboczny 7b — pierwszy raz miasto może trwale przejść pod barbarzyńców): „wtedy
+barbarzyńcy w mieście mogą budować normalnie, tak jak każda cywilizacja: jednostki jednak nie
+budują żadnych budynków ani ulepszeń; po prostu wykorzystują bazę miasta jako produkcję kolejnych
+jednostek. Całość jest nastawiona na produkcję jednostek wojskowych i atak na innych." Nowa
+mechanika: miasto pod `BARBARIAN_OWNER_ID` (-1) produkuje WYŁĄCZNIE jednostki (nigdy budynki/
+ulepszenia), kolejka/AI budowy barbarzyńskiego miasta dobiera cele czysto militarne.
+
+**9b — P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1 = B.** Dodać realny limit pościgu osieroconej
+jednostki (zamiast martwego `healthFrac`) — liczba tur od osierocenia LUB promień od miejsca
+zniszczenia obozu. Wybór konkretnego mechanizmu i wartości progowej: decyzja Operatora,
+uzasadniona w raporcie (żadna z dwóch opcji nie była jednoznacznie preferowana).
+
+**10b — P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1 = B.** Zniszczenie obozu przez `onSplit`
+(rozdzielenie armii) ma kosztować punkty ruchu identycznie jak normalny atak na obóz.
+
+**11a — P-BARBARZYNCY-BEZPOWROTNIE-RESPAWN-Q1 = A.** „Bezpowrotnie" dotyczy tylko instancji
+obozu (dzisiejsze zachowanie) — heks MOŻE dostać nowy obóz po czasie, to nie jest naruszenie
+słowa. Zero kodu — **ZAMKNIĘTE**, dopisać do rundy 5 obozów (już wstrzymanej) jako potwierdzenie,
+nie zadanie.
+
+**STATUS: dispatch w toku dla 6+7+8+9+10 jako skoordynowany batch (dzielą pliki
+barbarians.ts/main.ts capture — jeden Operator na raz zamiast 5 kolidujących równolegle),
+punkt 11 dołączony do już zarejestrowanej, wstrzymanej rundy 5 obozów jako potwierdzenie bez
+nowej pracy kodowej.**
