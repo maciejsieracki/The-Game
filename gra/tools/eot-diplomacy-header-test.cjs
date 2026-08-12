@@ -53,6 +53,12 @@ const diploWygaslaMsg = 'Dyplomacja: propozycja wygasła — wojna';
 const aiAiTradeMsg = 'Ateny handluje z Sparta';
 // Kontrolny wpis NIE-dyplomatyczny — musi zostać przy dotychczasowym „Koniec tury" / kind:'info'.
 const nonDiploMsg = 'Ukończono: <b>Piramida</b> @ 3,4';
+// N2 (Evaluator PASS-WITH-NOTES 7b02eb2d): prefiks „Dyplomacja:” NIE na początku zdania —
+// musi dostać domyślny nagłówek „Koniec tury”. Łapie mutację startsWith→includes (bez tego
+// przypadku ta mutacja przechodziła 15/15, bo żaden istniejący wpis nie miał prefiksu w środku).
+// EN: "Dyplomacja:" prefix NOT at the start of the message — must keep the default "Koniec
+// tury" header. Catches a startsWith→includes mutation (previously undetected: 15/15 passed).
+const midSentenceDiploMsg = 'Coś tam Dyplomacja: coś tam';
 
 const evs = B.deferredHintsToSidePanelEvents(
   [
@@ -60,13 +66,14 @@ const evs = B.deferredHintsToSidePanelEvents(
     { msg: diploWygaslaMsg, durationMs: 4000 },
     { msg: aiAiTradeMsg, durationMs: 4000 },
     { msg: nonDiploMsg, durationMs: 4500 },
+    { msg: midSentenceDiploMsg, durationMs: 4500 },
   ],
   7,
 );
 
-ok(evs.length === 4, 'zwraca 4 wpisy (1:1 z hints)');
+ok(evs.length === 5, 'zwraca 5 wpisów (1:1 z hints)');
 
-const [evHandel, evWygasla, evAiAi, evNonDiplo] = evs;
+const [evHandel, evWygasla, evAiAi, evNonDiplo, evMidSentence] = evs;
 
 // Zgłoszony przypadek: nagłówek MA BYĆ „Dyplomacja", NIE „Koniec tury".
 ok(evHandel.title === 'Dyplomacja', `handel surowcem → title 'Dyplomacja' (got '${evHandel.title}')`);
@@ -88,6 +95,12 @@ ok(evNonDiplo.title === 'Koniec tury', `nie-dyplomacja → title 'Koniec tury' b
 ok(evNonDiplo.kind === 'info', `nie-dyplomacja → kind 'info' bez zmian (got '${evNonDiplo.kind}')`);
 ok(evNonDiplo.origin === undefined, 'nie-dyplomacja → bez origin');
 ok(!evNonDiplo.subtitle.includes('<'), 'nie-dyplomacja → subtitle bez HTML (bez regresji istniejącego strippingu)');
+
+// N2: prefiks „Dyplomacja:” w ŚRODKU zdania (nie na początku) → nagłówek MUSI zostać
+// domyślny „Koniec tury” (startsWith, nie includes).
+ok(evMidSentence.title === 'Koniec tury', `„Dyplomacja:” w środku zdania → title 'Koniec tury' (got '${evMidSentence.title}')`);
+ok(evMidSentence.kind === 'info', `„Dyplomacja:” w środku zdania → kind 'info' (got '${evMidSentence.kind}')`);
+ok(evMidSentence.origin === undefined, '„Dyplomacja:” w środku zdania → bez origin');
 
 try { fs.unlinkSync(ENTRY); fs.unlinkSync(BUNDLE); } catch (_) {}
 

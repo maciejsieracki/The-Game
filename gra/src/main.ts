@@ -850,6 +850,7 @@ import {
   deferredHintsToSidePanelEvents,
   dismissEotOrEraWarLogEntry,
   shouldDeferEotEvents,
+  DIPLOMACY_MSG_PREFIX,
   type DeferredEotHint,
 } from './game/eot-event-defer';
 import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
@@ -13001,7 +13002,7 @@ async function boot(): Promise<void> {
         turn, 'ai', negotiationSeq,
       );
       negotiationTable.push(entry);
-      showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), 4500);
+      showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), 4500);
       refreshD1bHud();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
@@ -13023,7 +13024,7 @@ async function boot(): Promise<void> {
         if (!validity.valid) {
           negotiationTable.splice(ni, 1);
           changed = true;
-          showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+          showHintMessage(DIPLOMACY_MSG_PREFIX + ' propozycja wygasła — ' + (validity.reason ?? ''), 4000);
         }
       }
       if (changed) {
@@ -13142,7 +13143,7 @@ async function boot(): Promise<void> {
       ));
       if (!validity.valid) {
         negotiationTable.splice(ni, 1);
-        showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+        showHintMessage(DIPLOMACY_MSG_PREFIX + ' propozycja wygasła — ' + (validity.reason ?? ''), 4000);
         return;
       }
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
@@ -13769,7 +13770,7 @@ async function boot(): Promise<void> {
         zaplataPerTura: resourceCmd?.zaplataPerTura,
         resTurns: resourceCmd?.turns,
       });
-      showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmdType), 4500);
+      showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmdType), 4500);
       refreshD1bHud();
     }
 

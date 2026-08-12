@@ -62,7 +62,7 @@ const AI_AI_TRADE_MARKER = ' handluje z ';
  * ogólne podsumowanie tury, a nie osobna nota dyplomatyczna (P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK).
  * EN: prefix of player↔AI diplomacy messages deferred via this queue — without this check they got
  * the misleading "Koniec tury" (End of turn) header instead of a diplomacy-specific one. */
-const DIPLOMACY_MSG_PREFIX = 'Dyplomacja:';
+export const DIPLOMACY_MSG_PREFIX = 'Dyplomacja:';
 
 /** Zamień odłożone hinty na wpisy panelu Wydarzenia.
  * Wpisy dyplomatyczne — handel AI↔AI (marker „ handluje z ”) ORAZ komunikaty dyplomacji gracz↔AI
@@ -83,6 +83,25 @@ export function deferredHintsToSidePanelEvents(
   turn: number,
 ): SidePanelEvent[] {
   return hints.map((h, i) => {
+    // N3 (Evaluator PASS-WITH-NOTES 7b02eb2d): kolejność sprawdzania tych dwóch flag ma
+    // znaczenie dla `origin`. Gdyby jakiś komunikat pasował do OBU wzorców naraz (zaczynał się
+    // od „Dyplomacja:” I zawierał marker AI↔AI „ handluje z ”), `isAiAiTrade` „wygrywa” niżej
+    // przy nadawaniu `origin:'other-civs'` — wpis dotyczący gracza wprost zostałby ukryty przy
+    // filtrze 🌍 „Inne cyw.” OFF, wbrew intencji naprawy P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK.
+    // Dziś nieosiągalne: żadna z 8 wartości `diploPendingTitle()` (main.ts) ani 4 reasonów
+    // `negotiationStillValid()` (diplomacy-proposals.ts) nie zawiera markera „ handluje z ” —
+    // zweryfikowane przeglądem obu list. Jeśli w przyszłości ktoś doda taki tekst do jednej
+    // z nich, ta kolizja stanie się realna i będzie wymagała jawnego rozstrzygnięcia priorytetu
+    // (np. `isPlayerAiDiplomacy` przed `isAiAiTrade` przy nadawaniu origin).
+    // EN: the check order of these two flags matters for `origin`. If a message ever matched
+    // BOTH patterns at once (started with "Dyplomacja:" AND contained the AI↔AI " handluje z "
+    // marker), `isAiAiTrade` "wins" below when assigning `origin:'other-civs'` — an entry that
+    // concerns the player directly would get hidden by the 🌍 "Other civs" filter when OFF,
+    // against the intent of the P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK fix. Unreachable today:
+    // none of the 8 `diploPendingTitle()` values (main.ts) nor the 4 `negotiationStillValid()`
+    // reasons (diplomacy-proposals.ts) contain the " handluje z " marker — checked by review of
+    // both lists. If either ever gains such text, this collision becomes real and needs an
+    // explicit priority resolution (e.g. check `isPlayerAiDiplomacy` before `isAiAiTrade` for origin).
     const isAiAiTrade = h.msg.includes(AI_AI_TRADE_MARKER);
     const isPlayerAiDiplomacy = h.msg.startsWith(DIPLOMACY_MSG_PREFIX);
     const isDiplomacy = isAiAiTrade || isPlayerAiDiplomacy;
