@@ -747,7 +747,7 @@ import { advanceProduction, rushProduction, rushCost, populationCostOf, UNIT_POP
   enqueue, buildingProductionItem, splitPraca, cityPracaInteger, pracaImperialPoolGain, previewPracaPoolBrutto, availableProduction, availableReplacementsFor,
   buildableProduction, purchasableUnits,
   buildingLevelForEpoch, buildingEffectAtLevel, frontItem, unitNacjaForCivKey, applyCompletedBuildingIds,
-  buildingUnlockFlagFor, buildingTypeQueued,
+  buildingUnlockFlagFor, buildingTypeQueued, insertAtFront,
   type CityProduction, type AvailabilityContext } from './game/production';
 import { buildReplaceAvailabilityCtx } from './game/unit-replace-context';
 import { daninaLabel as resolveDaninaLabel, mennicaWStolicy } from './game/danina-nazwa';
@@ -3212,12 +3212,19 @@ async function boot(): Promise<void> {
       );
       if (!d.ok) {
         console.log(`[Produkcja] Tura ${turn} ${city.name}: brak Manpower — odlozono ${completed.id}`);
+        // RUNDA 3, naprawa B2 (P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B): `prodAfterAdvance`
+        // przychodzi już PO advanceProduction/dropFrontItem -- jego scalar `postep`
+        // należy do NOWEGO frontu (`prodAfterAdvance.kolejka[0]`, np. Cud, który
+        // odzyskał swój zbankowany postęp bo `completed` właśnie zszedł). `completed`
+        // (np. Wojownik) wraca na front, bo Manpower zabrakło -- ale gołe nadpisanie
+        // scalara wartością `completed.koszt` (poprzedni kod) po cichu gubiło postęp
+        // Cudu. `insertAtFront` bankuje go NAJPIERW na `kolejka[0]`, dokładnie jak
+        // `promoteToFront`/`dropFrontItem`. / EN: round-3 fix for B2 -- `prodAfterAdvance`
+        // already went through advanceProduction/dropFrontItem, so its `postep` scalar
+        // belongs to the NEW front (`prodAfterAdvance.kolejka[0]`), not to `completed`;
+        // `insertAtFront` banks it there before putting `completed` back on top.
         return {
-          prod: {
-            ...prodAfterAdvance,
-            kolejka: [completed, ...prodAfterAdvance.kolejka],
-            postep: completed.koszt,
-          },
+          prod: insertAtFront(prodAfterAdvance, completed, completed.koszt),
           requeueManpower: true,
         };
       }

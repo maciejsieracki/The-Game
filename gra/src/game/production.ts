@@ -1324,6 +1324,67 @@ export function promoteToFront(prod: CityProduction, index: number): CityProduct
   };
 }
 
+/**
+ * Wstaw `item` na sam front kolejki, bankując NAJPIERW aktualny scalar
+ * `prod.postep` na itemie, który przez to traci status frontu (dawny
+ * `kolejka[0]`) -- ten sam wzorzec bankowania co `promoteToFront`/
+ * `dropFrontItem`, tylko dla trzeciego call-site'u, który ręcznie manipuluje
+ * frontem kolejki: `applyProductionCompleted` w main.ts (gałąź "brak
+ * Manpower" -- P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B, RUNDA 3, naprawa B2).
+ * Bez tego bankowania scalar `prod.postep` (należący do dawnego frontu, np.
+ * Cudu, którego postęp `advanceProduction`/`dropFrontItem` właśnie
+ * przywróciło) ginie bezpowrotnie, nadpisany przez `activePostep` (koszt
+ * itemu wracającego na front, np. w pełni opłaconej jednostki czekającej na
+ * wolny Manpower).
+ *
+ * Bankuje TYLKO gdy `prod.postep` jest skończoną liczbą > 0 -- inaczej nie
+ * dopisuje pustego/zerowego pola `postep` na itemie (spójne z tym, że brak
+ * pola = 0, patrz doc `ProductionItem.postep`). Pusta kolejka (nie ma komu
+ * zbankować) to no-op na tym kroku -- `item` po prostu staje się jedynym
+ * elementem.
+ *
+ * Niezmiennik zachowany: item na indeksie 0 zwróconej kolejki (`item`)
+ * NIGDY nie ma zdefiniowanego pola `postep` -- żyje wyłącznie w zwracanym
+ * scalarze `activePostep`.
+ * / EN: Insert `item` at the very front of the queue, FIRST banking the
+ * current `prod.postep` scalar on the item that thereby loses front status
+ * (the former `kolejka[0]`) -- the same banking pattern as
+ * `promoteToFront`/`dropFrontItem`, for the third call site that manually
+ * manipulates the queue front: `applyProductionCompleted` in main.ts (the
+ * "no Manpower" branch -- P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B, round 3, fix
+ * for B2). Without this banking step, the `prod.postep` scalar (belonging to
+ * the former front, e.g. a Wonder whose progress `advanceProduction`/
+ * `dropFrontItem` just restored) is lost, silently overwritten by
+ * `activePostep` (the cost of the item returning to the front, e.g. a
+ * fully-paid unit waiting on free Manpower).
+ *
+ * Only banks when `prod.postep` is a finite number > 0 -- otherwise it does
+ * not attach an empty/zero `postep` field to the item (consistent with
+ * "field absent means 0", see the `ProductionItem.postep` doc). An empty
+ * queue (nothing to bank onto) is a no-op at this step -- `item` simply
+ * becomes the sole element.
+ *
+ * Invariant preserved: the item at index 0 of the returned queue (`item`)
+ * NEVER carries a defined `postep` field -- it lives solely in the returned
+ * `activePostep` scalar.
+ */
+export function insertAtFront(
+  prod: CityProduction,
+  item: ProductionItem,
+  activePostep: number,
+): CityProduction {
+  const kolejka = [...prod.kolejka];
+  if (kolejka.length > 0 && Number.isFinite(prod.postep) && prod.postep > 0) {
+    kolejka[0] = { ...(kolejka[0] as ProductionItem), postep: prod.postep };
+  }
+  return {
+    kolejka: [item, ...kolejka],
+    postep: activePostep,
+    wstrzymana: prod.wstrzymana,
+    rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // advanceProduction
 // ---------------------------------------------------------------------------

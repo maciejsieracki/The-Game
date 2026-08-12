@@ -53,7 +53,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.promote-to-front-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.promote-to-front-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { promoteToFront, frontItem, advanceProduction, enqueue, dequeue, rushProduction } from '../src/game/production';
+export { promoteToFront, frontItem, advanceProduction, enqueue, dequeue, rushProduction, insertAtFront } from '../src/game/production';
 `, 'utf8');
 
 try {
@@ -95,7 +95,7 @@ console.log('-- 1. podstawowa zamiana: pozycja 1 w kolejce staje się frontem --
   const next = M.promoteToFront(prod, 1);
   eq(M.frontItem(next).id, 'Studnia', 'Studnia staje się aktualnie budowana');
   eq(ids(next.kolejka), 'Studnia,Spichlerz,Garncarnia,Dom Starszyzny', 'Spichlerz wraca do kolejki na miejsce Studni, reszta bez zmian');
-  eq(next.postep, 0, 'postęp resetuje się do 0 -- Studnia zaczyna budowę od zera');
+  eq(next.postep, 0, 'Studnia (nigdy wcześniej nie była frontem) startuje z zbankowanym 0 -- to NIE reset, po prostu nigdy wcześniej nic nie zbankowała (patrz decyzja Q1=B, sekcja 5-6 niżej)');
   // niemutowalnosc wejscia
   eq(ids(prod.kolejka), 'Spichlerz,Studnia,Garncarnia,Dom Starszyzny', 'oryginalny obiekt prod.kolejka nie jest mutowany');
   eq(prod.postep, 4, 'oryginalny prod.postep nie jest mutowany');
@@ -106,7 +106,7 @@ console.log('-- 2. zamiana z dalszą pozycją (index=2) to prawdziwy SWAP, nie p
   const prod = { kolejka: [item('A', 10), item('B', 20), item('C', 30)], postep: 5 };
   const next = M.promoteToFront(prod, 2);
   eq(ids(next.kolejka), 'C,B,A', 'tylko index 0 i index 2 zamieniają się miejscami; B (index 1) zostaje na miejscu');
-  eq(next.postep, 0, 'postęp resetuje się także przy zamianie z dalszą pozycją kolejki');
+  eq(next.postep, 0, 'C (nigdy wcześniej nie był frontem) startuje z zbankowanym 0 również przy zamianie z dalszą pozycją kolejki -- nie jest to reset');
 }
 
 console.log('-- 3. index poza zakresem = no-op --');
@@ -302,6 +302,73 @@ console.log('-- 13. RUNDA 2: niezmiennik postep -- dequeue(0) też odzyskuje zba
   eq(M.frontItem(afterDequeue).id, 'Cud', 'Cud staje się nowym frontem po anulowaniu Wojownika');
   eq(afterDequeue.postep, 500, 'Cud odzyskuje SWOJE zbankowane 500 Pracy -- anulowanie Wojownika nie kasuje cudzego postępu (7 Pracy Wojownika przepada, zgodnie z kontraktem dequeue)');
   eq(M.frontItem(afterDequeue).postep, undefined, 'niezmiennik: front (Cud) po dequeue nie niesie już własnego pola postep');
+}
+
+console.log('-- 14. RUNDA 3 (notatka N1 Evaluatora): niezmiennik postep -- bezpośrednio na promoteToFront, front (kolejka[0]) nigdy nie ma zdefiniowanego własnego pola postep --');
+{
+  // Testy 9/12/13 asercjonowały ten niezmiennik już PO advanceProduction/rushProduction/dequeue
+  // -- nigdy bezpośrednio po promoteToFront, czyli funkcji która faktycznie ZAPISUJE to pole
+  // (na itemie SCHODZĄCYM z frontu). Ta sekcja domyka lukę: element WCHODZĄCY na front musi mieć
+  // pole wyczyszczone, niezależnie czy wcześniej sam je niósł (round-trip) czy nie (pierwsza
+  // promocja). / EN: tests 9/12/13 already asserted this invariant AFTER advanceProduction/
+  // rushProduction/dequeue -- never directly after promoteToFront itself, the function that
+  // actually WRITES this field (on the item LEAVING the front). This section closes that gap:
+  // the item ENTERING the front must have the field cleared, whether or not it carried one
+  // itself before (round-trip) or not (first-ever promotion).
+  const prod1 = { kolejka: [item('Spichlerz', 80), item('Studnia', 40)], postep: 4 };
+  const next1 = M.promoteToFront(prod1, 1);
+  eq(next1.kolejka[0].postep, undefined, 'Studnia (pierwsza promocja, wchodzi na front) nie niesie własnego pola postep -- żyje wyłącznie w next1.postep');
+
+  // Round-trip: element, który WCZEŚNIEJ zbankował własne postep schodząc z frontu, musi mieć
+  // je wyczyszczone gdy wraca NA front (przywrócone do scalara, nie zdublowane w obu miejscach).
+  let prod2 = { kolejka: [item('A', 10), item('B', 20)], postep: 8 };
+  prod2 = M.promoteToFront(prod2, 1); // B front, A zbankowane postep:8 w kolejce
+  eq(prod2.kolejka.find(it => it.id === 'A').postep, 8, 'A ma zbankowane pole postep po zejściu z frontu (przygotowanie sceny)');
+  prod2 = M.promoteToFront(prod2, 1); // A wraca na front
+  eq(M.frontItem(prod2).id, 'A', 'A ponownie frontem');
+  eq(prod2.kolejka[0].postep, undefined, 'A (z powrotem na froncie) ma pole postep wyczyszczone mimo że wcześniej je niosło -- żyje tylko w prod2.postep (8)');
+}
+
+console.log('-- 15. RUNDA 3, naprawa B2: repro dosłowne z rejestru Evaluatora -- brak Manpower NIE gubi już zbankowanego postępu Cudu --');
+{
+  // Repro Evaluatora (rundy 1 i 2, ten sam scenariusz): kolejka [Cud 1000, Wojownik 10], 500
+  // Pracy zebrane, ⇈ na Wojownika, Wojownik kończy się, tryDeductUnitSpawnCostsEmpire -> ok:false
+  // (brak Manpower). Runda 1: ręczna ⇈ na Cud po tym zdarzeniu odzyskiwała aktywny postęp=500.
+  // Runda 2 (przed tą naprawą): identyczny scenariusz dawał aktywny postęp=0 -- main.ts
+  // applyProductionCompleted (gałąź `!d.ok`) nadpisywało scalar `completed.koszt`, tracąc
+  // zbankowany postęp `prodAfterAdvance.kolejka[0]` (Cud). Ten test odtwarza DOKŁADNIE tę samą
+  // sekwencję operacji na production.ts, kończąc dokładnie tym wywołaniem `insertAtFront`, którego
+  // main.ts (applyProductionCompleted, gałąź `!d.ok`) teraz używa zamiast ręcznego klepania
+  // kolejki/postep -- weryfikacja "przez realny kod", bo applyProductionCompleted samo jest zbyt
+  // wplecione w main.ts (dostęp do city/units/tryDeductUnitSpawnCostsEmpire itd.), by odpalić je
+  // w izolacji tutaj. / EN: the Evaluator's literal repro (rounds 1 and 2, same scenario): queue
+  // [Wonder 1000, Warrior 10], 500 Praca collected, promote the Warrior, the Warrior finishes,
+  // tryDeductUnitSpawnCostsEmpire -> ok:false (no Manpower). Round 1: manually re-promoting the
+  // Wonder afterwards recovered active postep=500. Round 2 (before this fix): the identical
+  // scenario gave active postep=0 -- main.ts's applyProductionCompleted (`!d.ok` branch) overwrote
+  // the scalar with `completed.koszt`, losing the banked postep on `prodAfterAdvance.kolejka[0]`
+  // (the Wonder). This test replays the EXACT same sequence of production.ts operations, ending
+  // with the very `insertAtFront` call that main.ts (applyProductionCompleted, `!d.ok` branch) now
+  // uses instead of manually splicing kolejka/postep -- verification "through the real code",
+  // since applyProductionCompleted itself is too entangled in main.ts (city/units/
+  // tryDeductUnitSpawnCostsEmpire access etc.) to exercise in isolation here.
+  let prod = { kolejka: [item('Cud', 1000), item('Wojownik', 10, 'jednostka')], postep: 500 };
+  prod = M.promoteToFront(prod, 1); // gracz ⇈ na Wojownika -- Cud schodzi z frontu, bankuje 500
+  eq(M.frontItem(prod).id, 'Wojownik', 'Wojownik jest frontem po promocji gracza');
+  eq(prod.postep, 0, 'Wojownik (nigdy wcześniej frontem) startuje z zbankowanym 0');
+
+  const { prod: prodAfterAdvance, completed } = M.advanceProduction(prod, 10); // Wojownik kończy się (10 Pracy = koszt)
+  eq(completed && completed.id, 'Wojownik', 'Wojownik kończy się naturalnie w advanceProduction (dokładnie ta funkcja, którą main.ts woła przed applyProductionCompleted)');
+  eq(M.frontItem(prodAfterAdvance).id, 'Cud', 'Cud staje się nowym frontem -- dropFrontItem odczytało jego zbankowany postęp');
+  eq(prodAfterAdvance.postep, 500, 'prodAfterAdvance.postep = 500 Cudu -- to DOKŁADNIE ta wartość, którą stary kod main.ts nadpisywał');
+
+  // Symulacja main.ts: tryDeductUnitSpawnCostsEmpire zwraca ok:false (brak Manpower) --
+  // applyProductionCompleted (gałąź `!d.ok`) woła teraz insertAtFront zamiast ręcznego splice.
+  const afterManpowerFail = M.insertAtFront(prodAfterAdvance, completed, completed.koszt);
+  eq(M.frontItem(afterManpowerFail).id, 'Wojownik', 'Wojownik wraca na front kolejki (czeka na wolny Manpower w kolejnej turze)');
+  eq(afterManpowerFail.postep, completed.koszt, 'aktywny postęp = koszt Wojownika (w pełni "opłacony", czeka tylko na Manpower) -- kontrakt applyProductionCompleted zachowany');
+  const cudAfterFail = afterManpowerFail.kolejka.find(it => it.id === 'Cud');
+  eq(cudAfterFail.postep, 500, 'B2 NAPRAWIONY: Cud zachowuje zbankowane 500 Pracy mimo że Wojownik wrócił na front -- NIE ginie (przed naprawą: pole nadal 0/undefined, bo prodAfterAdvance.postep był ślepo nadpisywany)');
 }
 
 console.log(`\npromote-to-front-test: ${passed} passed, ${failed} failed`);
