@@ -16595,3 +16595,21 @@ Kontynuacja scalona osobnym commitem `e401c1c2`, push OK.
 („biorąc pod uwagę skalę, dokładny Evaluator sprawdzający kompletność i spójność przed
 zamknięciem"), obejmujący ŁĄCZNIE oba commity (`db124b4b`+`e401c1c2`), bo db124b4b nigdy wcześniej
 nie dostał niezależnej weryfikacji.
+
+---
+
+## Restart kontenera (2026-08-13) — odzysk stanu, 3 procesy wznowione
+
+Kontener sesji zrestartował się w trakcie pracy 2 agentów w tle. Odzyskany stan:
+
+1. **R-EKONOMIA-SUROWCE-SKALA-5X-Q1** — oba etapy (`db124b4b` + kontynuacja) odnalezione,
+   scalone, zweryfikowane bramkami (patrz wpis wyżej), dokładny Evaluator (Opus 5,
+   `aa897c17f1a338ed0`) dysponowany.
+2. **P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B runda 3 (B2)** — worktree `fix-promote-front-progress-r3`
+   odtworzony z aktualnego czubka, Operator (Sonnet 5, `aa50d9f5e738c9c20`) dysponowany do
+   naprawy `applyProductionCompleted` w `main.ts` (patrz wpis wyżej, pełny opis B2).
+3. **R-CIVPEDIA-OPISY-AUDYT-Q1** — Workflow `wf_600b5a93-598` wznowiony (`resumeFromRunId`) ze
+   skryptu odzyskanego z `/root/.claude/projects/.../workflows/scripts/`; cache'owane wyniki
+   agentów sprzed restartu wykorzystane, tylko brakujące/nowe fazy wykonają się ponownie.
+
+Standing autoryzacja pracy samodzielnej („działaj samodzielnie") w mocy — kontynuuję bez pytań.
