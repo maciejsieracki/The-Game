@@ -46,7 +46,7 @@
     "uwagi": "B-SUROW-BUD-03: bonus Pracy only — bez konwertera desek",
     "techUnlock": "Obróbka drewna",
     "koszt_surowce": {
-      "drewno": 5
+      "drewno": 25
     }
   },
   {
@@ -85,7 +85,7 @@
     "uwagi": "SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
-      "drewno": 6
+      "drewno": 30
     }
   },
   {
@@ -124,8 +124,8 @@
     "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia zelaza/Wielka Kuznia, max +45%). Nazwa wyswietlana zmieniona z 'Kuznia' na 'Kuźnia brązu' (Maciej 2026-07-25) -- identyfikator 'kuznia' BEZ ZMIAN (wsteczna zgodnosc zapisow). LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Kuznia zelaza, nie sama z epoka. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc (kolejny tier w kolejnej epoce), obecnie martwe.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 6
+      "drewno": 30,
+      "kamien": 30
     }
   },
   {
@@ -164,8 +164,8 @@
     "uwagi": "Odlewnia brązu (tier1 łańcucha odlewni); upgrade → Odlewnia żelaza. Dostęp brąz = Kopalnia miedzi (mapa) + ten budynek. Konwerter: ruda+drewno→brąz. Piec hutniczy = rezerwowana nazwa na przyszłe epoki (NIE ten budynek). LANCUCH W GORE: maksPoziom=1 — wartosc stala per tier, rosnie WYLACZNIE przez awans na Odlewnie zelaza.",
     "techUnlock": "Brązownictwo",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 8
+      "drewno": 30,
+      "kamien": 40
     }
   },
   {
@@ -205,8 +205,8 @@
     "techUnlock": "Hutnictwo żelaza",
     "upgradeFrom": "odlewnia_brazu",
     "koszt_surowce": {
-      "drewno": 8,
-      "cegla": 10
+      "drewno": 40,
+      "cegla": 50
     }
   },
   {
@@ -247,8 +247,8 @@
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "odlewnia_zelaza",
     "koszt_surowce": {
-      "drewno": 12,
-      "cegla": 14
+      "drewno": 60,
+      "cegla": 70
     }
   },
   {
@@ -298,7 +298,7 @@
     "uwagi": "PYTANIE 20=A (Maciej 2026-07-26): dawny przyrost.mnoznik=3 przy baza.mnoznik=0 nigdy nie byl czytany przez silnik dla tego budynku (mnoznik zyje wylacznie dla 6 rozpoznanych budynkow sciezek Pancerz/Parametry, patrz unit-building-bonuses.ts) -- realny efekt handlowy Targowiska byl wiec zerowy na kazdym poziomie mimo widocznego chipu. Naprawa: zamierzony efekt przeniesiony do baza.pieniadz (3->5) i przyrost.pieniadz (2->3), mnoznik skasowany (oba pola = 0).",
     "techUnlock": "Wymiana",
     "koszt_surowce": {
-      "drewno": 6
+      "drewno": 30
     }
   },
   {
@@ -337,8 +337,8 @@
     "uwagi": "LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Port wielki. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Żegluga",
     "koszt_surowce": {
-      "drewno": 12,
-      "kamien": 6
+      "drewno": 60,
+      "kamien": 30
     }
   },
   {
@@ -378,8 +378,8 @@
     "techUnlock": "Inżynieria",
     "upgradeFrom": "port",
     "koszt_surowce": {
-      "drewno": 12,
-      "kamien": 10
+      "drewno": 60,
+      "kamien": 50
     }
   },
   {
@@ -418,7 +418,7 @@
     "uwagi": "B-SPIC: bramka Ceramika (garncarnia imperium); tier I cap 100. LANCUCH W GORE (decyzja Maciej 2026-07-25): maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Spichlerz II. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): pole 'wymagania' bylo puste, wiec gdy bramka Ceramika nie byla spelniona, budynek znikal z panelu bez zadnego komunikatu (eraBuildingCatalog nie sprawdzal tej bramki w ogole -- naprawione w production.ts, patrz komentarz R-BUD-SPICHLERZ-ZNIKA tamze). Tekst tu teraz zasila formatBuildingCatalogLockHint w cityPanel.ts.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
-      "drewno": 8
+      "drewno": 40
     }
   },
   {
@@ -458,8 +458,8 @@
     "uwagi": "B-SPIC: bramka Sól; cap armii 150; bufor 70% po wzroście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe. R-BUD-SPICHLERZ-ZNIKA (Maciej 2026-07-26): 'wymagania' uzupełnione o bramkę Soli, tak samo jak Spichlerz I -- patrz production.ts eraBuildingCatalog.",
     "techUnlock": "Warzelnia soli",
     "koszt_surowce": {
-      "drewno": 8,
-      "kamien": 10
+      "drewno": 40,
+      "kamien": 50
     }
   },
   {
@@ -498,7 +498,7 @@
     "uwagi": "ABC-6: glina+drewno→ceramika (paliwo usuniete 2026-07-23). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
-      "drewno": 6
+      "drewno": 30
     }
   },
   {
@@ -537,8 +537,8 @@
     "uwagi": "ABC-8: bramka Pismo wymaga Cegielni w imperium. Konwerter bierze drewno 1:1 (paliwo usuniete 2026-07-23).",
     "techUnlock": "Garncarstwo",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 6
+      "drewno": 30,
+      "kamien": 30
     }
   },
   {
@@ -577,7 +577,7 @@
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY — konwersja religii +2%/t (religia_konwersja_kregi, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. Świątynia stoi teraz obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- nie następca w upgradeFrom. WYJĄTEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali łamałby zgodność historyczną).",
     "techUnlock": "Mistycyzm",
     "koszt_surowce": {
-      "kamien": 8
+      "kamien": 40
     }
   },
   {
@@ -616,8 +616,8 @@
     "uwagi": "B-KULT-REL + KULT-BUD-02: budynek RELIGIJNY -- konwersja religii +4%/t (religia_konwersja_swiatynia, additive do bazy); plon kultury OK, bez bonusu konwersji kultury. GRUPY-BUDYNKOW (Maciej 2026-07-25): Świątynia to NIEZALEZNY budynek obok Kamiennych kregow (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Kultura/Zadowolenie rozdzielone (3=1+2 wzgledem Kamiennych kregow, oba pola), zeby wklad Kamiennych kregow nie liczyl sie dwa razy.",
     "techUnlock": "Religia",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 8
+      "drewno": 30,
+      "kamien": 40
     }
   },
   {
@@ -670,8 +670,8 @@
       "6": "Astronomia"
     },
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 6
+      "drewno": 30,
+      "kamien": 30
     }
   },
   {
@@ -710,7 +710,7 @@
     "uwagi": "Studnia miejska — dostęp do czystej wody (+Zdrowie proxy). Osobno: Łaźnia publiczna (termy rzymskie, epoka Żelaza). SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25: epoka Kamienia = wylacznie drewno.",
     "techUnlock": "Gospodarka wodna",
     "koszt_surowce": {
-      "drewno": 5
+      "drewno": 25
     }
   },
   {
@@ -749,8 +749,8 @@
     "uwagi": "T-TECH-6: zdrowie++ i cap ludności (turn-economy). DECYZJA 54b (Maciej 2026-07-25): Akwedukt wymaga Studni w tym samym mieście -- prerekwyzyt w CITY_BUILDING_PREREQ (building-resource-gate.ts), sprawdzany w production.ts.",
     "techUnlock": "Budownictwo",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 12
+      "drewno": 30,
+      "kamien": 60
     }
   },
   {
@@ -790,8 +790,8 @@
     "techUnlock": "Waluta",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 8
+      "drewno": 30,
+      "kamien": 40
     }
   },
   {
@@ -831,7 +831,7 @@
     "techUnlock": "Obróbka drewna",
     "odblokowuje": "maMur",
     "koszt_surowce": {
-      "drewno": 12
+      "drewno": 60
     }
   },
   {
@@ -871,8 +871,8 @@
     "techUnlock": "Budownictwo",
     "odblokowuje": "maMur",
     "koszt_surowce": {
-      "drewno": 8,
-      "kamien": 16
+      "drewno": 40,
+      "kamien": 80
     }
   },
   {
@@ -911,8 +911,8 @@
     "uwagi": "Mnoznik = +20% parametry miekkie (Sciezka B, wszystko poza Pancerzem) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Akademia wojskowa/Warsztat oblezniczy, max +50%). Akademia wojskowa stoi obok jako niezależny budynek (GRUPY-BUDYNKOW, Maciej 2026-07-25) -- jej Praca rozdzielona, by nie liczyć wkładu Koszar dwa razy.",
     "techUnlock": "Wojskowość",
     "koszt_surowce": {
-      "drewno": 8,
-      "kamien": 8
+      "drewno": 40,
+      "kamien": 40
     }
   },
   {
@@ -951,8 +951,8 @@
     "uwagi": "",
     "techUnlock": "Handel",
     "koszt_surowce": {
-      "drewno": 10,
-      "kamien": 6
+      "drewno": 50,
+      "kamien": 30
     }
   },
   {
@@ -991,7 +991,7 @@
     "uwagi": "Nie wymaga utrzymania. WYJĄTEK zatwierdzony (SPEC-KOSZTY-SUROWCOWE-BUDYNKOW 2026-07-25): zostaje na kamieniu mimo epoki Kamienia (Stonehenge z bali łamałby zgodność historyczną).",
     "techUnlock": "Murarstwo",
     "koszt_surowce": {
-      "kamien": 6
+      "kamien": 30
     }
   },
   {
@@ -1073,8 +1073,8 @@
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 10,
-      "kamien": 10
+      "drewno": 50,
+      "kamien": 50
     }
   },
   {
@@ -1115,8 +1115,8 @@
     "techUnlock": "-",
     "lokalizacja": "stolica",
     "koszt_surowce": {
-      "drewno": 10,
-      "cegla": 14
+      "drewno": 50,
+      "cegla": 70
     }
   },
   {
@@ -1157,8 +1157,8 @@
     "uwagi": "Mnoznik = +15% Pancerz (Sciezka A) dla jednostek, ktore odwiedzily to miasto (kumuluje sie z Kuznia brazu/Wielka Kuznia, max +45%); wymaga dostepu do zelaza. NAPRAWIONE OGNIWO (decyzja Maciej 2026-07-25): dopisano upgradeFrom='kuznia' -- Kuźnia żelaza zastępuje teraz Kuźnię brązu (jak Pałac), zamiast stać obok niej w mieście. LANCUCH W GORE: maksPoziom=1 -- wartosc stala per tier, rosnie WYLACZNIE przez awans na Wielka Kuznia. Pole 'przyrost' zostaje w danych jako notatka na przyszlosc, obecnie martwe.",
     "techUnlock": "Hutnictwo żelaza",
     "koszt_surowce": {
-      "drewno": 8,
-      "cegla": 10
+      "drewno": 40,
+      "cegla": 50
     }
   },
   {
@@ -1199,8 +1199,8 @@
     "techUnlock": "Obróbka żelaza",
     "upgradeFrom": "kuznia_zelaza",
     "koszt_surowce": {
-      "drewno": 12,
-      "cegla": 16
+      "drewno": 60,
+      "cegla": 80
     }
   },
   {
@@ -1240,8 +1240,8 @@
     "techUnlock": "Inżynieria",
     "odblokowuje": "maFort",
     "koszt_surowce": {
-      "drewno": 10,
-      "kamien": 20
+      "drewno": 50,
+      "kamien": 100
     }
   },
   {
@@ -1281,8 +1281,8 @@
     "techUnlock": "Inżynieria",
     "odblokowuje": "maBaszta",
     "koszt_surowce": {
-      "drewno": 10,
-      "kamien": 20
+      "drewno": 50,
+      "kamien": 100
     }
   },
   {
@@ -1322,8 +1322,8 @@
     "techUnlock": "Oblężnictwo",
     "odblokowuje": "maWarsztatOblezniczy",
     "koszt_surowce": {
-      "drewno": 10,
-      "kamien": 10
+      "drewno": 50,
+      "kamien": 50
     }
   },
   {
@@ -1362,8 +1362,8 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia to NIEZALEZNY budynek obok Biblioteki (nie zastepuje jej, upgradeFrom usuniety) -- oba stoja w miescie osobno. Nauka/Kultura rozdzielone (9=3+6, 7=2+5 wzgledem Biblioteki), zeby wklad Biblioteki nie liczyl sie dwa razy. Teatr nadal ukryty z produkcji i wliczony w Akademie (merge bez zmian, ABC-21 B).",
     "techUnlock": "Filozofia",
     "koszt_surowce": {
-      "drewno": 8,
-      "cegla": 14
+      "drewno": 40,
+      "cegla": 70
     }
   },
   {
@@ -1403,8 +1403,8 @@
     "techUnlock": "Filozofia",
     "suppressed": true,
     "koszt_surowce": {
-      "drewno": 8,
-      "cegla": 10
+      "drewno": 40,
+      "cegla": 50
     }
   },
   {
@@ -1443,8 +1443,8 @@
     "uwagi": "KULT-BUD-01: +5 kultura baza, +2% konwersji; redukuje korupcje; zadowolenie z praworz.",
     "techUnlock": "Prawo",
     "koszt_surowce": {
-      "drewno": 6,
-      "cegla": 10
+      "drewno": 30,
+      "cegla": 50
     }
   },
   {
@@ -1484,7 +1484,7 @@
     "techUnlock": "-",
     "lokalizacja": "region",
     "koszt_surowce": {
-      "drewno": 6
+      "drewno": 30
     }
   },
   {
@@ -1525,8 +1525,8 @@
     "techUnlock": "Kodeks",
     "lokalizacja": "region",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 6
+      "drewno": 30,
+      "kamien": 30
     }
   },
   {
@@ -1567,8 +1567,8 @@
     "techUnlock": "Prawo",
     "lokalizacja": "region",
     "koszt_surowce": {
-      "drewno": 8,
-      "cegla": 10
+      "drewno": 40,
+      "cegla": 50
     }
   },
   {
@@ -1607,8 +1607,8 @@
     "uwagi": "3a: wczesna administracja — +porzadek, anty-korupcja; slabszy niz Sad/Pretorium (Kodeks prawa)",
     "techUnlock": "Kodeks",
     "koszt_surowce": {
-      "drewno": 6,
-      "kamien": 8
+      "drewno": 30,
+      "kamien": 40
     }
   },
   {
@@ -1647,8 +1647,8 @@
     "uwagi": "KULT-BUD-01: +3 kultura baza, +1% konwersji; termy — zadowolenie, zdrowie; wymaga Studni i tech Medycyna.",
     "techUnlock": "Medycyna",
     "koszt_surowce": {
-      "drewno": 8,
-      "cegla": 12
+      "drewno": 40,
+      "cegla": 60
     }
   },
   {
@@ -1687,8 +1687,8 @@
     "uwagi": "GRUPY-BUDYNKOW (Maciej 2026-07-25): Akademia wojskowa to NIEZALEZNY budynek obok Koszar (nie zastepuje ich, upgradeFrom usuniety) -- oba stoja w miescie osobno. Praca rozdzielona (5=2+3 wzgledem Koszar), zeby wklad Koszar nie liczyl sie dwa razy. Mnoznik = +20% parametry miekkie (Sciezka B) -- TERAZ kumuluje sie z Koszarami wprost (oba obecne w miescie = +40%, razem z Warsztatem oblezniczym +50%); bramka elit UNITS.",
     "techUnlock": "Sztuka wojenna",
     "koszt_surowce": {
-      "drewno": 10,
-      "cegla": 14
+      "drewno": 50,
+      "cegla": 70
     }
   }
 ]

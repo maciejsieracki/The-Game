@@ -159,9 +159,10 @@ eq(U.buildingUpkeep({ przyrostUtrzymania: 0 }, 1), 0, 'ZAD1: budynek bez wpisu u
 // utrzymanie=NaN traktowane jak "brak wpisu" (nie moze wygenerowac NaN w wyniku)
 eq(U.buildingUpkeep({ utrzymanie: NaN, przyrostUtrzymania: 0 }, 1, 1), 2, 'ZAD1: utrzymanie=NaN traktowane jak brak wpisu -> flat default×2');
 
-// --- building resource upkeep (koszt_surowce -> 1/turę per type) ---
-eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 5 } })), '{"drewno":1}', 'res upkeep: drewno build cost -> 1 drewno/t');
-eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 40, kamien: 12 } })), '{"drewno":1,"kamien":1}', 'res upkeep: always 1 per type, not build amount');
+// --- building resource upkeep (koszt_surowce -> BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE/turę
+//     per type -- R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13: 5/turę, było 1/turę) ---
+eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 5 } })), '{"drewno":5}', 'res upkeep: drewno build cost -> 5 drewno/t (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1)');
+eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 40, kamien: 12 } })), '{"drewno":5,"kamien":5}', 'res upkeep: always 5 per type (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1), not build amount');
 eq(JSON.stringify(U.buildingResourceUpkeep({})), '{}', 'res upkeep: no koszt_surowce -> empty');
 eq(JSON.stringify(U.buildingResourceUpkeep({ koszt_surowce: { drewno: 0 } })), '{}', 'res upkeep: zero build cost -> no upkeep');
 const resBlds = [
@@ -169,11 +170,11 @@ const resBlds = [
   { record: { koszt_surowce: { drewno: 8, kamien: 3 } }, level: 1 },
   { record: {}, level: 1 },
 ];
-eq(JSON.stringify(U.totalBuildingResourceUpkeep(resBlds)), '{"drewno":2,"kamien":1}', 'res upkeep total: sum per type across buildings');
+eq(JSON.stringify(U.totalBuildingResourceUpkeep(resBlds)), '{"drewno":10,"kamien":5}', 'res upkeep total: sum per type across buildings (2 budynki x drewno 5 = 10, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 2)');
 eq(JSON.stringify(U.buildingResourceUpkeepForBuiltIds(
   ['stolarnia', 'kamieniarski'],
   [{ id: 'stolarnia', koszt_surowce: { drewno: 5 } }, { id: 'kamieniarski', koszt_surowce: { kamien: 4 } }],
-)), '{"drewno":1,"kamien":1}', 'res upkeep for built ids');
+)), '{"drewno":5,"kamien":5}', 'res upkeep for built ids (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 1,1)');
 
 // s.6.2 unit upkeep: typeId table > category default > standard
 // R-STAWKI FALA1×FALA2: ×4 (R_STAWKI_FALA1_FALA2_MULT) vs JSON/category/base.

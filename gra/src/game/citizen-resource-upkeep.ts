@@ -1,7 +1,10 @@
 /**
  * citizen-resource-upkeep.ts — R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10, drenaż
  * realny doprecyzowany 2026-08-11, stawka zmniejszona 1,0→0,2 2026-08-12 — punkt 1 zgłoszenia
- * „DECYZJA: STAWKA 1→0,2", `dyspozycje/PYTANIA-OTWARTE.md`).
+ * „DECYZJA: STAWKA 1→0,2", `dyspozycje/PYTANIA-OTWARTE.md`; stawka PRZYWRÓCONA 0,2→1,0
+ * 2026-08-13 jako część `R-EKONOMIA-SUROWCE-SKALA-5X-Q1` — pełne przeskalowanie ekonomii
+ * surowcowej ×5 eliminuje problem zaokrąglenia do zera przy stawce 0,2 u źródła, patrz
+ * `dyspozycje/PYTANIA-OTWARTE.md` sekcja `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`).
  *
  * Obywatele miast zużywają surowce budowlane per epoka (tabela: `data/citizen-resource-upkeep.json`),
  * ściągane z magazynu CENTRALNEGO imperium (suma City.surowce po wszystkich miastach ownera —
@@ -113,20 +116,26 @@ export const CITIZEN_UPKEEP_HAPPINESS_PER_MISSING = TABLE._kara?.szczescieZaBrak
 export const CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING = TABLE._kara?.rozwojPctZaBrakujacy ?? -1;
 
 /**
- * Stawka zużycia: sztuk surowca / 1 obywatela / turę, per wymagany surowiec epoki (Maciej
- * 2026-08-12, „R-ZUZYCIE-SUROWCOW-OBYWATELE — DECYZJA: STAWKA 1→0,2", punkt 1 —
- * `dyspozycje/PYTANIA-OTWARTE.md`). Wcześniej **1,0** (Maciej 2026-08-11) — zmniejszona **5×**
- * po zgłoszeniu, że kombinacja starej stawki z do 5 wymaganymi surowcami w epoce Żelaza była
- * "bardzo ciężka do zaspokojenia". Użycie: patrz `computeCitizenResourceDrain()` niżej (JSDoc
+ * Stawka zużycia: sztuk surowca / 1 obywatela / turę, per wymagany surowiec epoki.
+ * PRZYWRÓCONA **1,0** (Maciej 2026-08-13, `R-EKONOMIA-SUROWCE-SKALA-5X-Q1`, punkt 1 —
+ * `dyspozycje/PYTANIA-OTWARTE.md`) — była **0,2** (Maciej 2026-08-12, „DECYZJA: STAWKA
+ * 1→0,2"), przed tym **1,0** (Maciej 2026-08-11). Powrót do 1,0 jest częścią pełnego
+ * przeskalowania ekonomii surowcowej ×5 (produkcja/koszty/utrzymanie/cap razem): przy
+ * stawce 1,0 `floor(population × 1,0)` nigdy nie zeruje się dla populacji ≥ 1, co usuwa
+ * problem zaokrąglenia-do-zera przy małych populacjach BEZ potrzeby osobnej premii —
+ * zamiast obniżać stawkę (jak 2026-08-12), rozwiązaniem jest podniesienie granulacji
+ * całej ekonomii surowcowej. Użycie: patrz `computeCitizenResourceDrain()` niżej (JSDoc
  * modułu ma pełne uzasadnienie zaokrąglenia `Math.floor(population × ta_stawka)`) oraz
  * `citizenUpkeepDisplayLines()` (panel UI — ta sama stawka, ten sam Math.floor, żeby liczba
  * wyświetlana graczowi zawsze zgadzała się z realnym drenażem silnika).
  * / EN: consumption rate — units of resource per 1 citizen per turn, per resource required by
- * the era. Was 1.0, reduced 5× after feedback that the old rate combined with up to 5 required
- * resources in the Iron era was too harsh to satisfy. Also used by `citizenUpkeepDisplayLines()`
- * (UI panel) so the displayed number always matches the real engine drain.
+ * the era. RESTORED to 1.0 (2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1) as part of the full
+ * ×5 resource-economy rescale — at rate 1.0, `floor(population × 1.0)` never floors to zero
+ * for population ≥ 1, which fixes the zero-rounding problem at small populations without a
+ * separate bonus branch. Also used by `citizenUpkeepDisplayLines()` (UI panel) so the
+ * displayed number always matches the real engine drain.
  */
-export const CITIZEN_UPKEEP_RATE_PER_CITIZEN = 0.2;
+export const CITIZEN_UPKEEP_RATE_PER_CITIZEN = 1.0;
 
 /**
  * Lista surowców wymaganych przez obywateli w danej epoce (kumulatywna — tabela JSON już

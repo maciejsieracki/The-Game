@@ -39,13 +39,13 @@
     "Surowiec": "Koń",
     "Typ": "hodowla",
     "Źródło / budynek": "Stadnina (złoże konia) + szlaki handlowe",
-    "Uwagi": "magazyn państwa (klucz stock: kon); Stadnina 1/t; rekrut jednostek Typ Mount +5 Koni (U-15); NIEDOSTĘPNY u Majów/Ameryki Pd."
+    "Uwagi": "magazyn państwa (klucz stock: kon); Stadnina 25/t (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13, ×5 vs poprzedni stan 5/t — poprzedni tekst „1/t” był już wtedy nieaktualny, poprawione przy okazji); rekrut jednostek Typ Mount +25 Koni (było +5, ×5, R-EKONOMIA-SUROWCE-SKALA-5X-Q1); NIEDOSTĘPNY u Majów/Ameryki Pd."
   },
   {
     "Surowiec": "Sól",
     "Typ": "surowy",
     "Źródło / budynek": "Warzelnia soli (wybrzeże / złoże sol) + szlaki handlowe",
-    "Uwagi": "magazyn państwa (klucz stock: sol); Warzelnia 10/t; zużycie Spichlerz II (5 Sól/t × działający)"
+    "Uwagi": "magazyn państwa (klucz stock: sol); Warzelnia 50/t (było 10/t); zużycie Spichlerz II (25 Sól/t × działający, było 5) — R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5)"
   },
   {
     "Surowiec": "Złoto",
@@ -63,7 +63,7 @@
     "Surowiec": "Ceramika",
     "Typ": "przetworzony",
     "Źródło / budynek": "Garncarnia (glina+drewno)",
-    "Uwagi": "magazyn państwa (klucz stock: ceramika); zużycie Spichlerz I/II (5 Ceramiki/t); Garncarnia nie zużywa Ceramiki (U-14)"
+    "Uwagi": "magazyn państwa (klucz stock: ceramika); zużycie Spichlerz I/II (25 Ceramiki/t, było 5) — R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5); Garncarnia nie zużywa Ceramiki (U-14)"
   },
   {
     "Surowiec": "Brąz",

@@ -472,37 +472,37 @@ console.log('\n-- J. cityPanel.ts computeOrderStateLocal -- werdykt silnika prze
 }
 
 // ===========================================================================
-// G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obywatel (N2, Maciej 2026-08-11;
-//    stawka 1,0->0,2 Maciej 2026-08-12, "DECYZJA: STAWKA 1->0,2", punkt 1)
+// G. computeCitizenResourceDrain -- realny drenaż 1,0 szt./obywatel (N2, Maciej 2026-08-11;
+//    stawka 1,0->0,2 Maciej 2026-08-12, "DECYZJA: STAWKA 1->0,2", punkt 1; PRZYWRÓCONA
+//    0,2->1,0 Maciej 2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1 -- pełne przeskalowanie
+//    ekonomii surowcowej ×5 usuwa problem floor-do-zera u źródła)
 // ===========================================================================
-console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obywatel --');
+console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1,0 szt./obywatel --');
 {
-  // G0 (Evaluator FAIL na 1208eb6c, pin stawki): jedyny dotychczasowy pin wartości 0,2 leżał w
-  // INNYM, późniejszym pliku (porzadek-panel-czytelnosc-test.cjs:82), nie w tym dedykowanym
+  // G0 (Evaluator FAIL na 1208eb6c, pin stawki): jedyny dotychczasowy pin wartości stawki leżał w
+  // INNYM, późniejszym pliku (porzadek-panel-czytelnosc-test.cjs), nie w tym dedykowanym
   // teście stawki -- ta bramka mogła teoretycznie przejść zielono nawet gdyby ktoś podmienił
   // CITIZEN_UPKEEP_RATE_PER_CITIZEN na inną wartość, dopóki druga, niepowiązana bramka nie
   // zostałaby uruchomiona. Pin wprost, w miejscu gdzie stawka jest zdefiniowana i używana.
-  eq(M.CITIZEN_UPKEEP_RATE_PER_CITIZEN, 0.2, 'G0: kanon stawki (Maciej 2026-08-12, "DECYZJA: STAWKA 1->0,2") -- CITIZEN_UPKEEP_RATE_PER_CITIZEN === 0,2 szt. surowca/obywatela/turę, pinowane bezpośrednio w tym dedykowanym teście');
+  eq(M.CITIZEN_UPKEEP_RATE_PER_CITIZEN, 1.0, 'G0: kanon stawki (Maciej 2026-08-13, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, powrót do 1,0) -- CITIZEN_UPKEEP_RATE_PER_CITIZEN === 1,0 szt. surowca/obywatela/turę, pinowane bezpośrednio w tym dedykowanym teście');
 
-  // PRZELICZENIE PO ZMIANIE STAWKI (2026-08-12, 1,0->0,2 = 5x mniej): wszystkie liczby obywateli
-  // w tej sekcji przeskalowane x5 względem stanu sprzed zmiany (10->50, 3->15, 7->35), żeby
-  // required = Math.floor(population * 0.2) wyszło DOKŁADNIE tyle samo, ile wychodziło required
-  // = population * 1 przy starej stawce -- każda "want" wartość w eq()/deepEqSet() niżej zostaje
-  // WIĘC NIEZMIENIONA, przeliczona jest tylko liczba obywateli na wejściu. Weryfikacja braku
-  // błędu zaokrąglenia (50*0.2, 15*0.2, 35*0.2 wychodzą dokładnie 10/3/7 w IEEE754, bez utraty
-  // precyzji) zrobiona osobno poza testem (node -e).
+  // PRZELICZENIE PO PRZYWRÓCENIU STAWKI (2026-08-13, 0,2->1,0 = R-EKONOMIA-SUROWCE-SKALA-5X-Q1):
+  // populacje w tej sekcji WRACAJĄ do wartości sprzed korekty 2026-08-12 (50->10, 15->3, 35->7),
+  // bo required = Math.floor(population * 1,0) = population wprost -- żeby "want" wartości
+  // (required=10/3/7 itd.) zostały DOKŁADNIE takie same jak dotychczas, przelicza się tylko
+  // liczbę obywateli na wejściu, w drugą stronę niż robił to commit z 2026-08-12.
   //
-  // Stawka 0,2: 50 obywateli, magazyn 50 drewna/50 gliny (epoka 1) -> required=floor(50*0,2)=10
+  // Stawka 1,0: 10 obywateli, magazyn 10 drewna/10 gliny (epoka 1) -> required=floor(10*1,0)=10
   // każdy, drained=10 każdy (magazyn wystarcza), oba "available" (pełne pokrycie).
-  const full = M.computeCitizenResourceDrain(1, 50, { drewno: 50, glina: 50 });
-  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na required=10 (z 50 obywateli x 0,2) każdego surowca -> oba available');
-  eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (0,2 szt./obywatel × 50 obywateli)');
-  eq(full.deductions.glina, 10, 'deductions.glina = 10 (0,2 szt./obywatel × 50 obywateli)');
+  const full = M.computeCitizenResourceDrain(1, 10, { drewno: 10, glina: 10 });
+  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na required=10 (z 10 obywateli x 1,0) każdego surowca -> oba available');
+  eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (1,0 szt./obywatel × 10 obywateli)');
+  eq(full.deductions.glina, 10, 'deductions.glina = 10 (1,0 szt./obywatel × 10 obywateli)');
 
   // Niedobór: magazyn MNIEJSZY niż required -> drained = min(required, stock), NIGDY < 0,
   // surowiec liczy się jako "missing" (pokrycie częściowe, nie pełne -- kara nadal binarna).
-  const partial = M.computeCitizenResourceDrain(1, 50, { drewno: 3, glina: 0 });
-  deepEqSet(partial.missing, ['drewno', 'glina'], '50 obywateli (required=10), magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
+  const partial = M.computeCitizenResourceDrain(1, 10, { drewno: 3, glina: 0 });
+  deepEqSet(partial.missing, ['drewno', 'glina'], '10 obywateli (required=10), magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
   eq(partial.deductions.drewno, 3, 'deductions.drewno = min(10, 3) = 3 -- drenuje ile jest, magazyn NIE schodzi poniżej zera');
   assert(!('glina' in partial.deductions), 'deductions.glina nieobecne (0 do odjęcia) -- magazyn=0, nic nie drenować');
 
@@ -522,31 +522,33 @@ console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obyw
   // Kara nadal BINARNA (ECHO Q3=A niezmienione): pokrycie W PEŁNI (nie licznik/rozmiar
   // niedoboru) -- 1 sztuka brakująca do pełnego pokrycia daje TAKĄ SAMĄ karę jak 1000 sztuk
   // brakujących (obie "missing"), happinessDelta/growthPctDelta liczą TYLKO available.length/missing.length.
-  // 50 obywateli -> required=10 (jak wyżej); drewno=9 to "brakuje 1 sztuki do required=10".
-  const barelyMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 9, glina: 50 });
-  const wayMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 0, glina: 50 });
+  // 10 obywateli -> required=10 (jak wyżej); drewno=9 to "brakuje 1 sztuki do required=10".
+  const barelyMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 9, glina: 10 });
+  const wayMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 0, glina: 10 });
   eq(barelyMissing.happinessDelta, wayMissing.happinessDelta, 'ECHO Q3=A zachowane: brak 1 sztuki do pełnego pokrycia = ta sama kara co brak całości (binarne, nie proporcjonalne)');
 
-  // G2 (Evaluator FAIL na 1208eb6c -- pokrycie zaokrąglenia): WSZYSTKIE populacje wyżej w tej
-  // sekcji są WIELOKROTNOŚCIĄ 5 (10->50, 3->15, 7->35) -- przy takich wartościach
-  // floor(pop×0,2) == ceil(pop×0,2) == round(pop×0,2), więc Math.floor() nigdy realnie nie
-  // zaokrągla w tych asercjach; 3 z 8 mutacji Evaluatora (floor->ceil, floor->round, usunięcie
-  // zaokrąglenia) przeżywały bez wykrycia. Populacja NIEBĘDĄCA wielokrotnością 5 (53) łamie tę
-  // symetrię: 53×0,2 = 10,600000000000001 w IEEE754 (zweryfikowane `node -e`) -- floor=10
-  // (oczekiwane), ceil=11, round=11, brak zaokrąglenia=10,600000000000001 -- WSZYSTKIE TRZY
-  // mutacje dają wynik != 10, jedna asercja zabija wszystkie naraz. Magazyn=50 (>> required=10)
-  // celowo, żeby drained=min(required,stock)=required ZAWSZE (niezależnie którą z 4 wersji
-  // required policzyłby zmutowany kod) -- deductions.drewno odzwierciedla WYNIK ZAOKRĄGLENIA
-  // wprost, bez interferencji z drenażem częściowym (który by uciął różnicę przez min()).
-  // / EN: all populations above this line are multiples of 5, so floor/ceil/round coincide and
-  // never actually exercise rounding -- pop=53 breaks that symmetry (53×0.2=10.600000000000001
-  // in IEEE754), catching all 3 previously-surviving rounding mutants with one assertion.
-  const roundingProbe = M.computeCitizenResourceDrain(1, 53, { drewno: 50, glina: 50 });
+  // G2 (Evaluator FAIL na 1208eb6c -- pokrycie zaokrąglenia; NOTA 2026-08-13,
+  // R-EKONOMIA-SUROWCE-SKALA-5X-Q1): przy stawce 0,2 populacja NIEBĘDĄCA wielokrotnością 5
+  // (53×0,2=10,600000000000001) rozróżniała floor/ceil/round -- ta konstrukcja stała się
+  // STRUKTURALNIE NIEOSIĄGALNA po powrocie do stawki 1,0: `pop` jest już zaokrąglone w dół do
+  // liczby całkowitej PRZED przemnożeniem (`Math.floor(population)`), więc `pop × 1,0` jest
+  // ZAWSZE dokładną liczbą całkowitą w IEEE754 (żadnej straty precyzji) -- floor(N)==ceil(N)==
+  // round(N)==N dla KAŻDEGO całkowitego N i KAŻDEJ wartości populacji, nie da się już dobrać
+  // populacji łamiącej tę symetrię. To nie luka w teście, tylko bezpośrednia konsekwencja
+  // wyboru stawki 1,0 (ten sam powód, dla którego przywrócono 1,0 -- floor nigdy nie gubi
+  // precyzji przy całkowitej stawce). Test niżej zostaje jako podstawowa asercja poprawności
+  // (required = population wprost), nie jako dyskryminator mutacji floor/ceil/round.
+  // / EN: the floor/ceil/round-discriminating design from the 0.2-rate era is now structurally
+  // unreachable -- with rate=1.0, `pop` is already an integer before multiplication, so
+  // pop×1.0 is always an exact integer (no IEEE754 precision loss), meaning floor/ceil/round
+  // agree for EVERY population value. This is a direct consequence of choosing rate=1.0 (the
+  // same reason it fixes the zero-rounding bug), not a test gap. Kept as a basic correctness
+  // check, no longer as a rounding-mutant discriminator.
+  const roundingProbe = M.computeCitizenResourceDrain(1, 53, { drewno: 100, glina: 100 });
   eq(
-    roundingProbe.deductions.drewno, 10,
-    'G2: pop=53 (NIE wielokrotność 5) -- required=floor(53×0,2)=floor(10,600000000000001)=10 '
-      + '(nie 11 jak przy floor->ceil/floor->round, nie 10,600000000000001 jak przy usunięciu '
-      + 'zaokrąglenia -- ta jedna asercja odróżnia wszystkie 3 mutacje)',
+    roundingProbe.deductions.drewno, 53,
+    'G2: pop=53, stawka 1,0 -- required=floor(53×1,0)=53 wprost (floor/ceil/round nierozróżnialne '
+      + 'przy stawce całkowitej, patrz komentarz wyżej)',
   );
 }
 
@@ -700,25 +702,26 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
   );
 
   // Behawioralny dowód end-to-end: computeCitizenResourceDrain wywołane RAZ z sumą populacji
-  // 2 miast (25+25=50) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
-  // populacji 50 -- a NIE 2× wywołanie po 25 (co dałoby 2×5=10 też przypadkiem przy tej stawce,
-  // więc test dobiera asymetryczne populacje 15+35, żeby odróżnić "suma najpierw" od "podwójne
-  // liczenie": drenaż z osobna dla pop=15 (required=floor(15×0,2)=3) i pop=35
-  // (required=floor(35×0,2)=7) na TYM SAMYM (niezmutowanym) magazynie 8 drewna dałby OBA
-  // "available" (3<=8 i 7<=8) -- błędnie, bo razem potrzeba floor(50×0,2)=10 > 8. Suma-najpierw
-  // (RAZ per owner) poprawnie daje deductions.drewno = min(10, 8) = 8, missing.
-  // PRZELICZENIE PO ZMIANIE STAWKI (2026-08-12, 1,0->0,2 = 5x mniej): populacje przeskalowane x5
-  // (3->15, 7->35, suma 10->50) względem stanu sprzed zmiany, żeby required (3, 7, 10) i
-  // wszystkie "want" wartości niżej zostały DOKŁADNIE takie same jak wcześniej.
-  const wrongPerCity3 = M.computeCitizenResourceDrain(1, 15, { drewno: 8 });
-  const wrongPerCity7 = M.computeCitizenResourceDrain(1, 35, { drewno: 8 });
+  // 2 miast daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o tej samej
+  // populacji -- a NIE 2× wywołanie osobno, więc test dobiera asymetryczne populacje 3+7, żeby
+  // odróżnić "suma najpierw" od "podwójne liczenie": drenaż z osobna dla pop=3 (required=
+  // floor(3×1,0)=3) i pop=7 (required=floor(7×1,0)=7) na TYM SAMYM (niezmutowanym) magazynie
+  // 8 drewna dałby OBA "available" (3<=8 i 7<=8) -- błędnie, bo razem potrzeba
+  // floor(10×1,0)=10 > 8. Suma-najpierw (RAZ per owner) poprawnie daje deductions.drewno =
+  // min(10, 8) = 8, missing.
+  // PRZYWRÓCENIE PO ZMIANIE STAWKI (2026-08-13, 0,2->1,0, R-EKONOMIA-SUROWCE-SKALA-5X-Q1):
+  // populacje WRACAJĄ do wartości sprzed korekty 2026-08-12 (15->3, 35->7, suma 50->10), żeby
+  // required (3, 7, 10) i wszystkie "want" wartości niżej zostały DOKŁADNIE takie same jak
+  // wcześniej (sprzed obu zmian stawki).
+  const wrongPerCity3 = M.computeCitizenResourceDrain(1, 3, { drewno: 8 });
+  const wrongPerCity7 = M.computeCitizenResourceDrain(1, 7, { drewno: 8 });
   assert(
     wrongPerCity3.available.includes('drewno') && wrongPerCity7.available.includes('drewno'),
     'sanity: liczone OSOBNO (błędny wzorzec) obie "widzą" magazyn=8 jako wystarczający -- to właśnie ta pułapka, którą H1-H3 mają wykluczyć w main.ts',
   );
-  const correctSummedFirst = M.computeCitizenResourceDrain(1, 15 + 35, { drewno: 8, glina: 50 });
+  const correctSummedFirst = M.computeCitizenResourceDrain(1, 3 + 7, { drewno: 8, glina: 10 });
   eq(correctSummedFirst.deductions.drewno, 8, 'poprawny wzorzec (suma populacji NAJPIERW, RAZ per owner): deductions.drewno = min(10, 8) = 8, nie 2×8=16');
-  deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 50 obywateli (required=10) > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
+  deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 10 obywateli (required=10) > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
 }
 
 // ===========================================================================

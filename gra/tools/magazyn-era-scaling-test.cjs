@@ -159,13 +159,13 @@ eq(M.ownerStorageParamsForEra(SP, 3).bonusSurowceNaBudynek, 400, 'era3: capBonus
 // ===========================================================================
 // D. econ-params.json REALNE wartosci (era1, wszystkie trudnosci)
 // ===========================================================================
-console.log('\n-- D. econ-params.json: magazyn_baza_surowce=10000, magazyn_bonus_surowce_na_budynek=100 (era1) --');
-eq(M.DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo, 10000, 'default fallback: baza panstwa = 10000 (podniesiona 1000->10000, era1)');
-eq(M.DEFAULT_OWNER_STORAGE_PARAMS.bonusSurowceNaBudynek, 100, 'default fallback: bonus/Magazyn = 100 (NIEZMIENIONY -- "100 i 150" to Spichlerz I/II, nie to pole)');
+console.log('\n-- D. econ-params.json: magazyn_baza_surowce=50000, magazyn_bonus_surowce_na_budynek=500 (era1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1) --');
+eq(M.DEFAULT_OWNER_STORAGE_PARAMS.bazaSurowcePanstwo, 50000, 'default fallback: baza panstwa = 50000 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, Maciej 2026-08-13, x5 vs 10000, era1)');
+eq(M.DEFAULT_OWNER_STORAGE_PARAMS.bonusSurowceNaBudynek, 500, 'default fallback: bonus/Magazyn = 500 (R-EKONOMIA-SUROWCE-SKALA-5X-Q1: tym razem TO pole objete poleceniem "wszystkie skladowe formuly cap x5", w odroznieniu od wczesniejszego P-MAGAZYN-SKALOWANIE-EPOKA-Q1 ktory go nie ruszal)');
 for (const d of ['easy', 'normal', 'hard']) {
   const p = M.loadOwnerStorageParams(econParamsRaw, d);
-  eq(p.bazaSurowcePanstwo, 10000, `econ-params.json ${d}: magazyn_baza_surowce = 10000 (era1)`);
-  eq(p.bonusSurowceNaBudynek, 100, `econ-params.json ${d}: magazyn_bonus_surowce_na_budynek = 100 (era1, niezmieniony)`);
+  eq(p.bazaSurowcePanstwo, 50000, `econ-params.json ${d}: magazyn_baza_surowce = 50000 (era1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)`);
+  eq(p.bonusSurowceNaBudynek, 500, `econ-params.json ${d}: magazyn_bonus_surowce_na_budynek = 500 (era1, R-EKONOMIA-SUROWCE-SKALA-5X-Q1)`);
 }
 
 // ===========================================================================
@@ -259,10 +259,12 @@ console.log('\n-- H. advanceCityEconomy: PARYTET AI (gracz era1, AI era3) -- mag
     const cPlayer = M.foundCityAt(spots[0].q, spots[0].r, 0, cities, map, 'PlayerCity'); cities.push(cPlayer);
     const cAi     = M.foundCityAt(spots[1].q, spots[1].r, 7, cities, map, 'AiCity');     cities.push(cAi);
 
-    // Zapas WPROST ponad cap era1 (10000) ale POD cap era3 (40000) -- jesli era
-    // dziala poprawnie: gracz (era1) traci nadwyzke, AI (era3) zachowuje wszystko.
-    cPlayer.surowce = { drewno: 25000 };
-    cAi.surowce     = { drewno: 25000 };
+    // Zapas WPROST ponad cap era1 (50000, R-EKONOMIA-SUROWCE-SKALA-5X-Q1) ale POD cap
+    // era3 (200000) -- jesli era dziala poprawnie: gracz (era1) traci nadwyzke, AI
+    // (era3) zachowuje wszystko. 125000 zachowuje te sama proporcje do capu era1
+    // (2,5x) i marginesu do capu era3 (0,625x) co poprzedni pin 25000 vs 10000/40000.
+    cPlayer.surowce = { drewno: 125000 };
+    cAi.surowce     = { drewno: 125000 };
     const builtByCity = new Map([[cPlayer.id, []], [cAi.id, []]]);
 
     // PARYTET AI: JEDEN resolver, zero galezi w kodzie produkcyjnym -- owner 0 -> era 1,
@@ -278,15 +280,15 @@ console.log('\n-- H. advanceCityEconomy: PARYTET AI (gracz era1, AI era3) -- mag
 
     const playerCap = M.ownerResourceCap(cities, builtByCity, 0, data, 'normal', 1);
     const aiCap     = M.ownerResourceCap(cities, builtByCity, 7, data, 'normal', 3);
-    eq(playerCap, 10000, 'gracz (era1): cap panstwa = 10000 (0 Magazynow)');
-    eq(aiCap, 40000, 'AI (ownerId=7, era3): cap panstwa = 40000 (x4 wzgledem era1) -- MECHANIZM DZIALA DLA AI');
+    eq(playerCap, 50000, 'gracz (era1): cap panstwa = 50000 (0 Magazynow, R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 10000)');
+    eq(aiCap, 200000, 'AI (ownerId=7, era3): cap panstwa = 200000 (x4 wzgledem era1) -- MECHANIZM DZIALA DLA AI (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo 40000)');
 
-    eq(cPlayer.surowce.drewno, 10000, 'gracz (era1): 25000 drewna obciete do cap era1 (10000) -- reconcile realnie dziala');
-    // >= 25000 (nie == 25000): terytorium miasta moze dolozyc kilka sztuk drewna
+    eq(cPlayer.surowce.drewno, 50000, 'gracz (era1): 125000 drewna obciete do cap era1 (50000) -- reconcile realnie dziala (R-EKONOMIA-SUROWCE-SKALA-5X-Q1, bylo cap 10000)');
+    // >= 125000 (nie == 125000): terytorium miasta moze dolozyc kilka sztuk drewna
     // z plonow terenu tej tury (szum niezalezny od P-MAGAZYN-SKALOWANIE-EPOKA-Q1) --
-    // sedno asercji to BRAK obciecia (< cap era3=40000, w odroznieniu od gracza wyzej).
-    assert(cAi.surowce.drewno >= 25000, `AI (era3): drewno (${cAi.surowce.drewno}) NIE obciete ponizej wejsciowych 25000 (magazyn realnie wiekszy w epoce3)`);
-    assert(cAi.surowce.drewno < 40000, `AI (era3): drewno (${cAi.surowce.drewno}) ponizej cap era3 (40000) -- reconcile NIE obcina (zero galezi po ownerId)`);
+    // sedno asercji to BRAK obciecia (< cap era3=200000, w odroznieniu od gracza wyzej).
+    assert(cAi.surowce.drewno >= 125000, `AI (era3): drewno (${cAi.surowce.drewno}) NIE obciete ponizej wejsciowych 125000 (magazyn realnie wiekszy w epoce3)`);
+    assert(cAi.surowce.drewno < 200000, `AI (era3): drewno (${cAi.surowce.drewno}) ponizej cap era3 (200000) -- reconcile NIE obcina (zero galezi po ownerId)`);
   }
 }
 

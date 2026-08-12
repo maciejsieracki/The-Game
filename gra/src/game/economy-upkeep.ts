@@ -360,9 +360,18 @@ export interface OwnerStorageParams {
  * target belongs to the Granary I/II PAIR (SPICHLERZ_EMPIRE_CAP_I/II), not this
  * single-value field -- but both fields still get the same era-doubling mechanism.
  */
+/**
+ * R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): OBA pola ×5 (baza I bonus/Magazyn,
+ * zgodnie z poleceniem "przeskalować WSZYSTKIE składowe formuły cap ×5") — było
+ * 10000/100, jest 50000/500. Ten sam fallback musi zgadzać się z
+ * econ-params.json globalne.magazyn_baza_surowce / magazyn_bonus_surowce_na_budynek
+ * (przeskalowane w tym samym zadaniu) -- patrz `loadOwnerStorageParams` niżej.
+ * / EN: BOTH fields ×5 (base and per-Magazyn bonus) -- was 10000/100, now 50000/500;
+ * must match econ-params.json (scaled in the same task).
+ */
 export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
-  bazaSurowcePanstwo:    10000,
-  bonusSurowceNaBudynek: 100,
+  bazaSurowcePanstwo:    50000,
+  bonusSurowceNaBudynek: 500,
 };
 
 /**
@@ -386,7 +395,10 @@ export function magazynEraMultiplier(era: number): number {
 /**
  * Surowce objęte capem magazynu państwa (SUROW-CIV-01 + PYTANIE-84-U20):
  * cap(typ) = magazyn_baza_surowce + magazyn_bonus_surowce_na_budynek × liczba Magazynów
- * (dziś 1000 + 100×Magazyn per typ). Żywność (Spichlerz) — osobny model per-miasto.
+ * (dziś, epoka 1, po R-EKONOMIA-SUROWCE-SKALA-5X-Q1 2026-08-13: 50000 + 500×Magazyn per typ;
+ * NOTA: poprzedni tekst tego komentarza mówił „1000 + 100" i był już wtedy nieaktualny wobec
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 z 2026-08-12 -- poprawione przy okazji). Żywność (Spichlerz) —
+ * osobny model per-miasto, poza zakresem tej skali.
  */
 export const OWNER_CAPPED_RESOURCE_KEYS = [
   'drewno', 'kamien', 'glina', 'ruda', 'ruda_zelaza',
@@ -398,7 +410,7 @@ export type OwnerCappedResourceKey = typeof OWNER_CAPPED_RESOURCE_KEYS[number];
 
 const OWNER_CAPPED_RESOURCE_KEY_SET = new Set<string>(OWNER_CAPPED_RESOURCE_KEYS);
 
-/** Czy typ surowca podlega capowi magazynu państwa (epoka 1: 10000 + 100×Magazyn, podwaja się co epokę -- P-MAGAZYN-SKALOWANIE-EPOKA-Q1). */
+/** Czy typ surowca podlega capowi magazynu państwa (epoka 1: 50000 + 500×Magazyn, podwaja się co epokę -- P-MAGAZYN-SKALOWANIE-EPOKA-Q1 + R-EKONOMIA-SUROWCE-SKALA-5X-Q1). */
 export function isOwnerCappedResourceKey(key: string): key is OwnerCappedResourceKey {
   return OWNER_CAPPED_RESOURCE_KEY_SET.has(key);
 }
@@ -651,9 +663,20 @@ export function totalBuildingUpkeep(
 }
 
 /**
- * Per-turn resource upkeep for one building: 1 unit per resource TYPE present in
- * koszt_surowce (build cost), regardless of build-cost amount or FALA scaling.
- * Empty / missing koszt_surowce => no resource upkeep.
+ * Ile sztuk/turę zużywa wybudowany budynek per typ surowca obecny w koszt_surowce
+ * (build cost) — flat, NIEZALEŻNIE od kwoty kosztu budowy ani skalowania FALA.
+ * R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5, było 1 — ten sam algorytm
+ * (flat N/typ), tylko N przeskalowane; „utrzymanie surowcowe budynków” z zadania.
+ * / EN: flat units/turn per resource TYPE present in koszt_surowce (build cost),
+ * regardless of build-cost amount or FALA scaling — algorithm unchanged, only the
+ * flat constant N is scaled ×5 (was 1).
+ */
+export const BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE = 5;
+
+/**
+ * Per-turn resource upkeep for one building: BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE
+ * units per resource TYPE present in koszt_surowce (build cost), regardless of
+ * build-cost amount or FALA scaling. Empty / missing koszt_surowce => no resource upkeep.
  */
 export function buildingResourceUpkeep(
   building: { koszt_surowce?: BuildingStockCost | null } | null | undefined,
@@ -663,7 +686,7 @@ export function buildingResourceUpkeep(
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(raw)) {
     if (typeof v === 'number' && Number.isFinite(v) && v > 0) {
-      out[k] = 1;
+      out[k] = BUILDING_RESOURCE_UPKEEP_UNITS_PER_TYPE;
     }
   }
   return out;

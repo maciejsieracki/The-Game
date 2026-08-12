@@ -7,7 +7,7 @@
     "kanon_zywnosc_hodowla": "docs/decyzje/KANON-ULEPSZENIA-ZYWNOSC-HODOWLA.md (2026-06-29 Maciej) — obowiazuje nad tym plikiem do wdrozenia",
     "decyzje_EKONOMIA": "surowiecOdblokowany = klucz ASCII surowca (lub null) wg modelu dostepu boolean v0.1; zasieg_terytorium: posterunek=5 (epoka 2), fort=10 (epoka 3), miasto=10 (stale); zakladanie kolejnego miasta wymaga Straznica LUB zasiegu obecnego miasta. Rozbieznosci kluczy z resources.json (brak pola id) zapisane w EKONOMIA-ulepszenia-terenu-v01.md.",
     "klucze_surowcow_ASCII": "drewno | kamien | glina | ruda | zelazo | stal | bydlo | owce | lama | kon | sol | zloto",
-    "pole_surowiec_ilosc_tura": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE (korekta balansu Maciej 2026-08-12, R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, ZASTEPUJE stawki 2026-07-29 nizej): Tartak->drewno 10, Glinianka->glina 15 (PYTANIE-84-B1/B9/U-18, korekta balansu Maciej 2026-07-29: bylo 20/20), Kamieniolom->kamien 10, Kopalnia miedzi->ruda 4, Kopalnia zelaza->ruda_zelaza 4, Warzelnia soli->sol 10 (B2), Stadnina->kon 5 (B3), Kopalnia zlota->zloto 1 (B4). Brak pola w JSON -> domyslnie 2/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa)."
+    "pole_surowiec_ilosc_tura": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja PER ZBUDOWANE ULEPSZENIE w terytorium wlasciciela, niezaleznie od obsadzenia pola populacja (workedTiles). Wartosc = surowiec/ture. Stawki REALNE PO R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13, ×5 vs stan sprzed tej decyzji, ZASTEPUJE stawki 2026-08-12 nizej -- zloto WYLACZONE ze skalowania, waluta nie surowiec budowlany): Tartak->drewno 50 (bylo 10), Glinianka->glina 50 (bylo 10), Kamieniolom->kamien 50 (bylo 10), Kopalnia miedzi->ruda 20 (bylo 4), Kopalnia zelaza->ruda_zelaza 20 (bylo 4), Warzelnia soli->sol 50 (bylo 10), Stadnina->kon 25 (bylo 5), Kopalnia zlota->zloto 1 (BEZ ZMIAN -- wylaczone). Brak pola w JSON -> domyslnie 10/ture (terrain-improvements.ts TERRITORY_YIELD_DEFAULT_AMOUNT, fallback bezpieczenstwa, rowniez x5 dla spojnosci -- bylo 2/ture)."
   },
   "farma": {
     "nazwa": "Farma",
@@ -96,8 +96,8 @@
       "handel": 2
     },
     "surowiecOdblokowany": "kon",
-    "surowiecOdblokowany_uwaga": "ABC-18: tylko na złożu konia + tech Jeździectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Koń do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 5/turę (było 1/turę).",
-    "surowiec_ilosc_tura": 5,
+    "surowiecOdblokowany_uwaga": "ABC-18: tylko na złożu konia + tech Jeździectwo. PYTANIE-84-B3 (Maciej 2026-07-27): produkcja Koń do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 5/turę (było 1/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 25/turę (było 5/turę).",
+    "surowiec_ilosc_tura": 25,
     "teren": "Łąka, Równina",
     "warunek": "solo; tylko heks ze złożem konia w terytorium",
     "koszt_praca": 28,
@@ -113,8 +113,8 @@
       "handel": 2
     },
     "surowiecOdblokowany": "glina",
-    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). NIE bonus.glina (2) -- osobne pola. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę).",
-    "surowiec_ilosc_tura": 10,
+    "surowiecOdblokowany_uwaga": "GLINA-Q1=A (Maciej 2026-07-20): stala ilosc glina/ture z ulepszenia. PYTANIE-84-B1/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 15/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). NIE bonus.glina (2) -- osobne pola. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
+    "surowiec_ilosc_tura": 50,
     "teren": "złoże Gliny",
     "warunek": "glina → cegła (ważne w brązie)",
     "koszt_praca": 20,
@@ -130,8 +130,8 @@
       "handel": 2
     },
     "surowiecOdblokowany": "kamien",
-    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; brak pola id — propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu — DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę).",
-    "surowiec_ilosc_tura": 10,
+    "surowiecOdblokowany_uwaga": "klucz 'kamien' wg Surowiec='Kamień' w resources.json; brak pola id — propozycja EKONOMIA; UWAGA: 'kamien' pojawia sie rowniez w bonus{} jako efekt plonu — DANE musi zdecydowac czy bonus.kamien = dostep czy liczba. Stawka SUROW-TERYT-01 (Maciej 2026-07-23, REALNA) = 4/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
+    "surowiec_ilosc_tura": 50,
     "teren": "Wzgórza, Góry (kamień)",
     "warunek": "budulec — mury, budynki",
     "koszt_praca": 22,
@@ -183,8 +183,8 @@
       "handel": 3
     },
     "surowiecOdblokowany": "drewno",
-    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę).",
-    "surowiec_ilosc_tura": 10,
+    "surowiecOdblokowany_uwaga": "SUROW-TERYT-01 (Maciej 2026-07-23): produkcja per ulepszenie w terytorium, niezaleznie od obsadzenia populacja. PYTANIE-84-B9/U-18 (Maciej 2026-07-27): stawka REALNA = 20/ture; korekta balansu Maciej 2026-07-29: 10/ture (bylo 20 — magazyn PEŁNY); korekta balansu Maciej 2026-08-09: 4/ture (wyrownanie do kamieniolomu). R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 10/turę (było 4/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
+    "surowiec_ilosc_tura": 50,
     "teren": "Ląd w terytorium (łąka, lasy, wzgórza…)",
     "warunek": "stałe ulepszenie; MOŻE na lesie — las NIE znika; odblokowuje dostęp do drewna (v0.1 bez ilości)",
     "koszt_praca": 25,
@@ -238,8 +238,8 @@
       "handel": 3
     },
     "surowiecOdblokowany": "sol",
-    "surowiecOdblokowany_uwaga": "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja Sól do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 Żywność, +1 Pieniądz) zostaje obok surowca_ilosc_tura.",
-    "surowiec_ilosc_tura": 10,
+    "surowiecOdblokowany_uwaga": "PYTANIE-84-U21/B2 (Maciej 2026-07-27): produkcja Sól do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 10/ture. Bonus heksa (+1 Żywność, +1 Pieniądz) zostaje obok surowca_ilosc_tura. R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 50/turę (było 10/turę).",
+    "surowiec_ilosc_tura": 50,
     "teren": "Wybrzeże, złoże soli (hex.zloze=sol)",
     "warunek": "sól — wyłącznie wybrzeże morskie (kanon: złoża soli przy brzegu) lub hex.zloze=sol",
     "koszt_praca": 20,
@@ -301,8 +301,8 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda",
-    "surowiecOdblokowany_uwaga": "ruda miedzi (Odlewnia brązu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę).",
-    "surowiec_ilosc_tura": 4,
+    "surowiecOdblokowany_uwaga": "ruda miedzi (Odlewnia brązu); plon 2/t z kopalni_miedzi. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA (nie placeholder) = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 20/turę (było 4/turę).",
+    "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże miedzi (hex.zloze=miedz) lub legacy ZlozeRudy",
     "warunek": "ruda miedzi → magazyn (Odlewnia brązu)",
     "koszt_praca": 22,
@@ -318,8 +318,8 @@
       "handel": 5
     },
     "surowiecOdblokowany": "ruda_zelaza",
-    "surowiecOdblokowany_uwaga": "Ruda żelaza (Odlewnia żelaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę).",
-    "surowiec_ilosc_tura": 4,
+    "surowiecOdblokowany_uwaga": "Ruda żelaza (Odlewnia żelaza); plon 2/t z kopalni_zelaza. SUROW-TERYT-01 (Maciej 2026-07-23): stawka REALNA = 2/ture. R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta balansu Maciej 2026-08-12: 4/turę (było 2/turę). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): ×5 → 20/turę (było 4/turę).",
+    "surowiec_ilosc_tura": 20,
     "teren": "Wzgórza, Góry, złoże żelaza (hex.zloze=zelazo)",
     "warunek": "ruda żelaza → magazyn (Odlewnia żelaza)",
     "koszt_praca": 22,
@@ -335,7 +335,7 @@
       "handel": 10
     },
     "surowiecOdblokowany": "zloto",
-    "surowiecOdblokowany_uwaga": "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Złoto do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/turę. Mennica zużywa 1 Złoto/turę ze skarbca przy mnożniku handlu→Pieniądz (U-13).",
+    "surowiecOdblokowany_uwaga": "PYTANIE-84-R9/B4 (Maciej 2026-07-27): Złoto do magazynu państwa per ulepszenie w terytorium (SUROW-TERYT-01); stawka REALNA = 1/turę. Mennica zużywa 1 Złoto/turę ze skarbca przy mnożniku handlu→Pieniądz (U-13). R-EKONOMIA-SUROWCE-SKALA-5X-Q1 (Maciej 2026-08-13): Złoto ŚWIADOMIE WYŁĄCZONE z przeskalowania ×5 (waluta/handel, nie surowiec budowlany) — wartość BEZ ZMIAN.",
     "surowiec_ilosc_tura": 1,
     "teren": "Wzgórza, Góry, złoże złota (hex.zloze=zloto)",
     "warunek": "złoże złota — produkcja do magazynu państwa",
