@@ -557,7 +557,7 @@ import {
   type QualityTier,
 } from './map/newGameMapDefaults';
 import { buildStyledResourceOverlay } from './render/styleResources';
-import { collapseToMergedMesh, countMeshesInGroup } from './render/mergeDecor';
+import { collapseToMergedMesh, countMeshesInGroup, disposeMergedDecor } from './render/mergeDecor';
 import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
@@ -1338,6 +1338,22 @@ async function boot(): Promise<void> {
       const raw = new URLSearchParams(location.search).get('mapQuality');
       return raw ? qualityTierFromLabel(raw) : defaultTier;
     }
+
+    /**
+     * P-PERF-SPOWOLNIENIE-PO-60-TURACH (2026-08-12, diagnoza rundy 1): flaga URL
+     * `?perfDebug=1` włącza WYŁĄCZNIE dodatkowe console.info() z czasem (ms) faz
+     * autozapisu -- zero wpływu na normalną grę (bez flagi PERF_DEBUG=false, każde
+     * miejsce poniżej to jeden warunek + return, żadnej zmiany logiki). Cel:
+     * potwierdzić/obalić hipotezę "synchroniczna serializacja+zapis co turę rośnie
+     * z rozmiarem gry" bez zgadywania -- patrz raport diagnozy rundy 1.
+     * / EN: the `?perfDebug=1` URL flag enables ONLY extra console.info() timing
+     * (ms) of autosave phases -- zero effect on normal play (with PERF_DEBUG=false
+     * every site below is one guard + return, no logic change). Goal: confirm/
+     * refute the "sync per-turn serialize+write cost grows with game size"
+     * hypothesis without guessing -- see round-1 diagnosis report.
+     */
+    const PERF_DEBUG = typeof location !== 'undefined'
+      && new URLSearchParams(location.search).get('perfDebug') === '1';
 
     document.body.style.margin   = '0';
     document.body.style.padding  = '0';
@@ -2170,7 +2186,17 @@ async function boot(): Promise<void> {
     }
 
     function clearResourceOverlays(): void {
-      for (const { group } of resourceOverlays) scene.remove(group);
+      // P-PERF-SPOWOLNIENIE-PO-60-TURACH: disposeMergedDecor jest bezpieczny tu
+      // TYLKO bo działa wyłącznie na wyniku collapseToMergedMesh (>=7 mesh grupy,
+      // patrz maybeCollapseResourceOverlay) — nie rusza NIEzmergowanych dzieci,
+      // więc singletony (np. koń złoża z kon-nowy-model.ts, współdzielony z
+      // tokenami jednostek) nigdy nie są tu dysponowane.
+      // / EN: disposeMergedDecor is safe here ONLY because it acts exclusively
+      // on the collapseToMergedMesh output (>=7-mesh groups, see
+      // maybeCollapseResourceOverlay) — it never touches un-merged children, so
+      // singletons (e.g. the horse deposit model from kon-nowy-model.ts, shared
+      // with unit tokens) are never disposed here.
+      for (const { group } of resourceOverlays) { scene.remove(group); disposeMergedDecor(group); }
       resourceOverlays.length = 0;
     }
 
@@ -2180,6 +2206,7 @@ async function boot(): Promise<void> {
       for (let i = resourceOverlays.length - 1; i >= 0; i--) {
         if (resourceOverlays[i]!.hexKey === hexKey) {
           scene.remove(resourceOverlays[i]!.group);
+          disposeMergedDecor(resourceOverlays[i]!.group); // patrz komentarz w clearResourceOverlays
           resourceOverlays.splice(i, 1);
         }
       }
@@ -10728,7 +10755,19 @@ async function boot(): Promise<void> {
       if (isNaN(q) || isNaN(r)) return;
       const layers = mergedImprovementLayers(hexKey);
       const oldMesh = improvementMeshes.get(hexKey);
-      if (oldMesh) scene.remove(oldMesh);
+      if (oldMesh) {
+        scene.remove(oldMesh);
+        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: bez tego każde ulepszenie/warstwa
+        // zmieniona na tym heksie (budynek, wykarczowany las, tarasy…) leakowała
+        // unikalną, zmergowaną BufferGeometry + Material na GPU na zawsze — nigdy
+        // nie zwalniane przez GC (nie jest to pamięć JS). Rośnie z każdym
+        // respawnem na mapie, przez cały czas trwania gry.
+        // / EN: without this every improvement/layer change on this hex leaked
+        // a unique merged BufferGeometry + Material on the GPU forever — never
+        // freed by JS GC. Grows with every respawn on the map, for the whole
+        // game session.
+        disposeMergedDecor(oldMesh);
+      }
       if (layers.length === 0) {
         improvementMeshes.delete(hexKey);
         syncResourceOverlayAtHex(hexKey);
@@ -10764,7 +10803,7 @@ async function boot(): Promise<void> {
       entries: Array<[string, ImprovementKey | PlacedLayers]> | undefined,
     ): void {
       placedImprovements.clear();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
       if (entries?.length) {
         for (const [hexKey, raw] of entries) {
@@ -22301,6 +22340,7 @@ async function boot(): Promise<void> {
         return;
       }
       autosaveInFlight = true;
+      const _perfAutosaveT0 = PERF_DEBUG ? performance.now() : 0;
       try {
       let idx = 0;
       try {
@@ -22326,6 +22366,13 @@ async function boot(): Promise<void> {
         console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
         showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
         return;
+      }
+      if (PERF_DEBUG) {
+        console.info(
+          '[perfDebug] buildSaveGameSnapshot: ' + (performance.now() - _perfAutosaveT0).toFixed(1)
+          + ' ms · tura=' + turn + ' · units=' + units.length + ' · cities=' + cities.length
+          + ' · improvementMeshes=' + improvementMeshes.size + ' · resourceOverlays=' + resourceOverlays.length,
+        );
       }
 
       if (shouldUseFsaAutosave(getFsaReadinessState())) {
@@ -22364,7 +22411,17 @@ async function boot(): Promise<void> {
       }
 
       try {
+        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: pomiar poniżej sprawdza, czy JSON.stringify
+        // (buildSaveGameSnapshot już policzony wcześniej) + zapis migawki gry co turę
+        // (domyślnie) rośnie wraz z rozmiarem gry (więcej jednostek/miast/historii).
+        // Od migracji na IndexedDB (`idb-storage.ts`) `saveToLocal` jest asynchroniczny
+        // (nie blokuje już głównego wątku samym zapisem), ale JSON.stringify wciąż jest.
+        const _perfSaveLocalT0 = PERF_DEBUG ? performance.now() : 0;
         const { ok, reason } = await saveToLocal(slot, snapshot);
+        if (PERF_DEBUG) {
+          console.info('[perfDebug] saveToLocal (JSON.stringify+IndexedDB, async): '
+            + (performance.now() - _perfSaveLocalT0).toFixed(1) + ' ms · tura=' + turn);
+        }
         if (ok) {
           setLastPlayedSlotId(slot);
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
@@ -22506,6 +22563,18 @@ async function boot(): Promise<void> {
         return;
       }
       console.warn('[EndTurn] triggerPlayerEndTurn: START tura', turn);
+      if (PERF_DEBUG) {
+        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: migawka liczników na START każdej tury gracza --
+        // porównaj trend między turami (rosnące improvementMeshes/resourceOverlays z tury na
+        // turę przy STAŁEJ liczbie miast wskazywałoby na wyciek, nie na naturalny wzrost gry).
+        console.info(
+          '[perfDebug] EOT start tura=' + turn + ' · units=' + units.length + ' · cities=' + cities.length
+          + ' · improvementMeshes=' + improvementMeshes.size + ' · resourceOverlays=' + resourceOverlays.length
+          + ' · villageMeshes=' + villageMeshes.size + ' · campMeshes=' + campMeshes.size
+          + ' · drawCalls=' + (renderer.info.render.calls) + ' · geometries=' + (renderer.info.memory.geometries)
+          + ' · textures=' + (renderer.info.memory.textures),
+        );
+      }
       endTurnInProgress = true;
       endTurnStartedAt = Date.now();
       void (async () => {
@@ -27066,7 +27135,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
 
       await postSceneProgress(loading, 'plan klastra startowego', 7, POST_SCENE_STEPS);
@@ -27323,7 +27392,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
       refreshBuildApi();
       overlayDepositEra = player.era;
@@ -27570,7 +27639,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
 
       cityBuilt.set(preset.playerCityId, ['koszary']);
@@ -27794,7 +27863,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
 
       cityBuilt.set(preset.playerCityId, ['koszary', 'spichlerz']);

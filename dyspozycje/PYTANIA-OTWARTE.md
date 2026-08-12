@@ -12720,3 +12720,16 @@ Zakres: F1 (blokujące, wg podanego kierunku naprawy) + F2 (tania, przy okazji) 
 regresyjny na dokładnie ten scenariusz (start gry z istniejącym zapisem → menu → przycisk
 aktywny). F3/F4/F5 mogą zostać jako osobne, mniej pilne noty jeśli zabraknie czasu w tej
 rundzie — NIE blokują F1.**
+
+## P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE — SCALONE (76514613)
+
+Operator (a98bf3d5e42160e75) znalazł prawdziwą przyczynę: nie w generowaniu oferty AI (już
+poprawne, `D-DYPLO-AI-OFERTA-ZERO`), tylko w bramce akceptacji gracza
+(`diplomacy-acceptance-points.ts`) — wymagała pokrycia "bazy traktatu" niezależnie od tego, kto
+proponuje, podczas gdy silnik (`evaluateProposal`) wymusza to tylko gdy proponuje gracz. Efekt:
+w pełni uczciwa oferta AI i tak pokazywała fałszywy niedobór PW i blokowała przycisk Przyjmij.
+Naprawione + 15 nowych asercji (240/240 `diplomacy-acceptance-points-test.cjs`), `tsc` 0 błędów,
+`logic-test` 213/213, wszystkie 35 plików dyplomacji zielone, `ai-test` 274/8 (baseline
+pre-istniejący, niezwiązany). Commit `76514613`, wypchnięty na branch.
+
+**STATUS: ZAMKNIĘTE (bug #3 z batcha playtestu).**

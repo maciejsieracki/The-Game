@@ -123,3 +123,33 @@ export function collapseToMergedMesh<T extends THREE.Object3D>(group: T): T {
   group.userData[MERGED_DECOR_FLAG] = true;
   return group;
 }
+
+/**
+ * P-PERF-SPOWOLNIENIE-PO-60-TURACH (2026-08-12): dispose GPU resources of a group
+ * PRODUCED by collapseToMergedMesh() before it is discarded (e.g. respawned on
+ * improvement/layer change). Bezpieczne WYŁĄCZNIE dla wyniku collapse — merged
+ * BufferGeometry + Material są tworzone od zera w buildMergedMesh() (nigdy
+ * współdzielone), więc dispose ich tutaj nie psuje żadnego innego obiektu w
+ * scenie. Bez flagi MERGED_DECOR_FLAG (collapse się nie powiódł / grupa pusta)
+ * celowo NIC nie robi — dzieci mogły być współdzielonymi singletonami (patrz
+ * komentarz nagłówkowy pliku), dispose złamałoby inne miejsca ich użycia.
+ * / EN: dispose GPU resources of a group PRODUCED by collapseToMergedMesh()
+ * before discarding it (e.g. respawned on an improvement/layer change). Safe
+ * ONLY for a collapse result — the merged BufferGeometry + Material are built
+ * from scratch in buildMergedMesh() (never shared), so disposing them here
+ * cannot break any other object in the scene. Without MERGED_DECOR_FLAG
+ * (collapse failed / empty group) this deliberately does nothing — children
+ * may be shared singleton geometries (see file header comment); disposing
+ * them would break every other place still using them.
+ */
+export function disposeMergedDecor(group: THREE.Object3D): void {
+  if (group.userData?.[MERGED_DECOR_FLAG] !== true) return;
+  for (const child of group.children) {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh) continue;
+    mesh.geometry?.dispose();
+    const mat = mesh.material;
+    if (Array.isArray(mat)) mat.forEach(m => m.dispose());
+    else mat?.dispose();
+  }
+}
