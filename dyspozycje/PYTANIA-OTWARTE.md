@@ -16410,3 +16410,12 @@ turze ABC dla zmian merytorycznych, wejdzie w fazę wykonania przez normalną p�
 
 **STATUS: dispatch agenta rozpoznawczego (katalogowanie wszystkich takich paneli/tekstów w
 kodzie) w toku — pierwszy krok przed jakąkolwiek oceną jakości.**
+
+## Rozszerzenie zakresu R-CIVPEDIA-OPISY-AUDYT-Q1: + Poradnik dla gracza (Maciej, 2026-08-13)
+
+Polecenie: dołączyć „Poradnik dla gracza" do zakresu przeglądu (CivPedia + wszystkie
+szczegóły/ściągi w grze + Poradnik). Właściciel nieobecny przez dłuższy czas — **praca
+samodzielna, autoryzacja standing na kontynuację pipeline'u AutoBot i nowych tematów bez
+czekania na odpowiedzi.** Otwarte pytania ABC (`P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1`
+czeka na doprecyzowanie mojego pytania zwrotnego) zostają zablokowane do jego powrotu — nie
+zgaduję, kontynuuję inne dostępne wątki.
