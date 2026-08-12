@@ -16084,3 +16084,64 @@ wartości, zachowanie kolejki) są łapane.
 ZAMKNIĘTY** — klaster miast barbarzyńców (tematy 7-10, `93db72e8` + naprawa `6df223f1`) przeszedł
 łącznie 4 rundy niezależnej recenzji (3x pierwotna + ta weryfikacja) bez otwartego FAIL. 3
 rekomendacje (E6/E7/E10 wzmocnienie testu) do backlogu, nie blokują.
+
+## Blokada duplikatów w koszyku PW (fc17538f) — Evaluator: PASS-WITH-NOTES, nowy test dodany
+
+Rdzeń naprawy potwierdzony wykonaniem (27/27 własnych asercji): tech/jednostka×3 → 1 wiersz,
+sumowanie złota z clampem identycznym jak ręczna edycja (ten sam `basketItemMaxQty`), żywność z
+2 miast → 2 osobne wiersze (klucz realnie używa `cityId`), no-op zwraca TĘ SAMĄ referencję
+(mocniej niż wymagano — brak cichego nadpisania), legalnie różne pozycje nietknięte. 7/8 mutacji
+złapanych (M7 — limit z `newItem` zamiast `existing` — teoretyczna, nieosiągalna z formularza).
+
+**⛔ N1 — ścieżka EDYCJI omija deduplikację (nie regresja tego commita, pre-istniejące z
+`R-PROPOZYCJA-BRAK-EDYCJI`, ale ta sama klasa błędu co zgłoszenie).** Odtworzone E2E: koszyk
+[Obróbka drewna, Garncarstwo] → Edytuj wiersz 1 → wybierz "Obróbka drewna" → Zapisz → DWA
+identyczne wiersze — dokładnie objaw ze zgłoszenia właściciela. `diplomacyTradeBasket.ts:2308-2309`
+robi `map()` bez sprawdzenia tożsamości. Temat P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE NIE
+powinien być uznany za w pełni zamknięty bez tego.
+
+**N2 — dostarczony test był ślepy na regresję podłączenia** (helper poprawny, ale wywołanie z UI
+mogłoby się rozłączyć bez wykrycia) — Evaluator dopisał `diplomacy-basket-duplicate-ui-test.cjs`
+(esbuild+jsdom, klika realny modal, 10/10), potwierdzony jako realnie czuły (pod mutacją miejsca
+wywołania: stary test 17/17 zielony, nowy 0/10 czerwony). **Scalone** (commit `d6082f84`).
+
+**STATUS: dispatch naprawy N1 (deduplikacja ścieżki edycji) w toku.**
+
+## Tabela Miast filtr+SUROWCE+podsumowanie (89c16ec1) — Evaluator: FAIL, naprawa dispatchowana
+
+**⛔ F1 — niespójność etykiety z decyzją podjętą 12h wcześniej w tej samej sesji.** Kolumna
+SUROWCE pokazuje pełne, NIEKLAMROWANE zapotrzebowanie (`buildingResourceUpkeepForBuiltIds`), ale
+stopka nazywa to "utrzymanie" — dokładnie odwrotnie niż rozstrzygnął `9c0cd04d` (naprawa
+`a79bae29` w tej samej sesji: "Budynki/Wojsko celowo mówią zapotrzebowanie, NIE zużycie/
+utrzymanie"). Zmierzone: zapotrzebowanie {drewno:2,kamien:2} vs realny drenaż {drewno:1,kamien:0}.
+Dwa panele tej samej gry, jeden ekran od siebie, przeczą sobie.
+
+**⛔ F2 — realny bug: wiersz SUMA liczy błędnie przy kolizji nazw miast.** `cityEcon` i
+`cityPobor` to tablice RÓWNOLEGŁE (ten sam `pc.map(...)`), ale panel łączy je po `name`
+zamiast po indeksie. 94 nazwy miast występują w więcej niż jednej puli cywilizacji
+(`city-names-pools.json`), a `captureCity()` zachowuje nazwę zdobytego miasta — więc dwa
+miasta jednego ownera o tej samej nazwie (naturalny skutek podboju) dają: oba wiersze dostają
+dane PIERWSZEGO, podsumowanie liczy podwójnie i GUBI drugie miasto całkowicie. Zmierzone: suma
+100+7 pokazuje 200, "−9 Kamień" drugiego miasta znika bez śladu. Połowa błędu pre-istniejąca, ale
+błędny AGREGAT jest nowy w tym commicie (dodał wiersz podsumowania) i ten commit przepisał
+dokładnie ten join.
+
+**F3 — 2/8 mutacji własnych ucieka** (test sprawdza wyłącznie dopasowanie tekstu źródła, nie
+wykonanie): desync między filtrem nagłówka a wierszami/podsumowaniem — przy przyszłym refaktorze
+przeszedłby niewykryty.
+
+Noty nieblokujące: N1 (podwójne okablowanie — `render()` woła `wireMiastaColFilter` 2×, 2 listenery
+na klik, stan końcowy poprawny ale marnotrawstwo); N2 (martwy klucz `detailFor.ludnosc`); N3
+(`sumResourceRecords` cicho gubi wartości ≤0, dziś nieszkodliwe); N4 (`ownerId` w
+`buildingResourceUpkeepForCityId` martwy parametr, pre-istniejące); N5 (scroll-reset już
+naprawiony wcześniej, bez działania); N6 (trwałość filtra w ramach sesji — OK).
+
+Reszta modułu potwierdzona solidna wykonaniem (44 własne asercje na realnym DOM, obalając
+uzasadnienie testu projektu że "nie da się zbundlować" — dało się, esbuild+loadery): filtr kolumn
+realnie usuwa z DOM, SUROWCE = dokładna wartość źródłowa, WZROST = średnia nie suma, edge case'y
+0/1 miasto bezpieczne, XSS w nazwie miasta escapowane.
+
+**STATUS: dispatch naprawy F1+F2+F3 w toku** — zakres: (1) etykieta stopki "zapotrzebowanie" +
+zastrzeżenie o niedoborze (spójność z `9c0cd04d`), (2) join po indeksie zamiast po `name` +
+`cityId` w `EmpireCityPoborRow` dla żywności, (3) 2 asercje behawioralne (wykonanie, nie tekst
+źródła) zamykające M2/M7.
