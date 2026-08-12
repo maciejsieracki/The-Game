@@ -14836,7 +14836,8 @@ przywróceniem `prevScrollTop`. Test `empire-panel-moc-scroll-preserve-test.cjs`
 cofnięcie obu części naprawy → 34 passed/12 failed, S1+S4 nadal zielone = naprawa rundy 1
 nienaruszona). Wszystkie bramki zielone (`tsc`, `hud-armia-chip-jednostki-test` 58/58,
 `power-objective-test` 29/29, `logic-test` 213/213). Scalone jako `55e64ac2`, worktree
-`fix-scroll-reset-r2` usunięty. Evaluator (Sonnet 5, temat UI niebojowy → 1x) dispatchowany.
+`fix-scroll-reset-r2` usunięty. Evaluator (Opus 5, temat UI niebojowy → 1x, per §4 CLAUDE.md
+Evaluator zawsze Opus 5 — poprzedni wpis błędnie mówił "Sonnet 5", skorygowane) dispatchowany.
 
 ## ECHO R-EPOKA-CUD-ZAKRES-Q1 (95bf5503) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
 
