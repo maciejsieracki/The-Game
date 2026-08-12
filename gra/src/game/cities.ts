@@ -35,7 +35,13 @@ export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatki';
 /** Tryb przypisania pól: auto (AI) lub ręczna korekta 👤. */
 export type OkolicaTryb = 'auto' | 'reczny';
 
-export const DEFAULT_OKOLICA_FOCUS: OkolicaFocus = 'zrownowazone';
+/** P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC (Maciej): domyślny tryb Zarządzania polami
+ * dla nowo zakładanego miasta = Żywność (był Zrównoważone). Gracz może zmienić ręcznie
+ * po założeniu — to wyłącznie wartość startowa (per-owner global default, patrz
+ * empire-city-defaults.ts::freshOwnerDefaultOkolicaFocus + main.ts::seedCityOwnerDefaults).
+ * EN: default Field Management mode for a newly founded city = Food (was Balanced).
+ * Player can still change it manually after founding — this only changes the starting value. */
+export const DEFAULT_OKOLICA_FOCUS: OkolicaFocus = 'zywnosc';
 export const DEFAULT_OKOLICA_TRYB: OkolicaTryb = 'auto';
 
 /** Profile auto-kolejki budynków (panel Produkcja). */
