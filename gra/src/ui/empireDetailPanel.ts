@@ -966,14 +966,28 @@ function resCitizenBadgeHtml(r: EmpireResourceRow): string {
 }
 
 /**
- * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): rozwinięcie „Zobacz szczegóły" —
- * rozbicie zużycia TEGO surowca ostatniej przeliczonej tury na budynki/obywateli/wojsko.
- * Czyta WYŁĄCZNIE `r.usage` (`resource-usage-breakdown.ts`, WPROST z tego co silnik faktycznie
- * odjął z magazynu — nie licz nic tutaj). Natywny `<details>/<summary>` — ten sam wzorzec co
- * grupy budynków w cityPanel.ts (GRUPY-BUDYNKOW), zero nowego okablowania JS/zdarzeń.
- * Zwraca '' gdy brak zużycia (żadnej kategorii) — karta wtedy nie pokazuje przycisku wcale.
+ * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12) + P-ZUZYCIE-ROZBICIE-NIEDOBOR
+ * (Evaluator FAIL, wariant B): rozwinięcie „Zobacz szczegóły" — rozbicie TEGO surowca na
+ * budynki/obywateli/wojsko. Czyta WYŁĄCZNIE `r.usage` (`resource-usage-breakdown.ts`) — nie
+ * licz nic tutaj. Natywny `<details>/<summary>` — ten sam wzorzec co grupy budynków w
+ * cityPanel.ts (GRUPY-BUDYNKOW), zero nowego okablowania JS/zdarzeń. Zwraca '' gdy brak
+ * zużycia (żadnej kategorii) — karta wtedy nie pokazuje przycisku wcale.
+ *
+ * ⚠️ Etykiety Budynki/Wojsko celowo mówią „zapotrzebowanie", NIE „zużycie"/„utrzymanie" —
+ * `u.buildings`/`u.units` to PEŁNY popyt, nieklamrowany do zapasu magazynu (patrz JSDoc
+ * `ResourceUsageBreakdown` w resource-usage-breakdown.ts); przy niedoborze magazynu może to
+ * przewyższać to, co silnik realnie odjął. Obywatele SĄ klamrowani (`u.citizens` = drenaż
+ * realny) — jedyna kategoria tu, o której wolno twierdzić „to zostało realnie zużyte".
+ * / EN: Budynki/Wojsko rows deliberately say "zapotrzebowanie" (demand), not "usage" — those
+ * two fields are full, unclamped demand and can exceed what the engine actually deducted
+ * under a warehouse shortage. Obywatele IS clamped (real drain) — the only row here entitled
+ * to claim actual consumption.
  */
-function resUsageDetailsHtml(r: EmpireResourceRow): string {
+// Eksport dla testów (ten sam wzorzec co treasuryBalanceSignedTxt wyżej) — pozwala testowi
+// naprawdę WOŁAĆ tę funkcję z kontrolowanym `EmpireResourceRow`, zamiast dopasowywać tekst w
+// źródle. / EN: exported for tests (same pattern as treasuryBalanceSignedTxt above) — lets the
+// test REALLY CALL this function with a controlled row instead of matching text in the source.
+export function resUsageDetailsHtml(r: EmpireResourceRow): string {
   if (!r.usage) return '';
   const u = r.usage;
   const total = resourceUsageTotal(u);
@@ -985,13 +999,16 @@ function resUsageDetailsHtml(r: EmpireResourceRow): string {
   return `<details class="civ-emp-res-usage">`
     + `<summary>Zobacz szczegóły zużycia</summary>`
     + `<div class="civ-emp-res-usage-body">`
-    + row('Budynki (utrzymanie)', u.buildings)
-    + row('Obywatele (drenaż)', u.citizens)
-    + row('Wojsko (utrzymanie)', u.units)
-    + `<div class="civ-emp-res-usage-row total"><span class="k">Zużycie razem tej tury</span><span class="v">−${total}</span></div>`
+    + row('Budynki (zapotrzebowanie)', u.buildings)
+    + row('Obywatele (drenaż realny)', u.citizens)
+    + row('Wojsko (zapotrzebowanie)', u.units)
+    + `<div class="civ-emp-res-usage-row total"><span class="k">Suma rozbicia tej tury</span><span class="v">−${total}</span></div>`
+    + `<div class="civ-emp-res-usage-note">Budynki i Wojsko pokazują <b>zapotrzebowanie</b> (pełne, bez klamrowania do `
+    + `zapasu) — przy niedoborze magazynu suma może przewyższać to, co realnie zeszło z magazynu. Obywatele pokazują `
+    + `<b>drenaż realny</b> (klamrowany do dostępnego zapasu).</div>`
     + `<div class="civ-emp-res-usage-note">Produkcja: <b>${esc(signedTxt(prod))}</b> / turę — liczona OSOBNO od `
-    + `zużycia powyżej (zużycie jest odjęte z magazynu przy przetwarzaniu tury; „${esc(signedTxt(r.ratePerTurn))}/turę” `
-    + `widoczne na karcie to produkcja ± dyplomacja, BEZ zużycia).</div>`
+    + `rozbicia powyżej („${esc(signedTxt(r.ratePerTurn))}/turę” widoczne na karcie to produkcja ± dyplomacja, `
+    + `BEZ zużycia).</div>`
     + `</div></details>`;
 }
 

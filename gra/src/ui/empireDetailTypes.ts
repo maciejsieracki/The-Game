@@ -101,11 +101,13 @@ export interface EmpireResourceRow {
    */
   citizenCovered?: boolean;
   /**
-   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): rozbicie zużycia tego surowca w
-   * OSTATNIEJ przeliczonej turze na budynki/obywateli/wojsko — czytane WPROST z tego, co
-   * silnik faktycznie odjął z magazynu (`resource-usage-breakdown.ts`), NIE przeliczane
-   * osobno. `undefined` = brak zużycia żadnej kategorii tego surowca tej tury (przycisk
-   * „Zobacz szczegóły" niepotrzebny — patrz `resourceUsageHasAny`).
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12) + P-ZUZYCIE-ROZBICIE-NIEDOBOR:
+   * rozbicie tego surowca na budynki/obywateli/wojsko — czytane WPROST z tego, co silnik
+   * policzył (`resource-usage-breakdown.ts`), NIE przeliczane osobno. `undefined` = brak
+   * żadnej kategorii tego surowca (przycisk „Zobacz szczegóły" niepotrzebny — patrz
+   * `resourceUsageHasAny`). ⚠️ `citizens` jest klamrowany do zapasu (realny drenaż);
+   * `buildings`/`units` to PEŁNE zapotrzebowanie, nie zawsze równe temu, co silnik realnie
+   * odjął z magazynu przy niedoborze — patrz JSDoc `ResourceUsageBreakdown`.
    */
   usage?: ResourceUsageBreakdown;
   /**

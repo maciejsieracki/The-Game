@@ -852,7 +852,7 @@ import {
   shouldDeferEotEvents,
   type DeferredEotHint,
 } from './game/eot-event-defer';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -2737,10 +2737,34 @@ async function boot(): Promise<void> {
       const citizenRequiredSet = new Set(citizenUpkeep.required);
       const citizenAvailableSet = new Set(citizenUpkeep.available);
       // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: budynki/wojsko z ostatniej przeliczonej tury —
-      // WPROST z mapy publikowanej w bloku „Bank treasury" (main.ts), NIE przeliczane tutaj.
-      // Brak wpisu (np. przed 1. turą) = obiekt pusty, resourceUsageBreakdownFor() zwraca 0.
-      const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId);
-      const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId);
+      // WPROST z mapy publikowanej w bloku „Bank treasury” (main.ts), NIE przeliczane tutaj.
+      // P-SUROWCE-SAVE-LOAD-PUSTE (Evaluator FAIL, wariant A): `buildingResourceUpkeepByOwner`/
+      // `unitResourceUpkeepByOwner` są czyszczone przy KAŻDYM wczytaniu zapisu/nowej grze (5
+      // miejsc, `restoreGameFromSave` i siostrzane) i wypełniane WYŁĄCZNIE wewnątrz bloku „Bank
+      // treasury” pierwszej przeliczonej tury — do tego czasu `.get(ownerId)` zwraca
+      // `undefined`, mimo że przycisk „Zobacz szczegóły” już może się pokazać (bo
+      // `citizenUpkeep` MA fallback niżej i `usage.citizens` bywa > 0). Bez fallbacku panel
+      // pokazywałby wtedy budynki/wojsko jako 0 — niedoszacowanie, nie prawdziwy stan gry.
+      // Naprawa: TEN SAM wzorzec fallbacku co `citizenUpkeep` niżej (`?? computeCitizenResourceDrain(...)`)
+      // — gdy mapa nie ma jeszcze wpisu, przelicz NA ŻĄDANIE z aktualnego stanu gry (`cityBuilt`/
+      // `units`) tymi samymi czystymi prymitywami silnika (`previewOwnerBuildingResourceUpkeep`/
+      // `totalUnitResourceUpkeep`, economy-upkeep.ts — te same funkcje, które `turn-economy.ts`
+      // woła wewnątrz ticku pod `totalBuildingResourceUpkeep`/`totalUnitResourceUpkeep`; budynki
+      // nie zależą od poziomu, patrz `buildingResourceUpkeep()` JSDoc — zero rozjazdu z tickiem).
+      // Wpis obecny, ale pusty `{}` (owner naprawdę nie ma dziś kosztu) NIE trafia w ten fallback
+      // — `??` reaguje tylko na `undefined`, nie na pusty obiekt.
+      // / EN: both maps are cleared on every save-load / new game (5 spots) and populated ONLY
+      // inside the "Bank treasury" block of the first processed turn — until then `.get(ownerId)`
+      // is `undefined` even though the button can already show (citizens has its own fallback).
+      // Fix mirrors the citizenUpkeep fallback below: recompute on demand from live game state
+      // using the exact same pure primitives the turn engine itself calls (no drift risk).
+      const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)
+        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt);
+      const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId)
+        ?? totalUnitResourceUpkeep(
+          units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
+          typeId => data.units.find(u => u.Jednostka === typeId),
+        );
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
