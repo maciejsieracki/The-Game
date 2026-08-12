@@ -15237,3 +15237,31 @@ stanie "oba pola true" (ścieżki main.ts:9727 lub main.ts:16944) przy wyjściu 
 odzyska ruchu. Pre-istniejący defekt danych, ujawniony przez tę rundę, poza jej zakresem —
 osobny temat do rozpoznania.
 
+
+## IndexedDB B1+B2+B3 (4b07eaff) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `a3bea6bede1c3b7c1`: wszystkie 3 naprawy realne i poprawne, zweryfikowane
+niezależnymi sondami (nie tylko testem Operatora). B1: kolejkowanie dowiedzione formalnie jako
+konwergujące do najnowszego stanu + własny scenariusz 5 nakładających się kliknięć z usunięciem
+w locie — 0 duplikatów, DOM zgodny z realnym stanem IDB. B2: sukces trwale cache'owany (brak
+retry-stormu), 3 warianty wyścigu zweryfikowane empirycznie. B3: brak fałszywego alarmu przy
+pierwszym uruchomieniu, baner realnie znika po powrocie IDB w tej samej sesji.
+
+**Luki w teście (nie w kodzie), 3 mutacje przechodzą niezłapane** — rekomendacja dla ewentualnej
+przyszłej rundy (NIE blokuje zamknięcia): (1) asercja `idb-b1b2b3-test.cjs:306-309` jest fałszywie
+etykietowana — twierdzi że testuje kolejkowanie, ale przechodzi też bez niego (testuje coś innego:
+`selectedId` ustawiane synchronicznie przed renderem); (2) test ma tylko 1 awarię IDB z rzędu, nie
+łapie regresji "cache porażki od 2. próby zamiast każdej"; (3) brak DRUGIEGO renderu w scenariuszu
+B3, nie łapie "widoczność liczona tylko raz".
+
+**Znalezisko przy okazji, zarejestrowane cicho (zasada §2), PRE-ISTNIEJĄCE nie regresja tej
+rundy:** gdy IndexedDB umiera PO udanym otwarciu (nie przy otwieraniu — `versionchange`, zamknięcie
+połączenia przez przeglądarkę), `openDb()` w nieskończoność zwraca martwy uchwyt z cache (bo B2
+naprawił tylko cache PORAŻKI otwarcia, nie unieważnienie cache SUKCESU po jego śmierci) —
+`db.transaction()` rzuca, odczyt cicho spada na legacy localStorage, **baner B3 się NIE pokazuje**
+mimo że to dokładnie scenariusz przed którym ma ostrzegać. Brakuje `db.onclose`/`onversionchange`.
+Do osobnego rozpoznania.
+
+**ZAMKNIĘTE** — noty nieblokujące, poprawki testu odłożone do ewentualnej przyszłej okazji
+dotknięcia tego pliku, nie wymagają osobnego dispatchu teraz.
+
