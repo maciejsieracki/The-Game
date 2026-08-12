@@ -16187,3 +16187,24 @@ oceniającą `3dc9d650` — przeniósł się do podkatalogu i powtórzył pomiar
 
 **STATUS: dispatch naprawy N1+N2+N3+N5 w toku** (dane/dokumentacja, zero ryzyka behawioralnego).
 N4/N7/N8 pozostają do wiedzy/przyszłej decyzji, nie naprawiane teraz.
+
+## Dyplomacja U2 (asymetria kierunku own) — ZAMKNIĘTE
+
+**Diagnoza: mechanizm INNY niż U1** (nie ten sam kod, więc nie prosta lustrzana poprawka). Bramka
+`balanceOk` dla kierunku `own` blokowała WSZYSTKIE traktaty z `treatyBase>0`, gdy proponentem był
+gracz — ale realny silnik (`PROPOSER_PW_FAIRNESS_ACTIONS`, `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`) ma
+taką bramkę WYŁĄCZNIE dla `umowa_handlowa`/`umowa_szlakow`. Dowód: NAP@Relacja=61 proponowany przez
+gracza — panel pokazywał "Brakuje 78 PW", silnik `evaluateProposal` faktycznie akceptował. Naprawa:
+`OWN_PROPOSER_TREATY_PW_GATE_ACTIONS` (mirror realnej bramki silnika) — bramka PW teraz stosowana
+tylko tam, gdzie silnik ją ma; `umowa_handlowa`/`umowa_szlakow` nadal poprawnie blokują przy
+deficycie.
+
+Efekt uboczny znaleziony i naprawiony w toku: po zdjęciu zbędnej bramki ujawniła się sprzeczność
+etykiety przy `relOk=false` (mylące "Spełnia warunki 0 PW" mimo odrzucenia) — naprawiona osobną
+gałęzią, świadomie ograniczoną do `!incoming` (identyczna, pre-istniejąca sprzeczność po stronie
+`incoming` zostawiona nietknięta, poza zakresem tego zlecenia).
+
+Weryfikacja nietykalności `incoming`: różnicowy bundle stary/nowy kod, 152 scenariusze (8 typów ×
+19 wartości Relacji) — 0 różnic. `diplomacy-acceptance-points-test` 241→253/253 (+14 nowych),
+`tsc` 0 błędów, `logic-test` 213/213, plus 3 sąsiednie bramki dyplomacji zielone bez regresji.
+**ZAMKNIĘTE** (commit `489b2661`). Temat asymetrii dyplomacji PW (U1+U2) w pełni domknięty.
