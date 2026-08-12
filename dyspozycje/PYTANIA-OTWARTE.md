@@ -15967,3 +15967,14 @@ Wszystkie poprzednie zlecenia zamknięte, worktree zwolnione (23GB dostępne). N
 Po tej turze WSZYSTKIE 11 commitów z audytu #3 (3a3b11da, 26b684af, 7b02eb2d, fc17538f, 3dc9d650,
 ecbddda8, 89c16ec1 + wcześniej 0651d65e, ad4b1e8d, fcd31209, 810d5917) będą miały pierwszą
 niezależną recenzję.
+
+## techPrereqChain — naprawa testu (26b684af) — ZAMKNIĘTE
+
+N2: dopisana asercja rekurencji (`function visit(...)...visit(p)`), potwierdzona łapiąca mutację
+"płaski split zamiast rekurencji" (89→88/1 przy mutacji). N1: sekcja [5] rozszerzona z filtra po
+bezpośrednim `techUnlock` na filtr po PEŁNYM łańcuchu prereqów — 7 budynków pośrednich
+(`odlewnia_zelaza`, `kuznia_zelaza`, `port_wielki`, `fort`, `baszta`, `koszary`,
+`laznia_publiczna`) teraz ujętych i potwierdzonych zielonych. Potwierdzone mutacyjnie: cofnięcie
+filtra do wersji sprzed naprawy daje 7 czerwonych asercji (26→19 budynków). `building-tech-gate-test`
+74→89/89, `tsc` 0 błędów, `tech-tree-test` 19/19, `research-test` 33/33, `logic-test` 213/213.
+**ZAMKNIĘTE** (commit `b198e575`). Temat 26b684af w pełni domknięty.
