@@ -14678,3 +14678,30 @@ Rekomendacja: A — słowo "bezpowrotnie" najbardziej naturalnie odnosi się do 
 sformalizowanymi pytaniami (R-EPOKA-CUD-ZAKRES-Q1, P-SUROWCE-KOLEJNOSC-KON-Q1,
 R-KONWERTERY-TRUDNOSC-SPLASZCZONA-Q1, R-MAPGEN-PANGEA-PROG-Q1, P-DREWNO-BRAMKA-RYZYKO-STARTU) —
 11 pytań łącznie, poza normalnym limitem 3/turę na wyraźne życzenie właściciela.
+
+## ECHO R-EPOKA-CUD-ZAKRES-Q1 = B, z warunkiem właściciela + nowy wymóg UI (Maciej, 2026-08-12)
+
+Odpowiedź właściciela: „1b pod warunkiem, że dana cywilizacja w danej epoce ma swój cud do
+wybudowania. Jeżeli nie ma, to nie ma blokady." + nowy wymóg: „Musi też powstać jakaś informacja,
+czego brakuje do kolejnej epoki danej cywilizacji, żeby gracz wiedział, z czego wynika fakt, że
+nie może jeszcze awansować."
+
+**WAŻNE ustalenie po przeczytaniu realnego kodu (`gra/src/game/owner-epoch.ts:80-89`,
+`eraOwnWonderSatisfied`)**: warunek który właściciel opisał w odpowiedzi **JEST JUŻ DOKŁADNIE
+DZISIEJSZYM ZACHOWANIEM** — `eraOwnWonderSatisfied` zwraca `true` (brak blokady) gdy
+`required.length === 0` (cywilizacja nie ma cudu E przypisanego tej epoce), blokuje TYLKO gdy cud
+jest przypisany i niezbudowany. To nie jest zmiana logiki blokady — **logika blokady zostaje
+BEZ ZMIAN kodu**, bo już realizuje dokładnie to czego właściciel chciał. Zero regresji do naprawy.
+
+**Jedyna realna, nowa praca — brakująca informacja dla gracza.** Sprawdzone: dzisiejszy kod ma
+TYLKO wewnętrzny mechanizm AI-forcing (`main.ts:25500-25543`, `wonderEraGateForced` — wymusza
+priorytet budowy cudu w kolejce AI), ZERO gracz-widocznego UI tłumaczącego dlaczego epoka nie
+awansuje. Do zbudowania: widoczny komunikat (najlepiej w panelu Nauki/drzewka technologii i/lub
+przy wskaźniku epoki w HUD) pokazujący: (a) czy WSZYSTKIE technologie bieżącej epoki są odkryte
+(jeśli nie — ile brakuje), (b) czy cywilizacja ma przypisany cud wyłączny (E) tej epoce i czy jest
+zbudowany (jeśli ma i nie jest — nazwa cudu + status budowy), (c) jeśli cywilizacja NIE MA cudu w
+tej epoce — jasne potwierdzenie że warunek nie obowiązuje (żeby gracz nie szukał czegoś czego nie
+ma). Źródło danych: `allEraTechsResearched`, `eraOwnWonderSatisfied`, `eraOwnWonderIds` (wszystkie
+już istnieją w `owner-epoch.ts`, czysta logika, gotowe do wywołania z UI).
+
+**STATUS: dispatch Sonnet 5 (worktree) w toku — WYŁĄCZNIE punkt UI, logika blokady nietknięta.**
