@@ -2724,25 +2724,52 @@ async function boot(): Promise<void> {
         data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
         _menuDifficulty,
       );
-      type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ'] };
+      type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; placeholder?: boolean };
+      // P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12): kolejność kart = pary surowiec
+      // bazowy→przetworzony wg wskazania właściciela, wiersz po wierszu (grid 2 kolumny).
+      // Koń NIE był wymieniony w liście właściciela (nie pasuje do żadnej pary
+      // bazowy→przetworzony) — umieszczony celowo TUŻ PRZED Złotem, żeby Złoto zostało
+      // ostatnią kartą (zgodnie z „Złoto na samym końcu"), kosztem tego że Złoto przestaje
+      // być samo w ostatnim wierszu.
+      // EN: card order = base→processed resource pairs per owner's list, row by row (2-col
+      // grid). "Koń" (Horse) wasn't in the owner's list (doesn't fit any base→processed
+      // pair) — placed right before Gold on purpose, so Gold stays the last card.
       const CATALOG: Cat[] = [
         { id: 'drewno',      label: 'Drewno',      icon: '🪵', typ: 'surowy' },
         { id: 'kamien',      label: 'Kamień',      icon: '🪨', typ: 'surowy' },
         { id: 'glina',       label: 'Glina',       icon: '🟫', typ: 'surowy' },
-        { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
-        { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
         { id: 'cegla',       label: 'Cegła',       icon: '🧱', typ: 'przetworzony' },
+        { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy' },
         { id: 'ceramika',    label: 'Ceramika',    icon: '🏺', typ: 'przetworzony' },
+        { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
         { id: 'braz',        label: 'Brąz',        icon: '🥉', typ: 'przetworzony' },
+        { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
+        // Placeholder (P-SUROWCE-KOLEJNOSC-KART): "Ruda cyny" NIE ISTNIEJE w
+        // resources.json — karta wyszarzona/nieaktywna, bez realnych danych silnika.
+        // NIE dodawaj tego id do resources.json ani żadnej innej tabeli danych gry.
+        // EN: "Ruda cyny" (tin ore) does NOT exist in resources.json — dimmed/inactive
+        // card only, no real engine data. Do not add this id to any game data table.
+        { id: 'ruda_cyny',   label: 'Ruda cyny — wkrótce', icon: '⛏️', typ: 'surowy', placeholder: true },
         { id: 'zelazo',      label: 'Żelazo',      icon: '⚙️', typ: 'przetworzony' },
         { id: 'stal',        label: 'Stal',        icon: '🔩', typ: 'przetworzony' },
-        { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy' },
         { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla' },
         { id: 'zloto',       label: 'Złoto (surowiec)', icon: '🪙', typ: 'surowy' },
       ];
       const diploFlows = empireDiploResourceFlowPerTurn(activeDeals, ownerId);
       const rows: EmpireResourceRow[] = [];
       for (const c of CATALOG) {
+        if (c.placeholder) {
+          // Karta placeholder: brak jakichkolwiek realnych danych silnika (stock/cap/produkcja
+          // zawsze 0, dostęp zawsze false) — resCardHtml() w empireDetailPanel.ts renderuje ją
+          // wyszarzoną, bez paska postępu, na podstawie `placeholder: true`.
+          // EN: placeholder card carries no real engine data — always stock/cap 0, dostep
+          // false; empireDetailPanel.ts's resCardHtml() renders it dimmed, no progress bar.
+          rows.push({
+            id: c.id, label: c.label, icon: c.icon, stock: 0, ratePerTurn: 0, typ: c.typ,
+            dostep: false, cap: 0, placeholder: true,
+          });
+          continue;
+        }
         const stock = Math.floor(warehouse[c.id] ?? 0);
         // Zgłoszenie Macieja 2026-07-26: "surowce na dostęp" mają mieć ŹRÓDŁO PRAWDY
         // per surowiec (nie jeden zbiorczy accessLabels.has), żeby złoto mogło użyć

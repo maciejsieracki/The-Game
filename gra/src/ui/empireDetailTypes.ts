@@ -108,6 +108,14 @@ export interface EmpireResourceRow {
    * „Zobacz szczegóły" niepotrzebny — patrz `resourceUsageHasAny`).
    */
   usage?: ResourceUsageBreakdown;
+  /**
+   * P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12): karta placeholder dla surowca, który
+   * jeszcze NIE istnieje w `resources.json` (dziś: „Ruda cyny"). Renderuje się wyszarzona,
+   * 0/0, bez paska postępu i bez żadnych realnych danych (produkcja/dostęp/zużycie).
+   * EN: placeholder card for a resource not yet implemented in `resources.json` (today:
+   * "Ruda cyny" / tin ore). Renders dimmed, 0/0, no progress bar, no real data.
+   */
+  placeholder?: boolean;
 }
 
 export interface EmpireKulturaSnap {

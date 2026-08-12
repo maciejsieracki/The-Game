@@ -865,8 +865,25 @@ function resUsageDetailsHtml(r: EmpireResourceRow): string {
     + `</div></details>`;
 }
 
+/**
+ * P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12): karta placeholder ("Ruda cyny — wkrótce") —
+ * surowiec bez realnych danych silnika (nie istnieje w resources.json). Wyszarzona (opacity),
+ * bez paska postępu, zawsze „0 / 0", bez tooltipa z produkcją/dostępem/zużyciem (nie ma czego
+ * pokazać). EN: placeholder card with no real engine data — dimmed, no progress bar, always
+ * "0 / 0", no production/access/usage tooltip (nothing real to show).
+ */
+function resPlaceholderCardHtml(r: EmpireResourceRow): string {
+  return `<div class="civ-emp-res-card placeholder" style="opacity:0.45" `
+    + `data-section="econ-surowiec-${esc(r.id)}" title="${esc(r.label)} — surowiec jeszcze nie wdrożony do gry">`
+    + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${esc(r.icon)}</span>`
+    + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div></div></div>`
+    + `<div class="civ-emp-res-amt"><span class="cur">0</span><span class="cap">/ 0</span></div>`
+    + `</div>`;
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
 function resCardHtml(r: EmpireResourceRow): string {
+  if (r.placeholder) return resPlaceholderCardHtml(r);
   const cap = r.cap ?? 0;
   const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
   const state = resStateOf(r);
