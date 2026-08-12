@@ -16432,3 +16432,32 @@ Encyklopedii w 6 wsadach wg kategorii, krzyżowo z `gra/data/`, (4) recenzja pan
 kątem zgodności wzorów z silnikiem, (5) synteza w jeden raport. Raport zapisze się jako
 `dyspozycje/AUDYT-OPISY-CIVPEDIA-PORADNIK-SCIAGI-2026-08-13.md`. **ETAP 1 wyłącznie — bez
 zmian w kodzie/danych**, zgodnie z poleceniem właściciela.
+
+## Postęp per-item w promoteToFront — Evaluator: FAIL, naprawa runda 2 dispatchowana
+
+Mechanizm bankowania sam w sobie poprawny (exploit zablokowany, potwierdzone 55 asercji
+własnych: A→B→C→A bez mieszania, dequeue czyści zbankowane, no-op na index 0, save/load
+bezpieczny, rekrutacja nietknięta).
+
+**⛔ BLOKER B1 — zbankowany postęp ginie w DOMINUJĄCEJ ścieżce powrotu na front.**
+`advanceProduction`/`rushProduction` (production.ts:1308,1507) NIE czytają zbankowanego pola
+`postep` przy zdejmowaniu frontu — nowy front startuje z aktywnym postępem 0, a jego zbankowana
+wartość zostaje MARTWYM polem, które przy NASTĘPNEJ promocji jest bezpowrotnie NADPISYWANE.
+Realny przebieg gracza: Cud 500/1000 → promocja Wojownika (⇈, tooltip obiecuje "zostanie
+zachowana") → Wojownik kończy się naturalnie w 1-2 tury → Cud wraca na front SAM → panel
+pokazuje 0/1000. Dokładnie to, co decyzja P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B miała wyeliminować.
+Własny test Operatora (sekcja 9) **przypina ten błąd jako zamierzony** z komentarzem
+"advanceProduction nie zna per-item postep" — bramka zielona, bo asercjonuje bug, nie jego brak.
+
+Dowiedziona przyczyna luki testowej: mutacja "usuń czyszczenie pola na wchodzącym" (duplikacja
+wartości i w scalarze, i na itemie frontu) PRZEŻYŁA 55/55 — brak asercji na niezmiennik "item na
+froncie nigdy nie niesie zbankowanego postep".
+
+**STATUS: dispatch rundy 2 w toku** — zakres: (1) B1, wspólny helper "zdejmij front" używany
+przez `dequeue`/`advanceProduction`/`rushProduction`, czytający i czyszczący zbankowane pole
+nowego frontu (`postep: (rest[0]?.postep ?? 0) + remainder`); (2) nota 1 — `promoteToFront`
+przebudowuje itemy pole-po-polu zamiast `{...outgoing, postep}`, ryzyko cichej utraty
+przyszłych pól; (3) nota 2 — tooltip ⇈ do przeredagowania po naprawie B1; (4) nowa asercja
+niezmiennika "front nigdy nie niesie zbankowanego postep". **Nota 4 (sanitizeProductionQueue
+też przekazuje darmową Pracę przy usunięciu frontu) zarejestrowana OSOBNO, pre-istniejąca, poza
+zakresem tej naprawy.**
