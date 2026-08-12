@@ -47,8 +47,12 @@ export {
   remainingCitiesOfOwner,
   applyCapitalCapturePlunder,
   disbandOwnerUnits,
+  barbarianCaptorResourceAccess,
+  barbarianCapturedPowerGain,
+  applyBarbarianAwareCapitalCapturePlunder,
 } from '../src/game/capital-capture';
 export { computeObjectivePower } from '../src/game/power-objective';
+export { BARBARIAN_OWNER_ID, isBarbarian } from '../src/game/barbarians';
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -78,6 +82,11 @@ const {
   applyCapitalCapturePlunder,
   disbandOwnerUnits,
   computeObjectivePower,
+  barbarianCaptorResourceAccess,
+  barbarianCapturedPowerGain,
+  applyBarbarianAwareCapitalCapturePlunder,
+  BARBARIAN_OWNER_ID,
+  isBarbarian,
 } = M;
 
 // --- tiny assertion framework ------------------------------------------------
@@ -115,6 +124,37 @@ function makeAccess(seed) {
     setPracaPool: (oid, v) => { if (oid === 0) praca.set(oid, Math.max(0, v)); },
     getNaukaPool: (oid) => (oid === 0 ? (nauka.get(oid) ?? 0) : 0),
     setNaukaPool: (oid, v) => { if (oid === 0) nauka.set(oid, Math.max(0, v)); },
+    getResearchedTechs: (oid) => techy.get(oid) ?? new Set(),
+    addResearchedTechs: (oid, ids) => {
+      if (!techy.has(oid)) techy.set(oid, new Set());
+      const s = techy.get(oid);
+      for (const id of ids) s.add(id);
+    },
+    _raw: { skarbiec, praca, nauka, techy },
+  };
+}
+
+/** RUNDA 3 (sekcja 14b): wariant BEZ asymetrii "tylko ownerId 0 ma pulę pracy/nauki" --
+ *  potrzebny do integracyjnego testu guarda barbarzyńskiego, bo z `makeAccess` powyżej
+ *  `getNaukaPool(BARBARIAN_OWNER_ID)` zawsze zwraca 0 (barbarzyńcy to ownerId ujemny,
+ *  nigdy 0) NIEZALEŻNIE od tego, czy `setNaukaPool` faktycznie zapisało coś do tego
+ *  ownera -- asercja przez taki mock byłaby ślepa na regres guarda (potwierdzone
+ *  mutacyjnie: usunięcie no-opu setNaukaPool w `barbarianCaptorResourceAccess`
+ *  PRZECHODZIŁO niezauważone przez sekcję 14b, dopóki używała `makeAccess`). Ten wariant
+ *  śledzi WSZYSTKICH ownerów symetrycznie, więc realnie wykrywa zapis DO ownera
+ *  barbarzyńskiego. */
+function makeSymmetricAccess(seed) {
+  const skarbiec = new Map(Object.entries(seed.skarbiec || {}).map(([k, v]) => [Number(k), v]));
+  const praca    = new Map(Object.entries(seed.praca    || {}).map(([k, v]) => [Number(k), v]));
+  const nauka    = new Map(Object.entries(seed.nauka    || {}).map(([k, v]) => [Number(k), v]));
+  const techy    = new Map(Object.entries(seed.techy    || {}).map(([k, v]) => [Number(k), new Set(v)]));
+  return {
+    getTreasury: (oid) => skarbiec.get(oid) ?? 0,
+    setTreasury: (oid, v) => skarbiec.set(oid, Math.max(0, v)),
+    getPracaPool: (oid) => praca.get(oid) ?? 0,
+    setPracaPool: (oid, v) => { praca.set(oid, Math.max(0, v)); },
+    getNaukaPool: (oid) => nauka.get(oid) ?? 0,
+    setNaukaPool: (oid, v) => { nauka.set(oid, Math.max(0, v)); },
     getResearchedTechs: (oid) => techy.get(oid) ?? new Set(),
     addResearchedTechs: (oid, ids) => {
       if (!techy.has(oid)) techy.set(oid, new Set());
@@ -345,9 +385,11 @@ console.log('10. computeObjectivePower -- skladowa "zdobycze" (Power-zdobycze)')
 
   const withZdobycze = computeObjectivePower({ ...baseInput, zdobyczePower: 1234 });
   const zdobyczeRow = withZdobycze.components.find(c => c.key === 'zdobycze');
-  eq(zdobyczeRow.coefficient, 1, 'coeff "zdobycze" zawsze 1 (wartosc to juz pkt, nie surowy licznik)');
-  eq(zdobyczeRow.points, 1234, 'pkt "zdobycze" = zdobyczePower 1:1');
-  eq(withZdobycze.power, 1234, 'Power calkowity = zdobycze (jedyna niezerowa skladowa w tym teście)');
+  // P-MOC-BALANS-WAGI (Maciej 2026-08-12): coeff "zdobycze" 1 -> 2 (×2). Wciaz stale (nie z
+  // JSON) -- wartosc wejsciowa to juz gotowe punkty Power, nie surowy licznik.
+  eq(zdobyczeRow.coefficient, 2, 'coeff "zdobycze" 2 od P-MOC-BALANS-WAGI (bylo 1)');
+  eq(zdobyczeRow.points, 2468, 'pkt "zdobycze" = zdobyczePower x2 (1234 x2 = 2468)');
+  eq(withZdobycze.power, 2468, 'Power calkowity = zdobycze x2 (jedyna niezerowa skladowa w tym teście)');
 }
 
 // ===========================================================================
@@ -366,6 +408,169 @@ console.log('11. disbandOwnerUnits — brak jednostek po eliminacji ownerId');
   assert(!after.some(u => u.ownerId === 3), 'brak jednostek ownerId=3 po disband');
   eq(after.map(u => u.id).sort().join(','), 'u3,u4', 'zachowane jednostki owner 7 i 0');
   eq(units.length, 4, 'oryginalna tablica nietknięta (pure helper)');
+}
+
+// ===========================================================================
+// 12. RUNDA 3 (P-BARB-CAPTURE-GUARD, punkt 3) -- barbarianCaptorResourceAccess:
+//     zapisy DO newOwner no-opowane, zapisy DO INNEGO ownera (ofiary) przechodzą,
+//     odczyty zawsze przechodzą (delegacja do base). Sprawdzone OSOBNO dla KAŻDEGO
+//     z 3 opakowanych setterów -- cofnięcie opakowania JEDNEGO z nich (a nie
+//     wszystkich naraz) musi dać czerwono tylko w JEGO sekcji.
+// ===========================================================================
+console.log('12. barbarianCaptorResourceAccess -- no-op zapisów DO newOwner, per-setter');
+{
+  function makeSpyAccess() {
+    const calls = { setTreasury: [], setNaukaPool: [], addResearchedTechs: [] };
+    const store = { treasury: new Map(), nauka: new Map(), techy: new Map() };
+    return {
+      access: {
+        getTreasury: (oid) => store.treasury.get(oid) ?? 0,
+        setTreasury: (oid, v) => { calls.setTreasury.push([oid, v]); store.treasury.set(oid, v); },
+        getPracaPool: () => 0,
+        setPracaPool: () => {},
+        getNaukaPool: (oid) => store.nauka.get(oid) ?? 0,
+        setNaukaPool: (oid, v) => { calls.setNaukaPool.push([oid, v]); store.nauka.set(oid, v); },
+        getResearchedTechs: (oid) => store.techy.get(oid) ?? new Set(),
+        addResearchedTechs: (oid, ids) => { calls.addResearchedTechs.push([oid, Array.from(ids)]); },
+      },
+      calls,
+      store,
+    };
+  }
+
+  // 12a. setTreasury: no-op DO newOwner, przechodzi DO innego ownera.
+  {
+    const { access, calls } = makeSpyAccess();
+    const wrapped = barbarianCaptorResourceAccess(access, 9 /* newOwner=barbarzyńca */);
+    wrapped.setTreasury(9, 500);
+    eq(calls.setTreasury.length, 0, '12a: setTreasury(newOwner=9, ...) jest no-opowane (0 wywołań base)');
+    wrapped.setTreasury(3, 200);
+    eq(calls.setTreasury.length, 1, '12a: setTreasury(oldOwner=3, ...) PRZECHODZI do base (1 wywołanie)');
+    deepEq(calls.setTreasury[0], [3, 200], '12a: przepuszczone wywołanie ma niezmienione argumenty');
+  }
+
+  // 12b. setNaukaPool: no-op DO newOwner, przechodzi DO innego ownera.
+  {
+    const { access, calls } = makeSpyAccess();
+    const wrapped = barbarianCaptorResourceAccess(access, 9);
+    wrapped.setNaukaPool(9, 40);
+    eq(calls.setNaukaPool.length, 0, '12b: setNaukaPool(newOwner=9, ...) jest no-opowane');
+    wrapped.setNaukaPool(3, 15);
+    eq(calls.setNaukaPool.length, 1, '12b: setNaukaPool(oldOwner=3, ...) PRZECHODZI do base');
+    deepEq(calls.setNaukaPool[0], [3, 15], '12b: przepuszczone wywołanie ma niezmienione argumenty');
+  }
+
+  // 12c. addResearchedTechs: no-op DO newOwner, przechodzi DO innego ownera.
+  {
+    const { access, calls } = makeSpyAccess();
+    const wrapped = barbarianCaptorResourceAccess(access, 9);
+    wrapped.addResearchedTechs(9, ['brazownictwo']);
+    eq(calls.addResearchedTechs.length, 0, '12c: addResearchedTechs(newOwner=9, ...) jest no-opowane');
+    wrapped.addResearchedTechs(3, ['kolo']);
+    eq(calls.addResearchedTechs.length, 1, '12c: addResearchedTechs(oldOwner=3, ...) PRZECHODZI do base');
+    deepEq(calls.addResearchedTechs[0], [3, ['kolo']], '12c: przepuszczone wywołanie ma niezmienione argumenty');
+  }
+
+  // 12d. Odczyty zawsze delegowane do base (nieopakowane), niezależnie od ownerId.
+  {
+    const { access, store } = makeSpyAccess();
+    store.treasury.set(9, 777);
+    const wrapped = barbarianCaptorResourceAccess(access, 9);
+    eq(wrapped.getTreasury(9), 777, '12d: getTreasury zawsze deleguje do base, nawet dla newOwner');
+  }
+}
+
+// ===========================================================================
+// 13. RUNDA 3 (punkt 3) -- barbarianCapturedPowerGain: 0 Power gdy barbCaptor,
+//     lostPower bez zmian gdy nie-barbarzyńca.
+// ===========================================================================
+console.log('13. barbarianCapturedPowerGain -- Power zdobyczy barbarzyńcy zawsze 0');
+{
+  eq(barbarianCapturedPowerGain(1000, true), 0, '13a: barbCaptor=true -> 0 Power (barbarzyńcy nie dziedziczą)');
+  eq(barbarianCapturedPowerGain(1000, false), 1000, '13b: barbCaptor=false -> lostPower bez zmian');
+  eq(barbarianCapturedPowerGain(0, false), 0, '13c: lostPower=0 -> 0 niezależnie od barbCaptor');
+  eq(barbarianCapturedPowerGain(0, true), 0, '13d: lostPower=0, barbCaptor=true -> 0');
+}
+
+// ===========================================================================
+// 14. RUNDA 3 (punkt 3) -- applyBarbarianAwareCapitalCapturePlunder: integracja
+//     obu guardów (oldOwner barbarzyńca -> null; newOwner barbarzyńca -> no-op
+//     zapisów) NAD realnym applyCapitalCapturePlunder. Weryfikacja mutacyjna
+//     (cofnięcie KAŻDEGO guarda z osobna) uruchomiona OSOBNO -- patrz raport
+//     finalny Operatora.
+// ===========================================================================
+console.log('14. applyBarbarianAwareCapitalCapturePlunder -- oba guardy zintegrowane');
+{
+  // 14a. oldOwner barbarzyńca -> null, ZERO efektów ubocznych (skarbiec nietknięty).
+  {
+    const citiesAfter = [city('cityBarb', 5)];
+    const access = makeAccess({ skarbiec: { [BARBARIAN_OWNER_ID]: 999, 5: 0 } });
+    const res = applyBarbarianAwareCapitalCapturePlunder(
+      city('cityBarb', 5), BARBARIAN_OWNER_ID, 5, citiesAfter, access, undefined, isBarbarian,
+    );
+    eq(res, null, '14a: oldOwner=barbarzyńca -> null (guard 1 aktywny, brak legacy eliminacji CAŁEJ frakcji)');
+    eq(access.getTreasury(BARBARIAN_OWNER_ID), 999, '14a: skarbiec barbarzyńców NIETKNIĘTY (funkcja wyszła wcześnie)');
+  }
+
+  // 14b. newOwner barbarzyńca -> ofiara traci normalnie, ale barbarzyńcy NIC nie dostają.
+  // Używa `makeSymmetricAccess` (nie `makeAccess`) -- z asymetrycznym mockiem
+  // `getNaukaPool(BARBARIAN_OWNER_ID)` zawsze zwraca 0 z konstrukcji (tylko ownerId===0
+  // ma pulę), więc asercja "nauka nie trafia do barbarzyńców" byłaby ślepa na regres
+  // guarda (potwierdzone mutacyjnie -- patrz raport finalny Operatora).
+  {
+    const citiesAfter = [city('cityCaptured', BARBARIAN_OWNER_ID)];
+    const access = makeSymmetricAccess({
+      skarbiec: { 4: 300, [BARBARIAN_OWNER_ID]: 0 },
+      nauka:    { 4: 20 },
+      techy:    { 4: ['brazownictwo'] },
+    });
+    const res = applyBarbarianAwareCapitalCapturePlunder(
+      city('cityCaptured', BARBARIAN_OWNER_ID), 4, BARBARIAN_OWNER_ID, citiesAfter, access, undefined, isBarbarian,
+    );
+    assert(res !== null, '14b: oldOwner=4 (nie-barbarzyńca) -> plunder wykonany (eliminacja, miasto-państwo)');
+    eq(res.eliminacja, true, '14b: ostatnie miasto ofiary -> eliminacja');
+    eq(access.getTreasury(4), 0, '14b: ofiara TRACI skarbiec normalnie (strata ofiary niezależna od guarda 2)');
+    eq(access.getTreasury(BARBARIAN_OWNER_ID), 0,
+      '14b: skarbiec NIE trafia na konto barbarzyńców (guard 2 -- barbarianCaptorResourceAccess aktywny)');
+    eq(access.getNaukaPool(BARBARIAN_OWNER_ID), 0, '14b: nauka NIE trafia na konto barbarzyńców');
+    deepEq(Array.from(access.getResearchedTechs(BARBARIAN_OWNER_ID)).sort(), [],
+      '14b: techy NIE trafiają na konto barbarzyńców (addResearchedTechs no-opowane)');
+    eq(res.skarbiecPrzejety, 300, '14b: outcome.skarbiecPrzejety nadal raportuje realną kwotę utraconą przez ofiarę (dla UI)');
+  }
+
+  // 14c. Regresja: oldOwner I newOwner oboje nie-barbarzyńcy -> zachowanie identyczne
+  //      z applyCapitalCapturePlunder bez owijki (żaden guard się nie odpala).
+  {
+    const citiesAfter = [city('cityNormal', 2)];
+    const accessWrapped = makeAccess({ skarbiec: { 1: 150, 2: 0 } });
+    const accessDirect  = makeAccess({ skarbiec: { 1: 150, 2: 0 } });
+    const resWrapped = applyBarbarianAwareCapitalCapturePlunder(
+      city('cityNormal', 2), 1, 2, citiesAfter, accessWrapped, undefined, isBarbarian,
+    );
+    const resDirect = applyCapitalCapturePlunder(city('cityNormal', 2), 1, 2, citiesAfter, accessDirect);
+    deepEq(resWrapped, resDirect, '14c: gracz/AI vs gracz/AI -- wynik IDENTYCZNY z gołym applyCapitalCapturePlunder');
+    eq(accessWrapped.getTreasury(2), accessDirect.getTreasury(2), '14c: skarbiec newOwner identyczny (bez owijki barbarzyńskiej)');
+  }
+}
+
+// ===========================================================================
+// 15. RUNDA 3 (punkt 3) -- main.ts WIRING (statyczne, main.ts nie jest bundlowalny --
+//     patrz nagłówek pliku barb-city-behavior-test.cjs dla tego samego ograniczenia).
+//     Realna logika guardów jest w pełni wykonana i dowiedziona mutacyjnie w sekcjach
+//     12-14 wyżej -- to WYŁĄCZNIE cienka weryfikacja, że main.ts faktycznie WOŁA te
+//     wyciągnięte funkcje zamiast trzymać logikę inline (regres: ktoś przywraca stary
+//     inline kod w main.ts, zostawiając poprawne, ale teraz nieużywane funkcje tutaj).
+// ===========================================================================
+console.log('15. main.ts wiring -- statyczna weryfikacja (uzupełnienie realnego wykonania z 12-14)');
+{
+  const mainTsPath = path.resolve(__dirname, '..', 'src', 'main.ts');
+  const mainTs = fs.readFileSync(mainTsPath, 'utf8');
+  assert(mainTs.includes('applyBarbarianAwareCapitalCapturePlunder(') ,
+    '15a: main.ts woła applyBarbarianAwareCapitalCapturePlunder(...) (guardy 1+2)');
+  assert(mainTs.includes('barbarianCapturedPowerGain(lostPower, barbCaptor)'),
+    '15b: main.ts woła barbarianCapturedPowerGain(lostPower, barbCaptor) (guard 3)');
+  assert(!mainTs.includes('if (lostPower > 0 && !barbCaptor)'),
+    '15c regresja: stary inline warunek "lostPower > 0 && !barbCaptor" usunięty z main.ts');
 }
 
 // --- summary ---------------------------------------------------------------

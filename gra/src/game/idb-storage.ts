@@ -45,15 +45,34 @@ const STORE_NAME = 'kv';
  * Otwiera (i memoizuje) połączenie do bazy. Cache'ujemy Promise, nie sam
  * wynik -- kolejne wywołania w trakcie otwierania czekają na TO SAMO
  * otwarcie zamiast każde odpalać własny indexedDB.open().
+ *
+ * B2 (Evaluator, migracja IDB runda 2): cache'ujemy WYŁĄCZNIE sukces.
+ * Wcześniej `dbPromise` zostawał ustawiony NA STAŁE również przy porażce
+ * (`resolve(null)`) -- jedna przejściowa awaria `indexedDB.open()` (chwilowy
+ * lock, quota) wyłączała zapis/odczyt IDB do końca życia karty, bo każde
+ * kolejne wywołanie dostawało tę SAMĄ odrzuconą-na-null obietnicę zamiast
+ * spróbować ponownie. Teraz: gdy próba rozwiąże się do `null`, i o ile
+ * żadna NOWSZA próba jej w międzyczasie nie zastąpiła (`dbPromise ===
+ * attempt`), czyścimy cache -- następne wywołanie otwiera bazę OD NOWA.
+ * Sukces nadal zostaje w cache'u na zawsze (jak dotychczas).
  * / EN: opens (and memoizes) the DB connection. We cache the Promise, not
  * the resolved value -- concurrent calls while opening await the SAME open
  * instead of each firing its own indexedDB.open().
+ *
+ * B2: cache ONLY success. Previously `dbPromise` stuck around forever even
+ * on failure (`resolve(null)`) -- one transient `indexedDB.open()` failure
+ * (a momentary lock, quota) disabled IDB read/write for the rest of the
+ * tab's life, because every later call got the SAME null-resolved promise
+ * instead of retrying. Now, when an attempt resolves to `null` -- and only
+ * if no NEWER attempt has since replaced it (`dbPromise === attempt`) -- we
+ * clear the cache so the next call opens the DB from scratch. Success still
+ * stays cached forever (unchanged).
  */
 let dbPromise: Promise<IDBDatabase | null> | null = null;
 
 function openDb(): Promise<IDBDatabase | null> {
   if (dbPromise) return dbPromise;
-  dbPromise = new Promise((resolve) => {
+  const attempt: Promise<IDBDatabase | null> = new Promise((resolve) => {
     let idb: IDBFactory | undefined;
     try {
       idb = typeof indexedDB === 'undefined' ? undefined : indexedDB;
@@ -76,7 +95,33 @@ function openDb(): Promise<IDBDatabase | null> {
       resolve(null);
     }
   });
-  return dbPromise;
+  dbPromise = attempt;
+  attempt.then((db) => {
+    if (db === null && dbPromise === attempt) dbPromise = null;
+  });
+  return attempt;
+}
+
+/**
+ * B3 (Evaluator, migracja IDB runda 2): true, jeśli IndexedDB jest DOSTĘPNE w
+ * tej karcie. Po naprawie B2 to pytanie ma sens zadawać wielokrotnie --
+ * przejściowa awaria już nie jest trwała, więc odpowiedź może się zmienić
+ * między wywołaniami. Używane przez UI (saveLoadDialog.ts), żeby ostrzec
+ * gracza, że lista zapisów może właśnie pokazywać PRZESTARZAŁE dane z legacy
+ * localStorage (save.ts cicho tam spada, gdy IDB nie działa -- patrz
+ * loadFromLocal/loadSaveSlotMeta) zamiast cichego dryfu bez wyjaśnienia.
+ * Tania -- korzysta z tego samego memoizowanego openDb() co reszta modułu
+ * (sukces cache'owany wyżej), nie otwiera drugiego połączenia.
+ * / EN: true if IndexedDB is available in this tab. After the B2 fix this is
+ * worth asking repeatedly -- a transient failure is no longer permanent, so
+ * the answer can change between calls. Used by the UI (saveLoadDialog.ts) to
+ * warn the player that the save list may currently show STALE data read
+ * from legacy localStorage (save.ts silently falls back there when IDB is
+ * down) instead of drifting silently. Cheap -- reuses the same memoized
+ * openDb() as the rest of the module.
+ */
+export async function idbIsAvailable(): Promise<boolean> {
+  return (await openDb()) !== null;
 }
 
 /** Odczyt klucza. Cicha porażka (jak getStorage() dziś) -- null przy braku/błędzie. */

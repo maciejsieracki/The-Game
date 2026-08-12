@@ -29,6 +29,35 @@ export function empirePanelBlockForSection(section: string | null): EmpirePanelB
   return 'ekonomia';
 }
 
+export interface EconSliderVisibility {
+  /** Suwak "Domyślny podział podatek" (Skarb/Nauka/Zamożność, renderDefaultHandelSplitSection). */
+  showTaxSplit: boolean;
+  /** Suwak "Domyślny podział pracy" (Budynki/Do puli imperium, renderDefaultPodzialPracySection). */
+  showLaborSplit: boolean;
+}
+
+/**
+ * P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE-NA-WSZYSTKICH-ZAKLADKACH (Maciej 2026-08-12): każda zakładka
+ * bloku „ekonomia" (`onlyEconId` — id wiersza po filtrze chipu HUD, `null` = pełny przegląd bez
+ * filtra) pokazuje WYŁĄCZNIE tematycznie powiązany suwak, nie oba naraz na każdej — Skarbiec i
+ * Nauka -> podatek (Nauka finansowana % podatku "Nauka" z TEGO SAMEGO suwaka co Skarb/Zamożność,
+ * NIE przez podział Pracy); Praca -> podział pracy; pozostałe zakładki (Miasta, Rekruci, Religia)
+ * -> żaden. Pełny przegląd (`onlyEconId === null`) pokazuje oba — jedyne miejsce gdzie to ma sens
+ * tematyczny (przegląd całej ekonomii, nie pojedynczy zasób).
+ * EN: each tab of the "ekonomia" block (`onlyEconId` — the row id after the HUD chip filter,
+ * `null` = full overview with no filter) shows ONLY its thematically-linked slider, not both on
+ * every tab — Treasury and Science -> tax split (Science is financed by the SAME "Science"
+ * tax-split % as Treasury/Wealth, NOT by the labor split); Labor -> labor split; other tabs
+ * (Cities, Recruits, Religion) -> neither. The full overview (`onlyEconId === null`) shows both —
+ * the only place that makes thematic sense (whole-economy overview, not a single resource).
+ */
+export function econSliderVisibilityForOnlyEconId(onlyEconId: string | null): EconSliderVisibility {
+  return {
+    showTaxSplit: onlyEconId === null || onlyEconId === 'skarbiec' || onlyEconId === 'nauka',
+    showLaborSplit: onlyEconId === null || onlyEconId === 'praca',
+  };
+}
+
 /** Mapowanie data-act z chipów HUD → sekcja panelu. */
 export function empireSectionFromHudAct(act: string): string | undefined {
   switch (act) {

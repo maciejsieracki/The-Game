@@ -76,7 +76,22 @@ import type { RuntimeUnit } from '../units/setup';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
 import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
-import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys } from './idb-storage';
+import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys, idbIsAvailable } from './idb-storage';
+
+/**
+ * B3 (Evaluator, migracja IDB runda 2): re-export -- UI (saveLoadDialog.ts)
+ * dotychczas zależy WYŁĄCZNIE od save.ts, nigdy bezpośrednio od
+ * idb-storage.ts (ten plik jest szczegółem implementacyjnym save.ts);
+ * `isIdbAvailable` utrzymuje tę granicę zamiast dokładać nową krawędź
+ * importu ui/ -> game/idb-storage. Patrz idb-storage.ts::idbIsAvailable dla
+ * pełnego opisu.
+ * / EN: re-export -- the UI (saveLoadDialog.ts) so far depends ONLY on
+ * save.ts, never directly on idb-storage.ts (an implementation detail of
+ * save.ts); `isIdbAvailable` keeps that boundary instead of adding a new
+ * ui/ -> game/idb-storage import edge. See idb-storage.ts::idbIsAvailable
+ * for the full description.
+ */
+export { idbIsAvailable as isIdbAvailable };
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -588,6 +603,28 @@ export async function saveToLocal(slot: string, s: SaveGame): Promise<SaveToLoca
     // STALE meta key (best-effort -- idbRemoveItem never rejects), so a
     // MISSING key (not a stale one) drives the correct fallback.
     await idbRemoveItem(saveMetaKey(slot));
+    // P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE, znalezisko F2 (Evaluator, 2026-08-12):
+    // czyszczenie samego klucza IDB nie wystarcza -- loadSaveSlotMeta() po
+    // nieudanym odczycie z IDB (raw === null) SPADA na legacy localStorage pod
+    // TYM SAMYM kluczem (saveMetaKey(slot)). Jeśli ten slot miał kiedyś zapis
+    // meta sprzed migracji IDB, stary wpis w localStorage "zmartwychwstaje" --
+    // dialog "Wczytaj grę" pokazuje STARĄ etykietę/turę dla NOWSZEGO zapisu
+    // (sama treść zapisu w IDB jest poprawna, tylko wyświetlane metadane są
+    // przestarzałe). Czyścimy więc RÓWNIEŻ legacy klucz localStorage, tym samym
+    // wzorcem co deleteLocal() niżej (best-effort, nie rzuca).
+    // / EN: P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE, finding F2 (Evaluator,
+    // 2026-08-12): clearing the IDB key alone is not enough -- after a failed
+    // IDB read (raw === null), loadSaveSlotMeta() FALLS BACK to legacy
+    // localStorage under the SAME key (saveMetaKey(slot)). If this slot ever
+    // had a pre-IDB-migration meta entry, that stale localStorage entry
+    // "resurrects" -- the "Load game" dialog shows the OLD label/turn for the
+    // NEWER save (the save body in IDB is fine, only the displayed metadata is
+    // stale). So also clear the legacy localStorage key, same pattern as
+    // deleteLocal() below (best-effort, never throws).
+    const storage = getStorage();
+    if (storage !== null) {
+      try { storage.removeItem(saveMetaKey(slot)); } catch { /* ignore -- best-effort */ }
+    }
   }
   return { ok: true };
 }
@@ -644,6 +681,29 @@ export async function loadFromLocal(slot: string): Promise<SaveGame | null> {
  * (a slot resaved after the migration exists in IDB only, but a slot never
  * touched since stays in localStorage only -- either way it appears once).
  *
+ * FANTOM `_lastPlayed` (Maciej/Evaluator): LAST_PLAYED_SLOT_KEY =
+ * SAVE_PREFIX + '_lastPlayed' -- w odróżnieniu od SAVE_META_PREFIX (rozłączny
+ * z SAVE_PREFIX, patrz komentarz przy tej stałej) ten klucz CELOWO dzieli
+ * prefiks z prawdziwymi slotami zapisu, więc po odcięciu SAVE_PREFIX zostaje
+ * '_lastPlayed' i bez tego filtra trafiłby do wyniku jako fałszywy dodatkowy
+ * slot -- dokładnie ten sam wzorzec, który summarizeSaveSlots()
+ * (saveLoadDialog.ts) już stosuje przy renderze listy (`slotId.startsWith('_')`).
+ * Odrzucamy więc każdy klucz, którego nazwa slotu (po odcięciu SAVE_PREFIX)
+ * zaczyna się od '_' -- to sam LAST_PLAYED_SLOT_KEY dziś, ale reguła obejmuje
+ * też każdy przyszły meta-wskaźnik zapisany pod tym samym schematem nazw.
+ * / EN: PHANTOM `_lastPlayed` (Maciej/Evaluator): LAST_PLAYED_SLOT_KEY =
+ * SAVE_PREFIX + '_lastPlayed' -- unlike SAVE_META_PREFIX (disjoint from
+ * SAVE_PREFIX, see the comment by that constant) this key DELIBERATELY
+ * shares the prefix with real save slots, so stripping SAVE_PREFIX leaves
+ * '_lastPlayed' behind, and without this filter it would show up in the
+ * result as a bogus extra slot -- the exact same pattern
+ * summarizeSaveSlots() (saveLoadDialog.ts) already applies when rendering
+ * the list (`slotId.startsWith('_')`). So we reject any key whose slot name
+ * (after stripping SAVE_PREFIX) starts with '_' -- today that's just
+ * LAST_PLAYED_SLOT_KEY, but the rule also covers any future meta pointer
+ * saved under the same naming scheme. See guard assertion in
+ * map-snapshot-load-test.cjs.
+ *
  * Returns [] when both backends are unavailable or hold no saves.
  * Browser-safe: never throws.
  */
@@ -651,16 +711,20 @@ export async function listSaves(): Promise<string[]> {
   const slots = new Set<string>();
   const idbKeys = await idbListKeys();
   for (const key of idbKeys) {
-    if (key.startsWith(SAVE_PREFIX)) slots.add(key.slice(SAVE_PREFIX.length));
+    if (!key.startsWith(SAVE_PREFIX)) continue;
+    const slot = key.slice(SAVE_PREFIX.length);
+    if (slot.startsWith('_')) continue;
+    slots.add(slot);
   }
   const storage = getStorage();
   if (storage !== null) {
     try {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
-        if (key !== null && key.startsWith(SAVE_PREFIX)) {
-          slots.add(key.slice(SAVE_PREFIX.length));
-        }
+        if (key === null || !key.startsWith(SAVE_PREFIX)) continue;
+        const slot = key.slice(SAVE_PREFIX.length);
+        if (slot.startsWith('_')) continue;
+        slots.add(slot);
       }
     } catch {
       /* ignore -- IDB results (if any) still stand */

@@ -219,6 +219,7 @@ def barbarzyncy_rows():
         "barbarzyncy_zasieg_kontroli": (3, "heksy", "Zasięg kontroli obozu"),
         "barbarzyncy_zasieg_agresji": (6, "heksy", "Zasięg agresji barbarzyńców"),
         "barbarzyncy_prog_odwrotu_hp": (0.3, "0–1", "Poniżej tego HP % — odwrót"),
+        "barbarzyncy_limit_tur_osierocony": (10, "tury", "Limit tur pościgu jednostki osieroconej (bez obozu)"),
     }
     ai = load_json("ai-params.json")
     rows = []

@@ -345,11 +345,43 @@ export interface OwnerStorageParams {
   bonusSurowceNaBudynek: number;
 }
 
-/** Placeholder do strojenia (Maciej 2026-07-24/28): 1000 baza + 100/Magazyn (baza 100→500→1000). */
+/**
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): baza podniesiona 1000→10000
+ * (epoka 1 / Kamień -- "zwiększ jeszcze wielkość magazynu do 10 tysięcy sztuk dla
+ * każdego surowca z obecnego 1000"). bonusSurowceNaBudynek NIEZMIENIONY (100) --
+ * właściciel podał docelowe "1000 i 1500" dla PARY Spichlerz I/II
+ * (SPICHLERZ_EMPIRE_CAP_I/II w building-resource-gate.ts, potwierdzone grepem
+ * komentarza "Spichlerze lokalne +100/+150, Magazyn +100" przy
+ * magazyn_centralny_baza_zywnosc), nie dla tego pola (ma tylko JEDNĄ wartość, nie
+ * parę) -- patrz raport Operatora. Oba pola mimo to dostają IDENTYCZNY mechanizm
+ * podwajania co epokę (magazynEraMultiplier), bo dzielą tę samą formułę
+ * cap(typ) = baza + bonus × liczba_magazynow. / EN: base raised 1000→10000 (era 1
+ * / Stone); bonusSurowceNaBudynek UNCHANGED (100) -- the owner's "1000 and 1500"
+ * target belongs to the Granary I/II PAIR (SPICHLERZ_EMPIRE_CAP_I/II), not this
+ * single-value field -- but both fields still get the same era-doubling mechanism.
+ */
 export const DEFAULT_OWNER_STORAGE_PARAMS: OwnerStorageParams = {
-  bazaSurowcePanstwo:    1000,
+  bazaSurowcePanstwo:    10000,
   bonusSurowceNaBudynek: 100,
 };
+
+/**
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): "A każdą epokę wielkość
+ * magazynu powinna się podwajać" -- mnożnik COMPOUND (nie addytywny, w odróżnieniu
+ * od +10%/epokę konwerterów P-KONWERTERY-PRZEPUSTOWOSC-Q1): era1=×1, era2=×2,
+ * era3=×4 (2^(era-1)). `era` < 1 / NaN / nieskończone traktowane jak 1 (brak
+ * ujemnego/ułamkowego cofania pojemności). Współdzielony wzorzec dla magazynu
+ * surowców PAŃSTWA (ownerResourceCapacityPerType niżej) ORAZ magazynu żywności
+ * centralnego przez Spichlerz I/II (empire-food.ts::computeCentralFoodCap,
+ * SPICHLERZ_EMPIRE_CAP_I/II w building-resource-gate.ts) -- ta sama funkcja,
+ * zero duplikacji formuły. / EN: shared doubling multiplier for both the state
+ * resource warehouse cap and the Granary I/II contribution to the central food
+ * cap -- one formula, no duplication.
+ */
+export function magazynEraMultiplier(era: number): number {
+  const e = Number.isFinite(era) && era > 1 ? era : 1;
+  return Math.pow(2, e - 1);
+}
 
 /**
  * Surowce objęte capem magazynu państwa (SUROW-CIV-01 + PYTANIE-84-U20):
@@ -366,7 +398,7 @@ export type OwnerCappedResourceKey = typeof OWNER_CAPPED_RESOURCE_KEYS[number];
 
 const OWNER_CAPPED_RESOURCE_KEY_SET = new Set<string>(OWNER_CAPPED_RESOURCE_KEYS);
 
-/** Czy typ surowca podlega capowi magazynu państwa (1000 + 100×Magazyn). */
+/** Czy typ surowca podlega capowi magazynu państwa (epoka 1: 10000 + 100×Magazyn, podwaja się co epokę -- P-MAGAZYN-SKALOWANIE-EPOKA-Q1). */
 export function isOwnerCappedResourceKey(key: string): key is OwnerCappedResourceKey {
   return OWNER_CAPPED_RESOURCE_KEY_SET.has(key);
 }
@@ -390,13 +422,40 @@ export function loadOwnerStorageParams(
  * Civ-wide cap per resource type (SUROW-CIV-01): bazaSurowcePanstwo + bonus x
  * liczba Magazynow ownera. Addytywny, NIE mnoznikowy. `magazynCount` ujemny /
  * niefinite -> traktowany jako 0 (bez Magazynow, tylko baza panstwa).
+ *
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): `era` (epoka CYWILIZACJI
+ * WŁAŚCICIELA, nie epoka gry -- PARYTET AI, ten sam parametr liczbowy bez galezi
+ * po ownerId, patrz turn-economy.ts advanceCityEconomy::ownerResourceCapFor)
+ * podwaja WYNIK CAŁEJ formuly co epoke (magazynEraMultiplier) -- rownowazne
+ * skalowaniu obu skladnikow (baza, bonus) OSOBNO tym samym mnoznikiem, patrz
+ * ownerStorageParamsForEra nizej dla rozbicia UI. Domyslne era=1 -> zachowanie
+ * identyczne jak przed ta zmiana (mnoznik ×1).
  */
 export function ownerResourceCapacityPerType(
   magazynCount: number,
   p: OwnerStorageParams = DEFAULT_OWNER_STORAGE_PARAMS,
+  era: number = 1,
 ): number {
   const cnt = Number.isFinite(magazynCount) && magazynCount > 0 ? Math.floor(magazynCount) : 0;
-  return p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt;
+  return (p.bazaSurowcePanstwo + p.bonusSurowceNaBudynek * cnt) * magazynEraMultiplier(era);
+}
+
+/**
+ * Rozbicie OwnerStorageParams PRZESKALOWANE dla jednej epoki -- dla UI, ktore chce
+ * pokazac "baza" i "bonus/Magazyn" OSOBNO (np. main.ts panel Surowce: capBase +
+ * capBonusPerMagazyn × liczba_magazynow MUSI sumowac sie do tego samego `cap`, co
+ * zwraca ownerResourceCapacityPerType -- ta sama funkcja mnoznika gwarantuje brak
+ * rozjazdu). Czysta, bez efektow ubocznych.
+ */
+export function ownerStorageParamsForEra(
+  p: OwnerStorageParams,
+  era: number,
+): OwnerStorageParams {
+  const mult = magazynEraMultiplier(era);
+  return {
+    bazaSurowcePanstwo:    p.bazaSurowcePanstwo * mult,
+    bonusSurowceNaBudynek: p.bonusSurowceNaBudynek * mult,
+  };
 }
 
 /** Minimalny ksztalt miasta potrzebny do rekoncyliacji puli panstwa (bez importu City/GameMap). */

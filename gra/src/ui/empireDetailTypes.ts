@@ -2,6 +2,7 @@
  * empireDetailTypes.ts — snapshot panelu imperium (HUD mapy).
  */
 import type { HudState } from './hud';
+import type { ResourceUsageBreakdown } from '../game/resource-usage-breakdown';
 
 /** PYTANIE-84-U23A — uchwała imperium (perk widoczny, gdy ≥1 Spichlerz II płaci Sól). */
 export const UCHWALA_SOL_SPICHLERZ_II_ID = 'uchwala-sol-spichlerz-ii';
@@ -99,6 +100,24 @@ export interface EmpireResourceRow {
    * czy 0 (kara aktywna — Szczęście −1, Rozwój −1% w każdym mieście imperium).
    */
   citizenCovered?: boolean;
+  /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12) + P-ZUZYCIE-ROZBICIE-NIEDOBOR:
+   * rozbicie tego surowca na budynki/obywateli/wojsko — czytane WPROST z tego, co silnik
+   * policzył (`resource-usage-breakdown.ts`), NIE przeliczane osobno. `undefined` = brak
+   * żadnej kategorii tego surowca (przycisk „Zobacz szczegóły" niepotrzebny — patrz
+   * `resourceUsageHasAny`). ⚠️ `citizens` jest klamrowany do zapasu (realny drenaż);
+   * `buildings`/`units` to PEŁNE zapotrzebowanie, nie zawsze równe temu, co silnik realnie
+   * odjął z magazynu przy niedoborze — patrz JSDoc `ResourceUsageBreakdown`.
+   */
+  usage?: ResourceUsageBreakdown;
+  /**
+   * P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12): karta placeholder dla surowca, który
+   * jeszcze NIE istnieje w `resources.json` (dziś: „Ruda cyny"). Renderuje się wyszarzona,
+   * 0/0, bez paska postępu i bez żadnych realnych danych (produkcja/dostęp/zużycie).
+   * EN: placeholder card for a resource not yet implemented in `resources.json` (today:
+   * "Ruda cyny" / tin ore). Renders dimmed, 0/0, no progress bar, no real data.
+   */
+  placeholder?: boolean;
 }
 
 export interface EmpireKulturaSnap {
@@ -126,7 +145,17 @@ export interface EmpirePowerSnap {
   power: number;
   powerBase: number;
   components: EmpirePowerComponentRow[];
-  ranking: Array<{ civ: string; power: number; rank: number; isPlayer?: boolean }>;
+  ranking: Array<{
+    civ: string;
+    power: number;
+    /** P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): WYŁĄCZNIE Armia + Rekruci (ekw. jedn.). */
+    powerMilitary: number;
+    /** P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): wszystko OPRÓCZ Armii i Rekrutów. */
+    powerEconomic: number;
+    rank: number;
+    isPlayer?: boolean;
+    wiarygodnosc?: number;
+  }>;
   respektExample?: { civ: string; respekt: number; playerPower: number; theirPower: number };
   /** R-RANKING-MOC: pozycja absolutna wśród WSZYSTKICH cywilizacji (także nieodkrytych). */
   absoluteRank?: { rank: number; total: number };
@@ -152,6 +181,26 @@ export interface EmpireCityEconRow {
   handelZeSzlakow?: number;
   /** Utrzymanie budynków w tym mieście / turę (schodzi ze skarbca imperium). */
   utrzymanieBudynkow?: number;
+  /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12): utrzymanie surowcowe
+   * BUDYNKÓW WYBUDOWANYCH W TYM KONKRETNYM mieście / turę (klucz surowca → ilość, 1 szt./typ
+   * obecny w koszt_surowce budynku — patrz `buildingResourceUpkeep` w `economy-upkeep.ts`).
+   * Źródło: `main.ts` `buildingResourceUpkeepForCityId(cityId, 0)` — TA SAMA funkcja i ten sam
+   * wywołanie, którym `_lastPlayerCityEcon.utrzymanieSurowcowBudynkow` jest już liczone (patrz
+   * `populateLastPlayerCityEcon`), tylko dotąd nie było przekazane do `cityEcon` w
+   * `buildEmpireDetailSnap()`. Budynki NALEŻĄ do jednego miasta, więc to jest PRAWDZIWY per-miasto
+   * rozkład (nie przybliżenie) — w przeciwieństwie do zużycia obywateli (magazyn centralny
+   * imperium, civ-wide z definicji — ECHO Q1 `citizen-resource-upkeep.ts`) i wojska (jednostki
+   * poruszają się po mapie, nie należą do miasta), które NIE mają analogicznego rozbicia
+   * per-miasto i celowo NIE są tu wliczone — pełne rozbicie budynki/obywatele/wojsko per
+   * surowiec jest w sekcji SUROWCE (karta surowca → „Zobacz szczegóły zużycia",
+   * `resource-usage-breakdown.ts`). `undefined` = brak wpisu tick jeszcze (przed 1. turą).
+   * / EN: resource upkeep of buildings BUILT IN THIS SPECIFIC city / turn — buildings belong to
+   * exactly one city, so this is a genuine per-city split (unlike citizens' central-warehouse
+   * drain or roaming units' upkeep, neither of which has a per-city breakdown; both stay
+   * empire-wide, shown in the SUROWCE section's "Zobacz szczegóły zużycia" instead).
+   */
+  utrzymanieSurowcowBudynkow?: Record<string, number>;
   pracaPula: number;
   pracaBudynki: number;
   nauka: number;
@@ -162,6 +211,14 @@ export interface EmpireCityPoborRow {
   name: string;
   ludki: number;
   ludnoscAbsLabel: string;
+  /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12): wartość SUROWA (przed
+   * `formatManpower`) tożsama z tą, z której liczy się `ludnoscAbsLabel` — potrzebna do
+   * zsumowania kolumny LUDNOŚĆ w wierszu podsumowania tabeli „Miasta" (suma liczb, nie sklejanie
+   * sformatowanych etykiet tekstowych). / EN: raw value backing `ludnoscAbsLabel`, needed to sum
+   * the LUDNOŚĆ column in the city table's summary row (numeric sum, not label concatenation).
+   */
+  ludnoscAbsolutna: number;
   rekruci: number;
   rekruciMax: number;
   regenPerTurn: number;

@@ -1,22 +1,23 @@
 'use strict';
 /**
- * tartak-glinianka-rate-Q1-test.cjs -- korekta balansu Maciej 2026-08-09:
- * Tartak->drewno 10->4/ture, Glinianka->glina 15->4/ture (wyrownanie do
- * kamieniolomu = 4/ture, referencja bez zmian).
+ * tartak-glinianka-rate-Q1-test.cjs -- korekta balansu Maciej 2026-08-09,
+ * ZASTAPIONA korekta R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 (Maciej 2026-08-12):
+ * Tartak->drewno 4->10/ture, Glinianka->glina 4->10/ture, Kamieniolom->kamien
+ * 4->10/ture (wszystkie trzy razem, referencja teraz TEZ zmieniona).
  *
  * Run from gra/: node tools/tartak-glinianka-rate-Q1-test.cjs
  *
  * Pokrywa:
- *   A. terrain-improvements.json: surowiec_ilosc_tura Tartak=4, Glinianka=4
- *      (odczyt bezposredni z danych zrodlowych).
+ *   A. terrain-improvements.json: surowiec_ilosc_tura Tartak=10, Glinianka=10,
+ *      Kamieniolom=10 (odczyt bezposredni z danych zrodlowych).
  *   B. Silnik: territoryResourceYieldForImprovement (SUROW-TERYT-01) zwraca
- *      4 dla obu kluczy, NIE stara wartosc 10/15 (funkcja realna, nie JSON).
- *   C. Integracja: advanceCityEconomy -- Tartak w terytorium daje +4 drewna/ture
- *      do magazynu panstwa (nie +10), Glinianka na zlozu gliny daje +4 gliny/ture
- *      (nie +15).
+ *      10 dla obu kluczy, NIE stara wartosc 4 (funkcja realna, nie JSON).
+ *   C. Integracja: advanceCityEconomy -- Tartak w terytorium daje +10 drewna/ture
+ *      do magazynu panstwa (nie +4), Glinianka na zlozu gliny daje +10 gliny/ture
+ *      (nie +4).
  *   D. Regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO: capPerType (cap panstwa,
  *      reconcileOwnerResourceCaps przez advanceCityEconomy) nadal poprawnie klamruje
- *      SUME do cap-u panstwa przy nizszej, nowej stawce produkcji (4/ture) -- test
+ *      SUME do cap-u panstwa przy nowej, wyzszej stawce produkcji (10/ture) -- test
  *      wielu Tartakow przez wiele tur az suma przekroczy cap, potwierdzenie ze
  *      suma nigdy nie przekracza cap-u panstwa.
  */
@@ -81,22 +82,30 @@ function eq(a, b, msg) {
   ok(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`);
 }
 
-console.log('\n-- A. terrain-improvements.json: surowiec_ilosc_tura po korekcie 2026-08-09 --\n');
-eq(terrainImprovements.tartak.surowiec_ilosc_tura, 4, 'JSON: tartak.surowiec_ilosc_tura === 4');
-eq(terrainImprovements.glinianka.surowiec_ilosc_tura, 4, 'JSON: glinianka.surowiec_ilosc_tura === 4');
-eq(terrainImprovements.kamieniolom.surowiec_ilosc_tura, 4, 'JSON: kamieniolom.surowiec_ilosc_tura NIEZMIENIONY (referencja) === 4');
+console.log('\n-- A. terrain-improvements.json: surowiec_ilosc_tura po korekcie 2026-08-12 --\n');
+eq(terrainImprovements.tartak.surowiec_ilosc_tura, 10, 'JSON: tartak.surowiec_ilosc_tura === 10');
+eq(terrainImprovements.glinianka.surowiec_ilosc_tura, 10, 'JSON: glinianka.surowiec_ilosc_tura === 10');
+eq(terrainImprovements.kamieniolom.surowiec_ilosc_tura, 10, 'JSON: kamieniolom.surowiec_ilosc_tura === 10 (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, tez zmieniony)');
 
 console.log('\n-- B. territoryResourceYieldForImprovement (silnik, SUROW-TERYT-01) --\n');
 const tartakYield = M.territoryResourceYieldForImprovement('tartak');
 const glinianKaYield = M.territoryResourceYieldForImprovement('glinianka');
+const kamieniolomYield = M.territoryResourceYieldForImprovement('kamieniolom');
 ok(!!tartakYield, 'tartak: territoryResourceYieldForImprovement zwraca wpis');
 ok(!!glinianKaYield, 'glinianka: territoryResourceYieldForImprovement zwraca wpis');
+ok(!!kamieniolomYield, 'kamieniolom: territoryResourceYieldForImprovement zwraca wpis');
 eq(tartakYield && tartakYield.resourceKey, 'drewno', 'tartak: resourceKey = drewno');
-eq(tartakYield && tartakYield.amount, 4, 'silnik: tartak amount === 4 (NIE stara wartosc 10)');
+eq(tartakYield && tartakYield.amount, 10, 'silnik: tartak amount === 10 (NIE stara wartosc 4)');
 eq(glinianKaYield && glinianKaYield.resourceKey, 'glina', 'glinianka: resourceKey = glina');
-eq(glinianKaYield && glinianKaYield.amount, 4, 'silnik: glinianka amount === 4 (NIE stara wartosc 15)');
+eq(glinianKaYield && glinianKaYield.amount, 10, 'silnik: glinianka amount === 10 (NIE stara wartosc 4)');
+// N5 (Maciej 2026-08-12, dispatch po ecbddda8): luka pokrycia -- kamieniolom mial
+// dotad asercje TYLKO na poziomie JSON (sekcja A wyzej), NIE na poziomie silnika.
+// EN: coverage gap -- kamieniolom previously had assertions ONLY at the JSON level
+// (section A above), NOT at the engine level.
+eq(kamieniolomYield && kamieniolomYield.resourceKey, 'kamien', 'kamieniolom: resourceKey = kamien');
+eq(kamieniolomYield && kamieniolomYield.amount, 10, 'silnik: kamieniolom amount === 10 (odczyt z JSON, nie hardkod)');
 
-console.log('\n-- C. Integracja: advanceCityEconomy -- Tartak/Glinianka w terytorium +4/ture do magazynu --\n');
+console.log('\n-- C. Integracja: advanceCityEconomy -- Tartak/Glinianka w terytorium +10/ture do magazynu --\n');
 
 function makeCity(overrides = {}) {
   return {
@@ -137,7 +146,7 @@ function runTick(city, builtIds, map) {
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const terr = M.computeTerritoryResourceYieldByCity([city], map, nodes);
   const terrDrewno = terr.get(city.id)?.drewno ?? 0;
-  eq(terrDrewno, 4, 'computeTerritoryResourceYieldByCity: Tartak solo terrYield drewno = 4/ture');
+  eq(terrDrewno, 10, 'computeTerritoryResourceYieldByCity: Tartak solo terrYield drewno = 10/ture');
 }
 
 {
@@ -160,15 +169,15 @@ function runTick(city, builtIds, map) {
   const nodes = M.buildTerritoryNodesFromCities([city]);
   const terr = M.computeTerritoryResourceYieldByCity([city], map, nodes);
   const terrGlina = terr.get(city.id)?.glina ?? 0;
-  eq(terrGlina, 4, 'computeTerritoryResourceYieldByCity: Glinianka terrYield glina = 4/ture');
+  eq(terrGlina, 10, 'computeTerritoryResourceYieldByCity: Glinianka terrYield glina = 10/ture');
 }
 
-console.log('\n-- D. Regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO: cap panstwa nadal klamruje przy 4/ture --\n');
+console.log('\n-- D. Regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO: cap panstwa nadal klamruje przy 10/ture --\n');
 {
   // Cap panstwa faktyczny (odczyt runtime, NIE zahardkodowany -- DEFAULT_OWNER_STORAGE_PARAMS
   // w economy-upkeep.ts jest dzis 1000 + 100/Magazyn, patrz komentarz "baza 100->500->1000";
   // odczytujemy realna wartosc przez ownerResourceCap zamiast zakladac liczbe na sztywno).
-  // 8x Tartak w terytorium = 8x4 = 32 drewna/ture -- wystarczy by w rozsadnej
+  // 8x Tartak w terytorium = 8x10 = 80 drewna/ture -- wystarczy by w rozsadnej
   // liczbie tur przekroczyc dowolny sensowny cap panstwa i wymusic klamrowanie.
   const N_TARTAK = 8;
   const hexes = {};
@@ -187,8 +196,14 @@ console.log('\n-- D. Regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO: cap p
   const expectedCap = M.ownerResourceCap([city], builtByCity, 0, DATA, 'normal');
   ok(expectedCap > 0, `sanity: cap panstwa odczytany runtime > 0 (${expectedCap})`);
 
-  const perTurn = N_TARTAK * 4; // stawka NOWA (4/ture x Tartak), nie stara 10/ture
-  const turnsToExceedCap = Math.ceil(expectedCap / perTurn) + 15; // kilkanascie tur ponad przekroczenie cap-u
+  const perTurn = N_TARTAK * 10; // stawka NOWA (10/ture x Tartak), nie stara 4/ture
+  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): margines x2 (nie tylko +15) --
+  // po podniesieniu magazyn_baza_surowce 1000->10000 sama nominalna stawka (perTurn=80)
+  // nie trafia netto do magazynu (empirycznie ~62/ture po odjeciu innego zuzycia miasta),
+  // wiec staly dodatek +15 tur, wystarczajacy przy starym, malym capie, przestal
+  // wystarczac przy 10x wiekszym capie -- margines musi skalowac sie MULTIPLIKATYWNIE
+  // z capem, nie addytywnie stala liczba tur.
+  const turnsToExceedCap = Math.ceil((expectedCap / perTurn) * 2) + 15; // margines x2 + kilkanascie tur ponad przekroczenie cap-u
 
   let maxSeen = 0;
   for (let t = 0; t < turnsToExceedCap; t++) {
@@ -199,7 +214,7 @@ console.log('\n-- D. Regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO: cap p
     maxSeen = Math.max(maxSeen, drewno);
     ok(drewno <= expectedCap, `tura ${t + 1}: drewno (${drewno}) <= cap panstwa (${expectedCap})`);
   }
-  ok(maxSeen === expectedCap, `capPerType aktywowal sie: suma osiagnela dokladnie cap (${maxSeen} === ${expectedCap}) mimo nizszej stawki 4/ture x${N_TARTAK} Tartakow`);
+  ok(maxSeen === expectedCap, `capPerType aktywowal sie: suma osiagnela dokladnie cap (${maxSeen} === ${expectedCap}) mimo wyzszej stawki 10/ture x${N_TARTAK} Tartakow`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

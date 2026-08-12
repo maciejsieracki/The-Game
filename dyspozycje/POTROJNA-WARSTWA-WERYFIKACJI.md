@@ -55,3 +55,21 @@ Kanon: `docs/decyzje/R-PROC-AUTOBOT-EVAL-SCOPE.md` · twardość werdyktów: `do
 ## Hasło Macieja
 
 Brak osobnego hasła — reguła jest **stała** przy każdej paczce kodu po `działaj` / implementacji.
+
+## Integracja z Ultracode/Workflow (Maciej 2026-08-12)
+
+Narzędzie Workflow (Ultracode, Claude Agent SDK) automatyzuje dokładnie te trzy warstwy —
+nie zastępuje żadnej z nich. Warstwa 1 (przygotowuje kod) = `phase('Operator')` na
+domyślnym modelu sesji; Warstwa 2 (adwokat diabła) = `phase('Evaluator')` na
+`model:'opus', effort:'high'`; obie fazy MUSZĄ żyć w jednym skrypcie, jako dwa kroki
+sekwencyjne — nigdy jako dwa osobne dispatche, bo to strukturalnie zabezpiecza przed
+pominięciem Warstwy 2 (realny incydent tej sesji: ~11 zmian scalonych bezpośrednio, bez
+Warstwy 2). Warstwa 3 (finalna kontrola całej paczki) zostaje zawsze poza Workflow — robi ją
+orkiestrator po zakończeniu skryptu, razem z `git commit`/`push` i całym deployem.
+
+Dla zmian wysokiego ryzyka (silnik bitwy, save/load, migracje `gra/data/**`) Warstwa 2 nie
+ogranicza się do jednego adwokata diabła — wymagane 3 niezależne, głosujące większością
+(wzorzec „adversarial verify" wbudowany w Workflow). Każdy prompt agenta uruchamianego w
+izolowanym worktree (Workflow albo ręczny dispatch) zaczyna się od weryfikacji bazy
+worktree (grep symbolu, który musi istnieć na właściwej gałęzi) — dokładny szablon i pełen
+opis: `.cursor/rules/autobot-evaluator-operator.mdc` §„Integracja z Ultracode/Workflow".

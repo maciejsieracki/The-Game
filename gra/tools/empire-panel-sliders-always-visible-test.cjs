@@ -1,23 +1,36 @@
 'use strict';
 /**
- * empire-panel-sliders-always-visible-test.cjs — BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU
+ * empire-panel-sliders-always-visible-test.cjs — SUPERSEDED przez P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE
+ * (commit 469f3152, Evaluator FAIL szczelina 6, 2026-08-12).
  *
- * Chroni gra/src/ui/empireDetailPanel.ts, sekcję „ZASOBY IMPERIUM": suwaki globalne Skarbca
- * (renderDefaultHandelSplitSection) i Pracy (renderDefaultPodzialPracySection) muszą się
- * renderować ZAWSZE, niezależnie od tego, który chip HUD (np. „Praca"/„Skarbiec") ustawił
- * `onlyEconId`. C-PANEL=B (Maciej 2026-07-24) zostaje nienaruszone dla WIERSZY ekonomii —
- * pętla `econRows` nadal filtruje po `onlyEconId`; naprawiony jest wyłącznie fakt, że oba
- * wywołania suwaków były owinięte w `if (!onlyEconId) { ... }` i znikały razem z resztą
- * wierszy przy kliknięciu chipu „Praca"/„Skarbiec" (zgłoszenie Macieja z playtestu FALI 268).
+ * Historia: ten plik pierwotnie (BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU, commit
+ * b80426ff) chronił kontrakt „suwaki Skarbiec+Praca renderują się ZAWSZE, niezależnie od
+ * onlyEconId" — to było poprawne dopóki jedynym problemem było to, że oba suwaki znikały razem
+ * z resztą wierszy. Ale ten kontrakt jest DZIŚ NIEAKTUALNY: 469f3152 wprowadził (na zgłoszenie
+ * właściciela, 3 zrzuty ekranu) wymóg, żeby każda zakładka pokazywała WYŁĄCZNIE tematycznie
+ * powiązany suwak, nigdy oba naraz na filtrowanej zakładce. Stary plik dalej przechodził po tej
+ * zmianie zielono (jego regex łapie tylko syntaktyczny wzorzec `if (!onlyEconId) { ... }`, nowe
+ * guardy nazywają się `if (sliderVis.showTaxSplit)` — semantycznie inny warunek), więc w repo
+ * stała zielona bramka autorytatywnie twierdząca coś PRZECIWNEGO do dzisiejszego kontraktu —
+ * gotowy przepis na to, żeby przyszły agent „naprawił" 469f3152 z powrotem w duplikację.
  *
- * Wzorzec testu: source-text regex na wyciętym fragmencie (esbuild nie może zbundlować całego
- * empireDetailPanel.ts bez loaderów SVG/audio — patrz CLAUDE.md, znane pre-istniejące porażki
- * map-field-battle-test/pre-battle-save-test), analogicznie do
- * spichlerz-cap-citypanel-wiring-test.cjs / border-march-wygasanie-test.cjs.
+ * DZISIEJSZY kontrakt (patrz gra/tools/empire-panel-econ-slider-visibility-test.cjs — pełne,
+ * wykonywalne pokrycie z dowodem mutacyjnym na źródle empireDetailPanel.ts): każdy suwak musi
+ * być OSIĄGALNY na co najmniej jednej zakładce (nigdy globalnie martwy) i NIGDY oba naraz na
+ * zakładce filtrowanej — nie „zawsze widoczne bezwarunkowo".
  *
- * EN: Guards the "ZASOBY IMPERIUM" section — the global Treasury and Labor sliders must always
- * render regardless of the active HUD chip filter (onlyEconId). C-PANEL=B row filter itself
- * stays intact; only the two slider calls must live outside any `if (!onlyEconId)` guard.
+ * Ten plik zostaje (żeby nie tracić `Run from gra/: node tools/...` w historii commitów i
+ * żeby niczyj istniejący skrypt/dyspozycja odwołujący się do tej nazwy pliku nie dostał 404),
+ * ale jego asercje zostały przepisane na dzisiejszy kontrakt. Pełne, mutacyjnie dowiedzione
+ * pokrycie żyje w empire-panel-econ-slider-visibility-test.cjs — traktuj TEN plik jako cienką,
+ * uzupełniającą warstwę (regres b80426ff: żaden suwak nie jest globalnie nieosiągalny), nie
+ * jako główne źródło prawdy.
+ *
+ * EN: SUPERSEDED by P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE (469f3152). The old "always visible"
+ * contract is stale — today's rule is "reachable on its own tab, never both on a filtered tab",
+ * enforced with mutation-proof coverage in empire-panel-econ-slider-visibility-test.cjs. This
+ * file's assertions were rewritten to match; treat it as a thin supplementary regression guard
+ * for the original b80426ff bug (no slider ever globally unreachable), not the source of truth.
  *
  * Run from gra/: node tools/empire-panel-sliders-always-visible-test.cjs
  */
@@ -53,33 +66,37 @@ ok(/if\s*\(onlyEconId\s*&&\s*r\.id\s*!==\s*onlyEconId\)\s*continue;/.test(sectio
   'filtr onlyEconId nadal działa na pętli econRows (C-PANEL=B nienaruszone)');
 
 // ---------------------------------------------------------------------------
-// Wymóg 2: oba wywołania suwaków są obecne w sekcji ZASOBY IMPERIUM.
+// Wymóg 2: oba wywołania suwaków są obecne w sekcji ZASOBY IMPERIUM (osiągalne, nie usunięte
+// całkiem) — ale DZIŚ pod guardem decyzji econSliderVisibilityForOnlyEconId, nie bezwarunkowo.
 // ---------------------------------------------------------------------------
 ok(/renderDefaultHandelSplitSection\(\)/.test(sectionBody),
-  'renderDefaultHandelSplitSection() (suwak Skarbiec+Nauka) wywołane w sekcji ZASOBY IMPERIUM');
+  'renderDefaultHandelSplitSection() (suwak Skarbiec+Nauka) obecne w sekcji ZASOBY IMPERIUM');
 ok(/renderDefaultPodzialPracySection\(\)/.test(sectionBody),
-  'renderDefaultPodzialPracySection() (suwak Praca) wywołane w sekcji ZASOBY IMPERIUM');
+  'renderDefaultPodzialPracySection() (suwak Praca) obecne w sekcji ZASOBY IMPERIUM');
 
 // ---------------------------------------------------------------------------
-// Wymóg 3 (kluczowy, dokładna regresja BUG-SUWAKI): żadne z tych dwóch wywołań nie może być
-// owinięte w `if (!onlyEconId) { ... }` — dokładnie ten wzorzec sprawiał, że suwaki znikały
-// po kliknięciu chipu HUD „Praca"/„Skarbiec" (activeSection='econ-praca'/'econ-skarbiec').
+// Wymóg 3 (PRZEPISANY 2026-08-12, patrz nagłówek SUPERSEDED powyżej): stary wymóg „żadne z tych
+// dwóch wywołań nie może być owinięte w if(!onlyEconId)" jest dziś FAŁSZYWY jako opis kontraktu
+// — DZIŚ oba wywołania SĄ warunkowe (if(sliderVis.showTaxSplit) / if(sliderVis.showLaborSplit)),
+// i to jest poprawne zachowanie, nie regres. Nowy, poprawny wymóg: żaden suwak nie jest
+// bezwarunkowo USUNIĘTY (globalnie martwy kod) — musi istnieć niepusty warunek bramkujący każde
+// wywołanie, sterowany przez `sliderVis` (econSliderVisibilityForOnlyEconId), nie stały `false`.
 // ---------------------------------------------------------------------------
-const guardedBlocks = sectionBody.match(/if\s*\(!onlyEconId\)\s*\{[\s\S]*?\n\s*\}/g) || [];
-ok(guardedBlocks.length === 0
-  || guardedBlocks.every(b => !/renderDefaultHandelSplitSection\(\)/.test(b) && !/renderDefaultPodzialPracySection\(\)/.test(b)),
-  'suwaki Skarbiec/Praca NIE są wewnątrz żadnego bloku if(!onlyEconId) w sekcji ZASOBY IMPERIUM (regres BUG-SUWAKI-PRACA-SKARBIEC)');
+ok(/if\s*\(sliderVis\.showTaxSplit\)\s*zasoby \+= renderDefaultHandelSplitSection\(\);/.test(sectionBody),
+  'renderDefaultHandelSplitSection() bramkowane przez sliderVis.showTaxSplit (dzisiejszy kontrakt, nie stała false/usunięte)');
+ok(/if\s*\(sliderVis\.showLaborSplit\)\s*zasoby \+= renderDefaultPodzialPracySection\(\);/.test(sectionBody),
+  'renderDefaultPodzialPracySection() bramkowane przez sliderVis.showLaborSplit (dzisiejszy kontrakt, nie stała false/usunięte)');
 
-// Kontrola przytomności: to nie jest test próżny — jeżeli ktoś przywróci stary wzorzec, wykryjemy
-// go wprost (symulacja regresu na kopii tekstu, bez modyfikacji pliku źródłowego).
-const regressedSection = sectionBody.replace(
-  /zasoby \+= renderDefaultHandelSplitSection\(\);[\s\S]*?zasoby \+= renderDefaultPodzialPracySection\(\);/,
-  `if (!onlyEconId) {\n    zasoby += renderDefaultHandelSplitSection();\n    zasoby += renderDefaultPodzialPracySection();\n  }`,
-);
-const regressedGuardedBlocks = regressedSection.match(/if\s*\(!onlyEconId\)\s*\{[\s\S]*?\n\s*\}/g) || [];
-ok(regressedGuardedBlocks.length > 0
-  && regressedGuardedBlocks.some(b => /renderDefaultHandelSplitSection\(\)/.test(b) && /renderDefaultPodzialPracySection\(\)/.test(b)),
-  'kontrola przytomności: symulowany regres (suwaki z powrotem w if(!onlyEconId)) jest wykrywalny przez ten sam regex');
+// Kontrola przytomności: gdyby ktoś usunął OBA wywołania całkowicie (suwaki globalnie martwe —
+// regres z b80426ff w nowej postaci), powyższe dwie asercje muszą złapać to czerwono.
+const deletedSection = sectionBody
+  .replace('if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();', '')
+  .replace('if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();', '');
+const deletedStillMatches =
+  /if\s*\(sliderVis\.showTaxSplit\)\s*zasoby \+= renderDefaultHandelSplitSection\(\);/.test(deletedSection)
+  || /if\s*\(sliderVis\.showLaborSplit\)\s*zasoby \+= renderDefaultPodzialPracySection\(\);/.test(deletedSection);
+ok(!deletedStillMatches,
+  'kontrola przytomności: symulowane całkowite usunięcie obu wywołań jest wykrywalne przez ten sam regex (nie próżny test)');
 
-console.log(`\nempire-panel-sliders-always-visible-test: ${pass} pass, ${fail} fail`);
+console.log(`\nempire-panel-sliders-always-visible-test (SUPERSEDED, patrz nagłówek): ${pass} pass, ${fail} fail`);
 process.exit(fail === 0 ? 0 : 1);

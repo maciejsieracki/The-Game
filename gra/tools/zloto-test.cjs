@@ -225,7 +225,7 @@ console.log('-- F. złoto magazynowane w skarbcu państwa (PYTANIE-84-R9) --');
     `kopalnia_zlota.surowiec_ilosc_tura = 1 (ma: ${JSON.stringify(kz && kz.surowiec_ilosc_tura)})`);
 
   const stad = rawTerrainImprovements['stadnina'];
-  ok(stad?.surowiec_ilosc_tura === 1, 'stadnina: 1 Koń/t do magazynu państwa');
+  ok(stad?.surowiec_ilosc_tura === 5, 'stadnina: 5 Koń/t do magazynu państwa (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, korekta 2026-08-12)');
 
   const zlotoRes = rawResources.find(r => r.Surowiec === 'Złoto');
   ok(!!zlotoRes, 'resources.json: wpis Złoto istnieje');

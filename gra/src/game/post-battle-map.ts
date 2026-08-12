@@ -6,6 +6,7 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
+import { isBarbarian } from './barbarians';
 import { onCityCapturedCulture } from './conquest-stability';
 import { applyPostCaptureLawOnCapture } from './post-capture-law';
 import type { RuntimeUnit } from '../units/setup';
@@ -446,7 +447,41 @@ export function applyCityCaptureAfterBattle(
     if (live.oblegaCityId === city.id) delete live.oblegaCityId;
   }
 
-  applyPostCaptureLawOnCapture(city, atkOwner, prevOwner);
+  // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 4): "Prawo po podboju" (banner UI
+  // "Po podboju — Prawo 100% (5 tur)", revoltRisk=0) nie ma sensu dla frakcji bez rządu
+  // -- barbarzyńcy nie mają Prawa/rewolt, więc dla nich cała funkcja jest pomijana.
+  // KOREKTA RUNDY 3 (poprzedni opis był błędny, wykonaniem zweryfikowane 2026-08-12):
+  // guard NIE chroni żadnego "10-turowego bonusu po odbiciu od barbarzyńców" -- taki
+  // bonus dziś w ogóle nie istnieje. `rebelPreviousOwnerId` faktycznie PRZEŻYWA to
+  // przejęcie (guard pomija `delete city.rebelPreviousOwnerId` wewnątrz
+  // applyPostCaptureLawOnCapture), ale to przetrwanie jest bez znaczenia: gdy
+  // WŁAŚCIWY właściciel później odbija miasto OD barbarzyńcy, `prevOwner` w TYM
+  // wywołaniu to `BARBARIAN_OWNER_ID` (-1), nie `REBEL_FACTION_OWNER_ID` (-99) --
+  // `isRebellionReconquest` sprawdza wyłącznie `prevOwner===REBEL_FACTION_OWNER_ID`,
+  // więc zwraca `false`, miasto dostaje zwykłe 5 tur (nie 10), a `rebelPreviousOwnerId`
+  // zostaje i tak skasowane przy TYM wywołaniu (guard go już nie chroni, bo `atkOwner`
+  // nie jest barbarzyńcą). Zachowana wartość nigdy nie jest konsumowana. Czy łańcuch
+  // bunt->barbarzyńca->odbicie MA dawać 10-turowy bonus, to osobna decyzja produktowa
+  // (nie rozstrzygana tym guardem) -- guard tu jedynie chroni przed przedwczesnym
+  // `delete` przy SAMYM przejęciu barbarzyńskim, nic więcej.
+  // / EN: "post-conquest Law" (the "Post-conquest — Law 100% (5 turns)" UI banner,
+  // revoltRisk=0) makes no sense for a government-less faction -- barbarians have no
+  // Law/revolt concept, so the whole function is skipped for them.
+  // ROUND 3 CORRECTION (the previous description was wrong, verified by execution
+  // 2026-08-12): this guard does NOT protect any "10-turn bonus after reclaiming from
+  // barbarians" -- no such bonus exists today. `rebelPreviousOwnerId` DOES survive this
+  // capture (the guard skips `delete city.rebelPreviousOwnerId` inside
+  // applyPostCaptureLawOnCapture), but that survival is inert: when the RIGHTFUL owner
+  // later reclaims the city FROM the barbarian, `prevOwner` in THAT call is
+  // `BARBARIAN_OWNER_ID` (-1), not `REBEL_FACTION_OWNER_ID` (-99) --
+  // `isRebellionReconquest` only checks `prevOwner===REBEL_FACTION_OWNER_ID`, so it
+  // returns `false`, the city gets the ordinary 5 turns (not 10), and
+  // `rebelPreviousOwnerId` gets deleted anyway on THAT call (the guard no longer
+  // applies, since `atkOwner` isn't a barbarian there). The preserved value is never
+  // consumed. Whether the rebellion->barbarian->reclaim chain SHOULD grant the 10-turn
+  // bonus is a separate product decision (not settled by this guard) -- this guard only
+  // prevents a premature `delete` at the barbarian capture step itself, nothing more.
+  if (!isBarbarian(atkOwner)) applyPostCaptureLawOnCapture(city, atkOwner, prevOwner);
   city.ownerId = atkOwner;
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;

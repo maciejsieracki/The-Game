@@ -157,3 +157,50 @@ Po FAIL adwokata diabła (`bc-43dbc71b`):
 3. **Evaluation delay** — `retireWeakRules` + prune pomijane gdy delay niespełniony; `recordRuleOutcome` zawsze; `allowPlaybookMutation` tylko smoke/test.
 4. **Guardrails deny-by-default** — nieznany `actionId` → `forbidden`; semantika merge/deploy-force blokowana.
 5. **RETIRED** — `retireWeakRules` ustawia `status=RETIRED` (kwarantanna bez nadpisywania na QUARANTINE).
+
+---
+
+## Integracja z Ultracode/Workflow (Maciej 2026-08-12)
+
+Polecenie: *„przeczytaj jeszcze raz całe zasady autobots i dostosuj je do pracy ultracode
+tak żeby się uzupełniały i razem usprawniały pracę oraz generowało jak najmniej błędów."*
+Pełny szczegół (KROK 0, tabela modeli, adversarialna weryfikacja, co zostaje ręczne) żyje w
+`.cursor/rules/autobot-evaluator-operator.mdc` §„Integracja z Ultracode/Workflow" — tu
+streszczenie kanoniczne.
+
+**Workflow ≠ AutoBot.** Workflow (Ultracode) jest **narzędziem wykonawczym** (skrypt JS z
+`agent()`/`pipeline()`/`parallel()`/`phase()`, wbudowana współbieżność i izolacja
+worktree per agent). AutoBot pozostaje **regułą procesu** z tego dokumentu — Workflow ma
+JĄ automatyzować, nie zastępować. Guardrails z sekcji „Twarde guardrails" wyżej (bez
+merge→`main`, bez deploy bez hasła, mandatory human approval na akcje krytyczne) obowiązują
+identycznie, czy praca idzie przez Workflow, czy przez ręczny dispatch.
+
+**Mapowanie ról:**
+
+| Rola AutoBot | Workflow | Model |
+|---|---|---|
+| Operator | `phase('Operator')` | domyślny model sesji (Sonnet 5) |
+| Evaluator | `phase('Evaluator')`, `model:'opus', effort:'high'` | Opus 5 |
+
+Obie fazy — **jeden skrypt, dwa kroki sekwencyjne, nigdy dwa osobne dispatche** — to
+strukturalne zabezpieczenie przed powtórką incydentu tej sesji, w którym ~11 zmian
+Operatora zostało scalonych i skomitowanych bez pośredniego Evaluatora. `pipeline()`
+zastępuje ręczne sekwencjonowanie „poczekaj → scal → dopiero Evaluator": temat A może być
+u Evaluatora, gdy temat B jeszcze pracuje u Operatora.
+
+**KROK 0 (weryfikacja bazy worktree)** obowiązkowy jako pierwszy akapit każdego promptu
+`agent()` z `isolation:'worktree'` — dokładny szablon w `.mdc` wyżej; adresuje recydywę
+„worktree na złej bazie" (subagent widzi kod sprzed jakiejś funkcji i błędnie raportuje
+brak).
+
+**Adversarialna weryfikacja:** domyślnie 1 Evaluator; **3 niezależni, głosujący większością**
+dla zmian dotykających silnika bitwy, save/load, lub migracji danych kanonicznych
+(`gra/data/**`).
+
+**Zawsze poza Workflow, zawsze ręką orkiestratora:** `git commit`/`push`, wpisy do
+`PYTANIA-OTWARTE.md`/`WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`/`KANAL-PRACA.md`, cały deploy
+(hasło `deploy`, Opus 5). Workflow kończy na „kod zatwierdzony przez Evaluatora".
+
+Reguła 0b (orkiestrator nie ocenia sam siebie) obowiązuje **także** przy ręcznym scalaniu
+konfliktów (`git apply -3` z konfliktem) — to też jest zmiana zapisana do repozytorium i
+idzie do kolejki Evaluatora, „to tylko scalanie" nie zwalnia.

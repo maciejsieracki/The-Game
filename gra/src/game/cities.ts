@@ -35,7 +35,13 @@ export type OkolicaFocus = 'zrownowazone' | 'zywnosc' | 'produkcja' | 'podatki';
 /** Tryb przypisania pól: auto (AI) lub ręczna korekta 👤. */
 export type OkolicaTryb = 'auto' | 'reczny';
 
-export const DEFAULT_OKOLICA_FOCUS: OkolicaFocus = 'zrownowazone';
+/** P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC (Maciej): domyślny tryb Zarządzania polami
+ * dla nowo zakładanego miasta = Żywność (był Zrównoważone). Gracz może zmienić ręcznie
+ * po założeniu — to wyłącznie wartość startowa (per-owner global default, patrz
+ * empire-city-defaults.ts::freshOwnerDefaultOkolicaFocus + main.ts::seedCityOwnerDefaults).
+ * EN: default Field Management mode for a newly founded city = Food (was Balanced).
+ * Player can still change it manually after founding — this only changes the starting value. */
+export const DEFAULT_OKOLICA_FOCUS: OkolicaFocus = 'zywnosc';
 export const DEFAULT_OKOLICA_TRYB: OkolicaTryb = 'auto';
 
 /** Profile auto-kolejki budynków (panel Produkcja). */
@@ -595,6 +601,45 @@ export interface City {
   centerWorkedTile?: import('./economy').WorkedTile;
   /** Startowe miasto-państwo (Sparta/Kapua) — founding: min 3 hex; UI: dopisek „· miasto-państwo”. */
   startCityState?: boolean;
+  /**
+   * P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1=A (Maciej): tury do następnego DARMOWEGO spawnu
+   * jednostki barbarzyńskiej z TEGO miasta -- wyłącznie gdy `ownerId===BARBARIAN_OWNER_ID`
+   * (miasto przejęte przez barbarzyńców, temat 7 tego batcha). Odrębne od `cityProd`/kolejki
+   * Pracy CELOWO: jednostki w tej grze są KUPOWANE za Pieniądz (patrz production.ts
+   * `buildableProduction` -- "Wszystkie jednostki sa kupowane za Pieniadz... zadna nie
+   * trafia do kolejki Pracy"), a barbarzyńcy strukturalnie NIE MAJĄ skarbca (ownerTreasury
+   * zwraca 0 dla ownerId spoza {0}∪AI -- main.ts ~21132) ani Manpower/puli surowców --
+   * spięcie z istniejącym potokiem zakupu (purchaseRecruitmentUnit) wymagałoby wynalezienia
+   * gospodarki barbarzyńskiej (skąd złoto?), co jest decyzją bilansu poza zakresem tego
+   * zlecenia. Zamiast tego: darmowy, okresowy spawn jednostki WOJSKOWEJ analogiczny do
+   * istniejącego `BarbCamp.spawnCooldown`/`tickCamps` (ten sam wzorzec, main.ts wywołuje
+   * `tickBarbarianCityGarrisons` obok `tickCamps` w tym samym ticku barbarzyńców) --
+   * strukturalnie NIGDY nie produkuje budynków (funkcja zwraca WYŁĄCZNIE spawny jednostek,
+   * nie dotyka `cityProd`/kolejki Pracy w ogóle), więc wymóg "nigdy budynki" jest spełniony
+   * przez KONSTRUKCJĘ, nie przez filtr na liście kandydatów budynek/jednostka. Optional --
+   * miasta niebarbarzyńskie i stare save'y = brak pola = brak efektu (identyczne zachowanie
+   * sprzed tej rundy); zwykłe pole liczbowe na `City`, przechodzi save/load round-trip tak
+   * samo jak `postCaptureLawTurnsRemaining` wyżej (żadna specjalna obsługa w save.ts).
+   * / EN: turns until this city's next FREE barbarian unit spawn -- ONLY meaningful when
+   * `ownerId===BARBARIAN_OWNER_ID` (a city captured by barbarians, topic 7 of this batch).
+   * Deliberately separate from `cityProd`/the Praca queue: units in this game are PURCHASED
+   * with treasury gold (see production.ts `buildableProduction` -- "all units are bought
+   * with money... none ever enters the Praca queue"), and barbarians structurally have NO
+   * treasury (ownerTreasury returns 0 for any ownerId outside {0}∪AI -- main.ts ~21132), no
+   * Manpower, no resource pool -- wiring into the existing purchase pipeline
+   * (purchaseRecruitmentUnit) would require inventing a barbarian economy (where would the
+   * gold come from?), a balance decision out of scope for this task. Instead: a free,
+   * periodic spawn of a MILITARY unit, modeled on the existing `BarbCamp.spawnCooldown`/
+   * `tickCamps` (same pattern -- main.ts calls `tickBarbarianCityGarrisons` alongside
+   * `tickCamps` in the same barbarian tick) -- structurally NEVER produces buildings (the
+   * function returns ONLY unit spawns, never touches `cityProd`/the Praca queue at all), so
+   * the "units only, never buildings" requirement is met BY CONSTRUCTION, not by filtering a
+   * building/unit candidate list. Optional -- non-barbarian cities and legacy saves = field
+   * absent = no effect (identical to pre-this-round behaviour); a plain numeric `City`
+   * field, round-trips through save/load exactly like `postCaptureLawTurnsRemaining` above
+   * (no special handling in save.ts).
+   */
+  barbGarrisonSpawnCooldown?: number;
 }
 
 export const MIN_CITY_DISTANCE = (miastoParams.min_dystans_miast?.wartosc as number) ?? 5;

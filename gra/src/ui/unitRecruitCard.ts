@@ -33,9 +33,26 @@ function unitCategory(u: UnitDef): string {
   return categoryOf(u.Jednostka ?? '', u['Rola (linia)'] ?? '', isSuper, u['Typ']);
 }
 
-/** Podtytuł wiersza rekrutacji — tylko typ jednostki (bez statów bojowych). */
+/**
+ * Podtytuł wiersza rekrutacji — typ jednostki + epoka (bez statów bojowych).
+ * P-NAZWY-JEDNOSTEK-MYLACO-PODOBNE (Maciej, zgłoszenie #11 dyspozycje/PYTANIA-OTWARTE.md):
+ * jednostka bazowa (np. "Wojownik", Kamień) i jej kulturowy zamiennik z tym samym
+ * rdzeniem nazwy (np. "Wojownik mykeński", Brąz) mogą wystąpić w TYM SAMYM wierszu
+ * katalogu rekrutacji tej samej cywilizacji naraz — mechanizm "Zastąp specjalnie"
+ * (production.ts availableProduction) chowa bazowego "Wojownik z mieczem i tarczą",
+ * ale NIE chowa jeszcze wcześniejszej bazy "Wojownik" (Kamień), bo żaden zamiennik
+ * jej wprost nie zastępuje dla większości kultur. Epoka dopisana tu ROZRÓŻNIA je na
+ * pierwszy rzut oka bez najeżdżania myszą (szczegóły z Epoką są tylko w hover-karcie
+ * buildUnitDetailCard). Czysto prezentacyjne — nie dotyka danych w units.json.
+ * EN: base unit (e.g. "Wojownik"/Warrior, Stone era) and its culture-specific
+ * replacement sharing the same name root (e.g. "Wojownik mykeński"/Mycenaean
+ * Warrior, Bronze era) can appear in the SAME civilization's recruit list at once;
+ * appending the era here disambiguates them at a glance without hovering.
+ */
 function unitCompactMeta(u: UnitDef, cat: string): string {
-  return unitInfographicLabel(cat) || u.Jednostka || '';
+  const label = unitInfographicLabel(cat) || u.Jednostka || '';
+  const epoka = typeof u.Epoka === 'string' ? u.Epoka.trim() : '';
+  return epoka ? `${label} · ${epoka}` : label;
 }
 
 export interface UnitRecruitCardOpts {

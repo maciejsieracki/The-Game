@@ -4,9 +4,10 @@
  * Kolejność tury: suma bilansów lokalnych → nadwyżki do centrali → dopłaty miastom
  * → koszt wojska → zmiana stanu magazynu. Wzrost ludności w population-growth-v85.ts.
  */
-import type { EconomyTickResult, EconUnit, CityEconomyTick } from './turn-economy';
+import type { EconomyTickResult, EconUnit, CityEconomyTick, OwnerEraResolver } from './turn-economy';
 import { militaryFoodConsumptionWithSpichlerz, recomputeCityFoodBalancesInEcon } from './turn-economy';
 import type { UpkeepParams, UnitFoodTable } from './economy-upkeep';
+import { magazynEraMultiplier } from './economy-upkeep';
 import { isBarbarian } from './barbarians';
 import { SPICHLERZ_EMPIRE_CAP_I, SPICHLERZ_EMPIRE_CAP_II_FULL, resolveSpichlerzCityBonusState } from './building-resource-gate';
 import type { SpichlerzCityBonusState } from './building-resource-gate';
@@ -154,17 +155,29 @@ function countMagazynByOwner(
   return out;
 }
 
+/**
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): `era` skaluje WYŁĄCZNIE
+ * wkład Spichlerza (SPICHLERZ_EMPIRE_CAP_I/II, magazynEraMultiplier -- ×2/epokę
+ * CYWILIZACJI WŁAŚCICIELA) -- `centralCapBaza`/`centralCapBonusMagazyn`
+ * (magazyn_centralny_baza_zywnosc / magazyn_centralny_bonus_zywnosc_na_budynek)
+ * NIE są objęte tym zadaniem, zostają FLAT bez zmian (poza zakresem
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 -- właściciel wskazał wyłącznie magazyn_baza_surowce
+ * / magazyn_bonus_surowce_na_budynek / Spichlerz I/II). Domyślne era=1 -> mnożnik
+ * ×1, zachowanie identyczne jak przed ta zmiana.
+ */
 function computeCentralFoodCap(
   ownerId: number,
   perCity: EconomyTickResult['perCity'],
   magazynCount: number,
   params: EmpireFoodParams,
+  era: number = 1,
 ): number {
+  const spichlerzMult = magazynEraMultiplier(era);
   let spichlerzCap = 0;
   for (const tick of perCity) {
     if (tick.ownerId !== ownerId || tick.oblegany) continue;
-    if (tick.maSpichlerzII) spichlerzCap += SPICHLERZ_EMPIRE_CAP_II_FULL;
-    else if (tick.maSpichlerz) spichlerzCap += SPICHLERZ_EMPIRE_CAP_I;
+    if (tick.maSpichlerzII) spichlerzCap += SPICHLERZ_EMPIRE_CAP_II_FULL * spichlerzMult;
+    else if (tick.maSpichlerz) spichlerzCap += SPICHLERZ_EMPIRE_CAP_I * spichlerzMult;
   }
   return params.centralCapBaza
     + params.centralCapBonusMagazyn * magazynCount
@@ -179,6 +192,15 @@ export function advanceEmpireFood(
   params: EmpireFoodParams,
   foodTable: UnitFoodTable = {},
   builtByCity?: ReadonlyMap<string, readonly string[]>,
+  /**
+   * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka CYWILIZACJI
+   * WŁAŚCICIELA dla skalowania wkładu Spichlerza do centralnego capu żywności
+   * (computeCentralFoodCap). OPCJONALNY, na końcu -- zachowuje wsteczna
+   * kompatybilność z istniejącymi wywołaniami testowymi (era=1, mnożnik ×1,
+   * identyczne zachowanie jak przed ta zmianą). PARYTET AI: ta sama funkcja
+   * (main.ts::empireEpochForOwner) dla gracza (ownerId=0) i AI, zero gałęzi.
+   */
+  resolveOwnerEra?: OwnerEraResolver,
 ): EmpireFoodTickResult {
   const magazynCountByOwner = countMagazynByOwner(econ.perCity, builtByCity);
   const perOwner: EmpireFoodTick[] = [];
@@ -247,8 +269,9 @@ export function advanceEmpireFood(
     const kosztArmii = militaryFoodConsumptionWithSpichlerz(units, ownerId, upkeep, foodTable);
     central -= kosztArmii;
 
+    const ownerEra = resolveOwnerEra ? resolveOwnerEra(ownerId) : 1;
     const maxCap = computeCentralFoodCap(
-      ownerId, econ.perCity, magazynCountByOwner.get(ownerId) ?? 0, params,
+      ownerId, econ.perCity, magazynCountByOwner.get(ownerId) ?? 0, params, ownerEra,
     );
     if (central > maxCap) central = maxCap;
     const glodWojska = central < 0;
