@@ -1,0 +1,275 @@
+'use strict';
+/**
+ * porzadek-panel-czytelnosc-test.cjs — P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12).
+ *
+ * Run from gra/:  node tools/porzadek-panel-czytelnosc-test.cjs
+ *
+ * Panel "Porządek" per miasto (Szczęście / Zaopatrzenie obywateli / Prawo / Porządek łącznie,
+ * `gra/src/ui/cityPanel.ts`) pokazywał każdy pasek jako jeden zbity ciąg tekstu oddzielony
+ * `" · "` (np. "Budynki (+1/budynek): +35 · Kultura: +4 · Religia: +4"), a blok "Zaopatrzenie
+ * obywateli" pokazywał stawkę per capita (zawsze ±1) zamiast łącznego zużycia miasta. Właściciel:
+ * "za bardzo nadziubdziane i nieczytelne", chce KAŻDY składnik w osobnej linii + realną łączną
+ * wartość zużycia (populacja miasta × stawka) + widoczne rozbicie % wkładu Szczęścia/Prawa do
+ * Porządku łącznie.
+ *
+ * Pokrywa:
+ *   A. citizenUpkeepDisplayLines (citizen-resource-upkeep.ts) — łączne zużycie miasta
+ *      (Math.floor(populacja × CITIZEN_UPKEEP_RATE_PER_CITIZEN)), NIE stawka per capita.
+ *   B. orderContributionPct (society-breakdown.ts) — % wkładu Szczęścia/Prawa do PorPct,
+ *      zawsze sumujące się do 100.
+ *   C-H. cityPanel.ts jako TEKST (wzorem spichlerz-cap-citypanel-wiring-test.cjs /
+ *      citizen-resource-upkeep-test.cjs sekcja J — plik nie bundluje się samodzielnie, więc
+ *      okna źródła + regex/indexOf zamiast pełnego wykonania): format blokowy (nie
+ *      `.join(' · ')`), wiring populacji miasta do bloku Zaopatrzenia, wiring % wkładu do stanu
+ *      i do renderowania Porządku łącznie, oraz że `resolveOrderState` NIE gubi tych pól w
+ *      gałęzi "werdykt silnika" (fromEngine=true).
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+const esbuild = (() => {
+  const apiPath = path.resolve(__dirname, '..', 'node_modules', 'esbuild');
+  try { return require(apiPath); }
+  catch (e) { console.error('[porzadek-panel-czytelnosc-test] esbuild not found. Run: npm install (from gra/)'); process.exit(1); }
+})();
+
+const GRA = path.resolve(__dirname, '..');
+const ENTRY_FILE = path.resolve(__dirname, '.porzadek-panel-czytelnosc-entry.ts');
+const BUNDLE_FILE = path.resolve(__dirname, '.porzadek-panel-czytelnosc-bundle.cjs');
+
+fs.writeFileSync(ENTRY_FILE, `
+export {
+  citizenUpkeepDisplayLines,
+  CITIZEN_UPKEEP_RATE_PER_CITIZEN,
+} from '../src/game/citizen-resource-upkeep';
+export { orderContributionPct, computePorPct } from '../src/game/society-breakdown';
+`, 'utf8');
+
+try {
+  esbuild.buildSync({
+    entryPoints: [ENTRY_FILE],
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    target: 'node18',
+    loader: { '.ts': 'ts', '.json': 'json' },
+    outfile: BUNDLE_FILE,
+    absWorkingDir: GRA,
+    logLevel: 'silent',
+  });
+} catch (e) {
+  console.error('[porzadek-panel-czytelnosc-test] esbuild bundling failed:\n', e.message || e);
+  process.exit(1);
+}
+
+const M = require(BUNDLE_FILE);
+
+let passed = 0, failed = 0;
+function assert(cond, msg) { if (cond) { passed++; } else { failed++; console.error('FAIL:', msg); } }
+function eq(a, b, msg) { assert(a === b, `${msg} (got ${JSON.stringify(a)}, want ${JSON.stringify(b)})`); }
+function deepEq(a, b, msg) {
+  const sa = JSON.stringify(a);
+  const sb = JSON.stringify(b);
+  assert(sa === sb, `${msg} (got ${sa}, want ${sb})`);
+}
+
+// ===========================================================================
+// A. citizenUpkeepDisplayLines — łączna wartość dla MIASTA, nie per capita
+// ===========================================================================
+console.log('\n-- A. citizenUpkeepDisplayLines -- łączne zużycie miasta (populacja × stawka) --');
+{
+  eq(M.CITIZEN_UPKEEP_RATE_PER_CITIZEN, 0.2, 'kanon: stawka = 0,2 sztuki surowca / obywatela / turę (ta sama co computeCitizenResourceDrain, Maciej 2026-08-12)');
+
+  const cov = { available: ['drewno', 'glina'], missing: ['kamien'] };
+
+  // Math.floor(20 * 0.2) = 4 -- wybrane tak, by dawało niezerowy, łatwy do ręcznej weryfikacji wynik.
+  const pop20 = M.citizenUpkeepDisplayLines(cov, 20);
+  deepEq(
+    pop20,
+    [
+      { key: 'drewno', value: 4, available: true },
+      { key: 'glina', value: 4, available: true },
+      { key: 'kamien', value: -4, available: false },
+    ],
+    'populacja=20: wartość = ±Math.floor(populacja × 0,2) = ±4 dla KAŻDEGO surowca, kolejność dostępne->brakujące',
+  );
+
+  // Math.floor(35 * 0.2) = 7 -- inna populacja, żeby dowieść skalowania (nie stała).
+  const pop35 = M.citizenUpkeepDisplayLines(cov, 35);
+  eq(pop35[0].value, 7, 'populacja=35: wartość dostępnego surowca = 7, NIE stały +1 (regresja do stawki per capita)');
+  eq(pop35[2].value, -7, 'populacja=35: wartość brakującego surowca = -7, NIE stały -1');
+  assert(pop35[0].value !== pop20[0].value, 'wartość SKALUJE SIĘ z populacją miasta (7 ≠ 4) -- dowód że to nie jest stała kary Szczęścia');
+
+  // Math.floor(1 * 0.2) = 0 -- przy tak niskiej stawce mała populacja daje zero (zamierzone, patrz
+  // JSDoc modułu citizen-resource-upkeep.ts, ta sama granulacja co computeCitizenResourceDrain).
+  const pop1 = M.citizenUpkeepDisplayLines(cov, 1);
+  eq(pop1[0].value, 0, 'populacja=1: Math.floor(1*0,2)=0 -- przy stawce 0,2 mała populacja daje zero zapotrzebowania (zamierzone, nie luka granulacji)');
+
+  const pop0 = M.citizenUpkeepDisplayLines(cov, 0);
+  eq(pop0[0].value, 0, 'populacja=0: zero zapotrzebowania -> wartość 0 (nie crash, nie stała ±1)');
+  eq(pop0[2].value, 0, 'populacja=0: brakujący surowiec też 0 (bez fałszywego -1)');
+
+  const popNeg = M.citizenUpkeepDisplayLines(cov, -5);
+  eq(popNeg[0].value, 0, 'populacja ujemna (dane śmieciowe) traktowana jak 0 -- zero regresji/crashu, wzorem computeCitizenResourceDrain');
+  const popNaN = M.citizenUpkeepDisplayLines(cov, NaN);
+  eq(popNaN[0].value, 0, 'populacja NaN traktowana jak 0');
+
+  // Math.floor(34.9) = 34 (obcięcie populacji), potem Math.floor(34 * 0.2) = 6.
+  const popFrac = M.citizenUpkeepDisplayLines(cov, 34.9);
+  eq(popFrac[0].value, 6, 'populacja ułamkowa ścinana w dół (Math.floor) PRZED przemnożeniem przez stawkę, spójnie z computeCitizenResourceDrain');
+
+  eq(M.citizenUpkeepDisplayLines({ available: [], missing: [] }, 10).length, 0, 'brak wymaganych surowców -> pusta lista wierszy');
+}
+
+// ===========================================================================
+// B. orderContributionPct — % wkładu Szczęścia/Prawa do Porządku łącznie
+// ===========================================================================
+console.log('\n-- B. orderContributionPct -- % wkładu Szczęścia/Prawa (sumuje się do 100) --');
+{
+  // Wagi równe (0.5/0.5), SzPct=80 > PrawPct=20 -> Szczęście "ciągnie" wynik mocniej -> wkład > 50%.
+  const a = M.orderContributionPct(80, 20, 0.5, 0.5);
+  eq(a.szWkladPct, 80, 'wagi równe, SzPct=80/PrawPct=20 -> wkład Szczęścia = udział wartości ważonej = 80%');
+  eq(a.prawWkladPct, 20, 'dopełnienie do 100: wkład Prawa = 20%');
+  eq(a.szWkladPct + a.prawWkladPct, 100, 'oba wkłady sumują się do dokładnie 100');
+
+  // Wartości równe (50/50), wagi nierówne (0.7/0.3) -> wkład = same wagi.
+  const b = M.orderContributionPct(50, 50, 0.7, 0.3);
+  eq(b.szWkladPct, 70, 'SzPct=PrawPct=50, wagi 0.7/0.3 -> wkład Szczęścia = 70% (proporcjonalny do wagi przy równych wartościach)');
+  eq(b.prawWkladPct, 30, 'wkład Prawa = 30%');
+
+  // Symetria: zamiana Sz<->Prawo odwraca wkłady.
+  const c1 = M.orderContributionPct(90, 30, 0.5, 0.5);
+  const c2 = M.orderContributionPct(30, 90, 0.5, 0.5);
+  eq(c1.szWkladPct, c2.prawWkladPct, 'symetria: wkład Sz przy (90,30) = wkład Prawa przy (30,90) (te same wagi)');
+
+  // Fallback: oba paski na zero (brak sygnału z wartości) -> podział wg samych wag, nie /0.
+  const zero = M.orderContributionPct(0, 0, 0.5, 0.5);
+  eq(zero.szWkladPct, 50, 'oba paski = 0 -> fallback do podziału wg wag (0.5/0.5 -> 50/50), brak dzielenia przez zero / NaN');
+  eq(zero.prawWkladPct, 50, 'fallback symetryczny dla Prawa');
+  assert(Number.isFinite(zero.szWkladPct) && Number.isFinite(zero.prawWkladPct), 'fallback zero/zero nie daje NaN/Infinity');
+
+  const zeroUnequalW = M.orderContributionPct(0, 0, 0.8, 0.2);
+  eq(zeroUnequalW.szWkladPct, 80, 'fallback zero/zero z NIERÓWNYMI wagami -> podział wg wag (80/20), nie sztywne 50/50');
+
+  // Spójność z computePorPct: wkład * wynikowy porPct powinien odtworzyć ważoną sumę (przy braku clampu).
+  const szPct = 64, prawPct = 40, wSz = 0.6, wPraw = 0.4;
+  const porPct = M.computePorPct(szPct, prawPct, { wagaSzczescie: wSz, wagaPrawo: wPraw });
+  const wklad = M.orderContributionPct(szPct, prawPct, wSz, wPraw);
+  const reconstructed = (wklad.szWkladPct / 100) * porPct + (wklad.prawWkladPct / 100) * porPct;
+  assert(Math.abs(reconstructed - porPct) < 0.6, `wkład% zastosowany do porPct odtwarza porPct w granicach zaokrągleń (got ${reconstructed.toFixed(2)}, porPct=${porPct})`);
+
+  // Property: dla wielu losowych-ale-deterministycznych kombinacji, wkłady zawsze sumują się do 100.
+  const combos = [
+    [10, 90, 0.5, 0.5], [100, 0, 0.3, 0.7], [0, 100, 0.9, 0.1],
+    [55, 45, 0.5, 0.5], [1, 1, 0.5, 0.5], [120, 0, 0.5, 0.5],
+  ];
+  for (const [sz, praw, ws, wp] of combos) {
+    const r = M.orderContributionPct(sz, praw, ws, wp);
+    eq(r.szWkladPct + r.prawWkladPct, 100, `property: suma wkładów = 100 dla (szPct=${sz}, prawPct=${praw}, wagaSz=${ws}, wagaPraw=${wp})`);
+  }
+}
+
+// ===========================================================================
+// C-H. cityPanel.ts jako TEKST -- format blokowy (nie inline join) + wiring
+// (wzorem citizen-resource-upkeep-test.cjs sekcja J / spichlerz-cap-citypanel-wiring-test.cjs
+// -- plik nie bundluje się samodzielnie, patrz JSDoc modułu)
+// ===========================================================================
+console.log('\n-- C-H. cityPanel.ts (tekst): format blokowy + wiring populacji/% wkładu --');
+{
+  const CITY_PANEL_TS = path.join(GRA, 'src', 'ui', 'cityPanel.ts');
+  const src = fs.readFileSync(CITY_PANEL_TS, 'utf8');
+
+  function windowBetween(startMarker, endMarker, fromIdx = 0) {
+    const s = src.indexOf(startMarker, fromIdx);
+    if (s < 0) return { start: -1, end: -1, body: '' };
+    const e = src.indexOf(endMarker, s + startMarker.length);
+    if (e < 0) return { start: s, end: -1, body: '' };
+    return { start: s, end: e, body: src.slice(s, e) };
+  }
+
+  // -------------------------------------------------------------------------
+  // C. formatW4InlineBreakdown (dawny join(' · ')) całkowicie usunięty z pliku.
+  // -------------------------------------------------------------------------
+  // Sprawdzamy KSZTAŁT deklaracji/wywołania, nie goły string -- JSDoc komentarze w kodzie mogą
+  // legalnie WSPOMINAĆ starą nazwę jako historyczny kontekst naprawy, to nie jest regresja.
+  assert(!src.includes('function formatW4InlineBreakdown('), 'C1: cityPanel.ts NIE zawiera już DEKLARACJI formatW4InlineBreakdown (martwa funkcja usunięta, nie tylko odpięta)');
+  assert(!/[^.\w]formatW4InlineBreakdown\(/.test(src), 'C2: cityPanel.ts NIE zawiera już żadnego WYWOŁANIA formatW4InlineBreakdown(...)');
+
+  // -------------------------------------------------------------------------
+  // D. appendW4PctMetricBlock -- rozpiska renderuje się BLOKOWO (appendBreakdownLines), nie
+  //    przez .join(' · ') w tej funkcji. Ta jedna funkcja obsługuje WSZYSTKIE trzy paski
+  //    (Szczęście / Prawo / Porządek łącznie) + blok Zaopatrzenia obywateli -- naprawa w NIEJ
+  //    naprawia wszystkie cztery na raz.
+  // -------------------------------------------------------------------------
+  const w4 = windowBetween('function appendW4PctMetricBlock(', '\nfunction ');
+  assert(w4.start > -1, 'D0: znaleziono function appendW4PctMetricBlock(...) w cityPanel.ts');
+  assert(w4.end > w4.start, 'D0b: znaleziono koniec appendW4PctMetricBlock (kolejna top-level function)');
+  assert(w4.body.includes('appendBreakdownLines(block, lines, emptyHint)'), 'D1: appendW4PctMetricBlock renderuje rozpiskę przez appendBreakdownLines (jeden div/linia na składnik) -- ten sam wzorzec co blok "Zdrowie miasta"');
+  assert(!w4.body.includes(".join(' · ')"), "D2 (zabija regresję do inline): appendW4PctMetricBlock NIE zawiera .join(' · ') -- brak zbitego ciągu tekstu");
+  assert(!w4.body.includes('civ-w4-inline-breakdown'), 'D3: appendW4PctMetricBlock NIE używa już kontenera civ-w4-inline-breakdown (stary, jednoliniowy kontener)');
+
+  // -------------------------------------------------------------------------
+  // E. appendCitizenUpkeepBlock -- przyjmuje cityPopulation i buduje wiersze przez
+  //    citizenUpkeepDisplayLines (łączna wartość miasta), NIE przez stare stałe ±1.
+  // -------------------------------------------------------------------------
+  const cub = windowBetween('function appendCitizenUpkeepBlock(', '\nfunction ');
+  assert(cub.start > -1, 'E0: znaleziono function appendCitizenUpkeepBlock(...) w cityPanel.ts');
+  assert(/function appendCitizenUpkeepBlock\([^)]*cityPopulation: number[^)]*\): void \{/.test(src.slice(cub.start, cub.start + 200)), 'E1: appendCitizenUpkeepBlock przyjmuje parametr cityPopulation: number');
+  assert(cub.body.includes('citizenUpkeepDisplayLines(upkeep, cityPopulation)'), 'E2: appendCitizenUpkeepBlock woła citizenUpkeepDisplayLines(upkeep, cityPopulation) -- łączna wartość dla TEGO miasta');
+  assert(!cub.body.includes('CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE') && !cub.body.includes('CITIZEN_UPKEEP_HAPPINESS_PER_MISSING'), 'E3 (zabija regresję do per-capita): appendCitizenUpkeepBlock NIE używa już stałych kary Szczęścia (±1) jako wyświetlanej ilości surowca');
+
+  // -------------------------------------------------------------------------
+  // F. renderSpoleczenstwo -- wywołanie appendCitizenUpkeepBlock PRZEKAZUJE city.population
+  //    (dowód wiringu na realnym call-site, nie tylko że parametr istnieje w sygnaturze).
+  // -------------------------------------------------------------------------
+  const rs = windowBetween(
+    'function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): void {',
+    '\nfunction ',
+  );
+  assert(rs.start > -1, 'F0: znaleziono function renderSpoleczenstwo(...) w cityPanel.ts');
+  assert(rs.body.includes('appendCitizenUpkeepBlock(mount, state.citizenUpkeep, city.population)'), 'F1: renderSpoleczenstwo woła appendCitizenUpkeepBlock(mount, state.citizenUpkeep, city.population) -- populacja TEGO miasta, nie imperium');
+
+  // -------------------------------------------------------------------------
+  // G. renderSpoleczenstwo -- blok "Porządek łącznie" pokazuje % wkładu Szczęścia i Prawa,
+  //    KAŻDY w osobnej linii (dwa oddzielne elementy), nie złączone przez " · ".
+  // -------------------------------------------------------------------------
+  assert(rs.body.includes('state.szWkladPct'), 'G1: renderSpoleczenstwo czyta state.szWkladPct (rozbicie % wkładu Szczęścia)');
+  assert(rs.body.includes('state.prawWkladPct'), 'G2: renderSpoleczenstwo czyta state.prawWkladPct (rozbicie % wkładu Prawa)');
+  const szRowMatch = /szRow\.textContent = `Szczęście: \$\{Math\.round\(state\.szWkladPct\)\}% wkładu`/.test(rs.body);
+  const prawRowMatch = /prawRow\.textContent = `Prawo: \$\{Math\.round\(state\.prawWkladPct\)\}% wkładu`/.test(rs.body);
+  assert(szRowMatch, 'G3: wiersz Szczęścia renderowany jako osobny element (szRow.textContent), format "Szczęście: N% wkładu"');
+  assert(prawRowMatch, 'G4: wiersz Prawa renderowany jako osobny element (prawRow.textContent), format "Prawo: N% wkładu"');
+  assert(rs.body.includes('wkladBox.appendChild(szRow)') && rs.body.includes('wkladBox.appendChild(prawRow)'), 'G5: oba wiersze dołączone jako OSOBNE dzieci DOM (appendChild ×2) -- blokowo, nie jeden string złączony');
+  assert(!/wkładu[^`"]*·[^`"]*wkładu/.test(rs.body), "G6 (zabija regresję do inline): brak wzorca łączącego OBA wkłady jednym ciągiem przez '·' w tym samym literale");
+
+  // -------------------------------------------------------------------------
+  // H. computeOrderStateLocal -- liczy orderContributionPct i zapisuje wynik do stanu (nie tylko
+  //    liczy i odrzuca). resolveOrderState -- gałąź "werdykt silnika" (fromEngine=true) NIE gubi
+  //    tych pól (ten sam wzorzec co dla porPct/prawPct, patrz komentarz w pliku o dokładnie tej
+  //    klasie regresji: nadpisanie tylko części pól przy scaleniu z `live`).
+  // -------------------------------------------------------------------------
+  const cos = windowBetween(
+    'function computeOrderStateLocal(city: City, data: GameData): { state: OrderState; fromEngine: boolean } {',
+    '\nfunction ',
+  );
+  assert(cos.start > -1, 'H0: znaleziono function computeOrderStateLocal(...) w cityPanel.ts');
+  assert(cos.body.includes('orderContributionPct(ordPct.sz.szPct, ordPct.prawo.prawPct, ordPct.wagaSz, ordPct.wagaPraw)'), 'H1: computeOrderStateLocal woła orderContributionPct z DOKŁADNIE tych samych sz/prawPct i wag, co reszta stanu (spójność z paskami wyżej)');
+  assert(/szWkladPct:\s*wklad\.szWkladPct/.test(cos.body), 'H2: computeOrderStateLocal zapisuje szWkladPct do zwracanego stanu');
+  assert(/prawWkladPct:\s*wklad\.prawWkladPct/.test(cos.body), 'H3: computeOrderStateLocal zapisuje prawWkladPct do zwracanego stanu');
+
+  const ros = windowBetween(
+    'function resolveOrderState(city: City, data: GameData): { state: OrderState; fromEngine: boolean } {',
+    '\nfunction ',
+  );
+  assert(ros.start > -1, 'H4: znaleziono function resolveOrderState(...) w cityPanel.ts');
+  assert(
+    /szWkladPct:\s*computed\.state\.szWkladPct/.test(ros.body) && /prawWkladPct:\s*computed\.state\.prawWkladPct/.test(ros.body),
+    'H5 (zabija regresję "gałąź silnika gubi % wkładu"): resolveOrderState w gałęzi live (fromEngine=true) jawnie przenosi szWkladPct/prawWkladPct z computed.state -- inaczej `...live` nadpisałby je na undefined, bo silnik (main.ts) tych pól nie liczy',
+  );
+}
+
+console.log(`\nporzadek-panel-czytelnosc-test: ${passed} passed, ${failed} failed`);
+try { fs.unlinkSync(ENTRY_FILE); } catch (e) { /* noop */ }
+try { fs.unlinkSync(BUNDLE_FILE); } catch (e) { /* noop */ }
+process.exit(failed > 0 ? 1 : 0);

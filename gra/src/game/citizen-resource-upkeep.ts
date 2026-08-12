@@ -118,10 +118,13 @@ export const CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING = TABLE._kara?.rozwojPctZaBra
  * `dyspozycje/PYTANIA-OTWARTE.md`). Wcześniej **1,0** (Maciej 2026-08-11) — zmniejszona **5×**
  * po zgłoszeniu, że kombinacja starej stawki z do 5 wymaganymi surowcami w epoce Żelaza była
  * "bardzo ciężka do zaspokojenia". Użycie: patrz `computeCitizenResourceDrain()` niżej (JSDoc
- * modułu ma pełne uzasadnienie zaokrąglenia `Math.floor(population × ta_stawka)`).
+ * modułu ma pełne uzasadnienie zaokrąglenia `Math.floor(population × ta_stawka)`) oraz
+ * `citizenUpkeepDisplayLines()` (panel UI — ta sama stawka, ten sam Math.floor, żeby liczba
+ * wyświetlana graczowi zawsze zgadzała się z realnym drenażem silnika).
  * / EN: consumption rate — units of resource per 1 citizen per turn, per resource required by
  * the era. Was 1.0, reduced 5× after feedback that the old rate combined with up to 5 required
- * resources in the Iron era was too harsh to satisfy.
+ * resources in the Iron era was too harsh to satisfy. Also used by `citizenUpkeepDisplayLines()`
+ * (UI panel) so the displayed number always matches the real engine drain.
  */
 export const CITIZEN_UPKEEP_RATE_PER_CITIZEN = 0.2;
 
@@ -254,4 +257,45 @@ export function computeCitizenResourceDrain(
     + missing.length * CITIZEN_UPKEEP_HAPPINESS_PER_MISSING;
   const growthPctDelta = missing.length * CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING;
   return { required, available, missing, happinessDelta, growthPctDelta, deductions };
+}
+
+/** Jeden wiersz do wyświetlenia w panelu miasta — jeden surowiec, łączna ilość dla TEGO miasta. */
+export interface CitizenUpkeepDisplayLine {
+  /** Klucz surowca (np. „drewno") — etykieta czytelna dla gracza dobierana przez UI. */
+  key: string;
+  /**
+   * Łączne zużycie tego surowca przez WSZYSTKICH obywateli TEGO miasta na turę
+   * (`Math.floor(cityPopulation × CITIZEN_UPKEEP_RATE_PER_CITIZEN)`), NIE stawka per capita. Znak koduje
+   * WYŁĄCZNIE kolor UI (dodatni = pokryty w pełni, ujemny = niedobór) — wartość bezwzględna to
+   * zawsze łączne zapotrzebowanie tego miasta, niezależnie od statusu pokrycia.
+   */
+  value: number;
+  /** Pokrycie wg werdyktu silnika (`coverage.available`/`coverage.missing`) — bez zmian, tylko liczba obok jest przeliczona dla tego miasta. */
+  available: boolean;
+}
+
+/**
+ * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): buduje wiersze do bloku
+ * „Zaopatrzenie obywateli" w panelu miasta — dla KAŻDEGO surowca z `coverage.required` łączną
+ * ilość zużywaną przez obywateli PRZEKAZANEGO miasta (`cityPopulation × stawka`), nie stawkę
+ * per capita (poprzedni błąd: panel pokazywał zawsze ±1, czyli samą stawkę kary Szczęścia, nie
+ * ilość surowca). `coverage` może być liczone dla innej populacji (np. całego imperium ownera —
+ * patrz JSDoc modułu) — to WERDYKT SILNIKA używany WYŁĄCZNIE do statusu available/missing
+ * (kolor), sama WIELKOŚĆ liczby jest tu przeliczana lokalnie dla `cityPopulation`. Kolejność
+ * wierszy: dostępne (w kolejności `coverage.available`), potem brakujące (w kolejności
+ * `coverage.missing`) — identycznie jak dotychczasowe grupowanie w panelu (dostępne na górze).
+ * Pure — bez DOM, bez mutacji wejść.
+ */
+export function citizenUpkeepDisplayLines(
+  coverage: Pick<CitizenUpkeepCoverage, 'available' | 'missing'>,
+  cityPopulation: number,
+): CitizenUpkeepDisplayLine[] {
+  const pop = Number.isFinite(cityPopulation) && cityPopulation > 0 ? Math.floor(cityPopulation) : 0;
+  // Math.floor: sztuki całkowite, ta sama zasada co computeCitizenResourceDrain() powyżej --
+  // liczba wyświetlana graczowi musi się zgadzać z realnym drenażem silnika.
+  const qty = Math.floor(pop * CITIZEN_UPKEEP_RATE_PER_CITIZEN);
+  return [
+    ...coverage.available.map((key) => ({ key, value: qty, available: true })),
+    ...coverage.missing.map((key) => ({ key, value: -qty, available: false })),
+  ];
 }

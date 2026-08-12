@@ -597,6 +597,44 @@ export function computePorPct(
   return clampPct(wS * szPct + wP * prawPct, SZ_PCT_CAP);
 }
 
+/** Rozbicie procentowego WKŁADU Szczęścia i Prawa do finalnego wyniku Porządku łącznie. */
+export interface OrderContributionPct {
+  /** % wkładu Szczęścia w wynik Porządku łącznie tej tury (0–100). */
+  szWkladPct: number;
+  /** % wkładu Prawa — zawsze `100 - szWkladPct` (oba razem = 100%). */
+  prawWkladPct: number;
+}
+
+/**
+ * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): Porządek łącznie to średnia ważona
+ * `PorPct ≈ wagaSz×szPct + wagaPraw×prawPct` (`computePorPct`) — wkład KAŻDEGO paska to udział
+ * jego WAŻONEJ wartości tej tury w sumie ważonej (nie sama waga `wagaSz`/`wagaPraw`, bo ta jest
+ * stała niezależnie od tego, jak wysoki jest akurat SzPct/PrawPct — np. przy równych wagach
+ * 50/50, ale SzPct=80 i PrawPct=20, Szczęście realnie „ciągnie” wynik mocniej niż Prawo, więc
+ * jego wkład > 50%). Gdy oba ważone składniki wynoszą 0 (oba paski na zero — nie ma z czego
+ * policzyć proporcji wartości), spada na podział wg samych wag jako sensowny fallback zamiast
+ * dzielenia przez zero. Pure — bez DOM, zaokrąglenie do liczb całkowitych sumujących się do 100.
+ */
+export function orderContributionPct(
+  szPct: number,
+  prawPct: number,
+  wagaSz: number,
+  wagaPraw: number,
+): OrderContributionPct {
+  const wSzSafe = Number.isFinite(wagaSz) ? wagaSz : 0;
+  const wPrawSafe = Number.isFinite(wagaPraw) ? wagaPraw : 0;
+  const weightedSz = (Number.isFinite(szPct) ? szPct : 0) * wSzSafe;
+  const weightedPraw = (Number.isFinite(prawPct) ? prawPct : 0) * wPrawSafe;
+  const total = weightedSz + weightedPraw;
+  if (total > 0) {
+    const szWkladPct = Math.round((weightedSz / total) * 100);
+    return { szWkladPct, prawWkladPct: 100 - szWkladPct };
+  }
+  const wSum = wSzSafe + wPrawSafe;
+  const szWkladPct = wSum > 0 ? Math.round((wSzSafe / wSum) * 100) : 50;
+  return { szWkladPct, prawWkladPct: 100 - szWkladPct };
+}
+
 export function computeOrderPctBreakdown(
   sz: HappinessPctBreakdown,
   prawo: LawPctBreakdown,

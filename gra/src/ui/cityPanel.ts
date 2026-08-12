@@ -202,11 +202,11 @@ import {
   evaluateOrderFromBreakdown,
   porPctBand,
   POR_BAND_LABELS,
+  orderContributionPct,
 } from '../game/society-breakdown';
 import {
   computeCitizenResourceDrain,
-  CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
-  CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+  citizenUpkeepDisplayLines,
   type CitizenUpkeepCoverage,
 } from '../game/citizen-resource-upkeep';
 import {
@@ -2861,6 +2861,10 @@ function resolveOrderState(city: City, data: GameData): { state: OrderState; fro
         porPct: computed.state.porPct,
         bandLabel: computed.state.bandLabel,
         porzadek: computed.state.porzadek,
+        // % wkładu liczone z TYCH SAMYCH sz/prawPct co porPct wyżej — musi iść razem z nim
+        // (computed), inaczej wkład%×2 nie sumowałby się do 100 względem wyświetlanego porPct.
+        szWkladPct: computed.state.szWkladPct,
+        prawWkladPct: computed.state.prawWkladPct,
       },
       fromEngine: true,
     };
@@ -2970,6 +2974,10 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
 
   const grace = city.revoltGraceRemaining;
   const revoltWarning = !isPostCaptureLawActive(city) && grace != null && grace > 0;
+  // P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): % wkładu Szczęścia/Prawa do
+  // PorPct — liczone z DOKŁADNIE tych samych sz/prawPct i wag, które trafiają do stanu poniżej
+  // (spójne z tym, co panel faktycznie pokazuje na dwóch paskach nad wynikiem łącznym).
+  const wklad = orderContributionPct(ordPct.sz.szPct, ordPct.prawo.prawPct, ordPct.wagaSz, ordPct.wagaPraw);
 
   return {
     state: {
@@ -2981,6 +2989,8 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       bandLabel: ordPct.bandLabel,
       szLines: ordPct.sz.lines,
       prawLines: ordPct.prawo.lines,
+      szWkladPct: wklad.szWkladPct,
+      prawWkladPct: wklad.prawWkladPct,
       progT1: op.progT1,
       progT2: op.progT2,
       revoltGraceRemaining: grace ?? undefined,
@@ -3054,7 +3064,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     state.szLines,
     'Brak składników wpływających na szczęście.',
   );
-  appendCitizenUpkeepBlock(mount, state.citizenUpkeep);
+  appendCitizenUpkeepBlock(mount, state.citizenUpkeep, city.population);
   appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('tb-army', 'Prawo'),
@@ -3072,6 +3082,19 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     undefined,
     '',
     (porBlock) => {
+      // P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): widoczny podział % wkładu
+      // Szczęścia i Prawa do wyniku Porządku łącznie tej tury — jedna linia na składnik
+      // (nie inline `" · "`), zgodnie z tą samą regułą formatu co pozostałe paski wyżej.
+      if (state.szWkladPct != null && state.prawWkladPct != null) {
+        const wkladBox = el('div', 'or-lines civ-w4-wklad');
+        const szRow = el('div');
+        szRow.textContent = `Szczęście: ${Math.round(state.szWkladPct)}% wkładu`;
+        const prawRow = el('div');
+        prawRow.textContent = `Prawo: ${Math.round(state.prawWkladPct)}% wkładu`;
+        wkladBox.appendChild(szRow);
+        wkladBox.appendChild(prawRow);
+        porBlock.appendChild(wkladBox);
+      }
       if (state.revoltWarning && state.revoltGraceRemaining != null) {
         const st = el('div', 'civ-w4-order-banner crit');
         st.innerHTML = `${cityPanelChipIconWrap('chip-warning', 16)}<span>Grozi bunt · ${state.revoltGraceRemaining} tur</span>`;
@@ -4139,35 +4162,23 @@ function appendW4SignedBreakdownSections(
   mount.appendChild(block);
 }
 
-function formatW4InlineBreakdown(lines: BreakdownLine[] | undefined, emptyHint: string): string {
-  if (!lines || lines.length === 0) {
-    return `<span class="muted">${emptyHint}</span>`;
-  }
-  return lines.map(l => {
-    const cls = l.value >= 0 ? 'pos' : 'neg';
-    return `<span class="${cls}">${l.label}: ${l.value >= 0 ? '+' : ''}${l.value}</span>`;
-  }).join(' · ');
-}
-
 /**
  * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10, ECHO Q4): wiersz zaraz POD Szczęściem —
  * lista surowców budowlanych wymaganych przez obywateli TEJ epoki, pokrytych/brakujących wg
  * magazynu CENTRALNEGO imperium (`citizen-resource-upkeep.ts`; nie lokalny magazyn tego
  * miasta — ECHO Q1). Brak wymaganych surowców w tej epoce (np. dane niekompletne) → blok się
  * nie renderuje.
+ *
+ * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): liczby obok surowców to ŁĄCZNE
+ * zużycie WSZYSTKICH obywateli TEGO miasta (`cityPopulation × stawka`,
+ * `citizenUpkeepDisplayLines`), nie stawka per capita (poprzedni błąd — panel pokazywał zawsze
+ * ±1, czyli samą karę Szczęścia za surowiec, nie ilość). Status dostępny/brakujący (kolor)
+ * zostaje WERDYKTEM SILNIKA z `upkeep` bez zmian — przelicza się wyłącznie WIELKOŚĆ liczby.
  */
-function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined): void {
+function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined, cityPopulation: number): void {
   if (!upkeep || upkeep.required.length === 0) return;
-  const lines: BreakdownLine[] = [
-    ...upkeep.available.map(k => ({
-      label: stockResourceLabel(k),
-      value: CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
-    })),
-    ...upkeep.missing.map(k => ({
-      label: stockResourceLabel(k),
-      value: CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
-    })),
-  ];
+  const lines: BreakdownLine[] = citizenUpkeepDisplayLines(upkeep, cityPopulation)
+    .map(l => ({ label: stockResourceLabel(l.key), value: l.value }));
   appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('chip-crate', 'Zaopatrzenie obywateli'),
@@ -4178,7 +4189,14 @@ function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCover
   );
 }
 
-/** Pasek procentowy W4 v2 (Szczęście / Prawo / Porządek) — mockup 1E. */
+/**
+ * Pasek procentowy W4 v2 (Szczęście / Prawo / Porządek / Zaopatrzenie obywateli) — mockup 1E.
+ *
+ * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): rozpiska składników renderuje się
+ * BLOKOWO — jeden składnik na osobnej linii (`appendBreakdownLines`, ten sam wzorzec co blok
+ * „Zdrowie miasta") — NIE jako jeden zbity ciąg tekstu łączony `" · "` (poprzedni błąd:
+ * `formatW4InlineBreakdown`, właściciel: „za bardzo nadziubdziane i nieczytelne").
+ */
 function appendW4PctMetricBlock(
   mount: HTMLElement,
   titleHtml: string,
@@ -4207,9 +4225,7 @@ function appendW4PctMetricBlock(
     block.appendChild(barWrap);
   }
   if ((lines && lines.length > 0) || emptyHint) {
-    const sumEl = el('div', 'civ-w4-inline-breakdown');
-    sumEl.innerHTML = formatW4InlineBreakdown(lines, emptyHint);
-    block.appendChild(sumEl);
+    appendBreakdownLines(block, lines, emptyHint);
   }
   if (afterBar) afterBar(block);
   mount.appendChild(block);
