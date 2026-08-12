@@ -53,6 +53,22 @@
  * DROBNĄ weryfikację okablowania przez source-text (main.ts woła wyciągnięte
  * funkcje), ale CAŁA logika decyzyjna jest teraz wykonywana naprawdę przez bundel
  * barbarians.ts, identycznie jak main.ts by ją wywołał.
+ *
+ * RUNDA 3 (Evaluator A/B/C jednomyślny FAIL na rundzie 2, finalny zakres A+B+C):
+ *   6. Punkt 2 (livelock): `unit.recentlyClearedCityId` zapisywane DOPIERO po
+ *      faktycznym dotarciu (hexDistance<=1) do celu, nie na podstawie samego
+ *      wyboru celu w danej turze. >=6 kolejnych decyzji z REALNIE stosowanym
+ *      ruchem (`unit.q/r` aktualizowane z komendy `move`, bramkowane przez
+ *      `canUnitOccupyCityHex` -- dokładnie tak jak main.ts:26258 aplikuje komendy
+ *      barbarzyńców), dwa warianty (drugie miasto BRONIONE/NIEBRONIONE). Asercja:
+ *      dystans do aktualnego celu monotonicznie maleje w każdej z dwóch faz
+ *      (dojście do miasta A, potem do miasta B), bez cofnięcia w trakcie fazy.
+ *   7. Punkt 4: `applyCityCaptureAfterBattle` z atkOwner barbarzyńskim NIE kasuje
+ *      `city.rebelPreviousOwnerId` (guard `!isBarbarian(atkOwner)` w
+ *      post-battle-map.ts pomija `applyPostCaptureLawOnCapture` dla barbarzyńców)
+ *      + z atkOwner gracz/AI (nie-barbarzyńca) bonus Prawa po podboju nadal się
+ *      poprawnie ustawia (postCaptureLawTurnsRemaining, revoltRisk=0 przez
+ *      applyPostCaptureLawOverride) -- REALNE WYKONANIE, nie source-text.
  */
 
 const fs   = require('fs');
@@ -87,6 +103,15 @@ export {
 export {
   applyPostBattleMap, applyCityCaptureAfterBattle,
 } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/post-battle-map'))};
+export {
+  canUnitOccupyCityHex,
+} from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/city-hex-movement'))};
+export {
+  isPostCaptureLawActive, applyPostCaptureLawOverride,
+  POST_CAPTURE_FRESH_TURNS, POST_CAPTURE_REBELLION_RECONQUEST_TURNS,
+  REBEL_FACTION_OWNER_ID,
+} from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/post-capture-law'))};
+export { evaluateOrderFromBreakdown } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/society-breakdown'))};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -111,6 +136,11 @@ const {
   BARBARIAN_OWNER_ID, FALLBACK_BARB_PARAMS, decideBarbarianMoves,
   applyPostBattleMap, applyCityCaptureAfterBattle,
   shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
+  canUnitOccupyCityHex,
+  isPostCaptureLawActive, applyPostCaptureLawOverride,
+  POST_CAPTURE_FRESH_TURNS, POST_CAPTURE_REBELLION_RECONQUEST_TURNS,
+  REBEL_FACTION_OWNER_ID,
+  evaluateOrderFromBreakdown,
 } = B;
 
 // --- tiny assertion framework --------------------------------------------------------------
@@ -195,10 +225,15 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 
 // ============================================================================================
 // 2. normal -- RUNDA 2: wykluczenie PER JEDNOSTKA, nie globalne. Trzy scenariusze na tej samej
-//    geometrii (cityWest niebronione q=2 dist=3, cityEast bronione przez `g` q=9 dist=4,
-//    jednostka startuje q=5):
-//    2a. Świeża jednostka (bez pamięci) celuje w BLIŻSZE niebronione cityWest -- nigdy go
-//        wcześniej nie "oczyściła", więc filtr go NIE wyklucza (punkt 3: nie wszystkie
+//    geometrii (cityWest niebronione q=2, cityEast bronione przez `g` q=9,
+//    jednostka startuje q=3 -- PRZYLEGŁA do cityWest, dist=1):
+//    RUNDA 3 (livelock fix): jednostka startuje PRZYLEGLE do cityWest celowo -- od tej rundy
+//    `recentlyClearedCityId` zapisuje się DOPIERO po realnym dotarciu (hexDistance<=1), nie na
+//    podstawie samego wyboru celu (patrz sekcja 6 niżej dla testu z dystansu i realnym ruchem
+//    między turami). Ten scenariusz (start przyległy) nadal weryfikuje sam mechanizm pamięci
+//    per-jednostkowej jedną decyzją, bez potrzeby symulowania wielu tur marszu.
+//    2a. Świeża jednostka (bez pamięci), już PRZYLEGŁA do niebronionego cityWest -- dotarcie
+//        następuje od razu, memory zapisuje się TĄ SAMĄ decyzją (punkt 3: nie wszystkie
 //        niebronione miasta globalnie, tylko to, co ta jednostka faktycznie napotkała).
 //    2b. TA SAMA jednostka, druga decyzja (symulacja kolejnej tury, pozycja niezmieniona) --
 //        decideBarbarianMoves zapamiętał cityWest jako "niebronione, napotkane" przy 2a
@@ -218,7 +253,7 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   const g = enemy('g', 9, 0);
 
   // 2a
-  const b1 = barb('b1', 5, 0);
+  const b1 = barb('b1', 3, 0);
   eq(b1.recentlyClearedCityId, undefined, '2a: fresh unit starts with no memory');
   const cmdsA = decideBarbarianMoves([b1], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
   eq(cmdsA.length, 1, '2a normal: exactly one move command');
@@ -252,7 +287,7 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   }
 
   // 2c -- a DIFFERENT, fresh unit on the identical geometry: unaffected by b1's memory.
-  const b2 = barb('b2', 5, 0);
+  const b2 = barb('b2', 3, 0);
   const cmdsC = decideBarbarianMoves([b2], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
   eq(cmdsC.length, 1, '2c normal: exactly one move command for the second, independent unit');
   {
@@ -457,6 +492,193 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   const aiAttackWindow = mainTs.slice(Math.max(0, aiAttackIdx - 700), aiAttackIdx + 700);
   assert(!aiAttackWindow.includes('barbAllowCityCapture'),
     'static 5e: AI-vs-player attack call site is untouched -- no barbAllowCityCapture leakage');
+}
+
+// ============================================================================================
+// 6. RUNDA 3, punkt 2 -- livelock fix. `unit.recentlyClearedCityId` musi zapisywać się
+//    dopiero po REALNYM dotarciu (hexDistance<=1), nie na podstawie samego wyboru celu.
+//    Symulacja >=6 kolejnych decyzji z RZECZYWIŚCIE stosowanym ruchem: `unit.q/r`
+//    aktualizowane z komendy `move`, ale TYLKO gdy `canUnitOccupyCityHex` pozwala --
+//    dokładnie ta sama bramka, którą main.ts stosuje przy aplikowaniu komend
+//    barbarzyńców (main.ts ok. linii 26258: `if (!canUnitOccupyCityHex(...)) continue;`
+//    przed `bu.q = bcmd.toQ`). Bez tej bramki symulacja fałszywie pozwoliłaby jednostce
+//    "wejść" na heks miasta, którego pathfinder NIE blokuje jako celu ścieżki (blokuje
+//    tylko przejście PRZEZ obcy heks miasta, nie sam ostatni krok -- patrz
+//    computePath/setup.ts "Destination: always passable as final step").
+// ============================================================================================
+{
+  /**
+   * Symuluje `turns` kolejnych decyzji `decideBarbarianMoves` dla JEDNEJ jednostki,
+   * aplikując ruch tak jak main.ts (bramkowane `canUnitOccupyCityHex`). Zwraca log
+   * per-turowy: dystans do cityA/cityB PRZED decyzją tej tury, typ wydanej komendy,
+   * oraz pamięć jednostki PO tej decyzji.
+   */
+  function simulateChase(unit, enemies, cities, map, params, difficulty, turns) {
+    const [cityA, cityB] = cities;
+    const log = [];
+    for (let t = 0; t < turns; t++) {
+      const dA = hexDist(unit.q, unit.r, cityA.q, cityA.r);
+      const dB = hexDist(unit.q, unit.r, cityB.q, cityB.r);
+      const cmds = decideBarbarianMoves([unit], enemies, cities, [], map, params, undefined, difficulty);
+      const cmd = cmds[0];
+      let moved = false;
+      if (cmd?.type === 'move' && canUnitOccupyCityHex(unit.ownerId, cmd.toQ, cmd.toR, cities)) {
+        unit.q = cmd.toQ;
+        unit.r = cmd.toR;
+        moved = true;
+      }
+      log.push({ t, dA, dB, cmdType: cmd?.type ?? 'idle', moved, memoryAfter: unit.recentlyClearedCityId });
+      if (cmd?.type === 'attack') break;
+    }
+    return log;
+  }
+
+  /** Faza = seria kolejnych wpisów log-u, dopóki `memoryAfter` nie zmieni się na
+   *  `targetCityId` (albo dopóki nie pojawi się `attack`) -- asercjonuje monotoniczny
+   *  spadek `distKey` (dA lub dB) w KAŻDYM kroku fazy, i że dystans faktycznie
+   *  osiąga <=1 (dotarcie) LUB faza kończy się atakiem (miasto bronione). */
+  function assertMonotonicPhase(log, distKey, targetCityId, minSteps, label) {
+    const phase = [];
+    for (const entry of log) {
+      phase.push(entry);
+      if (entry.memoryAfter === targetCityId || entry.cmdType === 'attack') break;
+    }
+    assert(phase.length >= minSteps,
+      `${label}: fazy trwa >= ${minSteps} decyzji (got ${phase.length})`);
+    for (let i = 1; i < phase.length; i++) {
+      assert(phase[i][distKey] < phase[i - 1][distKey],
+        `${label}: krok ${i} -- dystans (${distKey}) maleje monotonicznie ` +
+        `(${phase[i - 1][distKey]} -> ${phase[i][distKey]}), BEZ cofnięcia w trakcie fazy`);
+    }
+    const last = phase[phase.length - 1];
+    assert(last.memoryAfter === targetCityId || last.cmdType === 'attack',
+      `${label}: faza kończy się DOTARCIEM (memory=${targetCityId}) albo ATAKIEM na obrońcę ` +
+      `(got memoryAfter=${last.memoryAfter}, cmdType=${last.cmdType})`);
+    return phase;
+  }
+
+  function makeChaseScenario(secondCityDefended) {
+    const map = makeMap(26, 8);
+    const cityA = city('cityA', 4, 4);   // bliżej, niebronione
+    const cityB = city('cityB', 14, 4);  // dalej, wariant broniony/niebroniony
+    const enemies = secondCityDefended ? [enemy('g', 14, 4)] : [];
+    // campId wskazujący na nieistniejący obóz -> orphaned -> raidReady=true
+    // (chaseRadius=Infinity) -- ten sam wzorzec co sekcja 3c wyżej, bez potrzeby
+    // konfigurowania realnych obozów.
+    const unit = barb('b1', 8, 4, { campId: 'destroyed-camp' });
+    return { map, cityA, cityB, enemies, unit };
+  }
+
+  for (const secondCityDefended of [false, true]) {
+    const label = secondCityDefended ? 'drugie miasto BRONIONE' : 'drugie miasto NIEBRONIONE';
+    const { map, cityA, cityB, enemies, unit } = makeChaseScenario(secondCityDefended);
+    const log = simulateChase(unit, enemies, [cityA, cityB], map, P, 'normal', 20);
+
+    // Faza 1: dojście do cityA (bliższe, zawsze niebronione w tym scenariuszu) --
+    // dystans dA maleje monotonicznie, kończy się "dotarciem" (memory=cityA).
+    const phase1 = assertMonotonicPhase(log, 'dA', cityA.id, 4, `6 (${label}) faza 1 (do cityA)`);
+
+    // Faza 2: dojście do cityB -- reszta logu po fazie 1.
+    const phase2Log = log.slice(phase1.length);
+    assert(phase2Log.length > 0,
+      `6 (${label}): faza 2 (do cityB) faktycznie się zaczyna po dotarciu do cityA`);
+    const phase2 = assertMonotonicPhase(phase2Log, 'dB', cityB.id, 6, `6 (${label}) faza 2 (do cityB)`);
+
+    if (secondCityDefended) {
+      assert(phase2[phase2.length - 1].cmdType === 'attack',
+        `6 (${label}): dotarcie do BRONIONEGO cityB kończy się atakiem na obrońcę, nie ` +
+        `próbą wejścia na heks -- memory NIGDY nie zapisuje cityB (miasto broni się samo)`);
+      assert(phase2[phase2.length - 1].memoryAfter === cityA.id,
+        `6 (${label}): pamięć zostaje przy cityA -- broniony cel nigdy nie trafia do ` +
+        `recentlyClearedCityId (filtr go i tak nigdy nie wyklucza)`);
+    } else {
+      assert(phase2[phase2.length - 1].memoryAfter === cityB.id,
+        `6 (${label}): dotarcie do NIEBRONIONEGO cityB zapisuje memory=cityB dopiero PO ` +
+        `faktycznym dotarciu (hexDistance<=1), nie wcześniej`);
+    }
+
+    // Regresja livelocku: żadna z dwóch faz nie trwa mniej niż 4 decyzje -- stary bug
+    // dawał 2-turowy cykl (faza "1" miałaby długość ~1-2 z natychmiastowym zawróceniem).
+    assert(phase1.length + phase2.length >= 10,
+      `6 (${label}): łącznie >=10 decyzji analizowanych w obu fazach (got ` +
+      `${phase1.length + phase2.length}) -- >= wymagane 6 z zapasem`);
+  }
+}
+
+// ============================================================================================
+// 7. RUNDA 3, punkt 4 -- pokrycie testowe dla guarda `!isBarbarian(atkOwner)` w
+//    post-battle-map.ts (applyCityCaptureAfterBattle), REALNE WYKONANIE (nie source-text).
+//    (a) `rebelPreviousOwnerId` PRZEŻYWA przejęcie miasta PRZEZ barbarzyńcę (guard
+//        pomija applyPostCaptureLawOnCapture, które inaczej by je skasowało).
+//    (b) Prawo po podboju nadal poprawnie działa (ustawia postCaptureLawTurnsRemaining
+//        + revoltRisk=0 przez applyPostCaptureLawOverride) gdy zdobywcą jest gracz
+//        (ownerId=0) LUB AI (ownerId>0, nie-barbarzyńca) -- guard nie psuje normalnej
+//        ścieżki.
+// ============================================================================================
+{
+  // --- 7a. rebelPreviousOwnerId przeżywa capture barbarzyński. ---
+  const rebelCity = {
+    id: 'rebelCity', q: 5, r: 5, ownerId: REBEL_FACTION_OWNER_ID, name: 'rebelCity',
+    rebelPreviousOwnerId: 0, rebelState: true,
+  };
+  const barbAtkRoster = [{ id: 'batk', ownerId: BARBARIAN_OWNER_ID, q: 5, r: 5, ruchLeft: 1 }];
+  const barbUnits = [...barbAtkRoster];
+  applyCityCaptureAfterBattle(rebelCity, barbAtkRoster, BARBARIAN_OWNER_ID, barbUnits, 'batk');
+  eq(rebelCity.ownerId, BARBARIAN_OWNER_ID, '7a: city.ownerId zmienione na barbarzyńcę');
+  eq(rebelCity.rebelPreviousOwnerId, 0,
+    '7a: rebelPreviousOwnerId PRZEŻYWA przejęcie przez barbarzyńcę (guard pomija ' +
+    'applyPostCaptureLawOnCapture, które inaczej by je `delete`owało)');
+  eq(rebelCity.postCaptureLawTurnsRemaining, undefined,
+    '7a: bonus Prawa po podboju NIE jest ustawiany dla barbarzyńskiego zdobywcy (guard aktywny)');
+
+  // --- 7b regresja mutacyjna (opisowa, weryfikowana w Krok "dowód mutacyjny" niżej):
+  // usunięcie guarda `!isBarbarian(atkOwner)` sprawiłoby, że powyższe dwie asercje
+  // (rebelPreviousOwnerId===0, postCaptureLawTurnsRemaining===undefined) staną się
+  // czerwone jednocześnie -- applyPostCaptureLawOnCapture zostałoby wywołane, co (1)
+  // ustawiłoby postCaptureLawTurnsRemaining, i (2) skasowałoby rebelPreviousOwnerId.
+
+  // --- 7c. Prawo po podboju nadal działa dla zdobywcy GRACZA (ownerId=0), zwykły podbój. ---
+  const freshCityPlayer = { id: 'freshP', q: 1, r: 1, ownerId: 3, name: 'freshP' };
+  const playerAtkRoster = [{ id: 'patk', ownerId: 0, q: 1, r: 1, ruchLeft: 1 }];
+  applyCityCaptureAfterBattle(freshCityPlayer, playerAtkRoster, 0, [...playerAtkRoster], 'patk');
+  eq(freshCityPlayer.ownerId, 0, '7c: city.ownerId zmienione na gracza');
+  eq(freshCityPlayer.postCaptureLawTurnsRemaining, POST_CAPTURE_FRESH_TURNS,
+    '7c: świeży podbój przez GRACZA -- bonus Prawa ustawiony (guard nie blokuje nie-barbarzyńcy)');
+  assert(isPostCaptureLawActive(freshCityPlayer), '7c: isPostCaptureLawActive === true dla gracza');
+
+  // --- 7d. Prawo po podboju nadal działa dla zdobywcy AI (ownerId=2, nie-barbarzyńca). ---
+  const freshCityAi = { id: 'freshAI', q: 2, r: 2, ownerId: 3, name: 'freshAI' };
+  const aiAtkRoster = [{ id: 'aatk', ownerId: 2, q: 2, r: 2, ruchLeft: 1 }];
+  applyCityCaptureAfterBattle(freshCityAi, aiAtkRoster, 2, [...aiAtkRoster], 'aatk');
+  eq(freshCityAi.ownerId, 2, '7d: city.ownerId zmienione na AI');
+  eq(freshCityAi.postCaptureLawTurnsRemaining, POST_CAPTURE_FRESH_TURNS,
+    '7d: świeży podbój przez AI -- bonus Prawa ustawiony identycznie jak dla gracza (parytet)');
+  assert(isPostCaptureLawActive(freshCityAi), '7d: isPostCaptureLawActive === true dla AI');
+
+  // --- 7e. revoltRisk=0 -- applyPostCaptureLawOverride na realnym ordPct (gracz). ---
+  const ordBase = evaluateOrderFromBreakdown(
+    { population: 10, buildingZadowolenie: 0, era: 1 },
+    { garnizonCount: 0, era: 1 },
+    null,
+    'normal',
+  );
+  const overridden = applyPostCaptureLawOverride(ordBase, freshCityPlayer, null, 'normal');
+  eq(overridden.effects.revoltRisk, 0,
+    '7e: applyPostCaptureLawOverride ustawia revoltRisk=0 dla świeżo podbitego miasta gracza ' +
+    '(guard w post-battle-map.ts nie blokuje tej ścieżki dla nie-barbarzyńcy)');
+
+  // --- 7f. Odbicie po buncie (rebelia, zdobywcą NIE-barbarzyńca) -- 10 tur, dla kontrastu
+  // z 7a (gdzie zdobywcą jest barbarzyńca i bonus się NIE ustawia). ---
+  const rebelCity2 = {
+    id: 'rebelCity2', q: 6, r: 6, ownerId: REBEL_FACTION_OWNER_ID, name: 'rebelCity2',
+    rebelPreviousOwnerId: 0, rebelState: true,
+  };
+  const playerReconquestRoster = [{ id: 'ratk', ownerId: 0, q: 6, r: 6, ruchLeft: 1 }];
+  applyCityCaptureAfterBattle(rebelCity2, playerReconquestRoster, 0, [...playerReconquestRoster], 'ratk');
+  eq(rebelCity2.postCaptureLawTurnsRemaining, POST_CAPTURE_REBELLION_RECONQUEST_TURNS,
+    '7f: odbicie po buncie PRZEZ GRACZA (nie-barbarzyńcę) -- 10 tur bonusu, guard nie ingeruje');
+  eq(rebelCity2.rebelPreviousOwnerId, undefined,
+    '7f: rebelPreviousOwnerId poprawnie skasowany PO wykorzystaniu (normalna ścieżka nie-barb)');
 }
 
 // --- summary ----------------------------------------------------------------------------------

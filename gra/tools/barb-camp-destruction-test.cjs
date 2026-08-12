@@ -458,7 +458,37 @@ const CALL_SITES = [
 }
 
 // ============================================================================================
-// 8. Weryfikacja mutacyjna (self-check) -- RUNDA 3, kryterium przyjęcia sekcji 5 ze zlecenia.
+// 8. RUNDA 3 (P-BARB-CAPTURE-GUARD, punkt 5) -- ochrona fallbacku "raid-ready freeze" (punkt 1
+//    ze zlecenia rundy 3, naprawiony WSPÓLNIE z tematem miast w barbarians.ts) we WŁASNYM
+//    pliku testowym tematu obozów -- dziś (przed tą sekcją) ten wspólny fix nie miał TU żadnej
+//    asercji blokującej, więc przyszła zmiana w temacie obozów mogłaby po cichu cofnąć fallback
+//    przy zielonych bramkach obozowych. EXECUTION: jedyne miasto na mapie, niebronione,
+//    jednostka JUŻ ma je zapamiętane jako `recentlyClearedCityId` -- per-jednostkowy filtr
+//    wykluczyłby je (lista pusta), fallback (`filtered.length > 0 ? filtered : civCitiesBase`)
+//    musi mimo to dać komendę ruchu w jego stronę, zamiast zamrożenia jednostki bez rozkazu.
+// ============================================================================================
+{
+  const map = makeMap(15, 3);
+  const onlyCity = { id: 'onlyCity', q: 9, r: 1, ownerId: 0, name: 'onlyCity' };
+  const unit = barb('raider1', 5, 1, { recentlyClearedCityId: 'onlyCity' });
+  const cmds = decideBarbarianMoves([unit], /* enemies */ [], [onlyCity], /* camps */ [], map, P, undefined, 'hard');
+  assert(cmds.length === 1,
+    '8: fallback (punkt 1, freeze fix) -- jedyny niebroniony cel już "zapamiętany" jako oczyszczony ' +
+    'przez TĘ jednostkę wciąż dostaje rozkaz (pusta przefiltrowana lista spada na pełną, jednostka ' +
+    'nie zamiera bez rozkazu)');
+  const cmd = cmds[0];
+  if (cmd) {
+    eq(cmd.type, 'move', '8: fallback wydaje komendę ruchu (nie brak rozkazu)');
+    const distBefore = axialDist(unit.q, unit.r, onlyCity.q, onlyCity.r);
+    const distAfter = axialDist(cmd.toQ, cmd.toR, onlyCity.q, onlyCity.r);
+    assert(distAfter < distBefore,
+      `8: krok zbliża jednostkę do jedynego (zapamiętanego jako "oczyszczone") miasta -- dowód, że ` +
+      `to WŁAŚNIE fallback wybrał ten cel, nie przypadek (before=${distBefore}, after=${distAfter})`);
+  }
+}
+
+// ============================================================================================
+// 9. Weryfikacja mutacyjna (self-check) -- RUNDA 3, kryterium przyjęcia sekcji 5 ze zlecenia.
 //    Sam ten plik dowodzi, wykonaniem, że asercje z sekcji 4/7 faktycznie łapią dokładnie te
 //    mutacje, które mają łapać -- analogicznie do wzorca `--self-check-skip-mutation` już
 //    używanego w tym repo (empire-panel-econ-slider-visibility-test.cjs,
@@ -497,7 +527,7 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
     return mutantFailed;
   }
 
-  console.log('\n-- Sekcja 8 / weryfikacja mutacyjna: usunięcie KAŻDEGO z ' + CALL_SITES.length + ' wpięć osobno --');
+  console.log('\n-- Sekcja 9 / weryfikacja mutacyjna: usunięcie KAŻDEGO z ' + CALL_SITES.length + ' wpięć osobno --');
   const mainTsOriginalForMutation = fs.readFileSync(mainTsPath, 'utf8');
   for (const site of CALL_SITES) {
     const mi = mainTsOriginalForMutation.indexOf(site.marker);
@@ -512,7 +542,7 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
     expectSelfCheckFails(new Map([[mainTsPath, mutated]]), `usunięcie wpięcia: ${site.label}`);
   }
 
-  console.log('-- Sekcja 8 / degradacja checkBarbCampDestructionAlongPath do hexes.slice(-1) --');
+  console.log('-- Sekcja 9 / degradacja checkBarbCampDestructionAlongPath do hexes.slice(-1) --');
   {
     const fnMarker = 'function checkBarbCampDestructionAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {';
     const fnIdx = mainTsOriginalForMutation.indexOf(fnMarker);
@@ -531,7 +561,7 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
     }
   }
 
-  console.log('-- Sekcja 8 / cofnięcie naprawy #2 (stary chaseRadius, homeCamp===undefined -> raidReady=false) --');
+  console.log('-- Sekcja 9 / cofnięcie naprawy #2 (stary chaseRadius, homeCamp===undefined -> raidReady=false) --');
   {
     const barbariansOriginal = fs.readFileSync(barbariansSrcPath, 'utf8');
     const oldBlock =
@@ -549,6 +579,22 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
       assert(reverted !== barbariansOriginal, 'mutacja-setup: reversion actually changed barbarians.ts source');
       expectSelfCheckFails(new Map([[barbariansSrcPath, reverted]]),
         'cofnięcie naprawy #2 (stary chaseRadius bez homeCamp===undefined -> raidReady=true)');
+    }
+  }
+
+  console.log('-- Sekcja 9 / punkt 5 -- odwrócenie fallbacku "raid-ready freeze" (civCities = filtered) --');
+  {
+    const barbariansOriginal = fs.readFileSync(barbariansSrcPath, 'utf8');
+    const fallbackLine = 'civCities = filtered.length > 0 ? filtered : civCitiesBase;';
+    const fallbackIdx = barbariansOriginal.indexOf(fallbackLine);
+    assert(fallbackIdx !== -1, 'mutacja-setup: fallback line "civCities = filtered.length > 0 ? ..." found in barbarians.ts');
+    if (fallbackIdx !== -1) {
+      const mutated = barbariansOriginal.slice(0, fallbackIdx)
+        + 'civCities = filtered;'
+        + barbariansOriginal.slice(fallbackIdx + fallbackLine.length);
+      assert(mutated !== barbariansOriginal, 'mutacja-setup: reversion actually changed barbarians.ts source');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutated]]),
+        'odwrócenie fallbacku punktu 1: civCities = filtered (bez spadku na civCitiesBase, freeze wraca)');
     }
   }
 }

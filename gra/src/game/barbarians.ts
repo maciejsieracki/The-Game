@@ -1188,19 +1188,32 @@ export function decideBarbarianMoves(
       civCities = filtered.length > 0 ? filtered : civCitiesBase;
     }
     const nearestCity = nearest(unit.q, unit.r, civCities);
-    if (skipDefenselessCities) {
-      // Zapamiętaj (tylko dla TEJ jednostki) czy jej obecny najbliższy cel-miasto
-      // jest niebroniony -- następna tura wykluczy je z JEJ listy, pozwalając jej
-      // przejść do kolejnego celu zamiast tkwić w miejscu (krok 3 wyżej) niemożliwym
-      // do wejścia (canUnitOccupyCityHex blokuje obcy heks miasta bez zdobycia).
-      // / EN: remember (only for THIS unit) whether its current nearest city target
-      // is undefended -- next turn excludes it from ITS OWN list, letting it move on
-      // to the next target instead of stalling in place (step 3 above) unable to
-      // enter (canUnitOccupyCityHex blocks a foreign city hex without capturing it).
-      unit.recentlyClearedCityId =
-        nearestCity !== undefined && !enemies.some(e => e.q === nearestCity.q && e.r === nearestCity.r)
-          ? nearestCity.id
-          : undefined;
+    // RUNDA 3 (Evaluator A/B/C jednomyślnie, livelock): zapamiętanie musi czekać na
+    // faktyczne DOTARCIE (hexDistance<=1) do miasta -- nie na sam fakt bycia
+    // wybranym jako cel w tej turze. Stary zapis (bezwarunkowy, co turę, na
+    // podstawie samego "to jest teraz najbliższy cel") tworzył stabilny 2-cykl:
+    // wykluczenie A odsłaniało B (memory=A), następna decyzja wykluczała B
+    // odsłaniając A z powrotem (memory=B) -- jednostka drgała między A i B w
+    // nieskończoność, z zerowym postępem netto, nawet na statycznej planszy bez
+    // ruchu gracza (zgłoszone przez wszystkich 3 Evaluatorów niezależnie).
+    // Teraz: dopóki jednostka nie jest przyległa do celu, pamięć zostaje
+    // NIETKNIĘTA -- ten sam cel pozostaje wybierany co turę (monotoniczny postęp),
+    // wykluczenie następuje dopiero po realnym dotarciu.
+    // / EN: ROUND 3 (Evaluator A/B/C unanimous, livelock): the memory write must
+    // wait for the unit to actually REACH (hexDistance<=1) the city -- not merely
+    // being picked as this turn's target. The old write (unconditional, every
+    // turn, based purely on "this is currently the nearest target") formed a
+    // stable 2-cycle: excluding A exposed B (memory=A), the next decision
+    // excluded B exposing A again (memory=B) -- the unit oscillated between A and
+    // B forever with zero net progress, even on a static board with no player
+    // movement (independently reported by all 3 Evaluators). Now: as long as the
+    // unit is not adjacent to the target, memory is left UNTOUCHED -- the same
+    // target keeps being picked turn after turn (monotonic progress), exclusion
+    // only happens after actually arriving.
+    if (skipDefenselessCities && nearestCity !== undefined
+        && hexDistance(unit.q, unit.r, nearestCity.q, nearestCity.r) <= 1
+        && !enemies.some(e => e.q === nearestCity.q && e.r === nearestCity.r)) {
+      unit.recentlyClearedCityId = nearestCity.id;
     }
     const targets: { q: number; r: number; d: number }[] = [];
     if (nearestEnemyUnit !== undefined) {

@@ -234,3 +234,61 @@ export function applyCapitalCapturePlunder(
 export function disbandOwnerUnits<T extends { ownerId: number }>(units: readonly T[], ownerId: number): T[] {
   return units.filter(u => u.ownerId !== ownerId);
 }
+
+// ---------------------------------------------------------------------------
+// P-BARB-CAPTURE-GUARD RUNDA 3 (Evaluator, punkt 3) — barbarzyńcy nie są realną
+// cywilizacją (brak stolicy/skarbca/Power). `runCapitalCapturePlunder` w main.ts
+// wywoływała te reguły INLINE, bez pokrycia testowego (main.ts nie jest
+// bundlowalny) — wyciągnięte tu jako czyste, samodzielnie testowalne funkcje.
+// / EN: barbarians are not a real civilization (no capital/treasury/Power).
+// `runCapitalCapturePlunder` in main.ts used to apply these rules INLINE, with
+// zero test coverage (main.ts is not bundlable) — extracted here as pure,
+// independently testable functions.
+// ---------------------------------------------------------------------------
+
+/**
+ * Owijka `OwnerResourceAccess`, w której zapisy DO `newOwner` (skarbiec/nauka/
+ * techy) są no-opowane — barbarzyńcy nie dziedziczą łupu. Odczyty i zapisy DO
+ * innych ownerów (w praktyce: ofiary, `oldOwner`) przechodzą bez zmian.
+ */
+export function barbarianCaptorResourceAccess(
+  base: OwnerResourceAccess,
+  newOwner: number,
+): OwnerResourceAccess {
+  return {
+    ...base,
+    setTreasury: (oid, v) => { if (oid !== newOwner) base.setTreasury(oid, v); },
+    setNaukaPool: (oid, v) => { if (oid !== newOwner) base.setNaukaPool(oid, v); },
+    addResearchedTechs: (oid, ids) => { if (oid !== newOwner) base.addResearchedTechs(oid, ids); },
+  };
+}
+
+/** Ile Power trafia do zdobywcy za utratę stolicy ofiary — 0, gdy zdobywcą jest
+ *  barbarzyńca (barbarzyńcy nie dziedziczą Power ofiary), inaczej `lostPower`. */
+export function barbarianCapturedPowerGain(lostPower: number, barbCaptor: boolean): number {
+  return barbCaptor ? 0 : lostPower;
+}
+
+/**
+ * `applyCapitalCapturePlunder`, świadome barbarzyńców jako starego/nowego właściciela:
+ *  - `oldOwner` barbarzyńca -> `null` (barbarzyńcy nie mają stolicy/skarbca) — bez tego
+ *    guarda odbicie JEDYNEGO miasta barbarzyńców wpadało w legacy fallback "najstarsze
+ *    miasto" -> `remaining.length===0` -> eliminacja CAŁEJ frakcji barbarzyńców jednym
+ *    odbiciem jednego miasta, plus trwały fałszywy wpis w `eliminatedOwners` w sejwie.
+ *  - `newOwner` barbarzyńca -> zapisy DO `newOwner` (skarbiec/nauka/techy) no-opowane
+ *    (`barbarianCaptorResourceAccess`) — ofiara wciąż traci normalnie.
+ */
+export function applyBarbarianAwareCapitalCapturePlunder(
+  city: City,
+  oldOwner: number,
+  newOwner: number,
+  citiesAfterCapture: readonly City[],
+  access: OwnerResourceAccess,
+  designatedCapitalId: string | null | undefined,
+  isBarbarianOwner: (ownerId: number) => boolean,
+): CapitalCaptureOutcome | null {
+  if (isBarbarianOwner(oldOwner)) return null;
+  const barbCaptor = isBarbarianOwner(newOwner);
+  const finalAccess = barbCaptor ? barbarianCaptorResourceAccess(access, newOwner) : access;
+  return applyCapitalCapturePlunder(city, oldOwner, newOwner, citiesAfterCapture, finalAccess, designatedCapitalId);
+}

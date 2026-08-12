@@ -730,7 +730,8 @@ import {
   type BattleLoot,
 } from './game/battle-loot';
 import {
-  applyCapitalCapturePlunder,
+  applyBarbarianAwareCapitalCapturePlunder,
+  barbarianCapturedPowerGain,
   disbandOwnerUnits,
   oldestCityOfOwner,
   type OwnerResourceAccess,
@@ -21586,47 +21587,33 @@ async function boot(): Promise<void> {
       // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
       // i eliminateOwner(-99) zaśmiecały eliminatedOwners/sejw wpisem -99.
       if (oldOwner === REBEL_FACTION_OWNER_ID) return null;
-      // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1, kierunek A -- oldOwner):
-      // barbarzyńcy tak samo jak REBEL_FACTION nie są realną cywilizacją -- nie mają
-      // stolicy/skarbca. Bez tego guarda ODBICIE gracza/AI ich JEDYNEGO miasta wpadało
-      // w legacy fallback "najstarsze miasto" -> remaining.length===0 ->
-      // eliminateOwner(BARBARIAN_OWNER_ID), kasując WSZYSTKICH barbarzyńców z całej
-      // mapy jednym odbiciem jednego miasta (+ trwały fałszywy wpis w eliminatedOwners
-      // w sejwie). / EN: barbarians, like REBEL_FACTION, are not a real civilization --
-      // no capital/treasury. Without this guard, the player/AI RECLAIMING their ONE
-      // city fell into the legacy "oldest city" fallback -> remaining.length===0 ->
-      // eliminateOwner(BARBARIAN_OWNER_ID), wiping every barbarian on the whole map
-      // from a single city recapture (+ a permanent bogus eliminatedOwners save entry).
-      if (isBarbarian(oldOwner)) return null;
       const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
-      // P-BARB-CAPTURE-GUARD RUNDA 2 (punkt 1, kierunek B -- newOwner): gdy zdobywcą
-      // jest barbarzyńca, ofiara wciąż TRACI skarbiec/naukę/techy/pulę pracy (spójnie
-      // z każdym innym przejęciem stolicy -- to strata ofiary, nie nagroda zdobywcy),
-      // ale NIC z tego nie ma trafić NA KONTO barbarzyńców (setTreasury/setNaukaPool/
-      // addResearchedTechs niżej no-opują zapis DO newOwner, gdy to barbarzyńca).
-      // Eliminacja (jeśli to było OSTATNIE miasto ofiary) i tak następuje niżej --
-      // o TYM decyduje reszta tej funkcji (outcome.event/eliminateOwner), nie ten
-      // warunek: właściciel wprost zastrzegł, że ten guard NIE ma blokować mechaniki
-      // eliminacji, tylko łup barbarzyńców. / EN: when the captor is a barbarian, the
-      // victim still LOSES treasury/science/techs/work pool (consistent with any other
-      // capital capture -- it's the victim's loss, not the captor's reward), but NONE
-      // of it lands in the barbarian account (setTreasury/setNaukaPool/
-      // addResearchedTechs below no-op the write TO newOwner when it's a barbarian).
-      // Elimination (if this was the victim's LAST city) still happens below -- decided
-      // by the rest of this function (outcome.event/eliminateOwner), not by this
-      // condition: the owner explicitly required this guard to NOT block the
-      // elimination mechanic, only the barbarian loot.
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1), wyciągnięte do czystych,
+      // testowalnych funkcji w RUNDZIE 3 (capital-capture.ts, zero pokrycia testowego
+      // póki logika żyła inline tutaj -- main.ts nie jest bundlowalny):
+      //   - oldOwner barbarzyńca -> null (barbarzyńcy nie mają stolicy/skarbca). Bez
+      //     tego guarda ODBICIE gracza/AI ich JEDYNEGO miasta wpadało w legacy fallback
+      //     "najstarsze miasto" -> eliminacja CAŁEJ frakcji barbarzyńców jednym odbiciem
+      //     jednego miasta (+ trwały fałszywy wpis w eliminatedOwners w sejwie).
+      //   - newOwner barbarzyńca -> ofiara wciąż TRACI skarbiec/naukę/techy/pulę pracy
+      //     (strata ofiary, nie nagroda zdobywcy), ale NIC z tego nie trafia NA KONTO
+      //     barbarzyńców (`barbarianCaptorResourceAccess` no-opuje zapis DO newOwner).
+      //     Eliminacja (jeśli to było OSTATNIE miasto ofiary) i tak następuje niżej.
+      // / EN: extracted to pure, testable functions in ROUND 3 (capital-capture.ts,
+      // zero test coverage while the logic lived inline here -- main.ts is not
+      // bundlable):
+      //   - oldOwner barbarian -> null (barbarians have no capital/treasury). Without
+      //     this guard, the player/AI RECLAIMING their ONE city fell into the legacy
+      //     "oldest city" fallback -> elimination of the WHOLE barbarian faction from a
+      //     single city recapture (+ a permanent bogus eliminatedOwners save entry).
+      //   - newOwner barbarian -> the victim still LOSES treasury/science/techs/work
+      //     pool (the victim's loss, not the captor's reward), but NONE of it lands in
+      //     the barbarian account (`barbarianCaptorResourceAccess` no-ops the write TO
+      //     newOwner). Elimination (if this was the victim's LAST city) still happens
+      //     below regardless.
       const barbCaptor = isBarbarian(newOwner);
-      const access: OwnerResourceAccess = barbCaptor
-        ? {
-            ...capitalCaptureResourceAccess,
-            setTreasury: (oid, v) => { if (oid !== newOwner) setOwnerTreasury(oid, v); },
-            setNaukaPool: (oid, v) => { if (oid !== newOwner) setOwnerNaukaPool(oid, v); },
-            addResearchedTechs: (oid, ids) => { if (oid !== newOwner) addOwnerResearchedTechs(oid, ids); },
-          }
-        : capitalCaptureResourceAccess;
-      const outcome = applyCapitalCapturePlunder(
-        city, oldOwner, newOwner, cities, access, designatedCapitalId,
+      const outcome = applyBarbarianAwareCapitalCapturePlunder(
+        city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId, isBarbarian,
       );
       if (!outcome) return null;
 
@@ -21650,12 +21637,13 @@ async function boot(): Promise<void> {
       // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
       // eliminateOwner (patrz komentarz funkcji).
       // P-BARB-CAPTURE-GUARD RUNDA 2 (punkt 1, kierunek B): barbarzyńcy nie dziedziczą
-      // Power ofiary -- `barbCaptor` guard, patrz komentarz przy `access` wyżej.
-      // / EN: barbarians do not inherit the victim's Power -- see the `barbCaptor`
-      // guard / `access` comment above.
+      // Power ofiary -- `barbarianCapturedPowerGain` (capital-capture.ts, RUNDA 3).
+      // / EN: barbarians do not inherit the victim's Power --
+      // `barbarianCapturedPowerGain` (capital-capture.ts, ROUND 3).
       const lostPower = buildObjectivePowerForOwner(oldOwner).power;
-      if (lostPower > 0 && !barbCaptor) {
-        zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
+      const powerGain = barbarianCapturedPowerGain(lostPower, barbCaptor);
+      if (powerGain > 0) {
+        zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + powerGain);
       }
       const eliminatedCivLabel = civLabelForOwner(oldOwner);
       const eliminatedDetails = barbCaptor
