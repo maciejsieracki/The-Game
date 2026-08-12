@@ -14705,3 +14705,31 @@ ma). Źródło danych: `allEraTechsResearched`, `eraOwnWonderSatisfied`, `eraOwn
 już istnieją w `owner-epoch.ts`, czysta logika, gotowe do wywołania z UI).
 
 **STATUS: dispatch Sonnet 5 (worktree) w toku — WYŁĄCZNIE punkt UI, logika blokady nietknięta.**
+
+## Odtworzenie sekcji F + scroll-reset (`05328fe6`) — Evaluator: Zadanie 1 PASS, Zadanie 2 FAIL
+
+**Zadanie 1 (sekcja F, dowód mutacyjny chipu Armia): PASS.** Evaluator potwierdził 5 własnymi
+mutacjami (2 łapane, 2 celowo poza zakresem sekcji F bo dotyczą wspólnych liści obu ścieżek —
+zgodne z uczciwym komentarzem sekcji). **Nota nieblokująca (do wiadomości, nie naprawiać teraz)**:
+`main.ts:12544` (`rekruci: mp.manpowerBiezacy` w budowie wierszy `cityPobor`) nie jest pinowane
+przez żadną sekcję — mutacja podmieniająca na `mp.manpowerMax` zostaje niewykryta (58/58 zielono)
+mimo realnego rozjazdu w grze (kolumna JEDN. pokazuje inne wartości niż wiersz RAZEM).
+
+**Zadanie 2 (scroll-reset w Rankingu Mocy): FAIL — naprawa wymienia jeden defekt na drugi, na
+CZĘSTSZEJ ścieżce.** Naprawiony scenariusz (przełącznik trybu widoku w PEŁNYM panelu) działa. Ale
+**klik żetonu HUD (Skarbiec/Nauka/Surowce/Armia itd.) — najczęstsza ścieżka wejścia do panelu —
+teraz przywraca scrollTop Z POPRZEDNIEGO, INNEGO bloku zamiast pokazywać nową treść od góry**
+(dowód: S2 klik żetonu po scrollu w innym bloku, oczekiwane 0, otrzymane 600; S3 ponowne otwarcie
+panelu po zamknięciu, oczekiwane 0, otrzymane 900). Przyczyna: `render()` nie odróżnia re-renderu
+TEGO SAMEGO widoku (gdzie przywrócenie jest poprawne) od otwarcia NOWEGO bloku/świeżego otwarcia
+(gdzie powinno być 0) — panel zamknięty to `transform:translateX(100%)`, nie `display:none`, więc
+`scrollTop` przeżywa zamknięcie.
+
+**Gotowa recepta naprawy od Evaluatora** (3 linie, nie rusza działającego S1/S4 ani filtra kolumn
+tabeli Miasta): flaga `resetScrollOnNextRender` ustawiana w `showEmpireDetailPanel()` (miejsce
+otwierania panelu, NIE zgadywana wewnątrz `render()`), odczytywana i zerowana w gałęzi `else`
+`render()`. Dodatkowa nota: test scrollowy bez naprawy rzuca `ReferenceError` zamiast czysto
+failować (bramka i tak czerwona, ale `runReal(...)` wart owinięcia w try/catch).
+
+**STATUS: dispatch rundy 2 WYŁĄCZNIE dla Zadania 2 (scroll-reset) w toku — Zadanie 1 (sekcja F)
+zostaje bez zmian, PASS.**
