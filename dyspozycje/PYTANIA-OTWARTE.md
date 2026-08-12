@@ -15824,3 +15824,79 @@ zweryfikowany jako nieskażony, ale mechanizm izolacji ma dziurę SZERSZĄ niż 
 obejmuje też scratchpad, nie tylko przypadki błędnego `cd`. Do zbadania w przyszłości.
 
 Czekam na Evaluatora C (pokrycie mutacyjne + tabela 12 reżimów) przed werdyktem zbiorczym rundy 6.
+
+## Epoka w liście rekrutacji (3a3b11da) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE (częściowe)
+
+Naprawa potwierdzona na REALNYM kodzie (esbuild+jsdom+Chromium, DOM z faktycznie zbudowanej
+karty): 53/53 asercji, 12 par różnoepokowych tej samej kategorii poprawnie rozróżnionych (w tym
+dokładny przypadek ze zgłoszenia: "Miecznik · Kamień" vs "Miecznik · Brąz"). Twierdzenie commita
+"nie zmieniono danych, tylko prezentację" potwierdzone empirycznie. 6/6 mutacji złapanych, w tym
+wszystkie kompilują się czysto pod `tsc` (typy nie chronią tego kodu). **ZAMKNIĘTE.**
+
+**N1 — naprawa częściowa: 7 par nadal nierozróżnialnych** (symulacja 15 cywilizacji×3 epoki):
+6× warianty "Rydwan (woły)" tej samej epoki (Grecy/Rzym/Chiny/Egipt/Sumer/Hetyci, wszystkie
+"Rydwan · Brąz") + 1× Asyria "Konnica łucznicza" vs "Konnica lancowa" (obie "Konnica · Żelazo").
+Ta sama klasa pomyłki co zgłoszenie właściciela — niedomknięta, nie regresja.
+
+**N2 — epoka jako SUFIKS jest obcinana pierwsza w wąskich panelach.** Zmierzone w realnym
+Chromium: od 420px zero obcięć, ale przy min-width 300px z szerokimi chipami kosztu surowcowego
+epoka znika całkowicie z 2 nazw ("Oszczepnik …", "Oblężnicza · …"). Przed naprawą obcięć nie
+było. Właściciel w zgłoszeniu sugerował PREFIKS (odporny na to), zaimplementowano sufiks.
+
+**N3 — Evaluator świadomie nie dopisał testu** — format nieratyfikowany (3 warianty w zgłoszeniu:
+prefiks/badge/zmiana nazwy), test przypiąłby wariant, który wg N1/N2 może wymagać zmiany.
+Rekomendacja: jeden test razem z decyzją o pozostałych 7 kolizjach.
+
+**Zarejestrowane cicho, nowy temat backlogu (nie ABC — czeka na okazję, nie blokuje):** 7
+pozostałych nierozróżnialnych par + ryzyko obcięcia sufiksu w wąskich panelach — do rozstrzygnięcia
+razem (prefiks vs sufiks vs inny format) przy następnej turze tego tematu.
+
+**N4 — trzecie potwierdzenie kolizji scratchpada** (po round6 Evaluatorze A): plik
+`scratchpad/eval-harness.cjs` nadpisany przez równolegle działającego `eval-7b02eb2d`. Wyniki
+nienaruszone (nadpisanie po wygenerowaniu), ale wzorzec systemowy coraz mocniej potwierdzony —
+generyczne nazwy plików roboczych w współdzielonym scratchpadzie kolidują między równoległymi
+agentami. Rekomendacja na przyszłość: nazwy plików z ID commita/tematu.
+
+## ⛔ Runda 6 miast barbarzyńców — WERDYKT ZBIOROWY 3x Evaluator: PASS-WITH-NOTES × 3
+
+**Pierwszy raz w 6 rundach tego mechanizmu WSZYSCY TRZEJ Evaluatorzy dają PASS (nie FAIL).** Livelock
+F1 i regresja wydajności F2 potwierdzone naprawione niezależnie przez A/B/C, każdy własnym
+scenariuszem wykonania (nie czytaniem kodu). Evaluator C dodatkowo zweryfikował WSZYSTKIE 12
+reżimów z tabeli Operatora wykonaniem (bundle NEW vs OLD, ślad krok-po-kroku) — potwierdza że
+żaden z 12 nie regresuje, a rejestr Operatora niedoszacował liczbę bit-identycznych reżimów
+(realnie 8, nie 3 — niekompletność opisu, nie nieprawda).
+
+**Do domknięcia przed pełnym zamknięciem tematu (żadne nie jest FAIL, wszystkie to sprostowania
+dokumentacji + wzmocnienie testu + jedna nowa, łagodna, udokumentowana granica):**
+
+1. **Fałszywe zdanie w komentarzu (Evaluator A)** — "reżim ≥2 niebronionych daje samo-gojący się
+   1-2-turowy artefakt" jest NIEPRAWDĄ; realnie stabilny cykl o okresie 22 (2 miasta) / 44 (3
+   miasta), bronione miasto nieosiągnięte w 300 turach. NIE regresja (przed naprawą było tak samo
+   źle), ale overclaim do sprostowania w PL+EN.
+2. **⛔ NOWE PYTANIE ABC, STATUS: OTWARTE (Evaluator A)** — `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`:
+   czy krążenie jednostki między ≥2 niebronionymi miastami bez dotarcia do bronionego (na
+   normal/easy) jest akceptowalne? Na hard problem znika sam (przejęcie usuwa miasto z puli).
+3. **Nowy, łagodny defekt do zarejestrowania (Evaluator C, 4. oś tabeli pominięta: OSIĄGALNOŚĆ)**
+   — reżim "1 niebronione osiągalne + ≥1 bronione NIEOSIĄGALNE (inna wyspa)": F1 zamienia dawny
+   livelock na TRWAŁE zamrożenie (idle 23/25 tur od t5, bez obozu). Nie nowa ścieżka — to
+   pre-istniejący, już udokumentowany jako świadomie-poza-zakresem defekt `if(raidReady) continue`
+   (F3 z rundy 6), tylko POSZERZONY na reżim gdzie stary (błędny) reset przypadkiem ciągle
+   odsłaniał osiągalny cel. Zamieniony błąd też był błędem — nie regresja netto, ale do
+   udokumentowania jawnie, nie po cichu.
+4. **2 nowe przypadki testowe (Evaluator B)** — M2b (etykietowanie terenu ostrzejsze niż runtime,
+   np. Wzgórza nieprzechodnie w etykietowaniu a przechodnie w `computePath` — dokładny tryb
+   fałszywego odrzucenia osiągalnego celu, ostrzegany w komentarzu kodu ale niepokryty) i M3
+   (usunięcie fallbacku `unitComp===undefined` daje 0 komend — odtwarza klasę "jednostka zamiera
+   na stałe" z rundy 5).
+5. **Zdanie F3 przeuogólnia (Evaluator C)** — "raidReady oznacza zero komend do końca gry"
+   nieprawdziwe dla jednostek osieroconych (`orphanedActive` wygasa po `orphanedChaseTurnLimit`);
+   twierdzenie trzyma się tylko dla jednostek z żywym obozem. Ten sam kształt błędu co F3 miało
+   naprawić, tylko łagodniejszy — do dopięcia jednym zdaniem.
+6. **Uzupełnienie tabeli 12 reżimów** o oś osiągalności (punkt 3) i pełną listę 8 bit-identycznych
+   reżimów (nie tylko 3 wymienione).
+7. **Rozdzielenie/sprostowanie mieszanego commitu `044aa26d`** (już zarejestrowane jako własny
+   błąd wcześniej, potwierdzone niezależnie przez A i C).
+
+**STATUS: dispatch rundy 7 (naprawa dokumentacji + 2 testy + rejestracja) w toku** — po niej
+JEDNORAZOWA (nie 3x, zakres zmalał do poprawek nieinwazyjnych, rdzeń logiki już 3x zweryfikowany)
+weryfikacja Evaluatora przed ostatecznym zamknięciem tematu.
