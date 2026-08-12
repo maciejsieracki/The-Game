@@ -15900,3 +15900,17 @@ dokumentacji + wzmocnienie testu + jedna nowa, łagodna, udokumentowana granica)
 **STATUS: dispatch rundy 7 (naprawa dokumentacji + 2 testy + rejestracja) w toku** — po niej
 JEDNORAZOWA (nie 3x, zakres zmalał do poprawek nieinwazyjnych, rdzeń logiki już 3x zweryfikowany)
 weryfikacja Evaluatora przed ostatecznym zamknięciem tematu.
+
+## Panel "Zobacz szczegóły zużycia" (fix-resource-usage-a79bae29) — ZAMKNIĘTE
+
+Zadanie 1: wariant B (zmiana etykiet, nie klamrowanie) — uzasadnione: klamrowanie wymagałoby
+zmiany kontraktu współdzielonej funkcji silnika tury używanej w 6 miejscach (budynki+wojsko są
+scalane w jedną liczbę PRZED wspólnym odjęciem, atrybucja niedostępna w danych silnika). Etykiety
+teraz: "Budynki (zapotrzebowanie)"/"Wojsko (zapotrzebowanie)"/"Obywatele (drenaż realny)", suma →
+"Suma rozbicia tej tury" (nie "Zużycie razem"). Zadanie 2: wariant A (żywy fallback) — istniejące
+czyste prymitywy silnika (`previewOwnerBuildingResourceUpkeep`/`totalUnitResourceUpkeep`, też
+używane wewnątrz ticku) podpięte jako fallback gdy cache puste po save-load, wzorzec identyczny do
+istniejącego fallbacku obywateli. Zadanie 3: test 60→100 asercji, 3 nowe sekcje z realnym
+wykonaniem (nie dopasowaniem tekstu) — end-to-end preview→breakdown→HTML, scenariusz niedoboru.
+6/6 mutacji własnych potwierdzone złapane. `tsc` 0 błędów, `citizen-resource-upkeep-test` 109/109
+(niepogorszone), `logic-test` 213/213. **ZAMKNIĘTE** (commit `9c0cd04d`).
