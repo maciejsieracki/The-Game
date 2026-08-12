@@ -207,6 +207,19 @@ let bodyEl: HTMLDivElement | null = null;
 let getSnap: (() => EmpireDetailSnap) | null = null;
 let open = false;
 let pendingScrollSection: string | null = null;
+/** RUNDA 2 scroll-reset (Evaluator werdykt dla `05328fe6`): ustawiana WYŁĄCZNIE w
+ *  `showEmpireDetailPanel()`, tam gdzie wiadomo że to nowe otwarcie/zmiana bloku (nie
+ *  zgadywana wewnątrz `render()`, bo `render()` nie odróżnia re-renderu tego samego widoku
+ *  od otwarcia nowego — patrz `open` ustawiane PRZED `render()` w obu przypadkach). Panel
+ *  zamknięty to `transform:translateX(100%)`, NIE `display:none`, więc `scrollTop` przeżywa
+ *  zamknięcie — bez tej flagi ponowne otwarcie/zmiana bloku pokazywałaby scrollTop z
+ *  poprzedniego, innego widoku. / EN: set ONLY in `showEmpireDetailPanel()`, at the one place
+ *  that actually knows this is a fresh open / block change (not guessed inside `render()`,
+ *  since `render()` can't tell a same-view re-render from a fresh open — `open` is set
+ *  BEFORE `render()` in both cases). A closed panel is `transform:translateX(100%)`, NOT
+ *  `display:none`, so `scrollTop` survives closing — without this flag, reopening / switching
+ *  block would show the scrollTop left over from the previous, different view. */
+let resetScrollOnNextRender = false;
 /** C-PANEL=B (Maciej 2026-07-24): klik żetonu HUD otwiera panel z TYLKO jednym blokiem
  *  (żeby klik „Surowce" pokazywał magazyn, a nie całą ekonomię z Nauką). Trzymane między
  *  renderami (refresh nie resetuje widoku). null = pełny panel (wszystkie bloki). */
@@ -1464,6 +1477,13 @@ function render(): void {
   pendingScrollSection = null;
   if (scrollTarget) {
     requestAnimationFrame(() => scrollToSection(scrollTarget));
+  } else if (resetScrollOnNextRender) {
+    // RUNDA 2: nowe otwarcie / zmiana bloku (flaga ustawiona w showEmpireDetailPanel) —
+    // pokaż nową treść OD GÓRY, nie scrollTop z poprzedniego, innego widoku.
+    // EN: fresh open / block change (flag set in showEmpireDetailPanel) — show the new
+    // content from the TOP, not the scrollTop left over from the previous, different view.
+    resetScrollOnNextRender = false;
+    bodyEl.scrollTop = 0;
   } else {
     bodyEl.scrollTop = prevScrollTop;
   }
@@ -1524,8 +1544,26 @@ export function mountEmpireDetailPanel(snapFn: () => EmpireDetailSnap): void {
 /** section: np. parametry, moc, ekonomia, econ-skarbiec, econ-praca, econ-ludnosc, kultura, surowce */
 export function showEmpireDetailPanel(section?: string): void {
   ensureDom();
-  pendingScrollSection = section ?? null;
-  activeSection = section ?? null;   // C-PANEL=B: zapamiętaj wybrany blok (pełny panel gdy brak)
+  const newSection = section ?? null;
+  // RUNDA 2 scroll-reset: reset scrolla do góry gdy to NIE zwykły re-render tego samego,
+  // już otwartego bloku — czyli gdy panel był zamknięty (świeże otwarcie, np. ponowne
+  // kliknięcie po zamknięciu) LUB gdy sekcja faktycznie się zmienia (klik INNEGO żetonu
+  // HUD, w tym zmiana wiersza w obrębie bloku „ekonomia", np. econ-skarbiec -> econ-praca).
+  // Porównanie robimy PRZED nadpisaniem `activeSection` niżej. Przełącznik trybu widoku
+  // Rankingu Mocy (wireMocViewButtons) NIE przechodzi przez tę funkcję — woła render()
+  // bezpośrednio, więc ta flaga tam nigdy nie jest ustawiana (scroll zachowany, zgodnie
+  // z rundą 1). / EN: reset scroll to top when this is NOT an ordinary re-render of the
+  // same, already-open block — i.e. the panel was closed (fresh open, e.g. re-clicking
+  // after closing) OR the section actually changes (a DIFFERENT HUD chip, including a row
+  // change within the "ekonomia" block, e.g. econ-skarbiec -> econ-praca). Compared BEFORE
+  // `activeSection` is overwritten below. The Power Ranking view toggle (wireMocViewButtons)
+  // does NOT go through this function — it calls render() directly, so this flag is never
+  // set there (scroll preserved, per round 1).
+  if (!open || newSection !== activeSection) {
+    resetScrollOnNextRender = true;
+  }
+  pendingScrollSection = newSection;
+  activeSection = newSection;   // C-PANEL=B: zapamiętaj wybrany blok (pełny panel gdy brak)
   open = true;
   renderHeader();
   render();
