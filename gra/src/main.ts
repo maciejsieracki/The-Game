@@ -20554,6 +20554,14 @@ async function boot(): Promise<void> {
       terrain: string,
       structBonusPct: number,
       atkStart?: Map<string | number, { q: number; r: number }>,
+      /** P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (hard): patrz applyMapBattleOutcome ->
+       *  opts.allowCityCapture -- dziś wołane wyłącznie z barbarzyńskiego bloku ataku
+       *  (hard), gracz/AI dalej NIE przechodzą tędy przez capture (allowCityCapture
+       *  domyślnie undefined -- zero zmian dla ich ścieżki).
+       *  / EN: see applyMapBattleOutcome -> opts.allowCityCapture -- today only the
+       *  barbarian attack block (hard) passes this; player/AI callers still leave it
+       *  undefined, so their capture path is unchanged. */
+      allowCityCapture?: boolean,
     ): ReturnType<typeof resolveAutoBattleByPower> | null {
       const start = atkStart ?? snapshotRosterPositions(atkRoster);
       const aLeadDef = unitDefFor(atkRoster[0]!);
@@ -20573,6 +20581,7 @@ async function boot(): Promise<void> {
         battleQ,
         battleR,
         atkStart: start,
+        allowCityCapture,
       });
       return powerRes;
     }
@@ -20591,6 +20600,14 @@ async function boot(): Promise<void> {
       contextLabel: string,
       onResolved: () => void,
       worldTerrain?: WorldTerrainInput,
+      /** P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (hard): patrz applyMapBattleOutcome ->
+       *  opts.allowCityCapture -- wołane wyłącznie z barbarzyńskiego ataku na miasto
+       *  gracza (hard). AI-vs-gracz (drugi caller) nie przekazuje tego argumentu ->
+       *  undefined -> zero zmian dla tamtej ścieżki.
+       *  / EN: see applyMapBattleOutcome -> opts.allowCityCapture -- only the barbarian
+       *  attack on the player's city (hard) passes this; the AI-vs-player caller omits
+       *  it -> undefined -> unchanged for that path. */
+      allowCityCapture?: boolean,
     ): void {
       const atkRosterRef = atkRoster.slice();
       const defRosterRef = defRoster.slice();
@@ -20682,6 +20699,7 @@ async function boot(): Promise<void> {
               battleQ: battleHex.q,
               battleR: battleHex.r,
               atkStart: atkStartSnap,
+              allowCityCapture,
             },
             mapBattleSummaryMeta('auto'),
             finishIncomingBattleUi,
@@ -20744,6 +20762,7 @@ async function boot(): Promise<void> {
                 battleQ: battleHex.q,
                 battleR: battleHex.r,
                 atkStart: atkStartSnap,
+                allowCityCapture,
               },
               mapBattleSummaryMeta('manual'),
               () => {
@@ -20925,11 +20944,27 @@ async function boot(): Promise<void> {
         }
       }
 
+      // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (hard, Maciej 2026-08-12): barbarzyńcy
+      // przejmują miasto WYŁĄCZNIE gdy jego heks jest w tej chwili (PO applyPostBattleMap
+      // wyżej) wolny od WSZYSTKICH jednostek nie-barbarzyńskich -- jawna weryfikacja
+      // "oczyszczone z obrońców do zera w TEJ walce", nie samo zwycięstwo ATK (który dla
+      // gracza/AI wystarcza, bo defRoster tam = cała obrona; ten dodatkowy check dotyczy
+      // WYŁĄCZNIE atakującego-barbarzyńcy -- gracz/AI capture (siege/allowCityCapture)
+      // bez zmian). / EN: barbarians capture a city ONLY when its hex is (AFTER
+      // applyPostBattleMap above) free of every non-barbarian unit -- an explicit "cleared
+      // to zero defenders in THIS battle" check, on top of the plain ATK-win gate below.
+      // Applies to a barbarian attacker only -- player/AI capture unchanged.
+      const atkOwnerForCapture = atkRoster[0]?.ownerId;
+      const barbCaptureBlockedByRemainingDefenders =
+        atkOwnerForCapture !== undefined && isBarbarian(atkOwnerForCapture)
+        && units.some(u => u.q === battleQ && u.r === battleR && !isBarbarian(u.ownerId));
+
       if (
         (opts?.allowCityCapture === true || opts?.siegeContext === true)
         && mapWinner === 'atakujacy'
         && cityOnHex
         && cityOnHex.ownerId !== atkRoster[0]?.ownerId
+        && !barbCaptureBlockedByRemainingDefenders
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
         const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
@@ -26115,8 +26150,12 @@ async function boot(): Promise<void> {
             // egzekwowany regułą, nie wyjątkiem.
             const barbCanEngageOwner = (targetOwnerId: number): boolean =>
               getDiploRelation(BARBARIAN_OWNER_ID, targetOwnerId).status === 'wojna';
+            // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A: trzy poziomy trudności barbarzyńców =
+            // ISTNIEJĄCY suwak gry (_menuDifficulty), nie nowe ustawienie -- patrz komentarz
+            // `difficulty` przy decideBarbarianMoves (barbarians.ts).
             const barbCmds = decideBarbarianMoves(
               landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive, barbCanEngageOwner,
+              _menuDifficulty,
             );
             if (seaBarbs.length > 0) {
               const raidTargets = collectSeaRaidTargets(map);
@@ -26169,6 +26208,14 @@ async function boot(): Promise<void> {
                   const hexObj2 = map.hexes[hexKey2];
                   const teren2: string = hexObj2 ? (hexObj2.terenBazowy as string) : 'Rownina';
                   const structBonusBarb = structureDefenseBonusFor(target.q, target.r);
+                  // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (ECHO, Maciej 2026-08-12): capture
+                  // miasta przez atak barbarzyński WYŁĄCZNIE na trudności hard -- reużywa
+                  // istniejącej ścieżki allowCityCapture z applyMapBattleOutcome (samą decyzję
+                  // "czy to naprawdę miasto oczyszczone z obrońców do zera" podejmuje ta
+                  // funkcja PO rozstrzygnięciu walki, patrz barbCaptureBlockedByRemainingDefenders
+                  // tamże). easy/normal: allowCityCapture=false -- zero zmian względem
+                  // dotychczasowego zachowania (miasto NIE zmienia właściciela).
+                  const barbAllowCityCapture = _menuDifficulty === 'hard';
                   if (defRoster.some(u => u.ownerId === 0)) {
                     launchIncomingMapFieldBattle(
                       atkRoster,
@@ -26180,6 +26227,7 @@ async function boot(): Promise<void> {
                       'Atak barbarzyńców',
                       () => { /* reszta tury już poszła — tylko odśwież mapę */ },
                       worldTerrainFromHex(hexObj2),
+                      barbAllowCityCapture,
                     );
                     continue;
                   }
@@ -26190,6 +26238,8 @@ async function boot(): Promise<void> {
                     target.r,
                     teren2,
                     structBonusBarb,
+                    undefined,
+                    barbAllowCityCapture,
                   );
                 }
               } catch (eBarbCmd) {

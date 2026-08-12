@@ -969,6 +969,26 @@ export function destroyCampAt(
  *   getDiploRelation), so this is a rule, not a hard-coded exception -- omitted
  *   (tests, legacy callers) it defaults to "always engageable", identical to
  *   the previous unconditional behaviour.
+ * @param difficulty
+ *   P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (Maciej 2026-08-12): ECHO -- trzy
+ *   poziomy trudności = ISTNIEJĄCY suwak gry (_menuDifficulty), NIE nowe
+ *   ustawienie. `undefined` (wszyscy istniejący wołający/testy) = LEGACY
+ *   zachowanie, bit-identyczne z easy -- żadna nowa gałąź kodu się nie
+ *   uruchamia (gwarancja "easy bez zmian"). 'normal'/'hard': miasto BEZ
+ *   żadnej jednostki broniącej na jego heksie (sprawdzone przez `playerUnits`)
+ *   przestaje być celem "chase" (krok 3) -- po oczyszczeniu miasta z obrońców
+ *   jednostka celuje w NASTĘPNE najbliższe miasto/jednostkę, zamiast tkwić
+ *   przy tym samym (właściciel: "na średnim poziomie jeżeli jedno miasto
+ *   udaje mi się zniszczyć jednostki idą do kolejnego miasta"). Dla 'hard' to
+ *   dodatkowo za darmo wyklucza WŁASNE (już przejęte) miasto barbarzyńców --
+ *   `civCities` już filtruje `isBarbarian(c.ownerId)` niezależnie od tego pola.
+ *   / EN: three difficulty levels = the EXISTING game slider (_menuDifficulty),
+ *   not a new setting. `undefined` (all pre-existing callers/tests) = LEGACY
+ *   behaviour, bit-identical to easy -- no new code path runs (guarantees
+ *   "easy unchanged"). 'normal'/'hard': a city with NO defending unit on its
+ *   hex (checked via `playerUnits`) stops being a chase target (step 3) -- once
+ *   cleared of defenders the unit heads for the next-nearest city/unit instead
+ *   of camping the same one.
  */
 export function decideBarbarianMoves(
   barbUnits: BarbUnit[],
@@ -978,9 +998,11 @@ export function decideBarbarianMoves(
   map: GameMap,
   params: BarbParams,
   canEngageOwner?: (targetOwnerId: number) => boolean,
+  difficulty?: SeaRaidDifficulty,
 ): BarbCommand[] {
   const commands: BarbCommand[] = [];
   const engageOk = canEngageOwner ?? ((_targetOwnerId: number) => true);
+  const skipDefenselessCities = difficulty === 'normal' || difficulty === 'hard';
 
   // Only real players are valid targets.
   const enemies = playerUnits.filter(u => !isBarbarian(u.ownerId));
@@ -1027,7 +1049,14 @@ export function decideBarbarianMoves(
 
     // 3. Chase the nearest civilization target (unit or city).
     const nearestEnemyUnit = nearest(unit.q, unit.r, enemies);
-    const civCities = cities.filter(c => c.ownerId === undefined || !isBarbarian(c.ownerId));
+    const civCities = cities.filter(c => {
+      if (c.ownerId !== undefined && isBarbarian(c.ownerId)) return false;
+      // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (normal/hard): miasto bez ŻADNEJ
+      // jednostki broniącej na jego heksie nie jest już "chase" celem -- patrz
+      // komentarz `difficulty` przy sygnaturze funkcji.
+      if (skipDefenselessCities && !enemies.some(e => e.q === c.q && e.r === c.r)) return false;
+      return true;
+    });
     const nearestCity = nearest(unit.q, unit.r, civCities);
     const targets: { q: number; r: number; d: number }[] = [];
     if (nearestEnemyUnit !== undefined) {

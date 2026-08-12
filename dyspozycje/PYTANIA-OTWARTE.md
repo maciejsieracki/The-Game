@@ -13839,3 +13839,52 @@ Trade-flow jest najgroźniejszy z trzech (odjęcie u nadawcy jest bezwarunkowe �
 realne ZNISZCZENIE surowca, nie tylko zaniżony licznik). Naprawa: 2 dodatkowe strażniki tekstowe
 w `surow-civ-storage-test.cjs`, symetryczne do istniejącego dla wyrębu.
 **STATUS: dispatch szybkiej poprawki (tylko test, zero zmian logiki) w toku.**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 — SCALONE (worktree fix-barb-city-v1)
+
+Pełny zakres wg ECHO=A: easy/normal/hard = ISTNIEJĄCY suwak trudności gry (`_menuDifficulty`).
+
+**Faza 1 (wykonalność „hard" — miasto należące do barbarzyńców)**: BRAK twardego blokatora.
+Kluczowe odkrycie Operatora: dokładnie ten sam wzorzec (miasto z `ownerId` ujemnym sentinel, nie
+prawdziwym indeksem gracza) JUŻ działa w produkcji przez `REBEL_FACTION_OWNER_ID=-99`
+(mechanika buntu, `society-breakdown.ts`) — konsumowany przez DOKŁADNIE tę samą maszynerię,
+którą reużyto dla capture barbarzyńców (`applyCityCaptureAfterBattle`, `seedCityOwnerDefaults`,
+`applyPostCaptureLawOnCapture`). Brak `players[ownerId]`-stylu indeksowania tablicowego (wszystko
+przez `Map.get(ownerId) ?? fallback`), save/load generyczne bez walidacji ownerId, wiele miejsc
+już ZAKŁADA że miasto barbarzyńskie może istnieć (`isBarbarian(c.ownerId)` filtry na listach
+tras handlowych/warunków zwycięstwa/etykiet). Jedyny kosmetyczny (nie blokujący) efekt uboczny:
+miasto barbarzyńskie renderuje się z domyślną grecką kolorystyką (fallback `civTypeForOwner`) —
+poza zakresem ECHO, nie naprawiane.
+
+**Faza 2 (implementacja)**:
+- `decideBarbarianMoves` (`barbarians.ts`) — nowy opcjonalny param `difficulty`; pominięty przez
+  wszystkie stare wywołania/testy → zachowanie BAJT-IDENTYCZNE (easy nietknięte strukturalnie, nie
+  tylko konwencją). `normal`/`hard`: cele-miasta bez żywych obrońców na heksie są wykluczane z
+  listy celów (jednostka rusza dalej zamiast obozować przy oczyszczonym mieście) — rozwiązanie
+  niejednoznaczności: Operator wyprowadził „obronę" z już istniejącego argumentu `enemies`, bez
+  nowego stanu mutowalnego, zachowując czystość funkcji.
+- `main.ts::applyMapBattleOutcome` — nowa bramka `barbCaptureBlockedByRemainingDefenders`
+  (liczona PO `applyPostBattleMap`, true tylko gdy atakujący-barbarzyńca a na heksie bitwy nadal
+  stoi jednostka niebarbarzyńska) jako DODATKOWY warunek AND do istniejącej bramki
+  `allowCityCapture`/`siegeContext` — no-op dla gracza/AI (ta gałąź ocenia się nietrywialnie
+  tylko dla `isBarbarian`).
+  `doAutoPowerMapBattle`/`launchIncomingMapFieldBattle` — nowy opcjonalny `allowCityCapture`,
+  pominięty na wszystkich innych call site'ach (atak AI-vs-gracz) → niezmienione.
+  Handler ataku barbarzyńców — `barbAllowCityCapture = (_menuDifficulty === 'hard')`.
+- Easy/normal: `barbAllowCityCapture` zawsze `false` → gałąź capture nigdy się nie odpala dla
+  barbarzyńców, `city.ownerId` nietknięty — identyczne z dzisiejszym stanem.
+
+Nowy test `gra/tools/barb-city-behavior-test.cjs` (36 asercji): easy niezmienione (parametr
+pominięty i jawne `'easy'`), normal pomija miasto bez obrońców, hard pomija + regresja „miasto
+już barbarzyńskie nigdy nie jest celem", DOWÓD WYKONANIEM że `applyPostBattleMap` +
+`applyCityCaptureAfterBattle` (reużyty prymityw gracz/AI) akceptują `BARBARIAN_OWNER_ID` bez
+wyjątku i poprawnie ustawiają `city.ownerId`, statyczna weryfikacja całego okablowania `main.ts`
+w tym regresja że ścieżka AI-vs-gracz NIGDY nie dostaje `barbAllowCityCapture`.
+
+Bramki (zweryfikowane przez orkiestratora po scaleniu): `tsc` 0, `logic-test` 213/213,
+`barbarians-test` 167/167, `barb-camp-destruction-test` 39/39, `ai-home-defense-vs-barbarians-test`
+38/38, nowy `barb-city-behavior-test` **36/36**, higiena (tech-tree/research/unit-replace/
+ai-founding-territory) wszystkie zielone.
+
+**Scalone przez orkiestratora — temat mechaniki walki/capture, próg adwersarialny (3 Evaluatory)
+— dispatch w toku.**
