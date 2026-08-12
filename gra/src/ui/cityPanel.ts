@@ -4056,7 +4056,19 @@ function appendBreakdownLines(
     for (const l of lines) {
       const isNeg = l.neg === true || l.value < 0;
       const row = el('div', isNeg ? 'neg' : 'pos');
-      row.textContent = `${l.label}: ${l.value >= 0 ? '+' : ''}${l.value}`;
+      // P-PORZADEK-PANEL-CZYTELNOSC (Evaluator, komit 3b851610 dot. koloru): wiersz
+      // NEGATYWNY (isNeg) z wartością -0 (np. citizenUpkeepDisplayLines: -qty gdy
+      // qty===0, populacja 1-4) nie może pokazać „+0" — mylące w czerwonym wierszu, bo
+      // sugeruje przyrost mimo statusu "brak". `Math.abs(l.value) === 0` łapie zarówno
+      // 0, jak i -0. Dla zwykłych wartości (dodatnich, i ujemnych różnych od zera)
+      // zachowanie identyczne jak dawniej.
+      // EN: a NEGATIVE row (isNeg) with value -0 (e.g. citizenUpkeepDisplayLines: -qty
+      // when qty===0, population 1-4) must not read "+0" -- misleading in a red row,
+      // implies a gain despite the "missing" status. `Math.abs(l.value) === 0` catches
+      // both 0 and -0. Ordinary values (positive, and negative non-zero) keep today's
+      // behavior unchanged.
+      const showAsZero = isNeg && Math.abs(l.value) === 0;
+      row.textContent = `${l.label}: ${showAsZero ? '0' : `${l.value >= 0 ? '+' : ''}${l.value}`}`;
       box.appendChild(row);
     }
   }

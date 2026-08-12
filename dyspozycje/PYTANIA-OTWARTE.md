@@ -13692,3 +13692,26 @@ sprawdzić czy z czymś się też nie kłócą nowe reguły."*
 **STATUS: ABC zadane w czacie tej samej tury (P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1). NIE
 dispatchować implementacji przed odpowiedzią — zbyt duża przestrzeń projektowa (nowa mechanika
 capture, mapowanie na poziom trudności, ew. mechanizm łupienia) żeby zgadywać.**
+
+**ECHO Macieja: A.** Reużyć istniejący suwak trudności gry (easy/normal/hard); „zajęcie" na
+hard = zmiana `ownerId` miasta na barbarzyńców przez istniejącą infrastrukturę przejęcia miast
+(ta sama co capture gracz↔AI), miasto odbijalne; „łupienie" NIE jest osobnym nowym mechanizmem —
+realizuje się przez zachowanie na poziomie normal/hard (przejście do kolejnego miasta / przejęcie);
+easy zostaje bez zmian (dzisiejsze zachowanie: wybicie obrońców → wypchnięcie z heksu → bezczynność
+obok). **Dispatch implementacji w toku — patrz niżej.**
+
+## Batch: małe naprawy z rekomendacji Evaluatorów — SCALONE (worktree fix-small-batch-1)
+
+1. **3 brakujące parametry `era` w `ownerResourceCap`** (`main.ts`, battle-loot/trade-flow/
+   wyrąb lasu) — dopisane `empireEpochForOwner(<ownerId>)` jako 6. arg, z właściwym `ownerId`
+   per kontekst (`winOid` dla łupu, `flow.toOwnerId` dla handlu — odbiorca nie nadawca, `ownerId`
+   jednostki dla wyrębu). Naprawia rzeczywistą utratę zasobów gracza przy era≥2 i zapasie>10000,
+   znalezioną przez Evaluatora `26707dcf`. Zaktualizowany strażnik tekstowy w
+   `surow-civ-storage-test.cjs` (regex z 5-arg na tolerancyjny 6-arg wieloliniowy).
+2. **Tekst „+0" w czerwonym wierszu** (`cityPanel.ts::appendBreakdownLines`) — gdy `isNeg &&
+   value===±0`, tekst pokazuje samo „0" bez znaku (zamiast mylącego „+0"). 4 nowe asercje
+   (I9-I12) w `porzadek-panel-czytelnosc-test.cjs`.
+
+Bramki: `tsc` 0, `logic-test` 213/213, `porzadek-panel-czytelnosc-test` **67/67** (było 63/63),
+`surow-civ-storage-test` **43/14** (identyczne jak punkt odniesienia, sekcja G — dotknięta zmianą —
+bez FAIL). **Scalone przez orkiestratora, czeka na Evaluatora.**

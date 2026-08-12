@@ -396,8 +396,12 @@ console.log('\n-- G. main.ts (strażnik tekstowy): wyrąb lasu przekazuje cap do
 
   // cap MUSI być liczony przez ownerResourceCap (ta sama funkcja co reszta ekonomii),
   // nie hardkodowaną stałą -- kontroluje, że naprawa nie "przeszła" przez sztuczną wartość.
-  assert(/const drewnoCap = ownerResourceCap\(cities, cityBuilt, ownerId, data, _menuDifficulty\);/.test(loopBody),
-    'main.ts: drewnoCap liczony przez ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty) w pętli wyrębu');
+  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): wywołanie ma dziś 6 argumentów
+  // (dołożony `empireEpochForOwner(ownerId)` jako `era`) i jest sformatowane wieloliniowo
+  // przez ESLint/Prettier po dodaniu argumentu -- regex tolerancyjny na białe znaki/nowe
+  // linie między argumentami i między `ownerResourceCap(` a otwierającym `cities,`.
+  assert(/const drewnoCap = ownerResourceCap\(\s*cities,\s*cityBuilt,\s*ownerId,\s*data,\s*_menuDifficulty,\s*empireEpochForOwner\(ownerId\),?\s*\);/.test(loopBody),
+    'main.ts: drewnoCap liczony przez ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId)) w pętli wyrębu');
 }
 
 // --- summary ---------------------------------------------------------------

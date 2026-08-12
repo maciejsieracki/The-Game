@@ -20908,7 +20908,15 @@ async function boot(): Promise<void> {
               // reconcileOwnerResourceCaps (advanceCityEconomy) — bez capu łup (Brąz/Żelazo
               // i inne surowce jednostek) mógłby windować magazyn ponad limit tak samo jak
               // wyrąb lasu (drewno).
-              const battleLootCap = ownerResourceCap(cities, cityBuilt, winOid, data, _menuDifficulty);
+              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka ZWYCIĘZCY (winOid)
+              // odbierającego łup -- bez tego cap liczony tu byłby niższy niż realnie
+              // egzekwowany przez silnik od epoki 2 wzwyż, łup mógłby zniknąć w całości.
+              // EN: WINNER's (winOid, loot recipient) epoch -- otherwise the cap computed
+              // here would be lower than what the engine actually enforces from epoch 2
+              // onward, and loot could vanish entirely.
+              const battleLootCap = ownerResourceCap(
+                cities, cityBuilt, winOid, data, _menuDifficulty, empireEpochForOwner(winOid),
+              );
               for (const [key, amt] of Object.entries(battleLoot.resources)) {
                 if (amt > 0) creditOwnerResourceStock(cities, winOid, key, amt, battleLootCap);
               }
@@ -23000,7 +23008,16 @@ async function boot(): Promise<void> {
               // reconcileOwnerResourceCaps w tej samej turze, więc nadwyżka i tak zostałaby
               // ścięta na końcu ticku; cap dołożony tu defensywnie (spójnie z resztą), żeby
               // nie polegać na kolejności wywołań w przyszłych zmianach.
-              const tradeFlowCap = ownerResourceCap(cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty);
+              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka ODBIORCY (flow.toOwnerId
+              // -- ten sam ownerId co creditOwnerResourceStock niżej) -- bez tego cap byłby
+              // zaniżony od epoki 2 wzwyż i surowiec mógłby zniknąć zamiast dotrzeć do odbiorcy.
+              // EN: RECEIVER's (flow.toOwnerId, same ownerId as creditOwnerResourceStock below)
+              // epoch -- otherwise the cap would be too low from epoch 2 onward and the resource
+              // could vanish instead of reaching the recipient.
+              const tradeFlowCap = ownerResourceCap(
+                cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty,
+                empireEpochForOwner(flow.toOwnerId),
+              );
               creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount, tradeFlowCap);
             }
           } catch (eTradeFlow) {
@@ -23325,7 +23342,14 @@ async function boot(): Promise<void> {
               // więc bez capu kilka równoległych wyrębów windowało Drewno ponad limit
               // magazynu bez ograniczenia — cap liczony identycznie jak w
               // tickEmpireResourcePipeline / buildEmpireResourceRows (ownerResourceCap).
-              const drewnoCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
+              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka WŁAŚCICIELA jednostki
+              // wyrąbującej (ownerId = st.ownerId) -- bez tego cap byłby zaniżony od epoki 2
+              // wzwyż i plon wyrębu mógłby nie dać nic.
+              // EN: epoch of the CLEARING unit's owner (ownerId = st.ownerId) -- otherwise the
+              // cap would be too low from epoch 2 onward and forest clearing could yield nothing.
+              const drewnoCap = ownerResourceCap(
+                cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
+              );
               creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, drewnoCap);
               showHintMessage(
                 'Wyrąb: +' + drewnoCredit + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',

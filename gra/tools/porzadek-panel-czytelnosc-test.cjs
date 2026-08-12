@@ -303,6 +303,31 @@ console.log('\n-- C-H. cityPanel.ts (tekst): format blokowy + wiring populacji/%
     assert(classify({ value: -7 }) === true, 'I7: brak neg, value ujemne -> nadal "neg" (fallback zachowany dla innych wołających appendBreakdownLines)');
     assert(classify({ value: 4 }) === false, 'I8: brak neg, value dodatnie -> nadal "pos" (fallback zachowany)');
   }
+
+  // -------------------------------------------------------------------------
+  // I9-I12 (Evaluator, 2026-08-12): kolor (I1-I8 wyżej) naprawiony wcześniej (3b851610),
+  // ale SAM TEKST liczby w czerwonym wierszu nadal czytał się "+0" dla -0 -- `l.value >= 0`
+  // jest w JS PRAWDĄ dla -0, więc znak "+" trafiał do wiersza status "brak" (populacja
+  // miasta 1-4, `Math.floor(pop*0,2)===0`). Naprawa: `showAsZero = isNeg &&
+  // Math.abs(l.value) === 0` -- gdy true, tekst to "0" bez znaku (ani + ani -0); dla
+  // zwykłych wartości (dodatnich i ujemnych różnych od zera) formuła nie zmienia wyniku.
+  // Dowód wykonaniem: wycięta REALNA formuła tekstu z appendBreakdownLines, uruchomiona
+  // na tych samych klasach wejść co I5-I8 (neg + zero, zwykły dodatni, zwykły ujemny).
+  // -------------------------------------------------------------------------
+  const textFormulaMatch = abl.body.match(
+    /const showAsZero = isNeg && Math\.abs\(l\.value\) === 0;\s*\n\s*row\.textContent = `\$\{l\.label\}: \$\{showAsZero \? '0' : `\$\{l\.value >= 0 \? '\+' : ''\}\$\{l\.value\}`\}`;/,
+  );
+  assert(!!textFormulaMatch, 'I9: appendBreakdownLines zawiera formułę tekstu sprzęgniętą z isNeg/showAsZero (nie goły `l.value >= 0 ? "+" : ""` bez świadomości -0)');
+  if (textFormulaMatch) {
+    const renderText = new Function('l', `
+      const isNeg = l.neg === true || l.value < 0;
+      const showAsZero = isNeg && Math.abs(l.value) === 0;
+      return \`\${l.label}: \${showAsZero ? '0' : \`\${l.value >= 0 ? '+' : ''}\${l.value}\`}\`;
+    `);
+    eq(renderText({ label: 'Kamień', value: -0, neg: true }), 'Kamień: 0', 'I10: value=-0, neg=true (brakujący surowiec, populacja 1-4) -> tekst "Kamień: 0" BEZ znaku + i BEZ "-0" (naprawiony bug Evaluatora)');
+    eq(renderText({ label: 'Drewno', value: 5, neg: false }), 'Drewno: +5', 'I11: value=5, neg=false (zwykły dodatni) -> tekst "Drewno: +5" (bez regresji)');
+    eq(renderText({ label: 'Glina', value: -5, neg: true }), 'Glina: -5', 'I12: value=-5, neg=true (zwykły ujemny) -> tekst "Glina: -5" (bez regresji)');
+  }
 }
 
 console.log(`\nporzadek-panel-czytelnosc-test: ${passed} passed, ${failed} failed`);
