@@ -15984,3 +15984,13 @@ filtra do wersji sprzed naprawy daje 7 czerwonych asercji (26→19 budynków). `
 Kolejny slot uzupełniony naprawą U2 — lustrzana asymetria do już naprawionego U1: gracz
 proponujący NAP/wasal przy Relacji=61 widział "Brakuje PW" mimo że silnik akceptuje (7 znanych
 przypadków). Świadomie odłożone przy naprawie U1 jako osobny temat backlogu.
+
+## Nagłówek "Dyplomacja" w EOT — naprawa N1+N2+N3 (7b02eb2d) — ZAMKNIĘTE
+
+N1: `DIPLOMACY_MSG_PREFIX` wyeksportowany, użyty w 4 miejscach `main.ts` zamiast literałów —
+potwierdzone: literówka teraz daje błąd kompilacji (`TS2552`) zamiast cichej regresji. N2: nowy
+przypadek testowy "prefiks w środku zdania" (15→18/18), potwierdzony łapiący mutację
+`startsWith`→`includes` (16/18 po mutacji). N3: komentarz PL+EN dokumentujący priorytet markera
+AI-AI nad prefiksem dyplomacji przy teoretycznej kolizji (dziś nieosiągalne, zweryfikowane).
+`tsc` 0 błędów, `eot-event-defer-test` 5/5, `logic-test` 213/213. **ZAMKNIĘTE** (commit
+`960f4515`). Temat 7b02eb2d w pełni domknięty.
