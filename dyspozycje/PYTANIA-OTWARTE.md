@@ -16461,3 +16461,25 @@ przyszłych pól; (3) nota 2 — tooltip ⇈ do przeredagowania po naprawie B1; 
 niezmiennika "front nigdy nie niesie zbankowanego postep". **Nota 4 (sanitizeProductionQueue
 też przekazuje darmową Pracę przy usunięciu frontu) zarejestrowana OSOBNO, pre-istniejąca, poza
 zakresem tej naprawy.**
+
+---
+
+## Audyt C-030/C-031 (2026-08-13, w ramach standing autoryzacji autonomicznej) — LISTA PUSTA
+
+`grep -n 'STATUS: \*\*OTWARTE' dyspozycje/PYTANIA-OTWARTE.md` — 23 trafienia. Sprawdzone
+wszystkie: 3 nagłówki-relikty z historycznych rejestracji już zamkniętych tego samego dnia
+sesji (P-ZUZYCIE-OBYWATELE, P-PROMOCJA-FRONT, P-BARBARZYNCY-KRAZENIE — ECHO/zamknięcie widoczne
+niżej w pliku, tekst nagłówka to oryginalna rejestracja, nie aktualny stan), 3 dopasowania to
+odwołania w treści innych wpisów (nie nagłówki `## `). Realne otwarte nagłówki: P-HEKS-ZLOZE
+i P-KOLOR-SUROWCE (świadomie odłożone, cytat Macieja), P-PANSTWO-MIASTO-ZNIKA (wstrzymane na
+wyraźną prośbę), R-FORT-STRAZNICA (odłożone na „krok 2", decyzja Macieja 2026-08-09),
+R-KONFIGURATOR-CYWILIZACJI / R-EPOKA-KAMIEN / R-SUROWIEC-CYNA / R-AI-UCZENIE-SIE (wszystkie 4:
+„do zapisania, nie do podjęcia teraz" — wprost zarejestrowane per §2 CLAUDE.md, nie
+dispatchowane celowo), P-GARNIZON-KONIUNKCJA (pytanie ABC czeka na odpowiedź Macieja — patrz
+notatka wyżej o rozbieżności między jego opisem słownym a faktycznym mapowaniem pól
+`inGarnizon`/`ufortyfikowanyWPolu`, wciąż nierozstrzygnięta). Żaden nowy dispatch nie wymagany.
+
+Stan agentów w tle: `fix-ekonomia-skala-5x` (R-EKONOMIA-SUROWCE-SKALA-5X-Q1) i
+`fix-promote-front-progress-r2` (runda 2 B1) — oba jeszcze pracują. Workflow audytu
+CivPedia/Poradnik/ściąg (`wf_600b5a93-598`) — w toku. Żadnych nowych zgłoszeń do zarejestrowania
+od czasu ostatniego wpisu.
