@@ -827,6 +827,62 @@ console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.cl
       + 'przyszłe PIĄTE miejsce cityOrderState.clear() bez odpowiednika nie zostało pominięte po '
       + 'cichu bez wykrycia',
   );
+
+  // -------------------------------------------------------------------------
+  // K3 (Runda 6, ta sama "PIĄTA szczelina" Evaluatora -- PYTANIA-OTWARTE.md): K1/K2 liczą
+  // wystąpienia w CAŁYM main.ts, ale nie sprawdzają UMIEJSCOWIENIA. Gdyby jeden z 5
+  // "citizenUpkeepByOwner.clear()" leżał GDZIE INDZIEJ niż wewnątrz restoreGameFromSave (np.
+  // usunięty stamtąd i zduplikowany w funkcji startu nowej gry), K1 nadal widziałby 5 (liczba
+  // się zgadza), K2 nadal 5>=4 (nierówność się zgadza) -- OBIE zielone, mimo że naprawa punktu 1
+  // tej samej rundy (regresja load-save, commit 13f62b0b) faktycznie by zniknęła. K3 domyka tę
+  // szóstą szczelinę: wycina okno tekstu SAMEJ funkcji restoreGameFromSave dopasowaniem klamer
+  // od 'function restoreGameFromSave(' (NIE kotwicząc na "następna `    function `" --
+  // restoreGameFromSave jest OSTATNIĄ funkcją na tym poziomie wcięcia w main.ts, taka kotwica by
+  // nie zadziałała) i sprawdza DOKŁADNIE wewnątrz tego okna, nie w całym pliku.
+  // -------------------------------------------------------------------------
+
+  /** Balansuje nawiasy klamrowe od podanego indeksu '{' i zwraca indeks TUŻ ZA dopasowanym '}'.
+   *  (ten sam wzorzec co ai-founding-territory-test.cjs, balancedBraceEnd). */
+  function balancedBraceEnd(src, openBraceIdx) {
+    let depth = 0;
+    let i = openBraceIdx;
+    for (; i < src.length; i++) {
+      if (src[i] === '{') depth++;
+      else if (src[i] === '}') {
+        depth--;
+        if (depth === 0) { i++; break; }
+      }
+    }
+    return i;
+  }
+
+  // Kotwica/okno to twarde WARUNKI WSTĘPNE tej bramki, nie osobne asercje do policzenia --
+  // "dokładnie jedna nowa asercja K3" (zakres zgłoszenia). Brak kotwicy/pustego okna nie ma
+  // sensownej wartości "czerwono policzonej" -- to awaria samego harnessu testu, więc rzuca
+  // wyjątkiem zamiast wchodzić do passed/failed.
+  const RESTORE_FN_ANCHOR = 'function restoreGameFromSave(';
+  const restoreFnStart = mainSrcStripped.indexOf(RESTORE_FN_ANCHOR);
+  if (restoreFnStart === -1) {
+    throw new Error('K3: main.ts nie zawiera kotwicy "function restoreGameFromSave(" (po stripLineComments) -- harness testu wymaga naprawy, nie liczy się jako FAIL asercji');
+  }
+  const restoreBodyBraceStart = mainSrcStripped.indexOf('{', restoreFnStart);
+  const restoreBodyEnd = balancedBraceEnd(mainSrcStripped, restoreBodyBraceStart);
+  const restoreWindow = mainSrcStripped.slice(restoreFnStart, restoreBodyEnd);
+  if (restoreWindow.length === 0) {
+    throw new Error('K3: okno tekstu ciała restoreGameFromSave wycięte dopasowaniem klamer jest puste -- harness testu wymaga naprawy, nie liczy się jako FAIL asercji');
+  }
+
+  const restoreByOwnerClearCount = (restoreWindow.match(/citizenUpkeepByOwner\.clear\(\)/g) || []).length;
+  const restoreOrderStateClearCount = (restoreWindow.match(/cityOrderState\.clear\(\)/g) || []).length;
+  assert(
+    restoreByOwnerClearCount === 1 && restoreOrderStateClearCount === 0,
+    'K3 (Runda 6, umiejscowienie, nie tylko liczba w całym pliku): WEWNĄTRZ ciała restoreGameFromSave '
+      + '(okno wycięte dopasowaniem klamer) jest dokładnie 1 wystąpienie "citizenUpkeepByOwner.clear()" '
+      + '(naprawa punktu 1 tej samej rundy, commit 13f62b0b) i 0 wystąpień "cityOrderState.clear()" '
+      + `(świadomie, odłożony temat) -- got byOwner=${restoreByOwnerClearCount}, orderState=${restoreOrderStateClearCount}. `
+      + 'K1/K2 liczą wystąpienia w CAŁYM main.ts i NIE wykrywają PRZENIESIENIA jednego z 5 '
+      + 'citizenUpkeepByOwner.clear() poza tę funkcję, dopóki suma w pliku i nierówność 5>=4 się zgadzają',
+  );
 }
 
 // --- summary ---------------------------------------------------------------
