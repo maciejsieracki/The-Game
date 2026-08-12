@@ -1501,6 +1501,51 @@ function basketItemMaxQty(
   return undefined;
 }
 
+/**
+ * Tożsamość pozycji koszyka — dwie pozycje o tej samej tożsamości są "tą samą propozycją"
+ * (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE). Dla `zywnosc` samo `id` już JEST cityId
+ * (patrz readItemFromForm), dopisanie `cityId` jest więc no-opem — zostawione jawnie, żeby
+ * nie polegać cicho na tym, że oba pola akurat są dziś równe.
+ * / EN: identity key for a basket item; two items sharing it are "the same proposal".
+ */
+function basketItemIdentity(item: BasketItem): string {
+  return item.typ + '::' + item.id + (item.typ === 'zywnosc' ? '::' + (item.cityId ?? '') : '');
+}
+
+/**
+ * R-DYPLO-DUPLIKAT-KOSZYK (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE, 2026-08-12): dodanie
+ * pozycji o TEJ SAMEJ tożsamości (typ+id[+cityId dla żywności]), która już jest w koszyku po
+ * tej samej stronie:
+ *  - typy z sensowną, sumowalną ilością (zloto/praca/zywnosc/surowiec_ilosc — te same typy co
+ *    `basketItemQtyEditable`, bo to one dostają suwak ilości w wierszu koszyka) -> ZSUMUJ
+ *    ilość z istniejącą pozycją, przycięte do tego samego limitu co ręczna zmiana ilości
+ *    (`basketItemMaxQty`) zamiast dokładać drugi osobny wiersz;
+ *  - typy bez pola ilości (tech/jednostka/zloze/surowiec_boolean — jedna technologia/jednostka/
+ *    dostęp to jedna, niepodzielna oferta) -> BLOKADA, koszyk zostaje BEZ ZMIAN. Druga kopia tej
+ *    samej technologii (np. 4× "Obróbka drewna" ze zrzutu właściciela) nie ma sensu nawet po
+ *    zsumowaniu ilości, bo ilości tu w ogóle nie ma.
+ * Eksport do testu regresyjnego (tools/diplomacy-basket-duplicate-test.cjs).
+ * / EN: adding an item with the same identity as one already in the basket either sums the
+ * quantity (for quantity-bearing types) or is blocked outright (for one-of-a-kind types like a
+ * single technology/unit/access grant, where a second copy is meaningless even summed).
+ */
+export function addOrMergeBasketItem(
+  items: BasketItem[],
+  newItem: BasketItem,
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+): BasketItem[] {
+  const identity = basketItemIdentity(newItem);
+  const idx = items.findIndex(it => basketItemIdentity(it) === identity);
+  if (idx < 0) return [...items, newItem];
+  if (!basketItemQtyEditable(newItem)) return items; // blokada duplikatu — bez zmian
+  const existing = items[idx]!;
+  const summedQty = (existing.ilosc ?? 0) + (newItem.ilosc ?? 0);
+  const max = basketItemMaxQty(existing, side, ctx);
+  const clamped = max != null ? Math.min(max, summedQty) : summedQty;
+  return items.map((it, i) => (i === idx ? { ...existing, ilosc: clamped } : it));
+}
+
 function basketRowQtyStepperHtml(
   item: BasketItem,
   side: 'give' | 'receive',
@@ -2264,8 +2309,11 @@ export function showTradeBasketModal(
           else receiveItems = receiveItems.map((it, i) => (i === editIdx ? item : it));
           editingItem = null;
         } else {
-          if (side === 'give') giveItems = [...giveItems, item];
-          else receiveItems = [...receiveItems, item];
+          // R-DYPLO-DUPLIKAT-KOSZYK: dodanie tej samej propozycji drugi raz sumuje ilość
+          // (dla typów, gdzie to ma sens) albo jest blokowane (patrz addOrMergeBasketItem) —
+          // zamiast dokładać osobny, zduplikowany wiersz.
+          if (side === 'give') giveItems = addOrMergeBasketItem(giveItems, item, 'give', ctx);
+          else receiveItems = addOrMergeBasketItem(receiveItems, item, 'receive', ctx);
         }
         refresh();
       });
