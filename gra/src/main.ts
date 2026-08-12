@@ -1013,7 +1013,7 @@ import {
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
-  pruneEmptyCampsAfterCombat,
+  destroyCampAt,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -18559,8 +18559,14 @@ async function boot(): Promise<void> {
       const deductedRuchMarch = pulaPrzedMarch - stackRuchLeft(stack);
       if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
       let hutCollected = false;
+      let campDestroyed = false;
       if (result.movePath.length > 0) {
         if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(result.movePath);
+        // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze graczem (guard
+        // `u.ownerId !== 0` wyżej) -- nigdy barbarzyńcą, więc bez isBarbarian.
+        // / EN: `u` is always the player (ownerId !== 0 guard above) -- never
+        // a barbarian, so no isBarbarian check needed here.
+        campDestroyed = checkBarbCampDestructionAlongPath(result.movePath);
         const bonusChanged = applyCityVisitBonusesAlongPath(
           stack,
           result.movePath,
@@ -18568,8 +18574,8 @@ async function boot(): Promise<void> {
         );
         if (bonusChanged) syncUnitsRender();
       }
-      // checkVillageRewardAt już woła refreshFog({ skipVeteranEducation }) — nie dubluj ani nie nadpisuj toastu chatki.
-      if (!hutCollected) refreshFog();
+      // checkVillageRewardAt/checkBarbCampDestroyedAt już wołają refreshFog — nie dubluj ani nie nadpisuj toastu chatki.
+      if (!hutCollected && !campDestroyed) refreshFog();
       validateActiveSieges();
       promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost, deductedRuchMarch);
 
@@ -18803,6 +18809,50 @@ async function boot(): Promise<void> {
         if (checkVillageRewardAt(h.q, h.r)) collected = true;
       }
       return collected;
+    }
+
+    /**
+     * P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: obóz barbarzyński niszczony jest
+     * przez WEJŚCIE (najechanie) jednostki -- gracza LUB AI -- na jego heks,
+     * analogicznie do wiosek neutralnych wyżej (`checkVillageRewardAt`). W
+     * przeciwieństwie do wiosek: BEZ nagrody, i dotyczy każdej cywilizacji (nie
+     * tylko gracza) -- WOŁAJĄCY musi sam wykluczyć jednostki barbarzyńskie
+     * (isBarbarian(u.ownerId)) PRZED wywołaniem, ta funkcja tego nie robi (nie
+     * zna właściciela wchodzącej jednostki -- patrz destroyCampAt).
+     * Zniszczenie obozu NIE dotyka jednostek barbarzyńskich już
+     * zaspawnowanych na mapie (`units`) -- te walczą dalej normalnie; jedyny
+     * efekt to zniknięcie obozu z `barbCamps`, więc tickCamps() przestaje z
+     * niego spawnować nowe jednostki.
+     * / EN: a barbarian camp is destroyed by a unit -- player OR AI --
+     * ENTERING its hex, mirroring the neutral-village hook above. Unlike
+     * villages: no reward, and it applies to every civilization (not just the
+     * player) -- the CALLER must exclude barbarian-owned movers itself
+     * (isBarbarian(u.ownerId)) BEFORE calling, this function does not (it has
+     * no notion of who is entering -- see destroyCampAt). Destruction never
+     * touches barbarian units already spawned on the map (`units`) -- they
+     * keep fighting normally; the only effect is the camp disappearing from
+     * `barbCamps`, so tickCamps() stops spawning new units from it.
+     */
+    function checkBarbCampDestroyedAt(q: number, r: number): boolean {
+      const result = destroyCampAt(barbCamps, q, r);
+      if (result.destroyedCampId === null) return false;
+      barbCamps = result.camps;
+      console.log(`[Barbarzyncy] Obóz zniszczony (najechany): ${result.destroyedCampId}`);
+      refreshFog();
+      return true;
+    }
+
+    /** Sprawdza zniszczenie obozu barbarzyńskiego na każdym unikalnym heksie ścieżki. */
+    function checkBarbCampDestructionAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {
+      const seen = new Set<string>();
+      let destroyed = false;
+      for (const h of hexes) {
+        const k = keyOf(h.q, h.r);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        if (checkBarbCampDestroyedAt(h.q, h.r)) destroyed = true;
+      }
+      return destroyed;
     }
 
     /** Animowany ruch (merge / taktyka — natychmiast, bez planowania A3). */
@@ -20806,38 +20856,38 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
       });
 
-      // P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU: obóz to węzeł spawnu
-      // NIEZALEŻNY od jednostek na mapie (barbarians.ts) -- bez tego haka
-      // garnizon mógł zginąć tutaj, a obóz zostawał i dalej produkował.
-      // Sprawdzone PO applyPostBattleMap (usuwa poległych z `units` in-place),
-      // więc "poległ" = był w atkRoster/defRoster PRZED walką, a teraz go w
-      // `units` nie ma -- działa identycznie dla auto-strat (lossAtkPct/
-      // lossDefPct) i dla ręcznej bitwy 3D (manualSurvivors), bo obie ścieżki
-      // mutują ten sam `units` przez splice.
-      // / EN: a camp is a spawn node fully decoupled from map units -- without
-      // this hook, its garrison could die here while the camp stayed and kept
-      // spawning. Checked AFTER applyPostBattleMap (removes casualties from
-      // `units` in place); "died" = was in atkRoster/defRoster before the
-      // battle and is now gone from `units` -- works identically for
-      // auto-loss and manual 3D-battle survivor paths, since both splice the
-      // same `units` array.
-      const barbRosterBeforeBattle = [...atkRoster, ...defRoster].filter(
-        u => isBarbarian(u.ownerId),
-      ) as BarbUnit[];
-      if (barbRosterBeforeBattle.length > 0) {
-        const defeatedBarbUnits = barbRosterBeforeBattle.filter(
-          u => !units.some(x => x.id === u.id),
-        );
-        if (defeatedBarbUnits.length > 0) {
-          const survivingBarbUnits = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
-          const pruned = pruneEmptyCampsAfterCombat(
-            barbCamps, defeatedBarbUnits, survivingBarbUnits, barbParams.campControlRadius,
+      // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
+      // niszczy WEJŚCIE (najechanie) jednostki na jego heks -- NIE walka /
+      // zliczanie garnizonu (poprzednia mechanika tutaj, usunięta -- Evaluator
+      // znalazł w niej realną regresję, właściciel ustalił że to zła
+      // mechanika). Bitwa na mapie sama w sobie NIE niszczy obozu -- ale gdy
+      // zwycięski ATAKUJĄCY (applyPostBattleMap → moveAtkRosterOntoBattleHex,
+      // wyżej) faktycznie wchodzi na heks bitwy (battleQ, battleR), to jest
+      // dokładnie taka sama "entrata" jak zwykły ruch -- stąd sprawdzenie tu,
+      // PO applyPostBattleMap (żeby widzieć finalne pozycje jednostek).
+      // Barbarzyńcy nigdy nie niszczą swojego obozu tym haczykiem (isBarbarian
+      // wyklucza ich jako "atakującego" w tym sensie) -- symetria gracz/AI
+      // zapewniona tym, że atkOwnerId to zwykły ownerId (0 = gracz, 1..N = AI),
+      // bez rozróżniania kto to jest.
+      // / EN: a camp is destroyed by a unit ENTERING its hex -- NOT by combat /
+      // garrison counting (the previous mechanic here, removed -- the
+      // Evaluator found a real regression in it, the owner determined it was
+      // the wrong mechanic). The battle itself does not destroy the camp --
+      // but when the winning ATTACKER (applyPostBattleMap →
+      // moveAtkRosterOntoBattleHex, above) actually steps onto the battle hex
+      // (battleQ, battleR), that is exactly the same "entry" as an ordinary
+      // move -- hence the check here, AFTER applyPostBattleMap (so it sees
+      // final unit positions). Barbarians never destroy their own camp via
+      // this hook (isBarbarian excludes them as an "attacker" here) -- player/
+      // AI symmetry comes for free since atkOwnerId is a plain ownerId (0 =
+      // player, 1..N = AI) with no further distinction.
+      if (mapWinner === 'atakujacy') {
+        const atkOwnerId = atkRoster[0]?.ownerId;
+        if (atkOwnerId !== undefined && !isBarbarian(atkOwnerId)) {
+          const attackerNowOnBattleHex = units.some(
+            u => u.ownerId === atkOwnerId && u.q === battleQ && u.r === battleR,
           );
-          if (pruned.removedCampIds.length > 0) {
-            barbCamps = pruned.camps;
-            console.log(`[Barbarzyncy] Obóz zniszczony (ostatni obrońca pokonany): ${pruned.removedCampIds.join(', ')}`);
-            refreshFog();
-          }
+          if (attackerNowOnBattleHex) checkBarbCampDestroyedAt(battleQ, battleR);
         }
       }
 
@@ -22782,6 +22832,12 @@ async function boot(): Promise<void> {
               endTurnAnimHutCollected = checkVillageRewardsAlongPath(anim.pathHexes);
             }
             if (anim.pathHexes.length > 0) {
+              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `anim` jest zawsze
+              // jednostką gracza (jedyne miejsce ustawiające `anim` to
+              // startAnimatedMove, playerStackAt) -- nigdy barbarzyńcą.
+              // / EN: `anim` always tracks a player unit (the sole assignment
+              // site is startAnimatedMove/playerStackAt) -- never a barbarian.
+              checkBarbCampDestructionAlongPath(anim.pathHexes);
               const bonusChanged = applyCityVisitBonusesAlongPath(
                 stack,
                 anim.pathHexes,
@@ -22809,6 +22865,11 @@ async function boot(): Promise<void> {
               if (u.ownerId === 0) {
                 if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
               }
+              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: runScoutsAutoExplore filtruje
+              // wewnętrznie do playerOwnerId (0) -- `u` jest zawsze graczem, nigdy
+              // barbarzyńcą. / EN: runScoutsAutoExplore filters internally to
+              // playerOwnerId (0) -- `u` is always the player, never a barbarian.
+              checkBarbCampDestroyedAt(u.q, u.r);
               if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === 0)) {
                 syncUnitsRender();
               }
@@ -25487,6 +25548,13 @@ async function boot(): Promise<void> {
                     u.ruchLeft = 0;
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     applyEmbarkStateAfterMove([u], map);
+                    // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
+                    // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
+                    // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).
+                    // / EN: symmetry with player movement -- `ownerId` here is always
+                    // a real AI civilization (1..N), never barbarians (they have
+                    // their own movement loop below, outside AICommand).
+                    checkBarbCampDestroyedAt(last.q, last.r);
                     if (applyCityVisitBonusesAlongPath([u], path, false)) {
                       syncUnitsRender();
                     }
@@ -26461,24 +26529,32 @@ async function boot(): Promise<void> {
 
           // GRAFIKA-TEREN-2 / WIOSKI: jednostka gracza kończy ruch na wiosce -> nagroda + znika.
           // Najpierw chatka (własny refreshFog ze skip), potem mgła tylko gdy bez chatki.
+          // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze jednostką gracza
+          // (jedyne miejsce ustawiające `anim` to startAnimatedMove/playerStackAt) --
+          // nigdy barbarzyńcą, więc bez isBarbarian. / EN: `u` is always the player's
+          // own unit (the sole `anim` assignment site is startAnimatedMove/
+          // playerStackAt) -- never a barbarian, so no isBarbarian check.
           let hutCollected = false;
+          let campDestroyed = false;
           if (u) {
             if (pathHexes.length > 0) {
               if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(pathHexes);
+              campDestroyed = checkBarbCampDestructionAlongPath(pathHexes);
               const bonusChanged = applyCityVisitBonusesAlongPath(
                 stack,
                 pathHexes,
                 u.ownerId === 0,
               );
               if (bonusChanged) syncUnitsRender();
-            } else if (u.ownerId === 0) {
-              hutCollected = checkVillageRewardAt(destQ, destR);
-              if (applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
+            } else {
+              if (u.ownerId === 0) hutCollected = checkVillageRewardAt(destQ, destR);
+              campDestroyed = checkBarbCampDestroyedAt(destQ, destR);
+              if (u.ownerId === 0 && applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
                 syncUnitsRender();
               }
             }
           }
-          if (!hutCollected) refreshFog();
+          if (!hutCollected && !campDestroyed) refreshFog();
 
           if (u) tryAutoCaptureEmptyCityAt(destQ, destR, stack);
           promptMergeIfCoLocated(

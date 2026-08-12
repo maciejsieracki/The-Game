@@ -13621,3 +13621,33 @@ Dowód mutacyjny x2: usunięcie strażnika grupy → czerwono (19/1), usunięcie
 temat dla przyszłego Operatora Opus 5).
 Bramki: `tsc` 0, `logic-test` 213/213, `merge-decor-no-regress-test` **20/20** (było 8/8).
 **Scalone przez orkiestratora, czeka na Evaluatora.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 — SCALONA REIMPLEMENTACJA (worktree fix-barb-camp-v2)
+
+Wdrożona DOKŁADNIE wg ECHO właściciela (wejście na heks niszczy obóz bezpowrotnie, jednostki
+obozu NIE są usuwane i nadal walczą, tylko nowe przestają się generować):
+- `pruneEmptyCampsAfterCombat` (runda 1, błędna mechanika combat/garrison) USUNIĘTA CAŁKOWICIE.
+- Nowa czysta funkcja `destroyCampAt(camps, q, r)` w `barbarians.ts` — usuwa WYŁĄCZNIE obóz na
+  dokładnym heksie, bez parametru `units` w sygnaturze (strukturalnie nie może dotknąć jednostek).
+- Wpięta analogicznie do `checkVillageRewardAt` w KAŻDYM miejscu kończącym ruch (gracz i AI):
+  `applyMarchSegmentInstant`, animacja końca tury, auto-explore zwiadowcy, handler AI `move`,
+  dokończenie animacji (oba warianty z/bez ścieżki) — 6 miejsc, owner-agnostic.
+  Ścieżka bitewna: destrukcja obozu następuje gdy zwycięski atakujący FIZYCZNIE wchodzi na heks
+  (`moveAtkRosterOntoBattleHex`), nie w momencie rozstrzygnięcia walki — to jest odpowiedź na
+  pytanie "obrona obozu": generyczna blokada zajętego heksu + advance-po-zwycięstwie już razem
+  dają "zaatakuj żeby oczyścić obrońcę, wejście niszczy obóz" bez dodatkowego kodu.
+- Nowy test `barb-camp-destruction-test.cjs` (39 asercji): czysta funkcja, integracja `tickCamps`,
+  DOWÓD że jednostki na mapie są nietknięte (sygnatura bez `units` + snapshot tożsamości
+  przed/po), owner-agnostic, strażniki tekstowe na wpięcie w main.ts (main.ts nie jest
+  bundlowany/wykonywany w testach tego repo — brak DOM/THREE), regres pilnujący że mechanika
+  rundy 1 zniknęła CAŁKOWICIE (nie tylko dostrojona).
+- Sekcja 11 (17 asercji rundy 1) usunięta z `barbarians-test.cjs` — 167/167 pozostałych zielone.
+
+Bramki (zweryfikowane PONOWNIE przez orkiestratora po scaleniu, nie tylko przez Operatora):
+`tsc` 0, `logic-test` 213/213, `barbarians-test` 167/167, `barb-camp-destruction-test` 39/39,
+`ai-home-defense-vs-barbarians-test` 38/38, + higiena (tech-tree/research/unit-replace/
+ai-founding-territory) wszystkie zielone. `map-gen-regression-test` NIE ukończony w czasie
+(bardzo wolny, kod tego zadania nie dotyka generowania mapy — nieblokujące).
+
+**Scalone przez orkiestratora, temat dotyczy mechaniki gry (P0 combat-adjacent) — dispatch
+Evaluatora.**

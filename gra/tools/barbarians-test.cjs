@@ -34,7 +34,6 @@ export {
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
-  pruneEmptyCampsAfterCombat,
 } from '../src/game/barbarians';
 export {
   hexDistance, computePath, computeReachable, keyOf,
@@ -73,7 +72,6 @@ const {
   FALLBACK_SEA_BARB_PARAMS, loadSeaBarbParams, spawnSeaCamps,
   spawnSeaPeoplesRaiders, purgeNavalCamps, SEA_WAVE_CAMP_ID,
   decideSeaPeoplesRaids, collectSeaRaidTargets, isCoastalCity,
-  pruneEmptyCampsAfterCombat,
   hexDistance, computePath, computeReachable,
   isWaterTerrain, embarkMoveCost, EMBARKED_WATER_MOVE_COST,
   EMBARK_TECH, EMBARK_DEFENSE_MULT,
@@ -731,97 +729,6 @@ assert(barbariansActive(P.startTurn, P, EPOKA_SREDNIOWIECZE_BARBARZY) === false,
     const e = player('e', 6, 5);
     const cmds = decideBarbarianMoves([b1], [e], [], [], m, P);
     eq(cmds.length, 0, 'land logic skips embarked/seaRaider units');
-  }
-}
-
-// ===========================================================================
-// 11. P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU -- pruneEmptyCampsAfterCombat
-// ===========================================================================
-{
-  const R = P.campControlRadius; // 3 (fallback)
-
-  // 11a. Ostatni obrońca poległ -> obóz znika.
-  {
-    const camp = { id: 'c1', q: 5, r: 5, spawnCooldown: 0 };
-    const dead = barb('b1', 5, 6, { campId: 'c1' }); // dist 1 <= R, poległ
-    const res = pruneEmptyCampsAfterCombat([camp], [dead], [], R);
-    eq(res.camps.length, 0, 'last defender down -> camp removed');
-    eq(res.removedCampIds.length, 1, 'one camp id reported removed');
-    eq(res.removedCampIds[0], 'c1', 'removed camp id matches');
-  }
-
-  // 11b. Garnizon wciąż żywy (inny wojownik tego samego obozu) -> obóz zostaje.
-  {
-    const camp = { id: 'c1', q: 5, r: 5, spawnCooldown: 0 };
-    const dead = barb('b1', 5, 6, { campId: 'c1' });
-    const alive = barb('b2', 4, 5, { campId: 'c1' }); // dist 1 <= R, wciaz zywy
-    const res = pruneEmptyCampsAfterCombat([camp], [dead], [alive], R);
-    eq(res.camps.length, 1, 'camp survives while garrison > 0');
-    eq(res.removedCampIds.length, 0, 'no removal reported');
-  }
-
-  // 11c. Poległa jednostka NIE należała do żadnego obozu w zasięgu -> nic się nie dzieje
-  // (np. rajder daleko od dowolnego obozu; brak "podejrzanego" obozu do sprawdzenia).
-  {
-    const camp = { id: 'c1', q: 5, r: 5, spawnCooldown: 0 };
-    const dead = barb('far', 20, 20); // poza zasiegiem KAZDEGO obozu, brak campId
-    const res = pruneEmptyCampsAfterCombat([camp], [dead], [], R);
-    eq(res.camps.length, 1, 'unrelated casualty does not touch an unrelated camp');
-    eq(res.removedCampIds.length, 0, 'no removal for an out-of-range casualty');
-  }
-
-  // 11d. Dwa obozy: ginie garnizon TYLKO jednego -> usuwany tylko ten jeden.
-  {
-    const campA = { id: 'cA', q: 0, r: 0, spawnCooldown: 0 };
-    const campB = { id: 'cB', q: 20, r: 20, spawnCooldown: 0 };
-    const deadA = barb('da', 0, 1, { campId: 'cA' });
-    const aliveB = barb('ab', 20, 21, { campId: 'cB' });
-    const res = pruneEmptyCampsAfterCombat([campA, campB], [deadA], [aliveB], R);
-    eq(res.camps.length, 1, 'only the empty camp is removed');
-    eq(res.camps[0].id, 'cB', 'surviving camp is the untouched one');
-    eq(res.removedCampIds[0], 'cA', 'removed id is the emptied camp');
-  }
-
-  // 11e. Rajder Ludów Morza (seaRaider) poległy -- pomijany, nigdy nie kasuje
-  // lądowego obozu, nawet gdyby wypadł w jego promieniu kontroli.
-  {
-    const camp = { id: 'c1', q: 5, r: 5, spawnCooldown: 0 };
-    const deadRaider = barb('r1', 5, 6, { seaRaider: true, embarked: true });
-    const res = pruneEmptyCampsAfterCombat([camp], [deadRaider], [], R);
-    eq(res.camps.length, 1, 'sea raider casualty never touches a land camp');
-    eq(res.removedCampIds.length, 0, 'no removal for a sea raider casualty');
-  }
-
-  // 11f. Brak campId -- dopasowanie przez najbliższy obóz w zasięgu kontroli
-  // (ten sam fallback co homeCampForUnit / isCampRaidReady).
-  {
-    const camp = { id: 'c1', q: 5, r: 5, spawnCooldown: 0 };
-    const dead = barb('noid', 6, 5); // dist 1 <= R, bez campId ustawionego
-    const res = pruneEmptyCampsAfterCombat([camp], [dead], [], R);
-    eq(res.camps.length, 0, 'nearest-camp fallback still empties and removes the camp');
-  }
-
-  // 11g. Pure: nie mutuje wejściowej listy `camps`.
-  {
-    const camps = [{ id: 'c1', q: 5, r: 5, spawnCooldown: 0 }];
-    const dead = barb('b1', 5, 6, { campId: 'c1' });
-    pruneEmptyCampsAfterCombat(camps, [dead], [], R);
-    eq(camps.length, 1, 'input camps array left untouched (purity)');
-  }
-
-  // 11h. Integracja z tickCamps: po usunięciu obozu z listy, tickCamps nie
-  // generuje już z niego żadnego spawnu (bo obozu tam po prostu nie ma) --
-  // dokładnie zachowanie zgłoszone przez właściciela: obóz przestaje
-  // "produkować kolejnych barbarzyńców" po zdobyciu.
-  {
-    const map = makeMap(10, 10);
-    const camp = { id: 'c1', q: 5, r: 5, spawnCooldown: 0 };
-    const dead = barb('b1', 5, 6, { campId: 'c1' });
-    const pruned = pruneEmptyCampsAfterCombat([camp], [dead], [], R);
-    eq(pruned.camps.length, 0, 'camp gone before the next tick');
-    const tick = tickCamps(pruned.camps, [], [], map, P);
-    eq(tick.spawns.length, 0, 'destroyed camp produces zero spawns on the next tick');
-    eq(tick.camps.length, 0, 'destroyed camp does not reappear in tickCamps output');
   }
 }
 

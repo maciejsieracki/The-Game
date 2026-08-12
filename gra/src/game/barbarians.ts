@@ -884,59 +884,54 @@ function homeCampForUnit(
 }
 
 /**
- * P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU: obóz jest węzłem spawnu
- * NIEZALEŻNYM od jednostek na mapie (patrz komentarz na górze pliku) -- bez
- * tej funkcji garnizon mógł zginąć w walce, a obóz zostawał na mapie i dalej
- * produkował kolejnych barbarzyńców. Warunek „zdobyty/zniszczony" jest
- * analogiczny do zdobycia miasta: ostatni obrońca (żywy barbarzyńca lądowy
- * macierzysty dla tego obozu) poległ -- węzeł przestaje istnieć.
+ * P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (odpowiedź właściciela, 2026-08-12): obóz
+ * jest niszczony przez WEJŚCIE (najechanie) jednostki -- gracza LUB AI -- na
+ * jego heks. To ZASTĘPUJE poprzednią mechanikę (`pruneEmptyCampsAfterCombat`,
+ * wyzwalacz = zliczanie garnizonu w promieniu po walce) -- Evaluator znalazł w
+ * niej realną regresję (asymetria identyfikacji vs decyzji), a właściciel
+ * ustalił wprost, że to była w ogóle zła mechanika, nie do poprawki parametru.
+ * Analogia: wioski neutralne w main.ts (`checkVillageRewardAt`) -- pierwsze
+ * wejście na heks = trwały efekt na heksie. Różnica: bez nagrody, i dotyczy
+ * KAŻDEJ cywilizacji (nie tylko gracza) -- wołający (main.ts) musi sam
+ * wykluczyć jednostki barbarzyńskie, ta funkcja tego nie robi (przyjmuje samo
+ * (q, r), bez informacji o właścicielu wchodzącej jednostki).
  *
- * Sprawdza WYŁĄCZNIE obozy „podejrzane" (macierzyste dla `defeatedBarbUnits`
- * -- jednostek, które poległy w TEJ walce), więc nigdy nie usuwa obozu, który
- * po prostu jeszcze nie zdążył nikogo wystawić (garrison=0 z innego powodu
- * niż porażka w walce, np. świeżo postawiony obóz albo cooldown w toku).
- * Rajderzy Ludów Morza (seaRaider) są pomijani -- nie mają obozu-domu w tym
- * sensie (SEA_WAVE_CAMP_ID to wirtualny obóz, nigdy nie trafia do `camps`).
+ * Zniszczenie obozu NIE dotyka jednostek barbarzyńskich już zaspawnowanych na
+ * mapie (`units`) -- te walczą dalej normalnie, niezależnie od losu obozu po
+ * zaspawnowaniu. Jedyny efekt: obóz znika z `camps`, więc tickCamps()
+ * przestaje z niego spawnować NOWE jednostki.
  *
  * Czysta funkcja: nie mutuje `camps`, zwraca nową listę.
- * / EN: a camp is a spawn node fully decoupled from map units (see the file
- * header) -- without this hook, its garrison could be wiped out in combat
- * while the camp stayed on the map and kept producing. "Captured/destroyed"
- * mirrors city capture: once the last defender (a living land barbarian whose
- * home is this camp) dies, the node stops existing. Only checks "suspect"
- * camps (home camp of a unit that died in THIS battle), so it never removes a
- * camp that simply hasn't spawned anyone yet. Sea Peoples raiders are skipped
- * -- they have no land home camp in this sense. Pure: does not mutate `camps`.
+ * / EN: a camp is destroyed by a unit -- player OR AI -- ENTERING its hex.
+ * This REPLACES the previous mechanic (`pruneEmptyCampsAfterCombat`, trigger =
+ * garrison count within a radius after combat) -- the Evaluator found a real
+ * regression in it (identification vs. decision asymmetry), and the owner
+ * determined outright that it was simply the wrong mechanic, not a parameter
+ * to tune. Mirrors neutral villages in main.ts (`checkVillageRewardAt`): first
+ * entry onto the hex = a permanent effect. Difference: no reward, and it
+ * applies to every civilization (not just the player) -- the caller (main.ts)
+ * must exclude barbarian-owned movers itself; this function takes only (q, r)
+ * and has no notion of who is entering.
  *
- * @param camps               Obozy PRZED usunięciem.
- * @param defeatedBarbUnits   Jednostki barbarzyńskie poległe w TEJ bitwie (przed usunięciem z listy jednostek).
- * @param survivingBarbUnits  WSZYSCY żywi barbarzyńcy PO tej bitwie (do przeliczenia garnizonu).
- * @param campControlRadius   Ten sam promień co tickCamps/isCampRaidReady (params.campControlRadius).
- * @returns nowa lista obozów (bez zniszczonych) + id usuniętych obozów (log/UI).
+ * Destroying a camp never touches barbarian units already spawned on the map
+ * (`units`) -- they keep fighting normally, independent of their home camp's
+ * fate after spawning. The only effect: the camp disappears from `camps`, so
+ * tickCamps() stops spawning NEW units from it. Pure: does not mutate `camps`.
+ *
+ * @param camps  Obozy PRZED usunięciem.
+ * @param q, r   Heks, na który właśnie weszła (dokończyła ruch) jednostka.
+ * @returns nowa lista obozów (bez zniszczonego, jeśli jakiś tam był) + id zniszczonego obozu (albo null).
  */
-export function pruneEmptyCampsAfterCombat(
+export function destroyCampAt(
   camps: BarbCamp[],
-  defeatedBarbUnits: BarbUnit[],
-  survivingBarbUnits: BarbUnit[],
-  campControlRadius: number,
-): { camps: BarbCamp[]; removedCampIds: string[] } {
-  const suspectCampIds = new Set<string>();
-  for (const u of defeatedBarbUnits) {
-    if (u.seaRaider === true) continue;
-    const home = homeCampForUnit(u, camps, campControlRadius);
-    if (home !== undefined) suspectCampIds.add(home.id);
-  }
-  if (suspectCampIds.size === 0) return { camps: camps.slice(), removedCampIds: [] };
-
-  const removedCampIds: string[] = [];
-  const kept = camps.filter(c => {
-    if (!suspectCampIds.has(c.id)) return true;
-    const garrison = countCampGarrison(c, survivingBarbUnits, campControlRadius);
-    if (garrison > 0) return true;
-    removedCampIds.push(c.id);
-    return false;
-  });
-  return { camps: kept, removedCampIds };
+  q: number,
+  r: number,
+): { camps: BarbCamp[]; destroyedCampId: string | null } {
+  const idx = camps.findIndex(c => c.q === q && c.r === r);
+  if (idx === -1) return { camps: camps.slice(), destroyedCampId: null };
+  const destroyedCampId = camps[idx]!.id;
+  const kept = camps.slice(0, idx).concat(camps.slice(idx + 1));
+  return { camps: kept, destroyedCampId };
 }
 
 // ---------------------------------------------------------------------------
