@@ -6699,3 +6699,28 @@ wymaga wyraźnej zgody właściciela; `git-merge-main` zablokowany w `guardrails
 ℹ️ **Commity, ktore weszly na galaz po buildzie, NIE sa w bundlu** — wiazacy build HEAD = `b6159561`, reszta wchodzi do FALI 272. Do momentu pushu doszly m.in. `7155d39d`/`0994753b`/`63bdf1b9` (rejestr + testy; kopalnia zlota odsprzegnieta do JSON, wartosc 1→1, zachowanie bez zmian) oraz `b923730a`/`af8fb9c6` (deduplikacja EDYCJI koszyka PW, 10→20/20 — **realna zmiana logiki, poza ta fala**). Bundel NIE byl przebudowywany 4. raz.
 **SESJA LOKALNA: pull na dysk właściciela** (testuj `ea51ac51`).
 CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FALI 270 do `main`.
+
+## [23:58 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 272**, md5 `5343a5f4`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`5343a5f45bb91510043740190f9beffa`**, stempel
+`ROBOCZA · 85027372 · 2026-08-12 21:58` (UTC). Build z HEAD **`ad946239`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**12 commitów** od FALI 271, 6 plików w
+`gra/src`+`gra/data`, +146/−20). Bramki na tym czubku: `tsc` **0 błędów** · `logic-test`
+**213/213** · `combat-test` **6/6** · `empire-miasta-table-test` **89/0** ·
+`diplomacy-basket-duplicate-ui-test` **20/20** · `porzadek-panel-czytelnosc-test` **81/0** ·
+`tartak-glinianka-rate-Q1-test` **281/0** · `vite build` **815 modułów** ·
+`verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html` (manifest 10 bundli) przegenerowane.
+**Tematy (fala domykająca AUDYT #3 — same naprawy, bez nowych funkcji):** **Tabela Miast** —
+złączenie po **indeksie zamiast po nazwie miasta** (realny bug: zdobyte miasta o tej samej nazwie
+gubiły dane w podsumowaniu), etykieta `SUROWCE`→**zapotrzebowanie**, `wireMiastaColFilter` wyjęty
+z buildera HTML do `render()` · **koszyk PW** — deduplikacja **ścieżki EDYCJI** (`applyBasketItemEdit`,
+10→20/20) · **produkcja terenowa** — hardkod stawki kopalni złota odsprzęgnięty do JSON
+(**1→1, zachowanie bez zmian**, zmiana architektoniczna) · **panel Szczęście/Prawo** — sekcje J i K
+w teście (67→81/81, zero zmian w `src/`).
+✅ **Bundel budowany RAZ** — w przeciwieństwie do FALI 271 gałąź nie przyjęła żadnego commitu
+w trakcie deployu (`git fetch` przed buildem i przed commitem: zero nowych), zero porzuconych md5.
+**FALA 272 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu”). Powstanie FALI 272
+kwalifikuje **FALĘ 271** (`94a17910`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
+Niescalone: **FALA 270** (`028ff459`) i **FALA 271** (`94a17910`).
+**SESJA LOKALNA: pull na dysk właściciela** (testuj `5343a5f4`).
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 270+271 do `main`.
