@@ -12903,3 +12903,30 @@ Właściciel zdecydował dwutorowo, w reakcji na zgłoszenie "bardzo ciężko za
 
 **STATUS: Punkt 1 → dispatch Sonnet 5 (worktree), gotowe. Punkt 2 → dispatch przygotuje
 propozycję ABC (nie koduje), do zadania w kolejnej turze.**
+
+## P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA (Maciej, 2026-08-12, 3 zrzuty panelu Produkcja)
+
+Właściciel zgłosił: sekcja "BUDYNKI (N)" (lista już wybudowanych budynków, dziś pod listą
+"DOSTĘPNE DO BUDOWY" w tej samej wąskiej lewej kolumnie panelu Produkcja) wymaga mocnego
+przewijania, ciężko zobaczyć co jest wybudowane. Zaproponował 2 opcje i poprosił o rekomendację
+("Napisz jak byś to widział"):
+A) rozwinięcie listy budynków wybudowanych w górę, do ok. połowy wysokości ekranu.
+B) przeniesienie "Budynki (wybudowane)" na PRAWĄ stronę ekranu (miejsce puste, gdy panel
+   Produkcja jest otwarty — widoczne na 3. zrzucie: prawa strona to tylko wąski pasek ikon).
+
+**Odpowiedź orkiestratora (ECHO w tej samej turze): rekomendacja B** — przeniesienie na prawą
+stronę jako osobna, stała kolumna. Uzasadnienie: obie listy (Dostępne do budowy / Wybudowane)
+dostają pełną niezależną wysokość bez przewijania, zamiast dzielić jedną wąską kolumnę nawet po
+rozwinięciu do połowy ekranu.
+
+ZADANIE dla dispatchu: znaleźć panel Produkcja (grep "DOSTĘPNE DO BUDOWY"/"BUDYNKI (" w
+`gra/src/ui/cityPanel.ts` lub podobnym) — przenieść sekcję "Budynki (N)" (lista wybudowanych, z
+grupami "Nauka i kultura"/"Wiara" itd.) do NOWEJ kolumny po prawej stronie widoku mapy, widocznej
+gdy panel Produkcja jest otwarty (ten sam layout co pokazany na 3. zrzucie — prawa strona ma dziś
+tylko pasek ikon, obok niego jest miejsce). Zachować całą dzisiejszą funkcjonalność listy
+(grupowanie kategorii, koszt utrzymania per budynek) — to WYŁĄCZNIE zmiana pozycji/layoutu, nie
+treści. Sprawdzić czy prawa kolumna nie koliduje z innymi panelami otwieranymi w tym samym
+miejscu (np. minimapa, panel dyplomacji) — jeśli koliduje, opisać w raporcie i zaproponować
+rozwiązanie (np. zakładka/przełącznik) zamiast cichego nadpisania.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
