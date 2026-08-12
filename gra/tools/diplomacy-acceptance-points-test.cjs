@@ -511,6 +511,77 @@ ok(!tradePanel896.includes('000000'), 'umowa_handlowa panel @ rel 89.6: bez IEEE
 ok(tradePanel896.includes('−10,4%'), 'umowa_handlowa panel @ rel 89.6: badge −10,4%');
 ok(tradePanel896.includes('baza 80, Relacja −10,4% siła'), 'umowa_handlowa panel @ rel 89.6: hint baza z czystym mod%');
 
+// ---------------------------------------------------------------------------
+// P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (Maciej, zrzuty ekranu 2026-08-1x):
+// AI-proponent (incoming) na traktatach z bazą PW (nap/sojusz/umowa_handlowa/umowa_szlakow)
+// NIE może pokazywać/wymagać dopłaty gracza wynikającej z rabatu Relacji <100 po stronie
+// gracza — evaluateProposal gate'uje tę bazę WYŁĄCZNIE `if (proposerIsPlayer)`. Wcześniej
+// panel pokazywał „Brakuje N PW — zawrzyj osobną umowę" na w pełni akceptowalnej ofercie AI,
+// a dla umowa_handlowa/umowa_szlakow ten sam sztuczny deficyt BLOKOWAŁ przycisk Przyjmij
+// (`computeIncomingPlayerAcceptNetPw`/`previewIncomingPlayerAccept`).
+// ---------------------------------------------------------------------------
+
+// 1) AI proponuje NAP przy Relacji 61/200 (poniżej neutralnej 100, powyżej progu 50) —
+// silnik akceptuje bez dopłaty; panel MUSI się z tym zgadzać (przed naprawą: accepted=false,
+// "Brakuje 78 PW — zawrzyj osobną umowę", mimo braku realnego wymogu PW).
+const napIncoming61 = mod.computePlayerAcceptanceSides('nap', {}, 61, true);
+ok(napIncoming61.my.accepted === true, 'AI proponuje NAP @ rel 61: my.accepted true (nie sztuczny deficyt)');
+ok(napIncoming61.their.accepted === true, 'AI proponuje NAP @ rel 61: their.accepted true');
+ok(!napIncoming61.my.statusLabel.includes('Brakuje'), 'AI proponuje NAP @ rel 61: bez fałszywego "Brakuje"');
+const napEval61 = mod.evaluateProposal(
+  { actionId: 'nap', proposerOwnerId: 1, responderOwnerId: 0, payload: {} },
+  {
+    relation: { zaufanie: 31, respekt: 30 }, stanWojny: false, difficulty: 'normal',
+    turn: 10, proposerWiarygodnosc: 60,
+  },
+);
+ok(napEval61.accepted === true, 'kontrola silnika: evaluateProposal NAP @ rel 61 (AI proponent) = accepted');
+
+// 2) Ta sama Relacja, ale GRACZ jest proponentem (own) — zachowanie MUSI zostać bez zmian
+// (silnik i tak nigdy nie wymaga PW dla nap/sojusz/wasal niezależnie od strony, ale ten test
+// pilnuje że naprawa dotknęła WYŁĄCZNIE ścieżkę incoming, nie zmieniła nic dla own).
+const napOwn61 = mod.computePlayerAcceptanceSides('nap', {}, 61, false);
+ok(napOwn61.my.accepted === false, 'gracz proponuje NAP @ rel 61: zachowanie own NIEZMIENIONE (accepted false jak przed naprawą)');
+ok(napOwn61.my.statusLabel.includes('Brakuje'), 'gracz proponuje NAP @ rel 61: statusLabel own NIEZMIENIONY ("Brakuje")');
+
+// 3) umowa_handlowa incoming, PUSTY koszyk @ rel 61 — realny bug: blokował przycisk Przyjmij.
+const trHandlowaIncoming61 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 61, true);
+ok(trHandlowaIncoming61.my.accepted === true, 'AI proponuje umowa_handlowa @ rel 61 (pusty koszyk): my.accepted true');
+const trHandlowaNet = mod.computeIncomingPlayerAcceptNetPw('umowa_handlowa', {}, 61);
+ok(trHandlowaNet === null, 'umowa_handlowa incoming pusty koszyk: gate bramki NIEAKTYWNY (null, nie blokuje Przyjmij)');
+const trHandlowaPreview = mod.previewIncomingPlayerAccept('umowa_handlowa', {}, 61);
+ok(trHandlowaPreview === null, 'umowa_handlowa incoming pusty koszyk: previewIncomingPlayerAccept null (fallback do evaluateProposal)');
+const trHandlowaEval61 = mod.evaluateProposal(
+  { actionId: 'umowa_handlowa', proposerOwnerId: 1, responderOwnerId: 0, payload: {} },
+  {
+    relation: { zaufanie: 31, respekt: 30 }, stanWojny: false, difficulty: 'normal',
+    turn: 10, proposerWiarygodnosc: 60,
+  },
+);
+ok(trHandlowaEval61.accepted === true, 'kontrola silnika: evaluateProposal umowa_handlowa @ rel 61 (AI proponent) = accepted');
+
+// 4) umowa_szlakow — bliźniacza akcja, ta sama konfiguracja bazy: MUSI zachowywać się
+// SPÓJNIE z umowa_handlowa (przed naprawą było niespójne — szlakow zwracał null, handlowa nie).
+const trSzlakowNet = mod.computeIncomingPlayerAcceptNetPw('umowa_szlakow', {}, 61);
+ok(trSzlakowNet === null, 'umowa_szlakow incoming pusty koszyk: gate bramki nieaktywny (spójne z umowa_handlowa)');
+
+// 5) umowa_handlowa incoming z REALNYM koszykiem, w którym AI oddaje dużo za mało (200 PN za
+// 1 PN) — R-PW-ACCEPT-OVERPAY-Q1=A MUSI dalej chronić AI przed takim przyjęciem (naprawa
+// dotyczy WYŁĄCZNIE bazy traktatu, nie realnej treści koszyka).
+const aiGenerousBasket = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'zelazo', ilosc: 10 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
+};
+const aiGenerousNet = mod.computeIncomingPlayerAcceptNetPw('umowa_handlowa', aiGenerousBasket, 100);
+ok(aiGenerousNet != null && aiGenerousNet.netPw < 0, 'umowa_handlowa incoming: koszyk nieuczciwy dla AI nadal wykryty (netto ujemne)');
+const aiGenerousPreview = mod.previewIncomingPlayerAccept('umowa_handlowa', aiGenerousBasket, 100);
+ok(aiGenerousPreview != null && aiGenerousPreview.accepted === false, 'umowa_handlowa incoming: Przyjmij nadal zablokowane, gdy koszyk realnie krzywdzi AI');
+
+// 6) 'handel' (treatyBase=0) — kontrola zerowa: zachowanie MUSI pozostać identyczne z testami
+// R-PW-ACCEPT-OVERPAY-Q1=A wyżej (overpay/underpay), naprawa nie dotyka tej akcji.
+ok(mod.computeIncomingPlayerAcceptNetPw('handel', overpayPayload, 100).netPw === overpayNet.netPw, 'handel: netPw niezmieniony po naprawie (overpay)');
+ok(mod.computeIncomingPlayerAcceptNetPw('handel', underpayPayload, 100).netPw === underpayNet.netPw, 'handel: netPw niezmieniony po naprawie (underpay)');
+
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 
 console.log(`diplomacy-acceptance-points-test: ${pass} pass, ${fail} fail`);

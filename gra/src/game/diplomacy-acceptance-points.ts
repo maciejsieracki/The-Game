@@ -382,7 +382,27 @@ export function computePlayerAcceptanceSides(
     const theirDisplay = (their.treatyEffectivePn ?? 0) + their.offerPn;
     const asymBalance = myDisplay - theirDisplay;
     const relOk = adjustedRelRequired == null || relTotal >= adjustedRelRequired;
-    const balanceOk = asymBalance >= 0;
+    // P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (Maciej, zrzuty ekranu): baza wartości
+    // traktatu po stronie gracza (myDisplay, obniżona Relacją <100) jest realnym wymogiem
+    // WYŁĄCZNIE gdy GRACZ jest proponentem — mirror evaluateProposal (treatyBaseFairnessGap
+    // w diplomacy-proposals.ts wołane wyłącznie `if (proposerIsPlayer/proposerIsTreatyPlayer)`;
+    // żaden case AI-proponenta — nap/sojusz_*/wasal/umowa_handlowa/umowa_szlakow — nie gate'uje
+    // PW, gdy to AI proponuje). Bez tego gracz widział „Brakuje N PW — zawrzyj osobną umowę"
+    // na w pełni poprawnej, przychodzącej propozycji AI (np. NAP @ Relacji 61/200 → baza 200 →
+    // wyświetlana wymagana 122, partner stały 200 → sztuczny deficyt −78), a dla umowa_handlowa/
+    // umowa_szlakow ten sam deficyt realnie BLOKOWAŁ przycisk Przyjmij (patrz
+    // computeIncomingPlayerAcceptNetPw niżej). Gdy AI proponuje (incoming=true), baza traktatu
+    // zostaje wartością INFORMACYJNĄ (treatyEffectivePn/treatyBasePn nadal w AcceptanceSideBalance),
+    // ale przestaje blokować `accepted`.
+    // EN: the player-side treaty base (myDisplay, discounted by Relation <100) is a real
+    // requirement ONLY when the PLAYER is the proposer — mirrors evaluateProposal's own gate
+    // (treatyBaseFairnessGap fires only `if (proposerIsPlayer)`; every AI-proposer case — nap/
+    // alliance/vassal/trade agreement — never gates PW). Without this the player saw "Missing
+    // N PW" on a fully valid incoming AI offer, and for the trade-agreement types the same gap
+    // actually BLOCKED the Accept button. When AI proposes, the treaty base stays an
+    // informational display value but no longer blocks `accepted`.
+    const proposerIsPlayer = !incoming;
+    const balanceOk = proposerIsPlayer ? asymBalance >= 0 : true;
     my.balancePn = asymBalance;
     their.balancePn = asymBalance;
     // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś
@@ -408,6 +428,12 @@ export function computePlayerAcceptanceSides(
     // nothing was added to THIS negotiation's basket yet, not that the type lacks
     // one. R-DYP-STOL-A part C is effectively done for these types; the only real gap
     // is war, a unilateral action outside this proposal system.
+    // Etykieta „zawrzyj osobną umowę" ma sens tylko gdy deficyt REALNIE blokuje (gracz jako
+    // proponent); dla incoming (AI proponuje) asymBalance<0 pozostaje jako liczba informacyjna
+    // (baza traktatu partnera stała, gracza obniżona Relacją), ale nie jest brakiem do spłaty.
+    // / EN: the "close a separate deal" hint only makes sense when the gap actually blocks
+    // (player as proposer); for incoming (AI proposes) a negative asymBalance stays purely
+    // informational (partner's base is fixed, player's is relation-discounted) — not a debt.
     if (mode === 'treaty' && !hasBasket) {
       my.accepted = relOk && balanceOk;
       their.accepted = relOk && balanceOk;
@@ -415,12 +441,16 @@ export function computePlayerAcceptanceSides(
         ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
-          : 'Spełnia warunki (0 PW)';
+          : incoming && asymBalance < 0
+            ? 'Propozycja partnera — możesz przyjąć bez dopłaty'
+            : 'Spełnia warunki (0 PW)';
       their.statusLabel = !balanceOk
         ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
-          : 'Równo — spełnia';
+          : incoming && asymBalance < 0
+            ? 'Propozycja partnera — bez dopłaty'
+            : 'Równo — spełnia';
     } else if (mode === 'mixed') {
       my.accepted = my.accepted && relOk && balanceOk;
       their.accepted = their.accepted && relOk && balanceOk;
@@ -493,7 +523,41 @@ export type IncomingPlayerAcceptNetPw = {
 
 /**
  * Netto PW przy przyjmowaniu oferty AI: myOffer − theirOffer (jak UI / incomingTradeNetBalancePw).
- * Zwraca null gdy akcja nie podlega tej bramce lub brak koszyka (handel / umowa_szlakow).
+ * Zwraca null gdy akcja nie podlega tej bramce lub brak koszyka (handel / umowa_szlakow /
+ * umowa_handlowa bez realnej treści koszyka).
+ *
+ * P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (Maciej, zrzuty ekranu): netto liczone
+ * WYŁĄCZNIE z realnego koszyka (`acceptance.my/their.offerPn`, wartości PRZED doliczeniem bazy
+ * traktatu) — dawna wersja doliczała bazę traktatu (treatyBasePn, np. 80 PW dla umowa_handlowa/
+ * umowa_szlakow, 200 PW dla NAP) przez `bilateralTreatyDisplayPw`/`sideDisplayOfferPw`, i
+ * WYŁĄCZNIE dla `actionId === 'umowa_handlowa'` wymuszała tę bramkę nawet przy PUSTYM koszyku
+ * (mode 'treaty', spójny bliźniak 'umowa_szlakow' poprawnie zwracał null w tym samym stanie —
+ * niespójność między dwoma akcjami z identyczną konfiguracją bazy). Baza traktatu po stronie
+ * gracza jest obniżana Relacją <100 (`playerTreatyEffectivePn`), a partnera trzymana na stałej
+ * bazie — to samo źródło asymetrii co w `evaluateProposal` (`treatyBaseFairnessGap`), ALE tam
+ * gate'owane WYŁĄCZNIE `if (proposerIsTreatyPlayer)` (gracz jako proponent). Ta funkcja jest
+ * wołana tylko dla `incoming` (AI proponuje) — więc baza traktatu nigdy nie powinna być tu
+ * wymogiem: dawny kod blokował przycisk Przyjmij komunikatem „Przewaga u Ciebie — oferta
+ * nieuczciwa dla partnera (N PW)" na w pełni poprawnych, przychodzących ofertach AI (np. 31 PW
+ * przy Relacji 61/200, baza 80 PW umowa_handlowa — zweryfikowane: `evaluateProposal` dla tej
+ * samej propozycji zwraca `accepted:true`). Cel bramki (R-PW-ACCEPT-OVERPAY-Q1=A — chronić AI
+ * przed koszykiem, w którym gracz oddaje mniej niż dostaje) zostaje w pełni zachowany — liczy
+ * WYŁĄCZNIE realne pozycje koszyka (surowce/¤/Praca), tak jak już robił 'handel' (treatyBase=0,
+ * bez zmiany zachowania — `offerPn` tam i tak nigdy nie zawierał bazy traktatu).
+ *
+ * EN: net computed from the REAL basket ONLY (`acceptance.my/their.offerPn`, values BEFORE the
+ * treaty base is folded in) — the previous version added the treaty base (e.g. 80 PW for trade
+ * agreements, 200 PW for NAP) via `bilateralTreatyDisplayPw`/`sideDisplayOfferPw`, and forced
+ * this gate even on an EMPTY basket only for `actionId === 'umowa_handlowa'` (its sibling
+ * 'umowa_szlakow' correctly returned null in the identical state — an inconsistency between two
+ * actions sharing the same base config). The treaty base's player side is relation-discounted
+ * while the partner side stays fixed — the same asymmetry `evaluateProposal` uses, but gated
+ * there ONLY `if (proposerIsTreatyPlayer)` (player-as-proposer). This function only ever runs
+ * for `incoming` (AI proposes), so the treaty base should never be a requirement here: the old
+ * code blocked the Accept button with a false "unfair to partner" message on fully valid
+ * incoming AI offers. The original gate's purpose (protect the AI from a basket where the
+ * player gives less than they get) is fully preserved — it now compares only real basket items,
+ * exactly as 'handel' (treatyBase=0) already did.
  */
 export function computeIncomingPlayerAcceptNetPw(
   actionId: ProposalActionId,
@@ -504,12 +568,11 @@ export function computeIncomingPlayerAcceptNetPw(
   if (!usesIncomingPlayerNetPwGate(actionId)) return null;
   const acceptance = computePlayerAcceptanceSides(actionId, payload, relTotal, true, opts);
   const mode = acceptance.my.mode;
-  if (actionId !== 'umowa_handlowa' && mode !== 'basket' && mode !== 'mixed') {
+  if (mode !== 'basket' && mode !== 'mixed') {
     return null;
   }
-  const bilateralPw = bilateralTreatyDisplayPw(acceptance.my, acceptance.their);
-  const myOfferPn = sideDisplayOfferPw(acceptance.my, bilateralPw);
-  const theirOfferPn = sideDisplayOfferPw(acceptance.their, bilateralPw);
+  const myOfferPn = acceptance.my.offerPn;
+  const theirOfferPn = acceptance.their.offerPn;
   return { netPw: myOfferPn - theirOfferPn, myOfferPn, theirOfferPn };
 }
 
