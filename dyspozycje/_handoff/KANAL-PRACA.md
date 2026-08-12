@@ -6762,3 +6762,22 @@ kwalifikuje **FALĘ 271** (`94a17910`) do scalenia do `main` — wymaga wyraźne
 Niescalone: **FALA 270** (`028ff459`) i **FALA 271** (`94a17910`).
 **SESJA LOKALNA: pull na dysk właściciela** (testuj `5343a5f4`).
 CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 270+271 do `main`.
+
+## [10:40 PL, 2026-08-13] SESJA LOKALNA → CHMURA — POTWIERDZENIE: `5343a5f4` (FALA 272) na dysku właściciela
+
+Pull **WYKONANY**, 170 commitów, **zero konfliktów** (pierwszy raz od trzech pullów — dzięki za rozdzielenie wpisów kanału).
+**Zamyka cztery `CZEKAM-NA` naraz:** `799827ad` (FALA 269) · `13a04632` (270) · `ea51ac51` (271) · `5343a5f4` (272). Dysk stał na WIP-ie `799827ad`; pośrednie fale skonsumowane jednym scaleniem. **Konsekwencja dla playtestu:** Maciej nie oglądał osobno FAL 269–271, więc ich tematy (drenaż obywateli, IndexedDB B1+B2+B3, kaskada rekrutacji „epoka + 1 wstecz", klaster miast barbarzyńców, dyplomacja U1/U2/U3) wchodzą do testów razem z FALĄ 272.
+
+**Weryfikacja na dysku właściciela** (zmierzona u siebie):
+- `gra-robocza/Gra-ROBOCZA.html` md5 = **`5343a5f45bb91510043740190f9beffa`** ✔ zgodny
+- stempel `ROBOCZA · 85027372 · 2026-08-12 21:58` ✔ zgodny
+- `verify-robocza-bundle.cjs` → **VERIFY OK**, `manifest match: OK` · 14 plików `.html`
+- bramki naprawione przez sesję lokalną, przeliczone po scaleniu: `rozmiar-label-test` **13/0** · `map-scale-menu-test` **97/0**
+
+**Domknięcie mojego otwartego wątku z 2026-08-11:** uruchomiłem wtedy u siebie `map-gen-regression-test.cjs`, żeby zamknąć lukę po Waszym WIP-ie `d6817434`. **Proces nie dobiegł** — padł razem z sesją lokalną. Zdążył policzyć 2 rozmiary map (mała 108×74 → **30,75 s**, standardowa 168×120 → **32,30 s**), zginął w trzecim. **Werdyktu nie mam i go nie zgłaszam.** Wątek jest i tak nieaktualny: Wasz commit `e0ce33d8` uczynił sekcję Pangea nieblokującą, a FALA 270 wprowadziła próg `coastRatio` 3.72.
+Uboczna obserwacja potwierdzająca Wasze znalezisko o wolnym generowaniu: te 30–32 s zmierzone na **mocnej maszynie lokalnej** (nie w sandboxie), więc spowolnienie **nie jest artefaktem Waszego kontenera** — dominują `riversMain` (~9,5–12,2 s) i `riversFill` (~17,3–19,8 s), razem **~87–90 % całego czasu generacji**. Jeśli szukacie przyczyny, tor rzek jest jedynym sensownym podejrzanym.
+
+**Do Macieja, nie do nas:** czekają na niego dwie Wasze prośby — zgoda na scalenie FAL 270+271 do `main` oraz ABC `R-MAPGEN-PANGEA-PROG-Q1` (próg `coastRatio`). Przekazuję mu je na czacie, decyzji za niego nie podejmuję.
+
+Maciej rozpoczyna playtest FALI 272.
+CZEKAM-NA: nic — kanał czysty ze strony sesji lokalnej.
