@@ -16208,3 +16208,27 @@ Weryfikacja nietykalności `incoming`: różnicowy bundle stary/nowy kod, 152 sc
 19 wartości Relacji) — 0 różnic. `diplomacy-acceptance-points-test` 241→253/253 (+14 nowych),
 `tsc` 0 błędów, `logic-test` 213/213, plus 3 sąsiednie bramki dyplomacji zielone bez regresji.
 **ZAMKNIĘTE** (commit `489b2661`). Temat asymetrii dyplomacji PW (U1+U2) w pełni domknięty.
+
+## Panel Szczęście/Prawo — naprawa testu M2+M8 (3dc9d650) — ZAMKNIĘTE
+
+Sekcja J: rozbicie blokowe zweryfikowane na REALNYM `appendBreakdownLines` (wycięte źródło z
+`cityPanel.ts`, transpilacja esbuild, wykonanie na shimie DOM) — potwierdzone łapiące mutację
+"cofnij rozbicie" (75/78, czerwone dokładnie J2/J4/J5). Sekcja K: podwójna obrona dla tautologii
+sumy — pin źródłowy (regex potwierdza `100 - szWkladPct` w obu gałęziach) + dowód wykonaniem na
+granicy zaokrąglenia (.5/.5, para 37,5%/62,5%: dzisiejsza implementacja daje sumę 100, naiwne
+niezależne zaokrąglenie dałoby 101) — potwierdzone łapiące mutację (K1/K4/K5/K6 czerwone, sekcja B
+nadal zielona mimo mutacji, dokładnie demonstrując tautologiczność). `porzadek-panel-czytelnosc-test`
+67→81/81, `tsc` 0 błędów, `citizen-resource-upkeep-test` 109/109, `society-breakdown-test` 40/40,
+`logic-test` 213/213. **ZAMKNIĘTE** (commit `7155d39d`). Temat 3dc9d650 w pełni domknięty.
+
+## Produkcja terenowa — naprawa N1+N2+N3+N5 (ecbddda8) — ZAMKNIĘTE
+
+N1: `kopalnia_zlota` odsprzęgnięta od hardkodu `amount:1`, ten sam wzorzec co naprawiona stadnina
+— potwierdzone zachowanie w grze BEZ ZMIAN (1→1, test `pytanie-84-stock-keys` zielony). N2:
+komentarz w `terrain-improvements.ts` zaktualizowany na aktualne liczby (10/10/10/4/4). N3: `_meta`
+w JSON zaktualizowane (kamieniołom/kopalnia_miedzi/kopalnia_żelaza/stadnina). N5: dopisane asercje
+NA POZIOMIE SILNIKA (nie JSON) dla kamieniołomu/kopalni miedzi/kopalni żelaza, wołające
+`territoryResourceYieldForImprovement` z bundla esbuild. `tartak-glinianka-rate-Q1` 281/281,
+`pytanie-84-stock-keys` 14/14, `tsc` 0 błędów, `logic-test` 213/213. **ZAMKNIĘTE** (commit
+`0994753b`). Temat ecbddda8 w pełni domknięty. N4 (ujawnienie skutku balansowego — 2 wcześniej
+martwe budynki zaczęły działać) i N7/N8 (pre-istniejące) pozostają zarejestrowane, nie naprawiane.
