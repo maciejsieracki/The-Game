@@ -14284,4 +14284,23 @@ wiedzieć wybierając literę.** Rekomendacja: **odblokowanie tymczasowe teraz**
 nie wymaga ABC — samo zdjęcie `fail++` nie zmienia progu ani nie cofa niczyjej decyzji, tylko
 przestaje fałszywie czerwienić całą bramkę za jedną wadliwie skalibrowaną sekcję) + pełne ABC
 do właściciela po powrocie.
-**STATUS: dispatch odblokowania tymczasowego (zdjęcie fail++ z sekcji Pangea) w toku.**
+**STATUS: dispatch odblokowania tymczasowego (zdjęcie fail++ z sekcji Pangea) w toku
+(worktree fix-mapgen-unblock, Operator Sonnet 5 dispatchowany 2026-08-12).**
+
+## P-PERF-BUILDSCENE-TRY-FINALLY — NOWY, znaleziony przez Evaluatora przy P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK
+
+**Sytuacja.** Evaluator (Opus 5, PASS-WITH-NOTES dla `scene.ts::dispose()` styledOverlays fix,
+patrz sekcja wyżej) potwierdził czytaniem kodu: `buildScene` (`gra/src/render/scene.ts`) nie ma
+`try/finally`. Jeśli wyjątek wyleci PO fazie merge geometrii (`collapseToMergedMesh` dla
+`styledOverlays` lub innych grup), funkcja porzuca częściowo zbudowaną scenę bez wywołania
+`dispose()` — wyciek GPU (bufory/geometrie/materiały) przy każdym takim wyjątku, nie tylko przy
+normalnym przebudowaniu sceny (które i tak teraz poprawnie disposuje dzięki dzisiejszej naprawie).
+
+**Zakres.** `gra/src/render/scene.ts` — render/**, wymaga Opus 5 (standing exception właściciela,
+CLAUDE.md pkt 4). Owinąć fazę merge/budowy `buildScene` w `try/finally` tak, żeby częściowo
+zbudowana scena zawsze dostała `dispose()` przy wyjątku. Sprawdzić też wywołanie z `main.ts`
+(`runBuildSceneWithOverlay`) — czy caller też potrzebuje analogicznego zabezpieczenia.
+
+**STATUS: OTWARTE — nie zarejestrowany jeszcze do dispatchu (niska pilność: wymaga realnego
+wyjątku w trakcie merge żeby się objawić, nie zaobserwowano w praktyce; render/**, więc drogi
+Opus 5 — kandydat na dispatch w kolejnej turze audytu kategorii 4).**
