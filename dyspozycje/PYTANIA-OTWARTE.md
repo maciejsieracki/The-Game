@@ -14571,3 +14571,110 @@ rejestr twierdzi że coś jest zamknięte, kod tego nie potwierdza.**
 odzyskania — worktree usunięty) w toku, razem z naprawą UX-defektu scroll-reset znalezionego przez
 Evaluatora P-MOC-BALANS-WAGI (kliknięcie przełącznika trybu widoku Rankingu Mocy przewija panel na
 początek — `empireDetailPanel.ts`, `bodyEl.innerHTML=body` bez zachowania `scrollTop`).
+
+## ZBIÓRKA WSZYSTKICH OTWARTYCH PYTAŃ ABC (Maciej, 2026-08-12: „zadaj mi wszystkie pytania A/B/C,
+## które cię blokują — wszystkie") — pełna lista sformalizowana z bullet-pointów na format ABC
+
+Sześć pytań barbarzyńskich („zbiorcza lista ABC", linia ~14100) nigdy nie miało formalnych opcji
+A/B/C — poniżej sformalizowane pod numerami. Reszta (5 pytań) już miała pełny format, tylko
+zebrana tu w jednym miejscu do jednorazowego zadania w czacie.
+
+**[TEMAT: Asymetria „Wycofaj" gracz vs AI/barbarzyńcy] P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1**
+Sytuacja: na `hard`, miasto gracza może zawsze wycofać garnizon przed walką polową (gracz
+kontroluje moment starcia) — miasto AI/barbarzyńcy nie ma takiej opcji (AI nie wycofuje się
+świadomie), więc miasta AI strukturalnie padają częściej niż miasta gracza w tej samej sytuacji.
+A) Zostaw jak jest — asymetria wynika z tego że gracz ma wolną wolę, AI nie; naturalna przewaga
+   sterowania ręcznego. Za: zero pracy, zgodne z ogólną zasadą że gracz podejmuje decyzje. Przeciw:
+   łamie PARYTET AI (zasada projektu — każda zmiana stosuje się identycznie do AI).
+B) Dodaj AI heurystykę wycofania garnizonu przy przegranej walce polowej (próg HP/przewagi wroga).
+   Za: przywraca parytet. Przeciw: realna praca nad AI, ryzyko nowych błędów w zachowaniu AI.
+C) Zaakceptuj asymetrię jako zamierzoną trudność gry (gracz ma przewagę informacyjną i reakcji,
+   to część rozgrywki) — udokumentuj wprost jako świadomą decyzję, nie naprawiaj.
+Rekomendacja: C — to różnica między graczem-człowiekiem a AI, nie bug silnika; ale zgłaszam do
+jawnej decyzji bo dotyka PARYTETU AI, zasady którą właściciel podkreślał wielokrotnie.
+
+**[TEMAT: Puste miasto wroga trwale odporne na przejęcie na hard] P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1**
+Sytuacja: barbarzyńskie przejęcie miasta jest osiągalne WYŁĄCZNIE przez komendę `attack` na
+przyległą jednostkę wroga (`main.ts:26273`) — miasto BEZ obrońców nie może zostać zdobyte NAWET
+NA HARD, mimo że `shouldAllowBarbCityCapture('hard')===true`. To BLOKUJE pełne domknięcie rundy 4/5
+tematu zachowania barbarzyńców wobec miast — bez tej decyzji jednostka może co najwyżej patrolować
+między niebronionymi miastami, nigdy żadnego nie zdobyć.
+A) Zamierzone — „nagroda za obronę": miasto bez garnizonu jest bezpieczne dopóki jakaś jednostka
+   wroga fizycznie go nie obsadzi. Za: zero pracy, zgodne z dzisiejszym zachowaniem od zawsze.
+   Przeciw: sprzeczne z Twoim pierwotnym opisem („przy najwyższym poziomie powinni zajmować
+   miasta") — dziś NIGDY nie zajmują niebronionego miasta na żadnym poziomie.
+B) Dodaj mechanikę „wejście na pusty heks miasta = przejęcie" (analogicznie do zwykłego zajęcia
+   terytorium), aktywną TYLKO na `hard` (`shouldAllowBarbCityCapture`). Za: realizuje pierwotną
+   specyfikację wprost. Przeciw: nowa mechanika w silniku (wymaga testów, wpływa na balans hard).
+C) Jak B, ale aktywna też na `normal` (bez obrońców = zawsze można zająć, niezależnie od
+   trudności) — różnicowanie trudności zostaje wyłącznie w tym, JAK AGRESYWNIE barbarzyńcy szukają
+   takich miast (`aggroRadius`/`raidReady`), nie w SAMEJ możliwości przejęcia.
+Rekomendacja: B — zgodne z Twoim pierwotnym rozróżnieniem poziomów trudności („przy najniższym —
+dokładnie to co robią teraz [stoją obok]... przy najwyższym powinni zajmować miasta").
+
+**[TEMAT: Czy barbarzyńcy mogą całkowicie wyeliminować cywilizację] P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1**
+Sytuacja: dzisiejszy silnik ogólnie na to pozwala (mechanika eliminacji nie rozróżnia kto jest
+zdobywcą) — nie ma osobnej blokady chroniącej gracza/AI przed całkowitą eliminacją przez
+barbarzyńców konkretnie.
+A) Zostaw jak jest — barbarzyńcy to pełnoprawne zagrożenie militarne, eliminacja cywilizacji przez
+   nich jest częścią wyzwania (zwłaszcza na hard). Za: brak dodatkowej pracy, spójne z resztą
+   silnika (AI też może eliminować AI). Przeciw: barbarzyńcy nie mają miast/gospodarki do
+   zarządzania zdobyczą — eliminacja przez nich może być mniej satysfakcjonująca narracyjnie niż
+   przez rywala-cywilizację.
+B) Dodaj twardą blokadę — ostatnie miasto cywilizacji nigdy nie może paść na rzecz barbarzyńców
+   (walka toczy się normalnie, ale przejęcie ostatniego miasta jest zablokowane/miasto zostaje
+   "wyzwolone" zamiast przejęte). Za: chroni przed frustrującą, "niesprawiedliwą" porażką z ręki
+   losowego zagrożenia środowiskowego. Przeciw: sztuczne, gracz traci realne ryzyko.
+Rekomendacja: A — potwierdzić że to zamierzone, nie zgadywać czy potrzebna blokada; to pytanie
+najniższego ryzyka z całej listy, głównie do potwierdzenia.
+
+**[TEMAT: Limit pościgu osieroconych jednostek barbarzyńskich] P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1**
+Sytuacja: jednostka, której obóz-spawner został zniszczony, dostaje NIEOGRANICZONY zasięg
+pościgu (`chaseRadius=Infinity`) — zamierzony hamulec bezpieczeństwa („odwrót przy niskim HP",
+`healthFrac`) jest MARTWYM KODEM od zawsze (`healthFrac` nigdy nie jest ustawiane przez silnik),
+więc w praktyce osierocona jednostka goni cel przez całą mapę bez końca.
+A) Zostaw bez limitu — osierocona jednostka barbarzyńska to "berserker" bez macierzystego obozu,
+   nieograniczony pościg jest częścią jej charakteru. Za: zero pracy. Przeciw: `healthFrac` jako
+   martwy kod to dług — jeśli miał być realnym hamulcem, dziś nim nie jest.
+B) Dodaj realny limit (np. liczbę tur od osierocenia, albo promień od miejsca zniszczenia obozu)
+   zamiast martwego `healthFrac`. Za: przewidywalne zachowanie, łatwiejsze do zbalansowania.
+   Przeciw: nowy parametr do dostrojenia, zmiana zachowania od tego co jest dziś w grze.
+C) Napraw `healthFrac` żeby faktycznie było ustawiane (jednostka o niskim HP zawraca) — realizuje
+   PIERWOTNY zamiar kodu zamiast dodawać nowy mechanizm. Za: naprawia dług zamiast go obchodzić.
+   Przeciw: może zmienić balans walki (jednostki HP już dziś liczone gdzie indziej, integracja
+   nietrywialna).
+Rekomendacja: A — nieograniczony pościg osieroconej jednostki wydaje się working-as-intended
+(kara za zniszczenie obozu: agresywniejsi obrońcy), ale zgłaszam bo martwy kod bezpieczeństwa to
+zawsze warte potwierdzenia.
+
+**[TEMAT: Koszt ruchu przy zniszczeniu obozu przez rozdzielenie armii] P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1**
+Sytuacja: gdy gracz niszczy obóz barbarzyński mechaniką `onSplit` (rozdzielenie stosu jednostek na
+heksie obozu), ta ścieżka dziś NIE zużywa punktów ruchu jednostki — inaczej niż normalny atak.
+A) Zostaw bez kosztu — rozdzielenie armii to inna kategoria akcji niż atak, nie musi kosztować
+   ruchu. Za: zero pracy, może być zamierzone (unikalna nagroda za tę metodę zniszczenia).
+   Przeciw: potencjalna dziura balansowa (darmowe niszczenie obozu bez utraty tury jednostki).
+B) Dodaj koszt ruchu identyczny jak przy normalnym ataku na obóz. Za: spójność mechaniki,
+   eliminuje potencjalny exploit. Przeciw: może być karą za coś co miało być bonusem tej ścieżki.
+Rekomendacja: B — spójność z resztą mechaniki ataku wydaje się bezpieczniejsza domyślnie, ale to
+czysto Twoja decyzja balansowa, nie mam silnej preferencji.
+
+**[TEMAT: Znaczenie „bezpowrotnie" przy zniszczeniu obozu] P-BARBARZYNCY-BEZPOWROTNIE-RESPAWN-Q1**
+Sytuacja: gdy obóz zostaje zniszczony „bezpowrotnie" (wg specyfikacji/nazwy mechaniki), dziś w
+praktyce oznacza to tylko że TA KONKRETNA INSTANCJA obozu znika — sam HEKS może dostać NOWY obóz
+w ciągu kilku-kilkudziesięciu tur (generator spawnu nie ma blacklisty zniszczonych lokalizacji).
+A) „Bezpowrotnie" = tylko instancja, nie heks (dzisiejsze zachowanie) — respawn na tym samym
+   miejscu po czasie to normalna dynamika świata, nie naruszenie słowa "bezpowrotnie" (które
+   odnosi się do TEGO obozu, nie do lokalizacji na zawsze). Za: zero pracy. Przeciw: może zaskoczyć
+   gracza który oczekiwał że oczyszczony teren zostanie oczyszczony na stałe.
+B) „Bezpowrotnie" = też heks — dodać blacklistę lokalizacji zniszczonych obozów (na zawsze albo na
+   długi okres, np. 50+ tur) w generatorze spawnu. Za: dosłowna zgodność ze słowem "bezpowrotnie".
+   Przeciw: praca w generatorze, może zmniejszyć presję barbarzyńców w późnej grze jeśli gracz
+   systematycznie czyści obozy.
+Rekomendacja: A — słowo "bezpowrotnie" najbardziej naturalnie odnosi się do konkretnego obozu
+(tej grupy barbarzyńców), nie do lokalizacji geograficznej na mapie, ale zgłaszam żeby potwierdzić
+że to zgodne z Twoim zamiarem projektowym.
+
+**STATUS: wszystkie 6 zadane w czacie w tej turze, razem z pozostałymi 5 już wcześniej
+sformalizowanymi pytaniami (R-EPOKA-CUD-ZAKRES-Q1, P-SUROWCE-KOLEJNOSC-KON-Q1,
+R-KONWERTERY-TRUDNOSC-SPLASZCZONA-Q1, R-MAPGEN-PANGEA-PROG-Q1, P-DREWNO-BRAMKA-RYZYKO-STARTU) —
+11 pytań łącznie, poza normalnym limitem 3/turę na wyraźne życzenie właściciela.
