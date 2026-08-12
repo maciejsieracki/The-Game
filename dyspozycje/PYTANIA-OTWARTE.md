@@ -15755,3 +15755,72 @@ zamiast importu z `setup.ts` — dziś identyczne, cichy rozjazd w przyszłości
 
 Czekam na Evaluatorów A (lens F1 livelock) i C (lens pokrycie mutacyjne całości + tabela 12
 reżimów) przed werdyktem zbiorczym rundy 6.
+
+## Klaster miast barbarzyńców — naprawa ucieczek mutacyjnych SCALONA (M7.1/M10.3/2h/ai-params.json)
+
+Naprawa dla FAIL Evaluatora C (i korobującego U1 Evaluatora A) na commicie `93db72e8`: bramka
+trudności (`barbCanWalkIntoEmptyCity`) i koszt ruchu splitu (`splitCampMoveCost`) wyciągnięte do
+eksportowanych czystych funkcji w `barbarians.ts`, importowanych zarówno przez `main.ts` jak i
+test — dokładnie ten sam zabieg, który już raz zamknął analogiczną lukę dla
+`shouldAllowBarbCityCapture`. Test 2h rozdzielony na `2h-static` (jawnie nazwany "snapshot-lock
+na tekście", nie dowód behawioralny) + nowy `2h-behavioral` wykonujący realny `advanceProduction`
+(budynek 60/100 NIE kończy się po przejęciu barbarzyńskim, `overflowToPool=40`). Dopisany
+brakujący klucz `barbarzyncy_limit_tur_osierocony` do `ai-params.json`+`gen-panel-d.py`+spec.
+`barb-city-capture-cluster-test.cjs` 89→94/94, `tsc` 0 błędów, `barbarians-test` 167/167,
+`capital-capture-test` 86/86, `logic-test` 213/213. **SCALONE** (commit `6df223f1`), czeka na
+niezależną weryfikację Evaluatora przed uznaniem za w pełni domknięte (temat combat-adjacent).
+
+## techPrereqChain AND-prereqy (26b684af) — Evaluator: PASS-WITH-NOTES, naprawa testu dispatchowana
+
+Rdzeń naprawy potwierdzony na REALNYM kodzie (własny harness esbuild+loadery, 46/46 asercji):
+17 technologii z AND-prereq, 19 budynków bezpośrednio bramkowanych — dokładnie zgodne z
+deklaracją. Rekurencja zagnieżdżona, porządek topologiczny, separatory, cykle, parytet UI↔silnik
+(0 rozjazdów na 41×32 kombinacji) — wszystko poprawne.
+
+**N1 — zasięg zaniżony: realnie 26 budynków, nie 19.** 7 dodatkowych budynków (`odlewnia_zelaza`,
+`kuznia_zelaza`, `port_wielki`, `fort`, `baszta`, `koszary`, `laznia_publiczna`) też miało kartę
+trwale czerwoną — ich łańcuch przechodzi PRZEZ technologię z AND-prereq, ale test sekcji [5]
+filtruje tylko po bezpośrednim `techUnlock`, nie po pełnym łańcuchu. **N6 — bug NIE był czysto
+kosmetyczny**: `buildingCanBuildNow` zasila sortowanie budowalności i ścieżkę przycisku budowy —
+26 budynków było klasyfikowanych jako "nie do zbudowania teraz" nawet z ukończonymi prereqami.
+
+**N2 — luka testu potwierdzona mutacyjnie.** Sekcje [3][4][5] testują RĘCZNĄ KOPIĘ algorytmu, nie
+prawdziwy kod. Mutacja "usuń rekurencję, zostań przy płaskim split" przechodzi wszystkie 74
+asercje. Evaluator świadomie NIE dopisał testu sam (§0b — wykonawca nie ocenia własnej zmiany),
+dostarczył gotową łatkę regex + rekomendację rozszerzenia sekcji [5] o 7 budynków z N1.
+
+**STATUS: dispatch naprawy testu w toku** — zakres: dopisać łatkę regex z N2 (dowód rekurencji),
+rozszerzyć sekcję [5] o 7 pośrednio dotkniętych budynków z N1. Kod produkcyjny NIE wymaga zmian.
+
+## Runda 6 miast barbarzyńców — Evaluator A (lens F1 livelock): PASS-WITH-NOTES
+
+Livelock w wąskim zakresie (1 niebronione + ≥1 bronione) potwierdzony NAPRAWIONY wykonaniem
+własnego scenariusza (przed naprawą: idealny 3-turowy cykl, 40 tur, nigdy do bronionego; po
+naprawie: dotarcie i `attack` w turze 13). Reżim 0 bronionych potwierdzony bit-identyczny
+przed/po (dowód wykonaniem z korektą własnej pierwszej, pozornej próby).
+
+**⛔ Fałszywe twierdzenie w komentarzu kodu (do poprawy przed uznaniem rundy za zamkniętą).**
+Komentarz przy naprawie twierdzi że reżim ≥2 niebronionych+≥1 bronione daje "samo-gojący się
+1-2-turowy artefakt" — NIEPRAWDA, zweryfikowane wykonaniem: 2 niebronione dają STABILNY cykl o
+OKRESIE 22 (300 tur), bronione miasto NIGDY bliżej niż 14 heksów, adjacency=0; 3 niebronione:
+okres 44, min. 19 heksów. Mechanizm: reset zostawiający "ostatnie" natychmiast odsłania
+"przedostatnie" — 2-cykl zamiast 3-cyklu. **NIE regresja rundy 6** (przed naprawą było tak samo
+źle), ale komentarz przecenia własną skuteczność, na czym oparłaby się następna runda.
+
+**⛔ NOWE PYTANIE ABC, STATUS: OTWARTE.** Czy na `normal`/`easy` krążenie jednostki między ≥2
+niebronionymi miastami bez dotarcia do bronionego (bezczynność mimo obecności celu) jest
+akceptowalne? Literalnie spełnia specyfikację właściciela ("jednostki idą do kolejnego miasta"),
+ale czyni barbarzyńców biernymi przy ≥2 niebronionych w pobliżu. Na `hard` problem znika sam
+(przejęcie usuwa miasto z puli, zweryfikowane: przejęcia w t5/t15, dotarcie do bronionego t29).
+
+Test sekcji 6d strukturalnie NIE MOŻE złapać tego zjawiska — bronione miasto celowo postawione
+na q=120 "żeby nigdy nie stało się najbliższym celem", żadna asercja nie sprawdza dotarcia.
+5/6 mutacji własnych zabitych semantycznie (1 przeżywa — martwy defensywny guard, nieszkodliwe).
+
+**⛔ Nowa eskalacja: kolizja NIE tylko na poziomie worktree, ale i scratchpada.** W trakcie pracy
+tego Evaluatora inna równoległa sesja nadpisała plik w WSPÓŁDZIELONYM katalogu scratchpad
+(`mutate.sh` celujący w `eval-3a3b11da`/`unitRecruitCard.ts`). Worktree tego evaluatora
+zweryfikowany jako nieskażony, ale mechanizm izolacji ma dziurę SZERSZĄ niż dotąd sądzono —
+obejmuje też scratchpad, nie tylko przypadki błędnego `cd`. Do zbadania w przyszłości.
+
+Czekam na Evaluatora C (pokrycie mutacyjne + tabela 12 reżimów) przed werdyktem zbiorczym rundy 6.
