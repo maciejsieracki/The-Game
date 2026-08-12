@@ -14007,3 +14007,37 @@ bonusu odbicia po buncie).
 **DO ABC właściciela (nie zgadywać, opisać i zapytać po powrocie) — patrz pytanie w czacie.**
 
 **STATUS: dispatch rundy 2 (punkty 1-5) w toku. Punkty ABC czekają na Macieja.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 3 (`4fcf80e5`) — RUNDA 4 WERYFIKACJI: A=PASS-WITH-NOTES, B=FAIL, czeka na C
+
+**Evaluator A: PASS-WITH-NOTES.** Wszystkie 5 blokerów potwierdzone WŁASNYMI harnessami
+wykonaniowymi (nie na słowo) — punkt 2 (osierocone vs daleko-od-domu) 8/8, punkt 1 (parytet AI)
+13/13 na realnej `computePath`, własne mutacje realistyczne (nie NOOP-placeholder jak wewnętrzne
+w teście) 7/8 złapane. **Ale świadome pominięcie `placeFanOutGroup` (odwrót/rozbicie po walce)
+oparte na NIEPRAWDZIWYM uzasadnieniu** — Operator napisał że wymaga zmiany interfejsu w 3
+miejscach; Evaluator UDOWODNIŁ WYKONANIEM że wystarczy ~10 linii, zero zmian interfejsu
+(funkcja mutuje `u.q/u.r` na współdzielonej tablicy, rekoncyliacja po powrocie tym samym
+wzorcem co naprawa #4). Dodatkowo luka dotyczy DWÓCH miejsc, nie jednego
+(`applyPostBattleMap` ORAZ `applyDefenderPreBattleRetreat`) — potwierdzone realnym scenariuszem:
+obrońca cofnięty na heks żywego obozu, obóz PRZEŻYWA. **Ta sama klasa błędu za którą runda 2
+dostała FAIL (onSplit).** Wymaga: (a) korekty fałszywego zapisu w rejestrze, (b) dispatch
+domknięcia (mały, NIE wymaga ABC — to domknięcie już podjętej reguły „wejście niszczy obóz",
+nie nowa decyzja).
+
+**Evaluator B: FAIL.** Znalazł DODATKOWĄ regresję nieznalezioną przez A: `main.ts:28673`
+wczytanie STAREGO zapisu (sprzed rundy 3, bez `meta.barbCamps`) → `barbCamps=[]` →
+**KAŻDA jednostka barbarzyńska z `campId` staje się fałszywie „osierocona"** → cała populacja
+dostaje nieograniczony `chaseRadius` — zmiana trudności, której nikt nie zamawiał, niewidoczna
+dla właściciela. Własne mutacje (poza 13 wewnętrznymi Operatora): M1 (odwrócenie strażnika
+rekoncyliacji load) i M2 (usunięcie testu „obóz nieobecny" z warunku osierocenia — KAŻDY
+barbarzyńca z campId dostaje nieograniczony pościg nawet z żywym obozem) — **OBIE przechodzą
+WSZYSTKIE bramki niezauważone**, mimo że runda 3 deklarowała „13/13 mutacji złapane". Dodatkowo:
+`healthFrac` (bezpiecznik odwrotu przy niskim HP, teoretycznie hamujący nieograniczony pościg)
+**nigdy nie jest ustawiane przez silnik — martwy kod od zawsze**, więc „nieograniczony pościg"
+jest dziś DOSŁOWNIE nieograniczony, bez żadnego hamulca — runda 3 masowo zwiększa populację
+wchodzącą w tę ścieżkę. Rekomenduje 2 ABC (podważające wcześniejsze ustalenia, §1a): czy pościg
+osieroconych ma być NAPRAWDĘ bez limitu skoro jedyny zamierzony hamulec nie działa; czy
+zniszczenie obozu przez rozdzielenie armii ma pomijać koszt ruchu (`canSplit` nie sprawdza
+`ruchLeft`).
+
+**Evaluator C: w toku, decyduje.**
