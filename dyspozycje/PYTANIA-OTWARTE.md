@@ -14491,3 +14491,45 @@ odblokowania materializuje się dopiero na sprzęcie z realistycznymi czasami LU
 tematu limitów sandboxa. Dodatkowe dane dla oczekującego ABC R-MAPGEN-PANGEA-PROG-Q1: przy seed 42
 `coast/√A=3.789` (próg `>3.8`, chybienie o 0.3%), `bboxFill=0.856` (próg `<0.87`, zapas 1.6%) —
 potwierdza że `bboxFill` ma realną siłę wykrywania, `coastRatio` to niemal-ślepy próg.
+
+## Batch kategorii 4 (5 tematów) — wyniki
+
+**P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK (`deccc6b4`) — TEMAT ZAMKNIĘTY, Evaluator: PASS-WITH-NOTES.**
+Praca była już w pełni zaimplementowana (przodek HEAD), zdublowany dispatch nie wprowadził zmian.
+Wszystkie 6 wag i 3 tryby widoku zweryfikowane niezależnie (arytmetyka przeliczona ręcznie,
+2 mutacje, spójność JSON↔fallback sprawdzona dla wszystkich 11 współczynników). **Nowa nota
+(nie zgłoszona przez Operatora):** kliknięcie przełącznika trybu widoku Rankingu przewija panel
+na sam początek (`bodyEl.innerHTML=body` bez zachowania `scrollTop`) — realny defekt UX,
+niepilny, do osobnej naprawy.
+
+**P-ARMIA-CHIP-PELNE-JEDNOSTKI (`b32b52ea`) — TEMAT ZAMKNIĘTY, Evaluator: PASS-WITH-NOTES.**
+Praca była już w pełni zaimplementowana (przodek HEAD). Wszystkie 4 wymagania właściciela
+zweryfikowane (chip HUD, panel ogólny, kolumna per-miasto bez floorowania, wiersz RAZEM) —
+jedno źródło kosztu (`manpower.ts`) potwierdzone. Operator wzmocnił test o sekcję F (dowód
+mutacyjny spójności 4 miejsc). **Nota:** komentarz w nowej sekcji F testu przecenia własne
+pokrycie (twierdzi że wykryje KAŻDĄ regresję rozjazdu, ale mutacja panelu złapana tylko przez
+osobny regex, nie przez samą sekcję F) — do przeredagowania, nieblokujące.
+
+**R-ZUZYCIE-SUROWCOW-OBYWATELE N2 runda 5 pkt 2-3 + backlog cityOrderState — SCALONE, konflikt
+2 równoległych Operatorów zsyntetyzowany przez orkiestratora, temat zamknięty (`74019e25`).**
+Szczegóły: commit wyżej. Oba Evaluatory (osobno dla każdego z 2 równoległych dispatchy) poprawnie
+złapały że naprawa `cityOrderState.clear()` w `restoreGameFromSave` łamie istniejące K1/K3
+(pinowały starą liczbę 4). Zsyntetyzowana naprawa: K1→5, K3→1+1, plus nowa asercja H6b (Evaluator
+zuzycie-n2-r5 znalazł że H6 nie łapie podmiany wartości na zahardkodowaną — H6b to domyka).
+Dispatch pojedynczego Evaluatora (Opus 5) na scaloną, zsyntetyzowaną wersję w toku.
+
+**P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA ECHO 3 (IndexedDB, przerwany przegląd) — Evaluator: FAIL.**
+Migracja architektonicznie dobra, **najgorszy scenariusz (utrata zapisu) NIE materializuje się**
+(4 mutacje adwersarialne złapane, transakcyjność IDB chroni przed torn state). Ale 2 realne
+blokery, oba udowodnione wykonaniem, oba niepokryte testem:
+- **B1** — brak strażnika re-entrancy w `saveLoadDialog.ts::renderList()` (linia 433) — dwa
+  szybkie kliknięcia dają DUPLIKACJĘ wierszy w dialogu "Wczytaj grę" (dowód: 3→6 wierszy).
+- **B2** — `idb-storage.ts::openDb()` (linie 52-80) cache'uje PORAŻKĘ `indexedDB.open()` na stałe
+  — jedna przejściowa awaria wyłącza zapis/odczyt IDB do końca sesji karty, gra cicho spada na
+  legacy localStorage (widoczne tylko jako toast błędu co turę).
+- **B3** (konsekwencja B2) — odczyt z legacy pod tą samą nazwą slotu bez ostrzeżenia w UI może
+  pokazać graczowi dane sprzed migracji (dowód: ten sam slot "Rzym", tura 200 vs tura 5).
+8 dodatkowych, nieblokujących not (durability przy zamknięciu karty, mylące komunikaty błędów,
+przestarzały known-fail w map-snapshot-load-test, brak `onversionchange`, duplikacja fallbacku
+5×, cache niedoczyszczany po delete ostatniego zapisu, luka pokrycia `saveToLocal ok:true`,
+brak sprzątania legacy). **STATUS: dispatch naprawy B1+B2 (+B3 minimum) w toku.**
