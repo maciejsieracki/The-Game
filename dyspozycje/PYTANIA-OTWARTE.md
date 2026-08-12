@@ -16613,3 +16613,23 @@ Kontener sesji zrestartował się w trakcie pracy 2 agentów w tle. Odzyskany st
    agentów sprzed restartu wykorzystane, tylko brakujące/nowe fazy wykonają się ponownie.
 
 Standing autoryzacja pracy samodzielnej („działaj samodzielnie") w mocy — kontynuuję bez pytań.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — runda 3 (B2) SCALONA, Evaluator w toku (2026-08-13)
+
+Operator naprawił B2: nowy eksportowany helper `insertAtFront(prod, item, activePostep)` w
+`production.ts` — bankuje `prod.postep` na `prod.kolejka[0]` (jeśli istnieje i >0) PRZED
+wstawieniem nowego itemu na front i nadpisaniem scalara. Użyty w `applyProductionCompleted`
+(`main.ts`, gałąź `!d.ok`) zamiast ręcznego klepania frontu — naprawia wszystkie 3 call-site'y
+tej funkcji jednym miejscem. Dodano sekcję 14 (niezmiennik bezpośrednio po `promoteToFront`) i
+15 (dosłowne repro B2 z rejestru Evaluatora — Cud odzyskuje 500, nie ginie przy braku Manpower).
+Poprawiono mylące komentarze „resetuje się do 0" w sekcjach 1-2 (N2).
+
+Bramki na głównym drzewie: `tsc` 0, `promote-to-front-test.cjs` **77/77** (było 65), `logic-test`
+213/213. Commit `8384b7ac`, push OK.
+
+**Dispatch rundy 3 Evaluatora (Opus 5) NASTĘPUJE teraz** — ma odtworzyć scenariusz B2 własnym
+kodem (nie czytaniem raportu), potwierdzić że `insertAtFront` faktycznie jest używany we
+wszystkich 3 miejscach wywołania `applyProductionCompleted`, sprawdzić czy centralizacja nie
+wprowadziła nowej asymetrii, i - jeśli to trzecia czysta runda - domknąć temat.
