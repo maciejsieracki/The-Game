@@ -13090,3 +13090,28 @@ aktywnej epoce) nie ma reguły aktywnej na ŻADNYM z 2 dostępnych przejść. Py
 `R-EPOKA-CUD-ZAKRES-Q1` zadane w czacie tej samej turze — czeka na odpowiedź.
 
 **STATUS: ABC ZADANE, czeka na `R-EPOKA-CUD-ZAKRES-Q1 + litera`.**
+
+## P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA — SCALONE (7ae5d8f8)
+
+Rekomendacja B (prawa kolumna) potwierdzona przez właściciela, wdrożona. Zero kolizji z
+minimapą/dyplomacją/bitwą (osobne overlaye pełnoekranowe lub chowane na czas panelu miasta).
+tsc 0 błędów, logic-test 213/213. **STATUS: ZAMKNIĘTE.**
+
+## P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC — SCALONE (8a3a3d29)
+
+`DEFAULT_OKOLICA_FOCUS` 'zrownowazone'→'zywnosc', dotyczy gracza i AI/Państw-Miast (wspólna
+ścieżka `seedCityOwnerDefaults`). +4 asercje, 49/49, tsc 0 błędów, logic-test 213/213.
+**STATUS: ZAMKNIĘTE.**
+
+## ⛔ AUDYT WŁASNY: BRAK EWALUATORA DLA SERII SCALEŃ 2026-08-12 (naruszenie zasady 0a/0b)
+
+Właściciel zapytał wprost czy po przełączeniu na Ultracode są martwe subagenty i czy każdy
+Operator ma swojego Ewaluatora. Odpowiedź: subagenci OK (brak crashy), ALE seria commitów
+poniżej poszła Operator→commit BEZ pośredniego Evaluatora — naruszenie zasady 0a/0b:
+`76514613` (dyplomacja AI), `e702d982` (wyciek GPU), `a79bae29` (szczegóły zużycia),
+`469f3152` (suwaki Empire), `b32b52ea` (chip Armia), `9594e4ac` (kolejność kart Surowców),
+`1208eb6c` (stawka 0,2), `1c41c113` (obóz barbarzyński), `deccc6b4` (wagi Mocy), `7ae5d8f8`
+(prawa kolumna budynków), `8a3a3d29` (domyślny podział pól). **Dispatch Evaluatorów (Opus 5)
+w toku dla całej serii, przez Workflow (na wyraźne polecenie właściciela — ultracode).**
+
+**STATUS: W NAPRAWIE.**
