@@ -582,6 +582,27 @@ ok(aiGenerousPreview != null && aiGenerousPreview.accepted === false, 'umowa_han
 ok(mod.computeIncomingPlayerAcceptNetPw('handel', overpayPayload, 100).netPw === overpayNet.netPw, 'handel: netPw niezmieniony po naprawie (overpay)');
 ok(mod.computeIncomingPlayerAcceptNetPw('handel', underpayPayload, 100).netPw === underpayNet.netPw, 'handel: netPw niezmieniony po naprawie (underpay)');
 
+// 7) U3 (Evaluator 76514613): asercja regresyjna dla mutacji M5 (niezłapana) — netPw MUSI liczyć
+// się WYŁĄCZNIE z realnego koszyka (offerPn), NIE z bazy traktatu przefiltrowanej przez
+// bilateralTreatyDisplayPw/sideDisplayOfferPw. umowa_handlowa (treatyBase=80) @ rel 140: koszyk
+// my=60 PW (receiveItems), their=80 PW (giveItems) → netPw poprawny = 60−80 = −20. Stara
+// (błędna) ścieżka, która dokłada bazę traktatu (gracz @ Relacji 112, partner baza 80), dałaby
+// 172−160 = +12 — zweryfikowane niezależnie na tej samej kombinacji: gdyby M5 (lub jej
+// odpowiednik) wróciła, ta asercja różni się o 32 PW i musi FAIL.
+// / EN: U3 (Evaluator 76514613): regression assertion for the (uncaught) M5 mutation — netPw
+// MUST be computed from the REAL basket only (offerPn), NOT from the treaty base folded back in
+// via bilateralTreatyDisplayPw/sideDisplayOfferPw. umowa_handlowa (treatyBase=80) @ rel 140:
+// basket my=60 PW (receiveItems), their=80 PW (giveItems) → correct netPw = 60−80 = −20. The old
+// (buggy) path that folds in the treaty base (player @ Relation 112, partner base 80) would give
+// 172−160 = +12 — independently verified on the identical combination: if M5 (or an equivalent)
+// regressed, this assertion differs by 32 PW and must FAIL.
+const u3TreatyPayload = {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 80 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 60 }],
+};
+const u3Net = mod.computeIncomingPlayerAcceptNetPw('umowa_handlowa', u3TreatyPayload, 140);
+ok(u3Net != null && u3Net.netPw === -20, 'U3: umowa_handlowa incoming @ rel 140, koszyk 60/80: netPw === -20 (nie +12 ze starej ścieżki bazy traktatu)');
+
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 
 console.log(`diplomacy-acceptance-points-test: ${pass} pass, ${fail} fail`);

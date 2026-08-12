@@ -434,6 +434,16 @@ export function computePlayerAcceptanceSides(
     // / EN: the "close a separate deal" hint only makes sense when the gap actually blocks
     // (player as proposer); for incoming (AI proposes) a negative asymBalance stays purely
     // informational (partner's base is fixed, player's is relation-discounted) — not a debt.
+    // KOREKTA U1 (Evaluator 76514613, Maciej): etykieta „możesz przyjąć bez dopłaty" była
+    // kluczowana wyłącznie na `incoming && asymBalance<0`, ignorując `relOk` — pokazywała się
+    // nawet gdy realne `accepted = relOk && balanceOk` odrzucało ofertę z powodu Relacji (nie
+    // Salda). Dodano `&& relOk`, żeby etykieta pokazywała się WYŁĄCZNIE gdy oferta faktycznie
+    // zostałaby zaakceptowana z powodu salda.
+    // / EN: the "you can accept without topping up" label was keyed solely on
+    // `incoming && asymBalance<0`, ignoring `relOk` — it showed up even when the real
+    // `accepted = relOk && balanceOk` rejected the offer for a Relation shortfall (not a
+    // balance one). Added `&& relOk` so the label only appears when the offer would actually
+    // be accepted on balance grounds.
     if (mode === 'treaty' && !hasBasket) {
       my.accepted = relOk && balanceOk;
       their.accepted = relOk && balanceOk;
@@ -441,14 +451,14 @@ export function computePlayerAcceptanceSides(
         ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
-          : incoming && asymBalance < 0
+          : incoming && asymBalance < 0 && relOk
             ? 'Propozycja partnera — możesz przyjąć bez dopłaty'
             : 'Spełnia warunki (0 PW)';
       their.statusLabel = !balanceOk
         ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
         : asymBalance > 0
           ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
-          : incoming && asymBalance < 0
+          : incoming && asymBalance < 0 && relOk
             ? 'Propozycja partnera — bez dopłaty'
             : 'Równo — spełnia';
     } else if (mode === 'mixed') {
