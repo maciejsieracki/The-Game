@@ -12414,3 +12414,79 @@ zgłoszenia jako możliwy błąd/ograniczenie środowiska poza tą sesją.
 `CLAUDE.md`/runbooku. Status nieustalony: świeże czy stare, próg czy generator. **STATUS:
 OTWARTE — do zbadania na starcie następnej sesji, PRZED deployem (patrz `KANAL-PRACA.md`, wpis
 2026-08-11 09:5x, pełne dane).**
+
+## BATCH PLAYTESTU (Maciej, 2026-08-11, zgłoszone przed odnowieniem limitu) — 12 zgłoszeń, do dispatchu jutro
+
+Zgłoszone przez właściciela z gry na żywo (zrzuty ekranu), zarejestrowane bez dalszych pytań
+(zasada 2 — brak nowych wątków pytaniami). Każde poniżej to osobny temat do rozpoznania +
+dispatchu subagenta jutro, PRZED nowymi tematami spoza tej listy.
+
+### 1. P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK
+Toast po końcu tury z treścią dyplomatyczną (np. "Dyplomacja: Korynt · Grecy · miasto-państwo —
+Propozycja handlu surowcem") ma nagłówek "Koniec tury" — myląco sugeruje podsumowanie tury, nie
+osobną notę dyplomatyczną. Postulat: nagłówek "Dyplomacja" / "Nota dyplomatyczna" gdy treść
+dotyczy dyplomacji, nie ogólny "Koniec tury".
+
+### 2. P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE
+W edytorze "Umowa wymiany surowców" można wielokrotnie dodać TĘ SAMĄ propozycję do oferty
+(zrzut: 4× "Obróbka drewna" jako osobne pozycje w "OFERUJEMY"). Powinna być blokada duplikatu
+albo scalanie w jedną pozycję z sumowaną ilością.
+
+### 3. P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE
+AI proponuje kontroferty, które matematycznie nie mogą wyjść na zero/być uczciwe (zrzut: "Wpływ
+relacji na deal −35,4%" / "Przewaga u Ciebie — oferta nieuczciwa dla partnera 37 PW",
+"−23,1%... musisz dać więcej"). Minimum oczekiwane: AI powinno domyślnie proponować ofertę
+zbalansowaną (bilans ~0 PW), nie startować od dużego niezbalansowania.
+
+### 4. P-DYPLOMACJA-STOL-NEGOCJACJI-ZABLOKOWANY
+Stół negocjacji zablokowany — nie da się ani Przyjąć, ani Odrzucić oferty (zrzut: oba przyciski
+obecne, treść mówi "Spełnia warunki — użyj Przyjmij", ale akcja nie działa). Do reprodukcji —
+prawdopodobnie stan wyścigu/zawieszony stan UI negocjacji.
+
+### 5. P-TARGOWISKO-BLEDNA-BRAMKA-BADAN
+Karta budynku Targowisko (Rynek) pokazuje wymagane badania (Garncarstwo + Rolnictwo + Oswojenie
+zwierząt) jako CZERWONE/niespełnione, mimo że gracz ma je od dawna. Bug w warunku bramki technologii
+budynku lub w renderze karty (odczyt złego pola/złej listy zbadanych).
+
+### 6. P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI
+W kolejce budowy nie da się zamienić AKTUALNIE budowanego (głównego) budynku z innym niżej w
+kolejce — są tylko strzałki przesuwające pozycje WEWNĄTRZ oczekujących, brak przycisku "zrób to
+głównym/aktualnie budowanym" (np. Spichlerz na górze ↔ Studnia niżej, zamiana miejscami z
+głównym slotem produkcji).
+
+### 7. P-REKRUTACJA-ZNIKLE-JEDNOSTKI-EPOKI-BRAZU
+W epoce Brąz lista rekrutacji pokazuje WYŁĄCZNIE Zwiadowcę — reszta jednostek zniknęła. Wg
+wcześniejszej zasady projektu rekrutacja powinna obejmować też jednostki epoki niższej (Kamień)
+dostępne równolegle z Brązem. Możliwa regresja — do zbadania.
+
+### 8. P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU
+Po zaatakowaniu/zdobyciu obozu/chaty barbarzyńców węzeł NIE znika z mapy i dalej PRODUKUJE
+kolejnych barbarzyńców — nielogiczne, powinien zostać usunięty/wyłączony po zdobyciu.
+
+### 9. P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (powiązane z R-ZUZYCIE-SUROWCOW-OBYWATELE)
+Panel Surowców (magazyn państwa) potrzebuje przycisku "Zobacz szczegóły" z rozbiciem zużycia per
+kategoria (budynki / ludność-obywatele / wojsko) dla każdego surowca. Dziś nie da się sprawdzić
+np. ile drewna/kamienia realnie zjadają obywatele — bezpośrednio dotyczy tematu z tej nocy
+(drenaż 1:1), UI go dziś nie pokazuje wprost.
+
+### 10. P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD
+Górny pasek HUD ma liczniki "Armia"/"Miasta", ale BRAK łącznej liczby obywateli (sumy populacji)
+we wszystkich miastach imperium.
+
+### 11. P-NAZWY-JEDNOSTEK-MYLACO-PODOBNE (Wojownik vs Wojownik mykeński)
+"Wojownik" (epoka Kamień, HP 60, atak 6/obraż.4) i "Wojownik mykeński" (epoka Brąz, kultura
+Grecka, HP 110, atak 6/obraż.8, W ZAMIAN ZA Wojownika z mieczem i tarczą) — nazwy zbyt podobne
+mimo że to kompletnie różne jednostki. Postulat: wyraźniejsze odróżnienie (prefiks epoki, inny
+kolor/badge, albo zmiana nazwy).
+
+### 12. P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI
+Rozbicie "Mocy" (Power) — składnik "Armia" (suma siły bojowej) to 44% całkowitego wyniku,
+zdecydowanie dominuje nad resztą (Miasta 9%, Ulepszenia terenu 11%, Infrastruktura 6%, itd.).
+Do rozważenia rebalans wag składników, żeby wojsko nie przeważało tak mocno nad gospodarką w
+ocenie Mocy.
+
+**STATUS: OTWARTE, wszystkie 12 — dispatch subagentów jutro na starcie sesji (po dokończeniu
+punktów wiszących z dzisiejszej nocy: map-gen Pangea, R-ZUZYCIE-SUROWCOW N1 runda 5 reszta,
+przegląd IndexedDB), PRZED nowymi tematami spoza tej listy. Żadne z 12 nie wymaga na razie
+decyzji ABC właściciela — wszystkie to rozpoznanie+naprawa techniczna lub UI, można dispatchować
+Operatora wprost.**
