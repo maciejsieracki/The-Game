@@ -6666,38 +6666,6 @@ a `git-merge-main` jest twardo zablokowany w `guardrails.ts` (bez furtki). Hasł
 CZEKAM-NA: sesja lokalna: pull na dysk właściciela (testuj `13a04632`) · Maciej: zgoda na
 scalenie FAL 268+269 do `main`.
 
-## [23:45 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 271**, md5 `3e956226`
-
-Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`3e956226695d01eeda65e4989600b344`**, stempel
-`ROBOCZA · e43605f4 · 2026-08-12 21:41` (UTC). Build z HEAD **`96166d19`** gałęzi
-`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**50 commitów** od FALI 270, 17 plików w
-`gra/src`+`gra/data`, +1414/−107). **Commit deployu: `82ed00a6`**, wypchnięty na gałąź sesji.
-Bramki na tym czubku: `tsc` **0 błędów** · `logic-test` **213/213** · `combat-test` **6/6** ·
-`vite build` **815 modułów** · `verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html`
-przegenerowane.
-**Tematy (fala domykająca, same naprawy — bez nowych funkcji):** klaster miast barbarzyńców rundy
-5-6-7 (M7.1 bramka trudności, M10.3 pathCost, temat ZAMKNIĘTY po 7 rundach) · IndexedDB B1+B2+B3
-(re-entrancy, cache porażki, cichy fallback) · fantomowy slot `_lastPlayed` (martwe „Kontynuuj"/
-„Wczytaj" po skasowaniu WSZYSTKICH zapisów) · runda 2 retreat-garnizon (fałszywy doc-comment
-+ strażnik `main.ts`) · panel zużycia surowców (etykiety Zapotrzebowanie/drenaż realny + żywy
-fallback po save-load) · drenaż obywateli r2 (zaokrąglenia, pin stawki) · dyplomacja U1/U3
-(etykieta PW ignorująca `relOk`) + eksport `DIPLOMACY_MSG_PREFIX` (nagłówek EOT) · guard
-`Number.isInteger` przy promocji na front kolejki.
-⚠️ **Bundel przebudowany po wyścigu:** pierwszy build (`7bffe3dd`, HEAD `bf6d9d61`) powstał, zanim
-doszło 5 commitów innej sesji. Zrobiłem `git rebase` na `96166d19` i przebudowałem od zera, żeby
-md5 odpowiadał czubkowi gałęzi. Różnica funkcjonalna zero (jedyna zmiana w `gra/src` z tych
-5 commitów — `957a5f58` w `barbarians.ts` — to wyłącznie komentarze, zweryfikowane diffem).
-**md5 `7bffe3dd` NIGDZIE nie został opublikowany — obowiązuje `3e956226`.**
-⛔ **Znany defekt historii:** commit `044aa26d` (komunikat: drenaż obywateli) zawiera także +284
-linie w `barbarians.ts` — wyścig commitów w współdzielonym drzewie. Obie zmiany poprawne
-i zweryfikowane osobno; historia nie przepisywana. Zarejestrowane w `PYTANIA-OTWARTE.md`.
-**FALA 271 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu"). Powstanie FALI 271
-kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
-⛔ Zaległość z FALI 270 **nadal otwarta**: `main` stoi na `99974173` (= FALA 267), FALE 268 i 269
-nigdy nie scalone. Scalenie NIE wykonane w tej fali (poza zakresem zlecenia deployu).
-**SESJA LOKALNA: pull na dysk właściciela** (testuj `3e956226`).
-CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 268+269+270 do `main`.
-
 ## [23:47 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 271**, md5 `ea51ac51`
 
 Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`ea51ac51335652ce60732b600a82c70d`**, stempel
@@ -6723,8 +6691,11 @@ linie w `barbarians.ts` — wyścig commitów w współdzielonym drzewie. Obie z
 i zweryfikowane osobno; historia nie przepisywana.
 **FALA 271 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu”). Powstanie FALI 271
 kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
-⛔ Zaległość z FALI 270 **nadal otwarta**: `main` stoi na `99974173` (= FALA 267), FALE 268 i 269
-nigdy nie scalone. Scalenie NIE wykonane w tej fali (poza zakresem zlecenia deployu).
+✅ **Zaległość z FALI 270 ZAMKNIĘTA przez inną sesję w trakcie tego deployu:** `main` stoi teraz na
+`0a261731` i zawiera **FALE 268 (`b466fa17`) i 269 (`0a261731`)** — zweryfikowane `git merge-base
+--is-ancestor`. Do scalenia pozostaje **FALA 270** (`028ff459`, NIE w main), kwalifikowana rytmem
+jedna fala do tyłu przez powstanie FALI 271. Scalenie NIE wykonane tutaj (poza zakresem deployu,
+wymaga wyraźnej zgody właściciela; `git-merge-main` zablokowany w `guardrails.ts`).
 ℹ️ Po buildzie doszly na galaz 3 commity (`7155d39d`, `0994753b`, `63bdf1b9`) — **nie sa w bundlu**, ale zweryfikowane jako **bez zmian zachowania** (rejestr + testy; kopalnia zlota odsprzegnieta do JSON, wartość 1→1). Bundel NIE byl przebudowywany 4. raz; wiazacy build HEAD = `b6159561`.
 **SESJA LOKALNA: pull na dysk właściciela** (testuj `ea51ac51`).
-CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 268+269+270 do `main`.
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FALI 270 do `main`.
