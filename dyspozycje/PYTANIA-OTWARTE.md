@@ -14876,3 +14876,26 @@ w Żelazie). `epoka-merge-recruit-test.cjs` testy 1-3 przepisane pod nową regu�
 identyczne przed/po via `git stash`. Worktree `fix-epoka-kaskada` usunięty, Evaluator
 dispatchowany w `eval-epoka-kaskada`.
 
+
+## Blokada wycofania obrońcy w garnizonie (pyt. 6) — SCALONE (787210e1)
+
+**STATUS: w Evaluatorze (Opus 5) — z NACISKIEM na jeden punkt do sprawdzenia.** Operator
+zmapował wszystkie 4 miejsca ustawiania `canRetreat`/`defenderCanRetreat` w repo — tylko JEDNO
+(`main.ts:20709`, `launchIncomingMapFieldBattle`, atak AI/barbarzyńcy na jednostkę gracza w
+mieście BEZ MURU, z pominięciem systemu oblężenia) może kiedykolwiek dać `defenderCanRetreat=
+true`; pozostałe 3 dotyczą wyłącznie opcji ATAKUJĄCEGO (zawsze gracz), nie obrońcy. Tam dodano
+`allDefendersFortifiedInGarnizon()` (nowa funkcja w `armyMerge.ts`) blokującą wycofanie
+niezależnie od ownera obrońcy.
+
+**Świadome odejście od litery ECHO, jawnie oznaczone przez Operatora:** zapis ECHO mówił o
+koniunkcji `inGarnizon===true I ufortyfikowanyWPolu===true`; Operator dowiódł wykonaniem, że te
+dwa pola są dziś wzajemnie wykluczające się (jeden przycisk 'fortify' → `enterGarnizon()` ALBO
+`enterFieldFortify()`, nigdy oba), więc dosłowna koniunkcja nigdy nie byłaby prawdziwa i reguła
+nigdy by nie zadziałała. Zaimplementował predykat na samym `inGarnizon`. Evaluator ma
+zweryfikować czy to jedyna sensowna interpretacja, czy zostawia lukę (`ufortyfikowanyWPolu` bez
+`inGarnizon` — obrona w otwartym polu — dziś NIE blokuje wycofania).
+
+Bramki zielone (`tsc`, nowy test 18/18, `logic-test` 213/213, `combat-test` 6/6 + 10 innych
+niedotkniętych testów pokrewnych). Worktree `fix-retreat-garnizon` usunięty, Evaluator w
+`eval-retreat-garnizon`.
+
