@@ -15219,3 +15219,21 @@ Evaluatora C jako ten sam typ "pustej asercji", na którym poległy już rundy 1
    (Evaluator A: poprawne), samo-wygasania (Evaluator A: poprawne), guard `if(!includes)` w kroku
    dodawania (Evaluator C: dowiedziony martwy kod defensywny, nie dopisywać asercji).
 
+
+## Runda 2 retreat-garnizon (7bd17f17) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE, runda 4 NIE wymagana
+
+Werdykt agenta `af1791683fe5d1b20`: wszystkie 3 zlecone poprawki dostarczone i zweryfikowane
+niezależnie punkt po punkcie (doc-comment prawdziwy, sekcja 3 to prawdziwy dowód nie kołowy,
+sekcja 6 strażnik kotwiczy poprawnie — potwierdzone testem podstępu z wabikiem w zagnieżdżonym
+`onCancel`). 2 drobne nieścisłości w opisie mechanizmu (nieblokujące). 9 mutacji własnych — M6/M9
+(całkowite odpięcie funkcji przez podmianę deklaracji zmiennej) przechodzą niezłapane, ale
+Evaluator zwalidował gotową 4-liniową asercję domykającą tę lukę, oznaczoną jako OPCJONALNA
+("tania okazja, nie wymagana do zamknięcia"). **ZAMKNIĘTE bez dalszych rund.**
+
+**Znalezisko przy okazji, zarejestrowane cicho (zasada §2):** sekwencja
+`enterFieldFortify(u); enterGarnizon(u);` niszczy `fortifyRuchSnapshot` — `enterFieldFortify`
+zeruje `ruchLeft`, `enterGarnizon` zapisuje jako snapshot już wyzerowaną wartość. Jednostka w
+stanie "oba pola true" (ścieżki main.ts:9727 lub main.ts:16944) przy wyjściu z fortyfikacji NIE
+odzyska ruchu. Pre-istniejący defekt danych, ujawniony przez tę rundę, poza jej zakresem —
+osobny temat do rozpoznania.
+
