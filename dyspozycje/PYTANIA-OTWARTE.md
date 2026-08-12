@@ -14365,3 +14365,40 @@ osobno, sekcja T nie jest ślepa na żaden pojedynczy element).**
 
 Bramki (Evaluator, własne uruchomienie): tsc 0, merge-decor-no-regress-test 49/49,
 logic-test 213/213. **TEMAT ZAMKNIĘTY.**
+
+## ⛔ AUDYT WŁASNY #2 — 6 z 11 commitów z „AUDYTU WŁASNEGO #1" (linia ~13156) NIGDY nie dostało
+## Evaluatora mimo deklaracji „redispatch w toku" (2026-08-12, na polecenie Macieja: ultracode)
+
+Właściciel poprosił o rygorystyczną re-weryfikację kategorii 6 (wszystkie zlecenia od FALA 269),
+z dispatchem subagentów dla każdego wiszącego tematu. Krzyżowa weryfikacja `git log` vs treść
+rejestru (nie tylko czytanie nagłówków `##`, jak w poprzednim audycie) wykryła: „AUDYT WŁASNY:
+BRAK EWALUATORA DLA SERII SCALEŃ" (linia ~13156) wymienił 11 commitów bez Evaluatora i zadeklarował
+„Dispatch Evaluatorów (Opus 5) w toku dla całej serii" — later „Redispatch w toku: 14 commitów bez
+Evaluatora" (linia ~13229, po odkryciu bugu bazy `isolation:'worktree'`). Faktyczne pokrycie
+zweryfikowane grepem po HASHU każdego z 11: **5 dostało Evaluatora** (`469f3152` FAIL→fix→PASS,
+`e702d982` PASS-WITH-NOTES, `9594e4ac` — evaluator znalazł 2 realne luki, obsłużone, `7ae5d8f8`
+FAIL→fix (`4e62c4f6`)→PASS-WITH-NOTES, `1c41c113` — pełna wieloramundowa saga
+P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1). **6 NIGDY nie dostało — zero wzmianki „Evaluator" w
+rejestrze poza własnym nagłówkiem „SCALONE"/„ZAMKNIĘTE" Operatora, który sam siebie zamknął:**
+
+1. `76514613` — P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (fix bramki akceptacji PW)
+2. `a79bae29` — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 1 (panel Surowców, przycisk szczegółów)
+3. `b32b52ea` — P-ARMIA-CHIP-PELNE-JEDNOSTKI (chip Armia + panel Rekrutów, pełne jednostki)
+4. `deccc6b4` — P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK (6 wag składników Mocy + 3 tryby widoku)
+5. `1208eb6c` — R-ZUZYCIE-SUROWCOW-OBYWATELE stawka drenażu 1,0→0,2 (CITIZEN_UPKEEP_RATE_PER_CITIZEN)
+6. `8a3a3d29` — P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC (DEFAULT_OKOLICA_FOCUS→'zywnosc')
+
+**Uwaga o #5:** stawka 0,2 jest transitywnie POKRYTA testem przez wielorundową sagę
+R-ZUZYCIE-SUROWCOW N1/N2 (`citizen-resource-upkeep-test.cjs`, 100+/100+ asercji, 5+ rund
+Evaluatora na mechanizmie drenażu który UŻYWA tej stałej) — ale sama WARTOŚĆ (0,2, nie np. 0,3)
+jako zamierzona decyzja właściciela nigdy nie dostała jawnego werdyktu „to jest właściwa liczba,
+wdrożona poprawnie". Niższe ryzyko niż pozostałe 5, ale dla kompletności też w dispatchu.
+
+**Przyczyna prawdopodobna:** kolejne fale redispatchu (batch 2026-08-12 #1: 469f3152/konwertery/
+magazyn; kategoria 4: scene-styledoverlays/rekrutacja-brazu/zuzycie-n1/mapgen-pangea) każda
+skupiała się na PODZBIORZE „wiszących" tematów wybranym z pamięci sesji/kontekstu, nie z pełnej,
+systematycznej listy 11(14) hashy — klasyczny błąd „ponowna lista z pamięci zamiast z rejestru",
+dokładnie ten typ pomyłki przed którym ostrzega §0c. **Dispatch 6 Evaluatorów (Opus 5) NA
+ISTNIEJĄCYM, już zmergowanym kodzie (nie nowa implementacja) — w toku, ręcznie tworzone worktree.**
+
+**STATUS: W NAPRAWIE.**
