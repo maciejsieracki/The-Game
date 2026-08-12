@@ -15341,3 +15341,40 @@ Operatora, uzasadniona; (2) fallback liczący budynki/wojsko na żywo po wczytan
 nie pokazywać przycisku dopóki mapy puste; (3) bramka musi wykonywać `resUsageDetailsHtml()` na
 gotowym `EmpireResourceRow` i sprawdzać wyrenderowany HTML, nie tylko tekst źródła.
 
+
+## Fix wycieku placeholdera HUD Surowce (5448eb51) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: brief zadania opisywał INNY błąd niż ten commit naprawia (placeholder to statyczny wpis
+katalogu "Ruda cyny — wkrótce", jawnie zamówiony przez właściciela jako trwałe zarezerwowane
+miejsce, nie stan ładowania) — Evaluator sam skorygował fałszywą przesłankę i zweryfikował
+merytoryczny odpowiednik: placeholder miał `cap=0,stock=0`, więc fałszywie liczył się jako
+"surowiec na limicie magazynu" w chipie HUD (stały fałszywy alarm od pierwszej tury). Własny
+harness: 24/24 po naprawie, 6/24 przed (odtworzone dokładnie). 8/10 mutacji złapanych (2
+pozostałe to legalne refaktory dające głośny crash zamiast cichej porażki — koszt utrzymania,
+nie dziura bezpieczeństwa). Kolejność katalogu (Koń+Złoto razem) zgodna z już podjętą decyzją
+właściciela `P-SUROWCE-KOLEJNOSC-KON-Q1=A`. **ZAMKNIĘTE.**
+
+**Znalezisko przy okazji, zarejestrowane cicho:** `renderSurowceSection` wyprowadza nagłówek
+"Magazyn państwa" z `stored[0]` (pierwszy element katalogu) — placeholder ma `cap=0` bez
+`capBase`/`capBonus`. Dziś bezpieczne WYŁĄCZNIE bo placeholder stoi na indeksie 9, nie 0.
+Przestawienie katalogu tak, żeby placeholder był pierwszy, dałoby błędny nagłówek "pojemność
+0/0 Magazynów" — ta sama klasa błędu co właśnie naprawiona, piętro wyżej, niepokryta nową bramką.
+
+## ⛔ ZNALEZISKO PROCESOWE: kolizja worktree w self-audycie (eval-audit3-8)
+
+Przy okazji recenzji `5448eb51` Evaluator sam wykrył i zgłosił: w trakcie jego pracy w
+`eval-audit3-8` INNY proces (prawdopodobnie Evaluator recenzujący `8a3a3d29`) pisał do TEGO
+SAMEGO katalogu — nadpisał plik w scratchpadzie skryptem mutacyjnym celującym w
+`cities.ts`/`empire-city-defaults.ts`. Zweryfikowałem: pliki własnego zakresu obu evaluatorów
+(main.ts/empireDetailPanel.ts dla 5448eb51) pozostały czyste, brak realnej kontaminacji wyniku
+— ale to jednoznaczne naruszenie zasady §4a ("każdy subagent na własnej kopii"). Dochodzenie:
+oba worktree PRZYPISANE tym dwóm tematom (eval-audit2-2, eval-audit3-2) są czyste i nietknięte —
+oznacza to, że oba evaluatory NIE PRACOWAŁY w katalogach, do których je jawnie skierowałem w
+promptcie (KROK 0), tylko oba (a może więcej) samodzielnie wylądowały w `eval-audit3-8` (worktree
+istniejący od wcześniejszej rundy audytu, wtedy nieużywany). Mechanizm tej rozbieżności
+nieustalony — nie udało się potwierdzić czy to błąd modelu przy wykonywaniu KROK 0, czy coś
+innego. Skutek faktyczny: NIESZKODLIWY dla dotychczasowych werdyktów (potwierdzone brakiem
+kontaminacji plików własnego zakresu każdego evaluatora), ale wymaga czujności — kolejne
+dispatch'e powinny jawnie weryfikować `pwd` zgadza się z oczekiwaną ścieżką, nie tylko `git log`.
+Posprzątane (`.eval-stubs/` usunięte z `eval-audit3-8`).
+
