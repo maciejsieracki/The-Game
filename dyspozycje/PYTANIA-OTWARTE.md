@@ -15300,3 +15300,15 @@ fałszywego komentarza o "nic więcej się nie da zrobić"; (4) wzmocnienie `exp
 — tabela 12 reżimów planszy (miasta niebronione 0/1/≥2 × bronione 0/≥1 × raidReady tak/nie),
 żeby zapobiec szóstej rundzie tego samego typu błędu.
 
+
+## Fix stołu negocjacji dyplomatycznych (ad4b1e8d) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: naprawa `actionableNegotiationIdsForPair` (błędne liczenie proposer/responder blokujące
+niektóre wątki negocjacji) jest poprawna, zweryfikowana niezależnym harnessem (45/45) i 8/8
+mutacji własnych. Evaluator skorygował fałszywą przesłankę we własnym briefie (role proposer/
+responder są celowo STAŁE od rundy 1, kodują kierunek koszyka nie kolejność tury — "naprawa"
+zgodna z pierwotnym błędnym briefem wprowadziłaby regresję). Nota nieblokująca: fix ma
+nieudokumentowany efekt uboczny — poszerza zakres liczenia PW dla `livePackageSiblingFor`
+(prawdopodobnie zamierzone, zrównuje silnik z UI, ale commit message o tym nie wspomina).
+**ZAMKNIĘTE.**
+
