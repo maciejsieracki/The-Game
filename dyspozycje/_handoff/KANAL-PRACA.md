@@ -6703,7 +6703,7 @@ CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 268+
 Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`ea51ac51335652ce60732b600a82c70d`**, stempel
 `ROBOCZA · b91375a2 · 2026-08-12 21:44` (UTC). Build z HEAD **`b6159561`** gałęzi
 `claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**53 commity** od FALI 270, 17 plików w
-`gra/src`+`gra/data`, +1523/−120). **Commit deployu: `b530a9a3`**, wypchnięty na gałąź sesji.
+`gra/src`+`gra/data`, +1523/−120). **Commit deployu: `94a17910`**, wypchnięty na gałąź sesji.
 Bramki na tym czubku: `tsc` **0 błędów** · `logic-test` **213/213** · `combat-test` **6/6** ·
 `diplomacy-acceptance-points-test` **253/0** · `vite build` **815 modułów** ·
 `verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html` przegenerowane.
@@ -6725,5 +6725,6 @@ i zweryfikowane osobno; historia nie przepisywana.
 kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
 ⛔ Zaległość z FALI 270 **nadal otwarta**: `main` stoi na `99974173` (= FALA 267), FALE 268 i 269
 nigdy nie scalone. Scalenie NIE wykonane w tej fali (poza zakresem zlecenia deployu).
+ℹ️ Po buildzie doszly na galaz 3 commity (`7155d39d`, `0994753b`, `63bdf1b9`) — **nie sa w bundlu**, ale zweryfikowane jako **bez zmian zachowania** (rejestr + testy; kopalnia zlota odsprzegnieta do JSON, wartość 1→1). Bundel NIE byl przebudowywany 4. raz; wiazacy build HEAD = `b6159561`.
 **SESJA LOKALNA: pull na dysk właściciela** (testuj `ea51ac51`).
 CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 268+269+270 do `main`.
