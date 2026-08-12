@@ -12490,3 +12490,18 @@ punktów wiszących z dzisiejszej nocy: map-gen Pangea, R-ZUZYCIE-SUROWCOW N1 ru
 przegląd IndexedDB), PRZED nowymi tematami spoza tej listy. Żadne z 12 nie wymaga na razie
 decyzji ABC właściciela — wszystkie to rozpoznanie+naprawa techniczna lub UI, można dispatchować
 Operatora wprost.**
+
+## P-PERF-SPOWOLNIENIE-PO-60-TURACH — KRYTYCZNE, zgłoszone przez Macieja (2026-08-11)
+
+Po ok. 60 turach gra drastycznie zwalnia — każdy ruch to kilkunastosekundowe opóźnienie, gra
+praktycznie niegrywalna. Maciej pyta czy to może być problem za małej pamięci podręcznej
+przeglądarki. Hipotezy do zbadania przez Operatora: (a) rosnące struktury bez czyszczenia (Mapy/
+Sety rosnące co turę bez limitu — np. cache'e per-owner tworzone w boot() a nie czyszczone,
+podobnie do incydentu z tej nocy przy citizenUpkeepByOwner); (b) autosave/serializacja całego
+stanu co N tur (mapSnapshot, kompresja) blokująca główny wątek; (c) akumulacja obiektów DOM/
+event listenerów bez sprzątania (toasty, panele, historia wydarzeń); (d) render 3D — rosnąca
+liczba mesh/instancji bez recyklingu przy dużej mapie po wielu turach; (e) pętla AI/ekonomii
+skalująca się nieliniowo z liczbą miast/jednostek zamiast liniowo. **STATUS: KRYTYCZNE — dispatch
+Sonnet 5 (worktree) NATYCHMIAST, priorytet nad resztą listy playtestu. Zakres: profilowanie
+(np. dodanie tymczasowych console.time/performance.now() wokół głównych faz tury, DevTools
+Performance/Memory snapshot jeśli możliwe w headless) + identyfikacja źródła + naprawa.**
