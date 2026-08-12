@@ -13115,3 +13115,18 @@ poniżej poszła Operator→commit BEZ pośredniego Evaluatora — naruszenie za
 w toku dla całej serii, przez Workflow (na wyraźne polecenie właściciela — ultracode).**
 
 **STATUS: W NAPRAWIE.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 — SCALONE (ecbddda8)
+
+Wartości terenowe zmienione zgodnie z decyzją. Operator znalazł i naprawił dodatkowo realny bug:
+Stadnina miała zahardkodowaną wartość produkcji Konia (1) pomijającą JSON — bez tej poprawki
+zmiana samego pliku danych nie zadziałałaby w grze dla tego surowca. tsc 0 błędów, logic-test
+213/213. **STATUS: ZAMKNIĘTE, czeka na Evaluatora (dispatch w toku, engine-code change flagged).**
+
+## P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE — SCALONE (3dc9d650)
+
+Blokowe rozbicie Szczęście/Prawo, łączne zużycie w Zaopatrzeniu obywateli (nie per capita),
+widoczny % wkładu w Porządek łącznie. Konflikt scalania z równoległym commitem stawki 0,2
+rozwiązany przez orkiestratora (usunięta zduplikowana stała, ujednolicone na
+CITIZEN_UPKEEP_RATE_PER_CITIZEN=0.2 wszędzie). tsc 0 błędów, logic-test 213/213.
+**STATUS: ZAMKNIĘTE, czeka na Evaluatora (dispatch w toku).**
