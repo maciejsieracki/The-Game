@@ -16707,3 +16707,58 @@ nie ma czego skalować. Łup z bitwy — skaluje się automatycznie przez `unitS
 bonus glinianka/kamieniolom ×5) + B2 (wyrąb ×5) + notatka 3 (sprostowanie JSDoc) + bramka-
 inwariant na units.json/buildings.json (luka pokrycia 218/255). Notatka 1 (cennik dyplomacji)
 ZAREJESTROWANA jako osobne pytanie ABC, POZA zakresem tej rundy — nie zgadywać.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — Evaluator runda 3: FAIL (B3 — AI queueJump, parytet gracz-AI), runda 4 dispatch (2026-08-13)
+
+**B2 potwierdzone NAPRAWIONE, niezależnie, własnym harnessem (55 asercji)** — repro dosłowne z
+rundy 3, kontrolne odtworzenie starego kodu potwierdza że gubił 500. Guard `isFinite && >0`
+zweryfikowany działający dla 0/undefined/NaN/±Infinity/ujemny/0.5. Niezmiennik „front nigdy nie
+niesie postep" trzyma się po WSZYSTKICH 5 funkcjach dotykających frontu + fuzz 20 000 kroków.
+Wszystkie 3 call site'y `applyProductionCompleted` potwierdzone przechodzące przez naprawioną
+funkcję. Save/load bezpieczny. Bramki: `tsc` 0, `promote-to-front-test.cjs` 77/77, `logic-test`
+213/213 — wszystkie potwierdzone wykonaniem przez Evaluatora.
+
+**BLOKER B3 — `main.ts:25780-25786`, AI `queueJump` (wymuszanie cudu epoki), zeruje scalar BEZ
+bankowania.** Docstring `insertAtFront` z rundy 3 twierdzi że obsługuje „trzeci call-site" —
+NIEPRAWDA, to CZWARTY, przeoczony. `ai.ts:1693`: `queueJump: !city.queueEmpty` — gałąź odpala się
+WYŁĄCZNIE gdy kolejka NIE jest pusta, więc zawsze jest coś do zbankowania. Kod: `postep: 0` zamiast
+bankowania na schodzącym z frontu itemie.
+
+**Repro (dosłowna kopia kodu main.ts, zweryfikowana przez Evaluatora):** kolejka
+`[Koszary, Cud-A(bank 500)]`, scalar=180 → AI wymusza Cud-B → `[Cud-B, Koszary, Cud-A(bank 500)]`,
+scalar=0. **180 Pracy Koszar utracone bezpowrotnie.** Z `insertAtFront`: scalar=0 (Cud-B startuje
+od zera, poprawnie), ale Koszary bankują 180 (odzyskują przy powrocie na front) — zgodnie z
+decyzją Q1=B.
+
+**⛔ PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (CLAUDE.md §1a) — `R-EPOKA-CUD-WARUNEK-AWANSU B3`
+(commit `e5ba61c2`).** Zerowanie scalara przy `queueJump` było świadomym elementem TEJ decyzji
+(sprzed Q1=B), z patologią „AI co turę wskakiwała innym cudem, kolejka rosła bez ograniczenia"
+łagodzoną przez `forcePriority`, NIE przez samo zerowanie. Zmiana na bankowanie (zgodnie z Q1=B)
+lekko POPRAWIA ekonomię AI (przestaje tracić postęp przy wymuszeniach) — to świadoma konsekwencja
+do pokazania właścicielowi, nie cicha zmiana. **Uzasadnienie fixu: parytet gracz-AI jest twardym
+kryterium tego projektu (Evaluator jego słowami) — gracz przez `promoteToFront` NIGDY nie traci
+postępu, AI przez `queueJump` ZAWSZE traciła. Fix przywraca spójność z Q1=B, którego AI nigdy nie
+dostała po rundach 1-3 (przeoczenie, nie osobna decyzja o AI).** Runda 4 dysponowana jako
+kontynuacja naprawy tego samego mechanizmu (nie nowy wątek), zgodnie z ustaloną w tym projekcie
+zasadą twardego FAIL dla naruszeń parytetu gracz-AI.
+
+**Drugie znalezisko (NIE blokuje rundy 3/4, aktualizacja istniejącej notatki N3 z rundy 2) —
+`main.ts:3377 sanitizeProductionQueue`, PIĄTE miejsce dotykające frontu, JEDYNE łamiące
+niezmiennik ANTY-EXPLOIT (postęp przeskakuje między RÓŻNYMI itemami).** Teraz z konkretnym repro:
+rywal kończy Cud na świecie → `wonderGateOk` zwraca false → filtr usuwa Cud z frontu → scalar
+(900 Pracy) zostaje, ale należy teraz do INNEGO itemu (np. Wojownik koszt 10) → Wojownik kończy
+się gratis, 890 nadwyżki wpada do puli imperium. Przeczy komunikatowi w tym samym pliku
+(„Twoja Praca w to nie wraca"). Niefarmowalne na żądanie (wymaga rywala kończącego cud
+jednocześnie), pre-istniejące (`13419757`, sprzed rund 1-3) — POZA zakresem rundy 4, wymaga
+osobnego pytania ABC (przepadek vs. transfer vs. zwrot do puli — decyzja produktowa).
+
+**Luka pokrycia (do rundy 4, nieblokująca):** mutacja usuwająca CAŁY guard `isFinite && >0` w
+`insertAtFront` — 77/77 nadal zielone, NIE złapane. Guard działa dziś, ale bez czerwonego testu
+na przyszłość.
+
+**STATUS: dispatch rundy 4 w toku** — zakres: B3 (`insertAtFront(wProd0, wItem, 0)` zamiast
+ręcznego zerowania w `main.ts:25780-25786`) + 2-3 asercje na sekwencję queueJump w teście + asercje
+domykające lukę guardu (mutacje M1/M5 z raportu Evaluatora). Sanitize (drugie znalezisko) POZA
+zakresem, do osobnej rejestracji z ID i pytaniem ABC.
