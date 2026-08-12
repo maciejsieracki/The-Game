@@ -15616,3 +15616,61 @@ z incydentu `map-gen-regression` §0b). `tsc` 0 błędów. `barb-camp-destructio
 **STATUS: scalenie do drzewa głównego wykonane w tej samej turze** (patrz commit), po nim
 dispatch 3x adwersarialnej reewaluacji (runda 6) — piąta z rzędu porażka na tym mechanizmie
 oznacza że runda 6 wymaga szczególnie sceptycznej weryfikacji zanim zostanie uznana za zamkniętą.
+
+## ⛔ Fix KRYTYCZNE Kontynuuj/Wczytaj po restarcie (810d5917) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Naprawa potwierdzona niezależnym harnessem end-to-end (realny `save.ts`+`mainMenu.ts`+`saveLoadDialog.ts`,
+fake IndexedDB z konfigurowalnym opóźnieniem): 41/41 scenariuszy zielonych, w tym wyścig startowy,
+wolne IDB (300ms), IDB niedostępne→fallback localStorage, wiele slotów. 11/12 mutacji złapanych
+(1 przeżywa harness ale łapie ją `tsc`). **ZAMKNIĘTE, zalecane do wdrożenia — przywraca
+podstawową grywalność.**
+
+**⛔ F-1 (ŚREDNIE, PRE-ISTNIEJĄCY BŁĄD, ale ODSŁONIĘTY dopiero przez ten fix — realny priorytet
+wyższy niż standardowe "pre-istniejące").** `LAST_PLAYED_SLOT_KEY='thegame.save._lastPlayed'`
+zaczyna się od tego samego prefiksu co `SAVE_PREFIX='thegame.save.'` → `listSaves()` liczy go jako
+fantomowy slot zapisu. Skutek zmierzony: przy ZERO realnych zapisów, ale obecnym starym
+wskaźniku (np. po skasowaniu wszystkich zapisów, wskaźnik nigdy nieczyszczony) — "Kontynuuj"
+pokazuje się jako AKTYWNY, klik nie robi nic (`continueSaveSlotId()`→null), a dialog "Wczytaj"
+otwiera się z pustą listą zamiast pokazać komunikat "Brak zapisów". Bliźniaczy błąd dla innej
+stałej (`meta.<slot>`) już był naprawiony w tym repo z dedykowaną asercją strażniczą w
+`map-snapshot-load-test.cjs:135` — ta asercja NIE objęła `LAST_PLAYED_SLOT_KEY`. Naprawa: filtr
+`_`-prefiksowanych slotów w `listSaves()` (wzorzec już istnieje w `summarizeSaveSlots()`) +
+rozszerzenie asercji strażniczej.
+
+Noty nieblokujące: F-2 (brak timeoutu na `indexedDB.open()` bez żadnego callbacku — przycisk
+zostaje martwy, ale to NIE regresja, przed naprawą było identycznie); F-3 (przebudowa menu w
+trakcie resolvingu cache może wyrzucić gracza z ekranu "Ustawienia" z powrotem do menu głównego —
+UX, małe okno); F-4 (bramka repo sekcja B nie dotyka realnego IndexedDB, tylko atrapę boola —
+lukę zamknął dodatkowy harness Evaluatora).
+
+## Sprzątanie worktree — wszystkie zakończone prace zwolnione (2026-08-12)
+
+Po scaleniu rundy 6 miast barbarzyńców i drenażu obywateli r2 oraz odbiorze wszystkich 5
+oczekujących ewaluacji (0651d65e, klaster miast A/B/C, fcd31209, 810d5917) usunięto 20 zużytych
+worktree (`eval-audit2-*`, `eval-audit3-*`, `eval-cluster-*`, `fix-barb-city-round6`,
+`fix-citizen-upkeep-r2`) + odpowiadające gałęzie lokalne. Odzyskane miejsce na dysku: ~16GB
+(7,0GB→23GB dostępne). Utworzono 8 świeżych worktree na aktualnym HEAD (`044aa26d`) dla kolejnej
+tury dispatchu (poniżej).
+
+**⛔ WŁASNY BŁĄD proceduralny (§0b):** scalenie rundy 6 miast barbarzyńców i drenażu obywateli r2
+zostało wykonane dwoma równoległymi parami `git add`+`git commit` w tej samej turze — race
+warunek sprawił że OBA zestawy plików trafiły do JEDNEGO commitu (`044aa26d`), którego komunikat
+opisuje tylko drenaż obywateli, nie wspomina rundy 6 barbarzyńców. Zawartość jest poprawna i
+kompletna (zweryfikowane `git show --stat`), wszystkie bramki zielone przed commitem, więc BEZ
+utraty pracy — ale historia commitów jest myląca. Nie cofam już wypchniętego commitu (zasada:
+nigdy nie przepisuj wypchniętej historii); rejestruję to tu dla przejrzystości. Nauka: nigdy nie
+uruchamiać `git add`+`git commit` dla dwóch niezależnych zmian jako równoległe wywołania
+narzędzia w tej samej turze.
+
+## Dispatch tury: 8 równoległych zleceń (naprawy + runda 7 ewaluacji miast barbarzyńców)
+
+1. **fix-cluster-difficulty-gate** — naprawa ucieczek mutacyjnych klastra miast (M7.1 bramka
+   trudności, M10.3 pathCost, testy pozorne 1c/4a-4b/2h) + brakujący klucz `ai-params.json`.
+2. **fix-resource-usage-a79bae29** — panel "Zobacz szczegóły zużycia" (klamrowanie budynki/wojsko,
+   fallback po save-load, wzmocnienie testu do realnego renderu).
+3. **fix-diplomacy-u1-76514613** — myląca etykieta ofert PW ignorująca `relOk` + brakująca
+   asercja U3.
+4. **fix-promote-front-nan-guard** — guard `Number.isInteger` w `promoteToFront` (fix jednolinijkowy).
+5. **fix-idb-phantom-lastplayed** — filtr `_`-prefiksowanych slotów w `listSaves()` (F-1 wyżej).
+6-8. **eval-barb-round6-{a,b,c}** — 3x adwersarialna reewaluacja rundy 6 mechanizmu
+   `clearedCityIds` (po 5 kolejnych porażkach rund 1-5, runda 6 wymaga szczególnego sceptycyzmu).
