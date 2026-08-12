@@ -14304,3 +14304,28 @@ zbudowana scena zawsze dostała `dispose()` przy wyjątku. Sprawdzić też wywo�
 **STATUS: OTWARTE — nie zarejestrowany jeszcze do dispatchu (niska pilność: wymaga realnego
 wyjątku w trakcie merge żeby się objawić, nie zaobserwowano w praktyce; render/**, więc drogi
 Opus 5 — kandydat na dispatch w kolejnej turze audytu kategorii 4).**
+
+## P-MAPGEN-PANGEA-COASTRATIO-PROG — odblokowanie tymczasowe SCALONE
+
+`gra/tools/map-gen-regression-test.cjs`, sekcja Pangea: porażka progu `coastRatio>3.8` NIE
+inkrementuje już globalnego `fail` (nie blokuje bramki `map-gen-regression-test`), ale zostaje
+wyraźnie zaraportowana jako `console.warn` z odwołaniem do `R-MAPGEN-PANGEA-PROG-Q1` — reszta
+sekcji (determinizm, rzeki, chaty, czasy) nietknięta, nadal blokuje normalnie. Dowód mutacyjny
+Operatora: (a) sabotaż sekcji determinizmu (seed 42 vs 43) nadal poprawnie inkrementuje `fail`
+mimo równoległej porażki Pangei na tym samym seedzie; (b) Pangea sama w sobie (dziś czerwona)
+już nie psuje exit code. Czeka na Evaluatora.
+
+**NOWE ZNALEZISKO Operatora (poza zakresem zlecenia, zarejestrowane cicho zgodnie z §2)
+— P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.** Pełny bieg `map-gen-regression-test.cjs` w TYM
+środowisku (kontener sesji chmurowej) generuje mapy 16-70× wolniej niż limity kodu:
+mapa standardowa 114.37s vs `STANDARD_GEN_MS_LIMIT=7000ms` (16.3× za wolno), mapa duża
+1016.06s vs `DUZY_GEN_MS_LIMIT=15000ms` (67.7× za wolno, sam `riversFill`=988s). Operator
+przerwał bieg (`kill`, `EXIT_CODE=143`) po potwierdzeniu przyczyny — **to NIE jest wynik testu,
+tylko SIGTERM**, nie interpretować jako czerwonej bramki (pułapka z CLAUDE.md §0b, incydent
+2026-08-07 się nie powtarza). Przyczyna nieznana (CPU sandboxa vs sprzęt na którym kalibrowano
+limity, czy coś innego) — **do zbadania osobno**, nieblokujące (nie regresja kodu gry). Skutek
+praktyczny: pełna bramka `map-gen-regression-test` może dawać fałszywie czerwone `stdOk`/`duzyOk`
+w TYM środowisku niezależnie od jakiejkolwiek zmiany w kodzie — przy interpretacji przyszłych
+wyników tej bramki w sesji chmurowej brać to pod uwagę, nie traktować automatycznie jako regresji.
+**STATUS: OTWARTE — niepilne, do zbadania osobno (nie blokuje niczego dzisiejszego, ale
+podważa wiarygodność pełnych timingów tej bramki w środowisku chmurowym).**
