@@ -16321,3 +16321,18 @@ w tej samej turze nowe sekcje z wnioskami z tej sesji (worktree/scratchpad koliz
 równoległego `git commit`, wzorzec extract-to-pure-function domykający tautologie testowe,
 audyt "nigdy-nie-ewaluowanych" commitów jako cykliczna higiena, wartość weryfikacji krzyżowej
 między tematami tej samej sesji).
+
+## ECHO P-PROMOCJA-FRONT-RESET-POSTEPU-Q1 = B (Maciej, 2026-08-13)
+
+Wariant B: dodać pole postępu PER POZYCJA (nie tylko dla frontu kolejki) — zamiana pozycji z
+frontem ma przenosić jej zebrany postęp zamiast go kasować. Wymaga zmiany schematu danych
+kolejki produkcji (`gra/src/game/production.ts` i pokrewne typy) + migracji istniejących
+zapisów (stare zapisy nie mają pola postępu per-pozycja dla elementów innych niż front — muszą
+dostać bezpieczny default, np. 0).
+
+**Świadomie NIETKNIĘTE w tym zleceniu:** pytanie poboczne o semantykę swap vs prawdziwy
+move-to-front (funkcja `promoteToFront` dziś robi SWAP, nie move-to-front) — właściciel
+odpowiedział wyłącznie na pytanie o reset postępu, nie na to powiązane pytanie. Zachowanie SWAP
+zostaje bez zmian do czasu osobnej decyzji; dispatch obejmuje wyłącznie przeniesienie postępu.
+
+**STATUS: dispatch Operatora (Sonnet 5) w toku.**
