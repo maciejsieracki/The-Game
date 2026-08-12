@@ -9297,6 +9297,15 @@ async function boot(): Promise<void> {
         u.q = dest.q;
         u.r = dest.r;
         moved = true;
+        // RUNDA 3 pkt 6: wypchnięcie jednostki (np. cywila z heksu miasta po
+        // walce) może wylądować na żywym obozie barbarzyńskim -- ta sama
+        // "entrata" co zwykły ruch, więc ten sam hak. Nie dotyczy
+        // barbarzyńców (nie mają jak być "obcą" jednostką na własnym mieście).
+        // / EN: evicting a unit (e.g. a civilian from a city hex after
+        // combat) may land it on a living barbarian camp -- same "entry" as
+        // ordinary movement, hence the same hook. Never applies to
+        // barbarians themselves (can't be a "foreign" unit on their own city).
+        if (!isBarbarian(u.ownerId)) checkBarbCampDestroyedAt(dest.q, dest.r);
       }
       if (moved) syncUnitsRender();
     }
@@ -9588,11 +9597,24 @@ async function boot(): Promise<void> {
             u.r = destR;
             u.ruchLeft = 0;
           }
+          // P-BARBARZYNCY-SPLIT-Q1: rozdzielenie armii na heks żywego obozu
+          // barbarzyńskiego niszczy go tak samo jak zwykły ruch (parytet z
+          // innymi zakończeniami ruchu, np. main.ts ok. 26551) -- inaczej
+          // isHexPassableForUnit/findSplitDestHexes (sprawdzają WYŁĄCZNIE
+          // przejezdność terenu) pozwalają zostawić pod-stos na obozie, który
+          // dalej spawnuje jednostki pod nim.
+          // / EN: splitting an army onto a living barbarian camp's hex
+          // destroys it, same as regular movement (parity with other
+          // move-completion sites, e.g. main.ts ~26551) -- otherwise
+          // isHexPassableForUnit/findSplitDestHexes (terrain passability
+          // ONLY) let a sub-stack land on a camp that keeps spawning units
+          // underneath it.
+          const campDestroyed = checkBarbCampDestroyedAt(destQ, destR);
           if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
             refreshD1bHud();
             return;
           }
-          refreshFog();
+          if (!campDestroyed) refreshFog();
           const movedSel = ids.includes(selectedId ?? '');
           if (movedSel && ids.length === 1) {
             selectPlayerUnit(ids[0]!, true);
@@ -25613,7 +25635,13 @@ async function boot(): Promise<void> {
                     // / EN: symmetry with player movement -- `ownerId` here is always
                     // a real AI civilization (1..N), never barbarians (they have
                     // their own movement loop below, outside AICommand).
-                    checkBarbCampDestroyedAt(last.q, last.r);
+                    // P-BARBARZYNCY-AI-CALA-TRASA-Q1: parytet z ruchem gracza (linia ~18569) --
+                    // sprawdzaj CAŁĄ trasę (Dijkstra z computePath), nie tylko ostatni heks,
+                    // bo AI "teleportuje się" na `last` z ruchLeft=0 i mija po drodze obozy.
+                    // / EN: parity with player movement (line ~18569) -- check the WHOLE
+                    // path (Dijkstra from computePath), not just the last hex, since AI
+                    // "teleports" to `last` with ruchLeft=0 and passes camps along the way.
+                    checkBarbCampDestructionAlongPath(path);
                     if (applyCityVisitBonusesAlongPath([u], path, false)) {
                       syncUnitsRender();
                     }
@@ -28644,6 +28672,22 @@ async function boot(): Promise<void> {
       // Odtworz z zapisu; brak pola (stary zapis) = reset do pustej tablicy.
       const savedBarbCamps = saved.meta?.barbCamps as BarbCamp[] | undefined;
       barbCamps = Array.isArray(savedBarbCamps) ? savedBarbCamps.slice() : [];
+      // P-BARBARZYNCY-LOAD-REKONCYLIACJA-Q1: zapis mógł powstać PRZED hakiem
+      // niszczącym obozy (stary zapis) albo przez lukę w onSplit sprzed jej
+      // naprawy -- w obu przypadkach mógł legalnie zawierać jednostkę
+      // cywilizacji stojącą na heksie ŻYWEGO obozu. Bez tej rekoncyliacji
+      // taki obóz żyje wiecznie po wczytaniu i dalej spawnuje jednostki pod
+      // stojącą na nim jednostką. `units` jest już odtworzone wyżej (linia
+      // ~28444), więc kolejność jest bezpieczna.
+      // / EN: the save may predate the camp-destruction hook (old save) or
+      // come from the onSplit gap before its fix -- either way it may
+      // legally contain a civilization unit standing on a LIVING camp's hex.
+      // Without this reconciliation such a camp lives forever after load and
+      // keeps spawning units underneath the unit standing on it. `units` is
+      // already restored above (line ~28444), so the ordering is safe.
+      for (const u of units) {
+        if (!isBarbarian(u.ownerId)) checkBarbCampDestroyedAt(u.q, u.r);
+      }
       // Audyt #43: cityRelig/autoManageCities nie byly ani zapisywane, ani
       // czyszczone przy load -- id 'cityN' koliduja miedzy rozgrywkami, wiec
       // bez tego nowe miasto dziedziczylo zombie stan z poprzedniej gry/sejwu.

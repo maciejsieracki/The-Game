@@ -13888,3 +13888,36 @@ ai-founding-territory) wszystkie zielone.
 
 **Scalone przez orkiestratora — temat mechaniki walki/capture, próg adwersarialny (3 Evaluatory)
 — dispatch w toku.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 3 — SCALONA (worktree fix-barb-camp-v3)
+
+Wszystkie 5 punktów specyfikacji (zebrane ze zgodnych głosów 3 Evaluatorów rundy 2) wdrożone:
+1. AI move handler → `checkBarbCampDestructionAlongPath(path)` (parytet z graczem) — `path` już
+   policzone w tej samej gałęzi, zero dociągania z innego miejsca.
+2. **Zaszła konieczna korekta względem litery specyfikacji, udokumentowana przez Operatora**:
+   literalne `homeCamp===undefined → raidReady=true` złamałoby PRE-ISTNIEJĄCY zielony test
+   (jednostka daleko od żywego obozu bez `campId` to inny przypadek niż jednostka, której obóz
+   macierzysty faktycznie zginął). Finalna wersja rozróżnia: `orphaned = Boolean(unit.campId) &&
+   !camps.some(c => c.id===unit.campId)` — tylko PRAWDZIWIE osierocone (campId wskazuje na
+   zniszczony obóz) dostają nieograniczony `chaseRadius` + pominięcie driftu do domu; zwykłe
+   „daleko od domu" bez zniszczonego obozu zachowuje stare zachowanie.
+3. `onSplit` → hak po ustawieniu pozycji pod-stosu, wzorcem 1:1 z istniejącego miejsca.
+4. Wczytanie zapisu → rekoncyliacja `barbCamps` vs pozycje jednostek, kolejność zweryfikowana
+   (units odtwarzane wcześniej w tej samej funkcji).
+5. Test wzmocniony: próg `>=5` zastąpiony 11 jawnie nazwanymi asercjami (jedna per realne
+   wpięcie, definicje wykluczone), nowa asercja WYKONANIOWA na zachowanie osieroconej jednostki,
+   **weryfikacja mutacyjna uruchomiona i potwierdzona: 13/13 mutacji (11 pojedynczych wpięć +
+   degradacja ścieżki + cofnięcie naprawy #2) złapane czerwono niezależnie**.
+6. Bonus: `evictForeignUnitsFromCityHexes` naprawione (tanie, dodane do 11 wpięć).
+   `placeFanOutGroup` świadomie POMINIĘTE — czysty moduł bez dostępu do `barbCamps`, wymagałoby
+   zmiany interfejsu `PostBattleMapInput`/`PostBattleMapResult` w 3 miejscach — realna praca,
+   nie „przy okazji". Zarejestrowane jako pozostająca, drobna luka (nieblokująca).
+
+Bramki (zweryfikowane przez orkiestratora po scaleniu): `tsc` 0, `logic-test` 213/213,
+`barbarians-test` 167/167, `barb-camp-destruction-test` **76/0** (było 39, +37 nowych w tym 13
+dowodów mutacyjnych), `ai-home-defense-vs-barbarians-test` 38/38, `barb-city-behavior-test`
+36/36 (potwierdza brak kolizji z równolegle scalonym P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 —
+oba tematy dotykają `barbarians.ts`), higiena (tech-tree/research/unit-replace) zielone.
+
+**Scalone przez orkiestratora — dispatch 3x Evaluator adwersaryjny (runda 4 weryfikacji, próg
+niezmieniony po jednomyślnym FAIL rundy 2) w toku.**

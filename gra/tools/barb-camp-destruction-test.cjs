@@ -64,7 +64,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.barb-camp-destruction-bundle.cjs')
 const ENTRY_TS = `
 export {
   BARBARIAN_OWNER_ID, isBarbarian,
-  FALLBACK_BARB_PARAMS, destroyCampAt, tickCamps,
+  FALLBACK_BARB_PARAMS, destroyCampAt, tickCamps, decideBarbarianMoves,
 } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/barbarians'))};
 `;
 
@@ -86,7 +86,7 @@ try {
 }
 
 const B = require(BUNDLE_FILE);
-const { BARBARIAN_OWNER_ID, FALLBACK_BARB_PARAMS, destroyCampAt, tickCamps } = B;
+const { BARBARIAN_OWNER_ID, FALLBACK_BARB_PARAMS, destroyCampAt, tickCamps, decideBarbarianMoves } = B;
 
 // --- tiny assertion framework --------------------------------------------------------------
 let passed = 0;
@@ -126,8 +126,49 @@ function makeMap(w, h) {
   }
   return { szerokoscQ: w, wysokoscR: h, hexes, seed: 1, riverPaths: [] };
 }
+/** Axial hex distance (pointy-top, max-based) -- lokalna kopia formuły z units/setup.ts,
+ * używana WYŁĄCZNIE do asercji w tym pliku testowym (nie testujemy tu samej formuły). */
+function axialDist(aq, ar, bq, br) {
+  const dq = Math.abs(aq - bq);
+  const dr = Math.abs(ar - br);
+  const ds = Math.abs((-aq - ar) - (-bq - br));
+  return Math.max(dq, dr, ds);
+}
 
 const P = FALLBACK_BARB_PARAMS;
+
+// --- RUNDA 3: inwentarz WSZYSTKICH realnych wpięć checkBarbCampDestroyedAt/
+// checkBarbCampDestructionAlongPath w main.ts (definicje funkcji WYKLUCZONE). Zastępuje próg
+// liczbowy `>= 5` z RUNDY 2 (Evaluatorzy zweryfikowali wykonaniem: regex łapał też 2 definicje,
+// a próg pozwalał usunąć 2-3 realne wpięcia i dalej przechodzić zielono). Każdy wpis ma WŁASNĄ,
+// nazwaną asercję (sekcja 4 niżej) -- usunięcie DOWOLNEGO JEDNEGO psuje WYŁĄCZNIE jego asercję,
+// z czytelnym komunikatem, nie ogólny licznik. `window` to margines (znaki) od `marker` do
+// końca przeszukiwanego okna -- zmierzony wykonaniem (node -e ...) w trakcie pisania tej rundy,
+// z zapasem, żeby drobne przyszłe zmiany komentarzy w main.ts nie fałszywie wywalały testu.
+const CALL_SITES = [
+  { label: 'onSplit (main.ts ok. 9576) -- rozdzielenie armii na heks obozu (RUNDA 3 naprawa #3)',
+    marker: 'P-BARBARZYNCY-SPLIT-Q1', call: 'checkBarbCampDestroyedAt(destQ, destR)', window: 1200 },
+  { label: 'applyMarchSegmentInstant -- ruch gracza krok-po-kroku (marsz)',
+    marker: 'function applyMarchSegmentInstant(', call: 'checkBarbCampDestructionAlongPath(result.movePath)', window: 2300 },
+  { label: 'checkBarbCampDestructionAlongPath -- pętla wewnętrzna po każdym unikalnym heksie ścieżki',
+    marker: 'function checkBarbCampDestructionAlongPath(', call: 'checkBarbCampDestroyedAt(h.q, h.r)', window: 600 },
+  { label: 'hak po zwycięskiej walce -- atakujący faktycznie wchodzi na heks bitwy',
+    marker: 'attackerNowOnBattleHex', call: 'checkBarbCampDestroyedAt(battleQ, battleR)', window: 400 },
+  { label: 'koniec tury -- domknięcie (snap) animacji ruchu gracza w locie',
+    marker: 'Snap any in-flight animation to its destination.', call: 'checkBarbCampDestructionAlongPath(anim.pathHexes)', window: 1600 },
+  { label: 'auto-eksploracja zwiadowców gracza (runScoutsAutoExplore)',
+    marker: 'runScoutsAutoExplore(', call: 'checkBarbCampDestroyedAt(u.q, u.r)', window: 900 },
+  { label: 'ruch AI (cmd.type===\'move\') -- RUNDA 3 naprawa #1: cała trasa zamiast last.q/last.r',
+    marker: 'P-BARBARZYNCY-AI-CALA-TRASA-Q1', call: 'checkBarbCampDestructionAlongPath(path)', window: 800 },
+  { label: 'animowany ruch gracza -- gałąź wieloheksowa (pathHexes.length > 0)',
+    marker: 'GRAFIKA-TEREN-2 / WIOSKI', call: 'checkBarbCampDestructionAlongPath(pathHexes)', window: 1200 },
+  { label: 'animowany ruch gracza -- gałąź jednoheksowa (bez pathHexes, destQ/destR)',
+    marker: 'checkVillageRewardAt(destQ, destR)', call: 'checkBarbCampDestroyedAt(destQ, destR)', window: 300 },
+  { label: 'wczytanie zapisu -- rekoncyliacja jednostek z żywymi obozami (RUNDA 3 naprawa #4)',
+    marker: 'P-BARBARZYNCY-LOAD-REKONCYLIACJA-Q1', call: 'checkBarbCampDestroyedAt(u.q, u.r)', window: 1400 },
+  { label: 'evictForeignUnitsFromCityHexes -- wypchnięcie obcej jednostki z heksu miasta (RUNDA 3 pkt 6)',
+    marker: 'RUNDA 3 pkt 6', call: 'checkBarbCampDestroyedAt(dest.q, dest.r)', window: 900 },
+];
 
 // ============================================================================================
 // 1. destroyCampAt -- czyste zachowanie (punkt zadania (a))
@@ -268,11 +309,17 @@ const P = FALLBACK_BARB_PARAMS;
       'static 4: main.ts defines checkBarbCampDestroyedAt()');
 
     // Blok AI: komentarz-znacznik dopisany razem z wywołaniem w gałęzi cmd.type === 'move' AI.
-    const aiCallIdx = mainTs.indexOf('symetria z ruchem gracza');
-    assert(aiCallIdx !== -1, 'static 4b: AI move-command block carries the symmetry marker comment');
+    // RUNDA 3 naprawa #1: sprawdzana jest CAŁA trasa (checkBarbCampDestructionAlongPath(path)),
+    // NIE tylko ostatni heks (checkBarbCampDestroyedAt(last.q, last.r) -- stary, dziurawy kod
+    // sprzed tej rundy, zweryfikowany wykonaniem przez Evaluatorów jako pomijający obozy w
+    // połowie trasy AI, bo AI "teleportuje się" na `last` z ruchLeft=0).
+    const aiCallIdx = mainTs.indexOf('P-BARBARZYNCY-AI-CALA-TRASA-Q1');
+    assert(aiCallIdx !== -1, 'static 4b: AI move-command block carries the RUNDA-3 full-path marker comment');
     const aiCallWindow = mainTs.slice(aiCallIdx, aiCallIdx + 600);
-    assert(aiCallWindow.includes('checkBarbCampDestroyedAt(last.q, last.r)'),
-      'static 4b: checkBarbCampDestroyedAt is called right after the AI move-command finalizes u.q/u.r');
+    assert(aiCallWindow.includes('checkBarbCampDestructionAlongPath(path)'),
+      'static 4b: checkBarbCampDestructionAlongPath(path) is called right after the AI move-command computes the FULL path (parity with player -- naprawa #1)');
+    assert(!aiCallWindow.includes('checkBarbCampDestroyedAt(last.q, last.r)'),
+      'static 4b: the AI move-command block no longer uses the old last-hex-only check (regresja rundy 2 naprawiona)');
 
     // Blok gracza: applyMarchSegmentInstant (ruch player-only, `u.ownerId !== 0` return false wyżej).
     const playerFnIdx = mainTs.indexOf('function applyMarchSegmentInstant(');
@@ -281,12 +328,36 @@ const P = FALLBACK_BARB_PARAMS;
     assert(playerFnWindow.includes('checkBarbCampDestructionAlongPath(result.movePath)'),
       'static 4c: checkBarbCampDestructionAlongPath is called on the player move-completion path');
 
-    // Nie wystarczy JEDNO wystąpienie w całym pliku -- musi być >= 2 wywołań
-    // checkBarbCampDestroyedAt/checkBarbCampDestructionAlongPath (AI + co najmniej 1 gracz),
-    // nie licząc definicji funkcji samej.
-    const callSites = (mainTs.match(/checkBarbCampDestroy(edAt|ed|edAt)?\(|checkBarbCampDestructionAlongPath\(/g) || []);
-    assert(callSites.length >= 5,
-      `static 4: at least 5 checkBarbCampDestroyedAt/checkBarbCampDestructionAlongPath call sites in main.ts (got ${callSites.length})`);
+    // RUNDA 3 (zastępuje próg liczbowy `>= 5` z RUNDY 2 -- Evaluatorzy zweryfikowali wykonaniem,
+    // że regex łapał też 2 definicje funkcji i próg pozwalał usunąć 2-3 realne wpięcia i dalej
+    // przechodzić zielono, np. usunięcie haka bitewnego CAŁEGO + animacji końca tury naraz dawało
+    // 39/39). Zamiast jednego licznika: JAWNA lista wszystkich realnych wpięć (CALL_SITES,
+    // zdefiniowana na górze pliku), każde z WŁASNĄ nazwaną asercją -- usunięcie DOWOLNEGO JEDNEGO
+    // psuje TYLKO jego asercję, z czytelnym komunikatem które konkretnie wpięcie zniknęło.
+    for (const site of CALL_SITES) {
+      const mi = mainTs.indexOf(site.marker);
+      if (mi === -1) {
+        assert(false, `static 4-list: marker not found for [${site.label}] (marker: ${JSON.stringify(site.marker)})`);
+        continue;
+      }
+      const win = mainTs.slice(mi, mi + site.window);
+      assert(win.includes(site.call),
+        `static 4-list: [${site.label}] -- wywołanie ${JSON.stringify(site.call)} obecne w main.ts blisko markera ${JSON.stringify(site.marker)}`);
+    }
+
+    // Siatka bezpieczeństwa: dokładna liczba realnych wywołań (definicje funkcji WYKLUCZONE przez
+    // odrzucenie dopasowań poprzedzonych "function "). Łapie też wpięcia SPOZA listy CALL_SITES
+    // (np. przyszły nowy hak dodany bez odpowiadającej asercji -- test wtedy nie milczy, tylko
+    // zgłasza rozjazd liczby zamiast fałszywie przechodzić zielono).
+    const callRegex = /checkBarbCampDestroyedAt\(|checkBarbCampDestructionAlongPath\(/g;
+    let match;
+    let realCallCount = 0;
+    while ((match = callRegex.exec(mainTs)) !== null) {
+      const preceding = mainTs.slice(Math.max(0, match.index - 9), match.index);
+      if (!preceding.endsWith('function ')) realCallCount++;
+    }
+    eq(realCallCount, CALL_SITES.length,
+      `static 4-list: dokładnie ${CALL_SITES.length} realnych wywołań w main.ts (definicje funkcji wykluczone)`);
   }
 }
 
@@ -333,6 +404,153 @@ const P = FALLBACK_BARB_PARAMS;
     '6: main.ts import list from ./game/barbarians no longer includes pruneEmptyCampsAfterCombat');
   assert(!mainTs.includes('pruneEmptyCampsAfterCombat('),
     '6: main.ts no longer CALLS pruneEmptyCampsAfterCombat(...) anywhere');
+}
+
+// ============================================================================================
+// 7. RUNDA 3 -- naprawa #2 (jednostki osierocone: chaseRadius) + degradacja
+//    checkBarbCampDestructionAlongPath do "tylko ostatni heks"
+// ============================================================================================
+{
+  // 7a. EXECUTION (nie source-text): jednostka barbarzyńska bez ŻYWEGO obozu macierzystego
+  // (campId wskazuje na obóz, którego NIE MA w `camps`) musi NADAL wydawać rozkaz pościgu do
+  // celu odległego o 20 heksów -- daleko poza aggroRadius=6 (FALLBACK_BARB_PARAMS). Przed
+  // naprawą #2: homeCamp===undefined -> raidReady=false -> chaseRadius=aggroRadius=6 ->
+  // target.d(20) > 6 -> krok 3 pomija cel -> krok 4 "drift do domu" też nic nie robi (camps=[]
+  // -> homeCampIdle=undefined) -> commands=[] (jednostka zamiera). To bezpośredni test
+  // wykonaniowy przeciwko dokładnie tej regresji, zweryfikowanej przez 2 Evaluatorów na
+  // realnym bundlu barbarians.ts.
+  const map = makeMap(25, 5);
+  const orphan = barb('orphan1', 2, 2, { campId: 'destroyed-camp-id-does-not-exist' });
+  const farEnemy = { id: 'enemy1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 22, r: 2, ruch: 2, ruchLeft: 2 };
+  eq(axialDist(orphan.q, orphan.r, farEnemy.q, farEnemy.r) > P.aggroRadius, true,
+    '7a-setup: test target is beyond aggroRadius (sanity check on the fixture itself)');
+
+  const cmds = decideBarbarianMoves([orphan], [farEnemy], /* cities */ [], /* camps */ [], map, P);
+  const orphanCmd = cmds.find(c => c.unitId === 'orphan1');
+  assert(cmds.length > 0,
+    '7a: orphaned unit (home camp destroyed) at distance 20 >> aggroRadius=6 still issues an order -- does NOT idle/freeze (naprawa #2)');
+  assert(orphanCmd !== undefined, '7a: the issued order belongs to the orphaned unit itself (unitId match)');
+  if (orphanCmd) {
+    eq(orphanCmd.type, 'move', '7a: orphaned unit issues a MOVE command chasing the far target (not stuck)');
+    const distBefore = axialDist(orphan.q, orphan.r, farEnemy.q, farEnemy.r);
+    const distAfter = axialDist(orphanCmd.toQ, orphanCmd.toR, farEnemy.q, farEnemy.r);
+    assert(distAfter < distBefore,
+      `7a: the move step goes TOWARD the target, not away toward a foreign camp / idling (distBefore=${distBefore}, distAfter=${distAfter})`);
+  }
+
+  // 7b. static: checkBarbCampDestructionAlongPath w main.ts musi iterować po CAŁEJ przekazanej
+  // ścieżce (for-of po `hexes`), a NIE degradować się do sprawdzania wyłącznie ostatniego heksu
+  // (`hexes.slice(-1)` / `hexes[hexes.length-1]`) -- dokładnie ta degradacja, którą Evaluatorzy
+  // RUNDY 2 zademonstrowali jako niewykrywalną przez sam próg liczbowy (usunięcie realnych
+  // wpięć + degradacja treści funkcji to dwie RÓŻNE mutacje, obie muszą być złapane osobno).
+  const mainTsPath = path.join(GRA_ROOT, 'src/main.ts');
+  const mainTs = fs.readFileSync(mainTsPath, 'utf8');
+  const fnIdx = mainTs.indexOf('function checkBarbCampDestructionAlongPath(');
+  assert(fnIdx !== -1, '7b: main.ts defines checkBarbCampDestructionAlongPath()');
+  const bodyEnd = mainTs.indexOf('\n    }\n', fnIdx);
+  const fnBody = mainTs.slice(fnIdx, bodyEnd === -1 ? fnIdx + 500 : bodyEnd);
+  assert(fnBody.includes('for (const h of hexes)'),
+    '7b: checkBarbCampDestructionAlongPath iterates the FULL hexes array (for-of), not just the last hex');
+  assert(!/hexes\s*\.\s*slice\(\s*-1\s*\)/.test(fnBody),
+    '7b: checkBarbCampDestructionAlongPath does not degrade to hexes.slice(-1) (last-hex-only)');
+  assert(!/hexes\s*\[\s*hexes\s*\.\s*length\s*-\s*1\s*\]/.test(fnBody),
+    '7b: checkBarbCampDestructionAlongPath does not degrade to hexes[hexes.length-1] (last-hex-only)');
+}
+
+// ============================================================================================
+// 8. Weryfikacja mutacyjna (self-check) -- RUNDA 3, kryterium przyjęcia sekcji 5 ze zlecenia.
+//    Sam ten plik dowodzi, wykonaniem, że asercje z sekcji 4/7 faktycznie łapią dokładnie te
+//    mutacje, które mają łapać -- analogicznie do wzorca `--self-check-skip-mutation` już
+//    używanego w tym repo (empire-panel-econ-slider-visibility-test.cjs,
+//    owned-building-detail-side-test.cjs): mutuje plik źródłowy NA DYSKU, odpala TEN SAM plik
+//    testowy w podprocesie z `--self-check-skip-mutation` (unika nieskończonej rekurencji
+//    mutacyjnej -- ta flaga pomija całą tę sekcję 8), oczekuje niezerowego kodu wyjścia,
+//    PRZYWRACA oryginał w `finally` (nawet przy wyjątku w środku).
+//    Pominięta w trybie --self-check-skip-mutation (żeby uniknąć nieskończonej rekurencji --
+//    ten tryb uruchamia TEN SAM plik na zmutowanym źródle i oczekuje, że sekcje 1-7 złapią to
+//    czerwono; sekcja 8 sama w sobie nie ma sensu wewnątrz zmutowanego podprocesu).
+// ============================================================================================
+if (!process.argv.includes('--self-check-skip-mutation')) {
+  const { execSync } = require('child_process');
+  const mainTsPath = path.join(GRA_ROOT, 'src/main.ts');
+  const barbariansSrcPath = path.join(GRA_ROOT, 'src/game/barbarians.ts');
+
+  /** Zapisuje `mutations` (Map<ścieżka, nowa treść>) na dysk, odpala self-check w podprocesie,
+   * oczekuje niezerowego exit code, PRZYWRACA oryginały w finally, zwraca czy złapano czerwono. */
+  function expectSelfCheckFails(mutations, label) {
+    const backups = new Map();
+    for (const [p, content] of mutations) backups.set(p, fs.readFileSync(p, 'utf8'));
+    let mutantFailed = false;
+    let errorMsg = '';
+    try {
+      for (const [p, content] of mutations) fs.writeFileSync(p, content, 'utf8');
+      execSync(`node ${JSON.stringify(__filename)} --self-check-skip-mutation`, {
+        cwd: __dirname, stdio: 'pipe', timeout: 60000,
+      });
+    } catch (e) {
+      mutantFailed = true;
+      errorMsg = String(e && e.message || e);
+    } finally {
+      for (const [p, orig] of backups) fs.writeFileSync(p, orig, 'utf8');
+    }
+    assert(mutantFailed, `mutacja [${label}] złapana czerwono przez self-check podproces (niezerowy exit code)`);
+    return mutantFailed;
+  }
+
+  console.log('\n-- Sekcja 8 / weryfikacja mutacyjna: usunięcie KAŻDEGO z ' + CALL_SITES.length + ' wpięć osobno --');
+  const mainTsOriginalForMutation = fs.readFileSync(mainTsPath, 'utf8');
+  for (const site of CALL_SITES) {
+    const mi = mainTsOriginalForMutation.indexOf(site.marker);
+    const callIdx = mi === -1 ? -1 : mainTsOriginalForMutation.indexOf(site.call, mi);
+    if (mi === -1 || callIdx === -1) {
+      assert(false, `mutacja-setup: nie znaleziono markera/wywołania do zmutowania dla [${site.label}]`);
+      continue;
+    }
+    const mutated = mainTsOriginalForMutation.slice(0, callIdx)
+      + 'NOOP_MUTATION_PLACEHOLDER_RUNDA3()'
+      + mainTsOriginalForMutation.slice(callIdx + site.call.length);
+    expectSelfCheckFails(new Map([[mainTsPath, mutated]]), `usunięcie wpięcia: ${site.label}`);
+  }
+
+  console.log('-- Sekcja 8 / degradacja checkBarbCampDestructionAlongPath do hexes.slice(-1) --');
+  {
+    const fnMarker = 'function checkBarbCampDestructionAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {';
+    const fnIdx = mainTsOriginalForMutation.indexOf(fnMarker);
+    const bodyEnd = mainTsOriginalForMutation.indexOf('\n    }\n', fnIdx);
+    assert(fnIdx !== -1 && bodyEnd !== -1, 'mutacja-setup: checkBarbCampDestructionAlongPath body found for degradation mutation');
+    if (fnIdx !== -1 && bodyEnd !== -1) {
+      const degradedFn =
+        'function checkBarbCampDestructionAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {\n'
+        + '        const lastOnly = hexes.slice(-1)[0];\n'
+        + '        if (!lastOnly) return false;\n'
+        + '        return checkBarbCampDestroyedAt(lastOnly.q, lastOnly.r);\n'
+        + '      }\n';
+      const degraded = mainTsOriginalForMutation.slice(0, fnIdx) + degradedFn + mainTsOriginalForMutation.slice(bodyEnd + '\n    }\n'.length);
+      expectSelfCheckFails(new Map([[mainTsPath, degraded]]),
+        'degradacja checkBarbCampDestructionAlongPath do hexes.slice(-1) (dokładnie mutacja z rundy 2)');
+    }
+  }
+
+  console.log('-- Sekcja 8 / cofnięcie naprawy #2 (stary chaseRadius, homeCamp===undefined -> raidReady=false) --');
+  {
+    const barbariansOriginal = fs.readFileSync(barbariansSrcPath, 'utf8');
+    const oldBlock =
+      'const homeCamp = homeCampForUnit(unit, camps, params.campControlRadius);\n'
+      + '    const raidReady = homeCamp !== undefined && isCampRaidReady(homeCamp, barbUnits, params);\n'
+      + '    const chaseRadius = raidReady ? Infinity : params.aggroRadius;';
+    const anchor = 'const homeCamp = homeCampForUnit(unit, camps, params.campControlRadius);';
+    const chaseLine = 'const chaseRadius = raidReady ? Infinity : params.aggroRadius;';
+    const anchorIdx = barbariansOriginal.indexOf(anchor);
+    const chaseIdx = anchorIdx === -1 ? -1 : barbariansOriginal.indexOf(chaseLine, anchorIdx);
+    assert(anchorIdx !== -1 && chaseIdx !== -1, 'mutacja-setup: naprawiony blok homeCamp/raidReady/chaseRadius found in barbarians.ts');
+    if (anchorIdx !== -1 && chaseIdx !== -1) {
+      const blockEnd = chaseIdx + chaseLine.length;
+      const reverted = barbariansOriginal.slice(0, anchorIdx) + oldBlock + barbariansOriginal.slice(blockEnd);
+      assert(reverted !== barbariansOriginal, 'mutacja-setup: reversion actually changed barbarians.ts source');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, reverted]]),
+        'cofnięcie naprawy #2 (stary chaseRadius bez homeCamp===undefined -> raidReady=true)');
+    }
+  }
 }
 
 // --- summary ----------------------------------------------------------------------------------

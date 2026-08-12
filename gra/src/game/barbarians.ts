@@ -1068,7 +1068,41 @@ export function decideBarbarianMoves(
     targets.sort((a, b) => a.d - b.d);
     const target = targets[0];
     const homeCamp = homeCampForUnit(unit, camps, params.campControlRadius);
-    const raidReady = homeCamp !== undefined && isCampRaidReady(homeCamp, barbUnits, params);
+    // P-BARBARZYNCY-OSIEROCONE-Q1: `homeCamp === undefined` ma DWIE różne
+    // przyczyny, które trzeba rozróżnić -- mylenie ich zepsuło test istniejący
+    // PRZED tą rundą (barbarians-test.cjs 6d "drifts toward camp when idle
+    // and away"):
+    //   (A) jednostka MA campId, ale obóz o tym id już nie istnieje w `camps`
+    //       -- to jest scenariusz specyfikacji: "obóz zniszczony, stare
+    //       jednostki nadal atakują". campId nadany przy spawnie jest trwały
+    //       (destroyCampAt strukturalnie nie dotyka `units`, patrz sekcja 3
+    //       barb-camp-destruction-test.cjs), więc campId wskazujący na obóz
+    //       nieobecny w `camps` jednoznacznie oznacza "mój obóz zniszczono".
+    //   (B) jednostka NIE MA campId (albo pusty) i po prostu jest poza
+    //       campControlRadius od JAKIEGOKOLWIEK żywego obozu -- to zwykłe
+    //       "daleko od domu", istniejące zachowanie (drift do najbliższego
+    //       obozu w kroku 4), NIEZWIĄZANE ze zniszczeniem obozu -- musi
+    //       zostać nietknięte.
+    // Tylko (A) dostaje nieograniczony chaseRadius i pomija krok 4 (nie ma
+    // dokąd wracać). (B) zachowuje dokładnie stare zachowanie.
+    // / EN: `homeCamp === undefined` has TWO distinct causes that must be
+    // told apart -- conflating them broke a PRE-EXISTING test (barbarians-
+    // test.cjs 6d "drifts toward camp when idle and away"):
+    //   (A) the unit HAS a campId, but no camp with that id exists in
+    //       `camps` anymore -- this is the spec scenario: "camp destroyed,
+    //       old units keep attacking". campId assigned at spawn is
+    //       permanent (destroyCampAt structurally never touches `units`,
+    //       see barb-camp-destruction-test.cjs section 3), so a campId
+    //       pointing at a camp absent from `camps` unambiguously means "my
+    //       camp was destroyed".
+    //   (B) the unit has NO campId (or empty) and is simply outside
+    //       campControlRadius of any living camp -- ordinary "far from
+    //       home", pre-existing behaviour (drift to nearest camp in step 4),
+    //       UNRELATED to camp destruction -- must stay untouched.
+    // Only (A) gets unlimited chaseRadius and skips step 4 (nowhere to
+    // return to). (B) keeps the exact old behaviour.
+    const orphaned = Boolean(unit.campId) && !camps.some(c => c.id === unit.campId);
+    const raidReady = orphaned || (homeCamp !== undefined && isCampRaidReady(homeCamp, barbUnits, params));
     const chaseRadius = raidReady ? Infinity : params.aggroRadius;
     if (target !== undefined && target.d <= chaseRadius) {
       const step = firstStep(unit, map, target.q, target.r, occ);
