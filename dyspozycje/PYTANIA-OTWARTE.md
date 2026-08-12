@@ -14040,4 +14040,56 @@ osieroconych ma być NAPRAWDĘ bez limitu skoro jedyny zamierzony hamulec nie dz
 zniszczenie obozu przez rozdzielenie armii ma pomijać koszt ruchu (`canSplit` nie sprawdza
 `ruchLeft`).
 
-**Evaluator C: w toku, decyduje.**
+**Evaluator C: FAIL. WYNIK RUNDY 4 = 2/3 FAIL (A=PASS-WITH-NOTES, B=FAIL, C=FAIL) → RUNDA 5.**
+
+C potwierdza niezależnie (własnym bundlem, własnym scenariuszem 30×30) **DOKŁADNIE ten sam
+mechanizm zamrożenia**, który Evaluator B znalazł od strony save/load: jednostka osierocona +
+`skipDefenselessCities` (z `490f579c`, temat P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1) opróżnia listę
+celów-miast → `raidReady=true` pomija krok 4 (drift) → **zero komend na DOMYŚLNEJ trudności gry
+(`normal`), na stałe** (10/10 komend na easy vs 0/10 na normal/hard, kontrolowane wielokrotnie).
+**⛔ TO JEST TEN SAM DEFEKT CO BLOKER #2 W RUNDZIE 2 TEMATU MIAST (`P-BARBARZYNCY-MIASTA-
+ZACHOWANIE-Q1`, wyżej w tym pliku) — jedna naprawa w `decideBarbarianMoves` (już zlecona
+Operatorowi w toku, worktree `fix-barb-city-v2`) rozwiąże OBA tematy jednocześnie, bo to
+dokładnie ten sam kod. NIE dispatchować drugiej, redundantnej naprawy dla tematu obozów —
+poczekać na wynik `fix-barb-city-v2`, zweryfikować że naprawia też ten scenariusz, i dopiero
+wtedy re-ewaluować oba tematy razem.**
+
+Dodatkowe, niezależne ustalenia C:
+- Pełny inwentarz 10 realnych wpięć w `main.ts` — wszystkie poprawne, brak duplikatów/pominięć.
+- **Nowa luka w pokryciu mutacyjnym**: inwersja strażnika `!isBarbarian(...)` w rekoncyliacji
+  przy wczytaniu zapisu (`main.ts:28689`, `if (!isBarbarian(...))` → `if (isBarbarian(...))`,
+  tekst wywołania nietknięty) — **76/0, exit 0, NIEWYKRYTE**. Po tej mutacji hak niszczyłby
+  obozy pod WŁASNYMI barbarzyńcami zamiast pod jednostkami cywilizacji — odwrotność zamierzenia.
+- **Punkt 6 rundy 3 rozliczony tylko częściowo, nieudokumentowane**: `refreshFog()` bez
+  `skipVeteranEducation` (może nadpisać toast chatki) — 1-słowna poprawka, pominięta w rejestrze
+  bez wzmianki.
+- **NOWE ABC (do listy oczekujących, patrz podsumowanie niżej)**: „bezpowrotnie" zniszczony obóz
+  nie wraca jako INSTANCJA, ale `spawnCamps` (co turę, brak czarnej listy heksów) odbudowuje
+  populację do `maxCamps` już w kolejnej turze — na małej mapie (20×20) zmierzono 45 przypadków
+  nowego obozu na TYM SAMYM heksie w 200 tur. Przed tą mechaniką uzupełnianie obozów było martwym
+  kodem (mapa zawsze pełna) — ta runda je OŻYWIA, kasując nagrodę za wyczyszczenie obozu w ~1
+  turę. Pytanie: czy „bezpowrotnie" ma znaczyć też „ten heks nigdy więcej".
+
+## PODSUMOWANIE — obozy barbarzyńców runda 5 + zbiorcza lista ABC (obie mechaniki barbarzyńców)
+
+**Runda 5 (obozy) — WSTRZYMANA do wyniku `fix-barb-city-v2`** (dzieli root-cause z blokerem #2
+tematu miast). Pozostały zakres do dołożenia PO zweryfikowaniu współdzielonej naprawy:
+1. Pokrycie mutacyjne „inwersja strażnika" na wpięciu load-rekoncyliacji.
+2. `refreshFog({skipVeteranEducation: true})` w `checkBarbCampDestroyedAt`.
+3. (opcjonalnie, z rekomendacji A rundy 4) domknięcie `placeFanOutGroup` — Evaluator A UDOWODNIŁ
+   że uzasadnienie odłożenia w rejestrze jest NIEPRAWDZIWE (nie wymaga zmiany interfejsu, ~10
+   linii, wzorzec już istnieje) — **skorygować zapis w rejestrze** niezależnie od decyzji czy
+   naprawiać teraz czy później.
+
+**ABC oczekujące na Macieja (obie mechaniki barbarzyńców, do zadania w czacie po powrocie):**
+- Asymetria „Wycofaj" — miasta gracza strukturalnie nietykalne na hard (gracz zawsze może się
+  wycofać przed walką), miasta AI zawsze padają.
+- Puste miasto wroga (bez obrońców) trwale odporne na przejęcie na hard — czy to zamierzona
+  „nagroda za obronę" czy furtka do naprawienia.
+- Czy barbarzyńcy mają móc całkowicie wyeliminować cywilizację (dziś mogą, silnik na to pozwala
+  ogólnie) — do potwierdzenia że to nie wymaga osobnej blokady.
+- Czy pościg osieroconych jednostek ma być NAPRAWDĘ bez limitu, skoro jedyny zamierzony hamulec
+  (odwrót przy niskim HP) jest martwym kodem od zawsze (`healthFrac` nigdy nie ustawiane).
+- Czy zniszczenie obozu przez rozdzielenie armii (`onSplit`) ma pomijać koszt punktów ruchu.
+- **Znaczenie „bezpowrotnie"** — czy dotyczy tylko instancji obozu, czy też heksu (dziś: heks
+  może dostać nowy obóz w ciągu kilku-kilkudziesięciu tur).
