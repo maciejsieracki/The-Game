@@ -15684,3 +15684,10 @@ przepuszczał wszystkie 3 patologiczne wartości (dawał `kolejka[NaN]`→`undef
 asercji sekcja 7). `tsc` 0 błędów, `logic-test` 213/213. Semantyka swap/reset-postępu NIE
 dotknięta — czeka na `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1` (nadal STATUS: OTWARTE, czeka na
 odpowiedź właściciela). **ZAMKNIĘTE** (commit `8e465fd1`).
+
+## Uzupełnienie puli do 8: dispatch Evaluatora dla 3a3b11da
+
+Po zamknięciu tematu NaN-guard (promoteToFront) zwolniony slot uzupełniony Evaluatorem dla
+`3a3b11da` (epoka w kompaktowej liście rekrutacji) — pierwszy z 7 pozostałych merge'owanych,
+nigdy-nie-ewaluowanych commitów z audytu #3 (3a3b11da, 26b684af, 7b02eb2d, fc17538f, 3dc9d650,
+ecbddda8, 89c16ec1). Pozostałe 6 do dispatchu sukcesywnie w miarę zwalniania slotów.
