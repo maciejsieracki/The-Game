@@ -604,6 +604,45 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
       + 'gracza i AI/Państw-Miast (parytet ECHO Q2=A), bez rozgałęzienia po ownerId',
   );
 
+  // ---------------------------------------------------------------------
+  // H6 (N1 runda 5, punkt 2 Evaluatora rundy 4 -- Maciej 2026-08-12): H1-H5 wyżej dowodzą, że
+  // resolver poprawnie sumuje populację, realnie drenuje magazyn RAZ per owner per turę i robi to
+  // identycznie dla gracza/AI -- ale ŻADNA z nich nie sprawdza, że wynik jest TAKŻE publikowany do
+  // `citizenUpkeepByOwner` (mapa kluczowana ownerem, PRZETRWAŁA między turami, czytana przez panel
+  // Surowców -- sekcja I, `citizenUpkeepByOwner.get(ownerId)`). Dziś usunięcie SAMEJ linii
+  // `citizenUpkeepByOwner.set(ownerId, v);` przechodzi wszystkie 100 asercji tego pliku bez
+  // wykrycia -- cichy powrót DOKŁADNIE tej regresji, którą naprawiono w rundzie 2 (panel Surowców
+  // czyta werdykt sprzed drenażu / spada na fallback inline zamiast werdyktu silnika), mimo że
+  // sam drenaż magazynu (H1-H5) nadal działa bez zarzutu.
+  //
+  // Okno H4/H5 (resolverBlockWindow, `if (v === undefined) {` .. `citizenUpkeepDrainCache.set(
+  // ownerId, v);`, WYŁĄCZNIE tej drugiej kotwicy) NIE nadaje się tu wprost: w realnym main.ts
+  // `citizenUpkeepByOwner.set(ownerId, v);` leży TEKSTOWO PO `citizenUpkeepDrainCache.set(ownerId,
+  // v);` (publikacja do mapy przetrwałej jest druga, celowo PO zapisie do cache'a lokalnego), więc
+  // nie mieści się w tamtym (węższym, celowo innym) oknie. Nowe okno używa TEJ SAMEJ kotwicy
+  // startowej (`if (v === undefined) {`), ale kończy się na `return v;` -- jedynej instrukcji PO
+  // zamknięciu bloku `if` wewnątrz ciała citizenUpkeepDrainForOwner (kształt funkcji:
+  // `if (v === undefined) { ... } return v;`) -- więc okno obejmuje CAŁY blok if (oba `.set(...)`)
+  // i nic poza nim (kolejna funkcja/kod w main.ts nie ma szans wejść w okno).
+  // ---------------------------------------------------------------------
+  const idxOfReturnV = idxOfIfUndefined > -1
+    ? mainSrcStripped.indexOf('return v;', idxOfIfUndefined)
+    : -1;
+  assert(idxOfReturnV > idxOfCacheSet, 'main.ts: "return v;" znalezione PO "citizenUpkeepDrainCache.set(ownerId, v);" WEWNĄTRZ citizenUpkeepDrainForOwner -- okno całego bloku if (H6) dobrze uformowane');
+  const resolverFullBlockWindow = (idxOfIfUndefined > -1 && idxOfReturnV > idxOfIfUndefined)
+    ? mainSrcStripped.slice(idxOfIfUndefined, idxOfReturnV)
+    : '';
+  assert(
+    resolverFullBlockWindow.includes('citizenUpkeepByOwner.set(ownerId'),
+    'H6 (N1 runda 5, punkt 2 Evaluatora rundy 4 -- zabija powrót regresji rundy 2/3 "po cichu": '
+      + 'usunięcie publikacji werdyktu do mapy przetrwałej między turami): treść całego bloku '
+      + 'if(v===undefined) {..} wewnątrz citizenUpkeepDrainForOwner (od "if (v === undefined) {" do '
+      + '"return v;") zawiera TAKŻE "citizenUpkeepByOwner.set(ownerId" -- wynik drenażu publikowany '
+      + 'RÓWNOLEGLE do citizenUpkeepDrainCache (lokalny cache resolvera, ginie po turze) ORAZ do '
+      + 'citizenUpkeepByOwner (przetrwały, czytany wprost przez panel Surowców -- sekcja I), nie '
+      + 'tylko do pierwszego z nich',
+  );
+
   // Behawioralny dowód end-to-end: computeCitizenResourceDrain wywołane RAZ z sumą populacji
   // 2 miast (5+5=10) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
   // populacji 10 -- a NIE 2× wywołanie po 5 (co dałoby 2×5=10 też przypadkiem przy tej stawce,
@@ -747,6 +786,46 @@ console.log('\n-- F. Wiring main.ts -> silnik tury (N1: happinessDelta + growthP
   eq(
     withPenalty.row.breakdown.total, withoutPenalty.row.breakdown.total - 5,
     'F4: total_z_karą = total_bez_kary + (-5) -- delta wchodzi 1:1, addytywnie',
+  );
+}
+
+// ===========================================================================
+// K. Parytet liczby miejsc czyszczenia: citizenUpkeepByOwner.clear() vs cityOrderState.clear()
+//    (N1 runda 5, punkt 3 Evaluatora rundy 4 -- Maciej 2026-08-12)
+// ===========================================================================
+console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.clear() vs cityOrderState.clear() --');
+{
+  // Kontekst: `citizenUpkeepByOwner` musi być czyszczone w KAŻDYM miejscu, gdzie czyszczone jest
+  // `cityOrderState` (4× w funkcjach startu nowej gry/restartu), PLUS DODATKOWO przy wczytaniu
+  // zapisu (restoreGameFromSave, naprawa punktu 1 tej samej rundy, commit 13f62b0b) -- razem 5.
+  // `cityOrderState` ŚWIADOMIE NIE jest dziś czyszczone w restoreGameFromSave (osobny, odłożony
+  // temat -- patrz PYTANIA-OTWARTE.md -- NIE naprawiany w tym zgłoszeniu), więc stan dzisiejszy
+  // jest OSTRO nierówny (5 vs 4), nie równy.
+  //
+  // K1 poniżej pinuje DOKŁADNIE dzisiejsze liczby -- to jest jedyna forma tej asercji, która
+  // realnie łapie mutanta "usuń jedno z 5 wystąpień citizenUpkeepByOwner.clear()" (zweryfikowane
+  // mutacją, patrz commit tej rundy): po takim usunięciu licznik spada z 5 do 4 -- DOKŁADNIE tyle
+  // ile cityOrderState.clear() (4) -- więc sama nierówność `>=` (K2) NIE wykrywa tej konkretnej
+  // mutacji (4 >= 4 nadal prawdziwe). K1 jest więc pierwszą linią obrony przed regresją liczby
+  // TU I TERAZ; K2 wyraża WŁAŚCIWY niezmiennik semantyczny na przyszłość (patrz niżej).
+  const byOwnerClearCount = (mainSrcStripped.match(/citizenUpkeepByOwner\.clear\(\)/g) || []).length;
+  const orderStateClearCount = (mainSrcStripped.match(/cityOrderState\.clear\(\)/g) || []).length;
+  eq(byOwnerClearCount, 5, 'K1: main.ts zawiera dziś dokładnie 5 wystąpień "citizenUpkeepByOwner.clear()" -- 4 w funkcjach startu nowej gry/restartu + 1 w restoreGameFromSave (naprawa punktu 1 tej samej rundy, commit 13f62b0b)');
+  eq(orderStateClearCount, 4, 'K1: main.ts zawiera dziś dokładnie 4 wystąpienia "cityOrderState.clear()" -- cityOrderState ŚWIADOMIE NIE jest czyszczone w restoreGameFromSave (odłożony temat, NIE naprawiany w tym zgłoszeniu)');
+
+  // K2 (wymóg wprost ze zgłoszenia): NIERÓWNOŚĆ jako niezmiennik na przyszłość -- jeśli powstanie
+  // PIĄTE miejsce `cityOrderState.clear()` (np. nowy tryb startu gry) BEZ odpowiadającego mu
+  // `citizenUpkeepByOwner.clear()`, licznik cityOrderState przewyższy licznik citizenUpkeepByOwner
+  // i ta asercja złapie to czerwono -- zamiast pozwolić nowemu miejscu zresetować Porządek miast,
+  // ale zostawić martwy/nieaktualny werdykt drenażu obywateli dla tego samego ownera.
+  assert(
+    byOwnerClearCount >= orderStateClearCount,
+    `K2 (N1 runda 5, punkt 3 Evaluatora -- parytet na przyszłość): liczba wystąpień `
+      + `"citizenUpkeepByOwner.clear()" (${byOwnerClearCount}) >= liczba wystąpień `
+      + `"cityOrderState.clear()" (${orderStateClearCount}) w main.ts -- każde miejsce resetu `
+      + 'Porządku miast ma odpowiadające miejsce resetu drenażu obywateli (co najmniej), żeby '
+      + 'przyszłe PIĄTE miejsce cityOrderState.clear() bez odpowiednika nie zostało pominięte po '
+      + 'cichu bez wykrycia',
   );
 }
 
