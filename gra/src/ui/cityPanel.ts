@@ -8098,9 +8098,18 @@ function appendOwnedBuildingRow(
   id: string,
   data: GameData,
   city?: City,
-  opts?: { compact?: boolean },
+  opts?: { compact?: boolean; detailSide?: 'left' | 'right' },
 ): void {
   const compact = opts?.compact === true;
+  // P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA, znalezisko Evaluatora (2026-08-12): karty
+  // szczegółów muszą dokować po TEJ SAMEJ stronie co lista, która je wywołuje -- '`left'
+  // zahardkodowane tu było poprawne, gdy lista żyła wyłącznie w lewej kolumnie (legacy
+  // #cs-owned), ale po przeniesieniu do prawej kolumny wymuszało dok po przeciwnej stronie
+  // ekranu niż kliknięcie/hover.
+  // / EN: detail cards must dock on the SAME side as the list that triggers them --
+  // hardcoded 'left' was correct while the list only lived in the left column (legacy
+  // #cs-owned), but after moving to the right column it forced the dock to the wrong side.
+  const detailSide: 'left' | 'right' = opts?.detailSide ?? 'left';
   const def = data.buildings.find(b => b.id === id);
   const row = el('div', compact ? 'bld-owned-row bld-owned-row--tight' : 'bld-owned-row');
   const hd = el('div', 'bld-owned-hd');
@@ -8168,7 +8177,7 @@ function appendOwnedBuildingRow(
     upBtn.textContent = '↗';
     upBtn.title = 'Skład bonusów upgrade';
     upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
-    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data, city), { delayMs: 260, sideHint: 'left' });
+    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data, city), { delayMs: 260, sideHint: detailSide });
     hd.appendChild(upBtn);
   }
   row.appendChild(hd);
@@ -8187,11 +8196,11 @@ function appendOwnedBuildingRow(
       tail.appendChild(bon);
     }
     if (tail.childElementCount > 0) row.appendChild(tail);
-    attachHoverDetail(row, () => buildBuildingDetailCard(def, data, city), 280, 'left');
+    attachHoverDetail(row, () => buildBuildingDetailCard(def, data, city), 280, detailSide);
     row.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('.bld-upg')) return;
       e.stopPropagation();
-      showHoverDetailNow(row, () => buildBuildingDetailCard(def, data, city), 'left');
+      showHoverDetailNow(row, () => buildBuildingDetailCard(def, data, city), detailSide);
     });
   }
 
@@ -8216,6 +8225,11 @@ function renderBuildingsOwned(
   mount.innerHTML = '';
   const compact = opts?.compact === true;
   if (compact) mount.classList.add('bld-owned-compact-mount');
+  // P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA, znalezisko Evaluatora (2026-08-12): mount
+  // jest już w DOM w tym miejscu (withW4TabCard robi appendChild PRZED render(body)), więc
+  // closest('.civ-ux-right') poprawnie rozstrzyga stronę -- karty szczegółów muszą dokować
+  // po tej samej stronie co lista wywołująca, nie zawsze po lewej.
+  const detailSide: 'left' | 'right' = mount.closest('.civ-ux-right') ? 'right' : 'left';
   const built = cfg.getBuiltBuildingIds?.(city.id);
   const builtCount = built?.length ?? 0;
   let titleHtml = compact
@@ -8264,7 +8278,7 @@ function renderBuildingsOwned(
           details.appendChild(el('div', 'muted bld-group-empty-note', '(brak)'));
         }
       } else {
-        for (const id of ids) appendOwnedBuildingRow(details, id, data, city, { compact });
+        for (const id of ids) appendOwnedBuildingRow(details, id, data, city, { compact, detailSide });
       }
       target.appendChild(details);
     }
