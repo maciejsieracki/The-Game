@@ -63,6 +63,7 @@ import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
+import { parsePrerequisites } from '../game/research';
 import {
   buildableProduction,
   eraBuildingCatalog,
@@ -6642,18 +6643,44 @@ function unitExtraField(u: UnitDef, key: string): string | number | null {
   return v as string | number;
 }
 
+/**
+ * Pełny łańcuch wymaganych technologii (rekurencyjnie, wszystkie gałęzie AND) — do
+ * podglądu w karcie budynku i do oceny „spełnione/niespełnione".
+ * NAPRAWA (P-TARGOWISKO-BLEDNA-BRAMKA-BADAN, 2026-08-12): pole „Wymaga (prereq)" bywa
+ * listą złączoną „+" (np. „Garncarstwo + Rolnictwo + Oswojenie zwierząt" dla Wymiany).
+ * Stara wersja traktowała cały ten napis jako JEDNĄ nazwę technologii (bez rozbicia po
+ * „+"), więc getTechDef() jej nie znajdował, a ten sztuczny wpis nigdy nie trafiał do
+ * zbioru zbadanych — karta budynku pokazywała czerwono nawet gdy gracz miał wszystkie
+ * trzy techy. Naprawa: parsePrerequisites (research.ts, ta sama funkcja co silnik badań)
+ * rozbija listę na pojedyncze nazwy i rekurencyjnie odwiedza KAŻDĄ z nich (AND), nie
+ * tylko pierwszą.
+ * EN: „Wymaga (prereq)" can be a „+"-joined list (e.g. "Garncarstwo + Rolnictwo +
+ * Oswojenie zwierząt" for Wymiana). The old version treated the whole string as a
+ * SINGLE tech name (no "+" split), so getTechDef() never found it and that synthetic
+ * entry could never be marked as researched — the building card showed red even when
+ * the player had all three techs. Fix: parsePrerequisites (research.ts, the same
+ * function the research engine uses) splits the list and recursively visits EVERY
+ * entry (AND), not just the first.
+ */
 function techPrereqChain(data: GameData, techName: string): string[] {
   const chain: string[] = [];
-  let cur = techName.trim();
   const seen = new Set<string>();
-  while (cur && !isEmptyDataVal(cur) && !seen.has(cur)) {
-    seen.add(cur);
-    chain.unshift(cur);
-    const t = getTechDef(data, cur);
-    const prereq = t?.['Wymaga (prereq)'];
-    if (!prereq || isEmptyDataVal(prereq)) break;
-    cur = String(prereq).trim();
+
+  function visit(name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed || isEmptyDataVal(trimmed) || seen.has(trimmed)) return;
+    seen.add(trimmed);
+    const t = getTechDef(data, trimmed);
+    const prereqRaw = t?.['Wymaga (prereq)'];
+    if (prereqRaw && !isEmptyDataVal(prereqRaw)) {
+      for (const p of parsePrerequisites(String(prereqRaw))) {
+        visit(p);
+      }
+    }
+    chain.push(trimmed);
   }
+
+  visit(techName);
   return chain;
 }
 
