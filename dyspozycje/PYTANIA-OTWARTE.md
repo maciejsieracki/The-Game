@@ -12673,3 +12673,50 @@ dwóch, chyba że dziś już go tam nie ma (sprawdzić). Nie usuwać funkcjonaln
 ograniczyć WIDOCZNOŚĆ do właściwej zakładki.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE — KRYTYCZNE, REGRESJA NA WDROZONYM ROBOCZA (Evaluator, 2026-08-12)
+
+**Werdykt Evaluatora migracji IndexedDB (`798f3c17`): FAIL, blokujące.** Zweryfikowane A/B na
+REALNYCH artefaktach (Chromium 141, `file://`, zaszczepiony localStorage): `gra-kanon/Gra-KANON.html`
+(sprzed migracji) — przyciski "Kontynuuj"/"Wczytaj grę" AKTYWNE. `gra-robocza/Gra-ROBOCZA.html`
+(FALA 269, JUŻ WDROŻONA) — OBA przyciski WYSZARZONE, mimo istniejących zapisów, i NIE naprawiają
+się same (menu buduje się raz).
+
+**⛔ F1 (BLOKER).** `main.ts:28574` `void refreshHasAnySaveSlotCache();` (fire-and-forget) tuż
+przed `main.ts:28585` `openStartupMainMenu()` w TYM SAMYM synchronicznym ticku — odczyt IndexedDB
+nie może się rozwiązać przed pierwszym renderem menu, `mainMenu.build()` czyta `cfg.hasSave()`
+RAZ (`mainMenu.ts:384`), więc zawsze widzi `cachedHasAnySaveSlot === false` przy starcie.
+Deterministyczne w 100%, nie wyścig probabilistyczny. `mainMenu.ts:257-258` nie tylko wyszarza
+przycisk ale NIE PODPINA handlera kliknięcia — przycisk jest realnie martwy.
+**Kierunek naprawy (podany przez Evaluatora):** `void refreshHasAnySaveSlotCache().then(() => {
+if (isMainMenuOpen()) showMainMenu(); })` — przebuduj menu po rozwiązaniu cache, jeśli nadal
+wisi na ekranie (`isMainMenuOpen` już zaimportowane w `main.ts:1034`).
+
+**Noty nieblokujące (do naprawy przy okazji, nie osobno):**
+- F2: stara meta z localStorage "zmartwychwstaje" po nieudanym zapisie meta do IDB — dialog
+  Wczytaj grę pokazuje STARĄ etykietę/turę dla nowszego zapisu (dane same są poprawne, tylko
+  wyświetlanie). Naprawa: dołożyć `storage.removeItem(saveMetaKey(slot))` w tym samym `catch`
+  co dziś czyści tylko IDB (`save.ts:590`).
+- F3: brak fallbacku zapisu na localStorage gdy IndexedDB niedostępne (stary kod: `ok:true` +
+  dane w localStorage; nowy: `ok:false`, nic zapisane). Obawa o `file://` EMPIRYCZNIE OBALONA
+  (realny Chromium 141 pod file:// działa) — ryzyko resztkowe: inne przeglądarki/tryb prywatny.
+- F4: `dbPromise` (`idb-storage.ts:70-95`) memoizuje PORAŻKĘ na stałe — jedno nieudane/
+  zablokowane otwarcie wyłącza zapis do końca sesji, brak `onclose`/`onversionchange` reset.
+- F5: `showLoadGameDialog` przypisuje modułowy `root` PRZED `await` — podwójny klik "Wczytaj
+  grę" w oknie odczytu IDB może zdublować treść dialogu (przed migracją niemożliwe, kod był
+  synchroniczny).
+
+**Co przeszło weryfikację (NIE złamane, potwierdzone atakiem):** wsteczna kompatybilność
+(33 asercje), brak cichej porażki zapisu (`idbSetItem` czeka na `tx.oncomplete`, quota
+odróżniona), meta+pełny zapis w tym samym backendzie bez rozjazdu, wszystkie ~30 call site'ów
+faktycznie awaitowane.
+
+**Luka testowa:** żadna z istniejących bramek nie łapie F1 (brak testu na synchroniczny kontrakt
+`hasSave()` przy starcie) — repro gotowe w scratchpadzie Evaluatora, do przeniesienia na test w
+`gra/tools/`.
+
+**STATUS: KRYTYCZNE, PRIORYTET NAD RESZTĄ KOLEJKI — dispatch Sonnet 5 (worktree) NATYCHMIAST.
+Zakres: F1 (blokujące, wg podanego kierunku naprawy) + F2 (tania, przy okazji) + nowy test
+regresyjny na dokładnie ten scenariusz (start gry z istniejącym zapisem → menu → przycisk
+aktywny). F3/F4/F5 mogą zostać jako osobne, mniej pilne noty jeśli zabraknie czasu w tej
+rundzie — NIE blokują F1.**
