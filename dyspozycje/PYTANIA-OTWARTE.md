@@ -13028,3 +13028,52 @@ Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), test regresyj
 nowy default przy założeniu miasta.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-EPOKA-PRZEJSCIE-CZY-PER-CYWILIZACJA — ZAMKNIĘTE, BEZ ZMIAN KODU (audyt, 2026-08-12)
+
+Audyt (worktree naprawiony) potwierdził: epoka jest liczona per owner (`ownerEraByOwner: Map<number,number>`,
+`ownerStartEraByOwner`, `aiResearchDone: Map<number,Set>`, gracz osobno `player.era`/`player.zbadane`,
+main.ts). `syncOwnerEraFromResearch(ownerId)` czyta/pisze wyłącznie pod kluczem TEGO ownera, wołana
+w pętli po wszystkich ownerach. Jawnie udokumentowane jako zamierzone w `gra/src/game/owner-epoch.ts:9-16`
+(R-EPOKA-CUD-WARUNEK-AWANSU, Maciej 2026-08-09): "Progresja per cywilizacja pozostaje niezależna/
+asynchroniczna... to ZAMIERZONE, nie naprawiać." Pokrycie testowe już istnieje i jest zielone:
+`era-cud-warunek-awansu-test.cjs` 33/33, `era-cud-main-ts-integracja-test.cjs` 16/16+11/11,
+`owner-epoch-test.cjs` 13/13. Obawa właściciela NIE potwierdza się — zero zmian kodu.
+
+**STATUS: ZAMKNIĘTE.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 — DECYZJA WŁAŚCICIELA: WARTOŚCI ABSOLUTNE (Maciej, ECHO 2026-08-12)
+
+Odpowiedź na pytanie ABC (przygotowane przez Operatora `af66d1e09b87bb854`) — właściciel podał
+własne WARTOŚCI ABSOLUTNE zamiast wybrania litery A/B/C, i rozszerzył zakres o Konia (poza
+pierwotną piątką związaną z zużyciem obywateli):
+
+| Ulepszenie terenu | Surowiec | Dziś (`surowiec_ilosc_tura`) | Nowa wartość |
+|---|---|---|---|
+| Tartak | Drewno | 4/turę | **10/turę** |
+| Kamieniołom | Kamień | 4/turę | **10/turę** |
+| Glinianka | Glina | 4/turę | **10/turę** |
+| Kopalnia miedzi | Ruda (miedzi) | 2/turę | **4/turę** |
+| Kopalnia żelaza | Ruda żelaza | 2/turę | **4/turę** |
+| Stadnina | Koń | 1/turę | **5/turę** |
+
+Złoto (Kopalnia złota) i Sól (Warzelnia soli) — BEZ ZMIAN, nie wspomniane przez właściciela.
+
+⚠️ **PODWAŻA WCZEŚNIEJSZE DECYZJE BALANSU (rule 1a)**: wartości 4/turę dla Tartak/Kamieniołom/
+Glinianka pochodzą z korekty **Maciej 2026-08-09** ("wyrównanie do kamieniołomu", było wcześniej
+10/20 — a teraz wraca do 10, czyli de facto CZĘŚCIOWY powrót do wcześniejszej, jeszcze starszej
+wartości). Wartości 2/turę dla Kopalni miedzi/żelaza pochodzą z **Maciej 2026-07-23**
+(SUROW-TERYT-01, "stawka REALNA"). Wartość 1/turę dla Stadniny — też SUROW-TERYT-01. Właściciel
+świadomie te decyzje teraz koryguje tą decyzją ECHO.
+
+ZADANIE dla dispatchu: `gra/data/terrain-improvements.json` — zmienić `surowiec_ilosc_tura` dla
+kluczy `tartak`, `kamieniolom`, `glinianka`, `kopalnia_miedzi`, `kopalnia_zelaza`, `stadnina` na
+wartości wyżej. Zaktualizować pole `surowiecOdblokowany_uwaga` w każdym wpisie z krótką notatką o
+korekcie 2026-08-12 (wzorzec istniejących notatek o poprzednich korektach w tych samych polach).
+Sprawdzić testy asercjonujące te wartości (grep "surowiec_ilosc_tura"/nazwy kluczy w
+`gra/tools/`) i przeliczyć oczekiwane wartości.
+
+Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), wszelkie testy dotykające
+tych wartości (przeliczone, zielone).
+
+**STATUS: OTWARTE, gotowe do dispatchu Sonnet 5 (worktree) — czysta zmiana danych + testy.**
