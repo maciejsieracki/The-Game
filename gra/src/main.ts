@@ -13056,10 +13056,39 @@ async function boot(): Promise<void> {
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
-    /** Identyfikatory wpisów stołu wymagających decyzji gracza u danego partnera. */
+    /**
+     * Identyfikatory wpisów stołu wymagających decyzji gracza u danego partnera.
+     *
+     * P-DYPLOMACJA-STOL-NEGOCJACJI-ZABLOKOWANY: w obrębie getNegotiationsForPair(ownerId)
+     * awaitingOwnerId może być tylko 0 (kolej gracza — "incoming" w UI) albo ownerId (kolej
+     * AI — "own"+awaitingAiResponse w UI, ale gracz i tak steruje przyciskiem: wyślij
+     * kontrofertę do AI albo wycofaj). Poprzedni warunek dokładał `proposerOwnerId===0`,
+     * zakładając że "nasza kolejka czeka na AI" = "to MY zaproponowaliśmy pierwsi" — błędnie,
+     * bo proposerOwnerId/responderOwnerId są STAŁE od rundy 1 (patrz komentarz przy
+     * PendingNegotiation w diplomacy-proposals.ts) i NIE zmieniają się przy kontrofercie.
+     * Gdy AI zaproponowało jako pierwsze (proposerOwnerId=ownerId), a gracz skontrował
+     * (Kontruj) — wpis trafia dokładnie w ten stan (awaitingOwnerId=ownerId,
+     * proposerOwnerId=ownerId, runda 2+), czyli DOKŁADNIE scenariusz "Kontroferta 2/3" ze
+     * zgłoszenia. UI (buildPendingNegotiationRows/filterActionableNegotiationRows) liczy
+     * "own" wyłącznie z awaitingOwnerId i pokazywał aktywny pasek Przyjmij/Odrzuć — ale ten
+     * filtr silnika wycinał taki wpis z `ids`, więc handleNegotiationAcceptPackage/
+     * RejectPackage (pętla `for (const id of ids)`) go pomijały — klik był cichym no-opem.
+     * Naprawa: dopasuj filtr do UI — brak dodatkowego warunku o tym, kto był proponentem.
+     * / EN: within getNegotiationsForPair(ownerId), awaitingOwnerId is only ever 0 (player's
+     * turn) or ownerId (AI's turn, but the player still drives the button — push the
+     * counter-offer to the AI, or withdraw it). The old extra `proposerOwnerId===0` clause
+     * assumed "our turn is waiting on AI" meant "we proposed first" — wrong, because
+     * proposer/responder roles are FIXED from round 1 and never swap on a counter-offer. When
+     * the AI proposed first and the player countered, the entry lands exactly in this state
+     * (awaitingOwnerId=ownerId, proposerOwnerId=ownerId, round 2+) — precisely the reported
+     * "Kontroferta 2/3" case. The UI derives "own" purely from awaitingOwnerId and rendered an
+     * active Przyjmij/Odrzuć bar, but this engine-side filter dropped the entry from `ids`, so
+     * the accept/reject-package loop silently skipped it — clicking did nothing. Fix: match
+     * the UI's real criterion, no extra "who proposed" condition.
+     */
     function actionableNegotiationIdsForPair(ownerId: number): string[] {
       return getNegotiationsForPair(ownerId)
-        .filter(n => n.awaitingOwnerId === 0 || (n.proposerOwnerId === 0 && n.awaitingOwnerId !== 0))
+        .filter(n => n.awaitingOwnerId === 0 || n.awaitingOwnerId === ownerId)
         .map(n => n.id)
         .sort((a, b) => a.localeCompare(b));
     }
