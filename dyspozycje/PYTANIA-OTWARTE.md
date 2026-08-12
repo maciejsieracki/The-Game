@@ -15701,3 +15701,10 @@ próg 50): przed fixem etykieta "możesz przyjąć bez dopłaty" mimo `accepted=
 ścieżka dałaby +12, różnica 32 PW). `diplomacy-acceptance-points-test.cjs` 240→241/241. `tsc`
 0 błędów, `logic-test` 213/213. Kierunek `own` (U2) nietknięty, jak zaplanowano. **ZAMKNIĘTE**
 (commit `19bdb411`).
+
+## Uzupełnienie puli do 8: dispatch Evaluatora dla 26b684af
+
+Kolejny slot uzupełniony Evaluatorem dla `26b684af` (techPrereqChain AND-prereqy, deklarowane
+17 technologii + 19 budynków dotkniętych). Drugi z 6 pozostałych merge'owanych,
+nigdy-nie-ewaluowanych commitów audytu #3 (26b684af, 7b02eb2d, fc17538f, 3dc9d650, ecbddda8,
+89c16ec1).
