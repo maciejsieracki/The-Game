@@ -28534,6 +28534,18 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // Backlog "cityOrderState nieczyszczone w restoreGameFromSave" (Evaluator rundy 4
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1, PYTANIA-OTWARTE.md): bez tego czyszczenia panel
+      // miasta (cityPanel.ts, resolveOrderState) po wczytaniu zapisu mógł pokazać OrderState
+      // (szczęście/porządek/bandLabel/...) Z POPRZEDNIEJ GRY tej samej sesji przeglądarki,
+      // dopóki pętla Porządku nie przeliczy od nowa (1 tura) -- analogiczny bug do naprawionego
+      // niżej dla citizenUpkeepByOwner, ten sam mechanizm (mapa lokalna dla `boot()`, klucz
+      // miasta niemal zawsze już istniał w mapie z poprzedniej gry).
+      // / EN: without this clear, the city panel (cityPanel.ts, resolveOrderState) after
+      // loading a save could show OrderState (happiness/order/bandLabel/...) from a PREVIOUS
+      // game of the same browser session until the Order loop recomputes (1 turn) -- same class
+      // of bug as citizenUpkeepByOwner fixed below.
+      cityOrderState.clear();
       // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 5 (Evaluator 2026-08-11): bez tego czyszczenia
       // panel Surowców po wczytaniu zapisu pokazywał werdykt Z POPRZEDNIEJ GRY tej samej sesji
       // przeglądarki (klucz ownerId=0 niemal zawsze już istniał w mapie) -- cudza epoka/

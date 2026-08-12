@@ -654,6 +654,20 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
       + 'citizenUpkeepByOwner (przetrwały, czytany wprost przez panel Surowców -- sekcja I), nie '
       + 'tylko do pierwszego z nich',
   );
+  // H6b (Evaluator, dispatch domykający N2: H6 wyżej łapie USUNIĘCIE wywołania .set(...), ale NIE
+  // łapie PODMIANY jego drugiego argumentu na błędną, zahardkodowaną wartość zamiast realnie
+  // policzonego `v` -- dowiedzione mutacją `citizenUpkeepByOwner.set(ownerId, { deductions: [],
+  // perCitizen: 0, total: 0 })`, która przeszła 106/106 bez wykrycia. H6b wymaga, żeby DRUGI
+  // argument .set() był dosłownie gołą zmienną `v` (nie obiektem literalnym/inną nazwą) -- ten sam
+  // `v`, który `if (v === undefined) { ... }` właśnie obliczył i który `return v;` zwraca niżej,
+  // więc podmiana na cokolwiek innego niż `v)` (ze średnikiem lub bez, przed `}`) jest łapana.
+  assert(
+    /citizenUpkeepByOwner\.set\(ownerId,\s*v\)\s*;/.test(resolverFullBlockWindow),
+    'H6b: drugi argument "citizenUpkeepByOwner.set(ownerId, v);" to dosłownie zmienna "v" (ten sam '
+      + 'wynik co "return v;" niżej) -- nie zahardkodowany obiekt ani inna zmienna. Mutacja '
+      + 'podmieniająca ją na fałszywą wartość (np. total:0) jest tym samym łapana, mimo że sama '
+      + 'obecność wywołania .set() (H6) by tego nie wykryła',
+  );
 
   // Behawioralny dowód end-to-end: computeCitizenResourceDrain wywołane RAZ z sumą populacji
   // 2 miast (25+25=50) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
@@ -813,21 +827,21 @@ console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.cl
 {
   // Kontekst: `citizenUpkeepByOwner` musi być czyszczone w KAŻDYM miejscu, gdzie czyszczone jest
   // `cityOrderState` (4× w funkcjach startu nowej gry/restartu), PLUS DODATKOWO przy wczytaniu
-  // zapisu (restoreGameFromSave, naprawa punktu 1 tej samej rundy, commit 13f62b0b) -- razem 5.
-  // `cityOrderState` ŚWIADOMIE NIE jest dziś czyszczone w restoreGameFromSave (osobny, odłożony
-  // temat -- patrz PYTANIA-OTWARTE.md -- NIE naprawiany w tym zgłoszeniu), więc stan dzisiejszy
-  // jest OSTRO nierówny (5 vs 4), nie równy.
+  // zapisu (restoreGameFromSave). Backlog "cityOrderState nieczyszczone w restoreGameFromSave"
+  // (odnotowany przez Evaluatora N1 rundy 5) został ZAMKNIĘTY równolegle z tą rundą -- oba pola są
+  // dziś czyszczone w restoreGameFromSave, więc stan jest RÓWNY (5 i 5), nie ostro nierówny.
   //
   // K1 poniżej pinuje DOKŁADNIE dzisiejsze liczby -- to jest jedyna forma tej asercji, która
   // realnie łapie mutanta "usuń jedno z 5 wystąpień citizenUpkeepByOwner.clear()" (zweryfikowane
-  // mutacją, patrz commit tej rundy): po takim usunięciu licznik spada z 5 do 4 -- DOKŁADNIE tyle
-  // ile cityOrderState.clear() (4) -- więc sama nierówność `>=` (K2) NIE wykrywa tej konkretnej
-  // mutacji (4 >= 4 nadal prawdziwe). K1 jest więc pierwszą linią obrony przed regresją liczby
-  // TU I TERAZ; K2 wyraża WŁAŚCIWY niezmiennik semantyczny na przyszłość (patrz niżej).
+  // mutacją): sama nierówność `>=` (K2) NIE wykrywa tej mutacji gdy oba liczniki są równe (4 >= 5
+  // fałszywe wprawdzie, ALE mutant "usuń jedno z 5 cityOrderState.clear()" da 5>=4, wciąż prawda --
+  // K2 nie chroni przed usunięciem strony cityOrderState). K1 jest więc pierwszą linią obrony przed
+  // regresją liczby PO KAŻDEJ stronie TU I TERAZ; K2 wyraża WŁAŚCIWY niezmiennik semantyczny na
+  // przyszłość (patrz niżej).
   const byOwnerClearCount = (mainSrcStripped.match(/citizenUpkeepByOwner\.clear\(\)/g) || []).length;
   const orderStateClearCount = (mainSrcStripped.match(/cityOrderState\.clear\(\)/g) || []).length;
   eq(byOwnerClearCount, 5, 'K1: main.ts zawiera dziś dokładnie 5 wystąpień "citizenUpkeepByOwner.clear()" -- 4 w funkcjach startu nowej gry/restartu + 1 w restoreGameFromSave (naprawa punktu 1 tej samej rundy, commit 13f62b0b)');
-  eq(orderStateClearCount, 4, 'K1: main.ts zawiera dziś dokładnie 4 wystąpienia "cityOrderState.clear()" -- cityOrderState ŚWIADOMIE NIE jest czyszczone w restoreGameFromSave (odłożony temat, NIE naprawiany w tym zgłoszeniu)');
+  eq(orderStateClearCount, 5, 'K1: main.ts zawiera dziś dokładnie 5 wystąpień "cityOrderState.clear()" -- 4 w funkcjach startu nowej gry/restartu + 1 w restoreGameFromSave (domknięcie backlogu "cityOrderState nieczyszczone w restoreGameFromSave")');
 
   // K2 (wymóg wprost ze zgłoszenia): NIERÓWNOŚĆ jako niezmiennik na przyszłość -- jeśli powstanie
   // PIĄTE miejsce `cityOrderState.clear()` (np. nowy tryb startu gry) BEZ odpowiadającego mu
@@ -849,12 +863,14 @@ console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.cl
   // wystąpienia w CAŁYM main.ts, ale nie sprawdzają UMIEJSCOWIENIA. Gdyby jeden z 5
   // "citizenUpkeepByOwner.clear()" leżał GDZIE INDZIEJ niż wewnątrz restoreGameFromSave (np.
   // usunięty stamtąd i zduplikowany w funkcji startu nowej gry), K1 nadal widziałby 5 (liczba
-  // się zgadza), K2 nadal 5>=4 (nierówność się zgadza) -- OBIE zielone, mimo że naprawa punktu 1
-  // tej samej rundy (regresja load-save, commit 13f62b0b) faktycznie by zniknęła. K3 domyka tę
-  // szóstą szczelinę: wycina okno tekstu SAMEJ funkcji restoreGameFromSave dopasowaniem klamer
-  // od 'function restoreGameFromSave(' (NIE kotwicząc na "następna `    function `" --
+  // się zgadza) -- OBIE K1-strony zielone, mimo że naprawa punktu 1 tej samej rundy (regresja
+  // load-save, commit 13f62b0b) faktycznie by zniknęła. K3 domyka tę szóstą szczelinę: wycina
+  // okno tekstu SAMEJ funkcji restoreGameFromSave dopasowaniem klamer od
+  // 'function restoreGameFromSave(' (NIE kotwicząc na "następna `    function `" --
   // restoreGameFromSave jest OSTATNIĄ funkcją na tym poziomie wcięcia w main.ts, taka kotwica by
-  // nie zadziałała) i sprawdza DOKŁADNIE wewnątrz tego okna, nie w całym pliku.
+  // nie zadziałała) i sprawdza DOKŁADNIE wewnątrz tego okna, nie w całym pliku. Po domknięciu
+  // backlogu "cityOrderState nieczyszczone w restoreGameFromSave" oczekiwane jest PO 1 wystąpieniu
+  // KAŻDEGO z dwóch clear() wewnątrz tego okna, nie 1+0.
   // -------------------------------------------------------------------------
 
   /** Balansuje nawiasy klamrowe od podanego indeksu '{' i zwraca indeks TUŻ ZA dopasowanym '}'.
@@ -891,13 +907,14 @@ console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.cl
   const restoreByOwnerClearCount = (restoreWindow.match(/citizenUpkeepByOwner\.clear\(\)/g) || []).length;
   const restoreOrderStateClearCount = (restoreWindow.match(/cityOrderState\.clear\(\)/g) || []).length;
   assert(
-    restoreByOwnerClearCount === 1 && restoreOrderStateClearCount === 0,
+    restoreByOwnerClearCount === 1 && restoreOrderStateClearCount === 1,
     'K3 (Runda 6, umiejscowienie, nie tylko liczba w całym pliku): WEWNĄTRZ ciała restoreGameFromSave '
       + '(okno wycięte dopasowaniem klamer) jest dokładnie 1 wystąpienie "citizenUpkeepByOwner.clear()" '
-      + '(naprawa punktu 1 tej samej rundy, commit 13f62b0b) i 0 wystąpień "cityOrderState.clear()" '
-      + `(świadomie, odłożony temat) -- got byOwner=${restoreByOwnerClearCount}, orderState=${restoreOrderStateClearCount}. `
+      + '(naprawa punktu 1 tej samej rundy, commit 13f62b0b) i dokładnie 1 wystąpienie '
+      + '"cityOrderState.clear()" (domknięcie backlogu "cityOrderState nieczyszczone w '
+      + `restoreGameFromSave") -- got byOwner=${restoreByOwnerClearCount}, orderState=${restoreOrderStateClearCount}. `
       + 'K1/K2 liczą wystąpienia w CAŁYM main.ts i NIE wykrywają PRZENIESIENIA jednego z 5 '
-      + 'citizenUpkeepByOwner.clear() poza tę funkcję, dopóki suma w pliku i nierówność 5>=4 się zgadzają',
+      + 'clear() poza tę funkcję, dopóki suma w pliku się zgadza',
   );
 }
 
