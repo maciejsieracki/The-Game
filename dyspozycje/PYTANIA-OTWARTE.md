@@ -15095,3 +15095,30 @@ kontenerze. Zatrzymuj **wyłącznie własny PID** (zapamiętany przy starcie, `k
 narzędziem sesji (`TaskStop` dla zadań w tle). Przed jakimkolwiek `pkill` — `pgrep -af <wzorzec>`
 i sprawdzenie **ścieżki roboczej** każdego trafienia (`ps -o cmd`); trafienie w cudzym worktree
 oznacza STOP.
+
+## Scroll-reset runda 2 (55e64ac2) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `af85c27cc7a42bb7c`: naprawa poprawna i kompletna. Zbudował niezależny harness
+(31/31, prawdziwa flaga modułowa + wykonanie realnego `showEmpireDetailPanel()`, nie regex) —
+11 sekwencji nawigacyjnych zielonych, w tym potwierdzenie że scenariusz rundy 1 nie wrócił.
+6 mutacji na realnym źródle złapanych. Hipoteza "wyciek flagi w gałęzi `if(scrollTarget)`" —
+zweryfikowana jako konstrukcyjnie prawdziwa, ale ścieżka DOWODLIWIE nieosiągalna (statycznie +
+empirycznie 16 aktów HUD + mutant równoważny). **Wzorzec "łatanie dziur" kończy się na tej
+rundzie** — warunek `!open || newSection !== activeSection` dzieli przestrzeń stanów rozłącznie
+i wyczerpująco. Noty nieblokujące: martwa gałąź `scrollTarget`/`scrollToSection()` pre-istniejąca
+(nie wprowadzona tą rundą), bramka słabo pokrywa stronę "ustawiającą" flagę behawioralnie (tylko
+tekstowo), decyzja UX "reopen tego samego bloku resetuje scroll" nie była explicite ratyfikowana
+przez właściciela (przywraca zachowanie sprzed rundy 1, nie nowy wymysł). **ZAMKNIĘTE.**
+
+## Zużycie surowców — synteza K1-K3+H6b (74019e25) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `a8a06a8918ec0abb5`: fundament (5× `cityOrderState.clear()`, parytet z
+`citizenUpkeepByOwner.clear()`) potwierdzony. K1=5, K3=1+1 odtworzone niezależnym matcherem
+klamer na `restoreGameFromSave` (linie 28531-29069). 9 mutacji własnych — wszystkie zachowały
+się poprawnie, w tym M4b (mutant w pełni poprawny typowo, semantycznie fałszujący panel
+Surowców) złapany WYŁĄCZNIE przez H6b — potwierdza że ta asercja realnie domyka lukę. Wszystkie
+4 punkty pierwotnego zakresu (z dwóch równoległych Operatorów) obecne, nic nie zgubione w
+syntezie. Noty nieblokujące: nieaktualny komentarz K2 (mówi "PIĄTE miejsce", jest już 5),
+nieścisły opis regexu H6b, cała rodzina K1-K3/H6/H6b to asercje strukturalne na tekście
+`main.ts` (nie behawioralne) — udokumentowana konwencja repo, akceptowalne. **ZAMKNIĘTE.**
+
