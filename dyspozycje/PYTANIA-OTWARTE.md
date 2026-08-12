@@ -16343,3 +16343,50 @@ Akceptowalne — na `normal`/`easy` krążenie jednostki barbarzyńskiej między
 miastami bez dotarcia do bronionego jest świadomie zaakceptowanym zachowaniem, nie błędem do
 naprawy. Runda 8 mechanizmu `clearedCityIds` NIE jest potrzebna. Zero kodu do zmiany —
 **ZAMKNIĘTE**. Mechanizm patrolu barbarzyńców (rundy 1-7) uznany za kompletny.
+
+## NUMER + ECHO: R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — decyzja WŁASNA właściciela (2026-08-13)
+
+**Kontekst:** w toku dyskusji o `P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1` (populacja 1-4 przy
+stawce 0,2/obywatela floruje `need` do zera) właściciel zdecydował o znacznie szerszej zmianie
+niż wybór litery — pełne przeskalowanie ekonomii surowcowej ×5, które eliminuje problem
+zaokrąglenia u źródła (przy stawce 1,0/obywatela `floor(1×1,0)=1`, nigdy nie zeruje się dla
+populacji ≥1), zamiast wybierać między premią a neutralnością dla przypadku zerowego.
+
+**Decyzja (dosłowna, właściciela), doprecyzowana 3 pytaniami AskUserQuestion:**
+
+1. **Stawka drenażu obywateli: powrót do 1,0 szt./obywatela/surowiec/turę** (z obecnych 0,2) —
+   `CITIZEN_UPKEEP_RATE_PER_CITIZEN` w `gra/src/game/citizen-resource-upkeep.ts`, 0,2→1,0.
+2. **Produkcja WSZYSTKICH surowców fizycznych ×5** — terytorialna (`terrain-improvements.json`)
+   i budynkowa. **Punkt bazowy: DZISIEJSZE żywe wartości** (po porannej naprawie `ecbddda8` tej
+   samej sesji), NIE sprzed niej. Konkretnie: tartak/kamieniołom/glinianka 10→**50** szt./turę,
+   kopalnia_miedzi/kopalnia_żelaza 4→**20** szt./turę, stadnina 5→**25** szt./turę. Sól
+   (warzelnia_soli, dziś 10/turę, nietknięta przez `ecbddda8`) traktowana jako zwykły surowiec
+   fizyczny → **50** szt./turę (dedukcja orkiestratora z „wszystkie surowce fizyczne" — do
+   weryfikacji przez Evaluatora, nie było wprost wymienione przez właściciela).
+3. **Koszt surowcowy rekrutacji jednostek ×5** (`gra/data/units.json`, pola kosztów surowców).
+4. **Utrzymanie surowcowe jednostek ×5** (osobne od drenażu obywateli — koszt utrzymania per
+   jednostka, jeśli taki mechanizm istnieje oddzielnie od kosztu rekrutacji).
+5. **Koszt budowy budynków w surowcach ×5** (`gra/data/buildings.json` lub odpowiednik, pola
+   kosztu budowy).
+6. **Utrzymanie surowcowe budynków ×5** (mechanizm `building-stock-cost.ts`/pokrewny, dotknięty
+   wcześniej w tej sesji przez `a79bae29`/`89c16ec1` — tam WYŁĄCZNIE etykiety, nie wartości;
+   teraz realna zmiana wartości).
+7. **Pojemność magazynów (cap) ×5** — żeby 5× większa produkcja nie wypełniała magazynów 5×
+   szybciej niż dziś (formuła `500+100/Magazyn` czy odpowiednik → `2500+500/Magazyn`, dokładna
+   formuła i miejsce w kodzie do ustalenia przez Operatora).
+8. **WYŁĄCZONE z ×5: Złoto (surowiec z `kopalnia_zlota`) i Pieniądz (waluta)** — zostają bez
+   zmian, świadomie potraktowane jako jedna kategoria (waluta/handel), różna od surowców
+   fizycznych zużywanych do budowy/utrzymania.
+
+**Cel:** neutralny wpływ na resztę parametrów (Szczęście, Rozwój) przy poprawnym liczeniu
+zużycia surowców przez mieszkańców — wszystkie proporcje między produkcją/kosztem/utrzymaniem
+zostają identyczne względem siebie, zmienia się wyłącznie granulacja (jednostka „1 sztuka" jest
+teraz relatywnie 5× drobniejsza względem populacji), co usuwa problem floor-do-zera przy małych
+populacjach bez potrzeby wyboru premia-vs-neutralność.
+
+**STATUS: dispatch Operatora (Sonnet 5) w toku — zakres: pełna inwentaryzacja WSZYSTKICH
+dotkniętych liczb (plik:linia, PRZED zmianą) w stylu tabeli reżimów, potem zastosowanie ×5/
+×1 wg reguł wyżej, potem aktualizacja wszystkich testów pinujących stare wartości.** Ze względu
+na skalę (dotyka ekonomii całej gry) — po Operatorze osobny, dokładny Evaluator sprawdzający
+KOMPLETNOŚĆ (czy żaden surowiec/koszt nie został pominięty) i SPÓJNOŚĆ (czy proporcje
+rzeczywiście zostały zachowane, nie tylko poszczególne liczby zmienione).
