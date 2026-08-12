@@ -47,6 +47,7 @@ export {
   CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
   CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
   CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING,
+  CITIZEN_UPKEEP_RATE_PER_CITIZEN,
 } from '../src/game/citizen-resource-upkeep';
 export { computeHappinessBreakdown } from '../src/game/society-breakdown';
 export { computeGrowthPercentV85, applyPostCentralPopulationGrowth } from '../src/game/population-growth-v85';
@@ -476,6 +477,13 @@ console.log('\n-- J. cityPanel.ts computeOrderStateLocal -- werdykt silnika prze
 // ===========================================================================
 console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obywatel --');
 {
+  // G0 (Evaluator FAIL na 1208eb6c, pin stawki): jedyny dotychczasowy pin wartości 0,2 leżał w
+  // INNYM, późniejszym pliku (porzadek-panel-czytelnosc-test.cjs:82), nie w tym dedykowanym
+  // teście stawki -- ta bramka mogła teoretycznie przejść zielono nawet gdyby ktoś podmienił
+  // CITIZEN_UPKEEP_RATE_PER_CITIZEN na inną wartość, dopóki druga, niepowiązana bramka nie
+  // zostałaby uruchomiona. Pin wprost, w miejscu gdzie stawka jest zdefiniowana i używana.
+  eq(M.CITIZEN_UPKEEP_RATE_PER_CITIZEN, 0.2, 'G0: kanon stawki (Maciej 2026-08-12, "DECYZJA: STAWKA 1->0,2") -- CITIZEN_UPKEEP_RATE_PER_CITIZEN === 0,2 szt. surowca/obywatela/turę, pinowane bezpośrednio w tym dedykowanym teście');
+
   // PRZELICZENIE PO ZMIANIE STAWKI (2026-08-12, 1,0->0,2 = 5x mniej): wszystkie liczby obywateli
   // w tej sekcji przeskalowane x5 względem stanu sprzed zmiany (10->50, 3->15, 7->35), żeby
   // required = Math.floor(population * 0.2) wyszło DOKŁADNIE tyle samo, ile wychodziło required
@@ -518,6 +526,28 @@ console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obyw
   const barelyMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 9, glina: 50 });
   const wayMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 0, glina: 50 });
   eq(barelyMissing.happinessDelta, wayMissing.happinessDelta, 'ECHO Q3=A zachowane: brak 1 sztuki do pełnego pokrycia = ta sama kara co brak całości (binarne, nie proporcjonalne)');
+
+  // G2 (Evaluator FAIL na 1208eb6c -- pokrycie zaokrąglenia): WSZYSTKIE populacje wyżej w tej
+  // sekcji są WIELOKROTNOŚCIĄ 5 (10->50, 3->15, 7->35) -- przy takich wartościach
+  // floor(pop×0,2) == ceil(pop×0,2) == round(pop×0,2), więc Math.floor() nigdy realnie nie
+  // zaokrągla w tych asercjach; 3 z 8 mutacji Evaluatora (floor->ceil, floor->round, usunięcie
+  // zaokrąglenia) przeżywały bez wykrycia. Populacja NIEBĘDĄCA wielokrotnością 5 (53) łamie tę
+  // symetrię: 53×0,2 = 10,600000000000001 w IEEE754 (zweryfikowane `node -e`) -- floor=10
+  // (oczekiwane), ceil=11, round=11, brak zaokrąglenia=10,600000000000001 -- WSZYSTKIE TRZY
+  // mutacje dają wynik != 10, jedna asercja zabija wszystkie naraz. Magazyn=50 (>> required=10)
+  // celowo, żeby drained=min(required,stock)=required ZAWSZE (niezależnie którą z 4 wersji
+  // required policzyłby zmutowany kod) -- deductions.drewno odzwierciedla WYNIK ZAOKRĄGLENIA
+  // wprost, bez interferencji z drenażem częściowym (który by uciął różnicę przez min()).
+  // / EN: all populations above this line are multiples of 5, so floor/ceil/round coincide and
+  // never actually exercise rounding -- pop=53 breaks that symmetry (53×0.2=10.600000000000001
+  // in IEEE754), catching all 3 previously-surviving rounding mutants with one assertion.
+  const roundingProbe = M.computeCitizenResourceDrain(1, 53, { drewno: 50, glina: 50 });
+  eq(
+    roundingProbe.deductions.drewno, 10,
+    'G2: pop=53 (NIE wielokrotność 5) -- required=floor(53×0,2)=floor(10,600000000000001)=10 '
+      + '(nie 11 jak przy floor->ceil/floor->round, nie 10,600000000000001 jak przy usunięciu '
+      + 'zaokrąglenia -- ta jedna asercja odróżnia wszystkie 3 mutacje)',
+  );
 }
 
 // ===========================================================================

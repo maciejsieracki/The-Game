@@ -3,7 +3,8 @@
  * `dyspozycje/PYTANIA-OTWARTE.md` punkt 9).
  *
  * Rozbicie zużycia KAŻDEGO surowca magazynu państwa na trzy kategorie tej tury —
- * budynki (utrzymanie surowcowe), obywatele (drenaż realny 1 szt./obywatela/turę)
+ * budynki (utrzymanie surowcowe), obywatele (drenaż realny, stawka
+ * CITIZEN_UPKEEP_RATE_PER_CITIZEN szt./obywatela/turę — kanon: citizen-resource-upkeep.ts)
  * i wojsko (utrzymanie surowcowe jednostek) — dla przycisku „Zobacz szczegóły" na
  * karcie surowca w panelu imperium (`ui/empireDetailPanel.ts`).
  *
@@ -34,7 +35,7 @@
 export interface ResourceUsageBreakdown {
   /** Utrzymanie surowcowe budynków (koszt_surowce, 1 szt./typ obecny w budynku/turę). */
   buildings: number;
-  /** Drenaż realny obywateli (1 szt./obywatela/turę, magazyn centralny imperium). */
+  /** Drenaż realny obywateli (stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN szt./obywatela/turę — citizen-resource-upkeep.ts, magazyn centralny imperium). */
   citizens: number;
   /** Utrzymanie surowcowe jednostek (units.json „Utrzymanie surowiec (ilość)”). */
   units: number;

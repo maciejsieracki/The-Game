@@ -4194,6 +4194,13 @@ function appendW4SignedBreakdownSections(
  * `citizenUpkeepDisplayLines`), nie stawka per capita (poprzedni błąd — panel pokazywał zawsze
  * ±1, czyli samą karę Szczęścia za surowiec, nie ilość). Status dostępny/brakujący (kolor)
  * zostaje WERDYKTEM SILNIKA z `upkeep` bez zmian — przelicza się wyłącznie WIELKOŚĆ liczby.
+ *
+ * ⚠️ Ta liczba jest floorowana PER MIASTO (`cityPopulation` przekazane niżej), a silnik floruje
+ * RAZ na sumie populacji CAŁEGO ownera — przy >1 mieście `Σfloor ≤ floor(Σ)`, więc suma liczb na
+ * osobnych kartach miast tego ownera może wyjść mniejsza niż realny drenaż silnika. Znany,
+ * świadomie nienaprawiony rozjazd (produktowa decyzja, nie technika) — pełne uzasadnienie w
+ * JSDoc `citizenUpkeepDisplayLines()` (`game/citizen-resource-upkeep.ts`). Kosmetyczny: nie
+ * wpływa na Szczęście/Rozwój (te czytają wyłącznie werdykt binarny available/missing).
  */
 function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined, cityPopulation: number): void {
   if (!upkeep || upkeep.required.length === 0) return;

@@ -34,7 +34,7 @@ import type { City } from './cities';
 import { addForeignCityBlocks } from './city-hex-movement';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, keyOf, isWaterTerrain, embarkMoveCost } from '../units/setup';
+import { hexDistance, computePath, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -537,6 +537,120 @@ function firstStep(
   const path = computePath(unit, map, destQ, destR, occupied, costFn);
   if (path.length === 0) return null;
   return path[0] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// F2-PERF (RUNDA 6, Evaluator B) -- spójne składowe lądu (flood-fill), do
+// odfiltrowania kandydatów-celów GWARANTOWANIE nieosiągalnych PRZED próbą
+// pełnego computePath/Dijkstry.
+// ---------------------------------------------------------------------------
+
+/**
+ * Etykietuje spójne składowe terenu przechodniego dla jednostek lądowych
+ * (BFS/flood-fill), heks -> numer składowej. Kryterium przechodniości to
+ * DOKŁADNIE ta sama funkcja kosztu, której używa computePath z domyślnym
+ * `costFn` (czyli `terrainMoveCost`, bez podanego `costFn` w wywołaniach
+ * `firstStep` w tym pliku) -- nie osobny/duplikowany warunek -- żeby etykiety
+ * nigdy nie rozjechały się z tym, co pathfinding naprawdę uznaje za
+ * przechodnie (w tym po `configureTerrainMovement()` w runtime).
+ *
+ * CELOWO bez `occupied` (jednostki na heksach) -- zajęcie jest per-turowe i
+ * NIE zmienia topologii lądu, tylko chwilowo blokuje konkretny heks. Spójność
+ * terenu jest warunkiem KONIECZNYM dotarcia (różna składowa => dowodliwie
+ * nigdy nieosiągalne, żaden układ jednostek tego nie zmieni), ale NIE
+ * WYSTARCZAJĄCYM (ta sama składowa może nadal być zablokowana przez
+ * `occupied` na konkretnym korytarzu) -- dlatego wynik służy WYŁĄCZNIE jako
+ * tani (O(heksy) raz na turę) wstępny filtr PRZED faktycznym
+ * firstStep/computePath, nigdy jako jego zamiennik.
+ *
+ * Koszt: O(liczba heksów mapy) raz na wywołanie decideBarbarianMoves (czyli
+ * raz na turę), NIE raz na jednostkę x cel -- to jest właśnie naprawa F2
+ * (patrz komentarz przy pętli wyboru celu niżej).
+ *
+ * / EN: labels connected components of terrain passable to land units (BFS/
+ * flood-fill), hex -> component id. The passability criterion is EXACTLY the
+ * same cost function computePath uses with its default `costFn` (i.e.
+ * `terrainMoveCost`, since every `firstStep` call in this file omits a custom
+ * `costFn`) -- not a separate/duplicated check -- so the labels can never
+ * drift from what pathfinding actually treats as passable (including after a
+ * runtime `configureTerrainMovement()` call).
+ *
+ * DELIBERATELY ignores `occupied` (units standing on hexes) -- occupation is
+ * per-turn and does NOT change land topology, it only blocks one specific hex
+ * temporarily. Terrain connectivity is a NECESSARY condition for reachability
+ * (different component => provably never reachable, no unit arrangement can
+ * change that), but NOT SUFFICIENT (the same component can still be blocked
+ * by `occupied` along one particular corridor) -- so the result is used ONLY
+ * as a cheap (O(hexes) once per turn) pre-filter BEFORE the real
+ * firstStep/computePath call, never as a replacement for it.
+ *
+ * Cost: O(map hex count) once per decideBarbarianMoves call (i.e. once per
+ * turn), NOT once per unit x target -- this is exactly the F2 fix (see the
+ * comment at the target-selection loop below).
+ */
+function computeLandComponents(map: GameMap): Map<string, number> {
+  const comp = new Map<string, number>();
+  let nextId = 0;
+  for (const key of Object.keys(map.hexes)) {
+    if (comp.has(key)) continue;
+    const hex = map.hexes[key];
+    if (hex === undefined || terrainMoveCost(hex) === Infinity) continue;
+    const id = nextId++;
+    const queue: string[] = [key];
+    comp.set(key, id);
+    let qi = 0;
+    while (qi < queue.length) {
+      const curKey = queue[qi++]!;
+      const curHex = map.hexes[curKey];
+      if (curHex === undefined) continue;
+      const cq = curHex.coords.q;
+      const cr = curHex.coords.r;
+      for (const [dq, dr] of HEX_NEIGHBORS) {
+        const nKey = keyOf(cq + dq, cr + dr);
+        if (comp.has(nKey)) continue;
+        const nHex = map.hexes[nKey];
+        if (nHex === undefined || terrainMoveCost(nHex) === Infinity) continue;
+        comp.set(nKey, id);
+        queue.push(nKey);
+      }
+    }
+  }
+  return comp;
+}
+
+/**
+ * Zbiór id składowych, przez które dany heks (q,r) jest osiągalny jako CEL
+ * (nie jako zwykły tranzyt). `computePath` traktuje DESTYNACJĘ jako zawsze
+ * "wchodzalną" jako ostatni krok, NIEZALEŻNIE od jej własnego kosztu terenu
+ * (patrz computePath/setup.ts: `enterCost = movCost === Infinity ? 1 :
+ * movCost`) -- np. miasto teoretycznie na heksie o nieskończonym koszcie
+ * WŁASNYM wciąż jest osiągalne, jeśli SĄSIADUJE ze składową, z której
+ * jednostka startuje. Dlatego zwracamy: własną składową heksu (gdy przechodni)
+ * ORAZ składowe wszystkich sąsiadów -- odpowiednik "wchodzalny jako ostatni
+ * krok z tej strony". W praktyce miasta/jednostki zawsze stoją na terenie
+ * przechodnim (canFoundCity odrzuca Morze/Wybrzeze/Gory), więc gałąź
+ * sąsiedzka jest rzadkim marginesem bezpieczeństwa, nie głównym przypadkiem.
+ * / EN: set of component ids through which the given (q,r) hex is reachable
+ * AS A DESTINATION (not as ordinary transit). `computePath` always treats the
+ * DESTINATION as enterable as the final step, REGARDLESS of its own terrain
+ * cost (see computePath/setup.ts: `enterCost = movCost === Infinity ? 1 :
+ * movCost`) -- e.g. a city hypothetically sitting on an infinite-cost hex is
+ * still reachable if it's ADJACENT to the component the unit starts from.
+ * Hence we return: the hex's own component (when passable) PLUS every
+ * neighbour's component -- the equivalent of "enterable as the final step
+ * from that side". In practice cities/units always stand on passable terrain
+ * (canFoundCity rejects Morze/Wybrzeze/Gory), so the neighbour branch is a
+ * rare safety margin, not the main case.
+ */
+function destComponentIds(map: GameMap, comps: Map<string, number>, q: number, r: number): Set<number> {
+  const ids = new Set<number>();
+  const ownId = comps.get(keyOf(q, r));
+  if (ownId !== undefined) ids.add(ownId);
+  for (const [dq, dr] of HEX_NEIGHBORS) {
+    const nId = comps.get(keyOf(q + dq, r + dr));
+    if (nId !== undefined) ids.add(nId);
+  }
+  return ids;
 }
 
 // ---------------------------------------------------------------------------
@@ -1365,6 +1479,25 @@ export function decideBarbarianMoves(
   // All units occupy hexes for pathing (barbs + players).
   const allUnits: RuntimeUnit[] = [...barbUnits, ...enemies];
 
+  // F2-PERF (RUNDA 6, Evaluator B): etykietowanie spójnych składowych lądu
+  // liczone LENIWIE, co najwyżej RAZ na to wywołanie (czyli raz na turę),
+  // WSPÓLNE dla wszystkich jednostek barbarzyńskich w tej turze -- nie raz na
+  // jednostkę x cel. Patrz doc-comment computeLandComponents/destComponentIds
+  // wyżej dla pełnego uzasadnienia poprawności (dlaczego to bezpieczny,
+  // konieczny-ale-nie-wystarczający pre-filtr) i komentarz przy pętli wyboru
+  // celu niżej dla zmierzonych liczb.
+  // / EN: land-component labelling computed LAZILY, at most ONCE per this
+  // call (i.e. once per turn), SHARED across every barbarian unit this turn
+  // -- not once per unit x target. See the computeLandComponents/
+  // destComponentIds doc-comment above for the full correctness rationale
+  // (why this is a safe, necessary-but-not-sufficient pre-filter) and the
+  // comment at the target-selection loop below for the measured numbers.
+  let landComponentsCache: Map<string, number> | null = null;
+  const getLandComponents = (): Map<string, number> => {
+    landComponentsCache ??= computeLandComponents(map);
+    return landComponentsCache;
+  };
+
   for (const unit of barbUnits) {
     if (unit.ruchLeft <= 0) continue;
     // TEMAT #15: jednostki Ludów Morza (rajderzy / zaokrętowane) prowadzi
@@ -1478,7 +1611,57 @@ export function decideBarbarianMoves(
         // see the "ROUND 4" doc-comment on the function signature (the open ABC
         // "undefended city permanently immune to capture" stays open, out of
         // scope).
-        unit.clearedCityIds = [];
+        //
+        // F1-LIVELOCK (RUNDA 6, Evaluator A): czyszczenie do PUSTEJ tablicy (jak
+        // wyżej w komentarzu RUNDA 4) tworzy na planszy z DOKŁADNIE JEDNYM miastem
+        // niebronionym (+ >=1 bronionym) STABILNY 3-turowy cykl: jednostka dociera
+        // do jedynego niebronionego miasta -> zapisuje je -> warunek resetu
+        // odpala NATYCHMIAST (to JEDYNE niebronione miasto, `every()` na
+        // jednoelementowej tablicy) -> zbiór czyszczony do `[]` -> miasto znów
+        // "widoczne" jako cel (bo `filtered` w NASTĘPNEJ turze liczony jest z
+        // pustym `clearedSet`) -> jednostka wraca do niego -> w nieskończoność,
+        // NIGDY nie dociera do bronionego miasta obok. Naprawa: nowe okrążenie
+        // zaczyna z WYKLUCZONYM WYŁĄCZNIE ostatnio odwiedzonym miastem (ostatni
+        // element `clearedSet`, bo krok zapisu niżej zawsze dopisuje na koniec
+        // przez `.push`) -- jednostka nie odbija się z powrotem na miasto, które
+        // WŁAŚNIE opuściła, tylko idzie dalej (do bronionego, jeśli nic innego nie
+        // zostało). Przy >=2 miastach niebronionych i >=1 bronionym to dodatkowo
+        // usuwa analogiczny, choć samo-gojący się, 1-2-turowy "odbij się od
+        // ostatniego miasta" artefakt (patrz tabela 12 reżimów w raporcie rundy 6).
+        // Przy 0 bronionych (RUNDA 4/6b, `filtered` wychodzi puste i tak wraca do
+        // fallbacku `civCitiesBase` w TEJ SAMEJ turze) wynik jest DOWIEDLIWIE
+        // identyczny co przed tą poprawką -- zapis "arrival" w kroku niżej i tak
+        // natychmiast dopisuje z powrotem ostatnio odwiedzone miasto do zbioru
+        // (fizyczna obecność jednostki na jego heksie czyni je `nearestCity` tej
+        // samej decyzji), więc różnica między "wyczyść do []" a "wyczyść do
+        // [ostatnie]" znika w tej samej turze -- sekcja 6b w
+        // barb-city-behavior-test.cjs pozostaje zielona bez zmian.
+        // / EN: F1-LIVELOCK (ROUND 6, Evaluator A): clearing to an EMPTY array (as
+        // in the ROUND 4 comment above) forms a STABLE 3-turn cycle on a board
+        // with EXACTLY ONE undefended city (+ >=1 defended): the unit reaches the
+        // sole undefended city -> records it -> the reset condition fires
+        // IMMEDIATELY (it's the ONLY undefended city, `every()` on a one-element
+        // array) -> the set is cleared to `[]` -> the city becomes a "visible"
+        // target again (the NEXT turn's `filtered` is computed from an empty
+        // `clearedSet`) -> the unit returns to it -> forever, NEVER reaching the
+        // defended city nearby. Fix: the new lap starts with ONLY the
+        // most-recently-visited city excluded (the set's last element, since the
+        // write step below always `.push`es onto the end) -- the unit does not
+        // bounce straight back onto the city it just left, it moves on instead
+        // (to the defended one, if nothing else remains). With >=2 undefended
+        // cities and >=1 defended one this additionally removes an analogous,
+        // though self-healing, 1-2-turn "bounce off the last city" artifact (see
+        // the 12-regime table in the round-6 report). With 0 defended cities
+        // (ROUND 4/6b, `filtered` comes out empty and falls straight back to the
+        // `civCitiesBase` fallback within the SAME turn) the outcome is PROVABLY
+        // identical to before this fix -- the "arrival" write below immediately
+        // re-adds the just-visited city to the set anyway (the unit's physical
+        // presence on its hex makes it `nearestCity` for that very decision), so
+        // the difference between "clear to []" and "clear to [last]" vanishes
+        // within the same turn -- section 6b in barb-city-behavior-test.cjs stays
+        // green unchanged.
+        const lastVisited = clearedSet[clearedSet.length - 1];
+        unit.clearedCityIds = lastVisited !== undefined ? [lastVisited] : [];
       }
       // Fallback niezmieniony od rundy 2 (potwierdzony przez 3 rundy Evaluatorów):
       // gdy przefiltrowana lista wyszłaby pusta, filtr się NIE stosuje (pełna lista
@@ -1627,8 +1810,51 @@ export function decideBarbarianMoves(
     // kandydatach (posortowanych rosnąco wg odległości) i bierzemy PIERWSZEGO
     // OSIĄGALNEGO w zasięgu `chaseRadius` -- lista jest posortowana, więc jak
     // tylko trafimy kandydata poza zasięgiem, dalsi też odpadają (`break`, nie
-    // `continue`). Dopiero gdy WSZYSCY kandydaci w zasięgu są nieosiągalni, brak
-    // komendy jest akceptowalny (nic więcej nie da się zrobić -- to nie jest bug).
+    // `continue`).
+    //
+    // X3 KOREKTA (RUNDA 6, Evaluator B) -- poprzednie zdanie w tym miejscu
+    // twierdziło: "Dopiero gdy WSZYSCY kandydaci w zasięgu są nieosiągalni,
+    // brak komendy jest akceptowalny (nic więcej nie da się zrobić -- to nie
+    // jest bug)". To jest PRAWDĄ TYLKO dla jednostki NIE-raidReady -- dla niej
+    // krok 4 (dryf do obozu) faktycznie wykonuje się zaraz PO tej pętli
+    // (`if (raidReady) continue;` niżej NIE zwiera obwodu), więc "brak komendy
+    // tutaj" i tak kończy się próbą dryfu, nie realnym zamrożeniem. Dla
+    // jednostki raidReady zdanie jest FAŁSZEM: `if (raidReady) continue;`
+    // pomija krok 4 CAŁKOWICIE (z INNEGO, starszego powodu -- "obóz wysłał
+    // rajd, nie ma dokąd wracać", nie ma nic wspólnego z tą pętlą), więc
+    // "wszyscy kandydaci nieosiągalni" u jednostki raidReady oznacza REALNIE
+    // zero komend do końca gry, nie "nic więcej nie da się zrobić". Evaluator B
+    // to udowodnił: jednostka raidReady z ŻYWYM, OSIĄGALNYM obozem (12 heksów,
+    // garnizon w promieniu 3) daje 0 komend przez 60 tur, mimo że mogłaby po
+    // prostu wrócić do obozu -- `if (raidReady) continue;` blokuje dokładnie tę
+    // ścieżkę. To NIE jest regresja tej ani poprzedniej rundy (kod
+    // `if(raidReady) continue` jest starszy niż F2) i CELOWO POZA ZAKRESEM tej
+    // rundy -- naprawiamy TYLKO fałszywy opis, NIE zachowanie `raidReady`
+    // (osobny, nieotwarty jeszcze temat).
+    //
+    // F2-PERF (RUNDA 6, Evaluator B) -- KRYTYCZNA regresja wydajności: przy
+    // nieosiągalnym najbliższym kandydacie ta pętla próbowała KOLEJNEGO z
+    // WSZYSTKICH miast na planszy, każda próba = pełne wywołanie
+    // firstStep/computePath (Dijkstra). Na mapie z 60-120 miastami (typowe dla
+    // dużej mapy, MAX_MIAST_PANSTWA x klastry + ekspansja AI) i scenariuszu
+    // wielowyspowym (obozy barbarzyńskie spawnują na DOWOLNYM lądzie, jedyny
+    // warunek to `minDistFromCity>=5` w spawnCamps -- "większość celów
+    // nieosiągalna" jest REALNE, nie egzotyczne) zmierzone przez Evaluatora B:
+    // do 118x spowolnienie, do ~23s zawieszenia jednej tury. Naprawa: PRZED
+    // próbą `firstStep` dla kandydata, tani (O(1) na kandydata, O(heksy mapy)
+    // raz na turę -- patrz computeLandComponents/destComponentIds wyżej)
+    // filtr odrzuca kandydatów z INNEJ spójnej składowej terenu niż jednostka
+    // -- taki kandydat jest DOWIEDLIWIE nieosiągalny (żadna Dijkstra tego nie
+    // zmieni), więc pomijamy go BEZ płacenia za pełne przeszukanie. Ta sama
+    // składowa NIE gwarantuje osiągalności (occupied może blokować akurat ten
+    // korytarz) -- dlatego nadal wołamy `firstStep` dla każdego kandydata w tej
+    // samej składowej, filtr tylko ODRZUCA prowizoryczne "z góry niemożliwe",
+    // nigdy nie PRZYJMUJE zamiast realnego sprawdzenia. Gdy `unitComp` jest
+    // `undefined` (heks jednostki spoza mapy albo o nieskończonym koszcie --
+    // brzegowy przypadek, patrz doc-comment destComponentIds) filtr jest
+    // POMIJANY CAŁKOWICIE (nie odrzuca żadnego kandydata) -- bezpieczny
+    // fallback do starego (wolniejszego, ale zawsze poprawnego) zachowania,
+    // zamiast ryzykować fałszywe odrzucenie osiągalnego celu.
     // / EN: F2 (Evaluator A, round 5): BEFORE the fix only `targets[0]` (the
     // globally nearest candidate) was tried; when `firstStep` for it returned
     // `null` (target unreachable, e.g. a defended city across water) and
@@ -1638,12 +1864,56 @@ export function decideBarbarianMoves(
     // at all. Evaluator's proof: 47/60 idle turns. Now we iterate over ALL
     // candidates (sorted ascending by distance) and take the FIRST REACHABLE one
     // within `chaseRadius` -- the list is sorted, so as soon as we hit a
-    // candidate beyond range, later ones are too (`break`, not `continue`). Only
-    // once EVERY candidate in range is unreachable is issuing no command
-    // acceptable (nothing more can be done -- not a bug).
+    // candidate beyond range, later ones are too (`break`, not `continue`).
+    //
+    // X3 CORRECTION (ROUND 6, Evaluator B) -- the sentence that used to sit here
+    // claimed: "Only once EVERY candidate in range is unreachable is issuing no
+    // command acceptable (nothing more can be done -- not a bug)". That is TRUE
+    // ONLY for a NON-raidReady unit -- for it, step 4 (drift to camp) actually
+    // runs right AFTER this loop (`if (raidReady) continue;` below does NOT
+    // short-circuit), so "no command here" still ends in an attempted drift, not
+    // a real freeze. For a raidReady unit the sentence is FALSE: `if (raidReady)
+    // continue;` skips step 4 ENTIRELY (for an UNRELATED, older reason -- "the
+    // camp sent a raid, there's nowhere to return to" -- nothing to do with this
+    // loop), so "every candidate unreachable" for a raidReady unit really does
+    // mean zero commands for the rest of the game, not "nothing more can be
+    // done". Evaluator B proved this: a raidReady unit with a LIVE, REACHABLE
+    // camp (12 hexes away, garrison within radius 3) gives 0 commands for 60
+    // turns even though it could simply return to camp -- `if (raidReady)
+    // continue;` blocks exactly that path. This is NOT a regression from this or
+    // any prior round (the `if(raidReady) continue` code predates F2) and is
+    // DELIBERATELY OUT OF SCOPE for this round -- we fix ONLY the false
+    // description here, NOT `raidReady` behaviour (a separate, still-open topic).
+    //
+    // F2-PERF (ROUND 6, Evaluator B) -- CRITICAL performance regression: when the
+    // nearest candidate was unreachable, this loop tried the NEXT of ALL cities
+    // on the board, each attempt a full firstStep/computePath (Dijkstra) call. On
+    // a map with 60-120 cities (typical for a large map, MAX_MIAST_PANSTWA x
+    // clusters + AI expansion) and a multi-island scenario (barbarian camps spawn
+    // on ANY land, the only condition is `minDistFromCity>=5` in spawnCamps --
+    // "most targets unreachable" is REAL, not exotic) Evaluator B measured: up to
+    // a 118x slowdown, up to ~23s of stalling on a single turn. Fix: BEFORE
+    // trying `firstStep` for a candidate, a cheap (O(1) per candidate, O(map hex
+    // count) once per turn -- see computeLandComponents/destComponentIds above)
+    // filter rejects candidates on a DIFFERENT land component than the unit --
+    // such a candidate is PROVABLY unreachable (no Dijkstra can change that), so
+    // it's skipped WITHOUT paying for a full search. The same component does NOT
+    // guarantee reachability (`occupied` can still block that one corridor) --
+    // so `firstStep` is still called for every same-component candidate, the
+    // filter only REJECTS provable impossibilities, it never ACCEPTS in place of
+    // the real check. When `unitComp` is `undefined` (unit's hex off-map or
+    // infinite-cost -- an edge case, see the destComponentIds doc-comment) the
+    // filter is SKIPPED ENTIRELY (rejects no candidate) -- a safe fallback to the
+    // old (slower but always correct) behaviour, rather than risking a false
+    // rejection of a reachable target.
     let movedToTarget = false;
+    const unitComp = getLandComponents().get(keyOf(unit.q, unit.r));
     for (const cand of targets) {
       if (cand.d > chaseRadius) break;
+      if (unitComp !== undefined) {
+        const candComps = destComponentIds(map, getLandComponents(), cand.q, cand.r);
+        if (!candComps.has(unitComp)) continue; // dowiedlnie inna wyspa/kontynent -- pomiń bez Dijkstry / provably a different island/continent -- skip without paying for Dijkstra
+      }
       const step = firstStep(unit, map, cand.q, cand.r, occ);
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });

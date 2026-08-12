@@ -285,6 +285,37 @@ export interface CitizenUpkeepDisplayLine {
  * wierszy: dostępne (w kolejności `coverage.available`), potem brakujące (w kolejności
  * `coverage.missing`) — identycznie jak dotychczasowe grupowanie w panelu (dostępne na górze).
  * Pure — bez DOM, bez mutacji wejść.
+ *
+ * ⚠️ ZNANY ROZJAZD PANEL vs SILNIK (Evaluator, przegląd 1208eb6c, ŚWIADOMIE NIENAPRAWIONY —
+ * zmiana wymagałaby decyzji właściciela, patrz niżej): `computeCitizenResourceDrain()` floruje
+ * RAZ na SUMIE populacji WSZYSTKICH miast ownera (`floor(Σ_miasta population × stawka)`), ale ta
+ * funkcja floruje OSOBNO PER MIASTO i wywołująca strona (panel) sumuje wizualnie wiersz po
+ * wierszu (`Σ floor(cityPopulation_i × stawka)`) — matematycznie `Σfloor ≤ floor(Σ)`, więc przy
+ * >1 mieście tego samego ownera suma liczb pokazywanych graczowi na osobnych kartach miast może
+ * wyjść MNIEJSZA niż to, co silnik realnie drenuje z magazynu (np. 3 miasta po 4 obywateli:
+ * panel pokazuje floor(4×0,2)=0 na każdej z 3 kart, razem 0, silnik realnie drenuje
+ * floor(12×0,2)=2). Świadomie NIE naprawione tutaj: docelowa naprawa („panel MUSI czytać werdykt
+ * silnika, nie przeliczać osobno" — zasada już egzekwowana w `resource-usage-breakdown.ts`)
+ * wymagałaby albo (a) pokazywania tej samej wartości EMPIRE-WIDE identycznie na KAŻDEJ karcie
+ * miasta tego ownera (zamiana semantyki „ile zużywa TO miasto" na „ile zużywa CAŁE imperium
+ * ownera" — realna zmiana tego, co widzi gracz), albo (b) wymyślenia nowego algorytmu
+ * podziału sprawiedliwego jednej empire-wide liczby pomiędzy miasta, którego silnik dziś NIE
+ * liczy i nigdzie nie definiuje. Obie opcje to decyzja produktowa/UX, nie techniczna, i obie
+ * odwracałyby JUŻ PODJĘTĄ i przypiętą testem decyzję (P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE,
+ * `porzadek-panel-czytelnosc-test.cjs` sekcja A: „wartość = ±Math.floor(populacja_MIASTA ×
+ * 0,2)"). Kolor dostępny/brakujący (jedyny kanał, który realnie wpływa na Szczęście/Rozwój)
+ * POZOSTAJE poprawny — to WERDYKT SILNIKA per-owner (binarny, nie liczbowy), rozjazd dotyczy
+ * WYŁĄCZNIE wyświetlanej liczby sztuk, kosmetyczny, nie wpływa na żadną mechanikę gry.
+ * / EN: KNOWN PANEL vs ENGINE DISCREPANCY (deliberately left unfixed — would need an owner
+ * product decision): the engine floors ONCE on the SUM of an owner's cities' population; this
+ * function floors PER CITY and the caller sums the displayed rows — mathematically
+ * `Σfloor ≤ floor(Σ)`, so with >1 city of the same owner the numbers shown across separate city
+ * cards can sum to LESS than what the engine actually drains. Not fixed here because the fix
+ * would either show the same empire-wide number identically on every city card (a real change to
+ * what the player sees) or invent a fair-share split algorithm the engine does not define —
+ * both would reverse an already-locked, test-pinned decision. Cosmetic only: the
+ * available/missing color (the only channel feeding Happiness/Growth) is unaffected — it is
+ * still the engine's per-owner binary verdict.
  */
 export function citizenUpkeepDisplayLines(
   coverage: Pick<CitizenUpkeepCoverage, 'available' | 'missing'>,

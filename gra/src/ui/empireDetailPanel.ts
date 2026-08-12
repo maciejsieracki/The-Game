@@ -913,9 +913,10 @@ function resTooltipHtml(r: EmpireResourceRow): string {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
   // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
-  // ZASPOKAJA CAŁĄ populację imperium tego ownera (1 szt. surowca/obywatela/turę), NIE
-  // starsza binarna „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy
-  // silnik tury (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
+  // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN szt.
+  // surowca/obywatela/turę — kanon: citizen-resource-upkeep.ts), NIE starsza binarna
+  // „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy silnik tury
+  // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
   if (r.citizenRequired) {
     parts.push(r.citizenCovered
       ? 'Obywatele: zapotrzebowanie POKRYTE (magazyn ≥ zapotrzebowanie całego imperium; +1 Szczęście każde miasto)'

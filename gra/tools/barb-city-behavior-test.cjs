@@ -764,6 +764,16 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 //    dokładnie scenariusz, w którym mutacja "cofnij F1" (dowód mutacyjny niżej) przechodziłaby
 //    niezłapana, gdyby tego testu nie było (6b nie wystarcza -- tam NIE MA żadnego bronionego
 //    miasta na planszy, więc stary i nowy warunek są tam matematycznie równoważne).
+//
+//    WZMOCNIENIE RUNDA 6 (Evaluator C, pkt 1) -- stara wersja asercjonowała TYLKO, że zbiór
+//    *kiedyś w ciągu 60 tur* przestaje zawierać oba miasta naraz (`findIndex` po całym logu),
+//    nie przypinając KONKRETNEGO momentu ani nie dowodząc, że jednostka REALNIE kontynuuje
+//    patrol (nie zamiera po jednym okrążeniu). Dodane: (i) log śledzi teraz dystans do KAŻDEGO
+//    miasta przed decyzją (jak 6b), (ii) każde z cityU1/cityU2 ma >=2 "przyjazdy" (zdarzenia
+//    dystans>1 -> dystans<=1) w pełnym logu -- dowód, że patrol faktycznie kontynuuje, nie
+//    zamiera po jednym okrążeniu; (iii) reset następuje w PRZEWIDYWALNYM, PRZYPIĘTYM momencie
+//    -- DOKŁADNIE na wpisie bezpośrednio PO tym, w którym zbiór po raz pierwszy zawiera oba
+//    miasta naraz (`resetIdx === bothVisitedIdx + 1`, nie tylko "gdzieś później").
 // ============================================================================================
 {
   const map = makeMap(140, 8);
@@ -780,13 +790,15 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   const TURNS = 60;
   const log = [];
   for (let t = 0; t < TURNS; t++) {
+    const dist = {};
+    for (const c of citiesMixed) dist[c.id] = hexDist(unit.q, unit.r, c.q, c.r);
     const cmds = decideBarbarianMoves([unit], enemiesMixed, citiesMixed, [], map, P, undefined, 'normal');
     const cmd = cmds[0];
     if (cmd?.type === 'move' && canUnitOccupyCityHex(unit.ownerId, cmd.toQ, cmd.toR, citiesMixed)) {
       unit.q = cmd.toQ;
       unit.r = cmd.toR;
     }
-    log.push({ t, clearedAfter: (unit.clearedCityIds ?? []).slice(), cmdType: cmd?.type ?? 'idle' });
+    log.push({ t, dist, clearedAfter: (unit.clearedCityIds ?? []).slice(), cmdType: cmd?.type ?? 'idle' });
     if (cmd?.type === 'attack') break; // nie powinno się zdarzyć -- guard za daleko przez cały bieg.
   }
 
@@ -809,6 +821,36 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
   if (bothVisitedIdx !== -1 && resetIdx !== -1) {
     assert(resetIdx > bothVisitedIdx,
       '6d: reset następuje PO turze, w której oba niebronione miasta zostały odwiedzone razem, nie przed');
+    // RUNDA 6 (Evaluator C, pkt 1a): moment resetu jest PRZEWIDYWALNY -- reset (mutacja zbioru w
+    // kroku 3) i zapis "arrival" (dopisanie ostatniego miasta) dzielą tę samą decyzję tylko gdy
+    // WCHODZĄC w tę turę zbiór już jest pełny; skoro `bothVisitedIdx` to WŁAŚNIE pierwszy wpis z
+    // pełnym zbiorem (zapisanym PO decyzji tej tury), warunek resetu (liczony na WEJŚCIU do
+    // KOLEJNEJ decyzji) odpala się dokładnie na wpisie bothVisitedIdx+1 -- nie "gdzieś później".
+    eq(resetIdx, bothVisitedIdx + 1,
+      '6d (F1, pkt 1a): reset następuje w PRZEWIDYWALNYM, PRZYPIĘTYM momencie -- dokładnie na ' +
+      'wpisie bezpośrednio PO tym, w którym zbiór po raz pierwszy zawiera oba miasta naraz ' +
+      `(bothVisitedIdx=${bothVisitedIdx}), nie tylko "gdzieś w logu później"`);
+  }
+
+  // RUNDA 6 (Evaluator C, pkt 1b): dowód BEHAWIORALNY, nie tylko stanu wewnętrznego -- każde z
+  // dwóch miast ma >=2 "przyjazdy" (przejście dystans>1 -> dystans<=1) w PEŁNYM logu, dowodzące
+  // że patrol faktycznie KONTYNUUJE (wraca po resecie), nie zamiera po jednym okrążeniu.
+  function arrivalCount(cid) {
+    let count = 0;
+    let wasThere = false;
+    for (const e of log) {
+      const isThere = e.dist[cid] <= 1;
+      if (isThere && !wasThere) count++;
+      wasThere = isThere;
+    }
+    return count;
+  }
+  for (const cid of ['cityU1', 'cityU2']) {
+    const n = arrivalCount(cid);
+    assert(n >= 2,
+      `6d (F1, pkt 1b): ${cid} ma >=2 przyjazdy (przejście dystans>1->dystans<=1) w pełnym logu ` +
+      `${TURNS} tur (got ${n}) -- dowód, że patrol faktycznie kontynuuje/wraca, nie zamiera po ` +
+      'jednym okrążeniu');
   }
 }
 
@@ -851,6 +893,98 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
     assert(dFarAfter < dFarBefore,
       '6e: ruch faktycznie zbliża do OSIĄGALNEGO cityFar (before=' + dFarBefore + ', after=' + dFarAfter +
       ') -- dowód, że pominięty nieosiągalny kandydat NIE zablokował całej decyzji');
+  }
+}
+
+// ============================================================================================
+// 6f. RUNDA 6, USTERKA 1 / F1-LIVELOCK (Evaluator A) -- dowód WŁAŚCIWY dla naprawy tej rundy:
+//    plansza z DOKŁADNIE JEDNYM miastem niebronionym (cityNear, blisko) + JEDNYM bronionym
+//    (cityFar, dalej), jednostka NIE raid-ready (brak campId -> chaseRadius=aggroRadius, NIE
+//    Infinity) startuje MIĘDZY nimi -- dokładnie geometria ze zgłoszenia Evaluatora A (q=2 / q=9
+//    / start q=3). Symulacja >=30 tur z REALNIE stosowanym ruchem (jak 6b/6d).
+//
+//    ODSTĘPSTWO ŚWIADOME od dosłownego brzmienia propozycji Evaluatora C (runda 5): oryginalna
+//    propozycja (cytat ze zlecenia tej rundy) mówiła o asercji "jednostka WRACA do niebronionego
+//    miasta WIELOKROTNIE (nie utyka po jednym dotarciu)". To sformułowanie powstało PRZED
+//    diagnozą Evaluatora A z TEJ rundy -- "wraca wielokrotnie" jest DOKŁADNIE opisem
+//    PATOLOGICZNEGO livelocku (nieskończone odbijanie jednostki między dwiema pozycjami wokół
+//    cityNear, jednostka NIGDY nie dociera do cityFar), nie pożądanym zachowaniem. Test niżej
+//    asercjonuje zamiast tego WŁAŚCIWY, naprawiony niezmiennik: jednostka NIE odbija się w
+//    nieskończoność -- dystans do BRONIONEGO cityFar nie rośnie między kolejnymi turami i
+//    jednostka OSTATECZNIE dociera do niego (komenda 'attack'), zamiast tkwić w wahadle wokół
+//    cityNear. Dowód mutacyjny niżej (sekcja "USTERKA 1", w bloku self-check) potwierdza:
+//    cofnięcie naprawy tej rundy do `unit.clearedCityIds = []` sprawia, że WŁAŚNIE TA asercja
+//    (jednostka dociera do cityFar w budżecie tur) staje się czerwona -- jednostka faktycznie
+//    wpada w opisywany 3-turowy cykl i NIGDY nie dociera do cityFar.
+// ============================================================================================
+{
+  const map = makeMap(15, 3);
+  const cityNear = city('cityNear', 2, 0);   // NIEBRONIONE, blisko
+  const cityFar = city('cityFar', 9, 0);     // BRONIONE, dalej
+  const guardF = enemy('guardF', 9, 0);
+  const citiesF = [cityNear, cityFar];
+  // Promień pościgu wystarczający, żeby cityFar było ZAWSZE w zasięgu chase niezależnie od
+  // pozycji jednostki na tej planszy (bez obozu -> chaseRadius=aggroRadius, NIE Infinity --
+  // dokładnie scenariusz zlecenia: "BEZ obozu, nie raid-ready").
+  const P6f = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 20 });
+
+  const unit = barb('bF1livelock', 3, 0); // BEZ campId -- nie raid-ready
+  eq(Boolean(unit.campId), false,
+    '6f setup: jednostka bez campId (zgodnie ze zleceniem -- BEZ obozu, chaseRadius=aggroRadius)');
+
+  const TURNS = 40; // >= 30 wymagane przez zlecenie rundy 6, z zapasem
+  const log = [];
+  for (let t = 0; t < TURNS; t++) {
+    const cmds = decideBarbarianMoves([unit], [guardF], citiesF, [], map, P6f, undefined, 'normal');
+    const cmd = cmds[0];
+    let moved = false;
+    if (cmd?.type === 'move' && canUnitOccupyCityHex(unit.ownerId, cmd.toQ, cmd.toR, citiesF)) {
+      unit.q = cmd.toQ;
+      unit.r = cmd.toR;
+      moved = true;
+    }
+    log.push({
+      t, cmdType: cmd?.type ?? 'idle', moved,
+      distFar: hexDist(unit.q, unit.r, cityFar.q, cityFar.r),
+      clearedAfter: (unit.clearedCityIds ?? []).slice(),
+    });
+    if (cmd?.type === 'attack') break; // dotarcie do bronionego miasta -- cel testu osiągnięty.
+  }
+
+  assert(log.length >= 2, `6f: symulacja wygenerowała >=2 wpisy logu (got ${log.length})`);
+
+  // Rdzeń dowodu: jednostka OSIĄGA bronione cityFar (komenda 'attack') w budżecie ${TURNS} tur.
+  // PRZED naprawą tej rundy NIE osiąga go NIGDY (nieskończone odbijanie wokół cityNear -- patrz
+  // dowód mutacyjny).
+  const reachedGuarded = log.some(e => e.cmdType === 'attack');
+  assert(reachedGuarded,
+    `6f (USTERKA 1): jednostka dociera do BRONIONEGO cityFar (komenda 'attack') w budżecie ` +
+    `${TURNS} tur (log ${log.length} wpisów, ostatni dystans do cityFar=` +
+    `${log[log.length - 1]?.distFar}) -- przed naprawą tej rundy NIE dociera NIGDY, tkwi w ` +
+    '3-turowym cyklu odbijania się od cityNear zamiast kontynuować do cityFar');
+
+  // Dystans do cityFar NIGDY nie rośnie między kolejnymi wpisami logu -- realna regresja
+  // (livelock sprzed naprawy) to WIELOKROTNY wzrost dystansu w kolejnych turach (jednostka
+  // odbija się z powrotem do cityNear), nie pojedyncze plateau routingu.
+  let regressions = 0;
+  for (let i = 1; i < log.length; i++) {
+    if (log[i].distFar > log[i - 1].distFar) regressions++;
+  }
+  assert(regressions === 0,
+    `6f (USTERKA 1): dystans do cityFar NIGDY nie rośnie między kolejnymi wpisami logu ` +
+    `(got ${regressions} wzrostów) -- zero odbić od cityNear po pierwszym wykluczeniu`);
+
+  // Dowód WEWNĘTRZNY, uzupełniający: skoro cityNear raz trafia do clearedCityIds, zostaje tam
+  // TRWALE (zbiór nie oscyluje [] <-> ['cityNear']) -- dokładny mechanizm livelocku sprzed
+  // naprawy tej rundy (reset do [] "odblokowywał" cityNear co ~2 tury).
+  const firstExcludedIdx = log.findIndex(e => e.clearedAfter.includes('cityNear'));
+  assert(firstExcludedIdx !== -1,
+    '6f (USTERKA 1): cityNear zostaje wpisany do clearedCityIds w pewnym momencie logu');
+  if (firstExcludedIdx !== -1) {
+    const reincludedLater = log.slice(firstExcludedIdx + 1).some(e => !e.clearedAfter.includes('cityNear'));
+    assert(!reincludedLater,
+      "6f (USTERKA 1): PO pierwszym wykluczeniu cityNear zbiór już NIGDY nie wraca do [] " +
+      "(clearedCityIds nie oscyluje [] <-> ['cityNear'])");
   }
 }
 
@@ -994,6 +1128,86 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 }
 
 // ============================================================================================
+// 12. RUNDA 6, USTERKA 2 / F2-PERF (Evaluator B, wzmocnienie #4) -- bramka WYDAJNOŚCIOWA.
+//    Plansza: JEDNA duża osiągalna wyspa domowa (~10 000 heksów lądu, zbliżone do zgłoszenia
+//    Evaluatora B) + archipelag MAŁYCH wysp oddzielonych wodą, niosących WIĘKSZOŚĆ miast
+//    (dowiedlnie nieosiągalne dla jednostek na wyspie domowej -- inny land component) + JEDNO
+//    bronione miasto na dalekim krańcu wyspy domowej (osiągalne, ale GEOMETRYCZNIE dalej niż
+//    większość wysp archipelagu -- więc próbowane JAKO OSTATNIE w liście posortowanej rosnąco
+//    wg odległości, dokładny "worst case": najbliżsi kandydaci nieosiągalni, jednostka MUSI
+//    przejrzeć wielu z nich zanim trafi na osiągalnego). Kilka jednostek raidReady
+//    (chaseRadius=Infinity -- też najgorszy przypadek, żaden kandydat nie odpada przez zasięg
+//    przed próbą pathfindingu). ~120 miast (blisko "60-120" ze zgłoszenia), 12 jednostek.
+//
+//    Bez filtra spójnych składowych (computeLandComponents/destComponentIds) KAŻDA próba dla
+//    nieosiągalnego kandydata to pełne firstStep/computePath -- na TEJ SAMEJ geometrii
+//    zmierzone (patrz raport rundy 6 dla metodologii i pełnych liczb): ~9.8s BEZ filtra vs
+//    ~0.4s Z filtrem. Próg czasowy niżej jest CELOWO hojny (>>obserwowany czas na tej maszynie)
+//    -- to jest łapacz REGRESJI RZĘDU WIELKOŚCI, nie ścisły benchmark (maszyny CI różnią się
+//    szybkością). Dowód mutacyjny (usunięcie SAMEGO filtra składowych, bez cofania reszty F2 z
+//    rundy 5) w bloku self-check niżej.
+// ============================================================================================
+{
+  const HOME_WIDTH = 500;
+  const HOME_ROWS = 20; // 10 000 heksów lądu na wyspie domowej
+  const GAP = 3;
+  const ISLANDS = 39;
+  const ISLAND_WIDTH = 3;
+  const ISLAND_GAP = 2;
+  const CITIES_PER_ISLAND = 3; // 39 x 3 + 1 osiągalne = 118 miast
+
+  const archipelagoStart = HOME_WIDTH + GAP;
+  const totalWidth = archipelagoStart + ISLANDS * (ISLAND_WIDTH + ISLAND_GAP);
+  const mapPerf = makeMap(totalWidth, HOME_ROWS);
+  for (let w = 0; w < GAP; w++) {
+    for (let r = 0; r < HOME_ROWS; r++) mapPerf.hexes[`${HOME_WIDTH + w},${r}`].terenBazowy = 'morze';
+  }
+  for (let isl = 0; isl < ISLANDS; isl++) {
+    const waterStart = archipelagoStart + isl * (ISLAND_WIDTH + ISLAND_GAP) + ISLAND_WIDTH;
+    for (let w = 0; w < ISLAND_GAP; w++) {
+      for (let r = 0; r < HOME_ROWS; r++) {
+        const k = `${waterStart + w},${r}`;
+        if (mapPerf.hexes[k]) mapPerf.hexes[k].terenBazowy = 'morze';
+      }
+    }
+  }
+  const citiesPerf = [];
+  for (let isl = 0; isl < ISLANDS; isl++) {
+    const islandStartQ = archipelagoStart + isl * (ISLAND_WIDTH + ISLAND_GAP);
+    for (let c = 0; c < CITIES_PER_ISLAND; c++) {
+      citiesPerf.push(city(`perfArch_${isl}_${c}`, islandStartQ + (c % ISLAND_WIDTH), c % HOME_ROWS));
+    }
+  }
+  const reachableCityPerf = city('perfReachable', 0, 0); // BRONIONE, daleki kraniec wyspy domowej
+  citiesPerf.push(reachableCityPerf);
+  const guardPerf = enemy('perfGuard', 0, 0);
+
+  const UNITS = 12;
+  const perfUnits = [];
+  for (let i = 0; i < UNITS; i++) {
+    // campId wskazujący na nieistniejący obóz -> orphaned -> raidReady=true (chaseRadius=Infinity),
+    // startują blisko wschodniej krawędzi wyspy domowej -- archipelag jest NAJBLIŻSZYM
+    // kandydatem geometrycznie (worst case dla starej wersji pętli).
+    perfUnits.push(barb(`perfUnit${i}`, HOME_WIDTH - 1 - (i % 3), i % HOME_ROWS, { campId: 'destroyed-camp' }));
+  }
+
+  const tStart = Date.now();
+  const perfCmds = decideBarbarianMoves(perfUnits, [guardPerf], citiesPerf, [], mapPerf, P, undefined, 'normal');
+  const elapsedMs = Date.now() - tStart;
+
+  const PERF_BUDGET_MS = 3000;
+  console.log(`  [perf] F2-PERF: ${UNITS} jednostek x ${citiesPerf.length} miast / ${ISLANDS} wysp / ` +
+    `${HOME_WIDTH * HOME_ROWS} heksów wyspy domowej -> ${elapsedMs}ms (budżet ${PERF_BUDGET_MS}ms)`);
+  assert(elapsedMs < PERF_BUDGET_MS,
+    `12 (F2-PERF): decideBarbarianMoves dla ${UNITS} jednostek x ${citiesPerf.length} miast / ` +
+    `${ISLANDS} wysp kończy się w ${elapsedMs}ms (budżet ${PERF_BUDGET_MS}ms, hojny -- łapacz ` +
+    'regresji rzędu wielkości, patrz raport rundy 6 dla liczb przed/po na tym samym benchmarku)');
+  eq(perfCmds.length, UNITS,
+    `12 (F2-PERF): każda z ${UNITS} jednostek dostaje dokładnie 1 komendę mimo archipelagu ` +
+    'nieosiągalnych kandydatów -- poprawność zachowana, nie tylko szybkość');
+}
+
+// ============================================================================================
 // 9. RUNDA 4 -- dowód mutacyjny (self-check): cofnięcie CAŁEJ naprawy tej rundy do stanu
 //    RUNDY 3 (pojedynczy slot `recentlyClearedCityId` zamiast zbioru `clearedCityIds`) MUSI
 //    dać czerwono na TYM SAMYM pliku testowym -- w szczególności na sekcji 6b (3 poprzednie
@@ -1009,10 +1223,31 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
   const barbariansSrcPath = path.join(GRA_ROOT, 'src/game/barbarians.ts');
   const barbariansOriginal = fs.readFileSync(barbariansSrcPath, 'utf8');
 
-  function expectSelfCheckFails(mutations, label) {
+  // RUNDA 6 (Evaluator C, wzmocnienie #3): kryterium "mutant złapany" było WYŁĄCZNIE
+  // niezerowym kodem wyjścia podprocesu -- to liczy JAKIKOLWIEK błąd (awaria kompilacji
+  // esbuild, timeout, wyjątek niezwiązany z mutowaną sekcją) jako "sukces", nawet gdy
+  // mutacja nie ma NIC wspólnego z zamierzonym testem (fałszywie pozytywny dowód
+  // mutacyjny). Teraz: gdy podano `expectedFailPattern`, dodatkowo wymagamy, żeby
+  // stdout/stderr podprocesu zawierał linię `FAIL:` pasującą do wzorca (np. regex numeru
+  // sekcji) -- odróżnia REALNE czerwone trafienie zamierzonej asercji od przypadkowej
+  // awarii gdzie indziej. Parametr opcjonalny (backward-compatible) -- wywołania bez
+  // wzorca zachowują stare, słabsze kryterium (nie dotyczy nowych wywołań w tej rundzie,
+  // wszystkie dostają wzorzec).
+  // / EN: ROUND 6 (Evaluator C, reinforcement #3): the "mutant caught" criterion used to
+  // be EXCLUSIVELY a nonzero subprocess exit code -- that counts ANY failure (esbuild
+  // compile crash, timeout, an exception unrelated to the mutated section) as "success",
+  // even when the mutation has NOTHING to do with the intended test (a false-positive
+  // mutational proof). Now: when `expectedFailPattern` is given, we additionally require
+  // the subprocess stdout/stderr to contain a `FAIL:` line matching the pattern (e.g. a
+  // regex for the section number) -- distinguishes a REAL red hit on the intended
+  // assertion from an incidental failure elsewhere. Optional param (backward-compatible)
+  // -- calls without a pattern keep the old, weaker criterion (does not apply to any new
+  // call site added this round, all of them pass a pattern).
+  function expectSelfCheckFails(mutations, label, expectedFailPattern) {
     const backups = new Map();
     for (const [p] of mutations) backups.set(p, fs.readFileSync(p, 'utf8'));
     let mutantFailed = false;
+    let subprocessOutput = '';
     try {
       for (const [p, content] of mutations) fs.writeFileSync(p, content, 'utf8');
       execSync(`node ${JSON.stringify(__filename)} --self-check-skip-mutation`, {
@@ -1020,10 +1255,17 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
       });
     } catch (e) {
       mutantFailed = true;
+      subprocessOutput = String(e.stdout ?? '') + '\n' + String(e.stderr ?? '');
     } finally {
       for (const [p, orig] of backups) fs.writeFileSync(p, orig, 'utf8');
     }
     assert(mutantFailed, `mutacja [${label}] złapana czerwono przez self-check podproces (niezerowy exit code)`);
+    if (mutantFailed && expectedFailPattern !== undefined) {
+      assert(expectedFailPattern.test(subprocessOutput),
+        `mutacja [${label}]: stdout/stderr podprocesu zawiera linię FAIL: pasującą do wzorca ` +
+        `${expectedFailPattern} (nie tylko niezerowy exit code -- wyklucza fałszywie pozytywny ` +
+        `dowód mutacyjny z awarii niezwiązanej z zamierzoną asercją)`);
+    }
     return mutantFailed;
   }
 
@@ -1073,7 +1315,8 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
       expectSelfCheckFails(new Map([[barbariansSrcPath, mutated]]),
         'cofnięcie CAŁEJ naprawy RUNDY 4 do stanu RUNDY 3 (pojedynczy slot recentlyClearedCityId ' +
         'zamiast zbioru clearedCityIds) -- trzecie miasto NIE powinno być odwiedzane w >=30 turach, ' +
-        'sekcja 6b MUSI to złapać');
+        'sekcja 6b MUSI to złapać',
+        /FAIL:\s+6b/);
     }
   }
 
@@ -1097,7 +1340,8 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
       expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedF1]]),
         'F1: cofnięcie warunku resetu do starego "filtered.length === 0 && civCitiesBase.length > 0" ' +
         '-- na planszy MIESZANEJ (sekcja 6d, bronione miasto obecne przez cały bieg) reset nigdy ' +
-        'się nie odpala, bo bronione miasto zawsze przechodzi filtr bezwarunkowo');
+        'się nie odpala, bo bronione miasto zawsze przechodzi filtr bezwarunkowo',
+        /FAIL:\s+6d/);
     }
   }
 
@@ -1133,7 +1377,66 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
       expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedF2]]),
         'F2: cofnięcie strażnika osiągalności do "wyłącznie targets[0]" -- w scenariuszu zamrożenia ' +
         '(sekcja 6e: najbliższy kandydat nieosiągalny za wodą, dalszy osiągalny) jednostka raid-' +
-        'ready ponownie zamiera bez żadnej komendy zamiast spróbować kolejnego kandydata');
+        'ready ponownie zamiera bez żadnej komendy zamiast spróbować kolejnego kandydata',
+        /FAIL:\s+6e/);
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------
+  // 13. RUNDA 6, USTERKA 1 -- dowód mutacyjny: cofnięcie naprawy F1-LIVELOCK (Evaluator A) do
+  //    `unit.clearedCityIds = [];` (pełne czyszczenie, stan sprzed tej rundy) MUSI dać czerwono
+  //    na sekcji 6f (dokładnie 1 miasto niebronione + 1 bronione, jednostka NIE raid-ready) --
+  //    jednostka wraca do stanu opisanego przez Evaluatora A: nieskończone odbijanie się między
+  //    dwiema pozycjami wokół cityNear, NIGDY nie dociera do cityFar w budżecie 40 tur.
+  // ----------------------------------------------------------------------------------------
+  console.log('-- USTERKA 1 (runda 6) / dowód mutacyjny: cofnięcie naprawy F1-LIVELOCK --');
+  {
+    const USTERKA1_NEW =
+      'const lastVisited = clearedSet[clearedSet.length - 1];\n'
+      + '        unit.clearedCityIds = lastVisited !== undefined ? [lastVisited] : [];';
+    const USTERKA1_OLD = '        unit.clearedCityIds = [];';
+    const u1Occurrences = barbariansOriginal.split(USTERKA1_NEW).length - 1;
+    assert(u1Occurrences === 1,
+      `mutacja-setup USTERKA 1: naprawa F1-LIVELOCK (nowa wersja) odnaleziona DOKŁADNIE RAZ w barbarians.ts (got ${u1Occurrences})`);
+    if (u1Occurrences === 1) {
+      const mutatedU1 = barbariansOriginal.replace(USTERKA1_NEW, USTERKA1_OLD);
+      assert(mutatedU1 !== barbariansOriginal, 'mutacja-setup USTERKA 1: cofnięcie faktycznie zmieniło źródło barbarians.ts');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedU1]]),
+        'USTERKA 1: cofnięcie naprawy F1-LIVELOCK do pełnego czyszczenia "unit.clearedCityIds = []" ' +
+        '-- na planszy z DOKŁADNIE 1 miastem niebronionym + 1 bronionym (sekcja 6f) jednostka wraca ' +
+        'do 3-turowego cyklu odbijania i NIGDY nie dociera do bronionego miasta w 40 turach',
+        /FAIL:\s+6f/);
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------
+  // 14. RUNDA 6, USTERKA 2 -- dowód mutacyjny: usunięcie SAMEGO filtra spójnych składowych
+  //    F2-PERF (bez cofania reszty logiki F2 z rundy 5 -- próba KOLEJNEGO kandydata zostaje)
+  //    MUSI dać czerwono na bramce wydajnościowej sekcji 12 (archipelag nieosiągalnych miast +
+  //    duża osiągalna wyspa domowa) -- bez filtra każda próba nieosiągalnego kandydata znów
+  //    kosztuje pełną Dijkstrę po całej wyspie domowej, budżet czasowy zostaje przekroczony.
+  // ----------------------------------------------------------------------------------------
+  console.log('-- USTERKA 2 (runda 6) / dowód mutacyjny: usunięcie filtra spójnych składowych F2-PERF --');
+  {
+    const F2PERF_FILTER_BLOCK =
+      '      if (unitComp !== undefined) {\n'
+      + '        const candComps = destComponentIds(map, getLandComponents(), cand.q, cand.r);\n'
+      + '        if (!candComps.has(unitComp)) continue; // dowiedlnie inna wyspa/kontynent -- pomiń bez Dijkstry / provably a different island/continent -- skip without paying for Dijkstra\n'
+      + '      }\n';
+    const f2PerfOccurrences = barbariansOriginal.split(F2PERF_FILTER_BLOCK).length - 1;
+    assert(f2PerfOccurrences === 1,
+      `mutacja-setup USTERKA 2: filtr spójnych składowych (F2-PERF) odnaleziony DOKŁADNIE RAZ w barbarians.ts (got ${f2PerfOccurrences})`);
+    if (f2PerfOccurrences === 1) {
+      const mutatedF2Perf = barbariansOriginal.replace(F2PERF_FILTER_BLOCK, '');
+      assert(mutatedF2Perf !== barbariansOriginal, 'mutacja-setup USTERKA 2: cofnięcie faktycznie zmieniło źródło barbarians.ts');
+      // Budżet 60s domyślny execSync timeout w expectSelfCheckFails MUSI starczyć na ~10s
+      // niezoptymalizowanego scenariusza sekcji 12 + resztę pliku -- zmierzone bezpiecznie
+      // poniżej limitu (patrz raport rundy 6).
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedF2Perf]]),
+        'USTERKA 2: usunięcie filtra spójnych składowych F2-PERF (reszta pętli F2 z rundy 5 ' +
+        'niezmieniona) -- bramka wydajnościowa sekcji 12 (archipelag nieosiągalnych miast) MUSI ' +
+        'przekroczyć budżet czasowy bez filtra',
+        /FAIL:\s+12/);
     }
   }
 }
