@@ -15978,3 +15978,9 @@ bezpośrednim `techUnlock` na filtr po PEŁNYM łańcuchu prereqów — 7 budynk
 filtra do wersji sprzed naprawy daje 7 czerwonych asercji (26→19 budynków). `building-tech-gate-test`
 74→89/89, `tsc` 0 błędów, `tech-tree-test` 19/19, `research-test` 33/33, `logic-test` 213/213.
 **ZAMKNIĘTE** (commit `b198e575`). Temat 26b684af w pełni domknięty.
+
+## Uzupełnienie puli do 8: dispatch naprawy U2 (asymetria dyplomacji, kierunek own)
+
+Kolejny slot uzupełniony naprawą U2 — lustrzana asymetria do już naprawionego U1: gracz
+proponujący NAP/wasal przy Relacji=61 widział "Brakuje PW" mimo że silnik akceptuje (7 znanych
+przypadków). Świadomie odłożone przy naprawie U1 jako osobny temat backlogu.
