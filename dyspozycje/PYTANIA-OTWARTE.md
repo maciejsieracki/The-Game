@@ -12930,3 +12930,101 @@ miejscu (np. minimapa, panel dyplomacji) — jeśli koliduje, opisać w raporcie
 rozwiązanie (np. zakładka/przełącznik) zamiast cichego nadpisania.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-EPOKA-PRZEJSCIE-CZY-PER-CYWILIZACJA (Maciej, 2026-08-12, obawa/prośba o sprawdzenie)
+
+Właściciel poprosił o sprawdzenie: czy przejście do kolejnej epoki jest liczone OSOBNO per
+cywilizacja, czy istnieje ryzyko, że przejście JEDNEJ cywilizacji do nowej epoki wymusza/
+powoduje przejście WSZYSTKICH innych cywilizacji też. Jego słowa: "To nie powinno mieć
+miejsca. Bo mam jakieś obawy co do tej kwestii." — to prośba o AUDYT/POTWIERDZENIE, nie
+zgłoszenie potwierdzonego buga.
+
+ZADANIE dla dispatchu: znaleźć logikę przejścia epoki (grep "epoka"/"advanceEra"/"eraAdvance" w
+`gra/src/game/`, prawdopodobnie `research.ts`/`tech.ts` lub silnik tury) — ustalić, czy stan
+epoki jest trzymany PER OWNER (per cywilizacja/gracz/AI/Państwo-Miasto) czy jako jedna globalna
+zmienna dla całej gry. Jeśli per-owner (oczekiwane, poprawne) — potwierdzić to w raporcie z
+dowodem (cytat struktury danych, np. `Record<ownerId, epoka>` czy podobne) i ZAMKNĄĆ temat bez
+zmian kodu. Jeśli faktycznie globalne/współdzielone (realny bug) — naprawić: rozdzielić stan
+epoki per owner, dodać test regresyjny potwierdzający że przejście jednej cywilizacji NIE
+wpływa na epokę innych.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree) — audyt, naprawa TYLKO jeśli znajdzie realny bug.**
+
+## P-CUDA-NIE-BLOKUJA-PRZEJSCIA-EPOKI (Maciej, 2026-08-12)
+
+Zgłoszenie: "Wybudowanie cudów nadal nie blokuje przejścia do następnej epoki." Sformułowanie
+"nadal" sugeruje że to już był poruszany temat/oczekiwanie — sprawdzić czy istnieje wcześniejsza
+decyzja w rejestrze (grep "cud"/"wonder" w `dyspozycje/`) o tym że budowa/dostępność cudów ma
+być warunkiem przejścia epoki (podobnie jak inne bramki epoki, patrz CLAUDE.md sekcja BRAMKI —
+"czysta bramka epoki (decyzje ABC)", temat 8 w historii projektu).
+
+ZADANIE dla dispatchu: znaleźć logikę bramki przejścia epoki (ten sam kod co temat wyżej) —
+ustalić DOKŁADNIE jakie warunki dziś blokują/pozwalają na przejście do następnej epoki, czy cuda
+(`wonders.json`) są w ogóle brane pod uwagę. Jeśli NIE — to nie naprawiaj automatycznie (decyzja
+gameplayowa: KTÓRY cud/ile cudów ma być wymagane, w KTÓREJ epoce — to wymaga ABC z właścicielem,
+nie zgadywania). Przygotuj w raporcie: (a) potwierdzenie dzisiejszego stanu (cuda nie blokują),
+(b) znalezienie wcześniejszej decyzji jeśli istnieje w rejestrze, (c) jeśli brak wcześniejszej
+decyzji — gotowy tekst pytania ABC z 2-3 wariantami (np. "przynajmniej 1 cud zbudowany w
+cywilizacji" / "konkretny cud wymagany per epoka" / "cuda NIE są warunkiem, zostawić jak jest")
+— NIE wdrażaj kodu bramki bez odpowiedzi właściciela.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree) — recon + ABC prep, kod TYLKO jeśli znajdzie
+udokumentowaną wcześniejszą decyzję do wdrożenia.**
+
+## P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej, 2026-08-12, zrzut panelu Porządek)
+
+Panel "Porządek" (per miasto, dziś: Szczęście/Zaopatrzenie obywateli/Prawo/Porządek łącznie)
+pokazuje składniki KAŻDEGO paska jako jeden zbity ciąg tekstu oddzielony kropkami (np. "Budynki
+(+1/budynek): +35 · Kultura: +4 · Religia: +4 · Zagęszczenie (8−5): -2.25 · Zaopatrzenie
+obywateli (surowce): +3") — właściciel ocenia to jako "za bardzo nadziubdziane i nieczytelne".
+Chce KAŻDY składnik w OSOBNEJ linii (jeden pod drugim), nie w ciągu oddzielonym kropkami, dla
+WSZYSTKICH trzech pasków:
+
+1. **Szczęście** — każdy składnik (Budynki, Kultura, Religia, Zagęszczenie, Zaopatrzenie
+   obywateli itd.) w osobnej linii.
+2. **Zaopatrzenie obywateli** (dziś osobna sekcja niżej: "Drewno: +1 · Glina: +1 · Kamień: +1 ·
+   Cegła: +1 · Ceramika: -1") — też jeden surowiec pod drugim, ALE dodatkowo ZMIENIĆ TREŚĆ: dziś
+   liczby (+1/-1) wyglądają jak "ile na JEDNEGO obywatela" — właściciel chce żeby pokazywało ile
+   ŁĄCZNIE zużywane jest danego surowca na WSZYSTKICH obywateli tego miasta (czyli
+   `populacja_miasta × stawka`, nie stawkę per capita) — spójne z realnym drenażem
+   (`computeCitizenResourceDrain`/`citizenUpkeepByOwner`, NIE liczyć drugi raz inną metodą).
+3. **Prawo** — te same zasady: każdy składnik (Dom Starszyzny, Brak garnizonu itd.) w osobnej
+   linii, nie w ciągu.
+4. **Porządek łącznie** — rozbicie z podziałem PROCENTOWYM ile z wyniku pochodzi od Szczęścia, a
+   ile od Prawa (np. "Szczęście: 60% wkładu · Prawo: 40% wkładu" lub podobne — dokładny format
+   do ustalenia przez Operatora, ważne żeby był widoczny rozkład, nie tylko finalna suma %).
+
+ZADANIE dla dispatchu: znaleźć panel Porządek (grep "PORZĄDEK ŁĄCZNIE"/"ZAOPATRZENIE OBYWATELI"
+w `gra/src/ui/cityPanel.ts` lub podobnym) — zmienić renderowanie z inline string (join(' · '))
+na listę elementów blokowych (jeden div/li per składnik). Dla punktu 2 — znaleźć źródło liczb
+"Drewno: +1" itd. (prawdopodobnie per-capita z `citizen-resource-upkeep.ts`) i zamienić na
+łączną wartość dla miasta (per-capita × populacja miasta TEGO miasta, nie całego imperium — to
+panel per-miasto). Dla punktu 4 — znaleźć jak dziś liczony jest "Porządek łącznie" (średnia
+ważona Szczęście+Prawo?) i dodać widoczne rozbicie wkładu procentowego każdego z dwóch pasków.
+
+Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), nowy/rozszerzony test
+regresyjny na format renderowania (blokowy, nie inline) i na poprawność łącznej wartości
+zużycia surowców (populacja × stawka, nie per capita).
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC (Maciej, 2026-08-12, zrzut "Zarządzanie polami")
+
+Po założeniu nowego miasta domyślne ustawienie trybu zarządzania polami ("Zarządzanie polami":
+Żyw. / Prod. / Podat. / Zrówn. / Ręczny) ma być **"Żyw." (Żywność)**, nie "Zrówn."
+(Zrównoważone) ani "Ręczny" (jakikolwiek jest dziś default). Gracz może to zmienić ręcznie po
+założeniu miasta — to tylko zmiana WARTOŚCI STARTOWEJ, nie usunięcie innych trybów.
+
+ZADANIE dla dispatchu: znaleźć logikę zakładania miasta i inicjalizacji trybu zarządzania
+polami (grep "Zrówn"/"zrownowazony"/domyślny tryb pól w `gra/src/game/`, prawdopodobnie przy
+`foundCityAt`/tworzeniu nowego `City` — pole trybu przydziału pól/`fieldMode`/podobne). Zmienić
+wartość startową na tryb Żywność. Sprawdzić czy dotyczy to WSZYSTKICH nowo zakładanych miast
+(gracz i AI/Państwa-Miasta) czy tylko gracza — właściciel nie sprecyzował, ale zasada "AI
+traktowane tak samo jak gracz" (patrz inne decyzje w tym pliku) sugeruje zastosować wszędzie,
+chyba że znajdzie się przesłankę że AI ma inny, celowy domyślny tryb (wtedy zgłosić, nie
+zgadywać).
+
+Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), test regresyjny potwierdzający
+nowy default przy założeniu miasta.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
