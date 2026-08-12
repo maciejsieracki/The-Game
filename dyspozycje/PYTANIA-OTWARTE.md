@@ -14439,3 +14439,55 @@ dołączony do dispatchu jako najmniejszy z 12.
 **Dispatch 11 Evaluatorów (+1 mały, 12 razem) w toku, Opus 5, na istniejącym kodzie.**
 
 **STATUS: W NAPRAWIE.**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 (`25c09c45`) — RUNDA 3: 3/3 FAIL JEDNOMYŚLNIE (trzeci raz)
+
+Wszyscy 3 Evaluatorzy (A/B/C, niezależnie) potwierdzają: **punkty 1/3/4/5 solidne, mutacyjnie
+dowiedzione** (5 pod-guardów capital-capture.ts osobno, guard post-battle-map dokładnie 2
+czerwone, ochrona fallbacku w teście obozów). **Punkt 2 (livelock) — GŁÓWNY POWÓD ISTNIENIA
+RUNDY 3 — NIE naprawiony, tylko WYDŁUŻONY okres cyklu** (z 2 do 2×d(A,B), przy realnym
+`MIN_CITY_DISTANCE=4` to wciąż cykl o okresie 6-8, zero przesunięcia netto). Pojedynczy slot
+pamięci (`recentlyClearedCityId`) strukturalnie nie może wyrazić „odwiedziłem już A i B" —
+zapisanie B kasuje A, A wraca do puli, wahadło w nieskończoność. Przy 3 miastach trzecie NIGDY
+nie jest odwiedzane.
+
+**Ten sam wzorzec ślepego testu trzeci raz z rzędu**: nowa sekcja 6 zbiera 20 wpisów w logu, ale
+asercjonuje tylko pierwsze 13 (`phase1+phase2`) — 7 nieasercjonowanych wpisów na końcu zawiera
+DOKŁADNIE zawrócenie, którego naprawa miała nie dopuścić. Wszyscy 3 Evaluatorzy odtworzyli to
+niezależnie tym samym harnessem (realny ruch aplikowany z komendy `move`, nie 2x wywołanie na tej
+samej pozycji). **Systemowa lekcja**: asercja „monotoniczny spadek w oknie/fazie" nie chroni przed
+cyklem obejmującym więcej faz niż okno — testy tego tematu muszą sprawdzać CAŁY log, nie prefiks.
+
+**⛔ NOWE, KRYTYCZNE ustalenie strukturalne (Evaluator C, potwierdzone czytaniem main.ts:26273):**
+barbarzyńskie przejęcie miasta jest osiągalne WYŁĄCZNIE przez komendę `attack` na PRZYLEGŁĄ
+jednostkę wroga — miasto BEZ obrońców nie może zostać zdobyte NAWET NA HARD, mimo że
+`shouldAllowBarbCityCapture('hard') === true`. Skutek: dla jednostki stojącej przy niebronionym
+mieście **nie istnieje stan terminalny** — żadna naprawa pamięci per-jednostkowej (ani slot, ani
+zbiór odwiedzonych) nie da REALNEGO zakończenia, tylko patrol o innej amplitudzie. To pokrywa się
+z już zarejestrowanym otwartym ABC „puste miasto trwale odporne na przejęcie na hard" — **runda 4
+NIE rozwiąże tematu do końca bez rozstrzygnięcia TEGO ABC przez właściciela** (czy `move` na
+niebronione miasto ma je przejmować, analogicznie do zwykłego zajęcia heksu). Nie zgaduję —
+zostaje jako ABC.
+
+**STATUS: dispatch rundy 4 w toku — zakres: (1) zbiór odwiedzonych miast zamiast pojedynczego
+slotu (drugi wariant ze specyfikacji rundy 3, jedyny strukturalnie zdolny dać postęp), (2) test
+musi asercjonować PEŁNY log (wszystkie wygenerowane decyzje), nie prefiks/fazę, (3) jawna notka w
+kodzie i teście że bez rozstrzygnięcia ABC „puste miasto trwale odporne" wynikiem będzie
+OGRANICZONY patrol (odwiedza wszystkie miasta po kolei, cyklicznie), NIE realne zakończenie —
+to ma być udokumentowane jako świadomy, tymczasowy stan, nie ukryte pod zieloną bramką.**
+
+## Odblokowanie tymczasowe mapgen-pangea (`e0ce33d8`) — Evaluator: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY
+
+Potwierdzone: sekcja Pangea izolowana (4 wystąpienia `pangeaShapeFail` w repo, żadne w `allOk`),
+reszta sekcji (rzeki/sieć/determinizm/chaty/czasy) nietknięta — własna mutacja (seed 42 vs 43 w
+determinizmie) nadal poprawnie czerwieni bramkę MIMO równoległej (nieblokującej) porażki Pangei.
+
+**Ważna nota (nie blokuje scalenia, ale koryguje oczekiwania):** pełen bieg `map-gen-regression-test`
+jest niewykonalny w tym sandboxie (Evaluator zmierzył niezależnie: mapa standardowa 117.2s vs
+limit 7000ms, pełny bieg bramki szacunkowo >2h) — **odblokowanie Pangei NIE daje dziś zielonej
+całej bramki w środowisku chmurowym**, bo `stdOk`/`duzyOk` i tak padają z powodu
+P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY (osobny, już zarejestrowany temat). Realna korzyść z tego
+odblokowania materializuje się dopiero na sprzęcie z realistycznymi czasami LUB po zamknięciu
+tematu limitów sandboxa. Dodatkowe dane dla oczekującego ABC R-MAPGEN-PANGEA-PROG-Q1: przy seed 42
+`coast/√A=3.789` (próg `>3.8`, chybienie o 0.3%), `bboxFill=0.856` (próg `<0.87`, zapas 1.6%) —
+potwierdza że `bboxFill` ma realną siłę wykrywania, `coastRatio` to niemal-ślepy próg.
