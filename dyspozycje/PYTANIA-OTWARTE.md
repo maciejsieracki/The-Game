@@ -16566,3 +16566,32 @@ rozważyć eksport wspólnego helpera `insertAtFront(prod, item, postep)` z `pro
 żaden call-site więcej nie manipulował frontem ręcznie — to już trzeci raz) + N1 (asercja
 niezmiennika też po `promoteToFront`) + N2 (poprawka opisu sekcji 1-2). N3/N4/N5 świadomie POZA
 zakresem tej rundy — do osobnej rejestracji jeśli nie zmieszczą się w czasie.
+
+---
+
+## R-EKONOMIA-SUROWCE-SKALA-5X-Q1 — oba etapy scalone, Evaluator dokładny w toku (2026-08-13, po restarcie kontenera)
+
+**Kontekst restartu:** kontener sesji zrestartował się w trakcie pracy Operatora (task
+`af04e631968772d94`). Po restarcie odnaleziono w worktree `fix-ekonomia-skala-5x` DWA etapy:
+(1) commit `db124b4b` „pelne przeskalowanie" — **już wcześniej scalony do gałęzi współdzielonej**
+(potwierdzone: `db124b4b` jest przodkiem `origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`,
+zaraz przed `aa7b937c`), ale **nigdy nie trafił do rejestru jako osobny wpis scalenia** — luka
+dokumentacyjna z części sesji sprzed tego restartu; (2) NIEZACOMMITOWANA kontynuacja na wierzchu
+tego commitu — Operator kontynuował pracę (znajdował przepustowość konwerterów w
+`econ-params.json` pominiętą w pierwszym przebiegu, hardkodowane stałe typu
+`SPICHLERZ_DRAIN_CERAMIKA_PER_TURN`, udokumentował martwe klucze JSON) — przerwana przez restart
+przed commitem/raportem końcowym.
+
+**Działanie:** oba etapy potraktowane jako jedna całość. Zweryfikowano na scalonym drzewie
+głównym (nie tylko w worktree): `tsc --noEmit` 0 błędów, `logic-test.cjs` 213/213, oraz 10
+testów dotykających ekonomii surowcowej (`citizen-resource-upkeep-test` 109/109,
+`converter-era-scaling-test` 87/87, `converters-test` 46/46, `magazyn-era-scaling-test` 57/57,
+`porzadek-panel-czytelnosc-test` 81/81, `pytanie-84-stock-keys-test` 14/14,
+`resource-usage-breakdown-test` 100/100, `surow-civ-storage-test` 67/67,
+`tartak-glinianka-rate-Q1-test` 1281/1281, `upkeep-test` 73/73) — wszystkie zielone, zero porażek.
+Kontynuacja scalona osobnym commitem `e401c1c2`, push OK.
+
+**Dispatch dokładnego Evaluatora (Opus 5) NASTĘPUJE teraz** — zgodnie z wcześniejszą zapowiedzią
+(„biorąc pod uwagę skalę, dokładny Evaluator sprawdzający kompletność i spójność przed
+zamknięciem"), obejmujący ŁĄCZNIE oba commity (`db124b4b`+`e401c1c2`), bo db124b4b nigdy wcześniej
+nie dostał niezależnej weryfikacji.
