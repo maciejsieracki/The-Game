@@ -13229,3 +13229,37 @@ regresja względem stanu przed commitem (przed commitem obóz nigdy nie znikał,
 złych przypadkach ORAZ czasem nie znika w dobrych) — bezpieczne pozostawić scalone do czasu
 odpowiedzi, temat nie jest krytyczny (brak realnego uszczerbku poza kosmetycznym mylącym
 zniknięciem obozu).**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 — ODPOWIEDŹ WŁAŚCICIELA: MECHANIKA CAŁKOWICIE INNA NIŻ WDROŻONA
+
+Właściciel doprecyzował (ECHO, 2026-08-12) — mechanika jest ZASADNICZO różna od tego, co
+zaimplementował commit `1c41c113` (usuwanie po walce/zliczaniu garnizonu):
+
+> "Jeżeli cywilizacja, zarówno AI, jak i gracz, wejdzie do obozu, bezpowrotnie go niszczy. Ale
+> nie niszczy jednostek, które ten obóz stworzył. Czyli tak długo jak obóz istnieje, tak długo
+> są generowane nowe jednostki. Ale jeżeli obóz zostanie zniszczony poprzez najechanie
+> jednostkami na ten obóz, to stare jednostki nie są usuwane, nie są likwidowane, tylko nadal
+> atakują, a jedynie nie są już tworzone nowe jednostki, ponieważ obóz został zniszczony."
+
+Rozbite na regułę:
+1. **Wyzwalacz zniszczenia = WEJŚCIE (najechanie) jednostką na heks obozu**, NIE walka/zliczanie
+   garnizonu w promieniu. Analogia z wioskami neutralnymi (`checkVillageRewardAt`, `main.ts`),
+   które znikają przez samo wejście — dokładnie to, co Evaluator nazwał "znalezisko 5" (brak
+   parytetu obóz/wioska) w swoim raporcie do commitu `1c41c113`.
+2. **Zniszczenie obozu NIE usuwa już zaspawnowanych jednostek barbarzyńskich** — te walczą dalej
+   normalnie, są całkowicie niezależne od losu obozu po zaspawnowaniu.
+3. **Jedyny efekt zniszczenia**: `tickCamps()` przestaje spawnować NOWE jednostki z tego obozu
+   (bo obóz zniknął z `barbCamps`).
+4. Dotyczy zarówno gracza jak i AI (wszystkie cywilizacje, symetrycznie).
+
+**Commit `1c41c113` (`pruneEmptyCampsAfterCombat`, wyzwalacz = zliczanie garnizonu w promieniu
+po walce) implementuje CAŁKOWICIE INNĄ mechanikę niż ta — do zastąpienia, nie do poprawki
+parametru.** Nowa implementacja: hook analogiczny do `checkVillageRewardAt` — gdy jednostka
+(gracz LUB AI) kończy ruch na heksie z aktywnym `BarbCamp`, usunąć ten obóz z `barbCamps`
+(zatrzymuje `tickCamps` dla niego), bez ŻADNEGO dotykania tablicy `units` (jednostki obozu,
+jeśli jakieś istnieją na mapie, zostają nietknięte i nadal biorą udział w walkach).
+`pruneEmptyCampsAfterCombat` i jej wywołanie w `applyMapBattleOutcome` (main.ts) — do usunięcia
+jako niewłaściwy mechanizm, zastąpione nowym hookiem ruchu.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree ręczny) — implementacja od nowa wg
+doprecyzowanej mechaniki, z pełnym pokryciem testowym (w tym że stare jednostki NIE znikają).**
