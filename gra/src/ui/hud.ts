@@ -131,6 +131,11 @@ export interface HudState {
   bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
   /** Utrzymanie jednostek/turę (Pieniadz) — odjete od wplywow brutto przy koncu tury. */
   bogactwoUtrzymanieJednostek?: number;
+  /** P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD (Maciej 2026-08-12): suma `population` wszystkich
+   *  miast gracza (cities.filter(ownerId===0).reduce(+population)) — teraz wyświetlana wprost
+   *  w górnym pasku HUD (chip „Obywatele"), nie tylko w panelu Moc/MIASTA.
+   *  / EN: sum of `population` across all player cities — now shown directly in the top HUD
+   *  bar (the "Obywatele"/Citizens chip), not only buried in the Power/CITIES detail panel. */
   ludnosc: number;
   ludnoscRate?: number;
   /** A1-Q15 / P-C3 — Moc (absolutna, P-A). Kod: objectivePower. */
@@ -841,6 +846,16 @@ function miastaChipTitle(s: HudState): string {
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
+/** Tooltip chipu „Obywatele" (P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD) — łączna liczba
+ *  obywateli imperium (suma populacji wszystkich miast gracza), osobno od liczby miast. */
+function obywateleChipTitle(s: HudState): string {
+  const rate = s.ludnoscRate ?? 0;
+  return `Obywatele — łączna populacja imperium`
+    + ` · Duża liczba: ${s.ludnosc} obywateli (suma populacji wszystkich miast gracza)`
+    + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności netto)`
+    + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
+}
+
 function kulturaChipTitle(s: HudState): string {
   const stock = Math.floor(s.kultura);
   const rate = s.kulturaRate ?? 0;
@@ -1013,12 +1028,27 @@ function renderBarD1B(s: HudState): string {
     }),
     chip6cSep(),
     chip6cHtml({
-      iconId: 'res-population',
+      // P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD: 'res-population' (ikona ludzi) przechodzi
+      // na nowy chip „Obywatele" poniżej — Miasta dostaje właściwą ikonę osiedla, żeby
+      // dwa sąsiednie chipy nie dzieliły tej samej ikony dla dwóch różnych liczb.
+      // / EN: 'res-population' (people icon) moves to the new "Obywatele" chip below —
+      // Miasta gets the correct settlement icon so two adjacent chips don't share the
+      // same icon for two different numbers.
+      iconId: 'res-settlements',
       label: 'Miasta',
       value: String(s.osiedla),
       rate: signed(s.ludnoscRate ?? 0),
       act: 'miasta',
       title: miastaChipTitle(s),
+    }),
+    chip6cSep(),
+    chip6cHtml({
+      iconId: 'res-population',
+      label: 'Obywatele',
+      value: String(s.ludnosc),
+      rate: signed(s.ludnoscRate ?? 0),
+      act: 'ludnosc',
+      title: obywateleChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({
