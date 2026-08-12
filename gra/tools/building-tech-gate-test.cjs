@@ -148,6 +148,23 @@ if (fnMatch) {
     !/cur = String\(prereq\)\.trim\(\);/.test(body),
     'stary wzorzec „cur = String(prereq).trim()” (caly napis jako 1 nazwa techu) ZNIKNAL',
   );
+  // N2 (Evaluator 7b02eb2d): nie wystarczy, ze cialo woła parsePrerequisites na
+  // TOP-LEVEL techName -- plaski, jednopoziomowy split (bez rekurencji) tez by
+  // przeszedl powyzsze asercje, a nie rozwijalby lancucha GLEBIEJ niz 1 poziom
+  // (np. Hutnictwo zelaza -> Brazownictwo -> Garncarstwo/Murarstwo/Obrobka drewna).
+  // Ta asercja przypina, ze funkcja wewnetrzna `visit` WOLA SAMA SIEBIE na kazdym
+  // rozbitym prereq (`visit(p)` w petli `for (const p of parsePrerequisites(...))`),
+  // czyli rozwijanie jest REKURENCYJNE, nie tylko jednopoziomowe.
+  // EN: it is not enough that the body calls parsePrerequisites on the TOP-LEVEL
+  // techName -- a flat, single-level split (no recursion) would pass the assertions
+  // above too, without expanding the chain deeper than 1 level. This assertion pins
+  // that the inner `visit` function calls ITSELF on every split prereq (`visit(p)`
+  // inside the `for (const p of parsePrerequisites(...))` loop), i.e. expansion is
+  // RECURSIVE, not merely one level flat.
+  assert(
+    /function visit\([\s\S]*?\bvisit\(p\)/.test(body),
+    'rozwijanie jest REKURENCYJNE (visit woła siebie na każdym prereq) — płaski split nie wystarczy',
+  );
 }
 
 // --- [2] DANE -- Targowisko i tech.json bez literowek ----------------------------------------
@@ -248,11 +265,42 @@ for (const t of andTechs) {
   );
 }
 
-// Budynki, ktore wprost wymagaja jednego z tych AND-techow -- ta sama gwarancja na poziomie karty budynku.
-console.log('\n[5] budynki z techUnlock wskazujacym na AND-tech (bezposrednio) -- chip „met” po zbadaniu calosci');
+// Budynki dotkniete AND-prereqem -- NIE TYLKO te z techUnlock BEZPOSREDNIO w AND-tech
+// (np. Targowisko -> Wymiana), ale i te, ktorych PELNY lancuch prereqow (przez
+// techPrereqChainFixed) PRZECHODZI przez jakis AND-tech gdzies wyzej (np.
+// odlewnia_zelaza -> techUnlock="Hutnictwo żelaza" -> prereq "Brązownictwo" (AND) ->
+// "Garncarstwo + Murarstwo + Obróbka drewna"). Filtr WYLACZNIE po b.techUnlock
+// bezposrednio w andTechNames (N1, Evaluator 7b02eb2d) pomijal 7 takich budynkow,
+// ktore przed naprawa mialy karte trwale czerwona identycznie jak Targowisko --
+// stary blad w techPrereqChain psul KAZDY poziom lancucha, nie tylko najblizszy.
+// EN: buildings affected by an AND-prereq -- NOT ONLY those with techUnlock DIRECTLY
+// in AND-tech (e.g. Targowisko -> Wymiana), but also those whose FULL prereq chain
+// (via techPrereqChainFixed) PASSES THROUGH an AND-tech somewhere upstream (e.g.
+// odlewnia_zelaza -> techUnlock="Hutnictwo żelaza" -> prereq "Brązownictwo" (AND) ->
+// "Garncarstwo + Murarstwo + Obróbka drewna"). Filtering ONLY on b.techUnlock being
+// directly in andTechNames (N1, Evaluator 7b02eb2d) skipped 7 such buildings, which
+// before the fix had a permanently red card exactly like Targowisko -- the old bug in
+// techPrereqChain broke EVERY level of the chain, not just the nearest one.
+console.log('\n[5] budynki, ktorych PELNY lancuch prereqow zawiera AND-tech (bezposrednio lub przez lancuch) -- chip „met” po zbadaniu calosci');
 const andTechNames = new Set(andTechs.map(t => t.Technologia));
-const affectedBuildings = buildings.filter(b => b.techUnlock && andTechNames.has(b.techUnlock));
-assert(affectedBuildings.length >= 1, `co najmniej 1 budynek z techUnlock w AND-tech (dzis: ${affectedBuildings.length}, np. Targowisko)`);
+const affectedBuildings = buildings.filter(b => {
+  if (!b.techUnlock) return false;
+  const chain = techPrereqChainFixed(b.techUnlock);
+  return chain.some(name => andTechNames.has(name));
+});
+assert(affectedBuildings.length >= 1, `co najmniej 1 budynek dotkniety AND-tech w lancuchu (dzis: ${affectedBuildings.length}, np. Targowisko)`);
+// N1 (Evaluator 7b02eb2d): dowod ze rozszerzenie faktycznie objelo 7 budynkow
+// posrednio dotknietych (nie tylko bezposrednio bramkowane techUnlock w AND-tech).
+const posrednioDotknietyOczekiwane = [
+  'odlewnia_zelaza', 'kuznia_zelaza', 'port_wielki', 'fort', 'baszta', 'koszary', 'laznia_publiczna',
+];
+const affectedIds = new Set(affectedBuildings.map(b => b.id));
+for (const id of posrednioDotknietyOczekiwane) {
+  assert(
+    affectedIds.has(id),
+    `budynek "${id}" jest ujety w [5] mimo ze jego techUnlock NIE jest bezposrednio AND-tech (lancuch przechodzi przez AND-tech wyzej)`,
+  );
+}
 for (const b of affectedBuildings) {
   const chain = techPrereqChainFixed(b.techUnlock);
   const allResearched = new Set(chain);
