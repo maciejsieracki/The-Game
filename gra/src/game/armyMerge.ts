@@ -245,6 +245,49 @@ export function exitFieldFortify(u: RuntimeUnit): boolean {
   return true;
 }
 
+/**
+ * P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1 (Maciej 2026-08-12, odpowiedź WŁASNA, ECHO
+ * dyspozycje/PYTANIA-OTWARTE.md commit 1d9691b0): „Jeżeli jakaś jednostka jest
+ * ufortyfikowana w mieście i jest w garnizonie, to nie może się wycofać. Ani AI, ani
+ * gracz, ani nikt." Reguła symetryczna względem ownera -- dla KAŻDEGO obrońcy
+ * (gracz/AI/barbarzyńca), gdy WSZYSCY obrońcy w rosterze bitwy są w tym stanie, opcja
+ * wycofania obrońcy (PreBattleInfo.defenderCanRetreat) musi być `false`.
+ * / EN: Maciej's rule (2026-08-12, own-wording answer, ECHOed at the commit above):
+ * "If a unit is fortified in the city AND in garrison, it can never retreat -- not the
+ * player, not AI, nobody." Owner-symmetric -- for ANY defender side, when EVERY
+ * defending unit in the battle roster is in that state, the defender's retreat option
+ * must be forced off.
+ *
+ * INTERPRETACJA `inGarnizon`/`ufortyfikowanyWPolu` -- WAŻNE, przeczytaj przed zmianą:
+ * ECHO w PYTANIA-OTWARTE.md zapisało warunek literalnie jako koniunkcję OBU pól
+ * (`inGarnizon===true` I `ufortyfikowanyWPolu===true`). Zbadano (units/setup.ts
+ * doc-comment RuntimeUnit.ufortyfikowanyWPolu + enterGarnizon/enterFieldFortify
+ * powyżej w tym pliku): te dwa pola są DZIŚ WZAJEMNIE WYKLUCZAJĄCE SIĘ w całym
+ * silniku -- `ufortyfikowanyWPolu` jest z definicji stanem POZA hexem własnego
+ * miasta, a jedyne dwa wywołania, które go ustawiają
+ * (main.ts handleSelectedUnitHudAction, akcja 'fortify'), rozgałęziają się na
+ * `city !== undefined && u.ownerId === city.ownerId` → enterGarnizon(), inaczej →
+ * enterFieldFortify() -- WYŁĄCZNIE jedno z dwóch, nigdy oba na tej samej jednostce.
+ * Dosłowna koniunkcja obu pól jest więc STRUKTURALNIE NIEOSIĄGALNA -- zaimplementowana
+ * dosłownie, ta funkcja nigdy nie zwróciłaby `true`, więc opcja wycofania obrońcy
+ * NIGDY nie zostałaby zablokowana dla nikogo -- co wprost przeczy cytatowi właściciela
+ * ("Ani AI, ani gracz, ani nikt" -- czyli KTOŚ ma być faktycznie zablokowany).
+ * "Ufortyfikowana w mieście i jest w garnizonie" w mówionym języku opisuje JEDEN stan
+ * tej gry (jedyny sposób na bycie "ufortyfikowanym w mieście" to właśnie wejście do
+ * garnizonu -- UI nazywa obie czynności tym samym przyciskiem "Ufortyfikuj" na hexie
+ * własnego miasta), nie logiczną koniunkcję dwóch niezależnych, wzajemnie
+ * wykluczających się pól. Dlatego predykat niżej sprawdza WYŁĄCZNIE `inGarnizon`.
+ * Pełne uzasadnienie i dowód kodem: raport zadania fix-retreat-garnizon.
+ *
+ * @param defenders roster obrońców bitwy (ten sam roster, co idzie do PreBattleSide).
+ * @returns true, gdy roster jest niepusty i KAŻDY obrońca ma `inGarnizon===true`.
+ */
+export function allDefendersFortifiedInGarnizon(
+  defenders: ReadonlyArray<Pick<RuntimeUnit, 'inGarnizon'>>,
+): boolean {
+  return defenders.length > 0 && defenders.every(u => u.inGarnizon === true);
+}
+
 /** Najmocniejsza jednostka stosu (Atak → id). */
 export function pickStackRepresentative(
   stack: RuntimeUnit[],

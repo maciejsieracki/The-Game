@@ -449,6 +449,7 @@ import {
   enterGarnizon,
   enterFieldFortify,
   exitFieldFortify,
+  allDefendersFortifiedInGarnizon,
   assignSharedStackGroupId,
   stackGroupIdOf,
   stackRenderKey,
@@ -20695,6 +20696,16 @@ async function boot(): Promise<void> {
         : defLead.typeId;
       const placeInfo = fieldBattlePlaceInfo(battleQ, battleR, terrain, 0);
       const playerDefends = defRosterRef.some(u => u.ownerId === 0);
+      // P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1 (Maciej 2026-08-12): obrońca w pełni
+      // ufortyfikowany w garnizonie miasta (WSZYSCY obrońcy inGarnizon===true) NIE
+      // MOŻE się wycofać -- ani gracz, ani AI/barbarzyńca (patrz
+      // allDefendersFortifiedInGarnizon w armyMerge.ts dla pełnego uzasadnienia,
+      // w tym dlaczego predykat sprawdza WYŁĄCZNIE `inGarnizon`, nie koniunkcję z
+      // `ufortyfikowanyWPolu`). / EN: a defender fully fortified in the city garrison
+      // (ALL defenders inGarnizon===true) can never retreat -- player or AI/barbarian
+      // alike (see allDefendersFortifiedInGarnizon in armyMerge.ts for the full
+      // rationale, incl. why the predicate checks ONLY `inGarnizon`).
+      const defenderLockedByGarnizon = allDefendersFortifiedInGarnizon(defRosterRef);
 
       const pbInfo: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(atkRosterRef, atkSideTitle, atkCivLabel),
@@ -20707,7 +20718,7 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: false,
-        defenderCanRetreat: playerDefends,
+        defenderCanRetreat: playerDefends && !defenderLockedByGarnizon,
         warunki: cityDefenseBreakdownFor(defRosterRef, terrain),
       };
 
@@ -20840,7 +20851,13 @@ async function boot(): Promise<void> {
         },
         onCancel: () => {
           hidePreBattle();
-          if (playerDefends) {
+          // Obrona-w-głąb: powtórz WARUNEK z defenderCanRetreat (nie tylko widoczność
+          // przycisku w UI) -- gdyby onCancel został kiedyś wywołany inną drogą niż
+          // klik/Esc (np. test, przyszły skrót), garnizon i tak zostaje na miejscu.
+          // / EN: defense-in-depth -- repeat the SAME condition as defenderCanRetreat
+          // (not just UI button visibility) -- if onCancel is ever invoked another way
+          // than click/Esc (test, future shortcut), a garnizoned defender still can't flee.
+          if (playerDefends && !defenderLockedByGarnizon) {
             applyDefenderPreBattleRetreat({
               units,
               battleQ: battleHex.q,
