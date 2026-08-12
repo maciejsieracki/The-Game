@@ -15071,3 +15071,27 @@ bramkę analogiczną do `deploy-*` (`humanApproved`), albo kanon powinien wprost
 scalenie wykonuje wyłącznie człowiek/sesja lokalna. Dziś każdy agent trafiający na ten rytm
 musi rozstrzygać tę sprzeczność sam — a to jest dokładnie ten rodzaj luki, przez który
 zaległość dwóch fal przeleżała niezauważona.
+
+## ⚠️ NEAR-MISS PROCESOWY: `pkill -f` we współdzielonym kontenerze może zabić test innej sesji (2026-08-12, agent deployu FALI 270) · STATUS: **ZAREJESTROWANE — do wiedzy, bez otwartego pytania**
+
+**Co się stało.** Agent deployu uruchomił `map-gen-regression-test.cjs` w tle, a po zakończeniu
+pracy zatrzymał go komendą `pkill -f map-gen-regression-test`. **W tym samym kontenerze działał
+równolegle drugi taki sam test** — uruchomiony przez innego agenta w worktree
+`.claude/worktrees/fix-barb-city-capture-cluster/gra`. Jego linia poleceń (`node
+tools/map-gen-regression-test.cjs`) **pasuje do tego samego wzorca `pkill -f`**.
+
+**Skutku NIE BYŁO — potwierdzone pomiarem, nie założeniem:** proces tamtej sesji (PID 23778)
+miał w chwili sprawdzenia `ELAPSED=00:28`, czyli wystartował **po** moim `pkill`, i realnie
+liczył (CPU 28s→32s w odstępie 4s). Zbieg okoliczności, nie zabezpieczenie.
+
+**Dlaczego to jest istotne.** Ten test trwa w tym sandboksie **2h+**
+(`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`). Zabicie go cudzą komendą byłoby **cichą utratą pracy bez
+żadnego komunikatu dla właściciela procesu** — czwarty mechanizm tej klasy w tym repo, obok
+`b9867b3` (import z współdzielonego drzewa), `92341250`/`cdb29d92` (`git diff` bez przodka)
+i „worktree startuje od `main`". Tamte trzy są opisane w skillu `civ-autobot`; ten nie był.
+
+**Zasada na przyszłość:** nigdy `pkill -f <wzorzec>` / `killall` na nazwę skryptu w tym
+kontenerze. Zatrzymuj **wyłącznie własny PID** (zapamiętany przy starcie, `kill $PID`) albo
+narzędziem sesji (`TaskStop` dla zadań w tle). Przed jakimkolwiek `pkill` — `pgrep -af <wzorzec>`
+i sprawdzenie **ścieżki roboczej** każdego trafienia (`ps -o cmd`); trafienie w cudzym worktree
+oznacza STOP.
