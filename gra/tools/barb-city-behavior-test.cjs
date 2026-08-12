@@ -13,29 +13,46 @@
  * Trzy poziomy = ISTNIEJĄCY suwak trudności gry (_menuDifficulty), nie nowe
  * ustawienie (opcja A, zaakceptowana).
  *
+ * RUNDA 2 (Evaluator, jednomyślny FAIL 3/3 na rundzie 1 -- P-BARBARZYNCY-MIASTA-
+ * ZACHOWANIE-Q1): sekcje 2/3 przepisane -- pierwsza wersja filtra wykluczała
+ * WSZYSTKIE niebronione miasta GLOBALNIE (dla każdej jednostki), co: (a) mroziło
+ * jednostki raid-ready na stałe, gdy WSZYSTKIE miasta w zasięgu były niebronione
+ * (pusta lista celów, krok 4 "drift do domu" pominięty dla raid-ready); (b) kazało
+ * jednostce po oczyszczeniu miasta A iść do OBOZU zamiast do miasta B, bo B (i każde
+ * inne niebronione miasto) też było globalnie wykluczone. Naprawa: wykluczenie
+ * PER JEDNOSTKA (`unit.recentlyClearedCityId`) + jawny fallback na pełną listę, gdy
+ * przefiltrowana lista wyszłaby pusta. Sekcja 5 przepisana z source-text .includes()
+ * na REALNE WYKONANIE wyciągniętych funkcji (shouldAllowBarbCityCapture,
+ * isCityCaptureBlockedByDefenders) + asercja parytetu gracz(0)/AI(1).
+ *
  * Sekcje:
  *   1. decideBarbarianMoves -- easy (bez param. `difficulty` ORAZ z difficulty='easy')
  *      = zachowanie LEGACY, bit-identyczne: miasto bez obrońców dalej jest celem
  *      "chase" (punkt zadania (a): "żadna nowa gałąź kodu się nie uruchamia").
- *   2. decideBarbarianMoves -- normal: miasto bez obrońców NIE jest już celem --
- *      jednostka celuje w kolejne (obronione) miasto (punkt zadania (b)).
- *   3. decideBarbarianMoves -- hard: ta sama filtracja jak normal (capture jest
- *      efektem UBOCZNYM zwycięskiej walki w main.ts, nie osobną gałęzią targetowania
- *      tutaj) + własne (już przejęte) miasto barbarzyńców nigdy nie jest celem.
+ *   2. decideBarbarianMoves -- normal: wykluczenie PER JEDNOSTKA (nie globalne) +
+ *      "idzie do kolejnego miasta" po jednej turze pamięci + izolacja między jednostkami.
+ *   3. decideBarbarianMoves -- hard: własne (już przejęte) miasto barbarzyńców nigdy
+ *      nie jest celem (niezależnie od pamięci) + fallback na pustą listę (punkt 2) +
+ *      regres freeze dla jednostki raid-ready (punkt 2, dosłowny scenariusz błędu).
  *   4. applyPostBattleMap + applyCityCaptureAfterBattle z atkOwner=BARBARIAN_OWNER_ID
  *      -- DOWÓD WYKONYWALNY (nie tylko analiza Fazy 1) że silnikowy prymityw
  *      przejęcia miasta akceptuje ownerId=-1 bez wywrotki i poprawnie zmienia
  *      city.ownerId (punkt zadania (c), część "miasto zmienia ownerId TYLKO gdy
  *      oczyszczone z obrońców" zweryfikowana jako precondition przed capture).
- *   5. Static: main.ts -- bramka `_menuDifficulty === 'hard'` przy barbarzyńskim
- *      ataku, dodatkowy guard `barbCaptureBlockedByRemainingDefenders`, przekazanie
- *      `_menuDifficulty` do decideBarbarianMoves, oraz regres -- AI-vs-gracz (inny
- *      caller doAutoPowerMapBattle/launchIncomingMapFieldBattle) NIE dostaje
- *      barbAllowCityCapture (capture pozostaje wyłącznie barbarzyński/hard).
+ *   5. REALNE WYKONANIE (nie source-text): shouldAllowBarbCityCapture (bramka trudności)
+ *      + isCityCaptureBlockedByDefenders (bramka "oczyszczone do zera") wywołane
+ *      bezpośrednio, włącznie z asercją parytetu ownerId=0 (gracz) vs ownerId=1 (AI) --
+ *      identyczny scenariusz musi dać identyczny wynik. Plus lekka weryfikacja
+ *      okablowania main.ts (main.ts faktycznie WOŁA te funkcje, nie zawiera logiki
+ *      inline) -- jedyne miejsce w tym pliku, gdzie source-text jest uzasadniony
+ *      (main.ts nie jest bundlowany, patrz niżej), i tylko dla "czy woła", nie "czy
+ *      logika jest poprawna" (to sprawdza realne wykonanie wyżej).
  *
  * main.ts NIE jest bundlowany (monolityczny plik z zależnościami DOM/THREE -- ten
- * sam ograniczenie co w barb-camp-destruction-test.cjs) -- sekcja 5 jest więc
- * weryfikacją STATYCZNĄ (przeszukanie tekstu źródła), jawnie oznaczoną "static:".
+ * sam ograniczenie co w barb-camp-destruction-test.cjs) -- sekcja 5 nadal zawiera
+ * DROBNĄ weryfikację okablowania przez source-text (main.ts woła wyciągnięte
+ * funkcje), ale CAŁA logika decyzyjna jest teraz wykonywana naprawdę przez bundel
+ * barbarians.ts, identycznie jak main.ts by ją wywołał.
  */
 
 const fs   = require('fs');
@@ -65,6 +82,7 @@ const BUNDLE_FILE = path.resolve(__dirname, '.barb-city-behavior-bundle.cjs');
 const ENTRY_TS = `
 export {
   BARBARIAN_OWNER_ID, isBarbarian, FALLBACK_BARB_PARAMS, decideBarbarianMoves,
+  shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
 } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/barbarians'))};
 export {
   applyPostBattleMap, applyCityCaptureAfterBattle,
@@ -92,6 +110,7 @@ const B = require(BUNDLE_FILE);
 const {
   BARBARIAN_OWNER_ID, FALLBACK_BARB_PARAMS, decideBarbarianMoves,
   applyPostBattleMap, applyCityCaptureAfterBattle,
+  shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
 } = B;
 
 // --- tiny assertion framework --------------------------------------------------------------
@@ -175,63 +194,131 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 }
 
 // ============================================================================================
-// 2. normal -- defenseless city excluded from targeting: same geometry as section 1, but the
-//    unit now steps EAST toward the farther, DEFENDED cityEast instead. Punkt zadania (b).
+// 2. normal -- RUNDA 2: wykluczenie PER JEDNOSTKA, nie globalne. Trzy scenariusze na tej samej
+//    geometrii (cityWest niebronione q=2 dist=3, cityEast bronione przez `g` q=9 dist=4,
+//    jednostka startuje q=5):
+//    2a. Świeża jednostka (bez pamięci) celuje w BLIŻSZE niebronione cityWest -- nigdy go
+//        wcześniej nie "oczyściła", więc filtr go NIE wyklucza (punkt 3: nie wszystkie
+//        niebronione miasta globalnie, tylko to, co ta jednostka faktycznie napotkała).
+//    2b. TA SAMA jednostka, druga decyzja (symulacja kolejnej tury, pozycja niezmieniona) --
+//        decideBarbarianMoves zapamiętał cityWest jako "niebronione, napotkane" przy 2a
+//        (unit.recentlyClearedCityId), więc TERAZ wyklucza je i celuje w cityEast zamiast
+//        tkwić w miejscu -- "jeżeli jedno miasto udaje mi się zniszczyć jednostki idą do
+//        kolejnego miasta" (cytat właściciela), zastosowane też do "miasto okazało się
+//        nie do zdobycia" (blokada wejścia bez obrońcy do zabicia).
+//    2c. INNA, świeża jednostka na identycznej geometrii -- NIE dziedziczy pamięci b1,
+//        znowu celuje w bliższe cityWest -- dowód, że wykluczenie jest PER JEDNOSTKA, nie
+//        globalne (naprawia oscylację przy przesuwaniu jednego garnizonu między miastami:
+//        pamięć jednej jednostki nie wpływa na decyzje innej).
 // ============================================================================================
 {
   const map = makeMap(15, 3);
   const cityWest = city('cityWest', 2, 0);
   const cityEast = city('cityEast', 9, 0);
   const g = enemy('g', 9, 0);
-  const b = barb('b1', 5, 0);
 
-  const cmds = decideBarbarianMoves([b], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
-  eq(cmds.length, 1, '2 normal: exactly one move command');
-  const cmd = cmds[0];
-  eq(cmd?.type, 'move', '2 normal: command is a move');
-  const dWestBefore = hexDist(b.q, b.r, cityWest.q, cityWest.r);
-  const dWestAfter = hexDist(cmd.toQ, cmd.toR, cityWest.q, cityWest.r);
-  const dEastBefore = hexDist(b.q, b.r, cityEast.q, cityEast.r);
-  const dEastAfter = hexDist(cmd.toQ, cmd.toR, cityEast.q, cityEast.r);
-  assert(dEastAfter < dEastBefore,
-    `2 normal: step gets closer to the defended cityEast (before=${dEastBefore}, after=${dEastAfter})`);
-  assert(dWestAfter >= dWestBefore,
-    `2 normal: step does NOT get closer to the defenseless cityWest, even though it is closer ` +
-    `(before=${dWestBefore}, after=${dWestAfter}) -- once cityWest has no garrison it is skipped`);
+  // 2a
+  const b1 = barb('b1', 5, 0);
+  eq(b1.recentlyClearedCityId, undefined, '2a: fresh unit starts with no memory');
+  const cmdsA = decideBarbarianMoves([b1], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
+  eq(cmdsA.length, 1, '2a normal: exactly one move command');
+  eq(cmdsA[0]?.type, 'move', '2a normal: command is a move');
+  {
+    const dWestBefore = hexDist(b1.q, b1.r, cityWest.q, cityWest.r);
+    const dWestAfter = hexDist(cmdsA[0].toQ, cmdsA[0].toR, cityWest.q, cityWest.r);
+    assert(dWestAfter < dWestBefore,
+      `2a normal: a FRESH unit still chases the closer, never-before-seen defenceless cityWest ` +
+      `(before=${dWestBefore}, after=${dWestAfter}) -- point 3: exclusion is per-unit memory, ` +
+      `not "any currently undefended city"`);
+  }
+  eq(b1.recentlyClearedCityId, 'cityWest',
+    '2a normal: decideBarbarianMoves remembers cityWest as "seen undefended" ON b1 after this decision');
+
+  // 2b -- same unit, same position, second call: cityWest now excluded FOR b1.
+  const cmdsB = decideBarbarianMoves([b1], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
+  eq(cmdsB.length, 1, '2b normal: exactly one move command (unit does not freeze)');
+  eq(cmdsB[0]?.type, 'move', '2b normal: command is a move');
+  {
+    const dEastBefore = hexDist(b1.q, b1.r, cityEast.q, cityEast.r);
+    const dEastAfter = hexDist(cmdsB[0].toQ, cmdsB[0].toR, cityEast.q, cityEast.r);
+    const dWestBefore = hexDist(b1.q, b1.r, cityWest.q, cityWest.r);
+    const dWestAfter = hexDist(cmdsB[0].toQ, cmdsB[0].toR, cityWest.q, cityWest.r);
+    assert(dEastAfter < dEastBefore,
+      `2b normal: on the SECOND decision the SAME unit moves toward the defended cityEast instead ` +
+      `(before=${dEastBefore}, after=${dEastAfter}) -- "goes to the next city" once cityWest turned ` +
+      `out un-enterable`);
+    assert(dWestAfter >= dWestBefore,
+      `2b normal: does NOT step toward the now-excluded cityWest (before=${dWestBefore}, after=${dWestAfter})`);
+  }
+
+  // 2c -- a DIFFERENT, fresh unit on the identical geometry: unaffected by b1's memory.
+  const b2 = barb('b2', 5, 0);
+  const cmdsC = decideBarbarianMoves([b2], [g], [cityWest, cityEast], [], map, P, undefined, 'normal');
+  eq(cmdsC.length, 1, '2c normal: exactly one move command for the second, independent unit');
+  {
+    const dWestBefore = hexDist(b2.q, b2.r, cityWest.q, cityWest.r);
+    const dWestAfter = hexDist(cmdsC[0].toQ, cmdsC[0].toR, cityWest.q, cityWest.r);
+    assert(dWestAfter < dWestBefore,
+      `2c normal: a DIFFERENT fresh unit (b2) still targets the closer cityWest, unaffected by b1's ` +
+      `memory -- exclusion is per-unit, not global (before=${dWestBefore}, after=${dWestAfter})`);
+  }
+  eq(b2.recentlyClearedCityId, 'cityWest', "2c normal: b2 builds its OWN memory, independent of b1's");
 }
 
 // ============================================================================================
-// 3. hard -- same target-filtering as normal (capture itself is a main.ts-side post-battle
-//    effect, not a separate targeting branch here) + an already barbarian-OWNED city is never
-//    a chase target (pre-existing isBarbarian filter, pinned here as a regression guard).
+// 3. hard -- own (barbarian-owned) city always excluded regardless of memory/difficulty +
+//    RUNDA 2 regressions for points 2/3: empty-filtered-list fallback, and the literal
+//    raid-ready freeze bug (a raid-ready unit whose only candidate city is both barbarian-
+//    owned-excluded-N/A and already-remembered-undefended must still get a command, never
+//    silently emit nothing).
 // ============================================================================================
 {
   const map = makeMap(15, 3);
-  const cityWest = city('cityWest', 2, 0);
-  const cityEast = city('cityEast', 9, 0);
-  const g = enemy('g', 9, 0);
-  const b = barb('b1', 5, 0);
 
-  const cmds = decideBarbarianMoves([b], [g], [cityWest, cityEast], [], map, P, undefined, 'hard');
-  eq(cmds.length, 1, '3 hard: exactly one move command');
-  const cmd = cmds[0];
-  eq(cmd?.type, 'move', '3 hard: command is a move');
-  const dEastBefore = hexDist(b.q, b.r, cityEast.q, cityEast.r);
-  const dEastAfter = hexDist(cmd.toQ, cmd.toR, cityEast.q, cityEast.r);
-  assert(dEastAfter < dEastBefore,
-    `3 hard: step gets closer to the defended cityEast, same filtering as normal ` +
-    `(before=${dEastBefore}, after=${dEastAfter})`);
+  // 3a. Own captured city excluded outright (isBarbarian filter) -- independent of the
+  // per-unit memory mechanism, still a hard regression guard.
+  const ownCapturedCity = city('ownCity', 2, 0, { ownerId: BARBARIAN_OWNER_ID }); // closer, but barb-owned
+  const cityEast = city('cityEast', 9, 0); // farther, but real + defended
+  const gEast = enemy('gEast', 9, 0);
+  const b1 = barb('b1', 5, 0);
+  const cmds1 = decideBarbarianMoves([b1], [gEast], [ownCapturedCity, cityEast], [], map, P, undefined, 'hard');
+  eq(cmds1.length, 1, '3a hard: exactly one move command');
+  {
+    const dEastBefore = hexDist(b1.q, b1.r, cityEast.q, cityEast.r);
+    const dEastAfter = hexDist(cmds1[0].toQ, cmds1[0].toR, cityEast.q, cityEast.r);
+    assert(dEastAfter < dEastBefore,
+      `3a hard: targets the real, defended cityEast, never the barbarian-owned ownCity ` +
+      `(before=${dEastBefore}, after=${dEastAfter})`);
+  }
 
-  // 3b. Already-captured (barbarian-owned) city is excluded from targeting even though it
-  // has no garrison -- same as any other barbarian-owned map object (units, camps).
-  const ownCapturedCity = city('ownCity', 9, 0, { ownerId: BARBARIAN_OWNER_ID });
-  const farUndefendedCity = city('farCity', 12, 0, { ownerId: 0 }); // no garrison either
-  const b2 = barb('b2', 5, 0);
-  const cmds2 = decideBarbarianMoves([b2], [], [ownCapturedCity, farUndefendedCity], [], map, P, undefined, 'hard');
-  // Both remaining cities are defenseless under 'hard' filtering (ownCity excluded outright by
-  // isBarbarian, farCity excluded by the no-garrison filter) -- no valid chase target, and with
-  // no camps to idle toward, decideBarbarianMoves must emit nothing.
-  eq(cmds2.length, 0, '3b hard: no target at all when the only cities are (barb-owned) or (defenseless)');
+  // 3b. RUNDA 2 point 2: filtered-list-would-be-empty fallback. Only ONE non-barbarian city
+  // exists, it is undefended, AND this exact unit already remembers it (simulating "next
+  // turn" after clearing it) -- the per-unit filter alone would exclude it, leaving the
+  // candidate pool empty; the fallback must still target it rather than emit nothing.
+  const onlyCity = city('onlyCity', 9, 0, { ownerId: 0 }); // no garrison
+  const b2 = barb('b2', 5, 0, { recentlyClearedCityId: 'onlyCity' });
+  const cmds2 = decideBarbarianMoves([b2], [], [ownCapturedCity, onlyCity], [], map, P, undefined, 'hard');
+  eq(cmds2.length, 1,
+    '3b hard (point 2 fallback): unit still gets a move command when the per-unit filter would ' +
+    'leave zero candidates -- the filter is skipped for this decision instead of freezing the unit');
+  eq(cmds2[0]?.type, 'move', '3b hard: command is a move');
+  {
+    const dBefore = hexDist(b2.q, b2.r, onlyCity.q, onlyCity.r);
+    const dAfter = hexDist(cmds2[0].toQ, cmds2[0].toR, onlyCity.q, onlyCity.r);
+    assert(dAfter < dBefore,
+      `3b hard: the fallback-selected target is the only real city, onlyCity (before=${dBefore}, after=${dAfter})`);
+  }
+
+  // 3c. RUNDA 2 point 2, LITERAL regression: a raid-ready unit (chaseRadius=Infinity, skips
+  // step 4 "drift home") whose only candidate is already-remembered-undefended must NOT
+  // freeze with zero commands. `campId` pointing at a camp absent from `camps` -> orphaned ->
+  // raidReady=true (see decideBarbarianMoves step-3 comment) -- no camps needed to set this up.
+  const b3 = barb('b3', 5, 0, { campId: 'destroyed-camp', recentlyClearedCityId: 'onlyCity' });
+  const cmds3 = decideBarbarianMoves([b3], [], [onlyCity], [], map, P, undefined, 'hard');
+  eq(cmds3.length, 1,
+    '3c hard (point 2, raid-ready freeze regression): a raid-ready unit with only an already-' +
+    'remembered undefended city as a candidate still receives a move command instead of freezing');
+  eq(cmds3[0]?.type, 'move', '3c hard: command is a move, not silently nothing');
 }
 
 // ============================================================================================
@@ -268,8 +355,8 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
     cityOnBattleHex: barbCity,
   });
 
-  // Precondition for hard-mode capture (main.ts barbCaptureBlockedByRemainingDefenders):
-  // zero non-barbarian units remain on the city hex after the barbarian's ATK win.
+  // Precondition for hard-mode capture (isCityCaptureBlockedByDefenders, section 5): zero
+  // non-barbarian units remain on the city hex after the barbarian's ATK win.
   const remainingDefenders = barbCityUnits.filter(
     u => u.q === 11 && u.r === 22 && u.ownerId !== BARBARIAN_OWNER_ID,
   );
@@ -295,49 +382,72 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 }
 
 // ============================================================================================
-// 5. Static: main.ts wiring for the hard-only capture gate + normal/hard difficulty threading.
+// 5. RUNDA 2 (Evaluator, punkt 5) -- REALNE WYKONANIE zamiast source-text .includes(). Trzy
+//    niezależne mutacje Evaluatorów rundy 1 (miasta gracza trwale odporne na capture; usunięty
+//    argument trudności; capture przerobiony na no-op) przechodziły 36/36 niezauważone, bo
+//    dawna sekcja 5 sprawdzała WYŁĄCZNIE obecność fragmentów tekstu w main.ts. Teraz obie
+//    wyciągnięte funkcje są wołane BEZPOŚREDNIO z realnymi argumentami.
 // ============================================================================================
 {
+  // --- 5a. shouldAllowBarbCityCapture -- bramka trudności, realne wykonanie. ---
+  eq(shouldAllowBarbCityCapture('easy'), false, '5a: easy -- capture not allowed');
+  eq(shouldAllowBarbCityCapture('normal'), false, '5a: normal -- capture not allowed');
+  eq(shouldAllowBarbCityCapture('hard'), true, '5a: hard -- capture allowed');
+
+  // --- 5b. isCityCaptureBlockedByDefenders -- realne wykonanie, kilka scenariuszy. ---
+  const unitsClearedHex = [
+    { id: 'atk', ownerId: BARBARIAN_OWNER_ID, q: 5, r: 5 },
+  ];
+  eq(isCityCaptureBlockedByDefenders(BARBARIAN_OWNER_ID, unitsClearedHex, 5, 5), false,
+    '5b: barbarian attacker, hex cleared of every non-barbarian unit -- NOT blocked');
+
+  const unitsWithDefenderLeft = [
+    { id: 'atk', ownerId: BARBARIAN_OWNER_ID, q: 5, r: 5 },
+    { id: 'survivor', ownerId: 0, q: 5, r: 5 },
+  ];
+  eq(isCityCaptureBlockedByDefenders(BARBARIAN_OWNER_ID, unitsWithDefenderLeft, 5, 5), true,
+    '5b: barbarian attacker, a non-barbarian unit STILL stands on the hex -- blocked');
+
+  const unitsDefenderElsewhere = [
+    { id: 'atk', ownerId: BARBARIAN_OWNER_ID, q: 5, r: 5 },
+    { id: 'other', ownerId: 0, q: 9, r: 9 },
+  ];
+  eq(isCityCaptureBlockedByDefenders(BARBARIAN_OWNER_ID, unitsDefenderElsewhere, 5, 5), false,
+    '5b: a non-barbarian unit exists but NOT on the battle hex -- not blocked');
+
+  // --- 5c. Parity: player (ownerId=0) and AI (ownerId=1) attackers must give an IDENTICAL
+  // result to the same scenario -- isCityCaptureBlockedByDefenders returns `false` immediately
+  // for ANY non-barbarian attacker (see the early `!isBarbarian` guard), so it structurally
+  // cannot distinguish the player from AI. No divergence found -- nothing to flag separately.
+  const sharedUnits = [
+    { id: 'atk', ownerId: 0, q: 5, r: 5 },
+    { id: 'garrison', ownerId: 3, q: 5, r: 5 },
+  ];
+  const resultAsPlayer = isCityCaptureBlockedByDefenders(0, sharedUnits, 5, 5);
+  const resultAsAi = isCityCaptureBlockedByDefenders(1, sharedUnits, 5, 5);
+  eq(resultAsPlayer, false, '5c parity: non-barbarian attacker (player, ownerId=0) never blocked by this gate');
+  eq(resultAsAi, false, '5c parity: non-barbarian attacker (AI, ownerId=1) never blocked by this gate');
+  eq(resultAsPlayer, resultAsAi,
+    '5c parity: identical scenario with ownerId=0 (player) vs ownerId=1 (AI) gives an IDENTICAL ' +
+    'result -- the function does not know or care whether the attacker is the human player or AI');
+
+  // --- 5d. main.ts wiring: main.ts calls the EXTRACTED functions rather than containing the
+  // decision inline. main.ts is not bundled (DOM/THREE deps, see file header) -- this is
+  // deliberately a THIN wiring check only; the actual decision logic is covered by real
+  // execution in 5a-5c above, not by this text search.
   const mainTsPath = path.join(GRA_ROOT, 'src/main.ts');
   const mainTs = fs.readFileSync(mainTsPath, 'utf8');
 
-  // 5a. _menuDifficulty threaded into decideBarbarianMoves (normal/hard target filtering).
-  assert(mainTs.includes('landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive, barbCanEngageOwner,')
-    && mainTs.includes('_menuDifficulty,\n            );'),
-    'static 5a: decideBarbarianMoves() call passes _menuDifficulty as the difficulty argument');
-
-  // 5b. hard-only gate for barbarian city capture.
-  assert(mainTs.includes("const barbAllowCityCapture = _menuDifficulty === 'hard';"),
-    "static 5b: barbAllowCityCapture is gated on _menuDifficulty === 'hard'");
-
-  // 5c. barbAllowCityCapture is actually threaded into BOTH battle-resolution call sites at the
-  // barbarian attack command handler (interactive vs-player, and auto vs-AI).
-  const attackBlockIdx = mainTs.indexOf("bcmd.type === 'attack'");
-  assert(attackBlockIdx !== -1, 'static 5c: found the barbarian attack command handler');
-  const attackBlock = mainTs.slice(attackBlockIdx, attackBlockIdx + 2600);
-  assert(attackBlock.includes('barbAllowCityCapture'), 'static 5c: barbAllowCityCapture computed in the handler');
-  const launchCallIdx = attackBlock.indexOf('launchIncomingMapFieldBattle(');
-  const autoCallIdx = attackBlock.indexOf('doAutoPowerMapBattle(');
-  assert(launchCallIdx !== -1 && autoCallIdx !== -1, 'static 5c: both battle-resolution calls found in the handler');
-  assert(attackBlock.slice(launchCallIdx, launchCallIdx + 550).includes('barbAllowCityCapture'),
-    'static 5c: launchIncomingMapFieldBattle(...) receives barbAllowCityCapture (interactive vs-player path)');
-  assert(attackBlock.slice(autoCallIdx, autoCallIdx + 350).includes('barbAllowCityCapture'),
-    'static 5c: doAutoPowerMapBattle(...) receives barbAllowCityCapture (auto vs-AI path)');
-
-  // 5d. applyMapBattleOutcome's capture branch has the extra "cleared to zero defenders" guard,
-  // scoped to barbarian attackers only (does not touch the player/AI capture gate itself).
-  assert(mainTs.includes('barbCaptureBlockedByRemainingDefenders'),
-    'static 5d: applyMapBattleOutcome defines the barbarian-only "cleared to zero" guard');
-  const guardDefIdx = mainTs.indexOf('const barbCaptureBlockedByRemainingDefenders =');
-  assert(guardDefIdx !== -1, 'static 5d: guard definition found');
-  const guardWindow = mainTs.slice(guardDefIdx, guardDefIdx + 400);
-  assert(guardWindow.includes('isBarbarian(atkOwnerForCapture)'),
-    'static 5d: guard only evaluates non-trivially for a barbarian attacker (isBarbarian check)');
-  const captureIfIdx = mainTs.indexOf('opts?.allowCityCapture === true || opts?.siegeContext === true');
-  assert(captureIfIdx !== -1, 'static 5d: found the existing player/AI capture condition');
-  const captureIfWindow = mainTs.slice(captureIfIdx, captureIfIdx + 250);
-  assert(captureIfWindow.includes('!barbCaptureBlockedByRemainingDefenders'),
-    'static 5d: the capture condition additionally requires !barbCaptureBlockedByRemainingDefenders');
+  assert(mainTs.includes('shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,')
+    || mainTs.includes('shouldAllowBarbCityCapture,') && mainTs.includes('isCityCaptureBlockedByDefenders,'),
+    '5d: main.ts imports both extracted functions from game/barbarians');
+  assert(mainTs.includes('const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);'),
+    '5d: main.ts calls shouldAllowBarbCityCapture(_menuDifficulty) instead of an inline comparison');
+  assert(mainTs.includes('isCityCaptureBlockedByDefenders(atkOwnerForCapture, units, battleQ, battleR)'),
+    '5d: main.ts calls isCityCaptureBlockedByDefenders(...) instead of an inline isBarbarian+units.some check');
+  assert(!mainTs.includes("_menuDifficulty === 'hard';"),
+    '5d regression: the old inline hard-only comparison is gone from main.ts (logic now lives ' +
+    'exclusively in shouldAllowBarbCityCapture)');
 
   // 5e. Regression: the OTHER (non-barbarian) caller of doAutoPowerMapBattle/
   // launchIncomingMapFieldBattle -- AI attacking the player in the general AI turn loop -- does

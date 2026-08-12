@@ -102,6 +102,28 @@ export interface BarbUnit extends RuntimeUnit {
    * Utrwalane w save razem z units[] (pole opcjonalne, wstecznie kompatybilne).
    */
   seaRaider?: boolean;
+  /**
+   * P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 RUNDA 2 (Evaluator, punkt 3): id miasta,
+   * które TA jednostka ostatnio uznała za "oczyszczone" (bez obrońcy na heksie,
+   * niemożliwe do zaatakowania ani wejścia -- patrz canUnitOccupyCityHex). Mutowane
+   * bezpośrednio przez decideBarbarianMoves (jedyne świadome odejście od "moduł nigdy
+   * nie mutuje stanu" -- pole czysto informacyjne per-jednostka, identyczny wzorzec do
+   * `campId`/`healthFrac`, bez którego pamięć musiałaby wędrować przez main.ts tam i z
+   * powrotem co turę). Samo-wygasa: gdy miasto odzyska obrońcę, filtr (patrz krok 3)
+   * przestaje je wykluczać niezależnie od tej wartości -- nie trzeba osobnego licznika
+   * TTL. Optional -- stare save'y i testy legacy bez tego pola = brak pamięci, identyczne
+   * zachowanie do pierwszego napotkania niebronionego miasta.
+   * / EN: id of the city THIS unit most recently deemed "cleared" (no defender on its
+   * hex, unattackable and unenterable -- see canUnitOccupyCityHex). Mutated directly by
+   * decideBarbarianMoves (the one deliberate exception to "this module never mutates
+   * state" -- a purely informational per-unit field, same pattern as `campId`/
+   * `healthFrac`; without it the memory would have to round-trip through main.ts every
+   * turn). Self-expiring: once the city regains a defender the step-3 filter stops
+   * excluding it regardless of this value -- no separate TTL counter needed. Optional --
+   * legacy saves/tests without this field simply have no memory yet, identical
+   * behaviour up to the first undefended city encountered.
+   */
+  recentlyClearedCityId?: string;
 }
 
 /**
@@ -229,6 +251,58 @@ export function loadBarbParams(data: GameData): BarbParams {
 
 /** Klucz trudności silnika (main.ts `_menuDifficulty`). */
 export type SeaRaidDifficulty = 'easy' | 'normal' | 'hard';
+
+/**
+ * P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 RUNDA 2 (Evaluator, punkt 5): decyzja "czy capture
+ * miasta przez barbarzyńców jest w ogóle możliwy na danej trudności" wyciągnięta z main.ts
+ * (dawniej inline `_menuDifficulty === 'hard'`) do czystej, testowalnej funkcji -- main.ts
+ * ma TYLKO wołać tę funkcję, nie zawierać tej decyzji inline (main.ts miał zero pokrycia
+ * wykonawczego przez testy -- source-text .includes() na main.ts nie łapał mutacji
+ * usuwających/psujących tę bramkę). easy/normal: brak capture (miasto NIE zmienia
+ * właściciela, zero zmian względem zachowania sprzed tej rundy). hard: capture dozwolony
+ * (dalsze warunki -- czy walka faktycznie wygrana i miasto oczyszczone z obrońców --
+ * sprawdza reszta applyMapBattleOutcome, patrz isCityCaptureBlockedByDefenders niżej).
+ * / EN: "is barbarian city capture possible at all at this difficulty" pulled out of
+ * main.ts (formerly inline `_menuDifficulty === 'hard'`) into a pure, testable function --
+ * main.ts should ONLY call this, not contain the decision inline (main.ts had zero
+ * executable test coverage -- source-text .includes() on main.ts didn't catch mutations
+ * removing/breaking this gate). easy/normal: no capture (city ownership never changes, no
+ * change vs. pre-this-round behaviour). hard: capture allowed (further conditions -- did
+ * the battle actually win, was the city cleared of defenders -- are checked by the rest of
+ * applyMapBattleOutcome, see isCityCaptureBlockedByDefenders below).
+ */
+export function shouldAllowBarbCityCapture(difficulty: SeaRaidDifficulty): boolean {
+  return difficulty === 'hard';
+}
+
+/**
+ * P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 RUNDA 2 (Evaluator, punkt 5): odpowiednik dzisiejszego
+ * main.ts `barbCaptureBlockedByRemainingDefenders`, wyciągnięty do czystej funkcji. Zwraca
+ * true TYLKO gdy atakujący jest barbarzyńcą ORAZ na heksie (q,r) wciąż stoi choć jedna
+ * jednostka NIE-barbarzyńska (walka wygrana, ale miasto jeszcze nie oczyszczone do zera --
+ * np. wielo-jednostkowy garnizon, z którego padł tylko jeden obrońca). Dla gracza/AI
+ * (atkOwnerId >= 0, NIE barbarzyńca) zawsze zwraca `false` natychmiast -- funkcja NIE
+ * rozróżnia gracza (ownerId=0) od AI (ownerId>=1): oba trafiają w tę samą wczesną gałąź
+ * `!isBarbarian(atkOwnerId)`, więc identyczny scenariusz z ownerId=0 i ownerId=1 daje
+ * IDENTYCZNY wynik z konstrukcji (patrz asercja parytetu w barb-city-behavior-test.cjs).
+ * / EN: pure-function equivalent of today's main.ts `barbCaptureBlockedByRemainingDefenders`.
+ * Returns true ONLY when the attacker is a barbarian AND at least one NON-barbarian unit
+ * still stands on hex (q,r) (battle won, but the city not yet cleared to zero -- e.g. a
+ * multi-unit garrison that lost only one defender). For the player/AI (atkOwnerId >= 0, not
+ * a barbarian) it always returns `false` immediately -- the function does NOT distinguish
+ * the player (ownerId=0) from AI (ownerId>=1): both hit the same early `!isBarbarian
+ * (atkOwnerId)` branch, so an identical scenario with ownerId=0 and ownerId=1 gives an
+ * IDENTICAL result by construction (see the parity assertion in barb-city-behavior-test.cjs).
+ */
+export function isCityCaptureBlockedByDefenders(
+  atkOwnerId: number,
+  units: readonly RuntimeUnit[],
+  q: number,
+  r: number,
+): boolean {
+  if (!isBarbarian(atkOwnerId)) return false;
+  return units.some(u => u.q === q && u.r === r && !isBarbarian(u.ownerId));
+}
 
 /** Parametry obozów nadmorskich i rajdów Ludów Morza. */
 export interface SeaBarbParams {
@@ -396,8 +470,18 @@ function firstStep(
 // Camp spawning
 // ---------------------------------------------------------------------------
 
-/** A city-like input for spacing / movement blocking. */
-export type CityLike = HasQR & { ownerId?: number };
+/**
+ * A city-like input for spacing / movement blocking.
+ * RUNDA 2 (Evaluator, punkt 3): `id` dodane, żeby decideBarbarianMoves mogło
+ * per-jednostkowo zapamiętać "które miasto ta jednostka ostatnio uznała za
+ * oczyszczone" (patrz BarbUnit.recentlyClearedCityId) -- realny `City` (main.ts)
+ * ZAWSZE ma `id: string`, więc to nie zawęża istniejących wywołań produkcyjnych.
+ * / EN: `id` added so decideBarbarianMoves can remember, per unit, "which city
+ * did THIS unit most recently deem cleared" (see BarbUnit.recentlyClearedCityId)
+ * -- a real `City` (main.ts) ALWAYS has `id: string`, so this doesn't narrow any
+ * existing production call site.
+ */
+export type CityLike = HasQR & { id: string; ownerId?: number };
 
 /**
  * Picks NEW camp sites and returns them (does not include `existing`).
@@ -989,6 +1073,33 @@ export function destroyCampAt(
  *   hex (checked via `playerUnits`) stops being a chase target (step 3) -- once
  *   cleared of defenders the unit heads for the next-nearest city/unit instead
  *   of camping the same one.
+ *
+ *   RUNDA 2 (Evaluator jednomyślny FAIL na rundzie 1, punkty 2+3) -- pierwsza wersja
+ *   filtra wykluczała WSZYSTKIE niebronione miasta GLOBALNIE (dla każdej jednostki,
+ *   niezależnie od tego, kto/czy w ogóle je "oczyścił"), co miało dwa realne skutki:
+ *   (a) gdy WSZYSTKIE miasta w zasięgu były niebronione, lista celów stawała się
+ *   pusta -- jednostka raid-ready (chaseRadius=Infinity, pomija krok 4 "drift do domu")
+ *   zamierała na stałe, bez ŻADNEGO rozkazu; (b) jednostka po oczyszczeniu miasta A
+ *   szła do OBOZU zamiast do miasta B, bo B (i każde inne niebronione miasto) też było
+ *   globalnie wykluczone, plus oscylacja gdy gracz przesuwał JEDEN garnizon między
+ *   dwoma miastami (dowolne z nich na przemian wykluczane w zależności od tego, gdzie
+ *   akurat stoi). Naprawa: wykluczenie jest teraz PER JEDNOSTKA (`unit.
+ *   recentlyClearedCityId`, patrz BarbUnit), nie globalne -- i ma jawny fallback: gdy
+ *   przefiltrowana lista wyszłaby pusta, filtr się NIE stosuje (pełna lista miast jako
+ *   cel), więc jednostka nigdy nie zamiera z braku jakiegokolwiek celu.
+ *   / EN: ROUND 2 (unanimous Evaluator FAIL on round 1, points 2+3) -- the first
+ *   version of the filter excluded EVERY undefended city GLOBALLY (for every unit,
+ *   regardless of who -- if anyone -- actually cleared it), which had two real
+ *   consequences: (a) when EVERY city in range was undefended, the target list went
+ *   empty -- a raid-ready unit (chaseRadius=Infinity, skips step 4 "drift home") froze
+ *   permanently with NO command at all; (b) a unit that had just cleared city A headed
+ *   for CAMP instead of city B, because B (and every other undefended city) was also
+ *   globally excluded, plus oscillation when the player shuffled ONE garrison between
+ *   two cities (whichever one currently lacks it gets excluded, alternating). Fix: the
+ *   exclusion is now PER UNIT (`unit.recentlyClearedCityId`, see BarbUnit), not global
+ *   -- with an explicit fallback: when the filtered list would be empty, the filter is
+ *   skipped entirely (full city list as candidates), so a unit never freezes for lack
+ *   of any target.
  */
 export function decideBarbarianMoves(
   barbUnits: BarbUnit[],
@@ -1049,15 +1160,48 @@ export function decideBarbarianMoves(
 
     // 3. Chase the nearest civilization target (unit or city).
     const nearestEnemyUnit = nearest(unit.q, unit.r, enemies);
-    const civCities = cities.filter(c => {
-      if (c.ownerId !== undefined && isBarbarian(c.ownerId)) return false;
-      // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (normal/hard): miasto bez ŻADNEJ
-      // jednostki broniącej na jego heksie nie jest już "chase" celem -- patrz
-      // komentarz `difficulty` przy sygnaturze funkcji.
-      if (skipDefenselessCities && !enemies.some(e => e.q === c.q && e.r === c.r)) return false;
-      return true;
-    });
+    // Bazowa lista: własne (barbarzyńskie) miasta zawsze poza celami -- niezależnie
+    // od trudności/pamięci niżej. / EN: base list: own (barbarian) cities are always
+    // out of scope -- independent of difficulty/memory below.
+    const civCitiesBase = cities.filter(c => !(c.ownerId !== undefined && isBarbarian(c.ownerId)));
+    let civCities = civCitiesBase;
+    if (skipDefenselessCities) {
+      // RUNDA 2 (Evaluator, punkty 2+3): wykluczenie PER JEDNOSTKA (nie globalnie) --
+      // miasto bez obrońcy wypada z celów TYLKO gdy to konkretnie ta jednostka je
+      // ostatnio tak zapamiętała (`unit.recentlyClearedCityId`); inne niebronione
+      // miasta (nigdy nieodwiedzone przez TĘ jednostkę, albo odzyskały obrońcę)
+      // zostają poprawnymi celami. Patrz komentarz `difficulty` przy sygnaturze.
+      // / EN: PER-UNIT exclusion (not global) -- a defenceless city drops out of
+      // targets ONLY when THIS unit specifically remembered it that way; other
+      // undefended cities (never visited by THIS unit, or now defended again) stay
+      // valid targets. See the `difficulty` comment on the signature.
+      const filtered = civCitiesBase.filter(c => {
+        const undefended = !enemies.some(e => e.q === c.q && e.r === c.r);
+        if (!undefended) return true;
+        return c.id !== unit.recentlyClearedCityId;
+      });
+      // Punkt 2: filtr dałby pustą listę -- NIE stosuj go dla tej decyzji (pełna
+      // lista jako fallback), żeby jednostka raid-ready nigdy nie zamarła bez celu.
+      // / EN: point 2: the filter would yield an empty list -- do NOT apply it for
+      // this decision (full list as fallback), so a raid-ready unit never freezes
+      // with no target at all.
+      civCities = filtered.length > 0 ? filtered : civCitiesBase;
+    }
     const nearestCity = nearest(unit.q, unit.r, civCities);
+    if (skipDefenselessCities) {
+      // Zapamiętaj (tylko dla TEJ jednostki) czy jej obecny najbliższy cel-miasto
+      // jest niebroniony -- następna tura wykluczy je z JEJ listy, pozwalając jej
+      // przejść do kolejnego celu zamiast tkwić w miejscu (krok 3 wyżej) niemożliwym
+      // do wejścia (canUnitOccupyCityHex blokuje obcy heks miasta bez zdobycia).
+      // / EN: remember (only for THIS unit) whether its current nearest city target
+      // is undefended -- next turn excludes it from ITS OWN list, letting it move on
+      // to the next target instead of stalling in place (step 3 above) unable to
+      // enter (canUnitOccupyCityHex blocks a foreign city hex without capturing it).
+      unit.recentlyClearedCityId =
+        nearestCity !== undefined && !enemies.some(e => e.q === nearestCity.q && e.r === nearestCity.r)
+          ? nearestCity.id
+          : undefined;
+    }
     const targets: { q: number; r: number; d: number }[] = [];
     if (nearestEnemyUnit !== undefined) {
       targets.push({ q: nearestEnemyUnit.q, r: nearestEnemyUnit.r, d: hexDistance(unit.q, unit.r, nearestEnemyUnit.q, nearestEnemyUnit.r) });

@@ -1014,6 +1014,7 @@ import {
   loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
   destroyCampAt,
+  shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -20976,10 +20977,12 @@ async function boot(): Promise<void> {
       // applyPostBattleMap above) free of every non-barbarian unit -- an explicit "cleared
       // to zero defenders in THIS battle" check, on top of the plain ATK-win gate below.
       // Applies to a barbarian attacker only -- player/AI capture unchanged.
+      // RUNDA 2 (Evaluator, punkt 5): logika wyciągnięta do czystej, testowalnej
+      // isCityCaptureBlockedByDefenders (barbarians.ts) -- main.ts tylko woła.
       const atkOwnerForCapture = atkRoster[0]?.ownerId;
       const barbCaptureBlockedByRemainingDefenders =
-        atkOwnerForCapture !== undefined && isBarbarian(atkOwnerForCapture)
-        && units.some(u => u.q === battleQ && u.r === battleR && !isBarbarian(u.ownerId));
+        atkOwnerForCapture !== undefined
+        && isCityCaptureBlockedByDefenders(atkOwnerForCapture, units, battleQ, battleR);
 
       if (
         (opts?.allowCityCapture === true || opts?.siegeContext === true)
@@ -21583,9 +21586,47 @@ async function boot(): Promise<void> {
       // ścieżkę "ostatnie miasto -> eliminacja": fałszywy komunikat ELIMINACJA
       // i eliminateOwner(-99) zaśmiecały eliminatedOwners/sejw wpisem -99.
       if (oldOwner === REBEL_FACTION_OWNER_ID) return null;
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1, kierunek A -- oldOwner):
+      // barbarzyńcy tak samo jak REBEL_FACTION nie są realną cywilizacją -- nie mają
+      // stolicy/skarbca. Bez tego guarda ODBICIE gracza/AI ich JEDYNEGO miasta wpadało
+      // w legacy fallback "najstarsze miasto" -> remaining.length===0 ->
+      // eliminateOwner(BARBARIAN_OWNER_ID), kasując WSZYSTKICH barbarzyńców z całej
+      // mapy jednym odbiciem jednego miasta (+ trwały fałszywy wpis w eliminatedOwners
+      // w sejwie). / EN: barbarians, like REBEL_FACTION, are not a real civilization --
+      // no capital/treasury. Without this guard, the player/AI RECLAIMING their ONE
+      // city fell into the legacy "oldest city" fallback -> remaining.length===0 ->
+      // eliminateOwner(BARBARIAN_OWNER_ID), wiping every barbarian on the whole map
+      // from a single city recapture (+ a permanent bogus eliminatedOwners save entry).
+      if (isBarbarian(oldOwner)) return null;
       const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (punkt 1, kierunek B -- newOwner): gdy zdobywcą
+      // jest barbarzyńca, ofiara wciąż TRACI skarbiec/naukę/techy/pulę pracy (spójnie
+      // z każdym innym przejęciem stolicy -- to strata ofiary, nie nagroda zdobywcy),
+      // ale NIC z tego nie ma trafić NA KONTO barbarzyńców (setTreasury/setNaukaPool/
+      // addResearchedTechs niżej no-opują zapis DO newOwner, gdy to barbarzyńca).
+      // Eliminacja (jeśli to było OSTATNIE miasto ofiary) i tak następuje niżej --
+      // o TYM decyduje reszta tej funkcji (outcome.event/eliminateOwner), nie ten
+      // warunek: właściciel wprost zastrzegł, że ten guard NIE ma blokować mechaniki
+      // eliminacji, tylko łup barbarzyńców. / EN: when the captor is a barbarian, the
+      // victim still LOSES treasury/science/techs/work pool (consistent with any other
+      // capital capture -- it's the victim's loss, not the captor's reward), but NONE
+      // of it lands in the barbarian account (setTreasury/setNaukaPool/
+      // addResearchedTechs below no-op the write TO newOwner when it's a barbarian).
+      // Elimination (if this was the victim's LAST city) still happens below -- decided
+      // by the rest of this function (outcome.event/eliminateOwner), not by this
+      // condition: the owner explicitly required this guard to NOT block the
+      // elimination mechanic, only the barbarian loot.
+      const barbCaptor = isBarbarian(newOwner);
+      const access: OwnerResourceAccess = barbCaptor
+        ? {
+            ...capitalCaptureResourceAccess,
+            setTreasury: (oid, v) => { if (oid !== newOwner) setOwnerTreasury(oid, v); },
+            setNaukaPool: (oid, v) => { if (oid !== newOwner) setOwnerNaukaPool(oid, v); },
+            addResearchedTechs: (oid, ids) => { if (oid !== newOwner) addOwnerResearchedTechs(oid, ids); },
+          }
+        : capitalCaptureResourceAccess;
       const outcome = applyCapitalCapturePlunder(
-        city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId,
+        city, oldOwner, newOwner, cities, access, designatedCapitalId,
       );
       if (!outcome) return null;
 
@@ -21608,13 +21649,18 @@ async function boot(): Promise<void> {
       // ew. jego WCZEŚNIEJSZE zdobycze z poprzednich eliminacji — rekurencyjnie
       // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
       // eliminateOwner (patrz komentarz funkcji).
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (punkt 1, kierunek B): barbarzyńcy nie dziedziczą
+      // Power ofiary -- `barbCaptor` guard, patrz komentarz przy `access` wyżej.
+      // / EN: barbarians do not inherit the victim's Power -- see the `barbCaptor`
+      // guard / `access` comment above.
       const lostPower = buildObjectivePowerForOwner(oldOwner).power;
-      if (lostPower > 0) {
+      if (lostPower > 0 && !barbCaptor) {
         zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
       }
       const eliminatedCivLabel = civLabelForOwner(oldOwner);
-      const eliminatedDetails =
-        `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
+      const eliminatedDetails = barbCaptor
+        ? 'Skarbiec i nauka przepadły (barbarzyńcy nie dziedziczą łupu).'
+        : `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
       const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
         newOwner,
         oldOwner,
@@ -21714,7 +21760,16 @@ async function boot(): Promise<void> {
         { civKeyForOwner: civKeyForOwnerId, onOwnerChanged: seedCityOwnerDefaults },
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
-      if (sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1 -- kontekst): barbarzyńcy nie
+      // mają realnej kultury/religii -- civKeyForOwnerId(BARBARIAN_OWNER_ID) fałszuje ją
+      // przez fallback 'grecy' (aiOwnerCivMap.get(ujemny id) === undefined), co mogło
+      // przypadkiem "trafić" w sameCultureCircle z ofiarą grającą Grecją i podmienić
+      // religię miasta na (nieistniejącą) religię barbarzyńców. / EN: barbarians have no
+      // real culture/religion -- civKeyForOwnerId(BARBARIAN_OWNER_ID) fakes it via the
+      // 'grecy' fallback (aiOwnerCivMap.get(negative id) === undefined), which could
+      // accidentally "match" sameCultureCircle against a Greek-playing victim and swap
+      // the city's religion for the barbarians' (nonexistent) one.
+      if (!isBarbarian(atkOwner) && sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
         cityRelig.set(
           city.id,
           defaultCityReligionState(city.population, ownerReligionForOwnerId(atkOwner)),
@@ -26243,7 +26298,9 @@ async function boot(): Promise<void> {
                   // funkcja PO rozstrzygnięciu walki, patrz barbCaptureBlockedByRemainingDefenders
                   // tamże). easy/normal: allowCityCapture=false -- zero zmian względem
                   // dotychczasowego zachowania (miasto NIE zmienia właściciela).
-                  const barbAllowCityCapture = _menuDifficulty === 'hard';
+                  // RUNDA 2 (Evaluator, punkt 5): decyzja wyciągnięta do czystej, testowalnej
+                  // shouldAllowBarbCityCapture (barbarians.ts) -- main.ts tylko woła.
+                  const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
                   if (defRoster.some(u => u.ownerId === 0)) {
                     launchIncomingMapFieldBattle(
                       atkRoster,

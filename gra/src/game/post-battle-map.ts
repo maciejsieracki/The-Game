@@ -6,6 +6,7 @@
 
 import type { GameMap } from '../types/map';
 import type { City } from './cities';
+import { isBarbarian } from './barbarians';
 import { onCityCapturedCulture } from './conquest-stability';
 import { applyPostCaptureLawOnCapture } from './post-capture-law';
 import type { RuntimeUnit } from '../units/setup';
@@ -446,7 +447,20 @@ export function applyCityCaptureAfterBattle(
     if (live.oblegaCityId === city.id) delete live.oblegaCityId;
   }
 
-  applyPostCaptureLawOnCapture(city, atkOwner, prevOwner);
+  // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 4): "Prawo po podboju" (banner UI
+  // "Po podboju — Prawo 100% (5 tur)", revoltRisk=0) nie ma sensu dla frakcji bez rządu
+  // -- barbarzyńcy nie mają Prawa/rewolt. Bez tego guarda `delete city.
+  // rebelPreviousOwnerId` (wewnątrz applyPostCaptureLawOnCapture) nieumyślnie kasował
+  // bonus "odbicie po buncie" gdy barbarzyńcy przejmowali miasto zbuntowane
+  // (REBEL_FACTION_OWNER_ID), bo ten sam side-effect biegnie niezależnie od tego, czy
+  // faktyczny bonus Prawa miał sens dla zdobywcy. / EN: "post-conquest Law" (the
+  // "Post-conquest — Law 100% (5 turns)" UI banner, revoltRisk=0) makes no sense for a
+  // government-less faction -- barbarians have no Law/revolt concept. Without this
+  // guard, `delete city.rebelPreviousOwnerId` (inside applyPostCaptureLawOnCapture)
+  // unintentionally wiped the "reclaimed after a rebellion" bonus whenever barbarians
+  // captured a rebelled city (REBEL_FACTION_OWNER_ID), since that side effect runs
+  // regardless of whether the Law bonus itself made sense for the captor.
+  if (!isBarbarian(atkOwner)) applyPostCaptureLawOnCapture(city, atkOwner, prevOwner);
   city.ownerId = atkOwner;
   city.oblegane = false;
   if (city.rebelState) city.rebelState = false;

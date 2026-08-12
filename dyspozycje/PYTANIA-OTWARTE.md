@@ -14093,3 +14093,39 @@ tematu miast). Pozostały zakres do dołożenia PO zweryfikowaniu współdzielon
 - Czy zniszczenie obozu przez rozdzielenie armii (`onSplit`) ma pomijać koszt punktów ruchu.
 - **Znaczenie „bezpowrotnie"** — czy dotyczy tylko instancji obozu, czy też heksu (dziś: heks
   może dostać nowy obóz w ciągu kilku-kilkudziesięciu tur).
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 runda 2 — SCALONA (worktree fix-barb-city-v2)
+
+Wszystkie 5 punktów z jednomyślnego FAIL rundy 1:
+1. `runCapitalCapturePlunder` — guard `isBarbarian(oldOwner)` (analogiczny do REBEL) +
+   NIE ślepy `return null` dla `isBarbarian(newOwner)` (zablokowałoby to legalną eliminację
+   ofiary) — zamiast tego wrapper `OwnerResourceAccess` no-opujący zapis DO barbarzyńców
+   (skarbiec/nauka/techy), odczyt/utrata u ofiary działa normalnie. Korekta zakresu: dodatkowy
+   guard w `applyCityCaptureToMap` (kultura/religia fałszowana przez `civKeyForOwnerId(-1)→
+   'grecy'` — symptom nazwany wprost w specyfikacji, fizycznie kilka linii przed funkcją ze
+   zlecenia, naprawiony przy okazji).
+2. Raid-ready freeze — **NAPRAWIONE WSPÓLNIE Z tym samym defektem w temacie obozów
+   (P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 4, blokery B/C)**: gdy filtr per-jednostkowy
+   dałby pustą listę celów, spada do pełnej nieprzefiltrowanej listy miast.
+3. „Kolejne miasto" — przepisane z globalnego wykluczenia na PER-JEDNOSTKOWĄ pamięć
+   (`unit.recentlyClearedCityId`, samo-wygasająca przez odzyskanie obrońcy, bez licznika TTL).
+4. `applyPostCaptureLawOnCapture` pominięte dla `isBarbarian(atkOwner)` w
+   `applyCityCaptureAfterBattle` (jedyne realnie osiągalne miejsce — oblężenie niedostępne dla
+   barbarzyńców, drugie miejsce wywołania nietknięte świadomie).
+5. Wyciągnięte czyste funkcje `shouldAllowBarbCityCapture(difficulty)` i
+   `isCityCaptureBlockedByDefenders(atkOwnerId, units, q, r)` — main.ts tylko woła, zero logiki
+   inline. Sekcja 5 testu przepisana na realne wykonanie (nie source-text). Test parytetu
+   gracz/AI: identyczny wynik dla `ownerId=0` i `ownerId=1` (funkcja nie rozróżnia — brak
+   asymetrii do zgłoszenia).
+
+Bramki (zweryfikowane przez orkiestratora po scaleniu): `tsc` 0, `logic-test` 213/213,
+`barbarians-test` 167/167, `barb-camp-destruction-test` 76/0, `ai-home-defense-vs-barbarians-test`
+38/38, `barb-city-behavior-test` **48/48** (było 36), higiena zielona. Własna próba
+niezależnej weryfikacji orkiestratora scenariusza „raid-ready freeze" WŁASNYM harnessem
+zawiodła technicznie (brak realnych danych terenu w stubie `map.hexes` → `firstStep` zawsze
+zwracał null, fałszywe 0/0/0 na wszystkich trudnościach łącznie z easy, które wg obu
+Evaluatorów rundy 4 powinno dawać 10/10) — **porzucona na rzecz dispatchu properowych
+Evaluatorów**, którzy already mają sprawdzone harnessy z realną geometrią mapy.
+
+**Scalone przez orkiestratora — dispatch 3x Evaluator adwersaryjny w toku, z jawnym zadaniem
+zweryfikowania NAPRAWY WSPÓLNEJ dla obu tematów barbarzyńców (freeze bug).**
