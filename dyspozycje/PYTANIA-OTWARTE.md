@@ -15265,3 +15265,38 @@ Do osobnego rozpoznania.
 **ZAMKNIĘTE** — noty nieblokujące, poprawki testu odłożone do ewentualnej przyszłej okazji
 dotknięcia tego pliku, nie wymagają osobnego dispatchu teraz.
 
+
+## Runda 5 miast barbarzyńców (29b4d2f1) — 3x Evaluator: A=FAIL, B=FAIL, C=PASS-WITH-NOTES, werdykt zbiorczy FAIL, runda 6 dispatchowana
+
+**Piąta z rzędu porażka recenzji tego samego mechanizmu** (`clearedCityIds`, patrol barbarzyńców).
+
+**Evaluator A — FAIL:** naprawa F1 (semantyka resetu) wprowadza NOWY livelock — na planszy z
+DOKŁADNIE JEDNYM miastem niebronionym + bronionym obok, reset do `[]` powoduje że jednostka
+odbija się w nieskończoność (3-turowy cykl) między dwoma heksami, NIGDY nie docierając do
+bronionego miasta. Zweryfikowana jednoliniowa poprawka: reset do `[ostatnio_odwiedzone]`
+zamiast do `[]`. Znalazł też że mutant `undefendedCities.length > 1` (zamiast `> 0`) przechodzi
+142/142 mimo błędnego zachowania na planszy sekcji 2 testu.
+
+**Evaluator B — FAIL:** naprawa F2 (strażnik osiągalności) wprowadza regresję wydajności **do
+118×** — każda nieudana próba dotarcia do celu to pełne zalanie Dijkstrą mapy, gra rutynowo ma
+60-120 miast, obozy barbarzyńców spawnują się bez wymogu osiągalności miast. Zmierzone: do ~23s
+zawieszenia jednej tury przy realistycznej konfiguracji. Dodatkowo komentarz kodu fałszywie
+twierdzi że "nic więcej się nie da zrobić" gdy wszyscy kandydaci nieosiągalni — obalone
+scenariuszem jednostki raid-ready z żywym, osiągalnym obozem dającej 0 komend przez 60 tur
+(blokuje to niezwiązany, starszy `if(raidReady) continue` w kroku 4 — nie regresja tej rundy,
+ale komentarz F2 fałszywie deklaruje że to domknięte).
+
+**Evaluator C — PASS-WITH-NOTES:** niezależnie potwierdził TĘ SAMĄ klasę błędu co A (mutant M20 —
+reset częściowy zamiast pełnego — przechodzi CAŁY komplet bramek mimo załamania patrolu po
+jednym okrążeniu, na dokładnie tej planszy dla której napisano sekcję 6d). Dodatkowo:
+`expectSelfCheckFails` (wzorzec sekcji 9/10/11) liczy DOWOLNY niezerowy exit code jako "złapane"
+(w tym błąd kompilacji) — luka z rundy 4, powielona bez utwardzenia.
+
+**STATUS: runda 6 dispatchowana**, zakres: (1) poprawka F1 z Evaluatora A + test na planszy z
+dokładnie 1 miastem niebronionym symulowanej 30-40 tur; (2) ograniczenie kosztu F2 do O(1)
+zalania/turę (flood-fill reachability / limit prób / cache) + bramka wydajnościowa; (3) korekta
+fałszywego komentarza o "nic więcej się nie da zrobić"; (4) wzmocnienie `expectSelfCheckFails`
+(wymóg linii `FAIL:` w stdout, nie tylko exit code); (5) **wymóg proceduralny przed kodowaniem**
+— tabela 12 reżimów planszy (miasta niebronione 0/1/≥2 × bronione 0/≥1 × raidReady tak/nie),
+żeby zapobiec szóstej rundzie tego samego typu błędu.
+
