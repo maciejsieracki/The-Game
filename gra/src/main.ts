@@ -12634,6 +12634,9 @@ async function boot(): Promise<void> {
       const cityPobor = pc.map(c => {
         const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult);
         return {
+          // P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2): patrz JSDoc EmpireCityPoborRow.cityId
+          // (empireDetailTypes.ts) -- nazwy miast nie sa unikalne w obrebie cywilizacji.
+          cityId: c.id,
           name: c.name,
           ludki: mp.ludki,
           ludnoscAbsLabel: formatManpower(mp.ludnoscAbsolutna),

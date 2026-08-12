@@ -208,6 +208,24 @@ export interface EmpireCityEconRow {
 
 /** Ludność i pula rekrutów per miasto. */
 export interface EmpireCityPoborRow {
+  /**
+   * P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2, Evaluator FAIL na 89c16ec1): identyfikator miasta
+   * (`city.id`), NIE tylko `name` — nazwy miast NIE są unikalne w obrębie jednej cywilizacji:
+   * `captureCity()` (`siege.ts:766`) zachowuje nazwę zdobytego miasta, więc dwa miasta TEGO
+   * SAMEGO ownera mogą mieć tę samą nazwę po podboju (94 nazwy współdzielone między pulami w
+   * `city-names-pools.json`). Join `cityEcon`↔`cityPobor` w tabeli „Miasta"
+   * (`cityMiastaMiniDetail`, `empireDetailPanel.ts`) jest INDEKSOWY (obie tablice są równoległe,
+   * budowane z tego samego `pc.map()` w `main.ts`) — to pole służy do jednoznacznego
+   * dopasowania wiersza żywności (`food.perCityRows`, który już ma `cityId`), gdzie join po
+   * nazwie miałby ten sam błąd.
+   * / EN: city identifier (`city.id`), NOT just `name` — city names are not unique within one
+   * civilization: `captureCity()` keeps the conquered city's name, so two same-owner cities can
+   * share a name after conquest. The `cityEcon`↔`cityPobor` join in the Miasta table is
+   * INDEX-based (both arrays are parallel, built from the same `pc.map()` in `main.ts`) — this
+   * field is for unambiguously matching the food row (`food.perCityRows`, which already carries
+   * `cityId`), where a name-based join would have the same bug.
+   */
+  cityId: string;
   name: string;
   ludki: number;
   ludnoscAbsLabel: string;

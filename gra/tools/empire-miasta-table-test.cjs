@@ -371,5 +371,170 @@ console.log('\n-- H. empireDetailPanel.ts: wiersz podsumowania z computeMiastaSu
     'H9: wiersz podsumowania (civ-emp-mini-summary) leży w kodzie PO pętli renderującej wiersze miast -- ląduje na końcu tabeli, nie na początku/w środku');
 }
 
-console.log(`\nempire-miasta-table-test: ${passed} passed, ${failed} failed`);
-process.exitCode = failed > 0 ? 1 : 0;
+// ===========================================================================
+// L. REALNE wykonanie (esbuild+jsdom): filtr kolumn faktycznie zmienia liczbę komórek W KAŻDYM
+//    wierszu (nie tylko w nagłówku, mutacja M2) i w wierszu podsumowania (mutacja M7) --
+//    Evaluator FAIL na 89c16ec1, zadanie 3: sekcje A-K wyżej dopasowują WYŁĄCZNIE tekst źródła,
+//    nie wykonanie, więc oba mutanty (M2: desync nagłówek/wiersze; M7: podsumowanie ignoruje
+//    filtr, osierocone komórki) uciekały. Bundluje empireDetailPanel.ts NAPRAWDĘ (ten sam stub
+//    brandAssets co resource-usage-breakdown-test.cjs -- jedyna przeszkoda Vite w drzewie
+//    zależności, patrz komentarz tam), renderuje tabelę do jsdom, symuluje odznaczenie
+//    checkboxów przez PRAWDZIWY wireMiastaColFilter() (change event -> miastaHiddenCols ->
+//    render() no-op bo root===null poza pełnym panelem -- patrz guard na początku render() w
+//    empireDetailPanel.ts), po czym renderuje DRUGI RAZ (cityMiastaMiniDetail czyta zmutowany
+//    stan modułu miastaHiddenCols) i liczy realne <div> dzieci KAŻDEGO .civ-emp-mini-r
+//    (wiersze miast + wiersz podsumowania) w zrenderowanym DOM.
+// ===========================================================================
+async function runSectionL() {
+  console.log('\n-- L. cityMiastaMiniDetail + wireMiastaColFilter (esbuild+jsdom, REALNE wykonanie) --');
+  let JSDOM;
+  try { ({ JSDOM } = require(path.resolve(GRA, 'node_modules', 'jsdom'))); }
+  catch (e) {
+    console.error('[empire-miasta-table-test] jsdom not found. Run: npm install (from gra/)');
+    process.exit(1);
+  }
+
+  const L_ENTRY_FILE = path.resolve(__dirname, '.empire-miasta-table-L-entry.ts');
+  const L_BUNDLE_FILE = path.resolve(__dirname, '.empire-miasta-table-L-bundle.cjs');
+  fs.writeFileSync(L_ENTRY_FILE, `
+export {
+  cityMiastaMiniDetail,
+  wireMiastaColFilter,
+} from '../src/ui/empireDetailPanel';
+`, 'utf8');
+
+  // Ten sam stub co resource-usage-breakdown-test.cjs: JEDYNA przeszkoda Vite w drzewie
+  // zależności empireDetailPanel.ts to ./icons/brandAssets (import.meta.glob na poziomie
+  // modułu) -- funkcje pod testem go nie wołają, ale moduły ES wykonują CAŁY top-level kod
+  // przy imporcie, więc bez stuba require(bundle) rzuciłby wyjątkiem wcześniej.
+  const L_STUB_BRAND_ASSETS_PLUGIN = {
+    name: 'stub-brand-assets-L',
+    setup(build) {
+      build.onResolve({ filter: /icons\/brandAssets$/ }, (args) => (
+        { path: args.path, namespace: 'stub-brand-assets-L' }
+      ));
+      build.onLoad({ filter: /.*/, namespace: 'stub-brand-assets-L' }, () => ({
+        contents:
+          'export function brandIconSvg(id, size) { return String(id); }\n'
+          + 'export function mapResourceIconSvg(label, size) { return String(label); }\n',
+        loader: 'js',
+      }));
+    },
+  };
+
+  // esbuild rzuca "Cannot use plugins in synchronous API calls" dla buildSync -- ta sekcja
+  // (jedyna w tym pliku z pluginem) musi użyć asynchronicznego build().
+  try {
+    await esbuild.build({
+      entryPoints: [L_ENTRY_FILE],
+      bundle: true,
+      platform: 'node',
+      format: 'cjs',
+      target: 'node18',
+      loader: { '.ts': 'ts', '.json': 'json' },
+      plugins: [L_STUB_BRAND_ASSETS_PLUGIN],
+      outfile: L_BUNDLE_FILE,
+      absWorkingDir: GRA,
+      logLevel: 'silent',
+    });
+  } catch (e) {
+    console.error('[empire-miasta-table-test] sekcja L esbuild bundling failed:\n', e.message || e);
+    process.exit(1);
+  }
+
+  const dom = new JSDOM('<!doctype html><html><body></body></html>');
+  global.document = dom.window.document;
+  global.window = dom.window;
+
+  delete require.cache[require.resolve(L_BUNDLE_FILE)];
+  const L = require(L_BUNDLE_FILE);
+
+  // Dwa miasta z TĄ SAMĄ nazwą "Roma" (naturalny skutek podboju -- captureCity() zachowuje
+  // nazwę zdobytego miasta, patrz naprawa F2/join-po-indeksie) + trzecie miasto z inną nazwą --
+  // 3 wiersze, wystarczające do odróżnienia "tylko nagłówek zmienia się" od "wszystkie wiersze".
+  const ceL = [
+    { name: 'Roma', pieniadz: 10, pracaPula: 2, pracaBudynki: 1, nauka: 1, utrzymanieSurowcowBudynkow: { drewno: 2 } },
+    { name: 'Roma', pieniadz: 5, pracaPula: 1, pracaBudynki: 0, nauka: 0, utrzymanieSurowcowBudynkow: { kamien: 1 } },
+    { name: 'Neapolis', pieniadz: 3, pracaPula: 1, pracaBudynki: 1, nauka: 0, utrzymanieSurowcowBudynkow: undefined },
+  ];
+  const cpL = [
+    { cityId: 'c1', name: 'Roma', ludki: 5, ludnoscAbsLabel: '500', ludnoscAbsolutna: 500, rekruci: 2, rekruciMax: 10, regenPerTurn: 1 },
+    { cityId: 'c2', name: 'Roma', ludki: 3, ludnoscAbsLabel: '300', ludnoscAbsolutna: 300, rekruci: 1, rekruciMax: 8, regenPerTurn: 1 },
+    { cityId: 'c3', name: 'Neapolis', ludki: 2, ludnoscAbsLabel: '200', ludnoscAbsolutna: 200, rekruci: 1, rekruciMax: 6, regenPerTurn: 1 },
+  ];
+  const foodL = {
+    zapasy: 100, maxCap: 200,
+    perCityRows: [
+      { cityId: 'c1', name: 'Roma', produkcja: 10, kosztRacji: 5, bilans: 5, wzrostProcent: 10 },
+      { cityId: 'c2', name: 'Roma', produkcja: 8, kosztRacji: 3, bilans: 5, wzrostProcent: 20 },
+      { cityId: 'c3', name: 'Neapolis', produkcja: 6, kosztRacji: 4, bilans: 2, wzrostProcent: 5 },
+    ],
+  };
+  const eL = { osiedla: 3, ludnoscRate: 4 };
+
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+
+  // Render #1 -- stan domyślny (nic ukryte) -- wpina checkboxy do jsdom przez PRAWDZIWY
+  // wireMiastaColFilter(), żeby móc je realnie odznaczyć (nie manipulować stanem modułu z boku).
+  container.innerHTML = L.cityMiastaMiniDetail(ceL, cpL, foodL, eL);
+  L.wireMiastaColFilter();
+
+  const EXPECTED_TOTAL = container.querySelectorAll('.civ-emp-mini-h > *').length;
+  assert(EXPECTED_TOTAL > 3, `L0: nagłówek startowy ma >3 komórek (${EXPECTED_TOTAL}) -- kontrola przytomności, dane testowe faktycznie renderują tabelę`);
+
+  const HIDE_IDS = ['wzrost', 'zywnosc', 'surowce']; // 3 z 7 kolumn filtrowalnych (sekcja A)
+  let toggled = 0;
+  for (const id of HIDE_IDS) {
+    const inp = container.querySelector(`input[data-miasta-col="${id}"]`);
+    assert(inp !== null, `L1.${id}: checkbox dla kolumny "${id}" istnieje w DOM po render #1 (wireMiastaColFilter go znalazł)`);
+    if (inp) {
+      inp.checked = false;
+      inp.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+      toggled++;
+    }
+  }
+  eq(toggled, HIDE_IDS.length, 'L2: wszystkie 3 checkboxy realnie odznaczone i zdarzenie "change" wysłane -- PRAWDZIWY wireMiastaColFilter, nie wywołanie funkcji z pominięciem DOM');
+
+  // Render #2 -- odczytuje ZMIENIONY stan modułu (miastaHiddenCols zmutowany przez handler
+  // change powyżej, TRWAŁY między wywołaniami cityMiastaMiniDetail -- to jest "wyrenderuj
+  // tabelę z odznaczonymi kolumnami" z zadania 3, nie symulacja przez ręczne budowanie HTML).
+  const html2 = L.cityMiastaMiniDetail(ceL, cpL, foodL, eL);
+  container.innerHTML = html2;
+
+  const EXPECTED_VISIBLE = EXPECTED_TOTAL - HIDE_IDS.length;
+  const headerCells = container.querySelectorAll('.civ-emp-mini-h > *').length;
+  eq(headerCells, EXPECTED_VISIBLE, `L3: nagłówek ma ${EXPECTED_VISIBLE} komórek po odznaczeniu ${HIDE_IDS.length} kolumn (to już dziś działa -- kontrola przytomności przed L4/L5)`);
+
+  const allRowEls = Array.from(container.querySelectorAll('.civ-emp-mini-r'));
+  eq(allRowEls.length, cpL.length + 1, `L4: ${cpL.length} wierszy miast + 1 wiersz podsumowania = ${cpL.length + 1} elementów .civ-emp-mini-r w DOM`);
+
+  // Rdzeń zadania 3 -- ASERCJE WYKONANIOWE (1): KAŻDY wiersz miasta (nie tylko nagłówek, patrz
+  // L3) ma dokładnie EXPECTED_VISIBLE komórek. Mutacja M2 (Evaluator: desync filtr
+  // nagłówka/wiersze -- nagłówek filtruje, wiersze nie) zostawiłaby tu 8 komórek zamiast 5.
+  let summaryCount = 0;
+  allRowEls.forEach((rowEl, i) => {
+    const isSummary = rowEl.classList.contains('civ-emp-mini-summary');
+    const cellCount = rowEl.children.length;
+    if (isSummary) {
+      summaryCount++;
+      // Rdzeń zadania 3 -- ASERCJE WYKONANIOWE (2): wiersz PODSUMOWANIA też ma dokładnie
+      // EXPECTED_VISIBLE komórek. Mutacja M7 (Evaluator: podsumowanie ignoruje filtr) zostawiłaby
+      // tu osierocone komórki bez odpowiadającego nagłówka (8 zamiast 5).
+      eq(cellCount, EXPECTED_VISIBLE,
+        `L6 (mutacja M7): wiersz PODSUMOWANIA ma ${EXPECTED_VISIBLE} komórek po filtrze -- nie osierocone wartości bez nagłówka`);
+    } else {
+      eq(cellCount, EXPECTED_VISIBLE,
+        `L5.${i} (mutacja M2): wiersz miasta #${i} ma ${EXPECTED_VISIBLE} komórek po filtrze -- desync nagłówek/wiersze by tu uciekł`);
+    }
+  });
+  eq(summaryCount, 1, 'L7: dokładnie jeden wiersz podsumowania rozpoznany w DOM (civ-emp-mini-summary)');
+}
+
+runSectionL().then(() => {
+  console.log(`\nempire-miasta-table-test: ${passed} passed, ${failed} failed`);
+  process.exitCode = failed > 0 ? 1 : 0;
+}).catch((e) => {
+  console.error('[empire-miasta-table-test] sekcja L unexpected error:', e && e.stack || e);
+  process.exitCode = 1;
+});
