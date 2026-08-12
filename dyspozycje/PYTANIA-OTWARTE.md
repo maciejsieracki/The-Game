@@ -15419,3 +15419,38 @@ weryfikacji `pwd` PRZED jakąkolwiek pracą, nie tylko `git log`, i przerwać je
 `810d5917`) oraz nowo dispatchowany `fcd31209` będą zweryfikowane pod tym kątem przy odbiorze —
 jeśli zgłoszą tę samą kolizję, traktować jako potwierdzenie wzorca systemowego, nie przypadku.
 
+
+## Stawka drenażu obywateli 1,0→0,2 (1208eb6c) — Evaluator: FAIL, naprawa częściowa dispatchowana + nowe pytanie ABC
+
+**Bloker 1 — realny błąd balansu, dotyczy KAŻDEGO nowego miasta/cywilizacji.** `floor(pop×0,2)=0`
+dla populacji 1-4 → `need=0` → `drained(0)>=need(0)` → liczy się jako PEŁNE pokrycie → premia do
+Szczęścia zamiast kary. Zmierzone: pop=4 z pustym magazynem → +5 Szczęście, 0% kara Rozwoju;
+pop=5 → −5 Szczęście, −5% Rozwój. Przy starej stawce 1,0 tego efektu nie było (pop 1-4 → need
+1-4 → kara). **Ten commit to stworzył**, mimo że właściciel explicite prosił o sprawdzenie tego
+edge case'u (rejestr, linia ~12943) — Operator odpowiedział tylko połowicznie ("zero wymogu, nie
+luka"), przeoczył że zerowy wymóg jest punktowany jako pełne pokrycie i NAGRADZANY.
+
+**⛔ NOWE PYTANIE ABC, STATUS: OTWARTE — dotyka kanonu kary binarnej (ECHO Q3=A)**
+
+`P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`: czy populacja z `need=0` (poniżej progu zaokrąglenia)
+powinna liczyć się jako NEUTRALNA (0 Szczęścia, 0% kara) zamiast obecnej PREMII? Semantycznie
+neutralność wydaje się właściwa, ale to zmiana kanonu kary binarnej ustalonego wcześniej
+(ECHO Q3=A) — wymaga wprost decyzji właściciela, nie cichej poprawki Operatora.
+
+**Bloker 2 — zaokrąglenie niepokryte, 3/8 mutacji przeżywa** (floor→ceil, floor→round, usunięcie
+zaokrąglenia — wszystkie MISSED). Przyczyna: dane testowe przeskalowane ×5 (10→50, 3→15),
+przez co floor/ceil/round są nierozróżnialne w żadnym scenariuszu testu.
+
+**Noty nieblokujące, do naprawy przy okazji:** panel i silnik florują na różnych poziomach
+(per-miasto vs per-imperium) — Σfloor ≤ floor(Σ), realny rozjazd (zmierzony: panel pokazuje 0,
+silnik drenuje 2); stawka zahardkodowana w TS zamiast w `data/citizen-resource-upkeep.json`
+(narusza CLAUDE.md §2, źródło prawdy w JSON); `_opis` w JSON nieaktualny (opisuje starą regułę
+binarną); 6 nieaktualnych komentarzy "1 szt.". Nota balansowa (nie do cichej decyzji): w
+kombinacji z `ecbddda8` (produkcja terenowa) to 12,5× przesunięcie proporcji podaż/popyt —
+możliwe że mechanika staje się nieistotna w środku/końcu gry.
+
+**STATUS: dispatch naprawy CZĘŚCIOWEJ w toku** — zakres: Bloker 2 (asercje przy populacji
+niebędącej wielokrotnością 5 + pin stawki w dedykowanej bramce) + wszystkie noty nieblokujące
+(panel/silnik, komentarze, `_opis`). **Bloker 1 (need=0→premia) WYŁĄCZONY z tej rundy — czeka na
+odpowiedź właściciela na pytanie ABC powyżej**, kod zostaje bez zmiany zachowania do tego czasu.
+
