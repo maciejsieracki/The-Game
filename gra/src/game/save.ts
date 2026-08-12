@@ -681,6 +681,29 @@ export async function loadFromLocal(slot: string): Promise<SaveGame | null> {
  * (a slot resaved after the migration exists in IDB only, but a slot never
  * touched since stays in localStorage only -- either way it appears once).
  *
+ * FANTOM `_lastPlayed` (Maciej/Evaluator): LAST_PLAYED_SLOT_KEY =
+ * SAVE_PREFIX + '_lastPlayed' -- w odróżnieniu od SAVE_META_PREFIX (rozłączny
+ * z SAVE_PREFIX, patrz komentarz przy tej stałej) ten klucz CELOWO dzieli
+ * prefiks z prawdziwymi slotami zapisu, więc po odcięciu SAVE_PREFIX zostaje
+ * '_lastPlayed' i bez tego filtra trafiłby do wyniku jako fałszywy dodatkowy
+ * slot -- dokładnie ten sam wzorzec, który summarizeSaveSlots()
+ * (saveLoadDialog.ts) już stosuje przy renderze listy (`slotId.startsWith('_')`).
+ * Odrzucamy więc każdy klucz, którego nazwa slotu (po odcięciu SAVE_PREFIX)
+ * zaczyna się od '_' -- to sam LAST_PLAYED_SLOT_KEY dziś, ale reguła obejmuje
+ * też każdy przyszły meta-wskaźnik zapisany pod tym samym schematem nazw.
+ * / EN: PHANTOM `_lastPlayed` (Maciej/Evaluator): LAST_PLAYED_SLOT_KEY =
+ * SAVE_PREFIX + '_lastPlayed' -- unlike SAVE_META_PREFIX (disjoint from
+ * SAVE_PREFIX, see the comment by that constant) this key DELIBERATELY
+ * shares the prefix with real save slots, so stripping SAVE_PREFIX leaves
+ * '_lastPlayed' behind, and without this filter it would show up in the
+ * result as a bogus extra slot -- the exact same pattern
+ * summarizeSaveSlots() (saveLoadDialog.ts) already applies when rendering
+ * the list (`slotId.startsWith('_')`). So we reject any key whose slot name
+ * (after stripping SAVE_PREFIX) starts with '_' -- today that's just
+ * LAST_PLAYED_SLOT_KEY, but the rule also covers any future meta pointer
+ * saved under the same naming scheme. See guard assertion in
+ * map-snapshot-load-test.cjs.
+ *
  * Returns [] when both backends are unavailable or hold no saves.
  * Browser-safe: never throws.
  */
@@ -688,16 +711,20 @@ export async function listSaves(): Promise<string[]> {
   const slots = new Set<string>();
   const idbKeys = await idbListKeys();
   for (const key of idbKeys) {
-    if (key.startsWith(SAVE_PREFIX)) slots.add(key.slice(SAVE_PREFIX.length));
+    if (!key.startsWith(SAVE_PREFIX)) continue;
+    const slot = key.slice(SAVE_PREFIX.length);
+    if (slot.startsWith('_')) continue;
+    slots.add(slot);
   }
   const storage = getStorage();
   if (storage !== null) {
     try {
       for (let i = 0; i < storage.length; i++) {
         const key = storage.key(i);
-        if (key !== null && key.startsWith(SAVE_PREFIX)) {
-          slots.add(key.slice(SAVE_PREFIX.length));
-        }
+        if (key === null || !key.startsWith(SAVE_PREFIX)) continue;
+        const slot = key.slice(SAVE_PREFIX.length);
+        if (slot.startsWith('_')) continue;
+        slots.add(slot);
       }
     } catch {
       /* ignore -- IDB results (if any) still stand */
