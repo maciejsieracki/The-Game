@@ -14860,3 +14860,19 @@ zakolejkowany" mimo że nie może jej wykonać (brak tech). Osobna decyzja wła�
 naprawy w tej zmianie — odłożone.
 
 ---
+
+## Kaskada rekrutacji (epoka + 1 wstecz) — SCALONE (86890cd7)
+
+**STATUS: w Evaluatorze (Opus 5).** Operator odwrócił pełną kaskadę epok w dół z
+`production.ts` na regułę „epoka bieżąca + dokładnie 1 niżej" + stały wyjątek Zwiadowcy
+(`Typ==='Civilian'`, jedyna taka jednostka w `units.json`), zgodnie z odpowiedzią właściciela
+do pyt. 5a. `availableReplacementsFor` (ścieżka „Zastąp") świadomie NIETKNIĘTA — inna
+semantyka, potwierdzona istniejącym `unit-replace-test.cjs` (Wojownik jako zamiennik Hastati
+w Żelazie). `epoka-merge-recruit-test.cjs` testy 1-3 przepisane pod nową regułę, test 4
+(bramka surowcowa drewna, osobne ABC) nietknięty. Wszystkie bramki zielone (`tsc`,
+`epoka-merge-recruit-test` 13/13, `logic-test` 213/213, `unit-replace-test` 13/13,
+`tech-tree-test` 19/19, `research-test` 33/33), dowód mutacyjny (cofnięcie dolnej granicy →
+1/13 FAIL, dokładnie test 3). 5 pre-istniejących porażek w innych testach zweryfikowane
+identyczne przed/po via `git stash`. Worktree `fix-epoka-kaskada` usunięty, Evaluator
+dispatchowany w `eval-epoka-kaskada`.
+
