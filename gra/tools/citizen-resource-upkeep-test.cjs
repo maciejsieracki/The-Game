@@ -47,6 +47,7 @@ export {
   CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
   CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
   CITIZEN_UPKEEP_GROWTH_PCT_PER_MISSING,
+  CITIZEN_UPKEEP_RATE_PER_CITIZEN,
 } from '../src/game/citizen-resource-upkeep';
 export { computeHappinessBreakdown } from '../src/game/society-breakdown';
 export { computeGrowthPercentV85, applyPostCentralPopulationGrowth } from '../src/game/population-growth-v85';
@@ -471,30 +472,48 @@ console.log('\n-- J. cityPanel.ts computeOrderStateLocal -- werdykt silnika prze
 }
 
 // ===========================================================================
-// G. computeCitizenResourceDrain -- realny drenaż 1:1 (N2, Maciej 2026-08-11)
+// G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obywatel (N2, Maciej 2026-08-11;
+//    stawka 1,0->0,2 Maciej 2026-08-12, "DECYZJA: STAWKA 1->0,2", punkt 1)
 // ===========================================================================
-console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1 szt./obywatel --');
+console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obywatel --');
 {
-  // Stawka 1:1: 10 obywateli, magazyn 50 drewna/50 gliny (epoka 1) -> required=10 każdy,
-  // drained=10 każdy (magazyn wystarcza), oba "available" (pełne pokrycie).
-  const full = M.computeCitizenResourceDrain(1, 10, { drewno: 50, glina: 50 });
-  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na 10 obywateli (>=10 każdego) -> oba available');
-  eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (1 szt./obywatel × 10 obywateli)');
-  eq(full.deductions.glina, 10, 'deductions.glina = 10 (1 szt./obywatel × 10 obywateli)');
+  // G0 (Evaluator FAIL na 1208eb6c, pin stawki): jedyny dotychczasowy pin wartości 0,2 leżał w
+  // INNYM, późniejszym pliku (porzadek-panel-czytelnosc-test.cjs:82), nie w tym dedykowanym
+  // teście stawki -- ta bramka mogła teoretycznie przejść zielono nawet gdyby ktoś podmienił
+  // CITIZEN_UPKEEP_RATE_PER_CITIZEN na inną wartość, dopóki druga, niepowiązana bramka nie
+  // zostałaby uruchomiona. Pin wprost, w miejscu gdzie stawka jest zdefiniowana i używana.
+  eq(M.CITIZEN_UPKEEP_RATE_PER_CITIZEN, 0.2, 'G0: kanon stawki (Maciej 2026-08-12, "DECYZJA: STAWKA 1->0,2") -- CITIZEN_UPKEEP_RATE_PER_CITIZEN === 0,2 szt. surowca/obywatela/turę, pinowane bezpośrednio w tym dedykowanym teście');
+
+  // PRZELICZENIE PO ZMIANIE STAWKI (2026-08-12, 1,0->0,2 = 5x mniej): wszystkie liczby obywateli
+  // w tej sekcji przeskalowane x5 względem stanu sprzed zmiany (10->50, 3->15, 7->35), żeby
+  // required = Math.floor(population * 0.2) wyszło DOKŁADNIE tyle samo, ile wychodziło required
+  // = population * 1 przy starej stawce -- każda "want" wartość w eq()/deepEqSet() niżej zostaje
+  // WIĘC NIEZMIENIONA, przeliczona jest tylko liczba obywateli na wejściu. Weryfikacja braku
+  // błędu zaokrąglenia (50*0.2, 15*0.2, 35*0.2 wychodzą dokładnie 10/3/7 w IEEE754, bez utraty
+  // precyzji) zrobiona osobno poza testem (node -e).
+  //
+  // Stawka 0,2: 50 obywateli, magazyn 50 drewna/50 gliny (epoka 1) -> required=floor(50*0,2)=10
+  // każdy, drained=10 każdy (magazyn wystarcza), oba "available" (pełne pokrycie).
+  const full = M.computeCitizenResourceDrain(1, 50, { drewno: 50, glina: 50 });
+  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na required=10 (z 50 obywateli x 0,2) każdego surowca -> oba available');
+  eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (0,2 szt./obywatel × 50 obywateli)');
+  eq(full.deductions.glina, 10, 'deductions.glina = 10 (0,2 szt./obywatel × 50 obywateli)');
 
   // Niedobór: magazyn MNIEJSZY niż required -> drained = min(required, stock), NIGDY < 0,
   // surowiec liczy się jako "missing" (pokrycie częściowe, nie pełne -- kara nadal binarna).
-  const partial = M.computeCitizenResourceDrain(1, 10, { drewno: 3, glina: 0 });
-  deepEqSet(partial.missing, ['drewno', 'glina'], '10 obywateli, magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
+  const partial = M.computeCitizenResourceDrain(1, 50, { drewno: 3, glina: 0 });
+  deepEqSet(partial.missing, ['drewno', 'glina'], '50 obywateli (required=10), magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
   eq(partial.deductions.drewno, 3, 'deductions.drewno = min(10, 3) = 3 -- drenuje ile jest, magazyn NIE schodzi poniżej zera');
   assert(!('glina' in partial.deductions), 'deductions.glina nieobecne (0 do odjęcia) -- magazyn=0, nic nie drenować');
 
   // Zero obywateli -> zero zapotrzebowania -> zawsze "available" (brak kary na dane brzegowe).
+  // Stawka nie ma tu znaczenia (0 * dowolna_stawka = 0) -- populacja NIE przeskalowana.
   const zeroPop = M.computeCitizenResourceDrain(1, 0, { drewno: 0, glina: 0 });
   deepEqSet(zeroPop.available, ['drewno', 'glina'], '0 obywateli -> required=0 -> zawsze pełne pokrycie, nawet z pustym magazynem');
   eq(Object.keys(zeroPop.deductions).length, 0, '0 obywateli -> brak zapotrzebowania -> brak odjęcia (deductions puste)');
 
   // Populacja ujemna/niefinitna (dane śmieciowe) -> traktowana jak 0, zero regresji/crashu.
+  // Stawka nie ma tu znaczenia (pop klamrowane do 0 PRZED przemnożeniem przez stawkę).
   const negPop = M.computeCitizenResourceDrain(1, -5, { drewno: 0 });
   eq(Object.keys(negPop.deductions).length, 0, 'populacja ujemna traktowana jak 0 -- brak odjęcia, brak crasha');
   const nanPop = M.computeCitizenResourceDrain(1, NaN, { drewno: 0 });
@@ -503,9 +522,32 @@ console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1 szt./obywat
   // Kara nadal BINARNA (ECHO Q3=A niezmienione): pokrycie W PEŁNI (nie licznik/rozmiar
   // niedoboru) -- 1 sztuka brakująca do pełnego pokrycia daje TAKĄ SAMĄ karę jak 1000 sztuk
   // brakujących (obie "missing"), happinessDelta/growthPctDelta liczą TYLKO available.length/missing.length.
-  const barelyMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 9, glina: 50 });
-  const wayMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 0, glina: 50 });
+  // 50 obywateli -> required=10 (jak wyżej); drewno=9 to "brakuje 1 sztuki do required=10".
+  const barelyMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 9, glina: 50 });
+  const wayMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 0, glina: 50 });
   eq(barelyMissing.happinessDelta, wayMissing.happinessDelta, 'ECHO Q3=A zachowane: brak 1 sztuki do pełnego pokrycia = ta sama kara co brak całości (binarne, nie proporcjonalne)');
+
+  // G2 (Evaluator FAIL na 1208eb6c -- pokrycie zaokrąglenia): WSZYSTKIE populacje wyżej w tej
+  // sekcji są WIELOKROTNOŚCIĄ 5 (10->50, 3->15, 7->35) -- przy takich wartościach
+  // floor(pop×0,2) == ceil(pop×0,2) == round(pop×0,2), więc Math.floor() nigdy realnie nie
+  // zaokrągla w tych asercjach; 3 z 8 mutacji Evaluatora (floor->ceil, floor->round, usunięcie
+  // zaokrąglenia) przeżywały bez wykrycia. Populacja NIEBĘDĄCA wielokrotnością 5 (53) łamie tę
+  // symetrię: 53×0,2 = 10,600000000000001 w IEEE754 (zweryfikowane `node -e`) -- floor=10
+  // (oczekiwane), ceil=11, round=11, brak zaokrąglenia=10,600000000000001 -- WSZYSTKIE TRZY
+  // mutacje dają wynik != 10, jedna asercja zabija wszystkie naraz. Magazyn=50 (>> required=10)
+  // celowo, żeby drained=min(required,stock)=required ZAWSZE (niezależnie którą z 4 wersji
+  // required policzyłby zmutowany kod) -- deductions.drewno odzwierciedla WYNIK ZAOKRĄGLENIA
+  // wprost, bez interferencji z drenażem częściowym (który by uciął różnicę przez min()).
+  // / EN: all populations above this line are multiples of 5, so floor/ceil/round coincide and
+  // never actually exercise rounding -- pop=53 breaks that symmetry (53×0.2=10.600000000000001
+  // in IEEE754), catching all 3 previously-surviving rounding mutants with one assertion.
+  const roundingProbe = M.computeCitizenResourceDrain(1, 53, { drewno: 50, glina: 50 });
+  eq(
+    roundingProbe.deductions.drewno, 10,
+    'G2: pop=53 (NIE wielokrotność 5) -- required=floor(53×0,2)=floor(10,600000000000001)=10 '
+      + '(nie 11 jak przy floor->ceil/floor->round, nie 10,600000000000001 jak przy usunięciu '
+      + 'zaokrąglenia -- ta jedna asercja odróżnia wszystkie 3 mutacje)',
+  );
 }
 
 // ===========================================================================
@@ -604,22 +646,79 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
       + 'gracza i AI/Państw-Miast (parytet ECHO Q2=A), bez rozgałęzienia po ownerId',
   );
 
+  // ---------------------------------------------------------------------
+  // H6 (N1 runda 5, punkt 2 Evaluatora rundy 4 -- Maciej 2026-08-12): H1-H5 wyżej dowodzą, że
+  // resolver poprawnie sumuje populację, realnie drenuje magazyn RAZ per owner per turę i robi to
+  // identycznie dla gracza/AI -- ale ŻADNA z nich nie sprawdza, że wynik jest TAKŻE publikowany do
+  // `citizenUpkeepByOwner` (mapa kluczowana ownerem, PRZETRWAŁA między turami, czytana przez panel
+  // Surowców -- sekcja I, `citizenUpkeepByOwner.get(ownerId)`). Dziś usunięcie SAMEJ linii
+  // `citizenUpkeepByOwner.set(ownerId, v);` przechodzi wszystkie 100 asercji tego pliku bez
+  // wykrycia -- cichy powrót DOKŁADNIE tej regresji, którą naprawiono w rundzie 2 (panel Surowców
+  // czyta werdykt sprzed drenażu / spada na fallback inline zamiast werdyktu silnika), mimo że
+  // sam drenaż magazynu (H1-H5) nadal działa bez zarzutu.
+  //
+  // Okno H4/H5 (resolverBlockWindow, `if (v === undefined) {` .. `citizenUpkeepDrainCache.set(
+  // ownerId, v);`, WYŁĄCZNIE tej drugiej kotwicy) NIE nadaje się tu wprost: w realnym main.ts
+  // `citizenUpkeepByOwner.set(ownerId, v);` leży TEKSTOWO PO `citizenUpkeepDrainCache.set(ownerId,
+  // v);` (publikacja do mapy przetrwałej jest druga, celowo PO zapisie do cache'a lokalnego), więc
+  // nie mieści się w tamtym (węższym, celowo innym) oknie. Nowe okno używa TEJ SAMEJ kotwicy
+  // startowej (`if (v === undefined) {`), ale kończy się na `return v;` -- jedynej instrukcji PO
+  // zamknięciu bloku `if` wewnątrz ciała citizenUpkeepDrainForOwner (kształt funkcji:
+  // `if (v === undefined) { ... } return v;`) -- więc okno obejmuje CAŁY blok if (oba `.set(...)`)
+  // i nic poza nim (kolejna funkcja/kod w main.ts nie ma szans wejść w okno).
+  // ---------------------------------------------------------------------
+  const idxOfReturnV = idxOfIfUndefined > -1
+    ? mainSrcStripped.indexOf('return v;', idxOfIfUndefined)
+    : -1;
+  assert(idxOfReturnV > idxOfCacheSet, 'main.ts: "return v;" znalezione PO "citizenUpkeepDrainCache.set(ownerId, v);" WEWNĄTRZ citizenUpkeepDrainForOwner -- okno całego bloku if (H6) dobrze uformowane');
+  const resolverFullBlockWindow = (idxOfIfUndefined > -1 && idxOfReturnV > idxOfIfUndefined)
+    ? mainSrcStripped.slice(idxOfIfUndefined, idxOfReturnV)
+    : '';
+  assert(
+    resolverFullBlockWindow.includes('citizenUpkeepByOwner.set(ownerId'),
+    'H6 (N1 runda 5, punkt 2 Evaluatora rundy 4 -- zabija powrót regresji rundy 2/3 "po cichu": '
+      + 'usunięcie publikacji werdyktu do mapy przetrwałej między turami): treść całego bloku '
+      + 'if(v===undefined) {..} wewnątrz citizenUpkeepDrainForOwner (od "if (v === undefined) {" do '
+      + '"return v;") zawiera TAKŻE "citizenUpkeepByOwner.set(ownerId" -- wynik drenażu publikowany '
+      + 'RÓWNOLEGLE do citizenUpkeepDrainCache (lokalny cache resolvera, ginie po turze) ORAZ do '
+      + 'citizenUpkeepByOwner (przetrwały, czytany wprost przez panel Surowców -- sekcja I), nie '
+      + 'tylko do pierwszego z nich',
+  );
+  // H6b (Evaluator, dispatch domykający N2: H6 wyżej łapie USUNIĘCIE wywołania .set(...), ale NIE
+  // łapie PODMIANY jego drugiego argumentu na błędną, zahardkodowaną wartość zamiast realnie
+  // policzonego `v` -- dowiedzione mutacją `citizenUpkeepByOwner.set(ownerId, { deductions: [],
+  // perCitizen: 0, total: 0 })`, która przeszła 106/106 bez wykrycia. H6b wymaga, żeby DRUGI
+  // argument .set() był dosłownie gołą zmienną `v` (nie obiektem literalnym/inną nazwą) -- ten sam
+  // `v`, który `if (v === undefined) { ... }` właśnie obliczył i który `return v;` zwraca niżej,
+  // więc podmiana na cokolwiek innego niż `v)` (ze średnikiem lub bez, przed `}`) jest łapana.
+  assert(
+    /citizenUpkeepByOwner\.set\(ownerId,\s*v\)\s*;/.test(resolverFullBlockWindow),
+    'H6b: drugi argument "citizenUpkeepByOwner.set(ownerId, v);" to dosłownie zmienna "v" (ten sam '
+      + 'wynik co "return v;" niżej) -- nie zahardkodowany obiekt ani inna zmienna. Mutacja '
+      + 'podmieniająca ją na fałszywą wartość (np. total:0) jest tym samym łapana, mimo że sama '
+      + 'obecność wywołania .set() (H6) by tego nie wykryła',
+  );
+
   // Behawioralny dowód end-to-end: computeCitizenResourceDrain wywołane RAZ z sumą populacji
-  // 2 miast (5+5=10) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
-  // populacji 10 -- a NIE 2× wywołanie po 5 (co dałoby 2×5=10 też przypadkiem przy tej stawce,
-  // więc test dobiera asymetryczne populacje 3+7, żeby odróżnić "suma najpierw" od "podwójne
-  // liczenie": drenaż z osobna dla pop=3 i pop=7 na TYM SAMYM (niezmutowanym) magazynie 8 drewna
-  // dałby OBA "available" (3<=8 i 7<=8) -- błędnie, bo razem potrzeba 10 > 8. Suma-najpierw
+  // 2 miast (25+25=50) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
+  // populacji 50 -- a NIE 2× wywołanie po 25 (co dałoby 2×5=10 też przypadkiem przy tej stawce,
+  // więc test dobiera asymetryczne populacje 15+35, żeby odróżnić "suma najpierw" od "podwójne
+  // liczenie": drenaż z osobna dla pop=15 (required=floor(15×0,2)=3) i pop=35
+  // (required=floor(35×0,2)=7) na TYM SAMYM (niezmutowanym) magazynie 8 drewna dałby OBA
+  // "available" (3<=8 i 7<=8) -- błędnie, bo razem potrzeba floor(50×0,2)=10 > 8. Suma-najpierw
   // (RAZ per owner) poprawnie daje deductions.drewno = min(10, 8) = 8, missing.
-  const wrongPerCity3 = M.computeCitizenResourceDrain(1, 3, { drewno: 8 });
-  const wrongPerCity7 = M.computeCitizenResourceDrain(1, 7, { drewno: 8 });
+  // PRZELICZENIE PO ZMIANIE STAWKI (2026-08-12, 1,0->0,2 = 5x mniej): populacje przeskalowane x5
+  // (3->15, 7->35, suma 10->50) względem stanu sprzed zmiany, żeby required (3, 7, 10) i
+  // wszystkie "want" wartości niżej zostały DOKŁADNIE takie same jak wcześniej.
+  const wrongPerCity3 = M.computeCitizenResourceDrain(1, 15, { drewno: 8 });
+  const wrongPerCity7 = M.computeCitizenResourceDrain(1, 35, { drewno: 8 });
   assert(
     wrongPerCity3.available.includes('drewno') && wrongPerCity7.available.includes('drewno'),
     'sanity: liczone OSOBNO (błędny wzorzec) obie "widzą" magazyn=8 jako wystarczający -- to właśnie ta pułapka, którą H1-H3 mają wykluczyć w main.ts',
   );
-  const correctSummedFirst = M.computeCitizenResourceDrain(1, 3 + 7, { drewno: 8, glina: 50 });
+  const correctSummedFirst = M.computeCitizenResourceDrain(1, 15 + 35, { drewno: 8, glina: 50 });
   eq(correctSummedFirst.deductions.drewno, 8, 'poprawny wzorzec (suma populacji NAJPIERW, RAZ per owner): deductions.drewno = min(10, 8) = 8, nie 2×8=16');
-  deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 10 obywateli > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
+  deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 50 obywateli (required=10) > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
 }
 
 // ===========================================================================
@@ -747,6 +846,105 @@ console.log('\n-- F. Wiring main.ts -> silnik tury (N1: happinessDelta + growthP
   eq(
     withPenalty.row.breakdown.total, withoutPenalty.row.breakdown.total - 5,
     'F4: total_z_karą = total_bez_kary + (-5) -- delta wchodzi 1:1, addytywnie',
+  );
+}
+
+// ===========================================================================
+// K. Parytet liczby miejsc czyszczenia: citizenUpkeepByOwner.clear() vs cityOrderState.clear()
+//    (N1 runda 5, punkt 3 Evaluatora rundy 4 -- Maciej 2026-08-12)
+// ===========================================================================
+console.log('\n-- K. main.ts: parytet liczby wystąpień citizenUpkeepByOwner.clear() vs cityOrderState.clear() --');
+{
+  // Kontekst: `citizenUpkeepByOwner` musi być czyszczone w KAŻDYM miejscu, gdzie czyszczone jest
+  // `cityOrderState` (4× w funkcjach startu nowej gry/restartu), PLUS DODATKOWO przy wczytaniu
+  // zapisu (restoreGameFromSave). Backlog "cityOrderState nieczyszczone w restoreGameFromSave"
+  // (odnotowany przez Evaluatora N1 rundy 5) został ZAMKNIĘTY równolegle z tą rundą -- oba pola są
+  // dziś czyszczone w restoreGameFromSave, więc stan jest RÓWNY (5 i 5), nie ostro nierówny.
+  //
+  // K1 poniżej pinuje DOKŁADNIE dzisiejsze liczby -- to jest jedyna forma tej asercji, która
+  // realnie łapie mutanta "usuń jedno z 5 wystąpień citizenUpkeepByOwner.clear()" (zweryfikowane
+  // mutacją): sama nierówność `>=` (K2) NIE wykrywa tej mutacji gdy oba liczniki są równe (4 >= 5
+  // fałszywe wprawdzie, ALE mutant "usuń jedno z 5 cityOrderState.clear()" da 5>=4, wciąż prawda --
+  // K2 nie chroni przed usunięciem strony cityOrderState). K1 jest więc pierwszą linią obrony przed
+  // regresją liczby PO KAŻDEJ stronie TU I TERAZ; K2 wyraża WŁAŚCIWY niezmiennik semantyczny na
+  // przyszłość (patrz niżej).
+  const byOwnerClearCount = (mainSrcStripped.match(/citizenUpkeepByOwner\.clear\(\)/g) || []).length;
+  const orderStateClearCount = (mainSrcStripped.match(/cityOrderState\.clear\(\)/g) || []).length;
+  eq(byOwnerClearCount, 5, 'K1: main.ts zawiera dziś dokładnie 5 wystąpień "citizenUpkeepByOwner.clear()" -- 4 w funkcjach startu nowej gry/restartu + 1 w restoreGameFromSave (naprawa punktu 1 tej samej rundy, commit 13f62b0b)');
+  eq(orderStateClearCount, 5, 'K1: main.ts zawiera dziś dokładnie 5 wystąpień "cityOrderState.clear()" -- 4 w funkcjach startu nowej gry/restartu + 1 w restoreGameFromSave (domknięcie backlogu "cityOrderState nieczyszczone w restoreGameFromSave")');
+
+  // K2 (wymóg wprost ze zgłoszenia): NIERÓWNOŚĆ jako niezmiennik na przyszłość -- jeśli powstanie
+  // PIĄTE miejsce `cityOrderState.clear()` (np. nowy tryb startu gry) BEZ odpowiadającego mu
+  // `citizenUpkeepByOwner.clear()`, licznik cityOrderState przewyższy licznik citizenUpkeepByOwner
+  // i ta asercja złapie to czerwono -- zamiast pozwolić nowemu miejscu zresetować Porządek miast,
+  // ale zostawić martwy/nieaktualny werdykt drenażu obywateli dla tego samego ownera.
+  assert(
+    byOwnerClearCount >= orderStateClearCount,
+    `K2 (N1 runda 5, punkt 3 Evaluatora -- parytet na przyszłość): liczba wystąpień `
+      + `"citizenUpkeepByOwner.clear()" (${byOwnerClearCount}) >= liczba wystąpień `
+      + `"cityOrderState.clear()" (${orderStateClearCount}) w main.ts -- każde miejsce resetu `
+      + 'Porządku miast ma odpowiadające miejsce resetu drenażu obywateli (co najmniej), żeby '
+      + 'przyszłe PIĄTE miejsce cityOrderState.clear() bez odpowiednika nie zostało pominięte po '
+      + 'cichu bez wykrycia',
+  );
+
+  // -------------------------------------------------------------------------
+  // K3 (Runda 6, ta sama "PIĄTA szczelina" Evaluatora -- PYTANIA-OTWARTE.md): K1/K2 liczą
+  // wystąpienia w CAŁYM main.ts, ale nie sprawdzają UMIEJSCOWIENIA. Gdyby jeden z 5
+  // "citizenUpkeepByOwner.clear()" leżał GDZIE INDZIEJ niż wewnątrz restoreGameFromSave (np.
+  // usunięty stamtąd i zduplikowany w funkcji startu nowej gry), K1 nadal widziałby 5 (liczba
+  // się zgadza) -- OBIE K1-strony zielone, mimo że naprawa punktu 1 tej samej rundy (regresja
+  // load-save, commit 13f62b0b) faktycznie by zniknęła. K3 domyka tę szóstą szczelinę: wycina
+  // okno tekstu SAMEJ funkcji restoreGameFromSave dopasowaniem klamer od
+  // 'function restoreGameFromSave(' (NIE kotwicząc na "następna `    function `" --
+  // restoreGameFromSave jest OSTATNIĄ funkcją na tym poziomie wcięcia w main.ts, taka kotwica by
+  // nie zadziałała) i sprawdza DOKŁADNIE wewnątrz tego okna, nie w całym pliku. Po domknięciu
+  // backlogu "cityOrderState nieczyszczone w restoreGameFromSave" oczekiwane jest PO 1 wystąpieniu
+  // KAŻDEGO z dwóch clear() wewnątrz tego okna, nie 1+0.
+  // -------------------------------------------------------------------------
+
+  /** Balansuje nawiasy klamrowe od podanego indeksu '{' i zwraca indeks TUŻ ZA dopasowanym '}'.
+   *  (ten sam wzorzec co ai-founding-territory-test.cjs, balancedBraceEnd). */
+  function balancedBraceEnd(src, openBraceIdx) {
+    let depth = 0;
+    let i = openBraceIdx;
+    for (; i < src.length; i++) {
+      if (src[i] === '{') depth++;
+      else if (src[i] === '}') {
+        depth--;
+        if (depth === 0) { i++; break; }
+      }
+    }
+    return i;
+  }
+
+  // Kotwica/okno to twarde WARUNKI WSTĘPNE tej bramki, nie osobne asercje do policzenia --
+  // "dokładnie jedna nowa asercja K3" (zakres zgłoszenia). Brak kotwicy/pustego okna nie ma
+  // sensownej wartości "czerwono policzonej" -- to awaria samego harnessu testu, więc rzuca
+  // wyjątkiem zamiast wchodzić do passed/failed.
+  const RESTORE_FN_ANCHOR = 'function restoreGameFromSave(';
+  const restoreFnStart = mainSrcStripped.indexOf(RESTORE_FN_ANCHOR);
+  if (restoreFnStart === -1) {
+    throw new Error('K3: main.ts nie zawiera kotwicy "function restoreGameFromSave(" (po stripLineComments) -- harness testu wymaga naprawy, nie liczy się jako FAIL asercji');
+  }
+  const restoreBodyBraceStart = mainSrcStripped.indexOf('{', restoreFnStart);
+  const restoreBodyEnd = balancedBraceEnd(mainSrcStripped, restoreBodyBraceStart);
+  const restoreWindow = mainSrcStripped.slice(restoreFnStart, restoreBodyEnd);
+  if (restoreWindow.length === 0) {
+    throw new Error('K3: okno tekstu ciała restoreGameFromSave wycięte dopasowaniem klamer jest puste -- harness testu wymaga naprawy, nie liczy się jako FAIL asercji');
+  }
+
+  const restoreByOwnerClearCount = (restoreWindow.match(/citizenUpkeepByOwner\.clear\(\)/g) || []).length;
+  const restoreOrderStateClearCount = (restoreWindow.match(/cityOrderState\.clear\(\)/g) || []).length;
+  assert(
+    restoreByOwnerClearCount === 1 && restoreOrderStateClearCount === 1,
+    'K3 (Runda 6, umiejscowienie, nie tylko liczba w całym pliku): WEWNĄTRZ ciała restoreGameFromSave '
+      + '(okno wycięte dopasowaniem klamer) jest dokładnie 1 wystąpienie "citizenUpkeepByOwner.clear()" '
+      + '(naprawa punktu 1 tej samej rundy, commit 13f62b0b) i dokładnie 1 wystąpienie '
+      + '"cityOrderState.clear()" (domknięcie backlogu "cityOrderState nieczyszczone w '
+      + `restoreGameFromSave") -- got byOwner=${restoreByOwnerClearCount}, orderState=${restoreOrderStateClearCount}. `
+      + 'K1/K2 liczą wystąpienia w CAŁYM main.ts i NIE wykrywają PRZENIESIENIA jednego z 5 '
+      + 'clear() poza tę funkcję, dopóki suma w pliku się zgadza',
   );
 }
 

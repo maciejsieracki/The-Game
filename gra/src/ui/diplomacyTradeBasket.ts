@@ -1501,6 +1501,102 @@ function basketItemMaxQty(
   return undefined;
 }
 
+/**
+ * Tożsamość pozycji koszyka — dwie pozycje o tej samej tożsamości są "tą samą propozycją"
+ * (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE). Dla `zywnosc` samo `id` już JEST cityId
+ * (patrz readItemFromForm), dopisanie `cityId` jest więc no-opem — zostawione jawnie, żeby
+ * nie polegać cicho na tym, że oba pola akurat są dziś równe.
+ * / EN: identity key for a basket item; two items sharing it are "the same proposal".
+ */
+function basketItemIdentity(item: BasketItem): string {
+  return item.typ + '::' + item.id + (item.typ === 'zywnosc' ? '::' + (item.cityId ?? '') : '');
+}
+
+/**
+ * R-DYPLO-DUPLIKAT-KOSZYK (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE, 2026-08-12): dodanie
+ * pozycji o TEJ SAMEJ tożsamości (typ+id[+cityId dla żywności]), która już jest w koszyku po
+ * tej samej stronie:
+ *  - typy z sensowną, sumowalną ilością (zloto/praca/zywnosc/surowiec_ilosc — te same typy co
+ *    `basketItemQtyEditable`, bo to one dostają suwak ilości w wierszu koszyka) -> ZSUMUJ
+ *    ilość z istniejącą pozycją, przycięte do tego samego limitu co ręczna zmiana ilości
+ *    (`basketItemMaxQty`) zamiast dokładać drugi osobny wiersz;
+ *  - typy bez pola ilości (tech/jednostka/zloze/surowiec_boolean — jedna technologia/jednostka/
+ *    dostęp to jedna, niepodzielna oferta) -> BLOKADA, koszyk zostaje BEZ ZMIAN. Druga kopia tej
+ *    samej technologii (np. 4× "Obróbka drewna" ze zrzutu właściciela) nie ma sensu nawet po
+ *    zsumowaniu ilości, bo ilości tu w ogóle nie ma.
+ * Eksport do testu regresyjnego (tools/diplomacy-basket-duplicate-test.cjs).
+ * / EN: adding an item with the same identity as one already in the basket either sums the
+ * quantity (for quantity-bearing types) or is blocked outright (for one-of-a-kind types like a
+ * single technology/unit/access grant, where a second copy is meaningless even summed).
+ */
+export function addOrMergeBasketItem(
+  items: BasketItem[],
+  newItem: BasketItem,
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+): BasketItem[] {
+  const identity = basketItemIdentity(newItem);
+  const idx = items.findIndex(it => basketItemIdentity(it) === identity);
+  if (idx < 0) return [...items, newItem];
+  if (!basketItemQtyEditable(newItem)) return items; // blokada duplikatu — bez zmian
+  const existing = items[idx]!;
+  const summedQty = (existing.ilosc ?? 0) + (newItem.ilosc ?? 0);
+  const max = basketItemMaxQty(existing, side, ctx);
+  const clamped = max != null ? Math.min(max, summedQty) : summedQty;
+  return items.map((it, i) => (i === idx ? { ...existing, ilosc: clamped } : it));
+}
+
+/**
+ * R-DYPLO-DUPLIKAT-KOSZYK-EDYCJA (P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-EDYCJA, 2026-08-12):
+ * handler „Zapisz zmiany" po edycji ISTNIEJĄCEGO wiersza koszyka. Zwykłe podmienienie na
+ * miejscu (stary kod) nie sprawdzało, czy nowa wersja wiersza koliduje (ta sama tożsamość
+ * `basketItemIdentity`) z INNYM, już istniejącym wierszem — dawało to dwa identyczne wiersze
+ * (zgłoszenie właściciela: edycja "Garncarstwo" -> "Obróbka drewna", gdy "Obróbka drewna" już
+ * jest w koszyku). Kolizja z SAMYM SOBĄ (i === editIdx) to nie duplikat, tylko brak zmiany
+ * typu/id — trzeba ją wykluczyć z porównania.
+ *  - Brak kolizji z innym wierszem -> zwykła podmiana na miejscu (dotychczasowe zachowanie).
+ *  - Kolizja z innym wierszem, typ z sumowalną ilością (patrz `basketItemQtyEditable`) -> SCAL:
+ *    tak samo jak przy dodawaniu (`addOrMergeBasketItem`) sumuj ilość do wiersza, z którym jest
+ *    kolizja, przytnij do tego samego limitu (`basketItemMaxQty`) i USUŃ edytowany wiersz jako
+ *    osobną pozycję — wynik: jeden wiersz z sumą, identycznie jak przy dwukrotnym dodaniu.
+ *  - Kolizja z innym wierszem, typ BEZ ilości (tech/jednostka/zloze/surowiec_boolean — jedna
+ *    niepodzielna oferta) -> BLOKADA: edycja się nie stosuje, lista wraca do stanu SPRZED
+ *    edycji (nic nie usunięte, nic nie zduplikowane). Wybrane (zamiast „usuń edytowany
+ *    wiersz, zostaw istniejący") żeby zachowanie było SPÓJNE z blokadą w
+ *    `addOrMergeBasketItem` — tam duplikat też jest odrzucany bez usuwania czegokolwiek z
+ *    listy, więc "cofnięcie do no-op" jest tym samym mechanizmem zastosowanym do edycji
+ *    zamiast do dodawania.
+ * Eksport do testu regresyjnego (tools/diplomacy-basket-duplicate-ui-test.cjs).
+ * / EN: "Save changes" handler for editing an EXISTING basket row. A plain in-place replace
+ * (old code) never checked whether the edited row's new identity collides with a DIFFERENT
+ * existing row — producing two identical rows (owner's report: editing "Garncarstwo" into
+ * "Obróbka drewna" while that tech is already in the basket). Colliding with itself
+ * (i === editIdx) is not a duplicate, just an unchanged type/id, and must be excluded from the
+ * comparison. No collision: normal in-place replace. Collision + quantity-bearing type: merge
+ * into the colliding row (sum, clamp — same as addOrMergeBasketItem) and drop the edited row.
+ * Collision + one-of-a-kind type: block — list reverts to its pre-edit state, mirroring
+ * addOrMergeBasketItem's block semantics (nothing removed, nothing duplicated).
+ */
+export function applyBasketItemEdit(
+  items: BasketItem[],
+  editIdx: number,
+  newItem: BasketItem,
+  side: 'give' | 'receive',
+  ctx: NegotiationModalContext,
+): BasketItem[] {
+  const identity = basketItemIdentity(newItem);
+  const collideIdx = items.findIndex((it, i) => i !== editIdx && basketItemIdentity(it) === identity);
+  if (collideIdx < 0) return items.map((it, i) => (i === editIdx ? newItem : it));
+  if (!basketItemQtyEditable(newItem)) return items; // blokada duplikatu — edycja się nie stosuje
+  const existing = items[collideIdx]!;
+  const summedQty = (existing.ilosc ?? 0) + (newItem.ilosc ?? 0);
+  const max = basketItemMaxQty(existing, side, ctx);
+  const clamped = max != null ? Math.min(max, summedQty) : summedQty;
+  return items
+    .map((it, i) => (i === collideIdx ? { ...existing, ilosc: clamped } : it))
+    .filter((_, i) => i !== editIdx);
+}
+
 function basketRowQtyStepperHtml(
   item: BasketItem,
   side: 'give' | 'receive',
@@ -2259,13 +2355,18 @@ export function showTradeBasketModal(
         const editIdxAttr = btn.getAttribute('data-edit-idx');
         const editIdx = editIdxAttr != null ? parseInt(editIdxAttr, 10) : -1;
         if (editIdx >= 0) {
-          // R-PROPOZYCJA-BRAK-EDYCJI: „Zapisz zmiany" — podmień pozycję na miejscu, nie dodawaj nowej.
-          if (side === 'give') giveItems = giveItems.map((it, i) => (i === editIdx ? item : it));
-          else receiveItems = receiveItems.map((it, i) => (i === editIdx ? item : it));
+          // R-PROPOZYCJA-BRAK-EDYCJI: „Zapisz zmiany" — podmień pozycję na miejscu; przy kolizji
+          // z INNYM wierszem scal/zablokuj tak samo jak przy dodawaniu (R-DYPLO-DUPLIKAT-KOSZYK-
+          // EDYCJA, patrz applyBasketItemEdit) zamiast po cichu tworzyć duplikat.
+          if (side === 'give') giveItems = applyBasketItemEdit(giveItems, editIdx, item, side, ctx);
+          else receiveItems = applyBasketItemEdit(receiveItems, editIdx, item, side, ctx);
           editingItem = null;
         } else {
-          if (side === 'give') giveItems = [...giveItems, item];
-          else receiveItems = [...receiveItems, item];
+          // R-DYPLO-DUPLIKAT-KOSZYK: dodanie tej samej propozycji drugi raz sumuje ilość
+          // (dla typów, gdzie to ma sens) albo jest blokowane (patrz addOrMergeBasketItem) —
+          // zamiast dokładać osobny, zduplikowany wiersz.
+          if (side === 'give') giveItems = addOrMergeBasketItem(giveItems, item, 'give', ctx);
+          else receiveItems = addOrMergeBasketItem(receiveItems, item, 'receive', ctx);
         }
         refresh();
       });

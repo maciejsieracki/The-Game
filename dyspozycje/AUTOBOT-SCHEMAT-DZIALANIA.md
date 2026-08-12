@@ -103,3 +103,44 @@ flowchart TD
 ## 7. Jedno zdanie dla agenta
 
 > Najpierw ID i decyzja Macieja → **Operator** robi → **Evaluator** sprawdza na twardych metrykach → **Grok** zatwierdza → **deploy** tylko gdy Maciej powie.
+
+---
+
+## 8. Integracja z Ultracode/Workflow (Maciej 2026-08-12)
+
+**Uwaga o modelach:** ten schemat (Sekcja 2–3) mówi o `composer-2.5`/„Grok" — starszym
+wariancie z sesji Cursor, sprzed aktualizacji modeli 2026-08-06 (zaznaczone już wyżej w
+pliku jako możliwa rozbieżność). W sesjach Claude Code (gdzie działa narzędzie Workflow
+opisane niżej) obowiązuje CLAUDE.md §4: Operator = Sonnet 5, Evaluator = Opus 5, Deploy =
+Opus 5, „Grok" nie występuje jako final gate — tę rolę pełni orkiestrator (główna sesja
+Claude Code). Pętla z Sekcji 1 (`OP → EV → GR`) pozostaje kanoniczna jako **struktura**;
+poniższe punkty tłumaczą ją na narzędzie Workflow bez zmiany kolejności kroków.
+
+Workflow (Ultracode, Claude Agent SDK) to **narzędzie wykonawcze** — skrypt z `agent()`,
+`pipeline()`, `parallel()`, `phase()`, wbudowanym limitem współbieżności i izolacją
+worktree per agent. Nie jest nową rolą w tabeli z Sekcji 2 — jest sposobem, w jaki role
+**Operator** i **Evaluator** z tej tabeli zostają wywołane, gdy tematów jest dużo naraz
+(≥3 niezależnych) — dla 1–2 tematów ręczny dispatch pozostaje w pełni poprawny.
+
+Mapowanie na krok 3–4 z checklisty Sekcji 4 („Operator: implementacja" → „Evaluator:
+adwokat diabła"): `phase('Operator')` i `phase('Evaluator')` żyją w JEDNYM skrypcie Workflow
+jako dwa kroki sekwencyjne tego samego przebiegu — nigdy jako dwa osobne, oddzielnie
+zlecane uruchomienia. `pipeline()` pozwala tematowi A być już w kroku 4 (Evaluator), gdy
+temat B jeszcze jest w kroku 3 (Operator) — bez ręcznego pilnowania kolejności przez
+orkiestratora/Grok.
+
+Każdy prompt agenta uruchamianego w izolowanym worktree (Workflow albo ręczny `Agent` tool)
+zaczyna się od weryfikacji bazy worktree: grep symbolu, który musi istnieć na właściwej
+gałęzi; brak trafienia = agent się zatrzymuje i zgłasza, zamiast zgadywać, że kod „jeszcze
+nie scalony". Zmiany dotykające silnika bitwy, zapisu/wczytania gry lub migracji danych w
+`gra/data/**` przechodzą przez 3 niezależnych Evaluatorów głosujących większością, nie 1.
+
+Krok 6–7 checklisty (meldunek „Gotowe" → `deploy` → tylko Grok/orkiestrator publikuje) NIE
+wchodzi w zakres Workflow — `git commit`/`push`, wpisy do `WERSJE.md`/`KANAL-PRACA.md`/
+`REJESTR-PROSB-I-ZADAN.md` i cały deploy zostają zawsze poza skryptem, ręką
+orkiestratora/Grok, dokładnie jak dziś. Workflow kończy pracę na „kod zatwierdzony przez
+Evaluatora" (koniec kroku 4), nie dalej.
+
+Pełny szczegół (dokładny szablon KROK 0, tabela modeli Sonnet 5/Opus 5): patrz
+`.cursor/rules/autobot-evaluator-operator.mdc` §„Integracja z Ultracode/Workflow" i
+`docs/decyzje/R-PROC-AUTOBOT.md` §„Integracja z Ultracode/Workflow".

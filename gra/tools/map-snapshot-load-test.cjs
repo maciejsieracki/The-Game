@@ -95,12 +95,33 @@ function canonicalJson(value) {
   return JSON.stringify(value);
 }
 
+/**
+ * Minimalny fake `Storage` (Web Storage) do testowania listSaves() poza
+ * przeglądarką -- Node nie ma globalnego `localStorage`. Wystarcza dokładnie
+ * to, czego używa save.ts::getStorage()-owe pętle (length/key/getItem/
+ * setItem/removeItem); brak IndexedDB w tym środowisku (indexedDB pozostaje
+ * undefined) sprawia, że idbListKeys() bezpiecznie zwraca [] (patrz
+ * idb-storage.ts), więc test przez localStorage w pełni ćwiczy tę samą
+ * logikę filtrowania nazw slotów co gałąź IDB w listSaves().
+ */
+function makeFakeLocalStorage(initialEntries) {
+  const map = new Map(Object.entries(initialEntries));
+  return {
+    get length() { return map.size; },
+    key(i) { return Array.from(map.keys())[i] ?? null; },
+    getItem(k) { return map.has(k) ? map.get(k) : null; },
+    setItem(k, v) { map.set(k, String(v)); },
+    removeItem(k) { map.delete(k); },
+    clear() { map.clear(); },
+  };
+}
+
 fs.writeFileSync(
   ENTRY,
   [
     "export { serializeMapForSave, buildGameMapFromSnapshot, isValidMapSnapshot } from '../src/map/mapSnapshot.ts';",
     "export { loadMapForSave } from '../src/game/load-map-source.ts';",
-    "export { serializeGame, deserializeGame, SAVE_VERSION, SAVE_PREFIX, SAVE_META_PREFIX } from '../src/game/save.ts';",
+    "export { serializeGame, deserializeGame, SAVE_VERSION, SAVE_PREFIX, SAVE_META_PREFIX, LAST_PLAYED_SLOT_KEY, listSaves } from '../src/game/save.ts';",
     "export { generateMap } from '../src/map/generator.ts';",
     '',
   ].join('\n'),
@@ -120,7 +141,7 @@ esbuild.buildSync({
 const {
   serializeMapForSave, buildGameMapFromSnapshot, isValidMapSnapshot,
   loadMapForSave, serializeGame, deserializeGame, SAVE_VERSION,
-  SAVE_PREFIX, SAVE_META_PREFIX,
+  SAVE_PREFIX, SAVE_META_PREFIX, LAST_PLAYED_SLOT_KEY, listSaves,
   generateMap,
 } = require(BUNDLE);
 fs.unlinkSync(ENTRY);
@@ -133,6 +154,24 @@ fs.unlinkSync(ENTRY);
 // ---------------------------------------------------------------------------
 console.log('--- 0. SAVE_META_PREFIX rozłączny z SAVE_PREFIX ---');
 assert(!SAVE_META_PREFIX.startsWith(SAVE_PREFIX), 'SAVE_META_PREFIX (' + SAVE_META_PREFIX + ') NIE jest podprefiksem SAVE_PREFIX (' + SAVE_PREFIX + ') -- listSaves() nie zwróci fantomowego slotu meta.<realSlot>');
+console.log('');
+
+// ---------------------------------------------------------------------------
+// 0b. FANTOM LAST_PLAYED_SLOT_KEY (Maciej/Evaluator, znaleziony obok naprawy
+//     SAVE_META_PREFIX z sekcji 0): w ODRÓŻNIENIU od SAVE_META_PREFIX, klucz
+//     LAST_PLAYED_SLOT_KEY = SAVE_PREFIX + '_lastPlayed' CELOWO dzieli prefiks
+//     z prawdziwymi slotami zapisu -- rozłączność prefiksów (sekcja 0) NIE
+//     jest tu poprawną naprawą. listSaves() (save.ts) musiał zamiast tego
+//     przyjąć ten sam filtr, jaki summarizeSaveSlots() (saveLoadDialog.ts) już
+//     stosuje przy renderze: odrzucić każdy klucz, którego nazwa slotu (po
+//     odcięciu SAVE_PREFIX) zaczyna się od '_'. Asercja statyczna niżej
+//     dokumentuje ZAŁOŻENIE (dlaczego rozłączność nie wchodzi w grę tutaj);
+//     żywy test zachowania listSaves() jest w sekcji 0c (musi być wewnątrz
+//     IIFE async niżej -- listSaves() zwraca Promise).
+// ---------------------------------------------------------------------------
+console.log('--- 0b. LAST_PLAYED_SLOT_KEY dzieli prefiks z SAVE_PREFIX CELOWO -- listSaves() filtruje po nazwie slotu, nie po rozłączności ---');
+assert(LAST_PLAYED_SLOT_KEY.startsWith(SAVE_PREFIX), 'LAST_PLAYED_SLOT_KEY (' + LAST_PLAYED_SLOT_KEY + ') START WITH SAVE_PREFIX (' + SAVE_PREFIX + ') -- w odróżnieniu od SAVE_META_PREFIX (sekcja 0) to jest CELOWE (schemat nazw kluczy), więc naprawą NIE MOŻE być rozłączność prefiksów');
+assert(LAST_PLAYED_SLOT_KEY.slice(SAVE_PREFIX.length).startsWith('_'), 'nazwa slotu po odcięciu SAVE_PREFIX ("' + LAST_PLAYED_SLOT_KEY.slice(SAVE_PREFIX.length) + '") zaczyna się od "_" -- listSaves() (save.ts) MUSI odrzucać takie sloty, tak jak summarizeSaveSlots() (saveLoadDialog.ts) już robi przy renderze listy');
 console.log('');
 
 // ---------------------------------------------------------------------------
@@ -223,6 +262,43 @@ async function mockGenFail() {
 }
 
 (async () => {
+  // -------------------------------------------------------------------------
+  // 0c. listSaves() NA ŻYWO (localStorage zmockowany, patrz makeFakeLocalStorage
+  //     wyżej) -- P-IDB-FANTOM-LASTPLAYED (Maciej/Evaluator): przed naprawą
+  //     LAST_PLAYED_SLOT_KEY ('thegame.save._lastPlayed') pasował do
+  //     `key.startsWith(SAVE_PREFIX)` w listSaves() i trafiał do wyniku jako
+  //     fantomowy slot '_lastPlayed' -- hasAnySaveSlot()/openLoadGameDialog()
+  //     (main.ts) czytają listSaves() BEZPOŚREDNIO (nie przez
+  //     summarizeSaveSlots(), które już filtruje '_'-prefiksowane sloty przy
+  //     renderze), więc skutek realny: przycisk "Kontynuuj" aktywny mimo braku
+  //     zapisów, dialog "Wczytaj grę" otwiera się zamiast pokazać "Brak
+  //     zapisów". Musi być wewnątrz IIFE async (nie w sekcji 0/0b wyżej),
+  //     bo listSaves() zwraca Promise -- ten plik .cjs nie ma top-level await.
+  //     Ten fake localStorage jest przywracany w `finally`, żeby NIE wyciekł
+  //     do sekcji 1-5 niżej (które go nie potrzebują).
+  // -------------------------------------------------------------------------
+  console.log('--- 0c. listSaves() (na żywo, localStorage zmockowany) NIE zwraca fantomowego slotu "_lastPlayed" ---');
+  const prevLocalStorage = globalThis.localStorage;
+  globalThis.localStorage = makeFakeLocalStorage({
+    [SAVE_PREFIX + 'moj-zapis']: '{"wersja":2,"tura":1,"units":[],"cities":[],"explored":[]}',
+    [LAST_PLAYED_SLOT_KEY]: 'moj-zapis',
+  });
+  try {
+    const liveSlots = await listSaves();
+    assert(
+      Array.isArray(liveSlots) && liveSlots.includes('moj-zapis'),
+      'listSaves() (live) zwraca prawdziwy slot "moj-zapis" (got: ' + JSON.stringify(liveSlots) + ')',
+    );
+    assert(
+      !liveSlots.includes('_lastPlayed'),
+      'listSaves() (live) NIE zwraca fantomowego slotu "_lastPlayed" mimo że LAST_PLAYED_SLOT_KEY dzieli prefiks z SAVE_PREFIX (got: ' + JSON.stringify(liveSlots) + ')',
+    );
+  } finally {
+    if (prevLocalStorage === undefined) delete globalThis.localStorage;
+    else globalThis.localStorage = prevLocalStorage;
+  }
+  console.log('');
+
   const result = await loadMapForSave(restoredSave, mockGenFail);
   assert(genCalls === 0, 'loadMapForSave NIE wywołało generatora, gdy mapSnapshot jest poprawny (calls=' + genCalls + ')');
   assert(result.usedSnapshot === true, 'loadMapForSave zwraca usedSnapshot=true dla nowego formatu');

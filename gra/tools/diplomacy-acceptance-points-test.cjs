@@ -511,6 +511,148 @@ ok(!tradePanel896.includes('000000'), 'umowa_handlowa panel @ rel 89.6: bez IEEE
 ok(tradePanel896.includes('−10,4%'), 'umowa_handlowa panel @ rel 89.6: badge −10,4%');
 ok(tradePanel896.includes('baza 80, Relacja −10,4% siła'), 'umowa_handlowa panel @ rel 89.6: hint baza z czystym mod%');
 
+// ---------------------------------------------------------------------------
+// P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (Maciej, zrzuty ekranu 2026-08-1x):
+// AI-proponent (incoming) na traktatach z bazą PW (nap/sojusz/umowa_handlowa/umowa_szlakow)
+// NIE może pokazywać/wymagać dopłaty gracza wynikającej z rabatu Relacji <100 po stronie
+// gracza — evaluateProposal gate'uje tę bazę WYŁĄCZNIE `if (proposerIsPlayer)`. Wcześniej
+// panel pokazywał „Brakuje N PW — zawrzyj osobną umowę" na w pełni akceptowalnej ofercie AI,
+// a dla umowa_handlowa/umowa_szlakow ten sam sztuczny deficyt BLOKOWAŁ przycisk Przyjmij
+// (`computeIncomingPlayerAcceptNetPw`/`previewIncomingPlayerAccept`).
+// ---------------------------------------------------------------------------
+
+// 1) AI proponuje NAP przy Relacji 61/200 (poniżej neutralnej 100, powyżej progu 50) —
+// silnik akceptuje bez dopłaty; panel MUSI się z tym zgadzać (przed naprawą: accepted=false,
+// "Brakuje 78 PW — zawrzyj osobną umowę", mimo braku realnego wymogu PW).
+const napIncoming61 = mod.computePlayerAcceptanceSides('nap', {}, 61, true);
+ok(napIncoming61.my.accepted === true, 'AI proponuje NAP @ rel 61: my.accepted true (nie sztuczny deficyt)');
+ok(napIncoming61.their.accepted === true, 'AI proponuje NAP @ rel 61: their.accepted true');
+ok(!napIncoming61.my.statusLabel.includes('Brakuje'), 'AI proponuje NAP @ rel 61: bez fałszywego "Brakuje"');
+const napEval61 = mod.evaluateProposal(
+  { actionId: 'nap', proposerOwnerId: 1, responderOwnerId: 0, payload: {} },
+  {
+    relation: { zaufanie: 31, respekt: 30 }, stanWojny: false, difficulty: 'normal',
+    turn: 10, proposerWiarygodnosc: 60,
+  },
+);
+ok(napEval61.accepted === true, 'kontrola silnika: evaluateProposal NAP @ rel 61 (AI proponent) = accepted');
+
+// 2) U2 (Evaluator, Maciej) — LUSTRZANA asymetria: GRACZ jest proponentem (own) tej samej
+// propozycji. Silnik (evaluateProposal, case 'nap') nie ma ŻADNEGO PW-fairness gate — ani dla
+// AI-proponenta (punkt 1), ani dla gracza-proponenta — sprawdza wyłącznie `score < napThreshold`
+// (progNapRelacja=50 ≤ 61). Do UZUPEŁNIENIA U1 (2026-08-1x): panel own pokazywał
+// accepted=false, "Brakuje 78 PW — zawrzyj osobną umowę" na tej samej w pełni akceptowalnej
+// przez silnik propozycji — bramka `asymBalance>=0` była stosowana do WSZYSTKICH traktatów z
+// treatyBase>0 gdy proponentem był gracz, mimo że realną bramkę PW (treatyBaseFairnessGap,
+// `if (proposerIsPlayer)`) silnik ma WYŁĄCZNIE w case'ach umowa_handlowa/umowa_szlakow (i
+// osobno pokój). Naprawione: bramka `asymBalance>=0` po stronie own dotyczy TERAZ wyłącznie
+// tych dwóch typów (OWN_PROPOSER_TREATY_PW_GATE_ACTIONS w diplomacy-acceptance-points.ts).
+const napOwn61 = mod.computePlayerAcceptanceSides('nap', {}, 61, false);
+ok(napOwn61.my.accepted === true, 'U2: gracz proponuje NAP @ rel 61: my.accepted true (naprawione — był fałszywy deficyt −78 PW)');
+ok(napOwn61.their.accepted === true, 'U2: gracz proponuje NAP @ rel 61: their.accepted true');
+ok(!napOwn61.my.statusLabel.includes('Brakuje'), 'U2: gracz proponuje NAP @ rel 61: bez fałszywego "Brakuje"');
+ok(napOwn61.my.balancePn === -78, 'U2: gracz proponuje NAP @ rel 61: balancePn nadal informacyjnie −78 (122−200), ale nie blokuje');
+const napEvalOwn61 = mod.evaluateProposal(
+  { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
+  {
+    relation: { zaufanie: 31, respekt: 30 }, stanWojny: false, difficulty: 'normal',
+    turn: 10, proposerWiarygodnosc: 60,
+  },
+);
+ok(napEvalOwn61.accepted === true, 'kontrola silnika: evaluateProposal NAP @ rel 61 (gracz proponent) = accepted (zgadza się z panelem)');
+
+// 2a) U2 — gate PW dla umowa_handlowa/umowa_szlakow (own) MUSI zostać — to JEDYNE dwa typy,
+// gdzie evaluateProposal realnie gate'uje bazę PW `if (proposerIsTreatyPlayer)` (treatyBaseFairnessGap).
+// rel 52: gracz 42 PW (baza 80 @ rabat −48%), partner 80 PW → deficyt −38, MUSI dalej blokować.
+const tradeOwn52StillGated = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 52, false);
+ok(tradeOwn52StillGated.my.accepted === false, 'U2: umowa_handlowa @ rel 52 (own): dalej accepted false (gate PW zachowany)');
+ok(tradeOwn52StillGated.my.balancePn === -38, 'U2: umowa_handlowa @ rel 52 (own): balancePn −38 (42−80)');
+ok(tradeOwn52StillGated.my.statusLabel.includes('Brakuje 38'), 'U2: umowa_handlowa @ rel 52 (own): statusLabel "Brakuje 38 PW"');
+
+// 2b) U2 — sojusz_pelny (own) @ rel 160 (relOk: próg 151 ≤ 160, asymBalance>0 bo Relacja>100
+// wzmacnia bazę gracza) — silnik case 'sojusz_pelny' nie ma PW gate, tylko progi Relacji/Zaufania/
+// Respektu/willingnessAlly; panel MUSI akceptować niezależnie od asymBalance.
+const sojuszOwn160 = mod.computePlayerAcceptanceSides('sojusz_pelny', {}, 160, false);
+ok(sojuszOwn160.my.accepted === true, 'U2: gracz proponuje sojusz_pelny @ rel 160: accepted true (brak PW gate w silniku)');
+ok(sojuszOwn160.my.balancePn === 300, 'U2: sojusz_pelny @ rel 160 (own): balancePn +300 (800−500), informacyjne, nie blokuje');
+
+// 2c) U2 — regresja etykiety/accepted: relOk=false (Relacja poniżej progu case'a) dla akcji BEZ
+// bramki PW (nap) po stronie own MUSI dalej blokować z poprawną przyczyną ("Relacja"), nie z
+// fałszywym "Spełnia warunki (0 PW)" (efekt uboczny odkryty przy weryfikacji tej naprawy —
+// zanim balanceOk było zawsze true dla nap, relOk=false i tak trafiał w gałąź "Brakuje PW" z
+// powodu ujemnego asymBalance, maskując usterkę; po naprawie balanceOk=true ujawniało ją).
+const napOwn40BelowThreshold = mod.computePlayerAcceptanceSides('nap', {}, 40, false);
+ok(napOwn40BelowThreshold.my.accepted === false, 'U2: gracz proponuje NAP @ rel 40 (< próg 50): accepted false (Relacja, nie PW)');
+ok(napOwn40BelowThreshold.my.statusLabel === 'Relacja −10 (wym. 50)', 'U2: NAP @ rel 40 (own): statusLabel "Relacja −10 (wym. 50)", nie "Spełnia warunki"');
+
+// 2d) U2 — kierunek incoming pozostaje BAJT-IDENTYCZNY (regresja na U1): AI proponuje NAP
+// @ rel 61 wciąż accepted=true z etykietą U1 ("możesz przyjąć bez dopłaty"), niezmienione.
+const napIncoming61Regress = mod.computePlayerAcceptanceSides('nap', {}, 61, true);
+ok(napIncoming61Regress.my.accepted === true, 'U2 regresja: AI proponuje NAP @ rel 61 (incoming): accepted nadal true');
+ok(
+  napIncoming61Regress.my.statusLabel === 'Propozycja partnera — możesz przyjąć bez dopłaty',
+  'U2 regresja: AI proponuje NAP @ rel 61 (incoming): statusLabel U1 niezmieniony',
+);
+
+// 3) umowa_handlowa incoming, PUSTY koszyk @ rel 61 — realny bug: blokował przycisk Przyjmij.
+const trHandlowaIncoming61 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 61, true);
+ok(trHandlowaIncoming61.my.accepted === true, 'AI proponuje umowa_handlowa @ rel 61 (pusty koszyk): my.accepted true');
+const trHandlowaNet = mod.computeIncomingPlayerAcceptNetPw('umowa_handlowa', {}, 61);
+ok(trHandlowaNet === null, 'umowa_handlowa incoming pusty koszyk: gate bramki NIEAKTYWNY (null, nie blokuje Przyjmij)');
+const trHandlowaPreview = mod.previewIncomingPlayerAccept('umowa_handlowa', {}, 61);
+ok(trHandlowaPreview === null, 'umowa_handlowa incoming pusty koszyk: previewIncomingPlayerAccept null (fallback do evaluateProposal)');
+const trHandlowaEval61 = mod.evaluateProposal(
+  { actionId: 'umowa_handlowa', proposerOwnerId: 1, responderOwnerId: 0, payload: {} },
+  {
+    relation: { zaufanie: 31, respekt: 30 }, stanWojny: false, difficulty: 'normal',
+    turn: 10, proposerWiarygodnosc: 60,
+  },
+);
+ok(trHandlowaEval61.accepted === true, 'kontrola silnika: evaluateProposal umowa_handlowa @ rel 61 (AI proponent) = accepted');
+
+// 4) umowa_szlakow — bliźniacza akcja, ta sama konfiguracja bazy: MUSI zachowywać się
+// SPÓJNIE z umowa_handlowa (przed naprawą było niespójne — szlakow zwracał null, handlowa nie).
+const trSzlakowNet = mod.computeIncomingPlayerAcceptNetPw('umowa_szlakow', {}, 61);
+ok(trSzlakowNet === null, 'umowa_szlakow incoming pusty koszyk: gate bramki nieaktywny (spójne z umowa_handlowa)');
+
+// 5) umowa_handlowa incoming z REALNYM koszykiem, w którym AI oddaje dużo za mało (200 PN za
+// 1 PN) — R-PW-ACCEPT-OVERPAY-Q1=A MUSI dalej chronić AI przed takim przyjęciem (naprawa
+// dotyczy WYŁĄCZNIE bazy traktatu, nie realnej treści koszyka).
+const aiGenerousBasket = {
+  giveItems: [{ typ: 'surowiec_ilosc', id: 'zelazo', ilosc: 10 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 1 }],
+};
+const aiGenerousNet = mod.computeIncomingPlayerAcceptNetPw('umowa_handlowa', aiGenerousBasket, 100);
+ok(aiGenerousNet != null && aiGenerousNet.netPw < 0, 'umowa_handlowa incoming: koszyk nieuczciwy dla AI nadal wykryty (netto ujemne)');
+const aiGenerousPreview = mod.previewIncomingPlayerAccept('umowa_handlowa', aiGenerousBasket, 100);
+ok(aiGenerousPreview != null && aiGenerousPreview.accepted === false, 'umowa_handlowa incoming: Przyjmij nadal zablokowane, gdy koszyk realnie krzywdzi AI');
+
+// 6) 'handel' (treatyBase=0) — kontrola zerowa: zachowanie MUSI pozostać identyczne z testami
+// R-PW-ACCEPT-OVERPAY-Q1=A wyżej (overpay/underpay), naprawa nie dotyka tej akcji.
+ok(mod.computeIncomingPlayerAcceptNetPw('handel', overpayPayload, 100).netPw === overpayNet.netPw, 'handel: netPw niezmieniony po naprawie (overpay)');
+ok(mod.computeIncomingPlayerAcceptNetPw('handel', underpayPayload, 100).netPw === underpayNet.netPw, 'handel: netPw niezmieniony po naprawie (underpay)');
+
+// 7) U3 (Evaluator 76514613): asercja regresyjna dla mutacji M5 (niezłapana) — netPw MUSI liczyć
+// się WYŁĄCZNIE z realnego koszyka (offerPn), NIE z bazy traktatu przefiltrowanej przez
+// bilateralTreatyDisplayPw/sideDisplayOfferPw. umowa_handlowa (treatyBase=80) @ rel 140: koszyk
+// my=60 PW (receiveItems), their=80 PW (giveItems) → netPw poprawny = 60−80 = −20. Stara
+// (błędna) ścieżka, która dokłada bazę traktatu (gracz @ Relacji 112, partner baza 80), dałaby
+// 172−160 = +12 — zweryfikowane niezależnie na tej samej kombinacji: gdyby M5 (lub jej
+// odpowiednik) wróciła, ta asercja różni się o 32 PW i musi FAIL.
+// / EN: U3 (Evaluator 76514613): regression assertion for the (uncaught) M5 mutation — netPw
+// MUST be computed from the REAL basket only (offerPn), NOT from the treaty base folded back in
+// via bilateralTreatyDisplayPw/sideDisplayOfferPw. umowa_handlowa (treatyBase=80) @ rel 140:
+// basket my=60 PW (receiveItems), their=80 PW (giveItems) → correct netPw = 60−80 = −20. The old
+// (buggy) path that folds in the treaty base (player @ Relation 112, partner base 80) would give
+// 172−160 = +12 — independently verified on the identical combination: if M5 (or an equivalent)
+// regressed, this assertion differs by 32 PW and must FAIL.
+const u3TreatyPayload = {
+  giveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 80 }],
+  receiveItems: [{ typ: 'zloto', id: 'zloto', ilosc: 60 }],
+};
+const u3Net = mod.computeIncomingPlayerAcceptNetPw('umowa_handlowa', u3TreatyPayload, 140);
+ok(u3Net != null && u3Net.netPw === -20, 'U3: umowa_handlowa incoming @ rel 140, koszyk 60/80: netPw === -20 (nie +12 ze starej ścieżki bazy traktatu)');
+
 try { fs.unlinkSync(ENTRY); } catch (_) { /* ignore */ }
 
 console.log(`diplomacy-acceptance-points-test: ${pass} pass, ${fail} fail`);

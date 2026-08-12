@@ -11,6 +11,7 @@ import { bindHudPanelOutsideDismiss } from './hudPanelDismiss';
 import { techIconSvg } from './techIcons';
 import { SIDE_PANEL_LEFT, SIDE_PANEL_TOP } from './sidePanelLayout';
 import { RESEARCH_QUEUE_MAX } from '../game/playerState';
+import type { EraGateInfo } from '../game/era-gate-ui';
 
 export interface ScienceHubProgress {
   targetName: string | null;
@@ -66,6 +67,13 @@ export interface ScienceHubHudConfig {
   onDequeue?: (techId: string) => void;
   /** C-RES-Q2=C: drag&drop — przestaw pozycję fromIdx→toIdx (indeksy w getPlan()). */
   onReorder?: (fromIdx: number, toIdx: number) => void;
+  /**
+   * R-EPOKA-CUD-ZAKRES-Q1=B: stan bramki awansu epoki bieżącej (tech + cud własny E).
+   * Panel renderowany TYLKO gdy `info.blocked` (patrz decyzja UX w raporcie Operatora —
+   * silnik przelicza erę automatycznie tę samą turę gdy oba warunki są spełnione, więc
+   * stan "spełnione, ale jeszcze nie awansowano" praktycznie nie występuje na ekranie).
+   */
+  getEraGateInfo?: () => EraGateInfo | null;
 }
 
 export interface ScienceHubHudApi {
@@ -201,6 +209,21 @@ function ensureStyles(): void {
 .civ-science-hub-hud .sh-item .sh-num-badge{flex-shrink:0;width:1.2em;height:1.2em;border-radius:50%;
   background:var(--circle-grad);color:var(--circle-text);font-size:0.62em;font-weight:800;
   display:flex;align-items:center;justify-content:center;margin-top:0.15em;}
+.civ-science-hub-hud .sh-era-gate{border-color:rgba(224,122,95,.45);
+  background:linear-gradient(180deg,rgba(40,22,18,.95),rgba(18,11,9,.96));}
+.civ-science-hub-hud .sh-era-gate-title{color:#e8a888;border-bottom-color:rgba(224,122,95,.28);
+  font-size:0.86em;}
+.civ-science-hub-hud .sh-gate-row{font-size:0.76em;line-height:1.45;display:flex;gap:0.4em;
+  align-items:flex-start;margin-top:0.3em;}
+.civ-science-hub-hud .sh-gate-row:first-of-type{margin-top:0;}
+.civ-science-hub-hud .sh-gate-row.ok{color:#a8d0a0;}
+.civ-science-hub-hud .sh-gate-row.ok.muted{color:var(--muted);}
+.civ-science-hub-hud .sh-gate-row.bad{color:#e0b0a0;}
+.civ-science-hub-hud .sh-gate-mark{flex-shrink:0;font-weight:800;width:1em;text-align:center;}
+.civ-science-hub-hud .sh-gate-row.ok .sh-gate-mark{color:#7fc46a;}
+.civ-science-hub-hud .sh-gate-row.bad .sh-gate-mark{color:#e07a5f;}
+.civ-science-hub-hud .sh-gate-detail{color:var(--gold-bright);}
+.civ-science-hub-hud .sh-gate-hint{font-size:0.68em;color:var(--muted);margin-top:0.35em;font-style:italic;}
 `;
   const s = document.createElement('style');
   s.id = STYLE_ID;
@@ -254,6 +277,66 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
       + '<div class="sh-prog-meta">Pula ' + Math.round(prog.pula) + ' / ' + Math.round(prog.kosztCelu) + ' PN'
       + ' · <b>' + pct + '%</b> · ETA ' + esc(eta) + rate + '</div>'
       + '<div class="sh-bar"><div class="sh-bar-fill" style="width:' + pct + '%"></div></div>';
+    return box;
+  }
+
+  /**
+   * R-EPOKA-CUD-ZAKRES-Q1=B: "czego brakuje do awansu epoki" — widoczny WYŁĄCZNIE gdy
+   * `info.blocked` (decyzja UX, patrz raport Operatora). Pokazuje oba warunki bramki
+   * (`allEraTechsResearched` / `eraOwnWonderSatisfied`) zawsze parą, żeby gracz od razu
+   * widział, że warunek cudu jest nieaktywny, gdy cywilizacja go nie ma — nie tylko
+   * milczący brak wzmianki. / EN: shown ONLY when blocked; both gate conditions are
+   * always rendered together so "no wonder assigned" reads as an explicit non-blocker,
+   * not a silent omission.
+   */
+  function renderEraGatePanel(info: EraGateInfo): HTMLElement {
+    const box = document.createElement('div');
+    box.className = 'panel sh-era-gate';
+
+    const title = document.createElement('div');
+    title.className = 'ptitle sh-era-gate-title';
+    title.textContent = 'Awans do epoki ' + info.nextEraLabel + ' — zablokowany';
+    box.appendChild(title);
+
+    // (a) technologie epoki bieżącej
+    const techRow = document.createElement('div');
+    techRow.className = 'sh-gate-row' + (info.techsComplete ? ' ok' : ' bad');
+    if (info.techsComplete) {
+      techRow.innerHTML = '<span class="sh-gate-mark">✓</span> Technologie epoki '
+        + esc(info.eraLabel) + ': wszystkie odkryte';
+    } else {
+      const names = info.missingTechs.map(t => esc(t.name)).join(', ');
+      techRow.innerHTML = '<span class="sh-gate-mark">✗</span> Technologie epoki '
+        + esc(info.eraLabel) + ': brakuje ' + info.missingTechs.length
+        + ' — <span class="sh-gate-detail">' + names + '</span>';
+    }
+    box.appendChild(techRow);
+
+    // (b)/(c) cud wyłączny (E) epoki bieżącej — LUB jawne potwierdzenie braku wymogu
+    if (!info.wonderRequired) {
+      const wonderRow = document.createElement('div');
+      wonderRow.className = 'sh-gate-row ok muted';
+      wonderRow.innerHTML = '<span class="sh-gate-mark">–</span> Brak wymogu cudu w tej epoce';
+      box.appendChild(wonderRow);
+    } else {
+      for (const w of info.wonders) {
+        const wonderRow = document.createElement('div');
+        wonderRow.className = 'sh-gate-row' + (w.built ? ' ok' : ' bad');
+        const status = w.built
+          ? 'zbudowany'
+          : (w.inProgress ? 'w budowie' : 'jeszcze nie zakolejkowany');
+        wonderRow.innerHTML = '<span class="sh-gate-mark">' + (w.built ? '✓' : '✗') + '</span> Cud epoki: '
+          + '<span class="sh-gate-detail">' + esc(w.name) + '</span> — ' + status;
+        box.appendChild(wonderRow);
+      }
+      if (info.wonders.length > 1) {
+        const hint = document.createElement('div');
+        hint.className = 'sh-gate-hint';
+        hint.textContent = 'Wystarczy zbudować JEDEN z powyższych cudów.';
+        box.appendChild(hint);
+      }
+    }
+
     return box;
   }
 
@@ -417,6 +500,11 @@ export function createScienceHubHud(config: ScienceHubHudConfig): ScienceHubHudA
     }
 
     scroll.appendChild(head);
+
+    const eraGateInfo = config.getEraGateInfo?.() ?? null;
+    if (eraGateInfo && eraGateInfo.blocked) {
+      scroll.appendChild(renderEraGatePanel(eraGateInfo));
+    }
 
     if (config.getPlan) {
       scroll.appendChild(renderPlanPanel(plan));

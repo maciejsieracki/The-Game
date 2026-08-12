@@ -200,6 +200,7 @@ Neutralna frakcja: `BARBARIAN_OWNER_ID = -1` (`isBarbarian(ownerId)`). Nigdy nie
 | `campControlRadius` | 3 | `barbarzyncy_zasieg_kontroli` |
 | `aggroRadius` | 6 | `barbarzyncy_zasieg_agresji` |
 | `retreatHpFrac` | 0.3 | `barbarzyncy_prog_odwrotu_hp` |
+| `orphanedChaseTurnLimit` | 10 | `barbarzyncy_limit_tur_osierocony` |
 | `unitTypeId` | `'Wojownik'` | (stały, nie z panelu) |
 
 `loadBarbParams(data)` czyta te klucze z `ai-params.json`, z fallbackiem do defaultów. **Odporne** na `wartosc`/`wartość`
@@ -234,7 +235,8 @@ Neutralna frakcja: `BARBARIAN_OWNER_ID = -1` (`isBarbarian(ownerId)`). Nigdy nie
 **§8 Archetypy — LIVE (czyta `ai.ts`)** — 7 typów × {wojsko, nauka, ekonomia, obrona} (delty −1..+2). Najważniejsze:
 - Rzym: wojsko +1 · Zulusi: wojsko +2, nauka −1, ekonomia −1 · Sumer: nauka +2, wojsko −1 · Chiny: wojsko −1, nauka +1, ekonomia +1 · Grecy: nauka +1 · Egipt: ekonomia +1 · Inkowie: obrona +1.
 
-**§5 Barbarzyńcy — LIVE (czyta `barbarians.ts`)** — 9 kluczy `barbarzyncy_*` (tabela w sekcji 4.3). Dodane w tym pakiecie.
+**§5 Barbarzyńcy — LIVE (czyta `barbarians.ts`)** — 10 kluczy `barbarzyncy_*` (tabela w sekcji 4.3). Dodane w tym pakiecie
+(9 pierwotnych + `barbarzyncy_limit_tur_osierocony`, dopisany przy Zadaniu 4 rundy naprawczej P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1).
 
 > Uwaga: parametr `nauka` w archetypach jest zdefiniowany, ale **heurystyka nauki (§5 Spec-AI) nie jest jeszcze w `ai.ts`** —
 > delta nauki zadziała dopiero po dopisaniu wyboru technologii.

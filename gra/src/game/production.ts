@@ -826,7 +826,22 @@ export function availableProduction(
   // --- units -------------------------------------------------------------
   const built = new Set(builtList);
   for (const u of data.units) {
-    if (epochNumber(u.Epoka) > epoch) continue;
+    // R-EPOKA-KASKADA-JEDNA-Q1 (Maciej 2026-08-12, ECHO commit 1d9691b0): rekrutacja
+    // pokazuje jednostki BIEZACEJ epoki ORAZ dokladnie JEDNEJ epoki nizszej -- NIE pelna
+    // kaskade w dol jak wczesniej (bledne zrozumienie zasady projektu, podwazone tutaj;
+    // patrz nagłówek tools/epoka-merge-recruit-test.cjs). WYJATEK: Zwiadowca -- jedyna
+    // jednostka Typ='Civilian' w units.json (zweryfikowane empirycznie na pelnych danych,
+    // 2026-08-12) -- dostepny we WSZYSTKICH epokach, bo to jednostka cywilna zwiadu, nie
+    // wojskowa (potwierdzone explicite przez wlasciciela).
+    // EN: recruitment shows the CURRENT epoch's units PLUS exactly one epoch below -- not
+    // a full downward cascade as before (incorrect reading of the project rule, overturned
+    // here; see header of tools/epoka-merge-recruit-test.cjs). EXCEPTION: Zwiadowca -- the
+    // only Typ='Civilian' unit in units.json (verified empirically against the full dataset,
+    // 2026-08-12) -- is always available regardless of epoch, being a civilian scout unit,
+    // not a military one (explicitly confirmed by the owner).
+    const unitEpoch = epochNumber(u.Epoka);
+    const isZwiadowcaException = (u.Typ ?? '').toString().trim() === 'Civilian';
+    if (!isZwiadowcaException && (unitEpoch > epoch || unitEpoch < epoch - 1)) continue;
     const nacja = (u.Nacja ?? '').toString().trim();
     if (!unitAllowedForCivNation(nacja, ctx.civUnitNacja)) continue;
     const zamiast = (u['W zamian za'] ?? '').toString().trim();
@@ -1087,6 +1102,70 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
   return {
     kolejka,
     postep: index === 0 ? 0 : prod.postep,
+    wstrzymana: prod.wstrzymana,
+    rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+  };
+}
+
+/**
+ * Zamień pozycję kolejki oczekujących (`index` >= 1) miejscami z aktualnie
+ * budowanym elementem (`index` 0) -- "podnieś na samą górę". Rozwiązuje
+ * P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI: strzałki ↑↓ przesuwają pozycje
+ * WYŁĄCZNIE wewnątrz kolejki oczekujących (index >= 1, patrz moveQueueItem w
+ * ui/cityPanel.ts), nigdy nie zamieniają z frontem.
+ *
+ * `postep` resetuje się do 0 przy KAŻDEJ zamianie -- tak samo jak w dequeue()
+ * powyżej ("Removing the front item resets postep to 0 -- accumulated work
+ * belonged to that item"). W tym modelu danych tylko element na indeksie 0 ma
+ * w ogóle pole postępu (kolejka[i>=0] to gołe ProductionItem bez własnego
+ * licznika Pracy) -- nie ma więc gdzie "odłożyć" częściowej Pracy przy
+ * zdjęciu z frontu. Literalne przeniesienie postep razem z pozycją byłoby też
+ * furtką do nadużycia: zbieranie Pracy na drogim froncie, a potem zamiana na
+ * tani element z kolejki, żeby dokończyć go od razu za darmo.
+ * Out-of-range `index` (< 1 lub >= kolejka.length) to no-op (shallow copy).
+ * Nie-całkowity `index` (NaN, undefined, wartość ułamkowa) to TEŻ no-op --
+ * bez `Number.isInteger` oba porównania `< 1` i `>= length` są `false` dla
+ * NaN/undefined, guard przepuszcza, a `kolejka[NaN]` wstawia `undefined` na
+ * front kolejki. Wzorzec spójny z `bindBuildQueueDragReorder` w
+ * ui/cityPanel.ts (tam `Number.isFinite`).
+ * / EN: Swap a waiting-queue position (`index` >= 1) with the currently
+ * building front item (`index` 0) -- "promote to the very top". Fixes
+ * P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI: the ↑↓ arrows only reorder
+ * WITHIN the waiting queue (index >= 1, see moveQueueItem in
+ * ui/cityPanel.ts) and never swap with the front slot.
+ *
+ * `postep` resets to 0 on EVERY swap -- same rule as dequeue() above
+ * ("Removing the front item resets postep to 0 -- accumulated work belonged
+ * to that item"). In this data model only index 0 carries a progress field at
+ * all (kolejka[i>=0] entries are bare ProductionItem with no progress counter
+ * of their own), so there is nowhere to "park" partial Praca when an item
+ * leaves the front. Literally carrying `postep` along with the position would
+ * also be an exploit: bank Praca on an expensive front item, then swap in a
+ * cheap queued item to finish it instantly for free.
+ * An out-of-range `index` (< 1 or >= kolejka.length) is a no-op (shallow copy).
+ * A non-integer `index` (NaN, undefined, fractional) is ALSO a no-op --
+ * without `Number.isInteger`, both `< 1` and `>= length` are `false` for
+ * NaN/undefined, so the guard would let it through and `kolejka[NaN]` would
+ * splice `undefined` into the front slot. Pattern kept consistent with
+ * `bindBuildQueueDragReorder` in ui/cityPanel.ts (which uses
+ * `Number.isFinite`).
+ */
+export function promoteToFront(prod: CityProduction, index: number): CityProduction {
+  if (!Number.isInteger(index) || index < 1 || index >= prod.kolejka.length) {
+    return {
+      kolejka: [...prod.kolejka],
+      postep: prod.postep,
+      wstrzymana: prod.wstrzymana,
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    };
+  }
+  const kolejka = [...prod.kolejka];
+  const front = kolejka[0] as ProductionItem;
+  kolejka[0] = kolejka[index] as ProductionItem;
+  kolejka[index] = front;
+  return {
+    kolejka,
+    postep: 0,
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
   };

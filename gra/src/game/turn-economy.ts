@@ -99,6 +99,7 @@ import {
   loadThroughput,
   DEFAULT_CONVERTER_RECIPES,
   converterBuildingIdForRecipe,
+  converterThroughputForEra,
   computeGarncarniaSurplusBonus,
   type RawConverterParamsJson,
 } from './converters';
@@ -1123,6 +1124,22 @@ export interface EconomyTickResult {
   /** Per-owner building resource upkeep (1/turę per koszt_surowce type). Keyed by ownerId. */
   resourceUpkeepByOwner: Map<number, Record<string, number>>;
   /**
+   * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): rozbicie `resourceUpkeepByOwner`
+   * na dwa źródła, TĘ SAMĄ wartość, zanim zostaną scalone `addResourceCosts` — panel Surowców
+   * (empireDetailPanel.ts „Zobacz szczegóły") czyta te dwie mapy zamiast przeliczać osobno.
+   * Dla każdego ownera i surowca: `resourceUpkeepBuildingsByOwner[o][k] +
+   * resourceUpkeepUnitsByOwner[o][k] === resourceUpkeepByOwner[o][k]` (dokładnie — to jest
+   * ten sam wynik `totalBuildingResourceUpkeep`/`totalUnitResourceUpkeep` niżej, tylko
+   * przechwycony PRZED `addResourceCosts`, nie osobne, mogące się rozjechać przeliczenie).
+   * / EN: split of `resourceUpkeepByOwner` into its two source computations, captured BEFORE
+   * they are merged via `addResourceCosts` — buildings[o][k] + units[o][k] === total[o][k]
+   * exactly, by construction (same totalBuildingResourceUpkeep/totalUnitResourceUpkeep calls
+   * below, not a second independent calculation).
+   */
+  resourceUpkeepBuildingsByOwner: Map<number, Record<string, number>>;
+  /** Analogiczne do `resourceUpkeepBuildingsByOwner`, tylko utrzymanie surowcowe jednostek. */
+  resourceUpkeepUnitsByOwner: Map<number, Record<string, number>>;
+  /**
    * ZADANIE 1 (Maciej 2026-07-23): Praca/turę do odjęcia z globalnej puli
    * produkcji cywilizacji (civ-wide -- playerPracaPool/aiPracaPoolByOwner w
    * main.ts) za utrzymanie ulepszeń surowcowych. Keyed by ownerId; brak wpisu = 0.
@@ -1206,12 +1223,19 @@ export function sumEconomyForPlayerCities(
  * Zapas (stock) per typ: patrz ownerResourceStock / ownerResourceStockAll w
  * game/building-stock-cost.ts (dziala na tym samym `cities`, bez potrzeby builtByCity).
  */
+/**
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): `era` (epoka CYWILIZACJI
+ * WŁAŚCICIELA -- opcjonalny, domyślnie 1 -> mnożnik ×1, zachowanie identyczne
+ * jak przed tą zmianą dla wywołań, które go nie podają) podwaja cap co epokę,
+ * wzorem converterThroughputsForOwner/empireEpochForOwner w main.ts (PARYTET AI).
+ */
 export function ownerResourceCap(
   cities: ReadonlyArray<{ id: string; ownerId: number }>,
   builtByCity: ReadonlyMap<string, readonly string[]>,
   ownerId: number,
   data: GameData,
   difficulty: Difficulty = 'normal',
+  era: number = 1,
 ): number {
   let magazynCount = 0;
   for (const c of cities) {
@@ -1220,7 +1244,7 @@ export function ownerResourceCap(
   }
   const rawEconParams = data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0];
   const params = loadOwnerStorageParams(rawEconParams, difficulty);
-  return ownerResourceCapacityPerType(magazynCount, params);
+  return ownerResourceCapacityPerType(magazynCount, params, era);
 }
 
 /**
@@ -1484,7 +1508,13 @@ function tickEmpireResourcePipeline(
   kamieniarskiCountByOwner: ReadonlyMap<number, number>,
   stolarniaBonusDrewnaCiv: number,
   kamieniarskiBonusKamieniaCiv: number,
-  converterThroughputs: Record<string, number>,
+  /**
+   * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): funkcja, nie stała mapa --
+   * Cegielnia/Garncarnia skalują się +10% bazy/epokę WŁAŚCICIELA konwertera (owner
+   * to zwykły parametr, PARYTET AI: identyczna funkcja dla ownerId=0 i AI). Wołana
+   * raz na ownera w pętli Faza 2 niżej.
+   */
+  converterThroughputsForOwner: (ownerId: number) => Record<string, number>,
   ownerResourceCapFor: (ownerId: number) => number,
   resolveOwnerActiveLabels?: OwnerActiveLabelsResolver,
   resolveOwnerZlotoAccess?: OwnerZlotoAccessResolver,
@@ -1534,6 +1564,9 @@ function tickEmpireResourcePipeline(
   for (const ownerId of ownerIds) {
     const cap = ownerResourceCapFor(ownerId);
     let pool: Record<string, number> = { ...ownerResourceStockAll(cities, ownerId) };
+    // P-KONWERTERY-PRZEPUSTOWOSC-Q1: przepustowość TEGO ownera (Cegielnia/Garncarnia
+    // skalowane epoką właściciela, Odlewnie płaskie) -- liczona raz/ownera, nie/miasto.
+    const ownerThroughputs = converterThroughputsForOwner(ownerId);
 
     for (const city of cities) {
       if (city.ownerId !== ownerId) continue;
@@ -1554,7 +1587,7 @@ function tickEmpireResourcePipeline(
       const convResult = runConverters(
         activeRecipes,
         pool,
-        converterThroughputs,
+        ownerThroughputs,
         () => cap,
       );
       pool = convResult.stores;
@@ -2053,7 +2086,8 @@ export function advanceCityEconomy(
   // Build unit upkeep lookup table once per tick.
   const unitUpkeepTbl = buildUnitUpkeepTable(data.units as unknown as Parameters<typeof buildUnitUpkeepTable>[0]);
 
-  // Pre-compute converter throughputs (from econ-params.json) -- used per-city.
+  // Pre-compute converter throughputs (from econ-params.json) -- BASE, przed
+  // skalowaniem epoką (P-KONWERTERY-PRZEPUSTOWOSC-Q1 niżej).
   const rawForConverters = data.econParams as unknown as RawConverterParamsJson;
   const converterThroughputs: Record<string, number> = {};
   for (const recipe of DEFAULT_CONVERTER_RECIPES) {
@@ -2061,6 +2095,24 @@ export function advanceCityEconomy(
       rawForConverters, recipe.throughputParamKey, difficulty, recipe.throughputFallback,
     );
   }
+  // P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): Cegielnia/Garncarnia +10%
+  // przepustowości bazowej ADDYTYWNIE za każdą epokę CYWILIZACJI WŁAŚCICIELA (nie
+  // globalną epokę gry) -- `resolveOwnerEra` to ten sam resolver PARYTETU AI już
+  // używany dla buildingLevelForEpoch/upkeep (main.ts: empireEpochForOwner), zero
+  // nowej gałęzi po ownerId; owner 0 bez resolvera spada na `playerEra` (parametr
+  // funkcji), inny owner bez resolvera na erę 1 -- identycznie jak previewOwnerUpkeep
+  // wyżej. Odlewnie NIE są w CONVERTER_ERA_SCALING_RECIPE_IDS -- zostają płaskie.
+  const converterThroughputsForOwner = (ownerId: number): Record<string, number> => {
+    const era = resolveOwnerEra
+      ? resolveOwnerEra(ownerId)
+      : (ownerId === 0 ? playerEra : 1);
+    const out: Record<string, number> = {};
+    for (const recipe of DEFAULT_CONVERTER_RECIPES) {
+      const base = converterThroughputs[recipe.id] ?? recipe.throughputFallback;
+      out[recipe.id] = converterThroughputForEra(recipe.id, base, era);
+    }
+    return out;
+  };
 
   // Zadanie 2 (2026-07-23): Stolarnia / Warsztat kamieniarski -- bonus CIV-WIDE do
   // produkcji Drewna/Kamienia (+10% za kazda sztuke zbudowana GDZIEKOLWIEK w imperium
@@ -2105,12 +2157,20 @@ export function advanceCityEconomy(
   // ownerStorageParams jest wspolny dla WSZYSTKICH ownerow (gracz + AI) -- sam cap
   // rozni sie tylko przez magazynCountByOwner (rzeczywiscie zbudowane Magazyny tego
   // ownera), nigdy przez ownerId samo w sobie.
+  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): cap panstwa podwaja sie co
+  // epoke CYWILIZACJI WLASCICIELA -- `resolveOwnerEra` to TEN SAM resolver PARYTETU
+  // AI juz uzywany wyzej dla converterThroughputsForOwner (zero nowej galezi po
+  // ownerId); owner 0 bez resolvera spada na `playerEra`, inny owner na epoke 1 --
+  // identycznie jak converterThroughputsForOwner.
   const ownerStorageParams: OwnerStorageParams = loadOwnerStorageParams(rawEconParams, difficulty);
   const ownerResCapByOwner = new Map<number, number>();
   function ownerResourceCapFor(ownerId: number): number {
     const cached = ownerResCapByOwner.get(ownerId);
     if (cached !== undefined) return cached;
-    const cap = ownerResourceCapacityPerType(magazynCountByOwner.get(ownerId) ?? 0, ownerStorageParams);
+    const era = resolveOwnerEra
+      ? resolveOwnerEra(ownerId)
+      : (ownerId === 0 ? playerEra : 1);
+    const cap = ownerResourceCapacityPerType(magazynCountByOwner.get(ownerId) ?? 0, ownerStorageParams, era);
     ownerResCapByOwner.set(ownerId, cap);
     return cap;
   }
@@ -2162,6 +2222,8 @@ export function advanceCityEconomy(
     starved:        0,
     upkeepByOwner:  new Map(),
     resourceUpkeepByOwner: new Map(),
+    resourceUpkeepBuildingsByOwner: new Map(),
+    resourceUpkeepUnitsByOwner: new Map(),
     pracaUpkeepByOwner,
   };
 
@@ -2179,7 +2241,7 @@ export function advanceCityEconomy(
     kamieniarskiCountByOwner,
     stolarniaBonusDrewnaCiv,
     kamieniarskiBonusKamieniaCiv,
-    converterThroughputs,
+    converterThroughputsForOwner,
     ownerResourceCapFor,
     resolveOwnerActiveLabels,
     resolveOwnerZlotoAccess,
@@ -2561,16 +2623,21 @@ export function advanceCityEconomy(
     const ounits  = econUnits.filter(u => u.ownerId === oid) as unknown as UnitUpkeepLike[];
     const balance = upkeepBalance(income, buildingsByOwner.get(oid) ?? [], ounits, unitUpkeepTbl, upkeepParams);
     result.upkeepByOwner.set(oid, balance);
-    const resUpkeep: Record<string, number> = totalBuildingResourceUpkeep(
+    // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: liczone OSOBNO (buildingsResUpkeep / unitsResUpkeep),
+    // publikowane OSOBNO do result.resourceUpkeepBuildingsByOwner/UnitsByOwner PONIŻEJ, potem
+    // scalone (addResourceCosts) w jeden resUpkeep — panel Surowców czyta oba źródła wprost,
+    // nie przelicza od nowa (patrz JSDoc pól wyżej).
+    const buildingsResUpkeep: Record<string, number> = totalBuildingResourceUpkeep(
       buildingsByOwner.get(oid) ?? [],
     );
-    addResourceCosts(
-      resUpkeep,
-      totalUnitResourceUpkeep(ounits, typeId =>
-        data.units.find(u => u.Jednostka === typeId),
-      ),
+    const unitsResUpkeep: Record<string, number> = totalUnitResourceUpkeep(ounits, typeId =>
+      data.units.find(u => u.Jednostka === typeId),
     );
+    const resUpkeep: Record<string, number> = { ...buildingsResUpkeep };
+    addResourceCosts(resUpkeep, unitsResUpkeep);
     result.resourceUpkeepByOwner.set(oid, resUpkeep);
+    result.resourceUpkeepBuildingsByOwner.set(oid, buildingsResUpkeep);
+    result.resourceUpkeepUnitsByOwner.set(oid, unitsResUpkeep);
   }
 
   if (manpowerHeal) {

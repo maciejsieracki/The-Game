@@ -62,6 +62,17 @@ export interface PowerComponentBreakdown {
   rawCount: number;
   coefficient: number;
   points: number;
+  /**
+   * P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): true wyłącznie dla Armii i Rekrutów — źródło
+   * prawdy to `skladniki.<klucz>.wojskowy` w power-params.json (patrz loadMilitaryComponentKeys),
+   * reszta domyślnie false. Karmi przełącznik widoku Moc całkowita/gospodarcza/militarna w
+   * Rankingu Mocy (filtruje TĘ SAMĄ listę components, nie osobny silnik liczenia).
+   * / EN: true only for Army and Recruits — source of truth is `skladniki.<key>.wojskowy` in
+   * power-params.json (see loadMilitaryComponentKeys), everything else defaults false. Feeds the
+   * Total/Economic/Military Power ranking view toggle (filters this SAME components list, no
+   * separate calculation engine).
+   */
+  military: boolean;
 }
 
 export interface ObjectivePowerResult {
@@ -74,7 +85,7 @@ export interface ObjectivePowerResult {
 }
 
 type ParamsFile = {
-  skladniki?: Record<string, { pkt?: number }>;
+  skladniki?: Record<string, { pkt?: number; wojskowy?: boolean }>;
   mnoznikEpoki?: Record<string, number>;
   opcje?: Record<string, { wartosc?: string | boolean | number }>;
 };
@@ -94,15 +105,31 @@ export function battlePowerPointsFromDefeatedEnemy(enemyFieldM: number): number 
   return Math.max(0, Math.floor(m));
 }
 
+/**
+ * P-MOC-BALANS-WAGI (Maciej 2026-08-12): fallback musi zostać SPÓJNY z power-params.json
+ * (wzorzec tego pliku — patrz loadPowerCoefficients niżej). Zmienione: jednostkaWojskowa
+ * 25→2.5 (÷10), rekrutEkwJednostki 5→10 (×2), techZbadane 20→80 (×4), heksTerytorium
+ * 0.5→1.0 (×2). wygranaBitwa (25) NIE zmienione tutaj — to fallback dormant pola JSON
+ * `wygrana_bitwa.pkt`, używane tylko w nieaktywnej dziś ścieżce flat_count; aktywny
+ * współczynnik bitwy (i „zdobycze") to hardcoded stałe w computeObjectivePower niżej
+ * (bitwyCoeff, coeff „zdobycze"), 1→2 tą samą decyzją — patrz tam.
+ * / EN: fallback must stay CONSISTENT with power-params.json (this file's own pattern —
+ * see loadPowerCoefficients below). Changed: jednostkaWojskowa 25→2.5 (÷10),
+ * rekrutEkwJednostki 5→10 (×2), techZbadane 20→80 (×4), heksTerytorium 0.5→1.0 (×2).
+ * wygranaBitwa (25) NOT changed here — it is the fallback for the dormant JSON
+ * `wygrana_bitwa.pkt` field, only used on the inactive flat_count path; the active battle
+ * coefficient (and "zdobycze") are hardcoded constants in computeObjectivePower below
+ * (bitwyCoeff, "zdobycze" coeff), 1→2 by the same decision — see there.
+ */
 const DEFAULT_COEFF: PowerCoefficients = {
-  jednostkaWojskowa: 25,
+  jednostkaWojskowa: 2.5,
   wygranaBitwa: 25,
   ludek: 5,
-  rekrutEkwJednostki: 5,
+  rekrutEkwJednostki: 10,
   miasto: 50,
-  heksTerytorium: 0.5,
+  heksTerytorium: 1.0,
   budynki: 5,
-  techZbadane: 20,
+  techZbadane: 80,
   ulepszenieTerenu: 5,
   kulturaImperium: 0.5,
   religiaJednosc: 25,
@@ -134,14 +161,58 @@ export function epokaPowerMultiplier(_epoka?: number): number {
   return 1;
 }
 
+/**
+ * P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): mapowanie breakdown.key (skrócone identyfikatory
+ * używane w PowerComponentBreakdown/ObjectivePowerResult.components) -> klucz JSON w
+ * power-params.json::skladniki. „zdobycze" nie ma odpowiednika w JSON (coeff hardcoded w
+ * computeObjectivePower, patrz niżej) -> zawsze traktowane jako niewojskowe (brak wpisu w
+ * mapie = false w loadMilitaryComponentKeys).
+ * / EN: maps breakdown.key (short ids used in PowerComponentBreakdown/ObjectivePowerResult.
+ * components) -> the JSON key in power-params.json::skladniki. "zdobycze" has no JSON
+ * counterpart (its coeff is hardcoded in computeObjectivePower, see below) -> always
+ * non-military (missing map entry = false in loadMilitaryComponentKeys).
+ */
+const SKLADNIK_KEY_BY_COMPONENT: Record<string, string> = {
+  armia: 'jednostka_wojskowa',
+  bitwy: 'wygrana_bitwa',
+  ludki: 'ludek',
+  rekruci: 'rekrut_ekw_jednostki',
+  miasta: 'miasto',
+  terytorium: 'heks_terytorium',
+  infra: 'budynki',
+  tech: 'tech_zbadane',
+  ulepszenia: 'ulepszenie_terenu',
+  kultura: 'kultura_imperium',
+  religia: 'religia_jednosc',
+};
+
+/**
+ * P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): zbiór breakdown-key'y oznaczonych `wojskowy: true`
+ * w power-params.json (dziś: Armia + Rekruci). Karmi filtr widoku Moc całkowita/gospodarcza/
+ * militarna w Rankingu Mocy (`PowerComponentBreakdown.military`) — JSON jest źródłem prawdy,
+ * tak jak dla `pkt`.
+ * / EN: set of breakdown-keys tagged `wojskowy: true` in power-params.json (today: Army +
+ * Recruits). Feeds the Total/Economic/Military ranking view filter (`PowerComponentBreakdown.
+ * military`) — JSON is the source of truth, same as for `pkt`.
+ */
+export function loadMilitaryComponentKeys(raw: ParamsFile = powerParams as unknown as ParamsFile): Set<string> {
+  const s = raw.skladniki ?? {};
+  const out = new Set<string>();
+  for (const [componentKey, jsonKey] of Object.entries(SKLADNIK_KEY_BY_COMPONENT)) {
+    if (s[jsonKey]?.wojskowy === true) out.add(componentKey);
+  }
+  return out;
+}
+
 function row(
   key: string,
   label: string,
   rawCount: number,
   coefficient: number,
+  military: boolean,
 ): PowerComponentBreakdown {
   const points = rawCount * coefficient;
-  return { key, label, rawCount, coefficient, points };
+  return { key, label, rawCount, coefficient, points, military };
 }
 
 /**
@@ -153,26 +224,37 @@ export function computeObjectivePower(
   input: EmpirePowerRaw,
   coeff: PowerCoefficients = loadPowerCoefficients(),
   battleModel: BattlePowerModel = loadBattlePowerModel(),
+  militaryKeys: Set<string> = loadMilitaryComponentKeys(),
 ): ObjectivePowerResult {
   const bitwyRaw = battleModel === 'enemy_m_sum'
     ? Math.max(0, input.bitwyPktSum ?? 0)
     : Math.max(0, input.wygraneBitwy);
-  const bitwyCoeff = battleModel === 'enemy_m_sum' ? 1 : coeff.wygranaBitwa;
+  // P-MOC-BALANS-WAGI (Maciej 2026-08-12): "Wygrane bitwy (dziś wsp. 1) → razy dwa" — jego "1"
+  // opisuje TEN hardcoded coeff aktywnej ścieżki enemy_m_sum (nie dormant JSON `wygrana_bitwa.
+  // pkt`=25, patrz komentarz przy DEFAULT_COEFF) -> 1 → 2.
+  // / EN: "Wygrane bitwy (currently coeff 1) → times two" — his "1" describes THIS hardcoded
+  // coeff on the active enemy_m_sum path (not the dormant JSON `wygrana_bitwa.pkt`=25, see the
+  // DEFAULT_COEFF comment) -> 1 → 2.
+  const bitwyCoeff = battleModel === 'enemy_m_sum' ? 2 : coeff.wygranaBitwa;
 
   const components: PowerComponentBreakdown[] = [
-    row('armia', 'Armia', Math.max(0, input.jednostki), coeff.jednostkaWojskowa),
-    row('bitwy', 'Wygrane bitwy', bitwyRaw, bitwyCoeff),
-    row('ludki', 'Obywatele', Math.max(0, input.sumaLudkow), coeff.ludek),
-    row('rekruci', 'Rekruci (ekw. jedn.)', Math.max(0, input.rekrutEkw), coeff.rekrutEkwJednostki),
-    row('miasta', 'Miasta', Math.max(0, input.miasta), coeff.miasto),
-    row('terytorium', 'Terytorium (heksy)', Math.max(0, input.heksyTerytorium), coeff.heksTerytorium),
-    row('infra', 'Infrastruktura (budynki)', Math.max(0, input.budynki), coeff.budynki),
-    row('tech', 'Odkrycia / tech', Math.max(0, input.techZbadane), coeff.techZbadane),
-    row('ulepszenia', 'Ulepszenia terenu', Math.max(0, input.ulepszeniaTerenu), coeff.ulepszenieTerenu),
-    row('kultura', 'Kultura imperium', Math.max(0, input.kulturaImperium ?? 0), coeff.kulturaImperium),
-    row('religia', 'Jedność religii (miasta)', Math.max(0, input.miastaJednoscReligii ?? 0), coeff.religiaJednosc),
-    // Follow-up „Power-zdobycze": wartość to już punkty (nie surowy licznik) -> coeff=1 stały.
-    row('zdobycze', 'Zdobycze (eliminacje)', Math.max(0, input.zdobyczePower ?? 0), 1),
+    row('armia', 'Armia', Math.max(0, input.jednostki), coeff.jednostkaWojskowa, militaryKeys.has('armia')),
+    row('bitwy', 'Wygrane bitwy', bitwyRaw, bitwyCoeff, militaryKeys.has('bitwy')),
+    row('ludki', 'Obywatele', Math.max(0, input.sumaLudkow), coeff.ludek, militaryKeys.has('ludki')),
+    row('rekruci', 'Rekruci (ekw. jedn.)', Math.max(0, input.rekrutEkw), coeff.rekrutEkwJednostki, militaryKeys.has('rekruci')),
+    row('miasta', 'Miasta', Math.max(0, input.miasta), coeff.miasto, militaryKeys.has('miasta')),
+    row('terytorium', 'Terytorium (heksy)', Math.max(0, input.heksyTerytorium), coeff.heksTerytorium, militaryKeys.has('terytorium')),
+    row('infra', 'Infrastruktura (budynki)', Math.max(0, input.budynki), coeff.budynki, militaryKeys.has('infra')),
+    row('tech', 'Odkrycia / tech', Math.max(0, input.techZbadane), coeff.techZbadane, militaryKeys.has('tech')),
+    row('ulepszenia', 'Ulepszenia terenu', Math.max(0, input.ulepszeniaTerenu), coeff.ulepszenieTerenu, militaryKeys.has('ulepszenia')),
+    row('kultura', 'Kultura imperium', Math.max(0, input.kulturaImperium ?? 0), coeff.kulturaImperium, militaryKeys.has('kultura')),
+    row('religia', 'Jedność religii (miasta)', Math.max(0, input.miastaJednoscReligii ?? 0), coeff.religiaJednosc, militaryKeys.has('religia')),
+    // Follow-up „Power-zdobycze": wartość to już punkty (nie surowy licznik) -> coeff stały,
+    // niewojskowe (P-MOC-PODZIAL-WIDOK: brak wpisu w JSON = gospodarcze). P-MOC-BALANS-WAGI
+    // (Maciej 2026-08-12): "Zdobycze (dziś wsp. 1) → razy dwa" -> coeff 1 → 2.
+    // / EN: value is already points (not a raw count) -> fixed coeff, non-military (no JSON
+    // entry = economic). P-MOC-BALANS-WAGI: coeff 1 → 2.
+    row('zdobycze', 'Zdobycze (eliminacje)', Math.max(0, input.zdobyczePower ?? 0), 2, false),
   ];
 
   const powerBase = components.reduce((s, c) => s + c.points, 0);

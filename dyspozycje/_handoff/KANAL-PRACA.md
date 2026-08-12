@@ -6633,3 +6633,132 @@ domknij 2 tematy pozostawione w stanie nie-PASS: `R-ZUZYCIE-SUROWCOW-OBYWATELE N
 częściowa, `13f62b0b` — brakuje jeszcze 2 asercji testowych, patrz `PYTANIA-OTWARTE.md`) i
 przegląd migracji IndexedDB (`798f3c17`, workflow przerwany bez werdyktu, `PYTANIA-OTWARTE.md`).
 CZEKAM-NA: kolejna sesja chmurowa (ten sam wątek pracy, po odnowieniu limitu).
+
+## [09:5x PL, 2026-08-11] KOREKTA własnego wpisu wyżej — map-gen-regression-test NIE jest czystym PASS
+
+Wynik dotarł już po zakończeniu poprzedniej tury (proces w tle, PID 31523, dokończył się
+naturalnie). **Mój wcześniejszy wpis błędnie sugerował "uruchom od zera, jeśli PASS to
+deployuj"** — mam już wynik i NIE jest to czyste PASS, więc następna sesja NIE powinna ślepo
+polegać na samym exit code (dokładnie pułapka z CLAUDE.md §0b pkt (b): odczytałem najpierw exit
+code POTOKU `| tail -50`, nie samego skryptu — to była pomyłka, poprawiona przez przeczytanie
+treści i logiki `allOk`/`process.exit` w źródle testu).
+
+**Realny wynik:** `allOk = stdOk && duzyOk && ... && fail === 0 && villageOk` — więc skrypt
+faktycznie kończy się `exit 1`. Dwa źródła:
+1. **AC czasowe** (`standard <7s: FAIL 129.21s`, `duża <15s: FAIL 1158.30s`) — zgodnie z
+   istniejącą notatką w runbooku (`STAN-PRACY-HANDOFF.md §6`) to **znany, akceptowany** rodzaj
+   FAIL na wolniejszej maszynie, pomiar wydajności nie regresja. NIE blokuje.
+2. **⚠️ „Pangea nieregularna: 1 masa + nieregularny obrys: FAIL (4 fail)"** — 4 z 5 seedów
+   (42/123/777/2026) nie przechodzą progu `coastRatio > 3.8` (funkcja `pangeaShapeMetrics`,
+   `gra/tools/map-gen-regression-test.cjs:206-221`), WSZYSTKIE tuż PONIŻEJ progu (3.778-3.799,
+   próg 3.8 — różnica ~0.5%, nie drastyczne odchylenie). `dominantRatio`/`bboxFill` w normie.
+   **TEGO ELEMENTU NIE MA na liście znanych pre-istniejących czerwonych bramek w `CLAUDE.md`
+   (BRAMKI) ani w runbooku** — status nieznany: czy to świeża regresja z dzisiejszej nocy (mało
+   prawdopodobne, żaden z tematów nie dotykał generatora map), czy stary, nigdy niezauważony
+   dług testowy (kalibracja progu), czy coś pomiędzy.
+**PIERWSZA CZYNNOŚĆ następnej sesji (poprawiona wersja poprzedniego wpisu):** ZBADAJ Pangea FAIL
+PRZED deployem — sprawdź `git log -p -- gra/tools/map-gen-regression-test.cjs` (kiedy próg 3.8
+powstał i jaka była wtedy rzeczywista wartość) oraz czy ten sam FAIL występuje na czystym `main`
+(bramka niezwiązana z dzisiejszą pracą = można potraktować jak inne pre-istniejące czerwone i
+zadeployować z jawną notatką w `WERSJE.md`; związana = realna regresja do znalezienia). Reszta
+poprzedniego wpisu (artefakty gotowe, md5 `799827ad`, gałąź `d6817434`) bez zmian.
+
+## [10:1x PL, 2026-08-11] CHMURA → CHMURA (następna sesja) — deploy ROBOCZA FALA 269 ZALOGOWANY, md5 `799827ad`
+
+Deploy dokończony na wyraźne polecenie Macieja ("zrób deploy do roboczej tego co masz, wszystkiego
+co jest bezpieczne"). `map-gen-regression-test` przeanalizowany: 2 znane AC czasowe FAIL (akceptowalne)
++ nowy `P-MAPGEN-PANGEA-COASTRATIO-PROG` (4/5 seedów, próg coastRatio nietrafiony o ~0,5%) —
+zweryfikowany jako NIEZWIĄZANY z tą falą (żaden commit tej sesji nie dotyka generatora map),
+zarejestrowany w `PYTANIA-OTWARTE.md`, nie blokuje. Pełny opis fali: `WERSJE.md`.
+**Push na `main` NIE wykonany jeszcze w tej wiadomości** — patrz kolejny wpis niżej.
+CZEKAM-NA: nic — deploy do ROBOCZA kompletny.
+
+## [21:23 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 270**, md5 `13a04632` + ⛔ ujawniona zaległość scalenia `main`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`13a0463294c0e686cf6e46c37d2e8ea6`**, stempel
+`ROBOCZA · a602fa6b · 2026-08-12 19:14` (UTC). Build z HEAD **`fa52023a`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**102 commity** od FALI 269, 37 plików w
+`gra/src`+`gra/data`). **Commit deployu: `028ff459`**, wypchnięty na gałąź sesji.
+Bramki: `tsc` **0** (TS 5.9.3) · `logic-test` **213/213** · `combat-test` **6/6** ·
+`vite build` **815 modułów** · `verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html`
+przegenerowane. **`map-gen-regression-test` uruchomiony, nie ukończony przed wpisem** (znany limit
+sandboksu `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`, 2h+); sekcja Pangei zweryfikowana wcześniej
+niezależnie 2× (5/5 seedów PASS na progu 3.72).
+**Tematy:** kaskada rekrutacji „epoka + 1 wstecz" (+Zwiadowca zawsze) · UI „czego brakuje do
+awansu epoki" (panel Nauki + tooltip HUD) · blokada wycofania obrońcy w garnizonie · próg
+`coastRatio` Pangei 3.8→**3.72** (`R-MAPGEN-PANGEA-PROG-Q1=A`) · scroll-reset panelu Imperium
+runda 2 · + barbarzyńcy (4 rundy), wyciek GPU, drenaż surowców 1,0→**0,2**/obywatela, konwertery,
+panele Surowców/Mocy, dyplomacja, krytyczna naprawa martwego „Kontynuuj" po IndexedDB.
+⚠️ **Dwa tematy NIE w 100% domknięte** (opisane w `WERSJE.md`): kaskada rekrutacji — Evaluator
+PASS-WITH-NOTES, furtka przez „Zastąp" (N3, do ABC); garnizon — PASS-WITH-NOTES + **runda 2 w
+toku** + otwarte ABC `P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1` podważające wcześniejszą
+decyzję właściciela.
+⛔ **ZALEGŁOŚĆ: `main` jest DWIE fale w tyle** — stoi na `99974173` (= FALA 267). **FALA 268
+(`23216527`) i FALA 269 (`0c1f7c37`) nigdy nie zostały scalone**; wpis FALI 269 zapowiadał push
+„w kolejnym wpisie niżej", **ten wpis nigdy nie powstał**. Scalenie **przygotowane, ale NIE
+wykonane** — `R-MERGE-MAIN-RYTM-Q1` wymaga wyraźnej zgody właściciela na każde scalenie do `main`,
+a `git-merge-main` jest twardo zablokowany w `guardrails.ts` (bez furtki). Hasło `deploy`
++ „wypchniesz na git" pokrywa ROBOCZA i push gałęzi — **nie `main`**. Gotowe komendy i dowody
+(md5 obu commitów zweryfikowane) w `PYTANIA-OTWARTE.md`, do wykonania na jedno słowo.
+**FALA 270 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu" — wejdzie przy FALI 271).
+CZEKAM-NA: sesja lokalna: pull na dysk właściciela (testuj `13a04632`) · Maciej: zgoda na
+scalenie FAL 268+269 do `main`.
+
+## [23:47 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 271**, md5 `ea51ac51`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`ea51ac51335652ce60732b600a82c70d`**, stempel
+`ROBOCZA · b91375a2 · 2026-08-12 21:44` (UTC). Build z HEAD **`b6159561`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**53 commity** od FALI 270, 17 plików w
+`gra/src`+`gra/data`, +1523/−120). **Commit deployu: `94a17910`**, wypchnięty na gałąź sesji.
+Bramki na tym czubku: `tsc` **0 błędów** · `logic-test` **213/213** · `combat-test` **6/6** ·
+`diplomacy-acceptance-points-test` **253/0** · `vite build` **815 modułów** ·
+`verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html` przegenerowane.
+**Tematy (fala domykająca, same naprawy — bez nowych funkcji):** klaster miast barbarzyńców rundy
+5-6-7 (temat ZAMKNIĘTY po 7 rundach) · IndexedDB B1+B2+B3 (re-entrancy, cache porażki, cichy
+fallback) · fantomowy slot `_lastPlayed` (martwe „Kontynuuj”/„Wczytaj” po skasowaniu WSZYSTKICH
+zapisów) · runda 2 retreat-garnizon · panel zużycia surowców (etykiety + żywy fallback po
+save-load) · drenaż obywateli r2 · **dyplomacja U1+U2+U3 — asymetria PW w pełni domknięta**
+(U2 `489b2661` wjechał w trakcie deployu, JEST w bundlu) + nagłówek EOT · guard `Number.isInteger`
+przy promocji na front kolejki.
+⚠️ **Bundel budowany 3× — wyścig z równoległymi sesjami na gałęzi.** Buildy `7bffe3dd`
+(HEAD `bf6d9d61`) i `3e956226` (HEAD `96166d19`) **porzucone, NIGDZIE nie opublikowane** —
+obowiązuje **wyłącznie `ea51ac51`**. Po każdym fetchu z nowymi commitami: rebase + pełna
+przebudowa od zera (nigdy podmiana samej pieczątki), żeby md5 odpowiadał czubkowi gałęzi.
+⛔ **Znany defekt historii:** commit `044aa26d` (komunikat: drenaż obywateli) zawiera także +284
+linie w `barbarians.ts` — wyścig commitów w współdzielonym drzewie. Obie zmiany poprawne
+i zweryfikowane osobno; historia nie przepisywana.
+**FALA 271 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu”). Powstanie FALI 271
+kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
+✅ **Zaległość z FALI 270 ZAMKNIĘTA przez inną sesję w trakcie tego deployu:** `main` stoi teraz na
+`0a261731` i zawiera **FALE 268 (`b466fa17`) i 269 (`0a261731`)** — zweryfikowane `git merge-base
+--is-ancestor`. Do scalenia pozostaje **FALA 270** (`028ff459`, NIE w main), kwalifikowana rytmem
+jedna fala do tyłu przez powstanie FALI 271. Scalenie NIE wykonane tutaj (poza zakresem deployu,
+wymaga wyraźnej zgody właściciela; `git-merge-main` zablokowany w `guardrails.ts`).
+ℹ️ **Commity, ktore weszly na galaz po buildzie, NIE sa w bundlu** — wiazacy build HEAD = `b6159561`, reszta wchodzi do FALI 272. Do momentu pushu doszly m.in. `7155d39d`/`0994753b`/`63bdf1b9` (rejestr + testy; kopalnia zlota odsprzegnieta do JSON, wartosc 1→1, zachowanie bez zmian) oraz `b923730a`/`af8fb9c6` (deduplikacja EDYCJI koszyka PW, 10→20/20 — **realna zmiana logiki, poza ta fala**). Bundel NIE byl przebudowywany 4. raz.
+**SESJA LOKALNA: pull na dysk właściciela** (testuj `ea51ac51`).
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FALI 270 do `main`.
+
+## [23:58 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 272**, md5 `5343a5f4`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`5343a5f45bb91510043740190f9beffa`**, stempel
+`ROBOCZA · 85027372 · 2026-08-12 21:58` (UTC). Build z HEAD **`ad946239`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**12 commitów** od FALI 271, 6 plików w
+`gra/src`+`gra/data`, +146/−20). Bramki na tym czubku: `tsc` **0 błędów** · `logic-test`
+**213/213** · `combat-test` **6/6** · `empire-miasta-table-test` **89/0** ·
+`diplomacy-basket-duplicate-ui-test` **20/20** · `porzadek-panel-czytelnosc-test` **81/0** ·
+`tartak-glinianka-rate-Q1-test` **281/0** · `vite build` **815 modułów** ·
+`verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html` (manifest 10 bundli) przegenerowane.
+**Tematy (fala domykająca AUDYT #3 — same naprawy, bez nowych funkcji):** **Tabela Miast** —
+złączenie po **indeksie zamiast po nazwie miasta** (realny bug: zdobyte miasta o tej samej nazwie
+gubiły dane w podsumowaniu), etykieta `SUROWCE`→**zapotrzebowanie**, `wireMiastaColFilter` wyjęty
+z buildera HTML do `render()` · **koszyk PW** — deduplikacja **ścieżki EDYCJI** (`applyBasketItemEdit`,
+10→20/20) · **produkcja terenowa** — hardkod stawki kopalni złota odsprzęgnięty do JSON
+(**1→1, zachowanie bez zmian**, zmiana architektoniczna) · **panel Szczęście/Prawo** — sekcje J i K
+w teście (67→81/81, zero zmian w `src/`).
+✅ **Bundel budowany RAZ** — w przeciwieństwie do FALI 271 gałąź nie przyjęła żadnego commitu
+w trakcie deployu (`git fetch` przed buildem i przed commitem: zero nowych), zero porzuconych md5.
+**FALA 272 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu”). Powstanie FALI 272
+kwalifikuje **FALĘ 271** (`94a17910`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
+Niescalone: **FALA 270** (`028ff459`) i **FALA 271** (`94a17910`).
+**SESJA LOKALNA: pull na dysk właściciela** (testuj `5343a5f4`).
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 270+271 do `main`.

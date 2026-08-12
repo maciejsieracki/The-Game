@@ -8,15 +8,20 @@
  *   - Zużycie Ceramiki wyłącznie Spichlerz I/II (B6/B8: 5 Ceramiki/turę).
  *   - U-14bA: nadwyżka Ceramiki po drain Spichlerza → auto +Zdrowie (zapas: +Zadowolenie).
  *   - Paliwo USUNIĘTE całkowicie (Mielerz usunięty); konwertery biorą DREWNO 1:1.
- *   Cegielnia  | 2 glina + 1 drewno | 1 cegla    | 3/t
- *   Garncarnia | 1 glina + 1 drewno | 1 ceramika | 6/t (PYTANIE-84-B5)
- *   Odlewnia brązu | 1 ruda + 1 drewno | 1 braz  | 1/t
- *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 1/t każdy
- *   Wielka odlewnia | braz + żelazo + stal (1 zelazo + 1 drewno) | 1/t każdy
+ *   Cegielnia  | 2 glina + 1 drewno | 1 cegla    | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
+ *   Garncarnia | 1 glina + 1 drewno | 1 ceramika | 10/t + 10% bazy/epokę właściciela (P-KONWERTERY-PRZEPUSTOWOSC-Q1)
+ *   Odlewnia brązu | 1 ruda + 1 drewno | 1 braz  | 5/t (płaskie, bez skalowania epoką)
+ *   Odlewnia żelaza | braz (jak tier1) + żelazo (1 ruda_zelaza + 1 drewno) | 5/t każdy (płaskie)
+ *   Wielka odlewnia | braz + żelazo + stal (1 zelazo + 1 drewno) | 5/t każdy (płaskie)
  *   Stolarnia / Tartak — NIE konwertują (drewno TYP 1; deski wycofane).
  *
  * Lancuch odlewni (Maciej 2026-07-27): jeden slot, upgrade zastępuje poprzednik.
  * Wielka Kuźnia = tylko Pancerz (+15% lancuch), NIE produkuje stali.
+ *
+ * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): przepustowości bazowe
+ * podniesione (Cegielnia/Garncarnia 3|6 → 10, Odlewnie 1 → 5) + Cegielnia/Garncarnia
+ * dostają +10% bazy ADDYTYWNIE za każdą epokę CYWILIZACJI WŁAŚCICIELA (nie epokę
+ * gry, nie poziom budynku) -- patrz `converterThroughputForEra` niżej.
  */
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -55,18 +60,72 @@ export interface ConverterRecipe {
  * Domyślny zestaw receptur (PYTANIE-84 2026-07-27: Ceramika stock + Garncarnia konwerter;
  * łańcuch odlewni multi-receptura; Wielka Kuźnia bez produkcji stali).
  */
+// P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): nowe wartości bazowe --
+// Cegielnia/Garncarnia przepustowość 10 (było 3/6), Odlewnie (wszystkie warianty
+// łańcucha, share'ujące throughputParamKey) przepustowość 5 (było 1). / EN: new base
+// throughput values -- Brickworks/Pottery 10 (was 3/6), all Foundry-chain variants
+// (sharing a throughputParamKey) 5 (was 1).
 export const DEFAULT_CONVERTER_RECIPES: ReadonlyArray<ConverterRecipe> = [
-  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 3 },
-  { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 6 },
+  { id: 'cegielnia',              inputs: { glina: 2, drewno: 1 },         output: 'cegla',    outputAmount: 1, throughputParamKey: 'budynek_cegielnia_przepustowosc',        throughputFallback: 10 },
+  { id: 'garncarnia',             inputs: { glina: 1, drewno: 1 },         output: 'ceramika', outputAmount: 1, throughputParamKey: 'budynek_garncarnia_przepustowosc',     throughputFallback: 10 },
   // 'mielerz' USUNIĘTY (Maciej 2026-07-23): Paliwo usunięte całkowicie; konwertery biorą drewno 1:1.
-  { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
-  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
-  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
-  { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },
-  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 1 },
-  { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 1 },
-  { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 1 },
+  { id: 'huta',                    inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
+  { id: 'odlewnia_brazu',          inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
+  { id: 'odlewnia_zelaza__braz',   buildingId: 'odlewnia_zelaza', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
+  { id: 'odlewnia_zelaza__zelazo', buildingId: 'odlewnia_zelaza', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 5 },
+  { id: 'wielka_odlewnia__braz',   buildingId: 'wielka_odlewnia', inputs: { ruda: 1, drewno: 1 },          output: 'braz',     outputAmount: 1, throughputParamKey: 'budynek_huta_przepustowosc',             throughputFallback: 5 },
+  { id: 'wielka_odlewnia__zelazo', buildingId: 'wielka_odlewnia', inputs: { ruda_zelaza: 1, drewno: 1 },    output: 'zelazo',   outputAmount: 1, throughputParamKey: 'budynek_odlewnia_zelaza_przepustowosc', throughputFallback: 5 },
+  { id: 'wielka_odlewnia__stal',   buildingId: 'wielka_odlewnia', inputs: { zelazo: 1, drewno: 1 },        output: 'stal',     outputAmount: 1, throughputParamKey: 'budynek_wielka_odlewnia_przepustowosc',  throughputFallback: 5 },
 ];
+
+// ---------------------------------------------------------------------------
+// P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12) -- Cegielnia/Garncarnia:
+// "przepustowość 10 plus 10% możliwość awansu i ulepszenia co każdą epokę" --
+// przepustowość rośnie +10% ADDYTYWNIE od bazy za KAŻDĄ epokę CYWILIZACJI
+// WŁAŚCICIELA budynku (nie globalną epokę gry, nie poziom budynku
+// buildingLevelForEpoch -- to OSOBNY system, patrz buildings.json maksPoziom).
+// Baza 10: epoka1=10, epoka2=11, epoka3=12. Odlewnie (huta/odlewnia_brazu/
+// odlewnia_zelaza*/wielka_odlewnia*) NIE dostają tego mechanizmu -- zostają płaskie.
+// / EN: Brickworks/Pottery throughput grows +10% ADDITIVELY from the base for EVERY
+// era of the OWNING civilization (not the global game era, not the building's own
+// level system). Base 10: era1=10, era2=11, era3=12. Foundries are excluded and
+// stay flat.
+//
+// Interpretacja "+10%" -- ADDYTYWNA od BAZY, nie mnożnikowa/compound:
+//   throughput(era) = base + base * PCT * (era - 1)
+// Odrzucona alternatywa (compound: base * (1+PCT)^(era-1)) dawałaby dla bazy 10:
+// epoka1=10, epoka2=11, epoka3=12,1 -- niemal identyczne dziś (3 epoki), ale
+// rozjeżdżające się wykładniczo przy każdej kolejnej epoce dodanej w przyszłości.
+// Dosłowne słowa właściciela "10 plus 10% ... co każdą epokę" czytamy jako stały,
+// liniowy przyrost OD TEJ SAMEJ BAZY 10, nie jako mnożnik nawarstwiający się na
+// wartości z poprzedniej epoki. / EN: rejected alternative (compound growth) would
+// read "+10% every era" as compounding on the PREVIOUS era's value; the additive/
+// linear reading (fixed % of the original base, summed per era) was picked as the
+// more direct match for "10 plus 10% ... every era".
+// ---------------------------------------------------------------------------
+
+/** Receptury objęte skalowaniem +10%/epokę (klucz `id` z DEFAULT_CONVERTER_RECIPES). */
+export const CONVERTER_ERA_SCALING_RECIPE_IDS: ReadonlySet<string> = new Set(['cegielnia', 'garncarnia']);
+
+/** Przyrost przepustowości na epokę (10% BAZY), addytywnie -- patrz komentarz wyżej. */
+export const CONVERTER_ERA_SCALING_PCT = 0.10;
+
+/**
+ * Przepustowość konwertera po uwzględnieniu epoki WŁAŚCICIELA budynku (per-owner,
+ * PARYTET AI -- ta sama funkcja dla gracza i AI, `era` to zwykły parametr liczbowy
+ * bez gałęzi po ownerId). Cegielnia/Garncarnia rosną +10% bazy/epokę (addytywnie);
+ * reszta receptur (Odlewnie) zwraca `baseThroughput` bez zmian niezależnie od `era`.
+ * `era` < 1 lub nieskończone/NaN traktowane jak 1 (brak ujemnego/undefined mnożnika).
+ */
+export function converterThroughputForEra(
+  recipeId: string,
+  baseThroughput: number,
+  era: number,
+): number {
+  if (!CONVERTER_ERA_SCALING_RECIPE_IDS.has(recipeId)) return baseThroughput;
+  const e = Number.isFinite(era) && era > 1 ? era : 1;
+  return baseThroughput * (1 + CONVERTER_ERA_SCALING_PCT * (e - 1));
+}
 
 export type ConverterReason = 'ok' | 'brak-wejscia' | 'pelny-magazyn' | 'zero-przepustowosci';
 

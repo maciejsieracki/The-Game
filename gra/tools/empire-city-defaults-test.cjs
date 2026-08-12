@@ -309,5 +309,40 @@ function ok(cond, msg) {
   ok(M.freshOwnerDefaultPoziomRacji() === M.DEFAULT_POZIOM_RACJI, 'freshOwnerDefaultPoziomRacji() === DEFAULT_POZIOM_RACJI');
 }
 
+// ---------------------------------------------------------------------------
+// 7. P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC (Maciej): domyślny tryb widgetu
+//    "Zarządzanie polami" dla ŚWIEŻO ZAŁOŻONEGO miasta = Żywność (był Zrównoważone).
+//    Pokrywa CAŁY łańcuch, jakim realna gra ustala wartość startową:
+//      foundCityAt (override=false, patrz sekcja 4) → seedCityOwnerDefaults (main.ts,
+//      niebundlowalne -- czysta logika) czyta ownerDefaultOkolicaFocus.get(ownerId),
+//      a ten Map jest zasiewany freshOwnerDefaultOkolicaFocus() zarówno dla gracza (owner
+//      0) jak i dla KAŻDEGO AI/Państwa-Miasta (main.ts initAiOwnerDefaults, ta sama
+//      funkcja, brak osobnej ścieżki) → DEFAULT_OKOLICA_FOCUS (cities.ts).
+//    EN: default Field Management mode for a FRESHLY FOUNDED city = Food (was Balanced).
+//    Covers the real chain: foundCityAt (override=false) → seedCityOwnerDefaults reads
+//    the per-owner Map → seeded by freshOwnerDefaultOkolicaFocus() for BOTH player and
+//    every AI/city-state (same function, no separate AI path) → DEFAULT_OKOLICA_FOCUS.
+// ---------------------------------------------------------------------------
+{
+  ok(M.DEFAULT_OKOLICA_FOCUS === 'zywnosc',
+    `DEFAULT_OKOLICA_FOCUS === 'zywnosc' (got ${M.DEFAULT_OKOLICA_FOCUS})`);
+  ok(M.freshOwnerDefaultOkolicaFocus() === 'zywnosc',
+    `freshOwnerDefaultOkolicaFocus() === 'zywnosc' — używane zarówno dla gracza (owner 0) jak i dla każdego AI/Państwa-Miasta w main.ts (got ${M.freshOwnerDefaultOkolicaFocus()})`);
+
+  // Symulacja main.ts::seedCityOwnerDefaults dla świeżo założonego miasta: override=false
+  // (potwierdzone przez foundCityAt, sekcja 4) + globalny default ownera świeżo zasiany
+  // freshOwnerDefaultOkolicaFocus() -> efektywny okolicaFocus przez resolveCityOkolicaFocus.
+  const map = { hexes: {} };
+  map.hexes['0,0'] = { terenBazowy: 0 };
+  const freshCity = M.foundCityAt(0, 0, 0, [], map, 'TestGródŻywność');
+  ok(freshCity !== null, 'foundCityAt zwraca miasto (Żywność test)');
+  if (freshCity) {
+    const seededDefault = M.freshOwnerDefaultOkolicaFocus();
+    const effective = M.resolveCityOkolicaFocus(freshCity, seededDefault);
+    ok(effective === 'zywnosc',
+      `świeżo założone miasto: efektywny okolicaFocus (jak w seedCityOwnerDefaults) = 'zywnosc' (got ${effective})`);
+  }
+}
+
 console.log(`empire-city-defaults-test: ${pass} pass, ${fail} fail`);
 process.exit(fail > 0 ? 1 : 0);

@@ -396,8 +396,87 @@ console.log('\n-- G. main.ts (strażnik tekstowy): wyrąb lasu przekazuje cap do
 
   // cap MUSI być liczony przez ownerResourceCap (ta sama funkcja co reszta ekonomii),
   // nie hardkodowaną stałą -- kontroluje, że naprawa nie "przeszła" przez sztuczną wartość.
-  assert(/const drewnoCap = ownerResourceCap\(cities, cityBuilt, ownerId, data, _menuDifficulty\);/.test(loopBody),
-    'main.ts: drewnoCap liczony przez ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty) w pętli wyrębu');
+  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): wywołanie ma dziś 6 argumentów
+  // (dołożony `empireEpochForOwner(ownerId)` jako `era`) i jest sformatowane wieloliniowo
+  // przez ESLint/Prettier po dodaniu argumentu -- regex tolerancyjny na białe znaki/nowe
+  // linie między argumentami i między `ownerResourceCap(` a otwierającym `cities,`.
+  assert(/const drewnoCap = ownerResourceCap\(\s*cities,\s*cityBuilt,\s*ownerId,\s*data,\s*_menuDifficulty,\s*empireEpochForOwner\(ownerId\),?\s*\);/.test(loopBody),
+    'main.ts: drewnoCap liczony przez ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId)) w pętli wyrębu');
+}
+
+// ===========================================================================
+console.log('\n-- H. main.ts (strażnik tekstowy): łup z bitwy przekazuje cap do creditOwnerResourceStock --');
+{
+  const MAIN_TS = path.join(__dirname, '..', 'src', 'main.ts');
+  const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
+
+  // Wytnij ciało bloku łupu z bitwy (od deklaracji `battleLoot` do warunku
+  // zdobycia miasta, ktory zaczyna sie zaraz po zamknieciu tego bloku).
+  const blockStart = mainSrc.indexOf('let battleLoot: BattleLoot | null = null;');
+  assert(blockStart >= 0, 'main.ts: znaleziono blok łupu z bitwy (let battleLoot)');
+  const blockEndMarker = 'opts?.allowCityCapture === true || opts?.siegeContext === true';
+  const blockEndIdx = mainSrc.indexOf(blockEndMarker, blockStart);
+  assert(blockEndIdx > blockStart, 'main.ts: znaleziono koniec bloku łupu z bitwy (przed allowCityCapture)');
+  const battleLootBody = blockStart >= 0 && blockEndIdx > blockStart ? mainSrc.slice(blockStart, blockEndIdx) : '';
+
+  // Wywołanie creditOwnerResourceStock dla łupu MUSI mieć 5. argument (cap) --
+  // dokładnie ten fragment, jaki Operator zostawił w kodzie po naprawie
+  // P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO.
+  const battleLootCallMatch = battleLootBody.match(
+    /creditOwnerResourceStock\(cities, winOid, key, amt(, \w+)?\)/,
+  );
+  assert(!!battleLootCallMatch,
+    'main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, winOid, key, amt...) w bloku łupu z bitwy');
+  assert(!!(battleLootCallMatch && battleLootCallMatch[1]),
+    'main.ts: wywołanie w bloku łupu z bitwy PRZEKAZUJE 5. argument (cap) do creditOwnerResourceStock -- ' +
+    'bez niego łup rośnie bez ograniczenia mimo pełnego magazynu (regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO)');
+
+  // cap MUSI być liczony przez ownerResourceCap z epoką ZWYCIĘZCY (winOid) --
+  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): bez empireEpochForOwner(winOid)
+  // cap liczony tu byłby niższy niż realnie egzekwowany przez silnik od epoki 2
+  // wzwyż, łup mógłby zniknąć w całości. Regex tolerancyjny na białe znaki/nowe
+  // linie, tak samo jak strażnik wyrębu (sekcja G).
+  assert(/const battleLootCap = ownerResourceCap\(\s*cities,\s*cityBuilt,\s*winOid,\s*data,\s*_menuDifficulty,\s*empireEpochForOwner\(winOid\),?\s*\);/.test(battleLootBody),
+    'main.ts: battleLootCap liczony przez ownerResourceCap(cities, cityBuilt, winOid, data, _menuDifficulty, empireEpochForOwner(winOid)) w bloku łupu z bitwy');
+}
+
+// ===========================================================================
+console.log('\n-- I. main.ts (strażnik tekstowy): przepływ handlowy przekazuje cap do creditOwnerResourceStock --');
+{
+  const MAIN_TS = path.join(__dirname, '..', 'src', 'main.ts');
+  const mainSrc = fs.readFileSync(MAIN_TS, 'utf8');
+
+  // Wytnij ciało pętli przepływu ilościowego surowca przez trasy handlowe (od
+  // `const tradeFlows = computeTradeRouteResourceFlow` do komunikatu bledu w
+  // otaczającym catch, ktory zamyka ten blok).
+  const blockStart = mainSrc.indexOf('const tradeFlows = computeTradeRouteResourceFlow(tradeRoutes,');
+  assert(blockStart >= 0, 'main.ts: znaleziono pętlę przepływu handlowego (const tradeFlows = computeTradeRouteResourceFlow)');
+  const blockEndMarker = 'Blad przeplywu ilosciowego surowca przez trase';
+  const blockEndIdx = mainSrc.indexOf(blockEndMarker, blockStart);
+  assert(blockEndIdx > blockStart, 'main.ts: znaleziono koniec pętli przepływu handlowego (przed komunikatem bledu w catch)');
+  const tradeFlowBody = blockStart >= 0 && blockEndIdx > blockStart ? mainSrc.slice(blockStart, blockEndIdx) : '';
+
+  // Wywołanie creditOwnerResourceStock dla przepływu handlowego MUSI mieć 5.
+  // argument (cap) -- bez niego surowiec dopisany odbiorcy rośnie bez
+  // ograniczenia mimo pełnego magazynu, a odjęcie u nadawcy
+  // (deductBuildingStockCostAcrossCities wyżej w pętli) jest BEZWARUNKOWE --
+  // regres tutaj oznacza realne zniszczenie surowca, nie tylko przekroczenie capu.
+  const tradeFlowCallMatch = tradeFlowBody.match(
+    /creditOwnerResourceStock\(cities, flow\.toOwnerId, flow\.resourceKey, flow\.amount(, \w+)?\)/,
+  );
+  assert(!!tradeFlowCallMatch,
+    'main.ts: znaleziono wywołanie creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount...) w pętli przepływu handlowego');
+  assert(!!(tradeFlowCallMatch && tradeFlowCallMatch[1]),
+    'main.ts: wywołanie w pętli przepływu handlowego PRZEKAZUJE 5. argument (cap) do creditOwnerResourceStock -- ' +
+    'bez niego surowiec rośnie bez ograniczenia mimo pełnego magazynu (regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO)');
+
+  // cap MUSI być liczony przez ownerResourceCap z epoką ODBIORCY (flow.toOwnerId) --
+  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): bez empireEpochForOwner(flow.toOwnerId)
+  // cap byłby zaniżony od epoki 2 wzwyż i surowiec mógłby zniknąć zamiast dotrzeć
+  // do odbiorcy. Regex tolerancyjny na białe znaki/nowe linie, tak samo jak
+  // strażnik wyrębu (sekcja G).
+  assert(/const tradeFlowCap = ownerResourceCap\(\s*cities,\s*cityBuilt,\s*flow\.toOwnerId,\s*data,\s*_menuDifficulty,\s*empireEpochForOwner\(flow\.toOwnerId\),?\s*\);/.test(tradeFlowBody),
+    'main.ts: tradeFlowCap liczony przez ownerResourceCap(cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty, empireEpochForOwner(flow.toOwnerId)) w pętli przepływu handlowego');
 }
 
 // --- summary ---------------------------------------------------------------

@@ -10,11 +10,22 @@ import {
   type EmpireResourceRow,
   type EmpireUchwalaRow,
 } from './empireDetailTypes';
-import { formatObywateleLabel } from '../game/manpower';
+import { formatObywateleLabel, formatManpower } from '../game/manpower';
 import { stockResourceLabel } from '../game/building-stock-cost';
+import { resourceUsageTotal } from '../game/resource-usage-breakdown';
+import {
+  MIASTA_TABLE_COLUMNS,
+  visibleMiastaColumns,
+  miastaColumnGridTemplate,
+  computeMiastaSummaryRow,
+  type MiastaColDef,
+} from './empireMiastaTable';
 import { mocLabel, mocWithValue } from './power-labels';
+import {
+  powerRankingValueForMode, sortPowerRankingForMode, type PowerRankingViewMode,
+} from './powerOverlayHud';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
-import { signedPl } from './formatPl';
+import { formatLiczbaPl, signedPl } from './formatPl';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
@@ -26,6 +37,7 @@ import {
 } from '../game/population-growth-v85';
 import { formatCivBrandLine } from './civBrandDisplay';
 import {
+  econSliderVisibilityForOnlyEconId,
   empirePanelBlockForSection,
   type EmpirePanelBlock,
 } from './empirePanelSectionMap';
@@ -195,10 +207,26 @@ let bodyEl: HTMLDivElement | null = null;
 let getSnap: (() => EmpireDetailSnap) | null = null;
 let open = false;
 let pendingScrollSection: string | null = null;
+/** RUNDA 2 scroll-reset (Evaluator werdykt dla `05328fe6`): ustawiana WYŁĄCZNIE w
+ *  `showEmpireDetailPanel()`, tam gdzie wiadomo że to nowe otwarcie/zmiana bloku (nie
+ *  zgadywana wewnątrz `render()`, bo `render()` nie odróżnia re-renderu tego samego widoku
+ *  od otwarcia nowego — patrz `open` ustawiane PRZED `render()` w obu przypadkach). Panel
+ *  zamknięty to `transform:translateX(100%)`, NIE `display:none`, więc `scrollTop` przeżywa
+ *  zamknięcie — bez tej flagi ponowne otwarcie/zmiana bloku pokazywałaby scrollTop z
+ *  poprzedniego, innego widoku. / EN: set ONLY in `showEmpireDetailPanel()`, at the one place
+ *  that actually knows this is a fresh open / block change (not guessed inside `render()`,
+ *  since `render()` can't tell a same-view re-render from a fresh open — `open` is set
+ *  BEFORE `render()` in both cases). A closed panel is `transform:translateX(100%)`, NOT
+ *  `display:none`, so `scrollTop` survives closing — without this flag, reopening / switching
+ *  block would show the scrollTop left over from the previous, different view. */
+let resetScrollOnNextRender = false;
 /** C-PANEL=B (Maciej 2026-07-24): klik żetonu HUD otwiera panel z TYLKO jednym blokiem
  *  (żeby klik „Surowce" pokazywał magazyn, a nie całą ekonomię z Nauką). Trzymane między
  *  renderami (refresh nie resetuje widoku). null = pełny panel (wszystkie bloki). */
 let activeSection: string | null = null;
+/** P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): tryb widoku Rankingu Mocy — trzymany między
+ *  renderami (refresh nie resetuje wyboru), tak jak `activeSection` wyżej. */
+let mocViewMode: PowerRankingViewMode = 'total';
 
 function blockForSection(section: string | null): EmpirePanelBlock {
   return empirePanelBlockForSection(section);
@@ -281,6 +309,11 @@ function ensureStyles(): void {
 .civ-emp-foot{font-size:10.5px;color:#6f7889;font-style:italic;line-height:1.4;margin-top:10px;}
 .civ-emp-rank{font-size:13px;color:#cfd5de;line-height:1.9;}
 .civ-emp-rank .you{display:flex;align-items:center;gap:6px;color:#d9a441;font-weight:700;margin-top:2px;}
+.civ-emp-mocview{display:flex;gap:6px;margin-top:8px;}
+.civ-emp-mocview-btn{flex:1;padding:6px 4px;border-radius:6px;border:1px solid #2b3543;
+  background:#171e2a;color:#9aa4b2;font-size:11px;font-weight:600;cursor:pointer;text-align:center;}
+.civ-emp-mocview-btn:hover{border-color:#3a4657;color:#cfd5de;}
+.civ-emp-mocview-btn.active{background:rgba(217,164,65,0.16);border-color:#d9a441;color:#d9a441;}
 .civ-emp-resp{margin:12px 0 4px;padding:11px 14px;border-radius:8px;background:#1c2431;
   border:1px solid #2b3543;font-size:12.5px;color:#cfd5de;}
 .civ-emp-resp b{color:#e8ebf0;}
@@ -297,6 +330,7 @@ function ensureStyles(): void {
 .civ-emp-zrow .val .d.z{color:#6f7889;}
 .civ-emp-mini{border:1px solid #232b38;border-radius:7px;overflow:hidden;margin:2px 0 8px;
   scroll-margin-top:8px;}
+.civ-emp-mini-scroll{overflow-x:auto;}
 .civ-emp-mini-h,.civ-emp-mini-r{display:grid;padding:7px 10px;column-gap:6px;}
 .civ-emp-mini-h{font-size:10px;letter-spacing:0.35px;color:#7d8798;font-weight:600;background:#1a2230;}
 .civ-emp-mini-h-cell{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;}
@@ -306,6 +340,15 @@ function ensureStyles(): void {
 .civ-emp-mini-r{font-size:12px;color:#cfd5de;}
 .civ-emp-mini-r>div{min-width:0;}
 .civ-emp-mini-r+.civ-emp-mini-r{border-top:1px solid #1f2733;}
+/* — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12) — filtr kolumn + wiersz
+   podsumowania tabeli „Miasta" — */
+.civ-emp-colfilter{display:flex;flex-wrap:wrap;gap:6px 14px;margin:2px 0 8px;padding:8px 10px;
+  border:1px solid #232b38;border-radius:7px;background:#171e2a;}
+.civ-emp-colchk{display:flex;align-items:center;gap:5px;font-size:11px;color:#b8c4d8;
+  cursor:pointer;user-select:none;}
+.civ-emp-colchk input{accent-color:#d9a441;cursor:pointer;margin:0;}
+.civ-emp-mini-summary{background:#1a2230;font-weight:700;color:#d9a441;
+  border-top:1px solid #3a4657;}
 .civ-emp-bar{height:10px;border-radius:6px;background:#1f2733;overflow:hidden;margin:2px 0 10px;}
 .civ-emp-bar .fill{height:100%;background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-bar .fill.warn{background:linear-gradient(90deg,#6a4010,#d9a441);}
@@ -363,6 +406,23 @@ function ensureStyles(): void {
 .civ-emp-res-bar.good>span{background:linear-gradient(90deg,#4e9a3f,#78c95a);}
 .civ-emp-res-bar.warn>span{background:linear-gradient(90deg,#6a4010,#d9a441);}
 .civ-emp-res-bar.bad>span{background:linear-gradient(90deg,#5a2020,#e07a7a);}
+/* — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12) — rozwinięcie „Zobacz szczegóły" — */
+.civ-emp-res-usage{margin-top:2px;}
+.civ-emp-res-usage>summary{list-style:none;cursor:pointer;font-size:10.5px;color:#8ec5ff;
+  font-weight:600;user-select:none;}
+.civ-emp-res-usage>summary::-webkit-details-marker{display:none;}
+.civ-emp-res-usage>summary::before{content:'▸ ';}
+.civ-emp-res-usage[open]>summary::before{content:'▾ ';}
+.civ-emp-res-usage-body{margin-top:6px;padding:8px 9px;border-radius:6px;background:rgba(15,20,28,.55);
+  display:flex;flex-direction:column;gap:3px;}
+.civ-emp-res-usage-row{display:flex;justify-content:space-between;gap:8px;font-size:11px;
+  font-variant-numeric:tabular-nums;color:#b8c4d8;}
+.civ-emp-res-usage-row .v{color:#e07a7a;font-weight:600;}
+.civ-emp-res-usage-row.total{margin-top:2px;padding-top:4px;border-top:1px solid rgba(255,255,255,.1);
+  font-weight:700;color:#cfd5de;}
+.civ-emp-res-usage-row.total .v{color:#e07a7a;}
+.civ-emp-res-usage-note{margin-top:5px;font-size:10px;line-height:1.4;color:#7d8798;}
+.civ-emp-res-usage-note b{color:#78c95a;}
 .civ-emp-res-foodnote{margin:14px 0 4px;padding:10px 12px;border-radius:8px;border:1px dashed #2b3543;
   background:rgba(142,197,255,.05);font-size:12px;color:#b8c4d8;display:flex;gap:9px;
   align-items:flex-start;}
@@ -498,7 +558,69 @@ function cityEconMiniNauka(rows: EmpireDetailSnap['cityEcon']): string {
   return h;
 }
 
-function cityMiastaMiniDetail(
+/**
+ * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12) — kolumny UKRYTE przez
+ * checkboxy filtra nad tabelą „Miasta". Trwa między renderami (nie reset przy każdym
+ * odświeżeniu), bo to czysto stan wyświetlania — analogicznie do `activeSection` wyżej.
+ * MIASTO (id, `toggle:false` w MIASTA_TABLE_COLUMNS) nigdy tu nie trafia — checkbox dla niej
+ * się nie renderuje (zobacz `cityMiastaColFilterHtml`).
+ */
+const miastaHiddenCols = new Set<string>();
+
+/** Checkboxy widoczności kolumn — punkt (a) zadania. Kolejność kolumn (`grid-template-columns`)
+ *  zostaje jak dziś; checkbox WYŁĄCZNIE pokazuje/ukrywa, nie zmienia kolejności. */
+function cityMiastaColFilterHtml(): string {
+  const chips = MIASTA_TABLE_COLUMNS.filter(c => c.toggle).map(c => {
+    const checked = miastaHiddenCols.has(c.id) ? '' : ' checked';
+    return `<label class="civ-emp-colchk"><input type="checkbox" data-miasta-col="${esc(c.id)}"${checked}> ${esc(c.label)}</label>`;
+  }).join('');
+  return `<div class="civ-emp-colfilter" id="civ-emp-miasta-colfilter">${chips}</div>`;
+}
+
+// Eksport dla testów -- patrz komentarz przy cityMiastaMiniDetail wyżej (ten sam powód: realna
+// symulacja checkboxów w jsdom zamiast dopasowania tekstu).
+export function wireMiastaColFilter(): void {
+  const host = document.getElementById('civ-emp-miasta-colfilter');
+  if (!host) return;
+  for (const inp of Array.from(host.querySelectorAll<HTMLInputElement>('input[data-miasta-col]'))) {
+    inp.addEventListener('change', () => {
+      const id = inp.dataset.miastaCol;
+      if (!id) return;
+      if (inp.checked) miastaHiddenCols.delete(id); else miastaHiddenCols.add(id);
+      render();
+    });
+  }
+}
+
+/** Komórka jednego wiersza miasta dla danej kolumny (`colId` = `MiastaColDef.id`). */
+function miastaCellFor(r: {
+  name: string; obyw: number; ludnoscLabel: string; wzrost: number | null;
+  praca: number; pieniadz: number; zywnosc: number | null;
+  surowce: Record<string, number> | undefined;
+}, colId: string): string {
+  switch (colId) {
+    case 'miasto': return esc(r.name);
+    case 'obyw': return String(r.obyw);
+    case 'ludnosc': return esc(r.ludnoscLabel);
+    case 'wzrost': return r.wzrost != null ? `${Math.round(r.wzrost)}%` : '—';
+    case 'praca': return signedTxt(r.praca);
+    case 'pieniadz': return signedTxt(r.pieniadz);
+    case 'zywnosc': return r.zywnosc != null ? signedIntTxt(r.zywnosc) : '—';
+    // Punkt (b): utrzymanie surowcowe budynków W TYM mieście — patrz JSDoc
+    // EmpireCityEconRow.utrzymanieSurowcowBudynkow (empireDetailTypes.ts) skąd DOKŁADNIE
+    // pochodzi ta liczba (buildingResourceUpkeepForCityId w main.ts, per-miasto z definicji).
+    case 'surowce': return formatResourceUpkeepEmpireLine(r.surowce);
+    default: return '—';
+  }
+}
+
+// Eksport dla testów (ten sam wzorzec co resUsageDetailsHtml wyżej) — pozwala testowi NAPRAWDĘ
+// zbundlować i wywołać tę funkcję (esbuild+jsdom, symulacja checkboxów filtra kolumn) zamiast
+// dopasowywać tekst w źródle (zadanie 3, empire-miasta-table-test.cjs sekcja L).
+// / EN: exported for tests (same pattern as resUsageDetailsHtml above) — lets the test REALLY
+// bundle and call this function (esbuild+jsdom, column-filter checkbox simulation) instead of
+// matching text in the source.
+export function cityMiastaMiniDetail(
   ce: EmpireDetailSnap['cityEcon'],
   cp: EmpireDetailSnap['cityPobor'],
   food: EmpireFoodSnap,
@@ -507,44 +629,98 @@ function cityMiastaMiniDetail(
   if (cp.length === 0) {
     return '<div class="civ-emp-empty">Brak miast — załóż osiedle na mapie.</div>';
   }
-  const foodByName = new Map(food.perCityRows.map(r => [r.name, r]));
-  const grid = '1.05fr 0.45fr 0.75fr 0.55fr 0.55fr 0.6fr 0.6fr';
+  const foodById = new Map(food.perCityRows.map(r => [r.cityId, r]));
+  // Dane per miasto liczone RAZ — użyte zarówno do wierszy, jak i do wiersza podsumowania
+  // (punkt c), żeby suma/średnia w stopce dokładnie odpowiadały temu, co widać w wierszach
+  // powyżej (nie osobne, mogące się rozjechać przeliczenie).
+  // P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2, Evaluator FAIL na 89c16ec1): `ce` (cityEcon) i `cp`
+  // (cityPobor) powstają jako `pc.map(...)` z TEJ SAMEJ tablicy źródłowej w main.ts
+  // (buildEmpireDetailSnap) — są RÓWNOLEGŁE INDEKSOWO. Join po nazwie (`ce.find(c => c.name
+  // === pob.name)`) był błędny: nazwy miast NIE są unikalne w obrębie jednej cywilizacji
+  // (`captureCity()` w siege.ts zachowuje nazwę zdobytego miasta), więc dwa miasta tego samego
+  // ownera o tej samej nazwie dawały: oba wiersze dostawały dane PIERWSZEGO dopasowania, a
+  // wiersz podsumowania liczył podwójnie i gubił drugie miasto całkowicie. Food joinowane po
+  // cityId (patrz EmpireCityPoborRow.cityId, empireDetailTypes.ts) z tego samego powodu.
+  // / EN: `ce`/`cp` are index-parallel (built from the same `pc.map()` in main.ts) — joining by
+  // name was wrong because city names are not unique within one civilization (captureCity()
+  // keeps the conquered city's name); two same-owner cities sharing a name both got the FIRST
+  // match's data, and the summary row double-counted one and lost the other entirely. Food is
+  // joined by cityId for the same reason.
+  const rows = cp.map((pob, i) => {
+    const econ = ce[i];
+    const fd = foodById.get(pob.cityId);
+    return {
+      name: pob.name,
+      obyw: pob.ludki,
+      ludnoscLabel: pob.ludnoscAbsLabel,
+      ludnoscAbsolutna: pob.ludnoscAbsolutna,
+      wzrost: fd != null ? fd.wzrostProcent : null,
+      praca: (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0),
+      pieniadz: econ?.pieniadz ?? 0,
+      zywnosc: fd != null ? fd.bilans : null,
+      surowce: econ?.utrzymanieSurowcowBudynkow,
+    };
+  });
+
+  const cols: MiastaColDef[] = visibleMiastaColumns(miastaHiddenCols);
+  const grid = miastaColumnGridTemplate(cols);
+
   let h = `<div class="civ-emp-note">Miasta imperium: <b>${e.osiedla}</b>`
     + ` · przyrost ludności łącznie: <b>${signedPl(e.ludnoscRate ?? 0)}</b> obyw./turę</div>`;
-  h += `<div class="civ-emp-mini">${miniHeader(
-    [
-      'MIASTO',
-      { label: 'OBYW.', iconId: 'res-population' },
-      'LUDNOŚĆ',
-      'WZROST',
-      { label: 'PRACA', iconId: 'res-work' },
-      { label: 'PIENIĄDZ', iconId: 'res-treasury' },
-      { label: 'ŻYWNOŚĆ', iconId: 'res-food' },
-    ],
-    grid,
-  )}`;
-  for (const pob of cp) {
-    const econ = ce.find(c => c.name === pob.name);
-    const fd = foodByName.get(pob.name);
-    const praca = (econ?.pracaPula ?? 0) + (econ?.pracaBudynki ?? 0);
-    const wzrost = fd != null ? `${Math.round(fd.wzrostProcent)}%` : '—';
-    const zywnosc = fd != null ? signedIntTxt(fd.bilans) : '—';
-    h += miniRow([
-      esc(pob.name),
-      String(pob.ludki),
-      esc(pob.ludnoscAbsLabel),
-      wzrost,
-      signedTxt(praca),
-      signedTxt(econ?.pieniadz ?? 0),
-      zywnosc,
-    ], grid);
+  // Punkt (a): checkboxy widoczności kolumn nad tabelą.
+  h += cityMiastaColFilterHtml();
+  h += `<div class="civ-emp-mini-scroll"><div class="civ-emp-mini">`;
+  h += miniHeader(cols.map(c => (c.iconId ? { label: c.label, iconId: c.iconId } : c.label)), grid);
+  for (const r of rows) {
+    h += miniRow(cols.map(c => miastaCellFor(r, c.id)), grid);
   }
-  h += '</div>';
+  // Punkt (c): wiersz podsumowania — suma każdej kolumny, poza WZROST gdzie to ŚREDNIA
+  // (computeMiastaSummaryRow, empireMiastaTable.ts — czysta agregacja liczb z wierszy powyżej,
+  // zero nowego przeliczenia ekonomii).
+  const summary = computeMiastaSummaryRow(rows.map(r => ({
+    obyw: r.obyw,
+    ludnoscAbsolutna: r.ludnoscAbsolutna,
+    wzrostProcent: r.wzrost,
+    praca: r.praca,
+    pieniadz: r.pieniadz,
+    zywnosc: r.zywnosc ?? 0,
+    surowce: r.surowce,
+  })));
+  const summaryCellFor = (colId: string): string => {
+    switch (colId) {
+      case 'miasto': return 'SUMA / ŚREDNIA';
+      case 'obyw': return String(summary.obywTotal);
+      case 'ludnosc': return esc(formatManpower(summary.ludnoscAbsolutnaTotal));
+      case 'wzrost': return summary.wzrostProcentAvg != null ? `${summary.wzrostProcentAvg}%` : '—';
+      case 'praca': return signedTxt(summary.pracaTotal);
+      case 'pieniadz': return signedTxt(summary.pieniadzTotal);
+      case 'zywnosc': return signedIntTxt(summary.zywnoscTotal);
+      case 'surowce': return formatResourceUpkeepEmpireLine(summary.surowceTotal);
+      default: return '';
+    }
+  };
+  h += `<div class="civ-emp-mini-r civ-emp-mini-summary" style="grid-template-columns:${grid}">`
+    + cols.map(c => `<div>${summaryCellFor(c.id)}</div>`).join('') + `</div>`;
+  h += '</div></div>';
   h += '<div class="civ-emp-foot">'
     + 'PRACA = suma do puli imperium i do budynków w mieście / turę · '
     + 'PIENIĄDZ = wpływ netto do skarbca po suwakach · '
     + 'ŻYWNOŚĆ = bilans lokalny miasta (produkcja − racje) · '
-    + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta).</div>';
+    + 'WZROST = szacowany % wzrostu ludności (szczegóły w panelu miasta) · '
+    + 'SUROWCE = zapotrzebowanie surowcowe budynków wybudowanych W TYM mieście / turę (pełne, '
+    + 'bez klamrowania do zapasu magazynu — patrz „Zobacz szczegóły zużycia" niżej) — obywatele '
+    + '(magazyn centralny) i wojsko (porusza się po mapie) są civ-wide, bez podziału na miasta; '
+    + 'to POPYT przypisany do miasta — faktyczny drenaż magazynu idzie z puli CAŁEGO imperium '
+    + '(surowiec może zejść z zapasu innego miasta); pełne rozbicie budynki/obywatele/wojsko per '
+    + 'surowiec: sekcja SUROWCE → karta surowca → „Zobacz szczegóły zużycia".</div>'
+    + '<div class="civ-emp-foot">Wiersz „SUMA / ŚREDNIA" na dole — suma dla każdej kolumny, poza '
+    + 'WZROST (tam średnia z miast, dla których wzrost jest znany).</div>';
+  // N1 (Evaluator, notatka na 89c16ec1): queueMicrotask(wireMiastaColFilter) NIE jest tu wołane —
+  // ta funkcja bywa wołana 2x na render() (patrz detailFor w render()), co podpinałoby listenery
+  // podwójnie. Wiring przeniesiony do JEDNEGO wywołania w render(), po bodyEl.innerHTML=.
+  // / EN: queueMicrotask(wireMiastaColFilter) intentionally NOT called here — this function used
+  // to be invoked twice per render() (see detailFor in render()), which would double-wire
+  // listeners. Wiring moved to a SINGLE call in render(), after bodyEl.innerHTML=.
   return h;
 }
 
@@ -562,13 +738,39 @@ function cityPoborMiniRekruci(
     h += '<div class="civ-emp-empty">Brak miast.</div>';
     return h;
   }
-  const grid = '1fr 1fr 0.8fr 0.9fr';
-  h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'REKRUCI', 'MAX', 'ODNOWA'], grid)}`;
+  // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): kolumna JEDN. = potencjalne pełne
+  // jednostki z rekrutów TEGO miasta (rekruci ÷ p.kosztJednostki — TEN SAM koszt/jedn. co
+  // "można werbować" w notatce wyżej i chip "Armia" w HUD, gra/src/game/manpower.ts:
+  // unitManpowerCost). Wartość informacyjna, NIE floorowana — 1 miejsce po przecinku.
+  // Wiersz RAZEM na końcu: suma rekrutów/max/odnowy per kolumnę + p.rekrutEkw (identyczne
+  // z HUD i notatką wyżej, nie przeliczane osobno) w kolumnie JEDN.
+  // / EN: JEDN. column = potential full units from THIS city's recruits (recruits ÷
+  // p.kosztJednostki — the SAME cost/unit as "można werbować" in the note above and the HUD
+  // "Armia" chip, gra/src/game/manpower.ts: unitManpowerCost). Informational, NOT floored —
+  // one decimal place. RAZEM (total) row at the end: per-column sums of recruits/max/regen +
+  // p.rekrutEkw (identical to the HUD and the note above, not recomputed separately) in the
+  // JEDN. column.
+  const grid = '1fr 0.9fr 0.75fr 0.85fr 0.85fr';
+  h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'REKRUCI', 'MAX', 'ODNOWA', 'JEDN.'], grid)}`;
+  let sumRekruci = 0;
+  let sumMax = 0;
+  let sumRegen = 0;
   for (const c of rows) {
+    sumRekruci += c.rekruci;
+    sumMax += c.rekruciMax;
+    sumRegen += c.regenPerTurn;
+    const ekwMiasto = p.kosztJednostki > 0 ? c.rekruci / p.kosztJednostki : 0;
     h += miniRow([esc(c.name), String(c.rekruci), String(c.rekruciMax),
-      `<span style="color:#78c95a">+${c.regenPerTurn}</span>`], grid);
+      `<span style="color:#78c95a">+${c.regenPerTurn}</span>`,
+      formatLiczbaPl(ekwMiasto, 1)], grid);
   }
-  h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli całej cywilizacji (suma miast). Pasek = wypełnienie puli względem maksimum imperium.</div>';
+  h += `<div class="civ-emp-mini-r" style="grid-template-columns:${grid};font-weight:700;`
+    + `border-top:1px solid #2b3543;background:#1a2230">`
+    + `<div>RAZEM (imperium)</div><div>${sumRekruci}</div><div>${sumMax}</div>`
+    + `<div><span style="color:#78c95a">+${sumRegen}</span></div><div>${p.rekrutEkw}</div></div>`;
+  h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli całej cywilizacji (suma miast). '
+    + 'Pasek = wypełnienie puli względem maksimum imperium. '
+    + 'JEDN. = rekruci miasta ÷ koszt jednostki w bieżącej epoce (informacyjnie, bez zaokrąglania w dół).</div>';
   return h;
 }
 
@@ -739,9 +941,10 @@ function resTooltipHtml(r: EmpireResourceRow): string {
     parts.push(prod === 0 ? 'Produkcja: brak zmiany w tej turze' : `Produkcja: ${signedTxt(prod)} / turę`);
   }
   // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): reguła pokrycia = magazyn centralny
-  // ZASPOKAJA CAŁĄ populację imperium tego ownera (1 szt. surowca/obywatela/turę), NIE
-  // starsza binarna „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy
-  // silnik tury (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
+  // ZASPOKAJA CAŁĄ populację imperium tego ownera (stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN szt.
+  // surowca/obywatela/turę — kanon: citizen-resource-upkeep.ts), NIE starsza binarna
+  // „magazyn > 0" — panel musi zgadzać się z tym, co faktycznie liczy silnik tury
+  // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain).
   if (r.citizenRequired) {
     parts.push(r.citizenCovered
       ? 'Obywatele: zapotrzebowanie POKRYTE (magazyn ≥ zapotrzebowanie całego imperium; +1 Szczęście każde miasto)'
@@ -790,8 +993,72 @@ function resCitizenBadgeHtml(r: EmpireResourceRow): string {
     + `font-size:11px;background:${bg};color:${fg}">${esc(txt)}</span>`;
 }
 
+/**
+ * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12) + P-ZUZYCIE-ROZBICIE-NIEDOBOR
+ * (Evaluator FAIL, wariant B): rozwinięcie „Zobacz szczegóły" — rozbicie TEGO surowca na
+ * budynki/obywateli/wojsko. Czyta WYŁĄCZNIE `r.usage` (`resource-usage-breakdown.ts`) — nie
+ * licz nic tutaj. Natywny `<details>/<summary>` — ten sam wzorzec co grupy budynków w
+ * cityPanel.ts (GRUPY-BUDYNKOW), zero nowego okablowania JS/zdarzeń. Zwraca '' gdy brak
+ * zużycia (żadnej kategorii) — karta wtedy nie pokazuje przycisku wcale.
+ *
+ * ⚠️ Etykiety Budynki/Wojsko celowo mówią „zapotrzebowanie", NIE „zużycie"/„utrzymanie" —
+ * `u.buildings`/`u.units` to PEŁNY popyt, nieklamrowany do zapasu magazynu (patrz JSDoc
+ * `ResourceUsageBreakdown` w resource-usage-breakdown.ts); przy niedoborze magazynu może to
+ * przewyższać to, co silnik realnie odjął. Obywatele SĄ klamrowani (`u.citizens` = drenaż
+ * realny) — jedyna kategoria tu, o której wolno twierdzić „to zostało realnie zużyte".
+ * / EN: Budynki/Wojsko rows deliberately say "zapotrzebowanie" (demand), not "usage" — those
+ * two fields are full, unclamped demand and can exceed what the engine actually deducted
+ * under a warehouse shortage. Obywatele IS clamped (real drain) — the only row here entitled
+ * to claim actual consumption.
+ */
+// Eksport dla testów (ten sam wzorzec co treasuryBalanceSignedTxt wyżej) — pozwala testowi
+// naprawdę WOŁAĆ tę funkcję z kontrolowanym `EmpireResourceRow`, zamiast dopasowywać tekst w
+// źródle. / EN: exported for tests (same pattern as treasuryBalanceSignedTxt above) — lets the
+// test REALLY CALL this function with a controlled row instead of matching text in the source.
+export function resUsageDetailsHtml(r: EmpireResourceRow): string {
+  if (!r.usage) return '';
+  const u = r.usage;
+  const total = resourceUsageTotal(u);
+  if (total <= 0) return '';
+  const row = (label: string, val: number): string => val > 0
+    ? `<div class="civ-emp-res-usage-row"><span class="k">${esc(label)}</span><span class="v">−${val}</span></div>`
+    : '';
+  const prod = r.rateProductionPerTurn ?? r.ratePerTurn;
+  return `<details class="civ-emp-res-usage">`
+    + `<summary>Zobacz szczegóły zużycia</summary>`
+    + `<div class="civ-emp-res-usage-body">`
+    + row('Budynki (zapotrzebowanie)', u.buildings)
+    + row('Obywatele (drenaż realny)', u.citizens)
+    + row('Wojsko (zapotrzebowanie)', u.units)
+    + `<div class="civ-emp-res-usage-row total"><span class="k">Suma rozbicia tej tury</span><span class="v">−${total}</span></div>`
+    + `<div class="civ-emp-res-usage-note">Budynki i Wojsko pokazują <b>zapotrzebowanie</b> (pełne, bez klamrowania do `
+    + `zapasu) — przy niedoborze magazynu suma może przewyższać to, co realnie zeszło z magazynu. Obywatele pokazują `
+    + `<b>drenaż realny</b> (klamrowany do dostępnego zapasu).</div>`
+    + `<div class="civ-emp-res-usage-note">Produkcja: <b>${esc(signedTxt(prod))}</b> / turę — liczona OSOBNO od `
+    + `rozbicia powyżej („${esc(signedTxt(r.ratePerTurn))}/turę” widoczne na karcie to produkcja ± dyplomacja, `
+    + `BEZ zużycia).</div>`
+    + `</div></details>`;
+}
+
+/**
+ * P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12): karta placeholder ("Ruda cyny — wkrótce") —
+ * surowiec bez realnych danych silnika (nie istnieje w resources.json). Wyszarzona (opacity),
+ * bez paska postępu, zawsze „0 / 0", bez tooltipa z produkcją/dostępem/zużyciem (nie ma czego
+ * pokazać). EN: placeholder card with no real engine data — dimmed, no progress bar, always
+ * "0 / 0", no production/access/usage tooltip (nothing real to show).
+ */
+function resPlaceholderCardHtml(r: EmpireResourceRow): string {
+  return `<div class="civ-emp-res-card placeholder" style="opacity:0.45" `
+    + `data-section="econ-surowiec-${esc(r.id)}" title="${esc(r.label)} — surowiec jeszcze nie wdrożony do gry">`
+    + `<div class="civ-emp-res-top"><span class="civ-emp-res-ic">${esc(r.icon)}</span>`
+    + `<div class="civ-emp-res-nm"><div class="nm">${esc(r.label)}</div></div></div>`
+    + `<div class="civ-emp-res-amt"><span class="cur">0</span><span class="cap">/ 0</span></div>`
+    + `</div>`;
+}
+
 /** Karta pojedynczego surowca magazynowanego (pasek zapełnienia stock/cap). */
 function resCardHtml(r: EmpireResourceRow): string {
+  if (r.placeholder) return resPlaceholderCardHtml(r);
   const cap = r.cap ?? 0;
   const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((r.stock / cap) * 100))) : 0;
   const state = resStateOf(r);
@@ -805,6 +1072,7 @@ function resCardHtml(r: EmpireResourceRow): string {
     + `</div>`
     + `<div class="civ-emp-res-bar ${state}"><span style="width:${pct}%"></span></div>`
     + resCitizenBadgeHtml(r)
+    + resUsageDetailsHtml(r)
     + `</div>`;
 }
 
@@ -1010,6 +1278,26 @@ function renderUchwalyHtml(uchwaly: EmpireUchwalaRow[]): string {
   return h;
 }
 
+/**
+ * P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): wiąże klik zakładek Całkowita/Gospodarcza/Militarna
+ * nad Rankingiem Mocy — ten sam wzorzec co inne wiring-funkcje w tym pliku (queueMicrotask po
+ * ustawieniu innerHTML). No-op gdy przyciski nie są w bieżącym bloku (np. widok pojedynczej
+ * sekcji spoza „moc" — patrz C-PANEL=B). / EN: wires the Total/Economic/Military tab clicks
+ * above the Power Ranking — same pattern as the other wiring functions in this file. No-op
+ * when the buttons aren't in the current block (e.g. a single-section view other than "moc").
+ */
+function wireMocViewButtons(): void {
+  if (bodyEl === null) return;
+  for (const btn of Array.from(bodyEl.querySelectorAll<HTMLButtonElement>('[data-moc-view]'))) {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mocView as PowerRankingViewMode | undefined;
+      if (!mode || mode === mocViewMode) return;
+      mocViewMode = mode;
+      render();
+    });
+  }
+}
+
 function render(): void {
   if (root === null || bodyEl === null || getSnap === null) return;
   const snap = getSnap();
@@ -1061,13 +1349,30 @@ function render(): void {
   moc += `</div>`;
   moc += `<div class="civ-emp-foot">Respekt w dyplomacji = stosunek Twojej Mocy do Mocy rozmówcy (nie to samo co % udziału w tabeli).</div>`;
   if (p.ranking.length > 0) {
+    // P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): przełącznik widoku Rankingu — Całkowita
+    // (dzisiejsza suma, domyślna) / Gospodarcza (wszystko OPRÓCZ Armii+Rekrutów) / Militarna
+    // (WYŁĄCZNIE Armia+Rekruci). Ranking przelicza się CAŁY wg wybranego trybu (sortPowerRankingForMode)
+    // — nie tylko wartość gracza. / EN: Ranking view toggle — Total (today's default sum) /
+    // Economic (everything EXCEPT Army+Recruits) / Military (ONLY Army+Recruits). The WHOLE
+    // ranking is re-sorted for the chosen mode (sortPowerRankingForMode), not just the player's row.
+    const mocViewLabel: Record<PowerRankingViewMode, string> = {
+      total: 'Całkowita', economic: 'Gospodarcza', military: 'Militarna',
+    };
     moc += `<div class="civ-emp-title" style="margin-top:12px">Ranking ${esc(mocLabel())}</div>`;
+    moc += `<div class="civ-emp-mocview">`;
+    for (const m of ['total', 'economic', 'military'] as PowerRankingViewMode[]) {
+      const cls = m === mocViewMode ? 'civ-emp-mocview-btn active' : 'civ-emp-mocview-btn';
+      moc += `<button type="button" class="${cls}" data-moc-view="${m}">${esc(mocViewLabel[m])}</button>`;
+    }
+    moc += `</div>`;
+    const rankingForView = sortPowerRankingForMode(p.ranking, mocViewMode);
     moc += `<div class="civ-emp-rank">`;
-    for (const r of p.ranking) {
+    for (const r of rankingForView) {
+      const val = Math.round(powerRankingValueForMode(r, mocViewMode));
       if (r.isPlayer) {
-        moc += `<div class="you">▸ #${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(r.power))}</div>`;
+        moc += `<div class="you">▸ #${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(val))}</div>`;
       } else {
-        moc += `#${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(r.power))}<br>`;
+        moc += `#${r.rank} ${esc(r.civ)} — ${esc(mocWithValue(val))}<br>`;
       }
     }
     moc += `</div>`;
@@ -1098,8 +1403,13 @@ function render(): void {
     skarbiec: cityEconMiniSkarbiec(ce, e),
     praca: cityEconMiniPraca(ce, e.pracaUpkeep),
     nauka: cityEconMiniNauka(ce),
+    // N1 (Evaluator, notatka na 89c16ec1): klucz 'ludnosc' USUNIĘTY — żaden wpis econRows nie ma
+    // id 'ludnosc' (patrz tablica econRows wyżej: praca/skarbiec/nauka/kultura/religia/miasta/
+    // rekruci), więc detailFor.ludnosc nigdy nie był czytany — tylko wołał cityMiastaMiniDetail()
+    // po raz drugi bez potrzeby (double-wiring przez queueMicrotask, patrz N1 w tej funkcji).
+    // / EN: 'ludnosc' key REMOVED — no econRows entry has id 'ludnosc', so detailFor.ludnosc was
+    // never read — it only called cityMiastaMiniDetail() a needless second time (double-wiring).
     miasta: cityMiastaMiniDetail(ce, cp, snap.food, e),
-    ludnosc: cityMiastaMiniDetail(ce, cp, snap.food, e),
     rekruci: cityPoborMiniRekruci(cp, p),
   };
   let zasoby = `<div class="civ-emp-sect sep" data-section="ekonomia">`
@@ -1119,18 +1429,18 @@ function render(): void {
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;
   }
-  // BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU (Maciej 2026-08-10): suwaki globalne
-  // Skarbca i Pracy muszą być widoczne ZAWSZE, niezależnie od onlyEconId — analogicznie do
-  // Wyżywienia (renderDefaultPoziomRacjiSection wewnątrz renderSpichlerzCentralnySection, poza
-  // filtrem). C-PANEL=B (filtr wierszy stanu/przyrostu ekonomii) zostaje nienaruszony —
-  // wyjęte spod `if` są WYŁĄCZNIE te dwa wywołania suwaków, nie cała pętla econRows wyżej.
-  // EN: global Treasury/Labor sliders must always be visible regardless of onlyEconId — same
-  // pattern as Food (rendered outside the filter). C-PANEL=B (econ row filter) stays intact —
-  // only these two slider calls are pulled out of the `if`, not the econRows loop above.
-  zasoby += renderDefaultHandelSplitSection();
-  // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Praca", Maciej 2026-08-10): globalny
-  // podział Pracy imperium, wzorem sekcji Handlu tuż wyżej (DYSPOZYCJA-85-SUWAK).
-  zasoby += renderDefaultPodzialPracySection();
+  // P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE-NA-WSZYSTKICH-ZAKLADKACH (Maciej 2026-08-12): każda
+  // zakładka pokazuje WYŁĄCZNIE tematycznie powiązany suwak, nie oba naraz na każdej — reguła
+  // i pełne uzasadnienie w `econSliderVisibilityForOnlyEconId` (empirePanelSectionMap.ts, plik
+  // bez importów UI/DOM, testowalny przez esbuild). C-PANEL=B (filtr wierszy econRows wyżej)
+  // zostaje nienaruszony — to tylko dwa wywołania suwaków, poza pętlą.
+  // EN: each tab shows ONLY its thematically-linked slider, not both on every tab — rule and
+  // full rationale live in `econSliderVisibilityForOnlyEconId` (empirePanelSectionMap.ts, a
+  // DOM/UI-import-free file, esbuild-testable). C-PANEL=B (econRows row filter above) stays
+  // intact — only these two slider calls, outside the loop, are affected.
+  const sliderVis = econSliderVisibilityForOnlyEconId(onlyEconId);
+  if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();
+  if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
@@ -1201,13 +1511,41 @@ function render(): void {
   if (block === 'all' || block === 'kultura') body += kult;
   if (block === 'all' || block === 'surowce') body += sur;
   if (block === 'all' || block === 'handel') body += handel;
+  // P-MOC-BALANS-WAGI/scroll (Maciej, zgłoszenie Evaluatora): innerHTML podmienia CAŁĄ treść
+  // .civ-emp-body, co samo z siebie zeruje scrollTop — zapamiętujemy pozycję PRZED podmianą i
+  // przywracamy PO niej, żeby np. klik zakładki Rankingu Mocy (wireMocViewButtons) czy filtr
+  // kolumn (wireMiastaColFilter) nie przewijał panelu z powrotem na sam początek. / EN: innerHTML
+  // replaces the ENTIRE .civ-emp-body content, which by itself zeroes scrollTop — we save the
+  // position BEFORE the swap and restore it AFTER, so e.g. clicking a Power Ranking view tab
+  // (wireMocViewButtons) or a column filter (wireMiastaColFilter) doesn't scroll the panel back
+  // to the very top.
+  const prevScrollTop = bodyEl.scrollTop;
   bodyEl.innerHTML = body;
+  wireMocViewButtons();
+  // N1 (Evaluator, notatka na 89c16ec1): JEDNO wywołanie na render() (przeniesione z wnętrza
+  // cityMiastaMiniDetail — patrz komentarz tam) — filtr kolumn tabeli Miasta istnieje w DOM
+  // tylko gdy blok 'ekonomia'/'all' jest w body; wireMiastaColFilter() jest null-safe
+  // (getElementById zwraca null poza tym blokiem, funkcja wtedy po prostu wraca).
+  // / EN: SINGLE call per render() (moved out of cityMiastaMiniDetail) — the Miasta column
+  // filter only exists in the DOM when the 'ekonomia'/'all' block is in body;
+  // wireMiastaColFilter() is null-safe (getElementById returns null otherwise, function
+  // returns early).
+  queueMicrotask(wireMiastaColFilter);
 
   // Scroll do podsekcji ma sens tylko w pełnym widoku; przy pojedynczym bloku i tak widać całość.
   const scrollTarget = block === 'all' ? pendingScrollSection : null;
   pendingScrollSection = null;
   if (scrollTarget) {
     requestAnimationFrame(() => scrollToSection(scrollTarget));
+  } else if (resetScrollOnNextRender) {
+    // RUNDA 2: nowe otwarcie / zmiana bloku (flaga ustawiona w showEmpireDetailPanel) —
+    // pokaż nową treść OD GÓRY, nie scrollTop z poprzedniego, innego widoku.
+    // EN: fresh open / block change (flag set in showEmpireDetailPanel) — show the new
+    // content from the TOP, not the scrollTop left over from the previous, different view.
+    resetScrollOnNextRender = false;
+    bodyEl.scrollTop = 0;
+  } else {
+    bodyEl.scrollTop = prevScrollTop;
   }
 }
 
@@ -1266,8 +1604,26 @@ export function mountEmpireDetailPanel(snapFn: () => EmpireDetailSnap): void {
 /** section: np. parametry, moc, ekonomia, econ-skarbiec, econ-praca, econ-ludnosc, kultura, surowce */
 export function showEmpireDetailPanel(section?: string): void {
   ensureDom();
-  pendingScrollSection = section ?? null;
-  activeSection = section ?? null;   // C-PANEL=B: zapamiętaj wybrany blok (pełny panel gdy brak)
+  const newSection = section ?? null;
+  // RUNDA 2 scroll-reset: reset scrolla do góry gdy to NIE zwykły re-render tego samego,
+  // już otwartego bloku — czyli gdy panel był zamknięty (świeże otwarcie, np. ponowne
+  // kliknięcie po zamknięciu) LUB gdy sekcja faktycznie się zmienia (klik INNEGO żetonu
+  // HUD, w tym zmiana wiersza w obrębie bloku „ekonomia", np. econ-skarbiec -> econ-praca).
+  // Porównanie robimy PRZED nadpisaniem `activeSection` niżej. Przełącznik trybu widoku
+  // Rankingu Mocy (wireMocViewButtons) NIE przechodzi przez tę funkcję — woła render()
+  // bezpośrednio, więc ta flaga tam nigdy nie jest ustawiana (scroll zachowany, zgodnie
+  // z rundą 1). / EN: reset scroll to top when this is NOT an ordinary re-render of the
+  // same, already-open block — i.e. the panel was closed (fresh open, e.g. re-clicking
+  // after closing) OR the section actually changes (a DIFFERENT HUD chip, including a row
+  // change within the "ekonomia" block, e.g. econ-skarbiec -> econ-praca). Compared BEFORE
+  // `activeSection` is overwritten below. The Power Ranking view toggle (wireMocViewButtons)
+  // does NOT go through this function — it calls render() directly, so this flag is never
+  // set there (scroll preserved, per round 1).
+  if (!open || newSection !== activeSection) {
+    resetScrollOnNextRender = true;
+  }
+  pendingScrollSection = newSection;
+  activeSection = newSection;   // C-PANEL=B: zapamiętaj wybrany blok (pełny panel gdy brak)
   open = true;
   renderHeader();
   render();

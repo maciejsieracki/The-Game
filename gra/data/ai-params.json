@@ -454,6 +454,11 @@
     "sekcja": "§5 Barbarzyncy",
     "opis": "Ulamek HP (0..1) ponizej ktorego jednostka wraca do obozu."
   },
+  "barbarzyncy_limit_tur_osierocony": {
+    "wartosc": 10,
+    "sekcja": "§5 Barbarzyncy",
+    "opis": "Limit tur poscigu jednostki osieroconej (bez obozu) za celem poza zasiegiem agresji; po przekroczeniu wraca do zasiegu agresji."
+  },
   "archetype_celtowie_wojsko_priorytet": {
     "wartosc": 2,
     "sekcja": "§8 Archetypy",

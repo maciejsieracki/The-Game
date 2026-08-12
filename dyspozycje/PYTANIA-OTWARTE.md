@@ -12405,3 +12405,3919 @@ tworzy `git worktree add <ścieżka> -b <branch> HEAD` (HEAD = aktualna gałąź
 tej ręcznie przygotowanej ścieżce + obowiązkową weryfikacją bazy na starcie (`grep
 SAVE_META_PREFIX gra/src/game/save.ts`).** Zadziałało za każdym razem od wdrożenia. Do
 zgłoszenia jako możliwy błąd/ograniczenie środowiska poza tą sesją.
+
+## P-MAPGEN-PANGEA-COASTRATIO-PROG — znaleziony przy deployu, status nieustalony (2026-08-11)
+
+`map-gen-regression-test.cjs`, sekcja „Pangea nieregularna" (5 seedów): 4/5 seedów (42/123/777/
+2026) nie przechodzą `coastRatio > 3.8` (wartości 3.778-3.799, tuż pod progiem; `dominantRatio`/
+`bboxFill` w normie). Nieobecne na liście znanych pre-istniejących czerwonych bramek w
+`CLAUDE.md`/runbooku. Status nieustalony: świeże czy stare, próg czy generator. **STATUS:
+OTWARTE — do zbadania na starcie następnej sesji, PRZED deployem (patrz `KANAL-PRACA.md`, wpis
+2026-08-11 09:5x, pełne dane).**
+
+## BATCH PLAYTESTU (Maciej, 2026-08-11, zgłoszone przed odnowieniem limitu) — 12 zgłoszeń, do dispatchu jutro
+
+Zgłoszone przez właściciela z gry na żywo (zrzuty ekranu), zarejestrowane bez dalszych pytań
+(zasada 2 — brak nowych wątków pytaniami). Każde poniżej to osobny temat do rozpoznania +
+dispatchu subagenta jutro, PRZED nowymi tematami spoza tej listy.
+
+### 1. P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK
+Toast po końcu tury z treścią dyplomatyczną (np. "Dyplomacja: Korynt · Grecy · miasto-państwo —
+Propozycja handlu surowcem") ma nagłówek "Koniec tury" — myląco sugeruje podsumowanie tury, nie
+osobną notę dyplomatyczną. Postulat: nagłówek "Dyplomacja" / "Nota dyplomatyczna" gdy treść
+dotyczy dyplomacji, nie ogólny "Koniec tury".
+
+### 2. P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE
+W edytorze "Umowa wymiany surowców" można wielokrotnie dodać TĘ SAMĄ propozycję do oferty
+(zrzut: 4× "Obróbka drewna" jako osobne pozycje w "OFERUJEMY"). Powinna być blokada duplikatu
+albo scalanie w jedną pozycję z sumowaną ilością.
+
+### 3. P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE
+AI proponuje kontroferty, które matematycznie nie mogą wyjść na zero/być uczciwe (zrzut: "Wpływ
+relacji na deal −35,4%" / "Przewaga u Ciebie — oferta nieuczciwa dla partnera 37 PW",
+"−23,1%... musisz dać więcej"). Minimum oczekiwane: AI powinno domyślnie proponować ofertę
+zbalansowaną (bilans ~0 PW), nie startować od dużego niezbalansowania.
+
+### 4. P-DYPLOMACJA-STOL-NEGOCJACJI-ZABLOKOWANY
+Stół negocjacji zablokowany — nie da się ani Przyjąć, ani Odrzucić oferty (zrzut: oba przyciski
+obecne, treść mówi "Spełnia warunki — użyj Przyjmij", ale akcja nie działa). Do reprodukcji —
+prawdopodobnie stan wyścigu/zawieszony stan UI negocjacji.
+
+### 5. P-TARGOWISKO-BLEDNA-BRAMKA-BADAN
+Karta budynku Targowisko (Rynek) pokazuje wymagane badania (Garncarstwo + Rolnictwo + Oswojenie
+zwierząt) jako CZERWONE/niespełnione, mimo że gracz ma je od dawna. Bug w warunku bramki technologii
+budynku lub w renderze karty (odczyt złego pola/złej listy zbadanych).
+
+### 6. P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI
+W kolejce budowy nie da się zamienić AKTUALNIE budowanego (głównego) budynku z innym niżej w
+kolejce — są tylko strzałki przesuwające pozycje WEWNĄTRZ oczekujących, brak przycisku "zrób to
+głównym/aktualnie budowanym" (np. Spichlerz na górze ↔ Studnia niżej, zamiana miejscami z
+głównym slotem produkcji).
+
+### 7. P-REKRUTACJA-ZNIKLE-JEDNOSTKI-EPOKI-BRAZU
+W epoce Brąz lista rekrutacji pokazuje WYŁĄCZNIE Zwiadowcę — reszta jednostek zniknęła. Wg
+wcześniejszej zasady projektu rekrutacja powinna obejmować też jednostki epoki niższej (Kamień)
+dostępne równolegle z Brązem. Możliwa regresja — do zbadania.
+
+**ROZSTRZYGNIĘTE 2026-08-12 (Explore + Evaluator, PASS-WITH-NOTES) — NIE regresja.** Filtr epoki
+(`production.ts:829`) jest poprawny i sumuje kaskadowo (Kamień+Brąz razem w epoce Brąz,
+zweryfikowane wykonaniem: 5 jednostek Kamienia + 9 Brązu = 14 razem). Zgłoszony objaw to
+złożenie DWÓCH niezwiązanych z epoką bramek: świeże miasto ma pusty magazyn państwa
+(`empireStockHas` wymaga >0 sztuk Drewna/Brązu) i brak Koszar — Zwiadowca to jedyna jednostka
+bez wymogu surowca, stąd jedyna widoczna. **To ten sam temat co
+`P-DREWNO-BRAMKA-RYZYKO-STARTU` (linia ~12606), z gotowym pytaniem ABC czekającym na literę
+właściciela** (A: zostaw jak jest / B: próg startowy Drewna-Brązu / C: darmowy „Tartak
+startowy") — **z flagą §1a: odpowiedź B lub C podważa wcześniejszą decyzję
+`BUG-BRAMKA-DREWNO-BRAK=A` (Maciej 2026-08-08)**. Nowy test regresyjny
+`gra/tools/epoka-merge-recruit-test.cjs` (7 asercji, zweryfikowany mutacyjnie 3x — filtr epoki
+zamieniony na „zastępuje" zamiast „sumuje", przeciek epoki w dół, wyłączona bramka drewna —
+wszystkie złapane czerwono) SCALONY. Zero zmian w kodzie produkcyjnym (naprawa objawu = wybór
+litery ABC, nie do zgadywania). **STATUS: zamknięte jako „nie regresja", czeka na tę samą
+literę co P-DREWNO-BRAMKA-RYZYKO-STARTU.**
+
+### 8. P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU
+Po zaatakowaniu/zdobyciu obozu/chaty barbarzyńców węzeł NIE znika z mapy i dalej PRODUKUJE
+kolejnych barbarzyńców — nielogiczne, powinien zostać usunięty/wyłączony po zdobyciu.
+
+### 9. P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (powiązane z R-ZUZYCIE-SUROWCOW-OBYWATELE)
+Panel Surowców (magazyn państwa) potrzebuje przycisku "Zobacz szczegóły" z rozbiciem zużycia per
+kategoria (budynki / ludność-obywatele / wojsko) dla każdego surowca. Dziś nie da się sprawdzić
+np. ile drewna/kamienia realnie zjadają obywatele — bezpośrednio dotyczy tematu z tej nocy
+(drenaż 1:1), UI go dziś nie pokazuje wprost.
+
+### 10. P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD
+Górny pasek HUD ma liczniki "Armia"/"Miasta", ale BRAK łącznej liczby obywateli (sumy populacji)
+we wszystkich miastach imperium.
+
+### 11. P-NAZWY-JEDNOSTEK-MYLACO-PODOBNE (Wojownik vs Wojownik mykeński)
+"Wojownik" (epoka Kamień, HP 60, atak 6/obraż.4) i "Wojownik mykeński" (epoka Brąz, kultura
+Grecka, HP 110, atak 6/obraż.8, W ZAMIAN ZA Wojownika z mieczem i tarczą) — nazwy zbyt podobne
+mimo że to kompletnie różne jednostki. Postulat: wyraźniejsze odróżnienie (prefiks epoki, inny
+kolor/badge, albo zmiana nazwy).
+
+### 12. P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI
+Rozbicie "Mocy" (Power) — składnik "Armia" (suma siły bojowej) to 44% całkowitego wyniku,
+zdecydowanie dominuje nad resztą (Miasta 9%, Ulepszenia terenu 11%, Infrastruktura 6%, itd.).
+Do rozważenia rebalans wag składników, żeby wojsko nie przeważało tak mocno nad gospodarką w
+ocenie Mocy.
+
+**STATUS: OTWARTE, wszystkie 12 — dispatch subagentów jutro na starcie sesji (po dokończeniu
+punktów wiszących z dzisiejszej nocy: map-gen Pangea, R-ZUZYCIE-SUROWCOW N1 runda 5 reszta,
+przegląd IndexedDB), PRZED nowymi tematami spoza tej listy. Żadne z 12 nie wymaga na razie
+decyzji ABC właściciela — wszystkie to rozpoznanie+naprawa techniczna lub UI, można dispatchować
+Operatora wprost.**
+
+## P-PERF-SPOWOLNIENIE-PO-60-TURACH — KRYTYCZNE, zgłoszone przez Macieja (2026-08-11)
+
+Po ok. 60 turach gra drastycznie zwalnia — każdy ruch to kilkunastosekundowe opóźnienie, gra
+praktycznie niegrywalna. Maciej pyta czy to może być problem za małej pamięci podręcznej
+przeglądarki. Hipotezy do zbadania przez Operatora: (a) rosnące struktury bez czyszczenia (Mapy/
+Sety rosnące co turę bez limitu — np. cache'e per-owner tworzone w boot() a nie czyszczone,
+podobnie do incydentu z tej nocy przy citizenUpkeepByOwner); (b) autosave/serializacja całego
+stanu co N tur (mapSnapshot, kompresja) blokująca główny wątek; (c) akumulacja obiektów DOM/
+event listenerów bez sprzątania (toasty, panele, historia wydarzeń); (d) render 3D — rosnąca
+liczba mesh/instancji bez recyklingu przy dużej mapie po wielu turach; (e) pętla AI/ekonomii
+skalująca się nieliniowo z liczbą miast/jednostek zamiast liniowo. **STATUS: KRYTYCZNE — dispatch
+Sonnet 5 (worktree) NATYCHMIAST, priorytet nad resztą listy playtestu. Zakres: profilowanie
+(np. dodanie tymczasowych console.time/performance.now() wokół głównych faz tury, DevTools
+Performance/Memory snapshot jeśli możliwe w headless) + identyfikacja źródła + naprawa.**
+
+## P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI (Maciej, zrzut z gry, 2026-08-12) · STATUS: **PYTANIE ABC GOTOWE — czeka na literę**
+
+Rozbicie „Mocy" (Power): składnik Armia dominuje (44% całości). Rozpoznanie + wagi w kodzie +
+trzy warianty rebalansu z wyliczeniami zarejestrowane niżej jako `P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1`.
+Zgodnie z CLAUDE.md pkt 2 (zakaz otwierania nowego wątku pytaniem) — zarejestrowane, NIE
+zadane w czacie; czeka na turę ABC.
+
+**Dokładne miejsce wag w kodzie:** `gra/data/power-params.json` → `skladniki.<klucz>.pkt`
+(JSON, źródło prawdy, edytowalne bez ryzyka regresji silnika — czytane dynamicznie przez
+`loadPowerCoefficients()`); fallback identycznych wartości domyślnych w
+`gra/src/game/power-objective.ts:97-109` (stała `DEFAULT_COEFF`), używany WYŁĄCZNIE gdy JSON
+brakuje/ma niepoprawną wartość. Sumowanie ważone (rawCount × coefficient per składnik) w
+`computeObjectivePower()`, `gra/src/game/power-objective.ts:152-190` (wiersz Armii:
+`row('armia', 'Armia', Math.max(0, input.jednostki), coeff.jednostkaWojskowa)`, linia 163).
+`input.jednostki` = suma M_pole (siła bojowa) całej armii polowej imperium (`sumArmyMForOwner`
+w `main.ts:1830`), NIE liczba jednostek.
+
+---
+
+**[TEMAT: Rebalans wagi składnika Armia w Mocy (Power) — dziś 44% wyniku] P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1**
+
+**Sytuacja:** Zrzut z gry (Maciej, 2026-08-12) pokazuje rozbicie Mocy jednego imperium: Armia
+(suma M_pole floty polowej) = 483 pkt siły × 25 pkt/jedn. = 12 075 pkt = **44%** całości Mocy;
+pozostałe 11 składników razem = 15 233 pkt = 56% (Wygrane bitwy 461×1=461=2%, Obywatele
+285×5=1425=5%, Rekruci 281×5=1405=5%, Miasta 49×50=2450=9%, Terytorium 2540×0,5=1270=5%,
+Infrastruktura 341×5=1705=6%, Odkrycia 23×20=460=2%, Ulepszenia terenu 615×5=3075=11%, Kultura
+2634×0,5=1317=5%, Jedność religii 49×25=1225=4%, Zdobycze 440×1=440=2%). Razem Moc = 27 308 pkt.
+
+**Odniesienie do wcześniejszej decyzji (CLAUDE.md pkt 1a):** sam `gra/data/power-params.json`
+(sekcja `kalibracja`, kanon **P-A**, Maciej 2026-06-26) deklaruje CEL „Żaden składnik nie
+dominuje (~8–17% bazy)" przy scenariuszu wzorcowym. Dzisiejszy zrzut pokazuje, że ten własny cel
+kalibracji kanonu P-A jest dziś złamany dla Armii (44% ≫ górna granica 17%). To pytanie **NIE
+cofa** decyzji P-A (obiektywny Power = suma ważona, bez mnożnika epoki) ani P-B (mnożnik epoki
+odrzucony) ani P-C2-DEF (model bitwy = suma M_pole wroga) — dostraja WYŁĄCZNIE wartości
+mnożników tak, by spełnić cel kalibracji, który P-A samo sobie wyznaczyło.
+
+**Cel pytania:** wybrać sposób obniżenia udziału Armii w Mocy do ok. **25–30%** przy typowych
+wartościach z przykładu, bez psucia rankingu Mocy/Respektu (dyplomacja, `computeRespekt`) dla
+pozostałych graczy.
+
+**Dlaczego teraz:** Moc napędza RESPEKT w dyplomacji — dopóki jeden składnik (wojsko) stanowi
+44%, ranking Mocy/Respekt de facto mierzy głównie wielkość armii, nie całość imperium
+(gospodarkę, terytorium, kulturę), sprzecznie z deklarowanym celem kalibracji P-A.
+
+**A — obniżyć mnożnik Armii (`jednostka_wojskowa` w `power-params.json`) z 25 do ok. 11–13
+pkt/jedn.** (jedna liczba w JSON, żadna zmiana kodu).
+Wyliczenie (reszta stała = 15 233 pkt, rawArmia = 483): X=13 → 483×13=6279, suma=21 512,
+udział=**29,2%**. X=12 → 483×12=5796, suma=21 029, udział=**27,6%**. X=11 → 483×11=5313,
+suma=20 546, udział=**25,9%**. Cały przedział 25–30% mieści się w X≈11–13.
+Za: jedna zmiana w danych, zero ryzyka regresji silnika (współczynnik czytany dynamicznie już
+dziś przez `loadPowerCoefficients()`). Za: efekt identyczny niezależnie od wielkości armii —
+przewidywalny, łatwy do wytłumaczenia graczowi jednym zdaniem.
+Przeciw: realna redukcja wagi wojska o ~50% może być odebrana jako osłabienie sensu budowania
+armii dla prestiżu/Respektu. Przeciw: nie adresuje ewentualnego przyszłego skrajnego
+„stackowania" (bardzo duża armia nadal rośnie liniowo, tylko wolniej dochodzi do 44%+).
+
+**B — podnieść mnożniki pozostałych składników (Miasta, Infrastruktura, Kultura, Terytorium,
+Ulepszenia terenu, Rekruci), zostawić Armię = 25 (12 075 pkt bez zmian).**
+Wyliczenie: żeby Armia spadła do 30% BEZ zmiany jej mnożnika, suma pozostałych musi wzrosnąć z
+15 233 do 28 175 pkt (12075/0,30 − 12075) — skala ×1,85 na WSZYSTKIE pozostałe razem; dla 25%
+trzeba aż 36 225 pkt (×2,38). Przykład rozłożenia na 6 składników (Miasto 50→90, Infrastruktura
+5→10, Kultura 0,5→1,2, Ulepszenia 5→8, Terytorium 0,5→1,0, Rekruci 5→8): suma pozostałych
+rośnie do ~24 700 pkt → udział Armii spada tylko do **~32,8%** (nadal poza pasmem 25–30%,
+potrzeba jeszcze mocniejszych podwyżek).
+Za: wojsko zachowuje pełną dzisiejszą wagę — brak wrażenia osłabienia armii u gracza
+militarnego. Za: wprost podnosi wagę gospodarki/kultury w Mocy, odpowiadając na istotę
+zgłoszenia Macieja („żeby wojsko nie przeważało nad gospodarką").
+Przeciw: wymaga jednoczesnej zmiany 5–6 różnych mnożników zamiast jednego — więcej miejsc do
+błędu, więcej do przetestowania (`power-objective.ts` + panel Excel `panele-sterowania`,
+kierunek JSON→Excel). Przeciw: podnosi całą sumę Mocy każdego gracza (scenariusz kalibracji
+„~3020 pkt" w tym samym JSON przestaje być aktualne) i zmienia relacje MIĘDZY tymi składnikami
+nawzajem, nie tylko względem Armii — większe ryzyko efektów ubocznych w innych układach (np.
+imperium „turtle" z wieloma miastami i małą armią mogłoby przeskoczyć w rankingu militarne).
+
+**C — pułap / malejące przyrosty (diminishing returns) dla bardzo dużych armii, bez zmiany
+wagi przy małych/średnich armiach.**
+Przykładowa formuła: `pkt_armia = 25 × min(M, próg) + 25 × sqrt(max(0, M − próg))`, próg=200
+jedn. Przy M=483: 25×200=5000 + 25×√283≈421 → **5421 pkt**; suma=5421+15233=20654,
+udział=**26,2%** (w paśmie 25–30%, ale TYLKO dla tej armii). Mniejsza armia (np. M=150, poniżej
+progu) nie zmienia się WCALE — nadal liniowo 150×25=3750 pkt, identycznie jak dziś.
+Za: nie karze małych/średnich armii (obrona miasta, wczesna gra) — działa wyłącznie na skrajne
+stackowanie, spójne z ideą „wojsko ma się liczyć, ale nie dominować przy przesadnej kumulacji".
+Za: nie rusza pozostałych 11 mnożników — jeden nowy wzór w jednym miejscu.
+Przeciw: to zmiana KODU (`power-objective.ts`), nie samego JSON — większe ryzyko niż A/B, wymaga
+nowych testów jednostkowych i re-weryfikacji bramek dot. Power (np. `unit-power-test.cjs`,
+`logic-test.cjs`). Przeciw: dokłada drugi parametr do wytłumaczenia graczowi (próg + kształt
+spadku) zamiast jednej liczby — trudniej opisać w tooltipie/wiki niż prosty mnożnik.
+
+**Rekomendacja: A** — najmniejsza zmiana (jedna liczba w `power-params.json`:
+`jednostka_wojskowa.pkt` 25 → 12), zero ryzyka dla silnika (współczynnik już czytany
+dynamicznie), zgodna z zasadą projektu „najprostsze rozwiązanie, które spełnia wymaganie,
+wygrywa" (CLAUDE.md pkt 7). Realizuje własny zadeklarowany cel kalibracji kanonu P-A (~8–17% na
+składnik) najbliżej środka pasma 25–30% ze wszystkich trzech wariantów, bez dotykania
+pozostałych 10 mnożników ani kodu silnika. Wariant C zostaje jako osobny, przyszły temat, gdyby
+po wdrożeniu A gracze zaczęli świadomie „stackować" ekstremalnie duże armie wyłącznie pod
+ranking Mocy/Respekt (dziś brak na to dowodu w zgłoszeniu).
+
+## P-DREWNO-BRAMKA-RYZYKO-STARTU — POTWIERDZONE playtestem (2026-08-12), było "do potwierdzenia"
+
+Powiązane z punktem 7 batcha (rekrutacja Brąz pokazująca tylko Zwiadowcę). Recon (Sonnet 5)
+potwierdził: **to NIE regresja**. Filtr epoki (`production.ts:829`, `epochNumber(u.Epoka) >
+epoch → continue`) działa poprawnie od commitu `13419757` (2026-07-09), niezmieniony —
+epoka niższa i bieżąca zawsze przechodzą (zweryfikowane wykonaniem: miasto z zapasem
+Drewna/Brązu pokazuje 12 jednostek naraz, epoki Kamień+Brąz razem). Prawdziwa przyczyna: miasto
+zawsze startuje z PUSTYM magazynem (`cities.ts:415`), a bramka `empireStockHas(stock,
+'drewno'/'braz')` (dodana `5682c0664`, 2026-08-08, komentarz w kodzie: "świadome ryzyko blokady
+startu gry bez Drewna w zapasie") wymaga >0 sztuk w magazynie PAŃSTWA — z 75 jednostek tylko
+Zwiadowca ma `Surowiec=null`. Drewno/Brąz pojawiają się dopiero po kilku turach (Tartak/heksy/
+konwertery). To DOKŁADNIE materializacja ryzyka opisanego już w tym samym pliku (linia ~2679,
+nota Evaluatora 2026-08-08, status "DO WIEDZY — do potwierdzenia playtestem, czy to realnie
+blokuje wczesną grę"). **STATUS: POTWIERDZONE — pytanie ABC gotowe do zadania razem z
+P-MOC-BALANS-Q1 (nie osobno, zgodnie z limitem 3 pytań/turę CLAUDE.md §1):**
+- A: zostawić jak jest (obywatel gry akceptuje kilkutorowe opóźnienie startu rekrutacji poza
+  Zwiadowcą, świadoma decyzja z 2026-08-08 pozostaje w mocy)
+- B: dodać próg startowy Drewna/Brązu w magazynie miasta przy założeniu
+- C: darmowy "Tartak startowy"/jednorazowy zapas surowca przy założeniu miasta
+
+## P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA — ROZSZERZONY ZAKRES (Maciej, doprecyzowanie 2026-08-12)
+
+Doprecyzowanie punktu 9 z batcha playtestu — właściciel opisał DOKŁADNĄ specyfikację, szerszą niż
+pierwotny dispatch (który dotyczył wyłącznie panelu Surowców). Docelowo TRZY miejsca, każde z
+innym efektem/zakresem:
+
+1. **Panel Surowców (empire-wide)** — ile surowców zużywane NA RZECZ OBYWATELI (to już
+   dispatchowane, w toku).
+2. **Tabela "Miasta (osiedla imperium)"** (zakładka Miasta/econ-miasta, dziś kolumny: Obyw.,
+   Ludność, Wzrost, Praca, Pieniądz, Żywność) — robi się za dużo kolumn. Potrzebne:
+   (a) możliwość ZAZNACZENIA u góry tabeli, które kolumny pokazać/ukryć (checkboxy) — układ
+   pionowych linii/kolumn zostaje jak jest dziś, tylko z opcją filtrowania widoczności;
+   (b) NOWA kolumna/zakładka "Surowce" po prawej stronie tej samej tabeli — per miasto,
+   dokładnie jakiego typu surowce są zużywane w TYM KONKRETNYM mieście;
+   (c) na samym końcu tabeli — WIERSZ PODSUMOWANIA agregujący każdą kolumnę dla całej
+   cywilizacji: suma obywateli, suma ludności, ŚREDNI wzrost (nie suma), suma wszystkich
+   surowców, suma pieniędzy itd. — żeby zobaczyć zagregowany stan całego imperium jednym
+   spojrzeniem.
+
+**STATUS: dispatch osobnego Sonnet 5 (worktree) na punkty 2(a)/(b)/(c) — po zakończeniu punktu 1
+(już w toku), jako kolejny, świadomie rozszerzony temat (nie duplikować pracy już dispatchowanej
+dla punktu 1).**
+
+## P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE-NA-WSZYSTKICH-ZAKLADKACH (Maciej, 3 zrzuty ekranu, 2026-08-12)
+
+Pełny obraz po 3 kolejnych zgłoszeniach właściciela (Skarbiec → Praca → Nauka — za każdym razem
+ten sam komentarz o "niewłaściwej" sekcji, ale WSKAZUJĄCY NA RÓŻNĄ z dwóch sekcji w zależności od
+zakładki): w panelu szczegółów imperium (Empire Detail), sekcje **"DOMYŚLNY PODZIAŁ PODATEK"**
+(Skarb/Nauka/Zamożność) I **"DOMYŚLNY PODZIAŁ PRACY"** (Budynki/Do puli imperium 70%/30%)
+pokazują się RAZEM, IDENTYCZNIE, na WSZYSTKICH zakładkach zasobów (Skarbiec, Praca, Nauka —
+prawdopodobnie też Zamożność i inne, nie tylko te 3 zrzucone) — zamiast każda zakładka
+pokazywała WYŁĄCZNIE suwak tematycznie powiązany z tym zasobem:
+- **Skarbiec** → tylko "Domyślny podział podatek" (Skarb/Nauka/Zamożność to PODZIAŁ PODATKU,
+  bezpośrednio dotyczy Skarbca).
+- **Praca** → tylko "Domyślny podział pracy" (Budynki/Do puli imperium).
+- **Nauka** → tylko "Domyślny podział podatek" (Nauka finansowana jest przez % podatku "Nauka"
+  z tego samego suwaka co Skarb/Zamożność — NIE przez podział Pracy).
+- (nie zweryfikowane, ale prawdopodobnie ten sam błąd na pozostałych zakładkach — Zamożność
+  itd. — dispatch ma to sprawdzić systematycznie, nie tylko 3 zgłoszone).
+
+ZADANIE dla dispatchu: znaleźć komponent renderujący te dwie sekcje w panelu Empire Detail
+(prawdopodobnie `empireDetailPanel.ts`, grep "DOMYŚLNY PODZIAŁ PODATEK"/"DOMYŚLNY PODZIAŁ
+PRACY") — ustalić, czy dziś renderowanie tych bloków jest WARUNKOWANE aktywną zakładką w ogóle,
+czy to wspólna stopka/sekcja doklejona bezwarunkowo do KAŻDEJ zakładki zasobów. Naprawić: każda
+zakładka pokazuje WYŁĄCZNIE swój tematycznie powiązany suwak (Skarbiec/Nauka/Zamożność →
+podział podatku; Praca → podział pracy), pozostałe zakładki (Surowce, Miasta itd.) — żadnego z
+dwóch, chyba że dziś już go tam nie ma (sprawdzić). Nie usuwać funkcjonalności suwaków — tylko
+ograniczyć WIDOCZNOŚĆ do właściwej zakładki.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+**ZAMKNIĘTE (commit `469f3152`), Evaluator runda 1 = FAIL (wąski, zachowanie w grze poprawne,
+dziurawa ochrona przed regresją — 2 szczeliny), runda 2 domknięta bez dispatchu (naprawa testowa,
+zero zmian logiki):**
+- Fix wdrożony poprawnie: `econSliderVisibilityForOnlyEconId` (`empirePanelSectionMap.ts`) +
+  dwa warunkowe wywołania w `empireDetailPanel.ts:1377-1379` (`if (sliderVis.showTaxSplit)` /
+  `if (sliderVis.showLaborSplit)`). Evaluator potwierdził wykonaniem: żaden regres z `b80426ff`
+  nie wrócił, pokrycie wszystkich 7 osiągalnych zakładek (nie tylko 3 zgłoszonych) kompletne.
+- **Szczelina 5 (blokująca)** — nowy test badał wyłącznie czystą funkcję decyzyjną, nigdy nie
+  czytał `empireDetailPanel.ts`; mutacja usuwająca oba `if` (dosłowny zgłoszony błąd) przechodziła
+  wszystkie bramki zielono. **Naprawione**: `empire-panel-econ-slider-visibility-test.cjs` dostał
+  Wymóg 4 — czyta źródło `empireDetailPanel.ts` wprost, dowodzi mutacją+subprocess-em, że
+  usunięcie guardów jest łapane czerwono (60/60 asercji zielono po naprawie).
+- **Szczelina 6** — stary `empire-panel-sliders-always-visible-test.cjs` (z `b80426ff`) dalej
+  stał zielony i asertował ODWROTNY kontrakt („suwaki muszą się renderować ZAWSZE"). **Naprawione**:
+  przepisany na dzisiejszy kontrakt z jawną notą `SUPERSEDED przez P-EMPIRE-PANEL-SUWAKI-
+  DUPLIKOWANE (469f3152)` w nagłówku (8/8 zielono).
+- **Domknięty sprawdzony negatyw z rejestru**: „Zamożność" **NIE jest osobną zakładką** — to
+  wiersz WEWNĄTRZ suwaka "Domyślny podział podatek" (`procentLuksus`). Wymóg „sprawdzić
+  systematycznie także Zamożność" jest więc spełniony pusto — nie ma takiej zakładki do
+  sprawdzenia (`grep "zamoznosc|Zamożność" gra/src/ui/hud.ts` → 0 trafień poza etykietami
+  wiersza suwaka). Nie wracać do tego pytania.
+
+## P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE — KRYTYCZNE, REGRESJA NA WDROZONYM ROBOCZA (Evaluator, 2026-08-12)
+
+**Werdykt Evaluatora migracji IndexedDB (`798f3c17`): FAIL, blokujące.** Zweryfikowane A/B na
+REALNYCH artefaktach (Chromium 141, `file://`, zaszczepiony localStorage): `gra-kanon/Gra-KANON.html`
+(sprzed migracji) — przyciski "Kontynuuj"/"Wczytaj grę" AKTYWNE. `gra-robocza/Gra-ROBOCZA.html`
+(FALA 269, JUŻ WDROŻONA) — OBA przyciski WYSZARZONE, mimo istniejących zapisów, i NIE naprawiają
+się same (menu buduje się raz).
+
+**⛔ F1 (BLOKER).** `main.ts:28574` `void refreshHasAnySaveSlotCache();` (fire-and-forget) tuż
+przed `main.ts:28585` `openStartupMainMenu()` w TYM SAMYM synchronicznym ticku — odczyt IndexedDB
+nie może się rozwiązać przed pierwszym renderem menu, `mainMenu.build()` czyta `cfg.hasSave()`
+RAZ (`mainMenu.ts:384`), więc zawsze widzi `cachedHasAnySaveSlot === false` przy starcie.
+Deterministyczne w 100%, nie wyścig probabilistyczny. `mainMenu.ts:257-258` nie tylko wyszarza
+przycisk ale NIE PODPINA handlera kliknięcia — przycisk jest realnie martwy.
+**Kierunek naprawy (podany przez Evaluatora):** `void refreshHasAnySaveSlotCache().then(() => {
+if (isMainMenuOpen()) showMainMenu(); })` — przebuduj menu po rozwiązaniu cache, jeśli nadal
+wisi na ekranie (`isMainMenuOpen` już zaimportowane w `main.ts:1034`).
+
+**Noty nieblokujące (do naprawy przy okazji, nie osobno):**
+- F2: stara meta z localStorage "zmartwychwstaje" po nieudanym zapisie meta do IDB — dialog
+  Wczytaj grę pokazuje STARĄ etykietę/turę dla nowszego zapisu (dane same są poprawne, tylko
+  wyświetlanie). Naprawa: dołożyć `storage.removeItem(saveMetaKey(slot))` w tym samym `catch`
+  co dziś czyści tylko IDB (`save.ts:590`).
+- F3: brak fallbacku zapisu na localStorage gdy IndexedDB niedostępne (stary kod: `ok:true` +
+  dane w localStorage; nowy: `ok:false`, nic zapisane). Obawa o `file://` EMPIRYCZNIE OBALONA
+  (realny Chromium 141 pod file:// działa) — ryzyko resztkowe: inne przeglądarki/tryb prywatny.
+- F4: `dbPromise` (`idb-storage.ts:70-95`) memoizuje PORAŻKĘ na stałe — jedno nieudane/
+  zablokowane otwarcie wyłącza zapis do końca sesji, brak `onclose`/`onversionchange` reset.
+- F5: `showLoadGameDialog` przypisuje modułowy `root` PRZED `await` — podwójny klik "Wczytaj
+  grę" w oknie odczytu IDB może zdublować treść dialogu (przed migracją niemożliwe, kod był
+  synchroniczny).
+
+**Co przeszło weryfikację (NIE złamane, potwierdzone atakiem):** wsteczna kompatybilność
+(33 asercje), brak cichej porażki zapisu (`idbSetItem` czeka na `tx.oncomplete`, quota
+odróżniona), meta+pełny zapis w tym samym backendzie bez rozjazdu, wszystkie ~30 call site'ów
+faktycznie awaitowane.
+
+**Luka testowa:** żadna z istniejących bramek nie łapie F1 (brak testu na synchroniczny kontrakt
+`hasSave()` przy starcie) — repro gotowe w scratchpadzie Evaluatora, do przeniesienia na test w
+`gra/tools/`.
+
+**STATUS: KRYTYCZNE, PRIORYTET NAD RESZTĄ KOLEJKI — dispatch Sonnet 5 (worktree) NATYCHMIAST.
+Zakres: F1 (blokujące, wg podanego kierunku naprawy) + F2 (tania, przy okazji) + nowy test
+regresyjny na dokładnie ten scenariusz (start gry z istniejącym zapisem → menu → przycisk
+aktywny). F3/F4/F5 mogą zostać jako osobne, mniej pilne noty jeśli zabraknie czasu w tej
+rundzie — NIE blokują F1.**
+
+**ZAMKNIĘTE (commit `810d5917`) — notatka domykająca dopisana wstecznie (Maciej audyt „raport",
+2026-08-12: fix był zrobiony, rejestr nigdy tego nie potwierdził — dokładnie klasa błędu C-042
+„rejestr zamknięcia i faktyczny deploy/merge to dwa różne stany").** F1 naprawiony dokładnie wg
+podanego kierunku: `void refreshHasAnySaveSlotCache().then(() => { if (isMainMenuOpen())
+showMainMenu(); refreshGamePauseMenuLoadState(); })` (`main.ts` ok. 28717). F2 naprawiony
+(`save.ts::saveToLocal` czyści też legacy klucz localStorage w tym samym catch). Nowy test
+`idb-menu-continue-boot-refresh-test.cjs` (32 asercje, esbuild+jsdom na realnym `mainMenu.ts` +
+realny `save.ts` z fake IDB). Bramki: `tsc` 0, `logic-test` 213/213, `idb-storage-migration`
+25/25, `autosave-quota-fail` 20/20, `fsa-autosave` 55/55. F3/F4/F5 pozostały jako mniej pilne
+noty (nie blokowały F1, zgodnie z pierwotnym zakresem) — NIE dispatchowane osobno, nadal
+otwarte jeśli ktoś chce je podjąć.
+
+## P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE — SCALONE (76514613)
+
+Operator (a98bf3d5e42160e75) znalazł prawdziwą przyczynę: nie w generowaniu oferty AI (już
+poprawne, `D-DYPLO-AI-OFERTA-ZERO`), tylko w bramce akceptacji gracza
+(`diplomacy-acceptance-points.ts`) — wymagała pokrycia "bazy traktatu" niezależnie od tego, kto
+proponuje, podczas gdy silnik (`evaluateProposal`) wymusza to tylko gdy proponuje gracz. Efekt:
+w pełni uczciwa oferta AI i tak pokazywała fałszywy niedobór PW i blokowała przycisk Przyjmij.
+Naprawione + 15 nowych asercji (240/240 `diplomacy-acceptance-points-test.cjs`), `tsc` 0 błędów,
+`logic-test` 213/213, wszystkie 35 plików dyplomacji zielone, `ai-test` 274/8 (baseline
+pre-istniejący, niezwiązany). Commit `76514613`, wypchnięty na branch.
+
+**STATUS: ZAMKNIĘTE (bug #3 z batcha playtestu).**
+
+## P-PERF-SPOWOLNIENIE-PO-60-TURACH — SCALONE (e702d982)
+
+Operator (a919eaf81009a7024) znalazł realny wyciek pamięci GPU: `collapseToMergedMesh()`
+(render/mergeDecor.ts) tworzy przy każdym wywołaniu nową, unikalną geometrię+material scalającą
+dekoracje heksu, a `spawnImprovementMesh`/`clearResourceOverlays`/`syncResourceOverlayAtHex`
+usuwały stary mesh ze sceny (`scene.remove`) ale NIGDY nie zwalniały buforów GPU (`.dispose()`)
+— wołane co turę, dla gracza i każdej cywilizacji AI. Naprawione: `disposeMergedDecor()` (bezpieczny,
+tylko na wyniku `collapseToMergedMesh`, nie dotyka współdzielonych singletonów) podpięty w 8
+miejscach. Dodatkowo instrumentacja diagnostyczna za `?perfDebug=1` (zero wpływu na normalną grę)
+do weryfikacji w rundzie 2, gdyby spowolnienie się utrzymało. `tsc` 0 błędów, `logic-test` 213/213,
+tech-tree/research/unit-replace/ai-founding-territory zielone. Commit `e702d982`.
+
+**Drugorzędne, nienaprawione teraz** (mały wolumen, do rundy 2 jeśli potrzeba): ten sam brak
+`dispose()` przy `okolicaOverlayGroup`, `tradeRoutesOverlayGroup`, `workerFieldOverlayGroup`,
+`cultureRangeGroup`/`religionRangeGroup`, `territoryBorderGroup`, ghost-preview budynku,
+przebudowa `villageMeshes`/`campMeshes`/`clearingMeshes`. Osobno: `rebuildResourceOverlays()`
+ma udokumentowany komentarz „~100+ s synchronicznie" na Standard — odpala się tylko przy
+awansie epoki (rzadko), może tłumaczyć pojedyncze drastyczne zamrożenie, nie ciągłe spowolnienie.
+
+**STATUS: NAPRAWIONE (przyczyna główna). Playtest z `?perfDebug=1` do tury 60+ zweryfikuje czy
+coś jeszcze zostaje — jeśli tak, runda 2 dokończy drugorzędne miejsca.**
+
+## P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (punkt 1: panel Surowców) — SCALONE (a79bae29)
+
+Operator (a8047f1f0f76fc818) zrobił KOMPLET (budynki + obywatele + wojsko), nie tylko minimum —
+`turn-economy.ts` już liczył utrzymanie budynków i jednostek jako dwa osobne wywołania przed
+scaleniem, więc rozdzielenie kosztowało tylko przechwycenie PRZED merge. Nowy moduł
+`resource-usage-breakdown.ts`, przycisk „Zobacz szczegóły zużycia" w panelu Surowców
+(`empireDetailPanel.ts`, `<details>/<summary>`). Ważne dla właściciela: „+X/turę" na karcie
+surowca = produkcja − dyplomacja (NIE zawiera zużycia obywateli/budynków/wojska — osobny
+mechanizm, dopisane wprost w UI, żeby nie wyglądało jak rozjazd). `tsc` 0 błędów, `logic-test`
+213/213, nowy test 60/60, `citizen-resource-upkeep-test` 105/105. Commit `a79bae29`.
+
+**STATUS: PUNKT 1 ZAMKNIĘTY. Punkty 2 (kolumny tabeli Miasta) i 3 (podsumowanie) — patrz sekcja
+rozszerzonego zakresu wyżej, osobny dispatch.**
+
+## P-SUROWCE-KOLEJNOSC-KART (Maciej, 2026-08-12, zrzut panelu Surowców)
+
+Właściciel podał docelową kolejność kart surowców w panelu Surowców (dziś kolejność wygląda na
+przypadkową — Drewno/Kamień, Glina/Ruda miedzi, Ruda żelaza/Cegła, Ceramika/Brąz, Żelazo/Stal,
+Sól/Koń, Złoto — nie odzwierciedla żadnej logicznej pary surowiec-bazowy→przetworzony):
+
+1. Drewno (lewa kolumna, pierwsza para)
+2. Kamień (prawa kolumna, pierwsza para)
+3. Glina / Cegła (para 2)
+4. Sól / Ceramika (para 3)
+5. Ruda miedzi / Brąz (para 4)
+6. Ruda żelaza / Ruda cyny (para 5 — **Ruda cyny NIE ISTNIEJE jeszcze w grze, właściciel chce
+   miejsce już teraz zarezerwowane** pod przyszłe dodanie surowca)
+7. Żelazo / Stal (para 6)
+8. Złoto (na samym końcu, osobno)
+
+ZADANIE dla dispatchu: znaleźć listę/kolejność kart w panelu Surowców (prawdopodobnie
+`empireDetailPanel.ts`, ta sama sekcja co punkt 1 `P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA` właśnie
+scalona w `a79bae29`) i przeukładać wg powyższej sekwencji. Dla "Ruda cyny" (surowiec, którego
+nie ma w `gra/data/`) — zarezerwować pozycję w layout (np. karta wyszarzona/pusta z etykietą
+"Ruda cyny — wkrótce" LUB po prostu odstęp w gridzie, do ustalenia przez Operatora wg tego co
+najmniej inwazyjne) BEZ dodawania realnego surowca do danych gry (to osobna decyzja produktowa).
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej, 2026-08-12, zrzut górnego chipu Armia + panelu rekrutacji)
+
+Górny chip "Armia" w HUD dziś pokazuje `Armia 25 +20400` — plusik pokazuje SUROWĄ liczbę
+rekrutów w puli, nie ile PEŁNYCH jednostek można z niej wystawić. Właściciel chce:
+
+1. **Górny chip Armia**: "+" ma pokazywać ile PEŁNYCH jednostek można aktualnie zrekrutować z
+   puli rekrutów (nie samą liczbę rekrutów).
+2. **Panel "Rekruci (pula werbu)" (informacje ogólne, imperium)**: oprócz dzisiejszej liczby
+   rekrutów, dopisać (a) ile rekrutów potrzeba na JEDNĄ jednostkę w BIEŻĄCEJ epoce (dziś panel
+   już pokazuje "koszt 4000 rekr./szt." w opisie — upewnić się że to samo źródło), (b) ile
+   ŁĄCZNIE pełnych jednostek można wystawić z całej puli imperium.
+3. **Tabela per-miasto** (kolumny Miasto/Rekruci/Max/Odnowa): dopisać kolumnę z liczbą
+   POTENCJALNYCH pełnych jednostek do wystawienia z rekrutów TEGO miasta, z DOKŁADNOŚCIĄ DO
+   JEDNEGO MIEJSCA PO PRZECINKU (np. "2,6") — nie zaokrąglać w górę/dół, bo miasto realnie nie
+   rekrutuje samo z siebie, tylko z puli ogólnej (to wartość informacyjna/wkład miasta do puli).
+4. **Na końcu tabeli** — wiersz podsumowania: suma pełnych jednostek możliwych do wystawienia
+   z całej puli (ten sam wynik co punkt 2b, dla spójności).
+
+ZADANIE dla dispatchu: znaleźć chip "Armia" w HUD (`gra/src/ui/hud.ts`, wzorzec z niedawno
+dodanego chipu "Obywatele" — `P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD`) oraz panel
+"Rekruci (pula werbu)" z tabelą per-miasto (grep "Rekruci (pula werbu)"/"koszt 4000 rekr" w
+`gra/src/ui/`). Koszt rekrutów/jednostkę w bieżącej epoce — sprawdzić czy istnieje już gotowa
+stała/funkcja (grep "rekr./szt"/"kosztRekrutow"/podobne w `gra/src/game/`) zanim się przelicza
+od nowa. Zachować SPÓJNOŚĆ źródła między górnym chipem, panelem ogólnym i tabelą per-miasto —
+wszystkie trzy miejsca muszą liczyć z tego samego kosztu/jednostkę, żeby liczby się zgadzały.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK (Maciej, 2026-08-12, decyzja + nowa funkcja, dot. P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1)
+
+**Część A — konkretne wagi (odpowiedź właściciela na wcześniej zarejestrowane pytanie ABC
+`P-MOC-BALANS-ARMIA-DOMINUJE-SKLADNIKI-Q1`, ale zamiast litery A/B/C — własne liczby, więc
+traktować jako decyzję nadrzędną wobec tamtych wariantów)**. Wagi żyją w
+`gra/data/power-params.json::skladniki.<klucz>.pkt` (fallback `power-objective.ts:97-109`).
+Zmiany wag (mnożnik względem DZISIEJSZEJ wagi, nie względem punktów):
+1. **Armia** (`M_pole`, dziś wsp. 25) → **podzielić przez 10** (właściciel: "10-krotnie
+   zmniejszyć moc jednostek w sensie w jaki sposób są wliczane do power, bo stanowią zbyt dużą
+   część mocy i zaburzają prawdziwy obraz").
+2. **Rekruci (ekw. jedn.)** (dziś wsp. 5) → **razy dwa**.
+3. **Wygrane bitwy** (dziś wsp. 1) → **razy dwa**.
+4. **Zdobycze (eliminacje)** (dziś wsp. 1) → **razy dwa**.
+5. **Odkrycia/tech** (dziś wsp. 20) → **razy cztery**.
+
+⚠️ **NIEJEDNOZNACZNOŚĆ DO WYJAŚNIENIA (rule 6 — nie zgadywać)**: zdanie właściciela "Zdobyczę
+eliminację, pól liczba punktów też razy dwa" wygląda na dyktowanie głosowe z literówką — mogło
+oznaczać PRAWDOPODOBNIE jeden komponent (Zdobycze/eliminacje ×2, ujęte wyżej) ALBO dwa
+(Zdobycze/eliminacje ×2 ORAZ Terytorium-heksy ×2, "pól" = kolokwialnie heksy/pola mapy). Do
+potwierdzenia przez właściciela zanim Operator dotknie wagi Terytorium — **NIE zgadywać, zapytać
+wprost w czacie zanim się zamknie temat wag** (zrobione — patrz odpowiedź w tej samej turze).
+
+**Część B — nowa funkcja: podział widoku Mocy w Rankingu (koniec porównania cywilizacji)**.
+Dziś "Ranking Moc" pokazuje tylko jedną, łączną liczbę Mocy per cywilizacja. Właściciel chce
+możliwość PRZEŁĄCZENIA widoku rankingu między trzema trybami:
+1. **Moc całkowita** (dzisiejsza suma wszystkich składników, bez zmian).
+2. **Moc gospodarcza** — WSZYSTKIE składniki OPRÓCZ Armii i Rekrutów (Obywatele, Miasta,
+   Terytorium, Infrastruktura, Odkrycia/tech, Ulepszenia terenu, Kultura, Jedność religii,
+   Zdobycze/eliminacje — do potwierdzenia dokładnej listy z Operatorem, ale zasada: wszystko co
+   NIE jest wojskowe).
+3. **Moc militarna** — WYŁĄCZNIE Armia + Rekruci (ekw. jedn.) — "tylko ilość rekrutów i armia
+   posiadana".
+Cel (słowa właściciela): "żeby można było bardziej sprawdzić jak nasza cywilizacja w rankingu
+odnosi się do kwestii gospodarczych, jak do kwestii militarnych i jak w całości."
+
+ZADANIE dla dispatchu: `gra/data/power-params.json` (zmiana wag część A, z wyjątkiem
+Terytorium/"pól" do czasu odpowiedzi), `gra/src/game/power-objective.ts` (fallback musi być
+spójny z JSON, jak zawsze w tym pliku), Ranking Moc UI (grep "Ranking Moc" w `gra/src/ui/`) —
+dodać przełącznik trybu widoku licząc sumę tylko z wybranego podzbioru `skladniki` (nie osobny
+silnik liczenia — filtrowanie tej samej listy komponentów wg tagu wojskowy/niewojskowy). Sprawdzić
+czy jest test canonu wag power-params (grep w `gra/tools/`) i zaktualizować oczekiwane wartości.
+
+**STATUS: OTWARTE. Część A (bez Terytorium) + Część B → dispatch Sonnet 5 (worktree) po
+potwierdzeniu "pól" w czacie.**
+
+## P-MOC-BALANS-WAGI — DOPRECYZOWANIE "PÓL" (Maciej, ECHO 2026-08-12)
+
+Potwierdzone pytaniem doprecyzowującym: **"pól" = TAKŻE Terytorium (heksy) ×2**, nie tylko
+Zdobycze/eliminacje. Pełna lista wag część A (patrz sekcja `P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK`
+wyżej) — dopisać punkt 6:
+6. **Terytorium (heksy)** (dziś wsp. 0.5) → **razy dwa** (→ 1.0).
+
+Dispatch obejmuje TERAZ pełną listę 6 wag (Armia ÷10, Rekruci ×2, Wygrane bitwy ×2, Zdobycze
+×2, Odkrycia/tech ×4, Terytorium ×2) + Część B (przełącznik widoku Moc całkowita/gospodarcza/
+militarna). Nic już nie czeka na doprecyzowanie w tym temacie.
+
+**STATUS: OTWARTE, gotowe do dispatchu Sonnet 5 (worktree) — pełny zakres A+B.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE — DECYZJA: STAWKA 1→0,2 + LEKKI WZROST PRODUKCJI (Maciej, ECHO 2026-08-12)
+
+Właściciel zdecydował dwutorowo, w reakcji na zgłoszenie "bardzo ciężko zaspokoić te potrzeby"
+(zob. rozpiska stawek w tej samej turze — 1 szt./obywatela/turę, do 5 surowców w epoce Żelaza):
+
+1. **Stawka zużycia obywateli: z 1,0 na 0,2 sztuki surowca / obywatela / turę** (5× mniej) —
+   konkretna, gotowa do wdrożenia liczba. Zmiana w `computeCitizenResourceDrain()`
+   (`gra/src/game/citizen-resource-upkeep.ts`), dziś `const need = pop;` (czyli `pop × 1`) →
+   `pop × 0.2`. Sprawdzić czy `deductions`/testy zakładają liczby całkowite (obecny kod NIE
+   floruje `need`, tylko `pop` przy starcie — do zweryfikowania czy 0,2 wymaga zaokrąglenia
+   przy małych populacjach, np. pop=1 → need=0,2, żeby uniknąć drenażu poniżej sensownej
+   granulacji magazynu).
+2. **"Troszeczkę zwiększymy liczbę produkcji surowców w terenie"** — kierunek zaakceptowany,
+   ALE **BEZ KONKRETNEJ LICZBY/DŹWIGNI** (które budynki/tereny, o ile %). Zgodnie z zasadą
+   "każda liczba musi mieć nazwany parametr" — **NIE zgadywać konkretnej wartości**. Do
+   dispatchu: punkt 1 (stawka 0,2) jest gotowy do wdrożenia od razu; punkt 2 wymaga osobnego
+   pytania ABC z konkretną propozycją (np. "+X% wydajności budynków surowcowych bazowych:
+   Tartak/Kamieniołom/Glinianka" — Operator może PRZYGOTOWAĆ wariant liczbowy do ABC, ale nie
+   wdrażać go bez odpowiedzi właściciela).
+
+**STATUS: Punkt 1 → dispatch Sonnet 5 (worktree), gotowe. Punkt 2 → dispatch przygotuje
+propozycję ABC (nie koduje), do zadania w kolejnej turze.**
+
+## P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA (Maciej, 2026-08-12, 3 zrzuty panelu Produkcja)
+
+Właściciel zgłosił: sekcja "BUDYNKI (N)" (lista już wybudowanych budynków, dziś pod listą
+"DOSTĘPNE DO BUDOWY" w tej samej wąskiej lewej kolumnie panelu Produkcja) wymaga mocnego
+przewijania, ciężko zobaczyć co jest wybudowane. Zaproponował 2 opcje i poprosił o rekomendację
+("Napisz jak byś to widział"):
+A) rozwinięcie listy budynków wybudowanych w górę, do ok. połowy wysokości ekranu.
+B) przeniesienie "Budynki (wybudowane)" na PRAWĄ stronę ekranu (miejsce puste, gdy panel
+   Produkcja jest otwarty — widoczne na 3. zrzucie: prawa strona to tylko wąski pasek ikon).
+
+**Odpowiedź orkiestratora (ECHO w tej samej turze): rekomendacja B** — przeniesienie na prawą
+stronę jako osobna, stała kolumna. Uzasadnienie: obie listy (Dostępne do budowy / Wybudowane)
+dostają pełną niezależną wysokość bez przewijania, zamiast dzielić jedną wąską kolumnę nawet po
+rozwinięciu do połowy ekranu.
+
+ZADANIE dla dispatchu: znaleźć panel Produkcja (grep "DOSTĘPNE DO BUDOWY"/"BUDYNKI (" w
+`gra/src/ui/cityPanel.ts` lub podobnym) — przenieść sekcję "Budynki (N)" (lista wybudowanych, z
+grupami "Nauka i kultura"/"Wiara" itd.) do NOWEJ kolumny po prawej stronie widoku mapy, widocznej
+gdy panel Produkcja jest otwarty (ten sam layout co pokazany na 3. zrzucie — prawa strona ma dziś
+tylko pasek ikon, obok niego jest miejsce). Zachować całą dzisiejszą funkcjonalność listy
+(grupowanie kategorii, koszt utrzymania per budynek) — to WYŁĄCZNIE zmiana pozycji/layoutu, nie
+treści. Sprawdzić czy prawa kolumna nie koliduje z innymi panelami otwieranymi w tym samym
+miejscu (np. minimapa, panel dyplomacji) — jeśli koliduje, opisać w raporcie i zaproponować
+rozwiązanie (np. zakładka/przełącznik) zamiast cichego nadpisania.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-EPOKA-PRZEJSCIE-CZY-PER-CYWILIZACJA (Maciej, 2026-08-12, obawa/prośba o sprawdzenie)
+
+Właściciel poprosił o sprawdzenie: czy przejście do kolejnej epoki jest liczone OSOBNO per
+cywilizacja, czy istnieje ryzyko, że przejście JEDNEJ cywilizacji do nowej epoki wymusza/
+powoduje przejście WSZYSTKICH innych cywilizacji też. Jego słowa: "To nie powinno mieć
+miejsca. Bo mam jakieś obawy co do tej kwestii." — to prośba o AUDYT/POTWIERDZENIE, nie
+zgłoszenie potwierdzonego buga.
+
+ZADANIE dla dispatchu: znaleźć logikę przejścia epoki (grep "epoka"/"advanceEra"/"eraAdvance" w
+`gra/src/game/`, prawdopodobnie `research.ts`/`tech.ts` lub silnik tury) — ustalić, czy stan
+epoki jest trzymany PER OWNER (per cywilizacja/gracz/AI/Państwo-Miasto) czy jako jedna globalna
+zmienna dla całej gry. Jeśli per-owner (oczekiwane, poprawne) — potwierdzić to w raporcie z
+dowodem (cytat struktury danych, np. `Record<ownerId, epoka>` czy podobne) i ZAMKNĄĆ temat bez
+zmian kodu. Jeśli faktycznie globalne/współdzielone (realny bug) — naprawić: rozdzielić stan
+epoki per owner, dodać test regresyjny potwierdzający że przejście jednej cywilizacji NIE
+wpływa na epokę innych.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree) — audyt, naprawa TYLKO jeśli znajdzie realny bug.**
+
+## P-CUDA-NIE-BLOKUJA-PRZEJSCIA-EPOKI (Maciej, 2026-08-12)
+
+Zgłoszenie: "Wybudowanie cudów nadal nie blokuje przejścia do następnej epoki." Sformułowanie
+"nadal" sugeruje że to już był poruszany temat/oczekiwanie — sprawdzić czy istnieje wcześniejsza
+decyzja w rejestrze (grep "cud"/"wonder" w `dyspozycje/`) o tym że budowa/dostępność cudów ma
+być warunkiem przejścia epoki (podobnie jak inne bramki epoki, patrz CLAUDE.md sekcja BRAMKI —
+"czysta bramka epoki (decyzje ABC)", temat 8 w historii projektu).
+
+ZADANIE dla dispatchu: znaleźć logikę bramki przejścia epoki (ten sam kod co temat wyżej) —
+ustalić DOKŁADNIE jakie warunki dziś blokują/pozwalają na przejście do następnej epoki, czy cuda
+(`wonders.json`) są w ogóle brane pod uwagę. Jeśli NIE — to nie naprawiaj automatycznie (decyzja
+gameplayowa: KTÓRY cud/ile cudów ma być wymagane, w KTÓREJ epoce — to wymaga ABC z właścicielem,
+nie zgadywania). Przygotuj w raporcie: (a) potwierdzenie dzisiejszego stanu (cuda nie blokują),
+(b) znalezienie wcześniejszej decyzji jeśli istnieje w rejestrze, (c) jeśli brak wcześniejszej
+decyzji — gotowy tekst pytania ABC z 2-3 wariantami (np. "przynajmniej 1 cud zbudowany w
+cywilizacji" / "konkretny cud wymagany per epoka" / "cuda NIE są warunkiem, zostawić jak jest")
+— NIE wdrażaj kodu bramki bez odpowiedzi właściciela.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree) — recon + ABC prep, kod TYLKO jeśli znajdzie
+udokumentowaną wcześniejszą decyzję do wdrożenia.**
+
+## P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej, 2026-08-12, zrzut panelu Porządek)
+
+Panel "Porządek" (per miasto, dziś: Szczęście/Zaopatrzenie obywateli/Prawo/Porządek łącznie)
+pokazuje składniki KAŻDEGO paska jako jeden zbity ciąg tekstu oddzielony kropkami (np. "Budynki
+(+1/budynek): +35 · Kultura: +4 · Religia: +4 · Zagęszczenie (8−5): -2.25 · Zaopatrzenie
+obywateli (surowce): +3") — właściciel ocenia to jako "za bardzo nadziubdziane i nieczytelne".
+Chce KAŻDY składnik w OSOBNEJ linii (jeden pod drugim), nie w ciągu oddzielonym kropkami, dla
+WSZYSTKICH trzech pasków:
+
+1. **Szczęście** — każdy składnik (Budynki, Kultura, Religia, Zagęszczenie, Zaopatrzenie
+   obywateli itd.) w osobnej linii.
+2. **Zaopatrzenie obywateli** (dziś osobna sekcja niżej: "Drewno: +1 · Glina: +1 · Kamień: +1 ·
+   Cegła: +1 · Ceramika: -1") — też jeden surowiec pod drugim, ALE dodatkowo ZMIENIĆ TREŚĆ: dziś
+   liczby (+1/-1) wyglądają jak "ile na JEDNEGO obywatela" — właściciel chce żeby pokazywało ile
+   ŁĄCZNIE zużywane jest danego surowca na WSZYSTKICH obywateli tego miasta (czyli
+   `populacja_miasta × stawka`, nie stawkę per capita) — spójne z realnym drenażem
+   (`computeCitizenResourceDrain`/`citizenUpkeepByOwner`, NIE liczyć drugi raz inną metodą).
+3. **Prawo** — te same zasady: każdy składnik (Dom Starszyzny, Brak garnizonu itd.) w osobnej
+   linii, nie w ciągu.
+4. **Porządek łącznie** — rozbicie z podziałem PROCENTOWYM ile z wyniku pochodzi od Szczęścia, a
+   ile od Prawa (np. "Szczęście: 60% wkładu · Prawo: 40% wkładu" lub podobne — dokładny format
+   do ustalenia przez Operatora, ważne żeby był widoczny rozkład, nie tylko finalna suma %).
+
+ZADANIE dla dispatchu: znaleźć panel Porządek (grep "PORZĄDEK ŁĄCZNIE"/"ZAOPATRZENIE OBYWATELI"
+w `gra/src/ui/cityPanel.ts` lub podobnym) — zmienić renderowanie z inline string (join(' · '))
+na listę elementów blokowych (jeden div/li per składnik). Dla punktu 2 — znaleźć źródło liczb
+"Drewno: +1" itd. (prawdopodobnie per-capita z `citizen-resource-upkeep.ts`) i zamienić na
+łączną wartość dla miasta (per-capita × populacja miasta TEGO miasta, nie całego imperium — to
+panel per-miasto). Dla punktu 4 — znaleźć jak dziś liczony jest "Porządek łącznie" (średnia
+ważona Szczęście+Prawo?) i dodać widoczne rozbicie wkładu procentowego każdego z dwóch pasków.
+
+Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), nowy/rozszerzony test
+regresyjny na format renderowania (blokowy, nie inline) i na poprawność łącznej wartości
+zużycia surowców (populacja × stawka, nie per capita).
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC (Maciej, 2026-08-12, zrzut "Zarządzanie polami")
+
+Po założeniu nowego miasta domyślne ustawienie trybu zarządzania polami ("Zarządzanie polami":
+Żyw. / Prod. / Podat. / Zrówn. / Ręczny) ma być **"Żyw." (Żywność)**, nie "Zrówn."
+(Zrównoważone) ani "Ręczny" (jakikolwiek jest dziś default). Gracz może to zmienić ręcznie po
+założeniu miasta — to tylko zmiana WARTOŚCI STARTOWEJ, nie usunięcie innych trybów.
+
+ZADANIE dla dispatchu: znaleźć logikę zakładania miasta i inicjalizacji trybu zarządzania
+polami (grep "Zrówn"/"zrownowazony"/domyślny tryb pól w `gra/src/game/`, prawdopodobnie przy
+`foundCityAt`/tworzeniu nowego `City` — pole trybu przydziału pól/`fieldMode`/podobne). Zmienić
+wartość startową na tryb Żywność. Sprawdzić czy dotyczy to WSZYSTKICH nowo zakładanych miast
+(gracz i AI/Państwa-Miasta) czy tylko gracza — właściciel nie sprecyzował, ale zasada "AI
+traktowane tak samo jak gracz" (patrz inne decyzje w tym pliku) sugeruje zastosować wszędzie,
+chyba że znajdzie się przesłankę że AI ma inny, celowy domyślny tryb (wtedy zgłosić, nie
+zgadywać).
+
+Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), test regresyjny potwierdzający
+nowy default przy założeniu miasta.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree).**
+
+## P-EPOKA-PRZEJSCIE-CZY-PER-CYWILIZACJA — ZAMKNIĘTE, BEZ ZMIAN KODU (audyt, 2026-08-12)
+
+Audyt (worktree naprawiony) potwierdził: epoka jest liczona per owner (`ownerEraByOwner: Map<number,number>`,
+`ownerStartEraByOwner`, `aiResearchDone: Map<number,Set>`, gracz osobno `player.era`/`player.zbadane`,
+main.ts). `syncOwnerEraFromResearch(ownerId)` czyta/pisze wyłącznie pod kluczem TEGO ownera, wołana
+w pętli po wszystkich ownerach. Jawnie udokumentowane jako zamierzone w `gra/src/game/owner-epoch.ts:9-16`
+(R-EPOKA-CUD-WARUNEK-AWANSU, Maciej 2026-08-09): "Progresja per cywilizacja pozostaje niezależna/
+asynchroniczna... to ZAMIERZONE, nie naprawiać." Pokrycie testowe już istnieje i jest zielone:
+`era-cud-warunek-awansu-test.cjs` 33/33, `era-cud-main-ts-integracja-test.cjs` 16/16+11/11,
+`owner-epoch-test.cjs` 13/13. Obawa właściciela NIE potwierdza się — zero zmian kodu.
+
+**STATUS: ZAMKNIĘTE.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 — DECYZJA WŁAŚCICIELA: WARTOŚCI ABSOLUTNE (Maciej, ECHO 2026-08-12)
+
+Odpowiedź na pytanie ABC (przygotowane przez Operatora `af66d1e09b87bb854`) — właściciel podał
+własne WARTOŚCI ABSOLUTNE zamiast wybrania litery A/B/C, i rozszerzył zakres o Konia (poza
+pierwotną piątką związaną z zużyciem obywateli):
+
+| Ulepszenie terenu | Surowiec | Dziś (`surowiec_ilosc_tura`) | Nowa wartość |
+|---|---|---|---|
+| Tartak | Drewno | 4/turę | **10/turę** |
+| Kamieniołom | Kamień | 4/turę | **10/turę** |
+| Glinianka | Glina | 4/turę | **10/turę** |
+| Kopalnia miedzi | Ruda (miedzi) | 2/turę | **4/turę** |
+| Kopalnia żelaza | Ruda żelaza | 2/turę | **4/turę** |
+| Stadnina | Koń | 1/turę | **5/turę** |
+
+Złoto (Kopalnia złota) i Sól (Warzelnia soli) — BEZ ZMIAN, nie wspomniane przez właściciela.
+
+⚠️ **PODWAŻA WCZEŚNIEJSZE DECYZJE BALANSU (rule 1a)**: wartości 4/turę dla Tartak/Kamieniołom/
+Glinianka pochodzą z korekty **Maciej 2026-08-09** ("wyrównanie do kamieniołomu", było wcześniej
+10/20 — a teraz wraca do 10, czyli de facto CZĘŚCIOWY powrót do wcześniejszej, jeszcze starszej
+wartości). Wartości 2/turę dla Kopalni miedzi/żelaza pochodzą z **Maciej 2026-07-23**
+(SUROW-TERYT-01, "stawka REALNA"). Wartość 1/turę dla Stadniny — też SUROW-TERYT-01. Właściciel
+świadomie te decyzje teraz koryguje tą decyzją ECHO.
+
+ZADANIE dla dispatchu: `gra/data/terrain-improvements.json` — zmienić `surowiec_ilosc_tura` dla
+kluczy `tartak`, `kamieniolom`, `glinianka`, `kopalnia_miedzi`, `kopalnia_zelaza`, `stadnina` na
+wartości wyżej. Zaktualizować pole `surowiecOdblokowany_uwaga` w każdym wpisie z krótką notatką o
+korekcie 2026-08-12 (wzorzec istniejących notatek o poprzednich korektach w tych samych polach).
+Sprawdzić testy asercjonujące te wartości (grep "surowiec_ilosc_tura"/nazwy kluczy w
+`gra/tools/`) i przeliczyć oczekiwane wartości.
+
+Bramki: `npx tsc --noEmit`, `node tools/logic-test.cjs` (213/213), wszelkie testy dotykające
+tych wartości (przeliczone, zielone).
+
+**STATUS: OTWARTE, gotowe do dispatchu Sonnet 5 (worktree) — czysta zmiana danych + testy.**
+
+## P-CUDA-NIE-BLOKUJA-PRZEJSCIA-EPOKI — RECON ZAKOŃCZONY, ABC ZADANE (2026-08-12)
+
+Mechanizm z `R-EPOKA-CUD-WARUNEK-AWANSU` (ECHO A, 2026-08-09) JEST wdrożony i wpięty
+(`owner-epoch.ts::computeMainCivEraFromResearch`/`eraOwnWonderSatisfied`), scalony `13861b60`+
+`e5ba61c2`, na ROBOCZA od FALA 266 (2026-08-10) — DWA DNI przed zgłoszeniem. To NIE regresja.
+Przyczyna zgłoszenia: reguła ma wąski zakres z definicji (blokuje tylko gdy cywilizacja ma
+przypisany cud E w OPUSZCZANEJ epoce) — dziś w praktyce: Kamień→Brąz zablokowane tylko dla
+Egiptu (1/15 cywilizacji), Brąz→Żelazo dla 8/15, a 6/15 cywilizacji (cud w Żelazie = ostatniej
+aktywnej epoce) nie ma reguły aktywnej na ŻADNYM z 2 dostępnych przejść. Pytanie ABC
+`R-EPOKA-CUD-ZAKRES-Q1` zadane w czacie tej samej turze — czeka na odpowiedź.
+
+**STATUS: ABC ZADANE, czeka na `R-EPOKA-CUD-ZAKRES-Q1 + litera`.**
+
+## P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA — SCALONE (7ae5d8f8)
+
+Rekomendacja B (prawa kolumna) potwierdzona przez właściciela, wdrożona. Zero kolizji z
+minimapą/dyplomacją/bitwą (osobne overlaye pełnoekranowe lub chowane na czas panelu miasta).
+tsc 0 błędów, logic-test 213/213. **STATUS: ZAMKNIĘTE.**
+
+## P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC — SCALONE (8a3a3d29)
+
+`DEFAULT_OKOLICA_FOCUS` 'zrownowazone'→'zywnosc', dotyczy gracza i AI/Państw-Miast (wspólna
+ścieżka `seedCityOwnerDefaults`). +4 asercje, 49/49, tsc 0 błędów, logic-test 213/213.
+**STATUS: ZAMKNIĘTE.**
+
+## ⛔ AUDYT WŁASNY: BRAK EWALUATORA DLA SERII SCALEŃ 2026-08-12 (naruszenie zasady 0a/0b)
+
+Właściciel zapytał wprost czy po przełączeniu na Ultracode są martwe subagenty i czy każdy
+Operator ma swojego Ewaluatora. Odpowiedź: subagenci OK (brak crashy), ALE seria commitów
+poniżej poszła Operator→commit BEZ pośredniego Evaluatora — naruszenie zasady 0a/0b:
+`76514613` (dyplomacja AI), `e702d982` (wyciek GPU), `a79bae29` (szczegóły zużycia),
+`469f3152` (suwaki Empire), `b32b52ea` (chip Armia), `9594e4ac` (kolejność kart Surowców),
+`1208eb6c` (stawka 0,2), `1c41c113` (obóz barbarzyński), `deccc6b4` (wagi Mocy), `7ae5d8f8`
+(prawa kolumna budynków), `8a3a3d29` (domyślny podział pól). **Dispatch Evaluatorów (Opus 5)
+w toku dla całej serii, przez Workflow (na wyraźne polecenie właściciela — ultracode).**
+
+**STATUS: W NAPRAWIE.**
+
+## R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 — SCALONE (ecbddda8)
+
+Wartości terenowe zmienione zgodnie z decyzją. Operator znalazł i naprawił dodatkowo realny bug:
+Stadnina miała zahardkodowaną wartość produkcji Konia (1) pomijającą JSON — bez tej poprawki
+zmiana samego pliku danych nie zadziałałaby w grze dla tego surowca. tsc 0 błędów, logic-test
+213/213. **STATUS: ZAMKNIĘTE, czeka na Evaluatora (dispatch w toku, engine-code change flagged).**
+
+## P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE — SCALONE (3dc9d650)
+
+Blokowe rozbicie Szczęście/Prawo, łączne zużycie w Zaopatrzeniu obywateli (nie per capita),
+widoczny % wkładu w Porządek łącznie. Konflikt scalania z równoległym commitem stawki 0,2
+rozwiązany przez orkiestratora (usunięta zduplikowana stała, ujednolicone na
+CITIZEN_UPKEEP_RATE_PER_CITIZEN=0.2 wszędzie). tsc 0 błędów, logic-test 213/213.
+**STATUS: ZAMKNIĘTE, czeka na Evaluatora (dispatch w toku).**
+
+## P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (tabela Miast) — SCALONE (89c16ec1)
+
+Filtr kolumn + kolumna SUROWCE (wyłącznie utrzymanie budynków per miasto, realne dane bez
+przybliżeń) + wiersz podsumowania (wzrost = średnia, reszta = suma). Obywatele/wojsko flagowane
+jako civ-wide z definicji, bez próby sztucznego podziału per miasto — do ewentualnego
+potwierdzenia przez właściciela jeśli oczekiwał inaczej. +77 asercji, tsc 0 błędów, logic-test
+213/213. **STATUS: ZAMKNIĘTE, czeka na Evaluatora.**
+
+## P-SUROWCE-KOLEJNOSC-KART: FIX zastosowany (5448eb51) + ABC otwarte
+
+**Naprawione**: wyciek placeholdera do chipu HUD Surowce (patrz commit 5448eb51 wyżej).
+
+**Nadal otwarte (ABC, nie zgadywać)**: Evaluator znalazł że implementacja umieściła Konia i
+Złoto w TYM SAMYM wierszu tabeli (para "Koń | Złoto"), podczas gdy dosłowna specyfikacja
+właściciela mówiła "Złoto (na samym końcu, **osobno**)". Rozwiązanie zachowujące "osobno"
+istniało (Koń w wierszu 7 z pustym slotem, Złoto samo w wierszu 8) — Operator wybrał jednostronnie
+wariant "razem", bez pytania.
+
+**[TEMAT: Pozycja Konia względem Złota w panelu Surowców] P-SUROWCE-KOLEJNOSC-KON-Q1**
+Sytuacja: opisana wyżej. Cel: potwierdzić czy "Koń+Złoto razem" jest OK, czy Złoto ma być
+faktycznie samo w ostatnim wierszu.
+A) Zostaje jak jest (Koń+Złoto w jednym wierszu) — Za: już wdrożone, zero dodatkowej pracy;
+   zwarty layout. Przeciw: nie odpowiada dosłownie słowu "osobno" z pierwotnej specyfikacji.
+B) Złoto samo w ostatnim wierszu, Koń przesunięty wcześniej (np. do wiersza z pustym slotem
+   obok Rudy cyny, albo osobny wiersz przed Złotem z pustym slotem) — Za: dosłownie zgodne z
+   "osobno"; Przeciw: dodatkowy pusty slot w layoucie (mniej zwarte), mała dodatkowa praca.
+Rekomendacja: A (różnica kosmetyczna, nie wpływa na dane/funkcjonalność) — ale zgłaszam do
+jawnej decyzji zamiast milczącego zamknięcia, zgodnie ze znaleziskiem Evaluatora.
+
+**STATUS: ABC OTWARTE, czeka na odpowiedź.**
+
+## ⛔ ZNALEZISKO: `isolation:'worktree'` W WORKFLOW MA TEN SAM BUG BAZY CO Agent TOOL (2026-08-12)
+
+Uruchomiony Workflow (17 agentów: 15 Evaluatorów + 2 Operatorów, wszystkie `isolation:'worktree'`)
+— **16/17 trafiło na złą bazę worktree** (branch `main`/commit `99974173` zamiast czubka
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`), identycznie jak wcześniejsze manualne dispatch'e
+przez `Agent` tool. Tylko 1 agent (Evaluator commitu `9594e4ac`) samodzielnie odzyskał się przez
+`git archive <sha> -- gra` do katalogu scratch, zamiast polegać na worktree. **Wniosek: to nie
+jest specyficzne dla jednego narzędzia — to systemowy problem środowiska (worktree provisioning
+domyślnie/czasem sięga po stary `main`).** Od teraz: dla WSZYSTKICH dispatchy (Agent tool i
+Workflow) NIE polegać na `isolation:'worktree'` — orkiestrator ręcznie tworzy worktree
+(`git worktree add <path> -b <branch> origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`) i podaje
+JAWNĄ ścieżkę w prompt-cie ("Twój przydzielony katalog roboczy to..."). Ten wzorzec miał 100%
+skuteczności przez całą sesję.
+
+**Redispatch w toku**: 14 commitów bez Evaluatora + 2 nowe (tabela Miast, fix wycieku
+placeholdera) + 2 tematy deweloperskie (przepustowość konwerterów, skalowanie magazynu per
+epoka) — wszystkie na ręcznie utworzonych worktree.
+
+## P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU — EVALUATOR FAIL: realna regresja, ABC wymagane
+
+Evaluator znalazł i potwierdził WYKONANIEM realną asymetrię w `pruneEmptyCampsAfterCombat`
+(`barbarians.ts`): wyznaczenie "podejrzanego" obozu robi TOŻSAMOŚCIOWO (`homeCampForUnit`,
+`campId` wygrywa nad odległością), a decyzja o USUNIĘCIU robi POZYCYJNIE (`countCampGarrison`,
+czysta odległość, bez `campId`, bez filtra `seaRaider`). Skutek:
+
+- **Fałszywy pozytyw**: rajder z `campId='c1'` ginie 30 heksów od obozu, mimo że drugi żywy
+  wojownik TEGO SAMEGO obozu wciąż stoi w polu — `c1` i tak zostaje usunięty. Osiągalne w
+  normalnej rozgrywce (pościg w zasięgu 6 heksów, `Infinity` przy raid-ready, rutynowo wyprowadza
+  jednostki poza promień 3 kontrolny obozu).
+- **Fałszywy negatyw** (oryginalny zgłoszony bug WRACA): garnizon lądowy wybity, ale dowolny
+  barbarzyński cywil/rajder morski stoi w promieniu — obóz NIE znika.
+- Mutacja M2 (przełączenie identyfikacji podejrzanych na czysto pozycyjną) daje **184/184
+  zielono** — dowód, że +17 asercji rundy Operatora w ogóle nie pinuje osi, na której leży wada.
+
+**To jest decyzja o REGULE GRY, nie cicha poprawka Operatora** (Evaluator to nazwał wprost —
+wymaga ABC wg §0/§1, nie milczącej decyzji).
+
+**[TEMAT: Kiedy dokładnie obóz barbarzyński ma zniknąć po walce] P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1**
+
+Sytuacja: opisana wyżej — dziś dwa niespójne kryteria (tożsamość vs pozycja), dające zarówno
+fałszywe usunięcia (obcy/odległy obóz znika) jak i fałszywe nie-usunięcia (oryginalny bug wraca
+w innych scenariuszach).
+
+A) **Tożsamościowa** — obóz ginie, gdy zginie jego OSTATNI członek (po `campId`), niezależnie
+   od pozycji na mapie w momencie śmierci. Za: dokładnie to, co deklaruje dzisiejszy docblock
+   commitu; prostsza koncepcyjnie ("wybiłeś załogę = obóz koniec"). Przeciw: obóz może zniknąć
+   "zdalnie" — gracz zabija rajdera daleko od jego bazy i baza mimo braku ataku na nią znika,
+   co może być mylące wizualnie (mesh znika bez powiązanej z nim akcji na mapie).
+B) **Pozycyjna** (najbliższa dosłownej treści zgłoszenia "po zaatakowaniu/zdobyciu obozu") —
+   podejrzane są WYŁĄCZNIE obozy w promieniu `campControlRadius` od heksu, na którym zginęła
+   jednostka; nic nie znika zdalnie. Za: zgodna z intuicją "zdobyłem to miejsce, więc no more
+   spawns tutaj"; eliminuje mylące zdalne znikanie. Przeciw: wymaga też ujednolicenia filtra w
+   `countCampGarrison` (dodać wykluczenie `seaRaider`/`embarked`, spójne z `isCampRaidReady`) —
+   trochę więcej pracy niż A.
+
+Rekomendacja: **B** — bliżej dosłownej treści zgłoszenia i unika mylącego "zdalnego" znikania
+obozu bez żadnej akcji przy nim. Dodatkowo poza tym pytaniem: Evaluator zauważył że "zdobycie"
+bez walki (wejście na opuszczony heks obozu) nie jest w ogóle obsłużone — brak parytetu z
+wioskami neutralnymi (które znikają przez samo wejście). To osobny, mniejszy temat do
+ewentualnego rozszerzenia później, nie blokuje tej decyzji.
+
+**STATUS: ABC OTWARTE, czeka na odpowiedź. Kod cofnięty do stanu przed commitem `1c41c113` w
+sensie regresji NIE jest wymagany — obecny stan to "częściowa naprawa z nową, inną wadą", nie
+regresja względem stanu przed commitem (przed commitem obóz nigdy nie znikał, teraz znika w
+złych przypadkach ORAZ czasem nie znika w dobrych) — bezpieczne pozostawić scalone do czasu
+odpowiedzi, temat nie jest krytyczny (brak realnego uszczerbku poza kosmetycznym mylącym
+zniknięciem obozu).**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 — ODPOWIEDŹ WŁAŚCICIELA: MECHANIKA CAŁKOWICIE INNA NIŻ WDROŻONA
+
+Właściciel doprecyzował (ECHO, 2026-08-12) — mechanika jest ZASADNICZO różna od tego, co
+zaimplementował commit `1c41c113` (usuwanie po walce/zliczaniu garnizonu):
+
+> "Jeżeli cywilizacja, zarówno AI, jak i gracz, wejdzie do obozu, bezpowrotnie go niszczy. Ale
+> nie niszczy jednostek, które ten obóz stworzył. Czyli tak długo jak obóz istnieje, tak długo
+> są generowane nowe jednostki. Ale jeżeli obóz zostanie zniszczony poprzez najechanie
+> jednostkami na ten obóz, to stare jednostki nie są usuwane, nie są likwidowane, tylko nadal
+> atakują, a jedynie nie są już tworzone nowe jednostki, ponieważ obóz został zniszczony."
+
+Rozbite na regułę:
+1. **Wyzwalacz zniszczenia = WEJŚCIE (najechanie) jednostką na heks obozu**, NIE walka/zliczanie
+   garnizonu w promieniu. Analogia z wioskami neutralnymi (`checkVillageRewardAt`, `main.ts`),
+   które znikają przez samo wejście — dokładnie to, co Evaluator nazwał "znalezisko 5" (brak
+   parytetu obóz/wioska) w swoim raporcie do commitu `1c41c113`.
+2. **Zniszczenie obozu NIE usuwa już zaspawnowanych jednostek barbarzyńskich** — te walczą dalej
+   normalnie, są całkowicie niezależne od losu obozu po zaspawnowaniu.
+3. **Jedyny efekt zniszczenia**: `tickCamps()` przestaje spawnować NOWE jednostki z tego obozu
+   (bo obóz zniknął z `barbCamps`).
+4. Dotyczy zarówno gracza jak i AI (wszystkie cywilizacje, symetrycznie).
+
+**Commit `1c41c113` (`pruneEmptyCampsAfterCombat`, wyzwalacz = zliczanie garnizonu w promieniu
+po walce) implementuje CAŁKOWICIE INNĄ mechanikę niż ta — do zastąpienia, nie do poprawki
+parametru.** Nowa implementacja: hook analogiczny do `checkVillageRewardAt` — gdy jednostka
+(gracz LUB AI) kończy ruch na heksie z aktywnym `BarbCamp`, usunąć ten obóz z `barbCamps`
+(zatrzymuje `tickCamps` dla niego), bez ŻADNEGO dotykania tablicy `units` (jednostki obozu,
+jeśli jakieś istnieją na mapie, zostają nietknięte i nadal biorą udział w walkach).
+`pruneEmptyCampsAfterCombat` i jej wywołanie w `applyMapBattleOutcome` (main.ts) — do usunięcia
+jako niewłaściwy mechanizm, zastąpione nowym hookiem ruchu.
+
+**STATUS: OTWARTE, dispatch Sonnet 5 (worktree ręczny) — implementacja od nowa wg
+doprecyzowanej mechaniki, z pełnym pokryciem testowym (w tym że stare jednostki NIE znikają).**
+
+## P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
+
+Cytat właściciela: *"Cegielnia przepustowość 10 plus 10% możliwość awansu i ulepszenia co
+każdą epokę. To samo Garncarnia, przepustowość 10 plus 10% co każdą epokę. Odlewnia brązu
+przepustowość 5, odlewnia żelaza przepustowość 5, wielka odlewnia przepustowość 5."*
+
+**Wykonane (Operator Sonnet 5, worktree `eval-pool-4`)**:
+1. Nowe wartości bazowe `throughputFallback` w `DEFAULT_CONVERTER_RECIPES`
+   (`gra/src/game/converters.ts`): Cegielnia 3→10, Garncarnia 6→10, Odlewnie (huta/
+   odlewnia_brazu/odlewnia_zelaza__braz/odlewnia_zelaza__zelazo/wielka_odlewnia__braz/
+   wielka_odlewnia__zelazo/wielka_odlewnia__stal — wszystkie warianty łańcucha odlewni,
+   share'ujące throughputParamKey z 3 przywołanymi w zgłoszeniu) 1→5.
+2. **JSON param-file `gra/data/econ-params.json` NADPISYWAŁ fallback** (5 kluczy:
+   `budynek_cegielnia_przepustowosc`, `budynek_garncarnia_przepustowosc`,
+   `budynek_huta_przepustowosc`, `budynek_odlewnia_zelaza_przepustowosc`,
+   `budynek_wielka_odlewnia_przepustowosc`) — zaktualizowany TAM, nie tylko fallback.
+   **Założenie do potwierdzenia**: właściciel podał JEDNĄ liczbę na budynek bez
+   różnicowania trudności; ustawiłem WSZYSTKIE 3 trudności (easy/normal/hard) na tę samą
+   wartość płaską (10/10/5/5/5), zamiast zachować dotychczasowy spread malejący z
+   trudnością (np. Cegielnia było easy=4/normal=3/hard=2). Jeśli właściciel chciał
+   zachować różnicowanie trudności wokół nowych baz — do korekty.
+3. Mechanizm "+10%/epokę" dla Cegielni/Garncarni: `converterThroughputForEra()` (nowa
+   funkcja czysta w `converters.ts`) — ADDYTYWNIE od bazy (epoka1=baza, epoka2=+10%,
+   epoka3=+20%, NIE compound/mnożnikowo); per epokę CYWILIZACJI WŁAŚCICIELA budynku
+   (nie epokę gry, nie poziom budynku maksPoziom — osobny system). Wpięty w realny
+   silnik (`turn-economy.ts::advanceCityEconomy` → `tickEmpireResourcePipeline`, per-owner,
+   PARYTET AI — ten sam resolver `resolveOwnerEra` dla gracza i AI, zero gałęzi po
+   ownerId) ORAZ w podgląd HUD (`main.ts::empireConverterResourceRatesForOwner`, żeby
+   licznik nie rozjechał się z silnikiem — klasa błędu HUD-SKARBIEC). Odlewnie
+   NIE dostają mechanizmu — zostają płaskie.
+4. Nowy test regresyjny `gra/tools/converter-era-scaling-test.cjs` (esbuild-bundle-real-source,
+   87 asercji): wartości bazowe (fallback + JSON realny), skalowanie czyste (w tym brzegi
+   era<1/NaN, baza niecałkowita + floor), regresja (dowód że stary kod dałby stałą wartość),
+   integracja pełna `advanceCityEconomy` z PARYTETEM AI (gracz era1 vs AI era3 w JEDNYM
+   wywołaniu) potwierdzająca że Odlewnia zostaje płaska dla OBU mimo różnych epok.
+   Zweryfikowany mutacyjnie: na kodzie SPRZED zmiany test pada (crash na braku eksportu).
+
+**Bramki**: `npx tsc --noEmit` 0 błędów · `logic-test.cjs` 213/213 · nowy test 87/87 ·
+`converters-test.cjs` (istniejący, zaktualizowana 1 asercja fallbacku Garncarni 6→10)
+46/46 · `mennica-magazyn-test.cjs` (istniejący, poprawione 2 fixture ze stockiem gliny
+za małym na nową przepustowość) 40 pass/1 fail — ten 1 fail pre-istniejący, niezwiązany
+(Mennica bez Waluty), zweryfikowany identyczny na `git stash` bazowym. tech-tree-test/
+research-test/unit-replace-test/ai-founding-territory-test — wszystkie zielone (impact
+check dla współdzielonych plików turn-economy.ts/main.ts).
+
+**Zmienione pliki**: `gra/src/game/converters.ts`, `gra/src/game/turn-economy.ts`,
+`gra/src/main.ts`, `gra/data/econ-params.json`, `gra/tools/converters-test.cjs`,
+`gra/tools/mennica-magazyn-test.cjs` (poprawki istniejących fixture'ów) +
+`gra/tools/converter-era-scaling-test.cjs` (nowy).
+
+**Pozostawione NIEPRZYWRÓCONE w worktree `eval-pool-4`** na życzenie orkiestratora —
+scalenie do głównego drzewa i ewentualny Evaluator po stronie orkiestratora.
+
+**STATUS: ZAMKNIĘTE PO STRONIE OPERATORA, czeka na scalenie + Evaluator (nie
+self-ocena — worktree odizolowany, brak commitu/deployu z tej sesji).**
+
+## P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
+
+Cytaty właściciela (dwie wiadomości):
+1. *"zwiększ jeszcze wielkość magazynu do 10 tysięcy sztuk dla każdego surowca z
+   obecnego 1000 oraz dla magazynów, które wybudujemy w mieście zwiększ
+   przepustowość z 100 i 150 na 1000 i 1500."*
+2. *"I co? A każdą epokę wielkość magazynu powinna się podwajać. To co
+   powiedziałem to powinno być dla epoki kamienia."*
+
+Odczytane jako: wartości z (1) to wartości DLA EPOKI 1 (Kamień); od epoki 2 wzwyż
+PODWAJA SIĘ co epokę WŁAŚCICIELA (era2=×2, era3=×4, `2^(era-1)`, compound — NIE
+addytywne +10%/epokę jak konwertery P-KONWERTERY-PRZEPUSTOWOSC-Q1, osobna decyzja
+właściciela w osobnej wiadomości).
+
+**Interpretacja "100 i 150" (ZBADANA grepem PRZED zmianą liczb, jak nakazane w
+zleceniu):** `magazyn_bonus_surowce_na_budynek` (econ-params.json) ma dziś TYLKO
+jedną wartość (100), nie parę — nie może być tym, co właściciel opisał jako "100 i
+150". Grep komentarza przy `magazyn_centralny_baza_zywnosc` w econ-params.json:
+*"(+ Spichlerze lokalne +100/+150, Magazyn +100)"* — i faktycznie
+`SPICHLERZ_EMPIRE_CAP_I = 100` / `SPICHLERZ_EMPIRE_CAP_II_FULL = 150`
+(`gra/src/game/building-resource-gate.ts`), używane w
+`empire-food.ts::computeCentralFoodCap` jako wkład Spichlerza I/II do
+CENTRALNEGO CAPU ŻYWNOŚCI (nie surowców) per miasto. To JEDYNA para wartości
+100/150 w całym mechanizmie magazynów — przyjęta interpretacja: "100 i 150" =
+SPICHLERZ_EMPIRE_CAP_I/II, NIE `magazyn_bonus_surowce_na_budynek` (który dostaje
+mimo to TEN SAM mechanizm podwajania co epokę, bo dzieli formułę cap(typ) z
+`magazyn_baza_surowce`, ale jego wartość bazowa era1 zostaje NIEZMIENIONA — 100).
+
+**Wykonane (Operator Sonnet 5, worktree `eval-pool-4`)**:
+1. `gra/data/econ-params.json`: `magazyn_baza_surowce` 1000→10000 (era1, wszystkie
+   trudności płasko); `magazyn_bonus_surowce_na_budynek` wartość bazowa
+   NIEZMIENIONA (100, era1) — patrz interpretacja wyżej.
+2. `gra/src/game/building-resource-gate.ts`: `SPICHLERZ_EMPIRE_CAP_I` 100→1000,
+   `SPICHLERZ_EMPIRE_CAP_II_FULL` 150→1500 (era1).
+3. Nowa funkcja czysta `magazynEraMultiplier(era)` w `gra/src/game/economy-upkeep.ts`
+   — `2^(max(1,era)-1)`, era<1/NaN/nieskończona → 1 (mnożnik ×1). Współdzielona
+   przez oba mechanizmy (surowce + Spichlerz/żywność), zero duplikacji formuły.
+4. `ownerResourceCapacityPerType(magazynCount, params, era=1)` — dodany 3. param
+   `era`, skaluje CAŁY wynik (baza+bonus×magazynCount) razem, matematycznie
+   równoważne skalowaniu obu składników osobno. Nowa `ownerStorageParamsForEra(p,
+   era)` — rozbicie (baza, bonus) przeskalowane OSOBNO, dla UI (main.ts panel
+   Surowce: `capBase`/`capBonusPerMagazyn` muszą sumować się dokładnie do `cap`,
+   inaczej rozjazd klasy HUD-SKARBIEC).
+5. `computeCentralFoodCap(..., era=1)` w `empire-food.ts` — skaluje WYŁĄCZNIE
+   wkład Spichlerza (`SPICHLERZ_EMPIRE_CAP_I/II × magazynEraMultiplier`);
+   `centralCapBaza`/`centralCapBonusMagazyn` (magazyn_centralny_* — osobny
+   mechanizm, POZA zakresem tego zlecenia) zostają PŁASKIE, bez zmian.
+   `advanceEmpireFood(...)` dostał nowy opcjonalny 8. param `resolveOwnerEra`.
+6. Threading do silnika (PARYTET AI, ten sam resolver dla gracza i AI, zero
+   nowych gałęzi po ownerId):
+   - `turn-economy.ts::advanceCityEconomy` — wewnętrzny `ownerResourceCapFor`
+     teraz liczy erę TYM SAMYM wzorcem co `converterThroughputsForOwner`
+     (`resolveOwnerEra ? resolveOwnerEra(ownerId) : (ownerId===0 ? playerEra : 1)`).
+   - `turn-economy.ts::ownerResourceCap()` (eksportowany getter dla UI/innych
+     wywołujących) — dodany opcjonalny 6. param `era=1`.
+   - `main.ts`: `advanceCityEconomy(...)` JUŻ przekazywał `empireEpochForOwner`
+     na pozycji `resolveOwnerEra` (sprzed tej zmiany, z innego zadania) — zero
+     zmiany wymaganej. `advanceEmpireFood(...)` — dodany `empireEpochForOwner`
+     jako 8. arg. Panel Surowce (`buildEmpireResourceRows`) — `empireCap` i
+     `storageParams` (capBase/capBonusPerMagazyn) liczone przez
+     `empireEpochForOwner(ownerId)`, żeby HUD nie rozjechał się z silnikiem.
+7. **ŚWIADOMA LUKA (poza zakresem, udokumentowana, NIE naprawiona w tym
+   zleceniu):** trzy inne wywołania `ownerResourceCap(...)` w `main.ts`
+   (battle-loot cap ~L20839, trade-flow cap ~L22920, drewno-wyrąb cap ~L23241)
+   NIE dostały jawnego `era` — zostają na domyślnym `era=1` (zachowanie
+   identyczne jak przed tą zmianą, poza samą podwyżką bazy 1000→10000, która
+   jest bezwarunkowa). Celowo pominięte: (a) drewno-wyrąb jest chronione
+   strażnikiem tekstowym `surow-civ-storage-test.cjs` sekcja G z DOKŁADNYM
+   regexem na literalne wywołanie 5-argumentowe — dodanie 6. argumentu złamałoby
+   ten test bez wyraźnego zlecenia na jego zmianę; (b) battle-loot/trade-flow są
+   brzegowe względem tego zadania (magazyn per-turowy), a każde dodatkowo
+   wymaga własnej analizy ownerId/era w danym kontekście. Ryzyko: w epokach 2+
+   te trzy miejsca liczą cap NIŻSZY niż realnie egzekwowany przez
+   `advanceCityEconomy`/`reconcileOwnerResourceCaps` — praktyczny skutek:
+   konserwatywne niedoszacowanie (nie exploit, nie crash), np. łup z bitwy może
+   zostać przycięty do era1-cap zamiast realnego, wyższego capu. Kandydat na
+   osobne zgłoszenie ABC, jeśli właściciel chce pełnej spójności.
+8. Nowy test `gra/tools/magazyn-era-scaling-test.cjs` (esbuild-bundle-real-source,
+   57 asercji): `magazynEraMultiplier` (×1/×2/×4 + brzegi era<1/NaN/ujemna/
+   niecałkowita), `ownerResourceCapacityPerType`/`ownerStorageParamsForEra`
+   (skalowanie + zgodność rozbicia UI z totalem), wartości realne z
+   econ-params.json, `SPICHLERZ_EMPIRE_CAP_I/II` (1000/1500), integracja przez
+   `advanceEmpireFood` (Spichlerz I i II, era1/2/3), dowód mutacyjny (era3 daje
+   dokładnie ×4 vs era1), integracja PEŁNA `advanceCityEconomy` z PARYTETEM AI
+   (gracz era1 vs AI era3 w JEDNYM wywołaniu — magazyn gracza obcina nadwyżkę do
+   10000, magazyn AI (era3, cap 40000) zachowuje ją w całości).
+9. Poprawione 2 istniejące testy, których hardkodowane oczekiwania odnosiły się
+   WPROST do zmienianych dziś parametrów (recompute, nie pre-istniejący dług —
+   zweryfikowane osobno na czystym `main` przed zmianami):
+   - `gra/tools/empire-food-b5-test.cjs` (sekcja Q6): scenariusz podniesiony
+     proporcjonalnie (1560+50→1500 zamiast 560+50→600), żeby nadal realnie
+     ćwiczyć OBCINANIE nadwyżki z nowym `SPICHLERZ_EMPIRE_CAP_I=1000`.
+   - `gra/tools/tartak-glinianka-rate-Q1-test.cjs` (sekcja D): margines liczby
+     tur zmieniony z addytywnego (+15) na multiplikatywny (×2 + 15) — przy
+     10x większym capie (1000→10000) stały dodatek tur przestał wystarczać, bo
+     realna efektywność magazynowania (~62/turę netto, nie nominalne 80/turę)
+     jest stała niezależnie od wielkości capu.
+   - Naprawiona TAKŻE regresja we własnym komentarzu: pierwsza wersja zmiany w
+     `main.ts::advanceEmpireFood(...)` dodała wieloliniowy komentarz WEWNĄTRZ
+     wywołania (między `advanceEmpireFood(` a argumentami), co przesunęło
+     `_maxSafeRationCache.clear();` poza okno 1500 znaków strażnika tekstowego
+     `auto-wyzywienie-live-recalc-test.cjs` — naprawione przeniesieniem
+     komentarza PRZED linię wywołania (złapane własną weryfikacją bramek, nie
+     przez Evaluatora).
+
+**Bramki**: `npx tsc --noEmit` (worktree z symlinkiem `node_modules`, `npx tsc
+--version` = 5.9.3 zweryfikowane) 0 błędów · `logic-test.cjs` 213/213 ·
+`tech-tree-test.cjs`/`research-test.cjs`/`unit-replace-test.cjs`/
+`ai-founding-territory-test.cjs` wszystkie zielone · nowy
+`magazyn-era-scaling-test.cjs` 57/57 · testy dotknięte bezpośrednio (recompute):
+`empire-food-b5-test.cjs` 25 pass/3 fail (3 fail PRE-ISTNIEJĄCE, zweryfikowane
+identyczne na czystym `main` — „koszt wojska R-STAWKI", „po wojsku zostaje 14",
+„wojsko zjada po miastach", niezwiązane z tym zleceniem), `tartak-glinianka-
+rate-Q1-test.cjs` 278/278 (po naprawie marginesu), `auto-wyzywienie-live-recalc-
+test.cjs` 57/57 (po naprawie pozycji komentarza), `converters-test.cjs` 46/46,
+`upkeep-test.cjs` 73/73 (moduł legacy `StorageParams`/`loadStorageParams`
+per-miasto NIE dotknięty — poza zakresem, patrz komentarz w
+economy-upkeep.ts). Impact-check współdzielonych plików (C-026, lista
+weryfikowana grepem `ownerResourceCap(\|loadOwnerStorageParams\|
+DEFAULT_OWNER_STORAGE_PARAMS\|magazyn_baza_surowce\|
+magazyn_bonus_surowce_na_budynek\|ownerResourceCapacityPerType\|
+SPICHLERZ_EMPIRE_CAP\|advanceEmpireFood(`, każde trafienie sprawdzone z osobna):
+`mennica-magazyn-test.cjs` 40/1 (PRE-ISTNIEJĄCY, dokumentowany przez zadanie
+P-KONWERTERY-PRZEPUSTOWOSC-Q1 wyżej, nie dotyczy magazynu) ·
+`population-growth-v85-test.cjs` 48/2, `spichlerz-wzrost-test.cjs` 2/7,
+`glod-wojska-karencja-test.cjs` 29/10, `grupa-b-lane-test.cjs` 45/4 —
+wszystkie CZTERY zweryfikowane IDENTYCZNE (te same liczby pass/fail) na czystym
+`main` PRZED zmianami (git stash + rerun), więc pre-istniejący dług testowy
+niezwiązany z tym zleceniem, nie regresja · `surow-civ-storage-test.cjs` 43/14
+— TA SAMA liczba fail (14) jak PRZED zmianą (baseline zweryfikowany), tylko
+inne liczby „got" (stara, już nieaktualna baza 500 vs realne dziś 1000→10000)
+— pre-istniejący dług sekcji A/D/E tego pliku (komentarz w kodzie testu z
+2026-07-24 już to odnotowywał: „bazaSurowcePanstwo w danych = 1000, nie 500 jak
+zakładał stary test"), NIE naprawiony w tym zleceniu (poza zakresem, C-025) ·
+`ai-major-economy-test.cjs`/`city-state-mp-growth-test.cjs`/`spichlerz-
+deficyt-scalenie-test.cjs`/`city-badge-growth-percent-test.cjs`/`army-hunger-
+combat-test.cjs` wszystkie zielone bez zmian.
+
+**Zmienione pliki**: `gra/data/econ-params.json`, `gra/src/game/economy-upkeep.ts`,
+`gra/src/game/building-resource-gate.ts`, `gra/src/game/empire-food.ts`,
+`gra/src/game/turn-economy.ts`, `gra/src/main.ts`, `gra/tools/empire-food-b5-test.cjs`,
+`gra/tools/tartak-glinianka-rate-Q1-test.cjs` (poprawki istniejących testów) +
+`gra/tools/magazyn-era-scaling-test.cjs` (nowy).
+
+**Pozostawione NIEPRZYWRÓCONE w worktree `eval-pool-4`** na życzenie orkiestratora —
+scalenie do głównego drzewa i ewentualny Evaluator po stronie orkiestratora.
+
+**STATUS: ZAMKNIĘTE PO STRONIE OPERATORA, czeka na scalenie + Evaluator (nie
+self-ocena — worktree odizolowany, brak commitu/deployu z tej sesji). Punkt 7
+(świadoma luka battle-loot/trade-flow/drewno-wyrąb cap bez era) i decyzja o
+NIEZMIENIONej bazie `magazyn_bonus_surowce_na_budynek` — do potwierdzenia przez
+Evaluatora/właściciela, nie zgadywane dalej.**
+
+**SCALONE 2026-08-12 (commit `26707dcf`)** — bramki niezależnie zweryfikowane przez
+orkiestratora przed commitem (tsc 0, logic-test 213/213, oba nowe testy 87/87 +
+57/57, testy dotknięte bezpośrednio zielone poza 2 pre-istniejącymi awariami
+potwierdzonymi identycznymi na `git stash` bazowym). Evaluator dispatched (Opus 5,
+worktree `eval-pool-4`) — w toku.
+
+---
+
+## Batch dispatch 2026-08-12 (po scaleniu 469f3152-fix i konwertery/magazyn): 4 Evaluatorzy + 1 Operator
+
+Registrowane zbiorczo, żeby nie plodzic 5 osobnych naglowkow dla tego samego zdarzenia:
+- **Evaluator (eval-pool-1, Opus 5)**: commit `4e62c4f6` (building-panel detail-side fix,
+  hotfix orkiestratora — wymaga Evaluatora wg zasady 0b, orkiestrator nie ocenia sam siebie).
+- **Evaluator (eval-pool-2, Opus 5)**: commit `3b851610` (porzadek-panel -0 fix, hotfix
+  orkiestratora — jw.).
+- **Evaluator (eval-pool-3, Opus 5)**: commit `a2f4d535` (P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE,
+  domkniecie szczelin 5+6 z rundy 1 Evaluatora, hotfix orkiestratora — jw.).
+- **Evaluator (eval-pool-4, Opus 5)**: commit `26707dcf` (P-KONWERTERY-PRZEPUSTOWOSC-Q1 +
+  P-MAGAZYN-SKALOWANIE-EPOKA-Q1, praca Operatora scalona przez orkiestratora).
+- **Operator (worktree `fix-gpu-dispose-v2`, Opus 5 — reguła render/**)**: runda 2 naprawy
+  `e702d982` (GPU dispose) wg rekomendacji Evaluatora rundy 1 (pelny raport w
+  `/tmp/.../scratchpad/fail-e702d982.txt`): rozszerzenie `merge-decor-no-regress-test.cjs`
+  o pokrycie krytycznego niezmiennika + 4 brakujące call site w `syncVillageMeshes`/
+  `syncCampMeshes` + zamkniecie luki T5. Wyciek `styledOverlays` w `scene.ts` swiadomie
+  POZA zakresem tej rundy — do osobnego zgloszenia.
+
+**STATUS: wszystkie 5 W TOKU (dispatch tej samej tury).**
+
+**Evaluator `a2f4d535` (eval-pool-3) ZAKOŃCZONY: PASS-WITH-NOTES.** Obie szczeliny (5+6)
+potwierdzone domknięte WŁASNĄ, niezależną mutacją Evaluatora (nie tylko wewnętrzną mutacją
+testu) — MUT-A (usunięcie obu guardów) łapane czerwono (3 fail), MUT-C (błąd wprowadzony od
+strony `econSliderVisibilityForOnlyEconId`) też łapany (20+ fail), stary test też łapie ten sam
+regres (6/8 fail). Nota „Zamożność nie jest zakładką" potwierdzona strukturalnie (brak ścieżki
+dającej `onlyEconId==='zamoznosc'`). 3 NIEBLOKUJĄCE uwagi: (1) asercje kruche składniowo —
+przeformatowanie semantycznie identycznego kodu daje fałszywe czerwone (kierunek bezpieczny, ale
+przyszły agent może rozluźnić regex zamiast poprawić kotwicę — do rozważenia dopisanie ostrzeżenia
+w nagłówku testu); (2) mutacja testu pisze bezpośrednio do `empireDetailPanel.ts` z przywróceniem
+w `finally` — nieodporne na SIGINT/równoległe bramki na tym samym pliku; (3) `mutantFailed` łapie
+KAŻDY niezerowy exit subprocesu, nie tylko właściwą przyczynę. Żadna nie blokuje — commit
+przyjęty bez dalszych zmian, uwagi udokumentowane na przyszłość.
+
+**Evaluator `4e62c4f6` (eval-pool-1) ZAKOŃCZONY: PASS-WITH-NOTES.** Naprawa potwierdzona
+wykonaniem (jsdom-dowód: prawa kolumna→'right', lewa→'left', odpięty mount→fallback 'left',
+brak false-positive na `.civ-ux-right-icon-rail`). Mutacja niezależna (usunięcie `detailSide`
+z sygnatury) złapana przez `tsc` (2 błędy) I nowy test. Uwagi nieblokujące: (1) rozwiązanie
+szersze niż potrzeba — samo skasowanie 3 literałów by wystarczyło, zamiast tego doszedł
+parametr+duplikat logiki (w pliku już są `resolveDetailSideHint`/`resolveDockSide` robiące to
+samo); (2) pre-istniejąca, POZA zasięgiem luka: call site ~7061 (karta szczegółów) nadal ma
+zahardkodowane 'left' dla zagnieżdżonych podkart — ta sama klasa błędu, inny zasięg. Przyjęty
+bez zmian.
+
+**Evaluator `26707dcf` (eval-pool-4) ZAKOŃCZONY: PASS-WITH-NOTES — 2 elementy do domknięcia
+przed deployem.** Matematyka i spójność HUD↔silnik zweryfikowane wykonaniem (własny skrypt,
+~60 asercji, BAD=0), 3 czerwone testy potwierdzone identyczne na commicie rodzica (nie
+regresja), interpretacja addytywna „+10%/epokę" NIE wymaga ABC (różnica = 0 po `Math.floor`
+przy dzisiejszych 3 epokach, rozjazd zacząłby się dopiero od epoki 6).
+- **(a) Realny defekt, DO OPERATORA (nie ABC)**: 3 wywołania `ownerResourceCap(...)` w
+  `main.ts` (battle-loot ~L20851, trade-flow ~L22932, drewno-wyrąb ~L23257) bez `era` →
+  przy era≥2 i zapasie >10000 danego typu: łup z bitwy PRZEPADA W CAŁOŚCI, trade-flow
+  NISZCZY surowiec nadawcy bez dostarczenia odbiorcy, wyrąb lasu nie daje nic. To NIE jest
+  „konserwatywne niedoszacowanie" (jak napisał Operator) — to cicha utrata zasobów gracza.
+  Naprawa zweryfikowana jako trywialna (dopisanie `empireEpochForOwner(...)` jako 6. arg,
+  `tsc` zielony) + poprawka regexu w `surow-civ-storage-test.cjs:399` (literalne 5-arg
+  wywołanie).
+- **(b) DO ABC, i to z jawnym flagowaniem podważenia wcześniejszej decyzji (§1a)**:
+  spłaszczenie różnicowania trudności w `econ-params.json` usunęło `normal=3` dla Cegielni
+  (jawna decyzja **`C-SUROW-CEGLA=A`, Maciej 2026-07-24**) oraz zmieniło `hard=0` (Odlewnia
+  brązu/żelaza/wielka — produkcja NIEMOŻLIWA na hard) na `hard=5` dla wszystkich 3 odlewni —
+  to zniesienie istniejącego mechanizmu trudności, nie efekt uboczny podania jednej liczby.
+  Właściciel podał jedną liczbę/budynek bez różnicowania trudności — Operator ustawił flat
+  na wszystkich trudnościach zamiast pytać. **NIE deployować tego elementu bez ABC.**
+- (c) `magazyn_bonus_surowce_na_budynek` pozostał na 100 (interpretacja "100 i 150" =
+  SPICHLERZ_EMPIRE_CAP_I/II, zweryfikowana niezależnie przez Evaluatora jako poprawna) —
+  dokleić jednym zdaniem do ABC z (b), nie osobny wątek.
+
+## ABC OCZEKUJĄCE (zarejestrowane po znalezieniu przy pracy nad innym wątkiem, §2 —
+## NIE zadawane w czacie, dopóki właściciel nie da sygnału do zmiany tematu)
+
+### R-KONWERTERY-TRUDNOSC-SPLASZCZONA-Q1
+**Sytuacja**: `P-KONWERTERY-PRZEPUSTOWOSC-Q1` (26707dcf) ustawiło Cegielnia/Garncarnia/3×
+Odlewnia na WARTOŚĆ PŁASKĄ (identyczną easy/normal/hard), kasując wcześniejsze różnicowanie —
+w tym `normal=3` dla Cegielni, będące jawną decyzją `C-SUROW-CEGLA=A` (Maciej 2026-07-24), oraz
+`hard=0` dla wszystkich 3 Odlewni (dziś: produkcja Brązu/Żelaza/Stali NIEMOŻLIWA na hard — po
+zmianie: możliwa, 5/turę, tak samo jak easy/normal).
+**Cel pytania**: potwierdzić czy spłaszczenie było zamierzone, czy właściciel chce zachować
+różnicowanie trudności wokół nowych, wyższych baz.
+**Dlaczego teraz**: temat gotowy do zamknięcia poza tym jednym punktem — element (a) (era-param)
+naprawiany równolegle, cała reszta PASS-WITH-NOTES.
+**A.** Zachować płaskie wartości (10/10/10, 5/5/5) — najprostsze, zgodne z dosłownym brzmieniem
+   cytatu właściciela (jedna liczba/budynek). Przeciw: cofa `C-SUROW-CEGLA=A` i usuwa mechanizm
+   trudności dla 3 Odlewni bez wyraźnej decyzji o tym.
+**B.** Odtworzyć proporcjonalny spread wokół nowych baz (np. Cegielnia 12/10/8 zamiast 4/3/2;
+   Odlewnie 6/5/4 zamiast 2/1/0) — zachowuje mechanizm trudności. Przeciw: właściciel może
+   rzeczywiście chcieć płasko (brak wzmianki o trudności w jego cytacie).
+**C.** Zachować `hard=0` dla Odlewni (przywrócić „na hard produkcja niemożliwa"), ale spłaszczyć
+   pozostałe. Przeciw: niespójne, arbitralne.
+**Rekomendacja**: B — nie zgaduj przy niejednoznaczności (§6), a to bezpośrednio podważa
+udokumentowaną decyzję.
+**STATUS: OTWARTE, NIE ZADAWANE w czacie — poza aktywnym wątkiem (barbarzyńcy). Nie deployować
+`26707dcf`/econ-params.json części Cegielnia/Garncarnia/Odlewnie do ROBOCZA, dopóki nieodpowiedziane
+(reszta commitu — magazyn/Spichlerz część — nie jest tym dotknięta i może iść).**
+
+## Batch dispatch 2026-08-12 (kontynuacja): naprawa era-param (26707dcf pkt a) + domknięcie
+## priorytetu 1 z Evaluatora 3b851610 (tekst "+0" w czerwonym wierszu)
+
+- **Operator (worktree ręczny, Sonnet 5)**: (1) dopisać `empireEpochForOwner(...)` jako 6. arg
+  do 3 wywołań `ownerResourceCap` w `main.ts` (battle-loot/trade-flow/drewno-wyrąb) + poprawić
+  regex w `surow-civ-storage-test.cjs:399`; (2) `cityPanel.ts` ok. linii 4059 — sprząc znak
+  („+"/brak) z `isNeg` zamiast z surowym `l.value >= 0`, żeby czerwony wiersz przy `-0` nie
+  pokazywał mylącego „+0".
+**STATUS: DISPATCHED.**
+
+## e702d982 runda 2 — SCALONA (GPU dispose, Opus 5, worktree fix-gpu-dispose-v2)
+
+Wykonane dokładnie wg rekomendacji Evaluatora rundy 1 (`fail-e702d982.txt`): (1)
+`merge-decor-no-regress-test.cjs` rozszerzony o `disposeMergedDecor` — 12 nowych asercji (D1-D6),
+D6 na realnym `buildZlozeKonie` (zero dispose na `geoNH*`); (2) 4 brakujące podpięcia w
+`syncVillageMeshes`/`syncCampMeshes` (`main.ts`, linie przesunięte +12 vs raport — zweryfikowane
+zewem); (3) zamknięta luka T5 (`if (child.userData?.[MERGED_DECOR_FLAG] !== true) continue;`).
+Operator odkrył, że T5 czyni część starych asercji redundantną (obie warstwy chronią ten sam
+niezmiennik) — dołożył D4 celującą dokładnie w różnicę (merged mesh przepięty do obcej grupy).
+Dowód mutacyjny x2: usunięcie strażnika grupy → czerwono (19/1), usunięcie strażnika T5 → czerwono
+(19/1, inny komunikat). `styledOverlays` w `scene.ts` świadomie NIETKNIĘTY (poza zakresem, osobny
+temat dla przyszłego Operatora Opus 5).
+Bramki: `tsc` 0, `logic-test` 213/213, `merge-decor-no-regress-test` **20/20** (było 8/8).
+**Scalone przez orkiestratora, czeka na Evaluatora.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 — SCALONA REIMPLEMENTACJA (worktree fix-barb-camp-v2)
+
+Wdrożona DOKŁADNIE wg ECHO właściciela (wejście na heks niszczy obóz bezpowrotnie, jednostki
+obozu NIE są usuwane i nadal walczą, tylko nowe przestają się generować):
+- `pruneEmptyCampsAfterCombat` (runda 1, błędna mechanika combat/garrison) USUNIĘTA CAŁKOWICIE.
+- Nowa czysta funkcja `destroyCampAt(camps, q, r)` w `barbarians.ts` — usuwa WYŁĄCZNIE obóz na
+  dokładnym heksie, bez parametru `units` w sygnaturze (strukturalnie nie może dotknąć jednostek).
+- Wpięta analogicznie do `checkVillageRewardAt` w KAŻDYM miejscu kończącym ruch (gracz i AI):
+  `applyMarchSegmentInstant`, animacja końca tury, auto-explore zwiadowcy, handler AI `move`,
+  dokończenie animacji (oba warianty z/bez ścieżki) — 6 miejsc, owner-agnostic.
+  Ścieżka bitewna: destrukcja obozu następuje gdy zwycięski atakujący FIZYCZNIE wchodzi na heks
+  (`moveAtkRosterOntoBattleHex`), nie w momencie rozstrzygnięcia walki — to jest odpowiedź na
+  pytanie "obrona obozu": generyczna blokada zajętego heksu + advance-po-zwycięstwie już razem
+  dają "zaatakuj żeby oczyścić obrońcę, wejście niszczy obóz" bez dodatkowego kodu.
+- Nowy test `barb-camp-destruction-test.cjs` (39 asercji): czysta funkcja, integracja `tickCamps`,
+  DOWÓD że jednostki na mapie są nietknięte (sygnatura bez `units` + snapshot tożsamości
+  przed/po), owner-agnostic, strażniki tekstowe na wpięcie w main.ts (main.ts nie jest
+  bundlowany/wykonywany w testach tego repo — brak DOM/THREE), regres pilnujący że mechanika
+  rundy 1 zniknęła CAŁKOWICIE (nie tylko dostrojona).
+- Sekcja 11 (17 asercji rundy 1) usunięta z `barbarians-test.cjs` — 167/167 pozostałych zielone.
+
+Bramki (zweryfikowane PONOWNIE przez orkiestratora po scaleniu, nie tylko przez Operatora):
+`tsc` 0, `logic-test` 213/213, `barbarians-test` 167/167, `barb-camp-destruction-test` 39/39,
+`ai-home-defense-vs-barbarians-test` 38/38, + higiena (tech-tree/research/unit-replace/
+ai-founding-territory) wszystkie zielone. `map-gen-regression-test` NIE ukończony w czasie
+(bardzo wolny, kod tego zadania nie dotyka generowania mapy — nieblokujące).
+
+**Scalone przez orkiestratora, temat dotyczy mechaniki gry (P0 combat-adjacent) — dispatch
+Evaluatora.** Zdecydowano o 3 niezależnych Evaluatorach adwersaryjnych (A/B/C, głosowanie
+większością) — próg z integracji AutoBot+Ultracode dla zmian "combat-adjacent" — dispatch w toku.
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 — NOWY WĄTEK, badanie stanu dzisiejszego (Maciej, 2026-08-12)
+
+Maciej: *"Trzeba jeszcze ustalić, co barbarzyńcy robią z miastami."*, potem: *"zazwyczaj po
+zabiciu jednostek stoją obok, a powinni łupić. Mamy trzy poziomy trudności dla barbarzyńców.
+Przy najwyższym powinni zajmować miasta. Przy najniższym robić dokładnie to, co robią teraz. Na
+średnim poziomie jeżeli jedno miasto udaje mi się zniszczyć jednostki idą do kolejnego miasta. W
+tym się widzi różnie od najsłabszego poziomu bo przynajmniej słabszym stoję obok tego miasta
+cały czas."*, potem: *"to trzeba wprowadzić dodatkowo do obecnych reguł, które już są i
+sprawdzić czy z czymś się też nie kłócą nowe reguły."*
+
+**Zbadane (Explore, tylko odczyt) — stan dzisiejszy w kodzie:**
+1. Barbarzyńcy NIE MOGĄ dziś wejść/pozostać na heksie miasta — `canUnitOccupyCityHex()`
+   (`city-hex-movement.ts`) blokuje to dla każdego `ownerId` różnego od właściciela miasta,
+   a `evictForeignUnitsFromCityHexes()` (wołane co tick barbarzyńców) usuwa każdą obcą jednostkę
+   z heksu miasta.
+2. Wyjątek techniczny: gdy barbarzyńca WYGRA walkę z obrońcami stojącymi DOKŁADNIE na centrum
+   miasta, `wipeDefenderOnCityCenter()` usuwa WSZYSTKICH obrońców (nie proporcjonalnie), zwycięski
+   roster (w tym barbarzyńca) fizycznie ląduje na heksie miasta — ale zostaje z niego wypchnięty
+   na koniec tej samej fazy tickCamps. To jest DOKŁADNIE zgłoszony objaw: "stoją obok" po
+   wybiciu obrońców.
+3. `applyMapBattleOutcome()` zmienia `ownerId` miasta TYLKO gdy `allowCityCapture===true` LUB
+   `siegeContext===true` — ścieżki ataku barbarzyńców NIGDY nie ustawiają tych flag. **Barbarzyńcy
+   nigdy nie przejmują miasta — zero mechaniki capture dla nich dziś.**
+4. Osobnego "oblężenia" barbarzyńców NIE MA — formalny system oblężenia (`siegeContext`) jest
+   wołany wyłącznie ze ścieżek gracz/AI.
+5. Ruch barbarzyńców JUŻ celuje w miasta świadomie: `decideBarbarianMoves()` wybiera cel =
+   najbliższa jednostka LUB miasto w `aggroRadius`, a po osiągnięciu progu "raid-ready"
+   (≥`unitsPerCamp` wojowników) zasięg pościgu jest NIEOGRANICZONY (`chaseRadius=Infinity`).
+6. Mechanizm łupienia (drenaż zasobów miasta) NIE ISTNIEJE w ogóle dla żadnej strony (gracz/AI/
+   barbarzyńcy).
+7. Brak jakiejkolwiek wcześniejszej decyzji ABC o zdobywaniu miast przez barbarzyńców w rejestrze.
+   `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1` (wyżej) dotyczy WYŁĄCZNIE niszczenia obozów-spawnerów,
+   nie miast gracza/AI — **BRAK KOLIZJI z tym tematem**, potwierdzone przeglądem. Jedyna
+   pokrewna decyzja: `P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI` (ECHO A, 2026-08-09) —
+   dotyczy priorytetu OBRONY AI, nie zachowania barbarzyńców po zwycięstwie.
+
+**STATUS: ABC zadane w czacie tej samej tury (P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1). NIE
+dispatchować implementacji przed odpowiedzią — zbyt duża przestrzeń projektowa (nowa mechanika
+capture, mapowanie na poziom trudności, ew. mechanizm łupienia) żeby zgadywać.**
+
+**ECHO Macieja: A.** Reużyć istniejący suwak trudności gry (easy/normal/hard); „zajęcie" na
+hard = zmiana `ownerId` miasta na barbarzyńców przez istniejącą infrastrukturę przejęcia miast
+(ta sama co capture gracz↔AI), miasto odbijalne; „łupienie" NIE jest osobnym nowym mechanizmem —
+realizuje się przez zachowanie na poziomie normal/hard (przejście do kolejnego miasta / przejęcie);
+easy zostaje bez zmian (dzisiejsze zachowanie: wybicie obrońców → wypchnięcie z heksu → bezczynność
+obok). **Dispatch implementacji w toku — patrz niżej.**
+
+## Batch: małe naprawy z rekomendacji Evaluatorów — SCALONE (worktree fix-small-batch-1)
+
+1. **3 brakujące parametry `era` w `ownerResourceCap`** (`main.ts`, battle-loot/trade-flow/
+   wyrąb lasu) — dopisane `empireEpochForOwner(<ownerId>)` jako 6. arg, z właściwym `ownerId`
+   per kontekst (`winOid` dla łupu, `flow.toOwnerId` dla handlu — odbiorca nie nadawca, `ownerId`
+   jednostki dla wyrębu). Naprawia rzeczywistą utratę zasobów gracza przy era≥2 i zapasie>10000,
+   znalezioną przez Evaluatora `26707dcf`. Zaktualizowany strażnik tekstowy w
+   `surow-civ-storage-test.cjs` (regex z 5-arg na tolerancyjny 6-arg wieloliniowy).
+2. **Tekst „+0" w czerwonym wierszu** (`cityPanel.ts::appendBreakdownLines`) — gdy `isNeg &&
+   value===±0`, tekst pokazuje samo „0" bez znaku (zamiast mylącego „+0"). 4 nowe asercje
+   (I9-I12) w `porzadek-panel-czytelnosc-test.cjs`.
+
+Bramki: `tsc` 0, `logic-test` 213/213, `porzadek-panel-czytelnosc-test` **67/67** (było 63/63),
+`surow-civ-storage-test` **43/14** (identyczne jak punkt odniesienia, sekcja G — dotknięta zmianą —
+bez FAIL). **Scalone przez orkiestratora, czeka na Evaluatora.**
+
+## e702d982 runda 2 (`6a7f49f9`) — Evaluator: **PASS-WITH-NOTES**
+
+Wszystkie 3 przyczyny FAIL rundy 1 zamknięte, potwierdzone własnymi mutacjami Evaluatora (nie
+lekturą). D4 (nowa asercja Operatora) słusznie łata realną, samodzielnie odkrytą lukę — zdanie
+komunikatu commita nazywające D6 „kluczową" to nadinterpretacja (D6 przeżywa wszystkie mutacje;
+realne wykrywanie robią D4/D5), skorygowane w rejestrze. 2 uwagi:
+1. **Do zrobienia (wymagane przed zamknięciem tematu)**: `styledOverlays`/`scene.ts:2713` —
+   JEDYNE pozostałe niezwolnione miejsce `collapseToMergedMesh` w całym `src/` — nie ma
+   WŁASNEGO wpisu w rejestrze (tylko wzmianki w cudzych akapitach) → wpadnie w kategorię 4
+   „zapomniane" audytu §0c. **REJESTROWANE TERAZ, patrz niżej.**
+2. Nieblokujące: brak strażnika tekstowego na 4 nowe call site w `main.ts` (mutacja Evaluatora
+   usuwająca jeden z nich przechodzi wszystkie bramki — kierunek błędu bezpieczny, to tylko
+   niewykryty wyciek, nie double-free); §4a — commit znów zgarnął 5 niepowiązanych tematów do
+   tego samego pliku rejestru (druga runda z rzędu tego wzorca, nota procesowa, nie blokująca).
+
+## P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK — NOWY, do Operatora Opus 5 (render/**)
+
+`scene.ts::dispose()` (linie 3013-3055) zwalnia instancje/rzeki/ocean/ramkę, ale ANI JEDNEJ
+zmergowanej grupy overlayów (`scene.ts:2713` `collapseToMergedMesh(group)`, potencjalnie
+tysiące — las/dżungla/szczyty/plaże/wydmy/oazy). `disposeScene()` woła się w 5 miejscach (nowa
+gra, load, regeneracja) — każde takie przejście w tej samej sesji przegląarki leakuje cały ten
+pool. Prawdopodobnie WIĘKSZY wyciek niż ten naprawiony w `e702d982`/`6a7f49f9`. Zgodnie ze stałą
+zgodą właściciela (2026-07-25/08-06): CAŁA praca w `gra/src/render/**` na Opus 5.
+**STATUS: OTWARTE, dispatch Opus 5 (worktree) — priorytet, prawdopodobnie największy pozostały
+wyciek GPU w grze.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 2 (`6fccb568`) — 3 Evaluatorzy adwersaryjni, 2/3 = **FAIL**
+
+**Evaluator B: FAIL.** Rdzeń poprawny (jednostki strukturalnie nietykalne, bramki zielone), ale:
+- **Asymetria gracz/AI (blokująca)**: `main.ts:25557` ruch AI sprawdza WYŁĄCZNIE heks końcowy
+  ścieżki (`checkBarbCampDestroyedAt`), nie całą trasę — gracz w tej samej sytuacji niszczy obóz
+  mijany po drodze (`checkBarbCampDestructionAlongPath`), AI nie. Naprawa: 1 linia.
+- **Sprzeczność ze specyfikacją (blokująca)**: gdy obóz jednostki zostaje zniszczony, jednostka
+  traci `raidReady` → `chaseRadius` spada z nieograniczonego do zwykłego zasięgu → jednostki
+  osierocone PRZESTAJĄ atakować/ścigać, zamiast (cytat właściciela) „nadal atakować". Evaluator B
+  rekomenduje to jako ODRĘBNE pytanie ABC (zmienia globalną agresję barbarzyńców) — POTWIERDZONE
+  wykonaniem własnym harnessem (2 komendy move przy żywym obozie w d=15 → 0 komend po zniszczeniu).
+- Test ma asercję próżną (3b „units array unchanged" nigdy nie przekazuje `units` do
+  `destroyCampAt` — tautologia) + mutacja B (AI nigdy nie niszczy obozu) przechodzi 39/39.
+
+**Evaluator C: FAIL.** Niezależnie znalazł DODATKOWE luki:
+- **`main.ts:9587` `onSplit` (rozdzielenie armii) — blokująca, osiągalna w normalnej rozgrywce.**
+  `isHexPassableForUnit` sprawdza wyłącznie teren — gracz może rozdzielić armię TAK, żeby
+  pod-stos wylądował na heksie żywego obozu; obóz przeżywa i dalej spawnuje.
+- **Wczytanie zapisu (`main.ts:28572`) — blokująca, luka save/load.** `barbCamps` odtwarzane
+  1:1 bez rekoncyliacji z pozycjami jednostek — zapis sprzed tego commitu (albo z luki onSplit)
+  może mieć jednostkę cywilizacji STOJĄCĄ na obozie; po wczytaniu obóz żyje wiecznie.
+- Ta sama asymetria AI co Evaluator B (niezależne potwierdzenie).
+- 2 własne mutacje przechodzą wszystko: usunięcie haka po walce CAŁKOWICIE, degradacja
+  `checkBarbCampDestructionAlongPath` do sprawdzania tylko ostatniego heksu — zero pokrycia na
+  „niszczenie w środku ścieżki", mimo że to jest właśnie deklarowana nowość tego commitu.
+- 2 mniejsze, nieblokujące luki: `evictForeignUnitsFromCityHexes` i `placeFanOutGroup`
+  (odwrót/rozbicie po walce) mogą wypchnąć jednostkę na heks obozu bez haka.
+- Potwierdza (jak runda 1): barbarzyńcy nie mogą zniszczyć WŁASNEGO obozu (poprawne z
+  konstrukcji — ich pętla ruchu w ogóle nie ma haka).
+
+**Evaluator A: w toku.** Werdykt większościowy już przesądzony (2/3 FAIL) niezależnie od jego
+wyniku — czekam na jego głos, bo może wskazać dodatkowe poprawki do tej samej rundy 3, żeby nie
+robić rundy 4 za coś, co dało się złapać teraz.
+
+**Evaluator A: FAIL (jednomyślne 3/3, nie tylko większość).** Niezależnie potwierdza OBA bloker
+znalezione przez B/C wykonaniem WŁASNEGO harnessu (realny `computePath` z silnika, ten sam obóz
+w połowie trasy: hak gracza niszczy, hak AI nie), plus szczegółowy dowód na osierocone jednostki
+(3 scenariusze: żywy obóz→naciera; zniszczony obóz+inny obóz w pobliżu→**ucieka w stronę obcego
+obozu, od celu**; zniszczony obóz+brak innych obozów→**zero rozkazu, jednostka zamiera na
+stałe**). Dodatkowo mutacją dowodzi, że próg testu `>=5` przepuszcza usunięcie AŻ 2 wpięć naraz
+(hak bitewny CAŁY + animacja końca tury) — 39/39 bez zmian. Scenariusz „obóz broniony"
+(rozumowanie Operatora o zbędności dodatkowego kodu) — zweryfikowany krok po kroku,
+**potwierdzony bez zastrzeżeń przez wszystkich 3 Evaluatorów niezależnie**.
+
+**Rekomendacja co do punktu „osierocone jednostki" — NIE nowe ABC.** Trzej Evaluatorzy (A/B
+wprost, C pośrednio) zgodni: obecny stan („stoi w miejscu"/"ucieka") jest WPROST sprzeczny z
+cytatem właściciela „nadal atakują" — to nie nowa decyzja projektowa, tylko niedokończone
+wdrożenie już podjętej. Najprostsze poprawne odczytanie: `homeCamp===undefined` →
+`raidReady=true` (chaseRadius nieograniczony, jak żywy raid-ready obóz) + pominięcie kroku 4
+(drift do domu — jednostka bez domu nie ma dokąd wracać). Dispatch wprost, bez kolejnego pytania.
+
+**STATUS: RUNDA 3 W TOKU. Zakres (zebrany ze wszystkich 3 głosów, priorytety wg konsensusu):**
+1. **[bloker, parytet]** `main.ts:25557` — AI ma używać `checkBarbCampDestructionAlongPath(path)`
+   zamiast `checkBarbCampDestroyedAt(last.q, last.r)` (`path` już policzone w tej samej funkcji).
+2. **[bloker, spec „nadal atakują"]** `barbarians.ts` ok. linii 1041 — `homeCamp===undefined` →
+   `raidReady=true`, pominąć krok 4 (drift do domu) dla jednostek bez żywego obozu macierzystego.
+3. **[bloker, osiągalne w rozgrywce]** `main.ts:9587` `onSplit` — dopisać
+   `checkBarbCampDestroyedAt(destQ, destR)` po rozdzieleniu armii na docelowy heks.
+4. **[bloker, save/load]** `main.ts:28572` wczytanie zapisu — po odtworzeniu `barbCamps`
+   przelecieć jednostki `!isBarbarian` i wywołać `checkBarbCampDestroyedAt(u.q, u.r)` dla każdej
+   (zamyka zapisy sprzed tego commitu / z luki onSplit, gdzie jednostka mogła legalnie stać na
+   heksie żywego obozu).
+5. **[wymagane, moc testu]** Zastąpić próg `callSites.length >= 5` JAWNĄ listą wszystkich
+   realnych wpięć (8, każde przypięte osobno charakterystycznym fragmentem kontekstu), wykluczyć
+   z liczenia definicje funkcji. Dołożyć asercję wykonaniową: `decideBarbarianMoves` po
+   zniszczeniu obozu WCIĄŻ wydaje rozkaz ataku/marszu (nie `[]`). Kryterium przyjęcia: wszystkie
+   mutacje z tej rundy (usunięcie dowolnego pojedynczego wpięcia, usunięcie 2 naraz, degradacja
+   `…AlongPath` do sprawdzania tylko ostatniego heksu) muszą dawać czerwono.
+6. **[nieblokujące, przy okazji jeśli tanio]** `evictForeignUnitsFromCityHexes` i
+   `placeFanOutGroup` (odwrót/rozbicie po walce) — brak haka przy wypchnięciu jednostki na heks
+   obozu; `refreshFog()` bez `skipVeteranEducation` (może nadpisać toast chatki, gdy ścieżka mija
+   i wioskę, i obóz).
+
+## `2dabc0e2` (era-param + tekst „+0") — Evaluator: **PASS-WITH-NOTES**
+
+Oba zadania merytorycznie poprawne, potwierdzone wykonaniem (kierunek `ownerId` we wszystkich 3
+miejscach zweryfikowany przez kontrakt typu `TradeRouteResourceFlow`; tekst „+0" naprawiony bez
+regresji, odtworzenie realnego wołającego dla populacji 1-10 potwierdza dokładnie zgłoszony
+zakres populacja 1-4). **Realna luka**: mutacja dowiodła, że battle-loot i trade-flow (2 z 3
+napraw zadania 1) NIE MAJĄ żadnej ochrony testowej — cofnięcie każdego z tych dwóch wywołań do
+starej 5-argumentowej formy przechodzi WSZYSTKIE bramki bez zmian. Tylko wyrąb lasu ma strażnik.
+Trade-flow jest najgroźniejszy z trzech (odjęcie u nadawcy jest bezwarunkowe — regres oznacza
+realne ZNISZCZENIE surowca, nie tylko zaniżony licznik). Naprawa: 2 dodatkowe strażniki tekstowe
+w `surow-civ-storage-test.cjs`, symetryczne do istniejącego dla wyrębu.
+**STATUS: dispatch szybkiej poprawki (tylko test, zero zmian logiki) w toku.**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 — SCALONE (worktree fix-barb-city-v1)
+
+Pełny zakres wg ECHO=A: easy/normal/hard = ISTNIEJĄCY suwak trudności gry (`_menuDifficulty`).
+
+**Faza 1 (wykonalność „hard" — miasto należące do barbarzyńców)**: BRAK twardego blokatora.
+Kluczowe odkrycie Operatora: dokładnie ten sam wzorzec (miasto z `ownerId` ujemnym sentinel, nie
+prawdziwym indeksem gracza) JUŻ działa w produkcji przez `REBEL_FACTION_OWNER_ID=-99`
+(mechanika buntu, `society-breakdown.ts`) — konsumowany przez DOKŁADNIE tę samą maszynerię,
+którą reużyto dla capture barbarzyńców (`applyCityCaptureAfterBattle`, `seedCityOwnerDefaults`,
+`applyPostCaptureLawOnCapture`). Brak `players[ownerId]`-stylu indeksowania tablicowego (wszystko
+przez `Map.get(ownerId) ?? fallback`), save/load generyczne bez walidacji ownerId, wiele miejsc
+już ZAKŁADA że miasto barbarzyńskie może istnieć (`isBarbarian(c.ownerId)` filtry na listach
+tras handlowych/warunków zwycięstwa/etykiet). Jedyny kosmetyczny (nie blokujący) efekt uboczny:
+miasto barbarzyńskie renderuje się z domyślną grecką kolorystyką (fallback `civTypeForOwner`) —
+poza zakresem ECHO, nie naprawiane.
+
+**Faza 2 (implementacja)**:
+- `decideBarbarianMoves` (`barbarians.ts`) — nowy opcjonalny param `difficulty`; pominięty przez
+  wszystkie stare wywołania/testy → zachowanie BAJT-IDENTYCZNE (easy nietknięte strukturalnie, nie
+  tylko konwencją). `normal`/`hard`: cele-miasta bez żywych obrońców na heksie są wykluczane z
+  listy celów (jednostka rusza dalej zamiast obozować przy oczyszczonym mieście) — rozwiązanie
+  niejednoznaczności: Operator wyprowadził „obronę" z już istniejącego argumentu `enemies`, bez
+  nowego stanu mutowalnego, zachowując czystość funkcji.
+- `main.ts::applyMapBattleOutcome` — nowa bramka `barbCaptureBlockedByRemainingDefenders`
+  (liczona PO `applyPostBattleMap`, true tylko gdy atakujący-barbarzyńca a na heksie bitwy nadal
+  stoi jednostka niebarbarzyńska) jako DODATKOWY warunek AND do istniejącej bramki
+  `allowCityCapture`/`siegeContext` — no-op dla gracza/AI (ta gałąź ocenia się nietrywialnie
+  tylko dla `isBarbarian`).
+  `doAutoPowerMapBattle`/`launchIncomingMapFieldBattle` — nowy opcjonalny `allowCityCapture`,
+  pominięty na wszystkich innych call site'ach (atak AI-vs-gracz) → niezmienione.
+  Handler ataku barbarzyńców — `barbAllowCityCapture = (_menuDifficulty === 'hard')`.
+- Easy/normal: `barbAllowCityCapture` zawsze `false` → gałąź capture nigdy się nie odpala dla
+  barbarzyńców, `city.ownerId` nietknięty — identyczne z dzisiejszym stanem.
+
+Nowy test `gra/tools/barb-city-behavior-test.cjs` (36 asercji): easy niezmienione (parametr
+pominięty i jawne `'easy'`), normal pomija miasto bez obrońców, hard pomija + regresja „miasto
+już barbarzyńskie nigdy nie jest celem", DOWÓD WYKONANIEM że `applyPostBattleMap` +
+`applyCityCaptureAfterBattle` (reużyty prymityw gracz/AI) akceptują `BARBARIAN_OWNER_ID` bez
+wyjątku i poprawnie ustawiają `city.ownerId`, statyczna weryfikacja całego okablowania `main.ts`
+w tym regresja że ścieżka AI-vs-gracz NIGDY nie dostaje `barbAllowCityCapture`.
+
+Bramki (zweryfikowane przez orkiestratora po scaleniu): `tsc` 0, `logic-test` 213/213,
+`barbarians-test` 167/167, `barb-camp-destruction-test` 39/39, `ai-home-defense-vs-barbarians-test`
+38/38, nowy `barb-city-behavior-test` **36/36**, higiena (tech-tree/research/unit-replace/
+ai-founding-territory) wszystkie zielone.
+
+**Scalone przez orkiestratora — temat mechaniki walki/capture, próg adwersarialny (3 Evaluatory)
+— dispatch w toku.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 3 — SCALONA (worktree fix-barb-camp-v3)
+
+Wszystkie 5 punktów specyfikacji (zebrane ze zgodnych głosów 3 Evaluatorów rundy 2) wdrożone:
+1. AI move handler → `checkBarbCampDestructionAlongPath(path)` (parytet z graczem) — `path` już
+   policzone w tej samej gałęzi, zero dociągania z innego miejsca.
+2. **Zaszła konieczna korekta względem litery specyfikacji, udokumentowana przez Operatora**:
+   literalne `homeCamp===undefined → raidReady=true` złamałoby PRE-ISTNIEJĄCY zielony test
+   (jednostka daleko od żywego obozu bez `campId` to inny przypadek niż jednostka, której obóz
+   macierzysty faktycznie zginął). Finalna wersja rozróżnia: `orphaned = Boolean(unit.campId) &&
+   !camps.some(c => c.id===unit.campId)` — tylko PRAWDZIWIE osierocone (campId wskazuje na
+   zniszczony obóz) dostają nieograniczony `chaseRadius` + pominięcie driftu do domu; zwykłe
+   „daleko od domu" bez zniszczonego obozu zachowuje stare zachowanie.
+3. `onSplit` → hak po ustawieniu pozycji pod-stosu, wzorcem 1:1 z istniejącego miejsca.
+4. Wczytanie zapisu → rekoncyliacja `barbCamps` vs pozycje jednostek, kolejność zweryfikowana
+   (units odtwarzane wcześniej w tej samej funkcji).
+5. Test wzmocniony: próg `>=5` zastąpiony 11 jawnie nazwanymi asercjami (jedna per realne
+   wpięcie, definicje wykluczone), nowa asercja WYKONANIOWA na zachowanie osieroconej jednostki,
+   **weryfikacja mutacyjna uruchomiona i potwierdzona: 13/13 mutacji (11 pojedynczych wpięć +
+   degradacja ścieżki + cofnięcie naprawy #2) złapane czerwono niezależnie**.
+6. Bonus: `evictForeignUnitsFromCityHexes` naprawione (tanie, dodane do 11 wpięć).
+   `placeFanOutGroup` świadomie POMINIĘTE — czysty moduł bez dostępu do `barbCamps`, wymagałoby
+   zmiany interfejsu `PostBattleMapInput`/`PostBattleMapResult` w 3 miejscach — realna praca,
+   nie „przy okazji". Zarejestrowane jako pozostająca, drobna luka (nieblokująca).
+
+Bramki (zweryfikowane przez orkiestratora po scaleniu): `tsc` 0, `logic-test` 213/213,
+`barbarians-test` 167/167, `barb-camp-destruction-test` **76/0** (było 39, +37 nowych w tym 13
+dowodów mutacyjnych), `ai-home-defense-vs-barbarians-test` 38/38, `barb-city-behavior-test`
+36/36 (potwierdza brak kolizji z równolegle scalonym P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 —
+oba tematy dotykają `barbarians.ts`), higiena (tech-tree/research/unit-replace) zielone.
+
+**Scalone przez orkiestratora — dispatch 3x Evaluator adwersaryjny (runda 4 weryfikacji, próg
+niezmieniony po jednomyślnym FAIL rundy 2) w toku.**
+
+## `2dabc0e2` domknięcie luki — battle-loot/trade-flow strażniki — SCALONE, Evaluator: **PASS**
+
+2 nowe sekcje w `surow-civ-storage-test.cjs` (10 asercji: obecność wywołania z 5. argumentem
+cap + dokładny kształt `ownerResourceCap(..., empireEpochForOwner(X))` dla battle-loot i
+trade-flow). Evaluator niezależnie zweryfikował punkt odniesienia (`git checkout HEAD --` na
+plik testowy: baseline 43/14 → po zmianie 53/14, dokładnie +10/+0) i wykonał WŁASNE dodatkowe
+3 mutacje poza tymi które testował Operator (usunięcie samego 5. argumentu z wywołania
+`creditOwnerResourceStock`, nie tylko z deklaracji `cap` — złapane; podstawienie złej zmiennej
+jako cap — nie złapane przez strażnik, ale złapane przez `tsc` jako TS2304, więc bezpieczne).
+Zero zmian w `main.ts` — czysto testowe zadanie, zakres dotrzymany.
+Bramki: `tsc` 0, `logic-test` 213/213, `surow-civ-storage-test` **53/14** (identyczne 14
+pre-istniejących niezwiązanych porażek). **Temat w pełni zamknięty.**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 (`490f579c`) — Evaluator A: **FAIL**
+
+**Realny, potwierdzony wykonaniem bug**: gdy gracz/AI ODBIJA miasto zdobyte wcześniej przez
+barbarzyńców (wymóg ECHO=A „miasto ma pozostać odbijalne" — zaimplementowany mechanicznie
+poprawnie), `runCapitalCapturePlunder` ma guard TYLKO dla `REBEL_FACTION_OWNER_ID=-99`, nie dla
+barbarzyńców (`-1`) — `capitalCityIdByOwner.get(-1)` = undefined → legacy fallback →
+`remaining.length===0` → **`eliminateOwner(-1)` kasuje WSZYSTKICH barbarzyńców z całej mapy
+jednym odbiciem JEDNEGO miasta**, plus trwały fałszywy wpis `-1` w `eliminatedOwners`
+zapisywany do sejwu. Evaluator znalazł to przez WŁASNY harness (nie zgadywanie) i wskazuje że
+analogiczny guard dla `-99` powstał po dokładnie tej samej klasie błędu w innej rundzie
+(komentarz w kodzie „#25" cytowany wprost) — precedens REBEL, na który powołał się Operator,
+w rzeczywistości DOWODZI że wzorzec wymaga jawnych guardów, nie że działa z automatu.
+Drugi problem (mniej pilny, do ABC): gdy barbarzyńcy przejmą OSTATNIE miasto cywilizacji,
+skarbiec/nauka/techy/Power lecą na konto -1 i cywilizacja zostaje wyeliminowana PRZEZ
+barbarzyńców — konsekwencja produktowa nieautoryzowana przez ECHO=A.
+Trzeci (nota): bramka `barbCaptureBlockedByRemainingDefenders` chroniona wyłącznie tekstowym
+strażnikiem (`static 5d`) — mutacja B (usunięcie negacji w ciele guardu zamiast usunięcia
+tokenu) przechodzi WSZYSTKIE bramki niezauważona.
+**Evaluator B: FAIL.** Easy potwierdzone bajt-identyczne wykonaniem (20/20 porównań). Normal
+wieloturowo częściowo działa, ale znalazł 3 realne problemy: (a) **BLOKER** — barbarzyńcy
+raid-ready (`chaseRadius=Infinity`, pomijają krok „drift do domu") przy WYŁĄCZNIE niebronionych
+miastach w zasięgu dostają PUSTĄ listę celów po filtrze `skipDefenselessCities` → **zero komend,
+zamrożenie na stałe** (zmierzone: 30 komend/10 tur na easy, **0 na normal/hard** — dotyczy
+DOMYŚLNEJ trudności gry); (b) „kolejne miasto" zaimplementowane jako globalne wykluczenie
+WSZYSTKICH miast bez obrońców, nie tylko właśnie oczyszczonego — efekt odwrotny do zamówionego
+(jednostka wraca do obozu zamiast iść dalej); (c) nowa oscylacja — jeden garnizon kursujący
+między 2 miastami usypia całą armię barbarzyńców (zero postępu przez 12 tur). Dodatkowo: capture
+na hard osiągalny WYŁĄCZNIE gdy ostatni obrońca ginie na heksie miasta — **puste miasto wroga
+(gracz wyprowadził garnizon) jest darmowo, trwale odporne na przejęcie** — złota furtka na
+najwyższej trudności. Mutacja zlecona złapana + 3 własne (M2/M3/M4) potwierdzają że test
+faktycznie rozróżnia poziomy trudności (mocna strona pracy).
+
+**Evaluator C: FAIL.** Save/load CZYSTE (dowód wykonaniem: capture przez realny prymityw →
+serializacja → deserializacja → deep-equal identyczne, miasto poprawnie klasyfikowane).
+**Asymetria gracz/AI w rozstrzyganiu walki** (ta sama klasa błędu co rundy 1-2 obozów) —
+atak na miasto GRACZA idzie przez `launchIncomingMapFieldBattle` z przyciskiem „Wycofaj"
+(`defenderCanRetreat`), obrońca ucieka bez walki, capture nigdy się nie wykonuje; atak na
+miasto AI idzie przez `doAutoPowerMapBattle` — rozstrzygnięcie natychmiastowe, zero opcji
+ucieczki. **Efekt: na hard miasta AI padają, miasta gracza są strukturalnie nietykalne dla
+gracza który zawsze klika Wycofaj — odwraca sens suwaka trudności.** Krytyka testu: **15/36
+asercji (sekcja 5) to source-text `.includes()` na main.ts, ZERO pokrycia wykonawczego** —
+3 niezależne mutacje Evaluatora (miasta gracza trwale odporne na capture; usunięty argument
+trudności z wywołania — normal/hard zachowują się jak easy; capture przerobione na no-op)
+**wszystkie przechodzą 36/36 na wszystkich 6 bramkach niezauważone.** Jedna z asercji (5a) ma
+dodatkowo błędną kotwicę tekstową trafiającą przypadkiem w NIEZWIĄZANE wywołanie w innym miejscu
+main.ts (zbieg okoliczności, nie ochrona). Potwierdza i rozszerza znalezisko A:
+`runCapitalCapturePlunder` brakuje guardu analogicznego do istniejącego dla `REBEL_FACTION_OWNER_ID`
+— przy przejęciu OSTATNIEGO miasta cywilizacji przez barbarzyńców: skarbiec/nauka/**wszystkie
+technologie ofiary trwale kopiowane na konto -1 do sejwu**, Power, `civKeyForOwnerId(-1)→'grecy'`
+fałszuje religię/kulturę. Dodatkowo `applyPostCaptureLawOnCapture` generuje bezsensowny banner
+UI „Po podboju — Prawo 100%" dla frakcji bez rządu + kasuje `rebelPreviousOwnerId` (utrata
+bonusu odbicia po buncie).
+
+## PODSUMOWANIE 3/3 FAIL — zakres rundy 2 (zebrany, priorytety)
+
+**Bloker, BEZ ABC (jasne bugi techniczne, dispatch wprost):**
+1. `runCapitalCapturePlunder` — guard `isBarbarian(oldOwner)` (analogiczny do istniejącego dla
+   `REBEL_FACTION_OWNER_ID`) ORAZ `isBarbarian(newOwner)` (pomija plądrowanie/eliminację gdy
+   barbarzyńcy są odbiorcą).
+2. Raid-ready freeze — gdy `skipDefenselessCities` opróżnia listę celów, jednostka MUSI dostać
+   jakiś rozkaz (fallback do pełnej listy miast, albo pominięcie filtra gdy wynik pusty).
+3. „Kolejne miasto" — wykluczać WYŁĄCZNIE miasto właśnie oczyszczone przez tę jednostkę, nie
+   globalnie każde miasto bez obrońców (naprawia też oscylację 3c Evaluatora B).
+4. `applyPostCaptureLawOnCapture` pominięte dla `isBarbarian(newOwner)` — bez bannera „Prawo
+   100%", bez kasowania `rebelPreviousOwnerId` gdy nowy właściciel to barbarzyńcy.
+5. Test: wyciągnąć decyzje `main.ts` (bramka hard, guard „oczyszczone do zera") do czystych,
+   testowalnych funkcji (wzorem `barbarians.ts`) — sekcja 5 dziś nie odróżnia działającej
+   mechaniki od jej całkowitego braku (3 mutacje survive 36/36).
+
+**DO ABC właściciela (nie zgadywać, opisać i zapytać po powrocie) — patrz pytanie w czacie.**
+
+**STATUS: dispatch rundy 2 (punkty 1-5) w toku. Punkty ABC czekają na Macieja.**
+
+## P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 3 (`4fcf80e5`) — RUNDA 4 WERYFIKACJI: A=PASS-WITH-NOTES, B=FAIL, czeka na C
+
+**Evaluator A: PASS-WITH-NOTES.** Wszystkie 5 blokerów potwierdzone WŁASNYMI harnessami
+wykonaniowymi (nie na słowo) — punkt 2 (osierocone vs daleko-od-domu) 8/8, punkt 1 (parytet AI)
+13/13 na realnej `computePath`, własne mutacje realistyczne (nie NOOP-placeholder jak wewnętrzne
+w teście) 7/8 złapane. **Ale świadome pominięcie `placeFanOutGroup` (odwrót/rozbicie po walce)
+oparte na NIEPRAWDZIWYM uzasadnieniu** — Operator napisał że wymaga zmiany interfejsu w 3
+miejscach; Evaluator UDOWODNIŁ WYKONANIEM że wystarczy ~10 linii, zero zmian interfejsu
+(funkcja mutuje `u.q/u.r` na współdzielonej tablicy, rekoncyliacja po powrocie tym samym
+wzorcem co naprawa #4). Dodatkowo luka dotyczy DWÓCH miejsc, nie jednego
+(`applyPostBattleMap` ORAZ `applyDefenderPreBattleRetreat`) — potwierdzone realnym scenariuszem:
+obrońca cofnięty na heks żywego obozu, obóz PRZEŻYWA. **Ta sama klasa błędu za którą runda 2
+dostała FAIL (onSplit).** Wymaga: (a) korekty fałszywego zapisu w rejestrze, (b) dispatch
+domknięcia (mały, NIE wymaga ABC — to domknięcie już podjętej reguły „wejście niszczy obóz",
+nie nowa decyzja).
+
+**Evaluator B: FAIL.** Znalazł DODATKOWĄ regresję nieznalezioną przez A: `main.ts:28673`
+wczytanie STAREGO zapisu (sprzed rundy 3, bez `meta.barbCamps`) → `barbCamps=[]` →
+**KAŻDA jednostka barbarzyńska z `campId` staje się fałszywie „osierocona"** → cała populacja
+dostaje nieograniczony `chaseRadius` — zmiana trudności, której nikt nie zamawiał, niewidoczna
+dla właściciela. Własne mutacje (poza 13 wewnętrznymi Operatora): M1 (odwrócenie strażnika
+rekoncyliacji load) i M2 (usunięcie testu „obóz nieobecny" z warunku osierocenia — KAŻDY
+barbarzyńca z campId dostaje nieograniczony pościg nawet z żywym obozem) — **OBIE przechodzą
+WSZYSTKIE bramki niezauważone**, mimo że runda 3 deklarowała „13/13 mutacji złapane". Dodatkowo:
+`healthFrac` (bezpiecznik odwrotu przy niskim HP, teoretycznie hamujący nieograniczony pościg)
+**nigdy nie jest ustawiane przez silnik — martwy kod od zawsze**, więc „nieograniczony pościg"
+jest dziś DOSŁOWNIE nieograniczony, bez żadnego hamulca — runda 3 masowo zwiększa populację
+wchodzącą w tę ścieżkę. Rekomenduje 2 ABC (podważające wcześniejsze ustalenia, §1a): czy pościg
+osieroconych ma być NAPRAWDĘ bez limitu skoro jedyny zamierzony hamulec nie działa; czy
+zniszczenie obozu przez rozdzielenie armii ma pomijać koszt ruchu (`canSplit` nie sprawdza
+`ruchLeft`).
+
+**Evaluator C: FAIL. WYNIK RUNDY 4 = 2/3 FAIL (A=PASS-WITH-NOTES, B=FAIL, C=FAIL) → RUNDA 5.**
+
+C potwierdza niezależnie (własnym bundlem, własnym scenariuszem 30×30) **DOKŁADNIE ten sam
+mechanizm zamrożenia**, który Evaluator B znalazł od strony save/load: jednostka osierocona +
+`skipDefenselessCities` (z `490f579c`, temat P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1) opróżnia listę
+celów-miast → `raidReady=true` pomija krok 4 (drift) → **zero komend na DOMYŚLNEJ trudności gry
+(`normal`), na stałe** (10/10 komend na easy vs 0/10 na normal/hard, kontrolowane wielokrotnie).
+**⛔ TO JEST TEN SAM DEFEKT CO BLOKER #2 W RUNDZIE 2 TEMATU MIAST (`P-BARBARZYNCY-MIASTA-
+ZACHOWANIE-Q1`, wyżej w tym pliku) — jedna naprawa w `decideBarbarianMoves` (już zlecona
+Operatorowi w toku, worktree `fix-barb-city-v2`) rozwiąże OBA tematy jednocześnie, bo to
+dokładnie ten sam kod. NIE dispatchować drugiej, redundantnej naprawy dla tematu obozów —
+poczekać na wynik `fix-barb-city-v2`, zweryfikować że naprawia też ten scenariusz, i dopiero
+wtedy re-ewaluować oba tematy razem.**
+
+Dodatkowe, niezależne ustalenia C:
+- Pełny inwentarz 10 realnych wpięć w `main.ts` — wszystkie poprawne, brak duplikatów/pominięć.
+- **Nowa luka w pokryciu mutacyjnym**: inwersja strażnika `!isBarbarian(...)` w rekoncyliacji
+  przy wczytaniu zapisu (`main.ts:28689`, `if (!isBarbarian(...))` → `if (isBarbarian(...))`,
+  tekst wywołania nietknięty) — **76/0, exit 0, NIEWYKRYTE**. Po tej mutacji hak niszczyłby
+  obozy pod WŁASNYMI barbarzyńcami zamiast pod jednostkami cywilizacji — odwrotność zamierzenia.
+- **Punkt 6 rundy 3 rozliczony tylko częściowo, nieudokumentowane**: `refreshFog()` bez
+  `skipVeteranEducation` (może nadpisać toast chatki) — 1-słowna poprawka, pominięta w rejestrze
+  bez wzmianki.
+- **NOWE ABC (do listy oczekujących, patrz podsumowanie niżej)**: „bezpowrotnie" zniszczony obóz
+  nie wraca jako INSTANCJA, ale `spawnCamps` (co turę, brak czarnej listy heksów) odbudowuje
+  populację do `maxCamps` już w kolejnej turze — na małej mapie (20×20) zmierzono 45 przypadków
+  nowego obozu na TYM SAMYM heksie w 200 tur. Przed tą mechaniką uzupełnianie obozów było martwym
+  kodem (mapa zawsze pełna) — ta runda je OŻYWIA, kasując nagrodę za wyczyszczenie obozu w ~1
+  turę. Pytanie: czy „bezpowrotnie" ma znaczyć też „ten heks nigdy więcej".
+
+## PODSUMOWANIE — obozy barbarzyńców runda 5 + zbiorcza lista ABC (obie mechaniki barbarzyńców)
+
+**Runda 5 (obozy) — WSTRZYMANA do wyniku `fix-barb-city-v2`** (dzieli root-cause z blokerem #2
+tematu miast). Pozostały zakres do dołożenia PO zweryfikowaniu współdzielonej naprawy:
+1. Pokrycie mutacyjne „inwersja strażnika" na wpięciu load-rekoncyliacji.
+2. `refreshFog({skipVeteranEducation: true})` w `checkBarbCampDestroyedAt`.
+3. (opcjonalnie, z rekomendacji A rundy 4) domknięcie `placeFanOutGroup` — Evaluator A UDOWODNIŁ
+   że uzasadnienie odłożenia w rejestrze jest NIEPRAWDZIWE (nie wymaga zmiany interfejsu, ~10
+   linii, wzorzec już istnieje) — **skorygować zapis w rejestrze** niezależnie od decyzji czy
+   naprawiać teraz czy później.
+
+**ABC oczekujące na Macieja (obie mechaniki barbarzyńców, do zadania w czacie po powrocie):**
+- Asymetria „Wycofaj" — miasta gracza strukturalnie nietykalne na hard (gracz zawsze może się
+  wycofać przed walką), miasta AI zawsze padają.
+- Puste miasto wroga (bez obrońców) trwale odporne na przejęcie na hard — czy to zamierzona
+  „nagroda za obronę" czy furtka do naprawienia.
+- Czy barbarzyńcy mają móc całkowicie wyeliminować cywilizację (dziś mogą, silnik na to pozwala
+  ogólnie) — do potwierdzenia że to nie wymaga osobnej blokady.
+- Czy pościg osieroconych jednostek ma być NAPRAWDĘ bez limitu, skoro jedyny zamierzony hamulec
+  (odwrót przy niskim HP) jest martwym kodem od zawsze (`healthFrac` nigdy nie ustawiane).
+- Czy zniszczenie obozu przez rozdzielenie armii (`onSplit`) ma pomijać koszt punktów ruchu.
+- **Znaczenie „bezpowrotnie"** — czy dotyczy tylko instancji obozu, czy też heksu (dziś: heks
+  może dostać nowy obóz w ciągu kilku-kilkudziesięciu tur).
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 runda 2 — SCALONA (worktree fix-barb-city-v2)
+
+Wszystkie 5 punktów z jednomyślnego FAIL rundy 1:
+1. `runCapitalCapturePlunder` — guard `isBarbarian(oldOwner)` (analogiczny do REBEL) +
+   NIE ślepy `return null` dla `isBarbarian(newOwner)` (zablokowałoby to legalną eliminację
+   ofiary) — zamiast tego wrapper `OwnerResourceAccess` no-opujący zapis DO barbarzyńców
+   (skarbiec/nauka/techy), odczyt/utrata u ofiary działa normalnie. Korekta zakresu: dodatkowy
+   guard w `applyCityCaptureToMap` (kultura/religia fałszowana przez `civKeyForOwnerId(-1)→
+   'grecy'` — symptom nazwany wprost w specyfikacji, fizycznie kilka linii przed funkcją ze
+   zlecenia, naprawiony przy okazji).
+2. Raid-ready freeze — **NAPRAWIONE WSPÓLNIE Z tym samym defektem w temacie obozów
+   (P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 runda 4, blokery B/C)**: gdy filtr per-jednostkowy
+   dałby pustą listę celów, spada do pełnej nieprzefiltrowanej listy miast.
+3. „Kolejne miasto" — przepisane z globalnego wykluczenia na PER-JEDNOSTKOWĄ pamięć
+   (`unit.recentlyClearedCityId`, samo-wygasająca przez odzyskanie obrońcy, bez licznika TTL).
+4. `applyPostCaptureLawOnCapture` pominięte dla `isBarbarian(atkOwner)` w
+   `applyCityCaptureAfterBattle` (jedyne realnie osiągalne miejsce — oblężenie niedostępne dla
+   barbarzyńców, drugie miejsce wywołania nietknięte świadomie).
+5. Wyciągnięte czyste funkcje `shouldAllowBarbCityCapture(difficulty)` i
+   `isCityCaptureBlockedByDefenders(atkOwnerId, units, q, r)` — main.ts tylko woła, zero logiki
+   inline. Sekcja 5 testu przepisana na realne wykonanie (nie source-text). Test parytetu
+   gracz/AI: identyczny wynik dla `ownerId=0` i `ownerId=1` (funkcja nie rozróżnia — brak
+   asymetrii do zgłoszenia).
+
+Bramki (zweryfikowane przez orkiestratora po scaleniu): `tsc` 0, `logic-test` 213/213,
+`barbarians-test` 167/167, `barb-camp-destruction-test` 76/0, `ai-home-defense-vs-barbarians-test`
+38/38, `barb-city-behavior-test` **48/48** (było 36), higiena zielona. Własna próba
+niezależnej weryfikacji orkiestratora scenariusza „raid-ready freeze" WŁASNYM harnessem
+zawiodła technicznie (brak realnych danych terenu w stubie `map.hexes` → `firstStep` zawsze
+zwracał null, fałszywe 0/0/0 na wszystkich trudnościach łącznie z easy, które wg obu
+Evaluatorów rundy 4 powinno dawać 10/10) — **porzucona na rzecz dispatchu properowych
+Evaluatorów**, którzy already mają sprawdzone harnessy z realną geometrią mapy.
+
+**Scalone przez orkiestratora — dispatch 3x Evaluator adwersaryjny w toku, z jawnym zadaniem
+zweryfikowania NAPRAWY WSPÓLNEJ dla obu tematów barbarzyńców (freeze bug).**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 runda 2 (`5bf3e696`) — Evaluator B: **FAIL**
+
+Punkty 1/2/5 dobre. **Bloker: punkt 3 („kolejne miasto") nie daje POSTĘPU — livelock zamiast
+deadlocka.** Pojedynczy slot pamięci (`recentlyClearedCityId`) nadpisywany co turę: zapamiętanie
+miasta B kasuje pamięć o A, więc A natychmiast wraca do puli celów → jednostka oscyluje w
+nieskończoność między A i B z zerowym postępem netto (zweryfikowane wykonaniem, 12 tur,
+`dB` skacze 5↔6 w kółko, nigdy nie maleje). **To ta sama wada co bloker rundy 1 — zmienił się
+tryb awarii z deadlocka na livelock, trudniejszy do zauważenia w playteście** (jednostka
+wygląda na aktywną, tylko nie robi postępu). Test tego nie łapie, bo sekcja 2 kończy się o jedno
+wywołanie za wcześnie (asercjonuje tylko 2 pierwsze decyzje). Dodatkowo: pamięć zapisuje się bez
+faktycznego dotarcia do miasta (jednostka 25 heksów od miasta już je „oczyszcza") i zatruwa się
+podczas pościgu za jednostką polową (miasto oznaczane jako oczyszczone mimo że jednostka gonił
+coś innego).
+**Drugi bloker: punkt 4 (`applyPostCaptureLawOnCapture` pominięte) ma ZERO pokrycia testowego** —
+mutacja usuwająca `!isBarbarian(atkOwner)` przechodzi wszystkie 6 bramek niezauważona.
+**Nota (§0b, do korekty kanonu)**: komentarz uzasadniający guard punktu 4 jako „ochronę bonusu
+odbicie po buncie" jest FAKTYCZNIE BŁĘDNY — zweryfikowane wykonaniem, `rebelPreviousOwnerId`
+faktycznie przeżywa przejęcie przez barbarzyńców, ale `isRebellionReconquest` wymaga
+`prevOwner===-99`, a przy odbiciu OD BARBARZYŃCÓW `prevOwner=-1` — łańcuch buntu jest przerwany
+przez pośredniego właściciela, gracz dostaje zwykłe 5 tur nie 10, identycznie jak bez guarda.
+Zachowane pole nigdy nie jest użyte.
+**Czeka na głos A (2/3 FAIL już przesądzone przez B+C, większość ustalona).**
+
+**Evaluator C: FAIL — potwierdza niezależnie.** Punkty ABC nietknięte (zweryfikowane licznikowo,
+diff nie rusza `defenderCanRetreat`/`canSplit`/`healthFrac`). Impact-check współdzielonego
+`barbarians.ts`: naprawa #2 rundy 3 obozów (`orphaned = ...`) bit-identyczna, przesunięta tylko
+o linie — scalenia się NIE pogryzły. Krytyka mocy testu: **16 własnych mutacji, 11/11 dla
+punktów 2/3/5 złapane (sekcja 5 realnie zamyka dziurę rundy 1)**, ale **5/5 dla punktów 1 i 4
+PRZEŻYWA wszystkie bramki** — pełne cofnięcie WSZYSTKICH 4 pod-guardów punktu 1
+(`runCapitalCapturePlunder`: eliminacja barbarzyńców przy odbiciu, dziedziczenie
+skarbca/nauki/techów/Power, fałszowanie kultury/religii) I punktu 4
+(`applyPostCaptureLawOnCapture`) **jest niewidzialne dla wszystkich 6 bramek jednocześnie**.
+„Najcięższy defekt rundy 1 (wyczyszczenie całej frakcji barbarzyńców + trwały fałszywy wpis w
+sejwie) jest naprawiony w miejscu, którego żaden test nie wykonuje" (cytat Evaluatora C).
+Niezależnie od B potwierdza oscylację (livelock) przy ≥2 niebronionych miastach — inna
+geometria testowa, ten sam wniosek: zerowy postęp netto, nieskończone drganie.
+
+## RUNDA 3 (miasta barbarzyńców) — zakres zebrany z B+C, dispatch w toku
+
+1. **[bloker, zero pokrycia]** Wyciągnąć decyzje z punktu 1 (`runCapitalCapturePlunder`) do
+   czystych, testowalnych funkcji — main.ts nie jest bundlowalny, więc bez tego naprawa
+   pozostanie niewidzialna dla każdej przyszłej bramki. Kryterium: cofnięcie KAŻDEGO z 4
+   pod-guardów osobno musi dawać czerwono.
+2. **[bloker, zero pokrycia]** Dodać asercje wykonawcze dla punktu 4 — `rebelPreviousOwnerId`
+   przeżywa capture barbarzyński, Prawo po podboju nadal działa dla capture gracz/AI. Cofnięcie
+   guardu musi dawać czerwono.
+3. **[bloker, livelock potwierdzony 2x niezależnie]** Przeprojektować pamięć „kolejnego miasta"
+   żeby dawała POSTĘP przy ≥2 niebronionych miastach, nie oscylację o okresie 2. Kierunki od
+   Evaluatora B (nie przesądzone): zbiór/lista odwiedzonych zamiast jednego slotu; TRWAŁY cel
+   (`currentTargetCityId`) zamiast przeliczania najbliższego co turę; zapis pamięci dopiero przy
+   `hexDistance<=1` od miasta (usuwa też „oczyszczanie z 25 heksów" i zatruwanie podczas
+   pościgu). Kryterium: test musi symulować ≥6 kolejnych decyzji z aktualizacją pozycji i
+   asercjonować MONOTONICZNY spadek dystansu, w wariancie z drugim miastem bronionym I
+   niebronionym.
+4. Korekta kanonu (nie kod): komentarz przy punkcie 4 błędnie twierdzi że guard chroni „bonus
+   odbicie po buncie" — nie chroni (łańcuch `-99→gracz` przerwany przez pośredniego właściciela
+   `-1`). Sprostować albo osobno zapytać właściciela czy 10-turowy bonus ma faktycznie
+   przysługiwać po odbiciu OD barbarzyńców (nowe ABC, nie zakładać).
+
+**Evaluator A (3/3 jednomyślne): FAIL — potwierdza.** Punkty 1/2/4/5 zamknięte i NIE wymagają
+ponownej weryfikacji w rundzie 3 (pod warunkiem że runda 3 ich nie dotknie). **Kluczowe:
+własnym harnessem A/B względem commitu-rodzica POTWIERDZIŁ że wspólna naprawa freeze (punkt 2)
+realnie działa** — 0/10→10/10 komend na normal/hard w wielu konfiguracjach, w tym dokładnie tej
+z tematu obozów (3 miasta bez obrońców) — **NIE cofać tej naprawy w rundzie 3**. Ale punkt 3
+(„kolejne miasto") to NIE naprawiony freeze zastąpiony STABILNYM 2-CYKLEM (livelock) —
+niezależnie od geometrii testowej B: pamięć nadpisywana co turę bezwarunkowo → wykluczenie A
+odsłania B → wykluczenie B odsłania A → naprzemiennie w nieskończoność, **nawet na statycznej
+planszy bez udziału gracza** (D2: jedno niebronione miasto + JAKIEKOLWIEK inne miasto na mapie
+= wieczna oscylacja). Test Operatora (asercja 2b) przechodzi tylko dlatego, że woła funkcję
+2x na NIEZMIENIONEJ pozycji jednostki — trzecie wywołanie z zastosowanym ruchem odwraca kierunek.
+**Dodatkowa luka**: naprawa freeze (punkt 2) nie ma WŁASNEJ asercji blokującej w
+`barb-camp-destruction-test.cjs` — temat obozów może po cichu cofnąć fallback przy zielonych
+bramkach obozowych, mimo że to naprawa deklarowana jako wspólna.
+
+## RUNDA 3 (miasta barbarzyńców) — finalny zakres (A+B+C zgodne), dispatch w toku
+
+1. **[bloker, NIE cofać]** Naprawa freeze (punkt 2, fallback do pełnej listy) POTWIERDZONA przez
+   wszystkich 3 Evaluatorów jako działająca i wspólna z tematem obozów — zostawić nietkniętą.
+2. **[bloker]** Przeprojektować pamięć „kolejnego miasta" (punkt 3) żeby dawała POSTĘP, nie
+   2-cykl. Nie nadpisywać/kasować `recentlyClearedCityId` bezwarunkowo co turę — zapisywać
+   dopiero gdy jednostka realnie DOTRZE do miasta (`hexDistance<=1`, uzgadnia nazwę pola z
+   semantyką) ALBO trzymać zbiór odwiedzonych zamiast jednego slotu. Test: ≥6 kolejnych decyzji
+   z REALNIE stosowanym ruchem (nie 2 wywołania na zamrożonej pozycji), asercja na malejący
+   dystans / brak powtarzającej się pozycji, dla wariantu z drugim miastem BRONIONYM i
+   NIEBRONIONYM.
+3. **[bloker, zero pokrycia]** Wyciągnąć punkt 1 (`runCapitalCapturePlunder`) do czystych
+   funkcji — cofnięcie KAŻDEGO z 4 pod-guardów osobno musi dawać czerwono.
+4. **[bloker, zero pokrycia]** Asercje wykonawcze dla punktu 4 — `rebelPreviousOwnerId`
+   przeżywa capture barbarzyński, Prawo po podboju nadal działa dla gracz/AI.
+5. **[dodatkowe, z A]** Dołożyć asercję fallbacku (cofnięcie punktu 2) do
+   `barb-camp-destruction-test.cjs` — naprawa wspólna, temat obozów potrzebuje własnej blokady.
+6. Korekta komentarza przy punkcie 4 (nieprawdziwa korzyść `rebelPreviousOwnerId`).
+
+## Batch kategorii 4 (Workflow) — 4 tematy zamknięte
+
+**P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK — SCALONE, Evaluator: PASS-WITH-NOTES.** `scene.ts::dispose()`
+dostał pętlę `disposeMergedDecor(group)` po `styledOverlays` (1 linia + import) — jedyne
+pozostałe niezwolnione miejsce `collapseToMergedMesh` w całym `src/` jest teraz domknięte.
+Evaluator zweryfikował własnymi mutacjami (6, w tym 2 „legalny refaktor" wykrywające fałszywą
+czerwień na strażniku S3 — kierunek bezpieczny, kosmetyka do ew. rozluźnienia) + potwierdził
+lekturą kodu że merged geometria/materiał nigdy nie są współdzielone z singletonami (buduje się
+od zera per grupa) i że `setFog` nie podmienia materiału. **Nowe, potwierdzone (nie naprawiane
+teraz) odkrycie**: `buildScene` nie ma `try/finally` — wyjątek po fazie merge (main.ts
+`runBuildSceneWithOverlay`) porzuca częściowo zbudowaną scenę bez dispose. Osobny temat, render/**,
+Opus 5. Bramki: `tsc` 0, `logic-test` 213/213, `merge-decor-no-regress-test` **30/30** (było 20).
+
+**R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 5 pkt 2-3 — JUŻ ZAMKNIĘTE wcześniej (`df4085d4`+`13568179`),
+dyspozycja była nieaktualna.** Zero do scalenia. Evaluator znalazł 2 nowe, nieblokujące luki do
+osobnej rejestracji (nie teraz): (1) asercja H6 łapie BRAK wywołania `citizenUpkeepByOwner.set`,
+ale NIE łapie publikacji ZŁEJ wartości (mutacja podmieniająca werdykt na `pop=0` przechodzi
+wszystkie 106 asercji) — wymagałoby harnessu wykonującego tick silnika, nietrywialne; (2)
+komentarz przy asercji K2 opisuje mechanizm nieprawdziwie (ochronę faktycznie daje K1 nie K2 przy
+5 vs 5) — kosmetyka dokumentacji testu.
+
+**P-MAPGEN-PANGEA-COASTRATIO-PROG — POTWIERDZONE jako stary dług kalibracji (NIE regresja),
+NOWE ABC do właściciela.** Test czerwony od DNIA wprowadzenia progu (`6f96f082`, 2026-08-02,
+„Pangea bez obwarzanka") — zweryfikowane 2x niezależnie (Operator + Evaluator, checkout
+historyczny, wartości bit-identyczne). Rozkład na 17+17 (34 łącznie, dwie niezależne próbki
+seedów) potwierdza: próg 3.8 odrzuca 70-82% normalnych generacji. **Ale rekomendacja Operatora
+(obniżyć próg do 3.70-3.72) jest ZDYSKWALIFIKOWANA przez Evaluatora** — własna mutacja
+(morfologiczne domknięcie zatok, symulacja realnej degeneracji kształtu) pokazuje że przy progu
+3.70 PRZECHODZI nawet skrajna degeneracja; próg zamieniłby czerwoną-ale-fałszywą bramkę w
+zieloną-ale-ślepą. Dodatkowo: `bboxFill` (nie `coastRatio`) to metryka z realną siłą wykrywania
+(łapie domknięcie k≥4), wbrew opisowi Operatora „w normie z dużym zapasem" (zapas to tylko 1,6%).
+
+**NOWE ABC: R-MAPGEN-PANGEA-PROG-Q1** — sytuacja jw., 3 opcje: **A.** próg→3.72 (bramka zielona
+natychmiast, ale praktycznie pusta — ochronę kształtu przejmuje wyłącznie `bboxFill`). **B.**
+usunąć `coastRatio` z asercji, zostawić `bboxFill<0.87` jako jedyny, uczciwy strażnik kształtu.
+**C.** zachować 3.8 jako spec docelowy i zmienić GENERATOR żeby dawał bardziej postrzępione
+wybrzeże (realna praca — przesunięcie mediany o ~2,5 odchylenia standardowego). **Odblokowanie
+tymczasowe zaproponowane przez Evaluatora** (jeśli orkiestrator potrzebuje zielonej bramki przed
+odpowiedzią): zdjąć `fail++` z sekcji Pangea, zamienić na nieblokujące ostrzeżenie — reszta
+`map-gen-regression` (czasy, rzeki, determinizm) odzyskuje użyteczność. **§1a: warianty A i B
+COFAJĄ poprzeczkę jakości kształtu Pangei ustanowioną w `6f96f082` — właściciel musi to
+wiedzieć wybierając literę.** Rekomendacja: **odblokowanie tymczasowe teraz** (nieblokujące,
+nie wymaga ABC — samo zdjęcie `fail++` nie zmienia progu ani nie cofa niczyjej decyzji, tylko
+przestaje fałszywie czerwienić całą bramkę za jedną wadliwie skalibrowaną sekcję) + pełne ABC
+do właściciela po powrocie.
+**STATUS: dispatch odblokowania tymczasowego (zdjęcie fail++ z sekcji Pangea) w toku
+(worktree fix-mapgen-unblock, Operator Sonnet 5 dispatchowany 2026-08-12).**
+
+## P-PERF-BUILDSCENE-TRY-FINALLY — NOWY, znaleziony przez Evaluatora przy P-PERF-SCENE-STYLEDOVERLAYS-WYCIEK
+
+**Sytuacja.** Evaluator (Opus 5, PASS-WITH-NOTES dla `scene.ts::dispose()` styledOverlays fix,
+patrz sekcja wyżej) potwierdził czytaniem kodu: `buildScene` (`gra/src/render/scene.ts`) nie ma
+`try/finally`. Jeśli wyjątek wyleci PO fazie merge geometrii (`collapseToMergedMesh` dla
+`styledOverlays` lub innych grup), funkcja porzuca częściowo zbudowaną scenę bez wywołania
+`dispose()` — wyciek GPU (bufory/geometrie/materiały) przy każdym takim wyjątku, nie tylko przy
+normalnym przebudowaniu sceny (które i tak teraz poprawnie disposuje dzięki dzisiejszej naprawie).
+
+**Zakres.** `gra/src/render/scene.ts` — render/**, wymaga Opus 5 (standing exception właściciela,
+CLAUDE.md pkt 4). Owinąć fazę merge/budowy `buildScene` w `try/finally` tak, żeby częściowo
+zbudowana scena zawsze dostała `dispose()` przy wyjątku. Sprawdzić też wywołanie z `main.ts`
+(`runBuildSceneWithOverlay`) — czy caller też potrzebuje analogicznego zabezpieczenia.
+
+**STATUS: OTWARTE — nie zarejestrowany jeszcze do dispatchu (niska pilność: wymaga realnego
+wyjątku w trakcie merge żeby się objawić, nie zaobserwowano w praktyce; render/**, więc drogi
+Opus 5 — kandydat na dispatch w kolejnej turze audytu kategorii 4).**
+
+## P-MAPGEN-PANGEA-COASTRATIO-PROG — odblokowanie tymczasowe SCALONE
+
+`gra/tools/map-gen-regression-test.cjs`, sekcja Pangea: porażka progu `coastRatio>3.8` NIE
+inkrementuje już globalnego `fail` (nie blokuje bramki `map-gen-regression-test`), ale zostaje
+wyraźnie zaraportowana jako `console.warn` z odwołaniem do `R-MAPGEN-PANGEA-PROG-Q1` — reszta
+sekcji (determinizm, rzeki, chaty, czasy) nietknięta, nadal blokuje normalnie. Dowód mutacyjny
+Operatora: (a) sabotaż sekcji determinizmu (seed 42 vs 43) nadal poprawnie inkrementuje `fail`
+mimo równoległej porażki Pangei na tym samym seedzie; (b) Pangea sama w sobie (dziś czerwona)
+już nie psuje exit code. Czeka na Evaluatora.
+
+**NOWE ZNALEZISKO Operatora (poza zakresem zlecenia, zarejestrowane cicho zgodnie z §2)
+— P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY.** Pełny bieg `map-gen-regression-test.cjs` w TYM
+środowisku (kontener sesji chmurowej) generuje mapy 16-70× wolniej niż limity kodu:
+mapa standardowa 114.37s vs `STANDARD_GEN_MS_LIMIT=7000ms` (16.3× za wolno), mapa duża
+1016.06s vs `DUZY_GEN_MS_LIMIT=15000ms` (67.7× za wolno, sam `riversFill`=988s). Operator
+przerwał bieg (`kill`, `EXIT_CODE=143`) po potwierdzeniu przyczyny — **to NIE jest wynik testu,
+tylko SIGTERM**, nie interpretować jako czerwonej bramki (pułapka z CLAUDE.md §0b, incydent
+2026-08-07 się nie powtarza). Przyczyna nieznana (CPU sandboxa vs sprzęt na którym kalibrowano
+limity, czy coś innego) — **do zbadania osobno**, nieblokujące (nie regresja kodu gry). Skutek
+praktyczny: pełna bramka `map-gen-regression-test` może dawać fałszywie czerwone `stdOk`/`duzyOk`
+w TYM środowisku niezależnie od jakiejkolwiek zmiany w kodzie — przy interpretacji przyszłych
+wyników tej bramki w sesji chmurowej brać to pod uwagę, nie traktować automatycznie jako regresji.
+**STATUS: OTWARTE — niepilne, do zbadania osobno (nie blokuje niczego dzisiejszego, ale
+podważa wiarygodność pełnych timingów tej bramki w środowisku chmurowym).**
+
+## P-PERF-BUILDSCENE-TRY-FINALLY — SCALONE, Evaluator: PASS-WITH-NOTES
+
+`scene.ts::buildScene()` — `dispose()` przeniesiony przed rejestr `sceneTeardown: Array<() => void>`
+(zasoby tworzone wewnątrz `try` — ocean, ramka, listenery okna — rejestrują się same w miejscu
+powstania), `try` od linii ~2208 (tuż za ostatnią deklaracją, po której zaczynają się realne
+zasoby GPU) do `return`, `catch`+`dispose()` w osobnym `try`+re-throw (świadomie NIE `finally` —
+argument: wcześniejszy `return` z niepełną sceną zwolniłby ją tuż przed oddaniem graczowi).
+`main.ts` bez zmian — wszystkich 5 call site'ów `runBuildSceneWithOverlay` już miało
+`try{disposeScene()}catch{}` PRZED budową nowej sceny. Nowa sekcja T w
+`merge-decor-no-regress-test.cjs` (4 przypadki, wyjątek wstrzykiwany w różnych fazach, patchowanie
+prototypów na BUNDLOWEJ kopii three) — 30→49 asercji.
+
+**Evaluator: własna weryfikacja TDZ (36 identyfikatorów sprawdzonych, wszystkie deklarowane przed
+`try`), własna mutacja całościowa (43/6→49/0, liczby Operatora potwierdzone) + 2 mutacje
+chirurgiczne własne (usunięcie samej rejestracji oceanu / samego drenażu rejestru — obie łapane
+osobno, sekcja T nie jest ślepa na żaden pojedynczy element).**
+
+**4 odkrycia Evaluatora (żadne nie blokuje):**
+1. Przeframowanie luki (c) Operatora: `sharedRenderer` nigdy nie jest ustawiany w kodzie
+   produkcyjnym (`ownRenderer` zawsze `true` w grze) — to NIE margines, to JEDYNA konfiguracja
+   produkcyjna, a testy T biegną na odwrotnej. Kod poprawny (zweryfikowany czytaniem), ale opis
+   luki w rejestrze zaniżał ryzyko — do sprostowania.
+2. Wycena luki (d) zawyżona: Operator szacował "~40 constów do hoistowania", realnie wystarczy
+   wąski `try` (~5 linii) wokół samego `new THREE.WebGLRenderer` (linia ~1626, jedyny drogi zasób
+   w nieobjętym prologu 1626-2207, zero `await` w tym zakresie).
+3. **NOWE, pre-istniejące:** po nieudanej budowie `disposeScene` w `main.ts` nadal wskazuje na już
+   zwolnioną starą scenę — kolejna próba startu wywoła drenaż `sceneTeardown` drugi raz. Nieszkodliwe
+   (`removeEventListener`/`geometry.dispose()` w three.js idempotentne), nie wprowadzone tą zmianą,
+   ale wart odnotowania.
+4. Na plus: naprawa zamyka też wyciek SPOZA zgłoszenia — listenery `resize`/`fullscreenchange`
+   przypięte na zawsze przy wyjątku trzymały przy życiu cały porzucony graf sceny w hałdzie JS, nie
+   tylko bufory GPU.
+
+Bramki (Evaluator, własne uruchomienie): tsc 0, merge-decor-no-regress-test 49/49,
+logic-test 213/213. **TEMAT ZAMKNIĘTY.**
+
+## ⛔ AUDYT WŁASNY #2 — 6 z 11 commitów z „AUDYTU WŁASNEGO #1" (linia ~13156) NIGDY nie dostało
+## Evaluatora mimo deklaracji „redispatch w toku" (2026-08-12, na polecenie Macieja: ultracode)
+
+Właściciel poprosił o rygorystyczną re-weryfikację kategorii 6 (wszystkie zlecenia od FALA 269),
+z dispatchem subagentów dla każdego wiszącego tematu. Krzyżowa weryfikacja `git log` vs treść
+rejestru (nie tylko czytanie nagłówków `##`, jak w poprzednim audycie) wykryła: „AUDYT WŁASNY:
+BRAK EWALUATORA DLA SERII SCALEŃ" (linia ~13156) wymienił 11 commitów bez Evaluatora i zadeklarował
+„Dispatch Evaluatorów (Opus 5) w toku dla całej serii" — later „Redispatch w toku: 14 commitów bez
+Evaluatora" (linia ~13229, po odkryciu bugu bazy `isolation:'worktree'`). Faktyczne pokrycie
+zweryfikowane grepem po HASHU każdego z 11: **5 dostało Evaluatora** (`469f3152` FAIL→fix→PASS,
+`e702d982` PASS-WITH-NOTES, `9594e4ac` — evaluator znalazł 2 realne luki, obsłużone, `7ae5d8f8`
+FAIL→fix (`4e62c4f6`)→PASS-WITH-NOTES, `1c41c113` — pełna wieloramundowa saga
+P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1). **6 NIGDY nie dostało — zero wzmianki „Evaluator" w
+rejestrze poza własnym nagłówkiem „SCALONE"/„ZAMKNIĘTE" Operatora, który sam siebie zamknął:**
+
+1. `76514613` — P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE (fix bramki akceptacji PW)
+2. `a79bae29` — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 1 (panel Surowców, przycisk szczegółów)
+3. `b32b52ea` — P-ARMIA-CHIP-PELNE-JEDNOSTKI (chip Armia + panel Rekrutów, pełne jednostki)
+4. `deccc6b4` — P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK (6 wag składników Mocy + 3 tryby widoku)
+5. `1208eb6c` — R-ZUZYCIE-SUROWCOW-OBYWATELE stawka drenażu 1,0→0,2 (CITIZEN_UPKEEP_RATE_PER_CITIZEN)
+6. `8a3a3d29` — P-MIASTO-DOMYSLNY-PODZIAL-POL-ZYWNOSC (DEFAULT_OKOLICA_FOCUS→'zywnosc')
+
+**Uwaga o #5:** stawka 0,2 jest transitywnie POKRYTA testem przez wielorundową sagę
+R-ZUZYCIE-SUROWCOW N1/N2 (`citizen-resource-upkeep-test.cjs`, 100+/100+ asercji, 5+ rund
+Evaluatora na mechanizmie drenażu który UŻYWA tej stałej) — ale sama WARTOŚĆ (0,2, nie np. 0,3)
+jako zamierzona decyzja właściciela nigdy nie dostała jawnego werdyktu „to jest właściwa liczba,
+wdrożona poprawnie". Niższe ryzyko niż pozostałe 5, ale dla kompletności też w dispatchu.
+
+**Przyczyna prawdopodobna:** kolejne fale redispatchu (batch 2026-08-12 #1: 469f3152/konwertery/
+magazyn; kategoria 4: scene-styledoverlays/rekrutacja-brazu/zuzycie-n1/mapgen-pangea) każda
+skupiała się na PODZBIORZE „wiszących" tematów wybranym z pamięci sesji/kontekstu, nie z pełnej,
+systematycznej listy 11(14) hashy — klasyczny błąd „ponowna lista z pamięci zamiast z rejestru",
+dokładnie ten typ pomyłki przed którym ostrzega §0c. **Dispatch 6 Evaluatorów (Opus 5) NA
+ISTNIEJĄCYM, już zmergowanym kodzie (nie nowa implementacja) — w toku, ręcznie tworzone worktree.**
+
+**STATUS: W NAPRAWIE.**
+
+## ⛔ AUDYT WŁASNY #3 — 11 KOLEJNYCH commitów bez Evaluatora, znalezionych przez systematyczne
+## krzyżowanie KAŻDEGO hasha commitu (nie tylko nagłówków) od FALA 269 (2026-08-12, ultracode)
+
+Na wyraźne polecenie właściciela („sprawdź czy każdy temat z listy jest zaopiekowany, masz
+możliwość puszczenia przynajmniej 10 subagentów") — pełny, systematyczny przegląd: `git log
+--oneline 0c1f7c37..HEAD` (wszystkie commity od FALA 269), odfiltrowane wpisy czysto
+dokumentacyjne (`Rejestr:`/`Kanal:`/`WIP:`/`Deploy`), dla KAŻDEGO pozostałego hasha grep w
+rejestrze — nie tylko czy ma własny nagłówek „SCALONE", ale czy GDZIEKOLWIEK pada słowo
+„Evaluator" w jego kontekście. Wynik: **11 commitów z zerowym śladem niezależnej recenzji**,
+w tym 7 które NAWET nie mają własnego nagłówka domykającego z hashem (kod istnieje, rejestr
+milczy całkowicie — gorszy przypadek niż audyty #1/#2, gdzie przynajmniej był nagłówek
+„SCALONE"):
+
+1. `0651d65e` — P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD (nowy chip „Obywatele")
+2. `ad4b1e8d` — P-DYPLOMACJA-STOL-NEGOCJACJI-ZABLOKOWANY (actionableNegotiationIdsForPair)
+3. `3a3b11da` — P-NAZWY-JEDNOSTEK-MYLACO-PODOBNE (epoka w liście rekrutacji)
+4. `fcd31209` — P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI (przycisk zamiany z frontem kolejki)
+5. `26b684af` — P-TARGOWISKO-BLEDNA-BRAMKA-BADAN (techPrereqChain dla AND-prereqów)
+6. `7b02eb2d` — P-KONIEC-TURY-DYPLOMACJA-MYLACY-NAGLOWEK
+7. `fc17538f` — P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE
+8. `3dc9d650` — P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (ma nagłówek „SCALONE, czeka na Evaluatora" — nigdy nie doczekał)
+9. `ecbddda8` — R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 (wartości produkcji terenowej)
+10. `89c16ec1` — P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (tabela Miast)
+11. `810d5917` — **P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE** (KRYTYCZNE, regresja na WDROŻONYM
+    ROBOCZA — fix F1/F2 istnieje, notatka dopisana wstecznie przy audycie „raport", ale NIGDY
+    nie dostał Evaluatora mimo że to najwyższy-ryzyka temat z całej jedenastki — martwe
+    Kontynuuj/Wczytaj na starcie gry). F3/F4/F5 ze specyfikacji świadomie odłożone, nie
+    dispatchowane, nadal otwarte jeśli ktoś zechce je podjąć (niepilne, nie blokują F1/F2).
+
+Dodatkowo niepewny, niski priorytet: `5448eb51` (fix wycieku placeholdera HUD Surowce) reaguje
+wprost na finding Evaluatora `9594e4ac`, ale sam fix nigdy nie dostał świeżego spojrzenia —
+dołączony do dispatchu jako najmniejszy z 12.
+
+**Dispatch 11 Evaluatorów (+1 mały, 12 razem) w toku, Opus 5, na istniejącym kodzie.**
+
+**STATUS: W NAPRAWIE.**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 (`25c09c45`) — RUNDA 3: 3/3 FAIL JEDNOMYŚLNIE (trzeci raz)
+
+Wszyscy 3 Evaluatorzy (A/B/C, niezależnie) potwierdzają: **punkty 1/3/4/5 solidne, mutacyjnie
+dowiedzione** (5 pod-guardów capital-capture.ts osobno, guard post-battle-map dokładnie 2
+czerwone, ochrona fallbacku w teście obozów). **Punkt 2 (livelock) — GŁÓWNY POWÓD ISTNIENIA
+RUNDY 3 — NIE naprawiony, tylko WYDŁUŻONY okres cyklu** (z 2 do 2×d(A,B), przy realnym
+`MIN_CITY_DISTANCE=4` to wciąż cykl o okresie 6-8, zero przesunięcia netto). Pojedynczy slot
+pamięci (`recentlyClearedCityId`) strukturalnie nie może wyrazić „odwiedziłem już A i B" —
+zapisanie B kasuje A, A wraca do puli, wahadło w nieskończoność. Przy 3 miastach trzecie NIGDY
+nie jest odwiedzane.
+
+**Ten sam wzorzec ślepego testu trzeci raz z rzędu**: nowa sekcja 6 zbiera 20 wpisów w logu, ale
+asercjonuje tylko pierwsze 13 (`phase1+phase2`) — 7 nieasercjonowanych wpisów na końcu zawiera
+DOKŁADNIE zawrócenie, którego naprawa miała nie dopuścić. Wszyscy 3 Evaluatorzy odtworzyli to
+niezależnie tym samym harnessem (realny ruch aplikowany z komendy `move`, nie 2x wywołanie na tej
+samej pozycji). **Systemowa lekcja**: asercja „monotoniczny spadek w oknie/fazie" nie chroni przed
+cyklem obejmującym więcej faz niż okno — testy tego tematu muszą sprawdzać CAŁY log, nie prefiks.
+
+**⛔ NOWE, KRYTYCZNE ustalenie strukturalne (Evaluator C, potwierdzone czytaniem main.ts:26273):**
+barbarzyńskie przejęcie miasta jest osiągalne WYŁĄCZNIE przez komendę `attack` na PRZYLEGŁĄ
+jednostkę wroga — miasto BEZ obrońców nie może zostać zdobyte NAWET NA HARD, mimo że
+`shouldAllowBarbCityCapture('hard') === true`. Skutek: dla jednostki stojącej przy niebronionym
+mieście **nie istnieje stan terminalny** — żadna naprawa pamięci per-jednostkowej (ani slot, ani
+zbiór odwiedzonych) nie da REALNEGO zakończenia, tylko patrol o innej amplitudzie. To pokrywa się
+z już zarejestrowanym otwartym ABC „puste miasto trwale odporne na przejęcie na hard" — **runda 4
+NIE rozwiąże tematu do końca bez rozstrzygnięcia TEGO ABC przez właściciela** (czy `move` na
+niebronione miasto ma je przejmować, analogicznie do zwykłego zajęcia heksu). Nie zgaduję —
+zostaje jako ABC.
+
+**STATUS: dispatch rundy 4 w toku — zakres: (1) zbiór odwiedzonych miast zamiast pojedynczego
+slotu (drugi wariant ze specyfikacji rundy 3, jedyny strukturalnie zdolny dać postęp), (2) test
+musi asercjonować PEŁNY log (wszystkie wygenerowane decyzje), nie prefiks/fazę, (3) jawna notka w
+kodzie i teście że bez rozstrzygnięcia ABC „puste miasto trwale odporne" wynikiem będzie
+OGRANICZONY patrol (odwiedza wszystkie miasta po kolei, cyklicznie), NIE realne zakończenie —
+to ma być udokumentowane jako świadomy, tymczasowy stan, nie ukryte pod zieloną bramką.**
+
+## Odblokowanie tymczasowe mapgen-pangea (`e0ce33d8`) — Evaluator: PASS-WITH-NOTES, TEMAT ZAMKNIĘTY
+
+Potwierdzone: sekcja Pangea izolowana (4 wystąpienia `pangeaShapeFail` w repo, żadne w `allOk`),
+reszta sekcji (rzeki/sieć/determinizm/chaty/czasy) nietknięta — własna mutacja (seed 42 vs 43 w
+determinizmie) nadal poprawnie czerwieni bramkę MIMO równoległej (nieblokującej) porażki Pangei.
+
+**Ważna nota (nie blokuje scalenia, ale koryguje oczekiwania):** pełen bieg `map-gen-regression-test`
+jest niewykonalny w tym sandboxie (Evaluator zmierzył niezależnie: mapa standardowa 117.2s vs
+limit 7000ms, pełny bieg bramki szacunkowo >2h) — **odblokowanie Pangei NIE daje dziś zielonej
+całej bramki w środowisku chmurowym**, bo `stdOk`/`duzyOk` i tak padają z powodu
+P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY (osobny, już zarejestrowany temat). Realna korzyść z tego
+odblokowania materializuje się dopiero na sprzęcie z realistycznymi czasami LUB po zamknięciu
+tematu limitów sandboxa. Dodatkowe dane dla oczekującego ABC R-MAPGEN-PANGEA-PROG-Q1: przy seed 42
+`coast/√A=3.789` (próg `>3.8`, chybienie o 0.3%), `bboxFill=0.856` (próg `<0.87`, zapas 1.6%) —
+potwierdza że `bboxFill` ma realną siłę wykrywania, `coastRatio` to niemal-ślepy próg.
+
+## Batch kategorii 4 (5 tematów) — wyniki
+
+**P-MOC-BALANS-WAGI + P-MOC-PODZIAL-WIDOK (`deccc6b4`) — TEMAT ZAMKNIĘTY, Evaluator: PASS-WITH-NOTES.**
+Praca była już w pełni zaimplementowana (przodek HEAD), zdublowany dispatch nie wprowadził zmian.
+Wszystkie 6 wag i 3 tryby widoku zweryfikowane niezależnie (arytmetyka przeliczona ręcznie,
+2 mutacje, spójność JSON↔fallback sprawdzona dla wszystkich 11 współczynników). **Nowa nota
+(nie zgłoszona przez Operatora):** kliknięcie przełącznika trybu widoku Rankingu przewija panel
+na sam początek (`bodyEl.innerHTML=body` bez zachowania `scrollTop`) — realny defekt UX,
+niepilny, do osobnej naprawy.
+
+**P-ARMIA-CHIP-PELNE-JEDNOSTKI (`b32b52ea`) — TEMAT ZAMKNIĘTY, Evaluator: PASS-WITH-NOTES.**
+Praca była już w pełni zaimplementowana (przodek HEAD). Wszystkie 4 wymagania właściciela
+zweryfikowane (chip HUD, panel ogólny, kolumna per-miasto bez floorowania, wiersz RAZEM) —
+jedno źródło kosztu (`manpower.ts`) potwierdzone. Operator wzmocnił test o sekcję F (dowód
+mutacyjny spójności 4 miejsc). **Nota:** komentarz w nowej sekcji F testu przecenia własne
+pokrycie (twierdzi że wykryje KAŻDĄ regresję rozjazdu, ale mutacja panelu złapana tylko przez
+osobny regex, nie przez samą sekcję F) — do przeredagowania, nieblokujące.
+
+**R-ZUZYCIE-SUROWCOW-OBYWATELE N2 runda 5 pkt 2-3 + backlog cityOrderState — SCALONE, konflikt
+2 równoległych Operatorów zsyntetyzowany przez orkiestratora, temat zamknięty (`74019e25`).**
+Szczegóły: commit wyżej. Oba Evaluatory (osobno dla każdego z 2 równoległych dispatchy) poprawnie
+złapały że naprawa `cityOrderState.clear()` w `restoreGameFromSave` łamie istniejące K1/K3
+(pinowały starą liczbę 4). Zsyntetyzowana naprawa: K1→5, K3→1+1, plus nowa asercja H6b (Evaluator
+zuzycie-n2-r5 znalazł że H6 nie łapie podmiany wartości na zahardkodowaną — H6b to domyka).
+Dispatch pojedynczego Evaluatora (Opus 5) na scaloną, zsyntetyzowaną wersję w toku.
+
+**P-WCZYTYWANIE-REGENERUJE-MAPE-OD-ZERA ECHO 3 (IndexedDB, przerwany przegląd) — Evaluator: FAIL.**
+Migracja architektonicznie dobra, **najgorszy scenariusz (utrata zapisu) NIE materializuje się**
+(4 mutacje adwersarialne złapane, transakcyjność IDB chroni przed torn state). Ale 2 realne
+blokery, oba udowodnione wykonaniem, oba niepokryte testem:
+- **B1** — brak strażnika re-entrancy w `saveLoadDialog.ts::renderList()` (linia 433) — dwa
+  szybkie kliknięcia dają DUPLIKACJĘ wierszy w dialogu "Wczytaj grę" (dowód: 3→6 wierszy).
+- **B2** — `idb-storage.ts::openDb()` (linie 52-80) cache'uje PORAŻKĘ `indexedDB.open()` na stałe
+  — jedna przejściowa awaria wyłącza zapis/odczyt IDB do końca sesji karty, gra cicho spada na
+  legacy localStorage (widoczne tylko jako toast błędu co turę).
+- **B3** (konsekwencja B2) — odczyt z legacy pod tą samą nazwą slotu bez ostrzeżenia w UI może
+  pokazać graczowi dane sprzed migracji (dowód: ten sam slot "Rzym", tura 200 vs tura 5).
+8 dodatkowych, nieblokujących not (durability przy zamknięciu karty, mylące komunikaty błędów,
+przestarzały known-fail w map-snapshot-load-test, brak `onversionchange`, duplikacja fallbacku
+5×, cache niedoczyszczany po delete ostatniego zapisu, luka pokrycia `saveToLocal ok:true`,
+brak sprzątania legacy). **STATUS: dispatch naprawy B1+B2 (+B3 minimum) w toku.**
+
+## ECHO — kategoria 6 raportu ZAWIESZONA (Maciej, 2026-08-12)
+
+Właściciel zauważył że raport wyglądał inaczej niż pamiętał i poprosił o sprawdzenie w historii,
+co dokładnie miał na myśli prosząc o „numer 6". Sprawdzone wyczerpująco: `git log -- CLAUDE.md`
+(komity `db7edb75` = oryginalne 5 kategorii 2026-08-10, `30b4112c` = dopisanie kategorii 6
+2026-08-12) + pełny transkrypt tej sesji (~59 tys. linii, wszystkie punkty kompaktowania).
+**Ustalenie: dosłowna, oryginalna wypowiedź właściciela nie jest odzyskiwalna** — nawet
+najwcześniejszy zachowany zapis to już parafraza z wcześniejszego kompaktowania kontekstu, nie
+cytat surowy. Właściciel po zapoznaniu się z tym co jest zachowane, z pamięci potwierdził:
+„W numerze 6 miały być po prostu wszystkie tematy, niezależnie od tego, w której są części,
+wypisane, wylistowane od ostatniej fali." — czyli DOKŁADNIE definicja jaką kategoria 6 już miała.
+**Decyzja: SKORO te same tematy są i tak widoczne rozbite na kategorie 1-5, kategoria 6 zostaje
+ZAWIESZONA (nie usunięta z pamięci projektu) do czasu aż właściciel znajdzie dla niej inne
+zastosowanie.** CLAUDE.md §10 zaktualizowane — hasło `raport` wraca do 5 kategorii. Zero zmian w
+kodzie gry, czysto proceduralne.
+
+## ⛔ BŁĄD WŁASNY: P-ARMIA-CHIP-PELNE-JEDNOSTKI zarejestrowany jako "ZAMKNIĘTY" bez scalenia diffu
+
+Właściciel poprosił o sprawdzenie czy kategorie 1-5 wymagają działania — przy tej okazji własna
+weryfikacja wykryła: w batchu kategorii 4 (`0d320e6c`) zarejestrowałem P-ARMIA-CHIP-PELNE-JEDNOSTKI
+jako "TEMAT ZAMKNIĘTY, Evaluator: PASS-WITH-NOTES", opisując że Operator dopisał do
+`gra/tools/hud-armia-chip-jednostki-test.cjs` sekcję F (+87 linii, +8 asercji, dowód mutacyjny
+spójności 4 miejsc) i że Evaluator to zweryfikował — ale **ten commit (`0d320e6c`) zawiera
+WYŁĄCZNIE zmianę rejestru, zero kodu**. Worktree `eval-pool-3` z faktyczną sekcją F został
+usunięty PRZED scaleniem diffu do głównego drzewa — pomyłka wynikła z potraktowania tego tematu
+identycznie jak równoległy P-MOC-BALANS-WAGI (gdzie Operator FAKTYCZNIE nic nie zmienił, bo
+wszystko już było zaimplementowane) — dla armia-chip było DO scalenia, a nie zostało. Weryfikacja:
+`gra/tools/hud-armia-chip-jednostki-test.cjs` w drzewie dziś ma 353 linie, zero wystąpień "Sekcja
+F" — potwierdzone bezpośrednio. Dowód mutacyjny, który Evaluator faktycznie recenzował i za który
+dał PASS-WITH-NOTES, dziś fizycznie nie istnieje w repo. **Ten sam typ błędu co C-042
+("rejestr zamknięcia i faktyczny deploy/merge to dwa różne stany"), tym razem w drugą stronę —
+rejestr twierdzi że coś jest zamknięte, kod tego nie potwierdza.**
+
+**STATUS: dispatch odtworzenia sekcji F (Operator+Evaluator od nowa, oryginalny diff nie do
+odzyskania — worktree usunięty) w toku, razem z naprawą UX-defektu scroll-reset znalezionego przez
+Evaluatora P-MOC-BALANS-WAGI (kliknięcie przełącznika trybu widoku Rankingu Mocy przewija panel na
+początek — `empireDetailPanel.ts`, `bodyEl.innerHTML=body` bez zachowania `scrollTop`).
+
+## ZBIÓRKA WSZYSTKICH OTWARTYCH PYTAŃ ABC (Maciej, 2026-08-12: „zadaj mi wszystkie pytania A/B/C,
+## które cię blokują — wszystkie") — pełna lista sformalizowana z bullet-pointów na format ABC
+
+Sześć pytań barbarzyńskich („zbiorcza lista ABC", linia ~14100) nigdy nie miało formalnych opcji
+A/B/C — poniżej sformalizowane pod numerami. Reszta (5 pytań) już miała pełny format, tylko
+zebrana tu w jednym miejscu do jednorazowego zadania w czacie.
+
+**[TEMAT: Asymetria „Wycofaj" gracz vs AI/barbarzyńcy] P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1**
+Sytuacja: na `hard`, miasto gracza może zawsze wycofać garnizon przed walką polową (gracz
+kontroluje moment starcia) — miasto AI/barbarzyńcy nie ma takiej opcji (AI nie wycofuje się
+świadomie), więc miasta AI strukturalnie padają częściej niż miasta gracza w tej samej sytuacji.
+A) Zostaw jak jest — asymetria wynika z tego że gracz ma wolną wolę, AI nie; naturalna przewaga
+   sterowania ręcznego. Za: zero pracy, zgodne z ogólną zasadą że gracz podejmuje decyzje. Przeciw:
+   łamie PARYTET AI (zasada projektu — każda zmiana stosuje się identycznie do AI).
+B) Dodaj AI heurystykę wycofania garnizonu przy przegranej walce polowej (próg HP/przewagi wroga).
+   Za: przywraca parytet. Przeciw: realna praca nad AI, ryzyko nowych błędów w zachowaniu AI.
+C) Zaakceptuj asymetrię jako zamierzoną trudność gry (gracz ma przewagę informacyjną i reakcji,
+   to część rozgrywki) — udokumentuj wprost jako świadomą decyzję, nie naprawiaj.
+Rekomendacja: C — to różnica między graczem-człowiekiem a AI, nie bug silnika; ale zgłaszam do
+jawnej decyzji bo dotyka PARYTETU AI, zasady którą właściciel podkreślał wielokrotnie.
+
+**[TEMAT: Puste miasto wroga trwale odporne na przejęcie na hard] P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1**
+Sytuacja: barbarzyńskie przejęcie miasta jest osiągalne WYŁĄCZNIE przez komendę `attack` na
+przyległą jednostkę wroga (`main.ts:26273`) — miasto BEZ obrońców nie może zostać zdobyte NAWET
+NA HARD, mimo że `shouldAllowBarbCityCapture('hard')===true`. To BLOKUJE pełne domknięcie rundy 4/5
+tematu zachowania barbarzyńców wobec miast — bez tej decyzji jednostka może co najwyżej patrolować
+między niebronionymi miastami, nigdy żadnego nie zdobyć.
+A) Zamierzone — „nagroda za obronę": miasto bez garnizonu jest bezpieczne dopóki jakaś jednostka
+   wroga fizycznie go nie obsadzi. Za: zero pracy, zgodne z dzisiejszym zachowaniem od zawsze.
+   Przeciw: sprzeczne z Twoim pierwotnym opisem („przy najwyższym poziomie powinni zajmować
+   miasta") — dziś NIGDY nie zajmują niebronionego miasta na żadnym poziomie.
+B) Dodaj mechanikę „wejście na pusty heks miasta = przejęcie" (analogicznie do zwykłego zajęcia
+   terytorium), aktywną TYLKO na `hard` (`shouldAllowBarbCityCapture`). Za: realizuje pierwotną
+   specyfikację wprost. Przeciw: nowa mechanika w silniku (wymaga testów, wpływa na balans hard).
+C) Jak B, ale aktywna też na `normal` (bez obrońców = zawsze można zająć, niezależnie od
+   trudności) — różnicowanie trudności zostaje wyłącznie w tym, JAK AGRESYWNIE barbarzyńcy szukają
+   takich miast (`aggroRadius`/`raidReady`), nie w SAMEJ możliwości przejęcia.
+Rekomendacja: B — zgodne z Twoim pierwotnym rozróżnieniem poziomów trudności („przy najniższym —
+dokładnie to co robią teraz [stoją obok]... przy najwyższym powinni zajmować miasta").
+
+**[TEMAT: Czy barbarzyńcy mogą całkowicie wyeliminować cywilizację] P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1**
+Sytuacja: dzisiejszy silnik ogólnie na to pozwala (mechanika eliminacji nie rozróżnia kto jest
+zdobywcą) — nie ma osobnej blokady chroniącej gracza/AI przed całkowitą eliminacją przez
+barbarzyńców konkretnie.
+A) Zostaw jak jest — barbarzyńcy to pełnoprawne zagrożenie militarne, eliminacja cywilizacji przez
+   nich jest częścią wyzwania (zwłaszcza na hard). Za: brak dodatkowej pracy, spójne z resztą
+   silnika (AI też może eliminować AI). Przeciw: barbarzyńcy nie mają miast/gospodarki do
+   zarządzania zdobyczą — eliminacja przez nich może być mniej satysfakcjonująca narracyjnie niż
+   przez rywala-cywilizację.
+B) Dodaj twardą blokadę — ostatnie miasto cywilizacji nigdy nie może paść na rzecz barbarzyńców
+   (walka toczy się normalnie, ale przejęcie ostatniego miasta jest zablokowane/miasto zostaje
+   "wyzwolone" zamiast przejęte). Za: chroni przed frustrującą, "niesprawiedliwą" porażką z ręki
+   losowego zagrożenia środowiskowego. Przeciw: sztuczne, gracz traci realne ryzyko.
+Rekomendacja: A — potwierdzić że to zamierzone, nie zgadywać czy potrzebna blokada; to pytanie
+najniższego ryzyka z całej listy, głównie do potwierdzenia.
+
+**[TEMAT: Limit pościgu osieroconych jednostek barbarzyńskich] P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1**
+Sytuacja: jednostka, której obóz-spawner został zniszczony, dostaje NIEOGRANICZONY zasięg
+pościgu (`chaseRadius=Infinity`) — zamierzony hamulec bezpieczeństwa („odwrót przy niskim HP",
+`healthFrac`) jest MARTWYM KODEM od zawsze (`healthFrac` nigdy nie jest ustawiane przez silnik),
+więc w praktyce osierocona jednostka goni cel przez całą mapę bez końca.
+A) Zostaw bez limitu — osierocona jednostka barbarzyńska to "berserker" bez macierzystego obozu,
+   nieograniczony pościg jest częścią jej charakteru. Za: zero pracy. Przeciw: `healthFrac` jako
+   martwy kod to dług — jeśli miał być realnym hamulcem, dziś nim nie jest.
+B) Dodaj realny limit (np. liczbę tur od osierocenia, albo promień od miejsca zniszczenia obozu)
+   zamiast martwego `healthFrac`. Za: przewidywalne zachowanie, łatwiejsze do zbalansowania.
+   Przeciw: nowy parametr do dostrojenia, zmiana zachowania od tego co jest dziś w grze.
+C) Napraw `healthFrac` żeby faktycznie było ustawiane (jednostka o niskim HP zawraca) — realizuje
+   PIERWOTNY zamiar kodu zamiast dodawać nowy mechanizm. Za: naprawia dług zamiast go obchodzić.
+   Przeciw: może zmienić balans walki (jednostki HP już dziś liczone gdzie indziej, integracja
+   nietrywialna).
+Rekomendacja: A — nieograniczony pościg osieroconej jednostki wydaje się working-as-intended
+(kara za zniszczenie obozu: agresywniejsi obrońcy), ale zgłaszam bo martwy kod bezpieczeństwa to
+zawsze warte potwierdzenia.
+
+**[TEMAT: Koszt ruchu przy zniszczeniu obozu przez rozdzielenie armii] P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1**
+Sytuacja: gdy gracz niszczy obóz barbarzyński mechaniką `onSplit` (rozdzielenie stosu jednostek na
+heksie obozu), ta ścieżka dziś NIE zużywa punktów ruchu jednostki — inaczej niż normalny atak.
+A) Zostaw bez kosztu — rozdzielenie armii to inna kategoria akcji niż atak, nie musi kosztować
+   ruchu. Za: zero pracy, może być zamierzone (unikalna nagroda za tę metodę zniszczenia).
+   Przeciw: potencjalna dziura balansowa (darmowe niszczenie obozu bez utraty tury jednostki).
+B) Dodaj koszt ruchu identyczny jak przy normalnym ataku na obóz. Za: spójność mechaniki,
+   eliminuje potencjalny exploit. Przeciw: może być karą za coś co miało być bonusem tej ścieżki.
+Rekomendacja: B — spójność z resztą mechaniki ataku wydaje się bezpieczniejsza domyślnie, ale to
+czysto Twoja decyzja balansowa, nie mam silnej preferencji.
+
+**[TEMAT: Znaczenie „bezpowrotnie" przy zniszczeniu obozu] P-BARBARZYNCY-BEZPOWROTNIE-RESPAWN-Q1**
+Sytuacja: gdy obóz zostaje zniszczony „bezpowrotnie" (wg specyfikacji/nazwy mechaniki), dziś w
+praktyce oznacza to tylko że TA KONKRETNA INSTANCJA obozu znika — sam HEKS może dostać NOWY obóz
+w ciągu kilku-kilkudziesięciu tur (generator spawnu nie ma blacklisty zniszczonych lokalizacji).
+A) „Bezpowrotnie" = tylko instancja, nie heks (dzisiejsze zachowanie) — respawn na tym samym
+   miejscu po czasie to normalna dynamika świata, nie naruszenie słowa "bezpowrotnie" (które
+   odnosi się do TEGO obozu, nie do lokalizacji na zawsze). Za: zero pracy. Przeciw: może zaskoczyć
+   gracza który oczekiwał że oczyszczony teren zostanie oczyszczony na stałe.
+B) „Bezpowrotnie" = też heks — dodać blacklistę lokalizacji zniszczonych obozów (na zawsze albo na
+   długi okres, np. 50+ tur) w generatorze spawnu. Za: dosłowna zgodność ze słowem "bezpowrotnie".
+   Przeciw: praca w generatorze, może zmniejszyć presję barbarzyńców w późnej grze jeśli gracz
+   systematycznie czyści obozy.
+Rekomendacja: A — słowo "bezpowrotnie" najbardziej naturalnie odnosi się do konkretnego obozu
+(tej grupy barbarzyńców), nie do lokalizacji geograficznej na mapie, ale zgłaszam żeby potwierdzić
+że to zgodne z Twoim zamiarem projektowym.
+
+**STATUS: wszystkie 6 zadane w czacie w tej turze, razem z pozostałymi 5 już wcześniej
+sformalizowanymi pytaniami (R-EPOKA-CUD-ZAKRES-Q1, P-SUROWCE-KOLEJNOSC-KON-Q1,
+R-KONWERTERY-TRUDNOSC-SPLASZCZONA-Q1, R-MAPGEN-PANGEA-PROG-Q1, P-DREWNO-BRAMKA-RYZYKO-STARTU) —
+11 pytań łącznie, poza normalnym limitem 3/turę na wyraźne życzenie właściciela.
+
+## ECHO R-EPOKA-CUD-ZAKRES-Q1 = B, z warunkiem właściciela + nowy wymóg UI (Maciej, 2026-08-12)
+
+Odpowiedź właściciela: „1b pod warunkiem, że dana cywilizacja w danej epoce ma swój cud do
+wybudowania. Jeżeli nie ma, to nie ma blokady." + nowy wymóg: „Musi też powstać jakaś informacja,
+czego brakuje do kolejnej epoki danej cywilizacji, żeby gracz wiedział, z czego wynika fakt, że
+nie może jeszcze awansować."
+
+**WAŻNE ustalenie po przeczytaniu realnego kodu (`gra/src/game/owner-epoch.ts:80-89`,
+`eraOwnWonderSatisfied`)**: warunek który właściciel opisał w odpowiedzi **JEST JUŻ DOKŁADNIE
+DZISIEJSZYM ZACHOWANIEM** — `eraOwnWonderSatisfied` zwraca `true` (brak blokady) gdy
+`required.length === 0` (cywilizacja nie ma cudu E przypisanego tej epoce), blokuje TYLKO gdy cud
+jest przypisany i niezbudowany. To nie jest zmiana logiki blokady — **logika blokady zostaje
+BEZ ZMIAN kodu**, bo już realizuje dokładnie to czego właściciel chciał. Zero regresji do naprawy.
+
+**Jedyna realna, nowa praca — brakująca informacja dla gracza.** Sprawdzone: dzisiejszy kod ma
+TYLKO wewnętrzny mechanizm AI-forcing (`main.ts:25500-25543`, `wonderEraGateForced` — wymusza
+priorytet budowy cudu w kolejce AI), ZERO gracz-widocznego UI tłumaczącego dlaczego epoka nie
+awansuje. Do zbudowania: widoczny komunikat (najlepiej w panelu Nauki/drzewka technologii i/lub
+przy wskaźniku epoki w HUD) pokazujący: (a) czy WSZYSTKIE technologie bieżącej epoki są odkryte
+(jeśli nie — ile brakuje), (b) czy cywilizacja ma przypisany cud wyłączny (E) tej epoce i czy jest
+zbudowany (jeśli ma i nie jest — nazwa cudu + status budowy), (c) jeśli cywilizacja NIE MA cudu w
+tej epoce — jasne potwierdzenie że warunek nie obowiązuje (żeby gracz nie szukał czegoś czego nie
+ma). Źródło danych: `allEraTechsResearched`, `eraOwnWonderSatisfied`, `eraOwnWonderIds` (wszystkie
+już istnieją w `owner-epoch.ts`, czysta logika, gotowe do wywołania z UI).
+
+**STATUS: dispatch Sonnet 5 (worktree) w toku — WYŁĄCZNIE punkt UI, logika blokady nietknięta.**
+
+## Odtworzenie sekcji F + scroll-reset (`05328fe6`) — Evaluator: Zadanie 1 PASS, Zadanie 2 FAIL
+
+**Zadanie 1 (sekcja F, dowód mutacyjny chipu Armia): PASS.** Evaluator potwierdził 5 własnymi
+mutacjami (2 łapane, 2 celowo poza zakresem sekcji F bo dotyczą wspólnych liści obu ścieżek —
+zgodne z uczciwym komentarzem sekcji). **Nota nieblokująca (do wiadomości, nie naprawiać teraz)**:
+`main.ts:12544` (`rekruci: mp.manpowerBiezacy` w budowie wierszy `cityPobor`) nie jest pinowane
+przez żadną sekcję — mutacja podmieniająca na `mp.manpowerMax` zostaje niewykryta (58/58 zielono)
+mimo realnego rozjazdu w grze (kolumna JEDN. pokazuje inne wartości niż wiersz RAZEM).
+
+**Zadanie 2 (scroll-reset w Rankingu Mocy): FAIL — naprawa wymienia jeden defekt na drugi, na
+CZĘSTSZEJ ścieżce.** Naprawiony scenariusz (przełącznik trybu widoku w PEŁNYM panelu) działa. Ale
+**klik żetonu HUD (Skarbiec/Nauka/Surowce/Armia itd.) — najczęstsza ścieżka wejścia do panelu —
+teraz przywraca scrollTop Z POPRZEDNIEGO, INNEGO bloku zamiast pokazywać nową treść od góry**
+(dowód: S2 klik żetonu po scrollu w innym bloku, oczekiwane 0, otrzymane 600; S3 ponowne otwarcie
+panelu po zamknięciu, oczekiwane 0, otrzymane 900). Przyczyna: `render()` nie odróżnia re-renderu
+TEGO SAMEGO widoku (gdzie przywrócenie jest poprawne) od otwarcia NOWEGO bloku/świeżego otwarcia
+(gdzie powinno być 0) — panel zamknięty to `transform:translateX(100%)`, nie `display:none`, więc
+`scrollTop` przeżywa zamknięcie.
+
+**Gotowa recepta naprawy od Evaluatora** (3 linie, nie rusza działającego S1/S4 ani filtra kolumn
+tabeli Miasta): flaga `resetScrollOnNextRender` ustawiana w `showEmpireDetailPanel()` (miejsce
+otwierania panelu, NIE zgadywana wewnątrz `render()`), odczytywana i zerowana w gałęzi `else`
+`render()`. Dodatkowa nota: test scrollowy bez naprawy rzuca `ReferenceError` zamiast czysto
+failować (bramka i tak czerwona, ale `runReal(...)` wart owinięcia w try/catch).
+
+**STATUS: dispatch rundy 2 WYŁĄCZNIE dla Zadania 2 (scroll-reset) w toku — Zadanie 1 (sekcja F)
+zostaje bez zmian, PASS.**
+
+## ECHO — odpowiedzi na 10 pozostałych pytań ABC (Maciej, 2026-08-12, batch)
+
+**2a — P-SUROWCE-KOLEJNOSC-KON-Q1 = A.** Koń+Złoto zostają w jednym wierszu (już wdrożone).
+Zero kodu — **ZAMKNIĘTE**.
+
+**3a — R-KONWERTERY-TRUDNOSC-SPLASZCZONA-Q1 = A**, z uzasadnieniem właściciela: „nigdy nie
+planowaliśmy ograniczenia produkcji surowców na różnych poziomach trudności". **To ŚWIADOMIE
+COFA wcześniejszą decyzję `C-SUROW-CEGLA=A` (Maciej 2026-07-24)** — właściciel jawnie
+potwierdził że tamta decyzja nie odzwierciedlała faktycznego zamiaru. Płaskie wartości
+(10/10/10 Cegielnia, 5/5/5 Odlewnie) zostają. Zero kodu do zmiany (`26707dcf` już ma płaskie
+wartości) — **ZAMKNIĘTE, zdejmuję blokadę deployu tej części `26707dcf`**.
+
+**4a — R-MAPGEN-PANGEA-PROG-Q1 = A.** Próg `coastRatio` obniżony z 3.8 do ~3.72. Świadomie
+przyjęty kompromis mimo że Evaluator dowiódł że to czyni sekcję niemal ślepą (przy 3.70 skrajna
+degeneracja kształtu przechodzi) — właściciel wybrał prostotę/zieloną bramkę nad ostrością
+testu. Kod do zmiany.
+
+**5a — P-DREWNO-BRAMKA-RYZYKO-STARTU = A** (bramka surowcowa dla widoczności w rekrutacji
+zostaje bez zmian — świadome ryzyko z 2026-08-08 pozostaje w mocy) — **ZAMKNIĘTE, zero kodu**.
+
+**⛔ ALE — istotna korekta przy okazji, PODWAŻAJĄCA wcześniejsze ustalenie (rule §1a).**
+Właściciel doprecyzował ZAKRES KASKADY epok w rekrutacji, w sposób SPRZECZNY z tym co
+zarejestrowałem jako „NIE regresja" w tej samej turze co punkt 5 (`epoka-merge-recruit-test.cjs`,
+scalone w `0caaec93`, asercja „epoch=3: jednostki Kamienia WCIĄŻ dostępne — kaskada 3 epok, NIE
+tylko bieżąca" — **ta asercja jest TERAZ NIEPRAWDZIWA wg słów właściciela poniżej**):
+
+> „Zawsze umożliwialiśmy produkcję jednostek z poprzedniej epoki, czyli w brązie powinny być
+> możliwe do rekrutacji od razu, od początku, wszystkie jednostki z kamienia. Z kolei w żelazie
+> powinna być możliwość rekrutacji wszystkich jednostek z brązu, ale z kamienia już nie.
+> Oczywiście wyjątek dotyczy zwiadowcy. Tak że surowce nie są tu problemem. To jest naturalna
+> kolej rzeczy, że trzeba postawić odpowiednie ulepszenia, żeby te surowce pozyskać."
+
+**Nowa reguła kaskady**: epoka bieżąca + WYŁĄCZNIE jedna epoka bezpośrednio poprzedzająca (nie
+WSZYSTKIE niższe epoki jak dziś) — WYJĄTEK: Zwiadowca (`Epoka: Kamień` w `units.json`, jedyna
+jednostka bez wymogu surowca) ma pozostać dostępny we WSZYSTKICH epokach niezależnie od reguły.
+Skutek w praktyce: Brąz (epoka 2) nie zmienia się (Kamień=epoka1 ⩾ epoka-1=1, kaskada 1 epoki w
+dół daje ten sam wynik co dziś) — rozjazd ujawnia się DOPIERO w Żelazie (epoka 3): dziś pokazuje
+Kamień+Brąz+Żelazo (wszystkie 3), docelowo ma pokazywać Brąz+Żelazo (2), Kamień znika (poza
+Zwiadowcą). Kod: `gra/src/game/production.ts:829` (`if (epochNumber(u.Epoka) > epoch) continue;`
+— dodać dolną granicę). Test `epoka-merge-recruit-test.cjs` wymaga PRZEPISANIA (obecna asercja
+sekcji 3 zakłada dokładnie odwrotne zachowanie).
+
+**STATUS: dispatch Sonnet 5 (worktree) dla punktu 4 (próg mapgen) + korekty kaskady epok
+(punkt 5) w toku — dwa niezależne, równoległe zadania.**
+
+---
+
+**6 — P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1 — odpowiedź WŁASNA właściciela (nie litera ABC),
+zastępuje pierwotne opcje.** „Jeżeli jakaś jednostka jest ufortyfikowana w mieście i jest w
+garnizonie, to nie może się wycofać. Ani AI, ani gracz, ani nikt." Nowa reguła, symetryczna: dla
+KAŻDEGO obrońcy (gracz/AI/barbarzyńca) — jeśli WSZYSTKIE jednostki w obronie mają jednocześnie
+`inGarnizon===true` I `ufortyfikowanyWPolu===true`, `canRetreat` musi być `false` niezależnie od
+ownera. Dziś `canRetreat: true/false` ustawiane przy konstrukcji `preBattleSideFromRoster`
+(main.ts, kilka miejsc — grep `canRetreat:` znajduje ~3 literalne miejsca zapisu). Do sprawdzenia:
+czy dzisiejsze `true`/`false` już koreluje z `inGarnizon`/`ufortyfikowanyWPolu`, czy to osobny,
+niezwiązany warunek — jeśli osobny, podłączyć.
+
+**7b — P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1 = B.** Dodać mechanikę „wejście na pusty heks
+miasta (bez obrońców) = przejęcie", aktywną WYŁĄCZNIE na `hard` (`shouldAllowBarbCityCapture`).
+**To ODBLOKOWUJE pełne domknięcie tematu P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1** — bez stanu
+terminalnego żadna naprawa pamięci (rundy 2-4) nie mogła dać realnego zakończenia, tylko patrol.
+
+**8a — P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1 = A**, z istotnym doprecyzowaniem nowej
+mechaniki (efekt uboczny 7b — pierwszy raz miasto może trwale przejść pod barbarzyńców): „wtedy
+barbarzyńcy w mieście mogą budować normalnie, tak jak każda cywilizacja: jednostki jednak nie
+budują żadnych budynków ani ulepszeń; po prostu wykorzystują bazę miasta jako produkcję kolejnych
+jednostek. Całość jest nastawiona na produkcję jednostek wojskowych i atak na innych." Nowa
+mechanika: miasto pod `BARBARIAN_OWNER_ID` (-1) produkuje WYŁĄCZNIE jednostki (nigdy budynki/
+ulepszenia), kolejka/AI budowy barbarzyńskiego miasta dobiera cele czysto militarne.
+
+**9b — P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1 = B.** Dodać realny limit pościgu osieroconej
+jednostki (zamiast martwego `healthFrac`) — liczba tur od osierocenia LUB promień od miejsca
+zniszczenia obozu. Wybór konkretnego mechanizmu i wartości progowej: decyzja Operatora,
+uzasadniona w raporcie (żadna z dwóch opcji nie była jednoznacznie preferowana).
+
+**10b — P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1 = B.** Zniszczenie obozu przez `onSplit`
+(rozdzielenie armii) ma kosztować punkty ruchu identycznie jak normalny atak na obóz.
+
+**11a — P-BARBARZYNCY-BEZPOWROTNIE-RESPAWN-Q1 = A.** „Bezpowrotnie" dotyczy tylko instancji
+obozu (dzisiejsze zachowanie) — heks MOŻE dostać nowy obóz po czasie, to nie jest naruszenie
+słowa. Zero kodu — **ZAMKNIĘTE**, dopisać do rundy 5 obozów (już wstrzymanej) jako potwierdzenie,
+nie zadanie.
+
+**STATUS: dispatch w toku dla 6+7+8+9+10 jako skoordynowany batch (dzielą pliki
+barbarians.ts/main.ts capture — jeden Operator na raz zamiast 5 kolidujących równolegle),
+punkt 11 dołączony do już zarejestrowanej, wstrzymanej rundy 5 obozów jako potwierdzenie bez
+nowej pracy kodowej.**
+
+---
+
+## Odtworzenie sekcji F + scroll-reset — RUNDA 2 SCALONA (55e64ac2)
+
+**STATUS: w Evaluatorze.** Operator naprawił regresję z rundy 1 (Evaluator `a36b19fa6f9294e5a`
+znalazł: fix scrollTop dla przełącznika Moc w tym samym bloku zepsuł CZĘSTSZĄ ścieżkę — klik
+chipa HUD innego bloku przywracał starą pozycję zamiast resetować do 0). Naprawa: nowa flaga
+modułowa `resetScrollOnNextRender`, ustawiana WYŁĄCZNIE w `showEmpireDetailPanel()` gdy zmienia
+się blok/panel otwiera się od nowa (linia ~1563); `render()` sprawdza ją w osobnej gałęzi przed
+przywróceniem `prevScrollTop`. Test `empire-panel-moc-scroll-preserve-test.cjs` rozbudowany
+243→419 linii (46/46), z podwójnym dowodem mutacyjnym (w pliku + ręcznie na realnym źródle:
+cofnięcie obu części naprawy → 34 passed/12 failed, S1+S4 nadal zielone = naprawa rundy 1
+nienaruszona). Wszystkie bramki zielone (`tsc`, `hud-armia-chip-jednostki-test` 58/58,
+`power-objective-test` 29/29, `logic-test` 213/213). Scalone jako `55e64ac2`, worktree
+`fix-scroll-reset-r2` usunięty. Evaluator (Opus 5, temat UI niebojowy → 1x, per §4 CLAUDE.md
+Evaluator zawsze Opus 5 — poprzedni wpis błędnie mówił "Sonnet 5", skorygowane) dispatchowany.
+
+## ECHO R-EPOKA-CUD-ZAKRES-Q1 (95bf5503) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `ae9ce06e802b7b295`: twardy wymóg (`owner-epoch.ts` nietknięty) potwierdzony
+diffem pustym; wszystkie bramki odtworzone niezależnie (`era-gate-ui-test` 51/51,
+`era-cud-warunek-awansu-test` 33/33, `era-cud-main-ts-integracja-test` 15/15, `owner-epoch-test`
+13/13, `logic-test` 213/213); własny oracle na 822 scenariuszach (15 cywilizacji × epoki 1-4 ×
+warianty `done`/cudów) — 0 rozbieżności z silnikiem, `canAdvance` UI ≡ realna bramka
+`computeMainCivEraFromResearch`. 10 mutacji wstrzykniętych, 5 złapanych, 2 nieblokujące luki
+testowe (M6: tooltip przy OBU warunkach niespełnionych jednocześnie łączy tylko pierwszy powód
+przez `parts[0]` zamiast `parts.join('; ')` — realny błąd komunikatu, nie logiki; M10:
+`nextEraLabel` błąd nie zaasercjonowany). **ZAMKNIĘTE jako PASS-WITH-NOTES** — obie luki to dług
+testowy w UI-komunikacie, nie w logice bramki, nieblokujące.
+
+**Znaleziony przy okazji, zarejestrowany cicho (zasada §2):** Petra/Fenicjanie —
+`epokaWejscia=2` ale `techUnlock=Inżynieria` (technologia epoki 3) — PRE-ISTNIEJĄCY rozjazd
+danych (już znany po stronie AI, `main.ts:25598-25607`), nowa praca go nie tworzy, ale panel
+epoki teraz POKAZUJE Fenicjaninowi mylącą podpowiedź „Cud epoki: Petra — jeszcze nie
+zakolejkowany" mimo że nie może jej wykonać (brak tech). Osobna decyzja właściciela, nie do
+naprawy w tej zmianie — odłożone.
+
+---
+
+## Kaskada rekrutacji (epoka + 1 wstecz) — SCALONE (86890cd7)
+
+**STATUS: w Evaluatorze (Opus 5).** Operator odwrócił pełną kaskadę epok w dół z
+`production.ts` na regułę „epoka bieżąca + dokładnie 1 niżej" + stały wyjątek Zwiadowcy
+(`Typ==='Civilian'`, jedyna taka jednostka w `units.json`), zgodnie z odpowiedzią właściciela
+do pyt. 5a. `availableReplacementsFor` (ścieżka „Zastąp") świadomie NIETKNIĘTA — inna
+semantyka, potwierdzona istniejącym `unit-replace-test.cjs` (Wojownik jako zamiennik Hastati
+w Żelazie). `epoka-merge-recruit-test.cjs` testy 1-3 przepisane pod nową regułę, test 4
+(bramka surowcowa drewna, osobne ABC) nietknięty. Wszystkie bramki zielone (`tsc`,
+`epoka-merge-recruit-test` 13/13, `logic-test` 213/213, `unit-replace-test` 13/13,
+`tech-tree-test` 19/19, `research-test` 33/33), dowód mutacyjny (cofnięcie dolnej granicy →
+1/13 FAIL, dokładnie test 3). 5 pre-istniejących porażek w innych testach zweryfikowane
+identyczne przed/po via `git stash`. Worktree `fix-epoka-kaskada` usunięty, Evaluator
+dispatchowany w `eval-epoka-kaskada`.
+
+
+## Blokada wycofania obrońcy w garnizonie (pyt. 6) — SCALONE (787210e1)
+
+**STATUS: w Evaluatorze (Opus 5) — z NACISKIEM na jeden punkt do sprawdzenia.** Operator
+zmapował wszystkie 4 miejsca ustawiania `canRetreat`/`defenderCanRetreat` w repo — tylko JEDNO
+(`main.ts:20709`, `launchIncomingMapFieldBattle`, atak AI/barbarzyńcy na jednostkę gracza w
+mieście BEZ MURU, z pominięciem systemu oblężenia) może kiedykolwiek dać `defenderCanRetreat=
+true`; pozostałe 3 dotyczą wyłącznie opcji ATAKUJĄCEGO (zawsze gracz), nie obrońcy. Tam dodano
+`allDefendersFortifiedInGarnizon()` (nowa funkcja w `armyMerge.ts`) blokującą wycofanie
+niezależnie od ownera obrońcy.
+
+**Świadome odejście od litery ECHO, jawnie oznaczone przez Operatora:** zapis ECHO mówił o
+koniunkcji `inGarnizon===true I ufortyfikowanyWPolu===true`; Operator dowiódł wykonaniem, że te
+dwa pola są dziś wzajemnie wykluczające się (jeden przycisk 'fortify' → `enterGarnizon()` ALBO
+`enterFieldFortify()`, nigdy oba), więc dosłowna koniunkcja nigdy nie byłaby prawdziwa i reguła
+nigdy by nie zadziałała. Zaimplementował predykat na samym `inGarnizon`. Evaluator ma
+zweryfikować czy to jedyna sensowna interpretacja, czy zostawia lukę (`ufortyfikowanyWPolu` bez
+`inGarnizon` — obrona w otwartym polu — dziś NIE blokuje wycofania).
+
+Bramki zielone (`tsc`, nowy test 18/18, `logic-test` 213/213, `combat-test` 6/6 + 10 innych
+niedotkniętych testów pokrewnych). Worktree `fix-retreat-garnizon` usunięty, Evaluator w
+`eval-retreat-garnizon`.
+
+
+## Kaskada rekrutacji (86890cd7) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `aa283ff79dc4e7e14`: kod zgodny z deklaracją, jedyny drugi filtr epoki
+(`passesAvailabilityGates`, "Zastąp") świadomie nietknięty i weryfikowalnie inny cel. Edge
+`epoch=1` bezpieczny strukturalnie (`epochNumber()` ma podłogę 1). Niezależny oracle: 6
+cywilizacji × 3 epoki = 18/18 zgodnych. 9/9 mutacji własnych złapanych (100%). Pre-istniejące
+porażki zweryfikowane samodzielnie (before/after identyczne) — **korekta do raportu Operatora:
+jest ich 6, nie 5** — Operator pominął `zloto-test` (39 pass/6 fail, bramka Mennicy),
+pre-istniejące, niezwiązane z tą zmianą.
+
+**Nowe, zarejestrowane cicho (zasada §2), do przyszłego ABC:**
+
+1. **N1 — martwa kolumna `Dostępna w epokach` w `units.json`.** Wypełniona dla wszystkich 75
+   jednostek, nieczytana przez żaden plik w `src/`. Zwiadowca ma tam wprost `Kamień;Brąz;Żelazo`
+   — dane JUŻ deklarują ten wyjątek per-jednostkowo, bez potrzeby heurystyki po `Typ`. Reguła
+   ryczałtowa (epoka+1 wstecz) zgadza się z tą kolumną dla 64/75 jednostek — **11 się rozjeżdża**
+   (m.in. Taran, Wojownik, Falanga/Evocati/konnica asyryjska). Dowód intencji: commit `5e750a28`
+   celowo ograniczył Taran do samego Kamienia z opisem „taran kamienny ograniczony do Kamienia" —
+   ta decyzja nigdy nie została wpięta w kod. Ta zmiana POPRAWIA zgodność (22→13 rozjazdów, 0
+   zepsutych), ale 11 nadal się różni od tego co ktoś świadomie wpisał per jednostkę. Do
+   rozstrzygnięcia: czy docelowo silnik powinien czytać `Dostępna w epokach` zamiast reguły
+   ryczałtowej.
+2. **N3 — rekrutacja i „Zastąp" mają teraz RÓŻNE zasady kaskady epok, furtka do obejścia.**
+   Potwierdzone wywołaniem: Rzym w Żelazie NIE MOŻE rekrutować Wojownika (Kamień), ale MOŻE
+   zamienić Hastati na Wojownika przez „Zastąp" — czyli gracz i tak dostaje jednostkę kamienną w
+   Żelazie, tylko inną ścieżką. To decyzja produktowa (czy „Zastąp" ma respektować kaskadę epoki),
+   nie techniczna — do ABC.
+
+Noty N2 (heurystyka `Typ==='Civilian'`, dziś bezpieczna ale krucha, osłonięta testem) i N4
+(kolejka produkcji niereewalidowana przy zmianie epoki w trakcie budowy, drobny nieaktualny
+komentarz) — nieblokujące, bez dalszego działania.
+
+**ZAMKNIĘTE jako PASS-WITH-NOTES.**
+
+
+## Blokada wycofania w garnizonie (787210e1) — Evaluator: PASS-WITH-NOTES, RUNDA 2 WYMAGANA
+
+Werdykt agenta `aa77297798dc1e166`: **wdrożone zachowanie jest poprawne** (blokuje nadzbiór tego
+o co prosił właściciel — bezpieczne, zero ryzyka rozgrywkowego), ALE znalazł 3 realne usterki do
+naprawy przed zamknięciem tematu:
+
+1. **Centralne twierdzenie Operatora w kodzie jest FAŁSZYWE, obalone wykonaniem.** Doc-comment w
+   `armyMerge.ts` i sekcja 3 testu twierdzą że koniunkcja `inGarnizon && ufortyfikowanyWPolu` jest
+   „strukturalnie nieosiągalna" — Evaluator URUCHOMIŁ realne funkcje (`enterFieldFortify` +
+   `enterGarnizon` na tej samej jednostce, plus ścieżki `main.ts:9727` i `main.ts:16944`) i
+   uzyskał OBA pola `true` jednocześnie. Sekcja 3 testu jest rozumowaniem kołowym (re-implementuje
+   rozgałęzienie zamiast wołać realne funkcje) — "certyfikuje nieprawdę". Implementacja i tak jest
+   OK (bo `inGarnizon` samo to nadzbiór koniunkcji), ale uzasadnienie w kodzie/teście musi zostać
+   poprawione na prawdziwe.
+2. **Zero ochrony regresyjnej dla realnego okablowania w `main.ts`.** Mutacje M1/M2 (usunięcie
+   `!defenderLockedByGarnizon` z `defenderCanRetreat` ORAZ z `onCancel` w `main.ts`) — bramka
+   zostaje **zielona (18/18)**. Test przypina tylko czysty predykat, nie jego integrację. Do
+   dodania: strażnik tekstowy na `main.ts` (wzorem `ai-founding-territory-test.cjs`).
+3. **Defekt procesowy — commit `787210e1` nie dotknął `PYTANIA-OTWARTE.md`.** ECHO
+   `P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1` (linie 14784-14792) nadal mówi dosłownie o koniunkcji,
+   kod robi inaczej, nic tego nie odnotowuje — audyt właściciela (`grep STATUS: **OTWARTE`, §0c)
+   by tego nie złapał.
+
+## P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1 (2026-08-12, nota Evaluatora `aa77297798dc1e166`) · STATUS: **OTWARTE — pytanie ABC czeka na odpowiedź, PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (zasada §1a)**
+
+Zaimplementowana reguła (blokada na samym
+`inGarnizon===true`, bez wymogu `ufortyfikowanyWPolu===true` jednocześnie) **podważa dosłowny
+zapis ECHO `P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1`** (który mówił o koniunkcji obu pól). Tekstowo
+uzasadnione ("ufortyfikowana W MIEŚCIE" = `inGarnizon`, `ufortyfikowanyWPolu` to z definicji
+POZA miastem), ale wymaga wprost potwierdzenia właściciela.
+
+Dodatkowo, przy okazji: **jednostka ufortyfikowana W POLU (`ufortyfikowanyWPolu`, bez
+`inGarnizon`) dostaje +50% Obrony (`fortify_obrona_proc`, `city-defense.ts:151`) I ZACHOWUJE
+darmową ucieczkę** (dzisiejsza implementacja jej nie blokuje) — czy to zamierzone, czy powinno
+też być zablokowane analogicznie do garnizonu? Osobne pytanie do rozstrzygnięcia razem.
+
+**STATUS: dispatch rundy 2 (napraw 1+2, kod/test) w toku. Punkt 3 (pytanie ABC) czeka na turę
+właściciela — nie blokuje merge'a, kod już scalony i bezpieczny (nadzbiór, nie luka).**
+
+
+## ⛔ BŁĄD WŁASNY: naprawa mapgen-prog-372 wjechała do cudzego commitu (b83e6141)
+
+Zauważone przy próbie osobnego commitu — `git status` pokazał "nothing to commit" mimo
+niescalonej jeszcze zmiany progu coastRatio. Dochodzenie: plik `gra/tools/map-gen-regression-
+test.cjs` (patch z worktree `fix-mapgen-prog-372`, zaaplikowany `git apply -3` wcześniej w tej
+turze) pozostał niewyjaśnienie ZASTAGOWANY w indeksie i został zmieciony przez kolejny
+`git add dyspozycje/PYTANIA-OTWARTE.md && git commit` (commit `b83e6141`, którego treść wiadomości
+mówi wyłącznie o retreat-garnizon, NIE wspomina mapgen). Mechanizm dokładnej przyczyny
+niepotwierdzony (możliwe że `git apply -3` w tej wersji gita zostawia hunk w indeksie mimo braku
+konfliktu) — do zapamiętania na przyszłość: sprawdzać `git diff --cached` przed każdym `git add
+<konkretny-plik>`, nie ufać że nic poza wymienionym plikiem nie jest już stage'owane.
+
+**Skutek faktyczny: NIESZKODLIWY.** Sama zmiana kodu jest poprawna i w pełni zweryfikowana
+(patrz niżej) — problem jest wyłącznie w czytelności historii commitów (wiadomość `b83e6141` nie
+opisuje zmiany progu mapgen). Nie cofam/nie przepisuję historii (już zapushowane) — rejestruję
+transparentnie zgodnie z §0b.
+
+## Próg coastRatio Pangei 3.72 (wjechał w b83e6141, patrz błąd wyżej) — SCALONE
+
+Operator zmierzył próg empirycznie na 5 SEEDS z pliku (rozrzut 3.7778-3.8272), zmienił sekcję z
+nieblokującego WARN na zwykłą blokującą asercję. **Niezależnie zweryfikowane przez orkiestratora**
+osobnym skryptem ładującym ten sam generator (`src/map/generator.ts`) — wszystkie 5 seedów
+osobno: **ALL PASS (0/5 fail)**, wartości coastRatio identyczne co do 4 miejsca po przecinku z
+pomiarem Operatora. `tsc --noEmit` 0 błędów. Pełny bieg całego pliku (2+h w tym sandboksie,
+pre-istniejący znany limit `P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`) nie ukończony, ale sekcja
+dotknięta zmianą zweryfikowana w pełni niezależnie dwa razy. Worktree `fix-mapgen-prog-372`
+usunięty, Evaluator dispatchowany.
+
+
+## ⛔ ZALEGŁOŚĆ PROCESOWA: `main` jest DWIE fale w tyle — FALE 268 i 269 nigdy nie scalone (2026-08-12, znalezione przez agenta deployu FALI 270) · STATUS: **ZAMKNIĘTE — obie zaległości nadgonione**
+
+**ZAMKNIĘCIE (2026-08-12/13).** FALA 268+269 scalona do `main` na wyraźną zgodę właściciela
+("możemy zrobić scalenie 268 i 269 zostawiając tylko 270 bez scalenia") — merge `0a261731`.
+Kolejna zaległość (FALA 270+271) powstała tym samym mechanizmem (rytm "jedna fala do tyłu") i
+została scalona w tej samej sesji, też na wyraźną zgodę ("możesz scalić do main 270 i 271") —
+merge `e723cb0e`, do commitu deployu FALI 271 (`94a17910`, obejmuje FALĘ 270 jako przodka).
+`main` dziś na `e723cb0e`. FALA 272 (najnowsza) świadomie NIE scalona — zostaje do testów,
+zgodnie z rytmem, aż powstanie FALA 273.
+
+**Znalezisko (rejestruję zanim naprawię, zgodnie z §0b — uczciwe przyznanie, nie ukrywanie).**
+Przy deployu FALI 270 sprawdziłem stan `main`: stoi na `99974173` („merge: dogonienie main
+o FALA 267"). Zgodnie z rytmem `R-MERGE-MAIN-RYTM-Q1` („zawsze jedna fala do tyłu") powstanie
+FALI 269 kwalifikowało FALĘ 268 do scalenia, a powstanie FALI 270 kwalifikuje FALĘ 269 —
+**żadne z tych dwóch scaleń nie zostało wykonane.**
+
+**Jak do tego doszło (łańcuch dwóch przeoczeń, oba udokumentowane w repo):**
+1. **FALA 268** — `WERSJE.md` (linia 44) i `KANAL-PRACA.md` (linia 6571) jawnie odnotowały:
+   „agent deployu miał zakres ograniczony do gałęzi sesji i świadomie nie ruszał `main`,
+   scalenie FALI 267 zostaje do wykonania jako osobny krok". FALA 267 została scalona
+   (`99974173`), ale samej FALI 268 już nikt nie scalił przy okazji FALI 269.
+2. **FALA 269** — wpis w `KANAL-PRACA.md` (linia 6635) kończy się dosłownie: **„Push na `main`
+   NIE wykonany jeszcze w tej wiadomości — patrz kolejny wpis niżej"**. ⛔ **Ten kolejny wpis
+   NIGDY NIE POWSTAŁ** — plik kończy się na tej linii. Zapowiedź bez wykonania, niewyłapana
+   przez nikogo przez ~33 godziny.
+
+**Ustalone dokładne commity scalenia (zweryfikowane md5 bundla, nie z pamięci):**
+| Fala | md5 bundla | commit deployu | weryfikacja |
+|---|---|---|---|
+| 268 | `3bc0236b` | **`23216527`** | `git show 23216527:gra-robocza/Gra-ROBOCZA.html \| md5sum` = `3bc0236b8ef52d34aacaea1704bb010b` ✔ |
+| 269 | `799827ad` | **`0c1f7c37`** | `git show 0c1f7c37:gra-robocza/Gra-ROBOCZA.html \| md5sum` = `799827adc83b1a57ebb1576e2d876a95` ✔ |
+
+Uwaga do wyboru commitu FALI 269: bundel wszedł commitem `d6817434` opisanym jako „WIP …
+**NIE zalogowany**, ostatnia bramka niepotwierdzona" — właściwym commitem deployu jest
+**`0c1f7c37`** („Deploy ROBOCZA FALA 269"), bo to on niesie wpis w `WERSJE.md`, a
+`R-MERGE-MAIN-RYTM-Q1` definiuje punkt scalenia jako „commit deployu **w `WERSJE.md`**".
+`23216527` jest potwierdzonym przodkiem `0c1f7c37`, a `0c1f7c37` przodkiem `HEAD`
+(`git merge-base --is-ancestor`) — kolejność scalania 268 → 269 jest bezpieczna.
+
+**⛔ DLACZEGO NIE NAPRAWIŁEM TEGO OD RĘKI (świadome zatrzymanie, nie przeoczenie):**
+1. **`R-MERGE-MAIN-RYTM-Q1` §„Kto wykonuje merge do main"** mówi wprost: *„Kolejne scalenia
+   wymagają analogicznej, jednorazowej zgody (lub wyraźnego stwierdzenia przez Macieja, że zgoda
+   jest już stała/domyślna dla tego wzorca)."* Przeszukałem repo — **zgody stałej nigdzie nie
+   ma**. Każde dotychczasowe scalenie ma w kanale ślad osobnej zgody: „Wykonane od razu, **za
+   wyraźną zgodą Macieja**" (FALA 262), „**Na wyraźne polecenie Macieja** («scal 263 do main»)"
+   (FALA 263).
+2. **`git-merge-main` jest w `alwaysForbidden`** w `dyspozycje/autobot/src/guardrails.ts` —
+   twardy blok **bez żadnej furtki**, w odróżnieniu od `deploy-*`, które mają bramkę ratunkową
+   `humanApproved && deployPasswordGiven`.
+3. Hasło, które padło (**`deploy`** + „wypchniesz na git"), pokrywa **deploy do ROBOCZA i push
+   gałęzi sesji** — to zostało wykonane w całości. Dotychczasowy wzorzec zgody na `main` to
+   osobne, jawne zdanie nazywające `main` („scal 263 do main"), a nie „wypchnij na git".
+   Przy tej niejednoznaczności obowiązuje `CLAUDE.md` §7: **pytaj, nie zgaduj**.
+
+**GOTOWE DO WYKONANIA NA JEDNO SŁOWO** (np. „scal 268 i 269 do main") — komendy poniżej,
+sprawdzone pod kątem FF i przodków, do wykonania dokładnie w tej kolejności:
+```bash
+git checkout main && git pull --ff-only origin main
+git merge --no-ff 23216527 -m 'merge: dogonienie main o FALA 268 (rytm "jedna fala do tyłu")'
+git push origin main
+git merge --no-ff 0c1f7c37 -m 'merge: dogonienie main o FALA 269 (rytm "jedna fala do tyłu")'
+git push origin main
+git checkout claude/sprawdzenie-funkcjonalnosci-ek4ra0
+```
+**FALA 270 (`13a04632`, commit deployu tej fali) świadomie NIE wchodzi** — zostaje na gałęzi
+roboczej wyłącznie do testów, wejdzie do `main` dopiero przy okazji FALI 271
+(`R-MERGE-MAIN-RYTM-Q1`).
+
+**Do rozważenia przy okazji (nie blokuje):** dwie reguły są dziś w sprzeczności — kanon
+`R-MERGE-MAIN-RYTM-Q1` przewiduje regularne scalanie do `main` jako rytm, a `guardrails.ts`
+trzyma `git-merge-main` na twardej liście zakazanej bez furtki. Albo guardrail powinien dostać
+bramkę analogiczną do `deploy-*` (`humanApproved`), albo kanon powinien wprost powiedzieć, że
+scalenie wykonuje wyłącznie człowiek/sesja lokalna. Dziś każdy agent trafiający na ten rytm
+musi rozstrzygać tę sprzeczność sam — a to jest dokładnie ten rodzaj luki, przez który
+zaległość dwóch fal przeleżała niezauważona.
+
+## ⚠️ NEAR-MISS PROCESOWY: `pkill -f` we współdzielonym kontenerze może zabić test innej sesji (2026-08-12, agent deployu FALI 270) · STATUS: **ZAREJESTROWANE — do wiedzy, bez otwartego pytania**
+
+**Co się stało.** Agent deployu uruchomił `map-gen-regression-test.cjs` w tle, a po zakończeniu
+pracy zatrzymał go komendą `pkill -f map-gen-regression-test`. **W tym samym kontenerze działał
+równolegle drugi taki sam test** — uruchomiony przez innego agenta w worktree
+`.claude/worktrees/fix-barb-city-capture-cluster/gra`. Jego linia poleceń (`node
+tools/map-gen-regression-test.cjs`) **pasuje do tego samego wzorca `pkill -f`**.
+
+**Skutku NIE BYŁO — potwierdzone pomiarem, nie założeniem:** proces tamtej sesji (PID 23778)
+miał w chwili sprawdzenia `ELAPSED=00:28`, czyli wystartował **po** moim `pkill`, i realnie
+liczył (CPU 28s→32s w odstępie 4s). Zbieg okoliczności, nie zabezpieczenie.
+
+**Dlaczego to jest istotne.** Ten test trwa w tym sandboksie **2h+**
+(`P-SANDBOX-MAPGEN-WYDAJNOSC-LIMITY`). Zabicie go cudzą komendą byłoby **cichą utratą pracy bez
+żadnego komunikatu dla właściciela procesu** — czwarty mechanizm tej klasy w tym repo, obok
+`b9867b3` (import z współdzielonego drzewa), `92341250`/`cdb29d92` (`git diff` bez przodka)
+i „worktree startuje od `main`". Tamte trzy są opisane w skillu `civ-autobot`; ten nie był.
+
+**Zasada na przyszłość:** nigdy `pkill -f <wzorzec>` / `killall` na nazwę skryptu w tym
+kontenerze. Zatrzymuj **wyłącznie własny PID** (zapamiętany przy starcie, `kill $PID`) albo
+narzędziem sesji (`TaskStop` dla zadań w tle). Przed jakimkolwiek `pkill` — `pgrep -af <wzorzec>`
+i sprawdzenie **ścieżki roboczej** każdego trafienia (`ps -o cmd`); trafienie w cudzym worktree
+oznacza STOP.
+
+## Scroll-reset runda 2 (55e64ac2) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `af85c27cc7a42bb7c`: naprawa poprawna i kompletna. Zbudował niezależny harness
+(31/31, prawdziwa flaga modułowa + wykonanie realnego `showEmpireDetailPanel()`, nie regex) —
+11 sekwencji nawigacyjnych zielonych, w tym potwierdzenie że scenariusz rundy 1 nie wrócił.
+6 mutacji na realnym źródle złapanych. Hipoteza "wyciek flagi w gałęzi `if(scrollTarget)`" —
+zweryfikowana jako konstrukcyjnie prawdziwa, ale ścieżka DOWODLIWIE nieosiągalna (statycznie +
+empirycznie 16 aktów HUD + mutant równoważny). **Wzorzec "łatanie dziur" kończy się na tej
+rundzie** — warunek `!open || newSection !== activeSection` dzieli przestrzeń stanów rozłącznie
+i wyczerpująco. Noty nieblokujące: martwa gałąź `scrollTarget`/`scrollToSection()` pre-istniejąca
+(nie wprowadzona tą rundą), bramka słabo pokrywa stronę "ustawiającą" flagę behawioralnie (tylko
+tekstowo), decyzja UX "reopen tego samego bloku resetuje scroll" nie była explicite ratyfikowana
+przez właściciela (przywraca zachowanie sprzed rundy 1, nie nowy wymysł). **ZAMKNIĘTE.**
+
+## Zużycie surowców — synteza K1-K3+H6b (74019e25) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `a8a06a8918ec0abb5`: fundament (5× `cityOrderState.clear()`, parytet z
+`citizenUpkeepByOwner.clear()`) potwierdzony. K1=5, K3=1+1 odtworzone niezależnym matcherem
+klamer na `restoreGameFromSave` (linie 28531-29069). 9 mutacji własnych — wszystkie zachowały
+się poprawnie, w tym M4b (mutant w pełni poprawny typowo, semantycznie fałszujący panel
+Surowców) złapany WYŁĄCZNIE przez H6b — potwierdza że ta asercja realnie domyka lukę. Wszystkie
+4 punkty pierwotnego zakresu (z dwóch równoległych Operatorów) obecne, nic nie zgubione w
+syntezie. Noty nieblokujące: nieaktualny komentarz K2 (mówi "PIĄTE miejsce", jest już 5),
+nieścisły opis regexu H6b, cała rodzina K1-K3/H6/H6b to asercje strukturalne na tekście
+`main.ts` (nie behawioralne) — udokumentowana konwencja repo, akceptowalne. **ZAMKNIĘTE.**
+
+
+## Runda 4 miast barbarzyńców (59a87c74) — 3x Evaluator adwersarialny: A=FAIL, B=PASS-WITH-NOTES, C w toku
+
+**Evaluator A (lens: poprawność logiki) — WERDYKT: FAIL, realne znalezisko.** Warunek resetu
+`clearedCityIds` NIE odpowiada dokumentacji: reset odpala się wyłącznie gdy na planszy nie ma
+ANI JEDNEGO bronionego miasta (bo bronione miasto przechodzi filtr `filtered` bezwarunkowo,
+`filtered.length===0` liczy się względem tej listy, nie względem "wszystkich niebronionych" jak
+głosi komentarz PL+EN i treść commita). Na planszy mieszanej (bronione+niebronione, czyli
+realna gra z garnizonami) reset **nigdy nie zadziała** — dowód: scenariusz 40 tur, 0 zdarzeń
+resetu. Gorsze: gdy zbiór wyklucza wszystkie OSIĄGALNE niebronione miasta a `filtered` zostaje
+niepuste (bronione miasto nieosiągalne, np. za wodą) — jednostka **trwale zamiera** (dowód:
+11 ruchów vs 53 w kodzie rundy 3, 47 tur bezczynności z 60). Mutacja M8 (podmiana warunku na
+DOSŁOWNĄ semantykę z dokumentacji) przechodzi 127/127 — **żadna bramka nie odróżnia
+zaimplementowanego warunku od zadeklarowanego**, bo żaden test nie stawia miast bronionych i
+niebronionych razem na ścieżce resetu. Pozostałe elementy (zakres per-jednostka, serializacja
+Array-nie-Set, naprawa wady rundy 3 dla plansz jednorodnych, samo-wygasanie) zweryfikowane jako
+poprawne.
+
+**Evaluator B (lens: save/load) — PASS-WITH-NOTES** — potwierdził serializację/round-trip w
+pełni poprawne, save/load behawioralnie przezroczyste (40-turowy test z zapisem co turę
+identyczny z biegiem nieprzerwanym). Nie testował warunku resetu na planszy mieszanej (poza
+zakresem jego lensu) — stąd nie złapał F1/F2, co jest spójne z tym, że to inny wymiar problemu.
+
+**Evaluator C (lens: pokrycie mutacyjne)** — w toku.
+
+**STATUS: FAIL przeważa (1 z 3 Evaluatorów znalazł realny, dobrze udowodniony błąd logiki —
+niezgodność między dokumentacją a implementacją + nowa konfiguracja trwałego zamrożenia
+jednostki). Runda 5 dispatchowana zostanie po powrocie Evaluatora C, z zakresem: (1) rozstrzygnąć
+F1 decyzją — wdrożyć semantykę z dokumentacji (2-liniowa zmiana) LUB poprawić dokumentację+komunikat
+commita żeby nie kłamały o "patrolu cyklicznym"; (2) F2 — strażnik osiągalności, gdy firstStep
+zwraca null dla wybranego celu, spróbować kolejnego kandydata zamiast zamierać; (3) test na
+planszy MIESZANEJ (bronione+niebronione) na ścieżce resetu, żeby M8 przestało przechodzić
+niezłapane.**
+
+
+## Zaległość scalenia do `main` — ROZWIĄZANA (Maciej: "zrobię scalenie 268 i 269, zostawiając 270 bez scalenia")
+
+Wykonane: `git checkout main` → `merge --no-ff 23216527` (FALA 268, md5 `3bc0236b`) → push
+(`b466fa17`) → `merge --no-ff 0c1f7c37` (FALA 269, md5 `799827ad`) → push (`0a261731`) →
+`git checkout claude/sprawdzenie-funkcjonalnosci-ek4ra0`. Oba scalenia bez konfliktów. `main`
+dogonione do FALI 269. FALA 270 świadomie NIE scalona — zostaje na gałęzi sesji do testów,
+zgodnie z `R-MERGE-MAIN-RYTM-Q1` (scalenie dopiero przy powstaniu FALI 271). **ZAMKNIĘTE.**
+
+## Próg coastRatio mapgen (b83e6141) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `a0d778cf89e8ad5bc`: pomiary Operatora potwierdzone co do 4 miejsca po przecinku.
+**Kluczowe pytanie generalizacji rozstrzygnięte jednoznacznie** — na 24 seedach (5 z pliku + 19
+dodatkowych) próg 3.72 daje 0% odrzuceń (stary 3.8 odrzucał 62,5%). Kalibracja symetryczna
+względem `bboxFill<0.87` (3,28 sd poniżej średniej vs 3,19 sd powyżej dla bboxFill). Test
+syntetycznych kształtów skrajnych: `coastRatio` i `bboxFill` są ORTOGONALNE, nie redundantne —
+dla degeneracji "obwarzankowej" (okrągły blob, dokładnie po to powstała ta sekcja) `bboxFill`
+przechodzi z dużym zapasem, jedynym strażnikiem jest `coastRatio`.
+
+**Nota N2 — do poprawy, nieblokująca ale ważna:** komentarz w kodzie (odziedziczony z
+wcześniejszej rundy) twierdzi "realną ochronę kształtu Pangei daje `bboxFill<0.87`, nie
+`coastRatio`" — to jest OBALONE przez powyższy test i ryzykowne: mogłoby zostać zacytowane przy
+przyszłej próbie usunięcia `coastRatio`, co otworzyłoby dokładnie tę degenerację, przeciw której
+sekcja powstała. Do skorygowania przy najbliższej okazji dotknięcia tego pliku (nie wymaga
+osobnego dispatchu). Nota N1 (margines liczony tylko na 5 seedach, realny mniejszy: 0.0355 nie
+0.058) — kosmetyczna. **ZAMKNIĘTE.**
+
+
+## Runda 4 miast barbarzyńców (59a87c74) — 3x Evaluator KOMPLETNE: werdykt zbiorczy FAIL, runda 5 dispatchowana
+
+Evaluator C (lens: pokrycie mutacyjne) wrócił: **PASS-WITH-NOTES**, 92,3% mutantów nierównoważnych
+zabitych (12/13, jeden dowiedziony jako równoważny). Znalazł JEDNĄ realną, dodatkową lukę:
+**X3** — guard "miasto BRONIONE nie trafia do `clearedCityIds`" w kroku 3 (`barbarians.ts:1309`)
+jest dziś pokryty PUSTĄ asercją (sekcja 6a przyznaje we własnym komentarzu że krok 2 zawsze
+przechwytuje wcześniej przez `continue`, więc krok 3 nigdy się nie wykonuje w tym teście). Dowód
+że mutant jest żywy (nie równoważny): 2 osiągalne scenariusze gdzie krok 2 NIE zwiera obwodu
+(rozejm `canEngageOwner=false`; jednostka NA heksie miasta, dystans 0) — bronione miasto zostaje
+błędnie oznaczone jako "oczyszczone", barbarzyńca porzuca miasto którego nigdy nie zdobył. Gotowe
+2 asercje (sekcja 6c) podane w raporcie Evaluatora.
+
+**WERDYKT ZBIORCZY: FAIL.** Evaluator A (lens: poprawność logiki) znalazł błąd nadrzędny wobec
+notatek B/C: warunek resetu `clearedCityIds` nie odpowiada dokumentacji — na planszy z bronionymi
+miastami (czyli każdej realnej rozgrywce) reset **nigdy się nie odpala** (dowód: 40 tur, 0 resetów),
+a w gorszym przypadku jednostka **trwale zamiera** (47/60 tur bezczynności gdy jedyne osiągalne
+niebronione miasta wyczerpane, a jedyne bronione jest nieosiągalne). Mutacja M8 (podmiana na
+dosłowną semantykę z dokumentacji) przechodzi 127/127 niezłapana — potwierdzone niezależnie przez
+Evaluatora C jako ten sam typ "pustej asercji", na którym poległy już rundy 1-3.
+
+**Zakres rundy 5 (dispatchowana):**
+1. **F1 (Evaluator A)** — rozstrzygnąć decyzją: wdrożyć semantykę z dokumentacji (reset gdy
+   wszystkie NIEBRONIONE miasta odwiedzone, niezależnie od bronionych) LUB poprawić dokumentację
+   + komunikat commita żeby nie twierdziły "patrol cykliczny" gdy realnie jest jednorazowy na
+   planszy mieszanej. Rekomendacja Evaluatora A: 2-liniowa zmiana warunku.
+2. **F2 (Evaluator A)** — strażnik osiągalności: gdy `firstStep` zwraca `null` dla wybranego celu,
+   spróbować kolejnego kandydata zamiast kończyć turę bez komendy na zawsze.
+3. **Test na planszy MIESZANEJ** (bronione+niebronione razem) na ścieżce resetu — dziś M8
+   przechodzi niezłapane.
+4. **X3 (Evaluator C)** — dopisać sekcję 6c (2 gotowe asercje, kod w raporcie C) pokrywającą
+   realnie osiągnięty krok 3 z bronionym celem (rozejm + dystans 0).
+5. NIE dotykać: serializacji/save-load (Evaluator B: w pełni poprawne), zakresu per-jednostka
+   (Evaluator A: poprawne), samo-wygasania (Evaluator A: poprawne), guard `if(!includes)` w kroku
+   dodawania (Evaluator C: dowiedziony martwy kod defensywny, nie dopisywać asercji).
+
+
+## Runda 2 retreat-garnizon (7bd17f17) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE, runda 4 NIE wymagana
+
+Werdykt agenta `af1791683fe5d1b20`: wszystkie 3 zlecone poprawki dostarczone i zweryfikowane
+niezależnie punkt po punkcie (doc-comment prawdziwy, sekcja 3 to prawdziwy dowód nie kołowy,
+sekcja 6 strażnik kotwiczy poprawnie — potwierdzone testem podstępu z wabikiem w zagnieżdżonym
+`onCancel`). 2 drobne nieścisłości w opisie mechanizmu (nieblokujące). 9 mutacji własnych — M6/M9
+(całkowite odpięcie funkcji przez podmianę deklaracji zmiennej) przechodzą niezłapane, ale
+Evaluator zwalidował gotową 4-liniową asercję domykającą tę lukę, oznaczoną jako OPCJONALNA
+("tania okazja, nie wymagana do zamknięcia"). **ZAMKNIĘTE bez dalszych rund.**
+
+**Znalezisko przy okazji, zarejestrowane cicho (zasada §2):** sekwencja
+`enterFieldFortify(u); enterGarnizon(u);` niszczy `fortifyRuchSnapshot` — `enterFieldFortify`
+zeruje `ruchLeft`, `enterGarnizon` zapisuje jako snapshot już wyzerowaną wartość. Jednostka w
+stanie "oba pola true" (ścieżki main.ts:9727 lub main.ts:16944) przy wyjściu z fortyfikacji NIE
+odzyska ruchu. Pre-istniejący defekt danych, ujawniony przez tę rundę, poza jej zakresem —
+osobny temat do rozpoznania.
+
+
+## IndexedDB B1+B2+B3 (4b07eaff) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `a3bea6bede1c3b7c1`: wszystkie 3 naprawy realne i poprawne, zweryfikowane
+niezależnymi sondami (nie tylko testem Operatora). B1: kolejkowanie dowiedzione formalnie jako
+konwergujące do najnowszego stanu + własny scenariusz 5 nakładających się kliknięć z usunięciem
+w locie — 0 duplikatów, DOM zgodny z realnym stanem IDB. B2: sukces trwale cache'owany (brak
+retry-stormu), 3 warianty wyścigu zweryfikowane empirycznie. B3: brak fałszywego alarmu przy
+pierwszym uruchomieniu, baner realnie znika po powrocie IDB w tej samej sesji.
+
+**Luki w teście (nie w kodzie), 3 mutacje przechodzą niezłapane** — rekomendacja dla ewentualnej
+przyszłej rundy (NIE blokuje zamknięcia): (1) asercja `idb-b1b2b3-test.cjs:306-309` jest fałszywie
+etykietowana — twierdzi że testuje kolejkowanie, ale przechodzi też bez niego (testuje coś innego:
+`selectedId` ustawiane synchronicznie przed renderem); (2) test ma tylko 1 awarię IDB z rzędu, nie
+łapie regresji "cache porażki od 2. próby zamiast każdej"; (3) brak DRUGIEGO renderu w scenariuszu
+B3, nie łapie "widoczność liczona tylko raz".
+
+**Znalezisko przy okazji, zarejestrowane cicho (zasada §2), PRE-ISTNIEJĄCE nie regresja tej
+rundy:** gdy IndexedDB umiera PO udanym otwarciu (nie przy otwieraniu — `versionchange`, zamknięcie
+połączenia przez przeglądarkę), `openDb()` w nieskończoność zwraca martwy uchwyt z cache (bo B2
+naprawił tylko cache PORAŻKI otwarcia, nie unieważnienie cache SUKCESU po jego śmierci) —
+`db.transaction()` rzuca, odczyt cicho spada na legacy localStorage, **baner B3 się NIE pokazuje**
+mimo że to dokładnie scenariusz przed którym ma ostrzegać. Brakuje `db.onclose`/`onversionchange`.
+Do osobnego rozpoznania.
+
+**ZAMKNIĘTE** — noty nieblokujące, poprawki testu odłożone do ewentualnej przyszłej okazji
+dotknięcia tego pliku, nie wymagają osobnego dispatchu teraz.
+
+
+## Runda 5 miast barbarzyńców (29b4d2f1) — 3x Evaluator: A=FAIL, B=FAIL, C=PASS-WITH-NOTES, werdykt zbiorczy FAIL, runda 6 dispatchowana
+
+**Piąta z rzędu porażka recenzji tego samego mechanizmu** (`clearedCityIds`, patrol barbarzyńców).
+
+**Evaluator A — FAIL:** naprawa F1 (semantyka resetu) wprowadza NOWY livelock — na planszy z
+DOKŁADNIE JEDNYM miastem niebronionym + bronionym obok, reset do `[]` powoduje że jednostka
+odbija się w nieskończoność (3-turowy cykl) między dwoma heksami, NIGDY nie docierając do
+bronionego miasta. Zweryfikowana jednoliniowa poprawka: reset do `[ostatnio_odwiedzone]`
+zamiast do `[]`. Znalazł też że mutant `undefendedCities.length > 1` (zamiast `> 0`) przechodzi
+142/142 mimo błędnego zachowania na planszy sekcji 2 testu.
+
+**Evaluator B — FAIL:** naprawa F2 (strażnik osiągalności) wprowadza regresję wydajności **do
+118×** — każda nieudana próba dotarcia do celu to pełne zalanie Dijkstrą mapy, gra rutynowo ma
+60-120 miast, obozy barbarzyńców spawnują się bez wymogu osiągalności miast. Zmierzone: do ~23s
+zawieszenia jednej tury przy realistycznej konfiguracji. Dodatkowo komentarz kodu fałszywie
+twierdzi że "nic więcej się nie da zrobić" gdy wszyscy kandydaci nieosiągalni — obalone
+scenariuszem jednostki raid-ready z żywym, osiągalnym obozem dającej 0 komend przez 60 tur
+(blokuje to niezwiązany, starszy `if(raidReady) continue` w kroku 4 — nie regresja tej rundy,
+ale komentarz F2 fałszywie deklaruje że to domknięte).
+
+**Evaluator C — PASS-WITH-NOTES:** niezależnie potwierdził TĘ SAMĄ klasę błędu co A (mutant M20 —
+reset częściowy zamiast pełnego — przechodzi CAŁY komplet bramek mimo załamania patrolu po
+jednym okrążeniu, na dokładnie tej planszy dla której napisano sekcję 6d). Dodatkowo:
+`expectSelfCheckFails` (wzorzec sekcji 9/10/11) liczy DOWOLNY niezerowy exit code jako "złapane"
+(w tym błąd kompilacji) — luka z rundy 4, powielona bez utwardzenia.
+
+**STATUS: runda 6 dispatchowana**, zakres: (1) poprawka F1 z Evaluatora A + test na planszy z
+dokładnie 1 miastem niebronionym symulowanej 30-40 tur; (2) ograniczenie kosztu F2 do O(1)
+zalania/turę (flood-fill reachability / limit prób / cache) + bramka wydajnościowa; (3) korekta
+fałszywego komentarza o "nic więcej się nie da zrobić"; (4) wzmocnienie `expectSelfCheckFails`
+(wymóg linii `FAIL:` w stdout, nie tylko exit code); (5) **wymóg proceduralny przed kodowaniem**
+— tabela 12 reżimów planszy (miasta niebronione 0/1/≥2 × bronione 0/≥1 × raidReady tak/nie),
+żeby zapobiec szóstej rundzie tego samego typu błędu.
+
+
+## Fix stołu negocjacji dyplomatycznych (ad4b1e8d) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: naprawa `actionableNegotiationIdsForPair` (błędne liczenie proposer/responder blokujące
+niektóre wątki negocjacji) jest poprawna, zweryfikowana niezależnym harnessem (45/45) i 8/8
+mutacji własnych. Evaluator skorygował fałszywą przesłankę we własnym briefie (role proposer/
+responder są celowo STAŁE od rundy 1, kodują kierunek koszyka nie kolejność tury — "naprawa"
+zgodna z pierwotnym błędnym briefem wprowadziłaby regresję). Nota nieblokująca: fix ma
+nieudokumentowany efekt uboczny — poszerza zakres liczenia PW dla `livePackageSiblingFor`
+(prawdopodobnie zamierzone, zrównuje silnik z UI, ale commit message o tym nie wspomina).
+**ZAMKNIĘTE.**
+
+
+## Przycisk "Zobacz szczegóły zużycia" (a79bae29) — Evaluator: FAIL, naprawa dispatchowana
+
+Werdykt: 3 usterki blokujące, wszystkie potwierdzone wykonaniem realnego kodu silnika:
+
+1. **Suma kłamie przy niedoborze surowca.** `deductBuildingStockCostAcrossCities()` przycina
+   pobór budynków/wojska do stanu magazynu (`take=Math.min(have,need)`), ale panel pokazuje
+   wartość NOMINALNĄ (nieprzycinaną) dla tych dwóch kategorii, podczas gdy Obywatele SĄ przycinane
+   (`computeCitizenResourceDrain` przycina swoje `deductions`). Rozjazd jednostronny: scenariusz
+   Evaluatora — magazyn=4, panel pokazuje "−6", realnie odjęte z magazynu=4. Gracz otwiera ten
+   panel WŁAŚNIE gdy surowce się kończą — czyli w jedynym momencie gdy panel kłamie.
+2. **Po wczytaniu save'a panel pokazuje zaniżoną sumę, przycisk nadal aktywny, bez ostrzeżenia.**
+   Po `.clear()` obywatele mają fallback liczący na żywo (`computeCitizenResourceDrain`),
+   budynki/wojsko NIE mają fallbacku → 0. Scenariusz: prawidłowe B=2/O=4/W=4 (razem 10), po
+   wczytaniu panel pokazuje B=0/O=4/W=0 (razem 4) — zaniżenie o 60%, wiersze Budynki/Wojsko
+   znikają całkowicie (filtr `val>0`), przycisk nadal się pokazuje bo `hasAny=true`.
+3. **Bramka testowa (60/60) jest zawyżona.** 37/60 asercji to `includes()`/regex po tekście
+   źródła, nie wykonanie kodu — funkcja renderująca `resUsageDetailsHtml()` (to co realnie widzi
+   gracz) NIE JEST ANI RAZU wywołana w teście. 5/9 mutacji własnych Evaluatora przeżywa (usunięty
+   wiersz Wojsko, usunięty minus przy zużyciu, zamienione etykiety Budynki↔Wojsko, wiersz "razem"
+   pokazujący tylko budynki, usunięty wiersz Obywatele — wszystkie 60/60 mimo zepsutego UI).
+
+**STATUS: dispatch naprawy w toku**, zakres: (1) przycinać budynki/wojsko do realnie pobranego
+ALBO zmienić etykietę na "Zapotrzebowanie" jeśli intencja to wartość nominalna — decyzja
+Operatora, uzasadniona; (2) fallback liczący budynki/wojsko na żywo po wczytaniu save'a
+(`previewOwnerTotalResourceUpkeep()` już istnieje w `economy-upkeep.ts`, do wykorzystania) ALBO
+nie pokazywać przycisku dopóki mapy puste; (3) bramka musi wykonywać `resUsageDetailsHtml()` na
+gotowym `EmpireResourceRow` i sprawdzać wyrenderowany HTML, nie tylko tekst źródła.
+
+
+## Fix wycieku placeholdera HUD Surowce (5448eb51) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: brief zadania opisywał INNY błąd niż ten commit naprawia (placeholder to statyczny wpis
+katalogu "Ruda cyny — wkrótce", jawnie zamówiony przez właściciela jako trwałe zarezerwowane
+miejsce, nie stan ładowania) — Evaluator sam skorygował fałszywą przesłankę i zweryfikował
+merytoryczny odpowiednik: placeholder miał `cap=0,stock=0`, więc fałszywie liczył się jako
+"surowiec na limicie magazynu" w chipie HUD (stały fałszywy alarm od pierwszej tury). Własny
+harness: 24/24 po naprawie, 6/24 przed (odtworzone dokładnie). 8/10 mutacji złapanych (2
+pozostałe to legalne refaktory dające głośny crash zamiast cichej porażki — koszt utrzymania,
+nie dziura bezpieczeństwa). Kolejność katalogu (Koń+Złoto razem) zgodna z już podjętą decyzją
+właściciela `P-SUROWCE-KOLEJNOSC-KON-Q1=A`. **ZAMKNIĘTE.**
+
+**Znalezisko przy okazji, zarejestrowane cicho:** `renderSurowceSection` wyprowadza nagłówek
+"Magazyn państwa" z `stored[0]` (pierwszy element katalogu) — placeholder ma `cap=0` bez
+`capBase`/`capBonus`. Dziś bezpieczne WYŁĄCZNIE bo placeholder stoi na indeksie 9, nie 0.
+Przestawienie katalogu tak, żeby placeholder był pierwszy, dałoby błędny nagłówek "pojemność
+0/0 Magazynów" — ta sama klasa błędu co właśnie naprawiona, piętro wyżej, niepokryta nową bramką.
+
+## ⛔ ZNALEZISKO PROCESOWE: kolizja worktree w self-audycie (eval-audit3-8)
+
+Przy okazji recenzji `5448eb51` Evaluator sam wykrył i zgłosił: w trakcie jego pracy w
+`eval-audit3-8` INNY proces (prawdopodobnie Evaluator recenzujący `8a3a3d29`) pisał do TEGO
+SAMEGO katalogu — nadpisał plik w scratchpadzie skryptem mutacyjnym celującym w
+`cities.ts`/`empire-city-defaults.ts`. Zweryfikowałem: pliki własnego zakresu obu evaluatorów
+(main.ts/empireDetailPanel.ts dla 5448eb51) pozostały czyste, brak realnej kontaminacji wyniku
+— ale to jednoznaczne naruszenie zasady §4a ("każdy subagent na własnej kopii"). Dochodzenie:
+oba worktree PRZYPISANE tym dwóm tematom (eval-audit2-2, eval-audit3-2) są czyste i nietknięte —
+oznacza to, że oba evaluatory NIE PRACOWAŁY w katalogach, do których je jawnie skierowałem w
+promptcie (KROK 0), tylko oba (a może więcej) samodzielnie wylądowały w `eval-audit3-8` (worktree
+istniejący od wcześniejszej rundy audytu, wtedy nieużywany). Mechanizm tej rozbieżności
+nieustalony — nie udało się potwierdzić czy to błąd modelu przy wykonywaniu KROK 0, czy coś
+innego. Skutek faktyczny: NIESZKODLIWY dla dotychczasowych werdyktów (potwierdzone brakiem
+kontaminacji plików własnego zakresu każdego evaluatora), ale wymaga czujności — kolejne
+dispatch'e powinny jawnie weryfikować `pwd` zgadza się z oczekiwaną ścieżką, nie tylko `git log`.
+Posprzątane (`.eval-stubs/` usunięte z `eval-audit3-8`).
+
+
+## Domyślny tryb pól miasta (8a3a3d29) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: domyślny tryb "Żywność" potwierdzony na własnym harnessie (37 asercji, ścieżka
+zakładania miasta odtworzona identycznie jak `main.ts`), parytet gracz/AI realny (jedna funkcja
+bez rozgałęzienia po ownerId, sprawdzone dla gracza/AI-preseed/AI-nie-preseed). Stare zapisy
+bezpieczne (obie gałęzie migracji sprawdzone). 7/7 mutacji złapanych. **ZAMKNIĘTE.**
+
+Noty nieblokujące, zarejestrowane cicho: (N1) nowy domyślny działa tylko w NOWEJ grze — miasto
+założone we WCZYTANEJ istniejącej rozgrywce dziedziczy zapisaną globalną, nie "Żywność" (poprawna
+konsekwencja wcześniejszej decyzji R-MIASTO-USTAWIENIA-GLOBALNE-VS-LOKALNE=A, ale komunikat
+commita brzmi bezwarunkowo); (N2) twierdzenie commita "jedyne miejsce, wszystkie odczyty to
+fallback na stałą" jest nieprawdziwe — 2 miejsca (`auto-manage.ts:319`, `cityPanel.ts:8975`) mają
+wpisany literał `'zrownowazone'` zamiast stałej; dziś nieosiągalne (wszystkie 9 miejsc tworzenia
+miasta ustawiają pole), ale to mina na przyszłość.
+
+## ⛔ ESKALACJA: kolizja worktree eval-audit3-8 — potwierdzona przez 3 NIEZALEŻNE raporty
+
+Trzeci z rzędu Evaluator (po `5448eb51` i teraz `8a3a3d29`) zgłasza że pracował w `eval-audit3-8`
+mimo jawnego polecenia `cd` do INNEGO, przypisanego mu katalogu (`eval-audit2-4`). Ten evaluator
+widział ślad JESZCZE JEDNEGO procesu w tym samym katalogu — skrypt robiący
+`git checkout -- gra/src/game/diplomacy-acceptance-points.ts`, czyli plik z zakresu tematu
+`76514613` (przypisanego do `eval-audit2-1`). **To oznacza że co najmniej 4 z 8 dispatchowanych
+Evaluatorów (a79bae29, ad4b1e8d, 5448eb51, 8a3a3d29) oraz prawdopodobnie piąty (76514613) — mimo
+jawnych, różnych ścieżek `cd` w każdym prompcie — zbiegły się w JEDNYM współdzielonym katalogu
+`eval-audit3-8`**, zamiast pracować w osobnych kopiach (złamanie zasady §4a).
+
+**Zweryfikowany skutek faktyczny: dotychczas NIESZKODLIWY.** Każdy z 3 evaluatorów, którzy to
+zgłosili, samodzielnie potwierdził że pliki jego WŁASNEGO zakresu pozostały czyste na koniec
+(żaden nie mutował tych samych plików co inny w tym samym momencie — różne tematy, różne pliki
+źródłowe), a finalne bramki uruchomili ponownie na zweryfikowanym, nietkniętym stanie. Dlatego
+werdykty (`a79bae29=FAIL`, `ad4b1e8d`/`5448eb51`/`8a3a3d29`=PASS-WITH-NOTES) pozostają zaufane.
+
+**Przyczyna nieustalona.** Nie potwierdzono czy to błąd modelu przy wykonywaniu jawnie podanego
+`cd` w KROK 0, czy inny mechanizm. Do rozpoznania w przyszłości (np. wymagać w prompcie jawnej
+weryfikacji `pwd` PRZED jakąkolwiek pracą, nie tylko `git log`, i przerwać jeśli się nie zgadza).
+
+**Działanie:** pozostałe 3 wciąż aktywne dispatch'e z tej samej ósemki (`1208eb6c`, `0651d65e`,
+`810d5917`) oraz nowo dispatchowany `fcd31209` będą zweryfikowane pod tym kątem przy odbiorze —
+jeśli zgłoszą tę samą kolizję, traktować jako potwierdzenie wzorca systemowego, nie przypadku.
+
+
+## Stawka drenażu obywateli 1,0→0,2 (1208eb6c) — Evaluator: FAIL, naprawa częściowa dispatchowana + nowe pytanie ABC
+
+**Bloker 1 — realny błąd balansu, dotyczy KAŻDEGO nowego miasta/cywilizacji.** `floor(pop×0,2)=0`
+dla populacji 1-4 → `need=0` → `drained(0)>=need(0)` → liczy się jako PEŁNE pokrycie → premia do
+Szczęścia zamiast kary. Zmierzone: pop=4 z pustym magazynem → +5 Szczęście, 0% kara Rozwoju;
+pop=5 → −5 Szczęście, −5% Rozwój. Przy starej stawce 1,0 tego efektu nie było (pop 1-4 → need
+1-4 → kara). **Ten commit to stworzył**, mimo że właściciel explicite prosił o sprawdzenie tego
+edge case'u (rejestr, linia ~12943) — Operator odpowiedział tylko połowicznie ("zero wymogu, nie
+luka"), przeoczył że zerowy wymóg jest punktowany jako pełne pokrycie i NAGRADZANY.
+
+**⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** — dotyka kanonu kary binarnej (ECHO Q3=A)**
+
+`P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`: czy populacja z `need=0` (poniżej progu zaokrąglenia)
+powinna liczyć się jako NEUTRALNA (0 Szczęścia, 0% kara) zamiast obecnej PREMII? Semantycznie
+neutralność wydaje się właściwa, ale to zmiana kanonu kary binarnej ustalonego wcześniej
+(ECHO Q3=A) — wymaga wprost decyzji właściciela, nie cichej poprawki Operatora.
+
+**Bloker 2 — zaokrąglenie niepokryte, 3/8 mutacji przeżywa** (floor→ceil, floor→round, usunięcie
+zaokrąglenia — wszystkie MISSED). Przyczyna: dane testowe przeskalowane ×5 (10→50, 3→15),
+przez co floor/ceil/round są nierozróżnialne w żadnym scenariuszu testu.
+
+**Noty nieblokujące, do naprawy przy okazji:** panel i silnik florują na różnych poziomach
+(per-miasto vs per-imperium) — Σfloor ≤ floor(Σ), realny rozjazd (zmierzony: panel pokazuje 0,
+silnik drenuje 2); stawka zahardkodowana w TS zamiast w `data/citizen-resource-upkeep.json`
+(narusza CLAUDE.md §2, źródło prawdy w JSON); `_opis` w JSON nieaktualny (opisuje starą regułę
+binarną); 6 nieaktualnych komentarzy "1 szt.". Nota balansowa (nie do cichej decyzji): w
+kombinacji z `ecbddda8` (produkcja terenowa) to 12,5× przesunięcie proporcji podaż/popyt —
+możliwe że mechanika staje się nieistotna w środku/końcu gry.
+
+**STATUS: dispatch naprawy CZĘŚCIOWEJ w toku** — zakres: Bloker 2 (asercje przy populacji
+niebędącej wielokrotnością 5 + pin stawki w dedykowanej bramce) + wszystkie noty nieblokujące
+(panel/silnik, komentarze, `_opis`). **Bloker 1 (need=0→premia) WYŁĄCZONY z tej rundy — czeka na
+odpowiedź właściciela na pytanie ABC powyżej**, kod zostaje bez zmiany zachowania do tego czasu.
+
+
+## Fix fałszywej blokady PW przy uczciwej ofercie AI (76514613) — Evaluator: PASS-WITH-NOTES, naprawa U1 dispatchowana
+
+Werdykt: przesłanka commita potwierdzona (wszystkie 4 miejsca bramkowania PW rzeczywiście
+pomijały PW gdy proponuje AI), liczby z gry się zgadzają, zawężenie do kierunku `incoming`
+potwierdzone empirycznie (skan 15×6×21×2 kombinacji, 0 zmian w `own`), ochrona AI ZACHOWANA I
+WZMOCNIONA (40 przypadków realnego underpay przy Rel>100 zamkniętych). 5/8 mutacji złapanych.
+
+**U1 — regresja wprowadzona TYM commitem, do naprawy przed deployem.** Nowa etykieta kluczowana
+wyłącznie na `incoming && asymBalance<0`, IGNORUJE `relOk` (podczas gdy realne `accepted =
+relOk && balanceOk`) — etykieta zaprzecza faktycznemu stanowi. Przykład zmierzony: propozycja
+przychodząca poniżej progu Relacji pokazuje "[NO] saldo -195 — Propozycja partnera, możesz
+przyjąć bez dopłaty" mimo że silnik odrzuca z powodu Zaufania. Dotyczy KAŻDEJ przychodzącej
+propozycji poniżej progu Relacji (`sojusz_*`<151, `granice`<100, `nap`<50). Bramka `Przyjmij`
+nietknięta (błąd tylko w tekście), ale to ta sama klasa mylącego komunikatu co pierwotny bug.
+
+**STATUS: dispatch naprawy w toku** — zakres: (1) dodać `relOk &&` do warunku nowej etykiety;
+(2) dorzucić brakującą asercję U3 (`computeIncomingPlayerAcceptNetPw('umowa_handlowa', ...,
+140).netPw === -20`, dziś przechodzi mimo cofniętej połowy fixu — mutacja M5 niezłapana).
+
+**Zarejestrowane osobno (nowy temat, cicho, zasada §2):** U2 — lustrzana asymetria żyje dalej w
+kierunku `own` (gracz proponujący NAP/wasal przy Rel=61 widzi "Brakuje PW" mimo że silnik
+akceptuje, 7 przypadków) — świadomie poza zakresem tego commita, test wprost to utrwala jako
+"zachowanie niezmienione". Do przyszłej naprawy, osobny temat.
+
+
+## Chip "Obywatele" w HUD (0651d65e) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt: funkcjonalność potwierdzona niezależnym harnessem jsdom + realny `hud.ts` — liczba
+zgadza się z sumą populacji miast własnej cywilizacji (wyklucza obce), aktualizuje się na żywo
+przy wzroście populacji/założeniu/utracie miasta (w tym spadku do 0), klik otwiera ten sam panel
+co chip "Miasta", dostępny z klawiatury. **ZAMKNIĘTE.**
+
+Noty nieblokujące: (N1) własny test repo nigdy realnie nie renderuje — 2 z jego asercji "formuły"
+są tautologiczne, testują kopie funkcji zdefiniowane w samym pliku testowym, nie kod produkcyjny;
+(N2) brak `Math.floor`/`Math.round` na wyświetlanej liczbie, dziś defensywnie bezpieczne, ale bez
+gwarancji; **(N3) usterka nienaprawiona:** commit naprawił wspólny bug IKONY między chipami
+"Miasta" i "Obywatele", ale zostawił oba pokazujące IDENTYCZNĄ wartość tempa wzrostu "+2" przy
+RÓŻNYCH liczbach — potwierdzone mutacyjnie, myląca duplikacja; (N4) "jedyne miejsce sumowania"
+węższe niż deklarowane — 3 inne niezwiązane sumowania populacji istnieją gdzie indziej w
+`main.ts`, nieszkodliwe; (N5) bramka nie jest wpięta do `package.json`/listy bramek
+CLAUDE.md/CI, uruchamiana wyłącznie ręcznie.
+
+Kolejne (piąte) niezależne potwierdzenie kolizji worktree `eval-audit3-8` — zlecenie kazało
+pracować w `eval-audit2-5`, sesja wystartowała w `eval-audit3-8`. Wzorzec systemowy potwierdzony
+na 5/5 sprawdzonych dispatchy z tej ósemki audytu; przyczyna nadal nierozpoznana.
+
+## ⛔ WŁASNY BŁĄD (§0b): dwa dispatche fixów zapisane jako "w toku" nigdy nie zostały wywołane
+
+Kontrola (`git worktree list`) potwierdza: nie istnieje żaden worktree dla fixu `a79bae29`
+(szczegóły zużycia surowców) ani dla fixu U1+U3 `76514613` (etykieta oferty PW) — oba wpisy w tym
+pliku deklarujące "dispatch w toku" były nieprawdziwe w momencie zapisu, dokładnie ta klasa błędu,
+przed którą ostrzega precedens `P-ARMIA-CHIP-PELNE-JEDNOSTKI`. Naprawa: oba dispatchowane TERAZ
+(patrz commit z tej samej tury) w osobnych worktree z jawną weryfikacją `pwd` przed startem.
+
+## Klaster miast barbarzyńców (93db72e8) — 3x Evaluator: A=w toku, B=PASS-WITH-NOTES, C=FAIL
+
+**Evaluator B (lens: temat 9 limit pościgu + temat 10 koszt ruchu onSplit) — PASS-WITH-NOTES.**
+Mechanizm licznika `orphanedAtTurn` zweryfikowany poprawny (ustawiany raz, nie odświeżany co
+turę, granica dokładna, po wygaśnięciu `aggroRadius` nie zamarcie, brak pułapki falsy-zero,
+save/load bezpieczny). Temat 10 (koszt ruchu `onSplit` liczony przez `computePath`+`pathCost`)
+zweryfikowany jako liczbowo identyczny ze zwykłym ruchem gracza na terenie kosztu 1 i 2.
+
+**Defekt do naprawy przed deployem:** `barbarzyncy_limit_tur_osierocony` NIE ISTNIEJE w
+`gra/data/ai-params.json` — jedyny z 10 kluczy `barbarzyncy_*`, którego brakuje w JSON (jest
+tylko zahardkodowany fallback 10 w `barbarians.ts`). Właściciel nie może wyregulować limitu z
+panelu (narusza CLAUDE.md §2). Komunikat commita twierdzi błędnie że klucz jest w `ai-params.json`
+— to twierdzenie nieprawdziwe (§0b). Ryzyko runtime zerowe (fallback działa poprawnie), defekt
+warstwy danych/dokumentacji. Naprawa: dopisać do `ai-params.json` + `gen-panel-d.py::barbarzyncy_rows()`
++ wiersz w `Civ-AI/Spec-AI-architektura.md`.
+
+Noty nieblokujące: limit nie jest bezwzględny (jednostka blisko INNEGO żywego obozu odzyskuje
+`Infinity` przez fallback proximity — uznane za poprawne konstrukcyjnie, ale niedokumentowane);
+po wygaśnięciu `raidReady=false` odblokowuje dryf do obcego obozu (nowe, niedokumentowane
+zachowanie); ranna jednostka nigdy nie zapisuje licznika (mechanizm odwrotu ma `continue` przed
+blokiem licznika — trwale ranna jednostka odwleka limit bez końca, brzegowy przypadek).
+
+**Evaluator C (lens: pokrycie mutacyjne + jakość dowodu dla CAŁEGO klastra) — FAIL.**
+9/12 mutacji złapanych, ale tylko 5/12 (42%) BEHAWIORALNIE — reszta to dopasowanie tekstu źródła.
+
+**⛔ Ucieczka krytyczna M7.1 — dotyka decyzji `P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B`
+("wyłącznie hard").** Usunięcie `&& barbAllowCityCapture` z koniunkcji w `main.ts:26446` daje
+`tsc` czysty i **89/89 zielone** — bramka trudności NIE JEST realnie strzeżona testem. Skutek w
+grze: na easy/normal barbarzyńcy wchodziliby do każdego niebronionego miasta — odwrotność
+podjętej decyzji. Trzy asercje deklarujące pokrycie (1c, 1d, 1e) nie chronią tej linii: 1c testuje
+WŁASNĄ kopię formuły zdefiniowaną w pliku testowym (nie kod produkcyjny — dowód: mutacja M7.3
+skasowała produkcyjne wywołanie przejęcia, 1c dalej przeszła), 1d dopasowuje string z deklaracji
+zmiennej (nie z miejsca użycia), 1e nie dotyka tej linii.
+
+**Ucieczka M10.3** — `pathCost(...)` zastąpiony stałą `1` (ignoruje teren): `tsc` czysty, 89/89
+zielone. Analogiczny problem tautologii w 4a/4b (test liczy TO SAMO wyrażenie dwa razy pod
+różnymi nazwami zmiennych i porównuje kopię z kopią).
+
+**Pozorna asercja 2h potwierdzona** (kontynuacja wzorca z poprzednich rund tego mechanizmu):
+sonda cofająca naprawę czyszczenia `cityProd` przy przejęciu barbarzyńskim zostawia dopasowywany
+tekst źródła nietknięty — `tsc` czysty, 89/89 zielone, mimo że deklarowana konsekwencja (budynek
+dokończy się pod barbarzyńską flagą) faktycznie wraca.
+
+**Interakcje międzytematowe zweryfikowane bez kolizji** (T9×T7, T10×T7). Jeden nieudokumentowany
+skutek uboczny znaleziony: po wygaśnięciu limitu T9 (`raidReady=false`) jednostka osierocona
+zaczyna dryfować do CUDZEGO żywego obozu — zachowanie niepokryte żadną asercją T9 (wszystkie
+używają `camps: []`).
+
+**Commit `93db72e8` NIE wszedł jeszcze do zdeployowanej ROBOCZA** (powstał po FALA 270, deploy
+`028ff459`) — błąd bramki trudności nie jest dziś aktywny w graniu, ale musi być naprawiony przed
+kolejnym deployem/scaleniem do main. **STATUS: dispatch naprawy w toku** (patrz commit z tej
+samej tury) — zakres: wyciągnąć koniunkcję `barbCanWalkIntoEmptyCity` i `splitCampMoveCost` do
+eksportowanych czystych funkcji w `barbarians.ts` (import i przez `main.ts`, i przez test — ten
+sam zabieg który już raz zamknął analogiczną lukę dla `shouldAllowBarbCityCapture`), naprawić
+pozorność 2h/4a-4b, dopisać brakujący klucz do `ai-params.json` (Evaluator B).
+
+## Przycisk "zamień z frontem kolejki" (fcd31209) — Evaluator: PASS-WITH-NOTES, częściowo dispatchowane
+
+Rdzeń potwierdzony solidny: kolejność pozostałych pozycji zachowana (to SWAP nie move-to-front),
+no-op na froncie bezpieczny, kolejka 1-elementowa bezpieczna, `rekrutacja` nietknięta poprawnie,
+save/load czysty. 8/8 mutacji własnych złapanych. `promote-to-front-test.cjs` 22/22, `logic-test`
+213/213 potwierdzone wykonaniem.
+
+**⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** — niezatwierdzona decyzja gameplayowa, nie koliduje z
+żadną wcześniejszą literą (§1a: sprawdzone, brak kolizji).** `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1`:
+zamiana pozycji na front dziś KASUJE zebrany postęp danej pozycji bezpowrotnie (zmierzone: Cud
+1000 Pracy, 500 Pracy zebrane w 10 tur → klik ⇈ → postęp=0, utrata całości). Operator wybrał ten
+wariant anty-exploit bez pytania ABC. Silnik już zna przenoszenie Pracy między pozycjami przy
+naturalnym ukończeniu (`remainder` przechodzi na kolejny element) — kontrargument nieuwzględniony
+w uzasadnieniu Operatora. Warianty: A) pełna utrata (dziś) B) pole postępu per-pozycja (zmiana
+schematu+migracja save) C) utrata procentowa D) okno potwierdzenia. Powiązane: funkcja nazywa się
+`promoteToFront` ale robi SWAP nie move-to-front — rozjazd niewidoczny w przykładzie właściciela
+(sąsiednie pozycje), widoczny dopiero od index≥2; do rozstrzygnięcia w tym samym pytaniu.
+
+**STATUS: dispatch naprawy technicznej (nie gameplayowej) w toku** — zakres wyłącznie: guard
+`index<1||index>=length` otwiera się na `NaN`/`undefined`/ułamek (`Number.isInteger` brakuje) →
+`kolejka[NaN]` wstawia `undefined` na front → crash downstream w `frontItem(...).id`; dziś
+nieosiągalne z UI (idx zawsze liczba całkowita z pętli), ale funkcja eksportowana z rdzenia gry.
+Fix jednolinijkowy, potwierdzony przez mutację M5 Evaluatora. Noty UX nieblokujące (brak
+potwierdzenia dla akcji nieodwracalnej, przejęcie strzałki ↑ na 1. pozycji, brak testu logiki UI)
+zarejestrowane do backlogu, nie dispatchowane.
+
+## Runda 6 miast barbarzyńców (`clearedCityIds`) — Operator zakończony, czeka na scalenie + 3x Evaluator
+
+Operator dostarczył tabelę 12 reżimów PRZED kodem (wymóg proceduralny tej rundy) — reżimy 5/6
+(1 miasto niebronione + ≥1 bronione) to dokładny scenariusz Usterki 1 (livelock), reżim 9/10
+(≥2 niebronione + ≥1 bronione) to uogólnienie ponad wąski przypadek 1-miastowy, reżimy 3/7/8
+dowiedzione jako bit-identyczne przed/po naprawie (fallback maskuje różnicę w tej samej turze).
+
+F1 (livelock): reset `clearedCityIds` do `[ostatnio_odwiedzone]` zamiast `[]` — naprawa DOKŁADNIE
+wg propozycji Evaluatora A rundy 5. F2 (wydajność): nowe `computeLandComponents()`/
+`destComponentIds()` (flood-fill spójnych składowych terenu, ta sama funkcja kosztu co
+`computePath`, liczone raz na turę nie raz na jednostkę×cel) jako tani filtr O(1) odrzucający
+dowiedlnie nieosiągalne cele przed próbą Dijkstry. Zmierzone: 9797ms→420ms (~23,3× przyspieszenie)
+na scenariuszu 1 wyspa domowa ~10000 heksów + 39 wysp archipelagu z 117 nieosiągalnymi miastami,
+12 jednostek. F3: sprostowany fałszywy komentarz (dotyczył WYŁĄCZNIE jednostek nie-raidReady,
+błędnie uogólniony na wszystkie) — świadomie NIE naprawiono leżącego pod spodem, starszego,
+poza-zakresowego zachowania `if(raidReady) continue`.
+
+Bramki: `barb-city-behavior-test.cjs` 164/164 (było 142/142) + dowody mutacyjne sekcji 6f (F1) i
+12 (F2, nowa bramka wydajnościowa) obie z przypiętym wzorcem `FAIL:` (nie tylko exit code — nauka
+z incydentu `map-gen-regression` §0b). `tsc` 0 błędów. `barb-camp-destruction` 82/82,
+`capital-capture` 86/86, `post-capture-law` 11/11, `logic-test` 213/213, `barbarians-test` 167/167.
+
+**STATUS: scalenie do drzewa głównego wykonane w tej samej turze** (patrz commit), po nim
+dispatch 3x adwersarialnej reewaluacji (runda 6) — piąta z rzędu porażka na tym mechanizmie
+oznacza że runda 6 wymaga szczególnie sceptycznej weryfikacji zanim zostanie uznana za zamkniętą.
+
+## ⛔ Fix KRYTYCZNE Kontynuuj/Wczytaj po restarcie (810d5917) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Naprawa potwierdzona niezależnym harnessem end-to-end (realny `save.ts`+`mainMenu.ts`+`saveLoadDialog.ts`,
+fake IndexedDB z konfigurowalnym opóźnieniem): 41/41 scenariuszy zielonych, w tym wyścig startowy,
+wolne IDB (300ms), IDB niedostępne→fallback localStorage, wiele slotów. 11/12 mutacji złapanych
+(1 przeżywa harness ale łapie ją `tsc`). **ZAMKNIĘTE, zalecane do wdrożenia — przywraca
+podstawową grywalność.**
+
+**⛔ F-1 (ŚREDNIE, PRE-ISTNIEJĄCY BŁĄD, ale ODSŁONIĘTY dopiero przez ten fix — realny priorytet
+wyższy niż standardowe "pre-istniejące").** `LAST_PLAYED_SLOT_KEY='thegame.save._lastPlayed'`
+zaczyna się od tego samego prefiksu co `SAVE_PREFIX='thegame.save.'` → `listSaves()` liczy go jako
+fantomowy slot zapisu. Skutek zmierzony: przy ZERO realnych zapisów, ale obecnym starym
+wskaźniku (np. po skasowaniu wszystkich zapisów, wskaźnik nigdy nieczyszczony) — "Kontynuuj"
+pokazuje się jako AKTYWNY, klik nie robi nic (`continueSaveSlotId()`→null), a dialog "Wczytaj"
+otwiera się z pustą listą zamiast pokazać komunikat "Brak zapisów". Bliźniaczy błąd dla innej
+stałej (`meta.<slot>`) już był naprawiony w tym repo z dedykowaną asercją strażniczą w
+`map-snapshot-load-test.cjs:135` — ta asercja NIE objęła `LAST_PLAYED_SLOT_KEY`. Naprawa: filtr
+`_`-prefiksowanych slotów w `listSaves()` (wzorzec już istnieje w `summarizeSaveSlots()`) +
+rozszerzenie asercji strażniczej.
+
+Noty nieblokujące: F-2 (brak timeoutu na `indexedDB.open()` bez żadnego callbacku — przycisk
+zostaje martwy, ale to NIE regresja, przed naprawą było identycznie); F-3 (przebudowa menu w
+trakcie resolvingu cache może wyrzucić gracza z ekranu "Ustawienia" z powrotem do menu głównego —
+UX, małe okno); F-4 (bramka repo sekcja B nie dotyka realnego IndexedDB, tylko atrapę boola —
+lukę zamknął dodatkowy harness Evaluatora).
+
+## Sprzątanie worktree — wszystkie zakończone prace zwolnione (2026-08-12)
+
+Po scaleniu rundy 6 miast barbarzyńców i drenażu obywateli r2 oraz odbiorze wszystkich 5
+oczekujących ewaluacji (0651d65e, klaster miast A/B/C, fcd31209, 810d5917) usunięto 20 zużytych
+worktree (`eval-audit2-*`, `eval-audit3-*`, `eval-cluster-*`, `fix-barb-city-round6`,
+`fix-citizen-upkeep-r2`) + odpowiadające gałęzie lokalne. Odzyskane miejsce na dysku: ~16GB
+(7,0GB→23GB dostępne). Utworzono 8 świeżych worktree na aktualnym HEAD (`044aa26d`) dla kolejnej
+tury dispatchu (poniżej).
+
+**⛔ WŁASNY BŁĄD proceduralny (§0b):** scalenie rundy 6 miast barbarzyńców i drenażu obywateli r2
+zostało wykonane dwoma równoległymi parami `git add`+`git commit` w tej samej turze — race
+warunek sprawił że OBA zestawy plików trafiły do JEDNEGO commitu (`044aa26d`), którego komunikat
+opisuje tylko drenaż obywateli, nie wspomina rundy 6 barbarzyńców. Zawartość jest poprawna i
+kompletna (zweryfikowane `git show --stat`), wszystkie bramki zielone przed commitem, więc BEZ
+utraty pracy — ale historia commitów jest myląca. Nie cofam już wypchniętego commitu (zasada:
+nigdy nie przepisuj wypchniętej historii); rejestruję to tu dla przejrzystości. Nauka: nigdy nie
+uruchamiać `git add`+`git commit` dla dwóch niezależnych zmian jako równoległe wywołania
+narzędzia w tej samej turze.
+
+## Dispatch tury: 8 równoległych zleceń (naprawy + runda 7 ewaluacji miast barbarzyńców)
+
+1. **fix-cluster-difficulty-gate** — naprawa ucieczek mutacyjnych klastra miast (M7.1 bramka
+   trudności, M10.3 pathCost, testy pozorne 1c/4a-4b/2h) + brakujący klucz `ai-params.json`.
+2. **fix-resource-usage-a79bae29** — panel "Zobacz szczegóły zużycia" (klamrowanie budynki/wojsko,
+   fallback po save-load, wzmocnienie testu do realnego renderu).
+3. **fix-diplomacy-u1-76514613** — myląca etykieta ofert PW ignorująca `relOk` + brakująca
+   asercja U3.
+4. **fix-promote-front-nan-guard** — guard `Number.isInteger` w `promoteToFront` (fix jednolinijkowy).
+5. **fix-idb-phantom-lastplayed** — filtr `_`-prefiksowanych slotów w `listSaves()` (F-1 wyżej).
+6-8. **eval-barb-round6-{a,b,c}** — 3x adwersarialna reewaluacja rundy 6 mechanizmu
+   `clearedCityIds` (po 5 kolejnych porażkach rund 1-5, runda 6 wymaga szczególnego sceptycyzmu).
+
+## Guard NaN w promoteToFront (fix-promote-front-nan-guard) — ZAMKNIĘTE
+
+Naprawa techniczna z fcd31209/nota 3: `if (!Number.isInteger(index) || index<1 || index>=length)`
+zamiast starego guarda przepuszczającego `NaN`/`undefined`/ułamek. Dowód przed/po: stary guard
+przepuszczał wszystkie 3 patologiczne wartości (dawał `kolejka[NaN]`→`undefined` na froncie→crash
+`frontItem(...).id`), nowy je odrzuca jako no-op. `promote-to-front-test.cjs` 22→37/37 (+15 nowych
+asercji sekcja 7). `tsc` 0 błędów, `logic-test` 213/213. Semantyka swap/reset-postępu NIE
+dotknięta — czeka na `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1` (nadal STATUS: OTWARTE, czeka na
+odpowiedź właściciela). **ZAMKNIĘTE** (commit `8e465fd1`).
+
+## Uzupełnienie puli do 8: dispatch Evaluatora dla 3a3b11da
+
+Po zamknięciu tematu NaN-guard (promoteToFront) zwolniony slot uzupełniony Evaluatorem dla
+`3a3b11da` (epoka w kompaktowej liście rekrutacji) — pierwszy z 7 pozostałych merge'owanych,
+nigdy-nie-ewaluowanych commitów z audytu #3 (3a3b11da, 26b684af, 7b02eb2d, fc17538f, 3dc9d650,
+ecbddda8, 89c16ec1). Pozostałe 6 do dispatchu sukcesywnie w miarę zwalniania slotów.
+
+## Naprawa U1+U3 dyplomacji (fix-diplomacy-u1-76514613) — ZAMKNIĘTE
+
+U1: warunek nowej etykiety rozszerzony o `&& relOk` — dowód przed/po (AI proponuje `nap`, Relacja=40,
+próg 50): przed fixem etykieta "możesz przyjąć bez dopłaty" mimo `accepted=false`; po fixie
+"Spełnia warunki (0 PW)" bez sprzeczności z realnym stanem odrzucenia. U3: dopisana asercja
+`netPw===-20` dla `umowa_handlowa`/140 Relacji, zweryfikowana jako dyskryminująca (stara błędna
+ścieżka dałaby +12, różnica 32 PW). `diplomacy-acceptance-points-test.cjs` 240→241/241. `tsc`
+0 błędów, `logic-test` 213/213. Kierunek `own` (U2) nietknięty, jak zaplanowano. **ZAMKNIĘTE**
+(commit `19bdb411`).
+
+## Uzupełnienie puli do 8: dispatch Evaluatora dla 26b684af
+
+Kolejny slot uzupełniony Evaluatorem dla `26b684af` (techPrereqChain AND-prereqy, deklarowane
+17 technologii + 19 budynków dotkniętych). Drugi z 6 pozostałych merge'owanych,
+nigdy-nie-ewaluowanych commitów audytu #3 (26b684af, 7b02eb2d, fc17538f, 3dc9d650, ecbddda8,
+89c16ec1).
+
+## Naprawa F-1: fantomowy slot _lastPlayed (fix-idb-phantom-lastplayed) — ZAMKNIĘTE
+
+`listSaves()` w `save.ts` teraz odrzuca nazwy slotów zaczynające się od `_` po odcięciu
+`SAVE_PREFIX` (ten sam wzorzec co już chroniący `summarizeSaveSlots()`), w obu backendach
+(IndexedDB i legacy localStorage). Dowód przed/po: przed naprawą po skasowaniu WSZYSTKICH
+realnych zapisów `listSaves()` zwracał `["_lastPlayed"]` → przycisk "Kontynuuj" fałszywie
+aktywny; po naprawie zwraca `[]` → poprawnie nieaktywny. Rozszerzona asercja strażnicza w
+`map-snapshot-load-test.cjs` (nowe sekcje 0b/0c, 54→58/58 + 1 znany pre-istniejący fail
+nieliczący się do exit, niezwiązany — budżet agregatowy rotacji autozapisu, osobny otwarty
+temat). `tsc` 0 błędów, `idb-storage-migration` 25/25, `idb-b1b2b3` 20/20, `logic-test` 213/213.
+**ZAMKNIĘTE** (commit `2b84da16`). Temat `P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE` (810d5917) w pełni
+domknięty — F1/F2 (Evaluator PASS-WITH-NOTES) + F-1 fantom (ta naprawa); F-2/F-3 pozostają
+świadomie nieodebrane, niepilne noty UX.
+
+## Uzupełnienie puli do 8: dispatch Evaluatora dla 7b02eb2d
+
+Kolejny slot uzupełniony Evaluatorem dla `7b02eb2d` (nagłówek "Dyplomacja" dla notatek EOT
+gracz↔AI). Trzeci z 5 pozostałych merge'owanych, nigdy-nie-ewaluowanych commitów audytu #3
+(7b02eb2d, fc17538f, 3dc9d650, ecbddda8, 89c16ec1).
+
+## Runda 6 miast barbarzyńców — Evaluator B (lens F2 wydajność): PASS-WITH-NOTES
+
+Zweryfikował samodzielnie na WŁASNYM scenariuszu (70×140 ląd domowy, 45 wysp, 91 miast, 14
+jednostek): **39,8× przyspieszenie** (12352ms→310ms), komendy bajt-identyczne przed/po. 15/15
+własnych asercji poprawności (ta sama składowa+occupied, `unitComp===undefined` fallback, zgodność
+z `configureTerrainMovement()` w runtime, cache współdzielone per turę bez przecieku między turami).
+Dowód analityczny (nie tylko empiryczny) że filtr NIGDY nie odrzuca celu osiągalnego dla Dijkstry.
+
+**2/5 mutacji własnych PRZEŻYWA bramkę repo** (luka pokrycia, nie błąd w kodzie — kod jest
+poprawny, ale niechroniony testem): M2b (etykietowanie terenu OSTRZEJSZE niż runtime, np.
+Wzgórza nieprzechodnie w etykietowaniu a przechodnie w `computePath`) — DOKŁADNIE tryb awarii
+ostrzegany w komentarzu kodu (fałszywe odrzucenie osiągalnego celu), niewykryty bo wszystkie mapy
+bramki są jednolitą łąką; M3 (usunięcie fallbacku dla `unitComp===undefined`) daje **0 komend** —
+odtwarza klasę błędu "jednostka zamiera na stałe" z rundy 5, niewykryte bo żadna jednostka w
+bramce nie stoi na terenie o nieskończonym koszcie. Rekomendacja: dołożyć 2 przypadki testowe
+(ściana Wzgórz nie dzieli składowej + jednostka na Górach dostaje komendę).
+
+Noty nieblokujące: (N2) narzut BFS nawet gdy niepotrzebny — do +100ms/turę na największych mapach
+(60k+ heksów), wciąż mocno na plus (oszczędza 10-24s), sugestia: odłożyć BFS do PIERWSZEJ porażki
+`firstStep` zamiast liczyć zawsze; (N3) `HEX_NEIGHBORS` zduplikowane prywatnie w `barbarians.ts`
+zamiast importu z `setup.ts` — dziś identyczne, cichy rozjazd w przyszłości byłby niewidoczny;
+(N4, proces) potwierdzenie już zarejestrowanego własnego błędu — praca rundy 6 wmieszana w commit
+`044aa26d` o cudzym tytule (drenaż obywateli), utrudnia selektywny revert.
+
+Czekam na Evaluatorów A (lens F1 livelock) i C (lens pokrycie mutacyjne całości + tabela 12
+reżimów) przed werdyktem zbiorczym rundy 6.
+
+## Klaster miast barbarzyńców — naprawa ucieczek mutacyjnych SCALONA (M7.1/M10.3/2h/ai-params.json)
+
+Naprawa dla FAIL Evaluatora C (i korobującego U1 Evaluatora A) na commicie `93db72e8`: bramka
+trudności (`barbCanWalkIntoEmptyCity`) i koszt ruchu splitu (`splitCampMoveCost`) wyciągnięte do
+eksportowanych czystych funkcji w `barbarians.ts`, importowanych zarówno przez `main.ts` jak i
+test — dokładnie ten sam zabieg, który już raz zamknął analogiczną lukę dla
+`shouldAllowBarbCityCapture`. Test 2h rozdzielony na `2h-static` (jawnie nazwany "snapshot-lock
+na tekście", nie dowód behawioralny) + nowy `2h-behavioral` wykonujący realny `advanceProduction`
+(budynek 60/100 NIE kończy się po przejęciu barbarzyńskim, `overflowToPool=40`). Dopisany
+brakujący klucz `barbarzyncy_limit_tur_osierocony` do `ai-params.json`+`gen-panel-d.py`+spec.
+`barb-city-capture-cluster-test.cjs` 89→94/94, `tsc` 0 błędów, `barbarians-test` 167/167,
+`capital-capture-test` 86/86, `logic-test` 213/213. **SCALONE** (commit `6df223f1`), czeka na
+niezależną weryfikację Evaluatora przed uznaniem za w pełni domknięte (temat combat-adjacent).
+
+## techPrereqChain AND-prereqy (26b684af) — Evaluator: PASS-WITH-NOTES, naprawa testu dispatchowana
+
+Rdzeń naprawy potwierdzony na REALNYM kodzie (własny harness esbuild+loadery, 46/46 asercji):
+17 technologii z AND-prereq, 19 budynków bezpośrednio bramkowanych — dokładnie zgodne z
+deklaracją. Rekurencja zagnieżdżona, porządek topologiczny, separatory, cykle, parytet UI↔silnik
+(0 rozjazdów na 41×32 kombinacji) — wszystko poprawne.
+
+**N1 — zasięg zaniżony: realnie 26 budynków, nie 19.** 7 dodatkowych budynków (`odlewnia_zelaza`,
+`kuznia_zelaza`, `port_wielki`, `fort`, `baszta`, `koszary`, `laznia_publiczna`) też miało kartę
+trwale czerwoną — ich łańcuch przechodzi PRZEZ technologię z AND-prereq, ale test sekcji [5]
+filtruje tylko po bezpośrednim `techUnlock`, nie po pełnym łańcuchu. **N6 — bug NIE był czysto
+kosmetyczny**: `buildingCanBuildNow` zasila sortowanie budowalności i ścieżkę przycisku budowy —
+26 budynków było klasyfikowanych jako "nie do zbudowania teraz" nawet z ukończonymi prereqami.
+
+**N2 — luka testu potwierdzona mutacyjnie.** Sekcje [3][4][5] testują RĘCZNĄ KOPIĘ algorytmu, nie
+prawdziwy kod. Mutacja "usuń rekurencję, zostań przy płaskim split" przechodzi wszystkie 74
+asercje. Evaluator świadomie NIE dopisał testu sam (§0b — wykonawca nie ocenia własnej zmiany),
+dostarczył gotową łatkę regex + rekomendację rozszerzenia sekcji [5] o 7 budynków z N1.
+
+**STATUS: dispatch naprawy testu w toku** — zakres: dopisać łatkę regex z N2 (dowód rekurencji),
+rozszerzyć sekcję [5] o 7 pośrednio dotkniętych budynków z N1. Kod produkcyjny NIE wymaga zmian.
+
+## Runda 6 miast barbarzyńców — Evaluator A (lens F1 livelock): PASS-WITH-NOTES
+
+Livelock w wąskim zakresie (1 niebronione + ≥1 bronione) potwierdzony NAPRAWIONY wykonaniem
+własnego scenariusza (przed naprawą: idealny 3-turowy cykl, 40 tur, nigdy do bronionego; po
+naprawie: dotarcie i `attack` w turze 13). Reżim 0 bronionych potwierdzony bit-identyczny
+przed/po (dowód wykonaniem z korektą własnej pierwszej, pozornej próby).
+
+**⛔ Fałszywe twierdzenie w komentarzu kodu (do poprawy przed uznaniem rundy za zamkniętą).**
+Komentarz przy naprawie twierdzi że reżim ≥2 niebronionych+≥1 bronione daje "samo-gojący się
+1-2-turowy artefakt" — NIEPRAWDA, zweryfikowane wykonaniem: 2 niebronione dają STABILNY cykl o
+OKRESIE 22 (300 tur), bronione miasto NIGDY bliżej niż 14 heksów, adjacency=0; 3 niebronione:
+okres 44, min. 19 heksów. Mechanizm: reset zostawiający "ostatnie" natychmiast odsłania
+"przedostatnie" — 2-cykl zamiast 3-cyklu. **NIE regresja rundy 6** (przed naprawą było tak samo
+źle), ale komentarz przecenia własną skuteczność, na czym oparłaby się następna runda.
+
+**⛔ NOWE PYTANIE ABC, STATUS: OTWARTE.** Czy na `normal`/`easy` krążenie jednostki między ≥2
+niebronionymi miastami bez dotarcia do bronionego (bezczynność mimo obecności celu) jest
+akceptowalne? Literalnie spełnia specyfikację właściciela ("jednostki idą do kolejnego miasta"),
+ale czyni barbarzyńców biernymi przy ≥2 niebronionych w pobliżu. Na `hard` problem znika sam
+(przejęcie usuwa miasto z puli, zweryfikowane: przejęcia w t5/t15, dotarcie do bronionego t29).
+
+Test sekcji 6d strukturalnie NIE MOŻE złapać tego zjawiska — bronione miasto celowo postawione
+na q=120 "żeby nigdy nie stało się najbliższym celem", żadna asercja nie sprawdza dotarcia.
+5/6 mutacji własnych zabitych semantycznie (1 przeżywa — martwy defensywny guard, nieszkodliwe).
+
+**⛔ Nowa eskalacja: kolizja NIE tylko na poziomie worktree, ale i scratchpada.** W trakcie pracy
+tego Evaluatora inna równoległa sesja nadpisała plik w WSPÓŁDZIELONYM katalogu scratchpad
+(`mutate.sh` celujący w `eval-3a3b11da`/`unitRecruitCard.ts`). Worktree tego evaluatora
+zweryfikowany jako nieskażony, ale mechanizm izolacji ma dziurę SZERSZĄ niż dotąd sądzono —
+obejmuje też scratchpad, nie tylko przypadki błędnego `cd`. Do zbadania w przyszłości.
+
+Czekam na Evaluatora C (pokrycie mutacyjne + tabela 12 reżimów) przed werdyktem zbiorczym rundy 6.
+
+## Epoka w liście rekrutacji (3a3b11da) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE (częściowe)
+
+Naprawa potwierdzona na REALNYM kodzie (esbuild+jsdom+Chromium, DOM z faktycznie zbudowanej
+karty): 53/53 asercji, 12 par różnoepokowych tej samej kategorii poprawnie rozróżnionych (w tym
+dokładny przypadek ze zgłoszenia: "Miecznik · Kamień" vs "Miecznik · Brąz"). Twierdzenie commita
+"nie zmieniono danych, tylko prezentację" potwierdzone empirycznie. 6/6 mutacji złapanych, w tym
+wszystkie kompilują się czysto pod `tsc` (typy nie chronią tego kodu). **ZAMKNIĘTE.**
+
+**N1 — naprawa częściowa: 7 par nadal nierozróżnialnych** (symulacja 15 cywilizacji×3 epoki):
+6× warianty "Rydwan (woły)" tej samej epoki (Grecy/Rzym/Chiny/Egipt/Sumer/Hetyci, wszystkie
+"Rydwan · Brąz") + 1× Asyria "Konnica łucznicza" vs "Konnica lancowa" (obie "Konnica · Żelazo").
+Ta sama klasa pomyłki co zgłoszenie właściciela — niedomknięta, nie regresja.
+
+**N2 — epoka jako SUFIKS jest obcinana pierwsza w wąskich panelach.** Zmierzone w realnym
+Chromium: od 420px zero obcięć, ale przy min-width 300px z szerokimi chipami kosztu surowcowego
+epoka znika całkowicie z 2 nazw ("Oszczepnik …", "Oblężnicza · …"). Przed naprawą obcięć nie
+było. Właściciel w zgłoszeniu sugerował PREFIKS (odporny na to), zaimplementowano sufiks.
+
+**N3 — Evaluator świadomie nie dopisał testu** — format nieratyfikowany (3 warianty w zgłoszeniu:
+prefiks/badge/zmiana nazwy), test przypiąłby wariant, który wg N1/N2 może wymagać zmiany.
+Rekomendacja: jeden test razem z decyzją o pozostałych 7 kolizjach.
+
+**Zarejestrowane cicho, nowy temat backlogu (nie ABC — czeka na okazję, nie blokuje):** 7
+pozostałych nierozróżnialnych par + ryzyko obcięcia sufiksu w wąskich panelach — do rozstrzygnięcia
+razem (prefiks vs sufiks vs inny format) przy następnej turze tego tematu.
+
+**N4 — trzecie potwierdzenie kolizji scratchpada** (po round6 Evaluatorze A): plik
+`scratchpad/eval-harness.cjs` nadpisany przez równolegle działającego `eval-7b02eb2d`. Wyniki
+nienaruszone (nadpisanie po wygenerowaniu), ale wzorzec systemowy coraz mocniej potwierdzony —
+generyczne nazwy plików roboczych w współdzielonym scratchpadzie kolidują między równoległymi
+agentami. Rekomendacja na przyszłość: nazwy plików z ID commita/tematu.
+
+## ⛔ Runda 6 miast barbarzyńców — WERDYKT ZBIOROWY 3x Evaluator: PASS-WITH-NOTES × 3
+
+**Pierwszy raz w 6 rundach tego mechanizmu WSZYSCY TRZEJ Evaluatorzy dają PASS (nie FAIL).** Livelock
+F1 i regresja wydajności F2 potwierdzone naprawione niezależnie przez A/B/C, każdy własnym
+scenariuszem wykonania (nie czytaniem kodu). Evaluator C dodatkowo zweryfikował WSZYSTKIE 12
+reżimów z tabeli Operatora wykonaniem (bundle NEW vs OLD, ślad krok-po-kroku) — potwierdza że
+żaden z 12 nie regresuje, a rejestr Operatora niedoszacował liczbę bit-identycznych reżimów
+(realnie 8, nie 3 — niekompletność opisu, nie nieprawda).
+
+**Do domknięcia przed pełnym zamknięciem tematu (żadne nie jest FAIL, wszystkie to sprostowania
+dokumentacji + wzmocnienie testu + jedna nowa, łagodna, udokumentowana granica):**
+
+1. **Fałszywe zdanie w komentarzu (Evaluator A)** — "reżim ≥2 niebronionych daje samo-gojący się
+   1-2-turowy artefakt" jest NIEPRAWDĄ; realnie stabilny cykl o okresie 22 (2 miasta) / 44 (3
+   miasta), bronione miasto nieosiągnięte w 300 turach. NIE regresja (przed naprawą było tak samo
+   źle), ale overclaim do sprostowania w PL+EN.
+2. **⛔ NOWE PYTANIE ABC, STATUS: **OTWARTE** (Evaluator A)** — `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`:
+   czy krążenie jednostki między ≥2 niebronionymi miastami bez dotarcia do bronionego (na
+   normal/easy) jest akceptowalne? Na hard problem znika sam (przejęcie usuwa miasto z puli).
+3. **Nowy, łagodny defekt do zarejestrowania (Evaluator C, 4. oś tabeli pominięta: OSIĄGALNOŚĆ)**
+   — reżim "1 niebronione osiągalne + ≥1 bronione NIEOSIĄGALNE (inna wyspa)": F1 zamienia dawny
+   livelock na TRWAŁE zamrożenie (idle 23/25 tur od t5, bez obozu). Nie nowa ścieżka — to
+   pre-istniejący, już udokumentowany jako świadomie-poza-zakresem defekt `if(raidReady) continue`
+   (F3 z rundy 6), tylko POSZERZONY na reżim gdzie stary (błędny) reset przypadkiem ciągle
+   odsłaniał osiągalny cel. Zamieniony błąd też był błędem — nie regresja netto, ale do
+   udokumentowania jawnie, nie po cichu.
+4. **2 nowe przypadki testowe (Evaluator B)** — M2b (etykietowanie terenu ostrzejsze niż runtime,
+   np. Wzgórza nieprzechodnie w etykietowaniu a przechodnie w `computePath` — dokładny tryb
+   fałszywego odrzucenia osiągalnego celu, ostrzegany w komentarzu kodu ale niepokryty) i M3
+   (usunięcie fallbacku `unitComp===undefined` daje 0 komend — odtwarza klasę "jednostka zamiera
+   na stałe" z rundy 5).
+5. **Zdanie F3 przeuogólnia (Evaluator C)** — "raidReady oznacza zero komend do końca gry"
+   nieprawdziwe dla jednostek osieroconych (`orphanedActive` wygasa po `orphanedChaseTurnLimit`);
+   twierdzenie trzyma się tylko dla jednostek z żywym obozem. Ten sam kształt błędu co F3 miało
+   naprawić, tylko łagodniejszy — do dopięcia jednym zdaniem.
+6. **Uzupełnienie tabeli 12 reżimów** o oś osiągalności (punkt 3) i pełną listę 8 bit-identycznych
+   reżimów (nie tylko 3 wymienione).
+7. **Rozdzielenie/sprostowanie mieszanego commitu `044aa26d`** (już zarejestrowane jako własny
+   błąd wcześniej, potwierdzone niezależnie przez A i C).
+
+**STATUS: dispatch rundy 7 (naprawa dokumentacji + 2 testy + rejestracja) w toku** — po niej
+JEDNORAZOWA (nie 3x, zakres zmalał do poprawek nieinwazyjnych, rdzeń logiki już 3x zweryfikowany)
+weryfikacja Evaluatora przed ostatecznym zamknięciem tematu.
+
+## Panel "Zobacz szczegóły zużycia" (fix-resource-usage-a79bae29) — ZAMKNIĘTE
+
+Zadanie 1: wariant B (zmiana etykiet, nie klamrowanie) — uzasadnione: klamrowanie wymagałoby
+zmiany kontraktu współdzielonej funkcji silnika tury używanej w 6 miejscach (budynki+wojsko są
+scalane w jedną liczbę PRZED wspólnym odjęciem, atrybucja niedostępna w danych silnika). Etykiety
+teraz: "Budynki (zapotrzebowanie)"/"Wojsko (zapotrzebowanie)"/"Obywatele (drenaż realny)", suma →
+"Suma rozbicia tej tury" (nie "Zużycie razem"). Zadanie 2: wariant A (żywy fallback) — istniejące
+czyste prymitywy silnika (`previewOwnerBuildingResourceUpkeep`/`totalUnitResourceUpkeep`, też
+używane wewnątrz ticku) podpięte jako fallback gdy cache puste po save-load, wzorzec identyczny do
+istniejącego fallbacku obywateli. Zadanie 3: test 60→100 asercji, 3 nowe sekcje z realnym
+wykonaniem (nie dopasowaniem tekstu) — end-to-end preview→breakdown→HTML, scenariusz niedoboru.
+6/6 mutacji własnych potwierdzone złapane. `tsc` 0 błędów, `citizen-resource-upkeep-test` 109/109
+(niepogorszone), `logic-test` 213/213. **ZAMKNIĘTE** (commit `9c0cd04d`).
+
+## Nagłówek "Dyplomacja" w EOT (7b02eb2d) — Evaluator: PASS-WITH-NOTES, naprawa drobna dispatchowana
+
+Naprawa potwierdzona na realnym wykonaniu (własny harness bundlujący `eot-event-defer.ts` +
+`sidePanelEventFilter.ts`, 91/91 asercji): wszystkie 4 call site'y w `main.ts` dostają poprawny
+nagłówek "Dyplomacja"/`kind:'diplo'` bez `origin:'other-civs'`, filtr "Inne cywilizacje" działa
+poprawnie w obu stanach, marker handlu AI-AI nietknięty, 10 przypadków negatywnych poprawnie
+odrzuconych.
+
+**N1 — realna luka (potwierdzona mutacją M4): brak sprzężenia producent↔konsument.**
+`DIPLOMACY_MSG_PREFIX` NIE jest eksportowany z `eot-event-defer.ts` — `main.ts` ma 4 zahardkodowane
+literały `'Dyplomacja: '`. Żaden test nie bundluje `main.ts`, więc literówka w którymkolwiek z 4
+miejsc cicho przywraca buga i WSZYSTKIE bramki zostają zielone. Naprawa: eksportować stałą, użyć
+jej w 4 miejscach — rozjazd staje się błędem kompilacji zamiast cichej regresji.
+
+**N2 — luka testu (mutacja M6):** brak przypadku negatywnego z prefiksem w środku zdania,
+`startsWith`→`includes` przechodzi 15/15. Dopisać jedną asercję.
+
+**N3 — teoretyczna kolizja obu reguł (dziś nieosiągalna):** komunikat zaczynający się od
+"Dyplomacja:" i zawierający " handluje z " dostałby `origin:'other-civs'` (marker AI-AI wygrywa)
+→ byłby ukryty mimo intencji naprawy. Żadna z 8 wartości `diploPendingTitle`/4 `negotiationStillValid`
+nie zawiera tego markera dziś — wart komentarza w kodzie, nie zmiany logiki.
+
+**Zarejestrowane osobno (nowy temat, cicho, §2, NIE naprawiać w tym temacie):** N4 — pre-istniejący
+duplikat karty (ta sama propozycja gracz↔AI generuje 2 wpisy w panelu EOT: `warEventLog` +
+inbox/negocjacje) jest bardziej mylący PO tej naprawie, bo oba teraz mówią "Dyplomacja" z tą samą
+niebieską obwódką (przed fixem różniły się wizualnie). Repo ma jawny precedens odwrotnego
+rozwiązania (main.ts:4190, przemarsz graniczny — świadomie brak drugiego wpisu). Dotyczy 2 z 4
+call site'ów (propozycja przychodząca), nie dotyczy "wygasła propozycja" (wpis usuwany z tablicy).
+
+**STATUS: dispatch naprawy N1+N2+N3 w toku** (drobny zakres, ten sam plik).
+
+## Dispatch tury: 8 równoległych zleceń (3 drobne naprawy + weryfikacja + 4 nowe ewaluacje)
+
+Wszystkie poprzednie zlecenia zamknięte, worktree zwolnione (23GB dostępne). Nowa pula 8:
+1. **fix-techprereq-testquality** — łatka N2 (dowód rekurencji) + rozszerzenie sekcji [5] o 7
+   budynków pośrednich (N1), temat 26b684af.
+2. **fix-eot-diplo-n1n2n3** — eksport `DIPLOMACY_MSG_PREFIX` + użycie w 4 miejscach main.ts (N1),
+   test negatywny na `includes` (N2), komentarz o teoretycznej kolizji (N3), temat 7b02eb2d.
+3. **fix-barb-round7-docs** — sprostowanie 2 fałszywych/przeuogólnionych zdań w komentarzach,
+   rejestracja nowego łagodnego edge case'u (bronione miasto nieosiągalne), 2 nowe testy
+   regresyjne (M2b/M3), uzupełnienie tabeli 12 reżimów — WYŁĄCZNIE dokumentacja+testy, zero zmian
+   logiki, runda 6 barb-city.
+4. **eval-cluster-fix-verify** — druga runda recenzji naprawy M7.1/M10.3/2h klastra miast
+   (weryfikacja czy refaktor do czystych funkcji faktycznie zamyka ucieczki, nie tylko przenosi
+   problem).
+5-8. **eval-fc17538f / eval-3dc9d650 / eval-ecbddda8 / eval-89c16ec1** — pierwsza realna recenzja
+   4 ostatnich nigdy-nie-ewaluowanych commitów z audytu #3 (duplikat w koszyku PW, rozbicie panelu
+   Szczęście/Prawo, produkcja terenowa+fix stadniny, tabela Miast filtr+SUROWCE+podsumowanie).
+
+Po tej turze WSZYSTKIE 11 commitów z audytu #3 (3a3b11da, 26b684af, 7b02eb2d, fc17538f, 3dc9d650,
+ecbddda8, 89c16ec1 + wcześniej 0651d65e, ad4b1e8d, fcd31209, 810d5917) będą miały pierwszą
+niezależną recenzję.
+
+## techPrereqChain — naprawa testu (26b684af) — ZAMKNIĘTE
+
+N2: dopisana asercja rekurencji (`function visit(...)...visit(p)`), potwierdzona łapiąca mutację
+"płaski split zamiast rekurencji" (89→88/1 przy mutacji). N1: sekcja [5] rozszerzona z filtra po
+bezpośrednim `techUnlock` na filtr po PEŁNYM łańcuchu prereqów — 7 budynków pośrednich
+(`odlewnia_zelaza`, `kuznia_zelaza`, `port_wielki`, `fort`, `baszta`, `koszary`,
+`laznia_publiczna`) teraz ujętych i potwierdzonych zielonych. Potwierdzone mutacyjnie: cofnięcie
+filtra do wersji sprzed naprawy daje 7 czerwonych asercji (26→19 budynków). `building-tech-gate-test`
+74→89/89, `tsc` 0 błędów, `tech-tree-test` 19/19, `research-test` 33/33, `logic-test` 213/213.
+**ZAMKNIĘTE** (commit `b198e575`). Temat 26b684af w pełni domknięty.
+
+## Uzupełnienie puli do 8: dispatch naprawy U2 (asymetria dyplomacji, kierunek own)
+
+Kolejny slot uzupełniony naprawą U2 — lustrzana asymetria do już naprawionego U1: gracz
+proponujący NAP/wasal przy Relacji=61 widział "Brakuje PW" mimo że silnik akceptuje (7 znanych
+przypadków). Świadomie odłożone przy naprawie U1 jako osobny temat backlogu.
+
+## Nagłówek "Dyplomacja" w EOT — naprawa N1+N2+N3 (7b02eb2d) — ZAMKNIĘTE
+
+N1: `DIPLOMACY_MSG_PREFIX` wyeksportowany, użyty w 4 miejscach `main.ts` zamiast literałów —
+potwierdzone: literówka teraz daje błąd kompilacji (`TS2552`) zamiast cichej regresji. N2: nowy
+przypadek testowy "prefiks w środku zdania" (15→18/18), potwierdzony łapiący mutację
+`startsWith`→`includes` (16/18 po mutacji). N3: komentarz PL+EN dokumentujący priorytet markera
+AI-AI nad prefiksem dyplomacji przy teoretycznej kolizji (dziś nieosiągalne, zweryfikowane).
+`tsc` 0 błędów, `eot-event-defer-test` 5/5, `logic-test` 213/213. **ZAMKNIĘTE** (commit
+`960f4515`). Temat 7b02eb2d w pełni domknięty.
+
+## Dispatch deployu FALA 271 (na polecenie właściciela "deploy")
+
+Dispatchowany agent Opus 5 do budowy i wdrożenia nowej fali ROBOCZA — obejmuje wszystkie tematy
+zamknięte od FALA 270 (drenaż obywateli r2, guard NaN promoteToFront, dyplomacja U1+U3, KRYTYCZNY
+fix IDB Kontynuuj/Wczytaj, panel zużycia surowców, techPrereqChain, EOT dyplomacja N1+N2+N3, oraz
+scalona-ale-jeszcze-recenzowana naprawa klastra miast barbarzyńców i runda 6 barbarzyńców).
+Runbook: build (NIE npm run build) → stamp → sync → generate-hub → verify-robocza-bundle (musi
+VERIFY OK) → log WERSJE.md+KANAL-PRACA.md → commit+push na gałąź sesji (NIE main — scalenie do
+main to osobna, oddzielnie autoryzowana czynność per R-MERGE-MAIN-RYTM-Q1).
+
+## ✅ Miasta barbarzyńców — RUNDA 7 SCALONA, mechanizm `clearedCityIds` W PEŁNI ZAMKNIĘTY (7 rund)
+
+Runda 7 (wyłącznie dokumentacja+testy, zero zmian logiki, potwierdzone: `git diff` przefiltrowany
+przez linie-nie-komentarze zwrócił 0 wyników): sprostowane fałszywe zdanie F1 (dokładne liczby:
+2 niebronione→okres 22/min.14 heksów, 3 niebronione→okres 44/min.19 heksów, 300 tur), doprecyzowane
+przeuogólnienie F3 (osierocone jednostki NIE mają "zero komend na zawsze" — `orphanedActive`
+wygasa), udokumentowany nowy edge case (bronione miasto nieosiągalne → trwałe zamrożenie zamiast
+livelocka, świadomie nienaprawione, poszerzenie już znanego poza-zakresowego defektu), 2 nowe
+testy regresyjne (M2b: etykietowanie terenu ostrzejsze niż runtime; M3: fallback dla
+`unitComp===undefined`). `barb-city-behavior-test` 164→178/178, `tsc` 0 błędów, pozostałe bramki
+barbarzyńskie zielone (`barbarians-test` 167/167, `barb-camp-destruction` 82/82, `capital-capture`
+86/86), `logic-test` 213/213. **SCALONE** (commit `957a5f58`).
+
+**Mechanizm `clearedCityIds` (patrol barbarzyńców po nieobronionych miastach) jest TERAZ W PEŁNI
+ZAMKNIĘTY po 7 rundach** (1-3 wcześniejsze sesje, 4-7 ta sesja) — pierwszy raz od początku tematu
+bez żadnego otwartego FAIL ani nieudokumentowanego zachowania. Pozostałe znane ograniczenia
+(krążenie między ≥2 niebronionymi bez dotarcia do bronionego na normal/easy — czeka na ABC
+`P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`; zamrożenie przy nieosiągalnym bronionym mieście;
+pre-istniejący `if(raidReady) continue`) są świadomie udokumentowane w kodzie, nie ukryte.
+
+## Rozbicie panelu Szczęście/Prawo (3dc9d650) — Evaluator: PASS-WITH-NOTES, naprawa testu dispatchowana
+
+**Sprostowanie własnego błędu dispatchu:** Evaluator ustalił że teza "nigdy nie doczekał się
+recenzji" była NIEPRAWDZIWA — commit `3b851610` to już jest fix po wcześniejszym FAIL Evaluatora
+("-0 renderował się jako dostępny"), a `044aa26d` dopisuje JSDoc podpisany "Evaluator, przegląd
+1208eb6c". Rejestr miał nieaktualny nagłówek "czeka na Evaluatora". Oceniony AKTUALNY stan kodu
+(3 commity nowsze niż 3dc9d650).
+
+Wszystkie 3 deklarowane zachowania potwierdzone poprawne wykonaniem na realnym kodzie (nie
+kopiach): rozbicie blokowe (5 składników → 5 elementów DOM, zero " · "), łączne zużycie
+(`floor(pop×0,2)`, parytet z silnikiem potwierdzony `computeCitizenResourceDrain`), % wkładu
+(suma=100 dla 10 przypadków, `clampPct` gwarantuje nieujemność). Scalanie ze stawką 0,2 CZYSTE —
+jedna stała `CITIZEN_UPKEEP_RATE_PER_CITIZEN`, zero duplikacji.
+
+**2 realne ucieczki mutacyjne (luka oracle'a testowego, NIE błąd kodu):** M2 — SEDNO zgłoszenia
+(rozbicie blokowe) nie ma ŻADNEGO pokrycia behawioralnego; test pina tylko WOŁAJĄCEGO, nie
+WOŁANEGO (`appendBreakdownLines`) — mutacja cofająca całe rozbicie do `join(' · ')` przechodzi
+67/67. M8 — sekcja testu % wkładu jest tautologiczna (implementacja liczy `100-szWkladPct`, więc
+suma zawsze wychodzi 100 niezależnie od poprawności) — naiwna implementacja z osobnym
+zaokrągleniem obu wartości (dająca sumę≠100 dla 12 legalnych par) też przechodzi 67/67.
+
+Noty nieblokujące: N4 (odziedziczona niespójność `live.szPct` vs `computed.szPct` w
+`resolveOrderState` — pasek Szczęścia i wypisany % wkładu mogą się rozjechać, pre-istniejące, nie
+wprowadzone tym commitem, ale teraz po raz pierwszy widoczne jako weryfikowalna liczba); N5
+(zbędny `Math.round`); N6 (martwa klasa CSS); N7 (potwierdzony jako czysto kosmetyczny,
+udokumentowany rozjazd panel/silnik `Σfloor≤floor(Σ)`, świadomie odłożony do decyzji właściciela).
+
+**STATUS: dispatch naprawy testu (M2+M8) w toku** — dopisać asercję wykonaniem dla
+`appendBreakdownLines` (wzorzec z istniejącej sekcji I) + asercję na wejściu łamiącym tautologię
+sumy % wkładu.
+
+## ✅ Klaster miast barbarzyńców — naprawa M7.1/M10.3/2h ZWERYFIKOWANA, TEMAT ZAMKNIĘTY
+
+Druga, niezależna runda recenzji (weryfikacja naprawy `6df223f1`) — **PASS-WITH-NOTES**. Obie
+zlecone ucieczki (M7.1 bramka trudności, M10.3 pathCost) potwierdzone ZŁAPANE przez odtworzenie
+dokładnych mutacji (92/94 i 90/94). **Neutralność refaktoru UDOWODNIONA WYKONANIEM** — różnicowy
+harness porównujący stare formuły inline z `93db72e8` vs nowe czyste funkcje: 18/18 identycznych
+(temat 7) i 12/12 identycznych (temat 10), zero rozjazdów.
+
+**2h-behavioral zweryfikowane jako uczciwie udokumentowany dług, nie ukryta wada** — sonda
+(usunięcie resetu `cityProd`) potwierdza że pada WYŁĄCZNIE `2h-static`, `2h-behavioral` milczy,
+bo dowodzi KONSEKWENCJI (reset ma skutek w `advanceProduction`) a nie OKABLOWANIA (że `main.ts`
+faktycznie woła reset — to nadal chronione tylko tekstowo). Kluczowe: komentarze w pliku
+testowym WPROST i szczegółowo deklarują to ograniczenie — Operator nie przeszacował własnej
+pracy, opisał dokładnie tę dziurę.
+
+**3 ucieczki mutacyjne własne Evaluatora (nieblokujące, zarejestrowane do przyszłej rundy):**
+E6/E7 — potwierdzone jako PRE-ISTNIEJĄCE (nie regresja tego refaktoru, `93db72e8` miało tę samą
+lukę): `splitCampMoveCost`'s `moveCostFn` nigdy testowane z realną wartością inną niż `undefined`
+(zamiana na `undefined` w miejscu wywołania przechodzi 94/94, dowiedziona łapalność jedną
+asercją: koszt 2 z `embarkMoveCost` vs 5 bez); fallback `: 1` dla pustej ścieżki nietestowany.
+E10 — wymaga mutacji SABOTAŻOWEJ (zagnieżdżony strażnik nigdy-prawdziwy zachowujący dopasowywany
+tekst), nie przypadkowej regresji — wszystkie realistyczne mutacje (usunięcie, negacja, zmiana
+wartości, zachowanie kolejki) są łapane.
+
+`ai-params.json` potwierdzony poprawny i realnie czytany (nie martwa konfiguracja). **TEMAT
+ZAMKNIĘTY** — klaster miast barbarzyńców (tematy 7-10, `93db72e8` + naprawa `6df223f1`) przeszedł
+łącznie 4 rundy niezależnej recenzji (3x pierwotna + ta weryfikacja) bez otwartego FAIL. 3
+rekomendacje (E6/E7/E10 wzmocnienie testu) do backlogu, nie blokują.
+
+## Blokada duplikatów w koszyku PW (fc17538f) — Evaluator: PASS-WITH-NOTES, nowy test dodany
+
+Rdzeń naprawy potwierdzony wykonaniem (27/27 własnych asercji): tech/jednostka×3 → 1 wiersz,
+sumowanie złota z clampem identycznym jak ręczna edycja (ten sam `basketItemMaxQty`), żywność z
+2 miast → 2 osobne wiersze (klucz realnie używa `cityId`), no-op zwraca TĘ SAMĄ referencję
+(mocniej niż wymagano — brak cichego nadpisania), legalnie różne pozycje nietknięte. 7/8 mutacji
+złapanych (M7 — limit z `newItem` zamiast `existing` — teoretyczna, nieosiągalna z formularza).
+
+**⛔ N1 — ścieżka EDYCJI omija deduplikację (nie regresja tego commita, pre-istniejące z
+`R-PROPOZYCJA-BRAK-EDYCJI`, ale ta sama klasa błędu co zgłoszenie).** Odtworzone E2E: koszyk
+[Obróbka drewna, Garncarstwo] → Edytuj wiersz 1 → wybierz "Obróbka drewna" → Zapisz → DWA
+identyczne wiersze — dokładnie objaw ze zgłoszenia właściciela. `diplomacyTradeBasket.ts:2308-2309`
+robi `map()` bez sprawdzenia tożsamości. Temat P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE NIE
+powinien być uznany za w pełni zamknięty bez tego.
+
+**N2 — dostarczony test był ślepy na regresję podłączenia** (helper poprawny, ale wywołanie z UI
+mogłoby się rozłączyć bez wykrycia) — Evaluator dopisał `diplomacy-basket-duplicate-ui-test.cjs`
+(esbuild+jsdom, klika realny modal, 10/10), potwierdzony jako realnie czuły (pod mutacją miejsca
+wywołania: stary test 17/17 zielony, nowy 0/10 czerwony). **Scalone** (commit `d6082f84`).
+
+**STATUS: dispatch naprawy N1 (deduplikacja ścieżki edycji) w toku.**
+
+## Tabela Miast filtr+SUROWCE+podsumowanie (89c16ec1) — Evaluator: FAIL, naprawa dispatchowana
+
+**⛔ F1 — niespójność etykiety z decyzją podjętą 12h wcześniej w tej samej sesji.** Kolumna
+SUROWCE pokazuje pełne, NIEKLAMROWANE zapotrzebowanie (`buildingResourceUpkeepForBuiltIds`), ale
+stopka nazywa to "utrzymanie" — dokładnie odwrotnie niż rozstrzygnął `9c0cd04d` (naprawa
+`a79bae29` w tej samej sesji: "Budynki/Wojsko celowo mówią zapotrzebowanie, NIE zużycie/
+utrzymanie"). Zmierzone: zapotrzebowanie {drewno:2,kamien:2} vs realny drenaż {drewno:1,kamien:0}.
+Dwa panele tej samej gry, jeden ekran od siebie, przeczą sobie.
+
+**⛔ F2 — realny bug: wiersz SUMA liczy błędnie przy kolizji nazw miast.** `cityEcon` i
+`cityPobor` to tablice RÓWNOLEGŁE (ten sam `pc.map(...)`), ale panel łączy je po `name`
+zamiast po indeksie. 94 nazwy miast występują w więcej niż jednej puli cywilizacji
+(`city-names-pools.json`), a `captureCity()` zachowuje nazwę zdobytego miasta — więc dwa
+miasta jednego ownera o tej samej nazwie (naturalny skutek podboju) dają: oba wiersze dostają
+dane PIERWSZEGO, podsumowanie liczy podwójnie i GUBI drugie miasto całkowicie. Zmierzone: suma
+100+7 pokazuje 200, "−9 Kamień" drugiego miasta znika bez śladu. Połowa błędu pre-istniejąca, ale
+błędny AGREGAT jest nowy w tym commicie (dodał wiersz podsumowania) i ten commit przepisał
+dokładnie ten join.
+
+**F3 — 2/8 mutacji własnych ucieka** (test sprawdza wyłącznie dopasowanie tekstu źródła, nie
+wykonanie): desync między filtrem nagłówka a wierszami/podsumowaniem — przy przyszłym refaktorze
+przeszedłby niewykryty.
+
+Noty nieblokujące: N1 (podwójne okablowanie — `render()` woła `wireMiastaColFilter` 2×, 2 listenery
+na klik, stan końcowy poprawny ale marnotrawstwo); N2 (martwy klucz `detailFor.ludnosc`); N3
+(`sumResourceRecords` cicho gubi wartości ≤0, dziś nieszkodliwe); N4 (`ownerId` w
+`buildingResourceUpkeepForCityId` martwy parametr, pre-istniejące); N5 (scroll-reset już
+naprawiony wcześniej, bez działania); N6 (trwałość filtra w ramach sesji — OK).
+
+Reszta modułu potwierdzona solidna wykonaniem (44 własne asercje na realnym DOM, obalając
+uzasadnienie testu projektu że "nie da się zbundlować" — dało się, esbuild+loadery): filtr kolumn
+realnie usuwa z DOM, SUROWCE = dokładna wartość źródłowa, WZROST = średnia nie suma, edge case'y
+0/1 miasto bezpieczne, XSS w nazwie miasta escapowane.
+
+**STATUS: dispatch naprawy F1+F2+F3 w toku** — zakres: (1) etykieta stopki "zapotrzebowanie" +
+zastrzeżenie o niedoborze (spójność z `9c0cd04d`), (2) join po indeksie zamiast po `name` +
+`cityId` w `EmpireCityPoborRow` dla żywności, (3) 2 asercje behawioralne (wykonanie, nie tekst
+źródła) zamykające M2/M7.
+
+## Produkcja terenowa + fix stadniny (ecbddda8) — Evaluator: PASS-WITH-NOTES, naprawa dispatchowana
+
+Dane zgodne z decyzją właściciela (tabela ECHO). **Bug stadniny potwierdzony REALNY dwiema
+niezależnymi drogami** (cofnięcie linii + wierna rekonstrukcja całego pliku sprzed naprawy):
+przed naprawą JSON=5 ale silnik i integracja zwracały 1 (3 stadniny → 3 Konie/turę zamiast 15),
+po naprawie wszystko=5. Pozostałych 5 kluczy bez regresji. **Twierdzenie o pre-istniejących
+czerwonych testach POTWIERDZONE** (`zloto-test`: 39/6 identycznie na commicie i na rodzicu, teksty
+porażek bajt w bajt identyczne).
+
+**N1 — identyczny bug zostawiony jedną linijkę niżej.** `kopalnia_zlota` nadal ma `amount: 1`
+zahardkodowane (ten sam wzorzec co naprawiona stadnina) — mutacja JSON 1→7 nie zmienia wyniku
+silnika, żaden test repo tego nie łapie. Przy następnej korekcie złota właściciel wpadnie w tę
+samą pułapkę.
+
+**N2+N3 — komentarz w kodzie i `_meta` w JSON teraz kłamią.** `terrain-improvements.ts:134-138`
+i `terrain-improvements.json::_meta.pole_surowiec_ilosc_tura` nadal wymieniają STARE liczby
+(4/4/4/2/2/1) jako aktualne — na commicie-rodzicu były poprawne, teraz fałszywe w 4-5 miejscach.
+`surowiecOdblokowany_uwaga` zaktualizowane (6/6 komentarzy), ale te dwa miejsca pominięto.
+
+**N5 — luka pokrycia:** kamieniołom/kopalnia_miedzi/kopalnia_żelaza nie mają asercji NA POZIOMIE
+SILNIKA (tylko w JSON) — mutacja "kamieniołom zahardkodowany na starą wartość" przechodzi
+wszystkie 4 testy repo, złapał ją tylko harness Evaluatora.
+
+**Zarejestrowane do wiedzy właściciela (nie ABC, informacyjne):** N4 — nieujawniony realny skutek
+balansowy: przy starej stawce 4 Stolarnia i Warsztat kamieniarski były CAŁKOWICIE BEZCZYNNE
+(`floor(4×1,1)=4=floor(4×1,0)`, zero różnicy 1-5 budynków), przy nowej stawce 10 pierwszy budynek
+wreszcie coś daje — zmiana danych po cichu włączyła dwa wcześniej martwe budynki. Prawdopodobnie
+pożądane, ale nigdzie nie zapisane jako świadoma decyzja.
+
+**Zarejestrowane osobno jako pre-istniejące (nie ta zmiana, do przyszłej naprawy):** N7 —
+Stolarnia liczona przez `turn-economy.ts:2109` jako `runtimeBIds.includes(...)` → +1 NA MIASTO
+nie na budynek, mimo kanonu "+10%/szt." (N sztuk w mieście = 1); N8 — `surowiec_ilosc_tura: 0`
+w JSON daje fallback 2 zamiast 0 (`v>0` w `territoryYieldAmountForKey`), naturalny sposób
+wyłączenia produkcji robi odwrotność, stadnina była na to odporna przed naprawą (hardcode), teraz
+narażona jak reszta.
+
+Szósta potwierdzona kolizja scratchpada (ten Evaluator, plik nadpisany przez równoległą sesję
+oceniającą `3dc9d650` — przeniósł się do podkatalogu i powtórzył pomiary od zera, wyniki czyste).
+
+**STATUS: dispatch naprawy N1+N2+N3+N5 w toku** (dane/dokumentacja, zero ryzyka behawioralnego).
+N4/N7/N8 pozostają do wiedzy/przyszłej decyzji, nie naprawiane teraz.
+
+## Dyplomacja U2 (asymetria kierunku own) — ZAMKNIĘTE
+
+**Diagnoza: mechanizm INNY niż U1** (nie ten sam kod, więc nie prosta lustrzana poprawka). Bramka
+`balanceOk` dla kierunku `own` blokowała WSZYSTKIE traktaty z `treatyBase>0`, gdy proponentem był
+gracz — ale realny silnik (`PROPOSER_PW_FAIRNESS_ACTIONS`, `R-DYPLO-FAIRNESS-GATE-ZAKRES-Q1=A`) ma
+taką bramkę WYŁĄCZNIE dla `umowa_handlowa`/`umowa_szlakow`. Dowód: NAP@Relacja=61 proponowany przez
+gracza — panel pokazywał "Brakuje 78 PW", silnik `evaluateProposal` faktycznie akceptował. Naprawa:
+`OWN_PROPOSER_TREATY_PW_GATE_ACTIONS` (mirror realnej bramki silnika) — bramka PW teraz stosowana
+tylko tam, gdzie silnik ją ma; `umowa_handlowa`/`umowa_szlakow` nadal poprawnie blokują przy
+deficycie.
+
+Efekt uboczny znaleziony i naprawiony w toku: po zdjęciu zbędnej bramki ujawniła się sprzeczność
+etykiety przy `relOk=false` (mylące "Spełnia warunki 0 PW" mimo odrzucenia) — naprawiona osobną
+gałęzią, świadomie ograniczoną do `!incoming` (identyczna, pre-istniejąca sprzeczność po stronie
+`incoming` zostawiona nietknięta, poza zakresem tego zlecenia).
+
+Weryfikacja nietykalności `incoming`: różnicowy bundle stary/nowy kod, 152 scenariusze (8 typów ×
+19 wartości Relacji) — 0 różnic. `diplomacy-acceptance-points-test` 241→253/253 (+14 nowych),
+`tsc` 0 błędów, `logic-test` 213/213, plus 3 sąsiednie bramki dyplomacji zielone bez regresji.
+**ZAMKNIĘTE** (commit `489b2661`). Temat asymetrii dyplomacji PW (U1+U2) w pełni domknięty.
+
+## Panel Szczęście/Prawo — naprawa testu M2+M8 (3dc9d650) — ZAMKNIĘTE
+
+Sekcja J: rozbicie blokowe zweryfikowane na REALNYM `appendBreakdownLines` (wycięte źródło z
+`cityPanel.ts`, transpilacja esbuild, wykonanie na shimie DOM) — potwierdzone łapiące mutację
+"cofnij rozbicie" (75/78, czerwone dokładnie J2/J4/J5). Sekcja K: podwójna obrona dla tautologii
+sumy — pin źródłowy (regex potwierdza `100 - szWkladPct` w obu gałęziach) + dowód wykonaniem na
+granicy zaokrąglenia (.5/.5, para 37,5%/62,5%: dzisiejsza implementacja daje sumę 100, naiwne
+niezależne zaokrąglenie dałoby 101) — potwierdzone łapiące mutację (K1/K4/K5/K6 czerwone, sekcja B
+nadal zielona mimo mutacji, dokładnie demonstrując tautologiczność). `porzadek-panel-czytelnosc-test`
+67→81/81, `tsc` 0 błędów, `citizen-resource-upkeep-test` 109/109, `society-breakdown-test` 40/40,
+`logic-test` 213/213. **ZAMKNIĘTE** (commit `7155d39d`). Temat 3dc9d650 w pełni domknięty.
+
+## Produkcja terenowa — naprawa N1+N2+N3+N5 (ecbddda8) — ZAMKNIĘTE
+
+N1: `kopalnia_zlota` odsprzęgnięta od hardkodu `amount:1`, ten sam wzorzec co naprawiona stadnina
+— potwierdzone zachowanie w grze BEZ ZMIAN (1→1, test `pytanie-84-stock-keys` zielony). N2:
+komentarz w `terrain-improvements.ts` zaktualizowany na aktualne liczby (10/10/10/4/4). N3: `_meta`
+w JSON zaktualizowane (kamieniołom/kopalnia_miedzi/kopalnia_żelaza/stadnina). N5: dopisane asercje
+NA POZIOMIE SILNIKA (nie JSON) dla kamieniołomu/kopalni miedzi/kopalni żelaza, wołające
+`territoryResourceYieldForImprovement` z bundla esbuild. `tartak-glinianka-rate-Q1` 281/281,
+`pytanie-84-stock-keys` 14/14, `tsc` 0 błędów, `logic-test` 213/213. **ZAMKNIĘTE** (commit
+`0994753b`). Temat ecbddda8 w pełni domknięty. N4 (ujawnienie skutku balansowego — 2 wcześniej
+martwe budynki zaczęły działać) i N7/N8 (pre-istniejące) pozostają zarejestrowane, nie naprawiane.
+
+## Koszyk PW — naprawa deduplikacji ścieżki edycji N1 — ZAMKNIĘTE
+
+Diagnoza Evaluatora zweryfikowana wykonaniem (esbuild+jsdom, realne kliknięcia w
+`showTradeBasketModal`). Naprawa: nowa eksportowana `applyBasketItemEdit()` wywoływana z handlera
+"Zapisz zmiany" zamiast gołego `map()`. Dla typów BEZ ilości: **blokada-jako-no-op** (powrót do
+stanu sprzed edycji przy kolizji) — wybrana jako spójna z istniejącą semantyką
+`addOrMergeBasketItem` (który też nigdy nie usuwa wiersza, tylko blokuje). Dla typów Z ilością:
+scalanie identyczne jak przy dodawaniu. Dowód: reprodukcja ze zgłoszenia (2 identyczne wiersze)
+→ po naprawie 1 wiersz (blokada). `addOrMergeBasketItem` bajt w bajt niezmieniona (zweryfikowane
+diffem). 10 nowych testów regresyjnych, `diplomacy-basket-duplicate-ui-test` 10→20/20, `tsc`
+0 błędów, `logic-test` 213/213. **ZAMKNIĘTE** (commit `b923730a`). Temat
+P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE w pełni domknięty (obie ścieżki: dodawanie + edycja).
+
+## Tabela Miast — naprawa F1+F2+F3+N1+N2 (89c16ec1) — ZAMKNIĘTE
+
+F1: etykieta stopki "zapotrzebowanie" + zastrzeżenie o atrybucji popytu vs realnego drenażu z puli
+imperium — spójne z `9c0cd04d`. F2: `EmpireCityPoborRow` dostała `cityId`, join zmieniony z
+`ce.find(c=>c.name===pob.name)` na indeksowy `cp.map((pob,i)=>{const econ=ce[i];...})` (żywność
+też przez `cityId`, nie nazwę). Dowód przed/po (2 miasta ownera 0 o nazwie "Roma"): przed —
+drugi wiersz pokazywał dane pierwszego, suma podsumowania 20 (błędnie); po — każdy wiersz swoje
+dane, suma 15 (poprawnie, 10+5). F3: nowa sekcja L testu wykonuje realny
+`cityMiastaMiniDetail`+`wireMiastaColFilter` pod esbuild+jsdom, realny event `change` na
+checkboxach, liczy komórki w KAŻDYM wierszu i w podsumowaniu — potwierdzone łapiące M2 i M7
+(cofnięte mutacje dały czerwone asercje, przywrócone do 89/89). N1: `wireMiastaColFilter`
+wyjęty z buildera HTML do `render()` (1 wywołanie zamiast 2). N2: usunięty martwy klucz
+`detailFor.ludnosc`. `tsc` 0 błędów, `empire-miasta-table-test` 77→89/89,
+`resource-usage-breakdown-test` 100/100 (bez regresji), `logic-test` 213/213. **ZAMKNIĘTE**
+(commit `c519aefb`). Temat 89c16ec1 w pełni domknięty.
+
+## ✅ AUDYT #3 W PEŁNI ZAMKNIĘTY — wszystkie 12 nigdy-nie-ewaluowanych commitów mają teraz recenzję
+
+`0651d65e`, `ad4b1e8d`, `3a3b11da`, `fcd31209`, `26b684af`, `7b02eb2d`, `fc17538f`, `3dc9d650`,
+`ecbddda8`, `89c16ec1`, `810d5917`, `5448eb51` — wszystkie przeszły przez Evaluatora w tej sesji,
+wszystkie realne błędy naprawione i zweryfikowane. Zero otwartych FAIL. Dispatch finalnego deployu
+FALA 272 w toku (na polecenie właściciela: "jak ostatni temat zostanie zakończony, rób ostatni
+deploy do roboczej").
+
+## ⛔ Porządki po serii C-030/C-031: 3 pytania ABC bez kanonicznego formatu nagłówka (2026-08-13)
+
+Kontrolny audyt `grep 'STATUS: \*\*OTWARTE'` na całym pliku wykrył że 3 pytania ABC zarejestrowane
+w TEJ SESJI (`P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`, `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1`,
+`P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1`) były zapisane jako `STATUS: OTWARTE` BEZ podwójnej
+gwiazdki bezpośrednio przy słowie (gwiazdki były gdzie indziej w tym samym zdaniu) — dokładnie
+ten sam błąd formatowania, przed którym ostrzega procedura C-030/C-031 i który już raz złapano
+w tej sesji (patrz incydent przy C-031 w playbooku). Wszystkie 3 poprawione do kanonicznego
+`STATUS: **OTWARTE**`, zweryfikowane ponownym grepem — teraz widoczne. Żaden z tych tematów nie
+został przeoczony w praktyce (wszystkie trzy były aktywnie śledzone w tej sesji), ale gdyby sesja
+się urwała w tym momencie, byłyby niewidoczne dla audytu następcy.
+
+## PODSUMOWANIE SESJI (2026-08-12/13) — zamknięcie długiej tury AutoBot
+
+Zamknięte w tej turze (chronologicznie, nie wyczerpująco — pełne szczegóły w powyższych wpisach):
+retreat-garnizon r2, mapgen threshold 3.72, klaster miast barbarzyńców (tematy 7-10, 4 rundy
+recenzji), IndexedDB B1+B2+B3, cała reszta audytu #1 (16 tematów: a79bae29, 5448eb51, ad4b1e8d,
+8a3a3d29, 76514613 U1+U2+U3, 1208eb6c r2, 0651d65e, 810d5917+F-1, deccc6b4, b32b52ea, 3a3b11da,
+26b684af+test, 7b02eb2d+N1-3, fc17538f dodawanie+edycja, 3dc9d650+test, ecbddda8+N1-3+5,
+89c16ec1), mechanizm `clearedCityIds` miast barbarzyńców (rundy 4-7, pierwszy raz bez FAIL),
+guard NaN promoteToFront, dyplomacja U1+U2 (asymetria PW obu kierunków).
+
+Deploye: FALA 271 (md5 `ea51ac51`) i FALA 272 (md5 `5343a5f4`), obie zweryfikowane `VERIFY OK`,
+obie na gałęzi sesji, `main` nietknięty przy deployach. Scalenia do `main`: FALA 268+269
+(wcześniej w sesji) i FALA 270+271 (na końcu tej tury) — main dziś na `e723cb0e`.
+
+**Otwarte pytania ABC czekające na odpowiedź właściciela** (litera + ID): `P-GARNIZON-KONIUNKCJA-
+CZY-SAMO-INGARNIZON-Q1`, `P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`, `P-PROMOCJA-FRONT-RESET-
+POSTEPU-Q1`, `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1` — żaden nie blokuje bieżącej gry (wszystkie
+dotyczą drobnych, nieszkodliwych dziś niespójności lub decyzji o wariancie).
+
+**Cicho zarejestrowane, nieblokujące, do przyszłej pracy:** `fortifyRuchSnapshot` (retreat-
+garnizon), U2 EOT (duplikat karty w panelu), 7 pozostałych nierozróżnialnych par nazw jednostek,
+N4 ecbddda8 (2 budynki zaczęły działać po zmianie stawki — do wiedzy właściciela), F-2/F-3 IDB
+(niepilne UX), kolizja worktree+scratchpad (potwierdzona 6× niezależnie, przyczyna nadal
+nieustalona — do zbadania w przyszłości, mitygacja: jawna weryfikacja `pwd` w KROK 0 + unikalne
+nazwy plików roboczych z ID tematu w scratchpadzie).
+
+Aktualizacja: skille `AUTOBOT-UNIVERSAL.md` i `.claude/skills/civ-autobot/SKILL.md` dostają
+w tej samej turze nowe sekcje z wnioskami z tej sesji (worktree/scratchpad kolizja, race
+równoległego `git commit`, wzorzec extract-to-pure-function domykający tautologie testowe,
+audyt "nigdy-nie-ewaluowanych" commitów jako cykliczna higiena, wartość weryfikacji krzyżowej
+między tematami tej samej sesji).

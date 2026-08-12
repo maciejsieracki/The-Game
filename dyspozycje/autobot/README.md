@@ -176,3 +176,31 @@ node dyspozycje/autobot/tools/autobot-smoke.cjs
 | Dev scorer | typecheck + testy + deploy gate |
 
 Następny krok: podpięcie metryk z `WERSJE.md` / testów → dashboard z `logs/`.
+
+## Integracja z Ultracode/Workflow (Maciej 2026-08-12)
+
+Workflow (Ultracode, Claude Agent SDK) jest narzędziem wykonawczym, które automatyzuje
+dokładnie architekturę opisaną wyżej — nie zastępuje żadnego z 5 modułów. `OperatorAgent`
+odpowiada `phase('Operator')` (domyślny model sesji), a `EvaluatorAgent` odpowiada
+`phase('Evaluator')` z `model:'opus', effort:'high'`; obie fazy MUSZĄ być krokami jednego
+skryptu Workflow, nigdy dwoma osobno zlecanymi uruchomieniami — bo dokładnie ten podział
+umożliwił w tej sesji scalenie ~11 zmian Operatora bez pośredniego Evaluatora. `pipeline()`
+z Workflow przepuszcza wiele tematów przez `OperatorAgent → EvaluatorAgent` niezależnie
+(temat A może być już w Module 1/Hard Metric Evaluator, gdy temat B wciąż jest w Module
+4/Guardrails), bez ręcznego pilnowania kolejności.
+
+Guardrails (Moduł 4) obowiązują identycznie wewnątrz Workflow: `assertProdIsolation`, HITL,
+zakaz merge→`main`, deploy tylko po `humanApproved` + `deployPassword`. Dla zmian
+dotykających silnika bitwy, save/load lub migracji `gra/data/**` — jeden `EvaluatorAgent`
+nie wystarcza, wymagane 3 niezależne instancje głosujące większością (adversarial verify).
+
+Każdy prompt agenta uruchamianego w `isolation:'worktree'` (Workflow albo ręczny `Agent`
+tool) zaczyna się od obowiązkowej weryfikacji bazy worktree (grep symbolu, który musi
+istnieć na właściwej gałęzi; brak trafienia = STOP i zgłoszenie, nie ręczne odtwarzanie
+kodu) — dokładny szablon: `.cursor/rules/autobot-evaluator-operator.mdc`
+§„Integracja z Ultracode/Workflow".
+
+**Co zostaje poza Workflow, zawsze ręką orkiestratora:** `git commit`/`push`, wpisy do
+`PYTANIA-OTWARTE.md`/`WERSJE.md`/`REJESTR-PROSB-I-ZADAN.md`/`KANAL-PRACA.md`, cały deploy
+(hasło `deploy`, Opus 5). Moduł 5 (Dashboard Logger) pozostaje docelowym miejscem na
+postmortemy z przebiegów Workflow, gdy scaffold na to pozwoli.

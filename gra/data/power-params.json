@@ -28,36 +28,38 @@
   },
   "skladniki": {
     "jednostka_wojskowa": {
-      "pkt": 25,
-      "opis": "Suma M_pole armii imperium × pkt (unit-power.ts). Oblężnicze = 0 w armii polowej."
+      "pkt": 2.5,
+      "wojskowy": true,
+      "opis": "Suma M_pole armii imperium × pkt (unit-power.ts). Oblężnicze = 0 w armii polowej. P-MOC-BALANS-WAGI (Maciej 2026-08-12): 25 → 2.5 (÷10) — Armia stanowiła 44% Mocy, ponad deklarowany cel kalibracji (~8–17%, patrz kalibracja.cel). `wojskowy: true` — tag filtru widoku Moc militarna/gospodarcza w Rankingu (P-MOC-PODZIAL-WIDOK)."
     },
     "wygrana_bitwa": {
       "pkt": 25,
-      "opis": "Legacy flat: liczba wygranych × pkt. P-C2-DEF A: model enemy_m — składnik = suma M_pole wroga (coeff 1)."
+      "opis": "Legacy flat (NIEAKTYWNE dziś — czytane tylko gdyby opcje.bitwa_power_model wrócił do 'flat_count'; dziś='enemy_m_pre_battle'): liczba wygranych × pkt. P-C2-DEF A: aktywny model enemy_m — WSPÓŁCZYNNIK aktywnej ścieżki ŻYJE W KODZIE (power-objective.ts computeObjectivePower, bitwyCoeff), NIE w tym polu pkt: 1 → 2 od P-MOC-BALANS-WAGI (Maciej 2026-08-12, ×2 zgodnie z jego \"dziś wsp. 1\" — to opisuje AKTYWNY hardcoded coeff, nie ten dormant pkt=25). Ten `pkt` (25) pozostaje bez zmian — dotyczy tylko nieużywanej dziś ścieżki flat, nie wpływa na dzisiejszą rozgrywkę."
     },
     "ludek": {
       "pkt": 5,
       "opis": "Suma slotów populacji (ludki) we wszystkich miastach — NIE ludność absolutna. @10 miast typowo ~100 ludków."
     },
     "rekrut_ekw_jednostki": {
-      "pkt": 5,
-      "opis": "Ekwiwalent jednostek z puli Manpower: floor(rekruci / koszt_werbu[epoka]). Pełna pula ≈ ludki×10 szt. @ ep.1."
+      "pkt": 10,
+      "wojskowy": true,
+      "opis": "Ekwiwalent jednostek z puli Manpower: floor(rekruci / koszt_werbu[epoka]). Pełna pula ≈ ludki×10 szt. @ ep.1. P-MOC-BALANS-WAGI (Maciej 2026-08-12): 5 → 10 (×2). `wojskowy: true` — tag filtru widoku Rankingu (P-MOC-PODZIAL-WIDOK)."
     },
     "miasto": {
       "pkt": 50,
       "opis": "Każde miasto imperium."
     },
     "heks_terytorium": {
-      "pkt": 0.5,
-      "opis": "Heks w zasięgu terytorium miast (isInTerritory)."
+      "pkt": 1.0,
+      "opis": "Heks w zasięgu terytorium miast (isInTerritory). P-MOC-BALANS-WAGI (Maciej 2026-08-12): 0.5 → 1.0 (×2)."
     },
     "budynki": {
       "pkt": 5,
       "opis": "Każdy wybudowany budynek we wszystkich miastach."
     },
     "tech_zbadane": {
-      "pkt": 20,
-      "opis": "Liczba zbadanych technologii imperium."
+      "pkt": 80,
+      "opis": "Liczba zbadanych technologii imperium. P-MOC-BALANS-WAGI (Maciej 2026-08-12): 20 → 80 (×4)."
     },
     "ulepszenie_terenu": {
       "pkt": 5,
@@ -74,8 +76,8 @@
   },
   "kalibracja": {
     "scenariusz": "ep.1, ~10 miast, ~100 ludków (≥10/miasto), 10 jedn., 10 bitew, 8000 rekr. (80 ekw.), 500 heks., 60 budynków, 16 tech, 50 ulepszeń",
-    "powerOczekiwany": 3020,
-    "cel": "Żaden składnik nie dominuje (~8–17% bazy). Bez wag per-cyw — tylko globalne współczynniki."
+    "powerOczekiwany": 4655,
+    "cel": "Żaden składnik nie dominuje (~8–17% bazy). Bez wag per-cyw — tylko globalne współczynniki. P-MOC-BALANS-WAGI (Maciej 2026-08-12): powerOczekiwany przeliczony 3020 → 4655 po zmianie 6 wag (patrz jednostka_wojskowa/wygrana_bitwa/rekrut_ekw_jednostki/tech_zbadane/heks_terytorium + coeff 'zdobycze' w kodzie). UWAGA — w TYM konkretnym scenariuszu (tylko 16 tech, ep.1) Odkrycia/tech = 1280/4655 ≈ 27,5%, ponad ten sam cel 8–17%; bezpośredni skutek jawnej decyzji właściciela (tech ×4) w scenariuszu z niewielką liczbą technologii, nie błąd przeliczenia — do obserwacji w realnej rozgrywce, nie autonomicznie korygowane."
   },
   "opcje": {
     "liczy_osadnik_w_armii": {

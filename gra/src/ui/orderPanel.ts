@@ -23,6 +23,13 @@ export interface OrderState {
   prawPct?: number;
   /** Procent Porządku łączny. */
   porPct?: number;
+  /**
+   * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): % wkładu Szczęścia/Prawa do
+   * `porPct` tej tury (`orderContributionPct`, `society-breakdown.ts`). Oba razem = 100 gdy
+   * oba obecne.
+   */
+  szWkladPct?: number;
+  prawWkladPct?: number;
   /** Etykieta tieru (Ład, Bunt…). */
   bandLabel?: string;
   /** Rozpiska Szczęścia +/-. */

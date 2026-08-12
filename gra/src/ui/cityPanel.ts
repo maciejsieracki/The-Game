@@ -63,6 +63,7 @@ import { civWideSixStatsFromEmpireSnap, buildChipDeltaStockHtml } from '../game/
 import type { GameMap } from '../types/map';
 import { TerenBazowy, Nakladka } from '../types/hex';
 import { loadGameData, getTechDef, type GameData, type BuildingDef, type UnitDef } from '../data/loader';
+import { parsePrerequisites } from '../game/research';
 import {
   buildableProduction,
   eraBuildingCatalog,
@@ -72,6 +73,7 @@ import {
   frontItem,
   enqueue,
   dequeue,
+  promoteToFront,
   setPaused,
   buildingProductionItem,
   buildingLevelForEpoch,
@@ -200,11 +202,11 @@ import {
   evaluateOrderFromBreakdown,
   porPctBand,
   POR_BAND_LABELS,
+  orderContributionPct,
 } from '../game/society-breakdown';
 import {
   computeCitizenResourceDrain,
-  CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
-  CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
+  citizenUpkeepDisplayLines,
   type CitizenUpkeepCoverage,
 } from '../game/citizen-resource-upkeep';
 import {
@@ -2748,24 +2750,6 @@ ${UNIT_RECRUIT_CARD_CSS}
 .civ-v-build-main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-build-main > .panel{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .civ-v-build-main .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:none;overflow-y:auto;}
-.civ-v-build-owned-bar{flex:1 1 auto;padding-top:0.28em;border-top:1px solid rgba(212,175,90,0.28);min-height:10em;max-height:68%;display:flex;flex-direction:column;}
-.civ-v-build-owned-bar > .panel{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding:0.32em 0.36em 0.28em!important;}
-.civ-v-build-owned-bar .list-scroll-fill{flex:1 1 auto;min-height:0;max-height:18em;overflow-y:auto;}
-.civ-v-build-owned-bar .ptitle{font-size:0.82em;margin-bottom:0.22em;letter-spacing:.06em;padding:0;}
-.civ-v-build-owned-bar .muted{font-size:0.82em;min-height:4.5em;padding:0.55em 0.12em;line-height:1.45;}
-.civ-v-build-owned-bar .bld-owned-title-upkeep{font-weight:600;color:#c8a878;margin-left:0.2em;font-size:0.95em;}
-.civ-v-build-owned-bar .bld-owned-summary{margin:0 0 0.28em;padding:0.28em 0.36em;font-size:0.78em;}
-.civ-v-build-owned-bar .bld-group{margin-bottom:0.18em;}
-.civ-v-build-owned-bar .bld-group-h{font-size:0.8em;padding:0.12em 0.28em;margin-bottom:0.1em;line-height:1.35;}
-.civ-v-build-owned-bar .bld-group>.bld-owned-row{margin-left:0.12em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-row--tight{padding:0.18em 0.32em;margin-bottom:0.1em;border-radius:4px;gap:0.18em 0.36em;min-height:2.7em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-hd{gap:0.28em;max-width:46%;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-hd .bi{width:1.25em;height:1.25em;font-size:1em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-name{font-size:0.82em;max-width:9em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-tail{font-size:0.76em;gap:0.28em 0.36em;line-height:1.25;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-chip{gap:0.1em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-sep{opacity:.4;font-size:0.95em;margin:0 0.1em;}
-.civ-v-build-owned-bar .bld-owned-compact-mount .bld-owned-row .bld-upg{font-size:0.76em;padding:0.06em 0.28em;}
 .bld-owned-compact-mount .bld-owned-row--tight{padding:0.1em 0.22em;margin-bottom:0.06em;border-radius:4px;gap:0.12em 0.28em;min-height:1.35em;}
 .bld-owned-compact-mount .bld-owned-hd{gap:0.18em;max-width:46%;}
 .bld-owned-compact-mount .bld-owned-hd .bi{width:1em;height:1em;font-size:0.85em;}
@@ -2877,6 +2861,10 @@ function resolveOrderState(city: City, data: GameData): { state: OrderState; fro
         porPct: computed.state.porPct,
         bandLabel: computed.state.bandLabel,
         porzadek: computed.state.porzadek,
+        // % wkładu liczone z TYCH SAMYCH sz/prawPct co porPct wyżej — musi iść razem z nim
+        // (computed), inaczej wkład%×2 nie sumowałby się do 100 względem wyświetlanego porPct.
+        szWkladPct: computed.state.szWkladPct,
+        prawWkladPct: computed.state.prawWkladPct,
       },
       fromEngine: true,
     };
@@ -2986,6 +2974,10 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
 
   const grace = city.revoltGraceRemaining;
   const revoltWarning = !isPostCaptureLawActive(city) && grace != null && grace > 0;
+  // P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): % wkładu Szczęścia/Prawa do
+  // PorPct — liczone z DOKŁADNIE tych samych sz/prawPct i wag, które trafiają do stanu poniżej
+  // (spójne z tym, co panel faktycznie pokazuje na dwóch paskach nad wynikiem łącznym).
+  const wklad = orderContributionPct(ordPct.sz.szPct, ordPct.prawo.prawPct, ordPct.wagaSz, ordPct.wagaPraw);
 
   return {
     state: {
@@ -2997,6 +2989,8 @@ function computeOrderStateLocal(city: City, data: GameData): { state: OrderState
       bandLabel: ordPct.bandLabel,
       szLines: ordPct.sz.lines,
       prawLines: ordPct.prawo.lines,
+      szWkladPct: wklad.szWkladPct,
+      prawWkladPct: wklad.prawWkladPct,
       progT1: op.progT1,
       progT2: op.progT2,
       revoltGraceRemaining: grace ?? undefined,
@@ -3070,7 +3064,7 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     state.szLines,
     'Brak składników wpływających na szczęście.',
   );
-  appendCitizenUpkeepBlock(mount, state.citizenUpkeep);
+  appendCitizenUpkeepBlock(mount, state.citizenUpkeep, city.population);
   appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('tb-army', 'Prawo'),
@@ -3088,6 +3082,19 @@ function renderSpoleczenstwo(mount: HTMLElement, city: City, data: GameData): vo
     undefined,
     '',
     (porBlock) => {
+      // P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): widoczny podział % wkładu
+      // Szczęścia i Prawa do wyniku Porządku łącznie tej tury — jedna linia na składnik
+      // (nie inline `" · "`), zgodnie z tą samą regułą formatu co pozostałe paski wyżej.
+      if (state.szWkladPct != null && state.prawWkladPct != null) {
+        const wkladBox = el('div', 'or-lines civ-w4-wklad');
+        const szRow = el('div');
+        szRow.textContent = `Szczęście: ${Math.round(state.szWkladPct)}% wkładu`;
+        const prawRow = el('div');
+        prawRow.textContent = `Prawo: ${Math.round(state.prawWkladPct)}% wkładu`;
+        wkladBox.appendChild(szRow);
+        wkladBox.appendChild(prawRow);
+        porBlock.appendChild(wkladBox);
+      }
       if (state.revoltWarning && state.revoltGraceRemaining != null) {
         const st = el('div', 'civ-w4-order-banner crit');
         st.innerHTML = `${cityPanelChipIconWrap('chip-warning', 16)}<span>Grozi bunt · ${state.revoltGraceRemaining} tur</span>`;
@@ -4026,7 +4033,14 @@ function orderBandEffectShort(band: ReturnType<typeof porPctBand>): string {
   }
 }
 
-type BreakdownLine = { label: string; value: number };
+// `neg` opcjonalne (Evaluator FAIL, P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE, 2026-08-12): status
+// NIE może być wywnioskowany wyłącznie ze znaku `value` — `Math.floor(pop×0,2)` dla małej
+// populacji miasta (1-4 obywateli) daje dla brakującego surowca `value = -0`, a `-0 >= 0` jest
+// w JS PRAWDĄ, więc wiersz renderował się jako zielony "+0" (dostępny) zamiast czerwony
+// "brakujący" — łamiąc kontrakt z JSDoc `citizenUpkeepDisplayLines`. Wołający, który zna
+// realny status (np. `available: boolean` z silnika), przekazuje `neg` jawnie; bez niego
+// zachowanie zostaje jak dawniej (`value < 0`).
+type BreakdownLine = { label: string; value: number; neg?: boolean };
 
 function appendBreakdownLines(
   mount: HTMLElement,
@@ -4040,8 +4054,21 @@ function appendBreakdownLines(
     box.appendChild(none);
   } else {
     for (const l of lines) {
-      const row = el('div', l.value >= 0 ? 'pos' : 'neg');
-      row.textContent = `${l.label}: ${l.value >= 0 ? '+' : ''}${l.value}`;
+      const isNeg = l.neg === true || l.value < 0;
+      const row = el('div', isNeg ? 'neg' : 'pos');
+      // P-PORZADEK-PANEL-CZYTELNOSC (Evaluator, komit 3b851610 dot. koloru): wiersz
+      // NEGATYWNY (isNeg) z wartością -0 (np. citizenUpkeepDisplayLines: -qty gdy
+      // qty===0, populacja 1-4) nie może pokazać „+0" — mylące w czerwonym wierszu, bo
+      // sugeruje przyrost mimo statusu "brak". `Math.abs(l.value) === 0` łapie zarówno
+      // 0, jak i -0. Dla zwykłych wartości (dodatnich, i ujemnych różnych od zera)
+      // zachowanie identyczne jak dawniej.
+      // EN: a NEGATIVE row (isNeg) with value -0 (e.g. citizenUpkeepDisplayLines: -qty
+      // when qty===0, population 1-4) must not read "+0" -- misleading in a red row,
+      // implies a gain despite the "missing" status. `Math.abs(l.value) === 0` catches
+      // both 0 and -0. Ordinary values (positive, and negative non-zero) keep today's
+      // behavior unchanged.
+      const showAsZero = isNeg && Math.abs(l.value) === 0;
+      row.textContent = `${l.label}: ${showAsZero ? '0' : `${l.value >= 0 ? '+' : ''}${l.value}`}`;
       box.appendChild(row);
     }
   }
@@ -4155,35 +4182,30 @@ function appendW4SignedBreakdownSections(
   mount.appendChild(block);
 }
 
-function formatW4InlineBreakdown(lines: BreakdownLine[] | undefined, emptyHint: string): string {
-  if (!lines || lines.length === 0) {
-    return `<span class="muted">${emptyHint}</span>`;
-  }
-  return lines.map(l => {
-    const cls = l.value >= 0 ? 'pos' : 'neg';
-    return `<span class="${cls}">${l.label}: ${l.value >= 0 ? '+' : ''}${l.value}</span>`;
-  }).join(' · ');
-}
-
 /**
  * R-ZUZYCIE-SUROWCOW-OBYWATELE (Maciej 2026-08-10, ECHO Q4): wiersz zaraz POD Szczęściem —
  * lista surowców budowlanych wymaganych przez obywateli TEJ epoki, pokrytych/brakujących wg
  * magazynu CENTRALNEGO imperium (`citizen-resource-upkeep.ts`; nie lokalny magazyn tego
  * miasta — ECHO Q1). Brak wymaganych surowców w tej epoce (np. dane niekompletne) → blok się
  * nie renderuje.
+ *
+ * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): liczby obok surowców to ŁĄCZNE
+ * zużycie WSZYSTKICH obywateli TEGO miasta (`cityPopulation × stawka`,
+ * `citizenUpkeepDisplayLines`), nie stawka per capita (poprzedni błąd — panel pokazywał zawsze
+ * ±1, czyli samą karę Szczęścia za surowiec, nie ilość). Status dostępny/brakujący (kolor)
+ * zostaje WERDYKTEM SILNIKA z `upkeep` bez zmian — przelicza się wyłącznie WIELKOŚĆ liczby.
+ *
+ * ⚠️ Ta liczba jest floorowana PER MIASTO (`cityPopulation` przekazane niżej), a silnik floruje
+ * RAZ na sumie populacji CAŁEGO ownera — przy >1 mieście `Σfloor ≤ floor(Σ)`, więc suma liczb na
+ * osobnych kartach miast tego ownera może wyjść mniejsza niż realny drenaż silnika. Znany,
+ * świadomie nienaprawiony rozjazd (produktowa decyzja, nie technika) — pełne uzasadnienie w
+ * JSDoc `citizenUpkeepDisplayLines()` (`game/citizen-resource-upkeep.ts`). Kosmetyczny: nie
+ * wpływa na Szczęście/Rozwój (te czytają wyłącznie werdykt binarny available/missing).
  */
-function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined): void {
+function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined, cityPopulation: number): void {
   if (!upkeep || upkeep.required.length === 0) return;
-  const lines: BreakdownLine[] = [
-    ...upkeep.available.map(k => ({
-      label: stockResourceLabel(k),
-      value: CITIZEN_UPKEEP_HAPPINESS_PER_AVAILABLE,
-    })),
-    ...upkeep.missing.map(k => ({
-      label: stockResourceLabel(k),
-      value: CITIZEN_UPKEEP_HAPPINESS_PER_MISSING,
-    })),
-  ];
+  const lines: BreakdownLine[] = citizenUpkeepDisplayLines(upkeep, cityPopulation)
+    .map(l => ({ label: stockResourceLabel(l.key), value: l.value, neg: !l.available }));
   appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('chip-crate', 'Zaopatrzenie obywateli'),
@@ -4194,7 +4216,14 @@ function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCover
   );
 }
 
-/** Pasek procentowy W4 v2 (Szczęście / Prawo / Porządek) — mockup 1E. */
+/**
+ * Pasek procentowy W4 v2 (Szczęście / Prawo / Porządek / Zaopatrzenie obywateli) — mockup 1E.
+ *
+ * P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE (Maciej 2026-08-12): rozpiska składników renderuje się
+ * BLOKOWO — jeden składnik na osobnej linii (`appendBreakdownLines`, ten sam wzorzec co blok
+ * „Zdrowie miasta") — NIE jako jeden zbity ciąg tekstu łączony `" · "` (poprzedni błąd:
+ * `formatW4InlineBreakdown`, właściciel: „za bardzo nadziubdziane i nieczytelne").
+ */
 function appendW4PctMetricBlock(
   mount: HTMLElement,
   titleHtml: string,
@@ -4223,9 +4252,7 @@ function appendW4PctMetricBlock(
     block.appendChild(barWrap);
   }
   if ((lines && lines.length > 0) || emptyHint) {
-    const sumEl = el('div', 'civ-w4-inline-breakdown');
-    sumEl.innerHTML = formatW4InlineBreakdown(lines, emptyHint);
-    block.appendChild(sumEl);
+    appendBreakdownLines(block, lines, emptyHint);
   }
   if (afterBar) afterBar(block);
   mount.appendChild(block);
@@ -6642,18 +6669,44 @@ function unitExtraField(u: UnitDef, key: string): string | number | null {
   return v as string | number;
 }
 
+/**
+ * Pełny łańcuch wymaganych technologii (rekurencyjnie, wszystkie gałęzie AND) — do
+ * podglądu w karcie budynku i do oceny „spełnione/niespełnione".
+ * NAPRAWA (P-TARGOWISKO-BLEDNA-BRAMKA-BADAN, 2026-08-12): pole „Wymaga (prereq)" bywa
+ * listą złączoną „+" (np. „Garncarstwo + Rolnictwo + Oswojenie zwierząt" dla Wymiany).
+ * Stara wersja traktowała cały ten napis jako JEDNĄ nazwę technologii (bez rozbicia po
+ * „+"), więc getTechDef() jej nie znajdował, a ten sztuczny wpis nigdy nie trafiał do
+ * zbioru zbadanych — karta budynku pokazywała czerwono nawet gdy gracz miał wszystkie
+ * trzy techy. Naprawa: parsePrerequisites (research.ts, ta sama funkcja co silnik badań)
+ * rozbija listę na pojedyncze nazwy i rekurencyjnie odwiedza KAŻDĄ z nich (AND), nie
+ * tylko pierwszą.
+ * EN: „Wymaga (prereq)" can be a „+"-joined list (e.g. "Garncarstwo + Rolnictwo +
+ * Oswojenie zwierząt" for Wymiana). The old version treated the whole string as a
+ * SINGLE tech name (no "+" split), so getTechDef() never found it and that synthetic
+ * entry could never be marked as researched — the building card showed red even when
+ * the player had all three techs. Fix: parsePrerequisites (research.ts, the same
+ * function the research engine uses) splits the list and recursively visits EVERY
+ * entry (AND), not just the first.
+ */
 function techPrereqChain(data: GameData, techName: string): string[] {
   const chain: string[] = [];
-  let cur = techName.trim();
   const seen = new Set<string>();
-  while (cur && !isEmptyDataVal(cur) && !seen.has(cur)) {
-    seen.add(cur);
-    chain.unshift(cur);
-    const t = getTechDef(data, cur);
-    const prereq = t?.['Wymaga (prereq)'];
-    if (!prereq || isEmptyDataVal(prereq)) break;
-    cur = String(prereq).trim();
+
+  function visit(name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed || isEmptyDataVal(trimmed) || seen.has(trimmed)) return;
+    seen.add(trimmed);
+    const t = getTechDef(data, trimmed);
+    const prereqRaw = t?.['Wymaga (prereq)'];
+    if (prereqRaw && !isEmptyDataVal(prereqRaw)) {
+      for (const p of parsePrerequisites(String(prereqRaw))) {
+        visit(p);
+      }
+    }
+    chain.push(trimmed);
   }
+
+  visit(techName);
   return chain;
 }
 
@@ -7391,6 +7444,9 @@ function appendBuildQueueSection(
 ): void {
   if (prod.kolejka.length <= 1) return;
   const data = gameData();
+  // P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI: front do zamiany przyciskiem "⇈"/strzałką ↑ na 1. pozycji.
+  // / EN: front item, used by the "⇈"/first-row ↑ swap-with-front button below.
+  const front = prod.kolejka[0] as ProductionItem;
   const qWrap = el('div');
   qWrap.style.cssText = 'margin-top:0.5em;padding-top:0.35em;border-top:1px solid var(--border);';
   const qh = el('div', 'gold', 'Kolejka budowy:');
@@ -7439,10 +7495,34 @@ function appendBuildQueueSection(
       }
       qi.appendChild(etaEl);
       const idx = i;
+      // P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI (Maciej): dotąd ↑↓ przesuwały pozycję
+      // WYŁĄCZNIE wewnątrz kolejki oczekujących -- nie dało się "wciągnąć" żadnej pozycji na
+      // sam szczyt (zamieniając ją z aktualnie budowanym elementem). "⇈" zamienia od razu z
+      // frontem z dowolnej pozycji; na 1. pozycji kolejki (idx===1) robi to teraz też ↑ -- była
+      // martwa (zawsze disabled, i<=1), więc "utykała na granicy" zamiast dokończyć ruch.
+      // Postęp Pracy frontu (prod.postep) resetuje się do 0 przy zamianie -- patrz promoteToFront().
+      // / EN: until now ↑↓ only reordered WITHIN the waiting queue -- nothing could be "pulled" all
+      // the way to the top (swapped with the currently-building item). "⇈" swaps any row straight
+      // to the front; on the first queue row (idx===1) ↑ now does the same -- it used to be dead
+      // (always disabled, i<=1), so it "got stuck at the boundary" instead of finishing the move.
+      // The front's Praca progress (prod.postep) resets to 0 on swap -- see promoteToFront().
+      const promote = el('button', 'btn btn-sm', '⇈');
+      promote.style.cssText = 'padding:0 0.35em;';
+      promote.title =
+        `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}" ` +
+        `(zebrana Praca frontu: ${Math.round(prod.postep)}/${front.koszt} zostanie utracona)`;
+      promote.addEventListener('click', () => { setProd(city.id, promoteToFront(getProd(city.id), idx)); rerender(); });
       const up = el('button', 'btn btn-sm', '↑');
       up.style.cssText = 'padding:0 0.35em;';
-      (up as HTMLButtonElement).disabled = i <= 1;
-      up.addEventListener('click', () => { setProd(city.id, moveQueueItem(getProd(city.id), idx, -1)); rerender(); });
+      (up as HTMLButtonElement).disabled = false;
+      up.title = idx === 1
+        ? `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}"`
+        : 'Przesuń w górę kolejki oczekujących';
+      up.addEventListener('click', () => {
+        if (idx === 1) { setProd(city.id, promoteToFront(getProd(city.id), idx)); }
+        else { setProd(city.id, moveQueueItem(getProd(city.id), idx, -1)); }
+        rerender();
+      });
       const down = el('button', 'btn btn-sm', '↓');
       down.style.cssText = 'padding:0 0.35em;';
       (down as HTMLButtonElement).disabled = i >= prod.kolejka.length - 1;
@@ -7451,7 +7531,7 @@ function appendBuildQueueSection(
       x.style.cssText = 'padding:0 0.35em;';
       x.title = 'Usuń z kolejki (zwrot surowców do puli państwa)';
       x.addEventListener('click', () => { cancelQueueItem(city, idx); });
-      if (player) { qi.appendChild(up); qi.appendChild(down); qi.appendChild(x); }
+      if (player) { qi.appendChild(promote); qi.appendChild(up); qi.appendChild(down); qi.appendChild(x); }
       sc.appendChild(qi);
     }
     if (player) bindBuildQueueDragReorder(sc, city);
@@ -8045,9 +8125,18 @@ function appendOwnedBuildingRow(
   id: string,
   data: GameData,
   city?: City,
-  opts?: { compact?: boolean },
+  opts?: { compact?: boolean; detailSide?: 'left' | 'right' },
 ): void {
   const compact = opts?.compact === true;
+  // P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA, znalezisko Evaluatora (2026-08-12): karty
+  // szczegółów muszą dokować po TEJ SAMEJ stronie co lista, która je wywołuje -- '`left'
+  // zahardkodowane tu było poprawne, gdy lista żyła wyłącznie w lewej kolumnie (legacy
+  // #cs-owned), ale po przeniesieniu do prawej kolumny wymuszało dok po przeciwnej stronie
+  // ekranu niż kliknięcie/hover.
+  // / EN: detail cards must dock on the SAME side as the list that triggers them --
+  // hardcoded 'left' was correct while the list only lived in the left column (legacy
+  // #cs-owned), but after moving to the right column it forced the dock to the wrong side.
+  const detailSide: 'left' | 'right' = opts?.detailSide ?? 'left';
   const def = data.buildings.find(b => b.id === id);
   const row = el('div', compact ? 'bld-owned-row bld-owned-row--tight' : 'bld-owned-row');
   const hd = el('div', 'bld-owned-hd');
@@ -8115,7 +8204,7 @@ function appendOwnedBuildingRow(
     upBtn.textContent = '↗';
     upBtn.title = 'Skład bonusów upgrade';
     upBtn.setAttribute('aria-label', `Skład bonusów ${def.nazwa}`);
-    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data, city), { delayMs: 260, sideHint: 'left' });
+    attachInteractiveDetail(upBtn, () => buildUpgradeBonusDetailCard(def, data, city), { delayMs: 260, sideHint: detailSide });
     hd.appendChild(upBtn);
   }
   row.appendChild(hd);
@@ -8134,11 +8223,11 @@ function appendOwnedBuildingRow(
       tail.appendChild(bon);
     }
     if (tail.childElementCount > 0) row.appendChild(tail);
-    attachHoverDetail(row, () => buildBuildingDetailCard(def, data, city), 280, 'left');
+    attachHoverDetail(row, () => buildBuildingDetailCard(def, data, city), 280, detailSide);
     row.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('.bld-upg')) return;
       e.stopPropagation();
-      showHoverDetailNow(row, () => buildBuildingDetailCard(def, data, city), 'left');
+      showHoverDetailNow(row, () => buildBuildingDetailCard(def, data, city), detailSide);
     });
   }
 
@@ -8163,6 +8252,11 @@ function renderBuildingsOwned(
   mount.innerHTML = '';
   const compact = opts?.compact === true;
   if (compact) mount.classList.add('bld-owned-compact-mount');
+  // P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA, znalezisko Evaluatora (2026-08-12): mount
+  // jest już w DOM w tym miejscu (withW4TabCard robi appendChild PRZED render(body)), więc
+  // closest('.civ-ux-right') poprawnie rozstrzyga stronę -- karty szczegółów muszą dokować
+  // po tej samej stronie co lista wywołująca, nie zawsze po lewej.
+  const detailSide: 'left' | 'right' = mount.closest('.civ-ux-right') ? 'right' : 'left';
   const built = cfg.getBuiltBuildingIds?.(city.id);
   const builtCount = built?.length ?? 0;
   let titleHtml = compact
@@ -8211,7 +8305,7 @@ function renderBuildingsOwned(
           details.appendChild(el('div', 'muted bld-group-empty-note', '(brak)'));
         }
       } else {
-        for (const id of ids) appendOwnedBuildingRow(details, id, data, city, { compact });
+        for (const id of ids) appendOwnedBuildingRow(details, id, data, city, { compact, detailSide });
       }
       target.appendChild(details);
     }
@@ -8260,6 +8354,17 @@ function renderOwnedBuildingsBar(mount: HTMLElement, city: City, data: GameData 
   mount.appendChild(bar);
 }
 
+/**
+ * Panel „Dostępne do budowy" (lewa kolumna, zakładka Budowa) — CAŁĄ wysokość
+ * lewej kolumny, bez dolnego paska „Budynki". Sekcja wybudowanych budynków
+ * przeniesiona do `renderBuildingsOwnedRightPanel` (prawa kolumna) —
+ * P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA (Maciej 2026-08-12, rekomendacja
+ * B): obie listy dostają pełną niezależną wysokość zamiast dzielić jedną wąską
+ * kolumnę (dawniej pasek „Budynki" miał max-height 68% i wymagał mocnego
+ * przewijania). / EN: "Available to build" now fills the whole left column —
+ * the built-buildings section moved to the right column so both lists get
+ * full independent height instead of splitting one narrow column.
+ */
 function renderBuildSplitPanel(
   mount: HTMLElement,
   city: City,
@@ -8277,10 +8382,40 @@ function renderBuildSplitPanel(
     { scrollFill: true },
   );
   pane.appendChild(mainCol);
-  const barCol = el('div', 'civ-v-build-owned-bar');
-  renderBuildingsOwned(appendPanel(barCol, 'cs-owned'), city, data, { scrollFill: true, compact: true });
-  pane.appendChild(barCol);
   mount.appendChild(pane);
+}
+
+/**
+ * Sekcja „Budynki w mieście (N)" w PRAWEJ kolumnie panelu miasta — widoczna
+ * gdy aktywna zakładka to Budowa (produkcja budynków). Prawa kolumna
+ * (`.civ-ux-right`) jest tym samym slotem co pozostałe zakładki miasta
+ * (Spichlerz/Handel/Praca/Porządek/Zdrowie/Kultura/Religia) — dziś pusta
+ * (ukryta) przy zakładce Budowa, więc nie ma tu kolizji z żadnym innym
+ * panelem: reużywamy istniejący, już zarezerwowany slot, nie tworzymy nowej
+ * kolumny. Tryb PEŁNY (compact:false) — bogatszy niż dawny pasek kompaktowy
+ * (odznaka poziomu budynku widoczna też przy L1, gdy budynek ma wyższe
+ * poziomy; podsumowanie łącznego utrzymania). / EN: "Buildings in city"
+ * section in the RIGHT column, shown while the Budowa tab is active — reuses
+ * the existing right-column slot (already empty/hidden for this tab), so no
+ * new column and no collision with other city-panel tabs. Full (non-compact)
+ * mode is a superset of the old compact bar's info.
+ */
+function renderBuildingsOwnedRightPanel(
+  mount: HTMLElement,
+  city: City,
+  data: GameData | null,
+): void {
+  mount.innerHTML = '';
+  withW4TabCard(mount, 'cs-owned-right', city, body => {
+    // Bez scrollFill/visibleRows celowo — `target` w renderBuildingsOwned staje
+    // się wtedy `mount` (bez wewnętrznego list-scroll o ograniczonej wysokości),
+    // więc JEDYNY scroll to ten z `.civ-w4-tab-body--scroll` (cała karta), a nie
+    // podwójny/zagnieżdżony pasek. / EN: intentionally no scrollFill/visibleRows
+    // — this makes renderBuildingsOwned append groups straight into `mount`
+    // (no capped-height inner list-scroll), so the card's own body scrollbar is
+    // the single scroll region instead of a nested one.
+    renderBuildingsOwned(body, city, data);
+  }, { scrollable: true });
 }
 
 function appendGarrisonUnitChip(parent: HTMLElement, u: GarrisonUnit): void {
@@ -10586,7 +10721,16 @@ export function paintCityPanelSections(
   const mainEl = el('div', 'civ-v-right-main');
   mainEl.id = 'cs-right-main';
   rightScope.appendChild(mainEl);
-  if (isProductionPanelTab(activeCityPanelTab)) {
+  if (activeCityPanelTab === 'budowa') {
+    // P-PRODUKCJA-BUDYNKI-WYBUDOWANE-PRAWA-KOLUMNA (Maciej 2026-08-12): zakładka
+    // Budowa reużywa prawą kolumnę (dziś pustą przy tej zakładce) pod listę
+    // wybudowanych budynków, żeby lewa kolumna mogła oddać "Dostępne do budowy"
+    // pełną wysokość. / EN: Budowa tab reuses the right column (empty today for
+    // this tab) for the built-buildings list, freeing full height on the left.
+    mainEl.style.display = '';
+    mainEl.style.flex = '1 1 auto';
+    renderBuildingsOwnedRightPanel(mainEl, city, data);
+  } else if (isProductionPanelTab(activeCityPanelTab)) {
     mainEl.style.display = 'none';
     mainEl.innerHTML = '';
   } else {

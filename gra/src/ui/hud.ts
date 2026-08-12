@@ -131,6 +131,11 @@ export interface HudState {
   bogactwoUtrzymanieSurowcowBudynkow?: Record<string, number>;
   /** Utrzymanie jednostek/turę (Pieniadz) — odjete od wplywow brutto przy koncu tury. */
   bogactwoUtrzymanieJednostek?: number;
+  /** P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD (Maciej 2026-08-12): suma `population` wszystkich
+   *  miast gracza (cities.filter(ownerId===0).reduce(+population)) — teraz wyświetlana wprost
+   *  w górnym pasku HUD (chip „Obywatele"), nie tylko w panelu Moc/MIASTA.
+   *  / EN: sum of `population` across all player cities — now shown directly in the top HUD
+   *  bar (the "Obywatele"/Citizens chip), not only buried in the Power/CITIES detail panel. */
   ludnosc: number;
   ludnoscRate?: number;
   /** A1-Q15 / P-C3 — Moc (absolutna, P-A). Kod: objectivePower. */
@@ -138,12 +143,32 @@ export interface HudState {
   /** Suma rekrutów (Manpower) imperium — pod Mocą na mapie. */
   rekruci?: number;
   rekruciLabel?: string;
+  /** P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): ile PEŁNYCH jednostek da się
+   *  zwerbować z całej puli rekrutów imperium — Math.floor(rekruci / kosztJednostki),
+   *  liczone jedynym źródłem `unitManpowerCost`/`rekrutUnitEquivalents`
+   *  (gra/src/game/manpower.ts), tym samym co panel "Rekruci (pula werbu)"
+   *  (empireDetailPanel.ts: p.rekrutEkw). Zastępuje na chipie "Armia" surową liczbę
+   *  rekrutów, która nie mówi ile wojska da się realnie wystawić.
+   *  / EN: how many FULL units can be recruited from the empire's entire recruit pool —
+   *  Math.floor(rekruci / kosztJednostki), computed from the single source
+   *  `unitManpowerCost`/`rekrutUnitEquivalents` (gra/src/game/manpower.ts), the same one
+   *  the "Rekruci (pula werbu)" panel uses (empireDetailPanel.ts: p.rekrutEkw). Replaces
+   *  the raw recruit count on the "Armia" chip, which didn't say how many units that
+   *  pool can actually field. */
+  rekrutEkw?: number;
+  /** Koszt Manpower jednej jednostki w bieżącej epoce (gra/src/game/manpower.ts:
+   *  unitManpowerCost) — do tooltipu chipu "Armia", to samo źródło co rekrutEkw wyżej. */
+  kosztJednostki?: number;
   ludnoscAbsLabel?: string;
   osiedla: number;
   osiedlaMax: number;
   tura: number;
   epoka: string;
   epokaPostep?: number;
+  /** R-EPOKA-CUD-ZAKRES-Q1=B: tooltip „co brakuje do awansu" na `.p-epoch` (panel Moc) —
+   *  `undefined`/brak gdy nic nie blokuje (silnik: era-gate-ui.ts, formatEraGateSummary).
+   *  / EN: ".p-epoch" tooltip explaining what's blocking era advance; unset when nothing is. */
+  eraGateSummary?: string;
   /** Postęp aktywnej technologii [0..1] — nauka skumulowana / koszt badanej tech. */
   researchProgress?: number;
   badana?: string | null;
@@ -631,6 +656,8 @@ html.civ-ui-zoom-active .civ-hud-util-dock{
 .civ-hud .power-center:hover{filter:brightness(1.06);}
 .civ-hud .power-center .p-epoch{text-align:center;font-family:var(--civ-font-title);font-size:13px;
   color:var(--civ-gold-primary);letter-spacing:.08em;line-height:1.2;margin:0 0 8px;white-space:nowrap;}
+.civ-hud .power-center .p-epoch-gated{border-bottom:1px dotted rgba(224,122,95,.75);
+  padding-bottom:1px;cursor:help;}
 .civ-hud .power-center .p-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;width:100%;}
 .civ-hud .power-center .p-side-left{justify-self:start;display:inline-flex;align-items:flex-start;
   cursor:pointer;border-radius:6px;padding:2px 6px;margin:-2px -6px;}
@@ -820,12 +847,21 @@ function spichlerzChipTitle(s: HudState): string {
 /** Tooltip chipu „Armia" — wojsko na mapie i pula rekrutów. */
 function armiaChipTitle(s: HudState): string {
   const units = s.armyUnitsOnMap ?? 0;
+  const rekrutEkw = s.rekrutEkw ?? 0;
   const regen = s.rekruciRegenPerTurn ?? 0;
   const koszt = s.zywnoscKosztWojska ?? 0;
   const maxPart = s.zywnoscMax != null && s.zywnoscMax > 0 ? ` / ${s.zywnoscMax}` : '';
+  // P-ARMIA-CHIP-PELNE-JEDNOSTKI: „+” na chipie pokazuje teraz rekrutEkw (pełne jednostki
+  // z całej puli), nie surową pulę — tooltip nazywa to wprost i osobno podaje koszt/jedn.
+  // oraz odnowę puli/turę (ta druga zostaje w tooltipie, zeszła z samego chipu).
+  // / EN: the chip's „+” now shows rekrutEkw (full units from the whole pool), not the raw
+  // pool — the tooltip names it explicitly and separately states cost/unit and pool
+  // regen/turn (the latter stays in the tooltip, it moved off the chip itself).
   let title = `Armia — wojsko i rekruci`
     + ` · Jednostki na mapie: ${units}`
     + ` · Pula rekrutów: ${s.rekruciLabel ?? '—'}`
+    + ` · Można zwerbować: ${rekrutEkw} pełnych jednostek z całej puli`
+    + (s.kosztJednostki != null ? ` (koszt ${s.kosztJednostki} rekr./szt.)` : '')
     + ` · Odnowa puli: ${signed(regen)} rekr./turę`;
   if (koszt > 0) title += ` · Koszt żywności armii: ${signed(-koszt)} 🍞/turę`;
   title += ` · W magazynie państwa: ${s.zywnoscLabel}${maxPart} 🍞`;
@@ -838,6 +874,16 @@ function miastaChipTitle(s: HudState): string {
   return `Miasta — osiedla imperium`
     + ` · Duża liczba: ${s.osiedla} miast`
     + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności łącznie)`
+    + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
+}
+
+/** Tooltip chipu „Obywatele" (P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD) — łączna liczba
+ *  obywateli imperium (suma populacji wszystkich miast gracza), osobno od liczby miast. */
+function obywateleChipTitle(s: HudState): string {
+  const rate = s.ludnoscRate ?? 0;
+  return `Obywatele — łączna populacja imperium`
+    + ` · Duża liczba: ${s.ludnosc} obywateli (suma populacji wszystkich miast gracza)`
+    + ` · Zielone +N: ${signed(rate)} obyw./turę (przyrost ludności netto)`
     + ` · Kliknij po tabelę per miasto (obywatele, produkcja, skarbiec, żywność).`;
 }
 
@@ -1006,19 +1052,44 @@ function renderBarD1B(s: HudState): string {
       iconId: 'tb-army',
       label: 'Armia',
       value: String(s.armyUnitsOnMap ?? 0),
-      rate: signed(s.rekruciRegenPerTurn ?? 0),
+      // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): "+" pokazywał surową odnowę puli
+      // rekrutów/turę (mylące dla dużej puli — czytało się jak liczba rekrutów, nie jak
+      // ile wojska da się wystawić). Teraz pokazuje PEŁNE jednostki możliwe do zwerbowania
+      // z całej puli imperium (rekrutEkw = floor(rekruci / kosztJednostki), main.ts, to
+      // samo źródło co panel "Rekruci (pula werbu)"). Odnowa/turę zostaje w tooltipie.
+      // / EN: "+" used to show the raw pool regen/turn (misleading at a large pool — read
+      // like a recruit count, not like how much army it can field). Now shows FULL units
+      // recruitable from the whole empire pool (rekrutEkw = floor(rekruci / kosztJednostki),
+      // main.ts, same source as the "Rekruci (pula werbu)" panel). Regen/turn stays in the
+      // tooltip.
+      rate: signed(s.rekrutEkw ?? 0),
       rateWarn: !!s.glodWojska,
       act: 'armia',
       title: armiaChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({
-      iconId: 'res-population',
+      // P-BRAK-LACZNEJ-LICZBY-OBYWATELI-W-HUD: 'res-population' (ikona ludzi) przechodzi
+      // na nowy chip „Obywatele" poniżej — Miasta dostaje właściwą ikonę osiedla, żeby
+      // dwa sąsiednie chipy nie dzieliły tej samej ikony dla dwóch różnych liczb.
+      // / EN: 'res-population' (people icon) moves to the new "Obywatele" chip below —
+      // Miasta gets the correct settlement icon so two adjacent chips don't share the
+      // same icon for two different numbers.
+      iconId: 'res-settlements',
       label: 'Miasta',
       value: String(s.osiedla),
       rate: signed(s.ludnoscRate ?? 0),
       act: 'miasta',
       title: miastaChipTitle(s),
+    }),
+    chip6cSep(),
+    chip6cHtml({
+      iconId: 'res-population',
+      label: 'Obywatele',
+      value: String(s.ludnosc),
+      rate: signed(s.ludnoscRate ?? 0),
+      act: 'ludnosc',
+      title: obywateleChipTitle(s),
     }),
     chip6cSep(),
     chip6cHtml({
@@ -1045,8 +1116,10 @@ function renderBarD1B(s: HudState): string {
   let html = '<div class="civ-hud-banner-left"><div class="civ-hud-banner-shell"><div class="hud-chip-row">'
     + leftChipsHtml + '</div></div></div>';
 
+  const eraGateTitle = s.eraGateSummary ? ' title="' + escHtml(s.eraGateSummary) + '"' : '';
+  const eraGateCls = s.eraGateSummary ? ' p-epoch-gated' : '';
   html += '<div class="power-center" data-act="power" title="Moc imperium — siła absolutna państwa · Duża liczba: punkty Mocy (łączna siła imperium) · Kliknij po szczegóły.">'
-    + '<div class="p-epoch">' + escHtml(s.epoka) + '</div>'
+    + '<div class="p-epoch' + eraGateCls + '"' + eraGateTitle + '>' + escHtml(s.epoka) + '</div>'
     + '<div class="p-row">'
     + `<span class="p-side p-side-left" data-act="rekruci" title="Rekruci — pula rekrutacji (Manpower) · Liczba: aktualna pula werbu do szkolenia wojsk · Kliknij po szczegóły.">`
     + '<span class="p-stack">'

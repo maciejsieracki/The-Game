@@ -317,6 +317,10 @@ import { buildAudienceActionsList } from './game/diplomacy-audience-actions';
 import { grantTechEpokWczesniejszych } from './game/research';
 import { computeOwnerEraFromResearch, computeMainCivEraFromResearch } from './game/owner-epoch';
 import { allEraTechsResearched, eraOwnWonderSatisfied, eraOwnWonderIds } from './game/owner-epoch';
+// R-EPOKA-CUD-ZAKRES-Q1=B: UI "co brakuje do awansu epoki" — czysta logika złożona z
+// odczytów owner-epoch.ts wyżej, bramka sama NIE JEST tu zmieniana. / EN: UI-facing
+// "what's missing to advance" info, composed from owner-epoch.ts reads — gate untouched.
+import { computeEraGateInfo, formatEraGateSummary, type EraGateInfo } from './game/era-gate-ui';
 import {
   ERA_CHANGE_NOTIFY,
   shouldNotifyPlayerEraChange,
@@ -334,6 +338,7 @@ import {
   REBEL_FACTION_OWNER_ID,
 } from './game/society-breakdown';
 import { computeCitizenResourceDrain } from './game/citizen-resource-upkeep';
+import { resourceUsageBreakdownFor, resourceUsageHasAny } from './game/resource-usage-breakdown';
 import {
   applyPostCaptureLawOnCapture,
   applyPostCaptureLawOverride,
@@ -444,6 +449,7 @@ import {
   enterGarnizon,
   enterFieldFortify,
   exitFieldFortify,
+  allDefendersFortifiedInGarnizon,
   assignSharedStackGroupId,
   stackGroupIdOf,
   stackRenderKey,
@@ -557,7 +563,7 @@ import {
   type QualityTier,
 } from './map/newGameMapDefaults';
 import { buildStyledResourceOverlay } from './render/styleResources';
-import { collapseToMergedMesh, countMeshesInGroup } from './render/mergeDecor';
+import { collapseToMergedMesh, countMeshesInGroup, disposeMergedDecor } from './render/mergeDecor';
 import { visibleZloze, ensureDepositEraMeta } from './map/deposit-era';
 import { machinesByCampHex, campOwnerByHex, readyMachinesForCity } from './render/siegeCampSync';
 import { TerenBazowy, Nakladka, Ulepszenie } from './types/hex';
@@ -729,7 +735,8 @@ import {
   type BattleLoot,
 } from './game/battle-loot';
 import {
-  applyCapitalCapturePlunder,
+  applyBarbarianAwareCapitalCapturePlunder,
+  barbarianCapturedPowerGain,
   disbandOwnerUnits,
   oldestCityOfOwner,
   type OwnerResourceAccess,
@@ -843,9 +850,10 @@ import {
   deferredHintsToSidePanelEvents,
   dismissEotOrEraWarLogEntry,
   shouldDeferEotEvents,
+  DIPLOMACY_MSG_PREFIX,
   type DeferredEotHint,
 } from './game/eot-event-defer';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, previewOwnerBuildingResourceUpkeep, totalUnitResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -1012,6 +1020,10 @@ import {
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
+  destroyCampAt,
+  shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
+  tickBarbarianCityGarrisons,
+  canBarbarianWalkIntoEmptyCity, splitCampMoveCost,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -1194,6 +1206,7 @@ import {
 import {
   DEFAULT_CONVERTER_RECIPES,
   loadThroughput,
+  converterThroughputForEra,
   type RawConverterParamsJson,
 } from './game/converters';
 
@@ -1338,6 +1351,22 @@ async function boot(): Promise<void> {
       const raw = new URLSearchParams(location.search).get('mapQuality');
       return raw ? qualityTierFromLabel(raw) : defaultTier;
     }
+
+    /**
+     * P-PERF-SPOWOLNIENIE-PO-60-TURACH (2026-08-12, diagnoza rundy 1): flaga URL
+     * `?perfDebug=1` włącza WYŁĄCZNIE dodatkowe console.info() z czasem (ms) faz
+     * autozapisu -- zero wpływu na normalną grę (bez flagi PERF_DEBUG=false, każde
+     * miejsce poniżej to jeden warunek + return, żadnej zmiany logiki). Cel:
+     * potwierdzić/obalić hipotezę "synchroniczna serializacja+zapis co turę rośnie
+     * z rozmiarem gry" bez zgadywania -- patrz raport diagnozy rundy 1.
+     * / EN: the `?perfDebug=1` URL flag enables ONLY extra console.info() timing
+     * (ms) of autosave phases -- zero effect on normal play (with PERF_DEBUG=false
+     * every site below is one guard + return, no logic change). Goal: confirm/
+     * refute the "sync per-turn serialize+write cost grows with game size"
+     * hypothesis without guessing -- see round-1 diagnosis report.
+     */
+    const PERF_DEBUG = typeof location !== 'undefined'
+      && new URLSearchParams(location.search).get('perfDebug') === '1';
 
     document.body.style.margin   = '0';
     document.body.style.padding  = '0';
@@ -2170,7 +2199,17 @@ async function boot(): Promise<void> {
     }
 
     function clearResourceOverlays(): void {
-      for (const { group } of resourceOverlays) scene.remove(group);
+      // P-PERF-SPOWOLNIENIE-PO-60-TURACH: disposeMergedDecor jest bezpieczny tu
+      // TYLKO bo działa wyłącznie na wyniku collapseToMergedMesh (>=7 mesh grupy,
+      // patrz maybeCollapseResourceOverlay) — nie rusza NIEzmergowanych dzieci,
+      // więc singletony (np. koń złoża z kon-nowy-model.ts, współdzielony z
+      // tokenami jednostek) nigdy nie są tu dysponowane.
+      // / EN: disposeMergedDecor is safe here ONLY because it acts exclusively
+      // on the collapseToMergedMesh output (>=7-mesh groups, see
+      // maybeCollapseResourceOverlay) — it never touches un-merged children, so
+      // singletons (e.g. the horse deposit model from kon-nowy-model.ts, shared
+      // with unit tokens) are never disposed here.
+      for (const { group } of resourceOverlays) { scene.remove(group); disposeMergedDecor(group); }
       resourceOverlays.length = 0;
     }
 
@@ -2180,6 +2219,7 @@ async function boot(): Promise<void> {
       for (let i = resourceOverlays.length - 1; i >= 0; i--) {
         if (resourceOverlays[i]!.hexKey === hexKey) {
           scene.remove(resourceOverlays[i]!.group);
+          disposeMergedDecor(resourceOverlays[i]!.group); // patrz komentarz w clearResourceOverlays
           resourceOverlays.splice(i, 1);
         }
       }
@@ -2329,7 +2369,15 @@ async function boot(): Promise<void> {
         wanted.add(hexKey);
         const existing = villageMeshes.get(hexKey);
         if (existing && existing.parent === scene) continue;
-        if (existing) existing.parent?.remove(existing); // stara scena — odbuduj w bieżącej
+        // Porzucana grupa (stara scena — odbuduj w bieżącej): zwolnij jej zmergowaną
+        // geometrię/materiał, bo villageMeshes.set niżej nadpisze do niej referencję.
+        // Bezpieczne z tego samego powodu co w clearResourceOverlays — grupa przeszła
+        // collapseToMergedMesh, więc dispose dotyka wyłącznie wyniku scalenia.
+        // / EN: discarded group (old scene — rebuild in the current one): free its merged
+        // geometry/material, since villageMeshes.set below overwrites the reference to it.
+        // Safe for the same reason as in clearResourceOverlays — the group went through
+        // collapseToMergedMesh, so dispose touches the merge result only.
+        if (existing) { existing.parent?.remove(existing); disposeMergedDecor(existing); }
         const g = buildWioska();
         collapseToMergedMesh(g); // FPS lewar 1: ~20 boxów → 1 mesh
         const wp = axialToWorld(q, r, HEX_R);
@@ -2343,6 +2391,7 @@ async function boot(): Promise<void> {
       for (const [hexKey, g] of villageMeshes) {
         if (wanted.has(hexKey)) continue;
         g.parent?.remove(g);
+        disposeMergedDecor(g); // wioska zniknęła z mapy — grupa nigdzie już nie wraca
         villageMeshes.delete(hexKey);
         changed = true;
       }
@@ -2356,7 +2405,7 @@ async function boot(): Promise<void> {
         wanted.add(camp.id);
         const existing = campMeshes.get(camp.id);
         if (existing && existing.parent === scene) continue;
-        if (existing) existing.parent?.remove(existing);
+        if (existing) { existing.parent?.remove(existing); disposeMergedDecor(existing); } // jw. syncVillageMeshes / EN: as in syncVillageMeshes
         const g = buildObozBarbarzyncow(); // default BARB_FACTION_COLOR = 0xff4444 (decyzja B)
         collapseToMergedMesh(g);
         const wp = axialToWorld(camp.q, camp.r, HEX_R);
@@ -2370,6 +2419,7 @@ async function boot(): Promise<void> {
       for (const [id, g] of campMeshes) {
         if (wanted.has(id)) continue;
         g.parent?.remove(g);
+        disposeMergedDecor(g); // obóz zlikwidowany — grupa nigdzie już nie wraca
         campMeshes.delete(id);
         changed = true;
       }
@@ -2607,14 +2657,23 @@ async function boot(): Promise<void> {
      * outputAmount. BRUTTO = nominalna zdolność produkcyjna, NIE pomniejszona o brak
      * wejścia (drewna/gliny/rudy) tej konkretnej tury — wystarczające do "ile się
      * produkuje" w liczniku (Maciej: netto zbyt kosztowne, brutto OK).
+     *
+     * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): przepustowość bazowa
+     * przepuszczona przez `converterThroughputForEra` (Cegielnia/Garncarnia +10%/epokę
+     * WŁAŚCICIELA, Odlewnie płaskie) -- ten sam wzorzec co advanceCityEconomy, żeby
+     * licznik HUD nie rozjechał się z realnym silnikiem (klasa błędu HUD-SKARBIEC).
+     * `empireEpochForOwner` = ten sam resolver PARYTETU AI używany wszędzie indziej
+     * w main.ts (owner 0 -> player.era, AI -> ownerEraByOwner).
      */
     function empireConverterResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const rawForConverters = data.econParams as unknown as RawConverterParamsJson;
+      const era = empireEpochForOwner(ownerId);
       const out: Record<string, number> = {};
       for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-        const throughput = loadThroughput(
+        const baseThroughput = loadThroughput(
           rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
         );
+        const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
         for (const c of cities) {
           if (c.ownerId !== ownerId) continue;
           const builtIds = cityBuilt.get(c.id) ?? [];
@@ -2653,9 +2712,12 @@ async function boot(): Promise<void> {
       // używany WYŁĄCZNIE gdy `citizenUpkeepByOwner` nie ma jeszcze wpisu dla tego ownera (np.
       // pierwszy render UI przed 1. turą) — poza tym czyta zawsze z silnika, nigdy nie przelicza
       // równolegle. buildEmpireResourceRows służy WYŁĄCZNIE do podglądu UI (renderowanie), więc
-      // celowo używamy tylko required/available z wyniku — NIE stosujemy `deductions` (żadnej
-      // mutacji City.surowce z poziomu renderowania panelu, to by było podwójne odjęcie / efekt
-      // uboczny podglądu).
+      // celowo używamy tylko required/available z wyniku dla bramki POKRYTE/NIEDOBÓR — NIE
+      // stosujemy (nie mutujemy) `deductions` tutaj (żadnej mutacji City.surowce z poziomu
+      // renderowania panelu, to by było podwójne odjęcie / efekt uboczny podglądu). Od
+      // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (2026-08-12) CZYTAMY `deductions` DALEJ NIŻEJ —
+      // wyłącznie READ-ONLY, do wyświetlenia w „Zobacz szczegóły" (per surowiec, ile realnie
+      // odjął silnik obywatelom), bez żadnej mutacji — to nie jest to samo co "stosowanie".
       // EN: the Resources panel MUST read the engine's VERDICT from `citizenUpkeepByOwner` — a
       // map keyed DIRECTLY by owner (not via city id), never recompute live. Round 3 read via
       // `cities.find(c => c.ownerId === ownerId)` + `cityOrderState.get(thatCity.id)` — capturing
@@ -2663,8 +2725,8 @@ async function boot(): Promise<void> {
       // so `find()` could land on the captured city and surface the PREVIOUS owner's verdict.
       // Reading directly by ownerId removes that indirection structurally. Fallback
       // (`computeCitizenResourceDrain`) applies ONLY when `citizenUpkeepByOwner` has no entry yet
-      // for this owner (first UI render before turn 1); we deliberately ignore `deductions` here
-      // (no City.surowce mutation from a rendering path).
+      // for this owner (first UI render before turn 1); `deductions` below is read-only display,
+      // never mutates City.surowce.
       const citizenUpkeepOwnerPopulation = cities.reduce(
         (sum, c) => c.ownerId === ownerId ? sum + c.population : sum,
         0,
@@ -2675,38 +2737,106 @@ async function boot(): Promise<void> {
         );
       const citizenRequiredSet = new Set(citizenUpkeep.required);
       const citizenAvailableSet = new Set(citizenUpkeep.available);
+      // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: budynki/wojsko z ostatniej przeliczonej tury —
+      // WPROST z mapy publikowanej w bloku „Bank treasury” (main.ts), NIE przeliczane tutaj.
+      // P-SUROWCE-SAVE-LOAD-PUSTE (Evaluator FAIL, wariant A): `buildingResourceUpkeepByOwner`/
+      // `unitResourceUpkeepByOwner` są czyszczone przy KAŻDYM wczytaniu zapisu/nowej grze (5
+      // miejsc, `restoreGameFromSave` i siostrzane) i wypełniane WYŁĄCZNIE wewnątrz bloku „Bank
+      // treasury” pierwszej przeliczonej tury — do tego czasu `.get(ownerId)` zwraca
+      // `undefined`, mimo że przycisk „Zobacz szczegóły” już może się pokazać (bo
+      // `citizenUpkeep` MA fallback niżej i `usage.citizens` bywa > 0). Bez fallbacku panel
+      // pokazywałby wtedy budynki/wojsko jako 0 — niedoszacowanie, nie prawdziwy stan gry.
+      // Naprawa: TEN SAM wzorzec fallbacku co `citizenUpkeep` niżej (`?? computeCitizenResourceDrain(...)`)
+      // — gdy mapa nie ma jeszcze wpisu, przelicz NA ŻĄDANIE z aktualnego stanu gry (`cityBuilt`/
+      // `units`) tymi samymi czystymi prymitywami silnika (`previewOwnerBuildingResourceUpkeep`/
+      // `totalUnitResourceUpkeep`, economy-upkeep.ts — te same funkcje, które `turn-economy.ts`
+      // woła wewnątrz ticku pod `totalBuildingResourceUpkeep`/`totalUnitResourceUpkeep`; budynki
+      // nie zależą od poziomu, patrz `buildingResourceUpkeep()` JSDoc — zero rozjazdu z tickiem).
+      // Wpis obecny, ale pusty `{}` (owner naprawdę nie ma dziś kosztu) NIE trafia w ten fallback
+      // — `??` reaguje tylko na `undefined`, nie na pusty obiekt.
+      // / EN: both maps are cleared on every save-load / new game (5 spots) and populated ONLY
+      // inside the "Bank treasury" block of the first processed turn — until then `.get(ownerId)`
+      // is `undefined` even though the button can already show (citizens has its own fallback).
+      // Fix mirrors the citizenUpkeep fallback below: recompute on demand from live game state
+      // using the exact same pure primitives the turn engine itself calls (no drift risk).
+      const ownerBuildingResUpkeep = buildingResourceUpkeepByOwner.get(ownerId)
+        ?? previewOwnerBuildingResourceUpkeep(ownerId, cities, data.buildings, cityBuilt);
+      const ownerUnitResUpkeep = unitResourceUpkeepByOwner.get(ownerId)
+        ?? totalUnitResourceUpkeep(
+          units.filter(u => u.ownerId === ownerId).map(u => ({ typeId: u.typeId })),
+          typeId => data.units.find(u => u.Jednostka === typeId),
+        );
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
-      // SUROW-CIV-01 (Maciej 2026-07-24): cap PAŃSTWA (civ-wide) — 100 + 100×Magazyny
+      // SUROW-CIV-01 (Maciej 2026-07-24): cap PAŃSTWA (civ-wide) — baza + bonus×Magazyny
       // ownera; `warehouse` powyżej JEST już sumą civ-wide (citySurowceSumForOwner),
       // wystarczy dołożyć cap, żeby licznik pokazał „stock / cap" (np. „140 / 200").
-      const empireCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
+      // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): `capEra` = empireEpochForOwner
+      // (ten sam resolver PARYTETU AI co wszędzie indziej) -- cap podwaja się co epokę
+      // WŁAŚCICIELA, HUD musi pokazywać TĘ SAMĄ wartość, jaką realnie egzekwuje silnik
+      // (advanceCityEconomy::ownerResourceCapFor), inaczej licznik rozjeżdża się z grą
+      // (klasa błędu HUD-SKARBIEC, patrz empireConverterResourceRatesForOwner wyżej).
+      const capEra = empireEpochForOwner(ownerId);
+      const empireCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, capEra);
       // SUROW-UI-A1: parametry bazy/bonusu wprost z econ-params.json — UI dostaje realne
-      // wartości (dziś 1000 + 100×Magazyny) zamiast zaszywać starą "100" na sztywno.
-      const storageParams = loadOwnerStorageParams(
-        data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
-        _menuDifficulty,
+      // wartości (dziś 10000 + 100×Magazyny, epoka 1) zamiast zaszywać starą "100" na
+      // sztywno. ownerStorageParamsForEra przeskalowuje OBA składniki (baza, bonus/Magazyn)
+      // TYM SAMYM mnożnikiem co empireCap wyżej -- capBase + capBonusPerMagazyn×liczba
+      // sumuje się dokładnie do `cap` niżej (P-MAGAZYN-SKALOWANIE-EPOKA-Q1), zero rozjazdu.
+      const storageParams = ownerStorageParamsForEra(
+        loadOwnerStorageParams(
+          data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
+          _menuDifficulty,
+        ),
+        capEra,
       );
-      type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ'] };
+      type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; placeholder?: boolean };
+      // P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12): kolejność kart = pary surowiec
+      // bazowy→przetworzony wg wskazania właściciela, wiersz po wierszu (grid 2 kolumny).
+      // Koń NIE był wymieniony w liście właściciela (nie pasuje do żadnej pary
+      // bazowy→przetworzony) — umieszczony celowo TUŻ PRZED Złotem, żeby Złoto zostało
+      // ostatnią kartą (zgodnie z „Złoto na samym końcu"), kosztem tego że Złoto przestaje
+      // być samo w ostatnim wierszu.
+      // EN: card order = base→processed resource pairs per owner's list, row by row (2-col
+      // grid). "Koń" (Horse) wasn't in the owner's list (doesn't fit any base→processed
+      // pair) — placed right before Gold on purpose, so Gold stays the last card.
       const CATALOG: Cat[] = [
         { id: 'drewno',      label: 'Drewno',      icon: '🪵', typ: 'surowy' },
         { id: 'kamien',      label: 'Kamień',      icon: '🪨', typ: 'surowy' },
         { id: 'glina',       label: 'Glina',       icon: '🟫', typ: 'surowy' },
-        { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
-        { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
         { id: 'cegla',       label: 'Cegła',       icon: '🧱', typ: 'przetworzony' },
+        { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy' },
         { id: 'ceramika',    label: 'Ceramika',    icon: '🏺', typ: 'przetworzony' },
+        { id: 'ruda',        label: 'Ruda miedzi', icon: '🔶', typ: 'surowy' },
         { id: 'braz',        label: 'Brąz',        icon: '🥉', typ: 'przetworzony' },
+        { id: 'ruda_zelaza', label: 'Ruda żelaza', icon: '⛏️', typ: 'surowy' },
+        // Placeholder (P-SUROWCE-KOLEJNOSC-KART): "Ruda cyny" NIE ISTNIEJE w
+        // resources.json — karta wyszarzona/nieaktywna, bez realnych danych silnika.
+        // NIE dodawaj tego id do resources.json ani żadnej innej tabeli danych gry.
+        // EN: "Ruda cyny" (tin ore) does NOT exist in resources.json — dimmed/inactive
+        // card only, no real engine data. Do not add this id to any game data table.
+        { id: 'ruda_cyny',   label: 'Ruda cyny — wkrótce', icon: '⛏️', typ: 'surowy', placeholder: true },
         { id: 'zelazo',      label: 'Żelazo',      icon: '⚙️', typ: 'przetworzony' },
         { id: 'stal',        label: 'Stal',        icon: '🔩', typ: 'przetworzony' },
-        { id: 'sol',         label: 'Sól',         icon: '🧂', typ: 'surowy' },
         { id: 'kon',         label: 'Koń',         icon: '🐎', typ: 'hodowla' },
         { id: 'zloto',       label: 'Złoto (surowiec)', icon: '🪙', typ: 'surowy' },
       ];
       const diploFlows = empireDiploResourceFlowPerTurn(activeDeals, ownerId);
       const rows: EmpireResourceRow[] = [];
       for (const c of CATALOG) {
+        if (c.placeholder) {
+          // Karta placeholder: brak jakichkolwiek realnych danych silnika (stock/cap/produkcja
+          // zawsze 0, dostęp zawsze false) — resCardHtml() w empireDetailPanel.ts renderuje ją
+          // wyszarzoną, bez paska postępu, na podstawie `placeholder: true`.
+          // EN: placeholder card carries no real engine data — always stock/cap 0, dostep
+          // false; empireDetailPanel.ts's resCardHtml() renders it dimmed, no progress bar.
+          rows.push({
+            id: c.id, label: c.label, icon: c.icon, stock: 0, ratePerTurn: 0, typ: c.typ,
+            dostep: false, cap: 0, placeholder: true,
+          });
+          continue;
+        }
         const stock = Math.floor(warehouse[c.id] ?? 0);
         // Zgłoszenie Macieja 2026-07-26: "surowce na dostęp" mają mieć ŹRÓDŁO PRAWDY
         // per surowiec (nie jeden zbiorczy accessLabels.has), żeby złoto mogło użyć
@@ -2750,6 +2880,12 @@ async function boot(): Promise<void> {
         const capBase = storageParams.bazaSurowcePanstwo;
         const capBonusPerMagazyn = storageParams.bonusSurowceNaBudynek;
         const citizenRequired = citizenRequiredSet.has(c.id);
+        // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: rozbicie zużycia tego surowca z trzech gotowych
+        // rekordów silnika (obywatele/budynki/wojsko) — resourceUsageBreakdownFor() NIE liczy
+        // nic od nowa, tylko czyta te same mapy co reszta panelu.
+        const usage = resourceUsageBreakdownFor(
+          c.id, citizenUpkeep.deductions, ownerBuildingResUpkeep, ownerUnitResUpkeep,
+        );
         rows.push({
           id: c.id, label: c.label, icon: c.icon, stock, ratePerTurn, typ: c.typ, dostep,
           rateProductionPerTurn: production,
@@ -2759,6 +2895,7 @@ async function boot(): Promise<void> {
           ...(citizenRequired
             ? { citizenRequired: true, citizenCovered: citizenAvailableSet.has(c.id) }
             : {}),
+          ...(resourceUsageHasAny(usage) ? { usage } : {}),
         });
       }
       return rows;
@@ -2822,6 +2959,39 @@ async function boot(): Promise<void> {
 
     function parseWonderProdId(id: string): string | null {
       return id.startsWith(WONDER_PROD_PREFIX) ? id.slice(WONDER_PROD_PREFIX.length) : null;
+    }
+
+    /**
+     * R-EPOKA-CUD-ZAKRES-Q1=B: cuda gracza aktualnie zakolejkowane (dowolna pozycja w
+     * kolejce, nie tylko front — jak wonderRequiredAlreadyBuilding w AI-forcingu niżej)
+     * w KTÓRYMKOLWIEK z jego miast, jeszcze nieukończone. Do panelu "co brakuje do
+     * awansu epoki" (era-gate-ui.ts), status "w budowie" vs "jeszcze nie zakolejkowany".
+     * / EN: player wonders currently queued (any queue position, any city), not yet
+     * completed — feeds the era-gate UI panel's "in progress" vs "not queued" status.
+     */
+    function playerWonderInProgressIds(): string[] {
+      const ids: string[] = [];
+      for (const c of cities) {
+        if (c.ownerId !== 0) continue;
+        const kolejka = cityProd.get(c.id)?.kolejka ?? [];
+        for (const it of kolejka) {
+          const wid = parseWonderProdId(it.id);
+          if (wid !== null) ids.push(wid);
+        }
+      }
+      return ids;
+    }
+
+    /** R-EPOKA-CUD-ZAKRES-Q1=B: stan bramki awansu epoki gracza dla UI (Science Hub + HUD tooltip). */
+    function buildPlayerEraGateInfo(): EraGateInfo {
+      return computeEraGateInfo({
+        era: player.era,
+        techRows: data.tech as import('./data/loader').TechDef[],
+        done: player.zbadane,
+        civType: civTypeForOwner(0),
+        completedWonderIds: completedWorldWonders,
+        inProgressWonderIds: playerWonderInProgressIds(),
+      });
     }
 
     function wonderScaledWorkCost(wonderId: string): number {
@@ -3625,6 +3795,19 @@ async function boot(): Promise<void> {
      * with no city-id indirection.
      */
     const citizenUpkeepByOwner = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();
+    /**
+     * P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA (Maciej 2026-08-12): utrzymanie surowcowe budynków /
+     * jednostek OSTATNIEJ przeliczonej tury, per owner — publikowane w bloku „Bank treasury"
+     * WPROST z `econ.resourceUpkeepBuildingsByOwner`/`resourceUpkeepUnitsByOwner`
+     * (turn-economy.ts), dokładnie tymi wartościami, z których scala się
+     * `econ.resourceUpkeepByOwner` faktycznie odjęte przez `deductBuildingStockCostAcrossCities`.
+     * Ten sam wzorzec trwałości co `citizenUpkeepByOwner` wyżej (przetrwa między turami, czytane
+     * WPROST po ownerId przez `buildEmpireResourceRows`, panel Surowców „Zobacz szczegóły").
+     * / EN: last-tick building/unit resource upkeep per owner, published straight from
+     * `econ.resourceUpkeepBuildingsByOwner`/`UnitsByOwner` — never recomputed here.
+     */
+    const buildingResourceUpkeepByOwner = new Map<number, Record<string, number>>();
+    const unitResourceUpkeepByOwner = new Map<number, Record<string, number>>();
     /** OBL-S4: staty milicji szturmowej (ephemeral, nie w units[]). */
     const militiaDefOverrides = new Map<string, Record<string, unknown>>();
     const empireFoodStates = new Map<number, EmpireFoodState>();
@@ -9181,6 +9364,15 @@ async function boot(): Promise<void> {
         u.q = dest.q;
         u.r = dest.r;
         moved = true;
+        // RUNDA 3 pkt 6: wypchnięcie jednostki (np. cywila z heksu miasta po
+        // walce) może wylądować na żywym obozie barbarzyńskim -- ta sama
+        // "entrata" co zwykły ruch, więc ten sam hak. Nie dotyczy
+        // barbarzyńców (nie mają jak być "obcą" jednostką na własnym mieście).
+        // / EN: evicting a unit (e.g. a civilian from a city hex after
+        // combat) may land it on a living barbarian camp -- same "entry" as
+        // ordinary movement, hence the same hook. Never applies to
+        // barbarians themselves (can't be a "foreign" unit on their own city).
+        if (!isBarbarian(u.ownerId)) checkBarbCampDestroyedAt(dest.q, dest.r);
       }
       if (moved) syncUnitsRender();
     }
@@ -9467,16 +9659,63 @@ async function boot(): Promise<void> {
           // jawnego id oba pod-stosy współdzieliłyby TEN SAM heks+garnizon i wpadłyby
           // z powrotem w ten sam fallback-klucz, czyli dokładnie problem BB2.
           assignSharedStackGroupId(splitArrivals);
+          // P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1=B: koszt policzony PRZED przesunięciem
+          // (q,r) -- identycznie jak normalny ruch/atak na ten sam heks
+          // (beginMoveSelectedUnitTo, main.ts ok. 18956-18970: computePath + pathCost
+          // przez moveCostFnForUnit, potem deductStackRuchLeft z REALNYM kosztem, NIE
+          // bezwarunkowe ruchLeft=0). Dotyczy WYŁĄCZNIE splitu na heks ŻYWEGO obozu --
+          // zwykły split (bez obozu) zachowuje dotychczasowe ruchLeft=0 bez zmian (poza
+          // zakresem tego zlecenia, właściciel mówił wyłącznie o zniszczeniu obozu).
+          // RUNDA 3 (Evaluator C, M10.3): liczenie computePath+pathCost wyciągnięte do
+          // splitCampMoveCost (barbarians.ts) -- main.ts tylko woła (moveCostFn/occupied
+          // nadal liczone tu, bo zależą od stanu gry: cities/Żegluga, nie da się ich
+          // uczynić czystymi bez przeniesienia main.ts).
+          // / EN: cost computed BEFORE moving (q,r) -- identical to a normal move/attack
+          // onto the same hex (beginMoveSelectedUnitTo, main.ts ~18956-18970: computePath
+          // + pathCost via moveCostFnForUnit, then deductStackRuchLeft with the REAL
+          // cost, NOT an unconditional ruchLeft=0). Applies ONLY to a split landing on a
+          // LIVING camp's hex -- an ordinary split (no camp) keeps the existing
+          // ruchLeft=0 unchanged (out of scope for this task, the owner only asked about
+          // camp destruction).
+          // ROUND 3 (Evaluator C, M10.3): the computePath+pathCost computation pulled out
+          // into splitCampMoveCost (barbarians.ts) -- main.ts only calls it (moveCostFn/
+          // occupied still computed here, since they depend on game state: cities/
+          // Seafaring, cannot be made pure without moving main.ts).
+          const destHasLivingCamp = barbCamps.some(c => c.q === destQ && c.r === destR);
+          let splitMoveCostValue = 0;
+          if (destHasLivingCamp && splitArrivals.length > 0) {
+            const splitMover = splitArrivals[0]!;
+            const splitMoveCostFn = moveCostFnForUnit(splitMover);
+            const splitOcc = occupiedForMove(splitMover.ownerId, ...splitArrivals.map(s => s.id));
+            splitMoveCostValue = splitCampMoveCost(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn);
+          }
           for (const u of splitArrivals) {
             u.q = destQ;
             u.r = destR;
-            u.ruchLeft = 0;
           }
+          if (destHasLivingCamp) {
+            deductStackRuchLeft(splitArrivals, splitMoveCostValue);
+          } else {
+            for (const u of splitArrivals) u.ruchLeft = 0;
+          }
+          // P-BARBARZYNCY-SPLIT-Q1: rozdzielenie armii na heks żywego obozu
+          // barbarzyńskiego niszczy go tak samo jak zwykły ruch (parytet z
+          // innymi zakończeniami ruchu, np. main.ts ok. 26551) -- inaczej
+          // isHexPassableForUnit/findSplitDestHexes (sprawdzają WYŁĄCZNIE
+          // przejezdność terenu) pozwalają zostawić pod-stos na obozie, który
+          // dalej spawnuje jednostki pod nim.
+          // / EN: splitting an army onto a living barbarian camp's hex
+          // destroys it, same as regular movement (parity with other
+          // move-completion sites, e.g. main.ts ~26551) -- otherwise
+          // isHexPassableForUnit/findSplitDestHexes (terrain passability
+          // ONLY) let a sub-stack land on a camp that keeps spawning units
+          // underneath it.
+          const campDestroyed = checkBarbCampDestroyedAt(destQ, destR);
           if (tryAutoCaptureEmptyCityAt(destQ, destR, splitArrivals)) {
             refreshD1bHud();
             return;
           }
-          refreshFog();
+          if (!campDestroyed) refreshFog();
           const movedSel = ids.includes(selectedId ?? '');
           if (movedSel && ids.length === 1) {
             selectPlayerUnit(ids[0]!, true);
@@ -10728,7 +10967,19 @@ async function boot(): Promise<void> {
       if (isNaN(q) || isNaN(r)) return;
       const layers = mergedImprovementLayers(hexKey);
       const oldMesh = improvementMeshes.get(hexKey);
-      if (oldMesh) scene.remove(oldMesh);
+      if (oldMesh) {
+        scene.remove(oldMesh);
+        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: bez tego każde ulepszenie/warstwa
+        // zmieniona na tym heksie (budynek, wykarczowany las, tarasy…) leakowała
+        // unikalną, zmergowaną BufferGeometry + Material na GPU na zawsze — nigdy
+        // nie zwalniane przez GC (nie jest to pamięć JS). Rośnie z każdym
+        // respawnem na mapie, przez cały czas trwania gry.
+        // / EN: without this every improvement/layer change on this hex leaked
+        // a unique merged BufferGeometry + Material on the GPU forever — never
+        // freed by JS GC. Grows with every respawn on the map, for the whole
+        // game session.
+        disposeMergedDecor(oldMesh);
+      }
       if (layers.length === 0) {
         improvementMeshes.delete(hexKey);
         syncResourceOverlayAtHex(hexKey);
@@ -10764,7 +11015,7 @@ async function boot(): Promise<void> {
       entries: Array<[string, ImprovementKey | PlacedLayers]> | undefined,
     ): void {
       placedImprovements.clear();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
       if (entries?.length) {
         for (const [hexKey, raw] of entries) {
@@ -12099,16 +12350,46 @@ async function boot(): Promise<void> {
         discoveredOwners: getDiplomaticContacts(),
         showAllCivs: !fogOn,
       });
-      const rows = eligible.map(oid => ({
-        civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
+      const rows = eligible.map(oid => {
         // R-MOC-RANKING-ROZJAZD-Q1=B: panel Mocy (widoczny dla gracza) liczy Moc
         // EFEKTYWNIE — patrz sumArmyMForOwnerEffective. Progi decyzji AI (militaryRatioFromArmyM,
         // computeRespekt w ścieżkach AI) zostają na objectivePowerForOwner nominalnej.
-        power: objectivePowerForOwnerEffective(oid),
-        isPlayer: oid === 0,
-        rank: 0,
-        wiarygodnosc: getWiarygodnosc(oid),
-      }));
+        // Literalne wywołanie `objectivePowerForOwnerEffective(oid)` zostaje NIETKNIĘTE (kanarek
+        // źródłowy moc-ranking-rozjazd-test.cjs pilnuje TEGO dokładnego wpięcia) — breakdown
+        // components (dla podziału gospodarcza/militarna, P-MOC-PODZIAL-WIDOK) doliczony osobnym
+        // wywołaniem buildObjectivePowerForOwnerEffective (ta sama funkcja bazowa, `.power` obu
+        // ścieżek jest identyczne — panel budowany na żądanie, nie co klatkę, więc podwójne
+        // wywołanie jest tanie, patrz komentarz przy buildObjectivePowerForOwnerEffective).
+        // / EN: the literal `objectivePowerForOwnerEffective(oid)` call stays UNTOUCHED (the
+        // moc-ranking-rozjazd-test.cjs source canary guards THIS exact wiring) — the component
+        // breakdown (for the economic/military split, P-MOC-PODZIAL-WIDOK) is fetched via a
+        // separate call to buildObjectivePowerForOwnerEffective (same underlying function, both
+        // paths' `.power` are identical — this panel is built on demand, not per frame, so the
+        // extra call is cheap, see the comment on buildObjectivePowerForOwnerEffective).
+        const obj = buildObjectivePowerForOwnerEffective(oid);
+        // P-MOC-PODZIAL-WIDOK (Maciej 2026-08-12): filtrowanie TEJ SAMEJ listy components po
+        // fladze `military` (JSON `wojskowy`) — bez osobnego silnika liczenia. Militarna = Armia
+        // + Rekruci; gospodarcza = wszystko pozostałe (w tym Wygrane bitwy/Zdobycze — nie są
+        // otagowane wojskowe).
+        // / EN: filtering the SAME components list by the `military` flag (JSON `wojskowy`) — no
+        // separate calc engine. Military = Army + Recruits; economic = everything else
+        // (including Battles won/Conquests — not tagged military).
+        let powerMilitary = 0;
+        let powerEconomic = 0;
+        for (const c of obj.components) {
+          if (c.military) powerMilitary += c.points;
+          else powerEconomic += c.points;
+        }
+        return {
+          civ: oid === 0 ? civDisplayNameForKey(civKeyForOwner(0)) : ownerDiploLabel(oid),
+          power: objectivePowerForOwnerEffective(oid),
+          powerMilitary: Math.round(powerMilitary),
+          powerEconomic: Math.round(powerEconomic),
+          isPlayer: oid === 0,
+          rank: 0,
+          wiarygodnosc: getWiarygodnosc(oid),
+        };
+      });
       rows.sort((a, b) => b.power - a.power);
       return rows.map((row, i) => ({ ...row, rank: i + 1 }));
     }
@@ -12340,6 +12621,11 @@ async function boot(): Promise<void> {
           pieniadzBrutto: tk?.pieniadzBrutto,
           handelZeSzlakow: tk?.pieniadzZTras,
           utrzymanieBudynkow: tk?.utrzymanieBudynkow,
+          // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (Maciej 2026-08-12): już liczone w
+          // `_lastPlayerCityEcon` (populateLastPlayerCityEcon → buildingResourceUpkeepForCityId),
+          // dotąd nie przekazywane dalej — tylko doczepienie istniejącej liczby do snapa panelu,
+          // zero nowego przeliczenia.
+          utrzymanieSurowcowBudynkow: tk?.utrzymanieSurowcowBudynkow,
           pracaPula: tk?.doPuli ?? 0,
           pracaBudynki: tk?.doBudynkow ?? 0,
           nauka: tk?.nauka ?? 0,
@@ -12348,9 +12634,15 @@ async function boot(): Promise<void> {
       const cityPobor = pc.map(c => {
         const mp = cityManpowerSnapshot(c, epoka, regenMult, maxMult);
         return {
+          // P-EMPIRE-MIASTA-JOIN-INDEX (naprawa F2): patrz JSDoc EmpireCityPoborRow.cityId
+          // (empireDetailTypes.ts) -- nazwy miast nie sa unikalne w obrebie cywilizacji.
+          cityId: c.id,
           name: c.name,
           ludki: mp.ludki,
           ludnoscAbsLabel: formatManpower(mp.ludnoscAbsolutna),
+          // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2: wartość surowa obok etykiety — patrz
+          // JSDoc EmpireCityPoborRow.ludnoscAbsolutna (empireDetailTypes.ts).
+          ludnoscAbsolutna: mp.ludnoscAbsolutna,
           rekruci: mp.manpowerBiezacy,
           rekruciMax: mp.manpowerMax,
           regenPerTurn: mp.regenPerTurn,
@@ -12713,7 +13005,7 @@ async function boot(): Promise<void> {
         turn, 'ai', negotiationSeq,
       );
       negotiationTable.push(entry);
-      showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), 4500);
+      showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmd.type), 4500);
       refreshD1bHud();
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
@@ -12735,7 +13027,7 @@ async function boot(): Promise<void> {
         if (!validity.valid) {
           negotiationTable.splice(ni, 1);
           changed = true;
-          showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+          showHintMessage(DIPLOMACY_MSG_PREFIX + ' propozycja wygasła — ' + (validity.reason ?? ''), 4000);
         }
       }
       if (changed) {
@@ -12854,7 +13146,7 @@ async function boot(): Promise<void> {
       ));
       if (!validity.valid) {
         negotiationTable.splice(ni, 1);
-        showHintMessage('Dyplomacja: propozycja wygasła — ' + (validity.reason ?? ''), 4000);
+        showHintMessage(DIPLOMACY_MSG_PREFIX + ' propozycja wygasła — ' + (validity.reason ?? ''), 4000);
         return;
       }
       const sibling = siblingOverride ?? livePackageSiblingFor(entry);
@@ -13056,10 +13348,39 @@ async function boot(): Promise<void> {
       if (isDiplomacyPanelOpen()) updateDiplomacyPanel();
     }
 
-    /** Identyfikatory wpisów stołu wymagających decyzji gracza u danego partnera. */
+    /**
+     * Identyfikatory wpisów stołu wymagających decyzji gracza u danego partnera.
+     *
+     * P-DYPLOMACJA-STOL-NEGOCJACJI-ZABLOKOWANY: w obrębie getNegotiationsForPair(ownerId)
+     * awaitingOwnerId może być tylko 0 (kolej gracza — "incoming" w UI) albo ownerId (kolej
+     * AI — "own"+awaitingAiResponse w UI, ale gracz i tak steruje przyciskiem: wyślij
+     * kontrofertę do AI albo wycofaj). Poprzedni warunek dokładał `proposerOwnerId===0`,
+     * zakładając że "nasza kolejka czeka na AI" = "to MY zaproponowaliśmy pierwsi" — błędnie,
+     * bo proposerOwnerId/responderOwnerId są STAŁE od rundy 1 (patrz komentarz przy
+     * PendingNegotiation w diplomacy-proposals.ts) i NIE zmieniają się przy kontrofercie.
+     * Gdy AI zaproponowało jako pierwsze (proposerOwnerId=ownerId), a gracz skontrował
+     * (Kontruj) — wpis trafia dokładnie w ten stan (awaitingOwnerId=ownerId,
+     * proposerOwnerId=ownerId, runda 2+), czyli DOKŁADNIE scenariusz "Kontroferta 2/3" ze
+     * zgłoszenia. UI (buildPendingNegotiationRows/filterActionableNegotiationRows) liczy
+     * "own" wyłącznie z awaitingOwnerId i pokazywał aktywny pasek Przyjmij/Odrzuć — ale ten
+     * filtr silnika wycinał taki wpis z `ids`, więc handleNegotiationAcceptPackage/
+     * RejectPackage (pętla `for (const id of ids)`) go pomijały — klik był cichym no-opem.
+     * Naprawa: dopasuj filtr do UI — brak dodatkowego warunku o tym, kto był proponentem.
+     * / EN: within getNegotiationsForPair(ownerId), awaitingOwnerId is only ever 0 (player's
+     * turn) or ownerId (AI's turn, but the player still drives the button — push the
+     * counter-offer to the AI, or withdraw it). The old extra `proposerOwnerId===0` clause
+     * assumed "our turn is waiting on AI" meant "we proposed first" — wrong, because
+     * proposer/responder roles are FIXED from round 1 and never swap on a counter-offer. When
+     * the AI proposed first and the player countered, the entry lands exactly in this state
+     * (awaitingOwnerId=ownerId, proposerOwnerId=ownerId, round 2+) — precisely the reported
+     * "Kontroferta 2/3" case. The UI derives "own" purely from awaitingOwnerId and rendered an
+     * active Przyjmij/Odrzuć bar, but this engine-side filter dropped the entry from `ids`, so
+     * the accept/reject-package loop silently skipped it — clicking did nothing. Fix: match
+     * the UI's real criterion, no extra "who proposed" condition.
+     */
     function actionableNegotiationIdsForPair(ownerId: number): string[] {
       return getNegotiationsForPair(ownerId)
-        .filter(n => n.awaitingOwnerId === 0 || (n.proposerOwnerId === 0 && n.awaitingOwnerId !== 0))
+        .filter(n => n.awaitingOwnerId === 0 || n.awaitingOwnerId === ownerId)
         .map(n => n.id)
         .sort((a, b) => a.localeCompare(b));
     }
@@ -13452,7 +13773,7 @@ async function boot(): Promise<void> {
         zaplataPerTura: resourceCmd?.zaplataPerTura,
         resTurns: resourceCmd?.turns,
       });
-      showHintMessage('Dyplomacja: ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmdType), 4500);
+      showHintMessage(DIPLOMACY_MSG_PREFIX + ' ' + ownerDiploLabel(ownerId) + ' — ' + diploPendingTitle(cmdType), 4500);
       refreshD1bHud();
     }
 
@@ -14030,8 +14351,11 @@ async function boot(): Promise<void> {
       // SUROW-HUD-01 (Maciej 2026-07-24): chip „Surowce" w HUD — podsumowanie stanu
       // magazynów imperium (wiersze magazynowane, cap != null). „OK/total": OK =
       // surowce ani w niedoborze (ratePerTurn<0), ani na capie (stock>=cap).
+      // P-SUROWCE-KOLEJNOSC-KART, znalezisko Evaluatora (2026-08-12): wiersz placeholder
+      // (np. "Ruda cyny — wkrótce", cap=0) ma cap!=null i stock(0)>=cap(0), więc bez
+      // !r.placeholder wpadał do sumy jako "surowiec na limicie" -- fałszywy alarm na stałe.
       const resourceRows = buildEmpireResourceRows(0);
-      const storedResourceRows = resourceRows.filter(r => r.cap != null);
+      const storedResourceRows = resourceRows.filter(r => r.cap != null && !r.placeholder);
       const resourceAlertCount = storedResourceRows.filter(
         r => r.ratePerTurn < 0 || r.stock >= (r.cap ?? Infinity),
       ).length;
@@ -14129,6 +14453,16 @@ async function boot(): Promise<void> {
         stateReligion: stateRel,
         rekruci: pobor.rekruci,
         rekruciLabel: formatManpower(pobor.rekruci),
+        // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): chip "Armia" (hud.ts) pokazuje
+        // pełne jednostki możliwe do zwerbowania z całej puli, nie surowych rekrutów —
+        // to samo źródło (unitManpowerCost/rekrutUnitEquivalents, manpower.ts) co panel
+        // "Rekruci (pula werbu)" (buildEmpireDetailSnap niżej: power.rekrutEkw/kosztJednostki).
+        // / EN: the "Armia" chip (hud.ts) shows full units recruitable from the whole pool,
+        // not raw recruits — same source (unitManpowerCost/rekrutUnitEquivalents,
+        // manpower.ts) as the "Rekruci (pula werbu)" panel (buildEmpireDetailSnap below:
+        // power.rekrutEkw/kosztJednostki).
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, player.era, mpMults.maxMult),
+        kosztJednostki: unitManpowerCost(player.era, mpMults.maxMult),
         ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
         power,
         osiedla: pc.length,
@@ -14136,6 +14470,9 @@ async function boot(): Promise<void> {
         tura: turn,
         epoka: gameEpochHudLabel(player.era),
         epokaPostep,
+        // R-EPOKA-CUD-ZAKRES-Q1=B: tooltip HUD "co brakuje do awansu" — `null`/undefined
+        // gdy nic nie blokuje (max epoka LUB oba warunki spełnione), patrz era-gate-ui.ts.
+        eraGateSummary: formatEraGateSummary(buildPlayerEraGateInfo()) ?? undefined,
         researchProgress: epokaPostep,
         badana: player.badana,
         sojusze: chips.sojusze,
@@ -17139,6 +17476,7 @@ async function boot(): Promise<void> {
         onEnqueue: (techId) => enqueueOrSetPlayerResearchSlug(techId),
         onDequeue: (techId) => dequeuePlayerResearchSlug(techId),
         onReorder: (fromIdx, toIdx) => reorderPlayerResearchQueue(fromIdx, toIdx),
+        getEraGateInfo: () => buildPlayerEraGateInfo(),
       });
       createWikiHubHud({
         onClose: () => refreshD1bHud(),
@@ -18351,8 +18689,14 @@ async function boot(): Promise<void> {
       const deductedRuchMarch = pulaPrzedMarch - stackRuchLeft(stack);
       if (applyEmbarkStateAfterMove(stack, map)) syncUnitsRender();
       let hutCollected = false;
+      let campDestroyed = false;
       if (result.movePath.length > 0) {
         if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(result.movePath);
+        // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze graczem (guard
+        // `u.ownerId !== 0` wyżej) -- nigdy barbarzyńcą, więc bez isBarbarian.
+        // / EN: `u` is always the player (ownerId !== 0 guard above) -- never
+        // a barbarian, so no isBarbarian check needed here.
+        campDestroyed = checkBarbCampDestructionAlongPath(result.movePath);
         const bonusChanged = applyCityVisitBonusesAlongPath(
           stack,
           result.movePath,
@@ -18360,8 +18704,8 @@ async function boot(): Promise<void> {
         );
         if (bonusChanged) syncUnitsRender();
       }
-      // checkVillageRewardAt już woła refreshFog({ skipVeteranEducation }) — nie dubluj ani nie nadpisuj toastu chatki.
-      if (!hutCollected) refreshFog();
+      // checkVillageRewardAt/checkBarbCampDestroyedAt już wołają refreshFog — nie dubluj ani nie nadpisuj toastu chatki.
+      if (!hutCollected && !campDestroyed) refreshFog();
       validateActiveSieges();
       promptMergeIfCoLocated(stack.map(s => s.id), fromQ, fromR, result.cost, deductedRuchMarch);
 
@@ -18595,6 +18939,50 @@ async function boot(): Promise<void> {
         if (checkVillageRewardAt(h.q, h.r)) collected = true;
       }
       return collected;
+    }
+
+    /**
+     * P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: obóz barbarzyński niszczony jest
+     * przez WEJŚCIE (najechanie) jednostki -- gracza LUB AI -- na jego heks,
+     * analogicznie do wiosek neutralnych wyżej (`checkVillageRewardAt`). W
+     * przeciwieństwie do wiosek: BEZ nagrody, i dotyczy każdej cywilizacji (nie
+     * tylko gracza) -- WOŁAJĄCY musi sam wykluczyć jednostki barbarzyńskie
+     * (isBarbarian(u.ownerId)) PRZED wywołaniem, ta funkcja tego nie robi (nie
+     * zna właściciela wchodzącej jednostki -- patrz destroyCampAt).
+     * Zniszczenie obozu NIE dotyka jednostek barbarzyńskich już
+     * zaspawnowanych na mapie (`units`) -- te walczą dalej normalnie; jedyny
+     * efekt to zniknięcie obozu z `barbCamps`, więc tickCamps() przestaje z
+     * niego spawnować nowe jednostki.
+     * / EN: a barbarian camp is destroyed by a unit -- player OR AI --
+     * ENTERING its hex, mirroring the neutral-village hook above. Unlike
+     * villages: no reward, and it applies to every civilization (not just the
+     * player) -- the CALLER must exclude barbarian-owned movers itself
+     * (isBarbarian(u.ownerId)) BEFORE calling, this function does not (it has
+     * no notion of who is entering -- see destroyCampAt). Destruction never
+     * touches barbarian units already spawned on the map (`units`) -- they
+     * keep fighting normally; the only effect is the camp disappearing from
+     * `barbCamps`, so tickCamps() stops spawning new units from it.
+     */
+    function checkBarbCampDestroyedAt(q: number, r: number): boolean {
+      const result = destroyCampAt(barbCamps, q, r);
+      if (result.destroyedCampId === null) return false;
+      barbCamps = result.camps;
+      console.log(`[Barbarzyncy] Obóz zniszczony (najechany): ${result.destroyedCampId}`);
+      refreshFog();
+      return true;
+    }
+
+    /** Sprawdza zniszczenie obozu barbarzyńskiego na każdym unikalnym heksie ścieżki. */
+    function checkBarbCampDestructionAlongPath(hexes: ReadonlyArray<{ q: number; r: number }>): boolean {
+      const seen = new Set<string>();
+      let destroyed = false;
+      for (const h of hexes) {
+        const k = keyOf(h.q, h.r);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        if (checkBarbCampDestroyedAt(h.q, h.r)) destroyed = true;
+      }
+      return destroyed;
     }
 
     /** Animowany ruch (merge / taktyka — natychmiast, bez planowania A3). */
@@ -20296,6 +20684,14 @@ async function boot(): Promise<void> {
       terrain: string,
       structBonusPct: number,
       atkStart?: Map<string | number, { q: number; r: number }>,
+      /** P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (hard): patrz applyMapBattleOutcome ->
+       *  opts.allowCityCapture -- dziś wołane wyłącznie z barbarzyńskiego bloku ataku
+       *  (hard), gracz/AI dalej NIE przechodzą tędy przez capture (allowCityCapture
+       *  domyślnie undefined -- zero zmian dla ich ścieżki).
+       *  / EN: see applyMapBattleOutcome -> opts.allowCityCapture -- today only the
+       *  barbarian attack block (hard) passes this; player/AI callers still leave it
+       *  undefined, so their capture path is unchanged. */
+      allowCityCapture?: boolean,
     ): ReturnType<typeof resolveAutoBattleByPower> | null {
       const start = atkStart ?? snapshotRosterPositions(atkRoster);
       const aLeadDef = unitDefFor(atkRoster[0]!);
@@ -20315,6 +20711,7 @@ async function boot(): Promise<void> {
         battleQ,
         battleR,
         atkStart: start,
+        allowCityCapture,
       });
       return powerRes;
     }
@@ -20333,6 +20730,14 @@ async function boot(): Promise<void> {
       contextLabel: string,
       onResolved: () => void,
       worldTerrain?: WorldTerrainInput,
+      /** P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (hard): patrz applyMapBattleOutcome ->
+       *  opts.allowCityCapture -- wołane wyłącznie z barbarzyńskiego ataku na miasto
+       *  gracza (hard). AI-vs-gracz (drugi caller) nie przekazuje tego argumentu ->
+       *  undefined -> zero zmian dla tamtej ścieżki.
+       *  / EN: see applyMapBattleOutcome -> opts.allowCityCapture -- only the barbarian
+       *  attack on the player's city (hard) passes this; the AI-vs-player caller omits
+       *  it -> undefined -> unchanged for that path. */
+      allowCityCapture?: boolean,
     ): void {
       const atkRosterRef = atkRoster.slice();
       const defRosterRef = defRoster.slice();
@@ -20355,6 +20760,16 @@ async function boot(): Promise<void> {
         : defLead.typeId;
       const placeInfo = fieldBattlePlaceInfo(battleQ, battleR, terrain, 0);
       const playerDefends = defRosterRef.some(u => u.ownerId === 0);
+      // P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1 (Maciej 2026-08-12): obrońca w pełni
+      // ufortyfikowany w garnizonie miasta (WSZYSCY obrońcy inGarnizon===true) NIE
+      // MOŻE się wycofać -- ani gracz, ani AI/barbarzyńca (patrz
+      // allDefendersFortifiedInGarnizon w armyMerge.ts dla pełnego uzasadnienia,
+      // w tym dlaczego predykat sprawdza WYŁĄCZNIE `inGarnizon`, nie koniunkcję z
+      // `ufortyfikowanyWPolu`). / EN: a defender fully fortified in the city garrison
+      // (ALL defenders inGarnizon===true) can never retreat -- player or AI/barbarian
+      // alike (see allDefendersFortifiedInGarnizon in armyMerge.ts for the full
+      // rationale, incl. why the predicate checks ONLY `inGarnizon`).
+      const defenderLockedByGarnizon = allDefendersFortifiedInGarnizon(defRosterRef);
 
       const pbInfo: PreBattleInfo = {
         atakujacy: preBattleSideFromRoster(atkRosterRef, atkSideTitle, atkCivLabel),
@@ -20367,7 +20782,7 @@ async function boot(): Promise<void> {
         lokacja: placeInfo.lokacja,
         tura: turn,
         canRetreat: false,
-        defenderCanRetreat: playerDefends,
+        defenderCanRetreat: playerDefends && !defenderLockedByGarnizon,
         warunki: cityDefenseBreakdownFor(defRosterRef, terrain),
       };
 
@@ -20424,6 +20839,7 @@ async function boot(): Promise<void> {
               battleQ: battleHex.q,
               battleR: battleHex.r,
               atkStart: atkStartSnap,
+              allowCityCapture,
             },
             mapBattleSummaryMeta('auto'),
             finishIncomingBattleUi,
@@ -20486,6 +20902,7 @@ async function boot(): Promise<void> {
                 battleQ: battleHex.q,
                 battleR: battleHex.r,
                 atkStart: atkStartSnap,
+                allowCityCapture,
               },
               mapBattleSummaryMeta('manual'),
               () => {
@@ -20498,7 +20915,13 @@ async function boot(): Promise<void> {
         },
         onCancel: () => {
           hidePreBattle();
-          if (playerDefends) {
+          // Obrona-w-głąb: powtórz WARUNEK z defenderCanRetreat (nie tylko widoczność
+          // przycisku w UI) -- gdyby onCancel został kiedyś wywołany inną drogą niż
+          // klik/Esc (np. test, przyszły skrót), garnizon i tak zostaje na miejscu.
+          // / EN: defense-in-depth -- repeat the SAME condition as defenderCanRetreat
+          // (not just UI button visibility) -- if onCancel is ever invoked another way
+          // than click/Esc (test, future shortcut), a garnizoned defender still can't flee.
+          if (playerDefends && !defenderLockedByGarnizon) {
             applyDefenderPreBattleRetreat({
               units,
               battleQ: battleHex.q,
@@ -20598,6 +21021,41 @@ async function boot(): Promise<void> {
         cityOnBattleHex: cityOnHex,
       });
 
+      // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1 (właściciel, 2026-08-12): obóz
+      // niszczy WEJŚCIE (najechanie) jednostki na jego heks -- NIE walka /
+      // zliczanie garnizonu (poprzednia mechanika tutaj, usunięta -- Evaluator
+      // znalazł w niej realną regresję, właściciel ustalił że to zła
+      // mechanika). Bitwa na mapie sama w sobie NIE niszczy obozu -- ale gdy
+      // zwycięski ATAKUJĄCY (applyPostBattleMap → moveAtkRosterOntoBattleHex,
+      // wyżej) faktycznie wchodzi na heks bitwy (battleQ, battleR), to jest
+      // dokładnie taka sama "entrata" jak zwykły ruch -- stąd sprawdzenie tu,
+      // PO applyPostBattleMap (żeby widzieć finalne pozycje jednostek).
+      // Barbarzyńcy nigdy nie niszczą swojego obozu tym haczykiem (isBarbarian
+      // wyklucza ich jako "atakującego" w tym sensie) -- symetria gracz/AI
+      // zapewniona tym, że atkOwnerId to zwykły ownerId (0 = gracz, 1..N = AI),
+      // bez rozróżniania kto to jest.
+      // / EN: a camp is destroyed by a unit ENTERING its hex -- NOT by combat /
+      // garrison counting (the previous mechanic here, removed -- the
+      // Evaluator found a real regression in it, the owner determined it was
+      // the wrong mechanic). The battle itself does not destroy the camp --
+      // but when the winning ATTACKER (applyPostBattleMap →
+      // moveAtkRosterOntoBattleHex, above) actually steps onto the battle hex
+      // (battleQ, battleR), that is exactly the same "entry" as an ordinary
+      // move -- hence the check here, AFTER applyPostBattleMap (so it sees
+      // final unit positions). Barbarians never destroy their own camp via
+      // this hook (isBarbarian excludes them as an "attacker" here) -- player/
+      // AI symmetry comes for free since atkOwnerId is a plain ownerId (0 =
+      // player, 1..N = AI) with no further distinction.
+      if (mapWinner === 'atakujacy') {
+        const atkOwnerId = atkRoster[0]?.ownerId;
+        if (atkOwnerId !== undefined && !isBarbarian(atkOwnerId)) {
+          const attackerNowOnBattleHex = units.some(
+            u => u.ownerId === atkOwnerId && u.q === battleQ && u.r === battleR,
+          );
+          if (attackerNowOnBattleHex) checkBarbCampDestroyedAt(battleQ, battleR);
+        }
+      }
+
       let battleLoot: BattleLoot | null = null;
       if (mapWinner === 'atakujacy' || mapWinner === 'obronca') {
         const winOid = mapWinner === 'atakujacy' ? atkRoster[0]?.ownerId : defRoster[0]?.ownerId;
@@ -20615,7 +21073,15 @@ async function boot(): Promise<void> {
               // reconcileOwnerResourceCaps (advanceCityEconomy) — bez capu łup (Brąz/Żelazo
               // i inne surowce jednostek) mógłby windować magazyn ponad limit tak samo jak
               // wyrąb lasu (drewno).
-              const battleLootCap = ownerResourceCap(cities, cityBuilt, winOid, data, _menuDifficulty);
+              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka ZWYCIĘZCY (winOid)
+              // odbierającego łup -- bez tego cap liczony tu byłby niższy niż realnie
+              // egzekwowany przez silnik od epoki 2 wzwyż, łup mógłby zniknąć w całości.
+              // EN: WINNER's (winOid, loot recipient) epoch -- otherwise the cap computed
+              // here would be lower than what the engine actually enforces from epoch 2
+              // onward, and loot could vanish entirely.
+              const battleLootCap = ownerResourceCap(
+                cities, cityBuilt, winOid, data, _menuDifficulty, empireEpochForOwner(winOid),
+              );
               for (const [key, amt] of Object.entries(battleLoot.resources)) {
                 if (amt > 0) creditOwnerResourceStock(cities, winOid, key, amt, battleLootCap);
               }
@@ -20624,11 +21090,29 @@ async function boot(): Promise<void> {
         }
       }
 
+      // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (hard, Maciej 2026-08-12): barbarzyńcy
+      // przejmują miasto WYŁĄCZNIE gdy jego heks jest w tej chwili (PO applyPostBattleMap
+      // wyżej) wolny od WSZYSTKICH jednostek nie-barbarzyńskich -- jawna weryfikacja
+      // "oczyszczone z obrońców do zera w TEJ walce", nie samo zwycięstwo ATK (który dla
+      // gracza/AI wystarcza, bo defRoster tam = cała obrona; ten dodatkowy check dotyczy
+      // WYŁĄCZNIE atakującego-barbarzyńcy -- gracz/AI capture (siege/allowCityCapture)
+      // bez zmian). / EN: barbarians capture a city ONLY when its hex is (AFTER
+      // applyPostBattleMap above) free of every non-barbarian unit -- an explicit "cleared
+      // to zero defenders in THIS battle" check, on top of the plain ATK-win gate below.
+      // Applies to a barbarian attacker only -- player/AI capture unchanged.
+      // RUNDA 2 (Evaluator, punkt 5): logika wyciągnięta do czystej, testowalnej
+      // isCityCaptureBlockedByDefenders (barbarians.ts) -- main.ts tylko woła.
+      const atkOwnerForCapture = atkRoster[0]?.ownerId;
+      const barbCaptureBlockedByRemainingDefenders =
+        atkOwnerForCapture !== undefined
+        && isCityCaptureBlockedByDefenders(atkOwnerForCapture, units, battleQ, battleR);
+
       if (
         (opts?.allowCityCapture === true || opts?.siegeContext === true)
         && mapWinner === 'atakujacy'
         && cityOnHex
         && cityOnHex.ownerId !== atkRoster[0]?.ownerId
+        && !barbCaptureBlockedByRemainingDefenders
       ) {
         const atkOwner = atkRoster[0]!.ownerId;
         const captureResult = applyCityCaptureToMap(cityOnHex, atkRoster, atkOwner, atkRoster[0] ?? null);
@@ -21226,8 +21710,32 @@ async function boot(): Promise<void> {
       // i eliminateOwner(-99) zaśmiecały eliminatedOwners/sejw wpisem -99.
       if (oldOwner === REBEL_FACTION_OWNER_ID) return null;
       const designatedCapitalId = capitalCityIdByOwner.get(oldOwner) ?? undefined;
-      const outcome = applyCapitalCapturePlunder(
-        city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId,
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1), wyciągnięte do czystych,
+      // testowalnych funkcji w RUNDZIE 3 (capital-capture.ts, zero pokrycia testowego
+      // póki logika żyła inline tutaj -- main.ts nie jest bundlowalny):
+      //   - oldOwner barbarzyńca -> null (barbarzyńcy nie mają stolicy/skarbca). Bez
+      //     tego guarda ODBICIE gracza/AI ich JEDYNEGO miasta wpadało w legacy fallback
+      //     "najstarsze miasto" -> eliminacja CAŁEJ frakcji barbarzyńców jednym odbiciem
+      //     jednego miasta (+ trwały fałszywy wpis w eliminatedOwners w sejwie).
+      //   - newOwner barbarzyńca -> ofiara wciąż TRACI skarbiec/naukę/techy/pulę pracy
+      //     (strata ofiary, nie nagroda zdobywcy), ale NIC z tego nie trafia NA KONTO
+      //     barbarzyńców (`barbarianCaptorResourceAccess` no-opuje zapis DO newOwner).
+      //     Eliminacja (jeśli to było OSTATNIE miasto ofiary) i tak następuje niżej.
+      // / EN: extracted to pure, testable functions in ROUND 3 (capital-capture.ts,
+      // zero test coverage while the logic lived inline here -- main.ts is not
+      // bundlable):
+      //   - oldOwner barbarian -> null (barbarians have no capital/treasury). Without
+      //     this guard, the player/AI RECLAIMING their ONE city fell into the legacy
+      //     "oldest city" fallback -> elimination of the WHOLE barbarian faction from a
+      //     single city recapture (+ a permanent bogus eliminatedOwners save entry).
+      //   - newOwner barbarian -> the victim still LOSES treasury/science/techs/work
+      //     pool (the victim's loss, not the captor's reward), but NONE of it lands in
+      //     the barbarian account (`barbarianCaptorResourceAccess` no-ops the write TO
+      //     newOwner). Elimination (if this was the victim's LAST city) still happens
+      //     below regardless.
+      const barbCaptor = isBarbarian(newOwner);
+      const outcome = applyBarbarianAwareCapitalCapturePlunder(
+        city, oldOwner, newOwner, cities, capitalCaptureResourceAccess, designatedCapitalId, isBarbarian,
       );
       if (!outcome) return null;
 
@@ -21250,13 +21758,19 @@ async function boot(): Promise<void> {
       // ew. jego WCZEŚNIEJSZE zdobycze z poprzednich eliminacji — rekurencyjnie
       // złożone w computeObjectivePower) -> trwały bonus zwycięzcy. Snapshot PRZED
       // eliminateOwner (patrz komentarz funkcji).
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (punkt 1, kierunek B): barbarzyńcy nie dziedziczą
+      // Power ofiary -- `barbarianCapturedPowerGain` (capital-capture.ts, RUNDA 3).
+      // / EN: barbarians do not inherit the victim's Power --
+      // `barbarianCapturedPowerGain` (capital-capture.ts, ROUND 3).
       const lostPower = buildObjectivePowerForOwner(oldOwner).power;
-      if (lostPower > 0) {
-        zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + lostPower);
+      const powerGain = barbarianCapturedPowerGain(lostPower, barbCaptor);
+      if (powerGain > 0) {
+        zdobyczePowerByOwner.set(newOwner, (zdobyczePowerByOwner.get(newOwner) ?? 0) + powerGain);
       }
       const eliminatedCivLabel = civLabelForOwner(oldOwner);
-      const eliminatedDetails =
-        `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
+      const eliminatedDetails = barbCaptor
+        ? 'Skarbiec i nauka przepadły (barbarzyńcy nie dziedziczą łupu).'
+        : `Skarbiec, nauka i ${outcome.techSkopiowane.length} tech(y) przejęte. Zdobycze Power: +${lostPower}.`;
       const isTriumph = newOwner === 0 && shouldShowPlayerTriumphCityStateUnification({
         newOwner,
         oldOwner,
@@ -21356,7 +21870,45 @@ async function boot(): Promise<void> {
         { civKeyForOwner: civKeyForOwnerId, onOwnerChanged: seedCityOwnerDefaults },
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
-      if (sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
+      // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
+      // tickBarbarianCityGarrisons niżej w ticku barbarzyńców): capture NIE czyścił
+      // odziedziczonej kolejki budowy ofiary -- budynek W TOKU (front kolejki, np.
+      // "Świątynia" 60% ukończona) PRZETRWAŁBY przejęcie i dokończyłby się pod
+      // barbarzyńską flagą na kolejnych tickach ekonomii: advanceCityEconomy (turn-
+      // economy.ts) liczy Praca/doBudynkow identycznie dla KAŻDEGO miasta (brak
+      // filtru ownerId), a advanceProduction (main.ts, pętla per-miasto) odejmuje tę
+      // Pracę od frontu kolejki bez sprawdzania właściciela -- razem to zaprzeczałoby
+      // "miasto barbarzyńskie produkuje WYŁĄCZNIE jednostki (nigdy budynki)". Barbarzyńcy
+      // i tak NIGDY sami nie wkładają budynku do kolejki (pickAutoBuildItem odmawia,
+      // bo seedCityOwnerDefaults resetuje budowaTryb do 'reczny' przy KAŻDYM przejęciu,
+      // patrz komentarz przy tym wywołaniu wyżej) -- ten reset zamyka WYŁĄCZNIE
+      // przypadek ODZIEDZICZONEGO, już rozpoczętego budynku ofiary.
+      // / EN: batch 7-10 topic 8 gap closure (barbarian-owned cities -- see the
+      // tickBarbarianCityGarrisons wiring further down in the barbarian tick): capture
+      // did NOT clear the victim's inherited build queue -- a building IN PROGRESS
+      // (queue front, e.g. a "Temple" 60% complete) would SURVIVE the capture and
+      // finish completing under the barbarian flag on later economy ticks:
+      // advanceCityEconomy (turn-economy.ts) computes Praca/doBudynkow identically for
+      // EVERY city (no ownerId filter), and advanceProduction (main.ts, per-city loop)
+      // subtracts that Praca from the queue front without checking ownership -- together
+      // that would contradict "a barbarian-owned city produces ONLY units (never
+      // buildings)". Barbarians never queue a building themselves anyway
+      // (pickAutoBuildItem refuses, because seedCityOwnerDefaults resets budowaTryb to
+      // 'reczny' on EVERY capture, see the comment on that call above) -- this reset
+      // closes ONLY the case of an INHERITED, already-started building of the victim.
+      if (isBarbarian(atkOwner)) {
+        cityProd.set(city.id, { kolejka: [], postep: 0 });
+      }
+      // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1 -- kontekst): barbarzyńcy nie
+      // mają realnej kultury/religii -- civKeyForOwnerId(BARBARIAN_OWNER_ID) fałszuje ją
+      // przez fallback 'grecy' (aiOwnerCivMap.get(ujemny id) === undefined), co mogło
+      // przypadkiem "trafić" w sameCultureCircle z ofiarą grającą Grecją i podmienić
+      // religię miasta na (nieistniejącą) religię barbarzyńców. / EN: barbarians have no
+      // real culture/religion -- civKeyForOwnerId(BARBARIAN_OWNER_ID) fakes it via the
+      // 'grecy' fallback (aiOwnerCivMap.get(negative id) === undefined), which could
+      // accidentally "match" sameCultureCircle against a Greek-playing victim and swap
+      // the city's religion for the barbarians' (nonexistent) one.
+      if (!isBarbarian(atkOwner) && sameCultureCircle(civKeyForOwnerId(atkOwner), civKeyForOwnerId(oldOwner))) {
         cityRelig.set(
           city.id,
           defaultCityReligionState(city.population, ownerReligionForOwnerId(atkOwner)),
@@ -22272,6 +22824,7 @@ async function boot(): Promise<void> {
         return;
       }
       autosaveInFlight = true;
+      const _perfAutosaveT0 = PERF_DEBUG ? performance.now() : 0;
       try {
       let idx = 0;
       try {
@@ -22297,6 +22850,13 @@ async function boot(): Promise<void> {
         console.error('[Autosave] blad budowy migawki zapisu:', eSnap);
         showHintMessage('Autozapis nieudany (blad zapisu)', 3000);
         return;
+      }
+      if (PERF_DEBUG) {
+        console.info(
+          '[perfDebug] buildSaveGameSnapshot: ' + (performance.now() - _perfAutosaveT0).toFixed(1)
+          + ' ms · tura=' + turn + ' · units=' + units.length + ' · cities=' + cities.length
+          + ' · improvementMeshes=' + improvementMeshes.size + ' · resourceOverlays=' + resourceOverlays.length,
+        );
       }
 
       if (shouldUseFsaAutosave(getFsaReadinessState())) {
@@ -22335,7 +22895,17 @@ async function boot(): Promise<void> {
       }
 
       try {
+        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: pomiar poniżej sprawdza, czy JSON.stringify
+        // (buildSaveGameSnapshot już policzony wcześniej) + zapis migawki gry co turę
+        // (domyślnie) rośnie wraz z rozmiarem gry (więcej jednostek/miast/historii).
+        // Od migracji na IndexedDB (`idb-storage.ts`) `saveToLocal` jest asynchroniczny
+        // (nie blokuje już głównego wątku samym zapisem), ale JSON.stringify wciąż jest.
+        const _perfSaveLocalT0 = PERF_DEBUG ? performance.now() : 0;
         const { ok, reason } = await saveToLocal(slot, snapshot);
+        if (PERF_DEBUG) {
+          console.info('[perfDebug] saveToLocal (JSON.stringify+IndexedDB, async): '
+            + (performance.now() - _perfSaveLocalT0).toFixed(1) + ' ms · tura=' + turn);
+        }
         if (ok) {
           setLastPlayedSlotId(slot);
           // Indeks rotacji przesuwamy WYŁĄCZNIE po udanym zapisie -- przy
@@ -22477,6 +23047,18 @@ async function boot(): Promise<void> {
         return;
       }
       console.warn('[EndTurn] triggerPlayerEndTurn: START tura', turn);
+      if (PERF_DEBUG) {
+        // P-PERF-SPOWOLNIENIE-PO-60-TURACH: migawka liczników na START każdej tury gracza --
+        // porównaj trend między turami (rosnące improvementMeshes/resourceOverlays z tury na
+        // turę przy STAŁEJ liczbie miast wskazywałoby na wyciek, nie na naturalny wzrost gry).
+        console.info(
+          '[perfDebug] EOT start tura=' + turn + ' · units=' + units.length + ' · cities=' + cities.length
+          + ' · improvementMeshes=' + improvementMeshes.size + ' · resourceOverlays=' + resourceOverlays.length
+          + ' · villageMeshes=' + villageMeshes.size + ' · campMeshes=' + campMeshes.size
+          + ' · drawCalls=' + (renderer.info.render.calls) + ' · geometries=' + (renderer.info.memory.geometries)
+          + ' · textures=' + (renderer.info.memory.textures),
+        );
+      }
       endTurnInProgress = true;
       endTurnStartedAt = Date.now();
       void (async () => {
@@ -22509,6 +23091,12 @@ async function boot(): Promise<void> {
               endTurnAnimHutCollected = checkVillageRewardsAlongPath(anim.pathHexes);
             }
             if (anim.pathHexes.length > 0) {
+              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `anim` jest zawsze
+              // jednostką gracza (jedyne miejsce ustawiające `anim` to
+              // startAnimatedMove, playerStackAt) -- nigdy barbarzyńcą.
+              // / EN: `anim` always tracks a player unit (the sole assignment
+              // site is startAnimatedMove/playerStackAt) -- never a barbarian.
+              checkBarbCampDestructionAlongPath(anim.pathHexes);
               const bonusChanged = applyCityVisitBonusesAlongPath(
                 stack,
                 anim.pathHexes,
@@ -22536,6 +23124,11 @@ async function boot(): Promise<void> {
               if (u.ownerId === 0) {
                 if (checkVillageRewardAt(u.q, u.r)) scoutHutCollected = true;
               }
+              // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: runScoutsAutoExplore filtruje
+              // wewnętrznie do playerOwnerId (0) -- `u` jest zawsze graczem, nigdy
+              // barbarzyńcą. / EN: runScoutsAutoExplore filters internally to
+              // playerOwnerId (0) -- `u` is always the player, never a barbarian.
+              checkBarbCampDestroyedAt(u.q, u.r);
               if (applyCityVisitBonusesAtHex(u, u.q, u.r, u.ownerId === 0)) {
                 syncUnitsRender();
               }
@@ -22666,7 +23259,16 @@ async function boot(): Promise<void> {
               // reconcileOwnerResourceCaps w tej samej turze, więc nadwyżka i tak zostałaby
               // ścięta na końcu ticku; cap dołożony tu defensywnie (spójnie z resztą), żeby
               // nie polegać na kolejności wywołań w przyszłych zmianach.
-              const tradeFlowCap = ownerResourceCap(cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty);
+              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka ODBIORCY (flow.toOwnerId
+              // -- ten sam ownerId co creditOwnerResourceStock niżej) -- bez tego cap byłby
+              // zaniżony od epoki 2 wzwyż i surowiec mógłby zniknąć zamiast dotrzeć do odbiorcy.
+              // EN: RECEIVER's (flow.toOwnerId, same ownerId as creditOwnerResourceStock below)
+              // epoch -- otherwise the cap would be too low from epoch 2 onward and the resource
+              // could vanish instead of reaching the recipient.
+              const tradeFlowCap = ownerResourceCap(
+                cities, cityBuilt, flow.toOwnerId, data, _menuDifficulty,
+                empireEpochForOwner(flow.toOwnerId),
+              );
               creditOwnerResourceStock(cities, flow.toOwnerId, flow.resourceKey, flow.amount, tradeFlowCap);
             }
           } catch (eTradeFlow) {
@@ -22844,8 +23446,12 @@ async function boot(): Promise<void> {
               }
             }
 
+            // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): empireEpochForOwner (8. arg) --
+            // ten sam resolver PARYTETU AI uzywany wszedzie indziej -- skaluje wklad Spichlerza
+            // I/II do centralnego capu zywnosci co epoke wlasciciela.
             lastEfTickResult = advanceEmpireFood(
               econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
+              empireEpochForOwner,
             );
             // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 1, runda 5 Evaluatora): `advanceEmpireFood`
             // zapisuje `st.zapasyPanstwa = central` (empire-food.ts) -- to koniec-tury zmiana
@@ -22987,7 +23593,14 @@ async function boot(): Promise<void> {
               // więc bez capu kilka równoległych wyrębów windowało Drewno ponad limit
               // magazynu bez ograniczenia — cap liczony identycznie jak w
               // tickEmpireResourcePipeline / buildEmpireResourceRows (ownerResourceCap).
-              const drewnoCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
+              // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): epoka WŁAŚCICIELA jednostki
+              // wyrąbującej (ownerId = st.ownerId) -- bez tego cap byłby zaniżony od epoki 2
+              // wzwyż i plon wyrębu mógłby nie dać nic.
+              // EN: epoch of the CLEARING unit's owner (ownerId = st.ownerId) -- otherwise the
+              // cap would be too low from epoch 2 onward and forest clearing could yield nothing.
+              const drewnoCap = ownerResourceCap(
+                cities, cityBuilt, ownerId, data, _menuDifficulty, empireEpochForOwner(ownerId),
+              );
               creditOwnerResourceStock(cities, ownerId, 'drewno', drewnoCredit, drewnoCap);
               showHintMessage(
                 'Wyrąb: +' + drewnoCredit + ' Drewna (pozostało ' + st.turnsLeft + ' tury)',
@@ -23149,6 +23762,11 @@ async function boot(): Promise<void> {
             _lastBogactwoUtrzymanieJednostek = playerBalance?.utrzymanieJednostki ?? 0;
             _lastBogactwoUtrzymanieSurowcow = { ...(econ.resourceUpkeepByOwner.get(0) ?? {}) };
             _lastBogactwoRate = pieniadzGracza - (playerBalance?.utrzymanieRazem ?? 0);
+            // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: publikuj rozbicie budynki/wojsko WPROST z
+            // silnika (panel Surowców „Zobacz szczegóły") — ta sama tura, te same rekordy co
+            // powyżej (resourceUpkeepByOwner), tylko przed scaleniem (turn-economy.ts).
+            buildingResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepBuildingsByOwner.get(0) ?? {}) });
+            unitResourceUpkeepByOwner.set(0, { ...(econ.resourceUpkeepUnitsByOwner.get(0) ?? {}) });
 
             // Bank skarbca AI — per owner (nie econ.total*)
             const aiOwnerIds = new Set<number>();
@@ -23166,6 +23784,10 @@ async function boot(): Promise<void> {
               if (aiResUpkeep && Object.keys(aiResUpkeep).length > 0) {
                 deductBuildingStockCostAcrossCities(cities, oid, aiResUpkeep);
               }
+              // P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA: parytet gracz/AI — publikuj rozbicie dla
+              // KAŻDEGO ownera (nie tylko gracz=0), ten sam wzorzec co linia wyżej.
+              buildingResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepBuildingsByOwner.get(oid) ?? {}) });
+              unitResourceUpkeepByOwner.set(oid, { ...(econ.resourceUpkeepUnitsByOwner.get(oid) ?? {}) });
               // R-DEFICYT-ZLOTA-KARA-Q1 (PARYTET AI): NIE podłogować do 0 tutaj —
               // gracz (player.skarbiec -= utrzymanieRazem, wyżej) też może zejść
               // poniżej zera w tym samym bankowaniu tury; ownerTreasury(oid)<0 jest
@@ -23350,11 +23972,14 @@ async function boot(): Promise<void> {
             // ownerId-agnostyczne, dotyczy gracza, dużej AI i Państw-Miast jednakowo (ECHO Q2=A).
             const citizenUpkeepEmpireStock = makeOwnerEmpireStockResolver();
             // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): realny drenaż magazynu,
-            // 1 szt. surowca na 1 obywatela na turę. Liczony RAZ per owner per turę (suma
-            // populacji WSZYSTKICH miast tego ownera -- computeCitizenResourceDrain wymaga
-            // tego, inaczej kilka miast tego samego ownera wydrenowałoby ten sam magazyn
-            // wielokrotnie), potem cache'owany i zastosowany identycznie do każdego miasta
-            // tego ownera (ten sam wzorzec cache'owania co citizenUpkeepEmpireStock powyżej).
+            // stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN szt. surowca na 1 obywatela na turę
+            // (kanon: citizen-resource-upkeep.ts -- wartość NIE powtórzona tu jako liczba,
+            // żeby komentarz nie starzał się przy kolejnych zmianach stawki). Liczony RAZ per
+            // owner per turę (suma populacji WSZYSTKICH miast tego ownera --
+            // computeCitizenResourceDrain wymaga tego, inaczej kilka miast tego samego ownera
+            // wydrenowałoby ten sam magazyn wielokrotnie), potem cache'owany i zastosowany
+            // identycznie do każdego miasta tego ownera (ten sam wzorzec cache'owania co
+            // citizenUpkeepEmpireStock powyżej).
             const citizenUpkeepDrainCache = new Map<number, ReturnType<typeof computeCitizenResourceDrain>>();
             const citizenUpkeepDrainForOwner = (ownerId: number): ReturnType<typeof computeCitizenResourceDrain> => {
               let v = citizenUpkeepDrainCache.get(ownerId);
@@ -23556,7 +24181,8 @@ async function boot(): Promise<void> {
               const ownerEraForUpkeep = empireEpochForOwner(city.ownerId);
               // R-ZUZYCIE-SUROWCOW-OBYWATELE: ownerId-agnostyczne — dotyczy gracza, dużej AI
               // i Państw-Miast jednakowo (ECHO Q2=A), magazyn CENTRALNY, nie lokalny (ECHO Q1).
-              // N2 (2026-08-11): realny drenaż (1 szt./obywatel), nie tylko podgląd obecności —
+              // N2 (2026-08-11): realny drenaż (stawka CITIZEN_UPKEEP_RATE_PER_CITIZEN
+              // szt./obywatel, citizen-resource-upkeep.ts), nie tylko podgląd obecności —
               // citizenUpkeepDrainForOwner cache'uje i mutuje magazyn RAZ per owner per turę.
               const citizenUpkeep = citizenUpkeepDrainForOwner(city.ownerId);
 
@@ -23882,8 +24508,9 @@ async function boot(): Promise<void> {
               // R-ZUZYCIE-SUROWCOW-OBYWATELE N2 (Maciej 2026-08-11): kara Rozwoju (%) per
               // miasto — czytana z tego samego cityOrderState (już policzona w pętli Porządku
               // wyżej). `st.citizenUpkeep` to TERAZ wynik REALNEGO drenażu magazynu
-              // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain, 1 szt.
-              // surowca/obywatela/turę, cache'owany RAZ per owner per turę), nie sam podgląd
+              // (citizenUpkeepDrainForOwner / computeCitizenResourceDrain, stawka
+              // CITIZEN_UPKEEP_RATE_PER_CITIZEN szt. surowca/obywatela/turę — patrz kanon w
+              // citizen-resource-upkeep.ts, cache'owany RAZ per owner per turę), nie sam podgląd
               // obecności surowca w magazynie jak przed N2.
               // EN: `st.citizenUpkeep` now comes from the REAL drain
               // (citizenUpkeepDrainForOwner), not the old presence-only preview.
@@ -25201,6 +25828,19 @@ async function boot(): Promise<void> {
                     u.ruchLeft = 0;
                     // TEMAT #15: AI z Żeglugą też się (dez)okrętowuje wg terenu.
                     applyEmbarkStateAfterMove([u], map);
+                    // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: symetria z ruchem gracza --
+                    // `ownerId` tu to zawsze prawdziwa cywilizacja AI (1..N), nigdy
+                    // barbarzyńcy (ci mają własną pętlę ruchu niżej, poza AICommand).
+                    // / EN: symmetry with player movement -- `ownerId` here is always
+                    // a real AI civilization (1..N), never barbarians (they have
+                    // their own movement loop below, outside AICommand).
+                    // P-BARBARZYNCY-AI-CALA-TRASA-Q1: parytet z ruchem gracza (linia ~18569) --
+                    // sprawdzaj CAŁĄ trasę (Dijkstra z computePath), nie tylko ostatni heks,
+                    // bo AI "teleportuje się" na `last` z ruchLeft=0 i mija po drodze obozy.
+                    // / EN: parity with player movement (line ~18569) -- check the WHOLE
+                    // path (Dijkstra from computePath), not just the last hex, since AI
+                    // "teleports" to `last` with ruchLeft=0 and passes camps along the way.
+                    checkBarbCampDestructionAlongPath(path);
                     if (applyCityVisitBonusesAlongPath([u], path, false)) {
                       syncUnitsRender();
                     }
@@ -25722,6 +26362,58 @@ async function boot(): Promise<void> {
               }
             }
 
+            // P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1=A: miasta przejęte przez barbarzyńców
+            // (temat 7 tego batcha, ownerId===BARBARIAN_OWNER_ID) produkują -- WYŁĄCZNIE
+            // jednostki wojskowe, NIGDY budynki/ulepszenia -- przez osobny, darmowy mechanizm
+            // (tickBarbarianCityGarrisons, ten sam wzorzec cooldown co BarbCamp/tickCamps),
+            // NIE przez cityProd/kolejkę Pracy (patrz komentarz przy City.
+            // barbGarrisonSpawnCooldown, cities.ts, o architekturalnym powodzie: jednostki są
+            // kupowane za Pieniądz, barbarzyńcy strukturalnie nie mają skarbca/Manpower/puli
+            // surowców -- spięcie z purchaseRecruitmentUnit wymagałoby wynalezienia gospodarki
+            // barbarzyńskiej, decyzja bilansu poza zakresem tego zlecenia). Wołane PO pętli
+            // spawnu obozów wyżej, żeby `units` już zawierał tegoroczne spawny obozowe --
+            // `occupied` liczony wewnątrz tickBarbarianCityGarrisons z `units` unika kolizji
+            // heksu spawnu z jednostką, która właśnie powstała z obozu w TYM SAMYM ticku.
+            // / EN: cities captured by barbarians (topic 7 of this batch,
+            // ownerId===BARBARIAN_OWNER_ID) produce -- ONLY military units, NEVER buildings/
+            // improvements -- via a separate, free mechanism (tickBarbarianCityGarrisons,
+            // same cooldown pattern as BarbCamp/tickCamps), NOT via cityProd/the Praca queue
+            // (see the comment on City.barbGarrisonSpawnCooldown, cities.ts, for the
+            // architectural reason: units are purchased with money, barbarians structurally
+            // have no treasury/Manpower/resource pool -- wiring into
+            // purchaseRecruitmentUnit would require inventing a barbarian economy, a balance
+            // decision out of scope for this task). Called AFTER the camp-spawn loop above so
+            // `units` already contains this turn's camp spawns -- the `occupied` set built
+            // inside tickBarbarianCityGarrisons from `units` avoids a spawn-hex collision with
+            // a unit that just came from a camp in the SAME tick.
+            const barbCitiesNow = cities.filter(c => isBarbarian(c.ownerId));
+            if (barbCitiesNow.length > 0) {
+              const barbUnitsForGarrisonTick = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
+              const garrisonTick = tickBarbarianCityGarrisons(
+                barbCitiesNow, barbUnitsForGarrisonTick, units, map, barbLiveForSpawn,
+              );
+              for (const [cid, cd] of garrisonTick.cooldowns) {
+                const gc = cities.find(x => x.id === cid);
+                if (gc) gc.barbGarrisonSpawnCooldown = cd;
+              }
+              for (const gspawn of garrisonTick.spawns) {
+                const gdef = (data.units as any[]).find((u: any) => u['Jednostka'] === gspawn.typeId);
+                const gruch = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
+                const newGarrisonUnit: BarbUnit = {
+                  id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + Math.random().toString(36).slice(2),
+                  ownerId: BARBARIAN_OWNER_ID,
+                  typeId: gspawn.typeId,
+                  category: 'wojownik',
+                  q: gspawn.q,
+                  r: gspawn.r,
+                  ruch: gruch,
+                  ruchLeft: 0,
+                };
+                units.push(newGarrisonUnit);
+                console.log(`[Barbarzyncy] Miasto ${gspawn.cityId}: spawn ${gspawn.typeId} @ (${gspawn.q},${gspawn.r})`);
+              }
+            }
+
             // Move barbarian units.
             // TEMAT #15: rajderzy Ludów Morza (seaRaider/zaokrętowani) mają
             // własną logikę rajdową; reszta = klasyczna logika lądowa.
@@ -25737,8 +26429,16 @@ async function boot(): Promise<void> {
             // egzekwowany regułą, nie wyjątkiem.
             const barbCanEngageOwner = (targetOwnerId: number): boolean =>
               getDiploRelation(BARBARIAN_OWNER_ID, targetOwnerId).status === 'wojna';
+            // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A: trzy poziomy trudności barbarzyńców =
+            // ISTNIEJĄCY suwak gry (_menuDifficulty), nie nowe ustawienie -- patrz komentarz
+            // `difficulty` przy decideBarbarianMoves (barbarians.ts).
+            // P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B: `turn` przekazany, żeby limit
+            // tur pościgu osieroconej jednostki (orphanedAtTurn/orphanedChaseTurnLimit)
+            // liczył od PRAWDZIWEJ tury gry, nie od domyślnego 0 (patrz komentarz `turn`
+            // przy sygnaturze funkcji).
             const barbCmds = decideBarbarianMoves(
               landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive, barbCanEngageOwner,
+              _menuDifficulty, turn,
             );
             if (seaBarbs.length > 0) {
               const raidTargets = collectSeaRaidTargets(map);
@@ -25750,17 +26450,58 @@ async function boot(): Promise<void> {
             // SFX marsz — barbarzyńcy: ta sama logika co AI wyżej (jednorazowy
             // akcent, widoczność liczona raz dla całego ticku barbarzyńców).
             const barbVisNow = fogOn ? currentVisible() : null;
+            // P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B: policzone RAZ dla całego ticku
+            // (identyczna wartość w gałęzi `move` niżej i w gałęzi `attack` dalej) --
+            // hard: barbarzyńca może wejść na heks PUSTEGO (bez obrońców) obcego miasta
+            // i przejąć je (RUNDA badawcza tej sesji ustaliła: main.ts:tryAutoCaptureEmptyCityAt
+            // istniała już OGÓLNIE, ale gałąź `move` barbarzyńców nigdy jej nie wołała --
+            // canUnitOccupyCityHex blokowała WEJŚCIE na obcy heks miasta bezwarunkowo,
+            // więc dla pustego miasta nie było ŻADNEJ ścieżki do przejęcia, tylko attack
+            // na broniącą jednostkę -- patrz zaktualizowany komentarz `difficulty` przy
+            // decideBarbarianMoves, barbarians.ts). easy/normal: bez zmian (miasto puste =
+            // barbarzyńca nie wchodzi, dokładnie jak dziś).
+            // / EN: computed ONCE for the whole tick (identical value in the `move` branch
+            // below and the `attack` branch further down) -- hard: a barbarian may enter
+            // the hex of an EMPTY (undefended) foreign city and capture it (this session's
+            // research round established: main.ts's tryAutoCaptureEmptyCityAt already
+            // existed GENERICALLY, but the barbarian `move` branch never called it --
+            // canUnitOccupyCityHex unconditionally blocked entry onto a foreign city hex,
+            // so an undefended city had NO capture path at all, only an attack on a
+            // defending unit -- see the updated `difficulty` comment on
+            // decideBarbarianMoves, barbarians.ts). easy/normal: unchanged (an empty city
+            // still blocks barbarian entry, exactly as today).
+            const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
             for (const bcmd of barbCmds) {
               try {
                 const bu = units.find(u => u.id === bcmd.unitId);
                 if (!bu) continue;
                 if (bcmd.type === 'move') {
-                  if (!canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
+                  // P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B: gdy cel to obce miasto BEZ
+                  // obrońców (canCaptureCityWithoutBattle) i trudność hard -- wejście
+                  // dozwolone mimo że canUnitOccupyCityHex normalnie by je zablokowało
+                  // (ownerId nie pasuje). Miasto broniony (canCaptureCityWithoutBattle
+                  // false) -- bez zmian: bramka blokuje jak dotychczas, walka idzie
+                  // wyłącznie przez komendę `attack` (krok 2 decideBarbarianMoves).
+                  // RUNDA 3 (Evaluator A, U1): CAŁA koniunkcja (włącznie z bramką
+                  // trudności) wyciągnięta do canBarbarianWalkIntoEmptyCity (barbarians.ts)
+                  // -- main.ts tylko woła w miejscu użycia, bramka trudności jest teraz
+                  // chroniona mutacyjnie przez REALNE wykonanie testu na tej funkcji.
+                  const moveDestCity = cities.find(c => c.q === bcmd.toQ && c.r === bcmd.toR);
+                  const barbCanWalkIntoEmptyCity =
+                    canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty);
+                  if (!barbCanWalkIntoEmptyCity
+                      && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
                   bu.q = bcmd.toQ;
                   bu.r = bcmd.toR;
                   bu.ruchLeft = 0;
                   // TEMAT #15: woda -> zaokrętowanie, ląd -> desant.
                   applyEmbarkStateAfterMove([bu], map);
+                  if (barbCanWalkIntoEmptyCity) {
+                    // tryAutoCaptureEmptyCityAt no-opuje (zwraca false) dla własnego
+                    // miasta barbarzyńcy (city.ownerId===anchor.ownerId) -- bezpieczne
+                    // wołanie nawet gdy moveDestCity jest już barbarzyńska.
+                    tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]);
+                  }
                   if (sfxUnitsEnabled && (barbVisNow === null || barbVisNow.has(keyOf(bcmd.toQ, bcmd.toR)))) {
                     playMarchAccent(1);
                   }
@@ -25791,6 +26532,18 @@ async function boot(): Promise<void> {
                   const hexObj2 = map.hexes[hexKey2];
                   const teren2: string = hexObj2 ? (hexObj2.terenBazowy as string) : 'Rownina';
                   const structBonusBarb = structureDefenseBonusFor(target.q, target.r);
+                  // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A (ECHO, Maciej 2026-08-12): capture
+                  // miasta przez atak barbarzyński WYŁĄCZNIE na trudności hard -- reużywa
+                  // istniejącej ścieżki allowCityCapture z applyMapBattleOutcome (samą decyzję
+                  // "czy to naprawdę miasto oczyszczone z obrońców do zera" podejmuje ta
+                  // funkcja PO rozstrzygnięciu walki, patrz barbCaptureBlockedByRemainingDefenders
+                  // tamże). easy/normal: allowCityCapture=false -- zero zmian względem
+                  // dotychczasowego zachowania (miasto NIE zmienia właściciela).
+                  // RUNDA 2 (Evaluator, punkt 5): decyzja wyciągnięta do czystej, testowalnej
+                  // shouldAllowBarbCityCapture (barbarians.ts) -- main.ts tylko woła.
+                  // P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B: `barbAllowCityCapture` teraz
+                  // policzone RAZ przed pętlą `for (const bcmd of barbCmds)` (patrz wyżej) --
+                  // ta gałąź `attack` go tylko UŻYWA, nie deklaruje powtórnie.
                   if (defRoster.some(u => u.ownerId === 0)) {
                     launchIncomingMapFieldBattle(
                       atkRoster,
@@ -25802,6 +26555,7 @@ async function boot(): Promise<void> {
                       'Atak barbarzyńców',
                       () => { /* reszta tury już poszła — tylko odśwież mapę */ },
                       worldTerrainFromHex(hexObj2),
+                      barbAllowCityCapture,
                     );
                     continue;
                   }
@@ -25812,6 +26566,8 @@ async function boot(): Promise<void> {
                     target.r,
                     teren2,
                     structBonusBarb,
+                    undefined,
+                    barbAllowCityCapture,
                   );
                 }
               } catch (eBarbCmd) {
@@ -26175,24 +26931,32 @@ async function boot(): Promise<void> {
 
           // GRAFIKA-TEREN-2 / WIOSKI: jednostka gracza kończy ruch na wiosce -> nagroda + znika.
           // Najpierw chatka (własny refreshFog ze skip), potem mgła tylko gdy bez chatki.
+          // P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1: `u` jest zawsze jednostką gracza
+          // (jedyne miejsce ustawiające `anim` to startAnimatedMove/playerStackAt) --
+          // nigdy barbarzyńcą, więc bez isBarbarian. / EN: `u` is always the player's
+          // own unit (the sole `anim` assignment site is startAnimatedMove/
+          // playerStackAt) -- never a barbarian, so no isBarbarian check.
           let hutCollected = false;
+          let campDestroyed = false;
           if (u) {
             if (pathHexes.length > 0) {
               if (u.ownerId === 0) hutCollected = checkVillageRewardsAlongPath(pathHexes);
+              campDestroyed = checkBarbCampDestructionAlongPath(pathHexes);
               const bonusChanged = applyCityVisitBonusesAlongPath(
                 stack,
                 pathHexes,
                 u.ownerId === 0,
               );
               if (bonusChanged) syncUnitsRender();
-            } else if (u.ownerId === 0) {
-              hutCollected = checkVillageRewardAt(destQ, destR);
-              if (applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
+            } else {
+              if (u.ownerId === 0) hutCollected = checkVillageRewardAt(destQ, destR);
+              campDestroyed = checkBarbCampDestroyedAt(destQ, destR);
+              if (u.ownerId === 0 && applyCityVisitBonusesAtHex(u, destQ, destR, true)) {
                 syncUnitsRender();
               }
             }
           }
-          if (!hutCollected) refreshFog();
+          if (!hutCollected && !campDestroyed) refreshFog();
 
           if (u) tryAutoCaptureEmptyCityAt(destQ, destR, stack);
           promptMergeIfCoLocated(
@@ -27005,6 +27769,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27037,7 +27803,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
 
       await postSceneProgress(loading, 'plan klastra startowego', 7, POST_SCENE_STEPS);
@@ -27274,6 +28040,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27294,7 +28062,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
       refreshBuildApi();
       overlayDepositEra = player.era;
@@ -27520,6 +28288,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27541,7 +28311,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
 
       cityBuilt.set(preset.playerCityId, ['koszary']);
@@ -27744,6 +28514,8 @@ async function boot(): Promise<void> {
       wonderBuildSites = [];
       cityOrderState.clear();
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       orderMultMap.clear();
       orderValueMap.clear();
       growthMultMap.clear();
@@ -27765,7 +28537,7 @@ async function boot(): Promise<void> {
       placedImprovements.clear();
       clearAllHexClearing();
       pendingImprovementsTurn = new PendingImprovementsTurn();
-      for (const mesh of improvementMeshes.values()) scene.remove(mesh);
+      for (const mesh of improvementMeshes.values()) { scene.remove(mesh); disposeMergedDecor(mesh); }
       improvementMeshes.clear();
 
       cityBuilt.set(preset.playerCityId, ['koszary', 'spichlerz']);
@@ -28017,6 +28789,18 @@ async function boot(): Promise<void> {
         _gameSeed = saved.seed;
       }
       turn = saved.tura;
+      // Backlog "cityOrderState nieczyszczone w restoreGameFromSave" (Evaluator rundy 4
+      // R-ZUZYCIE-SUROWCOW-OBYWATELE N1, PYTANIA-OTWARTE.md): bez tego czyszczenia panel
+      // miasta (cityPanel.ts, resolveOrderState) po wczytaniu zapisu mógł pokazać OrderState
+      // (szczęście/porządek/bandLabel/...) Z POPRZEDNIEJ GRY tej samej sesji przeglądarki,
+      // dopóki pętla Porządku nie przeliczy od nowa (1 tura) -- analogiczny bug do naprawionego
+      // niżej dla citizenUpkeepByOwner, ten sam mechanizm (mapa lokalna dla `boot()`, klucz
+      // miasta niemal zawsze już istniał w mapie z poprzedniej gry).
+      // / EN: without this clear, the city panel (cityPanel.ts, resolveOrderState) after
+      // loading a save could show OrderState (happiness/order/bandLabel/...) from a PREVIOUS
+      // game of the same browser session until the Order loop recomputes (1 turn) -- same class
+      // of bug as citizenUpkeepByOwner fixed below.
+      cityOrderState.clear();
       // R-ZUZYCIE-SUROWCOW-OBYWATELE N1 runda 5 (Evaluator 2026-08-11): bez tego czyszczenia
       // panel Surowców po wczytaniu zapisu pokazywał werdykt Z POPRZEDNIEJ GRY tej samej sesji
       // przeglądarki (klucz ownerId=0 niemal zawsze już istniał w mapie) -- cudza epoka/
@@ -28025,6 +28809,8 @@ async function boot(): Promise<void> {
       // wystarcza -- fallback computeCitizenResourceDrain przejmie na wczytanym stanie do
       // czasu pierwszego ticku silnika.
       citizenUpkeepByOwner.clear();
+      buildingResourceUpkeepByOwner.clear();
+      unitResourceUpkeepByOwner.clear();
       units.length = 0;
       for (const u of saved.units) units.push(u);
       plannedMarches.clear();
@@ -28198,6 +28984,22 @@ async function boot(): Promise<void> {
       // Odtworz z zapisu; brak pola (stary zapis) = reset do pustej tablicy.
       const savedBarbCamps = saved.meta?.barbCamps as BarbCamp[] | undefined;
       barbCamps = Array.isArray(savedBarbCamps) ? savedBarbCamps.slice() : [];
+      // P-BARBARZYNCY-LOAD-REKONCYLIACJA-Q1: zapis mógł powstać PRZED hakiem
+      // niszczącym obozy (stary zapis) albo przez lukę w onSplit sprzed jej
+      // naprawy -- w obu przypadkach mógł legalnie zawierać jednostkę
+      // cywilizacji stojącą na heksie ŻYWEGO obozu. Bez tej rekoncyliacji
+      // taki obóz żyje wiecznie po wczytaniu i dalej spawnuje jednostki pod
+      // stojącą na nim jednostką. `units` jest już odtworzone wyżej (linia
+      // ~28444), więc kolejność jest bezpieczna.
+      // / EN: the save may predate the camp-destruction hook (old save) or
+      // come from the onSplit gap before its fix -- either way it may
+      // legally contain a civilization unit standing on a LIVING camp's hex.
+      // Without this reconciliation such a camp lives forever after load and
+      // keeps spawning units underneath the unit standing on it. `units` is
+      // already restored above (line ~28444), so the ordering is safe.
+      for (const u of units) {
+        if (!isBarbarian(u.ownerId)) checkBarbCampDestroyedAt(u.q, u.r);
+      }
       // Audyt #43: cityRelig/autoManageCities nie byly ani zapisywane, ani
       // czyszczone przy load -- id 'cityN' koliduja miedzy rozgrywkami, wiec
       // bez tego nowe miasto dziedziczylo zombie stan z poprzedniej gry/sejwu.
@@ -28571,7 +29373,31 @@ async function boot(): Promise<void> {
     // definicja wyżej) -- odpalone tu, żeby był gotowy zanim gracz zdąży
     // otworzyć menu główne/pauzy (stale-while-revalidate poniżej i tak by go
     // ostatecznie uzupełnił, ale to dodatkowo skraca okno "jeszcze nie wiem").
-    void refreshHasAnySaveSlotCache();
+    //
+    // P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE (Evaluator, 2026-08-12): menu startowe
+    // buduje się PONIŻEJ w TYM SAMYM synchronicznym ticku (openStartupMainMenu()),
+    // więc odczyt IndexedDB (async) nie zdążył się rozwiązać -- mainMenu.build()
+    // czyta hasSave() RAZ i zawsze widzi cachedHasAnySaveSlot === false: przyciski
+    // "Kontynuuj"/"Wczytaj grę" wychodzą trwale wyszarzone (btn() w mainMenu.ts
+    // w ogóle nie podpina handlera kliknięcia, gdy enabled=false przy budowie --
+    // menu się samo nie naprawia). Naprawa: gdy cache się rozwiąże, przebuduj
+    // menu główne (jeśli gracz wciąż na nim stoi) i odśwież stan przycisku
+    // "Wczytaj grę" w menu pauzy (no-op, gdy menu pauzy zamknięte -- funkcja
+    // sama to sprawdza).
+    // / EN: P-INDEXEDDB-MENU-KONTYNUUJ-MARTWE (Evaluator, 2026-08-12): the
+    // startup menu builds BELOW in the SAME synchronous tick
+    // (openStartupMainMenu()), so the async IndexedDB read hasn't resolved yet --
+    // mainMenu.build() reads hasSave() ONCE and always sees
+    // cachedHasAnySaveSlot === false: the "Continue"/"Load game" buttons come
+    // up permanently greyed out (btn() in mainMenu.ts doesn't even attach a
+    // click handler when enabled=false at build time -- the menu doesn't
+    // self-heal). Fix: once the cache resolves, rebuild the main menu (if the
+    // player is still on it) and refresh the pause menu's "Load game" button
+    // state (no-op when the pause menu is closed -- the function checks itself).
+    void refreshHasAnySaveSlotCache().then(() => {
+      if (isMainMenuOpen()) showMainMenu();
+      refreshGamePauseMenuLoadState();
+    });
 
     if (demoUlepszeniaUrl) {
       void (async () => { await doStartPlaytestMapaSwiata(); seedDemoUlepszenia(); })();

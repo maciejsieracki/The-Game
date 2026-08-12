@@ -480,9 +480,23 @@ export function builtIdsForSpichlerzYields(
   return out;
 }
 
-/** Cap zapasów armii 🍞 per miasto — U-22B, stare reguły empire-food.ts. */
-export const SPICHLERZ_EMPIRE_CAP_I = 100;
-export const SPICHLERZ_EMPIRE_CAP_II_FULL = 150;
+/**
+ * Cap zapasów armii 🍞 per miasto — U-22B, stare reguły empire-food.ts.
+ * P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): wartości BAZOWE dla epoki 1
+ * (Kamień), podniesione 100/150→1000/1500 -- dosłowny cytat właściciela „dla
+ * magazynów, które wybudujemy w mieście zwiększ przepustowość z 100 i 150 na
+ * 1000 i 1500" (potwierdzone grepem: to JEDYNA para wartości 100/150 w całym
+ * mechanizmie magazynów -- patrz komentarz „Spichlerze lokalne +100/+150,
+ * Magazyn +100" przy magazyn_centralny_baza_zywnosc w econ-params.json). Od
+ * epoki 2 wzwyż PODWAJAJĄ SIĘ co epokę CYWILIZACJI WŁAŚCICIELA (epoka2=2000/3000,
+ * epoka3=4000/6000) przez empire-food.ts::computeCentralFoodCap ×
+ * economy-upkeep.ts::magazynEraMultiplier -- te stałe zostają FLAT (era1), tak
+ * jak throughputFallback w converters.ts (P-KONWERTERY-PRZEPUSTOWOSC-Q1).
+ * / EN: era-1 (Stone) BASE values, raised 100/150→1000/1500 per the owner's
+ * literal request; double every era of the OWNING civilization from era 2 on.
+ */
+export const SPICHLERZ_EMPIRE_CAP_I = 1000;
+export const SPICHLERZ_EMPIRE_CAP_II_FULL = 1500;
 
 /**
  * U-10B: mnożnik kosztu żywności jednostki (nakładany na wynik unitFoodPerTurn).

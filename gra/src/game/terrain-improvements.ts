@@ -131,10 +131,12 @@ export function applyImprovementBonuses(yld: TileYield, improvementKeys: readonl
 // workedTiles (BEZ ZMIAN).
 //
 // Stawki: pole "surowiec_ilosc_tura" w terrain-improvements.json per ulepszenie.
-// Wartosci REALNE (terrain-improvements.json; korekta balansu Maciej 2026-08-09):
-//   Tartak->drewno 4 · Glinianka->glina 4 · Kamieniolom->kamien 4 (wyrownanie do
-//   kamieniolomu, bylo Tartak 10 / Glinianka 15 przed 2026-08-09) ·
-//   Kopalnia miedzi->ruda 2 · Kopalnia (zloze zelaza)->ruda_zelaza 2.
+// Wartosci REALNE (terrain-improvements.json; korekta balansu Maciej 2026-08-12,
+// R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1, ZASTEPUJE korekte 2026-08-09 nizej):
+//   Tartak->drewno 10 · Glinianka->glina 10 · Kamieniolom->kamien 10 ·
+//   Kopalnia miedzi->ruda 4 · Kopalnia (zloze zelaza)->ruda_zelaza 4.
+// EN: rates above are current as of 2026-08-12 (R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1);
+// see terrain-improvements.json surowiec_ilosc_tura per improvement for source of truth.
 // Domyslny fallback (gdy pole nieobecne w JSON) = 2/ture -- czysto bezpieczenstwo,
 // nie stawka docelowa; do dalszego strojenia w panelu Excel jesli potrzeba.
 // ---------------------------------------------------------------------------
@@ -183,8 +185,21 @@ export function territoryResourceYieldForImprovement(
     case 'kopalnia_miedzi': return { resourceKey: 'ruda',   amount: territoryYieldAmountForKey(norm) };
     case 'kopalnia_zelaza': return { resourceKey: 'ruda_zelaza', amount: territoryYieldAmountForKey(norm) };
     case 'warzelnia_soli':  return { resourceKey: 'sol',    amount: territoryYieldAmountForKey(norm) };
-    case 'stadnina':        return { resourceKey: 'kon',    amount: 1 }; // PYTANIE-84-B3
-    case 'kopalnia_zlota':  return { resourceKey: 'zloto',  amount: 1 }; // PYTANIE-84-B4
+    // R-ZUZYCIE-SUROWCOW-OBYWATELE-PROD-Q1 (Maciej 2026-08-12): stawka teraz czytana z JSON
+    // (surowiec_ilosc_tura), tak jak pozostale ulepszenia produkcyjne — wczesniej byla
+    // zahardkodowana na 1 i ignorowala korekty balansu w danych.
+    // EN: rate now read from JSON (surowiec_ilosc_tura), like the other production
+    // improvements — previously hardcoded to 1 and ignoring data balance corrections.
+    case 'stadnina':        return { resourceKey: 'kon',    amount: territoryYieldAmountForKey(norm) }; // PYTANIE-84-B3
+    // N1 (Maciej 2026-08-12, dispatch po ecbddda8): stawka teraz czytana z JSON
+    // (surowiec_ilosc_tura), tak jak pozostale ulepszenia produkcyjne (w tym stadnina
+    // naprawiona w ecbddda8) — wczesniej byla zahardkodowana na 1, tak samo jak stadnina
+    // przed naprawa. Dzis wartosc w JSON = 1, wiec zachowanie w grze bez zmian (1→1).
+    // EN: rate now read from JSON (surowiec_ilosc_tura), like the other production
+    // improvements (including stadnina, fixed in ecbddda8) — previously hardcoded to 1,
+    // same as stadnina before its fix. Today's JSON value is 1, so in-game behavior is
+    // unchanged (1→1).
+    case 'kopalnia_zlota':  return { resourceKey: 'zloto',  amount: territoryYieldAmountForKey(norm) }; // PYTANIE-84-B4
     default: return null;
   }
 }
