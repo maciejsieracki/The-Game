@@ -883,6 +883,62 @@ function homeCampForUnit(
   return best;
 }
 
+/**
+ * P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU: obóz jest węzłem spawnu
+ * NIEZALEŻNYM od jednostek na mapie (patrz komentarz na górze pliku) -- bez
+ * tej funkcji garnizon mógł zginąć w walce, a obóz zostawał na mapie i dalej
+ * produkował kolejnych barbarzyńców. Warunek „zdobyty/zniszczony" jest
+ * analogiczny do zdobycia miasta: ostatni obrońca (żywy barbarzyńca lądowy
+ * macierzysty dla tego obozu) poległ -- węzeł przestaje istnieć.
+ *
+ * Sprawdza WYŁĄCZNIE obozy „podejrzane" (macierzyste dla `defeatedBarbUnits`
+ * -- jednostek, które poległy w TEJ walce), więc nigdy nie usuwa obozu, który
+ * po prostu jeszcze nie zdążył nikogo wystawić (garrison=0 z innego powodu
+ * niż porażka w walce, np. świeżo postawiony obóz albo cooldown w toku).
+ * Rajderzy Ludów Morza (seaRaider) są pomijani -- nie mają obozu-domu w tym
+ * sensie (SEA_WAVE_CAMP_ID to wirtualny obóz, nigdy nie trafia do `camps`).
+ *
+ * Czysta funkcja: nie mutuje `camps`, zwraca nową listę.
+ * / EN: a camp is a spawn node fully decoupled from map units (see the file
+ * header) -- without this hook, its garrison could be wiped out in combat
+ * while the camp stayed on the map and kept producing. "Captured/destroyed"
+ * mirrors city capture: once the last defender (a living land barbarian whose
+ * home is this camp) dies, the node stops existing. Only checks "suspect"
+ * camps (home camp of a unit that died in THIS battle), so it never removes a
+ * camp that simply hasn't spawned anyone yet. Sea Peoples raiders are skipped
+ * -- they have no land home camp in this sense. Pure: does not mutate `camps`.
+ *
+ * @param camps               Obozy PRZED usunięciem.
+ * @param defeatedBarbUnits   Jednostki barbarzyńskie poległe w TEJ bitwie (przed usunięciem z listy jednostek).
+ * @param survivingBarbUnits  WSZYSCY żywi barbarzyńcy PO tej bitwie (do przeliczenia garnizonu).
+ * @param campControlRadius   Ten sam promień co tickCamps/isCampRaidReady (params.campControlRadius).
+ * @returns nowa lista obozów (bez zniszczonych) + id usuniętych obozów (log/UI).
+ */
+export function pruneEmptyCampsAfterCombat(
+  camps: BarbCamp[],
+  defeatedBarbUnits: BarbUnit[],
+  survivingBarbUnits: BarbUnit[],
+  campControlRadius: number,
+): { camps: BarbCamp[]; removedCampIds: string[] } {
+  const suspectCampIds = new Set<string>();
+  for (const u of defeatedBarbUnits) {
+    if (u.seaRaider === true) continue;
+    const home = homeCampForUnit(u, camps, campControlRadius);
+    if (home !== undefined) suspectCampIds.add(home.id);
+  }
+  if (suspectCampIds.size === 0) return { camps: camps.slice(), removedCampIds: [] };
+
+  const removedCampIds: string[] = [];
+  const kept = camps.filter(c => {
+    if (!suspectCampIds.has(c.id)) return true;
+    const garrison = countCampGarrison(c, survivingBarbUnits, campControlRadius);
+    if (garrison > 0) return true;
+    removedCampIds.push(c.id);
+    return false;
+  });
+  return { camps: kept, removedCampIds };
+}
+
 // ---------------------------------------------------------------------------
 // Aggression / movement
 // ---------------------------------------------------------------------------

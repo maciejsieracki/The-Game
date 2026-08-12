@@ -1013,6 +1013,7 @@ import {
   BARBARIAN_OWNER_ID, isBarbarian,
   loadSeaBarbParams, spawnSeaPeoplesRaiders, purgeNavalCamps, decideSeaPeoplesRaids,
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
+  pruneEmptyCampsAfterCombat,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -20731,6 +20732,41 @@ async function boot(): Promise<void> {
         isUnitAt: isOccupiedHex,
         cityOnBattleHex: cityOnHex,
       });
+
+      // P-BARBARZYNCY-CHATA-NIE-ZNIKA-PO-ZDOBYCIU: obóz to węzeł spawnu
+      // NIEZALEŻNY od jednostek na mapie (barbarians.ts) -- bez tego haka
+      // garnizon mógł zginąć tutaj, a obóz zostawał i dalej produkował.
+      // Sprawdzone PO applyPostBattleMap (usuwa poległych z `units` in-place),
+      // więc "poległ" = był w atkRoster/defRoster PRZED walką, a teraz go w
+      // `units` nie ma -- działa identycznie dla auto-strat (lossAtkPct/
+      // lossDefPct) i dla ręcznej bitwy 3D (manualSurvivors), bo obie ścieżki
+      // mutują ten sam `units` przez splice.
+      // / EN: a camp is a spawn node fully decoupled from map units -- without
+      // this hook, its garrison could die here while the camp stayed and kept
+      // spawning. Checked AFTER applyPostBattleMap (removes casualties from
+      // `units` in place); "died" = was in atkRoster/defRoster before the
+      // battle and is now gone from `units` -- works identically for
+      // auto-loss and manual 3D-battle survivor paths, since both splice the
+      // same `units` array.
+      const barbRosterBeforeBattle = [...atkRoster, ...defRoster].filter(
+        u => isBarbarian(u.ownerId),
+      ) as BarbUnit[];
+      if (barbRosterBeforeBattle.length > 0) {
+        const defeatedBarbUnits = barbRosterBeforeBattle.filter(
+          u => !units.some(x => x.id === u.id),
+        );
+        if (defeatedBarbUnits.length > 0) {
+          const survivingBarbUnits = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
+          const pruned = pruneEmptyCampsAfterCombat(
+            barbCamps, defeatedBarbUnits, survivingBarbUnits, barbParams.campControlRadius,
+          );
+          if (pruned.removedCampIds.length > 0) {
+            barbCamps = pruned.camps;
+            console.log(`[Barbarzyncy] Obóz zniszczony (ostatni obrońca pokonany): ${pruned.removedCampIds.join(', ')}`);
+            refreshFog();
+          }
+        }
+      }
 
       let battleLoot: BattleLoot | null = null;
       if (mapWinner === 'atakujacy' || mapWinner === 'obronca') {
