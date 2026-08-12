@@ -15454,3 +15454,28 @@ niebędącej wielokrotnością 5 + pin stawki w dedykowanej bramce) + wszystkie 
 (panel/silnik, komentarze, `_opis`). **Bloker 1 (need=0→premia) WYŁĄCZONY z tej rundy — czeka na
 odpowiedź właściciela na pytanie ABC powyżej**, kod zostaje bez zmiany zachowania do tego czasu.
 
+
+## Fix fałszywej blokady PW przy uczciwej ofercie AI (76514613) — Evaluator: PASS-WITH-NOTES, naprawa U1 dispatchowana
+
+Werdykt: przesłanka commita potwierdzona (wszystkie 4 miejsca bramkowania PW rzeczywiście
+pomijały PW gdy proponuje AI), liczby z gry się zgadzają, zawężenie do kierunku `incoming`
+potwierdzone empirycznie (skan 15×6×21×2 kombinacji, 0 zmian w `own`), ochrona AI ZACHOWANA I
+WZMOCNIONA (40 przypadków realnego underpay przy Rel>100 zamkniętych). 5/8 mutacji złapanych.
+
+**U1 — regresja wprowadzona TYM commitem, do naprawy przed deployem.** Nowa etykieta kluczowana
+wyłącznie na `incoming && asymBalance<0`, IGNORUJE `relOk` (podczas gdy realne `accepted =
+relOk && balanceOk`) — etykieta zaprzecza faktycznemu stanowi. Przykład zmierzony: propozycja
+przychodząca poniżej progu Relacji pokazuje "[NO] saldo -195 — Propozycja partnera, możesz
+przyjąć bez dopłaty" mimo że silnik odrzuca z powodu Zaufania. Dotyczy KAŻDEJ przychodzącej
+propozycji poniżej progu Relacji (`sojusz_*`<151, `granice`<100, `nap`<50). Bramka `Przyjmij`
+nietknięta (błąd tylko w tekście), ale to ta sama klasa mylącego komunikatu co pierwotny bug.
+
+**STATUS: dispatch naprawy w toku** — zakres: (1) dodać `relOk &&` do warunku nowej etykiety;
+(2) dorzucić brakującą asercję U3 (`computeIncomingPlayerAcceptNetPw('umowa_handlowa', ...,
+140).netPw === -20`, dziś przechodzi mimo cofniętej połowy fixu — mutacja M5 niezłapana).
+
+**Zarejestrowane osobno (nowy temat, cicho, zasada §2):** U2 — lustrzana asymetria żyje dalej w
+kierunku `own` (gracz proponujący NAP/wasal przy Rel=61 widzi "Brakuje PW" mimo że silnik
+akceptuje, 7 przypadków) — świadomie poza zakresem tego commita, test wprost to utrwala jako
+"zachowanie niezmienione". Do przyszłej naprawy, osobny temat.
+
