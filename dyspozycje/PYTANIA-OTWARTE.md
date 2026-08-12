@@ -15122,3 +15122,37 @@ syntezie. Noty nieblokujące: nieaktualny komentarz K2 (mówi "PIĄTE miejsce", 
 nieścisły opis regexu H6b, cała rodzina K1-K3/H6/H6b to asercje strukturalne na tekście
 `main.ts` (nie behawioralne) — udokumentowana konwencja repo, akceptowalne. **ZAMKNIĘTE.**
 
+
+## Runda 4 miast barbarzyńców (59a87c74) — 3x Evaluator adwersarialny: A=FAIL, B=PASS-WITH-NOTES, C w toku
+
+**Evaluator A (lens: poprawność logiki) — WERDYKT: FAIL, realne znalezisko.** Warunek resetu
+`clearedCityIds` NIE odpowiada dokumentacji: reset odpala się wyłącznie gdy na planszy nie ma
+ANI JEDNEGO bronionego miasta (bo bronione miasto przechodzi filtr `filtered` bezwarunkowo,
+`filtered.length===0` liczy się względem tej listy, nie względem "wszystkich niebronionych" jak
+głosi komentarz PL+EN i treść commita). Na planszy mieszanej (bronione+niebronione, czyli
+realna gra z garnizonami) reset **nigdy nie zadziała** — dowód: scenariusz 40 tur, 0 zdarzeń
+resetu. Gorsze: gdy zbiór wyklucza wszystkie OSIĄGALNE niebronione miasta a `filtered` zostaje
+niepuste (bronione miasto nieosiągalne, np. za wodą) — jednostka **trwale zamiera** (dowód:
+11 ruchów vs 53 w kodzie rundy 3, 47 tur bezczynności z 60). Mutacja M8 (podmiana warunku na
+DOSŁOWNĄ semantykę z dokumentacji) przechodzi 127/127 — **żadna bramka nie odróżnia
+zaimplementowanego warunku od zadeklarowanego**, bo żaden test nie stawia miast bronionych i
+niebronionych razem na ścieżce resetu. Pozostałe elementy (zakres per-jednostka, serializacja
+Array-nie-Set, naprawa wady rundy 3 dla plansz jednorodnych, samo-wygasanie) zweryfikowane jako
+poprawne.
+
+**Evaluator B (lens: save/load) — PASS-WITH-NOTES** — potwierdził serializację/round-trip w
+pełni poprawne, save/load behawioralnie przezroczyste (40-turowy test z zapisem co turę
+identyczny z biegiem nieprzerwanym). Nie testował warunku resetu na planszy mieszanej (poza
+zakresem jego lensu) — stąd nie złapał F1/F2, co jest spójne z tym, że to inny wymiar problemu.
+
+**Evaluator C (lens: pokrycie mutacyjne)** — w toku.
+
+**STATUS: FAIL przeważa (1 z 3 Evaluatorów znalazł realny, dobrze udowodniony błąd logiki —
+niezgodność między dokumentacją a implementacją + nowa konfiguracja trwałego zamrożenia
+jednostki). Runda 5 dispatchowana zostanie po powrocie Evaluatora C, z zakresem: (1) rozstrzygnąć
+F1 decyzją — wdrożyć semantykę z dokumentacji (2-liniowa zmiana) LUB poprawić dokumentację+komunikat
+commita żeby nie kłamały o "patrolu cyklicznym"; (2) F2 — strażnik osiągalności, gdy firstStep
+zwraca null dla wybranego celu, spróbować kolejnego kandydata zamiast zamierać; (3) test na
+planszy MIESZANEJ (bronione+niebronione) na ścieżce resetu, żeby M8 przestało przechodzić
+niezłapane.**
+
