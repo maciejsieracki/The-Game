@@ -12743,6 +12743,18 @@ regresyjny na dokładnie ten scenariusz (start gry z istniejącym zapisem → me
 aktywny). F3/F4/F5 mogą zostać jako osobne, mniej pilne noty jeśli zabraknie czasu w tej
 rundzie — NIE blokują F1.**
 
+**ZAMKNIĘTE (commit `810d5917`) — notatka domykająca dopisana wstecznie (Maciej audyt „raport",
+2026-08-12: fix był zrobiony, rejestr nigdy tego nie potwierdził — dokładnie klasa błędu C-042
+„rejestr zamknięcia i faktyczny deploy/merge to dwa różne stany").** F1 naprawiony dokładnie wg
+podanego kierunku: `void refreshHasAnySaveSlotCache().then(() => { if (isMainMenuOpen())
+showMainMenu(); refreshGamePauseMenuLoadState(); })` (`main.ts` ok. 28717). F2 naprawiony
+(`save.ts::saveToLocal` czyści też legacy klucz localStorage w tym samym catch). Nowy test
+`idb-menu-continue-boot-refresh-test.cjs` (32 asercje, esbuild+jsdom na realnym `mainMenu.ts` +
+realny `save.ts` z fake IDB). Bramki: `tsc` 0, `logic-test` 213/213, `idb-storage-migration`
+25/25, `autosave-quota-fail` 20/20, `fsa-autosave` 55/55. F3/F4/F5 pozostały jako mniej pilne
+noty (nie blokowały F1, zgodnie z pierwotnym zakresem) — NIE dispatchowane osobno, nadal
+otwarte jeśli ktoś chce je podjąć.
+
 ## P-DYPLOMACJA-AI-OFERTY-STRUKTURALNIE-NIEUCZCIWE — SCALONE (76514613)
 
 Operator (a98bf3d5e42160e75) znalazł prawdziwą przyczynę: nie w generowaniu oferty AI (już
