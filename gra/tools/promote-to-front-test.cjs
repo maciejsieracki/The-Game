@@ -1,32 +1,42 @@
 'use strict';
 /**
- * promote-to-front-test.cjs — P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI.
+ * promote-to-front-test.cjs — P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI +
+ * P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B.
  *
  * Run from gra/:  node tools/promote-to-front-test.cjs
  *
- * Zgłoszenie Macieja: strzałki ↑↓ w panelu produkcji miasta przesuwały pozycję WYŁĄCZNIE
- * wewnątrz kolejki oczekujących (index >= 1 w CityProduction.kolejka) — nie dało się
- * "wciągnąć" żadnej pozycji na sam szczyt, zamieniając ją z aktualnie budowanym elementem
+ * Zgłoszenie Macieja (org.): strzałki ↑↓ w panelu produkcji miasta przesuwały pozycję
+ * WYŁĄCZNIE wewnątrz kolejki oczekujących (index >= 1 w CityProduction.kolejka) — nie dało
+ * się "wciągnąć" żadnej pozycji na sam szczyt, zamieniając ją z aktualnie budowanym elementem
  * (index 0). Naprawa: promoteToFront() w src/game/production.ts + przycisk "⇈" (i rozszerzone
  * działanie ↑ na 1. pozycji kolejki) w src/ui/cityPanel.ts.
  *
- * Kluczowa decyzja projektowa pod testem: `postep` (zebrana Praca frontu) resetuje się do 0
- * przy KAŻDEJ zamianie — dokładnie ta sama reguła co przy dequeue(prod, 0) już w kodzie
- * ("Removing the front item resets postep to 0 -- accumulated work belonged to that item").
- * W tym modelu danych TYLKO index 0 ma pole postępu; pozycje kolejki (index >= 1) to gołe
- * ProductionItem bez własnego licznika Pracy — nie ma więc gdzie "odłożyć" częściowej Pracy
- * przy zdjęciu elementu z frontu. Dosłowne przeniesienie postep razem z pozycją byłoby też
- * furtką do nadużycia (zbierz Pracę na drogim froncie, zamień na tani element z kolejki,
- * dokończ go od razu za darmo) — patrz test 5 niżej.
+ * DECYZJA 2026-08-13 (P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B, ODWRACA poprzednią decyzję pod
+ * tym samym testem): promoteToFront() już NIE resetuje postępu do 0 przy zamianie. Zamiast
+ * tego postęp jest BANKOWANY PER-ITEM (`ProductionItem.postep`, pole opcjonalne): item
+ * schodzący z frontu zabiera ze sobą swój aktywny postęp (zapisany na SOBIE, nie ginie);
+ * item wchodzący na front oddaje swój wcześniej zbankowany postęp (0, jeśli nigdy nie był
+ * na froncie) jako nowy aktywny `prod.postep`. Oryginalny exploit ("zbierz Pracę na drogim
+ * froncie, dokończ tani element za darmo") POZOSTAJE zablokowany, bo postęp nigdy nie
+ * przeskakuje między RÓŻNYMI itemami — wraca WYŁĄCZNIE do TEGO SAMEGO itemu, gdy ten ponownie
+ * staje się frontem. Testy 5-6 poniżej zaktualizowane pod nowe zachowanie; testy 8-10 pokrywają
+ * pełny scenariusz z dyspozycji (Cud koszt 1000 + tani element koszt 10).
  * / EN: Maciej's report: the ↑↓ arrows in the city production panel only reordered WITHIN
  * the waiting queue (index >= 1 in CityProduction.kolejka) — nothing could be "pulled" all
  * the way to the top, swapping with the currently-building item (index 0). Fix:
  * promoteToFront() in src/game/production.ts + a "⇈" button (and the first queue row's ↑ now
  * doing the same) in src/ui/cityPanel.ts.
  *
- * Design decision under test: `postep` (front's accumulated Praca) resets to 0 on EVERY swap
- * — the same rule dequeue(prod, 0) already applies. Only index 0 carries a progress field in
- * this data model; see test 5 for the exploit this reset prevents.
+ * DECISION 2026-08-13 (P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B, REVERSES the previous decision
+ * under this same test): promoteToFront() no longer resets progress to 0 on swap. Instead
+ * progress is BANKED PER-ITEM (`ProductionItem.postep`, optional field): the item leaving the
+ * front takes its active progress WITH it (banked on itself, not lost); the item entering the
+ * front hands back its own previously-banked progress (0 if it was never on the front) as the
+ * new active `prod.postep`. The original exploit ("farm Praca on an expensive front item,
+ * finish a cheap item for free") REMAINS blocked because progress never jumps between
+ * DIFFERENT items -- it only ever returns to the SAME item once it becomes the front again.
+ * Tests 5-6 below updated for the new behaviour; tests 8-10 cover the full scenario from the
+ * work order (a Wonder costing 1000 + a cheap item costing 10).
  */
 
 const fs = require('fs');
@@ -43,7 +53,7 @@ const ENTRY_FILE = path.resolve(__dirname, '.promote-to-front-entry.ts');
 const BUNDLE_FILE = path.resolve(__dirname, '.promote-to-front-bundle.cjs');
 
 fs.writeFileSync(ENTRY_FILE, `
-export { promoteToFront, frontItem } from '../src/game/production';
+export { promoteToFront, frontItem, advanceProduction, enqueue } from '../src/game/production';
 `, 'utf8');
 
 try {
@@ -123,28 +133,36 @@ console.log('-- 4. flagi wstrzymana + kolejka rekrutacji przechodzą przez zamia
   eq(next.rekrutacja[0].id, 'Zwiadowca', 'zawartość kolejki rekrutacji bez zmian');
 }
 
-console.log('-- 5. reset postępu blokuje nadużycie "zbierz Pracę na drogim froncie, dokończ tani element za darmo" --');
+console.log('-- 5. exploit NADAL zablokowany: postęp nie przeskakuje na RÓŻNY, wcześniej-nie-frontowy element --');
 {
   // Front = bardzo drogi budynek (koszt 1000) z prawie ukończonym postępem (990/1000).
-  // Gdyby postęp "podróżował" razem z pozycją, zamiana na tani element (koszt 15) dałaby
-  // natychmiastowe ukończenie za 990 Pracy, której ten element nigdy nie zebrał.
+  // Chatka NIGDY wcześniej nie była frontem (brak własnego pola postep) -- mimo że postęp
+  // jest teraz bankowany per-item (nie resetowany do 0), Chatka i tak startuje z zbankowanym
+  // 0, bo bankowanie jest PER-ITEM, nie "przenoszone dalej" na inny item.
   const prod = { kolejka: [item('Cud', 1000), item('Chatka', 15)], postep: 990 };
   const next = M.promoteToFront(prod, 1);
   eq(M.frontItem(next).id, 'Chatka', 'Chatka (tani element) staje się frontem');
-  eq(next.postep, 0, 'postęp NIE przenosi się na Chatkę -- zero Pracy zebranej, brak darmowego ukończenia');
+  eq(next.postep, 0, 'postęp NIE przeskakuje na Chatkę -- zero Pracy zebranej, brak darmowego ukończenia');
   assert(next.postep < (M.frontItem(next)).koszt, 'nowy front nie jest "ukończony" od razu po zamianie');
+  // Nowość vs stare zachowanie: postęp Cudu NIE ginie -- jest zbankowany NA NIM, widoczny
+  // w kolejce pod jego własnym `postep`, gotowy do odzyskania gdy Cud wróci na front.
+  const cudInQueue = next.kolejka.find(it => it.id === 'Cud');
+  eq(cudInQueue.postep, 990, 'postęp Cudu (990) jest zbankowany NA NIM w kolejce, nie utracony');
 }
 
-console.log('-- 6. podwójna zamiana (round-trip): powrót do oryginalnego frontu też resetuje postęp --');
+console.log('-- 6. podwójna zamiana (round-trip): powrót do TEGO SAMEGO frontu PRZYWRACA jego postęp (nie resetuje) --');
 {
   let prod = { kolejka: [item('A', 10), item('B', 20), item('C', 30)], postep: 8 };
-  prod = M.promoteToFront(prod, 1); // B front, A na 1. pozycji kolejki, postęp=0
+  prod = M.promoteToFront(prod, 1); // B front, A na 1. pozycji kolejki (zbankowane postep:8), aktywny postęp=0
   eq(M.frontItem(prod).id, 'B', 'po 1. zamianie B jest frontem');
-  prod = { ...prod, postep: 15 }; // symulacja: kilka tur Pracy zebranej na B
+  eq(prod.postep, 0, 'B nigdy wcześniej nie był frontem -- startuje z zbankowanym 0');
+  eq(prod.kolejka.find(it => it.id === 'A').postep, 8, 'postęp A (8) zbankowany na A w kolejce po zejściu z frontu');
+  prod = { ...prod, postep: 15 }; // symulacja: kilka tur Pracy zebranej na B (advanceProduction w realnej grze)
   prod = M.promoteToFront(prod, 1); // A wraca na front (zamiana z pozycją 1, gdzie teraz siedzi A)
   eq(M.frontItem(prod).id, 'A', 'po 2. zamianie A ponownie jest frontem');
   eq(ids(prod.kolejka), 'A,B,C', 'kolejka wraca do oryginalnego porządku');
-  eq(prod.postep, 0, 'postęp resetuje się przy KAŻDEJ zamianie, także przy powrocie do poprzedniego frontu');
+  eq(prod.postep, 8, 'A ODZYSKUJE dokładnie swój wcześniej zbankowany postęp (8) -- NIE reset do 0 (decyzja Q1=B)');
+  eq(prod.kolejka.find(it => it.id === 'B').postep, 15, 'postęp B (15) jest teraz zbankowany na B, czeka na jego powrót');
 }
 
 console.log('-- 7. index nie-całkowity (NaN / undefined / ułamkowy) = no-op odporny, nie crash i nie wstawienie undefined --');
@@ -175,6 +193,61 @@ console.log('-- 7. index nie-całkowity (NaN / undefined / ułamkowy) = no-op od
   // oryginalny obiekt wejściowy nadal nietknięty po wszystkich trzech wywołaniach
   eq(ids(prod.kolejka), 'A,B,C', 'oryginalny prod.kolejka nie jest mutowany przez żadne z powyższych wywołań');
   eq(prod.postep, 7, 'oryginalny prod.postep nie jest mutowany');
+}
+
+console.log('-- 8. scenariusz z dyspozycji, krok 1: Cud (koszt 1000) na froncie, zebrano 500 Pracy, promuj tani element --');
+{
+  // Cud (koszt 1000, np. cud starożytny) na froncie z 500/1000 Pracy zebranej. Tani element
+  // (koszt 10) NIGDY wcześniej nie był na froncie -- w kolejce na indeksie 1.
+  const prod = { kolejka: [item('Cud', 1000), item('TaniElement', 10)], postep: 500 };
+  const next = M.promoteToFront(prod, 1);
+  eq(M.frontItem(next).id, 'TaniElement', 'tani element staje się nowym frontem');
+  eq(next.postep, 0, 'tani element startuje z postępem 0 -- NIE dziedziczy 500 Pracy Cudu');
+  assert(next.postep < M.frontItem(next).koszt, 'tani element (koszt 10) nie jest ukończony od razu po promocji');
+  const cudBanked = next.kolejka.find(it => it.id === 'Cud');
+  eq(cudBanked.postep, 500, 'Cud zachowuje zbankowane 500 Pracy, teraz na pozycji w kolejce (nie na froncie)');
+}
+
+console.log('-- 9. scenariusz z dyspozycji, krok 2: dokończ tani element normalnie, Cud dalej ma zbankowane 500 --');
+{
+  // Kontynuacja testu 8: TaniElement (koszt 10) jest frontem z postępem 0, Cud (koszt 1000)
+  // zbankowany na indeksie 1 z postep:500. advanceProduction() z 10 Pracy/turę kończy
+  // TaniElement w JEDNEJ turze (0+10 >= 10) -- naturalne dokończenie, bez promocji.
+  const prod = { kolejka: [item('TaniElement', 10), item('Cud', 1000, 'budynek')], postep: 0 };
+  prod.kolejka[1].postep = 500; // Cud niesie zbankowane 500 z poprzedniej promocji (test 8)
+  const { prod: afterAdv, completed } = M.advanceProduction(prod, 10);
+  eq(completed && completed.id, 'TaniElement', 'TaniElement kończy się w tej turze (10 Pracy = dokładnie jego koszt)');
+  eq(M.frontItem(afterAdv).id, 'Cud', 'Cud staje się nowym frontem po naturalnym dokończeniu TaniElement');
+  // advanceProduction NIE zna per-item postep -- to kontrakt CityProduction.postep, nietknięty
+  // (patrz doc CityProduction wyżej); zbankowana wartość na samym Cud (kolejka[0].postep=500)
+  // jest nadal tam, ale AKTYWNY licznik (afterAdv.postep) to remainder z advanceProduction (0,
+  // bo 10 Pracy dokładnie pokryło koszt TaniElement -- brak nadwyżki).
+  eq(afterAdv.postep, 0, 'aktywny postęp po naturalnym ukończeniu = remainder (0, brak nadwyżki Pracy)');
+  eq(M.frontItem(afterAdv).postep, 500, 'zbankowane 500 Pracy Cudu WCIĄŻ widoczne na nim -- naturalne dokończenie innego itemu go nie rusza');
+}
+
+console.log('-- 10. scenariusz z dyspozycji, krok 3: promuj Cud z powrotem na front -- odzyskuje dokładnie 500 --');
+{
+  // Cud (koszt 1000, zbankowane postep:500) siedzi na indeksie 1 za nowym frontem (np. kolejny
+  // tani element dodany po ukończeniu poprzedniego, koszt 20, aktywny postęp 3).
+  const prod = { kolejka: [item('Inny', 20), item('Cud', 1000)], postep: 3 };
+  prod.kolejka[1].postep = 500; // Cud niesie zbankowane 500 z testów 8-9
+  const next = M.promoteToFront(prod, 1);
+  eq(M.frontItem(next).id, 'Cud', 'Cud ponownie staje się frontem');
+  eq(next.postep, 500, 'Cud ODZYSKUJE dokładnie 500 Pracy postępu -- NIE 0 (decyzja właściciela Q1=B)');
+  const innyBanked = next.kolejka.find(it => it.id === 'Inny');
+  eq(innyBanked.postep, 3, 'Inny (poprzedni front) zabiera swoje 3 Pracy zbankowane na siebie, zamiast je tracić');
+}
+
+console.log('-- 11. regresja: naturalne dokończenie BEZ promocji nadal przenosi remainder na kolejny element (advanceProduction) --');
+{
+  // Zero interakcji z promoteToFront -- czysta regresja istniejącego mechanizmu przeniesienia
+  // nadwyżki Pracy (remainder) na kolejny element w JEDNEJ turze (Schemat sec.3.2).
+  const prod = M.enqueue({ kolejka: [item('A', 10)], postep: 7 }, item('B', 20));
+  const { prod: afterAdv, completed } = M.advanceProduction(prod, 8); // 7+8=15 >= 10 -> A kończy się, remainder=5
+  eq(completed && completed.id, 'A', 'A kończy się (7+8=15 Pracy >= koszt 10)');
+  eq(M.frontItem(afterAdv).id, 'B', 'B staje się nowym frontem po naturalnym dokończeniu A');
+  eq(afterAdv.postep, 5, 'nadwyżka Pracy (15-10=5) przechodzi jako startowy postęp B -- bez zmian vs dotychczasowa logika');
 }
 
 console.log(`\npromote-to-front-test: ${passed} passed, ${failed} failed`);

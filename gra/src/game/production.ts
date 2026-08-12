@@ -84,17 +84,35 @@ export type ProductionKind = 'budynek' | 'jednostka';
 /**
  * A single entry sitting in a city's production queue.
  *
- *   kind  : 'budynek' for a building, 'jednostka' for a unit.
- *   id    : stable identifier -- a building's `id`, or a unit's `Jednostka`
- *           name (units have no separate id field in units.json).
- *   nazwa : human-readable display name.
- *   koszt : total Praca required to complete it (computed via itemCost()).
+ *   kind   : 'budynek' for a building, 'jednostka' for a unit.
+ *   id     : stable identifier -- a building's `id`, or a unit's `Jednostka`
+ *            name (units have no separate id field in units.json).
+ *   nazwa  : human-readable display name.
+ *   koszt  : total Praca required to complete it (computed via itemCost()).
+ *   postep : BANKED Praca for this item WHILE IT IS NOT the front (index 0).
+ *            Optional -- absent/undefined means 0 (an item that has never sat
+ *            at the front yet, or an old save from before this field existed).
+ *            Written/read exclusively by promoteToFront() (P-PROMOCJA-FRONT-
+ *            RESET-POSTEPU-Q1=B): when an item leaves the front it parks its
+ *            active `CityProduction.postep` here; when it returns to the
+ *            front this value is restored into `CityProduction.postep` and
+ *            cleared here (never duplicated in both places at once). The
+ *            item at kolejka[0] never carries a meaningful value here -- its
+ *            live progress lives in `CityProduction.postep` instead.
+ *            / EN: BANKED Praca for this item WHILE IT IS NOT the front
+ *            (index 0). Optional -- absent/undefined means 0 (an item that
+ *            has never been at the front, or an old save predating this
+ *            field). Written/read exclusively by promoteToFront(): leaving
+ *            the front parks the active `CityProduction.postep` here;
+ *            returning to the front restores it into `CityProduction.postep`
+ *            and clears it here (never duplicated in both places at once).
  */
 export type ProductionItem = {
   kind: ProductionKind;
   id: string;
   nazwa: string;
   koszt: number;
+  postep?: number;
 };
 
 /**
@@ -102,7 +120,17 @@ export type ProductionItem = {
  *
  *   kolejka : ordered queue; index 0 is the item currently being built.
  *   postep  : Praca accumulated so far on the FRONT item only (resets to the
- *             carried remainder each time an item completes).
+ *             carried remainder each time an item completes). Contract
+ *             UNCHANGED by P-PROMOCJA-FRONT-RESET-POSTEPU-Q1 -- this scalar
+ *             is still the sole ACTIVE counter that advanceProduction()/
+ *             rushCost() etc. read; non-front items bank their own progress
+ *             on `ProductionItem.postep` instead (see that field's doc),
+ *             swapped in/out of this scalar only by promoteToFront().
+ *             / EN: contract UNCHANGED by P-PROMOCJA-FRONT-RESET-POSTEPU-Q1
+ *             -- still the sole ACTIVE counter read by advanceProduction()/
+ *             rushCost() etc.; non-front items bank their own progress on
+ *             `ProductionItem.postep` instead, swapped in/out of this scalar
+ *             only by promoteToFront().
  */
 export interface CityProduction {
   kolejka: ProductionItem[];
@@ -1114,14 +1142,26 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
  * WYŁĄCZNIE wewnątrz kolejki oczekujących (index >= 1, patrz moveQueueItem w
  * ui/cityPanel.ts), nigdy nie zamieniają z frontem.
  *
- * `postep` resetuje się do 0 przy KAŻDEJ zamianie -- tak samo jak w dequeue()
- * powyżej ("Removing the front item resets postep to 0 -- accumulated work
- * belonged to that item"). W tym modelu danych tylko element na indeksie 0 ma
- * w ogóle pole postępu (kolejka[i>=0] to gołe ProductionItem bez własnego
- * licznika Pracy) -- nie ma więc gdzie "odłożyć" częściowej Pracy przy
- * zdjęciu z frontu. Literalne przeniesienie postep razem z pozycją byłoby też
- * furtką do nadużycia: zbieranie Pracy na drogim froncie, a potem zamiana na
- * tani element z kolejki, żeby dokończyć go od razu za darmo.
+ * PRZENOSZENIE POSTĘPU PER-ITEM (P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B, decyzja
+ * Macieja 2026-08-13 -- ODWRACA poprzednie zachowanie "reset do 0" opisane
+ * niżej w historii tej funkcji): postęp już nie GINIE przy zamianie, tylko
+ * jest BANKOWANY NA ITEMIE, który schodzi z frontu (`ProductionItem.postep`),
+ * i PRZYWRACANY z itemu, który wchodzi na front (0, jeśli nigdy tam nie był).
+ * Krok po kroku: (1) item schodzący z frontu (dawny `kolejka[0]`) dostaje
+ * `postep: prod.postep` -- jego aktywny licznik jest teraz zbankowany na nim
+ * samym; (2) item wchodzący na front (dawny `kolejka[index]`) oddaje swój
+ * zbankowany `postep` (jeśli miał) jako nowy `prod.postep` i sam traci pole
+ * `postep` (żyje teraz wyłącznie w `prod.postep`, nie dubluje się w obu
+ * miejscach na raz).
+ *
+ * Exploit z ORYGINALNEGO uzasadnienia resetu ("zbierz Pracę na drogim
+ * froncie [Cud, koszt 1000], dokończ tani element [koszt 10] za darmo")
+ * NADAL jest zablokowany: postęp nigdy nie przeskakuje między RÓŻNYMI
+ * itemami -- tani element, który nigdy wcześniej nie był na froncie, zawsze
+ * startuje z zbankowanym 0, niezależnie ile Pracy zebrał Cud. Postęp wraca
+ * WYŁĄCZNIE do TEGO SAMEGO itemu, gdy ten ponownie staje się frontem (patrz
+ * testy 8-10 w tools/promote-to-front-test.cjs).
+ *
  * Out-of-range `index` (< 1 lub >= kolejka.length) to no-op (shallow copy).
  * Nie-całkowity `index` (NaN, undefined, wartość ułamkowa) to TEŻ no-op --
  * bez `Number.isInteger` oba porównania `< 1` i `>= length` są `false` dla
@@ -1134,14 +1174,26 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
  * WITHIN the waiting queue (index >= 1, see moveQueueItem in
  * ui/cityPanel.ts) and never swap with the front slot.
  *
- * `postep` resets to 0 on EVERY swap -- same rule as dequeue() above
- * ("Removing the front item resets postep to 0 -- accumulated work belonged
- * to that item"). In this data model only index 0 carries a progress field at
- * all (kolejka[i>=0] entries are bare ProductionItem with no progress counter
- * of their own), so there is nowhere to "park" partial Praca when an item
- * leaves the front. Literally carrying `postep` along with the position would
- * also be an exploit: bank Praca on an expensive front item, then swap in a
- * cheap queued item to finish it instantly for free.
+ * PER-ITEM PROGRESS TRANSFER (P-PROMOCJA-FRONT-RESET-POSTEPU-Q1=B, Maciej's
+ * decision 2026-08-13 -- REVERSES this function's previous "reset to 0"
+ * behaviour, see its history): progress no longer VANISHES on swap, it is
+ * BANKED on the item leaving the front (`ProductionItem.postep`) and
+ * RESTORED from the item entering the front (0 if it was never there
+ * before). Step by step: (1) the outgoing front item (old `kolejka[0]`)
+ * gets `postep: prod.postep` -- its active counter is now banked on itself;
+ * (2) the incoming front item (old `kolejka[index]`) hands back its own
+ * banked `postep` (if any) as the new `prod.postep` and loses its own
+ * `postep` field (it now lives solely in `prod.postep`, never duplicated in
+ * both places).
+ *
+ * The exploit from the ORIGINAL reset's rationale ("farm Praca on an
+ * expensive front item [a Wonder, cost 1000], finish a cheap item [cost 10]
+ * for free") is STILL blocked: progress never jumps between DIFFERENT items
+ * -- a cheap item that was never on the front before always starts banked at
+ * 0, no matter how much Praca the Wonder accumulated. Progress only ever
+ * returns to the SAME item once it becomes the front again (see tests 8-10
+ * in tools/promote-to-front-test.cjs).
+ *
  * An out-of-range `index` (< 1 or >= kolejka.length) is a no-op (shallow copy).
  * A non-integer `index` (NaN, undefined, fractional) is ALSO a no-op --
  * without `Number.isInteger`, both `< 1` and `>= length` are `false` for
@@ -1160,12 +1212,21 @@ export function promoteToFront(prod: CityProduction, index: number): CityProduct
     };
   }
   const kolejka = [...prod.kolejka];
-  const front = kolejka[0] as ProductionItem;
-  kolejka[0] = kolejka[index] as ProductionItem;
-  kolejka[index] = front;
+  const outgoing = kolejka[0] as ProductionItem; // schodzi z frontu / leaving the front
+  const incoming = kolejka[index] as ProductionItem; // wchodzi na front / entering the front
+  // Bankuj aktywny postęp NA itemie schodzącym z frontu (nie ginie, ale zostaje
+  // PRZY NIM -- nie przeskakuje na inny item, patrz docstring wyżej).
+  // EN: bank the active progress ON the outgoing item (not lost, but stays
+  // WITH it -- never jumps to a different item, see docstring above).
+  kolejka[index] = { kind: outgoing.kind, id: outgoing.id, nazwa: outgoing.nazwa, koszt: outgoing.koszt, postep: prod.postep };
+  // Przywróć zbankowany postęp itemu wchodzącego na front i wyczyść jego pole
+  // -- żyje teraz wyłącznie w zwracanym `postep` (scalar), bez duplikacji.
+  // EN: restore the incoming item's banked progress and clear its own field
+  // -- it now lives solely in the returned `postep` scalar, no duplication.
+  kolejka[0] = { kind: incoming.kind, id: incoming.id, nazwa: incoming.nazwa, koszt: incoming.koszt };
   return {
     kolejka,
-    postep: 0,
+    postep: incoming.postep ?? 0,
     wstrzymana: prod.wstrzymana,
     rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
   };
