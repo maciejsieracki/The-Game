@@ -14329,3 +14329,39 @@ w TYM środowisku niezależnie od jakiejkolwiek zmiany w kodzie — przy interpr
 wyników tej bramki w sesji chmurowej brać to pod uwagę, nie traktować automatycznie jako regresji.
 **STATUS: OTWARTE — niepilne, do zbadania osobno (nie blokuje niczego dzisiejszego, ale
 podważa wiarygodność pełnych timingów tej bramki w środowisku chmurowym).**
+
+## P-PERF-BUILDSCENE-TRY-FINALLY — SCALONE, Evaluator: PASS-WITH-NOTES
+
+`scene.ts::buildScene()` — `dispose()` przeniesiony przed rejestr `sceneTeardown: Array<() => void>`
+(zasoby tworzone wewnątrz `try` — ocean, ramka, listenery okna — rejestrują się same w miejscu
+powstania), `try` od linii ~2208 (tuż za ostatnią deklaracją, po której zaczynają się realne
+zasoby GPU) do `return`, `catch`+`dispose()` w osobnym `try`+re-throw (świadomie NIE `finally` —
+argument: wcześniejszy `return` z niepełną sceną zwolniłby ją tuż przed oddaniem graczowi).
+`main.ts` bez zmian — wszystkich 5 call site'ów `runBuildSceneWithOverlay` już miało
+`try{disposeScene()}catch{}` PRZED budową nowej sceny. Nowa sekcja T w
+`merge-decor-no-regress-test.cjs` (4 przypadki, wyjątek wstrzykiwany w różnych fazach, patchowanie
+prototypów na BUNDLOWEJ kopii three) — 30→49 asercji.
+
+**Evaluator: własna weryfikacja TDZ (36 identyfikatorów sprawdzonych, wszystkie deklarowane przed
+`try`), własna mutacja całościowa (43/6→49/0, liczby Operatora potwierdzone) + 2 mutacje
+chirurgiczne własne (usunięcie samej rejestracji oceanu / samego drenażu rejestru — obie łapane
+osobno, sekcja T nie jest ślepa na żaden pojedynczy element).**
+
+**4 odkrycia Evaluatora (żadne nie blokuje):**
+1. Przeframowanie luki (c) Operatora: `sharedRenderer` nigdy nie jest ustawiany w kodzie
+   produkcyjnym (`ownRenderer` zawsze `true` w grze) — to NIE margines, to JEDYNA konfiguracja
+   produkcyjna, a testy T biegną na odwrotnej. Kod poprawny (zweryfikowany czytaniem), ale opis
+   luki w rejestrze zaniżał ryzyko — do sprostowania.
+2. Wycena luki (d) zawyżona: Operator szacował "~40 constów do hoistowania", realnie wystarczy
+   wąski `try` (~5 linii) wokół samego `new THREE.WebGLRenderer` (linia ~1626, jedyny drogi zasób
+   w nieobjętym prologu 1626-2207, zero `await` w tym zakresie).
+3. **NOWE, pre-istniejące:** po nieudanej budowie `disposeScene` w `main.ts` nadal wskazuje na już
+   zwolnioną starą scenę — kolejna próba startu wywoła drenaż `sceneTeardown` drugi raz. Nieszkodliwe
+   (`removeEventListener`/`geometry.dispose()` w three.js idempotentne), nie wprowadzone tą zmianą,
+   ale wart odnotowania.
+4. Na plus: naprawa zamyka też wyciek SPOZA zgłoszenia — listenery `resize`/`fullscreenchange`
+   przypięte na zawsze przy wyjątku trzymały przy życiu cały porzucony graf sceny w hałdzie JS, nie
+   tylko bufory GPU.
+
+Bramki (Evaluator, własne uruchomienie): tsc 0, merge-decor-no-regress-test 49/49,
+logic-test 213/213. **TEMAT ZAMKNIĘTY.**

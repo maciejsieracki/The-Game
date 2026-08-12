@@ -19,7 +19,17 @@ fs.writeFileSync(
 } from '../src/render/mergeDecor';
 export { generujSwiat } from '../src/map/generator';
 export { countSceneOverlayCandidates } from '../src/render/countSceneOverlayCandidates';
-export { buildZlozeKonie } from '../src/render/kon-nowy-model';`,
+export { buildZlozeKonie } from '../src/render/kon-nowy-model';
+// SEKCJA T — realny buildScene w node. THREE MUSI byc reeksportowane z bundla: esbuild
+// wklaja wlasna kopie three do bundla, wiec require('three') w tescie to INNY modul i
+// zalatanie jego prototypow nie widzialoby zwolnien robionych przez kod sceny.
+export * as THREE_BUNDLED from 'three';
+export { buildScene, SCENE_BUILD_PHASE_LABELS } from '../src/render/scene';
+export { TEREN_MATERIAL, goraGeometria, wzgorzeGeometria } from '../src/render/teren-gory-wzgorza';
+export { LAS_MATERIAL, lasGeometria } from '../src/render/lasy-modele';
+export { DJUNGLA_MATERIAL, djunglaGeometria } from '../src/render/djungla-modele';
+export { DEKOR_MATERIAL, dekorLakaGeometria, dekorRowninaGeometria } from '../src/render/dekor-laki-rowniny';
+export { getCoastSharedGeometries, coastWaterMaterial, coastSandMaterial } from '../src/render/mapRenderStyle';`,
   'utf8',
 );
 
@@ -246,9 +256,22 @@ ok(
 const disposeBody = extractFnBody(SCENE_SRC, 'function dispose()');
 ok(disposeBody != null, 'scene.ts: znaleziono cialo function dispose()');
 // S2: kotwica poprawnosci wyciecia — bez niej kolejne asercje moglyby badac nie ten fragment.
+// P-PERF-BUILDSCENE-TRY-FINALLY przeniosl ocean/ramke/listenery do rejestru sceneTeardown
+// (ich const-y zyja w bloku try, dispose() stoi PRZED nim), wiec kotwica idzie po drenazu
+// rejestru zamiast po literalnym oceanGeo.dispose() — to ta sama sila, tylko inny znacznik.
 ok(
-  disposeBody != null && /renderer\.dispose\(\)/.test(disposeBody) && /oceanGeo\.dispose\(\)/.test(disposeBody),
-  'scene.ts: wyciete cialo to faktycznie dispose() (zawiera renderer.dispose + oceanGeo.dispose)',
+  disposeBody != null
+    && /renderer\.dispose\(\)/.test(disposeBody)
+    && /for\s*\(\s*const\s+\w+\s+of\s+sceneTeardown\s*\)/.test(disposeBody),
+  'scene.ts: wyciete cialo to faktycznie dispose() (zawiera renderer.dispose + drenaz sceneTeardown)',
+);
+// S2b: ocean i ramka swiata MUSZA sie rejestrowac w sceneTeardown — inaczej wypadaja
+// z dispose() calkowicie (dispose() nie widzi juz ich const-ow) i wyciekaja przy KAZDYM
+// zwolnieniu sceny, nie tylko na sciezce wyjatku.
+ok(
+  /sceneTeardown\.push\(\(\)\s*=>\s*\{\s*oceanGeo\.dispose\(\);\s*oceanMat\.dispose\(\);/.test(SCENE_SRC)
+    && /sceneTeardown\.push\(\(\)\s*=>\s*\{\s*for\s*\(const g of frameGeos\) g\.dispose\(\); frameMat\.dispose\(\);/.test(SCENE_SRC),
+  'scene.ts: ocean + ramka swiata zarejestrowane w sceneTeardown (inaczej wypadaja z dispose)',
 );
 
 // S3: w dispose() istnieje petla po CALEJ tablicy styledOverlays wolajaca disposeMergedDecor.
@@ -314,5 +337,218 @@ ok(
 );
 console.log('  overlay roblox/pangea/standard:', JSON.stringify(counts));
 
-console.log(`\nmerge-decor-no-regress-test: ${pass} pass, ${fail} fail`);
-if (fail > 0) process.exit(1);
+// ---------------------------------------------------------------------------
+// SEKCJA T — P-PERF-BUILDSCENE-TRY-FINALLY. Test MUTACYJNY, nie tekstowy: uruchamia
+// PRAWDZIWY buildScene z scene.ts w node i wstrzykuje wyjatek W TRAKCIE budowy sceny.
+//
+// Dlaczego to w ogole dziala bez WebGL (komentarz sekcji S mowil, ze sie nie da):
+// buildScene przyjmuje `sharedRenderer` i przy nim NIE tworzy WebGLRenderera, a przy
+// `previewViewport` nie dotyka window/document. Zostaje requestAnimationFrame (stub nizej).
+//
+// Wstrzykniecie: getter na map.riverPaths, uzbrajany dopiero gdy onProgress zglosi
+// pct>=90 — a to raport wysylany PO markBuildPhase('overlays'), czyli po calej fazie
+// merge (raporty z wnetrza petli merge maja pct < 90). Faza rzek siega po map.riverPaths
+// jako pierwsza po uzbrojeniu → wyjatek leci DOKLADNIE w scenariuszu ze zgloszenia:
+// zmergowane grupy styledOverlays juz istnieja, sceny nikt nie dostal.
+//
+// PRZED poprawka: buildScene porzuca scene bez dispose() → ponizsze asercje na czerwono
+// (zero zwolnien). PO poprawce: catch woła dispose() i puszcza TEN SAM blad dalej.
+// ---------------------------------------------------------------------------
+globalThis.requestAnimationFrame = globalThis.requestAnimationFrame
+  || ((cb) => setTimeout(() => cb(Date.now()), 0));
+
+/** Bundlowa kopia three — jedyna, ktorej prototypy widzi kod sceny (patrz komentarz w ENTRY). */
+const TB = M.THREE_BUNDLED;
+
+/** obiekt -> ile razy zwolniony. Latka na prototypach, bo scena nie oddaje swoich zasobow. */
+const disposeCalls = new Map();
+for (const proto of [TB.BufferGeometry.prototype, TB.Material.prototype]) {
+  const orig = proto.dispose;
+  proto.dispose = function patchedDispose(...args) {
+    disposeCalls.set(this, (disposeCalls.get(this) || 0) + 1);
+    return orig.apply(this, args);
+  };
+}
+/** Wszystko, co trafilo do grafu sceny — jedyny uchwyt do zasobow PORZUCONEJ budowy. */
+let addedObjects = [];
+const origObj3dAdd = TB.Object3D.prototype.add;
+TB.Object3D.prototype.add = function patchedAdd(...objs) {
+  for (const o of objs) addedObjects.push(o);
+  return origObj3dAdd.apply(this, objs);
+};
+
+/** Renderer-atrapa: buildScene z `sharedRenderer` nie tworzy kontekstu WebGL. */
+const fakeRenderer = {
+  shadowMap: { enabled: false, type: 0, autoUpdate: true, needsUpdate: false },
+  toneMapping: 0,
+  toneMappingExposure: 1,
+  disposeCount: 0,
+  setSize() {}, setPixelRatio() {},
+  dispose() { this.disposeCount++; },
+};
+const fakeCanvas = { clientWidth: 800, clientHeight: 600 };
+const RENDER_OPTS = {
+  style: 'roblox', renderQuality: 'medium', mapDetailQuality: 'high',
+  previewViewport: { width: 800, height: 600, panelColumns: 1 },
+  sharedRenderer: fakeRenderer,
+};
+
+/** Wspoldzielone singletony modulowe — ZADEN nie ma prawa zostac zwolniony przez scene. */
+function sharedSingletons() {
+  const out = [M.TEREN_MATERIAL, M.LAS_MATERIAL, M.DJUNGLA_MATERIAL, M.DEKOR_MATERIAL,
+    M.coastWaterMaterial(), M.coastSandMaterial()];
+  for (let v = 0; v < 5; v++) {
+    out.push(M.goraGeometria(v), M.wzgorzeGeometria(v), M.lasGeometria(v));
+  }
+  for (const lite of [true, false]) out.push(...Object.values(M.getCoastSharedGeometries(lite)));
+  return out.filter(Boolean);
+}
+/**
+ * Zmergowane grupy styledOverlays wylowione z grafu sceny (flaga MERGED_DECOR na grupie).
+ * Warunek isGroup jest istotny: collapseToMergedMesh stawia te sama flage TAKZE na samym
+ * zmergowanym meshu (patrz D4 wyzej), wiec bez niego kazda grupa liczylaby sie podwojnie.
+ */
+const mergedGroupsFrom = (objs) =>
+  objs.filter((o) => o && o.isGroup === true && o.userData && o.userData[M.MERGED_DECOR_FLAG] === true);
+/** Zasoby GPU nalezace do zmergowanej grupy: geometria + material jej jedynego dziecka. */
+function mergedResources(groups) {
+  const res = [];
+  for (const g of groups) {
+    const child = g.children[0];
+    if (child && child.geometry) res.push(child.geometry, child.material);
+  }
+  return res;
+}
+
+(async () => {
+  // --- T1 (kontrola): budowa konczy sie sukcesem, dispose() zwalnia zmergowane grupy.
+  addedObjects = [];
+  const okRes = await M.buildScene(map, fakeCanvas, RENDER_OPTS);
+  const collapsedCount = okRes.buildTimings.detail.nakladki.scalMergeCollapsed;
+  const okMerged = mergedGroupsFrom(addedObjects);
+  ok(collapsedCount > 0, `T1: buildScene faktycznie scalil grupy (collapsed=${collapsedCount})`);
+  // Kotwica kompletnosci przechwytywania: gdyby graf sceny gubil grupy, kolejne asercje
+  // badalyby probke zamiast calosci i „zero wyciekow" nic by nie znaczylo.
+  ok(
+    okMerged.length === collapsedCount,
+    `T1: z grafu sceny wylowiono WSZYSTKIE zmergowane grupy (${okMerged.length}/${collapsedCount})`,
+  );
+  const okRes1 = mergedResources(okMerged);
+  okRes.dispose();
+  ok(
+    okRes1.length > 0 && okRes1.every((r) => disposeCalls.get(r) === 1),
+    'T1: po udanej budowie dispose() zwalnia kazdy zasob zmergowanej grupy dokladnie 1x',
+  );
+  ok(fakeRenderer.disposeCount === 0, 'T1: wspoldzielony renderer NIE zwalniany (ownRenderer=false)');
+
+  // --- T2 (mutacja): wyjatek TUZ PO fazie merge — scenariusz ze zgloszenia.
+  const realRiverPaths = map.riverPaths;
+  const BOOM_MERGE = new Error('T2-inject-po-fazie-merge');
+  let armed = false;
+  Object.defineProperty(map, 'riverPaths', {
+    configurable: true,
+    get() { if (armed) throw BOOM_MERGE; return realRiverPaths; },
+  });
+  addedObjects = [];
+  disposeCalls.clear();
+  const sharedBefore = sharedSingletons();
+  let caught = null;
+  try {
+    await M.buildScene(map, fakeCanvas, RENDER_OPTS, (pct) => { if (pct >= 90) armed = true; });
+  } catch (err) { caught = err; }
+  Object.defineProperty(map, 'riverPaths', { configurable: true, writable: true, value: realRiverPaths });
+
+  ok(caught === BOOM_MERGE, 'T2: buildScene przepuszcza TEN SAM blad dalej (nie polyka, nie podmienia)');
+  const boomMerged = mergedGroupsFrom(addedObjects);
+  ok(boomMerged.length > 0, `T2: przed wyjatkiem powstaly zmergowane grupy (${boomMerged.length})`);
+  const boomRes = mergedResources(boomMerged);
+  const freed = boomRes.filter((r) => disposeCalls.get(r) === 1).length;
+  // TA asercja jest cala pointa zgloszenia: bez try/catch w buildScene freed === 0.
+  ok(
+    boomRes.length > 0 && freed === boomRes.length,
+    `T2: porzucona scena zwolnila KAZDY zasob zmergowanej grupy (${freed}/${boomRes.length})`,
+  );
+  ok(
+    addedObjects.some((o) => o && o.isInstancedMesh && disposeCalls.get(o.geometry) === 1),
+    'T2: porzucona scena zwolnila takze geometrie InstancedMesh (nie tylko merge)',
+  );
+  ok(
+    sharedBefore.every((s) => !disposeCalls.has(s)),
+    'T2: sprzatanie po wyjatku NIE tyka wspoldzielonych singletonow modulowych',
+  );
+  ok(fakeRenderer.disposeCount === 0, 'T2: sprzatanie po wyjatku NIE zwalnia cudzego renderera');
+
+  // --- T3 (mutacja): wyjatek PO utworzeniu oceanu i ramki swiata — dowod, ze rejestr
+  // sceneTeardown realnie sie drenuje (ocean/ramka nie sa juz widoczne dla dispose()).
+  const realSzer = map.szerokoscQ;
+  const BOOM_TAIL = new Error('T3-inject-po-oceanie');
+  const oceanBuilt = () => addedObjects.some((o) => o && o.isMesh && o.renderOrder === -10);
+  Object.defineProperty(map, 'szerokoscQ', {
+    configurable: true,
+    get() { if (oceanBuilt()) throw BOOM_TAIL; return realSzer; },
+  });
+  addedObjects = [];
+  disposeCalls.clear();
+  let caughtTail = null;
+  try { await M.buildScene(map, fakeCanvas, RENDER_OPTS); } catch (err) { caughtTail = err; }
+  Object.defineProperty(map, 'szerokoscQ', { configurable: true, writable: true, value: realSzer });
+
+  ok(caughtTail === BOOM_TAIL, 'T3: blad z fazy finalowej tez leci dalej nietkniety');
+  const oceanIdx = addedObjects.findIndex((o) => o && o.isMesh && o.renderOrder === -10);
+  const tailMeshes = oceanIdx < 0 ? [] : addedObjects.slice(oceanIdx).filter((o) => o && o.isMesh && o.geometry);
+  ok(tailMeshes.length >= 5, `T3: ocean + listwy ramki trafily do sceny (${tailMeshes.length} meshy, min. 1+4)`);
+  ok(
+    tailMeshes.length > 0 && tailMeshes.every((m) => disposeCalls.get(m.geometry) === 1),
+    'T3: ocean i ramka swiata zwolnione przez rejestr sceneTeardown mimo wyjatku',
+  );
+  ok(
+    sharedSingletons().every((s) => !disposeCalls.has(s)),
+    'T3: sprzatanie fazy finalowej tez nie tyka wspoldzielonych singletonow',
+  );
+
+  // --- T4 (mutacja): wyjatek W POLOWIE petli merge, nie po niej. Petla oddaje klatke
+  // przez `await c3NextFrame()` — a to jedyne miejsce w niej POZA wewnetrznym try/catch,
+  // ktory swiadomie polyka bledy pojedynczej grupy ('[civ] overlay item failed'). Rzucenie
+  // z requestAnimationFrame odwzorowuje wiec realna, jedyna droga ucieczki wyjatku z tej
+  // fazy — i zostawia pool nakladek W POLOWIE scalony (czesc grup zmergowana, reszta nie).
+  const BOOM_MID = new Error('T4-inject-w-trakcie-merge');
+  const realRaf = globalThis.requestAnimationFrame;
+  let armedMid = false;
+  globalThis.requestAnimationFrame = (cb) => {
+    if (armedMid) { armedMid = false; throw BOOM_MID; }
+    return realRaf(cb);
+  };
+  addedObjects = [];
+  disposeCalls.clear();
+  let caughtMid = null;
+  try {
+    await M.buildScene(map, fakeCanvas, RENDER_OPTS, (pct, label) => {
+      if (label === M.SCENE_BUILD_PHASE_LABELS.overlays) armedMid = true;
+    });
+  } catch (err) { caughtMid = err; }
+  globalThis.requestAnimationFrame = realRaf;
+
+  ok(caughtMid === BOOM_MID, 'T4: wyjatek z wnetrza petli merge leci dalej nietkniety');
+  const midMerged = mergedGroupsFrom(addedObjects);
+  // Kotwica „to naprawde srodek fazy": czesc puli juz scalona, ale NIE cala (38 = komplet).
+  ok(
+    midMerged.length > 0 && midMerged.length < collapsedCount,
+    `T4: wyjatek trafil w SRODEK fazy merge (${midMerged.length} z ${collapsedCount} grup scalonych)`,
+  );
+  const midRes = mergedResources(midMerged);
+  const midFreed = midRes.filter((r) => disposeCalls.get(r) === 1).length;
+  ok(
+    midRes.length > 0 && midFreed === midRes.length,
+    `T4: pol-scalona pula nakladek zwolniona w calosci (${midFreed}/${midRes.length})`,
+  );
+  ok(
+    sharedSingletons().every((s) => !disposeCalls.has(s)),
+    'T4: sprzatanie pol-scalonej puli nie tyka wspoldzielonych singletonow',
+  );
+
+  console.log(`\nmerge-decor-no-regress-test: ${pass} pass, ${fail} fail`);
+  if (fail > 0) process.exit(1);
+})().catch((err) => {
+  console.error('merge-decor-no-regress-test: BLAD HARNESSU', err);
+  process.exit(1);
+});

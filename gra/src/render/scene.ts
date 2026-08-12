@@ -2102,6 +2102,111 @@ export async function buildScene(
   const coastInstHexKey: string[][] = [];
   const coastInstOrig: THREE.Matrix4[][] = [];
 
+  // ===========================================================================
+  // P-PERF-BUILDSCENE-TRY-FINALLY — sprzątanie częściowo zbudowanej sceny
+  //
+  // Powyżej powstały już WSZYSTKIE zasoby GPU, których właścicielem jest dispose()
+  // (geometrie/materiały współdzielone w obrębie tej sceny) albo puste tablice, które
+  // dopiero zostaną wypełnione (instancedMeshes, styledOverlays, riverEntries…) — a że
+  // tablice łapane są przez referencję, dispose() zwalnia też wszystko, co do nich
+  // dojdzie PÓŹNIEJ. Dlatego dokładnie tutaj przebiega granica: dispose() jest już
+  // bezpieczne do wywołania (żadne z jego wiązań nie jest w TDZ), a cała ciężka część
+  // budowy (pętla heksów, brzeg, merge nakładek, rzeki, ocean, ramka) idzie do bloku
+  // `try` niżej. Wyjątek w tej części = scena nie zostanie nikomu zwrócona, więc nikt
+  // jej nie zwolni — bez tego bloku bufory GPU (w tym zmergowane grupy styledOverlays)
+  // zostawały na karcie do końca sesji przeglądarki.
+  // / EN: everything dispose() owns already exists above (shared per-scene geometries and
+  // materials, or still-empty arrays captured by reference, so later additions are covered
+  // too). That makes this the exact point where dispose() becomes safe to call — no binding
+  // of its is in TDZ — and where the heavy build (hex loop, coast, overlay merge, rivers,
+  // ocean, frame) can be wrapped in the `try` below. A throw in there means the scene is
+  // never handed to anyone, so nobody would ever free it; without this block its GPU buffers
+  // (merged styledOverlays groups included) stayed on the card until the browser session ended.
+  // ===========================================================================
+
+  /**
+   * Zasoby zakładane JUŻ WEWNĄTRZ bloku `try` (ocean, ramka świata, listenery okna).
+   * Ich `const`-y mają zakres tego bloku, więc dispose() — zadeklarowane PRZED `try`, żeby
+   * sięgnął po nie `catch` — nie może się do nich odwołać wprost; rejestrują się tu same
+   * w miejscu powstania. Nowy zasób tworzony wewnątrz bloku dopisuj tutaj, nie do dispose().
+   * / EN: resources created INSIDE the `try` block below (ocean, world frame, window
+   * listeners). Their consts are scoped to that block, so dispose() — declared BEFORE the
+   * try so `catch` can reach it — cannot name them; they register themselves where they are
+   * created. Any new resource made inside the block belongs here, not in dispose().
+   */
+  const sceneTeardown: Array<() => void> = [];
+
+  // -- Dispose
+  function dispose() {
+    for (const m of instancedMeshes) { m.geometry.dispose(); }
+    for (const mat of Object.values(terrainMaterials)) mat?.dispose();
+    forestConeGeo.dispose(); forestConeMat.dispose();
+    forestTrunkGeo.dispose(); forestTrunkMat.dispose();
+    snowGeo.dispose(); snowMat.dispose();
+    shrubConeGeo.dispose(); shrubConeMat.dispose();
+    // Nowe dekoracje terenu
+    peakGeo.dispose(); peakMat.dispose();
+    hillBumpGeo.dispose(); hillBumpMat.dispose();
+    // GRAFIKA-3D partia TEREN stage 2: zwolnij bufory instancji (geometria gór/wzgórz i
+    // TEREN_MATERIAL są współdzielone/cache w module — NIE dispose'ować ich tutaj).
+    for (const m of goraInst) m.dispose();
+    for (const m of wzgorzeInst) m.dispose();
+    for (const m of coastInstMeshes) m.dispose();
+    for (const m of dekorLakaInst) m.dispose();
+    for (const m of dekorRowninaInst) m.dispose();
+    beachGeo.dispose(); beachMat.dispose();
+    duneGeo.dispose(); duneMat.dispose();
+    // Oazy (InstancedMesh)
+    oasisPoolGeo.dispose();  oasisPoolMat.dispose();
+    oasisTrunkGeo.dispose(); oasisTrunkMat.dispose();
+    oasisFrondGeo.dispose(); oasisFrondMat.dispose();
+    // Rzeki (woda + brzegi per entry; merged = jedna geo)
+    for (const entry of riverEntries) {
+      entry.waterGeo.dispose();
+      if (entry.bankGeo !== entry.waterGeo) entry.bankGeo.dispose();
+    }
+    riverWaterMat.dispose();
+    riverBankMat.dispose();
+    coastDeltaMat.dispose();
+    // Ocean + ramka swiata (F1) + listenery okna — powstają w bloku `try`, więc zgłaszają
+    // się przez rejestr sceneTeardown (patrz komentarz przy jego deklaracji). Wpis, którego
+    // jeszcze nie było w chwili wyjątku, po prostu nie istnieje — nie ma czego zwalniać.
+    // / EN: ocean + world frame (F1) + window listeners are born inside the `try` block, so
+    // they report themselves through the sceneTeardown registry (see its declaration). An
+    // entry that did not exist yet when the exception hit simply is not there — nothing to free.
+    for (const teardown of sceneTeardown) teardown();
+    // P-PERF-SPOWOLNIENIE-PO-60-TURACH: zmergowane grupy styledOverlays (las, dżungla,
+    // szczyty, plaże, wydmy, oazy — potencjalnie tysiące grup na mapę). Każda ciężka grupa
+    // dostała w pętli merge WŁASNĄ, zbudowaną od zera BufferGeometry + MeshLambertMaterial
+    // (buildMergedMesh), których nic poza nią nie używa — bez dispose() gl.deleteBuffer nigdy
+    // nie leci, a GC JS buforów GPU nie zwalnia, więc każde disposeScene() w tej samej sesji
+    // przeglądarki (nowa gra / wczytanie / regeneracja) zostawiał cały ten pool na karcie.
+    // Grupy lekkie (bez collapse) są bezpieczne: disposeMergedDecor bez MERGED_DECOR_FLAG to
+    // NO-OP, więc współdzielone singletony geometrii nie zostaną tknięte.
+    // / EN: merged styledOverlays groups (forest, jungle, peaks, beaches, dunes, oases —
+    // potentially thousands per map). Every heavy group got its OWN from-scratch
+    // BufferGeometry + MeshLambertMaterial in the merge pass (buildMergedMesh), used by
+    // nothing else — without dispose() gl.deleteBuffer never runs and JS GC does not free GPU
+    // buffers, so each disposeScene() in the same browser session (new game / load / regen)
+    // left that whole pool on the card. Light (non-collapsed) groups are safe:
+    // disposeMergedDecor without MERGED_DECOR_FLAG is a NO-OP, so shared singleton
+    // geometries are never touched.
+    for (const { group } of styledOverlays) disposeMergedDecor(group);
+    if (ownRenderer) {
+      renderer.dispose();
+    }
+  }
+
+  // Ciało bloku CELOWO bez dodatkowego wcięcia (ten sam zabieg co przy `} else {` w fazie
+  // rzek niżej): samo owinięcie ~1,5 tys. linii nie zmienia ani jednej instrukcji, a
+  // przesunięcie ich wcięcia zamieniłoby przeglądalny diff w ścianę i zderzyłoby się z pracą
+  // drugiego integratora na tym samym pliku. Zamknięcie: `} catch (err)` na końcu funkcji.
+  // / EN: block body deliberately left un-indented (same trick as the `} else {` in the river
+  // phase below): the wrap itself changes no statement, while re-indenting ~1.5k lines would
+  // turn a reviewable diff into a wall and collide with the other integrator's work on this
+  // same file. Closing brace: `} catch (err)` at the end of the function.
+  try {
+
   // C3 — główna pętla po heksach rozbita na porcje (chunki). Materializujemy listę
   // heksów RAZ i iterujemy po indeksie, żeby zachować DOKŁADNIE tę samą kolejność co
   // wcześniejsze `for..of Object.values(map.hexes)` (kluczowe dla stanu LCG `rnd()`
@@ -2921,6 +3026,7 @@ export async function buildScene(
     depthWrite: true,
     fog: false,
   });
+  sceneTeardown.push(() => { oceanGeo.dispose(); oceanMat.dispose(); });
   const oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
   oceanMesh.rotation.x = -Math.PI / 2;
   oceanMesh.renderOrder = -10;
@@ -2934,6 +3040,10 @@ export async function buildScene(
   // Ramka swiata — 4 listwy obramowania wokol mapy (ciemny kamien/drewno), w oceanie.
   const frameMat = new THREE.MeshLambertMaterial({ color: palette.frame, fog: false });
   const frameGeos: THREE.BoxGeometry[] = [];
+  // Rejestracja PRZED addBar — tablica łapana przez referencję, więc obejmuje wszystkie
+  // listwy dołożone niżej. / EN: registered BEFORE addBar — the array is captured by
+  // reference, so every bar added below is covered.
+  sceneTeardown.push(() => { for (const g of frameGeos) g.dispose(); frameMat.dispose(); });
   const frameMeshes: THREE.Mesh[] = [];
   const fx0 = minX - padF, fx1 = maxX + padF, fz0 = minZ - padF, fz1 = maxZ + padF;
   const frameBarH = R * 0.6, frameBarT = R * 0.7, frameY = seaTop + R * 0.12;
@@ -3007,68 +3117,19 @@ export async function buildScene(
     // layout się ustabilizuje) — dopinamy się też wprost pod fullscreenchange, żeby kamera
     // (aspect) i bufor renderera na pewno dogoniły nowy rozmiar canvasu.
     document.addEventListener('fullscreenchange', onResize);
-  }
-
-  // -- Dispose
-  function dispose() {
-    if (!fixedViewport) {
+    // P-PERF-BUILDSCENE-TRY-FINALLY: `onResize` i `camera` są zadeklarowane W ŚRODKU bloku
+    // try (blok ma własny zakres), więc dispose() — zadeklarowane PRZED try, żeby widział je
+    // catch — nie może się do nich odwołać wprost. Zdejmowanie listenerów wędruje więc do
+    // rejestru sceneTeardown, dokładnie w miejscu ich zakładania (ta sama gałąź !fixedViewport
+    // co wcześniejszy warunek w dispose()).
+    // / EN: `onResize` and `camera` live INSIDE the try block (own scope), so dispose() —
+    // declared BEFORE the try so that catch can reach it — cannot reference them directly.
+    // Listener removal therefore moves into the sceneTeardown registry, right where the
+    // listeners are attached (same !fixedViewport branch as the former guard in dispose()).
+    sceneTeardown.push(() => {
       window.removeEventListener('resize', onResize);
       document.removeEventListener('fullscreenchange', onResize);
-    }
-    for (const m of instancedMeshes) { m.geometry.dispose(); }
-    for (const mat of Object.values(terrainMaterials)) mat?.dispose();
-    forestConeGeo.dispose(); forestConeMat.dispose();
-    forestTrunkGeo.dispose(); forestTrunkMat.dispose();
-    snowGeo.dispose(); snowMat.dispose();
-    shrubConeGeo.dispose(); shrubConeMat.dispose();
-    // Nowe dekoracje terenu
-    peakGeo.dispose(); peakMat.dispose();
-    hillBumpGeo.dispose(); hillBumpMat.dispose();
-    // GRAFIKA-3D partia TEREN stage 2: zwolnij bufory instancji (geometria gór/wzgórz i
-    // TEREN_MATERIAL są współdzielone/cache w module — NIE dispose'ować ich tutaj).
-    for (const m of goraInst) m.dispose();
-    for (const m of wzgorzeInst) m.dispose();
-    for (const m of coastInstMeshes) m.dispose();
-    for (const m of dekorLakaInst) m.dispose();
-    for (const m of dekorRowninaInst) m.dispose();
-    beachGeo.dispose(); beachMat.dispose();
-    duneGeo.dispose(); duneMat.dispose();
-    // Oazy (InstancedMesh)
-    oasisPoolGeo.dispose();  oasisPoolMat.dispose();
-    oasisTrunkGeo.dispose(); oasisTrunkMat.dispose();
-    oasisFrondGeo.dispose(); oasisFrondMat.dispose();
-    // Rzeki (woda + brzegi per entry; merged = jedna geo)
-    for (const entry of riverEntries) {
-      entry.waterGeo.dispose();
-      if (entry.bankGeo !== entry.waterGeo) entry.bankGeo.dispose();
-    }
-    riverWaterMat.dispose();
-    riverBankMat.dispose();
-    coastDeltaMat.dispose();
-    // Ocean + ramka swiata (F1)
-    oceanGeo.dispose(); oceanMat.dispose();
-    for (const g of frameGeos) g.dispose();
-    frameMat.dispose();
-    // P-PERF-SPOWOLNIENIE-PO-60-TURACH: zmergowane grupy styledOverlays (las, dżungla,
-    // szczyty, plaże, wydmy, oazy — potencjalnie tysiące grup na mapę). Każda ciężka grupa
-    // dostała w pętli merge WŁASNĄ, zbudowaną od zera BufferGeometry + MeshLambertMaterial
-    // (buildMergedMesh), których nic poza nią nie używa — bez dispose() gl.deleteBuffer nigdy
-    // nie leci, a GC JS buforów GPU nie zwalnia, więc każde disposeScene() w tej samej sesji
-    // przeglądarki (nowa gra / wczytanie / regeneracja) zostawiał cały ten pool na karcie.
-    // Grupy lekkie (bez collapse) są bezpieczne: disposeMergedDecor bez MERGED_DECOR_FLAG to
-    // NO-OP, więc współdzielone singletony geometrii nie zostaną tknięte.
-    // / EN: merged styledOverlays groups (forest, jungle, peaks, beaches, dunes, oases —
-    // potentially thousands per map). Every heavy group got its OWN from-scratch
-    // BufferGeometry + MeshLambertMaterial in the merge pass (buildMergedMesh), used by
-    // nothing else — without dispose() gl.deleteBuffer never runs and JS GC does not free GPU
-    // buffers, so each disposeScene() in the same browser session (new game / load / regen)
-    // left that whole pool on the card. Light (non-collapsed) groups are safe:
-    // disposeMergedDecor without MERGED_DECOR_FLAG is a NO-OP, so shared singleton
-    // geometries are never touched.
-    for (const { group } of styledOverlays) disposeMergedDecor(group);
-    if (ownRenderer) {
-      renderer.dispose();
-    }
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -3670,4 +3731,32 @@ export async function buildScene(
     scene, camera, renderer, center, dispose, setFog, hideDecorAtHex, syncForestForUnits, setZoomLod, getZoomLodLevel,
     terrainPickMeshes, resolveTerrainPick, buildTimings,
   };
+
+  } catch (err) {
+    // P-PERF-BUILDSCENE-TRY-FINALLY: wyjątek w budowie = `return` wyżej nigdy nie padł, więc
+    // wywołujący (runBuildSceneWithOverlay w main.ts) nie dostaje `dispose` i NIKT nie zwolni
+    // tego, co zdążyło powstać. Sprzątamy tutaj i puszczamy TEN SAM błąd dalej — obsługa
+    // błędu po stronie wywołującego zostaje bez zmian.
+    // Świadomie `catch` + `throw`, nie `finally` z flagą „oddane": udana ścieżka kończy się
+    // `return`, a `finally` musiałoby dopiero po fladze rozstrzygać, czy wolno zwalniać —
+    // gdyby ktoś dołożył kiedyś wcześniejszy `return` z gotową sceną, zapomniana flaga
+    // zwolniłaby scenę tuż przed oddaniem jej graczowi. `catch` nie ma jak się pomylić.
+    // Teardown w osobnym try: gdyby sam się wywrócił, oryginalny błąd musi przetrwać
+    // (wywołujący loguje go i pokazuje graczowi) — inaczej diagnoza zniknęłaby pod błędem
+    // sprzątania.
+    // / EN: a throw during the build means the `return` above never ran, so the caller
+    // (runBuildSceneWithOverlay in main.ts) gets no `dispose` and nobody will ever free what
+    // was built. Clean up here and rethrow THE SAME error — caller-side handling is unchanged.
+    // Deliberately `catch` + `throw` rather than `finally` with a "handed off" flag: the happy
+    // path ends in `return`, and a `finally` would have to consult that flag to decide whether
+    // freeing is allowed — if someone later added an early `return` with a valid scene and
+    // forgot the flag, it would free the scene right before handing it to the player. `catch`
+    // cannot get that wrong. Teardown sits in its own try: should it fail, the original error
+    // must survive (the caller logs and surfaces it), or the diagnosis would vanish behind a
+    // cleanup error.
+    try { dispose(); } catch (teardownErr) {
+      console.warn('[civ] buildScene teardown after failure threw', teardownErr);
+    }
+    throw err;
+  }
 }
