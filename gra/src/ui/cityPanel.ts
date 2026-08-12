@@ -4033,7 +4033,14 @@ function orderBandEffectShort(band: ReturnType<typeof porPctBand>): string {
   }
 }
 
-type BreakdownLine = { label: string; value: number };
+// `neg` opcjonalne (Evaluator FAIL, P-PORZADEK-PANEL-CZYTELNOSC-ROZBICIE, 2026-08-12): status
+// NIE może być wywnioskowany wyłącznie ze znaku `value` — `Math.floor(pop×0,2)` dla małej
+// populacji miasta (1-4 obywateli) daje dla brakującego surowca `value = -0`, a `-0 >= 0` jest
+// w JS PRAWDĄ, więc wiersz renderował się jako zielony "+0" (dostępny) zamiast czerwony
+// "brakujący" — łamiąc kontrakt z JSDoc `citizenUpkeepDisplayLines`. Wołający, który zna
+// realny status (np. `available: boolean` z silnika), przekazuje `neg` jawnie; bez niego
+// zachowanie zostaje jak dawniej (`value < 0`).
+type BreakdownLine = { label: string; value: number; neg?: boolean };
 
 function appendBreakdownLines(
   mount: HTMLElement,
@@ -4047,7 +4054,8 @@ function appendBreakdownLines(
     box.appendChild(none);
   } else {
     for (const l of lines) {
-      const row = el('div', l.value >= 0 ? 'pos' : 'neg');
+      const isNeg = l.neg === true || l.value < 0;
+      const row = el('div', isNeg ? 'neg' : 'pos');
       row.textContent = `${l.label}: ${l.value >= 0 ? '+' : ''}${l.value}`;
       box.appendChild(row);
     }
@@ -4178,7 +4186,7 @@ function appendW4SignedBreakdownSections(
 function appendCitizenUpkeepBlock(mount: HTMLElement, upkeep: CitizenUpkeepCoverage | undefined, cityPopulation: number): void {
   if (!upkeep || upkeep.required.length === 0) return;
   const lines: BreakdownLine[] = citizenUpkeepDisplayLines(upkeep, cityPopulation)
-    .map(l => ({ label: stockResourceLabel(l.key), value: l.value }));
+    .map(l => ({ label: stockResourceLabel(l.key), value: l.value, neg: !l.available }));
   appendW4PctMetricBlock(
     mount,
     pctSubheadHtml('chip-crate', 'Zaopatrzenie obywateli'),

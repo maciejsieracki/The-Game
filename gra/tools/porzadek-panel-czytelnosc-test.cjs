@@ -267,6 +267,42 @@ console.log('\n-- C-H. cityPanel.ts (tekst): format blokowy + wiring populacji/%
     /szWkladPct:\s*computed\.state\.szWkladPct/.test(ros.body) && /prawWkladPct:\s*computed\.state\.prawWkladPct/.test(ros.body),
     'H5 (zabija regresję "gałąź silnika gubi % wkładu"): resolveOrderState w gałęzi live (fromEngine=true) jawnie przenosi szWkladPct/prawWkladPct z computed.state -- inaczej `...live` nadpisałby je na undefined, bo silnik (main.ts) tych pól nie liczy',
   );
+
+  // -------------------------------------------------------------------------
+  // I. FIX (Evaluator FAIL, 2026-08-12): -0 w gałęzi "missing" renderował się jako zielone "+0"
+  //    (dostępny) zamiast czerwone "brakujący", bo appendBreakdownLines klasyfikował status
+  //    wyłącznie po znaku value (`value >= 0`), a `-0 >= 0` jest w JS PRAWDĄ. Przy populacji
+  //    miasta 1-4 (Math.floor(pop*0.2)===0) to normalna sytuacja na starcie KAŻDEJ rozgrywki.
+  //    Naprawa: BreakdownLine.neg (opcjonalny), appendCitizenUpkeepBlock przekazuje
+  //    neg: !l.available jawnie zamiast polegać na znaku.
+  // -------------------------------------------------------------------------
+  const abl = windowBetween('function appendBreakdownLines(', '\nfunction ');
+  assert(abl.start > -1, 'I0: znaleziono function appendBreakdownLines(...) w cityPanel.ts');
+  assert(
+    abl.body.includes('const isNeg = l.neg === true || l.value < 0;'),
+    'I1: appendBreakdownLines klasyfikuje status przez l.neg (jawny), z fallbackiem na l.value < 0 -- NIE l.value >= 0 (który myli -0 z "dostępny")',
+  );
+  assert(
+    !/el\('div', l\.value >= 0 \? 'pos' : 'neg'\)/.test(abl.body),
+    "I2 (zabija regresję -0): appendBreakdownLines NIE klasyfikuje już wyłącznie po `l.value >= 0`",
+  );
+
+  assert(
+    cub.body.includes('neg: !l.available'),
+    'I3: appendCitizenUpkeepBlock przekazuje neg: !l.available (status z silnika, nie ze znaku wartości)',
+  );
+
+  // Dowód wykonaniem: wycięta REALNA klasyfikacja z appendBreakdownLines, uruchomiona na
+  // dokładnie tym wejściu, które łamało poprzednią wersję (-0, populacja miasta = 1).
+  const isNegFnSrc = abl.body.match(/const isNeg = l\.neg === true \|\| l\.value < 0;/);
+  assert(isNegFnSrc, 'I4: kotwica wycięcia realnej klasyfikacji znaleziona (do uruchomienia poniżej)');
+  if (isNegFnSrc) {
+    const classify = new Function('l', `const isNeg = l.neg === true || l.value < 0; return isNeg;`);
+    assert(classify({ value: -0, neg: true }) === true, 'I5: value=-0, neg=true (surowiec brakujący, populacja mała) -> klasyfikowany jako "neg" (czerwony)');
+    assert(classify({ value: -0, neg: false }) === false, 'I6: value=-0, neg=false (surowiec dostępny mimo -0) -> klasyfikowany jako "pos" (zielony) -- neg ma pierwszeństwo przed znakiem');
+    assert(classify({ value: -7 }) === true, 'I7: brak neg, value ujemne -> nadal "neg" (fallback zachowany dla innych wołających appendBreakdownLines)');
+    assert(classify({ value: 4 }) === false, 'I8: brak neg, value dodatnie -> nadal "pos" (fallback zachowany)');
+  }
 }
 
 console.log(`\nporzadek-panel-czytelnosc-test: ${passed} passed, ${failed} failed`);
