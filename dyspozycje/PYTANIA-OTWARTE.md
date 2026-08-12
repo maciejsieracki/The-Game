@@ -14958,9 +14958,9 @@ naprawy przed zamknięciem tematu:
    kod robi inaczej, nic tego nie odnotowuje — audyt właściciela (`grep STATUS: **OTWARTE`, §0c)
    by tego nie złapał.
 
-**⛔ NOWE PYTANIE, PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (zasada §1a) — STATUS: OTWARTE**
+## P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1 (2026-08-12, nota Evaluatora `aa77297798dc1e166`) · STATUS: **OTWARTE — pytanie ABC czeka na odpowiedź, PODWAŻA WCZEŚNIEJSZĄ DECYZJĘ (zasada §1a)**
 
-`P-GARNIZON-KONIUNKCJA-CZY-SAMO-INGARNIZON-Q1`: zaimplementowana reguła (blokada na samym
+Zaimplementowana reguła (blokada na samym
 `inGarnizon===true`, bez wymogu `ufortyfikowanyWPolu===true` jednocześnie) **podważa dosłowny
 zapis ECHO `P-BARBARZYNCY-WYCOFANIE-ASYMETRIA-Q1`** (który mówił o koniunkcji obu pól). Tekstowo
 uzasadnione ("ufortyfikowana W MIEŚCIE" = `inGarnizon`, `ufortyfikowanyWPolu` to z definicji
