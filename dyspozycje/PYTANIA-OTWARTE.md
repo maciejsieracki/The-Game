@@ -15183,3 +15183,39 @@ sekcja powstała. Do skorygowania przy najbliższej okazji dotknięcia tego plik
 osobnego dispatchu). Nota N1 (margines liczony tylko na 5 seedach, realny mniejszy: 0.0355 nie
 0.058) — kosmetyczna. **ZAMKNIĘTE.**
 
+
+## Runda 4 miast barbarzyńców (59a87c74) — 3x Evaluator KOMPLETNE: werdykt zbiorczy FAIL, runda 5 dispatchowana
+
+Evaluator C (lens: pokrycie mutacyjne) wrócił: **PASS-WITH-NOTES**, 92,3% mutantów nierównoważnych
+zabitych (12/13, jeden dowiedziony jako równoważny). Znalazł JEDNĄ realną, dodatkową lukę:
+**X3** — guard "miasto BRONIONE nie trafia do `clearedCityIds`" w kroku 3 (`barbarians.ts:1309`)
+jest dziś pokryty PUSTĄ asercją (sekcja 6a przyznaje we własnym komentarzu że krok 2 zawsze
+przechwytuje wcześniej przez `continue`, więc krok 3 nigdy się nie wykonuje w tym teście). Dowód
+że mutant jest żywy (nie równoważny): 2 osiągalne scenariusze gdzie krok 2 NIE zwiera obwodu
+(rozejm `canEngageOwner=false`; jednostka NA heksie miasta, dystans 0) — bronione miasto zostaje
+błędnie oznaczone jako "oczyszczone", barbarzyńca porzuca miasto którego nigdy nie zdobył. Gotowe
+2 asercje (sekcja 6c) podane w raporcie Evaluatora.
+
+**WERDYKT ZBIORCZY: FAIL.** Evaluator A (lens: poprawność logiki) znalazł błąd nadrzędny wobec
+notatek B/C: warunek resetu `clearedCityIds` nie odpowiada dokumentacji — na planszy z bronionymi
+miastami (czyli każdej realnej rozgrywce) reset **nigdy się nie odpala** (dowód: 40 tur, 0 resetów),
+a w gorszym przypadku jednostka **trwale zamiera** (47/60 tur bezczynności gdy jedyne osiągalne
+niebronione miasta wyczerpane, a jedyne bronione jest nieosiągalne). Mutacja M8 (podmiana na
+dosłowną semantykę z dokumentacji) przechodzi 127/127 niezłapana — potwierdzone niezależnie przez
+Evaluatora C jako ten sam typ "pustej asercji", na którym poległy już rundy 1-3.
+
+**Zakres rundy 5 (dispatchowana):**
+1. **F1 (Evaluator A)** — rozstrzygnąć decyzją: wdrożyć semantykę z dokumentacji (reset gdy
+   wszystkie NIEBRONIONE miasta odwiedzone, niezależnie od bronionych) LUB poprawić dokumentację
+   + komunikat commita żeby nie twierdziły "patrol cykliczny" gdy realnie jest jednorazowy na
+   planszy mieszanej. Rekomendacja Evaluatora A: 2-liniowa zmiana warunku.
+2. **F2 (Evaluator A)** — strażnik osiągalności: gdy `firstStep` zwraca `null` dla wybranego celu,
+   spróbować kolejnego kandydata zamiast kończyć turę bez komendy na zawsze.
+3. **Test na planszy MIESZANEJ** (bronione+niebronione razem) na ścieżce resetu — dziś M8
+   przechodzi niezłapane.
+4. **X3 (Evaluator C)** — dopisać sekcję 6c (2 gotowe asercje, kod w raporcie C) pokrywającą
+   realnie osiągnięty krok 3 z bronionym celem (rozejm + dystans 0).
+5. NIE dotykać: serializacji/save-load (Evaluator B: w pełni poprawne), zakresu per-jednostka
+   (Evaluator A: poprawne), samo-wygasania (Evaluator A: poprawne), guard `if(!includes)` w kroku
+   dodawania (Evaluator C: dowiedziony martwy kod defensywny, nie dopisywać asercji).
+
