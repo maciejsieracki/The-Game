@@ -471,30 +471,41 @@ console.log('\n-- J. cityPanel.ts computeOrderStateLocal -- werdykt silnika prze
 }
 
 // ===========================================================================
-// G. computeCitizenResourceDrain -- realny drenaż 1:1 (N2, Maciej 2026-08-11)
+// G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obywatel (N2, Maciej 2026-08-11;
+//    stawka 1,0->0,2 Maciej 2026-08-12, "DECYZJA: STAWKA 1->0,2", punkt 1)
 // ===========================================================================
-console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1 szt./obywatel --');
+console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 0,2 szt./obywatel --');
 {
-  // Stawka 1:1: 10 obywateli, magazyn 50 drewna/50 gliny (epoka 1) -> required=10 każdy,
-  // drained=10 każdy (magazyn wystarcza), oba "available" (pełne pokrycie).
-  const full = M.computeCitizenResourceDrain(1, 10, { drewno: 50, glina: 50 });
-  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na 10 obywateli (>=10 każdego) -> oba available');
-  eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (1 szt./obywatel × 10 obywateli)');
-  eq(full.deductions.glina, 10, 'deductions.glina = 10 (1 szt./obywatel × 10 obywateli)');
+  // PRZELICZENIE PO ZMIANIE STAWKI (2026-08-12, 1,0->0,2 = 5x mniej): wszystkie liczby obywateli
+  // w tej sekcji przeskalowane x5 względem stanu sprzed zmiany (10->50, 3->15, 7->35), żeby
+  // required = Math.floor(population * 0.2) wyszło DOKŁADNIE tyle samo, ile wychodziło required
+  // = population * 1 przy starej stawce -- każda "want" wartość w eq()/deepEqSet() niżej zostaje
+  // WIĘC NIEZMIENIONA, przeliczona jest tylko liczba obywateli na wejściu. Weryfikacja braku
+  // błędu zaokrąglenia (50*0.2, 15*0.2, 35*0.2 wychodzą dokładnie 10/3/7 w IEEE754, bez utraty
+  // precyzji) zrobiona osobno poza testem (node -e).
+  //
+  // Stawka 0,2: 50 obywateli, magazyn 50 drewna/50 gliny (epoka 1) -> required=floor(50*0,2)=10
+  // każdy, drained=10 każdy (magazyn wystarcza), oba "available" (pełne pokrycie).
+  const full = M.computeCitizenResourceDrain(1, 50, { drewno: 50, glina: 50 });
+  deepEqSet(full.available, ['drewno', 'glina'], 'magazyn wystarcza na required=10 (z 50 obywateli x 0,2) każdego surowca -> oba available');
+  eq(full.deductions.drewno, 10, 'deductions.drewno = 10 (0,2 szt./obywatel × 50 obywateli)');
+  eq(full.deductions.glina, 10, 'deductions.glina = 10 (0,2 szt./obywatel × 50 obywateli)');
 
   // Niedobór: magazyn MNIEJSZY niż required -> drained = min(required, stock), NIGDY < 0,
   // surowiec liczy się jako "missing" (pokrycie częściowe, nie pełne -- kara nadal binarna).
-  const partial = M.computeCitizenResourceDrain(1, 10, { drewno: 3, glina: 0 });
-  deepEqSet(partial.missing, ['drewno', 'glina'], '10 obywateli, magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
+  const partial = M.computeCitizenResourceDrain(1, 50, { drewno: 3, glina: 0 });
+  deepEqSet(partial.missing, ['drewno', 'glina'], '50 obywateli (required=10), magazyn drewna=3 (< required=10) -> missing (pokrycie częściowe = brak)');
   eq(partial.deductions.drewno, 3, 'deductions.drewno = min(10, 3) = 3 -- drenuje ile jest, magazyn NIE schodzi poniżej zera');
   assert(!('glina' in partial.deductions), 'deductions.glina nieobecne (0 do odjęcia) -- magazyn=0, nic nie drenować');
 
   // Zero obywateli -> zero zapotrzebowania -> zawsze "available" (brak kary na dane brzegowe).
+  // Stawka nie ma tu znaczenia (0 * dowolna_stawka = 0) -- populacja NIE przeskalowana.
   const zeroPop = M.computeCitizenResourceDrain(1, 0, { drewno: 0, glina: 0 });
   deepEqSet(zeroPop.available, ['drewno', 'glina'], '0 obywateli -> required=0 -> zawsze pełne pokrycie, nawet z pustym magazynem');
   eq(Object.keys(zeroPop.deductions).length, 0, '0 obywateli -> brak zapotrzebowania -> brak odjęcia (deductions puste)');
 
   // Populacja ujemna/niefinitna (dane śmieciowe) -> traktowana jak 0, zero regresji/crashu.
+  // Stawka nie ma tu znaczenia (pop klamrowane do 0 PRZED przemnożeniem przez stawkę).
   const negPop = M.computeCitizenResourceDrain(1, -5, { drewno: 0 });
   eq(Object.keys(negPop.deductions).length, 0, 'populacja ujemna traktowana jak 0 -- brak odjęcia, brak crasha');
   const nanPop = M.computeCitizenResourceDrain(1, NaN, { drewno: 0 });
@@ -503,8 +514,9 @@ console.log('\n-- G. computeCitizenResourceDrain -- realny drenaż 1 szt./obywat
   // Kara nadal BINARNA (ECHO Q3=A niezmienione): pokrycie W PEŁNI (nie licznik/rozmiar
   // niedoboru) -- 1 sztuka brakująca do pełnego pokrycia daje TAKĄ SAMĄ karę jak 1000 sztuk
   // brakujących (obie "missing"), happinessDelta/growthPctDelta liczą TYLKO available.length/missing.length.
-  const barelyMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 9, glina: 50 });
-  const wayMissing = M.computeCitizenResourceDrain(1, 10, { drewno: 0, glina: 50 });
+  // 50 obywateli -> required=10 (jak wyżej); drewno=9 to "brakuje 1 sztuki do required=10".
+  const barelyMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 9, glina: 50 });
+  const wayMissing = M.computeCitizenResourceDrain(1, 50, { drewno: 0, glina: 50 });
   eq(barelyMissing.happinessDelta, wayMissing.happinessDelta, 'ECHO Q3=A zachowane: brak 1 sztuki do pełnego pokrycia = ta sama kara co brak całości (binarne, nie proporcjonalne)');
 }
 
@@ -644,21 +656,25 @@ console.log('\n-- H. citizenUpkeepDrainForOwner: drenaż liczony RAZ per owner (
   );
 
   // Behawioralny dowód end-to-end: computeCitizenResourceDrain wywołane RAZ z sumą populacji
-  // 2 miast (5+5=10) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
-  // populacji 10 -- a NIE 2× wywołanie po 5 (co dałoby 2×5=10 też przypadkiem przy tej stawce,
-  // więc test dobiera asymetryczne populacje 3+7, żeby odróżnić "suma najpierw" od "podwójne
-  // liczenie": drenaż z osobna dla pop=3 i pop=7 na TYM SAMYM (niezmutowanym) magazynie 8 drewna
-  // dałby OBA "available" (3<=8 i 7<=8) -- błędnie, bo razem potrzeba 10 > 8. Suma-najpierw
+  // 2 miast (25+25=50) daje IDENTYCZNY deductions co gdyby liczyć jedno "wirtualne" miasto o
+  // populacji 50 -- a NIE 2× wywołanie po 25 (co dałoby 2×5=10 też przypadkiem przy tej stawce,
+  // więc test dobiera asymetryczne populacje 15+35, żeby odróżnić "suma najpierw" od "podwójne
+  // liczenie": drenaż z osobna dla pop=15 (required=floor(15×0,2)=3) i pop=35
+  // (required=floor(35×0,2)=7) na TYM SAMYM (niezmutowanym) magazynie 8 drewna dałby OBA
+  // "available" (3<=8 i 7<=8) -- błędnie, bo razem potrzeba floor(50×0,2)=10 > 8. Suma-najpierw
   // (RAZ per owner) poprawnie daje deductions.drewno = min(10, 8) = 8, missing.
-  const wrongPerCity3 = M.computeCitizenResourceDrain(1, 3, { drewno: 8 });
-  const wrongPerCity7 = M.computeCitizenResourceDrain(1, 7, { drewno: 8 });
+  // PRZELICZENIE PO ZMIANIE STAWKI (2026-08-12, 1,0->0,2 = 5x mniej): populacje przeskalowane x5
+  // (3->15, 7->35, suma 10->50) względem stanu sprzed zmiany, żeby required (3, 7, 10) i
+  // wszystkie "want" wartości niżej zostały DOKŁADNIE takie same jak wcześniej.
+  const wrongPerCity3 = M.computeCitizenResourceDrain(1, 15, { drewno: 8 });
+  const wrongPerCity7 = M.computeCitizenResourceDrain(1, 35, { drewno: 8 });
   assert(
     wrongPerCity3.available.includes('drewno') && wrongPerCity7.available.includes('drewno'),
     'sanity: liczone OSOBNO (błędny wzorzec) obie "widzą" magazyn=8 jako wystarczający -- to właśnie ta pułapka, którą H1-H3 mają wykluczyć w main.ts',
   );
-  const correctSummedFirst = M.computeCitizenResourceDrain(1, 3 + 7, { drewno: 8, glina: 50 });
+  const correctSummedFirst = M.computeCitizenResourceDrain(1, 15 + 35, { drewno: 8, glina: 50 });
   eq(correctSummedFirst.deductions.drewno, 8, 'poprawny wzorzec (suma populacji NAJPIERW, RAZ per owner): deductions.drewno = min(10, 8) = 8, nie 2×8=16');
-  deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 10 obywateli > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
+  deepEqSet(correctSummedFirst.missing, ['drewno'], 'poprawny wzorzec: 50 obywateli (required=10) > 8 sztuk drewna w magazynie (glina wystarcza) -> tylko drewno missing (poprawnie wykrywa niedobór, którego wzorzec "osobno" by nie zauważył)');
 }
 
 // ===========================================================================
