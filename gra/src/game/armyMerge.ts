@@ -260,24 +260,56 @@ export function exitFieldFortify(u: RuntimeUnit): boolean {
  *
  * INTERPRETACJA `inGarnizon`/`ufortyfikowanyWPolu` -- WAŻNE, przeczytaj przed zmianą:
  * ECHO w PYTANIA-OTWARTE.md zapisało warunek literalnie jako koniunkcję OBU pól
- * (`inGarnizon===true` I `ufortyfikowanyWPolu===true`). Zbadano (units/setup.ts
- * doc-comment RuntimeUnit.ufortyfikowanyWPolu + enterGarnizon/enterFieldFortify
- * powyżej w tym pliku): te dwa pola są DZIŚ WZAJEMNIE WYKLUCZAJĄCE SIĘ w całym
- * silniku -- `ufortyfikowanyWPolu` jest z definicji stanem POZA hexem własnego
- * miasta, a jedyne dwa wywołania, które go ustawiają
- * (main.ts handleSelectedUnitHudAction, akcja 'fortify'), rozgałęziają się na
- * `city !== undefined && u.ownerId === city.ownerId` → enterGarnizon(), inaczej →
- * enterFieldFortify() -- WYŁĄCZNIE jedno z dwóch, nigdy oba na tej samej jednostce.
- * Dosłowna koniunkcja obu pól jest więc STRUKTURALNIE NIEOSIĄGALNA -- zaimplementowana
- * dosłownie, ta funkcja nigdy nie zwróciłaby `true`, więc opcja wycofania obrońcy
- * NIGDY nie zostałaby zablokowana dla nikogo -- co wprost przeczy cytatowi właściciela
- * ("Ani AI, ani gracz, ani nikt" -- czyli KTOŚ ma być faktycznie zablokowany).
- * "Ufortyfikowana w mieście i jest w garnizonie" w mówionym języku opisuje JEDEN stan
- * tej gry (jedyny sposób na bycie "ufortyfikowanym w mieście" to właśnie wejście do
- * garnizonu -- UI nazywa obie czynności tym samym przyciskiem "Ufortyfikuj" na hexie
- * własnego miasta), nie logiczną koniunkcję dwóch niezależnych, wzajemnie
- * wykluczających się pól. Dlatego predykat niżej sprawdza WYŁĄCZNIE `inGarnizon`.
- * Pełne uzasadnienie i dowód kodem: raport zadania fix-retreat-garnizon.
+ * (`inGarnizon===true` I `ufortyfikowanyWPolu===true`). Runda 1 tego komentarza
+ * twierdziła, że ta koniunkcja jest "STRUKTURALNIE NIEOSIĄGALNA" -- Evaluator
+ * (runda 2) to OBALIŁ wykonaniem: `enterFieldFortify(u); enterGarnizon(u);` na
+ * TEJ SAMEJ jednostce daje OBA pola `true` (żadna z dwóch funkcji w tym pliku
+ * nie czyści pola ustawianego przez drugą -- dowód w sekcji 3
+ * retreat-garnizon-fortyfikacja-test.cjs). To NIE jest tylko teoria: main.ts ma
+ * realne ścieżki, które prowadzą do tego stanu bez jawnej, świadomej akcji
+ * gracza -- (a) ok. linii 9727, scalanie stosów: `for (const u of all)
+ * u.inGarnizon = preferGarnizon;` -- zapis z pominięciem `enterGarnizon()`,
+ * więc `ufortyfikowanyWPolu` jednostki dołączanej do scalenia nigdy nie jest
+ * czyszczone; (b) ok. linii 16944, akcja "Ufortyfikuj" na hexie własnego miasta:
+ * `for (const su of stack) enterGarnizon(su);`, gdzie `stack` pochodzi z
+ * `playerStackAt` → `visibleStackOnHex`, która filtruje WYŁĄCZNIE po
+ * `inGarnizon !== true`, NIE po `ufortyfikowanyWPolu` -- jednostka ufortyfikowana
+ * w polu na tym heksie (np. obrońca, który wcześniej ufortyfikował się w polu,
+ * zanim gracz założył tam miasto -- `canFoundCity` nie sprawdza jednostek)
+ * trafia do `stack` i dostaje `inGarnizon=true` zbiorowo, bez przejścia przez
+ * `exitFieldFortify()`.
+ *
+ * WNIOSEK -- wykluczanie obu pól NIE JEST inwariantem danych w silniku. To
+ * jednak NIE ma znaczenia funkcjonalnego dla tej funkcji: predykat niżej
+ * sprawdza WYŁĄCZNIE `inGarnizon`, czyli logiczny NADZBIÓR dosłownej koniunkcji
+ * ECHO -- jednostka z obydwoma polami `true` MA `inGarnizon===true`, więc i tak
+ * jest poprawnie łapana i blokuje wycofanie (patrz sekcja 3d testu). Dosłowna
+ * koniunkcja byłaby węższa i pominęłaby zwykły, najczęstszy przypadek "sam w
+ * garnizonie" (`inGarnizon===true`, `ufortyfikowanyWPolu` nigdy nietknięte) --
+ * czyli DOKŁADNIE ten przypadek, którego zablokowanie było SEDNEM prośby
+ * właściciela ("Ani AI, ani gracz, ani nikt" -- czyli KTOŚ ma być faktycznie
+ * zablokowany). Dlatego predykat świadomie zostaje przy samym `inGarnizon`, a
+ * nie przy koniunkcji -- implementacja tej funkcji jest bez zmian od rundy 1,
+ * poprawiona jest tylko ta interpretacja.
+ * / EN: ECHO literally wrote the condition as a conjunction of BOTH fields.
+ * Round 1 of this comment claimed that conjunction was "structurally
+ * unreachable" -- the Evaluator (round 2) refuted that BY EXECUTION:
+ * `enterFieldFortify(u); enterGarnizon(u);` on the SAME unit yields BOTH
+ * fields `true` (neither function clears the other's field). This is not
+ * just theoretical: main.ts has real paths that reach this state without an
+ * explicit, deliberate player action -- see the two call sites cited above
+ * (~9727 direct field write during stack merge; ~16944 `enterGarnizon` over a
+ * hex's whole `visibleStackOnHex`, which filters only on `inGarnizon`, not on
+ * `ufortyfikowanyWPolu`). CONCLUSION: the mutual exclusion is NOT a data
+ * invariant of the engine -- but this has NO functional impact here, because
+ * the predicate below checks `inGarnizon` alone, a strict SUPERSET of the
+ * literal ECHO conjunction: a unit with both fields `true` still has
+ * `inGarnizon===true` and is still correctly caught. The literal conjunction
+ * would in fact be narrower and would miss the ordinary "garrison only" case
+ * that was the whole point of the owner's request. The predicate deliberately
+ * stays keyed on `inGarnizon` alone; only this write-up changed, not the
+ * implementation.
+ * Pełne uzasadnienie i dowód kodem: sekcja 3 retreat-garnizon-fortyfikacja-test.cjs.
  *
  * @param defenders roster obrońców bitwy (ten sam roster, co idzie do PreBattleSide).
  * @returns true, gdy roster jest niepusty i KAŻDY obrońca ma `inGarnizon===true`.
