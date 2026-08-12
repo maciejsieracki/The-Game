@@ -6665,3 +6665,65 @@ a `git-merge-main` jest twardo zablokowany w `guardrails.ts` (bez furtki). Hasł
 **FALA 270 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu" — wejdzie przy FALI 271).
 CZEKAM-NA: sesja lokalna: pull na dysk właściciela (testuj `13a04632`) · Maciej: zgoda na
 scalenie FAL 268+269 do `main`.
+
+## [23:45 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 271**, md5 `3e956226`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`3e956226695d01eeda65e4989600b344`**, stempel
+`ROBOCZA · e43605f4 · 2026-08-12 21:41` (UTC). Build z HEAD **`96166d19`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**50 commitów** od FALI 270, 17 plików w
+`gra/src`+`gra/data`, +1414/−107). **Commit deployu: `82ed00a6`**, wypchnięty na gałąź sesji.
+Bramki na tym czubku: `tsc` **0 błędów** · `logic-test` **213/213** · `combat-test` **6/6** ·
+`vite build` **815 modułów** · `verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html`
+przegenerowane.
+**Tematy (fala domykająca, same naprawy — bez nowych funkcji):** klaster miast barbarzyńców rundy
+5-6-7 (M7.1 bramka trudności, M10.3 pathCost, temat ZAMKNIĘTY po 7 rundach) · IndexedDB B1+B2+B3
+(re-entrancy, cache porażki, cichy fallback) · fantomowy slot `_lastPlayed` (martwe „Kontynuuj"/
+„Wczytaj" po skasowaniu WSZYSTKICH zapisów) · runda 2 retreat-garnizon (fałszywy doc-comment
++ strażnik `main.ts`) · panel zużycia surowców (etykiety Zapotrzebowanie/drenaż realny + żywy
+fallback po save-load) · drenaż obywateli r2 (zaokrąglenia, pin stawki) · dyplomacja U1/U3
+(etykieta PW ignorująca `relOk`) + eksport `DIPLOMACY_MSG_PREFIX` (nagłówek EOT) · guard
+`Number.isInteger` przy promocji na front kolejki.
+⚠️ **Bundel przebudowany po wyścigu:** pierwszy build (`7bffe3dd`, HEAD `bf6d9d61`) powstał, zanim
+doszło 5 commitów innej sesji. Zrobiłem `git rebase` na `96166d19` i przebudowałem od zera, żeby
+md5 odpowiadał czubkowi gałęzi. Różnica funkcjonalna zero (jedyna zmiana w `gra/src` z tych
+5 commitów — `957a5f58` w `barbarians.ts` — to wyłącznie komentarze, zweryfikowane diffem).
+**md5 `7bffe3dd` NIGDZIE nie został opublikowany — obowiązuje `3e956226`.**
+⛔ **Znany defekt historii:** commit `044aa26d` (komunikat: drenaż obywateli) zawiera także +284
+linie w `barbarians.ts` — wyścig commitów w współdzielonym drzewie. Obie zmiany poprawne
+i zweryfikowane osobno; historia nie przepisywana. Zarejestrowane w `PYTANIA-OTWARTE.md`.
+**FALA 271 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu"). Powstanie FALI 271
+kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
+⛔ Zaległość z FALI 270 **nadal otwarta**: `main` stoi na `99974173` (= FALA 267), FALE 268 i 269
+nigdy nie scalone. Scalenie NIE wykonane w tej fali (poza zakresem zlecenia deployu).
+**SESJA LOKALNA: pull na dysk właściciela** (testuj `3e956226`).
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 268+269+270 do `main`.
+
+## [23:47 PL, 2026-08-12] CHMURA → SESJA LOKALNA — deploy ROBOCZA **FALA 271**, md5 `ea51ac51`
+
+Bundel `gra-robocza/Gra-ROBOCZA.html` md5 **`ea51ac51335652ce60732b600a82c70d`**, stempel
+`ROBOCZA · b91375a2 · 2026-08-12 21:44` (UTC). Build z HEAD **`b6159561`** gałęzi
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0` (**53 commity** od FALI 270, 17 plików w
+`gra/src`+`gra/data`, +1523/−120). **Commit deployu: `b530a9a3`**, wypchnięty na gałąź sesji.
+Bramki na tym czubku: `tsc` **0 błędów** · `logic-test` **213/213** · `combat-test` **6/6** ·
+`diplomacy-acceptance-points-test` **253/0** · `vite build` **815 modułów** ·
+`verify-robocza-bundle` **VERIFY OK**. 6 playtestów + `START.html` przegenerowane.
+**Tematy (fala domykająca, same naprawy — bez nowych funkcji):** klaster miast barbarzyńców rundy
+5-6-7 (temat ZAMKNIĘTY po 7 rundach) · IndexedDB B1+B2+B3 (re-entrancy, cache porażki, cichy
+fallback) · fantomowy slot `_lastPlayed` (martwe „Kontynuuj”/„Wczytaj” po skasowaniu WSZYSTKICH
+zapisów) · runda 2 retreat-garnizon · panel zużycia surowców (etykiety + żywy fallback po
+save-load) · drenaż obywateli r2 · **dyplomacja U1+U2+U3 — asymetria PW w pełni domknięta**
+(U2 `489b2661` wjechał w trakcie deployu, JEST w bundlu) + nagłówek EOT · guard `Number.isInteger`
+przy promocji na front kolejki.
+⚠️ **Bundel budowany 3× — wyścig z równoległymi sesjami na gałęzi.** Buildy `7bffe3dd`
+(HEAD `bf6d9d61`) i `3e956226` (HEAD `96166d19`) **porzucone, NIGDZIE nie opublikowane** —
+obowiązuje **wyłącznie `ea51ac51`**. Po każdym fetchu z nowymi commitami: rebase + pełna
+przebudowa od zera (nigdy podmiana samej pieczątki), żeby md5 odpowiadał czubkowi gałęzi.
+⛔ **Znany defekt historii:** commit `044aa26d` (komunikat: drenaż obywateli) zawiera także +284
+linie w `barbarians.ts` — wyścig commitów w współdzielonym drzewie. Obie zmiany poprawne
+i zweryfikowane osobno; historia nie przepisywana.
+**FALA 271 świadomie zostaje na gałęzi** (rytm „jedna fala do tyłu”). Powstanie FALI 271
+kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźnej zgody właściciela.
+⛔ Zaległość z FALI 270 **nadal otwarta**: `main` stoi na `99974173` (= FALA 267), FALE 268 i 269
+nigdy nie scalone. Scalenie NIE wykonane w tej fali (poza zakresem zlecenia deployu).
+**SESJA LOKALNA: pull na dysk właściciela** (testuj `ea51ac51`).
+CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FAL 268+269+270 do `main`.
