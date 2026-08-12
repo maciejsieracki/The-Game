@@ -16232,3 +16232,16 @@ NA POZIOMIE SILNIKA (nie JSON) dla kamieniołomu/kopalni miedzi/kopalni żelaza,
 `pytanie-84-stock-keys` 14/14, `tsc` 0 błędów, `logic-test` 213/213. **ZAMKNIĘTE** (commit
 `0994753b`). Temat ecbddda8 w pełni domknięty. N4 (ujawnienie skutku balansowego — 2 wcześniej
 martwe budynki zaczęły działać) i N7/N8 (pre-istniejące) pozostają zarejestrowane, nie naprawiane.
+
+## Koszyk PW — naprawa deduplikacji ścieżki edycji N1 — ZAMKNIĘTE
+
+Diagnoza Evaluatora zweryfikowana wykonaniem (esbuild+jsdom, realne kliknięcia w
+`showTradeBasketModal`). Naprawa: nowa eksportowana `applyBasketItemEdit()` wywoływana z handlera
+"Zapisz zmiany" zamiast gołego `map()`. Dla typów BEZ ilości: **blokada-jako-no-op** (powrót do
+stanu sprzed edycji przy kolizji) — wybrana jako spójna z istniejącą semantyką
+`addOrMergeBasketItem` (który też nigdy nie usuwa wiersza, tylko blokuje). Dla typów Z ilością:
+scalanie identyczne jak przy dodawaniu. Dowód: reprodukcja ze zgłoszenia (2 identyczne wiersze)
+→ po naprawie 1 wiersz (blokada). `addOrMergeBasketItem` bajt w bajt niezmieniona (zweryfikowane
+diffem). 10 nowych testów regresyjnych, `diplomacy-basket-duplicate-ui-test` 10→20/20, `tsc`
+0 błędów, `logic-test` 213/213. **ZAMKNIĘTE** (commit `b923730a`). Temat
+P-DYPLOMACJA-DUPLIKAT-PROPOZYCJI-W-OFERCIE w pełni domknięty (obie ścieżki: dodawanie + edycja).
