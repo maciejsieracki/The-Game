@@ -16504,3 +16504,65 @@ błędów, `promote-to-front-test.cjs` 65/65, `logic-test.cjs` 213/213. Commit `
 `eval-promote-front-r2` z commitu `3539a6cf`) NASTĘPUJE teraz** — ma odtworzyć scenariusz B1
 własnym kodem (nie czytaniem raportu), zweryfikować `rushProduction`/`dequeue`, spróbować złamać
 niezmiennik anty-exploit własną mutacją, sprawdzić nie-tautologiczność sekcji 9/12/13.
+
+---
+
+## Przycisk „zamień z frontem kolejki" (fcd31209) — Evaluator runda 2: FAIL (B2 — nowy call-site poza production.ts), runda 3 dispatch (2026-08-13)
+
+**B1 potwierdzone NAPRAWIONE, niezależnie, własnym kodem Evaluatora** (nie czytaniem raportu):
+scenariusz krytyczny (Cud 1000, 500 zebrane realnym `advanceProduction`, promocja Wojownika,
+naturalne dokończenie) odtworzony z realnego `production.ts` — Cud wraca z dokładnie 500.
+Zweryfikowano też `rushProduction` i `dequeue`. Fuzz 400×25=10 000 kroków losowych operacji,
+0 naruszeń niezmiennika, bilans Pracy zachowany, round-trip zapisu (JSON stringify/parse jak
+`save.ts`) zachowuje zbankowane pole. Mutacja własna Evaluatora (8 wariantów, nie powtórka
+Operatora): 7/8 zabitych realnymi 65 asercjami — test nie jest jałowy. `tsc` 0, `promote-to-
+front-test.cjs` 65/65, `logic-test.cjs` 213/213 — potwierdzone wykonaniem przez Evaluatora.
+
+**BLOKER B2 — trwała utrata zbankowanego postępu w `main.ts::applyProductionCompleted`
+(linia 3167, gałąź „brak Manpower" ~3213-3222), STRICTLY WORSE niż runda 1.** Ta funkcja ma
+WŁASNĄ logikę wstawiania na front (`kolejka: [completed, ...prodAfterAdvance.kolejka], postep:
+completed.koszt`), całkowicie poza kontraktem `dropFrontItem`/`promoteToFront` z rundy 2. Gdy
+`tryDeductUnitSpawnCostsEmpire` zwraca `ok:false` (brak Manpower), scalar `postep` jest
+NADPISYWANY kosztem odłożonej jednostki — zbankowana wartość nowego frontu (już wyliczona przez
+`dropFrontItem` w `advanceProduction` chwilę wcześniej) ginie bezpowrotnie, bo item, na którym
+powinna wrócić (Cud), ma już wyczyszczone własne pole `postep` (przeniesione do scalara przez
+dropFrontItem), a ten scalar właśnie zostaje zastąpiony.
+
+**Repro (dosłowne, oba commity, ten sam scenariusz):** kolejka `[Cud 1000, Wojownik 10]`, 500
+Pracy zebrane, ⇈ na Wojownika, Wojownik kończy się, `tryDeductUnitSpawnCostsEmpire` → `ok:false`.
+Runda 1 (`de1d002b`): ręczna ⇈ na Cud po tym zdarzeniu → aktywny postęp = **500** (odzyskuje).
+Runda 2 (`3539a6cf`, HEAD): identyczny scenariusz → aktywny postęp = **0**. Regresja netto
+względem rundy 1, nie tylko brak postępu wobec rundy 2.
+
+**Osiągalne z 3 miejsc** (wszystkie wywołują tę samą funkcję): koniec tury (`main.ts:24451`),
+wykup (`main.ts:18115`, `main.ts:27301`) — jeden fix w `applyProductionCompleted` naprawia
+wszystkie trzy ścieżki.
+
+**Dlaczego blokujące, nie notatka:** (1) ta sama klasa błędu co B1 — call-site manipulujący
+frontem nieświadomy protokołu bankowania, runda 2 nie zaudytowała konsumentów scalara który sama
+przedefiniowała; (2) wyzwalacz skorelowany z pilną potrzebą wojska (⇈ na jednostkę robi się
+głównie gdy brakuje wojska — czyli dokładnie gdy Manpower może zablokować); (3) przeczy
+tooltipowi przeredagowanemu w TYM SAMYM commicie 2 rundy („zostanie zachowana i wróci na front").
+
+**Notatki niepilne (do rejestru, nie blokują), do przekazania Operatorowi rundy 3 jako
+dodatkowy zakres jeśli czas pozwoli, inaczej osobna rejestracja:**
+- N1 (luka testowa): niezmiennik „front nigdy nie niesie zbankowanego postep" asercjonowany po
+  `advanceProduction`/`rush`/`dequeue`, NIGDY po `promoteToFront` — wersja bez stripu wchodzącego
+  itemu przechodzi 65/65 (mutant M5 Evaluatora).
+- N2 (opis myli, nie blokuje): sekcje 1-2 testu mówią „postęp resetuje się do 0" — po decyzji B
+  to nie reset, to fakt że wchodzący item nigdy wcześniej nie był frontem (asercje poprawne).
+- N3 PRE-ISTNIEJĄCE (`13419757`, poza zakresem obu rund): `sanitizeProductionQueue`
+  (`main.ts:3369-3377`) przy usunięciu FRONTU (przegrany wyścig o cud) zostawia scalar, który
+  staje się postępem innego itemu — pierwotna klasa exploitu, nietknięta przez rundy 1-2.
+- N4 (asymetria gracz/AI, powstała w rundzie 1, nieudokumentowana decyzja): AI `queueJump`
+  (`main.ts` ~25772) wstawia na front z `postep: 0` — AI traci postęp wypychanego itemu, gracz
+  przez ⇈ go bankuje. Może być zamierzone, nie zapisane nigdzie jako decyzja.
+- N5 (kosmetyka): `(nextFront?.postep ?? 0) + remainder` przy nieliczbowym `postep` (ręcznie
+  edytowany save) daje konkatenację stringów zamiast NaN/błędu.
+
+**STATUS: dispatch rundy 3 w toku** — zakres: naprawić B2 (zbankować `prodAfterAdvance.postep`
+na `prodAfterAdvance.kolejka[0]` PRZED nadpisaniem scalara, symetrycznie do `dropFrontItem`;
+rozważyć eksport wspólnego helpera `insertAtFront(prod, item, postep)` z `production.ts`, żeby
+żaden call-site więcej nie manipulował frontem ręcznie — to już trzeci raz) + N1 (asercja
+niezmiennika też po `promoteToFront`) + N2 (poprawka opisu sekcji 1-2). N3/N4/N5 świadomie POZA
+zakresem tej rundy — do osobnej rejestracji jeśli nie zmieszczą się w czasie.
