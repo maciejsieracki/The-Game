@@ -13934,3 +13934,23 @@ jako cap — nie złapane przez strażnik, ale złapane przez `tsc` jako TS2304,
 Zero zmian w `main.ts` — czysto testowe zadanie, zakres dotrzymany.
 Bramki: `tsc` 0, `logic-test` 213/213, `surow-civ-storage-test` **53/14** (identyczne 14
 pre-istniejących niezwiązanych porażek). **Temat w pełni zamknięty.**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 (`490f579c`) — Evaluator A: **FAIL**
+
+**Realny, potwierdzony wykonaniem bug**: gdy gracz/AI ODBIJA miasto zdobyte wcześniej przez
+barbarzyńców (wymóg ECHO=A „miasto ma pozostać odbijalne" — zaimplementowany mechanicznie
+poprawnie), `runCapitalCapturePlunder` ma guard TYLKO dla `REBEL_FACTION_OWNER_ID=-99`, nie dla
+barbarzyńców (`-1`) — `capitalCityIdByOwner.get(-1)` = undefined → legacy fallback →
+`remaining.length===0` → **`eliminateOwner(-1)` kasuje WSZYSTKICH barbarzyńców z całej mapy
+jednym odbiciem JEDNEGO miasta**, plus trwały fałszywy wpis `-1` w `eliminatedOwners`
+zapisywany do sejwu. Evaluator znalazł to przez WŁASNY harness (nie zgadywanie) i wskazuje że
+analogiczny guard dla `-99` powstał po dokładnie tej samej klasie błędu w innej rundzie
+(komentarz w kodzie „#25" cytowany wprost) — precedens REBEL, na który powołał się Operator,
+w rzeczywistości DOWODZI że wzorzec wymaga jawnych guardów, nie że działa z automatu.
+Drugi problem (mniej pilny, do ABC): gdy barbarzyńcy przejmą OSTATNIE miasto cywilizacji,
+skarbiec/nauka/techy/Power lecą na konto -1 i cywilizacja zostaje wyeliminowana PRZEZ
+barbarzyńców — konsekwencja produktowa nieautoryzowana przez ECHO=A.
+Trzeci (nota): bramka `barbCaptureBlockedByRemainingDefenders` chroniona wyłącznie tekstowym
+strażnikiem (`static 5d`) — mutacja B (usunięcie negacji w ciele guardu zamiast usunięcia
+tokenu) przechodzi WSZYSTKIE bramki niezauważona.
+**Czeka na głosy B/C (większość decyduje) przed dispatchem rundy 2.**
