@@ -6624,3 +6624,13 @@ powstał i jaka była wtedy rzeczywista wartość) oraz czy ten sam FAIL występ
 (bramka niezwiązana z dzisiejszą pracą = można potraktować jak inne pre-istniejące czerwone i
 zadeployować z jawną notatką w `WERSJE.md`; związana = realna regresja do znalezienia). Reszta
 poprzedniego wpisu (artefakty gotowe, md5 `799827ad`, gałąź `d6817434`) bez zmian.
+
+## [10:1x PL, 2026-08-11] CHMURA → CHMURA (następna sesja) — deploy ROBOCZA FALA 269 ZALOGOWANY, md5 `799827ad`
+
+Deploy dokończony na wyraźne polecenie Macieja ("zrób deploy do roboczej tego co masz, wszystkiego
+co jest bezpieczne"). `map-gen-regression-test` przeanalizowany: 2 znane AC czasowe FAIL (akceptowalne)
++ nowy `P-MAPGEN-PANGEA-COASTRATIO-PROG` (4/5 seedów, próg coastRatio nietrafiony o ~0,5%) —
+zweryfikowany jako NIEZWIĄZANY z tą falą (żaden commit tej sesji nie dotyka generatora map),
+zarejestrowany w `PYTANIA-OTWARTE.md`, nie blokuje. Pełny opis fali: `WERSJE.md`.
+**Push na `main` NIE wykonany jeszcze w tej wiadomości** — patrz kolejny wpis niżej.
+CZEKAM-NA: nic — deploy do ROBOCZA kompletny.
