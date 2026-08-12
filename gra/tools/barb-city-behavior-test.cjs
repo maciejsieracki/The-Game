@@ -725,6 +725,136 @@ const P = Object.assign({}, FALLBACK_BARB_PARAMS, { aggroRadius: 6 });
 }
 
 // ============================================================================================
+// 6c. RUNDA 5, X3 (Evaluator C) -- guard "miasto BRONIONE nie trafia do clearedCityIds" w kroku
+//    3 (`!enemies.some(...)` przy zapisie) jest REALNIE osiągnięty, nie tylko teoretycznie
+//    poprawny. Sekcja 6a tego NIE dowodzi: tam krok 2 (atak) zawsze robi `continue` PRZED
+//    krokiem 3, więc krok 3 nigdy się w 6a nie wykonuje -- asercja "zbiór nietknięty" w 6a jest
+//    prawdziwa niezależnie od tego, czy guard w kroku 3 w ogóle działa (pusta asercja / martwe
+//    pokrycie, mutant guarda przechodziłby tam niezauważony). Tu krok 2 jest CELOWO zablokowany
+//    dwoma różnymi, niezależnymi drogami (i) `canEngageOwner` zwraca `false` (rozejm), (ii)
+//    dystans dokładnie 0 (krok 2 wymaga `hexDistance===1`) -- w OBU krok 3 faktycznie się
+//    wykonuje z bronionym miastem jako `nearestCity`.
+// ============================================================================================
+{
+  const map = makeMap(15, 4);
+  const cityDef = city('cityDef', 6, 0);
+  const guard   = enemy('guard', 6, 0);
+  // (i) rozejm: engageOk=false -> krok 2 nie odpala, krok 3 OSIĄGNIĘTY z bronionym celem
+  const u1 = barb('bT1', 5, 0, { campId: 'destroyed-camp' });
+  decideBarbarianMoves([u1], [guard], [cityDef], [], map, P, () => false, 'normal');
+  eq(u1.clearedCityIds, undefined,
+    '6c(i): bronione miasto NIE trafia do clearedCityIds, gdy krok 2 nie zwiera obwodu ' +
+    '(canEngageOwner=false) -- guard !enemies.some(...) w kroku 3');
+  // (ii) dystans 0: krok 2 wymaga hexDistance===1 dokładnie, więc też nie odpala
+  const u2 = barb('bT2', 6, 0, { campId: 'destroyed-camp' });
+  decideBarbarianMoves([u2], [enemy('g2', 6, 0)], [city('cityOn', 6, 0)], [], map, P, undefined, 'normal');
+  eq(u2.clearedCityIds, undefined,
+    '6c(ii): jednostka NA heksie bronionego miasta (dystans 0) też nie zapisuje go do zbioru');
+}
+
+// ============================================================================================
+// 6d. RUNDA 5, F1 (Evaluator A) -- dowód na planszy MIESZANEJ (bronione + niebronione RAZEM,
+//    przez CAŁĄ symulację, `cityDist` nigdy nie znika z listy `cities`). Stary warunek resetu
+//    (`filtered.length === 0`) był osiągalny WYŁĄCZNIE gdy na planszy NIE ISTNIEJE żadne
+//    bronione miasto (bronione miasto przechodzi filtr bezwarunkowo) -- na realnej planszy z
+//    choć jednym garnizonem reset nigdy by się nie odpalił. Ten test stawia miasto BRONIONE
+//    (bardzo daleko, żeby nigdy nie stało się "najbliższym celem" dopóki jednostka krąży koło
+//    dwóch niebronionych) i DWA NIEBRONIONE razem, symuluje aż oba niebronione zostaną
+//    odwiedzone naraz, i asercjonuje że zbiór PO TYM się resetuje (przestaje zawierać oba) --
+//    dokładnie scenariusz, w którym mutacja "cofnij F1" (dowód mutacyjny niżej) przechodziłaby
+//    niezłapana, gdyby tego testu nie było (6b nie wystarcza -- tam NIE MA żadnego bronionego
+//    miasta na planszy, więc stary i nowy warunek są tam matematycznie równoważne).
+// ============================================================================================
+{
+  const map = makeMap(140, 8);
+  const cityU1 = city('cityU1', 6, 4);
+  const cityU2 = city('cityU2', 16, 4);      // 10 heksów od cityU1, jak w sekcji 6b
+  const cityDist = city('cityDist', 120, 4); // BRONIONE, bardzo daleko
+  const guard = enemy('guardDist', 120, 4);
+  const citiesMixed = [cityU1, cityU2, cityDist];
+  const enemiesMixed = [guard];
+
+  // campId wskazujący na nieistniejący obóz -> orphaned -> raidReady=true (chaseRadius=Infinity),
+  // ten sam wzorzec co sekcja 3c/6b.
+  const unit = barb('bMix', 10, 4, { campId: 'destroyed-camp' });
+  const TURNS = 60;
+  const log = [];
+  for (let t = 0; t < TURNS; t++) {
+    const cmds = decideBarbarianMoves([unit], enemiesMixed, citiesMixed, [], map, P, undefined, 'normal');
+    const cmd = cmds[0];
+    if (cmd?.type === 'move' && canUnitOccupyCityHex(unit.ownerId, cmd.toQ, cmd.toR, citiesMixed)) {
+      unit.q = cmd.toQ;
+      unit.r = cmd.toR;
+    }
+    log.push({ t, clearedAfter: (unit.clearedCityIds ?? []).slice(), cmdType: cmd?.type ?? 'idle' });
+    if (cmd?.type === 'attack') break; // nie powinno się zdarzyć -- guard za daleko przez cały bieg.
+  }
+
+  const bothVisitedIdx = log.findIndex(e =>
+    e.clearedAfter.includes('cityU1') && e.clearedAfter.includes('cityU2'));
+  assert(bothVisitedIdx !== -1,
+    '6d: oba niebronione miasta (cityU1, cityU2) zostają odwiedzone w ' + TURNS + '-turowym logu ' +
+    'MIMO obecności bronionego cityDist na tej samej planszy przez cały bieg ' +
+    '(got bothVisitedIdx=' + bothVisitedIdx + ')');
+
+  const resetIdx = bothVisitedIdx === -1 ? -1
+    : log.findIndex((e, i) => i > bothVisitedIdx
+        && !(e.clearedAfter.includes('cityU1') && e.clearedAfter.includes('cityU2')));
+  assert(resetIdx !== -1,
+    '6d (F1): PO odwiedzeniu OBU niebronionych miast naraz zbiór clearedCityIds RESETUJE SIĘ ' +
+    '(przestaje zawierać oba naraz) w pełnym logu ' + TURNS + ' tur -- mimo że cityDist ' +
+    '(bronione) jest obecne przez CAŁĄ symulację. Stary warunek (filtered.length===0) nigdy by ' +
+    'tego nie złapał, bo cityDist zawsze przechodzi filtr bezwarunkowo ' +
+    '(got resetIdx=' + resetIdx + ')');
+  if (bothVisitedIdx !== -1 && resetIdx !== -1) {
+    assert(resetIdx > bothVisitedIdx,
+      '6d: reset następuje PO turze, w której oba niebronione miasta zostały odwiedzone razem, nie przed');
+  }
+}
+
+// ============================================================================================
+// 6e. RUNDA 5, F2 (Evaluator A) -- strażnik osiągalności. Miasto BRONIONE, geometrycznie
+//    NAJBLIŻSZE, jest NIEOSIĄGALNE -- odcięte kolumną wody na q=10 dla WSZYSTKICH wierszy mapy
+//    (twarda bariera: axialne przesunięcia sąsiadów zmieniają q wyłącznie o -1/0/+1 na krok,
+//    więc żadna ścieżka nie może "przeskoczyć" kolumny, patrz computePath/setup.ts). Miasto
+//    NIEBRONIONE, dalsze geometrycznie, jest OSIĄGALNE (ta sama strona wody co jednostka).
+//    Jednostka raid-ready (chaseRadius=Infinity, orphaned campId jak w 3c/6b/6d) MUSI spróbować
+//    KOLEJNEGO kandydata z listy zamiast zamierać bez komendy, gdy firstStep dla najbliższego
+//    (bronionego, za wodą) zwraca null.
+// ============================================================================================
+{
+  const map = makeMap(30, 3);
+  // Kolumna wody na q=10, wszystkie 3 wiersze -- twarda bariera.
+  for (let r = 0; r < 3; r++) {
+    map.hexes[`10,${r}`].terenBazowy = 'morze';
+  }
+  const cityBlocked = city('cityBlocked', 12, 0); // BRONIONE, bliżej geometrycznie, ale ZA WODĄ
+  const guardBlocked = enemy('guardBlocked', 12, 0);
+  const cityFar = city('cityFar', 2, 0); // NIEBRONIONE, dalej geometrycznie, ale OSIĄGALNE
+  const unit = barb('bFreeze', 8, 0, { campId: 'destroyed-camp' }); // orphaned -> raidReady
+
+  // Kontrola geometrii: cityBlocked BLIŻEJ niż cityFar (żeby stary kod, próbujący WYŁĄCZNIE
+  // targets[0], faktycznie wybrał cityBlocked jako jedyny cel tej decyzji).
+  assert(hexDist(unit.q, unit.r, cityBlocked.q, cityBlocked.r)
+      < hexDist(unit.q, unit.r, cityFar.q, cityFar.r),
+    '6e setup: cityBlocked jest geometrycznie BLIŻEJ niż cityFar (wymóg scenariusza)');
+
+  const cmds = decideBarbarianMoves(
+    [unit], [guardBlocked], [cityBlocked, cityFar], [], map, P, undefined, 'normal');
+  eq(cmds.length, 1,
+    '6e (F2): jednostka dostaje KOMENDĘ (nie zamiera) mimo że najbliższy kandydat (cityBlocked) ' +
+    'jest nieosiągalny za wodą -- próbuje kolejnego kandydata (cityFar), który JEST osiągalny');
+  eq(cmds[0]?.type, 'move', '6e: komenda to ruch');
+  if (cmds[0]?.type === 'move') {
+    const dFarBefore = hexDist(unit.q, unit.r, cityFar.q, cityFar.r);
+    const dFarAfter = hexDist(cmds[0].toQ, cmds[0].toR, cityFar.q, cityFar.r);
+    assert(dFarAfter < dFarBefore,
+      '6e: ruch faktycznie zbliża do OSIĄGALNEGO cityFar (before=' + dFarBefore + ', after=' + dFarAfter +
+      ') -- dowód, że pominięty nieosiągalny kandydat NIE zablokował całej decyzji');
+  }
+}
+
+// ============================================================================================
 // 7. RUNDA 3, punkt 4 -- pokrycie testowe dla guarda `!isBarbarian(atkOwner)` w
 //    post-battle-map.ts (applyCityCaptureAfterBattle), REALNE WYKONANIE (nie source-text).
 //    (a) `rebelPreviousOwnerId` PRZEŻYWA przejęcie miasta PRZEZ barbarzyńcę (guard
@@ -944,6 +1074,66 @@ if (!process.argv.includes('--self-check-skip-mutation')) {
         'cofnięcie CAŁEJ naprawy RUNDY 4 do stanu RUNDY 3 (pojedynczy slot recentlyClearedCityId ' +
         'zamiast zbioru clearedCityIds) -- trzecie miasto NIE powinno być odwiedzane w >=30 turach, ' +
         'sekcja 6b MUSI to złapać');
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------
+  // 10. RUNDA 5, F1 -- dowód mutacyjny: cofnięcie warunku resetu do starego
+  //    `filtered.length === 0` (stan sprzed tej rundy) MUSI dać czerwono na sekcji 6d (plansza
+  //    MIESZANA) -- stary warunek nigdy się nie odpala, gdy istnieje choćby jedno bronione
+  //    miasto (przechodzi filtr bezwarunkowo), więc zbiór `clearedCityIds` rośnie bez końca i
+  //    reset nigdy nie następuje.
+  // ----------------------------------------------------------------------------------------
+  console.log('-- F1 (runda 5) / dowód mutacyjny: cofnięcie warunku resetu --');
+  {
+    const F1_NEW_LINE = 'if (undefendedCities.length > 0 && undefendedCities.every(c => clearedSet.includes(c.id))) {';
+    const F1_OLD_LINE = 'if (filtered.length === 0 && civCitiesBase.length > 0) {';
+    const f1Occurrences = barbariansOriginal.split(F1_NEW_LINE).length - 1;
+    assert(f1Occurrences === 1,
+      `mutacja-setup F1: warunek resetu (nowa wersja) odnaleziony DOKŁADNIE RAZ w barbarians.ts (got ${f1Occurrences})`);
+    if (f1Occurrences === 1) {
+      const mutatedF1 = barbariansOriginal.replace(F1_NEW_LINE, F1_OLD_LINE);
+      assert(mutatedF1 !== barbariansOriginal, 'mutacja-setup F1: cofnięcie faktycznie zmieniło źródło barbarians.ts');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedF1]]),
+        'F1: cofnięcie warunku resetu do starego "filtered.length === 0 && civCitiesBase.length > 0" ' +
+        '-- na planszy MIESZANEJ (sekcja 6d, bronione miasto obecne przez cały bieg) reset nigdy ' +
+        'się nie odpala, bo bronione miasto zawsze przechodzi filtr bezwarunkowo');
+    }
+  }
+
+  // ----------------------------------------------------------------------------------------
+  // 11. RUNDA 5, F2 -- dowód mutacyjny: cofnięcie strażnika osiągalności (próba KOLEJNEGO
+  //    kandydata z listy) do starej wersji "tylko targets[0]" MUSI dać czerwono na sekcji 6e
+  //    (najbliższy kandydat nieosiągalny za wodą, dalszy osiągalny) -- bez strażnika jednostka
+  //    raid-ready (chaseRadius=Infinity) zamiera bez ŻADNEJ komendy, bo krok 4 (dryf do obozu)
+  //    jest świadomie pomijany dla raidReady.
+  // ----------------------------------------------------------------------------------------
+  console.log('-- F2 (runda 5) / dowód mutacyjny: cofnięcie strażnika osiągalności --');
+  {
+    const f2StartMarker = 'let movedToTarget = false;';
+    const f2EndMarker = 'if (movedToTarget) continue;';
+    const f2StartIdx = barbariansOriginal.indexOf(f2StartMarker);
+    const f2EndIdx = f2StartIdx === -1 ? -1 : barbariansOriginal.indexOf(f2EndMarker, f2StartIdx);
+    assert(f2StartIdx !== -1 && f2EndIdx !== -1,
+      'mutacja-setup F2: pętla reachability (RUNDA 5) odnaleziona w barbarians.ts');
+    if (f2StartIdx !== -1 && f2EndIdx !== -1) {
+      // Stan sprzed F2 -- wyłącznie targets[0], zero próby kolejnego kandydata.
+      const OLD_MOVE_BLOCK =
+        'const target = targets[0];\n'
+        + '    if (target !== undefined && target.d <= chaseRadius) {\n'
+        + '      const step = firstStep(unit, map, target.q, target.r, occ);\n'
+        + '      if (step !== null) {\n'
+        + '        commands.push({ type: \'move\', unitId: unit.id, toQ: step.q, toR: step.r });\n'
+        + '        continue;\n'
+        + '      }\n'
+        + '    }';
+      const mutatedF2 = barbariansOriginal.slice(0, f2StartIdx) + OLD_MOVE_BLOCK
+        + barbariansOriginal.slice(f2EndIdx + f2EndMarker.length);
+      assert(mutatedF2 !== barbariansOriginal, 'mutacja-setup F2: cofnięcie faktycznie zmieniło źródło barbarians.ts');
+      expectSelfCheckFails(new Map([[barbariansSrcPath, mutatedF2]]),
+        'F2: cofnięcie strażnika osiągalności do "wyłącznie targets[0]" -- w scenariuszu zamrożenia ' +
+        '(sekcja 6e: najbliższy kandydat nieosiągalny za wodą, dalszy osiągalny) jednostka raid-' +
+        'ready ponownie zamiera bez żadnej komendy zamiast spróbować kolejnego kandydata');
     }
   }
 }

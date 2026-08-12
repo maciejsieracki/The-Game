@@ -1248,7 +1248,36 @@ export function decideBarbarianMoves(
         if (!undefended) return true;
         return !clearedSet.includes(c.id);
       });
-      if (filtered.length === 0 && civCitiesBase.length > 0) {
+      // F1 (Evaluator A, runda 5): warunek resetu musi patrzeć WYŁĄCZNIE na miasta
+      // NIEBRONIONE -- stary warunek `filtered.length === 0` był osiągalny tylko
+      // gdy na planszy NIE ISTNIEJE żadne miasto bronione (bronione miasto
+      // przechodzi filtr `filtered` bezwarunkowo, patrz `if (!undefended) return
+      // true;` wyżej), mimo że dokumentacja "RUNDA 4" przy sygnaturze funkcji mówi
+      // wprost: reset gdy zbiór wyklucza WSZYSTKIE DOSTĘPNE (niebronione) miasta.
+      // Na realnej planszy z garnizonami (prawie zawsze istnieje choć jedno
+      // bronione miasto) stary warunek nigdy się nie odpalał. Poprawka liczy
+      // zbiór miast niebronionych osobno i resetuje, gdy WSZYSTKIE z nich są w
+      // `clearedSet` -- niezależnie od tego, czy jeszcze istnieje jakieś bronione.
+      // Guard `undefendedCities.length > 0` chroni przed reset-em w kółko (co
+      // turę) na planszy bez ŻADNEGO niebronionego miasta -- `every()` na pustej
+      // tablicy jest z definicji `true`, co bez guarda resetowałoby zbiór, który i
+      // tak nie ma nic realnego do zresetowania.
+      // / EN: F1 (Evaluator A, round 5): the reset condition must look ONLY at
+      // UNDEFENDED cities -- the old `filtered.length === 0` condition was only
+      // reachable when NO defended city existed on the board at all (a defended
+      // city always passes the `filtered` filter unconditionally, see `if
+      // (!undefended) return true;` above), even though the "ROUND 4" doc-comment
+      // on the function signature literally says: reset once the set excludes
+      // EVERY AVAILABLE (undefended) city. On a real board with garrisons (almost
+      // always at least one defended city) the old condition never fired. The fix
+      // counts undefended cities separately and resets once ALL of them are in
+      // `clearedSet`, regardless of whether a defended city still exists. The
+      // `undefendedCities.length > 0` guard prevents resetting every single turn
+      // on a board with NO undefended city at all -- `every()` on an empty array
+      // is vacuously `true`, which without the guard would keep resetting a set
+      // that has nothing real to reset.
+      const undefendedCities = civCitiesBase.filter(c => !enemies.some(e => e.q === c.q && e.r === c.r));
+      if (undefendedCities.length > 0 && undefendedCities.every(c => clearedSet.includes(c.id))) {
         // RUNDA 4: zbiór wykluczyłby WSZYSTKIE dostępne (niebronione) miasta -- ta
         // jednostka odwiedziła już każde z nich. Reset zbioru = patrol zaczyna
         // KOLEJNE OKRĄŻENIE (A -> B -> C -> A -> ...), zamiast trwale zamarznąć na
@@ -1320,15 +1349,22 @@ export function decideBarbarianMoves(
         unit.clearedCityIds.push(nearestCity.id);
       }
     }
+    // F2 (Evaluator A, runda 5): WSZYSTKIE miasta z `civCities` jako kandydaci
+    // celu, nie tylko `nearestCity` -- jeśli najbliższy kandydat okaże się
+    // nieosiągalny (patrz pętla reachability niżej), próbujemy kolejnego z tej
+    // samej, posortowanej listy zamiast zamierać bez komendy.
+    // / EN: F2 (Evaluator A, round 5): ALL cities from `civCities` as target
+    // candidates, not just `nearestCity` -- if the nearest candidate turns out
+    // unreachable (see the reachability loop below), we try the next one from
+    // this same sorted list instead of freezing with no command.
     const targets: { q: number; r: number; d: number }[] = [];
     if (nearestEnemyUnit !== undefined) {
       targets.push({ q: nearestEnemyUnit.q, r: nearestEnemyUnit.r, d: hexDistance(unit.q, unit.r, nearestEnemyUnit.q, nearestEnemyUnit.r) });
     }
-    if (nearestCity !== undefined) {
-      targets.push({ q: nearestCity.q, r: nearestCity.r, d: hexDistance(unit.q, unit.r, nearestCity.q, nearestCity.r) });
+    for (const c of civCities) {
+      targets.push({ q: c.q, r: c.r, d: hexDistance(unit.q, unit.r, c.q, c.r) });
     }
     targets.sort((a, b) => a.d - b.d);
-    const target = targets[0];
     const homeCamp = homeCampForUnit(unit, camps, params.campControlRadius);
     // P-BARBARZYNCY-OSIEROCONE-Q1: `homeCamp === undefined` ma DWIE różne
     // przyczyny, które trzeba rozróżnić -- mylenie ich zepsuło test istniejący
@@ -1366,13 +1402,41 @@ export function decideBarbarianMoves(
     const orphaned = Boolean(unit.campId) && !camps.some(c => c.id === unit.campId);
     const raidReady = orphaned || (homeCamp !== undefined && isCampRaidReady(homeCamp, barbUnits, params));
     const chaseRadius = raidReady ? Infinity : params.aggroRadius;
-    if (target !== undefined && target.d <= chaseRadius) {
-      const step = firstStep(unit, map, target.q, target.r, occ);
+    // F2 (Evaluator A, runda 5): PRZED poprawką próbowano wyłącznie `targets[0]`
+    // (globalnie najbliższego kandydata); gdy `firstStep` dla niego zwracał
+    // `null` (cel nieosiągalny, np. bronione miasto za wodą) a `raidReady` było
+    // `true` (chaseRadius = Infinity), jednostka nie wydawała ŻADNEJ komendy do
+    // końca gry -- krok 4 (dryf do obozu) jest świadomie pomijany przy raidReady
+    // (`if (raidReady) continue;` niżej), więc nie było żadnego fallbacku. Dowód
+    // Evaluatora: 47/60 tur bezczynności. Teraz iterujemy po WSZYSTKICH
+    // kandydatach (posortowanych rosnąco wg odległości) i bierzemy PIERWSZEGO
+    // OSIĄGALNEGO w zasięgu `chaseRadius` -- lista jest posortowana, więc jak
+    // tylko trafimy kandydata poza zasięgiem, dalsi też odpadają (`break`, nie
+    // `continue`). Dopiero gdy WSZYSCY kandydaci w zasięgu są nieosiągalni, brak
+    // komendy jest akceptowalny (nic więcej nie da się zrobić -- to nie jest bug).
+    // / EN: F2 (Evaluator A, round 5): BEFORE the fix only `targets[0]` (the
+    // globally nearest candidate) was tried; when `firstStep` for it returned
+    // `null` (target unreachable, e.g. a defended city across water) and
+    // `raidReady` was `true` (chaseRadius = Infinity), the unit issued NO command
+    // for the rest of the game -- step 4 (drift to camp) is deliberately skipped
+    // when raidReady (`if (raidReady) continue;` below), so there was no fallback
+    // at all. Evaluator's proof: 47/60 idle turns. Now we iterate over ALL
+    // candidates (sorted ascending by distance) and take the FIRST REACHABLE one
+    // within `chaseRadius` -- the list is sorted, so as soon as we hit a
+    // candidate beyond range, later ones are too (`break`, not `continue`). Only
+    // once EVERY candidate in range is unreachable is issuing no command
+    // acceptable (nothing more can be done -- not a bug).
+    let movedToTarget = false;
+    for (const cand of targets) {
+      if (cand.d > chaseRadius) break;
+      const step = firstStep(unit, map, cand.q, cand.r, occ);
       if (step !== null) {
         commands.push({ type: 'move', unitId: unit.id, toQ: step.q, toR: step.r });
-        continue;
+        movedToTarget = true;
+        break;
       }
     }
+    if (movedToTarget) continue;
 
     // 4. Idle: drift back toward the home camp (tylko gdy obóz nie wysłał rajdu).
     if (raidReady) continue;
