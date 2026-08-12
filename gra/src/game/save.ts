@@ -76,7 +76,22 @@ import type { RuntimeUnit } from '../units/setup';
 import type { City } from './cities';
 import type { TradeRoute } from './trade-routes';
 import { isValidMapSnapshot, type SerializedMapData } from '../map/mapSnapshot';
-import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys } from './idb-storage';
+import { idbGetItem, idbSetItem, idbRemoveItem, idbListKeys, idbIsAvailable } from './idb-storage';
+
+/**
+ * B3 (Evaluator, migracja IDB runda 2): re-export -- UI (saveLoadDialog.ts)
+ * dotychczas zależy WYŁĄCZNIE od save.ts, nigdy bezpośrednio od
+ * idb-storage.ts (ten plik jest szczegółem implementacyjnym save.ts);
+ * `isIdbAvailable` utrzymuje tę granicę zamiast dokładać nową krawędź
+ * importu ui/ -> game/idb-storage. Patrz idb-storage.ts::idbIsAvailable dla
+ * pełnego opisu.
+ * / EN: re-export -- the UI (saveLoadDialog.ts) so far depends ONLY on
+ * save.ts, never directly on idb-storage.ts (an implementation detail of
+ * save.ts); `isIdbAvailable` keeps that boundary instead of adding a new
+ * ui/ -> game/idb-storage import edge. See idb-storage.ts::idbIsAvailable
+ * for the full description.
+ */
+export { idbIsAvailable as isIdbAvailable };
 
 // ---------------------------------------------------------------------------
 // Constants

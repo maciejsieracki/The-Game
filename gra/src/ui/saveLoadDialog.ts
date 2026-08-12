@@ -9,6 +9,7 @@ import {
   uniqueSlotIdFromLabel, slotSlugFromLabel,
   FSA_SLOT_PREFIX,
   loadSaveSlotMeta, extractSaveContextFields,
+  isIdbAvailable,
   type SaveGame, type SaveSlotMeta,
 } from '../game/save';
 import { listFsaAutosaveFiles, loadFsaAutosaveFile } from '../game/fsa-autosave';
@@ -85,6 +86,8 @@ function ensureStyles(): void {
   background:transparent;color:#ffb8a8;cursor:pointer;}
 .civ-sl-del:hover{background:rgba(120,45,35,0.25);}
 .civ-sl-empty{padding:18px 14px;font-size:12px;color:#8a9bb0;text-align:center;}
+.civ-sl-idbwarn{margin:0 0 10px;padding:8px 10px;font-size:11px;line-height:1.4;color:#ffd9a8;
+  background:rgba(150,90,20,0.22);border:1px solid rgba(224,178,74,0.4);border-radius:8px;}
 .civ-sl-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;}
 .civ-sl-btns button{padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
   border:1px solid rgba(224,178,74,0.28);background:rgba(30,34,46,0.9);color:#e8ebf0;}
@@ -427,12 +430,44 @@ export async function showLoadGameDialog(opts: LoadDialogOptions): Promise<void>
     '<h2>Wczytaj grę</h2>' +
     '<p class="civ-sl-sub">Wybierz sejw z listy. Usuń niepotrzebne przyciskiem ✕.</p>';
 
+  // B3 (Evaluator, migracja IDB runda 2): baner ostrzegawczy -- widoczny,
+  // gdy IndexedDB jest niedostępne w tej karcie. Wtedy save.ts (loadFromLocal/
+  // loadSaveSlotMeta) cicho spada na legacy localStorage dla WSZYSTKICH
+  // slotów -- gracz mógłby zobaczyć PRZESTARZAŁY zapis pod tą samą nazwą
+  // slotu (sprzed migracji) bez żadnego wskaźnika, że to nie jest najnowszy
+  // stan (dowód Evaluatora: slot "Rzym" pokazuje turę 200 zamiast 5).
+  // Widoczność przeliczana w KAŻDYM renderListOnce() -- po naprawie B2
+  // przejściowa awaria IDB już się nie utrwala, więc baner może też zniknąć,
+  // gdy IDB odzyska dostępność między odświeżeniami listy.
+  // / EN: warning banner -- visible when IndexedDB is unavailable in this
+  // tab. save.ts then silently falls back to legacy localStorage for ALL
+  // slots -- the player could see a STALE save under the same slot name
+  // (predating the migration) with no indicator that it's not the latest
+  // state (Evaluator's proof: slot "Rzym" shows turn 200 instead of 5).
+  // Recomputed on EVERY renderListOnce() -- after the B2 fix a transient IDB
+  // failure no longer sticks, so the banner can also disappear once IDB
+  // becomes available again between list refreshes.
+  const idbWarn = document.createElement('div');
+  idbWarn.className = 'civ-sl-idbwarn';
+  idbWarn.style.display = 'none';
+  idbWarn.textContent = '⚠ IndexedDB niedostępne w tej karcie — lista może pokazywać PRZESTARZAŁE zapisy (awaryjny odczyt ze starszej pamięci przeglądarki).';
+
   const list = document.createElement('div');
   list.className = 'civ-sl-list';
 
-  const renderList = async (): Promise<void> => {
+  /**
+   * B1 (Evaluator, migracja IDB runda 2): pojedynczy przebieg renderu --
+   * BEZ strażnika re-entrancy (ten żyje w opakowującym renderList() niżej).
+   * Nie wołaj tej funkcji bezpośrednio spoza renderList().
+   * / EN: a single render pass -- WITHOUT the re-entrancy guard (that lives
+   * in the wrapping renderList() below). Do not call this directly outside
+   * renderList().
+   */
+  const renderListOnce = async (): Promise<void> => {
     list.innerHTML = '';
-    slots = mergeSaveSlotLists(await summarizeSaveSlots(), fsaSlotsCache);
+    const [idbOk, freshLocal] = await Promise.all([isIdbAvailable(), summarizeSaveSlots()]);
+    idbWarn.style.display = idbOk ? 'none' : 'block';
+    slots = mergeSaveSlotLists(freshLocal, fsaSlotsCache);
     if (slots.length === 0) {
       selectedId = null;
       list.innerHTML = '<div class="civ-sl-empty">Brak zapisów na tym urządzeniu.<br>Zapisz grę w menu pauzy (Ctrl+S = szybki zapis).</div>';
@@ -490,7 +525,57 @@ export async function showLoadGameDialog(opts: LoadDialogOptions): Promise<void>
     }
   };
 
+  // B1 (Evaluator, migracja IDB runda 2): strażnik re-entrancy.
+  // renderListOnce() jest async (czyta IndexedDB) i jest wołana z kilku
+  // niezależnych miejsc na raz -- klik wiersza, usunięcie, doładowanie FSA,
+  // ewentualny podwójny klik/podwójne otwarcie dialogu. BEZ strażnika dwa
+  // nakładające się wywołania osobno robią `list.innerHTML=''` (PRZED swoim
+  // await) i osobno DOPISUJĄ wiersze (PO await) -- ponieważ obie czyszczą
+  // listę zanim którakolwiek zdąży ją wypełnić, drugie wywołanie dopisuje
+  // się na wynik pierwszego zamiast go zastąpić (dowód Evaluatora: 3 zapisy
+  // -> 6 wierszy w UI). Wzorzec: jeśli render już trwa, oznacz "jeszcze
+  // jeden w kolejce" i wróć OD RAZU (nie duplikuj pracy) -- trwający render,
+  // PO zakończeniu, sam odpali jeszcze jeden przebieg widzący najnowszy stan
+  // (selectedId, fsaSlotsCache), więc DOM i tak dobija do prawdy. Analogiczny
+  // strażnik: main.ts::autosaveInFlight -- różnica: tam POMIJAMY turę
+  // (autosave może poczekać do następnej), tu KOLEJKUJEMY, bo lista MUSI w
+  // końcu odzwierciedlić najnowszy stan (np. zaraz po usunięciu zapisu).
+  // / EN: re-entrancy guard. renderListOnce() is async (reads IndexedDB) and
+  // is called from several independent places at once -- row click, delete,
+  // FSA load, a possible double-click/double-open of the dialog. WITHOUT a
+  // guard, two overlapping calls each separately clear `list.innerHTML=''`
+  // (BEFORE their own await) and separately APPEND rows (AFTER await) -- since
+  // both clear the list before either has populated it, the second call
+  // appends onto the first's result instead of replacing it (Evaluator's
+  // proof: 3 saves -> 6 rows in the UI). Pattern: if a render is already in
+  // flight, mark "one more queued" and return IMMEDIATELY (don't duplicate
+  // work) -- the in-flight render, once done, fires one more pass itself
+  // that sees the latest state (selectedId, fsaSlotsCache), so the DOM still
+  // converges to the truth. Analogous guard: main.ts::autosaveInFlight --
+  // difference: there we SKIP the turn (autosave can wait for the next
+  // one), here we QUEUE, because the list MUST eventually reflect the
+  // latest state (e.g. right after a delete).
+  let renderInFlight = false;
+  let renderQueued = false;
+  const renderList = async (): Promise<void> => {
+    if (renderInFlight) {
+      renderQueued = true;
+      return;
+    }
+    renderInFlight = true;
+    try {
+      await renderListOnce();
+      while (renderQueued) {
+        renderQueued = false;
+        await renderListOnce();
+      }
+    } finally {
+      renderInFlight = false;
+    }
+  };
+
   await renderList();
+  box.appendChild(idbWarn);
   box.appendChild(list);
 
   void summarizeFsaSaveSlots().then(async (fsaSlots) => {
