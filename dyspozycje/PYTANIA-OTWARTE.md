@@ -15312,3 +15312,32 @@ nieudokumentowany efekt uboczny — poszerza zakres liczenia PW dla `livePackage
 (prawdopodobnie zamierzone, zrównuje silnik z UI, ale commit message o tym nie wspomina).
 **ZAMKNIĘTE.**
 
+
+## Przycisk "Zobacz szczegóły zużycia" (a79bae29) — Evaluator: FAIL, naprawa dispatchowana
+
+Werdykt: 3 usterki blokujące, wszystkie potwierdzone wykonaniem realnego kodu silnika:
+
+1. **Suma kłamie przy niedoborze surowca.** `deductBuildingStockCostAcrossCities()` przycina
+   pobór budynków/wojska do stanu magazynu (`take=Math.min(have,need)`), ale panel pokazuje
+   wartość NOMINALNĄ (nieprzycinaną) dla tych dwóch kategorii, podczas gdy Obywatele SĄ przycinane
+   (`computeCitizenResourceDrain` przycina swoje `deductions`). Rozjazd jednostronny: scenariusz
+   Evaluatora — magazyn=4, panel pokazuje "−6", realnie odjęte z magazynu=4. Gracz otwiera ten
+   panel WŁAŚNIE gdy surowce się kończą — czyli w jedynym momencie gdy panel kłamie.
+2. **Po wczytaniu save'a panel pokazuje zaniżoną sumę, przycisk nadal aktywny, bez ostrzeżenia.**
+   Po `.clear()` obywatele mają fallback liczący na żywo (`computeCitizenResourceDrain`),
+   budynki/wojsko NIE mają fallbacku → 0. Scenariusz: prawidłowe B=2/O=4/W=4 (razem 10), po
+   wczytaniu panel pokazuje B=0/O=4/W=0 (razem 4) — zaniżenie o 60%, wiersze Budynki/Wojsko
+   znikają całkowicie (filtr `val>0`), przycisk nadal się pokazuje bo `hasAny=true`.
+3. **Bramka testowa (60/60) jest zawyżona.** 37/60 asercji to `includes()`/regex po tekście
+   źródła, nie wykonanie kodu — funkcja renderująca `resUsageDetailsHtml()` (to co realnie widzi
+   gracz) NIE JEST ANI RAZU wywołana w teście. 5/9 mutacji własnych Evaluatora przeżywa (usunięty
+   wiersz Wojsko, usunięty minus przy zużyciu, zamienione etykiety Budynki↔Wojsko, wiersz "razem"
+   pokazujący tylko budynki, usunięty wiersz Obywatele — wszystkie 60/60 mimo zepsutego UI).
+
+**STATUS: dispatch naprawy w toku**, zakres: (1) przycinać budynki/wojsko do realnie pobranego
+ALBO zmienić etykietę na "Zapotrzebowanie" jeśli intencja to wartość nominalna — decyzja
+Operatora, uzasadniona; (2) fallback liczący budynki/wojsko na żywo po wczytaniu save'a
+(`previewOwnerTotalResourceUpkeep()` już istnieje w `economy-upkeep.ts`, do wykorzystania) ALBO
+nie pokazywać przycisku dopóki mapy puste; (3) bramka musi wykonywać `resUsageDetailsHtml()` na
+gotowym `EmpireResourceRow` i sprawdzać wyrenderowany HTML, nie tylko tekst źródła.
+
