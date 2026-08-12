@@ -16145,3 +16145,45 @@ realnie usuwa z DOM, SUROWCE = dokładna wartość źródłowa, WZROST = średni
 zastrzeżenie o niedoborze (spójność z `9c0cd04d`), (2) join po indeksie zamiast po `name` +
 `cityId` w `EmpireCityPoborRow` dla żywności, (3) 2 asercje behawioralne (wykonanie, nie tekst
 źródła) zamykające M2/M7.
+
+## Produkcja terenowa + fix stadniny (ecbddda8) — Evaluator: PASS-WITH-NOTES, naprawa dispatchowana
+
+Dane zgodne z decyzją właściciela (tabela ECHO). **Bug stadniny potwierdzony REALNY dwiema
+niezależnymi drogami** (cofnięcie linii + wierna rekonstrukcja całego pliku sprzed naprawy):
+przed naprawą JSON=5 ale silnik i integracja zwracały 1 (3 stadniny → 3 Konie/turę zamiast 15),
+po naprawie wszystko=5. Pozostałych 5 kluczy bez regresji. **Twierdzenie o pre-istniejących
+czerwonych testach POTWIERDZONE** (`zloto-test`: 39/6 identycznie na commicie i na rodzicu, teksty
+porażek bajt w bajt identyczne).
+
+**N1 — identyczny bug zostawiony jedną linijkę niżej.** `kopalnia_zlota` nadal ma `amount: 1`
+zahardkodowane (ten sam wzorzec co naprawiona stadnina) — mutacja JSON 1→7 nie zmienia wyniku
+silnika, żaden test repo tego nie łapie. Przy następnej korekcie złota właściciel wpadnie w tę
+samą pułapkę.
+
+**N2+N3 — komentarz w kodzie i `_meta` w JSON teraz kłamią.** `terrain-improvements.ts:134-138`
+i `terrain-improvements.json::_meta.pole_surowiec_ilosc_tura` nadal wymieniają STARE liczby
+(4/4/4/2/2/1) jako aktualne — na commicie-rodzicu były poprawne, teraz fałszywe w 4-5 miejscach.
+`surowiecOdblokowany_uwaga` zaktualizowane (6/6 komentarzy), ale te dwa miejsca pominięto.
+
+**N5 — luka pokrycia:** kamieniołom/kopalnia_miedzi/kopalnia_żelaza nie mają asercji NA POZIOMIE
+SILNIKA (tylko w JSON) — mutacja "kamieniołom zahardkodowany na starą wartość" przechodzi
+wszystkie 4 testy repo, złapał ją tylko harness Evaluatora.
+
+**Zarejestrowane do wiedzy właściciela (nie ABC, informacyjne):** N4 — nieujawniony realny skutek
+balansowy: przy starej stawce 4 Stolarnia i Warsztat kamieniarski były CAŁKOWICIE BEZCZYNNE
+(`floor(4×1,1)=4=floor(4×1,0)`, zero różnicy 1-5 budynków), przy nowej stawce 10 pierwszy budynek
+wreszcie coś daje — zmiana danych po cichu włączyła dwa wcześniej martwe budynki. Prawdopodobnie
+pożądane, ale nigdzie nie zapisane jako świadoma decyzja.
+
+**Zarejestrowane osobno jako pre-istniejące (nie ta zmiana, do przyszłej naprawy):** N7 —
+Stolarnia liczona przez `turn-economy.ts:2109` jako `runtimeBIds.includes(...)` → +1 NA MIASTO
+nie na budynek, mimo kanonu "+10%/szt." (N sztuk w mieście = 1); N8 — `surowiec_ilosc_tura: 0`
+w JSON daje fallback 2 zamiast 0 (`v>0` w `territoryYieldAmountForKey`), naturalny sposób
+wyłączenia produkcji robi odwrotność, stadnina była na to odporna przed naprawą (hardcode), teraz
+narażona jak reszta.
+
+Szósta potwierdzona kolizja scratchpada (ten Evaluator, plik nadpisany przez równoległą sesję
+oceniającą `3dc9d650` — przeniósł się do podkatalogu i powtórzył pomiary od zera, wyniki czyste).
+
+**STATUS: dispatch naprawy N1+N2+N3+N5 w toku** (dane/dokumentacja, zero ryzyka behawioralnego).
+N4/N7/N8 pozostają do wiedzy/przyszłej decyzji, nie naprawiane teraz.
