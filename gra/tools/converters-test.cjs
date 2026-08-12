@@ -40,7 +40,7 @@ const garncarnia = C.DEFAULT_CONVERTER_RECIPES.find(r => r.id === 'garncarnia');
 assert(!!garncarnia, 'PYTANIE-84 U-14: garncarnia→ceramika w katalogu');
 assert(!Object.prototype.hasOwnProperty.call(garncarnia.inputs, 'ceramika'),
   'U-14: Garncarnia NIE zużywa Ceramiki (tylko glina+drewno)');
-eq(garncarnia.throughputFallback, 6, 'PYTANIE-84-B5: przepustowość Garncarnia fallback 6/t');
+eq(garncarnia.throughputFallback, 10, 'P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): przepustowość Garncarnia fallback 10/t (było 6/t, PYTANIE-84-B5)');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'mielerz'), 'Zadanie 1 (2026-07-23): Mielerz usuniety calkowicie');
 assert(!C.DEFAULT_CONVERTER_RECIPES.some(r => r.id === 'wielka_kuznia'), 'Maciej 2026-07-27: brak wielka_kuznia→stal (tylko pancerz)');
 assert(

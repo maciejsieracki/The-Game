@@ -13285,3 +13285,212 @@ jako niewłaściwy mechanizm, zastąpione nowym hookiem ruchu.
 
 **STATUS: OTWARTE, dispatch Sonnet 5 (worktree ręczny) — implementacja od nowa wg
 doprecyzowanej mechaniki, z pełnym pokryciem testowym (w tym że stare jednostki NIE znikają).**
+
+## P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
+
+Cytat właściciela: *"Cegielnia przepustowość 10 plus 10% możliwość awansu i ulepszenia co
+każdą epokę. To samo Garncarnia, przepustowość 10 plus 10% co każdą epokę. Odlewnia brązu
+przepustowość 5, odlewnia żelaza przepustowość 5, wielka odlewnia przepustowość 5."*
+
+**Wykonane (Operator Sonnet 5, worktree `eval-pool-4`)**:
+1. Nowe wartości bazowe `throughputFallback` w `DEFAULT_CONVERTER_RECIPES`
+   (`gra/src/game/converters.ts`): Cegielnia 3→10, Garncarnia 6→10, Odlewnie (huta/
+   odlewnia_brazu/odlewnia_zelaza__braz/odlewnia_zelaza__zelazo/wielka_odlewnia__braz/
+   wielka_odlewnia__zelazo/wielka_odlewnia__stal — wszystkie warianty łańcucha odlewni,
+   share'ujące throughputParamKey z 3 przywołanymi w zgłoszeniu) 1→5.
+2. **JSON param-file `gra/data/econ-params.json` NADPISYWAŁ fallback** (5 kluczy:
+   `budynek_cegielnia_przepustowosc`, `budynek_garncarnia_przepustowosc`,
+   `budynek_huta_przepustowosc`, `budynek_odlewnia_zelaza_przepustowosc`,
+   `budynek_wielka_odlewnia_przepustowosc`) — zaktualizowany TAM, nie tylko fallback.
+   **Założenie do potwierdzenia**: właściciel podał JEDNĄ liczbę na budynek bez
+   różnicowania trudności; ustawiłem WSZYSTKIE 3 trudności (easy/normal/hard) na tę samą
+   wartość płaską (10/10/5/5/5), zamiast zachować dotychczasowy spread malejący z
+   trudnością (np. Cegielnia było easy=4/normal=3/hard=2). Jeśli właściciel chciał
+   zachować różnicowanie trudności wokół nowych baz — do korekty.
+3. Mechanizm "+10%/epokę" dla Cegielni/Garncarni: `converterThroughputForEra()` (nowa
+   funkcja czysta w `converters.ts`) — ADDYTYWNIE od bazy (epoka1=baza, epoka2=+10%,
+   epoka3=+20%, NIE compound/mnożnikowo); per epokę CYWILIZACJI WŁAŚCICIELA budynku
+   (nie epokę gry, nie poziom budynku maksPoziom — osobny system). Wpięty w realny
+   silnik (`turn-economy.ts::advanceCityEconomy` → `tickEmpireResourcePipeline`, per-owner,
+   PARYTET AI — ten sam resolver `resolveOwnerEra` dla gracza i AI, zero gałęzi po
+   ownerId) ORAZ w podgląd HUD (`main.ts::empireConverterResourceRatesForOwner`, żeby
+   licznik nie rozjechał się z silnikiem — klasa błędu HUD-SKARBIEC). Odlewnie
+   NIE dostają mechanizmu — zostają płaskie.
+4. Nowy test regresyjny `gra/tools/converter-era-scaling-test.cjs` (esbuild-bundle-real-source,
+   87 asercji): wartości bazowe (fallback + JSON realny), skalowanie czyste (w tym brzegi
+   era<1/NaN, baza niecałkowita + floor), regresja (dowód że stary kod dałby stałą wartość),
+   integracja pełna `advanceCityEconomy` z PARYTETEM AI (gracz era1 vs AI era3 w JEDNYM
+   wywołaniu) potwierdzająca że Odlewnia zostaje płaska dla OBU mimo różnych epok.
+   Zweryfikowany mutacyjnie: na kodzie SPRZED zmiany test pada (crash na braku eksportu).
+
+**Bramki**: `npx tsc --noEmit` 0 błędów · `logic-test.cjs` 213/213 · nowy test 87/87 ·
+`converters-test.cjs` (istniejący, zaktualizowana 1 asercja fallbacku Garncarni 6→10)
+46/46 · `mennica-magazyn-test.cjs` (istniejący, poprawione 2 fixture ze stockiem gliny
+za małym na nową przepustowość) 40 pass/1 fail — ten 1 fail pre-istniejący, niezwiązany
+(Mennica bez Waluty), zweryfikowany identyczny na `git stash` bazowym. tech-tree-test/
+research-test/unit-replace-test/ai-founding-territory-test — wszystkie zielone (impact
+check dla współdzielonych plików turn-economy.ts/main.ts).
+
+**Zmienione pliki**: `gra/src/game/converters.ts`, `gra/src/game/turn-economy.ts`,
+`gra/src/main.ts`, `gra/data/econ-params.json`, `gra/tools/converters-test.cjs`,
+`gra/tools/mennica-magazyn-test.cjs` (poprawki istniejących fixture'ów) +
+`gra/tools/converter-era-scaling-test.cjs` (nowy).
+
+**Pozostawione NIEPRZYWRÓCONE w worktree `eval-pool-4`** na życzenie orkiestratora —
+scalenie do głównego drzewa i ewentualny Evaluator po stronie orkiestratora.
+
+**STATUS: ZAMKNIĘTE PO STRONIE OPERATORA, czeka na scalenie + Evaluator (nie
+self-ocena — worktree odizolowany, brak commitu/deployu z tej sesji).**
+
+## P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej, temat deweloperski, worktree eval-pool-4)
+
+Cytaty właściciela (dwie wiadomości):
+1. *"zwiększ jeszcze wielkość magazynu do 10 tysięcy sztuk dla każdego surowca z
+   obecnego 1000 oraz dla magazynów, które wybudujemy w mieście zwiększ
+   przepustowość z 100 i 150 na 1000 i 1500."*
+2. *"I co? A każdą epokę wielkość magazynu powinna się podwajać. To co
+   powiedziałem to powinno być dla epoki kamienia."*
+
+Odczytane jako: wartości z (1) to wartości DLA EPOKI 1 (Kamień); od epoki 2 wzwyż
+PODWAJA SIĘ co epokę WŁAŚCICIELA (era2=×2, era3=×4, `2^(era-1)`, compound — NIE
+addytywne +10%/epokę jak konwertery P-KONWERTERY-PRZEPUSTOWOSC-Q1, osobna decyzja
+właściciela w osobnej wiadomości).
+
+**Interpretacja "100 i 150" (ZBADANA grepem PRZED zmianą liczb, jak nakazane w
+zleceniu):** `magazyn_bonus_surowce_na_budynek` (econ-params.json) ma dziś TYLKO
+jedną wartość (100), nie parę — nie może być tym, co właściciel opisał jako "100 i
+150". Grep komentarza przy `magazyn_centralny_baza_zywnosc` w econ-params.json:
+*"(+ Spichlerze lokalne +100/+150, Magazyn +100)"* — i faktycznie
+`SPICHLERZ_EMPIRE_CAP_I = 100` / `SPICHLERZ_EMPIRE_CAP_II_FULL = 150`
+(`gra/src/game/building-resource-gate.ts`), używane w
+`empire-food.ts::computeCentralFoodCap` jako wkład Spichlerza I/II do
+CENTRALNEGO CAPU ŻYWNOŚCI (nie surowców) per miasto. To JEDYNA para wartości
+100/150 w całym mechanizmie magazynów — przyjęta interpretacja: "100 i 150" =
+SPICHLERZ_EMPIRE_CAP_I/II, NIE `magazyn_bonus_surowce_na_budynek` (który dostaje
+mimo to TEN SAM mechanizm podwajania co epokę, bo dzieli formułę cap(typ) z
+`magazyn_baza_surowce`, ale jego wartość bazowa era1 zostaje NIEZMIENIONA — 100).
+
+**Wykonane (Operator Sonnet 5, worktree `eval-pool-4`)**:
+1. `gra/data/econ-params.json`: `magazyn_baza_surowce` 1000→10000 (era1, wszystkie
+   trudności płasko); `magazyn_bonus_surowce_na_budynek` wartość bazowa
+   NIEZMIENIONA (100, era1) — patrz interpretacja wyżej.
+2. `gra/src/game/building-resource-gate.ts`: `SPICHLERZ_EMPIRE_CAP_I` 100→1000,
+   `SPICHLERZ_EMPIRE_CAP_II_FULL` 150→1500 (era1).
+3. Nowa funkcja czysta `magazynEraMultiplier(era)` w `gra/src/game/economy-upkeep.ts`
+   — `2^(max(1,era)-1)`, era<1/NaN/nieskończona → 1 (mnożnik ×1). Współdzielona
+   przez oba mechanizmy (surowce + Spichlerz/żywność), zero duplikacji formuły.
+4. `ownerResourceCapacityPerType(magazynCount, params, era=1)` — dodany 3. param
+   `era`, skaluje CAŁY wynik (baza+bonus×magazynCount) razem, matematycznie
+   równoważne skalowaniu obu składników osobno. Nowa `ownerStorageParamsForEra(p,
+   era)` — rozbicie (baza, bonus) przeskalowane OSOBNO, dla UI (main.ts panel
+   Surowce: `capBase`/`capBonusPerMagazyn` muszą sumować się dokładnie do `cap`,
+   inaczej rozjazd klasy HUD-SKARBIEC).
+5. `computeCentralFoodCap(..., era=1)` w `empire-food.ts` — skaluje WYŁĄCZNIE
+   wkład Spichlerza (`SPICHLERZ_EMPIRE_CAP_I/II × magazynEraMultiplier`);
+   `centralCapBaza`/`centralCapBonusMagazyn` (magazyn_centralny_* — osobny
+   mechanizm, POZA zakresem tego zlecenia) zostają PŁASKIE, bez zmian.
+   `advanceEmpireFood(...)` dostał nowy opcjonalny 8. param `resolveOwnerEra`.
+6. Threading do silnika (PARYTET AI, ten sam resolver dla gracza i AI, zero
+   nowych gałęzi po ownerId):
+   - `turn-economy.ts::advanceCityEconomy` — wewnętrzny `ownerResourceCapFor`
+     teraz liczy erę TYM SAMYM wzorcem co `converterThroughputsForOwner`
+     (`resolveOwnerEra ? resolveOwnerEra(ownerId) : (ownerId===0 ? playerEra : 1)`).
+   - `turn-economy.ts::ownerResourceCap()` (eksportowany getter dla UI/innych
+     wywołujących) — dodany opcjonalny 6. param `era=1`.
+   - `main.ts`: `advanceCityEconomy(...)` JUŻ przekazywał `empireEpochForOwner`
+     na pozycji `resolveOwnerEra` (sprzed tej zmiany, z innego zadania) — zero
+     zmiany wymaganej. `advanceEmpireFood(...)` — dodany `empireEpochForOwner`
+     jako 8. arg. Panel Surowce (`buildEmpireResourceRows`) — `empireCap` i
+     `storageParams` (capBase/capBonusPerMagazyn) liczone przez
+     `empireEpochForOwner(ownerId)`, żeby HUD nie rozjechał się z silnikiem.
+7. **ŚWIADOMA LUKA (poza zakresem, udokumentowana, NIE naprawiona w tym
+   zleceniu):** trzy inne wywołania `ownerResourceCap(...)` w `main.ts`
+   (battle-loot cap ~L20839, trade-flow cap ~L22920, drewno-wyrąb cap ~L23241)
+   NIE dostały jawnego `era` — zostają na domyślnym `era=1` (zachowanie
+   identyczne jak przed tą zmianą, poza samą podwyżką bazy 1000→10000, która
+   jest bezwarunkowa). Celowo pominięte: (a) drewno-wyrąb jest chronione
+   strażnikiem tekstowym `surow-civ-storage-test.cjs` sekcja G z DOKŁADNYM
+   regexem na literalne wywołanie 5-argumentowe — dodanie 6. argumentu złamałoby
+   ten test bez wyraźnego zlecenia na jego zmianę; (b) battle-loot/trade-flow są
+   brzegowe względem tego zadania (magazyn per-turowy), a każde dodatkowo
+   wymaga własnej analizy ownerId/era w danym kontekście. Ryzyko: w epokach 2+
+   te trzy miejsca liczą cap NIŻSZY niż realnie egzekwowany przez
+   `advanceCityEconomy`/`reconcileOwnerResourceCaps` — praktyczny skutek:
+   konserwatywne niedoszacowanie (nie exploit, nie crash), np. łup z bitwy może
+   zostać przycięty do era1-cap zamiast realnego, wyższego capu. Kandydat na
+   osobne zgłoszenie ABC, jeśli właściciel chce pełnej spójności.
+8. Nowy test `gra/tools/magazyn-era-scaling-test.cjs` (esbuild-bundle-real-source,
+   57 asercji): `magazynEraMultiplier` (×1/×2/×4 + brzegi era<1/NaN/ujemna/
+   niecałkowita), `ownerResourceCapacityPerType`/`ownerStorageParamsForEra`
+   (skalowanie + zgodność rozbicia UI z totalem), wartości realne z
+   econ-params.json, `SPICHLERZ_EMPIRE_CAP_I/II` (1000/1500), integracja przez
+   `advanceEmpireFood` (Spichlerz I i II, era1/2/3), dowód mutacyjny (era3 daje
+   dokładnie ×4 vs era1), integracja PEŁNA `advanceCityEconomy` z PARYTETEM AI
+   (gracz era1 vs AI era3 w JEDNYM wywołaniu — magazyn gracza obcina nadwyżkę do
+   10000, magazyn AI (era3, cap 40000) zachowuje ją w całości).
+9. Poprawione 2 istniejące testy, których hardkodowane oczekiwania odnosiły się
+   WPROST do zmienianych dziś parametrów (recompute, nie pre-istniejący dług —
+   zweryfikowane osobno na czystym `main` przed zmianami):
+   - `gra/tools/empire-food-b5-test.cjs` (sekcja Q6): scenariusz podniesiony
+     proporcjonalnie (1560+50→1500 zamiast 560+50→600), żeby nadal realnie
+     ćwiczyć OBCINANIE nadwyżki z nowym `SPICHLERZ_EMPIRE_CAP_I=1000`.
+   - `gra/tools/tartak-glinianka-rate-Q1-test.cjs` (sekcja D): margines liczby
+     tur zmieniony z addytywnego (+15) na multiplikatywny (×2 + 15) — przy
+     10x większym capie (1000→10000) stały dodatek tur przestał wystarczać, bo
+     realna efektywność magazynowania (~62/turę netto, nie nominalne 80/turę)
+     jest stała niezależnie od wielkości capu.
+   - Naprawiona TAKŻE regresja we własnym komentarzu: pierwsza wersja zmiany w
+     `main.ts::advanceEmpireFood(...)` dodała wieloliniowy komentarz WEWNĄTRZ
+     wywołania (między `advanceEmpireFood(` a argumentami), co przesunęło
+     `_maxSafeRationCache.clear();` poza okno 1500 znaków strażnika tekstowego
+     `auto-wyzywienie-live-recalc-test.cjs` — naprawione przeniesieniem
+     komentarza PRZED linię wywołania (złapane własną weryfikacją bramek, nie
+     przez Evaluatora).
+
+**Bramki**: `npx tsc --noEmit` (worktree z symlinkiem `node_modules`, `npx tsc
+--version` = 5.9.3 zweryfikowane) 0 błędów · `logic-test.cjs` 213/213 ·
+`tech-tree-test.cjs`/`research-test.cjs`/`unit-replace-test.cjs`/
+`ai-founding-territory-test.cjs` wszystkie zielone · nowy
+`magazyn-era-scaling-test.cjs` 57/57 · testy dotknięte bezpośrednio (recompute):
+`empire-food-b5-test.cjs` 25 pass/3 fail (3 fail PRE-ISTNIEJĄCE, zweryfikowane
+identyczne na czystym `main` — „koszt wojska R-STAWKI", „po wojsku zostaje 14",
+„wojsko zjada po miastach", niezwiązane z tym zleceniem), `tartak-glinianka-
+rate-Q1-test.cjs` 278/278 (po naprawie marginesu), `auto-wyzywienie-live-recalc-
+test.cjs` 57/57 (po naprawie pozycji komentarza), `converters-test.cjs` 46/46,
+`upkeep-test.cjs` 73/73 (moduł legacy `StorageParams`/`loadStorageParams`
+per-miasto NIE dotknięty — poza zakresem, patrz komentarz w
+economy-upkeep.ts). Impact-check współdzielonych plików (C-026, lista
+weryfikowana grepem `ownerResourceCap(\|loadOwnerStorageParams\|
+DEFAULT_OWNER_STORAGE_PARAMS\|magazyn_baza_surowce\|
+magazyn_bonus_surowce_na_budynek\|ownerResourceCapacityPerType\|
+SPICHLERZ_EMPIRE_CAP\|advanceEmpireFood(`, każde trafienie sprawdzone z osobna):
+`mennica-magazyn-test.cjs` 40/1 (PRE-ISTNIEJĄCY, dokumentowany przez zadanie
+P-KONWERTERY-PRZEPUSTOWOSC-Q1 wyżej, nie dotyczy magazynu) ·
+`population-growth-v85-test.cjs` 48/2, `spichlerz-wzrost-test.cjs` 2/7,
+`glod-wojska-karencja-test.cjs` 29/10, `grupa-b-lane-test.cjs` 45/4 —
+wszystkie CZTERY zweryfikowane IDENTYCZNE (te same liczby pass/fail) na czystym
+`main` PRZED zmianami (git stash + rerun), więc pre-istniejący dług testowy
+niezwiązany z tym zleceniem, nie regresja · `surow-civ-storage-test.cjs` 43/14
+— TA SAMA liczba fail (14) jak PRZED zmianą (baseline zweryfikowany), tylko
+inne liczby „got" (stara, już nieaktualna baza 500 vs realne dziś 1000→10000)
+— pre-istniejący dług sekcji A/D/E tego pliku (komentarz w kodzie testu z
+2026-07-24 już to odnotowywał: „bazaSurowcePanstwo w danych = 1000, nie 500 jak
+zakładał stary test"), NIE naprawiony w tym zleceniu (poza zakresem, C-025) ·
+`ai-major-economy-test.cjs`/`city-state-mp-growth-test.cjs`/`spichlerz-
+deficyt-scalenie-test.cjs`/`city-badge-growth-percent-test.cjs`/`army-hunger-
+combat-test.cjs` wszystkie zielone bez zmian.
+
+**Zmienione pliki**: `gra/data/econ-params.json`, `gra/src/game/economy-upkeep.ts`,
+`gra/src/game/building-resource-gate.ts`, `gra/src/game/empire-food.ts`,
+`gra/src/game/turn-economy.ts`, `gra/src/main.ts`, `gra/tools/empire-food-b5-test.cjs`,
+`gra/tools/tartak-glinianka-rate-Q1-test.cjs` (poprawki istniejących testów) +
+`gra/tools/magazyn-era-scaling-test.cjs` (nowy).
+
+**Pozostawione NIEPRZYWRÓCONE w worktree `eval-pool-4`** na życzenie orkiestratora —
+scalenie do głównego drzewa i ewentualny Evaluator po stronie orkiestratora.
+
+**STATUS: ZAMKNIĘTE PO STRONIE OPERATORA, czeka na scalenie + Evaluator (nie
+self-ocena — worktree odizolowany, brak commitu/deployu z tej sesji). Punkt 7
+(świadoma luka battle-loot/trade-flow/drewno-wyrąb cap bez era) i decyzja o
+NIEZMIENIONej bazie `magazyn_bonus_surowce_na_budynek` — do potwierdzenia przez
+Evaluatora/właściciela, nie zgadywane dalej.**

@@ -846,7 +846,7 @@ import {
   shouldDeferEotEvents,
   type DeferredEotHint,
 } from './game/eot-event-defer';
-import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
+import { loadUpkeepParams, buildUnitFoodTable, loadOwnerStorageParams, ownerStorageParamsForEra, buildingUpkeepForBuiltIds, buildingResourceUpkeepForBuiltIds, previewOwnerTotalResourceUpkeep, buildUnitUpkeepTable, totalUnitUpkeep, canAffordUnitRecruitFull, pickUnitRecruitHint, type UnitUpkeepLike } from './game/economy-upkeep';
 import { computePowerContributionsCityEconomy, buildPowerSnapshots, type PowerOwnerSnapshot } from './game/power';
 import { citySightRadius, toggleTileWorker, cityRangeForPopulation, yieldOfMapHex, resolveWorkedTiles, seedReczneFromAuto, collectWorkedHexOwnerMap, hexKeysWithinRadius, reconcileAllWorkedTiles, isLandWorkableHex } from './game/okolica';
 import { getCityResourceAccessForCity } from './game/resource-access';
@@ -1196,6 +1196,7 @@ import {
 import {
   DEFAULT_CONVERTER_RECIPES,
   loadThroughput,
+  converterThroughputForEra,
   type RawConverterParamsJson,
 } from './game/converters';
 
@@ -2636,14 +2637,23 @@ async function boot(): Promise<void> {
      * outputAmount. BRUTTO = nominalna zdolność produkcyjna, NIE pomniejszona o brak
      * wejścia (drewna/gliny/rudy) tej konkretnej tury — wystarczające do "ile się
      * produkuje" w liczniku (Maciej: netto zbyt kosztowne, brutto OK).
+     *
+     * P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): przepustowość bazowa
+     * przepuszczona przez `converterThroughputForEra` (Cegielnia/Garncarnia +10%/epokę
+     * WŁAŚCICIELA, Odlewnie płaskie) -- ten sam wzorzec co advanceCityEconomy, żeby
+     * licznik HUD nie rozjechał się z realnym silnikiem (klasa błędu HUD-SKARBIEC).
+     * `empireEpochForOwner` = ten sam resolver PARYTETU AI używany wszędzie indziej
+     * w main.ts (owner 0 -> player.era, AI -> ownerEraByOwner).
      */
     function empireConverterResourceRatesForOwner(ownerId: number): Partial<Record<string, number>> {
       const rawForConverters = data.econParams as unknown as RawConverterParamsJson;
+      const era = empireEpochForOwner(ownerId);
       const out: Record<string, number> = {};
       for (const recipe of DEFAULT_CONVERTER_RECIPES) {
-        const throughput = loadThroughput(
+        const baseThroughput = loadThroughput(
           rawForConverters, recipe.throughputParamKey, _menuDifficulty, recipe.throughputFallback,
         );
+        const throughput = converterThroughputForEra(recipe.id, baseThroughput, era);
         for (const c of cities) {
           if (c.ownerId !== ownerId) continue;
           const builtIds = cityBuilt.get(c.id) ?? [];
@@ -2715,15 +2725,27 @@ async function boot(): Promise<void> {
       const accessLabels = new Set(diplomacyActiveResourceLabelsForOwner(ownerId));
       const territoryRates = empireTerritoryResourceRatesForOwner(ownerId);
       const converterRates = empireConverterResourceRatesForOwner(ownerId);
-      // SUROW-CIV-01 (Maciej 2026-07-24): cap PAŃSTWA (civ-wide) — 100 + 100×Magazyny
+      // SUROW-CIV-01 (Maciej 2026-07-24): cap PAŃSTWA (civ-wide) — baza + bonus×Magazyny
       // ownera; `warehouse` powyżej JEST już sumą civ-wide (citySurowceSumForOwner),
       // wystarczy dołożyć cap, żeby licznik pokazał „stock / cap" (np. „140 / 200").
-      const empireCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty);
+      // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): `capEra` = empireEpochForOwner
+      // (ten sam resolver PARYTETU AI co wszędzie indziej) -- cap podwaja się co epokę
+      // WŁAŚCICIELA, HUD musi pokazywać TĘ SAMĄ wartość, jaką realnie egzekwuje silnik
+      // (advanceCityEconomy::ownerResourceCapFor), inaczej licznik rozjeżdża się z grą
+      // (klasa błędu HUD-SKARBIEC, patrz empireConverterResourceRatesForOwner wyżej).
+      const capEra = empireEpochForOwner(ownerId);
+      const empireCap = ownerResourceCap(cities, cityBuilt, ownerId, data, _menuDifficulty, capEra);
       // SUROW-UI-A1: parametry bazy/bonusu wprost z econ-params.json — UI dostaje realne
-      // wartości (dziś 1000 + 100×Magazyny) zamiast zaszywać starą "100" na sztywno.
-      const storageParams = loadOwnerStorageParams(
-        data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
-        _menuDifficulty,
+      // wartości (dziś 10000 + 100×Magazyny, epoka 1) zamiast zaszywać starą "100" na
+      // sztywno. ownerStorageParamsForEra przeskalowuje OBA składniki (baza, bonus/Magazyn)
+      // TYM SAMYM mnożnikiem co empireCap wyżej -- capBase + capBonusPerMagazyn×liczba
+      // sumuje się dokładnie do `cap` niżej (P-MAGAZYN-SKALOWANIE-EPOKA-Q1), zero rozjazdu.
+      const storageParams = ownerStorageParamsForEra(
+        loadOwnerStorageParams(
+          data.econParams as unknown as Parameters<typeof loadOwnerStorageParams>[0],
+          _menuDifficulty,
+        ),
+        capEra,
       );
       type Cat = { id: string; label: string; icon: string; typ: EmpireResourceRow['typ']; placeholder?: boolean };
       // P-SUROWCE-KOLEJNOSC-KART (Maciej 2026-08-12): kolejność kart = pary surowiec
@@ -23085,8 +23107,12 @@ async function boot(): Promise<void> {
               }
             }
 
+            // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): empireEpochForOwner (8. arg) --
+            // ten sam resolver PARYTETU AI uzywany wszedzie indziej -- skaluje wklad Spichlerza
+            // I/II do centralnego capu zywnosci co epoke wlasciciela.
             lastEfTickResult = advanceEmpireFood(
               econ, econUnits, empireFoodStates, upkeepParams, efParams, unitFoodTbl, cityBuilt,
+              empireEpochForOwner,
             );
             // P-WZROSTPROCENT-PLAKIETKA-ROZJAZD (blokada 1, runda 5 Evaluatora): `advanceEmpireFood`
             // zapisuje `st.zapasyPanstwa = central` (empire-food.ts) -- to koniec-tury zmiana

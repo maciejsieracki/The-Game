@@ -276,9 +276,13 @@ eq(yldClay.glinaTerenu, 4, 'cityYieldPerTurn: 2 pola z glinianka -> glinaTerenu 
 // ---------------------------------------------------------------------------
 console.log('\n-- H. Cegielnia + Garncarnia produkują; odlewnia_brazu NIE bez rudy --');
 
+// P-KONWERTERY-PRZEPUSTOWOSC-Q1 (Maciej 2026-08-12): stock podniesiony 20->40 --
+// Cegielnia (throughput 10, 2 glina/cykl) sama potrafi wchłonąć 20 gliny w jednym
+// ticku (recepty biegną po kolei, Cegielnia PRZED Garncarnią w DEFAULT_CONVERTER_RECIPES);
+// przy starym stocku=20 Garncarnia zostawała bez gliny (0 cykli). 40 daje margines dla obu.
 const withCegielniaGarncarnia = simulateConverterTick(
   ['cegielnia', 'garncarnia'],
-  { glina: 20, drewno: 20 },
+  { glina: 40, drewno: 40 },
 );
 assert(withCegielniaGarncarnia.stores.cegla > 0,
   `Cegielnia: cegla > 0 przy glina+drewno obecnych (got ${withCegielniaGarncarnia.stores.cegla})`);
@@ -295,9 +299,11 @@ eq(withoutBuildings.stores.glina, 8, 'brak budynkow: glina niezmieniona');
 
 // odlewnia_brazu zbudowana + drewno obecne, ale BEZ rudy (GLINA-Q2=A: rudy nie zbieramy) ->
 // braz NIE rosnie (limitWejscia=0 bo have('ruda')=0), niezaleznie od gliny/cegielni/garncarni.
+// Stock 40 (patrz komentarz wyżej przy withCegielniaGarncarnia) -- odlewnia_brazu
+// samo nie zużywa gliny (tylko ruda+drewno), więc nie wpływa na ten rachunek.
 const withOdlewniaNoOre = simulateConverterTick(
   ['odlewnia_brazu', 'cegielnia', 'garncarnia'],
-  { glina: 20, drewno: 20 },
+  { glina: 40, drewno: 40 },
 );
 eq(withOdlewniaNoOre.stores.braz, undefined,
   'odlewnia_brazu zbudowana ale brak rudy w magazynie -> braz NIE rosnie (undefined, brak-wejscia)');

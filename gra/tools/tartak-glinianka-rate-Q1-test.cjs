@@ -189,7 +189,13 @@ console.log('\n-- D. Regresja P-MAGAZYN-PRZEKROCZENIE-LIMITU-GLINA-DREWNO: cap p
   ok(expectedCap > 0, `sanity: cap panstwa odczytany runtime > 0 (${expectedCap})`);
 
   const perTurn = N_TARTAK * 10; // stawka NOWA (10/ture x Tartak), nie stara 4/ture
-  const turnsToExceedCap = Math.ceil(expectedCap / perTurn) + 15; // kilkanascie tur ponad przekroczenie cap-u
+  // P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej 2026-08-12): margines x2 (nie tylko +15) --
+  // po podniesieniu magazyn_baza_surowce 1000->10000 sama nominalna stawka (perTurn=80)
+  // nie trafia netto do magazynu (empirycznie ~62/ture po odjeciu innego zuzycia miasta),
+  // wiec staly dodatek +15 tur, wystarczajacy przy starym, malym capie, przestal
+  // wystarczac przy 10x wiekszym capie -- margines musi skalowac sie MULTIPLIKATYWNIE
+  // z capem, nie addytywnie stala liczba tur.
+  const turnsToExceedCap = Math.ceil((expectedCap / perTurn) * 2) + 15; // margines x2 + kilkanascie tur ponad przekroczenie cap-u
 
   let maxSeen = 0;
   for (let t = 0; t < turnsToExceedCap; t++) {

@@ -94,9 +94,13 @@ const params = M.buildEmpireFoodParams({
   ok(states.get(0).zapasyPanstwa === 14, 'po wojsku zostaje 14');
 }
 
-// Q6: cap 500 + Spichlerz +100
+// Q6: cap 500 + Spichlerz I (epoka 1) -- P-MAGAZYN-SKALOWANIE-EPOKA-Q1 (Maciej
+// 2026-08-12) podniosło SPICHLERZ_EMPIRE_CAP_I 100->1000 (era1, brak resolveOwnerEra
+// w tym wywołaniu -> era domyślnie 1, mnożnik ×1) -- cap = 500 + 1000 = 1500.
+// Wartości wejściowe podniesione proporcjonalnie (1560+50), żeby test dalej
+// realnie ćwiczył OBCINANIE nadwyżki ponad cap, nie tylko nową liczbę.
 {
-  const states = new Map([[0, { zapasyPanstwa: 560, turyUjemnychZapasow: 0 }]]);
+  const states = new Map([[0, { zapasyPanstwa: 1560, turyUjemnychZapasow: 0 }]]);
   const econ = {
     perCity: [{
       cityId: 'c1', ownerId: 0, oblegany: false, maSpichlerz: true,
@@ -104,8 +108,8 @@ const params = M.buildEmpireFoodParams({
     }],
   };
   M.advanceEmpireFood(econ, [], states, upkeep, params);
-  ok(states.get(0).zapasyPanstwa === 600, 'cap 600 — nadwyżka obcięta (560+50)');
-  ok(M.getEmpireFoodMaxCap(0) === 600, 'max cap = 500 + 100 spichlerz');
+  ok(states.get(0).zapasyPanstwa === 1500, 'cap 1500 — nadwyżka obcięta (1560+50)');
+  ok(M.getEmpireFoodMaxCap(0) === 1500, 'max cap = 500 + 1000 spichlerz (epoka 1)');
 }
 
 // Głód wojska przy niedoborze żywności (Q4=A: zapasy clamp ≥ 0)
