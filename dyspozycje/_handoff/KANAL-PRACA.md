@@ -6696,6 +6696,6 @@ kwalifikuje **FALĘ 270** (`028ff459`) do scalenia do `main` — wymaga wyraźne
 --is-ancestor`. Do scalenia pozostaje **FALA 270** (`028ff459`, NIE w main), kwalifikowana rytmem
 jedna fala do tyłu przez powstanie FALI 271. Scalenie NIE wykonane tutaj (poza zakresem deployu,
 wymaga wyraźnej zgody właściciela; `git-merge-main` zablokowany w `guardrails.ts`).
-ℹ️ Po buildzie doszly na galaz 3 commity (`7155d39d`, `0994753b`, `63bdf1b9`) — **nie sa w bundlu**, ale zweryfikowane jako **bez zmian zachowania** (rejestr + testy; kopalnia zlota odsprzegnieta do JSON, wartość 1→1). Bundel NIE byl przebudowywany 4. raz; wiazacy build HEAD = `b6159561`.
+ℹ️ **Commity, ktore weszly na galaz po buildzie, NIE sa w bundlu** — wiazacy build HEAD = `b6159561`, reszta wchodzi do FALI 272. Do momentu pushu doszly m.in. `7155d39d`/`0994753b`/`63bdf1b9` (rejestr + testy; kopalnia zlota odsprzegnieta do JSON, wartosc 1→1, zachowanie bez zmian) oraz `b923730a`/`af8fb9c6` (deduplikacja EDYCJI koszyka PW, 10→20/20 — **realna zmiana logiki, poza ta fala**). Bundel NIE byl przebudowywany 4. raz.
 **SESJA LOKALNA: pull na dysk właściciela** (testuj `ea51ac51`).
 CZEKAM-NA: sesja lokalna (pull + playtest) · Maciej: zgoda na scalenie FALI 270 do `main`.
