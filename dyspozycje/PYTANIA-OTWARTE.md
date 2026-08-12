@@ -14129,3 +14129,26 @@ Evaluatorów**, którzy already mają sprawdzone harnessy z realną geometrią m
 
 **Scalone przez orkiestratora — dispatch 3x Evaluator adwersaryjny w toku, z jawnym zadaniem
 zweryfikowania NAPRAWY WSPÓLNEJ dla obu tematów barbarzyńców (freeze bug).**
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 runda 2 (`5bf3e696`) — Evaluator B: **FAIL**
+
+Punkty 1/2/5 dobre. **Bloker: punkt 3 („kolejne miasto") nie daje POSTĘPU — livelock zamiast
+deadlocka.** Pojedynczy slot pamięci (`recentlyClearedCityId`) nadpisywany co turę: zapamiętanie
+miasta B kasuje pamięć o A, więc A natychmiast wraca do puli celów → jednostka oscyluje w
+nieskończoność między A i B z zerowym postępem netto (zweryfikowane wykonaniem, 12 tur,
+`dB` skacze 5↔6 w kółko, nigdy nie maleje). **To ta sama wada co bloker rundy 1 — zmienił się
+tryb awarii z deadlocka na livelock, trudniejszy do zauważenia w playteście** (jednostka
+wygląda na aktywną, tylko nie robi postępu). Test tego nie łapie, bo sekcja 2 kończy się o jedno
+wywołanie za wcześnie (asercjonuje tylko 2 pierwsze decyzje). Dodatkowo: pamięć zapisuje się bez
+faktycznego dotarcia do miasta (jednostka 25 heksów od miasta już je „oczyszcza") i zatruwa się
+podczas pościgu za jednostką polową (miasto oznaczane jako oczyszczone mimo że jednostka gonił
+coś innego).
+**Drugi bloker: punkt 4 (`applyPostCaptureLawOnCapture` pominięte) ma ZERO pokrycia testowego** —
+mutacja usuwająca `!isBarbarian(atkOwner)` przechodzi wszystkie 6 bramek niezauważona.
+**Nota (§0b, do korekty kanonu)**: komentarz uzasadniający guard punktu 4 jako „ochronę bonusu
+odbicie po buncie" jest FAKTYCZNIE BŁĘDNY — zweryfikowane wykonaniem, `rebelPreviousOwnerId`
+faktycznie przeżywa przejęcie przez barbarzyńców, ale `isRebellionReconquest` wymaga
+`prevOwner===-99`, a przy odbiciu OD BARBARZYŃCÓW `prevOwner=-1` — łańcuch buntu jest przerwany
+przez pośredniego właściciela, gracz dostaje zwykłe 5 tur nie 10, identycznie jak bez guarda.
+Zachowane pole nigdy nie jest użyte.
+**Czeka na głosy A/C.**
