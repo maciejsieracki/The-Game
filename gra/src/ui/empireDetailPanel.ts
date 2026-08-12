@@ -27,6 +27,7 @@ import {
 } from '../game/population-growth-v85';
 import { formatCivBrandLine } from './civBrandDisplay';
 import {
+  econSliderVisibilityForOnlyEconId,
   empirePanelBlockForSection,
   type EmpirePanelBlock,
 } from './empirePanelSectionMap';
@@ -1168,18 +1169,18 @@ function render(): void {
       + `<span class="lbl">${r.lbl}</span><span class="val">${val}</span></div>`;
     if (detail) zasoby += `<div data-section="econ-${r.id}">${detail}</div>`;
   }
-  // BUG-SUWAKI-PRACA-SKARBIEC-ZNIKAJA-PRZY-FILTRZE-CHIPU (Maciej 2026-08-10): suwaki globalne
-  // Skarbca i Pracy muszą być widoczne ZAWSZE, niezależnie od onlyEconId — analogicznie do
-  // Wyżywienia (renderDefaultPoziomRacjiSection wewnątrz renderSpichlerzCentralnySection, poza
-  // filtrem). C-PANEL=B (filtr wierszy stanu/przyrostu ekonomii) zostaje nienaruszony —
-  // wyjęte spod `if` są WYŁĄCZNIE te dwa wywołania suwaków, nie cała pętla econRows wyżej.
-  // EN: global Treasury/Labor sliders must always be visible regardless of onlyEconId — same
-  // pattern as Food (rendered outside the filter). C-PANEL=B (econ row filter) stays intact —
-  // only these two slider calls are pulled out of the `if`, not the econRows loop above.
-  zasoby += renderDefaultHandelSplitSection();
-  // R-USTAWIENIA-GLOBALNE-LOKALNE (grupa "Praca", Maciej 2026-08-10): globalny
-  // podział Pracy imperium, wzorem sekcji Handlu tuż wyżej (DYSPOZYCJA-85-SUWAK).
-  zasoby += renderDefaultPodzialPracySection();
+  // P-EMPIRE-PANEL-SUWAKI-DUPLIKOWANE-NA-WSZYSTKICH-ZAKLADKACH (Maciej 2026-08-12): każda
+  // zakładka pokazuje WYŁĄCZNIE tematycznie powiązany suwak, nie oba naraz na każdej — reguła
+  // i pełne uzasadnienie w `econSliderVisibilityForOnlyEconId` (empirePanelSectionMap.ts, plik
+  // bez importów UI/DOM, testowalny przez esbuild). C-PANEL=B (filtr wierszy econRows wyżej)
+  // zostaje nienaruszony — to tylko dwa wywołania suwaków, poza pętlą.
+  // EN: each tab shows ONLY its thematically-linked slider, not both on every tab — rule and
+  // full rationale live in `econSliderVisibilityForOnlyEconId` (empirePanelSectionMap.ts, a
+  // DOM/UI-import-free file, esbuild-testable). C-PANEL=B (econRows row filter above) stays
+  // intact — only these two slider calls, outside the loop, are affected.
+  const sliderVis = econSliderVisibilityForOnlyEconId(onlyEconId);
+  if (sliderVis.showTaxSplit) zasoby += renderDefaultHandelSplitSection();
+  if (sliderVis.showLaborSplit) zasoby += renderDefaultPodzialPracySection();
   zasoby += `<div class="civ-emp-foot">Klik w górnym pasku zasobów przewija do tabeli per miasto. Duża liczba = stan · zielone = netto.</div></div>`;
 
   // — SPICHLERZ (Maciej 2026-07-28) — magazyn centralny żywności, bez wojska.
