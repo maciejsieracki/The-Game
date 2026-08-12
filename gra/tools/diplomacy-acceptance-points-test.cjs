@@ -537,12 +537,62 @@ const napEval61 = mod.evaluateProposal(
 );
 ok(napEval61.accepted === true, 'kontrola silnika: evaluateProposal NAP @ rel 61 (AI proponent) = accepted');
 
-// 2) Ta sama Relacja, ale GRACZ jest proponentem (own) — zachowanie MUSI zostać bez zmian
-// (silnik i tak nigdy nie wymaga PW dla nap/sojusz/wasal niezależnie od strony, ale ten test
-// pilnuje że naprawa dotknęła WYŁĄCZNIE ścieżkę incoming, nie zmieniła nic dla own).
+// 2) U2 (Evaluator, Maciej) — LUSTRZANA asymetria: GRACZ jest proponentem (own) tej samej
+// propozycji. Silnik (evaluateProposal, case 'nap') nie ma ŻADNEGO PW-fairness gate — ani dla
+// AI-proponenta (punkt 1), ani dla gracza-proponenta — sprawdza wyłącznie `score < napThreshold`
+// (progNapRelacja=50 ≤ 61). Do UZUPEŁNIENIA U1 (2026-08-1x): panel own pokazywał
+// accepted=false, "Brakuje 78 PW — zawrzyj osobną umowę" na tej samej w pełni akceptowalnej
+// przez silnik propozycji — bramka `asymBalance>=0` była stosowana do WSZYSTKICH traktatów z
+// treatyBase>0 gdy proponentem był gracz, mimo że realną bramkę PW (treatyBaseFairnessGap,
+// `if (proposerIsPlayer)`) silnik ma WYŁĄCZNIE w case'ach umowa_handlowa/umowa_szlakow (i
+// osobno pokój). Naprawione: bramka `asymBalance>=0` po stronie own dotyczy TERAZ wyłącznie
+// tych dwóch typów (OWN_PROPOSER_TREATY_PW_GATE_ACTIONS w diplomacy-acceptance-points.ts).
 const napOwn61 = mod.computePlayerAcceptanceSides('nap', {}, 61, false);
-ok(napOwn61.my.accepted === false, 'gracz proponuje NAP @ rel 61: zachowanie own NIEZMIENIONE (accepted false jak przed naprawą)');
-ok(napOwn61.my.statusLabel.includes('Brakuje'), 'gracz proponuje NAP @ rel 61: statusLabel own NIEZMIENIONY ("Brakuje")');
+ok(napOwn61.my.accepted === true, 'U2: gracz proponuje NAP @ rel 61: my.accepted true (naprawione — był fałszywy deficyt −78 PW)');
+ok(napOwn61.their.accepted === true, 'U2: gracz proponuje NAP @ rel 61: their.accepted true');
+ok(!napOwn61.my.statusLabel.includes('Brakuje'), 'U2: gracz proponuje NAP @ rel 61: bez fałszywego "Brakuje"');
+ok(napOwn61.my.balancePn === -78, 'U2: gracz proponuje NAP @ rel 61: balancePn nadal informacyjnie −78 (122−200), ale nie blokuje');
+const napEvalOwn61 = mod.evaluateProposal(
+  { actionId: 'nap', proposerOwnerId: 0, responderOwnerId: 1, payload: {} },
+  {
+    relation: { zaufanie: 31, respekt: 30 }, stanWojny: false, difficulty: 'normal',
+    turn: 10, proposerWiarygodnosc: 60,
+  },
+);
+ok(napEvalOwn61.accepted === true, 'kontrola silnika: evaluateProposal NAP @ rel 61 (gracz proponent) = accepted (zgadza się z panelem)');
+
+// 2a) U2 — gate PW dla umowa_handlowa/umowa_szlakow (own) MUSI zostać — to JEDYNE dwa typy,
+// gdzie evaluateProposal realnie gate'uje bazę PW `if (proposerIsTreatyPlayer)` (treatyBaseFairnessGap).
+// rel 52: gracz 42 PW (baza 80 @ rabat −48%), partner 80 PW → deficyt −38, MUSI dalej blokować.
+const tradeOwn52StillGated = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 52, false);
+ok(tradeOwn52StillGated.my.accepted === false, 'U2: umowa_handlowa @ rel 52 (own): dalej accepted false (gate PW zachowany)');
+ok(tradeOwn52StillGated.my.balancePn === -38, 'U2: umowa_handlowa @ rel 52 (own): balancePn −38 (42−80)');
+ok(tradeOwn52StillGated.my.statusLabel.includes('Brakuje 38'), 'U2: umowa_handlowa @ rel 52 (own): statusLabel "Brakuje 38 PW"');
+
+// 2b) U2 — sojusz_pelny (own) @ rel 160 (relOk: próg 151 ≤ 160, asymBalance>0 bo Relacja>100
+// wzmacnia bazę gracza) — silnik case 'sojusz_pelny' nie ma PW gate, tylko progi Relacji/Zaufania/
+// Respektu/willingnessAlly; panel MUSI akceptować niezależnie od asymBalance.
+const sojuszOwn160 = mod.computePlayerAcceptanceSides('sojusz_pelny', {}, 160, false);
+ok(sojuszOwn160.my.accepted === true, 'U2: gracz proponuje sojusz_pelny @ rel 160: accepted true (brak PW gate w silniku)');
+ok(sojuszOwn160.my.balancePn === 300, 'U2: sojusz_pelny @ rel 160 (own): balancePn +300 (800−500), informacyjne, nie blokuje');
+
+// 2c) U2 — regresja etykiety/accepted: relOk=false (Relacja poniżej progu case'a) dla akcji BEZ
+// bramki PW (nap) po stronie own MUSI dalej blokować z poprawną przyczyną ("Relacja"), nie z
+// fałszywym "Spełnia warunki (0 PW)" (efekt uboczny odkryty przy weryfikacji tej naprawy —
+// zanim balanceOk było zawsze true dla nap, relOk=false i tak trafiał w gałąź "Brakuje PW" z
+// powodu ujemnego asymBalance, maskując usterkę; po naprawie balanceOk=true ujawniało ją).
+const napOwn40BelowThreshold = mod.computePlayerAcceptanceSides('nap', {}, 40, false);
+ok(napOwn40BelowThreshold.my.accepted === false, 'U2: gracz proponuje NAP @ rel 40 (< próg 50): accepted false (Relacja, nie PW)');
+ok(napOwn40BelowThreshold.my.statusLabel === 'Relacja −10 (wym. 50)', 'U2: NAP @ rel 40 (own): statusLabel "Relacja −10 (wym. 50)", nie "Spełnia warunki"');
+
+// 2d) U2 — kierunek incoming pozostaje BAJT-IDENTYCZNY (regresja na U1): AI proponuje NAP
+// @ rel 61 wciąż accepted=true z etykietą U1 ("możesz przyjąć bez dopłaty"), niezmienione.
+const napIncoming61Regress = mod.computePlayerAcceptanceSides('nap', {}, 61, true);
+ok(napIncoming61Regress.my.accepted === true, 'U2 regresja: AI proponuje NAP @ rel 61 (incoming): accepted nadal true');
+ok(
+  napIncoming61Regress.my.statusLabel === 'Propozycja partnera — możesz przyjąć bez dopłaty',
+  'U2 regresja: AI proponuje NAP @ rel 61 (incoming): statusLabel U1 niezmieniony',
+);
 
 // 3) umowa_handlowa incoming, PUSTY koszyk @ rel 61 — realny bug: blokował przycisk Przyjmij.
 const trHandlowaIncoming61 = mod.computePlayerAcceptanceSides('umowa_handlowa', {}, 61, true);

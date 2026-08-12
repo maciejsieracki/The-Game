@@ -139,6 +139,39 @@ export function isPlayerIncomingGift(payload: ProposalPayload): boolean {
   return split.weOffer.length === 0 && split.theyOffer.length > 0;
 }
 
+/**
+ * U2 (Evaluator, Maciej): akcje, dla których baza PW traktatu jest REALNYM wymogiem gdy
+ * GRACZ jest proponentem (own) — czyli mirror `treatyBaseFairnessGap` w diplomacy-proposals.ts,
+ * wołane tam WYŁĄCZNIE `if (proposerIsPlayer/proposerIsTreatyPlayer)` wewnątrz case'ów
+ * `umowa_handlowa`/`umowa_szlakow` ('pokoj' ma analogiczną, ale ODDZIELNĄ bramkę realizowaną
+ * przez computePeaceAcceptanceSides, więc tu nie występuje). Case'y `nap`/`sojusz_defensywny`/
+ * `sojusz_pelny`/`wasal`/`granice` w evaluateProposal NIE mają ŻADNEGO PW-fairness gate —
+ * niezależnie od tego, kto jest proponentem — mają wyłącznie własne progi Relacji/Zaufania/
+ * Respektu (progNapRelacja/progSojuszRelacja/progWasalizacjaRespekt/progGraniceRelacja).
+ * Przed naprawą kod niżej stosował gate `asymBalance >= 0` do WSZYSTKICH traktatów z
+ * treatyBase>0 gdy proponentem był gracz — dawało to fałszywe „Brakuje N PW — zawrzyj osobną
+ * umowę" (accepted=false) na w pełni akceptowalnych przez silnik propozycjach (np. NAP @ Rel
+ * 61/200: baza gracza po rabacie Relacji 122, partner na stałej bazie 200 → sztuczny deficyt
+ * −78 PW, mimo że evaluateProposal dla tej samej propozycji zwraca accepted:true — case 'nap'
+ * sprawdza tylko `score < napThreshold`, progNapRelacja=50, 61≥50).
+ * / EN: actions where the treaty base PW is a REAL requirement when the PLAYER proposes
+ * (own) — mirrors `treatyBaseFairnessGap` in diplomacy-proposals.ts, called there ONLY
+ * `if (proposerIsPlayer/proposerIsTreatyPlayer)` inside the `umowa_handlowa`/`umowa_szlakow`
+ * cases ('pokoj' has an analogous but SEPARATE gate via computePeaceAcceptanceSides, so it
+ * never reaches here). The `nap`/`sojusz_defensywny`/`sojusz_pelny`/`wasal`/`granice` cases in
+ * evaluateProposal have NO PW-fairness gate at all, for either proposer — only their own
+ * Relation/Trust/Respect thresholds. Before the fix, the code below applied the
+ * `asymBalance >= 0` gate to EVERY treaty with treatyBase>0 whenever the player proposed,
+ * producing a false "Missing N PW" (accepted=false) on offers the engine fully accepts (e.g.
+ * NAP @ Relation 61/200: player base after the Relation discount is 122, partner stays at the
+ * fixed base 200 → artificial −78 PW deficit, even though evaluateProposal accepts the same
+ * proposal — the 'nap' case only checks `score < napThreshold`, progNapRelacja=50, 61≥50).
+ */
+const OWN_PROPOSER_TREATY_PW_GATE_ACTIONS: ReadonlySet<string> = new Set<string>([
+  'umowa_handlowa',
+  'umowa_szlakow',
+]);
+
 function formatBalanceLabel(balancePn: number, accepted: boolean): string {
   if (accepted && balancePn > 0) return `Nadwyżka +${balancePn} PW`;
   if (accepted && balancePn === 0) return 'Spełnia warunki (0 PW)';
@@ -402,7 +435,22 @@ export function computePlayerAcceptanceSides(
     // actually BLOCKED the Accept button. When AI proposes, the treaty base stays an
     // informational display value but no longer blocks `accepted`.
     const proposerIsPlayer = !incoming;
-    const balanceOk = proposerIsPlayer ? asymBalance >= 0 : true;
+    // U2 (Evaluator, Maciej): bramka `asymBalance >= 0` po stronie gracza-proponenta (own)
+    // dotyczy WYŁĄCZNIE akcji z OWN_PROPOSER_TREATY_PW_GATE_ACTIONS (dziś: umowa_handlowa/
+    // umowa_szlakow) — mirror realnej bramki treatyBaseFairnessGap w evaluateProposal. Dla
+    // pozostałych traktatów z treatyBase>0 (nap/sojusz_defensywny/sojusz_pelny/wasal/granice)
+    // silnik NIE ma żadnego PW-fairness gate w ŻADNYM kierunku — sam warunek `proposerIsPlayer`
+    // (bez sprawdzenia actionId) dawał fałszywe „Brakuje N PW" na w pełni akceptowalnych przez
+    // silnik propozycjach gracza (zob. komentarz przy definicji stałej wyżej).
+    // / EN: the `asymBalance >= 0` gate on the player-as-proposer (own) side applies ONLY to
+    // actions in OWN_PROPOSER_TREATY_PW_GATE_ACTIONS (today: umowa_handlowa/umowa_szlakow) —
+    // mirroring the real treatyBaseFairnessGap gate in evaluateProposal. For the remaining
+    // treaties with treatyBase>0 (nap/sojusz_defensywny/sojusz_pelny/wasal/granice) the engine
+    // has NO PW-fairness gate in either direction — gating on `proposerIsPlayer` alone (without
+    // checking actionId) produced a false "Missing N PW" on player proposals the engine fully
+    // accepts (see the comment on the constant's definition above).
+    const ownPwGateApplies = proposerIsPlayer && OWN_PROPOSER_TREATY_PW_GATE_ACTIONS.has(actionId);
+    const balanceOk = ownPwGateApplies ? asymBalance >= 0 : true;
     my.balancePn = asymBalance;
     their.balancePn = asymBalance;
     // KOREKTA 2026-08-10 (P-DYPLO-DOPLAC-PW-ZLA-SCIEZKA, poprzedni komentarz z dziś
@@ -447,20 +495,68 @@ export function computePlayerAcceptanceSides(
     if (mode === 'treaty' && !hasBasket) {
       my.accepted = relOk && balanceOk;
       their.accepted = relOk && balanceOk;
-      my.statusLabel = !balanceOk
-        ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
-        : asymBalance > 0
-          ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
-          : incoming && asymBalance < 0 && relOk
-            ? 'Propozycja partnera — możesz przyjąć bez dopłaty'
-            : 'Spełnia warunki (0 PW)';
-      their.statusLabel = !balanceOk
-        ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
-        : asymBalance > 0
-          ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
-          : incoming && asymBalance < 0 && relOk
-            ? 'Propozycja partnera — bez dopłaty'
-            : 'Równo — spełnia';
+      // U2 (Evaluator, Maciej): `!ownPwGateApplies` zastępuje dawne `incoming` poniżej — dla
+      // incoming ownPwGateApplies jest zawsze false (proposerIsPlayer=false), więc zachowanie
+      // incoming jest BEZ ZMIAN (zweryfikowane przez porównanie ze stanem sprzed naprawy na
+      // siatce akcje×Relacje — 0 różnic); own zyskuje analogiczną, przyjazną etykietę dla akcji
+      // spoza bramki PW (nap/sojusz/wasal/granice), zamiast mylącego „Spełnia warunki (0 PW)"
+      // przy realnym niezerowym (ale nieblokującym) asymBalance.
+      // Gałąź `!incoming && !relOk` NIŻEJ (relDeficit) naprawia efekt uboczny tej samej zmiany:
+      // dla akcji spoza bramki PW `balanceOk` jest teraz zawsze true, więc bez niej Relacja
+      // poniżej progu (np. NAP @ rel 40 < próg 50, own) wpadałaby w domyślne „Spełnia warunki
+      // (0 PW)" MIMO accepted=false. ŚWIADOMIE ograniczone do `!incoming` — dla incoming
+      // identyczna sprzeczność już istnieje DZIŚ niezależnie od tej naprawy (balanceOk po
+      // stronie incoming był `true` bezwarunkowo już PRZED U1/U2, zweryfikowane na kodzie
+      // sprzed naprawy) — to osobna, pre-istniejąca usterka incoming, poza zakresem tego
+      // zlecenia („NIE dotykaj kierunku incoming"); zapisana osobno w PYTANIA-OTWARTE.md.
+      // / EN: `!ownPwGateApplies` replaces the old `incoming` below — for incoming
+      // ownPwGateApplies is always false (proposerIsPlayer=false), so incoming behavior is
+      // UNCHANGED (verified by diffing against the pre-fix code across an actions×Relations
+      // grid — 0 differences); own gets an analogous friendly label for actions outside the PW
+      // gate, instead of the misleading "Meets requirements (0 PW)" on a real nonzero
+      // (non-blocking) asymBalance.
+      // The `!incoming && !relOk` branch BELOW (relDeficit) fixes a side effect of the same
+      // change: for ungated actions `balanceOk` is now always true, so without it a Relation
+      // shortfall (e.g. NAP @ rel 40 < threshold 50, own) would fall through to "Meets
+      // requirements (0 PW)" despite accepted=false. DELIBERATELY scoped to `!incoming` — for
+      // incoming the identical contradiction already exists TODAY regardless of this fix
+      // (incoming's balanceOk was unconditionally `true` already BEFORE U1/U2, verified on the
+      // pre-fix code) — a separate, pre-existing incoming defect, out of scope here ("don't
+      // touch incoming"); logged separately in PYTANIA-OTWARTE.md.
+      const relDeficit = adjustedRelRequired != null ? Math.max(0, adjustedRelRequired - relTotal) : 0;
+      my.statusLabel = (!incoming && !relOk)
+        ? `Relacja −${relDeficit} (wym. ${adjustedRelRequired})`
+        : !balanceOk
+          ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
+          : asymBalance > 0
+            ? `Ty ${myDisplay} PW · Oni ${theirDisplay} PW (Relacja +${asymBalance})`
+            // `&& relOk` tu NIEZBĘDNE (nie skreślać jako „zbędne po branchu !relOk wyżej") —
+            // ten branch dla incoming NIE przechodzi przez branch `!incoming && !relOk` (bo
+            // incoming=true), więc relOk może tu wciąż być false; bez tego warunku ta gałąź
+            // pokazywałaby przyjazny tekst „możesz przyjąć bez dopłaty" nawet gdy Relacja
+            // realnie blokuje — dokładnie usterka, którą naprawiał U1.
+            // / EN: `&& relOk` here is REQUIRED (don't drop it as "redundant after the !relOk
+            // branch above") — for incoming this branch does NOT go through the
+            // `!incoming && !relOk` branch (since incoming=true), so relOk can still be false
+            // here; without this check the branch would show the friendly "you can accept
+            // without topping up" text even when Relation actually blocks — exactly the defect
+            // U1 fixed.
+            : !ownPwGateApplies && asymBalance < 0 && relOk
+              ? (incoming
+                ? 'Propozycja partnera — możesz przyjąć bez dopłaty'
+                : 'Twoja propozycja — baza traktatu nie wymaga dopłaty PW')
+              : 'Spełnia warunki (0 PW)';
+      their.statusLabel = (!incoming && !relOk)
+        ? `Relacja −${relDeficit} (wym. ${adjustedRelRequired})`
+        : !balanceOk
+          ? `Brakuje ${Math.abs(asymBalance)} PW — zawrzyj osobną umowę`
+          : asymBalance > 0
+            ? `Oni ${theirDisplay} PW · Ty ${myDisplay} PW`
+            : !ownPwGateApplies && asymBalance < 0 && relOk
+              ? (incoming
+                ? 'Propozycja partnera — bez dopłaty'
+                : 'Twoja propozycja — bez wymogu dopłaty PW')
+              : 'Równo — spełnia';
     } else if (mode === 'mixed') {
       my.accepted = my.accepted && relOk && balanceOk;
       their.accepted = their.accepted && relOk && balanceOk;
