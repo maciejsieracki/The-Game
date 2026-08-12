@@ -1,8 +1,27 @@
 ﻿# STAN PRACY — HANDOFF
 
-**Ostatnia aktualizacja: 2026-08-09 ~17:10** · Projekt: Civ „The Game"
+**Ostatnia aktualizacja: 2026-08-13 ~00:15** · Projekt: Civ „The Game"
 
-> **Handoff sesji 2026-08-09 (FALA 263, maraton AutoBot isWorkable + handel akcja „6"):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md) — **czytaj najpierw** (4 rundy isWorkable, 3 rundy handel-akcja6, dwa realne exploity finansowe naprawione, cichy revert przy scaleniu złapany na etapie deployu i naprawiony, trzy nowe reguły procesowe w `civ-autobot/SKILL.md`, praca żyje na branchu `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, nie na `main`).
+> **Handoff sesji 2026-08-12/13 (FALA 271+272, maraton AutoBot — domknięcie audytu #3 +
+> miasta barbarzyńców):** ROBOCZA **AKTUALNA `5343a5f4`** (FALA 272, branch
+> `claude/sprawdzenie-funkcjonalnosci-ek4ra0`, NIE `main`). `main` doganiany o FALA 270+271
+> (merge `e723cb0e`) — FALA 272 świadomie NIESCALONA, zostaje do testów zgodnie z rytmem
+> „jedna fala do tyłu" (`R-MERGE-MAIN-RYTM-Q1`), scali się dopiero przy FALI 273.
+> **Zamknięte w tej sesji (16 tematów, pełna lista + szczegóły: `dyspozycje/PYTANIA-OTWARTE.md`,
+> szukaj „PODSUMOWANIE SESJI"):** cały audyt „nigdy-nie-ewaluowanych" commitów (12/12 —
+> a79bae29, 5448eb51, ad4b1e8d, 8a3a3d29, 76514613, 1208eb6c, 0651d65e, 810d5917, 3a3b11da,
+> 26b684af, 7b02eb2d, fc17538f, 3dc9d650, ecbddda8, 89c16ec1 — większość dostała ≥1 realną
+> naprawę), mechanizm patrolu barbarzyńców `clearedCityIds` (rundy 4–7, **pierwszy raz bez
+> FAIL** po 7 rundach), klaster miast barbarzyńców tematy 7–10 (4 rundy recenzji, w tym
+> naprawa bramki trudności), KRYTYCZNY fix martwego przycisku „Kontynuuj"/„Wczytaj" po
+> restarcie (IndexedDB fantomowy slot), dyplomacja: asymetria PW obu kierunków (U1+U2).
+> **Otwarte pytania ABC czekające na literę właściciela:** `P-GARNIZON-KONIUNKCJA-CZY-SAMO-
+> INGARNIZON-Q1`, `P-ZUZYCIE-OBYWATELE-NEED-ZERO-PREMIA-Q1`, `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1`,
+> `P-BARBARZYNCY-KRAZENIE-NIEBRONIONE-Q1` — żadne nie blokuje bieżącej rozgrywki. Skille
+> `AUTOBOT-UNIVERSAL.md` + `.claude/skills/civ-autobot/SKILL.md` zaktualizowane o wnioski
+> z tej sesji (kolizja scratchpad, race równoległego commita, wzorzec extract-to-pure-function).
+
+> **Handoff sesji 2026-08-09 (FALA 263, maraton AutoBot isWorkable + handel akcja „6"):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-09_FALA-263-AUTOBOT-MARATON.md) — (4 rundy isWorkable, 3 rundy handel-akcja6, dwa realne exploity finansowe naprawione, cichy revert przy scaleniu złapany na etapie deployu i naprawiony, trzy nowe reguły procesowe w `civ-autobot/SKILL.md`).
 >
 > **Handoff sesji 2026-08-06 (FALA 254 + ECHO ABC):** [`dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md`](dyspozycje/_handoff/HANDOFF-SESJA-2026-08-06_FALA-254-ECHO-ABC.md).
 >
@@ -488,6 +507,20 @@ node tools/display-names-test.cjs        # etykieta MP „Miasto · Kultura · m
 ```
 
 **⚠️ KOREKTA starego handoffu:** notatka o „21 porażkach `logic-test`" i „`combat-test` rzuca wyjątek" jest **NIEAKTUALNA** — oba **naprawione 2026-07-20** i zielone (203/203, 6/6). Zweryfikowane na baseline.
+
+**⚠️ KOREKTA 2026-08-13 — lista bramek wyżej jest CZĘŚCIOWO NIEAKTUALNA** (np.
+`barbarians-test.cjs` pokazany jako 74/74 to stan sprzed wielu sesji, dziś **167/167**).
+Ta lista NIE jest już aktualizowana na bieżąco — **autorytatywnym, żywym źródłem progów
+bramek jest `CLAUDE.md` sekcja „BRAMKI"** (wstrzykiwane do kontekstu automatycznie każdej
+tury, w przeciwieństwie do tego pliku). Sesja 2026-08-12/13 dodała/rozszerzyła ~15 nowych
+plików testowych (m.in. `barb-city-behavior-test.cjs`, `barb-city-capture-cluster-test.cjs`,
+`resource-usage-breakdown-test.cjs`, `empire-miasta-table-test.cjs`,
+`diplomacy-acceptance-points-test.cjs`, `porzadek-panel-czytelnosc-test.cjs`,
+`eot-diplomacy-header-test.cjs`, `building-tech-gate-test.cjs`,
+`diplomacy-basket-duplicate-test.cjs`+`-ui-test.cjs`, `promote-to-front-test.cjs`) — pełna
+lista z aktualnymi licznikami: `dyspozycje/PYTANIA-OTWARTE.md`, szukaj „PODSUMOWANIE SESJI"
+(2026-08-12/13). `logic-test.cjs` = **213/213** nienaruszone przez całą sesję (punkt
+odniesienia `R-BRAMKA-MINDIST-Q1=A` wciąż obowiązuje).
 
 **Realne pre-istniejące porażki (NIE regresja, nie naprawiaj przy okazji) — stan 2026-07-27 (sesja F29–31):**
 - ~~`logic-test.cjs` → **207/208** — 1 fail **garnizon**~~ — **NIEAKTUALNE.** Fail garnizon naprawiony (`C-GARN-Q1=A`), a decyzją **`R-BRAMKA-MINDIST-Q1 = A` (2026-08-07)** punktem odniesienia jest **`213/213`, exit 0**. Wynik 209 lub 208 oznacza cofnięcie tej decyzji, nie normę.
