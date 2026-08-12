@@ -433,4 +433,55 @@ jest zwolnieniem z pętli.
 
 ---
 
+## 12. Znane wzorce awarii przy pracy wieloagentowej (niezależnie od narzędzia orkiestracji)
+
+Poniższe wnioski pochodzą z długiej, realnej sesji wieloagentowej (2026-08-12/13, dziesiątki
+równoległych Operatorów i Evaluatorów) i dotyczą KAŻDEGO sposobu uruchamiania kilku subagentów
+naraz — ręcznego dispatchu, izolowanych worktree, czy dedykowanego narzędzia orkiestracji.
+
+**Współdzielony katalog roboczy (scratchpad) koliduje na generycznych nazwach plików między
+równoległymi subagentami** — nawet gdy każdy z nich pracuje we własnej, poprawnej izolowanej
+kopii kodu (worktree). Potwierdzone wielokrotnie: dwaj subagenci różnych tematów, uruchomieni
+równolegle, nadpisali sobie nawzajem plik roboczy o tej samej, oczywistej nazwie (np.
+`harness.js`, `test-scratch.py`) w jednym współdzielonym katalogu tymczasowym. Skutek
+dotychczas nieszkodliwy (nadpisania wykrywane, pomiar powtarzany), ale przyczyna mechanizmu
+nieustalona i ryzyko realne. **Mitygacja:** każdy prompt dispatchujący subagenta powinien
+nakazać nazywanie plików roboczych z unikalnym prefiksem (ID zadania/tematu), nie generyczną
+nazwą — niezależnie od tego, czy pliki kodu są izolowane (worktree), bo katalog scratch może
+nie być.
+
+**Dwa niepowiązane `git add`+`git commit` jako dwa RÓWNOLEGŁE wywołania narzędzia w tej samej
+turze orkiestratora = realne ryzyko race condition.** Jeśli oba `git add` wykonają się przed
+którymkolwiek `git commit`, oba zestawy zmian trafią do JEDNEGO commitu, z komunikatem
+opisującym tylko jedną z dwóch zmian — myląca historia, nawet gdy sama zawartość jest
+kompletna i poprawna. Zasada: sekwencyjnie, nigdy równolegle, dla dowolnych dwóch operacji
+`git add`+`git commit` w tej samej turze, nawet gdy dotyczą rozłącznych plików.
+
+**Wzorzec „extract to pure function" domyka powtarzalną klasę tautologii testowej.** Gdy logika
+warta ochrony żyje inline w dużej, niewyeksportowanej funkcji, a test „sprawdza" ją przez
+odtworzenie tej samej formuły jako własną kopię (zamiast importować prawdziwy kod) — mutacja
+psująca produkcję przechodzi bramkę, bo test i tak testuje tylko swoją kopię. Jedyna naprawa,
+która trwale zamyka tę klasę luki: wyciągnąć sporny fragment do eksportowanej, czystej funkcji
+w module domenowym, i zaimportować DOKŁADNIE JĄ SAMĄ zarówno w miejscu produkcyjnego użycia,
+jak i w teście. Recenzent oceniający taką naprawę powinien zweryfikować, że test faktycznie
+importuje tę samą jednostkę co produkcja — inaczej naprawa tylko przenosi tautologię, nie
+zamyka jej.
+
+**Cykliczny audyt „zmian nigdy niezależnie zrecenzowanych" wykrywa realne błędy, nie tylko
+teoretyczne ryzyko.** Systematyczny przegląd historii (dla każdego commitu bez śladu
+niezależnej recenzji w rejestrze — nie tylko bez własnego nagłówka „gotowe") w praktyce
+wielokrotnie znajdował realne, już-grywalne/już-wysłane błędy w kodzie, który wyglądał na
+zamknięty. „Oznaczone jako gotowe" bez wzmianki o niezależnej recenzji nie jest dowodem
+jakości — jest dowodem, że nikt jeszcze nie sprawdził. Wart powtarzania jako rutynowa higiena,
+nie jednorazowa akcja po znalezieniu pierwszej luki.
+
+**Recenzent jednego tematu powinien sprawdzić spójność z DECYZJAMI z innych, niedawnych tematów
+tej samej sesji — nie tylko wewnętrzną poprawność.** Realny przypadek: decyzja nazewnicza/
+etykietowa podjęta i wdrożona w jednym miejscu (np. „to jest zapotrzebowanie, nie faktyczne
+zużycie") nie została propagowana do analogicznego, równoległego miejsca w innej części
+systemu — dwa ekrany tej samej aplikacji zaczęły sobie przeczyć. Złapane dopiero, gdy
+recenzent świadomie porównał z wcześniejszą decyzją, nie tylko oceniał temat w izolacji.
+
+---
+
 *Koniec protokołu. Potwierdź wczytanie zgodnie z sekcją 1 i czekaj na pierwsze zadanie.*
