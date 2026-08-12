@@ -13138,3 +13138,44 @@ przybliżeń) + wiersz podsumowania (wzrost = średnia, reszta = suma). Obywatel
 jako civ-wide z definicji, bez próby sztucznego podziału per miasto — do ewentualnego
 potwierdzenia przez właściciela jeśli oczekiwał inaczej. +77 asercji, tsc 0 błędów, logic-test
 213/213. **STATUS: ZAMKNIĘTE, czeka na Evaluatora.**
+
+## P-SUROWCE-KOLEJNOSC-KART: FIX zastosowany (5448eb51) + ABC otwarte
+
+**Naprawione**: wyciek placeholdera do chipu HUD Surowce (patrz commit 5448eb51 wyżej).
+
+**Nadal otwarte (ABC, nie zgadywać)**: Evaluator znalazł że implementacja umieściła Konia i
+Złoto w TYM SAMYM wierszu tabeli (para "Koń | Złoto"), podczas gdy dosłowna specyfikacja
+właściciela mówiła "Złoto (na samym końcu, **osobno**)". Rozwiązanie zachowujące "osobno"
+istniało (Koń w wierszu 7 z pustym slotem, Złoto samo w wierszu 8) — Operator wybrał jednostronnie
+wariant "razem", bez pytania.
+
+**[TEMAT: Pozycja Konia względem Złota w panelu Surowców] P-SUROWCE-KOLEJNOSC-KON-Q1**
+Sytuacja: opisana wyżej. Cel: potwierdzić czy "Koń+Złoto razem" jest OK, czy Złoto ma być
+faktycznie samo w ostatnim wierszu.
+A) Zostaje jak jest (Koń+Złoto w jednym wierszu) — Za: już wdrożone, zero dodatkowej pracy;
+   zwarty layout. Przeciw: nie odpowiada dosłownie słowu "osobno" z pierwotnej specyfikacji.
+B) Złoto samo w ostatnim wierszu, Koń przesunięty wcześniej (np. do wiersza z pustym slotem
+   obok Rudy cyny, albo osobny wiersz przed Złotem z pustym slotem) — Za: dosłownie zgodne z
+   "osobno"; Przeciw: dodatkowy pusty slot w layoucie (mniej zwarte), mała dodatkowa praca.
+Rekomendacja: A (różnica kosmetyczna, nie wpływa na dane/funkcjonalność) — ale zgłaszam do
+jawnej decyzji zamiast milczącego zamknięcia, zgodnie ze znaleziskiem Evaluatora.
+
+**STATUS: ABC OTWARTE, czeka na odpowiedź.**
+
+## ⛔ ZNALEZISKO: `isolation:'worktree'` W WORKFLOW MA TEN SAM BUG BAZY CO Agent TOOL (2026-08-12)
+
+Uruchomiony Workflow (17 agentów: 15 Evaluatorów + 2 Operatorów, wszystkie `isolation:'worktree'`)
+— **16/17 trafiło na złą bazę worktree** (branch `main`/commit `99974173` zamiast czubka
+`claude/sprawdzenie-funkcjonalnosci-ek4ra0`), identycznie jak wcześniejsze manualne dispatch'e
+przez `Agent` tool. Tylko 1 agent (Evaluator commitu `9594e4ac`) samodzielnie odzyskał się przez
+`git archive <sha> -- gra` do katalogu scratch, zamiast polegać na worktree. **Wniosek: to nie
+jest specyficzne dla jednego narzędzia — to systemowy problem środowiska (worktree provisioning
+domyślnie/czasem sięga po stary `main`).** Od teraz: dla WSZYSTKICH dispatchy (Agent tool i
+Workflow) NIE polegać na `isolation:'worktree'` — orkiestrator ręcznie tworzy worktree
+(`git worktree add <path> -b <branch> origin/claude/sprawdzenie-funkcjonalnosci-ek4ra0`) i podaje
+JAWNĄ ścieżkę w prompt-cie ("Twój przydzielony katalog roboczy to..."). Ten wzorzec miał 100%
+skuteczności przez całą sesję.
+
+**Redispatch w toku**: 14 commitów bez Evaluatora + 2 nowe (tabela Miast, fix wycieku
+placeholdera) + 2 tematy deweloperskie (przepustowość konwerterów, skalowanie magazynu per
+epoka) — wszystkie na ręcznie utworzonych worktree.
