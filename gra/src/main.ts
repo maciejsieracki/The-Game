@@ -1022,6 +1022,7 @@ import {
   destroyCampAt,
   shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
   tickBarbarianCityGarrisons,
+  canBarbarianWalkIntoEmptyCity, splitCampMoveCost,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -9640,6 +9641,10 @@ async function boot(): Promise<void> {
           // bezwarunkowe ruchLeft=0). Dotyczy WYŁĄCZNIE splitu na heks ŻYWEGO obozu --
           // zwykły split (bez obozu) zachowuje dotychczasowe ruchLeft=0 bez zmian (poza
           // zakresem tego zlecenia, właściciel mówił wyłącznie o zniszczeniu obozu).
+          // RUNDA 3 (Evaluator C, M10.3): liczenie computePath+pathCost wyciągnięte do
+          // splitCampMoveCost (barbarians.ts) -- main.ts tylko woła (moveCostFn/occupied
+          // nadal liczone tu, bo zależą od stanu gry: cities/Żegluga, nie da się ich
+          // uczynić czystymi bez przeniesienia main.ts).
           // / EN: cost computed BEFORE moving (q,r) -- identical to a normal move/attack
           // onto the same hex (beginMoveSelectedUnitTo, main.ts ~18956-18970: computePath
           // + pathCost via moveCostFnForUnit, then deductStackRuchLeft with the REAL
@@ -9647,21 +9652,24 @@ async function boot(): Promise<void> {
           // LIVING camp's hex -- an ordinary split (no camp) keeps the existing
           // ruchLeft=0 unchanged (out of scope for this task, the owner only asked about
           // camp destruction).
+          // ROUND 3 (Evaluator C, M10.3): the computePath+pathCost computation pulled out
+          // into splitCampMoveCost (barbarians.ts) -- main.ts only calls it (moveCostFn/
+          // occupied still computed here, since they depend on game state: cities/
+          // Seafaring, cannot be made pure without moving main.ts).
           const destHasLivingCamp = barbCamps.some(c => c.q === destQ && c.r === destR);
-          let splitCampMoveCost = 0;
+          let splitMoveCostValue = 0;
           if (destHasLivingCamp && splitArrivals.length > 0) {
             const splitMover = splitArrivals[0]!;
             const splitMoveCostFn = moveCostFnForUnit(splitMover);
             const splitOcc = occupiedForMove(splitMover.ownerId, ...splitArrivals.map(s => s.id));
-            const splitPath = computePath(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn);
-            splitCampMoveCost = splitPath.length > 0 ? pathCost(splitPath, map, splitMoveCostFn) : 1;
+            splitMoveCostValue = splitCampMoveCost(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn);
           }
           for (const u of splitArrivals) {
             u.q = destQ;
             u.r = destR;
           }
           if (destHasLivingCamp) {
-            deductStackRuchLeft(splitArrivals, splitCampMoveCost);
+            deductStackRuchLeft(splitArrivals, splitMoveCostValue);
           } else {
             for (const u of splitArrivals) u.ruchLeft = 0;
           }
@@ -26446,10 +26454,13 @@ async function boot(): Promise<void> {
                   // (ownerId nie pasuje). Miasto broniony (canCaptureCityWithoutBattle
                   // false) -- bez zmian: bramka blokuje jak dotychczas, walka idzie
                   // wyłącznie przez komendę `attack` (krok 2 decideBarbarianMoves).
+                  // RUNDA 3 (Evaluator A, U1): CAŁA koniunkcja (włącznie z bramką
+                  // trudności) wyciągnięta do canBarbarianWalkIntoEmptyCity (barbarians.ts)
+                  // -- main.ts tylko woła w miejscu użycia, bramka trudności jest teraz
+                  // chroniona mutacyjnie przez REALNE wykonanie testu na tej funkcji.
                   const moveDestCity = cities.find(c => c.q === bcmd.toQ && c.r === bcmd.toR);
-                  const barbCanWalkIntoEmptyCity = moveDestCity !== undefined
-                    && barbAllowCityCapture
-                    && canCaptureCityWithoutBattle(moveDestCity, units);
+                  const barbCanWalkIntoEmptyCity =
+                    canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty);
                   if (!barbCanWalkIntoEmptyCity
                       && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
                   bu.q = bcmd.toQ;

@@ -60,6 +60,7 @@ const ENTRY_TS = `
 export {
   BARBARIAN_OWNER_ID, isBarbarian, FALLBACK_BARB_PARAMS, decideBarbarianMoves,
   shouldAllowBarbCityCapture, tickBarbarianCityGarrisons,
+  canBarbarianWalkIntoEmptyCity, splitCampMoveCost,
 } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/barbarians'))};
 export {
   canCaptureCityWithoutBattle, hasCityDefenders,
@@ -73,6 +74,9 @@ export {
 export {
   serializeGame, deserializeGame,
 } from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/save'))};
+export {
+  advanceProduction,
+} from ${JSON.stringify(path.join(GRA_ROOT, 'src/game/production'))};
 `;
 
 fs.writeFileSync(ENTRY_FILE, ENTRY_TS, 'utf8');
@@ -96,10 +100,12 @@ const B = require(BUNDLE_FILE);
 const {
   BARBARIAN_OWNER_ID, isBarbarian, FALLBACK_BARB_PARAMS, decideBarbarianMoves,
   shouldAllowBarbCityCapture, tickBarbarianCityGarrisons,
+  canBarbarianWalkIntoEmptyCity, splitCampMoveCost,
   canCaptureCityWithoutBattle, hasCityDefenders,
   computePath, pathCost, terrainMoveCost, configureTerrainMovement,
   deductStackRuchLeft, stackRuchLeft,
   serializeGame, deserializeGame,
+  advanceProduction,
 } = B;
 
 // --- tiny assertion framework --------------------------------------------------------------
@@ -176,39 +182,39 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
   eq(canCaptureCityWithoutBattle(defendedCity, [defender]), false,
     '1b: jednostka obrońcy na heksie miasta -> NIE można przejąć bez bitwy');
 
-  // 1c. Formuła DOKŁADNIE odtwarzająca `barbCanWalkIntoEmptyCity` z main.ts (bcmd.type
-  // ==='move' handler) -- (destCity!==undefined) && shouldAllowBarbCityCapture(difficulty)
-  // && canCaptureCityWithoutBattle(destCity, units). Testuje SAMĄ FORMUŁĘ wykonaniem
-  // realnych funkcji -- warstwa main.ts (czy main.ts faktycznie tej formuły używa) jest
-  // sprawdzona osobno w 1d/1e/1f (static).
-  function barbCanWalkIntoEmptyCity(destCity, difficulty, units) {
-    return destCity !== undefined
-      && shouldAllowBarbCityCapture(difficulty)
-      && canCaptureCityWithoutBattle(destCity, units);
-  }
-  eq(barbCanWalkIntoEmptyCity(emptyCity, 'hard', []), true,
-    '1c: hard + miasto puste -> formuła zwraca true (przejęcie dozwolone)');
-  eq(barbCanWalkIntoEmptyCity(emptyCity, 'normal', []), false,
-    '1c (regresja-guard): normal + miasto puste -> formuła zwraca false (BEZ zmian vs dziś)');
-  eq(barbCanWalkIntoEmptyCity(emptyCity, 'easy', []), false,
-    '1c (regresja-guard): easy + miasto puste -> formuła zwraca false (BEZ zmian vs dziś)');
-  eq(barbCanWalkIntoEmptyCity(garrisonedCity, 'hard', []), false,
-    '1c: hard ALE miasto BRONIONE (garnizon) -> formuła zwraca false (walka nadal przez attack)');
-  eq(barbCanWalkIntoEmptyCity(undefined, 'hard', []), false,
-    '1c: brak miasta na heksie docelowym -> formuła zwraca false (zwykły ruch, bez zmian)');
+  // 1c. RUNDA 3 (naprawa U1, Evaluator A): `barbCanWalkIntoEmptyCity` z main.ts
+  // (bcmd.type ==='move' handler) woła TERAZ bezpośrednio wyeksportowaną, czystą
+  // canBarbarianWalkIntoEmptyCity (barbarians.ts) -- ten blok importuje i wykonuje
+  // TĘ SAMĄ funkcję co main.ts (z bundla, nie kopię formuły zdefiniowaną w tym
+  // pliku testowym jak przed RUNDĄ 3), więc mutacja WEWNĄTRZ niej (np. usunięcie
+  // `&& shouldAllowBarbCityCapture(difficulty)`) jest łapana przez REALNE wykonanie
+  // poniższych asercji na produkcyjnym kodzie, nie przez porównanie kopii z kopią.
+  eq(canBarbarianWalkIntoEmptyCity(emptyCity, [], 'hard'), true,
+    '1c: hard + miasto puste -> canBarbarianWalkIntoEmptyCity zwraca true (przejęcie dozwolone)');
+  eq(canBarbarianWalkIntoEmptyCity(emptyCity, [], 'normal'), false,
+    '1c (regresja-guard/mutacja bramki trudności): normal + miasto puste -> false (BEZ zmian vs dziś)');
+  eq(canBarbarianWalkIntoEmptyCity(emptyCity, [], 'easy'), false,
+    '1c (regresja-guard/mutacja bramki trudności): easy + miasto puste -> false (BEZ zmian vs dziś)');
+  eq(canBarbarianWalkIntoEmptyCity(garrisonedCity, [], 'hard'), false,
+    '1c: hard ALE miasto BRONIONE (garnizon) -> false (walka nadal przez attack)');
+  eq(canBarbarianWalkIntoEmptyCity(undefined, [], 'hard'), false,
+    '1c: brak miasta na heksie docelowym -> false (zwykły ruch, bez zmian)');
 
-  // 1d. STATIC: main.ts move-branch faktycznie zawiera tę formułę (nie tylko izolowana
-  // funkcja w tym pliku testowym) -- marker unikalny + wymagane podciągi w rozsądnym oknie.
+  // 1d. STATIC: main.ts move-branch faktycznie WOŁA canBarbarianWalkIntoEmptyCity w
+  // miejscu użycia (nie składa koniunkcję inline) -- marker unikalny + wymagane
+  // podciągi w rozsądnym oknie. Skoro 1c wykonuje TĘ SAMĄ funkcję realnie, 1d musi
+  // tylko dowieść, że main.ts faktycznie ją woła z właściwymi argumentami -- nie musi
+  // już osobno dopasowywać shouldAllowBarbCityCapture/canCaptureCityWithoutBattle
+  // (te żyją teraz WEWNĄTRZ funkcji, chronione przez 1c).
   const marker1d = 'P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1';
   const idx1d = mainTs.indexOf(marker1d);
   assert(idx1d !== -1, '1d: main.ts zawiera marker P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1');
   const window1d = mainTs.slice(idx1d, idx1d + 4000);
   assert(window1d.includes('barbCanWalkIntoEmptyCity'),
     '1d: okno wokół markera zawiera zmienną barbCanWalkIntoEmptyCity');
-  assert(window1d.includes('canCaptureCityWithoutBattle(moveDestCity, units)'),
-    '1d: okno zawiera wywołanie canCaptureCityWithoutBattle(moveDestCity, units)');
-  assert(window1d.includes('shouldAllowBarbCityCapture(_menuDifficulty)'),
-    '1d: okno zawiera wywołanie shouldAllowBarbCityCapture(_menuDifficulty)');
+  assert(window1d.includes('canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty)'),
+    '1d: okno zawiera wywołanie canBarbarianWalkIntoEmptyCity(moveDestCity, units, _menuDifficulty) -- '
+    + 'CAŁA koniunkcja (włącznie z bramką trudności) idzie przez funkcję z 1c, nie inline');
   assert(window1d.includes("tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu])"),
     '1d: okno zawiera wywołanie tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]) -- '
     + 'FAKTYCZNE przejęcie, nie tylko sprawdzenie formuły');
@@ -344,21 +350,54 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
   assert(citiesTs.includes('barbGarrisonSpawnCooldown?: number;'),
     '2g: City interface (cities.ts) deklaruje barbGarrisonSpawnCooldown?: number');
 
-  // 2h. STATIC (luka domknięta w TEJ rundzie): applyCityCaptureToMap czyści kolejkę
-  // budowy (cityProd) przy przejęciu barbarzyńskim -- inaczej budynek W TOKU odziedziczony
-  // po ofierze (front kolejki, np. "Świątynia" 60% ukończona) dokończyłby się pod
-  // barbarzyńską flagą na kolejnych tickach ekonomii (advanceCityEconomy liczy Praca/
-  // doBudynkow identycznie dla KAŻDEGO miasta, advanceProduction odejmuje ją od frontu
-  // kolejki bez sprawdzania właściciela) -- bez tego resetu "nigdy budynki" (temat 8)
-  // byłoby prawdziwe TYLKO dla nowej produkcji, nie dla odziedziczonej.
+  // 2h-static. RUNDA 3 (naprawiona etykieta, Evaluator A/C): to jest SNAPSHOT-LOCK na
+  // TEKŚCIE ŹRÓDŁOWYM main.ts, NIE dowód mutacyjny/behawioralny -- main.ts nie jest
+  // bundlowany w tym harnessie (patrz nagłówek pliku), więc applyCityCaptureToMap nie
+  // może zostać WYKONANY tutaj. Sonda cofająca naprawę, ale zostawiająca dopasowywany
+  // string nietknięty (np. w komentarzu albo w martwym kodzie) przechodzi ten blok --
+  // dlatego 2h-behavioral niżej dowodzi DEKLAROWANEJ KONSEKWENCJI reset (kolejka:[],
+  // postep:0) przez REALNE wykonanie silnika produkcji (advanceProduction, bundlowalny
+  // z production.ts), niezależnie od tego bloku. Dodatkowa asercja "nie w komentarzu"
+  // niżej zawęża (ale NIE eliminuje) klasę sond tekstowych, którym ten blok ulega.
+  // luka domknięta w RUNDZIE 2: applyCityCaptureToMap czyści kolejkę budowy (cityProd)
+  // przy przejęciu barbarzyńskim -- inaczej budynek W TOKU odziedziczony po ofierze
+  // (front kolejki, np. "Świątynia" 60% ukończona) dokończyłby się pod barbarzyńską
+  // flagą na kolejnych tickach ekonomii (advanceCityEconomy liczy Praca/doBudynkow
+  // identycznie dla KAŻDEGO miasta, advanceProduction odejmuje ją od frontu kolejki
+  // bez sprawdzania właściciela) -- bez tego resetu "nigdy budynki" (temat 8) byłoby
+  // prawdziwe TYLKO dla nowej produkcji, nie dla odziedziczonej.
   const idxApplyCapture = mainTs.indexOf('function applyCityCaptureToMap(');
-  assert(idxApplyCapture !== -1, '2h: main.ts definiuje applyCityCaptureToMap');
+  assert(idxApplyCapture !== -1, '2h-static: main.ts definiuje applyCityCaptureToMap');
   const windowApplyCapture = mainTs.slice(idxApplyCapture, idxApplyCapture + 4000);
-  assert(
-    /if\s*\(\s*isBarbarian\(atkOwner\)\s*\)\s*\{\s*[\s\S]{0,200}?cityProd\.set\(city\.id,\s*\{\s*kolejka:\s*\[\],\s*postep:\s*0\s*\}\);/.test(windowApplyCapture),
-    '2h: applyCityCaptureToMap czyści cityProd (kolejka:[], postep:0) WEWNĄTRZ '
-    + '`if (isBarbarian(atkOwner))` -- kolejka budowy ofiary NIE przeżywa przejęcia '
-    + 'barbarzyńskiego (zamyka lukę: budynek w toku dokończony pod barbarzyńcami)');
+  const resetRe =
+    /if\s*\(\s*isBarbarian\(atkOwner\)\s*\)\s*\{\s*[\s\S]{0,200}?cityProd\.set\(city\.id,\s*\{\s*kolejka:\s*\[\],\s*postep:\s*0\s*\}\);/;
+  const resetMatch = resetRe.exec(windowApplyCapture);
+  assert(resetMatch !== null,
+    '2h-static (snapshot-lock, NIE dowód behawioralny): applyCityCaptureToMap zawiera '
+    + 'tekstowo cityProd.set (kolejka:[], postep:0) WEWNĄTRZ `if (isBarbarian(atkOwner))`');
+  if (resetMatch) {
+    // Anty-komentarz: linia zawierająca DOKŁADNIE `if (isBarbarian(atkOwner))` i linia
+    // zawierająca DOKŁADNIE `cityProd.set(city.id,` (znalezione precyzyjnie, nie "ostatnie
+    // N linii przed dopasowaniem" -- ta duża funkcja ma nad `if` wielojęzyczny blok
+    // komentarza `//`, więc naiwne "kilka linii wstecz" łapałoby TEN komentarz i dawało
+    // fałszywy negatyw na poprawnym, nietkniętym kodzie) nie zaczynają się (po trim) od
+    // `//` -- zawęża sondę "zakomentuj naprawę, zostaw dopasowywany string w martwym
+    // komentarzu" (nie eliminuje w 100%: nie parsujemy JS, więc blokowe /* */ albo string
+    // w środku linii kodu nie są łapane).
+    const ifLineStart = windowApplyCapture.lastIndexOf('\n', resetMatch.index) + 1;
+    const ifLineEndIdx = windowApplyCapture.indexOf('\n', resetMatch.index);
+    const ifLine = windowApplyCapture.slice(ifLineStart, ifLineEndIdx === -1 ? undefined : ifLineEndIdx);
+
+    const cityProdIdx = windowApplyCapture.indexOf('cityProd.set(city.id,', resetMatch.index);
+    const cpLineStart = windowApplyCapture.lastIndexOf('\n', cityProdIdx) + 1;
+    const cpLineEndIdx = windowApplyCapture.indexOf('\n', cityProdIdx);
+    const cpLine = windowApplyCapture.slice(cpLineStart, cpLineEndIdx === -1 ? undefined : cpLineEndIdx);
+
+    assert(!ifLine.trim().startsWith('//') && !cpLine.trim().startsWith('//'),
+      '2h-static (anty-komentarz): ani linia `if (isBarbarian(atkOwner))` ('
+      + JSON.stringify(ifLine.trim()) + '), ani linia cityProd.set(...) ('
+      + JSON.stringify(cpLine.trim()) + ') nie są zakomentowane (trim() nie zaczyna się od `//`)');
+  }
   // Regresja-guard: reset MUSI być warunkowy na isBarbarian -- bezwarunkowe czyszczenie
   // skasowałoby też legalną, w toku będącą budowę gracza/AI przy zwykłym podboju
   // (poza zakresem tego zlecenia -- właściciel nie prosił o zmianę zachowania dla
@@ -370,10 +409,51 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
         '',
       ),
     ),
-    '2h (regresja-guard): PO usunięciu jedynego znanego wystąpienia wewnątrz '
+    '2h-static (regresja-guard): PO usunięciu jedynego znanego wystąpienia wewnątrz '
     + '`if (isBarbarian(atkOwner))` nie zostaje żadne DRUGIE, bezwarunkowe wystąpienie '
     + 'cityProd.set(city.id, {kolejka:[],postep:0}) -- reset dotyczy WYŁĄCZNIE '
     + 'przejęcia barbarzyńskiego, nie każdego podboju');
+
+  // 2h-behavioral. DOWÓD BEHAWIORALNY DEKLAROWANEJ KONSEKWENCJI (Zadanie 3, Operator
+  // RUNDA 3): main.ts nie jest bundlowany (2h-static wyżej tłumaczy dlaczego), więc nie
+  // wołamy applyCityCaptureToMap wprost -- zamiast tego odtwarzamy JEGO DWA MOŻLIWE
+  // ZACHOWANIA (reset zastosowany / reset pominięty, czyli PRZED naprawą z RUNDY 2) i
+  // przepuszczamy KAŻDE z nich przez PRAWDZIWY, bundlowalny silnik produkcji
+  // (advanceProduction, production.ts) -- ten sam silnik, którego używa main.ts na
+  // każdym ticku ekonomii (main.ts ok. 24403). To dowodzi KONSEKWENCJI ("budynek NIE
+  // kończy się pod barbarzyńską flagą"), nie tylko obecności tekstu w main.ts.
+  {
+    const inheritedBuilding = { kind: 'budynek', id: 'Swiatynia', nazwa: 'Świątynia', koszt: 100 };
+    const victimProdAt60 = { kolejka: [inheritedBuilding], postep: 60 }; // 60% ukończona
+    const pracaNastepnejTury = 40; // dokładnie tyle, ile brakuje do 100% (100-60)
+
+    // "PO naprawie" (RUNDA 2): applyCityCaptureToMap wykonuje
+    // cityProd.set(city.id, { kolejka: [], postep: 0 }) -- odtwarzamy TEN SAM efekt.
+    const afterFixProd = { kolejka: [], postep: 0 };
+    const afterFixTick = advanceProduction(afterFixProd, pracaNastepnejTury);
+    eq(afterFixTick.completed, null,
+      '2h-behavioral: PO naprawie (kolejka wyzerowana przy przejęciu) budynek '
+      + 'odziedziczony po ofierze NIE kończy się na kolejnym ticku ekonomii mimo '
+      + 'wystarczającej Pracy (40) -- "nigdy budynki" prawdziwe TAKŻE dla produkcji '
+      + 'odziedziczonej, nie tylko nowej');
+    eq(afterFixTick.overflowToPool, pracaNastepnejTury,
+      '2h-behavioral: cała Praca tej tury (40) trafia do overflowToPool (pusta kolejka) '
+      + '-- żadna jej część nie dokończyła cudzego budynku');
+
+    // "PRZED naprawą" (stan sprzed RUNDY 2, odtworzony TUTAJ jako punkt odniesienia --
+    // main.ts się dziś NIE zachowuje w ten sposób, sekcja 2h-static wyżej to chroni):
+    // kolejka ofiary PRZEŻYWA przejęcie nietknięta.
+    const beforeFixTick = advanceProduction(victimProdAt60, pracaNastepnejTury);
+    assert(beforeFixTick.completed !== null && beforeFixTick.completed.id === 'Swiatynia',
+      '2h-behavioral (punkt odniesienia PRZED naprawą): BEZ resetu kolejki, ten sam '
+      + 'budynek odziedziczony (60/100) + ta sama Praca (40) KOŃCZY się -- dokładnie '
+      + 'luka, którą RUNDA 2 zamknęła (dowód, że reset ma realny efekt, nie tylko '
+      + 'kosmetyczny zapis)');
+    eq(beforeFixTick.prod.kolejka.length, 0,
+      '2h-behavioral (punkt odniesienia PRZED naprawą): kolejka pusta PO ukończeniu '
+      + '(budynek był jedyną pozycją) -- budynek naprawdę "wszedł do gry" pod '
+      + 'barbarzyńcami w tym kontrfaktycznym scenariuszu');
+  }
 }
 
 // ============================================================================================
@@ -491,63 +571,84 @@ const citiesTs = fs.readFileSync(citiesTsPath, 'utf8');
 // (e) koszt ruchu onSplit-na-obóz === koszt ruchu normalny-atak-na-obóz
 // ============================================================================================
 {
-  // Teren: origin (2,2)='rownina' (koszt 1), destination (3,2)='wzgorza' (koszt 2) --
-  // celowo RÓŻNE koszty, żeby test odróżnił "prawdziwy koszt terenu" od przypadkowego
-  // zbiegu okoliczności (np. gdyby ruch jednostki akurat = kosztowi terenu).
-  configureTerrainMovement({}, 1); // reset do domyślnych kosztów (rownina=1, wzgorza=2)
-  const map = makeMap(10, 10, (q, r) => (q === 3 && r === 2 ? 'wzgorza' : 'rownina'));
+  // Teren: origin (2,2)='rownina' (koszt 1), (3,2)='wzgorza' (koszt 2), (2,3)='pustynia'
+  // (koszt SKONFIGUROWANY na 3, żeby być RÓŻNY od wzgorza) -- TRZY różne koszty, żeby
+  // 4a/4b odróżniły "prawdziwy koszt terenu, czytany PER heks" od stałej/przypadkowego
+  // zbiegu okoliczności (np. gdyby ruch jednostki akurat = kosztowi terenu, albo gdyby
+  // implementacja hardkodowała jedną wartość zamiast czytać teren -- patrz M10.3,
+  // Evaluator C: `pathCost(splitPath, map, splitMoveCostFn)` zastąpione stałą `1` dawało
+  // 89/89 zielone na starej wersji testu, bo 4a/4b liczyły TĘ SAMĄ formułę dwa razy).
+  configureTerrainMovement({ Wzgorza: 2, Pustynia: 3 }, 1);
+  const map = makeMap(10, 10, (q, r) => {
+    if (q === 3 && r === 2) return 'wzgorza';
+    if (q === 2 && r === 3) return 'pustynia';
+    return 'rownina';
+  });
 
-  // 4a. Formuła DOKŁADNIE odtwarzająca `splitCampMoveCost` z onSplit (main.ts):
-  // computePath + pathCost przez tę samą maszynerię co beginMoveSelectedUnitTo (normalny
-  // ruch gracza). Jednostka ruch=3 (celowo != kosztowi terenu=2), żeby wynik po odjęciu
-  // NIE mógł być pomylony z "przypadkowo wyszło 0" ani z pełnym ruch.
+  // 4a. RUNDA 3 (naprawa M10.3, Evaluator C): wywołuje BEZPOŚREDNIO wyeksportowaną,
+  // czystą splitCampMoveCost (barbarians.ts) -- TĘ SAMĄ funkcję, którą main.ts woła w
+  // onSplit (patrz 4c-static niżej). Jednostka ruch=3 (celowo != kosztowi terenu=2),
+  // żeby wynik po odjęciu NIE mógł być pomylony z "przypadkowo wyszło 0" ani z pełnym
+  // ruch.
   {
     const mover = { id: 'u1', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 2, r: 2, ruch: 3, ruchLeft: 3 };
-    const stack = [mover];
     const occ = new Set(); // occupiedForMove -- brak innych jednostek na mapie testowej
-    const path = computePath(mover, map, 3, 2, occ, undefined);
-    eq(path.length, 1, '4a: ścieżka do sąsiedniego heksu (3,2) ma dokładnie 1 krok');
-    const cost = pathCost(path, map, undefined);
-    eq(cost, 2, '4a: koszt terenu docelowego (wzgorza) = 2 (NIE 0, NIE pełny ruch=3)');
+    const cost = splitCampMoveCost(mover, map, 3, 2, occ, undefined);
+    eq(cost, 2, '4a: koszt terenu docelowego (wzgorza) = 2 (NIE 0, NIE pełny ruch=3, NIE stała)');
 
-    deductStackRuchLeft(stack, cost);
+    deductStackRuchLeft([mover], cost);
     eq(mover.ruchLeft, 1,
       '4a: po odjęciu REALNEGO kosztu terenu (2) z ruch=3 zostaje ruchLeft=1 -- '
-      + 'DOWÓD że onSplit-na-obóz (ta sama formuła) NIE zeruje bezwarunkowo do 0');
+      + 'DOWÓD że onSplit-na-obóz (ta sama funkcja) NIE zeruje bezwarunkowo do 0');
   }
 
-  // 4b. Parytet z "normalnym ruchem": DOKŁADNIE ta sama formuła (computePath+pathCost+
-  // deductStackRuchLeft) użyta niezależnie dla symulowanego "normalnego ruchu/ataku na
-  // obóz" -- identyczny wynik jak 4a przez KONSTRUKCJĘ (main.ts's beginMoveSelectedUnitTo
-  // używa dokładnie tych samych trzech prymitywów, patrz weryfikacja statyczna 4d).
+  // 4b. RUNDA 3 (zastąpienie tautologii, Evaluator C): DRUGI, RÓŻNY typ terenu z INNYM
+  // skonfigurowanym kosztem (pustynia=3 vs wzgorza=2 z 4a) -- dowodzi że
+  // splitCampMoveCost czyta REALNY koszt PER heks (nie stałą, nie kopiuje 4a) na DWÓCH
+  // niezależnych scenariuszach wykonania. Stara wersja 4b liczyła DOKŁADNIE tę samą
+  // parę computePath/pathCost na TYM SAMYM heksie (3,2)='wzgorza' co 4a pod innymi
+  // nazwami zmiennych -- porównanie kopii z kopią, tautologia analogiczna do 1c/1d
+  // sprzed RUNDY 3 (mutacja "zastąp wywołanie stałą 1" dawała 89/89 zielone).
   {
-    const mover2 = { id: 'u2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 2, r: 2, ruch: 3, ruchLeft: 3 };
+    const mover2 = { id: 'u2', ownerId: 0, typeId: 'Wojownik', category: 'miecznik', q: 2, r: 2, ruch: 5, ruchLeft: 5 };
     const occ2 = new Set();
-    const normalMovePath = computePath(mover2, map, 3, 2, occ2, undefined);
-    const normalMoveCost = pathCost(normalMovePath, map, undefined);
-    deductStackRuchLeft([mover2], normalMoveCost);
-    eq(mover2.ruchLeft, 1,
-      '4b: "normalny ruch" (formuła beginMoveSelectedUnitTo) na ten sam heks daje '
-      + 'IDENTYCZNY ruchLeft=1 -- parytet onSplit-na-obóz === normalny-ruch-na-obóz');
+    const costPustynia = splitCampMoveCost(mover2, map, 2, 3, occ2, undefined);
+    eq(costPustynia, 3,
+      '4b: koszt terenu docelowego (pustynia, skonfigurowana na 3) = 3 -- czytany PER '
+      + 'heks, nie skopiowany z 4a');
+    assert(costPustynia !== 2,
+      '4b (mutation-guard M10.3): koszt pustyni(3) != koszt wzgórz(2) z 4a -- gdyby '
+      + 'splitCampMoveCost ignorowała teren i zwracała stałą, OBA scenariusze dałyby '
+      + 'TEN SAM wynik zamiast dwóch różnych wartości terenowych');
+
+    deductStackRuchLeft([mover2], costPustynia);
+    eq(mover2.ruchLeft, 2,
+      '4b: po odjęciu REALNEGO kosztu pustyni (3) z ruch=5 zostaje ruchLeft=2');
   }
 
-  // 4c. STATIC: onSplit w main.ts liczy koszt PRZED przesunięciem (q,r) -- ordering-sensitive
-  // (destQ/destR muszą być użyte do computePath Z ORYGINALNEJ pozycji, nie z już-przesuniętej).
+  // 4c. STATIC: onSplit w main.ts woła splitCampMoveCost (barbarians.ts) PRZED
+  // przesunięciem (q,r) -- ordering-sensitive (destQ/destR muszą trafić do
+  // splitCampMoveCost Z ORYGINALNEJ pozycji jednostki, nie z już-przesuniętej -- inaczej
+  // origin w computePath wewnątrz splitCampMoveCost byłby już (destQ,destR)).
   const marker4 = 'P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1';
   const idx4 = mainTs.indexOf(marker4);
   assert(idx4 !== -1, '4c: main.ts zawiera marker P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1');
-  const window4 = mainTs.slice(idx4, idx4 + 2600);
+  const window4 = mainTs.slice(idx4, idx4 + 3200);
   assert(window4.includes('const destHasLivingCamp = barbCamps.some('),
     '4c: onSplit sprawdza destHasLivingCamp (czy cel to heks żywego obozu)');
-  const idxComputePath = window4.indexOf('computePath(splitMover, map, destQ, destR');
+  const idxSplitCampMoveCostCall = window4.indexOf(
+    'splitMoveCostValue = splitCampMoveCost(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn)');
   const idxMutateQR = window4.indexOf('u.q = destQ;\n            u.r = destR;');
-  assert(idxComputePath !== -1, '4c: onSplit woła computePath(splitMover, map, destQ, destR, ...)');
+  assert(idxSplitCampMoveCostCall !== -1,
+    '4c: onSplit woła splitCampMoveCost(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn) '
+    + '-- funkcja z 4a/4b, nie computePath/pathCost inline');
   assert(idxMutateQR !== -1, '4c: onSplit wciąż przesuwa jednostki na (destQ,destR)');
-  assert(idxComputePath !== -1 && idxMutateQR !== -1 && idxComputePath < idxMutateQR,
-    '4c (ordering-sensitive): computePath woła się PRZED przesunięciem (q,r) -- inaczej '
-    + 'origin w computePath byłby już (destQ,destR), dając ścieżkę pustą/błędny koszt');
-  assert(window4.includes('deductStackRuchLeft(splitArrivals, splitCampMoveCost)'),
-    '4c: onSplit odejmuje REALNY koszt przez deductStackRuchLeft, nie ustawia ruchLeft=0 wprost');
+  assert(idxSplitCampMoveCostCall !== -1 && idxMutateQR !== -1 && idxSplitCampMoveCostCall < idxMutateQR,
+    '4c (ordering-sensitive): splitCampMoveCost woła się PRZED przesunięciem (q,r) -- inaczej '
+    + 'origin wewnątrz niej byłby już (destQ,destR), dając ścieżkę pustą/błędny koszt');
+  assert(window4.includes('deductStackRuchLeft(splitArrivals, splitMoveCostValue)'),
+    '4c: onSplit odejmuje REALNY koszt (wynik splitCampMoveCost) przez deductStackRuchLeft, '
+    + 'nie ustawia ruchLeft=0 wprost');
 
   // 4d. STATIC: parytet z beginMoveSelectedUnitTo -- normalny ruch gracza używa DOKŁADNIE
   // tych samych trzech prymitywów (computePath/pathCost/deductStackRuchLeft poprzez

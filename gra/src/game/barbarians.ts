@@ -32,9 +32,10 @@ import type { GameData } from '../data/loader';
 import { TerenBazowy } from '../types/hex';
 import type { City } from './cities';
 import { addForeignCityBlocks } from './city-hex-movement';
+import { canCaptureCityWithoutBattle } from './siegeDefenders';
 import type { Hex } from '../types/hex';
 import type { RuntimeUnit } from '../units/setup';
-import { hexDistance, computePath, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
+import { hexDistance, computePath, pathCost, keyOf, isWaterTerrain, embarkMoveCost, terrainMoveCost } from '../units/setup';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -346,6 +347,85 @@ export type SeaRaidDifficulty = 'easy' | 'normal' | 'hard';
  */
 export function shouldAllowBarbCityCapture(difficulty: SeaRaidDifficulty): boolean {
   return difficulty === 'hard';
+}
+
+/**
+ * RUNDA 3 (Evaluator A, znalezisko U1 -- audyt zbiorczy commitu 93db72e8): CAŁA
+ * koniunkcja `barbCanWalkIntoEmptyCity` z main.ts (gałąź `move` barbarzyńców)
+ * wyciągnięta do jednej czystej, eksportowanej funkcji -- main.ts ma TYLKO wołać ją
+ * W MIEJSCU UŻYCIA, nie składać `destCity !== undefined && shouldAllowBarbCityCapture(...)
+ * && canCaptureCityWithoutBattle(...)` inline. Powód: przed tą rundą usunięcie
+ * `&& barbAllowCityCapture` z tej koniunkcji inline dawało `tsc` czysty i CAŁY test
+ * 89/89 zielony -- bramka trudności (hard-only, P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B)
+ * nie była chroniona w punkcie faktycznego użycia: test 1c liczył WŁASNĄ kopię formuły
+ * zdefiniowaną w pliku testowym (nie kod produkcyjny), test 1d dopasowywał string z
+ * miejsca DEKLARACJI zmiennej `barbCanWalkIntoEmptyCity`, która przeżywa mutację, bo
+ * zmienna nadal jest gdzieś używana. Ten sam wzorzec co shouldAllowBarbCityCapture
+ * wyżej (RUNDA 2, Evaluator punkt 5) -- wyciągnięcie do czystej, bundlowalnej funkcji
+ * sprawia, że mutacja WEWNĄTRZ niej jest łapana przez REALNE wykonanie testu na
+ * produkcyjnym kodzie, nie przez porównanie source-tekstu.
+ * / EN: the WHOLE `barbCanWalkIntoEmptyCity` conjunction from main.ts (barbarian `move`
+ * branch) pulled out into a single pure, exported function -- main.ts should ONLY call
+ * it AT THE USE SITE, not assemble `destCity !== undefined &&
+ * shouldAllowBarbCityCapture(...) && canCaptureCityWithoutBattle(...)` inline. Reason:
+ * before this round, removing `&& barbAllowCityCapture` from the inline conjunction
+ * gave a clean `tsc` and the ENTIRE test suite green at 89/89 -- the difficulty gate
+ * (hard-only, P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B) was not protected at the
+ * actual use site: test 1c computed its OWN copy of the formula defined in the test
+ * file (not production code), test 1d pattern-matched a string at the
+ * `barbCanWalkIntoEmptyCity` variable's DECLARATION site, which survives the mutation
+ * because the variable is still used somewhere. Same pattern as
+ * shouldAllowBarbCityCapture above (ROUND 2, Evaluator point 5) -- pulling it into a
+ * pure, bundlable function means a mutation INSIDE it is caught by REAL test execution
+ * against production code, not source-text comparison.
+ */
+export function canBarbarianWalkIntoEmptyCity(
+  destCity: City | undefined,
+  units: readonly RuntimeUnit[],
+  difficulty: SeaRaidDifficulty,
+): boolean {
+  return destCity !== undefined
+    && shouldAllowBarbCityCapture(difficulty)
+    && canCaptureCityWithoutBattle(destCity, units);
+}
+
+/**
+ * RUNDA 3 (Evaluator C, mutacja M10.3 -- audyt zbiorczy commitu 93db72e8): koszt ruchu
+ * (w punktach ruchu) rozdzielonego pod-stosu wchodzącego na heks ŻYWEGO obozu
+ * barbarzyńskiego (onSplit, main.ts, temat 10) wyciągnięty do czystej, eksportowanej
+ * funkcji -- main.ts ma TYLKO wołać ją, nie liczyć `computePath`+`pathCost` inline w
+ * miejscu użycia. Powód: przed tą rundą zastąpienie wywołania stałą `1` (ignorowanie
+ * realnego kosztu terenu) dawało `tsc` czysty i CAŁY test 89/89 zielony -- testy 4a/4b
+ * liczyły TO SAMO wyrażenie DWA RAZY pod różnymi nazwami zmiennych i porównywały kopię
+ * z kopią (tautologia analogiczna do 1c/1d powyżej). `moveCostFn`/`occupied` są
+ * policzone przez wołającego (main.ts: `moveCostFnForUnit`/`occupiedForMove` --
+ * zależą od stanu gry: `cities`, znajomość Żeglugi gracza/AI -- nie da się ich uczynić
+ * czystymi bez przeniesienia znacznej części main.ts), ta funkcja liczy WYŁĄCZNIE
+ * `computePath`+`pathCost` na już gotowych wynikach, żeby została czysta i bezpośrednio
+ * testowalna wprost (bez bundlowania main.ts).
+ * / EN: the movement cost (in movement points) for a split sub-stack landing on a
+ * LIVING barbarian camp's hex (onSplit, main.ts, topic 10) pulled out into a pure,
+ * exported function -- main.ts should ONLY call it, not compute `computePath`+
+ * `pathCost` inline at the use site. Reason: before this round, replacing the call
+ * with the constant `1` (ignoring the real terrain cost) gave a clean `tsc` and the
+ * ENTIRE test suite green at 89/89 -- tests 4a/4b computed the SAME expression TWICE
+ * under different variable names and compared a copy against a copy (a tautology
+ * analogous to 1c/1d above). `moveCostFn`/`occupied` are computed by the caller
+ * (main.ts: `moveCostFnForUnit`/`occupiedForMove` -- depend on game state: `cities`,
+ * player/AI Seafaring knowledge -- cannot be made pure without moving a large part of
+ * main.ts), this function ONLY computes `computePath`+`pathCost` on the ready-made
+ * results, to stay pure and directly testable (without bundling main.ts).
+ */
+export function splitCampMoveCost(
+  mover: RuntimeUnit,
+  map: GameMap,
+  destQ: number,
+  destR: number,
+  occupied: Set<string>,
+  moveCostFn: ((hex: Hex) => number) | undefined,
+): number {
+  const path = computePath(mover, map, destQ, destR, occupied, moveCostFn);
+  return path.length > 0 ? pathCost(path, map, moveCostFn) : 1;
 }
 
 /**
