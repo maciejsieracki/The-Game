@@ -13826,3 +13826,16 @@ wdrożenie już podjętej. Najprostsze poprawne odczytanie: `homeCamp===undefine
    `placeFanOutGroup` (odwrót/rozbicie po walce) — brak haka przy wypchnięciu jednostki na heks
    obozu; `refreshFog()` bez `skipVeteranEducation` (może nadpisać toast chatki, gdy ścieżka mija
    i wioskę, i obóz).
+
+## `2dabc0e2` (era-param + tekst „+0") — Evaluator: **PASS-WITH-NOTES**
+
+Oba zadania merytorycznie poprawne, potwierdzone wykonaniem (kierunek `ownerId` we wszystkich 3
+miejscach zweryfikowany przez kontrakt typu `TradeRouteResourceFlow`; tekst „+0" naprawiony bez
+regresji, odtworzenie realnego wołającego dla populacji 1-10 potwierdza dokładnie zgłoszony
+zakres populacja 1-4). **Realna luka**: mutacja dowiodła, że battle-loot i trade-flow (2 z 3
+napraw zadania 1) NIE MAJĄ żadnej ochrony testowej — cofnięcie każdego z tych dwóch wywołań do
+starej 5-argumentowej formy przechodzi WSZYSTKIE bramki bez zmian. Tylko wyrąb lasu ma strażnik.
+Trade-flow jest najgroźniejszy z trzech (odjęcie u nadawcy jest bezwarunkowe — regres oznacza
+realne ZNISZCZENIE surowca, nie tylko zaniżony licznik). Naprawa: 2 dodatkowe strażniki tekstowe
+w `surow-civ-storage-test.cjs`, symetryczne do istniejącego dla wyrębu.
+**STATUS: dispatch szybkiej poprawki (tylko test, zero zmian logiki) w toku.**
