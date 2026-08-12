@@ -13953,4 +13953,57 @@ barbarzyńców — konsekwencja produktowa nieautoryzowana przez ECHO=A.
 Trzeci (nota): bramka `barbCaptureBlockedByRemainingDefenders` chroniona wyłącznie tekstowym
 strażnikiem (`static 5d`) — mutacja B (usunięcie negacji w ciele guardu zamiast usunięcia
 tokenu) przechodzi WSZYSTKIE bramki niezauważona.
-**Czeka na głosy B/C (większość decyduje) przed dispatchem rundy 2.**
+**Evaluator B: FAIL.** Easy potwierdzone bajt-identyczne wykonaniem (20/20 porównań). Normal
+wieloturowo częściowo działa, ale znalazł 3 realne problemy: (a) **BLOKER** — barbarzyńcy
+raid-ready (`chaseRadius=Infinity`, pomijają krok „drift do domu") przy WYŁĄCZNIE niebronionych
+miastach w zasięgu dostają PUSTĄ listę celów po filtrze `skipDefenselessCities` → **zero komend,
+zamrożenie na stałe** (zmierzone: 30 komend/10 tur na easy, **0 na normal/hard** — dotyczy
+DOMYŚLNEJ trudności gry); (b) „kolejne miasto" zaimplementowane jako globalne wykluczenie
+WSZYSTKICH miast bez obrońców, nie tylko właśnie oczyszczonego — efekt odwrotny do zamówionego
+(jednostka wraca do obozu zamiast iść dalej); (c) nowa oscylacja — jeden garnizon kursujący
+między 2 miastami usypia całą armię barbarzyńców (zero postępu przez 12 tur). Dodatkowo: capture
+na hard osiągalny WYŁĄCZNIE gdy ostatni obrońca ginie na heksie miasta — **puste miasto wroga
+(gracz wyprowadził garnizon) jest darmowo, trwale odporne na przejęcie** — złota furtka na
+najwyższej trudności. Mutacja zlecona złapana + 3 własne (M2/M3/M4) potwierdzają że test
+faktycznie rozróżnia poziomy trudności (mocna strona pracy).
+
+**Evaluator C: FAIL.** Save/load CZYSTE (dowód wykonaniem: capture przez realny prymityw →
+serializacja → deserializacja → deep-equal identyczne, miasto poprawnie klasyfikowane).
+**Asymetria gracz/AI w rozstrzyganiu walki** (ta sama klasa błędu co rundy 1-2 obozów) —
+atak na miasto GRACZA idzie przez `launchIncomingMapFieldBattle` z przyciskiem „Wycofaj"
+(`defenderCanRetreat`), obrońca ucieka bez walki, capture nigdy się nie wykonuje; atak na
+miasto AI idzie przez `doAutoPowerMapBattle` — rozstrzygnięcie natychmiastowe, zero opcji
+ucieczki. **Efekt: na hard miasta AI padają, miasta gracza są strukturalnie nietykalne dla
+gracza który zawsze klika Wycofaj — odwraca sens suwaka trudności.** Krytyka testu: **15/36
+asercji (sekcja 5) to source-text `.includes()` na main.ts, ZERO pokrycia wykonawczego** —
+3 niezależne mutacje Evaluatora (miasta gracza trwale odporne na capture; usunięty argument
+trudności z wywołania — normal/hard zachowują się jak easy; capture przerobione na no-op)
+**wszystkie przechodzą 36/36 na wszystkich 6 bramkach niezauważone.** Jedna z asercji (5a) ma
+dodatkowo błędną kotwicę tekstową trafiającą przypadkiem w NIEZWIĄZANE wywołanie w innym miejscu
+main.ts (zbieg okoliczności, nie ochrona). Potwierdza i rozszerza znalezisko A:
+`runCapitalCapturePlunder` brakuje guardu analogicznego do istniejącego dla `REBEL_FACTION_OWNER_ID`
+— przy przejęciu OSTATNIEGO miasta cywilizacji przez barbarzyńców: skarbiec/nauka/**wszystkie
+technologie ofiary trwale kopiowane na konto -1 do sejwu**, Power, `civKeyForOwnerId(-1)→'grecy'`
+fałszuje religię/kulturę. Dodatkowo `applyPostCaptureLawOnCapture` generuje bezsensowny banner
+UI „Po podboju — Prawo 100%" dla frakcji bez rządu + kasuje `rebelPreviousOwnerId` (utrata
+bonusu odbicia po buncie).
+
+## PODSUMOWANIE 3/3 FAIL — zakres rundy 2 (zebrany, priorytety)
+
+**Bloker, BEZ ABC (jasne bugi techniczne, dispatch wprost):**
+1. `runCapitalCapturePlunder` — guard `isBarbarian(oldOwner)` (analogiczny do istniejącego dla
+   `REBEL_FACTION_OWNER_ID`) ORAZ `isBarbarian(newOwner)` (pomija plądrowanie/eliminację gdy
+   barbarzyńcy są odbiorcą).
+2. Raid-ready freeze — gdy `skipDefenselessCities` opróżnia listę celów, jednostka MUSI dostać
+   jakiś rozkaz (fallback do pełnej listy miast, albo pominięcie filtra gdy wynik pusty).
+3. „Kolejne miasto" — wykluczać WYŁĄCZNIE miasto właśnie oczyszczone przez tę jednostkę, nie
+   globalnie każde miasto bez obrońców (naprawia też oscylację 3c Evaluatora B).
+4. `applyPostCaptureLawOnCapture` pominięte dla `isBarbarian(newOwner)` — bez bannera „Prawo
+   100%", bez kasowania `rebelPreviousOwnerId` gdy nowy właściciel to barbarzyńcy.
+5. Test: wyciągnąć decyzje `main.ts` (bramka hard, guard „oczyszczone do zera") do czystych,
+   testowalnych funkcji (wzorem `barbarians.ts`) — sekcja 5 dziś nie odróżnia działającej
+   mechaniki od jej całkowitego braku (3 mutacje survive 36/36).
+
+**DO ABC właściciela (nie zgadywać, opisać i zapytać po powrocie) — patrz pytanie w czacie.**
+
+**STATUS: dispatch rundy 2 (punkty 1-5) w toku. Punkty ABC czekają na Macieja.**
