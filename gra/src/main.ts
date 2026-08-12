@@ -14226,6 +14226,16 @@ async function boot(): Promise<void> {
         stateReligion: stateRel,
         rekruci: pobor.rekruci,
         rekruciLabel: formatManpower(pobor.rekruci),
+        // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): chip "Armia" (hud.ts) pokazuje
+        // pełne jednostki możliwe do zwerbowania z całej puli, nie surowych rekrutów —
+        // to samo źródło (unitManpowerCost/rekrutUnitEquivalents, manpower.ts) co panel
+        // "Rekruci (pula werbu)" (buildEmpireDetailSnap niżej: power.rekrutEkw/kosztJednostki).
+        // / EN: the "Armia" chip (hud.ts) shows full units recruitable from the whole pool,
+        // not raw recruits — same source (unitManpowerCost/rekrutUnitEquivalents,
+        // manpower.ts) as the "Rekruci (pula werbu)" panel (buildEmpireDetailSnap below:
+        // power.rekrutEkw/kosztJednostki).
+        rekrutEkw: rekrutUnitEquivalents(pobor.rekruci, player.era, mpMults.maxMult),
+        kosztJednostki: unitManpowerCost(player.era, mpMults.maxMult),
         ludnoscAbsLabel: formatManpower(pobor.ludnoscAbsolutna),
         power,
         osiedla: pc.length,

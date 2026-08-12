@@ -15,7 +15,7 @@ import { stockResourceLabel } from '../game/building-stock-cost';
 import { resourceUsageTotal } from '../game/resource-usage-breakdown';
 import { mocLabel, mocWithValue } from './power-labels';
 // Liczby do wyswietlenia bez smieci zmiennoprzecinkowych (Maciej 2026-07-26).
-import { signedPl } from './formatPl';
+import { formatLiczbaPl, signedPl } from './formatPl';
 import { treasuryBalanceSignedTxt } from './treasuryBalanceFormat';
 import { brandIconSvg, mapResourceIconSvg } from './icons/brandAssets';
 import { daninaLabelGenitive } from '../game/danina-nazwa';
@@ -581,13 +581,39 @@ function cityPoborMiniRekruci(
     h += '<div class="civ-emp-empty">Brak miast.</div>';
     return h;
   }
-  const grid = '1fr 1fr 0.8fr 0.9fr';
-  h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'REKRUCI', 'MAX', 'ODNOWA'], grid)}`;
+  // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): kolumna JEDN. = potencjalne pełne
+  // jednostki z rekrutów TEGO miasta (rekruci ÷ p.kosztJednostki — TEN SAM koszt/jedn. co
+  // "można werbować" w notatce wyżej i chip "Armia" w HUD, gra/src/game/manpower.ts:
+  // unitManpowerCost). Wartość informacyjna, NIE floorowana — 1 miejsce po przecinku.
+  // Wiersz RAZEM na końcu: suma rekrutów/max/odnowy per kolumnę + p.rekrutEkw (identyczne
+  // z HUD i notatką wyżej, nie przeliczane osobno) w kolumnie JEDN.
+  // / EN: JEDN. column = potential full units from THIS city's recruits (recruits ÷
+  // p.kosztJednostki — the SAME cost/unit as "można werbować" in the note above and the HUD
+  // "Armia" chip, gra/src/game/manpower.ts: unitManpowerCost). Informational, NOT floored —
+  // one decimal place. RAZEM (total) row at the end: per-column sums of recruits/max/regen +
+  // p.rekrutEkw (identical to the HUD and the note above, not recomputed separately) in the
+  // JEDN. column.
+  const grid = '1fr 0.9fr 0.75fr 0.85fr 0.85fr';
+  h += `<div class="civ-emp-mini">${miniHeader(['MIASTO', 'REKRUCI', 'MAX', 'ODNOWA', 'JEDN.'], grid)}`;
+  let sumRekruci = 0;
+  let sumMax = 0;
+  let sumRegen = 0;
   for (const c of rows) {
+    sumRekruci += c.rekruci;
+    sumMax += c.rekruciMax;
+    sumRegen += c.regenPerTurn;
+    const ekwMiasto = p.kosztJednostki > 0 ? c.rekruci / p.kosztJednostki : 0;
     h += miniRow([esc(c.name), String(c.rekruci), String(c.rekruciMax),
-      `<span style="color:#78c95a">+${c.regenPerTurn}</span>`], grid);
+      `<span style="color:#78c95a">+${c.regenPerTurn}</span>`,
+      formatLiczbaPl(ekwMiasto, 1)], grid);
   }
-  h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli całej cywilizacji (suma miast). Pasek = wypełnienie puli względem maksimum imperium.</div>';
+  h += `<div class="civ-emp-mini-r" style="grid-template-columns:${grid};font-weight:700;`
+    + `border-top:1px solid #2b3543;background:#1a2230">`
+    + `<div>RAZEM (imperium)</div><div>${sumRekruci}</div><div>${sumMax}</div>`
+    + `<div><span style="color:#78c95a">+${sumRegen}</span></div><div>${p.rekrutEkw}</div></div>`;
+  h += '</div><div class="civ-emp-foot">Werb jednostki zużywa rekrutów z puli całej cywilizacji (suma miast). '
+    + 'Pasek = wypełnienie puli względem maksimum imperium. '
+    + 'JEDN. = rekruci miasta ÷ koszt jednostki w bieżącej epoce (informacyjnie, bez zaokrąglania w dół).</div>';
   return h;
 }
 

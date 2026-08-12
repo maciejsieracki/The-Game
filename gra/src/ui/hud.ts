@@ -143,6 +143,22 @@ export interface HudState {
   /** Suma rekrutów (Manpower) imperium — pod Mocą na mapie. */
   rekruci?: number;
   rekruciLabel?: string;
+  /** P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): ile PEŁNYCH jednostek da się
+   *  zwerbować z całej puli rekrutów imperium — Math.floor(rekruci / kosztJednostki),
+   *  liczone jedynym źródłem `unitManpowerCost`/`rekrutUnitEquivalents`
+   *  (gra/src/game/manpower.ts), tym samym co panel "Rekruci (pula werbu)"
+   *  (empireDetailPanel.ts: p.rekrutEkw). Zastępuje na chipie "Armia" surową liczbę
+   *  rekrutów, która nie mówi ile wojska da się realnie wystawić.
+   *  / EN: how many FULL units can be recruited from the empire's entire recruit pool —
+   *  Math.floor(rekruci / kosztJednostki), computed from the single source
+   *  `unitManpowerCost`/`rekrutUnitEquivalents` (gra/src/game/manpower.ts), the same one
+   *  the "Rekruci (pula werbu)" panel uses (empireDetailPanel.ts: p.rekrutEkw). Replaces
+   *  the raw recruit count on the "Armia" chip, which didn't say how many units that
+   *  pool can actually field. */
+  rekrutEkw?: number;
+  /** Koszt Manpower jednej jednostki w bieżącej epoce (gra/src/game/manpower.ts:
+   *  unitManpowerCost) — do tooltipu chipu "Armia", to samo źródło co rekrutEkw wyżej. */
+  kosztJednostki?: number;
   ludnoscAbsLabel?: string;
   osiedla: number;
   osiedlaMax: number;
@@ -825,12 +841,21 @@ function spichlerzChipTitle(s: HudState): string {
 /** Tooltip chipu „Armia" — wojsko na mapie i pula rekrutów. */
 function armiaChipTitle(s: HudState): string {
   const units = s.armyUnitsOnMap ?? 0;
+  const rekrutEkw = s.rekrutEkw ?? 0;
   const regen = s.rekruciRegenPerTurn ?? 0;
   const koszt = s.zywnoscKosztWojska ?? 0;
   const maxPart = s.zywnoscMax != null && s.zywnoscMax > 0 ? ` / ${s.zywnoscMax}` : '';
+  // P-ARMIA-CHIP-PELNE-JEDNOSTKI: „+” na chipie pokazuje teraz rekrutEkw (pełne jednostki
+  // z całej puli), nie surową pulę — tooltip nazywa to wprost i osobno podaje koszt/jedn.
+  // oraz odnowę puli/turę (ta druga zostaje w tooltipie, zeszła z samego chipu).
+  // / EN: the chip's „+” now shows rekrutEkw (full units from the whole pool), not the raw
+  // pool — the tooltip names it explicitly and separately states cost/unit and pool
+  // regen/turn (the latter stays in the tooltip, it moved off the chip itself).
   let title = `Armia — wojsko i rekruci`
     + ` · Jednostki na mapie: ${units}`
     + ` · Pula rekrutów: ${s.rekruciLabel ?? '—'}`
+    + ` · Można zwerbować: ${rekrutEkw} pełnych jednostek z całej puli`
+    + (s.kosztJednostki != null ? ` (koszt ${s.kosztJednostki} rekr./szt.)` : '')
     + ` · Odnowa puli: ${signed(regen)} rekr./turę`;
   if (koszt > 0) title += ` · Koszt żywności armii: ${signed(-koszt)} 🍞/turę`;
   title += ` · W magazynie państwa: ${s.zywnoscLabel}${maxPart} 🍞`;
@@ -1021,7 +1046,17 @@ function renderBarD1B(s: HudState): string {
       iconId: 'tb-army',
       label: 'Armia',
       value: String(s.armyUnitsOnMap ?? 0),
-      rate: signed(s.rekruciRegenPerTurn ?? 0),
+      // P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): "+" pokazywał surową odnowę puli
+      // rekrutów/turę (mylące dla dużej puli — czytało się jak liczba rekrutów, nie jak
+      // ile wojska da się wystawić). Teraz pokazuje PEŁNE jednostki możliwe do zwerbowania
+      // z całej puli imperium (rekrutEkw = floor(rekruci / kosztJednostki), main.ts, to
+      // samo źródło co panel "Rekruci (pula werbu)"). Odnowa/turę zostaje w tooltipie.
+      // / EN: "+" used to show the raw pool regen/turn (misleading at a large pool — read
+      // like a recruit count, not like how much army it can field). Now shows FULL units
+      // recruitable from the whole empire pool (rekrutEkw = floor(rekruci / kosztJednostki),
+      // main.ts, same source as the "Rekruci (pula werbu)" panel). Regen/turn stays in the
+      // tooltip.
+      rate: signed(s.rekrutEkw ?? 0),
       rateWarn: !!s.glodWojska,
       act: 'armia',
       title: armiaChipTitle(s),

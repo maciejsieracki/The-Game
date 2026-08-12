@@ -122,8 +122,17 @@ console.log('');
 console.log('2. main.ts: buildHudState -> pole "ludnosc" (jedyne zrodlo sumy dla HUD)');
 const mainTsSrc = fs.readFileSync(MAIN_TS, 'utf8');
 
+// P-ARMIA-CHIP-PELNE-JEDNOSTKI (Maciej 2026-08-12): cap podniesiony 10000->20000 -- dopisanie
+// pol rekrutEkw/kosztJednostki do buildHudState (hud-armia-chip-jednostki-test.cjs) przesunelo
+// dlugosc cialka funkcji za dotychczasowy limit regexu (10321 znakow), co bez zmiany psulo
+// TEN test mimo ze funkcjonalnie nic w nim sie nie zepsulo -- limit byl dowolnym marginesem
+// bezpieczenstwa, nie realnym ograniczeniem. / EN: cap raised 10000->20000 -- adding the
+// rekrutEkw/kosztJednostki fields to buildHudState (hud-armia-chip-jednostki-test.cjs) pushed
+// the function body past this regex's old limit (10321 chars), breaking THIS test even though
+// nothing about it functionally regressed -- the limit was an arbitrary safety margin, not a
+// real constraint.
 const buildHudStateMatch = mainTsSrc.match(
-  /function buildHudState\(\): HudState \{[\s\S]{0,10000}?\n {4}\}/,
+  /function buildHudState\(\): HudState \{[\s\S]{0,20000}?\n {4}\}/,
 );
 check('main.ts zawiera funkcje buildHudState(): HudState', buildHudStateMatch !== null);
 const buildHudStateBody = buildHudStateMatch ? buildHudStateMatch[0] : '';
