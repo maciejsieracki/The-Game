@@ -13130,3 +13130,11 @@ widoczny % wkładu w Porządek łącznie. Konflikt scalania z równoległym comm
 rozwiązany przez orkiestratora (usunięta zduplikowana stała, ujednolicone na
 CITIZEN_UPKEEP_RATE_PER_CITIZEN=0.2 wszędzie). tsc 0 błędów, logic-test 213/213.
 **STATUS: ZAMKNIĘTE, czeka na Evaluatora (dispatch w toku).**
+
+## P-SUROWCE-BRAK-SZCZEGOLOW-ZUZYCIA punkt 2 (tabela Miast) — SCALONE (89c16ec1)
+
+Filtr kolumn + kolumna SUROWCE (wyłącznie utrzymanie budynków per miasto, realne dane bez
+przybliżeń) + wiersz podsumowania (wzrost = średnia, reszta = suma). Obywatele/wojsko flagowane
+jako civ-wide z definicji, bez próby sztucznego podziału per miasto — do ewentualnego
+potwierdzenia przez właściciela jeśli oczekiwał inaczej. +77 asercji, tsc 0 błędów, logic-test
+213/213. **STATUS: ZAMKNIĘTE, czeka na Evaluatora.**
