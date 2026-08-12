@@ -14899,3 +14899,38 @@ Bramki zielone (`tsc`, nowy test 18/18, `logic-test` 213/213, `combat-test` 6/6 
 niedotkniętych testów pokrewnych). Worktree `fix-retreat-garnizon` usunięty, Evaluator w
 `eval-retreat-garnizon`.
 
+
+## Kaskada rekrutacji (86890cd7) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `aa283ff79dc4e7e14`: kod zgodny z deklaracją, jedyny drugi filtr epoki
+(`passesAvailabilityGates`, "Zastąp") świadomie nietknięty i weryfikowalnie inny cel. Edge
+`epoch=1` bezpieczny strukturalnie (`epochNumber()` ma podłogę 1). Niezależny oracle: 6
+cywilizacji × 3 epoki = 18/18 zgodnych. 9/9 mutacji własnych złapanych (100%). Pre-istniejące
+porażki zweryfikowane samodzielnie (before/after identyczne) — **korekta do raportu Operatora:
+jest ich 6, nie 5** — Operator pominął `zloto-test` (39 pass/6 fail, bramka Mennicy),
+pre-istniejące, niezwiązane z tą zmianą.
+
+**Nowe, zarejestrowane cicho (zasada §2), do przyszłego ABC:**
+
+1. **N1 — martwa kolumna `Dostępna w epokach` w `units.json`.** Wypełniona dla wszystkich 75
+   jednostek, nieczytana przez żaden plik w `src/`. Zwiadowca ma tam wprost `Kamień;Brąz;Żelazo`
+   — dane JUŻ deklarują ten wyjątek per-jednostkowo, bez potrzeby heurystyki po `Typ`. Reguła
+   ryczałtowa (epoka+1 wstecz) zgadza się z tą kolumną dla 64/75 jednostek — **11 się rozjeżdża**
+   (m.in. Taran, Wojownik, Falanga/Evocati/konnica asyryjska). Dowód intencji: commit `5e750a28`
+   celowo ograniczył Taran do samego Kamienia z opisem „taran kamienny ograniczony do Kamienia" —
+   ta decyzja nigdy nie została wpięta w kod. Ta zmiana POPRAWIA zgodność (22→13 rozjazdów, 0
+   zepsutych), ale 11 nadal się różni od tego co ktoś świadomie wpisał per jednostkę. Do
+   rozstrzygnięcia: czy docelowo silnik powinien czytać `Dostępna w epokach` zamiast reguły
+   ryczałtowej.
+2. **N3 — rekrutacja i „Zastąp" mają teraz RÓŻNE zasady kaskady epok, furtka do obejścia.**
+   Potwierdzone wywołaniem: Rzym w Żelazie NIE MOŻE rekrutować Wojownika (Kamień), ale MOŻE
+   zamienić Hastati na Wojownika przez „Zastąp" — czyli gracz i tak dostaje jednostkę kamienną w
+   Żelazie, tylko inną ścieżką. To decyzja produktowa (czy „Zastąp" ma respektować kaskadę epoki),
+   nie techniczna — do ABC.
+
+Noty N2 (heurystyka `Typ==='Civilian'`, dziś bezpieczna ale krucha, osłonięta testem) i N4
+(kolejka produkcji niereewalidowana przy zmianie epoki w trakcie budowy, drobny nieaktualny
+komentarz) — nieblokujące, bez dalszego działania.
+
+**ZAMKNIĘTE jako PASS-WITH-NOTES.**
+
