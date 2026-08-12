@@ -1021,6 +1021,7 @@ import {
   collectSeaRaidTargets, isCoastalCity, SEA_WAVE_CAMP_ID,
   destroyCampAt,
   shouldAllowBarbCityCapture, isCityCaptureBlockedByDefenders,
+  tickBarbarianCityGarrisons,
 } from './game/barbarians';
 import type { BarbCamp, BarbUnit } from './game/barbarians';
 // TEMAT #15 — embarkacja jednostek lądowych (gracz + AI + Ludy Morza).
@@ -9632,10 +9633,37 @@ async function boot(): Promise<void> {
           // jawnego id oba pod-stosy współdzieliłyby TEN SAM heks+garnizon i wpadłyby
           // z powrotem w ten sam fallback-klucz, czyli dokładnie problem BB2.
           assignSharedStackGroupId(splitArrivals);
+          // P-BARBARZYNCY-ONSPLIT-KOSZT-RUCHU-Q1=B: koszt policzony PRZED przesunięciem
+          // (q,r) -- identycznie jak normalny ruch/atak na ten sam heks
+          // (beginMoveSelectedUnitTo, main.ts ok. 18956-18970: computePath + pathCost
+          // przez moveCostFnForUnit, potem deductStackRuchLeft z REALNYM kosztem, NIE
+          // bezwarunkowe ruchLeft=0). Dotyczy WYŁĄCZNIE splitu na heks ŻYWEGO obozu --
+          // zwykły split (bez obozu) zachowuje dotychczasowe ruchLeft=0 bez zmian (poza
+          // zakresem tego zlecenia, właściciel mówił wyłącznie o zniszczeniu obozu).
+          // / EN: cost computed BEFORE moving (q,r) -- identical to a normal move/attack
+          // onto the same hex (beginMoveSelectedUnitTo, main.ts ~18956-18970: computePath
+          // + pathCost via moveCostFnForUnit, then deductStackRuchLeft with the REAL
+          // cost, NOT an unconditional ruchLeft=0). Applies ONLY to a split landing on a
+          // LIVING camp's hex -- an ordinary split (no camp) keeps the existing
+          // ruchLeft=0 unchanged (out of scope for this task, the owner only asked about
+          // camp destruction).
+          const destHasLivingCamp = barbCamps.some(c => c.q === destQ && c.r === destR);
+          let splitCampMoveCost = 0;
+          if (destHasLivingCamp && splitArrivals.length > 0) {
+            const splitMover = splitArrivals[0]!;
+            const splitMoveCostFn = moveCostFnForUnit(splitMover);
+            const splitOcc = occupiedForMove(splitMover.ownerId, ...splitArrivals.map(s => s.id));
+            const splitPath = computePath(splitMover, map, destQ, destR, splitOcc, splitMoveCostFn);
+            splitCampMoveCost = splitPath.length > 0 ? pathCost(splitPath, map, splitMoveCostFn) : 1;
+          }
           for (const u of splitArrivals) {
             u.q = destQ;
             u.r = destR;
-            u.ruchLeft = 0;
+          }
+          if (destHasLivingCamp) {
+            deductStackRuchLeft(splitArrivals, splitCampMoveCost);
+          } else {
+            for (const u of splitArrivals) u.ruchLeft = 0;
           }
           // P-BARBARZYNCY-SPLIT-Q1: rozdzielenie armii na heks żywego obozu
           // barbarzyńskiego niszczy go tak samo jak zwykły ruch (parytet z
@@ -21806,6 +21834,35 @@ async function boot(): Promise<void> {
         { civKeyForOwner: civKeyForOwnerId, onOwnerChanged: seedCityOwnerDefaults },
       );
       maybeResolveBronzeForcedWarOnCityCapture(oldOwner, atkOwner);
+      // Domknięcie luki temat 8 batcha 7-10 (miasta barbarzyńskie -- zob. wpięcie
+      // tickBarbarianCityGarrisons niżej w ticku barbarzyńców): capture NIE czyścił
+      // odziedziczonej kolejki budowy ofiary -- budynek W TOKU (front kolejki, np.
+      // "Świątynia" 60% ukończona) PRZETRWAŁBY przejęcie i dokończyłby się pod
+      // barbarzyńską flagą na kolejnych tickach ekonomii: advanceCityEconomy (turn-
+      // economy.ts) liczy Praca/doBudynkow identycznie dla KAŻDEGO miasta (brak
+      // filtru ownerId), a advanceProduction (main.ts, pętla per-miasto) odejmuje tę
+      // Pracę od frontu kolejki bez sprawdzania właściciela -- razem to zaprzeczałoby
+      // "miasto barbarzyńskie produkuje WYŁĄCZNIE jednostki (nigdy budynki)". Barbarzyńcy
+      // i tak NIGDY sami nie wkładają budynku do kolejki (pickAutoBuildItem odmawia,
+      // bo seedCityOwnerDefaults resetuje budowaTryb do 'reczny' przy KAŻDYM przejęciu,
+      // patrz komentarz przy tym wywołaniu wyżej) -- ten reset zamyka WYŁĄCZNIE
+      // przypadek ODZIEDZICZONEGO, już rozpoczętego budynku ofiary.
+      // / EN: batch 7-10 topic 8 gap closure (barbarian-owned cities -- see the
+      // tickBarbarianCityGarrisons wiring further down in the barbarian tick): capture
+      // did NOT clear the victim's inherited build queue -- a building IN PROGRESS
+      // (queue front, e.g. a "Temple" 60% complete) would SURVIVE the capture and
+      // finish completing under the barbarian flag on later economy ticks:
+      // advanceCityEconomy (turn-economy.ts) computes Praca/doBudynkow identically for
+      // EVERY city (no ownerId filter), and advanceProduction (main.ts, per-city loop)
+      // subtracts that Praca from the queue front without checking ownership -- together
+      // that would contradict "a barbarian-owned city produces ONLY units (never
+      // buildings)". Barbarians never queue a building themselves anyway
+      // (pickAutoBuildItem refuses, because seedCityOwnerDefaults resets budowaTryb to
+      // 'reczny' on EVERY capture, see the comment on that call above) -- this reset
+      // closes ONLY the case of an INHERITED, already-started building of the victim.
+      if (isBarbarian(atkOwner)) {
+        cityProd.set(city.id, { kolejka: [], postep: 0 });
+      }
       // P-BARB-CAPTURE-GUARD RUNDA 2 (Evaluator, punkt 1 -- kontekst): barbarzyńcy nie
       // mają realnej kultury/religii -- civKeyForOwnerId(BARBARIAN_OWNER_ID) fałszuje ją
       // przez fallback 'grecy' (aiOwnerCivMap.get(ujemny id) === undefined), co mogło
@@ -26264,6 +26321,58 @@ async function boot(): Promise<void> {
               }
             }
 
+            // P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1=A: miasta przejęte przez barbarzyńców
+            // (temat 7 tego batcha, ownerId===BARBARIAN_OWNER_ID) produkują -- WYŁĄCZNIE
+            // jednostki wojskowe, NIGDY budynki/ulepszenia -- przez osobny, darmowy mechanizm
+            // (tickBarbarianCityGarrisons, ten sam wzorzec cooldown co BarbCamp/tickCamps),
+            // NIE przez cityProd/kolejkę Pracy (patrz komentarz przy City.
+            // barbGarrisonSpawnCooldown, cities.ts, o architekturalnym powodzie: jednostki są
+            // kupowane za Pieniądz, barbarzyńcy strukturalnie nie mają skarbca/Manpower/puli
+            // surowców -- spięcie z purchaseRecruitmentUnit wymagałoby wynalezienia gospodarki
+            // barbarzyńskiej, decyzja bilansu poza zakresem tego zlecenia). Wołane PO pętli
+            // spawnu obozów wyżej, żeby `units` już zawierał tegoroczne spawny obozowe --
+            // `occupied` liczony wewnątrz tickBarbarianCityGarrisons z `units` unika kolizji
+            // heksu spawnu z jednostką, która właśnie powstała z obozu w TYM SAMYM ticku.
+            // / EN: cities captured by barbarians (topic 7 of this batch,
+            // ownerId===BARBARIAN_OWNER_ID) produce -- ONLY military units, NEVER buildings/
+            // improvements -- via a separate, free mechanism (tickBarbarianCityGarrisons,
+            // same cooldown pattern as BarbCamp/tickCamps), NOT via cityProd/the Praca queue
+            // (see the comment on City.barbGarrisonSpawnCooldown, cities.ts, for the
+            // architectural reason: units are purchased with money, barbarians structurally
+            // have no treasury/Manpower/resource pool -- wiring into
+            // purchaseRecruitmentUnit would require inventing a barbarian economy, a balance
+            // decision out of scope for this task). Called AFTER the camp-spawn loop above so
+            // `units` already contains this turn's camp spawns -- the `occupied` set built
+            // inside tickBarbarianCityGarrisons from `units` avoids a spawn-hex collision with
+            // a unit that just came from a camp in the SAME tick.
+            const barbCitiesNow = cities.filter(c => isBarbarian(c.ownerId));
+            if (barbCitiesNow.length > 0) {
+              const barbUnitsForGarrisonTick = units.filter(u => isBarbarian(u.ownerId)) as BarbUnit[];
+              const garrisonTick = tickBarbarianCityGarrisons(
+                barbCitiesNow, barbUnitsForGarrisonTick, units, map, barbLiveForSpawn,
+              );
+              for (const [cid, cd] of garrisonTick.cooldowns) {
+                const gc = cities.find(x => x.id === cid);
+                if (gc) gc.barbGarrisonSpawnCooldown = cd;
+              }
+              for (const gspawn of garrisonTick.spawns) {
+                const gdef = (data.units as any[]).find((u: any) => u['Jednostka'] === gspawn.typeId);
+                const gruch = gdef ? normFieldVal(gdef['Ruch'], 2) : 2;
+                const newGarrisonUnit: BarbUnit = {
+                  id: 'barbcity_' + turn + '_' + gspawn.cityId + '_' + Math.random().toString(36).slice(2),
+                  ownerId: BARBARIAN_OWNER_ID,
+                  typeId: gspawn.typeId,
+                  category: 'wojownik',
+                  q: gspawn.q,
+                  r: gspawn.r,
+                  ruch: gruch,
+                  ruchLeft: 0,
+                };
+                units.push(newGarrisonUnit);
+                console.log(`[Barbarzyncy] Miasto ${gspawn.cityId}: spawn ${gspawn.typeId} @ (${gspawn.q},${gspawn.r})`);
+              }
+            }
+
             // Move barbarian units.
             // TEMAT #15: rajderzy Ludów Morza (seaRaider/zaokrętowani) mają
             // własną logikę rajdową; reszta = klasyczna logika lądowa.
@@ -26282,9 +26391,13 @@ async function boot(): Promise<void> {
             // P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1=A: trzy poziomy trudności barbarzyńców =
             // ISTNIEJĄCY suwak gry (_menuDifficulty), nie nowe ustawienie -- patrz komentarz
             // `difficulty` przy decideBarbarianMoves (barbarians.ts).
+            // P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B: `turn` przekazany, żeby limit
+            // tur pościgu osieroconej jednostki (orphanedAtTurn/orphanedChaseTurnLimit)
+            // liczył od PRAWDZIWEJ tury gry, nie od domyślnego 0 (patrz komentarz `turn`
+            // przy sygnaturze funkcji).
             const barbCmds = decideBarbarianMoves(
               landBarbs, playerUnitsForBarbs, cities, barbCamps, map, barbLive, barbCanEngageOwner,
-              _menuDifficulty,
+              _menuDifficulty, turn,
             );
             if (seaBarbs.length > 0) {
               const raidTargets = collectSeaRaidTargets(map);
@@ -26296,17 +26409,55 @@ async function boot(): Promise<void> {
             // SFX marsz — barbarzyńcy: ta sama logika co AI wyżej (jednorazowy
             // akcent, widoczność liczona raz dla całego ticku barbarzyńców).
             const barbVisNow = fogOn ? currentVisible() : null;
+            // P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B: policzone RAZ dla całego ticku
+            // (identyczna wartość w gałęzi `move` niżej i w gałęzi `attack` dalej) --
+            // hard: barbarzyńca może wejść na heks PUSTEGO (bez obrońców) obcego miasta
+            // i przejąć je (RUNDA badawcza tej sesji ustaliła: main.ts:tryAutoCaptureEmptyCityAt
+            // istniała już OGÓLNIE, ale gałąź `move` barbarzyńców nigdy jej nie wołała --
+            // canUnitOccupyCityHex blokowała WEJŚCIE na obcy heks miasta bezwarunkowo,
+            // więc dla pustego miasta nie było ŻADNEJ ścieżki do przejęcia, tylko attack
+            // na broniącą jednostkę -- patrz zaktualizowany komentarz `difficulty` przy
+            // decideBarbarianMoves, barbarians.ts). easy/normal: bez zmian (miasto puste =
+            // barbarzyńca nie wchodzi, dokładnie jak dziś).
+            // / EN: computed ONCE for the whole tick (identical value in the `move` branch
+            // below and the `attack` branch further down) -- hard: a barbarian may enter
+            // the hex of an EMPTY (undefended) foreign city and capture it (this session's
+            // research round established: main.ts's tryAutoCaptureEmptyCityAt already
+            // existed GENERICALLY, but the barbarian `move` branch never called it --
+            // canUnitOccupyCityHex unconditionally blocked entry onto a foreign city hex,
+            // so an undefended city had NO capture path at all, only an attack on a
+            // defending unit -- see the updated `difficulty` comment on
+            // decideBarbarianMoves, barbarians.ts). easy/normal: unchanged (an empty city
+            // still blocks barbarian entry, exactly as today).
+            const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
             for (const bcmd of barbCmds) {
               try {
                 const bu = units.find(u => u.id === bcmd.unitId);
                 if (!bu) continue;
                 if (bcmd.type === 'move') {
-                  if (!canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
+                  // P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B: gdy cel to obce miasto BEZ
+                  // obrońców (canCaptureCityWithoutBattle) i trudność hard -- wejście
+                  // dozwolone mimo że canUnitOccupyCityHex normalnie by je zablokowało
+                  // (ownerId nie pasuje). Miasto broniony (canCaptureCityWithoutBattle
+                  // false) -- bez zmian: bramka blokuje jak dotychczas, walka idzie
+                  // wyłącznie przez komendę `attack` (krok 2 decideBarbarianMoves).
+                  const moveDestCity = cities.find(c => c.q === bcmd.toQ && c.r === bcmd.toR);
+                  const barbCanWalkIntoEmptyCity = moveDestCity !== undefined
+                    && barbAllowCityCapture
+                    && canCaptureCityWithoutBattle(moveDestCity, units);
+                  if (!barbCanWalkIntoEmptyCity
+                      && !canUnitOccupyCityHex(bu.ownerId, bcmd.toQ, bcmd.toR, cities)) continue;
                   bu.q = bcmd.toQ;
                   bu.r = bcmd.toR;
                   bu.ruchLeft = 0;
                   // TEMAT #15: woda -> zaokrętowanie, ląd -> desant.
                   applyEmbarkStateAfterMove([bu], map);
+                  if (barbCanWalkIntoEmptyCity) {
+                    // tryAutoCaptureEmptyCityAt no-opuje (zwraca false) dla własnego
+                    // miasta barbarzyńcy (city.ownerId===anchor.ownerId) -- bezpieczne
+                    // wołanie nawet gdy moveDestCity jest już barbarzyńska.
+                    tryAutoCaptureEmptyCityAt(bcmd.toQ, bcmd.toR, [bu]);
+                  }
                   if (sfxUnitsEnabled && (barbVisNow === null || barbVisNow.has(keyOf(bcmd.toQ, bcmd.toR)))) {
                     playMarchAccent(1);
                   }
@@ -26346,7 +26497,9 @@ async function boot(): Promise<void> {
                   // dotychczasowego zachowania (miasto NIE zmienia właściciela).
                   // RUNDA 2 (Evaluator, punkt 5): decyzja wyciągnięta do czystej, testowalnej
                   // shouldAllowBarbCityCapture (barbarians.ts) -- main.ts tylko woła.
-                  const barbAllowCityCapture = shouldAllowBarbCityCapture(_menuDifficulty);
+                  // P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B: `barbAllowCityCapture` teraz
+                  // policzone RAZ przed pętlą `for (const bcmd of barbCmds)` (patrz wyżej) --
+                  // ta gałąź `attack` go tylko UŻYWA, nie deklaruje powtórnie.
                   if (defRoster.some(u => u.ownerId === 0)) {
                     launchIncomingMapFieldBattle(
                       atkRoster,

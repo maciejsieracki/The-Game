@@ -116,9 +116,9 @@ export interface BarbUnit extends RuntimeUnit {
    * tablicą mimo deklarowanego typu `Set`, cichy rozjazd typu z rzeczywistością).
    * Zwykła tablica `string[]` przechodzi round-trip identycznie jak `campId`/
    * `healthFrac`, bez żadnej specjalnej obsługi. Mutowane bezpośrednio przez
-   * decideBarbarianMoves (jedyne świadome odejście od "moduł nigdy nie mutuje
-   * stanu" -- pole czysto informacyjne per-jednostka, ten sam wzorzec co
-   * `campId`/`healthFrac`). Samo-wygasa PER MIASTO: gdy miasto odzyska obrońcę,
+   * decideBarbarianMoves (jedno z DWÓCH świadomych odejść od "moduł nigdy nie mutuje
+   * stanu" -- drugie to `orphanedAtTurn`, patrz niżej; oba to pola czysto informacyjne
+   * per-jednostka, ten sam wzorzec co `campId`/`healthFrac`). Samo-wygasa PER MIASTO: gdy miasto odzyska obrońcę,
    * filtr (patrz krok 3) przestaje je wykluczać niezależnie od obecności w tym
    * zbiorze. Gdy zbiór wyklucza WSZYSTKIE dostępne (niebronione) miasta -- jednostka
    * odwiedziła każde z nich -- zbiór jest RESETOWANY (patrz krok 3), więc patrol
@@ -137,9 +137,9 @@ export interface BarbUnit extends RuntimeUnit {
    * field would silently become a plain array despite the declared `Set` type, a
    * quiet type/reality drift). A plain `string[]` round-trips exactly like
    * `campId`/`healthFrac`, no special handling needed. Mutated directly by
-   * decideBarbarianMoves (the one deliberate exception to "this module never
-   * mutates state" -- a purely informational per-unit field, same pattern as
-   * `campId`/`healthFrac`). Self-expires PER CITY: once a city regains a defender,
+   * decideBarbarianMoves (one of TWO deliberate exceptions to "this module never
+   * mutates state" -- the other is `orphanedAtTurn`, see below; both are purely
+   * informational per-unit fields, same pattern as `campId`/`healthFrac`). Self-expires PER CITY: once a city regains a defender,
    * the step-3 filter stops excluding it regardless of membership in this set.
    * When the set would exclude EVERY available (undefended) city -- the unit has
    * visited each one -- the set is RESET (see step 3), so the patrol starts another
@@ -148,6 +148,39 @@ export interface BarbUnit extends RuntimeUnit {
    * the first undefended city encountered.
    */
   clearedCityIds?: string[];
+  /**
+   * P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B (Maciej): tura, w której TA jednostka
+   * została po raz pierwszy uznana za osieroconą (campId wskazuje na obóz nieobecny
+   * w `camps`) -- ustawiane PRZY PIERWSZYM wykryciu, nietykane potem dopóki jednostka
+   * pozostaje osierocona. Gdy `turn - orphanedAtTurn >= params.orphanedChaseTurnLimit`,
+   * jednostka traci nieograniczony chaseRadius (wraca do aggroRadius) -- patrz komentarz
+   * `orphaned`/`chaseRadius` w decideBarbarianMoves. Licznik TUR, nie promień pozycyjny
+   * (Operator: prostsze, nie wymaga dodatkowego stanu pozycyjnego typu "punkt zniszczenia
+   * obozu" -- wystarcza jedna liczba, ten sam wzorzec co `clearedCityIds`/`campId`).
+   * Tablica `string[]` obok (`clearedCityIds`) już ustaliła, że zwykłe pola prymitywne
+   * na `BarbUnit` przechodzą save/load round-trip bez specjalnej obsługi (JSON.stringify
+   * wprost) -- ten `number` idzie tą samą, sprawdzoną drogą. Optional -- stare save'y/testy
+   * legacy bez tego pola = brak pamięci, dokładnie zachowanie sprzed tej rundy (patrz
+   * komentarz `turn` przy sygnaturze funkcji: brak `turn` u wołającego = `turn` domyślnie 0,
+   * `orphanedAtTurn` ustawiane raz na 0 i nigdy nie "dogania" progu -- bit-identyczne z
+   * dotychczasowym nieograniczonym pościgiem).
+   * / EN: the turn on which THIS unit was FIRST detected as orphaned (its campId points
+   * at a camp no longer present in `camps`) -- set on first detection, left untouched
+   * while the unit stays orphaned. Once `turn - orphanedAtTurn >= params.
+   * orphanedChaseTurnLimit`, the unit loses its unlimited chaseRadius (reverts to
+   * aggroRadius) -- see the `orphaned`/`chaseRadius` comment in decideBarbarianMoves. A
+   * TURN counter, not a positional radius (Operator's choice: simpler, needs no extra
+   * positional state like "camp destruction point" -- a single number suffices, same
+   * pattern as `clearedCityIds`/`campId`). The sibling `string[]` field (`clearedCityIds`)
+   * already established that plain primitive fields on `BarbUnit` round-trip through
+   * save/load with no special handling (straight `JSON.stringify`) -- this `number`
+   * travels the same, already-proven path. Optional -- legacy saves/tests without this
+   * field simply have no memory yet, exactly the pre-this-round behaviour (see the `turn`
+   * comment on the function signature: a caller omitting `turn` gets 0 every call,
+   * `orphanedAtTurn` gets set to 0 once and never "catches up" to the limit -- bit-
+   * identical to the previous unlimited chase).
+   */
+  orphanedAtTurn?: number;
 }
 
 /**
@@ -226,6 +259,19 @@ export interface BarbParams {
   retreatHpFrac: number;
   /** units.json "Jednostka" key used for spawned barbarians. */
   unitTypeId: string;
+  /**
+   * P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B (Maciej): liczba TUR od osierocenia
+   * (zniszczenia obozu macierzystego), po której jednostka osierocona traci
+   * nieograniczony zasięg pościgu (chaseRadius=Infinity) i wraca do zwykłego
+   * aggroRadius -- NIE znika, tylko przestaje mieć nieskończony zasięg. Patrz
+   * `orphanedAtTurn` (BarbUnit) i komentarz `turn` przy decideBarbarianMoves.
+   * / EN: number of TURNS since being orphaned (home camp destroyed) after
+   * which an orphaned unit loses its unlimited chase radius (chaseRadius=
+   * Infinity) and reverts to the ordinary aggroRadius -- it does NOT despawn,
+   * it simply stops having unlimited reach. See `orphanedAtTurn` (BarbUnit)
+   * and the `turn` param comment on decideBarbarianMoves.
+   */
+  orphanedChaseTurnLimit: number;
 }
 
 /** Built-in defaults; correct even if ai-params.json carries no barbarian keys. */
@@ -240,6 +286,7 @@ export const FALLBACK_BARB_PARAMS: BarbParams = {
   aggroRadius: 6,
   retreatHpFrac: 0.3,
   unitTypeId: 'Wojownik',
+  orphanedChaseTurnLimit: 10,
 };
 
 /**
@@ -252,7 +299,8 @@ export const FALLBACK_BARB_PARAMS: BarbParams = {
  * Recognised keys (add these to AI-parametry.xlsx):
  *   barbarzyncy_start_tura, barbarzyncy_max_obozy, barbarzyncy_min_dystans_miasto,
  *   barbarzyncy_odstep_obozow, barbarzyncy_interwal_spawnu, barbarzyncy_jednostek_na_oboz,
- *   barbarzyncy_zasieg_kontroli, barbarzyncy_zasieg_agresji, barbarzyncy_prog_odwrotu_hp.
+ *   barbarzyncy_zasieg_kontroli, barbarzyncy_zasieg_agresji, barbarzyncy_prog_odwrotu_hp,
+ *   barbarzyncy_limit_tur_osierocony (P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1).
  */
 export function loadBarbParams(data: GameData): BarbParams {
   return {
@@ -265,6 +313,7 @@ export function loadBarbParams(data: GameData): BarbParams {
     campControlRadius: readParam(data, 'barbarzyncy_zasieg_kontroli',    FALLBACK_BARB_PARAMS.campControlRadius),
     aggroRadius:       readParam(data, 'barbarzyncy_zasieg_agresji',     FALLBACK_BARB_PARAMS.aggroRadius),
     retreatHpFrac:     readParam(data, 'barbarzyncy_prog_odwrotu_hp',    FALLBACK_BARB_PARAMS.retreatHpFrac),
+    orphanedChaseTurnLimit: readParam(data, 'barbarzyncy_limit_tur_osierocony', FALLBACK_BARB_PARAMS.orphanedChaseTurnLimit),
     unitTypeId:        FALLBACK_BARB_PARAMS.unitTypeId,
   };
 }
@@ -863,6 +912,100 @@ export function tickCamps(
   return { camps: outCamps, spawns };
 }
 
+/**
+ * P-BARBARZYNCY-ELIMINACJA-CYWILIZACJI-Q1=A: minimalny odpowiednik "miasto barbarzyńskie
+ * produkuje" (temat 8 batcha 7-10) -- jedno DARMOWE spawnienie jednostki WOJSKOWEJ na
+ * miasto, na tych samych zasadach co obóz (cooldown -> spawn -> reset), ale KLUCZOWA różnica:
+ * cel spawnu to `City.barbGarrisonSpawnCooldown` (patrz komentarz przy polu, cities.ts), nie
+ * `BarbCamp`, i funkcja NIGDY nie dotyka `cityProd`/kolejki Pracy -- "nigdy budynki" jest
+ * spełnione PRZEZ KONSTRUKCJĘ (jedyny output to `spawns: BarbCityGarrisonSpawn[]`), nie przez
+ * filtrowanie listy kandydatów budynek/jednostka. PURE -- nie mutuje `barbCities`/`barbUnits`;
+ * wołający (main.ts) aplikuje `cooldowns` do `city.barbGarrisonSpawnCooldown` i tworzy
+ * RuntimeUnit z `spawns`, dokładnie jak przy `tickCamps`/`BarbSpawn`.
+ *
+ * @param barbCities  Miasta z ownerId===BARBARIAN_OWNER_ID (wołający filtruje).
+ * @param barbUnits   Żyjące jednostki barbarzyńskie (do limitu unitsPerCamp w promieniu miasta).
+ * @param allUnits    WSZYSTKIE jednostki na mapie (do zajętości heksów spawnu, jak tickCamps).
+ * @param map         Mapa gry (do szukania wolnego sąsiedniego heksu).
+ * @param params      Te same tunable co obozy -- campControlRadius/unitsPerCamp/spawnInterval/
+ *                    unitTypeId reużyte 1:1 (brak nowych osobnych tunable dla miast --
+ *                    najprostsze rozwiązanie spełniające wymaganie, KISS, CLAUDE.md §7).
+ *
+ * / EN: the minimal counterpart of "a barbarian city produces" (topic 8 of the 7-10 batch) --
+ * one FREE spawn of a MILITARY unit per city, on the same rules as a camp (cooldown -> spawn
+ * -> reset), but with a KEY difference: the spawn's target is `City.barbGarrisonSpawnCooldown`
+ * (see the field comment, cities.ts), not a `BarbCamp`, and the function NEVER touches
+ * `cityProd`/the Praca queue -- "never buildings" is satisfied BY CONSTRUCTION (the only
+ * output is `spawns: BarbCityGarrisonSpawn[]`), not by filtering a building/unit candidate
+ * list. PURE -- does not mutate `barbCities`/`barbUnits`; the caller (main.ts) applies
+ * `cooldowns` to `city.barbGarrisonSpawnCooldown` and builds a RuntimeUnit from `spawns`,
+ * exactly as with `tickCamps`/`BarbSpawn`.
+ */
+export interface BarbCityGarrisonSpawn {
+  /** id of the barbarian-owned City this unit spawned from. */
+  cityId: string;
+  q: number;
+  r: number;
+  /** units.json "Jednostka" key for the spawned barbarian. */
+  typeId: string;
+}
+
+export interface BarbCityGarrisonTickResult {
+  spawns: BarbCityGarrisonSpawn[];
+  /** cityId -> new value for City.barbGarrisonSpawnCooldown. */
+  cooldowns: Map<string, number>;
+}
+
+export function tickBarbarianCityGarrisons(
+  barbCities: ReadonlyArray<{ id: string; q: number; r: number; barbGarrisonSpawnCooldown?: number }>,
+  barbUnits: BarbUnit[],
+  allUnits: RuntimeUnit[],
+  map: GameMap,
+  params: BarbParams,
+): BarbCityGarrisonTickResult {
+  const occupied = new Set<string>();
+  for (const u of allUnits) occupied.add(keyOf(u.q, u.r));
+
+  const spawns: BarbCityGarrisonSpawn[] = [];
+  const cooldowns = new Map<string, number>();
+
+  for (const city of barbCities) {
+    // Brak pola (miasto świeżo przejęte -- temat 7) = gotowe do spawnu od razu, ten sam
+    // konwent co nowy BarbCamp.spawnCooldown=0 w spawnCamps() wyżej.
+    // / EN: field absent (freshly-captured city -- topic 7) = spawn-ready immediately,
+    // same convention as a new BarbCamp.spawnCooldown=0 in spawnCamps() above.
+    const cd = Math.max(0, (city.barbGarrisonSpawnCooldown ?? 0) - 1);
+
+    if (cd > 0) {
+      cooldowns.set(city.id, cd);
+      continue;
+    }
+
+    const owned = barbUnits.filter(
+      u => hexDistance(u.q, u.r, city.q, city.r) <= params.campControlRadius,
+    ).length;
+
+    if (owned >= params.unitsPerCamp) {
+      // Przy limicie -- trzymaj na 0, spawn gotowy natychmiast gdy zwolni się slot
+      // (identyczny wzorzec co tickCamps).
+      cooldowns.set(city.id, 0);
+      continue;
+    }
+
+    const spot = freeAdjacentHex(city.q, city.r, map, occupied);
+    if (spot === null) {
+      cooldowns.set(city.id, 0);
+      continue;
+    }
+
+    occupied.add(keyOf(spot.q, spot.r));
+    spawns.push({ cityId: city.id, q: spot.q, r: spot.r, typeId: params.unitTypeId });
+    cooldowns.set(city.id, params.spawnInterval);
+  }
+
+  return { spawns, cooldowns };
+}
+
 /** Nearest free passable land hex adjacent to (q,r): ring-1 then ring-2, or null. */
 function freeAdjacentHex(
   q: number,
@@ -1165,6 +1308,31 @@ export function destroyCampAt(
  *   terminal state for this unit (open ABC "undefended city permanently immune to
  *   capture", out of scope for this round -- see PYTANIA-OTWARTE.md, round 3 of
  *   this topic).
+ *
+ *   AKTUALIZACJA (P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B, batch tematów 7-10): "brak stanu
+ *   terminalnego" opisany wyżej (main.ts:26273, tylko `attack`) jest ZAMKNIĘTY osobnym,
+ *   równoległym zleceniem tej samej sesji -- main.ts teraz WOŁA tryAutoCaptureEmptyCityAt
+ *   także z komendy `move` (nie tylko `attack`), warunkowo pod shouldAllowBarbCityCapture.
+ *   Ta funkcja (decideBarbarianMoves) sama się NIE zmieniła w tym zakresie -- generuje
+ *   `move` w stronę pustego miasta dokładnie jak dotychczas (computePath: cel ZAWSZE
+ *   przejezdny jako ostatni krok, patrz units/setup.ts), wystarczyło dopiąć aplikację
+ *   komendy w main.ts. / EN: UPDATE (P-BARBARZYNCY-PUSTE-MIASTO-PRZEJECIE-Q1=B, batch of
+ *   topics 7-10): the "no terminal state" gap noted above (main.ts:26273, `attack` only) is
+ *   CLOSED by a separate, parallel task in this same session -- main.ts now also calls
+ *   tryAutoCaptureEmptyCityAt from a `move` command (not just `attack`), gated by
+ *   shouldAllowBarbCityCapture. This function (decideBarbarianMoves) itself did NOT change
+ *   in this respect -- it already generated a `move` toward an undefended city exactly as
+ *   before (computePath: the destination is ALWAYS passable as the final step, see units/
+ *   setup.ts), only the command's application in main.ts needed wiring.
+ * @param turn
+ *   P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B (Maciej): bieżąca tura gry, do liczenia ile tur
+ *   minęło od osierocenia (patrz `orphanedAtTurn`, BarbUnit). `undefined` (wszyscy istniejący
+ *   wołający/testy) = domyślnie 0, co czyni pościg osieroconej jednostki NIEOGRANICZONYM
+ *   NA ZAWSZE -- identyczne z zachowaniem sprzed tej rundy (gwarancja "legacy unchanged").
+ *   / EN: the current game turn, used to count how many turns have passed since a unit was
+ *   orphaned (see `orphanedAtTurn`, BarbUnit). `undefined` (all pre-existing callers/tests)
+ *   defaults to 0, which makes an orphaned unit's chase UNLIMITED FOREVER -- identical to the
+ *   pre-this-round behaviour ("legacy unchanged" guarantee).
  */
 export function decideBarbarianMoves(
   barbUnits: BarbUnit[],
@@ -1175,10 +1343,21 @@ export function decideBarbarianMoves(
   params: BarbParams,
   canEngageOwner?: (targetOwnerId: number) => boolean,
   difficulty?: SeaRaidDifficulty,
+  turn?: number,
 ): BarbCommand[] {
   const commands: BarbCommand[] = [];
   const engageOk = canEngageOwner ?? ((_targetOwnerId: number) => true);
   const skipDefenselessCities = difficulty === 'normal' || difficulty === 'hard';
+  // P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B: `turn` domyślnie 0 gdy pominięty (wszyscy
+  // istniejący wołający/testy) -- `orphanedAtTurn` jest wtedy ustawiane raz na 0 i
+  // `turnNum - orphanedAtTurn` zawsze wychodzi 0, nigdy nie osiąga orphanedChaseTurnLimit
+  // (dodatni) -- bit-identyczne z dotychczasowym nieograniczonym pościgiem, gwarancja
+  // "legacy callers unchanged" tym samym wzorcem co `difficulty` wyżej.
+  // / EN: `turn` defaults to 0 when omitted (all pre-existing callers/tests) --
+  // `orphanedAtTurn` is then set to 0 once and `turnNum - orphanedAtTurn` always comes out
+  // 0, never reaching orphanedChaseTurnLimit (positive) -- bit-identical to the previous
+  // unlimited chase, same "legacy callers unchanged" guarantee pattern as `difficulty` above.
+  const turnNum = turn ?? 0;
 
   // Only real players are valid targets.
   const enemies = playerUnits.filter(u => !isBarbarian(u.ownerId));
@@ -1400,7 +1579,43 @@ export function decideBarbarianMoves(
     // Only (A) gets unlimited chaseRadius and skips step 4 (nowhere to
     // return to). (B) keeps the exact old behaviour.
     const orphaned = Boolean(unit.campId) && !camps.some(c => c.id === unit.campId);
-    const raidReady = orphaned || (homeCamp !== undefined && isCampRaidReady(homeCamp, barbUnits, params));
+    // P-BARBARZYNCY-OSIEROCONE-POSCIG-LIMIT-Q1=B: "orphaned" dawał NIEOGRANICZONY
+    // (Infinity) zasięg pościgu NA ZAWSZE -- właściciel: dodać realny limit. Wybór
+    // Operatora: licznik TUR od pierwszego wykrycia osierocenia (`orphanedAtTurn`,
+    // BarbUnit), nie promień pozycyjny od miejsca zniszczenia obozu -- prostsze (jedna
+    // liczba, zero dodatkowego stanu pozycyjnego), ten sam wzorzec co `clearedCityIds`.
+    // Zapis TYLKO przy pierwszym wykryciu (`?? turnNum`) -- kolejne tury NIE nadpisują
+    // już ustawionej wartości, więc licznik faktycznie mierzy czas OD osierocenia, nie
+    // "od ostatniej tury bycia osieroconym". Gdy jednostka przestaje być osierocona
+    // (nie powinno się zdarzyć w praktyce -- obozy się nie odradzają -- ale defensywnie),
+    // pole jest czyszczone, żeby ewentualne przyszłe osierocenie zaczęło liczyć od zera.
+    // / EN: "orphaned" used to grant an UNLIMITED (Infinity) chase radius FOREVER -- the
+    // owner asked for a real limit. Operator's choice: a TURN counter since first
+    // detection (`orphanedAtTurn`, BarbUnit), not a positional radius from the camp's
+    // destruction point -- simpler (a single number, zero extra positional state), same
+    // pattern as `clearedCityIds`. Written ONLY on first detection (`?? turnNum`) --
+    // later turns do NOT overwrite an already-set value, so the counter actually measures
+    // time SINCE being orphaned, not "since the last turn of being orphaned". When a unit
+    // stops being orphaned (shouldn't happen in practice -- camps never respawn -- but
+    // handled defensively), the field is cleared so any future orphaning starts fresh.
+    if (orphaned) {
+      if (unit.orphanedAtTurn === undefined) unit.orphanedAtTurn = turnNum;
+    } else if (unit.orphanedAtTurn !== undefined) {
+      unit.orphanedAtTurn = undefined;
+    }
+    const orphanedChaseExpired = orphaned
+      && unit.orphanedAtTurn !== undefined
+      && (turnNum - unit.orphanedAtTurn) >= params.orphanedChaseTurnLimit;
+    // Osierocona jednostka PO limicie: raidReady liczony BEZ "orphaned" -- wraca do
+    // normalnego chaseRadius=aggroRadius (nie 0 -- jednostka nie znika ani nie zamiera,
+    // po prostu przestaje mieć nieskończony zasięg, dokładnie jak inne barbarzyńskie
+    // jednostki bez pełnego kontyngentu obozu w zasięgu).
+    // / EN: an orphaned unit PAST the limit: raidReady computed WITHOUT "orphaned" --
+    // reverts to the normal chaseRadius=aggroRadius (not 0 -- the unit does not vanish
+    // or freeze, it simply stops having unlimited reach, exactly like any other
+    // barbarian unit without a full camp contingent in range).
+    const orphanedActive = orphaned && !orphanedChaseExpired;
+    const raidReady = orphanedActive || (homeCamp !== undefined && isCampRaidReady(homeCamp, barbUnits, params));
     const chaseRadius = raidReady ? Infinity : params.aggroRadius;
     // F2 (Evaluator A, runda 5): PRZED poprawką próbowano wyłącznie `targets[0]`
     // (globalnie najbliższego kandydata); gdy `firstStep` dla niego zwracał
