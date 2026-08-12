@@ -13650,4 +13650,45 @@ ai-founding-territory) wszystkie zielone. `map-gen-regression-test` NIE ukończo
 (bardzo wolny, kod tego zadania nie dotyka generowania mapy — nieblokujące).
 
 **Scalone przez orkiestratora, temat dotyczy mechaniki gry (P0 combat-adjacent) — dispatch
-Evaluatora.**
+Evaluatora.** Zdecydowano o 3 niezależnych Evaluatorach adwersaryjnych (A/B/C, głosowanie
+większością) — próg z integracji AutoBot+Ultracode dla zmian "combat-adjacent" — dispatch w toku.
+
+## P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1 — NOWY WĄTEK, badanie stanu dzisiejszego (Maciej, 2026-08-12)
+
+Maciej: *"Trzeba jeszcze ustalić, co barbarzyńcy robią z miastami."*, potem: *"zazwyczaj po
+zabiciu jednostek stoją obok, a powinni łupić. Mamy trzy poziomy trudności dla barbarzyńców.
+Przy najwyższym powinni zajmować miasta. Przy najniższym robić dokładnie to, co robią teraz. Na
+średnim poziomie jeżeli jedno miasto udaje mi się zniszczyć jednostki idą do kolejnego miasta. W
+tym się widzi różnie od najsłabszego poziomu bo przynajmniej słabszym stoję obok tego miasta
+cały czas."*, potem: *"to trzeba wprowadzić dodatkowo do obecnych reguł, które już są i
+sprawdzić czy z czymś się też nie kłócą nowe reguły."*
+
+**Zbadane (Explore, tylko odczyt) — stan dzisiejszy w kodzie:**
+1. Barbarzyńcy NIE MOGĄ dziś wejść/pozostać na heksie miasta — `canUnitOccupyCityHex()`
+   (`city-hex-movement.ts`) blokuje to dla każdego `ownerId` różnego od właściciela miasta,
+   a `evictForeignUnitsFromCityHexes()` (wołane co tick barbarzyńców) usuwa każdą obcą jednostkę
+   z heksu miasta.
+2. Wyjątek techniczny: gdy barbarzyńca WYGRA walkę z obrońcami stojącymi DOKŁADNIE na centrum
+   miasta, `wipeDefenderOnCityCenter()` usuwa WSZYSTKICH obrońców (nie proporcjonalnie), zwycięski
+   roster (w tym barbarzyńca) fizycznie ląduje na heksie miasta — ale zostaje z niego wypchnięty
+   na koniec tej samej fazy tickCamps. To jest DOKŁADNIE zgłoszony objaw: "stoją obok" po
+   wybiciu obrońców.
+3. `applyMapBattleOutcome()` zmienia `ownerId` miasta TYLKO gdy `allowCityCapture===true` LUB
+   `siegeContext===true` — ścieżki ataku barbarzyńców NIGDY nie ustawiają tych flag. **Barbarzyńcy
+   nigdy nie przejmują miasta — zero mechaniki capture dla nich dziś.**
+4. Osobnego "oblężenia" barbarzyńców NIE MA — formalny system oblężenia (`siegeContext`) jest
+   wołany wyłącznie ze ścieżek gracz/AI.
+5. Ruch barbarzyńców JUŻ celuje w miasta świadomie: `decideBarbarianMoves()` wybiera cel =
+   najbliższa jednostka LUB miasto w `aggroRadius`, a po osiągnięciu progu "raid-ready"
+   (≥`unitsPerCamp` wojowników) zasięg pościgu jest NIEOGRANICZONY (`chaseRadius=Infinity`).
+6. Mechanizm łupienia (drenaż zasobów miasta) NIE ISTNIEJE w ogóle dla żadnej strony (gracz/AI/
+   barbarzyńcy).
+7. Brak jakiejkolwiek wcześniejszej decyzji ABC o zdobywaniu miast przez barbarzyńców w rejestrze.
+   `P-BARBARZYNCY-USUWANIE-SEMANTYKA-Q1` (wyżej) dotyczy WYŁĄCZNIE niszczenia obozów-spawnerów,
+   nie miast gracza/AI — **BRAK KOLIZJI z tym tematem**, potwierdzone przeglądem. Jedyna
+   pokrewna decyzja: `P-AI-NIE-BRONI-WLASNYCH-MIAST-PRZED-BARBARZYNCAMI` (ECHO A, 2026-08-09) —
+   dotyczy priorytetu OBRONY AI, nie zachowania barbarzyńców po zwycięstwie.
+
+**STATUS: ABC zadane w czacie tej samej tury (P-BARBARZYNCY-MIASTA-ZACHOWANIE-Q1). NIE
+dispatchować implementacji przed odpowiedzią — zbyt duża przestrzeń projektowa (nowa mechanika
+capture, mapowanie na poziom trudności, ew. mechanizm łupienia) żeby zgadywać.**
