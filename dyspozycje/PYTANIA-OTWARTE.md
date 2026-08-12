@@ -14821,3 +14821,41 @@ nie zadanie.
 barbarians.ts/main.ts capture — jeden Operator na raz zamiast 5 kolidujących równolegle),
 punkt 11 dołączony do już zarejestrowanej, wstrzymanej rundy 5 obozów jako potwierdzenie bez
 nowej pracy kodowej.**
+
+---
+
+## Odtworzenie sekcji F + scroll-reset — RUNDA 2 SCALONA (55e64ac2)
+
+**STATUS: w Evaluatorze.** Operator naprawił regresję z rundy 1 (Evaluator `a36b19fa6f9294e5a`
+znalazł: fix scrollTop dla przełącznika Moc w tym samym bloku zepsuł CZĘSTSZĄ ścieżkę — klik
+chipa HUD innego bloku przywracał starą pozycję zamiast resetować do 0). Naprawa: nowa flaga
+modułowa `resetScrollOnNextRender`, ustawiana WYŁĄCZNIE w `showEmpireDetailPanel()` gdy zmienia
+się blok/panel otwiera się od nowa (linia ~1563); `render()` sprawdza ją w osobnej gałęzi przed
+przywróceniem `prevScrollTop`. Test `empire-panel-moc-scroll-preserve-test.cjs` rozbudowany
+243→419 linii (46/46), z podwójnym dowodem mutacyjnym (w pliku + ręcznie na realnym źródle:
+cofnięcie obu części naprawy → 34 passed/12 failed, S1+S4 nadal zielone = naprawa rundy 1
+nienaruszona). Wszystkie bramki zielone (`tsc`, `hud-armia-chip-jednostki-test` 58/58,
+`power-objective-test` 29/29, `logic-test` 213/213). Scalone jako `55e64ac2`, worktree
+`fix-scroll-reset-r2` usunięty. Evaluator (Sonnet 5, temat UI niebojowy → 1x) dispatchowany.
+
+## ECHO R-EPOKA-CUD-ZAKRES-Q1 (95bf5503) — Evaluator: PASS-WITH-NOTES, ZAMKNIĘTE
+
+Werdykt agenta `ae9ce06e802b7b295`: twardy wymóg (`owner-epoch.ts` nietknięty) potwierdzony
+diffem pustym; wszystkie bramki odtworzone niezależnie (`era-gate-ui-test` 51/51,
+`era-cud-warunek-awansu-test` 33/33, `era-cud-main-ts-integracja-test` 15/15, `owner-epoch-test`
+13/13, `logic-test` 213/213); własny oracle na 822 scenariuszach (15 cywilizacji × epoki 1-4 ×
+warianty `done`/cudów) — 0 rozbieżności z silnikiem, `canAdvance` UI ≡ realna bramka
+`computeMainCivEraFromResearch`. 10 mutacji wstrzykniętych, 5 złapanych, 2 nieblokujące luki
+testowe (M6: tooltip przy OBU warunkach niespełnionych jednocześnie łączy tylko pierwszy powód
+przez `parts[0]` zamiast `parts.join('; ')` — realny błąd komunikatu, nie logiki; M10:
+`nextEraLabel` błąd nie zaasercjonowany). **ZAMKNIĘTE jako PASS-WITH-NOTES** — obie luki to dług
+testowy w UI-komunikacie, nie w logice bramki, nieblokujące.
+
+**Znaleziony przy okazji, zarejestrowany cicho (zasada §2):** Petra/Fenicjanie —
+`epokaWejscia=2` ale `techUnlock=Inżynieria` (technologia epoki 3) — PRE-ISTNIEJĄCY rozjazd
+danych (już znany po stronie AI, `main.ts:25598-25607`), nowa praca go nie tworzy, ale panel
+epoki teraz POKAZUJE Fenicjaninowi mylącą podpowiedź „Cud epoki: Petra — jeszcze nie
+zakolejkowany" mimo że nie może jej wykonać (brak tech). Osobna decyzja właściciela, nie do
+naprawy w tej zmianie — odłożone.
+
+---
