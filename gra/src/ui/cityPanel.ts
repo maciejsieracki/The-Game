@@ -73,6 +73,7 @@ import {
   frontItem,
   enqueue,
   dequeue,
+  promoteToFront,
   setPaused,
   buildingProductionItem,
   buildingLevelForEpoch,
@@ -7418,6 +7419,9 @@ function appendBuildQueueSection(
 ): void {
   if (prod.kolejka.length <= 1) return;
   const data = gameData();
+  // P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI: front do zamiany przyciskiem "⇈"/strzałką ↑ na 1. pozycji.
+  // / EN: front item, used by the "⇈"/first-row ↑ swap-with-front button below.
+  const front = prod.kolejka[0] as ProductionItem;
   const qWrap = el('div');
   qWrap.style.cssText = 'margin-top:0.5em;padding-top:0.35em;border-top:1px solid var(--border);';
   const qh = el('div', 'gold', 'Kolejka budowy:');
@@ -7466,10 +7470,34 @@ function appendBuildQueueSection(
       }
       qi.appendChild(etaEl);
       const idx = i;
+      // P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI (Maciej): dotąd ↑↓ przesuwały pozycję
+      // WYŁĄCZNIE wewnątrz kolejki oczekujących -- nie dało się "wciągnąć" żadnej pozycji na
+      // sam szczyt (zamieniając ją z aktualnie budowanym elementem). "⇈" zamienia od razu z
+      // frontem z dowolnej pozycji; na 1. pozycji kolejki (idx===1) robi to teraz też ↑ -- była
+      // martwa (zawsze disabled, i<=1), więc "utykała na granicy" zamiast dokończyć ruch.
+      // Postęp Pracy frontu (prod.postep) resetuje się do 0 przy zamianie -- patrz promoteToFront().
+      // / EN: until now ↑↓ only reordered WITHIN the waiting queue -- nothing could be "pulled" all
+      // the way to the top (swapped with the currently-building item). "⇈" swaps any row straight
+      // to the front; on the first queue row (idx===1) ↑ now does the same -- it used to be dead
+      // (always disabled, i<=1), so it "got stuck at the boundary" instead of finishing the move.
+      // The front's Praca progress (prod.postep) resets to 0 on swap -- see promoteToFront().
+      const promote = el('button', 'btn btn-sm', '⇈');
+      promote.style.cssText = 'padding:0 0.35em;';
+      promote.title =
+        `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}" ` +
+        `(zebrana Praca frontu: ${Math.round(prod.postep)}/${front.koszt} zostanie utracona)`;
+      promote.addEventListener('click', () => { setProd(city.id, promoteToFront(getProd(city.id), idx)); rerender(); });
       const up = el('button', 'btn btn-sm', '↑');
       up.style.cssText = 'padding:0 0.35em;';
-      (up as HTMLButtonElement).disabled = i <= 1;
-      up.addEventListener('click', () => { setProd(city.id, moveQueueItem(getProd(city.id), idx, -1)); rerender(); });
+      (up as HTMLButtonElement).disabled = false;
+      up.title = idx === 1
+        ? `Ustaw jako aktualnie budowane — zamienia miejscami z „${front.nazwa}"`
+        : 'Przesuń w górę kolejki oczekujących';
+      up.addEventListener('click', () => {
+        if (idx === 1) { setProd(city.id, promoteToFront(getProd(city.id), idx)); }
+        else { setProd(city.id, moveQueueItem(getProd(city.id), idx, -1)); }
+        rerender();
+      });
       const down = el('button', 'btn btn-sm', '↓');
       down.style.cssText = 'padding:0 0.35em;';
       (down as HTMLButtonElement).disabled = i >= prod.kolejka.length - 1;
@@ -7478,7 +7506,7 @@ function appendBuildQueueSection(
       x.style.cssText = 'padding:0 0.35em;';
       x.title = 'Usuń z kolejki (zwrot surowców do puli państwa)';
       x.addEventListener('click', () => { cancelQueueItem(city, idx); });
-      if (player) { qi.appendChild(up); qi.appendChild(down); qi.appendChild(x); }
+      if (player) { qi.appendChild(promote); qi.appendChild(up); qi.appendChild(down); qi.appendChild(x); }
       sc.appendChild(qi);
     }
     if (player) bindBuildQueueDragReorder(sc, city);

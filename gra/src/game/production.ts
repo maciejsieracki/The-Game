@@ -1092,6 +1092,59 @@ export function dequeue(prod: CityProduction, index = 0): CityProduction {
   };
 }
 
+/**
+ * Zamień pozycję kolejki oczekujących (`index` >= 1) miejscami z aktualnie
+ * budowanym elementem (`index` 0) -- "podnieś na samą górę". Rozwiązuje
+ * P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI: strzałki ↑↓ przesuwają pozycje
+ * WYŁĄCZNIE wewnątrz kolejki oczekujących (index >= 1, patrz moveQueueItem w
+ * ui/cityPanel.ts), nigdy nie zamieniają z frontem.
+ *
+ * `postep` resetuje się do 0 przy KAŻDEJ zamianie -- tak samo jak w dequeue()
+ * powyżej ("Removing the front item resets postep to 0 -- accumulated work
+ * belonged to that item"). W tym modelu danych tylko element na indeksie 0 ma
+ * w ogóle pole postępu (kolejka[i>=0] to gołe ProductionItem bez własnego
+ * licznika Pracy) -- nie ma więc gdzie "odłożyć" częściowej Pracy przy
+ * zdjęciu z frontu. Literalne przeniesienie postep razem z pozycją byłoby też
+ * furtką do nadużycia: zbieranie Pracy na drogim froncie, a potem zamiana na
+ * tani element z kolejki, żeby dokończyć go od razu za darmo.
+ * Out-of-range `index` (< 1 lub >= kolejka.length) to no-op (shallow copy).
+ * / EN: Swap a waiting-queue position (`index` >= 1) with the currently
+ * building front item (`index` 0) -- "promote to the very top". Fixes
+ * P-PRODUKCJA-BRAK-PROMOCJI-NA-GORE-KOLEJKI: the ↑↓ arrows only reorder
+ * WITHIN the waiting queue (index >= 1, see moveQueueItem in
+ * ui/cityPanel.ts) and never swap with the front slot.
+ *
+ * `postep` resets to 0 on EVERY swap -- same rule as dequeue() above
+ * ("Removing the front item resets postep to 0 -- accumulated work belonged
+ * to that item"). In this data model only index 0 carries a progress field at
+ * all (kolejka[i>=0] entries are bare ProductionItem with no progress counter
+ * of their own), so there is nowhere to "park" partial Praca when an item
+ * leaves the front. Literally carrying `postep` along with the position would
+ * also be an exploit: bank Praca on an expensive front item, then swap in a
+ * cheap queued item to finish it instantly for free.
+ * An out-of-range `index` (< 1 or >= kolejka.length) is a no-op (shallow copy).
+ */
+export function promoteToFront(prod: CityProduction, index: number): CityProduction {
+  if (index < 1 || index >= prod.kolejka.length) {
+    return {
+      kolejka: [...prod.kolejka],
+      postep: prod.postep,
+      wstrzymana: prod.wstrzymana,
+      rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+    };
+  }
+  const kolejka = [...prod.kolejka];
+  const front = kolejka[0] as ProductionItem;
+  kolejka[0] = kolejka[index] as ProductionItem;
+  kolejka[index] = front;
+  return {
+    kolejka,
+    postep: 0,
+    wstrzymana: prod.wstrzymana,
+    rekrutacja: prod.rekrutacja ? [...prod.rekrutacja] : undefined,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // advanceProduction
 // ---------------------------------------------------------------------------
