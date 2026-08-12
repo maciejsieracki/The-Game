@@ -15994,3 +15994,13 @@ przypadek testowy "prefiks w środku zdania" (15→18/18), potwierdzony łapiąc
 AI-AI nad prefiksem dyplomacji przy teoretycznej kolizji (dziś nieosiągalne, zweryfikowane).
 `tsc` 0 błędów, `eot-event-defer-test` 5/5, `logic-test` 213/213. **ZAMKNIĘTE** (commit
 `960f4515`). Temat 7b02eb2d w pełni domknięty.
+
+## Dispatch deployu FALA 271 (na polecenie właściciela "deploy")
+
+Dispatchowany agent Opus 5 do budowy i wdrożenia nowej fali ROBOCZA — obejmuje wszystkie tematy
+zamknięte od FALA 270 (drenaż obywateli r2, guard NaN promoteToFront, dyplomacja U1+U3, KRYTYCZNY
+fix IDB Kontynuuj/Wczytaj, panel zużycia surowców, techPrereqChain, EOT dyplomacja N1+N2+N3, oraz
+scalona-ale-jeszcze-recenzowana naprawa klastra miast barbarzyńców i runda 6 barbarzyńców).
+Runbook: build (NIE npm run build) → stamp → sync → generate-hub → verify-robocza-bundle (musi
+VERIFY OK) → log WERSJE.md+KANAL-PRACA.md → commit+push na gałąź sesji (NIE main — scalenie do
+main to osobna, oddzielnie autoryzowana czynność per R-MERGE-MAIN-RYTM-Q1).
