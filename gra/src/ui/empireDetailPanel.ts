@@ -628,9 +628,26 @@ function renderSpichlerzCentralnySection(food: EmpireFoodSnap): string {
   if (food.maxCap > 0) {
     h += `<div class="civ-emp-bar"><div class="${barCls}" style="width:${pct}%"></div></div>`;
   }
-  if (food.glodWojska) {
+  // P-SPICHLERZ-ZERO-MYLACE (ECHO C Maciej 2026-08-10): scalenie w JEDNO miejsce prawdy,
+  // TUŻ PRZY liczbie magazynu — wcześniej „W magazynie: 0" nie mówiło nic o tym, czy to
+  // zero jest zdrowe czy oznacza realny niepokryty deficyt; ostrzeżenie o głodzie wojska
+  // i ⚠ przy nazwie miasta (tabela niżej) żyły osobno, rozłącznie. / EN: consolidation into
+  // ONE place of truth, RIGHT NEXT TO the stock number — previously "In storage: 0" said
+  // nothing about whether that zero is healthy or a real uncovered deficit; the army-hunger
+  // note and the per-city ⚠ mark (table below) lived separately, disconnected.
+  const unfedRows = food.perCityRows.filter(r => r.nakarmione === false);
+  if (unfedRows.length > 0 || food.glodWojska) {
+    const deficitParts: string[] = [];
+    if (unfedRows.length > 0) {
+      const names = unfedRows.map(r => esc(r.name)).join(', ');
+      const miastoWord = miastoNiedokarmioneWord(unfedRows.length);
+      deficitParts.push(`<b>${unfedRows.length}</b> ${miastoWord} (${names})`);
+    }
+    if (food.glodWojska) {
+      deficitParts.push('głód wojska — magazyn centralny na minusie po koszcie armii');
+    }
     h += `<div class="civ-emp-note" style="color:#e07a7a;margin-bottom:8px">`
-      + `<b>Głód wojska</b> — magazyn centralny na minusie po koszcie armii.</div>`;
+      + `<b>⚠ Realny niepokryty deficyt żywności</b> — ${deficitParts.join(' · ')}.</div>`;
   }
 
   const t = food.tick;
@@ -920,6 +937,19 @@ function routeCountWord(n: number): string {
   const lastTwo = n % 100;
   if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'trasy';
   return 'tras';
+}
+
+/**
+ * P-SPICHLERZ-ZERO-MYLACE: polska odmiana ma TRZY formy, nie dwie — 1 / 2-4
+ * (poza 12-14) / 5+ i 12-14. / EN: Polish plural has THREE forms, not two —
+ * 1 / 2-4 (except 12-14) / 5+ and 12-14.
+ */
+function miastoNiedokarmioneWord(n: number): string {
+  if (n === 1) return 'miasto niedokarmione';
+  const lastDigit = n % 10;
+  const lastTwo = n % 100;
+  if (lastDigit >= 2 && lastDigit <= 4 && !(lastTwo >= 12 && lastTwo <= 14)) return 'miasta niedokarmione';
+  return 'miast niedokarmionych';
 }
 
 function scrollToSection(section: string | null | undefined): void {
