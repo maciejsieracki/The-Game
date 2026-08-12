@@ -15674,3 +15674,13 @@ narzędzia w tej samej turze.
 5. **fix-idb-phantom-lastplayed** — filtr `_`-prefiksowanych slotów w `listSaves()` (F-1 wyżej).
 6-8. **eval-barb-round6-{a,b,c}** — 3x adwersarialna reewaluacja rundy 6 mechanizmu
    `clearedCityIds` (po 5 kolejnych porażkach rund 1-5, runda 6 wymaga szczególnego sceptycyzmu).
+
+## Guard NaN w promoteToFront (fix-promote-front-nan-guard) — ZAMKNIĘTE
+
+Naprawa techniczna z fcd31209/nota 3: `if (!Number.isInteger(index) || index<1 || index>=length)`
+zamiast starego guarda przepuszczającego `NaN`/`undefined`/ułamek. Dowód przed/po: stary guard
+przepuszczał wszystkie 3 patologiczne wartości (dawał `kolejka[NaN]`→`undefined` na froncie→crash
+`frontItem(...).id`), nowy je odrzuca jako no-op. `promote-to-front-test.cjs` 22→37/37 (+15 nowych
+asercji sekcja 7). `tsc` 0 błędów, `logic-test` 213/213. Semantyka swap/reset-postępu NIE
+dotknięta — czeka na `P-PROMOCJA-FRONT-RESET-POSTEPU-Q1` (nadal STATUS: OTWARTE, czeka na
+odpowiedź właściciela). **ZAMKNIĘTE** (commit `8e465fd1`).
